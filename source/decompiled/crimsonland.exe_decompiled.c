@@ -40943,7 +40943,7 @@ undefined4 __cdecl FUN_00460d08(undefined4 param_1)
   byte *pbVar1;
   SIZE_T SVar2;
   
-  FUN_00462fa4();
+  crt_exit_lock();
   pbVar1 = (byte *)FUN_00463b86(DAT_004db4f4);
   if (pbVar1 < DAT_004db4f0 + (4 - (int)DAT_004db4f4)) {
     SVar2 = FUN_00463b86(DAT_004db4f4);
@@ -40958,7 +40958,7 @@ undefined4 __cdecl FUN_00460d08(undefined4 param_1)
   *(undefined4 *)DAT_004db4f0 = param_1;
   DAT_004db4f0 = DAT_004db4f0 + 4;
 LAB_00460d7d:
-  FUN_00462fad();
+  crt_exit_unlock();
   return param_1;
 }
 
@@ -43651,16 +43651,18 @@ LAB_00462e8f:
 
 
 
-/* FUN_00462eb0 @ 00462eb0 */
+/* crt_run_initializers @ 00462eb0 */
 
-void FUN_00462eb0(void)
+/* invokes CRT initializer function ranges */
+
+void crt_run_initializers(void)
 
 {
   if (PTR_FUN_0047b160 != (undefined *)0x0) {
     (*(code *)PTR_FUN_0047b160)();
   }
-  FUN_00462fb6((undefined4 *)&DAT_004710e4,(undefined4 *)&DAT_004710f8);
-  FUN_00462fb6((undefined4 *)&DAT_00471000,(undefined4 *)&DAT_004710e0);
+  crt_call_fn_range((undefined4 *)&DAT_004710e4,(undefined4 *)&DAT_004710f8);
+  crt_call_fn_range((undefined4 *)&DAT_00471000,(undefined4 *)&DAT_004710e0);
   return;
 }
 
@@ -43673,7 +43675,7 @@ void FUN_00462eb0(void)
 void __cdecl crt_exit(uint code)
 
 {
-  FUN_00462eff(code,0,0);
+  crt_doexit(code,0,0);
   return;
 }
 
@@ -43689,32 +43691,33 @@ void __cdecl crt_exit(uint code)
 void __cdecl __exit(int _Code)
 
 {
-  FUN_00462eff(_Code,1,0);
+  crt_doexit(_Code,1,0);
   return;
 }
 
 
 
-/* FUN_00462eff @ 00462eff */
+/* crt_doexit @ 00462eff */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* CRT exit worker (atexit/onexit + ExitProcess) */
 
-void __cdecl FUN_00462eff(UINT param_1,int param_2,int param_3)
+void __cdecl crt_doexit(uint code,int full,int quick)
 
 {
   HANDLE hProcess;
   undefined4 *puVar1;
-  UINT uExitCode;
+  uint uExitCode;
   
-  FUN_00462fa4();
+  crt_exit_lock();
   if (DAT_004d99c0 == 1) {
-    uExitCode = param_1;
+    uExitCode = code;
     hProcess = GetCurrentProcess();
     TerminateProcess(hProcess,uExitCode);
   }
   _DAT_004d99bc = 1;
-  DAT_004d99b8 = (undefined1)param_3;
-  if (param_2 == 0) {
+  DAT_004d99b8 = (undefined1)quick;
+  if (full == 0) {
     if ((DAT_004db4f4 != (undefined4 *)0x0) &&
        (puVar1 = (undefined4 *)(DAT_004db4f0 - 4), DAT_004db4f4 <= puVar1)) {
       do {
@@ -43724,23 +43727,25 @@ void __cdecl FUN_00462eff(UINT param_1,int param_2,int param_3)
         puVar1 = puVar1 + -1;
       } while (DAT_004db4f4 <= puVar1);
     }
-    FUN_00462fb6((undefined4 *)&DAT_004710fc,(undefined4 *)&DAT_00471104);
+    crt_call_fn_range((undefined4 *)&DAT_004710fc,(undefined4 *)&DAT_00471104);
   }
-  FUN_00462fb6((undefined4 *)&DAT_00471108,(undefined4 *)&DAT_00471110);
-  if (param_3 == 0) {
+  crt_call_fn_range((undefined4 *)&DAT_00471108,(undefined4 *)&DAT_00471110);
+  if (quick == 0) {
     DAT_004d99c0 = 1;
                     /* WARNING: Subroutine does not return */
-    ExitProcess(param_1);
+    ExitProcess(code);
   }
-  FUN_00462fad();
+  crt_exit_unlock();
   return;
 }
 
 
 
-/* FUN_00462fa4 @ 00462fa4 */
+/* crt_exit_lock @ 00462fa4 */
 
-void FUN_00462fa4(void)
+/* exit lock */
+
+void crt_exit_lock(void)
 
 {
   crt_lock(0xd);
@@ -43749,9 +43754,11 @@ void FUN_00462fa4(void)
 
 
 
-/* FUN_00462fad @ 00462fad */
+/* crt_exit_unlock @ 00462fad */
 
-void FUN_00462fad(void)
+/* exit unlock */
+
+void crt_exit_unlock(void)
 
 {
   crt_unlock(0xd);
@@ -43760,9 +43767,11 @@ void FUN_00462fad(void)
 
 
 
-/* FUN_00462fb6 @ 00462fb6 */
+/* crt_call_fn_range @ 00462fb6 */
 
-void __cdecl FUN_00462fb6(undefined4 *param_1,undefined4 *param_2)
+/* call function pointers in a range */
+
+void __cdecl crt_call_fn_range(undefined4 *param_1,undefined4 *param_2)
 
 {
   for (; param_1 < param_2; param_1 = param_1 + 1) {
@@ -43848,12 +43857,12 @@ void entry(void)
   crt_io_init();
   DAT_004db4e4 = GetCommandLineA();
   DAT_004d99c4 = crt_get_environment_strings();
-  FUN_00468a24();
-  FUN_0046896b();
-  FUN_00462eb0();
+  crt_build_argv();
+  crt_build_environ();
+  crt_run_initializers();
   local_60.dwFlags = 0;
   GetStartupInfoA(&local_60);
-  FUN_00468913();
+  crt_skip_program_name();
   GetModuleHandleA((LPCSTR)0x0);
   code = crimsonland_main();
   crt_exit(code);
@@ -43874,9 +43883,9 @@ void __cdecl __amsg_exit(int param_1)
 
 {
   if (DAT_004d99cc == 1) {
-    FUN_00468da3();
+    crt_runtime_error_banner();
   }
-  FUN_00468ddc(param_1);
+  crt_report_runtime_error(param_1);
   (*(code *)PTR___exit_0047b180)(0xff);
   return;
 }
@@ -43889,9 +43898,9 @@ void __cdecl FUN_00463153(DWORD param_1)
 
 {
   if (DAT_004d99cc == 1) {
-    FUN_00468da3();
+    crt_runtime_error_banner();
   }
-  FUN_00468ddc(param_1);
+  crt_report_runtime_error(param_1);
                     /* WARNING: Subroutine does not return */
   ExitProcess(0xff);
 }
@@ -49887,9 +49896,11 @@ uint __cdecl FUN_004688ef(int *param_1,undefined4 *param_2)
 
 
 
-/* FUN_00468913 @ 00468913 */
+/* crt_skip_program_name @ 00468913 */
 
-byte * FUN_00468913(void)
+/* returns command line tail after argv[0] */
+
+uchar * crt_skip_program_name(void)
 
 {
   byte bVar1;
@@ -49929,9 +49940,11 @@ LAB_00468950:
 
 
 
-/* FUN_0046896b @ 0046896b */
+/* crt_build_environ @ 0046896b */
 
-void FUN_0046896b(void)
+/* builds environ array from environment block */
+
+void crt_build_environ(void)
 
 {
   char cVar1;
@@ -49981,11 +49994,12 @@ void FUN_0046896b(void)
 
 
 
-/* FUN_00468a24 @ 00468a24 */
+/* crt_build_argv @ 00468a24 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* parses command line into argv/argc */
 
-void FUN_00468a24(void)
+void crt_build_argv(void)
 
 {
   undefined4 *puVar1;
@@ -50002,12 +50016,12 @@ void FUN_00468a24(void)
   if (*DAT_004db4e4 != 0) {
     pbVar2 = DAT_004db4e4;
   }
-  FUN_00468abd(pbVar2,(undefined4 *)0x0,(byte *)0x0,&local_8,&local_c);
+  crt_parse_cmdline(pbVar2,(undefined4 *)0x0,(byte *)0x0,&local_8,&local_c);
   puVar1 = _malloc(local_c + local_8 * 4);
   if (puVar1 == (undefined4 *)0x0) {
     __amsg_exit(8);
   }
-  FUN_00468abd(pbVar2,puVar1,(byte *)(puVar1 + local_8),&local_8,&local_c);
+  crt_parse_cmdline(pbVar2,puVar1,(byte *)(puVar1 + local_8),&local_8,&local_c);
   _DAT_004d9998 = puVar1;
   _DAT_004d9994 = local_8 + -1;
   return;
@@ -50015,9 +50029,12 @@ void FUN_00468a24(void)
 
 
 
-/* FUN_00468abd @ 00468abd */
+/* crt_parse_cmdline @ 00468abd */
 
-void __cdecl FUN_00468abd(byte *param_1,undefined4 *param_2,byte *param_3,int *param_4,int *param_5)
+/* low-level argv parser for command line */
+
+void __cdecl
+crt_parse_cmdline(byte *param_1,undefined4 *param_2,byte *param_3,int *param_4,int *param_5)
 
 {
   byte bVar1;
@@ -50257,26 +50274,30 @@ LAB_00468cc8:
 
 
 
-/* FUN_00468da3 @ 00468da3 */
+/* crt_runtime_error_banner @ 00468da3 */
 
-void FUN_00468da3(void)
+/* runtime error prolog/epilog around report */
+
+void crt_runtime_error_banner(void)
 
 {
   if ((DAT_004d99cc == 1) || ((DAT_004d99cc == 0 && (DAT_0047b184 == 1)))) {
-    FUN_00468ddc(0xfc);
+    crt_report_runtime_error(0xfc);
     if (DAT_004d9b84 != (code *)0x0) {
       (*DAT_004d9b84)();
     }
-    FUN_00468ddc(0xff);
+    crt_report_runtime_error(0xff);
   }
   return;
 }
 
 
 
-/* FUN_00468ddc @ 00468ddc */
+/* crt_report_runtime_error @ 00468ddc */
 
-void __cdecl FUN_00468ddc(DWORD param_1)
+/* formats and displays CRT runtime errors */
+
+void __cdecl crt_report_runtime_error(DWORD param_1)
 
 {
   undefined4 *puVar1;
@@ -53674,7 +53695,7 @@ FUN_0046ca2f(int param_1,int param_2,uint param_3,int param_4,int param_5,int pa
 void FUN_0046cb6f(void)
 
 {
-  FUN_00468ddc(10);
+  crt_report_runtime_error(10);
   FUN_0046d723((DWORD *)0x16);
                     /* WARNING: Subroutine does not return */
   __exit(3);

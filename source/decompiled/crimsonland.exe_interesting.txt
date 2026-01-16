@@ -13,6 +13,9 @@ Interesting Functions and Patterns
   crt_free_thread_data @ 0046551f
   ov_read @ 0046e93e
 
+[CMD related]
+  crt_parse_cmdline @ 00468abd
+
 [MALLOC related]
   _malloc @ 004629d9
   __nh_malloc @ 004629eb
@@ -32,5 +35,7 @@ Interesting Functions and Patterns
 
 [ERROR related]
   __startOneArgErrorHandling @ 004650e7
+  crt_runtime_error_banner @ 00468da3
+  crt_report_runtime_error @ 00468ddc
 
 [POTENTIALLY DANGEROUS FUNCTIONS]
