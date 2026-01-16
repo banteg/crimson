@@ -100,6 +100,37 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00462eb0",
+    "name": "crt_run_initializers",
+    "comment": "invokes CRT initializer function ranges"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462eff",
+    "name": "crt_doexit",
+    "signature": "void crt_doexit(unsigned int code, int full, int quick)",
+    "comment": "CRT exit worker (atexit/onexit + ExitProcess)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462fa4",
+    "name": "crt_exit_lock",
+    "comment": "exit lock"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462fad",
+    "name": "crt_exit_unlock",
+    "comment": "exit unlock"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462fb6",
+    "name": "crt_call_fn_range",
+    "comment": "call function pointers in a range"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00462edd",
     "name": "crt_exit",
     "signature": "void crt_exit(unsigned int code)",
@@ -111,6 +142,43 @@
     "name": "crt_exception_filter",
     "signature": "long crt_exception_filter(int code, _EXCEPTION_POINTERS *info)",
     "comment": "CRT exception filter/dispatch"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00468913",
+    "name": "crt_skip_program_name",
+    "signature": "unsigned char * crt_skip_program_name(void)",
+    "comment": "returns command line tail after argv[0]"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046896b",
+    "name": "crt_build_environ",
+    "comment": "builds environ array from environment block"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00468a24",
+    "name": "crt_build_argv",
+    "comment": "parses command line into argv/argc"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00468abd",
+    "name": "crt_parse_cmdline",
+    "comment": "low-level argv parser for command line"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00468da3",
+    "name": "crt_runtime_error_banner",
+    "comment": "runtime error prolog/epilog around report"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00468ddc",
+    "name": "crt_report_runtime_error",
+    "comment": "formats and displays CRT runtime errors"
   },
   {
     "program": "crimsonland.exe",
