@@ -26,7 +26,13 @@ public class ApplyWinapiGDT extends GhidraScript {
             gdtPath = System.getenv("CRIMSON_WINAPI_GDT");
         }
         if (gdtPath == null || gdtPath.isBlank()) {
-            gdtPath = "/Users/banteg/dev/0x6d696368/ghidra-data/typeinfo/winapi_32.gdt";
+            String localPath = "source" + File.separator + "ghidra" + File.separator + "winapi_32.gdt";
+            File localFile = new File(localPath);
+            if (localFile.exists()) {
+                gdtPath = localFile.getAbsolutePath();
+            } else {
+                gdtPath = "/Users/banteg/dev/0x6d696368/ghidra-data/typeinfo/winapi_32.gdt";
+            }
         }
 
         File gdtFile = new File(gdtPath);
