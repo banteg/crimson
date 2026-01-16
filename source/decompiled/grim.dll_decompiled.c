@@ -3789,9 +3789,12 @@ float grim_get_mouse_wheel_delta(void)
 
 
 
-/* FUN_10007580 @ 10007580 */
+/* grim_get_joystick_x @ 10007580 */
 
-undefined4 FUN_10007580(void)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x98 (provisional): joystick axis X */
+
+int grim_get_joystick_x(void)
 
 {
   return DAT_1005d830;
@@ -3799,9 +3802,12 @@ undefined4 FUN_10007580(void)
 
 
 
-/* FUN_10007590 @ 10007590 */
+/* grim_get_joystick_y @ 10007590 */
 
-undefined4 FUN_10007590(void)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x9c (provisional): joystick axis Y */
+
+int grim_get_joystick_y(void)
 
 {
   return DAT_1005d834;
@@ -3809,9 +3815,12 @@ undefined4 FUN_10007590(void)
 
 
 
-/* FUN_100075a0 @ 100075a0 */
+/* grim_get_joystick_z @ 100075a0 */
 
-undefined4 FUN_100075a0(void)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0xa0 (provisional): joystick axis Z */
+
+int grim_get_joystick_z(void)
 
 {
   return DAT_1005d838;
@@ -3832,13 +3841,19 @@ int grim_get_joystick_pov(int index)
 
 
 
-/* FUN_100075c0 @ 100075c0 */
+/* grim_is_joystick_button_down @ 100075c0 */
 
-void FUN_100075c0(uint param_1)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0xa8 (provisional): joystick button state */
+
+int grim_is_joystick_button_down(int button)
 
 {
-  FUN_1000a310(param_1);
-  return;
+  byte bVar1;
+  undefined3 extraout_var;
+  
+  bVar1 = FUN_1000a310(button);
+  return CONCAT31(extraout_var,bVar1);
 }
 
 
@@ -3918,22 +3933,25 @@ int grim_load_texture(char *name,char *path)
 
 
 
-/* FUN_10007700 @ 10007700 */
+/* grim_destroy_texture @ 10007700 */
 
-void FUN_10007700(int param_1)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0xbc (provisional): release texture handle */
+
+void grim_destroy_texture(int handle)
 
 {
   undefined4 *puVar1;
   int iVar2;
   bool bVar3;
   
-  puVar1 = (undefined4 *)(&DAT_1005d404)[param_1];
+  puVar1 = (undefined4 *)(&DAT_1005d404)[handle];
   if (puVar1 != (undefined4 *)0x0) {
     FUN_10004ab0(puVar1);
     operator_delete(puVar1);
     iVar2 = DAT_1005305c;
-    bVar3 = param_1 == DAT_1005305c;
-    (&DAT_1005d404)[param_1] = 0;
+    bVar3 = handle == DAT_1005305c;
+    (&DAT_1005d404)[handle] = 0;
     if (bVar3) {
       DAT_1005305c = iVar2 + -1;
     }

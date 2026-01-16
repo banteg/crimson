@@ -2,6 +2,7 @@ Interesting Functions and Patterns
 ===================================
 
 [DES related]
+  grim_destroy_texture @ 10007700
   `vector_deleting_destructor' @ 1000b2fd
   FID_conflict:`vector_deleting_destructor' @ 1000b348
 
