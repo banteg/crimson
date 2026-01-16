@@ -4,7 +4,7 @@
     "offset_hex": "0x0",
     "offset_dec": 0,
     "func_addr": "0x10005c80",
-    "func_name": "FUN_10005c80",
+    "func_name": "grim_release",
     "section": ".text"
   },
   {
@@ -12,7 +12,7 @@
     "offset_hex": "0x4",
     "offset_dec": 4,
     "func_addr": "0x10005c90",
-    "func_name": "FUN_10005c90",
+    "func_name": "grim_set_paused",
     "section": ".text"
   },
   {
@@ -20,7 +20,7 @@
     "offset_hex": "0x8",
     "offset_dec": 8,
     "func_addr": "0x10005ca0",
-    "func_name": "FUN_10005ca0",
+    "func_name": "grim_get_version",
     "section": ".text"
   },
   {
@@ -28,7 +28,7 @@
     "offset_hex": "0xc",
     "offset_dec": 12,
     "func_addr": "0x10005cb0",
-    "func_name": "FUN_10005cb0",
+    "func_name": "grim_check_device",
     "section": ".text"
   },
   {
@@ -108,7 +108,7 @@
     "offset_hex": "0x34",
     "offset_dec": 52,
     "func_addr": "0x10006e40",
-    "func_name": "FUN_10006e40",
+    "func_name": "grim_get_time_ms",
     "section": ".text"
   },
   {
@@ -116,7 +116,7 @@
     "offset_hex": "0x38",
     "offset_dec": 56,
     "func_addr": "0x10006e50",
-    "func_name": "FUN_10006e50",
+    "func_name": "grim_set_time_ms",
     "section": ".text"
   },
   {
@@ -124,7 +124,7 @@
     "offset_hex": "0x3c",
     "offset_dec": 60,
     "func_addr": "0x10006e60",
-    "func_name": "FUN_10006e60",
+    "func_name": "grim_get_frame_dt",
     "section": ".text"
   },
   {
@@ -132,7 +132,7 @@
     "offset_hex": "0x40",
     "offset_dec": 64,
     "func_addr": "0x10006e90",
-    "func_name": "FUN_10006e90",
+    "func_name": "grim_get_fps",
     "section": ".text"
   },
   {
@@ -188,7 +188,7 @@
     "offset_hex": "0x5c",
     "offset_dec": 92,
     "func_addr": "0x10007440",
-    "func_name": "FUN_10007440",
+    "func_name": "grim_was_mouse_button_pressed",
     "section": ".text"
   },
   {
@@ -204,7 +204,7 @@
     "offset_hex": "0x64",
     "offset_dec": 100,
     "func_addr": "0x10007530",
-    "func_name": "FUN_10007530",
+    "func_name": "grim_set_mouse_pos",
     "section": ".text"
   },
   {
@@ -212,7 +212,7 @@
     "offset_hex": "0x68",
     "offset_dec": 104,
     "func_addr": "0x10007510",
-    "func_name": "FUN_10007510",
+    "func_name": "grim_get_mouse_x",
     "section": ".text"
   },
   {
@@ -220,7 +220,7 @@
     "offset_hex": "0x6c",
     "offset_dec": 108,
     "func_addr": "0x10007520",
-    "func_name": "FUN_10007520",
+    "func_name": "grim_get_mouse_y",
     "section": ".text"
   },
   {
@@ -228,7 +228,7 @@
     "offset_hex": "0x70",
     "offset_dec": 112,
     "func_addr": "0x100074d0",
-    "func_name": "FUN_100074d0",
+    "func_name": "grim_get_mouse_dx",
     "section": ".text"
   },
   {
@@ -236,7 +236,7 @@
     "offset_hex": "0x74",
     "offset_dec": 116,
     "func_addr": "0x100074e0",
-    "func_name": "FUN_100074e0",
+    "func_name": "grim_get_mouse_dy",
     "section": ".text"
   },
   {
@@ -244,7 +244,7 @@
     "offset_hex": "0x78",
     "offset_dec": 120,
     "func_addr": "0x100074f0",
-    "func_name": "FUN_100074f0",
+    "func_name": "grim_get_mouse_dx_indexed",
     "section": ".text"
   },
   {
@@ -252,7 +252,7 @@
     "offset_hex": "0x7c",
     "offset_dec": 124,
     "func_addr": "0x10007500",
-    "func_name": "FUN_10007500",
+    "func_name": "grim_get_mouse_dy_indexed",
     "section": ".text"
   },
   {
@@ -276,7 +276,7 @@
     "offset_hex": "0x88",
     "offset_dec": 136,
     "func_addr": "0x100072c0",
-    "func_name": "FUN_100072c0",
+    "func_name": "grim_get_slot_float",
     "section": ".text"
   },
   {
@@ -284,7 +284,7 @@
     "offset_hex": "0x8c",
     "offset_dec": 140,
     "func_addr": "0x100072d0",
-    "func_name": "FUN_100072d0",
+    "func_name": "grim_get_slot_int",
     "section": ".text"
   },
   {
@@ -292,7 +292,7 @@
     "offset_hex": "0x90",
     "offset_dec": 144,
     "func_addr": "0x100072e0",
-    "func_name": "FUN_100072e0",
+    "func_name": "grim_set_slot_float",
     "section": ".text"
   },
   {
@@ -300,7 +300,7 @@
     "offset_hex": "0x94",
     "offset_dec": 148,
     "func_addr": "0x10007300",
-    "func_name": "FUN_10007300",
+    "func_name": "grim_set_slot_int",
     "section": ".text"
   },
   {
