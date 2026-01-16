@@ -1,0 +1,198 @@
+{
+  "0x10": {
+    "callsites": 1,
+    "unique_functions": 1
+  },
+  "0x100": {
+    "callsites": 59,
+    "unique_functions": 23
+  },
+  "0x104": {
+    "callsites": 26,
+    "unique_functions": 6
+  },
+  "0x108": {
+    "callsites": 5,
+    "unique_functions": 2
+  },
+  "0x10c": {
+    "callsites": 4,
+    "unique_functions": 1
+  },
+  "0x110": {
+    "callsites": 19,
+    "unique_functions": 9
+  },
+  "0x114": {
+    "callsites": 191,
+    "unique_functions": 37
+  },
+  "0x118": {
+    "callsites": 12,
+    "unique_functions": 2
+  },
+  "0x11c": {
+    "callsites": 108,
+    "unique_functions": 21
+  },
+  "0x120": {
+    "callsites": 6,
+    "unique_functions": 2
+  },
+  "0x128": {
+    "callsites": 5,
+    "unique_functions": 1
+  },
+  "0x130": {
+    "callsites": 3,
+    "unique_functions": 1
+  },
+  "0x134": {
+    "callsites": 5,
+    "unique_functions": 2
+  },
+  "0x138": {
+    "callsites": 4,
+    "unique_functions": 1
+  },
+  "0x13c": {
+    "callsites": 6,
+    "unique_functions": 3
+  },
+  "0x14": {
+    "callsites": 1,
+    "unique_functions": 1
+  },
+  "0x140": {
+    "callsites": 3,
+    "unique_functions": 3
+  },
+  "0x144": {
+    "callsites": 18,
+    "unique_functions": 12
+  },
+  "0x148": {
+    "callsites": 96,
+    "unique_functions": 16
+  },
+  "0x14c": {
+    "callsites": 15,
+    "unique_functions": 14
+  },
+  "0x18": {
+    "callsites": 1,
+    "unique_functions": 1
+  },
+  "0x1c": {
+    "callsites": 1,
+    "unique_functions": 1
+  },
+  "0x20": {
+    "callsites": 204,
+    "unique_functions": 34
+  },
+  "0x24": {
+    "callsites": 17,
+    "unique_functions": 4
+  },
+  "0x28": {
+    "callsites": 1,
+    "unique_functions": 1
+  },
+  "0x2c": {
+    "callsites": 5,
+    "unique_functions": 3
+  },
+  "0x30": {
+    "callsites": 6,
+    "unique_functions": 3
+  },
+  "0x44": {
+    "callsites": 10,
+    "unique_functions": 3
+  },
+  "0x48": {
+    "callsites": 39,
+    "unique_functions": 16
+  },
+  "0x4c": {
+    "callsites": 12,
+    "unique_functions": 10
+  },
+  "0x50": {
+    "callsites": 1,
+    "unique_functions": 1
+  },
+  "0x54": {
+    "callsites": 2,
+    "unique_functions": 2
+  },
+  "0x58": {
+    "callsites": 4,
+    "unique_functions": 3
+  },
+  "0x60": {
+    "callsites": 2,
+    "unique_functions": 1
+  },
+  "0x80": {
+    "callsites": 39,
+    "unique_functions": 6
+  },
+  "0x84": {
+    "callsites": 10,
+    "unique_functions": 2
+  },
+  "0xa4": {
+    "callsites": 2,
+    "unique_functions": 2
+  },
+  "0xac": {
+    "callsites": 2,
+    "unique_functions": 1
+  },
+  "0xb4": {
+    "callsites": 3,
+    "unique_functions": 3
+  },
+  "0xc0": {
+    "callsites": 29,
+    "unique_functions": 12
+  },
+  "0xc4": {
+    "callsites": 73,
+    "unique_functions": 25
+  },
+  "0xcc": {
+    "callsites": 2,
+    "unique_functions": 2
+  },
+  "0xd0": {
+    "callsites": 24,
+    "unique_functions": 14
+  },
+  "0xd4": {
+    "callsites": 12,
+    "unique_functions": 11
+  },
+  "0xd8": {
+    "callsites": 1,
+    "unique_functions": 1
+  },
+  "0xdc": {
+    "callsites": 1,
+    "unique_functions": 1
+  },
+  "0xe8": {
+    "callsites": 79,
+    "unique_functions": 23
+  },
+  "0xf0": {
+    "callsites": 85,
+    "unique_functions": 27
+  },
+  "0xfc": {
+    "callsites": 71,
+    "unique_functions": 19
+  }
+}
