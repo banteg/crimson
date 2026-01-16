@@ -17,6 +17,7 @@ exports now include 84 entry points created from the vtable.
 We extracted all `(*DAT_0048083c + offset)` callsites and wrote them to:
 
 - `source/decompiled/grim2d_vtable_calls.json`
+- `source/decompiled/grim2d_vtable_callsites.json` (full callsite index with line numbers)
 
 The JSON includes offset, callsite count, unique functions, and sample lines.
 
