@@ -311,6 +311,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x100079b0",
+    "name": "grim_draw_fullscreen_color",
+    "signature": "void grim_draw_fullscreen_color(float r, float g, float b, float a)",
+    "comment": "Grim2D vtable 0xcc (provisional): fullscreen color/fade overlay"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10007f30",
     "name": "grim_set_rotation",
     "signature": "void grim_set_rotation(float radians)",
@@ -447,5 +454,40 @@
     "name": "grim_draw_text_mono_fmt",
     "signature": "void grim_draw_text_mono_fmt(int *self, float x, float y, char *fmt)",
     "comment": "Grim2D vtable 0x140 (provisional): formatted mono text"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10006cb0",
+    "name": "grim_clear_color",
+    "signature": "void grim_clear_color(float r, float g, float b, float a)",
+    "comment": "Grim2D vtable 0x2c (provisional): clear color"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10006d50",
+    "name": "grim_set_render_target",
+    "signature": "int grim_set_render_target(int target_index)",
+    "comment": "Grim2D vtable 0x30 (provisional): set render target; -1 resets"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007ac0",
+    "name": "grim_begin_batch",
+    "signature": "void grim_begin_batch(void)",
+    "comment": "Grim2D vtable 0xe8 (provisional): begin draw batch"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007b20",
+    "name": "grim_end_batch",
+    "signature": "void grim_end_batch(void)",
+    "comment": "Grim2D vtable 0xf0 (provisional): end draw batch/flush"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10008720",
+    "name": "grim_draw_quad_xy",
+    "signature": "void grim_draw_quad_xy(float *xy, float w, float h)",
+    "comment": "Grim2D vtable 0x120 (provisional): draw quad from xy pointer"
   }
 ]
