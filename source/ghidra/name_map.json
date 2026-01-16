@@ -311,6 +311,20 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10007b90",
+    "name": "grim_draw_circle_filled",
+    "signature": "void grim_draw_circle_filled(float x, float y, float radius)",
+    "comment": "Grim2D vtable 0xd8 (provisional): triangle fan circle fill"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007d40",
+    "name": "grim_draw_circle_outline",
+    "signature": "void grim_draw_circle_outline(float x, float y, float radius)",
+    "comment": "Grim2D vtable 0xdc (provisional): triangle strip ring/outline"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x100078e0",
     "name": "grim_draw_rect_filled",
     "comment": "Grim2D vtable 0xd0 (provisional): UI panel fill/quad"
