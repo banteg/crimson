@@ -1,0 +1,28 @@
+[
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046e8f4",
+    "name": "strdup_malloc",
+    "signature": "char * strdup_malloc(char * src)",
+    "comment": "malloc+copy helper"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004017a0",
+    "name": "console_push_line",
+    "comment": "pushes line into console queue"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00401870",
+    "name": "console_printf",
+    "comment": "formats then pushes line"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004566d3",
+    "name": "renderer_select_backend",
+    "signature": "int renderer_select_backend(int reset)",
+    "comment": "selects renderer table based on config"
+  }
+]

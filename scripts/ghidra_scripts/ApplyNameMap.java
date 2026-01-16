@@ -1,13 +1,19 @@
 /* ###
- * Apply function names/signatures from a CSV mapping.
+ * Apply function names/signatures from a JSON (or CSV) mapping.
  * @category Analysis
  */
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import ghidra.app.cmd.function.ApplyFunctionSignatureCmd;
 import ghidra.app.script.GhidraScript;
+import ghidra.app.util.parser.FunctionSignatureParser;
 import ghidra.program.model.address.Address;
 import ghidra.program.model.data.FunctionDefinitionDataType;
-import ghidra.program.model.data.FunctionSignatureParser;
 import ghidra.program.model.listing.Function;
 import ghidra.program.model.listing.FunctionManager;
 import ghidra.program.model.symbol.SourceType;
@@ -33,10 +39,15 @@ public class ApplyNameMap extends GhidraScript {
     }
 
     private static String defaultMapPath() {
-        String localPath = "source" + File.separator + "ghidra" + File.separator + "name_map.csv";
-        File localFile = new File(localPath);
-        if (localFile.exists()) {
-            return localFile.getAbsolutePath();
+        String jsonPath = "source" + File.separator + "ghidra" + File.separator + "name_map.json";
+        File jsonFile = new File(jsonPath);
+        if (jsonFile.exists()) {
+            return jsonFile.getAbsolutePath();
+        }
+        String csvPath = "source" + File.separator + "ghidra" + File.separator + "name_map.csv";
+        File csvFile = new File(csvPath);
+        if (csvFile.exists()) {
+            return csvFile.getAbsolutePath();
         }
         return null;
     }
@@ -73,12 +84,16 @@ public class ApplyNameMap extends GhidraScript {
         return fields;
     }
 
-    private static long parseAddress(String address) throws NumberFormatException {
+    private static long parseAddressValue(String address) throws NumberFormatException {
         String value = address.trim();
+        int radix = 10;
         if (value.startsWith("0x") || value.startsWith("0X")) {
             value = value.substring(2);
+            radix = 16;
+        } else if (value.matches(".*[a-fA-F].*")) {
+            radix = 16;
         }
-        return Long.parseUnsignedLong(value, 16);
+        return Long.parseUnsignedLong(value, radix);
     }
 
     private static Map<String, Integer> headerIndex(List<String> header) {
@@ -107,6 +122,76 @@ public class ApplyNameMap extends GhidraScript {
         return fields.get(idx).trim();
     }
 
+    private List<Row> readRows(File mapFile) throws IOException {
+        String name = mapFile.getName().toLowerCase();
+        if (name.endsWith(".json")) {
+            return readJsonRows(mapFile);
+        }
+        return readCsvRows(mapFile);
+    }
+
+    private List<Row> readCsvRows(File mapFile) throws IOException {
+        List<Row> rows = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(mapFile))) {
+            String line;
+            Map<String, Integer> headerMap = null;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty() || line.startsWith("#")) {
+                    continue;
+                }
+                List<String> fields = parseCsvLine(line);
+                if (headerMap == null) {
+                    headerMap = headerIndex(fields);
+                    if (!headerMap.containsKey("address") || !headerMap.containsKey("name")) {
+                        printerr("Invalid header in name map: " + line);
+                        return rows;
+                    }
+                    continue;
+                }
+                rows.add(readRow(fields, headerMap));
+            }
+        }
+        return rows;
+    }
+
+    private List<Row> readJsonRows(File mapFile) throws IOException {
+        List<Row> rows = new ArrayList<>();
+        Gson gson = new Gson();
+        try (BufferedReader reader = new BufferedReader(new FileReader(mapFile))) {
+            JsonElement root = JsonParser.parseReader(reader);
+            if (root == null || root.isJsonNull()) {
+                return rows;
+            }
+            if (root.isJsonArray()) {
+                JsonArray array = root.getAsJsonArray();
+                for (JsonElement element : array) {
+                    Row row = gson.fromJson(element, Row.class);
+                    if (row != null) {
+                        rows.add(row);
+                    }
+                }
+            } else if (root.isJsonObject()) {
+                JsonObject obj = root.getAsJsonObject();
+                if (obj.has("entries") && obj.get("entries").isJsonArray()) {
+                    JsonArray array = obj.get("entries").getAsJsonArray();
+                    for (JsonElement element : array) {
+                        Row row = gson.fromJson(element, Row.class);
+                        if (row != null) {
+                            rows.add(row);
+                        }
+                    }
+                } else if (obj.has("address")) {
+                    Row row = gson.fromJson(obj, Row.class);
+                    if (row != null) {
+                        rows.add(row);
+                    }
+                }
+            }
+        }
+        return rows;
+    }
+
     @Override
     public void run() throws Exception {
         String mapPath = null;
@@ -131,9 +216,22 @@ public class ApplyNameMap extends GhidraScript {
             return;
         }
 
+        List<Row> rows;
+        try {
+            rows = readRows(mapFile);
+        } catch (IOException e) {
+            printerr("Failed to read name map: " + e.getMessage());
+            return;
+        }
+        if (rows.isEmpty()) {
+            printerr("Name map is empty: " + mapFile.getAbsolutePath());
+            return;
+        }
+
         String programName = currentProgram.getName();
         FunctionManager functionManager = currentProgram.getFunctionManager();
-        FunctionSignatureParser parser = new FunctionSignatureParser(currentProgram.getDataTypeManager(), null);
+        FunctionSignatureParser parser =
+            new FunctionSignatureParser(currentProgram.getDataTypeManager(), null);
 
         int applied = 0;
         int renamed = 0;
@@ -142,63 +240,49 @@ public class ApplyNameMap extends GhidraScript {
         int missing = 0;
         int skipped = 0;
 
-        try (BufferedReader reader = new BufferedReader(new FileReader(mapFile))) {
-            String line;
-            Map<String, Integer> headerMap = null;
-            while ((line = reader.readLine()) != null) {
-                line = line.trim();
-                if (line.isEmpty() || line.startsWith("#")) {
+        for (Row row : rows) {
+            if (row == null || row.address == null || row.address.isBlank()) {
+                continue;
+            }
+            if (row.program != null && !row.program.isBlank()) {
+                if (!row.program.equalsIgnoreCase(programName)) {
+                    skipped++;
                     continue;
                 }
-                List<String> fields = parseCsvLine(line);
-                if (headerMap == null) {
-                    headerMap = headerIndex(fields);
-                    if (!headerMap.containsKey("address") || !headerMap.containsKey("name")) {
-                        printerr("Invalid header in name map: " + line);
-                        return;
-                    }
-                    continue;
-                }
-                Row row = readRow(fields, headerMap);
-                if (row.address == null || row.address.isBlank()) {
-                    continue;
-                }
-                if (row.program != null && !row.program.isBlank()) {
-                    if (!row.program.equalsIgnoreCase(programName)) {
-                        skipped++;
-                        continue;
-                    }
-                }
-                Address addr;
+            }
+            Address addr;
+            try {
+                addr = toAddr(parseAddressValue(row.address));
+            } catch (NumberFormatException e) {
+                printerr("Invalid address: " + row.address);
+                continue;
+            }
+            Function function = functionManager.getFunctionAt(addr);
+            if (function == null) {
+                printerr("No function at " + addr + " for " + row.name);
+                missing++;
+                continue;
+            }
+
+            boolean changed = false;
+            if (row.name != null && !row.name.isBlank()) {
                 try {
-                    addr = toAddr(parseAddress(row.address));
-                } catch (NumberFormatException e) {
-                    printerr("Invalid address: " + row.address);
-                    continue;
-                }
-                Function function = functionManager.getFunctionAt(addr);
-                if (function == null) {
-                    printerr("No function at " + addr + " for " + row.name);
-                    missing++;
-                    continue;
-                }
-
-                boolean changed = false;
-                if (row.name != null && !row.name.isBlank()) {
-                    try {
-                        if (!function.getName().equals(row.name)) {
-                            function.setName(row.name, SourceType.USER_DEFINED);
-                            renamed++;
-                            changed = true;
-                        }
-                    } catch (DuplicateNameException | InvalidInputException e) {
-                        printerr("Rename failed for " + row.name + ": " + e.getMessage());
+                    if (!function.getName().equals(row.name)) {
+                        function.setName(row.name, SourceType.USER_DEFINED);
+                        renamed++;
+                        changed = true;
                     }
+                } catch (DuplicateNameException | InvalidInputException e) {
+                    printerr("Rename failed for " + row.name + ": " + e.getMessage());
                 }
+            }
 
-                if (row.signature != null && !row.signature.isBlank()) {
-                    try {
-                        FunctionDefinitionDataType sig = parser.parse(null, row.signature);
+            if (row.signature != null && !row.signature.isBlank()) {
+                try {
+                    FunctionDefinitionDataType sig = parser.parse(function.getSignature(), row.signature);
+                    if (sig == null) {
+                        printerr("Signature parse failed for " + row.name + ": " + row.signature);
+                    } else {
                         ApplyFunctionSignatureCmd cmd =
                             new ApplyFunctionSignatureCmd(function.getEntryPoint(), sig, SourceType.USER_DEFINED);
                         if (cmd.applyTo(currentProgram, monitor)) {
@@ -207,24 +291,21 @@ public class ApplyNameMap extends GhidraScript {
                         } else {
                             printerr("Signature apply failed for " + row.name + ": " + row.signature);
                         }
-                    } catch (Exception e) {
-                        printerr("Signature parse failed for " + row.name + ": " + e.getMessage());
                     }
-                }
-
-                if (row.comment != null && !row.comment.isBlank()) {
-                    function.setComment(row.comment);
-                    comments++;
-                    changed = true;
-                }
-
-                if (changed) {
-                    applied++;
+                } catch (Exception e) {
+                    printerr("Signature parse failed for " + row.name + ": " + e.getMessage());
                 }
             }
-        } catch (IOException e) {
-            printerr("Failed to read name map: " + e.getMessage());
-            return;
+
+            if (row.comment != null && !row.comment.isBlank()) {
+                function.setComment(row.comment);
+                comments++;
+                changed = true;
+            }
+
+            if (changed) {
+                applied++;
+            }
         }
 
         println("Applied name map: " + mapFile.getAbsolutePath());

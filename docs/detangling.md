@@ -13,13 +13,13 @@ uv run python scripts/function_hotspots.py --top 12 --only-fun
 
 ## Name map workflow
 
-We keep authoritative renames/signatures in `source/ghidra/name_map.csv` and
+We keep authoritative renames/signatures in `source/ghidra/name_map.json` and
 apply them during headless analysis:
 
 ```
 ./.codex/skills/ghidra/scripts/ghidra-analyze.sh \
   --script-path scripts/ghidra_scripts \
-  -s ApplyNameMap.java -a source/ghidra/name_map.csv \
+  -s ApplyNameMap.java -a source/ghidra/name_map.json \
   -s ExportAll.java -o source/decompiled game/crimsonland.exe
 ```
 
