@@ -24,6 +24,7 @@ Special handling during extraction:
 
 - [PAQ archives](formats/paq.md) — Completed
 - [JAZ textures](formats/jaz.md) — Completed
+- [Small font (smallFnt.dat)](formats/font.md) — Draft
 - [Sprite atlas cutting](atlas.md) — In progress
 - [Extraction pipeline](pipeline.md) — In progress
 - [Weapon table](weapon-table.md) — In progress

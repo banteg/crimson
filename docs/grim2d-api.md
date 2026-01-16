@@ -82,9 +82,10 @@ These offsets appear with keycodes or input-related values:
 | `0x110` | `set_pivot` | `void set_pivot(const float *xy)` | low | pointer to float pair |
 | `0x114` | `set_color` | `void set_color(float r, float g, float b, float a)` | high | RGBA floats |
 | `0x11c` | `draw_quad` | `void draw_quad(float x, float y, float w, float h)` | high | core draw call |
-| `0x144` | `draw_text` | `void draw_text(float x, float y, const char *text)` | medium | text draw |
+| `0x13c` | `draw_text_mono` | `void draw_text_mono(float x, float y, const char *text)` | medium | fixed 16px grid; handles a few extended codes |
+| `0x144` | `draw_text_small` | `void draw_text_small(float x, float y, const char *text)` | medium | uses `smallFnt.dat` widths + `GRIM_Font2` |
 | `0x148` | `draw_text_box` | `void draw_text_box(float x, float y, const char *text, ...)` | low | wrapping/layout variant |
-| `0x14c` | `measure_text_width` | `int measure_text_width(const char *text)` | medium | width metric |
+| `0x14c` | `measure_text_width` | `int measure_text_width(const char *text)` | medium | width metric for small font |
 
 The working vtable skeleton lives in:
 

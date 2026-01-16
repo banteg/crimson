@@ -41,6 +41,7 @@ nav = [
   { "Formats" = [
     { "PAQ" = "formats/paq.md" },
     { "JAZ" = "formats/jaz.md" },
+    { "Small font" = "formats/font.md" },
   ]},
   { "Extraction pipeline" = "pipeline.md" },
   { "Atlas cutting" = "atlas.md" },
@@ -49,8 +50,12 @@ nav = [
   { "Refactor attempt" = "refactor.md" },
   { "Modern Linux build name mining" = "modern-linux.md" },
   { "Modern Android build name mining" = "modern-android.md" },
-  { "Grim2D API vtable" = "grim2d-api.md" },
+  { "Grim2D" = [
+    { "API vtable" = "grim2d-api.md" },
+    { "API evidence" = "grim2d-api-evidence.md" },
+  ]},
   { "Plan" = "plan.md" },
+  { "Plan 2" = "plan2.md" },
 ]
 
 [project.extra]

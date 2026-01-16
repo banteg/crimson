@@ -92,11 +92,11 @@ struct Grim2DVtable {
     void (*fn_0x130)(void); // 0x130 (FUN_10008430)
     void (*fn_0x134)(void); // 0x134 (FUN_100084e0)
     void (*fn_0x138)(void); // 0x138 (FUN_10009080)
-    void (*fn_0x13c)(void); // 0x13c (FUN_100092b0)
+    void (*draw_text_mono)(float x, float y, const char *text); // 0x13c (FUN_100092b0)
     void (*fn_0x140)(void); // 0x140 (FUN_10009940)
-    void (*draw_text)(float x, float y, const char *text); // 0x144 (FUN_10009730)
+    void (*draw_text_small)(float x, float y, const char *text); // 0x144 (FUN_10009730)
     void (*draw_text_box)(float x, float y, const char *text, ...); // 0x148 (FUN_10009980)
-    int (*measure_text_width)(const char *text); // 0x14c (FUN_100096c0)
+    int (*measure_text_width)(const char *text); // 0x14c (FUN_100096c0, small font)
 };
 
 struct Grim2D {
