@@ -29,6 +29,7 @@ Special handling during extraction:
 - [Extraction pipeline](pipeline.md) — In progress
 - [Weapon table](weapon-table.md) — In progress
 - [Progress metrics](metrics.md) — Tracking
+- [Detangling notes](detangling.md) — In progress
 - [Refactor attempt](refactor.md) — Planned
 - [Modern Linux build name mining](modern-linux.md) — Reference
 - [Modern Android build name mining](modern-android.md) — Reference
