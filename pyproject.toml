@@ -9,6 +9,7 @@ dependencies = [
 
 [project.scripts]
 paq = "crimson.cli:main"
+crimson = "crimson.cli:main"
 
 [build-system]
 requires = ["uv_build>=0.9.18,<0.10.0"]
