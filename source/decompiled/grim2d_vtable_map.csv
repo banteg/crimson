@@ -18,9 +18,9 @@ offset_hex,offset_dec,callsites,unique_functions,sample_calls,func_addr,section,
 0x40,64,0,0,,0x10006e90,.text,FUN_10006e90,7,unknown,undefined,0,undefined FUN_10006e90(),DEFAULT
 0x44,68,6,2,FUN_00401a40:L509; FUN_00401a40:L511; FUN_00401a40:L526; FUN_00401a40:L528; FUN_0043d830:L26638; FUN_0043d830:L26639,0x10007320,.text,grim_is_key_down,16,unknown,int,1,int grim_is_key_down(uint key),DEFAULT
 0x48,72,39,16,FUN_00401a40:L514; FUN_00401a40:L522; FUN_00401a40:L531; FUN_00401a40:L543; FUN_00401a40:L547; FUN_00401a40:L551; FUN_00401a40:L574; FUN_00401a40:L578,0x10007390,.text,grim_was_key_pressed,119,__stdcall,int,1,int grim_was_key_pressed(uint key),DEFAULT
-0x4c,76,12,10,FUN_004018b0:L346; FUN_004070e0:L4357; FUN_00408530:L5083; FUN_00408530:L5104; FUN_0040aab0:L5879; FUN_0040ffc0:L7055; FUN_004107e0:L7326; FUN_00410d20:L7702,0x10007330,.text,FUN_10007330,91,unknown,undefined,0,undefined FUN_10007330(),DEFAULT
+0x4c,76,12,10,FUN_004018b0:L346; FUN_004070e0:L4357; FUN_00408530:L5083; FUN_00408530:L5104; FUN_0040aab0:L5879; FUN_0040ffc0:L7055; FUN_004107e0:L7326; FUN_00410d20:L7702,0x10007330,.text,grim_flush_input,91,unknown,void,0,void grim_flush_input(void),DEFAULT
 0x50,80,1,1,FUN_00401060:L33,0x10005c40,.text,grim_get_key_char,52,unknown,int,0,int grim_get_key_char(void),DEFAULT
-0x54,84,2,2,FUN_0042c450:L19559; FUN_0043ecf0:L27394,0x10005c20,.text,FUN_10005c20,32,unknown,undefined,0,undefined FUN_10005c20(),DEFAULT
+0x54,84,2,2,FUN_0042c450:L19559; FUN_0043ecf0:L27394,0x10005c20,.text,grim_set_key_char_buffer,32,unknown,void,3,"void grim_set_key_char_buffer(uchar * buffer, int * count, int size)",DEFAULT
 0x58,88,4,3,FUN_0040aab0:L5953; FUN_00446030:L29260; FUN_00446030:L29278; FUN_004460f0:L29306,0x10007410,.text,grim_is_mouse_button_down,38,unknown,int,1,int grim_is_mouse_button_down(int button),DEFAULT
 0x5c,92,0,0,,0x10007440,.text,FUN_10007440,131,unknown,undefined,0,undefined FUN_10007440(),DEFAULT
 0x60,96,2,1,FUN_0043def0:L26948; FUN_0043def0:L26952,0x10007560,.text,grim_get_mouse_wheel_delta,23,unknown,float,0,float grim_get_mouse_wheel_delta(void),DEFAULT
@@ -55,10 +55,10 @@ offset_hex,offset_dec,callsites,unique_functions,sample_calls,func_addr,section,
 0xd4,212,12,11,FUN_00402d50:L1454; FUN_004047c0:L3107; FUN_00405160:L3372; FUN_00408530:L5031; FUN_00410d20:L7694; FUN_0043e5e0:L27177; FUN_0043ecf0:L27413; FUN_0043ecf0:L27448,0x10008f10,.text,grim_draw_rect_outline,356,unknown,undefined,0,undefined grim_draw_rect_outline(),DEFAULT
 0xd8,216,1,1,FUN_0040a510:L5640,0x10007b90,.text,grim_draw_circle_filled,432,unknown,void,3,"void grim_draw_circle_filled(float x, float y, float radius)",DEFAULT
 0xdc,220,1,1,FUN_0040a510:L5644,0x10007d40,.text,grim_draw_circle_outline,462,unknown,void,3,"void grim_draw_circle_outline(float x, float y, float radius)",DEFAULT
-0xe0,224,0,0,,0x100080b0,.text,FUN_100080b0,134,unknown,undefined,0,undefined FUN_100080b0(),DEFAULT
-0xe4,228,0,0,,0x10008150,.text,FUN_10008150,99,unknown,undefined,0,undefined FUN_10008150(),DEFAULT
+0xe0,224,0,0,,0x100080b0,.text,grim_draw_line,134,unknown,void,3,"void grim_draw_line(float * p0, float * p1, float thickness)",DEFAULT
+0xe4,228,0,0,,0x10008150,.text,grim_draw_line_quad,99,unknown,void,3,"void grim_draw_line_quad(float * p0, float * p1, float * half_vec)",DEFAULT
 0xe8,232,79,23,FUN_004061e0:L3887; FUN_004061e0:L3892; FUN_0040a510:L5683; FUN_00417b80:L9228; FUN_00417b80:L9271; FUN_00417b80:L9299; FUN_004181b0:L9464; FUN_004181b0:L9506,0x10007ac0,.text,grim_begin_batch,94,unknown,void,0,void grim_begin_batch(void),DEFAULT
-0xec,236,0,0,,0x100083c0,.text,FUN_100083c0,107,unknown,undefined,0,undefined FUN_100083c0(),DEFAULT
+0xec,236,0,0,,0x100083c0,.text,grim_flush_batch,107,unknown,void,0,void grim_flush_batch(void),DEFAULT
 0xf0,240,86,28,FUN_00401dd0:L753; FUN_004047c0:L3134; FUN_004061e0:L3889; FUN_004061e0:L3895; FUN_0040a510:L5702; FUN_0040b740:L6346; FUN_00417ae0:L9125; FUN_00417b80:L9261,0x10007b20,.text,grim_end_batch,104,unknown,void,0,void grim_end_batch(void),DEFAULT
 0xf4,244,0,0,,0x10008e30,.text,FUN_10008e30,116,unknown,undefined,0,undefined FUN_10008e30(),DEFAULT
 0xf8,248,0,0,,0x10008eb0,.text,FUN_10008eb0,91,unknown,undefined,0,undefined FUN_10008eb0(),DEFAULT
@@ -73,11 +73,11 @@ offset_hex,offset_dec,callsites,unique_functions,sample_calls,func_addr,section,
 0x11c,284,100,21,FUN_004047c0:L3132; FUN_004061e0:L3888; FUN_004061e0:L3894; FUN_0040a510:L5701; FUN_0040b740:L6344; FUN_00417ae0:L9124; FUN_004188a0:L9613; FUN_00418b60:L9720,0x10008b10,.text,grim_draw_quad,800,unknown,void,4,"void grim_draw_quad(float x, float y, float w, float h)",DEFAULT
 0x120,288,6,2,FUN_00417b80:L9255; FUN_00417b80:L9289; FUN_00417b80:L9317; FUN_004181b0:L9491; FUN_004181b0:L9524; FUN_004181b0:L9547,0x10008720,.text,grim_draw_quad_xy,34,unknown,void,3,"void grim_draw_quad_xy(float * xy, float w, float h)",DEFAULT
 0x124,292,0,0,,0x10008750,.text,FUN_10008750,953,unknown,undefined,0,undefined FUN_10008750(),DEFAULT
-0x128,296,5,1,FUN_00446c40:L29980; FUN_00446c40:L29985; FUN_00446c40:L29986; FUN_00446c40:L30065; FUN_00446c40:L30107,0x100085c0,.text,FUN_100085c0,192,unknown,undefined,0,undefined FUN_100085c0(),DEFAULT
-0x12c,300,4,1,FUN_00446c40:L30035; FUN_00446c40:L30042; FUN_00446c40:L30045; FUN_00446c40:L30074,0x10008680,.text,FUN_10008680,153,unknown,undefined,0,undefined FUN_10008680(),DEFAULT
-0x130,304,3,1,FUN_00446c40:L30006; FUN_00446c40:L30014; FUN_00446c40:L30018,0x10008430,.text,FUN_10008430,168,unknown,undefined,0,undefined FUN_10008430(),DEFAULT
-0x134,308,5,2,FUN_0042e820:L20025; FUN_0042e820:L20053; FUN_00446c40:L29953; FUN_00446c40:L29959; FUN_00446c40:L29962,0x100084e0,.text,FUN_100084e0,218,unknown,undefined,0,undefined FUN_100084e0(),DEFAULT
-0x138,312,4,1,FUN_00422c70:L16048; FUN_00422c70:L16204; FUN_00422c70:L16755; FUN_00422c70:L16768,0x10009080,.text,FUN_10009080,554,unknown,undefined,0,undefined FUN_10009080(),DEFAULT
+0x128,296,5,1,FUN_00446c40:L29980; FUN_00446c40:L29985; FUN_00446c40:L29986; FUN_00446c40:L30065; FUN_00446c40:L30107,0x100085c0,.text,grim_submit_vertices_transform,192,unknown,void,4,"void grim_submit_vertices_transform(float * verts, int count, float * offset, float * matrix)",DEFAULT
+0x12c,300,4,1,FUN_00446c40:L30035; FUN_00446c40:L30042; FUN_00446c40:L30045; FUN_00446c40:L30074,0x10008680,.text,grim_submit_vertices_offset,153,unknown,void,3,"void grim_submit_vertices_offset(float * verts, int count, float * offset)",DEFAULT
+0x130,304,3,1,FUN_00446c40:L30006; FUN_00446c40:L30014; FUN_00446c40:L30018,0x10008430,.text,grim_submit_vertices_offset_color,168,unknown,void,4,"void grim_submit_vertices_offset_color(float * verts, int count, float * offset, float * color)",DEFAULT
+0x134,308,5,2,FUN_0042e820:L20025; FUN_0042e820:L20053; FUN_00446c40:L29953; FUN_00446c40:L29959; FUN_00446c40:L29962,0x100084e0,.text,grim_submit_vertices_transform_color,218,unknown,void,5,"void grim_submit_vertices_transform_color(float * verts, int count, float * offset, float * matrix, float * color)",DEFAULT
+0x138,312,4,1,FUN_00422c70:L16048; FUN_00422c70:L16204; FUN_00422c70:L16755; FUN_00422c70:L16768,0x10009080,.text,grim_draw_quad_points,554,unknown,void,8,"void grim_draw_quad_points(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3)",DEFAULT
 0x13c,316,5,3,FUN_00401dd0:L781; FUN_00401dd0:L804; FUN_00401dd0:L843; FUN_0040b740:L6491; FUN_0041aed0:L11263,0x100092b0,.text,grim_draw_text_mono,1034,unknown,void,3,"void grim_draw_text_mono(float x, float y, char * text)",DEFAULT
 0x140,320,3,3,FUN_00405160:L3374; FUN_00406350:L3950; FUN_0041aed0:L11281,0x10009940,.text,grim_draw_text_mono_fmt,52,unknown,void,4,"void grim_draw_text_mono_fmt(int * self, float x, float y, char * fmt)",DEFAULT
 0x144,324,20,9,FUN_00401dd0:L760; FUN_00401dd0:L800; FUN_00405be0:L3808; FUN_0040b740:L6398; FUN_0040b740:L6401; FUN_0040b740:L6409; FUN_0040b740:L6426; FUN_0040b740:L6428,0x10009730,.text,grim_draw_text_small,515,unknown,void,3,"void grim_draw_text_small(float x, float y, char * text)",DEFAULT

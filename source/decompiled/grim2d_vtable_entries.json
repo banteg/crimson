@@ -156,7 +156,7 @@
     "offset_hex": "0x4c",
     "offset_dec": 76,
     "func_addr": "0x10007330",
-    "func_name": "FUN_10007330",
+    "func_name": "grim_flush_input",
     "section": ".text"
   },
   {
@@ -172,7 +172,7 @@
     "offset_hex": "0x54",
     "offset_dec": 84,
     "func_addr": "0x10005c20",
-    "func_name": "FUN_10005c20",
+    "func_name": "grim_set_key_char_buffer",
     "section": ".text"
   },
   {
@@ -452,7 +452,7 @@
     "offset_hex": "0xe0",
     "offset_dec": 224,
     "func_addr": "0x100080b0",
-    "func_name": "FUN_100080b0",
+    "func_name": "grim_draw_line",
     "section": ".text"
   },
   {
@@ -460,7 +460,7 @@
     "offset_hex": "0xe4",
     "offset_dec": 228,
     "func_addr": "0x10008150",
-    "func_name": "FUN_10008150",
+    "func_name": "grim_draw_line_quad",
     "section": ".text"
   },
   {
@@ -476,7 +476,7 @@
     "offset_hex": "0xec",
     "offset_dec": 236,
     "func_addr": "0x100083c0",
-    "func_name": "FUN_100083c0",
+    "func_name": "grim_flush_batch",
     "section": ".text"
   },
   {
@@ -596,7 +596,7 @@
     "offset_hex": "0x128",
     "offset_dec": 296,
     "func_addr": "0x100085c0",
-    "func_name": "FUN_100085c0",
+    "func_name": "grim_submit_vertices_transform",
     "section": ".text"
   },
   {
@@ -604,7 +604,7 @@
     "offset_hex": "0x12c",
     "offset_dec": 300,
     "func_addr": "0x10008680",
-    "func_name": "FUN_10008680",
+    "func_name": "grim_submit_vertices_offset",
     "section": ".text"
   },
   {
@@ -612,7 +612,7 @@
     "offset_hex": "0x130",
     "offset_dec": 304,
     "func_addr": "0x10008430",
-    "func_name": "FUN_10008430",
+    "func_name": "grim_submit_vertices_offset_color",
     "section": ".text"
   },
   {
@@ -620,7 +620,7 @@
     "offset_hex": "0x134",
     "offset_dec": 308,
     "func_addr": "0x100084e0",
-    "func_name": "FUN_100084e0",
+    "func_name": "grim_submit_vertices_transform_color",
     "section": ".text"
   },
   {
@@ -628,7 +628,7 @@
     "offset_hex": "0x138",
     "offset_dec": 312,
     "func_addr": "0x10009080",
-    "func_name": "FUN_10009080",
+    "func_name": "grim_draw_quad_points",
     "section": ".text"
   },
   {
