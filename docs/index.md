@@ -29,3 +29,4 @@ Special handling during extraction:
 - [Weapon table](weapon-table.md) — In progress
 - [Progress metrics](metrics.md) — Tracking
 - [Refactor attempt](refactor.md) — Planned
+- [Modern Linux build name mining](modern-linux.md) — Reference
