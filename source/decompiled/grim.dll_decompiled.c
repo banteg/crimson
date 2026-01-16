@@ -2406,17 +2406,20 @@ void FUN_10005c20(undefined *param_1,undefined *param_2,undefined4 param_3)
 
 
 
-/* FUN_10005c40 @ 10005c40 */
+/* grim_get_key_char @ 10005c40 */
 
-undefined4 FUN_10005c40(void)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x50 (provisional) */
+
+int grim_get_key_char(void)
 
 {
-  undefined4 uVar1;
+  int iVar1;
   undefined4 *puVar2;
   int iVar3;
   
   if (DAT_1005d3e4 != 0) {
-    uVar1 = DAT_1005d3c4;
+    iVar1 = DAT_1005d3c4;
     if (0 < DAT_1005d3e4) {
       puVar2 = &DAT_1005d3c4;
       iVar3 = DAT_1005d3e4;
@@ -2427,7 +2430,7 @@ undefined4 FUN_10005c40(void)
       } while (iVar3 != 0);
     }
     DAT_1005d3e4 = DAT_1005d3e4 + -1;
-    return uVar1;
+    return iVar1;
   }
   return 0;
 }
@@ -2735,11 +2738,13 @@ uint __cdecl FUN_10006030(uint param_1)
 
 
 
-/* FUN_10006580 @ 10006580 */
+/* grim_set_render_state @ 10006580 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x20 (provisional) */
 
-void FUN_10006580(int param_1,uint param_2,uint param_3,uint param_4,byte *param_5)
+void grim_set_render_state(uint state,uint value)
 
 {
   byte bVar1;
@@ -2759,24 +2764,27 @@ void FUN_10006580(int param_1,uint param_2,uint param_3,uint param_4,byte *param
   byte *pbVar15;
   bool bVar16;
   undefined4 unaff_retaddr;
+  uint in_stack_0000000c;
+  uint in_stack_00000010;
+  byte *in_stack_00000014;
   undefined2 auStack_600 [256];
   undefined2 auStack_400 [256];
   undefined2 auStack_200 [254];
   undefined4 uStack_4;
   
-  switch(param_1) {
+  switch(state) {
   case 5:
-    DAT_1005d3a8 = param_5;
+    DAT_1005d3a8 = in_stack_00000014;
     return;
   case 6:
-    DAT_10059770 = param_5;
+    DAT_10059770 = in_stack_00000014;
     return;
   case 7:
     if (DAT_1005bac8 != (byte *)0x0) {
       operator_delete(DAT_1005bac8);
     }
     uVar9 = 0xffffffff;
-    pbVar13 = param_5;
+    pbVar13 = in_stack_00000014;
     do {
       if (uVar9 == 0) break;
       uVar9 = uVar9 - 1;
@@ -2786,12 +2794,12 @@ void FUN_10006580(int param_1,uint param_2,uint param_3,uint param_4,byte *param
     DAT_1005bac8 = operator_new(~uVar9);
     uVar9 = 0xffffffff;
     do {
-      pbVar13 = param_5;
+      pbVar13 = in_stack_00000014;
       if (uVar9 == 0) break;
       uVar9 = uVar9 - 1;
-      pbVar13 = param_5 + 1;
-      bVar1 = *param_5;
-      param_5 = pbVar13;
+      pbVar13 = in_stack_00000014 + 1;
+      bVar1 = *in_stack_00000014;
+      in_stack_00000014 = pbVar13;
     } while (bVar1 != 0);
     uVar9 = ~uVar9;
     pbVar13 = pbVar13 + -uVar9;
@@ -2806,20 +2814,20 @@ void FUN_10006580(int param_1,uint param_2,uint param_3,uint param_4,byte *param
       pbVar13 = pbVar13 + 1;
       pbVar15 = pbVar15 + 1;
     }
-    *(byte **)(&DAT_1005cb94 + param_1 * 0x10) = DAT_1005bac8;
+    *(byte **)(&DAT_1005cb94 + state * 0x10) = DAT_1005bac8;
     return;
   default:
-    puVar11 = &DAT_1005cb88 + param_1 * 4;
-    *puVar11 = param_2;
+    puVar11 = &DAT_1005cb88 + state * 4;
+    *puVar11 = value;
     goto LAB_10006b54;
   case 0xb:
   case 0xc:
   case 0xe:
   case 0x42:
-    *(char *)(&DAT_1005cb88 + param_1 * 4) = (char)param_2;
+    *(char *)(&DAT_1005cb88 + state * 4) = (char)value;
     return;
   case 0xd:
-    *(char *)(&DAT_1005cb88 + param_1 * 4) = (char)param_2;
+    *(char *)(&DAT_1005cb88 + state * 4) = (char)value;
     if (DAT_1005cc58 != '\0') {
       DAT_1005cc48 = 1;
       return;
@@ -2827,7 +2835,7 @@ void FUN_10006580(int param_1,uint param_2,uint param_3,uint param_4,byte *param
     break;
   case 0x10:
     pbVar15 = &DAT_1005d828;
-    pbVar13 = param_5;
+    pbVar13 = in_stack_00000014;
     do {
       bVar1 = *pbVar13;
       bVar16 = bVar1 < *pbVar15;
@@ -2846,78 +2854,78 @@ LAB_10006882:
     iVar14 = 0;
 LAB_10006887:
     if (iVar14 == 0) {
-      if (*(void **)(&DAT_1005cb94 + param_1 * 0x10) != (void *)0x0) {
-        operator_delete(*(void **)(&DAT_1005cb94 + param_1 * 0x10));
+      if (*(void **)(&DAT_1005cb94 + state * 0x10) != (void *)0x0) {
+        operator_delete(*(void **)(&DAT_1005cb94 + state * 0x10));
       }
       _DAT_1005cc94 = _strdup(&DAT_1005d828);
       DAT_1005bc14 = 0;
     }
-    uVar6 = FUN_10005a40((char *)param_5);
+    uVar6 = FUN_10005a40((char *)in_stack_00000014);
     DAT_1005bc14 = (undefined1)uVar6;
-    if (*(void **)(&DAT_1005cb94 + param_1 * 0x10) != (void *)0x0) {
-      operator_delete(*(void **)(&DAT_1005cb94 + param_1 * 0x10));
+    if (*(void **)(&DAT_1005cb94 + state * 0x10) != (void *)0x0) {
+      operator_delete(*(void **)(&DAT_1005cb94 + state * 0x10));
     }
-    pcVar8 = _strdup((char *)param_5);
-    *(char **)(&DAT_1005cb94 + param_1 * 0x10) = pcVar8;
-    *(undefined1 *)(&DAT_1005cb88 + param_1 * 4) = DAT_1005bc14;
+    pcVar8 = _strdup((char *)in_stack_00000014);
+    *(char **)(&DAT_1005cb94 + state * 0x10) = pcVar8;
+    *(undefined1 *)(&DAT_1005cb88 + state * 4) = DAT_1005bc14;
     return;
   case 0x12:
-    if (*(char *)(&DAT_1005cb88 + param_1 * 4) != (char)param_2) {
-      (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x1b,param_2 & 0xff);
-      *(char *)(&DAT_1005cb88 + param_1 * 4) = (char)param_2;
+    if (*(char *)(&DAT_1005cb88 + state * 4) != (char)value) {
+      (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x1b,value & 0xff);
+      *(char *)(&DAT_1005cb88 + state * 4) = (char)value;
       return;
     }
     break;
   case 0x13:
-    if ((&DAT_1005cb88)[param_1 * 4] != param_2) {
-      (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x13,param_2);
-      (&DAT_1005cb88)[param_1 * 4] = param_2;
+    if ((&DAT_1005cb88)[state * 4] != value) {
+      (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x13,value);
+      (&DAT_1005cb88)[state * 4] = value;
       return;
     }
     break;
   case 0x14:
-    if ((&DAT_1005cb88)[param_1 * 4] != param_2) {
-      (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x14,param_2);
-      (&DAT_1005cb88)[param_1 * 4] = param_2;
+    if ((&DAT_1005cb88)[state * 4] != value) {
+      (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x14,value);
+      (&DAT_1005cb88)[state * 4] = value;
       return;
     }
     break;
   case 0x15:
-    if (0 < (int)param_2) {
-      if (2 < (int)param_2) {
-        if (param_2 != 3) {
+    if (0 < (int)value) {
+      if (2 < (int)value) {
+        if (value != 3) {
           return;
         }
-        if ((&DAT_1005cb88)[param_1 * 4] != 3) {
+        if ((&DAT_1005cb88)[state * 4] != 3) {
           (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,0x15,3);
         }
       }
-      if ((&DAT_1005cb88)[param_1 * 4] == 3) {
+      if ((&DAT_1005cb88)[state * 4] == 3) {
         (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,0x15,1);
       }
-      (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,0x11,param_2);
-      (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,0x10,param_2);
-      (&DAT_1005cb88)[param_1 * 4] = param_2;
+      (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,0x11,value);
+      (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,0x10,value);
+      (&DAT_1005cb88)[state * 4] = value;
       return;
     }
     break;
   case 0x1a:
-    uVar6 = FUN_10006030(param_2);
+    uVar6 = FUN_10006030(value);
     if ((char)uVar6 == '\0') {
       return;
     }
-    puVar11 = &DAT_1005cb88 + param_1 * 4;
-    *puVar11 = param_2;
+    puVar11 = &DAT_1005cb88 + state * 4;
+    *puVar11 = value;
 LAB_10006b54:
-    puVar11[1] = param_3;
-    puVar11[2] = param_4;
-    puVar11[3] = (uint)param_5;
+    puVar11[1] = in_stack_0000000c;
+    puVar11[2] = in_stack_00000010;
+    puVar11[3] = (uint)in_stack_00000014;
     break;
   case 0x1b:
-    (&DAT_1005cb88)[param_1 * 4] = param_2;
-    (&DAT_1005cb8c)[param_1 * 4] = param_3;
-    *(uint *)(&DAT_1005cb90 + param_1 * 0x10) = param_4;
-    *(byte **)(&DAT_1005cb94 + param_1 * 0x10) = param_5;
+    (&DAT_1005cb88)[state * 4] = value;
+    (&DAT_1005cb8c)[state * 4] = in_stack_0000000c;
+    *(uint *)(&DAT_1005cb90 + state * 0x10) = in_stack_00000010;
+    *(byte **)(&DAT_1005cb94 + state * 0x10) = in_stack_00000014;
     uVar2 = ftol();
     uVar3 = ftol();
     uVar4 = ftol();
@@ -2945,41 +2953,41 @@ LAB_10006b54:
       puVar12 = puVar12 + 1;
     } while (iVar14 < 0x100);
     (**(code **)(*DAT_10059dbc + 0x48))(DAT_10059dbc,1,auStack_600);
-    (&DAT_1005cb88)[param_1 * 4] = uStack_4;
-    (&DAT_1005cb8c)[param_1 * 4] = unaff_retaddr;
-    *(int *)(&DAT_1005cb90 + param_1 * 0x10) = param_1;
-    *(uint *)(&DAT_1005cb94 + param_1 * 0x10) = param_2;
+    (&DAT_1005cb88)[state * 4] = uStack_4;
+    (&DAT_1005cb8c)[state * 4] = unaff_retaddr;
+    *(uint *)(&DAT_1005cb90 + state * 0x10) = state;
+    *(uint *)(&DAT_1005cb94 + state * 0x10) = value;
     return;
   case 0x29:
-    DAT_1005c400 = param_2;
-    (&DAT_1005cb88)[param_1 * 4] = param_2;
+    DAT_1005c400 = value;
+    (&DAT_1005cb88)[state * 4] = value;
     return;
   case 0x2a:
-    DAT_10059dc0 = param_2;
-    (&DAT_1005cb88)[param_1 * 4] = param_2;
+    DAT_10059dc0 = value;
+    (&DAT_1005cb88)[state * 4] = value;
     return;
   case 0x2b:
-    (&DAT_1005cb88)[param_1 * 4] = param_2;
-    DAT_1005a488 = (param_2 != 0x20) + 0x16;
+    (&DAT_1005cb88)[state * 4] = value;
+    DAT_1005a488 = (value != 0x20) + 0x16;
     return;
   case 0x2d:
-    DAT_1005977c = param_5;
+    DAT_1005977c = in_stack_00000014;
     return;
   case 0x34:
-    *(char *)(&DAT_1005cb88 + param_1 * 4) = (char)param_2;
+    *(char *)(&DAT_1005cb88 + state * 4) = (char)value;
     return;
   case 0x36:
     (**(code **)(*DAT_10059dbc + 0x3c))(DAT_10059dbc,0,0,0,0);
     return;
   case 0x52:
-    (&DAT_1005cb88)[param_1 * 4] = param_2;
-    (&DAT_1005cb8c)[param_1 * 4] = param_3;
-    *(uint *)(&DAT_1005cb90 + param_1 * 0x10) = param_4;
-    *(byte **)(&DAT_1005cb94 + param_1 * 0x10) = param_5;
-    DAT_1005d3fc = *(undefined4 *)param_5;
+    (&DAT_1005cb88)[state * 4] = value;
+    (&DAT_1005cb8c)[state * 4] = in_stack_0000000c;
+    *(uint *)(&DAT_1005cb90 + state * 0x10) = in_stack_00000010;
+    *(byte **)(&DAT_1005cb94 + state * 0x10) = in_stack_00000014;
+    DAT_1005d3fc = *(undefined4 *)in_stack_00000014;
     return;
   case 0x55:
-    DAT_1005d3bd = (char)param_2;
+    DAT_1005d3bd = (char)value;
     return;
   }
   return;
@@ -3225,104 +3233,105 @@ undefined4 FUN_10006f90(void)
 
 
 
-/* FUN_10006fe0 @ 10006fe0 */
+/* grim_is_key_active @ 10006fe0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* Grim2D vtable 0x80 (provisional) */
 
-uint __thiscall FUN_10006fe0(void *this,int param_1)
+int __thiscall grim_is_key_active(void *this,int key)
 
 {
   float fVar1;
-  uint uVar2;
-  int iVar3;
+  int iVar2;
+  uint uVar3;
   int iVar4;
   int iVar5;
   
-  if (param_1 < 0x100) {
-    uVar2 = (**(code **)(*(int *)this + 0x44))(param_1);
-    return uVar2;
+  if (key < 0x100) {
+    iVar2 = (**(code **)(*(int *)this + 0x44))(key);
+    return iVar2;
   }
-  if (param_1 == 0x100) {
-    uVar2 = (**(code **)(*(int *)this + 0x58))(0);
-    return uVar2;
+  if (key == 0x100) {
+    iVar2 = (**(code **)(*(int *)this + 0x58))(0);
+    return iVar2;
   }
-  if (param_1 == 0x101) {
-    uVar2 = (**(code **)(*(int *)this + 0x58))(1);
-    return uVar2;
+  if (key == 0x101) {
+    iVar2 = (**(code **)(*(int *)this + 0x58))(1);
+    return iVar2;
   }
-  if (param_1 == 0x102) {
-    uVar2 = (**(code **)(*(int *)this + 0x58))(2);
-    return uVar2;
+  if (key == 0x102) {
+    iVar2 = (**(code **)(*(int *)this + 0x58))(2);
+    return iVar2;
   }
-  if (param_1 == 0x103) {
-    uVar2 = (**(code **)(*(int *)this + 0x58))(3);
-    return uVar2;
+  if (key == 0x103) {
+    iVar2 = (**(code **)(*(int *)this + 0x58))(3);
+    return iVar2;
   }
-  if (param_1 == 0x104) {
-    uVar2 = (**(code **)(*(int *)this + 0x58))(4);
-    return uVar2;
+  if (key == 0x104) {
+    iVar2 = (**(code **)(*(int *)this + 0x58))(4);
+    return iVar2;
   }
-  uVar2 = 1;
+  uVar3 = 1;
   do {
-    if (param_1 == uVar2 + 0x11e) {
-      uVar2 = (**(code **)(*(int *)this + 0xa8))(uVar2 - 1);
-      return uVar2;
+    if (key == uVar3 + 0x11e) {
+      iVar2 = (**(code **)(*(int *)this + 0xa8))(uVar3 - 1);
+      return iVar2;
     }
-    uVar2 = uVar2 + 1;
-  } while ((int)uVar2 < 0xd);
-  if (param_1 == 0x131) {
-    uVar2 = FUN_10006ea0();
-    return uVar2;
+    uVar3 = uVar3 + 1;
+  } while ((int)uVar3 < 0xd);
+  if (key == 0x131) {
+    iVar2 = FUN_10006ea0();
+    return iVar2;
   }
-  if (param_1 == 0x132) {
-    uVar2 = FUN_10006ef0();
-    return uVar2;
+  if (key == 0x132) {
+    iVar2 = FUN_10006ef0();
+    return iVar2;
   }
-  if (param_1 == 0x133) {
-    uVar2 = FUN_10006f40();
-    return uVar2;
+  if (key == 0x133) {
+    iVar2 = FUN_10006f40();
+    return iVar2;
   }
-  if (param_1 == 0x134) {
-    uVar2 = FUN_10006f90();
-    return uVar2;
+  if (key == 0x134) {
+    iVar2 = FUN_10006f90();
+    return iVar2;
   }
-  if (param_1 == 0x13f) {
+  if (key == 0x13f) {
     fVar1 = (float)DAT_1005d830;
   }
-  else if (param_1 == 0x140) {
+  else if (key == 0x140) {
     fVar1 = (float)DAT_1005d834;
   }
-  else if (param_1 == 0x141) {
+  else if (key == 0x141) {
     fVar1 = (float)DAT_1005d838;
   }
-  else if (param_1 == 0x153) {
+  else if (key == 0x153) {
     fVar1 = (float)_DAT_1005d83c;
   }
-  else if (param_1 == 0x154) {
+  else if (key == 0x154) {
     fVar1 = (float)_DAT_1005d840;
   }
   else {
-    if (param_1 != 0x155) {
+    if (key != 0x155) {
       if (DAT_1005d3b4 == (int *)0x0) {
-        return uVar2 & 0xffffff00;
+        return uVar3 & 0xffffff00;
       }
-      iVar4 = 0;
+      iVar2 = 0;
       iVar5 = 0x16d;
       do {
-        uVar2 = 0;
-        iVar3 = iVar5;
+        uVar3 = 0;
+        iVar4 = iVar5;
         do {
-          if (param_1 == iVar3) {
-            uVar2 = (**(code **)(*DAT_1005d3b4 + 0xc))(iVar4,uVar2);
-            return uVar2;
+          if (key == iVar4) {
+            iVar2 = (**(code **)(*DAT_1005d3b4 + 0xc))(iVar2,uVar3);
+            return iVar2;
           }
-          uVar2 = uVar2 + 1;
-          iVar3 = iVar3 + 1;
-        } while ((int)uVar2 < 5);
+          uVar3 = uVar3 + 1;
+          iVar4 = iVar4 + 1;
+        } while ((int)uVar3 < 5);
         iVar5 = iVar5 + 5;
-        iVar4 = iVar4 + 1;
+        iVar2 = iVar2 + 1;
       } while (iVar5 < 0x17c);
-      return uVar2 & 0xffffff00;
+      return uVar3 & 0xffffff00;
     }
     fVar1 = (float)_DAT_1005d844;
   }
@@ -3334,11 +3343,13 @@ uint __thiscall FUN_10006fe0(void *this,int param_1)
 
 
 
-/* FUN_100071b0 @ 100071b0 */
+/* grim_get_config_float @ 100071b0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x84 (provisional) */
 
-float10 FUN_100071b0(int param_1)
+float grim_get_config_float(int id)
 
 {
   int iVar1;
@@ -3346,49 +3357,49 @@ float10 FUN_100071b0(int param_1)
   int iVar2;
   float10 fVar3;
   
-  if (0xff < param_1) {
-    if (param_1 == 0x13f) {
-      return (float10)DAT_1005d830 * (float10)0.001;
+  if (0xff < id) {
+    if (id == 0x13f) {
+      return (float)DAT_1005d830 * 0.001;
     }
-    if (param_1 == 0x140) {
-      return (float10)DAT_1005d834 * (float10)0.001;
+    if (id == 0x140) {
+      return (float)DAT_1005d834 * 0.001;
     }
-    if (param_1 == 0x141) {
-      return (float10)DAT_1005d838 * (float10)0.001;
+    if (id == 0x141) {
+      return (float)DAT_1005d838 * 0.001;
     }
-    if (param_1 == 0x153) {
-      return (float10)_DAT_1005d83c * (float10)0.001;
+    if (id == 0x153) {
+      return (float)_DAT_1005d83c * 0.001;
     }
-    if (param_1 == 0x154) {
-      return (float10)_DAT_1005d840 * (float10)0.001;
+    if (id == 0x154) {
+      return (float)_DAT_1005d840 * 0.001;
     }
-    if (param_1 == 0x155) {
-      return (float10)_DAT_1005d844 * (float10)0.001;
+    if (id == 0x155) {
+      return (float)_DAT_1005d844 * 0.001;
     }
-    if (param_1 == 0x15f) {
+    if (id == 0x15f) {
       fVar3 = (float10)(**(code **)(*in_ECX + 0x70))();
-      return fVar3;
+      return (float)fVar3;
     }
-    if (param_1 == 0x160) {
+    if (id == 0x160) {
       fVar3 = (float10)(**(code **)(*in_ECX + 0x74))();
-      return fVar3;
+      return (float)fVar3;
     }
     iVar2 = 0;
     iVar1 = 0x168;
     do {
-      if (param_1 == iVar1 + -5) {
+      if (id == iVar1 + -5) {
         fVar3 = (float10)(**(code **)(*in_ECX + 0x78))(iVar2);
-        return fVar3;
+        return (float)fVar3;
       }
-      if (param_1 == iVar1) {
+      if (id == iVar1) {
         fVar3 = (float10)(**(code **)(*in_ECX + 0x7c))(iVar2);
-        return fVar3;
+        return (float)fVar3;
       }
       iVar2 = iVar2 + 1;
       iVar1 = iVar1 + 1;
     } while (iVar1 < 0x16b);
   }
-  return (float10)0.0;
+  return 0.0;
 }
 
 
@@ -3435,13 +3446,19 @@ void FUN_10007300(int param_1,undefined4 param_2)
 
 
 
-/* FUN_10007320 @ 10007320 */
+/* grim_is_key_down @ 10007320 */
 
-void FUN_10007320(uint param_1)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x44 (provisional) */
+
+int grim_is_key_down(uint key)
 
 {
-  FUN_1000a370(param_1);
-  return;
+  byte bVar1;
+  undefined3 extraout_var;
+  
+  bVar1 = FUN_1000a370(key);
+  return CONCAT31(extraout_var,bVar1);
 }
 
 
@@ -3478,11 +3495,12 @@ void FUN_10007330(void)
 
 
 
-/* FUN_10007390 @ 10007390 */
+/* grim_was_key_pressed @ 10007390 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* Grim2D vtable 0x48 (provisional) */
 
-uint FUN_10007390(uint param_1)
+int grim_was_key_pressed(uint key)
 
 {
   float fVar1;
@@ -3491,14 +3509,14 @@ uint FUN_10007390(uint param_1)
   uint uVar3;
   uint uVar4;
   
-  bVar2 = FUN_1000a370(param_1);
+  bVar2 = FUN_1000a370(key);
   if (bVar2 == 0) {
-    uVar3 = param_1 & 0xff;
+    uVar3 = key & 0xff;
     (&DAT_1005a058)[uVar3] = 0;
     (&DAT_10059f44)[uVar3] = 1;
   }
   else {
-    uVar4 = param_1 & 0xff;
+    uVar4 = key & 0xff;
     fVar1 = (float)(&DAT_1005a058)[uVar4];
     uVar3 = CONCAT22(extraout_var,
                      (ushort)(fVar1 < 0.0) << 8 | (ushort)NAN(fVar1) << 10 |
@@ -3518,18 +3536,22 @@ uint FUN_10007390(uint param_1)
 
 
 
-/* FUN_10007410 @ 10007410 */
+/* grim_is_mouse_button_down @ 10007410 */
 
-byte FUN_10007410(int param_1)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x58 (provisional) */
+
+int grim_is_mouse_button_down(int button)
 
 {
   byte bVar1;
+  undefined3 extraout_var;
   
   if (DAT_1005cc58 != '\0') {
-    return (&DAT_1005a044)[param_1];
+    return CONCAT31((int3)((uint)button >> 8),(&DAT_1005a044)[button]);
   }
-  bVar1 = FUN_1000a590(param_1);
-  return bVar1;
+  bVar1 = FUN_1000a590(button);
+  return CONCAT31(extraout_var,bVar1);
 }
 
 
@@ -3656,17 +3678,19 @@ void FUN_10007530(undefined4 param_1,undefined4 param_2)
 
 
 
-/* FUN_10007560 @ 10007560 */
+/* grim_get_mouse_wheel_delta @ 10007560 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x60 (provisional) */
 
-float10 FUN_10007560(void)
+float grim_get_mouse_wheel_delta(void)
 
 {
   if (DAT_1005cc58 != '\0') {
-    return (float10)_DAT_1005d3b8;
+    return _DAT_1005d3b8;
   }
-  return (float10)_DAT_1005db58;
+  return _DAT_1005db58;
 }
 
 
@@ -3722,9 +3746,11 @@ void FUN_100075c0(uint param_1)
 
 
 
-/* FUN_100075d0 @ 100075d0 */
+/* grim_create_texture @ 100075d0 */
 
-uint FUN_100075d0(undefined4 param_1,undefined4 param_2,undefined4 param_3)
+/* Grim2D vtable 0xac (provisional) */
+
+int grim_create_texture(char *name,int width,int height)
 
 {
   uint uVar1;
@@ -3750,8 +3776,8 @@ uint FUN_100075d0(undefined4 param_1,undefined4 param_2,undefined4 param_3)
   }
   pvVar5 = (void *)0x1;
   uVar4 = 1;
-  uVar2 = (**(code **)(*DAT_10059dbc + 0x50))
-                    (DAT_10059dbc,param_2,param_3,1,1,DAT_1005a488,0,local_10);
+  uVar2 = (**(code **)(*DAT_10059dbc + 0x50))(DAT_10059dbc,width,height,1,1,DAT_1005a488,0,local_10)
+  ;
   if ((int)uVar2 < 0) {
     DAT_1005c8f8 = s_D3D__Could_not_create_a_texture__10053c18;
     ExceptionList = pvVar5;
@@ -3767,8 +3793,8 @@ uint FUN_100075d0(undefined4 param_1,undefined4 param_2,undefined4 param_3)
   (&DAT_1005d404)[uVar1] = puVar3;
   puVar3[1] = uVar4;
   *(undefined1 *)((&DAT_1005d404)[uVar1] + 8) = 1;
-  *(undefined4 *)((&DAT_1005d404)[uVar1] + 0xc) = param_2;
-  *(undefined4 *)((&DAT_1005d404)[uVar1] + 0x10) = param_3;
+  *(int *)((&DAT_1005d404)[uVar1] + 0xc) = width;
+  *(int *)((&DAT_1005d404)[uVar1] + 0x10) = height;
   uVar2 = DAT_1005305c;
   if ((int)DAT_1005305c < (int)uVar1) {
     DAT_1005305c = uVar1;
@@ -3779,13 +3805,18 @@ uint FUN_100075d0(undefined4 param_1,undefined4 param_2,undefined4 param_3)
 
 
 
-/* FUN_100076e0 @ 100076e0 */
+/* grim_load_texture @ 100076e0 */
 
-void FUN_100076e0(undefined4 param_1,undefined4 param_2)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0xb4 (provisional) */
+
+int grim_load_texture(char *name,char *path)
 
 {
-  FUN_100051e0(param_1,param_2);
-  return;
+  int iVar1;
+  
+  iVar1 = FUN_100051e0(name,path);
+  return iVar1;
 }
 
 
@@ -3815,13 +3846,18 @@ void FUN_10007700(int param_1)
 
 
 
-/* FUN_10007740 @ 10007740 */
+/* grim_get_texture_handle @ 10007740 */
 
-void FUN_10007740(byte *param_1)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0xc0 (provisional) */
+
+int grim_get_texture_handle(char *name)
 
 {
-  FUN_10005170(param_1);
-  return;
+  int iVar1;
+  
+  iVar1 = FUN_10005170((byte *)name);
+  return iVar1;
 }
 
 
@@ -3875,19 +3911,20 @@ undefined4 FUN_10007790(int *param_1)
 
 
 
-/* FUN_10007830 @ 10007830 */
+/* grim_bind_texture @ 10007830 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* Grim2D vtable 0xc4 (provisional) */
 
-void FUN_10007830(int param_1,undefined4 param_2)
+void grim_bind_texture(int handle,int stage)
 
 {
   int iVar1;
   
-  if (((-1 < param_1) && ((&DAT_1005d404)[param_1] != 0)) &&
-     (iVar1 = *(int *)((&DAT_1005d404)[param_1] + 4), iVar1 != 0)) {
-    (**(code **)(*DAT_10059dbc + 0xf4))(DAT_10059dbc,param_2,iVar1);
-    _DAT_10053060 = param_1;
+  if (((-1 < handle) && ((&DAT_1005d404)[handle] != 0)) &&
+     (iVar1 = *(int *)((&DAT_1005d404)[handle] + 4), iVar1 != 0)) {
+    (**(code **)(*DAT_10059dbc + 0xf4))(DAT_10059dbc,stage,iVar1);
+    _DAT_10053060 = handle;
   }
   return;
 }
@@ -4166,19 +4203,21 @@ void FUN_10007d40(void)
 
 
 
-/* FUN_10007f30 @ 10007f30 */
+/* grim_set_rotation @ 10007f30 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0xfc (provisional) */
 
-void FUN_10007f30(float param_1)
+void grim_set_rotation(float radians)
 
 {
   float10 fVar1;
   
-  _DAT_10059e30 = param_1;
-  fVar1 = (float10)fcos((float10)param_1 + (float10)0.7853982);
+  _DAT_10059e30 = radians;
+  fVar1 = (float10)fcos((float10)radians + (float10)0.7853982);
   DAT_1005c8e4 = (float)fVar1;
-  fVar1 = (float10)fsin((float10)param_1 + (float10)0.7853982);
+  fVar1 = (float10)fsin((float10)radians + (float10)0.7853982);
   _DAT_1005a460 = DAT_1005c8e4;
   _DAT_1005a46c = DAT_1005c8e4;
   DAT_10059f40 = (float)fVar1;
@@ -4189,9 +4228,12 @@ void FUN_10007f30(float param_1)
 
 
 
-/* FUN_10007f90 @ 10007f90 */
+/* grim_set_color @ 10007f90 */
 
-void FUN_10007f90(void)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x114 (provisional) */
+
+void grim_set_color(float r,float g,float b,float a)
 
 {
   uint uVar1;
@@ -4212,26 +4254,27 @@ void FUN_10007f90(void)
 
 
 
-/* FUN_10008040 @ 10008040 */
+/* grim_set_pivot @ 10008040 */
 
-void FUN_10008040(void)
+/* Grim2D vtable 0x110 (provisional) */
+
+void grim_set_pivot(float *xy)
 
 {
   undefined1 uVar1;
   undefined1 uVar2;
   undefined1 uVar3;
   undefined1 uVar4;
-  undefined4 uStack00000004;
   
   uVar1 = ftol();
   uVar2 = ftol();
   uVar3 = ftol();
   uVar4 = ftol();
-  uStack00000004 = CONCAT31(CONCAT21(CONCAT11(uVar1,uVar2),uVar3),uVar4);
-  DAT_1005bc04 = uStack00000004;
-  DAT_1005bc10 = uStack00000004;
-  DAT_1005bc0c = uStack00000004;
-  DAT_1005bc08 = uStack00000004;
+  xy = (float *)CONCAT31(CONCAT21(CONCAT11(uVar1,uVar2),uVar3),uVar4);
+  DAT_1005bc04 = xy;
+  DAT_1005bc10 = xy;
+  DAT_1005bc0c = xy;
+  DAT_1005bc08 = xy;
   return;
 }
 
@@ -4301,16 +4344,19 @@ void FUN_100081c0(int param_1)
 
 
 
-/* FUN_10008230 @ 10008230 */
+/* grim_set_atlas_frame @ 10008230 */
 
-void FUN_10008230(int param_1,int param_2)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x104 (provisional) */
+
+void grim_set_atlas_frame(int atlas,int frame)
 
 {
   float fVar1;
   
-  fVar1 = 1.0 / (float)param_1;
-  DAT_1005b2a8 = *(float *)((&DAT_1005bc78)[param_1] + param_2 * 8);
-  DAT_1005b29c = *(float *)((&DAT_1005bc78)[param_1] + 4 + param_2 * 8);
+  fVar1 = 1.0 / (float)atlas;
+  DAT_1005b2a8 = *(float *)((&DAT_1005bc78)[atlas] + frame * 8);
+  DAT_1005b29c = *(float *)((&DAT_1005bc78)[atlas] + 4 + frame * 8);
   DAT_1005b290 = DAT_1005b2a8;
   DAT_1005b294 = DAT_1005b29c;
   DAT_1005b298 = DAT_1005b2a8 + fVar1;
@@ -4322,20 +4368,23 @@ void FUN_10008230(int param_1,int param_2)
 
 
 
-/* FUN_100082c0 @ 100082c0 */
+/* grim_set_sub_rect @ 100082c0 */
 
-void FUN_100082c0(int param_1,int param_2,int param_3,int param_4)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x108 (provisional) */
+
+void grim_set_sub_rect(int x,int y,int w,int h)
 
 {
   float fVar1;
   
-  DAT_1005b2a8 = *(float *)((&DAT_1005bc78)[param_1] + param_4 * 8);
-  DAT_1005b29c = *(float *)((&DAT_1005bc78)[param_1] + 4 + param_4 * 8);
+  DAT_1005b2a8 = *(float *)((&DAT_1005bc78)[x] + h * 8);
+  DAT_1005b29c = *(float *)((&DAT_1005bc78)[x] + 4 + h * 8);
   DAT_1005b290 = DAT_1005b2a8;
   DAT_1005b294 = DAT_1005b29c;
-  DAT_1005b298 = (float)param_2 * (1.0 / (float)param_1) + DAT_1005b2a8;
+  DAT_1005b298 = (float)y * (1.0 / (float)x) + DAT_1005b2a8;
   DAT_1005b2a0 = DAT_1005b298;
-  fVar1 = (1.0 / (float)param_1) * (float)param_3;
+  fVar1 = (1.0 / (float)x) * (float)w;
   DAT_1005b2a4 = fVar1 + DAT_1005b29c;
   DAT_1005b2ac = fVar1 + DAT_1005b29c;
   return;
@@ -4343,19 +4392,22 @@ void FUN_100082c0(int param_1,int param_2,int param_3,int param_4)
 
 
 
-/* FUN_10008350 @ 10008350 */
+/* grim_set_uv @ 10008350 */
 
-void FUN_10008350(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x100 (provisional) */
+
+void grim_set_uv(float u0,float v0,float u1,float v1)
 
 {
-  DAT_1005b290 = param_1;
-  DAT_1005b294 = param_2;
-  DAT_1005b298 = param_3;
-  DAT_1005b29c = param_2;
-  DAT_1005b2a0 = param_3;
-  DAT_1005b2a4 = param_4;
-  DAT_1005b2a8 = param_1;
-  DAT_1005b2ac = param_4;
+  DAT_1005b290 = u0;
+  DAT_1005b294 = v0;
+  DAT_1005b298 = u1;
+  DAT_1005b29c = v0;
+  DAT_1005b2a0 = u1;
+  DAT_1005b2a4 = v1;
+  DAT_1005b2a8 = u0;
+  DAT_1005b2ac = v1;
   return;
 }
 
@@ -4690,15 +4742,18 @@ void FUN_10008750(float param_1,float param_2,float param_3,float param_4)
 
 
 
-/* FUN_10008b10 @ 10008b10 */
+/* grim_draw_quad @ 10008b10 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x11c (provisional) */
 
-void FUN_10008b10(float param_1,float param_2,float param_3,float param_4)
+void grim_draw_quad(float x,float y,float w,float h)
 
 {
   float fVar1;
   float fVar2;
+  float fVar3;
   int *in_ECX;
   float fStack_28;
   float fStack_24;
@@ -4713,31 +4768,31 @@ void FUN_10008b10(float param_1,float param_2,float param_3,float param_4)
       (**(code **)(*in_ECX + 0xe8))();
     }
     if (_DAT_10059e30 == 0.0) {
-      fStack_20 = param_1 + param_3;
-      fStack_28 = param_1;
-      fStack_24 = param_2;
-      fStack_1c = param_2;
-      param_2 = param_2 + param_4;
-      fStack_10 = param_1;
+      fStack_20 = x + w;
+      fStack_28 = x;
+      fStack_24 = y;
+      fStack_1c = y;
+      fVar1 = y + h;
+      fStack_10 = x;
       fStack_18 = fStack_20;
-      fStack_14 = param_2;
+      fStack_14 = fVar1;
     }
     else {
-      param_1 = param_3 * 0.5 + param_1;
-      param_2 = param_4 * 0.5 + param_2;
-      fVar1 = param_4 * param_4 + param_3 * param_3;
-      fVar2 = (float)(0x5f3759df - ((int)fVar1 >> 1));
-      fVar1 = (1.5 - fVar1 * 0.5 * fVar2 * fVar2) * fVar2 * fVar1 * 0.5;
-      fVar2 = DAT_1005c8e4 * fVar1;
-      fVar1 = fVar1 * DAT_10059f40;
-      fStack_28 = param_1 - fVar2;
-      fStack_24 = param_2 - fVar1;
-      fStack_20 = param_1 + fVar1;
-      fStack_1c = -fVar2 + param_2;
-      fStack_18 = param_1 + fVar2;
-      fStack_14 = param_2 + fVar1;
-      fStack_10 = -fVar1 + param_1;
-      param_2 = param_2 + fVar2;
+      fStack_10 = w * 0.5 + x;
+      fVar1 = h * 0.5 + y;
+      fVar2 = h * h + w * w;
+      fVar3 = (float)(0x5f3759df - ((int)fVar2 >> 1));
+      fVar2 = (1.5 - fVar2 * 0.5 * fVar3 * fVar3) * fVar3 * fVar2 * 0.5;
+      fVar3 = DAT_1005c8e4 * fVar2;
+      fVar2 = fVar2 * DAT_10059f40;
+      fStack_28 = fStack_10 - fVar3;
+      fStack_24 = fVar1 - fVar2;
+      fStack_20 = fStack_10 + fVar2;
+      fStack_1c = -fVar3 + fVar1;
+      fStack_18 = fStack_10 + fVar3;
+      fStack_14 = fVar1 + fVar2;
+      fStack_10 = -fVar2 + fStack_10;
+      fVar1 = fVar1 + fVar3;
     }
     *DAT_10059e34 = fStack_28;
     DAT_10059e34[1] = fStack_24;
@@ -4764,7 +4819,7 @@ void FUN_10008b10(float param_1,float param_2,float param_3,float param_4)
     DAT_10059e34[6] = DAT_1005b2a4;
     DAT_10059e34 = DAT_10059e34 + 7;
     *DAT_10059e34 = fStack_10;
-    DAT_10059e34[1] = param_2;
+    DAT_10059e34[1] = fVar1;
     DAT_10059e34[2] = DAT_1005b288;
     DAT_10059e34[3] = DAT_1005b28c;
     DAT_10059e34[4] = DAT_1005bc10;
@@ -4928,130 +4983,131 @@ void FUN_10009080(undefined4 param_1,undefined4 param_2,undefined4 param_3,undef
 
 
 
-/* FUN_100092b0 @ 100092b0 */
+/* grim_draw_text_mono @ 100092b0 */
 
-void FUN_100092b0(char *param_1,char *param_2,char *param_3)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x13c (provisional) */
+
+void grim_draw_text_mono(float x,float y,char *text)
 
 {
   char cVar1;
   float fVar2;
   float fVar3;
   bool bVar4;
-  char *pcVar5;
+  float fVar5;
   float fVar6;
-  char *pcVar7;
-  int iVar8;
+  float fVar7;
+  float fVar8;
+  int iVar9;
   int *in_ECX;
-  uint uVar9;
-  char *pcVar10;
-  char *pcVar11;
-  char *unaff_retaddr;
-  float fVar12;
+  uint uVar10;
+  float fVar11;
+  char *pcVar12;
+  float unaff_retaddr;
   float fVar13;
+  float fVar14;
   float fStack_5c;
   int iStack_58;
-  char *pcStack_44;
+  float fStack_44;
   
-  if ((DAT_1005d3bd == '\0') && (param_3 != (char *)0x0)) {
+  if ((DAT_1005d3bd == '\0') && (text != (char *)0x0)) {
     if (DAT_1005ccf8 == '\0') {
       (**(code **)(*DAT_10059dbc + 0xf4))(DAT_10059dbc,0,DAT_1005d3ec);
     }
-    pcStack_44 = param_2;
-    fVar13 = 0.0;
+    fStack_44 = y;
+    fVar14 = 0.0;
     (**(code **)(*in_ECX + 0xfc))(0);
     (**(code **)(*in_ECX + 0xe8))();
     fVar2 = fStack_5c * 32.0;
-    uVar9 = 0xffffffff;
-    pcVar11 = param_3;
+    uVar10 = 0xffffffff;
+    pcVar12 = text;
     do {
-      if (uVar9 == 0) break;
-      uVar9 = uVar9 - 1;
-      cVar1 = *pcVar11;
-      pcVar11 = pcVar11 + 1;
+      if (uVar10 == 0) break;
+      uVar10 = uVar10 - 1;
+      cVar1 = *pcVar12;
+      pcVar12 = pcVar12 + 1;
     } while (cVar1 != '\0');
     fVar3 = fStack_5c * 16.0;
     bVar4 = false;
     iStack_58 = 0;
-    if (0 < (int)(~uVar9 - 1)) {
+    if (0 < (int)(~uVar10 - 1)) {
       do {
-        fVar6 = DAT_1005b644;
-        pcVar5 = DAT_1005b640;
-        fVar12 = DAT_1005b5d4;
-        pcVar11 = DAT_1005b5d0;
-        cVar1 = param_3[iStack_58];
-        pcVar10 = unaff_retaddr;
-        pcVar7 = unaff_retaddr;
+        fVar7 = DAT_1005b644;
+        fVar6 = DAT_1005b640;
+        fVar13 = DAT_1005b5d4;
+        fVar5 = DAT_1005b5d0;
+        cVar1 = text[iStack_58];
+        fVar11 = unaff_retaddr;
+        fVar8 = unaff_retaddr;
         if (cVar1 != '\n') {
           if (cVar1 == -0x59) {
             bVar4 = true;
-            pcVar10 = param_1;
-            pcVar7 = pcStack_44;
+            fVar11 = x;
+            fVar8 = fStack_44;
           }
           else {
             if (cVar1 == -0x1b) {
-              pcStack_44 = (char *)((float)pcStack_44 + fVar3);
+              fStack_44 = fStack_44 + fVar3;
               (**(code **)(*in_ECX + 0x100))
-                        (DAT_1005b5d0,DAT_1005b5d4,(float)DAT_1005b5d0 + 0.0625,
-                         DAT_1005b5d4 + 0.0625);
-              (**(code **)(*in_ECX + 0x11c))(pcVar11,fVar12 + 1.0,fVar2,fVar2);
-              fVar13 = DAT_1005b43c;
+                        (DAT_1005b5d0,DAT_1005b5d4,DAT_1005b5d0 + 0.0625,DAT_1005b5d4 + 0.0625);
+              (**(code **)(*in_ECX + 0x11c))(fVar5,fVar13 + 1.0,fVar2,fVar2);
+              fVar14 = DAT_1005b43c;
               (**(code **)(*in_ECX + 0x100))
                         (DAT_1005b438,DAT_1005b43c,DAT_1005b438 + 0.0625,DAT_1005b43c + 0.0625);
-              iVar8 = *in_ECX;
-              fVar12 = fVar13 - 6.0;
-              param_1 = pcVar11;
+              iVar9 = *in_ECX;
+              fVar13 = fVar14 - 6.0;
+              x = fVar5;
             }
             else if (cVar1 == -0x1c) {
               (**(code **)(*in_ECX + 0x100))
-                        (DAT_1005b5d0,DAT_1005b5d4,(float)DAT_1005b5d0 + 0.0625,
-                         DAT_1005b5d4 + 0.0625);
-              (**(code **)(*in_ECX + 0x11c))(pcVar11,fVar12 + 1.0,fVar2,fVar2);
-              pcStack_44 = (char *)(DAT_1005b3d8 + 0.0625);
-              fVar12 = DAT_1005b3dc;
+                        (DAT_1005b5d0,DAT_1005b5d4,DAT_1005b5d0 + 0.0625,DAT_1005b5d4 + 0.0625);
+              (**(code **)(*in_ECX + 0x11c))(fVar5,fVar13 + 1.0,fVar2,fVar2);
+              fStack_44 = DAT_1005b3d8 + 0.0625;
+              fVar13 = DAT_1005b3dc;
               (**(code **)(*in_ECX + 0x100))
-                        (DAT_1005b3d8,DAT_1005b3dc,pcStack_44,DAT_1005b3dc + 0.0625);
-              iVar8 = *in_ECX;
-              param_1 = pcVar11;
-              fVar13 = fVar12;
+                        (DAT_1005b3d8,DAT_1005b3dc,fStack_44,DAT_1005b3dc + 0.0625);
+              iVar9 = *in_ECX;
+              x = fVar5;
+              fVar14 = fVar13;
             }
             else if (cVar1 == -10) {
-              pcStack_44 = (char *)((float)pcStack_44 + fVar3);
+              fStack_44 = fStack_44 + fVar3;
               (**(code **)(*in_ECX + 0x100))
-                        (DAT_1005b640,DAT_1005b644,(float)DAT_1005b640 + 0.0625,
-                         DAT_1005b644 + 0.0625);
-              (**(code **)(*in_ECX + 0x11c))(pcVar5,fVar6 + 1.0,fVar2,fVar2);
-              fVar12 = DAT_1005b3dc;
+                        (DAT_1005b640,DAT_1005b644,DAT_1005b640 + 0.0625,DAT_1005b644 + 0.0625);
+              (**(code **)(*in_ECX + 0x11c))(fVar6,fVar7 + 1.0,fVar2,fVar2);
+              fVar13 = DAT_1005b3dc;
               (**(code **)(*in_ECX + 0x100))
                         (DAT_1005b3d8,DAT_1005b3dc,DAT_1005b3d8 + 0.0625,DAT_1005b3dc + 0.0625);
-              iVar8 = *in_ECX;
-              param_1 = pcVar5;
-              fVar13 = fVar12;
+              iVar9 = *in_ECX;
+              x = fVar6;
+              fVar14 = fVar13;
             }
             else {
               if (bVar4) {
                 bVar4 = false;
               }
               else {
-                param_1 = (char *)((float)pcStack_44 + fVar3);
-                pcStack_44 = param_1;
+                x = fStack_44 + fVar3;
+                fStack_44 = x;
               }
               (**(code **)(*in_ECX + 0x100))
                         ((&DAT_1005b2c8)[cVar1 * 2],(&DAT_1005b2cc)[cVar1 * 2],
                          (float)(&DAT_1005b2c8)[cVar1 * 2] + 0.0625,
                          (float)(&DAT_1005b2cc)[cVar1 * 2] + 0.0625);
-              iVar8 = *in_ECX;
-              fVar12 = fVar13 + 1.0;
+              iVar9 = *in_ECX;
+              fVar13 = fVar14 + 1.0;
             }
-            (**(code **)(iVar8 + 0x11c))(param_1,fVar12,fVar2,fVar2);
-            pcVar10 = param_1;
-            pcVar7 = pcStack_44;
+            (**(code **)(iVar9 + 0x11c))(x,fVar13,fVar2,fVar2);
+            fVar11 = x;
+            fVar8 = fStack_44;
           }
         }
-        pcStack_44 = pcVar7;
+        fStack_44 = fVar8;
         iStack_58 = iStack_58 + 1;
-        param_3 = param_2;
-        param_1 = pcVar10;
-      } while (iStack_58 < (int)(~uVar9 - 1));
+        text = (char *)y;
+        x = fVar11;
+      } while (iStack_58 < (int)(~uVar10 - 1));
     }
     (**(code **)(*in_ECX + 0xf0))();
   }
@@ -5060,9 +5116,11 @@ void FUN_100092b0(char *param_1,char *param_2,char *param_3)
 
 
 
-/* FUN_100096c0 @ 100096c0 */
+/* grim_measure_text_width @ 100096c0 */
 
-int FUN_100096c0(char *param_1)
+/* Grim2D vtable 0x14c (provisional) */
+
+int grim_measure_text_width(char *text)
 
 {
   char cVar1;
@@ -5072,13 +5130,13 @@ int FUN_100096c0(char *param_1)
   char *pcVar5;
   int iVar6;
   
-  if (param_1 == (char *)0x0) {
+  if (text == (char *)0x0) {
     return 0;
   }
   uVar3 = 0xffffffff;
   iVar2 = 0;
   iVar4 = 0;
-  pcVar5 = param_1;
+  pcVar5 = text;
   do {
     if (uVar3 == 0) break;
     uVar3 = uVar3 - 1;
@@ -5088,7 +5146,7 @@ int FUN_100096c0(char *param_1)
   iVar6 = 0;
   if (0 < (int)(~uVar3 - 1)) {
     do {
-      if (param_1[iVar6] == 10) {
+      if (text[iVar6] == 10) {
         if (iVar2 < iVar4) {
           iVar2 = iVar4;
         }
@@ -5096,7 +5154,7 @@ int FUN_100096c0(char *param_1)
       }
       else {
         iVar4 = iVar4 + (uint)*(byte *)((int)&DAT_1005bad8 +
-                                       (uint)(byte)(&DAT_1005a570)[(byte)param_1[iVar6]]);
+                                       (uint)(byte)(&DAT_1005a570)[(byte)text[iVar6]]);
       }
       iVar6 = iVar6 + 1;
     } while (iVar6 < (int)(~uVar3 - 1));
@@ -5109,9 +5167,12 @@ int FUN_100096c0(char *param_1)
 
 
 
-/* FUN_10009730 @ 10009730 */
+/* grim_draw_text_small @ 10009730 */
 
-void FUN_10009730(undefined4 param_1,undefined4 param_2,char *param_3)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x144 (provisional) */
+
+void grim_draw_text_small(float x,float y,char *text)
 
 {
   char cVar1;
@@ -5125,7 +5186,7 @@ void FUN_10009730(undefined4 param_1,undefined4 param_2,char *param_3)
   int iVar7;
   undefined4 uStack_14;
   
-  if ((DAT_1005d3bd == '\0') && (param_3 != (char *)0x0)) {
+  if ((DAT_1005d3bd == '\0') && (text != (char *)0x0)) {
     ftol();
     ftol();
     if ((DAT_10053070 != -1) ||
@@ -5139,7 +5200,7 @@ void FUN_10009730(undefined4 param_1,undefined4 param_2,char *param_3)
       (**(code **)(*in_ECX + 0xfc))(0);
       (**(code **)(*in_ECX + 0xe8))();
       uVar2 = 0xffffffff;
-      pcVar4 = param_3;
+      pcVar4 = text;
       do {
         if (uVar2 == 0) break;
         uVar2 = uVar2 - 1;
@@ -5149,8 +5210,8 @@ void FUN_10009730(undefined4 param_1,undefined4 param_2,char *param_3)
       iVar5 = 0;
       if (0 < (int)(~uVar2 - 1)) {
         do {
-          uVar3 = (uint)(byte)(&DAT_1005a570)[(byte)param_3[iVar5]];
-          if (param_3[iVar5] != 10) {
+          uVar3 = (uint)(byte)(&DAT_1005a570)[(byte)text[iVar5]];
+          if (text[iVar5] != 10) {
             (**(code **)(*in_ECX + 0x100))
                       ((float)(&DAT_1005b2c8)[uVar3 * 2] + 0.001953125,
                        (float)(&DAT_1005b2cc)[uVar3 * 2] + 0.001953125,
@@ -5183,13 +5244,18 @@ void FUN_10009940(int *param_1,undefined4 param_2,undefined4 param_3,char *param
 
 
 
-/* FUN_10009980 @ 10009980 */
+/* grim_draw_text_box @ 10009980 */
 
-void FUN_10009980(int *param_1,undefined4 param_2,undefined4 param_3,char *param_4)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x148 (provisional) */
+
+void grim_draw_text_box(float x,float y,char *text)
 
 {
-  vsprintf(&DAT_1005b078,param_4,&stack0x00000014);
-  (**(code **)(*param_1 + 0x144))(param_2,param_3,&DAT_1005b078);
+  char *in_stack_00000010;
+  
+  vsprintf(&DAT_1005b078,in_stack_00000010,&stack0x00000014);
+  (**(code **)(*(int *)x + 0x144))(y,text,&DAT_1005b078);
   return;
 }
 
