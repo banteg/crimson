@@ -4017,3 +4017,1942 @@ Linking the External Programs of 'grim.dll' to imported libraries...
 2026-01-16 20:34:21 INFO  (LocalFileSystem) /grim.dll: file created (banteg)  
 2026-01-16 20:34:21 INFO  (HeadlessAnalyzer) REPORT: Save succeeded for: /grim.dll (ghidra_grim_dll_38940:/grim.dll)  
 2026-01-16 20:34:21 INFO  (HeadlessAnalyzer) REPORT: Import succeeded  
+2026-01-16 16:59:32 INFO  (LoggingInitialization) Using log config file: jar:file:/opt/ghidra_12.0.1_PUBLIC/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml  
+2026-01-16 16:59:32 INFO  (LoggingInitialization) Using log file: /workspace/source/decompiled/ghidra_analysis.log  
+2026-01-16 16:59:32 INFO  (Preferences) Loading user preferences: /home/node/.config/ghidra/ghidra_12.0.1_PUBLIC/preferences  
+2026-01-16 16:59:32 INFO  (ClassSearcher) Searching for classes...  
+2026-01-16 16:59:33 INFO  (ClassSearcher) Class search complete (716 ms)  
+2026-01-16 16:59:33 INFO  (DefaultSSLContextInitializer) Initializing SSL Context  
+2026-01-16 16:59:33 INFO  (SecureRandomFactory) Initializing Random Number Generator...  
+2026-01-16 16:59:33 INFO  (SecureRandomFactory) Random Number Generator initialization complete: NativePRNGNonBlocking  
+2026-01-16 16:59:33 INFO  (DefaultTrustManagerFactory) Trust manager disabled, cacerts have not been set  
+2026-01-16 16:59:33 INFO  (FileCacheMaintenanceDaemon) Starting cache cleanup: /var/tmp/node-ghidra/fscache2  
+2026-01-16 16:59:33 INFO  (FileCacheMaintenanceDaemon) Finished cache cleanup, estimated storage used: 0  
+2026-01-16 16:59:33 INFO  (AnalyzeHeadless) Headless startup complete (1409 ms)  
+2026-01-16 16:59:33 INFO  (ClassSearcher) Class searcher loaded 58 extension points (18 false positives)  
+2026-01-16 16:59:33 INFO  (HeadlessAnalyzer) HEADLESS Script Paths:
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/PIC/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/VersionTracking/ghidra_scripts
+    /workspace/.codex/skills/ghidra/scripts/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/PDB/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/JVM/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/FileFormats/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/BytePatterns/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Jython/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/DATA/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/BSim/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/8051/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/PyGhidra/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Decompiler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/FunctionID/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/Atmel/ghidra_scripts  
+2026-01-16 16:59:33 INFO  (HeadlessAnalyzer) HEADLESS: execution starts  
+2026-01-16 16:59:33 INFO  (HeadlessAnalyzer) Creating temporary project: /tmp/ghidra_crimsonland_exe_5716  
+2026-01-16 16:59:33 DEBUG (DefaultProjectManager) No tools found; Installing default tools  
+2026-01-16 16:59:33 DEBUG (DefaultProjectManager) 	no recent project directories found  
+2026-01-16 16:59:33 INFO  (DefaultProject) Creating project: /tmp/ghidra_crimsonland_exe_5716  
+2026-01-16 16:59:33 INFO  (HeadlessAnalyzer) REPORT: Processing input files:   
+2026-01-16 16:59:33 INFO  (HeadlessAnalyzer)      project: /tmp/ghidra_crimsonland_exe_5716  
+2026-01-16 16:59:33 INFO  (HeadlessAnalyzer) IMPORTING: file:///workspace/game/crimsonland.exe  
+2026-01-16 16:59:34 INFO  (ProgramLoader) Using Loader: Portable Executable (PE)  
+2026-01-16 16:59:34 INFO  (ProgramLoader) Using Language/Compiler: x86:LE:32:default:windows  
+2026-01-16 16:59:34 INFO  (ProgramLoader) Using Library Search Path: [., /bin, /lib, /lib64, /lib/x86_64-linux-gnu, /lib/aarch64-linux-gnu, /usr/bin, /usr/lib, /usr/X11R6/bin, /usr/X11R6/lib, /usr/java/packages/lib, /usr/lib/aarch64-linux-gnu/jni, /usr/lib/aarch64-linux-gnu, /usr/lib/jni]  
+2026-01-16 16:59:34 INFO  (ProgramLoader) Additional info:
+Loading file:///workspace/game/crimsonland.exe?MD5=b5734f679649e1e61b79b6071f7e0ee5...
+------------------------------------------------
+
+Searching 8 paths for library ADVAPI32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library D3D8.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library DSOUND.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library KERNEL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library OLE32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library OLEAUT32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library SHELL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library URLMON.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library USER32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library VERSION.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library VORBISFILE.DLL...
+Loading file:///workspace/game/VORBISFILE.DLL?MD5=b226080606e45b6879ea02f1b5f47c5e...
+Created exports file: /home/node/.config/ghidra/ghidra_12.0.1_PUBLIC/symbols/win32/vorbisfile.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 8 paths for library WININET.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library WINMM.DLL...
+Library not found.
+------------------------------------------------
+
+Applying cached symbols from VORBISFILE.DLL
+Linking the External Programs of 'crimsonland.exe' to imported libraries...
+  [KERNEL32.DLL] -> not found in project
+  [USER32.DLL] -> not found in project
+  [ADVAPI32.DLL] -> not found in project
+  [SHELL32.DLL] -> not found in project
+  [OLE32.DLL] -> not found in project
+  [OLEAUT32.DLL] -> not found in project
+  [VORBISFILE.DLL] -> not found in project
+  [URLMON.DLL] -> not found in project
+  [WINMM.DLL] -> not found in project
+  [D3D8.DLL] -> not found in project
+  [VERSION.DLL] -> not found in project
+  [WININET.DLL] -> not found in project
+  [DSOUND.DLL] -> not found in project
+------------------------------------------------
+
+  
+2026-01-16 16:59:34 INFO  (HeadlessAnalyzer) IMPORTING: Loaded 0 additional files  
+2026-01-16 16:59:35 INFO  (HeadlessAnalyzer) ANALYZING all memory and code: file:///workspace/game/crimsonland.exe  
+2026-01-16 16:59:35 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___raise_securityfailure' specified in file: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 16:59:35 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___report_rangecheckfailure' specified in file: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 16:59:35 INFO  (PdbUniversalAnalyzer) Skipping PDB processing: missing PDB information in program metadata  
+2026-01-16 16:59:35 INFO  (PackedDatabaseCache) Packed database cache: /var/tmp/node-ghidra/packed-db-cache  
+2026-01-16 16:59:35 DEBUG (PackedDatabaseCache) Caching packed database: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/typeinfo/win32/windows_vs12_32.gdt  
+2026-01-16 16:59:35 DEBUG (PackedDatabase) Unpacking database /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/typeinfo/win32/windows_vs12_32.gdt -> /var/tmp/node-ghidra/packed-db-cache/pdb761FC8FB/db.1.gbf  
+2026-01-16 16:59:35 DEBUG (PackedDatabaseCache) Cache update completed: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/typeinfo/win32/windows_vs12_32.gdt  
+2026-01-16 16:59:37 ERROR (DecompileProcessFactory) os/linux_arm_64/decompile does not exist (see GettingStarted.md, 'Building Native Components')  
+2026-01-16 16:59:42 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 16:59:42 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045385d:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00453640:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00438840:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00436440:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043bc40:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00420040:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00420440:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00427840:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00467e47:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041e840:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00417640:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00465c40:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00466c7b:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00467c7a:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046a471:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043b870:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041e270:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045326f:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046d66c:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00466a61:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041fc60:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00417660:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00401060:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046d419:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00453012:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043b810:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00465842:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041dc10:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00455614:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041a810:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045e40a:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00445600:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00446000:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041e400:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0040f400:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045e832:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00465c30:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00454433:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00466c33:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00446030:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043d830:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042fc30:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00428210:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041f430:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046324b:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00401030:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00401050:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041dc50:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: __ftol:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045b252:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00403430:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043b850:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00441220:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043bc20:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00434220:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046a0dd:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004650d0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: __allmul:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046d6d3:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00430ad0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041e8d0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046ca2f:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00466a27:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041fed0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004018d0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004036d0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: __alldiv:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004600c0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004636c8:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041a6d0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004568c0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00460cd0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043b8c0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00447420:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004608c0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004632f1:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004544c9:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004658f0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00452ef0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004460f0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004530f0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045eac0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042fcf0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004672d8:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0044ecf0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004658cc:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046a0f8:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045fae8:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046d8e2:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046d6ef:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041dce0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00417ae0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004636f9:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00457099:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00460ccf:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045b092:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043aa90:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00417a90:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0040e690:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046b08c:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00456eec:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00461a83:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043b880:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00447c90:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042e080:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041dc80:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00402480:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00468abd:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004678be:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045feb0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00417ab0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004018b0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041e8f0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004636ae:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046d8a5:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: __NLG_Notify1:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043b8a0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042e0a0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004206a0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004188a0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00417aa0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004034a0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004556ff:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043b8e0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00468f58:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046515c:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0044fb50:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004564e6:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00446150:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00452f5a:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043a950:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041df50:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00402750:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00401150:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00402d50:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045eb4b:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00456542:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00446140:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00438940:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00465145:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043d940:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043bf40:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041df40:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00412940:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00413540:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00457170:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00469573:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00446170:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00437d70:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: __fload_withFB:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00462d76:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00403370:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045336f:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046d961:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00447cf0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00454560:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00469565:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043bf60:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043c960:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041df60:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00412960:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046a11f:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00445310:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046d70b:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00454f03:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046a104:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045373b:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00465130:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045dd30:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043af30:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00461335:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00420730:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00469f29:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046332c:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00468f2f:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046cd20:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: __allshl:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00463325:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043b520:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00457127:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042e120:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00401120:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00469dd9:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045cbdc:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004569d0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045fbd0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043abd0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042de80:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004679d6:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0040b5d0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004010f0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00469e97:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004654a5:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004651ce:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004205d0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045fdc0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004343c0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046ad57:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042a9c0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046e5ec:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046d5e3:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004473e0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043d7e0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004281e0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046d3e6:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004061e0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: __frnd:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046d39c:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00467d9e:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046a590:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00446190:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00445590:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00453197:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00467389:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046258a:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046d98f:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00464380:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00469582:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00447580:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042a980:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00425d80:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00454f87:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041f580:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004651b8:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046d1be:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004567b0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004571b0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004519b0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00469fb2:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00456fb6:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041cdb0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: Catch@004565b4:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00462fb6:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046cda0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004607a0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004695a5:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00462fa4:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00419ba0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041dda0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043c230:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00448b50:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046cd60:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004411c0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00420360:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00402630:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00446c40:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004027b0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046c883:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00405160:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041a8b0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00459b4b:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004557db:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045573b:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045567f:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00455587:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041e290:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00418b60:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004601c0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00467484:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00462a7e:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00463bf0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045ed17:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00463df7:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004565c0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00462fad:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004668ce:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00462983:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00462683:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00466845:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00469ffb:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043bfa0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043d7c0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: ___add_12:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00461a6b:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00463c6b:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004024e0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00467914:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: __local_unwind2:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: __CallSettingFrame@12:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00427920:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041a320:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046325f:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00402530:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043def0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043d770:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00452e40:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042fb10:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00462d28:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00469073:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046262b:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046777a:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00468fb2:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00469d72:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042f270:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042e820:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00456aa5:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042df10:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00463333:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041df00:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041ddb0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043baf0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00468ddc:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043efc0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043d9b0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043dc80:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0040a4c0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046a39e:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00463b61:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00466ca6:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004698f3:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00466fcf:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046de3b:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00412a10:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046d1ad:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046e36f:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046a8ce:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004664d1:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045c3ea:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00459adf:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045cac3:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00459d0f:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00459c82:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043c2b0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00417690:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00419680:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00459f51:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00459536:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00459e05:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00469e4c:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045657a:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00462eff:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046a051:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043d550:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046d9bc:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00467a2d:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00465f2d:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004633b8:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004653ec:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00462bd4:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00467a72:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00469326:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00461a03:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043c590:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043be20:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00468da3:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004638bf:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004639d6:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046e05b:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00463c74:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046d442:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00469e81:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043d730:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: __global_unwind2:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00462edd:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042f330:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045661f:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042e710:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004652bc:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00463153:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046da83:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046b265:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046e79e:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00461f0a:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00462ffe:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043c520:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00462173:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00463e26:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004636e7:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046a415:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046a8c5:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00463a7d:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046385e:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00463981:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00462add:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00462a17:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046ad79:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046586b:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046623d:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004666f5:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046e8f4:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043c110:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042fd00:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046d13f:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046acf8:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00461e9b:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046e85d:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00463dd4:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004667ac:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046d1ef:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004625c1:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046e160:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00462de0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046c862:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00463da5:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00462104:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00463b86:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046e7f6:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004026e0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042fd90:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00412660:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004688d8:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046aa98:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00463760:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004641a0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004654b8:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00465451:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046d5c7:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046551f:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00468c71:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00460dc7:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004668e9:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00461739:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046135d:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00465d9c:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004619eb:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00463737:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00468887:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00460dd2:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00462fd0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046a1ac:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00462835:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00463431:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00465d93:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046d723:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00469b36:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00462373:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041dee0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046d048:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00402580:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046abbb:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046896b:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004011f0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0040d000:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00468a24:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00465d20:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004624b5:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046acb6:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046953d:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00412410:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046cb6f:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041db50:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00468913:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00444f70:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00436350:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00420130:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042eb10:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042f3f0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00412470:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004120b0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004618fd:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041fbb0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046ac37:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046e261:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046b10e:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00469a69:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042f540:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041f5b0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046cde6:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00452cd0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042f6c0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042ef60:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00412360:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00409500:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043be60:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00460cb8:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004622b6:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042ec80:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046a32e:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043b750:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004626aa:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046cfeb:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004017a0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004016e0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0040d090:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046223f:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046248e:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046c4cb:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00465f48:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004655bf:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046645e:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046b0b5:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046cdcf:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00463ea6:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041f790:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041cfe0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043d260:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043d460:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043d120:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00462eb0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042ee00:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046a371:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00460d08:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046e617:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: __startOneArgErrorHandling:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00465fa9:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046d66f:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004663f9:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00466064:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004656b7:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00466a8e:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00463e49:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041f8d0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00452d40:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00413430:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0040e570:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00446900:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043ecf0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043e830:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0040d040:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00460d86:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046e301:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00465219:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: __math_exit:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046355c:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00469bae:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00469950:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00461c30:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00465fff:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00465652:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046dd16:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00466bd6:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004055e0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00444980:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00442150:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043e5e0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00427700:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042fae0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00412440:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004121f0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00401180:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0040a510:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00408530:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046e0d7:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00461162:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046319d:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004699ee:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00461c0e:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00463f54:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00464268:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004614a5:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046adbd:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00406b40:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046c5db:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00461140:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00463180:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00469849:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00460fac:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004688be:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00462da2:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00461b26:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00461089:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00461e4a:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004616e7:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042f080:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00461dbd:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: __fclose_lk:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00466782:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00461477:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00464030:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046c5ad:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041a040:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00401dd0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00469696:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004688ef:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043b940:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00461af7:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0040e000:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00401870:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041ccb0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00461d91:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00460e5d:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00461fd5:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046150a:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004615dd:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00465da5:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043ab10:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043c090:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046a318:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00461981:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043d5b0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042a670:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042fbd0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042a5f0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0044faa0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004343e0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043aa60:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00430a20:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00428140:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042a700:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00419d00:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041fc80:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043bad0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041ddd0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00461448:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00441270:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043b5b0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00429580:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041aed0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00402bd0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0040e860:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0040e700:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0040ff50:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00406180:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00403550:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004047c0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004615ae:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: ___timet_from_ft:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004623b2:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043c980:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043c700:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042faa0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004123d0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00412190:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043d3f0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004045a0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00439230:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00444810:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00430af0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00428240:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041e910:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00407510:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0044fcb0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041ca90:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004413a0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043ad70:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00461768:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00461835:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00434250:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00417b80:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00420240:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00402fe0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00408990:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004207c0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043cf90:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00419dd0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004566d3:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00425e50:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00409890:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045315a:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004545dc:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00452f1d:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00453711:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00453a57:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00454417:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045438d:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00454ccd:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00454303:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00454bc0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00453340:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004530c1:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00455281:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00454b44:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00454544:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00453245:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004546fe:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00454e3c:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00454832:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004547f3:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00452f30:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004551b6:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00455135:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004534ea:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00452fe8:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00455028:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045382e:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004544ad:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00453ca0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00454821:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00453464:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043a790:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004181b0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004030f0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00403250:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004295f0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0040a320:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004545fc:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00454b64:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00422c70:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00426220:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00428390:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004136b0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045604d:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00455f73:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00454859:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00455c86:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045515f:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046100e:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004551f6:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004695fb:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0040e940:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00412dc0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00464be7:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046a344:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00463382:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00420600:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00467e62:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042a630:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046340c:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00462ba0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004610da:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00402350:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00401940:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00402c00:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0040e040:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00401560:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00401a40:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00401170:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0046103f:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00405960:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0045589a:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043afa0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043ac70:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043b980:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00455cbf:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041f130:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041ec60:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043b450:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041f1a0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004451b0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004443c0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043b9e0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00402ed0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004634e7:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00420b90:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043c3a0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043c8d0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00402860:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00445380:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043c9c0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043d0d0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042abd0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042a9f0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043bcf0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00412a80:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043d070:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043b510:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043d110:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043bca0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00412c10:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004461c0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042c450:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043c020:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004070e0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043c740:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0043caa0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0041a530:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: entry:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004457c0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004107e0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00403390:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00403500:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00406350:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0040b630:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00405be0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0040ffc0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0042b090:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004072b0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00410d20:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00406af0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00407cd0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0040aab0:   
+2026-01-16 16:59:50 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_0040b740:   
+2026-01-16 16:59:51 INFO  (AutoAnalysisManager) -----------------------------------------------------
+    ASCII Strings                              0.231 secs
+    Apply Data Archives                        0.103 secs
+    Call Convention ID                         0.005 secs
+    Call-Fixup Installer                       0.021 secs
+    Create Address Tables                      0.051 secs
+    Create Address Tables - One Time           3.668 secs
+    Create Function                            0.220 secs
+    Data Reference                             0.950 secs
+    Decompiler Parameter ID                    0.106 secs
+    Decompiler Switch Analysis                 0.265 secs
+    Demangler Microsoft                        0.007 secs
+    Disassemble                                0.229 secs
+    Disassemble Entry Points                   0.459 secs
+    Embedded Media                             0.014 secs
+    External Entry References                  0.000 secs
+    Function ID                                0.429 secs
+    Function Start Pre Search                  0.012 secs
+    Function Start Search                      0.059 secs
+    Function Start Search After Code           0.041 secs
+    Function Start Search After Data           0.018 secs
+    Function Start Search delayed - One Time   0.003 secs
+    Non-Returning Functions - Discovered       0.118 secs
+    Non-Returning Functions - Known            0.002 secs
+    PDB Universal                              0.002 secs
+    Reference                                  1.320 secs
+    Scalar Operand References                  0.362 secs
+    Shared Return Calls                        0.110 secs
+    Stack                                      1.385 secs
+    Subroutine References                      0.952 secs
+    Subroutine References - One Time           0.002 secs
+    Windows x86 PE Exception Handling          1.240 secs
+    Windows x86 PE RTTI Analyzer               0.000 secs
+    Windows x86 Thread Environment Block (TEB) Analyzer     0.011 secs
+    WindowsResourceReference                   1.727 secs
+    X86 Function Callee Purge                  0.065 secs
+    x86 Constant Reference Analyzer            2.450 secs
+-----------------------------------------------------
+     Total Time   16 secs
+-----------------------------------------------------
+  
+2026-01-16 16:59:51 INFO  (HeadlessAnalyzer) REPORT: Analysis succeeded for file: file:///workspace/game/crimsonland.exe  
+2026-01-16 16:59:51 INFO  (HeadlessAnalyzer) REPORT: Execute script: ExportAll.java   
+2026-01-16 16:59:52 INFO  (HeadlessAnalyzer) SCRIPT: /workspace/.codex/skills/ghidra/scripts/ghidra_scripts/ExportAll.java  
+2026-01-16 16:59:52 INFO  (GhidraScript) ExportAll.java> === Starting comprehensive export ===  
+2026-01-16 16:59:52 INFO  (GhidraScript) ExportAll.java> Output directory: /workspace/source/decompiled  
+2026-01-16 16:59:52 INFO  (GhidraScript) ExportAll.java> Program: crimsonland.exe  
+2026-01-16 16:59:52 INFO  (GhidraScript) ExportAll.java> Architecture: x86  
+2026-01-16 16:59:52 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 16:59:52 INFO  (GhidraScript) ExportAll.java> Exporting summary to: crimsonland.exe_summary.txt  
+2026-01-16 16:59:52 INFO  (GhidraScript) ExportAll.java> Exporting decompiled code to: crimsonland.exe_decompiled.c  
+2026-01-16 16:59:52 ERROR (GhidraScript) ExportAll.java> Failed to initialize decompiler  
+2026-01-16 16:59:52 INFO  (GhidraScript) ExportAll.java> Exporting functions to: crimsonland.exe_functions.json  
+2026-01-16 16:59:52 INFO  (GhidraScript) ExportAll.java>   Exported 805 functions  
+2026-01-16 16:59:52 INFO  (GhidraScript) ExportAll.java> Exporting strings to: crimsonland.exe_strings.txt  
+2026-01-16 16:59:52 INFO  (GhidraScript) ExportAll.java>   Exported 1373 strings  
+2026-01-16 16:59:52 INFO  (GhidraScript) ExportAll.java> Analyzing interesting patterns...  
+2026-01-16 16:59:52 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 16:59:52 INFO  (GhidraScript) ExportAll.java> === Export complete ===  
+2026-01-16 16:59:52 INFO  (HeadlessAnalyzer) ANALYZING changes made by post scripts: file:///workspace/game/crimsonland.exe  
+2026-01-16 16:59:52 INFO  (HeadlessAnalyzer) REPORT: Post-analysis succeeded for file: file:///workspace/game/crimsonland.exe  
+2026-01-16 16:59:52 INFO  (LocalFileSystem) /crimsonland.exe: file created (node)  
+2026-01-16 16:59:52 INFO  (HeadlessAnalyzer) REPORT: Save succeeded for: /crimsonland.exe (ghidra_crimsonland_exe_5716:/crimsonland.exe)  
+2026-01-16 16:59:52 INFO  (HeadlessAnalyzer) REPORT: Import succeeded  
+2026-01-16 17:02:27 INFO  (LoggingInitialization) Using log config file: jar:file:/opt/ghidra_12.0.1_PUBLIC/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml  
+2026-01-16 17:02:27 INFO  (LoggingInitialization) Using log file: /workspace/source/decompiled/ghidra_analysis.log  
+2026-01-16 17:02:27 INFO  (Preferences) Loading user preferences: /home/node/.config/ghidra/ghidra_12.0.1_PUBLIC/preferences  
+2026-01-16 17:02:27 INFO  (ClassSearcher) Searching for classes...  
+2026-01-16 17:02:28 INFO  (ClassSearcher) Class search complete (731 ms)  
+2026-01-16 17:02:28 INFO  (DefaultSSLContextInitializer) Initializing SSL Context  
+2026-01-16 17:02:28 INFO  (SecureRandomFactory) Initializing Random Number Generator...  
+2026-01-16 17:02:28 INFO  (SecureRandomFactory) Random Number Generator initialization complete: NativePRNGNonBlocking  
+2026-01-16 17:02:28 INFO  (DefaultTrustManagerFactory) Trust manager disabled, cacerts have not been set  
+2026-01-16 17:02:28 INFO  (AnalyzeHeadless) Headless startup complete (1436 ms)  
+2026-01-16 17:02:28 INFO  (ClassSearcher) Class searcher loaded 58 extension points (18 false positives)  
+2026-01-16 17:02:28 INFO  (HeadlessAnalyzer) HEADLESS Script Paths:
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/PIC/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/VersionTracking/ghidra_scripts
+    /workspace/.codex/skills/ghidra/scripts/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/PDB/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/JVM/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/FileFormats/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/BytePatterns/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Jython/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/DATA/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/BSim/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/8051/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/PyGhidra/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Decompiler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/FunctionID/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/Atmel/ghidra_scripts  
+2026-01-16 17:02:28 INFO  (HeadlessAnalyzer) HEADLESS: execution starts  
+2026-01-16 17:02:28 INFO  (HeadlessAnalyzer) Creating temporary project: /tmp/ghidra_crimsonland_exe_7540  
+2026-01-16 17:02:28 INFO  (DefaultProject) Creating project: /tmp/ghidra_crimsonland_exe_7540  
+2026-01-16 17:02:28 INFO  (HeadlessAnalyzer) REPORT: Processing input files:   
+2026-01-16 17:02:28 INFO  (HeadlessAnalyzer)      project: /tmp/ghidra_crimsonland_exe_7540  
+2026-01-16 17:02:28 INFO  (HeadlessAnalyzer) IMPORTING: file:///workspace/game/crimsonland.exe  
+2026-01-16 17:02:29 INFO  (ProgramLoader) Using Loader: Portable Executable (PE)  
+2026-01-16 17:02:29 INFO  (ProgramLoader) Using Language/Compiler: x86:LE:32:default:windows  
+2026-01-16 17:02:29 INFO  (ProgramLoader) Using Library Search Path: [., /bin, /lib, /lib64, /lib/x86_64-linux-gnu, /lib/aarch64-linux-gnu, /usr/bin, /usr/lib, /usr/X11R6/bin, /usr/X11R6/lib, /usr/java/packages/lib, /usr/lib/aarch64-linux-gnu/jni, /usr/lib/aarch64-linux-gnu, /usr/lib/jni]  
+2026-01-16 17:02:29 INFO  (ProgramLoader) Additional info:
+Loading file:///workspace/game/crimsonland.exe?MD5=b5734f679649e1e61b79b6071f7e0ee5...
+------------------------------------------------
+
+Searching 8 paths for library ADVAPI32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library D3D8.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library DSOUND.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library KERNEL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library OLE32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library OLEAUT32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library SHELL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library URLMON.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library USER32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library VERSION.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library VORBISFILE.DLL...
+Loading file:///workspace/game/VORBISFILE.DLL?MD5=b226080606e45b6879ea02f1b5f47c5e...
+Created exports file: /home/node/.config/ghidra/ghidra_12.0.1_PUBLIC/symbols/win32/vorbisfile.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 8 paths for library WININET.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library WINMM.DLL...
+Library not found.
+------------------------------------------------
+
+Applying cached symbols from VORBISFILE.DLL
+Linking the External Programs of 'crimsonland.exe' to imported libraries...
+  [KERNEL32.DLL] -> not found in project
+  [USER32.DLL] -> not found in project
+  [ADVAPI32.DLL] -> not found in project
+  [SHELL32.DLL] -> not found in project
+  [OLE32.DLL] -> not found in project
+  [OLEAUT32.DLL] -> not found in project
+  [VORBISFILE.DLL] -> not found in project
+  [URLMON.DLL] -> not found in project
+  [WINMM.DLL] -> not found in project
+  [D3D8.DLL] -> not found in project
+  [VERSION.DLL] -> not found in project
+  [WININET.DLL] -> not found in project
+  [DSOUND.DLL] -> not found in project
+------------------------------------------------
+
+  
+2026-01-16 17:02:29 INFO  (HeadlessAnalyzer) IMPORTING: Loaded 0 additional files  
+2026-01-16 17:02:30 INFO  (HeadlessAnalyzer) ANALYZING all memory and code: file:///workspace/game/crimsonland.exe  
+2026-01-16 17:02:30 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___raise_securityfailure' specified in file: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 17:02:30 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___report_rangecheckfailure' specified in file: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 17:02:30 INFO  (PdbUniversalAnalyzer) Skipping PDB processing: missing PDB information in program metadata  
+2026-01-16 17:02:30 INFO  (PackedDatabaseCache) Packed database cache: /var/tmp/node-ghidra/packed-db-cache  
+2026-01-16 17:02:30 DEBUG (PackedDatabaseCache) Using cached packed database: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/typeinfo/win32/windows_vs12_32.gdt  
+2026-01-16 17:02:58 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 17:02:58 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 17:03:11 INFO  (AutoAnalysisManager) -----------------------------------------------------
+    ASCII Strings                              0.236 secs
+    Apply Data Archives                        0.113 secs
+    Call Convention ID                         0.003 secs
+    Call-Fixup Installer                       0.033 secs
+    Create Address Tables                      0.046 secs
+    Create Address Tables - One Time           0.064 secs
+    Create Function                            0.186 secs
+    Data Reference                             0.076 secs
+    Decompiler Parameter ID                    9.821 secs
+    Decompiler Switch Analysis                22.633 secs
+    Demangler Microsoft                        0.008 secs
+    Disassemble                                0.204 secs
+    Disassemble Entry Points                   0.368 secs
+    Embedded Media                             0.011 secs
+    External Entry References                  0.000 secs
+    Function ID                                0.390 secs
+    Function Start Pre Search                  0.012 secs
+    Function Start Search                      0.073 secs
+    Function Start Search After Code           0.028 secs
+    Function Start Search After Data           0.015 secs
+    Function Start Search delayed - One Time   0.001 secs
+    Non-Returning Functions - Discovered       0.101 secs
+    Non-Returning Functions - Known            0.003 secs
+    PDB Universal                              0.001 secs
+    Reference                                  0.287 secs
+    Scalar Operand References                  0.383 secs
+    Shared Return Calls                        0.086 secs
+    Stack                                      1.483 secs
+    Subroutine References                      0.839 secs
+    Subroutine References - One Time           0.011 secs
+    Windows x86 PE Exception Handling          1.067 secs
+    Windows x86 PE RTTI Analyzer               0.001 secs
+    Windows x86 Thread Environment Block (TEB) Analyzer     0.011 secs
+    WindowsResourceReference                   0.271 secs
+    X86 Function Callee Purge                  0.053 secs
+    x86 Constant Reference Analyzer            2.353 secs
+-----------------------------------------------------
+     Total Time   41 secs
+-----------------------------------------------------
+  
+2026-01-16 17:03:11 INFO  (HeadlessAnalyzer) REPORT: Analysis succeeded for file: file:///workspace/game/crimsonland.exe  
+2026-01-16 17:03:11 INFO  (HeadlessAnalyzer) REPORT: Execute script: ExportAll.java   
+2026-01-16 17:03:11 INFO  (HeadlessAnalyzer) SCRIPT: /workspace/.codex/skills/ghidra/scripts/ghidra_scripts/ExportAll.java  
+2026-01-16 17:03:11 INFO  (GhidraScript) ExportAll.java> === Starting comprehensive export ===  
+2026-01-16 17:03:11 INFO  (GhidraScript) ExportAll.java> Output directory: /workspace/source/decompiled  
+2026-01-16 17:03:11 INFO  (GhidraScript) ExportAll.java> Program: crimsonland.exe  
+2026-01-16 17:03:11 INFO  (GhidraScript) ExportAll.java> Architecture: x86  
+2026-01-16 17:03:11 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 17:03:11 INFO  (GhidraScript) ExportAll.java> Exporting summary to: crimsonland.exe_summary.txt  
+2026-01-16 17:03:11 INFO  (GhidraScript) ExportAll.java> Exporting decompiled code to: crimsonland.exe_decompiled.c  
+2026-01-16 17:03:31 INFO  (GhidraScript) ExportAll.java>   Decompiled 792 functions  
+2026-01-16 17:03:31 INFO  (GhidraScript) ExportAll.java> Exporting functions to: crimsonland.exe_functions.json  
+2026-01-16 17:03:31 INFO  (GhidraScript) ExportAll.java>   Exported 819 functions  
+2026-01-16 17:03:31 INFO  (GhidraScript) ExportAll.java> Exporting strings to: crimsonland.exe_strings.txt  
+2026-01-16 17:03:31 INFO  (GhidraScript) ExportAll.java>   Exported 1374 strings  
+2026-01-16 17:03:31 INFO  (GhidraScript) ExportAll.java> Analyzing interesting patterns...  
+2026-01-16 17:03:31 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 17:03:31 INFO  (GhidraScript) ExportAll.java> === Export complete ===  
+2026-01-16 17:03:31 INFO  (HeadlessAnalyzer) ANALYZING changes made by post scripts: file:///workspace/game/crimsonland.exe  
+2026-01-16 17:03:31 INFO  (HeadlessAnalyzer) REPORT: Post-analysis succeeded for file: file:///workspace/game/crimsonland.exe  
+2026-01-16 17:03:31 INFO  (LocalFileSystem) /crimsonland.exe: file created (node)  
+2026-01-16 17:03:31 INFO  (HeadlessAnalyzer) REPORT: Save succeeded for: /crimsonland.exe (ghidra_crimsonland_exe_7540:/crimsonland.exe)  
+2026-01-16 17:03:31 INFO  (HeadlessAnalyzer) REPORT: Import succeeded  
+2026-01-16 17:04:38 INFO  (LoggingInitialization) Using log config file: jar:file:/opt/ghidra_12.0.1_PUBLIC/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml  
+2026-01-16 17:04:38 INFO  (LoggingInitialization) Using log file: /workspace/source/decompiled/ghidra_analysis.log  
+2026-01-16 17:04:38 INFO  (Preferences) Loading user preferences: /home/node/.config/ghidra/ghidra_12.0.1_PUBLIC/preferences  
+2026-01-16 17:04:38 INFO  (ClassSearcher) Searching for classes...  
+2026-01-16 17:04:39 INFO  (ClassSearcher) Class search complete (716 ms)  
+2026-01-16 17:04:39 INFO  (DefaultSSLContextInitializer) Initializing SSL Context  
+2026-01-16 17:04:39 INFO  (SecureRandomFactory) Initializing Random Number Generator...  
+2026-01-16 17:04:39 INFO  (SecureRandomFactory) Random Number Generator initialization complete: NativePRNGNonBlocking  
+2026-01-16 17:04:39 INFO  (DefaultTrustManagerFactory) Trust manager disabled, cacerts have not been set  
+2026-01-16 17:04:39 INFO  (AnalyzeHeadless) Headless startup complete (1399 ms)  
+2026-01-16 17:04:39 INFO  (ClassSearcher) Class searcher loaded 58 extension points (18 false positives)  
+2026-01-16 17:04:39 INFO  (HeadlessAnalyzer) HEADLESS Script Paths:
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/PIC/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/VersionTracking/ghidra_scripts
+    /workspace/.codex/skills/ghidra/scripts/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/PDB/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/JVM/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/FileFormats/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/BytePatterns/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Jython/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/DATA/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/BSim/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/8051/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/PyGhidra/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Decompiler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/FunctionID/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/Atmel/ghidra_scripts  
+2026-01-16 17:04:39 INFO  (HeadlessAnalyzer) HEADLESS: execution starts  
+2026-01-16 17:04:39 INFO  (HeadlessAnalyzer) Creating temporary project: /tmp/ghidra_grim_dll_7958  
+2026-01-16 17:04:39 INFO  (DefaultProject) Creating project: /tmp/ghidra_grim_dll_7958  
+2026-01-16 17:04:39 INFO  (HeadlessAnalyzer) REPORT: Processing input files:   
+2026-01-16 17:04:39 INFO  (HeadlessAnalyzer)      project: /tmp/ghidra_grim_dll_7958  
+2026-01-16 17:04:39 INFO  (HeadlessAnalyzer) IMPORTING: file:///workspace/game/grim.dll  
+2026-01-16 17:04:40 INFO  (ProgramLoader) Using Loader: Portable Executable (PE)  
+2026-01-16 17:04:40 INFO  (ProgramLoader) Using Language/Compiler: x86:LE:32:default:windows  
+2026-01-16 17:04:40 INFO  (ProgramLoader) Using Library Search Path: [., /bin, /lib, /lib64, /lib/x86_64-linux-gnu, /lib/aarch64-linux-gnu, /usr/bin, /usr/lib, /usr/X11R6/bin, /usr/X11R6/lib, /usr/java/packages/lib, /usr/lib/aarch64-linux-gnu/jni, /usr/lib/aarch64-linux-gnu, /usr/lib/jni]  
+2026-01-16 17:04:40 INFO  (ProgramLoader) Additional info:
+Loading file:///workspace/game/grim.dll?MD5=88d5f6d66a1389cdeb3c30dc6ee4aa42...
+------------------------------------------------
+
+Searching 8 paths for library ADVAPI32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library D3D8.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library DINPUT8.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library GDI32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library KERNEL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library MSVCRT.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library URLMON.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library USER32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library WINMM.DLL...
+Library not found.
+------------------------------------------------
+
+Linking the External Programs of 'grim.dll' to imported libraries...
+  [KERNEL32.DLL] -> not found in project
+  [USER32.DLL] -> not found in project
+  [GDI32.DLL] -> not found in project
+  [MSVCRT.DLL] -> not found in project
+  [D3D8.DLL] -> not found in project
+  [WINMM.DLL] -> not found in project
+  [DINPUT8.DLL] -> not found in project
+  [URLMON.DLL] -> not found in project
+  [ADVAPI32.DLL] -> not found in project
+------------------------------------------------
+
+  
+2026-01-16 17:04:40 INFO  (HeadlessAnalyzer) IMPORTING: Loaded 0 additional files  
+2026-01-16 17:04:40 INFO  (HeadlessAnalyzer) ANALYZING all memory and code: file:///workspace/game/grim.dll  
+2026-01-16 17:04:40 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___raise_securityfailure' specified in file: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 17:04:40 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___report_rangecheckfailure' specified in file: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 17:04:40 INFO  (PdbUniversalAnalyzer) Skipping PDB processing: missing PDB information in program metadata  
+2026-01-16 17:04:41 INFO  (PackedDatabaseCache) Packed database cache: /var/tmp/node-ghidra/packed-db-cache  
+2026-01-16 17:04:41 DEBUG (PackedDatabaseCache) Using cached packed database: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/typeinfo/win32/windows_vs12_32.gdt  
+2026-01-16 17:04:42 ERROR (PngDataType) Invalid PNG data at 1004e51c  
+2026-01-16 17:04:43 INFO  (DecompilerSwitchAnalyzer) hit non-returning function, restarting decompiler switch analyzer later  
+2026-01-16 17:04:56 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 17:04:56 INFO  (DecompilerSwitchAnalyzer) hit non-returning function, restarting decompiler switch analyzer later  
+2026-01-16 17:04:56 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 17:05:03 INFO  (AutoAnalysisManager) -----------------------------------------------------
+    ASCII Strings                              0.260 secs
+    Apply Data Archives                        0.087 secs
+    Call Convention ID                         0.003 secs
+    Call-Fixup Installer                       0.018 secs
+    Create Address Tables                      0.073 secs
+    Create Address Tables - One Time           0.045 secs
+    Create Function                            0.214 secs
+    Data Reference                             0.128 secs
+    Decompiler Parameter ID                    4.492 secs
+    Decompiler Switch Analysis                 7.365 secs
+    Decompiler Switch Analysis - One Time      2.392 secs
+    Demangler Microsoft                        0.013 secs
+    Disassemble                                0.891 secs
+    Disassemble Entry Points                   0.027 secs
+    Embedded Media                             0.014 secs
+    External Entry References                  0.000 secs
+    Function ID                                0.326 secs
+    Function Start Pre Search                  0.010 secs
+    Function Start Search                      0.056 secs
+    Function Start Search After Code           0.022 secs
+    Function Start Search After Data           0.013 secs
+    Function Start Search delayed - One Time   0.003 secs
+    Non-Returning Functions - Discovered       0.072 secs
+    Non-Returning Functions - Known            0.005 secs
+    PDB Universal                              0.001 secs
+    Reference                                  0.193 secs
+    Scalar Operand References                  0.443 secs
+    Shared Return Calls                        0.098 secs
+    Stack                                      1.515 secs
+    Subroutine References                      0.270 secs
+    Subroutine References - One Time           0.003 secs
+    Windows x86 PE Exception Handling          1.075 secs
+    Windows x86 PE RTTI Analyzer               0.000 secs
+    Windows x86 Thread Environment Block (TEB) Analyzer     0.010 secs
+    WindowsResourceReference                   0.569 secs
+    X86 Function Callee Purge                  0.066 secs
+    x86 Constant Reference Analyzer            1.563 secs
+-----------------------------------------------------
+     Total Time   22 secs
+-----------------------------------------------------
+  
+2026-01-16 17:05:03 INFO  (HeadlessAnalyzer) REPORT: Analysis succeeded for file: file:///workspace/game/grim.dll  
+2026-01-16 17:05:03 INFO  (HeadlessAnalyzer) REPORT: Execute script: ExportAll.java   
+2026-01-16 17:05:03 INFO  (HeadlessAnalyzer) SCRIPT: /workspace/.codex/skills/ghidra/scripts/ghidra_scripts/ExportAll.java  
+2026-01-16 17:05:03 INFO  (GhidraScript) ExportAll.java> === Starting comprehensive export ===  
+2026-01-16 17:05:03 INFO  (GhidraScript) ExportAll.java> Output directory: /workspace/source/decompiled  
+2026-01-16 17:05:03 INFO  (GhidraScript) ExportAll.java> Program: grim.dll  
+2026-01-16 17:05:03 INFO  (GhidraScript) ExportAll.java> Architecture: x86  
+2026-01-16 17:05:03 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 17:05:03 INFO  (GhidraScript) ExportAll.java> Exporting summary to: grim.dll_summary.txt  
+2026-01-16 17:05:03 INFO  (GhidraScript) ExportAll.java> Exporting decompiled code to: grim.dll_decompiled.c  
+2026-01-16 17:05:08 INFO  (GhidraScript) ExportAll.java>   Decompiled 843 functions  
+2026-01-16 17:05:08 INFO  (GhidraScript) ExportAll.java> Exporting functions to: grim.dll_functions.json  
+2026-01-16 17:05:08 INFO  (GhidraScript) ExportAll.java>   Exported 883 functions  
+2026-01-16 17:05:08 INFO  (GhidraScript) ExportAll.java> Exporting strings to: grim.dll_strings.txt  
+2026-01-16 17:05:08 INFO  (GhidraScript) ExportAll.java>   Exported 583 strings  
+2026-01-16 17:05:08 INFO  (GhidraScript) ExportAll.java> Analyzing interesting patterns...  
+2026-01-16 17:05:08 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 17:05:08 INFO  (GhidraScript) ExportAll.java> === Export complete ===  
+2026-01-16 17:05:08 INFO  (HeadlessAnalyzer) ANALYZING changes made by post scripts: file:///workspace/game/grim.dll  
+2026-01-16 17:05:08 INFO  (HeadlessAnalyzer) REPORT: Post-analysis succeeded for file: file:///workspace/game/grim.dll  
+2026-01-16 17:05:08 INFO  (LocalFileSystem) /grim.dll: file created (node)  
+2026-01-16 17:05:08 INFO  (HeadlessAnalyzer) REPORT: Save succeeded for: /grim.dll (ghidra_grim_dll_7958:/grim.dll)  
+2026-01-16 17:05:08 INFO  (HeadlessAnalyzer) REPORT: Import succeeded  
+2026-01-16 17:11:18 INFO  (LoggingInitialization) Using log config file: jar:file:/opt/ghidra_12.0.1_PUBLIC/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml  
+2026-01-16 17:11:18 INFO  (LoggingInitialization) Using log file: /workspace/source/decompiled/ghidra_analysis.log  
+2026-01-16 17:11:18 INFO  (Preferences) Loading user preferences: /home/node/.config/ghidra/ghidra_12.0.1_PUBLIC/preferences  
+2026-01-16 17:11:18 INFO  (ClassSearcher) Searching for classes...  
+2026-01-16 17:11:19 INFO  (ClassSearcher) Class search complete (713 ms)  
+2026-01-16 17:11:19 INFO  (DefaultSSLContextInitializer) Initializing SSL Context  
+2026-01-16 17:11:19 INFO  (SecureRandomFactory) Initializing Random Number Generator...  
+2026-01-16 17:11:19 INFO  (SecureRandomFactory) Random Number Generator initialization complete: NativePRNGNonBlocking  
+2026-01-16 17:11:19 INFO  (DefaultTrustManagerFactory) Trust manager disabled, cacerts have not been set  
+2026-01-16 17:11:19 INFO  (AnalyzeHeadless) Headless startup complete (1383 ms)  
+2026-01-16 17:11:19 INFO  (ClassSearcher) Class searcher loaded 58 extension points (18 false positives)  
+2026-01-16 17:11:19 INFO  (HeadlessAnalyzer) HEADLESS Script Paths:
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/PIC/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/VersionTracking/ghidra_scripts
+    /workspace/.codex/skills/ghidra/scripts/ghidra_scripts
+    /workspace/scripts/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/PDB/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/JVM/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/FileFormats/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/BytePatterns/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Jython/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/DATA/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/BSim/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/8051/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/PyGhidra/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Decompiler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/FunctionID/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/Atmel/ghidra_scripts  
+2026-01-16 17:11:19 INFO  (HeadlessAnalyzer) HEADLESS: execution starts  
+2026-01-16 17:11:19 INFO  (HeadlessAnalyzer) Creating temporary project: /tmp/ghidra_crimsonland_exe_8676  
+2026-01-16 17:11:19 INFO  (DefaultProject) Creating project: /tmp/ghidra_crimsonland_exe_8676  
+2026-01-16 17:11:19 INFO  (HeadlessAnalyzer) REPORT: Processing input files:   
+2026-01-16 17:11:19 INFO  (HeadlessAnalyzer)      project: /tmp/ghidra_crimsonland_exe_8676  
+2026-01-16 17:11:19 INFO  (HeadlessAnalyzer) IMPORTING: file:///workspace/game/crimsonland.exe  
+2026-01-16 17:11:20 INFO  (ProgramLoader) Using Loader: Portable Executable (PE)  
+2026-01-16 17:11:20 INFO  (ProgramLoader) Using Language/Compiler: x86:LE:32:default:windows  
+2026-01-16 17:11:20 INFO  (ProgramLoader) Using Library Search Path: [., /bin, /lib, /lib64, /lib/x86_64-linux-gnu, /lib/aarch64-linux-gnu, /usr/bin, /usr/lib, /usr/X11R6/bin, /usr/X11R6/lib, /usr/java/packages/lib, /usr/lib/aarch64-linux-gnu/jni, /usr/lib/aarch64-linux-gnu, /usr/lib/jni]  
+2026-01-16 17:11:20 INFO  (ProgramLoader) Additional info:
+Loading file:///workspace/game/crimsonland.exe?MD5=b5734f679649e1e61b79b6071f7e0ee5...
+------------------------------------------------
+
+Searching 8 paths for library ADVAPI32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library D3D8.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library DSOUND.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library KERNEL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library OLE32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library OLEAUT32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library SHELL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library URLMON.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library USER32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library VERSION.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library VORBISFILE.DLL...
+Loading file:///workspace/game/VORBISFILE.DLL?MD5=b226080606e45b6879ea02f1b5f47c5e...
+Created exports file: /home/node/.config/ghidra/ghidra_12.0.1_PUBLIC/symbols/win32/vorbisfile.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 8 paths for library WININET.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library WINMM.DLL...
+Library not found.
+------------------------------------------------
+
+Applying cached symbols from VORBISFILE.DLL
+Linking the External Programs of 'crimsonland.exe' to imported libraries...
+  [KERNEL32.DLL] -> not found in project
+  [USER32.DLL] -> not found in project
+  [ADVAPI32.DLL] -> not found in project
+  [SHELL32.DLL] -> not found in project
+  [OLE32.DLL] -> not found in project
+  [OLEAUT32.DLL] -> not found in project
+  [VORBISFILE.DLL] -> not found in project
+  [URLMON.DLL] -> not found in project
+  [WINMM.DLL] -> not found in project
+  [D3D8.DLL] -> not found in project
+  [VERSION.DLL] -> not found in project
+  [WININET.DLL] -> not found in project
+  [DSOUND.DLL] -> not found in project
+------------------------------------------------
+
+  
+2026-01-16 17:11:20 INFO  (HeadlessAnalyzer) IMPORTING: Loaded 0 additional files  
+2026-01-16 17:11:21 INFO  (HeadlessAnalyzer) ANALYZING all memory and code: file:///workspace/game/crimsonland.exe  
+2026-01-16 17:11:21 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___raise_securityfailure' specified in file: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 17:11:21 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___report_rangecheckfailure' specified in file: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 17:11:21 INFO  (PdbUniversalAnalyzer) Skipping PDB processing: missing PDB information in program metadata  
+2026-01-16 17:11:21 INFO  (PackedDatabaseCache) Packed database cache: /var/tmp/node-ghidra/packed-db-cache  
+2026-01-16 17:11:21 DEBUG (PackedDatabaseCache) Using cached packed database: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/typeinfo/win32/windows_vs12_32.gdt  
+2026-01-16 17:11:50 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 17:11:50 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 17:12:03 INFO  (AutoAnalysisManager) -----------------------------------------------------
+    ASCII Strings                              0.277 secs
+    Apply Data Archives                        0.126 secs
+    Call Convention ID                         0.006 secs
+    Call-Fixup Installer                       0.025 secs
+    Create Address Tables                      0.055 secs
+    Create Address Tables - One Time           0.112 secs
+    Create Function                            0.226 secs
+    Data Reference                             0.116 secs
+    Decompiler Parameter ID                   10.199 secs
+    Decompiler Switch Analysis                22.324 secs
+    Demangler Microsoft                        0.007 secs
+    Disassemble                                0.187 secs
+    Disassemble Entry Points                   0.344 secs
+    Embedded Media                             0.012 secs
+    External Entry References                  0.000 secs
+    Function ID                                0.455 secs
+    Function Start Pre Search                  0.012 secs
+    Function Start Search                      0.072 secs
+    Function Start Search After Code           0.035 secs
+    Function Start Search After Data           0.019 secs
+    Function Start Search delayed - One Time   0.003 secs
+    Non-Returning Functions - Discovered       0.119 secs
+    Non-Returning Functions - Known            0.003 secs
+    PDB Universal                              0.001 secs
+    Reference                                  0.295 secs
+    Scalar Operand References                  0.399 secs
+    Shared Return Calls                        0.106 secs
+    Stack                                      1.575 secs
+    Subroutine References                      0.983 secs
+    Subroutine References - One Time           0.003 secs
+    Windows x86 PE Exception Handling          1.018 secs
+    Windows x86 PE RTTI Analyzer               0.000 secs
+    Windows x86 Thread Environment Block (TEB) Analyzer     0.010 secs
+    WindowsResourceReference                   0.268 secs
+    X86 Function Callee Purge                  0.059 secs
+    x86 Constant Reference Analyzer            2.488 secs
+-----------------------------------------------------
+     Total Time   41 secs
+-----------------------------------------------------
+  
+2026-01-16 17:12:03 INFO  (HeadlessAnalyzer) REPORT: Analysis succeeded for file: file:///workspace/game/crimsonland.exe  
+2026-01-16 17:12:03 INFO  (HeadlessAnalyzer) REPORT: Execute script: ImportThirdPartyHeaders.java '/workspace/source/headers/third_party'   
+2026-01-16 17:12:03 INFO  (HeadlessAnalyzer) SCRIPT: /workspace/scripts/ghidra_scripts/ImportThirdPartyHeaders.java  
+2026-01-16 17:12:03 INFO  (GhidraScript) ImportThirdPartyHeaders.java> Parsing third-party headers into: crimsonland.exe  
+2026-01-16 17:12:03 INFO  (GhidraScript) ImportThirdPartyHeaders.java> Headers root: /workspace/source/headers/third_party  
+2026-01-16 17:12:03 INFO  (CParserUtils) parse /workspace/source/headers/third_party/jpeglib.h  
+2026-01-16 17:12:03 INFO  (CParserUtils) parse /workspace/source/headers/third_party/zlib.h  
+2026-01-16 17:12:03 INFO  (CParserUtils) parse /workspace/source/headers/third_party/ogg/ogg.h  
+2026-01-16 17:12:04 INFO  (CParserUtils) parse /workspace/source/headers/third_party/vorbis/codec.h  
+2026-01-16 17:12:04 INFO  (CParserUtils) parse /workspace/source/headers/third_party/vorbis/vorbisfile.h  
+2026-01-16 17:12:04 INFO  (HeadlessAnalyzer) REPORT: Execute script: ApplyWinapiGDT.java '/workspace/source/ghidra/winapi_32.gdt'   
+2026-01-16 17:12:04 INFO  (HeadlessAnalyzer) SCRIPT: /workspace/scripts/ghidra_scripts/ApplyWinapiGDT.java  
+2026-01-16 17:12:04 INFO  (GhidraScript) ApplyWinapiGDT.java> Applying WinAPI GDT: /workspace/source/ghidra/winapi_32.gdt  
+2026-01-16 17:12:04 DEBUG (PackedDatabaseCache) Caching packed database: /workspace/source/ghidra/winapi_32.gdt  
+2026-01-16 17:12:04 DEBUG (PackedDatabase) Unpacking database /workspace/source/ghidra/winapi_32.gdt -> /var/tmp/node-ghidra/packed-db-cache/pdb1BAF84F0/db.1.gbf  
+2026-01-16 17:12:04 DEBUG (PackedDatabaseCache) Cache update completed: /workspace/source/ghidra/winapi_32.gdt  
+2026-01-16 17:12:04 INFO  (HeadlessAnalyzer) REPORT: Execute script: ExportAll.java   
+2026-01-16 17:12:04 INFO  (HeadlessAnalyzer) SCRIPT: /workspace/.codex/skills/ghidra/scripts/ghidra_scripts/ExportAll.java  
+2026-01-16 17:12:04 INFO  (GhidraScript) ExportAll.java> === Starting comprehensive export ===  
+2026-01-16 17:12:04 INFO  (GhidraScript) ExportAll.java> Output directory: /workspace/source/decompiled  
+2026-01-16 17:12:04 INFO  (GhidraScript) ExportAll.java> Program: crimsonland.exe  
+2026-01-16 17:12:04 INFO  (GhidraScript) ExportAll.java> Architecture: x86  
+2026-01-16 17:12:04 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 17:12:04 INFO  (GhidraScript) ExportAll.java> Exporting summary to: crimsonland.exe_summary.txt  
+2026-01-16 17:12:04 INFO  (GhidraScript) ExportAll.java> Exporting decompiled code to: crimsonland.exe_decompiled.c  
+2026-01-16 17:12:23 INFO  (GhidraScript) ExportAll.java>   Decompiled 792 functions  
+2026-01-16 17:12:23 INFO  (GhidraScript) ExportAll.java> Exporting functions to: crimsonland.exe_functions.json  
+2026-01-16 17:12:23 INFO  (GhidraScript) ExportAll.java>   Exported 819 functions  
+2026-01-16 17:12:23 INFO  (GhidraScript) ExportAll.java> Exporting strings to: crimsonland.exe_strings.txt  
+2026-01-16 17:12:23 INFO  (GhidraScript) ExportAll.java>   Exported 1374 strings  
+2026-01-16 17:12:23 INFO  (GhidraScript) ExportAll.java> Analyzing interesting patterns...  
+2026-01-16 17:12:23 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 17:12:23 INFO  (GhidraScript) ExportAll.java> === Export complete ===  
+2026-01-16 17:12:23 INFO  (HeadlessAnalyzer) ANALYZING changes made by post scripts: file:///workspace/game/crimsonland.exe  
+2026-01-16 17:12:23 INFO  (HeadlessAnalyzer) REPORT: Post-analysis succeeded for file: file:///workspace/game/crimsonland.exe  
+2026-01-16 17:12:23 INFO  (LocalFileSystem) /crimsonland.exe: file created (node)  
+2026-01-16 17:12:23 INFO  (HeadlessAnalyzer) REPORT: Save succeeded for: /crimsonland.exe (ghidra_crimsonland_exe_8676:/crimsonland.exe)  
+2026-01-16 17:12:23 INFO  (HeadlessAnalyzer) REPORT: Import succeeded  
+2026-01-16 17:12:29 INFO  (LoggingInitialization) Using log config file: jar:file:/opt/ghidra_12.0.1_PUBLIC/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml  
+2026-01-16 17:12:29 INFO  (LoggingInitialization) Using log file: /workspace/source/decompiled/ghidra_analysis.log  
+2026-01-16 17:12:29 INFO  (Preferences) Loading user preferences: /home/node/.config/ghidra/ghidra_12.0.1_PUBLIC/preferences  
+2026-01-16 17:12:29 INFO  (ClassSearcher) Searching for classes...  
+2026-01-16 17:12:30 INFO  (ClassSearcher) Class search complete (737 ms)  
+2026-01-16 17:12:30 INFO  (DefaultSSLContextInitializer) Initializing SSL Context  
+2026-01-16 17:12:30 INFO  (SecureRandomFactory) Initializing Random Number Generator...  
+2026-01-16 17:12:30 INFO  (SecureRandomFactory) Random Number Generator initialization complete: NativePRNGNonBlocking  
+2026-01-16 17:12:30 INFO  (DefaultTrustManagerFactory) Trust manager disabled, cacerts have not been set  
+2026-01-16 17:12:30 INFO  (AnalyzeHeadless) Headless startup complete (1445 ms)  
+2026-01-16 17:12:30 INFO  (ClassSearcher) Class searcher loaded 58 extension points (18 false positives)  
+2026-01-16 17:12:31 INFO  (HeadlessAnalyzer) HEADLESS Script Paths:
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/PIC/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/VersionTracking/ghidra_scripts
+    /workspace/.codex/skills/ghidra/scripts/ghidra_scripts
+    /workspace/scripts/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/PDB/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/JVM/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/FileFormats/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/BytePatterns/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Jython/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/DATA/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/BSim/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/8051/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/PyGhidra/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Decompiler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/FunctionID/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/Atmel/ghidra_scripts  
+2026-01-16 17:12:31 INFO  (HeadlessAnalyzer) HEADLESS: execution starts  
+2026-01-16 17:12:31 INFO  (HeadlessAnalyzer) Creating temporary project: /tmp/ghidra_grim_dll_9048  
+2026-01-16 17:12:31 INFO  (DefaultProject) Creating project: /tmp/ghidra_grim_dll_9048  
+2026-01-16 17:12:31 INFO  (HeadlessAnalyzer) REPORT: Processing input files:   
+2026-01-16 17:12:31 INFO  (HeadlessAnalyzer)      project: /tmp/ghidra_grim_dll_9048  
+2026-01-16 17:12:31 INFO  (HeadlessAnalyzer) IMPORTING: file:///workspace/game/grim.dll  
+2026-01-16 17:12:31 INFO  (ProgramLoader) Using Loader: Portable Executable (PE)  
+2026-01-16 17:12:31 INFO  (ProgramLoader) Using Language/Compiler: x86:LE:32:default:windows  
+2026-01-16 17:12:31 INFO  (ProgramLoader) Using Library Search Path: [., /bin, /lib, /lib64, /lib/x86_64-linux-gnu, /lib/aarch64-linux-gnu, /usr/bin, /usr/lib, /usr/X11R6/bin, /usr/X11R6/lib, /usr/java/packages/lib, /usr/lib/aarch64-linux-gnu/jni, /usr/lib/aarch64-linux-gnu, /usr/lib/jni]  
+2026-01-16 17:12:32 INFO  (ProgramLoader) Additional info:
+Loading file:///workspace/game/grim.dll?MD5=88d5f6d66a1389cdeb3c30dc6ee4aa42...
+------------------------------------------------
+
+Searching 8 paths for library ADVAPI32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library D3D8.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library DINPUT8.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library GDI32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library KERNEL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library MSVCRT.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library URLMON.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library USER32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library WINMM.DLL...
+Library not found.
+------------------------------------------------
+
+Linking the External Programs of 'grim.dll' to imported libraries...
+  [KERNEL32.DLL] -> not found in project
+  [USER32.DLL] -> not found in project
+  [GDI32.DLL] -> not found in project
+  [MSVCRT.DLL] -> not found in project
+  [D3D8.DLL] -> not found in project
+  [WINMM.DLL] -> not found in project
+  [DINPUT8.DLL] -> not found in project
+  [URLMON.DLL] -> not found in project
+  [ADVAPI32.DLL] -> not found in project
+------------------------------------------------
+
+  
+2026-01-16 17:12:32 INFO  (HeadlessAnalyzer) IMPORTING: Loaded 0 additional files  
+2026-01-16 17:12:32 INFO  (HeadlessAnalyzer) ANALYZING all memory and code: file:///workspace/game/grim.dll  
+2026-01-16 17:12:32 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___raise_securityfailure' specified in file: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 17:12:32 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___report_rangecheckfailure' specified in file: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 17:12:32 INFO  (PdbUniversalAnalyzer) Skipping PDB processing: missing PDB information in program metadata  
+2026-01-16 17:12:32 INFO  (PackedDatabaseCache) Packed database cache: /var/tmp/node-ghidra/packed-db-cache  
+2026-01-16 17:12:32 DEBUG (PackedDatabaseCache) Using cached packed database: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/typeinfo/win32/windows_vs12_32.gdt  
+2026-01-16 17:12:33 ERROR (PngDataType) Invalid PNG data at 1004e51c  
+2026-01-16 17:12:35 INFO  (DecompilerSwitchAnalyzer) hit non-returning function, restarting decompiler switch analyzer later  
+2026-01-16 17:12:48 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 17:12:48 INFO  (DecompilerSwitchAnalyzer) hit non-returning function, restarting decompiler switch analyzer later  
+2026-01-16 17:12:48 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 17:12:55 INFO  (AutoAnalysisManager) -----------------------------------------------------
+    ASCII Strings                              0.221 secs
+    Apply Data Archives                        0.100 secs
+    Call Convention ID                         0.002 secs
+    Call-Fixup Installer                       0.021 secs
+    Create Address Tables                      0.103 secs
+    Create Address Tables - One Time           0.055 secs
+    Create Function                            0.202 secs
+    Data Reference                             0.108 secs
+    Decompiler Parameter ID                    4.437 secs
+    Decompiler Switch Analysis                 7.463 secs
+    Decompiler Switch Analysis - One Time      2.363 secs
+    Demangler Microsoft                        0.016 secs
+    Disassemble                                0.972 secs
+    Disassemble Entry Points                   0.028 secs
+    Embedded Media                             0.013 secs
+    External Entry References                  0.000 secs
+    Function ID                                0.284 secs
+    Function Start Pre Search                  0.010 secs
+    Function Start Search                      0.056 secs
+    Function Start Search After Code           0.025 secs
+    Function Start Search After Data           0.018 secs
+    Function Start Search delayed - One Time   0.004 secs
+    Non-Returning Functions - Discovered       0.082 secs
+    Non-Returning Functions - Known            0.006 secs
+    PDB Universal                              0.001 secs
+    Reference                                  0.224 secs
+    Scalar Operand References                  0.428 secs
+    Shared Return Calls                        0.108 secs
+    Stack                                      1.285 secs
+    Subroutine References                      0.304 secs
+    Subroutine References - One Time           0.001 secs
+    Windows x86 PE Exception Handling          1.098 secs
+    Windows x86 PE RTTI Analyzer               0.000 secs
+    Windows x86 Thread Environment Block (TEB) Analyzer     0.010 secs
+    WindowsResourceReference                   0.575 secs
+    X86 Function Callee Purge                  0.062 secs
+    x86 Constant Reference Analyzer            1.674 secs
+-----------------------------------------------------
+     Total Time   22 secs
+-----------------------------------------------------
+  
+2026-01-16 17:12:55 INFO  (HeadlessAnalyzer) REPORT: Analysis succeeded for file: file:///workspace/game/grim.dll  
+2026-01-16 17:12:55 INFO  (HeadlessAnalyzer) REPORT: Execute script: ImportThirdPartyHeaders.java '/workspace/source/headers/third_party'   
+2026-01-16 17:12:55 INFO  (HeadlessAnalyzer) SCRIPT: /workspace/scripts/ghidra_scripts/ImportThirdPartyHeaders.java  
+2026-01-16 17:12:55 INFO  (GhidraScript) ImportThirdPartyHeaders.java> Parsing third-party headers into: grim.dll  
+2026-01-16 17:12:55 INFO  (GhidraScript) ImportThirdPartyHeaders.java> Headers root: /workspace/source/headers/third_party  
+2026-01-16 17:12:55 INFO  (CParserUtils) parse /workspace/source/headers/third_party/jpeglib.h  
+2026-01-16 17:12:55 INFO  (CParserUtils) parse /workspace/source/headers/third_party/zlib.h  
+2026-01-16 17:12:55 INFO  (CParserUtils) parse /workspace/source/headers/third_party/ogg/ogg.h  
+2026-01-16 17:12:55 INFO  (CParserUtils) parse /workspace/source/headers/third_party/vorbis/codec.h  
+2026-01-16 17:12:55 INFO  (CParserUtils) parse /workspace/source/headers/third_party/vorbis/vorbisfile.h  
+2026-01-16 17:12:55 INFO  (HeadlessAnalyzer) REPORT: Execute script: ApplyWinapiGDT.java '/workspace/source/ghidra/winapi_32.gdt'   
+2026-01-16 17:12:55 INFO  (HeadlessAnalyzer) SCRIPT: /workspace/scripts/ghidra_scripts/ApplyWinapiGDT.java  
+2026-01-16 17:12:55 INFO  (GhidraScript) ApplyWinapiGDT.java> Applying WinAPI GDT: /workspace/source/ghidra/winapi_32.gdt  
+2026-01-16 17:12:55 DEBUG (PackedDatabaseCache) Using cached packed database: /workspace/source/ghidra/winapi_32.gdt  
+2026-01-16 17:12:55 INFO  (HeadlessAnalyzer) REPORT: Execute script: ExportAll.java   
+2026-01-16 17:12:55 INFO  (HeadlessAnalyzer) SCRIPT: /workspace/.codex/skills/ghidra/scripts/ghidra_scripts/ExportAll.java  
+2026-01-16 17:12:55 INFO  (GhidraScript) ExportAll.java> === Starting comprehensive export ===  
+2026-01-16 17:12:55 INFO  (GhidraScript) ExportAll.java> Output directory: /workspace/source/decompiled  
+2026-01-16 17:12:55 INFO  (GhidraScript) ExportAll.java> Program: grim.dll  
+2026-01-16 17:12:55 INFO  (GhidraScript) ExportAll.java> Architecture: x86  
+2026-01-16 17:12:55 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 17:12:55 INFO  (GhidraScript) ExportAll.java> Exporting summary to: grim.dll_summary.txt  
+2026-01-16 17:12:55 INFO  (GhidraScript) ExportAll.java> Exporting decompiled code to: grim.dll_decompiled.c  
+2026-01-16 17:13:00 INFO  (GhidraScript) ExportAll.java>   Decompiled 843 functions  
+2026-01-16 17:13:00 INFO  (GhidraScript) ExportAll.java> Exporting functions to: grim.dll_functions.json  
+2026-01-16 17:13:00 INFO  (GhidraScript) ExportAll.java>   Exported 883 functions  
+2026-01-16 17:13:00 INFO  (GhidraScript) ExportAll.java> Exporting strings to: grim.dll_strings.txt  
+2026-01-16 17:13:00 INFO  (GhidraScript) ExportAll.java>   Exported 583 strings  
+2026-01-16 17:13:00 INFO  (GhidraScript) ExportAll.java> Analyzing interesting patterns...  
+2026-01-16 17:13:00 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 17:13:00 INFO  (GhidraScript) ExportAll.java> === Export complete ===  
+2026-01-16 17:13:00 INFO  (HeadlessAnalyzer) ANALYZING changes made by post scripts: file:///workspace/game/grim.dll  
+2026-01-16 17:13:00 INFO  (HeadlessAnalyzer) REPORT: Post-analysis succeeded for file: file:///workspace/game/grim.dll  
+2026-01-16 17:13:00 INFO  (LocalFileSystem) /grim.dll: file created (node)  
+2026-01-16 17:13:00 INFO  (HeadlessAnalyzer) REPORT: Save succeeded for: /grim.dll (ghidra_grim_dll_9048:/grim.dll)  
+2026-01-16 17:13:00 INFO  (HeadlessAnalyzer) REPORT: Import succeeded  
+2026-01-16 17:17:48 INFO  (LoggingInitialization) Using log config file: jar:file:/opt/ghidra_12.0.1_PUBLIC/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml  
+2026-01-16 17:17:48 INFO  (LoggingInitialization) Using log file: /workspace/source/decompiled/ghidra_analysis.log  
+2026-01-16 17:17:48 INFO  (Preferences) Loading user preferences: /home/node/.config/ghidra/ghidra_12.0.1_PUBLIC/preferences  
+2026-01-16 17:17:48 INFO  (ClassSearcher) Searching for classes...  
+2026-01-16 17:17:49 INFO  (ClassSearcher) Class search complete (777 ms)  
+2026-01-16 17:17:49 INFO  (DefaultSSLContextInitializer) Initializing SSL Context  
+2026-01-16 17:17:49 INFO  (SecureRandomFactory) Initializing Random Number Generator...  
+2026-01-16 17:17:49 INFO  (SecureRandomFactory) Random Number Generator initialization complete: NativePRNGNonBlocking  
+2026-01-16 17:17:49 INFO  (DefaultTrustManagerFactory) Trust manager disabled, cacerts have not been set  
+2026-01-16 17:17:49 INFO  (AnalyzeHeadless) Headless startup complete (1535 ms)  
+2026-01-16 17:17:49 INFO  (ClassSearcher) Class searcher loaded 58 extension points (18 false positives)  
+2026-01-16 17:17:50 INFO  (HeadlessAnalyzer) HEADLESS Script Paths:
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/PIC/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/VersionTracking/ghidra_scripts
+    /workspace/.codex/skills/ghidra/scripts/ghidra_scripts
+    /workspace/scripts/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/PDB/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/JVM/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/FileFormats/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/BytePatterns/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Jython/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/DATA/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/BSim/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/8051/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/PyGhidra/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Decompiler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/FunctionID/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/Atmel/ghidra_scripts  
+2026-01-16 17:17:50 INFO  (HeadlessAnalyzer) HEADLESS: execution starts  
+2026-01-16 17:17:50 INFO  (HeadlessAnalyzer) Creating temporary project: /tmp/ghidra_grim_dll_9745  
+2026-01-16 17:17:50 INFO  (DefaultProject) Creating project: /tmp/ghidra_grim_dll_9745  
+2026-01-16 17:17:50 INFO  (HeadlessAnalyzer) REPORT: Processing input files:   
+2026-01-16 17:17:50 INFO  (HeadlessAnalyzer)      project: /tmp/ghidra_grim_dll_9745  
+2026-01-16 17:17:50 INFO  (HeadlessAnalyzer) IMPORTING: file:///workspace/game/grim.dll  
+2026-01-16 17:17:50 INFO  (ProgramLoader) Using Loader: Portable Executable (PE)  
+2026-01-16 17:17:50 INFO  (ProgramLoader) Using Language/Compiler: x86:LE:32:default:windows  
+2026-01-16 17:17:50 INFO  (ProgramLoader) Using Library Search Path: [., /bin, /lib, /lib64, /lib/x86_64-linux-gnu, /lib/aarch64-linux-gnu, /usr/bin, /usr/lib, /usr/X11R6/bin, /usr/X11R6/lib, /usr/java/packages/lib, /usr/lib/aarch64-linux-gnu/jni, /usr/lib/aarch64-linux-gnu, /usr/lib/jni]  
+2026-01-16 17:17:51 INFO  (ProgramLoader) Additional info:
+Loading file:///workspace/game/grim.dll?MD5=88d5f6d66a1389cdeb3c30dc6ee4aa42...
+------------------------------------------------
+
+Searching 8 paths for library ADVAPI32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library D3D8.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library DINPUT8.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library GDI32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library KERNEL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library MSVCRT.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library URLMON.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library USER32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library WINMM.DLL...
+Library not found.
+------------------------------------------------
+
+Linking the External Programs of 'grim.dll' to imported libraries...
+  [KERNEL32.DLL] -> not found in project
+  [USER32.DLL] -> not found in project
+  [GDI32.DLL] -> not found in project
+  [MSVCRT.DLL] -> not found in project
+  [D3D8.DLL] -> not found in project
+  [WINMM.DLL] -> not found in project
+  [DINPUT8.DLL] -> not found in project
+  [URLMON.DLL] -> not found in project
+  [ADVAPI32.DLL] -> not found in project
+------------------------------------------------
+
+  
+2026-01-16 17:17:51 INFO  (HeadlessAnalyzer) IMPORTING: Loaded 0 additional files  
+2026-01-16 17:17:51 INFO  (HeadlessAnalyzer) ANALYZING all memory and code: file:///workspace/game/grim.dll  
+2026-01-16 17:17:51 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___raise_securityfailure' specified in file: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 17:17:51 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___report_rangecheckfailure' specified in file: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 17:17:51 INFO  (PdbUniversalAnalyzer) Skipping PDB processing: missing PDB information in program metadata  
+2026-01-16 17:17:51 INFO  (PackedDatabaseCache) Packed database cache: /var/tmp/node-ghidra/packed-db-cache  
+2026-01-16 17:17:51 DEBUG (PackedDatabaseCache) Using cached packed database: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/typeinfo/win32/windows_vs12_32.gdt  
+2026-01-16 17:17:52 ERROR (PngDataType) Invalid PNG data at 1004e51c  
+2026-01-16 17:17:54 INFO  (DecompilerSwitchAnalyzer) hit non-returning function, restarting decompiler switch analyzer later  
+2026-01-16 17:18:07 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 17:18:07 INFO  (DecompilerSwitchAnalyzer) hit non-returning function, restarting decompiler switch analyzer later  
+2026-01-16 17:18:07 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 17:18:14 INFO  (AutoAnalysisManager) -----------------------------------------------------
+    ASCII Strings                              0.221 secs
+    Apply Data Archives                        0.089 secs
+    Call Convention ID                         0.003 secs
+    Call-Fixup Installer                       0.020 secs
+    Create Address Tables                      0.067 secs
+    Create Address Tables - One Time           0.059 secs
+    Create Function                            0.203 secs
+    Data Reference                             0.114 secs
+    Decompiler Parameter ID                    4.548 secs
+    Decompiler Switch Analysis                 7.391 secs
+    Decompiler Switch Analysis - One Time      2.405 secs
+    Demangler Microsoft                        0.014 secs
+    Disassemble                                1.002 secs
+    Disassemble Entry Points                   0.032 secs
+    Embedded Media                             0.014 secs
+    External Entry References                  0.001 secs
+    Function ID                                0.325 secs
+    Function Start Pre Search                  0.011 secs
+    Function Start Search                      0.077 secs
+    Function Start Search After Code           0.023 secs
+    Function Start Search After Data           0.015 secs
+    Function Start Search delayed - One Time   0.002 secs
+    Non-Returning Functions - Discovered       0.075 secs
+    Non-Returning Functions - Known            0.006 secs
+    PDB Universal                              0.002 secs
+    Reference                                  0.225 secs
+    Scalar Operand References                  0.455 secs
+    Shared Return Calls                        0.091 secs
+    Stack                                      1.523 secs
+    Subroutine References                      0.311 secs
+    Subroutine References - One Time           0.003 secs
+    Windows x86 PE Exception Handling          1.273 secs
+    Windows x86 PE RTTI Analyzer               0.001 secs
+    Windows x86 Thread Environment Block (TEB) Analyzer     0.012 secs
+    WindowsResourceReference                   0.573 secs
+    X86 Function Callee Purge                  0.054 secs
+    x86 Constant Reference Analyzer            1.920 secs
+-----------------------------------------------------
+     Total Time   23 secs
+-----------------------------------------------------
+  
+2026-01-16 17:18:14 INFO  (HeadlessAnalyzer) REPORT: Analysis succeeded for file: file:///workspace/game/grim.dll  
+2026-01-16 17:18:14 INFO  (HeadlessAnalyzer) REPORT: Execute script: ImportThirdPartyHeaders.java '/workspace/source/headers/third_party'   
+2026-01-16 17:18:14 INFO  (HeadlessAnalyzer) SCRIPT: /workspace/scripts/ghidra_scripts/ImportThirdPartyHeaders.java  
+2026-01-16 17:18:14 INFO  (GhidraScript) ImportThirdPartyHeaders.java> Parsing third-party headers into: grim.dll  
+2026-01-16 17:18:14 INFO  (GhidraScript) ImportThirdPartyHeaders.java> Headers root: /workspace/source/headers/third_party  
+2026-01-16 17:18:14 INFO  (CParserUtils) parse /workspace/source/headers/third_party/jpeglib.h  
+2026-01-16 17:18:14 INFO  (CParserUtils) parse /workspace/source/headers/third_party/zlib.h  
+2026-01-16 17:18:14 INFO  (CParserUtils) parse /workspace/source/headers/third_party/ogg/ogg.h  
+2026-01-16 17:18:14 INFO  (CParserUtils) parse /workspace/source/headers/third_party/vorbis/codec.h  
+2026-01-16 17:18:14 INFO  (CParserUtils) parse /workspace/source/headers/third_party/vorbis/vorbisfile.h  
+2026-01-16 17:18:15 INFO  (HeadlessAnalyzer) REPORT: Execute script: ApplyWinapiGDT.java '/workspace/source/ghidra/winapi_32.gdt'   
+2026-01-16 17:18:15 INFO  (HeadlessAnalyzer) SCRIPT: /workspace/scripts/ghidra_scripts/ApplyWinapiGDT.java  
+2026-01-16 17:18:15 INFO  (GhidraScript) ApplyWinapiGDT.java> Applying WinAPI GDT: /workspace/source/ghidra/winapi_32.gdt  
+2026-01-16 17:18:15 DEBUG (PackedDatabaseCache) Using cached packed database: /workspace/source/ghidra/winapi_32.gdt  
+2026-01-16 17:18:15 INFO  (HeadlessAnalyzer) REPORT: Execute script: CreateGrim2DVtableFunctions.java   
+2026-01-16 17:18:15 INFO  (HeadlessAnalyzer) SCRIPT: /workspace/scripts/ghidra_scripts/CreateGrim2DVtableFunctions.java  
+2026-01-16 17:18:15 INFO  (GhidraScript) CreateGrim2DVtableFunctions.java> CreateGrim2DVtableFunctions: created=84 skipped=80  
+2026-01-16 17:18:15 INFO  (HeadlessAnalyzer) REPORT: Execute script: ExportAll.java   
+2026-01-16 17:18:15 INFO  (HeadlessAnalyzer) SCRIPT: /workspace/.codex/skills/ghidra/scripts/ghidra_scripts/ExportAll.java  
+2026-01-16 17:18:15 INFO  (GhidraScript) ExportAll.java> === Starting comprehensive export ===  
+2026-01-16 17:18:15 INFO  (GhidraScript) ExportAll.java> Output directory: /workspace/source/decompiled  
+2026-01-16 17:18:15 INFO  (GhidraScript) ExportAll.java> Program: grim.dll  
+2026-01-16 17:18:15 INFO  (GhidraScript) ExportAll.java> Architecture: x86  
+2026-01-16 17:18:15 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 17:18:15 INFO  (GhidraScript) ExportAll.java> Exporting summary to: grim.dll_summary.txt  
+2026-01-16 17:18:15 INFO  (GhidraScript) ExportAll.java> Exporting decompiled code to: grim.dll_decompiled.c  
+2026-01-16 17:18:20 INFO  (GhidraScript) ExportAll.java>   Decompiled 919 functions  
+2026-01-16 17:18:20 INFO  (GhidraScript) ExportAll.java> Exporting functions to: grim.dll_functions.json  
+2026-01-16 17:18:20 INFO  (GhidraScript) ExportAll.java>   Exported 959 functions  
+2026-01-16 17:18:20 INFO  (GhidraScript) ExportAll.java> Exporting strings to: grim.dll_strings.txt  
+2026-01-16 17:18:20 INFO  (GhidraScript) ExportAll.java>   Exported 583 strings  
+2026-01-16 17:18:20 INFO  (GhidraScript) ExportAll.java> Analyzing interesting patterns...  
+2026-01-16 17:18:20 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 17:18:20 INFO  (GhidraScript) ExportAll.java> === Export complete ===  
+2026-01-16 17:18:20 INFO  (HeadlessAnalyzer) REPORT: Execute script: ExportFunctions.java   
+2026-01-16 17:18:20 INFO  (HeadlessAnalyzer) SCRIPT: /workspace/.codex/skills/ghidra/scripts/ghidra_scripts/ExportFunctions.java  
+2026-01-16 17:18:20 INFO  (GhidraScript) ExportFunctions.java> Exporting functions to: /workspace/source/decompiled/grim.dll_functions.json  
+2026-01-16 17:18:21 INFO  (GhidraScript) ExportFunctions.java> Exported 959 functions  
+2026-01-16 17:18:21 INFO  (HeadlessAnalyzer) ANALYZING changes made by post scripts: file:///workspace/game/grim.dll  
+2026-01-16 17:18:23 INFO  (AutoAnalysisManager) -----------------------------------------------------
+    Call Convention ID                         0.000 secs
+    Call-Fixup Installer                       0.000 secs
+    Decompiler Parameter ID                    2.458 secs
+    Function Start Search                      0.001 secs
+    Shared Return Calls                        0.001 secs
+    Stack                                      0.035 secs
+    X86 Function Callee Purge                  0.002 secs
+-----------------------------------------------------
+     Total Time   2 secs
+-----------------------------------------------------
+  
+2026-01-16 17:18:23 INFO  (HeadlessAnalyzer) REPORT: Post-analysis succeeded for file: file:///workspace/game/grim.dll  
+2026-01-16 17:18:23 INFO  (LocalFileSystem) /grim.dll: file created (node)  
+2026-01-16 17:18:23 INFO  (HeadlessAnalyzer) REPORT: Save succeeded for: /grim.dll (ghidra_grim_dll_9745:/grim.dll)  
+2026-01-16 17:18:23 INFO  (HeadlessAnalyzer) REPORT: Import succeeded  

@@ -1,94 +1,89 @@
-openjdk version "25.0.1" 2025-10-21 LTS
-OpenJDK Runtime Environment Temurin-25.0.1+8 (build 25.0.1+8-LTS)
-OpenJDK 64-Bit Server VM Temurin-25.0.1+8 (build 25.0.1+8-LTS, mixed mode)
-INFO  Using log config file: jar:file:/Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml (LoggingInitialization)  
-INFO  Using log file: /Users/banteg/dev/banteg/crimsonland-decompile/source/decompiled/ghidra_analysis.log (LoggingInitialization)  
-INFO  Loading user preferences: /Users/banteg/Library/ghidra/ghidra_12.0_DEV/preferences (Preferences)  
+openjdk version "21.0.9" 2025-10-21
+OpenJDK Runtime Environment (build 21.0.9+10-Ubuntu-125.10)
+OpenJDK 64-Bit Server VM (build 21.0.9+10-Ubuntu-125.10, mixed mode)
+INFO  Using log config file: jar:file:/opt/ghidra_12.0.1_PUBLIC/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml (LoggingInitialization)  
+INFO  Using log file: /workspace/source/decompiled/ghidra_analysis.log (LoggingInitialization)  
+INFO  Loading user preferences: /home/node/.config/ghidra/ghidra_12.0.1_PUBLIC/preferences (Preferences)  
 INFO  Searching for classes... (ClassSearcher)  
-INFO  Class search complete (778 ms) (ClassSearcher)  
-INFO  Initializing SSL Context (SSLContextInitializer)  
+INFO  Class search complete (777 ms) (ClassSearcher)  
+INFO  Initializing SSL Context (DefaultSSLContextInitializer)  
 INFO  Initializing Random Number Generator... (SecureRandomFactory)  
 INFO  Random Number Generator initialization complete: NativePRNGNonBlocking (SecureRandomFactory)  
-INFO  Trust manager disabled, cacerts have not been set (ApplicationTrustManagerFactory)  
-INFO  Headless startup complete (1631 ms) (AnalyzeHeadless)  
+INFO  Trust manager disabled, cacerts have not been set (DefaultTrustManagerFactory)  
+INFO  Headless startup complete (1535 ms) (AnalyzeHeadless)  
 INFO  Class searcher loaded 58 extension points (18 false positives) (ClassSearcher)  
-WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
-WARNING: sun.misc.Unsafe::staticFieldOffset has been called by org.apache.felix.framework.util.SecureAction (file:/Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/lib/org.apache.felix.framework-7.0.5.jar)
-WARNING: Please consider reporting this to the maintainers of class org.apache.felix.framework.util.SecureAction
-WARNING: sun.misc.Unsafe::staticFieldOffset will be removed in a future release
 INFO  HEADLESS Script Paths:
-    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger/ghidra_scripts
-    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/Atmel/ghidra_scripts
-    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/PIC/ghidra_scripts
-    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
-    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
-    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/VersionTracking/ghidra_scripts
-    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/GnuDemangler/ghidra_scripts
-    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SwiftDemangler/ghidra_scripts
-    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BytePatterns/ghidra_scripts
-    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FileFormats/ghidra_scripts
-    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/WildcardAssembler/ghidra_scripts
-    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SystemEmulation/ghidra_scripts
-    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Jython/ghidra_scripts
-    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BSim/ghidra_scripts
-    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PyGhidra/ghidra_scripts
-    /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts
-    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/JVM/ghidra_scripts
-    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/DATA/ghidra_scripts
-    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PDB/ghidra_scripts
-    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Decompiler/ghidra_scripts
-    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/8051/ghidra_scripts
-    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FunctionID/ghidra_scripts
-    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/DecompilerDependent/ghidra_scripts
-    /Users/banteg/dev/banteg/crimsonland-decompile/scripts/ghidra_scripts
-    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/ghidra_scripts (HeadlessAnalyzer)  
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/PIC/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/VersionTracking/ghidra_scripts
+    /workspace/.codex/skills/ghidra/scripts/ghidra_scripts
+    /workspace/scripts/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/PDB/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/JVM/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/FileFormats/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/BytePatterns/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Jython/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/DATA/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/BSim/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/8051/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/PyGhidra/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Decompiler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/FunctionID/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/Atmel/ghidra_scripts (HeadlessAnalyzer)  
 INFO  HEADLESS: execution starts (HeadlessAnalyzer)  
-INFO  Creating temporary project: /tmp/ghidra_grim_dll_38940 (HeadlessAnalyzer)  
-INFO  Creating project: /tmp/ghidra_grim_dll_38940 (DefaultProject)  
+INFO  Creating temporary project: /tmp/ghidra_grim_dll_9745 (HeadlessAnalyzer)  
+INFO  Creating project: /tmp/ghidra_grim_dll_9745 (DefaultProject)  
 INFO  REPORT: Processing input files:  (HeadlessAnalyzer)  
-INFO       project: /tmp/ghidra_grim_dll_38940 (HeadlessAnalyzer)  
-INFO  IMPORTING: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/grim.dll (HeadlessAnalyzer)  
+INFO       project: /tmp/ghidra_grim_dll_9745 (HeadlessAnalyzer)  
+INFO  IMPORTING: file:///workspace/game/grim.dll (HeadlessAnalyzer)  
 INFO  Using Loader: Portable Executable (PE) (ProgramLoader)  
 INFO  Using Language/Compiler: x86:LE:32:default:windows (ProgramLoader)  
-INFO  Using Library Search Path: [., /System/Library/dyld/dyld_shared_cache_arm64e, /System/Library/dyld/dyld_shared_cache_x86_64, /System/Library/dyld/dyld_shared_cache_x86_64h, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64h, /Users/banteg/Library/Java/Extensions, /Library/Java/Extensions, /Network/Library/Java/Extensions, /System/Library/Java/Extensions, /usr/lib/java] (ProgramLoader)  
-INFO  Removing 2 unused filesystems from cache (FileSystemInstanceManager)  
+INFO  Using Library Search Path: [., /bin, /lib, /lib64, /lib/x86_64-linux-gnu, /lib/aarch64-linux-gnu, /usr/bin, /usr/lib, /usr/X11R6/bin, /usr/X11R6/lib, /usr/java/packages/lib, /usr/lib/aarch64-linux-gnu/jni, /usr/lib/aarch64-linux-gnu, /usr/lib/jni] (ProgramLoader)  
 INFO  Additional info:
-Loading file:///Users/banteg/dev/banteg/crimsonland-decompile/game/grim.dll?MD5=88d5f6d66a1389cdeb3c30dc6ee4aa42...
+Loading file:///workspace/game/grim.dll?MD5=88d5f6d66a1389cdeb3c30dc6ee4aa42...
 ------------------------------------------------
 
-Searching 4 paths for library ADVAPI32.DLL...
+Searching 8 paths for library ADVAPI32.DLL...
 Library not found.
 ------------------------------------------------
 
-Searching 4 paths for library D3D8.DLL...
+Searching 8 paths for library D3D8.DLL...
 Library not found.
 ------------------------------------------------
 
-Searching 4 paths for library DINPUT8.DLL...
+Searching 8 paths for library DINPUT8.DLL...
 Library not found.
 ------------------------------------------------
 
-Searching 4 paths for library GDI32.DLL...
+Searching 8 paths for library GDI32.DLL...
 Library not found.
 ------------------------------------------------
 
-Searching 4 paths for library KERNEL32.DLL...
+Searching 8 paths for library KERNEL32.DLL...
 Library not found.
 ------------------------------------------------
 
-Searching 4 paths for library MSVCRT.DLL...
+Searching 8 paths for library MSVCRT.DLL...
 Library not found.
 ------------------------------------------------
 
-Searching 4 paths for library URLMON.DLL...
+Searching 8 paths for library URLMON.DLL...
 Library not found.
 ------------------------------------------------
 
-Searching 4 paths for library USER32.DLL...
+Searching 8 paths for library USER32.DLL...
 Library not found.
 ------------------------------------------------
 
-Searching 4 paths for library WINMM.DLL...
+Searching 8 paths for library WINMM.DLL...
 Library not found.
 ------------------------------------------------
 
@@ -106,80 +101,109 @@ Linking the External Programs of 'grim.dll' to imported libraries...
 
  (ProgramLoader)  
 INFO  IMPORTING: Loaded 0 additional files (HeadlessAnalyzer)  
-INFO  ANALYZING all memory and code: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/grim.dll (HeadlessAnalyzer)  
-WARN  Ignoring leading '_' chars on no-return name '___raise_securityfailure' specified in file: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn (NoReturnFunctionAnalyzer)  
-WARN  Ignoring leading '_' chars on no-return name '___report_rangecheckfailure' specified in file: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn (NoReturnFunctionAnalyzer)  
+INFO  ANALYZING all memory and code: file:///workspace/game/grim.dll (HeadlessAnalyzer)  
+WARN  Ignoring leading '_' chars on no-return name '___raise_securityfailure' specified in file: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn (NoReturnFunctionAnalyzer)  
+WARN  Ignoring leading '_' chars on no-return name '___report_rangecheckfailure' specified in file: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn (NoReturnFunctionAnalyzer)  
 INFO  Skipping PDB processing: missing PDB information in program metadata (PdbUniversalAnalyzer)  
-INFO  Packed database cache: /var/tmp/banteg-ghidra/packed-db-cache (PackedDatabaseCache)  
+INFO  Packed database cache: /var/tmp/node-ghidra/packed-db-cache (PackedDatabaseCache)  
 ERROR Invalid PNG data at 1004e51c (PngDataType)  
 INFO  hit non-returning function, restarting decompiler switch analyzer later (DecompilerSwitchAnalyzer)  
 INFO  Applied data type archive: windows_vs12_32 (ApplyDataArchiveAnalyzer)  
 INFO  hit non-returning function, restarting decompiler switch analyzer later (DecompilerSwitchAnalyzer)  
 INFO  Applied data type archive: windows_vs12_32 (ApplyDataArchiveAnalyzer)  
 INFO  -----------------------------------------------------
-    ASCII Strings                              0.283 secs
-    Apply Data Archives                        0.087 secs
-    Call Convention ID                         0.002 secs
-    Call-Fixup Installer                       0.019 secs
-    Create Address Tables                      0.083 secs
-    Create Address Tables - One Time           0.056 secs
-    Create Function                            0.149 secs
-    Data Reference                             0.187 secs
-    Decompiler Parameter ID                    3.945 secs
-    Decompiler Switch Analysis                 7.625 secs
-    Decompiler Switch Analysis - One Time      2.432 secs
+    ASCII Strings                              0.221 secs
+    Apply Data Archives                        0.089 secs
+    Call Convention ID                         0.003 secs
+    Call-Fixup Installer                       0.020 secs
+    Create Address Tables                      0.067 secs
+    Create Address Tables - One Time           0.059 secs
+    Create Function                            0.203 secs
+    Data Reference                             0.114 secs
+    Decompiler Parameter ID                    4.548 secs
+    Decompiler Switch Analysis                 7.391 secs
+    Decompiler Switch Analysis - One Time      2.405 secs
     Demangler Microsoft                        0.014 secs
-    Disassemble                                0.750 secs
-    Disassemble Entry Points                   0.019 secs
-    Embedded Media                             0.015 secs
-    External Entry References                  0.000 secs
-    Function ID                                0.481 secs
-    Function Start Pre Search                  0.014 secs
-    Function Start Search                      0.071 secs
-    Function Start Search After Code           0.019 secs
-    Function Start Search After Data           0.018 secs
-    Function Start Search delayed - One Time   0.003 secs
-    Non-Returning Functions - Discovered       0.083 secs
+    Disassemble                                1.002 secs
+    Disassemble Entry Points                   0.032 secs
+    Embedded Media                             0.014 secs
+    External Entry References                  0.001 secs
+    Function ID                                0.325 secs
+    Function Start Pre Search                  0.011 secs
+    Function Start Search                      0.077 secs
+    Function Start Search After Code           0.023 secs
+    Function Start Search After Data           0.015 secs
+    Function Start Search delayed - One Time   0.002 secs
+    Non-Returning Functions - Discovered       0.075 secs
     Non-Returning Functions - Known            0.006 secs
-    PDB Universal                              0.001 secs
-    Reference                                  0.201 secs
-    Scalar Operand References                  0.403 secs
-    Shared Return Calls                        0.094 secs
-    Stack                                      1.238 secs
-    Subroutine References                      0.327 secs
-    Subroutine References - One Time           0.002 secs
-    Windows x86 PE Exception Handling          1.028 secs
-    Windows x86 PE RTTI Analyzer               0.000 secs
-    Windows x86 Thread Environment Block (TEB) Analyzer     0.009 secs
-    WindowsResourceReference                   0.589 secs
-    X86 Function Callee Purge                  0.052 secs
-    x86 Constant Reference Analyzer            1.378 secs
+    PDB Universal                              0.002 secs
+    Reference                                  0.225 secs
+    Scalar Operand References                  0.455 secs
+    Shared Return Calls                        0.091 secs
+    Stack                                      1.523 secs
+    Subroutine References                      0.311 secs
+    Subroutine References - One Time           0.003 secs
+    Windows x86 PE Exception Handling          1.273 secs
+    Windows x86 PE RTTI Analyzer               0.001 secs
+    Windows x86 Thread Environment Block (TEB) Analyzer     0.012 secs
+    WindowsResourceReference                   0.573 secs
+    X86 Function Callee Purge                  0.054 secs
+    x86 Constant Reference Analyzer            1.920 secs
 -----------------------------------------------------
-     Total Time   21 secs
+     Total Time   23 secs
 -----------------------------------------------------
  (AutoAnalysisManager)  
-INFO  REPORT: Analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/grim.dll (HeadlessAnalyzer)  
+INFO  REPORT: Analysis succeeded for file: file:///workspace/game/grim.dll (HeadlessAnalyzer)  
+INFO  REPORT: Execute script: ImportThirdPartyHeaders.java '/workspace/source/headers/third_party'  (HeadlessAnalyzer)  
+INFO  SCRIPT: /workspace/scripts/ghidra_scripts/ImportThirdPartyHeaders.java (HeadlessAnalyzer)  
+INFO  ImportThirdPartyHeaders.java> Parsing third-party headers into: grim.dll (GhidraScript)  
+INFO  ImportThirdPartyHeaders.java> Headers root: /workspace/source/headers/third_party (GhidraScript)  
+INFO  parse /workspace/source/headers/third_party/jpeglib.h (CParserUtils)  
+INFO  parse /workspace/source/headers/third_party/zlib.h (CParserUtils)  
+INFO  parse /workspace/source/headers/third_party/ogg/ogg.h (CParserUtils)  
+INFO  parse /workspace/source/headers/third_party/vorbis/codec.h (CParserUtils)  
+INFO  parse /workspace/source/headers/third_party/vorbis/vorbisfile.h (CParserUtils)  
+INFO  REPORT: Execute script: ApplyWinapiGDT.java '/workspace/source/ghidra/winapi_32.gdt'  (HeadlessAnalyzer)  
+INFO  SCRIPT: /workspace/scripts/ghidra_scripts/ApplyWinapiGDT.java (HeadlessAnalyzer)  
+INFO  ApplyWinapiGDT.java> Applying WinAPI GDT: /workspace/source/ghidra/winapi_32.gdt (GhidraScript)  
 INFO  REPORT: Execute script: CreateGrim2DVtableFunctions.java  (HeadlessAnalyzer)  
-INFO  SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/scripts/ghidra_scripts/CreateGrim2DVtableFunctions.java (HeadlessAnalyzer)  
+INFO  SCRIPT: /workspace/scripts/ghidra_scripts/CreateGrim2DVtableFunctions.java (HeadlessAnalyzer)  
 INFO  CreateGrim2DVtableFunctions.java> CreateGrim2DVtableFunctions: created=84 skipped=80 (GhidraScript)  
+INFO  REPORT: Execute script: ExportAll.java  (HeadlessAnalyzer)  
+INFO  SCRIPT: /workspace/.codex/skills/ghidra/scripts/ghidra_scripts/ExportAll.java (HeadlessAnalyzer)  
+INFO  ExportAll.java> === Starting comprehensive export === (GhidraScript)  
+INFO  ExportAll.java> Output directory: /workspace/source/decompiled (GhidraScript)  
+INFO  ExportAll.java> Program: grim.dll (GhidraScript)  
+INFO  ExportAll.java> Architecture: x86 (GhidraScript)  
+INFO  ExportAll.java>  (GhidraScript)  
+INFO  ExportAll.java> Exporting summary to: grim.dll_summary.txt (GhidraScript)  
+INFO  ExportAll.java> Exporting decompiled code to: grim.dll_decompiled.c (GhidraScript)  
+INFO  ExportAll.java>   Decompiled 919 functions (GhidraScript)  
+INFO  ExportAll.java> Exporting functions to: grim.dll_functions.json (GhidraScript)  
+INFO  ExportAll.java>   Exported 959 functions (GhidraScript)  
+INFO  ExportAll.java> Exporting strings to: grim.dll_strings.txt (GhidraScript)  
+INFO  ExportAll.java>   Exported 583 strings (GhidraScript)  
+INFO  ExportAll.java> Analyzing interesting patterns... (GhidraScript)  
+INFO  ExportAll.java>  (GhidraScript)  
+INFO  ExportAll.java> === Export complete === (GhidraScript)  
 INFO  REPORT: Execute script: ExportFunctions.java  (HeadlessAnalyzer)  
-INFO  SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts/ExportFunctions.java (HeadlessAnalyzer)  
-INFO  ExportFunctions.java> Exporting functions to: /Users/banteg/dev/banteg/crimsonland-decompile/source/decompiled/grim.dll_functions.json (GhidraScript)  
+INFO  SCRIPT: /workspace/.codex/skills/ghidra/scripts/ghidra_scripts/ExportFunctions.java (HeadlessAnalyzer)  
+INFO  ExportFunctions.java> Exporting functions to: /workspace/source/decompiled/grim.dll_functions.json (GhidraScript)  
 INFO  ExportFunctions.java> Exported 959 functions (GhidraScript)  
-INFO  ANALYZING changes made by post scripts: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/grim.dll (HeadlessAnalyzer)  
+INFO  ANALYZING changes made by post scripts: file:///workspace/game/grim.dll (HeadlessAnalyzer)  
 INFO  -----------------------------------------------------
     Call Convention ID                         0.000 secs
     Call-Fixup Installer                       0.000 secs
-    Decompiler Parameter ID                    2.555 secs
-    Function Start Search                      0.000 secs
+    Decompiler Parameter ID                    2.458 secs
+    Function Start Search                      0.001 secs
     Shared Return Calls                        0.001 secs
-    Stack                                      0.034 secs
+    Stack                                      0.035 secs
     X86 Function Callee Purge                  0.002 secs
 -----------------------------------------------------
      Total Time   2 secs
 -----------------------------------------------------
  (AutoAnalysisManager)  
-INFO  REPORT: Post-analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/grim.dll (HeadlessAnalyzer)  
-INFO  /grim.dll: file created (banteg) (LocalFileSystem)  
-INFO  REPORT: Save succeeded for: /grim.dll (ghidra_grim_dll_38940:/grim.dll) (HeadlessAnalyzer)  
+INFO  REPORT: Post-analysis succeeded for file: file:///workspace/game/grim.dll (HeadlessAnalyzer)  
+INFO  /grim.dll: file created (node) (LocalFileSystem)  
+INFO  REPORT: Save succeeded for: /grim.dll (ghidra_grim_dll_9745:/grim.dll) (HeadlessAnalyzer)  
 INFO  REPORT: Import succeeded (HeadlessAnalyzer)  
