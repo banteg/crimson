@@ -24,5 +24,12 @@
     "name": "renderer_select_backend",
     "signature": "int renderer_select_backend(int reset)",
     "comment": "selects renderer table based on config"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042c450",
+    "name": "crimsonland_main",
+    "signature": "int crimsonland_main(void)",
+    "comment": "primary game init/run/shutdown sequence"
   }
 ]
