@@ -85,10 +85,13 @@ These offsets appear with keycodes or input-related values:
 | `0x100` | `set_uv` | `void set_uv(float u0, float v0, float u1, float v1)` | high | UV coords |
 | `0x104` | `set_atlas_frame` | `void set_atlas_frame(int atlas, int frame)` | high | atlas index + frame |
 | `0x108` | `set_sub_rect` | `void set_sub_rect(int x, int y, int w, int h)` | medium | pixel rect/clip |
+| `0x10c` | `set_uv_point` | `void set_uv_point(int index, float u, float v)` | medium | sets a single UV pair |
 | `0x110` | `set_pivot` | `void set_pivot(const float *xy)` | low | pointer to float pair |
 | `0x114` | `set_color` | `void set_color(float r, float g, float b, float a)` | high | RGBA floats |
+| `0x118` | `set_color_slot` | `void set_color_slot(int index, float r, float g, float b, float a)` | low | updates a color slot/palette |
 | `0x11c` | `draw_quad` | `void draw_quad(float x, float y, float w, float h)` | high | core draw call |
 | `0x13c` | `draw_text_mono` | `void draw_text_mono(float x, float y, const char *text)` | medium | fixed 16px grid; handles a few extended codes |
+| `0x140` | `draw_text_mono_fmt` | `void draw_text_mono_fmt(float x, float y, const char *fmt, ...)` | medium | printf-style wrapper |
 | `0x144` | `draw_text_small` | `void draw_text_small(float x, float y, const char *text)` | medium | uses `smallFnt.dat` widths + `GRIM_Font2` |
 | `0x148` | `draw_text_box` | `void draw_text_box(float x, float y, const char *text, ...)` | low | wrapping/layout variant |
 | `0x14c` | `measure_text_width` | `int measure_text_width(const char *text)` | medium | width metric for small font |
