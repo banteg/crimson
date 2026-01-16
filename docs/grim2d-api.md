@@ -64,24 +64,44 @@ These offsets appear with keycodes or input-related values:
 
 | Offset | Name | Signature (guess) | Confidence | Notes |
 | --- | --- | --- | --- | --- |
+| `0x0` | `release` | `void release(void)` | medium | vtable destructor (operator_delete) |
+| `0x4` | `set_paused` | `void set_paused(int paused)` | low | toggles update loop |
+| `0x8` | `get_version` | `float get_version(void)` | low | returns constant 1.21 |
+| `0xc` | `check_device` | `int check_device(void)` | low | device creation test |
 | `0x10` | `apply_config` | `int apply_config(void)` | medium | invoked by "...invoking grim config" log |
 | `0x14` | `init_system` | `int init_system(void)` | high | returns success before game starts |
 | `0x18` | `shutdown` | `void shutdown(void)` | high | shutdown path before DLL release |
 | `0x1c` | `apply_settings` | `void apply_settings(void)` | low | called after config copy |
+| `0x20` | `set_render_state` | `void set_render_state(uint32_t state, uint32_t value)` | high | D3D-style render state usage |
 | `0x24` | `get_config_var` | `void * get_config_var(...)` | low | returns pointer to config var (args vary) |
 | `0x28` | `get_error_text` | `char * get_error_text(void)` | medium | error string for MessageBox |
 | `0x2c` | `clear_color` | `void clear_color(float r, float g, float b, float a)` | medium | clear color before render |
 | `0x30` | `set_render_target` | `int set_render_target(int target_index)` | low | `-1` resets to backbuffer |
-| `0x20` | `set_render_state` | `void set_render_state(uint32_t state, uint32_t value)` | high | D3D-style render state usage |
+| `0x34` | `get_time_ms` | `int get_time_ms(void)` | low | frame time accumulator (ms) |
+| `0x38` | `set_time_ms` | `void set_time_ms(int ms)` | low | overrides time accumulator |
+| `0x3c` | `get_frame_dt` | `float get_frame_dt(void)` | low | clamped frame delta |
+| `0x40` | `get_fps` | `float get_fps(void)` | low | frame rate estimate |
 | `0x44` | `is_key_down` | `bool is_key_down(uint32_t key)` | high | Ctrl/arrow keycodes |
 | `0x48` | `was_key_pressed` | `bool was_key_pressed(uint32_t key)` | high | edge-triggered key checks |
 | `0x4c` | `flush_input` | `void flush_input(void)` | low | clears buffered input/device state |
 | `0x50` | `get_key_char` | `int get_key_char(void)` | high | console text input |
 | `0x54` | `set_key_char_buffer` | `void set_key_char_buffer(uint8_t *buffer, int *count, int size)` | low | input char ring buffer |
 | `0x58` | `is_mouse_button_down` | `bool is_mouse_button_down(int button)` | medium | button 0 used |
+| `0x5c` | `was_mouse_button_pressed` | `bool was_mouse_button_pressed(int button)` | low | edge-triggered mouse button |
 | `0x60` | `get_mouse_wheel_delta` | `float get_mouse_wheel_delta(void)` | high | +/- wheel to change selection |
+| `0x64` | `set_mouse_pos` | `void set_mouse_pos(float x, float y)` | low | updates mouse position |
+| `0x68` | `get_mouse_x` | `float get_mouse_x(void)` | low | mouse position X |
+| `0x6c` | `get_mouse_y` | `float get_mouse_y(void)` | low | mouse position Y |
+| `0x70` | `get_mouse_dx` | `float get_mouse_dx(void)` | low | mouse delta X |
+| `0x74` | `get_mouse_dy` | `float get_mouse_dy(void)` | low | mouse delta Y |
+| `0x78` | `get_mouse_dx_indexed` | `float get_mouse_dx_indexed(int index)` | low | mouse delta X (indexed) |
+| `0x7c` | `get_mouse_dy_indexed` | `float get_mouse_dy_indexed(int index)` | low | mouse delta Y (indexed) |
 | `0x80` | `is_key_active` | `bool is_key_active(int key)` | medium | uses key mapping entries |
 | `0x84` | `get_config_float` | `float get_config_float(int id)` | medium | IDs `0x13f..0x155` |
+| `0x88` | `get_slot_float` | `float get_slot_float(int index)` | low | float slot accessor |
+| `0x8c` | `get_slot_int` | `int get_slot_int(int index)` | low | int slot accessor |
+| `0x90` | `set_slot_float` | `void set_slot_float(int index, float value)` | low | float slot setter |
+| `0x94` | `set_slot_int` | `void set_slot_int(int index, int value)` | low | int slot setter |
 | `0xa4` | `get_joystick_pov` | `int get_joystick_pov(int index)` | low | joystick POV hat value |
 | `0xac` | `create_texture` | `bool create_texture(const char *name, int width, int height)` | medium | terrain texture path |
 | `0xb4` | `load_texture` | `bool load_texture(const char *name, const char *path)` | high | `(name, filename)` |
