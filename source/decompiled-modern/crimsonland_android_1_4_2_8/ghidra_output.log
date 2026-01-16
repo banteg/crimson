@@ -1,0 +1,157 @@
+openjdk version "25.0.1" 2025-10-21 LTS
+OpenJDK Runtime Environment Temurin-25.0.1+8 (build 25.0.1+8-LTS)
+OpenJDK 64-Bit Server VM Temurin-25.0.1+8 (build 25.0.1+8-LTS, mixed mode)
+INFO  Using log config file: jar:file:/Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml (LoggingInitialization)  
+INFO  Using log file: /Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/apk/analysis/ghidra_analysis.log (LoggingInitialization)  
+INFO  Loading user preferences: /Users/banteg/Library/ghidra/ghidra_12.0_DEV/preferences (Preferences)  
+INFO  Searching for classes... (ClassSearcher)  
+INFO  Class search complete (771 ms) (ClassSearcher)  
+INFO  Initializing SSL Context (SSLContextInitializer)  
+INFO  Initializing Random Number Generator... (SecureRandomFactory)  
+INFO  Random Number Generator initialization complete: NativePRNGNonBlocking (SecureRandomFactory)  
+INFO  Trust manager disabled, cacerts have not been set (ApplicationTrustManagerFactory)  
+INFO  Headless startup complete (1613 ms) (AnalyzeHeadless)  
+INFO  Class searcher loaded 58 extension points (18 false positives) (ClassSearcher)  
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::staticFieldOffset has been called by org.apache.felix.framework.util.SecureAction (file:/Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/lib/org.apache.felix.framework-7.0.5.jar)
+WARNING: Please consider reporting this to the maintainers of class org.apache.felix.framework.util.SecureAction
+WARNING: sun.misc.Unsafe::staticFieldOffset will be removed in a future release
+INFO  HEADLESS Script Paths:
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/Atmel/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/PIC/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/VersionTracking/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BytePatterns/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FileFormats/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Jython/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BSim/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PyGhidra/ghidra_scripts
+    /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/JVM/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/DATA/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PDB/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Decompiler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/8051/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FunctionID/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/ghidra_scripts (HeadlessAnalyzer)  
+INFO  HEADLESS: execution starts (HeadlessAnalyzer)  
+INFO  Creating temporary project: /tmp/ghidra_libNativeGame_so_10321 (HeadlessAnalyzer)  
+INFO  Creating project: /tmp/ghidra_libNativeGame_so_10321 (DefaultProject)  
+INFO  REPORT: Processing input files:  (HeadlessAnalyzer)  
+INFO       project: /tmp/ghidra_libNativeGame_so_10321 (HeadlessAnalyzer)  
+INFO  IMPORTING: file:///Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/apk/Crimsonland-HD-v1-4-2-8-mod/lib/arm64-v8a/libNativeGame.so (HeadlessAnalyzer)  
+INFO  Using Loader: Executable and Linking Format (ELF) (ProgramLoader)  
+INFO  Using Language/Compiler: AARCH64:LE:64:v8A:default (ProgramLoader)  
+INFO  Using Library Search Path: [., /System/Library/dyld/dyld_shared_cache_arm64e, /System/Library/dyld/dyld_shared_cache_x86_64, /System/Library/dyld/dyld_shared_cache_x86_64h, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64h, /Users/banteg/Library/Java/Extensions, /Library/Java/Extensions, /Network/Library/Java/Extensions, /System/Library/Java/Extensions, /usr/lib/java] (ProgramLoader)  
+WARN  EXTERNAL Data ELF Relocation with offset: at 0063d420 (External Location = _ZTVN10__cxxabiv120__si_class_type_infoE+0x10) (ElfRelocationHandler)  
+WARN  EXTERNAL Data ELF Relocation with offset: at 0063d448 (External Location = _ZTVN10__cxxabiv120__si_class_type_infoE+0x10) (ElfRelocationHandler)  
+WARN  EXTERNAL Data ELF Relocation with offset: at 0063d520 (External Location = _ZTVN10__cxxabiv120__si_class_type_infoE+0x10) (ElfRelocationHandler)  
+WARN  EXTERNAL Data ELF Relocation with offset: at 0063d5b8 (External Location = _ZTVN10__cxxabiv120__si_class_type_infoE+0x10) (ElfRelocationHandler)  
+WARN  EXTERNAL Data ELF Relocation with offset: at 0063d680 (External Location = _ZTVN10__cxxabiv120__si_class_type_infoE+0x10) (ElfRelocationHandler)  
+WARN  EXTERNAL Data ELF Relocation with offset: at 00643830 (External Location = _ZTVN10__cxxabiv120__si_class_type_infoE+0x10) (ElfRelocationHandler)  
+WARN  EXTERNAL Data ELF Relocation with offset: at 00643848 (External Location = _ZTVN10__cxxabiv120__si_class_type_infoE+0x10) (ElfRelocationHandler)  
+WARN  EXTERNAL Data ELF Relocation with offset: at 00646e50 (External Location = _ZTVN10__cxxabiv120__si_class_type_infoE+0x10) (ElfRelocationHandler)  
+WARN  EXTERNAL Data ELF Relocation with offset: at 0063d438 (External Location = _ZTVN10__cxxabiv117__class_type_infoE+0x10) (ElfRelocationHandler)  
+WARN  EXTERNAL Data ELF Relocation with offset: at 0063d5d0 (External Location = _ZTVN10__cxxabiv117__class_type_infoE+0x10) (ElfRelocationHandler)  
+INFO  Additional info:
+Loading file:///Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/apk/Crimsonland-HD-v1-4-2-8-mod/lib/arm64-v8a/libNativeGame.so?MD5=5e5b27a985361bd3f04f900f27cb147f...
+Unable to perform relocation: Type = 1026 (0x402) at 0085d000 (Symbol = ExecuteProgram) - Block is non-existent
+Setting block .data.rel.ro to read-only
+Setting block .fini_array to read-only
+Setting block .init_array to read-only
+Setting block segment_3.4 to read-only
+------------------------------------------------
+
+Linking the External Programs of 'libNativeGame.so' to imported libraries...
+  [libpairipcore.so] -> not found in project
+  [libandroid.so] -> not found in project
+  [libEGL.so] -> not found in project
+  [libGLESv2.so] -> not found in project
+  [liblog.so] -> not found in project
+  [libOpenSLES.so] -> not found in project
+  [libz.so] -> not found in project
+  [libc++_shared.so] -> not found in project
+  [libm.so] -> not found in project
+  [libdl.so] -> not found in project
+  [libc.so] -> not found in project
+------------------------------------------------
+
+Resolving External Symbols of [/libNativeGame.so] - 423 unresolved symbols, no external libraries configured - skipping
+ (ProgramLoader)  
+INFO  IMPORTING: Loaded 0 additional files (HeadlessAnalyzer)  
+INFO  ANALYZING all memory and code: file:///Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/apk/Crimsonland-HD-v1-4-2-8-mod/lib/arm64-v8a/libNativeGame.so (HeadlessAnalyzer)  
+INFO  DWARF external debug information found: ExternalDebugInfo [filename=null, crc=0, hash=2e86fe1ff08222a46740327511cada98] (ExternalDebugFileSectionProvider)  
+INFO  Unable to find DWARF information, skipping DWARF analysis (DWARFAnalyzer)  
+ERROR Invalid PNG data at 002113b0 (PngDataType)  
+WARN  Decompiling 0050ccf4: Unable to read bytes at ram:00a1622a (DecompileCallback)  
+ERROR VarnodeContext: out of address spaces at @005218d4 for: x14-005218d4 (VarnodeContext)  
+INFO  Packed database cache: /var/tmp/banteg-ghidra/packed-db-cache (PackedDatabaseCache)  
+INFO  Applied data type archive: generic_clib_64 (ApplyDataArchiveAnalyzer)  
+WARN  Unable to fully apply external demangled Address Table at 008af348: __cxxabiv1::__si_class_type_info::vtable (DemangledAddressTable)  
+WARN  Unable to fully apply external demangled Address Table at 008af350: __cxxabiv1::__class_type_info::vtable (DemangledAddressTable)  
+WARN  Unable to fully apply external demangled Address Table at 008af610: std::length_error::vtable (DemangledAddressTable)  
+WARN  Unable to fully apply external demangled Address Table at 008afb90: std::__ndk1::__assoc_sub_state::vtable (DemangledAddressTable)  
+WARN  Decompiling 0050ccf4: Unable to read bytes at ram:00a1622a (DecompileCallback)  
+ERROR VarnodeContext: out of address spaces at @005218d4 for: x14-005218d4 (VarnodeContext)  
+INFO  -----------------------------------------------------
+    AARCH64 ELF PLT Thunks                     0.458 secs
+    ASCII Strings                              0.512 secs
+    Apply Data Archives                        0.471 secs
+    Basic Constant Reference Analyzer         17.505 secs
+    Call Convention ID                        15.836 secs
+    Call-Fixup Installer                       0.222 secs
+    Create Address Tables                      0.596 secs
+    Create Address Tables - One Time           0.372 secs
+    Create Function                            0.010 secs
+    DWARF                                      0.007 secs
+    Data Reference                             0.919 secs
+    Decompiler Switch Analysis                12.479 secs
+    Demangler GNU                              1.501 secs
+    Disassemble Entry Points                   7.398 secs
+    Embedded Media                             0.067 secs
+    External Entry References                  0.052 secs
+    Function ID                                0.027 secs
+    Function Start Search                      0.249 secs
+    Function Start Search After Code           0.292 secs
+    Function Start Search After Data           0.211 secs
+    Function Start Search delayed - One Time   0.002 secs
+    GCC Exception Handlers                     5.399 secs
+    Non-Returning Functions - Discovered       1.119 secs
+    Non-Returning Functions - Known            0.011 secs
+    Reference                                  1.648 secs
+    Shared Return Calls                        0.730 secs
+    Stack                                     19.529 secs
+    Subroutine References                      0.398 secs
+-----------------------------------------------------
+     Total Time   88 secs
+-----------------------------------------------------
+ (AutoAnalysisManager)  
+INFO  REPORT: Analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/apk/Crimsonland-HD-v1-4-2-8-mod/lib/arm64-v8a/libNativeGame.so (HeadlessAnalyzer)  
+INFO  REPORT: Execute script: ExportFunctions.java  (HeadlessAnalyzer)  
+INFO  SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts/ExportFunctions.java (HeadlessAnalyzer)  
+INFO  ExportFunctions.java> Exporting functions to: /Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/apk/analysis/libNativeGame.so_functions.json (GhidraScript)  
+INFO  ExportFunctions.java> Exported 11433 functions (GhidraScript)  
+INFO  REPORT: Execute script: ExportSymbols.java  (HeadlessAnalyzer)  
+INFO  SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts/ExportSymbols.java (HeadlessAnalyzer)  
+INFO  ExportSymbols.java> Exporting symbols to: /Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/apk/analysis/libNativeGame.so_symbols.json (GhidraScript)  
+INFO  ExportSymbols.java> Exported 423 imports, 6190 exports, 10000 symbols (GhidraScript)  
+INFO  REPORT: Execute script: ExportStrings.java  (HeadlessAnalyzer)  
+INFO  SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts/ExportStrings.java (HeadlessAnalyzer)  
+INFO  ExportStrings.java> Exporting strings to: /Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/apk/analysis/libNativeGame.so_strings.json (GhidraScript)  
+INFO  ExportStrings.java> Exported 14529 strings (GhidraScript)  
+INFO  REPORT: Execute script: ExportCalls.java  (HeadlessAnalyzer)  
+INFO  SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts/ExportCalls.java (HeadlessAnalyzer)  
+INFO  ExportCalls.java> Exporting call graph to: /Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/apk/analysis/libNativeGame.so_calls.json (GhidraScript)  
+INFO  ExportCalls.java> Exported call graph with 7822 functions (GhidraScript)  
+INFO  ANALYZING changes made by post scripts: file:///Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/apk/Crimsonland-HD-v1-4-2-8-mod/lib/arm64-v8a/libNativeGame.so (HeadlessAnalyzer)  
+INFO  REPORT: Post-analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/apk/Crimsonland-HD-v1-4-2-8-mod/lib/arm64-v8a/libNativeGame.so (HeadlessAnalyzer)  
+INFO  /libNativeGame.so: file created (banteg) (LocalFileSystem)  
+INFO  REPORT: Save succeeded for: /libNativeGame.so (ghidra_libNativeGame_so_10321:/libNativeGame.so) (HeadlessAnalyzer)  
+INFO  REPORT: Import succeeded (HeadlessAnalyzer)  
