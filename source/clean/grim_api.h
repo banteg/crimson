@@ -79,7 +79,7 @@ struct Grim2DVtable {
     void (*set_rotation)(float radians); // 0xfc (FUN_10007f30)
     void (*set_uv)(float u0, float v0, float u1, float v1); // 0x100 (FUN_10008350)
     void (*set_atlas_frame)(int atlas_size, int frame); // 0x104 (FUN_10008230)
-    void (*set_sub_rect)(int atlas_size, int width, int height, int frame); // 0x108 (FUN_100082c0) atlas_size is cells/side; width/height in cells
+    void (*set_sub_rect)(int atlas_size, int width, int height, int frame); // 0x108 (FUN_100082c0) atlas_size indexes UV table (2/4/8/16)
     void (*set_uv_point)(int index, float u, float v); // 0x10c (grim_set_uv_point) index 0..3
     void (*set_color_ptr)(float *rgba); // 0x110 (grim_set_color_ptr)
     void (*set_color)(float r, float g, float b, float a); // 0x114 (FUN_10007f90)

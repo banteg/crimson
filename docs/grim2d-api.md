@@ -136,7 +136,7 @@ These offsets appear with keycodes or input-related values:
 | `0xfc` | `set_rotation` | `void set_rotation(float radians)` | medium | rotation before draw |
 | `0x100` | `set_uv` | `void set_uv(float u0, float v0, float u1, float v1)` | high | UV coords |
 | `0x104` | `set_atlas_frame` | `void set_atlas_frame(int atlas_size, int frame)` | high | atlas size (cells per side) + frame index |
-| `0x108` | `set_sub_rect` | `void set_sub_rect(int atlas_size, int width, int height, int frame)` | medium | atlas grid sub-rect: `atlas_size` is cells/side (2/4/8/16), width/height in cells, `frame` selects top-left cell |
+| `0x108` | `set_sub_rect` | `void set_sub_rect(int atlas_size, int width, int height, int frame)` | medium | atlas grid sub-rect: `atlas_size` indexes the UV table (2/4/8/16), width/height in cells, `frame` selects top-left cell |
 | `0x10c` | `set_uv_point` | `void set_uv_point(int index, float u, float v)` | medium | sets a single UV pair (index 0..3) for custom quad UVs |
 | `0x110` | `set_color_ptr` | `void set_color_ptr(float *rgba)` | medium | sets current color from float[4] (RGBA 0..1) |
 | `0x114` | `set_color` | `void set_color(float r, float g, float b, float a)` | high | RGBA floats |

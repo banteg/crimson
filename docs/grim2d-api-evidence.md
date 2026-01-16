@@ -572,7 +572,7 @@ LAB_00401add:
 ## 0x108 — FUN_100082c0 @ 0x100082c0
 - Provisional name: `set_sub_rect` (medium)
 - Guess: `void set_sub_rect(int atlas_size, int width, int height, int frame)`
-- Notes: atlas grid sub-rect; grim.dll precomputes UV tables for sizes 2/4/8/16; explicit call uses `(8, 2, 1, frame<<1)`
+- Notes: atlas grid sub-rect; `atlas_size` indexes a pointer table with entries at 2/4/8/16; explicit call uses `(8, 2, 1, frame<<1)`
 - Ghidra signature: `void grim_set_sub_rect(int atlas_size, int width, int height, int frame)`
 - Call sites: 6 (unique funcs: 3)
 - Sample calls: FUN_0041aed0:L10950; FUN_0041aed0:L10961; FUN_0041aed0:L10964; FUN_0041aed0:L11488; FUN_004295f0:L18733; FUN_004413a0:L27845
@@ -592,6 +592,20 @@ Explicit parameterized call (FUN_004295f0):
         (**(code **)(*DAT_0048083c + 0x108))
                   (8,2,1,(&DAT_004d7a90)[(int)pfVar7[4] * 0x1f] << 1);
         (**(code **)(*DAT_0048083c + 0x11c))();
+```
+
+Atlas pointer table setup (grim.dll init):
+
+```c
+  puVar9 = &DAT_1005bc78;
+  for (iVar7 = 0x10; iVar7 != 0; iVar7 = iVar7 + -1) {
+    *puVar9 = 0;
+    puVar9 = puVar9 + 1;
+  }
+  _DAT_1005bc80 = &DAT_1005d388;
+  _DAT_1005bc88 = &DAT_1005cb08;
+  _DAT_1005bc98 = &DAT_1005c908;
+  _DAT_1005bcb8 = &DAT_1005a678;
 ```
 
 
