@@ -82,10 +82,12 @@ These offsets appear with keycodes or input-related values:
 | `0x60` | `get_mouse_wheel_delta` | `float get_mouse_wheel_delta(void)` | high | +/- wheel to change selection |
 | `0x80` | `is_key_active` | `bool is_key_active(int key)` | medium | uses key mapping entries |
 | `0x84` | `get_config_float` | `float get_config_float(int id)` | medium | IDs `0x13f..0x155` |
+| `0xa4` | `get_joystick_pov` | `int get_joystick_pov(int index)` | low | joystick POV hat value |
 | `0xac` | `create_texture` | `bool create_texture(const char *name, int width, int height)` | medium | terrain texture path |
 | `0xb4` | `load_texture` | `bool load_texture(const char *name, const char *path)` | high | `(name, filename)` |
 | `0xc0` | `get_texture_handle` | `int get_texture_handle(const char *name)` | high | returns `-1` on missing |
 | `0xc4` | `bind_texture` | `void bind_texture(int handle, int stage)` | medium | often `(handle, 0)` |
+| `0xc8` | `draw_fullscreen_quad` | `void draw_fullscreen_quad(void)` | low | full-screen quad with current texture |
 | `0xcc` | `draw_fullscreen_color` | `void draw_fullscreen_color(float r, float g, float b, float a)` | medium | fade/overlay quad (often black + alpha) |
 | `0xd0` | `draw_rect_filled` | `void draw_rect_filled(float *xy, float w, float h)` | low | UI panel fill / background quad |
 | `0xd4` | `draw_rect_outline` | `void draw_rect_outline(float *xy, float w, float h)` | low | UI panel outline/frame |

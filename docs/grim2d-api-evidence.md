@@ -302,8 +302,8 @@ LAB_00401add:
 ```
 
 
-## 0xa4 — FUN_100075b0 @ 0x100075b0
-- Ghidra signature: `undefined FUN_100075b0()`
+## 0xa4 — grim_get_joystick_pov @ 0x100075b0
+- Ghidra signature: `undefined grim_get_joystick_pov()`
 - Call sites: 2 (unique funcs: 2)
 - Sample calls: FUN_0041e8d0:L13164; FUN_0041e8f0:L13177
 - First callsite: FUN_0041e8d0 (line 15301)
@@ -389,8 +389,8 @@ LAB_00401add:
 ```
 
 
-## 0xc8 — FUN_10007870 @ 0x10007870
-- Ghidra signature: `undefined FUN_10007870()`
+## 0xc8 — grim_draw_fullscreen_quad @ 0x10007870
+- Ghidra signature: `undefined grim_draw_fullscreen_quad()`
 - Call sites: 1 (unique funcs: 1)
 - Sample calls: FUN_004188a0:L9637
 - First callsite: not found in decompiled output
