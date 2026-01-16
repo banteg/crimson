@@ -182,8 +182,8 @@ LAB_00401add:
 ```
 
 
-## 0x4c — FUN_10007330 @ 0x10007330
-- Ghidra signature: `undefined FUN_10007330()`
+## 0x4c — grim_flush_input @ 0x10007330
+- Ghidra signature: `undefined grim_flush_input()`
 - Call sites: 12 (unique funcs: 10)
 - Sample calls: FUN_004018b0:L346; FUN_004070e0:L4357; FUN_00408530:L5083; FUN_00408530:L5104; FUN_0040aab0:L5879; FUN_0040ffc0:L7055; FUN_004107e0:L7326; FUN_00410d20:L7702
 - First callsite: FUN_004018b0 (line 346)
@@ -215,8 +215,8 @@ LAB_00401add:
 ```
 
 
-## 0x54 — FUN_10005c20 @ 0x10005c20
-- Ghidra signature: `undefined FUN_10005c20()`
+## 0x54 — grim_set_key_char_buffer @ 0x10005c20
+- Ghidra signature: `undefined grim_set_key_char_buffer()`
 - Call sites: 2 (unique funcs: 2)
 - Sample calls: FUN_0042c450:L19559; FUN_0043ecf0:L27394
 - First callsite: FUN_0042c450 (line 21696)
@@ -672,8 +672,8 @@ LAB_00401add:
 ```
 
 
-## 0x128 — FUN_100085c0 @ 0x100085c0
-- Ghidra signature: `undefined FUN_100085c0()`
+## 0x128 — grim_submit_vertices_transform @ 0x100085c0
+- Ghidra signature: `undefined grim_submit_vertices_transform()`
 - Call sites: 5 (unique funcs: 1)
 - Sample calls: FUN_00446c40:L29980; FUN_00446c40:L29985; FUN_00446c40:L29986; FUN_00446c40:L30065; FUN_00446c40:L30107
 - First callsite: FUN_00446c40 (line 32116)
@@ -687,15 +687,15 @@ LAB_00401add:
 ```
 
 
-## 0x12c — FUN_10008680 @ 0x10008680
-- Ghidra signature: `undefined FUN_10008680()`
+## 0x12c — grim_submit_vertices_offset @ 0x10008680
+- Ghidra signature: `undefined grim_submit_vertices_offset()`
 - Call sites: 4 (unique funcs: 1)
 - Sample calls: FUN_00446c40:L30035; FUN_00446c40:L30042; FUN_00446c40:L30045; FUN_00446c40:L30074
 - First callsite: not found in decompiled output
 
 
-## 0x130 — FUN_10008430 @ 0x10008430
-- Ghidra signature: `undefined FUN_10008430()`
+## 0x130 — grim_submit_vertices_offset_color @ 0x10008430
+- Ghidra signature: `undefined grim_submit_vertices_offset_color()`
 - Call sites: 3 (unique funcs: 1)
 - Sample calls: FUN_00446c40:L30006; FUN_00446c40:L30014; FUN_00446c40:L30018
 - First callsite: FUN_00446c40 (line 32142)
@@ -709,8 +709,8 @@ LAB_00401add:
 ```
 
 
-## 0x134 — FUN_100084e0 @ 0x100084e0
-- Ghidra signature: `undefined FUN_100084e0()`
+## 0x134 — grim_submit_vertices_transform_color @ 0x100084e0
+- Ghidra signature: `undefined grim_submit_vertices_transform_color()`
 - Call sites: 5 (unique funcs: 2)
 - Sample calls: FUN_0042e820:L20025; FUN_0042e820:L20053; FUN_00446c40:L29953; FUN_00446c40:L29959; FUN_00446c40:L29962
 - First callsite: FUN_0042e820 (line 22162)
@@ -724,8 +724,8 @@ LAB_00401add:
 ```
 
 
-## 0x138 — FUN_10009080 @ 0x10009080
-- Ghidra signature: `undefined FUN_10009080()`
+## 0x138 — grim_draw_quad_points @ 0x10009080
+- Ghidra signature: `undefined grim_draw_quad_points()`
 - Call sites: 4 (unique funcs: 1)
 - Sample calls: FUN_00422c70:L16048; FUN_00422c70:L16204; FUN_00422c70:L16755; FUN_00422c70:L16768
 - First callsite: FUN_00422c70 (line 18185)

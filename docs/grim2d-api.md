@@ -75,7 +75,9 @@ These offsets appear with keycodes or input-related values:
 | `0x20` | `set_render_state` | `void set_render_state(uint32_t state, uint32_t value)` | high | D3D-style render state usage |
 | `0x44` | `is_key_down` | `bool is_key_down(uint32_t key)` | high | Ctrl/arrow keycodes |
 | `0x48` | `was_key_pressed` | `bool was_key_pressed(uint32_t key)` | high | edge-triggered key checks |
+| `0x4c` | `flush_input` | `void flush_input(void)` | low | clears buffered input/device state |
 | `0x50` | `get_key_char` | `int get_key_char(void)` | high | console text input |
+| `0x54` | `set_key_char_buffer` | `void set_key_char_buffer(uint8_t *buffer, int *count, int size)` | low | input char ring buffer |
 | `0x58` | `is_mouse_button_down` | `bool is_mouse_button_down(int button)` | medium | button 0 used |
 | `0x60` | `get_mouse_wheel_delta` | `float get_mouse_wheel_delta(void)` | high | +/- wheel to change selection |
 | `0x80` | `is_key_active` | `bool is_key_active(int key)` | medium | uses key mapping entries |
@@ -89,6 +91,9 @@ These offsets appear with keycodes or input-related values:
 | `0xd4` | `draw_rect_outline` | `void draw_rect_outline(float *xy, float w, float h)` | low | UI panel outline/frame |
 | `0xd8` | `draw_circle_filled` | `void draw_circle_filled(float x, float y, float radius)` | low | triangle fan circle fill |
 | `0xdc` | `draw_circle_outline` | `void draw_circle_outline(float x, float y, float radius)` | low | triangle strip ring/outline |
+| `0xe0` | `draw_line` | `void draw_line(float *p0, float *p1, float thickness)` | low | computes quad from endpoints |
+| `0xe4` | `draw_line_quad` | `void draw_line_quad(float *p0, float *p1, float *half_vec)` | low | uses precomputed half-width vector |
+| `0xec` | `flush_batch` | `void flush_batch(void)` | medium | flushes batch when buffer fills |
 | `0xe8` | `begin_batch` | `void begin_batch(void)` | high | start buffered quad batch |
 | `0xf0` | `end_batch` | `void end_batch(void)` | high | flush buffered batch |
 | `0xfc` | `set_rotation` | `void set_rotation(float radians)` | medium | rotation before draw |
@@ -101,6 +106,11 @@ These offsets appear with keycodes or input-related values:
 | `0x118` | `set_color_slot` | `void set_color_slot(int index, float r, float g, float b, float a)` | low | updates a color slot/palette |
 | `0x11c` | `draw_quad` | `void draw_quad(float x, float y, float w, float h)` | high | core draw call |
 | `0x120` | `draw_quad_xy` | `void draw_quad_xy(float *xy, float w, float h)` | medium | quad using pointer to XY |
+| `0x128` | `submit_vertices_transform` | `void submit_vertices_transform(float *verts, int count, float *offset, float *matrix)` | low | rotate + translate batch verts |
+| `0x12c` | `submit_vertices_offset` | `void submit_vertices_offset(float *verts, int count, float *offset)` | low | translate batch verts |
+| `0x130` | `submit_vertices_offset_color` | `void submit_vertices_offset_color(float *verts, int count, float *offset, float *color)` | low | translate + set color |
+| `0x134` | `submit_vertices_transform_color` | `void submit_vertices_transform_color(float *verts, int count, float *offset, float *matrix, float *color)` | low | rotate + translate + color |
+| `0x138` | `draw_quad_points` | `void draw_quad_points(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3)` | low | quad from 4 points |
 | `0x13c` | `draw_text_mono` | `void draw_text_mono(float x, float y, const char *text)` | medium | fixed 16px grid; handles a few extended codes |
 | `0x140` | `draw_text_mono_fmt` | `void draw_text_mono_fmt(float x, float y, const char *fmt, ...)` | medium | printf-style wrapper |
 | `0x144` | `draw_text_small` | `void draw_text_small(float x, float y, const char *text)` | medium | uses `smallFnt.dat` widths + `GRIM_Font2` |

@@ -3,7 +3,7 @@
 This site tracks the file formats and asset pipeline we have verified from the
 decompiled Crimsonland v1.9.93 executable and game data.
 
-Overall naming coverage: 13.2% (234 / 1778 functions named or inferred).
+Overall naming coverage: 13.7% (244 / 1778 functions named or inferred).
 
 ## Quick start
 
