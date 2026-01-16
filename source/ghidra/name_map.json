@@ -234,6 +234,34 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10005c80",
+    "name": "grim_release",
+    "signature": "void grim_release(void)",
+    "comment": "Grim2D vtable 0x0 (provisional): delete interface"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10005c90",
+    "name": "grim_set_paused",
+    "signature": "void grim_set_paused(int paused)",
+    "comment": "Grim2D vtable 0x4 (provisional): pause game tick update"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10005ca0",
+    "name": "grim_get_version",
+    "signature": "float grim_get_version(void)",
+    "comment": "Grim2D vtable 0x8 (provisional): engine version constant"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10005cb0",
+    "name": "grim_check_device",
+    "signature": "int grim_check_device(void)",
+    "comment": "Grim2D vtable 0xc (provisional): device creation test"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10007320",
     "name": "grim_is_key_down",
     "signature": "int grim_is_key_down(unsigned int key)",
@@ -252,6 +280,13 @@
     "name": "grim_flush_input",
     "signature": "void grim_flush_input(void)",
     "comment": "Grim2D vtable 0x4c (provisional): clear buffered input/device state"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007440",
+    "name": "grim_was_mouse_button_pressed",
+    "signature": "int grim_was_mouse_button_pressed(int button)",
+    "comment": "Grim2D vtable 0x5c (provisional): edge-triggered mouse button"
   },
   {
     "program": "grim.dll",
@@ -276,6 +311,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10007530",
+    "name": "grim_set_mouse_pos",
+    "signature": "void grim_set_mouse_pos(float x, float y)",
+    "comment": "Grim2D vtable 0x64 (provisional): set mouse position"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10007560",
     "name": "grim_get_mouse_wheel_delta",
     "signature": "float grim_get_mouse_wheel_delta(void)",
@@ -283,10 +325,80 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10007510",
+    "name": "grim_get_mouse_x",
+    "signature": "float grim_get_mouse_x(void)",
+    "comment": "Grim2D vtable 0x68 (provisional): mouse X position"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007520",
+    "name": "grim_get_mouse_y",
+    "signature": "float grim_get_mouse_y(void)",
+    "comment": "Grim2D vtable 0x6c (provisional): mouse Y position"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100074d0",
+    "name": "grim_get_mouse_dx",
+    "signature": "float grim_get_mouse_dx(void)",
+    "comment": "Grim2D vtable 0x70 (provisional): mouse delta X"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100074e0",
+    "name": "grim_get_mouse_dy",
+    "signature": "float grim_get_mouse_dy(void)",
+    "comment": "Grim2D vtable 0x74 (provisional): mouse delta Y"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100074f0",
+    "name": "grim_get_mouse_dx_indexed",
+    "signature": "float grim_get_mouse_dx_indexed(int index)",
+    "comment": "Grim2D vtable 0x78 (provisional): mouse delta X (indexed)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007500",
+    "name": "grim_get_mouse_dy_indexed",
+    "signature": "float grim_get_mouse_dy_indexed(int index)",
+    "comment": "Grim2D vtable 0x7c (provisional): mouse delta Y (indexed)"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10006fe0",
     "name": "grim_is_key_active",
     "signature": "int grim_is_key_active(int key)",
     "comment": "Grim2D vtable 0x80 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100072c0",
+    "name": "grim_get_slot_float",
+    "signature": "float grim_get_slot_float(int index)",
+    "comment": "Grim2D vtable 0x88 (provisional): float slot accessor"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100072d0",
+    "name": "grim_get_slot_int",
+    "signature": "int grim_get_slot_int(int index)",
+    "comment": "Grim2D vtable 0x8c (provisional): int slot accessor"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100072e0",
+    "name": "grim_set_slot_float",
+    "signature": "void grim_set_slot_float(int index, float value)",
+    "comment": "Grim2D vtable 0x90 (provisional): float slot setter"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007300",
+    "name": "grim_set_slot_int",
+    "signature": "void grim_set_slot_int(int index, int value)",
+    "comment": "Grim2D vtable 0x94 (provisional): int slot setter"
   },
   {
     "program": "grim.dll",
@@ -522,6 +634,34 @@
     "name": "grim_set_render_target",
     "signature": "int grim_set_render_target(int target_index)",
     "comment": "Grim2D vtable 0x30 (provisional): set render target; -1 resets"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10006e40",
+    "name": "grim_get_time_ms",
+    "signature": "int grim_get_time_ms(void)",
+    "comment": "Grim2D vtable 0x34 (provisional): accumulated time (ms)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10006e50",
+    "name": "grim_set_time_ms",
+    "signature": "void grim_set_time_ms(int ms)",
+    "comment": "Grim2D vtable 0x38 (provisional): set accumulated time"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10006e60",
+    "name": "grim_get_frame_dt",
+    "signature": "float grim_get_frame_dt(void)",
+    "comment": "Grim2D vtable 0x3c (provisional): clamped frame delta"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10006e90",
+    "name": "grim_get_fps",
+    "signature": "float grim_get_fps(void)",
+    "comment": "Grim2D vtable 0x40 (provisional): frames per second"
   },
   {
     "program": "grim.dll",
