@@ -4093,9 +4093,10 @@ void grim_draw_fullscreen_quad(void)
 
 /* grim_draw_rect_filled @ 100078e0 */
 
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* Grim2D vtable 0xd0 (provisional): UI panel fill/quad */
 
-void grim_draw_rect_filled(void)
+void grim_draw_rect_filled(float *xy,float w,float h)
 
 {
   int *in_ECX;
@@ -4111,7 +4112,7 @@ void grim_draw_rect_filled(void)
     uVar2 = 4;
     puVar1 = (undefined4 *)0x0;
     (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,4,3);
-    (**(code **)(*in_ECX + 0x110))(in_stack_00000010);
+    (**(code **)(*in_ECX + 0x110))();
     (**(code **)(*in_ECX + 0xfc))(0);
     (**(code **)(*in_ECX + 0xe8))();
     (**(code **)(*in_ECX + 0x11c))(*puVar1,puVar1[1],uVar2,uVar3);
@@ -5097,9 +5098,10 @@ void grim_submit_quad_raw(float *verts)
 /* WARNING: Removing unreachable block (ram,0x10008fa9) */
 /* WARNING: Removing unreachable block (ram,0x10008f74) */
 /* WARNING: Removing unreachable block (ram,0x10008f80) */
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* Grim2D vtable 0xd4 (provisional): UI panel outline/frame */
 
-void grim_draw_rect_outline(void)
+void grim_draw_rect_outline(float *xy,float w,float h)
 
 {
   int *in_ECX;
