@@ -3974,9 +3974,11 @@ void FUN_10007870(void)
 
 
 
-/* FUN_100078e0 @ 100078e0 */
+/* grim_draw_rect_filled @ 100078e0 */
 
-void FUN_100078e0(void)
+/* Grim2D vtable 0xd0 (provisional): UI panel fill/quad */
+
+void grim_draw_rect_filled(void)
 
 {
   int *in_ECX;
@@ -4937,13 +4939,14 @@ void FUN_10008eb0(undefined4 *param_1)
 
 
 
-/* FUN_10008f10 @ 10008f10 */
+/* grim_draw_rect_outline @ 10008f10 */
 
 /* WARNING: Removing unreachable block (ram,0x10008fa9) */
 /* WARNING: Removing unreachable block (ram,0x10008f74) */
 /* WARNING: Removing unreachable block (ram,0x10008f80) */
+/* Grim2D vtable 0xd4 (provisional): UI panel outline/frame */
 
-void FUN_10008f10(void)
+void grim_draw_rect_outline(void)
 
 {
   int *in_ECX;
