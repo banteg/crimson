@@ -154,6 +154,35 @@ def parse_signature(signature: str) -> tuple[str | None, int | None]:
     return return_type, param_count
 
 
+def parse_text_range(path: Path) -> tuple[int, int] | None:
+    if not path.exists():
+        return None
+    for line in path.read_text().splitlines():
+        text = line.strip()
+        if not text.startswith(".text:"):
+            continue
+        parts = text.split()
+        if len(parts) < 4:
+            continue
+        start = parse_hex(parts[1])
+        end = parse_hex(parts[3])
+        if start is None or end is None:
+            continue
+        return start, end
+    return None
+
+
+def is_exec_addr(addr: int | None, section: str, text_range: tuple[int, int] | None) -> bool:
+    if addr is None or addr == 0:
+        return False
+    if section.strip() == ".text":
+        return True
+    if text_range:
+        start, end = text_range
+        return start <= addr <= end
+    return False
+
+
 def normalize_signature(value: str | None) -> str:
     if value is None:
         return ""
@@ -303,6 +332,12 @@ def main() -> int:
         help="output directory for JSON files",
     )
     parser.add_argument(
+        "--summary",
+        type=Path,
+        default=Path("source/decompiled/grim.dll_summary.txt"),
+        help="grim.dll summary file (used to detect .text range)",
+    )
+    parser.add_argument(
         "--update-csv",
         action="store_true",
         help="rewrite CSVs with refreshed names/signatures",
@@ -317,6 +352,16 @@ def main() -> int:
 
     update_entry_names(entry_rows, functions)
     update_map_rows(map_rows, functions)
+
+    text_range = parse_text_range(args.summary)
+    entry_rows = [
+        row
+        for row in entry_rows
+        if is_exec_addr(parse_hex(row.get("func_addr")), row.get("section", ""), text_range)
+    ]
+    valid_offsets = {row.get("offset_hex") for row in entry_rows}
+    map_rows = [row for row in map_rows if row.get("offset_hex") in valid_offsets]
+    call_rows = [row for row in call_rows if row.get("offset_hex") in valid_offsets]
 
     if args.update_csv:
         entries_csv = (
