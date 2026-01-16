@@ -311,6 +311,18 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x100078e0",
+    "name": "grim_draw_rect_filled",
+    "comment": "Grim2D vtable 0xd0 (provisional): UI panel fill/quad"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10008f10",
+    "name": "grim_draw_rect_outline",
+    "comment": "Grim2D vtable 0xd4 (provisional): UI panel outline/frame"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x100079b0",
     "name": "grim_draw_fullscreen_color",
     "signature": "void grim_draw_fullscreen_color(float r, float g, float b, float a)",
