@@ -4090,9 +4090,12 @@ void grim_end_batch(void)
 
 
 
-/* FUN_10007b90 @ 10007b90 */
+/* grim_draw_circle_filled @ 10007b90 */
 
-void FUN_10007b90(void)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0xd8 (provisional): triangle fan circle fill */
+
+void grim_draw_circle_filled(float x,float y,float radius)
 
 {
   int iVar1;
@@ -4151,9 +4154,12 @@ void FUN_10007b90(void)
 
 
 
-/* FUN_10007d40 @ 10007d40 */
+/* grim_draw_circle_outline @ 10007d40 */
 
-void FUN_10007d40(void)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0xdc (provisional): triangle strip ring/outline */
+
+void grim_draw_circle_outline(float x,float y,float radius)
 
 {
   int iVar1;
