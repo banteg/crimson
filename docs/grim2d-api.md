@@ -108,7 +108,9 @@ These offsets appear with keycodes or input-related values:
 | `0xa4` | `get_joystick_pov` | `int get_joystick_pov(int index)` | low | joystick POV hat value |
 | `0xa8` | `is_joystick_button_down` | `bool is_joystick_button_down(int button)` | low | joystick button state |
 | `0xac` | `create_texture` | `bool create_texture(const char *name, int width, int height)` | medium | terrain texture path |
+| `0xb0` | `recreate_texture` | `bool recreate_texture(int handle)` | low | recreate texture object (pool/format?) |
 | `0xb4` | `load_texture` | `bool load_texture(const char *name, const char *path)` | high | `(name, filename)` |
+| `0xb8` | `validate_texture` | `bool validate_texture(int handle)` | low | validates texture handle |
 | `0xbc` | `destroy_texture` | `void destroy_texture(int handle)` | low | release texture handle |
 | `0xc0` | `get_texture_handle` | `int get_texture_handle(const char *name)` | high | returns `-1` on missing |
 | `0xc4` | `bind_texture` | `void bind_texture(int handle, int stage)` | medium | often `(handle, 0)` |
@@ -123,6 +125,8 @@ These offsets appear with keycodes or input-related values:
 | `0xec` | `flush_batch` | `void flush_batch(void)` | medium | flushes batch when buffer fills |
 | `0xe8` | `begin_batch` | `void begin_batch(void)` | high | start buffered quad batch |
 | `0xf0` | `end_batch` | `void end_batch(void)` | high | flush buffered batch |
+| `0xf4` | `submit_vertex_raw` | `void submit_vertex_raw(const float *vertex)` | low | push 1 raw vertex (7 floats) |
+| `0xf8` | `submit_quad_raw` | `void submit_quad_raw(const float *verts)` | low | push 4 raw vertices (28 floats) |
 | `0xfc` | `set_rotation` | `void set_rotation(float radians)` | medium | rotation before draw |
 | `0x100` | `set_uv` | `void set_uv(float u0, float v0, float u1, float v1)` | high | UV coords |
 | `0x104` | `set_atlas_frame` | `void set_atlas_frame(int atlas, int frame)` | high | atlas index + frame |
@@ -133,6 +137,7 @@ These offsets appear with keycodes or input-related values:
 | `0x118` | `set_color_slot` | `void set_color_slot(int index, float r, float g, float b, float a)` | low | updates a color slot/palette |
 | `0x11c` | `draw_quad` | `void draw_quad(float x, float y, float w, float h)` | high | core draw call |
 | `0x120` | `draw_quad_xy` | `void draw_quad_xy(float *xy, float w, float h)` | medium | quad using pointer to XY |
+| `0x124` | `draw_quad_rotated_matrix` | `void draw_quad_rotated_matrix(float x, float y, float w, float h)` | low | quad using rotation matrix |
 | `0x128` | `submit_vertices_transform` | `void submit_vertices_transform(float *verts, int count, float *offset, float *matrix)` | low | rotate + translate batch verts |
 | `0x12c` | `submit_vertices_offset` | `void submit_vertices_offset(float *verts, int count, float *offset)` | low | translate batch verts |
 | `0x130` | `submit_vertices_offset_color` | `void submit_vertices_offset_color(float *verts, int count, float *offset, float *color)` | low | translate + set color |
