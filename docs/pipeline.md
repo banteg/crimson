@@ -1,5 +1,7 @@
 # Extraction pipeline
 
+**Status:** In progress
+
 The extractor walks the `game/` directory, finds all `.paq` archives, and
 writes files under `assets/{paq_name}/...` while applying a couple of format
 conversions.

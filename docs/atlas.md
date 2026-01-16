@@ -1,5 +1,7 @@
 # Sprite atlas cutting (Crimsonland)
 
+**Status:** In progress
+
 This is based on the decompiled engine in `output/crimsonland.exe_decompiled.c`.
 The engine does **not** load atlas metadata from disk; all slicing is hard‑coded.
 

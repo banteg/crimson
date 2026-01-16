@@ -44,6 +44,7 @@ nav = [
   ]},
   { "Extraction pipeline" = "pipeline.md" },
   { "Atlas cutting" = "atlas.md" },
+  { "Weapon table" = "weapon-table.md" },
 ]
 
 [project.extra]
