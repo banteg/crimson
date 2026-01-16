@@ -9,6 +9,8 @@ Interesting Functions and Patterns
   ov_open_callbacks @ 0046e932
 
 [READ related]
+  crt_get_thread_data @ 004654b8
+  crt_free_thread_data @ 0046551f
   ov_read @ 0046e93e
 
 [MALLOC related]
@@ -18,6 +20,7 @@ Interesting Functions and Patterns
 
 [FREE related]
   __freebuf @ 00463f29
+  crt_free_thread_data @ 0046551f
 
 [ALLOC related]
   _malloc @ 004629d9
