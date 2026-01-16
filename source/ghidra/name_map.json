@@ -304,6 +304,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x100075b0",
+    "name": "grim_get_joystick_pov",
+    "signature": "int grim_get_joystick_pov(int index)",
+    "comment": "Grim2D vtable 0xa4 (provisional): joystick POV hat value"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x100076e0",
     "name": "grim_load_texture",
     "signature": "int grim_load_texture(char *name, char *path)",
@@ -322,6 +329,13 @@
     "name": "grim_bind_texture",
     "signature": "void grim_bind_texture(int handle, int stage)",
     "comment": "Grim2D vtable 0xc4 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007870",
+    "name": "grim_draw_fullscreen_quad",
+    "signature": "void grim_draw_fullscreen_quad(void)",
+    "comment": "Grim2D vtable 0xc8 (provisional): full-screen quad with current texture"
   },
   {
     "program": "grim.dll",
