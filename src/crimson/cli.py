@@ -29,13 +29,12 @@ def _extract_one(paq_path: Path, assets_root: Path) -> int:
         rel = _safe_relpath(name)
         dest = out_root / rel
         dest.parent.mkdir(parents=True, exist_ok=True)
-        dest.write_bytes(data)
         if dest.suffix.lower() == ".jaz":
             jaz_image = jaz.decode_jaz_bytes(data)
             base = dest.with_suffix("")
-            base.with_suffix(".rgb.jpg").write_bytes(jaz_image.jpeg)
-            jaz_image.alpha_image().save(base.with_suffix(".alpha.png"))
-            jaz_image.composite_image().save(base.with_suffix(".rgba.png"))
+            jaz_image.composite_image().save(base.with_suffix(".png"))
+        else:
+            dest.write_bytes(data)
         count += 1
     return count
 
