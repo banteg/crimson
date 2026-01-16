@@ -13443,3 +13443,188 @@ Linking the External Programs of 'grim.dll' to imported libraries...
 2026-01-16 23:15:26 INFO  (LocalFileSystem) /grim.dll: file created (node)  
 2026-01-16 23:15:26 INFO  (HeadlessAnalyzer) REPORT: Save succeeded for: /grim.dll (ghidra_grim_dll_68066:/grim.dll)  
 2026-01-16 23:15:26 INFO  (HeadlessAnalyzer) REPORT: Import succeeded  
+2026-01-16 23:46:03 INFO  (LoggingInitialization) Using log config file: jar:file:/opt/ghidra_12.0.1_PUBLIC/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml  
+2026-01-16 23:46:03 INFO  (LoggingInitialization) Using log file: source/decompiled/ghidra_analysis.log  
+2026-01-16 23:46:03 INFO  (Preferences) Loading user preferences: /home/node/.config/ghidra/ghidra_12.0.1_PUBLIC/preferences  
+2026-01-16 23:46:03 INFO  (ClassSearcher) Searching for classes...  
+2026-01-16 23:46:03 INFO  (ClassSearcher) Class search complete (728 ms)  
+2026-01-16 23:46:04 INFO  (DefaultSSLContextInitializer) Initializing SSL Context  
+2026-01-16 23:46:04 INFO  (SecureRandomFactory) Initializing Random Number Generator...  
+2026-01-16 23:46:04 INFO  (SecureRandomFactory) Random Number Generator initialization complete: NativePRNGNonBlocking  
+2026-01-16 23:46:04 INFO  (DefaultTrustManagerFactory) Trust manager disabled, cacerts have not been set  
+2026-01-16 23:46:04 INFO  (AnalyzeHeadless) Headless startup complete (1450 ms)  
+2026-01-16 23:46:04 INFO  (ClassSearcher) Class searcher loaded 58 extension points (18 false positives)  
+2026-01-16 23:46:04 INFO  (HeadlessAnalyzer) HEADLESS Script Paths:
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/PIC/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/VersionTracking/ghidra_scripts
+    /workspace/.codex/skills/ghidra/scripts/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/PDB/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/JVM/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/FileFormats/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/BytePatterns/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Jython/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/DATA/ghidra_scripts
+    /workspace/scripts/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/BSim/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/8051/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/PyGhidra/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Decompiler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/FunctionID/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/Atmel/ghidra_scripts  
+2026-01-16 23:46:04 INFO  (HeadlessAnalyzer) HEADLESS: execution starts  
+2026-01-16 23:46:04 INFO  (HeadlessAnalyzer) Creating temporary project: /tmp/ghidra_grim_dll_71843  
+2026-01-16 23:46:04 INFO  (DefaultProject) Creating project: /tmp/ghidra_grim_dll_71843  
+2026-01-16 23:46:04 INFO  (HeadlessAnalyzer) REPORT: Processing input files:   
+2026-01-16 23:46:04 INFO  (HeadlessAnalyzer)      project: /tmp/ghidra_grim_dll_71843  
+2026-01-16 23:46:04 INFO  (HeadlessAnalyzer) IMPORTING: file:///workspace/game/grim.dll  
+2026-01-16 23:46:05 INFO  (ProgramLoader) Using Loader: Portable Executable (PE)  
+2026-01-16 23:46:05 INFO  (ProgramLoader) Using Language/Compiler: x86:LE:32:default:windows  
+2026-01-16 23:46:05 INFO  (ProgramLoader) Using Library Search Path: [., /bin, /lib, /lib64, /lib/x86_64-linux-gnu, /lib/aarch64-linux-gnu, /usr/bin, /usr/lib, /usr/X11R6/bin, /usr/X11R6/lib, /usr/java/packages/lib, /usr/lib/aarch64-linux-gnu/jni, /usr/lib/aarch64-linux-gnu, /usr/lib/jni]  
+2026-01-16 23:46:05 INFO  (ProgramLoader) Additional info:
+Loading file:///workspace/game/grim.dll?MD5=88d5f6d66a1389cdeb3c30dc6ee4aa42...
+------------------------------------------------
+
+Searching 8 paths for library ADVAPI32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library D3D8.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library DINPUT8.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library GDI32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library KERNEL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library MSVCRT.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library URLMON.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library USER32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library WINMM.DLL...
+Library not found.
+------------------------------------------------
+
+Linking the External Programs of 'grim.dll' to imported libraries...
+  [KERNEL32.DLL] -> not found in project
+  [USER32.DLL] -> not found in project
+  [GDI32.DLL] -> not found in project
+  [MSVCRT.DLL] -> not found in project
+  [D3D8.DLL] -> not found in project
+  [WINMM.DLL] -> not found in project
+  [DINPUT8.DLL] -> not found in project
+  [URLMON.DLL] -> not found in project
+  [ADVAPI32.DLL] -> not found in project
+------------------------------------------------
+
+  
+2026-01-16 23:46:05 INFO  (HeadlessAnalyzer) IMPORTING: Loaded 0 additional files  
+2026-01-16 23:46:05 INFO  (HeadlessAnalyzer) ANALYZING all memory and code: file:///workspace/game/grim.dll  
+2026-01-16 23:46:05 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___raise_securityfailure' specified in file: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 23:46:05 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___report_rangecheckfailure' specified in file: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 23:46:05 INFO  (PdbUniversalAnalyzer) Skipping PDB processing: missing PDB information in program metadata  
+2026-01-16 23:46:05 INFO  (PackedDatabaseCache) Packed database cache: /var/tmp/node-ghidra/packed-db-cache  
+2026-01-16 23:46:06 DEBUG (PackedDatabaseCache) Using cached packed database: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/typeinfo/win32/windows_vs12_32.gdt  
+2026-01-16 23:46:07 ERROR (PngDataType) Invalid PNG data at 1004e51c  
+2026-01-16 23:46:08 INFO  (DecompilerSwitchAnalyzer) hit non-returning function, restarting decompiler switch analyzer later  
+2026-01-16 23:46:21 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 23:46:21 INFO  (DecompilerSwitchAnalyzer) hit non-returning function, restarting decompiler switch analyzer later  
+2026-01-16 23:46:21 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 23:46:28 INFO  (AutoAnalysisManager) -----------------------------------------------------
+    ASCII Strings                              0.214 secs
+    Apply Data Archives                        0.095 secs
+    Call Convention ID                         0.005 secs
+    Call-Fixup Installer                       0.027 secs
+    Create Address Tables                      0.071 secs
+    Create Address Tables - One Time           0.047 secs
+    Create Function                            0.230 secs
+    Data Reference                             0.127 secs
+    Decompiler Parameter ID                    4.493 secs
+    Decompiler Switch Analysis                 7.491 secs
+    Decompiler Switch Analysis - One Time      2.428 secs
+    Demangler Microsoft                        0.014 secs
+    Disassemble                                0.948 secs
+    Disassemble Entry Points                   0.029 secs
+    Embedded Media                             0.012 secs
+    External Entry References                  0.001 secs
+    Function ID                                0.317 secs
+    Function Start Pre Search                  0.012 secs
+    Function Start Search                      0.069 secs
+    Function Start Search After Code           0.022 secs
+    Function Start Search After Data           0.016 secs
+    Function Start Search delayed - One Time   0.003 secs
+    Non-Returning Functions - Discovered       0.073 secs
+    Non-Returning Functions - Known            0.007 secs
+    PDB Universal                              0.002 secs
+    Reference                                  0.204 secs
+    Scalar Operand References                  0.521 secs
+    Shared Return Calls                        0.097 secs
+    Stack                                      1.571 secs
+    Subroutine References                      0.279 secs
+    Subroutine References - One Time           0.001 secs
+    Windows x86 PE Exception Handling          1.206 secs
+    Windows x86 PE RTTI Analyzer               0.000 secs
+    Windows x86 Thread Environment Block (TEB) Analyzer     0.011 secs
+    WindowsResourceReference                   0.535 secs
+    X86 Function Callee Purge                  0.093 secs
+    x86 Constant Reference Analyzer            1.664 secs
+-----------------------------------------------------
+     Total Time   22 secs
+-----------------------------------------------------
+  
+2026-01-16 23:46:28 INFO  (HeadlessAnalyzer) REPORT: Analysis succeeded for file: file:///workspace/game/grim.dll  
+2026-01-16 23:46:28 INFO  (HeadlessAnalyzer) REPORT: Execute script: CreateGrim2DVtableFunctions.java   
+2026-01-16 23:46:28 INFO  (HeadlessAnalyzer) SCRIPT: /workspace/scripts/ghidra_scripts/CreateGrim2DVtableFunctions.java  
+2026-01-16 23:46:28 INFO  (GhidraScript) CreateGrim2DVtableFunctions.java> CreateGrim2DVtableFunctions: created=84 skipped=80  
+2026-01-16 23:46:28 INFO  (HeadlessAnalyzer) REPORT: Execute script: ApplyNameMap.java 'source/ghidra/name_map.json'   
+2026-01-16 23:46:28 INFO  (HeadlessAnalyzer) SCRIPT: /workspace/scripts/ghidra_scripts/ApplyNameMap.java  
+2026-01-16 23:46:28 INFO  (GhidraScript) ApplyNameMap.java> Applied name map: /workspace/source/ghidra/name_map.json  
+2026-01-16 23:46:28 INFO  (GhidraScript) ApplyNameMap.java> Program: grim.dll  
+2026-01-16 23:46:28 INFO  (GhidraScript) ApplyNameMap.java> Updated entries: 95  
+2026-01-16 23:46:28 INFO  (GhidraScript) ApplyNameMap.java> Renamed: 95, Signatures: 95, Comments: 95  
+2026-01-16 23:46:28 INFO  (GhidraScript) ApplyNameMap.java> Missing: 0, Skipped: 44  
+2026-01-16 23:46:28 INFO  (HeadlessAnalyzer) REPORT: Execute script: ExportFunctions.java   
+2026-01-16 23:46:29 INFO  (HeadlessAnalyzer) SCRIPT: /workspace/.codex/skills/ghidra/scripts/ghidra_scripts/ExportFunctions.java  
+2026-01-16 23:46:29 INFO  (GhidraScript) ExportFunctions.java> Exporting functions to: /workspace/source/decompiled/grim.dll_functions.json  
+2026-01-16 23:46:29 INFO  (GhidraScript) ExportFunctions.java> Exported 959 functions  
+2026-01-16 23:46:29 INFO  (HeadlessAnalyzer) ANALYZING changes made by post scripts: file:///workspace/game/grim.dll  
+2026-01-16 23:46:33 INFO  (AutoAnalysisManager) -----------------------------------------------------
+    Call Convention ID                         2.397 secs
+    Call-Fixup Installer                       0.000 secs
+    Decompiler Parameter ID                    2.295 secs
+    Function Start Search                      0.001 secs
+    Shared Return Calls                        0.002 secs
+    Stack                                      0.054 secs
+    X86 Function Callee Purge                  0.000 secs
+-----------------------------------------------------
+     Total Time   4 secs
+-----------------------------------------------------
+  
+2026-01-16 23:46:33 INFO  (HeadlessAnalyzer) REPORT: Post-analysis succeeded for file: file:///workspace/game/grim.dll  
+2026-01-16 23:46:33 INFO  (LocalFileSystem) /grim.dll: file created (node)  
+2026-01-16 23:46:33 INFO  (HeadlessAnalyzer) REPORT: Save succeeded for: /grim.dll (ghidra_grim_dll_71843:/grim.dll)  
+2026-01-16 23:46:33 INFO  (HeadlessAnalyzer) REPORT: Import succeeded  

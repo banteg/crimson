@@ -1313,7 +1313,7 @@
     "calling_convention": "__stdcall",
     "return_type": "void",
     "param_count": 1,
-    "signature": "void grim_set_color_ptr(float *rgba)",
+    "signature": "void grim_set_color_ptr(float * rgba)",
     "source_type": "DEFAULT"
   },
   {

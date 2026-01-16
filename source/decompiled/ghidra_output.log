@@ -5,12 +5,12 @@ INFO  Using log config file: jar:file:/opt/ghidra_12.0.1_PUBLIC/Ghidra/Framework
 INFO  Using log file: source/decompiled/ghidra_analysis.log (LoggingInitialization)  
 INFO  Loading user preferences: /home/node/.config/ghidra/ghidra_12.0.1_PUBLIC/preferences (Preferences)  
 INFO  Searching for classes... (ClassSearcher)  
-INFO  Class search complete (723 ms) (ClassSearcher)  
+INFO  Class search complete (728 ms) (ClassSearcher)  
 INFO  Initializing SSL Context (DefaultSSLContextInitializer)  
 INFO  Initializing Random Number Generator... (SecureRandomFactory)  
 INFO  Random Number Generator initialization complete: NativePRNGNonBlocking (SecureRandomFactory)  
 INFO  Trust manager disabled, cacerts have not been set (DefaultTrustManagerFactory)  
-INFO  Headless startup complete (1443 ms) (AnalyzeHeadless)  
+INFO  Headless startup complete (1450 ms) (AnalyzeHeadless)  
 INFO  Class searcher loaded 58 extension points (18 false positives) (ClassSearcher)  
 INFO  HEADLESS Script Paths:
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger/ghidra_scripts
@@ -18,7 +18,6 @@ INFO  HEADLESS Script Paths:
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/PIC/ghidra_scripts
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/VersionTracking/ghidra_scripts
     /workspace/.codex/skills/ghidra/scripts/ghidra_scripts
-    /workspace/scripts/ghidra_scripts
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/DecompilerDependent/ghidra_scripts
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/PDB/ghidra_scripts
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/JVM/ghidra_scripts
@@ -30,6 +29,7 @@ INFO  HEADLESS Script Paths:
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Jython/ghidra_scripts
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/DATA/ghidra_scripts
+    /workspace/scripts/ghidra_scripts
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/BSim/ghidra_scripts
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/8051/ghidra_scripts
@@ -39,10 +39,10 @@ INFO  HEADLESS Script Paths:
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/FunctionID/ghidra_scripts
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/Atmel/ghidra_scripts (HeadlessAnalyzer)  
 INFO  HEADLESS: execution starts (HeadlessAnalyzer)  
-INFO  Creating temporary project: /tmp/ghidra_grim_dll_68066 (HeadlessAnalyzer)  
-INFO  Creating project: /tmp/ghidra_grim_dll_68066 (DefaultProject)  
+INFO  Creating temporary project: /tmp/ghidra_grim_dll_71843 (HeadlessAnalyzer)  
+INFO  Creating project: /tmp/ghidra_grim_dll_71843 (DefaultProject)  
 INFO  REPORT: Processing input files:  (HeadlessAnalyzer)  
-INFO       project: /tmp/ghidra_grim_dll_68066 (HeadlessAnalyzer)  
+INFO       project: /tmp/ghidra_grim_dll_71843 (HeadlessAnalyzer)  
 INFO  IMPORTING: file:///workspace/game/grim.dll (HeadlessAnalyzer)  
 INFO  Using Loader: Portable Executable (PE) (ProgramLoader)  
 INFO  Using Language/Compiler: x86:LE:32:default:windows (ProgramLoader)  
@@ -112,89 +112,76 @@ INFO  Applied data type archive: windows_vs12_32 (ApplyDataArchiveAnalyzer)
 INFO  hit non-returning function, restarting decompiler switch analyzer later (DecompilerSwitchAnalyzer)  
 INFO  Applied data type archive: windows_vs12_32 (ApplyDataArchiveAnalyzer)  
 INFO  -----------------------------------------------------
-    ASCII Strings                              0.286 secs
-    Apply Data Archives                        0.104 secs
-    Call Convention ID                         0.003 secs
-    Call-Fixup Installer                       0.021 secs
-    Create Address Tables                      0.061 secs
-    Create Address Tables - One Time           0.082 secs
-    Create Function                            0.261 secs
-    Data Reference                             0.166 secs
-    Decompiler Parameter ID                    4.613 secs
-    Decompiler Switch Analysis                 7.533 secs
-    Decompiler Switch Analysis - One Time      2.537 secs
-    Demangler Microsoft                        0.017 secs
-    Disassemble                                0.958 secs
-    Disassemble Entry Points                   0.032 secs
-    Embedded Media                             0.013 secs
-    External Entry References                  0.000 secs
-    Function ID                                0.310 secs
+    ASCII Strings                              0.214 secs
+    Apply Data Archives                        0.095 secs
+    Call Convention ID                         0.005 secs
+    Call-Fixup Installer                       0.027 secs
+    Create Address Tables                      0.071 secs
+    Create Address Tables - One Time           0.047 secs
+    Create Function                            0.230 secs
+    Data Reference                             0.127 secs
+    Decompiler Parameter ID                    4.493 secs
+    Decompiler Switch Analysis                 7.491 secs
+    Decompiler Switch Analysis - One Time      2.428 secs
+    Demangler Microsoft                        0.014 secs
+    Disassemble                                0.948 secs
+    Disassemble Entry Points                   0.029 secs
+    Embedded Media                             0.012 secs
+    External Entry References                  0.001 secs
+    Function ID                                0.317 secs
     Function Start Pre Search                  0.012 secs
-    Function Start Search                      0.073 secs
-    Function Start Search After Code           0.023 secs
-    Function Start Search After Data           0.018 secs
-    Function Start Search delayed - One Time   0.004 secs
-    Non-Returning Functions - Discovered       0.100 secs
+    Function Start Search                      0.069 secs
+    Function Start Search After Code           0.022 secs
+    Function Start Search After Data           0.016 secs
+    Function Start Search delayed - One Time   0.003 secs
+    Non-Returning Functions - Discovered       0.073 secs
     Non-Returning Functions - Known            0.007 secs
     PDB Universal                              0.002 secs
-    Reference                                  0.203 secs
-    Scalar Operand References                  0.422 secs
-    Shared Return Calls                        0.120 secs
-    Stack                                      1.538 secs
-    Subroutine References                      0.271 secs
-    Subroutine References - One Time           0.002 secs
-    Windows x86 PE Exception Handling          1.224 secs
+    Reference                                  0.204 secs
+    Scalar Operand References                  0.521 secs
+    Shared Return Calls                        0.097 secs
+    Stack                                      1.571 secs
+    Subroutine References                      0.279 secs
+    Subroutine References - One Time           0.001 secs
+    Windows x86 PE Exception Handling          1.206 secs
     Windows x86 PE RTTI Analyzer               0.000 secs
-    Windows x86 Thread Environment Block (TEB) Analyzer     0.012 secs
-    WindowsResourceReference                   0.559 secs
-    X86 Function Callee Purge                  0.098 secs
-    x86 Constant Reference Analyzer            1.661 secs
+    Windows x86 Thread Environment Block (TEB) Analyzer     0.011 secs
+    WindowsResourceReference                   0.535 secs
+    X86 Function Callee Purge                  0.093 secs
+    x86 Constant Reference Analyzer            1.664 secs
 -----------------------------------------------------
-     Total Time   23 secs
+     Total Time   22 secs
 -----------------------------------------------------
  (AutoAnalysisManager)  
 INFO  REPORT: Analysis succeeded for file: file:///workspace/game/grim.dll (HeadlessAnalyzer)  
 INFO  REPORT: Execute script: CreateGrim2DVtableFunctions.java  (HeadlessAnalyzer)  
 INFO  SCRIPT: /workspace/scripts/ghidra_scripts/CreateGrim2DVtableFunctions.java (HeadlessAnalyzer)  
 INFO  CreateGrim2DVtableFunctions.java> CreateGrim2DVtableFunctions: created=84 skipped=80 (GhidraScript)  
-INFO  REPORT: Execute script: ApplyNameMap.java  (HeadlessAnalyzer)  
+INFO  REPORT: Execute script: ApplyNameMap.java 'source/ghidra/name_map.json'  (HeadlessAnalyzer)  
 INFO  SCRIPT: /workspace/scripts/ghidra_scripts/ApplyNameMap.java (HeadlessAnalyzer)  
 INFO  ApplyNameMap.java> Applied name map: /workspace/source/ghidra/name_map.json (GhidraScript)  
 INFO  ApplyNameMap.java> Program: grim.dll (GhidraScript)  
 INFO  ApplyNameMap.java> Updated entries: 95 (GhidraScript)  
 INFO  ApplyNameMap.java> Renamed: 95, Signatures: 95, Comments: 95 (GhidraScript)  
 INFO  ApplyNameMap.java> Missing: 0, Skipped: 44 (GhidraScript)  
-INFO  REPORT: Execute script: ExportAll.java  (HeadlessAnalyzer)  
-INFO  SCRIPT: /workspace/.codex/skills/ghidra/scripts/ghidra_scripts/ExportAll.java (HeadlessAnalyzer)  
-INFO  ExportAll.java> === Starting comprehensive export === (GhidraScript)  
-INFO  ExportAll.java> Output directory: source/decompiled (GhidraScript)  
-INFO  ExportAll.java> Program: grim.dll (GhidraScript)  
-INFO  ExportAll.java> Architecture: x86 (GhidraScript)  
-INFO  ExportAll.java>  (GhidraScript)  
-INFO  ExportAll.java> Exporting summary to: grim.dll_summary.txt (GhidraScript)  
-INFO  ExportAll.java> Exporting decompiled code to: grim.dll_decompiled.c (GhidraScript)  
-INFO  ExportAll.java>   Decompiled 919 functions (GhidraScript)  
-INFO  ExportAll.java> Exporting functions to: grim.dll_functions.json (GhidraScript)  
-INFO  ExportAll.java>   Exported 959 functions (GhidraScript)  
-INFO  ExportAll.java> Exporting strings to: grim.dll_strings.txt (GhidraScript)  
-INFO  ExportAll.java>   Exported 583 strings (GhidraScript)  
-INFO  ExportAll.java> Analyzing interesting patterns... (GhidraScript)  
-INFO  ExportAll.java>  (GhidraScript)  
-INFO  ExportAll.java> === Export complete === (GhidraScript)  
+INFO  REPORT: Execute script: ExportFunctions.java  (HeadlessAnalyzer)  
+INFO  SCRIPT: /workspace/.codex/skills/ghidra/scripts/ghidra_scripts/ExportFunctions.java (HeadlessAnalyzer)  
+INFO  ExportFunctions.java> Exporting functions to: /workspace/source/decompiled/grim.dll_functions.json (GhidraScript)  
+INFO  ExportFunctions.java> Exported 959 functions (GhidraScript)  
 INFO  ANALYZING changes made by post scripts: file:///workspace/game/grim.dll (HeadlessAnalyzer)  
 INFO  -----------------------------------------------------
-    Call Convention ID                         2.419 secs
+    Call Convention ID                         2.397 secs
     Call-Fixup Installer                       0.000 secs
-    Decompiler Parameter ID                    2.334 secs
-    Function Start Search                      0.000 secs
+    Decompiler Parameter ID                    2.295 secs
+    Function Start Search                      0.001 secs
     Shared Return Calls                        0.002 secs
-    Stack                                      0.061 secs
-    X86 Function Callee Purge                  0.001 secs
+    Stack                                      0.054 secs
+    X86 Function Callee Purge                  0.000 secs
 -----------------------------------------------------
      Total Time   4 secs
 -----------------------------------------------------
  (AutoAnalysisManager)  
 INFO  REPORT: Post-analysis succeeded for file: file:///workspace/game/grim.dll (HeadlessAnalyzer)  
 INFO  /grim.dll: file created (node) (LocalFileSystem)  
-INFO  REPORT: Save succeeded for: /grim.dll (ghidra_grim_dll_68066:/grim.dll) (HeadlessAnalyzer)  
+INFO  REPORT: Save succeeded for: /grim.dll (ghidra_grim_dll_71843:/grim.dll) (HeadlessAnalyzer)  
 INFO  REPORT: Import succeeded (HeadlessAnalyzer)  

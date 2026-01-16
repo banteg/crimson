@@ -572,7 +572,7 @@ LAB_00401add:
 ## 0x108 — FUN_100082c0 @ 0x100082c0
 - Provisional name: `set_sub_rect` (medium)
 - Guess: `void set_sub_rect(int atlas_size, int width, int height, int frame)`
-- Notes: atlas sub-rect in cell units (uses atlas size + frame)
+- Notes: atlas grid sub-rect; grim.dll precomputes UV tables for sizes 2/4/8/16; explicit call uses `(8, 2, 1, frame<<1)`
 - Ghidra signature: `void grim_set_sub_rect(int atlas_size, int width, int height, int frame)`
 - Call sites: 6 (unique funcs: 3)
 - Sample calls: FUN_0041aed0:L10950; FUN_0041aed0:L10961; FUN_0041aed0:L10964; FUN_0041aed0:L11488; FUN_004295f0:L18733; FUN_004413a0:L27845
@@ -586,9 +586,18 @@ LAB_00401add:
       fStack_100 = 64.0;
 ```
 
+Explicit parameterized call (FUN_004295f0):
+
+```c
+        (**(code **)(*DAT_0048083c + 0x108))
+                  (8,2,1,(&DAT_004d7a90)[(int)pfVar7[4] * 0x1f] << 1);
+        (**(code **)(*DAT_0048083c + 0x11c))();
+```
+
 
 ## 0x10c — FUN_100083a0 @ 0x100083a0
 - Ghidra signature: `undefined FUN_100083a0()`
+- Notes: called as four consecutive `set_uv_point` calls (indices 0..3) to override per-corner UVs; u=0.625, v in {0, 0.25}
 - Call sites: 4 (unique funcs: 1)
 - Sample calls: FUN_00422c70:L16721; FUN_00422c70:L16725; FUN_00422c70:L16728; FUN_00422c70:L16729
 - First callsite: FUN_00422c70 (line 18858)
@@ -599,6 +608,13 @@ LAB_00401add:
               (**(code **)(*DAT_0048083c + 0x10c))(0,0x3f200000,0);
               fVar26 = 0.25;
               fVar24 = 0.625;
+              fVar21 = 1.4013e-45;
+              (**(code **)(*DAT_0048083c + 0x10c))(1,0x3f200000,0x3e800000);
+              fVar19 = 0.25;
+              in_stack_fffffd48 = 0.625;
+              (**(code **)(*DAT_0048083c + 0x10c))(2,0x3f200000,0x3e800000);
+              (**(code **)(*DAT_0048083c + 0x10c))(3,0x3f200000,0);
+              pfVar7 = &fStack_274;
 ```
 
 
