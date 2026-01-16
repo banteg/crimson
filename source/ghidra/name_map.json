@@ -97,5 +97,26 @@
     "address": "0x0046777a",
     "name": "crt_sbh_create_region",
     "comment": "CRT small-block heap region init"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462edd",
+    "name": "crt_exit",
+    "signature": "void crt_exit(unsigned int code)",
+    "comment": "CRT exit path (atexit/onexit + ExitProcess)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004668e9",
+    "name": "crt_exception_filter",
+    "signature": "long crt_exception_filter(int code, _EXCEPTION_POINTERS *info)",
+    "comment": "CRT exception filter/dispatch"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00468c71",
+    "name": "crt_get_environment_strings",
+    "signature": "char * crt_get_environment_strings(void)",
+    "comment": "returns a malloc'd copy of the environment block"
   }
 ]
