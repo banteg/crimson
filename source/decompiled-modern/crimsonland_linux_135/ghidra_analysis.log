@@ -1,0 +1,288 @@
+2026-01-16 19:59:19 INFO  (LoggingInitialization) Using log config file: jar:file:/Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml  
+2026-01-16 19:59:19 INFO  (LoggingInitialization) Using log file: /Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/crimson_linux_135/analysis/ghidra_analysis.log  
+2026-01-16 19:59:19 INFO  (Preferences) Loading user preferences: /Users/banteg/Library/ghidra/ghidra_12.0_DEV/preferences  
+2026-01-16 19:59:19 INFO  (ClassSearcher) Searching for classes...  
+2026-01-16 19:59:20 INFO  (ClassSearcher) Class search complete (778 ms)  
+2026-01-16 19:59:20 INFO  (SSLContextInitializer) Initializing SSL Context  
+2026-01-16 19:59:20 INFO  (SecureRandomFactory) Initializing Random Number Generator...  
+2026-01-16 19:59:20 INFO  (SecureRandomFactory) Random Number Generator initialization complete: NativePRNGNonBlocking  
+2026-01-16 19:59:20 INFO  (ApplicationTrustManagerFactory) Trust manager disabled, cacerts have not been set  
+2026-01-16 19:59:20 INFO  (AnalyzeHeadless) Headless startup complete (1634 ms)  
+2026-01-16 19:59:20 INFO  (ClassSearcher) Class searcher loaded 58 extension points (18 false positives)  
+2026-01-16 19:59:20 INFO  (HeadlessAnalyzer) HEADLESS Script Paths:
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/Atmel/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/PIC/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/VersionTracking/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BytePatterns/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FileFormats/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Jython/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BSim/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PyGhidra/ghidra_scripts
+    /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/JVM/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/DATA/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PDB/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Decompiler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/8051/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FunctionID/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/ghidra_scripts  
+2026-01-16 19:59:20 INFO  (HeadlessAnalyzer) HEADLESS: execution starts  
+2026-01-16 19:59:20 INFO  (HeadlessAnalyzer) Creating temporary project: /tmp/ghidra_crimsonland_89077  
+2026-01-16 19:59:20 INFO  (DefaultProject) Creating project: /tmp/ghidra_crimsonland_89077  
+2026-01-16 19:59:20 INFO  (HeadlessAnalyzer) REPORT: Processing input files:   
+2026-01-16 19:59:20 INFO  (HeadlessAnalyzer)      project: /tmp/ghidra_crimsonland_89077  
+2026-01-16 19:59:20 INFO  (HeadlessAnalyzer) IMPORTING: file:///Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/crimson_linux_135/Crimsonland/game/crimsonland  
+2026-01-16 19:59:21 INFO  (ProgramLoader) Using Loader: Executable and Linking Format (ELF)  
+2026-01-16 19:59:21 INFO  (ProgramLoader) Using Language/Compiler: x86:LE:64:default:gcc  
+2026-01-16 19:59:21 INFO  (ProgramLoader) Using Library Search Path: [., /System/Library/dyld/dyld_shared_cache_arm64e, /System/Library/dyld/dyld_shared_cache_x86_64, /System/Library/dyld/dyld_shared_cache_x86_64h, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64h, /Users/banteg/Library/Java/Extensions, /Library/Java/Extensions, /Network/Library/Java/Extensions, /System/Library/Java/Extensions, /usr/lib/java]  
+2026-01-16 19:59:21 DEBUG (ElfHeader) Elf symbol table section .dynsym linked to string table section .dynstr  
+2026-01-16 19:59:21 DEBUG (ElfHeader) Elf symbol table section .symtab linked to string table section .strtab  
+2026-01-16 19:59:21 DEBUG (ElfHeader) Elf relocation table section .rela.dyn linked to symbol table section .dynsym affecting PT_LOAD  
+2026-01-16 19:59:21 DEBUG (ElfHeader) Elf relocation table section .rela.plt linked to symbol table section .dynsym affecting .got.plt  
+2026-01-16 19:59:21 DEBUG (ElfProgramBuilder) Discarding 16-byte alignment/filler segment_3.7 at 009fe650  
+2026-01-16 19:59:21 DEBUG (ElfProgramBuilder) Discarding 4-byte alignment/filler segment_2.6 at 00400334  
+2026-01-16 19:59:21 DEBUG (ElfProgramBuilder) Discarding 6-byte alignment/filler segment_2.14 at 0040383a  
+2026-01-16 19:59:21 DEBUG (ElfProgramBuilder) Discarding 8-byte alignment/filler segment_2.17 at 004044c8  
+2026-01-16 19:59:21 DEBUG (ElfProgramBuilder) Discarding 2-byte alignment/filler segment_2.19 at 0068de52  
+2026-01-16 19:59:21 DEBUG (ElfProgramBuilder) Discarding 3-byte alignment/filler segment_2.21 at 0068de5d  
+2026-01-16 19:59:21 DEBUG (ElfProgramBuilder) Discarding 4-byte alignment/filler segment_2.24 at 007b0da4  
+2026-01-16 19:59:23 INFO  (ProgramLoader) Additional info:
+Loading file:///Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/crimson_linux_135/Crimsonland/game/crimsonland?MD5=1bbe731db700904e4f127c8ff302765c...
+Unsupported Thread-Local Symbol not loaded: nx_thread_state
+ELF Relocation Failure: R_X86_64_COPY (5, 0x5) at 009fec20 (Symbol = _ZTVN10__cxxabiv117__class_type_infoE) - Runtime copy not supported (88-bytes)
+ELF Relocation Failure: R_X86_64_COPY (5, 0x5) at 009fec78 (Symbol = _ZTVN10__cxxabiv120__si_class_type_infoE) - Runtime copy not supported (88-bytes)
+ELF Relocation Failure: R_X86_64_COPY (5, 0x5) at 009fece0 (Symbol = stderr) - Runtime copy not supported (8-bytes)
+Converted 6 .plt section symbols to external thunks
+Setting block .init_array to read-only
+Setting block .fini_array to read-only
+Setting block .jcr to read-only
+Setting block .dynamic to read-only
+------------------------------------------------
+
+Linking the External Programs of 'crimsonland' to imported libraries...
+  [libopenal.so.1] -> not found in project
+  [libpthread.so.0] -> not found in project
+  [libSDL2-2.0.so.0] -> not found in project
+  [libstdc++.so.6] -> not found in project
+  [libm.so.6] -> not found in project
+  [libgcc_s.so.1] -> not found in project
+  [libc.so.6] -> not found in project
+------------------------------------------------
+
+Resolving External Symbols of [/crimsonland] - 199 unresolved symbols, no external libraries configured - skipping
+  
+2026-01-16 19:59:23 INFO  (HeadlessAnalyzer) IMPORTING: Loaded 0 additional files  
+2026-01-16 19:59:23 INFO  (HeadlessAnalyzer) ANALYZING all memory and code: file:///Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/crimson_linux_135/Crimsonland/game/crimsonland  
+2026-01-16 19:59:23 INFO  (ExternalDebugFileSectionProvider) DWARF external debug information found: ExternalDebugInfo [filename=null, crc=0, hash=0047a1e29c72da08d4432f434fe1c7c90da693d7]  
+2026-01-16 19:59:23 INFO  (DWARFAnalyzer) Unable to find DWARF information, skipping DWARF analysis  
+2026-01-16 19:59:36 INFO  (DecompilerSwitchAnalyzer) hit non-returning function, restarting decompiler switch analyzer later  
+2026-01-16 19:59:39 WARN  (DecompileCallback) Decompiling 006786b0: Unable to read bytes at ram:00819c40  
+2026-01-16 19:59:40 WARN  (DecompileCallback) Decompiling 005d0310: Unable to read bytes at ram:00000000  
+2026-01-16 19:59:40 WARN  (DecompileCallback) Decompiling 00664910: Unable to read bytes at ram:008182a8  
+2026-01-16 19:59:58 INFO  (PackedDatabaseCache) Packed database cache: /var/tmp/banteg-ghidra/packed-db-cache  
+2026-01-16 19:59:58 DEBUG (PackedDatabaseCache) Caching packed database: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/typeinfo/generic/generic_clib_64.gdt  
+2026-01-16 19:59:58 DEBUG (PackedDatabase) Unpacking database /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/typeinfo/generic/generic_clib_64.gdt -> /var/tmp/banteg-ghidra/packed-db-cache/pdb66CDB134/db.1.gbf  
+2026-01-16 19:59:58 DEBUG (PackedDatabaseCache) Cache update completed: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/typeinfo/generic/generic_clib_64.gdt  
+2026-01-16 19:59:58 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: generic_clib_64  
+2026-01-16 20:00:04 WARN  (DecompileCallback) Decompiling 005d0310: Unable to read bytes at ram:00000000  
+2026-01-16 20:00:07 WARN  (DecompileCallback) Decompiling 006786b0: Unable to read bytes at ram:00819c40  
+2026-01-16 20:00:08 WARN  (DecompileCallback) Decompiling 00664910: Unable to read bytes at ram:008182a8  
+2026-01-16 20:00:30 INFO  (AutoAnalysisManager) -----------------------------------------------------
+    ASCII Strings                              0.453 secs
+    Apply Data Archives                        0.190 secs
+    Call Convention ID                        14.788 secs
+    Call-Fixup Installer                       0.057 secs
+    Create Address Tables                      0.393 secs
+    Create Address Tables - One Time           3.451 secs
+    Create Function                            0.020 secs
+    DWARF                                      0.005 secs
+    Data Reference                             1.232 secs
+    Decompiler Switch Analysis                 1.027 secs
+    Decompiler Switch Analysis - One Time      5.100 secs
+    Demangler GNU                              1.270 secs
+    Disassemble Entry Points                   3.668 secs
+    ELF Scalar Operand References              2.403 secs
+    Embedded Media                             0.034 secs
+    External Entry References                  0.037 secs
+    Function ID                                2.078 secs
+    Function Start Pre Search                  0.079 secs
+    Function Start Search                      0.241 secs
+    Function Start Search After Code           0.116 secs
+    Function Start Search After Data           0.081 secs
+    GCC Exception Handlers                     5.261 secs
+    Non-Returning Functions - Discovered       2.314 secs
+    Non-Returning Functions - Known            0.014 secs
+    Reference                                  1.430 secs
+    Shared Return Calls                        0.611 secs
+    Stack                                      9.494 secs
+    Subroutine References                      0.413 secs
+    x86 Constant Reference Analyzer           10.392 secs
+-----------------------------------------------------
+     Total Time   66 secs
+-----------------------------------------------------
+  
+2026-01-16 20:00:30 INFO  (HeadlessAnalyzer) REPORT: Analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/crimson_linux_135/Crimsonland/game/crimsonland  
+2026-01-16 20:00:30 INFO  (HeadlessAnalyzer) REPORT: Execute script: ExportFunctions.java   
+2026-01-16 20:00:30 INFO  (HeadlessAnalyzer) SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts/ExportFunctions.java  
+2026-01-16 20:00:30 INFO  (GhidraScript) ExportFunctions.java> Exporting functions to: /Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/crimson_linux_135/analysis/crimsonland_functions.json  
+2026-01-16 20:00:30 INFO  (GhidraScript) ExportFunctions.java> Exported 6626 functions  
+2026-01-16 20:00:30 INFO  (HeadlessAnalyzer) ANALYZING changes made by post scripts: file:///Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/crimson_linux_135/Crimsonland/game/crimsonland  
+2026-01-16 20:00:30 INFO  (HeadlessAnalyzer) REPORT: Post-analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/crimson_linux_135/Crimsonland/game/crimsonland  
+2026-01-16 20:00:31 INFO  (LocalFileSystem) /crimsonland: file created (banteg)  
+2026-01-16 20:00:31 INFO  (HeadlessAnalyzer) REPORT: Save succeeded for: /crimsonland (ghidra_crimsonland_89077:/crimsonland)  
+2026-01-16 20:00:31 INFO  (HeadlessAnalyzer) REPORT: Import succeeded  
+2026-01-16 20:05:44 INFO  (LoggingInitialization) Using log config file: jar:file:/Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml  
+2026-01-16 20:05:44 INFO  (LoggingInitialization) Using log file: /Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/crimson_linux_135/analysis/ghidra_analysis.log  
+2026-01-16 20:05:44 INFO  (Preferences) Loading user preferences: /Users/banteg/Library/ghidra/ghidra_12.0_DEV/preferences  
+2026-01-16 20:05:44 INFO  (ClassSearcher) Searching for classes...  
+2026-01-16 20:05:45 INFO  (ClassSearcher) Class search complete (805 ms)  
+2026-01-16 20:05:45 INFO  (SSLContextInitializer) Initializing SSL Context  
+2026-01-16 20:05:45 INFO  (SecureRandomFactory) Initializing Random Number Generator...  
+2026-01-16 20:05:45 INFO  (SecureRandomFactory) Random Number Generator initialization complete: NativePRNGNonBlocking  
+2026-01-16 20:05:45 INFO  (ApplicationTrustManagerFactory) Trust manager disabled, cacerts have not been set  
+2026-01-16 20:05:45 INFO  (AnalyzeHeadless) Headless startup complete (1599 ms)  
+2026-01-16 20:05:45 INFO  (ClassSearcher) Class searcher loaded 58 extension points (18 false positives)  
+2026-01-16 20:05:45 INFO  (HeadlessAnalyzer) HEADLESS Script Paths:
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/Atmel/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/PIC/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/VersionTracking/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BytePatterns/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FileFormats/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Jython/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BSim/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PyGhidra/ghidra_scripts
+    /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/JVM/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/DATA/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PDB/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Decompiler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/8051/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FunctionID/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/ghidra_scripts  
+2026-01-16 20:05:45 INFO  (HeadlessAnalyzer) HEADLESS: execution starts  
+2026-01-16 20:05:45 INFO  (HeadlessAnalyzer) Creating temporary project: /tmp/ghidra_crimsonland_2982  
+2026-01-16 20:05:45 INFO  (DefaultProject) Creating project: /tmp/ghidra_crimsonland_2982  
+2026-01-16 20:05:45 INFO  (HeadlessAnalyzer) REPORT: Processing input files:   
+2026-01-16 20:05:45 INFO  (HeadlessAnalyzer)      project: /tmp/ghidra_crimsonland_2982  
+2026-01-16 20:05:45 INFO  (HeadlessAnalyzer) IMPORTING: file:///Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/crimson_linux_135/Crimsonland/game/crimsonland  
+2026-01-16 20:05:46 INFO  (ProgramLoader) Using Loader: Executable and Linking Format (ELF)  
+2026-01-16 20:05:46 INFO  (ProgramLoader) Using Language/Compiler: x86:LE:64:default:gcc  
+2026-01-16 20:05:46 INFO  (ProgramLoader) Using Library Search Path: [., /System/Library/dyld/dyld_shared_cache_arm64e, /System/Library/dyld/dyld_shared_cache_x86_64, /System/Library/dyld/dyld_shared_cache_x86_64h, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64h, /Users/banteg/Library/Java/Extensions, /Library/Java/Extensions, /Network/Library/Java/Extensions, /System/Library/Java/Extensions, /usr/lib/java]  
+2026-01-16 20:05:46 DEBUG (ElfHeader) Elf symbol table section .dynsym linked to string table section .dynstr  
+2026-01-16 20:05:46 DEBUG (ElfHeader) Elf symbol table section .symtab linked to string table section .strtab  
+2026-01-16 20:05:46 DEBUG (ElfHeader) Elf relocation table section .rela.dyn linked to symbol table section .dynsym affecting PT_LOAD  
+2026-01-16 20:05:46 DEBUG (ElfHeader) Elf relocation table section .rela.plt linked to symbol table section .dynsym affecting .got.plt  
+2026-01-16 20:05:46 DEBUG (ElfProgramBuilder) Discarding 16-byte alignment/filler segment_3.7 at 009fe650  
+2026-01-16 20:05:46 DEBUG (ElfProgramBuilder) Discarding 4-byte alignment/filler segment_2.6 at 00400334  
+2026-01-16 20:05:46 DEBUG (ElfProgramBuilder) Discarding 6-byte alignment/filler segment_2.14 at 0040383a  
+2026-01-16 20:05:46 DEBUG (ElfProgramBuilder) Discarding 8-byte alignment/filler segment_2.17 at 004044c8  
+2026-01-16 20:05:46 DEBUG (ElfProgramBuilder) Discarding 2-byte alignment/filler segment_2.19 at 0068de52  
+2026-01-16 20:05:46 DEBUG (ElfProgramBuilder) Discarding 3-byte alignment/filler segment_2.21 at 0068de5d  
+2026-01-16 20:05:46 DEBUG (ElfProgramBuilder) Discarding 4-byte alignment/filler segment_2.24 at 007b0da4  
+2026-01-16 20:05:47 INFO  (ProgramLoader) Additional info:
+Loading file:///Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/crimson_linux_135/Crimsonland/game/crimsonland?MD5=1bbe731db700904e4f127c8ff302765c...
+Unsupported Thread-Local Symbol not loaded: nx_thread_state
+ELF Relocation Failure: R_X86_64_COPY (5, 0x5) at 009fec20 (Symbol = _ZTVN10__cxxabiv117__class_type_infoE) - Runtime copy not supported (88-bytes)
+ELF Relocation Failure: R_X86_64_COPY (5, 0x5) at 009fec78 (Symbol = _ZTVN10__cxxabiv120__si_class_type_infoE) - Runtime copy not supported (88-bytes)
+ELF Relocation Failure: R_X86_64_COPY (5, 0x5) at 009fece0 (Symbol = stderr) - Runtime copy not supported (8-bytes)
+Converted 6 .plt section symbols to external thunks
+Setting block .init_array to read-only
+Setting block .fini_array to read-only
+Setting block .jcr to read-only
+Setting block .dynamic to read-only
+------------------------------------------------
+
+Linking the External Programs of 'crimsonland' to imported libraries...
+  [libopenal.so.1] -> not found in project
+  [libpthread.so.0] -> not found in project
+  [libSDL2-2.0.so.0] -> not found in project
+  [libstdc++.so.6] -> not found in project
+  [libm.so.6] -> not found in project
+  [libgcc_s.so.1] -> not found in project
+  [libc.so.6] -> not found in project
+------------------------------------------------
+
+Resolving External Symbols of [/crimsonland] - 199 unresolved symbols, no external libraries configured - skipping
+  
+2026-01-16 20:05:47 INFO  (HeadlessAnalyzer) IMPORTING: Loaded 0 additional files  
+2026-01-16 20:05:48 INFO  (HeadlessAnalyzer) ANALYZING all memory and code: file:///Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/crimson_linux_135/Crimsonland/game/crimsonland  
+2026-01-16 20:05:48 INFO  (ExternalDebugFileSectionProvider) DWARF external debug information found: ExternalDebugInfo [filename=null, crc=0, hash=0047a1e29c72da08d4432f434fe1c7c90da693d7]  
+2026-01-16 20:05:48 INFO  (DWARFAnalyzer) Unable to find DWARF information, skipping DWARF analysis  
+2026-01-16 20:06:01 INFO  (DecompilerSwitchAnalyzer) hit non-returning function, restarting decompiler switch analyzer later  
+2026-01-16 20:06:05 WARN  (DecompileCallback) Decompiling 006786b0: Unable to read bytes at ram:00819c40  
+2026-01-16 20:06:05 WARN  (DecompileCallback) Decompiling 00664910: Unable to read bytes at ram:008182a8  
+2026-01-16 20:06:06 WARN  (DecompileCallback) Decompiling 005d0310: Unable to read bytes at ram:00000000  
+2026-01-16 20:06:24 INFO  (PackedDatabaseCache) Packed database cache: /var/tmp/banteg-ghidra/packed-db-cache  
+2026-01-16 20:06:24 DEBUG (PackedDatabaseCache) Using cached packed database: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/typeinfo/generic/generic_clib_64.gdt  
+2026-01-16 20:06:24 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: generic_clib_64  
+2026-01-16 20:06:31 WARN  (DecompileCallback) Decompiling 005d0310: Unable to read bytes at ram:00000000  
+2026-01-16 20:06:34 WARN  (DecompileCallback) Decompiling 006786b0: Unable to read bytes at ram:00819c40  
+2026-01-16 20:06:34 WARN  (DecompileCallback) Decompiling 00664910: Unable to read bytes at ram:008182a8  
+2026-01-16 20:06:57 INFO  (AutoAnalysisManager) -----------------------------------------------------
+    ASCII Strings                              0.466 secs
+    Apply Data Archives                        0.200 secs
+    Call Convention ID                        15.237 secs
+    Call-Fixup Installer                       0.058 secs
+    Create Address Tables                      0.411 secs
+    Create Address Tables - One Time           3.540 secs
+    Create Function                            0.113 secs
+    DWARF                                      0.005 secs
+    Data Reference                             1.249 secs
+    Decompiler Switch Analysis                 1.222 secs
+    Decompiler Switch Analysis - One Time      4.525 secs
+    Demangler GNU                              1.287 secs
+    Disassemble Entry Points                   3.767 secs
+    ELF Scalar Operand References              2.624 secs
+    Embedded Media                             0.034 secs
+    External Entry References                  0.040 secs
+    Function ID                                2.197 secs
+    Function Start Pre Search                  0.053 secs
+    Function Start Search                      0.237 secs
+    Function Start Search After Code           0.116 secs
+    Function Start Search After Data           0.119 secs
+    GCC Exception Handlers                     5.849 secs
+    Non-Returning Functions - Discovered       2.287 secs
+    Non-Returning Functions - Known            0.014 secs
+    Reference                                  1.480 secs
+    Shared Return Calls                        0.638 secs
+    Stack                                      9.855 secs
+    Subroutine References                      0.422 secs
+    x86 Constant Reference Analyzer           10.851 secs
+-----------------------------------------------------
+     Total Time   68 secs
+-----------------------------------------------------
+  
+2026-01-16 20:06:57 INFO  (HeadlessAnalyzer) REPORT: Analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/crimson_linux_135/Crimsonland/game/crimsonland  
+2026-01-16 20:06:57 INFO  (HeadlessAnalyzer) REPORT: Execute script: ExportSymbols.java   
+2026-01-16 20:06:57 INFO  (HeadlessAnalyzer) SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts/ExportSymbols.java  
+2026-01-16 20:06:57 INFO  (GhidraScript) ExportSymbols.java> Exporting symbols to: /Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/crimson_linux_135/analysis/crimsonland_symbols.json  
+2026-01-16 20:06:57 INFO  (GhidraScript) ExportSymbols.java> Exported 200 imports, 6066 exports, 10000 symbols  
+2026-01-16 20:06:57 INFO  (HeadlessAnalyzer) REPORT: Execute script: ExportStrings.java   
+2026-01-16 20:06:57 INFO  (HeadlessAnalyzer) SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts/ExportStrings.java  
+2026-01-16 20:06:57 INFO  (GhidraScript) ExportStrings.java> Exporting strings to: /Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/crimson_linux_135/analysis/crimsonland_strings.json  
+2026-01-16 20:06:57 INFO  (GhidraScript) ExportStrings.java> Exported 15202 strings  
+2026-01-16 20:06:57 INFO  (HeadlessAnalyzer) REPORT: Execute script: ExportCalls.java   
+2026-01-16 20:06:57 INFO  (HeadlessAnalyzer) SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts/ExportCalls.java  
+2026-01-16 20:06:57 INFO  (GhidraScript) ExportCalls.java> Exporting call graph to: /Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/crimson_linux_135/analysis/crimsonland_calls.json  
+2026-01-16 20:06:57 INFO  (GhidraScript) ExportCalls.java> Exported call graph with 4926 functions  
+2026-01-16 20:06:57 INFO  (HeadlessAnalyzer) ANALYZING changes made by post scripts: file:///Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/crimson_linux_135/Crimsonland/game/crimsonland  
+2026-01-16 20:06:57 INFO  (HeadlessAnalyzer) REPORT: Post-analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile-2025-02/reverse_engineering/crimson_linux_135/Crimsonland/game/crimsonland  
+2026-01-16 20:06:58 INFO  (LocalFileSystem) /crimsonland: file created (banteg)  
+2026-01-16 20:06:58 INFO  (HeadlessAnalyzer) REPORT: Save succeeded for: /crimsonland (ghidra_crimsonland_2982:/crimsonland)  
+2026-01-16 20:06:58 INFO  (HeadlessAnalyzer) REPORT: Import succeeded  
