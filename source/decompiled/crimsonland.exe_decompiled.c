@@ -21139,7 +21139,7 @@ int __cdecl texture_get_or_load(char *name)
 
 /* texture_get_or_load_alt @ 0042a700 */
 
-/* duplicate of texture_get_or_load */
+/* duplicate of texture_get_or_load (callers are mostly .jaz assets) */
 
 int __cdecl texture_get_or_load_alt(char *name)
 
@@ -21269,11 +21269,12 @@ LAB_0042abbf:
 
 
 
-/* FUN_0042abd0 @ 0042abd0 */
+/* load_textures_step @ 0042abd0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* stage-based texture loading (advances DAT_004aaf88) */
 
-bool FUN_0042abd0(void)
+int load_textures_step(void)
 
 {
   if (DAT_004aaf88 == 0) {
@@ -21370,7 +21371,7 @@ bool FUN_0042abd0(void)
   DAT_004aaf88 = DAT_004aaf88 + 1;
   DAT_00473a5c = 0xb;
   console_flush_log(0x47eea0);
-  return 10 < DAT_004aaf88;
+  return (uint)(10 < DAT_004aaf88);
 }
 
 
