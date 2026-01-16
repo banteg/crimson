@@ -185,15 +185,15 @@ int * __fastcall FUN_00401560(int *param_1)
   _DAT_0047eaa8 = 0;
   _DAT_0047eaac = 0;
   DAT_0047f4cc = 0;
-  FUN_004026e0(param_1,(uint *)s_cmdlist_00471244,&LAB_00401370);
-  FUN_004026e0(param_1,(uint *)&DAT_0047123c,&LAB_004013c0);
-  FUN_004026e0(param_1,(uint *)&DAT_00471234,&LAB_00401410);
-  FUN_004026e0(param_1,(uint *)&DAT_00471230,&LAB_00401510);
-  FUN_004026e0(param_1,(uint *)&DAT_00471228,&LAB_00401240);
-  FUN_004026e0(param_1,(uint *)s_clear_00471220,&LAB_004011a0);
-  FUN_004026e0(param_1,(uint *)s_extendconsole_00471210,&LAB_00401340);
-  FUN_004026e0(param_1,(uint *)s_minimizeconsole_00471200,&LAB_00401360);
-  FUN_004026e0(param_1,(uint *)&DAT_004711f8,&LAB_00401250);
+  console_register_command(param_1,(uint *)s_cmdlist_00471244,&LAB_00401370);
+  console_register_command(param_1,(uint *)&DAT_0047123c,&LAB_004013c0);
+  console_register_command(param_1,(uint *)&DAT_00471234,&LAB_00401410);
+  console_register_command(param_1,(uint *)&DAT_00471230,&LAB_00401510);
+  console_register_command(param_1,(uint *)&DAT_00471228,&LAB_00401240);
+  console_register_command(param_1,(uint *)s_clear_00471220,&LAB_004011a0);
+  console_register_command(param_1,(uint *)s_extendconsole_00471210,&LAB_00401340);
+  console_register_command(param_1,(uint *)s_minimizeconsole_00471200,&LAB_00401360);
+  console_register_command(param_1,(uint *)&DAT_004711f8,&LAB_00401250);
   puVar1 = operator_new(8);
   if (puVar1 == (undefined4 *)0x0) {
     puVar1 = (undefined4 *)0x0;
@@ -1177,9 +1177,11 @@ LAB_00402683:
 
 
 
-/* FUN_004026e0 @ 004026e0 */
+/* console_register_command @ 004026e0 */
 
-void __thiscall FUN_004026e0(void *this,uint *param_1,undefined4 param_2)
+/* registers a console command and handler */
+
+void __thiscall console_register_command(void *this,uint *param_1,undefined4 param_2)
 
 {
   int iVar1;
@@ -1321,9 +1323,11 @@ LAB_00402804:
 
 
 
-/* FUN_00402860 @ 00402860 */
+/* console_flush_log @ 00402860 */
 
-undefined4 __fastcall FUN_00402860(int param_1)
+/* flushes console lines to the log file */
+
+undefined4 __fastcall console_flush_log(int param_1)
 
 {
   char cVar1;
@@ -1383,9 +1387,11 @@ undefined * FUN_00402bd0(void)
 
 
 
-/* FUN_00402c00 @ 00402c00 */
+/* register_core_cvars @ 00402c00 */
 
-void FUN_00402c00(void)
+/* registers built-in cvars */
+
+void register_core_cvars(void)
 
 {
   DAT_00480854 = FUN_00402350(&DAT_0047eea0,(uint *)s_cv_silentloads_00471434,(uint *)&DAT_0047125c)
@@ -6619,7 +6625,7 @@ void FUN_0040b740(void)
     DAT_0048724c = 0;
     DAT_00487274 = 0;
     DAT_0048700d = 1;
-    FUN_0041f1a0();
+    config_load_presets();
     FUN_0043d550(DAT_004c4030);
     FUN_0043d550(DAT_004c4034);
     FUN_0043d460(DAT_004c4038);
@@ -6840,7 +6846,7 @@ void FUN_0040b740(void)
         DAT_00487274 = 0;
         return;
       }
-      FUN_0041f1a0();
+      config_load_presets();
       FUN_0043d550(DAT_004c4030);
       FUN_0043d550(DAT_004c4044);
       FUN_0043d460(DAT_004c4038);
@@ -12502,7 +12508,7 @@ void FUN_0041a530(void)
   if (iVar1 < DAT_00487248) {
     if ((DAT_00487270 == 0) && (DAT_0048700d != '\0')) {
       DAT_0048700d = '\0';
-      FUN_0041f1a0();
+      config_load_presets();
     }
     fVar3 = (float10)fcos((float10)0.0);
     DAT_00487292 = 1;
@@ -13749,54 +13755,56 @@ LAB_0041cc88:
 
 
 
-/* FUN_0041ccb0 @ 0041ccb0 */
+/* dx_get_version @ 0041ccb0 */
 
-undefined4 __cdecl FUN_0041ccb0(int *param_1,undefined1 *param_2,int param_3)
+/* query DirectX version */
+
+int __cdecl dx_get_version(int *version,char *out,int out_len)
 
 {
-  undefined1 *puVar1;
+  char *pcVar1;
   int iVar2;
   char cVar3;
   int iVar4;
   uint uVar5;
   int local_4;
   
-  iVar2 = param_3;
-  puVar1 = param_2;
-  if (param_1 != (int *)0x0) {
-    *param_1 = 0;
+  iVar2 = out_len;
+  pcVar1 = out;
+  if (version != (int *)0x0) {
+    *version = 0;
   }
-  if ((param_2 != (undefined1 *)0x0) && (0 < param_3)) {
-    *param_2 = 0;
+  if ((out != (char *)0x0) && (0 < out_len)) {
+    *out = '\0';
   }
-  param_3 = 0;
+  out_len = 0;
   local_4 = 0;
-  param_2 = (undefined1 *)CONCAT31(param_2._1_3_,0x20);
+  out = (char *)CONCAT31(out._1_3_,0x20);
   iVar4 = FUN_0041cdb0();
   if (iVar4 < 0) {
-    iVar4 = FUN_0041cfe0(&param_3,&local_4,(undefined1 *)&param_2);
+    iVar4 = FUN_0041cfe0(&out_len,&local_4,(undefined1 *)&out);
     if (iVar4 < 0) {
-      return 0x80004005;
+      return -0x7fffbffb;
     }
   }
-  uVar5 = FUN_00461e9b((int)(char)param_2);
+  uVar5 = FUN_00461e9b((int)(char)out);
   cVar3 = (char)uVar5;
-  param_2 = (undefined1 *)CONCAT31(param_2._1_3_,cVar3);
-  if (param_1 != (int *)0x0) {
-    iVar4 = (param_3 * 0x100 + local_4) * 0x100;
+  out = (char *)CONCAT31(out._1_3_,cVar3);
+  if (version != (int *)0x0) {
+    iVar4 = (out_len * 0x100 + local_4) * 0x100;
     if (('`' < cVar3) && (cVar3 < '{')) {
       iVar4 = iVar4 + -0x60 + (int)cVar3;
     }
-    *param_1 = iVar4;
+    *version = iVar4;
   }
-  if ((puVar1 != (undefined1 *)0x0) && (0 < iVar2)) {
+  if ((pcVar1 != (char *)0x0) && (0 < iVar2)) {
     if (cVar3 == ' ') {
-      FUN_00461e4a(puVar1,iVar2,(byte *)s__d__d_0047381c);
-      puVar1[iVar2 + -1] = 0;
+      FUN_00461e4a(pcVar1,iVar2,(byte *)s__d__d_0047381c);
+      pcVar1[iVar2 + -1] = '\0';
       return 0;
     }
-    FUN_00461e4a(puVar1,iVar2,(byte *)s__d__d_c_0047389c);
-    puVar1[iVar2 + -1] = 0;
+    FUN_00461e4a(pcVar1,iVar2,(byte *)s__d__d_c_0047389c);
+    pcVar1[iVar2 + -1] = '\0';
   }
   return 0;
 }
@@ -14952,11 +14960,12 @@ int __cdecl FUN_0041dc50(uint param_1,uint param_2,uint param_3,uint param_4)
 
 
 
-/* FUN_0041dc80 @ 0041dc80 */
+/* grim_load_interface @ 0041dc80 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* load grim DLL and fetch GRIM_GetInterface */
 
-int __cdecl FUN_0041dc80(LPCSTR param_1)
+int __cdecl grim_load_interface(char *dll_name)
 
 {
   char cVar1;
@@ -14967,19 +14976,19 @@ int __cdecl FUN_0041dc80(LPCSTR param_1)
   char *pcVar6;
   char *pcVar7;
   
-  _DAT_00490304 = LoadLibraryA(param_1);
+  _DAT_00490304 = LoadLibraryA(dll_name);
   if (_DAT_00490304 == (HMODULE)0x0) {
     return 0;
   }
   pFVar2 = GetProcAddress(_DAT_00490304,s_GRIM__GetInterface_004739bc);
   uVar4 = 0xffffffff;
   do {
-    pcVar6 = param_1;
+    pcVar6 = dll_name;
     if (uVar4 == 0) break;
     uVar4 = uVar4 - 1;
-    pcVar6 = param_1 + 1;
-    cVar1 = *param_1;
-    param_1 = pcVar6;
+    pcVar6 = dll_name + 1;
+    cVar1 = *dll_name;
+    dll_name = pcVar6;
   } while (cVar1 != '\0');
   uVar4 = ~uVar4;
   pcVar6 = pcVar6 + -uVar4;
@@ -15801,9 +15810,11 @@ void FUN_0041f130(void)
 
 
 
-/* FUN_0041f1a0 @ 0041f1a0 */
+/* config_load_presets @ 0041f1a0 */
 
-uint FUN_0041f1a0(void)
+/* loads config presets into globals */
+
+uint config_load_presets(void)
 
 {
   LPCSTR pCVar1;
@@ -21245,7 +21256,7 @@ void FUN_0042a9f0(void)
   }
   console_printf(&DAT_0047eea0,(byte *)s_Running_in_safemode__using_stati_00474034);
 LAB_0042abbf:
-  FUN_00402860(0x47eea0);
+  console_flush_log(0x47eea0);
   return;
 }
 
@@ -21351,7 +21362,7 @@ bool FUN_0042abd0(void)
   }
   DAT_004aaf88 = DAT_004aaf88 + 1;
   DAT_00473a5c = 0xb;
-  FUN_00402860(0x47eea0);
+  console_flush_log(0x47eea0);
   return 10 < DAT_004aaf88;
 }
 
@@ -21375,7 +21386,7 @@ void FUN_0042b090(void)
   (**(code **)(*DAT_0048083c + 0x20))();
   (**(code **)(*DAT_0048083c + 0x20))();
   FUN_0041fed0();
-  FUN_00402860(0x47eea0);
+  console_flush_log(0x47eea0);
   DStack_58 = 0x42b10a;
   console_printf(&DAT_0047eea0,(byte *)s_Entering_Crimsonland___0047465c);
   FUN_0042fd90((uint3)extraout_ECX);
@@ -21451,13 +21462,13 @@ int crimsonland_main(void)
   undefined4 uStack_5a0;
   UINT uType;
   uint local_420 [5];
-  undefined1 local_40c [12];
+  char local_40c [12];
   WCHAR local_400 [512];
   
   DVar2 = FUN_004623b2((int *)0x0);
   FUN_00461739(DVar2);
   local_420[0] = 0;
-  iVar3 = FUN_0041ccb0((int *)local_420,local_40c,10);
+  iVar3 = dx_get_version((int *)local_420,local_40c,10);
   if (iVar3 < 0) {
     iVar3 = MessageBoxA((HWND)0x0,s_Unknown_DirectX_version_detected_00474d74,s_Crimsonland_00472d5c
                         ,4);
@@ -21486,23 +21497,23 @@ int crimsonland_main(void)
   console_printf(&DAT_0047eea0,(byte *)s_Crimsonland_00474d64);
   console_printf(&DAT_0047eea0,(byte *)s_____________00474d54);
   console_printf(&DAT_0047eea0,&DAT_004711c0);
-  FUN_00402860(0x47eea0);
+  console_flush_log(0x47eea0);
   if (piVar5 == (int *)0x0) {
     MessageBoxA((HWND)0x0,s_DirectX8_1_not_detected__Crimson_00474cb8,s_Crimsonland_00472d5c,0);
     return 0;
   }
   (**(code **)(*piVar5 + 8))();
   console_printf(&DAT_0047eea0,(byte *)s_Game_base_path____s__00474ca0);
-  FUN_00402860(0x47eea0);
+  console_flush_log(0x47eea0);
   FUN_0041f130();
-  FUN_004026e0(&DAT_0047eea0,(uint *)s_setGammaRamp_00474c90,&LAB_0042c3d0);
-  FUN_004026e0(&DAT_0047eea0,(uint *)s_snd_addGameTune_00474c80,&LAB_0042c360);
-  FUN_004026e0(&DAT_0047eea0,(uint *)s_generateterrain_00474c70,&LAB_0042a970);
-  FUN_004026e0(&DAT_0047eea0,(uint *)s_telltimesurvived_00474c5c,&LAB_0042a860);
-  FUN_004026e0(&DAT_0047eea0,(uint *)s_setresourcepaq_00474c4c,&LAB_0042a7c0);
-  FUN_004026e0(&DAT_0047eea0,(uint *)s_loadtexture_00474c40,&LAB_0042a780);
-  FUN_004026e0(&DAT_0047eea0,(uint *)s_openurl_00474c38,&LAB_0042a890);
-  FUN_004026e0(&DAT_0047eea0,(uint *)s_sndfreqadjustment_00474c24,&LAB_0042a930);
+  console_register_command(&DAT_0047eea0,(uint *)s_setGammaRamp_00474c90,&LAB_0042c3d0);
+  console_register_command(&DAT_0047eea0,(uint *)s_snd_addGameTune_00474c80,&LAB_0042c360);
+  console_register_command(&DAT_0047eea0,(uint *)s_generateterrain_00474c70,&LAB_0042a970);
+  console_register_command(&DAT_0047eea0,(uint *)s_telltimesurvived_00474c5c,&LAB_0042a860);
+  console_register_command(&DAT_0047eea0,(uint *)s_setresourcepaq_00474c4c,&LAB_0042a7c0);
+  console_register_command(&DAT_0047eea0,(uint *)s_loadtexture_00474c40,&LAB_0042a780);
+  console_register_command(&DAT_0047eea0,(uint *)s_openurl_00474c38,&LAB_0042a890);
+  console_register_command(&DAT_0047eea0,(uint *)s_sndfreqadjustment_00474c24,&LAB_0042a930);
   puVar9 = &DAT_004852d0;
   for (iVar3 = 0x3f; iVar3 != 0; iVar3 = iVar3 + -1) {
     *puVar9 = 0;
@@ -21523,12 +21534,12 @@ int crimsonland_main(void)
   DAT_004852da = 0x6f;
   DAT_004852db = 99;
   DAT_004852dc = 0x6b;
-  DAT_0048083c = (int *)FUN_0041dc80(s____grim_grSystem_c_Release_grim__00474c00);
+  DAT_0048083c = (int *)grim_load_interface(s____grim_grSystem_c_Release_grim__00474c00);
   console_printf(&DAT_0047eea0,(byte *)s________________________004740fc);
   console_printf(&DAT_0047eea0,(byte *)s_______Grim2D_API_______00474be8);
   console_printf(&DAT_0047eea0,(byte *)s________________________004740fc);
   console_printf(&DAT_0047eea0,(byte *)s_Initiating_Grim_00474bd4);
-  FUN_00402860(0x47eea0);
+  console_flush_log(0x47eea0);
   DAT_004852e1 = 0x75;
   DAT_004852eb = 0x75;
   DAT_004852dd = 0x65;
@@ -21549,9 +21560,9 @@ int crimsonland_main(void)
   DAT_004852ee = 0x5c;
   if (DAT_0048083c == (int *)0x0) {
     console_printf(&DAT_0047eea0,(byte *)s____DEV_dll_not_found__trying_to_f_00474ba4);
-    DAT_0048083c = (int *)FUN_0041dc80(s_grim_dll_00474b98);
+    DAT_0048083c = (int *)grim_load_interface(s_grim_dll_00474b98);
   }
-  FUN_00402860(0x47eea0);
+  console_flush_log(0x47eea0);
   if (DAT_0048083c == DAT_0048083c + 1) {
     console_printf(&DAT_0047eea0,PTR_DAT_00473a14);
     console_printf(&DAT_0047eea0,PTR_s_I_ll_tell_you_a_little_secret__t_00473a18);
@@ -21569,18 +21580,18 @@ int crimsonland_main(void)
   }
   console_printf(&DAT_0047eea0,(byte *)s____interface_created_00474af8);
   console_printf(&DAT_0047eea0,(byte *)s____registering_core_variables_00474ad8);
-  FUN_00402c00();
+  register_core_cvars();
   if (DAT_00473a64 != 0x7b) {
     DAT_0048083c = (int *)0x0;
   }
-  FUN_00402860(0x47eea0);
+  console_flush_log(0x47eea0);
   console_printf(&DAT_0047eea0,(byte *)s____loading_config_pre_sets_00474abc);
-  FUN_0041f1a0();
+  config_load_presets();
   FUN_00412c10();
   FUN_00412a10();
-  FUN_00402860(0x47eea0);
+  console_flush_log(0x47eea0);
   console_printf(&DAT_0047eea0,(byte *)s____invoking_grim_config_00474aa0);
-  FUN_00402860(0x47eea0);
+  console_flush_log(0x47eea0);
   cVar1 = (**(code **)(*DAT_0048083c + 0x10))();
   DAT_004aaf45 = 1;
   if (cVar1 == '\0') {
@@ -21591,9 +21602,9 @@ int crimsonland_main(void)
   }
   FUN_0041ec60();
   DAT_004aaf45 = 0;
-  FUN_0041f1a0();
+  config_load_presets();
   console_printf(&DAT_0047eea0,(byte *)s____setting_system_states_00474a84);
-  FUN_00402860(0x47eea0);
+  console_flush_log(0x47eea0);
   pcVar6 = (char *)(**(code **)(*DAT_0048083c + 0x24))();
   DAT_004871c8 = *pcVar6;
   puVar7 = (undefined1 *)(**(code **)(*DAT_0048083c + 0x24))();
@@ -21617,7 +21628,7 @@ int crimsonland_main(void)
   if (DAT_0048083c == (int *)0x0) {
     console_printf(&DAT_0047eea0,(byte *)s____using_DEVELOPER_backend_00474a28);
   }
-  FUN_00402860(0x47eea0);
+  console_flush_log(0x47eea0);
   (**(code **)(*DAT_0048083c + 0x20))();
   (**(code **)(*DAT_0048083c + 0x20))();
   (**(code **)(*DAT_0048083c + 0x20))();
@@ -21734,14 +21745,14 @@ int crimsonland_main(void)
   if (DAT_004aaee4 != (undefined *)0x0) {
     FUN_00460dc7(DAT_004aaee4);
   }
-  FUN_00402860(0x47eea0);
+  console_flush_log(0x47eea0);
   FUN_0043d110();
   console_printf(&DAT_0047eea0,(byte *)s_Shutdown_Grim___00474848);
   (**(code **)(*DAT_0048083c + 0x18))();
-  FUN_00402860(0x47eea0);
+  console_flush_log(0x47eea0);
   (**(code **)*DAT_0048083c)();
   console_printf(&DAT_0047eea0,(byte *)s_Waving_the_Grim_Reaper_goodbye___00474824);
-  FUN_00402860(0x47eea0);
+  console_flush_log(0x47eea0);
   if (((DAT_004d11f0 == 0) && (DAT_004d11f8 != '\0')) && (DAT_004d11f4 != (LPCCH)0x0)) {
     Sleep(200);
     uStack_5a0 = uStack_5a0 & 0xffff0000;
@@ -21766,7 +21777,7 @@ int crimsonland_main(void)
     }
     DAT_004d11f8 = '\0';
   }
-  FUN_00402860(0x47eea0);
+  console_flush_log(0x47eea0);
   return 0;
 }
 
@@ -28342,7 +28353,7 @@ void FUN_0043d070(void)
     } while ((int)puVar1 < 0x4cc6d0);
     console_printf(&DAT_0047eea0,(byte *)s_SFX_Shutdown____004785fc);
     console_printf(&DAT_0047eea0,(byte *)s_SFX_Released__004785ec);
-    FUN_00402860(0x47eea0);
+    console_flush_log(0x47eea0);
   }
   return;
 }
@@ -28362,7 +28373,7 @@ void FUN_0043d0d0(void)
       FUN_0043c090((int)puVar1);
       puVar1 = puVar1 + 0x84;
     } while ((int)puVar1 < 0x4c8450);
-    FUN_00402860(0x47eea0);
+    console_flush_log(0x47eea0);
   }
   return;
 }

@@ -30,6 +30,9 @@ Interesting Functions and Patterns
   __nh_malloc @ 004629eb
   strdup_malloc @ 0046e8f4
 
+[LOG related]
+  console_flush_log @ 00402860
+
 [PRINT related]
   console_printf @ 00401870
 
