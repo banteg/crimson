@@ -7,6 +7,11 @@ classic `crimsonland.exe` decompilation. The engine interface pointer is
 The interface is created in `GRIM__GetInterface` (`grim.dll`), which sets the
 object vtable to `PTR_LAB_1004c238` (address `0x1004c238` in the DLL).
 
+We created functions at vtable entry addresses via
+`scripts/ghidra_scripts/CreateGrim2DVtableFunctions.java` and re-exported
+`grim.dll_functions.json` to capture those entry names. The latest vtable CSVs
+now include 84 named entry points.
+
 ## Extraction artifact
 
 We extracted all `(*DAT_0048083c + offset)` callsites and wrote them to:
