@@ -262,6 +262,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0042abd0",
+    "name": "load_textures_step",
+    "signature": "int load_textures_step(void)",
+    "comment": "stage-based texture loading (advances DAT_004aaf88)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0043d730",
     "name": "audio_suspend_channels",
     "signature": "void audio_suspend_channels(void)",
