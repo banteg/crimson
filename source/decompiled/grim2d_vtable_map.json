@@ -1620,12 +1620,12 @@
     ],
     "func_addr": "0x10009980",
     "section": ".text",
-    "func_name": "grim_draw_text_box",
+    "func_name": "grim_draw_text_small_fmt",
     "func_size": 52,
     "calling_convention": "unknown",
     "return_type": "void",
     "param_count": 3,
-    "signature": "void grim_draw_text_box(float x, float y, char * text)",
+    "signature": "void grim_draw_text_small_fmt(float x, float y, char * fmt)",
     "source_type": "DEFAULT"
   },
   {

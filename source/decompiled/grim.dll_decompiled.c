@@ -5448,18 +5448,18 @@ void grim_draw_text_mono_fmt(int *self,float x,float y,char *fmt)
 
 
 
-/* grim_draw_text_box @ 10009980 */
+/* grim_draw_text_small_fmt @ 10009980 */
 
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x148 (provisional) */
+/* Grim2D vtable 0x148 (provisional): formatted small-font text (vsprintf + vtable 0x144) */
 
-void grim_draw_text_box(float x,float y,char *text)
+void grim_draw_text_small_fmt(float x,float y,char *fmt)
 
 {
   char *in_stack_00000010;
   
   vsprintf(&DAT_1005b078,in_stack_00000010,&stack0x00000014);
-  (**(code **)(*(int *)x + 0x144))(y,text,&DAT_1005b078);
+  (**(code **)(*(int *)x + 0x144))(y,fmt,&DAT_1005b078);
   return;
 }
 

@@ -660,7 +660,7 @@
     "offset_hex": "0x148",
     "offset_dec": 328,
     "func_addr": "0x10009980",
-    "func_name": "grim_draw_text_box",
+    "func_name": "grim_draw_text_small_fmt",
     "section": ".text"
   },
   {

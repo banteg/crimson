@@ -730,9 +730,9 @@
   {
     "program": "grim.dll",
     "address": "0x10009980",
-    "name": "grim_draw_text_box",
-    "signature": "void grim_draw_text_box(float x, float y, char *text)",
-    "comment": "Grim2D vtable 0x148 (provisional)"
+    "name": "grim_draw_text_small_fmt",
+    "signature": "void grim_draw_text_small_fmt(float x, float y, char *fmt)",
+    "comment": "Grim2D vtable 0x148 (provisional): formatted small-font text (vsprintf + vtable 0x144)"
   },
   {
     "program": "grim.dll",

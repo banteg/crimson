@@ -81,5 +81,5 @@ index,offset_hex,offset_dec,func_addr,func_name,section
 79,0x13c,316,0x100092b0,grim_draw_text_mono,.text
 80,0x140,320,0x10009940,grim_draw_text_mono_fmt,.text
 81,0x144,324,0x10009730,grim_draw_text_small,.text
-82,0x148,328,0x10009980,grim_draw_text_box,.text
+82,0x148,328,0x10009980,grim_draw_text_small_fmt,.text
 83,0x14c,332,0x100096c0,grim_measure_text_width,.text
