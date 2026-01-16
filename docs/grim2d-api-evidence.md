@@ -411,8 +411,8 @@ LAB_00401add:
 ```
 
 
-## 0xd0 — FUN_100078e0 @ 0x100078e0
-- Ghidra signature: `undefined FUN_100078e0()`
+## 0xd0 — grim_draw_rect_filled @ 0x100078e0
+- Ghidra signature: `undefined grim_draw_rect_filled()`
 - Call sites: 24 (unique funcs: 14)
 - Sample calls: FUN_00401dd0:L740; FUN_00401dd0:L752; FUN_00402d50:L1448; FUN_004047c0:L3096; FUN_00405160:L3369; FUN_00408530:L5029; FUN_0040b740:L6476; FUN_0040b740:L6480
 - First callsite: FUN_00401dd0 (line 740)
@@ -426,8 +426,8 @@ LAB_00401add:
 ```
 
 
-## 0xd4 — FUN_10008f10 @ 0x10008f10
-- Ghidra signature: `undefined FUN_10008f10()`
+## 0xd4 — grim_draw_rect_outline @ 0x10008f10
+- Ghidra signature: `undefined grim_draw_rect_outline()`
 - Call sites: 12 (unique funcs: 11)
 - Sample calls: FUN_00402d50:L1454; FUN_004047c0:L3107; FUN_00405160:L3372; FUN_00408530:L5031; FUN_00410d20:L7694; FUN_0043e5e0:L27177; FUN_0043ecf0:L27413; FUN_0043ecf0:L27448
 - First callsite: FUN_00402d50 (line 1454)

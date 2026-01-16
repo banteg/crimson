@@ -84,6 +84,8 @@ These offsets appear with keycodes or input-related values:
 | `0xc0` | `get_texture_handle` | `int get_texture_handle(const char *name)` | high | returns `-1` on missing |
 | `0xc4` | `bind_texture` | `void bind_texture(int handle, int stage)` | medium | often `(handle, 0)` |
 | `0xcc` | `draw_fullscreen_color` | `void draw_fullscreen_color(float r, float g, float b, float a)` | medium | fade/overlay quad (often black + alpha) |
+| `0xd0` | `draw_rect_filled` | `void draw_rect_filled(float *xy, float w, float h)` | low | UI panel fill / background quad |
+| `0xd4` | `draw_rect_outline` | `void draw_rect_outline(float *xy, float w, float h)` | low | UI panel outline/frame |
 | `0xe8` | `begin_batch` | `void begin_batch(void)` | high | start buffered quad batch |
 | `0xf0` | `end_batch` | `void end_batch(void)` | high | flush buffered batch |
 | `0xfc` | `set_rotation` | `void set_rotation(float radians)` | medium | rotation before draw |
