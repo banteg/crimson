@@ -441,8 +441,8 @@ LAB_00401add:
 ```
 
 
-## 0xd8 — FUN_10007b90 @ 0x10007b90
-- Ghidra signature: `undefined FUN_10007b90()`
+## 0xd8 — grim_draw_circle_filled @ 0x10007b90
+- Ghidra signature: `undefined grim_draw_circle_filled()`
 - Call sites: 1 (unique funcs: 1)
 - Sample calls: FUN_0040a510:L5640
 - First callsite: FUN_0040a510 (line 6027)
@@ -456,8 +456,8 @@ LAB_00401add:
 ```
 
 
-## 0xdc — FUN_10007d40 @ 0x10007d40
-- Ghidra signature: `undefined FUN_10007d40()`
+## 0xdc — grim_draw_circle_outline @ 0x10007d40
+- Ghidra signature: `undefined grim_draw_circle_outline()`
 - Call sites: 1 (unique funcs: 1)
 - Sample calls: FUN_0040a510:L5644
 - First callsite: FUN_0040a510 (line 6031)
