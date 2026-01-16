@@ -19,56 +19,56 @@ uv run python scripts/entrypoint_trace.py --depth 2 --skip-external
 ## Trace (depth 2, internal calls only)
 
 ```
-- entry -> FUN_00463153, FUN_00468c71, FUN_00468a24, FUN_0046896b, FUN_00468913, FUN_004668e9, crt_heap_init, FUN_00462eb0 ...
-  - FUN_00463153 -> FUN_00468da3, FUN_00468ddc
-  - FUN_00468c71 -> FUN_004625c1, FUN_004658f0, _malloc
-  - FUN_00468a24 -> FUN_00468abd, FUN_0046d5c7, _malloc, __amsg_exit
-  - FUN_0046896b -> FUN_00465c30, _strlen, FUN_004625c1, FUN_0046d5c7, _malloc, __amsg_exit
-  - FUN_00468913 -> FUN_0046d5c7, FUN_0046d1ad
-  - FUN_004668e9 -> crt_get_thread_data, FUN_00466a27
-  - crt_heap_init -> crt_sbh_init, crt_heap_select, crt_sbh_create_region
-  - FUN_00462eb0 -> FUN_00460cb8, FUN_00462fb6
+- entry -> FUN_00468913, crt_exit, FUN_00462eb0, crt_get_environment_strings, crt_mt_init, crimsonland_main, crt_heap_init, crt_io_init ...
+  - FUN_00468913 -> FUN_0046d1ad, FUN_0046d5c7
+  - crt_exit -> FUN_00462eff
+  - FUN_00462eb0 -> FUN_00462fb6, FUN_00460cb8
+  - crt_get_environment_strings -> FUN_004658f0, FUN_004625c1, _malloc
   - crt_mt_init -> crt_init_locks, FUN_004654a5, FUN_004667ac
-  - crt_io_init -> _malloc, __amsg_exit
-  - crimsonland_main -> FUN_00412c10, FUN_00412a80, FUN_0042a9f0, FUN_0041ec60, FUN_0041ccb0, FUN_00412a10, FUN_00461739, FUN_0042a9c0 ...
-  - FUN_00462edd -> FUN_00462eff
-    - FUN_00468da3 -> FUN_00468ddc
-    - FUN_00468ddc -> FUN_00465c30, _strlen, FUN_00465c40, _strncpy, FUN_0046d5e3
-    - FUN_004625c1 -> FUN_00466ca6, crt_lock, FUN_00467a2d, FUN_00462683, FUN_00466c7b, FUN_004679d6, FUN_0046262b
-    - FUN_004658f0
-    - _malloc -> __nh_malloc
-    - FUN_00468abd
-    - FUN_0046d5c7 -> FUN_0046d1ef
-    - __amsg_exit -> FUN_00468da3, __exit, FUN_00468ddc
-    - FUN_00465c30
-    - _strlen
+  - crimsonland_main -> HlinkNavigateString, FUN_0041ec60, FUN_0041dc80, FUN_0042a9c0, FUN_00401940, FUN_0041ccb0, FUN_004623b2, FUN_00412c10 ...
+  - crt_heap_init -> crt_heap_select, crt_sbh_create_region, crt_sbh_init
+  - crt_io_init -> __amsg_exit, _malloc
+  - FUN_0046896b -> _strlen, __amsg_exit, FUN_004625c1, _malloc, FUN_0046d5c7, FUN_00465c30
+  - FUN_00463153 -> FUN_00468da3, FUN_00468ddc
+  - crt_exception_filter -> FUN_00466a27, crt_get_thread_data
+  - FUN_00468a24 -> FUN_00468abd, __amsg_exit, _malloc, FUN_0046d5c7
     - FUN_0046d1ad -> FUN_0046d1be
-    - crt_get_thread_data -> FUN_004654a5, FUN_004667ac, __amsg_exit
-    - FUN_00466a27
-    - crt_sbh_init
-    - crt_heap_select -> _strstr, FUN_0046cdcf, _strchr, FUN_00466a61, _strncmp, FUN_0046cda0
-    - crt_sbh_create_region -> _memset
-    - FUN_00460cb8 -> FUN_00460cd0, FUN_00463737, FUN_004636e7
+    - FUN_0046d5c7 -> FUN_0046d1ef
+    - FUN_00462eff -> FUN_00462fad, FUN_00462fa4, FUN_00462fb6
     - FUN_00462fb6
+    - FUN_00460cb8 -> FUN_00460cd0, FUN_00463737, FUN_004636e7
+    - FUN_004658f0
+    - FUN_004625c1 -> FUN_0046262b, crt_lock, FUN_00462683, FUN_00467a2d, FUN_00466c7b, FUN_004679d6, FUN_00466ca6
+    - _malloc -> __nh_malloc
     - crt_init_locks
     - FUN_004654a5
-    - FUN_004667ac -> crt_lock, FUN_00466fcf, _memset, FUN_00467a72, FUN_00466845, FUN_004668ce, FUN_00467e47
-    - FUN_00412c10 -> FUN_00461d91, FUN_0046103f, FUN_00412a10, FUN_00402bd0, FUN_00412a80, FUN_00460e5d, console_printf, FUN_00461c0e ...
-    - FUN_00412a80 -> FUN_00412c10, FUN_0046103f, FUN_00412a10, FUN_004615ae, FUN_00402bd0, FUN_0042a9c0, FUN_00460e5d, console_printf
-    - FUN_0042a9f0 -> FUN_0043cf90, console_printf, __ftol, FUN_00402860
-    - FUN_0041ec60 -> FUN_00461d91, FUN_0046103f, FUN_004615ae, FUN_00402bd0, FUN_00460e5d, FUN_00461c0e, FUN_00461af7
-    - FUN_0041ccb0 -> FUN_0041cfe0, FUN_00461e9b, FUN_0041cdb0, FUN_00461e4a
-    - FUN_00412a10 -> FUN_0042a980
-    - FUN_00461739 -> crt_get_thread_data
-    - FUN_0042a9c0
-    - console_printf -> console_push_line, FUN_00461089
-    - FUN_0043d110 -> FUN_0043bc20, FUN_0043d070, FUN_0043d0d0
-    - FUN_00402c00 -> FUN_00402350
-    - FUN_004026e0 -> operator_new, strdup_malloc
+    - FUN_004667ac -> FUN_00467a72, FUN_004668ce, crt_lock, FUN_00466fcf, _memset, FUN_00466845, FUN_00467e47
+    - HlinkNavigateString
+    - FUN_0041ec60 -> FUN_00460e5d, FUN_004615ae, FUN_00461af7, FUN_00461c0e, FUN_0046103f, FUN_00461d91, FUN_00402bd0
     - FUN_0041dc80
-    - FUN_0041f130 -> FUN_0046103f, FUN_004615ae, FUN_00402bd0, FUN_00460e5d
-    - FUN_00402860 -> FUN_0046103f, FUN_004615ae, FUN_00402bd0, FUN_00460e5d, FUN_00461448
-    - FUN_00462eff -> FUN_00462fa4, FUN_00462fb6, FUN_00462fad
+    - FUN_0042a9c0
+    - FUN_00401940 -> strdup_malloc, FUN_00402750, FUN_004610da, FUN_00402580, FUN_00402480, FUN_00460dc7, console_printf
+    - FUN_0041ccb0 -> FUN_0041cfe0, FUN_0041cdb0, FUN_00461e9b, FUN_00461e4a
+    - FUN_004623b2 -> FUN_00465da5
+    - FUN_00412c10 -> FUN_00460e5d, FUN_00412a80, FUN_00461af7, FUN_00461c0e, FUN_0046103f, FUN_00461d91, console_printf, FUN_00412a10 ...
+    - FUN_00412a10 -> FUN_0042a980
+    - FUN_0041f130 -> FUN_00460e5d, FUN_004615ae, FUN_0046103f, FUN_00402bd0
+    - FUN_00402c00 -> FUN_00402350
+    - console_printf -> console_push_line, FUN_00461089
+    - FUN_0043d110 -> FUN_0043d0d0, FUN_0043bc20, FUN_0043d070
+    - FUN_0042a9f0 -> __ftol, FUN_0043cf90, FUN_00402860, console_printf
+    - FUN_0042a670 -> console_printf
+    - crt_heap_select -> _strncmp, _strstr, FUN_00466a61, _strchr, FUN_0046cdcf, FUN_0046cda0
+    - crt_sbh_create_region -> _memset
+    - crt_sbh_init
+    - __amsg_exit -> FUN_00468da3, __exit, FUN_00468ddc
+    - _strlen
+    - FUN_00465c30
+    - FUN_00468da3 -> FUN_00468ddc
+    - FUN_00468ddc -> FUN_0046d5e3, _strncpy, _strlen, FUN_00465c40, FUN_00465c30
+    - FUN_00466a27
+    - crt_get_thread_data -> FUN_004654a5, __amsg_exit, FUN_004667ac
+    - FUN_00468abd
 ```
 
 ## Classic Windows entry sequence (ordered)
@@ -83,7 +83,7 @@ High-level call order:
 3) `crt_mt_init()` → CRT thread/TLS init
 4) `crt_io_init()` → CRT file handle table init
 5) `GetCommandLineA()` → stored in `DAT_004db4e4`
-6) `FUN_00468c71()` → unknown (command line parsing?)
+6) `crt_get_environment_strings()` → environment block copy
 7) `FUN_00468a24()` → unknown (startup init)
 8) `FUN_0046896b()` → unknown (startup init)
 9) `FUN_00462eb0()` → unknown (startup init)
@@ -91,8 +91,8 @@ High-level call order:
 11) `FUN_00468913()` → unknown (startup init)
 12) `GetModuleHandleA(NULL)`
 13) `crimsonland_main()` (`FUN_0042c450`) → full game init/run/shutdown
-14) `FUN_00462edd(exit_code)` → exit handling
-15) `FUN_004668e9(exception_code, exception_ptr)` → post-exit reporting hook
+14) `crt_exit(exit_code)` → exit handling
+15) `crt_exception_filter(exception_code, exception_ptr)` → CRT exception filter
 
 Notes:
 - `crimsonland_main()` includes DirectX version checks, Grim2D loading, config
