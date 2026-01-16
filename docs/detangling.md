@@ -78,6 +78,14 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
   - Evidence: copies a function table, reads config `DisableD3DXPSGP`,
     and switches between multiple vtable variants (`FUN_004567b0`, `FUN_004568c0`, `FUN_00456aa5`).
 
+### Texture loading helpers (high confidence)
+
+- `FUN_0042a670` -> `texture_get_or_load`
+  - Evidence: calls Grim `get_texture_handle` (0xc0); if missing, calls `load_texture` (0xb4),
+    logs success/failure, and re-queries handle.
+- `FUN_0042a700` -> `texture_get_or_load_alt`
+  - Evidence: identical body to `texture_get_or_load`; primary callers pass `.jaz` assets.
+
 ## Next naming targets
 
 - Trace `FUN_0046586b` / `FUN_004658cc` (called by error paths); likely error reporting or fatal handling.
