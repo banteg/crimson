@@ -47,6 +47,7 @@ nav = [
   { "Weapon table" = "weapon-table.md" },
   { "Progress metrics" = "metrics.md" },
   { "Refactor attempt" = "refactor.md" },
+  { "Plan" = "plan.md" },
 ]
 
 [project.extra]
