@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 """
-Atlas slicing used by the Crimsonland Classic renderer.
+Atlas slicing used by the Crimsonland renderer.
 
 Findings from decompiled code:
 - FUN_0041fed0 precomputes UV grids for 2x2, 4x4, 8x8, 16x16 (steps 0.5/0.25/0.125/0.0625).

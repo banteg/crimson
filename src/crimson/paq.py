@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 """
-PAQ archive format (Crimsonland Classic).
+PAQ archive format (Crimsonland).
 
 File layout:
   - magic: 4 bytes, ASCII "paq\\0"

@@ -1,4 +1,4 @@
-# Sprite atlas cutting (Crimsonland Classic)
+# Sprite atlas cutting (Crimsonland)
 
 This is based on the decompiled engine in `output/crimsonland.exe_decompiled.c`.
 The engine does **not** load atlas metadata from disk; all slicing is hard‑coded.

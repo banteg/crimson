@@ -1,11 +1,7 @@
----
-icon: lucide/book
----
-
-# Crimsonland Classic reverse engineering notes
+# Crimsonland reverse engineering notes
 
 This site tracks the file formats and asset pipeline we have verified from the
-decompiled Crimsonland Classic executable and game data.
+decompiled Crimsonland v1.9.93 executable and game data.
 
 ## Quick start
 

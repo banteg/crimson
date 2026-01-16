@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 """
-JAZ texture format (Crimsonland Classic).
+JAZ texture format (Crimsonland).
 
 File layout:
   - u8  method: compression method (1 = zlib)
