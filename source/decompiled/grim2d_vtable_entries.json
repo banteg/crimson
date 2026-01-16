@@ -332,7 +332,7 @@
     "offset_hex": "0xa4",
     "offset_dec": 164,
     "func_addr": "0x100075b0",
-    "func_name": "FUN_100075b0",
+    "func_name": "grim_get_joystick_pov",
     "section": ".text"
   },
   {
@@ -404,7 +404,7 @@
     "offset_hex": "0xc8",
     "offset_dec": 200,
     "func_addr": "0x10007870",
-    "func_name": "FUN_10007870",
+    "func_name": "grim_draw_fullscreen_quad",
     "section": ".text"
   },
   {

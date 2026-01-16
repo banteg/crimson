@@ -40,7 +40,7 @@ index,offset_hex,offset_dec,func_addr,func_name,section
 38,0x98,152,0x10007580,FUN_10007580,.text
 39,0x9c,156,0x10007590,FUN_10007590,.text
 40,0xa0,160,0x100075a0,FUN_100075a0,.text
-41,0xa4,164,0x100075b0,FUN_100075b0,.text
+41,0xa4,164,0x100075b0,grim_get_joystick_pov,.text
 42,0xa8,168,0x100075c0,FUN_100075c0,.text
 43,0xac,172,0x100075d0,grim_create_texture,.text
 44,0xb0,176,0x10007790,FUN_10007790,.text
@@ -49,7 +49,7 @@ index,offset_hex,offset_dec,func_addr,func_name,section
 47,0xbc,188,0x10007700,FUN_10007700,.text
 48,0xc0,192,0x10007740,grim_get_texture_handle,.text
 49,0xc4,196,0x10007830,grim_bind_texture,.text
-50,0xc8,200,0x10007870,FUN_10007870,.text
+50,0xc8,200,0x10007870,grim_draw_fullscreen_quad,.text
 51,0xcc,204,0x100079b0,grim_draw_fullscreen_color,.text
 52,0xd0,208,0x100078e0,grim_draw_rect_filled,.text
 53,0xd4,212,0x10008f10,grim_draw_rect_outline,.text
