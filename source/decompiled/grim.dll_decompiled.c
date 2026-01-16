@@ -4340,9 +4340,12 @@ void FUN_10008150(float *param_1,float *param_2,float *param_3)
 
 
 
-/* FUN_100081c0 @ 100081c0 */
+/* grim_set_color_slot @ 100081c0 */
 
-void FUN_100081c0(int param_1)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x118 (provisional): set color slot */
+
+void grim_set_color_slot(int index,float r,float g,float b,float a)
 
 {
   uint uVar1;
@@ -4354,7 +4357,7 @@ void FUN_100081c0(int param_1)
   iVar2 = ftol();
   uVar3 = ftol();
   uVar4 = ftol();
-  (&DAT_1005bc04)[param_1] = ((uVar1 & 0xff | iVar2 << 8) << 8 | uVar3 & 0xff) << 8 | uVar4 & 0xff;
+  (&DAT_1005bc04)[index] = ((uVar1 & 0xff | iVar2 << 8) << 8 | uVar3 & 0xff) << 8 | uVar4 & 0xff;
   return;
 }
 
@@ -4429,13 +4432,16 @@ void grim_set_uv(float u0,float v0,float u1,float v1)
 
 
 
-/* FUN_100083a0 @ 100083a0 */
+/* grim_set_uv_point @ 100083a0 */
 
-void FUN_100083a0(int param_1,undefined4 param_2,undefined4 param_3)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x10c (provisional): set UV point */
+
+void grim_set_uv_point(int index,float u,float v)
 
 {
-  (&DAT_1005b290)[param_1 * 2] = param_2;
-  (&DAT_1005b294)[param_1 * 2] = param_3;
+  (&DAT_1005b290)[index * 2] = u;
+  (&DAT_1005b294)[index * 2] = v;
   return;
 }
 
@@ -5248,13 +5254,16 @@ void grim_draw_text_small(float x,float y,char *text)
 
 
 
-/* FUN_10009940 @ 10009940 */
+/* grim_draw_text_mono_fmt @ 10009940 */
 
-void FUN_10009940(int *param_1,undefined4 param_2,undefined4 param_3,char *param_4)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x140 (provisional): formatted mono text */
+
+void grim_draw_text_mono_fmt(int *self,float x,float y,char *fmt)
 
 {
-  vsprintf(&DAT_1005ae78,param_4,&stack0x00000014);
-  (**(code **)(*param_1 + 0x13c))(param_2,param_3,&DAT_1005ae78);
+  vsprintf(&DAT_1005ae78,fmt,&stack0x00000014);
+  (**(code **)(*self + 0x13c))(x,y,&DAT_1005ae78);
   return;
 }
 
