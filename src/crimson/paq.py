@@ -36,28 +36,31 @@ def _open_binary(source: str | Path | BinaryIO, mode: str) -> tuple[BinaryIO, bo
     return open(Path(source), mode), True
 
 
+def _iter_entries_bytes(data: bytes) -> Iterator[PaqEntry]:
+    if data[:4] != MAGIC:
+        raise PaqFormatError(f"bad magic: {data[:4]!r}")
+    offset = 4
+    size = len(data)
+    while offset < size:
+        try:
+            entry = PAQ_ENTRY.parse(data, offset=offset)
+        except ConstructError as exc:
+            raise PaqFormatError(f"failed to parse entry: {exc}") from exc
+        built = PAQ_ENTRY.build(entry)
+        offset += len(built)
+        head = (entry.head_lo.to_bytes(4, "little") + entry.head_hi.to_bytes(4, "little"))
+        full = head[: entry.total_size] + entry.payload
+        yield PaqEntry(name=entry.name, data=full)
+
+
 def iter_entries(source: str | Path | BinaryIO) -> Iterator[PaqEntry]:
     f, should_close = _open_binary(source, "rb")
     try:
-        header = f.read(4)
-        if header != MAGIC:
-            raise PaqFormatError(f"bad magic: {header!r}")
-        while True:
-            marker = f.read(1)
-            if not marker:
-                return
-            f.seek(-1, io.SEEK_CUR)
-            try:
-                entry = PAQ_ENTRY.parse_stream(f)
-            except ConstructError as exc:
-                raise PaqFormatError(f"failed to parse entry: {exc}") from exc
-            head = (entry.head_lo.to_bytes(4, "little") + entry.head_hi.to_bytes(4, "little"))
-            payload = entry.payload
-            full = head[: entry.total_size] + payload
-            yield PaqEntry(name=entry.name, data=full)
+        data = f.read()
     finally:
         if should_close:
             f.close()
+    yield from _iter_entries_bytes(data)
 
 
 def read_paq(source: str | Path | BinaryIO) -> dict[str, bytes]:
@@ -74,41 +77,40 @@ def _iter_items(entries: Mapping[str, bytes] | Iterable[PaqEntry] | Iterable[tup
     return ((e.name, e.data) if isinstance(e, PaqEntry) else e for e in entries)
 
 
+def _build_entries(entries: Mapping[str, bytes] | Iterable[PaqEntry] | Iterable[tuple[str, bytes]]) -> bytes:
+    out = bytearray()
+    for name, data in _iter_items(entries):
+        if isinstance(name, Path):
+            name = str(name)
+        if isinstance(data, memoryview):
+            data = data.tobytes()
+        total_size = len(data)
+        head = bytes(data[:8]).ljust(8, b"\x00")
+        head_lo = int.from_bytes(head[:4], "little")
+        head_hi = int.from_bytes(head[4:8], "little")
+        payload = bytes(data[8:]) if total_size > 8 else b""
+        built = PAQ_ENTRY.build(
+            {
+                "name": str(name),
+                "total_size": total_size,
+                "head_lo": head_lo,
+                "head_hi": head_hi,
+                "payload": payload,
+            },
+        )
+        out += built
+    return bytes(out)
+
+
 def write_paq(dest: str | Path | BinaryIO, entries: Mapping[str, bytes] | Iterable[PaqEntry] | Iterable[tuple[str, bytes]]) -> None:
     f, should_close = _open_binary(dest, "wb")
     try:
         f.write(MAGIC)
-        for name, data in _iter_items(entries):
-            if isinstance(name, Path):
-                name = str(name)
-            if isinstance(data, memoryview):
-                data = data.tobytes()
-            if not isinstance(data, (bytes, bytearray)):
-                raise TypeError("entry data must be bytes-like")
-            total_size = len(data)
-            head = bytes(data[:8]).ljust(8, b"\x00")
-            head_lo = int.from_bytes(head[:4], "little")
-            head_hi = int.from_bytes(head[4:8], "little")
-            payload = bytes(data[8:]) if total_size > 8 else b""
-            try:
-                built = PAQ_ENTRY.build(
-                    {
-                        "name": str(name),
-                        "total_size": total_size,
-                        "head_lo": head_lo,
-                        "head_hi": head_hi,
-                        "payload": payload,
-                    },
-                )
-            except ConstructError as exc:
-                raise PaqFormatError(f"failed to build entry {name!r}: {exc}") from exc
-            f.write(built)
+        f.write(_build_entries(entries))
     finally:
         if should_close:
             f.close()
 
 
 def encode_bytes(entries: Mapping[str, bytes] | Iterable[PaqEntry] | Iterable[tuple[str, bytes]]) -> bytes:
-    buf = io.BytesIO()
-    write_paq(buf, entries)
-    return buf.getvalue()
+    return MAGIC + _build_entries(entries)
