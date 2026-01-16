@@ -21417,11 +21417,12 @@ LAB_0042b17a:
 
 
 
-/* FUN_0042c450 @ 0042c450 */
+/* crimsonland_main @ 0042c450 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* primary game init/run/shutdown sequence */
 
-undefined4 FUN_0042c450(void)
+int crimsonland_main(void)
 
 {
   char cVar1;
@@ -43852,7 +43853,7 @@ void entry(void)
   GetStartupInfoA(&local_60);
   FUN_00468913();
   GetModuleHandleA((LPCSTR)0x0);
-  UVar3 = FUN_0042c450();
+  UVar3 = crimsonland_main();
   FUN_00462edd(UVar3);
   FUN_004668e9(local_18->ExceptionRecord->ExceptionCode,local_18);
   return;
