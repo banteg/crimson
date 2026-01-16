@@ -71,3 +71,76 @@ uv run python scripts/entrypoint_trace.py --depth 2 --skip-external
     - FUN_00468ddc -> _strlen, FUN_00465c30, FUN_0046d5e3, FUN_00465c40, _strncpy
     - FUN_00468da3 -> FUN_00468ddc
 ```
+
+## Modern Linux main trace (depth 2, internal calls only)
+
+**Caveat:** the modern Linux build is a different engine (Nexus vs Grim2D) and
+released much later. Use this trace only for loose orientation (naming ideas
+and broad initialization phases). The classic Windows binary is the source of
+truth for behavior and ordering.
+
+```
+uv run python scripts/entrypoint_trace.py \
+  source/decompiled-modern/crimsonland_linux_135/crimsonland_calls.json \
+  --entry main --depth 2 --skip-external
+```
+
+```
+- main -> NXID_MainLoop, NXI_PreInit, NX_SDL_DetermineDeviceInfo, SDL_Init
+  - NXID_MainLoop -> NEXUS_Shutdown, NXID_ProcessEvent, NXI_Frame, NXI_Init, NXI_SetGamepadButtonState, SDL_GameControllerClose, SDL_GameControllerGetAttached, SDL_GameControllerGetAxis ...
+  - NXI_PreInit -> AppendFormatted, GetArrayOfSupportedResolutions, Init, Initialize, InitializePathsAndDirectories, NXID_DetermineDeviceInfo, NXID_InitImageLoader, NXI_AddPackages ...
+  - NX_SDL_DetermineDeviceInfo -> SDL_GetDesktopDisplayMode, SDL_GetError, SDL_Log, __stack_chk_fail
+  - SDL_Init
+    - NEXUS_Shutdown -> Deinitialize, Free, GetSoundImpNull, NXID_DestroyWindow, NXI_ShutdownRendImp, NXT_DestroyMutex, NXT_PrintThreadInfos, NX_ShutdownExtensionModules ...
+    - NXID_ProcessEvent -> NXID_ConvertKey, NXI_ActivateApp, NXI_SendEvent, NXI_SendKeyEvent, NXI_SendMouseEvent, __stack_chk_fail
+    - NXI_Frame -> NXI_Frame
+    - NXI_Init -> Format, GetSoundImpNull, NEXUS_SoundImp_GetInterface, NXID_CreateWindow, NXID_DestroyWindow, NXI_InitRendImp, NXI_ProductFeatureExists, NXI_SetupAutoscaling ...
+    - NXI_SetGamepadButtonState -> NXI_SendEventQueued, __stack_chk_fail
+    - SDL_GameControllerClose
+    - SDL_GameControllerGetAttached
+    - SDL_GameControllerGetAxis
+    - SDL_GameControllerGetButton
+    - SDL_GameControllerGetJoystick
+    - SDL_GameControllerOpen
+    - SDL_IsGameController
+    - SDL_JoystickInstanceID
+    - SDL_NumJoysticks
+    - SDL_PollEvent
+    - SDL_Quit
+    - SetMaximumSize -> __cxa_throw_bad_array_new_length, operator.delete[], operator.new[]
+    - __cxa_throw_bad_array_new_length
+    - __stack_chk_fail
+    - operator.delete[]
+    - operator.new[]
+    - AppendFormatted -> __stack_chk_fail, free, malloc, memcpy, nStringFormatDynamic, operator.delete[], strlen
+    - GetArrayOfSupportedResolutions
+    - Init -> DetermineLogFileName, NXI_ProductFeatureExists, NXT_GetDate, NX_fprintf, __stack_chk_fail, __strcpy_chk, free
+    - Initialize -> malloc
+    - InitializePathsAndDirectories -> CreateDirectory, Format, Set, SetFormatted, __stack_chk_fail, free
+    - NXID_DetermineDeviceInfo -> SDL_GetDesktopDisplayMode, SDL_GetError, SDL_Log, __stack_chk_fail
+    - NXID_InitImageLoader -> GetImageLoaderImp
+    - NXI_AddPackages -> NXI_AddPackages
+    - NXI_AddPackagesDefinedInProgramParameters -> NXI_AddPackages, NXI_SelectGFXPackage
+    - NXI_CheckForMultipleProgramInstances
+    - NXI_DetermineInitialScreenMode -> NXI_IsResolutionSupportedByDevice, NXI_ProductFeatureExists, NXI_SelectOptimalResolution, __stack_chk_fail
+    - NXI_DetermineLocale -> AppendFormatted, free, malloc, memcpy, nStringDuplicate, strlen
+    - NXI_DetermineOrientation
+    - NXI_DetermineProgramParameters
+    - NXI_FinalizeProgramNamesIdsAndDirectories -> __ctype_b_loc, __strcpy_chk, strlen
+    - NXI_LoadProgImp -> Format, NXI_GetNullProg, NX_GetInterface, __snprintf_chk, __stack_chk_fail, free
+    - NXI_LoadRendImp -> NXID_LoadRendImp, NXI_SetBasicInterface
+    - NXI_ProductFeatureExists -> strlen, strstr
+    - NXI_ReadProgramSettings -> Append, Format, GetArray, GetDatabase, GetNode, GetValue, NXI_AddManifest, NXI_GetPlatformIdFromString ...
+    - NXI_RemoveResourcePackages -> Format, GetToken, __stack_chk_fail, free, malloc, memcpy, strchr, strlen
+    - NXI_StateSetup -> NXI_SetBasicInterface, __stack_chk_fail, gettimeofday, memset, now
+    - NXPI_ResolvePlatformInfo
+    - NXT_CreateMutex -> malloc, memcpy, operator.new, pthread_mutex_init, strlen
+    - NXT_InitThreads -> NXT_CreateMutex
+    - NX_InitializeExtensionModules -> NXI_ProductFeatureExists, NX_InitializeExtensionModuleImplementations, NX_RegisterExtensionModule, NX_ResolveExtensionModuleImplementations, operator.new
+    - free
+    - nStringDuplicate -> malloc, memcpy, strlen
+    - qsort
+    - SDL_GetDesktopDisplayMode
+    - SDL_GetError
+    - SDL_Log
+```

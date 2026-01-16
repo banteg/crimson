@@ -9,6 +9,9 @@ from typing import Iterable
 
 def load_functions(path: Path) -> dict[str, dict]:
     data = json.loads(path.read_text())
+    if isinstance(data, dict) and "callGraph" in data:
+        graph = data.get("callGraph", {})
+        return {name: {"name": name, "calls": entry.get("calls", [])} for name, entry in graph.items()}
     if isinstance(data, dict):
         functions = data.get("functions", [])
     else:
@@ -18,6 +21,8 @@ def load_functions(path: Path) -> dict[str, dict]:
 
 def load_by_address(path: Path) -> dict[int, dict]:
     data = json.loads(path.read_text())
+    if isinstance(data, dict) and "callGraph" in data:
+        return {}
     if isinstance(data, dict):
         functions = data.get("functions", [])
     else:
