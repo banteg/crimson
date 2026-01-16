@@ -2440,9 +2440,12 @@ int grim_get_key_char(void)
 
 
 
-/* FUN_10005c80 @ 10005c80 */
+/* grim_release @ 10005c80 */
 
-void FUN_10005c80(void)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x0 (provisional): delete interface */
+
+void grim_release(void)
 
 {
   void *in_ECX;
@@ -2453,57 +2456,68 @@ void FUN_10005c80(void)
 
 
 
-/* FUN_10005c90 @ 10005c90 */
+/* grim_set_paused @ 10005c90 */
 
-void FUN_10005c90(undefined1 param_1)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x4 (provisional): pause game tick update */
+
+void grim_set_paused(int paused)
 
 {
-  DAT_1005d820 = param_1;
+  DAT_1005d820 = (undefined1)paused;
   return;
 }
 
 
 
-/* FUN_10005ca0 @ 10005ca0 */
+/* grim_get_version @ 10005ca0 */
 
-float10 FUN_10005ca0(void)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x8 (provisional): engine version constant */
+
+float grim_get_version(void)
 
 {
-  return (float10)1.21;
+  return 1.21;
 }
 
 
 
-/* FUN_10005cb0 @ 10005cb0 */
+/* grim_check_device @ 10005cb0 */
 
-undefined4 FUN_10005cb0(void)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0xc (provisional): device creation test */
+
+int grim_check_device(void)
 
 {
-  int iVar1;
-  int *piVar2;
-  int *piVar3;
+  uint uVar1;
+  int iVar2;
+  undefined4 uVar3;
+  int *piVar4;
+  int *piVar5;
   undefined4 uStack_4;
   
   uStack_4 = 0;
-  piVar3 = DAT_10059dbc;
-  iVar1 = (**(code **)(*DAT_10059dbc + 0x6c))(DAT_10059dbc,DAT_10059df8,DAT_10059dfc,0x15,&uStack_4)
+  piVar5 = DAT_10059dbc;
+  uVar1 = (**(code **)(*DAT_10059dbc + 0x6c))(DAT_10059dbc,DAT_10059df8,DAT_10059dfc,0x15,&uStack_4)
   ;
-  if (iVar1 < 0) {
-    return 0;
+  if ((int)uVar1 < 0) {
+    return uVar1 & 0xffffff00;
   }
-  piVar2 = DAT_10059dbc;
-  iVar1 = (**(code **)(*DAT_10059dbc + 0x78))(DAT_10059dbc,piVar3);
-  if (iVar1 < 0) {
-    (**(code **)(*piVar2 + 8))(piVar2);
-    return 0;
+  piVar4 = DAT_10059dbc;
+  iVar2 = (**(code **)(*DAT_10059dbc + 0x78))(DAT_10059dbc,piVar5);
+  if (iVar2 < 0) {
+    uVar1 = (**(code **)(*piVar4 + 8))(piVar4);
+    return uVar1 & 0xffffff00;
   }
-  iVar1 = FUN_1000ae52();
-  if (iVar1 < 0) {
-    (**(code **)(*piVar2 + 8))(piVar2);
-    return 0;
+  iVar2 = FUN_1000ae52();
+  if (iVar2 < 0) {
+    uVar1 = (**(code **)(*piVar4 + 8))(piVar4);
+    return uVar1 & 0xffffff00;
   }
-  (**(code **)(*piVar2 + 8))(piVar2);
-  return 1;
+  uVar3 = (**(code **)(*piVar4 + 8))(piVar4);
+  return CONCAT31((int3)((uint)uVar3 >> 8),1);
 }
 
 
@@ -3135,9 +3149,12 @@ int grim_set_render_target(int target_index)
 
 
 
-/* FUN_10006e40 @ 10006e40 */
+/* grim_get_time_ms @ 10006e40 */
 
-undefined4 FUN_10006e40(void)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x34 (provisional): accumulated time (ms) */
+
+int grim_get_time_ms(void)
 
 {
   return DAT_1005a054;
@@ -3145,40 +3162,47 @@ undefined4 FUN_10006e40(void)
 
 
 
-/* FUN_10006e50 @ 10006e50 */
+/* grim_set_time_ms @ 10006e50 */
 
-void FUN_10006e50(undefined4 param_1)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x38 (provisional): set accumulated time */
+
+void grim_set_time_ms(int ms)
 
 {
-  DAT_1005a054 = param_1;
+  DAT_1005a054 = ms;
   return;
 }
 
 
 
-/* FUN_10006e60 @ 10006e60 */
+/* grim_get_frame_dt @ 10006e60 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x3c (provisional): clamped frame delta */
 
-float10 FUN_10006e60(void)
+float grim_get_frame_dt(void)
 
 {
   if (0.1 < _DAT_10059768) {
-    return (float10)0.1;
+    return 0.1;
   }
-  return (float10)_DAT_10059768;
+  return _DAT_10059768;
 }
 
 
 
-/* FUN_10006e90 @ 10006e90 */
+/* grim_get_fps @ 10006e90 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x40 (provisional): frames per second */
 
-float10 FUN_10006e90(void)
+float grim_get_fps(void)
 
 {
-  return (float10)_DAT_1005b2bc;
+  return _DAT_1005b2bc;
 }
 
 
@@ -3434,43 +3458,55 @@ float grim_get_config_float(int id)
 
 
 
-/* FUN_100072c0 @ 100072c0 */
+/* grim_get_slot_float @ 100072c0 */
 
-float10 FUN_100072c0(int param_1)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x88 (provisional): float slot accessor */
+
+float grim_get_slot_float(int index)
 
 {
-  return (float10)*(float *)(&DAT_1005c100 + param_1 * 4);
+  return *(float *)(&DAT_1005c100 + index * 4);
 }
 
 
 
-/* FUN_100072d0 @ 100072d0 */
+/* grim_get_slot_int @ 100072d0 */
 
-undefined4 FUN_100072d0(int param_1)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x8c (provisional): int slot accessor */
+
+int grim_get_slot_int(int index)
 
 {
-  return *(undefined4 *)(&DAT_1005bf00 + param_1 * 4);
+  return *(int *)(&DAT_1005bf00 + index * 4);
 }
 
 
 
-/* FUN_100072e0 @ 100072e0 */
+/* grim_set_slot_float @ 100072e0 */
 
-void FUN_100072e0(int param_1,undefined4 param_2)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x90 (provisional): float slot setter */
+
+void grim_set_slot_float(int index,float value)
 
 {
-  *(undefined4 *)(&DAT_1005c100 + param_1 * 4) = param_2;
+  *(float *)(&DAT_1005c100 + index * 4) = value;
   return;
 }
 
 
 
-/* FUN_10007300 @ 10007300 */
+/* grim_set_slot_int @ 10007300 */
 
-void FUN_10007300(int param_1,undefined4 param_2)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x94 (provisional): int slot setter */
+
+void grim_set_slot_int(int index,int value)
 
 {
-  *(undefined4 *)(&DAT_1005bf00 + param_1 * 4) = param_2;
+  *(int *)(&DAT_1005bf00 + index * 4) = value;
   return;
 }
 
@@ -3589,123 +3625,148 @@ int grim_is_mouse_button_down(int button)
 
 
 
-/* FUN_10007440 @ 10007440 */
+/* grim_was_mouse_button_pressed @ 10007440 */
 
-undefined1 FUN_10007440(int param_1)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x5c (provisional): edge-triggered mouse button */
+
+int grim_was_mouse_button_pressed(int button)
 
 {
   char cVar1;
+  undefined4 in_EAX;
+  uint3 uVar3;
+  undefined4 uVar2;
   int *in_ECX;
-  undefined1 uVar2;
+  undefined1 uVar4;
   
+  uVar3 = (uint3)((uint)in_EAX >> 8);
   if (DAT_1005cc58 == '\0') {
-    cVar1 = (**(code **)(*in_ECX + 0x58))(param_1);
-    if ((cVar1 == '\0') || ((&DAT_1005c8e8)[param_1] == '\0')) {
-      uVar2 = 0;
+    cVar1 = (**(code **)(*in_ECX + 0x58))(button);
+    if ((cVar1 == '\0') || ((&DAT_1005c8e8)[button] == '\0')) {
+      uVar4 = 0;
     }
     else {
-      uVar2 = 1;
+      uVar4 = 1;
     }
-    cVar1 = (**(code **)(*in_ECX + 0x58))(param_1);
-    (&DAT_1005c8e8)[param_1] = cVar1 == '\0';
-    return uVar2;
+    uVar2 = (**(code **)(*in_ECX + 0x58))(button);
+    (&DAT_1005c8e8)[button] = (char)uVar2 == '\0';
+    return CONCAT31((int3)((uint)uVar2 >> 8),uVar4);
   }
-  cVar1 = (&DAT_1005a044)[param_1];
-  if ((cVar1 != '\0') && ((&DAT_1005c8e8)[param_1] != '\0')) {
-    (&DAT_1005c8e8)[param_1] = cVar1 == '\0';
-    return 1;
+  cVar1 = (&DAT_1005a044)[button];
+  if ((cVar1 != '\0') && ((&DAT_1005c8e8)[button] != '\0')) {
+    (&DAT_1005c8e8)[button] = cVar1 == '\0';
+    return CONCAT31(uVar3,1);
   }
-  (&DAT_1005c8e8)[param_1] = cVar1 == '\0';
-  return 0;
+  (&DAT_1005c8e8)[button] = cVar1 == '\0';
+  return (uint)uVar3 << 8;
 }
 
 
 
-/* FUN_100074d0 @ 100074d0 */
+/* grim_get_mouse_dx @ 100074d0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x70 (provisional): mouse delta X */
 
-float10 FUN_100074d0(void)
+float grim_get_mouse_dx(void)
 
 {
-  return (float10)_DAT_1005db50;
+  return _DAT_1005db50;
 }
 
 
 
-/* FUN_100074e0 @ 100074e0 */
+/* grim_get_mouse_dy @ 100074e0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x74 (provisional): mouse delta Y */
 
-float10 FUN_100074e0(void)
+float grim_get_mouse_dy(void)
 
 {
-  return (float10)_DAT_1005db54;
+  return _DAT_1005db54;
 }
 
 
 
-/* FUN_100074f0 @ 100074f0 */
+/* grim_get_mouse_dx_indexed @ 100074f0 */
 
-void FUN_100074f0(void)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x78 (provisional): mouse delta X (indexed) */
+
+float grim_get_mouse_dx_indexed(int index)
 
 {
   int *in_ECX;
+  float10 fVar1;
   
-  (**(code **)(*in_ECX + 0x70))();
-  return;
+  fVar1 = (float10)(**(code **)(*in_ECX + 0x70))();
+  return (float)fVar1;
 }
 
 
 
-/* FUN_10007500 @ 10007500 */
+/* grim_get_mouse_dy_indexed @ 10007500 */
 
-void FUN_10007500(void)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x7c (provisional): mouse delta Y (indexed) */
+
+float grim_get_mouse_dy_indexed(int index)
 
 {
   int *in_ECX;
+  float10 fVar1;
   
-  (**(code **)(*in_ECX + 0x74))();
-  return;
+  fVar1 = (float10)(**(code **)(*in_ECX + 0x74))();
+  return (float)fVar1;
 }
 
 
 
-/* FUN_10007510 @ 10007510 */
+/* grim_get_mouse_x @ 10007510 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x68 (provisional): mouse X position */
 
-float10 FUN_10007510(void)
+float grim_get_mouse_x(void)
 
 {
-  return (float10)_DAT_1005b278;
+  return _DAT_1005b278;
 }
 
 
 
-/* FUN_10007520 @ 10007520 */
+/* grim_get_mouse_y @ 10007520 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x6c (provisional): mouse Y position */
 
-float10 FUN_10007520(void)
+float grim_get_mouse_y(void)
 
 {
-  return (float10)_DAT_1005b27c;
+  return _DAT_1005b27c;
 }
 
 
 
-/* FUN_10007530 @ 10007530 */
+/* grim_set_mouse_pos @ 10007530 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x64 (provisional): set mouse position */
 
-void FUN_10007530(undefined4 param_1,undefined4 param_2)
+void grim_set_mouse_pos(float x,float y)
 
 {
-  DAT_1005db44 = param_1;
-  DAT_1005db48 = param_2;
-  _DAT_1005b278 = param_1;
-  _DAT_1005b27c = param_2;
+  DAT_1005db44 = x;
+  DAT_1005db48 = y;
+  _DAT_1005b278 = x;
+  _DAT_1005b27c = y;
   return;
 }
 
@@ -5367,7 +5428,7 @@ undefined4 * GRIM__GetInterface(void)
   FUN_100052f0();
   DAT_1005d81c = operator_new(4);
   if (DAT_1005d81c != (undefined4 *)0x0) {
-    *DAT_1005d81c = &PTR_FUN_1004c238;
+    *DAT_1005d81c = &PTR_grim_release_1004c238;
     return DAT_1005d81c;
   }
   DAT_1005d81c = (undefined4 *)0x0;
