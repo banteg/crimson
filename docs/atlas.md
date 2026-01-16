@@ -90,3 +90,31 @@ The engine uses **two patterns**:
 
 This is sufficient to reproduce the engine’s sprite cuts for any of the
 uniform grids (2/4/8/16).
+
+## Atlas usage by texture (static scan)
+
+The notes below come from scanning `output/crimsonland.exe_decompiled.c` for
+texture binds (`+0xc4`) followed by atlas selection (`+0x104` or `FUN_0042e0a0`).
+They list which grids and indices are used, but not the semantic meaning of
+each frame.
+
+- `game/projs.jaz` (`projs`)
+  - Direct grid calls: **4×4** indices `2`, `3`, `6` (plus one call with extra
+    parameters using `grid=4, index=2`), and **2×2** index `0`.
+  - Table index `0x10` → **4×4**.
+
+- `game/bonuses.jaz` (`bonuses`)
+  - Direct grid calls: **4×4** index `0`, plus dynamic indices `iVar6` and
+    `iVar6 + 1` (frame selection happens in code).
+
+- `game/bodyset.jaz` (`bodyset`)
+  - Table index `0x10` → **4×4**.
+
+- `game/particles.jaz`
+  - Table indices `0x10`, `0x0e`, `0x0d`, `0x0c` → **4×4**.
+  - Table index `0x02` → **8×8**.
+  - Direct grid calls: **2×2**, **4×4**, **8×8**, **16×16** with a dynamic
+    index (`uVar2`).
+
+- `ground` texture (terrain)
+  - Direct grid call: **8×8** with dynamic index.
