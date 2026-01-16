@@ -472,6 +472,20 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10007750",
+    "name": "grim_validate_texture",
+    "signature": "int grim_validate_texture(int handle)",
+    "comment": "Grim2D vtable 0xb8 (provisional): validate texture handle"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007790",
+    "name": "grim_recreate_texture",
+    "signature": "int grim_recreate_texture(int handle)",
+    "comment": "Grim2D vtable 0xb0 (provisional): recreate texture object"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10007830",
     "name": "grim_bind_texture",
     "signature": "void grim_bind_texture(int handle, int stage)",
@@ -714,10 +728,31 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10008e30",
+    "name": "grim_submit_vertex_raw",
+    "signature": "void grim_submit_vertex_raw(float *vertex)",
+    "comment": "Grim2D vtable 0xf4 (provisional): push 1 raw vertex (7 floats)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10008eb0",
+    "name": "grim_submit_quad_raw",
+    "signature": "void grim_submit_quad_raw(float *verts)",
+    "comment": "Grim2D vtable 0xf8 (provisional): push 4 raw vertices (28 floats)"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10008720",
     "name": "grim_draw_quad_xy",
     "signature": "void grim_draw_quad_xy(float *xy, float w, float h)",
     "comment": "Grim2D vtable 0x120 (provisional): draw quad from xy pointer"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10008750",
+    "name": "grim_draw_quad_rotated_matrix",
+    "signature": "void grim_draw_quad_rotated_matrix(float x, float y, float w, float h)",
+    "comment": "Grim2D vtable 0x124 (provisional): quad with rotation matrix"
   },
   {
     "program": "grim.dll",
