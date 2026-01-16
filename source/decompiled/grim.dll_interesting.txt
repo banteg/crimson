@@ -11,6 +11,9 @@ Interesting Functions and Patterns
   grim_is_key_down @ 10007320
   grim_was_key_pressed @ 10007390
 
+[SYSTEM related]
+  grim_init_system @ 10005eb0
+
 [MALLOC related]
   malloc @ 1000aa98
 
@@ -26,6 +29,9 @@ Interesting Functions and Patterns
 
 [PRINT related]
   sprintf @ 1000a8d0
+
+[ERROR related]
+  grim_get_error_text @ 10006ca0
 
 [POTENTIALLY DANGEROUS FUNCTIONS]
   sprintf @ EXTERNAL:0000004c

@@ -2505,9 +2505,12 @@ undefined4 FUN_10005cb0(void)
 
 
 
-/* FUN_10005d40 @ 10005d40 */
+/* grim_apply_config @ 10005d40 */
 
-uint FUN_10005d40(void)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x10 (provisional): invoked by '...invoking grim config' log */
+
+int grim_apply_config(void)
 
 {
   uint uVar1;
@@ -2546,16 +2549,18 @@ uint FUN_10005d40(void)
 
 
 
-/* FUN_10005eb0 @ 10005eb0 */
+/* grim_init_system @ 10005eb0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* Grim2D vtable 0x14 (provisional): Grim2D init; returns success */
 
-undefined4 __fastcall FUN_10005eb0(int *param_1)
+int __fastcall grim_init_system(void)
 
 {
   undefined4 uVar1;
   uint uVar2;
   undefined4 *puVar3;
+  int *in_ECX;
   int iVar4;
   undefined4 *puVar5;
   undefined4 *puVar6;
@@ -2566,9 +2571,9 @@ undefined4 __fastcall FUN_10005eb0(int *param_1)
     puVar3 = puVar3 + 1;
   }
   _getcwd((char *)&DAT_10059e3c,0x104);
-  uVar1 = FUN_10003e60();
-  if ((char)uVar1 == '\0') {
-    return uVar1;
+  iVar4 = FUN_10003e60();
+  if ((char)iVar4 == '\0') {
+    return iVar4;
   }
   if ((DAT_1005cc48 == '\x01') && (DAT_1005cc58 == '\0')) {
     uVar1 = FUN_1000a5a0();
@@ -2600,9 +2605,9 @@ undefined4 __fastcall FUN_10005eb0(int *param_1)
   }
   FUN_10004920();
   FUN_10004970();
-  (**(code **)(*param_1 + 0x20))(0x15,2);
+  (**(code **)(*in_ECX + 0x20))(0x15,2);
   _DAT_1005d0b4 = &DAT_1005d3f8;
-  (**(code **)(*param_1 + 0x20))(0x10);
+  (**(code **)(*in_ECX + 0x20))(0x10);
   puVar3 = (undefined4 *)FUN_10005ae0((byte *)s_load_smallFnt_dat_10053b8c);
   if (puVar3 != (undefined4 *)0x0) {
     puVar5 = puVar3;
@@ -2618,9 +2623,12 @@ undefined4 __fastcall FUN_10005eb0(int *param_1)
 
 
 
-/* FUN_10005ff0 @ 10005ff0 */
+/* grim_shutdown @ 10005ff0 */
 
-void FUN_10005ff0(void)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x18 (provisional): Grim2D shutdown */
+
+void grim_shutdown(void)
 
 {
   FUN_10005a40(&DAT_1005d828);
@@ -2634,13 +2642,16 @@ void FUN_10005ff0(void)
 
 
 
-/* FUN_10006020 @ 10006020 */
+/* grim_apply_settings @ 10006020 */
 
-undefined4 FUN_10006020(void)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x1c (provisional): apply Grim2D settings after config load */
+
+void grim_apply_settings(void)
 
 {
   FUN_10003c00();
-  return 1;
+  return;
 }
 
 
@@ -2995,9 +3006,11 @@ LAB_10006b54:
 
 
 
-/* FUN_10006c30 @ 10006c30 */
+/* grim_get_config_var @ 10006c30 */
 
-void FUN_10006c30(undefined4 *param_1,int param_2)
+/* Grim2D vtable 0x24 (provisional): returns pointer to config var (args vary) */
+
+void grim_get_config_var(undefined4 *param_1,int param_2)
 
 {
   if ((-1 < param_2) && (param_2 < 0x80)) {
@@ -3016,9 +3029,12 @@ void FUN_10006c30(undefined4 *param_1,int param_2)
 
 
 
-/* FUN_10006ca0 @ 10006ca0 */
+/* grim_get_error_text @ 10006ca0 */
 
-undefined4 FUN_10006ca0(void)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x28 (provisional): error string for MessageBox */
+
+char * grim_get_error_text(void)
 
 {
   return DAT_1005c8f8;
