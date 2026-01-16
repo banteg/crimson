@@ -30,6 +30,10 @@ two datasets:
 The map JSON includes function size, calling convention, return type, parameter
 count, and the raw Ghidra signature for faster triage.
 
+We now filter vtable exports to entries that resolve into the `.text` section
+(84 entries / 0x150 bytes). Values after `0x14c` in the raw table look like
+data, not executable pointers.
+
 We also generate an evidence appendix with callsite snippets:
 
 - `docs/grim2d-api-evidence.md`
