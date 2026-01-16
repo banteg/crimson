@@ -5,7 +5,7 @@ import re
 import sys
 from pathlib import Path
 
-from . import paq
+from . import jaz, paq
 
 
 _SEP_RE = re.compile(r"[\\/]+")
@@ -25,11 +25,17 @@ def _extract_one(paq_path: Path, assets_root: Path) -> int:
     out_root = assets_root / paq_path.stem
     out_root.mkdir(parents=True, exist_ok=True)
     count = 0
-    for entry in paq.iter_entries(paq_path):
-        rel = _safe_relpath(entry.name)
+    for name, data in paq.iter_entries(paq_path):
+        rel = _safe_relpath(name)
         dest = out_root / rel
         dest.parent.mkdir(parents=True, exist_ok=True)
-        dest.write_bytes(entry.data)
+        dest.write_bytes(data)
+        if dest.suffix.lower() == ".jaz":
+            jaz_image = jaz.decode_jaz_bytes(data)
+            base = dest.with_suffix("")
+            base.with_suffix(".rgb.jpg").write_bytes(jaz_image.jpeg)
+            jaz_image.alpha_image().save(base.with_suffix(".alpha.png"))
+            jaz_image.composite_image().save(base.with_suffix(".rgba.png"))
         count += 1
     return count
 
