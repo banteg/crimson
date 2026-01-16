@@ -30472,7 +30472,7 @@ void __cdecl FUN_00444980(char param_1,char param_2)
   
   cVar5 = FUN_0041df40();
   if (cVar5 == '\0') {
-    FUN_00462edd(0);
+    crt_exit(0);
   }
   iVar6 = DAT_004aaf0c;
   if (DAT_0047eec8 == '\0') {
@@ -43666,12 +43666,14 @@ void FUN_00462eb0(void)
 
 
 
-/* FUN_00462edd @ 00462edd */
+/* crt_exit @ 00462edd */
 
-void __cdecl FUN_00462edd(UINT param_1)
+/* CRT exit path (atexit/onexit + ExitProcess) */
+
+void __cdecl crt_exit(uint code)
 
 {
-  FUN_00462eff(param_1,0,0);
+  FUN_00462eff(code,0,0);
   return;
 }
 
@@ -43814,7 +43816,7 @@ void entry(void)
 {
   DWORD DVar1;
   int iVar2;
-  UINT UVar3;
+  uint code;
   _STARTUPINFOA local_60;
   undefined1 *local_1c;
   _EXCEPTION_POINTERS *local_18;
@@ -43845,7 +43847,7 @@ void entry(void)
   local_8 = 0;
   crt_io_init();
   DAT_004db4e4 = GetCommandLineA();
-  DAT_004d99c4 = FUN_00468c71();
+  DAT_004d99c4 = crt_get_environment_strings();
   FUN_00468a24();
   FUN_0046896b();
   FUN_00462eb0();
@@ -43853,9 +43855,9 @@ void entry(void)
   GetStartupInfoA(&local_60);
   FUN_00468913();
   GetModuleHandleA((LPCSTR)0x0);
-  UVar3 = crimsonland_main();
-  FUN_00462edd(UVar3);
-  FUN_004668e9(local_18->ExceptionRecord->ExceptionCode,local_18);
+  code = crimsonland_main();
+  crt_exit(code);
+  crt_exception_filter(local_18->ExceptionRecord->ExceptionCode,local_18);
   return;
 }
 
@@ -47737,9 +47739,11 @@ void FUN_004668ce(void)
 
 
 
-/* FUN_004668e9 @ 004668e9 */
+/* crt_exception_filter @ 004668e9 */
 
-LONG __cdecl FUN_004668e9(int param_1,_EXCEPTION_POINTERS *param_2)
+/* CRT exception filter/dispatch */
+
+long __cdecl crt_exception_filter(int code,_EXCEPTION_POINTERS *info)
 
 {
   code *pcVar1;
@@ -47747,23 +47751,23 @@ LONG __cdecl FUN_004668e9(int param_1,_EXCEPTION_POINTERS *param_2)
   DWORD DVar3;
   DWORD *pDVar4;
   int *piVar5;
-  LONG LVar6;
+  long lVar6;
   int iVar7;
   int iVar8;
   
   pDVar4 = crt_get_thread_data();
-  piVar5 = FUN_00466a27(param_1,(int *)pDVar4[0x14]);
+  piVar5 = FUN_00466a27(code,(int *)pDVar4[0x14]);
   if ((piVar5 == (int *)0x0) || (pcVar1 = (code *)piVar5[2], pcVar1 == (code *)0x0)) {
-    LVar6 = UnhandledExceptionFilter((_EXCEPTION_POINTERS *)param_2);
+    lVar6 = UnhandledExceptionFilter((_EXCEPTION_POINTERS *)info);
   }
   else if (pcVar1 == (code *)0x5) {
     piVar5[2] = 0;
-    LVar6 = 1;
+    lVar6 = 1;
   }
   else {
     if (pcVar1 != (code *)0x1) {
       DVar2 = pDVar4[0x15];
-      pDVar4[0x15] = (DWORD)param_2;
+      pDVar4[0x15] = (DWORD)info;
       if (piVar5[1] == 8) {
         if (DAT_0047bad8 < DAT_0047badc + DAT_0047bad8) {
           iVar7 = DAT_0047bad8 * 0xc;
@@ -47806,9 +47810,9 @@ LONG __cdecl FUN_004668e9(int param_1,_EXCEPTION_POINTERS *param_2)
       }
       pDVar4[0x15] = DVar2;
     }
-    LVar6 = -1;
+    lVar6 = -1;
   }
-  return LVar6;
+  return lVar6;
 }
 
 
@@ -50162,9 +50166,11 @@ LAB_00468b68:
 
 
 
-/* FUN_00468c71 @ 00468c71 */
+/* crt_get_environment_strings @ 00468c71 */
 
-LPSTR FUN_00468c71(void)
+/* returns a malloc'd copy of the environment block */
+
+char * crt_get_environment_strings(void)
 
 {
   char cVar1;
@@ -50175,11 +50181,10 @@ LPSTR FUN_00468c71(void)
   size_t _Size;
   LPSTR lpMultiByteStr;
   char *pcVar6;
-  LPSTR pCVar8;
+  char *pcVar7;
   LPWCH lpWideCharStr;
   LPCH penv;
   LPSTR local_8;
-  char *pcVar7;
   
   lpWideCharStr = (LPWCH)0x0;
   penv = (LPCH)0x0;
@@ -50190,7 +50195,7 @@ LPSTR FUN_00468c71(void)
 LAB_00468cc8:
       if ((lpWideCharStr == (LPWCH)0x0) &&
          (lpWideCharStr = GetEnvironmentStringsW(), lpWideCharStr == (LPWCH)0x0)) {
-        return (LPSTR)0x0;
+        return (char *)0x0;
       }
       WVar2 = *lpWideCharStr;
       pWVar4 = lpWideCharStr;
@@ -50216,18 +50221,18 @@ LAB_00468cc8:
     }
     penv = GetEnvironmentStrings();
     if (penv == (LPCH)0x0) {
-      return (LPSTR)0x0;
+      return (char *)0x0;
     }
     DAT_004d9b80 = 2;
   }
   else {
     if (DAT_004d9b80 == 1) goto LAB_00468cc8;
     if (DAT_004d9b80 != 2) {
-      return (LPSTR)0x0;
+      return (char *)0x0;
     }
   }
   if ((penv == (LPCH)0x0) && (penv = GetEnvironmentStrings(), penv == (LPCH)0x0)) {
-    return (LPSTR)0x0;
+    return (char *)0x0;
   }
   cVar1 = *penv;
   pcVar6 = penv;
@@ -50239,15 +50244,15 @@ LAB_00468cc8:
     pcVar6 = pcVar7 + 2;
     cVar1 = *pcVar6;
   }
-  pCVar8 = _malloc((size_t)(pcVar6 + (1 - (int)penv)));
-  if (pCVar8 == (LPSTR)0x0) {
-    pCVar8 = (LPSTR)0x0;
+  pcVar7 = _malloc((size_t)(pcVar6 + (1 - (int)penv)));
+  if (pcVar7 == (char *)0x0) {
+    pcVar7 = (char *)0x0;
   }
   else {
-    FUN_004658f0((undefined4 *)pCVar8,(undefined4 *)penv,(uint)(pcVar6 + (1 - (int)penv)));
+    FUN_004658f0((undefined4 *)pcVar7,(undefined4 *)penv,(uint)(pcVar6 + (1 - (int)penv)));
   }
   FreeEnvironmentStringsA(penv);
-  return pCVar8;
+  return pcVar7;
 }
 
 
