@@ -72,6 +72,35 @@ uv run python scripts/entrypoint_trace.py --depth 2 --skip-external
     - FUN_00468da3 -> FUN_00468ddc
 ```
 
+## Classic Windows entry sequence (ordered)
+
+From `entry` (`0x00463026`), the classic binary performs a short CRT/bootstrap
+sequence and then enters the main game loop.
+
+High-level call order:
+
+1) `GetVersion` → populate version globals
+2) `FUN_00466bd6(1)` → unknown (early CRT/setup)
+3) `FUN_00465451()` → unknown (early CRT/setup)
+4) `FUN_0046623d()` → unknown (early CRT/setup)
+5) `GetCommandLineA()` → stored in `DAT_004db4e4`
+6) `FUN_00468c71()` → unknown (command line parsing?)
+7) `FUN_00468a24()` → unknown (startup init)
+8) `FUN_0046896b()` → unknown (startup init)
+9) `FUN_00462eb0()` → unknown (startup init)
+10) `GetStartupInfoA()` → captures startup flags
+11) `FUN_00468913()` → unknown (startup init)
+12) `GetModuleHandleA(NULL)`
+13) `crimsonland_main()` (`FUN_0042c450`) → full game init/run/shutdown
+14) `FUN_00462edd(exit_code)` → exit handling
+15) `FUN_004668e9(exception_code, exception_ptr)` → post-exit reporting hook
+
+Notes:
+- `crimsonland_main()` includes DirectX version checks, Grim2D loading, config
+  load/apply, input/audio/renderer setup, and the game loop + shutdown.
+- The `FUN_00466bd6` / `FUN_00465451` / `FUN_0046623d` cluster appears CRT-like;
+  we should identify these before renaming.
+
 ## Modern Linux main trace (depth 2, internal calls only)
 
 **Caveat:** the modern Linux build is a different engine (Nexus vs Grim2D) and
