@@ -31,3 +31,4 @@ Special handling during extraction:
 - [Refactor attempt](refactor.md) — Planned
 - [Modern Linux build name mining](modern-linux.md) — Reference
 - [Modern Android build name mining](modern-android.md) — Reference
+- [Grim2D API vtable](grim2d-api.md) — Draft
