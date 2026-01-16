@@ -27,3 +27,5 @@ Special handling during extraction:
 - [Sprite atlas cutting](atlas.md) — In progress
 - [Extraction pipeline](pipeline.md) — In progress
 - [Weapon table](weapon-table.md) — In progress
+- [Progress metrics](metrics.md) — Tracking
+- [Refactor attempt](refactor.md) — Planned
