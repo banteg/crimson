@@ -248,10 +248,24 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10007330",
+    "name": "grim_flush_input",
+    "signature": "void grim_flush_input(void)",
+    "comment": "Grim2D vtable 0x4c (provisional): clear buffered input/device state"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10005c40",
     "name": "grim_get_key_char",
     "signature": "int grim_get_key_char(void)",
     "comment": "Grim2D vtable 0x50 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10005c20",
+    "name": "grim_set_key_char_buffer",
+    "signature": "void grim_set_key_char_buffer(unsigned char *buffer, int *count, int size)",
+    "comment": "Grim2D vtable 0x54 (provisional): set input character ring buffer"
   },
   {
     "program": "grim.dll",
@@ -515,5 +529,61 @@
     "name": "grim_draw_quad_xy",
     "signature": "void grim_draw_quad_xy(float *xy, float w, float h)",
     "comment": "Grim2D vtable 0x120 (provisional): draw quad from xy pointer"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100085c0",
+    "name": "grim_submit_vertices_transform",
+    "signature": "void grim_submit_vertices_transform(float *verts, int count, float *offset, float *matrix)",
+    "comment": "Grim2D vtable 0x128 (provisional): copy verts, rotate, translate"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10008680",
+    "name": "grim_submit_vertices_offset",
+    "signature": "void grim_submit_vertices_offset(float *verts, int count, float *offset)",
+    "comment": "Grim2D vtable 0x12c (provisional): copy verts, translate"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10008430",
+    "name": "grim_submit_vertices_offset_color",
+    "signature": "void grim_submit_vertices_offset_color(float *verts, int count, float *offset, float *color)",
+    "comment": "Grim2D vtable 0x130 (provisional): translate + apply color"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100084e0",
+    "name": "grim_submit_vertices_transform_color",
+    "signature": "void grim_submit_vertices_transform_color(float *verts, int count, float *offset, float *matrix, float *color)",
+    "comment": "Grim2D vtable 0x134 (provisional): rotate + translate + apply color"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10009080",
+    "name": "grim_draw_quad_points",
+    "signature": "void grim_draw_quad_points(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3)",
+    "comment": "Grim2D vtable 0x138 (provisional): push quad using 4 points"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100083c0",
+    "name": "grim_flush_batch",
+    "signature": "void grim_flush_batch(void)",
+    "comment": "Grim2D vtable 0xec (provisional): flush batch when vertex buffer fills"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100080b0",
+    "name": "grim_draw_line",
+    "signature": "void grim_draw_line(float *p0, float *p1, float thickness)",
+    "comment": "Grim2D vtable 0xe0 (provisional): builds line quad from endpoints"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10008150",
+    "name": "grim_draw_line_quad",
+    "signature": "void grim_draw_line_quad(float *p0, float *p1, float *half_vec)",
+    "comment": "Grim2D vtable 0xe4 (provisional): line quad from endpoints + half-width vector"
   }
 ]
