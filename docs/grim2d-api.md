@@ -26,6 +26,9 @@ two datasets:
 - `source/decompiled/grim2d_vtable_entries.csv`
 - `source/decompiled/grim2d_vtable_map.csv`
 
+The map CSV includes function size, calling convention, return type, parameter
+count, and the raw Ghidra signature for faster triage.
+
 ## Top offsets by callsite count
 
 These are the most frequently used offsets (likely the core draw/state calls):
