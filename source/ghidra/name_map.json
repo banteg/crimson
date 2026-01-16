@@ -226,6 +226,55 @@
     "comment": "loads config presets into globals"
   },
   {
+    "program": "crimsonland.exe",
+    "address": "0x0042a5f0",
+    "name": "audio_resume_all",
+    "signature": "int audio_resume_all(void)",
+    "comment": "resume active audio channels"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042a630",
+    "name": "audio_suspend_all",
+    "signature": "void audio_suspend_all(void)",
+    "comment": "suspend active audio channels"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042a670",
+    "name": "texture_get_or_load",
+    "signature": "int texture_get_or_load(char *name)",
+    "comment": "lookup texture handle; load if missing"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042a700",
+    "name": "texture_get_or_load_alt",
+    "signature": "int texture_get_or_load_alt(char *name)",
+    "comment": "duplicate of texture_get_or_load"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042a9f0",
+    "name": "init_audio_and_terrain",
+    "signature": "void init_audio_and_terrain(void)",
+    "comment": "sound init + terrain texture setup"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043d730",
+    "name": "audio_suspend_channels",
+    "signature": "void audio_suspend_channels(void)",
+    "comment": "iterates channels and suspends playback"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043d770",
+    "name": "audio_resume_channels",
+    "signature": "void audio_resume_channels(void)",
+    "comment": "iterates channels and resumes playback"
+  },
+  {
     "program": "grim.dll",
     "address": "0x100028d0",
     "name": "grim_backup_textures",
