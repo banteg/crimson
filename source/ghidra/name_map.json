@@ -31,5 +31,71 @@
     "name": "crimsonland_main",
     "signature": "int crimsonland_main(void)",
     "comment": "primary game init/run/shutdown sequence"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00465451",
+    "name": "crt_mt_init",
+    "comment": "CRT thread init (TLS + locks)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004654b8",
+    "name": "crt_get_thread_data",
+    "comment": "CRT per-thread data accessor"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046551f",
+    "name": "crt_free_thread_data",
+    "comment": "frees CRT per-thread data"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00465842",
+    "name": "crt_init_locks",
+    "comment": "initializes CRT critical sections"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046586b",
+    "name": "crt_lock",
+    "comment": "CRT lock table enter"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004658cc",
+    "name": "crt_unlock",
+    "comment": "CRT lock table leave"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046623d",
+    "name": "crt_io_init",
+    "comment": "CRT file handle table init"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00466a8e",
+    "name": "crt_heap_select",
+    "comment": "selects CRT heap strategy"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00466bd6",
+    "name": "crt_heap_init",
+    "comment": "CRT heap init (small/large block selection)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00466c33",
+    "name": "crt_sbh_init",
+    "comment": "CRT small-block heap init"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046777a",
+    "name": "crt_sbh_create_region",
+    "comment": "CRT small-block heap region init"
   }
 ]
