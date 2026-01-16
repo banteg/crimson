@@ -11,6 +11,20 @@ Use the hotspot script to refresh the lists when the decompile is regenerated.
 uv run python scripts/function_hotspots.py --top 12 --only-fun
 ```
 
+## Name map workflow
+
+We keep authoritative renames/signatures in `source/ghidra/name_map.csv` and
+apply them during headless analysis:
+
+```
+./.codex/skills/ghidra/scripts/ghidra-analyze.sh \
+  --script-path scripts/ghidra_scripts \
+  -s ApplyNameMap.java -a source/ghidra/name_map.csv \
+  -s ExportAll.java -o source/decompiled game/crimsonland.exe
+```
+
+You can also set `CRIMSON_NAME_MAP` to point at a custom map.
+
 ## High-call functions (current)
 
 ### `crimsonland.exe`

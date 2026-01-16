@@ -1,0 +1,5 @@
+program,address,name,signature,comment
+crimsonland.exe,0x0046e8f4,strdup_malloc,char *strdup_malloc(const char *src),malloc+copy helper
+crimsonland.exe,0x004017a0,console_push_line,void console_push_line(void *this, const char *line),pushes line into console queue
+crimsonland.exe,0x00401870,console_printf,void console_printf(void *this, const char *fmt, ...),formats then pushes line
+crimsonland.exe,0x004566d3,renderer_select_backend,int renderer_select_backend(int reset),selects renderer table based on config
