@@ -201,7 +201,7 @@ uint FUN_10002680(void)
   int iVar1;
   int iVar2;
   uint uVar3;
-  WINBOOL WVar4;
+  BOOL BVar4;
   DWORD dwExStyle;
   DWORD dwStyle;
   HMENU hMenu;
@@ -267,8 +267,8 @@ uint FUN_10002680(void)
   UpdateWindow(DAT_1005d3f8);
   SetFocus(DAT_1005d3f8);
   ShowWindow(DAT_1005d3f8,1);
-  WVar4 = UpdateWindow(DAT_1005d3f8);
-  return CONCAT31((int3)((uint)WVar4 >> 8),1);
+  BVar4 = UpdateWindow(DAT_1005d3f8);
+  return CONCAT31((int3)((uint)BVar4 >> 8),1);
 }
 
 
@@ -854,7 +854,7 @@ undefined4 FUN_10003c00(void)
 {
   float fVar1;
   char cVar2;
-  WINBOOL WVar3;
+  BOOL BVar3;
   int iVar4;
   float *pfVar5;
   tagMSG *ptVar6;
@@ -881,8 +881,8 @@ undefined4 FUN_10003c00(void)
           while( true ) {
             while( true ) {
               if (local_1c.message == 0x12) goto LAB_10003e30;
-              WVar3 = PeekMessageA(&local_1c,(HWND)0x0,0,0,1);
-              if (WVar3 == 0) break;
+              BVar3 = PeekMessageA(&local_1c,(HWND)0x0,0,0,1);
+              if (BVar3 == 0) break;
               TranslateMessage(&local_1c);
               DispatchMessageA(&local_1c);
             }
@@ -3042,9 +3042,12 @@ char * grim_get_error_text(void)
 
 
 
-/* FUN_10006cb0 @ 10006cb0 */
+/* grim_clear_color @ 10006cb0 */
 
-void FUN_10006cb0(void)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x2c (provisional): clear color */
+
+void grim_clear_color(float r,float g,float b,float a)
 
 {
   int iVar1;
@@ -3069,26 +3072,33 @@ void FUN_10006cb0(void)
 
 
 
-/* FUN_10006d50 @ 10006d50 */
+/* grim_set_render_target @ 10006d50 */
 
-undefined4 FUN_10006d50(int param_1)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x30 (provisional): set render target; -1 resets */
+
+int grim_set_render_target(int target_index)
 
 {
-  int iVar1;
+  undefined4 in_EAX;
+  uint uVar1;
+  int iVar2;
   
+  iVar2 = CONCAT31((int3)((uint)in_EAX >> 8),DAT_1005d3bd);
   if (DAT_1005d3bd == '\0') {
-    if (param_1 < 0) {
+    if (target_index < 0) {
       if (DAT_1005c900 != (int *)0x0) {
         if (DAT_1005a48c != (int *)0x0) {
           (**(code **)(*DAT_1005a48c + 8))(DAT_1005a48c);
         }
         DAT_1005a48c = (int *)0x0;
-        iVar1 = (**(code **)(*DAT_10059dbc + 0x7c))(DAT_10059dbc,DAT_1005c900,0);
-        if (iVar1 < 0) {
-          return 0;
+        uVar1 = (**(code **)(*DAT_10059dbc + 0x7c))(DAT_10059dbc,DAT_1005c900,0);
+        if ((int)uVar1 < 0) {
+          return uVar1 & 0xffffff00;
         }
+        iVar2 = 0;
         if (DAT_1005c900 != (int *)0x0) {
-          (**(code **)(*DAT_1005c900 + 8))(DAT_1005c900);
+          iVar2 = (**(code **)(*DAT_1005c900 + 8))(DAT_1005c900);
         }
         DAT_1005c900 = (int *)0x0;
       }
@@ -3101,22 +3111,23 @@ undefined4 FUN_10006d50(int param_1)
       if (DAT_1005c900 == (int *)0x0) {
         (**(code **)(*DAT_10059dbc + 0x80))(DAT_10059dbc,&DAT_1005c900);
       }
-      iVar1 = (**(code **)(**(int **)((&DAT_1005d404)[param_1] + 4) + 0x3c))
-                        (*(int **)((&DAT_1005d404)[param_1] + 4),0,&DAT_1005a48c);
-      if (iVar1 < 0) {
-        return 0;
+      uVar1 = (**(code **)(**(int **)((&DAT_1005d404)[target_index] + 4) + 0x3c))
+                        (*(int **)((&DAT_1005d404)[target_index] + 4),0,&DAT_1005a48c);
+      if ((int)uVar1 < 0) {
+        return uVar1 & 0xffffff00;
       }
-      iVar1 = (**(code **)(*DAT_10059dbc + 0x7c))(DAT_10059dbc,DAT_1005a48c,0);
-      if (iVar1 < 0) {
+      iVar2 = (**(code **)(*DAT_10059dbc + 0x7c))(DAT_10059dbc,DAT_1005a48c,0);
+      if (iVar2 < 0) {
+        uVar1 = 0;
         if (DAT_1005a48c != (int *)0x0) {
-          (**(code **)(*DAT_1005a48c + 8))(DAT_1005a48c);
+          uVar1 = (**(code **)(*DAT_1005a48c + 8))(DAT_1005a48c);
         }
         DAT_1005a48c = (int *)0x0;
-        return 0;
+        return uVar1 & 0xffffff00;
       }
     }
   }
-  return 1;
+  return CONCAT31((int3)((uint)iVar2 >> 8),1);
 }
 
 
@@ -3994,19 +4005,21 @@ void FUN_100078e0(void)
 
 
 
-/* FUN_100079b0 @ 100079b0 */
+/* grim_draw_fullscreen_color @ 100079b0 */
 
-void FUN_100079b0(void)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0xcc (provisional): fullscreen color/fade overlay */
+
+void grim_draw_fullscreen_color(float r,float g,float b,float a)
 
 {
   int *in_ECX;
-  float in_stack_00000010;
   int *piVar1;
   undefined4 uVar2;
   undefined4 uVar3;
   undefined4 uVar4;
   
-  if (0.0 < in_stack_00000010) {
+  if (0.0 < a) {
     (**(code **)(*DAT_10059dbc + 0xf4))(DAT_10059dbc,0,0);
     uVar4 = 3;
     uVar3 = 1;
@@ -4027,9 +4040,12 @@ void FUN_100079b0(void)
 
 
 
-/* FUN_10007ac0 @ 10007ac0 */
+/* grim_begin_batch @ 10007ac0 */
 
-void FUN_10007ac0(void)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0xe8 (provisional): begin draw batch */
+
+void grim_begin_batch(void)
 
 {
   int iVar1;
@@ -4048,9 +4064,12 @@ void FUN_10007ac0(void)
 
 
 
-/* FUN_10007b20 @ 10007b20 */
+/* grim_end_batch @ 10007b20 */
 
-void FUN_10007b20(void)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0xf0 (provisional): end draw batch/flush */
+
+void grim_end_batch(void)
 
 {
   if ((DAT_1005d3bd == '\0') && (DAT_1005d3f4 != '\0')) {
@@ -4660,14 +4679,17 @@ void FUN_10008680(float *param_1,int param_2,float *param_3)
 
 
 
-/* FUN_10008720 @ 10008720 */
+/* grim_draw_quad_xy @ 10008720 */
 
-void FUN_10008720(undefined4 *param_1,undefined4 param_2,undefined4 param_3)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x120 (provisional): draw quad from xy pointer */
+
+void grim_draw_quad_xy(float *xy,float w,float h)
 
 {
   int *in_ECX;
   
-  (**(code **)(*in_ECX + 0x11c))(*param_1,param_1[1],param_2,param_3);
+  (**(code **)(*in_ECX + 0x11c))(*xy,xy[1],w,h);
   return;
 }
 
@@ -5318,7 +5340,7 @@ undefined4 FUN_10009a20(HINSTANCE param_1,int param_2)
 {
   if (param_2 == 1) {
     DAT_1005bacc = param_1;
-    DAT_10059778 = LoadIconA((HINSTANCE)param_1,(LPCSTR)0x72);
+    DAT_10059778 = LoadIconA(param_1,(LPCSTR)0x72);
   }
   return 1;
 }
@@ -6199,7 +6221,7 @@ void __cdecl FUN_1000a900(_onexit_t param_1)
 
 {
   if (DAT_1005dbcc == -1) {
-    _onexit((_onexit_t)param_1);
+    _onexit(param_1);
     return;
   }
   __dllonexit(param_1,&DAT_1005dbcc,&DAT_1005dbc8);
@@ -19900,9 +19922,9 @@ undefined4 __thiscall FUN_1001bcb7(void *this,LPCWSTR param_1,int param_2)
     local_9c.dwOSVersionInfoSize = 0x94;
     GetVersionExA(&local_9c);
     if (local_9c.dwPlatformId != 2) {
-      local_8 = WideCharToMultiByte(0,0,param_1,-1,(LPSTR)0x0,0,(LPCCH)0x0,(LPBOOL)0x0);
+      local_8 = WideCharToMultiByte(0,0,param_1,-1,(LPSTR)0x0,0,(LPCSTR)0x0,(LPBOOL)0x0);
       FUN_1004b790();
-      WideCharToMultiByte(0,0,param_1,-1,&stack0xffffff58,local_8,(LPCCH)0x0,(LPBOOL)0x0);
+      WideCharToMultiByte(0,0,param_1,-1,&stack0xffffff58,local_8,(LPCSTR)0x0,(LPBOOL)0x0);
       param_2 = 0;
       param_1 = (LPCWSTR)&stack0xffffff58;
     }
@@ -19959,9 +19981,9 @@ undefined4 __thiscall FUN_1001bdc7(void *this,LPCWSTR param_1,int param_2)
     GetVersionExA(&local_9c);
     if (local_9c.dwPlatformId != 2) {
       lpFileName = (LPCWSTR)&stack0xffffff58;
-      cbMultiByte = WideCharToMultiByte(0,0,param_1,-1,(LPSTR)0x0,0,(LPCCH)0x0,(LPBOOL)0x0);
+      cbMultiByte = WideCharToMultiByte(0,0,param_1,-1,(LPSTR)0x0,0,(LPCSTR)0x0,(LPBOOL)0x0);
       FUN_1004b790();
-      WideCharToMultiByte(0,0,param_1,-1,&stack0xffffff58,cbMultiByte,(LPCCH)0x0,(LPBOOL)0x0);
+      WideCharToMultiByte(0,0,param_1,-1,&stack0xffffff58,cbMultiByte,(LPCSTR)0x0,(LPBOOL)0x0);
       param_2 = 0;
       this = local_8;
     }
@@ -20027,7 +20049,7 @@ void __fastcall FUN_1001bed2(int *param_1)
 undefined4 __cdecl FUN_1001bedd(DWORD param_1,LPCSTR param_2,LPBYTE param_3)
 
 {
-  LONG LVar1;
+  LSTATUS LVar1;
   DWORD local_c;
   HKEY local_8;
   
@@ -20066,7 +20088,7 @@ undefined8 __fastcall FUN_1001bf39(undefined4 param_1,undefined4 param_2)
 int FUN_1001bf5e(void)
 
 {
-  LONG LVar1;
+  LSTATUS LVar1;
   undefined4 extraout_ECX;
   undefined4 extraout_ECX_00;
   undefined4 uVar2;
@@ -20217,7 +20239,7 @@ undefined4 FUN_1001c075(void)
 uint __cdecl FUN_1001c0d4(DWORD param_1)
 
 {
-  WINBOOL WVar1;
+  BOOL BVar1;
   uint uVar2;
   int iVar3;
   undefined4 extraout_ECX;
@@ -20234,8 +20256,8 @@ uint __cdecl FUN_1001c0d4(DWORD param_1)
   }
   local_5 = '\0';
   local_9c.dwOSVersionInfoSize = 0x94;
-  WVar1 = GetVersionExA(&local_9c);
-  if (WVar1 == 0) {
+  BVar1 = GetVersionExA(&local_9c);
+  if (BVar1 == 0) {
     local_5 = '\x01';
   }
   if (local_9c.dwPlatformId == 1) {
@@ -20249,7 +20271,7 @@ uint __cdecl FUN_1001c0d4(DWORD param_1)
     if (local_9c.dwPlatformId != 2) {
       return 0;
     }
-    if (WVar1 != 0) {
+    if (BVar1 != 0) {
       if (param_1 != 10) {
         uVar2 = IsProcessorFeaturePresent(param_1);
         return uVar2;
