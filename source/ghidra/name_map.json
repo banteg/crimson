@@ -409,6 +409,27 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10007580",
+    "name": "grim_get_joystick_x",
+    "signature": "int grim_get_joystick_x(void)",
+    "comment": "Grim2D vtable 0x98 (provisional): joystick axis X"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007590",
+    "name": "grim_get_joystick_y",
+    "signature": "int grim_get_joystick_y(void)",
+    "comment": "Grim2D vtable 0x9c (provisional): joystick axis Y"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100075a0",
+    "name": "grim_get_joystick_z",
+    "signature": "int grim_get_joystick_z(void)",
+    "comment": "Grim2D vtable 0xa0 (provisional): joystick axis Z"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x100075d0",
     "name": "grim_create_texture",
     "signature": "int grim_create_texture(char *name, int width, int height)",
@@ -423,10 +444,24 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x100075c0",
+    "name": "grim_is_joystick_button_down",
+    "signature": "int grim_is_joystick_button_down(int button)",
+    "comment": "Grim2D vtable 0xa8 (provisional): joystick button state"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x100076e0",
     "name": "grim_load_texture",
     "signature": "int grim_load_texture(char *name, char *path)",
     "comment": "Grim2D vtable 0xb4 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007700",
+    "name": "grim_destroy_texture",
+    "signature": "void grim_destroy_texture(int handle)",
+    "comment": "Grim2D vtable 0xbc (provisional): release texture handle"
   },
   {
     "program": "grim.dll",
