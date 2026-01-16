@@ -29,6 +29,10 @@ two datasets:
 The map CSV includes function size, calling convention, return type, parameter
 count, and the raw Ghidra signature for faster triage.
 
+We also generate an evidence appendix with callsite snippets:
+
+- `docs/grim2d-api-evidence.md`
+
 ## Top offsets by callsite count
 
 These are the most frequently used offsets (likely the core draw/state calls):
@@ -55,32 +59,39 @@ These offsets appear with keycodes or input-related values:
 - `0x84` returns a float and is queried with IDs `0x13f..0x155`
   in `FUN_00448b50` (likely config values).
 
-## Initial mapping (best guesses)
+## Provisional mapping (in progress)
 
-These are high-confidence candidates based on call patterns:
+| Offset | Name | Signature (guess) | Confidence | Notes |
+| --- | --- | --- | --- | --- |
+| `0x20` | `set_render_state` | `void set_render_state(uint32_t state, uint32_t value)` | high | D3D-style render state usage |
+| `0x44` | `is_key_down` | `bool is_key_down(uint32_t key)` | high | Ctrl/arrow keycodes |
+| `0x48` | `was_key_pressed` | `bool was_key_pressed(uint32_t key)` | high | edge-triggered key checks |
+| `0x50` | `get_key_char` | `int get_key_char(void)` | high | console text input |
+| `0x58` | `is_mouse_button_down` | `bool is_mouse_button_down(int button)` | medium | button 0 used |
+| `0x60` | `get_mouse_wheel_delta` | `float get_mouse_wheel_delta(void)` | high | +/- wheel to change selection |
+| `0x80` | `is_key_active` | `bool is_key_active(int key)` | medium | uses key mapping entries |
+| `0x84` | `get_config_float` | `float get_config_float(int id)` | medium | IDs `0x13f..0x155` |
+| `0xac` | `create_texture` | `bool create_texture(const char *name, int width, int height)` | medium | terrain texture path |
+| `0xb4` | `load_texture` | `bool load_texture(const char *name, const char *path)` | high | `(name, filename)` |
+| `0xc0` | `get_texture_handle` | `int get_texture_handle(const char *name)` | high | returns `-1` on missing |
+| `0xc4` | `bind_texture` | `void bind_texture(int handle, int stage)` | medium | often `(handle, 0)` |
+| `0xfc` | `set_rotation` | `void set_rotation(float radians)` | medium | rotation before draw |
+| `0x100` | `set_uv` | `void set_uv(float u0, float v0, float u1, float v1)` | high | UV coords |
+| `0x104` | `set_atlas_frame` | `void set_atlas_frame(int atlas, int frame)` | high | atlas index + frame |
+| `0x108` | `set_sub_rect` | `void set_sub_rect(int x, int y, int w, int h)` | medium | pixel rect/clip |
+| `0x110` | `set_pivot` | `void set_pivot(const float *xy)` | low | pointer to float pair |
+| `0x114` | `set_color` | `void set_color(float r, float g, float b, float a)` | high | RGBA floats |
+| `0x11c` | `draw_quad` | `void draw_quad(float x, float y, float w, float h)` | high | core draw call |
+| `0x144` | `draw_text` | `void draw_text(float x, float y, const char *text)` | medium | text draw |
+| `0x148` | `draw_text_box` | `void draw_text_box(float x, float y, const char *text, ...)` | low | wrapping/layout variant |
+| `0x14c` | `measure_text_width` | `int measure_text_width(const char *text)` | medium | width metric |
 
-- `0x20` — render state setter (`(0x13,5)`, `(0x14,6)`, `(0x18,0x3f000000)`),
-  matches D3D-style `SetRenderState` usage.
-- `0xb4` — load texture by name; called as `(name, name)` and returns success.
-- `0xc0` — get texture handle by name; returns `-1` if missing.
-- `0xac` — create terrain texture (`"ground"`, width, height); returns success.
-- `0x44` — key-down (used with Ctrl codes `0x1d/0x9d`).
-- `0x48` — key-pressed / edge trigger (used with arrows, pgup/pgdn).
-- `0x58` — mouse button state (called with `0`).
-- `0x80` — key state lookup (called with key mapping entries).
-- `0x100` — set UVs / texture coords (four floats).
-- `0x104` — set sprite frame / atlas index (called with `(8, frame)`).
-- `0x108` — set sub-rect in pixels (stacked 4 args before draw).
-- `0x110` — set rotation pivot / center (takes pointer to float(s)).
-- `0xfc` — set rotation angle (radians).
-- `0x114` — set color/alpha (RGBA floats).
-- `0x11c` — draw quad (x, y, w, h).
-- `0x144` — draw text (x, y, string).
-- `0x148` — draw text with layout/wrapping (x, y, string, optional args).
-- `0x14c` — text metrics (returns width/height; sometimes no args).
+The working vtable skeleton lives in:
+
+- `source/clean/grim_api.h`
 
 ## Next steps
 
-1. Map each offset to grim.dll call sites (match argument shapes).
-2. Assign provisional names in a `grim_api.h` draft.
-3. Validate with runtime behavior (config toggles, input, draw calls).
+1. Expand the provisional mapping table as evidence improves.
+2. Refine signatures in `source/clean/grim_api.h`.
+3. Validate behavior with runtime toggles (config, input, draw calls).
