@@ -14,6 +14,7 @@ Interesting Functions and Patterns
 [MALLOC related]
   _malloc @ 004629d9
   __nh_malloc @ 004629eb
+  strdup_malloc @ 0046e8f4
 
 [FREE related]
   __freebuf @ 00463f29
@@ -21,6 +22,10 @@ Interesting Functions and Patterns
 [ALLOC related]
   _malloc @ 004629d9
   __nh_malloc @ 004629eb
+  strdup_malloc @ 0046e8f4
+
+[PRINT related]
+  console_printf @ 00401870
 
 [ERROR related]
   __startOneArgErrorHandling @ 004650e7
