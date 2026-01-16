@@ -1,0 +1,1602 @@
+[
+  {
+    "index": 0,
+    "offset_hex": "0x0",
+    "offset_dec": 0,
+    "func_addr": "0x10005c80",
+    "func_name": "FUN_10005c80",
+    "section": ".text"
+  },
+  {
+    "index": 1,
+    "offset_hex": "0x4",
+    "offset_dec": 4,
+    "func_addr": "0x10005c90",
+    "func_name": "FUN_10005c90",
+    "section": ".text"
+  },
+  {
+    "index": 2,
+    "offset_hex": "0x8",
+    "offset_dec": 8,
+    "func_addr": "0x10005ca0",
+    "func_name": "FUN_10005ca0",
+    "section": ".text"
+  },
+  {
+    "index": 3,
+    "offset_hex": "0xc",
+    "offset_dec": 12,
+    "func_addr": "0x10005cb0",
+    "func_name": "FUN_10005cb0",
+    "section": ".text"
+  },
+  {
+    "index": 4,
+    "offset_hex": "0x10",
+    "offset_dec": 16,
+    "func_addr": "0x10005d40",
+    "func_name": "grim_apply_config",
+    "section": ".text"
+  },
+  {
+    "index": 5,
+    "offset_hex": "0x14",
+    "offset_dec": 20,
+    "func_addr": "0x10005eb0",
+    "func_name": "grim_init_system",
+    "section": ".text"
+  },
+  {
+    "index": 6,
+    "offset_hex": "0x18",
+    "offset_dec": 24,
+    "func_addr": "0x10005ff0",
+    "func_name": "grim_shutdown",
+    "section": ".text"
+  },
+  {
+    "index": 7,
+    "offset_hex": "0x1c",
+    "offset_dec": 28,
+    "func_addr": "0x10006020",
+    "func_name": "grim_apply_settings",
+    "section": ".text"
+  },
+  {
+    "index": 8,
+    "offset_hex": "0x20",
+    "offset_dec": 32,
+    "func_addr": "0x10006580",
+    "func_name": "grim_set_render_state",
+    "section": ".text"
+  },
+  {
+    "index": 9,
+    "offset_hex": "0x24",
+    "offset_dec": 36,
+    "func_addr": "0x10006c30",
+    "func_name": "grim_get_config_var",
+    "section": ".text"
+  },
+  {
+    "index": 10,
+    "offset_hex": "0x28",
+    "offset_dec": 40,
+    "func_addr": "0x10006ca0",
+    "func_name": "grim_get_error_text",
+    "section": ".text"
+  },
+  {
+    "index": 11,
+    "offset_hex": "0x2c",
+    "offset_dec": 44,
+    "func_addr": "0x10006cb0",
+    "func_name": "grim_clear_color",
+    "section": ".text"
+  },
+  {
+    "index": 12,
+    "offset_hex": "0x30",
+    "offset_dec": 48,
+    "func_addr": "0x10006d50",
+    "func_name": "grim_set_render_target",
+    "section": ".text"
+  },
+  {
+    "index": 13,
+    "offset_hex": "0x34",
+    "offset_dec": 52,
+    "func_addr": "0x10006e40",
+    "func_name": "FUN_10006e40",
+    "section": ".text"
+  },
+  {
+    "index": 14,
+    "offset_hex": "0x38",
+    "offset_dec": 56,
+    "func_addr": "0x10006e50",
+    "func_name": "FUN_10006e50",
+    "section": ".text"
+  },
+  {
+    "index": 15,
+    "offset_hex": "0x3c",
+    "offset_dec": 60,
+    "func_addr": "0x10006e60",
+    "func_name": "FUN_10006e60",
+    "section": ".text"
+  },
+  {
+    "index": 16,
+    "offset_hex": "0x40",
+    "offset_dec": 64,
+    "func_addr": "0x10006e90",
+    "func_name": "FUN_10006e90",
+    "section": ".text"
+  },
+  {
+    "index": 17,
+    "offset_hex": "0x44",
+    "offset_dec": 68,
+    "func_addr": "0x10007320",
+    "func_name": "grim_is_key_down",
+    "section": ".text"
+  },
+  {
+    "index": 18,
+    "offset_hex": "0x48",
+    "offset_dec": 72,
+    "func_addr": "0x10007390",
+    "func_name": "grim_was_key_pressed",
+    "section": ".text"
+  },
+  {
+    "index": 19,
+    "offset_hex": "0x4c",
+    "offset_dec": 76,
+    "func_addr": "0x10007330",
+    "func_name": "FUN_10007330",
+    "section": ".text"
+  },
+  {
+    "index": 20,
+    "offset_hex": "0x50",
+    "offset_dec": 80,
+    "func_addr": "0x10005c40",
+    "func_name": "grim_get_key_char",
+    "section": ".text"
+  },
+  {
+    "index": 21,
+    "offset_hex": "0x54",
+    "offset_dec": 84,
+    "func_addr": "0x10005c20",
+    "func_name": "FUN_10005c20",
+    "section": ".text"
+  },
+  {
+    "index": 22,
+    "offset_hex": "0x58",
+    "offset_dec": 88,
+    "func_addr": "0x10007410",
+    "func_name": "grim_is_mouse_button_down",
+    "section": ".text"
+  },
+  {
+    "index": 23,
+    "offset_hex": "0x5c",
+    "offset_dec": 92,
+    "func_addr": "0x10007440",
+    "func_name": "FUN_10007440",
+    "section": ".text"
+  },
+  {
+    "index": 24,
+    "offset_hex": "0x60",
+    "offset_dec": 96,
+    "func_addr": "0x10007560",
+    "func_name": "grim_get_mouse_wheel_delta",
+    "section": ".text"
+  },
+  {
+    "index": 25,
+    "offset_hex": "0x64",
+    "offset_dec": 100,
+    "func_addr": "0x10007530",
+    "func_name": "FUN_10007530",
+    "section": ".text"
+  },
+  {
+    "index": 26,
+    "offset_hex": "0x68",
+    "offset_dec": 104,
+    "func_addr": "0x10007510",
+    "func_name": "FUN_10007510",
+    "section": ".text"
+  },
+  {
+    "index": 27,
+    "offset_hex": "0x6c",
+    "offset_dec": 108,
+    "func_addr": "0x10007520",
+    "func_name": "FUN_10007520",
+    "section": ".text"
+  },
+  {
+    "index": 28,
+    "offset_hex": "0x70",
+    "offset_dec": 112,
+    "func_addr": "0x100074d0",
+    "func_name": "FUN_100074d0",
+    "section": ".text"
+  },
+  {
+    "index": 29,
+    "offset_hex": "0x74",
+    "offset_dec": 116,
+    "func_addr": "0x100074e0",
+    "func_name": "FUN_100074e0",
+    "section": ".text"
+  },
+  {
+    "index": 30,
+    "offset_hex": "0x78",
+    "offset_dec": 120,
+    "func_addr": "0x100074f0",
+    "func_name": "FUN_100074f0",
+    "section": ".text"
+  },
+  {
+    "index": 31,
+    "offset_hex": "0x7c",
+    "offset_dec": 124,
+    "func_addr": "0x10007500",
+    "func_name": "FUN_10007500",
+    "section": ".text"
+  },
+  {
+    "index": 32,
+    "offset_hex": "0x80",
+    "offset_dec": 128,
+    "func_addr": "0x10006fe0",
+    "func_name": "grim_is_key_active",
+    "section": ".text"
+  },
+  {
+    "index": 33,
+    "offset_hex": "0x84",
+    "offset_dec": 132,
+    "func_addr": "0x100071b0",
+    "func_name": "grim_get_config_float",
+    "section": ".text"
+  },
+  {
+    "index": 34,
+    "offset_hex": "0x88",
+    "offset_dec": 136,
+    "func_addr": "0x100072c0",
+    "func_name": "FUN_100072c0",
+    "section": ".text"
+  },
+  {
+    "index": 35,
+    "offset_hex": "0x8c",
+    "offset_dec": 140,
+    "func_addr": "0x100072d0",
+    "func_name": "FUN_100072d0",
+    "section": ".text"
+  },
+  {
+    "index": 36,
+    "offset_hex": "0x90",
+    "offset_dec": 144,
+    "func_addr": "0x100072e0",
+    "func_name": "FUN_100072e0",
+    "section": ".text"
+  },
+  {
+    "index": 37,
+    "offset_hex": "0x94",
+    "offset_dec": 148,
+    "func_addr": "0x10007300",
+    "func_name": "FUN_10007300",
+    "section": ".text"
+  },
+  {
+    "index": 38,
+    "offset_hex": "0x98",
+    "offset_dec": 152,
+    "func_addr": "0x10007580",
+    "func_name": "FUN_10007580",
+    "section": ".text"
+  },
+  {
+    "index": 39,
+    "offset_hex": "0x9c",
+    "offset_dec": 156,
+    "func_addr": "0x10007590",
+    "func_name": "FUN_10007590",
+    "section": ".text"
+  },
+  {
+    "index": 40,
+    "offset_hex": "0xa0",
+    "offset_dec": 160,
+    "func_addr": "0x100075a0",
+    "func_name": "FUN_100075a0",
+    "section": ".text"
+  },
+  {
+    "index": 41,
+    "offset_hex": "0xa4",
+    "offset_dec": 164,
+    "func_addr": "0x100075b0",
+    "func_name": "FUN_100075b0",
+    "section": ".text"
+  },
+  {
+    "index": 42,
+    "offset_hex": "0xa8",
+    "offset_dec": 168,
+    "func_addr": "0x100075c0",
+    "func_name": "FUN_100075c0",
+    "section": ".text"
+  },
+  {
+    "index": 43,
+    "offset_hex": "0xac",
+    "offset_dec": 172,
+    "func_addr": "0x100075d0",
+    "func_name": "grim_create_texture",
+    "section": ".text"
+  },
+  {
+    "index": 44,
+    "offset_hex": "0xb0",
+    "offset_dec": 176,
+    "func_addr": "0x10007790",
+    "func_name": "FUN_10007790",
+    "section": ".text"
+  },
+  {
+    "index": 45,
+    "offset_hex": "0xb4",
+    "offset_dec": 180,
+    "func_addr": "0x100076e0",
+    "func_name": "grim_load_texture",
+    "section": ".text"
+  },
+  {
+    "index": 46,
+    "offset_hex": "0xb8",
+    "offset_dec": 184,
+    "func_addr": "0x10007750",
+    "func_name": "FUN_10007750",
+    "section": ".text"
+  },
+  {
+    "index": 47,
+    "offset_hex": "0xbc",
+    "offset_dec": 188,
+    "func_addr": "0x10007700",
+    "func_name": "FUN_10007700",
+    "section": ".text"
+  },
+  {
+    "index": 48,
+    "offset_hex": "0xc0",
+    "offset_dec": 192,
+    "func_addr": "0x10007740",
+    "func_name": "grim_get_texture_handle",
+    "section": ".text"
+  },
+  {
+    "index": 49,
+    "offset_hex": "0xc4",
+    "offset_dec": 196,
+    "func_addr": "0x10007830",
+    "func_name": "grim_bind_texture",
+    "section": ".text"
+  },
+  {
+    "index": 50,
+    "offset_hex": "0xc8",
+    "offset_dec": 200,
+    "func_addr": "0x10007870",
+    "func_name": "FUN_10007870",
+    "section": ".text"
+  },
+  {
+    "index": 51,
+    "offset_hex": "0xcc",
+    "offset_dec": 204,
+    "func_addr": "0x100079b0",
+    "func_name": "grim_draw_fullscreen_color",
+    "section": ".text"
+  },
+  {
+    "index": 52,
+    "offset_hex": "0xd0",
+    "offset_dec": 208,
+    "func_addr": "0x100078e0",
+    "func_name": "FUN_100078e0",
+    "section": ".text"
+  },
+  {
+    "index": 53,
+    "offset_hex": "0xd4",
+    "offset_dec": 212,
+    "func_addr": "0x10008f10",
+    "func_name": "FUN_10008f10",
+    "section": ".text"
+  },
+  {
+    "index": 54,
+    "offset_hex": "0xd8",
+    "offset_dec": 216,
+    "func_addr": "0x10007b90",
+    "func_name": "FUN_10007b90",
+    "section": ".text"
+  },
+  {
+    "index": 55,
+    "offset_hex": "0xdc",
+    "offset_dec": 220,
+    "func_addr": "0x10007d40",
+    "func_name": "FUN_10007d40",
+    "section": ".text"
+  },
+  {
+    "index": 56,
+    "offset_hex": "0xe0",
+    "offset_dec": 224,
+    "func_addr": "0x100080b0",
+    "func_name": "FUN_100080b0",
+    "section": ".text"
+  },
+  {
+    "index": 57,
+    "offset_hex": "0xe4",
+    "offset_dec": 228,
+    "func_addr": "0x10008150",
+    "func_name": "FUN_10008150",
+    "section": ".text"
+  },
+  {
+    "index": 58,
+    "offset_hex": "0xe8",
+    "offset_dec": 232,
+    "func_addr": "0x10007ac0",
+    "func_name": "grim_begin_batch",
+    "section": ".text"
+  },
+  {
+    "index": 59,
+    "offset_hex": "0xec",
+    "offset_dec": 236,
+    "func_addr": "0x100083c0",
+    "func_name": "FUN_100083c0",
+    "section": ".text"
+  },
+  {
+    "index": 60,
+    "offset_hex": "0xf0",
+    "offset_dec": 240,
+    "func_addr": "0x10007b20",
+    "func_name": "grim_end_batch",
+    "section": ".text"
+  },
+  {
+    "index": 61,
+    "offset_hex": "0xf4",
+    "offset_dec": 244,
+    "func_addr": "0x10008e30",
+    "func_name": "FUN_10008e30",
+    "section": ".text"
+  },
+  {
+    "index": 62,
+    "offset_hex": "0xf8",
+    "offset_dec": 248,
+    "func_addr": "0x10008eb0",
+    "func_name": "FUN_10008eb0",
+    "section": ".text"
+  },
+  {
+    "index": 63,
+    "offset_hex": "0xfc",
+    "offset_dec": 252,
+    "func_addr": "0x10007f30",
+    "func_name": "grim_set_rotation",
+    "section": ".text"
+  },
+  {
+    "index": 64,
+    "offset_hex": "0x100",
+    "offset_dec": 256,
+    "func_addr": "0x10008350",
+    "func_name": "grim_set_uv",
+    "section": ".text"
+  },
+  {
+    "index": 65,
+    "offset_hex": "0x104",
+    "offset_dec": 260,
+    "func_addr": "0x10008230",
+    "func_name": "grim_set_atlas_frame",
+    "section": ".text"
+  },
+  {
+    "index": 66,
+    "offset_hex": "0x108",
+    "offset_dec": 264,
+    "func_addr": "0x100082c0",
+    "func_name": "grim_set_sub_rect",
+    "section": ".text"
+  },
+  {
+    "index": 67,
+    "offset_hex": "0x10c",
+    "offset_dec": 268,
+    "func_addr": "0x100083a0",
+    "func_name": "grim_set_uv_point",
+    "section": ".text"
+  },
+  {
+    "index": 68,
+    "offset_hex": "0x110",
+    "offset_dec": 272,
+    "func_addr": "0x10008040",
+    "func_name": "grim_set_pivot",
+    "section": ".text"
+  },
+  {
+    "index": 69,
+    "offset_hex": "0x114",
+    "offset_dec": 276,
+    "func_addr": "0x10007f90",
+    "func_name": "grim_set_color",
+    "section": ".text"
+  },
+  {
+    "index": 70,
+    "offset_hex": "0x118",
+    "offset_dec": 280,
+    "func_addr": "0x100081c0",
+    "func_name": "grim_set_color_slot",
+    "section": ".text"
+  },
+  {
+    "index": 71,
+    "offset_hex": "0x11c",
+    "offset_dec": 284,
+    "func_addr": "0x10008b10",
+    "func_name": "grim_draw_quad",
+    "section": ".text"
+  },
+  {
+    "index": 72,
+    "offset_hex": "0x120",
+    "offset_dec": 288,
+    "func_addr": "0x10008720",
+    "func_name": "grim_draw_quad_xy",
+    "section": ".text"
+  },
+  {
+    "index": 73,
+    "offset_hex": "0x124",
+    "offset_dec": 292,
+    "func_addr": "0x10008750",
+    "func_name": "FUN_10008750",
+    "section": ".text"
+  },
+  {
+    "index": 74,
+    "offset_hex": "0x128",
+    "offset_dec": 296,
+    "func_addr": "0x100085c0",
+    "func_name": "FUN_100085c0",
+    "section": ".text"
+  },
+  {
+    "index": 75,
+    "offset_hex": "0x12c",
+    "offset_dec": 300,
+    "func_addr": "0x10008680",
+    "func_name": "FUN_10008680",
+    "section": ".text"
+  },
+  {
+    "index": 76,
+    "offset_hex": "0x130",
+    "offset_dec": 304,
+    "func_addr": "0x10008430",
+    "func_name": "FUN_10008430",
+    "section": ".text"
+  },
+  {
+    "index": 77,
+    "offset_hex": "0x134",
+    "offset_dec": 308,
+    "func_addr": "0x100084e0",
+    "func_name": "FUN_100084e0",
+    "section": ".text"
+  },
+  {
+    "index": 78,
+    "offset_hex": "0x138",
+    "offset_dec": 312,
+    "func_addr": "0x10009080",
+    "func_name": "FUN_10009080",
+    "section": ".text"
+  },
+  {
+    "index": 79,
+    "offset_hex": "0x13c",
+    "offset_dec": 316,
+    "func_addr": "0x100092b0",
+    "func_name": "grim_draw_text_mono",
+    "section": ".text"
+  },
+  {
+    "index": 80,
+    "offset_hex": "0x140",
+    "offset_dec": 320,
+    "func_addr": "0x10009940",
+    "func_name": "grim_draw_text_mono_fmt",
+    "section": ".text"
+  },
+  {
+    "index": 81,
+    "offset_hex": "0x144",
+    "offset_dec": 324,
+    "func_addr": "0x10009730",
+    "func_name": "grim_draw_text_small",
+    "section": ".text"
+  },
+  {
+    "index": 82,
+    "offset_hex": "0x148",
+    "offset_dec": 328,
+    "func_addr": "0x10009980",
+    "func_name": "grim_draw_text_box",
+    "section": ".text"
+  },
+  {
+    "index": 83,
+    "offset_hex": "0x14c",
+    "offset_dec": 332,
+    "func_addr": "0x100096c0",
+    "func_name": "grim_measure_text_width",
+    "section": ".text"
+  },
+  {
+    "index": 84,
+    "offset_hex": "0x150",
+    "offset_dec": 336,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 85,
+    "offset_hex": "0x154",
+    "offset_dec": 340,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 86,
+    "offset_hex": "0x158",
+    "offset_dec": 344,
+    "func_addr": "0x20",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 87,
+    "offset_hex": "0x15c",
+    "offset_dec": 348,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 88,
+    "offset_hex": "0x160",
+    "offset_dec": 352,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 89,
+    "offset_hex": "0x164",
+    "offset_dec": 356,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 90,
+    "offset_hex": "0x168",
+    "offset_dec": 360,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 91,
+    "offset_hex": "0x16c",
+    "offset_dec": 364,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 92,
+    "offset_hex": "0x170",
+    "offset_dec": 368,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 93,
+    "offset_hex": "0x174",
+    "offset_dec": 372,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 94,
+    "offset_hex": "0x178",
+    "offset_dec": 376,
+    "func_addr": "0x14",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 95,
+    "offset_hex": "0x17c",
+    "offset_dec": 380,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 96,
+    "offset_hex": "0x180",
+    "offset_dec": 384,
+    "func_addr": "0x18",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 97,
+    "offset_hex": "0x184",
+    "offset_dec": 388,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 98,
+    "offset_hex": "0x188",
+    "offset_dec": 392,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 99,
+    "offset_hex": "0x18c",
+    "offset_dec": 396,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 100,
+    "offset_hex": "0x190",
+    "offset_dec": 400,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 101,
+    "offset_hex": "0x194",
+    "offset_dec": 404,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 102,
+    "offset_hex": "0x198",
+    "offset_dec": 408,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 103,
+    "offset_hex": "0x19c",
+    "offset_dec": 412,
+    "func_addr": "0x15",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 104,
+    "offset_hex": "0x1a0",
+    "offset_dec": 416,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 105,
+    "offset_hex": "0x1a4",
+    "offset_dec": 420,
+    "func_addr": "0x20",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 106,
+    "offset_hex": "0x1a8",
+    "offset_dec": 424,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 107,
+    "offset_hex": "0x1ac",
+    "offset_dec": 428,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 108,
+    "offset_hex": "0x1b0",
+    "offset_dec": 432,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 109,
+    "offset_hex": "0x1b4",
+    "offset_dec": 436,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 110,
+    "offset_hex": "0x1b8",
+    "offset_dec": 440,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 111,
+    "offset_hex": "0x1bc",
+    "offset_dec": 444,
+    "func_addr": "0x1",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 112,
+    "offset_hex": "0x1c0",
+    "offset_dec": 448,
+    "func_addr": "0x16",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 113,
+    "offset_hex": "0x1c4",
+    "offset_dec": 452,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 114,
+    "offset_hex": "0x1c8",
+    "offset_dec": 456,
+    "func_addr": "0x20",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 115,
+    "offset_hex": "0x1cc",
+    "offset_dec": 460,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 116,
+    "offset_hex": "0x1d0",
+    "offset_dec": 464,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 117,
+    "offset_hex": "0x1d4",
+    "offset_dec": 468,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 118,
+    "offset_hex": "0x1d8",
+    "offset_dec": 472,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 119,
+    "offset_hex": "0x1dc",
+    "offset_dec": 476,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 120,
+    "offset_hex": "0x1e0",
+    "offset_dec": 480,
+    "func_addr": "0x1",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 121,
+    "offset_hex": "0x1e4",
+    "offset_dec": 484,
+    "func_addr": "0x17",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 122,
+    "offset_hex": "0x1e8",
+    "offset_dec": 488,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 123,
+    "offset_hex": "0x1ec",
+    "offset_dec": 492,
+    "func_addr": "0x10",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 124,
+    "offset_hex": "0x1f0",
+    "offset_dec": 496,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 125,
+    "offset_hex": "0x1f4",
+    "offset_dec": 500,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 126,
+    "offset_hex": "0x1f8",
+    "offset_dec": 504,
+    "func_addr": "0x5",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 127,
+    "offset_hex": "0x1fc",
+    "offset_dec": 508,
+    "func_addr": "0x6",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 128,
+    "offset_hex": "0x200",
+    "offset_dec": 512,
+    "func_addr": "0x5",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 129,
+    "offset_hex": "0x204",
+    "offset_dec": 516,
+    "func_addr": "0x1",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 130,
+    "offset_hex": "0x208",
+    "offset_dec": 520,
+    "func_addr": "0x18",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 131,
+    "offset_hex": "0x20c",
+    "offset_dec": 524,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 132,
+    "offset_hex": "0x210",
+    "offset_dec": 528,
+    "func_addr": "0x10",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 133,
+    "offset_hex": "0x214",
+    "offset_dec": 532,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 134,
+    "offset_hex": "0x218",
+    "offset_dec": 536,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 135,
+    "offset_hex": "0x21c",
+    "offset_dec": 540,
+    "func_addr": "0x5",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 136,
+    "offset_hex": "0x220",
+    "offset_dec": 544,
+    "func_addr": "0x5",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 137,
+    "offset_hex": "0x224",
+    "offset_dec": 548,
+    "func_addr": "0x5",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 138,
+    "offset_hex": "0x228",
+    "offset_dec": 552,
+    "func_addr": "0x1",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 139,
+    "offset_hex": "0x22c",
+    "offset_dec": 556,
+    "func_addr": "0x28",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 140,
+    "offset_hex": "0x230",
+    "offset_dec": 560,
+    "func_addr": "0x1",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 141,
+    "offset_hex": "0x234",
+    "offset_dec": 564,
+    "func_addr": "0x10",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 142,
+    "offset_hex": "0x238",
+    "offset_dec": 568,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 143,
+    "offset_hex": "0x23c",
+    "offset_dec": 572,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 144,
+    "offset_hex": "0x240",
+    "offset_dec": 576,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 145,
+    "offset_hex": "0x244",
+    "offset_dec": 580,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 146,
+    "offset_hex": "0x248",
+    "offset_dec": 584,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 147,
+    "offset_hex": "0x24c",
+    "offset_dec": 588,
+    "func_addr": "0x1",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 148,
+    "offset_hex": "0x250",
+    "offset_dec": 592,
+    "func_addr": "0x29",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 149,
+    "offset_hex": "0x254",
+    "offset_dec": 596,
+    "func_addr": "0x1",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 150,
+    "offset_hex": "0x258",
+    "offset_dec": 600,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 151,
+    "offset_hex": "0x25c",
+    "offset_dec": 604,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 152,
+    "offset_hex": "0x260",
+    "offset_dec": 608,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 153,
+    "offset_hex": "0x264",
+    "offset_dec": 612,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 154,
+    "offset_hex": "0x268",
+    "offset_dec": 616,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 155,
+    "offset_hex": "0x26c",
+    "offset_dec": 620,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 156,
+    "offset_hex": "0x270",
+    "offset_dec": 624,
+    "func_addr": "0x1",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 157,
+    "offset_hex": "0x274",
+    "offset_dec": 628,
+    "func_addr": "0x19",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 158,
+    "offset_hex": "0x278",
+    "offset_dec": 632,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 159,
+    "offset_hex": "0x27c",
+    "offset_dec": 636,
+    "func_addr": "0x10",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 160,
+    "offset_hex": "0x280",
+    "offset_dec": 640,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 161,
+    "offset_hex": "0x284",
+    "offset_dec": 644,
+    "func_addr": "0x1",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 162,
+    "offset_hex": "0x288",
+    "offset_dec": 648,
+    "func_addr": "0x5",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 163,
+    "offset_hex": "0x28c",
+    "offset_dec": 652,
+    "func_addr": "0x5",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 164,
+    "offset_hex": "0x290",
+    "offset_dec": 656,
+    "func_addr": "0x5",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 165,
+    "offset_hex": "0x294",
+    "offset_dec": 660,
+    "func_addr": "0x1",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 166,
+    "offset_hex": "0x298",
+    "offset_dec": 664,
+    "func_addr": "0x1a",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 167,
+    "offset_hex": "0x29c",
+    "offset_dec": 668,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 168,
+    "offset_hex": "0x2a0",
+    "offset_dec": 672,
+    "func_addr": "0x10",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 169,
+    "offset_hex": "0x2a4",
+    "offset_dec": 676,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 170,
+    "offset_hex": "0x2a8",
+    "offset_dec": 680,
+    "func_addr": "0x4",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 171,
+    "offset_hex": "0x2ac",
+    "offset_dec": 684,
+    "func_addr": "0x4",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 172,
+    "offset_hex": "0x2b0",
+    "offset_dec": 688,
+    "func_addr": "0x4",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 173,
+    "offset_hex": "0x2b4",
+    "offset_dec": 692,
+    "func_addr": "0x4",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 174,
+    "offset_hex": "0x2b8",
+    "offset_dec": 696,
+    "func_addr": "0x1",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 175,
+    "offset_hex": "0x2bc",
+    "offset_dec": 700,
+    "func_addr": "0x1b",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 176,
+    "offset_hex": "0x2c0",
+    "offset_dec": 704,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 177,
+    "offset_hex": "0x2c4",
+    "offset_dec": 708,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 178,
+    "offset_hex": "0x2c8",
+    "offset_dec": 712,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 179,
+    "offset_hex": "0x2cc",
+    "offset_dec": 716,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 180,
+    "offset_hex": "0x2d0",
+    "offset_dec": 720,
+    "func_addr": "0x3",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 181,
+    "offset_hex": "0x2d4",
+    "offset_dec": 724,
+    "func_addr": "0x3",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 182,
+    "offset_hex": "0x2d8",
+    "offset_dec": 728,
+    "func_addr": "0x2",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 183,
+    "offset_hex": "0x2dc",
+    "offset_dec": 732,
+    "func_addr": "0x1",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 184,
+    "offset_hex": "0x2e0",
+    "offset_dec": 736,
+    "func_addr": "0x1c",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 185,
+    "offset_hex": "0x2e4",
+    "offset_dec": 740,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 186,
+    "offset_hex": "0x2e8",
+    "offset_dec": 744,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 187,
+    "offset_hex": "0x2ec",
+    "offset_dec": 748,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 188,
+    "offset_hex": "0x2f0",
+    "offset_dec": 752,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 189,
+    "offset_hex": "0x2f4",
+    "offset_dec": 756,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 190,
+    "offset_hex": "0x2f8",
+    "offset_dec": 760,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 191,
+    "offset_hex": "0x2fc",
+    "offset_dec": 764,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 192,
+    "offset_hex": "0x300",
+    "offset_dec": 768,
+    "func_addr": "0x1",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 193,
+    "offset_hex": "0x304",
+    "offset_dec": 772,
+    "func_addr": "0x1d",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 194,
+    "offset_hex": "0x308",
+    "offset_dec": 776,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 195,
+    "offset_hex": "0x30c",
+    "offset_dec": 780,
+    "func_addr": "0x10",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 196,
+    "offset_hex": "0x310",
+    "offset_dec": 784,
+    "func_addr": "0x0",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 197,
+    "offset_hex": "0x314",
+    "offset_dec": 788,
+    "func_addr": "0x8",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 198,
+    "offset_hex": "0x318",
+    "offset_dec": 792,
+    "func_addr": "0x3",
+    "func_name": "",
+    "section": ""
+  },
+  {
+    "index": 199,
+    "offset_hex": "0x31c",
+    "offset_dec": 796,
+    "func_addr": "0x3",
+    "func_name": "",
+    "section": ""
+  }
+]
