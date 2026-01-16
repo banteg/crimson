@@ -224,5 +224,166 @@
     "address": "0x0041f1a0",
     "name": "config_load_presets",
     "comment": "loads config presets into globals"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10006580",
+    "name": "grim_set_render_state",
+    "signature": "void grim_set_render_state(unsigned int state, unsigned int value)",
+    "comment": "Grim2D vtable 0x20 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007320",
+    "name": "grim_is_key_down",
+    "signature": "int grim_is_key_down(unsigned int key)",
+    "comment": "Grim2D vtable 0x44 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007390",
+    "name": "grim_was_key_pressed",
+    "signature": "int grim_was_key_pressed(unsigned int key)",
+    "comment": "Grim2D vtable 0x48 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10005c40",
+    "name": "grim_get_key_char",
+    "signature": "int grim_get_key_char(void)",
+    "comment": "Grim2D vtable 0x50 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007410",
+    "name": "grim_is_mouse_button_down",
+    "signature": "int grim_is_mouse_button_down(int button)",
+    "comment": "Grim2D vtable 0x58 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007560",
+    "name": "grim_get_mouse_wheel_delta",
+    "signature": "float grim_get_mouse_wheel_delta(void)",
+    "comment": "Grim2D vtable 0x60 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10006fe0",
+    "name": "grim_is_key_active",
+    "signature": "int grim_is_key_active(int key)",
+    "comment": "Grim2D vtable 0x80 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100071b0",
+    "name": "grim_get_config_float",
+    "signature": "float grim_get_config_float(int id)",
+    "comment": "Grim2D vtable 0x84 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100075d0",
+    "name": "grim_create_texture",
+    "signature": "int grim_create_texture(char *name, int width, int height)",
+    "comment": "Grim2D vtable 0xac (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100076e0",
+    "name": "grim_load_texture",
+    "signature": "int grim_load_texture(char *name, char *path)",
+    "comment": "Grim2D vtable 0xb4 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007740",
+    "name": "grim_get_texture_handle",
+    "signature": "int grim_get_texture_handle(char *name)",
+    "comment": "Grim2D vtable 0xc0 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007830",
+    "name": "grim_bind_texture",
+    "signature": "void grim_bind_texture(int handle, int stage)",
+    "comment": "Grim2D vtable 0xc4 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007f30",
+    "name": "grim_set_rotation",
+    "signature": "void grim_set_rotation(float radians)",
+    "comment": "Grim2D vtable 0xfc (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10008350",
+    "name": "grim_set_uv",
+    "signature": "void grim_set_uv(float u0, float v0, float u1, float v1)",
+    "comment": "Grim2D vtable 0x100 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10008230",
+    "name": "grim_set_atlas_frame",
+    "signature": "void grim_set_atlas_frame(int atlas, int frame)",
+    "comment": "Grim2D vtable 0x104 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100082c0",
+    "name": "grim_set_sub_rect",
+    "signature": "void grim_set_sub_rect(int x, int y, int w, int h)",
+    "comment": "Grim2D vtable 0x108 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10008040",
+    "name": "grim_set_pivot",
+    "signature": "void grim_set_pivot(float *xy)",
+    "comment": "Grim2D vtable 0x110 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007f90",
+    "name": "grim_set_color",
+    "signature": "void grim_set_color(float r, float g, float b, float a)",
+    "comment": "Grim2D vtable 0x114 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10008b10",
+    "name": "grim_draw_quad",
+    "signature": "void grim_draw_quad(float x, float y, float w, float h)",
+    "comment": "Grim2D vtable 0x11c (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100092b0",
+    "name": "grim_draw_text_mono",
+    "signature": "void grim_draw_text_mono(float x, float y, char *text)",
+    "comment": "Grim2D vtable 0x13c (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10009730",
+    "name": "grim_draw_text_small",
+    "signature": "void grim_draw_text_small(float x, float y, char *text)",
+    "comment": "Grim2D vtable 0x144 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10009980",
+    "name": "grim_draw_text_box",
+    "signature": "void grim_draw_text_box(float x, float y, char *text)",
+    "comment": "Grim2D vtable 0x148 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100096c0",
+    "name": "grim_measure_text_width",
+    "signature": "int grim_measure_text_width(char *text)",
+    "comment": "Grim2D vtable 0x14c (provisional)"
   }
 ]
