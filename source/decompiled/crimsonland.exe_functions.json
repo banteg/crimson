@@ -67,7 +67,7 @@
     "address": "00401560",
     "signature": "int * FUN_00401560(int * param_1)",
     "external": false,
-    "calls": ["FUN_004026e0", "FUN_0046e8f4", "FUN_00402350", "operator_new"]
+    "calls": ["operator_new", "FUN_00402350", "FUN_004026e0", "FUN_0046e8f4"]
   },
   {
     "name": "FUN_004016e0",
@@ -81,14 +81,14 @@
     "address": "004017a0",
     "signature": "undefined FUN_004017a0(void * this, uint * param_1)",
     "external": false,
-    "calls": ["FUN_0046e8f4", "FUN_004011f0", "FUN_00460dc7", "operator_new"]
+    "calls": ["operator_new", "FUN_004011f0", "FUN_00460dc7", "FUN_0046e8f4"]
   },
   {
     "name": "FUN_00401870",
     "address": "00401870",
     "signature": "undefined FUN_00401870(void * param_1, byte * param_2)",
     "external": false,
-    "calls": ["FUN_004017a0", "FUN_00461089"]
+    "calls": ["FUN_00461089", "FUN_004017a0"]
   },
   {
     "name": "FUN_004018b0",
@@ -109,14 +109,14 @@
     "address": "00401940",
     "signature": "undefined FUN_00401940(void * this, char * param_1)",
     "external": false,
-    "calls": ["FUN_004610da", "FUN_0046e8f4", "FUN_00460dc7", "FUN_00402580", "FUN_00402480", "FUN_00402750", "FUN_00401870"]
+    "calls": ["FUN_00402580", "FUN_00460dc7", "FUN_00402750", "FUN_00402480", "FUN_0046e8f4", "FUN_004610da", "FUN_00401870"]
   },
   {
     "name": "FUN_00401a40",
     "address": "00401a40",
     "signature": "undefined FUN_00401a40(void * param_1)",
     "external": false,
-    "calls": ["FUN_004018d0", "FUN_0046e8f4", "FUN_00401050", "FUN_004027b0", "FUN_00402580", "FUN_00401030", "FUN_00401060", "FUN_00402630", "operator_new", "FUN_00401870", "FUN_00401940"]
+    "calls": ["FUN_00401030", "FUN_00402580", "FUN_00401060", "operator_new", "FUN_004018d0", "FUN_00401050", "FUN_004027b0", "FUN_00401940", "FUN_0046e8f4", "FUN_00402630", "FUN_00401870"]
   },
   {
     "name": "FUN_00401dd0",
@@ -130,7 +130,7 @@
     "address": "00402350",
     "signature": "undefined4 * FUN_00402350(void * this, uint * param_1, uint * param_2)",
     "external": false,
-    "calls": ["FUN_004610da", "FUN_0046e8f4", "FUN_00460dc7", "FUN_00402480", "operator_new"]
+    "calls": ["operator_new", "FUN_00460dc7", "FUN_00402480", "FUN_0046e8f4", "FUN_004610da"]
   },
   {
     "name": "FUN_00402480",
@@ -172,7 +172,7 @@
     "address": "004026e0",
     "signature": "undefined FUN_004026e0(void * this, uint * param_1, undefined4 param_2)",
     "external": false,
-    "calls": ["FUN_0046e8f4", "operator_new"]
+    "calls": ["operator_new", "FUN_0046e8f4"]
   },
   {
     "name": "FUN_00402750",
@@ -193,7 +193,7 @@
     "address": "00402860",
     "signature": "undefined4 FUN_00402860(int param_1)",
     "external": false,
-    "calls": ["FUN_004615ae", "FUN_00460e5d", "FUN_0046103f", "FUN_00402bd0", "FUN_00461448"]
+    "calls": ["FUN_00461448", "FUN_00402bd0", "FUN_00460e5d", "FUN_004615ae", "FUN_0046103f"]
   },
   {
     "name": "FUN_00402bd0",
@@ -221,28 +221,28 @@
     "address": "00402ed0",
     "signature": "undefined FUN_00402ed0(void)",
     "external": false,
-    "calls": ["FUN_00452d40", "FUN_00430af0"]
+    "calls": ["FUN_00430af0", "FUN_00452d40"]
   },
   {
     "name": "FUN_00402fe0",
     "address": "00402fe0",
     "signature": "undefined FUN_00402fe0(void)",
     "external": false,
-    "calls": ["FUN_00452d40", "FUN_00430af0"]
+    "calls": ["FUN_00430af0", "FUN_00452d40"]
   },
   {
     "name": "FUN_004030f0",
     "address": "004030f0",
     "signature": "undefined FUN_004030f0(void)",
     "external": false,
-    "calls": ["FUN_00452d40", "_rand", "FUN_00417b80", "FUN_00430af0"]
+    "calls": ["FUN_00417b80", "FUN_00430af0", "FUN_00452d40", "_rand"]
   },
   {
     "name": "FUN_00403250",
     "address": "00403250",
     "signature": "undefined FUN_00403250(void)",
     "external": false,
-    "calls": ["FUN_00452d40", "_rand", "FUN_00417b80", "FUN_00430af0"]
+    "calls": ["FUN_00417b80", "FUN_00430af0", "FUN_00452d40", "_rand"]
   },
   {
     "name": "FUN_00403370",
@@ -256,7 +256,7 @@
     "address": "00403390",
     "signature": "int FUN_00403390(void)",
     "external": false,
-    "calls": ["FUN_00412dc0", "FUN_004461c0", "FUN_004030f0", "FUN_00402ed0", "FUN_00402fe0", "FUN_00403250", "FUN_00403370"]
+    "calls": ["FUN_00412dc0", "FUN_004030f0", "FUN_00403370", "FUN_00402fe0", "FUN_004461c0", "FUN_00403250", "FUN_00402ed0"]
   },
   {
     "name": "FUN_00403430",
@@ -277,14 +277,14 @@
     "address": "00403500",
     "signature": "undefined1 FUN_00403500(void)",
     "external": false,
-    "calls": ["FUN_004461c0", "FUN_00439230", "FUN_00412660", "FUN_00401870", "FUN_0042df10", "FUN_00419dd0"]
+    "calls": ["FUN_00439230", "FUN_004461c0", "FUN_0042df10", "FUN_00419dd0", "FUN_00412660", "FUN_00401870"]
   },
   {
     "name": "FUN_00403550",
     "address": "00403550",
     "signature": "undefined FUN_00403550(void)",
     "external": false,
-    "calls": ["FUN_004616e7", "FUN_004036d0", "FUN_00446c40"]
+    "calls": ["FUN_004036d0", "FUN_00446c40", "FUN_004616e7"]
   },
   {
     "name": "FUN_004036d0",
@@ -298,14 +298,14 @@
     "address": "004045a0",
     "signature": "undefined FUN_004045a0(void)",
     "external": false,
-    "calls": ["_rand", "FUN_0042fcf0", "FUN_0042fbd0", "FUN_00401870"]
+    "calls": ["FUN_0042fbd0", "FUN_0042fcf0", "_rand", "FUN_00401870"]
   },
   {
     "name": "FUN_004047c0",
     "address": "004047c0",
     "signature": "undefined FUN_004047c0(float * param_1, float param_2)",
     "external": false,
-    "calls": ["FUN_004616e7", "FUN_0043d550", "FUN_0041df40", "FUN_0041df60", "FUN_0043d460", "FUN_0043e830", "FUN_0041df50", "ShellExecuteA", "FUN_00460d86"]
+    "calls": ["FUN_0043d460", "FUN_0041df60", "FUN_00460d86", "FUN_0041df50", "FUN_004616e7", "FUN_0043d550", "FUN_0041df40", "ShellExecuteA", "FUN_0043e830"]
   },
   {
     "name": "FUN_00405160",
@@ -319,21 +319,21 @@
     "address": "004055e0",
     "signature": "undefined FUN_004055e0(int param_1)",
     "external": false,
-    "calls": ["FUN_00452cd0", "FUN_00452d40", "__ftol", "_rand", "FUN_0043d120", "FUN_0042ef60"]
+    "calls": ["FUN_00452d40", "FUN_00452cd0", "FUN_0042ef60", "_rand", "__ftol", "FUN_0043d120"]
   },
   {
     "name": "FUN_00405960",
     "address": "00405960",
     "signature": "undefined FUN_00405960(void)",
     "external": false,
-    "calls": ["FUN_004188a0", "FUN_00422c70", "FUN_00452d40", "FUN_00419680", "FUN_004295f0", "FUN_00427920", "FUN_00428390"]
+    "calls": ["FUN_00427920", "FUN_004188a0", "FUN_00452d40", "FUN_004295f0", "FUN_00422c70", "FUN_00419680", "FUN_00428390"]
   },
   {
     "name": "FUN_00405be0",
     "address": "00405be0",
     "signature": "undefined FUN_00405be0(void)",
     "external": false,
-    "calls": ["FUN_0041a530", "FUN_00417ae0", "FUN_004055e0", "FUN_0041a040", "__ftol", "FUN_0043e830", "FUN_0043d120", "FUN_00405960", "FUN_0043e5e0", "FUN_00460d86", "FUN_00403550"]
+    "calls": ["FUN_00403550", "FUN_00417ae0", "FUN_00460d86", "FUN_0043e5e0", "FUN_004055e0", "FUN_0041a530", "FUN_0041a040", "__ftol", "FUN_0043e830", "FUN_00405960", "FUN_0043d120"]
   },
   {
     "name": "FUN_00406180",
@@ -354,63 +354,63 @@
     "address": "00406350",
     "signature": "undefined FUN_00406350(void)",
     "external": false,
-    "calls": ["FUN_0041a530", "FUN_0041a040", "FUN_0043d550", "FUN_0043d460", "FUN_0043e830", "FUN_00405960", "FUN_00460d86"]
+    "calls": ["FUN_0043d460", "FUN_00460d86", "FUN_0043d550", "FUN_0041a530", "FUN_0041a040", "FUN_0043e830", "FUN_00405960"]
   },
   {
     "name": "FUN_00406af0",
     "address": "00406af0",
     "signature": "undefined FUN_00406af0(void)",
     "external": false,
-    "calls": ["FUN_004188a0", "FUN_0041a530", "FUN_0041a040", "FUN_00405960", "FUN_00403550"]
+    "calls": ["FUN_00403550", "FUN_004188a0", "FUN_0041a530", "FUN_0041a040", "FUN_00405960"]
   },
   {
     "name": "FUN_00406b40",
     "address": "00406b40",
     "signature": "undefined FUN_00406b40(void)",
     "external": false,
-    "calls": ["FUN_004206a0", "__ftol", "_rand", "FUN_0042fcf0", "FUN_0043d260", "FUN_00420130", "FUN_00427700"]
+    "calls": ["FUN_00427700", "FUN_004206a0", "FUN_00420130", "FUN_0043d260", "FUN_0042fcf0", "_rand", "__ftol"]
   },
   {
     "name": "FUN_004070e0",
     "address": "004070e0",
     "signature": "undefined FUN_004070e0(void)",
     "external": false,
-    "calls": ["FUN_00434220", "FUN_00412a80", "FUN_0043d550", "FUN_0043d460", "FUN_00428210", "FUN_0043d120", "FUN_00401060", "FUN_00434250"]
+    "calls": ["FUN_0043d460", "FUN_00401060", "FUN_00434220", "FUN_00428210", "FUN_0043d550", "FUN_00412a80", "FUN_00434250", "FUN_0043d120"]
   },
   {
     "name": "FUN_004072b0",
     "address": "004072b0",
     "signature": "undefined FUN_004072b0(void)",
     "external": false,
-    "calls": ["FUN_00428240", "FUN_00403390"]
+    "calls": ["FUN_00403390", "FUN_00428240"]
   },
   {
     "name": "FUN_00407510",
     "address": "00407510",
     "signature": "undefined FUN_00407510(undefined4 * param_1)",
     "external": false,
-    "calls": ["_rand", "FUN_00428140"]
+    "calls": ["FUN_00428140", "_rand"]
   },
   {
     "name": "FUN_00407cd0",
     "address": "00407cd0",
     "signature": "undefined FUN_00407cd0(void)",
     "external": false,
-    "calls": ["FUN_00452d40", "_rand", "FUN_00407510", "FUN_00403390", "FUN_00430af0"]
+    "calls": ["FUN_00430af0", "FUN_00403390", "FUN_00407510", "FUN_00452d40", "_rand"]
   },
   {
     "name": "FUN_00408530",
     "address": "00408530",
     "signature": "undefined FUN_00408530(char * param_1, char param_2)",
     "external": false,
-    "calls": ["__ftol", "FUN_0043e830", "_strchr", "FUN_00401060", "FUN_00460d86"]
+    "calls": ["FUN_00401060", "FUN_00460d86", "__ftol", "FUN_0043e830", "_strchr"]
   },
   {
     "name": "FUN_00408990",
     "address": "00408990",
     "signature": "undefined FUN_00408990()",
     "external": false,
-    "calls": ["FUN_0043d120", "FUN_00428210", "FUN_0042ef60", "FUN_00408530", "FUN_00430af0"]
+    "calls": ["FUN_00430af0", "FUN_00408530", "FUN_00428210", "FUN_0042ef60", "FUN_0043d120"]
   },
   {
     "name": "FUN_00409500",
@@ -424,7 +424,7 @@
     "address": "00409890",
     "signature": "undefined FUN_00409890(int param_1, int * param_2)",
     "external": false,
-    "calls": ["FUN_0043d120", "FUN_0042e120", "FUN_0042ee00", "FUN_00420040", "FUN_004207c0", "FUN_00452d40", "FUN_0042f6c0", "_rand", "FUN_0042ec80", "FUN_0042fcf0", "FUN_0041a810", "FUN_0043d260", "FUN_00420440"]
+    "calls": ["FUN_0042ee00", "FUN_0041a810", "FUN_00420440", "FUN_0043d120", "FUN_0042e120", "FUN_00420040", "FUN_00452d40", "FUN_0043d260", "FUN_0042f6c0", "FUN_0042ec80", "FUN_004207c0", "FUN_0042fcf0", "_rand"]
   },
   {
     "name": "FUN_0040a320",
@@ -438,7 +438,7 @@
     "address": "0040a4c0",
     "signature": "undefined FUN_0040a4c0(undefined4 param_1, undefined4 param_2, float param_3)",
     "external": false,
-    "calls": ["__ftol", "FUN_004061e0"]
+    "calls": ["FUN_004061e0", "__ftol"]
   },
   {
     "name": "FUN_0040a510",
@@ -452,7 +452,7 @@
     "address": "0040aab0",
     "signature": "undefined FUN_0040aab0(void)",
     "external": false,
-    "calls": ["FUN_0043d550", "FUN_00407cd0", "FUN_0043d460", "FUN_0043d120", "FUN_0040a510", "FUN_0041a530", "FUN_004461c0", "FUN_0041df40", "FUN_0041df60", "FUN_0040a320", "FUN_0041ca90", "FUN_00426220", "FUN_00401060", "FUN_00461140", "FUN_0041a040", "FUN_004070e0", "FUN_00409500", "FUN_0042e710", "FUN_00420b90", "FUN_004045a0"]
+    "calls": ["FUN_00426220", "FUN_004047c0", "FUN_00446030", "FUN_004461c0", "FUN_00461140", "FUN_00420b90", "FUN_0041a530", "FUN_00406b40", "FUN_0040a320", "FUN_00405960", "FUN_0043d120", "FUN_00408990", "FUN_0043d460", "FUN_00405160", "FUN_0041a040", "FUN_004045a0", "FUN_00401060", "FUN_0042e710", "FUN_0043d550", "FUN_0041df40"]
   },
   {
     "name": "FUN_0040b5d0",
@@ -466,21 +466,21 @@
     "address": "0040b630",
     "signature": "undefined FUN_0040b630(void)",
     "external": false,
-    "calls": ["FUN_0041a530", "FUN_0041a040", "FUN_0043d550", "FreeLibrary", "FUN_0040b5d0"]
+    "calls": ["FUN_0040b5d0", "FUN_0043d550", "FUN_0041a530", "FUN_0041a040", "FreeLibrary"]
   },
   {
     "name": "FUN_0040b740",
     "address": "0040b740",
     "signature": "undefined FUN_0040b740(void)",
     "external": false,
-    "calls": ["FUN_00417ae0", "FUN_0041a040", "FUN_0043d550", "FUN_0043d460", "FUN_00446030", "FUN_0041a530", "__ftol", "FUN_0041df40", "FUN_0041f1a0", "FUN_0043e830", "ShellExecuteA", "FUN_00403390", "FUN_00460d86"]
+    "calls": ["FUN_00446030", "FUN_00417ae0", "FUN_0043d550", "FUN_0041df40", "FUN_0041a530", "ShellExecuteA", "FUN_0041f1a0", "__ftol", "FUN_0043d460", "FUN_00403390", "FUN_00460d86", "FUN_0041a040", "FUN_0043e830"]
   },
   {
     "name": "FUN_0040d000",
     "address": "0040d000",
     "signature": "undefined FUN_0040d000(int param_1, uint * param_2, undefined4 param_3)",
     "external": false,
-    "calls": ["FUN_0046e8f4", "FUN_00460dc7"]
+    "calls": ["FUN_00460dc7", "FUN_0046e8f4"]
   },
   {
     "name": "FUN_0040d040",
@@ -501,7 +501,7 @@
     "address": "0040e000",
     "signature": "undefined FUN_0040e000(byte * param_1)",
     "external": false,
-    "calls": ["OutputDebugStringA", "FUN_00461089"]
+    "calls": ["FUN_00461089", "OutputDebugStringA"]
   },
   {
     "name": "FUN_0040e040",
@@ -529,21 +529,21 @@
     "address": "0040e700",
     "signature": "undefined4 * FUN_0040e700(void)",
     "external": false,
-    "calls": ["GetProcAddress", "FUN_004616e7", "LoadLibraryA", "FreeLibrary", "FUN_00401870", "FUN_00460d86"]
+    "calls": ["FUN_00460d86", "FUN_004616e7", "GetProcAddress", "FreeLibrary", "FUN_00401870", "LoadLibraryA"]
   },
   {
     "name": "FUN_0040e860",
     "address": "0040e860",
     "signature": "int FUN_0040e860(void)",
     "external": false,
-    "calls": ["GetProcAddress", "FUN_004616e7", "LoadLibraryA", "FreeLibrary", "FUN_00401870"]
+    "calls": ["FUN_004616e7", "GetProcAddress", "FreeLibrary", "FUN_00401870", "LoadLibraryA"]
   },
   {
     "name": "FUN_0040e940",
     "address": "0040e940",
     "signature": "bool FUN_0040e940(void)",
     "external": false,
-    "calls": ["FUN_00461835", "FUN_00461768", "FUN_004618fd"]
+    "calls": ["FUN_004618fd", "FUN_00461768", "FUN_00461835"]
   },
   {
     "name": "FUN_0040f400",
@@ -564,21 +564,21 @@
     "address": "0040ffc0",
     "signature": "undefined FUN_0040ffc0(void)",
     "external": false,
-    "calls": ["FUN_00417ae0", "FUN_0041a040", "FUN_0043d550", "FUN_0043d460", "FUN_0043d120", "FUN_0043b520", "FUN_004413a0", "FUN_0043b510", "FUN_00405960", "FUN_0043d7c0", "FUN_0041a530", "FUN_0043ecf0", "__ftol", "FUN_0043e830", "thunk_FUN_0043afa0", "FUN_00401060", "FUN_00460d86", "FUN_00403550"]
+    "calls": ["FUN_0043ecf0", "FUN_00401060", "FUN_0043d7c0", "FUN_00417ae0", "FUN_0043d550", "thunk_FUN_0043afa0", "FUN_0041a530", "__ftol", "FUN_00405960", "FUN_0043b520", "FUN_0043d120", "FUN_0043d460", "FUN_00403550", "FUN_0043b510", "FUN_00460d86", "FUN_0041a040", "FUN_0043e830", "FUN_004413a0"]
   },
   {
     "name": "FUN_004107e0",
     "address": "004107e0",
     "signature": "undefined FUN_004107e0(void)",
     "external": false,
-    "calls": ["FUN_00417ae0", "FUN_0041a040", "FUN_0043d550", "FUN_0043d460", "FUN_0043b520", "FUN_004413a0", "FUN_00405960", "FUN_0043d7c0", "FUN_0041a530", "__ftol", "FUN_0043e830", "thunk_FUN_0043afa0", "FUN_00401060", "FUN_00403550", "FUN_00460d86"]
+    "calls": ["FUN_00401060", "FUN_0043d7c0", "FUN_00417ae0", "FUN_0043d550", "thunk_FUN_0043afa0", "FUN_0041a530", "__ftol", "FUN_00405960", "FUN_0043b520", "FUN_0043d460", "FUN_00403550", "FUN_00460d86", "FUN_0041a040", "FUN_004413a0", "FUN_0043e830"]
   },
   {
     "name": "FUN_00410d20",
     "address": "00410d20",
     "signature": "undefined FUN_00410d20(void)",
     "external": false,
-    "calls": ["FUN_00417ae0", "FUN_0041a040", "FUN_0043d550", "FUN_0043d460", "FUN_0043d120", "FUN_0043b520", "FUN_004413a0", "FUN_0040ff50", "FUN_0043b510", "FUN_00405960", "FUN_00446030", "FUN_0043d7c0", "FUN_0041a530", "FUN_0043ecf0", "__ftol", "FUN_0043b750", "FUN_0043e830", "FUN_0041fc60", "thunk_FUN_0043afa0", "FUN_00460d86"]
+    "calls": ["FUN_0043ecf0", "FUN_00446030", "FUN_0043b750", "FUN_0043d7c0", "FUN_00417ae0", "FUN_0043d550", "thunk_FUN_0043afa0", "FUN_0041a530", "FUN_0041fc60", "__ftol", "FUN_00405960", "FUN_0043b520", "FUN_0043d120", "FUN_0043d460", "FUN_0040ff50", "FUN_00403550", "FUN_0043b510", "FUN_00460d86", "FUN_0041a040", "FUN_0043e830"]
   },
   {
     "name": "FUN_004120b0",
@@ -634,7 +634,7 @@
     "address": "00412470",
     "signature": "uint FUN_00412470(void)",
     "external": false,
-    "calls": ["_rand", "FUN_0042fcf0"]
+    "calls": ["FUN_0042fcf0", "_rand"]
   },
   {
     "name": "FUN_00412660",
@@ -662,35 +662,35 @@
     "address": "00412a10",
     "signature": "undefined FUN_00412a10(void)",
     "external": false,
-    "calls": ["RegCloseKey", "FUN_0042a980", "RegCreateKeyExA"]
+    "calls": ["RegCreateKeyExA", "RegCloseKey", "FUN_0042a980"]
   },
   {
     "name": "FUN_00412a80",
     "address": "00412a80",
     "signature": "undefined FUN_00412a80(void)",
     "external": false,
-    "calls": ["FUN_004615ae", "RegCloseKey", "FUN_00460e5d", "RegCreateKeyExA", "FUN_0046103f", "FUN_00412a10", "FUN_00412c10", "FUN_00402bd0", "FUN_0042a9c0", "FUN_00401870"]
+    "calls": ["FUN_00402bd0", "FUN_00412c10", "RegCreateKeyExA", "FUN_00460e5d", "FUN_004615ae", "RegCloseKey", "FUN_00412a10", "FUN_0042a9c0", "FUN_0046103f", "FUN_00401870"]
   },
   {
     "name": "FUN_00412c10",
     "address": "00412c10",
     "signature": "undefined FUN_00412c10(void)",
     "external": false,
-    "calls": ["FUN_00461d91", "FUN_00461af7", "FUN_00460e5d", "FUN_00412a80", "FUN_0046103f", "FUN_00412a10", "FUN_00461c0e", "FUN_00402bd0", "FUN_00401870"]
+    "calls": ["FUN_00461af7", "FUN_00402bd0", "FUN_00461d91", "FUN_00460e5d", "FUN_00412a80", "FUN_00461c0e", "FUN_00412a10", "FUN_0046103f", "FUN_00401870"]
   },
   {
     "name": "FUN_00412dc0",
     "address": "00412dc0",
     "signature": "undefined FUN_00412dc0(void)",
     "external": false,
-    "calls": ["FUN_004181b0", "FUN_00412940", "FUN_0041fc80", "FUN_004205d0", "_rand", "FUN_004519b0", "FUN_0042fc30", "FUN_00452e40", "FUN_0042df10"]
+    "calls": ["FUN_004181b0", "FUN_0042fc30", "FUN_0041fc80", "FUN_004519b0", "FUN_0042df10", "FUN_00412940", "FUN_004205d0", "FUN_00452e40", "_rand"]
   },
   {
     "name": "FUN_00413430",
     "address": "00413430",
     "signature": "undefined FUN_00413430(void)",
     "external": false,
-    "calls": ["FUN_0042fcf0", "FUN_0043d260"]
+    "calls": ["FUN_0043d260", "FUN_0042fcf0"]
   },
   {
     "name": "FUN_00413540",
@@ -704,7 +704,7 @@
     "address": "004136b0",
     "signature": "undefined FUN_004136b0()",
     "external": false,
-    "calls": ["FUN_0041e8f0", "FUN_00417660", "thunk_FUN_00452f1d", "FUN_00425e50", "FUN_00413430", "FUN_00417640", "FUN_0042e120", "FUN_00420130", "FUN_00420360", "FUN_00446030", "FUN_0041e8d0", "FUN_0041e290", "FUN_00413540", "__ftol", "_rand", "FUN_0041fbb0", "FUN_0042fcf0", "FUN_0043d260", "FUN_00420240", "FUN_0042eb10"]
+    "calls": ["FUN_00420360", "FUN_00446030", "FUN_0041fbb0", "FUN_0041e8f0", "FUN_00417660", "FUN_00420440", "__ftol", "FUN_00413540", "FUN_0041e290", "FUN_00420240", "FUN_00413430", "FUN_0042e120", "FUN_00425e50", "FUN_00417640", "thunk_FUN_00452f1d", "FUN_0043d260", "FUN_00420130", "FUN_0042fcf0", "_rand", "FUN_0041e8d0"]
   },
   {
     "name": "FUN_00417640",
@@ -725,7 +725,7 @@
     "address": "00417690",
     "signature": "undefined FUN_00417690(void)",
     "external": false,
-    "calls": ["FUN_00417a90", "FUN_004010f0"]
+    "calls": ["FUN_004010f0", "FUN_00417a90"]
   },
   {
     "name": "FUN_00417a90",
@@ -767,7 +767,7 @@
     "address": "004181b0",
     "signature": "undefined FUN_004181b0(void)",
     "external": false,
-    "calls": ["_rand", "FUN_00417b80", "FUN_00401870"]
+    "calls": ["FUN_00417b80", "_rand", "FUN_00401870"]
   },
   {
     "name": "FUN_004188a0",
@@ -781,14 +781,14 @@
     "address": "00418b60",
     "signature": "undefined FUN_00418b60(float param_1)",
     "external": false,
-    "calls": ["__ftol", "FUN_0042fcf0"]
+    "calls": ["FUN_0042fcf0", "__ftol"]
   },
   {
     "name": "FUN_00419680",
     "address": "00419680",
     "signature": "undefined FUN_00419680(void)",
     "external": false,
-    "calls": ["FUN_0042e0a0", "FUN_00418b60", "FUN_0042fcf0"]
+    "calls": ["FUN_00418b60", "FUN_0042e0a0", "FUN_0042fcf0"]
   },
   {
     "name": "FUN_00419ba0",
@@ -809,7 +809,7 @@
     "address": "00419dd0",
     "signature": "undefined FUN_00419dd0(void)",
     "external": false,
-    "calls": ["FUN_00419d00", "FUN_0044fcb0", "FUN_00419ba0"]
+    "calls": ["FUN_00419d00", "FUN_00419ba0", "FUN_0044fcb0"]
   },
   {
     "name": "FUN_0041a040",
@@ -830,7 +830,7 @@
     "address": "0041a530",
     "signature": "undefined FUN_0041a530(void)",
     "external": false,
-    "calls": ["FUN_004181b0", "FUN_004461c0", "FUN_00446190", "FUN_00446c40", "FUN_0041f1a0", "FUN_00446900"]
+    "calls": ["FUN_004181b0", "FUN_004461c0", "FUN_00446c40", "FUN_00446900", "FUN_00446190", "FUN_0041f1a0"]
   },
   {
     "name": "FUN_0041a6d0",
@@ -858,7 +858,7 @@
     "address": "0041aed0",
     "signature": "undefined FUN_0041aed0(void)",
     "external": false,
-    "calls": ["FUN_004616e7", "__ftol", "FUN_0041a6d0", "FUN_0041a8b0", "FUN_00461140", "FUN_00460d86"]
+    "calls": ["FUN_0041a6d0", "FUN_00461140", "FUN_00460d86", "FUN_004616e7", "FUN_0041a8b0", "__ftol"]
   },
   {
     "name": "FUN_0041ca90",
@@ -872,28 +872,28 @@
     "address": "0041ccb0",
     "signature": "undefined4 FUN_0041ccb0(int * param_1, undefined1 * param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_0041cdb0", "FUN_00461e4a", "FUN_0041cfe0", "FUN_00461e9b"]
+    "calls": ["FUN_0041cfe0", "FUN_00461e9b", "FUN_00461e4a", "FUN_0041cdb0"]
   },
   {
     "name": "FUN_0041cdb0",
     "address": "0041cdb0",
     "signature": "int FUN_0041cdb0(void)",
     "external": false,
-    "calls": ["CoInitialize", "Ordinal_9", "CoCreateInstance", "Ordinal_8", "WideCharToMultiByte", "CoUninitialize"]
+    "calls": ["CoInitialize", "Ordinal_8", "CoCreateInstance", "Ordinal_9", "CoUninitialize", "WideCharToMultiByte"]
   },
   {
     "name": "FUN_0041cfe0",
     "address": "0041cfe0",
     "signature": "undefined4 FUN_0041cfe0(undefined4 * param_1, undefined4 * param_2, undefined1 * param_3)",
     "external": false,
-    "calls": ["FUN_0041dc10", "FUN_0041db50", "FUN_0041dc50", "GetSystemDirectoryA"]
+    "calls": ["GetSystemDirectoryA", "FUN_0041dc10", "FUN_0041dc50", "FUN_0041db50"]
   },
   {
     "name": "FUN_0041db50",
     "address": "0041db50",
     "signature": "undefined4 FUN_0041db50(LPCSTR param_1, undefined4 * param_2)",
     "external": false,
-    "calls": ["VerQueryValueA", "FUN_00460dc7", "GetFileVersionInfoSizeA", "GetFileVersionInfoA", "operator_new"]
+    "calls": ["GetFileVersionInfoA", "operator_new", "GetFileVersionInfoSizeA", "FUN_00460dc7", "VerQueryValueA"]
   },
   {
     "name": "FUN_0041dc10",
@@ -942,14 +942,14 @@
     "address": "0041ddd0",
     "signature": "undefined4 FUN_0041ddd0(void * this, undefined4 * param_1, undefined4 param_2)",
     "external": false,
-    "calls": ["__allmul", "ov_pcm_total", "FUN_00461fd5", "FUN_0041dda0", "ov_open_callbacks", "ov_info", "__alldiv"]
+    "calls": ["ov_open_callbacks", "FUN_0041dda0", "__alldiv", "ov_info", "ov_pcm_total", "__allmul", "FUN_00461fd5"]
   },
   {
     "name": "FUN_0041dee0",
     "address": "0041dee0",
     "signature": "undefined FUN_0041dee0(int param_1)",
     "external": false,
-    "calls": ["FUN_00460dc7", "ov_clear"]
+    "calls": ["ov_clear", "FUN_00460dc7"]
   },
   {
     "name": "FUN_0041df00",
@@ -1026,28 +1026,28 @@
     "address": "0041e910",
     "signature": "undefined FUN_0041e910(int param_1, char param_2)",
     "external": false,
-    "calls": ["FUN_0041f8d0", "FUN_0041f5b0", "__ftol", "_rand", "FUN_0042ec80", "FUN_00428140", "FUN_0042ef60", "FUN_0042ee00", "FUN_00427700"]
+    "calls": ["FUN_00427700", "FUN_0041f8d0", "FUN_0042ee00", "FUN_00428140", "FUN_0042ec80", "FUN_0042ef60", "FUN_0041f5b0", "_rand", "__ftol"]
   },
   {
     "name": "FUN_0041ec60",
     "address": "0041ec60",
     "signature": "undefined4 FUN_0041ec60(void)",
     "external": false,
-    "calls": ["FUN_004615ae", "FUN_00461d91", "FUN_00461af7", "FUN_00460e5d", "FUN_0046103f", "FUN_00461c0e", "FUN_00402bd0"]
+    "calls": ["FUN_00461af7", "FUN_00402bd0", "FUN_00461d91", "FUN_00460e5d", "FUN_004615ae", "FUN_00461c0e", "FUN_0046103f"]
   },
   {
     "name": "FUN_0041f130",
     "address": "0041f130",
     "signature": "undefined FUN_0041f130(void)",
     "external": false,
-    "calls": ["FUN_004615ae", "FUN_00460e5d", "FUN_0046103f", "FUN_00402bd0"]
+    "calls": ["FUN_00402bd0", "FUN_00460e5d", "FUN_004615ae", "FUN_0046103f"]
   },
   {
     "name": "FUN_0041f1a0",
     "address": "0041f1a0",
     "signature": "uint FUN_0041f1a0(void)",
     "external": false,
-    "calls": ["FUN_00461d91", "FUN_00461af7", "FUN_0041ec60", "FUN_00460e5d", "FUN_0046103f", "FUN_00461c0e", "FUN_00402bd0"]
+    "calls": ["FUN_00461af7", "FUN_00402bd0", "FUN_00461d91", "FUN_00460e5d", "FUN_00461c0e", "FUN_0041ec60", "FUN_0046103f"]
   },
   {
     "name": "FUN_0041f430",
@@ -1068,21 +1068,21 @@
     "address": "0041f5b0",
     "signature": "int * FUN_0041f5b0(float * param_1, int param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_0041f580", "_rand", "FUN_0042e120"]
+    "calls": ["FUN_0041f580", "FUN_0042e120", "_rand"]
   },
   {
     "name": "FUN_0041f790",
     "address": "0041f790",
     "signature": "uint * FUN_0041f790(float * param_1)",
     "external": false,
-    "calls": ["FUN_00452cd0", "FUN_00412470", "FUN_0041f580", "_rand"]
+    "calls": ["FUN_0041f580", "FUN_00452cd0", "_rand", "FUN_00412470"]
   },
   {
     "name": "FUN_0041f8d0",
     "address": "0041f8d0",
     "signature": "uint * FUN_0041f8d0(float * param_1)",
     "external": false,
-    "calls": ["FUN_00452cd0", "_rand", "FUN_0042fcf0", "FUN_0041f790", "FUN_0042e120"]
+    "calls": ["FUN_0042e120", "FUN_00452cd0", "FUN_0042fcf0", "_rand", "FUN_0041f790"]
   },
   {
     "name": "FUN_0041fbb0",
@@ -1180,21 +1180,21 @@
     "address": "004207c0",
     "signature": "undefined4 FUN_004207c0(int param_1, float param_2, int param_3, float * param_4)",
     "external": false,
-    "calls": ["FUN_0041e910", "_rand", "FUN_0042fcf0", "FUN_0043d260", "FUN_0042e120"]
+    "calls": ["FUN_0042e120", "FUN_0041e910", "FUN_0043d260", "FUN_0042fcf0", "_rand"]
   },
   {
     "name": "FUN_00420b90",
     "address": "00420b90",
     "signature": "undefined FUN_00420b90(void)",
     "external": false,
-    "calls": ["FUN_0041e400", "FUN_0042f080", "FUN_0043d460", "thunk_FUN_00452f1d", "FUN_00420040", "FUN_004207c0", "FUN_00420600", "FUN_0042f270", "FUN_0041fbb0", "FUN_0042f3f0", "FUN_0043d260", "FUN_00420440", "FUN_0041e910", "FUN_00420730", "FUN_00427700", "FUN_0042f330", "FUN_0041e270", "FUN_004206a0", "__ftol", "FUN_0042f6c0"]
+    "calls": ["FUN_00427700", "FUN_00420440", "FUN_0041e270", "FUN_0043d460", "FUN_00420040", "thunk_FUN_00452f1d", "FUN_0043d260", "FUN_0042ec80", "FUN_0042f540", "FUN_0041e400", "FUN_0041fbb0", "FUN_0042f080", "FUN_00420730", "FUN_0042f3f0", "__ftol", "FUN_0041e840", "FUN_0042f330", "FUN_004206a0", "FUN_0041e910", "FUN_00420600"]
   },
   {
     "name": "FUN_00422c70",
     "address": "00422c70",
     "signature": "undefined FUN_00422c70(void)",
     "external": false,
-    "calls": ["FUN_0042e0a0", "FUN_004206a0", "__ftol", "thunk_FUN_00452f1d", "FUN_0042fcf0"]
+    "calls": ["FUN_0042e0a0", "FUN_004206a0", "thunk_FUN_00452f1d", "FUN_0042fcf0", "__ftol"]
   },
   {
     "name": "FUN_00425d80",
@@ -1208,21 +1208,21 @@
     "address": "00425e50",
     "signature": "undefined FUN_00425e50(int param_1, float param_2)",
     "external": false,
-    "calls": ["FUN_004207c0", "FUN_0042f6c0", "_rand", "FUN_0042fcf0", "FUN_0043d260"]
+    "calls": ["FUN_0042f6c0", "FUN_0043d260", "FUN_004207c0", "FUN_0042fcf0", "_rand"]
   },
   {
     "name": "FUN_00426220",
     "address": "00426220",
     "signature": "undefined FUN_00426220(void)",
     "external": false,
-    "calls": ["FUN_0041e400", "FUN_00425d80", "FUN_0041e910", "FUN_0041f430", "FUN_00425e50", "thunk_FUN_00452f1d", "FUN_0042ef60", "FUN_00427700", "FUN_004207c0", "__ftol", "FUN_00427840", "_rand", "FUN_0042fcf0", "FUN_0043d260", "FUN_00420440", "FUN_0042eb10", "FUN_00430af0"]
+    "calls": ["FUN_00430af0", "FUN_00427700", "FUN_0041e400", "FUN_00420440", "__ftol", "FUN_00425d80", "FUN_0041f430", "FUN_00427840", "FUN_00425e50", "FUN_0041e910", "thunk_FUN_00452f1d", "FUN_0043d260", "FUN_004207c0", "FUN_0042fcf0", "FUN_0042ef60", "_rand", "FUN_0042eb10"]
   },
   {
     "name": "FUN_00427700",
     "address": "00427700",
     "signature": "undefined FUN_00427700(float * param_1)",
     "external": false,
-    "calls": ["_rand", "FUN_0041e840", "FUN_00460d86"]
+    "calls": ["FUN_0041e840", "FUN_00460d86", "_rand"]
   },
   {
     "name": "FUN_00427840",
@@ -1264,14 +1264,14 @@
     "address": "00428240",
     "signature": "int FUN_00428240(undefined4 * param_1, undefined4 * param_2, undefined4 param_3)",
     "external": false,
-    "calls": ["_rand", "FUN_00428140"]
+    "calls": ["FUN_00428140", "_rand"]
   },
   {
     "name": "FUN_00428390",
     "address": "00428390",
     "signature": "undefined FUN_00428390(void)",
     "external": false,
-    "calls": ["FUN_0042e0a0", "__ftol", "thunk_FUN_00452f1d", "FUN_0042fcf0"]
+    "calls": ["FUN_0042e0a0", "thunk_FUN_00452f1d", "FUN_0042fcf0", "__ftol"]
   },
   {
     "name": "FUN_00429580",
@@ -1285,7 +1285,7 @@
     "address": "004295f0",
     "signature": "undefined FUN_004295f0(void)",
     "external": false,
-    "calls": ["FUN_0042e0a0", "FUN_00429580", "FUN_0042e820", "FUN_0042fcf0", "FUN_00409890", "FUN_00461140"]
+    "calls": ["FUN_0042e820", "FUN_00409890", "FUN_0042e0a0", "FUN_00461140", "FUN_00429580", "FUN_0042fcf0"]
   },
   {
     "name": "FUN_0042a5f0",
@@ -1341,21 +1341,21 @@
     "address": "0042abd0",
     "signature": "bool FUN_0042abd0(void)",
     "external": false,
-    "calls": ["FUN_00402860", "FUN_0042a670", "FUN_0042a700"]
+    "calls": ["FUN_0042a700", "FUN_00402860", "FUN_0042a670"]
   },
   {
     "name": "FUN_0042b090",
     "address": "0042b090",
     "signature": "undefined FUN_0042b090(void)",
     "external": false,
-    "calls": ["FUN_0046e8f4", "RegCreateKeyExA", "FUN_0041fed0", "FUN_0042fd90", "FUN_004519b0", "GetLocalTime", "FUN_00401870", "FUN_00461739", "FUN_00412dc0", "FUN_004181b0", "RegCloseKey", "FUN_00402860", "FUN_00403500", "FUN_0042a670", "FUN_0042a980", "QueryPerformanceCounter"]
+    "calls": ["FUN_00461739", "FUN_004181b0", "QueryPerformanceCounter", "GetLocalTime", "FUN_00402860", "FUN_0042fd90", "FUN_00412dc0", "FUN_004519b0", "RegCreateKeyExA", "RegCloseKey", "FUN_0042a670", "FUN_00403500", "FUN_0041fed0", "FUN_0046e8f4", "FUN_00401870", "FUN_0042a980"]
   },
   {
     "name": "FUN_0042c450",
     "address": "0042c450",
     "signature": "undefined4 FUN_0042c450(void)",
     "external": false,
-    "calls": ["MessageBoxA", "FUN_0041f130", "Sleep", "FUN_00461739", "RegCloseKey", "FUN_00402860", "FUN_00402c00", "FUN_0041ccb0", "MultiByteToWideChar", "FUN_00402350", "FUN_004623b2", "GetCommandLineA", "FUN_0041dc80", "FUN_00401940", "FUN_004026e0", "Direct3DCreate8", "HlinkNavigateString", "RegCreateKeyExA", "FUN_00412a10", "FUN_00401870"]
+    "calls": ["FUN_00402350", "FUN_004623b2", "FUN_00412a80", "Direct3DCreate8", "GetCommandLineA", "FUN_0041ec60", "FUN_0042a9c0", "MessageBoxA", "HlinkNavigateString", "FUN_0042a9f0", "FUN_0043d110", "FUN_00402c00", "RegCreateKeyExA", "FUN_00401940", "FUN_00461739", "Sleep", "FUN_0041ccb0", "FUN_00402860", "FUN_0041dc80", "FUN_0041f130"]
   },
   {
     "name": "FUN_0042de80",
@@ -1397,7 +1397,7 @@
     "address": "0042e710",
     "signature": "undefined FUN_0042e710(void)",
     "external": false,
-    "calls": ["FUN_0042e080", "FUN_0041e840"]
+    "calls": ["FUN_0041e840", "FUN_0042e080"]
   },
   {
     "name": "FUN_0042e820",
@@ -1411,35 +1411,35 @@
     "address": "0042eb10",
     "signature": "undefined FUN_0042eb10(undefined4 * param_1, float param_2, float param_3)",
     "external": false,
-    "calls": ["_rand", "FUN_0042e120"]
+    "calls": ["FUN_0042e120", "_rand"]
   },
   {
     "name": "FUN_0042ec80",
     "address": "0042ec80",
     "signature": "undefined FUN_0042ec80(undefined4 * param_1, float param_2)",
     "external": false,
-    "calls": ["_rand", "FUN_0042e120"]
+    "calls": ["FUN_0042e120", "_rand"]
   },
   {
     "name": "FUN_0042ee00",
     "address": "0042ee00",
     "signature": "undefined FUN_0042ee00(undefined4 * param_1, float param_2)",
     "external": false,
-    "calls": ["_rand", "FUN_0042ec80", "FUN_0042e120"]
+    "calls": ["FUN_0042e120", "FUN_0042ec80", "_rand"]
   },
   {
     "name": "FUN_0042ef60",
     "address": "0042ef60",
     "signature": "undefined FUN_0042ef60(undefined4 * param_1, int param_2)",
     "external": false,
-    "calls": ["_rand", "FUN_0042e120"]
+    "calls": ["FUN_0042e120", "_rand"]
   },
   {
     "name": "FUN_0042f080",
     "address": "0042f080",
     "signature": "undefined FUN_0042f080(undefined4 * param_1)",
     "external": false,
-    "calls": ["_rand", "FUN_0042e120"]
+    "calls": ["FUN_0042e120", "_rand"]
   },
   {
     "name": "FUN_0042f270",
@@ -1460,21 +1460,21 @@
     "address": "0042f3f0",
     "signature": "undefined FUN_0042f3f0(float * param_1, undefined4 param_2, int param_3)",
     "external": false,
-    "calls": ["__ftol", "_rand", "FUN_0042e120"]
+    "calls": ["FUN_0042e120", "__ftol", "_rand"]
   },
   {
     "name": "FUN_0042f540",
     "address": "0042f540",
     "signature": "undefined FUN_0042f540(undefined4 * param_1, float param_2)",
     "external": false,
-    "calls": ["__ftol", "_rand", "FUN_0042e120"]
+    "calls": ["FUN_0042e120", "__ftol", "_rand"]
   },
   {
     "name": "FUN_0042f6c0",
     "address": "0042f6c0",
     "signature": "undefined FUN_0042f6c0(undefined4 * param_1, float param_2)",
     "external": false,
-    "calls": ["_rand", "FUN_0042e120"]
+    "calls": ["FUN_0042e120", "_rand"]
   },
   {
     "name": "FUN_0042faa0",
@@ -1537,7 +1537,7 @@
     "address": "00430a20",
     "signature": "undefined FUN_00430a20(int * param_1, int param_2, uint param_3, uint * param_4)",
     "external": false,
-    "calls": ["FUN_0046e8f4", "FUN_00460dc7", "FUN_00401870"]
+    "calls": ["FUN_00460dc7", "FUN_0046e8f4", "FUN_00401870"]
   },
   {
     "name": "FUN_00430ad0",
@@ -1551,7 +1551,7 @@
     "address": "00430af0",
     "signature": "undefined1 * FUN_00430af0(int param_1, float * param_2, float param_3)",
     "external": false,
-    "calls": ["_rand", "FUN_00428140", "FUN_00430ad0", "FUN_0042ef60", "FUN_00401870"]
+    "calls": ["FUN_00428140", "FUN_0042ef60", "FUN_00430ad0", "_rand", "FUN_00401870"]
   },
   {
     "name": "FUN_00434220",
@@ -1628,7 +1628,7 @@
     "address": "0043a790",
     "signature": "undefined FUN_0043a790(int param_1, int param_2)",
     "external": false,
-    "calls": ["FUN_004205d0", "FUN_00417b80", "FUN_004343e0", "FUN_00452d40", "FUN_004281e0", "_rand", "FUN_00401870"]
+    "calls": ["FUN_00417b80", "FUN_00452d40", "FUN_004343e0", "FUN_004205d0", "FUN_004281e0", "_rand", "FUN_00401870"]
   },
   {
     "name": "FUN_0043a950",
@@ -1670,14 +1670,14 @@
     "address": "0043ac70",
     "signature": "undefined4 FUN_0043ac70(LPCSTR param_1, byte * param_2)",
     "external": false,
-    "calls": ["FUN_00461448", "FUN_00461d91", "FUN_0043ab10", "FUN_0043abd0", "FUN_0043ad70", "FUN_0046103f", "_rand", "FUN_00460e5d"]
+    "calls": ["FUN_0043ab10", "FUN_00461448", "FUN_00461d91", "FUN_0043ad70", "FUN_00460e5d", "FUN_0043abd0", "_rand", "FUN_0046103f"]
   },
   {
     "name": "FUN_0043ad70",
     "address": "0043ad70",
     "signature": "undefined FUN_0043ad70(undefined4 * param_1, int * param_2)",
     "external": false,
-    "calls": ["FUN_0043a950", "FUN_004615ae", "GetLocalTime", "_rand"]
+    "calls": ["GetLocalTime", "FUN_004615ae", "FUN_0043a950", "_rand"]
   },
   {
     "name": "FUN_0043af30",
@@ -1691,14 +1691,14 @@
     "address": "0043afa0",
     "signature": "undefined FUN_0043afa0(void)",
     "external": false,
-    "calls": ["FUN_00462bd4", "FUN_0043a950", "FUN_0043ab10", "FUN_0046103f", "_rand", "FUN_0043b5b0", "FUN_0043af30", "FUN_00460e5d"]
+    "calls": ["FUN_0043ab10", "FUN_00462bd4", "FUN_00460e5d", "FUN_0043a950", "FUN_0043af30", "FUN_0043b5b0", "_rand", "FUN_0046103f"]
   },
   {
     "name": "FUN_0043b450",
     "address": "0043b450",
     "signature": "undefined FUN_0043b450(byte * param_1)",
     "external": false,
-    "calls": ["FUN_0043ac70", "FUN_0043b750", "FUN_0043ad70", "FUN_0046103f", "CreateDirectoryA", "FUN_0043b5b0", "FUN_00460e5d", "FUN_00401870"]
+    "calls": ["FUN_0043b750", "FUN_0043ad70", "FUN_00460e5d", "CreateDirectoryA", "FUN_0043b5b0", "FUN_0046103f", "FUN_00401870", "FUN_0043ac70"]
   },
   {
     "name": "FUN_0043b510",
@@ -1719,7 +1719,7 @@
     "address": "0043b5b0",
     "signature": "undefined * FUN_0043b5b0(void)",
     "external": false,
-    "calls": ["FUN_0046248e", "FUN_004616e7", "FUN_00401870"]
+    "calls": ["FUN_004616e7", "FUN_0046248e", "FUN_00401870"]
   },
   {
     "name": "FUN_0043b750",
@@ -1796,14 +1796,14 @@
     "address": "0043b980",
     "signature": "undefined4 FUN_0043b980(LPCSTR param_1)",
     "external": false,
-    "calls": ["FUN_0046103f", "FUN_00460e5d"]
+    "calls": ["FUN_00460e5d", "FUN_0046103f"]
   },
   {
     "name": "FUN_0043b9e0",
     "address": "0043b9e0",
     "signature": "undefined4 FUN_0043b9e0(byte * param_1, int * param_2)",
     "external": false,
-    "calls": ["FUN_00461af7", "FUN_00461d91", "FUN_0046103f", "FUN_00461c0e", "FUN_00460e5d", "FUN_00462de0", "FUN_0043b940"]
+    "calls": ["FUN_00461af7", "FUN_00462de0", "FUN_00461d91", "FUN_00460e5d", "FUN_00461c0e", "FUN_0046103f", "FUN_0043b940"]
   },
   {
     "name": "FUN_0043bad0",
@@ -1838,14 +1838,14 @@
     "address": "0043bca0",
     "signature": "undefined4 FUN_0043bca0(byte * param_1, undefined4 * param_2, uint * param_3)",
     "external": false,
-    "calls": ["FUN_00461af7", "FUN_0043b9e0", "operator_new", "FUN_0043bad0"]
+    "calls": ["FUN_00461af7", "operator_new", "FUN_0043bad0", "FUN_0043b9e0"]
   },
   {
     "name": "FUN_0043bcf0",
     "address": "0043bcf0",
     "signature": "uint FUN_0043bcf0(undefined4 * param_1, byte * param_2)",
     "external": false,
-    "calls": ["FUN_00461af7", "FUN_0043b9e0", "operator_new", "FUN_0041ddd0", "FUN_0041dee0", "FUN_0043c2b0", "FUN_0043bad0", "FUN_0041df00"]
+    "calls": ["FUN_00461af7", "operator_new", "FUN_0041df00", "FUN_0041ddd0", "FUN_0041dee0", "FUN_0043bad0", "FUN_0043b9e0", "FUN_0043c2b0"]
   },
   {
     "name": "FUN_0043be20",
@@ -1859,7 +1859,7 @@
     "address": "0043be60",
     "signature": "uint FUN_0043be60(uint param_1)",
     "external": false,
-    "calls": ["FUN_0043c230", "_rand", "FUN_0043bc40", "FUN_0043be20", "FUN_0043c590"]
+    "calls": ["FUN_0043c590", "FUN_0043c230", "FUN_0043bc40", "FUN_0043be20", "_rand"]
   },
   {
     "name": "FUN_0043bf40",
@@ -1887,7 +1887,7 @@
     "address": "0043c020",
     "signature": "uint FUN_0043c020(undefined4 * param_1, byte * param_2)",
     "external": false,
-    "calls": ["FUN_0043bca0", "FUN_0043c2b0", "FUN_00460dc7", "FUN_0043c110"]
+    "calls": ["FUN_00460dc7", "FUN_0043bca0", "FUN_0043c2b0", "FUN_0043c110"]
   },
   {
     "name": "FUN_0043c090",
@@ -1901,7 +1901,7 @@
     "address": "0043c110",
     "signature": "uint FUN_0043c110(undefined4 * param_1, int param_2, undefined4 param_3)",
     "external": false,
-    "calls": ["operator_new", "FUN_0043b8e0", "FUN_0043b850", "FUN_0043b870", "FUN_0043b8c0", "FUN_0043b8a0", "FUN_0043b880"]
+    "calls": ["FUN_0043b8c0", "operator_new", "FUN_0043b870", "FUN_0043b8a0", "FUN_0043b8e0", "FUN_0043b880", "FUN_0043b850"]
   },
   {
     "name": "FUN_0043c230",
@@ -1922,7 +1922,7 @@
     "address": "0043c3a0",
     "signature": "undefined4 FUN_0043c3a0(undefined4 * param_1, byte * param_2)",
     "external": false,
-    "calls": ["FUN_00461af7", "FUN_0043b9e0", "operator_new", "FUN_0041ddd0", "FUN_0043bad0"]
+    "calls": ["FUN_00461af7", "operator_new", "FUN_0041ddd0", "FUN_0043bad0", "FUN_0043b9e0"]
   },
   {
     "name": "FUN_0043c520",
@@ -1936,7 +1936,7 @@
     "address": "0043c590",
     "signature": "uint FUN_0043c590(int param_1)",
     "external": false,
-    "calls": ["OutputDebugStringA", "FUN_0041df00"]
+    "calls": ["FUN_0041df00", "OutputDebugStringA"]
   },
   {
     "name": "FUN_0043c700",
@@ -1950,7 +1950,7 @@
     "address": "0043c740",
     "signature": "int FUN_0043c740(char * param_1)",
     "external": false,
-    "calls": ["FUN_0043bcf0", "FUN_004616e7", "_strstr", "FUN_0043c020", "FUN_00401870"]
+    "calls": ["FUN_004616e7", "FUN_0043c020", "FUN_00401870", "_strstr", "FUN_0043bcf0"]
   },
   {
     "name": "FUN_0043c8d0",
@@ -1978,42 +1978,42 @@
     "address": "0043c9c0",
     "signature": "undefined FUN_0043c9c0(void)",
     "external": false,
-    "calls": ["FUN_0043b980", "FUN_00401940", "FUN_0043c8d0", "FUN_00401870"]
+    "calls": ["FUN_00401940", "FUN_0043c8d0", "FUN_0043b980", "FUN_00401870"]
   },
   {
     "name": "FUN_0043caa0",
     "address": "0043caa0",
     "signature": "undefined FUN_0043caa0(void)",
     "external": false,
-    "calls": ["FUN_0043b980", "FUN_0043c740", "timeGetTime", "FUN_00401870"]
+    "calls": ["timeGetTime", "FUN_0043b980", "FUN_0043c740", "FUN_00401870"]
   },
   {
     "name": "FUN_0043cf90",
     "address": "0043cf90",
     "signature": "undefined4 FUN_0043cf90(void)",
     "external": false,
-    "calls": ["GetForegroundWindow", "FUN_00401870", "FUN_0043baf0"]
+    "calls": ["GetForegroundWindow", "FUN_0043baf0", "FUN_00401870"]
   },
   {
     "name": "FUN_0043d070",
     "address": "0043d070",
     "signature": "undefined FUN_0043d070(void)",
     "external": false,
-    "calls": ["FUN_00402860", "FUN_0043c090", "FUN_00401870"]
+    "calls": ["FUN_0043c090", "FUN_00402860", "FUN_00401870"]
   },
   {
     "name": "FUN_0043d0d0",
     "address": "0043d0d0",
     "signature": "undefined FUN_0043d0d0(void)",
     "external": false,
-    "calls": ["FUN_00402860", "FUN_0043c090"]
+    "calls": ["FUN_0043c090", "FUN_00402860"]
   },
   {
     "name": "FUN_0043d110",
     "address": "0043d110",
     "signature": "undefined FUN_0043d110(void)",
     "external": false,
-    "calls": ["FUN_0043d070", "FUN_0043d0d0", "FUN_0043bc20"]
+    "calls": ["FUN_0043bc20", "FUN_0043d0d0", "FUN_0043d070"]
   },
   {
     "name": "FUN_0043d120",
@@ -2034,28 +2034,28 @@
     "address": "0043d3f0",
     "signature": "undefined FUN_0043d3f0(void)",
     "external": false,
-    "calls": ["FUN_0043d5b0", "FUN_0043c520"]
+    "calls": ["FUN_0043c520", "FUN_0043d5b0"]
   },
   {
     "name": "FUN_0043d460",
     "address": "0043d460",
     "signature": "undefined FUN_0043d460(int param_1)",
     "external": false,
-    "calls": ["FUN_0043d550", "FUN_0043d7c0", "FUN_0043be60", "_rand", "FUN_0043bfa0"]
+    "calls": ["FUN_0043be60", "FUN_0043d7c0", "FUN_0043d550", "FUN_0043bfa0", "_rand"]
   },
   {
     "name": "FUN_0043d550",
     "address": "0043d550",
     "signature": "undefined FUN_0043d550(int param_1)",
     "external": false,
-    "calls": ["FUN_0043d550", "FUN_0043d7c0"]
+    "calls": ["FUN_0043d7c0", "FUN_0043d550"]
   },
   {
     "name": "FUN_0043d5b0",
     "address": "0043d5b0",
     "signature": "undefined FUN_0043d5b0(void)",
     "external": false,
-    "calls": ["FUN_0043bf60", "FUN_0043bf40", "FUN_0043bfa0", "FUN_00401870"]
+    "calls": ["FUN_0043bf40", "FUN_0043bf60", "FUN_0043bfa0", "FUN_00401870"]
   },
   {
     "name": "FUN_0043d730",
@@ -2104,49 +2104,49 @@
     "address": "0043d9b0",
     "signature": "undefined FUN_0043d9b0(float * param_1, int * param_2)",
     "external": false,
-    "calls": ["FUN_004034a0", "FUN_0043d7e0", "FUN_0043d940", "FUN_0043d830", "__ftol", "FUN_004460f0"]
+    "calls": ["FUN_0043d940", "FUN_004460f0", "FUN_0043d7e0", "FUN_0043d830", "__ftol", "FUN_004034a0"]
   },
   {
     "name": "FUN_0043dc80",
     "address": "0043dc80",
     "signature": "undefined4 FUN_0043dc80(float * param_1, char * param_2)",
     "external": false,
-    "calls": ["FUN_004034a0", "FUN_0043d7e0", "FUN_0043d940", "FUN_00446030", "FUN_0043d830"]
+    "calls": ["FUN_00446030", "FUN_0043d940", "FUN_0043d7e0", "FUN_0043d830", "FUN_004034a0"]
   },
   {
     "name": "FUN_0043def0",
     "address": "0043def0",
     "signature": "undefined FUN_0043def0(float * param_1, float * param_2)",
     "external": false,
-    "calls": ["FUN_004034a0", "FUN_0043d940", "FUN_00446030", "FUN_0043d830", "__ftol", "FUN_004460f0"]
+    "calls": ["FUN_00446030", "FUN_0043d940", "FUN_004460f0", "FUN_0043d830", "__ftol", "FUN_004034a0"]
   },
   {
     "name": "FUN_0043e5e0",
     "address": "0043e5e0",
     "signature": "undefined1 FUN_0043e5e0(float * param_1, undefined4 * param_2)",
     "external": false,
-    "calls": ["FUN_004034a0", "FUN_0043d7e0", "FUN_00460d86", "FUN_0043d940", "FUN_00446030", "FUN_0043d830", "__ftol", "FUN_0043d120"]
+    "calls": ["FUN_00446030", "FUN_0043d940", "FUN_00460d86", "FUN_0043d7e0", "FUN_0043d830", "__ftol", "FUN_004034a0", "FUN_0043d120"]
   },
   {
     "name": "FUN_0043e830",
     "address": "0043e830",
     "signature": "undefined1 FUN_0043e830(float * param_1, undefined4 * param_2)",
     "external": false,
-    "calls": ["FUN_004034a0", "FUN_0043d7e0", "FUN_0043d940", "FUN_00446030", "FUN_0043d830", "__ftol", "FUN_0043d120"]
+    "calls": ["FUN_00446030", "FUN_0043d940", "FUN_0043d7e0", "FUN_0043d830", "__ftol", "FUN_004034a0", "FUN_0043d120"]
   },
   {
     "name": "FUN_0043ecf0",
     "address": "0043ecf0",
     "signature": "undefined1 FUN_0043ecf0(float * param_1, int * param_2)",
     "external": false,
-    "calls": ["FUN_004034a0", "FUN_0043d7e0", "_rand", "FUN_0043d940", "FUN_0043d830", "__ftol", "FUN_00401060", "FUN_0043d120"]
+    "calls": ["FUN_00401060", "FUN_0043d940", "FUN_0043d7e0", "FUN_0043d830", "__ftol", "_rand", "FUN_004034a0", "FUN_0043d120"]
   },
   {
     "name": "FUN_0043efc0",
     "address": "0043efc0",
     "signature": "undefined4 FUN_0043efc0(float * param_1, char * param_2)",
     "external": false,
-    "calls": ["FUN_00403430", "FUN_004034a0", "FUN_0043d7e0", "FUN_0043d940", "FUN_0043d830", "__ftol"]
+    "calls": ["FUN_0043d940", "FUN_0043d7e0", "FUN_0043d830", "__ftol", "FUN_00403430", "FUN_004034a0"]
   },
   {
     "name": "FUN_004411c0",
@@ -2174,7 +2174,7 @@
     "address": "004413a0",
     "signature": "undefined FUN_004413a0(undefined4 param_1, float param_2, float param_3)",
     "external": false,
-    "calls": ["FUN_004411c0", "FUN_004616e7", "FUN_00441270", "FUN_00406180", "__ftol", "FUN_004061e0", "FUN_00441220"]
+    "calls": ["FUN_00406180", "FUN_00441270", "FUN_004411c0", "FUN_00441220", "FUN_004061e0", "FUN_004616e7", "__ftol"]
   },
   {
     "name": "FUN_00442150",
@@ -2188,21 +2188,21 @@
     "address": "004443c0",
     "signature": "uint FUN_004443c0(float * param_1, undefined1 param_2)",
     "external": false,
-    "calls": ["FUN_0043ecf0", "FUN_00460d86", "FUN_00460dc7", "FUN_0043e830", "FUN_0046e8f4", "FUN_00446030", "thunk_FUN_0043afa0", "FUN_0043efc0"]
+    "calls": ["FUN_0043ecf0", "FUN_00446030", "FUN_00460d86", "FUN_00460dc7", "thunk_FUN_0043afa0", "FUN_0043efc0", "FUN_0043e830", "FUN_0046e8f4"]
   },
   {
     "name": "FUN_00444810",
     "address": "00444810",
     "signature": "int FUN_00444810(undefined4 * param_1, undefined4 * param_2, int param_3)",
     "external": false,
-    "calls": ["_rand", "FUN_00428140"]
+    "calls": ["FUN_00428140", "_rand"]
   },
   {
     "name": "FUN_00444980",
     "address": "00444980",
     "signature": "undefined FUN_00444980(char param_1, char param_2)",
     "external": false,
-    "calls": ["FUN_00420440", "FUN_0042fcf0", "FUN_0043d260", "FUN_0041fbb0", "FUN_0041df40", "_rand", "FUN_00462edd", "FUN_00413430"]
+    "calls": ["FUN_00413430", "FUN_0041fbb0", "FUN_0041df40", "FUN_0043d260", "FUN_00420440", "FUN_0042fcf0", "_rand", "FUN_00462edd"]
   },
   {
     "name": "FUN_00444f70",
@@ -2216,7 +2216,7 @@
     "address": "004451b0",
     "signature": "undefined1 * FUN_004451b0(void)",
     "external": false,
-    "calls": ["FUN_004616e7", "_rand", "thunk_FUN_0043afa0", "FUN_00462fd0", "FUN_00401870"]
+    "calls": ["FUN_004616e7", "thunk_FUN_0043afa0", "FUN_00462fd0", "_rand", "FUN_00401870"]
   },
   {
     "name": "FUN_00445310",
@@ -2230,7 +2230,7 @@
     "address": "00445380",
     "signature": "undefined FUN_00445380(int param_1)",
     "external": false,
-    "calls": ["FUN_00445310", "FUN_004616e7", "FUN_004451b0", "_rand", "FUN_00444f70"]
+    "calls": ["FUN_004451b0", "FUN_004616e7", "FUN_00444f70", "_rand", "FUN_00445310"]
   },
   {
     "name": "FUN_00445590",
@@ -2251,7 +2251,7 @@
     "address": "004457c0",
     "signature": "undefined FUN_004457c0(void)",
     "external": false,
-    "calls": ["FUN_00426220", "FUN_0042e710", "FUN_00445600", "__ftol", "FUN_00401060", "FUN_0043d120", "FUN_00445380", "FUN_0043d550", "FUN_00406b40", "FUN_0043d460", "FUN_00403550", "FUN_0041ca90", "FUN_00409500", "FUN_00460d86", "FUN_00445590", "_rand", "FUN_00444980", "FUN_0041a530", "FUN_00420b90", "FUN_00444810"]
+    "calls": ["FUN_00445380", "FUN_00426220", "FUN_00401060", "FUN_0042e710", "FUN_00445600", "FUN_0043d550", "FUN_00420b90", "FUN_0041a530", "FUN_00406b40", "__ftol", "FUN_00405960", "FUN_0043d120", "FUN_0043d460", "FUN_00403550", "FUN_00444980", "FUN_00460d86", "FUN_00409500", "FUN_0041ca90", "FUN_00444810", "FUN_00445590"]
   },
   {
     "name": "FUN_00446000",
@@ -2307,14 +2307,14 @@
     "address": "004461c0",
     "signature": "undefined FUN_004461c0(int param_1)",
     "external": false,
-    "calls": ["FUN_0041df40", "FUN_00446170", "FUN_0043a790", "thunk_FUN_0043afa0", "FUN_00412a80", "FUN_0040e940", "FUN_00401060", "FUN_00412dc0"]
+    "calls": ["FUN_00412dc0", "FUN_00446170", "FUN_00401060", "FUN_0040e940", "FUN_00412a80", "thunk_FUN_0043afa0", "FUN_0041df40", "FUN_0043a790"]
   },
   {
     "name": "FUN_00446900",
     "address": "00446900",
     "signature": "undefined FUN_00446900(char * param_1)",
     "external": false,
-    "calls": ["FUN_00446150", "FUN_00446030", "FUN_0043d120"]
+    "calls": ["FUN_00446030", "FUN_00446150", "FUN_0043d120"]
   },
   {
     "name": "FUN_00446c40",
@@ -2391,7 +2391,7 @@
     "address": "0044fcb0",
     "signature": "undefined FUN_0044fcb0(void)",
     "external": false,
-    "calls": ["FUN_00419ba0", "FUN_0044fb50", "FUN_0041df40", "FUN_0044faa0", "FUN_0042a700", "FUN_00419d00"]
+    "calls": ["FUN_0042a700", "FUN_00419ba0", "FUN_00419d00", "FUN_0044fb50", "FUN_0041df40", "FUN_0044faa0"]
   },
   {
     "name": "FUN_004519b0",
@@ -2412,7 +2412,7 @@
     "address": "00452d40",
     "signature": "undefined FUN_00452d40(int param_1, int param_2)",
     "external": false,
-    "calls": ["FUN_0042fcf0", "FUN_0043d260", "__ftol"]
+    "calls": ["FUN_0043d260", "FUN_0042fcf0", "__ftol"]
   },
   {
     "name": "FUN_00452e40",
@@ -2447,7 +2447,7 @@
     "address": "00452f30",
     "signature": "undefined FUN_00452f30(undefined4 param_1, undefined4 param_2, undefined4 param_3, undefined4 param_4, undefined4 param_5, undefined4 param_6)",
     "external": false,
-    "calls": ["FUN_004566d3", "FUN_00452f30"]
+    "calls": ["FUN_00452f30", "FUN_004566d3"]
   },
   {
     "name": "FUN_00452f5a",
@@ -2461,7 +2461,7 @@
     "address": "00452fe8",
     "signature": "undefined FUN_00452fe8(undefined4 param_1, undefined4 param_2, undefined4 param_3, undefined4 param_4, undefined4 param_5, undefined4 param_6)",
     "external": false,
-    "calls": ["FUN_004566d3", "FUN_00452fe8"]
+    "calls": ["FUN_00452fe8", "FUN_004566d3"]
   },
   {
     "name": "FUN_00453012",
@@ -2475,7 +2475,7 @@
     "address": "004530c1",
     "signature": "undefined FUN_004530c1(undefined4 param_1, undefined4 param_2, undefined4 param_3, undefined4 param_4, undefined4 param_5, undefined4 param_6)",
     "external": false,
-    "calls": ["FUN_004566d3", "FUN_004530c1"]
+    "calls": ["FUN_004530c1", "FUN_004566d3"]
   },
   {
     "name": "FUN_004530f0",
@@ -2566,7 +2566,7 @@
     "address": "00453711",
     "signature": "undefined FUN_00453711(undefined4 param_1, undefined4 param_2, undefined4 param_3, undefined4 param_4, undefined4 param_5, undefined4 param_6)",
     "external": false,
-    "calls": ["FUN_004566d3", "FUN_00453711"]
+    "calls": ["FUN_00453711", "FUN_004566d3"]
   },
   {
     "name": "FUN_0045373b",
@@ -2580,7 +2580,7 @@
     "address": "0045382e",
     "signature": "undefined FUN_0045382e(undefined4 param_1, undefined4 param_2, undefined4 param_3, undefined4 param_4, undefined4 param_5, undefined4 param_6)",
     "external": false,
-    "calls": ["FUN_004566d3", "FUN_0045382e"]
+    "calls": ["FUN_0045382e", "FUN_004566d3"]
   },
   {
     "name": "FUN_0045385d",
@@ -2636,14 +2636,14 @@
     "address": "00454303",
     "signature": "undefined FUN_00454303(undefined4 param_1, undefined4 param_2, undefined4 param_3, undefined4 param_4)",
     "external": false,
-    "calls": ["FUN_004566d3", "FUN_00454303"]
+    "calls": ["FUN_00454303", "FUN_004566d3"]
   },
   {
     "name": "FUN_0045438d",
     "address": "0045438d",
     "signature": "undefined FUN_0045438d(undefined4 param_1, undefined4 param_2, undefined4 param_3, undefined4 param_4)",
     "external": false,
-    "calls": ["FUN_004566d3", "FUN_0045438d"]
+    "calls": ["FUN_0045438d", "FUN_004566d3"]
   },
   {
     "name": "FUN_00454417",
@@ -2664,7 +2664,7 @@
     "address": "004544ad",
     "signature": "undefined FUN_004544ad(undefined4 param_1, undefined4 param_2)",
     "external": false,
-    "calls": ["FUN_004566d3", "FUN_004544ad"]
+    "calls": ["FUN_004544ad", "FUN_004566d3"]
   },
   {
     "name": "FUN_004544c9",
@@ -2678,7 +2678,7 @@
     "address": "00454544",
     "signature": "undefined FUN_00454544(undefined4 param_1, undefined4 param_2)",
     "external": false,
-    "calls": ["FUN_004566d3", "FUN_00454544"]
+    "calls": ["FUN_00454544", "FUN_004566d3"]
   },
   {
     "name": "FUN_00454560",
@@ -2692,7 +2692,7 @@
     "address": "004545dc",
     "signature": "undefined FUN_004545dc(undefined4 param_1, undefined4 param_2, undefined4 param_3)",
     "external": false,
-    "calls": ["FUN_004566d3", "FUN_004545dc"]
+    "calls": ["FUN_004545dc", "FUN_004566d3"]
   },
   {
     "name": "FUN_004545fc",
@@ -2720,7 +2720,7 @@
     "address": "004547f3",
     "signature": "undefined FUN_004547f3(undefined4 param_1, undefined4 param_2, undefined4 param_3, undefined4 param_4)",
     "external": false,
-    "calls": ["FUN_004566d3", "FUN_004547f3"]
+    "calls": ["FUN_004547f3", "FUN_004566d3"]
   },
   {
     "name": "FUN_00454821",
@@ -2748,7 +2748,7 @@
     "address": "00454b44",
     "signature": "undefined FUN_00454b44(undefined4 param_1, undefined4 param_2, undefined4 param_3)",
     "external": false,
-    "calls": ["FUN_004566d3", "FUN_00454b44"]
+    "calls": ["FUN_00454b44", "FUN_004566d3"]
   },
   {
     "name": "FUN_00454b64",
@@ -2762,7 +2762,7 @@
     "address": "00454bc0",
     "signature": "undefined FUN_00454bc0(undefined4 param_1, undefined4 param_2, undefined4 param_3, undefined4 param_4)",
     "external": false,
-    "calls": ["FUN_004566d3", "FUN_00454bc0"]
+    "calls": ["FUN_00454bc0", "FUN_004566d3"]
   },
   {
     "name": "thunk_FUN_00454bc0",
@@ -2818,7 +2818,7 @@
     "address": "00455028",
     "signature": "undefined FUN_00455028(undefined4 param_1, undefined4 param_2, undefined4 param_3, undefined4 param_4)",
     "external": false,
-    "calls": ["FUN_004566d3", "FUN_00455028"]
+    "calls": ["FUN_00455028", "FUN_004566d3"]
   },
   {
     "name": "thunk_FUN_00455028",
@@ -2832,7 +2832,7 @@
     "address": "00455135",
     "signature": "undefined FUN_00455135(undefined4 param_1, undefined4 param_2, undefined4 param_3, undefined4 param_4, undefined4 param_5, undefined4 param_6)",
     "external": false,
-    "calls": ["FUN_004566d3", "FUN_00455135"]
+    "calls": ["FUN_00455135", "FUN_004566d3"]
   },
   {
     "name": "FUN_0045515f",
@@ -2853,7 +2853,7 @@
     "address": "004551f6",
     "signature": "undefined4 * FUN_004551f6(undefined4 * param_1, undefined4 * param_2, undefined4 param_3, undefined4 param_4, float param_5, float param_6)",
     "external": false,
-    "calls": ["FUN_00452ef0", "thunk_FUN_00455028"]
+    "calls": ["thunk_FUN_00455028", "FUN_00452ef0"]
   },
   {
     "name": "FUN_00455281",
@@ -2923,7 +2923,7 @@
     "address": "00455a27",
     "signature": "float * FUN_00455a27(float * param_1, float * param_2, int * param_3, int param_4, int param_5, int param_6)",
     "external": false,
-    "calls": ["thunk_FUN_00453f63", "thunk_FUN_00453a57", "thunk_FUN_00453464"]
+    "calls": ["thunk_FUN_00453a57", "thunk_FUN_00453f63", "thunk_FUN_00453464"]
   },
   {
     "name": "FUN_00455bcd",
@@ -2944,7 +2944,7 @@
     "address": "00455cbf",
     "signature": "undefined4 * FUN_00455cbf(undefined4 * param_1, float * param_2, int param_3, undefined4 * param_4, float * param_5, int param_6, float * param_7)",
     "external": false,
-    "calls": ["thunk_FUN_00453a57", "thunk_FUN_004546fe", "thunk_FUN_00453ca0"]
+    "calls": ["thunk_FUN_00453ca0", "thunk_FUN_00453a57", "thunk_FUN_004546fe"]
   },
   {
     "name": "FUN_00455f73",
@@ -2965,7 +2965,7 @@
     "address": "004564e6",
     "signature": "undefined4 FUN_004564e6(DWORD param_1, LPCSTR param_2, LPBYTE param_3)",
     "external": false,
-    "calls": ["RegOpenKeyA", "RegQueryValueExA", "RegCloseKey"]
+    "calls": ["RegQueryValueExA", "RegCloseKey", "RegOpenKeyA"]
   },
   {
     "name": "FUN_00456542",
@@ -2979,7 +2979,7 @@
     "address": "0045657a",
     "signature": "undefined FUN_0045657a(void)",
     "external": false,
-    "calls": ["FUN_004565c0", "FUN_004636c8"]
+    "calls": ["FUN_004636c8", "FUN_004565c0"]
   },
   {
     "name": "Catch@004565b4",
@@ -3000,14 +3000,14 @@
     "address": "0045661f",
     "signature": "uint FUN_0045661f(DWORD param_1)",
     "external": false,
-    "calls": ["GetVersionExA", "IsProcessorFeaturePresent", "FUN_00456542", "FUN_0045657a"]
+    "calls": ["IsProcessorFeaturePresent", "GetVersionExA", "FUN_00456542", "FUN_0045657a"]
   },
   {
     "name": "FUN_004566d3",
     "address": "004566d3",
     "signature": "int FUN_004566d3(int param_1)",
     "external": false,
-    "calls": ["FUN_004564e6", "FUN_004568c0", "FUN_00457127", "FUN_0045661f", "FUN_004567b0", "FUN_00456aa5"]
+    "calls": ["FUN_004564e6", "FUN_00456aa5", "FUN_00457127", "FUN_0045661f", "FUN_004567b0", "FUN_004568c0"]
   },
   {
     "name": "FUN_004567b0",
@@ -3091,7 +3091,7 @@
     "address": "00459adf",
     "signature": "undefined FUN_00459adf(undefined8 * param_1, ulonglong * param_2, uint param_3)",
     "external": false,
-    "calls": ["FUN_0045e832", "FUN_004607a0"]
+    "calls": ["FUN_004607a0", "FUN_0045e832"]
   },
   {
     "name": "FUN_00459b4b",
@@ -3119,14 +3119,14 @@
     "address": "00459e05",
     "signature": "undefined FUN_00459e05(undefined8 * param_1, undefined8 * param_2)",
     "external": false,
-    "calls": ["FUN_004608c0", "FUN_004601c0"]
+    "calls": ["FUN_004601c0", "FUN_004608c0"]
   },
   {
     "name": "FUN_00459f51",
     "address": "00459f51",
     "signature": "undefined FUN_00459f51(undefined8 * param_1, undefined8 * param_2, ulonglong * param_3, ulonglong * param_4, ulonglong * param_5, ulonglong * param_6, ulonglong * param_7)",
     "external": false,
-    "calls": ["FUN_004607a0", "FUN_004608c0", "FUN_004601c0"]
+    "calls": ["FUN_004601c0", "FUN_004608c0", "FUN_004607a0"]
   },
   {
     "name": "FUN_0045b092",
@@ -3154,7 +3154,7 @@
     "address": "0045cac3",
     "signature": "undefined FUN_0045cac3(undefined8 * param_1, ulonglong * param_2)",
     "external": false,
-    "calls": ["FUN_0045e832", "FUN_004607a0"]
+    "calls": ["FUN_004607a0", "FUN_0045e832"]
   },
   {
     "name": "FUN_0045cbdc",
@@ -3280,7 +3280,7 @@
     "address": "00460cb8",
     "signature": "undefined FUN_00460cb8(void)",
     "external": false,
-    "calls": ["FUN_00460cd0", "FUN_004636e7", "FUN_00463737"]
+    "calls": ["FUN_004636e7", "FUN_00463737", "FUN_00460cd0"]
   },
   {
     "name": "FUN_00460ccf",
@@ -3301,7 +3301,7 @@
     "address": "00460d08",
     "signature": "undefined4 FUN_00460d08(undefined4 param_1)",
     "external": false,
-    "calls": ["FUN_00462fa4", "FUN_00462fad", "FUN_00463b86", "FUN_004626aa"]
+    "calls": ["FUN_00462fa4", "FUN_004626aa", "FUN_00462fad", "FUN_00463b86"]
   },
   {
     "name": "FUN_00460d86",
@@ -3329,14 +3329,14 @@
     "address": "00460e5d",
     "signature": "undefined4 FUN_00460e5d(FILE * param_1)",
     "external": false,
-    "calls": ["__fclose_lk", "FUN_00463df7", "FUN_00463da5"]
+    "calls": ["FUN_00463da5", "FUN_00463df7", "__fclose_lk"]
   },
   {
     "name": "__fclose_lk",
     "address": "00460e8e",
     "signature": "undefined4 __fclose_lk(FILE * param_1)",
     "external": false,
-    "calls": ["FUN_004625c1", "FUN_004614a5", "__freebuf", "FUN_00463e49"]
+    "calls": ["FUN_004625c1", "__freebuf", "FUN_004614a5", "FUN_00463e49"]
   },
   {
     "name": "_strchr",
@@ -3350,7 +3350,7 @@
     "address": "00460fac",
     "signature": "char * FUN_00460fac(char * param_1, int param_2, undefined4 * param_3)",
     "external": false,
-    "calls": ["FUN_00463df7", "FUN_00463da5", "FUN_00463f54"]
+    "calls": ["FUN_00463da5", "FUN_00463f54", "FUN_00463df7"]
   },
   {
     "name": "FUN_0046100e",
@@ -3385,14 +3385,14 @@
     "address": "00461089",
     "signature": "int FUN_00461089(undefined1 * param_1, byte * param_2, undefined4 * param_3)",
     "external": false,
-    "calls": ["FUN_00464380", "FUN_00464268"]
+    "calls": ["FUN_00464268", "FUN_00464380"]
   },
   {
     "name": "FUN_004610da",
     "address": "004610da",
     "signature": "float10 FUN_004610da(undefined * param_1, byte * param_2)",
     "external": false,
-    "calls": ["FUN_00463c74", "FUN_00464be7", "_strlen"]
+    "calls": ["FUN_00464be7", "_strlen", "FUN_00463c74"]
   },
   {
     "name": "FUN_00461140",
@@ -3406,7 +3406,7 @@
     "address": "00461162",
     "signature": "undefined1[10] FUN_00461162(int param_1, uint param_2, int param_3, uint param_4)",
     "external": false,
-    "calls": ["FUN_00465145", "__fload_withFB", "FUN_00465219", "FUN_00465130", "FUN_004651ce", "FUN_004650d0", "FUN_00461335", "FUN_004652bc"]
+    "calls": ["FUN_004652bc", "__fload_withFB", "FUN_00461335", "FUN_00465145", "FUN_00465130", "FUN_00465219", "FUN_004651ce", "FUN_004650d0"]
   },
   {
     "name": "FUN_00461335",
@@ -3434,14 +3434,14 @@
     "address": "00461448",
     "signature": "int FUN_00461448(int * param_1)",
     "external": false,
-    "calls": ["FUN_00463df7", "FUN_00461477", "FUN_00463da5", "FUN_0046150a"]
+    "calls": ["FUN_00463da5", "FUN_00463df7", "FUN_00461477", "FUN_0046150a"]
   },
   {
     "name": "FUN_00461477",
     "address": "00461477",
     "signature": "int FUN_00461477(int * param_1)",
     "external": false,
-    "calls": ["FUN_004614a5", "FUN_004655bf"]
+    "calls": ["FUN_004655bf", "FUN_004614a5"]
   },
   {
     "name": "FUN_004614a5",
@@ -3455,28 +3455,28 @@
     "address": "0046150a",
     "signature": "int FUN_0046150a(int param_1)",
     "external": false,
-    "calls": ["FUN_004658cc", "FUN_00463e26", "FUN_00463dd4", "FUN_00461477", "FUN_0046586b"]
+    "calls": ["FUN_004658cc", "FUN_00463dd4", "FUN_0046586b", "FUN_00463e26", "FUN_00461477"]
   },
   {
     "name": "FUN_004615ae",
     "address": "004615ae",
     "signature": "uint FUN_004615ae(char * param_1, uint param_2, uint param_3, int * param_4)",
     "external": false,
-    "calls": ["FUN_00463df7", "FUN_00463da5", "FUN_004615dd"]
+    "calls": ["FUN_00463da5", "FUN_00463df7", "FUN_004615dd"]
   },
   {
     "name": "FUN_004615dd",
     "address": "004615dd",
     "signature": "uint FUN_004615dd(char * param_1, uint param_2, uint param_3, int * param_4)",
     "external": false,
-    "calls": ["FUN_004614a5", "FUN_00465652", "FUN_00464268", "FUN_004658f0"]
+    "calls": ["FUN_00464268", "FUN_004658f0", "FUN_00465652", "FUN_004614a5"]
   },
   {
     "name": "FUN_004616e7",
     "address": "004616e7",
     "signature": "int FUN_004616e7(undefined1 * param_1, byte * param_2)",
     "external": false,
-    "calls": ["FUN_00464380", "FUN_00464268"]
+    "calls": ["FUN_00464268", "FUN_00464380"]
   },
   {
     "name": "FUN_00461739",
@@ -3497,28 +3497,28 @@
     "address": "00461768",
     "signature": "HANDLE FUN_00461768(LPCSTR param_1, uint * param_2)",
     "external": false,
-    "calls": ["FUN_00465d93", "FUN_00465c30", "FindFirstFileA", "___timet_from_ft", "GetLastError"]
+    "calls": ["FUN_00465c30", "GetLastError", "FindFirstFileA", "___timet_from_ft", "FUN_00465d93"]
   },
   {
     "name": "FUN_00461835",
     "address": "00461835",
     "signature": "undefined4 FUN_00461835(HANDLE param_1, uint * param_2)",
     "external": false,
-    "calls": ["FUN_00465d93", "FindNextFileA", "FUN_00465c30", "___timet_from_ft", "GetLastError"]
+    "calls": ["FUN_00465c30", "GetLastError", "FindNextFileA", "___timet_from_ft", "FUN_00465d93"]
   },
   {
     "name": "FUN_004618fd",
     "address": "004618fd",
     "signature": "undefined4 FUN_004618fd(HANDLE param_1)",
     "external": false,
-    "calls": ["FUN_00465d93", "FindClose"]
+    "calls": ["FindClose", "FUN_00465d93"]
   },
   {
     "name": "___timet_from_ft",
     "address": "0046191d",
     "signature": "int ___timet_from_ft(FILETIME * param_1)",
     "external": false,
-    "calls": ["FileTimeToSystemTime", "FUN_00465da5", "FileTimeToLocalFileTime"]
+    "calls": ["FUN_00465da5", "FileTimeToLocalFileTime", "FileTimeToSystemTime"]
   },
   {
     "name": "FUN_00461981",
@@ -3560,7 +3560,7 @@
     "address": "00461af7",
     "signature": "uint FUN_00461af7(char * param_1, uint param_2, uint param_3, int * param_4)",
     "external": false,
-    "calls": ["FUN_00461b26", "FUN_00463df7", "FUN_00463da5"]
+    "calls": ["FUN_00463da5", "FUN_00463df7", "FUN_00461b26"]
   },
   {
     "name": "FUN_00461b26",
@@ -3574,7 +3574,7 @@
     "address": "00461c0e",
     "signature": "int FUN_00461c0e(char * param_1)",
     "external": false,
-    "calls": ["FUN_00463df7", "FUN_00463da5", "FUN_00461c30"]
+    "calls": ["FUN_00463da5", "FUN_00463df7", "FUN_00461c30"]
   },
   {
     "name": "FUN_00461c30",
@@ -3588,7 +3588,7 @@
     "address": "00461d91",
     "signature": "int FUN_00461d91(int * param_1, int param_2, DWORD param_3)",
     "external": false,
-    "calls": ["FUN_00463df7", "FUN_00461dbd", "FUN_00463da5"]
+    "calls": ["FUN_00461dbd", "FUN_00463da5", "FUN_00463df7"]
   },
   {
     "name": "FUN_00461dbd",
@@ -3602,28 +3602,28 @@
     "address": "00461e4a",
     "signature": "int FUN_00461e4a(undefined1 * param_1, int param_2, byte * param_3)",
     "external": false,
-    "calls": ["FUN_00464380", "FUN_00464268"]
+    "calls": ["FUN_00464268", "FUN_00464380"]
   },
   {
     "name": "FUN_00461e9b",
     "address": "00461e9b",
     "signature": "uint FUN_00461e9b(uint param_1)",
     "external": false,
-    "calls": ["InterlockedDecrement", "FUN_004658cc", "FUN_0046586b", "FUN_00461f0a", "InterlockedIncrement"]
+    "calls": ["FUN_00461f0a", "FUN_004658cc", "InterlockedIncrement", "FUN_0046586b", "InterlockedDecrement"]
   },
   {
     "name": "FUN_00461f0a",
     "address": "00461f0a",
     "signature": "uint FUN_00461f0a(void * this, uint param_1)",
     "external": false,
-    "calls": ["FUN_00463c74", "FUN_004664d1"]
+    "calls": ["FUN_004664d1", "FUN_00463c74"]
   },
   {
     "name": "FUN_00461fd5",
     "address": "00461fd5",
     "signature": "int FUN_00461fd5(byte * param_1)",
     "external": false,
-    "calls": ["FUN_00464380", "FUN_004666f5", "FUN_00463e26", "FUN_00463dd4", "FUN_00466782"]
+    "calls": ["FUN_004666f5", "FUN_00466782", "FUN_00463dd4", "FUN_00464380", "FUN_00463e26"]
   },
   {
     "name": "__alldiv",
@@ -3644,56 +3644,56 @@
     "address": "00462104",
     "signature": "uint FUN_00462104(uint param_1)",
     "external": false,
-    "calls": ["InterlockedDecrement", "FUN_004658cc", "FUN_0046586b", "InterlockedIncrement", "FUN_00462173"]
+    "calls": ["FUN_00462173", "FUN_004658cc", "InterlockedIncrement", "FUN_0046586b", "InterlockedDecrement"]
   },
   {
     "name": "FUN_00462173",
     "address": "00462173",
     "signature": "uint FUN_00462173(void * this, uint param_1)",
     "external": false,
-    "calls": ["FUN_00463c74", "FUN_004664d1"]
+    "calls": ["FUN_004664d1", "FUN_00463c74"]
   },
   {
     "name": "FUN_0046223f",
     "address": "0046223f",
     "signature": "HANDLE FUN_0046223f(int param_1, SIZE_T param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_004625c1", "FUN_004654a5", "FUN_00465d20", "ResumeThread", "FUN_004667ac", "GetLastError", "CreateThread"]
+    "calls": ["CreateThread", "ResumeThread", "GetLastError", "FUN_00465d20", "FUN_004654a5", "FUN_004625c1", "FUN_004667ac"]
   },
   {
     "name": "FUN_004622b6",
     "address": "004622b6",
     "signature": "undefined4 FUN_004622b6(undefined * param_1)",
     "external": false,
-    "calls": ["FUN_00460ccf", "TlsSetValue", "__amsg_exit", "TlsGetValue", "FUN_00462373", "FUN_0046551f"]
+    "calls": ["FUN_00462373", "TlsSetValue", "FUN_00460ccf", "__amsg_exit", "FUN_0046551f", "TlsGetValue"]
   },
   {
     "name": "FUN_00462373",
     "address": "00462373",
     "signature": "undefined FUN_00462373(void)",
     "external": false,
-    "calls": ["FUN_00460ccf", "CloseHandle", "__amsg_exit", "FUN_0046551f", "ExitThread", "FUN_004654b8"]
+    "calls": ["FUN_004654b8", "ExitThread", "FUN_00460ccf", "__amsg_exit", "CloseHandle", "FUN_0046551f"]
   },
   {
     "name": "FUN_004623b2",
     "address": "004623b2",
     "signature": "undefined FUN_004623b2(int * param_1)",
     "external": false,
-    "calls": ["GetTimeZoneInformation", "GetLocalTime", "FUN_00465da5", "GetSystemTime"]
+    "calls": ["GetLocalTime", "FUN_00465da5", "GetSystemTime", "GetTimeZoneInformation"]
   },
   {
     "name": "FUN_0046248e",
     "address": "0046248e",
     "signature": "uint * FUN_0046248e(uint * param_1, size_t param_2)",
     "external": false,
-    "calls": ["FUN_004658cc", "FUN_0046586b", "FUN_004624b5"]
+    "calls": ["FUN_004624b5", "FUN_004658cc", "FUN_0046586b"]
   },
   {
     "name": "FUN_004624b5",
     "address": "004624b5",
     "signature": "uint * FUN_004624b5(uint param_1, uint * param_2, size_t param_3)",
     "external": false,
-    "calls": ["FUN_00465d93", "GetCurrentDirectoryA", "FUN_00465d9c", "GetFullPathNameA", "_malloc", "FUN_00465c30", "FUN_0046258a"]
+    "calls": ["FUN_00465c30", "FUN_00465d93", "FUN_0046258a", "GetFullPathNameA", "_malloc", "FUN_00465d9c", "GetCurrentDirectoryA"]
   },
   {
     "name": "FUN_0046258a",
@@ -3707,7 +3707,7 @@
     "address": "004625c1",
     "signature": "undefined FUN_004625c1(undefined * param_1)",
     "external": false,
-    "calls": ["HeapFree", "FUN_0046262b", "FUN_00467a2d", "FUN_00462683", "FUN_00466c7b", "FUN_0046586b", "FUN_004679d6", "FUN_00466ca6"]
+    "calls": ["HeapFree", "FUN_00467a2d", "FUN_0046262b", "FUN_00462683", "FUN_0046586b", "FUN_004679d6", "FUN_00466ca6", "FUN_00466c7b"]
   },
   {
     "name": "FUN_0046262b",
@@ -3728,7 +3728,7 @@
     "address": "004626aa",
     "signature": "byte * FUN_004626aa(byte * param_1, uint * param_2)",
     "external": false,
-    "calls": ["FUN_004625c1", "_malloc", "FUN_0046586b", "FUN_00466fcf", "FUN_004679d6", "FUN_00467d9e", "FUN_00467a2d", "FUN_00462983", "FUN_00466c7b", "FUN_00467e47", "HeapReAlloc", "HeapAlloc", "FUN_004658f0", "FUN_00462835", "FUN_00467a72", "FUN_00467484", "FUN_00466ca6"]
+    "calls": ["FUN_00467a2d", "FUN_004625c1", "FUN_00467d9e", "FUN_00462983", "FUN_00466ca6", "FUN_00467a72", "FUN_00467e47", "FUN_00466c7b", "HeapReAlloc", "FUN_00466fcf", "FUN_004658f0", "FUN_00462835", "FUN_0046586b", "HeapAlloc", "FUN_00467484", "_malloc", "FUN_004679d6"]
   },
   {
     "name": "FUN_00462835",
@@ -3756,14 +3756,14 @@
     "address": "004629eb",
     "signature": "void * __nh_malloc(size_t _Size, int _NhFlag)",
     "external": false,
-    "calls": ["FUN_00467e47", "FUN_00462a17"]
+    "calls": ["FUN_00462a17", "FUN_00467e47"]
   },
   {
     "name": "FUN_00462a17",
     "address": "00462a17",
     "signature": "undefined FUN_00462a17(uint * param_1)",
     "external": false,
-    "calls": ["FUN_00462add", "FUN_0046586b", "HeapAlloc", "FUN_00462a7e", "FUN_00466fcf", "FUN_00467a72"]
+    "calls": ["FUN_0046586b", "HeapAlloc", "FUN_00467a72", "FUN_00462add", "FUN_00466fcf", "FUN_00462a7e"]
   },
   {
     "name": "FUN_00462a7e",
@@ -3791,7 +3791,7 @@
     "address": "00462ba0",
     "signature": "undefined FUN_00462ba0(char * param_1, byte * param_2)",
     "external": false,
-    "calls": ["FUN_00467e62", "_strlen"]
+    "calls": ["_strlen", "FUN_00467e62"]
   },
   {
     "name": "FUN_00462bd4",
@@ -3819,14 +3819,14 @@
     "address": "00462da2",
     "signature": "uint FUN_00462da2(undefined4 * param_1)",
     "external": false,
-    "calls": ["FUN_00463df7", "FUN_00463da5", "FUN_00463f54"]
+    "calls": ["FUN_00463da5", "FUN_00463f54", "FUN_00463df7"]
   },
   {
     "name": "FUN_00462de0",
     "address": "00462de0",
     "signature": "uint FUN_00462de0(void * this, byte * param_1, byte * param_2)",
     "external": false,
-    "calls": ["FUN_004658cc", "FUN_0046586b", "FUN_00461f0a"]
+    "calls": ["FUN_00461f0a", "FUN_004658cc", "FUN_0046586b"]
   },
   {
     "name": "FUN_00462eb0",
@@ -3854,7 +3854,7 @@
     "address": "00462eff",
     "signature": "undefined FUN_00462eff(UINT param_1, int param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_00462fb6", "FUN_00462fa4", "ExitProcess", "FUN_00462fad", "GetCurrentProcess", "TerminateProcess"]
+    "calls": ["FUN_00462fb6", "FUN_00462fa4", "ExitProcess", "TerminateProcess", "FUN_00462fad", "GetCurrentProcess"]
   },
   {
     "name": "FUN_00462fa4",
@@ -3896,35 +3896,35 @@
     "address": "00463026",
     "signature": "undefined entry(void)",
     "external": false,
-    "calls": ["FUN_0046896b", "FUN_004668e9", "FUN_00468a24", "GetVersion", "FUN_00463153", "FUN_00462eb0", "GetCommandLineA", "FUN_00466bd6", "FUN_00468c71", "GetStartupInfoA", "GetModuleHandleA", "FUN_00468913", "FUN_00465451", "FUN_00462edd", "FUN_0046623d", "FUN_0042c450"]
+    "calls": ["GetStartupInfoA", "FUN_00465451", "GetModuleHandleA", "FUN_00468913", "GetCommandLineA", "FUN_00468a24", "FUN_0046896b", "FUN_00462edd", "FUN_00466bd6", "FUN_004668e9", "FUN_0046623d", "GetVersion", "FUN_00462eb0", "FUN_0042c450", "FUN_00463153", "FUN_00468c71"]
   },
   {
     "name": "__amsg_exit",
     "address": "0046312e",
     "signature": "void __amsg_exit(int param_1)",
     "external": false,
-    "calls": ["FUN_00468da3", "FUN_00468ddc", "__exit"]
+    "calls": ["FUN_00468da3", "__exit", "FUN_00468ddc"]
   },
   {
     "name": "FUN_00463153",
     "address": "00463153",
     "signature": "undefined FUN_00463153(DWORD param_1)",
     "external": false,
-    "calls": ["ExitProcess", "FUN_00468da3", "FUN_00468ddc"]
+    "calls": ["FUN_00468da3", "ExitProcess", "FUN_00468ddc"]
   },
   {
     "name": "FUN_00463180",
     "address": "00463180",
     "signature": "undefined FUN_00463180(void)",
     "external": false,
-    "calls": ["FUN_0046319d", "FUN_004651b8"]
+    "calls": ["FUN_004651b8", "FUN_0046319d"]
   },
   {
     "name": "FUN_0046319d",
     "address": "0046319d",
     "signature": "undefined FUN_0046319d(int param_1, uint param_2)",
     "external": false,
-    "calls": ["FUN_00465145", "FUN_0046515c", "__startOneArgErrorHandling", "__math_exit"]
+    "calls": ["__math_exit", "FUN_00465145", "__startOneArgErrorHandling", "FUN_0046515c"]
   },
   {
     "name": "FUN_0046324b",
@@ -4078,7 +4078,7 @@
     "address": "00463760",
     "signature": "undefined FUN_00463760(char * param_1)",
     "external": false,
-    "calls": ["FUN_00463c74", "FUN_00461e9b"]
+    "calls": ["FUN_00461e9b", "FUN_00463c74"]
   },
   {
     "name": "__fassign",
@@ -4092,35 +4092,35 @@
     "address": "0046385e",
     "signature": "undefined1 * FUN_0046385e(undefined8 * param_1, undefined1 * param_2, int param_3, int param_4)",
     "external": false,
-    "calls": ["FUN_004638bf", "FUN_0046a415", "FUN_0046a39e"]
+    "calls": ["FUN_0046a415", "FUN_004638bf", "FUN_0046a39e"]
   },
   {
     "name": "FUN_004638bf",
     "address": "004638bf",
     "signature": "undefined1 * FUN_004638bf(undefined1 * param_1, int param_2, int param_3, int * param_4, char param_5)",
     "external": false,
-    "calls": ["FUN_00463b61", "FUN_00465c30"]
+    "calls": ["FUN_00465c30", "FUN_00463b61"]
   },
   {
     "name": "FUN_00463981",
     "address": "00463981",
     "signature": "char * FUN_00463981(undefined8 * param_1, char * param_2, size_t param_3)",
     "external": false,
-    "calls": ["FUN_0046a415", "FUN_0046a39e", "FUN_004639d6"]
+    "calls": ["FUN_0046a415", "FUN_004639d6", "FUN_0046a39e"]
   },
   {
     "name": "FUN_004639d6",
     "address": "004639d6",
     "signature": "char * FUN_004639d6(char * param_1, size_t param_2, int * param_3, char param_4)",
     "external": false,
-    "calls": ["FUN_00463b61", "_memset"]
+    "calls": ["_memset", "FUN_00463b61"]
   },
   {
     "name": "FUN_00463a7d",
     "address": "00463a7d",
     "signature": "undefined FUN_00463a7d(undefined8 * param_1, char * param_2, size_t param_3, int param_4)",
     "external": false,
-    "calls": ["FUN_004638bf", "FUN_0046a415", "FUN_0046a39e", "FUN_004639d6"]
+    "calls": ["FUN_0046a415", "FUN_004639d6", "FUN_004638bf", "FUN_0046a39e"]
   },
   {
     "name": "__cfltcvt",
@@ -4141,7 +4141,7 @@
     "address": "00463b86",
     "signature": "SIZE_T FUN_00463b86(undefined * param_1)",
     "external": false,
-    "calls": ["HeapSize", "FUN_00463c6b", "FUN_00463bf0", "FUN_00466c7b", "FUN_0046586b", "FUN_004679d6"]
+    "calls": ["FUN_00463c6b", "FUN_00463bf0", "FUN_0046586b", "FUN_004679d6", "FUN_00466c7b", "HeapSize"]
   },
   {
     "name": "FUN_00463bf0",
@@ -4169,42 +4169,42 @@
     "address": "00463da5",
     "signature": "undefined FUN_00463da5(uint param_1)",
     "external": false,
-    "calls": ["EnterCriticalSection", "FUN_0046586b"]
+    "calls": ["FUN_0046586b", "EnterCriticalSection"]
   },
   {
     "name": "FUN_00463dd4",
     "address": "00463dd4",
     "signature": "undefined FUN_00463dd4(int param_1, int param_2)",
     "external": false,
-    "calls": ["EnterCriticalSection", "FUN_0046586b"]
+    "calls": ["FUN_0046586b", "EnterCriticalSection"]
   },
   {
     "name": "FUN_00463df7",
     "address": "00463df7",
     "signature": "undefined FUN_00463df7(uint param_1)",
     "external": false,
-    "calls": ["FUN_004658cc", "LeaveCriticalSection"]
+    "calls": ["LeaveCriticalSection", "FUN_004658cc"]
   },
   {
     "name": "FUN_00463e26",
     "address": "00463e26",
     "signature": "undefined FUN_00463e26(int param_1, int param_2)",
     "external": false,
-    "calls": ["FUN_004658cc", "LeaveCriticalSection"]
+    "calls": ["LeaveCriticalSection", "FUN_004658cc"]
   },
   {
     "name": "FUN_00463e49",
     "address": "00463e49",
     "signature": "undefined4 FUN_00463e49(uint param_1)",
     "external": false,
-    "calls": ["FUN_00465d93", "FUN_0046acf8", "FUN_00463ea6", "FUN_00465d9c", "FUN_0046ad57"]
+    "calls": ["FUN_00463ea6", "FUN_0046ad57", "FUN_00465d93", "FUN_00465d9c", "FUN_0046acf8"]
   },
   {
     "name": "FUN_00463ea6",
     "address": "00463ea6",
     "signature": "undefined4 FUN_00463ea6(uint param_1)",
     "external": false,
-    "calls": ["CloseHandle", "FUN_00465d20", "FUN_0046ac37", "FUN_0046acb6", "GetLastError"]
+    "calls": ["GetLastError", "FUN_0046acb6", "FUN_00465d20", "FUN_0046ac37", "CloseHandle"]
   },
   {
     "name": "__freebuf",
@@ -4218,7 +4218,7 @@
     "address": "00463f54",
     "signature": "uint FUN_00463f54(undefined4 * param_1)",
     "external": false,
-    "calls": ["FUN_0046ad79", "FUN_00465fff"]
+    "calls": ["FUN_00465fff", "FUN_0046ad79"]
   },
   {
     "name": "FUN_00464030",
@@ -4232,21 +4232,21 @@
     "address": "004641a0",
     "signature": "undefined4 * FUN_004641a0(void)",
     "external": false,
-    "calls": ["FUN_004658cc", "FUN_00463e26", "_malloc", "FUN_00463dd4", "EnterCriticalSection", "FUN_0046586b", "InitializeCriticalSection"]
+    "calls": ["FUN_004658cc", "FUN_00463dd4", "FUN_0046586b", "FUN_00463e26", "_malloc", "EnterCriticalSection", "InitializeCriticalSection"]
   },
   {
     "name": "FUN_00464268",
     "address": "00464268",
     "signature": "uint FUN_00464268(uint param_1, int * param_2)",
     "external": false,
-    "calls": ["FUN_004663f9", "FUN_0046ad79", "FUN_00465652", "FUN_0046b08c"]
+    "calls": ["FUN_00465652", "FUN_004663f9", "FUN_0046b08c", "FUN_0046ad79"]
   },
   {
     "name": "FUN_00464380",
     "address": "00464380",
     "signature": "int FUN_00464380(int * param_1, byte * param_2, undefined4 * param_3)",
     "external": false,
-    "calls": ["FUN_004625c1", "_malloc", "FUN_00464bc9", "__aullrem", "FUN_00464b53", "FUN_0046b0b5", "_strlen", "FUN_00464bbc", "FUN_00464b1e", "__aulldiv", "FUN_0046a8c5", "FUN_00464bd9", "FUN_00464b84"]
+    "calls": ["FUN_00464b84", "_strlen", "FUN_004625c1", "FUN_00464bbc", "__aulldiv", "FUN_0046a8c5", "FUN_00464b1e", "FUN_00464bc9", "FUN_00464b53", "__aullrem", "FUN_00464bd9", "_malloc", "FUN_0046b0b5"]
   },
   {
     "name": "FUN_00464b1e",
@@ -4295,7 +4295,7 @@
     "address": "00464be7",
     "signature": "undefined FUN_00464be7(void * this, uint * param_1, byte * param_2)",
     "external": false,
-    "calls": ["FUN_0046b265", "FUN_0046a318"]
+    "calls": ["FUN_0046a318", "FUN_0046b265"]
   },
   {
     "name": "_strlen",
@@ -4386,14 +4386,14 @@
     "address": "004653ec",
     "signature": "undefined4 FUN_004653ec(double param_1)",
     "external": false,
-    "calls": ["FUN_0046325f", "__frnd"]
+    "calls": ["__frnd", "FUN_0046325f"]
   },
   {
     "name": "FUN_00465451",
     "address": "00465451",
     "signature": "undefined4 FUN_00465451(void)",
     "external": false,
-    "calls": ["FUN_004654a5", "TlsAlloc", "TlsSetValue", "FUN_00465842", "GetCurrentThreadId", "FUN_004667ac"]
+    "calls": ["FUN_00465842", "FUN_004654a5", "TlsSetValue", "TlsAlloc", "GetCurrentThreadId", "FUN_004667ac"]
   },
   {
     "name": "FUN_004654a5",
@@ -4407,7 +4407,7 @@
     "address": "004654b8",
     "signature": "DWORD * FUN_004654b8(void)",
     "external": false,
-    "calls": ["FUN_004654a5", "TlsSetValue", "__amsg_exit", "TlsGetValue", "GetCurrentThreadId", "FUN_004667ac", "SetLastError", "GetLastError"]
+    "calls": ["GetLastError", "FUN_004654a5", "TlsSetValue", "SetLastError", "GetCurrentThreadId", "__amsg_exit", "TlsGetValue", "FUN_004667ac"]
   },
   {
     "name": "FUN_0046551f",
@@ -4421,21 +4421,21 @@
     "address": "004655bf",
     "signature": "undefined4 FUN_004655bf(uint param_1)",
     "external": false,
-    "calls": ["FUN_00465d93", "FUN_0046acf8", "FUN_00465d9c", "FUN_0046acb6", "FlushFileBuffers", "GetLastError", "FUN_0046ad57"]
+    "calls": ["GetLastError", "FUN_0046acb6", "FUN_0046ad57", "FUN_00465d93", "FlushFileBuffers", "FUN_00465d9c", "FUN_0046acf8"]
   },
   {
     "name": "FUN_00465652",
     "address": "00465652",
     "signature": "int FUN_00465652(undefined * param_1, char * param_2, uint param_3)",
     "external": false,
-    "calls": ["FUN_00465d93", "FUN_0046acf8", "FUN_004656b7", "FUN_00465d9c", "FUN_0046ad57"]
+    "calls": ["FUN_004656b7", "FUN_0046ad57", "FUN_00465d93", "FUN_00465d9c", "FUN_0046acf8"]
   },
   {
     "name": "FUN_004656b7",
     "address": "004656b7",
     "signature": "int FUN_004656b7(undefined * param_1, char * param_2, uint param_3)",
     "external": false,
-    "calls": ["FUN_00465d93", "FUN_00465d20", "FUN_00465d9c", "FUN_0046645e", "WriteFile", "GetLastError"]
+    "calls": ["FUN_0046645e", "GetLastError", "FUN_00465d20", "WriteFile", "FUN_00465d93", "FUN_00465d9c"]
   },
   {
     "name": "FUN_00465842",
@@ -4449,7 +4449,7 @@
     "address": "0046586b",
     "signature": "undefined FUN_0046586b(int param_1)",
     "external": false,
-    "calls": ["FUN_004625c1", "FUN_004658cc", "__amsg_exit", "_malloc", "EnterCriticalSection", "FUN_0046586b", "InitializeCriticalSection"]
+    "calls": ["FUN_004658cc", "FUN_004625c1", "__amsg_exit", "FUN_0046586b", "_malloc", "EnterCriticalSection", "InitializeCriticalSection"]
   },
   {
     "name": "FUN_004658cc",
@@ -4505,7 +4505,7 @@
     "address": "00465da5",
     "signature": "int FUN_00465da5(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6, int param_7)",
     "external": false,
-    "calls": ["FUN_0046c5ad", "FUN_0046c862"]
+    "calls": ["FUN_0046c862", "FUN_0046c5ad"]
   },
   {
     "name": "FUN_00465f2d",
@@ -4519,7 +4519,7 @@
     "address": "00465f48",
     "signature": "undefined FUN_00465f48(void)",
     "external": false,
-    "calls": ["FUN_0046cb6f", "FUN_004654b8"]
+    "calls": ["FUN_004654b8", "FUN_0046cb6f"]
   },
   {
     "name": "FUN_00465fa9",
@@ -4533,49 +4533,49 @@
     "address": "00465fff",
     "signature": "int FUN_00465fff(uint param_1, char * param_2, char * param_3)",
     "external": false,
-    "calls": ["FUN_00465d93", "FUN_0046acf8", "FUN_00465d9c", "FUN_00466064", "FUN_0046ad57"]
+    "calls": ["FUN_0046ad57", "FUN_00465d93", "FUN_00466064", "FUN_00465d9c", "FUN_0046acf8"]
   },
   {
     "name": "FUN_00466064",
     "address": "00466064",
     "signature": "int FUN_00466064(uint param_1, char * param_2, char * param_3)",
     "external": false,
-    "calls": ["FUN_00465d93", "FUN_00465d20", "FUN_00465d9c", "FUN_0046645e", "ReadFile", "GetLastError"]
+    "calls": ["GetLastError", "FUN_0046645e", "FUN_00465d20", "FUN_00465d93", "ReadFile", "FUN_00465d9c"]
   },
   {
     "name": "FUN_0046623d",
     "address": "0046623d",
     "signature": "undefined FUN_0046623d(void)",
     "external": false,
-    "calls": ["GetStartupInfoA", "SetHandleCount", "GetStdHandle", "__amsg_exit", "_malloc", "GetFileType"]
+    "calls": ["SetHandleCount", "GetStartupInfoA", "GetStdHandle", "__amsg_exit", "_malloc", "GetFileType"]
   },
   {
     "name": "FUN_004663f9",
     "address": "004663f9",
     "signature": "DWORD FUN_004663f9(uint param_1, LONG param_2, DWORD param_3)",
     "external": false,
-    "calls": ["FUN_00465d93", "FUN_0046acf8", "FUN_00465d9c", "FUN_0046645e", "FUN_0046ad57"]
+    "calls": ["FUN_0046645e", "FUN_0046ad57", "FUN_00465d93", "FUN_00465d9c", "FUN_0046acf8"]
   },
   {
     "name": "FUN_0046645e",
     "address": "0046645e",
     "signature": "DWORD FUN_0046645e(uint param_1, LONG param_2, DWORD param_3)",
     "external": false,
-    "calls": ["FUN_00465d93", "FUN_00465d20", "SetFilePointer", "FUN_0046acb6", "GetLastError"]
+    "calls": ["GetLastError", "FUN_0046acb6", "FUN_00465d20", "FUN_00465d93", "SetFilePointer"]
   },
   {
     "name": "FUN_004664d1",
     "address": "004664d1",
     "signature": "int FUN_004664d1(LCID param_1, uint param_2, char * param_3, int param_4, LPWSTR param_5, int param_6, UINT param_7, int param_8)",
     "external": false,
-    "calls": ["MultiByteToWideChar", "FUN_0046cda0", "WideCharToMultiByte", "LCMapStringW", "LCMapStringA", "FUN_0046e5ec"]
+    "calls": ["FUN_0046cda0", "FUN_0046e5ec", "MultiByteToWideChar", "LCMapStringW", "WideCharToMultiByte", "LCMapStringA"]
   },
   {
     "name": "FUN_004666f5",
     "address": "004666f5",
     "signature": "undefined4 FUN_004666f5(undefined4 * param_1)",
     "external": false,
-    "calls": ["_malloc", "FUN_0046b08c"]
+    "calls": ["FUN_0046b08c", "_malloc"]
   },
   {
     "name": "FUN_00466782",
@@ -4589,7 +4589,7 @@
     "address": "004667ac",
     "signature": "int * FUN_004667ac(int param_1, int param_2)",
     "external": false,
-    "calls": ["FUN_004668ce", "FUN_00467e47", "_memset", "FUN_0046586b", "HeapAlloc", "FUN_00466fcf", "FUN_00467a72", "FUN_00466845"]
+    "calls": ["_memset", "FUN_00466845", "FUN_004668ce", "FUN_0046586b", "HeapAlloc", "FUN_00467a72", "FUN_00467e47", "FUN_00466fcf"]
   },
   {
     "name": "FUN_00466845",
@@ -4610,7 +4610,7 @@
     "address": "004668e9",
     "signature": "LONG FUN_004668e9(int param_1, _EXCEPTION_POINTERS * param_2)",
     "external": false,
-    "calls": ["UnhandledExceptionFilter", "FUN_004654b8", "FUN_00466a27"]
+    "calls": ["FUN_004654b8", "UnhandledExceptionFilter", "FUN_00466a27"]
   },
   {
     "name": "FUN_00466a27",
@@ -4631,14 +4631,14 @@
     "address": "00466a8e",
     "signature": "int FUN_00466a8e(void)",
     "external": false,
-    "calls": ["FUN_0046cda0", "_strncmp", "_strchr", "FUN_0046cdcf", "GetModuleFileNameA", "_strstr", "GetVersionExA", "GetEnvironmentVariableA", "FUN_00466a61"]
+    "calls": ["FUN_0046cda0", "GetVersionExA", "FUN_00466a61", "GetModuleFileNameA", "GetEnvironmentVariableA", "_strncmp", "_strstr", "_strchr", "FUN_0046cdcf"]
   },
   {
     "name": "FUN_00466bd6",
     "address": "00466bd6",
     "signature": "undefined4 FUN_00466bd6(int param_1)",
     "external": false,
-    "calls": ["HeapDestroy", "FUN_00466c33", "FUN_0046777a", "FUN_00466a8e", "HeapCreate"]
+    "calls": ["HeapCreate", "FUN_00466c33", "HeapDestroy", "FUN_00466a8e", "FUN_0046777a"]
   },
   {
     "name": "FUN_00466c33",
@@ -4659,21 +4659,21 @@
     "address": "00466ca6",
     "signature": "undefined FUN_00466ca6(uint * param_1, int param_2)",
     "external": false,
-    "calls": ["HeapFree", "VirtualFree", "FUN_0046a590"]
+    "calls": ["HeapFree", "FUN_0046a590", "VirtualFree"]
   },
   {
     "name": "FUN_00466fcf",
     "address": "00466fcf",
     "signature": "int * FUN_00466fcf(uint * param_1)",
     "external": false,
-    "calls": ["FUN_004672d8", "FUN_00467389"]
+    "calls": ["FUN_00467389", "FUN_004672d8"]
   },
   {
     "name": "FUN_004672d8",
     "address": "004672d8",
     "signature": "undefined4 * FUN_004672d8(void)",
     "external": false,
-    "calls": ["HeapFree", "VirtualAlloc", "HeapReAlloc", "HeapAlloc"]
+    "calls": ["HeapFree", "HeapAlloc", "HeapReAlloc", "VirtualAlloc"]
   },
   {
     "name": "FUN_00467389",
@@ -4694,7 +4694,7 @@
     "address": "0046777a",
     "signature": "undefined * * FUN_0046777a(void)",
     "external": false,
-    "calls": ["HeapFree", "VirtualAlloc", "_memset", "VirtualFree", "HeapAlloc"]
+    "calls": ["_memset", "HeapFree", "HeapAlloc", "VirtualFree", "VirtualAlloc"]
   },
   {
     "name": "FUN_004678be",
@@ -4708,7 +4708,7 @@
     "address": "00467914",
     "signature": "undefined FUN_00467914(int param_1)",
     "external": false,
-    "calls": ["VirtualFree", "FUN_004678be"]
+    "calls": ["FUN_004678be", "VirtualFree"]
   },
   {
     "name": "FUN_004679d6",
@@ -4729,7 +4729,7 @@
     "address": "00467a72",
     "signature": "int * FUN_00467a72(uint param_1)",
     "external": false,
-    "calls": ["VirtualAlloc", "_memset", "FUN_00467c7a", "FUN_0046777a"]
+    "calls": ["_memset", "FUN_00467c7a", "VirtualAlloc", "FUN_0046777a"]
   },
   {
     "name": "FUN_00467c7a",
@@ -4757,7 +4757,7 @@
     "address": "00467e62",
     "signature": "int FUN_00467e62(void * this, int * param_1, byte * param_2, undefined4 * param_3)",
     "external": false,
-    "calls": ["FUN_0046cfeb", "FUN_00463c74", "FUN_004688be", "FUN_0046a8c5", "_memset", "FUN_004688ef", "__allshl", "__allmul", "FUN_00462ffe", "FUN_004688d8", "FUN_00468887"]
+    "calls": ["FUN_00462ffe", "_memset", "FUN_00468887", "FUN_0046cfeb", "FUN_004688d8", "FUN_004688be", "FUN_00463c74", "FUN_0046a8c5", "FUN_004688ef", "__allmul", "__allshl"]
   },
   {
     "name": "FUN_00468887",
@@ -4785,7 +4785,7 @@
     "address": "004688ef",
     "signature": "uint FUN_004688ef(int * param_1, undefined4 * param_2)",
     "external": false,
-    "calls": ["FUN_004688be", "FUN_00462ffe"]
+    "calls": ["FUN_00462ffe", "FUN_004688be"]
   },
   {
     "name": "FUN_00468913",
@@ -4799,14 +4799,14 @@
     "address": "0046896b",
     "signature": "undefined FUN_0046896b(void)",
     "external": false,
-    "calls": ["FUN_004625c1", "FUN_0046d5c7", "__amsg_exit", "_malloc", "FUN_00465c30", "_strlen"]
+    "calls": ["FUN_00465c30", "_strlen", "FUN_004625c1", "__amsg_exit", "_malloc", "FUN_0046d5c7"]
   },
   {
     "name": "FUN_00468a24",
     "address": "00468a24",
     "signature": "undefined FUN_00468a24(void)",
     "external": false,
-    "calls": ["FUN_0046d5c7", "__amsg_exit", "FUN_00468abd", "_malloc", "GetModuleFileNameA"]
+    "calls": ["FUN_00468abd", "GetModuleFileNameA", "__amsg_exit", "_malloc", "FUN_0046d5c7"]
   },
   {
     "name": "FUN_00468abd",
@@ -4820,7 +4820,7 @@
     "address": "00468c71",
     "signature": "LPSTR FUN_00468c71(void)",
     "external": false,
-    "calls": ["FUN_004625c1", "FreeEnvironmentStringsA", "_malloc", "GetEnvironmentStrings", "FreeEnvironmentStringsW", "WideCharToMultiByte", "FUN_004658f0", "GetEnvironmentStringsW"]
+    "calls": ["GetEnvironmentStringsW", "FreeEnvironmentStringsW", "FUN_004625c1", "FUN_004658f0", "FreeEnvironmentStringsA", "_malloc", "WideCharToMultiByte", "GetEnvironmentStrings"]
   },
   {
     "name": "FUN_00468da3",
@@ -4834,7 +4834,7 @@
     "address": "00468ddc",
     "signature": "undefined FUN_00468ddc(DWORD param_1)",
     "external": false,
-    "calls": ["GetStdHandle", "GetModuleFileNameA", "WriteFile", "FUN_00465c30", "FUN_00465c40", "FUN_0046d5e3", "_strlen", "_strncpy"]
+    "calls": ["FUN_00465c30", "FUN_00465c40", "GetStdHandle", "_strlen", "_strncpy", "GetModuleFileNameA", "WriteFile", "FUN_0046d5e3"]
   },
   {
     "name": "FUN_00468f2f",
@@ -4862,7 +4862,7 @@
     "address": "00469073",
     "signature": "undefined FUN_00469073(uint * param_1, uint * param_2, uint param_3, uint param_4, undefined8 * param_5, undefined8 * param_6)",
     "external": false,
-    "calls": ["FUN_00469573", "RaiseException", "FUN_00469565"]
+    "calls": ["RaiseException", "FUN_00469573", "FUN_00469565"]
   },
   {
     "name": "FUN_00469326",
@@ -4918,14 +4918,14 @@
     "address": "00469696",
     "signature": "undefined FUN_00469696(PEXCEPTION_RECORD param_1, PVOID param_2, DWORD param_3, undefined4 param_4, int param_5, char param_6, int param_7, PVOID param_8)",
     "external": false,
-    "calls": ["FUN_0046355c", "FUN_00469d72", "FUN_00465fa9", "FUN_004699ee", "FUN_00469849", "FUN_00465f48", "FUN_0046d6d3", "FUN_004654b8", "FUN_004698f3"]
+    "calls": ["FUN_004654b8", "FUN_0046355c", "FUN_00465f48", "FUN_00469d72", "FUN_00465fa9", "FUN_0046d6d3", "FUN_004699ee", "FUN_00469849", "FUN_004698f3"]
   },
   {
     "name": "FUN_00469849",
     "address": "00469849",
     "signature": "undefined FUN_00469849(PEXCEPTION_RECORD param_1, PVOID param_2, DWORD param_3, undefined4 param_4, int param_5, int param_6, int param_7, PVOID param_8)",
     "external": false,
-    "calls": ["FUN_0046355c", "FUN_00463431", "FUN_004699ee", "FUN_004654b8"]
+    "calls": ["FUN_004654b8", "FUN_0046355c", "FUN_00463431", "FUN_004699ee"]
   },
   {
     "name": "FUN_004698f3",
@@ -4939,35 +4939,35 @@
     "address": "00469950",
     "signature": "undefined FUN_00469950(int param_1, undefined4 param_2, int param_3, int param_4)",
     "external": false,
-    "calls": ["FUN_00465fa9", "__CallSettingFrame@12"]
+    "calls": ["__CallSettingFrame@12", "FUN_00465fa9"]
   },
   {
     "name": "FUN_004699ee",
     "address": "004699ee",
     "signature": "undefined FUN_004699ee(PEXCEPTION_RECORD param_1, PVOID param_2, DWORD param_3, undefined4 param_4, int param_5, byte * param_6, byte * param_7, int * param_8, int param_9, PVOID param_10)",
     "external": false,
-    "calls": ["FUN_00469a69", "FUN_004632f1", "FUN_00463333", "FUN_00469950", "FUN_00469bae"]
+    "calls": ["FUN_00469a69", "FUN_004632f1", "FUN_00469bae", "FUN_00463333", "FUN_00469950"]
   },
   {
     "name": "FUN_00469a69",
     "address": "00469a69",
     "signature": "undefined4 FUN_00469a69(DWORD param_1, undefined4 param_2, DWORD param_3, undefined4 param_4, undefined4 param_5, int param_6, int param_7)",
     "external": false,
-    "calls": ["FUN_004633b8", "FUN_00469b36", "FUN_004654b8"]
+    "calls": ["FUN_004654b8", "FUN_004633b8", "FUN_00469b36"]
   },
   {
     "name": "FUN_00469b36",
     "address": "00469b36",
     "signature": "undefined FUN_00469b36(void)",
     "external": false,
-    "calls": ["FUN_00469d72", "FUN_004654b8", "__abnormal_termination"]
+    "calls": ["FUN_004654b8", "FUN_00469d72", "__abnormal_termination"]
   },
   {
     "name": "FUN_00469bae",
     "address": "00469bae",
     "signature": "undefined FUN_00469bae(int param_1, int param_2, byte * param_3, byte * param_4)",
     "external": false,
-    "calls": ["FUN_0046d6ef", "FUN_00469dd9", "FUN_0046d70b", "FUN_00465fa9", "FUN_00463325", "FUN_0046d6d3", "FUN_0046a590", "FUN_0046332c"]
+    "calls": ["FUN_00463325", "FUN_0046a590", "FUN_0046d6ef", "FUN_00465fa9", "FUN_0046d6d3", "FUN_00469dd9", "FUN_0046d70b", "FUN_0046332c"]
   },
   {
     "name": "FUN_00469d72",
@@ -4995,7 +4995,7 @@
     "address": "00469e4c",
     "signature": "uint FUN_00469e4c(void * this, uint param_1, uint param_2)",
     "external": false,
-    "calls": ["FUN_00469e97", "FUN_00469f29"]
+    "calls": ["FUN_00469f29", "FUN_00469e97"]
   },
   {
     "name": "FUN_00469e81",
@@ -5037,7 +5037,7 @@
     "address": "0046a051",
     "signature": "undefined4 FUN_0046a051(int param_1, int param_2)",
     "external": false,
-    "calls": ["FUN_00469ffb", "FUN_00469fb2"]
+    "calls": ["FUN_00469fb2", "FUN_00469ffb"]
   },
   {
     "name": "FUN_0046a0dd",
@@ -5072,7 +5072,7 @@
     "address": "0046a1ac",
     "signature": "undefined4 FUN_0046a1ac(ushort * param_1, uint * param_2, int * param_3)",
     "external": false,
-    "calls": ["FUN_0046a051", "FUN_0046a104", "FUN_0046a11f", "FUN_0046a0dd", "FUN_0046a0f8"]
+    "calls": ["FUN_0046a104", "FUN_0046a11f", "FUN_0046a0f8", "FUN_0046a051", "FUN_0046a0dd"]
   },
   {
     "name": "FUN_0046a318",
@@ -5093,7 +5093,7 @@
     "address": "0046a344",
     "signature": "undefined FUN_0046a344(void * this, uint * param_1, byte * param_2)",
     "external": false,
-    "calls": ["FUN_0046b265", "FUN_0046a318"]
+    "calls": ["FUN_0046a318", "FUN_0046b265"]
   },
   {
     "name": "FUN_0046a371",
@@ -5114,7 +5114,7 @@
     "address": "0046a415",
     "signature": "int * FUN_0046a415(undefined4 param_1, undefined4 param_2, int * param_3, uint * param_4)",
     "external": false,
-    "calls": ["FUN_0046da83", "FUN_0046a471", "FUN_00465c30"]
+    "calls": ["FUN_00465c30", "FUN_0046a471", "FUN_0046da83"]
   },
   {
     "name": "FUN_0046a471",
@@ -5149,28 +5149,28 @@
     "address": "0046a8ce",
     "signature": "BOOL FUN_0046a8ce(DWORD param_1, LPCSTR param_2, int param_3, LPWORD param_4, UINT param_5, LCID param_6, int param_7)",
     "external": false,
-    "calls": ["MultiByteToWideChar", "GetStringTypeW", "FUN_0046cda0", "_memset", "GetStringTypeA"]
+    "calls": ["_memset", "FUN_0046cda0", "MultiByteToWideChar", "GetStringTypeW", "GetStringTypeA"]
   },
   {
     "name": "FUN_0046aa98",
     "address": "0046aa98",
     "signature": "uint FUN_0046aa98(void)",
     "external": false,
-    "calls": ["FUN_0046acf8", "FUN_004658cc", "_malloc", "EnterCriticalSection", "FUN_0046586b", "LeaveCriticalSection", "InitializeCriticalSection"]
+    "calls": ["LeaveCriticalSection", "FUN_004658cc", "FUN_0046586b", "_malloc", "EnterCriticalSection", "InitializeCriticalSection", "FUN_0046acf8"]
   },
   {
     "name": "FUN_0046abbb",
     "address": "0046abbb",
     "signature": "undefined4 FUN_0046abbb(uint param_1, HANDLE param_2)",
     "external": false,
-    "calls": ["FUN_00465d93", "SetStdHandle", "FUN_00465d9c"]
+    "calls": ["SetStdHandle", "FUN_00465d93", "FUN_00465d9c"]
   },
   {
     "name": "FUN_0046ac37",
     "address": "0046ac37",
     "signature": "undefined4 FUN_0046ac37(uint param_1)",
     "external": false,
-    "calls": ["FUN_00465d93", "SetStdHandle", "FUN_00465d9c"]
+    "calls": ["SetStdHandle", "FUN_00465d93", "FUN_00465d9c"]
   },
   {
     "name": "FUN_0046acb6",
@@ -5184,7 +5184,7 @@
     "address": "0046acf8",
     "signature": "undefined FUN_0046acf8(uint param_1)",
     "external": false,
-    "calls": ["FUN_004658cc", "EnterCriticalSection", "FUN_0046586b", "InitializeCriticalSection"]
+    "calls": ["FUN_004658cc", "FUN_0046586b", "EnterCriticalSection", "InitializeCriticalSection"]
   },
   {
     "name": "FUN_0046ad57",
@@ -5205,7 +5205,7 @@
     "address": "0046adbd",
     "signature": "undefined * FUN_0046adbd(LPCSTR param_1, uint param_2, uint param_3, uint param_4)",
     "external": false,
-    "calls": ["FUN_00465d93", "FUN_0046dd16", "FUN_00465d20", "FUN_00465d9c", "FUN_0046abbb", "CreateFileA", "GetFileType", "GetLastError", "FUN_0046aa98", "FUN_0046ad57", "CloseHandle", "FUN_0046645e", "FUN_00466064", "FUN_00463e49"]
+    "calls": ["FUN_0046dd16", "FUN_0046ad57", "CreateFileA", "CloseHandle", "GetFileType", "FUN_00463e49", "GetLastError", "FUN_0046645e", "FUN_00465d20", "FUN_0046abbb", "FUN_00465d93", "FUN_00466064", "FUN_00465d9c", "FUN_0046aa98"]
   },
   {
     "name": "FUN_0046b08c",
@@ -5219,7 +5219,7 @@
     "address": "0046b0b5",
     "signature": "int FUN_0046b0b5(LPSTR param_1, WCHAR param_2)",
     "external": false,
-    "calls": ["InterlockedDecrement", "FUN_004658cc", "FUN_0046b10e", "FUN_0046586b", "InterlockedIncrement"]
+    "calls": ["FUN_0046b10e", "FUN_004658cc", "InterlockedIncrement", "FUN_0046586b", "InterlockedDecrement"]
   },
   {
     "name": "FUN_0046b10e",
@@ -5247,14 +5247,14 @@
     "address": "0046b265",
     "signature": "undefined4 FUN_0046b265(void * this, ushort * param_1, int * param_2, byte * param_3, int param_4, int param_5, int param_6, int param_7)",
     "external": false,
-    "calls": ["FUN_00463c74", "FUN_0046d9bc", "FUN_0046e05b"]
+    "calls": ["FUN_0046d9bc", "FUN_0046e05b", "FUN_00463c74"]
   },
   {
     "name": "FUN_0046c4cb",
     "address": "0046c4cb",
     "signature": "undefined FUN_0046c4cb(uint param_1, int * param_2, ushort * param_3)",
     "external": false,
-    "calls": ["FUN_0046953d", "FUN_00469582", "FUN_00469073", "FUN_00469326", "FUN_0046d66c"]
+    "calls": ["FUN_0046953d", "FUN_00469326", "FUN_0046d66c", "FUN_00469582", "FUN_00469073"]
   },
   {
     "name": "__frnd",
@@ -5268,21 +5268,21 @@
     "address": "0046c5ad",
     "signature": "undefined FUN_0046c5ad(void)",
     "external": false,
-    "calls": ["FUN_004658cc", "FUN_0046586b", "FUN_0046c5db"]
+    "calls": ["FUN_0046c5db", "FUN_004658cc", "FUN_0046586b"]
   },
   {
     "name": "FUN_0046c5db",
     "address": "0046c5db",
     "signature": "undefined FUN_0046c5db(void)",
     "external": false,
-    "calls": ["GetTimeZoneInformation", "FUN_004625c1", "FUN_004658cc", "_malloc", "FUN_0046e0d7", "_strcmp", "FUN_00465c30", "FUN_0046586b", "WideCharToMultiByte", "FUN_00460dd2", "_strlen", "_strncpy"]
+    "calls": ["FUN_00465c30", "_strcmp", "FUN_004658cc", "FUN_004625c1", "_strlen", "_strncpy", "FUN_0046586b", "FUN_00460dd2", "_malloc", "GetTimeZoneInformation", "WideCharToMultiByte", "FUN_0046e0d7"]
   },
   {
     "name": "FUN_0046c862",
     "address": "0046c862",
     "signature": "bool FUN_0046c862(int * param_1)",
     "external": false,
-    "calls": ["FUN_004658cc", "FUN_0046c883", "FUN_0046586b"]
+    "calls": ["FUN_004658cc", "FUN_0046586b", "FUN_0046c883"]
   },
   {
     "name": "FUN_0046c883",
@@ -5303,7 +5303,7 @@
     "address": "0046cb6f",
     "signature": "undefined FUN_0046cb6f(void)",
     "external": false,
-    "calls": ["FUN_00468ddc", "__exit", "FUN_0046d723"]
+    "calls": ["__exit", "FUN_00468ddc", "FUN_0046d723"]
   },
   {
     "name": "_strcmp",
@@ -5352,21 +5352,21 @@
     "address": "0046cde6",
     "signature": "void * FUN_0046cde6(void * this, byte * param_1, int * param_2, void * param_3, uint param_4)",
     "external": false,
-    "calls": ["FUN_00465d93", "FUN_00463c74", "FUN_00462104"]
+    "calls": ["FUN_00462104", "FUN_00465d93", "FUN_00463c74"]
   },
   {
     "name": "FUN_0046cfeb",
     "address": "0046cfeb",
     "signature": "uint FUN_0046cfeb(LPWSTR param_1, byte * param_2, uint param_3)",
     "external": false,
-    "calls": ["InterlockedDecrement", "FUN_0046d048", "FUN_004658cc", "FUN_0046586b", "InterlockedIncrement"]
+    "calls": ["FUN_0046d048", "FUN_004658cc", "InterlockedIncrement", "FUN_0046586b", "InterlockedDecrement"]
   },
   {
     "name": "FUN_0046d048",
     "address": "0046d048",
     "signature": "uint FUN_0046d048(LPWSTR param_1, byte * param_2, uint param_3)",
     "external": false,
-    "calls": ["FUN_00465d93", "MultiByteToWideChar"]
+    "calls": ["MultiByteToWideChar", "FUN_00465d93"]
   },
   {
     "name": "__allshl",
@@ -5401,7 +5401,7 @@
     "address": "0046d1ef",
     "signature": "undefined4 FUN_0046d1ef(int param_1)",
     "external": false,
-    "calls": ["FUN_0046d419", "FUN_004658cc", "FUN_0046d3e6", "FUN_0046d442", "FUN_0046d39c", "FUN_0046586b", "GetCPInfo"]
+    "calls": ["FUN_004658cc", "FUN_0046d3e6", "FUN_0046d419", "FUN_0046586b", "FUN_0046d442", "FUN_0046d39c", "GetCPInfo"]
   },
   {
     "name": "FUN_0046d39c",
@@ -5429,7 +5429,7 @@
     "address": "0046d442",
     "signature": "undefined FUN_0046d442(void)",
     "external": false,
-    "calls": ["FUN_0046a8ce", "GetCPInfo", "FUN_004664d1"]
+    "calls": ["FUN_0046a8ce", "FUN_004664d1", "GetCPInfo"]
   },
   {
     "name": "FUN_0046d5c7",
@@ -5457,7 +5457,7 @@
     "address": "0046d66f",
     "signature": "int FUN_0046d66f(int * param_1)",
     "external": false,
-    "calls": ["FUN_0046d70b", "FUN_00465f48"]
+    "calls": ["FUN_00465f48", "FUN_0046d70b"]
   },
   {
     "name": "FUN_0046d6d3",
@@ -5485,7 +5485,7 @@
     "address": "0046d723",
     "signature": "undefined4 FUN_0046d723(DWORD * param_1)",
     "external": false,
-    "calls": ["FUN_004658cc", "FUN_0046d8a5", "FUN_0046586b", "FUN_004654b8", "__exit"]
+    "calls": ["FUN_004654b8", "FUN_0046d8a5", "FUN_004658cc", "__exit", "FUN_0046586b"]
   },
   {
     "name": "FUN_0046d8a5",
@@ -5534,21 +5534,21 @@
     "address": "0046da83",
     "signature": "undefined4 FUN_0046da83(uint param_1, uint param_2, uint param_3, int param_4, byte param_5, short * param_6)",
     "external": false,
-    "calls": ["___add_12", "FUN_0046d98f", "FUN_0046e05b", "FUN_0046de3b", "FUN_0046d961", "FUN_00465c30"]
+    "calls": ["FUN_00465c30", "FUN_0046de3b", "FUN_0046e05b", "___add_12", "FUN_0046d961", "FUN_0046d98f"]
   },
   {
     "name": "FUN_0046dd16",
     "address": "0046dd16",
     "signature": "int FUN_0046dd16(undefined * param_1, int param_2)",
     "external": false,
-    "calls": ["FUN_00465d93", "SetEndOfFile", "FUN_0046cda0", "FUN_004656b7", "FUN_00465d9c", "FUN_0046645e", "_memset", "FUN_0046e261", "FUN_0046acb6", "GetLastError"]
+    "calls": ["FUN_0046645e", "_memset", "GetLastError", "FUN_0046e261", "FUN_0046acb6", "FUN_0046cda0", "FUN_004656b7", "SetEndOfFile", "FUN_00465d93", "FUN_00465d9c"]
   },
   {
     "name": "FUN_0046de3b",
     "address": "0046de3b",
     "signature": "undefined FUN_0046de3b(int * param_1, int * param_2)",
     "external": false,
-    "calls": ["FUN_0046d98f", "FUN_0046d961", "FUN_0046d8e2"]
+    "calls": ["FUN_0046d8e2", "FUN_0046d961", "FUN_0046d98f"]
   },
   {
     "name": "FUN_0046e05b",
@@ -5562,14 +5562,14 @@
     "address": "0046e0d7",
     "signature": "int FUN_0046e0d7(uchar * param_1)",
     "external": false,
-    "calls": ["__mbsnbicoll", "FUN_0046e301", "_strlen"]
+    "calls": ["_strlen", "__mbsnbicoll", "FUN_0046e301"]
   },
   {
     "name": "FUN_0046e160",
     "address": "0046e160",
     "signature": "undefined4 FUN_0046e160(byte * param_1, char * param_2, void * param_3)",
     "external": false,
-    "calls": ["FUN_004658cc", "FUN_0046586b", "FUN_00461f0a"]
+    "calls": ["FUN_00461f0a", "FUN_004658cc", "FUN_0046586b"]
   },
   {
     "name": "FUN_0046e261",
@@ -5597,7 +5597,7 @@
     "address": "0046e36f",
     "signature": "int FUN_0046e36f(LCID param_1, DWORD param_2, byte * param_3, int param_4, byte * param_5, int param_6, UINT param_7)",
     "external": false,
-    "calls": ["CompareStringW", "MultiByteToWideChar", "FUN_0046cda0", "GetCPInfo", "FUN_0046e5ec", "CompareStringA"]
+    "calls": ["FUN_0046cda0", "FUN_0046e5ec", "MultiByteToWideChar", "CompareStringW", "CompareStringA", "GetCPInfo"]
   },
   {
     "name": "FUN_0046e5ec",
@@ -5611,7 +5611,7 @@
     "address": "0046e617",
     "signature": "undefined4 FUN_0046e617(uint * param_1, int param_2)",
     "external": false,
-    "calls": ["FUN_0046e7f6", "FUN_0046e79e", "SetEnvironmentVariableA", "FUN_004625c1", "_malloc", "FUN_00465c30", "FUN_004626aa", "FUN_0046e301", "_strlen", "FUN_0046e85d"]
+    "calls": ["FUN_00465c30", "SetEnvironmentVariableA", "FUN_004625c1", "_strlen", "FUN_0046e85d", "FUN_004626aa", "_malloc", "FUN_0046e7f6", "FUN_0046e79e", "FUN_0046e301"]
   },
   {
     "name": "FUN_0046e79e",
@@ -5632,14 +5632,14 @@
     "address": "0046e85d",
     "signature": "byte * FUN_0046e85d(byte * param_1, uint param_2)",
     "external": false,
-    "calls": ["FUN_004658cc", "_strchr", "FUN_0046586b"]
+    "calls": ["FUN_004658cc", "FUN_0046586b", "_strchr"]
   },
   {
     "name": "FUN_0046e8f4",
     "address": "0046e8f4",
     "signature": "uint * FUN_0046e8f4(uint * param_1)",
     "external": false,
-    "calls": ["_malloc", "FUN_00465c30", "_strlen"]
+    "calls": ["FUN_00465c30", "_strlen", "_malloc"]
   },
   {
     "name": "ov_pcm_seek",
