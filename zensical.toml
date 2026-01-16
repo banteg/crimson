@@ -48,6 +48,7 @@ nav = [
   { "Weapon table" = "weapon-table.md" },
   { "Progress metrics" = "metrics.md" },
   { "Detangling notes" = "detangling.md" },
+  { "Entrypoint trace" = "entrypoint.md" },
   { "Refactor attempt" = "refactor.md" },
   { "Modern Linux build name mining" = "modern-linux.md" },
   { "Modern Android build name mining" = "modern-android.md" },
