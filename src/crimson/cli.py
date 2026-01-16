@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import argparse
+import io
 import re
 import sys
 from pathlib import Path
+
+from PIL import Image
 
 from . import jaz, paq
 
@@ -29,12 +32,17 @@ def _extract_one(paq_path: Path, assets_root: Path) -> int:
         rel = _safe_relpath(name)
         dest = out_root / rel
         dest.parent.mkdir(parents=True, exist_ok=True)
-        if dest.suffix.lower() == ".jaz":
+        suffix = dest.suffix.lower()
+        if suffix == ".jaz":
             jaz_image = jaz.decode_jaz_bytes(data)
             base = dest.with_suffix("")
             jaz_image.composite_image().save(base.with_suffix(".png"))
         else:
-            dest.write_bytes(data)
+            if suffix == ".tga":
+                img = Image.open(io.BytesIO(data))
+                img.save(dest.with_suffix(".png"))
+            else:
+                dest.write_bytes(data)
         count += 1
     return count
 
