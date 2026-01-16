@@ -22,7 +22,7 @@ struct Grim2DVtable {
     void (*shutdown)(void); // 0x18 (grim_shutdown)
     void (*apply_settings)(void); // 0x1c (grim_apply_settings)
     void (*set_render_state)(uint32_t state, uint32_t value); // 0x20 (FUN_10006580)
-    void *(*get_config_var)(void); // 0x24 (grim_get_config_var)
+    void (*get_config_var)(uint32_t *out, int id); // 0x24 (grim_get_config_var)
     char *(*get_error_text)(void); // 0x28 (grim_get_error_text)
     void (*clear_color)(float r, float g, float b, float a); // 0x2c (grim_clear_color)
     int (*set_render_target)(int target_index); // 0x30 (grim_set_render_target)

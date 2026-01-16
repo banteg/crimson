@@ -79,7 +79,7 @@ These offsets appear with keycodes or input-related values:
 | `0x18` | `shutdown` | `void shutdown(void)` | high | shutdown path before DLL release |
 | `0x1c` | `apply_settings` | `void apply_settings(void)` | low | called after config copy |
 | `0x20` | `set_render_state` | `void set_render_state(uint32_t state, uint32_t value)` | high | D3D-style render state usage |
-| `0x24` | `get_config_var` | `void * get_config_var(...)` | medium | returns pointer to config var (args vary) |
+| `0x24` | `get_config_var` | `void get_config_var(uint32_t *out, int id)` | high | fills 4 dwords for config entry (`id` 0..0x7f) |
 | `0x28` | `get_error_text` | `char * get_error_text(void)` | medium | error string for MessageBox |
 | `0x2c` | `clear_color` | `void clear_color(float r, float g, float b, float a)` | medium | clear color before render |
 | `0x30` | `set_render_target` | `int set_render_target(int target_index)` | low | `-1` resets to backbuffer |

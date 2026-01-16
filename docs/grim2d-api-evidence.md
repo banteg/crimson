@@ -86,11 +86,11 @@ plus the current grim.dll entry signature and address from
 ```
 
 
-## 0x24 — FUN_10006c30 @ 0x10006c30
-- Provisional name: `get_config_var` (medium)
-- Guess: `void * get_config_var(const void *key, ...)`
-- Notes: returns pointer to config value; callsites pass key buffers + IDs
-- Ghidra signature: `undefined FUN_10006c30()`
+## 0x24 — grim_get_config_var @ 0x10006c30
+- Provisional name: `get_config_var` (high)
+- Guess: `void get_config_var(uint32_t *out, int id)`
+- Notes: grim.dll writes 4 dwords from a config table for `id` in `0..0x7f`
+- Ghidra signature: `void grim_get_config_var(unsigned int *out, int id)`
 - Call sites: 17 (unique funcs: 4)
 - Sample calls: FUN_0041ec60:L13402; FUN_0041ec60:L13410; FUN_0041ec60:L13413; FUN_0041ec60:L13415; FUN_0041ec60:L13417; FUN_0041ec60:L13419; FUN_0042c450:L19456; FUN_0042c450:L19458
 - First callsite: FUN_0041ec60 (line 15539)
