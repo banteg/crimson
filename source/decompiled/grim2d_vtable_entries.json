@@ -436,7 +436,7 @@
     "offset_hex": "0xd8",
     "offset_dec": 216,
     "func_addr": "0x10007b90",
-    "func_name": "FUN_10007b90",
+    "func_name": "grim_draw_circle_filled",
     "section": ".text"
   },
   {
@@ -444,7 +444,7 @@
     "offset_hex": "0xdc",
     "offset_dec": 220,
     "func_addr": "0x10007d40",
-    "func_name": "FUN_10007d40",
+    "func_name": "grim_draw_circle_outline",
     "section": ".text"
   },
   {

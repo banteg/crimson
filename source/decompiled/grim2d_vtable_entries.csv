@@ -53,8 +53,8 @@ index,offset_hex,offset_dec,func_addr,func_name,section
 51,0xcc,204,0x100079b0,grim_draw_fullscreen_color,.text
 52,0xd0,208,0x100078e0,grim_draw_rect_filled,.text
 53,0xd4,212,0x10008f10,grim_draw_rect_outline,.text
-54,0xd8,216,0x10007b90,FUN_10007b90,.text
-55,0xdc,220,0x10007d40,FUN_10007d40,.text
+54,0xd8,216,0x10007b90,grim_draw_circle_filled,.text
+55,0xdc,220,0x10007d40,grim_draw_circle_outline,.text
 56,0xe0,224,0x100080b0,FUN_100080b0,.text
 57,0xe4,228,0x10008150,FUN_10008150,.text
 58,0xe8,232,0x10007ac0,grim_begin_batch,.text
