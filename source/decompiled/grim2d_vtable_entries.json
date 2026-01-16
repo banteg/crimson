@@ -308,7 +308,7 @@
     "offset_hex": "0x98",
     "offset_dec": 152,
     "func_addr": "0x10007580",
-    "func_name": "FUN_10007580",
+    "func_name": "grim_get_joystick_x",
     "section": ".text"
   },
   {
@@ -316,7 +316,7 @@
     "offset_hex": "0x9c",
     "offset_dec": 156,
     "func_addr": "0x10007590",
-    "func_name": "FUN_10007590",
+    "func_name": "grim_get_joystick_y",
     "section": ".text"
   },
   {
@@ -324,7 +324,7 @@
     "offset_hex": "0xa0",
     "offset_dec": 160,
     "func_addr": "0x100075a0",
-    "func_name": "FUN_100075a0",
+    "func_name": "grim_get_joystick_z",
     "section": ".text"
   },
   {
@@ -340,7 +340,7 @@
     "offset_hex": "0xa8",
     "offset_dec": 168,
     "func_addr": "0x100075c0",
-    "func_name": "FUN_100075c0",
+    "func_name": "grim_is_joystick_button_down",
     "section": ".text"
   },
   {
@@ -380,7 +380,7 @@
     "offset_hex": "0xbc",
     "offset_dec": 188,
     "func_addr": "0x10007700",
-    "func_name": "FUN_10007700",
+    "func_name": "grim_destroy_texture",
     "section": ".text"
   },
   {
