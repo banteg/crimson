@@ -87,17 +87,25 @@ plus the current grim.dll entry signature and address from
 
 
 ## 0x24 — FUN_10006c30 @ 0x10006c30
+- Provisional name: `get_config_var` (medium)
+- Guess: `void * get_config_var(const void *key, ...)`
+- Notes: returns pointer to config value; callsites pass key buffers + IDs
 - Ghidra signature: `undefined FUN_10006c30()`
 - Call sites: 17 (unique funcs: 4)
 - Sample calls: FUN_0041ec60:L13402; FUN_0041ec60:L13410; FUN_0041ec60:L13413; FUN_0041ec60:L13415; FUN_0041ec60:L13417; FUN_0041ec60:L13419; FUN_0042c450:L19456; FUN_0042c450:L19458
 - First callsite: FUN_0041ec60 (line 15539)
 
 ```c
+  acStack_4b0[0] = '|';
+  acStack_4b0[1] = -0x14;
   acStack_4b0[2] = 'A';
   acStack_4b0[3] = '\0';
   puVar2 = (undefined1 *)(**(code **)(*DAT_0048083c + 0x24))();
   DAT_0048050c = *puVar2;
-  puStack_4b4 = &stack0xfffffb68;
+  puVar3 = (undefined4 *)(**(code **)(*DAT_0048083c + 0x24))(&stack0xfffffb60);
+  DAT_00480504 = *puVar3;
+  puVar3 = (undefined4 *)(**(code **)(*DAT_0048083c + 0x24))(&uStack_4a8,0x2a);
+  DAT_00480508 = *puVar3;
 ```
 
 
@@ -412,6 +420,9 @@ LAB_00401add:
 
 
 ## 0xd0 — grim_draw_rect_filled @ 0x100078e0
+- Provisional name: `draw_rect_filled` (medium)
+- Guess: `void draw_rect_filled(const float *xy, float w, float h)`
+- Notes: used for UI panel backgrounds before setting color
 - Ghidra signature: `undefined grim_draw_rect_filled()`
 - Call sites: 24 (unique funcs: 14)
 - Sample calls: FUN_00401dd0:L740; FUN_00401dd0:L752; FUN_00402d50:L1448; FUN_004047c0:L3096; FUN_00405160:L3369; FUN_00408530:L5029; FUN_0040b740:L6476; FUN_0040b740:L6480
@@ -427,6 +438,9 @@ LAB_00401add:
 
 
 ## 0xd4 — grim_draw_rect_outline @ 0x10008f10
+- Provisional name: `draw_rect_outline` (medium)
+- Guess: `void draw_rect_outline(const float *xy, float w, float h)`
+- Notes: used for UI framing with explicit width/height
 - Ghidra signature: `undefined grim_draw_rect_outline()`
 - Call sites: 12 (unique funcs: 11)
 - Sample calls: FUN_00402d50:L1454; FUN_004047c0:L3107; FUN_00405160:L3372; FUN_00408530:L5031; FUN_00410d20:L7694; FUN_0043e5e0:L27177; FUN_0043ecf0:L27413; FUN_0043ecf0:L27448
@@ -589,20 +603,22 @@ LAB_00401add:
 
 
 ## 0x110 — FUN_10008040 @ 0x10008040
-- Provisional name: `set_pivot` (low)
+- Provisional name: `set_pivot` (medium)
 - Guess: `void set_pivot(const float *xy)`
-- Notes: pointer to float pair
+- Notes: called after atlas selection and before rotation/draw calls; pointer passed from stack/global
 - Ghidra signature: `undefined FUN_10008040(void)`
 - Call sites: 20 (unique funcs: 10)
 - Sample calls: FUN_0040ffc0:L7098; FUN_0040ffc0:L7171; FUN_00410d20:L7782; FUN_00410d20:L7851; FUN_00418b60:L9717; FUN_00418b60:L9772; FUN_00418b60:L9832; FUN_00418b60:L9894
 - First callsite: FUN_0040ffc0 (line 7485)
 
 ```c
-      DAT_00496604 = 0x3f800000;
-      local_14 = local_14 + 84.0;
-      (**(code **)(*DAT_0048083c + 0x110))(&DAT_004965f8);
-      (**(code **)(*DAT_0048083c + 0x148))
-                (DAT_0048083c,unaff_EBX + 42.0,local_18,s_State_your_name__trooper__00473190);
+            (**(code **)(*DAT_0048083c + 0x104))(8,iVar2);
+          }
+          (**(code **)(*DAT_0048083c + 0x110))(&fStack_58);
+          (**(code **)(*DAT_0048083c + 0xfc))(pfVar5[7] - 1.5707964);
+          (**(code **)(*DAT_0048083c + 0x11c))
+                    ((_DAT_00484fc8 + pfVar5[1]) - fVar10,(_DAT_00484fcc + pfVar5[2]) - fVar10,
+                     pfVar5[9] * 1.07,pfVar5[9] * 1.07);
 ```
 
 

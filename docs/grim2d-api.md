@@ -79,7 +79,7 @@ These offsets appear with keycodes or input-related values:
 | `0x18` | `shutdown` | `void shutdown(void)` | high | shutdown path before DLL release |
 | `0x1c` | `apply_settings` | `void apply_settings(void)` | low | called after config copy |
 | `0x20` | `set_render_state` | `void set_render_state(uint32_t state, uint32_t value)` | high | D3D-style render state usage |
-| `0x24` | `get_config_var` | `void * get_config_var(...)` | low | returns pointer to config var (args vary) |
+| `0x24` | `get_config_var` | `void * get_config_var(...)` | medium | returns pointer to config var (args vary) |
 | `0x28` | `get_error_text` | `char * get_error_text(void)` | medium | error string for MessageBox |
 | `0x2c` | `clear_color` | `void clear_color(float r, float g, float b, float a)` | medium | clear color before render |
 | `0x30` | `set_render_target` | `int set_render_target(int target_index)` | low | `-1` resets to backbuffer |
@@ -122,8 +122,8 @@ These offsets appear with keycodes or input-related values:
 | `0xc4` | `bind_texture` | `void bind_texture(int handle, int stage)` | medium | often `(handle, 0)` |
 | `0xc8` | `draw_fullscreen_quad` | `void draw_fullscreen_quad(void)` | low | full-screen quad with current texture |
 | `0xcc` | `draw_fullscreen_color` | `void draw_fullscreen_color(float r, float g, float b, float a)` | medium | fade/overlay quad (often black + alpha) |
-| `0xd0` | `draw_rect_filled` | `void draw_rect_filled(float *xy, float w, float h)` | low | UI panel fill / background quad |
-| `0xd4` | `draw_rect_outline` | `void draw_rect_outline(float *xy, float w, float h)` | low | UI panel outline/frame |
+| `0xd0` | `draw_rect_filled` | `void draw_rect_filled(float *xy, float w, float h)` | medium | UI panel fill / background quad |
+| `0xd4` | `draw_rect_outline` | `void draw_rect_outline(float *xy, float w, float h)` | medium | UI panel outline/frame |
 | `0xd8` | `draw_circle_filled` | `void draw_circle_filled(float x, float y, float radius)` | low | triangle fan circle fill |
 | `0xdc` | `draw_circle_outline` | `void draw_circle_outline(float x, float y, float radius)` | low | triangle strip ring/outline |
 | `0xe0` | `draw_line` | `void draw_line(float *p0, float *p1, float thickness)` | low | computes quad from endpoints |
@@ -138,7 +138,7 @@ These offsets appear with keycodes or input-related values:
 | `0x104` | `set_atlas_frame` | `void set_atlas_frame(int atlas, int frame)` | high | atlas index + frame |
 | `0x108` | `set_sub_rect` | `void set_sub_rect(int x, int y, int w, int h)` | medium | pixel rect/clip |
 | `0x10c` | `set_uv_point` | `void set_uv_point(int index, float u, float v)` | medium | sets a single UV pair |
-| `0x110` | `set_pivot` | `void set_pivot(const float *xy)` | low | pointer to float pair |
+| `0x110` | `set_pivot` | `void set_pivot(const float *xy)` | medium | set pivot/anchor before rotation + draw |
 | `0x114` | `set_color` | `void set_color(float r, float g, float b, float a)` | high | RGBA floats |
 | `0x118` | `set_color_slot` | `void set_color_slot(int index, float r, float g, float b, float a)` | low | updates a color slot/palette |
 | `0x11c` | `draw_quad` | `void draw_quad(float x, float y, float w, float h)` | high | core draw call |
