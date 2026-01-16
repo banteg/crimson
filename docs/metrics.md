@@ -10,6 +10,9 @@ numbers after each Ghidra regen or when a format/system is confirmed.
 Counts come from `source/decompiled/*_summary.txt` and
 `source/decompiled/ghidra_analysis.log`. “Named/inferred” counts functions
 whose names are not the default Ghidra stubs (`FUN_*`, `thunk_FUN_*`, `LAB_*`).
+“Typed signature” means the function signature does not start with
+`undefined`/`undefinedN`. “GDT hits” count signature changes vs the previous
+regen (from git history).
 
 ### `crimsonland.exe`
 
@@ -18,6 +21,9 @@ whose names are not the default Ghidra stubs (`FUN_*`, `thunk_FUN_*`, `LAB_*`).
 - User-defined: 793
 - Decompiled: 790 (99.6% coverage)
 - Named/inferred: 50 (6.1%)
+- Typed signatures: 227 (27.7%)
+- External typed: 0 / 0
+- GDT hits (since previous regen): 8
 - Last regen: 2026-01-16
 
 ### `grim.dll`
@@ -27,6 +33,9 @@ whose names are not the default Ghidra stubs (`FUN_*`, `thunk_FUN_*`, `LAB_*`).
 - User-defined: 843
 - Decompiled: 843 (100% coverage)
 - Named/inferred: 106 (12.0%)
+- Typed signatures: 148 (16.8%)
+- External typed: 0 / 0
+- GDT hits (since previous regen): 1
 - Last regen: 2026-01-16
 
 ### Total
@@ -36,6 +45,9 @@ whose names are not the default Ghidra stubs (`FUN_*`, `thunk_FUN_*`, `LAB_*`).
 - User-defined: 1636
 - Decompiled: 1633 (99.8% coverage)
 - Named/inferred: 156 (9.2%)
+- Typed signatures: 375 (22.0%)
+- External typed: 0 / 0
+- GDT hits (since previous regen): 9
 - Last regen: 2026-01-16
 
 ## Formats and systems
