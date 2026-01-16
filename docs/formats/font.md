@@ -48,3 +48,15 @@ A small bias of 1/512 is applied to the U/V values in code to reduce bleeding.
 - Empty atlas cells observed at indices 32, 160, 253-255 (space + unused).
 - `default_font_courier.tga` in `crimson.paq` is likely the fixed-width font
   used by vtable offset `0x13c`, but that mapping still needs confirmation.
+
+## Sample render
+
+```
+uv run paq font --assets-dir assets --out output/small_font_sample.png
+```
+
+Custom text:
+
+```
+uv run paq font --text "Hello, world!" --scale 2.0
+```

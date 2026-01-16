@@ -60,6 +60,27 @@ def cmd_extract(game_dir: Path, assets_dir: Path) -> int:
     return total
 
 
+def cmd_font(
+    assets_dir: Path,
+    out_path: Path,
+    text: str | None,
+    text_file: Path | None,
+    scale: float,
+) -> int:
+    if text and text_file:
+        raise SystemExit("use either --text or --text-file, not both")
+    if text_file is not None:
+        text = text_file.read_text(encoding="utf-8", errors="replace")
+    from . import font
+
+    if text is None:
+        text = font.DEFAULT_SAMPLE
+    font_data = font.load_small_font_from_assets(assets_dir)
+    font.render_sample(font_data, out_path, text=text, scale=scale)
+    print(f"wrote {out_path}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(prog="paq")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -68,10 +89,30 @@ def main(argv: list[str] | None = None) -> None:
     extract_p.add_argument("game_dir", type=Path)
     extract_p.add_argument("assets_dir", type=Path)
 
+    font_p = sub.add_parser("font", help="render sample text with the small font")
+    font_p.add_argument(
+        "--assets-dir",
+        type=Path,
+        default=Path("assets"),
+        help="assets root (default: ./assets)",
+    )
+    font_p.add_argument(
+        "--out",
+        type=Path,
+        default=Path("output/small_font_sample.png"),
+        help="output image path",
+    )
+    font_p.add_argument("--text", type=str, help="text to render")
+    font_p.add_argument("--text-file", type=Path, help="path to a text file")
+    font_p.add_argument("--scale", type=float, default=2.0, help="scale factor")
+
     args = parser.parse_args(argv)
     if args.cmd == "extract":
         total = cmd_extract(args.game_dir, args.assets_dir)
         print(f"extracted {total} files")
+        return
+    if args.cmd == "font":
+        cmd_font(args.assets_dir, args.out, args.text, args.text_file, args.scale)
         return
 
     raise SystemExit(f"unknown command: {args.cmd}")

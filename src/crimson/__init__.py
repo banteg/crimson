@@ -1,3 +1,3 @@
 from __future__ import annotations
 
-__all__ = ["atlas", "jaz", "paq", "weapons"]
+__all__ = ["atlas", "font", "jaz", "paq", "weapons"]
