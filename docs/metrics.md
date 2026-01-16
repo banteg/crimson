@@ -20,10 +20,10 @@ regen (from git history).
 - Thunks: 26
 - User-defined: 793
 - Decompiled: 792 (99.7% coverage)
-- Named/inferred: 93 (11.4%)
+- Named/inferred: 94 (11.5%)
 - Typed signatures: 230 (28.1%)
 - External typed: 0 / 0
-- GDT hits (since previous regen): 8
+- GDT hits (since previous regen): 1
 - Last regen: 2026-01-16
 
 ### `grim.dll`
@@ -44,10 +44,10 @@ regen (from git history).
 - Thunks: 66
 - User-defined: 1712
 - Decompiled: 1711 (99.9% coverage)
-- Named/inferred: 294 (16.5%)
+- Named/inferred: 295 (16.6%)
 - Typed signatures: 462 (26.0%)
 - External typed: 0 / 0
-- GDT hits (since previous regen): 8
+- GDT hits (since previous regen): 1
 - Last regen: 2026-01-16
 
 ## Formats and systems
