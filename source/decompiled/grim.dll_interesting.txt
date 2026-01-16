@@ -1,0 +1,25 @@
+Interesting Functions and Patterns
+===================================
+
+[DES related]
+  `vector_deleting_destructor' @ 1000b2fd
+  FID_conflict:`vector_deleting_destructor' @ 1000b348
+
+[MALLOC related]
+  malloc @ 1000aa98
+
+[FREE related]
+  free @ 1000aa8c
+
+[ALLOC related]
+  malloc @ 1000aa98
+  calloc @ 1004b7c6
+
+[SPRINTF related]
+  sprintf @ 1000a8d0
+
+[PRINT related]
+  sprintf @ 1000a8d0
+
+[POTENTIALLY DANGEROUS FUNCTIONS]
+  sprintf @ EXTERNAL:0000004c

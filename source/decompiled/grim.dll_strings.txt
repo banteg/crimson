@@ -1,0 +1,599 @@
+1004ca74: d3d8d.dll
+1004ca80: DebugSetMute
+1004ca90: d3d8.dll
+1004ca9c: read error
+1004cad8: 1.0.5
+1004ce00: Software\Microsoft\Direct3D
+1004ce1c: DisableMMX
+1004ce28: GenuineIntel
+1004ce38: DisableD3DXPSGP
+1004d02c: Application transferred too many scanlines
+1004d058: Invalid SOS parameters for sequential JPEG
+1004d084: Corrupt JPEG data: found marker 0x%02x instead of RST%d
+1004d0bc: Premature end of JPEG file
+1004d0d8: Warning: unknown JFIF revision number %d.%02d
+1004d108: Corrupt JPEG data: bad Huffman code
+1004d12c: Corrupt JPEG data: premature end of data segment
+1004d160: Corrupt JPEG data: %u extraneous bytes before marker 0x%02x
+1004d1a0: Inconsistent progression sequence for component %d coefficient %d
+1004d1e4: Unknown Adobe color transform code %d
+1004d20c: Obtained XMS handle %u
+1004d224: Freed XMS handle %u
+1004d238: Unrecognized component IDs %d %d %d, assuming YCbCr
+1004d26c: Opened temporary file %s
+1004d288: Closed temporary file %s
+1004d2a4:   Ss=%d, Se=%d, Ah=%d, Al=%d
+1004d2c4:     Component %d: dc=%d ac=%d
+1004d2e4: Start Of Scan: %d components
+1004d304: Start of Image
+1004d314:     Component %d: %dhx%dv q=%d
+1004d334: Start Of Frame 0x%02x: width=%u, height=%u, components=%d
+1004d370: Smoothing not supported with nonstandard sampling ratios
+1004d3ac: RST%d
+1004d3b4: At marker 0x%02x, recovery action %d
+1004d3dc: Selected %d colors for quantization
+1004d400: Quantizing to %d colors
+1004d418: Quantizing to %d = %d*%d*%d colors
+1004d43c:         %4u %4u %4u %4u %4u %4u %4u %4u
+1004d464: Unexpected marker 0x%02x
+1004d480: Skipping marker 0x%02x, length %u
+1004d4a4:     with %d x %d thumbnail image
+1004d4c8: Unknown JFIF minor revision number %d.%02d
+1004d4f4: Warning: thumbnail image size does not match data length %u
+1004d530: JFIF APP0 marker, density %dx%d  %d
+1004d554:         %3d %3d %3d %3d %3d %3d %3d %3d
+1004d57c: End Of Image
+1004d58c: Obtained EMS handle %u
+1004d5a4: Freed EMS handle %u
+1004d5b8: Define Restart Interval %u
+1004d5d4: Define Quantization Table %d  precision %d
+1004d600: Define Huffman Table 0x%02x
+1004d61c: Define Arithmetic Table 0x%02x: 0x%02x
+1004d644: Unknown APP14 marker (not Adobe), length %u
+1004d670: Unknown APP0 marker (not JFIF), length %u
+1004d6a0: Adobe APP14 marker: version %d, flags 0x%04x 0x%04x, transform %d
+1004d6e4: Caution: quantization tables are too coarse for baseline JPEG
+1004d724: 6a  7-Feb-96
+1004d734: Copyright (C) 1996, Thomas G. Lane
+1004d758: Write to XMS failed
+1004d76c: Read from XMS failed
+1004d784: Image too wide for this implementation
+1004d7ac: Virtual array controller messed up
+1004d7d0: Unsupported marker type 0x%02x
+1004d7f0: Application transferred too few scanlines
+1004d81c: Write failed on temporary file --- out of disk space?
+1004d854: Seek failed on temporary file
+1004d874: Read failed on temporary file
+1004d894: Failed to create temporary file %s
+1004d8b8: Invalid JPEG file structure: SOS before SOF
+1004d8e4: Invalid JPEG file structure: two SOI markers
+1004d914: Unsupported JPEG process: SOF type 0x%02x
+1004d940: Invalid JPEG file structure: missing SOS marker
+1004d970: Invalid JPEG file structure: two SOF markers
+1004d9a0: Cannot quantize to more than %d colors
+1004d9c8: Cannot quantize to fewer than %d colors
+1004d9f0: Cannot quantize more than %d color components
+1004da20: Insufficient memory (case %d)
+1004da40: Not a JPEG file: starts with 0x%02x 0x%02x
+1004da6c: Quantization table 0x%02x was not defined
+1004da98: JPEG datastream contains no image
+1004dabc: Huffman table 0x%02x was not defined
+1004dae4: Backing store not supported
+1004db00: Requested feature was omitted at compile time
+1004db30: Not implemented yet
+1004db44: Invalid color quantization mode change
+1004db6c: Scan script does not transmit all data
+1004db94: Cannot transcode due to multiple use of quantization table %d
+1004dbd4: Premature end of input file
+1004dbf0: Empty input file
+1004dc04: Maximum supported image dimension is %u pixels
+1004dc34: Missing Huffman code table entry
+1004dc58: Huffman code size table overflow
+1004dc7c: Fractional sampling not implemented yet
+1004dca4: Output file write error --- out of disk space?
+1004dcd4: Input file read error
+1004dcec: Didn't expect more than one scan
+1004dd10: Write to EMS failed
+1004dd24: Read from EMS failed
+1004dd3c: Empty JPEG image (DNL not supported)
+1004dd64: Bogus DQT index %d
+1004dd78: Bogus DHT index %d
+1004dd8c: Bogus DHT counts
+1004dda0: Bogus DAC value 0x%x
+1004ddb8: Bogus DAC index %d
+1004ddcc: Unsupported color conversion request
+1004ddf4: Too many color components: %d, max %d
+1004de1c: CCIR601 sampling not implemented yet
+1004de44: Suspension not allowed here
+1004de60: Buffer passed to JPEG library is too small
+1004de8c: Bogus virtual array access
+1004dea8: JPEG parameter struct mismatch: library thinks size is %u, caller expects %u
+1004def8: Improper call to JPEG library in state %d
+1004df24: Invalid scan script at entry %d
+1004df44: Bogus sampling factors
+1004df5c: Invalid progressive parameters at scan script entry %d
+1004df94: Invalid progressive parameters Ss=%d Se=%d Ah=%d Al=%d
+1004dfcc: Unsupported JPEG data precision %d
+1004dff0: Invalid memory pool code %d
+1004e00c: Sampling factors too large for interleaved scan
+1004e03c: Wrong JPEG library version: library is %d, caller expects %d
+1004e07c: Bogus marker length
+1004e090: Bogus JPEG colorspace
+1004e0a8: Bogus input colorspace
+1004e0c0: IDCT output block size %d not supported
+1004e0e8: Invalid component ID %d in SOS
+1004e108: Bogus buffer control mode
+1004e124: MAX_ALLOC_CHUNK is wrong, please fix
+1004e14c: ALIGN_TYPE is wrong, please fix
+1004e16c: Sorry, there are legal restrictions on arithmetic coding
+1004e1a8: Bogus message code %d
+1004e1c0: 0123456789ABCDEF1.0.5
+1004e24c: zlib version error
+1004e260: zlib memory error
+1004e274: Unknown zlib error
+1004e288: 1.1.3
+1004e290: Incompatible libpng version in application and library
+1004e2c8: Missing PLTE before IDAT
+1004e2e4: Missing IHDR before IDAT
+1004e300: PNG file corrupted by ASCII conversion
+1004e328: Not a PNG file
+1004e338: Extra compressed data
+1004e350: Decompression error
+1004e364: Not enough image data
+1004e37c: Invalid attempt to read row data
+1004e3a0: Width too large for libpng to process image data.
+1004e408: png_do_dither returned rowbytes=0
+1004e42c: NULL row buffer
+1004e43c: Width too large to process image data; rowbytes will overflow.
+1004e487: ?Call to NULL read function
+1004e4a4: same structure.  Resetting write_data_fn to NULL.
+1004e4d8: It's an error to set both read_data_fn and write_data_fn in the 
+1004e7a0: AuthenticAMD
+1004e7b0: UnknownVendr
+1004ea10: need dictionary
+1004ea20: incorrect data check
+1004ea38: incorrect header check
+1004ea50: invalid window size
+1004ea64: unknown compression method
+1004ea80: Out of Memory
+1004eb08: invalid chunk type
+1004eb1c: Ignoring bad adaptive filter type
+1004eb40: CRC error
+1004eb4c: Unknown filter method in IHDR
+1004eb6c: Unknown compression method in IHDR
+1004eb90: Unknown interlace method in IHDR
+1004ebb4: Invalid color type/bit depth combination in IHDR
+1004ebe8: Invalid color type in IHDR
+1004ec04: Invalid bit depth in IHDR
+1004ec20: Invalid image size in IHDR
+1004ec3c: Invalid IHDR chunk
+1004ec50: Out of place IHDR
+1004ec64: Truncating incorrect tRNS chunk length
+1004ec8c: Invalid palette chunk
+1004eca4: Duplicate PLTE chunk
+1004ecbc: Invalid PLTE after IDAT
+1004ecd4: Missing IHDR before PLTE
+1004ecf0: Incorrect IEND chunk length
+1004ed0c: No image in file
+1004ed20: Ignoring incorrect gAMA value when sRGB is also present
+1004ed67: @Duplicate gAMA chunk
+1004ed80: Out of place gAMA chunk
+1004ed98: Invalid gAMA after IDAT
+1004edb0: Incorrect gAMA chunk length
+1004edcc: Missing IHDR before gAMA
+1004edeb: GUnknown sRGB intent
+1004ee00: Duplicate sRGB chunk
+1004ee18: Out of place sRGB chunk
+1004ee30: Invalid sRGB after IDAT
+1004ee48: Incorrect sRGB chunk length
+1004ee64: Missing IHDR before sRGB
+1004ee80: tRNS chunk not allowed with alpha channel
+1004eeac: Incorrect tRNS chunk length
+1004eec8: Duplicate tRNS chunk
+1004eee0: Invalid tRNS after IDAT
+1004eef8: Zero length tRNS chunk
+1004ef10: Missing PLTE before tRNS
+1004ef2c: Missing IHDR before tRNS
+1004ef48: unknown critical chunk
+1004ef60: Extra compression data
+1004ef78: Decompression Error
+1004f72c: invalid bit length repeat
+1004f748: too many length or distance symbols
+1004f76c: invalid stored block lengths
+1004f78c: invalid block type
+1004f7a0: incompatible version
+1004f7b8: buffer error
+1004f7c8: insufficient memory
+1004f7dc: data error
+1004f7e8: stream error
+1004f7f8: file error
+1004f804: stream end
+1004f82f: ?invalid distance code
+1004f848: invalid literal/length code
+1004fa58: incomplete dynamic bit lengths tree
+1004fa7c: oversubscribed dynamic bit lengths tree
+1004faa4: incomplete literal/length tree
+1004fac4: oversubscribed literal/length tree
+1004fae8: empty distance tree with lengths
+1004fb0c: incomplete distance tree
+1004fb28: oversubscribed distance tree
+10050970:  deflate 1.1.3 Copyright 1995-1998 Jean-loup Gailly 
+100514a0:  inflate 1.1.3 Copyright 1995-1998 Mark Adler 
+10051ebe: GetProcAddress
+10051ed0: LoadLibraryA
+10051ee0: GetLocalTime
+10051ef0: WinExec
+10051efa: GetModuleHandleA
+10051f0e: Sleep
+10051f16: SizeofResource
+10051f28: LockResource
+10051f38: LoadResource
+10051f48: FindResourceA
+10051f56: KERNEL32.dll
+10051f66: MessageBoxA
+10051f74: EndDialog
+10051f80: SendMessageA
+10051f90: GetDlgItem
+10051f9e: GetWindowTextA
+10051fb0: SetWindowTextA
+10051fc2: DialogBoxParamA
+10051fd4: ShowWindow
+10051fe2: SetFocus
+10051fee: UpdateWindow
+10051ffe: CreateWindowExA
+10052010: AdjustWindowRectEx
+10052026: GetSystemMetrics
+1005203a: GetDesktopWindow
+1005204e: RegisterClassExA
+10052062: LoadCursorA
+10052070: UnregisterClassA
+10052084: DestroyWindow
+10052094: PostQuitMessage
+100520a6: GetClientRect
+100520b6: EndPaint
+100520c2: BeginPaint
+100520d0: DefWindowProcA
+100520e2: ShowCursor
+100520f0: DispatchMessageA
+10052104: TranslateMessage
+10052118: SetForegroundWindow
+1005212e: PeekMessageA
+1005213e: LoadIconA
+1005214a: GetForegroundWindow
+1005215e: USER32.dll
+1005216c: GetStockObject
+1005217e: DeleteObject
+1005218c: GDI32.dll
+10052198: vsprintf
+100521a4: fclose
+100521ae: fwrite
+100521b8: fopen
+100521c0: fread
+100521c8: ftell
+100521d0: fseek
+100521d8: sprintf
+100521e2: atoi
+100521ea: strchr
+100521f4: strstr
+100521fe: _getcwd
+10052208: ??3@YAXPAX@Z
+10052218: ??2@YAPAXI@Z
+10052228: __CxxFrameHandler
+1005223c: _setjmp3
+10052248: __CxxLongjmpUnwind
+1005225e: longjmp
+10052268: _ftol
+1005226e: MSVCRT.dll
+1005227c: __dllonexit
+1005228a: _onexit
+10052294: free
+1005229c: _initterm
+100522a8: malloc
+100522b2: _adjust_fdiv
+100522c2: Direct3DCreate8
+100522d2: d3d8.dll
+100522de: timeGetTime
+100522ec: timeEndPeriod
+100522fc: timeBeginPeriod
+1005230c: WINMM.dll
+10052318: DirectInput8Create
+1005232c: DINPUT8.dll
+1005233a: HlinkNavigateString
+1005234e: urlmon.dll
+1005235c: WriteFile
+10052368: GetLastError
+10052378: GetFileSize
+10052386: MapViewOfFile
+10052396: CreateFileMappingA
+100523ac: CreateFileA
+100523ba: CreateFileW
+100523c8: WideCharToMultiByte
+100523de: GetVersionExA
+100523ee: CloseHandle
+100523fc: UnmapViewOfFile
+1005240e: IsProcessorFeaturePresent
+1005242a: GetActiveWindow
+1005243c: RegCloseKey
+1005244a: RegQueryValueExA
+1005245e: RegOpenKeyA
+1005246a: ADVAPI32.dll
+1005247a: _strdup
+10052484: _CIacos
+1005248e: _finite
+10052498: isdigit
+100524a2: isspace
+100524ac: _CIpow
+100524b6: floor
+100524be: exit
+100524c6: calloc
+100524d0: sscanf
+100524da: getenv
+100524e4: _except_handler3
+100524f8: ?terminate@@YAXXZ
+10052542: grim.dll
+1005254b: GRIM__GetInterface
+10053074: Parental lock is now disabled. Full gore is shown.
+100530a8: Parental lock is now enabled. No blood is shown and bodies fade away.
+100530f4: System: No Frame Function defined.
+10053118: None (static texture, no decals stored)
+10053140: Half (faster, 4x less memory used)
+10053164: Full (default)
+10053174: Double (slowest, 4x more mem used)
+10053198: DXT5 compressed
+100531a8: DXT3 compressed
+100531b8: 16-bit A4R4G4B4
+100531c8: 16-bit A8R3G3B2
+100531d8: 32-bit A8R8G8B8 (highest detail)
+100531fc: Autodetect (select the best available)
+10053225: 0tons
+1005322c: default
+10053234: crimson.cfg
+10053248: No supported display adapters were found on your system.
+You might not have Direct3D 8.1 compatible display adapter installed.
+
+Would you still like to try and run Crimsonland?
+100532fc: Crimsonland
+1005330c: %s (default)
+1005331c: Password is incorrect.
+
+10053334: Please give a password.
+
+10053350: About password
+10053360: Given passwords don't match.
+
+10053380: About passwords
+10053390: 1024x768x32
+1005339c: 960x600x32 (wide)
+100533b0: 800x600x32
+100533bc: 640x480x32
+100533c8: 1024x768x16
+100533d4: 960x600x16 (wide)
+100533e8: 800x600x16
+100533f4: 640x480x16
+10053400: 1024x768 (windowed)
+10053414: 960x600 (wide window)
+1005342c: 800x600 (windowed)
+10053440: 640x480 (windowed)
+10053454: No supported display adapters detected
+1005347c: w: %d h %d bpp %d
+
+10053494: window
+1005349c: Failed to open the Crimsonland Manual html file.
+100534d0: explorer.exe manual.html
+100534ec: Failed to open browser at http://www.crimsonland.com/
+10053524: http://www.crimsonland.com
+1005355c: Unable to load configuration file.
+You can't set parental lock.
+1005359c: Parental lock problem
+100535b4: WIN: Could not create the main window.
+100535dc: Crimson
+100535e4: <- hResult
+100535f0: D3DERR_INVALIDCALL
+10053604: D3DERR_DEVICELOST
+10053618: D3D: Unable to backup texture. (CopyRects)
+10053644: D3D: Unable to backup texture. (GetSurfaceLevel)
+10053678: D3D: Unable to backup texture. (CreateImageSurface)
+100536ac: (already backed up)
+
+100536c4: Backup Dynamics
+
+100536d8: D3D: Unable to restore texture. (CopyRects)
+10053704: D3D: Unable to recreate texture. (GetSurfaceLevel)
+10053738: (not backedup) 
+
+1005374c: RestoreDynamics
+
+10053760: Done D3D_TryResetDevice, failed to reset device..
+
+10053794: Done D3D_TryResetDevice ok..
+
+100537b4: RestoreDynamics() == false) at line 1006
+100537e0: D3D: Unable to recreate a texture.
+10053804: D3D: Unable to restore device.
+1005382c: Entering D3D_TryResetDevice..
+
+1005384c: MyApp::Init()
+
+1005385c: WM_CANCELMODE
+1005386c: WM_ACTIVATEAPP active
+10053884: WM_ACTIVATEAPP inactive
+1005389c: WM_ACTIVATE inactive
+100538b4: d3d not ready!
+100538c4: WM_ACTIVATE active
+100538d8: dc WM_ACTIVATE inactive
+100538f0: dc WM_ACTIVATE active
+10053908: dc WM_ACTIVATEAPP active
+10053924: dc WM_ACTIVATEAPP inactive
+10053940: dc WM_CANCELMODE
+10053954: WM_MESSAGE (d3d)
+10053968: WM_MESSAGE (dc)
+10053978: D3D: Unable to load grim splash texture.
+100539a4: D3D: Unable to load default font texture.
+100539d0: D3D: Could not find any compatible texture formats.
+10053a04: D3D: Could not set the requested screenmode.
+10053a34: D3D: Error getting adapter display mode.
+10053a60: D3D: Could not init DirectX 8.1, (re)install it.
+10053a94: D3D: Internal: Could not create index buffer.
+10053ac4: D3D: Internal: Could not create vertex buffer.
+10053af4: D3D: No supported texture formats found.
+10053b24: D3D: Could not load a texture.
+10053b44: D3D: Texture slot not free.
+10053b60: All texture slots are used.
+10053b7c: Grim - No Title
+10053b8c: load\smallFnt.dat
+10053ba0: crimson.paq
+10053bac: DI8: Could not initialize joystic.
+10053bd0: DI8: Could not initialize keyboard.
+10053bf4: DI8: Could not initialize mouse.
+10053c18: D3D: Could not create a texture.
+10053c3c: GRIM_Font2
+10053c48: stall
+10057064: Application transferred too many scanlines
+10057090: Invalid SOS parameters for sequential JPEG
+100570bc: Corrupt JPEG data: found marker 0x%02x instead of RST%d
+100570f4: Premature end of JPEG file
+10057110: Warning: unknown JFIF revision number %d.%02d
+10057140: Corrupt JPEG data: bad Huffman code
+10057164: Corrupt JPEG data: premature end of data segment
+10057198: Corrupt JPEG data: %u extraneous bytes before marker 0x%02x
+100571d4: Inconsistent progression sequence for component %d coefficient %d
+10057218: Unknown Adobe color transform code %d
+10057240: Obtained XMS handle %u
+10057258: Freed XMS handle %u
+1005726c: Unrecognized component IDs %d %d %d, assuming YCbCr
+100572a0: Opened temporary file %s
+100572bc: Closed temporary file %s
+100572d8:   Ss=%d, Se=%d, Ah=%d, Al=%d
+100572f8:     Component %d: dc=%d ac=%d
+10057318: Start Of Scan: %d components
+10057338: Start of Image
+10057348:     Component %d: %dhx%dv q=%d
+10057368: Start Of Frame 0x%02x: width=%u, height=%u, components=%d
+100573a4: Smoothing not supported with nonstandard sampling ratios
+100573e0: RST%d
+100573e8: At marker 0x%02x, recovery action %d
+10057410: Selected %d colors for quantization
+10057434: Quantizing to %d colors
+1005744c: Quantizing to %d = %d*%d*%d colors
+10057470:         %4u %4u %4u %4u %4u %4u %4u %4u
+10057498: Unexpected marker 0x%02x
+100574b4: Skipping marker 0x%02x, length %u
+100574d8:     with %d x %d thumbnail image
+100574fc: Unknown JFIF minor revision number %d.%02d
+10057528: Warning: thumbnail image size does not match data length %u
+10057564: JFIF APP0 marker, density %dx%d  %d
+10057588:         %3d %3d %3d %3d %3d %3d %3d %3d
+100575b0: End Of Image
+100575c0: Obtained EMS handle %u
+100575d8: Freed EMS handle %u
+100575ec: Define Restart Interval %u
+10057608: Define Quantization Table %d  precision %d
+10057634: Define Huffman Table 0x%02x
+10057650: Define Arithmetic Table 0x%02x: 0x%02x
+10057678: Unknown APP14 marker (not Adobe), length %u
+100576a4: Unknown APP0 marker (not JFIF), length %u
+100576d0: Adobe APP14 marker: version %d, flags 0x%04x 0x%04x, transform %d
+10057714: Caution: quantization tables are too coarse for baseline JPEG
+10057754: 6a  7-Feb-96
+10057764: Copyright (C) 1996, Thomas G. Lane
+10057788: Write to XMS failed
+1005779c: Read from XMS failed
+100577b4: Image too wide for this implementation
+100577dc: Virtual array controller messed up
+10057800: Unsupported marker type 0x%02x
+10057820: Application transferred too few scanlines
+1005784c: Write failed on temporary file --- out of disk space?
+10057884: Seek failed on temporary file
+100578a4: Read failed on temporary file
+100578c4: Failed to create temporary file %s
+100578e8: Invalid JPEG file structure: SOS before SOF
+10057914: Invalid JPEG file structure: two SOI markers
+10057944: Unsupported JPEG process: SOF type 0x%02x
+10057970: Invalid JPEG file structure: missing SOS marker
+100579a0: Invalid JPEG file structure: two SOF markers
+100579d0: Cannot quantize to more than %d colors
+100579f8: Cannot quantize to fewer than %d colors
+10057a20: Cannot quantize more than %d color components
+10057a50: Insufficient memory (case %d)
+10057a70: Not a JPEG file: starts with 0x%02x 0x%02x
+10057a9c: Quantization table 0x%02x was not defined
+10057ac8: JPEG datastream contains no image
+10057aec: Huffman table 0x%02x was not defined
+10057b14: Backing store not supported
+10057b30: Requested feature was omitted at compile time
+10057b60: Not implemented yet
+10057b74: Invalid color quantization mode change
+10057b9c: Scan script does not transmit all data
+10057bc4: Cannot transcode due to multiple use of quantization table %d
+10057c04: Premature end of input file
+10057c20: Empty input file
+10057c34: Maximum supported image dimension is %u pixels
+10057c64: Missing Huffman code table entry
+10057c88: Huffman code size table overflow
+10057cac: Fractional sampling not implemented yet
+10057cd4: Output file write error --- out of disk space?
+10057d04: Input file read error
+10057d1c: Didn't expect more than one scan
+10057d40: Write to EMS failed
+10057d54: Read from EMS failed
+10057d6c: Empty JPEG image (DNL not supported)
+10057d94: Bogus DQT index %d
+10057da8: Bogus DHT index %d
+10057dbc: Bogus DHT counts
+10057dd0: Bogus DAC value 0x%x
+10057de8: Bogus DAC index %d
+10057dfc: Unsupported color conversion request
+10057e24: Too many color components: %d, max %d
+10057e4c: CCIR601 sampling not implemented yet
+10057e74: Suspension not allowed here
+10057e90: Buffer passed to JPEG library is too small
+10057ebc: Bogus virtual array access
+10057ed8: JPEG parameter struct mismatch: library thinks size is %u, caller expects %u
+10057f28: Improper call to JPEG library in state %d
+10057f54: Invalid scan script at entry %d
+10057f74: Bogus sampling factors
+10057f8c: Invalid progressive parameters at scan script entry %d
+10057fc4: Invalid progressive parameters Ss=%d Se=%d Ah=%d Al=%d
+10057ffc: Unsupported JPEG data precision %d
+10058020: Invalid memory pool code %d
+1005803c: Sampling factors too large for interleaved scan
+1005806c: Wrong JPEG library version: library is %d, caller expects %d
+100580ac: Bogus marker length
+100580c0: Bogus JPEG colorspace
+100580d8: Bogus input colorspace
+100580f0: IDCT output block size %d not supported
+10058118: Invalid component ID %d in SOS
+10058138: Bogus buffer control mode
+10058154: MAX_ALLOC_CHUNK is wrong, please fix
+1005817c: ALIGN_TYPE is wrong, please fix
+1005819c: Sorry, there are legal restrictions on arithmetic coding
+100581d8: Bogus message code %d
+100581f0: JPEG Error
+100581fc: %ld%c
+10058204: JPEGMEM
+1005820c: 1.1.3
+10058218: need dictionary
+10058228: incorrect data check
+10058240: incorrect header check
+10058258: invalid window size
+1005826c: unknown compression method
+100582b0: incompatible version
+100582c8: buffer error
+100582d8: insufficient memory
+100582ec: data error
+100582f8: stream error
+10058308: file error
+10058314: stream end
+10058364: invalid bit length repeat
+10058380: too many length or distance symbols
+100583a4: invalid stored block lengths
+100583c4: invalid block type
+100583d8: invalid distance code
+100583f0: invalid literal/length code
+10059518: incomplete dynamic bit lengths tree
+1005953c: oversubscribed dynamic bit lengths tree
+10059564: incomplete literal/length tree
+10059584: oversubscribed literal/length tree
+100595a8: empty distance tree with lengths
+100595cc: incomplete distance tree
+100595e8: oversubscribed distance tree

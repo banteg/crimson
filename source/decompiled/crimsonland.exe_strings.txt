@@ -1,0 +1,1607 @@
+0046f838: Software\Microsoft\Direct3D
+0046f854: GenuineIntel
+0046f864: DisableD3DXPSGP
+0046f9a0: AuthenticAMD
+0046f9b0: UnknownVendr
+0046fa8e: GAIsProcessorFeaturePresent
+0046faac: KERNEL32
+0046fab8: e+000
+0046fb36: null)
+0046fb45: null)
+0046fc00: __GLOBAL_HEAP_SELECTED
+0046fc18: __MSVCRT_HEAP_SELECT
+0046fc30: runtime error 
+0046fc40: TLOSS error
+
+0046fc50: SING error
+
+0046fc60: DOMAIN error
+
+0046fc70: R6028
+- unable to initialize heap
+
+0046fc98: R6027
+- not enough space for lowio initialization
+
+0046fcd0: R6026
+- not enough space for stdio initialization
+
+0046fd08: R6025
+- pure virtual function call
+
+0046fd30: R6024
+- not enough space for _onexit/atexit table
+
+0046fd68: R6019
+- unable to open console device
+
+0046fd94: R6018
+- unexpected heap error
+
+0046fdb8: R6017
+- unexpected multithread lock error
+
+0046fde8: R6016
+- not enough space for thread data
+
+0046fe14: 
+abnormal program termination
+
+0046fe38: R6009
+- not enough space for environment
+
+0046fe64: R6008
+- not enough space for arguments
+
+0046fe90: R6002
+- floating point not loaded
+
+0046feb8: Microsoft Visual C++ Runtime Library
+0046fee4: Runtime Error!
+
+Program: 
+0046ff04: <program name unknown>
+0046ff60: floor
+00470024: SunMonTueWedThuFriSat
+0047003c: JanFebMarAprMayJunJulAugSepOctNovDec
+00470068: GetLastActivePopup
+0047007c: GetActiveWindow
+0047008c: MessageBoxA
+00470098: user32.dll
+004700a4: 1#QNAN
+004700ac: 1#INF
+004700b4: 1#IND
+004700bc: 1#SNAN
+004700c4: H:mm:ss
+004700cc: dddd, MMMM dd, yyyy
+004700e0: M/d/yy
+004700f0: December
+004700fc: November
+00470108: October
+00470110: September
+0047011c: August
+00470134: April
+0047013c: March
+00470144: February
+00470150: January
+00470158: Saturday
+00470164: Friday
+0047016c: Thursday
+00470178: Wednesday
+00470184: Tuesday
+0047018c: Monday
+00470194: Sunday
+00470552: FreeLibrary
+00470560: Sleep
+00470568: OutputDebugStringA
+0047057e: GetProcAddress
+00470590: LoadLibraryA
+004705a0: WideCharToMultiByte
+004705b6: GetSystemDirectoryA
+004705cc: MultiByteToWideChar
+004705e2: QueryPerformanceCounter
+004705fc: GetLocalTime
+0047060c: GetCommandLineA
+0047061e: GetLastError
+0047062e: CreateDirectoryA
+00470640: KERNEL32.dll
+00470650: GetKeyNameTextA
+00470662: MessageBoxA
+00470670: GetForegroundWindow
+00470684: USER32.dll
+00470692: RegCloseKey
+004706a0: RegCreateKeyExA
+004706b2: RegQueryValueExA
+004706c6: RegSetValueExA
+004706d6: ADVAPI32.dll
+004706e6: ShellExecuteA
+004706f4: SHELL32.dll
+00470702: CoUninitialize
+00470714: CoCreateInstance
+00470728: CoInitialize
+00470736: ole32.dll
+00470740: OLEAUT32.dll
+00470750: ov_pcm_seek
+0047075e: ov_pcm_total
+0047076e: ov_info
+00470778: ov_open_callbacks
+0047078c: ov_clear
+00470798: ov_read
+004707a0: vorbisfile.dll
+004707b2: HlinkNavigateString
+004707c6: urlmon.dll
+004707d4: timeGetTime
+004707e0: WINMM.dll
+004707ec: Direct3DCreate8
+004707fc: d3d8.dll
+00470808: VerQueryValueA
+0047081a: GetFileVersionInfoA
+00470830: GetFileVersionInfoSizeA
+00470848: VERSION.dll
+00470854: WS2_32.dll
+00470862: InternetCloseHandle
+00470878: InternetGetLastResponseInfoA
+00470898: InternetReadFile
+004708ac: HttpSendRequestA
+004708c0: HttpOpenRequestA
+004708d4: InternetConnectA
+004708e8: InternetOpenA
+004708f6: WININET.dll
+00470902: DSOUND.dll
+00470910: IsProcessorFeaturePresent
+0047092c: GetVersionExA
+0047093c: FindFirstFileA
+0047094e: FindNextFileA
+0047095e: FindClose
+0047096a: FileTimeToSystemTime
+00470982: FileTimeToLocalFileTime
+0047099c: InterlockedDecrement
+004709b4: InterlockedIncrement
+004709cc: ResumeThread
+004709dc: CreateThread
+004709ec: TlsSetValue
+004709fa: TlsGetValue
+00470a08: ExitThread
+00470a16: CloseHandle
+00470a24: GetTimeZoneInformation
+00470a3e: GetSystemTime
+00470a4e: GetCurrentDirectoryA
+00470a66: GetFullPathNameA
+00470a7a: GetDriveTypeA
+00470a8a: HeapFree
+00470a96: HeapReAlloc
+00470aa4: HeapAlloc
+00470ab0: ExitProcess
+00470abe: TerminateProcess
+00470ad2: GetCurrentProcess
+00470ae6: GetModuleHandleA
+00470afa: GetStartupInfoA
+00470b0c: GetVersion
+00470b1a: RtlUnwind
+00470b26: HeapSize
+00470b32: EnterCriticalSection
+00470b4a: LeaveCriticalSection
+00470b62: InitializeCriticalSection
+00470b7e: GetCurrentThreadId
+00470b94: TlsAlloc
+00470ba0: SetLastError
+00470bb0: FlushFileBuffers
+00470bc4: WriteFile
+00470bd0: DeleteCriticalSection
+00470be8: ReadFile
+00470bf4: SetHandleCount
+00470c06: GetStdHandle
+00470c16: GetFileType
+00470c24: SetFilePointer
+00470c36: LCMapStringA
+00470c46: LCMapStringW
+00470c56: UnhandledExceptionFilter
+00470c72: GetModuleFileNameA
+00470c88: GetEnvironmentVariableA
+00470ca2: HeapDestroy
+00470cb0: HeapCreate
+00470cbe: VirtualFree
+00470ccc: VirtualAlloc
+00470cdc: IsBadWritePtr
+00470cec: FreeEnvironmentStringsA
+00470d06: FreeEnvironmentStringsW
+00470d20: GetEnvironmentStrings
+00470d38: GetEnvironmentStringsW
+00470d52: RaiseException
+00470d64: GetStringTypeA
+00470d76: GetStringTypeW
+00470d88: SetStdHandle
+00470d98: CreateFileA
+00470da6: GetCPInfo
+00470db2: GetACP
+00470dbc: GetOEMCP
+00470dc8: SetUnhandledExceptionFilter
+00470de6: IsBadReadPtr
+00470df6: IsBadCodePtr
+00470e06: SetEndOfFile
+00470e16: CompareStringA
+00470e28: CompareStringW
+00470e3a: SetEnvironmentVariableA
+00470e54: RegOpenKeyA
+00471164: Executing '%s'
+
+00471174: Cannot open file '%s'
+
+0047118c: exec <script>
+
+0047119c: %i commands
+
+004711b0: %i variables
+
+004711d0: '%s' set to '%s'
+
+004711e4: set <var> <value>
+
+00471200: minimizeconsole
+00471210: extendconsole
+00471220: clear
+00471244: cmdlist
+0047124c: con_monoFont
+00471264: version
+0047126c: Unknown command "%s"
+
+00471284: "%s" is "%s" (%ff)
+
+00471298: "%s" set to "%s" (%ff)
+
+004712b0: > %s
+
+004712c4: Crimsonland 1.9.93
+00471315: 0tons
+0047131c: default
+00471324: %s\%s
+0047132c: cv_padAimDistMul
+00471344: cv_showFPS
+00471350: cv_friendlyFire
+00471360: cv_aimEnhancementFade
+00471378: cv_uiSmallIndicators
+00471390: cv_terrainBodiesTransparency
+004713b0: cv_verbose
+004713bc: cv_enableMousePointAndClickMovement
+004713e0: cv_uiPointFilterPanels
+004713fc: cv_uiTransparency
+00471410: cv_bodiesFade
+00471420: cv_terrainFilter
+00471434: cv_silentloads
+00471444: Please wait...
+00471454: Core Init done.
+
+00471468: GDI initializing UI elements.
+
+00471488: Press %s to pick a perk
+004714a0: Unknown
+004714a8: MEDIASELECT
+004714bc: MYCOMPUTER
+004714c8: WEBBACK
+004714d0: WEBFORWARD
+004714dc: WEBSTOP
+004714e4: WEBREFRESH
+004714f0: WEBFAVORITES
+00471500: WEBSEARCH
+00471514: SLEEP
+0047151c: POWER
+0047153c: DELETE
+00471544: INSERT
+00471560: RIGHT
+00471570: PRIOR
+00471584: PAUSE
+0047158c: RMENU
+00471594: SYSRQ
+0047159c: DIVIDE
+004715a4: NUMPADCOMMA
+004715b0: WEBHOME
+004715b8: VOLUMEUP
+004715c4: VOLUMEDOWN
+004715d0: MEDIASTOP
+004715dc: PLAYPAUSE
+004715e8: CALCULATOR
+004715fc: RCONTROL
+00471608: NUMPADENTER
+00471614: NEXTTRACK
+00471620: UNLABELED
+00471638: KANJI
+00471640: UNDERLINE
+0047164c: COLON
+00471658: PREVTRACK
+00471664: NUMPADEQUALS
+00471674: ABNT_C2
+00471680: NOCONVERT
+0047168c: CONVERT
+00471694: ABNT_C1
+004716b8: OEM_102
+004716c0: DECIMAL
+004716c8: NUMPAD0
+004716d0: NUMPAD3
+004716d8: NUMPAD2
+004716e0: NUMPAD1
+004716ec: NUMPAD6
+004716f4: NUMPAD5
+004716fc: NUMPAD4
+00471704: SUBTRACT
+00471710: NUMPAD9
+00471718: NUMPAD8
+00471720: NUMPAD7
+00471728: SCROLL
+00471730: NUMLOCK
+00471760: CAPITAL
+00471768: SPACE
+00471770: LMENU
+00471778: MULTIPLY
+00471784: RSHIFT
+0047178c: SLASH
+00471794: PERIOD
+0047179c: COMMA
+004717c0: BACKSLASH
+004717cc: LSHIFT
+004717d4: GRAVE
+004717dc: APOSTROPHE
+004717e8: SEMICOLON
+00471818: LCONTROL
+00471824: RETURN
+0047182c: RBRACKET
+00471838: LBRACKET
+00471878: EQUALS
+00471880: MINUS
+00471888: DIK_0
+00471890: DIK_9
+00471898: DIK_8
+004718a0: DIK_7
+004718a8: DIK_6
+004718b0: DIK_5
+004718b8: DIK_4
+004718c0: DIK_3
+004718c8: DIK_2
+004718d0: DIK_1
+004718d8: DIK_ESCAPE
+004718e4: RawInput ?
+004718f1: IM2Btn5
+004718fc: RIM2Btn4
+00471909: IM2Btn3
+00471914: RIM2Btn2
+00471921: IM2Btn1
+0047192c: RIM1Btn5
+00471939: IM1Btn4
+00471944: RIM1Btn3
+00471951: IM1Btn2
+0047195c: RIM1Btn1
+00471969: IM0Btn5
+00471974: RIM0Btn4
+00471981: IM0Btn3
+0047198c: RIM0Btn2
+00471999: IM0Btn1
+004719a4: RIM2YAxis
+004719b1: IM1YAxis
+004719bc: RIM0YAxis
+004719c9: IM2XAxis
+004719d4: RIM1XAxis
+004719e1: IM0XAxis
+004719ec: unbound
+004719f5: oyRotZ
+004719fc: JoyRotY
+00471a05: oyRotX
+00471a0c: JoyAxisZ
+00471a18: JoyAxisY
+00471a24: JoyAxisX
+00471a30: JoysRight
+00471a3c: JoysLeft
+00471a48: JoysDown
+00471a54: JoysUp
+00471a5d: oys12
+00471a64: Joys11
+00471a6d: oys10
+00471a74: Joys9
+00471a84: Joys7
+00471a94: Joys5
+00471aa4: Joys3
+00471ab4: Joys1
+00471abc: MWheelDown
+00471ac8: MWheelUp
+00471ad5: ouse5
+00471adc: Mouse4
+00471ae4: Mouse3
+00471aec: Mouse2
+00471af4: Mouse1
+00471afc: Perk Randomizer failed to generate random unpicked perks.
+
+00471b40: http://buy.crimsonland.com
+00471b5c: Already paid
+00471b6c: Purchase
+00471b78: Maybe later
+00471b84: it now? You'll have a great time!
+00471ba8: and takes just minutes. 
+00471bc4: please upgrade to the full version of Crimsonland.  The process is very easy
+00471c14: have %s time left to play Quest mode levels only.
+00471c48: You have used up your play time in this game mode. However, you still
+00471c90: Buy the full version to gain unrestricted access to all 3
+00471ccc: is very easy and takes just minutes.
+00471cf4: all features, please upgrade to the full version of Crimsonland.  The process
+00471d44: Trial time is up. If you would like to have unlimited play time and access to
+00471d94: game modes and be able to post your scores on the Internet. Why not buy
+00471ddc: The full version features unrestricted access to all 3
+00471e14: please upgrade to the full version of Crimsonland.
+00471e48: If you would like to have unlimited play time and access to all features,
+00471e94: However, you still have %s time left to play Survival and Rush game modes.
+00471ee0: You've completed all Quest mode levels available in the Demo version.
+00471f28: %d:%s.%d
+00471f34: %d:%s.0%d
+00471f48: You've been playing the Demo version of
+00471f70: cl_logo
+00471f78: Press F1 to return to game
+00471f94: Fire:
+00471f9c: Right:
+00471fa4: Left:
+00471fac: Down:
+00471fb8: Player %d
+00471fc8: Reload:
+00471fd0: %s or SPACE BAR or KeyPadAdd
+00471ff0: Level Up:
+00471ffc: key info
+00472008: Select
+00472010: Cancel
+00472018: extra perk sponsored by the Perk Expert
+00472040: extra perks sponsored by the Perk Master
+00472084: Main Menu
+00472090: Typ'o'Shooter
+004720a0:   Rush  
+004720ac: Survival
+004720b8: Good luck with your battles, trooper!
+004720e0: for you: Splitter Gun.
+004720f8: efforts a new weapon has been unlocked 
+00472120: virtually impossible. To reward your
+00472148: You've done the thing we all thought was
+00472174: mode is unlocked for you: Typ'o'Shooter.
+004721a0: playing, a completely new and different game
+004721d0: As an additional reward for your victorious
+004721fc: You can also replay the quests in Hardcore.
+00472228: and weapons your Survival is just a bit easier.
+00472258: isn't over yet! With all of the unlocked perks
+00472288: You've completed all the levels but the battle
+004722b8:    Incredible!
+004722c8: Congratulations!
+004722dc: Skip tutorial
+004722ec: Play a game
+004722f8: Repeat tutorial
+00472308: Great! Now you are ready to start playing Crimsonland!
+00472340: Perks can give you extra abilities that help
+you survive in Crimsonland.
+0047238c: Now let's learn about Perks. You can pick a Perk by clicking
+the 'level up' sign at the upper right corner of the screen.
+00472408: It will help you to move and shoot and aim at the same time, so practice!
+00472454: Now, move the mouse to aim at the monsters
+00472480: Now learn to shoot and move at the same time.
+Click the left Mouse button to shoot.
+004724d4: Now pick up the bonuses by walking over them
+00472504: First learn to move by pushing the arrow keys.
+00472534: In this tutorial you'll learn how to play Crimsonland
+0047256c: Reflex Boost powerup slows down time giving you a chance to react better
+004725b8: This is the nuke powerup, picking it up causes a huge
+exposion harming all monsters nearby!
+00472614: This powerup doubles all experience points gained when
+x2 powerup is active.
+00472664: This is a weapon powerup. Picking it you gets
+you another weapon. This one is a submachine gun.
+004726c4: This is the speed powerup, it makes you move faster for
+a limited amount of time.
+0047271c: Want to post your high scores?
+0047273c: Want unlimited Play time?
+00472758: Want more Perks?
+0047276c: Want more Weapons?
+00472780: Want more Levels?
+00472794: Purchasing the game is very easy and secure.
+004727c4: -The ability to post your high scores online!
+004727f4:  hours of intense and fun gameplay!
+00472818: -40 insane Levels that give you
+00472838: -Over 40 game altering Perks!
+00472858:  fire and electricity!
+00472870:  weapons that allow you to deal death with plasma, lead,
+004728ac: -The varied weapon arsenal consisting of over 20 unique
+004728e4: -Unlimited Play Time in three thrilling Game Modes!
+00472918: Full version features:
+00472930: Upgrade to the full version of Crimsonland Today!
+00472964: mockup
+0047296c: backplasma
+00472978: Orbes Volantes Exstare
+0047299c: shot_%d.bmp
+004729a8: shot_0%d.bmp
+004729b8: shot_00%d.bmp
+004729d6: `=(and be patient!)
+004729ec: Click the ones with the round ones!
+00472a10: You can stop watching now.
+00472a2c: (see vorbis.txt)
+00472a40: 2003 (c) Xiph.Org Foundation
+00472a60: Uses Vorbis Audio Decompression
+00472a80: Pasi Heinonen
+00472a90: 10tons logo by
+00472aa0: 2003 (c) 10tons entertainment
+00472ac0: Muzzy
+00472ac8: Matricks
+00472ad4: Chaos^
+00472adc: Greeting to:
+00472afc: Toni Nurminen
+00472b0c: Simon Hallam
+00472b1c: Mike Colonnese
+00472b2c: Mika Alatalo
+00472b3c: Matti Alanen
+00472b4c: Markus Lassila
+00472b5c: Lee Cooper
+00472b68: Lars Brubaker
+00472b78: Kalle Hahl
+00472b84: Juha Alatalo
+00472b94: Jeff McAteer
+00472ba4: Jarkko Forsbacka
+00472bb8: James C. Smith
+00472bc8: Ernie Ramirez
+00472bd8: Erik Van Pelt
+00472be8: Eric Dallaire
+00472bf8: Dirk Bunk
+00472c04: Dan Ruskin
+00472c10: Bryce Baker
+00472c1c: Avraham Petrosyan
+00472c30: Play testers:
+00472c40: Peter Hajba / Remedy
+00472c60: rvilehto / Remedy
+00472c74: Special thanks to:
+00472c88: Miikka Kulmala
+00472c98: Manual:
+00472ca0: Ion Hardie
+00472cac: Sound Effects:
+00472cbc: Ville Eriksson
+00472ce4: Music:
+00472cec: Timo Palonen
+00472cfc: 3D Modelling:
+00472d0c: 2D Art:
+00472d14: Zach Young
+00472d20: Producer:
+00472d2c: Programming:
+00472d3c: Tero Alatalo
+00472d4c: Game Design:
+00472d5c: Crimsonland
+00472d68: (4 bits for index)
+00472d7c: (4 bits for index) <- OOOPS I meant FIVE!
+00472da8: 011111001000111
+00472db8: 0101001011100010010101100
+00472dd4: 0001001110000010101110011
+00472df0: Triangle Cube Last Not Flee
+00472e0c: Yourself Ground First For
+00472e28: The Sacrifice Old Center
+00472e44: Do Firepower See Mark Of
+00472e60: Inside Dead Let Mighty Blood
+00472e88: credits
+00472e90: Secret
+00472f34: IDirect3D8
+00472f50: CLM_%s
+00472f58: mods\%s
+00472f60: game_pause
+00472f6c: CMOD: mod enum '%s'
+
+00472f84: CMOD: bad CMOD_GetInfo function
+
+00472fa8: CMOD_GetInfo failed.
+
+00472fc0: CMOD_GetInfo
+00472fd0: CMOD: Load library failed.
+
+00472fec: CMOD: '%s'
+
+00472ff8: CMOD_GetMod ok
+
+00473008: CMOD: bad CMOD_GetMod function
+
+00473028: CMOD: CMOD_GetMod failed.
+
+00473044: CMOD_GetMod
+00473050: mods\*.dll
+0047305c: Launch
+00473064: Main menu
+00473070: (Unsupported API version)
+0047308c: Filename:
+00473098: Author(s):
+004730ac: v%.2f
+004730b4: list of mods:
+004730c4: + more
+004730d4: Reset
+004730dc: Game Over
+004730e8: score: %d
+004730f4: ..or something more?
+0047310c: a puzzle game unfinished
+00473128: AlienZooKeeper
+00473148: %d:%d
+00473150: %d:0%d
+00473158: High scores
+00473164: Play Again
+00473170: Score too low for top%d.
+00473190: State your name, trooper!
+004731ac: Play Another
+004731bc: Quest failed, try again.
+004731d8: Try one more time?
+004731ec: Persistence will be rewared.
+0047320c: No luck this time, have another go?
+00473230: Third time no good.
+00473244: You didn't make it, do try again.
+00473268: Show End Note
+00473278: Play Next
+00473284: Perk unlocked:
+00473294: Weapon unlocked:
+004732a8: State your name trooper!
+004732c4: Final Time:
+004732d0: Unpicked Perk Bonus:
+004732e8: Life Bonus:
+004732f4: Base Time:
+0047331b: ?You regain some of your health..
+00473340: MediKit
+00473348: For few seconds -- make them count.
+0047336c: Fire Bullets
+0047337c: Your firerate and load time increase for a short period.
+004733b8: Weapon Power Up
+004733c8: Suddenly monsters run away from you and you can eat them.
+00473404: Energizer
+00473410: Your movement speed increases for a while.
+0047343c: Speed
+00473444: Monsters are frozen.
+0047345c: Freeze
+00473464: Force field protects you for a while.
+0047348c: Shield
+00473494: You get more time to react as the game slows down.
+004734c8: Reflex Boost
+004734d8: Chain of shocks shock the crowd.
+004734fc: Shock Chain
+00473508: Fireballs all over the place.
+00473528: Fireblast
+00473534: Every experience point you get is doubled when this bonus is active.
+0047357c: Double Experience
+00473590: An amazing explosion of ATOMIC power.
+004735c0: You get a new weapon.
+004735d8: Weapon
+004735e0: You gain some experience points.
+00473604: Points
+0047360c: Quests
+0047361c: sequence
+00473628: GAME_SaveStatus FAILED!
+
+00473644: GAME_SaveStatus OK.
+
+0047365c: game.cfg
+0047366c: transferFailed
+0047367c: dataPathId
+00473688: Generating new file..
+
+004736a0: GAME_LoadStatus FAILED!
+
+004736bc: GAME_LoadStatus OK.
+
+004736d4: GAME_LoadStatus FAILED, check sum invalid
+
+00473700: GAME_LoadStatus FAILED, invalid file size
+
+0047372c: trooper
+00473734: alien
+0047373c: spider_sp2
+00473748: spider_sp1
+00473754: lizard
+0047375c: zombie
+00473764: Empty
+0047377a: `=- Generated terrain.
+
+00473794: ! FAILED Loading uiElement %s
+
+004737b4: Loading uiElement %s
+
+004737cc: ui\ui_menuPanel.jaz
+004737e0: ui\ui_menuItem.jaz
+004737f4: ui\ui_signCrimson.jaz
+00473810: %d seconds
+0047381c: %d.%d
+00473824: Progress
+00473838: ui\ui_indElectric.jaz
+00473850: ui\ui_indRocket.jaz
+00473864: ui\ui_indBullet.jaz
+00473878: ui\ui_indFire.jaz
+0047388c: iHeart
+00473894: iGameUI
+0047389c: %d.%d%c
+004738a4: szDirectXVersionLetter
+004738d4: dwDirectXVersionMinor
+00473900: dwDirectXVersionMajor
+0047392c: DxDiag_SystemInfo
+00473951: d3d9.dll
+0047395c: \dpnet.dll
+00473969: mpg2splt.ax
+00473979: d3d8.dll
+00473984: \dinput.dll
+00473991: dplayx.dll
+0047399d: d3drg8x.dll
+004739ac: \ddraw.dll
+004739bc: GRIM__GetInterface
+004739d0: Input does not appear to be an Ogg bitstream.
+
+00473a6c: Software\10tons\Crimsonland\
+00473a8c: Brave little haxx0r aren't you?
+
+00473b14:  :D"Wonder what he's up to now...
+
+00473b38: This is all about fixing city walls with Magic Paint. To stop sinking, you know?
+
+00473b8c: I'll state this as clearly as I can: click each line with letter o(s) in them in scrolling credits to start The Secret Path. Be careful though: don't click on other lines!
+
+00473c3c: Inside AlienZooKeeper can be found few interesting combinations. CyanYellowRedYellow doesn't mean anything but what about if you run it through an orthogonal projection?
+
+00473ce8: Do remember you're probably seeing something that not really meant to see! Don't believe everything...
+
+00473d50: I'll tell you a little secret; there are few secret weapons hidden inside the game!
+
+00473e0e:  tuli Reijolle huono olo. Voi voi.
+
+00473e34:  %ReDistrBuildXX%
+00473e48: crimson.cfg
+00473e54: - Reseting players.
+
+00473e6c: No free creatures to spawn!
+
+00473e8c: %s: %d
+00473e94: <-- Restored
+
+00473ea4: <-- Suspended
+
+00473eb4: ...loading texture '%s' failed
+
+00473ed4: ...loading texture '%s' ok
+
+00473ef0: loadtexture <texturefileid>
+
+00473f10: Set resource paq to '%s'
+
+00473f2c: File '%s' not found.
+
+00473f44: setresourcepaq <resourcepaq>
+
+00473f64: Survived: %i seconds.
+
+00473f7c: Launching web browser (%s)..
+
+00473f9c: Failed to launch web browser.
+
+00473fbc: openurl <url>
+
+00473fcc: Sound frequency adjustment is now disabled.
+
+00473ffc: Sound frequency adjustment is now enabled.
+
+00474028: console.log
+00474034: Running in safemode, using static terrain textures.
+
+0047406c: Created terrain texture.
+
+00474088: --> entering safemode.
+
+004740a0: Failed to create terrain texture.
+
+004740c4: ground
+004740cc: ...no sounds selected
+
+004740e4: - Sound init ---------
+
+004740fc: ----------------------
+
+00474114: Init Grim successful.
+
+0047412c: aim64
+00474134: ui_dropOff
+00474140: ui\ui_dropDownOff.jaz
+00474158: ui_dropOn
+00474164: ui\ui_dropDownOn.jaz
+0047417c: game\muzzleFlash.jaz
+00474194: ui\ui_clockPointer.jaz
+004741ac: ui\ui_clockTable.jaz
+004741c4: ui\ui_lifeHeart.jaz
+004741d8: ui\ui_gameTop.jaz
+004741ec: ui_wicons
+004741f8: ui\ui_wicons.jaz
+0047420c: ui\ui_num5.jaz
+0047421c: ui\ui_num4.jaz
+0047422c: ui\ui_num3.jaz
+0047423c: ui\ui_num2.jaz
+0047424c: ui\ui_num1.jaz
+0047425c: ui\ui_textQuest.jaz
+00474270: ui\ui_textLevComp.jaz
+00474288: ter\fb_q4.jaz
+00474298: ter\fb_q3.jaz
+004742a8: ter\fb_q2.jaz
+004742b8: ter\fb_q1.jaz
+004742c8: ter\ter_q4_tex1.jaz
+004742dc: ter\ter_q4_base.jaz
+004742f0: ter\ter_q3_tex1.jaz
+00474304: ter\ter_q3_base.jaz
+00474318: ter\ter_q2_tex1.jaz
+0047432c: ter\ter_q2_base.jaz
+00474340: ter\ter_q1_tex1.jaz
+00474354: ter\ter_q1_base.jaz
+00474368: ui\ui_aim.jaz
+00474378: ui\ui_cursor.jaz
+0047438c: ui\ui_arrow.jaz
+0047439c: ui\ui_indPanel.jaz
+004743b0: ui\ui_indLife.jaz
+004743c4: game\particles.jaz
+004743d8: bonuses
+004743e0: game\bonuses.jaz
+004743f4: ui_rectOn
+00474400: ui\ui_rectOn.jaz
+00474414: ui_rectOff
+00474420: ui\ui_rectOff.jaz
+00474434: ui_checkOff
+00474440: ui\ui_checkOff.jaz
+00474454: ui_checkOn
+00474460: ui\ui_checkOn.jaz
+00474474: ui_buttonMd
+00474480: ui\ui_button_128x32.jaz
+00474498: ui_buttonSm
+004744a4: ui\ui_button_64x32.jaz
+004744bc: ui_iconAim
+004744c8: ui\ui_iconAim.jaz
+004744dc: projs
+004744e4: game\projs.jaz
+004744f4: bodyset
+004744fc: game\bodyset.jaz
+00474510: bulletTrail
+0047451c: load\bulletTrail.tga
+00474534: bullet_i
+00474540: load\bullet16.tga
+00474554: arrow
+0047455c: load\arrow.tga
+0047456c: game\lizard.jaz
+0047457c: game\alien.jaz
+0047458c: game\spider_sp2.jaz
+004745a0: game\spider_sp1.jaz
+004745b4: game\zombie.jaz
+004745c4: game\trooper.jaz
+004745d8: GRIM_Font2
+004745e4: load\smallWhite.tga
+004745f8: timePlayed
+00474604: Software\10tons entertainment\Crimsonland
+00474630: Unloaded resource paq
+
+00474648: balloon
+00474650: balloon.tga
+0047465c: Entering Crimsonland..
+
+00474674: endthread () - (Sound library)
+
+00474694: beginthread () - (Sound library)
+
+004746b8: Grim SFX: %d/%d
+004746c8: Grim GFX %d/%d
+004746d8: logo_esrb
+004746e4: loading
+004746ec: splash10Tons
+004746fc: load\splash10tons.jaz
+00474714: splashReflexive
+00474724: load\splashReflexive.jpg
+00474740: music\%s
+0047474c: snd_addGameTune <tuneName.ogg>
+
+0047476c: Gamma ramp regenerated and multiplied with %f
+
+0047479c: Command adjusts gamma ramp linearly by multiplying with given scalar
+
+004747e4: setGammaRamp <scalar > 0>
+
+00474800: Failed to open browser at '%s'.
+
+00474824: Waving the Grim Reaper goodbye..
+
+00474848: Shutdown Grim..
+
+0047485c: Leaving Crimsonland..
+
+00474874: Kameli was NOT hairy.
+
+0047488c: load\logo_crimsonland.tga
+004748a8: load\loading.jaz
+004748bc: load\esrb_mature.jaz
+004748d4: load\mockup.jaz
+004748e4: load\backplasma.jaz
+004748f8: Set resource paq to 'crimson.paq'
+
+0047491c: crimson.paq
+00474928: v_height
+00474938: v_width
+00474944: exec autoexec.txt
+00474958: Crimsonland:
+00474968: Critical failure.
+
+0047497c: ...initiating Grim system
+
+00474998: ...using joystick
+
+004749ac: ...using mouse
+
+004749bc: ...using keyboard
+
+004749d0: ...selected fullscreen mode %dx%dx%d
+004749f8: ...selected windowed mode, window size %dx%d
+00474a28: ...using DEVELOPER backend
+
+00474a44: ...using PRIMARY backend
+
+00474a60: ...using SAFEMODE fallback backend
+
+00474a84: ...setting system states
+
+00474aa0: ...invoking grim config
+
+00474abc: ...loading config pre-sets
+
+00474ad8: ...registering core variables
+
+00474af8: ...interface created
+
+00474b10: Grim.dll is corrupted or missing.
+
+(You also might have too old
+DirectX version installed. Try
+(re)installing DX8.1 or above)
+00474b98: grim.dll
+00474ba4: ...DEV dll not found, trying to find REL dll
+
+00474bd4: Initiating Grim
+
+00474be8: ----- Grim2D API -----
+
+00474c00: ..\grim_grSystem_c\Release\grim.dll
+00474c24: sndfreqadjustment
+00474c38: openurl
+00474c40: loadtexture
+00474c4c: setresourcepaq
+00474c5c: telltimesurvived
+00474c70: generateterrain
+00474c80: snd_addGameTune
+00474c90: setGammaRamp
+00474ca0: Game base path: '%s'
+
+00474cb8: DirectX8.1 not detected.
+
+Crimsonland needs Microsoft DirectX 8.1 installed
+on the system. It is available for download at
+http://www.microsoft.com/directx
+00474d54: -----------
+
+00474d64: Crimsonland
+
+00474d74: Unknown DirectX version detected. You need to have DirectX version 8.1 or newer
+to run Crimsonland.
+
+Would you like to try and run the game anyway?
+00474e08: Failed to launch web browser.
+00474e28: http://www.microsoft.com/windows/directx/default.aspx
+00474e60: 
+DirectX8.1 or newer not detected.
+
+Crimsonland needs Microsoft DirectX 8.1 installed on the system to run.
+It is available for download at http://www.microsoft.com/directx
+
+Would you like to open your browser at location you can download DirectX?
+
+
+00474f60: application/octet-stream
+00474f90: endthread ()  (High scores)
+
+00474fb0: ONLINE Scores: CleanUp
+
+00474fc8: ONLINE Scores: InternetConnect failed.
+
+00474ff0: ONLINE Scores: HttpOpenRequest failed.
+
+00475018: ONLINE Scores: Scores sent and received ok.
+
+00475048: <-- (%d %d)
+
+00475058: invalid feedback (%d bytes).
+
+00475078: - Saving scores...
+
+0047508c: ->%s<-
+
+00475094: ! Invalid number of bytes received (%d should be %d).
+
+004750cc: <-- %d scores (%d+%d) received in %d bytes.
+
+004750fc: ONLINE Scores: Beginning to parse data..
+
+00475128: Warning: receiving too much data, breaking out..
+
+0047515c: Or: %s
+
+00475164: Reason: %d
+
+00475170: ONLINE Scores: InternetReadFile failed.
+
+0047519c: ONLINE Scores: HttpSendRequest failed.
+
+004751c4: <-- Sending %d scores in %d bytes.
+
+004751f0: HTTP/1.1
+00475204: guest
+0047520c: ONLINE Scores: InternetOpen failed.
+
+00475234: Detected a potential illegal score: refusing to send it online.
+
+0047527c: application/x-comet
+00475290: application/msword
+004752a4: application/vnd.ms-excel
+004752c0: application/vnd.ms-powerpoint
+004752e0: image/pjpeg
+004752ec: image/jpeg
+004752f8: image/x-xbitmap
+00475308: image/gif
+00475314: Content-Disposition: inline; filename="test"
+Content-type: application/octet-stream
+0047536c: beginthread () highscores thread.
+
+00475390: endthread ()  (version check)
+
+004753b0: Version Check: CleanUp
+
+004753c8: Version Check: InternetConnect failed.
+
+004753f0: Version Check: HttpOpenRequest failed.
+
+00475418: Received: '%s'
+
+00475428: Data not ok.
+
+00475438: Local Version: '%s'
+
+00475450: Newest Version: '%s'
+
+00475468: Link: '%s'
+
+00475474: There is a newer version available. (v%d.%d.%d)
+
+004754a8: Crimsonland %d.%d.%d<
+004754c0: Data seems ok.
+
+004754d0: <a href
+004754d8: Version Check: Beginning to parse data..
+
+00475504: Version Check: InternetReadFile failed.
+
+00475530: Receiving data...
+
+00475544: Version Check: HttpSendRequest failed.
+
+0047556c: Connecting server...
+
+00475584: www.crimsonland.com
+00475598: Version Check: InternetOpen failed.
+
+004755c0: beginthread () (version check)
+
+00475696: `=Perk Randomizer failed to generate a random perk!
+
+004756cc: The computer removes half of the wrong monsters for you. You don't gain any experience.
+00475724: Lifeline 50-50
+00475734: Damage received during reloading a weapon is halved.
+0047576c: Tough Reloader
+0047577c: It comes a time in each man's life when you'd just rather not move anymore. Being living fortress not moving comes with extra benefits as well. You do the more damage the longer you stand still.
+00475840: Living Fortress
+00475850: You have a fireball stuck in your throat. Repeatedly. Mind your manners.
+0047589c: Fire Caugh
+004758a8: You have the ability to go boom for you are the MAN BOMB. Going boom requires a lot of concentration and standing completely still for a few seconds.
+00475940: Man Bomb
+0047594c: It's incredibly hard to reload your piece while moving around, you've noticed. In fact, realizing that, when you don't move a (leg) muscle you can reload the gun THREE TIMES FASTER!
+00475a04: Stationary Reloader
+00475a18: You're good with ion weapons. You're so good that not only your shots do slightly more damage but your ion blast radius is also increased.
+00475aa4: Ion Gun Master
+00475ab4: You hate it when you run out of shots. You HATE HATE HATE reloading your gun. Lucky for you, and strangely enough, your hate materializes as Mighty Balls of Fire. Or more like Quite Decent Balls of Fire, but it's still kinda neat, huh?
+00475ba0: Angry Reloader
+00475bb0: Here, eat this bandage and you'll feel a lot better in no time. (restores up to 50% health)
+00475c0c: Bandage
+00475c14: You've grown very fond of your piece. You polish it all the time and talk nice to it, your precious. (+2 clip size, no more random weapon bonuses) 
+00475ca8: My Favourite Weapon
+00475cbc: You die exactly in 30 seconds. You can't escape your destiny, but feel free to go on a spree. Tick, tock.
+00475d28: Death Clock
+00475d34: Trade 2/3rds of your health for the killing of every single creature on the screen. No, you don't get the experience.
+00475dac: Breathing Room
+00475dbc: Your health replenishes faster than ever.
+00475de8: Greater Regeneration
+00475e00: To you the world seems to go on about 10% slower than to an average person. It can be rather irritating sometimes, but it does give you a chance to react better.
+00475ea4: Reflex Boosted
+00475eb4: Being the Perk Expert taught you a few things and now you are ready to take your training to the next level doubling the ability effect.
+00475f40: Perk Master
+00475f4c: Things happen near you. Strangest things. Creatures just drop dead and accidents happen. Beware.
+00475fb0: Jinxed
+00475fb8: You are immortal. Well, almost immortal. Instead of actually losing health on attacks you've got a 10% chance of just dropping dead whenever a monster attacks you. There really can be only one, you know.
+00476084: Highlander
+00476090: You've taken your dodging abilities to the next level; monsters have really hard time hitting you.
+004760f4: Ninja
+004760fc: You just enjoy using fire as your Tool of Destruction and you're good at it too; your fire based weapons do a lot more damage.
+0047617c: Pyromaniac
+00476188: Your health replenishes but very slowly. What more there is to say?
+004761cc: Regeneration
+004761dc: You started out just by being poisonous. The next logical step for you is to become highly toxic -- the ULTIMATE TOXIC AVENGER. Most monsters touching you will just drop dead within seconds!
+0047629c: Toxic Avenger
+004762ac: A strong poison runs through your veins. Monsters taking a bite of you are eventually to experience an agonizing death.
+00476324: Veins of Poison
+00476334: Empty clip doesn't prevent you from shooting with a weapon; instead the ammunition is drawn from your health while you are reloading.
+004763bc: Ammunition Within
+004763d0: After studying a lot of physics and friction you've come up with a way to make your bullets fly faster. More speed, more damage.
+00476454: Barrel Greaser
+00476464: Trade 1/3 of your health for only receiving 2/3rds damage on attacks.
+004764ac: Thick Skinned
+004764bc: Your bonus power-ups last 50% longer than they normally would.
+004764fc: Bonus Economist
+0047650c: It literally boils inside you. That's exactly why you need to let it out once in a while, unfortunately for those near you.
+00476588: Hot Tempered
+00476598: With your newly enhanced senses you can see all bad energy VERY clearly. That's got to be enough.
+004765fc: Monster Vision
+0047660c: With a single glance you can tell the medical condition of, well, anything. Also, being a doctor, you know exactly what hurts the most enabling you to do slightly more damage with your attacks.
+004766d0: Doctor
+004766d8: Your bullets have a nice creamy uranium filling. Yummy. Now that's gotta hurt the monsters more, right?
+00476740: Uranium Filled Bullets
+00476758: You somehow seem to lure all kinds of bonuses to appear around you more often.
+004767a8: Bonus Magnet
+004767b8: It seems so stupid just to take the hits. Each time a monster attacks you you have a chance to dodge the attack.
+0047682c: Dodger
+00476834: You tend to explicitly treat each of your bullets with rat poison. You do it for good luck, but it seems to have other side effects too.
+004768c0: Poison Bullets
+004768d0: In exchange for your soul, a dark stranger is offering you three (3) new perks. To collect his part of the bargain soon enough, your health is reduced to a near-death status. Just sign down here below this pentagram..
+004769ac: Infernal Contract
+004769c0: Attempt to shoot with an empty clip leads to a severe loss of experience. But hey, whatever makes them go down, right?
+00476a38: Regression Bullets
+00476a4c: Monsters can't slow you down with their nasty scratches and bites. It still hurts but you simply ignore the pain.
+00476ac0: Unstoppable
+00476acc: You sure know how to pick a perk -- most people just don't see that extra perk laying around. This gives you the opportunity to pick the freshest and shiniest perks from the top.
+00476b80: Perk Expert
+00476b8c: Picking up bonuses has never been so easy and FUN. You can pick up bonuses simply by aiming at them for a while. Ingenious.
+00476c08: Telekinetic
+00476c14: Pick this and you'll get your revenge. It's a promise.
+00476c4c: Final Revenge
+00476c5c: When you can't stand waiting your gun to be reloaded you can speed up the process by clicking your FIRE button repeatedly as fast as you can.
+00476cec: Anxious Loader
+00476cfc: You master the art of melee fighting. You don't just stand still when monsters come near -- you hit back. Hard.
+00476d6c: Mr. Melee
+00476d78: Here, have this weapon. No questions asked.
+00476da4: Random Weapon
+00476db4: Fifty-fifty chance of dying OR gaining 10k experience points. Place your bets. Interested, anyone?
+00476e18: Fatal Lottery
+00476e28: Funny how you make your gun spit bullets faster than the next guy. Even the most professional of engineers are astonished.
+00476ea4: Fastshot
+00476eb0: You are the Radioactive-man; you have that healthy green glow around you! Others don't like it though, it makes them sick and nauseous whenever near you. It does affect your social life a bit.
+00476f74: Radioactive
+00476f80: You squeeze and you push and you pack your clips with about 20% more ammo than a regular fellow. They call you Ammo Maniac with a deep respect in their voices.
+00477020: Ammo Maniac
+0047702c: No living (nor dead) can resist the hypnotic power of your eyes: monsters freeze still as you look at them!
+00477098: Evil Eyes
+004770a4: You carry a horrible disease. Good for you: you are immune. Bad for them: it is contagious! (Monsters become resistant over time though.)
+00477130: Plaguebearer
+00477140: Ever fancied about having two weapons available for use? This might be your lucky day; with this perk you'll get an extra weapon slot for another gun! Carrying around two guns slows you down slightly though. (You can switch the weapon slots with RELOAD key)
+00477244: Alternate Weapon
+00477258: I'll make you a deal: I'll give you 18% more experience points, and you'll give me your life. So you'll die but score higher. Ponder that one for a sec.
+004772f4: Grim Deal
+00477300: 2500 experience points. Right away. Take it or leave it.
+0047733c: Instant Winner
+0047734c: You see flames everywhere. Bare aiming at creatures causes them to heat up.
+00477398: Pyrokinetic
+004773a4: You move like a train that has feet and runs. You just need a little time to warm up. In other words you'll move faster the longer you run without stopping.
+00477444: Long Distance Runner
+0047745c: Why kill for experience when you can make some of your own for free! With this perk the experience just keeps flowing in at a constant rate.
+004774ec: Lean Mean Exp Machine
+00477504: Man, you sure know how to load a gun.
+0047752c: Fastloader
+00477538: Miraculously your aiming improves drastically, but you take a little bit more time on actually firing the gun. If you order now, you also get a fancy LASER SIGHT without ANY charge!
+004775f0: Sharpshooter
+00477600: You learn things faster than a regular Joe from now on gaining 30% more experience points from everything you do.
+00477674: Quick Learner
+00477684: More the merrier. More blood guarantees a 30% better experience. You spill more blood and gain more experience points.
+004776fc: Bloody Mess
+00477708: You shouldn't be seeing this..
+00477728: AntiPerk
+00477742: `=Quest overwritten!
+
+00477758: Unhandled creatureType.
+
+00477782: `=Generating a fallback quest.
+
+004777a4: The Gathering
+004777b4: Nagolipoli
+004777c0: Monster Blues
+004777d0: Army of Three
+004777e0: Cross Fire
+004777ec: Knee-deep in the Dead
+00477804: The Gang Wars
+00477814: The Fortress
+00477824: The Spanking Of The Dead
+00477840: The Beating
+0047784c: The End of All
+0047785c: The Annihilation
+00477870: Syntax Terror
+00477880: Gauntlet
+0047788c: The Unblitzkrieg
+004778a0: The Massacre
+004778b0: The Collaboration
+004778c4: Lizard Zombie Pact
+004778d8: Zombie Time
+004778e4: Major Alien Breach
+004778f8: Zombie Masters
+00477908: Deja vu
+00477910: Lizard Raze
+0047791c: Spiders Inc.
+0047792c: The Lizquidation
+00477940: Surrounded By Reptiles
+00477958: Hidden Evil
+00477964: The Killing
+00477970: Lizard Kings
+00477980: The Blighting
+00477990: Spideroids
+0047799c: Ghost Patrols
+004779ac: Land Of Lizards
+004779bc: Survival Of The Fastest
+004779d4: Evil Zombies At Large
+004779ec: Sweep Stakes
+004779fc: Two Fronts
+00477a08: Arachnoid Farm
+00477a18: Spider Spawns
+00477a28: Everred Pastures
+00477a3c: 8-legged Terror
+00477a4c: Nesting Grounds
+00477a5c: Alien Squads
+00477a6c: Spider Wave Syndrome
+00477a84: The Random Factor
+00477a98: Alien Dens
+00477aa4: Frontline Assault
+00477ab8: Target Practice
+00477ac8: Minor Alien Breach
+00477adc: Land Hostile
+00477aec: Setup tier %d quest %d.
+
+00477b16: `=Potentially illegal score detected.
+
+00477b40: WARN: checksum failure on score by %s
+
+00477b6c: Unable to save score: disk full or file in use?
+
+00477ba4: scores5
+00477bac: UNEXPECTED: sc is null!
+
+00477bc8: Opening '%s'
+
+00477bd8: Opening named cache '%s'
+
+00477bfc: scores5\unknown.hi
+00477c10: %s\scores5\questhc%d_%d.hi
+00477c2c: %s\scores5\quest%d_%d.hi
+00477c48: %s\scores5\survival.hi
+00477c60: %s\scores5\rush.hi
+00477c74: --- SND_  Buffer restored.
+
+00477ca0: --- SND_  Failed to duplicate the buffer.
+
+00477ccc: --- SND_  Somehow data on the second lock too! This can't be happening!.
+
+00477d2c: SFX Sample %d <- '%s' ok
+
+00477d48: ...loading wav sample '%s' failed
+
+00477d6c: ...loading ogg sample '%s' failed
+
+00477d90: sfx\%s
+00477d98: trooper_inPain_01.ogg
+00477db0: Warning: sample '%s' not accepted.
+
+00477ddc: SFX Tune %d <- '%s' ok
+
+00477df4: SFX Tune %d <- '%s' FAILED
+
+00477e10: music\crimsonquest.ogg
+00477e28: music\crimson_theme.ogg
+00477e40: exec music\game_tunes.txt
+00477e5c: music\shortie_monk.ogg
+00477e74: music\intro.ogg
+00477e84: ...resource paq 'music.paq' not found, using separate files.
+
+00477ec4: ...set sound resource paq 'music.paq'
+
+00477eec: music.paq
+00477ef8: %d samples loaded to sound library in %.2f seconds.
+
+00477f30: bloodSpill_02.ogg
+00477f44: bloodSpill_01.ogg
+00477f58: ui_clink_01.ogg
+00477f68: ui_typeEnter.ogg
+00477f7c: ui_typeClick_02.ogg
+00477f90: ui_typeClick_01.ogg
+00477fa4: ui_levelUp.ogg
+00477fb4: ui_panelClick.ogg
+00477fc8: ui_buttonClick.ogg
+00477fdc: ui_bonus.ogg
+00477fec: questHit.ogg
+00477ffc: shockwave.ogg
+0047800c: explosion_large.ogg
+00478020: explosion_medium.ogg
+00478038: explosion_small.ogg
+0047804c: shock_hit_01.ogg
+00478060: bullet_hit_06.ogg
+00478074: bullet_hit_05.ogg
+00478088: bullet_hit_04.ogg
+0047809c: bullet_hit_03.ogg
+004780b0: bullet_hit_02.ogg
+004780c4: bullet_hit_01.ogg
+004780d8: rocketmini_fire.ogg
+004780ec: rocket_fire.ogg
+004780fc: shockMinigun_fire.ogg
+00478114: shock_reload.ogg
+00478128: flamer_fire_02.ogg
+0047813c: flamer_fire_01.ogg
+00478150: pulse_fire.ogg
+00478160: plasmaShotgun_fire.ogg
+00478178: plasmaMinigun_fire.ogg
+00478190: shock_fire.ogg
+004781a0: hrpm_fire.ogg
+004781b0: gauss_fire.ogg
+004781c0: autorifle_reload.ogg
+004781d8: autorifle_fire.ogg
+004781ec: shotgun_reload.ogg
+00478200: shotgun_fire.ogg
+00478214: pistol_reload.ogg
+00478228: pistol_fire.ogg
+00478238: spider_attack_02.ogg
+00478250: spider_attack_01.ogg
+00478268: spider_die_04.ogg
+0047827c: spider_die_03.ogg
+00478290: spider_die_02.ogg
+004782a4: spider_die_01.ogg
+004782b8: lizard_attack_02.ogg
+004782d0: lizard_attack_01.ogg
+004782e8: lizard_die_04.ogg
+004782fc: lizard_die_03.ogg
+00478310: lizard_die_02.ogg
+00478324: lizard_die_01.ogg
+00478338: alien_attack_02.ogg
+0047834c: alien_attack_01.ogg
+00478360: alien_die_04.ogg
+00478374: alien_die_03.ogg
+00478388: alien_die_02.ogg
+0047839c: alien_die_01.ogg
+004783b0: zombie_attack_02.ogg
+004783c8: zombie_attack_01.ogg
+004783e0: zombie_die_04.ogg
+004783f4: zombie_die_03.ogg
+00478408: zombie_die_02.ogg
+0047841c: zombie_die_01.ogg
+00478430: trooper_die_03.ogg
+00478444: trooper_die_02.ogg
+00478458: trooper_die_01.ogg
+0047846c: trooper_inPain_03.ogg
+00478484: trooper_inPain_02.ogg
+0047849c: ...failed to set sound resource paq 'sfx.paq'
+
+004784cc: ...set sound resource paq 'sfx.paq'
+
+004784f4: sfx.paq
+004784fc: Init Grim SFX done
+
+00478510: ...saying hello to the Ogg!
+
+00478530: ...using default speaker config
+
+00478554: ...using DirectSound output
+
+00478574: ...init 44100 Hz 16 bit ok
+
+00478590: ...FAILED: unable to init Grim SFX. No sounds used.
+
+004785c8: Initializing Grim SFX sound system
+
+004785ec: SFX Released.
+
+004785fc: SFX_Shutdown ()
+
+00478610: SND: detected unsilenced hearable tune not playing -- starting up..
+
+0047867c: (total %dh)
+00478688: for new Crimsonland versions
+004786a8: Connect the Internet and check
+004786c8: of Crimsonland.
+004786d8: You've got the newest version
+004786f8: Failed..
+00478704: Done..
+0047870c: Connecting server..
+00478720: played for %d hours %d minutes
+00478740: Check for updates
+00478754: (Mods)
+0047875c:  (Typ'o'Shooter) 
+00478770:  Credits 
+0047877c:   Perks  
+00478788:   Weapons  
+00478794: Clip size: %d
+004787a4: Reload time: %.1f secs
+004787bc: Firerate:    n/a
+004787d0: Firerate:    %d rpm
+004787e4: wepno #%d
+004787f0: %d weapons in database
+00478808: Unlocked Weapons Database
+00478824: Requires: %s
+00478834: perkno #%d
+00478840: Perks
+00478848: %d perks in database
+00478860: Unlocked Perks Database
+00478878: %d. %s %d
+004788b8: The % of shot bullets hit the target
+004788e0: The time the game lasted
+004788fc: Most used weapon during the game
+00478920: Hit %%: %d%%
+00478930: Frags: %d
+0047893c: Game time
+00478948: Experience
+00478954: Rank: %s
+00478960: %.2f secs
+0047896c: Score
+00478974: Local score
+00478980: Score from the Internet
+00478998: uni#%d
+004789a0: Internet score of local origin
+004789c0: NOTE:
+004789c8: Get the update
+004789d8: game available for download.
+004789f8: There is a newer version of the
+00478a18: Play a game of selected game mode
+00478a3c: Only receive scores from the Internet. (Demo)
+00478a6c: Update scores from the Internet
+00478a8c: Failed to update scores. Try again later.
+00478ab8: Done...
+00478ac0: Receiving internet scores...
+00478ae0: Connected....
+00478af0: Sending local scores...
+00478b08: Connected...
+00478b18: Connecting...
+00478b28: 2 players
+00478b34: 1 player
+00478b40: Show scores:
+00478b50: Game mode
+00478b5c: Number of players
+00478b70: Selected score list:
+00478b88: Best of day
+00478b94: Best of week
+00478ba4: Best of month
+00478bb4: Best of all time
+00478bc8: Show internet scores
+00478be0: Receive all
+00478bec: Receive scores
+00478bfc: Update all
+00478c08: Update scores
+00478c18: %d	%d	%s
+00478c24: Hardcore
+00478c30: Player
+00478c40: %d.%d: %s
+00478c4c: High scores - %s
+00478c60: Delete
+00478c6c: <add new named list>
+00478cac: break
+00478cc4: scape
+00478ccc: below
+00478cec: sleep
+00478cfc: unique
+00478d20: jumper
+00478d2c: brown
+00478d34: quick
+00478d5c: harry
+00478e04: quickbrownfox
+00478e14: %d. unique: %s
+
+00478e24: %s%s%s
+00478e2c: %s%s%s%s
+00478e38: reload
+00478e68: Controls
+00478e74: UI Info texts
+00478e84: Mouse sensitivity:
+00478e98: Graphics detail:
+00478eac: Music volume:
+00478ebc: Sound volume:
+00478ecc: Computer
+00478ed8: Dual Action Pad
+00478ee8: Joystick
+00478ef4: Keyboard
+00478f00: Mouse relative
+00478f10: Mouse
+00478f18: Mouse point&click
+00478f2c: Static
+00478f34: Relative
+00478f40: (%d/%d)
+00478f48: (completed/games)
+00478f5c: Assign control (eg. press a key).
+00478f80:      (press ESCAPE to cancel)
+00478fa0: axis you want to assign the control to
+00478fc8:  Move joystick/pad analog controller
+00478ff8: Left/Right Axis:
+0047900c: Up/Down Axis:
+0047901c: Move to cursor:
+0047902c: Turn right:
+00479038: Turn left:
+00479044: Backwards:
+00479050: Forward:
+0047905c: Move Right:
+00479068: Move Left:
+00479074: Move Down:
+00479080: Move Up:
+0047908c: Moving
+00479094: Aim Left/Right Axis:
+004790ac: Aim Up/Down Axis:
+004790c0: Torso right:
+004790d0: Torso left:
+004790dc: Aiming
+004790e4: Configured controls
+004790f8: Show direction arrow
+00479110: Moving method:
+00479120: Aiming method:
+00479130: Configure for:
+00479140: Player 4
+0047914c: Player 3
+00479158: Player 2
+00479164: Player 1
+00479170: Redefine
+0047917c: Learn how to play Crimsonland.
+0047919c: Use your typing skills as the weapon to lay
+them down.
+004791d4: Gain perks and weapons and fight back.
+004791fc: Face a rush of aliens in Rush mode.
+00479220: Unlock new weapons and perks in Quest mode.
+0047924c: 4 players
+00479258: 3 players
+00479264: times played:
+00479274: Tutorial
+00479280:  Quests 
+0047928c: !!! Elem == NULL!
+
+004792a0: ui\ui_textLevelUp.jaz
+004792b8: ui\ui_textWellDone.jaz
+004792d0: ui\ui_textPickAPerk.jaz
+004792e8: ui\ui_textControls.jaz
+00479300: ui\ui_textReaper.jaz
+00479318: ui\ui_itemTexts.jaz
+0047933a: `=Lighting Rifle
+0047934c: Nuke Launcher
+0047935c: Blaster R-300
+0047936c: Transmutator
+0047937c: Spider Plasma
+0047938c: Bubblegun
+00479398: Grim Weapon
+004793a4: Rainbow Gun
+004793b0: Plague Sphreader Gun
+004793c8: Blade Gun
+004793d4: Shrinkifier 5k
+004793e4: Splitter Gun
+004793f5: ayGun
+004793fc: Flameburst
+00479408: Evil Scythe
+00479414: Plasma Cannon
+00479424: Gauss Shotgun
+00479434: Ion Shotgun
+00479440: Ion Cannon
+0047944c: Ion Minigun
+00479458: Ion Rifle
+00479464: Pulse Gun
+00479470: Rocket Minigun
+00479480: Mini-Rocket Swarmers
+00479498: HR Flamer
+004794a4: Blow Torch
+004794b0: Plasma Shotgun
+004794c0: Mean Minigun
+004794d0: Seeker Rockets
+004794e0: Rocket Launcher
+004794f0: Gauss Gun
+004794fc: Plasma Minigun
+0047950c: Multi-Plasma
+0047951c: Plasma Rifle
+0047952c: Flamethrower
+0047953c: Submachine Gun
+0047954c: Jackhammer
+00479558: Sawed-off Shotgun
+0047956d: hotgun
+00479574: Assault Rifle
+00479584: Pistol
+0047958c: Fire bullets
+0047db18:  	-]

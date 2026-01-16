@@ -1,0 +1,28 @@
+Interesting Functions and Patterns
+===================================
+
+[FILE related]
+  GetFileVersionInfoA @ 0046e956
+  GetFileVersionInfoSizeA @ 0046e95c
+
+[OPEN related]
+  ov_open_callbacks @ 0046e932
+
+[READ related]
+  ov_read @ 0046e93e
+
+[MALLOC related]
+  _malloc @ 004629d9
+  __nh_malloc @ 004629eb
+
+[FREE related]
+  __freebuf @ 00463f29
+
+[ALLOC related]
+  _malloc @ 004629d9
+  __nh_malloc @ 004629eb
+
+[ERROR related]
+  __startOneArgErrorHandling @ 004650e7
+
+[POTENTIALLY DANGEROUS FUNCTIONS]
