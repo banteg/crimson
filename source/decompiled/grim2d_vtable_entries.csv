@@ -67,7 +67,7 @@ index,offset_hex,offset_dec,func_addr,func_name,section
 65,0x104,260,0x10008230,grim_set_atlas_frame,.text
 66,0x108,264,0x100082c0,grim_set_sub_rect,.text
 67,0x10c,268,0x100083a0,grim_set_uv_point,.text
-68,0x110,272,0x10008040,grim_set_pivot,.text
+68,0x110,272,0x10008040,grim_set_color_ptr,.text
 69,0x114,276,0x10007f90,grim_set_color,.text
 70,0x118,280,0x100081c0,grim_set_color_slot,.text
 71,0x11c,284,0x10008b10,grim_draw_quad,.text

@@ -548,7 +548,7 @@
     "offset_hex": "0x110",
     "offset_dec": 272,
     "func_addr": "0x10008040",
-    "func_name": "grim_set_pivot",
+    "func_name": "grim_set_color_ptr",
     "section": ".text"
   },
   {

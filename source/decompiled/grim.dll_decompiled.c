@@ -4415,11 +4415,11 @@ void grim_set_color(float r,float g,float b,float a)
 
 
 
-/* grim_set_pivot @ 10008040 */
+/* grim_set_color_ptr @ 10008040 */
 
 /* Grim2D vtable 0x110 (provisional) */
 
-void grim_set_pivot(float *xy)
+void grim_set_color_ptr(float *rgba)
 
 {
   undefined1 uVar1;
@@ -4431,11 +4431,11 @@ void grim_set_pivot(float *xy)
   uVar2 = ftol();
   uVar3 = ftol();
   uVar4 = ftol();
-  xy = (float *)CONCAT31(CONCAT21(CONCAT11(uVar1,uVar2),uVar3),uVar4);
-  DAT_1005bc04 = xy;
-  DAT_1005bc10 = xy;
-  DAT_1005bc0c = xy;
-  DAT_1005bc08 = xy;
+  rgba = (float *)CONCAT31(CONCAT21(CONCAT11(uVar1,uVar2),uVar3),uVar4);
+  DAT_1005bc04 = rgba;
+  DAT_1005bc10 = rgba;
+  DAT_1005bc0c = rgba;
+  DAT_1005bc08 = rgba;
   return;
 }
 
@@ -4517,14 +4517,14 @@ void grim_set_color_slot(int index,float r,float g,float b,float a)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* Grim2D vtable 0x104 (provisional) */
 
-void grim_set_atlas_frame(int atlas,int frame)
+void grim_set_atlas_frame(int atlas_size,int frame)
 
 {
   float fVar1;
   
-  fVar1 = 1.0 / (float)atlas;
-  DAT_1005b2a8 = *(float *)((&DAT_1005bc78)[atlas] + frame * 8);
-  DAT_1005b29c = *(float *)((&DAT_1005bc78)[atlas] + 4 + frame * 8);
+  fVar1 = 1.0 / (float)atlas_size;
+  DAT_1005b2a8 = *(float *)((&DAT_1005bc78)[atlas_size] + frame * 8);
+  DAT_1005b29c = *(float *)((&DAT_1005bc78)[atlas_size] + 4 + frame * 8);
   DAT_1005b290 = DAT_1005b2a8;
   DAT_1005b294 = DAT_1005b29c;
   DAT_1005b298 = DAT_1005b2a8 + fVar1;
@@ -4541,18 +4541,18 @@ void grim_set_atlas_frame(int atlas,int frame)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* Grim2D vtable 0x108 (provisional) */
 
-void grim_set_sub_rect(int x,int y,int w,int h)
+void grim_set_sub_rect(int atlas_size,int width,int height,int frame)
 
 {
   float fVar1;
   
-  DAT_1005b2a8 = *(float *)((&DAT_1005bc78)[x] + h * 8);
-  DAT_1005b29c = *(float *)((&DAT_1005bc78)[x] + 4 + h * 8);
+  DAT_1005b2a8 = *(float *)((&DAT_1005bc78)[atlas_size] + frame * 8);
+  DAT_1005b29c = *(float *)((&DAT_1005bc78)[atlas_size] + 4 + frame * 8);
   DAT_1005b290 = DAT_1005b2a8;
   DAT_1005b294 = DAT_1005b29c;
-  DAT_1005b298 = (float)y * (1.0 / (float)x) + DAT_1005b2a8;
+  DAT_1005b298 = (float)width * (1.0 / (float)atlas_size) + DAT_1005b2a8;
   DAT_1005b2a0 = DAT_1005b298;
-  fVar1 = (1.0 / (float)x) * (float)w;
+  fVar1 = (1.0 / (float)atlas_size) * (float)height;
   DAT_1005b2a4 = fVar1 + DAT_1005b29c;
   DAT_1005b2ac = fVar1 + DAT_1005b29c;
   return;
@@ -49915,6 +49915,3 @@ void Unwind_1004bbcb(void)
   operator_delete(*(void **)(unaff_EBP + 8));
   return;
 }
-
-
-

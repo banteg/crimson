@@ -1244,7 +1244,7 @@
     "calling_convention": "unknown",
     "return_type": "void",
     "param_count": 2,
-    "signature": "void grim_set_atlas_frame(int atlas, int frame)",
+    "signature": "void grim_set_atlas_frame(int atlas_size, int frame)",
     "source_type": "DEFAULT"
   },
   {
@@ -1267,7 +1267,7 @@
     "calling_convention": "unknown",
     "return_type": "void",
     "param_count": 4,
-    "signature": "void grim_set_sub_rect(int x, int y, int w, int h)",
+    "signature": "void grim_set_sub_rect(int atlas_size, int width, int height, int frame)",
     "source_type": "DEFAULT"
   },
   {
@@ -1308,12 +1308,12 @@
     ],
     "func_addr": "0x10008040",
     "section": ".text",
-    "func_name": "grim_set_pivot",
+    "func_name": "grim_set_color_ptr",
     "func_size": 104,
     "calling_convention": "__stdcall",
     "return_type": "void",
     "param_count": 1,
-    "signature": "void grim_set_pivot(float * xy)",
+    "signature": "void grim_set_color_ptr(float *rgba)",
     "source_type": "DEFAULT"
   },
   {

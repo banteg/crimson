@@ -553,9 +553,9 @@ LAB_00401add:
 
 ## 0x104 — FUN_10008230 @ 0x10008230
 - Provisional name: `set_atlas_frame` (high)
-- Guess: `void set_atlas_frame(int atlas, int frame)`
-- Notes: atlas index + frame
-- Ghidra signature: `undefined FUN_10008230()`
+- Guess: `void set_atlas_frame(int atlas_size, int frame)`
+- Notes: atlas size (cells per side) + frame index
+- Ghidra signature: `void grim_set_atlas_frame(int atlas_size, int frame)`
 - Call sites: 25 (unique funcs: 6)
 - Sample calls: FUN_00418b60:L9704; FUN_00418b60:L9715; FUN_00418b60:L9759; FUN_00418b60:L9770; FUN_00418b60:L9819; FUN_00418b60:L9830; FUN_0041a8b0:L10630; FUN_00422c70:L16482
 - First callsite: FUN_00418b60 (line 11841)
@@ -571,9 +571,9 @@ LAB_00401add:
 
 ## 0x108 — FUN_100082c0 @ 0x100082c0
 - Provisional name: `set_sub_rect` (medium)
-- Guess: `void set_sub_rect(int x, int y, int w, int h)`
-- Notes: pixel rect; sometimes called with 4 ints
-- Ghidra signature: `undefined FUN_100082c0()`
+- Guess: `void set_sub_rect(int atlas_size, int width, int height, int frame)`
+- Notes: atlas sub-rect in cell units (uses atlas size + frame)
+- Ghidra signature: `void grim_set_sub_rect(int atlas_size, int width, int height, int frame)`
 - Call sites: 6 (unique funcs: 3)
 - Sample calls: FUN_0041aed0:L10950; FUN_0041aed0:L10961; FUN_0041aed0:L10964; FUN_0041aed0:L11488; FUN_004295f0:L18733; FUN_004413a0:L27845
 - First callsite: FUN_0041aed0 (line 13087)
@@ -603,10 +603,10 @@ LAB_00401add:
 
 
 ## 0x110 — FUN_10008040 @ 0x10008040
-- Provisional name: `set_pivot` (medium)
-- Guess: `void set_pivot(const float *xy)`
-- Notes: called after atlas selection and before rotation/draw calls; pointer passed from stack/global
-- Ghidra signature: `undefined FUN_10008040(void)`
+- Provisional name: `set_color_ptr` (medium)
+- Guess: `void set_color_ptr(float *rgba)`
+- Notes: pointer to RGBA floats (0..1); values are clamped before call
+- Ghidra signature: `void grim_set_color_ptr(float *rgba)`
 - Call sites: 20 (unique funcs: 10)
 - Sample calls: FUN_0040ffc0:L7098; FUN_0040ffc0:L7171; FUN_00410d20:L7782; FUN_00410d20:L7851; FUN_00418b60:L9717; FUN_00418b60:L9772; FUN_00418b60:L9832; FUN_00418b60:L9894
 - First callsite: FUN_0040ffc0 (line 7485)
@@ -619,6 +619,28 @@ LAB_00401add:
           (**(code **)(*DAT_0048083c + 0x11c))
                     ((_DAT_00484fc8 + pfVar5[1]) - fVar10,(_DAT_00484fcc + pfVar5[2]) - fVar10,
                      pfVar5[9] * 1.07,pfVar5[9] * 1.07);
+```
+
+Clamped RGBA example (FUN_00446030):
+
+```c
+        if (0.0 <= afStack_8c[2]) {
+          if (1.0 < afStack_8c[2]) {
+            afStack_8c[2] = 1.0;
+          }
+        }
+        else {
+          afStack_8c[2] = 0.0;
+        }
+        if (0.0 <= afStack_8c[3]) {
+          if (1.0 < afStack_8c[3]) {
+            afStack_8c[3] = 1.0;
+          }
+        }
+        else {
+          afStack_8c[3] = 0.0;
+        }
+        (**(code **)(*DAT_0048083c + 0x110))(afStack_8c + 2);
 ```
 
 

@@ -684,22 +684,22 @@
     "program": "grim.dll",
     "address": "0x10008230",
     "name": "grim_set_atlas_frame",
-    "signature": "void grim_set_atlas_frame(int atlas, int frame)",
+    "signature": "void grim_set_atlas_frame(int atlas_size, int frame)",
     "comment": "Grim2D vtable 0x104 (provisional)"
   },
   {
     "program": "grim.dll",
     "address": "0x100082c0",
     "name": "grim_set_sub_rect",
-    "signature": "void grim_set_sub_rect(int x, int y, int w, int h)",
+    "signature": "void grim_set_sub_rect(int atlas_size, int width, int height, int frame)",
     "comment": "Grim2D vtable 0x108 (provisional)"
   },
   {
     "program": "grim.dll",
     "address": "0x10008040",
-    "name": "grim_set_pivot",
-    "signature": "void grim_set_pivot(float *xy)",
-    "comment": "Grim2D vtable 0x110 (provisional)"
+    "name": "grim_set_color_ptr",
+    "signature": "void grim_set_color_ptr(float *rgba)",
+    "comment": "Grim2D vtable 0x110 (provisional): set color from float[4]"
   },
   {
     "program": "grim.dll",
