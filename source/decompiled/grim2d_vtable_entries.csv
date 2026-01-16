@@ -43,9 +43,9 @@ index,offset_hex,offset_dec,func_addr,func_name,section
 41,0xa4,164,0x100075b0,grim_get_joystick_pov,.text
 42,0xa8,168,0x100075c0,grim_is_joystick_button_down,.text
 43,0xac,172,0x100075d0,grim_create_texture,.text
-44,0xb0,176,0x10007790,FUN_10007790,.text
+44,0xb0,176,0x10007790,grim_recreate_texture,.text
 45,0xb4,180,0x100076e0,grim_load_texture,.text
-46,0xb8,184,0x10007750,FUN_10007750,.text
+46,0xb8,184,0x10007750,grim_validate_texture,.text
 47,0xbc,188,0x10007700,grim_destroy_texture,.text
 48,0xc0,192,0x10007740,grim_get_texture_handle,.text
 49,0xc4,196,0x10007830,grim_bind_texture,.text
@@ -60,8 +60,8 @@ index,offset_hex,offset_dec,func_addr,func_name,section
 58,0xe8,232,0x10007ac0,grim_begin_batch,.text
 59,0xec,236,0x100083c0,grim_flush_batch,.text
 60,0xf0,240,0x10007b20,grim_end_batch,.text
-61,0xf4,244,0x10008e30,FUN_10008e30,.text
-62,0xf8,248,0x10008eb0,FUN_10008eb0,.text
+61,0xf4,244,0x10008e30,grim_submit_vertex_raw,.text
+62,0xf8,248,0x10008eb0,grim_submit_quad_raw,.text
 63,0xfc,252,0x10007f30,grim_set_rotation,.text
 64,0x100,256,0x10008350,grim_set_uv,.text
 65,0x104,260,0x10008230,grim_set_atlas_frame,.text
@@ -72,7 +72,7 @@ index,offset_hex,offset_dec,func_addr,func_name,section
 70,0x118,280,0x100081c0,grim_set_color_slot,.text
 71,0x11c,284,0x10008b10,grim_draw_quad,.text
 72,0x120,288,0x10008720,grim_draw_quad_xy,.text
-73,0x124,292,0x10008750,FUN_10008750,.text
+73,0x124,292,0x10008750,grim_draw_quad_rotated_matrix,.text
 74,0x128,296,0x100085c0,grim_submit_vertices_transform,.text
 75,0x12c,300,0x10008680,grim_submit_vertices_offset,.text
 76,0x130,304,0x10008430,grim_submit_vertices_offset_color,.text
