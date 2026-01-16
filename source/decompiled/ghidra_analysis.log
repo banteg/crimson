@@ -760,3 +760,2452 @@ Linking the External Programs of 'grim.dll' to imported libraries...
 2026-01-16 18:41:30 INFO  (LocalFileSystem) /grim.dll: file created (banteg)  
 2026-01-16 18:41:30 INFO  (HeadlessAnalyzer) REPORT: Save succeeded for: /grim.dll (ghidra_grim_dll_78555:/grim.dll)  
 2026-01-16 18:41:30 INFO  (HeadlessAnalyzer) REPORT: Import succeeded  
+2026-01-16 19:01:23 INFO  (LoggingInitialization) Using log config file: jar:file:/Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml  
+2026-01-16 19:01:23 INFO  (LoggingInitialization) Using log file: source/decompiled/ghidra_analysis.log  
+2026-01-16 19:01:23 INFO  (Preferences) Loading user preferences: /Users/banteg/Library/ghidra/ghidra_12.0_DEV/preferences  
+2026-01-16 19:01:23 INFO  (ClassSearcher) Searching for classes...  
+2026-01-16 19:01:24 INFO  (ClassSearcher) Class search complete (775 ms)  
+2026-01-16 19:01:24 INFO  (SSLContextInitializer) Initializing SSL Context  
+2026-01-16 19:01:24 INFO  (SecureRandomFactory) Initializing Random Number Generator...  
+2026-01-16 19:01:24 INFO  (SecureRandomFactory) Random Number Generator initialization complete: NativePRNGNonBlocking  
+2026-01-16 19:01:24 INFO  (ApplicationTrustManagerFactory) Trust manager disabled, cacerts have not been set  
+2026-01-16 19:01:25 INFO  (AnalyzeHeadless) Headless startup complete (1631 ms)  
+2026-01-16 19:01:25 INFO  (ClassSearcher) Class searcher loaded 58 extension points (18 false positives)  
+2026-01-16 19:01:25 INFO  (HeadlessAnalyzer) HEADLESS Script Paths:
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/Atmel/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/PIC/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/VersionTracking/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BytePatterns/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FileFormats/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Jython/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BSim/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PyGhidra/ghidra_scripts
+    /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/JVM/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/DATA/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PDB/ghidra_scripts
+    /Users/banteg/dev/banteg/crimsonland-decompile/scripts/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Decompiler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/8051/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FunctionID/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/ghidra_scripts  
+2026-01-16 19:01:25 INFO  (HeadlessAnalyzer) HEADLESS: execution starts  
+2026-01-16 19:01:25 INFO  (HeadlessAnalyzer) Creating temporary project: /tmp/ghidra_crimsonland_exe_9648  
+2026-01-16 19:01:25 INFO  (DefaultProject) Creating project: /tmp/ghidra_crimsonland_exe_9648  
+2026-01-16 19:01:25 INFO  (HeadlessAnalyzer) REPORT: Processing input files:   
+2026-01-16 19:01:25 INFO  (HeadlessAnalyzer)      project: /tmp/ghidra_crimsonland_exe_9648  
+2026-01-16 19:01:25 INFO  (HeadlessAnalyzer) IMPORTING: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:01:25 INFO  (ProgramLoader) Using Loader: Portable Executable (PE)  
+2026-01-16 19:01:25 INFO  (ProgramLoader) Using Language/Compiler: x86:LE:32:default:windows  
+2026-01-16 19:01:25 INFO  (ProgramLoader) Using Library Search Path: [., /System/Library/dyld/dyld_shared_cache_arm64e, /System/Library/dyld/dyld_shared_cache_x86_64, /System/Library/dyld/dyld_shared_cache_x86_64h, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64h, /Users/banteg/Library/Java/Extensions, /Library/Java/Extensions, /Network/Library/Java/Extensions, /System/Library/Java/Extensions, /usr/lib/java]  
+2026-01-16 19:01:33 INFO  (FileSystemInstanceManager) Removing 2 unused filesystems from cache  
+2026-01-16 19:01:33 DEBUG (FileSystemInstanceManager) Closing unused filesystem [file:///System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64?MD5=8c187d8a9dbff51eba98244add99278e]  
+2026-01-16 19:01:33 DEBUG (FileSystemInstanceManager) Closing unused filesystem [file:///System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e?MD5=492b77873c25245403e49afdd8e71ea8]  
+2026-01-16 19:01:34 INFO  (ProgramLoader) Additional info:
+Loading file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe?MD5=b5734f679649e1e61b79b6071f7e0ee5...
+------------------------------------------------
+
+Searching 4 paths for library ADVAPI32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library D3D8.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library DSOUND.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library KERNEL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library OLE32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library OLEAUT32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library SHELL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library URLMON.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library USER32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library VERSION.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library VORBISFILE.DLL...
+Loading file:///Users/banteg/dev/banteg/crimsonland-decompile/game/VORBISFILE.DLL?MD5=b226080606e45b6879ea02f1b5f47c5e...
+Created exports file: /Users/banteg/Library/ghidra/ghidra_12.0_DEV/symbols/win32/vorbisfile.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 4 paths for library WININET.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library WINMM.DLL...
+Library not found.
+------------------------------------------------
+
+Applying cached symbols from VORBISFILE.DLL
+Linking the External Programs of 'crimsonland.exe' to imported libraries...
+  [KERNEL32.DLL] -> not found in project
+  [USER32.DLL] -> not found in project
+  [ADVAPI32.DLL] -> not found in project
+  [SHELL32.DLL] -> not found in project
+  [OLE32.DLL] -> not found in project
+  [OLEAUT32.DLL] -> not found in project
+  [VORBISFILE.DLL] -> not found in project
+  [URLMON.DLL] -> not found in project
+  [WINMM.DLL] -> not found in project
+  [D3D8.DLL] -> not found in project
+  [VERSION.DLL] -> not found in project
+  [WININET.DLL] -> not found in project
+  [DSOUND.DLL] -> not found in project
+------------------------------------------------
+
+  
+2026-01-16 19:01:34 INFO  (HeadlessAnalyzer) IMPORTING: Loaded 0 additional files  
+2026-01-16 19:01:34 INFO  (HeadlessAnalyzer) ANALYZING all memory and code: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:01:34 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___raise_securityfailure' specified in file: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 19:01:34 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___report_rangecheckfailure' specified in file: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 19:01:34 INFO  (PdbUniversalAnalyzer) Skipping PDB processing: missing PDB information in program metadata  
+2026-01-16 19:01:34 INFO  (PackedDatabaseCache) Packed database cache: /var/tmp/banteg-ghidra/packed-db-cache  
+2026-01-16 19:01:34 DEBUG (PackedDatabaseCache) Using cached packed database: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/typeinfo/win32/windows_vs12_32.gdt  
+2026-01-16 19:01:53 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 19:01:53 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 19:02:06 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004136b0: 
+Low-level Error: Free varnode has multiple descendants  
+2026-01-16 19:02:06 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00408990: 
+Low-level Error: Free varnode has multiple descendants  
+2026-01-16 19:02:08 INFO  (AutoAnalysisManager) -----------------------------------------------------
+    ASCII Strings                              0.276 secs
+    Apply Data Archives                        0.110 secs
+    Call Convention ID                         0.004 secs
+    Call-Fixup Installer                       0.021 secs
+    Create Address Tables                      0.072 secs
+    Create Address Tables - One Time           4.059 secs
+    Create Function                            0.178 secs
+    Data Reference                             1.086 secs
+    Decompiler Parameter ID                    6.101 secs
+    Decompiler Switch Analysis                13.858 secs
+    Demangler Microsoft                        0.005 secs
+    Disassemble                                0.188 secs
+    Disassemble Entry Points                   0.305 secs
+    Embedded Media                             0.014 secs
+    External Entry References                  0.000 secs
+    Function ID                                0.578 secs
+    Function Start Pre Search                  0.014 secs
+    Function Start Search                      0.073 secs
+    Function Start Search After Code           0.031 secs
+    Function Start Search After Data           0.017 secs
+    Function Start Search delayed - One Time   0.002 secs
+    Non-Returning Functions - Discovered       0.138 secs
+    Non-Returning Functions - Known            0.002 secs
+    PDB Universal                              0.001 secs
+    Reference                                  1.265 secs
+    Scalar Operand References                  0.339 secs
+    Shared Return Calls                        0.087 secs
+    Stack                                      1.252 secs
+    Subroutine References                      0.738 secs
+    Subroutine References - One Time           0.002 secs
+    Windows x86 PE Exception Handling          1.061 secs
+    Windows x86 PE RTTI Analyzer               0.000 secs
+    Windows x86 Thread Environment Block (TEB) Analyzer     0.007 secs
+    WindowsResourceReference                   0.322 secs
+    X86 Function Callee Purge                  0.046 secs
+    x86 Constant Reference Analyzer            1.823 secs
+-----------------------------------------------------
+     Total Time   34 secs
+-----------------------------------------------------
+  
+2026-01-16 19:02:08 INFO  (HeadlessAnalyzer) REPORT: Analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:02:08 INFO  (HeadlessAnalyzer) REPORT: Execute script: ImportThirdPartyHeaders.java 'source/headers/third_party'   
+2026-01-16 19:02:09 INFO  (HeadlessAnalyzer) SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/scripts/ghidra_scripts/ImportThirdPartyHeaders.java  
+2026-01-16 19:02:09 INFO  (GhidraScript) ImportThirdPartyHeaders.java> Parsing third-party headers into: crimsonland.exe  
+2026-01-16 19:02:09 INFO  (GhidraScript) ImportThirdPartyHeaders.java> Headers root: /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party  
+2026-01-16 19:02:09 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/jpeglib.h  
+2026-01-16 19:02:09 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h  
+2026-01-16 19:02:09 ERROR (CParserUtils) Parsing file :/Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h  
+2026-01-16 19:02:09 ERROR (CParserUtils) Unexpected Exception: PreProcessor hit #error " libpng requires 8-bit bytes" ghidra.app.util.cparser.CPP.ParseException: PreProcessor hit #error " libpng requires 8-bit bytes"
+	at ghidra.app.util.cparser.CPP.PreProcessor.Error(PreProcessor.java:2137)
+	at ghidra.app.util.cparser.CPP.PreProcessor.ControlLine(PreProcessor.java:1551)
+	at ghidra.app.util.cparser.CPP.PreProcessor.GroupPart(PreProcessor.java:1506)
+	at ghidra.app.util.cparser.CPP.PreProcessor.Group(PreProcessor.java:1414)
+	at ghidra.app.util.cparser.CPP.PreProcessor.TranslationUnit(PreProcessor.java:1395)
+	at ghidra.app.util.cparser.CPP.PreProcessor.Input(PreProcessor.java:1372)
+	at ghidra.app.util.cparser.CPP.PreProcessor.swapFileStreams(PreProcessor.java:687)
+	at ghidra.app.util.cparser.CPP.PreProcessor.includeFile(PreProcessor.java:824)
+	at ghidra.app.util.cparser.CPP.PreProcessor.standardPlace(PreProcessor.java:700)
+	at ghidra.app.util.cparser.CPP.PreProcessor.localPlace(PreProcessor.java:627)
+	at ghidra.app.util.cparser.CPP.PreProcessor.Include(PreProcessor.java:1713)
+	at ghidra.app.util.cparser.CPP.PreProcessor.ControlLine(PreProcessor.java:1542)
+	at ghidra.app.util.cparser.CPP.PreProcessor.GroupPart(PreProcessor.java:1506)
+	at ghidra.app.util.cparser.CPP.PreProcessor.Group(PreProcessor.java:1414)
+	at ghidra.app.util.cparser.CPP.PreProcessor.TranslationUnit(PreProcessor.java:1395)
+	at ghidra.app.util.cparser.CPP.PreProcessor.Input(PreProcessor.java:1372)
+	at ghidra.app.util.cparser.CPP.PreProcessor.parse(PreProcessor.java:1237)
+	at ghidra.app.util.cparser.C.CParserUtils.parseFile(CParserUtils.java:579)
+	at ghidra.app.util.cparser.C.CParserUtils.parseHeaderFiles(CParserUtils.java:524)
+	at ImportThirdPartyHeaders.run(ImportThirdPartyHeaders.java:68)
+	at ghidra.app.script.GhidraScript.executeNormal(GhidraScript.java:460)
+	at ghidra.app.script.GhidraScript.doExecute(GhidraScript.java:314)
+	at ghidra.app.script.GhidraScript.execute(GhidraScript.java:290)
+	at ghidra.app.util.headless.HeadlessAnalyzer.runScript(HeadlessAnalyzer.java:595)
+	at ghidra.app.util.headless.HeadlessAnalyzer.runScriptsList(HeadlessAnalyzer.java:938)
+	at ghidra.app.util.headless.HeadlessAnalyzer.analyzeProgram(HeadlessAnalyzer.java:1086)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processFileWithImport(HeadlessAnalyzer.java:1584)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithLoader(HeadlessAnalyzer.java:1744)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1685)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1769)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processLocal(HeadlessAnalyzer.java:462)
+	at ghidra.app.util.headless.AnalyzeHeadless.launch(AnalyzeHeadless.java:199)
+	at ghidra.GhidraLauncher.launch(GhidraLauncher.java:81)
+	at ghidra.Ghidra.main(Ghidra.java:54)
+ 
+2026-01-16 19:02:09 INFO  (PreProcessor) WARNING: No path to #include jconfig.h    Assuming not needed!
+Use -I option
+    Current Include Path: 
+     :   /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/jpeglib.h
+WARNING: No path to #include jmorecfg.h    Assuming not needed!
+Use -I option
+    Current Include Path: 
+     :   /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/jpeglib.h
+       /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/pnglibconf.h
+       /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/pngconf.h
+WARNING: No path to #include limits.h    Assuming not needed!
+Use -I option
+    Current Include Path: 
+     :   /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h
+     :   /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/pngconf.h
+WARNING: No path to #include stddef.h    Assuming not needed!
+Use -I option
+    Current Include Path: 
+     :   /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h
+     :   /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/pngconf.h
+WARNING: No path to #include stdio.h    Assuming not needed!
+Use -I option
+    Current Include Path: 
+     :   /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h
+     :   /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/pngconf.h
+WARNING: No path to #include setjmp.h    Assuming not needed!
+Use -I option
+    Current Include Path: 
+     :   /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h
+     :   /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/pngconf.h
+WARNING: No path to #include time.h    Assuming not needed!
+Use -I option
+    Current Include Path: 
+     :   /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h
+     :   /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/pngconf.h
+/Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/pngconf.h'470 #error Error:
+ libpng requires 8-bit bytes
+   In file pngconf.h
+ERROR parsing Included File: PreProcessor hit #error " libpng requires 8-bit bytes"
+   In file /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h
+PreProcessor Parse Error:  PreProcessor hit #error " libpng requires 8-bit bytes"
+  
+2026-01-16 19:02:09 ERROR (GhidraScript) ImportThirdPartyHeaders.java> Header parse completed with errors. See script log for details.  
+2026-01-16 19:02:09 INFO  (HeadlessAnalyzer) REPORT: Execute script: ExportAll.java   
+2026-01-16 19:02:09 INFO  (HeadlessAnalyzer) SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts/ExportAll.java  
+2026-01-16 19:02:09 INFO  (GhidraScript) ExportAll.java> === Starting comprehensive export ===  
+2026-01-16 19:02:09 INFO  (GhidraScript) ExportAll.java> Output directory: source/decompiled  
+2026-01-16 19:02:09 INFO  (GhidraScript) ExportAll.java> Program: crimsonland.exe  
+2026-01-16 19:02:09 INFO  (GhidraScript) ExportAll.java> Architecture: x86  
+2026-01-16 19:02:09 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 19:02:09 INFO  (GhidraScript) ExportAll.java> Exporting summary to: crimsonland.exe_summary.txt  
+2026-01-16 19:02:09 INFO  (GhidraScript) ExportAll.java> Exporting decompiled code to: crimsonland.exe_decompiled.c  
+2026-01-16 19:02:24 INFO  (GhidraScript) ExportAll.java>   Decompiled 790 functions  
+2026-01-16 19:02:24 INFO  (GhidraScript) ExportAll.java> Exporting functions to: crimsonland.exe_functions.json  
+2026-01-16 19:02:24 INFO  (GhidraScript) ExportAll.java>   Exported 819 functions  
+2026-01-16 19:02:24 INFO  (GhidraScript) ExportAll.java> Exporting strings to: crimsonland.exe_strings.txt  
+2026-01-16 19:02:24 INFO  (GhidraScript) ExportAll.java>   Exported 1374 strings  
+2026-01-16 19:02:24 INFO  (GhidraScript) ExportAll.java> Analyzing interesting patterns...  
+2026-01-16 19:02:24 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 19:02:24 INFO  (GhidraScript) ExportAll.java> === Export complete ===  
+2026-01-16 19:02:24 INFO  (HeadlessAnalyzer) ANALYZING changes made by post scripts: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:02:24 INFO  (HeadlessAnalyzer) REPORT: Post-analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:02:24 INFO  (LocalFileSystem) /crimsonland.exe: file created (banteg)  
+2026-01-16 19:02:24 INFO  (HeadlessAnalyzer) REPORT: Save succeeded for: /crimsonland.exe (ghidra_crimsonland_exe_9648:/crimsonland.exe)  
+2026-01-16 19:02:24 INFO  (HeadlessAnalyzer) REPORT: Import succeeded  
+2026-01-16 19:05:22 INFO  (LoggingInitialization) Using log config file: jar:file:/Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml  
+2026-01-16 19:05:22 INFO  (LoggingInitialization) Using log file: source/decompiled/ghidra_analysis.log  
+2026-01-16 19:05:22 INFO  (Preferences) Loading user preferences: /Users/banteg/Library/ghidra/ghidra_12.0_DEV/preferences  
+2026-01-16 19:05:22 INFO  (ClassSearcher) Searching for classes...  
+2026-01-16 19:05:22 INFO  (ClassSearcher) Class search complete (781 ms)  
+2026-01-16 19:05:22 INFO  (SSLContextInitializer) Initializing SSL Context  
+2026-01-16 19:05:22 INFO  (SecureRandomFactory) Initializing Random Number Generator...  
+2026-01-16 19:05:22 INFO  (SecureRandomFactory) Random Number Generator initialization complete: NativePRNGNonBlocking  
+2026-01-16 19:05:22 INFO  (ApplicationTrustManagerFactory) Trust manager disabled, cacerts have not been set  
+2026-01-16 19:05:23 INFO  (AnalyzeHeadless) Headless startup complete (1496 ms)  
+2026-01-16 19:05:23 INFO  (ClassSearcher) Class searcher loaded 58 extension points (18 false positives)  
+2026-01-16 19:05:23 INFO  (HeadlessAnalyzer) HEADLESS Script Paths:
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/Atmel/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/PIC/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/VersionTracking/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BytePatterns/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FileFormats/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Jython/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BSim/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PyGhidra/ghidra_scripts
+    /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/JVM/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/DATA/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PDB/ghidra_scripts
+    /Users/banteg/dev/banteg/crimsonland-decompile/scripts/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Decompiler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/8051/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FunctionID/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/ghidra_scripts  
+2026-01-16 19:05:23 INFO  (HeadlessAnalyzer) HEADLESS: execution starts  
+2026-01-16 19:05:23 INFO  (HeadlessAnalyzer) Creating temporary project: /tmp/ghidra_crimsonland_exe_14536  
+2026-01-16 19:05:23 INFO  (DefaultProject) Creating project: /tmp/ghidra_crimsonland_exe_14536  
+2026-01-16 19:05:23 INFO  (HeadlessAnalyzer) REPORT: Processing input files:   
+2026-01-16 19:05:23 INFO  (HeadlessAnalyzer)      project: /tmp/ghidra_crimsonland_exe_14536  
+2026-01-16 19:05:23 INFO  (HeadlessAnalyzer) IMPORTING: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:05:23 INFO  (ProgramLoader) Using Loader: Portable Executable (PE)  
+2026-01-16 19:05:23 INFO  (ProgramLoader) Using Language/Compiler: x86:LE:32:default:windows  
+2026-01-16 19:05:23 INFO  (ProgramLoader) Using Library Search Path: [., /System/Library/dyld/dyld_shared_cache_arm64e, /System/Library/dyld/dyld_shared_cache_x86_64, /System/Library/dyld/dyld_shared_cache_x86_64h, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64h, /Users/banteg/Library/Java/Extensions, /Library/Java/Extensions, /Network/Library/Java/Extensions, /System/Library/Java/Extensions, /usr/lib/java]  
+2026-01-16 19:05:31 INFO  (FileSystemInstanceManager) Removing 2 unused filesystems from cache  
+2026-01-16 19:05:31 DEBUG (FileSystemInstanceManager) Closing unused filesystem [file:///System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64?MD5=8c187d8a9dbff51eba98244add99278e]  
+2026-01-16 19:05:31 DEBUG (FileSystemInstanceManager) Closing unused filesystem [file:///System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e?MD5=492b77873c25245403e49afdd8e71ea8]  
+2026-01-16 19:05:31 INFO  (ProgramLoader) Additional info:
+Loading file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe?MD5=b5734f679649e1e61b79b6071f7e0ee5...
+------------------------------------------------
+
+Searching 4 paths for library ADVAPI32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library D3D8.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library DSOUND.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library KERNEL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library OLE32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library OLEAUT32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library SHELL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library URLMON.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library USER32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library VERSION.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library VORBISFILE.DLL...
+Loading file:///Users/banteg/dev/banteg/crimsonland-decompile/game/VORBISFILE.DLL?MD5=b226080606e45b6879ea02f1b5f47c5e...
+Created exports file: /Users/banteg/Library/ghidra/ghidra_12.0_DEV/symbols/win32/vorbisfile.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 4 paths for library WININET.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library WINMM.DLL...
+Library not found.
+------------------------------------------------
+
+Applying cached symbols from VORBISFILE.DLL
+Linking the External Programs of 'crimsonland.exe' to imported libraries...
+  [KERNEL32.DLL] -> not found in project
+  [USER32.DLL] -> not found in project
+  [ADVAPI32.DLL] -> not found in project
+  [SHELL32.DLL] -> not found in project
+  [OLE32.DLL] -> not found in project
+  [OLEAUT32.DLL] -> not found in project
+  [VORBISFILE.DLL] -> not found in project
+  [URLMON.DLL] -> not found in project
+  [WINMM.DLL] -> not found in project
+  [D3D8.DLL] -> not found in project
+  [VERSION.DLL] -> not found in project
+  [WININET.DLL] -> not found in project
+  [DSOUND.DLL] -> not found in project
+------------------------------------------------
+
+  
+2026-01-16 19:05:31 INFO  (HeadlessAnalyzer) IMPORTING: Loaded 0 additional files  
+2026-01-16 19:05:31 INFO  (HeadlessAnalyzer) ANALYZING all memory and code: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:05:31 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___raise_securityfailure' specified in file: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 19:05:31 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___report_rangecheckfailure' specified in file: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 19:05:31 INFO  (PdbUniversalAnalyzer) Skipping PDB processing: missing PDB information in program metadata  
+2026-01-16 19:05:31 INFO  (PackedDatabaseCache) Packed database cache: /var/tmp/banteg-ghidra/packed-db-cache  
+2026-01-16 19:05:31 DEBUG (PackedDatabaseCache) Using cached packed database: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/typeinfo/win32/windows_vs12_32.gdt  
+2026-01-16 19:05:51 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 19:05:51 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 19:06:03 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004136b0: 
+Low-level Error: Free varnode has multiple descendants  
+2026-01-16 19:06:03 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00408990: 
+Low-level Error: Free varnode has multiple descendants  
+2026-01-16 19:06:06 INFO  (AutoAnalysisManager) -----------------------------------------------------
+    ASCII Strings                              0.224 secs
+    Apply Data Archives                        0.091 secs
+    Call Convention ID                         0.005 secs
+    Call-Fixup Installer                       0.017 secs
+    Create Address Tables                      0.091 secs
+    Create Address Tables - One Time           4.207 secs
+    Create Function                            0.164 secs
+    Data Reference                             1.037 secs
+    Decompiler Parameter ID                    5.588 secs
+    Decompiler Switch Analysis                14.143 secs
+    Demangler Microsoft                        0.006 secs
+    Disassemble                                0.200 secs
+    Disassemble Entry Points                   0.323 secs
+    Embedded Media                             0.019 secs
+    External Entry References                  0.000 secs
+    Function ID                                0.604 secs
+    Function Start Pre Search                  0.014 secs
+    Function Start Search                      0.061 secs
+    Function Start Search After Code           0.030 secs
+    Function Start Search After Data           0.017 secs
+    Function Start Search delayed - One Time   0.001 secs
+    Non-Returning Functions - Discovered       0.131 secs
+    Non-Returning Functions - Known            0.002 secs
+    PDB Universal                              0.002 secs
+    Reference                                  1.230 secs
+    Scalar Operand References                  0.352 secs
+    Shared Return Calls                        0.092 secs
+    Stack                                      1.314 secs
+    Subroutine References                      0.857 secs
+    Subroutine References - One Time           0.003 secs
+    Windows x86 PE Exception Handling          1.039 secs
+    Windows x86 PE RTTI Analyzer               0.000 secs
+    Windows x86 Thread Environment Block (TEB) Analyzer     0.008 secs
+    WindowsResourceReference                   0.292 secs
+    X86 Function Callee Purge                  0.065 secs
+    x86 Constant Reference Analyzer            1.899 secs
+-----------------------------------------------------
+     Total Time   34 secs
+-----------------------------------------------------
+  
+2026-01-16 19:06:06 INFO  (HeadlessAnalyzer) REPORT: Analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:06:06 INFO  (HeadlessAnalyzer) REPORT: Execute script: ImportThirdPartyHeaders.java 'source/headers/third_party'   
+2026-01-16 19:06:06 INFO  (HeadlessAnalyzer) SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/scripts/ghidra_scripts/ImportThirdPartyHeaders.java  
+2026-01-16 19:06:06 INFO  (GhidraScript) ImportThirdPartyHeaders.java> Parsing third-party headers into: crimsonland.exe  
+2026-01-16 19:06:06 INFO  (GhidraScript) ImportThirdPartyHeaders.java> Headers root: /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party  
+2026-01-16 19:06:06 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/jpeglib.h  
+2026-01-16 19:06:06 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h  
+2026-01-16 19:06:06 ERROR (CParserUtils) Parsing file :/Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h  
+2026-01-16 19:06:06 ERROR (CParserUtils) Unexpected Exception: Lexical error at line 870, column 5.  Encountered: "~" (126), after : "" ghidra.app.util.cparser.CPP.TokenMgrError: Lexical error at line 870, column 5.  Encountered: "~" (126), after : ""
+	at ghidra.app.util.cparser.CPP.PreProcessorTokenManager.getNextToken(PreProcessorTokenManager.java:7621)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_scan_token(PreProcessor.java:5196)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_102(PreProcessor.java:4477)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_82(PreProcessor.java:4490)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3_50(PreProcessor.java:4518)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_81(PreProcessor.java:4551)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_80(PreProcessor.java:4596)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_79(PreProcessor.java:4660)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_78(PreProcessor.java:4755)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_77(PreProcessor.java:4852)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_76(PreProcessor.java:4909)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_120(PreProcessor.java:4958)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_104(PreProcessor.java:5016)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_116(PreProcessor.java:3954)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_99(PreProcessor.java:3984)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_75(PreProcessor.java:4059)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_74(PreProcessor.java:4100)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_72(PreProcessor.java:4121)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_70(PreProcessor.java:4137)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_68(PreProcessor.java:4208)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_67(PreProcessor.java:4280)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_66(PreProcessor.java:4311)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_62(PreProcessor.java:4339)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3_34(PreProcessor.java:4523)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_133(PreProcessor.java:4536)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_122(PreProcessor.java:4544)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_105(PreProcessor.java:4969)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_85(PreProcessor.java:4976)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_40(PreProcessor.java:5006)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3_5(PreProcessor.java:3667)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3_6(PreProcessor.java:3777)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_41(PreProcessor.java:3820)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3_3(PreProcessor.java:3874)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3R_39(PreProcessor.java:3866)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_3_1(PreProcessor.java:3889)
+	at ghidra.app.util.cparser.CPP.PreProcessor.jj_2_1(PreProcessor.java:3284)
+	at ghidra.app.util.cparser.CPP.PreProcessor.TranslationUnit(PreProcessor.java:1397)
+	at ghidra.app.util.cparser.CPP.PreProcessor.Input(PreProcessor.java:1372)
+	at ghidra.app.util.cparser.CPP.PreProcessor.parse(PreProcessor.java:1237)
+	at ghidra.app.util.cparser.C.CParserUtils.parseFile(CParserUtils.java:579)
+	at ghidra.app.util.cparser.C.CParserUtils.parseHeaderFiles(CParserUtils.java:524)
+	at ImportThirdPartyHeaders.run(ImportThirdPartyHeaders.java:82)
+	at ghidra.app.script.GhidraScript.executeNormal(GhidraScript.java:460)
+	at ghidra.app.script.GhidraScript.doExecute(GhidraScript.java:314)
+	at ghidra.app.script.GhidraScript.execute(GhidraScript.java:290)
+	at ghidra.app.util.headless.HeadlessAnalyzer.runScript(HeadlessAnalyzer.java:595)
+	at ghidra.app.util.headless.HeadlessAnalyzer.runScriptsList(HeadlessAnalyzer.java:938)
+	at ghidra.app.util.headless.HeadlessAnalyzer.analyzeProgram(HeadlessAnalyzer.java:1086)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processFileWithImport(HeadlessAnalyzer.java:1584)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithLoader(HeadlessAnalyzer.java:1744)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1685)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1769)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processLocal(HeadlessAnalyzer.java:462)
+	at ghidra.app.util.headless.AnalyzeHeadless.launch(AnalyzeHeadless.java:199)
+	at ghidra.GhidraLauncher.launch(GhidraLauncher.java:81)
+	at ghidra.Ghidra.main(Ghidra.java:54)
+ 
+2026-01-16 19:06:06 INFO  (PreProcessor) WARNING: No path to #include jconfig.h    Assuming not needed!
+Use -I option
+    Current Include Path: 
+     :   /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/jpeglib.h
+WARNING: No path to #include jmorecfg.h    Assuming not needed!
+Use -I option
+    Current Include Path: 
+     :   /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/jpeglib.h
+       /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/pnglibconf.h
+       /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/pngconf.h
+WARNING: No path to #include limits.h    Assuming not needed!
+Use -I option
+    Current Include Path: 
+     :   /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h
+     :   /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/pngconf.h
+WARNING: No path to #include stddef.h    Assuming not needed!
+Use -I option
+    Current Include Path: 
+     :   /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h
+     :   /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/pngconf.h
+WARNING: No path to #include stdio.h    Assuming not needed!
+Use -I option
+    Current Include Path: 
+     :   /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h
+     :   /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/pngconf.h
+WARNING: No path to #include setjmp.h    Assuming not needed!
+Use -I option
+    Current Include Path: 
+     :   /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h
+     :   /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/pngconf.h
+WARNING: No path to #include time.h    Assuming not needed!
+Use -I option
+    Current Include Path: 
+     :   /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h
+     :   /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/pngconf.h
+   In file /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h
+PreProcessor Token Error:  Lexical error at line 870, column 5.  Encountered: "~" (126), after : ""
+  
+2026-01-16 19:06:06 ERROR (GhidraScript) ImportThirdPartyHeaders.java> Header parse completed with errors. See script log for details.  
+2026-01-16 19:06:06 INFO  (HeadlessAnalyzer) REPORT: Execute script: ExportAll.java   
+2026-01-16 19:06:06 INFO  (HeadlessAnalyzer) SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts/ExportAll.java  
+2026-01-16 19:06:06 INFO  (GhidraScript) ExportAll.java> === Starting comprehensive export ===  
+2026-01-16 19:06:06 INFO  (GhidraScript) ExportAll.java> Output directory: source/decompiled  
+2026-01-16 19:06:06 INFO  (GhidraScript) ExportAll.java> Program: crimsonland.exe  
+2026-01-16 19:06:06 INFO  (GhidraScript) ExportAll.java> Architecture: x86  
+2026-01-16 19:06:06 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 19:06:06 INFO  (GhidraScript) ExportAll.java> Exporting summary to: crimsonland.exe_summary.txt  
+2026-01-16 19:06:06 INFO  (GhidraScript) ExportAll.java> Exporting decompiled code to: crimsonland.exe_decompiled.c  
+2026-01-16 19:06:21 INFO  (GhidraScript) ExportAll.java>   Decompiled 790 functions  
+2026-01-16 19:06:21 INFO  (GhidraScript) ExportAll.java> Exporting functions to: crimsonland.exe_functions.json  
+2026-01-16 19:06:21 INFO  (GhidraScript) ExportAll.java>   Exported 819 functions  
+2026-01-16 19:06:21 INFO  (GhidraScript) ExportAll.java> Exporting strings to: crimsonland.exe_strings.txt  
+2026-01-16 19:06:21 INFO  (GhidraScript) ExportAll.java>   Exported 1374 strings  
+2026-01-16 19:06:21 INFO  (GhidraScript) ExportAll.java> Analyzing interesting patterns...  
+2026-01-16 19:06:21 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 19:06:21 INFO  (GhidraScript) ExportAll.java> === Export complete ===  
+2026-01-16 19:06:21 INFO  (HeadlessAnalyzer) ANALYZING changes made by post scripts: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:06:21 INFO  (HeadlessAnalyzer) REPORT: Post-analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:06:21 INFO  (LocalFileSystem) /crimsonland.exe: file created (banteg)  
+2026-01-16 19:06:21 INFO  (HeadlessAnalyzer) REPORT: Save succeeded for: /crimsonland.exe (ghidra_crimsonland_exe_14536:/crimsonland.exe)  
+2026-01-16 19:06:21 INFO  (HeadlessAnalyzer) REPORT: Import succeeded  
+2026-01-16 19:07:45 INFO  (LoggingInitialization) Using log config file: jar:file:/Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml  
+2026-01-16 19:07:45 INFO  (LoggingInitialization) Using log file: source/decompiled/ghidra_analysis.log  
+2026-01-16 19:07:45 INFO  (Preferences) Loading user preferences: /Users/banteg/Library/ghidra/ghidra_12.0_DEV/preferences  
+2026-01-16 19:07:45 INFO  (ClassSearcher) Searching for classes...  
+2026-01-16 19:07:46 INFO  (ClassSearcher) Class search complete (825 ms)  
+2026-01-16 19:07:46 INFO  (SSLContextInitializer) Initializing SSL Context  
+2026-01-16 19:07:46 INFO  (SecureRandomFactory) Initializing Random Number Generator...  
+2026-01-16 19:07:46 INFO  (SecureRandomFactory) Random Number Generator initialization complete: NativePRNGNonBlocking  
+2026-01-16 19:07:46 INFO  (ApplicationTrustManagerFactory) Trust manager disabled, cacerts have not been set  
+2026-01-16 19:07:47 INFO  (AnalyzeHeadless) Headless startup complete (1817 ms)  
+2026-01-16 19:07:47 INFO  (ClassSearcher) Class searcher loaded 58 extension points (18 false positives)  
+2026-01-16 19:07:47 INFO  (HeadlessAnalyzer) HEADLESS Script Paths:
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/Atmel/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/PIC/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/VersionTracking/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BytePatterns/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FileFormats/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Jython/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BSim/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PyGhidra/ghidra_scripts
+    /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/JVM/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/DATA/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PDB/ghidra_scripts
+    /Users/banteg/dev/banteg/crimsonland-decompile/scripts/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Decompiler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/8051/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FunctionID/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/ghidra_scripts  
+2026-01-16 19:07:47 INFO  (HeadlessAnalyzer) HEADLESS: execution starts  
+2026-01-16 19:07:47 INFO  (HeadlessAnalyzer) Creating temporary project: /tmp/ghidra_crimsonland_exe_17879  
+2026-01-16 19:07:47 INFO  (DefaultProject) Creating project: /tmp/ghidra_crimsonland_exe_17879  
+2026-01-16 19:07:47 INFO  (HeadlessAnalyzer) REPORT: Processing input files:   
+2026-01-16 19:07:47 INFO  (HeadlessAnalyzer)      project: /tmp/ghidra_crimsonland_exe_17879  
+2026-01-16 19:07:47 INFO  (HeadlessAnalyzer) IMPORTING: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:07:48 INFO  (ProgramLoader) Using Loader: Portable Executable (PE)  
+2026-01-16 19:07:48 INFO  (ProgramLoader) Using Language/Compiler: x86:LE:32:default:windows  
+2026-01-16 19:07:48 INFO  (ProgramLoader) Using Library Search Path: [., /System/Library/dyld/dyld_shared_cache_arm64e, /System/Library/dyld/dyld_shared_cache_x86_64, /System/Library/dyld/dyld_shared_cache_x86_64h, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64h, /Users/banteg/Library/Java/Extensions, /Library/Java/Extensions, /Network/Library/Java/Extensions, /System/Library/Java/Extensions, /usr/lib/java]  
+2026-01-16 19:07:55 INFO  (FileSystemInstanceManager) Removing 2 unused filesystems from cache  
+2026-01-16 19:07:55 DEBUG (FileSystemInstanceManager) Closing unused filesystem [file:///System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64?MD5=8c187d8a9dbff51eba98244add99278e]  
+2026-01-16 19:07:55 DEBUG (FileSystemInstanceManager) Closing unused filesystem [file:///System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e?MD5=492b77873c25245403e49afdd8e71ea8]  
+2026-01-16 19:07:56 INFO  (ProgramLoader) Additional info:
+Loading file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe?MD5=b5734f679649e1e61b79b6071f7e0ee5...
+------------------------------------------------
+
+Searching 4 paths for library ADVAPI32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library D3D8.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library DSOUND.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library KERNEL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library OLE32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library OLEAUT32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library SHELL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library URLMON.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library USER32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library VERSION.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library VORBISFILE.DLL...
+Loading file:///Users/banteg/dev/banteg/crimsonland-decompile/game/VORBISFILE.DLL?MD5=b226080606e45b6879ea02f1b5f47c5e...
+Created exports file: /Users/banteg/Library/ghidra/ghidra_12.0_DEV/symbols/win32/vorbisfile.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 4 paths for library WININET.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library WINMM.DLL...
+Library not found.
+------------------------------------------------
+
+Applying cached symbols from VORBISFILE.DLL
+Linking the External Programs of 'crimsonland.exe' to imported libraries...
+  [KERNEL32.DLL] -> not found in project
+  [USER32.DLL] -> not found in project
+  [ADVAPI32.DLL] -> not found in project
+  [SHELL32.DLL] -> not found in project
+  [OLE32.DLL] -> not found in project
+  [OLEAUT32.DLL] -> not found in project
+  [VORBISFILE.DLL] -> not found in project
+  [URLMON.DLL] -> not found in project
+  [WINMM.DLL] -> not found in project
+  [D3D8.DLL] -> not found in project
+  [VERSION.DLL] -> not found in project
+  [WININET.DLL] -> not found in project
+  [DSOUND.DLL] -> not found in project
+------------------------------------------------
+
+  
+2026-01-16 19:07:56 INFO  (HeadlessAnalyzer) IMPORTING: Loaded 0 additional files  
+2026-01-16 19:07:56 INFO  (HeadlessAnalyzer) ANALYZING all memory and code: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:07:56 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___raise_securityfailure' specified in file: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 19:07:56 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___report_rangecheckfailure' specified in file: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 19:07:56 INFO  (PdbUniversalAnalyzer) Skipping PDB processing: missing PDB information in program metadata  
+2026-01-16 19:07:56 INFO  (PackedDatabaseCache) Packed database cache: /var/tmp/banteg-ghidra/packed-db-cache  
+2026-01-16 19:07:56 DEBUG (PackedDatabaseCache) Using cached packed database: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/typeinfo/win32/windows_vs12_32.gdt  
+2026-01-16 19:08:17 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 19:08:17 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 19:08:29 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004136b0: 
+Low-level Error: Free varnode has multiple descendants  
+2026-01-16 19:08:29 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00408990: 
+Low-level Error: Free varnode has multiple descendants  
+2026-01-16 19:08:31 INFO  (AutoAnalysisManager) -----------------------------------------------------
+    ASCII Strings                              0.282 secs
+    Apply Data Archives                        0.092 secs
+    Call Convention ID                         0.006 secs
+    Call-Fixup Installer                       0.016 secs
+    Create Address Tables                      0.087 secs
+    Create Address Tables - One Time           4.374 secs
+    Create Function                            0.171 secs
+    Data Reference                             1.107 secs
+    Decompiler Parameter ID                    5.754 secs
+    Decompiler Switch Analysis                14.273 secs
+    Demangler Microsoft                        0.005 secs
+    Disassemble                                0.212 secs
+    Disassemble Entry Points                   0.347 secs
+    Embedded Media                             0.014 secs
+    External Entry References                  0.000 secs
+    Function ID                                0.598 secs
+    Function Start Pre Search                  0.016 secs
+    Function Start Search                      0.079 secs
+    Function Start Search After Code           0.031 secs
+    Function Start Search After Data           0.018 secs
+    Function Start Search delayed - One Time   0.001 secs
+    Non-Returning Functions - Discovered       0.106 secs
+    Non-Returning Functions - Known            0.002 secs
+    PDB Universal                              0.001 secs
+    Reference                                  1.370 secs
+    Scalar Operand References                  0.298 secs
+    Shared Return Calls                        0.102 secs
+    Stack                                      1.246 secs
+    Subroutine References                      0.814 secs
+    Subroutine References - One Time           0.006 secs
+    Windows x86 PE Exception Handling          1.143 secs
+    Windows x86 PE RTTI Analyzer               0.000 secs
+    Windows x86 Thread Environment Block (TEB) Analyzer     0.009 secs
+    WindowsResourceReference                   0.290 secs
+    X86 Function Callee Purge                  0.050 secs
+    x86 Constant Reference Analyzer            2.005 secs
+-----------------------------------------------------
+     Total Time   34 secs
+-----------------------------------------------------
+  
+2026-01-16 19:08:31 INFO  (HeadlessAnalyzer) REPORT: Analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:08:31 INFO  (HeadlessAnalyzer) REPORT: Execute script: ImportThirdPartyHeaders.java 'source/headers/third_party'   
+2026-01-16 19:08:31 INFO  (HeadlessAnalyzer) SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/scripts/ghidra_scripts/ImportThirdPartyHeaders.java  
+2026-01-16 19:08:31 INFO  (GhidraScript) ImportThirdPartyHeaders.java> Parsing third-party headers into: crimsonland.exe  
+2026-01-16 19:08:31 INFO  (GhidraScript) ImportThirdPartyHeaders.java> Headers root: /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party  
+2026-01-16 19:08:31 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/jpeglib.h  
+2026-01-16 19:08:31 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h  
+2026-01-16 19:08:31 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/zlib.h  
+2026-01-16 19:08:31 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/ogg/ogg.h  
+2026-01-16 19:08:31 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/vorbis/codec.h  
+2026-01-16 19:08:31 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/vorbis/vorbisfile.h  
+2026-01-16 19:08:31 ERROR (HeadlessAnalyzer) REPORT SCRIPT ERROR:  ghidra.app.util.cparser.C.ParseException: C Parser:  Encountered errors during parse.
+         in /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/jpeglib.h near line 61
+Error: Encountered " "*" "* "" at line 27, column 17.
+Was expecting one of:
+    "_Alignas" ...
+    <ATTRIBUTE> ...
+    <ASM> ...
+    ";" ...
+    "(" ...
+    "[" ...
+    "," ...
+    "=" ...
+    "[" ...
+    "(" ...
+    "(" ...
+    <ATTRIBUTE> ...
+    <ASM> ...
+    "[" ...
+    "_Alignas" ...
+    <ATTRIBUTE> ...
+    <ASM> ...
+    "[" ...
+    "_Alignas" ...
+    
+         near token: JSAMPLE
+Possibly Undefined : *
+         Last Valid Datatype: - none -
+         Check around crimsonland.exe around line: 27
+
+	at ghidra.app.util.cparser.C.CParser.parse(CParser.java:859)
+	at ghidra.app.util.cparser.C.CParserUtils.parseHeaderFiles(CParserUtils.java:560)
+	at ImportThirdPartyHeaders.run(ImportThirdPartyHeaders.java:82)
+	at ghidra.app.script.GhidraScript.executeNormal(GhidraScript.java:460)
+	at ghidra.app.script.GhidraScript.doExecute(GhidraScript.java:314)
+	at ghidra.app.script.GhidraScript.execute(GhidraScript.java:290)
+	at ghidra.app.util.headless.HeadlessAnalyzer.runScript(HeadlessAnalyzer.java:595)
+	at ghidra.app.util.headless.HeadlessAnalyzer.runScriptsList(HeadlessAnalyzer.java:938)
+	at ghidra.app.util.headless.HeadlessAnalyzer.analyzeProgram(HeadlessAnalyzer.java:1086)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processFileWithImport(HeadlessAnalyzer.java:1584)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithLoader(HeadlessAnalyzer.java:1744)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1685)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1769)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processLocal(HeadlessAnalyzer.java:462)
+	at ghidra.app.util.headless.AnalyzeHeadless.launch(AnalyzeHeadless.java:199)
+	at ghidra.GhidraLauncher.launch(GhidraLauncher.java:81)
+	at ghidra.Ghidra.main(Ghidra.java:54)
+ 
+2026-01-16 19:08:31 INFO  (HeadlessAnalyzer) REPORT: Execute script: ExportAll.java   
+2026-01-16 19:08:31 INFO  (HeadlessAnalyzer) SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts/ExportAll.java  
+2026-01-16 19:08:31 INFO  (GhidraScript) ExportAll.java> === Starting comprehensive export ===  
+2026-01-16 19:08:31 INFO  (GhidraScript) ExportAll.java> Output directory: source/decompiled  
+2026-01-16 19:08:31 INFO  (GhidraScript) ExportAll.java> Program: crimsonland.exe  
+2026-01-16 19:08:31 INFO  (GhidraScript) ExportAll.java> Architecture: x86  
+2026-01-16 19:08:31 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 19:08:31 INFO  (GhidraScript) ExportAll.java> Exporting summary to: crimsonland.exe_summary.txt  
+2026-01-16 19:08:31 INFO  (GhidraScript) ExportAll.java> Exporting decompiled code to: crimsonland.exe_decompiled.c  
+2026-01-16 19:08:46 INFO  (GhidraScript) ExportAll.java>   Decompiled 790 functions  
+2026-01-16 19:08:46 INFO  (GhidraScript) ExportAll.java> Exporting functions to: crimsonland.exe_functions.json  
+2026-01-16 19:08:47 INFO  (GhidraScript) ExportAll.java>   Exported 819 functions  
+2026-01-16 19:08:47 INFO  (GhidraScript) ExportAll.java> Exporting strings to: crimsonland.exe_strings.txt  
+2026-01-16 19:08:47 INFO  (GhidraScript) ExportAll.java>   Exported 1374 strings  
+2026-01-16 19:08:47 INFO  (GhidraScript) ExportAll.java> Analyzing interesting patterns...  
+2026-01-16 19:08:47 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 19:08:47 INFO  (GhidraScript) ExportAll.java> === Export complete ===  
+2026-01-16 19:08:47 INFO  (HeadlessAnalyzer) ANALYZING changes made by post scripts: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:08:47 INFO  (HeadlessAnalyzer) REPORT: Post-analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:08:47 INFO  (LocalFileSystem) /crimsonland.exe: file created (banteg)  
+2026-01-16 19:08:47 INFO  (HeadlessAnalyzer) REPORT: Save succeeded for: /crimsonland.exe (ghidra_crimsonland_exe_17879:/crimsonland.exe)  
+2026-01-16 19:08:47 INFO  (HeadlessAnalyzer) REPORT: Import succeeded  
+2026-01-16 19:09:33 INFO  (LoggingInitialization) Using log config file: jar:file:/Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml  
+2026-01-16 19:09:33 INFO  (LoggingInitialization) Using log file: source/decompiled/ghidra_analysis.log  
+2026-01-16 19:09:33 INFO  (Preferences) Loading user preferences: /Users/banteg/Library/ghidra/ghidra_12.0_DEV/preferences  
+2026-01-16 19:09:33 INFO  (ClassSearcher) Searching for classes...  
+2026-01-16 19:09:34 INFO  (ClassSearcher) Class search complete (779 ms)  
+2026-01-16 19:09:34 INFO  (SSLContextInitializer) Initializing SSL Context  
+2026-01-16 19:09:34 INFO  (SecureRandomFactory) Initializing Random Number Generator...  
+2026-01-16 19:09:34 INFO  (SecureRandomFactory) Random Number Generator initialization complete: NativePRNGNonBlocking  
+2026-01-16 19:09:34 INFO  (ApplicationTrustManagerFactory) Trust manager disabled, cacerts have not been set  
+2026-01-16 19:09:34 INFO  (AnalyzeHeadless) Headless startup complete (1530 ms)  
+2026-01-16 19:09:34 INFO  (ClassSearcher) Class searcher loaded 58 extension points (18 false positives)  
+2026-01-16 19:09:34 INFO  (HeadlessAnalyzer) HEADLESS Script Paths:
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/Atmel/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/PIC/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/VersionTracking/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BytePatterns/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FileFormats/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Jython/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BSim/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PyGhidra/ghidra_scripts
+    /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/JVM/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/DATA/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PDB/ghidra_scripts
+    /Users/banteg/dev/banteg/crimsonland-decompile/scripts/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Decompiler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/8051/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FunctionID/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/ghidra_scripts  
+2026-01-16 19:09:34 INFO  (HeadlessAnalyzer) HEADLESS: execution starts  
+2026-01-16 19:09:34 INFO  (HeadlessAnalyzer) Creating temporary project: /tmp/ghidra_crimsonland_exe_21231  
+2026-01-16 19:09:34 INFO  (DefaultProject) Creating project: /tmp/ghidra_crimsonland_exe_21231  
+2026-01-16 19:09:34 INFO  (HeadlessAnalyzer) REPORT: Processing input files:   
+2026-01-16 19:09:34 INFO  (HeadlessAnalyzer)      project: /tmp/ghidra_crimsonland_exe_21231  
+2026-01-16 19:09:34 INFO  (HeadlessAnalyzer) IMPORTING: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:09:35 INFO  (ProgramLoader) Using Loader: Portable Executable (PE)  
+2026-01-16 19:09:35 INFO  (ProgramLoader) Using Language/Compiler: x86:LE:32:default:windows  
+2026-01-16 19:09:35 INFO  (ProgramLoader) Using Library Search Path: [., /System/Library/dyld/dyld_shared_cache_arm64e, /System/Library/dyld/dyld_shared_cache_x86_64, /System/Library/dyld/dyld_shared_cache_x86_64h, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64h, /Users/banteg/Library/Java/Extensions, /Library/Java/Extensions, /Network/Library/Java/Extensions, /System/Library/Java/Extensions, /usr/lib/java]  
+2026-01-16 19:09:42 INFO  (FileSystemInstanceManager) Removing 2 unused filesystems from cache  
+2026-01-16 19:09:42 DEBUG (FileSystemInstanceManager) Closing unused filesystem [file:///System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64?MD5=8c187d8a9dbff51eba98244add99278e]  
+2026-01-16 19:09:42 DEBUG (FileSystemInstanceManager) Closing unused filesystem [file:///System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e?MD5=492b77873c25245403e49afdd8e71ea8]  
+2026-01-16 19:09:43 INFO  (ProgramLoader) Additional info:
+Loading file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe?MD5=b5734f679649e1e61b79b6071f7e0ee5...
+------------------------------------------------
+
+Searching 4 paths for library ADVAPI32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library D3D8.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library DSOUND.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library KERNEL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library OLE32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library OLEAUT32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library SHELL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library URLMON.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library USER32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library VERSION.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library VORBISFILE.DLL...
+Loading file:///Users/banteg/dev/banteg/crimsonland-decompile/game/VORBISFILE.DLL?MD5=b226080606e45b6879ea02f1b5f47c5e...
+Created exports file: /Users/banteg/Library/ghidra/ghidra_12.0_DEV/symbols/win32/vorbisfile.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 4 paths for library WININET.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library WINMM.DLL...
+Library not found.
+------------------------------------------------
+
+Applying cached symbols from VORBISFILE.DLL
+Linking the External Programs of 'crimsonland.exe' to imported libraries...
+  [KERNEL32.DLL] -> not found in project
+  [USER32.DLL] -> not found in project
+  [ADVAPI32.DLL] -> not found in project
+  [SHELL32.DLL] -> not found in project
+  [OLE32.DLL] -> not found in project
+  [OLEAUT32.DLL] -> not found in project
+  [VORBISFILE.DLL] -> not found in project
+  [URLMON.DLL] -> not found in project
+  [WINMM.DLL] -> not found in project
+  [D3D8.DLL] -> not found in project
+  [VERSION.DLL] -> not found in project
+  [WININET.DLL] -> not found in project
+  [DSOUND.DLL] -> not found in project
+------------------------------------------------
+
+  
+2026-01-16 19:09:43 INFO  (HeadlessAnalyzer) IMPORTING: Loaded 0 additional files  
+2026-01-16 19:09:43 INFO  (HeadlessAnalyzer) ANALYZING all memory and code: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:09:43 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___raise_securityfailure' specified in file: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 19:09:43 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___report_rangecheckfailure' specified in file: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 19:09:43 INFO  (PdbUniversalAnalyzer) Skipping PDB processing: missing PDB information in program metadata  
+2026-01-16 19:09:43 INFO  (PackedDatabaseCache) Packed database cache: /var/tmp/banteg-ghidra/packed-db-cache  
+2026-01-16 19:09:43 DEBUG (PackedDatabaseCache) Using cached packed database: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/typeinfo/win32/windows_vs12_32.gdt  
+2026-01-16 19:10:03 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 19:10:03 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 19:10:15 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004136b0: 
+Low-level Error: Free varnode has multiple descendants  
+2026-01-16 19:10:15 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00408990: 
+Low-level Error: Free varnode has multiple descendants  
+2026-01-16 19:10:18 INFO  (AutoAnalysisManager) -----------------------------------------------------
+    ASCII Strings                              0.248 secs
+    Apply Data Archives                        0.089 secs
+    Call Convention ID                         0.004 secs
+    Call-Fixup Installer                       0.018 secs
+    Create Address Tables                      0.052 secs
+    Create Address Tables - One Time           4.329 secs
+    Create Function                            0.160 secs
+    Data Reference                             1.130 secs
+    Decompiler Parameter ID                    5.789 secs
+    Decompiler Switch Analysis                14.054 secs
+    Demangler Microsoft                        0.005 secs
+    Disassemble                                0.198 secs
+    Disassemble Entry Points                   0.299 secs
+    Embedded Media                             0.015 secs
+    External Entry References                  0.000 secs
+    Function ID                                0.605 secs
+    Function Start Pre Search                  0.012 secs
+    Function Start Search                      0.072 secs
+    Function Start Search After Code           0.027 secs
+    Function Start Search After Data           0.015 secs
+    Function Start Search delayed - One Time   0.001 secs
+    Non-Returning Functions - Discovered       0.133 secs
+    Non-Returning Functions - Known            0.002 secs
+    PDB Universal                              0.002 secs
+    Reference                                  1.296 secs
+    Scalar Operand References                  0.339 secs
+    Shared Return Calls                        0.114 secs
+    Stack                                      1.459 secs
+    Subroutine References                      0.731 secs
+    Subroutine References - One Time           0.005 secs
+    Windows x86 PE Exception Handling          1.014 secs
+    Windows x86 PE RTTI Analyzer               0.000 secs
+    Windows x86 Thread Environment Block (TEB) Analyzer     0.008 secs
+    WindowsResourceReference                   0.297 secs
+    X86 Function Callee Purge                  0.050 secs
+    x86 Constant Reference Analyzer            1.903 secs
+-----------------------------------------------------
+     Total Time   34 secs
+-----------------------------------------------------
+  
+2026-01-16 19:10:18 INFO  (HeadlessAnalyzer) REPORT: Analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:10:18 INFO  (HeadlessAnalyzer) REPORT: Execute script: ImportThirdPartyHeaders.java 'source/headers/third_party'   
+2026-01-16 19:10:18 INFO  (HeadlessAnalyzer) SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/scripts/ghidra_scripts/ImportThirdPartyHeaders.java  
+2026-01-16 19:10:18 INFO  (GhidraScript) ImportThirdPartyHeaders.java> Parsing third-party headers into: crimsonland.exe  
+2026-01-16 19:10:18 INFO  (GhidraScript) ImportThirdPartyHeaders.java> Headers root: /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party  
+2026-01-16 19:10:18 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/jpeglib.h  
+2026-01-16 19:10:18 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h  
+2026-01-16 19:10:18 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/zlib.h  
+2026-01-16 19:10:18 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/ogg/ogg.h  
+2026-01-16 19:10:18 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/vorbis/codec.h  
+2026-01-16 19:10:18 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/vorbis/vorbisfile.h  
+2026-01-16 19:10:18 ERROR (HeadlessAnalyzer) REPORT SCRIPT ERROR:  ghidra.app.util.cparser.C.ParseException: C Parser:  Encountered errors during parse.
+         in /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/jpeglib.h near line -2
+Error: Undefined data type "JOCTET"
+         near token: null
+Possibly Undefined : JOCTET
+         Last Valid Datatype: uint
+         Check around crimsonland.exe around line: 179
+
+	at ghidra.app.util.cparser.C.CParser.parse(CParser.java:859)
+	at ghidra.app.util.cparser.C.CParserUtils.parseHeaderFiles(CParserUtils.java:560)
+	at ImportThirdPartyHeaders.run(ImportThirdPartyHeaders.java:82)
+	at ghidra.app.script.GhidraScript.executeNormal(GhidraScript.java:460)
+	at ghidra.app.script.GhidraScript.doExecute(GhidraScript.java:314)
+	at ghidra.app.script.GhidraScript.execute(GhidraScript.java:290)
+	at ghidra.app.util.headless.HeadlessAnalyzer.runScript(HeadlessAnalyzer.java:595)
+	at ghidra.app.util.headless.HeadlessAnalyzer.runScriptsList(HeadlessAnalyzer.java:938)
+	at ghidra.app.util.headless.HeadlessAnalyzer.analyzeProgram(HeadlessAnalyzer.java:1086)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processFileWithImport(HeadlessAnalyzer.java:1584)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithLoader(HeadlessAnalyzer.java:1744)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1685)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1769)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processLocal(HeadlessAnalyzer.java:462)
+	at ghidra.app.util.headless.AnalyzeHeadless.launch(AnalyzeHeadless.java:199)
+	at ghidra.GhidraLauncher.launch(GhidraLauncher.java:81)
+	at ghidra.Ghidra.main(Ghidra.java:54)
+ 
+2026-01-16 19:10:18 INFO  (HeadlessAnalyzer) REPORT: Execute script: ExportAll.java   
+2026-01-16 19:10:18 INFO  (HeadlessAnalyzer) SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts/ExportAll.java  
+2026-01-16 19:10:18 INFO  (GhidraScript) ExportAll.java> === Starting comprehensive export ===  
+2026-01-16 19:10:18 INFO  (GhidraScript) ExportAll.java> Output directory: source/decompiled  
+2026-01-16 19:10:18 INFO  (GhidraScript) ExportAll.java> Program: crimsonland.exe  
+2026-01-16 19:10:18 INFO  (GhidraScript) ExportAll.java> Architecture: x86  
+2026-01-16 19:10:18 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 19:10:18 INFO  (GhidraScript) ExportAll.java> Exporting summary to: crimsonland.exe_summary.txt  
+2026-01-16 19:10:18 INFO  (GhidraScript) ExportAll.java> Exporting decompiled code to: crimsonland.exe_decompiled.c  
+2026-01-16 19:10:33 INFO  (GhidraScript) ExportAll.java>   Decompiled 790 functions  
+2026-01-16 19:10:33 INFO  (GhidraScript) ExportAll.java> Exporting functions to: crimsonland.exe_functions.json  
+2026-01-16 19:10:33 INFO  (GhidraScript) ExportAll.java>   Exported 819 functions  
+2026-01-16 19:10:33 INFO  (GhidraScript) ExportAll.java> Exporting strings to: crimsonland.exe_strings.txt  
+2026-01-16 19:10:33 INFO  (GhidraScript) ExportAll.java>   Exported 1374 strings  
+2026-01-16 19:10:33 INFO  (GhidraScript) ExportAll.java> Analyzing interesting patterns...  
+2026-01-16 19:10:33 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 19:10:33 INFO  (GhidraScript) ExportAll.java> === Export complete ===  
+2026-01-16 19:10:33 INFO  (HeadlessAnalyzer) ANALYZING changes made by post scripts: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:10:33 INFO  (HeadlessAnalyzer) REPORT: Post-analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:10:33 INFO  (LocalFileSystem) /crimsonland.exe: file created (banteg)  
+2026-01-16 19:10:33 INFO  (HeadlessAnalyzer) REPORT: Save succeeded for: /crimsonland.exe (ghidra_crimsonland_exe_21231:/crimsonland.exe)  
+2026-01-16 19:10:33 INFO  (HeadlessAnalyzer) REPORT: Import succeeded  
+2026-01-16 19:10:52 INFO  (LoggingInitialization) Using log config file: jar:file:/Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml  
+2026-01-16 19:10:52 INFO  (LoggingInitialization) Using log file: source/decompiled/ghidra_analysis.log  
+2026-01-16 19:10:52 INFO  (Preferences) Loading user preferences: /Users/banteg/Library/ghidra/ghidra_12.0_DEV/preferences  
+2026-01-16 19:10:52 INFO  (ClassSearcher) Searching for classes...  
+2026-01-16 19:10:52 INFO  (ClassSearcher) Class search complete (782 ms)  
+2026-01-16 19:10:52 INFO  (SSLContextInitializer) Initializing SSL Context  
+2026-01-16 19:10:52 INFO  (SecureRandomFactory) Initializing Random Number Generator...  
+2026-01-16 19:10:52 INFO  (SecureRandomFactory) Random Number Generator initialization complete: NativePRNGNonBlocking  
+2026-01-16 19:10:52 INFO  (ApplicationTrustManagerFactory) Trust manager disabled, cacerts have not been set  
+2026-01-16 19:10:53 INFO  (AnalyzeHeadless) Headless startup complete (1496 ms)  
+2026-01-16 19:10:53 INFO  (ClassSearcher) Class searcher loaded 58 extension points (18 false positives)  
+2026-01-16 19:10:53 INFO  (HeadlessAnalyzer) HEADLESS Script Paths:
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/Atmel/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/PIC/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/VersionTracking/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BytePatterns/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FileFormats/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Jython/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BSim/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PyGhidra/ghidra_scripts
+    /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/JVM/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/DATA/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PDB/ghidra_scripts
+    /Users/banteg/dev/banteg/crimsonland-decompile/scripts/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Decompiler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/8051/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FunctionID/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/ghidra_scripts  
+2026-01-16 19:10:53 INFO  (HeadlessAnalyzer) HEADLESS: execution starts  
+2026-01-16 19:10:53 INFO  (HeadlessAnalyzer) Creating temporary project: /tmp/ghidra_crimsonland_exe_23493  
+2026-01-16 19:10:53 INFO  (DefaultProject) Creating project: /tmp/ghidra_crimsonland_exe_23493  
+2026-01-16 19:10:53 INFO  (HeadlessAnalyzer) REPORT: Processing input files:   
+2026-01-16 19:10:53 INFO  (HeadlessAnalyzer)      project: /tmp/ghidra_crimsonland_exe_23493  
+2026-01-16 19:10:53 INFO  (HeadlessAnalyzer) IMPORTING: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:10:53 INFO  (ProgramLoader) Using Loader: Portable Executable (PE)  
+2026-01-16 19:10:53 INFO  (ProgramLoader) Using Language/Compiler: x86:LE:32:default:windows  
+2026-01-16 19:10:53 INFO  (ProgramLoader) Using Library Search Path: [., /System/Library/dyld/dyld_shared_cache_arm64e, /System/Library/dyld/dyld_shared_cache_x86_64, /System/Library/dyld/dyld_shared_cache_x86_64h, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64h, /Users/banteg/Library/Java/Extensions, /Library/Java/Extensions, /Network/Library/Java/Extensions, /System/Library/Java/Extensions, /usr/lib/java]  
+2026-01-16 19:11:01 INFO  (FileSystemInstanceManager) Removing 2 unused filesystems from cache  
+2026-01-16 19:11:01 DEBUG (FileSystemInstanceManager) Closing unused filesystem [file:///System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64?MD5=8c187d8a9dbff51eba98244add99278e]  
+2026-01-16 19:11:01 DEBUG (FileSystemInstanceManager) Closing unused filesystem [file:///System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e?MD5=492b77873c25245403e49afdd8e71ea8]  
+2026-01-16 19:11:01 INFO  (ProgramLoader) Additional info:
+Loading file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe?MD5=b5734f679649e1e61b79b6071f7e0ee5...
+------------------------------------------------
+
+Searching 4 paths for library ADVAPI32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library D3D8.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library DSOUND.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library KERNEL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library OLE32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library OLEAUT32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library SHELL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library URLMON.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library USER32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library VERSION.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library VORBISFILE.DLL...
+Loading file:///Users/banteg/dev/banteg/crimsonland-decompile/game/VORBISFILE.DLL?MD5=b226080606e45b6879ea02f1b5f47c5e...
+Created exports file: /Users/banteg/Library/ghidra/ghidra_12.0_DEV/symbols/win32/vorbisfile.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 4 paths for library WININET.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library WINMM.DLL...
+Library not found.
+------------------------------------------------
+
+Applying cached symbols from VORBISFILE.DLL
+Linking the External Programs of 'crimsonland.exe' to imported libraries...
+  [KERNEL32.DLL] -> not found in project
+  [USER32.DLL] -> not found in project
+  [ADVAPI32.DLL] -> not found in project
+  [SHELL32.DLL] -> not found in project
+  [OLE32.DLL] -> not found in project
+  [OLEAUT32.DLL] -> not found in project
+  [VORBISFILE.DLL] -> not found in project
+  [URLMON.DLL] -> not found in project
+  [WINMM.DLL] -> not found in project
+  [D3D8.DLL] -> not found in project
+  [VERSION.DLL] -> not found in project
+  [WININET.DLL] -> not found in project
+  [DSOUND.DLL] -> not found in project
+------------------------------------------------
+
+  
+2026-01-16 19:11:01 INFO  (HeadlessAnalyzer) IMPORTING: Loaded 0 additional files  
+2026-01-16 19:11:01 INFO  (HeadlessAnalyzer) ANALYZING all memory and code: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:11:01 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___raise_securityfailure' specified in file: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 19:11:01 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___report_rangecheckfailure' specified in file: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 19:11:01 INFO  (PdbUniversalAnalyzer) Skipping PDB processing: missing PDB information in program metadata  
+2026-01-16 19:11:01 INFO  (PackedDatabaseCache) Packed database cache: /var/tmp/banteg-ghidra/packed-db-cache  
+2026-01-16 19:11:01 DEBUG (PackedDatabaseCache) Using cached packed database: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/typeinfo/win32/windows_vs12_32.gdt  
+2026-01-16 19:11:21 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 19:11:21 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 19:11:33 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004136b0: 
+Low-level Error: Free varnode has multiple descendants  
+2026-01-16 19:11:33 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00408990: 
+Low-level Error: Free varnode has multiple descendants  
+2026-01-16 19:11:36 INFO  (AutoAnalysisManager) -----------------------------------------------------
+    ASCII Strings                              0.219 secs
+    Apply Data Archives                        0.094 secs
+    Call Convention ID                         0.003 secs
+    Call-Fixup Installer                       0.018 secs
+    Create Address Tables                      0.049 secs
+    Create Address Tables - One Time           4.245 secs
+    Create Function                            0.172 secs
+    Data Reference                             1.002 secs
+    Decompiler Parameter ID                    5.841 secs
+    Decompiler Switch Analysis                13.981 secs
+    Demangler Microsoft                        0.006 secs
+    Disassemble                                0.178 secs
+    Disassemble Entry Points                   0.307 secs
+    Embedded Media                             0.015 secs
+    External Entry References                  0.000 secs
+    Function ID                                0.608 secs
+    Function Start Pre Search                  0.014 secs
+    Function Start Search                      0.055 secs
+    Function Start Search After Code           0.029 secs
+    Function Start Search After Data           0.019 secs
+    Function Start Search delayed - One Time   0.002 secs
+    Non-Returning Functions - Discovered       0.115 secs
+    Non-Returning Functions - Known            0.002 secs
+    PDB Universal                              0.002 secs
+    Reference                                  1.268 secs
+    Scalar Operand References                  0.313 secs
+    Shared Return Calls                        0.093 secs
+    Stack                                      1.375 secs
+    Subroutine References                      0.773 secs
+    Subroutine References - One Time           0.003 secs
+    Windows x86 PE Exception Handling          1.038 secs
+    Windows x86 PE RTTI Analyzer               0.001 secs
+    Windows x86 Thread Environment Block (TEB) Analyzer     0.008 secs
+    WindowsResourceReference                   0.293 secs
+    X86 Function Callee Purge                  0.053 secs
+    x86 Constant Reference Analyzer            1.860 secs
+-----------------------------------------------------
+     Total Time   34 secs
+-----------------------------------------------------
+  
+2026-01-16 19:11:36 INFO  (HeadlessAnalyzer) REPORT: Analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:11:36 INFO  (HeadlessAnalyzer) REPORT: Execute script: ImportThirdPartyHeaders.java 'source/headers/third_party'   
+2026-01-16 19:11:36 INFO  (HeadlessAnalyzer) SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/scripts/ghidra_scripts/ImportThirdPartyHeaders.java  
+2026-01-16 19:11:36 INFO  (GhidraScript) ImportThirdPartyHeaders.java> Parsing third-party headers into: crimsonland.exe  
+2026-01-16 19:11:36 INFO  (GhidraScript) ImportThirdPartyHeaders.java> Headers root: /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party  
+2026-01-16 19:11:36 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/jpeglib.h  
+2026-01-16 19:11:36 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h  
+2026-01-16 19:11:36 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/zlib.h  
+2026-01-16 19:11:36 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/ogg/ogg.h  
+2026-01-16 19:11:36 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/vorbis/codec.h  
+2026-01-16 19:11:36 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/vorbis/vorbisfile.h  
+2026-01-16 19:11:36 ERROR (HeadlessAnalyzer) REPORT SCRIPT ERROR:  ghidra.app.util.cparser.C.ParseException: C Parser:  Encountered errors during parse.
+         in /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/jpeglib.h near line 669
+Error: Encountered " <IDENTIFIER> "EXTERN "" at line 679, column 1.
+Was expecting one of:
+    <PRAGMA> ...
+    <PRAGMA_FUNC> ...
+    <STATICASSERT> ...
+    "#line" ...
+    <LINEALT> ...
+    ";" ...
+    <PRAGMA> ...
+    <PRAGMA_FUNC> ...
+    <PRAGMA> ...
+    <PRAGMA_FUNC> ...
+    
+         near token: ;
+Possibly Undefined : EXTERN
+         Last Valid Datatype: jpeg_marker_parser_method
+         Check around crimsonland.exe around line: 679
+
+	at ghidra.app.util.cparser.C.CParser.parse(CParser.java:859)
+	at ghidra.app.util.cparser.C.CParserUtils.parseHeaderFiles(CParserUtils.java:560)
+	at ImportThirdPartyHeaders.run(ImportThirdPartyHeaders.java:82)
+	at ghidra.app.script.GhidraScript.executeNormal(GhidraScript.java:460)
+	at ghidra.app.script.GhidraScript.doExecute(GhidraScript.java:314)
+	at ghidra.app.script.GhidraScript.execute(GhidraScript.java:290)
+	at ghidra.app.util.headless.HeadlessAnalyzer.runScript(HeadlessAnalyzer.java:595)
+	at ghidra.app.util.headless.HeadlessAnalyzer.runScriptsList(HeadlessAnalyzer.java:938)
+	at ghidra.app.util.headless.HeadlessAnalyzer.analyzeProgram(HeadlessAnalyzer.java:1086)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processFileWithImport(HeadlessAnalyzer.java:1584)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithLoader(HeadlessAnalyzer.java:1744)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1685)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1769)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processLocal(HeadlessAnalyzer.java:462)
+	at ghidra.app.util.headless.AnalyzeHeadless.launch(AnalyzeHeadless.java:199)
+	at ghidra.GhidraLauncher.launch(GhidraLauncher.java:81)
+	at ghidra.Ghidra.main(Ghidra.java:54)
+ 
+2026-01-16 19:11:36 INFO  (HeadlessAnalyzer) REPORT: Execute script: ExportAll.java   
+2026-01-16 19:11:36 INFO  (HeadlessAnalyzer) SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts/ExportAll.java  
+2026-01-16 19:11:36 INFO  (GhidraScript) ExportAll.java> === Starting comprehensive export ===  
+2026-01-16 19:11:36 INFO  (GhidraScript) ExportAll.java> Output directory: source/decompiled  
+2026-01-16 19:11:36 INFO  (GhidraScript) ExportAll.java> Program: crimsonland.exe  
+2026-01-16 19:11:36 INFO  (GhidraScript) ExportAll.java> Architecture: x86  
+2026-01-16 19:11:36 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 19:11:36 INFO  (GhidraScript) ExportAll.java> Exporting summary to: crimsonland.exe_summary.txt  
+2026-01-16 19:11:36 INFO  (GhidraScript) ExportAll.java> Exporting decompiled code to: crimsonland.exe_decompiled.c  
+2026-01-16 19:11:51 INFO  (GhidraScript) ExportAll.java>   Decompiled 790 functions  
+2026-01-16 19:11:51 INFO  (GhidraScript) ExportAll.java> Exporting functions to: crimsonland.exe_functions.json  
+2026-01-16 19:11:51 INFO  (GhidraScript) ExportAll.java>   Exported 819 functions  
+2026-01-16 19:11:51 INFO  (GhidraScript) ExportAll.java> Exporting strings to: crimsonland.exe_strings.txt  
+2026-01-16 19:11:51 INFO  (GhidraScript) ExportAll.java>   Exported 1374 strings  
+2026-01-16 19:11:51 INFO  (GhidraScript) ExportAll.java> Analyzing interesting patterns...  
+2026-01-16 19:11:51 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 19:11:51 INFO  (GhidraScript) ExportAll.java> === Export complete ===  
+2026-01-16 19:11:51 INFO  (HeadlessAnalyzer) ANALYZING changes made by post scripts: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:11:51 INFO  (HeadlessAnalyzer) REPORT: Post-analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:11:51 INFO  (LocalFileSystem) /crimsonland.exe: file created (banteg)  
+2026-01-16 19:11:51 INFO  (HeadlessAnalyzer) REPORT: Save succeeded for: /crimsonland.exe (ghidra_crimsonland_exe_23493:/crimsonland.exe)  
+2026-01-16 19:11:51 INFO  (HeadlessAnalyzer) REPORT: Import succeeded  
+2026-01-16 19:12:18 INFO  (LoggingInitialization) Using log config file: jar:file:/Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml  
+2026-01-16 19:12:18 INFO  (LoggingInitialization) Using log file: source/decompiled/ghidra_analysis.log  
+2026-01-16 19:12:18 INFO  (Preferences) Loading user preferences: /Users/banteg/Library/ghidra/ghidra_12.0_DEV/preferences  
+2026-01-16 19:12:18 INFO  (ClassSearcher) Searching for classes...  
+2026-01-16 19:12:19 INFO  (ClassSearcher) Class search complete (803 ms)  
+2026-01-16 19:12:19 INFO  (SSLContextInitializer) Initializing SSL Context  
+2026-01-16 19:12:19 INFO  (SecureRandomFactory) Initializing Random Number Generator...  
+2026-01-16 19:12:19 INFO  (SecureRandomFactory) Random Number Generator initialization complete: NativePRNGNonBlocking  
+2026-01-16 19:12:19 INFO  (ApplicationTrustManagerFactory) Trust manager disabled, cacerts have not been set  
+2026-01-16 19:12:20 INFO  (AnalyzeHeadless) Headless startup complete (1597 ms)  
+2026-01-16 19:12:20 INFO  (ClassSearcher) Class searcher loaded 58 extension points (18 false positives)  
+2026-01-16 19:12:20 INFO  (HeadlessAnalyzer) HEADLESS Script Paths:
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/Atmel/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/PIC/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/VersionTracking/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BytePatterns/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FileFormats/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Jython/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BSim/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PyGhidra/ghidra_scripts
+    /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/JVM/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/DATA/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PDB/ghidra_scripts
+    /Users/banteg/dev/banteg/crimsonland-decompile/scripts/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Decompiler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/8051/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FunctionID/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/ghidra_scripts  
+2026-01-16 19:12:20 INFO  (HeadlessAnalyzer) HEADLESS: execution starts  
+2026-01-16 19:12:20 INFO  (HeadlessAnalyzer) Creating temporary project: /tmp/ghidra_crimsonland_exe_25883  
+2026-01-16 19:12:20 INFO  (DefaultProject) Creating project: /tmp/ghidra_crimsonland_exe_25883  
+2026-01-16 19:12:20 INFO  (HeadlessAnalyzer) REPORT: Processing input files:   
+2026-01-16 19:12:20 INFO  (HeadlessAnalyzer)      project: /tmp/ghidra_crimsonland_exe_25883  
+2026-01-16 19:12:20 INFO  (HeadlessAnalyzer) IMPORTING: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:12:20 INFO  (ProgramLoader) Using Loader: Portable Executable (PE)  
+2026-01-16 19:12:20 INFO  (ProgramLoader) Using Language/Compiler: x86:LE:32:default:windows  
+2026-01-16 19:12:20 INFO  (ProgramLoader) Using Library Search Path: [., /System/Library/dyld/dyld_shared_cache_arm64e, /System/Library/dyld/dyld_shared_cache_x86_64, /System/Library/dyld/dyld_shared_cache_x86_64h, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64h, /Users/banteg/Library/Java/Extensions, /Library/Java/Extensions, /Network/Library/Java/Extensions, /System/Library/Java/Extensions, /usr/lib/java]  
+2026-01-16 19:12:28 INFO  (FileSystemInstanceManager) Removing 2 unused filesystems from cache  
+2026-01-16 19:12:28 DEBUG (FileSystemInstanceManager) Closing unused filesystem [file:///System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64?MD5=8c187d8a9dbff51eba98244add99278e]  
+2026-01-16 19:12:28 DEBUG (FileSystemInstanceManager) Closing unused filesystem [file:///System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e?MD5=492b77873c25245403e49afdd8e71ea8]  
+2026-01-16 19:12:28 INFO  (ProgramLoader) Additional info:
+Loading file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe?MD5=b5734f679649e1e61b79b6071f7e0ee5...
+------------------------------------------------
+
+Searching 4 paths for library ADVAPI32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library D3D8.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library DSOUND.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library KERNEL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library OLE32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library OLEAUT32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library SHELL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library URLMON.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library USER32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library VERSION.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library VORBISFILE.DLL...
+Loading file:///Users/banteg/dev/banteg/crimsonland-decompile/game/VORBISFILE.DLL?MD5=b226080606e45b6879ea02f1b5f47c5e...
+Created exports file: /Users/banteg/Library/ghidra/ghidra_12.0_DEV/symbols/win32/vorbisfile.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 4 paths for library WININET.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library WINMM.DLL...
+Library not found.
+------------------------------------------------
+
+Applying cached symbols from VORBISFILE.DLL
+Linking the External Programs of 'crimsonland.exe' to imported libraries...
+  [KERNEL32.DLL] -> not found in project
+  [USER32.DLL] -> not found in project
+  [ADVAPI32.DLL] -> not found in project
+  [SHELL32.DLL] -> not found in project
+  [OLE32.DLL] -> not found in project
+  [OLEAUT32.DLL] -> not found in project
+  [VORBISFILE.DLL] -> not found in project
+  [URLMON.DLL] -> not found in project
+  [WINMM.DLL] -> not found in project
+  [D3D8.DLL] -> not found in project
+  [VERSION.DLL] -> not found in project
+  [WININET.DLL] -> not found in project
+  [DSOUND.DLL] -> not found in project
+------------------------------------------------
+
+  
+2026-01-16 19:12:28 INFO  (HeadlessAnalyzer) IMPORTING: Loaded 0 additional files  
+2026-01-16 19:12:28 INFO  (HeadlessAnalyzer) ANALYZING all memory and code: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:12:28 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___raise_securityfailure' specified in file: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 19:12:28 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___report_rangecheckfailure' specified in file: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 19:12:28 INFO  (PdbUniversalAnalyzer) Skipping PDB processing: missing PDB information in program metadata  
+2026-01-16 19:12:28 INFO  (PackedDatabaseCache) Packed database cache: /var/tmp/banteg-ghidra/packed-db-cache  
+2026-01-16 19:12:28 DEBUG (PackedDatabaseCache) Using cached packed database: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/typeinfo/win32/windows_vs12_32.gdt  
+2026-01-16 19:12:48 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 19:12:48 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 19:13:01 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004136b0: 
+Low-level Error: Free varnode has multiple descendants  
+2026-01-16 19:13:01 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00408990: 
+Low-level Error: Free varnode has multiple descendants  
+2026-01-16 19:13:03 INFO  (AutoAnalysisManager) -----------------------------------------------------
+    ASCII Strings                              0.249 secs
+    Apply Data Archives                        0.097 secs
+    Call Convention ID                         0.004 secs
+    Call-Fixup Installer                       0.019 secs
+    Create Address Tables                      0.089 secs
+    Create Address Tables - One Time           4.344 secs
+    Create Function                            0.180 secs
+    Data Reference                             1.092 secs
+    Decompiler Parameter ID                    5.797 secs
+    Decompiler Switch Analysis                13.975 secs
+    Demangler Microsoft                        0.005 secs
+    Disassemble                                0.212 secs
+    Disassemble Entry Points                   0.332 secs
+    Embedded Media                             0.015 secs
+    External Entry References                  0.000 secs
+    Function ID                                0.602 secs
+    Function Start Pre Search                  0.014 secs
+    Function Start Search                      0.077 secs
+    Function Start Search After Code           0.028 secs
+    Function Start Search After Data           0.015 secs
+    Function Start Search delayed - One Time   0.001 secs
+    Non-Returning Functions - Discovered       0.097 secs
+    Non-Returning Functions - Known            0.002 secs
+    PDB Universal                              0.002 secs
+    Reference                                  1.298 secs
+    Scalar Operand References                  0.296 secs
+    Shared Return Calls                        0.100 secs
+    Stack                                      1.315 secs
+    Subroutine References                      0.826 secs
+    Subroutine References - One Time           0.003 secs
+    Windows x86 PE Exception Handling          1.045 secs
+    Windows x86 PE RTTI Analyzer               0.000 secs
+    Windows x86 Thread Environment Block (TEB) Analyzer     0.008 secs
+    WindowsResourceReference                   0.287 secs
+    X86 Function Callee Purge                  0.050 secs
+    x86 Constant Reference Analyzer            1.912 secs
+-----------------------------------------------------
+     Total Time   34 secs
+-----------------------------------------------------
+  
+2026-01-16 19:13:03 INFO  (HeadlessAnalyzer) REPORT: Analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:13:03 INFO  (HeadlessAnalyzer) REPORT: Execute script: ImportThirdPartyHeaders.java 'source/headers/third_party'   
+2026-01-16 19:13:03 INFO  (HeadlessAnalyzer) SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/scripts/ghidra_scripts/ImportThirdPartyHeaders.java  
+2026-01-16 19:13:03 INFO  (GhidraScript) ImportThirdPartyHeaders.java> Parsing third-party headers into: crimsonland.exe  
+2026-01-16 19:13:03 INFO  (GhidraScript) ImportThirdPartyHeaders.java> Headers root: /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party  
+2026-01-16 19:13:03 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/jpeglib.h  
+2026-01-16 19:13:03 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h  
+2026-01-16 19:13:03 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/zlib.h  
+2026-01-16 19:13:03 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/ogg/ogg.h  
+2026-01-16 19:13:03 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/vorbis/codec.h  
+2026-01-16 19:13:03 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/vorbis/vorbisfile.h  
+2026-01-16 19:13:03 ERROR (HeadlessAnalyzer) REPORT SCRIPT ERROR:  ghidra.app.util.cparser.C.ParseException: C Parser:  Encountered errors during parse.
+         in /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h near line 590
+Error: Encountered " "int" "int "" at line 1694, column 50.
+Was expecting one of:
+    <IDENTIFIER> ...
+    <IDENTIFIER> ...
+    <IDENTIFIER> ...
+    
+         near token: ,
+Possibly Undefined : (
+         Last Valid Datatype: _func_101 *
+         Check around crimsonland.exe around line: 1694
+
+	at ghidra.app.util.cparser.C.CParser.parse(CParser.java:859)
+	at ghidra.app.util.cparser.C.CParserUtils.parseHeaderFiles(CParserUtils.java:560)
+	at ImportThirdPartyHeaders.run(ImportThirdPartyHeaders.java:82)
+	at ghidra.app.script.GhidraScript.executeNormal(GhidraScript.java:460)
+	at ghidra.app.script.GhidraScript.doExecute(GhidraScript.java:314)
+	at ghidra.app.script.GhidraScript.execute(GhidraScript.java:290)
+	at ghidra.app.util.headless.HeadlessAnalyzer.runScript(HeadlessAnalyzer.java:595)
+	at ghidra.app.util.headless.HeadlessAnalyzer.runScriptsList(HeadlessAnalyzer.java:938)
+	at ghidra.app.util.headless.HeadlessAnalyzer.analyzeProgram(HeadlessAnalyzer.java:1086)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processFileWithImport(HeadlessAnalyzer.java:1584)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithLoader(HeadlessAnalyzer.java:1744)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1685)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processWithImport(HeadlessAnalyzer.java:1769)
+	at ghidra.app.util.headless.HeadlessAnalyzer.processLocal(HeadlessAnalyzer.java:462)
+	at ghidra.app.util.headless.AnalyzeHeadless.launch(AnalyzeHeadless.java:199)
+	at ghidra.GhidraLauncher.launch(GhidraLauncher.java:81)
+	at ghidra.Ghidra.main(Ghidra.java:54)
+ 
+2026-01-16 19:13:03 INFO  (HeadlessAnalyzer) REPORT: Execute script: ExportAll.java   
+2026-01-16 19:13:03 INFO  (HeadlessAnalyzer) SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts/ExportAll.java  
+2026-01-16 19:13:03 INFO  (GhidraScript) ExportAll.java> === Starting comprehensive export ===  
+2026-01-16 19:13:03 INFO  (GhidraScript) ExportAll.java> Output directory: source/decompiled  
+2026-01-16 19:13:03 INFO  (GhidraScript) ExportAll.java> Program: crimsonland.exe  
+2026-01-16 19:13:03 INFO  (GhidraScript) ExportAll.java> Architecture: x86  
+2026-01-16 19:13:03 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 19:13:03 INFO  (GhidraScript) ExportAll.java> Exporting summary to: crimsonland.exe_summary.txt  
+2026-01-16 19:13:03 INFO  (GhidraScript) ExportAll.java> Exporting decompiled code to: crimsonland.exe_decompiled.c  
+2026-01-16 19:13:18 INFO  (GhidraScript) ExportAll.java>   Decompiled 790 functions  
+2026-01-16 19:13:18 INFO  (GhidraScript) ExportAll.java> Exporting functions to: crimsonland.exe_functions.json  
+2026-01-16 19:13:18 INFO  (GhidraScript) ExportAll.java>   Exported 819 functions  
+2026-01-16 19:13:18 INFO  (GhidraScript) ExportAll.java> Exporting strings to: crimsonland.exe_strings.txt  
+2026-01-16 19:13:18 INFO  (GhidraScript) ExportAll.java>   Exported 1374 strings  
+2026-01-16 19:13:18 INFO  (GhidraScript) ExportAll.java> Analyzing interesting patterns...  
+2026-01-16 19:13:18 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 19:13:18 INFO  (GhidraScript) ExportAll.java> === Export complete ===  
+2026-01-16 19:13:18 INFO  (HeadlessAnalyzer) ANALYZING changes made by post scripts: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:13:18 INFO  (HeadlessAnalyzer) REPORT: Post-analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:13:18 INFO  (LocalFileSystem) /crimsonland.exe: file created (banteg)  
+2026-01-16 19:13:18 INFO  (HeadlessAnalyzer) REPORT: Save succeeded for: /crimsonland.exe (ghidra_crimsonland_exe_25883:/crimsonland.exe)  
+2026-01-16 19:13:18 INFO  (HeadlessAnalyzer) REPORT: Import succeeded  
+2026-01-16 19:15:59 INFO  (LoggingInitialization) Using log config file: jar:file:/Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml  
+2026-01-16 19:15:59 INFO  (LoggingInitialization) Using log file: source/decompiled/ghidra_analysis.log  
+2026-01-16 19:15:59 INFO  (Preferences) Loading user preferences: /Users/banteg/Library/ghidra/ghidra_12.0_DEV/preferences  
+2026-01-16 19:15:59 INFO  (ClassSearcher) Searching for classes...  
+2026-01-16 19:16:00 INFO  (ClassSearcher) Class search complete (779 ms)  
+2026-01-16 19:16:00 INFO  (SSLContextInitializer) Initializing SSL Context  
+2026-01-16 19:16:00 INFO  (SecureRandomFactory) Initializing Random Number Generator...  
+2026-01-16 19:16:00 INFO  (SecureRandomFactory) Random Number Generator initialization complete: NativePRNGNonBlocking  
+2026-01-16 19:16:00 INFO  (ApplicationTrustManagerFactory) Trust manager disabled, cacerts have not been set  
+2026-01-16 19:16:00 INFO  (AnalyzeHeadless) Headless startup complete (1511 ms)  
+2026-01-16 19:16:00 INFO  (ClassSearcher) Class searcher loaded 58 extension points (18 false positives)  
+2026-01-16 19:16:00 INFO  (HeadlessAnalyzer) HEADLESS Script Paths:
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/Atmel/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/PIC/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/VersionTracking/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BytePatterns/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FileFormats/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Jython/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BSim/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PyGhidra/ghidra_scripts
+    /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/JVM/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/DATA/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PDB/ghidra_scripts
+    /Users/banteg/dev/banteg/crimsonland-decompile/scripts/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Decompiler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/8051/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FunctionID/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/ghidra_scripts  
+2026-01-16 19:16:00 INFO  (HeadlessAnalyzer) HEADLESS: execution starts  
+2026-01-16 19:16:00 INFO  (HeadlessAnalyzer) Creating temporary project: /tmp/ghidra_crimsonland_exe_31052  
+2026-01-16 19:16:00 INFO  (DefaultProject) Creating project: /tmp/ghidra_crimsonland_exe_31052  
+2026-01-16 19:16:00 INFO  (HeadlessAnalyzer) REPORT: Processing input files:   
+2026-01-16 19:16:00 INFO  (HeadlessAnalyzer)      project: /tmp/ghidra_crimsonland_exe_31052  
+2026-01-16 19:16:00 INFO  (HeadlessAnalyzer) IMPORTING: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:16:01 INFO  (ProgramLoader) Using Loader: Portable Executable (PE)  
+2026-01-16 19:16:01 INFO  (ProgramLoader) Using Language/Compiler: x86:LE:32:default:windows  
+2026-01-16 19:16:01 INFO  (ProgramLoader) Using Library Search Path: [., /System/Library/dyld/dyld_shared_cache_arm64e, /System/Library/dyld/dyld_shared_cache_x86_64, /System/Library/dyld/dyld_shared_cache_x86_64h, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64h, /Users/banteg/Library/Java/Extensions, /Library/Java/Extensions, /Network/Library/Java/Extensions, /System/Library/Java/Extensions, /usr/lib/java]  
+2026-01-16 19:16:08 INFO  (FileSystemInstanceManager) Removing 2 unused filesystems from cache  
+2026-01-16 19:16:08 DEBUG (FileSystemInstanceManager) Closing unused filesystem [file:///System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64?MD5=8c187d8a9dbff51eba98244add99278e]  
+2026-01-16 19:16:08 DEBUG (FileSystemInstanceManager) Closing unused filesystem [file:///System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e?MD5=492b77873c25245403e49afdd8e71ea8]  
+2026-01-16 19:16:09 INFO  (ProgramLoader) Additional info:
+Loading file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe?MD5=b5734f679649e1e61b79b6071f7e0ee5...
+------------------------------------------------
+
+Searching 4 paths for library ADVAPI32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library D3D8.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library DSOUND.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library KERNEL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library OLE32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library OLEAUT32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library SHELL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library URLMON.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library USER32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library VERSION.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library VORBISFILE.DLL...
+Loading file:///Users/banteg/dev/banteg/crimsonland-decompile/game/VORBISFILE.DLL?MD5=b226080606e45b6879ea02f1b5f47c5e...
+Created exports file: /Users/banteg/Library/ghidra/ghidra_12.0_DEV/symbols/win32/vorbisfile.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 4 paths for library WININET.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library WINMM.DLL...
+Library not found.
+------------------------------------------------
+
+Applying cached symbols from VORBISFILE.DLL
+Linking the External Programs of 'crimsonland.exe' to imported libraries...
+  [KERNEL32.DLL] -> not found in project
+  [USER32.DLL] -> not found in project
+  [ADVAPI32.DLL] -> not found in project
+  [SHELL32.DLL] -> not found in project
+  [OLE32.DLL] -> not found in project
+  [OLEAUT32.DLL] -> not found in project
+  [VORBISFILE.DLL] -> not found in project
+  [URLMON.DLL] -> not found in project
+  [WINMM.DLL] -> not found in project
+  [D3D8.DLL] -> not found in project
+  [VERSION.DLL] -> not found in project
+  [WININET.DLL] -> not found in project
+  [DSOUND.DLL] -> not found in project
+------------------------------------------------
+
+  
+2026-01-16 19:16:09 INFO  (HeadlessAnalyzer) IMPORTING: Loaded 0 additional files  
+2026-01-16 19:16:09 INFO  (HeadlessAnalyzer) ANALYZING all memory and code: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:16:09 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___raise_securityfailure' specified in file: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 19:16:09 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___report_rangecheckfailure' specified in file: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 19:16:09 INFO  (PdbUniversalAnalyzer) Skipping PDB processing: missing PDB information in program metadata  
+2026-01-16 19:16:09 INFO  (PackedDatabaseCache) Packed database cache: /var/tmp/banteg-ghidra/packed-db-cache  
+2026-01-16 19:16:09 DEBUG (PackedDatabaseCache) Using cached packed database: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/typeinfo/win32/windows_vs12_32.gdt  
+2026-01-16 19:16:28 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 19:16:28 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 19:16:41 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004136b0: 
+Low-level Error: Free varnode has multiple descendants  
+2026-01-16 19:16:41 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00408990: 
+Low-level Error: Free varnode has multiple descendants  
+2026-01-16 19:16:43 INFO  (AutoAnalysisManager) -----------------------------------------------------
+    ASCII Strings                              0.241 secs
+    Apply Data Archives                        0.091 secs
+    Call Convention ID                         0.004 secs
+    Call-Fixup Installer                       0.023 secs
+    Create Address Tables                      0.086 secs
+    Create Address Tables - One Time           4.334 secs
+    Create Function                            0.167 secs
+    Data Reference                             1.097 secs
+    Decompiler Parameter ID                    5.825 secs
+    Decompiler Switch Analysis                13.857 secs
+    Demangler Microsoft                        0.005 secs
+    Disassemble                                0.173 secs
+    Disassemble Entry Points                   0.315 secs
+    Embedded Media                             0.018 secs
+    External Entry References                  0.000 secs
+    Function ID                                0.585 secs
+    Function Start Pre Search                  0.014 secs
+    Function Start Search                      0.079 secs
+    Function Start Search After Code           0.027 secs
+    Function Start Search After Data           0.016 secs
+    Function Start Search delayed - One Time   0.001 secs
+    Non-Returning Functions - Discovered       0.104 secs
+    Non-Returning Functions - Known            0.002 secs
+    PDB Universal                              0.002 secs
+    Reference                                  1.327 secs
+    Scalar Operand References                  0.372 secs
+    Shared Return Calls                        0.087 secs
+    Stack                                      1.352 secs
+    Subroutine References                      0.800 secs
+    Subroutine References - One Time           0.002 secs
+    Windows x86 PE Exception Handling          1.037 secs
+    Windows x86 PE RTTI Analyzer               0.000 secs
+    Windows x86 Thread Environment Block (TEB) Analyzer     0.008 secs
+    WindowsResourceReference                   0.295 secs
+    X86 Function Callee Purge                  0.062 secs
+    x86 Constant Reference Analyzer            1.883 secs
+-----------------------------------------------------
+     Total Time   34 secs
+-----------------------------------------------------
+  
+2026-01-16 19:16:43 INFO  (HeadlessAnalyzer) REPORT: Analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:16:43 INFO  (HeadlessAnalyzer) REPORT: Execute script: ImportThirdPartyHeaders.java 'source/headers/third_party'   
+2026-01-16 19:16:44 INFO  (HeadlessAnalyzer) SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/scripts/ghidra_scripts/ImportThirdPartyHeaders.java  
+2026-01-16 19:16:44 INFO  (GhidraScript) ImportThirdPartyHeaders.java> Parsing third-party headers into: crimsonland.exe  
+2026-01-16 19:16:44 INFO  (GhidraScript) ImportThirdPartyHeaders.java> Headers root: /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party  
+2026-01-16 19:16:44 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/jpeglib.h  
+2026-01-16 19:16:44 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h  
+2026-01-16 19:16:44 ERROR (GhidraScript) ImportThirdPartyHeaders.java> Header parse failed: /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h (C Parser:  Encountered errors during parse.
+         in /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h near line 590
+Error: Encountered " "int" "int "" at line 797, column 50.
+Was expecting one of:
+    <IDENTIFIER> ...
+    <IDENTIFIER> ...
+    <IDENTIFIER> ...
+    
+         near token: ,
+Possibly Undefined : (
+         Last Valid Datatype: _func_11 *
+         Check around crimsonland.exe around line: 797
+)  
+2026-01-16 19:16:44 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/zlib.h  
+2026-01-16 19:16:44 ERROR (GhidraScript) ImportThirdPartyHeaders.java> Header parse failed: /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/zlib.h (C Parser:  Encountered errors during parse.
+         in /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/zlib.h near line 515
+Error: Encountered " <IDENTIFIER> "va_list "" at line 933, column 44.
+Was expecting one of:
+    "..." ...
+    "..." ...
+    "..." ...
+    "..." ...
+    
+         near token: ,
+Possibly Undefined : va_list
+         Last Valid Datatype: char *
+         Check around crimsonland.exe around line: 933
+)  
+2026-01-16 19:16:44 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/ogg/ogg.h  
+2026-01-16 19:16:44 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/vorbis/codec.h  
+2026-01-16 19:16:44 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/vorbis/vorbisfile.h  
+2026-01-16 19:16:44 ERROR (GhidraScript) ImportThirdPartyHeaders.java> One or more headers failed to parse. See script log for details.  
+2026-01-16 19:16:44 INFO  (HeadlessAnalyzer) REPORT: Execute script: ExportAll.java   
+2026-01-16 19:16:44 INFO  (HeadlessAnalyzer) SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts/ExportAll.java  
+2026-01-16 19:16:44 INFO  (GhidraScript) ExportAll.java> === Starting comprehensive export ===  
+2026-01-16 19:16:44 INFO  (GhidraScript) ExportAll.java> Output directory: source/decompiled  
+2026-01-16 19:16:44 INFO  (GhidraScript) ExportAll.java> Program: crimsonland.exe  
+2026-01-16 19:16:44 INFO  (GhidraScript) ExportAll.java> Architecture: x86  
+2026-01-16 19:16:44 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 19:16:44 INFO  (GhidraScript) ExportAll.java> Exporting summary to: crimsonland.exe_summary.txt  
+2026-01-16 19:16:44 INFO  (GhidraScript) ExportAll.java> Exporting decompiled code to: crimsonland.exe_decompiled.c  
+2026-01-16 19:17:00 INFO  (GhidraScript) ExportAll.java>   Decompiled 790 functions  
+2026-01-16 19:17:00 INFO  (GhidraScript) ExportAll.java> Exporting functions to: crimsonland.exe_functions.json  
+2026-01-16 19:17:00 INFO  (GhidraScript) ExportAll.java>   Exported 819 functions  
+2026-01-16 19:17:00 INFO  (GhidraScript) ExportAll.java> Exporting strings to: crimsonland.exe_strings.txt  
+2026-01-16 19:17:00 INFO  (GhidraScript) ExportAll.java>   Exported 1374 strings  
+2026-01-16 19:17:00 INFO  (GhidraScript) ExportAll.java> Analyzing interesting patterns...  
+2026-01-16 19:17:00 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 19:17:00 INFO  (GhidraScript) ExportAll.java> === Export complete ===  
+2026-01-16 19:17:00 INFO  (HeadlessAnalyzer) ANALYZING changes made by post scripts: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:17:00 INFO  (HeadlessAnalyzer) REPORT: Post-analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:17:00 INFO  (LocalFileSystem) /crimsonland.exe: file created (banteg)  
+2026-01-16 19:17:00 INFO  (HeadlessAnalyzer) REPORT: Save succeeded for: /crimsonland.exe (ghidra_crimsonland_exe_31052:/crimsonland.exe)  
+2026-01-16 19:17:00 INFO  (HeadlessAnalyzer) REPORT: Import succeeded  
+2026-01-16 19:18:55 INFO  (LoggingInitialization) Using log config file: jar:file:/Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml  
+2026-01-16 19:18:55 INFO  (LoggingInitialization) Using log file: source/decompiled/ghidra_analysis.log  
+2026-01-16 19:18:55 INFO  (Preferences) Loading user preferences: /Users/banteg/Library/ghidra/ghidra_12.0_DEV/preferences  
+2026-01-16 19:18:55 INFO  (ClassSearcher) Searching for classes...  
+2026-01-16 19:18:56 INFO  (ClassSearcher) Class search complete (781 ms)  
+2026-01-16 19:18:56 INFO  (SSLContextInitializer) Initializing SSL Context  
+2026-01-16 19:18:56 INFO  (SecureRandomFactory) Initializing Random Number Generator...  
+2026-01-16 19:18:56 INFO  (SecureRandomFactory) Random Number Generator initialization complete: NativePRNGNonBlocking  
+2026-01-16 19:18:56 INFO  (ApplicationTrustManagerFactory) Trust manager disabled, cacerts have not been set  
+2026-01-16 19:18:56 INFO  (AnalyzeHeadless) Headless startup complete (1665 ms)  
+2026-01-16 19:18:56 INFO  (ClassSearcher) Class searcher loaded 58 extension points (18 false positives)  
+2026-01-16 19:18:56 INFO  (HeadlessAnalyzer) HEADLESS Script Paths:
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/Atmel/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/PIC/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/VersionTracking/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BytePatterns/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FileFormats/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Jython/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BSim/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PyGhidra/ghidra_scripts
+    /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/JVM/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/DATA/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PDB/ghidra_scripts
+    /Users/banteg/dev/banteg/crimsonland-decompile/scripts/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Decompiler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/8051/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FunctionID/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/ghidra_scripts  
+2026-01-16 19:18:56 INFO  (HeadlessAnalyzer) HEADLESS: execution starts  
+2026-01-16 19:18:56 INFO  (HeadlessAnalyzer) Creating temporary project: /tmp/ghidra_crimsonland_exe_35276  
+2026-01-16 19:18:56 INFO  (DefaultProject) Creating project: /tmp/ghidra_crimsonland_exe_35276  
+2026-01-16 19:18:56 INFO  (HeadlessAnalyzer) REPORT: Processing input files:   
+2026-01-16 19:18:56 INFO  (HeadlessAnalyzer)      project: /tmp/ghidra_crimsonland_exe_35276  
+2026-01-16 19:18:56 INFO  (HeadlessAnalyzer) IMPORTING: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:18:57 INFO  (ProgramLoader) Using Loader: Portable Executable (PE)  
+2026-01-16 19:18:57 INFO  (ProgramLoader) Using Language/Compiler: x86:LE:32:default:windows  
+2026-01-16 19:18:57 INFO  (ProgramLoader) Using Library Search Path: [., /System/Library/dyld/dyld_shared_cache_arm64e, /System/Library/dyld/dyld_shared_cache_x86_64, /System/Library/dyld/dyld_shared_cache_x86_64h, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64h, /Users/banteg/Library/Java/Extensions, /Library/Java/Extensions, /Network/Library/Java/Extensions, /System/Library/Java/Extensions, /usr/lib/java]  
+2026-01-16 19:19:07 INFO  (FileSystemInstanceManager) Removing 2 unused filesystems from cache  
+2026-01-16 19:19:07 DEBUG (FileSystemInstanceManager) Closing unused filesystem [file:///System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64?MD5=8c187d8a9dbff51eba98244add99278e]  
+2026-01-16 19:19:07 DEBUG (FileSystemInstanceManager) Closing unused filesystem [file:///System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e?MD5=492b77873c25245403e49afdd8e71ea8]  
+2026-01-16 19:19:08 INFO  (ProgramLoader) Additional info:
+Loading file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe?MD5=b5734f679649e1e61b79b6071f7e0ee5...
+------------------------------------------------
+
+Searching 4 paths for library ADVAPI32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library D3D8.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library DSOUND.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library KERNEL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library OLE32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library OLEAUT32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library SHELL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library URLMON.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library USER32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library VERSION.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library VORBISFILE.DLL...
+Loading file:///Users/banteg/dev/banteg/crimsonland-decompile/game/VORBISFILE.DLL?MD5=b226080606e45b6879ea02f1b5f47c5e...
+Created exports file: /Users/banteg/Library/ghidra/ghidra_12.0_DEV/symbols/win32/vorbisfile.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 4 paths for library WININET.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library WINMM.DLL...
+Library not found.
+------------------------------------------------
+
+Applying cached symbols from VORBISFILE.DLL
+Linking the External Programs of 'crimsonland.exe' to imported libraries...
+  [KERNEL32.DLL] -> not found in project
+  [USER32.DLL] -> not found in project
+  [ADVAPI32.DLL] -> not found in project
+  [SHELL32.DLL] -> not found in project
+  [OLE32.DLL] -> not found in project
+  [OLEAUT32.DLL] -> not found in project
+  [VORBISFILE.DLL] -> not found in project
+  [URLMON.DLL] -> not found in project
+  [WINMM.DLL] -> not found in project
+  [D3D8.DLL] -> not found in project
+  [VERSION.DLL] -> not found in project
+  [WININET.DLL] -> not found in project
+  [DSOUND.DLL] -> not found in project
+------------------------------------------------
+
+  
+2026-01-16 19:19:08 INFO  (HeadlessAnalyzer) IMPORTING: Loaded 0 additional files  
+2026-01-16 19:19:08 INFO  (HeadlessAnalyzer) ANALYZING all memory and code: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:19:08 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___raise_securityfailure' specified in file: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 19:19:08 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___report_rangecheckfailure' specified in file: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 19:19:08 INFO  (PdbUniversalAnalyzer) Skipping PDB processing: missing PDB information in program metadata  
+2026-01-16 19:19:08 INFO  (PackedDatabaseCache) Packed database cache: /var/tmp/banteg-ghidra/packed-db-cache  
+2026-01-16 19:19:08 DEBUG (PackedDatabaseCache) Using cached packed database: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/typeinfo/win32/windows_vs12_32.gdt  
+2026-01-16 19:19:27 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 19:19:27 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 19:19:40 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004136b0: 
+Low-level Error: Free varnode has multiple descendants  
+2026-01-16 19:19:40 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00408990: 
+Low-level Error: Free varnode has multiple descendants  
+2026-01-16 19:19:42 INFO  (AutoAnalysisManager) -----------------------------------------------------
+    ASCII Strings                              0.230 secs
+    Apply Data Archives                        0.093 secs
+    Call Convention ID                         0.006 secs
+    Call-Fixup Installer                       0.014 secs
+    Create Address Tables                      0.077 secs
+    Create Address Tables - One Time           4.283 secs
+    Create Function                            0.170 secs
+    Data Reference                             1.024 secs
+    Decompiler Parameter ID                    5.867 secs
+    Decompiler Switch Analysis                13.887 secs
+    Demangler Microsoft                        0.006 secs
+    Disassemble                                0.204 secs
+    Disassemble Entry Points                   0.295 secs
+    Embedded Media                             0.014 secs
+    External Entry References                  0.000 secs
+    Function ID                                0.606 secs
+    Function Start Pre Search                  0.014 secs
+    Function Start Search                      0.079 secs
+    Function Start Search After Code           0.025 secs
+    Function Start Search After Data           0.015 secs
+    Function Start Search delayed - One Time   0.001 secs
+    Non-Returning Functions - Discovered       0.112 secs
+    Non-Returning Functions - Known            0.018 secs
+    PDB Universal                              0.002 secs
+    Reference                                  1.214 secs
+    Scalar Operand References                  0.358 secs
+    Shared Return Calls                        0.093 secs
+    Stack                                      1.459 secs
+    Subroutine References                      0.846 secs
+    Subroutine References - One Time           0.002 secs
+    Windows x86 PE Exception Handling          1.069 secs
+    Windows x86 PE RTTI Analyzer               0.000 secs
+    Windows x86 Thread Environment Block (TEB) Analyzer     0.009 secs
+    WindowsResourceReference                   0.299 secs
+    X86 Function Callee Purge                  0.049 secs
+    x86 Constant Reference Analyzer            1.836 secs
+-----------------------------------------------------
+     Total Time   34 secs
+-----------------------------------------------------
+  
+2026-01-16 19:19:42 INFO  (HeadlessAnalyzer) REPORT: Analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:19:42 INFO  (HeadlessAnalyzer) REPORT: Execute script: ImportThirdPartyHeaders.java 'source/headers/third_party'   
+2026-01-16 19:19:43 INFO  (HeadlessAnalyzer) SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/scripts/ghidra_scripts/ImportThirdPartyHeaders.java  
+2026-01-16 19:19:43 INFO  (GhidraScript) ImportThirdPartyHeaders.java> Parsing third-party headers into: crimsonland.exe  
+2026-01-16 19:19:43 INFO  (GhidraScript) ImportThirdPartyHeaders.java> Headers root: /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party  
+2026-01-16 19:19:43 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/jpeglib.h  
+2026-01-16 19:19:43 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h  
+2026-01-16 19:19:43 ERROR (GhidraScript) ImportThirdPartyHeaders.java> Header parse failed: /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h (C Parser:  Encountered errors during parse.
+         in /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/png.h near line 590
+Error: Encountered " "int" "int "" at line 797, column 50.
+Was expecting one of:
+    <IDENTIFIER> ...
+    <IDENTIFIER> ...
+    <IDENTIFIER> ...
+    
+         near token: ,
+Possibly Undefined : (
+         Last Valid Datatype: _func_11 *
+         Check around crimsonland.exe around line: 797
+)  
+2026-01-16 19:19:43 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/zlib.h  
+2026-01-16 19:19:43 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/ogg/ogg.h  
+2026-01-16 19:19:43 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/vorbis/codec.h  
+2026-01-16 19:19:43 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/vorbis/vorbisfile.h  
+2026-01-16 19:19:43 ERROR (GhidraScript) ImportThirdPartyHeaders.java> One or more headers failed to parse. See script log for details.  
+2026-01-16 19:19:43 INFO  (HeadlessAnalyzer) REPORT: Execute script: ExportAll.java   
+2026-01-16 19:19:43 INFO  (HeadlessAnalyzer) SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts/ExportAll.java  
+2026-01-16 19:19:43 INFO  (GhidraScript) ExportAll.java> === Starting comprehensive export ===  
+2026-01-16 19:19:43 INFO  (GhidraScript) ExportAll.java> Output directory: source/decompiled  
+2026-01-16 19:19:43 INFO  (GhidraScript) ExportAll.java> Program: crimsonland.exe  
+2026-01-16 19:19:43 INFO  (GhidraScript) ExportAll.java> Architecture: x86  
+2026-01-16 19:19:43 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 19:19:43 INFO  (GhidraScript) ExportAll.java> Exporting summary to: crimsonland.exe_summary.txt  
+2026-01-16 19:19:43 INFO  (GhidraScript) ExportAll.java> Exporting decompiled code to: crimsonland.exe_decompiled.c  
+2026-01-16 19:19:59 INFO  (GhidraScript) ExportAll.java>   Decompiled 790 functions  
+2026-01-16 19:19:59 INFO  (GhidraScript) ExportAll.java> Exporting functions to: crimsonland.exe_functions.json  
+2026-01-16 19:19:59 INFO  (GhidraScript) ExportAll.java>   Exported 819 functions  
+2026-01-16 19:19:59 INFO  (GhidraScript) ExportAll.java> Exporting strings to: crimsonland.exe_strings.txt  
+2026-01-16 19:19:59 INFO  (GhidraScript) ExportAll.java>   Exported 1374 strings  
+2026-01-16 19:19:59 INFO  (GhidraScript) ExportAll.java> Analyzing interesting patterns...  
+2026-01-16 19:19:59 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 19:19:59 INFO  (GhidraScript) ExportAll.java> === Export complete ===  
+2026-01-16 19:19:59 INFO  (HeadlessAnalyzer) ANALYZING changes made by post scripts: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:19:59 INFO  (HeadlessAnalyzer) REPORT: Post-analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:19:59 INFO  (LocalFileSystem) /crimsonland.exe: file created (banteg)  
+2026-01-16 19:19:59 INFO  (HeadlessAnalyzer) REPORT: Save succeeded for: /crimsonland.exe (ghidra_crimsonland_exe_35276:/crimsonland.exe)  
+2026-01-16 19:19:59 INFO  (HeadlessAnalyzer) REPORT: Import succeeded  
+2026-01-16 19:20:54 INFO  (LoggingInitialization) Using log config file: jar:file:/Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml  
+2026-01-16 19:20:54 INFO  (LoggingInitialization) Using log file: source/decompiled/ghidra_analysis.log  
+2026-01-16 19:20:54 INFO  (Preferences) Loading user preferences: /Users/banteg/Library/ghidra/ghidra_12.0_DEV/preferences  
+2026-01-16 19:20:54 INFO  (ClassSearcher) Searching for classes...  
+2026-01-16 19:20:54 INFO  (ClassSearcher) Class search complete (790 ms)  
+2026-01-16 19:20:54 INFO  (SSLContextInitializer) Initializing SSL Context  
+2026-01-16 19:20:54 INFO  (SecureRandomFactory) Initializing Random Number Generator...  
+2026-01-16 19:20:54 INFO  (SecureRandomFactory) Random Number Generator initialization complete: NativePRNGNonBlocking  
+2026-01-16 19:20:54 INFO  (ApplicationTrustManagerFactory) Trust manager disabled, cacerts have not been set  
+2026-01-16 19:20:55 INFO  (AnalyzeHeadless) Headless startup complete (1626 ms)  
+2026-01-16 19:20:55 INFO  (ClassSearcher) Class searcher loaded 58 extension points (18 false positives)  
+2026-01-16 19:20:55 INFO  (HeadlessAnalyzer) HEADLESS Script Paths:
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/Atmel/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/PIC/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/VersionTracking/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BytePatterns/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FileFormats/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Jython/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BSim/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PyGhidra/ghidra_scripts
+    /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/JVM/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/DATA/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PDB/ghidra_scripts
+    /Users/banteg/dev/banteg/crimsonland-decompile/scripts/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Decompiler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/8051/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FunctionID/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/ghidra_scripts  
+2026-01-16 19:20:55 INFO  (HeadlessAnalyzer) HEADLESS: execution starts  
+2026-01-16 19:20:55 INFO  (HeadlessAnalyzer) Creating temporary project: /tmp/ghidra_crimsonland_exe_38439  
+2026-01-16 19:20:55 INFO  (DefaultProject) Creating project: /tmp/ghidra_crimsonland_exe_38439  
+2026-01-16 19:20:55 INFO  (HeadlessAnalyzer) REPORT: Processing input files:   
+2026-01-16 19:20:55 INFO  (HeadlessAnalyzer)      project: /tmp/ghidra_crimsonland_exe_38439  
+2026-01-16 19:20:55 INFO  (HeadlessAnalyzer) IMPORTING: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:20:56 INFO  (ProgramLoader) Using Loader: Portable Executable (PE)  
+2026-01-16 19:20:56 INFO  (ProgramLoader) Using Language/Compiler: x86:LE:32:default:windows  
+2026-01-16 19:20:56 INFO  (ProgramLoader) Using Library Search Path: [., /System/Library/dyld/dyld_shared_cache_arm64e, /System/Library/dyld/dyld_shared_cache_x86_64, /System/Library/dyld/dyld_shared_cache_x86_64h, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64h, /Users/banteg/Library/Java/Extensions, /Library/Java/Extensions, /Network/Library/Java/Extensions, /System/Library/Java/Extensions, /usr/lib/java]  
+2026-01-16 19:21:04 INFO  (FileSystemInstanceManager) Removing 2 unused filesystems from cache  
+2026-01-16 19:21:04 DEBUG (FileSystemInstanceManager) Closing unused filesystem [file:///System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64?MD5=8c187d8a9dbff51eba98244add99278e]  
+2026-01-16 19:21:04 DEBUG (FileSystemInstanceManager) Closing unused filesystem [file:///System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e?MD5=492b77873c25245403e49afdd8e71ea8]  
+2026-01-16 19:21:05 INFO  (ProgramLoader) Additional info:
+Loading file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe?MD5=b5734f679649e1e61b79b6071f7e0ee5...
+------------------------------------------------
+
+Searching 4 paths for library ADVAPI32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library D3D8.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library DSOUND.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library KERNEL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library OLE32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library OLEAUT32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library SHELL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library URLMON.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library USER32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library VERSION.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library VORBISFILE.DLL...
+Loading file:///Users/banteg/dev/banteg/crimsonland-decompile/game/VORBISFILE.DLL?MD5=b226080606e45b6879ea02f1b5f47c5e...
+Created exports file: /Users/banteg/Library/ghidra/ghidra_12.0_DEV/symbols/win32/vorbisfile.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 4 paths for library WININET.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library WINMM.DLL...
+Library not found.
+------------------------------------------------
+
+Applying cached symbols from VORBISFILE.DLL
+Linking the External Programs of 'crimsonland.exe' to imported libraries...
+  [KERNEL32.DLL] -> not found in project
+  [USER32.DLL] -> not found in project
+  [ADVAPI32.DLL] -> not found in project
+  [SHELL32.DLL] -> not found in project
+  [OLE32.DLL] -> not found in project
+  [OLEAUT32.DLL] -> not found in project
+  [VORBISFILE.DLL] -> not found in project
+  [URLMON.DLL] -> not found in project
+  [WINMM.DLL] -> not found in project
+  [D3D8.DLL] -> not found in project
+  [VERSION.DLL] -> not found in project
+  [WININET.DLL] -> not found in project
+  [DSOUND.DLL] -> not found in project
+------------------------------------------------
+
+  
+2026-01-16 19:21:05 INFO  (HeadlessAnalyzer) IMPORTING: Loaded 0 additional files  
+2026-01-16 19:21:05 INFO  (HeadlessAnalyzer) ANALYZING all memory and code: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:21:05 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___raise_securityfailure' specified in file: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 19:21:05 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___report_rangecheckfailure' specified in file: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 19:21:05 INFO  (PdbUniversalAnalyzer) Skipping PDB processing: missing PDB information in program metadata  
+2026-01-16 19:21:05 INFO  (PackedDatabaseCache) Packed database cache: /var/tmp/banteg-ghidra/packed-db-cache  
+2026-01-16 19:21:05 DEBUG (PackedDatabaseCache) Using cached packed database: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/typeinfo/win32/windows_vs12_32.gdt  
+2026-01-16 19:21:25 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 19:21:25 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 19:21:37 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_004136b0: 
+Low-level Error: Free varnode has multiple descendants  
+2026-01-16 19:21:37 DEBUG (DecompilerParameterIdCmd)   Failed to decompile function: FUN_00408990: 
+Low-level Error: Free varnode has multiple descendants  
+2026-01-16 19:21:39 INFO  (AutoAnalysisManager) -----------------------------------------------------
+    ASCII Strings                              0.227 secs
+    Apply Data Archives                        0.089 secs
+    Call Convention ID                         0.004 secs
+    Call-Fixup Installer                       0.021 secs
+    Create Address Tables                      0.052 secs
+    Create Address Tables - One Time           4.345 secs
+    Create Function                            0.193 secs
+    Data Reference                             1.065 secs
+    Decompiler Parameter ID                    5.763 secs
+    Decompiler Switch Analysis                14.056 secs
+    Demangler Microsoft                        0.005 secs
+    Disassemble                                0.186 secs
+    Disassemble Entry Points                   0.297 secs
+    Embedded Media                             0.014 secs
+    External Entry References                  0.000 secs
+    Function ID                                0.665 secs
+    Function Start Pre Search                  0.015 secs
+    Function Start Search                      0.078 secs
+    Function Start Search After Code           0.026 secs
+    Function Start Search After Data           0.020 secs
+    Function Start Search delayed - One Time   0.002 secs
+    Non-Returning Functions - Discovered       0.102 secs
+    Non-Returning Functions - Known            0.002 secs
+    PDB Universal                              0.002 secs
+    Reference                                  1.286 secs
+    Scalar Operand References                  0.351 secs
+    Shared Return Calls                        0.083 secs
+    Stack                                      1.415 secs
+    Subroutine References                      0.828 secs
+    Subroutine References - One Time           0.003 secs
+    Windows x86 PE Exception Handling          1.079 secs
+    Windows x86 PE RTTI Analyzer               0.001 secs
+    Windows x86 Thread Environment Block (TEB) Analyzer     0.008 secs
+    WindowsResourceReference                   0.290 secs
+    X86 Function Callee Purge                  0.044 secs
+    x86 Constant Reference Analyzer            1.887 secs
+-----------------------------------------------------
+     Total Time   34 secs
+-----------------------------------------------------
+  
+2026-01-16 19:21:39 INFO  (HeadlessAnalyzer) REPORT: Analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:21:39 INFO  (HeadlessAnalyzer) REPORT: Execute script: ImportThirdPartyHeaders.java 'source/headers/third_party'   
+2026-01-16 19:21:40 INFO  (HeadlessAnalyzer) SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/scripts/ghidra_scripts/ImportThirdPartyHeaders.java  
+2026-01-16 19:21:40 INFO  (GhidraScript) ImportThirdPartyHeaders.java> Parsing third-party headers into: crimsonland.exe  
+2026-01-16 19:21:40 INFO  (GhidraScript) ImportThirdPartyHeaders.java> Headers root: /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party  
+2026-01-16 19:21:40 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/jpeglib.h  
+2026-01-16 19:21:40 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/zlib.h  
+2026-01-16 19:21:40 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/ogg/ogg.h  
+2026-01-16 19:21:40 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/vorbis/codec.h  
+2026-01-16 19:21:40 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/vorbis/vorbisfile.h  
+2026-01-16 19:21:40 INFO  (HeadlessAnalyzer) REPORT: Execute script: ExportAll.java   
+2026-01-16 19:21:40 INFO  (HeadlessAnalyzer) SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts/ExportAll.java  
+2026-01-16 19:21:40 INFO  (GhidraScript) ExportAll.java> === Starting comprehensive export ===  
+2026-01-16 19:21:40 INFO  (GhidraScript) ExportAll.java> Output directory: source/decompiled  
+2026-01-16 19:21:40 INFO  (GhidraScript) ExportAll.java> Program: crimsonland.exe  
+2026-01-16 19:21:40 INFO  (GhidraScript) ExportAll.java> Architecture: x86  
+2026-01-16 19:21:40 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 19:21:40 INFO  (GhidraScript) ExportAll.java> Exporting summary to: crimsonland.exe_summary.txt  
+2026-01-16 19:21:40 INFO  (GhidraScript) ExportAll.java> Exporting decompiled code to: crimsonland.exe_decompiled.c  
+2026-01-16 19:21:56 INFO  (GhidraScript) ExportAll.java>   Decompiled 790 functions  
+2026-01-16 19:21:56 INFO  (GhidraScript) ExportAll.java> Exporting functions to: crimsonland.exe_functions.json  
+2026-01-16 19:21:56 INFO  (GhidraScript) ExportAll.java>   Exported 819 functions  
+2026-01-16 19:21:56 INFO  (GhidraScript) ExportAll.java> Exporting strings to: crimsonland.exe_strings.txt  
+2026-01-16 19:21:56 INFO  (GhidraScript) ExportAll.java>   Exported 1374 strings  
+2026-01-16 19:21:56 INFO  (GhidraScript) ExportAll.java> Analyzing interesting patterns...  
+2026-01-16 19:21:56 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 19:21:56 INFO  (GhidraScript) ExportAll.java> === Export complete ===  
+2026-01-16 19:21:56 INFO  (HeadlessAnalyzer) ANALYZING changes made by post scripts: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:21:56 INFO  (HeadlessAnalyzer) REPORT: Post-analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/crimsonland.exe  
+2026-01-16 19:21:56 INFO  (LocalFileSystem) /crimsonland.exe: file created (banteg)  
+2026-01-16 19:21:56 INFO  (HeadlessAnalyzer) REPORT: Save succeeded for: /crimsonland.exe (ghidra_crimsonland_exe_38439:/crimsonland.exe)  
+2026-01-16 19:21:56 INFO  (HeadlessAnalyzer) REPORT: Import succeeded  
+2026-01-16 19:22:09 INFO  (LoggingInitialization) Using log config file: jar:file:/Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml  
+2026-01-16 19:22:09 INFO  (LoggingInitialization) Using log file: source/decompiled/ghidra_analysis.log  
+2026-01-16 19:22:09 INFO  (Preferences) Loading user preferences: /Users/banteg/Library/ghidra/ghidra_12.0_DEV/preferences  
+2026-01-16 19:22:09 INFO  (ClassSearcher) Searching for classes...  
+2026-01-16 19:22:10 INFO  (ClassSearcher) Class search complete (792 ms)  
+2026-01-16 19:22:10 INFO  (SSLContextInitializer) Initializing SSL Context  
+2026-01-16 19:22:10 INFO  (SecureRandomFactory) Initializing Random Number Generator...  
+2026-01-16 19:22:10 INFO  (SecureRandomFactory) Random Number Generator initialization complete: NativePRNGNonBlocking  
+2026-01-16 19:22:10 INFO  (ApplicationTrustManagerFactory) Trust manager disabled, cacerts have not been set  
+2026-01-16 19:22:11 INFO  (AnalyzeHeadless) Headless startup complete (1607 ms)  
+2026-01-16 19:22:11 INFO  (ClassSearcher) Class searcher loaded 58 extension points (18 false positives)  
+2026-01-16 19:22:11 INFO  (HeadlessAnalyzer) HEADLESS Script Paths:
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/Atmel/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/PIC/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/VersionTracking/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BytePatterns/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FileFormats/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Jython/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/BSim/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PyGhidra/ghidra_scripts
+    /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/JVM/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/DATA/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/PDB/ghidra_scripts
+    /Users/banteg/dev/banteg/crimsonland-decompile/scripts/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Decompiler/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Processors/8051/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/FunctionID/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/ghidra_scripts  
+2026-01-16 19:22:11 INFO  (HeadlessAnalyzer) HEADLESS: execution starts  
+2026-01-16 19:22:11 INFO  (HeadlessAnalyzer) Creating temporary project: /tmp/ghidra_grim_dll_40829  
+2026-01-16 19:22:11 INFO  (DefaultProject) Creating project: /tmp/ghidra_grim_dll_40829  
+2026-01-16 19:22:11 INFO  (HeadlessAnalyzer) REPORT: Processing input files:   
+2026-01-16 19:22:11 INFO  (HeadlessAnalyzer)      project: /tmp/ghidra_grim_dll_40829  
+2026-01-16 19:22:11 INFO  (HeadlessAnalyzer) IMPORTING: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/grim.dll  
+2026-01-16 19:22:11 INFO  (ProgramLoader) Using Loader: Portable Executable (PE)  
+2026-01-16 19:22:11 INFO  (ProgramLoader) Using Language/Compiler: x86:LE:32:default:windows  
+2026-01-16 19:22:11 INFO  (ProgramLoader) Using Library Search Path: [., /System/Library/dyld/dyld_shared_cache_arm64e, /System/Library/dyld/dyld_shared_cache_x86_64, /System/Library/dyld/dyld_shared_cache_x86_64h, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64, /System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64h, /Users/banteg/Library/Java/Extensions, /Library/Java/Extensions, /Network/Library/Java/Extensions, /System/Library/Java/Extensions, /usr/lib/java]  
+2026-01-16 19:22:20 INFO  (FileSystemInstanceManager) Removing 2 unused filesystems from cache  
+2026-01-16 19:22:20 DEBUG (FileSystemInstanceManager) Closing unused filesystem [file:///System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_x86_64?MD5=8c187d8a9dbff51eba98244add99278e]  
+2026-01-16 19:22:20 DEBUG (FileSystemInstanceManager) Closing unused filesystem [file:///System/Cryptexes/OS/System/Library/dyld/dyld_shared_cache_arm64e?MD5=492b77873c25245403e49afdd8e71ea8]  
+2026-01-16 19:22:21 INFO  (ProgramLoader) Additional info:
+Loading file:///Users/banteg/dev/banteg/crimsonland-decompile/game/grim.dll?MD5=88d5f6d66a1389cdeb3c30dc6ee4aa42...
+------------------------------------------------
+
+Searching 4 paths for library ADVAPI32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library D3D8.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library DINPUT8.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library GDI32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library KERNEL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library MSVCRT.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library URLMON.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library USER32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 4 paths for library WINMM.DLL...
+Library not found.
+------------------------------------------------
+
+Linking the External Programs of 'grim.dll' to imported libraries...
+  [KERNEL32.DLL] -> not found in project
+  [USER32.DLL] -> not found in project
+  [GDI32.DLL] -> not found in project
+  [MSVCRT.DLL] -> not found in project
+  [D3D8.DLL] -> not found in project
+  [WINMM.DLL] -> not found in project
+  [DINPUT8.DLL] -> not found in project
+  [URLMON.DLL] -> not found in project
+  [ADVAPI32.DLL] -> not found in project
+------------------------------------------------
+
+  
+2026-01-16 19:22:21 INFO  (HeadlessAnalyzer) IMPORTING: Loaded 0 additional files  
+2026-01-16 19:22:21 INFO  (HeadlessAnalyzer) ANALYZING all memory and code: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/grim.dll  
+2026-01-16 19:22:21 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___raise_securityfailure' specified in file: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 19:22:21 WARN  (NoReturnFunctionAnalyzer) Ignoring leading '_' chars on no-return name '___report_rangecheckfailure' specified in file: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn  
+2026-01-16 19:22:21 INFO  (PdbUniversalAnalyzer) Skipping PDB processing: missing PDB information in program metadata  
+2026-01-16 19:22:21 INFO  (PackedDatabaseCache) Packed database cache: /var/tmp/banteg-ghidra/packed-db-cache  
+2026-01-16 19:22:21 DEBUG (PackedDatabaseCache) Using cached packed database: /Applications/Ghidra.app/Contents/Resources/ghidra/Ghidra/Features/Base/data/typeinfo/win32/windows_vs12_32.gdt  
+2026-01-16 19:22:22 ERROR (PngDataType) Invalid PNG data at 1004e51c  
+2026-01-16 19:22:23 INFO  (DecompilerSwitchAnalyzer) hit non-returning function, restarting decompiler switch analyzer later  
+2026-01-16 19:22:36 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 19:22:36 INFO  (DecompilerSwitchAnalyzer) hit non-returning function, restarting decompiler switch analyzer later  
+2026-01-16 19:22:37 INFO  (ApplyDataArchiveAnalyzer) Applied data type archive: windows_vs12_32  
+2026-01-16 19:22:43 INFO  (AutoAnalysisManager) -----------------------------------------------------
+    ASCII Strings                              0.251 secs
+    Apply Data Archives                        0.083 secs
+    Call Convention ID                         0.004 secs
+    Call-Fixup Installer                       0.022 secs
+    Create Address Tables                      0.055 secs
+    Create Address Tables - One Time           0.039 secs
+    Create Function                            0.191 secs
+    Data Reference                             0.113 secs
+    Decompiler Parameter ID                    4.019 secs
+    Decompiler Switch Analysis                 7.828 secs
+    Decompiler Switch Analysis - One Time      2.518 secs
+    Demangler Microsoft                        0.014 secs
+    Disassemble                                0.823 secs
+    Disassemble Entry Points                   0.022 secs
+    Embedded Media                             0.016 secs
+    External Entry References                  0.000 secs
+    Function ID                                0.471 secs
+    Function Start Pre Search                  0.015 secs
+    Function Start Search                      0.070 secs
+    Function Start Search After Code           0.021 secs
+    Function Start Search After Data           0.017 secs
+    Function Start Search delayed - One Time   0.003 secs
+    Non-Returning Functions - Discovered       0.071 secs
+    Non-Returning Functions - Known            0.006 secs
+    PDB Universal                              0.002 secs
+    Reference                                  0.208 secs
+    Scalar Operand References                  0.430 secs
+    Shared Return Calls                        0.096 secs
+    Stack                                      1.248 secs
+    Subroutine References                      0.245 secs
+    Subroutine References - One Time           0.003 secs
+    Windows x86 PE Exception Handling          1.100 secs
+    Windows x86 PE RTTI Analyzer               0.000 secs
+    Windows x86 Thread Environment Block (TEB) Analyzer     0.010 secs
+    WindowsResourceReference                   0.583 secs
+    X86 Function Callee Purge                  0.055 secs
+    x86 Constant Reference Analyzer            1.362 secs
+-----------------------------------------------------
+     Total Time   22 secs
+-----------------------------------------------------
+  
+2026-01-16 19:22:43 INFO  (HeadlessAnalyzer) REPORT: Analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/grim.dll  
+2026-01-16 19:22:43 INFO  (HeadlessAnalyzer) REPORT: Execute script: ImportThirdPartyHeaders.java 'source/headers/third_party'   
+2026-01-16 19:22:43 INFO  (HeadlessAnalyzer) SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/scripts/ghidra_scripts/ImportThirdPartyHeaders.java  
+2026-01-16 19:22:43 INFO  (GhidraScript) ImportThirdPartyHeaders.java> Parsing third-party headers into: grim.dll  
+2026-01-16 19:22:43 INFO  (GhidraScript) ImportThirdPartyHeaders.java> Headers root: /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party  
+2026-01-16 19:22:43 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/jpeglib.h  
+2026-01-16 19:22:43 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/zlib.h  
+2026-01-16 19:22:43 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/ogg/ogg.h  
+2026-01-16 19:22:43 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/vorbis/codec.h  
+2026-01-16 19:22:43 INFO  (CParserUtils) parse /Users/banteg/dev/banteg/crimsonland-decompile/source/headers/third_party/vorbis/vorbisfile.h  
+2026-01-16 19:22:43 INFO  (HeadlessAnalyzer) REPORT: Execute script: ExportAll.java   
+2026-01-16 19:22:43 INFO  (HeadlessAnalyzer) SCRIPT: /Users/banteg/dev/banteg/crimsonland-decompile/.codex/skills/ghidra/scripts/ghidra_scripts/ExportAll.java  
+2026-01-16 19:22:43 INFO  (GhidraScript) ExportAll.java> === Starting comprehensive export ===  
+2026-01-16 19:22:43 INFO  (GhidraScript) ExportAll.java> Output directory: source/decompiled  
+2026-01-16 19:22:43 INFO  (GhidraScript) ExportAll.java> Program: grim.dll  
+2026-01-16 19:22:43 INFO  (GhidraScript) ExportAll.java> Architecture: x86  
+2026-01-16 19:22:43 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 19:22:43 INFO  (GhidraScript) ExportAll.java> Exporting summary to: grim.dll_summary.txt  
+2026-01-16 19:22:43 INFO  (GhidraScript) ExportAll.java> Exporting decompiled code to: grim.dll_decompiled.c  
+2026-01-16 19:22:50 INFO  (GhidraScript) ExportAll.java>   Decompiled 843 functions  
+2026-01-16 19:22:50 INFO  (GhidraScript) ExportAll.java> Exporting functions to: grim.dll_functions.json  
+2026-01-16 19:22:50 INFO  (GhidraScript) ExportAll.java>   Exported 883 functions  
+2026-01-16 19:22:50 INFO  (GhidraScript) ExportAll.java> Exporting strings to: grim.dll_strings.txt  
+2026-01-16 19:22:50 INFO  (GhidraScript) ExportAll.java>   Exported 583 strings  
+2026-01-16 19:22:50 INFO  (GhidraScript) ExportAll.java> Analyzing interesting patterns...  
+2026-01-16 19:22:50 INFO  (GhidraScript) ExportAll.java>   
+2026-01-16 19:22:50 INFO  (GhidraScript) ExportAll.java> === Export complete ===  
+2026-01-16 19:22:50 INFO  (HeadlessAnalyzer) ANALYZING changes made by post scripts: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/grim.dll  
+2026-01-16 19:22:50 INFO  (HeadlessAnalyzer) REPORT: Post-analysis succeeded for file: file:///Users/banteg/dev/banteg/crimsonland-decompile/game/grim.dll  
+2026-01-16 19:22:50 INFO  (LocalFileSystem) /grim.dll: file created (banteg)  
+2026-01-16 19:22:50 INFO  (HeadlessAnalyzer) REPORT: Save succeeded for: /grim.dll (ghidra_grim_dll_40829:/grim.dll)  
+2026-01-16 19:22:50 INFO  (HeadlessAnalyzer) REPORT: Import succeeded  

@@ -11,8 +11,8 @@ and where to put work so we can track progress consistently.
 - `source/decompiled/` contains raw Ghidra output and should be treated as
   read-only.
 - `source/clean/` is where cleaned C should live (currently empty).
-- `source/headers/` is reserved for third-party headers used by the Ghidra
-  C parser (currently empty).
+- `source/headers/` contains third-party headers (PNG/JPEG/zlib/ogg/vorbis),
+  plus DirectX/DirectSound references for later.
 
 ## Proposed workflow
 
@@ -21,8 +21,9 @@ and where to put work so we can track progress consistently.
    place.
 3. Rename globals/locals and introduce small structs and enums as they become
    clear.
-4. Add header files in `source/headers/` once types stabilize so future Ghidra
-   regen improves the raw output.
+4. Extend `source/headers/` as types stabilize so future Ghidra regen improves
+   the raw output (codec headers are already imported; DirectX/Win32 headers
+   will require a fuller Windows header set).
 5. Leave short evidence notes near refactors (function addresses, string refs,
    call sites) to keep provenance.
 

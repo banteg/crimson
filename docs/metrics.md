@@ -74,5 +74,5 @@ whose names are not the default Ghidra stubs (`FUN_*`, `thunk_FUN_*`, `LAB_*`).
 
 ### Header packs
 
-- Value: 0
-- Notes: `source/headers/` is currently empty.
+- Value: 1
+- Notes: `source/headers/third_party` (PNG/JPEG/zlib/ogg/vorbis + DirectX/DirectSound refs).
