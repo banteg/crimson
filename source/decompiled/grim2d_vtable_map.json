@@ -973,12 +973,12 @@
     ],
     "func_addr": "0x100078e0",
     "section": ".text",
-    "func_name": "FUN_100078e0",
+    "func_name": "grim_draw_rect_filled",
     "func_size": 205,
     "calling_convention": "unknown",
     "return_type": "undefined",
     "param_count": 0,
-    "signature": "undefined FUN_100078e0()",
+    "signature": "undefined grim_draw_rect_filled()",
     "source_type": "DEFAULT"
   },
   {
@@ -998,12 +998,12 @@
     ],
     "func_addr": "0x10008f10",
     "section": ".text",
-    "func_name": "FUN_10008f10",
+    "func_name": "grim_draw_rect_outline",
     "func_size": 356,
     "calling_convention": "unknown",
     "return_type": "undefined",
     "param_count": 0,
-    "signature": "undefined FUN_10008f10()",
+    "signature": "undefined grim_draw_rect_outline()",
     "source_type": "DEFAULT"
   },
   {
