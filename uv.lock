@@ -3,15 +3,28 @@ revision = 3
 requires-python = ">=3.14"
 
 [[package]]
+name = "construct"
+version = "2.10.70"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/02/77/8c84b98eca70d245a2a956452f21d57930d22ab88cbeed9290ca630cf03f/construct-2.10.70.tar.gz", hash = "sha256:4d2472f9684731e58cc9c56c463be63baa1447d674e0d66aeb5627b22f512c29", size = 86337, upload-time = "2023-11-29T08:44:49.545Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b2/fb/08b3f4bf05da99aba8ffea52a558758def16e8516bc75ca94ff73587e7d3/construct-2.10.70-py3-none-any.whl", hash = "sha256:c80be81ef595a1a821ec69dc16099550ed22197615f4320b57cc9ce2a672cb30", size = 63020, upload-time = "2023-11-29T08:44:46.876Z" },
+]
+
+[[package]]
 name = "crimson"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "construct" },
     { name = "pillow" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "pillow", specifier = ">=12.1.0" }]
+requires-dist = [
+    { name = "construct", specifier = ">=2.10.70" },
+    { name = "pillow", specifier = ">=12.1.0" },
+]
 
 [[package]]
 name = "pillow"

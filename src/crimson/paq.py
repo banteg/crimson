@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
-import struct
-from typing import BinaryIO, Iterable, Iterator, Mapping
 import io
+from pathlib import Path
+from typing import BinaryIO, Iterable, Iterator, Mapping
+
+from construct import Bytes, CString, Int32ul, Struct
+from construct.core import ConstructError
 
 MAGIC = b"paq\x00"
 
@@ -19,17 +21,13 @@ class PaqEntry:
     data: bytes
 
 
-def _read_cstring(f: BinaryIO) -> bytes:
-    buf = bytearray()
-    while True:
-        b = f.read(1)
-        if not b:
-            if not buf:
-                return b""
-            raise PaqFormatError("unexpected EOF while reading name")
-        if b == b"\x00":
-            return bytes(buf)
-        buf += b
+PAQ_ENTRY = Struct(
+    "name" / CString("utf8"),
+    "total_size" / Int32ul,
+    "head_lo" / Int32ul,
+    "head_hi" / Int32ul,
+    "payload" / Bytes(lambda ctx: max(ctx.total_size - 8, 0)),
+)
 
 
 def _open_binary(source: str | Path | BinaryIO, mode: str) -> tuple[BinaryIO, bool]:
@@ -45,23 +43,18 @@ def iter_entries(source: str | Path | BinaryIO) -> Iterator[PaqEntry]:
         if header != MAGIC:
             raise PaqFormatError(f"bad magic: {header!r}")
         while True:
-            name_bytes = _read_cstring(f)
-            if not name_bytes:
+            marker = f.read(1)
+            if not marker:
                 return
-            sizes = f.read(12)
-            if len(sizes) != 12:
-                raise PaqFormatError("unexpected EOF while reading entry header")
-            total_size, head_lo, head_hi = struct.unpack("<III", sizes)
-            if total_size < 0:
-                raise PaqFormatError("negative size")
-            data_len = max(total_size - 8, 0)
-            data = f.read(data_len)
-            if len(data) != data_len:
-                raise PaqFormatError("unexpected EOF while reading entry data")
-            head = struct.pack("<II", head_lo, head_hi)
-            full = head[:total_size] + data
-            name = name_bytes.decode("utf-8", "replace")
-            yield PaqEntry(name=name, data=full)
+            f.seek(-1, io.SEEK_CUR)
+            try:
+                entry = PAQ_ENTRY.parse_stream(f)
+            except ConstructError as exc:
+                raise PaqFormatError(f"failed to parse entry: {exc}") from exc
+            head = (entry.head_lo.to_bytes(4, "little") + entry.head_hi.to_bytes(4, "little"))
+            payload = entry.payload
+            full = head[: entry.total_size] + payload
+            yield PaqEntry(name=entry.name, data=full)
     finally:
         if should_close:
             f.close()
@@ -92,15 +85,24 @@ def write_paq(dest: str | Path | BinaryIO, entries: Mapping[str, bytes] | Iterab
                 data = data.tobytes()
             if not isinstance(data, (bytes, bytearray)):
                 raise TypeError("entry data must be bytes-like")
-            name_bytes = str(name).encode("utf-8")
-            f.write(name_bytes)
-            f.write(b"\x00")
             total_size = len(data)
             head = bytes(data[:8]).ljust(8, b"\x00")
-            head_lo, head_hi = struct.unpack("<II", head)
-            f.write(struct.pack("<III", total_size, head_lo, head_hi))
-            if total_size > 8:
-                f.write(data[8:])
+            head_lo = int.from_bytes(head[:4], "little")
+            head_hi = int.from_bytes(head[4:8], "little")
+            payload = bytes(data[8:]) if total_size > 8 else b""
+            try:
+                built = PAQ_ENTRY.build(
+                    {
+                        "name": str(name),
+                        "total_size": total_size,
+                        "head_lo": head_lo,
+                        "head_hi": head_hi,
+                        "payload": payload,
+                    },
+                )
+            except ConstructError as exc:
+                raise PaqFormatError(f"failed to build entry {name!r}: {exc}") from exc
+            f.write(built)
     finally:
         if should_close:
             f.close()

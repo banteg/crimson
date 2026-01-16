@@ -3,6 +3,7 @@ name = "crimson"
 version = "0.1.0"
 requires-python = ">=3.14"
 dependencies = [
+    "construct>=2.10.70",
     "pillow>=12.1.0",
 ]
 
