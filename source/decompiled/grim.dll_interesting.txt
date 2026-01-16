@@ -13,6 +13,9 @@ Interesting Functions and Patterns
   grim_is_key_down @ 10007320
   grim_was_key_pressed @ 10007390
 
+[FILE related]
+  grim_texture_load_file @ 10004ec0
+
 [SYSTEM related]
   grim_init_system @ 10005eb0
 
@@ -20,6 +23,7 @@ Interesting Functions and Patterns
   malloc @ 1000aa98
 
 [FREE related]
+  grim_find_free_texture_slot @ 100051c0
   free @ 1000aa8c
 
 [ALLOC related]

@@ -291,15 +291,16 @@ void FUN_10002880(void)
 
 
 
-/* FUN_100028d0 @ 100028d0 */
+/* grim_backup_textures @ 100028d0 */
 
 /* WARNING: Removing unreachable block (ram,0x100029b1) */
 /* WARNING: Removing unreachable block (ram,0x100029bb) */
 /* WARNING: Removing unreachable block (ram,0x10002a88) */
 /* WARNING: Removing unreachable block (ram,0x10002a92) */
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* backup texture surfaces before device reset */
 
-undefined4 FUN_100028d0(void)
+int grim_backup_textures(void)
 
 {
   undefined4 uVar1;
@@ -391,11 +392,12 @@ undefined4 FUN_100028d0(void)
 
 
 
-/* FUN_10002b40 @ 10002b40 */
+/* grim_restore_textures @ 10002b40 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* restore texture surfaces after device reset */
 
-uint FUN_10002b40(void)
+int grim_restore_textures(void)
 
 {
   int *piVar1;
@@ -497,10 +499,9 @@ undefined4 FUN_10002cf0(void)
   int *piVar1;
   int iVar2;
   int iVar3;
-  undefined4 uVar4;
   undefined4 unaff_EBX;
   undefined4 unaff_EBP;
-  int *piVar5;
+  int *piVar4;
   undefined4 uStack_10;
   undefined4 uStack_c;
   
@@ -515,16 +516,16 @@ undefined4 FUN_10002cf0(void)
   }
   iVar2 = 0;
   if (-1 < DAT_1005305c) {
-    piVar5 = &DAT_1005d404;
+    piVar4 = &DAT_1005d404;
     do {
-      iVar3 = *piVar5;
+      iVar3 = *piVar4;
       if ((((iVar3 != 0) && (*(char *)(iVar3 + 8) != '\0')) &&
           (piVar1 = *(int **)(iVar3 + 4), piVar1 != (int *)0x0)) &&
          (iVar3 = (**(code **)(*piVar1 + 8))(piVar1), iVar3 == 0)) {
-        *(undefined4 *)(*piVar5 + 4) = 0;
+        *(undefined4 *)(*piVar4 + 4) = 0;
       }
       iVar2 = iVar2 + 1;
-      piVar5 = piVar5 + 1;
+      piVar4 = piVar4 + 1;
     } while (iVar2 <= DAT_1005305c);
   }
   iVar2 = (**(code **)(*DAT_10059dbc + 0x38))(DAT_10059dbc,&DAT_10059df8);
@@ -533,9 +534,9 @@ undefined4 FUN_10002cf0(void)
       FUN_10004520();
       iVar2 = 0;
       if (-1 < DAT_1005305c) {
-        piVar5 = &DAT_1005d404;
+        piVar4 = &DAT_1005d404;
         do {
-          iVar3 = *piVar5;
+          iVar3 = *piVar4;
           if (((iVar3 != 0) && (*(char *)(iVar3 + 8) != '\0')) &&
              (iVar3 = (**(code **)(*DAT_10059dbc + 0x50))
                                 (DAT_10059dbc,*(undefined4 *)(iVar3 + 0xc),
@@ -543,15 +544,15 @@ undefined4 FUN_10002cf0(void)
              iVar3 < 0)) {
             DAT_1005c8f8 = s_D3D__Unable_to_recreate_a_textur_100537e0;
             FUN_10001160();
-            *(undefined4 *)(*piVar5 + 4) = 0;
+            *(undefined4 *)(*piVar4 + 4) = 0;
             Sleep(200);
           }
           iVar2 = iVar2 + 1;
-          piVar5 = piVar5 + 1;
+          piVar4 = piVar4 + 1;
         } while (iVar2 <= DAT_1005305c);
       }
-      uVar4 = FUN_10002b40();
-      if ((char)uVar4 == '\0') {
+      iVar2 = grim_restore_textures();
+      if ((char)iVar2 == '\0') {
         FUN_10001160();
       }
       FUN_10001160();
@@ -569,19 +570,19 @@ undefined4 FUN_10002cf0(void)
       }
       iVar2 = 0;
       if (-1 < DAT_1005305c) {
-        piVar5 = &DAT_1005d404;
+        piVar4 = &DAT_1005d404;
         do {
-          iVar3 = *piVar5;
+          iVar3 = *piVar4;
           if ((iVar3 != 0) && (*(char *)(iVar3 + 8) != '\0')) {
             piVar1 = *(int **)(iVar3 + 0x14);
             if ((piVar1 != (int *)0x0) && (iVar3 = (**(code **)(*piVar1 + 8))(piVar1), iVar3 == 0))
             {
-              *(undefined4 *)(*piVar5 + 0x14) = 0;
+              *(undefined4 *)(*piVar4 + 0x14) = 0;
             }
-            piVar1 = *(int **)(*piVar5 + 4);
+            piVar1 = *(int **)(*piVar4 + 4);
             if ((piVar1 != (int *)0x0) && (iVar3 = (**(code **)(*piVar1 + 8))(piVar1), iVar3 == 0))
             {
-              *(undefined4 *)(*piVar5 + 4) = 0;
+              *(undefined4 *)(*piVar4 + 4) = 0;
             }
             _DAT_1005d0f8 = CONCAT31((int3)((uint)unaff_EBP >> 8),1);
             _DAT_1005d100 = uStack_10;
@@ -590,7 +591,7 @@ undefined4 FUN_10002cf0(void)
             unaff_EBP = _DAT_1005d0f8;
           }
           iVar2 = iVar2 + 1;
-          piVar5 = piVar5 + 1;
+          piVar4 = piVar4 + 1;
         } while (iVar2 <= DAT_1005305c);
       }
     }
@@ -709,19 +710,18 @@ undefined4 FUN_100030b0(void)
   int *piVar1;
   int iVar2;
   int iVar3;
-  undefined4 uVar4;
   int extraout_EAX;
-  uint uVar5;
+  uint uVar4;
   undefined4 unaff_EBX;
   undefined4 unaff_EBP;
   undefined4 unaff_ESI;
-  int *piVar6;
+  int *piVar5;
   undefined4 uStack_10;
   
-  uVar5 = 0;
+  uVar4 = 0;
   if (DAT_10059dbc == (int *)0x0) {
 LAB_100033a0:
-    return uVar5 & 0xffffff00;
+    return uVar4 & 0xffffff00;
   }
   iVar2 = (**(code **)(*DAT_10059dbc + 0xc))(DAT_10059dbc);
   DAT_1005c898 = iVar2 == 0;
@@ -737,16 +737,16 @@ LAB_100033a0:
     }
     iVar2 = 0;
     if (-1 < DAT_1005305c) {
-      piVar6 = &DAT_1005d404;
+      piVar5 = &DAT_1005d404;
       do {
-        iVar3 = *piVar6;
+        iVar3 = *piVar5;
         if ((((iVar3 != 0) && (*(char *)(iVar3 + 8) != '\0')) &&
             (piVar1 = *(int **)(iVar3 + 4), piVar1 != (int *)0x0)) &&
            (iVar3 = (**(code **)(*piVar1 + 8))(piVar1), iVar3 == 0)) {
-          *(undefined4 *)(*piVar6 + 4) = 0;
+          *(undefined4 *)(*piVar5 + 4) = 0;
         }
         iVar2 = iVar2 + 1;
-        piVar6 = piVar6 + 1;
+        piVar5 = piVar5 + 1;
       } while (iVar2 <= DAT_1005305c);
     }
     iVar2 = (**(code **)(*DAT_10059dbc + 0x38))(DAT_10059dbc,&DAT_10059df8);
@@ -754,26 +754,26 @@ LAB_100033a0:
       FUN_10004520();
       iVar2 = 0;
       if (-1 < DAT_1005305c) {
-        piVar6 = &DAT_1005d404;
+        piVar5 = &DAT_1005d404;
         do {
-          iVar3 = *piVar6;
+          iVar3 = *piVar5;
           if (((iVar3 != 0) && (*(char *)(iVar3 + 8) != '\0')) &&
              (iVar3 = (**(code **)(*DAT_10059dbc + 0x50))
                                 (DAT_10059dbc,*(undefined4 *)(iVar3 + 0xc),
                                  *(undefined4 *)(iVar3 + 0x10),1,1,DAT_1005a488,0,iVar3 + 4),
              iVar3 < 0)) {
             DAT_1005c8f8 = s_D3D__Unable_to_recreate_a_textur_100537e0;
-            *(undefined4 *)(*piVar6 + 4) = 0;
+            *(undefined4 *)(*piVar5 + 4) = 0;
             FUN_10001160();
             FUN_10001160();
           }
           iVar2 = iVar2 + 1;
-          piVar6 = piVar6 + 1;
+          piVar5 = piVar5 + 1;
         } while (iVar2 <= DAT_1005305c);
       }
-      uVar4 = FUN_10002b40();
+      iVar2 = grim_restore_textures();
       DAT_1005d808 = 0;
-      return CONCAT31((int3)((uint)uVar4 >> 8),1);
+      return CONCAT31((int3)((uint)iVar2 >> 8),1);
     }
     DAT_1005d808 = DAT_1005d808 + 1;
     Sleep(500);
@@ -782,17 +782,17 @@ LAB_100033a0:
       iVar3 = 0;
       iVar2 = DAT_1005305c;
       if (DAT_1005305c < 0) goto LAB_10003396;
-      piVar6 = &DAT_1005d404;
+      piVar5 = &DAT_1005d404;
       do {
-        iVar2 = *piVar6;
+        iVar2 = *piVar5;
         if ((iVar2 != 0) && (*(char *)(iVar2 + 8) != '\0')) {
           piVar1 = *(int **)(iVar2 + 0x14);
           if ((piVar1 != (int *)0x0) && (iVar2 = (**(code **)(*piVar1 + 8))(piVar1), iVar2 == 0)) {
-            *(undefined4 *)(*piVar6 + 0x14) = 0;
+            *(undefined4 *)(*piVar5 + 0x14) = 0;
           }
-          piVar1 = *(int **)(*piVar6 + 4);
+          piVar1 = *(int **)(*piVar5 + 4);
           if ((piVar1 != (int *)0x0) && (iVar2 = (**(code **)(*piVar1 + 8))(piVar1), iVar2 == 0)) {
-            *(undefined4 *)(*piVar6 + 4) = 0;
+            *(undefined4 *)(*piVar5 + 4) = 0;
           }
           _DAT_1005d0f8 = CONCAT31((int3)((uint)unaff_ESI >> 8),1);
           _DAT_1005d104 = uStack_10;
@@ -801,30 +801,30 @@ LAB_100033a0:
           unaff_ESI = _DAT_1005d0f8;
         }
         iVar3 = iVar3 + 1;
-        piVar6 = piVar6 + 1;
+        piVar5 = piVar5 + 1;
         iVar2 = DAT_1005305c;
       } while (iVar3 <= DAT_1005305c);
     }
     if (6 < DAT_1005d808) {
       DAT_1005c8f8 = s_D3D__Unable_to_restore_device__10053804;
-      uVar5 = MessageBoxA(DAT_1005d3f8,s_D3D__Unable_to_restore_device__10053804,&DAT_10053824,5);
-      if (uVar5 == 2) goto LAB_100033a0;
+      uVar4 = MessageBoxA(DAT_1005d3f8,s_D3D__Unable_to_restore_device__10053804,&DAT_10053824,5);
+      if (uVar4 == 2) goto LAB_100033a0;
       iVar3 = 0;
       iVar2 = DAT_1005305c;
       if (-1 < DAT_1005305c) {
-        piVar6 = &DAT_1005d404;
+        piVar5 = &DAT_1005d404;
         do {
-          iVar2 = *piVar6;
+          iVar2 = *piVar5;
           if ((iVar2 != 0) && (*(char *)(iVar2 + 8) != '\0')) {
             piVar1 = *(int **)(iVar2 + 0x14);
             if ((piVar1 != (int *)0x0) && (iVar2 = (**(code **)(*piVar1 + 8))(piVar1), iVar2 == 0))
             {
-              *(undefined4 *)(*piVar6 + 0x14) = 0;
+              *(undefined4 *)(*piVar5 + 0x14) = 0;
             }
-            piVar1 = *(int **)(*piVar6 + 4);
+            piVar1 = *(int **)(*piVar5 + 4);
             if ((piVar1 != (int *)0x0) && (iVar2 = (**(code **)(*piVar1 + 8))(piVar1), iVar2 == 0))
             {
-              *(undefined4 *)(*piVar6 + 4) = 0;
+              *(undefined4 *)(*piVar5 + 4) = 0;
             }
             _DAT_1005d0f8 = CONCAT31((int3)((uint)unaff_ESI >> 8),1);
             _DAT_1005d104 = uStack_10;
@@ -833,7 +833,7 @@ LAB_100033a0:
             unaff_ESI = _DAT_1005d0f8;
           }
           iVar3 = iVar3 + 1;
-          piVar6 = piVar6 + 1;
+          piVar5 = piVar5 + 1;
           iVar2 = DAT_1005305c;
         } while (iVar3 <= DAT_1005305c);
       }
@@ -963,16 +963,14 @@ undefined4 FUN_10003e60(void)
 
 {
   byte bVar1;
-  bool bVar2;
-  char cVar3;
-  char *pcVar4;
-  int iVar5;
-  uint uVar6;
-  undefined4 uVar7;
-  undefined4 uVar8;
-  HRSRC pHVar9;
-  HGLOBAL pvVar10;
-  undefined4 *puVar11;
+  char *pcVar2;
+  int iVar3;
+  uint uVar4;
+  undefined4 uVar5;
+  undefined4 uVar6;
+  HRSRC pHVar7;
+  HGLOBAL pvVar8;
+  undefined4 *puVar9;
   int *piStack_460;
   undefined4 uStack_45c;
   undefined4 uStack_458;
@@ -1001,32 +999,32 @@ undefined4 FUN_10003e60(void)
   (**(code **)(*DAT_1005c8fc + 0x34))();
   bVar1 = 0;
   (**(code **)(*DAT_1005c8fc + 0x14))(DAT_1005c8fc,DAT_1005d3e8,2,&stack0xfffffbc0);
-  pcVar4 = strchr(acStack_250,0x56);
-  if (((((pcVar4 != (char *)0x0) && (pcVar4[1] == 'o')) && (pcVar4[2] == 'o')) &&
-      ((pcVar4[3] == 'd' && (pcVar4[4] == 'o')))) && ((pcVar4[5] == 'o' && (pcVar4[6] == '3')))) {
+  pcVar2 = strchr(acStack_250,0x56);
+  if (((((pcVar2 != (char *)0x0) && (pcVar2[1] == 'o')) && (pcVar2[2] == 'o')) &&
+      ((pcVar2[3] == 'd' && (pcVar2[4] == 'o')))) && ((pcVar2[5] == 'o' && (pcVar2[6] == '3')))) {
     bVar1 = 1;
   }
-  iVar5 = (**(code **)(*DAT_1005c8fc + 0x20))(DAT_1005c8fc,0,&piStack_460);
-  if (iVar5 < 0) {
+  iVar3 = (**(code **)(*DAT_1005c8fc + 0x20))(DAT_1005c8fc,0,&piStack_460);
+  if (iVar3 < 0) {
     DAT_1005c8f8 = s_D3D__Error_getting_adapter_displ_10053a34;
-    uVar6 = 0;
+    uVar4 = 0;
     if ((DAT_1005c8fc != (int *)0x0) &&
-       (uVar6 = (**(code **)(*DAT_1005c8fc + 8))(DAT_1005c8fc), uVar6 == 0)) {
+       (uVar4 = (**(code **)(*DAT_1005c8fc + 8))(DAT_1005c8fc), uVar4 == 0)) {
       DAT_1005c8fc = (int *)0x0;
     }
-    return uVar6 & 0xffffff00;
+    return uVar4 & 0xffffff00;
   }
-  uVar7 = FUN_10002680();
-  uVar8 = DAT_1005ceb8;
-  if ((char)uVar7 == '\0') {
-    return uVar7;
+  uVar5 = FUN_10002680();
+  uVar6 = DAT_1005ceb8;
+  if ((char)uVar5 == '\0') {
+    return uVar5;
   }
-  puVar11 = &DAT_10059df8;
-  for (iVar5 = 0xd; iVar5 != 0; iVar5 = iVar5 + -1) {
-    *puVar11 = 0;
-    puVar11 = puVar11 + 1;
+  puVar9 = &DAT_10059df8;
+  for (iVar3 = 0xd; iVar3 != 0; iVar3 = iVar3 + -1) {
+    *puVar9 = 0;
+    puVar9 = puVar9 + 1;
   }
-  _DAT_10059e04 = uVar8;
+  _DAT_10059e04 = uVar6;
   if (DAT_1005cc08 != '\x01') {
     _DAT_10059e0c = bVar1 + 1;
     _DAT_10059e24 = 0;
@@ -1048,62 +1046,60 @@ undefined4 FUN_10003e60(void)
   if (DAT_1005d3fc == 0) {
     _DAT_10059e10 = DAT_1005d3f8;
   }
-  iVar5 = (**(code **)(*DAT_1005c8fc + 0x3c))
+  iVar3 = (**(code **)(*DAT_1005c8fc + 0x3c))
                     (DAT_1005c8fc,DAT_1005d3e8,DAT_1005b2b4,DAT_1005d3f8,0x20,&DAT_10059df8,
                      &DAT_10059dbc);
-  if (iVar5 < 0) {
+  if (iVar3 < 0) {
     DAT_1005c8f8 = s_D3D__Could_not_set_the_requested_10053a04;
     MessageBoxA((HWND)0x0,s_D3D__Could_not_set_the_requested_10053a04,&DAT_10053824,0);
     FUN_10004280();
-    uVar6 = FUN_10002880();
-    return uVar6 & 0xffffff00;
+    uVar4 = FUN_10002880();
+    return uVar4 & 0xffffff00;
   }
   (**(code **)(*DAT_1005c8fc + 0x34))(DAT_1005c8fc,DAT_1005d3e8,DAT_1005b2b4,&DAT_1005a498);
-  uVar8 = FUN_10004350();
-  if ((char)uVar8 == '\0') {
+  uVar6 = FUN_10004350();
+  if ((char)uVar6 == '\0') {
     FUN_10004280();
-    uVar6 = FUN_10002880();
-    return uVar6 & 0xffffff00;
+    uVar4 = FUN_10002880();
+    return uVar4 & 0xffffff00;
   }
-  puVar11 = &DAT_1005d404;
-  for (iVar5 = 0x100; iVar5 != 0; iVar5 = iVar5 + -1) {
-    *puVar11 = 0;
-    puVar11 = puVar11 + 1;
+  puVar9 = &DAT_1005d404;
+  for (iVar3 = 0x100; iVar3 != 0; iVar3 = iVar3 + -1) {
+    *puVar9 = 0;
+    puVar9 = puVar9 + 1;
   }
   if (DAT_1005a56c != 0) {
-    bVar2 = FUN_100047f0(DAT_1005a56c);
-    if (bVar2) {
-      if (DAT_1005a56c != 0) goto LAB_10004142;
-    }
-    else {
+    iVar3 = grim_is_texture_format_supported(DAT_1005a56c);
+    if ((char)iVar3 == '\0') {
       DAT_1005a56c = 0;
     }
+    else if (DAT_1005a56c != 0) goto LAB_10004142;
   }
-  cVar3 = FUN_10004830();
-  if (cVar3 == '\0') {
+  iVar3 = grim_select_texture_format();
+  if ((char)iVar3 == '\0') {
     DAT_1005c8f8 = s_D3D__Could_not_find_any_compatib_100539d0;
     FUN_10004280();
     FUN_10002880();
   }
 LAB_10004142:
   FUN_10004520();
-  pHVar9 = FindResourceA(DAT_1005bacc,(LPCSTR)0x6f,(LPCSTR)0xa);
-  pvVar10 = LoadResource(DAT_1005bacc,pHVar9);
-  LockResource(pvVar10);
-  SizeofResource(DAT_1005bacc,pHVar9);
-  uVar6 = FUN_1000cb5c();
-  if ((int)uVar6 < 0) {
+  pHVar7 = FindResourceA(DAT_1005bacc,(LPCSTR)0x6f,(LPCSTR)0xa);
+  pvVar8 = LoadResource(DAT_1005bacc,pHVar7);
+  LockResource(pvVar8);
+  SizeofResource(DAT_1005bacc,pHVar7);
+  uVar4 = FUN_1000cb5c();
+  if ((int)uVar4 < 0) {
     DAT_1005c8f8 = s_D3D__Unable_to_load_default_font_100539a4;
-    return uVar6 & 0xffffff00;
+    return uVar4 & 0xffffff00;
   }
-  pHVar9 = FindResourceA(DAT_1005bacc,(LPCSTR)0x71,(LPCSTR)0xa);
-  pvVar10 = LoadResource(DAT_1005bacc,pHVar9);
-  LockResource(pvVar10);
-  SizeofResource(DAT_1005bacc,pHVar9);
-  uVar6 = FUN_1000cb5c();
-  if ((int)uVar6 < 0) {
+  pHVar7 = FindResourceA(DAT_1005bacc,(LPCSTR)0x71,(LPCSTR)0xa);
+  pvVar8 = LoadResource(DAT_1005bacc,pHVar7);
+  LockResource(pvVar8);
+  SizeofResource(DAT_1005bacc,pHVar7);
+  uVar4 = FUN_1000cb5c();
+  if ((int)uVar4 < 0) {
     DAT_1005c8f8 = s_D3D__Unable_to_load_grim_splash_t_10053978;
-    return uVar6 & 0xffffff00;
+    return uVar4 & 0xffffff00;
   }
   DAT_1005c900 = 0;
   DAT_1005a48c = 0;
@@ -1120,44 +1116,44 @@ LAB_10004142:
 void FUN_10004280(void)
 
 {
-  undefined4 *puVar1;
-  int iVar2;
-  undefined4 *puVar3;
+  void *texture;
+  int iVar1;
+  undefined4 *puVar2;
   
   if (DAT_1005c900 != (int *)0x0) {
-    iVar2 = (**(code **)(*DAT_1005c900 + 8))(DAT_1005c900);
-    if (iVar2 == 0) {
+    iVar1 = (**(code **)(*DAT_1005c900 + 8))(DAT_1005c900);
+    if (iVar1 == 0) {
       DAT_1005c900 = (int *)0x0;
     }
   }
   if (DAT_1005a48c != (int *)0x0) {
-    iVar2 = (**(code **)(*DAT_1005a48c + 8))(DAT_1005a48c);
-    if (iVar2 == 0) {
+    iVar1 = (**(code **)(*DAT_1005a48c + 8))(DAT_1005a48c);
+    if (iVar1 == 0) {
       DAT_1005a48c = (int *)0x0;
     }
   }
   if (DAT_1005d3ec != (int *)0x0) {
-    iVar2 = (**(code **)(*DAT_1005d3ec + 8))(DAT_1005d3ec);
-    if (iVar2 == 0) {
+    iVar1 = (**(code **)(*DAT_1005d3ec + 8))(DAT_1005d3ec);
+    if (iVar1 == 0) {
       DAT_1005d3ec = (int *)0x0;
     }
   }
   if (DAT_1005d3f0 != (int *)0x0) {
-    iVar2 = (**(code **)(*DAT_1005d3f0 + 8))(DAT_1005d3f0);
-    if (iVar2 == 0) {
+    iVar1 = (**(code **)(*DAT_1005d3f0 + 8))(DAT_1005d3f0);
+    if (iVar1 == 0) {
       DAT_1005d3f0 = (int *)0x0;
     }
   }
-  puVar3 = &DAT_1005d404;
+  puVar2 = &DAT_1005d404;
   do {
-    puVar1 = (undefined4 *)*puVar3;
-    if (puVar1 != (undefined4 *)0x0) {
-      FUN_10004ab0(puVar1);
-      operator_delete(puVar1);
-      *puVar3 = 0;
+    texture = (void *)*puVar2;
+    if (texture != (void *)0x0) {
+      grim_texture_release(texture);
+      operator_delete(texture);
+      *puVar2 = 0;
     }
-    puVar3 = puVar3 + 1;
-  } while ((int)puVar3 < 0x1005d804);
+    puVar2 = puVar2 + 1;
+  } while ((int)puVar2 < 0x1005d804);
   FUN_100044e0();
   if (DAT_10059dbc != (int *)0x0) {
     (**(code **)(*DAT_10059dbc + 8))(DAT_10059dbc);
@@ -1293,69 +1289,75 @@ void FUN_10004520(void)
 
 
 
-/* FUN_100047f0 @ 100047f0 */
+/* grim_is_texture_format_supported @ 100047f0 */
 
-bool __cdecl FUN_100047f0(undefined4 param_1)
+/* checks device support for a texture format */
+
+int __cdecl grim_is_texture_format_supported(uint format)
 
 {
   int iVar1;
   
   iVar1 = (**(code **)(*DAT_1005c8fc + 0x28))
-                    (DAT_1005c8fc,DAT_1005d3e8,DAT_1005b2b4,DAT_1005a488,0,3,param_1);
-  return -1 < iVar1;
+                    (DAT_1005c8fc,DAT_1005d3e8,DAT_1005b2b4,DAT_1005a488,0,3,format);
+  return CONCAT31((int3)((uint)iVar1 >> 8),-1 < iVar1);
 }
 
 
 
-/* FUN_10004830 @ 10004830 */
+/* grim_select_texture_format @ 10004830 */
 
-undefined1 FUN_10004830(void)
+/* chooses the first supported texture format */
+
+int grim_select_texture_format(void)
 
 {
-  bool bVar1;
+  int iVar1;
+  uint3 uVar2;
   
-  bVar1 = FUN_100047f0(0x15);
-  if (bVar1) {
+  iVar1 = grim_is_texture_format_supported(0x15);
+  if ((char)iVar1 != '\0') {
     DAT_1005a56c = 0x15;
-    return 1;
+    return CONCAT31((int3)((uint)iVar1 >> 8),1);
   }
-  bVar1 = FUN_100047f0(0x33545844);
-  if (bVar1) {
+  iVar1 = grim_is_texture_format_supported(0x33545844);
+  if ((char)iVar1 != '\0') {
     DAT_1005a56c = 0x33545844;
-    return 1;
+    return CONCAT31((int3)((uint)iVar1 >> 8),1);
   }
-  bVar1 = FUN_100047f0(0x1a);
-  if (bVar1) {
+  iVar1 = grim_is_texture_format_supported(0x1a);
+  if ((char)iVar1 != '\0') {
     DAT_1005a56c = 0x1a;
-    return 1;
+    return CONCAT31((int3)((uint)iVar1 >> 8),1);
   }
-  bVar1 = FUN_100047f0(0x19);
-  if (bVar1) {
+  iVar1 = grim_is_texture_format_supported(0x19);
+  if ((char)iVar1 != '\0') {
     DAT_1005a56c = 0x19;
-    return 1;
+    return CONCAT31((int3)((uint)iVar1 >> 8),1);
   }
-  bVar1 = FUN_100047f0(0x14);
-  if (bVar1) {
+  iVar1 = grim_is_texture_format_supported(0x14);
+  if ((char)iVar1 != '\0') {
     DAT_1005a56c = 0x14;
-    return 1;
+    return CONCAT31((int3)((uint)iVar1 >> 8),1);
   }
-  bVar1 = FUN_100047f0(0x16);
-  if (bVar1) {
+  iVar1 = grim_is_texture_format_supported(0x16);
+  if ((char)iVar1 != '\0') {
     DAT_1005a56c = 0x16;
-    return 1;
+    return CONCAT31((int3)((uint)iVar1 >> 8),1);
   }
-  bVar1 = FUN_100047f0(0x14);
-  if (bVar1) {
+  iVar1 = grim_is_texture_format_supported(0x14);
+  if ((char)iVar1 != '\0') {
     DAT_1005a56c = 0x14;
-    return 1;
+    return CONCAT31((int3)((uint)iVar1 >> 8),1);
   }
-  bVar1 = FUN_100047f0(0x17);
-  if (bVar1) {
+  iVar1 = grim_is_texture_format_supported(0x17);
+  uVar2 = (uint3)((uint)iVar1 >> 8);
+  if ((char)iVar1 != '\0') {
     DAT_1005a56c = 0x17;
-    return 1;
+    return CONCAT31(uVar2,1);
   }
   DAT_1005c8f8 = s_D3D__No_supported_texture_format_10053af4;
-  return 0;
+  return (uint)uVar2 << 8;
 }
 
 
@@ -1418,9 +1420,11 @@ void FUN_10004970(void)
 
 
 
-/* FUN_10004a50 @ 10004a50 */
+/* grim_texture_init @ 10004a50 */
 
-undefined4 * __thiscall FUN_10004a50(void *this,char *param_1)
+/* allocates/copies texture name and zeroes fields */
+
+void * __thiscall grim_texture_init(void *this,void *texture,char *name)
 
 {
   char cVar1;
@@ -1430,7 +1434,7 @@ undefined4 * __thiscall FUN_10004a50(void *this,char *param_1)
   char *pcVar5;
   
   uVar3 = 0xffffffff;
-  pcVar2 = param_1;
+  pcVar2 = texture;
   do {
     if (uVar3 == 0) break;
     uVar3 = uVar3 - 1;
@@ -1441,12 +1445,12 @@ undefined4 * __thiscall FUN_10004a50(void *this,char *param_1)
   uVar3 = 0xffffffff;
   *(char **)this = pcVar2;
   do {
-    pcVar5 = param_1;
+    pcVar5 = texture;
     if (uVar3 == 0) break;
     uVar3 = uVar3 - 1;
-    pcVar5 = param_1 + 1;
-    cVar1 = *param_1;
-    param_1 = pcVar5;
+    pcVar5 = (char *)((int)texture + 1);
+    cVar1 = *(char *)texture;
+    texture = pcVar5;
   } while (cVar1 != '\0');
   uVar3 = ~uVar3;
   pcVar5 = pcVar5 + -uVar3;
@@ -1468,27 +1472,29 @@ undefined4 * __thiscall FUN_10004a50(void *this,char *param_1)
 
 
 
-/* FUN_10004ab0 @ 10004ab0 */
+/* grim_texture_release @ 10004ab0 */
 
-void __fastcall FUN_10004ab0(undefined4 *param_1)
+/* releases COM objects and frees texture name */
+
+void __fastcall grim_texture_release(void *texture)
 
 {
   int *piVar1;
   
-  piVar1 = (int *)param_1[1];
+  piVar1 = *(int **)((int)texture + 4);
   if (piVar1 != (int *)0x0) {
     (**(code **)(*piVar1 + 8))(piVar1);
   }
-  piVar1 = (int *)param_1[5];
-  param_1[1] = 0;
+  piVar1 = *(int **)((int)texture + 0x14);
+  *(undefined4 *)((int)texture + 4) = 0;
   if (piVar1 != (int *)0x0) {
     (**(code **)(*piVar1 + 8))(piVar1);
   }
-  param_1[5] = 0;
-  if ((void *)*param_1 != (void *)0x0) {
-    operator_delete((void *)*param_1);
+  *(undefined4 *)((int)texture + 0x14) = 0;
+  if (*(void **)texture != (void *)0x0) {
+    operator_delete(*(void **)texture);
   }
-  *param_1 = 0;
+  *(undefined4 *)texture = 0;
   return;
 }
 
@@ -1683,9 +1689,11 @@ FUN_10004b70(char *param_1,undefined4 param_2,uint *param_3,uint *param_4,uint *
 
 
 
-/* FUN_10004ec0 @ 10004ec0 */
+/* grim_texture_load_file @ 10004ec0 */
 
-uint __thiscall FUN_10004ec0(void *this,LPCWSTR param_1)
+/* loads texture data from file path */
+
+int __thiscall grim_texture_load_file(void *this,void *texture,ushort *path)
 
 {
   undefined4 *puVar1;
@@ -1706,7 +1714,7 @@ uint __thiscall FUN_10004ec0(void *this,LPCWSTR param_1)
   undefined4 uStack_1c;
   undefined4 uStack_18;
   
-  if (param_1 == (LPCWSTR)0x0) {
+  if (texture == (void *)0x0) {
     return in_EAX & 0xffffff00;
   }
   piVar2 = *(int **)((int)this + 4);
@@ -1719,13 +1727,13 @@ uint __thiscall FUN_10004ec0(void *this,LPCWSTR param_1)
   _DstBuf = (char *)0x0;
   bVar8 = false;
   if (DAT_1005bc14 != '\0') {
-    _DstBuf = (char *)FUN_10005ae0((byte *)param_1);
+    _DstBuf = (char *)FUN_10005ae0(texture);
     bVar8 = _DstBuf != (char *)0x0;
   }
-  bVar3 = FUN_10004b00((char *)param_1,&DAT_10053b20);
+  bVar3 = FUN_10004b00(texture,&DAT_10053b20);
   if (!bVar3) {
     if ((DAT_1005bc14 != '\0') && (bVar8)) {
-      FUN_10005b80((byte *)param_1);
+      FUN_10005b80(texture);
       iVar6 = FUN_1000cb5c();
       uVar7 = (uint3)((uint)iVar6 >> 8);
       if (-1 < iVar6) {
@@ -1736,7 +1744,7 @@ uint __thiscall FUN_10004ec0(void *this,LPCWSTR param_1)
       *puVar1 = 0;
       return (uint)uVar7 << 8;
     }
-    uVar4 = FUN_1000cb9c(DAT_10059dbc,param_1);
+    uVar4 = FUN_1000cb9c(DAT_10059dbc,texture);
     if (-1 < (int)uVar4) {
       *(undefined4 *)((int)this + 0xc) = uStack_1c;
       *(undefined4 *)((int)this + 0x10) = uStack_18;
@@ -1746,7 +1754,7 @@ uint __thiscall FUN_10004ec0(void *this,LPCWSTR param_1)
     return uVar4 & 0xffffff00;
   }
   if ((DAT_1005bc14 == '\0') || (!bVar8)) {
-    _File = fopen((char *)param_1,&DAT_10053244);
+    _File = fopen(texture,&DAT_10053244);
     if (_File == (FILE *)0x0) {
       return 0;
     }
@@ -1758,7 +1766,7 @@ uint __thiscall FUN_10004ec0(void *this,LPCWSTR param_1)
     fclose(_File);
   }
   else {
-    uVar4 = FUN_10005b80((byte *)param_1);
+    uVar4 = FUN_10005b80(texture);
   }
   puVar5 = FUN_10004b70(_DstBuf,uVar4,&uStack_20,&uStack_2c,&uStack_24);
   uVar4 = 0;
@@ -1776,9 +1784,11 @@ uint __thiscall FUN_10004ec0(void *this,LPCWSTR param_1)
 
 
 
-/* FUN_10005110 @ 10005110 */
+/* grim_texture_name_equals @ 10005110 */
 
-uint __thiscall FUN_10005110(void *this,byte *param_1)
+/* compares stored texture name */
+
+int __thiscall grim_texture_name_equals(void *this,void *texture,char *name)
 
 {
   byte bVar1;
@@ -1787,21 +1797,21 @@ uint __thiscall FUN_10005110(void *this,byte *param_1)
   bool bVar4;
   
   pbVar2 = *(byte **)this;
-  if ((pbVar2 == (byte *)0x0) || (param_1 == (byte *)0x0)) {
+  if ((pbVar2 == (byte *)0x0) || (texture == (void *)0x0)) {
     return (uint)pbVar2 & 0xffffff00;
   }
   while( true ) {
     bVar1 = *pbVar2;
-    bVar4 = bVar1 < *param_1;
-    if (bVar1 != *param_1) break;
+    bVar4 = bVar1 < *(byte *)texture;
+    if (bVar1 != *(byte *)texture) break;
     if (bVar1 == 0) {
       return 1;
     }
     bVar1 = pbVar2[1];
-    bVar4 = bVar1 < param_1[1];
-    if (bVar1 != param_1[1]) break;
+    bVar4 = bVar1 < *(byte *)((int)texture + 1);
+    if (bVar1 != *(byte *)((int)texture + 1)) break;
     pbVar2 = pbVar2 + 2;
-    param_1 = param_1 + 2;
+    texture = (void *)((int)texture + 2);
     if (bVar1 == 0) {
       return 1;
     }
@@ -1812,13 +1822,16 @@ uint __thiscall FUN_10005110(void *this,byte *param_1)
 
 
 
-/* FUN_10005170 @ 10005170 */
+/* grim_find_texture_by_name @ 10005170 */
 
-int __cdecl FUN_10005170(byte *param_1)
+/* returns texture handle index for name */
+
+int __cdecl grim_find_texture_by_name(char *name)
 
 {
-  uint uVar1;
+  int iVar1;
   int iVar2;
+  char *unaff_EDI;
   undefined4 *puVar3;
   
   iVar2 = 0;
@@ -1826,8 +1839,8 @@ int __cdecl FUN_10005170(byte *param_1)
     puVar3 = &DAT_1005d404;
     do {
       if ((void *)*puVar3 != (void *)0x0) {
-        uVar1 = FUN_10005110((void *)*puVar3,param_1);
-        if ((char)uVar1 != '\0') {
+        iVar1 = grim_texture_name_equals((void *)*puVar3,name,unaff_EDI);
+        if ((char)iVar1 != '\0') {
           return iVar2;
         }
       }
@@ -1840,9 +1853,11 @@ int __cdecl FUN_10005170(byte *param_1)
 
 
 
-/* FUN_100051c0 @ 100051c0 */
+/* grim_find_free_texture_slot @ 100051c0 */
 
-int FUN_100051c0(void)
+/* finds the first free texture slot */
+
+int grim_find_free_texture_slot(void)
 
 {
   int iVar1;
@@ -1862,16 +1877,20 @@ int FUN_100051c0(void)
 
 
 
-/* FUN_100051e0 @ 100051e0 */
+/* grim_load_texture_internal @ 100051e0 */
 
-undefined4 FUN_100051e0(byte *param_1,LPCWSTR param_2)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* allocates texture slot and loads file */
+
+int grim_load_texture_internal(char *name,ushort *path)
 
 {
   int iVar1;
   int iVar2;
-  void *this;
-  undefined4 *this_00;
-  undefined4 uVar3;
+  uint uVar3;
+  void *pvVar4;
+  uint extraout_EAX;
+  ushort *unaff_EDI;
   void *local_c;
   undefined *puStack_8;
   undefined4 local_4;
@@ -1880,44 +1899,45 @@ undefined4 FUN_100051e0(byte *param_1,LPCWSTR param_2)
   puStack_8 = &DAT_1004b80b;
   local_c = ExceptionList;
   ExceptionList = &local_c;
-  iVar1 = FUN_100051c0();
-  if (iVar1 == -1) {
+  iVar2 = grim_find_free_texture_slot();
+  if (iVar2 == -1) {
     DAT_1005c8f8 = s_All_texture_slots_are_used__10053b60;
     ExceptionList = local_c;
-    return 0;
+    return -0x100;
   }
-  iVar2 = FUN_10005170(param_1);
-  if (iVar2 != -1) {
+  uVar3 = grim_find_texture_by_name(name);
+  if (uVar3 != 0xffffffff) {
     DAT_1005c8f8 = s_D3D__Texture_slot_not_free__10053b44;
     ExceptionList = local_c;
-    return 0;
+    return uVar3 & 0xffffff00;
   }
-  this = operator_new(0x18);
+  pvVar4 = operator_new(0x18);
   local_4 = 0;
-  if (this == (void *)0x0) {
-    this_00 = (undefined4 *)0x0;
+  if (pvVar4 == (void *)0x0) {
+    pvVar4 = (void *)0x0;
   }
   else {
-    this_00 = FUN_10004a50(this,(char *)param_1);
+    pvVar4 = grim_texture_init(pvVar4,name,(char *)unaff_EDI);
   }
   local_4 = 0xffffffff;
-  uVar3 = FUN_10004ec0(this_00,param_2);
-  iVar2 = DAT_1005305c;
+  uVar3 = grim_texture_load_file(pvVar4,path,unaff_EDI);
+  iVar1 = DAT_1005305c;
   if ((char)uVar3 == '\0') {
     DAT_1005c8f8 = s_D3D__Could_not_load_a_texture__10053b24;
-    if (this_00 != (undefined4 *)0x0) {
-      FUN_10004ab0(this_00);
-      operator_delete(this_00);
+    if (pvVar4 != (void *)0x0) {
+      grim_texture_release(pvVar4);
+      operator_delete(pvVar4);
+      uVar3 = extraout_EAX;
     }
     ExceptionList = local_c;
-    return 0;
+    return uVar3 & 0xffffff00;
   }
-  (&DAT_1005d404)[iVar1] = this_00;
-  if (iVar2 < iVar1) {
-    DAT_1005305c = iVar1;
+  (&DAT_1005d404)[iVar2] = pvVar4;
+  if (iVar1 < iVar2) {
+    DAT_1005305c = iVar2;
   }
   ExceptionList = local_c;
-  return 1;
+  return CONCAT31((int3)((uint)iVar1 >> 8),1);
 }
 
 
@@ -3867,9 +3887,9 @@ int grim_create_texture(char *name,int width,int height)
 {
   uint uVar1;
   uint uVar2;
-  void *this;
-  undefined4 *puVar3;
-  char *unaff_EDI;
+  void *pvVar3;
+  void *unaff_EDI;
+  int *name_00;
   undefined4 uVar4;
   void *pvVar5;
   undefined1 local_10 [4];
@@ -3881,13 +3901,14 @@ int grim_create_texture(char *name,int width,int height)
   puStack_8 = &LAB_1004b82b;
   local_c = ExceptionList;
   ExceptionList = &local_c;
-  uVar1 = FUN_100051c0();
+  uVar1 = grim_find_free_texture_slot();
   if ((int)uVar1 < 0) {
     ExceptionList = local_c;
     return uVar1 & 0xffffff00;
   }
   pvVar5 = (void *)0x1;
   uVar4 = 1;
+  name_00 = DAT_10059dbc;
   uVar2 = (**(code **)(*DAT_10059dbc + 0x50))(DAT_10059dbc,width,height,1,1,DAT_1005a488,0,local_10)
   ;
   if ((int)uVar2 < 0) {
@@ -3895,15 +3916,15 @@ int grim_create_texture(char *name,int width,int height)
     ExceptionList = pvVar5;
     return uVar2 & 0xffffff00;
   }
-  this = operator_new(0x18);
-  if (this == (void *)0x0) {
-    puVar3 = (undefined4 *)0x0;
+  pvVar3 = operator_new(0x18);
+  if (pvVar3 == (void *)0x0) {
+    pvVar3 = (void *)0x0;
   }
   else {
-    puVar3 = FUN_10004a50(this,unaff_EDI);
+    pvVar3 = grim_texture_init(pvVar3,unaff_EDI,(char *)name_00);
   }
-  (&DAT_1005d404)[uVar1] = puVar3;
-  puVar3[1] = uVar4;
+  (&DAT_1005d404)[uVar1] = pvVar3;
+  *(undefined4 *)((int)pvVar3 + 4) = uVar4;
   *(undefined1 *)((&DAT_1005d404)[uVar1] + 8) = 1;
   *(int *)((&DAT_1005d404)[uVar1] + 0xc) = width;
   *(int *)((&DAT_1005d404)[uVar1] + 0x10) = height;
@@ -3927,7 +3948,7 @@ int grim_load_texture(char *name,char *path)
 {
   int iVar1;
   
-  iVar1 = FUN_100051e0(name,path);
+  iVar1 = grim_load_texture_internal(name,(ushort *)path);
   return iVar1;
 }
 
@@ -3941,19 +3962,19 @@ int grim_load_texture(char *name,char *path)
 void grim_destroy_texture(int handle)
 
 {
-  undefined4 *puVar1;
-  int iVar2;
-  bool bVar3;
+  void *texture;
+  int iVar1;
+  bool bVar2;
   
-  puVar1 = (undefined4 *)(&DAT_1005d404)[handle];
-  if (puVar1 != (undefined4 *)0x0) {
-    FUN_10004ab0(puVar1);
-    operator_delete(puVar1);
-    iVar2 = DAT_1005305c;
-    bVar3 = handle == DAT_1005305c;
+  texture = (void *)(&DAT_1005d404)[handle];
+  if (texture != (void *)0x0) {
+    grim_texture_release(texture);
+    operator_delete(texture);
+    iVar1 = DAT_1005305c;
+    bVar2 = handle == DAT_1005305c;
     (&DAT_1005d404)[handle] = 0;
-    if (bVar3) {
-      DAT_1005305c = iVar2 + -1;
+    if (bVar2) {
+      DAT_1005305c = iVar1 + -1;
     }
   }
   return;
@@ -3971,7 +3992,7 @@ int grim_get_texture_handle(char *name)
 {
   int iVar1;
   
-  iVar1 = FUN_10005170((byte *)name);
+  iVar1 = grim_find_texture_by_name(name);
   return iVar1;
 }
 
