@@ -385,5 +385,46 @@
     "name": "grim_measure_text_width",
     "signature": "int grim_measure_text_width(char *text)",
     "comment": "Grim2D vtable 0x14c (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10005d40",
+    "name": "grim_apply_config",
+    "comment": "Grim2D vtable 0x10 (provisional): invoked by '...invoking grim config' log",
+    "signature": "int grim_apply_config(void)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10005eb0",
+    "name": "grim_init_system",
+    "comment": "Grim2D vtable 0x14 (provisional): Grim2D init; returns success",
+    "signature": "int grim_init_system(void)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10005ff0",
+    "name": "grim_shutdown",
+    "comment": "Grim2D vtable 0x18 (provisional): Grim2D shutdown",
+    "signature": "void grim_shutdown(void)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10006020",
+    "name": "grim_apply_settings",
+    "comment": "Grim2D vtable 0x1c (provisional): apply Grim2D settings after config load",
+    "signature": "void grim_apply_settings(void)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10006c30",
+    "name": "grim_get_config_var",
+    "comment": "Grim2D vtable 0x24 (provisional): returns pointer to config var (args vary)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10006ca0",
+    "name": "grim_get_error_text",
+    "comment": "Grim2D vtable 0x28 (provisional): error string for MessageBox",
+    "signature": "char * grim_get_error_text(void)"
   }
 ]
