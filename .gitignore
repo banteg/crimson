@@ -1,2 +1,7 @@
-# Scratch scripts
+/game/
+/assets/
+/output/
+.venv/
+.codex/
+.DS_Store
 scripts/
