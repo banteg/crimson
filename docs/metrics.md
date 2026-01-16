@@ -32,8 +32,8 @@ regen (from git history).
 - Thunks: 40
 - User-defined: 919
 - Decompiled: 919 (100% coverage)
-- Named/inferred: 138 (14.4%)
-- Typed signatures: 175 (18.2%)
+- Named/inferred: 144 (15.0%)
+- Typed signatures: 181 (18.9%)
 - External typed: 0 / 0
 - GDT hits (since previous regen): 1
 - Last regen: 2026-01-16
@@ -44,8 +44,8 @@ regen (from git history).
 - Thunks: 66
 - User-defined: 1712
 - Decompiled: 1711 (99.9% coverage)
-- Named/inferred: 224 (12.6%)
-- Typed signatures: 406 (22.8%)
+- Named/inferred: 230 (12.9%)
+- Typed signatures: 412 (23.2%)
 - External typed: 0 / 0
 - GDT hits (since previous regen): 9
 - Last regen: 2026-01-16

@@ -4,7 +4,7 @@ This appendix collects one concrete callsite snippet per vtable offset,
 
 plus the current grim.dll entry signature and address from
 
-`source/decompiled/grim2d_vtable_map.csv`.
+`source/decompiled/grim2d_vtable_map.json`.
 
 
 
