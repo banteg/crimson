@@ -3,6 +3,8 @@
 This site tracks the file formats and asset pipeline we have verified from the
 decompiled Crimsonland v1.9.93 executable and game data.
 
+Overall naming coverage: 12.4% (221 / 1778 functions named or inferred).
+
 ## Quick start
 
 ```bash
@@ -16,6 +18,7 @@ assets/{paq_name}/{path}
 ```
 
 Special handling during extraction:
+
 - `.jaz` files are decoded to a single composite PNG (RGB + alpha).
 - `.tga` files are converted to PNG.
 - Everything else is written as raw bytes.

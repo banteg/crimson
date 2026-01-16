@@ -63,6 +63,12 @@ These offsets appear with keycodes or input-related values:
 
 | Offset | Name | Signature (guess) | Confidence | Notes |
 | --- | --- | --- | --- | --- |
+| `0x10` | `apply_config` | `int apply_config(void)` | medium | invoked by "...invoking grim config" log |
+| `0x14` | `init_system` | `int init_system(void)` | high | returns success before game starts |
+| `0x18` | `shutdown` | `void shutdown(void)` | high | shutdown path before DLL release |
+| `0x1c` | `apply_settings` | `void apply_settings(void)` | low | called after config copy |
+| `0x24` | `get_config_var` | `void * get_config_var(...)` | low | returns pointer to config var (args vary) |
+| `0x28` | `get_error_text` | `char * get_error_text(void)` | medium | error string for MessageBox |
 | `0x20` | `set_render_state` | `void set_render_state(uint32_t state, uint32_t value)` | high | D3D-style render state usage |
 | `0x44` | `is_key_down` | `bool is_key_down(uint32_t key)` | high | Ctrl/arrow keycodes |
 | `0x48` | `was_key_pressed` | `bool was_key_pressed(uint32_t key)` | high | edge-triggered key checks |
