@@ -102,9 +102,14 @@ These offsets appear with keycodes or input-related values:
 | `0x8c` | `get_slot_int` | `int get_slot_int(int index)` | low | int slot accessor |
 | `0x90` | `set_slot_float` | `void set_slot_float(int index, float value)` | low | float slot setter |
 | `0x94` | `set_slot_int` | `void set_slot_int(int index, int value)` | low | int slot setter |
+| `0x98` | `get_joystick_x` | `int get_joystick_x(void)` | low | joystick axis X (raw) |
+| `0x9c` | `get_joystick_y` | `int get_joystick_y(void)` | low | joystick axis Y (raw) |
+| `0xa0` | `get_joystick_z` | `int get_joystick_z(void)` | low | joystick axis Z (raw) |
 | `0xa4` | `get_joystick_pov` | `int get_joystick_pov(int index)` | low | joystick POV hat value |
+| `0xa8` | `is_joystick_button_down` | `bool is_joystick_button_down(int button)` | low | joystick button state |
 | `0xac` | `create_texture` | `bool create_texture(const char *name, int width, int height)` | medium | terrain texture path |
 | `0xb4` | `load_texture` | `bool load_texture(const char *name, const char *path)` | high | `(name, filename)` |
+| `0xbc` | `destroy_texture` | `void destroy_texture(int handle)` | low | release texture handle |
 | `0xc0` | `get_texture_handle` | `int get_texture_handle(const char *name)` | high | returns `-1` on missing |
 | `0xc4` | `bind_texture` | `void bind_texture(int handle, int stage)` | medium | often `(handle, 0)` |
 | `0xc8` | `draw_fullscreen_quad` | `void draw_fullscreen_quad(void)` | low | full-screen quad with current texture |
