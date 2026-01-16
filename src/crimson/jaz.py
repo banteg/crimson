@@ -4,9 +4,9 @@ from __future__ import annotations
 JAZ texture format (Crimsonland Classic).
 
 File layout:
-  - u32 comp_info: compressed size in high 24 bits, low 8 bits = 1 (zlib)
-  - u32 raw_info: uncompressed size in high 24 bits, low 8 bits = 0
-  - u8  flags: always 0 in shipped assets
+  - u8  method: compression method (1 = zlib)
+  - u32 comp_size: compressed payload size (bytes)
+  - u32 raw_size: uncompressed payload size (bytes)
   - zlib stream (length = comp_size)
 
 Decompressed payload:
@@ -20,11 +20,31 @@ Notes from assets:
 """
 
 import io
-import struct
 import zlib
 from pathlib import Path
 
 from PIL import Image
+from construct import Bytes, Int8ul, Int32ul, Struct, this
+
+
+JAZ_HEADER = Struct(
+    "method" / Int8ul,
+    "comp_size" / Int32ul,
+    "raw_size" / Int32ul,
+)
+
+JAZ_FILE = Struct(
+    "header" / JAZ_HEADER,
+    "compressed" / Bytes(this.header.comp_size),
+)
+
+
+def jaz_payload(raw_size: int) -> Struct:
+    return Struct(
+        "jpeg_len" / Int32ul,
+        "jpeg" / Bytes(this.jpeg_len),
+        "alpha_rle" / Bytes(raw_size - 4 - this.jpeg_len),
+    )
 
 
 class JazImage:
@@ -65,23 +85,18 @@ def decode_alpha_rle(data: bytes, expected: int) -> bytes:
 
 
 def decode_jaz_bytes(data: bytes) -> JazImage:
-    comp_info, raw_info = struct.unpack_from("<II", data, 0)
-    comp_method = comp_info & 0xFF
-    comp_size = comp_info >> 8
-    raw_size = raw_info >> 8
-    if comp_method != 1:
-        raise ValueError(f"unsupported compression method: {comp_method}")
-    comp = data[9 : 9 + comp_size]
-    raw = zlib.decompress(comp)
-    if len(raw) != raw_size:
-        raise ValueError(f"raw size mismatch: {len(raw)} != {raw_size}")
-    jpeg_len = struct.unpack_from("<I", raw, 0)[0]
-    jpeg = raw[4 : 4 + jpeg_len]
-    alpha_rle = raw[4 + jpeg_len :]
-    img = Image.open(io.BytesIO(jpeg))
+    parsed = JAZ_FILE.parse(data)
+    header = parsed.header
+    if header.method != 1:
+        raise ValueError(f"unsupported compression method: {header.method}")
+    raw = zlib.decompress(parsed.compressed)
+    if len(raw) != header.raw_size:
+        raise ValueError(f"raw size mismatch: {len(raw)} != {header.raw_size}")
+    payload = jaz_payload(header.raw_size).parse(raw)
+    img = Image.open(io.BytesIO(payload.jpeg))
     width, height = img.size
-    alpha = decode_alpha_rle(alpha_rle, width * height)
-    return JazImage(width, height, jpeg, alpha)
+    alpha = decode_alpha_rle(payload.alpha_rle, width * height)
+    return JazImage(width, height, payload.jpeg, alpha)
 
 
 def decode_jaz(path: str | Path) -> JazImage:
