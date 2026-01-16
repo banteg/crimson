@@ -790,11 +790,11 @@ LAB_00401add:
 ```
 
 
-## 0x148 — FUN_10009980 @ 0x10009980
-- Provisional name: `draw_text_box` (low)
-- Guess: `void draw_text_box(float x, float y, const char *text, ...)`
-- Notes: wrapping/layout variant
-- Ghidra signature: `undefined FUN_10009980()`
+## 0x148 — grim_draw_text_small_fmt @ 0x10009980
+- Provisional name: `draw_text_small_fmt` (medium)
+- Guess: `void draw_text_small_fmt(float x, float y, const char *fmt, ...)`
+- Notes: `vsprintf` wrapper that forwards to `0x144` (small font draw)
+- Ghidra signature: `void grim_draw_text_small_fmt(float x, float y, char *fmt)`
 - Call sites: 86 (unique funcs: 15)
 - Sample calls: FUN_004047c0:L3140; FUN_004047c0:L3193; FUN_004047c0:L3197; FUN_004047c0:L3201; FUN_004047c0:L3206; FUN_004047c0:L3211; FUN_004047c0:L3214; FUN_004047c0:L3217
 - First callsite: FUN_004047c0 (line 3140)

@@ -63,6 +63,8 @@ These offsets appear with keycodes or input-related values:
 - `0x58` / `0x80` appear in input handling loops in `FUN_00446030`.
 - `0x84` returns a float and is queried with IDs `0x13f..0x155`
   in `FUN_00448b50` (likely config values).
+- `0x60`/`0x70`/`0x74` read the DirectInput mouse deltas, while
+  `0x64`/`0x68`/`0x6c` update or return the accumulated mouse position.
 
 ## Provisional mapping (in progress)
 
@@ -81,10 +83,10 @@ These offsets appear with keycodes or input-related values:
 | `0x28` | `get_error_text` | `char * get_error_text(void)` | medium | error string for MessageBox |
 | `0x2c` | `clear_color` | `void clear_color(float r, float g, float b, float a)` | medium | clear color before render |
 | `0x30` | `set_render_target` | `int set_render_target(int target_index)` | low | `-1` resets to backbuffer |
-| `0x34` | `get_time_ms` | `int get_time_ms(void)` | low | frame time accumulator (ms) |
-| `0x38` | `set_time_ms` | `void set_time_ms(int ms)` | low | overrides time accumulator |
-| `0x3c` | `get_frame_dt` | `float get_frame_dt(void)` | low | clamped frame delta |
-| `0x40` | `get_fps` | `float get_fps(void)` | low | frame rate estimate |
+| `0x34` | `get_time_ms` | `int get_time_ms(void)` | medium | frame time accumulator (ms) |
+| `0x38` | `set_time_ms` | `void set_time_ms(int ms)` | medium | overrides time accumulator |
+| `0x3c` | `get_frame_dt` | `float get_frame_dt(void)` | medium | clamped frame delta |
+| `0x40` | `get_fps` | `float get_fps(void)` | medium | frame rate estimate |
 | `0x44` | `is_key_down` | `bool is_key_down(uint32_t key)` | high | Ctrl/arrow keycodes |
 | `0x48` | `was_key_pressed` | `bool was_key_pressed(uint32_t key)` | high | edge-triggered key checks |
 | `0x4c` | `flush_input` | `void flush_input(void)` | low | clears buffered input/device state |
@@ -93,11 +95,11 @@ These offsets appear with keycodes or input-related values:
 | `0x58` | `is_mouse_button_down` | `bool is_mouse_button_down(int button)` | medium | button 0 used |
 | `0x5c` | `was_mouse_button_pressed` | `bool was_mouse_button_pressed(int button)` | low | edge-triggered mouse button |
 | `0x60` | `get_mouse_wheel_delta` | `float get_mouse_wheel_delta(void)` | high | +/- wheel to change selection |
-| `0x64` | `set_mouse_pos` | `void set_mouse_pos(float x, float y)` | low | updates mouse position |
-| `0x68` | `get_mouse_x` | `float get_mouse_x(void)` | low | mouse position X |
-| `0x6c` | `get_mouse_y` | `float get_mouse_y(void)` | low | mouse position Y |
-| `0x70` | `get_mouse_dx` | `float get_mouse_dx(void)` | low | mouse delta X |
-| `0x74` | `get_mouse_dy` | `float get_mouse_dy(void)` | low | mouse delta Y |
+| `0x64` | `set_mouse_pos` | `void set_mouse_pos(float x, float y)` | medium | updates mouse position |
+| `0x68` | `get_mouse_x` | `float get_mouse_x(void)` | medium | mouse position X |
+| `0x6c` | `get_mouse_y` | `float get_mouse_y(void)` | medium | mouse position Y |
+| `0x70` | `get_mouse_dx` | `float get_mouse_dx(void)` | medium | mouse delta X |
+| `0x74` | `get_mouse_dy` | `float get_mouse_dy(void)` | medium | mouse delta Y |
 | `0x78` | `get_mouse_dx_indexed` | `float get_mouse_dx_indexed(int index)` | low | mouse delta X (indexed) |
 | `0x7c` | `get_mouse_dy_indexed` | `float get_mouse_dy_indexed(int index)` | low | mouse delta Y (indexed) |
 | `0x80` | `is_key_active` | `bool is_key_active(int key)` | medium | uses key mapping entries |
@@ -150,7 +152,7 @@ These offsets appear with keycodes or input-related values:
 | `0x13c` | `draw_text_mono` | `void draw_text_mono(float x, float y, const char *text)` | medium | fixed 16px grid; handles a few extended codes |
 | `0x140` | `draw_text_mono_fmt` | `void draw_text_mono_fmt(float x, float y, const char *fmt, ...)` | medium | printf-style wrapper |
 | `0x144` | `draw_text_small` | `void draw_text_small(float x, float y, const char *text)` | medium | uses `smallFnt.dat` widths + `GRIM_Font2` |
-| `0x148` | `draw_text_box` | `void draw_text_box(float x, float y, const char *text, ...)` | low | wrapping/layout variant |
+| `0x148` | `draw_text_small_fmt` | `void draw_text_small_fmt(float x, float y, const char *fmt, ...)` | medium | formatted small-font text (wrapper around `0x144`) |
 | `0x14c` | `measure_text_width` | `int measure_text_width(const char *text)` | medium | width metric for small font |
 
 The working vtable skeleton lives in:
