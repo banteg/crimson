@@ -186,5 +186,43 @@
     "name": "crt_get_environment_strings",
     "signature": "char * crt_get_environment_strings(void)",
     "comment": "returns a malloc'd copy of the environment block"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004026e0",
+    "name": "console_register_command",
+    "comment": "registers a console command and handler"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00402860",
+    "name": "console_flush_log",
+    "comment": "flushes console lines to the log file"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00402c00",
+    "name": "register_core_cvars",
+    "comment": "registers built-in cvars"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041ccb0",
+    "name": "dx_get_version",
+    "signature": "int dx_get_version(int *version, char *out, int out_len)",
+    "comment": "query DirectX version"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041dc80",
+    "name": "grim_load_interface",
+    "signature": "int grim_load_interface(char *dll_name)",
+    "comment": "load grim DLL and fetch GRIM_GetInterface"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041f1a0",
+    "name": "config_load_presets",
+    "comment": "loads config presets into globals"
   }
 ]
