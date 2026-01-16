@@ -773,7 +773,8 @@
     "program": "grim.dll",
     "address": "0x10006c30",
     "name": "grim_get_config_var",
-    "comment": "Grim2D vtable 0x24 (provisional): returns pointer to config var (args vary)"
+    "signature": "void grim_get_config_var(unsigned int *out, int id)",
+    "comment": "Grim2D vtable 0x24 (provisional): fills 4 dwords for config entry (id 0..0x7f)"
   },
   {
     "program": "grim.dll",

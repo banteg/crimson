@@ -3045,22 +3045,23 @@ LAB_10006b54:
 
 /* grim_get_config_var @ 10006c30 */
 
-/* Grim2D vtable 0x24 (provisional): returns pointer to config var (args vary) */
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x24 (provisional): fills 4 dwords for config entry (id 0..0x7f) */
 
-void grim_get_config_var(undefined4 *param_1,int param_2)
+void grim_get_config_var(uint *out,int id)
 
 {
-  if ((-1 < param_2) && (param_2 < 0x80)) {
-    *param_1 = (&DAT_1005cb88)[param_2 * 4];
-    param_1[1] = (&DAT_1005cb8c)[param_2 * 4];
-    param_1[2] = *(undefined4 *)(&DAT_1005cb90 + param_2 * 0x10);
-    param_1[3] = *(undefined4 *)(&DAT_1005cb94 + param_2 * 0x10);
+  if ((-1 < id) && (id < 0x80)) {
+    *out = (&DAT_1005cb88)[id * 4];
+    out[1] = (&DAT_1005cb8c)[id * 4];
+    out[2] = *(uint *)(&DAT_1005cb90 + id * 0x10);
+    out[3] = *(uint *)(&DAT_1005cb94 + id * 0x10);
     return;
   }
-  *param_1 = DAT_1005a478;
-  param_1[1] = DAT_1005a47c;
-  param_1[2] = DAT_1005a480;
-  param_1[3] = DAT_1005a484;
+  *out = DAT_1005a478;
+  out[1] = DAT_1005a47c;
+  out[2] = DAT_1005a480;
+  out[3] = DAT_1005a484;
   return;
 }
 

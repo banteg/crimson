@@ -8,7 +8,7 @@ offset_hex,offset_dec,callsites,unique_functions,sample_calls,func_addr,section,
 0x18,24,1,1,FUN_0042c450:L19599,0x10005ff0,.text,grim_shutdown,38,unknown,void,0,void grim_shutdown(void),DEFAULT
 0x1c,28,1,1,FUN_0042c450:L19581,0x10006020,.text,grim_apply_settings,8,unknown,void,0,void grim_apply_settings(void),DEFAULT
 0x20,32,206,35,FUN_00401dd0:L754;FUN_00401dd0:L755;FUN_00401dd0:L847;FUN_00402d50:L1438;FUN_00402d50:L1460;FUN_004047c0:L3147;FUN_00405160:L3373;FUN_00405160:L3377,0x10006580,.text,grim_set_render_state,1534,unknown,void,2,"void grim_set_render_state(uint state, uint value)",DEFAULT
-0x24,36,17,4,FUN_0041ec60:L13402;FUN_0041ec60:L13410;FUN_0041ec60:L13413;FUN_0041ec60:L13415;FUN_0041ec60:L13417;FUN_0041ec60:L13419;FUN_0042c450:L19456;FUN_0042c450:L19458,0x10006c30,.text,grim_get_config_var,102,unknown,undefined,0,undefined grim_get_config_var(),DEFAULT
+0x24,36,17,4,FUN_0041ec60:L13402;FUN_0041ec60:L13410;FUN_0041ec60:L13413;FUN_0041ec60:L13415;FUN_0041ec60:L13417;FUN_0041ec60:L13419;FUN_0042c450:L19456;FUN_0042c450:L19458,0x10006c30,.text,grim_get_config_var,102,unknown,void,2,"void grim_get_config_var(uint * out, int id)",DEFAULT
 0x28,40,1,1,FUN_0042c450:L19509,0x10006ca0,.text,grim_get_error_text,6,unknown,char *,0,char * grim_get_error_text(void),DEFAULT
 0x2c,44,5,3,FUN_00417b80:L9215;FUN_004181b0:L9452;FUN_0042c450:L19534;FUN_0042c450:L19538;FUN_0042c450:L19547,0x10006cb0,.text,grim_clear_color,150,unknown,void,4,"void grim_clear_color(float r, float g, float b, float a)",DEFAULT
 0x30,48,6,3,FUN_00417b80:L9209;FUN_00417b80:L9333;FUN_004181b0:L9446;FUN_004181b0:L9563;FUN_00427920:L17949;FUN_00427920:L18035,0x10006d50,.text,grim_set_render_target,240,unknown,int,1,int grim_set_render_target(int target_index),DEFAULT
