@@ -1,5 +1,16 @@
 from __future__ import annotations
 
+"""
+PAQ archive format (Crimsonland Classic).
+
+File layout:
+  - magic: 4 bytes, ASCII "paq\\0"
+  - entries: repeated until EOF
+      - name: NUL-terminated UTF-8 string (relative path)
+      - size: u32 little-endian payload size
+      - payload: raw file bytes of length `size`
+"""
+
 from pathlib import Path
 from typing import Iterable, Iterator
 
@@ -10,10 +21,8 @@ MAGIC = b"paq\x00"
 
 PAQ_ENTRY = Struct(
     "name" / CString("utf8"),
-    "total_size" / Int32ul,
-    "head_lo" / Int32ul,
-    "head_hi" / Int32ul,
-    "payload" / Bytes(lambda ctx: max(ctx.total_size - 8, 0)),
+    "size" / Int32ul,
+    "payload" / Bytes(lambda ctx: ctx.size),
 )
 
 PAQ = Struct(
@@ -25,9 +34,7 @@ PAQ = Struct(
 def iter_entries_bytes(data: bytes) -> Iterator[tuple[str, bytes]]:
     parsed = PAQ.parse(data)
     for entry in parsed.entries:
-        head = entry.head_lo.to_bytes(4, "little") + entry.head_hi.to_bytes(4, "little")
-        full = head[: entry.total_size] + entry.payload
-        yield entry.name, full
+        yield entry.name, entry.payload
 
 
 def iter_entries(source: str | Path) -> Iterator[tuple[str, bytes]]:
@@ -50,18 +57,11 @@ def build_entries(entries: Iterable[tuple[str, bytes]]) -> bytes:
             name = str(name)
         if isinstance(data, memoryview):
             data = data.tobytes()
-        total_size = len(data)
-        head = bytes(data[:8]).ljust(8, b"\x00")
-        head_lo = int.from_bytes(head[:4], "little")
-        head_hi = int.from_bytes(head[4:8], "little")
-        payload = bytes(data[8:]) if total_size > 8 else b""
         built_entries.append(
             {
                 "name": str(name),
-                "total_size": total_size,
-                "head_lo": head_lo,
-                "head_hi": head_hi,
-                "payload": payload,
+                "size": len(data),
+                "payload": bytes(data),
             }
         )
     return PAQ.build({"magic": MAGIC, "entries": built_entries})
