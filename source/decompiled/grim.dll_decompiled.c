@@ -2393,14 +2393,17 @@ LAB_10005be6:
 
 
 
-/* FUN_10005c20 @ 10005c20 */
+/* grim_set_key_char_buffer @ 10005c20 */
 
-void FUN_10005c20(undefined *param_1,undefined *param_2,undefined4 param_3)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x54 (provisional): set input character ring buffer */
+
+void grim_set_key_char_buffer(uchar *buffer,int *count,int size)
 
 {
-  PTR_DAT_10053048 = param_1;
-  PTR_DAT_1005304c = param_2;
-  DAT_10053050 = param_3;
+  PTR_DAT_10053048 = buffer;
+  PTR_DAT_1005304c = (undefined *)count;
+  DAT_10053050 = size;
   return;
 }
 
@@ -3490,9 +3493,12 @@ int grim_is_key_down(uint key)
 
 
 
-/* FUN_10007330 @ 10007330 */
+/* grim_flush_input @ 10007330 */
 
-void FUN_10007330(void)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x4c (provisional): clear buffered input/device state */
+
+void grim_flush_input(void)
 
 {
   int iVar1;
@@ -4323,11 +4329,13 @@ void grim_set_pivot(float *xy)
 
 
 
-/* FUN_100080b0 @ 100080b0 */
+/* grim_draw_line @ 100080b0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0xe0 (provisional): builds line quad from endpoints */
 
-void FUN_100080b0(float *param_1,float *param_2)
+void grim_draw_line(float *p0,float *p1,float thickness)
 
 {
   int *in_ECX;
@@ -4340,28 +4348,30 @@ void FUN_100080b0(float *param_1,float *param_2)
   }
   puVar2 = &DAT_1005a490;
   puVar1 = &DAT_1005a490;
-  _DAT_1005a490 = *param_2 - *param_1;
-  _DAT_1005a494 = param_2[1] - param_1[1];
+  _DAT_1005a490 = *p1 - *p0;
+  _DAT_1005a494 = p1[1] - p0[1];
   thunk_FUN_1000cc2c();
-  _DAT_1005a490 = _DAT_1005a494 * (float)param_1;
-  _DAT_1005a494 = _DAT_1005a490 * (float)param_1;
-  (**(code **)(*in_ECX + 0xe4))(param_1,param_2,&DAT_1005a490,puVar1,puVar2);
+  _DAT_1005a490 = _DAT_1005a494 * (float)p0;
+  _DAT_1005a494 = _DAT_1005a490 * (float)p0;
+  (**(code **)(*in_ECX + 0xe4))(p0,p1,&DAT_1005a490,puVar1,puVar2);
   return;
 }
 
 
 
-/* FUN_10008150 @ 10008150 */
+/* grim_draw_line_quad @ 10008150 */
 
-void FUN_10008150(float *param_1,float *param_2,float *param_3)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0xe4 (provisional): line quad from endpoints + half-width vector */
+
+void grim_draw_line_quad(float *p0,float *p1,float *half_vec)
 
 {
   int *in_ECX;
   
   (**(code **)(*in_ECX + 0x138))
-            (*param_1 - *param_3,param_1[1] - param_3[1],*param_1 + *param_3,param_1[1] + param_3[1]
-             ,*param_2 + *param_3,param_2[1] + param_3[1],*param_2 - *param_3,
-             param_2[1] - param_3[1]);
+            (*p0 - *half_vec,p0[1] - half_vec[1],*p0 + *half_vec,p0[1] + half_vec[1],*p1 + *half_vec
+             ,p1[1] + half_vec[1],*p1 - *half_vec,p1[1] - half_vec[1]);
   return;
 }
 
@@ -4474,9 +4484,12 @@ void grim_set_uv_point(int index,float u,float v)
 
 
 
-/* FUN_100083c0 @ 100083c0 */
+/* grim_flush_batch @ 100083c0 */
 
-void FUN_100083c0(void)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0xec (provisional): flush batch when vertex buffer fills */
+
+void grim_flush_batch(void)
 
 {
   int iVar1;
@@ -4495,9 +4508,12 @@ void FUN_100083c0(void)
 
 
 
-/* FUN_10008430 @ 10008430 */
+/* grim_submit_vertices_offset_color @ 10008430 */
 
-void FUN_10008430(float *param_1,int param_2,float *param_3,float *param_4)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x130 (provisional): translate + apply color */
+
+void grim_submit_vertices_offset_color(float *verts,int count,float *offset,float *color)
 
 {
   int *in_ECX;
@@ -4507,28 +4523,28 @@ void FUN_10008430(float *param_1,int param_2,float *param_3,float *param_4)
   
   if (DAT_1005d3bd == '\0') {
     pfVar3 = DAT_10059e34;
-    for (uVar1 = (uint)(param_2 * 0x1c) >> 2; uVar1 != 0; uVar1 = uVar1 - 1) {
-      *pfVar3 = *param_1;
-      param_1 = param_1 + 1;
+    for (uVar1 = (uint)(count * 0x1c) >> 2; uVar1 != 0; uVar1 = uVar1 - 1) {
+      *pfVar3 = *verts;
+      verts = verts + 1;
       pfVar3 = pfVar3 + 1;
     }
     for (iVar2 = 0; iVar2 != 0; iVar2 = iVar2 + -1) {
-      *(undefined1 *)pfVar3 = *(undefined1 *)param_1;
-      param_1 = (float *)((int)param_1 + 1);
+      *(undefined1 *)pfVar3 = *(undefined1 *)verts;
+      verts = (float *)((int)verts + 1);
       pfVar3 = (float *)((int)pfVar3 + 1);
     }
-    iVar2 = param_2;
-    if (0 < param_2) {
+    iVar2 = count;
+    if (0 < count) {
       do {
         pfVar3 = DAT_10059e34;
-        *DAT_10059e34 = *param_3 + *DAT_10059e34;
-        pfVar3[1] = param_3[1] + pfVar3[1];
-        DAT_10059e34[4] = *param_4;
+        *DAT_10059e34 = *offset + *DAT_10059e34;
+        pfVar3[1] = offset[1] + pfVar3[1];
+        DAT_10059e34[4] = *color;
         DAT_10059e34 = DAT_10059e34 + 7;
         iVar2 = iVar2 + -1;
       } while (iVar2 != 0);
     }
-    DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + (short)param_2;
+    DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + (short)count;
     if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
       (**(code **)(*in_ECX + 0xec))();
     }
@@ -4538,9 +4554,13 @@ void FUN_10008430(float *param_1,int param_2,float *param_3,float *param_4)
 
 
 
-/* FUN_100084e0 @ 100084e0 */
+/* grim_submit_vertices_transform_color @ 100084e0 */
 
-void FUN_100084e0(float *param_1,int param_2,float *param_3,float *param_4,float *param_5)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x134 (provisional): rotate + translate + apply color */
+
+void grim_submit_vertices_transform_color
+               (float *verts,int count,float *offset,float *matrix,float *color)
 
 {
   float fVar1;
@@ -4554,35 +4574,35 @@ void FUN_100084e0(float *param_1,int param_2,float *param_3,float *param_4,float
   
   if (DAT_1005d3bd == '\0') {
     pfVar7 = DAT_10059e34;
-    for (uVar5 = (uint)(param_2 * 0x1c) >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
-      *pfVar7 = *param_1;
-      param_1 = param_1 + 1;
+    for (uVar5 = (uint)(count * 0x1c) >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
+      *pfVar7 = *verts;
+      verts = verts + 1;
       pfVar7 = pfVar7 + 1;
     }
     for (iVar6 = 0; iVar6 != 0; iVar6 = iVar6 + -1) {
-      *(undefined1 *)pfVar7 = *(undefined1 *)param_1;
-      param_1 = (float *)((int)param_1 + 1);
+      *(undefined1 *)pfVar7 = *(undefined1 *)verts;
+      verts = (float *)((int)verts + 1);
       pfVar7 = (float *)((int)pfVar7 + 1);
     }
-    iVar6 = param_2;
-    if (0 < param_2) {
+    iVar6 = count;
+    if (0 < count) {
       do {
         pfVar7 = DAT_10059e34;
         fVar1 = DAT_10059e34[1];
-        fVar2 = param_4[1];
+        fVar2 = matrix[1];
         fVar3 = *DAT_10059e34;
-        fVar4 = *param_4;
-        DAT_10059e34[1] = *DAT_10059e34 * param_4[2] + DAT_10059e34[1] * param_4[3];
+        fVar4 = *matrix;
+        DAT_10059e34[1] = *DAT_10059e34 * matrix[2] + DAT_10059e34[1] * matrix[3];
         *pfVar7 = fVar3 * fVar4 + fVar1 * fVar2;
         pfVar7 = DAT_10059e34;
-        *DAT_10059e34 = *param_3 + *DAT_10059e34;
-        pfVar7[1] = param_3[1] + pfVar7[1];
-        DAT_10059e34[4] = *param_5;
+        *DAT_10059e34 = *offset + *DAT_10059e34;
+        pfVar7[1] = offset[1] + pfVar7[1];
+        DAT_10059e34[4] = *color;
         DAT_10059e34 = DAT_10059e34 + 7;
         iVar6 = iVar6 + -1;
       } while (iVar6 != 0);
     }
-    DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + (short)param_2;
+    DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + (short)count;
     if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
       (**(code **)(*in_ECX + 0xec))();
     }
@@ -4592,9 +4612,12 @@ void FUN_100084e0(float *param_1,int param_2,float *param_3,float *param_4,float
 
 
 
-/* FUN_100085c0 @ 100085c0 */
+/* grim_submit_vertices_transform @ 100085c0 */
 
-void FUN_100085c0(float *param_1,int param_2,float *param_3,float *param_4)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x128 (provisional): copy verts, rotate, translate */
+
+void grim_submit_vertices_transform(float *verts,int count,float *offset,float *matrix)
 
 {
   float fVar1;
@@ -4608,34 +4631,34 @@ void FUN_100085c0(float *param_1,int param_2,float *param_3,float *param_4)
   
   if (DAT_1005d3bd == '\0') {
     pfVar7 = DAT_10059e34;
-    for (uVar5 = (uint)(param_2 * 0x1c) >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
-      *pfVar7 = *param_1;
-      param_1 = param_1 + 1;
+    for (uVar5 = (uint)(count * 0x1c) >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
+      *pfVar7 = *verts;
+      verts = verts + 1;
       pfVar7 = pfVar7 + 1;
     }
     for (iVar6 = 0; iVar6 != 0; iVar6 = iVar6 + -1) {
-      *(undefined1 *)pfVar7 = *(undefined1 *)param_1;
-      param_1 = (float *)((int)param_1 + 1);
+      *(undefined1 *)pfVar7 = *(undefined1 *)verts;
+      verts = (float *)((int)verts + 1);
       pfVar7 = (float *)((int)pfVar7 + 1);
     }
-    iVar6 = param_2;
-    if (0 < param_2) {
+    iVar6 = count;
+    if (0 < count) {
       do {
         pfVar7 = DAT_10059e34;
         fVar1 = DAT_10059e34[1];
-        fVar2 = param_4[1];
-        fVar3 = *param_4;
+        fVar2 = matrix[1];
+        fVar3 = *matrix;
         fVar4 = *DAT_10059e34;
-        DAT_10059e34[1] = *DAT_10059e34 * param_4[2] + DAT_10059e34[1] * param_4[3];
+        DAT_10059e34[1] = *DAT_10059e34 * matrix[2] + DAT_10059e34[1] * matrix[3];
         *pfVar7 = fVar3 * fVar4 + fVar1 * fVar2;
         pfVar7 = DAT_10059e34;
-        *DAT_10059e34 = *param_3 + *DAT_10059e34;
-        pfVar7[1] = param_3[1] + pfVar7[1];
+        *DAT_10059e34 = *offset + *DAT_10059e34;
+        pfVar7[1] = offset[1] + pfVar7[1];
         DAT_10059e34 = DAT_10059e34 + 7;
         iVar6 = iVar6 + -1;
       } while (iVar6 != 0);
     }
-    DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + (short)param_2;
+    DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + (short)count;
     if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
       (**(code **)(*in_ECX + 0xec))();
     }
@@ -4645,9 +4668,12 @@ void FUN_100085c0(float *param_1,int param_2,float *param_3,float *param_4)
 
 
 
-/* FUN_10008680 @ 10008680 */
+/* grim_submit_vertices_offset @ 10008680 */
 
-void FUN_10008680(float *param_1,int param_2,float *param_3)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x12c (provisional): copy verts, translate */
+
+void grim_submit_vertices_offset(float *verts,int count,float *offset)
 
 {
   int *in_ECX;
@@ -4657,27 +4683,27 @@ void FUN_10008680(float *param_1,int param_2,float *param_3)
   
   if (DAT_1005d3bd == '\0') {
     pfVar3 = DAT_10059e34;
-    for (uVar1 = (uint)(param_2 * 0x1c) >> 2; uVar1 != 0; uVar1 = uVar1 - 1) {
-      *pfVar3 = *param_1;
-      param_1 = param_1 + 1;
+    for (uVar1 = (uint)(count * 0x1c) >> 2; uVar1 != 0; uVar1 = uVar1 - 1) {
+      *pfVar3 = *verts;
+      verts = verts + 1;
       pfVar3 = pfVar3 + 1;
     }
     for (iVar2 = 0; iVar2 != 0; iVar2 = iVar2 + -1) {
-      *(undefined1 *)pfVar3 = *(undefined1 *)param_1;
-      param_1 = (float *)((int)param_1 + 1);
+      *(undefined1 *)pfVar3 = *(undefined1 *)verts;
+      verts = (float *)((int)verts + 1);
       pfVar3 = (float *)((int)pfVar3 + 1);
     }
-    iVar2 = param_2;
-    if (0 < param_2) {
+    iVar2 = count;
+    if (0 < count) {
       do {
         pfVar3 = DAT_10059e34;
-        *DAT_10059e34 = *DAT_10059e34 + *param_3;
-        pfVar3[1] = param_3[1] + pfVar3[1];
+        *DAT_10059e34 = *DAT_10059e34 + *offset;
+        pfVar3[1] = offset[1] + pfVar3[1];
         DAT_10059e34 = DAT_10059e34 + 7;
         iVar2 = iVar2 + -1;
       } while (iVar2 != 0);
     }
-    DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + (short)param_2;
+    DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + (short)count;
     if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
       (**(code **)(*in_ECX + 0xec))();
     }
@@ -4982,10 +5008,12 @@ void grim_draw_rect_outline(void)
 
 
 
-/* FUN_10009080 @ 10009080 */
+/* grim_draw_quad_points @ 10009080 */
 
-void FUN_10009080(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-                 undefined4 param_5,undefined4 param_6,undefined4 param_7,undefined4 param_8)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0x138 (provisional): push quad using 4 points */
+
+void grim_draw_quad_points(float x0,float y0,float x1,float y1,float x2,float y2,float x3,float y3)
 
 {
   int *in_ECX;
@@ -4994,32 +5022,32 @@ void FUN_10009080(undefined4 param_1,undefined4 param_2,undefined4 param_3,undef
     if (DAT_1005d3f4 == '\0') {
       (**(code **)(*in_ECX + 0xe8))();
     }
-    *DAT_10059e34 = param_1;
-    DAT_10059e34[1] = param_2;
+    *DAT_10059e34 = x0;
+    DAT_10059e34[1] = y0;
     DAT_10059e34[2] = DAT_1005b288;
     DAT_10059e34[3] = DAT_1005b28c;
     DAT_10059e34[4] = DAT_1005bc04;
     DAT_10059e34[5] = DAT_1005b290;
     DAT_10059e34[6] = DAT_1005b294;
     DAT_10059e34 = DAT_10059e34 + 7;
-    *DAT_10059e34 = param_3;
-    DAT_10059e34[1] = param_4;
+    *DAT_10059e34 = x1;
+    DAT_10059e34[1] = y1;
     DAT_10059e34[2] = DAT_1005b288;
     DAT_10059e34[3] = DAT_1005b28c;
     DAT_10059e34[4] = DAT_1005bc08;
     DAT_10059e34[5] = DAT_1005b298;
     DAT_10059e34[6] = DAT_1005b29c;
     DAT_10059e34 = DAT_10059e34 + 7;
-    *DAT_10059e34 = param_5;
-    DAT_10059e34[1] = param_6;
+    *DAT_10059e34 = x2;
+    DAT_10059e34[1] = y2;
     DAT_10059e34[2] = DAT_1005b288;
     DAT_10059e34[3] = DAT_1005b28c;
     DAT_10059e34[4] = DAT_1005bc0c;
     DAT_10059e34[5] = DAT_1005b2a0;
     DAT_10059e34[6] = DAT_1005b2a4;
     DAT_10059e34 = DAT_10059e34 + 7;
-    *DAT_10059e34 = param_7;
-    DAT_10059e34[1] = param_8;
+    *DAT_10059e34 = x3;
+    DAT_10059e34[1] = y3;
     DAT_10059e34[2] = DAT_1005b288;
     DAT_10059e34[3] = DAT_1005b28c;
     DAT_10059e34[4] = DAT_1005bc10;

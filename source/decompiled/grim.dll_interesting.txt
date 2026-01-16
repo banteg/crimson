@@ -6,6 +6,7 @@ Interesting Functions and Patterns
   FID_conflict:`vector_deleting_destructor' @ 1000b348
 
 [KEY related]
+  grim_set_key_char_buffer @ 10005c20
   grim_get_key_char @ 10005c40
   grim_is_key_active @ 10006fe0
   grim_is_key_down @ 10007320
