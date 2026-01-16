@@ -201,7 +201,7 @@ uint FUN_10002680(void)
   int iVar1;
   int iVar2;
   uint uVar3;
-  BOOL BVar4;
+  WINBOOL WVar4;
   DWORD dwExStyle;
   DWORD dwStyle;
   HMENU hMenu;
@@ -267,8 +267,8 @@ uint FUN_10002680(void)
   UpdateWindow(DAT_1005d3f8);
   SetFocus(DAT_1005d3f8);
   ShowWindow(DAT_1005d3f8,1);
-  BVar4 = UpdateWindow(DAT_1005d3f8);
-  return CONCAT31((int3)((uint)BVar4 >> 8),1);
+  WVar4 = UpdateWindow(DAT_1005d3f8);
+  return CONCAT31((int3)((uint)WVar4 >> 8),1);
 }
 
 
@@ -854,7 +854,7 @@ undefined4 FUN_10003c00(void)
 {
   float fVar1;
   char cVar2;
-  BOOL BVar3;
+  WINBOOL WVar3;
   int iVar4;
   float *pfVar5;
   tagMSG *ptVar6;
@@ -881,8 +881,8 @@ undefined4 FUN_10003c00(void)
           while( true ) {
             while( true ) {
               if (local_1c.message == 0x12) goto LAB_10003e30;
-              BVar3 = PeekMessageA(&local_1c,(HWND)0x0,0,0,1);
-              if (BVar3 == 0) break;
+              WVar3 = PeekMessageA(&local_1c,(HWND)0x0,0,0,1);
+              if (WVar3 == 0) break;
               TranslateMessage(&local_1c);
               DispatchMessageA(&local_1c);
             }
@@ -3002,7 +3002,7 @@ undefined4 FUN_10009a20(HINSTANCE param_1,int param_2)
 {
   if (param_2 == 1) {
     DAT_1005bacc = param_1;
-    DAT_10059778 = LoadIconA(param_1,(LPCSTR)0x72);
+    DAT_10059778 = LoadIconA((HINSTANCE)param_1,(LPCSTR)0x72);
   }
   return 1;
 }
@@ -3883,7 +3883,7 @@ void __cdecl FUN_1000a900(_onexit_t param_1)
 
 {
   if (DAT_1005dbcc == -1) {
-    _onexit(param_1);
+    _onexit((_onexit_t)param_1);
     return;
   }
   __dllonexit(param_1,&DAT_1005dbcc,&DAT_1005dbc8);
@@ -17584,9 +17584,9 @@ undefined4 __thiscall FUN_1001bcb7(void *this,LPCWSTR param_1,int param_2)
     local_9c.dwOSVersionInfoSize = 0x94;
     GetVersionExA(&local_9c);
     if (local_9c.dwPlatformId != 2) {
-      local_8 = WideCharToMultiByte(0,0,param_1,-1,(LPSTR)0x0,0,(LPCSTR)0x0,(LPBOOL)0x0);
+      local_8 = WideCharToMultiByte(0,0,param_1,-1,(LPSTR)0x0,0,(LPCCH)0x0,(LPBOOL)0x0);
       FUN_1004b790();
-      WideCharToMultiByte(0,0,param_1,-1,&stack0xffffff58,local_8,(LPCSTR)0x0,(LPBOOL)0x0);
+      WideCharToMultiByte(0,0,param_1,-1,&stack0xffffff58,local_8,(LPCCH)0x0,(LPBOOL)0x0);
       param_2 = 0;
       param_1 = (LPCWSTR)&stack0xffffff58;
     }
@@ -17643,9 +17643,9 @@ undefined4 __thiscall FUN_1001bdc7(void *this,LPCWSTR param_1,int param_2)
     GetVersionExA(&local_9c);
     if (local_9c.dwPlatformId != 2) {
       lpFileName = (LPCWSTR)&stack0xffffff58;
-      cbMultiByte = WideCharToMultiByte(0,0,param_1,-1,(LPSTR)0x0,0,(LPCSTR)0x0,(LPBOOL)0x0);
+      cbMultiByte = WideCharToMultiByte(0,0,param_1,-1,(LPSTR)0x0,0,(LPCCH)0x0,(LPBOOL)0x0);
       FUN_1004b790();
-      WideCharToMultiByte(0,0,param_1,-1,&stack0xffffff58,cbMultiByte,(LPCSTR)0x0,(LPBOOL)0x0);
+      WideCharToMultiByte(0,0,param_1,-1,&stack0xffffff58,cbMultiByte,(LPCCH)0x0,(LPBOOL)0x0);
       param_2 = 0;
       this = local_8;
     }
@@ -17711,7 +17711,7 @@ void __fastcall FUN_1001bed2(int *param_1)
 undefined4 __cdecl FUN_1001bedd(DWORD param_1,LPCSTR param_2,LPBYTE param_3)
 
 {
-  LSTATUS LVar1;
+  LONG LVar1;
   DWORD local_c;
   HKEY local_8;
   
@@ -17750,7 +17750,7 @@ undefined8 __fastcall FUN_1001bf39(undefined4 param_1,undefined4 param_2)
 int FUN_1001bf5e(void)
 
 {
-  LSTATUS LVar1;
+  LONG LVar1;
   undefined4 extraout_ECX;
   undefined4 extraout_ECX_00;
   undefined4 uVar2;
@@ -17901,7 +17901,7 @@ undefined4 FUN_1001c075(void)
 uint __cdecl FUN_1001c0d4(DWORD param_1)
 
 {
-  BOOL BVar1;
+  WINBOOL WVar1;
   uint uVar2;
   int iVar3;
   undefined4 extraout_ECX;
@@ -17918,8 +17918,8 @@ uint __cdecl FUN_1001c0d4(DWORD param_1)
   }
   local_5 = '\0';
   local_9c.dwOSVersionInfoSize = 0x94;
-  BVar1 = GetVersionExA(&local_9c);
-  if (BVar1 == 0) {
+  WVar1 = GetVersionExA(&local_9c);
+  if (WVar1 == 0) {
     local_5 = '\x01';
   }
   if (local_9c.dwPlatformId == 1) {
@@ -17933,7 +17933,7 @@ uint __cdecl FUN_1001c0d4(DWORD param_1)
     if (local_9c.dwPlatformId != 2) {
       return 0;
     }
-    if (BVar1 != 0) {
+    if (WVar1 != 0) {
       if (param_1 != 10) {
         uVar2 = IsProcessorFeaturePresent(param_1);
         return uVar2;

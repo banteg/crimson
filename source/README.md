@@ -19,6 +19,7 @@ Regenerating:
    ./scripts/ghidra-analyze.sh \
      --script-path scripts/ghidra_scripts \
      -s ImportThirdPartyHeaders.java -a source/headers/third_party \
+     -s ApplyWinapiGDT.java -a /Users/banteg/dev/0x6d696368/ghidra-data/typeinfo/winapi_32.gdt \
      -s ExportAll.java \
      -o source/decompiled \
      game/crimsonland.exe
@@ -28,5 +29,8 @@ Regenerating:
    import script only parses codec headers (JPEG/zlib/ogg/vorbis). The full
    `png.h` header is kept for reference but skipped in headless parsing due to
    Ghidra C parser limitations with unnamed callback parameters.
+
+   The WinAPI .gdt is external; override it via `CRIMSON_WINAPI_GDT` or the
+   `ApplyWinapiGDT.java` script arg if you keep it elsewhere.
 2. Copy fresh outputs into `source/decompiled/`.
 3. Only edit files in `source/clean/`.
