@@ -3758,12 +3758,15 @@ undefined4 FUN_100075a0(void)
 
 
 
-/* FUN_100075b0 @ 100075b0 */
+/* grim_get_joystick_pov @ 100075b0 */
 
-undefined4 FUN_100075b0(int param_1)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0xa4 (provisional): joystick POV hat value */
+
+int grim_get_joystick_pov(int index)
 
 {
-  return *(undefined4 *)(&DAT_1005d850 + param_1 * 4);
+  return *(int *)(&DAT_1005d850 + index * 4);
 }
 
 
@@ -3964,9 +3967,12 @@ void grim_bind_texture(int handle,int stage)
 
 
 
-/* FUN_10007870 @ 10007870 */
+/* grim_draw_fullscreen_quad @ 10007870 */
 
-void FUN_10007870(void)
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* Grim2D vtable 0xc8 (provisional): full-screen quad with current texture */
+
+void grim_draw_fullscreen_quad(void)
 
 {
   int *in_ECX;
