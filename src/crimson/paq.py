@@ -43,7 +43,7 @@ def _iter_entries_bytes(data: bytes) -> Iterator[PaqEntry]:
     size = len(data)
     while offset < size:
         try:
-            entry = PAQ_ENTRY.parse(data, offset=offset)
+            entry = PAQ_ENTRY.parse(data[offset:])
         except ConstructError as exc:
             raise PaqFormatError(f"failed to parse entry: {exc}") from exc
         built = PAQ_ENTRY.build(entry)
