@@ -227,6 +227,83 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x100028d0",
+    "name": "grim_backup_textures",
+    "signature": "int grim_backup_textures(void)",
+    "comment": "backup texture surfaces before device reset"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10002b40",
+    "name": "grim_restore_textures",
+    "signature": "int grim_restore_textures(void)",
+    "comment": "restore texture surfaces after device reset"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100047f0",
+    "name": "grim_is_texture_format_supported",
+    "signature": "int grim_is_texture_format_supported(unsigned int format)",
+    "comment": "checks device support for a texture format"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10004830",
+    "name": "grim_select_texture_format",
+    "signature": "int grim_select_texture_format(void)",
+    "comment": "chooses the first supported texture format"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10004a50",
+    "name": "grim_texture_init",
+    "signature": "void * grim_texture_init(void *texture, char *name)",
+    "comment": "allocates/copies texture name and zeroes fields"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10004ab0",
+    "name": "grim_texture_release",
+    "signature": "void grim_texture_release(void *texture)",
+    "comment": "releases COM objects and frees texture name"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10004ec0",
+    "name": "grim_texture_load_file",
+    "signature": "int grim_texture_load_file(void *texture, ushort *path)",
+    "comment": "loads texture data from file path"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10005110",
+    "name": "grim_texture_name_equals",
+    "signature": "int grim_texture_name_equals(void *texture, char *name)",
+    "comment": "compares stored texture name"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10005170",
+    "name": "grim_find_texture_by_name",
+    "signature": "int grim_find_texture_by_name(char *name)",
+    "comment": "returns texture handle index for name"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100051c0",
+    "name": "grim_find_free_texture_slot",
+    "signature": "int grim_find_free_texture_slot(void)",
+    "comment": "finds the first free texture slot"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100051e0",
+    "name": "grim_load_texture_internal",
+    "signature": "int grim_load_texture_internal(char *name, ushort *path)",
+    "comment": "allocates texture slot and loads file"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10006580",
     "name": "grim_set_render_state",
     "signature": "void grim_set_render_state(unsigned int state, unsigned int value)",
