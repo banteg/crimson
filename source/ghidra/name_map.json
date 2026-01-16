@@ -251,7 +251,7 @@
     "address": "0x0042a700",
     "name": "texture_get_or_load_alt",
     "signature": "int texture_get_or_load_alt(char *name)",
-    "comment": "duplicate of texture_get_or_load"
+    "comment": "duplicate of texture_get_or_load (callers are mostly .jaz assets)"
   },
   {
     "program": "crimsonland.exe",
