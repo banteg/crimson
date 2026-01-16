@@ -1,6 +1,7 @@
 /game/
 /assets/
 /output/
+/site/
 .venv/
 .codex/
 .DS_Store
