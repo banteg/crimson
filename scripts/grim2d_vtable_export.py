@@ -44,6 +44,84 @@ def read_csv(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(handle))
 
 
+def to_str(value: object | None) -> str:
+    if value is None:
+        return ""
+    return str(value)
+
+
+def join_samples(samples: object | None) -> str:
+    if not samples:
+        return ""
+    if isinstance(samples, list):
+        return ";".join(str(item) for item in samples if item is not None)
+    return str(samples)
+
+
+def read_calls_rows(path: Path) -> list[dict[str, str]]:
+    if path.suffix.lower() != ".json":
+        return read_csv(path)
+    data = json.loads(path.read_text())
+    rows: list[dict[str, str]] = []
+    for row in data:
+        rows.append(
+            {
+                "offset_hex": to_str(row.get("offset_hex")),
+                "offset_dec": to_str(row.get("offset_dec")),
+                "callsites": to_str(row.get("callsites")),
+                "unique_functions": to_str(row.get("unique_functions")),
+                "sample_calls": join_samples(row.get("sample_calls")),
+            }
+        )
+    return rows
+
+
+def read_entries_rows(path: Path) -> list[dict[str, str]]:
+    if path.suffix.lower() != ".json":
+        return read_csv(path)
+    data = json.loads(path.read_text())
+    rows: list[dict[str, str]] = []
+    for row in data:
+        rows.append(
+            {
+                "index": to_str(row.get("index")),
+                "offset_hex": to_str(row.get("offset_hex")),
+                "offset_dec": to_str(row.get("offset_dec")),
+                "func_addr": to_str(row.get("func_addr")),
+                "func_name": to_str(row.get("func_name")),
+                "section": to_str(row.get("section")),
+            }
+        )
+    return rows
+
+
+def read_map_rows(path: Path) -> list[dict[str, str]]:
+    if path.suffix.lower() != ".json":
+        return read_csv(path)
+    data = json.loads(path.read_text())
+    rows: list[dict[str, str]] = []
+    for row in data:
+        rows.append(
+            {
+                "offset_hex": to_str(row.get("offset_hex")),
+                "offset_dec": to_str(row.get("offset_dec")),
+                "callsites": to_str(row.get("callsites")),
+                "unique_functions": to_str(row.get("unique_functions")),
+                "sample_calls": join_samples(row.get("sample_calls")),
+                "func_addr": to_str(row.get("func_addr")),
+                "section": to_str(row.get("section")),
+                "func_name": to_str(row.get("func_name")),
+                "func_size": to_str(row.get("func_size")),
+                "calling_convention": to_str(row.get("calling_convention")),
+                "return_type": to_str(row.get("return_type")),
+                "param_count": to_str(row.get("param_count")),
+                "signature": to_str(row.get("signature")),
+                "source_type": to_str(row.get("source_type")),
+            }
+        )
+    return rows
+
+
 def write_csv(path: Path, rows: list[dict[str, str]], fieldnames: list[str]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as handle:
@@ -123,9 +201,11 @@ def sample_list(value: str | None) -> list[str]:
     return items
 
 
-def int_or_none(value: str | None) -> int | None:
+def int_or_none(value: str | int | None) -> int | None:
     if value is None:
         return None
+    if isinstance(value, int):
+        return value
     text = value.strip()
     if not text:
         return None
@@ -191,7 +271,7 @@ def to_json_map(rows: list[dict[str, str]]) -> list[dict[str, Any]]:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Convert Grim2D vtable CSVs to JSON and refresh names.")
+    parser = argparse.ArgumentParser(description="Refresh Grim2D vtable JSON/CSVs with current names.")
     parser.add_argument(
         "--functions",
         type=Path,
@@ -201,20 +281,20 @@ def main() -> int:
     parser.add_argument(
         "--calls",
         type=Path,
-        default=Path("source/decompiled/grim2d_vtable_calls.csv"),
-        help="calls CSV path",
+        default=Path("source/decompiled/grim2d_vtable_calls.json"),
+        help="calls JSON/CSV path",
     )
     parser.add_argument(
         "--entries",
         type=Path,
-        default=Path("source/decompiled/grim2d_vtable_entries.csv"),
-        help="entries CSV path",
+        default=Path("source/decompiled/grim2d_vtable_entries.json"),
+        help="entries JSON/CSV path",
     )
     parser.add_argument(
         "--map",
         type=Path,
-        default=Path("source/decompiled/grim2d_vtable_map.csv"),
-        help="map CSV path",
+        default=Path("source/decompiled/grim2d_vtable_map.json"),
+        help="map JSON/CSV path",
     )
     parser.add_argument(
         "--output-dir",
@@ -231,21 +311,31 @@ def main() -> int:
 
     functions = load_functions(args.functions)
 
-    call_rows = read_csv(args.calls)
-    entry_rows = read_csv(args.entries)
-    map_rows = read_csv(args.map)
+    call_rows = read_calls_rows(args.calls)
+    entry_rows = read_entries_rows(args.entries)
+    map_rows = read_map_rows(args.map)
 
     update_entry_names(entry_rows, functions)
     update_map_rows(map_rows, functions)
 
     if args.update_csv:
+        entries_csv = (
+            args.entries if args.entries.suffix.lower() == ".csv" else args.output_dir / "grim2d_vtable_entries.csv"
+        )
+        map_csv = args.map if args.map.suffix.lower() == ".csv" else args.output_dir / "grim2d_vtable_map.csv"
+        calls_csv = args.calls if args.calls.suffix.lower() == ".csv" else args.output_dir / "grim2d_vtable_calls.csv"
         write_csv(
-            args.entries,
+            calls_csv,
+            call_rows,
+            ["offset_hex", "offset_dec", "callsites", "unique_functions", "sample_calls"],
+        )
+        write_csv(
+            entries_csv,
             entry_rows,
             ["index", "offset_hex", "offset_dec", "func_addr", "func_name", "section"],
         )
         write_csv(
-            args.map,
+            map_csv,
             map_rows,
             [
                 "offset_hex",
