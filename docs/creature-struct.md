@@ -85,11 +85,12 @@ Field map (partial):
 | Offset | Field | Evidence |
 | --- | --- | --- |
 | 0x00 | sprite texture handle | Bound in `creature_render_type` via `grim_bind_texture`. |
-| 0x04 | death sfx[0] | Random pick in `FUN_004207c0` (on death). |
-| 0x08 | death sfx[1] | Random pick in `FUN_004207c0`. |
-| 0x0c | death sfx[2] | Random pick in `FUN_004207c0`. |
-| 0x14 | attack/contact sfx[0] | Random pick when the creature hits a player in `creature_update_all`. |
-| 0x18 | attack/contact sfx[1] | Random pick when the creature hits a player in `creature_update_all`. |
+| 0x04 | sfx bank A [0] | Random pick in `FUN_004207c0` (death/impact path). |
+| 0x08 | sfx bank A [1] | Random pick in `FUN_004207c0`. |
+| 0x0c | sfx bank A [2] | Random pick in `FUN_004207c0` and chain-kill paths. |
+| 0x10 | sfx bank A [3]? | `FUN_004207c0` can pick index `0..3`; this slot is only implied. |
+| 0x14 | sfx bank B [0] | Random pick in `creature_update_all` when a creature is removed in the contact-damage path. |
+| 0x18 | sfx bank B [1] | Random pick in the same contact-damage path. |
 | 0x34 | anim rate | Multiplies animation step in `creature_update_all`. |
 | 0x38 | atlas base frame | Base frame index for creature animation strips (used in `creature_render_type`). |
 | 0x3c | corpse frame | Used by `fx_queue_render` to select the bodyset frame for corpse sprites. |

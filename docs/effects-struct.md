@@ -155,19 +155,19 @@ Layout (partial):
 | 0x08 | effect_id (byte) | Stored in `effect_spawn`; used when expiring to call `fx_queue_add`. |
 | 0x0c | vel_x | `pos_x += vel_x * dt` in `effects_update`. |
 | 0x10 | vel_y | `pos_y += vel_y * dt` in `effects_update`. |
-| 0x14 | rotation | Passed into `fx_queue_add` on expiry. |
-| 0x18 | rotation_2 | Updated when `flags & 0x8` using `0x44`. |
+| 0x14 | rotation | Used in `effects_render`; updated when `flags & 0x4` using `0x40`. |
+| 0x18 | scale | Used in `effects_render`; updated when `flags & 0x8` using `0x44`. |
 | 0x1c | half_width | Doubled when queuing the expiry sprite. |
 | 0x20 | half_height | Doubled when queuing the expiry sprite. |
 | 0x24 | age | Incremented by `dt` in `effects_update`. |
 | 0x28 | lifetime | Compared against `age` in `effects_update`. |
-| 0x2c | flags | `0x4` updates `rotation` via `0x40`; `0x8` updates `rotation_2` via `0x44`; `0x10` fades alpha; `0x80` spawns `fx_queue_add` on expiry; `0x100` selects a dimmer expiry alpha. |
+| 0x2c | flags | `0x4` updates `rotation` via `0x40`; `0x8` updates `scale` via `0x44`; `0x10` fades alpha; `0x80` spawns `fx_queue_add` on expiry; `0x100` selects a dimmer expiry alpha. |
 | 0x30 | color_r | Initialized to `1.0`; passed into `fx_queue_add`. |
 | 0x34 | color_g | Initialized to `1.0`; passed into `fx_queue_add`. |
 | 0x38 | color_b | Initialized to `1.0`; passed into `fx_queue_add`. |
 | 0x3c | color_a | Initialized to `1.0`; `0x10` flag drives fade-out. |
 | 0x40 | rotation_step | Added into `rotation` when `flags & 0x4`. |
-| 0x44 | rotation_step_2 | Added into `rotation_2` when `flags & 0x8`. |
+| 0x44 | scale_step | Added into `scale` when `flags & 0x8`. |
 | 0x48 | UV/vertex data | Initialized in `effect_spawn` using atlas tables. |
 
 Notes:
@@ -178,6 +178,31 @@ Notes:
   - `0x20` -> `DAT_00491010/14` with base `_DAT_004755e8`.
   - `0x40` -> `DAT_00491210/14` with base `_DAT_004755e4`.
   - `0x80` -> `DAT_00491290/94` with base `_DAT_004755e0`.
+- `effect_spawn` copies 15 floats from the template block at `DAT_004ab1bc`
+  into offsets `0x0c..0x44` (see template map below).
+
+### Effect template block (`DAT_004ab1bc`)
+
+These globals act as a staging area for `effect_spawn`. They are copied into
+the effect entry (offsets `0x0c..0x44`) before the UVs are assigned.
+
+| Template | Entry offset | Meaning |
+| --- | --- | --- |
+| `DAT_004ab1bc` | 0x0c | vel_x |
+| `DAT_004ab1c0` | 0x10 | vel_y |
+| `DAT_004ab1c4` | 0x14 | rotation |
+| `DAT_004ab1c8` | 0x18 | scale |
+| `DAT_004ab1cc` | 0x1c | half_width |
+| `DAT_004ab1d0` | 0x20 | half_height |
+| `DAT_004ab1d4` | 0x24 | age |
+| `DAT_004ab1d8` | 0x28 | lifetime |
+| `DAT_004ab1dc` | 0x2c | flags |
+| `DAT_004ab1e0` | 0x30 | color_r |
+| `DAT_004ab1e4` | 0x34 | color_g |
+| `DAT_004ab1e8` | 0x38 | color_b |
+| `DAT_004ab1ec` | 0x3c | color_a |
+| `DAT_004ab1f0` | 0x40 | rotation_step |
+| `DAT_004ab1f4` | 0x44 | scale_step |
 
 ### Effect id table (`DAT_004755f0`)
 
