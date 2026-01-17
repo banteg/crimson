@@ -17,6 +17,7 @@ HELPER_MODEL = "gpt-5.2-codex"
 HELPER_REASONING = "low"
 MAX_ITERATIONS = 50
 DEFAULT_SESSION = "last"
+COLOR_MODE = "always"
 
 
 def _read_last_message(path: str) -> str:
@@ -40,6 +41,8 @@ def _build_args(
         "--output-last-message",
         output_path,
     ]
+    if COLOR_MODE:
+        args.append(f"--color={COLOR_MODE}")
     if model:
         args.extend(["--model", model])
     if reasoning:
@@ -74,12 +77,32 @@ def run_codex(
         output_path=output_path,
     )
 
-    result = subprocess.run(cmd, input=prompt, capture_output=True, text=True, timeout=300)
-    raw_output = result.stdout + result.stderr
+    process = subprocess.Popen(
+        cmd,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        bufsize=1,
+    )
+
+    if process.stdin:
+        process.stdin.write(prompt)
+        process.stdin.flush()
+        process.stdin.close()
+
+    output_lines: list[str] = []
+    if process.stdout:
+        for line in process.stdout:
+            print(line, end="", flush=True)
+            output_lines.append(line)
+    process.wait(timeout=300)
+
+    raw_output = "".join(output_lines)
     final_message = _read_last_message(output_path)
 
     if not final_message:
-        final_message = result.stdout.strip()
+        final_message = raw_output.strip()
 
     try:
         os.unlink(output_path)
@@ -138,7 +161,8 @@ def main():
             reasoning=MAIN_REASONING,
             session=session_id,
         )
-        print(output or raw_output)
+        if not raw_output.strip() and output:
+            print(output)
 
         print(f"\n[iter {i+1}] Getting helper response...")
         response, should_continue = get_response(
