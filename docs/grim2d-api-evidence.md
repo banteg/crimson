@@ -30,6 +30,38 @@ grim.dll body:
 ```
 
 
+## 0x4 — grim_set_paused @ 0x10005c90
+
+- Ghidra signature: `void grim_set_paused(int paused)`
+- Notes: stores the paused flag in a byte-sized global
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+
+grim.dll body:
+
+```c
+  DAT_1005d820 = (undefined1)paused;
+```
+
+
+## 0x8 — grim_get_version @ 0x10005ca0
+
+- Ghidra signature: `float grim_get_version(void)`
+- Notes: returns the hard-coded engine version constant
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+
+grim.dll body:
+
+```c
+  return 1.21;
+```
+
+
 ## 0xc — grim_check_device @ 0x10005cb0
 
 - Ghidra signature: `int grim_check_device(void)`
