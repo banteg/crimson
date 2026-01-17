@@ -67,6 +67,21 @@ Known type_id sources (partial):
 | `0x29` | Bubblegun weapon (id `0x29`) | Direct weapon spawn. |
 | `0x2b` | Grim Weapon (id `0x2b`) | Direct weapon spawn. |
 
+Non-projectile weapon paths (player_update):
+
+| Weapon id | Name | Path | Notes |
+| --- | --- | --- | --- |
+| `0x8` | Plasma Rifle | `fx_spawn_particle` | Emits particle shots; no `projectile_spawn`. |
+| `0xf` | HR Flamer | `fx_spawn_particle` | Sets particle flag `1` in `DAT_00493ee8`. |
+| `0x10` | Mini-Rocket Swarmers | `fx_spawn_particle` | Sets particle flag `2` in `DAT_00493ee8`. |
+| `0x0c` | Seeker Rockets | `fx_spawn_secondary_projectile` type `1` | Uses the secondary projectile pool (`DAT_00495ad8`). |
+| `0x0d` | Plasma Shotgun | `fx_spawn_secondary_projectile` type `2` | Uses the secondary projectile pool. |
+| `0x11` | Rocket Minigun | `fx_spawn_secondary_projectile` type `2` | Spawns multiple secondaries per shot. |
+| `0x12` | Pulse Gun | `fx_spawn_secondary_projectile` type `4` | Uses the secondary projectile pool. |
+| `0x2a` | Rainbow Gun | `fx_spawn_particle_slow` | Particle-only path. |
+
+See [Effects pools](effects-struct.md) for secondary projectile type behaviors and particle style ids.
+
 ## Rendering notes
 
 `projectile_render` uses `type_id` to select atlas frames in

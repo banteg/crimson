@@ -49,6 +49,12 @@ All offsets below are in **bytes**, relative to the pointer returned by
   the crosshair entirely.
 - Pellet count (offset `0x74`, `DAT_004d7aa0`) is used by the Fire Bullets bonus
   to spawn multiple `0x2d` pellets per shot.
+- Several weapons bypass the main projectile pool and use particle or secondary
+  projectile pools instead (Plasma Rifle `0x8`, HR Flamer `0xf`, Mini-Rocket
+  Swarmers `0x10`, Seeker Rockets `0xc`, Plasma Shotgun `0xd`, Rocket Minigun
+  `0x11`, Pulse Gun `0x12`, Rainbow Gun `0x2a`).
+- Secondary projectile type behavior and particle style ids are tracked in
+  [Effects pools](effects-struct.md).
 - The alt-weapon swap stores per-player runtime state in parallel arrays:
   `DAT_00490b8c` (weapon id), `DAT_00490b90` (clip size), `DAT_00490b98`
   (current ammo), `DAT_00490b9c` (reload timer), `DAT_00490ba0` (shot cooldown),
