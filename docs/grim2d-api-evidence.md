@@ -1661,3 +1661,16 @@ grim.dll body:
   - Mode 3: only `PTR_FUN_1004cd00` (param2 `0x20`).
   - Mode 1: remaining constructors (`PTR_FUN_1004cb6c`..`PTR_FUN_1004cd80`) using
     param2 values `0`, `8`, `0x10`, `0x18`, `0x20`, `0x30`, `0x40`.
+
+
+## grim.dll — pixel format init helper @ 0x100170f9
+
+- Provisional name: `grim_pixel_format_init` (low)
+- Notes:
+  - Called by many format-specific constructors; `param_2 >> 3` is stored as bytes-per-pixel
+    (`this+0x1068`) and used to derive buffer pitches and sizes.
+  - `param_3` is stored at `this+8` and later compared to `this+0x1048` to decide whether
+    `grim_convert_vertex_space` should run.
+  - `param_1` appears to be a descriptor block: width/height/stride fields copy into
+    `this+0x1030..0x1044`, and palette data (if present at `param_1[0x12]`) is expanded into
+    a 0x400-byte RGBA table at `this+0x34`.
