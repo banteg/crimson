@@ -241,6 +241,9 @@ the effect entry (offsets `0x0c..0x44`) before the UVs are assigned.
 
 Entry size: `0x08` bytes. Indexed by `effect_id`.
 
+`effect_select_texture` (`FUN_0042e0a0`) reads this table and calls the renderer
+with grid sizes `16/8/4/2` depending on the size code (`0x10/0x20/0x40/0x80`).
+
 | Offset | Field | Evidence |
 | --- | --- | --- |
 | 0x00 | atlas size code | Read by `effect_select_texture`/`effect_spawn`; values `0x10/0x20/0x40/0x80` map to `16/8/4/2` cell atlases. |
