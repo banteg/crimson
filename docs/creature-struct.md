@@ -68,3 +68,94 @@ Related notes:
 - Flags `0x4`, `0x10`, and `0x40` influence sprite selection in `FUN_00418b60`:
   `0x4` selects the short 8‑frame ping‑pong strip, `0x40` forces the long strip
   even when `0x4` is set, and `0x10` offsets the long strip by `+0x20`.
+
+## Spawn template ids (FUN_00430af0)
+
+`FUN_00430af0` uses `param_1` as a spawn template id. It assigns the creature
+type id (`&DAT_0049bfa4`) and optional flags (`&DAT_0049bfc4`). The table below
+lists the direct assignments found inside the helper.
+
+| Spawn id (param_1) | Type id | Flags (bfc4) | Anim note |
+| --- | --- | --- | --- |
+| `0x0` | `0` | `0x44` | long strip (`0x40` overrides `0x4`) |
+| `0x1` | `4` | `8` |  |
+| `0x3` | `3` |  |  |
+| `0x4` | `1` |  |  |
+| `0x5` | `4` |  |  |
+| `0x6` | `2` |  |  |
+| `0x7` | `2` | `4` | short strip (ping‑pong) |
+| `0x9` | `2` | `4` | short strip (ping‑pong) |
+| `0xa` | `2` | `4` | short strip (ping‑pong) |
+| `0xb` | `2` | `4` | short strip (ping‑pong) |
+| `0xc` | `2` | `4` | short strip (ping‑pong) |
+| `0xe` | `2` | `4` | short strip (ping‑pong) |
+| `0x10` | `2` | `4` | short strip (ping‑pong) |
+| `0x11` | `1` |  |  |
+| `0x12` | `2` |  |  |
+| `0x14` | `2` |  |  |
+| `0x15` | `2` |  |  |
+| `0x16` | `1` |  |  |
+| `0x17` | `3` |  |  |
+| `0x18` | `2` |  |  |
+| `0x19` | `2` |  |  |
+| `0x1a` | `2` |  |  |
+| `0x1b` | `3` |  |  |
+| `0x1d` | `2` |  |  |
+| `0x1e` | `2` |  |  |
+| `0x1f` | `2` |  |  |
+| `0x20` | `2` |  |  |
+| `0x21` | `2` |  |  |
+| `0x22` | `2` |  |  |
+| `0x23` | `2` |  |  |
+| `0x24` | `2` |  |  |
+| `0x25` | `2` |  |  |
+| `0x26` | `2` |  |  |
+| `0x27` | `2` | `0x400` |  |
+| `0x29` | `2` |  |  |
+| `0x2a` | `2` |  |  |
+| `0x2b` | `2` |  |  |
+| `0x2c` | `2` |  |  |
+| `0x2d` | `2` |  |  |
+| `0x2e` | `1` |  |  |
+| `0x2f` | `1` |  |  |
+| `0x30` | `1` |  |  |
+| `0x31` | `1` |  |  |
+| `0x33` | `3` |  |  |
+| `0x34` | `3` |  |  |
+| `0x35` | `4` |  |  |
+| `0x36` | `2` |  |  |
+| `0x37` | `4` | `0x100` |  |
+| `0x38` | `3` | `0x80` |  |
+| `0x39` | `3` | `0x80` |  |
+| `0x3a` | `3` | `0x10` | alt strip (+0x20) |
+| `0x3b` | `3` |  |  |
+| `0x3c` | `3` | `0x100` |  |
+| `0x3d` | `3` |  |  |
+| `0x3e` | `3` |  |  |
+| `0x40` | `3` |  |  |
+| `0x41` | `0` |  |  |
+| `0x42` | `0` |  |  |
+| `0x43` | `0` |  |  |
+
+Notes:
+
+- Flags `0x4`, `0x10`, and `0x40` are the only bits with confirmed animation effects.
+- Flag `0x8` triggers the split‑on‑death behavior (see `FUN_0041e910`).
+- Flag `0x400` calls `FUN_0041f5b0` on death (spawns a bonus entry using two 16‑bit
+  values from `&DAT_0049bfb0`).
+
+## Spawn id sources (call sites)
+
+`param_1` is supplied by a mix of scripted spawners and data tables:
+
+- `FUN_00402ed0`, `FUN_00402fe0`, `FUN_004030f0`, `FUN_00403250`: mode setup
+  helpers called from `FUN_00403390` (hard‑coded spawn ids like `0x34`, `0x35`,
+  `0x38`, `0x41`, `0x24`, `0x25`).
+- `survival_update` (`FUN_00407cd0`): milestone spawns using `0x12`, `0x2b`,
+  `0x2c`, `0x35`, `0x38`, `0x3a`, `0x3c`, and `1`.
+- Tutorial timeline (`FUN_00408990`): scripted spawns using `0x24`, `0x26`,
+  `0x27`, `0x28`, `0x40`.
+- Quest/timeline spawner (`FUN_00434250`): pulls spawn ids from the table at
+  `DAT_004857a8` (`pfVar4[3]`) with counts in `pfVar4[5]`.
+- AI subspawns (`FUN_00426220`): periodic spawns using `&DAT_00484fe4 + iVar6 * 0x18`,
+  which is seeded for some template ids inside `FUN_00430af0`.
