@@ -33,7 +33,7 @@ grim.dll body:
 ## 0x4 — grim_set_paused @ 0x10005c90
 
 - Ghidra signature: `void grim_set_paused(int paused)`
-- Notes: stores the paused flag in a byte-sized global
+- Notes: stores the paused flag in a byte-sized global (likely boolean)
 - Call sites: 0 (unique funcs: 0)
 - Sample calls: none found
 - First callsite: not found in decompiled output
