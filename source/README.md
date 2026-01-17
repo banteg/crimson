@@ -48,6 +48,21 @@ Regenerating:
      game/crimsonland.exe
    ```
 
-   Use `--project-name grim_dll` with `game/grim.dll` for Grim2D exports.
+   Use `--project-name grim_dll` with `game/grim.dll` for Grim2D exports, and
+   run the vtable helper before applying the name map so vtable entries are
+   created as functions:
+
+   ```bash
+   ./scripts/ghidra-analyze.sh \
+     --keep-project \
+     --project-dir output/ghidra_project \
+     --project-name grim_dll \
+     --script-path scripts/ghidra_scripts \
+     -s CreateGrim2DVtableFunctions.java \
+     -s ApplyNameMap.java -a source/ghidra/name_map.json \
+     -s ExportAll.java \
+     -o source/decompiled \
+     game/grim.dll
+   ```
 2. Copy fresh outputs into `source/decompiled/`.
 3. Only edit files in `source/clean/`.
