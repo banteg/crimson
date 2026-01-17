@@ -180,6 +180,9 @@ Notes:
 - `effects_render` splits entries by `flags & 0x40`. Both passes build a 2x2
   rotation/scale matrix from `rotation` + `scale` and draw the quad data starting
   at `0x48`.
+- `effect_free` (`FUN_0042e080`) clears `flags` to `0` and pushes the entry back
+  onto the free list; the flag presets always include bit `0x1` to keep `flags`
+  nonzero while active.
 
 Quad layout (from `effect_spawn` writes):
 
