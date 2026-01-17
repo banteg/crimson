@@ -51,6 +51,16 @@ We also generate an evidence appendix with callsite snippets:
 - `grim_pixel_format_init` (`0x100170f9`) initializes format descriptors and palette
   expansion; it also stores the coordinate mode later compared against the current
   mode before converting vertices.
+- `grim_config_dialog_proc` (`0x10002120`) handles the Grim2D config dialog messages.
+- `grim_window_create` (`0x10002680`) registers the window class and creates the main window.
+- `grim_window_destroy` (`0x10002880`) posts quit and destroys the main window.
+- `grim_d3d_init` (`0x10003e60`) creates the Direct3D8 interface and sets up the device.
+- `grim_keyboard_init` (`0x1000a390`) / `grim_keyboard_poll` (`0x1000a4a0`) / `grim_keyboard_shutdown`
+  (`0x1000a550`) manage the DirectInput keyboard device.
+- `grim_mouse_init` (`0x1000a5a0`) / `grim_mouse_poll` (`0x1000a670`) / `grim_mouse_shutdown`
+  (`0x1000a7d0`) manage the DirectInput mouse device.
+- `grim_joystick_init` (`0x1000a1c0`) / `grim_joystick_poll` (`0x1000a2b0`) manage the DirectInput
+  joystick device.
 
 
 ## Top offsets by callsite count

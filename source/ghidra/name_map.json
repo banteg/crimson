@@ -860,6 +860,34 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10002120",
+    "name": "grim_config_dialog_proc",
+    "signature": "int grim_config_dialog_proc(int hwnd, unsigned int msg, unsigned int wparam)",
+    "comment": "dialog procedure for the Grim2D config UI"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10002680",
+    "name": "grim_window_create",
+    "signature": "int grim_window_create(void)",
+    "comment": "registers the window class and creates the main game window"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10002880",
+    "name": "grim_window_destroy",
+    "signature": "void grim_window_destroy(void)",
+    "comment": "posts quit and destroys the main window"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10003e60",
+    "name": "grim_d3d_init",
+    "signature": "int grim_d3d_init(void)",
+    "comment": "creates the Direct3D8 interface, configures display mode, and opens the window"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x100028d0",
     "name": "grim_backup_textures",
     "signature": "int grim_backup_textures(void)",
@@ -927,6 +955,76 @@
     "name": "grim_find_free_texture_slot",
     "signature": "int grim_find_free_texture_slot(void)",
     "comment": "finds the first free texture slot"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000a1c0",
+    "name": "grim_joystick_init",
+    "signature": "int grim_joystick_init(int hwnd)",
+    "comment": "initializes DirectInput joystick device and acquires it"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000a2b0",
+    "name": "grim_joystick_poll",
+    "signature": "int grim_joystick_poll(void)",
+    "comment": "polls the joystick device and updates cached state"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000a370",
+    "name": "grim_keyboard_key_down",
+    "signature": "int grim_keyboard_key_down(unsigned int key)",
+    "comment": "reads the cached key state array"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000a390",
+    "name": "grim_keyboard_init",
+    "signature": "int grim_keyboard_init(int hwnd)",
+    "comment": "initializes DirectInput keyboard device and acquires it"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000a4a0",
+    "name": "grim_keyboard_poll",
+    "signature": "int grim_keyboard_poll(void)",
+    "comment": "polls the keyboard device and updates cached key state"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000a550",
+    "name": "grim_keyboard_shutdown",
+    "signature": "void grim_keyboard_shutdown(void)",
+    "comment": "releases DirectInput keyboard objects"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000a590",
+    "name": "grim_mouse_button_down",
+    "signature": "int grim_mouse_button_down(int button)",
+    "comment": "reads the cached mouse button state"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000a5a0",
+    "name": "grim_mouse_init",
+    "signature": "int grim_mouse_init(void)",
+    "comment": "initializes DirectInput mouse device and acquires it"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000a670",
+    "name": "grim_mouse_poll",
+    "signature": "int grim_mouse_poll(void)",
+    "comment": "polls the mouse device and updates cached position/delta"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000a7d0",
+    "name": "grim_mouse_shutdown",
+    "signature": "void grim_mouse_shutdown(void)",
+    "comment": "releases DirectInput mouse objects"
   },
   {
     "program": "grim.dll",
@@ -1527,14 +1625,14 @@
     "program": "grim.dll",
     "address": "0x10016944",
     "name": "grim_convert_vertex_space",
-    "signature": "float *grim_convert_vertex_space(void *this, float *src)",
+    "signature": "float * grim_convert_vertex_space(void *this, float *src)",
     "comment": "converts vec4 coordinates between space modes (1/2/3), writes to this+0x104c, returns the output buffer"
   },
   {
     "program": "grim.dll",
     "address": "0x100170f9",
     "name": "grim_pixel_format_init",
-    "signature": "void *grim_pixel_format_init(void *this, unsigned int *desc, unsigned int bits_per_pixel, unsigned int coord_mode)",
+    "signature": "void * grim_pixel_format_init(void *this, unsigned int *desc, unsigned int bits_per_pixel, unsigned int coord_mode)",
     "comment": "initializes format descriptor, bytes-per-pixel, palette expansion, and coordinate mode"
   }
 ]
