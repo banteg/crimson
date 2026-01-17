@@ -687,7 +687,7 @@ Clamped RGBA example (FUN_00446030):
 - Provisional name: `set_color` (high)
 - Guess: `void set_color(float r, float g, float b, float a)`
 - Notes: RGBA floats
-- Ghidra signature: `undefined FUN_10007f90()`
+- Ghidra signature: `void grim_set_color(float r, float g, float b, float a)`
 - Call sites: 203 (unique funcs: 37)
 - Sample calls: FUN_00401dd0:L733; FUN_00401dd0:L741; FUN_00401dd0:L756; FUN_00401dd0:L764; FUN_00401dd0:L769; FUN_00401dd0:L787; FUN_00401dd0:L833; FUN_00402d50:L1451
 - First callsite: FUN_00401dd0 (line 733)
@@ -698,6 +698,13 @@ Clamped RGBA example (FUN_00446030):
     (**(code **)(*DAT_0048083c + 0x114))();
     uStack_40 = 0;
     puStack_44 = (undefined1 *)0x401e8d;
+```
+
+grim.dll packing:
+
+```c
+  DAT_1005bc04 = ((uVar1 & 0xff | iVar2 << 8) << 8 | uVar3 & 0xff) << 8 | uVar4 & 0xff;
+  DAT_1005bc10 = DAT_1005bc04;
 ```
 
 
@@ -751,7 +758,7 @@ grim.dll vertex fill (color + UV):
 
 ## 0x120 — FUN_10008720 @ 0x10008720
 - Notes: wrapper around `draw_quad` using `xy` pointer
-- Ghidra signature: `undefined FUN_10008720()`
+- Ghidra signature: `void grim_draw_quad_xy(float *xy, float w, float h)`
 - Call sites: 6 (unique funcs: 2)
 - Sample calls: FUN_00417b80:L9255; FUN_00417b80:L9289; FUN_00417b80:L9317; FUN_004181b0:L9491; FUN_004181b0:L9524; FUN_004181b0:L9547
 - First callsite: FUN_00417b80 (line 11392)
