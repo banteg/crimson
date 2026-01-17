@@ -172,6 +172,19 @@ Layout (partial):
 
 Notes:
 
+- `effect_spawn` fills a 4‑corner quad starting at `0x48`. The position and UV
+  components are spaced with a 7‑float stride, leaving three unknown floats
+  between the position and UV fields for each corner.
+
+Quad layout (from `effect_spawn` writes):
+
+| Corner | pos offsets | uv offsets | Values |
+| --- | --- | --- | --- |
+| 0 | `0x48/0x4c` | `0x5c/0x60` | `(-half_w, -half_h)` + `(u0, v0)` |
+| 1 | `0x64/0x68` | `0x78/0x7c` | `( half_w, -half_h)` + `(u1, v0)` |
+| 2 | `0x80/0x84` | `0x94/0x98` | `( half_w,  half_h)` + `(u1, v1)` |
+| 3 | `0xa0/0xa4` | `0xb0/0xb4` | `(-half_w,  half_h)` + `(u0, v1)` |
+
 - `effect_spawn` reads `DAT_004755f0/4` to pick atlas size + frame index, then
   pulls UVs from size-specific tables:
   - `0x10` -> `DAT_004aa4d8/4` with base `_DAT_004755ec`.
