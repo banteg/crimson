@@ -48,9 +48,6 @@ Interesting Functions and Patterns
 [SPRINTF related]
   sprintf @ 1000a8d0
 
-[LOG related]
-  grim_config_dialog_proc @ 10002120
-
 [PRINT related]
   sprintf @ 1000a8d0
 
