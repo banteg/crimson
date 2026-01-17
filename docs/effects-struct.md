@@ -146,7 +146,7 @@ Notes:
 - `fx_queue_render` binds `DAT_0048f7dc` (bodyset atlas) and maps `effect_id`
   through the creature type table: `frame = *(int *)(&DAT_00482764 + effect_id * 0x44)`.
   That offset is the per‑type `corpse frame` (see `docs/creature-struct.md`),
-  and the frame is converted to UVs via the 4x atlas tables (`DAT_00491210/14`).
+  and the frame is converted to UVs via the 4x atlas tables (`effect_uv4_u` / `effect_uv4_v`).
 - The rotated queue is drawn in two passes: the first uses half alpha and a
   slightly inflated size (`scale * 1.064`), the second uses full alpha/size.
 - `fx_queue_add_rotated` skips enqueuing when `DAT_004871c8 != 0` or the queue is full.
@@ -221,10 +221,10 @@ Quad layout (from `effect_spawn` writes):
 
 - `effect_spawn` reads `effect_id_size_code` / `effect_id_frame` to pick atlas size + frame index, then
   pulls UVs from size-specific tables:
-  - `0x10` -> `DAT_004aa4d8/4` with base `_DAT_004755ec`.
-  - `0x20` -> `DAT_00491010/14` with base `_DAT_004755e8`.
-  - `0x40` -> `DAT_00491210/14` with base `_DAT_004755e4`.
-  - `0x80` -> `DAT_00491290/94` with base `_DAT_004755e0`.
+  - `0x10` -> `effect_uv16_u` / `effect_uv16_v` with base `effect_uv_step_16`.
+  - `0x20` -> `effect_uv8_u` / `effect_uv8_v` with base `effect_uv_step_8`.
+  - `0x40` -> `effect_uv4_u` / `effect_uv4_v` with base `effect_uv_step_4`.
+  - `0x80` -> `effect_uv2_u` / `effect_uv2_v` with base `effect_uv_step_2`.
 - `effect_spawn` copies 15 floats from the template block at `effect_template_vel_x`
   into offsets `0x0c..0x44` (see template map below).
 

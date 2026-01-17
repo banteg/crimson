@@ -551,7 +551,7 @@ tail bytes are validated against the current date and the full‑version flag.
 - `FUN_0042e120` -> `effect_spawn`
   - Evidence: pops an entry from the pool `DAT_004c2b30`, copies template `effect_template_vel_x`,
     writes position from `param_2`, tags the effect id, and assigns quad UVs from atlas tables
-    `effect_id_size_code` / `effect_id_frame` plus arrays `DAT_004aa4d8`, `DAT_00491010`, `DAT_00491210`, `DAT_00491290`.
+    `effect_id_size_code` / `effect_id_frame` plus arrays `effect_uv16_u`, `effect_uv8_u`, `effect_uv4_u`, `effect_uv2_u`.
 - `FUN_0042e710` -> `effects_update`
   - Evidence: iterates pool entries, advances timers/positions with `DAT_00480840`, and calls
     `effect_free` when expired.
