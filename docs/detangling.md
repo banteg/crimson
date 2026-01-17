@@ -308,6 +308,7 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
   - Evidence: scans `DAT_0049bf38` in `0x98`-byte strides for `active == 0`, clears flags/seed fields,
     increments `DAT_00486fb4`, and returns the slot index (or `0x180` on failure).
 - Layout (entry size `0x98`, base `DAT_0049bf38`, pool size `0x180`):
+
   | Offset | Field | Evidence |
   | --- | --- | --- |
   | 0x00 | active (byte) | checked for zero in most creature loops; set to `1` on spawn, cleared on death. |
@@ -329,6 +330,7 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
   - Evidence: clamps position to arena bounds, writes entry fields (type, lifetime, size, position,
     duration override), and spawns a pickup effect via `FUN_0042e120`.
 - Layout (entry size `0x1c`, base `DAT_00482948`, 16 entries):
+
   | Offset | Field | Evidence |
   | --- | --- | --- |
   | 0x00 | type id (0 = free) | `bonus_alloc_slot` scans for `0`; render/update skip `0`. |
