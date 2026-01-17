@@ -213,6 +213,19 @@ Entry size: `0x08` bytes. Indexed by `effect_id`.
 | 0x00 | atlas size code | Read by `effect_select_texture`/`effect_spawn`; values `0x10/0x20/0x40/0x80` map to `16/8/4/2` cell atlases. |
 | 0x04 | frame index | Read by `effect_select_texture`/`effect_spawn`; selects the atlas frame. |
 
+### Effect id usage (partial)
+
+| effect_id | Call sites | Notes |
+| --- | --- | --- |
+| `0` | `bonus_spawn_at`, `FUN_0042ef60`, `FUN_0042f080`, `FUN_0042f3f0`, `FUN_0042f540`, `FUN_0042f6c0`, `FUN_004207c0` | Generic burst/spark effects (used for bonus pickup and explosions). |
+| `1` | `bonus_apply` (Reflex Boost/Freeze), `FUN_0042f080`, `FUN_0042f270`, `FUN_0042f330`, `FUN_0042f6c0` | Power-up ring/halo style effects. |
+| `7` | `FUN_0042eb10` | Shock/impact burst used by chain-style effects. |
+| `8..10` | `FUN_0042ec80` | Randomized variant picks (`iVar3 % 3 + 8`). |
+| `0xc` | `FUN_0042f6c0` | Used during large explosion sequences. |
+| `0xe` | `FUN_0042ee00` | Four-way burst helper. |
+| `0x11` | `FUN_0042f6c0` | Extra burst when difficulty is high. |
+| `0x12` | `player_update` (`FUN_004136b0`) | Muzzle flash path when weapon flag `0x1` is set. |
+
 
 ## Sprite effect pool (`DAT_00496820`)
 
