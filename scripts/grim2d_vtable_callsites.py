@@ -15,7 +15,7 @@ ALIAS_PROP_RE = re.compile(
     r"\b(?P<var>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:\(int\))?(?P<src>[A-Za-z_][A-Za-z0-9_]*)\b"
 )
 CALLSITE_RE = re.compile(
-    r"\(\*\*\(code \*\*\)\((?P<base>[^)]+?)\+\s*(?P<offset>0x[0-9A-Fa-f]+)\)\)"
+    r"\(\*\*\(code \*\*\)\((?P<base>[^)]+?)\+\s*(?P<offset>0x[0-9A-Fa-f]+|\d+)\)\)"
 )
 
 
@@ -44,7 +44,14 @@ def iter_callsites(lines: list[str]) -> list[dict[str, object]]:
             continue
 
         base = match.group("base").strip()
-        offset = match.group("offset").lower()
+        offset_text = match.group("offset").lower()
+        if offset_text.startswith("0x"):
+            offset = offset_text
+        else:
+            try:
+                offset = hex(int(offset_text))
+            except ValueError:
+                continue
         base_clean = base.replace("(", "").replace(")", "").replace(" ", "")
 
         if "DAT_0048083c" in base:

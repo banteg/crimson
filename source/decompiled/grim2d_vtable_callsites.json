@@ -2814,6 +2814,13 @@
     "line_text": "  (**(code **)(*DAT_0048083c + 0x100))"
   },
   {
+    "offset_hex": "0xc8",
+    "function": "FUN_004188a0",
+    "line": 11783,
+    "base_expr": "*DAT_0048083c",
+    "line_text": "  (**(code **)(*DAT_0048083c + 200))(0);"
+  },
+  {
     "offset_hex": "0x20",
     "function": "FUN_004188a0",
     "line": 11784,
@@ -4762,1815 +4769,1822 @@
   {
     "offset_hex": "0xa4",
     "function": "FUN_0041e8d0",
-    "line": 15313,
+    "line": 15310,
     "base_expr": "*DAT_0048083c",
     "line_text": "  iVar1 = (**(code **)(*DAT_0048083c + 0xa4))(0);"
   },
   {
     "offset_hex": "0xa4",
     "function": "FUN_0041e8f0",
-    "line": 15326,
+    "line": 15323,
     "base_expr": "*DAT_0048083c",
     "line_text": "  iVar1 = (**(code **)(*DAT_0048083c + 0xa4))(0);"
   },
   {
     "offset_hex": "0x24",
     "function": "FUN_0041ec60",
-    "line": 15551,
+    "line": 15548,
     "base_expr": "*DAT_0048083c",
     "line_text": "  puVar2 = (undefined1 *)(**(code **)(*DAT_0048083c + 0x24))();"
   },
   {
     "offset_hex": "0x24",
     "function": "FUN_0041ec60",
-    "line": 15559,
+    "line": 15556,
     "base_expr": "*DAT_0048083c",
     "line_text": "  puVar3 = (undefined4 *)(**(code **)(*DAT_0048083c + 0x24))();"
   },
   {
     "offset_hex": "0x24",
     "function": "FUN_0041ec60",
-    "line": 15562,
+    "line": 15559,
     "base_expr": "*DAT_0048083c",
     "line_text": "  puVar3 = (undefined4 *)(**(code **)(*DAT_0048083c + 0x24))(&stack0xfffffb60);"
   },
   {
     "offset_hex": "0x24",
     "function": "FUN_0041ec60",
-    "line": 15564,
+    "line": 15561,
     "base_expr": "*DAT_0048083c",
     "line_text": "  puVar3 = (undefined4 *)(**(code **)(*DAT_0048083c + 0x24))(&uStack_4a8,0x2a);"
   },
   {
     "offset_hex": "0x24",
     "function": "FUN_0041ec60",
-    "line": 15566,
+    "line": 15563,
     "base_expr": "*DAT_0048083c",
     "line_text": "  puVar3 = (undefined4 *)(**(code **)(*DAT_0048083c + 0x24))(acStack_4b0,0x59);"
   },
   {
     "offset_hex": "0x24",
     "function": "FUN_0041ec60",
-    "line": 15568,
+    "line": 15565,
     "base_expr": "*DAT_0048083c",
     "line_text": "  puVar2 = (undefined1 *)(**(code **)(*DAT_0048083c + 0x24))(&uStack_4b8,0x54);"
   },
   {
     "offset_hex": "0x20",
     "function": "config_load_presets",
-    "line": 15887,
+    "line": 15884,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x59,DAT_004803b8);"
   },
   {
     "offset_hex": "0x20",
     "function": "config_load_presets",
-    "line": 15889,
+    "line": 15886,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(0x54,DAT_004807b6);"
   },
   {
     "offset_hex": "0x20",
     "function": "config_load_presets",
-    "line": 15890,
+    "line": 15887,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(8,DAT_0048050c);"
   },
   {
     "offset_hex": "0x20",
     "function": "config_load_presets",
-    "line": 15891,
+    "line": 15888,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(0x2b,DAT_00480500);"
   },
   {
     "offset_hex": "0x20",
     "function": "config_load_presets",
-    "line": 15892,
+    "line": 15889,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(0x29,DAT_00480504);"
   },
   {
     "offset_hex": "0x20",
     "function": "config_load_presets",
-    "line": 15893,
+    "line": 15890,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(0x2a,DAT_00480508);"
   },
   {
     "offset_hex": "0x20",
     "function": "config_load_presets",
-    "line": 15894,
+    "line": 15891,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(0x53,DAT_00480348);"
   },
   {
     "offset_hex": "0x100",
     "function": "FUN_00422c70",
-    "line": 18129,
+    "line": 18126,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x100))();"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18135,
+    "line": 18132,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x114))();"
   },
   {
     "offset_hex": "0x118",
     "function": "FUN_00422c70",
-    "line": 18144,
+    "line": 18141,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x118))();"
   },
   {
     "offset_hex": "0x118",
     "function": "FUN_00422c70",
-    "line": 18151,
+    "line": 18148,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x118))();"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_00422c70",
-    "line": 18155,
+    "line": 18152,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xc4))();"
   },
   {
     "offset_hex": "0x100",
     "function": "FUN_00422c70",
-    "line": 18161,
+    "line": 18158,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x100))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00422c70",
-    "line": 18189,
+    "line": 18186,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00422c70",
-    "line": 18191,
+    "line": 18188,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x138",
     "function": "FUN_00422c70",
-    "line": 18199,
+    "line": 18196,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x138))();"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00422c70",
-    "line": 18201,
+    "line": 18198,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00422c70",
-    "line": 18205,
+    "line": 18202,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x118",
     "function": "FUN_00422c70",
-    "line": 18219,
+    "line": 18216,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x118))();"
   },
   {
     "offset_hex": "0x118",
     "function": "FUN_00422c70",
-    "line": 18226,
+    "line": 18223,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x118))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00422c70",
-    "line": 18230,
+    "line": 18227,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00422c70",
-    "line": 18234,
+    "line": 18231,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x118",
     "function": "FUN_00422c70",
-    "line": 18259,
+    "line": 18256,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x118))();"
   },
   {
     "offset_hex": "0x118",
     "function": "FUN_00422c70",
-    "line": 18262,
+    "line": 18259,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x118))(3,0x3f000000,0x3f000000,0x3f000000);"
   },
   {
     "offset_hex": "0x118",
     "function": "FUN_00422c70",
-    "line": 18308,
+    "line": 18305,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x118))(2,0x3e4ccccd,0x3f000000,0x3f800000,fStack_10c);"
   },
   {
     "offset_hex": "0x118",
     "function": "FUN_00422c70",
-    "line": 18309,
+    "line": 18306,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x118))(3,0x3e4ccccd,0x3f000000,0x3f800000,fStack_10c);"
   },
   {
     "offset_hex": "0x138",
     "function": "FUN_00422c70",
-    "line": 18355,
+    "line": 18352,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x138))"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00422c70",
-    "line": 18361,
+    "line": 18358,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00422c70",
-    "line": 18365,
+    "line": 18362,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00422c70",
-    "line": 18368,
+    "line": 18365,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x14,2);"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_00422c70",
-    "line": 18370,
+    "line": 18367,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7ec);"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_00422c70",
-    "line": 18373,
+    "line": 18370,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xfc))();"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18381,
+    "line": 18378,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x114))"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00422c70",
-    "line": 18384,
+    "line": 18381,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 18385,
+    "line": 18382,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00422c70",
-    "line": 18389,
+    "line": 18386,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00422c70",
-    "line": 18391,
+    "line": 18388,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18411,
+    "line": 18408,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,fStack_e0 * 0.4);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 18415,
+    "line": 18412,
     "base_expr": "*DAT_0048083c",
     "line_text": "              (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18422,
+    "line": 18419,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,fStack_f0 * 0.45);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 18424,
+    "line": 18421,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18430,
+    "line": 18427,
     "base_expr": "iVar6",
     "line_text": "          (**(code **)(iVar6 + 0x114))(0x3f800000,0x3f800000,0x3f800000,fVar32);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 18432,
+    "line": 18429,
     "base_expr": "*DAT_0048083c",
     "line_text": "            (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18451,
+    "line": 18448,
     "base_expr": "*DAT_0048083c",
     "line_text": "            (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,fStack_e0 * 0.4);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 18455,
+    "line": 18452,
     "base_expr": "*DAT_0048083c",
     "line_text": "                (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18462,
+    "line": 18459,
     "base_expr": "*DAT_0048083c",
     "line_text": "            (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,fVar31);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 18464,
+    "line": 18461,
     "base_expr": "*DAT_0048083c",
     "line_text": "            (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18487,
+    "line": 18484,
     "base_expr": "*DAT_0048083c",
     "line_text": "              (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,fVar32);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 18491,
+    "line": 18488,
     "base_expr": "*DAT_0048083c",
     "line_text": "                  (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18498,
+    "line": 18495,
     "base_expr": "*DAT_0048083c",
     "line_text": "              (**(code **)(*DAT_0048083c + 0x114))"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 18501,
+    "line": 18498,
     "base_expr": "*DAT_0048083c",
     "line_text": "              (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18520,
+    "line": 18517,
     "base_expr": "*DAT_0048083c",
     "line_text": "              (**(code **)(*DAT_0048083c + 0x114))(0x3e99999a,0x3f800000,0x3e99999a,fStack_e0 * 0.4)"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 18525,
+    "line": 18522,
     "base_expr": "*DAT_0048083c",
     "line_text": "                  (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18532,
+    "line": 18529,
     "base_expr": "*DAT_0048083c",
     "line_text": "              (**(code **)(*DAT_0048083c + 0x114))(0x3e99999a,0x3f800000,0x3e99999a,fVar31);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 18534,
+    "line": 18531,
     "base_expr": "*DAT_0048083c",
     "line_text": "              (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18555,
+    "line": 18552,
     "base_expr": "*DAT_0048083c",
     "line_text": "              (**(code **)(*DAT_0048083c + 0x114))(0x3e99999a,0x3e99999a,0x3f800000,fStack_e0 * 0.4)"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 18560,
+    "line": 18557,
     "base_expr": "*DAT_0048083c",
     "line_text": "                  (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18567,
+    "line": 18564,
     "base_expr": "*DAT_0048083c",
     "line_text": "              (**(code **)(*DAT_0048083c + 0x114))(0x3e99999a,0x3e99999a,0x3f800000,fVar31);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 18569,
+    "line": 18566,
     "base_expr": "*DAT_0048083c",
     "line_text": "              (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18578,
+    "line": 18575,
     "base_expr": "iVar6",
     "line_text": "          (**(code **)(iVar6 + 0x114))(uVar16,uVar17,uVar15,fStack_110 * 0.15);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18599,
+    "line": 18596,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,fVar32 * fStack_e0);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 18606,
+    "line": 18603,
     "base_expr": "iVar6",
     "line_text": "        (**(code **)(iVar6 + 0x11c))(fVar14,fVar32,uVar17,uVar15);"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00422c70",
-    "line": 18612,
+    "line": 18609,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_00422c70",
-    "line": 18618,
+    "line": 18615,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7d4,0);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00422c70",
-    "line": 18619,
+    "line": 18616,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_00422c70",
-    "line": 18632,
+    "line": 18629,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0xfc))(pfVar3[-4]);"
   },
   {
     "offset_hex": "0x104",
     "function": "FUN_00422c70",
-    "line": 18633,
+    "line": 18630,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x104))(2,0);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18634,
+    "line": 18631,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x114))(0x3dcccccd,0x3f19999a,0x3e4ccccd,fStack_f4 * 0.7);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 18640,
+    "line": 18637,
     "base_expr": "iVar6",
     "line_text": "          (**(code **)(iVar6 + 0x11c))"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_00422c70",
-    "line": 18645,
+    "line": 18642,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0xfc))(pfVar3[-4]);"
   },
   {
     "offset_hex": "0x104",
     "function": "FUN_00422c70",
-    "line": 18646,
+    "line": 18643,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x104))(2,0);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18656,
+    "line": 18653,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,fVar14 * fStack_f4);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 18658,
+    "line": 18655,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_00422c70",
-    "line": 18670,
+    "line": 18667,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0xfc))(pfVar3[-4]);"
   },
   {
     "offset_hex": "0x104",
     "function": "FUN_00422c70",
-    "line": 18671,
+    "line": 18668,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x104))(4,3);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18678,
+    "line": 18675,
     "base_expr": "iVar6",
     "line_text": "          (**(code **)(iVar6 + 0x114))(uVar15,uVar16,uVar22,uVar17);"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_00422c70",
-    "line": 18692,
+    "line": 18689,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0xfc))"
   },
   {
     "offset_hex": "0x104",
     "function": "FUN_00422c70",
-    "line": 18694,
+    "line": 18691,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x104))(4,6);"
   },
   {
     "offset_hex": "0x104",
     "function": "FUN_00422c70",
-    "line": 18719,
+    "line": 18716,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x104))(2);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18731,
+    "line": 18728,
     "base_expr": "*DAT_0048083c",
     "line_text": "            (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f19999a,0x3dcccccd,uVar17);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18737,
+    "line": 18734,
     "base_expr": "*DAT_0048083c",
     "line_text": "            (**(code **)(*DAT_0048083c + 0x114))"
   },
   {
     "offset_hex": "0x104",
     "function": "FUN_00422c70",
-    "line": 18741,
+    "line": 18738,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x104))(4,2);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18761,
+    "line": 18758,
     "base_expr": "*DAT_0048083c",
     "line_text": "                (**(code **)(*DAT_0048083c + 0x114))"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18766,
+    "line": 18763,
     "base_expr": "*DAT_0048083c",
     "line_text": "                (**(code **)(*DAT_0048083c + 0x114))"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 18770,
+    "line": 18767,
     "base_expr": "*DAT_0048083c",
     "line_text": "              (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_00422c70",
-    "line": 18777,
+    "line": 18774,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0xfc))(pfVar7[1]);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18778,
+    "line": 18775,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f333333,uStack_114);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 18779,
+    "line": 18776,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_00422c70",
-    "line": 18786,
+    "line": 18783,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0xfc))(fVar14);"
   },
   {
     "offset_hex": "0x104",
     "function": "FUN_00422c70",
-    "line": 18787,
+    "line": 18784,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x104))(4,2);"
   },
   {
     "offset_hex": "0x104",
     "function": "FUN_00422c70",
-    "line": 18819,
+    "line": 18816,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x104))(4,2,pfVar23,pfVar7);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18840,
+    "line": 18837,
     "base_expr": "*DAT_0048083c",
     "line_text": "                (**(code **)(*DAT_0048083c + 0x114))"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18845,
+    "line": 18842,
     "base_expr": "*DAT_0048083c",
     "line_text": "                (**(code **)(*DAT_0048083c + 0x114))"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 18849,
+    "line": 18846,
     "base_expr": "*DAT_0048083c",
     "line_text": "              (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18858,
+    "line": 18855,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x114))(0x3f000000,0x3f19999a,0x3f800000,fVar14);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 18860,
+    "line": 18857,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18863,
+    "line": 18860,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x114))(0x3f000000,0x3f19999a,0x3f800000,fVar14);"
   },
   {
     "offset_hex": "0x10c",
     "function": "FUN_00422c70",
-    "line": 18872,
+    "line": 18869,
     "base_expr": "*DAT_0048083c",
     "line_text": "              (**(code **)(*DAT_0048083c + 0x10c))(0,0x3f200000,0);"
   },
   {
     "offset_hex": "0x10c",
     "function": "FUN_00422c70",
-    "line": 18876,
+    "line": 18873,
     "base_expr": "*DAT_0048083c",
     "line_text": "              (**(code **)(*DAT_0048083c + 0x10c))(1,0x3f200000,0x3e800000);"
   },
   {
     "offset_hex": "0x10c",
     "function": "FUN_00422c70",
-    "line": 18879,
+    "line": 18876,
     "base_expr": "*DAT_0048083c",
     "line_text": "              (**(code **)(*DAT_0048083c + 0x10c))(2,0x3f200000,0x3e800000);"
   },
   {
     "offset_hex": "0x10c",
     "function": "FUN_00422c70",
-    "line": 18880,
+    "line": 18877,
     "base_expr": "*DAT_0048083c",
     "line_text": "              (**(code **)(*DAT_0048083c + 0x10c))(3,0x3f200000,0);"
   },
   {
     "offset_hex": "0x138",
     "function": "FUN_00422c70",
-    "line": 18906,
+    "line": 18903,
     "base_expr": "*DAT_0048083c",
     "line_text": "              (**(code **)(*DAT_0048083c + 0x138))"
   },
   {
     "offset_hex": "0x138",
     "function": "FUN_00422c70",
-    "line": 18919,
+    "line": 18916,
     "base_expr": "*DAT_0048083c",
     "line_text": "              (**(code **)(*DAT_0048083c + 0x138))"
   },
   {
     "offset_hex": "0x104",
     "function": "FUN_00422c70",
-    "line": 18922,
+    "line": 18919,
     "base_expr": "*DAT_0048083c",
     "line_text": "              (**(code **)(*DAT_0048083c + 0x104))(4,2);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 18924,
+    "line": 18921,
     "base_expr": "*DAT_0048083c",
     "line_text": "              (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00422c70",
-    "line": 18940,
+    "line": 18937,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00422c70",
-    "line": 18942,
+    "line": 18939,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x13,1);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00422c70",
-    "line": 18944,
+    "line": 18941,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x14,6);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00422c70",
-    "line": 18945,
+    "line": 18942,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18950,
+    "line": 18947,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,uVar17);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 18952,
+    "line": 18949,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 18958,
+    "line": 18955,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 18965,
+    "line": 18962,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 18971,
+    "line": 18968,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 18977,
+    "line": 18974,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 18993,
+    "line": 18990,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,fVar31 * fStack_110);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 18996,
+    "line": 18993,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00422c70",
-    "line": 19003,
+    "line": 19000,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x100",
     "function": "FUN_00422c70",
-    "line": 19004,
+    "line": 19001,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x100))(0,0,0x3f800000,0x3f800000);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00422c70",
-    "line": 19005,
+    "line": 19002,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x13,5);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00422c70",
-    "line": 19006,
+    "line": 19003,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x14,2);"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_00422c70",
-    "line": 19007,
+    "line": 19004,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7ec,0);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 19009,
+    "line": 19006,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,uVar17);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00422c70",
-    "line": 19010,
+    "line": 19007,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_00422c70",
-    "line": 19015,
+    "line": 19012,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xfc))(*(undefined4 *)(pcVar4 + 4));"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 19017,
+    "line": 19014,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00422c70",
-    "line": 19023,
+    "line": 19020,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00422c70",
-    "line": 19026,
+    "line": 19023,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x13,5);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00422c70",
-    "line": 19027,
+    "line": 19024,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x14,6);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 19030,
+    "line": 19027,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x114))(0x3f4ccccd,0x3f4ccccd,0x3f4ccccd,fVar31);"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_00422c70",
-    "line": 19031,
+    "line": 19028,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xc4))(DAT_0049bb30,0);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00422c70",
-    "line": 19032,
+    "line": 19029,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_00422c70",
-    "line": 19038,
+    "line": 19035,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xfc))(pfVar2[-2]);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 19062,
+    "line": 19059,
     "base_expr": "iVar6",
     "line_text": "      (**(code **)(iVar6 + 0x11c))(fVar14,fVar32,uVar15,uVar16);"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00422c70",
-    "line": 19066,
+    "line": 19063,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00422c70",
-    "line": 19068,
+    "line": 19065,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(0x13,5);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00422c70",
-    "line": 19069,
+    "line": 19066,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(0x14,2);"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_00422c70",
-    "line": 19070,
+    "line": 19067,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7ec,0);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00422c70",
-    "line": 19072,
+    "line": 19069,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 19076,
+    "line": 19073,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,fStack_1d0 * 0.48);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 19079,
+    "line": 19076,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00422c70",
-    "line": 19086,
+    "line": 19083,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00422c70",
-    "line": 19087,
+    "line": 19084,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(0x14,6);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00422c70",
-    "line": 19089,
+    "line": 19086,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x13,5);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00422c70",
-    "line": 19091,
+    "line": 19088,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x14,6);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 19093,
+    "line": 19090,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x114))(0x3f4ccccd,0x3f4ccccd,0x3f4ccccd,fVar31);"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_00422c70",
-    "line": 19094,
+    "line": 19091,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7d4,0);"
   },
   {
     "offset_hex": "0x104",
     "function": "FUN_00422c70",
-    "line": 19095,
+    "line": 19092,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x104))(4,3);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00422c70",
-    "line": 19096,
+    "line": 19093,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_00422c70",
-    "line": 19100,
+    "line": 19097,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xfc))(puVar5[-3]);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 19104,
+    "line": 19101,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x114))(0x3f4ccccd,0x3f4ccccd,0x3f4ccccd,fVar31);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 19111,
+    "line": 19108,
     "base_expr": "iVar6",
     "line_text": "        (**(code **)(iVar6 + 0x11c))(fVar20,fVar25,uVar15,uVar16);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 19114,
+    "line": 19111,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x114))(0x3f4ccccd,0x3f4ccccd,0x3f4ccccd,fVar31);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 19115,
+    "line": 19112,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x11c))(fVar30,uVar17,0x41200000,0x41200000);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 19119,
+    "line": 19116,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x114))(0x3f4ccccd,0x3f4ccccd,0x3f4ccccd,fVar31);"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00422c70",
-    "line": 19130,
+    "line": 19127,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00422c70",
-    "line": 19132,
+    "line": 19129,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(0x13,5);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00422c70",
-    "line": 19133,
+    "line": 19130,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(0x14,2);"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_00422c70",
-    "line": 19134,
+    "line": 19131,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7ec,0);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00422c70",
-    "line": 19136,
+    "line": 19133,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 19142,
+    "line": 19139,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x114))(0x3f333333,0x3f333333,0x3f800000,fStack_218 * 0.158);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 19151,
+    "line": 19148,
     "base_expr": "iVar6",
     "line_text": "          (**(code **)(iVar6 + 0x11c))(fVar31,(float)fVar8,uVar17,uVar15);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 19154,
+    "line": 19151,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,fStack_218 * 0.68);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00422c70",
-    "line": 19157,
+    "line": 19154,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00422c70",
-    "line": 19163,
+    "line": 19160,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,fStack_218 * 0.58);"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00422c70",
-    "line": 19176,
+    "line": 19173,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00422c70",
-    "line": 19177,
+    "line": 19174,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(0x14,6);"
   },
   {
     "offset_hex": "0x30",
     "function": "FUN_00427920",
-    "line": 20100,
+    "line": 20097,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x30))(DAT_0048f530);"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_00427920",
-    "line": 20101,
+    "line": 20098,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7ec,0);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00427920",
-    "line": 20103,
+    "line": 20100,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x100",
     "function": "FUN_00427920",
-    "line": 20105,
+    "line": 20102,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x100))(0,0,0x3f800000,0x3f800000);"
   },
   {
     "offset_hex": "0x110",
     "function": "FUN_00427920",
-    "line": 20110,
+    "line": 20107,
     "base_expr": "*DAT_0048083c",
     "line_text": "            (**(code **)(*DAT_0048083c + 0x110))(puVar4 + 5);"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_00427920",
-    "line": 20111,
+    "line": 20108,
     "base_expr": "*DAT_0048083c",
     "line_text": "            (**(code **)(*DAT_0048083c + 0xfc))(*puVar4);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00427920",
-    "line": 20113,
+    "line": 20110,
     "base_expr": "*DAT_0048083c",
     "line_text": "            (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00427920",
-    "line": 20121,
+    "line": 20118,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_00427920",
-    "line": 20124,
+    "line": 20121,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7dc,0);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00427920",
-    "line": 20125,
+    "line": 20122,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x20))(0x13,1);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00427920",
-    "line": 20126,
+    "line": 20123,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x20))(0x14,6);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00427920",
-    "line": 20127,
+    "line": 20124,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x100",
     "function": "FUN_00427920",
-    "line": 20139,
+    "line": 20136,
     "base_expr": "*DAT_0048083c",
     "line_text": "            (**(code **)(*DAT_0048083c + 0x100))"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00427920",
-    "line": 20142,
+    "line": 20139,
     "base_expr": "*DAT_0048083c",
     "line_text": "            (**(code **)(*DAT_0048083c + 0x114))(puVar4[-2],puVar4[-1],*puVar4,fVar7);"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_00427920",
-    "line": 20143,
+    "line": 20140,
     "base_expr": "*DAT_0048083c",
     "line_text": "            (**(code **)(*DAT_0048083c + 0xfc))((float)(&DAT_0049669c)[iVar3] - 1.5707964);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00427920",
-    "line": 20147,
+    "line": 20144,
     "base_expr": "*DAT_0048083c",
     "line_text": "            (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00427920",
-    "line": 20154,
+    "line": 20151,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00427920",
-    "line": 20155,
+    "line": 20152,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x20))(0x13,5);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00427920",
-    "line": 20156,
+    "line": 20153,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x20))(0x14,6);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00427920",
-    "line": 20157,
+    "line": 20154,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x100",
     "function": "FUN_00427920",
-    "line": 20169,
+    "line": 20166,
     "base_expr": "*DAT_0048083c",
     "line_text": "            (**(code **)(*DAT_0048083c + 0x100))"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00427920",
-    "line": 20172,
+    "line": 20169,
     "base_expr": "*DAT_0048083c",
     "line_text": "            (**(code **)(*DAT_0048083c + 0x114))(puVar4[-2],puVar4[-1],*puVar4,fVar7);"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_00427920",
-    "line": 20173,
+    "line": 20170,
     "base_expr": "*DAT_0048083c",
     "line_text": "            (**(code **)(*DAT_0048083c + 0xfc))((float)(&DAT_0049669c)[iVar3] - 1.5707964);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00427920",
-    "line": 20174,
+    "line": 20171,
     "base_expr": "*DAT_0048083c",
     "line_text": "            (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00427920",
-    "line": 20182,
+    "line": 20179,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x30",
     "function": "FUN_00427920",
-    "line": 20186,
+    "line": 20183,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x30))(0xffffffff);"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_00427920",
-    "line": 20190,
+    "line": 20187,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7dc,0);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00427920",
-    "line": 20191,
+    "line": 20188,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(0x13,1);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00427920",
-    "line": 20192,
+    "line": 20189,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(0x14,6);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00427920",
-    "line": 20193,
+    "line": 20190,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x100",
     "function": "FUN_00427920",
-    "line": 20204,
+    "line": 20201,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x100))(DAT_004965d8,DAT_004965dc,_DAT_004965e0,_DAT_004965e4);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00427920",
-    "line": 20205,
+    "line": 20202,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x114))(puVar4[-2],puVar4[-1],*puVar4,(float)puVar4[1] * 0.5);"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_00427920",
-    "line": 20206,
+    "line": 20203,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0xfc))((float)(&DAT_0049669c)[iVar3] - 1.5707964);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00427920",
-    "line": 20209,
+    "line": 20206,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00427920",
-    "line": 20217,
+    "line": 20214,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00427920",
-    "line": 20218,
+    "line": 20215,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(0x13,5);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00427920",
-    "line": 20219,
+    "line": 20216,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(0x14,6);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00427920",
-    "line": 20220,
+    "line": 20217,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x100",
     "function": "FUN_00427920",
-    "line": 20231,
+    "line": 20228,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x100))(DAT_004965d8,DAT_004965dc,_DAT_004965e0,_DAT_004965e4);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00427920",
-    "line": 20232,
+    "line": 20229,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x114))(puVar4[-2],puVar4[-1],*puVar4,puVar4[1]);"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_00427920",
-    "line": 20233,
+    "line": 20230,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0xfc))((float)(&DAT_0049669c)[iVar3] - 1.5707964);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00427920",
-    "line": 20234,
+    "line": 20231,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00427920",
-    "line": 20242,
+    "line": 20239,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00428390",
-    "line": 20397,
+    "line": 20394,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00428390",
-    "line": 20398,
+    "line": 20395,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_00428390",
-    "line": 20399,
+    "line": 20396,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xc4))();"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00428390",
-    "line": 20402,
+    "line": 20399,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x114))();"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_00428390",
-    "line": 20403,
+    "line": 20400,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xfc))();"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00428390",
-    "line": 20404,
+    "line": 20401,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00428390",
-    "line": 20405,
+    "line": 20402,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x11c))();"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00428390",
-    "line": 20406,
+    "line": 20403,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_00428390",
-    "line": 20408,
+    "line": 20405,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xc4))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00428390",
-    "line": 20409,
+    "line": 20406,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00428390",
-    "line": 20410,
+    "line": 20407,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00428390",
-    "line": 20420,
+    "line": 20417,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x100",
     "function": "FUN_00428390",
-    "line": 20425,
+    "line": 20422,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x100))();"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00428390",
-    "line": 20426,
+    "line": 20423,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x114))();"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_00428390",
-    "line": 20427,
+    "line": 20424,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xfc))();"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00428390",
-    "line": 20432,
+    "line": 20429,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x11c))();"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00428390",
-    "line": 20433,
+    "line": 20430,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00428390",
-    "line": 20434,
+    "line": 20431,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00428390",
-    "line": 20435,
+    "line": 20432,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00428390",
-    "line": 20442,
+    "line": 20439,
     "base_expr": "iVar3",
     "line_text": "      (**(code **)(iVar3 + 0x114))();"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00428390",
-    "line": 20443,
+    "line": 20440,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00428390",
-    "line": 20444,
+    "line": 20441,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x11c))();"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00428390",
-    "line": 20445,
+    "line": 20442,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00428390",
-    "line": 20452,
+    "line": 20449,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x114))();"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_00428390",
-    "line": 20453,
+    "line": 20450,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xfc))();"
   },
   {
     "offset_hex": "0x100",
     "function": "FUN_00428390",
-    "line": 20461,
+    "line": 20458,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x100))();"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00428390",
-    "line": 20462,
+    "line": 20459,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00428390",
-    "line": 20466,
+    "line": 20463,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x11c))();"
   },
   {
     "offset_hex": "0x100",
     "function": "FUN_00428390",
-    "line": 20473,
+    "line": 20470,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x100))();"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_00428390",
-    "line": 20474,
+    "line": 20471,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xfc))();"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00428390",
-    "line": 20479,
+    "line": 20476,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x11c))();"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00428390",
-    "line": 20480,
+    "line": 20477,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_00428390",
-    "line": 20481,
+    "line": 20478,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xc4))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00428390",
-    "line": 20482,
+    "line": 20479,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00428390",
-    "line": 20483,
+    "line": 20480,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00428390",
-    "line": 20484,
+    "line": 20481,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00428390",
-    "line": 20485,
+    "line": 20482,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x114))();"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_00428390",
-    "line": 20486,
+    "line": 20483,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xfc))();"
   },
   {
     "offset_hex": "0x100",
     "function": "FUN_00428390",
-    "line": 20491,
+    "line": 20488,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x100))();"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00428390",
-    "line": 20497,
+    "line": 20494,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x11c))();"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00428390",
-    "line": 20498,
+    "line": 20495,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x114))();"
+  },
+  {
+    "offset_hex": "0x114",
+    "function": "FUN_00428390",
+    "line": 20498,
+    "base_expr": "*DAT_0048083c",
+    "line_text": "        (**(code **)(*DAT_0048083c + 0x114))();"
   },
   {
     "offset_hex": "0x114",
@@ -6580,1080 +6594,1059 @@
     "line_text": "        (**(code **)(*DAT_0048083c + 0x114))();"
   },
   {
-    "offset_hex": "0x114",
-    "function": "FUN_00428390",
-    "line": 20504,
-    "base_expr": "*DAT_0048083c",
-    "line_text": "        (**(code **)(*DAT_0048083c + 0x114))();"
-  },
-  {
     "offset_hex": "0x100",
     "function": "FUN_00428390",
-    "line": 20511,
+    "line": 20508,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x100))();"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_00428390",
-    "line": 20512,
+    "line": 20509,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xfc))();"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00428390",
-    "line": 20517,
+    "line": 20514,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x11c))();"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00428390",
-    "line": 20518,
+    "line": 20515,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00428390",
-    "line": 20521,
+    "line": 20518,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x20))(0x13,5);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00428390",
-    "line": 20523,
+    "line": 20520,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x20))(0x14);"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_00428390",
-    "line": 20525,
+    "line": 20522,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7ec,0);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00428390",
-    "line": 20537,
+    "line": 20534,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x114))(0x3eb6b6b7,0x3f34b4b5,0x3f800000,fVar10);"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_00428390",
-    "line": 20542,
+    "line": 20539,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xfc))(_DAT_0047ea4c + _DAT_0047ea4c);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00428390",
-    "line": 20543,
+    "line": 20540,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00428390",
-    "line": 20546,
+    "line": 20543,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00428390",
-    "line": 20549,
+    "line": 20546,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x114))(0x3eb6b6b7,0x3f34b4b5,0x3f800000,fVar11 * 0.3);"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_00428390",
-    "line": 20551,
+    "line": 20548,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xfc))(_DAT_0047ea4c * -2.0);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00428390",
-    "line": 20552,
+    "line": 20549,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00428390",
-    "line": 20556,
+    "line": 20553,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00428390",
-    "line": 20557,
+    "line": 20554,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x20))(0x14,6);"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_00428390",
-    "line": 20562,
+    "line": 20559,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7e0);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00428390",
-    "line": 20563,
+    "line": 20560,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x20))(0x13,2);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00428390",
-    "line": 20565,
+    "line": 20562,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x20))(0x14,2);"
   },
   {
     "offset_hex": "0x100",
     "function": "FUN_00428390",
-    "line": 20566,
+    "line": 20563,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x100))(0,0,0x3f800000,0x3f800000);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00428390",
-    "line": 20571,
+    "line": 20568,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,fVar14 * fVar11);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00428390",
-    "line": 20572,
+    "line": 20569,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_00428390",
-    "line": 20573,
+    "line": 20570,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xfc))((&DAT_00490bb0)[DAT_004aaf0c * 0xd8]);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00428390",
-    "line": 20592,
+    "line": 20589,
     "base_expr": "iVar3",
     "line_text": "      (**(code **)(iVar3 + 0x11c))(fStack_17c,DAT_004965dc,fVar14,fVar14);"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00428390",
-    "line": 20593,
+    "line": 20590,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00428390",
-    "line": 20598,
+    "line": 20595,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x20))(0x13,5);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00428390",
-    "line": 20600,
+    "line": 20597,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x20))(0x14,2);"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_00428390",
-    "line": 20601,
+    "line": 20598,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7d4,0);"
   },
   {
     "offset_hex": "0x104",
     "function": "FUN_00428390",
-    "line": 20602,
+    "line": 20599,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x104))(4,2);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00428390",
-    "line": 20603,
+    "line": 20600,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00428390",
-    "line": 20620,
+    "line": 20617,
     "base_expr": "*DAT_0048083c",
     "line_text": "            (**(code **)(*DAT_0048083c + 0x114))"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_00428390",
-    "line": 20625,
+    "line": 20622,
     "base_expr": "*DAT_0048083c",
     "line_text": "                (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00428390",
-    "line": 20636,
+    "line": 20633,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00428390",
-    "line": 20638,
+    "line": 20635,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(0x13,5);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00428390",
-    "line": 20639,
+    "line": 20636,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(0x14,6);"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_004295f0",
-    "line": 20703,
+    "line": 20700,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xc4))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_004295f0",
-    "line": 20709,
+    "line": 20706,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_004295f0",
-    "line": 20713,
+    "line": 20710,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_004295f0",
-    "line": 20717,
+    "line": 20714,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_004295f0",
-    "line": 20719,
+    "line": 20716,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(0x14,6);"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_004295f0",
-    "line": 20721,
+    "line": 20718,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7f0,0);"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_004295f0",
-    "line": 20723,
+    "line": 20720,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xfc))(0);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_004295f0",
-    "line": 20732,
+    "line": 20729,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x110",
     "function": "FUN_004295f0",
-    "line": 20783,
+    "line": 20780,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x110))(afStack_8c + 2);"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_004295f0",
-    "line": 20784,
+    "line": 20781,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0xfc))(0);"
   },
   {
     "offset_hex": "0x104",
     "function": "FUN_004295f0",
-    "line": 20785,
+    "line": 20782,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x104))(4,0);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_004295f0",
-    "line": 20786,
+    "line": 20783,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0x110",
     "function": "FUN_004295f0",
-    "line": 20832,
+    "line": 20829,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x110))(afStack_8c + 2);"
   },
   {
     "offset_hex": "0x110",
     "function": "FUN_004295f0",
-    "line": 20838,
+    "line": 20835,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x110))(afStack_8c + 1);"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_004295f0",
-    "line": 20840,
+    "line": 20837,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0xfc))((float)(fVar12 * (float10)0.2));"
   },
   {
     "offset_hex": "0x104",
     "function": "FUN_004295f0",
-    "line": 20842,
+    "line": 20839,
     "base_expr": "*DAT_0048083c",
     "line_text": "            (**(code **)(*DAT_0048083c + 0x104))(4,iVar6 + 1);"
   },
   {
     "offset_hex": "0x104",
     "function": "FUN_004295f0",
-    "line": 20845,
+    "line": 20842,
     "base_expr": "*DAT_0048083c",
     "line_text": "            (**(code **)(*DAT_0048083c + 0x104))(4,iVar6);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_004295f0",
-    "line": 20848,
+    "line": 20845,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_004295f0",
-    "line": 20855,
+    "line": 20852,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_004295f0",
-    "line": 20857,
+    "line": 20854,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7e4,0);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_004295f0",
-    "line": 20858,
+    "line": 20855,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x110",
     "function": "FUN_004295f0",
-    "line": 20875,
+    "line": 20872,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x110))(afStack_8c);"
   },
   {
     "offset_hex": "0x110",
     "function": "FUN_004295f0",
-    "line": 20880,
+    "line": 20877,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x110))(pfVar15);"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_004295f0",
-    "line": 20882,
+    "line": 20879,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0xfc))((float)fVar12);"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_004295f0",
-    "line": 20883,
+    "line": 20880,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0xfc))(0);"
   },
   {
     "offset_hex": "0x108",
     "function": "FUN_004295f0",
-    "line": 20884,
+    "line": 20881,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x108))(8,2,1,(&DAT_004d7a90)[(int)pfVar7[4] * 0x1f] << 1);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_004295f0",
-    "line": 20885,
+    "line": 20882,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_004295f0",
-    "line": 20892,
+    "line": 20889,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_004295f0",
-    "line": 20894,
+    "line": 20891,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(0x18,0x3f000000);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_004295f0",
-    "line": 20895,
+    "line": 20892,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,0x3f333333);"
   },
   {
     "offset_hex": "0x14c",
     "function": "FUN_004295f0",
-    "line": 20912,
+    "line": 20909,
     "base_expr": "*DAT_0048083c",
     "line_text": "              piVar16 = (int *)(**(code **)(*DAT_0048083c + 0x14c))(puVar3);"
   },
   {
     "offset_hex": "0x144",
     "function": "FUN_004295f0",
-    "line": 20916,
+    "line": 20913,
     "base_expr": "*DAT_0048083c",
     "line_text": "              (**(code **)(*DAT_0048083c + 0x144))(fVar19,uVar14,puVar3);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_004295f0",
-    "line": 20939,
+    "line": 20936,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x20))(0x13,5);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_004295f0",
-    "line": 20940,
+    "line": 20937,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x20))(0x14,2);"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_004295f0",
-    "line": 20941,
+    "line": 20938,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7ec,0);"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_004295f0",
-    "line": 20943,
+    "line": 20940,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xfc))(0);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_004295f0",
-    "line": 20944,
+    "line": 20941,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,0x3d851eb8);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_004295f0",
-    "line": 20945,
+    "line": 20942,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_004295f0",
-    "line": 20962,
+    "line": 20959,
     "base_expr": "*DAT_0048083c",
     "line_text": "            (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_004295f0",
-    "line": 20972,
+    "line": 20969,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xf0))();"
+  },
+  {
+    "offset_hex": "0x20",
+    "function": "FUN_004295f0",
+    "line": 20970,
+    "base_expr": "*DAT_0048083c",
+    "line_text": "      (**(code **)(*DAT_0048083c + 0x20))(0x14,6);"
+  },
+  {
+    "offset_hex": "0x20",
+    "function": "FUN_004295f0",
+    "line": 20972,
+    "base_expr": "*DAT_0048083c",
+    "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(0x13,5);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_004295f0",
     "line": 20973,
     "base_expr": "*DAT_0048083c",
-    "line_text": "      (**(code **)(*DAT_0048083c + 0x20))(0x14,6);"
-  },
-  {
-    "offset_hex": "0x20",
-    "function": "FUN_004295f0",
-    "line": 20975,
-    "base_expr": "*DAT_0048083c",
-    "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(0x13,5);"
-  },
-  {
-    "offset_hex": "0x20",
-    "function": "FUN_004295f0",
-    "line": 20976,
-    "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(0x14,2);"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_004295f0",
-    "line": 20977,
+    "line": 20974,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7ec,0);"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_004295f0",
-    "line": 20979,
+    "line": 20976,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xfc))(0);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_004295f0",
-    "line": 20980,
+    "line": 20977,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_004295f0",
-    "line": 20984,
+    "line": 20981,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0xfc))(*puVar9);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_004295f0",
-    "line": 20985,
+    "line": 20982,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x114))(puVar9[-6],puVar9[-5],puVar9[-4],puVar9[-3]);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_004295f0",
-    "line": 20994,
+    "line": 20991,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_004295f0",
-    "line": 21001,
+    "line": 20998,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_004295f0",
-    "line": 21003,
+    "line": 21000,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xfc))(0);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_004295f0",
-    "line": 21004,
+    "line": 21001,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_004295f0",
-    "line": 21008,
+    "line": 21005,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x114))"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_004295f0",
-    "line": 21014,
+    "line": 21011,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_004295f0",
-    "line": 21021,
+    "line": 21018,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_004295f0",
-    "line": 21022,
+    "line": 21019,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(0x14,6);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_004295f0",
-    "line": 21023,
+    "line": 21020,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(0x13,5);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_004295f0",
-    "line": 21024,
+    "line": 21021,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(0x14,2);"
   },
   {
     "offset_hex": "0x100",
     "function": "FUN_004295f0",
-    "line": 21025,
+    "line": 21022,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x100))(0,0,0x3f800000,0x3f800000);"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_004295f0",
-    "line": 21026,
+    "line": 21023,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xfc))(0);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_004295f0",
-    "line": 21027,
+    "line": 21024,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_004295f0",
-    "line": 21031,
+    "line": 21028,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f19999a,0x3dcccccd,1.0 - *pfVar7);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_004295f0",
-    "line": 21033,
+    "line": 21030,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_004295f0",
-    "line": 21036,
+    "line": 21033,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f19999a,0x3dcccccd,(1.0 - *pfVar7) * 0.3)"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_004295f0",
-    "line": 21039,
+    "line": 21036,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_004295f0",
-    "line": 21045,
+    "line": 21042,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_004295f0",
-    "line": 21046,
+    "line": 21043,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))(0x14,6);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_004295f0",
-    "line": 21048,
+    "line": 21045,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x20))(0x13,5);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_004295f0",
-    "line": 21049,
+    "line": 21046,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x20))(0x14,6);"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_004295f0",
-    "line": 21050,
+    "line": 21047,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7ec,0);"
   },
   {
     "offset_hex": "0x100",
     "function": "FUN_004295f0",
-    "line": 21052,
+    "line": 21049,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x100))(DAT_00491248,DAT_0049124c,fVar19,DAT_0049124c + 0.25);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_004295f0",
-    "line": 21053,
+    "line": 21050,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_004295f0",
-    "line": 21057,
+    "line": 21054,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0xfc))(puVar9[-5]);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_004295f0",
-    "line": 21058,
+    "line": 21055,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x114))(puVar9[-9],puVar9[-8],puVar9[-7],puVar9[-6]);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_004295f0",
-    "line": 21059,
+    "line": 21056,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x11c))"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_004295f0",
-    "line": 21065,
+    "line": 21062,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0xc0",
-    "function": "FUN_0042a670",
-    "line": 21119,
+    "function": "texture_get_or_load",
+    "line": 21122,
     "base_expr": "*DAT_0048083c",
-    "line_text": "  iVar2 = (**(code **)(*DAT_0048083c + 0xc0))(param_1);"
+    "line_text": "  iVar2 = (**(code **)(*DAT_0048083c + 0xc0))(name);"
   },
   {
     "offset_hex": "0xb4",
-    "function": "FUN_0042a670",
-    "line": 21121,
+    "function": "texture_get_or_load",
+    "line": 21124,
     "base_expr": "*DAT_0048083c",
-    "line_text": "    cVar1 = (**(code **)(*DAT_0048083c + 0xb4))(param_1,param_1);"
+    "line_text": "    cVar1 = (**(code **)(*DAT_0048083c + 0xb4))(name,name);"
   },
   {
     "offset_hex": "0xc0",
-    "function": "FUN_0042a670",
-    "line": 21126,
+    "function": "texture_get_or_load",
+    "line": 21129,
     "base_expr": "*DAT_0048083c",
-    "line_text": "      iVar2 = (**(code **)(*DAT_0048083c + 0xc0))(param_1);"
+    "line_text": "      iVar2 = (**(code **)(*DAT_0048083c + 0xc0))(name);"
   },
   {
     "offset_hex": "0xc0",
-    "function": "FUN_0042a700",
-    "line": 21145,
+    "function": "texture_get_or_load_alt",
+    "line": 21150,
     "base_expr": "*DAT_0048083c",
-    "line_text": "  iVar2 = (**(code **)(*DAT_0048083c + 0xc0))(param_1);"
+    "line_text": "  iVar2 = (**(code **)(*DAT_0048083c + 0xc0))(name);"
   },
   {
     "offset_hex": "0xb4",
-    "function": "FUN_0042a700",
-    "line": 21147,
-    "base_expr": "*DAT_0048083c",
-    "line_text": "    cVar1 = (**(code **)(*DAT_0048083c + 0xb4))(param_1,param_1);"
-  },
-  {
-    "offset_hex": "0xc0",
-    "function": "FUN_0042a700",
+    "function": "texture_get_or_load_alt",
     "line": 21152,
     "base_expr": "*DAT_0048083c",
-    "line_text": "      iVar2 = (**(code **)(*DAT_0048083c + 0xc0))(param_1);"
+    "line_text": "    cVar1 = (**(code **)(*DAT_0048083c + 0xb4))(name,name);"
+  },
+  {
+    "offset_hex": "0xc0",
+    "function": "texture_get_or_load_alt",
+    "line": 21157,
+    "base_expr": "*DAT_0048083c",
+    "line_text": "      iVar2 = (**(code **)(*DAT_0048083c + 0xc0))(name);"
   },
   {
     "offset_hex": "0xac",
-    "function": "FUN_0042a9f0",
-    "line": 21235,
+    "function": "init_audio_and_terrain",
+    "line": 21242,
     "base_expr": "*DAT_0048083c",
     "line_text": "    cVar3 = (**(code **)(*DAT_0048083c + 0xac))(s_ground_004740c4,(int)lVar5,(int)lVar5);"
   },
   {
     "offset_hex": "0xac",
-    "function": "FUN_0042a9f0",
-    "line": 21243,
+    "function": "init_audio_and_terrain",
+    "line": 21250,
     "base_expr": "iVar1",
     "line_text": "      cVar3 = (**(code **)(iVar1 + 0xac))(s_ground_004740c4,(int)lVar5,uVar4);"
   },
   {
     "offset_hex": "0xc0",
-    "function": "FUN_0042abd0",
-    "line": 21286,
+    "function": "load_textures_step",
+    "line": 21294,
     "base_expr": "*DAT_0048083c",
     "line_text": "    DAT_0048f7dc = (**(code **)(*DAT_0048083c + 0xc0))(s_bodyset_004744f4);"
   },
   {
     "offset_hex": "0xc0",
-    "function": "FUN_0042abd0",
-    "line": 21304,
+    "function": "load_textures_step",
+    "line": 21312,
     "base_expr": "*DAT_0048083c",
     "line_text": "    DAT_0048f7f0 = (**(code **)(*DAT_0048083c + 0xc0))(s_bonuses_004743d8);"
   },
   {
     "offset_hex": "0xc0",
-    "function": "FUN_0042abd0",
-    "line": 21354,
+    "function": "load_textures_step",
+    "line": 21362,
     "base_expr": "*DAT_0048083c",
     "line_text": "      DAT_0048f530 = (**(code **)(*DAT_0048083c + 0xc0))(s_ground_004740c4);"
   },
   {
     "offset_hex": "0xc0",
-    "function": "FUN_0042abd0",
-    "line": 21359,
+    "function": "load_textures_step",
+    "line": 21367,
     "base_expr": "*DAT_0048083c",
     "line_text": "    DAT_0049bb30 = (**(code **)(*DAT_0048083c + 0xc0))(s_bullet_i_00474534);"
   },
   {
     "offset_hex": "0xc0",
-    "function": "FUN_0042abd0",
-    "line": 21360,
+    "function": "load_textures_step",
+    "line": 21368,
     "base_expr": "*DAT_0048083c",
     "line_text": "    _DAT_00496698 = (**(code **)(*DAT_0048083c + 0xc0))(s_aim64_0047412c);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_0042b090",
-    "line": 21385,
+    "line": 21393,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_0042b090",
-    "line": 21386,
+    "line": 21394,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_0042b090",
-    "line": 21387,
+    "line": 21395,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_0042b090",
-    "line": 21411,
+    "line": 21419,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x10",
     "function": "crimsonland_main",
-    "line": 21595,
+    "line": 21602,
     "base_expr": "*DAT_0048083c",
     "line_text": "  cVar1 = (**(code **)(*DAT_0048083c + 0x10))();"
   },
   {
     "offset_hex": "0x24",
     "function": "crimsonland_main",
-    "line": 21608,
+    "line": 21615,
     "base_expr": "*DAT_0048083c",
     "line_text": "  pcVar6 = (char *)(**(code **)(*DAT_0048083c + 0x24))();"
   },
   {
     "offset_hex": "0x24",
     "function": "crimsonland_main",
-    "line": 21610,
+    "line": 21617,
     "base_expr": "*DAT_0048083c",
     "line_text": "  puVar7 = (undefined1 *)(**(code **)(*DAT_0048083c + 0x24))();"
   },
   {
     "offset_hex": "0x24",
     "function": "crimsonland_main",
-    "line": 21612,
+    "line": 21619,
     "base_expr": "*DAT_0048083c",
     "line_text": "  pfVar8 = (float *)(**(code **)(*DAT_0048083c + 0x24))();"
   },
   {
     "offset_hex": "0x24",
     "function": "crimsonland_main",
-    "line": 21619,
+    "line": 21626,
     "base_expr": "*DAT_0048083c",
     "line_text": "  pcVar6 = (char *)(**(code **)(*DAT_0048083c + 0x24))();"
   },
   {
     "offset_hex": "0x20",
     "function": "crimsonland_main",
-    "line": 21632,
+    "line": 21639,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x20",
-    "function": "crimsonland_main",
-    "line": 21633,
-    "base_expr": "*DAT_0048083c",
-    "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
-  },
-  {
-    "offset_hex": "0x20",
-    "function": "crimsonland_main",
-    "line": 21634,
-    "base_expr": "*DAT_0048083c",
-    "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
-  },
-  {
-    "offset_hex": "0x20",
-    "function": "crimsonland_main",
-    "line": 21635,
-    "base_expr": "*DAT_0048083c",
-    "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
-  },
-  {
-    "offset_hex": "0x20",
-    "function": "crimsonland_main",
-    "line": 21637,
-    "base_expr": "*DAT_0048083c",
-    "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
-  },
-  {
-    "offset_hex": "0x24",
-    "function": "crimsonland_main",
-    "line": 21638,
-    "base_expr": "*DAT_0048083c",
-    "line_text": "  piVar5 = (int *)(**(code **)(*DAT_0048083c + 0x24))();"
-  },
-  {
-    "offset_hex": "0x24",
     "function": "crimsonland_main",
     "line": 21640,
     "base_expr": "*DAT_0048083c",
+    "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
+  },
+  {
+    "offset_hex": "0x20",
+    "function": "crimsonland_main",
+    "line": 21641,
+    "base_expr": "*DAT_0048083c",
+    "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
+  },
+  {
+    "offset_hex": "0x20",
+    "function": "crimsonland_main",
+    "line": 21642,
+    "base_expr": "*DAT_0048083c",
+    "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
+  },
+  {
+    "offset_hex": "0x20",
+    "function": "crimsonland_main",
+    "line": 21644,
+    "base_expr": "*DAT_0048083c",
+    "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
+  },
+  {
+    "offset_hex": "0x24",
+    "function": "crimsonland_main",
+    "line": 21645,
+    "base_expr": "*DAT_0048083c",
+    "line_text": "  piVar5 = (int *)(**(code **)(*DAT_0048083c + 0x24))();"
+  },
+  {
+    "offset_hex": "0x24",
+    "function": "crimsonland_main",
+    "line": 21647,
+    "base_expr": "*DAT_0048083c",
     "line_text": "  piVar5 = (int *)(**(code **)(*DAT_0048083c + 0x24))();"
   },
   {
     "offset_hex": "0x20",
     "function": "crimsonland_main",
-    "line": 21649,
+    "line": 21656,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x20",
     "function": "crimsonland_main",
-    "line": 21651,
+    "line": 21658,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x20",
     "function": "crimsonland_main",
-    "line": 21653,
+    "line": 21660,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x14",
     "function": "crimsonland_main",
-    "line": 21656,
+    "line": 21663,
     "base_expr": "*DAT_0048083c",
     "line_text": "  cVar1 = (**(code **)(*DAT_0048083c + 0x14))();"
   },
   {
     "offset_hex": "0x28",
     "function": "crimsonland_main",
-    "line": 21661,
-    "base_expr": "*DAT_0048083c",
-    "line_text": "    lpText = (LPCSTR)(**(code **)(*DAT_0048083c + 0x28))();"
-  },
-  {
-    "offset_hex": "0x20",
-    "function": "crimsonland_main",
-    "line": 21667,
-    "base_expr": "*DAT_0048083c",
-    "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
-  },
-  {
-    "offset_hex": "0x20",
-    "function": "crimsonland_main",
     "line": 21668,
     "base_expr": "*DAT_0048083c",
-    "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
+    "line_text": "    pCVar9 = (LPCSTR)(**(code **)(*DAT_0048083c + 0x28))();"
   },
   {
     "offset_hex": "0x20",
     "function": "crimsonland_main",
-    "line": 21669,
+    "line": 21674,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x20",
     "function": "crimsonland_main",
-    "line": 21670,
+    "line": 21675,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x20",
     "function": "crimsonland_main",
-    "line": 21678,
+    "line": 21676,
+    "base_expr": "*DAT_0048083c",
+    "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
+  },
+  {
+    "offset_hex": "0x20",
+    "function": "crimsonland_main",
+    "line": 21677,
+    "base_expr": "*DAT_0048083c",
+    "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
+  },
+  {
+    "offset_hex": "0x20",
+    "function": "crimsonland_main",
+    "line": 21685,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x2c",
     "function": "crimsonland_main",
-    "line": 21686,
-    "base_expr": "*DAT_0048083c",
-    "line_text": "  (**(code **)(*DAT_0048083c + 0x2c))();"
-  },
-  {
-    "offset_hex": "0x20",
-    "function": "crimsonland_main",
-    "line": 21687,
-    "base_expr": "*DAT_0048083c",
-    "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
-  },
-  {
-    "offset_hex": "0x2c",
-    "function": "crimsonland_main",
-    "line": 21690,
+    "line": 21693,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x2c))();"
   },
@@ -7667,968 +7660,968 @@
   {
     "offset_hex": "0x2c",
     "function": "crimsonland_main",
-    "line": 21699,
+    "line": 21697,
+    "base_expr": "*DAT_0048083c",
+    "line_text": "  (**(code **)(*DAT_0048083c + 0x2c))();"
+  },
+  {
+    "offset_hex": "0x20",
+    "function": "crimsonland_main",
+    "line": 21701,
+    "base_expr": "*DAT_0048083c",
+    "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
+  },
+  {
+    "offset_hex": "0x2c",
+    "function": "crimsonland_main",
+    "line": 21706,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x2c))();"
   },
   {
     "offset_hex": "0x54",
     "function": "crimsonland_main",
-    "line": 21711,
+    "line": 21718,
     "base_expr": "*DAT_0048083c",
-    "line_text": "  (**(code **)(*DAT_0048083c + 0x54))(&DAT_004aacd8,&DAT_004aaedc,uVar14);"
+    "line_text": "  (**(code **)(*DAT_0048083c + 0x54))(&DAT_004aacd8,&DAT_004aaedc,uVar15);"
   },
   {
     "offset_hex": "0x1c",
     "function": "crimsonland_main",
-    "line": 21733,
+    "line": 21740,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x1c))();"
   },
   {
     "offset_hex": "0x18",
     "function": "crimsonland_main",
-    "line": 21751,
+    "line": 21758,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x18))();"
   },
   {
     "offset_hex": "0x104",
     "function": "FUN_0042e0a0",
-    "line": 21884,
+    "line": 21891,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x104))(0x10,uVar2);"
   },
   {
     "offset_hex": "0x104",
     "function": "FUN_0042e0a0",
-    "line": 21888,
+    "line": 21895,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x104))(8,uVar2);"
   },
   {
     "offset_hex": "0x104",
     "function": "FUN_0042e0a0",
-    "line": 21892,
+    "line": 21899,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x104))(4,uVar2);"
   },
   {
     "offset_hex": "0x104",
     "function": "FUN_0042e0a0",
-    "line": 21896,
+    "line": 21903,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x104))(2,uVar2);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_0042e820",
-    "line": 22138,
+    "line": 22145,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_0042e820",
-    "line": 22142,
+    "line": 22149,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_0042e820",
-    "line": 22146,
+    "line": 22153,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xc4))();"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_0042e820",
-    "line": 22148,
+    "line": 22155,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x134",
     "function": "FUN_0042e820",
-    "line": 22177,
+    "line": 22184,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x134))(puVar2 + 5,4);"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_0042e820",
-    "line": 22182,
+    "line": 22189,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_0042e820",
-    "line": 22183,
+    "line": 22190,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x14,2);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_0042e820",
-    "line": 22184,
+    "line": 22191,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x134",
     "function": "FUN_0042e820",
-    "line": 22205,
+    "line": 22212,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x134))(puVar2 + 5,4,&pfStack_5c,&uStack_54,&pfStack_64);"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_0042e820",
-    "line": 22209,
+    "line": 22216,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_0042e820",
-    "line": 22210,
+    "line": 22217,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x14,6);"
   },
   {
     "offset_hex": "0x14c",
     "function": "FUN_0042fd00",
-    "line": 22905,
+    "line": 22912,
     "base_expr": "*DAT_0048083c",
     "line_text": "      iVar3 = (**(code **)(*DAT_0048083c + 0x14c))((int)&uStack_4 + 2);"
   },
   {
     "offset_hex": "0x48",
     "function": "FUN_0043d830",
-    "line": 28788,
+    "line": 28799,
     "base_expr": "*DAT_0048083c",
     "line_text": "  if ((DAT_004871ca == '\\0') && (cVar2 = (**(code **)(*DAT_0048083c + 0x48))(0xf), cVar2 != '\\0')) {"
   },
   {
     "offset_hex": "0x44",
     "function": "FUN_0043d830",
-    "line": 28789,
+    "line": 28800,
     "base_expr": "*DAT_0048083c",
     "line_text": "    cVar2 = (**(code **)(*DAT_0048083c + 0x44))(0x2a);"
   },
   {
     "offset_hex": "0x44",
     "function": "FUN_0043d830",
-    "line": 28790,
+    "line": 28801,
     "base_expr": "*DAT_0048083c",
     "line_text": "    if ((cVar2 == '\\0') && (cVar2 = (**(code **)(*DAT_0048083c + 0x44))(0x36), cVar2 == '\\0')) {"
   },
   {
     "offset_hex": "0xd0",
     "function": "FUN_0043d940",
-    "line": 28830,
+    "line": 28841,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xd0))(&local_18,0x40c00000,0x40c00000,&local_10);"
   },
   {
     "offset_hex": "0x48",
     "function": "FUN_0043d9b0",
-    "line": 28871,
+    "line": 28882,
     "base_expr": "*DAT_0048083c",
     "line_text": "      cVar2 = (**(code **)(*DAT_0048083c + 0x48))(0xcd);"
   },
   {
     "offset_hex": "0x48",
     "function": "FUN_0043d9b0",
-    "line": 28879,
+    "line": 28890,
     "base_expr": "*DAT_0048083c",
     "line_text": "      cVar2 = (**(code **)(*DAT_0048083c + 0x48))(0xcb);"
   },
   {
     "offset_hex": "0xc0",
     "function": "FUN_0043d9b0",
-    "line": 28899,
+    "line": 28910,
     "base_expr": "*DAT_0048083c",
     "line_text": "    DAT_00478668 = (**(code **)(*DAT_0048083c + 0xc0))(s_ui_rectOn_004743f4);"
   },
   {
     "offset_hex": "0xc0",
     "function": "FUN_0043d9b0",
-    "line": 28902,
+    "line": 28913,
     "base_expr": "*DAT_0048083c",
     "line_text": "    DAT_0047866c = (**(code **)(*DAT_0048083c + 0xc0))(s_ui_rectOff_00474414);"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_0043d9b0",
-    "line": 28904,
+    "line": 28915,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xc4))(DAT_0047866c,0);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_0043d9b0",
-    "line": 28905,
+    "line": 28916,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_0043d9b0",
-    "line": 28907,
+    "line": 28918,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,0x3f000000);"
   },
   {
     "offset_hex": "0x100",
     "function": "FUN_0043d9b0",
-    "line": 28909,
+    "line": 28920,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x100))(0,0,0x3f800000,0x3f800000);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_0043d9b0",
-    "line": 28914,
+    "line": 28925,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x11c))((float)iVar10 + fVar9,fVar1,0x41000000,0x41800000);"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_0043d9b0",
-    "line": 28919,
+    "line": 28930,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_0043d9b0",
-    "line": 28921,
+    "line": 28932,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xc4))(DAT_00478668,0);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_0043d9b0",
-    "line": 28922,
+    "line": 28933,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_0043d9b0",
-    "line": 28923,
+    "line": 28934,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,0x3f800000);"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_0043d9b0",
-    "line": 28928,
+    "line": 28939,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x11c))((float)iVar10 + fVar8,fVar1,0x41000000,0x41800000);"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_0043d9b0",
-    "line": 28933,
+    "line": 28944,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x14c",
     "function": "FUN_0043dc80",
-    "line": 28961,
+    "line": 28972,
     "base_expr": "*DAT_0048083c",
     "line_text": "    iVar3 = (**(code **)(*DAT_0048083c + 0x14c))(*(int *)(param_2 + 4));"
   },
   {
     "offset_hex": "0x100",
     "function": "FUN_0043dc80",
-    "line": 28979,
+    "line": 28990,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x100))(0,0,0x3f800000,0x3f800000);"
   },
   {
     "offset_hex": "0xc0",
     "function": "FUN_0043dc80",
-    "line": 28987,
+    "line": 28998,
     "base_expr": "iVar3",
     "line_text": "  uVar4 = (**(code **)(iVar3 + 0xc0))(pcVar5,0);"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_0043dc80",
-    "line": 28988,
+    "line": 28999,
     "base_expr": "iVar3",
     "line_text": "  (**(code **)(iVar3 + 0xc4))(uVar4);"
   },
   {
     "offset_hex": "0x48",
     "function": "FUN_0043dc80",
-    "line": 28990,
+    "line": 29001,
     "base_expr": "*DAT_0048083c",
     "line_text": "     (((unaff_SI != '\\0' && (cVar1 = (**(code **)(*DAT_0048083c + 0x48))(0x1c), cVar1 != '\\0')) ||"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_0043dc80",
-    "line": 28994,
+    "line": 29005,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x15,1);"
-  },
-  {
-    "offset_hex": "0x114",
-    "function": "FUN_0043dc80",
-    "line": 28995,
-    "base_expr": "*DAT_0048083c",
-    "line_text": "  (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,0x3f800000);"
-  },
-  {
-    "offset_hex": "0xe8",
-    "function": "FUN_0043dc80",
-    "line": 28996,
-    "base_expr": "*DAT_0048083c",
-    "line_text": "  (**(code **)(*DAT_0048083c + 0xe8))();"
-  },
-  {
-    "offset_hex": "0xfc",
-    "function": "FUN_0043dc80",
-    "line": 28997,
-    "base_expr": "*DAT_0048083c",
-    "line_text": "  (**(code **)(*DAT_0048083c + 0xfc))(0);"
-  },
-  {
-    "offset_hex": "0x11c",
-    "function": "FUN_0043dc80",
-    "line": 28998,
-    "base_expr": "*DAT_0048083c",
-    "line_text": "  (**(code **)(*DAT_0048083c + 0x11c))(*param_1,param_1[1],0x41800000,0x41800000);"
-  },
-  {
-    "offset_hex": "0xf0",
-    "function": "FUN_0043dc80",
-    "line": 28999,
-    "base_expr": "*DAT_0048083c",
-    "line_text": "  (**(code **)(*DAT_0048083c + 0xf0))();"
-  },
-  {
-    "offset_hex": "0x20",
-    "function": "FUN_0043dc80",
-    "line": 29000,
-    "base_expr": "*DAT_0048083c",
-    "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x15,2);"
-  },
-  {
-    "offset_hex": "0x20",
-    "function": "FUN_0043dc80",
-    "line": 29001,
-    "base_expr": "*DAT_0048083c",
-    "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x18,0x3f000000);"
-  },
-  {
-    "offset_hex": "0x114",
-    "function": "FUN_0043dc80",
-    "line": 29003,
-    "base_expr": "*DAT_0048083c",
-    "line_text": "    uVar4 = (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_0043dc80",
     "line": 29006,
     "base_expr": "*DAT_0048083c",
+    "line_text": "  (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,0x3f800000);"
+  },
+  {
+    "offset_hex": "0xe8",
+    "function": "FUN_0043dc80",
+    "line": 29007,
+    "base_expr": "*DAT_0048083c",
+    "line_text": "  (**(code **)(*DAT_0048083c + 0xe8))();"
+  },
+  {
+    "offset_hex": "0xfc",
+    "function": "FUN_0043dc80",
+    "line": 29008,
+    "base_expr": "*DAT_0048083c",
+    "line_text": "  (**(code **)(*DAT_0048083c + 0xfc))(0);"
+  },
+  {
+    "offset_hex": "0x11c",
+    "function": "FUN_0043dc80",
+    "line": 29009,
+    "base_expr": "*DAT_0048083c",
+    "line_text": "  (**(code **)(*DAT_0048083c + 0x11c))(*param_1,param_1[1],0x41800000,0x41800000);"
+  },
+  {
+    "offset_hex": "0xf0",
+    "function": "FUN_0043dc80",
+    "line": 29010,
+    "base_expr": "*DAT_0048083c",
+    "line_text": "  (**(code **)(*DAT_0048083c + 0xf0))();"
+  },
+  {
+    "offset_hex": "0x20",
+    "function": "FUN_0043dc80",
+    "line": 29011,
+    "base_expr": "*DAT_0048083c",
+    "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x15,2);"
+  },
+  {
+    "offset_hex": "0x20",
+    "function": "FUN_0043dc80",
+    "line": 29012,
+    "base_expr": "*DAT_0048083c",
+    "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x18,0x3f000000);"
+  },
+  {
+    "offset_hex": "0x114",
+    "function": "FUN_0043dc80",
+    "line": 29014,
+    "base_expr": "*DAT_0048083c",
+    "line_text": "    uVar4 = (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000);"
+  },
+  {
+    "offset_hex": "0x114",
+    "function": "FUN_0043dc80",
+    "line": 29017,
+    "base_expr": "*DAT_0048083c",
     "line_text": "    uVar4 = (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000);"
   },
   {
     "offset_hex": "0x144",
     "function": "FUN_0043dc80",
-    "line": 29009,
+    "line": 29020,
     "base_expr": "*DAT_0048083c",
     "line_text": "    uVar4 = (**(code **)(*DAT_0048083c + 0x144))"
   },
   {
     "offset_hex": "0xd0",
     "function": "FUN_0043def0",
-    "line": 29079,
+    "line": 29090,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xd0))();"
   },
   {
     "offset_hex": "0xd0",
     "function": "FUN_0043def0",
-    "line": 29089,
+    "line": 29100,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xd0))(&fStack_40,0x43780000);"
   },
   {
     "offset_hex": "0xd0",
     "function": "FUN_0043def0",
-    "line": 29097,
+    "line": 29108,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xd0))(&stack0xffffffb0,0x3f800000,fVar1,&local_30);"
   },
   {
     "offset_hex": "0x60",
     "function": "FUN_0043def0",
-    "line": 29099,
+    "line": 29110,
     "base_expr": "*DAT_0048083c",
     "line_text": "  fVar8 = (float10)(**(code **)(*DAT_0048083c + 0x60))();"
   },
   {
     "offset_hex": "0x60",
     "function": "FUN_0043def0",
-    "line": 29103,
+    "line": 29114,
     "base_expr": "*DAT_0048083c",
     "line_text": "  fVar8 = (float10)(**(code **)(*DAT_0048083c + 0x60))();"
   },
   {
     "offset_hex": "0x48",
     "function": "FUN_0043def0",
-    "line": 29108,
+    "line": 29119,
     "base_expr": "*DAT_0048083c",
     "line_text": "    cVar3 = (**(code **)(*DAT_0048083c + 0x48))(200);"
   },
   {
     "offset_hex": "0x48",
     "function": "FUN_0043def0",
-    "line": 29112,
+    "line": 29123,
     "base_expr": "*DAT_0048083c",
     "line_text": "    cVar3 = (**(code **)(*DAT_0048083c + 0x48))(0xd0);"
   },
   {
     "offset_hex": "0x48",
     "function": "FUN_0043def0",
-    "line": 29117,
+    "line": 29128,
     "base_expr": "*DAT_0048083c",
     "line_text": "  cVar3 = (**(code **)(*DAT_0048083c + 0x48))(0xc9);"
   },
   {
     "offset_hex": "0x48",
     "function": "FUN_0043def0",
-    "line": 29122,
+    "line": 29133,
     "base_expr": "*DAT_0048083c",
     "line_text": "  cVar3 = (**(code **)(*DAT_0048083c + 0x48))(0xd1);"
   },
   {
     "offset_hex": "0xd0",
     "function": "FUN_0043def0",
-    "line": 29151,
+    "line": 29162,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xd0))(&fStack_40,0x41000000,local_24 + 1.0,&uStack_38);"
   },
   {
     "offset_hex": "0xd0",
     "function": "FUN_0043def0",
-    "line": 29162,
+    "line": 29173,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xd0))(&pfStack_68,0x40c00000,fStack_34 - 1.0,&stack0xffffffb8);"
   },
   {
     "offset_hex": "0xd0",
     "function": "FUN_0043def0",
-    "line": 29174,
+    "line": 29185,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xd0))(&pfStack_68,0x40c00000,fStack_34 - 1.0,&stack0xffffffb8);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_0043def0",
-    "line": 29232,
+    "line": 29243,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x114))(0x3f333333,0x3f800000,0x3f333333,local_24);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_0043def0",
-    "line": 29237,
+    "line": 29248,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,local_24);"
   },
   {
     "offset_hex": "0x144",
     "function": "FUN_0043def0",
-    "line": 29256,
+    "line": 29267,
     "base_expr": "*DAT_0048083c",
     "line_text": "            (**(code **)(*DAT_0048083c + 0x144))"
   },
   {
     "offset_hex": "0x14c",
     "function": "FUN_0043e5e0",
-    "line": 29315,
+    "line": 29326,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x14c))(*param_2);"
   },
   {
     "offset_hex": "0x110",
     "function": "FUN_0043e5e0",
-    "line": 29320,
+    "line": 29331,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x110))(&DAT_004ccd40);"
   },
   {
     "offset_hex": "0x110",
     "function": "FUN_0043e5e0",
-    "line": 29324,
+    "line": 29335,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x110))(&DAT_004d0e28);"
   },
   {
     "offset_hex": "0x148",
     "function": "FUN_0043e5e0",
-    "line": 29326,
+    "line": 29337,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x148))(DAT_0048083c,*param_1,param_1[1],&DAT_00471fc4,*param_2);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_0043e5e0",
-    "line": 29327,
+    "line": 29338,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0xd4",
     "function": "FUN_0043e5e0",
-    "line": 29328,
+    "line": 29339,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xd4))(&stack0xfffffff0,unaff_retaddr,0x3f800000);"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_0043e5e0",
-    "line": 29329,
+    "line": 29340,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x48",
     "function": "FUN_0043e5e0",
-    "line": 29334,
+    "line": 29345,
     "base_expr": "*DAT_0048083c",
     "line_text": "          ((cVar1 = (**(code **)(*DAT_0048083c + 0x48))(0x1c), cVar1 == '\\0' &&"
   },
   {
     "offset_hex": "0x14c",
     "function": "FUN_0043e830",
-    "line": 29376,
+    "line": 29387,
     "base_expr": "*DAT_0048083c",
     "line_text": "  iVar4 = (**(code **)(*DAT_0048083c + 0x14c))(*param_2);"
   },
   {
     "offset_hex": "0xc0",
     "function": "FUN_0043e830",
-    "line": 29378,
+    "line": 29389,
     "base_expr": "*DAT_0048083c",
     "line_text": "    DAT_00478670 = (**(code **)(*DAT_0048083c + 0xc0))(s_ui_buttonSm_00474498);"
   },
   {
     "offset_hex": "0xc0",
     "function": "FUN_0043e830",
-    "line": 29381,
+    "line": 29392,
     "base_expr": "*DAT_0048083c",
     "line_text": "    DAT_00478674 = (**(code **)(*DAT_0048083c + 0xc0))(s_ui_buttonMd_00474474);"
   },
   {
     "offset_hex": "0xd0",
     "function": "FUN_0043e830",
-    "line": 29437,
+    "line": 29448,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xd0))(&fStack_1c,fVar8 - 24.0,0x41b00000,&local_14);"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_0043e830",
-    "line": 29447,
+    "line": 29458,
     "base_expr": "iVar4",
     "line_text": "  (**(code **)(iVar4 + 0xc4))(iVar6,0);"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_0043e830",
-    "line": 29449,
+    "line": 29460,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xc4))(DAT_00478674,0);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_0043e830",
-    "line": 29452,
+    "line": 29463,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,param_2[4]);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_0043e830",
-    "line": 29453,
+    "line": 29464,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x15,1);"
   },
   {
     "offset_hex": "0x100",
     "function": "FUN_0043e830",
-    "line": 29454,
+    "line": 29465,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x100))(0,0,0x3f800000,0x3f800000);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_0043e830",
-    "line": 29455,
+    "line": 29466,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_0043e830",
-    "line": 29456,
+    "line": 29467,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x11c))(*param_1,param_1[1],uVar5,0x42000000);"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_0043e830",
-    "line": 29457,
+    "line": 29468,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_0043e830",
-    "line": 29458,
+    "line": 29469,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x15,2);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_0043e830",
-    "line": 29459,
+    "line": 29470,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x18,0x3f000000);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_0043e830",
-    "line": 29466,
+    "line": 29477,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,fVar8);"
   },
   {
     "offset_hex": "0x14c",
     "function": "FUN_0043e830",
-    "line": 29468,
+    "line": 29479,
     "base_expr": "iVar4",
     "line_text": "  iVar6 = (**(code **)(iVar4 + 0x14c))(*param_2,param_1[1] + 10.0,&DAT_00471fc4,*param_2);"
   },
   {
     "offset_hex": "0x148",
     "function": "FUN_0043e830",
-    "line": 29469,
+    "line": 29480,
     "base_expr": "iVar4",
     "line_text": "  (**(code **)(iVar4 + 0x148))(DAT_0048083c,(fVar8 - (float)(iVar6 / 2)) + 1.0);"
   },
   {
     "offset_hex": "0x48",
     "function": "FUN_0043e830",
-    "line": 29474,
+    "line": 29485,
     "base_expr": "*DAT_0048083c",
     "line_text": "          ((cVar2 = (**(code **)(*DAT_0048083c + 0x48))(0x1c), cVar2 == '\\0' &&"
   },
   {
     "offset_hex": "0x48",
     "function": "FUN_0043ecf0",
-    "line": 29539,
+    "line": 29550,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x48))();"
   },
   {
     "offset_hex": "0x48",
     "function": "FUN_0043ecf0",
-    "line": 29540,
+    "line": 29551,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x48))();"
   },
   {
     "offset_hex": "0x54",
     "function": "FUN_0043ecf0",
-    "line": 29545,
+    "line": 29556,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x54))();"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_0043ecf0",
-    "line": 29559,
+    "line": 29570,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x114))();"
   },
   {
     "offset_hex": "0xd4",
     "function": "FUN_0043ecf0",
-    "line": 29564,
+    "line": 29575,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xd4))();"
   },
   {
     "offset_hex": "0xd0",
     "function": "FUN_0043ecf0",
-    "line": 29570,
+    "line": 29581,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xd0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_0043ecf0",
-    "line": 29574,
+    "line": 29585,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x14c",
     "function": "FUN_0043ecf0",
-    "line": 29580,
+    "line": 29591,
     "base_expr": "*DAT_0048083c",
     "line_text": "    iStack_44 = (**(code **)(*DAT_0048083c + 0x14c))();"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_0043ecf0",
-    "line": 29587,
+    "line": 29598,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x114))(0x3f800000);"
   },
   {
     "offset_hex": "0x148",
     "function": "FUN_0043ecf0",
-    "line": 29588,
+    "line": 29599,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x148))"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_0043ecf0",
-    "line": 29596,
+    "line": 29607,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,pfStack_50);"
   },
   {
     "offset_hex": "0xd4",
     "function": "FUN_0043ecf0",
-    "line": 29599,
+    "line": 29610,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xd4))(&fStack_80,0x3f800000,0x41600000);"
   },
   {
     "offset_hex": "0x14c",
     "function": "FUN_0043efc0",
-    "line": 29633,
+    "line": 29644,
     "base_expr": "*DAT_0048083c",
     "line_text": "      iVar5 = (**(code **)(*DAT_0048083c + 0x14c))();"
   },
   {
     "offset_hex": "0x48",
     "function": "FUN_0043efc0",
-    "line": 29664,
+    "line": 29675,
     "base_expr": "*DAT_0048083c",
     "line_text": "    cVar3 = (**(code **)(*DAT_0048083c + 0x48))();"
   },
   {
     "offset_hex": "0x48",
     "function": "FUN_0043efc0",
-    "line": 29683,
+    "line": 29694,
     "base_expr": "*DAT_0048083c",
     "line_text": "    cVar3 = (**(code **)(*DAT_0048083c + 0x48))();"
   },
   {
     "offset_hex": "0xd0",
     "function": "FUN_0043efc0",
-    "line": 29704,
+    "line": 29715,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xd0))();"
   },
   {
     "offset_hex": "0xd0",
     "function": "FUN_0043efc0",
-    "line": 29707,
+    "line": 29718,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xd0))();"
   },
   {
     "offset_hex": "0xd0",
     "function": "FUN_0043efc0",
-    "line": 29712,
+    "line": 29723,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xd0))();"
   },
   {
     "offset_hex": "0xc0",
     "function": "FUN_0043efc0",
-    "line": 29715,
+    "line": 29726,
     "base_expr": "iVar7",
     "line_text": "  (**(code **)(iVar7 + 0xc0))();"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_0043efc0",
-    "line": 29716,
+    "line": 29727,
     "base_expr": "iVar7",
     "line_text": "  (**(code **)(iVar7 + 0xc4))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_0043efc0",
-    "line": 29717,
+    "line": 29728,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_0043efc0",
-    "line": 29718,
+    "line": 29729,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x114))();"
   },
   {
     "offset_hex": "0x100",
     "function": "FUN_0043efc0",
-    "line": 29719,
+    "line": 29730,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x100))();"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_0043efc0",
-    "line": 29720,
+    "line": 29731,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_0043efc0",
-    "line": 29722,
+    "line": 29733,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x11c))();"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_0043efc0",
-    "line": 29723,
+    "line": 29734,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_0043efc0",
-    "line": 29724,
+    "line": 29735,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_0043efc0",
-    "line": 29731,
+    "line": 29742,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_0043efc0",
-    "line": 29735,
+    "line": 29746,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000);"
   },
   {
     "offset_hex": "0x148",
     "function": "FUN_0043efc0",
-    "line": 29737,
+    "line": 29748,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x148))"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_0043efc0",
-    "line": 29741,
+    "line": 29752,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,0x3f333333);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_0043efc0",
-    "line": 29751,
+    "line": 29762,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,0x3f19999a);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_0043efc0",
-    "line": 29755,
+    "line": 29766,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,0x3f733333);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_0043efc0",
-    "line": 29758,
+    "line": 29769,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,0x3f75c28f);"
   },
   {
     "offset_hex": "0x148",
     "function": "FUN_0043efc0",
-    "line": 29760,
+    "line": 29771,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x148))"
   },
   {
     "offset_hex": "0x110",
     "function": "FUN_004411c0",
-    "line": 29789,
+    "line": 29800,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x110))(&DAT_004ccca8);"
   },
   {
     "offset_hex": "0xd4",
     "function": "FUN_004411c0",
-    "line": 29791,
+    "line": 29802,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xd4))(unaff_retaddr,0x43400000,0x3f800000);"
   },
   {
     "offset_hex": "0x110",
     "function": "FUN_00441220",
-    "line": 29806,
+    "line": 29817,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x110))(&DAT_004ccca8);"
   },
   {
     "offset_hex": "0xd4",
     "function": "FUN_00441220",
-    "line": 29808,
+    "line": 29819,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xd4))(unaff_retaddr,0x3f800000,0x42400000);"
   },
   {
     "offset_hex": "0xd0",
     "function": "FUN_00442150",
-    "line": 30138,
-    "base_expr": "*DAT_0048083c",
-    "line_text": "  (**(code **)(*DAT_0048083c + 0xd0))();"
-  },
-  {
-    "offset_hex": "0x114",
-    "function": "FUN_00442150",
-    "line": 30144,
-    "base_expr": "*DAT_0048083c",
-    "line_text": "  (**(code **)(*DAT_0048083c + 0x114))();"
-  },
-  {
-    "offset_hex": "0xd4",
-    "function": "FUN_00442150",
     "line": 30149,
     "base_expr": "*DAT_0048083c",
-    "line_text": "  (**(code **)(*DAT_0048083c + 0xd4))();"
+    "line_text": "  (**(code **)(*DAT_0048083c + 0xd0))();"
   },
   {
     "offset_hex": "0x114",
@@ -8638,639 +8631,681 @@
     "line_text": "  (**(code **)(*DAT_0048083c + 0x114))();"
   },
   {
+    "offset_hex": "0xd4",
+    "function": "FUN_00442150",
+    "line": 30160,
+    "base_expr": "*DAT_0048083c",
+    "line_text": "  (**(code **)(*DAT_0048083c + 0xd4))();"
+  },
+  {
+    "offset_hex": "0x114",
+    "function": "FUN_00442150",
+    "line": 30166,
+    "base_expr": "*DAT_0048083c",
+    "line_text": "  (**(code **)(*DAT_0048083c + 0x114))();"
+  },
+  {
     "offset_hex": "0x148",
     "function": "FUN_00442150",
-    "line": 30158,
+    "line": 30169,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x148))(DAT_0048083c,*param_1 + 12.0);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00442150",
-    "line": 30161,
+    "line": 30172,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000);"
   },
   {
     "offset_hex": "0x148",
     "function": "FUN_00442150",
-    "line": 30162,
+    "line": 30173,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x148))"
   },
   {
     "offset_hex": "0x148",
     "function": "FUN_00442150",
-    "line": 30165,
+    "line": 30176,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x148))"
   },
   {
     "offset_hex": "0x148",
     "function": "FUN_00442150",
-    "line": 30168,
+    "line": 30179,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x148))(DAT_0048083c,*param_1 + 60.0,param_1[1] + 32.0,&DAT_0047f4d8)"
   },
   {
     "offset_hex": "0x148",
     "function": "FUN_00442150",
-    "line": 30170,
+    "line": 30181,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x148))(DAT_0048083c,*param_1 + 60.0,param_1[1] + 46.0,&DAT_0047f4d8)"
   },
   {
     "offset_hex": "0x48",
     "function": "FUN_004443c0",
-    "line": 30387,
+    "line": 30398,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (cVar1 = (**(code **)(*DAT_0048083c + 0x48))(0x1c), cVar1 != '\\0')))) {"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00445600",
-    "line": 31111,
+    "line": 31122,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x114))(0x3f800000);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00445600",
-    "line": 31112,
+    "line": 31123,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x18,0x3f000000);"
   },
   {
     "offset_hex": "0x14c",
     "function": "FUN_00445600",
-    "line": 31117,
+    "line": 31128,
     "base_expr": "*DAT_0048083c",
     "line_text": "      iVar1 = (**(code **)(*DAT_0048083c + 0x14c))(puVar3);"
   },
   {
     "offset_hex": "0xd0",
     "function": "FUN_00445600",
-    "line": 31123,
+    "line": 31134,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xd0))(&fStack_40,fVar4,0x41700000,puVar6);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_00445600",
-    "line": 31124,
+    "line": 31135,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,puVar6);"
   },
   {
     "offset_hex": "0x144",
     "function": "FUN_00445600",
-    "line": 31125,
+    "line": 31136,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x144))(fVar4,uVar5,puVar3);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_004457c0",
-    "line": 31322,
+    "line": 31333,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,0x3f800000);"
   },
   {
     "offset_hex": "0x4c",
     "function": "FUN_004457c0",
-    "line": 31328,
+    "line": 31339,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x4c))();"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_004457c0",
-    "line": 31340,
+    "line": 31351,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,0x3f800000);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_004457c0",
-    "line": 31341,
+    "line": 31352,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x15,1);"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_004457c0",
-    "line": 31343,
+    "line": 31354,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7c4,0);"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_004457c0",
-    "line": 31344,
+    "line": 31355,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xfc))(0);"
   },
   {
     "offset_hex": "0x100",
     "function": "FUN_004457c0",
-    "line": 31345,
+    "line": 31356,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x100))(0,0,0x3f800000,0x3f800000);"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_004457c0",
-    "line": 31346,
+    "line": 31357,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,0x3f333333);"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_004457c0",
-    "line": 31347,
+    "line": 31358,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x11c",
     "function": "FUN_004457c0",
-    "line": 31349,
+    "line": 31360,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x11c))(0xbf800000,fVar15 - 16.0,0x43360000,0x42540000);"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_004457c0",
-    "line": 31350,
+    "line": 31361,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_004457c0",
-    "line": 31351,
+    "line": 31362,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x15,2);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_004457c0",
-    "line": 31352,
+    "line": 31363,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x18,0x3f000000);"
   },
   {
     "offset_hex": "0x148",
     "function": "FUN_004457c0",
-    "line": 31353,
+    "line": 31364,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x148))"
   },
   {
     "offset_hex": "0x114",
     "function": "FUN_004457c0",
-    "line": 31360,
+    "line": 31371,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,uVar13);"
   },
   {
     "offset_hex": "0x14c",
     "function": "FUN_004457c0",
-    "line": 31362,
+    "line": 31373,
     "base_expr": "iVar5",
     "line_text": "  iVar9 = (**(code **)(iVar5 + 0x14c))(&DAT_004d14a8,fVar14 + 1.0,&DAT_004712b8);"
   },
   {
     "offset_hex": "0x148",
     "function": "FUN_004457c0",
-    "line": 31363,
+    "line": 31374,
     "base_expr": "iVar5",
     "line_text": "  (**(code **)(iVar5 + 0x148))(DAT_0048083c,(float)iVar9 + 14.0);"
   },
   {
     "offset_hex": "0x80",
     "function": "FUN_00446000",
-    "line": 31382,
+    "line": 31393,
     "base_expr": "*DAT_0048083c",
     "line_text": "    cVar1 = (**(code **)(*DAT_0048083c + 0x80))(iVar2);"
   },
   {
     "offset_hex": "0x58",
     "function": "FUN_00446030",
-    "line": 31410,
+    "line": 31421,
     "base_expr": "*DAT_0048083c",
     "line_text": "      cVar1 = (**(code **)(*DAT_0048083c + 0x58))(0);"
   },
   {
     "offset_hex": "0x80",
     "function": "FUN_00446030",
-    "line": 31416,
+    "line": 31427,
     "base_expr": "*DAT_0048083c",
     "line_text": "        uVar2 = (**(code **)(*DAT_0048083c + 0x80))(*puVar4);"
   },
   {
     "offset_hex": "0x58",
     "function": "FUN_00446030",
-    "line": 31428,
+    "line": 31439,
     "base_expr": "*DAT_0048083c",
     "line_text": "      cVar1 = (**(code **)(*DAT_0048083c + 0x58))(0);"
   },
   {
     "offset_hex": "0x80",
     "function": "FUN_00446030",
-    "line": 31432,
+    "line": 31443,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x80))(*puVar4);"
   },
   {
     "offset_hex": "0x58",
     "function": "FUN_004460f0",
-    "line": 31456,
+    "line": 31467,
     "base_expr": "*DAT_0048083c",
     "line_text": "  cVar1 = (**(code **)(*DAT_0048083c + 0x58))(0);"
   },
   {
     "offset_hex": "0x80",
     "function": "FUN_004460f0",
-    "line": 31458,
+    "line": 31469,
     "base_expr": "*DAT_0048083c",
     "line_text": "    cVar1 = (**(code **)(*DAT_0048083c + 0x80))(DAT_00490bec);"
   },
   {
     "offset_hex": "0x80",
     "function": "FUN_004460f0",
-    "line": 31460,
+    "line": 31471,
     "base_expr": "*DAT_0048083c",
     "line_text": "      cVar1 = (**(code **)(*DAT_0048083c + 0x80))(DAT_00490f4c);"
   },
   {
     "offset_hex": "0x4c",
     "function": "FUN_004461c0",
-    "line": 31568,
+    "line": 31579,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x4c))();"
   },
   {
     "offset_hex": "0x24",
     "function": "FUN_004461c0",
-    "line": 31597,
+    "line": 31608,
     "base_expr": "*DAT_0048083c",
     "line_text": "      pcVar4 = (char *)(**(code **)(*DAT_0048083c + 0x24))(auStack_10,100);"
   },
   {
     "offset_hex": "0x24",
     "function": "FUN_004461c0",
-    "line": 31653,
+    "line": 31664,
     "base_expr": "*DAT_0048083c",
     "line_text": "    pcVar4 = (char *)(**(code **)(*DAT_0048083c + 0x24))(auStack_10,100);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00446c40",
-    "line": 32024,
+    "line": 32035,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x48",
     "function": "FUN_00446c40",
-    "line": 32032,
+    "line": 32043,
     "base_expr": "*DAT_0048083c",
     "line_text": "      cVar4 = (**(code **)(*DAT_0048083c + 0x48))();"
   },
   {
     "offset_hex": "0x100",
     "function": "FUN_00446c40",
-    "line": 32043,
+    "line": 32054,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x100))();"
   },
   {
     "offset_hex": "0xfc",
     "function": "FUN_00446c40",
-    "line": 32046,
+    "line": 32057,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0xfc))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00446c40",
-    "line": 32075,
+    "line": 32086,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00446c40",
-    "line": 32079,
+    "line": 32090,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_00446c40",
-    "line": 32084,
+    "line": 32095,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xc4))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00446c40",
-    "line": 32091,
+    "line": 32102,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00446c40",
-    "line": 32093,
+    "line": 32104,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x134",
     "function": "FUN_00446c40",
-    "line": 32103,
+    "line": 32114,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x134))();"
   },
   {
     "offset_hex": "0x134",
     "function": "FUN_00446c40",
-    "line": 32109,
+    "line": 32120,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x134))(param_1 + 0x74,4,&pppcStack_84);"
   },
   {
     "offset_hex": "0x134",
     "function": "FUN_00446c40",
-    "line": 32112,
+    "line": 32123,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x134))(param_1 + 0xac,4,&pppcStack_98,pppfVar1,&pfStack_74);"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00446c40",
-    "line": 32115,
+    "line": 32126,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00446c40",
-    "line": 32120,
+    "line": 32131,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00446c40",
-    "line": 32122,
+    "line": 32133,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x128",
     "function": "FUN_00446c40",
-    "line": 32130,
+    "line": 32141,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x128))();"
   },
   {
     "offset_hex": "0x128",
     "function": "FUN_00446c40",
-    "line": 32135,
+    "line": 32146,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x128))(param_1 + 0x74);"
   },
   {
     "offset_hex": "0x128",
     "function": "FUN_00446c40",
-    "line": 32136,
+    "line": 32147,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x128))(param_1 + 0xac,4,pppfVar1,pppcVar2);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00446c40",
-    "line": 32145,
+    "line": 32156,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00446c40",
-    "line": 32147,
+    "line": 32158,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x130",
     "function": "FUN_00446c40",
-    "line": 32156,
+    "line": 32167,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0x130))();"
   },
   {
     "offset_hex": "0x130",
     "function": "FUN_00446c40",
-    "line": 32164,
+    "line": 32175,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x130))(param_1 + 0x74);"
   },
   {
     "offset_hex": "0x130",
     "function": "FUN_00446c40",
-    "line": 32168,
+    "line": 32179,
     "base_expr": "*DAT_0048083c",
     "line_text": "          (**(code **)(*DAT_0048083c + 0x130))(param_1 + 0xac,4,&pppcStack_90,&fStack_6c);"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00446c40",
-    "line": 32171,
+    "line": 32182,
     "base_expr": "*DAT_0048083c",
     "line_text": "        (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00446c40",
-    "line": 32176,
+    "line": 32187,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00446c40",
-    "line": 32178,
+    "line": 32189,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
+    "offset_hex": "0x12c",
+    "function": "FUN_00446c40",
+    "line": 32196,
+    "base_expr": "*DAT_0048083c",
+    "line_text": "      (**(code **)(*DAT_0048083c + 300))();"
+  },
+  {
+    "offset_hex": "0x12c",
+    "function": "FUN_00446c40",
+    "line": 32203,
+    "base_expr": "*DAT_0048083c",
+    "line_text": "        (**(code **)(*DAT_0048083c + 300))();"
+  },
+  {
+    "offset_hex": "0x12c",
+    "function": "FUN_00446c40",
+    "line": 32206,
+    "base_expr": "*DAT_0048083c",
+    "line_text": "        (**(code **)(*DAT_0048083c + 300))(param_1 + 0xac,4,&pcStack_8c);"
+  },
+  {
     "offset_hex": "0xf0",
     "function": "FUN_00446c40",
-    "line": 32199,
+    "line": 32210,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_00446c40",
-    "line": 32206,
+    "line": 32217,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xc4))();"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00446c40",
-    "line": 32208,
+    "line": 32219,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x128",
     "function": "FUN_00446c40",
-    "line": 32215,
+    "line": 32226,
     "base_expr": "*DAT_0048083c",
     "line_text": "      (**(code **)(*DAT_0048083c + 0x128))();"
   },
   {
+    "offset_hex": "0x12c",
+    "function": "FUN_00446c40",
+    "line": 32235,
+    "base_expr": "*DAT_0048083c",
+    "line_text": "      (**(code **)(*DAT_0048083c + 300))();"
+  },
+  {
     "offset_hex": "0xf0",
     "function": "FUN_00446c40",
-    "line": 32227,
+    "line": 32238,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00446c40",
-    "line": 32232,
+    "line": 32243,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00446c40",
-    "line": 32236,
+    "line": 32247,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))();"
   },
   {
     "offset_hex": "0xc4",
     "function": "FUN_00446c40",
-    "line": 32255,
+    "line": 32266,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xc4))();"
   },
   {
     "offset_hex": "0xe8",
     "function": "FUN_00446c40",
-    "line": 32256,
+    "line": 32267,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xe8))();"
   },
   {
     "offset_hex": "0x128",
     "function": "FUN_00446c40",
-    "line": 32257,
+    "line": 32268,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0x128))(param_1 + 0x124,4,param_1 + 0x18,&pcStack_7c);"
   },
   {
     "offset_hex": "0xf0",
     "function": "FUN_00446c40",
-    "line": 32258,
+    "line": 32269,
     "base_expr": "*DAT_0048083c",
     "line_text": "    (**(code **)(*DAT_0048083c + 0xf0))();"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00446c40",
-    "line": 32260,
+    "line": 32271,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x13,5);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00446c40",
-    "line": 32261,
+    "line": 32272,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x14,6);"
   },
   {
     "offset_hex": "0x20",
     "function": "FUN_00446c40",
-    "line": 32265,
+    "line": 32276,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x20))(0x15,2);"
   },
   {
     "offset_hex": "0x84",
     "function": "FUN_00448b50",
-    "line": 32379,
+    "line": 32390,
     "base_expr": "*DAT_0048083c",
     "line_text": "  fVar1 = (float10)(**(code **)(*DAT_0048083c + 0x84))(0x13f,param_1);"
   },
   {
     "offset_hex": "0x84",
     "function": "FUN_00448b50",
-    "line": 32383,
+    "line": 32394,
     "base_expr": "*DAT_0048083c",
     "line_text": "  fVar1 = (float10)(**(code **)(*DAT_0048083c + 0x84))(0x140);"
   },
   {
     "offset_hex": "0x84",
     "function": "FUN_00448b50",
-    "line": 32387,
+    "line": 32398,
     "base_expr": "*DAT_0048083c",
     "line_text": "  fVar1 = (float10)(**(code **)(*DAT_0048083c + 0x84))(0x141);"
   },
   {
     "offset_hex": "0x84",
     "function": "FUN_00448b50",
-    "line": 32391,
+    "line": 32402,
     "base_expr": "*DAT_0048083c",
     "line_text": "  fVar1 = (float10)(**(code **)(*DAT_0048083c + 0x84))(0x153);"
   },
   {
     "offset_hex": "0x84",
     "function": "FUN_00448b50",
-    "line": 32395,
+    "line": 32406,
     "base_expr": "*DAT_0048083c",
     "line_text": "  fVar1 = (float10)(**(code **)(*DAT_0048083c + 0x84))(0x154);"
   },
   {
     "offset_hex": "0x84",
     "function": "FUN_00448b50",
-    "line": 32399,
+    "line": 32410,
     "base_expr": "*DAT_0048083c",
     "line_text": "  fVar1 = (float10)(**(code **)(*DAT_0048083c + 0x84))(0x155);"
   },
   {
     "offset_hex": "0x4c",
     "function": "FUN_00448b50",
-    "line": 32403,
+    "line": 32414,
     "base_expr": "*DAT_0048083c",
     "line_text": "  (**(code **)(*DAT_0048083c + 0x4c))();"
   },
   {
     "offset_hex": "0x24",
     "function": "FUN_0044fcb0",
-    "line": 32548,
+    "line": 32559,
     "base_expr": "*DAT_0048083c",
     "line_text": "  pcVar2 = (char *)(**(code **)(*DAT_0048083c + 0x24))(local_20,100);"
   },
   {
     "offset_hex": "0x24",
     "function": "FUN_0044fcb0",
-    "line": 32674,
+    "line": 32685,
     "base_expr": "*DAT_0048083c",
     "line_text": "  pcVar2 = (char *)(**(code **)(*DAT_0048083c + 0x24))(afStack_28,100);"
   },
   {
     "offset_hex": "0x24",
     "function": "FUN_0044fcb0",
-    "line": 32714,
+    "line": 32725,
     "base_expr": "*DAT_0048083c",
     "line_text": "    pcVar2 = (char *)(**(code **)(*DAT_0048083c + 0x24))(local_20,100);"
   }

@@ -43,6 +43,10 @@
     "callsites": 5,
     "unique_functions": 1
   },
+  "0x12c": {
+    "callsites": 4,
+    "unique_functions": 1
+  },
   "0x130": {
     "callsites": 3,
     "unique_functions": 1
@@ -162,6 +166,10 @@
   "0xc4": {
     "callsites": 73,
     "unique_functions": 25
+  },
+  "0xc8": {
+    "callsites": 1,
+    "unique_functions": 1
   },
   "0xcc": {
     "callsites": 2,
