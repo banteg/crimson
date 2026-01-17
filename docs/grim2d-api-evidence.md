@@ -875,6 +875,7 @@ grim.dll body:
 ## 0xc8 — grim_draw_fullscreen_quad @ 0x10007870
 
 - Ghidra signature: `void grim_draw_fullscreen_quad(void)`
+- Notes: decompiler shows an extra `0` argument; grim.dll just batches a full-screen quad
 - Call sites: 1 (unique funcs: 1)
 - Sample calls: FUN_004188a0:L11783
 - First callsite: FUN_004188a0 (line 11783)
@@ -897,6 +898,7 @@ grim.dll body:
 ## 0xcc — grim_draw_fullscreen_color @ 0x100079b0
 
 - Ghidra signature: `void grim_draw_fullscreen_color(float r, float g, float b, float a)`
+- Notes: draws only when `a > 0`, binds texture stage 0 to null, then batches a full-screen quad
 - Call sites: 2 (unique funcs: 2)
 - Sample calls: FUN_00405960:L3696; FUN_00406af0:L4120
 - First callsite: FUN_00405960 (line 3696)

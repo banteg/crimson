@@ -64,7 +64,7 @@ struct Grim2DVtable {
     int (*get_texture_handle)(const char *name); // 0xc0 (grim_get_texture_handle)
     void (*bind_texture)(int handle, int stage); // 0xc4 (grim_bind_texture)
     void (*draw_fullscreen_quad)(void); // 0xc8 (grim_draw_fullscreen_quad)
-    void (*draw_fullscreen_color)(float r, float g, float b, float a); // 0xcc (grim_draw_fullscreen_color)
+    void (*draw_fullscreen_color)(float r, float g, float b, float a); // 0xcc (grim_draw_fullscreen_color) draws only if a > 0
     void (*draw_rect_filled)(const float *xy, float w, float h); // 0xd0 (grim_draw_rect_filled)
     void (*draw_rect_outline)(const float *xy, float w, float h); // 0xd4 (grim_draw_rect_outline)
     void (*draw_circle_filled)(float x, float y, float radius); // 0xd8 (grim_draw_circle_filled)

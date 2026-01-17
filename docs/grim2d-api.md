@@ -125,6 +125,7 @@ Validation highlights (see the evidence appendix for snippets):
 - `grim_get_config_float` maps IDs `0x13f..0x155` to scaled config values and special-cases `0x15f`
   to return the mouse X delta (`grim_get_mouse_dx`).
 - `grim_check_device` has no decompiled callsites yet; grim.dll returns a D3D-style status code.
+- `grim_draw_fullscreen_color` only draws when alpha is positive and forces texture stage 0 to null.
 
 
 ## Input-ish offsets (evidence)
