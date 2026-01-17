@@ -11630,7 +11630,7 @@ undefined4 FUN_100117ff(int param_1,uint param_2)
     FUN_1001ec11((int)local_8,0xff,1);
     *local_38 = 0x16;
   }
-  FUN_1001e407((int *)local_8,(int *)local_c);
+  FUN_1001e407(local_8,(int *)local_c);
   iVar4 = *local_38;
   uVar5 = 3;
   if (iVar4 < 0x34) {
@@ -11679,7 +11679,7 @@ LAB_10011a8e:
               uVar5 = uVar5 + 1;
             } while (uVar5 < local_1c);
           }
-          FUN_1001e7ce((int *)local_8,local_20);
+          FUN_1001e7ce(local_8,local_20);
           if (*local_38 == 0x29) {
             local_2c = 0;
             local_24 = 0;
@@ -22573,7 +22573,7 @@ void __cdecl FUN_1001e294(png_structp png_ptr,uint *param_2)
           FUN_10025163(png_ptr_00,param_2,pVar3);
         }
         if (*(int *)buf != 0x45544c50) break;
-        FUN_10025359((void *)0x45544c50,(int *)png_ptr_00,(int)param_2,pVar3);
+        FUN_10025359((void *)0x45544c50,png_ptr_00,(int)param_2,pVar3);
       }
       if (*(int *)buf != 0x444e4549) break;
       FUN_10025483(png_ptr_00,param_2,pVar3,unaff_EBX,unaff_EBP);
@@ -22610,13 +22610,13 @@ LAB_1001e3f8:
 
 /* FUN_1001e407 @ 1001e407 */
 
-void __cdecl FUN_1001e407(int *param_1,int *param_2)
+void __cdecl FUN_1001e407(png_structp png_ptr,int *param_2)
 
 {
-  if ((*(byte *)(param_1 + 0x17) & 0x40) == 0) {
-    FUN_10024f3b((png_structp)param_1);
+  if ((png_ptr->flags & 0x40) == 0) {
+    FUN_10024f3b(png_ptr);
   }
-  FUN_1001ed89((int)param_1,param_2);
+  FUN_1001ed89((int)png_ptr,param_2);
   return;
 }
 
@@ -22624,177 +22624,189 @@ void __cdecl FUN_1001e407(int *param_1,int *param_2)
 
 /* FUN_1001e427 @ 1001e427 */
 
-void __thiscall FUN_1001e427(void *this,int *param_1,byte *param_2,byte *param_3)
+void __thiscall FUN_1001e427(void *this,png_structp png_ptr,byte *param_2,byte *param_3)
 
 {
-  uint *puVar1;
-  char cVar2;
+  png_uint_32 *ppVar1;
+  png_byte pVar2;
   byte bVar3;
-  int *png_ptr;
-  png_uint_32 pVar4;
-  byte *pbVar5;
+  uint uVar4;
+  png_bytep buf;
+  png_structp png_ptr_00;
+  png_uint_32 pVar5;
+  byte *pbVar6;
   char *msg;
-  int *extraout_ECX;
-  int *extraout_ECX_00;
-  int *this_00;
-  int *extraout_ECX_01;
-  int *extraout_ECX_02;
-  int *extraout_ECX_03;
-  int *extraout_ECX_04;
-  bool bVar6;
+  png_structp extraout_ECX;
   uint uVar7;
+  png_structp extraout_ECX_00;
+  png_structp this_00;
+  png_structp extraout_ECX_01;
+  png_structp extraout_ECX_02;
+  png_structp extraout_ECX_03;
+  png_structp extraout_ECX_04;
+  bool bVar8;
   
-  png_ptr = param_1;
-  if ((*(byte *)(param_1 + 0x17) & 0x40) == 0) {
-    this = param_1;
-    FUN_10024f3b((png_structp)param_1);
+  png_ptr_00 = png_ptr;
+  if ((png_ptr->flags & 0x40) == 0) {
+    this = png_ptr;
+    FUN_10024f3b(png_ptr);
   }
-  if ((*(char *)((int)png_ptr + 0x113) != '\0') && ((*(byte *)(png_ptr + 0x18) & 2) != 0)) {
-    cVar2 = (char)png_ptr[0x45];
-    if (cVar2 == '\0') {
-      if ((*(byte *)(png_ptr + 0x35) & 7) != 0) {
-        bVar6 = param_3 == (byte *)0x0;
+  if ((png_ptr_00->interlaced != '\0') && ((png_ptr_00->transformations & 2) != 0)) {
+    pVar2 = png_ptr_00->pass;
+    if (pVar2 == '\0') {
+      if (((uint)png_ptr_00->prev_row & 7) != 0) {
+        bVar8 = param_3 == (byte *)0x0;
 LAB_1001e539:
-        if (bVar6) goto LAB_1001e48f;
+        if (bVar8) goto LAB_1001e48f;
         uVar7 = 0xff;
 LAB_1001e544:
-        FUN_100248e1((int)png_ptr,param_3,uVar7);
+        FUN_100248e1((int)png_ptr_00,param_3,uVar7);
         this = extraout_ECX;
 LAB_1001e48f:
-        FUN_100258c8(this,png_ptr);
+        FUN_100258c8(this,(int *)png_ptr_00);
         return;
       }
     }
-    else if (cVar2 == '\x01') {
-      if (((*(byte *)(png_ptr + 0x35) & 7) != 0) || ((uint)png_ptr[0x2e] < 5)) {
+    else if (pVar2 == '\x01') {
+      if ((((uint)png_ptr_00->prev_row & 7) != 0) || (png_ptr_00->width < 5)) {
         if (param_3 == (byte *)0x0) goto LAB_1001e48f;
         uVar7 = 0xf;
         goto LAB_1001e544;
       }
     }
-    else if (cVar2 == '\x02') {
-      this = (void *)(png_ptr[0x35] & 0xffffff07);
+    else if (pVar2 == '\x02') {
+      this = (void *)((uint)png_ptr_00->prev_row & 0xffffff07);
       if ((char)this != '\x04') {
         if (param_3 == (byte *)0x0) goto LAB_1001e48f;
-        bVar6 = (png_ptr[0x35] & 4U) == 0;
+        bVar8 = ((uint)png_ptr_00->prev_row & 4) == 0;
         goto LAB_1001e539;
       }
     }
-    else if (cVar2 == '\x03') {
-      if (((*(byte *)(png_ptr + 0x35) & 3) != 0) || ((uint)png_ptr[0x2e] < 3)) {
+    else if (pVar2 == '\x03') {
+      if ((((uint)png_ptr_00->prev_row & 3) != 0) || (png_ptr_00->width < 3)) {
         if (param_3 == (byte *)0x0) goto LAB_1001e48f;
         uVar7 = 0x33;
         goto LAB_1001e544;
       }
     }
-    else if (cVar2 == '\x04') {
-      this = (void *)(png_ptr[0x35] & 0xffffff03);
+    else if (pVar2 == '\x04') {
+      this = (void *)((uint)png_ptr_00->prev_row & 0xffffff03);
       if ((char)this != '\x02') {
         if (param_3 == (byte *)0x0) goto LAB_1001e48f;
-        bVar6 = (png_ptr[0x35] & 2U) == 0;
+        bVar8 = ((uint)png_ptr_00->prev_row & 2) == 0;
         goto LAB_1001e539;
       }
     }
-    else if (cVar2 == '\x05') {
-      if (((*(byte *)(png_ptr + 0x35) & 1) != 0) || ((uint)png_ptr[0x2e] < 2)) {
+    else if (pVar2 == '\x05') {
+      if ((((uint)png_ptr_00->prev_row & 1) != 0) || (png_ptr_00->width < 2)) {
         if (param_3 == (byte *)0x0) goto LAB_1001e48f;
         uVar7 = 0x55;
         goto LAB_1001e544;
       }
     }
-    else if ((cVar2 == '\x06') && ((*(byte *)(png_ptr + 0x35) & 1) == 0)) goto LAB_1001e48f;
+    else if ((pVar2 == '\x06') && (((uint)png_ptr_00->prev_row & 1) == 0)) goto LAB_1001e48f;
   }
-  if ((*(byte *)(png_ptr + 0x16) & 4) == 0) {
-    png_error((png_structp)png_ptr,"Invalid attempt to read row data");
+  if ((png_ptr_00->mode & 4) == 0) {
+    png_error(png_ptr_00,"Invalid attempt to read row data");
   }
-  png_ptr[0x1c] = png_ptr[0x37];
-  png_ptr[0x1d] = png_ptr[0x33];
+  (png_ptr_00->zstream).words[3] = (png_uint_32)png_ptr_00->sub_row;
+  (png_ptr_00->zstream).words[4] = png_ptr_00->iwidth;
   do {
-    if (png_ptr[0x1a] == 0) {
-      if (png_ptr[0x3f] == 0) {
+    if ((png_ptr_00->zstream).words[1] == 0) {
+      if (png_ptr_00->crc == 0) {
         do {
-          png_crc_finish((png_structp)png_ptr,0);
-          png_read_data((png_structp)png_ptr,(png_bytep)&param_1,4);
-          pVar4 = png_get_uint_32((png_bytep)&param_1);
-          png_ptr[0x3f] = pVar4;
-          png_reset_crc((png_structp)png_ptr);
-          png_crc_read((png_structp)png_ptr,(png_bytep)(png_ptr + 0x43),4);
-          if (png_ptr[0x43] != 0x54414449) {
-            png_error((png_structp)png_ptr,"Not enough image data");
+          png_crc_finish(png_ptr_00,0);
+          png_read_data(png_ptr_00,(png_bytep)&png_ptr,4);
+          pVar5 = png_get_uint_32((png_bytep)&png_ptr);
+          png_ptr_00->crc = pVar5;
+          png_reset_crc(png_ptr_00);
+          png_crc_read(png_ptr_00,png_ptr_00->chunk_name,4);
+          if (*(int *)png_ptr_00->chunk_name != 0x54414449) {
+            png_error(png_ptr_00,"Not enough image data");
           }
-        } while (png_ptr[0x3f] == 0);
+        } while (png_ptr_00->crc == 0);
       }
-      png_ptr[0x1a] = png_ptr[0x28];
-      png_ptr[0x19] = png_ptr[0x27];
-      if ((uint)png_ptr[0x3f] < (uint)png_ptr[0x28]) {
-        png_ptr[0x1a] = png_ptr[0x3f];
+      uVar7 = png_ptr_00->zbuf_size;
+      uVar4 = png_ptr_00->crc;
+      buf = png_ptr_00->zbuf;
+      (png_ptr_00->zstream).words[1] = uVar7;
+      (png_ptr_00->zstream).words[0] = (png_uint_32)buf;
+      if (uVar4 < uVar7) {
+        (png_ptr_00->zstream).words[1] = uVar4;
       }
-      png_crc_read((png_structp)png_ptr,(png_bytep)png_ptr[0x27],png_ptr[0x1a]);
-      png_ptr[0x3f] = png_ptr[0x3f] - png_ptr[0x1a];
+      png_crc_read(png_ptr_00,buf,(png_ptr_00->zstream).words[1]);
+      png_ptr_00->crc = png_ptr_00->crc - (png_ptr_00->zstream).words[1];
     }
-    pbVar5 = FUN_1002438b(png_ptr + 0x19,1);
-    if (pbVar5 == (byte *)0x1) {
-      if (((png_ptr[0x1d] != 0) || (png_ptr[0x1a] != 0)) || (png_ptr[0x3f] != 0)) {
-        png_error((png_structp)png_ptr,"Extra compressed data");
+    pbVar6 = FUN_1002438b((int *)&png_ptr_00->zstream,1);
+    if (pbVar6 == (byte *)0x1) {
+      if ((((png_ptr_00->zstream).words[4] != 0) || ((png_ptr_00->zstream).words[1] != 0)) ||
+         (png_ptr_00->crc != 0)) {
+        png_error(png_ptr_00,"Extra compressed data");
       }
-      png_ptr[0x16] = png_ptr[0x16] | 8;
-      png_ptr[0x17] = png_ptr[0x17] | 0x20;
+      png_ptr_00->mode = png_ptr_00->mode | 8;
+      png_ptr_00->flags = png_ptr_00->flags | 0x20;
       break;
     }
-    if (pbVar5 != (byte *)0x0) {
-      msg = (char *)png_ptr[0x1f];
+    if (pbVar6 != (byte *)0x0) {
+      msg = (char *)(png_ptr_00->zstream).words[6];
       if (msg == (char *)0x0) {
         msg = "Decompression error";
       }
-      png_error((png_structp)png_ptr,msg);
+      png_error(png_ptr_00,msg);
     }
-  } while (png_ptr[0x1d] != 0);
-  *(undefined1 *)((int)png_ptr + 0xfa) = *(undefined1 *)((int)png_ptr + 0x11a);
-  *(undefined1 *)((int)png_ptr + 0xf9) = *(undefined1 *)((int)png_ptr + 0x117);
-  *(byte *)((int)png_ptr + 0xfb) = *(byte *)((int)png_ptr + 0x119);
-  *(undefined1 *)(png_ptr + 0x3e) = *(undefined1 *)((int)png_ptr + 0x116);
-  puVar1 = (uint *)(png_ptr + 0x3c);
-  *puVar1 = png_ptr[0x34];
-  png_ptr[0x3d] = (uint)*(byte *)((int)png_ptr + 0x119) * png_ptr[0x34] + 7 >> 3;
-  FUN_10024dc0((png_structp)png_ptr,(int)puVar1,(byte *)png_ptr[0x37] + 1,
-               (byte *)(png_ptr[0x36] + 1),(uint)*(byte *)png_ptr[0x37]);
-  FUN_10024790(png_ptr,(undefined4 *)png_ptr[0x36],(undefined4 *)png_ptr[0x37],png_ptr[0x32] + 1);
+  } while ((png_ptr_00->zstream).words[4] != 0);
+  pVar2 = png_ptr_00->color_type;
+  *(png_byte *)((int)&png_ptr_00->idat_size + 2) = png_ptr_00->channels;
+  *(png_byte *)((int)&png_ptr_00->idat_size + 1) = png_ptr_00->bit_depth;
+  bVar3 = png_ptr_00->pixel_depth;
+  *(byte *)((int)&png_ptr_00->idat_size + 3) = bVar3;
+  *(png_byte *)&png_ptr_00->idat_size = pVar2;
+  uVar7 = (uint)bVar3 * png_ptr_00->row_number + 7 >> 3;
+  ppVar1 = &(png_ptr_00->row_info).rowbytes;
+  *ppVar1 = png_ptr_00->row_number;
+  pbVar6 = png_ptr_00->sub_row;
+  (png_ptr_00->row_info).color_type = (char)uVar7;
+  (png_ptr_00->row_info).bit_depth = (char)(uVar7 >> 8);
+  (png_ptr_00->row_info).channels = (char)(uVar7 >> 0x10);
+  (png_ptr_00->row_info).pixel_depth = (char)(uVar7 >> 0x18);
+  FUN_10024dc0(png_ptr_00,(int)ppVar1,pbVar6 + 1,png_ptr_00->row_buf + 1,(uint)*pbVar6);
+  FUN_10024790(png_ptr_00,(undefined4 *)png_ptr_00->row_buf,(undefined4 *)png_ptr_00->sub_row,
+               png_ptr_00->rowbytes + 1);
   this_00 = extraout_ECX_00;
-  if (png_ptr[0x18] != 0) {
-    this_00 = png_ptr;
-    FUN_10020149((png_structp)png_ptr);
+  if (png_ptr_00->transformations != 0) {
+    this_00 = png_ptr_00;
+    FUN_10020149(png_ptr_00);
   }
-  if ((*(char *)((int)png_ptr + 0x113) == '\0') || ((png_ptr[0x18] & 2U) == 0)) {
+  if ((png_ptr_00->interlaced == '\0') || ((png_ptr_00->transformations & 2) == 0)) {
     if (param_2 != (byte *)0x0) {
-      FUN_100248e1((int)png_ptr,param_2,0xff);
+      FUN_100248e1((int)png_ptr_00,param_2,0xff);
       this_00 = extraout_ECX_03;
     }
     if (param_3 == (byte *)0x0) goto LAB_1001e7a4;
     uVar7 = 0xff;
-    pbVar5 = param_3;
+    pbVar6 = param_3;
   }
   else {
-    bVar3 = *(byte *)(png_ptr + 0x45);
-    this_00 = (int *)CONCAT31((int3)((uint)this_00 >> 8),bVar3);
+    bVar3 = png_ptr_00->pass;
+    this_00 = (png_structp)CONCAT31((int3)((uint)this_00 >> 8),bVar3);
     if (bVar3 < 6) {
-      FUN_10024af7(puVar1,(int *)(png_ptr[0x37] + 1),(uint)bVar3);
+      FUN_10024af7(ppVar1,(int *)(png_ptr_00->sub_row + 1),(uint)bVar3);
       this_00 = extraout_ECX_01;
     }
     if (param_3 != (byte *)0x0) {
-      FUN_100248e1((int)png_ptr,param_3,
-                   *(uint *)(&DAT_1004e1f8 + (uint)*(byte *)(png_ptr + 0x45) * 4));
+      FUN_100248e1((int)png_ptr_00,param_3,*(uint *)(&DAT_1004e1f8 + (uint)png_ptr_00->pass * 4));
       this_00 = extraout_ECX_02;
     }
     if (param_2 == (byte *)0x0) goto LAB_1001e7a4;
-    uVar7 = *(uint *)(&DAT_1004e1dc + (uint)*(byte *)(png_ptr + 0x45) * 4);
-    pbVar5 = param_2;
+    uVar7 = *(uint *)(&DAT_1004e1dc + (uint)png_ptr_00->pass * 4);
+    pbVar6 = param_2;
   }
-  FUN_100248e1((int)png_ptr,pbVar5,uVar7);
+  FUN_100248e1((int)png_ptr_00,pbVar6,uVar7);
   this_00 = extraout_ECX_04;
 LAB_1001e7a4:
-  FUN_100258c8(this_00,png_ptr);
-  if ((code *)png_ptr[0x5b] != (code *)0x0) {
-    (*(code *)png_ptr[0x5b])(png_ptr,png_ptr[0x35],(char)png_ptr[0x45]);
+  FUN_100258c8(this_00,(int *)png_ptr_00);
+  if (png_ptr_00[1].write_data_fn != (png_rw_ptr)0x0) {
+    (*png_ptr_00[1].write_data_fn)(png_ptr_00,png_ptr_00->prev_row,(png_uint_32)png_ptr_00->pass);
   }
   return;
 }
@@ -22803,31 +22815,31 @@ LAB_1001e7a4:
 
 /* FUN_1001e7ce @ 1001e7ce */
 
-void __cdecl FUN_1001e7ce(int *param_1,undefined4 *param_2)
+void __cdecl FUN_1001e7ce(png_structp png_ptr,undefined4 *param_2)
 
 {
-  int iVar1;
-  int iVar2;
+  png_uint_32 pVar1;
+  png_uint_32 pVar2;
   undefined4 *puVar3;
-  int *extraout_ECX;
-  int *this;
+  png_structp extraout_ECX;
+  png_structp this;
   undefined4 local_8;
   
-  this = param_1;
-  local_8 = FUN_1001ebf8((int)param_1);
-  iVar1 = param_1[0x2f];
-  param_1[0x30] = iVar1;
-  iVar2 = iVar1;
+  this = png_ptr;
+  local_8 = FUN_1001ebf8((int)png_ptr);
+  pVar1 = png_ptr->height;
+  png_ptr->num_rows = pVar1;
+  pVar2 = pVar1;
   puVar3 = param_2;
   if (0 < local_8) {
     do {
-      for (; iVar2 != 0; iVar2 = iVar2 + -1) {
-        FUN_1001e427(this,param_1,(byte *)*puVar3,(byte *)0x0);
+      for (; pVar2 != 0; pVar2 = pVar2 - 1) {
+        FUN_1001e427(this,png_ptr,(byte *)*puVar3,(byte *)0x0);
         puVar3 = puVar3 + 1;
         this = extraout_ECX;
       }
       local_8 = local_8 + -1;
-      iVar2 = iVar1;
+      pVar2 = pVar1;
       puVar3 = param_2;
     } while (local_8 != 0);
   }
@@ -24416,61 +24428,65 @@ void __cdecl FUN_1001fd2d(png_structp png_ptr)
 
 /* FUN_10020036 @ 10020036 */
 
-void __cdecl FUN_10020036(int *param_1)
+void __cdecl FUN_10020036(png_structp png_ptr)
 
 {
-  char cVar1;
-  int *piVar2;
-  byte *pbVar3;
-  int iVar4;
-  uint uVar5;
+  png_byte pVar1;
+  ushort uVar2;
+  png_structp ppVar3;
+  png_structp ppVar4;
+  byte *pbVar5;
   int iVar6;
+  uint uVar7;
+  int iVar8;
   int local_8;
   
-  piVar2 = param_1;
-  cVar1 = *(char *)((int)param_1 + 0x116);
-  if ((param_1[0x18] & 0x602000U) != 0) {
-    FUN_1001fd2d((png_structp)param_1);
-    if (cVar1 == '\x03') {
-      uVar5 = (uint)*(ushort *)(param_1 + 0x42);
-      if (uVar5 != 0) {
-        pbVar3 = (byte *)(param_1[0x41] + 2);
+  ppVar4 = png_ptr;
+  pVar1 = png_ptr->color_type;
+  if ((png_ptr->transformations & 0x602000) != 0) {
+    FUN_1001fd2d(png_ptr);
+    if (pVar1 == '\x03') {
+      uVar7 = (uint)(ushort)png_ptr->chunk_name_pad;
+      if (uVar7 != 0) {
+        pbVar5 = (byte *)(*(int *)&png_ptr->num_palette + 2);
         do {
-          pbVar3[-2] = *(byte *)((uint)pbVar3[-2] + param_1[0x4e]);
-          pbVar3[-1] = *(byte *)((uint)pbVar3[-1] + param_1[0x4e]);
-          *pbVar3 = *(byte *)((uint)*pbVar3 + param_1[0x4e]);
-          pbVar3 = pbVar3 + 3;
-          uVar5 = uVar5 - 1;
-        } while (uVar5 != 0);
+          pbVar5[-2] = *(byte *)((uint)pbVar5[-2] + png_ptr[1].jmpbuf[6]);
+          pbVar5[-1] = *(byte *)((uint)pbVar5[-1] + png_ptr[1].jmpbuf[6]);
+          *pbVar5 = *(byte *)((uint)*pbVar5 + png_ptr[1].jmpbuf[6]);
+          pbVar5 = pbVar5 + 3;
+          uVar7 = uVar7 - 1;
+        } while (uVar7 != 0);
       }
     }
   }
-  if (((*(byte *)(param_1 + 0x18) & 8) != 0) && (cVar1 == '\x03')) {
-    pbVar3 = (byte *)((int)param_1 + 0x152);
-    iVar6 = 8 - (uint)*(byte *)(param_1 + 0x54);
-    param_1 = (int *)(8 - (uint)*(byte *)((int)param_1 + 0x151));
-    local_8 = 8 - (uint)*pbVar3;
-    if ((iVar6 < 0) || (8 < iVar6)) {
-      iVar6 = 0;
+  if (((png_ptr->transformations & 8) != 0) && (pVar1 == '\x03')) {
+    ppVar3 = png_ptr + 1;
+    iVar8 = 8 - (uint)(byte)png_ptr[1].jmpbuf[0xc];
+    png_ptr = (png_structp)(8 - (uint)*(byte *)((int)png_ptr[1].jmpbuf + 0x31));
+    local_8 = 8 - (uint)*(byte *)((int)ppVar3->jmpbuf + 0x32);
+    if ((iVar8 < 0) || (8 < iVar8)) {
+      iVar8 = 0;
     }
-    if (((int)param_1 < 0) || (8 < (int)param_1)) {
-      param_1 = (int *)0x0;
+    if (((int)png_ptr < 0) || (8 < (int)png_ptr)) {
+      png_ptr = (png_structp)0x0;
     }
     if ((local_8 < 0) || (8 < local_8)) {
       local_8 = 0;
     }
-    if (*(ushort *)(piVar2 + 0x42) != 0) {
-      iVar4 = 0;
-      uVar5 = (uint)*(ushort *)(piVar2 + 0x42);
+    uVar2 = (ushort)ppVar4->chunk_name_pad;
+    if (uVar2 != 0) {
+      iVar6 = 0;
+      uVar7 = (uint)uVar2;
       do {
-        *(byte *)(iVar4 + piVar2[0x41]) = *(byte *)(iVar4 + piVar2[0x41]) >> ((byte)iVar6 & 0x1f);
-        pbVar3 = (byte *)(iVar4 + 1 + piVar2[0x41]);
-        *pbVar3 = *pbVar3 >> ((byte)param_1 & 0x1f);
-        pbVar3 = (byte *)(iVar4 + 2 + piVar2[0x41]);
-        *pbVar3 = *pbVar3 >> ((byte)local_8 & 0x1f);
-        iVar4 = iVar4 + 3;
-        uVar5 = uVar5 - 1;
-      } while (uVar5 != 0);
+        pbVar5 = (byte *)(iVar6 + *(int *)&ppVar4->num_palette);
+        *pbVar5 = *pbVar5 >> ((byte)iVar8 & 0x1f);
+        pbVar5 = (byte *)(iVar6 + 1 + *(int *)&ppVar4->num_palette);
+        *pbVar5 = *pbVar5 >> ((byte)png_ptr & 0x1f);
+        pbVar5 = (byte *)(iVar6 + 2 + *(int *)&ppVar4->num_palette);
+        *pbVar5 = *pbVar5 >> ((byte)local_8 & 0x1f);
+        iVar6 = iVar6 + 3;
+        uVar7 = uVar7 - 1;
+      } while (uVar7 != 0);
     }
   }
   return;
@@ -29286,7 +29302,7 @@ void __cdecl FUN_10024f3b(png_structp png_ptr)
   png_uint_32 pVar6;
   
   (png_ptr->zstream).words[1] = 0;
-  FUN_10020036((int *)png_ptr);
+  FUN_10020036(png_ptr);
   uVar3 = png_ptr->height;
   if (png_ptr->interlaced == '\0') {
     pVar6 = png_ptr->width;
@@ -29480,72 +29496,76 @@ LAB_1002531b:
 
 /* FUN_10025359 @ 10025359 */
 
-void __thiscall FUN_10025359(void *this,int *param_1,int param_2,uint param_3)
+void __thiscall FUN_10025359(void *this,png_structp png_ptr,int param_2,uint param_3)
 
 {
-  uint uVar1;
-  int *png_ptr;
-  int iVar2;
-  int iVar3;
-  undefined4 *puVar4;
+  byte *pbVar1;
+  ushort *puVar2;
+  uint uVar3;
+  png_structp png_ptr_00;
+  int iVar4;
+  int iVar5;
+  undefined4 *puVar6;
   png_structp unaff_ESI;
-  undefined1 *puVar5;
-  char *pcVar6;
+  undefined1 *puVar7;
+  char *pcVar8;
   int local_8;
   
-  png_ptr = param_1;
-  uVar1 = param_1[0x16];
-  if ((uVar1 & 1) == 0) {
-    pcVar6 = "Missing IHDR before PLTE";
+  png_ptr_00 = png_ptr;
+  uVar3 = png_ptr->mode;
+  if ((uVar3 & 1) == 0) {
+    pcVar8 = "Missing IHDR before PLTE";
 LAB_10025385:
-    png_error((png_structp)param_1,pcVar6);
+    png_error(png_ptr,pcVar8);
 LAB_1002538d:
-    png_ptr[0x16] = png_ptr[0x16] | 2;
+    png_ptr_00->mode = png_ptr_00->mode | 2;
     if (param_3 % 3 != 0) {
-      pcVar6 = "Invalid palette chunk";
-      unaff_ESI = (png_structp)png_ptr;
-      if (*(char *)((int)png_ptr + 0x116) != '\x03') goto LAB_100253ad;
-      png_error((png_structp)png_ptr,"Invalid palette chunk");
+      pcVar8 = "Invalid palette chunk";
+      unaff_ESI = png_ptr_00;
+      if (png_ptr_00->color_type != '\x03') goto LAB_100253ad;
+      png_error(png_ptr_00,"Invalid palette chunk");
     }
-    iVar3 = (int)param_3 / 3;
-    puVar4 = FUN_1002052b((png_structp)png_ptr,iVar3,3);
-    *(byte *)((int)png_ptr + 0x5d) = *(byte *)((int)png_ptr + 0x5d) | 0x10;
-    if (0 < iVar3) {
-      puVar5 = (undefined1 *)((int)puVar4 + 2);
-      local_8 = iVar3;
+    iVar5 = (int)param_3 / 3;
+    puVar6 = FUN_1002052b(png_ptr_00,iVar5,3);
+    pbVar1 = (byte *)((int)&png_ptr_00->flags + 1);
+    *pbVar1 = *pbVar1 | 0x10;
+    if (0 < iVar5) {
+      puVar7 = (undefined1 *)((int)puVar6 + 2);
+      local_8 = iVar5;
       do {
-        png_crc_read((png_structp)png_ptr,(png_bytep)&param_1,3);
-        puVar5[-2] = param_1._0_1_;
-        puVar5[-1] = param_1._1_1_;
-        *puVar5 = param_1._2_1_;
-        puVar5 = puVar5 + 3;
+        png_crc_read(png_ptr_00,(png_bytep)&png_ptr,3);
+        puVar7[-2] = png_ptr._0_1_;
+        puVar7[-1] = png_ptr._1_1_;
+        *puVar7 = png_ptr._2_1_;
+        puVar7 = puVar7 + 3;
         local_8 = local_8 + -1;
       } while (local_8 != 0);
     }
-    png_crc_finish((png_structp)png_ptr,0);
-    iVar2 = param_2;
-    png_ptr[0x41] = (int)puVar4;
-    *(short *)(png_ptr + 0x42) = (short)iVar3;
-    FUN_100203bd((int)png_ptr,param_2,puVar4,(short)iVar3);
-    if ((((*(char *)((int)png_ptr + 0x116) == '\x03') && (iVar2 != 0)) &&
-        ((*(byte *)(iVar2 + 8) & 0x10) != 0)) &&
-       (*(ushort *)(png_ptr + 0x42) < *(ushort *)((int)png_ptr + 0x10a))) {
-      png_warning((png_structp)png_ptr,"Truncating incorrect tRNS chunk length");
-      *(ushort *)((int)png_ptr + 0x10a) = *(ushort *)(png_ptr + 0x42);
+    png_crc_finish(png_ptr_00,0);
+    iVar4 = param_2;
+    *(undefined4 **)&png_ptr_00->num_palette = puVar6;
+    *(short *)&png_ptr_00->chunk_name_pad = (short)iVar5;
+    FUN_100203bd((int)png_ptr_00,param_2,puVar6,(short)iVar5);
+    if ((((png_ptr_00->color_type == '\x03') && (iVar4 != 0)) &&
+        ((*(byte *)(iVar4 + 8) & 0x10) != 0)) &&
+       (puVar2 = (ushort *)((int)&png_ptr_00->chunk_name_pad + 2),
+       (ushort)png_ptr_00->chunk_name_pad < *puVar2)) {
+      png_warning(png_ptr_00,"Truncating incorrect tRNS chunk length");
+      *puVar2 = (ushort)png_ptr_00->chunk_name_pad;
     }
   }
   else {
-    pcVar6 = this;
-    if ((uVar1 & 4) == 0) {
-      if ((uVar1 & 2) != 0) {
-        pcVar6 = "Duplicate PLTE chunk";
+    pcVar8 = this;
+    if ((uVar3 & 4) == 0) {
+      if ((uVar3 & 2) != 0) {
+        pcVar8 = "Duplicate PLTE chunk";
         goto LAB_10025385;
       }
       goto LAB_1002538d;
     }
 LAB_100253ad:
-    png_warning(unaff_ESI,pcVar6);
-    png_crc_finish((png_structp)png_ptr,param_3);
+    png_warning(unaff_ESI,pcVar8);
+    png_crc_finish(png_ptr_00,param_3);
   }
   return;
 }

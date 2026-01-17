@@ -161,9 +161,10 @@ public class ExportAll extends GhidraScript {
 
                 // Get calls
                 java.util.Set<Function> calls = func.getCalledFunctions(monitor);
+                List<Function> callsSorted = sortFunctionsByNameAndAddress(calls);
                 writer.print("    \"calls\": [");
                 int callIdx = 0;
-                for (Function calledFunc : calls) {
+                for (Function calledFunc : callsSorted) {
                     if (callIdx >= 20) break;
                     if (callIdx > 0) writer.print(", ");
                     writer.print("\"" + escapeJson(calledFunc.getName()) + "\"");
@@ -274,5 +275,13 @@ public class ExportAll extends GhidraScript {
                 .replace("\n", "\\n")
                 .replace("\r", "\\r")
                 .replace("\t", "\\t");
+    }
+
+    private List<Function> sortFunctionsByNameAndAddress(Set<Function> funcs) {
+        List<Function> sorted = new ArrayList<>(funcs);
+        Collections.sort(sorted, Comparator
+                .comparing((Function f) -> f.getName())
+                .thenComparing(f -> f.getEntryPoint().toString()));
+        return sorted;
     }
 }

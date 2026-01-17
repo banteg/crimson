@@ -12,6 +12,11 @@ import ghidra.program.model.symbol.SourceType;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
 public class ExportFunctions extends GhidraScript {
 
@@ -69,9 +74,10 @@ public class ExportFunctions extends GhidraScript {
 
                 // Called functions
                 writer.print("      \"calls\": [");
-                java.util.Set<Function> called = func.getCalledFunctions(monitor);
+                Set<Function> called = func.getCalledFunctions(monitor);
+                List<Function> calledSorted = sortFunctionsByNameAndAddress(called);
                 int callIdx = 0;
-                for (Function calledFunc : called) {
+                for (Function calledFunc : calledSorted) {
                     if (callIdx >= 50) break;  // Limit to 50 calls
                     if (callIdx > 0) writer.print(", ");
                     writer.print("\"" + escapeJson(calledFunc.getName()) + "\"");
@@ -81,9 +87,10 @@ public class ExportFunctions extends GhidraScript {
 
                 // Calling functions
                 writer.print("      \"calledBy\": [");
-                java.util.Set<Function> callers = func.getCallingFunctions(monitor);
+                Set<Function> callers = func.getCallingFunctions(monitor);
+                List<Function> callersSorted = sortFunctionsByNameAndAddress(callers);
                 int callerIdx = 0;
-                for (Function caller : callers) {
+                for (Function caller : callersSorted) {
                     if (callerIdx >= 50) break;  // Limit to 50 callers
                     if (callerIdx > 0) writer.print(", ");
                     writer.print("\"" + escapeJson(caller.getName()) + "\"");
@@ -110,5 +117,13 @@ public class ExportFunctions extends GhidraScript {
                 .replace("\n", "\\n")
                 .replace("\r", "\\r")
                 .replace("\t", "\\t");
+    }
+
+    private List<Function> sortFunctionsByNameAndAddress(Set<Function> funcs) {
+        List<Function> sorted = new ArrayList<>(funcs);
+        Collections.sort(sorted, Comparator
+                .comparing((Function f) -> f.getName())
+                .thenComparing(f -> f.getEntryPoint().toString()));
+        return sorted;
     }
 }
