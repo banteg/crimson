@@ -5,25 +5,6 @@ decompiled Crimsonland v1.9.93 executable and game data.
 
 Overall naming coverage: 26.3% (468 / 1779 functions named or inferred).
 
-## Quick start
-
-```bash
-uv run paq extract game_bins/crimsonland/1.9.93-gog artifacts/assets
-```
-
-This scans `game_bins/` for `.paq` archives and extracts them under:
-
-```
-artifacts/assets/{paq_name}/{path}
-```
-
-Special handling during extraction:
-
-- `.jaz` files are decoded to a single composite PNG (RGB + alpha).
-- `.tga` files are converted to PNG.
-- Everything else is written as raw bytes.
-
-
 ## What is documented
 
 - [PAQ archives](formats/paq.md) — Completed
