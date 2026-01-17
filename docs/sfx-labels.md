@@ -1,6 +1,6 @@
 # SFX label suggestions
 
-Suggested data label names derived from `docs/sfx-id-map.md`.
+Suggested data label names derived from [SFX ID map](sfx-id-map.md).
 These are meant for manual Ghidra labeling (ApplyNameMap only renames functions).
 
 | Var | File | Suggested label |

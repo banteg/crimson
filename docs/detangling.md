@@ -157,9 +157,9 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
     - `DAT_004c403c`/`_DAT_004c4040` = subsequent track ids (+1/+2).
 - `FUN_0043caa0` -> `audio_init_sfx`
   - Evidence: loads `sfx.paq` and registers the sound effect ids.
-  - See `docs/sfx-id-map.md` for the extracted id-to-file mapping.
-  - See `docs/sfx-usage.md` for the most referenced SFX ids in the decompiled code.
-  - See `docs/sfx-labels.md` for suggested data labels (ApplyNameMap only renames functions).
+  - See [SFX ID map](sfx-id-map.md) for the extracted id-to-file mapping.
+  - See [SFX usage](sfx-usage.md) for the most referenced SFX ids in the decompiled code.
+  - See [SFX label suggestions](sfx-labels.md) for suggested data labels (ApplyNameMap only renames functions).
 - `FUN_0043c740` -> `sfx_load_sample`
   - Evidence: allocates a free slot in `DAT_004c84e4`, loads `.ogg`/`.wav` data, and returns the
     sample id.
@@ -214,7 +214,7 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
 - `FUN_0042fd90` -> `perks_init_database`
   - Evidence: assigns perk id constants (`DAT_004c2b**`/`DAT_004c2c**`) and fills the perk
     name/description tables via `FUN_0042fd00`.
-  - See `docs/perk-id-map.md` for the extracted id-to-name mapping.
+  - See [Perk ID map](perk-id-map.md) for the extracted id-to-name mapping.
 - `FUN_0042fb10` -> `perk_can_offer`
   - Evidence: checks mode gates and perk flags, then returns a nonzero byte if the perk is eligible.
 - `FUN_0042fbd0` -> `perk_select_random`
@@ -240,7 +240,7 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
 
 ### Game mode selector (partial)
 
-- `_DAT_00480360` holds the current game mode. See `docs/game-mode-map.md` for the observed
+- `_DAT_00480360` holds the current game mode. See [Game mode map](game-mode-map.md) for the observed
   values and evidence.
 - `FUN_00412960` -> `game_mode_label`
   - Evidence: returns a label string based on `_DAT_00480360` (Survival, Quests, Typ-o-Shooter, etc.).

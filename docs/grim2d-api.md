@@ -12,7 +12,7 @@ We created functions at vtable entry addresses via
 `grim.dll_functions.json` to capture those entry names. The latest vtable JSON
 exports now include 84 entry points created from the vtable.
 
-For a high-level summary, see `docs/grim2d-overview.md`.
+For a high-level summary, see [Grim2D overview](grim2d-overview.md).
 
 ## Extraction artifact
 
@@ -38,7 +38,7 @@ data, not executable pointers.
 
 We also generate an evidence appendix with callsite snippets:
 
-- `docs/grim2d-api-evidence.md`
+- [Grim2D API evidence](grim2d-api-evidence.md)
 
 ## Top offsets by callsite count
 

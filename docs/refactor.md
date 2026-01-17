@@ -41,5 +41,5 @@ and where to put work so we can track progress consistently.
 
 ## How to track progress
 
-- Update `docs/metrics.md` after each cleaned module or Ghidra regen.
+- Update [metrics](metrics.md) after each cleaned module or Ghidra regen.
 - Add short notes to the relevant subsystem docs when a behavior is confirmed.

@@ -55,27 +55,27 @@ regen (from git history).
 ### PAQ archives
 
 - Status: Completed
-- Notes: `docs/formats/paq.md`
+- Notes: [PAQ format notes](formats/paq.md)
 
 ### JAZ textures
 
 - Status: Completed
-- Notes: `docs/formats/jaz.md`
+- Notes: [JAZ format notes](formats/jaz.md)
 
 ### Sprite atlas cutting
 
 - Status: In progress
-- Notes: `docs/atlas.md`
+- Notes: [Atlas cutting](atlas.md)
 
 ### Extraction pipeline
 
 - Status: In progress
-- Notes: `docs/pipeline.md`
+- Notes: [Extraction pipeline](pipeline.md)
 
 ### Weapon table
 
 - Status: In progress
-- Notes: `docs/weapon-table.md`
+- Notes: [Weapon table](weapon-table.md)
 
 ## Refactor progress
 
