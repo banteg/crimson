@@ -108,6 +108,7 @@ Notes:
   atlas size/frame (`0x10/0x20/0x40/0x80` -> `16/8/4/2` cells).
 - `FUN_00427700` is a small helper that spawns a random `fx_queue_add` entry
   (effect ids `3..7`) with randomized grayscale color and size.
+- `fx_queue_add` clamps the queue length to `0x7f` if the caller overflows it.
 
 ## Rotated FX queue (`DAT_004aaf3c`)
 
@@ -136,6 +137,7 @@ Notes:
   and the frame is converted to UVs via the 4x atlas tables (`DAT_00491210/14`).
 - The rotated queue is drawn in two passes: the first uses half alpha and a
   slightly inflated size (`scale * 1.064`), the second uses full alpha/size.
+- `fx_queue_add_rotated` skips enqueuing when `DAT_004871c8 != 0` or the queue is full.
 
 ## Effect entries (`DAT_004ab330` pool)
 
