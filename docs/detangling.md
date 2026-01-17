@@ -212,6 +212,9 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
 - `FUN_004055e0` -> `perk_apply`
   - Evidence: called after selecting a perk in the UI, increments `perk_count_get` table, and
     executes the perk-specific effects (exp, health, weapon changes, perk spawns).
+- `FUN_004045a0` -> `perks_generate_choices`
+  - Evidence: fills `DAT_004807e8` with randomly selected perks using `perk_select_random`,
+    enforces uniqueness, and applies special-case handling for mode `8` (fixed perk list).
 
 ### Game mode selector (partial)
 

@@ -311,6 +311,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004045a0",
+    "name": "perks_generate_choices",
+    "signature": "void perks_generate_choices(void)",
+    "comment": "builds the current perk choice list"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0042a9f0",
     "name": "init_audio_and_terrain",
     "signature": "void init_audio_and_terrain(void)",
