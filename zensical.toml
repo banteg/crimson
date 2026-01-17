@@ -73,6 +73,7 @@ nav = [
     { "Progress metrics" = "metrics.md" },
     { "Detangling notes" = "detangling.md" },
     { "Entrypoint trace" = "entrypoint.md" },
+    { "Crimsonland.exe overview" = "crimsonland-exe.md" },
     { "Refactor attempt" = "refactor.md" },
   ]},
   { "Modern builds" = [

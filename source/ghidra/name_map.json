@@ -859,6 +859,62 @@
     "comment": "finds a free creature entry in DAT_0049bf38 and seeds defaults"
   },
   {
+    "program": "crimsonland.exe",
+    "address": "0x00418b60",
+    "name": "creature_render_type",
+    "signature": "void creature_render_type(int type_id)",
+    "comment": "renders active creatures matching type_id using 8x8 atlases and animation strips"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00419680",
+    "name": "creature_render_all",
+    "signature": "void creature_render_all(void)",
+    "comment": "creature render pass: overlays + per-type draws via creature_render_type"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041aed0",
+    "name": "ui_render_hud",
+    "signature": "void ui_render_hud(void)",
+    "comment": "renders the in-game HUD (health, weapon icons, player UI)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e840",
+    "name": "fx_queue_add",
+    "signature": "int fx_queue_add(int effect_id, float *pos, float w, float h, float rotation, float *rgba)",
+    "comment": "pushes a quad entry into DAT_004aaf18 (capped at 0x80); returns 1 on success"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00422c70",
+    "name": "projectile_render",
+    "signature": "void projectile_render(void)",
+    "comment": "renders projectiles/secondary projectiles and related beam/trail effects"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00427840",
+    "name": "fx_queue_add_rotated",
+    "signature": "int fx_queue_add_rotated(float *pos, float *rgba, float rotation, float scale, int effect_id)",
+    "comment": "pushes a rotated sprite into DAT_004aaf3c (capped at 0x40); returns 1 on success"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00427920",
+    "name": "fx_queue_render",
+    "signature": "void fx_queue_render(void)",
+    "comment": "renders DAT_004aaf18/DAT_004aaf3c queues and clears them"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00428390",
+    "name": "player_render_overlays",
+    "signature": "void player_render_overlays(void)",
+    "comment": "renders per-player overlays/indicators using DAT_004908** tables"
+  },
+  {
     "program": "grim.dll",
     "address": "0x10002120",
     "name": "grim_config_dialog_proc",

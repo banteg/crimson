@@ -5,6 +5,7 @@ This page is generated. Run `uv run python scripts/gen_all_pages.py` to update.
 - [Sprite atlas cutting (Crimsonland)](atlas.md)
 - [Bonus ID map](bonus-id-map.md)
 - [Creature struct (DAT_0049bf38)](creature-struct.md)
+- [Crimsonland.exe overview](crimsonland-exe.md)
 - [Detangling notes](detangling.md)
 - [Effects pools](effects-struct.md)
 - [Entrypoint trace](entrypoint.md)

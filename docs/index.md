@@ -44,6 +44,7 @@ Special handling during extraction:
 - [Game mode map](game-mode-map.md) — Tracking
 - [Detangling notes](detangling.md) — In progress
 - [Entrypoint trace](entrypoint.md) — In progress
+- [Crimsonland.exe overview](crimsonland-exe.md) — Draft
 - [Refactor attempt](refactor.md) — Planned
 - [All pages](all-pages.md) — Index
 - [Modern Linux build name mining](modern-linux.md) — Reference

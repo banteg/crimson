@@ -55,6 +55,19 @@ Extracted table (index → `(cell_code, group_id)`):
 The `group_id` is passed to the renderer alongside the grid size;
 its semantics aren’t obvious from the decompile.
 
+## Non-uniform sub-rects (grim_set_sub_rect)
+
+The engine sometimes uses Grim2D vtable `0x108` (`grim_set_sub_rect`) to pick a
+rectangle that spans multiple grid cells (not a single cell).
+
+Known uses:
+
+- `assets/crimson/ui/ui_wicons.png` uses an **8×8** grid but selects **2×1**
+  sub-rects. The `frame` argument is derived from the weapon table
+  (`weapon_id * 2`) and is reused across HUD + menu renders.
+- Some UI paths call `grim_set_sub_rect` twice in a row to draw two adjacent
+  slices from the same sheet (split-screen layouts).
+
 ## How slicing is used in practice
 
 The engine uses **two patterns**:
@@ -70,6 +83,8 @@ The engine uses **two patterns**:
 - `assets/crimson/game/projs.png` (DAT_0048f7d4)
   - Uses **grid=4** (e.g. `+0x104(4, …)` around `source/decompiled/crimsonland.exe_decompiled.c:18448`).
   - Uses **grid=2** for some effects (e.g. `+0x104(2, 0)` around `:16479`).
+  - Several projectile/beam effects draw **repeated quads** along a vector
+    using a single frame (segment tiling instead of unique frames).
 
 - `assets/crimson/game/bonuses.png` (DAT_0048f7f0)
   - Uses **sprite table index 0x10** (call at `:18550`), which maps to **grid=4**.
@@ -79,6 +94,10 @@ The engine uses **two patterns**:
   - Uses **grid=8** for the main particle system (see `+0x104(8, …)` at `:9704`).
   - Uses **sprite table indices 0x10, 0x0e, 0x0d, 0x0c** for UI/overlay effects
     (calls at `:996?`, `:16217`, `:16854`, `:18788`, `:18824`). These indices map to **grid=4**.
+
+- `assets/crimson/ui/ui_wicons.png` (DAT_0048f7e4)
+  - Uses **grid=8**, but rendered via `grim_set_sub_rect(8, 2, 1, frame)`.
+  - This implies each weapon icon spans **2×1 cells** (wider than a single cell).
 
 - Enemy sheets (`assets/crimson/game/zombie.png`, `assets/crimson/game/lizard.png`,
   `assets/crimson/game/alien.png`, `assets/crimson/game/spider_sp1.png`,
@@ -197,6 +216,10 @@ Examples from the type init table (`FUN_00412dc0`):
 
 The animation phase itself lives at creature offset `0x94` and is advanced in
 `FUN_00426220` using a per‑type rate (`&DAT_0048275c + type * 0x44`).
+
+These sheets often pack **multiple animations** for the same type (long strip
+plus short ping‑pong strip), and in some cases **multiple type variants** share
+one sheet by selecting different base offsets.
 
 ### Enemy type table (DAT_00482728)
 
