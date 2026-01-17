@@ -41,6 +41,7 @@ High-confidence fields (partial):
 | `0x2b4` | reload timer max | `player_reload_timer_max` | Used for reload HUD progress and perk checks. |
 | `0x2b8` | alt weapon id | `player_alt_weapon_id` | Saved when swapping to alt weapon (see weapon table notes). |
 | `0x2bc` | alt clip size | `player_alt_clip_size` | Saved when swapping to alt weapon. |
+| `0x2c0` | alt reload active flag | `player_alt_reload_active` | Saved when swapping to alt weapon. |
 | `0x2c4` | alt current ammo | `player_alt_ammo` | Saved when swapping to alt weapon. |
 | `0x2c8` | alt reload timer | `player_alt_reload_timer` | Saved when swapping to alt weapon. |
 | `0x2cc` | alt shot cooldown | `player_alt_shot_cooldown` | Saved when swapping to alt weapon. |

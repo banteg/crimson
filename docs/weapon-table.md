@@ -56,9 +56,9 @@ All offsets below are in **bytes**, relative to the pointer returned by
 - Secondary projectile type behavior and particle style ids are tracked in
   [Effects pools](effects-struct.md).
 - The alt-weapon swap stores per-player runtime state in parallel arrays:
-  `DAT_00490b8c` (weapon id), `DAT_00490b90` (clip size), `DAT_00490b98`
-  (current ammo), `DAT_00490b9c` (reload timer), `DAT_00490ba0` (shot cooldown),
-  and `DAT_00490ba4` (reload timer max).
+  `DAT_00490b8c` (weapon id), `DAT_00490b90` (clip size), `DAT_00490b94` (reload
+  active), `DAT_00490b98` (current ammo), `DAT_00490b9c` (reload timer),
+  `DAT_00490ba0` (shot cooldown), and `DAT_00490ba4` (reload timer max).
 - The same stride is used by projectile metadata lookups (`DAT_004d7a98`,
   `DAT_004d7a9c`) keyed by projectile type ids in `projectile_spawn` and
   `projectile_update`.

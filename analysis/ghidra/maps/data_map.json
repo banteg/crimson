@@ -243,6 +243,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00490b94",
+      "name": "player_alt_reload_active",
+      "comment": "Per-player alt reload active flag (player_health + 0x2c0)"
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00490b98",
       "name": "player_alt_ammo",
       "comment": "Per-player alt ammo count (player_health + 0x2c4)"
