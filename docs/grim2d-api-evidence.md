@@ -128,7 +128,7 @@ grim.dll body:
 ```
 
 
-## 0x20 — FUN_10006580 @ 0x10006580
+## 0x20 — grim_set_render_state @ 0x10006580
 
 - Provisional name: `set_render_state` (high)
 - Guess: `void set_render_state(uint32_t state, uint32_t value)`
@@ -324,7 +324,7 @@ grim.dll body:
 ```
 
 
-## 0x48 — FUN_10007390 @ 0x10007390
+## 0x48 — grim_was_key_pressed @ 0x10007390
 
 - Provisional name: `was_key_pressed` (high)
 - Guess: `bool was_key_pressed(uint32_t key)`
@@ -751,7 +751,7 @@ grim.dll body:
 ```
 
 
-## 0xc0 — FUN_10007740 @ 0x10007740
+## 0xc0 — grim_get_texture_handle @ 0x10007740
 
 - Provisional name: `get_texture_handle` (high)
 - Guess: `int get_texture_handle(const char *name)`
@@ -771,7 +771,7 @@ grim.dll body:
 ```
 
 
-## 0xc4 — FUN_10007830 @ 0x10007830
+## 0xc4 — grim_bind_texture @ 0x10007830
 
 - Provisional name: `bind_texture` (high)
 - Guess: `void bind_texture(int handle, int stage)`
@@ -951,7 +951,7 @@ grim.dll body:
 ```
 
 
-## 0xe8 — FUN_10007ac0 @ 0x10007ac0
+## 0xe8 — grim_begin_batch @ 0x10007ac0
 
 - Ghidra signature: `void grim_begin_batch(void)`
 - Call sites: 79 (unique funcs: 23)
@@ -994,7 +994,7 @@ grim.dll body:
 ```
 
 
-## 0xf0 — FUN_10007b20 @ 0x10007b20
+## 0xf0 — grim_end_batch @ 0x10007b20
 
 - Ghidra signature: `void grim_end_batch(void)`
 - Call sites: 86 (unique funcs: 28)
@@ -1066,7 +1066,7 @@ grim.dll body:
 ```
 
 
-## 0xfc — FUN_10007f30 @ 0x10007f30
+## 0xfc — grim_set_rotation @ 0x10007f30
 
 - Provisional name: `set_rotation` (high)
 - Guess: `void set_rotation(float radians)`
@@ -1094,7 +1094,7 @@ grim.dll precompute:
 ```
 
 
-## 0x100 — FUN_10008350 @ 0x10008350
+## 0x100 — grim_set_uv @ 0x10008350
 
 - Provisional name: `set_uv` (high)
 - Guess: `void set_uv(float u0, float v0, float u1, float v1)`
@@ -1123,7 +1123,7 @@ grim.dll UV assignment:
 ```
 
 
-## 0x104 — FUN_10008230 @ 0x10008230
+## 0x104 — grim_set_atlas_frame @ 0x10008230
 
 - Provisional name: `set_atlas_frame` (high)
 - Guess: `void set_atlas_frame(int atlas_size, int frame)`
@@ -1210,7 +1210,7 @@ Atlas pointer table setup (grim.dll init):
 ```
 
 
-## 0x110 — FUN_10008040 @ 0x10008040
+## 0x110 — grim_set_color_ptr @ 0x10008040
 
 - Provisional name: `set_color_ptr` (high)
 - Guess: `void set_color_ptr(float *rgba)`
@@ -1254,7 +1254,7 @@ Clamped RGBA example (FUN_00446030):
 ```
 
 
-## 0x114 — FUN_10007f90 @ 0x10007f90
+## 0x114 — grim_set_color @ 0x10007f90
 
 - Provisional name: `set_color` (high)
 - Guess: `void set_color(float r, float g, float b, float a)`
@@ -1281,7 +1281,7 @@ grim.dll packing:
 ```
 
 
-## 0x118 — FUN_100081c0 @ 0x100081c0
+## 0x118 — grim_set_color_slot @ 0x100081c0
 
 - Notes: packs RGBA into color slot `index` (0..3); draw_quad reads slots 0..3
 - Ghidra signature: `void grim_set_color_slot(int index, float r, float g, float b, float a)`
@@ -1305,7 +1305,7 @@ grim.dll slot write:
 ```
 
 
-## 0x11c — FUN_10008b10 @ 0x10008b10
+## 0x11c — grim_draw_quad @ 0x10008b10
 
 - Provisional name: `draw_quad` (high)
 - Guess: `void draw_quad(float x, float y, float w, float h)`
@@ -1546,7 +1546,7 @@ grim.dll body:
 ```
 
 
-## 0x144 — FUN_10009730 @ 0x10009730
+## 0x144 — grim_draw_text_small @ 0x10009730
 
 - Provisional name: `draw_text_small` (high)
 - Guess: `void draw_text_small(float x, float y, const char *text)`
@@ -1608,7 +1608,7 @@ grim.dll body:
 ```
 
 
-## 0x14c — FUN_100096c0 @ 0x100096c0
+## 0x14c — grim_measure_text_width @ 0x100096c0
 
 - Provisional name: `measure_text_width` (high)
 - Guess: `int measure_text_width(const char *text)`

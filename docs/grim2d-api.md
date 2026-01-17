@@ -91,6 +91,22 @@ Use them to prioritize runtime validation and signature cleanup.
 | `0x4c` | `grim_flush_input` | 12 | 10 |
 | `0x118` | `grim_set_color_slot` | 12 | 2 |
 
+Validation highlights (see the evidence appendix for snippets):
+
+- `grim_set_render_state` callsites pass `(state, value)` pairs like `(0x15, 2)` and `(0x18, 0x3f000000)`,
+  matching D3D-style render state usage.
+- `grim_bind_texture` is called with `(handle, 0)` and followed by `grim_set_uv` + `grim_draw_quad`,
+  consistent with binding stage 0 before drawing.
+- `grim_set_uv` receives literal `0/1` and atlas fractions (e.g. `0.0625`, `0.00390625`) before draws,
+  confirming a 4-float UV rectangle.
+- `grim_set_atlas_frame` uses atlas sizes `4/8/16` plus frame indices, while `grim_set_sub_rect` supplies
+  width/height for multi-cell frames.
+- `grim_begin_batch` / `grim_end_batch` bracket `grim_draw_quad` and `submit_*` calls in most UI paths.
+- `grim_draw_text_small_fmt` calls `vsprintf` in grim.dll and forwards to `grim_draw_text_small`, so the
+  varargs signature is correct.
+- `grim_measure_text_width` returns an integer width used for layout/centering in menus.
+- `grim_set_color` / `grim_set_color_slot` pass RGBA floats or float pointers that grim.dll packs into ARGB.
+
 
 ## Input-ish offsets (evidence)
 
