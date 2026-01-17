@@ -610,6 +610,12 @@
     "comment": "renders tutorial prompt text + Repeat/Play/Skip buttons and handles selections"
   },
   {
+    "program": "crimsonland.exe",
+    "address": "0x00408990",
+    "name": "tutorial_timeline_update",
+    "comment": "drives tutorial stage timing, messages, and scripted spawns"
+  },
+  {
     "program": "grim.dll",
     "address": "0x100028d0",
     "name": "grim_backup_textures",

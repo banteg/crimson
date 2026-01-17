@@ -261,6 +261,29 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
     table `DAT_00490968` and resets timers) or exit to game (sets `DAT_00487274`, flushes input,
     and resets `DAT_00486fe0`).
 
+### Tutorial timeline (medium confidence)
+
+- `FUN_00408990` -> `tutorial_timeline_update`
+  - Evidence: loads the tutorial string table, advances `DAT_00486fd8` stage index when
+    `DAT_00486fe0` counts up from `-1000`, and renders each stage via `tutorial_prompt_dialog`.
+  - Stage transitions observed:
+    - Stage 0: after `DAT_00486fdc > 6000` and `DAT_00486fe0 == -1`, clears `DAT_004808a8`,
+      resets `DAT_004712fc`, and sets `DAT_00486fe0 = -1000`.
+    - Stage 1: waits for any movement key active (`grim_is_key_active` via vtable +0x80),
+      then spawns bonus pickups (`FUN_0042ef60`) and sets `DAT_00486fe0 = -1000`.
+    - Stage 2: waits until all 16 bonus slots in `DAT_00482948` clear, then sets
+      `DAT_00486fe0 = -1000`.
+    - Stage 3: waits for input in `DAT_00490bec` key slots, spawns arrow markers
+      (`FUN_00430af0`), then sets `DAT_00486fe0 = -1000`.
+    - Stage 4: waits for `FUN_00428210()` to fire, spawns arrow markers, sets `DAT_00486fdc = 1000`,
+      then sets `DAT_00486fe0 = -1000`.
+    - Stage 5: increments `DAT_004808a8` on repeated `FUN_00428210()` events, spawns markers/bonuses,
+      and after 8 iterations sets `DAT_0049095c = 3000` and `DAT_00486fe0 = -1000`.
+    - Stage 6: waits for `DAT_00486fac < 1`, spawns markers, then sets `DAT_00486fe0 = -1000`.
+    - Stage 7: waits for `FUN_00428210()` with no active bonus slots, then sets `DAT_00486fe0 = -1000`.
+  - Stage index wraps to 0 when `DAT_00486fd8` reaches 9; counters are initialized in `FUN_00412dc0`
+    (`DAT_00486fd8 = -1`, `DAT_00486fe0 = -1000`) and reset by `tutorial_prompt_dialog`.
+
 ### Game mode selector (partial)
 
 - `_DAT_00480360` holds the current game mode. See [Game mode map](game-mode-map.md) for the observed
