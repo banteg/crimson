@@ -298,7 +298,7 @@ Layout (partial):
 | 0x1c | pos_y | Written from `param_1[1]`; advanced by `vel_y` each tick. |
 | 0x20 | vel_x | Written from `param_2[0]`; scaled by `DAT_00480840` in update. |
 | 0x24 | vel_y | Written from `param_2[1]`; scaled by `DAT_00480840` in update. |
-| 0x28 | scale / size | Written from `param_3`; incremented by `dt * 60.0` before render. |
+| 0x28 | scale / size | Written from `param_3`; incremented by `dt * 60.0` before render, but not referenced in the current render path. |
 
 Notes:
 
