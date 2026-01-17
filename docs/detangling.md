@@ -137,9 +137,17 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
 - `FUN_0043d260` -> `sfx_play_panned`
   - Evidence: same as `sfx_play`, but converts an FPU value to pan (`__ftol`), clamps to
     `[-10000, 10000]`, and passes pan to vtable +0x40.
-- `FUN_0043d550` -> `sfx_mark_muted`
-  - Evidence: sets `DAT_004c8450[sfx]=1` and recursively applies to other unmuted ids using
-    `FUN_0043d7c0`; `FUN_0043d460` later clears the chosen id for exclusive playback.
+- `FUN_0043d550` -> `sfx_mute_all`
+  - Evidence: sets `DAT_004c8450[sfx]=1` and recursively mutes all other unmuted ids using
+    `sfx_is_unmuted`.
+- `FUN_0043d7c0` -> `sfx_is_unmuted`
+  - Evidence: returns true when `DAT_004cc8d6` is set and the per-id mute flag is clear.
+- `FUN_0043d460` -> `sfx_play_exclusive`
+  - Evidence: mutes other ids, optionally selects a random variant, and ensures the chosen id is
+    unmuted with its volume set in `DAT_004c404c`.
+- `FUN_0043d5b0` -> `sfx_update_mute_fades`
+  - Evidence: ramps per-id volume toward `DAT_004807b0` when unmuted and fades to zero when muted,
+    stopping voices via `FUN_0043bf60`.
 
 ### Global var access (medium confidence)
 

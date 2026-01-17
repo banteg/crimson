@@ -424,9 +424,30 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0043d550",
-    "name": "sfx_mark_muted",
-    "signature": "void sfx_mark_muted(int sfx_id)",
-    "comment": "marks sfx as muted (propagates to other unmuted ids)"
+    "name": "sfx_mute_all",
+    "signature": "void sfx_mute_all(int sfx_id)",
+    "comment": "mutes all unmuted sfx ids (recursive)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043d460",
+    "name": "sfx_play_exclusive",
+    "signature": "void sfx_play_exclusive(int sfx_id)",
+    "comment": "mutes other sfx ids and ensures the chosen id is audible"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043d5b0",
+    "name": "sfx_update_mute_fades",
+    "signature": "void sfx_update_mute_fades(void)",
+    "comment": "ramps volume up/down based on mute flags"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043d7c0",
+    "name": "sfx_is_unmuted",
+    "signature": "int sfx_is_unmuted(int sfx_id)",
+    "comment": "returns nonzero when sfx id is not muted"
   },
   {
     "program": "crimsonland.exe",
