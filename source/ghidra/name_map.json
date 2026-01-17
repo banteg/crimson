@@ -390,7 +390,7 @@
     "address": "0x00420440",
     "name": "projectile_spawn",
     "signature": "int projectile_spawn(float *pos, float angle, int type_id, int owner_id)",
-    "comment": "allocates a projectile slot, initializes fields, and returns the index"
+    "comment": "allocates a projectile slot, initializes fields, and returns the index (overrides to type 0x2d when Fire Bullets is active)"
   },
   {
     "program": "crimsonland.exe",

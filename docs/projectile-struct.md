@@ -38,6 +38,12 @@ Related tables:
   projectiles: it is decremented on hit and, if still positive, passed into
   `FUN_004207c0` as the damage value before subtracting the target's health.
 
+Spawn notes:
+
+- When Fire Bullets is active (`DAT_00490bcc > 0` or `DAT_00490f2c > 0`) and the
+  owner is a player (`owner_id == -100 / -1 / -2 / -3`), `projectile_spawn`
+  forces `type_id` to `0x2d` regardless of the requested type.
+
 ## Rendering notes
 
 `projectile_render` uses `type_id` to select atlas frames in

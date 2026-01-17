@@ -47,6 +47,8 @@ All offsets below are in **bytes**, relative to the pointer returned by
 - Flag bits (offset `0x68`): `0x1` spawn muzzle flash / shot burst effect
   (`FUN_0042e120(0x12, ...)`), `0x4` use the smaller crosshair size, `0x8` hide
   the crosshair entirely.
+- Pellet count (offset `0x74`, `DAT_004d7aa0`) is used by the Fire Bullets bonus
+  to spawn multiple `0x2d` pellets per shot.
 - The alt-weapon swap stores per-player runtime state in parallel arrays:
   `DAT_00490b8c` (weapon id), `DAT_00490b90` (clip size), `DAT_00490b98`
   (current ammo), `DAT_00490b9c` (reload timer), `DAT_00490ba0` (shot cooldown),
