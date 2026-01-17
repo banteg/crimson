@@ -296,6 +296,27 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00409890",
+    "name": "bonus_apply",
+    "signature": "void bonus_apply(int player_index, int *bonus_entry)",
+    "comment": "applies a picked bonus to the player and spawns related effects"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040a320",
+    "name": "bonus_update",
+    "signature": "void bonus_update(void)",
+    "comment": "updates bonus lifetimes and handles player pickups"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004295f0",
+    "name": "bonus_render",
+    "signature": "void bonus_render(void)",
+    "comment": "renders bonus icons and labels from the pickup pool"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0042a5f0",
     "name": "audio_resume_all",
     "signature": "int audio_resume_all(void)",
