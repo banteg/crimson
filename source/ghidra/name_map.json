@@ -528,6 +528,34 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0043cf90",
+    "name": "sfx_system_init",
+    "signature": "int sfx_system_init(void)",
+    "comment": "initializes the Grim SFX system and clears per-sfx state"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043d070",
+    "name": "sfx_release_all",
+    "signature": "void sfx_release_all(void)",
+    "comment": "releases all loaded sfx samples"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043d0d0",
+    "name": "music_release_all",
+    "signature": "void music_release_all(void)",
+    "comment": "releases all loaded music tracks"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043d110",
+    "name": "audio_shutdown_all",
+    "signature": "void audio_shutdown_all(void)",
+    "comment": "shuts down sfx + music systems"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0043d730",
     "name": "audio_suspend_channels",
     "signature": "void audio_suspend_channels(void)",

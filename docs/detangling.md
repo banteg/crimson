@@ -172,6 +172,14 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
   - Evidence: appends a track id into `DAT_004cc6d0` playlist array.
 - `FUN_0043c980` -> `music_release_track`
   - Evidence: releases a music entry by id via `sfx_release_entry`.
+- `FUN_0043cf90` -> `sfx_system_init`
+  - Evidence: initializes the Grim SFX system and clears `DAT_004c3c80`/`DAT_004c3e80` tables.
+- `FUN_0043d070` -> `sfx_release_all`
+  - Evidence: iterates `DAT_004c84d0` entries and calls `sfx_release_entry`.
+- `FUN_0043d0d0` -> `music_release_all`
+  - Evidence: iterates `DAT_004c4250` entries and calls `sfx_release_entry`.
+- `FUN_0043d110` -> `audio_shutdown_all`
+  - Evidence: calls `sfx_release_all`, `music_release_all`, and the audio backend shutdown helper.
 
 ### Global var access (medium confidence)
 
