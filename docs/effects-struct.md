@@ -168,7 +168,7 @@ Layout (partial):
 | 0x3c | color_a | Initialized to `1.0`; `0x10` flag drives fade-out. |
 | 0x40 | rotation_step | Added into `rotation` when `flags & 0x4`. |
 | 0x44 | scale_step | Added into `scale` when `flags & 0x8`. |
-| 0x48 | UV/vertex data | Initialized in `effect_spawn` using atlas tables. |
+| 0x48 | quad vertex data | `effect_spawn` writes four corners (pos + UVs) using `half_width/half_height` and the atlas tables. |
 
 Notes:
 

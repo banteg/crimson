@@ -85,14 +85,14 @@ Field map (partial):
 | Offset | Field | Evidence |
 | --- | --- | --- |
 | 0x00 | sprite texture handle | Bound in `creature_render_type` via `grim_bind_texture`. |
-| 0x04 | sfx bank A [0] | Random pick in `FUN_004207c0` (death/impact path). |
-| 0x08 | sfx bank A [1] | Random pick in `FUN_004207c0`. |
-| 0x0c | sfx bank A [2] | Random pick in `FUN_004207c0` and chain-kill paths. |
-| 0x10 | sfx bank A [3]? | `FUN_004207c0` can pick index `0..3`; this slot is only implied. |
-| 0x14 | sfx bank B [0] | Random pick in `creature_update_all` when a creature is removed in the contact-damage path. |
-| 0x18 | sfx bank B [1] | Random pick in the same contact-damage path. |
-| 0x34 | anim rate | Multiplies animation step in `creature_update_all`. |
-| 0x38 | atlas base frame | Base frame index for creature animation strips (used in `creature_render_type`). |
+| 0x04 | sfx bank A [0] | `FUN_004207c0` chooses `uVar3 = rand() & 3` and calls `FUN_0043d260` on `&DAT_0048272c + (uVar3 + type_id * 0x11) * 4`. |
+| 0x08 | sfx bank A [1] | Same selection as above. |
+| 0x0c | sfx bank A [2] | Same selection as above; also used by chain-kill paths. |
+| 0x10 | sfx bank A [3] | Same selection as above (the 0..3 range proves this slot is live). |
+| 0x14 | sfx bank B [0] | Contact-damage removal path picks `uVar7 = rand() & 1` and calls `FUN_0043d260` on `&DAT_0048273c + (uVar7 + type_id * 0x11) * 4`. |
+| 0x18 | sfx bank B [1] | Same selection as above (second slot in the 0..1 range). |
+| 0x34 | anim rate | Multiplies animation step in `creature_update_all` (drives `anim phase`). |
+| 0x38 | atlas base frame | Start frame for the long strip (used with `+0x10` or `+0x20` offsets in `creature_render_type`). |
 | 0x3c | corpse frame | Used by `fx_queue_render` to select the bodyset frame for corpse sprites. |
 | 0x40 | anim mirror flag | When bit `1` is set, the long strip mirrors frames `> 0x0f` in `creature_render_type`. |
 
@@ -105,7 +105,7 @@ Known initial entries (from the reset/init routine that loads creature textures)
 | `2` | `s_alien_00473734` | `1.35` | `0x20` | `4` | `0` |
 | `3` | `s_spider_sp1_00473748` | `1.5` | `0x10` | `1` | `1` |
 | `4` | `s_spider_sp2_0047373c` | `1.5` | `0x10` | `2` | `1` |
-| `5` | `s_trooper_0047372c` | unknown | unknown | `7` | unknown |
+| `5` | `s_trooper_0047372c` | not set in init | not set in init | `7` | not set in init |
 
 ## Spawn template ids (FUN_00430af0)
 
