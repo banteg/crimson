@@ -1059,6 +1059,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x004c2b30",
+      "name": "effect_free_list_head",
+      "comment": "Effect pool free list head pointer"
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004d7a2c",
       "name": "weapon_table",
       "comment": "Weapon table base (stride 0x7c bytes)"

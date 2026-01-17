@@ -153,7 +153,7 @@ Notes:
 
 ## Effect entries (`effect_pool_pos_x` pool)
 
-Entry size: `0xbc` bytes (`0x2f` floats). Free list head: `DAT_004c2b30`
+Entry size: `0xbc` bytes (`0x2f` floats). Free list head: `effect_free_list_head`
 with next pointer at offset `0xb8`.
 
 Spawn/update helpers:
