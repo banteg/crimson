@@ -114,6 +114,8 @@ Validation highlights (see the evidence appendix for snippets):
 - `grim_draw_quad_points` emits four explicit points with current UV/color slots and batches immediately.
 - `grim_draw_line` builds a half-width vector then forwards to `grim_draw_line_quad`, which emits the quad
   via `grim_draw_quad_points`.
+- `grim_draw_circle_filled` / `grim_draw_circle_outline` appear in gameplay effects with UV + color setup
+  immediately before the draw calls.
 
 
 ## Input-ish offsets (evidence)
