@@ -134,7 +134,8 @@ Notes:
   through the creature type table: `frame = *(int *)(&DAT_00482764 + effect_id * 0x44)`.
   That offset is the per‑type `corpse frame` (see `docs/creature-struct.md`),
   and the frame is converted to UVs via the 4x atlas tables (`DAT_00491210/14`).
-- The rotated queue is drawn in two passes with different alpha scales.
+- The rotated queue is drawn in two passes: the first uses half alpha and a
+  slightly inflated size (`scale * 1.064`), the second uses full alpha/size.
 
 ## Effect entries (`DAT_004ab330` pool)
 
