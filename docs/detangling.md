@@ -159,6 +159,7 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
   - Evidence: loads `sfx.paq` and registers the sound effect ids.
   - See `docs/sfx-id-map.md` for the extracted id-to-file mapping.
   - See `docs/sfx-usage.md` for the most referenced SFX ids in the decompiled code.
+  - See `docs/sfx-labels.md` for suggested data labels (ApplyNameMap only renames functions).
 - `FUN_0043c740` -> `sfx_load_sample`
   - Evidence: allocates a free slot in `DAT_004c84e4`, loads `.ogg`/`.wav` data, and returns the
     sample id.
