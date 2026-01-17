@@ -24,7 +24,7 @@ We extracted all `(*DAT_0048083c + offset)` callsites and wrote them to:
 
 The JSON includes offset, callsite count, unique functions, and sample lines.
 
-We also dumped the Grim2D vtable itself from `game_bins/crimsonland/<version>/grim.dll` and joined the
+We also dumped the Grim2D vtable itself from `game_bins/crimsonland/1.9.93-gog/grim.dll` and joined the
 two datasets:
 
 - `analysis/ghidra/derived/grim2d_vtable_entries.json`

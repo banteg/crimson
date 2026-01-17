@@ -23,7 +23,7 @@ analysis:
   -s ApplyNameMap.java -a analysis/ghidra/maps/name_map.json \
   -s ApplyDataMap.java -a analysis/ghidra/maps/data_map.json \
   -s ExportAll.java -o analysis/ghidra/raw \
-  game_bins/crimsonland/<version>/crimsonland.exe
+  game_bins/crimsonland/1.9.93-gog/crimsonland.exe
 ```
 
 You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps.
@@ -143,7 +143,7 @@ Config edit path status:
   global blob (`DAT_00480348`, size `0x480`) using mode `DAT_00473668` (`"wb"`).
 - `FUN_0041f130` is a fallback path that writes the same `DAT_00480348` blob using
   mode `DAT_00473668` (`"wb"`) when the `DAT_00472998` config file is missing.
-- File evidence: `game_bins/crimsonland/<version>/crimson.cfg` is exactly `0x480` bytes; `game_bins/crimsonland/<version>/game.cfg` is not
+- File evidence: `game_bins/crimsonland/1.9.93-gog/crimson.cfg` is exactly `0x480` bytes; `game_bins/crimsonland/1.9.93-gog/game.cfg` is not
   (likely a save/progress file). `DAT_00472998` is `"rb"`; the filename is supplied
   by `FUN_00402bd0` (`"%s\\%s"`).
 

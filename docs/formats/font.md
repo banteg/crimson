@@ -6,7 +6,7 @@ The small font is stored as a 256-byte width table and a 16x16 glyph atlas.
 
 ## Location
 
-- `game_bins/crimsonland/<version>/crimson.paq`: `load\smallFnt.dat`, `load\smallWhite.tga`
+- `game_bins/crimsonland/1.9.93-gog/crimson.paq`: `load\smallFnt.dat`, `load\smallWhite.tga`
 - Extracted to `artifacts/assets/crimson/load/smallFnt.dat` and `artifacts/assets/crimson/load/smallWhite.png`
 
 

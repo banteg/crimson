@@ -8,7 +8,7 @@ Overall naming coverage: 26.3% (468 / 1779 functions named or inferred).
 ## Quick start
 
 ```bash
-uv run paq extract game_bins/crimsonland/<version> artifacts/assets
+uv run paq extract game_bins/crimsonland/1.9.93-gog artifacts/assets
 ```
 
 This scans `game_bins/` for `.paq` archives and extracts them under:

@@ -3,4 +3,6 @@
 /_site/
 /analysis/ghidra/projects/
 .venv/
+zig-cache/
+zig-out/
 .DS_Store

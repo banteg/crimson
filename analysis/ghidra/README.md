@@ -30,7 +30,7 @@ External inputs:
      -s ApplyDataMap.java -a analysis/ghidra/maps/data_map.json \
      -s ExportAll.java \
      -o analysis/ghidra/raw \
-     game_bins/crimsonland/<version>/crimsonland.exe
+     game_bins/crimsonland/1.9.93-gog/crimsonland.exe
    ```
 
    The header pack includes DirectX/DirectSound headers as references, but the
@@ -56,11 +56,11 @@ External inputs:
      -s ApplyDataMap.java -a analysis/ghidra/maps/data_map.json \
      -s ExportAll.java \
      -o analysis/ghidra/raw \
-     game_bins/crimsonland/<version>/crimsonland.exe
+     game_bins/crimsonland/1.9.93-gog/crimsonland.exe
    ```
 
    Use `--project-name grim_dll` with
-   `game_bins/crimsonland/<version>/grim.dll` for Grim2D exports, and run
+   `game_bins/crimsonland/1.9.93-gog/grim.dll` for Grim2D exports, and run
    the vtable helper before applying the name map so vtable entries are created
    as functions:
 
@@ -75,7 +75,7 @@ External inputs:
      -s ApplyDataMap.java -a analysis/ghidra/maps/data_map.json \
      -s ExportAll.java \
      -o analysis/ghidra/raw \
-     game_bins/crimsonland/<version>/grim.dll
+     game_bins/crimsonland/1.9.93-gog/grim.dll
    ```
 
 3. For repeated runs on the same kept project, use `-process` with the raw
