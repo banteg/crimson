@@ -283,3 +283,9 @@ Layout (partial):
 | 0x20 | vel_x | Written from `param_2[0]`; scaled by `DAT_00480840` in update. |
 | 0x24 | vel_y | Written from `param_2[1]`; scaled by `DAT_00480840` in update. |
 | 0x28 | scale / size | Written from `param_3`; incremented by `dt * 60.0` before render. |
+
+Notes:
+
+- Render is gated by `DAT_00480359` and binds `DAT_0048f7ec` (`particles.png`)
+  with a fixed 4x atlas UV (`DAT_00491248/4c`), then draws each active entry
+  with the per-entry rotation and RGBA.
