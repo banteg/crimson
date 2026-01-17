@@ -1,4 +1,4 @@
-# Creature struct (DAT_0049bf38)
+# Creature struct (creature_pool / DAT_0049bf38)
 
 This document tracks the main creature pool used by `crimsonland.exe`.
 
@@ -6,7 +6,7 @@ Pool facts:
 
 - Entry size: `0x98` bytes.
 - Pool size: `0x180` entries.
-- Base address: `DAT_0049bf38`.
+- Base address: `creature_pool` (`DAT_0049bf38`).
 
 Key helpers:
 

@@ -7,7 +7,7 @@ in a fixed‑stride table. The accessor `weapon_table_entry` (`FUN_0041fc60`)
 returns a pointer to the name buffer at the start of each entry:
 
 ```
-&DAT_004d7a2c + weapon_id * 0x1f
+weapon_table (`DAT_004d7a2c`) + weapon_id * 0x1f
 ```
 
 `0x1f` is a count of `u32` slots, so the stride is **0x7c bytes** per entry.

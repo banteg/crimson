@@ -102,6 +102,17 @@ You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps
 - `FUN_00446000` -> `input_any_key_pressed`
   - Evidence: scans keycodes `2..0x17e` via the input callback at `(*DAT_0048083c + 0x80)`.
 
+### Data labels (high confidence)
+
+- `DAT_00480348` -> `config_blob`
+  - Evidence: 0x480‑byte `crimson.cfg` blob; see config layout below.
+- `DAT_00480510` -> `config_keybind_table`
+  - Evidence: 2×16 dword keybind table inside config blob; copied into runtime binds.
+- `DAT_0049bf38` -> `creature_pool`
+  - Evidence: base of 0x180‑entry creature pool with stride 0x98.
+- `DAT_004d7a2c` -> `weapon_table`
+  - Evidence: base of weapon table with stride 0x7c (see weapon table doc).
+
 ### Creature spawn + damage (high confidence)
 
 - `FUN_00430af0` -> `creature_spawn_template`
