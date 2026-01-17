@@ -57,6 +57,30 @@ Field map (medium confidence):
 | 0x90 | AI mode | selects movement pattern (cases 0/1/3/4/5/6/7/8). |
 | 0x94 | anim phase | accumulates to drive sprite timing; wraps at 31 or 15 depending on flags. |
 
+## AI mode behaviors (DAT_0049bfc8 / offset 0x90)
+
+The AI mode selects how the target position (`target_x/target_y`) is computed
+inside `creature_update_all`. These notes are medium-confidence.
+
+| Mode | Behavior (inferred) | Evidence |
+| --- | --- | --- |
+| `0` | Orbit toward player; if far (>800) target = player, else target = player + `cos/sin(phase) * dist * 0.85`. | Uses player index + per-creature phase (`DAT_0049bf3c`) and distance to pick a target offset. |
+| `1` | Tight orbit toward player; same as mode 0 but scale `0.55`. | Same logic with scale 0.55. |
+| `2` | Force direct chase; target is forced to player when mode == 2. | `mode == 2` triggers target override to player. |
+| `3` | Linked follower; target = linked creature position + per-creature offset (`DAT_0049bfb4/b8`). | Uses `DAT_0049bfb0` as link index; clears mode if target dead. |
+| `4` | Linked guard; if link alive, target around player like mode 0; if link dead, mode clears and a damage helper is called. | Clears mode and calls `FUN_004207c0` when link is dead. |
+| `5` | Tethered follower; target = link + offset; movement scale shrinks when very close (`dist * 0.015625`). | Computes `local_70` from distance to target and clamps in 0..1 range. |
+| `6` | Orbit around linked creature; target = link + `cos/sin(angle + heading) * radius`. | Uses `DAT_0049bfc0` (radius) and `DAT_0049bfbc` (angle). |
+| `7` | Hold/linger; target = current position while a timer runs. | Uses `DAT_0049bfc0` as countdown; clears mode when expired. |
+| `8` | Wide orbit toward player; same as mode 0 but scale `0.9`. | Same logic with scale 0.9. |
+
+Notes:
+
+- Linked modes use `DAT_0049bfb0` as the linked creature index and `DAT_0049bfb4/b8`
+  as the per-creature offset.
+- Mode `7` interacts with the `0x80` flag and the `DAT_0049bfb0` link index; if
+  either guard fails, the mode resets to `0`.
+
 Related notes:
 
 - See [Detangling notes](detangling.md) for helper naming and other pool context.
