@@ -189,6 +189,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00484fd0",
+      "name": "creature_spawn_slot_owner",
+      "comment": "Spawn slot owner creature pointer (stride 0x18 bytes; indexed by creature_link_index)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00484fd4",
       "name": "creature_spawn_slot_count",
       "comment": "Spawn slot current count (stride 0x18 bytes; indexed by creature_link_index)."
@@ -234,6 +240,24 @@
       "address": "0x00486fcc",
       "name": "creature_active_count",
       "comment": "Active creature count (set each creature_update_all pass)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00486fe8",
+      "name": "survival_recent_death_pos_x",
+      "comment": "Survival reward tracking: recent creature death X positions (3 entries, stride 8 bytes)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00486fec",
+      "name": "survival_recent_death_pos_y",
+      "comment": "Survival reward tracking: recent creature death Y positions (3 entries, stride 8 bytes)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00487000",
+      "name": "survival_recent_death_count",
+      "comment": "Survival reward tracking: recent creature death counter (counts to 6, stores 3 positions)."
     },
     {
       "program": "crimsonland.exe",

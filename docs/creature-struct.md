@@ -67,11 +67,17 @@ Global counters:
 
 Spawn slots (used by `creature_update_all` when `creature_link_index` selects a slot):
 
+- `creature_spawn_slot_owner` — pointer to the owning creature (used for collision and cleared on owner death).
 - `creature_spawn_slot_count` — current spawn count.
 - `creature_spawn_slot_limit` — max spawns before the slot stops.
 - `creature_spawn_slot_interval` — seconds between spawns.
 - `creature_spawn_slot_timer` — countdown timer to the next spawn.
 - `creature_spawn_slot_template` — spawn template id passed to `creature_spawn_template`.
+
+Survival reward tracking (globals):
+
+- `survival_recent_death_pos_x` / `survival_recent_death_pos_y` — up to 3 recent creature death positions (recorded in `creature_handle_death`).
+- `survival_recent_death_count` — increments with deaths (caps at 6) and gates the survival weapon reward check in `survival_update`.
 
 ## AI mode behaviors (DAT_0049bfc8 / offset 0x90)
 
