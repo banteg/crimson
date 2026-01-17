@@ -354,8 +354,8 @@
     "program": "crimsonland.exe",
     "address": "0x0041fc60",
     "name": "weapon_table_entry",
-    "signature": "int * weapon_table_entry(int weapon_id)",
-    "comment": "returns &DAT_004d7a2c + weapon_id * 0x1f"
+    "signature": "char * weapon_table_entry(int weapon_id)",
+    "comment": "returns the entry base (&DAT_004d7a2c + weapon_id * 0x1f)"
   },
   {
     "program": "crimsonland.exe",

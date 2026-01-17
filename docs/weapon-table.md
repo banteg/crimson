@@ -4,7 +4,7 @@
 
 Weapon stats are initialized in `weapon_table_init` (`FUN_004519b0`) and stored
 in a fixed‑stride table. The accessor `weapon_table_entry` (`FUN_0041fc60`)
-returns:
+returns a pointer to the name buffer at the start of each entry:
 
 ```
 &DAT_004d7a2c + weapon_id * 0x1f
@@ -24,7 +24,7 @@ All offsets below are in **bytes**, relative to the pointer returned by
 | Offset | Type  | Meaning | Evidence |
 | ------ | ----- | ------- | -------- |
 | `-0x04` | int | Ammo class / HUD indicator | Used to choose `ui_ui_ind*` icons in the HUD: `0=bullet`, `1=fire`, `2=rocket`, else electric. |
-| `0x00` | char * | Weapon name | Rendered in the HUD weapon list via `FUN_0041c4b0`. |
+| `0x00` | char[0x40] | Weapon name | String is copied inline during `weapon_table_init` and rendered in the HUD weapon list via `FUN_0041c4b0`. |
 | `0x40` | byte | Unlocked/available flag | `FUN_00452e40` clears the table then marks unlocked weapons; `FUN_00452cd0` skips entries with `0`. |
 | `0x44` | int | Clip size | Copied from `DAT_004d7a70` into `DAT_00490b74` on weapon swap and used to reset `DAT_00490b7c`. |
 | `0x48` | float | Shot cooldown | Copied into `DAT_00490b84` after firing in `FUN_00444980`. |
