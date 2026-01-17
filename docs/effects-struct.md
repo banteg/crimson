@@ -184,6 +184,17 @@ Notes:
   onto the free list; the flag presets always include bit `0x1` to keep `flags`
   nonzero while active.
 
+Common flag presets (from the template helpers that seed `DAT_004ab1dc`):
+
+| Flags | Bits present | Notes |
+| --- | --- | --- |
+| `0x19` | `0x1` + `0x8` + `0x10` | Base preset with scale step + alpha fade. |
+| `0x1d` | `0x1` + `0x4` + `0x8` + `0x10` | Adds rotation step to the base preset. |
+| `0x59` | `0x1` + `0x8` + `0x10` + `0x40` | Base preset rendered in the first batch (`flags & 0x40`). |
+| `0x5d` | `0x1` + `0x4` + `0x8` + `0x10` + `0x40` | Rotating variant rendered in the first batch. |
+| `0xc9` | `0x1` + `0x8` + `0x40` + `0x80` | First-batch preset that spawns a queue entry on expiry. |
+| `0x1cd` | `0x1` + `0x4` + `0x8` + `0x40` + `0x80` + `0x100` | As above, but uses the dim expiry alpha (`0x100`). |
+
 Quad layout (from `effect_spawn` writes):
 
 | Corner | pos offsets | uv offsets | Values |
