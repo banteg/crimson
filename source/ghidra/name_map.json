@@ -20,6 +20,69 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041a530",
+    "name": "ui_elements_update_and_render",
+    "signature": "void ui_elements_update_and_render(void)",
+    "comment": "advances UI timeline, handles transitions, updates + renders all UI elements"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00446030",
+    "name": "input_primary_just_pressed",
+    "signature": "int input_primary_just_pressed(void)",
+    "comment": "edge-detect primary action (mouse button 0 or per-player fire key DAT_00490bec)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00446000",
+    "name": "input_any_key_pressed",
+    "signature": "int input_any_key_pressed(void)",
+    "comment": "returns true if any key is down (scans keycodes 2..0x17e)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004460f0",
+    "name": "input_primary_is_down",
+    "signature": "int input_primary_is_down(void)",
+    "comment": "returns true while primary action is held (mouse button 0 or primary fire keys)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00446170",
+    "name": "ui_elements_reset_state",
+    "signature": "void ui_elements_reset_state(void)",
+    "comment": "clears active flags and hover timers on all UI elements"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00446190",
+    "name": "ui_elements_max_timeline",
+    "signature": "int ui_elements_max_timeline(void)",
+    "comment": "returns max timeline value (element +0x10) among active UI elements"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00401030",
+    "name": "console_input_clear",
+    "signature": "void console_input_clear(void)",
+    "comment": "clears console input buffer"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00401050",
+    "name": "console_input_buffer",
+    "signature": "char * console_input_buffer(void)",
+    "comment": "returns console input buffer pointer"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00401060",
+    "name": "console_input_poll",
+    "signature": "int console_input_poll(void)",
+    "comment": "polls text input and updates console buffer"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004566d3",
     "name": "renderer_select_backend",
     "signature": "int renderer_select_backend(int reset)",
@@ -98,6 +161,55 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00462fd0",
+    "name": "crt_isalpha",
+    "signature": "uint crt_isalpha(void *this, int c)",
+    "comment": "ctype alpha check (MBCS-aware)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462ffe",
+    "name": "crt_isspace",
+    "signature": "uint crt_isspace(void *this, int c)",
+    "comment": "ctype space check (MBCS-aware)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463c74",
+    "name": "crt_isctype",
+    "signature": "uint crt_isctype(void *this, int c, uint mask)",
+    "comment": "ctype classification (MBCS via GetStringTypeA/W)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046100e",
+    "name": "crt_fsopen",
+    "signature": "FILE * crt_fsopen(char *path, char *mode, uint share)",
+    "comment": "opens file with explicit share mode (fopen uses share=0x40)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046103f",
+    "name": "crt_fopen",
+    "signature": "FILE * crt_fopen(char *path, char *mode)",
+    "comment": "fopen wrapper (calls crt_fsopen with share=0x40)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004615ae",
+    "name": "crt_fwrite",
+    "signature": "uint crt_fwrite(void *ptr, uint size, uint count, FILE *fp)",
+    "comment": "fwrite wrapper with CRT lock/unlock"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004615dd",
+    "name": "crt_fwrite_nolock",
+    "signature": "uint crt_fwrite_nolock(void *ptr, uint size, uint count, FILE *fp)",
+    "comment": "fwrite implementation (no locking)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004616e7",
     "name": "crt_sprintf",
     "signature": "int crt_sprintf(char *dst, char *fmt, ...)",
@@ -105,10 +217,101 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00461af7",
+    "name": "crt_fread",
+    "signature": "uint crt_fread(void *ptr, uint size, uint count, FILE *fp)",
+    "comment": "fread wrapper with CRT lock/unlock"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00461b26",
+    "name": "crt_fread_nolock",
+    "signature": "uint crt_fread_nolock(void *ptr, uint size, uint count, FILE *fp)",
+    "comment": "fread implementation (no locking)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00461d91",
+    "name": "crt_fseek",
+    "signature": "int crt_fseek(FILE *fp, long offset, int origin)",
+    "comment": "fseek wrapper with CRT lock/unlock"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00461dbd",
+    "name": "crt_fseek_nolock",
+    "signature": "int crt_fseek_nolock(FILE *fp, long offset, int origin)",
+    "comment": "fseek implementation (uses crt_lseek)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004625c1",
     "name": "crt_free_base",
     "signature": "void crt_free_base(void *ptr)",
     "comment": "CRT heap free implementation"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463da5",
+    "name": "crt_lock_file",
+    "signature": "void crt_lock_file(FILE *fp)",
+    "comment": "lock a FILE stream (CRT lock or critical section)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463df7",
+    "name": "crt_unlock_file",
+    "signature": "void crt_unlock_file(FILE *fp)",
+    "comment": "unlock a FILE stream (CRT lock or critical section)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00464268",
+    "name": "crt_flsbuf",
+    "signature": "int crt_flsbuf(int ch, FILE *fp)",
+    "comment": "flush buffer or write single char (fputc core)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00464b1e",
+    "name": "crt_putc_nolock",
+    "signature": "void crt_putc_nolock(int ch, FILE *fp, int *count)",
+    "comment": "putc_nolock-style helper (increments count or sets -1 on error)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00464b53",
+    "name": "crt_putc_repeat_nolock",
+    "signature": "void crt_putc_repeat_nolock(int ch, int count, FILE *fp, int *out_count)",
+    "comment": "emit repeated chars via crt_putc_nolock (printf padding helper)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00464b84",
+    "name": "crt_putc_buffer_nolock",
+    "signature": "void crt_putc_buffer_nolock(char *buf, int count, FILE *fp, int *out_count)",
+    "comment": "emit buffer chars via crt_putc_nolock (printf string helper)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00465c30",
+    "name": "crt_strcpy",
+    "signature": "char * crt_strcpy(char *dst, char *src)",
+    "comment": "CRT strcpy implementation (word copy + null detection)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00465c40",
+    "name": "crt_strcat",
+    "signature": "char * crt_strcat(char *dst, char *src)",
+    "comment": "CRT strcat implementation (seek end, then copy)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00465d20",
+    "name": "crt_dosmaperr",
+    "signature": "void crt_dosmaperr(uint os_error)",
+    "comment": "map Win32 error to errno/doserrno"
   },
   {
     "program": "crimsonland.exe",
@@ -123,6 +326,41 @@
     "name": "crt_doserrno_ptr",
     "signature": "unsigned int * crt_doserrno_ptr(void)",
     "comment": "CRT doserrno pointer accessor (thread-local)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004663f9",
+    "name": "crt_lseek",
+    "signature": "long crt_lseek(int fd, long offset, int origin)",
+    "comment": "lseek wrapper (locks file handle, then SetFilePointer)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046645e",
+    "name": "crt_lseek_nolock",
+    "signature": "long crt_lseek_nolock(int fd, long offset, int origin)",
+    "comment": "lseek implementation via SetFilePointer"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046dd16",
+    "name": "crt_chsize",
+    "signature": "int crt_chsize(int fd, int size)",
+    "comment": "resize file (truncate/extend via lseek + SetEndOfFile/zero fill)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046acf8",
+    "name": "crt_lock_fh",
+    "signature": "void crt_lock_fh(uint fd)",
+    "comment": "lock CRT file handle entry"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046ad57",
+    "name": "crt_unlock_fh",
+    "signature": "void crt_unlock_fh(uint fd)",
+    "comment": "unlock CRT file handle entry"
   },
   {
     "program": "crimsonland.exe",
@@ -583,6 +821,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0042ef60",
+    "name": "effect_spawn_burst",
+    "signature": "void effect_spawn_burst(float *pos, int count)",
+    "comment": "generic burst loop for effect id 0"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004055e0",
     "name": "perk_apply",
     "signature": "void perk_apply(int perk_id)",
@@ -1009,7 +1254,7 @@
     "program": "grim.dll",
     "address": "0x10002120",
     "name": "grim_config_dialog_proc",
-    "signature": "int grim_config_dialog_proc(int hwnd, unsigned int msg, unsigned int wparam)",
+    "signature": "int grim_config_dialog_proc(int hwnd, unsigned int msg, unsigned int wparam, int lparam)",
     "comment": "dialog procedure for the Grim2D config UI"
   },
   {
@@ -1018,6 +1263,111 @@
     "name": "grim_window_create",
     "signature": "int grim_window_create(void)",
     "comment": "registers the window class and creates the main game window"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000aaa6",
+    "name": "grim_format_info_lookup",
+    "signature": "int * grim_format_info_lookup(int format)",
+    "comment": "returns pointer to the D3D format descriptor entry (fallbacks to default)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001c188",
+    "name": "grim_select_renderer_backend",
+    "signature": "int grim_select_renderer_backend(int force)",
+    "comment": "copies the render backend vtable and selects D3DX/alt paths based on config"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001e114",
+    "name": "png_error",
+    "signature": "void png_error(int *png_ptr, char *msg)",
+    "comment": "png error handler: call error_fn then longjmp"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001e132",
+    "name": "png_warning",
+    "signature": "void png_warning(int *png_ptr, char *msg)",
+    "comment": "png warning handler: call warning_fn"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002047c",
+    "name": "png_read_data",
+    "signature": "void png_read_data(int *png_ptr, unsigned char *data, unsigned int length)",
+    "comment": "png read callback wrapper (errors if NULL)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10020583",
+    "name": "png_reset_crc",
+    "signature": "void png_reset_crc(int *png_ptr)",
+    "comment": "reset png CRC state"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002059b",
+    "name": "png_calculate_crc",
+    "signature": "void png_calculate_crc(int *png_ptr, unsigned char *data, unsigned int length)",
+    "comment": "update png CRC with buffer"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10024734",
+    "name": "png_free_ptr",
+    "signature": "void png_free_ptr(void *ptr)",
+    "comment": "free wrapper for png allocations"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10024741",
+    "name": "png_malloc",
+    "signature": "void * png_malloc(int *png_ptr, unsigned int size)",
+    "comment": "png malloc wrapper (errors on OOM)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10024777",
+    "name": "png_free",
+    "signature": "void png_free(int *png_ptr, void *ptr)",
+    "comment": "png free callback wrapper"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100247e4",
+    "name": "png_get_uint_32",
+    "signature": "unsigned int png_get_uint_32(unsigned char *buf)",
+    "comment": "read big-endian 32-bit value"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10024807",
+    "name": "png_crc_read",
+    "signature": "void png_crc_read(int *png_ptr, unsigned char *buf, unsigned int length)",
+    "comment": "read PNG chunk data and update CRC"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10024821",
+    "name": "png_crc_error",
+    "signature": "int png_crc_error(int *png_ptr)",
+    "comment": "read stored CRC and compare with computed"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002487f",
+    "name": "png_check_chunk_name",
+    "signature": "void png_check_chunk_name(int *png_ptr, unsigned char *chunk_name)",
+    "comment": "validate PNG chunk type characters"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100250d7",
+    "name": "png_crc_finish",
+    "signature": "int png_crc_finish(int *png_ptr, unsigned int skip)",
+    "comment": "read remaining chunk bytes and check CRC"
   },
   {
     "program": "grim.dll",
@@ -1781,5 +2131,19 @@
     "name": "grim_pixel_format_init",
     "signature": "void * grim_pixel_format_init(void *this, unsigned int *desc, unsigned int bits_per_pixel, unsigned int coord_mode)",
     "comment": "initializes format descriptor, bytes-per-pixel, palette expansion, and coordinate mode"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100174a8",
+    "name": "grim_apply_color_key",
+    "signature": "void grim_apply_color_key(float *pixels)",
+    "comment": "zeroes RGBA pixels that match the current color key"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10022c14",
+    "name": "memzero",
+    "signature": "void memzero(void *dst, unsigned int size)",
+    "comment": "zero-fill helper (memset to 0)"
   }
 ]

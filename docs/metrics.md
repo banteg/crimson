@@ -19,9 +19,9 @@ regen (from git history).
 - Total funcs: 819
 - Thunks: 26
 - User-defined: 793
-- Decompiled: 792 (99.7% coverage)
-- Named/inferred: 199 (24.3%)
-- Typed signatures: 314 (38.3%)
+- Decompiled: 792 (99.9% coverage)
+- Named/inferred: 233 (28.4%)
+- Typed signatures: 325 (39.7%)
 - External typed: 0 / 0
 - GDT hits (since previous regen): 1
 - Last regen: 2026-01-17
@@ -29,25 +29,25 @@ regen (from git history).
 
 ### `grim.dll`
 
-- Total funcs: 968
-- Thunks: 41
-- User-defined: 927
-- Decompiled: 927 (100% coverage)
-- Named/inferred: 218 (22.5%)
-- Typed signatures: 287 (29.6%)
+- Total funcs: 960
+- Thunks: 40
+- User-defined: 920
+- Decompiled: 920 (100% coverage)
+- Named/inferred: 235 (24.5%)
+- Typed signatures: 261 (27.2%)
 - External typed: 0 / 0
 - GDT hits (since previous regen): 0
-- Last regen: 2026-01-16
+- Last regen: 2026-01-17
 
 
 ### Total
 
-- Total funcs: 1787
-- Thunks: 67
-- User-defined: 1720
-- Decompiled: 1719 (99.9% coverage)
-- Named/inferred: 417 (23.3%)
-- Typed signatures: 601 (33.6%)
+- Total funcs: 1779
+- Thunks: 66
+- User-defined: 1713
+- Decompiled: 1712 (99.9% coverage)
+- Named/inferred: 468 (26.3%)
+- Typed signatures: 586 (32.9%)
 - External typed: 0 / 0
 - GDT hits (since previous regen): 1
 - Last regen: 2026-01-17
@@ -90,7 +90,7 @@ regen (from git history).
 ### Clean C files
 
 - Value: 0
-- Notes: `source/clean/` is currently empty.
+- Notes: `source/clean/` only has `grim_api.h` so far; no cleaned C yet.
 
 
 ### Header packs

@@ -30,35 +30,35 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
 ### `crimsonland.exe`
 
 ```
-  25    1 00465d93 FUN_00465d93 DWORD * FUN_00465d93(void)
-  20    1 00460d86 FUN_00460d86 int FUN_00460d86(undefined4 param_1)
-  19    0 0042fcf0 FUN_0042fcf0 undefined4 FUN_0042fcf0(int param_1)
-  15    2 004616e7 FUN_004616e7 int FUN_004616e7(undefined1 * param_1, byte * param_2)
-  15    0 0042e120 FUN_0042e120 undefined4 * FUN_0042e120(int param_1, undefined4 * param_2)
-  14    3 0043d120 FUN_0043d120 int FUN_0043d120(int param_1)
-  14    1 00460dc7 FUN_00460dc7 undefined FUN_00460dc7(undefined * param_1)
-  14    1 00465d9c FUN_00465d9c DWORD * FUN_00465d9c(void)
-  12    8 004625c1 FUN_004625c1 undefined FUN_004625c1(undefined * param_1)
-  12    3 00460e5d FUN_00460e5d undefined4 FUN_00460e5d(FILE * param_1)
-  12    2 0043d550 FUN_0043d550 undefined FUN_0043d550(int param_1)
-  11    3 0043d260 FUN_0043d260 float FUN_0043d260(float param_1)
+   8    7 00405960 FUN_00405960 undefined FUN_00405960(void)
+   8    5 00430af0 FUN_00430af0 undefined1 * FUN_00430af0(int param_1, float * param_2, float param_3)
+   8    0 0041df40 FUN_0041df40 undefined1 FUN_0041df40(void)
+   6    3 00403550 FUN_00403550 undefined FUN_00403550(void)
+   6    1 00402bd0 FUN_00402bd0 undefined * FUN_00402bd0(void)
+   6    0 0043d7e0 FUN_0043d7e0 undefined FUN_0043d7e0(int param_1, char param_2)
+   6    0 00452ef0 FUN_00452ef0 undefined4 FUN_00452ef0(float param_1, float param_2)
+   5    1 00461140 FUN_00461140 undefined FUN_00461140(void)
+   5    1 004614a5 FUN_004614a5 undefined4 FUN_004614a5(int * param_1)
+   5    1 00465fa9 FUN_00465fa9 undefined FUN_00465fa9(void)
+   5    0 00417ae0 FUN_00417ae0 undefined FUN_00417ae0(void)
+   5    0 0046cda0 FUN_0046cda0 undefined FUN_0046cda0(void)
 ```
 
 ### `grim.dll`
 
 ```
-  33    0 10016944 FUN_10016944 undefined4 FUN_10016944(void * this, int param_1)
-  32    6 1001c188 FUN_1001c188 int FUN_1001c188(int param_1)
-  32    1 100170f9 FUN_100170f9 undefined4 * FUN_100170f9(void * this, undefined4 * param_1, uint param_2, undefined4 param_3)
   30    0 100170d6 FUN_100170d6 undefined FUN_100170d6(undefined4 param_1)
-  28    0 100174a8 FUN_100174a8 undefined FUN_100174a8(void * this, uint param_1)
-  21    0 1004b5b0 FUN_1004b5b0 undefined FUN_1004b5b0(void)
-  14    1 1001e114 FUN_1001e114 undefined FUN_1001e114(int * param_1, undefined4 param_2)
+  20    0 1004b5b0 FUN_1004b5b0 undefined FUN_1004b5b0(void)
   10    0 10001160 FUN_10001160 undefined FUN_10001160(void)
-  10    0 1001e132 FUN_1001e132 undefined FUN_1001e132(int param_1, undefined4 param_2)
-   9    4 100250d7 FUN_100250d7 undefined4 FUN_100250d7(int * param_1, uint param_2)
-   9    2 10024807 FUN_10024807 undefined FUN_10024807(int * param_1, byte * param_2, uint param_3)
    8    2 1001029e FUN_1001029e undefined FUN_1001029e(int param_1)
+   6    1 1001692e FUN_1001692e undefined FUN_1001692e(undefined4 * param_1)
+   6    0 1000cbff FUN_1000cbff undefined4 FUN_1000cbff(float param_1, float param_2)
+   6    0 100161b6 FUN_100161b6 undefined4 FUN_100161b6(byte * param_1)
+   6    0 10020708 FUN_10020708 undefined FUN_10020708(undefined4 param_1)
+   6    0 1002faab FUN_1002faab undefined4 FUN_1002faab(undefined4 * param_1, uint param_2, int param_3, int param_4)
+   5    2 100161bb FUN_100161bb int FUN_100161bb(void * this, undefined4 * param_1, int * param_2, undefined4 param_3, uint * param_4, undefined4 param_5, uint param_6)
+   5    1 1001ac4a FUN_1001ac4a undefined4 * FUN_1001ac4a(void * this, undefined4 * param_1)
+   4    3 100101f5 FUN_100101f5 undefined FUN_100101f5(undefined4 param_1)
 ```
 
 ## Identified candidates
@@ -72,6 +72,183 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
 - `FUN_00401870` -> `console_printf`
   - Evidence: formats strings (uses `FUN_00461089`) then pushes into the console queue; callsites include `Unknown command`/CMOD logs.
 
+
+### UI element timeline + transitions (high confidence)
+
+- `FUN_0041a530` -> `ui_elements_update_and_render`
+  - Evidence: advances a global timeline (`DAT_00487248`) based on `DAT_00480844`, clamps to
+    `ui_elements_max_timeline`, triggers screen transitions via `FUN_004461c0`, and iterates
+    `DAT_0048f208`..`DAT_0048f168` calling `FUN_00446900` + `ui_element_render`.
+- `FUN_00446170` -> `ui_elements_reset_state`
+  - Evidence: clears the element active flag (`*(char *)element`) and zeroes the per-element
+    hover timer at `+0x2f8` across the UI element table.
+- `FUN_00446190` -> `ui_elements_max_timeline`
+  - Evidence: returns the max `element+0x10` value among active elements (used to clamp the
+    UI transition timeline).
+
+
+### Input primary action (high confidence)
+
+- `FUN_00446030` -> `input_primary_just_pressed`
+  - Evidence: edge-detects a primary action by latching `DAT_00478e50`, checks mouse button
+    `(*DAT_0048083c + 0x58)(0)`, and scans per-player fire bindings at `DAT_00490bec` (stride
+    `0xd8`). Used across UI click/confirm paths and player fire/selection logic.
+- `FUN_004460f0` -> `input_primary_is_down`
+  - Evidence: returns true while the primary action is held (mouse button 0, `DAT_00490bec`,
+    or `DAT_00490f4c`), used by UI scroll/drag handling.
+- `FUN_00446000` -> `input_any_key_pressed`
+  - Evidence: scans keycodes `2..0x17e` via the input callback at `(*DAT_0048083c + 0x80)`.
+
+### Key binding block (`DAT_00490bdc`..`DAT_00490f5c`) (medium confidence)
+
+These live inside the per-player input struct (stride `0xd8`) and are queried through
+`grim_is_key_active` (`+0x80`) or `grim_is_key_down` (`+0x44`). Defaults are set in
+`config_load_presets`.
+
+| Address | Default (DIK) | Guess | Evidence |
+| --- | --- | --- | --- |
+| `DAT_00490bdc` | `0x11` (W) | move up | queried via `is_key_active` in player movement |
+| `DAT_00490be0` | `0x1f` (S) | move down | queried via `is_key_active` in player movement |
+| `DAT_00490be4` | `0x1e` (A) | move left | queried via `is_key_active` in player movement |
+| `DAT_00490be8` | `0x20` (D) | move right | queried via `is_key_active` in player movement |
+| `DAT_00490bec` | `0x0f` (Tab) | primary fire (player slot) | used by `input_primary_*` with stride `0xd8` |
+| `DAT_00490bf8` | `0x10` (Q) | rotate/aim left | rotates `DAT_00490bb0` in aim update |
+| `DAT_00490bfc` | `0x12` (E) | rotate/aim right | rotates `DAT_00490bb0` in aim update |
+| `DAT_00490bf0` | `0x11` (W) | unused/reserved | copied from config, but no `is_key_*` callsites found |
+| `DAT_00490bf4` | `0x1f` (S) | unused/reserved | copied from config, but no `is_key_*` callsites found |
+| `DAT_00490f3c` | `0xc8` (Up) | alt move up | used via `is_key_down` when `_DAT_0048035c == 1` |
+| `DAT_00490f40` | `0xd0` (Down) | alt move down | used via `is_key_down` when `_DAT_0048035c == 1` |
+| `DAT_00490f44` | `0xcb` (Left) | alt move left | used via `is_key_down` when `_DAT_0048035c == 1` |
+| `DAT_00490f48` | `0xcd` (Right) | alt move right | used via `is_key_down` when `_DAT_0048035c == 1` |
+| `DAT_00490f4c` | `0x9d` (RControl) | alt primary fire | checked in `input_primary_is_down` |
+| `DAT_00490f50` | `0x11` (W) | unused/reserved | defaults set; no callsites yet |
+| `DAT_00490f54` | `0x1f` (S) | unused/reserved | defaults set; no callsites yet |
+| `DAT_00490f58` | `0xd3` (Delete) | unused/reserved | defaults set; no callsites yet |
+| `DAT_00490f5c` | `0xc9` (PageUp) | unused/reserved | defaults set; no callsites yet |
+
+Key info overlay (`FUN_00405160`) shows the first five entries per player from the config
+blob at `DAT_00480510` (stride 5: Up/Down/Left/Right/Fire), which matches the active runtime
+binds copied from `DAT_00480540` into `DAT_00490bdc..DAT_00490bec`.
+
+Config edit path status:
+- No in-game rebind writes to `DAT_00480540` found in the decompile.
+- `config_load_presets` reads the 0x480‑byte config blob from disk into `DAT_00480348`
+  and then copies the keybind table (`DAT_00480540`) into the per-player runtime slots.
+- `FUN_0041ec60` seeds defaults in a local 0x480 blob, optionally reads a 0x480‑byte
+  config from `DAT_00472998`, copies the string field at offset `0x74` and the flag
+  at offset `0x46c` into globals (`DAT_004803bc`, `DAT_004807b4`), then writes the
+  global blob (`DAT_00480348`, size `0x480`) using mode `DAT_00473668` (`"wb"`).
+- `FUN_0041f130` is a fallback path that writes the same `DAT_00480348` blob using
+  mode `DAT_00473668` (`"wb"`) when the `DAT_00472998` config file is missing.
+- File evidence: `game/crimson.cfg` is exactly `0x480` bytes; `game/game.cfg` is not
+  (likely a save/progress file). `DAT_00472998` is `"rb"`; the filename is supplied
+  by `FUN_00402bd0` (`"%s\\%s"`).
+
+Config blob layout (partial, 0x480 bytes, base `DAT_00480348`):
+
+| Offset | Address | Size | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `0x00` | `DAT_00480348` | `u8` | `0` | Sound disable flag (nonzero skips SFX and music init; applied via config id `0x53`). |
+| `0x01` | `DAT_00480349` | `u8` | `0` | Music disable flag (music init requires `DAT_00480348 == 0` and `DAT_00480349 == 0`). |
+| `0x02` | `DAT_0048034a` | `u8` | `0` | High‑score date validation mode: `1` = year+month, `2` = computed date checksum + year, `3` = day+month+year. |
+| `0x03` | `DAT_0048034b` | `u8` | `0` | High‑score duplicate handling: `1` = replace existing entry with same name (via `FUN_0043af30`). |
+| `0x04` | `DAT_0048034c` | `u8[2]` | `1,1` | Per‑player HUD indicator toggle (gates the second indicator draw pass). |
+| `0x08` | `DAT_00480350` | `u32` | `8` | Unknown; value comes from a stack temp in `FUN_0041ec60` (used to query Grim config), no global xrefs. |
+| `0x0e` | `DAT_00480356` | `u8` | `0/1` | FX detail toggle (set by `DAT_004807b8`). |
+| `0x10` | `DAT_00480358` | `u8` | `0/1` | FX detail toggle (set by `DAT_004807b8`). |
+| `0x11` | `DAT_00480359` | `u8` | `0/1` | FX detail toggle (set by `DAT_004807b8`). |
+| `0x14` | `DAT_0048035c` | `u32` | `1/2` | Player count (loop bound in most per‑player logic). |
+| `0x18` | `DAT_00480360` | `u32` | `1..8` | Game mode/state selector (values `1/2/3/4/8` observed). |
+| `0x1c` | `DAT_00480364` | `u8[?]` | `0` | Per‑player mode flag (value `4` triggers alternate HUD draw). |
+| `0x44` | `DAT_0048038c` | `u32` | `0` | Unknown (defaulted in `FUN_0041ec60`, no xrefs). |
+| `0x48` | `DAT_00480390` | `u32` | `0` | Unknown (defaulted in `FUN_0041ec60`, no xrefs). |
+| `0x6c` | `DAT_004803b4` | `u32` | `0` | Unknown (defaulted in `FUN_0041ec60`, no xrefs). |
+| `0x70` | `DAT_004803b8` | `float` | `1.0` (clamped `0.5..4.0`) | Texture/terrain scale factor (used when creating ground texture). |
+| `0x74` | `DAT_004803bc` | `char[12]` | empty string | Copied from config in `FUN_0041ec60`; only explicit consumer so far. |
+| `0x80` | `DAT_004803c8` | `u32` | `0` | Selected name slot (0..7) for the saved‑name list. |
+| `0x84` | `DAT_004803cc` | `u32` | `1` | Saved‑name count / insert index. |
+| `0x88` | `DAT_004803d0` | `u32[8]` | `0..7` | Saved‑name order table (seeded in `FUN_0041ec60`); no xrefs in the decompile, likely unused. |
+| `0xa8` | `DAT_004803f0` | `char[0xd8]` | `"default"` x8 | 8 saved names, 0x1b bytes each (`DAT_0048040b` is entry 2). |
+| `0x180` | `DAT_004804c8` | `char[36]` | `DAT_00471314` | Player name (copied to runtime `DAT_00487040` on load). |
+| `0x1a0` | `DAT_004804e8` | `u32` | `DAT_004871e8` | Player name length (mirrored to runtime on load; config value is overwritten). |
+| `0x1a4` | `DAT_004804ec` | `u32` | `100` | Seeded in `FUN_0041ec60`; no xrefs yet. |
+| `0x1a8` | `DAT_004804f0` | `u32` | `0` | Unknown (defaulted in `FUN_0041ec60`, no xrefs). |
+| `0x1ac` | `DAT_004804f4` | `u32` | `0` | Unknown (defaulted in `FUN_0041ec60`, no xrefs). |
+| `0x1b0` | `DAT_004804f8` | `u32` | `9000` | Compared to Grim vtable `+0xa4` (`FUN_100075b0`) in `FUN_0041e8f0`; returns `DAT_1005d850[index]` (index 0 here), no callsites, likely dead. |
+| `0x1b4` | `DAT_004804fc` | `u32` | `27000` | Compared to Grim vtable `+0xa4` (`FUN_100075b0`) in `FUN_0041e8d0`; returns `DAT_1005d850[index]` (index 0 here), no callsites, likely dead. |
+| `0x1b8` | `DAT_00480500` | `u32` | `32` | Likely display color depth (bits‑per‑pixel); set alongside width/height via config id `0x2b` (inference from defaults and file). |
+| `0x1bc` | `DAT_00480504` | `u32` | `800` | Screen width. |
+| `0x1c0` | `DAT_00480508` | `u32` | `600` | Screen height. |
+| `0x1c4` | `DAT_0048050c` | `u8` | `0` | Windowed flag (`0` = fullscreen). |
+| `0x1c8` | `DAT_00480510` | `u32[0x20]` | see below | Keybind blocks (2 × 16 dwords; indices `0..12` copied). |
+| `0x1f8` | `DAT_00480540` | `u32*` | alias | Points at `&DAT_00480510[12]` (used for the copy loop). |
+| `0x440` | `DAT_00480788` | `u32` | `0` | Unknown (defaulted in `FUN_0041ec60`, no xrefs). |
+| `0x444` | `DAT_0048078c` | `u32` | `0` | Unknown (defaulted in `FUN_0041ec60`, no xrefs). |
+| `0x448` | `DAT_00480790` | `u8` | `0` | Full‑version/unlimited flag (gates quest logic and UI strings). |
+| `0x449` | `DAT_00480791` | `u8` | `1` | Perk prompt state (reset when `DAT_00480794` rolls over). |
+| `0x44c` | `DAT_00480794` | `u8` | `0` | Perk prompt counter (`0..0x32`). |
+| `0x450` | `DAT_00480798` | `u32` | `1` | Unknown (defaulted in `FUN_0041ec60`, no xrefs). |
+| `0x460` | `DAT_004807a8` | `u32` | `1` | Unknown (defaulted in `FUN_0041ec60`, no xrefs). |
+| `0x464` | `DAT_004807ac` | `float` | `?` | SFX volume multiplier. |
+| `0x468` | `DAT_004807b0` | `float` | `?` | Music volume multiplier. |
+| `0x46c` | `DAT_004807b4` | `u8` | `0` | FX toggle (gore/particle path; copied from config; `FUN_0041f130` forces `1` when cfg missing). |
+| `0x46d` | `DAT_004807b5` | `u8` | `0` | Score load gating flag (used with `DAT_0048034a`). |
+| `0x46e` | `DAT_004807b6` | `u8` | `?` | Config bool applied via Grim id `0x54` (unknown). |
+| `0x470` | `DAT_004807b8` | `u32` | `?` | Detail preset (drives `DAT_00480356/58/59`). |
+| `0x478` | `DAT_004807c0` | `u32` | `?` | Keybind: pick perk (Level‑up prompt). |
+| `0x47c` | `DAT_004807c4` | `u32` | `?` | Keybind: reload. |
+
+Keybind block layout (`DAT_00480510`, 2 × 16 dwords, indices `0..12` copied into runtime;
+`DAT_00480540` is `&DAT_00480510[12]`):
+
+| Index | P1 default | P2 default | Notes |
+| --- | --- | --- | --- |
+| `0` | `0x11` (W) | `0xc8` (Up) | Move up (overlay uses indices `0..4`). |
+| `1` | `0x1f` (S) | `0xd0` (Down) | Move down. |
+| `2` | `0x1e` (A) | `0xcb` (Left) | Move left. |
+| `3` | `0x20` (D) | `0xcd` (Right) | Move right. |
+| `4` | `0x100` | `0x9d` (RControl) | Primary fire (P1 default uses a non‑DIK sentinel). |
+| `5` | `0x17e` | `0x17e` | Unused/reserved. |
+| `6` | `0x17e` | `0x17e` | Unused/reserved. |
+| `7` | `0x10` (Q) | `0xd3` (Delete) | Rotate/aux? (mapped to runtime slots). |
+| `8` | `0x12` (E) | `0xd1` (PageDown) | Rotate/aux? (mapped to runtime slots). |
+| `9` | `0x13f` | `0x13f` | Unknown (mapped). |
+| `10` | `0x140` | `0x140` | Unknown (mapped). |
+| `11` | `0x141` | `0x141` | Unknown (mapped). |
+| `12` | `0x153` | `0x153` | Unknown (mapped). |
+| `13` | `0x17e` | `0x17e` | Unused/reserved. |
+| `14` | `0x17e` | `0x17e` | Unused/reserved. |
+| `15` | `0x17e` | `0x17e` | Unused/reserved. |
+
+Grim input query (partial, vtable `+0x80` → `FUN_10006fe0` in `grim.dll`):
+- `code < 0x100`: DirectInput keyboard state (raw DIK).
+- `0x100..0x104`: mouse buttons `0..4` (via Grim `+0x58`).
+- `0x11f..0x12b`: joystick buttons `0..12` (via Grim `+0xa8`).
+- `0x13f..0x155`: analog axes (reads `DAT_1005d830/834/838/83c/840/844`, thresholded).
+- `0x16d..0x17b`: joystick POV/axis queries via `DAT_1005d3b4` (if device present).
+
+Grim key‑click helper (vtable `+0x48` → `FUN_10007390`):
+- Uses `FUN_1000a370` (keyboard state byte) plus per‑key timers; returns 1 on a new press edge.
+
+Grim misc getter (vtable `+0xa4` → `FUN_100075b0`):
+- Returns `*(DAT_1005d850 + index*4)`; only index 0 observed in `crimsonland.exe` (`FUN_0041e8d0/1e8f0`).
+
+
+### High score record (0x48 bytes) — tail bytes 0x40..0x47
+
+Score entries are 0x48 bytes (`DAT_00482b10` array, `DAT_00487040` active record). The
+tail bytes are validated against the current date and the full‑version flag.
+
+| Offset | Address | Meaning | Evidence |
+| --- | --- | --- | --- |
+| `0x40` | `DAT_00487080` | Day‑of‑month | Written via `param_1 + 0x10` (word index → +0x40) in `FUN_0043ad70`; compared to `DAT_00495ace` in `FUN_0043afa0` mode 3. |
+| `0x41` | `DAT_00487081` | Date checksum (week‑of‑year) | `FUN_0043a950` result stored at `param_1 + 0x41`; compared in mode 2. |
+| `0x42` | `DAT_00487082` | Month (1–12) | Stored from `DAT_00495ac8._2_1_`; compared to `DAT_00495ac8._2_2_`. |
+| `0x43` | `DAT_00487083` | Year‑2000 | Stored as `(char)DAT_00495ac8 + '0'` (wraps low byte); compared to `year - 2000`. |
+| `0x44` | `DAT_00487084` | Score flags | `param_1[0x44] & 1` gates update vs append; set to `2` when replacing an existing record. |
+| `0x45` | `DAT_00487085` | Full‑version marker | Set to `0x75` (`'u'`) when `DAT_00480790 != 0`; checked in quest‑mode load to accept full/limited records. |
+| `0x46` | `DAT_00487040 + 0x46` | Sentinel `0x7c` (`'|'`) | Initialized in `FUN_0043afa0` default‑record loop. |
+| `0x47` | `DAT_00487040 + 0x47` | Sentinel `0xff` | Initialized in `FUN_0043afa0` default‑record loop. |
 
 ### Renderer backend selection (medium confidence)
 
@@ -93,16 +270,17 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
 
 - `FUN_00465d93` -> `crt_errno_ptr` (`_errno`-style accessor)
 - `FUN_00465d9c` -> `crt_doserrno_ptr` (`__doserrno`-style accessor)
+- `FUN_00465d20` -> `crt_dosmaperr` (Win32 error -> errno mapper)
 - Evidence:
   - Both call `crt_get_thread_data()` and return pointer offsets (`+2`, `+3`).
-  - `FUN_00465d20` stores Win32 errors into `*FUN_00465d9c` and maps to `*FUN_00465d93`
+  - `crt_dosmaperr` stores Win32 errors into `*crt_doserrno_ptr` and maps to `*crt_errno_ptr`
     via the error table at `DAT_0047b7c0`.
   - File I/O wrappers set these directly on failure:
     - `FUN_004655bf` (FlushFileBuffers) stores `GetLastError()` in `*FUN_00465d9c` and sets
       `*FUN_00465d93 = 9` (EBADF).
-    - `FUN_004656b7` (WriteFile) and `FUN_00466064` (ReadFile) call `FUN_00465d20` after
+    - `FUN_004656b7` (WriteFile) and `FUN_00466064` (ReadFile) call `crt_dosmaperr` after
       `GetLastError()` for non-trivial errors.
-    - `FUN_0046645e` (SetFilePointer) maps `GetLastError()` through `FUN_00465d20`.
+    - `FUN_0046645e` (SetFilePointer) maps `GetLastError()` through `crt_dosmaperr`.
 
 
 ### CRT lock/unlock helpers (high confidence)
@@ -112,6 +290,25 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
     lock path; invoked by `crt_exit_lock` and many CRT wrappers.
 - `FUN_004658cc` -> `crt_unlock`
   - Evidence: calls `LeaveCriticalSection`; invoked by `crt_exit_unlock` and many CRT wrappers.
+- `FUN_00463da5` -> `crt_lock_file`
+  - Evidence: uses `crt_lock` for small-stream table entries or a `FILE`-embedded critical section.
+- `FUN_00463df7` -> `crt_unlock_file`
+  - Evidence: inverse of `crt_lock_file`, calls `crt_unlock` or `LeaveCriticalSection`.
+- `FUN_0046acf8` -> `crt_lock_fh`
+  - Evidence: initializes per-file handle critical sections and enters the lock.
+- `FUN_0046ad57` -> `crt_unlock_fh`
+  - Evidence: leaves the per-file handle critical section.
+
+
+### CRT ctype helpers (high confidence)
+
+- `FUN_00463c74` -> `crt_isctype`
+  - Evidence: uses `PTR_DAT_0047b1c0` table for single-byte and falls back to
+    `GetStringTypeA/W` for multi-byte characters.
+- `FUN_00462fd0` -> `crt_isalpha`
+  - Evidence: calls `crt_isctype` with mask `0x103` (alpha/upper/lower).
+- `FUN_00462ffe` -> `crt_isspace`
+  - Evidence: calls `crt_isctype` with mask `0x8` (space).
 
 
 ### CRT exit/stdio helpers (high confidence)
@@ -129,9 +326,80 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
 - `FUN_00460e5d` -> `crt_fclose`
   - Evidence: if `_flag & 0x40` not set, locks stream, calls `__fclose_lk`, unlocks; otherwise
     clears `_flag`.
+- `FUN_0046100e` -> `crt_fsopen`
+  - Evidence: parses mode string, passes share flag to `FUN_0046adbd`, populates `FILE` fields.
+- `FUN_0046103f` -> `crt_fopen`
+  - Evidence: forwards to `crt_fsopen` with share mode `0x40` (`_SH_DENYNO`).
+- `FUN_004615ae` -> `crt_fwrite`
+  - Evidence: wraps `crt_fwrite_nolock` with `crt_lock_file`/`crt_unlock_file`.
+- `FUN_004615dd` -> `crt_fwrite_nolock`
+  - Evidence: writes buffers directly to file handle, uses `crt_flsbuf` for single-byte writes.
+- `FUN_00461af7` -> `crt_fread`
+  - Evidence: wraps `crt_fread_nolock` with `crt_lock_file`/`crt_unlock_file`.
+- `FUN_00461b26` -> `crt_fread_nolock`
+  - Evidence: reads buffers directly from file handle and sets EOF/error flags.
+- `FUN_00461d91` -> `crt_fseek`
+  - Evidence: wraps `crt_fseek_nolock` with `crt_lock_file`/`crt_unlock_file`.
+- `FUN_00461dbd` -> `crt_fseek_nolock`
+  - Evidence: validates stream flags, flushes, and seeks via `crt_lseek`.
 - `FUN_004616e7` -> `crt_sprintf`
   - Evidence: uses CRT output core `FUN_00464380` with an unbounded count (`0x7fffffff`) and
     terminates with `\0` on success.
+- `FUN_00464268` -> `crt_flsbuf`
+  - Evidence: flushes/allocates stream buffers, handles append seeks, and writes a single char;
+    used by `crt_fwrite`/`crt_sprintf` when buffers underflow.
+- `FUN_00464b1e` -> `crt_putc_nolock`
+  - Evidence: decrements buffer count, calls `crt_flsbuf` on underflow, otherwise writes byte and
+    updates the output counter (printf output helper).
+- `FUN_00464b53` -> `crt_putc_repeat_nolock`
+  - Evidence: loops count times calling `crt_putc_nolock`, used for space/zero padding in printf.
+- `FUN_00464b84` -> `crt_putc_buffer_nolock`
+  - Evidence: emits a string buffer via `crt_putc_nolock`, stops on error.
+- `FUN_004663f9` -> `crt_lseek`
+  - Evidence: validates handle, locks via `crt_lock_fh`, then calls `crt_lseek_nolock`.
+- `FUN_0046645e` -> `crt_lseek_nolock`
+  - Evidence: calls `SetFilePointer`, clears EOF flag on success, uses `crt_dosmaperr` on error.
+- `FUN_0046dd16` -> `crt_chsize`
+  - Evidence: uses `crt_lseek_nolock` to get size, truncates via `SetEndOfFile` or extends by
+    writing zero-filled blocks, then restores the file offset.
+
+
+### Grim/libpng helpers (high confidence)
+
+- `FUN_1001e114` -> `png_error`
+  - Evidence: calls `png_ptr->error_fn` when set and then `longjmp(png_ptr, 1)`.
+- `FUN_1001e132` -> `png_warning`
+  - Evidence: calls `png_ptr->warning_fn` when set.
+- `FUN_1002047c` -> `png_read_data`
+  - Evidence: dispatches to `read_data_fn` or raises `png_error` on NULL.
+- `FUN_10020583` -> `png_reset_crc`
+  - Evidence: seeds `png_ptr->crc` via `crc32(0, NULL, 0)`.
+- `FUN_1002059b` -> `png_calculate_crc`
+  - Evidence: updates CRC unless skip flags indicate the chunk is ignored.
+- `FUN_10024741` -> `png_malloc`
+  - Evidence: malloc wrapper that calls `png_error` on OOM.
+- `FUN_10024777` -> `png_free`
+  - Evidence: free wrapper with `(png_ptr, ptr)` signature.
+- `FUN_10024734` -> `png_free_ptr`
+  - Evidence: simple free wrapper used for png buffers and the main png_ptr.
+- `FUN_10024807` -> `png_crc_read`
+  - Evidence: calls `png_read_data` then `png_calculate_crc` on the same buffer.
+- `FUN_10024821` -> `png_crc_error`
+  - Evidence: reads the stored CRC and compares it against `png_ptr->crc`.
+- `FUN_1002487f` -> `png_check_chunk_name`
+  - Evidence: validates 4-letter chunk type and errors on invalid characters.
+- `FUN_100250d7` -> `png_crc_finish`
+  - Evidence: consumes remaining chunk bytes, checks CRC, and raises error/warning.
+
+
+### Grim pixel/format helpers (high confidence)
+
+- `FUN_1000aaa6` -> `grim_format_info_lookup`
+  - Evidence: walks the D3D format descriptor table (`DAT_1004c3b0`) and returns the entry for the
+    requested format id, falling back to a default descriptor.
+- `FUN_100174a8` -> `grim_apply_color_key`
+  - Evidence: iterates RGBA float pixels and zeroes those that match the current color key
+    (`this+0x1c..0x28`), used after converting pixel buffers.
 
 
 ### Audio SFX helpers (medium confidence)

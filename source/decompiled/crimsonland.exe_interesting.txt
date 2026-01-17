@@ -4,21 +4,32 @@ Interesting Functions and Patterns
 [DES related]
   sfx_update_mute_fades @ 0043d5b0
 
+[KEY related]
+  input_any_key_pressed @ 00446000
+
 [FILE related]
+  crt_lock_file @ 00463da5
+  crt_unlock_file @ 00463df7
   GetFileVersionInfoA @ 0046e956
   GetFileVersionInfoSizeA @ 0046e95c
 
 [OPEN related]
+  crt_fsopen @ 0046100e
+  crt_fopen @ 0046103f
   ov_open_callbacks @ 0046e932
 
 [READ related]
   reg_read_dword_default @ 0042a980
+  crt_fread @ 00461af7
+  crt_fread_nolock @ 00461b26
   crt_get_thread_data @ 004654b8
   crt_free_thread_data @ 0046551f
   ov_read @ 0046e93e
 
 [WRITE related]
   reg_write_dword @ 0042a9c0
+  crt_fwrite @ 004615ae
+  crt_fwrite_nolock @ 004615dd
 
 [SYSTEM related]
   sfx_system_init @ 0043cf90
@@ -44,6 +55,9 @@ Interesting Functions and Patterns
   _malloc @ 004629d9
   __nh_malloc @ 004629eb
   strdup_malloc @ 0046e8f4
+
+[STRCPY related]
+  crt_strcpy @ 00465c30
 
 [SPRINTF related]
   crt_sprintf @ 004616e7

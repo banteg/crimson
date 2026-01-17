@@ -455,8 +455,8 @@
     "func_size": 131,
     "calling_convention": "unknown",
     "return_type": "int",
-    "param_count": 2,
-    "signature": "int grim_was_mouse_button_pressed(void * this, int button)",
+    "param_count": 1,
+    "signature": "int grim_was_mouse_button_pressed(int button)",
     "source_type": "DEFAULT"
   },
   {
@@ -632,8 +632,8 @@
     "func_size": 264,
     "calling_convention": "unknown",
     "return_type": "float",
-    "param_count": 2,
-    "signature": "float grim_get_config_float(void * this, int id)",
+    "param_count": 1,
+    "signature": "float grim_get_config_float(int id)",
     "source_type": "DEFAULT"
   },
   {
@@ -952,8 +952,8 @@
     "func_size": 259,
     "calling_convention": "unknown",
     "return_type": "void",
-    "param_count": 5,
-    "signature": "void grim_draw_fullscreen_color(void * this, float r, float g, float b, float a)",
+    "param_count": 4,
+    "signature": "void grim_draw_fullscreen_color(float r, float g, float b, float a)",
     "source_type": "DEFAULT"
   },
   {
@@ -977,8 +977,8 @@
     "func_size": 205,
     "calling_convention": "unknown",
     "return_type": "void",
-    "param_count": 4,
-    "signature": "void grim_draw_rect_filled(void * this, float * xy, float w, float h)",
+    "param_count": 3,
+    "signature": "void grim_draw_rect_filled(float * xy, float w, float h)",
     "source_type": "DEFAULT"
   },
   {
@@ -1054,8 +1054,8 @@
     "func_size": 134,
     "calling_convention": "unknown",
     "return_type": "void",
-    "param_count": 4,
-    "signature": "void grim_draw_line(void * this, float * p0, float * p1, float thickness)",
+    "param_count": 3,
+    "signature": "void grim_draw_line(float * p0, float * p1, float thickness)",
     "source_type": "DEFAULT"
   },
   {
@@ -1070,8 +1070,8 @@
     "func_size": 99,
     "calling_convention": "unknown",
     "return_type": "void",
-    "param_count": 4,
-    "signature": "void grim_draw_line_quad(void * this, float * p0, float * p1, float * half_vec)",
+    "param_count": 3,
+    "signature": "void grim_draw_line_quad(float * p0, float * p1, float * half_vec)",
     "source_type": "DEFAULT"
   },
   {
@@ -1152,8 +1152,8 @@
     "func_size": 116,
     "calling_convention": "unknown",
     "return_type": "void",
-    "param_count": 2,
-    "signature": "void grim_submit_vertex_raw(void * this, float * vertex)",
+    "param_count": 1,
+    "signature": "void grim_submit_vertex_raw(float * vertex)",
     "source_type": "DEFAULT"
   },
   {
@@ -1168,8 +1168,8 @@
     "func_size": 91,
     "calling_convention": "unknown",
     "return_type": "void",
-    "param_count": 2,
-    "signature": "void grim_submit_quad_raw(void * this, float * verts)",
+    "param_count": 1,
+    "signature": "void grim_submit_quad_raw(float * verts)",
     "source_type": "DEFAULT"
   },
   {
@@ -1387,8 +1387,8 @@
     "func_size": 800,
     "calling_convention": "unknown",
     "return_type": "void",
-    "param_count": 5,
-    "signature": "void grim_draw_quad(void * this, float x, float y, float w, float h)",
+    "param_count": 4,
+    "signature": "void grim_draw_quad(float x, float y, float w, float h)",
     "source_type": "DEFAULT"
   },
   {
@@ -1410,8 +1410,8 @@
     "func_size": 34,
     "calling_convention": "unknown",
     "return_type": "void",
-    "param_count": 4,
-    "signature": "void grim_draw_quad_xy(void * this, float * xy, float w, float h)",
+    "param_count": 3,
+    "signature": "void grim_draw_quad_xy(float * xy, float w, float h)",
     "source_type": "DEFAULT"
   },
   {
@@ -1426,8 +1426,8 @@
     "func_size": 953,
     "calling_convention": "unknown",
     "return_type": "void",
-    "param_count": 5,
-    "signature": "void grim_draw_quad_rotated_matrix(void * this, float x, float y, float w, float h)",
+    "param_count": 4,
+    "signature": "void grim_draw_quad_rotated_matrix(float x, float y, float w, float h)",
     "source_type": "DEFAULT"
   },
   {
@@ -1448,8 +1448,8 @@
     "func_size": 192,
     "calling_convention": "unknown",
     "return_type": "void",
-    "param_count": 5,
-    "signature": "void grim_submit_vertices_transform(void * this, float * verts, int count, float * offset, float * matrix)",
+    "param_count": 4,
+    "signature": "void grim_submit_vertices_transform(float * verts, int count, float * offset, float * matrix)",
     "source_type": "DEFAULT"
   },
   {
@@ -1469,8 +1469,8 @@
     "func_size": 153,
     "calling_convention": "unknown",
     "return_type": "void",
-    "param_count": 4,
-    "signature": "void grim_submit_vertices_offset(void * this, float * verts, int count, float * offset)",
+    "param_count": 3,
+    "signature": "void grim_submit_vertices_offset(float * verts, int count, float * offset)",
     "source_type": "DEFAULT"
   },
   {
@@ -1489,8 +1489,8 @@
     "func_size": 168,
     "calling_convention": "unknown",
     "return_type": "void",
-    "param_count": 5,
-    "signature": "void grim_submit_vertices_offset_color(void * this, float * verts, int count, float * offset, float * color)",
+    "param_count": 4,
+    "signature": "void grim_submit_vertices_offset_color(float * verts, int count, float * offset, float * color)",
     "source_type": "DEFAULT"
   },
   {
@@ -1511,8 +1511,8 @@
     "func_size": 218,
     "calling_convention": "unknown",
     "return_type": "void",
-    "param_count": 6,
-    "signature": "void grim_submit_vertices_transform_color(void * this, float * verts, int count, float * offset, float * matrix, float * color)",
+    "param_count": 5,
+    "signature": "void grim_submit_vertices_transform_color(float * verts, int count, float * offset, float * matrix, float * color)",
     "source_type": "DEFAULT"
   },
   {
@@ -1532,8 +1532,8 @@
     "func_size": 554,
     "calling_convention": "unknown",
     "return_type": "void",
-    "param_count": 9,
-    "signature": "void grim_draw_quad_points(void * this, float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3)",
+    "param_count": 8,
+    "signature": "void grim_draw_quad_points(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3)",
     "source_type": "DEFAULT"
   },
   {
@@ -1554,8 +1554,8 @@
     "func_size": 1034,
     "calling_convention": "unknown",
     "return_type": "void",
-    "param_count": 4,
-    "signature": "void grim_draw_text_mono(void * this, float x, float y, char * text)",
+    "param_count": 3,
+    "signature": "void grim_draw_text_mono(float x, float y, char * text)",
     "source_type": "DEFAULT"
   },
   {
@@ -1599,8 +1599,8 @@
     "func_size": 515,
     "calling_convention": "unknown",
     "return_type": "void",
-    "param_count": 4,
-    "signature": "void grim_draw_text_small(void * this, float x, float y, char * text)",
+    "param_count": 3,
+    "signature": "void grim_draw_text_small(float x, float y, char * text)",
     "source_type": "DEFAULT"
   },
   {
