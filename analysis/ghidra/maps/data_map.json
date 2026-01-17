@@ -225,6 +225,96 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x004926bc",
+      "name": "projectile_angle",
+      "comment": "Projectile heading (projectile_pool + 0x04)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004926c0",
+      "name": "projectile_pos_x",
+      "comment": "Projectile position X (projectile_pool + 0x08)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004926c4",
+      "name": "projectile_pos_y",
+      "comment": "Projectile position Y (projectile_pool + 0x0c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004926c8",
+      "name": "projectile_origin_x",
+      "comment": "Projectile origin X (projectile_pool + 0x10)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004926cc",
+      "name": "projectile_origin_y",
+      "comment": "Projectile origin Y (projectile_pool + 0x14)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004926d0",
+      "name": "projectile_vel_x",
+      "comment": "Projectile velocity X (projectile_pool + 0x18)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004926d4",
+      "name": "projectile_vel_y",
+      "comment": "Projectile velocity Y (projectile_pool + 0x1c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004926d8",
+      "name": "projectile_type_id",
+      "comment": "Projectile type id (projectile_pool + 0x20)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004926dc",
+      "name": "projectile_life_timer",
+      "comment": "Projectile life timer (projectile_pool + 0x24)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004926e0",
+      "name": "projectile_reserved",
+      "comment": "Projectile reserved/unused (projectile_pool + 0x28)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004926e4",
+      "name": "projectile_speed_scale",
+      "comment": "Projectile speed scale (projectile_pool + 0x2c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004926e8",
+      "name": "projectile_damage_pool",
+      "comment": "Projectile damage pool / pierce budget (projectile_pool + 0x30)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004926ec",
+      "name": "projectile_hit_radius",
+      "comment": "Projectile hit radius (projectile_pool + 0x34)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004926f0",
+      "name": "projectile_base_damage",
+      "comment": "Projectile base damage/meta (projectile_pool + 0x38)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004926f4",
+      "name": "projectile_owner_id",
+      "comment": "Projectile owner id (projectile_pool + 0x3c)"
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00493eb8",
       "name": "particle_pool",
       "comment": "Particle pool base (0x80 entries, stride 0x38)"

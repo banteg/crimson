@@ -5864,8 +5864,9 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
                                  owner_id);
         if (iVar5 != -1) {
           iVar9 = _rand();
-          (&DAT_004926e4)[iVar5 * 0x10] =
-               ((float)(iVar9 % 0x32) * 0.01 + 0.5) * (float)(&DAT_004926e4)[iVar5 * 0x10];
+          (&projectile_speed_scale)[iVar5 * 0x10] =
+               ((float)(iVar9 % 0x32) * 0.01 + 0.5) * (float)(&projectile_speed_scale)[iVar5 * 0x10]
+          ;
         }
         iVar3 = iVar3 + -1;
       } while (iVar3 != 0);
@@ -10698,7 +10699,7 @@ LAB_0041600e:
           iVar11 = _rand();
           local_28 = (float)(iVar11 % 100);
           local_3c = (float)((int)local_3c + -1);
-          (&DAT_004926e4)[iVar17 * 0x10] = (float)(int)local_28 * 0.01 + 1.0;
+          (&projectile_speed_scale)[iVar17 * 0x10] = (float)(int)local_28 * 0.01 + 1.0;
         } while (local_3c != 0.0);
       }
       else if (iVar11 == 0x14) {
@@ -10725,7 +10726,7 @@ LAB_0041600e:
           iVar11 = _rand();
           local_28 = (float)(iVar11 % 100);
           local_3c = (float)((int)local_3c + -1);
-          (&DAT_004926e4)[iVar17 * 0x10] = (float)(int)local_28 * 0.01 + 1.0;
+          (&projectile_speed_scale)[iVar17 * 0x10] = (float)(int)local_28 * 0.01 + 1.0;
         } while (local_3c != 0.0);
       }
       else if (iVar11 == 4) {
@@ -10761,7 +10762,7 @@ LAB_0041600e:
           iVar11 = _rand();
           local_28 = (float)(iVar11 % 100);
           local_3c = (float)((int)local_3c + -1);
-          (&DAT_004926e4)[iVar17 * 0x10] = (float)(int)local_28 * 0.01 + 1.0;
+          (&projectile_speed_scale)[iVar17 * 0x10] = (float)(int)local_28 * 0.01 + 1.0;
         } while (local_3c != 0.0);
       }
       else if (iVar11 == 8) {
@@ -10883,7 +10884,7 @@ LAB_0041600e:
           iVar11 = _rand();
           local_28 = (float)(iVar11 % 0x50);
           local_3c = (float)((int)local_3c + -1);
-          (&DAT_004926e4)[iVar17 * 0x10] = (float)(int)local_28 * 0.01 + 1.4;
+          (&projectile_speed_scale)[iVar17 * 0x10] = (float)(int)local_28 * 0.01 + 1.4;
         } while (local_3c != 0.0);
       }
       else if (iVar11 == 0xb) {
@@ -10924,7 +10925,7 @@ LAB_0041600e:
           iVar11 = _rand();
           local_28 = (float)(iVar11 % 0x50);
           local_3c = (float)((int)local_3c + -1);
-          (&DAT_004926e4)[iVar17 * 0x10] = (float)(int)local_28 * 0.01 + 1.4;
+          (&projectile_speed_scale)[iVar17 * 0x10] = (float)(int)local_28 * 0.01 + 1.4;
         } while (local_3c != 0.0);
       }
       else if (iVar11 == 6) {
@@ -11073,7 +11074,7 @@ LAB_0041600e:
           iVar11 = _rand();
           local_28 = (float)(iVar11 % 100);
           local_3c = (float)((int)local_3c + -1);
-          (&DAT_004926e4)[iVar17 * 0x10] = (float)(int)local_28 * 0.01 + 1.0;
+          (&projectile_speed_scale)[iVar17 * 0x10] = (float)(int)local_28 * 0.01 + 1.0;
         } while (local_3c != 0.0);
       }
       else if (iVar11 == 0x29) {
@@ -16810,50 +16811,50 @@ int __cdecl projectile_spawn(float *pos,float angle,int type_id,int owner_id)
 LAB_004204d7:
   fVar4 = (float10)fcos((float10)angle);
   iVar3 = iVar2 * 0x40;
-  (&DAT_004926f4)[iVar2 * 0x10] = owner_id;
+  (&projectile_owner_id)[iVar2 * 0x10] = owner_id;
   (&projectile_pool)[iVar3] = 1;
-  (&DAT_004926f0)[iVar2 * 0x10] = (&DAT_004d7a98)[type_id * 0x1f];
-  (&DAT_004926c0)[iVar2 * 0x10] = *pos;
-  (&DAT_004926c4)[iVar2 * 0x10] = pos[1];
-  (&DAT_004926c8)[iVar2 * 0x10] = *pos;
-  (&DAT_004926cc)[iVar2 * 0x10] = pos[1];
-  (&DAT_004926bc)[iVar2 * 0x10] = angle;
-  (&DAT_004926d8)[iVar2 * 0x10] = type_id;
-  (&DAT_004926dc)[iVar2 * 0x10] = 0x3ecccccd;
-  *(undefined4 *)(iVar3 + 0x4926e0) = 0;
-  (&DAT_004926e4)[iVar2 * 0x10] = 0x3f800000;
-  (&DAT_004926d0)[iVar2 * 0x10] = (float)(fVar4 * (float10)1.5);
+  (&projectile_base_damage)[iVar2 * 0x10] = (&DAT_004d7a98)[type_id * 0x1f];
+  (&projectile_pos_x)[iVar2 * 0x10] = *pos;
+  (&projectile_pos_y)[iVar2 * 0x10] = pos[1];
+  (&projectile_origin_x)[iVar2 * 0x10] = *pos;
+  (&projectile_origin_y)[iVar2 * 0x10] = pos[1];
+  (&projectile_angle)[iVar2 * 0x10] = angle;
+  (&projectile_type_id)[iVar2 * 0x10] = type_id;
+  (&projectile_life_timer)[iVar2 * 0x10] = 0x3ecccccd;
+  *(undefined4 *)(&projectile_reserved + iVar3) = 0;
+  (&projectile_speed_scale)[iVar2 * 0x10] = 0x3f800000;
+  (&projectile_vel_x)[iVar2 * 0x10] = (float)(fVar4 * (float10)1.5);
   fVar4 = (float10)fsin((float10)angle);
-  (&DAT_004926d4)[iVar2 * 0x10] = (float)(fVar4 * (float10)1.5);
+  (&projectile_vel_y)[iVar2 * 0x10] = (float)(fVar4 * (float10)1.5);
   if (type_id == 0x16) {
-    (&DAT_004926ec)[iVar2 * 0x10] = 0x40400000;
-    *(undefined4 *)(&DAT_004926e8 + iVar3) = 0x3f800000;
+    (&projectile_hit_radius)[iVar2 * 0x10] = 0x40400000;
+    *(undefined4 *)(&projectile_damage_pool + iVar3) = 0x3f800000;
     return iVar2;
   }
   if (type_id == 0x15) {
-    (&DAT_004926ec)[iVar2 * 0x10] = 0x40a00000;
-    *(undefined4 *)(&DAT_004926e8 + iVar3) = 0x3f800000;
+    (&projectile_hit_radius)[iVar2 * 0x10] = 0x40a00000;
+    *(undefined4 *)(&projectile_damage_pool + iVar3) = 0x3f800000;
     return iVar2;
   }
   if ((type_id == 0x17) || (type_id == 0x1c)) {
-    (&DAT_004926ec)[iVar2 * 0x10] = 0x41200000;
+    (&projectile_hit_radius)[iVar2 * 0x10] = 0x41200000;
   }
   else {
-    (&DAT_004926ec)[iVar2 * 0x10] = 0x3f800000;
+    (&projectile_hit_radius)[iVar2 * 0x10] = 0x3f800000;
     if (type_id == 6) {
-      *(undefined4 *)(&DAT_004926e8 + iVar3) = 0x43960000;
+      *(undefined4 *)(&projectile_damage_pool + iVar3) = 0x43960000;
       return iVar2;
     }
     if (type_id == 0x2d) {
-      *(undefined4 *)(&DAT_004926e8 + iVar3) = 0x43700000;
+      *(undefined4 *)(&projectile_damage_pool + iVar3) = 0x43700000;
       return iVar2;
     }
     if (type_id == 0x19) {
-      *(undefined4 *)(&DAT_004926e8 + iVar3) = 0x42480000;
+      *(undefined4 *)(&projectile_damage_pool + iVar3) = 0x42480000;
       return iVar2;
     }
   }
-  *(undefined4 *)(&DAT_004926e8 + iVar3) = 0x3f800000;
+  *(undefined4 *)(&projectile_damage_pool + iVar3) = 0x3f800000;
   return iVar2;
 }
 
@@ -17182,31 +17183,31 @@ void projectile_update(void)
   do {
     iVar4 = local_e8 * 0x40;
     if ((&projectile_pool)[iVar4] != '\0') {
-      if ((float)(&DAT_004926dc)[local_e8 * 0x10] <= 0.0) {
+      if ((float)(&projectile_life_timer)[local_e8 * 0x10] <= 0.0) {
         (&projectile_pool)[iVar4] = 0;
       }
-      if (0.4 <= (float)(&DAT_004926dc)[local_e8 * 0x10]) {
-        pfVar11 = (float *)(&DAT_004926c0 + local_e8 * 0x10);
-        if (((((float)(&DAT_004926c0)[local_e8 * 0x10] < -64.0) ||
-             ((float)(&DAT_004926c4)[local_e8 * 0x10] < -64.0)) ||
+      if (0.4 <= (float)(&projectile_life_timer)[local_e8 * 0x10]) {
+        pfVar11 = (float *)(&projectile_pos_x + local_e8 * 0x10);
+        if (((((float)(&projectile_pos_x)[local_e8 * 0x10] < -64.0) ||
+             ((float)(&projectile_pos_y)[local_e8 * 0x10] < -64.0)) ||
             ((float)(DAT_0048f534 + 0x40) < *pfVar11)) ||
-           ((float)(DAT_0048f538 + 0x40) < (float)(&DAT_004926c4)[local_e8 * 0x10])) {
+           ((float)(DAT_0048f538 + 0x40) < (float)(&projectile_pos_y)[local_e8 * 0x10])) {
 LAB_004219ef:
-          fVar9 = (float)(&DAT_004926dc)[local_e8 * 0x10] - DAT_00480840;
+          fVar9 = (float)(&projectile_life_timer)[local_e8 * 0x10] - DAT_00480840;
 LAB_004219f8:
-          (&DAT_004926dc)[local_e8 * 0x10] = fVar9;
+          (&projectile_life_timer)[local_e8 * 0x10] = fVar9;
         }
         else {
           lVar19 = __ftol();
           local_dc = (float)lVar19;
-          fVar13 = (float10)fcos((float10)(float)(&DAT_004926bc)[local_e8 * 0x10] -
+          fVar13 = (float10)fcos((float10)(float)(&projectile_angle)[local_e8 * 0x10] -
                                  (float10)1.5707964);
           fVar17 = (float10)DAT_00480840;
-          fVar14 = (float10)fsin((float10)(float)(&DAT_004926bc)[local_e8 * 0x10] -
+          fVar14 = (float10)fsin((float10)(float)(&projectile_angle)[local_e8 * 0x10] -
                                  (float10)1.5707964);
           fVar16 = (float10)DAT_00480840;
           iVar10 = perk_count_get(DAT_004c2bec);
-          if ((iVar10 != 0) && ((int)(&DAT_004926f4)[local_e8 * 0x10] < 0)) {
+          if ((iVar10 != 0) && ((int)(&projectile_owner_id)[local_e8 * 0x10] < 0)) {
             lVar19 = __ftol();
             local_dc = (float)lVar19;
           }
@@ -17217,22 +17218,23 @@ LAB_004219f8:
             do {
               fVar9 = local_c4;
               local_cc = (float)(fVar13 * fVar17 * (float10)20.0) *
-                         (float)(&DAT_004926e4)[local_e8 * 0x10] * 3.0 + local_cc;
+                         (float)(&projectile_speed_scale)[local_e8 * 0x10] * 3.0 + local_cc;
               local_c8 = (float)(fVar14 * fVar16 * (float10)20.0) *
-                         (float)(&DAT_004926e4)[local_e8 * 0x10] * 3.0 + local_c8;
+                         (float)(&projectile_speed_scale)[local_e8 * 0x10] * 3.0 + local_c8;
               if ((4.0 <= SQRT(local_c8 * local_c8 + local_cc * local_cc)) ||
                  ((int)local_dc <= (int)local_c4 + 3)) {
                 FUN_0041e270(pfVar11,&local_cc);
-                iVar10 = creature_find_in_radius(pfVar11,(float)(&DAT_004926ec)[local_e8 * 0x10],0);
-                if ((iVar10 == -1) || (iVar10 == (&DAT_004926f4)[local_e8 * 0x10])) {
+                iVar10 = creature_find_in_radius
+                                   (pfVar11,(float)(&projectile_hit_radius)[local_e8 * 0x10],0);
+                if ((iVar10 == -1) || (iVar10 == (&projectile_owner_id)[local_e8 * 0x10])) {
                   if (local_e8 != DAT_00486fc0) {
-                    if ((&DAT_004926f4)[local_e8 * 0x10] != -100) {
+                    if ((&projectile_owner_id)[local_e8 * 0x10] != -100) {
                       iVar10 = player_find_in_radius
-                                         ((&DAT_004926f4)[local_e8 * 0x10],pfVar11,
-                                          (float)(&DAT_004926ec)[local_e8 * 0x10]);
+                                         ((&projectile_owner_id)[local_e8 * 0x10],pfVar11,
+                                          (float)(&projectile_hit_radius)[local_e8 * 0x10]);
                     }
                     if (iVar10 != -1) {
-                      (&DAT_004926dc)[local_e8 * 0x10] = 0x3e800000;
+                      (&projectile_life_timer)[local_e8 * 0x10] = 0x3e800000;
                       if ((float)(&player_shield_timer)[iVar10 * 0xd8] <= 0.0) {
                         (&player_table)[iVar10 * 0xd8] =
                              (float)(&player_table)[iVar10 * 0xd8] - 10.0;
@@ -17246,7 +17248,7 @@ LAB_004219f8:
                     *(uint *)(&DAT_0049bfc4 + iVar10 * 0x98) =
                          *(uint *)(&DAT_0049bfc4 + iVar10 * 0x98) | 1;
                   }
-                  if ((&DAT_004926d8)[local_e8 * 0x10] == 0x19) {
+                  if ((&projectile_type_id)[local_e8 * 0x10] == 0x19) {
                     iVar7 = 8;
                     do {
                       fVar9 = 0.0;
@@ -17255,12 +17257,12 @@ LAB_004219f8:
                       iVar7 = iVar7 + -1;
                     } while (iVar7 != 0);
                   }
-                  else if ((&DAT_004926d8)[local_e8 * 0x10] == 0x1d) {
+                  else if ((&projectile_type_id)[local_e8 * 0x10] == 0x1d) {
                     FUN_0042f3f0(pfVar11,0x41d00000,3);
-                    projectile_spawn(pfVar11,(float)(&DAT_004926bc)[local_e8 * 0x10] - 1.0471976,
-                                     0x1d,iVar10);
-                    projectile_spawn(pfVar11,(float)(&DAT_004926bc)[local_e8 * 0x10] + 1.0471976,
-                                     0x1d,iVar10);
+                    projectile_spawn(pfVar11,(float)(&projectile_angle)[local_e8 * 0x10] - 1.0471976
+                                     ,0x1d,iVar10);
+                    projectile_spawn(pfVar11,(float)(&projectile_angle)[local_e8 * 0x10] + 1.0471976
+                                     ,0x1d,iVar10);
                   }
                   local_64 = 0x3f800000;
                   local_68 = 1.0;
@@ -17281,11 +17283,11 @@ LAB_004219f8:
                       if (_DAT_00487018 <= 0.0) {
                         iVar7 = 2;
                         do {
-                          FUN_0042eb10(pfVar11,(float)(&DAT_004926bc)[local_e8 * 0x10] - 1.5707964,
-                                       0.0);
+                          FUN_0042eb10(pfVar11,(float)(&projectile_angle)[local_e8 * 0x10] -
+                                               1.5707964,0.0);
                           iVar5 = _rand();
                           if (((byte)iVar5 & 7) == 2) {
-                            FUN_0042eb10(pfVar11,((float)(&DAT_004926bc)[local_e8 * 0x10] -
+                            FUN_0042eb10(pfVar11,((float)(&projectile_angle)[local_e8 * 0x10] -
                                                  1.5707964) + 3.1415927,0.0);
                           }
                           iVar7 = iVar7 + -1;
@@ -17297,12 +17299,13 @@ LAB_004219f8:
                       do {
                         fVar9 = 0.0;
                         uVar8 = _rand();
-                        FUN_0042eb10(pfVar11,((float)(&DAT_004926bc)[local_e8 * 0x10] - 1.5707964) +
+                        FUN_0042eb10(pfVar11,((float)(&projectile_angle)[local_e8 * 0x10] -
+                                             1.5707964) +
                                              (float)(int)((uVar8 & 0x1f) - 0x10) * 0.0625,fVar9);
                         iVar7 = iVar7 + -1;
                       } while (iVar7 != 0);
-                      FUN_0042eb10(pfVar11,((float)(&DAT_004926bc)[local_e8 * 0x10] - 1.5707964) +
-                                           3.1415927,0.0);
+                      FUN_0042eb10(pfVar11,((float)(&projectile_angle)[local_e8 * 0x10] - 1.5707964)
+                                           + 3.1415927,0.0);
                     }
                   }
                   if ((&DAT_0049bf48)[iVar10 * 0x26] == 0x41800000) {
@@ -17332,29 +17335,29 @@ LAB_004219f8:
                       local_d8 = local_d8 + 10;
                     } while (-0x3c < iVar7);
                   }
-                  iVar7 = (&DAT_004926d8)[local_e8 * 0x10];
+                  iVar7 = (&projectile_type_id)[local_e8 * 0x10];
                   if (((iVar7 != 0x2d) && (iVar7 != 6)) && (iVar7 != 0x19)) {
-                    (&DAT_004926dc)[local_e8 * 0x10] = 0x3e800000;
+                    (&projectile_life_timer)[local_e8 * 0x10] = 0x3e800000;
                     uVar8 = _rand();
-                    fVar15 = (float10)fcos((float10)(float)(&DAT_004926bc)[local_e8 * 0x10] -
+                    fVar15 = (float10)fcos((float10)(float)(&projectile_angle)[local_e8 * 0x10] -
                                            (float10)1.5707964);
                     *pfVar11 = (float)(fVar15 * (float10)(uVar8 & 3) + (float10)*pfVar11);
-                    fVar15 = (float10)fsin((float10)(float)(&DAT_004926bc)[local_e8 * 0x10] -
+                    fVar15 = (float10)fsin((float10)(float)(&projectile_angle)[local_e8 * 0x10] -
                                            (float10)1.5707964);
-                    (&DAT_004926c4)[local_e8 * 0x10] =
+                    (&projectile_pos_y)[local_e8 * 0x10] =
                          (float)(fVar15 * (float10)(uVar8 & 3) +
-                                (float10)(float)(&DAT_004926c4)[local_e8 * 0x10]);
+                                (float10)(float)(&projectile_pos_y)[local_e8 * 0x10]);
                   }
-                  fVar9 = SQRT(((float)(&DAT_004926c8)[local_e8 * 0x10] - *pfVar11) *
-                               ((float)(&DAT_004926c8)[local_e8 * 0x10] - *pfVar11) +
-                               ((float)(&DAT_004926cc)[local_e8 * 0x10] -
-                               (float)(&DAT_004926c4)[local_e8 * 0x10]) *
-                               ((float)(&DAT_004926cc)[local_e8 * 0x10] -
-                               (float)(&DAT_004926c4)[local_e8 * 0x10]));
+                  fVar9 = SQRT(((float)(&projectile_origin_x)[local_e8 * 0x10] - *pfVar11) *
+                               ((float)(&projectile_origin_x)[local_e8 * 0x10] - *pfVar11) +
+                               ((float)(&projectile_origin_y)[local_e8 * 0x10] -
+                               (float)(&projectile_pos_y)[local_e8 * 0x10]) *
+                               ((float)(&projectile_origin_y)[local_e8 * 0x10] -
+                               (float)(&projectile_pos_y)[local_e8 * 0x10]));
                   if (fVar9 < 50.0) {
                     fVar9 = 50.0;
                   }
-                  iVar7 = (&DAT_004926d8)[local_e8 * 0x10];
+                  iVar7 = (&projectile_type_id)[local_e8 * 0x10];
                   fVar20 = (float)(&DAT_004d7a9c)[iVar7 * 0x1f];
                   if (iVar7 == 0x16) {
                     FUN_0042f270(pfVar11,1.5,0.1);
@@ -17392,7 +17395,7 @@ LAB_004219f8:
                       fVar18 = (float10)fsin((float10)fVar1);
                       local_34 = (float)(fVar18 * (float10)fVar2);
                       local_88 = (float)(fVar15 * (float10)fVar2 + (float10)*pfVar11);
-                      local_84 = local_34 + (float)(&DAT_004926c4)[local_e8 * 0x10];
+                      local_84 = local_34 + (float)(&projectile_pos_y)[local_e8 * 0x10];
                       projectile_spawn(&local_88,fVar1,9,-100);
                       local_e4 = local_e4 + 1;
                     } while (local_e4 < 0xc);
@@ -17405,7 +17408,7 @@ LAB_004219f8:
                   else if (iVar7 == 0x18) {
                     FUN_0042f080(pfVar11);
                     fVar2 = (float)(&DAT_0049bf6c)[iVar10 * 0x26];
-                    (&DAT_004926dc)[local_e8 * 0x10] = 0x3e800000;
+                    (&projectile_life_timer)[local_e8 * 0x10] = 0x3e800000;
                     (&DAT_0049bf6c)[iVar10 * 0x26] = fVar2 * 0.65;
                     if (fVar2 * 0.65 < 16.0) {
                       creature_handle_death(iVar10,true);
@@ -17423,36 +17426,40 @@ LAB_004219f8:
                   }
                   fVar9 = ((100.0 / fVar9) * fVar20 * 30.0 + 10.0) * 0.95;
                   if ((0.0 < fVar9) && (0.0 < (float)(&DAT_0049bf5c)[iVar10 * 0x26])) {
-                    fVar20 = *(float *)(&DAT_004926e8 + iVar4) - 1.0;
-                    *(float *)(&DAT_004926e8 + iVar4) = fVar20;
-                    fVar15 = (float10)fcos((float10)(float)(&DAT_004926bc)[local_e8 * 0x10] -
+                    fVar20 = *(float *)(&projectile_damage_pool + iVar4) - 1.0;
+                    *(float *)(&projectile_damage_pool + iVar4) = fVar20;
+                    fVar15 = (float10)fcos((float10)(float)(&projectile_angle)[local_e8 * 0x10] -
                                            (float10)1.5707964);
                     if (fVar20 <= 0.0) {
-                      local_98 = (float)(fVar15 * (float10)(float)(&DAT_004926e4)[local_e8 * 0x10]);
-                      local_94 = (float)(fVar15 * (float10)(float)(&DAT_004926e4)[local_e8 * 0x10]);
+                      local_98 = (float)(fVar15 * (float10)(float)(&projectile_speed_scale)
+                                                                  [local_e8 * 0x10]);
+                      local_94 = (float)(fVar15 * (float10)(float)(&projectile_speed_scale)
+                                                                  [local_e8 * 0x10]);
                       creature_apply_damage(iVar10,fVar9,1,&local_98);
-                      if ((&DAT_004926dc)[local_e8 * 0x10] != 0x3e800000) {
-                        (&DAT_004926dc)[local_e8 * 0x10] = 0x3e800000;
+                      if ((&projectile_life_timer)[local_e8 * 0x10] != 0x3e800000) {
+                        (&projectile_life_timer)[local_e8 * 0x10] = 0x3e800000;
                       }
                     }
                     else {
-                      local_78 = (float)(fVar15 * (float10)(float)(&DAT_004926e4)[local_e8 * 0x10]);
-                      local_74 = (float)(fVar15 * (float10)(float)(&DAT_004926e4)[local_e8 * 0x10]);
+                      local_78 = (float)(fVar15 * (float10)(float)(&projectile_speed_scale)
+                                                                  [local_e8 * 0x10]);
+                      local_74 = (float)(fVar15 * (float10)(float)(&projectile_speed_scale)
+                                                                  [local_e8 * 0x10]);
                       creature_apply_damage(iVar10,fVar20,1,&local_78);
-                      *(float *)(&DAT_004926e8 + iVar4) =
-                           *(float *)(&DAT_004926e8 + iVar4) - (float)(&DAT_0049bf5c)[iVar10 * 0x26]
-                      ;
+                      *(float *)(&projectile_damage_pool + iVar4) =
+                           *(float *)(&projectile_damage_pool + iVar4) -
+                           (float)(&DAT_0049bf5c)[iVar10 * 0x26];
                     }
                   }
-                  if ((*(int *)(&DAT_004926e8 + iVar4) == 0x3f800000) &&
-                     (iVar7 = (&DAT_004926dc)[local_e8 * 0x10],
-                     *(undefined4 *)(&DAT_004926e8 + iVar4) = 0, iVar7 != 0x3e800000)) {
-                    (&DAT_004926dc)[local_e8 * 0x10] = 0x3e800000;
+                  if ((*(int *)(&projectile_damage_pool + iVar4) == 0x3f800000) &&
+                     (iVar7 = (&projectile_life_timer)[local_e8 * 0x10],
+                     *(undefined4 *)(&projectile_damage_pool + iVar4) = 0, iVar7 != 0x3e800000)) {
+                    (&projectile_life_timer)[local_e8 * 0x10] = 0x3e800000;
                   }
                   (&DAT_0049bf40)[iVar10 * 0x98] = 1;
                   _rand();
-                  if (((&DAT_004926d8)[local_e8 * 0x10] == 6) ||
-                     ((&DAT_004926d8)[local_e8 * 0x10] == 0x2d)) {
+                  if (((&projectile_type_id)[local_e8 * 0x10] == 6) ||
+                     ((&projectile_type_id)[local_e8 * 0x10] == 0x2d)) {
                     perk_count_get(DAT_004c2b44);
                     local_ec = 6;
                     do {
@@ -17466,12 +17473,12 @@ LAB_004219f8:
                         iVar7 = _rand();
                         fVar15 = (float10)(iVar7 % 0x50 + 0x14) * (float10)0.1;
                       }
-                      fVar18 = (float10)fcos((float10)(float)(&DAT_004926bc)[local_e8 * 0x10] -
+                      fVar18 = (float10)fcos((float10)(float)(&projectile_angle)[local_e8 * 0x10] -
                                              (float10)1.5707964);
                       local_a8 = 0.0;
                       local_a4 = 0.0;
                       fVar9 = (float)(fVar18 * fVar15 * (float10)20.0);
-                      fVar18 = (float10)fsin((float10)(float)(&DAT_004926bc)[local_e8 * 0x10] -
+                      fVar18 = (float10)fsin((float10)(float)(&projectile_angle)[local_e8 * 0x10] -
                                              (float10)1.5707964);
                       fVar20 = (float)(fVar18 * fVar15 * (float10)20.0);
                       local_b0 = fVar9 + (float)(&DAT_0049bf4c)[iVar10 * 0x26];
@@ -17480,10 +17487,10 @@ LAB_004219f8:
                       _rand();
                       if (0.0 < _DAT_00487018) {
                         local_a0 = fVar9 + *pfVar11;
-                        local_9c = fVar20 + (float)(&DAT_004926c4)[local_e8 * 0x10];
+                        local_9c = fVar20 + (float)(&projectile_pos_y)[local_e8 * 0x10];
                         iVar7 = _rand();
                         FUN_0042ec80(&local_a0,
-                                     ((float)(&DAT_004926bc)[local_e8 * 0x10] - 1.5707964) +
+                                     ((float)(&projectile_angle)[local_e8 * 0x10] - 1.5707964) +
                                      (float)(iVar7 % 100) * 0.01);
                       }
                       local_b8 = fVar9 + (float)(&DAT_0049bf4c)[iVar10 * 0x26];
@@ -17497,7 +17504,7 @@ LAB_004219f8:
                     iVar7 = 3;
                     do {
                       iVar5 = _rand();
-                      fVar18 = ((float10)(float)(&DAT_004926bc)[local_e8 * 0x10] -
+                      fVar18 = ((float10)(float)(&projectile_angle)[local_e8 * 0x10] -
                                (float10)1.5707964) + (float10)(iVar5 % 0x14 + -10) * (float10)0.1;
                       fVar15 = (float10)fcos(fVar18);
                       fVar9 = (float)(fVar15 * (float10)20.0);
@@ -17521,7 +17528,7 @@ LAB_004219f8:
                   }
                   else {
                     iVar10 = _rand();
-                    FUN_0042ec80(pfVar11,((float)(&DAT_004926bc)[local_e8 * 0x10] - 1.5707964) +
+                    FUN_0042ec80(pfVar11,((float)(&projectile_angle)[local_e8 * 0x10] - 1.5707964) +
                                          (float)(iVar10 % 100) * 0.01);
                   }
                   if (((DAT_0048700d == '\0') && (DAT_004cc8d4 == '\0')) && (_DAT_00480360 != 2)) {
@@ -17529,14 +17536,14 @@ LAB_004219f8:
                   }
                   else {
                     fVar9 = DAT_004c3fe4;
-                    if ((&DAT_004d7a28)[(&DAT_004926d8)[local_e8 * 0x10] * 0x1f] != 4) {
+                    if ((&DAT_004d7a28)[(&projectile_type_id)[local_e8 * 0x10] * 0x1f] != 4) {
                       iVar10 = _rand();
                       fVar9 = (float)(iVar10 % 6 + DAT_004c3fcc);
                     }
                     sfx_play_panned(fVar9);
                   }
                   fVar9 = local_c4;
-                  if (*(float *)(&DAT_004926e8 + iVar4) <= 0.0) break;
+                  if (*(float *)(&projectile_damage_pool + iVar4) <= 0.0) break;
                 }
                 local_c8 = 0.0;
                 local_cc = 0.0;
@@ -17547,13 +17554,14 @@ LAB_004219f8:
         }
       }
       else {
-        iVar4 = (&DAT_004926d8)[local_e8 * 0x10];
+        iVar4 = (&projectile_type_id)[local_e8 * 0x10];
         if ((iVar4 == 0x15) || (iVar4 == 0x16)) {
           if (local_e8 == DAT_00486fc0) {
             DAT_00486fc0 = -1;
             DAT_00486fbc = 0;
           }
-          (&DAT_004926dc)[local_e8 * 0x10] = (float)(&DAT_004926dc)[local_e8 * 0x10] - DAT_00480840;
+          (&projectile_life_timer)[local_e8 * 0x10] =
+               (float)(&projectile_life_timer)[local_e8 * 0x10] - DAT_00480840;
           if (iVar4 == 0x15) {
             fVar20 = DAT_00480840 * 100.0;
             fVar9 = local_c0 * 88.0;
@@ -17566,15 +17574,16 @@ LAB_004219f8:
         else {
           if (iVar4 != 0x17) {
             if (iVar4 != 6) goto LAB_004219ef;
-            fVar9 = (float)(&DAT_004926dc)[local_e8 * 0x10] - DAT_00480840 * 0.1;
+            fVar9 = (float)(&projectile_life_timer)[local_e8 * 0x10] - DAT_00480840 * 0.1;
             goto LAB_004219f8;
           }
-          (&DAT_004926dc)[local_e8 * 0x10] =
-               (float)(&DAT_004926dc)[local_e8 * 0x10] - DAT_00480840 * 0.7;
+          (&projectile_life_timer)[local_e8 * 0x10] =
+               (float)(&projectile_life_timer)[local_e8 * 0x10] - DAT_00480840 * 0.7;
           fVar20 = DAT_00480840 * 300.0;
           fVar9 = local_c0 * 128.0;
         }
-        creatures_apply_radius_damage((float *)(&DAT_004926c0 + local_e8 * 0x10),fVar9,fVar20,7);
+        creatures_apply_radius_damage((float *)(&projectile_pos_x + local_e8 * 0x10),fVar9,fVar20,7)
+        ;
       }
     }
     local_e8 = local_e8 + 1;
@@ -18343,7 +18352,7 @@ void projectile_render(void)
   fStack_258 = 2.8026e-45;
   pfStack_260 = (float *)0x423011;
   (**(code **)(*DAT_0048083c + 0x20))();
-  pfVar2 = (float *)&DAT_004926d4;
+  pfVar2 = (float *)&projectile_vel_y;
   do {
     if ((*(char *)(pfVar2 + -7) != '\0') &&
        ((fVar31 = pfVar2[1], (int)fVar31 < 8 || (fVar31 == 4.06377e-44)))) {
@@ -18500,7 +18509,7 @@ void projectile_render(void)
     (**(code **)(*DAT_0048083c + 0xf0))();
   }
   (**(code **)(*DAT_0048083c + 0xe8))();
-  pfVar3 = (float *)&DAT_004926c4;
+  pfVar3 = (float *)&projectile_pos_y;
   do {
     if ((*(char *)(pfVar3 + -3) != '\0') &&
        ((((fVar32 = pfVar3[5], fVar32 == 1.26117e-44 || (fVar32 == 1.54143e-44)) ||
@@ -18729,7 +18738,7 @@ LAB_00424111:
   (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7d4,0);
   (**(code **)(*DAT_0048083c + 0xe8))();
   fStack_264 = 0.0;
-  pfVar3 = (float *)&DAT_004926cc;
+  pfVar3 = (float *)&projectile_origin_y;
   uVar17 = uStack_e8;
   do {
     pfVar7 = pfVar3 + -5;
@@ -19055,7 +19064,7 @@ LAB_00424475:
   fVar31 = 8.40779e-45;
   (**(code **)(*DAT_0048083c + 0x20))(0x14,6);
   (**(code **)(*DAT_0048083c + 0xe8))();
-  pfVar2 = (float *)&DAT_004926c4;
+  pfVar2 = (float *)&projectile_pos_y;
   do {
     if ((*(char *)(pfVar2 + -3) != '\0') && (pfVar2[5] == 5.74532e-44)) {
       if (pfVar2[6] == 0.4) {
@@ -19142,7 +19151,7 @@ LAB_00424475:
   (**(code **)(*DAT_0048083c + 0x114))(0x3f4ccccd,0x3f4ccccd,0x3f4ccccd,fVar31);
   (**(code **)(*DAT_0048083c + 0xc4))(DAT_0049bb30,0);
   (**(code **)(*DAT_0048083c + 0xe8))();
-  pfVar2 = (float *)&DAT_004926c4;
+  pfVar2 = (float *)&projectile_pos_y;
   do {
     if (((*(char *)(pfVar2 + -3) != '\0') && (pfVar2[6] == 0.4)) &&
        ((fVar32 = pfVar2[5], fVar32 != 1.26117e-44 &&
@@ -30829,7 +30838,7 @@ void __cdecl FUN_00444980(char param_1,char param_2)
                                      owner_id);
             iVar10 = _rand();
             iVar7 = iVar7 + -1;
-            (&DAT_004926e4)[iVar6 * 0x10] = (float)(iVar10 % 100) * 0.01 + 1.0;
+            (&projectile_speed_scale)[iVar6 * 0x10] = (float)(iVar10 % 100) * 0.01 + 1.0;
           } while (iVar7 != 0);
         }
         iVar7 = DAT_004c2b48;

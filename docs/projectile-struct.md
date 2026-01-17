@@ -7,6 +7,8 @@ Notes:
 - Entry size: `0x40` bytes.
 - Pool size: `0x60` entries (loop in `projectile_update`).
 - Primary writers: `projectile_spawn` (`FUN_00420440`) and `projectile_update` (`FUN_00420b90`).
+- Field arrays are labeled in the data map (e.g. `projectile_pos_x`, `projectile_type_id`,
+  `projectile_life_timer`, `projectile_owner_id`) at `projectile_pool` + offsets.
 
 | Offset | Field | Evidence |
 | --- | --- | --- |
