@@ -328,6 +328,20 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
   - Stage index wraps to 0 when `DAT_00486fd8` reaches 9; counters are initialized in `FUN_00412dc0`
     (`DAT_00486fd8 = -1`, `DAT_00486fe0 = -1000`) and reset by `tutorial_prompt_dialog`.
 
+### UI button helpers (medium confidence)
+
+- `FUN_004034a0` -> `ui_mouse_inside_rect`
+  - Evidence: checks mouse coordinates (`DAT_004871ec`/`DAT_004871f0`) against `xy + (w, h)` and
+    returns 1 when inside and `DAT_004871cc` is clear.
+- `FUN_0043d830` -> `ui_focus_update`
+  - Evidence: tracks a rolling list of focus candidates in `DAT_004ccbd0`, responds to key input
+    to move focus, and returns nonzero when the provided id matches the focused entry.
+- `FUN_0043d940` -> `ui_focus_draw`
+  - Evidence: draws a small highlight quad near the focused item location using the UI renderer.
+- `FUN_0043e830` -> `ui_button_update`
+  - Evidence: draws the small/medium button textures, updates hover/press timers using
+    `ui_mouse_inside_rect`, and returns nonzero when the button is activated.
+
 
 ### Creature table (partial)
 
