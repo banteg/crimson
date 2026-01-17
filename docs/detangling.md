@@ -316,8 +316,9 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
   - Secondary hint overlay:
     - `DAT_004712fc` increments when the current bonus object (`DAT_004808ac`) flips inactive with flag `0x400`,
       and `DAT_004808b4` ramps the hint alpha (up/down at 3x delta, clamped 0..1000).
-    - The hint text is fetched from the same stack string block (`afStack_5c[DAT_004712fc + 2]`),
-      suggesting the powerup/perk strings adjacent to the stage table are used for these overlays.
+    - The hint text is fetched from the same stack string block (`afStack_5c[DAT_004712fc + 2]`);
+      entries that point to `DAT_00472718` are skipped because the string starts with `0xa7`
+      (`-0x59`), matching the guard byte check.
   - Additional strings in the same stack block include perk tutorial lines
     ("It will help you to move and shoot...", Perks intro, Perks description, "Great! Now you are ready to start"),
     plus speed/weapon/x2 powerup blurbs (`local_44/local_40/local_3c`).
