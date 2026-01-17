@@ -150,7 +150,7 @@ These offsets appear with keycodes or input-related values:
 | `0x0` | `release` | `void release(void)` | high | vtable destructor (operator_delete) |
 | `0x4` | `set_paused` | `void set_paused(int paused)` | high | sets global pause flag |
 | `0x8` | `get_version` | `float get_version(void)` | high | returns constant 1.21 |
-| `0xc` | `check_device` | `int check_device(void)` | high | tests D3D device/state; returns success |
+| `0xc` | `check_device` | `int check_device(void)` | high | returns a D3D status code (negative values masked) |
 | `0x10` | `apply_config` | `bool apply_config(void)` | high | opens D3D config dialog and applies settings |
 | `0x14` | `init_system` | `bool init_system(void)` | high | returns success before game starts |
 | `0x18` | `shutdown` | `void shutdown(void)` | high | shutdown path before DLL release |
