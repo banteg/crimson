@@ -75,6 +75,11 @@ Related notes:
 - Flags `0x4`, `0x10`, and `0x40` influence sprite selection in `FUN_00418b60`:
   `0x4` selects the short 8‑frame ping‑pong strip, `0x40` forces the long strip
   even when `0x4` is set, and `0x10` offsets the long strip by `+0x20`.
+- `FUN_00418b60` computes the short strip frame as
+  `frame = base + 0x10 + ping_pong(int(phase) & 0xf)`, where `ping_pong` mirrors
+  indices `> 7` to `0xf - idx`. The long strip uses `frame = base + int(phase)`
+  (mirrored to `0x1f - frame` when `type_flags & 1` and `frame > 0x0f`), with
+  negative phases falling back to `base + 0x0f`.
 
 ## Creature type table (DAT_00482728)
 
