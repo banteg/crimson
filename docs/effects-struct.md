@@ -163,6 +163,15 @@ Layout (partial):
 | 0x44 | rotation_step_2 | Added into `rotation_2` when `flags & 0x8`. |
 | 0x48 | UV/vertex data | Initialized in `effect_spawn` using atlas tables. |
 
+Notes:
+
+- `effect_spawn` reads `DAT_004755f0/4` to pick atlas size + frame index, then
+  pulls UVs from size-specific tables:
+  - `0x10` -> `DAT_004aa4d8/4` with base `_DAT_004755ec`.
+  - `0x20` -> `DAT_00491010/14` with base `_DAT_004755e8`.
+  - `0x40` -> `DAT_00491210/14` with base `_DAT_004755e4`.
+  - `0x80` -> `DAT_00491290/94` with base `_DAT_004755e0`.
+
 
 ## Sprite effect pool (`DAT_00496820`)
 
