@@ -21,6 +21,42 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x0048294c",
+      "name": "bonus_state",
+      "comment": "Bonus state flag (bonus_pool + 0x04)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00482950",
+      "name": "bonus_time_left",
+      "comment": "Bonus time left (bonus_pool + 0x08)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00482954",
+      "name": "bonus_time_max",
+      "comment": "Bonus time max (bonus_pool + 0x0c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00482958",
+      "name": "bonus_pos_x",
+      "comment": "Bonus position X (bonus_pool + 0x10)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048295c",
+      "name": "bonus_pos_y",
+      "comment": "Bonus position Y (bonus_pool + 0x14)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00482960",
+      "name": "bonus_amount",
+      "comment": "Bonus amount/duration (bonus_pool + 0x18)"
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004908d4",
       "name": "player_table",
       "comment": "Per-player table base (stride 0xd8)"

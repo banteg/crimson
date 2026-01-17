@@ -801,12 +801,12 @@ See [Projectile struct](projectile-struct.md) for the expanded field map and not
   | Offset | Field | Evidence |
   | --- | --- | --- |
   | 0x00 | type id (0 = free) | `bonus_alloc_slot` scans for `0`; render/update skip `0`. |
-  | 0x04 | state flag (picked) | `bonus_update` sets to `1` after pickup and accelerates lifetime decay. |
-  | 0x08 | time_left | decremented each frame in `bonus_update`; set to `0.5` on pickup; expiry clears type to `0`. |
-  | 0x0c | time_max | set to `10.0` on spawn; used for fade/flash in `bonus_render`. |
-  | 0x10 | pos_x | set on spawn; used for distance checks. |
-  | 0x14 | pos_y | set on spawn; used for distance checks. |
-  | 0x18 | amount/duration | used by `bonus_apply` when applying certain bonus types. |
+  | 0x04 | state flag (`bonus_state`) | `bonus_update` sets to `1` after pickup and accelerates lifetime decay. |
+  | 0x08 | time_left (`bonus_time_left`) | decremented each frame in `bonus_update`; set to `0.5` on pickup; expiry clears type to `0`. |
+  | 0x0c | time_max (`bonus_time_max`) | set to `10.0` on spawn; used for fade/flash in `bonus_render`. |
+  | 0x10 | pos_x (`bonus_pos_x`) | set on spawn; used for distance checks. |
+  | 0x14 | pos_y (`bonus_pos_y`) | set on spawn; used for distance checks. |
+  | 0x18 | amount/duration (`bonus_amount`) | used by `bonus_apply` when applying certain bonus types. |
 
 
 ### Game mode selector (partial)

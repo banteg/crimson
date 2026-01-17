@@ -5331,17 +5331,17 @@ LAB_00408be2:
       sfx_play(DAT_004c4014);
       fStack_6c = 260.0;
       bonus_pool = 1;
-      DAT_00482950 = 0x42c80000;
-      DAT_00482954 = 0x42c80000;
-      DAT_0048294c = 0;
-      DAT_00482960 = 500;
-      DAT_00482958 = 0x43820000;
-      DAT_0048295c = 0x43820000;
-      effect_spawn_burst((float *)&DAT_00482958,0xc);
+      bonus_time_left = 0x42c80000;
+      bonus_time_max = 0x42c80000;
+      bonus_state = 0;
+      bonus_amount = 500;
+      bonus_pos_x = 0x43820000;
+      bonus_pos_y = 0x43820000;
+      effect_spawn_burst((float *)&bonus_pos_x,0xc);
       fStack_6c = 600.0;
       DAT_00482964 = 1;
       DAT_0048296c = 0x42c80000;
-      DAT_00482970 = DAT_00482950;
+      DAT_00482970 = bonus_time_left;
       DAT_00482968 = 0;
       _DAT_0048297c = 1000;
       DAT_00482974 = 0x44160000;
@@ -5350,7 +5350,7 @@ LAB_00408be2:
       fStack_6c = 300.0;
       _DAT_00482980 = 1;
       DAT_00482988 = 0x42c80000;
-      _DAT_0048298c = DAT_00482950;
+      _DAT_0048298c = bonus_time_left;
       DAT_00482984 = 0;
       _DAT_00482998 = 500;
       _DAT_00482990 = 0x43960000;
@@ -5960,7 +5960,7 @@ void bonus_update(void)
   float *pfVar4;
   
   if (DAT_00487240 != '\0') {
-    pfVar4 = (float *)&DAT_00482950;
+    pfVar4 = (float *)&bonus_time_left;
     iVar3 = _DAT_0048035c;
     do {
       if (pfVar4[-2] != 0.0) {
@@ -8648,7 +8648,7 @@ uint FUN_00412470(void)
   
   local_4 = 0;
   bVar2 = false;
-  pcVar3 = &DAT_0048294c;
+  pcVar3 = &bonus_state;
   do {
     if ((*(int *)(pcVar3 + -4) == 0xe) && (*pcVar3 == '\0')) {
       bVar2 = true;
@@ -20867,7 +20867,7 @@ void bonus_render(void)
     afStack_8c[4] = 1.0;
     afStack_8c[5] = 1.0;
     (**(code **)(*DAT_0048083c + 0xe8))();
-    pfVar6 = (float *)&DAT_00482950;
+    pfVar6 = (float *)&bonus_time_left;
     do {
       if (pfVar6[-2] != 0.0) {
         fVar1 = 1.0;
@@ -20993,7 +20993,7 @@ void bonus_render(void)
     iVar5 = 0;
     (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7e4,0);
     (**(code **)(*DAT_0048083c + 0xe8))();
-    pfVar6 = (float *)&DAT_00482950;
+    pfVar6 = (float *)&bonus_time_left;
     do {
       if (pfVar6[-2] == 4.2039e-45) {
         if (0.5 <= *pfVar6) {
@@ -21059,10 +21059,10 @@ void bonus_render(void)
           *piVar15 = 0;
 LAB_00429df8:
           if (((0x28a < *piVar15) && (iVar2 = perk_count_get(DAT_004c2bf8), iVar2 != 0)) &&
-             ((&DAT_0048294c)[iVar16 * 0x1c] == '\0')) {
+             ((&bonus_state)[iVar16 * 0x1c] == '\0')) {
             bonus_apply(iVar5,&bonus_pool + iVar16 * 7);
-            (&DAT_0048294c)[iVar16 * 0x1c] = 1;
-            (&DAT_00482950)[iVar16 * 7] = 0x3f000000;
+            (&bonus_state)[iVar16 * 0x1c] = 1;
+            (&bonus_time_left)[iVar16 * 7] = 0x3f000000;
             (&DAT_004aaf60)[iVar5] = 0;
             break;
           }
