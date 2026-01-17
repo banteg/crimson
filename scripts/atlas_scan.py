@@ -1,30 +1,34 @@
 from __future__ import annotations
 
 from collections import defaultdict
+import argparse
+import json
 import re
 from pathlib import Path
 
 from crimson.atlas import GRID_SIZE_BY_CODE, SPRITE_TABLE
 
 ROOT = Path(__file__).resolve().parents[1]
-C_PATH = ROOT / "output/crimsonland.exe_decompiled.c"
-STRINGS_PATH = ROOT / "output/crimsonland.exe_strings.txt"
+DEFAULT_C_PATH = ROOT / "source/decompiled/crimsonland.exe_decompiled.c"
+DEFAULT_STRINGS_PATH = ROOT / "source/decompiled/crimsonland.exe_strings.txt"
+DEFAULT_ASSETS_ROOT = ROOT / "assets" / "crimson"
 
 ADDR_RE = re.compile(r"^([0-9A-Fa-f]{8}):\s+(.*)$")
-SYM_ADDR_RE = re.compile(r"_([0-9A-Fa-f]{8})")
-
 LOAD_RE = re.compile(
-    r"(?P<var>[A-Za-z0-9_]+)\s*=\s*(?:FUN_0042a670|FUN_0042a700|\(\*\*\(code \*\*\)\(\*DAT_0048083c \+ 0xc0\)\))\(s_[A-Za-z0-9_]+_(?P<addr>[0-9A-Fa-f]{8})\)"
+    r"(?P<var>[A-Za-z0-9_]+)\s*=\s*(?:"
+    r"FUN_0042a670|FUN_0042a700|texture_get_or_load|texture_get_or_load_alt"
+    r"|\(\*\*\(code \*\*\)\(\*DAT_0048083c \+ 0xc0\)\)"
+    r")\(s_[A-Za-z0-9_]+_(?P<addr>[0-9A-Fa-f]{8})\)"
 )
 
-SET_TEX_RE = re.compile(r"\+ 0xc4\)\)\((?P<var>[^,\)]+)")
-SET_UV_RE = re.compile(r"\+ 0x104\)\)\((?P<grid>[^,]+),(?P<idx>[^\)]+)\)")
-TABLE_RE = re.compile(r"FUN_0042e0a0\((?P<idx>[^\)]+)\)")
+CALL_TEX_MARKER = "+ 0xc4))("
+CALL_UV_MARKER = "+ 0x104))("
+TABLE_MARKER = "FUN_0042e0a0("
 
 
-def parse_strings() -> dict[str, str]:
+def parse_strings(path: Path) -> dict[str, str]:
     addr_to_str: dict[str, str] = {}
-    with STRINGS_PATH.open() as fh:
+    with path.open() as fh:
         for line in fh:
             m = ADDR_RE.match(line.strip())
             if not m:
@@ -34,19 +38,32 @@ def parse_strings() -> dict[str, str]:
     return addr_to_str
 
 
-def resolve_path(name: str) -> str:
-    if "\\" in name or "/" in name or "." in name:
-        return name
-    for ext in (".jaz", ".tga", ".png", ".bmp", ".jpg"):
-        candidate = ROOT / "game" / f"{name}{ext}"
+def resolve_path(name: str, assets_root: Path) -> str:
+    normalized = name.replace("\\", "/")
+    path = Path(normalized)
+    candidates: list[Path] = []
+    if path.suffix:
+        candidates.append(assets_root / path)
+        if path.suffix.lower() == ".jaz":
+            candidates.append(assets_root / path.with_suffix(".png"))
+    else:
+        for ext in (".png", ".jaz", ".tga", ".bmp", ".jpg"):
+            candidates.append(assets_root / f"{normalized}{ext}")
+            candidates.append(assets_root / "game" / f"{normalized}{ext}")
+    for candidate in candidates:
         if candidate.exists():
             return str(candidate.relative_to(ROOT))
-    return name
+    if not path.suffix and "/" not in normalized:
+        for ext in (".png", ".jaz", ".tga", ".bmp", ".jpg"):
+            matches = sorted(assets_root.rglob(f"{normalized}{ext}"))
+            if matches:
+                return str(matches[0].relative_to(ROOT))
+    return normalized
 
 
-def parse_texture_symbols(addr_to_str: dict[str, str]) -> dict[str, str]:
+def parse_texture_symbols(addr_to_str: dict[str, str], c_path: Path, assets_root: Path) -> dict[str, str]:
     var_to_path: dict[str, str] = {}
-    with C_PATH.open() as fh:
+    with c_path.open() as fh:
         for line in fh:
             m = LOAD_RE.search(line)
             if not m:
@@ -55,81 +72,156 @@ def parse_texture_symbols(addr_to_str: dict[str, str]) -> dict[str, str]:
             path = addr_to_str.get(addr)
             if not path:
                 continue
-            var_to_path[m.group("var")] = resolve_path(path)
+            var_to_path[m.group("var")] = resolve_path(path, assets_root)
     return var_to_path
 
 
-def normalize_int(token: str) -> str:
+def normalize_value(token: str) -> int | str:
     token = token.strip()
-    if token.startswith("0x"):
-        try:
-            return str(int(token, 16))
-        except ValueError:
-            return token
+    if not token:
+        return ""
     try:
-        return str(int(token))
+        return int(token, 0)
     except ValueError:
         return token
 
 
-def sort_key(token: str) -> tuple[int, int | str]:
-    try:
-        return (0, int(token, 0))
-    except ValueError:
-        return (1, token)
+def sort_key(token: int | str) -> tuple[int, int | str]:
+    if isinstance(token, int):
+        return (0, token)
+    return (1, str(token))
+
+
+def split_args(raw: str) -> list[str]:
+    args: list[str] = []
+    current: list[str] = []
+    depth = 0
+    for ch in raw:
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            if depth > 0:
+                depth -= 1
+        if ch == "," and depth == 0:
+            args.append("".join(current).strip())
+            current = []
+            continue
+        current.append(ch)
+    tail = "".join(current).strip()
+    if tail:
+        args.append(tail)
+    return args
+
+
+def extract_call_args(line: str, marker: str) -> list[str] | None:
+    idx = line.find(marker)
+    if idx == -1:
+        return None
+    start = idx + len(marker)
+    depth = 0
+    end = None
+    for i in range(start, len(line)):
+        ch = line[i]
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            if depth == 0:
+                end = i
+                break
+            depth -= 1
+    if end is None:
+        return None
+    return split_args(line[start:end])
+
+
+def strip_cast(token: str) -> str:
+    cleaned = token.strip()
+    while cleaned.startswith("(") and ")" in cleaned:
+        closing = cleaned.find(")")
+        cleaned = cleaned[closing + 1 :].strip()
+    return cleaned.lstrip("*& ")
 
 
 def main() -> None:
-    addr_to_str = parse_strings()
-    var_to_path = parse_texture_symbols(addr_to_str)
-    atlas_calls: dict[str, dict[str, set[str]]] = defaultdict(
+    parser = argparse.ArgumentParser(description="Scan decompiled code for atlas usage.")
+    parser.add_argument("--c-path", type=Path, default=DEFAULT_C_PATH)
+    parser.add_argument("--strings-path", type=Path, default=DEFAULT_STRINGS_PATH)
+    parser.add_argument(
+        "--assets-root",
+        type=Path,
+        default=DEFAULT_ASSETS_ROOT,
+        help="assets root for path resolution",
+    )
+    parser.add_argument("--output-json", type=Path, help="write JSON manifest to this path")
+    args = parser.parse_args()
+
+    addr_to_str = parse_strings(args.strings_path)
+    var_to_path = parse_texture_symbols(addr_to_str, args.c_path, args.assets_root)
+    atlas_calls: dict[str, dict[str, set[tuple[int | str, int | str]] | set[int | str]]] = defaultdict(
         lambda: {"direct": set(), "table": set()}
     )
 
     current: str | None = None
-    with C_PATH.open() as fh:
+    with args.c_path.open() as fh:
         for line in fh:
-            m = SET_TEX_RE.search(line)
-            if m:
-                var = m.group("var").strip()
+            tex_args = extract_call_args(line, CALL_TEX_MARKER)
+            if tex_args:
+                var = strip_cast(tex_args[0])
                 current = var if var in var_to_path else None
 
             if current is None:
                 continue
 
-            m = SET_UV_RE.search(line)
-            if m:
-                grid = normalize_int(m.group("grid"))
-                idx = normalize_int(m.group("idx"))
-                atlas_calls[current]["direct"].add(f"{grid},{idx}")
+            uv_args = extract_call_args(line, CALL_UV_MARKER)
+            if uv_args and len(uv_args) >= 2:
+                grid = normalize_value(strip_cast(uv_args[0]))
+                idx = normalize_value(strip_cast(uv_args[1]))
+                atlas_calls[current]["direct"].add((grid, idx))
 
-            m = TABLE_RE.search(line)
-            if m:
-                idx = normalize_int(m.group("idx"))
+            table_args = extract_call_args(line, TABLE_MARKER)
+            if table_args:
+                idx = normalize_value(strip_cast(table_args[0]))
                 atlas_calls[current]["table"].add(idx)
 
+    textures: list[dict[str, object]] = []
     print("Atlas usage by texture variable:\n")
     for var in sorted(atlas_calls):
         path = var_to_path.get(var, "?")
-        direct = sorted(atlas_calls[var]["direct"])
+        direct = sorted(atlas_calls[var]["direct"], key=lambda t: (sort_key(t[0]), sort_key(t[1])))
         table = sorted(atlas_calls[var]["table"], key=sort_key)
         if not direct and not table:
             continue
         print(f"{var} -> {path}")
         if direct:
-            print(f"  direct grid,index: {', '.join(direct)}")
+            rendered = []
+            for grid, idx in direct:
+                rendered.append(f"{grid},{idx}")
+            print(f"  direct grid,index: {', '.join(rendered)}")
         if table:
             resolved = []
             for idx in table:
-                try:
-                    entry = SPRITE_TABLE[int(idx, 0)]
-                except (ValueError, IndexError):
-                    resolved.append(idx)
-                    continue
-                grid = GRID_SIZE_BY_CODE.get(entry[0], "?")
-                resolved.append(f"{idx} (grid {grid})")
+                if isinstance(idx, int) and 0 <= idx < len(SPRITE_TABLE):
+                    entry = SPRITE_TABLE[idx]
+                    grid = GRID_SIZE_BY_CODE.get(entry[0], "?")
+                    resolved.append(f"{idx} (grid {grid})")
+                else:
+                    resolved.append(str(idx))
             print(f"  table indices: {', '.join(resolved)}")
         print()
+
+        textures.append(
+            {
+                "var": var,
+                "texture": path,
+                "direct": [{"grid": grid, "index": idx} for grid, idx in direct],
+                "table_indices": table,
+            }
+        )
+
+    if args.output_json:
+        payload = {"textures": textures}
+        args.output_json.parent.mkdir(parents=True, exist_ok=True)
+        args.output_json.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":
