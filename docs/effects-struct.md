@@ -84,8 +84,8 @@ Render notes:
 
 Entry size: `0x28` bytes. Queue size: `0x80` entries (index `0..0x7f` via `DAT_004aaf18`).
 
-This queue is written by `fx_queue_add` and rendered (then cleared) by
-`fx_queue_render` once per frame.
+This queue is written by `fx_queue_add` (`FUN_0041e840`) and rendered (then
+cleared) by `fx_queue_render` once per frame.
 
 Layout (struct view of the SoA block):
 
@@ -111,8 +111,8 @@ Notes:
 
 ## Rotated FX queue (`DAT_004aaf3c`)
 
-Queue size: `0x40` entries. Written by `fx_queue_add_rotated` and rendered by
-`fx_queue_render`.
+Queue size: `0x40` entries. Written by `fx_queue_add_rotated` (`FUN_00427840`)
+and rendered by `fx_queue_render`.
 
 Layout (structure-of-arrays):
 
