@@ -42,6 +42,10 @@ public class ImportThirdPartyHeaders extends GhidraScript {
         addHeader(headerFiles, missing, new File(root, "ogg/ogg.h"));
         addHeader(headerFiles, missing, new File(root, "vorbis/codec.h"));
         addHeader(headerFiles, missing, new File(root, "vorbis/vorbisfile.h"));
+        addHeader(headerFiles, missing, new File(root, "d3d8.h"));
+        addHeader(headerFiles, missing, new File(root, "d3dtypes.h"));
+        addHeader(headerFiles, missing, new File(root, "dinput.h"));
+        addHeader(headerFiles, missing, new File(root, "dsound.h"));
 
         if (headerFiles.isEmpty()) {
             printerr("No headers found to parse under: " + root.getAbsolutePath());
