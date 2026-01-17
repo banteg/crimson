@@ -311,6 +311,7 @@ grim.dll body:
 - Guess: `bool is_key_down(uint32_t key)`
 - Notes: Ctrl/arrow keycodes
 - Ghidra signature: `int grim_is_key_down(unsigned int key)`
+- Suggested signature: `bool grim_is_key_down(uint32_t key)`
 - Call sites: 6 (unique funcs: 2)
 - Sample calls: FUN_00401a40:L509; FUN_00401a40:L511; FUN_00401a40:L526; FUN_00401a40:L528; FUN_0043d830:L26638; FUN_0043d830:L26639
 - First callsite: FUN_00401a40 (line 509)
@@ -331,6 +332,7 @@ grim.dll body:
 - Guess: `bool was_key_pressed(uint32_t key)`
 - Notes: edge-triggered key checks
 - Ghidra signature: `int grim_was_key_pressed(unsigned int key)`
+- Suggested signature: `bool grim_was_key_pressed(uint32_t key)`
 - Call sites: 39 (unique funcs: 16)
 - Sample calls: FUN_00401a40:L514; FUN_00401a40:L522; FUN_00401a40:L531; FUN_00401a40:L543; FUN_00401a40:L547; FUN_00401a40:L551; FUN_00401a40:L574; FUN_00401a40:L578
 - First callsite: FUN_00401a40 (line 514)
@@ -405,6 +407,7 @@ LAB_00401add:
 - Guess: `bool is_mouse_button_down(int button)`
 - Notes: button 0 used
 - Ghidra signature: `int grim_is_mouse_button_down(int button)`
+- Suggested signature: `bool grim_is_mouse_button_down(int button)`
 - Call sites: 4 (unique funcs: 3)
 - Sample calls: FUN_0040aab0:L6349; FUN_00446030:L31421; FUN_00446030:L31439; FUN_004460f0:L31467
 - First callsite: FUN_0040aab0 (line 6349)
@@ -579,6 +582,7 @@ grim.dll body:
 - Guess: `bool is_key_active(int key)`
 - Notes: called with key mapping entries
 - Ghidra signature: `int grim_is_key_active(int key)`
+- Suggested signature: `bool grim_is_key_active(int key)`
 - Call sites: 6 (unique funcs: 4)
 - Sample calls: FUN_0040aab0:L5929; FUN_00446000:L29232; FUN_00446030:L29266; FUN_00446030:L29282; FUN_004460f0:L29308; FUN_004460f0:L29310
 - First callsite: FUN_00408990 (line 5277)
@@ -695,6 +699,7 @@ grim.dll body:
 - Provisional name: `recreate_texture` (high)
 - Guess: `bool recreate_texture(int handle)`
 - Ghidra signature: `int grim_recreate_texture(int handle)`
+- Suggested signature: `bool grim_recreate_texture(int handle)`
 - Call sites: 0 (unique funcs: 0)
 - Sample calls: none found
 - First callsite: not found in decompiled output
@@ -717,6 +722,7 @@ grim.dll body:
 - Provisional name: `validate_texture` (high)
 - Guess: `bool validate_texture(int handle)`
 - Ghidra signature: `int grim_validate_texture(int handle)`
+- Suggested signature: `bool grim_validate_texture(int handle)`
 - Call sites: 0 (unique funcs: 0)
 - Sample calls: none found
 - First callsite: not found in decompiled output
