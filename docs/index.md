@@ -36,10 +36,17 @@ Special handling during extraction:
 - [Creature struct](creature-struct.md) — Tracking
 - [Projectile struct](projectile-struct.md) — Tracking
 - [Effects pools](effects-struct.md) — Tracking
+- [Perk ID map](perk-id-map.md) — Tracking
 - [Bonus ID map](bonus-id-map.md) — Tracking
+- [SFX ID map](sfx-id-map.md) — Tracking
+- [SFX usage](sfx-usage.md) — Tracking
+- [SFX labels](sfx-labels.md) — Tracking
+- [Game mode map](game-mode-map.md) — Tracking
 - [Detangling notes](detangling.md) — In progress
 - [Entrypoint trace](entrypoint.md) — In progress
 - [Refactor attempt](refactor.md) — Planned
 - [Modern Linux build name mining](modern-linux.md) — Reference
 - [Modern Android build name mining](modern-android.md) — Reference
+- [Grim2D overview](grim2d-overview.md) — Draft
 - [Grim2D API vtable](grim2d-api.md) — Draft
+- [Grim2D API evidence](grim2d-api-evidence.md) — Draft
