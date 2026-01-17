@@ -65,6 +65,8 @@ ghidra-exe:
 ghidra-grim:
     ./.codex/skills/ghidra/scripts/ghidra-analyze.sh \
       --script-path analysis/ghidra/scripts \
+      -s ImportThirdPartyHeaders.java -a third_party/headers \
+      -s ApplyWinapiGDT.java -a analysis/ghidra/maps/winapi_32.gdt \
       -s CreateGrim2DVtableFunctions.java \
       -s ApplyNameMap.java -a analysis/ghidra/maps/name_map.json \
       -s ApplyDataMap.java -a analysis/ghidra/maps/data_map.json \

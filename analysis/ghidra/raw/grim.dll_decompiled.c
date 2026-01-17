@@ -202,7 +202,7 @@ int grim_window_create(void)
   int iVar1;
   int iVar2;
   uint extraout_EAX;
-  BOOL BVar3;
+  WINBOOL WVar3;
   DWORD dwExStyle;
   DWORD dwStyle;
   HMENU hMenu;
@@ -268,8 +268,8 @@ int grim_window_create(void)
   UpdateWindow(DAT_1005d3f8);
   SetFocus(DAT_1005d3f8);
   ShowWindow(DAT_1005d3f8,1);
-  BVar3 = UpdateWindow(DAT_1005d3f8);
-  return CONCAT31((int3)((uint)BVar3 >> 8),1);
+  WVar3 = UpdateWindow(DAT_1005d3f8);
+  return CONCAT31((int3)((uint)WVar3 >> 8),1);
 }
 
 
@@ -857,7 +857,7 @@ undefined4 FUN_10003c00(void)
 {
   float fVar1;
   char cVar2;
-  BOOL BVar3;
+  WINBOOL WVar3;
   int iVar4;
   float *pfVar5;
   tagMSG *ptVar6;
@@ -884,8 +884,8 @@ undefined4 FUN_10003c00(void)
           while( true ) {
             while( true ) {
               if (local_1c.message == 0x12) goto LAB_10003e30;
-              BVar3 = PeekMessageA(&local_1c,(HWND)0x0,0,0,1);
-              if (BVar3 == 0) break;
+              WVar3 = PeekMessageA(&local_1c,(HWND)0x0,0,0,1);
+              if (WVar3 == 0) break;
               TranslateMessage(&local_1c);
               DispatchMessageA(&local_1c);
             }
@@ -961,6 +961,7 @@ LAB_10003e30:
 /* grim_d3d_init @ 10003e60 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 /* creates the Direct3D8 interface, configures display mode, and opens the window */
 
 int grim_d3d_init(void)
@@ -968,68 +969,60 @@ int grim_d3d_init(void)
 {
   byte bVar1;
   char *pcVar2;
-  int iVar3;
+  HRESULT HVar3;
   uint uVar4;
+  int iVar5;
   uint extraout_EAX;
-  undefined4 uVar5;
+  undefined4 uVar6;
   uint extraout_EAX_00;
-  HRSRC pHVar6;
-  HGLOBAL pvVar7;
-  undefined4 *puVar8;
-  int *piStack_460;
-  undefined4 uStack_45c;
-  undefined4 uStack_458;
-  undefined *puStack_454;
-  undefined4 uStack_450;
-  char acStack_250 [592];
+  HRSRC pHVar7;
+  HGLOBAL pvVar8;
+  undefined4 *puVar9;
+  D3DDISPLAYMODE DStack_43c;
+  D3DADAPTER_IDENTIFIER8 DStack_42c;
   
   DAT_1005c898 = 0;
-  DAT_1005c8fc = (int *)0x0;
+  DAT_1005c8fc = (IDirect3D8 *)0x0;
   DAT_10059dbc = 0;
-  DAT_1005b2b4 = 1;
+  DAT_1005b2b4 = D3DDEVTYPE_HAL;
   if ((char)DAT_1005cec8 == '\x01') {
-    DAT_1005b2b4 = 2;
+    DAT_1005b2b4 = D3DDEVTYPE_REF;
   }
-  uStack_450 = 0xdc;
-  puStack_454 = (undefined *)0x10003ea7;
-  DAT_1005c8fc = (int *)Direct3DCreate8();
-  if (DAT_1005c8fc == (int *)0x0) {
+  DAT_1005c8fc = Direct3DCreate8(0xdc);
+  if (DAT_1005c8fc == (IDirect3D8 *)0x0) {
     DAT_1005c8f8 = s_D3D__Could_not_init_DirectX_8_1__10053a60;
     return 0;
   }
-  puStack_454 = &DAT_1005a498;
-  uStack_458 = DAT_1005b2b4;
-  uStack_45c = DAT_1005d3e8;
-  piStack_460 = DAT_1005c8fc;
-  (**(code **)(*DAT_1005c8fc + 0x34))();
+  (*DAT_1005c8fc->lpVtbl->GetDeviceCaps)
+            (DAT_1005c8fc,DAT_1005d3e8,DAT_1005b2b4,(D3DCAPS8 *)&DAT_1005a498);
   bVar1 = 0;
-  (**(code **)(*DAT_1005c8fc + 0x14))(DAT_1005c8fc,DAT_1005d3e8,2,&stack0xfffffbc0);
-  pcVar2 = strchr(acStack_250,0x56);
+  (*DAT_1005c8fc->lpVtbl->GetAdapterIdentifier)(DAT_1005c8fc,DAT_1005d3e8,2,&DStack_42c);
+  pcVar2 = strchr(DStack_42c.Description,0x56);
   if (((((pcVar2 != (char *)0x0) && (pcVar2[1] == 'o')) && (pcVar2[2] == 'o')) &&
       ((pcVar2[3] == 'd' && (pcVar2[4] == 'o')))) && ((pcVar2[5] == 'o' && (pcVar2[6] == '3')))) {
     bVar1 = 1;
   }
-  iVar3 = (**(code **)(*DAT_1005c8fc + 0x20))(DAT_1005c8fc,0,&piStack_460);
-  if (iVar3 < 0) {
+  HVar3 = (*DAT_1005c8fc->lpVtbl->GetAdapterDisplayMode)(DAT_1005c8fc,0,&DStack_43c);
+  if (HVar3 < 0) {
     DAT_1005c8f8 = s_D3D__Error_getting_adapter_displ_10053a34;
     uVar4 = 0;
-    if ((DAT_1005c8fc != (int *)0x0) &&
-       (uVar4 = (**(code **)(*DAT_1005c8fc + 8))(DAT_1005c8fc), uVar4 == 0)) {
-      DAT_1005c8fc = (int *)0x0;
+    if ((DAT_1005c8fc != (IDirect3D8 *)0x0) &&
+       (uVar4 = (*DAT_1005c8fc->lpVtbl->Release)(DAT_1005c8fc), uVar4 == 0)) {
+      DAT_1005c8fc = (IDirect3D8 *)0x0;
     }
     return uVar4 & 0xffffff00;
   }
-  iVar3 = grim_window_create();
-  uVar5 = DAT_1005ceb8;
-  if ((char)iVar3 == '\0') {
-    return iVar3;
+  iVar5 = grim_window_create();
+  uVar6 = DAT_1005ceb8;
+  if ((char)iVar5 == '\0') {
+    return iVar5;
   }
-  puVar8 = &DAT_10059df8;
-  for (iVar3 = 0xd; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *puVar8 = 0;
-    puVar8 = puVar8 + 1;
+  puVar9 = &DAT_10059df8;
+  for (iVar5 = 0xd; iVar5 != 0; iVar5 = iVar5 + -1) {
+    *puVar9 = 0;
+    puVar9 = puVar9 + 1;
   }
-  _DAT_10059e04 = uVar5;
+  _DAT_10059e04 = uVar6;
   if (DAT_1005cc08 != '\x01') {
     _DAT_10059e0c = bVar1 + 1;
     _DAT_10059e24 = 0;
@@ -1037,7 +1030,7 @@ int grim_d3d_init(void)
   }
   else {
     _DAT_10059e0c = 1;
-    DAT_1005a488 = piStack_460;
+    DAT_1005a488 = (IDirect3D8 *)DStack_43c.Format;
   }
   _DAT_10059e14 = (uint)(DAT_1005cc08 == '\x01');
   DAT_10059dfc = DAT_10059dc0;
@@ -1048,59 +1041,60 @@ int grim_d3d_init(void)
   _DAT_10059e18 = (uint)(DAT_1005ced8 != '\0');
   _DAT_10059e1c = 0x50;
   _DAT_10059e10 = DAT_1005d3fc;
-  if (DAT_1005d3fc == 0) {
+  if (DAT_1005d3fc == (HWND)0x0) {
     _DAT_10059e10 = DAT_1005d3f8;
   }
-  iVar3 = (**(code **)(*DAT_1005c8fc + 0x3c))
-                    (DAT_1005c8fc,DAT_1005d3e8,DAT_1005b2b4,DAT_1005d3f8,0x20,&DAT_10059df8,
-                     &DAT_10059dbc);
-  if (iVar3 < 0) {
+  HVar3 = (*DAT_1005c8fc->lpVtbl->CreateDevice)
+                    (DAT_1005c8fc,DAT_1005d3e8,DAT_1005b2b4,DAT_1005d3f8,0x20,
+                     (D3DPRESENT_PARAMETERS *)&DAT_10059df8,(IDirect3DDevice8 **)&DAT_10059dbc);
+  if (HVar3 < 0) {
     DAT_1005c8f8 = s_D3D__Could_not_set_the_requested_10053a04;
     MessageBoxA((HWND)0x0,s_D3D__Could_not_set_the_requested_10053a04,&DAT_10053824,0);
     FUN_10004280();
     grim_window_destroy();
     return extraout_EAX & 0xffffff00;
   }
-  (**(code **)(*DAT_1005c8fc + 0x34))(DAT_1005c8fc,DAT_1005d3e8,DAT_1005b2b4,&DAT_1005a498);
-  uVar5 = FUN_10004350();
-  if ((char)uVar5 == '\0') {
+  (*DAT_1005c8fc->lpVtbl->GetDeviceCaps)
+            (DAT_1005c8fc,DAT_1005d3e8,DAT_1005b2b4,(D3DCAPS8 *)&DAT_1005a498);
+  uVar6 = FUN_10004350();
+  if ((char)uVar6 == '\0') {
     FUN_10004280();
     grim_window_destroy();
     return extraout_EAX_00 & 0xffffff00;
   }
-  puVar8 = &DAT_1005d404;
-  for (iVar3 = 0x100; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *puVar8 = 0;
-    puVar8 = puVar8 + 1;
+  puVar9 = &DAT_1005d404;
+  for (iVar5 = 0x100; iVar5 != 0; iVar5 = iVar5 + -1) {
+    *puVar9 = 0;
+    puVar9 = puVar9 + 1;
   }
   if (DAT_1005a56c != 0) {
-    iVar3 = grim_is_texture_format_supported(DAT_1005a56c);
-    if ((char)iVar3 == '\0') {
+    iVar5 = grim_is_texture_format_supported(DAT_1005a56c);
+    if ((char)iVar5 == '\0') {
       DAT_1005a56c = 0;
     }
     else if (DAT_1005a56c != 0) goto LAB_10004142;
   }
-  iVar3 = grim_select_texture_format();
-  if ((char)iVar3 == '\0') {
+  iVar5 = grim_select_texture_format();
+  if ((char)iVar5 == '\0') {
     DAT_1005c8f8 = s_D3D__Could_not_find_any_compatib_100539d0;
     FUN_10004280();
     grim_window_destroy();
   }
 LAB_10004142:
   FUN_10004520();
-  pHVar6 = FindResourceA(DAT_1005bacc,(LPCSTR)0x6f,(LPCSTR)0xa);
-  pvVar7 = LoadResource(DAT_1005bacc,pHVar6);
-  LockResource(pvVar7);
-  SizeofResource(DAT_1005bacc,pHVar6);
+  pHVar7 = FindResourceA(DAT_1005bacc,(LPCSTR)0x6f,(LPCSTR)0xa);
+  pvVar8 = LoadResource(DAT_1005bacc,pHVar7);
+  LockResource(pvVar8);
+  SizeofResource(DAT_1005bacc,pHVar7);
   uVar4 = FUN_1000cb5c();
   if ((int)uVar4 < 0) {
     DAT_1005c8f8 = s_D3D__Unable_to_load_default_font_100539a4;
     return uVar4 & 0xffffff00;
   }
-  pHVar6 = FindResourceA(DAT_1005bacc,(LPCSTR)0x71,(LPCSTR)0xa);
-  pvVar7 = LoadResource(DAT_1005bacc,pHVar6);
-  LockResource(pvVar7);
-  SizeofResource(DAT_1005bacc,pHVar6);
+  pHVar7 = FindResourceA(DAT_1005bacc,(LPCSTR)0x71,(LPCSTR)0xa);
+  pvVar8 = LoadResource(DAT_1005bacc,pHVar7);
+  LockResource(pvVar8);
+  SizeofResource(DAT_1005bacc,pHVar7);
   uVar4 = FUN_1000cb5c();
   if ((int)uVar4 < 0) {
     DAT_1005c8f8 = s_D3D__Unable_to_load_grim_splash_t_10053978;
@@ -2550,6 +2544,7 @@ int grim_check_device(void)
 /* grim_apply_config @ 10005d40 */
 
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 /* Grim2D vtable 0x10: opens D3D config dialog and applies settings */
 
 int grim_apply_config(void)
@@ -2562,15 +2557,15 @@ int grim_apply_config(void)
     DAT_10059778 = LoadIconA(DAT_1005bacc,(LPCSTR)0x72);
   }
   DAT_1005d3bc = '\0';
-  DAT_1005b2c4 = (int *)Direct3DCreate8(0xdc);
-  if (DAT_1005b2c4 == (int *)0x0) {
+  DAT_1005b2c4 = Direct3DCreate8(0xdc);
+  if (DAT_1005b2c4 == (IDirect3D8 *)0x0) {
     DAT_1005c8f8 = s_D3D__Could_not_init_DirectX_8_1__10053a60;
     uVar1 = MessageBoxA((HWND)0x0,s_D3D__Could_not_init_DirectX_8_1__10053a60,&DAT_10053824,0);
     return uVar1 & 0xffffff00;
   }
-  (**(code **)(*DAT_1005b2c4 + 0x34))(DAT_1005b2c4,0,1,&DAT_1005a498);
+  (*DAT_1005b2c4->lpVtbl->GetDeviceCaps)(DAT_1005b2c4,0,D3DDEVTYPE_HAL,(D3DCAPS8 *)&DAT_1005a498);
   DialogBoxParamA(DAT_1005bacc,(LPCSTR)0x74,(HWND)0x0,(DLGPROC)&LAB_10002120,0);
-  (**(code **)(*DAT_1005b2c4 + 8))(DAT_1005b2c4);
+  (*DAT_1005b2c4->lpVtbl->Release)(DAT_1005b2c4);
   if (DAT_1005d3bc == '\0') {
     (**(code **)(*in_ECX + 0x20))(0x54,DAT_1005d400);
     if ((char)DAT_1005b2b8 == '\0') {
@@ -5472,17 +5467,19 @@ void grim_draw_text_small_fmt(float x,float y,char *fmt)
 
 /* GRIM__GetInterface @ 100099c0 */
 
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
+
 undefined4 * GRIM__GetInterface(void)
 
 {
                     /* 0x99c0  1  GRIM__GetInterface */
-  DAT_1005b2c4 = (int *)Direct3DCreate8(0xdc);
-  if (DAT_1005b2c4 == (int *)0x0) {
+  DAT_1005b2c4 = Direct3DCreate8(0xdc);
+  if (DAT_1005b2c4 == (IDirect3D8 *)0x0) {
     DAT_1005c8f8 = s_D3D__Could_not_init_DirectX_8_1__10053a60;
     MessageBoxA((HWND)0x0,s_D3D__Could_not_init_DirectX_8_1__10053a60,&DAT_10053824,0);
     return (undefined4 *)0x0;
   }
-  (**(code **)(*DAT_1005b2c4 + 8))(DAT_1005b2c4);
+  (*DAT_1005b2c4->lpVtbl->Release)(DAT_1005b2c4);
   FUN_100052f0();
   DAT_1005d81c = operator_new(4);
   if (DAT_1005d81c != (undefined4 *)0x0) {
@@ -5502,7 +5499,7 @@ undefined4 FUN_10009a20(HINSTANCE param_1,int param_2)
 {
   if (param_2 == 1) {
     DAT_1005bacc = param_1;
-    DAT_10059778 = LoadIconA(param_1,(LPCSTR)0x72);
+    DAT_10059778 = LoadIconA((HINSTANCE)param_1,(LPCSTR)0x72);
   }
   return 1;
 }
@@ -5929,36 +5926,37 @@ int __cdecl grim_joystick_init(int hwnd)
   HWND pHVar1;
   HMODULE pHVar2;
   uint uVar3;
-  int iVar4;
-  uint3 uVar5;
-  undefined4 uVar6;
-  undefined *puVar7;
-  undefined4 *puVar8;
-  int *piVar9;
+  ULONG UVar4;
+  uint3 uVar6;
+  int iVar5;
+  DWORD DVar7;
+  REFIID pIVar8;
+  LPVOID *ppvVar9;
+  LPUNKNOWN pIVar10;
   
   if ((hwnd == 0) && (pHVar1 = GetForegroundWindow(), pHVar1 == (HWND)0x0)) {
     GetDesktopWindow();
   }
-  if (DAT_1005d940 == (int *)0x0) {
-    puVar8 = &DAT_1005d940;
-    puVar7 = &DAT_1005034c;
-    uVar6 = 0x800;
-    piVar9 = DAT_1005d940;
+  if (DAT_1005d940 == (LPUNKNOWN)0x0) {
+    ppvVar9 = &DAT_1005d940;
+    pIVar8 = (REFIID)&DAT_1005034c;
+    DVar7 = 0x800;
+    pIVar10 = DAT_1005d940;
     pHVar2 = GetModuleHandleA((LPCSTR)0x0);
-    uVar3 = DirectInput8Create(pHVar2,uVar6,puVar7,puVar8,piVar9);
+    uVar3 = DirectInput8Create(pHVar2,DVar7,pIVar8,ppvVar9,pIVar10);
     if ((int)uVar3 < 0) {
-      DAT_1005d940 = (int *)0x0;
+      DAT_1005d940 = (LPUNKNOWN)0x0;
       return uVar3 & 0xffffff00;
     }
   }
   if (DAT_1005d944 == (int *)0x0) {
-    iVar4 = (**(code **)(*DAT_1005d940 + 0x10))(DAT_1005d940,4,&LAB_1000a110,0,1);
-    uVar5 = (uint3)((uint)iVar4 >> 8);
-    if (iVar4 < 0) {
-      return (uint)uVar5 << 8;
+    UVar4 = (*DAT_1005d940->lpVtbl[1].AddRef)(DAT_1005d940);
+    uVar6 = (uint3)(UVar4 >> 8);
+    if ((int)UVar4 < 0) {
+      return (uint)uVar6 << 8;
     }
     if (DAT_1005d948 == '\0') {
-      return (uint)uVar5 << 8;
+      return (uint)uVar6 << 8;
     }
     uVar3 = (**(code **)(*DAT_1005d944 + 0x2c))(DAT_1005d944,&DAT_1004fe74);
     if ((int)uVar3 < 0) {
@@ -5976,8 +5974,8 @@ int __cdecl grim_joystick_init(int hwnd)
       (**(code **)(*DAT_1005d944 + 0x1c))(DAT_1005d944);
     }
   }
-  iVar4 = grim_joystick_poll();
-  return CONCAT31((int3)((uint)iVar4 >> 8),1);
+  iVar5 = grim_joystick_poll();
+  return CONCAT31((int3)((uint)iVar5 >> 8),1);
 }
 
 
@@ -6058,51 +6056,50 @@ int __cdecl grim_keyboard_init(int hwnd)
 
 {
   HWND pHVar1;
-  uint uVar2;
-  int iVar3;
-  int aiStack_38 [2];
-  int *piStack_30;
+  HMODULE pHVar2;
+  uint uVar3;
+  int iVar4;
+  DWORD DVar5;
+  REFIID pIVar6;
+  LPUNKNOWN *ppIVar7;
+  LPUNKNOWN pIVar8;
   
   if ((hwnd == 0) && (pHVar1 = GetForegroundWindow(), pHVar1 == (HWND)0x0)) {
     GetDesktopWindow();
   }
-  if (DAT_1005da20 == (int *)0x0) {
-    piStack_30 = (int *)0x1000a3cc;
-    GetModuleHandleA((LPCSTR)0x0);
-    piStack_30 = (int *)0x1000a3d2;
-    uVar2 = DirectInput8Create();
-    if ((int)uVar2 < 0) {
-      DAT_1005da20 = (int *)0x0;
-      return uVar2 & 0xffffff00;
+  if (DAT_1005da20 == (LPUNKNOWN)0x0) {
+    ppIVar7 = &DAT_1005da20;
+    pIVar6 = (REFIID)&DAT_1005034c;
+    DVar5 = 0x800;
+    pIVar8 = DAT_1005da20;
+    pHVar2 = GetModuleHandleA((LPCSTR)0x0);
+    uVar3 = DirectInput8Create(pHVar2,DVar5,pIVar6,ppIVar7,pIVar8);
+    if ((int)uVar3 < 0) {
+      DAT_1005da20 = (LPUNKNOWN)0x0;
+      return uVar3 & 0xffffff00;
     }
   }
   if (DAT_1005da24 == (int *)0x0) {
-    uVar2 = (**(code **)(*DAT_1005da20 + 0xc))();
-    if ((int)uVar2 < 0) {
-      return uVar2 & 0xffffff00;
+    uVar3 = (*DAT_1005da20->lpVtbl[1].QueryInterface)
+                      (DAT_1005da20,(REFIID)&DAT_1005029c,&DAT_1005da24);
+    if ((int)uVar3 < 0) {
+      return uVar3 & 0xffffff00;
     }
-    piStack_30 = DAT_1005da24;
-    aiStack_38[1] = 0x1000a427;
-    uVar2 = (**(code **)(*DAT_1005da24 + 0x2c))();
-    if ((int)uVar2 < 0) {
-      return uVar2 & 0xffffff00;
+    uVar3 = (**(code **)(*DAT_1005da24 + 0x2c))();
+    if ((int)uVar3 < 0) {
+      return uVar3 & 0xffffff00;
     }
-    aiStack_38[1] = 0x16;
-    aiStack_38[0] = hwnd;
-    uVar2 = (**(code **)(*DAT_1005da24 + 0x34))(DAT_1005da24);
-    if ((int)uVar2 < 0) {
-      return uVar2 & 0xffffff00;
+    uVar3 = (**(code **)(*DAT_1005da24 + 0x34))(DAT_1005da24);
+    if ((int)uVar3 < 0) {
+      return uVar3 & 0xffffff00;
     }
-    aiStack_38[0] = 0x14;
-    aiStack_38[1] = 0x10;
-    piStack_30 = (int *)0x0;
-    (**(code **)(*DAT_1005da24 + 0x18))(DAT_1005da24,1,aiStack_38);
+    (**(code **)(*DAT_1005da24 + 0x18))(DAT_1005da24,1,&stack0xffffffd4);
     if (DAT_1005da24 != (int *)0x0) {
       (**(code **)(*DAT_1005da24 + 0x1c))();
     }
   }
-  iVar3 = grim_keyboard_poll();
-  return CONCAT31((int3)((uint)iVar3 >> 8),1);
+  iVar4 = grim_keyboard_poll();
+  return CONCAT31((int3)((uint)iVar4 >> 8),1);
 }
 
 
@@ -6205,29 +6202,30 @@ int grim_mouse_init(void)
   HMODULE pHVar2;
   uint uVar3;
   int iVar4;
-  undefined4 uVar5;
-  undefined *puVar6;
-  undefined4 *puVar7;
-  int *piVar8;
+  DWORD DVar5;
+  REFIID pIVar6;
+  LPVOID *ppvVar7;
+  LPUNKNOWN pIVar8;
   
   iVar4 = DAT_1005d3f8;
   if ((DAT_1005d3f8 == 0) && (pHVar1 = GetForegroundWindow(), pHVar1 == (HWND)0x0)) {
     GetDesktopWindow();
   }
-  if (DAT_1005db28 == (int *)0x0) {
-    puVar7 = &DAT_1005db28;
-    puVar6 = &DAT_1005034c;
-    uVar5 = 0x800;
-    piVar8 = DAT_1005db28;
+  if (DAT_1005db28 == (LPUNKNOWN)0x0) {
+    ppvVar7 = &DAT_1005db28;
+    pIVar6 = (REFIID)&DAT_1005034c;
+    DVar5 = 0x800;
+    pIVar8 = DAT_1005db28;
     pHVar2 = GetModuleHandleA((LPCSTR)0x0);
-    uVar3 = DirectInput8Create(pHVar2,uVar5,puVar6,puVar7,piVar8);
+    uVar3 = DirectInput8Create(pHVar2,DVar5,pIVar6,ppvVar7,pIVar8);
     if ((int)uVar3 < 0) {
-      DAT_1005db28 = (int *)0x0;
+      DAT_1005db28 = (LPUNKNOWN)0x0;
       return uVar3 & 0xffffff00;
     }
   }
   if (DAT_1005db2c == (int *)0x0) {
-    uVar3 = (**(code **)(*DAT_1005db28 + 0xc))(DAT_1005db28,&DAT_100502ac,&DAT_1005db2c,0);
+    uVar3 = (*DAT_1005db28->lpVtbl[1].QueryInterface)
+                      (DAT_1005db28,(REFIID)&DAT_100502ac,&DAT_1005db2c);
     if ((int)uVar3 < 0) {
       return uVar3 & 0xffffff00;
     }
@@ -6403,7 +6401,7 @@ void __cdecl FUN_1000a900(_onexit_t param_1)
 
 {
   if (DAT_1005dbcc == -1) {
-    _onexit(param_1);
+    _onexit((_onexit_t)param_1);
     return;
   }
   __dllonexit(param_1,&DAT_1005dbcc,&DAT_1005dbc8);
@@ -20114,9 +20112,9 @@ undefined4 __thiscall FUN_1001bcb7(void *this,LPCWSTR param_1,int param_2)
     local_9c.dwOSVersionInfoSize = 0x94;
     GetVersionExA(&local_9c);
     if (local_9c.dwPlatformId != 2) {
-      local_8 = WideCharToMultiByte(0,0,param_1,-1,(LPSTR)0x0,0,(LPCSTR)0x0,(LPBOOL)0x0);
+      local_8 = WideCharToMultiByte(0,0,param_1,-1,(LPSTR)0x0,0,(LPCCH)0x0,(LPBOOL)0x0);
       FUN_1004b790();
-      WideCharToMultiByte(0,0,param_1,-1,&stack0xffffff58,local_8,(LPCSTR)0x0,(LPBOOL)0x0);
+      WideCharToMultiByte(0,0,param_1,-1,&stack0xffffff58,local_8,(LPCCH)0x0,(LPBOOL)0x0);
       param_2 = 0;
       param_1 = (LPCWSTR)&stack0xffffff58;
     }
@@ -20173,9 +20171,9 @@ undefined4 __thiscall FUN_1001bdc7(void *this,LPCWSTR param_1,int param_2)
     GetVersionExA(&local_9c);
     if (local_9c.dwPlatformId != 2) {
       lpFileName = (LPCWSTR)&stack0xffffff58;
-      cbMultiByte = WideCharToMultiByte(0,0,param_1,-1,(LPSTR)0x0,0,(LPCSTR)0x0,(LPBOOL)0x0);
+      cbMultiByte = WideCharToMultiByte(0,0,param_1,-1,(LPSTR)0x0,0,(LPCCH)0x0,(LPBOOL)0x0);
       FUN_1004b790();
-      WideCharToMultiByte(0,0,param_1,-1,&stack0xffffff58,cbMultiByte,(LPCSTR)0x0,(LPBOOL)0x0);
+      WideCharToMultiByte(0,0,param_1,-1,&stack0xffffff58,cbMultiByte,(LPCCH)0x0,(LPBOOL)0x0);
       param_2 = 0;
       this = local_8;
     }
@@ -20241,7 +20239,7 @@ void __fastcall FUN_1001bed2(int *param_1)
 undefined4 __cdecl FUN_1001bedd(DWORD param_1,LPCSTR param_2,LPBYTE param_3)
 
 {
-  LSTATUS LVar1;
+  LONG LVar1;
   DWORD local_c;
   HKEY local_8;
   
@@ -20280,7 +20278,7 @@ undefined8 __fastcall FUN_1001bf39(undefined4 param_1,undefined4 param_2)
 int FUN_1001bf5e(void)
 
 {
-  LSTATUS LVar1;
+  LONG LVar1;
   undefined4 extraout_ECX;
   undefined4 extraout_ECX_00;
   undefined4 uVar2;
@@ -20431,7 +20429,7 @@ undefined4 FUN_1001c075(void)
 uint __cdecl FUN_1001c0d4(DWORD param_1)
 
 {
-  BOOL BVar1;
+  WINBOOL WVar1;
   uint uVar2;
   int iVar3;
   undefined4 extraout_ECX;
@@ -20448,8 +20446,8 @@ uint __cdecl FUN_1001c0d4(DWORD param_1)
   }
   local_5 = '\0';
   local_9c.dwOSVersionInfoSize = 0x94;
-  BVar1 = GetVersionExA(&local_9c);
-  if (BVar1 == 0) {
+  WVar1 = GetVersionExA(&local_9c);
+  if (WVar1 == 0) {
     local_5 = '\x01';
   }
   if (local_9c.dwPlatformId == 1) {
@@ -20463,7 +20461,7 @@ uint __cdecl FUN_1001c0d4(DWORD param_1)
     if (local_9c.dwPlatformId != 2) {
       return 0;
     }
-    if (BVar1 != 0) {
+    if (WVar1 != 0) {
       if (param_1 != 10) {
         uVar2 = IsProcessorFeaturePresent(param_1);
         return uVar2;
@@ -22414,14 +22412,14 @@ void __cdecl FUN_1001e0fa(int param_1,undefined4 param_2,undefined4 param_3,unde
 
 /* png error handler: call error_fn then longjmp */
 
-void png_error(int *png_ptr,char *msg)
+void png_error(png_structp png_ptr,char *msg)
 
 {
-  if ((code *)png_ptr[0x10] != (code *)0x0) {
-    (*(code *)png_ptr[0x10])(png_ptr,msg);
+  if (png_ptr->error_fn != (png_error_ptr)0x0) {
+    (*png_ptr->error_fn)(png_ptr,msg);
   }
                     /* WARNING: Subroutine does not return */
-  longjmp(png_ptr,1);
+  longjmp(png_ptr->jmpbuf,1);
 }
 
 
@@ -22430,11 +22428,11 @@ void png_error(int *png_ptr,char *msg)
 
 /* png warning handler: call warning_fn */
 
-void __cdecl png_warning(int *png_ptr,char *msg)
+void __cdecl png_warning(png_structp png_ptr,char *msg)
 
 {
-  if ((code *)png_ptr[0x11] != (code *)0x0) {
-    (*(code *)png_ptr[0x11])(png_ptr,msg);
+  if (png_ptr->warning_fn != (png_error_ptr)0x0) {
+    (*png_ptr->warning_fn)(png_ptr,msg);
   }
   return;
 }
@@ -22449,7 +22447,7 @@ void __cdecl FUN_1001e147(int *param_1,undefined4 *param_2)
   char local_54 [80];
   
   FUN_1001e073(local_54,(int)param_1,param_2);
-  png_error(param_1,local_54);
+  png_error((png_structp)param_1,local_54);
   return;
 }
 
@@ -22463,7 +22461,7 @@ void __cdecl FUN_1001e16c(int param_1,undefined4 *param_2)
   char local_54 [80];
   
   FUN_1001e073(local_54,param_1,param_2);
-  png_warning((int *)param_1,local_54);
+  png_warning((png_structp)param_1,local_54);
   return;
 }
 
@@ -22474,18 +22472,18 @@ void __cdecl FUN_1001e16c(int param_1,undefined4 *param_2)
 int * __cdecl FUN_1001e191(char *param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)
 
 {
-  int *png_ptr;
+  png_structp png_ptr;
   int iVar1;
-  void *pvVar2;
+  png_bytep ppVar2;
   char *msg;
   
-  png_ptr = FUN_100246f2(1);
-  if (png_ptr == (int *)0x0) {
+  png_ptr = (png_structp)FUN_100246f2(1);
+  if (png_ptr == (png_structp)0x0) {
     return (int *)0x0;
   }
   iVar1 = setjmp3(png_ptr,0);
   if (iVar1 != 0) {
-    png_free(png_ptr,(void *)png_ptr[0x27]);
+    png_free(png_ptr,png_ptr->zbuf);
     png_free_ptr(png_ptr);
     return (int *)0x0;
   }
@@ -22493,13 +22491,13 @@ int * __cdecl FUN_1001e191(char *param_1,undefined4 param_2,undefined4 param_3,u
   if ((param_1 == (char *)0x0) || (*param_1 != '1')) {
     png_error(png_ptr,"Incompatible libpng version in application and library");
   }
-  png_ptr[0x28] = 0x2000;
-  pvVar2 = png_malloc(png_ptr,0x2000);
-  png_ptr[0x27] = (int)pvVar2;
-  png_ptr[0x21] = (int)FUN_1002052b;
-  png_ptr[0x22] = (int)png_free;
-  png_ptr[0x23] = (int)png_ptr;
-  iVar1 = FUN_10024374((int)(png_ptr + 0x19),"1.1.3",0x38);
+  png_ptr->zbuf_size = 0x2000;
+  ppVar2 = png_malloc(png_ptr,0x2000);
+  png_ptr->zbuf = ppVar2;
+  (png_ptr->zstream).words[8] = (png_uint_32)FUN_1002052b;
+  (png_ptr->zstream).words[9] = (png_uint_32)png_free;
+  (png_ptr->zstream).words[10] = (png_uint_32)png_ptr;
+  iVar1 = FUN_10024374((int)&png_ptr->zstream,"1.1.3",0x38);
   if (iVar1 == -6) {
     msg = "zlib version error";
   }
@@ -22512,10 +22510,10 @@ int * __cdecl FUN_1001e191(char *param_1,undefined4 param_2,undefined4 param_3,u
   }
   png_error(png_ptr,msg);
 LAB_1001e270:
-  png_ptr[0x1c] = png_ptr[0x27];
-  png_ptr[0x1d] = png_ptr[0x28];
+  (png_ptr->zstream).words[3] = (png_uint_32)png_ptr->zbuf;
+  (png_ptr->zstream).words[4] = png_ptr->zbuf_size;
   FUN_100204a4((int)png_ptr,0,0);
-  return png_ptr;
+  return png_ptr->jmpbuf;
 }
 
 
@@ -22531,24 +22529,24 @@ void __cdecl FUN_1001e294(int *param_1,uint *param_2)
   int unaff_EBX;
   uint uVar2;
   uint unaff_EBP;
-  uint length;
-  char *pcVar3;
+  png_uint_32 pVar3;
+  char *pcVar4;
   
   png_ptr = param_1;
   if (*(byte *)(param_1 + 0x47) < 8) {
     uVar2 = (uint)*(byte *)(param_1 + 0x47);
-    length = -uVar2 + 8;
-    png_read_data(param_1,(uchar *)(uVar2 + 0x20 + (int)param_2),length);
+    pVar3 = -uVar2 + 8;
+    png_read_data((png_structp)param_1,(png_bytep)(uVar2 + 0x20 + (int)param_2),pVar3);
     *(undefined1 *)(png_ptr + 0x47) = 8;
-    iVar1 = FUN_100204e3((int)(param_2 + 8),uVar2,length);
+    iVar1 = FUN_100204e3((int)(param_2 + 8),uVar2,pVar3);
     if (iVar1 != 0) {
       if ((uVar2 < 4) && (iVar1 = FUN_100204e3((int)(param_2 + 8),uVar2,-uVar2 + 4), iVar1 != 0)) {
-        pcVar3 = "Not a PNG file";
+        pcVar4 = "Not a PNG file";
       }
       else {
-        pcVar3 = "PNG file corrupted by ASCII conversion";
+        pcVar4 = "PNG file corrupted by ASCII conversion";
       }
-      png_error(png_ptr,pcVar3);
+      png_error((png_structp)png_ptr,pcVar4);
     }
   }
   buf = png_ptr + 0x43;
@@ -22556,45 +22554,45 @@ void __cdecl FUN_1001e294(int *param_1,uint *param_2)
     while( true ) {
       while( true ) {
         while( true ) {
-          png_read_data(png_ptr,(uchar *)&param_1,4);
-          uVar2 = png_get_uint_32((uchar *)&param_1);
-          png_reset_crc(png_ptr);
-          png_crc_read(png_ptr,(uchar *)buf,4);
+          png_read_data((png_structp)png_ptr,(png_bytep)&param_1,4);
+          pVar3 = png_get_uint_32((png_bytep)&param_1);
+          png_reset_crc((png_structp)png_ptr);
+          png_crc_read((png_structp)png_ptr,(png_bytep)buf,4);
           if (*buf != 0x52444849) break;
-          FUN_10025163(png_ptr,param_2,uVar2);
+          FUN_10025163(png_ptr,param_2,pVar3);
         }
         if (*buf != 0x45544c50) break;
-        FUN_10025359((void *)0x45544c50,png_ptr,(int)param_2,uVar2);
+        FUN_10025359((void *)0x45544c50,png_ptr,(int)param_2,pVar3);
       }
       if (*buf != 0x444e4549) break;
-      FUN_10025483(png_ptr,param_2,uVar2,unaff_EBX,unaff_EBP);
+      FUN_10025483(png_ptr,param_2,pVar3,unaff_EBX,unaff_EBP);
     }
     if (*buf == 0x54414449) break;
     if (*buf == 0x414d4167) {
-      FUN_100254cd(png_ptr,(int)param_2,uVar2);
+      FUN_100254cd(png_ptr,(int)param_2,pVar3);
     }
     else if (*buf == 0x42475273) {
-      FUN_100255d8(png_ptr,(int)param_2,uVar2);
+      FUN_100255d8(png_ptr,(int)param_2,pVar3);
     }
     else if (*buf == 0x534e5274) {
-      FUN_100256c7(png_ptr,(int)param_2,uVar2);
+      FUN_100256c7(png_ptr,(int)param_2,pVar3);
     }
     else {
-      FUN_1002587e(png_ptr,(int)param_2,uVar2);
+      FUN_1002587e(png_ptr,(int)param_2,pVar3);
     }
   }
   if ((png_ptr[0x16] & 1U) == 0) {
-    pcVar3 = "Missing IHDR before IDAT";
+    pcVar4 = "Missing IHDR before IDAT";
   }
   else {
     if ((*(char *)((int)png_ptr + 0x116) != '\x03') || ((png_ptr[0x16] & 2U) != 0))
     goto LAB_1001e3f8;
-    pcVar3 = "Missing PLTE before IDAT";
+    pcVar4 = "Missing PLTE before IDAT";
   }
-  png_error(png_ptr,pcVar3);
+  png_error((png_structp)png_ptr,pcVar4);
 LAB_1001e3f8:
   png_ptr[0x16] = png_ptr[0x16] | 4;
-  png_ptr[0x3f] = uVar2;
+  png_ptr[0x3f] = pVar3;
   return;
 }
 
@@ -22623,7 +22621,7 @@ void __thiscall FUN_1001e427(void *this,int *param_1,byte *param_2,byte *param_3
   char cVar2;
   byte bVar3;
   int *png_ptr;
-  uint uVar4;
+  png_uint_32 pVar4;
   byte *pbVar5;
   char *msg;
   int *extraout_ECX;
@@ -22634,6 +22632,7 @@ void __thiscall FUN_1001e427(void *this,int *param_1,byte *param_2,byte *param_3
   int *extraout_ECX_03;
   int *extraout_ECX_04;
   bool bVar6;
+  uint uVar7;
   
   png_ptr = param_1;
   if ((*(byte *)(param_1 + 0x17) & 0x40) == 0) {
@@ -22647,9 +22646,9 @@ void __thiscall FUN_1001e427(void *this,int *param_1,byte *param_2,byte *param_3
         bVar6 = param_3 == (byte *)0x0;
 LAB_1001e539:
         if (bVar6) goto LAB_1001e48f;
-        uVar4 = 0xff;
+        uVar7 = 0xff;
 LAB_1001e544:
-        FUN_100248e1((int)png_ptr,param_3,uVar4);
+        FUN_100248e1((int)png_ptr,param_3,uVar7);
         this = extraout_ECX;
 LAB_1001e48f:
         FUN_100258c8(this,png_ptr);
@@ -22659,7 +22658,7 @@ LAB_1001e48f:
     else if (cVar2 == '\x01') {
       if (((*(byte *)(png_ptr + 0x35) & 7) != 0) || ((uint)png_ptr[0x2e] < 5)) {
         if (param_3 == (byte *)0x0) goto LAB_1001e48f;
-        uVar4 = 0xf;
+        uVar7 = 0xf;
         goto LAB_1001e544;
       }
     }
@@ -22674,7 +22673,7 @@ LAB_1001e48f:
     else if (cVar2 == '\x03') {
       if (((*(byte *)(png_ptr + 0x35) & 3) != 0) || ((uint)png_ptr[0x2e] < 3)) {
         if (param_3 == (byte *)0x0) goto LAB_1001e48f;
-        uVar4 = 0x33;
+        uVar7 = 0x33;
         goto LAB_1001e544;
       }
     }
@@ -22689,14 +22688,14 @@ LAB_1001e48f:
     else if (cVar2 == '\x05') {
       if (((*(byte *)(png_ptr + 0x35) & 1) != 0) || ((uint)png_ptr[0x2e] < 2)) {
         if (param_3 == (byte *)0x0) goto LAB_1001e48f;
-        uVar4 = 0x55;
+        uVar7 = 0x55;
         goto LAB_1001e544;
       }
     }
     else if ((cVar2 == '\x06') && ((*(byte *)(png_ptr + 0x35) & 1) == 0)) goto LAB_1001e48f;
   }
   if ((*(byte *)(png_ptr + 0x16) & 4) == 0) {
-    png_error(png_ptr,"Invalid attempt to read row data");
+    png_error((png_structp)png_ptr,"Invalid attempt to read row data");
   }
   png_ptr[0x1c] = png_ptr[0x37];
   png_ptr[0x1d] = png_ptr[0x33];
@@ -22704,14 +22703,14 @@ LAB_1001e48f:
     if (png_ptr[0x1a] == 0) {
       if (png_ptr[0x3f] == 0) {
         do {
-          png_crc_finish(png_ptr,0);
-          png_read_data(png_ptr,(uchar *)&param_1,4);
-          uVar4 = png_get_uint_32((uchar *)&param_1);
-          png_ptr[0x3f] = uVar4;
-          png_reset_crc(png_ptr);
-          png_crc_read(png_ptr,(uchar *)(png_ptr + 0x43),4);
+          png_crc_finish((png_structp)png_ptr,0);
+          png_read_data((png_structp)png_ptr,(png_bytep)&param_1,4);
+          pVar4 = png_get_uint_32((png_bytep)&param_1);
+          png_ptr[0x3f] = pVar4;
+          png_reset_crc((png_structp)png_ptr);
+          png_crc_read((png_structp)png_ptr,(png_bytep)(png_ptr + 0x43),4);
           if (png_ptr[0x43] != 0x54414449) {
-            png_error(png_ptr,"Not enough image data");
+            png_error((png_structp)png_ptr,"Not enough image data");
           }
         } while (png_ptr[0x3f] == 0);
       }
@@ -22720,13 +22719,13 @@ LAB_1001e48f:
       if ((uint)png_ptr[0x3f] < (uint)png_ptr[0x28]) {
         png_ptr[0x1a] = png_ptr[0x3f];
       }
-      png_crc_read(png_ptr,(uchar *)png_ptr[0x27],png_ptr[0x1a]);
+      png_crc_read((png_structp)png_ptr,(png_bytep)png_ptr[0x27],png_ptr[0x1a]);
       png_ptr[0x3f] = png_ptr[0x3f] - png_ptr[0x1a];
     }
     pbVar5 = FUN_1002438b(png_ptr + 0x19,1);
     if (pbVar5 == (byte *)0x1) {
       if (((png_ptr[0x1d] != 0) || (png_ptr[0x1a] != 0)) || (png_ptr[0x3f] != 0)) {
-        png_error(png_ptr,"Extra compressed data");
+        png_error((png_structp)png_ptr,"Extra compressed data");
       }
       png_ptr[0x16] = png_ptr[0x16] | 8;
       png_ptr[0x17] = png_ptr[0x17] | 0x20;
@@ -22737,7 +22736,7 @@ LAB_1001e48f:
       if (msg == (char *)0x0) {
         msg = "Decompression error";
       }
-      png_error(png_ptr,msg);
+      png_error((png_structp)png_ptr,msg);
     }
   } while (png_ptr[0x1d] != 0);
   *(undefined1 *)((int)png_ptr + 0xfa) = *(undefined1 *)((int)png_ptr + 0x11a);
@@ -22761,7 +22760,7 @@ LAB_1001e48f:
       this_00 = extraout_ECX_03;
     }
     if (param_3 == (byte *)0x0) goto LAB_1001e7a4;
-    uVar4 = 0xff;
+    uVar7 = 0xff;
     pbVar5 = param_3;
   }
   else {
@@ -22777,10 +22776,10 @@ LAB_1001e48f:
       this_00 = extraout_ECX_02;
     }
     if (param_2 == (byte *)0x0) goto LAB_1001e7a4;
-    uVar4 = *(uint *)(&DAT_1004e1dc + (uint)*(byte *)(png_ptr + 0x45) * 4);
+    uVar7 = *(uint *)(&DAT_1004e1dc + (uint)*(byte *)(png_ptr + 0x45) * 4);
     pbVar5 = param_2;
   }
-  FUN_100248e1((int)png_ptr,pbVar5,uVar4);
+  FUN_100248e1((int)png_ptr,pbVar5,uVar7);
   this_00 = extraout_ECX_04;
 LAB_1001e7a4:
   FUN_100258c8(this_00,png_ptr);
@@ -22848,27 +22847,27 @@ void __cdecl FUN_1001e81b(undefined4 *param_1,undefined4 *param_2,undefined4 *pa
   if (param_3 != (undefined4 *)0x0) {
     FUN_100205da(param_1,param_3);
   }
-  png_free(param_1,(void *)param_1[0x27]);
-  png_free(param_1,(void *)param_1[0x37]);
-  png_free(param_1,(void *)param_1[0x36]);
-  png_free(param_1,(void *)param_1[0x5d]);
-  png_free(param_1,(void *)param_1[0x5e]);
-  png_free(param_1,(void *)param_1[0x4e]);
+  png_free((png_structp)param_1,(void *)param_1[0x27]);
+  png_free((png_structp)param_1,(void *)param_1[0x37]);
+  png_free((png_structp)param_1,(void *)param_1[0x36]);
+  png_free((png_structp)param_1,(void *)param_1[0x5d]);
+  png_free((png_structp)param_1,(void *)param_1[0x5e]);
+  png_free((png_structp)param_1,(void *)param_1[0x4e]);
   if ((*(byte *)((int)param_1 + 0x5d) & 0x10) != 0) {
-    png_free(param_1,(void *)param_1[0x41]);
+    png_free((png_structp)param_1,(void *)param_1[0x41]);
   }
   if ((*(byte *)((int)param_1 + 0x5d) & 0x20) != 0) {
-    png_free(param_1,(void *)param_1[0x57]);
+    png_free((png_structp)param_1,(void *)param_1[0x57]);
   }
   if (param_1[0x51] != 0) {
     iVar4 = 1 << (8U - (char)param_1[0x4b] & 0x1f);
     if (0 < iVar4) {
       do {
-        png_free(param_1,*(void **)(param_1[0x51] + iVar6 * 4));
+        png_free((png_structp)param_1,*(void **)(param_1[0x51] + iVar6 * 4));
         iVar6 = iVar6 + 1;
       } while (iVar6 < iVar4);
     }
-    png_free(param_1,(void *)param_1[0x51]);
+    png_free((png_structp)param_1,(void *)param_1[0x51]);
   }
   FUN_10024251((int)(param_1 + 0x19));
   uVar1 = param_1[0x12];
@@ -23051,7 +23050,7 @@ FUN_1001ea59(int param_1,uint *param_2,uint *param_3,uint *param_4,uint *param_5
       uVar2 = uVar2 + 1;
     }
     if ((uint)(0x7fffffff / (ulonglong)(uint)((int)(*param_5 * uVar2 + 7) >> 3)) < *param_3) {
-      png_warning((int *)param_1,"Width too large for libpng to process image data.");
+      png_warning((png_structp)param_1,"Width too large for libpng to process image data.");
     }
     uVar3 = 1;
   }
@@ -24298,7 +24297,7 @@ void __cdecl FUN_1001fd2d(int *param_1)
   png_ptr = param_1;
   if ((float)param_1[0x4c] != 0.0) {
     if (*(byte *)((int)param_1 + 0x117) < 9) {
-      pvVar6 = png_malloc(param_1,0x100);
+      pvVar6 = png_malloc((png_structp)param_1,0x100);
       param_1 = (int *)0x0;
       png_ptr[0x4e] = (int)pvVar6;
       do {
@@ -24341,14 +24340,14 @@ void __cdecl FUN_1001fd2d(int *param_1)
       bVar9 = 8 - bVar3;
       iVar10 = 1 << (bVar9 & 0x1f);
       param_1[0x4b] = local_8 & 0xff;
-      pvVar6 = png_malloc(param_1,iVar10 << 2);
+      pvVar6 = png_malloc((png_structp)param_1,iVar10 << 2);
       puVar1 = (ushort *)(param_1 + 0x18);
       param_1[0x51] = (int)pvVar6;
       param_1 = (int *)0x0;
       if ((*puVar1 & 0x480) == 0) {
         if (0 < iVar10) {
           do {
-            pvVar6 = png_malloc(png_ptr,0x200);
+            pvVar6 = png_malloc((png_structp)png_ptr,0x200);
             *(void **)(png_ptr[0x51] + (int)param_1 * 4) = pvVar6;
             iVar12 = 0;
             do {
@@ -24364,7 +24363,7 @@ void __cdecl FUN_1001fd2d(int *param_1)
       else {
         if (0 < iVar10) {
           do {
-            pvVar6 = png_malloc(png_ptr,0x200);
+            pvVar6 = png_malloc((png_structp)png_ptr,0x200);
             piVar2 = (int *)((int)param_1 + 1);
             *(void **)(png_ptr[0x51] + (int)param_1 * 4) = pvVar6;
             param_1 = piVar2;
@@ -24474,7 +24473,7 @@ void __cdecl FUN_10020149(int *param_1)
   int *piVar1;
   
   if (param_1[0x37] == 0) {
-    png_error(param_1,"NULL row buffer");
+    png_error((png_structp)param_1,"NULL row buffer");
   }
   if ((*(byte *)((int)param_1 + 0x61) & 0x10) != 0) {
     if ((char)param_1[0x3e] == '\x03') {
@@ -24502,7 +24501,7 @@ void __cdecl FUN_10020149(int *param_1)
   if ((*(byte *)(param_1 + 0x18) & 0x40) != 0) {
     FUN_1001fc1f(param_1 + 0x3c,(byte *)(param_1[0x37] + 1),param_1[0x5d],param_1[0x5e]);
     if (param_1[0x3d] == 0) {
-      png_error(param_1,"png_do_dither returned rowbytes=0");
+      png_error((png_structp)param_1,"png_do_dither returned rowbytes=0");
     }
   }
   if ((*(byte *)(param_1 + 0x18) & 8) != 0) {
@@ -24570,7 +24569,8 @@ FUN_1002031c(int param_1,uint *param_2,uint param_3,uint param_4,char param_5,by
     bVar1 = *(char *)((int)param_2 + 0x1d) * param_5;
     *(byte *)((int)param_2 + 0x1e) = bVar1;
     if ((uint)(0x7fffffff / (ulonglong)(uint)((int)(bVar1 + 7) >> 3)) < param_3) {
-      png_warning((int *)param_1,"Width too large to process image data; rowbytes will overflow.");
+      png_warning((png_structp)param_1,
+                  "Width too large to process image data; rowbytes will overflow.");
       param_2[3] = 0;
     }
     else {
@@ -24654,11 +24654,11 @@ void __cdecl FUN_10020435(int param_1,int param_2,int param_3,int param_4,undefi
 
 /* png read callback wrapper (errors if NULL) */
 
-void __cdecl png_read_data(int *png_ptr,uchar *data,uint length)
+void __cdecl png_read_data(png_structp png_ptr,png_bytep data,png_uint_32 length)
 
 {
-  if ((code *)png_ptr[0x14] != (code *)0x0) {
-    (*(code *)png_ptr[0x14])(png_ptr,data,length);
+  if (png_ptr->read_data_fn != (png_rw_ptr)0x0) {
+    (*png_ptr->read_data_fn)(png_ptr,data,length);
     return;
   }
   png_error(png_ptr,"Call to NULL read function");
@@ -24676,8 +24676,9 @@ void __cdecl FUN_100204a4(int param_1,undefined4 param_2,undefined4 param_3)
   *(undefined4 *)(param_1 + 0x50) = param_3;
   if (*(int *)(param_1 + 0x4c) != 0) {
     *(undefined4 *)(param_1 + 0x4c) = 0;
-    png_warning((int *)param_1,"It\'s an error to set both read_data_fn and write_data_fn in the ");
-    png_warning((int *)param_1,"same structure.  Resetting write_data_fn to NULL.");
+    png_warning((png_structp)param_1,
+                "It\'s an error to set both read_data_fn and write_data_fn in the ");
+    png_warning((png_structp)param_1,"same structure.  Resetting write_data_fn to NULL.");
   }
   *(undefined4 *)(param_1 + 0x120) = 0;
   return;
@@ -24738,7 +24739,7 @@ undefined4 * __cdecl FUN_1002052b(int *param_1,int param_2,int param_3)
   undefined4 *puVar6;
   
   uVar5 = param_2 * param_3;
-  puVar1 = png_malloc(param_1,uVar5);
+  puVar1 = png_malloc((png_structp)param_1,uVar5);
   puVar2 = (undefined4 *)0x0;
   if (puVar1 != (undefined4 *)0x0) {
     puVar6 = puVar1;
@@ -24769,13 +24770,13 @@ undefined4 * __cdecl FUN_1002052b(int *param_1,int param_2,int param_3)
 
 /* reset png CRC state */
 
-void __cdecl png_reset_crc(int *png_ptr)
+void __cdecl png_reset_crc(png_structp png_ptr)
 
 {
   uint uVar1;
   
   uVar1 = FUN_10025aec(0,(byte *)0x0,0);
-  png_ptr[0x40] = uVar1;
+  png_ptr->pad_100 = uVar1;
   return;
 }
 
@@ -24785,21 +24786,21 @@ void __cdecl png_reset_crc(int *png_ptr)
 
 /* update png CRC with buffer */
 
-void __cdecl png_calculate_crc(int *png_ptr,uchar *data,uint length)
+void __cdecl png_calculate_crc(png_structp png_ptr,png_bytep data,png_uint_32 length)
 
 {
   uint uVar1;
   
-  if ((*(byte *)(png_ptr + 0x43) & 0x20) == 0) {
-    if ((*(byte *)((int)png_ptr + 0x5d) & 8) != 0) {
+  if ((png_ptr->chunk_name & 0x20) == 0) {
+    if ((png_ptr->flags & 0x800) != 0) {
       return;
     }
   }
-  else if ((png_ptr[0x17] & 0x300U) == 0x300) {
+  else if ((png_ptr->flags & 0x300) == 0x300) {
     return;
   }
-  uVar1 = FUN_10025aec(png_ptr[0x40],data,length);
-  png_ptr[0x40] = uVar1;
+  uVar1 = FUN_10025aec(png_ptr->pad_100,data,length);
+  png_ptr->pad_100 = uVar1;
   return;
 }
 
@@ -28653,12 +28654,12 @@ void __cdecl png_free_ptr(void *ptr)
 
 /* png malloc wrapper (errors on OOM) */
 
-void * __cdecl png_malloc(int *png_ptr,uint size)
+void * __cdecl png_malloc(png_structp png_ptr,png_uint_32 size)
 
 {
   void *pvVar1;
   
-  if ((png_ptr != (int *)0x0) && (size != 0)) {
+  if ((png_ptr != (png_structp)0x0) && (size != 0)) {
     pvVar1 = malloc(size);
     if (pvVar1 == (void *)0x0) {
       png_error(png_ptr,"Out of Memory");
@@ -28674,10 +28675,10 @@ void * __cdecl png_malloc(int *png_ptr,uint size)
 
 /* png free callback wrapper */
 
-void __cdecl png_free(int *png_ptr,void *ptr)
+void __cdecl png_free(png_structp png_ptr,void *ptr)
 
 {
-  if ((png_ptr != (int *)0x0) && (ptr != (void *)0x0)) {
+  if ((png_ptr != (png_structp)0x0) && (ptr != (void *)0x0)) {
     free(ptr);
   }
   return;
@@ -28737,7 +28738,7 @@ FUN_100247b3(undefined4 param_1,undefined4 *param_2,undefined1 param_3,uint para
 
 /* read big-endian 32-bit value */
 
-uint __cdecl png_get_uint_32(uchar *buf)
+png_uint_32 __cdecl png_get_uint_32(png_bytep buf)
 
 {
   return CONCAT31(CONCAT21(CONCAT11(*buf,buf[1]),buf[2]),buf[3]);
@@ -28749,7 +28750,7 @@ uint __cdecl png_get_uint_32(uchar *buf)
 
 /* read PNG chunk data and update CRC */
 
-void __cdecl png_crc_read(int *png_ptr,uchar *buf,uint length)
+void __cdecl png_crc_read(png_structp png_ptr,png_bytep buf,png_uint_32 length)
 
 {
   png_read_data(png_ptr,buf,length);
@@ -28763,30 +28764,31 @@ void __cdecl png_crc_read(int *png_ptr,uchar *buf,uint length)
 
 /* read stored CRC and compare with computed */
 
-int __cdecl png_crc_error(int *png_ptr)
+int __cdecl png_crc_error(png_structp png_ptr)
 
 {
   bool bVar1;
-  int *piVar2;
-  uint uVar3;
+  png_structp ppVar2;
+  png_uint_32 pVar3;
+  uint uVar4;
   
-  piVar2 = png_ptr;
+  ppVar2 = png_ptr;
   bVar1 = true;
-  if ((*(byte *)(png_ptr + 0x43) & 0x20) == 0) {
-    if ((*(byte *)((int)png_ptr + 0x5d) & 8) == 0) goto LAB_1002484d;
+  if ((png_ptr->chunk_name & 0x20) == 0) {
+    if ((png_ptr->flags & 0x800) == 0) goto LAB_1002484d;
   }
-  else if ((png_ptr[0x17] & 0x300U) != 0x300) goto LAB_1002484d;
+  else if ((png_ptr->flags & 0x300) != 0x300) goto LAB_1002484d;
   bVar1 = false;
 LAB_1002484d:
-  png_read_data(png_ptr,(uchar *)&png_ptr,4);
+  png_read_data(png_ptr,(png_bytep)&png_ptr,4);
   if (bVar1) {
-    uVar3 = png_get_uint_32((uchar *)&png_ptr);
-    uVar3 = (uint)(uVar3 != piVar2[0x40]);
+    pVar3 = png_get_uint_32((png_bytep)&png_ptr);
+    uVar4 = (uint)(pVar3 != ppVar2->pad_100);
   }
   else {
-    uVar3 = 0;
+    uVar4 = 0;
   }
-  return uVar3;
+  return uVar4;
 }
 
 
@@ -28795,7 +28797,7 @@ LAB_1002484d:
 
 /* validate PNG chunk type characters */
 
-void __cdecl png_check_chunk_name(int *png_ptr,uchar *chunk_name)
+void __cdecl png_check_chunk_name(png_structp png_ptr,png_bytep chunk_name)
 
 {
   byte bVar1;
@@ -28808,7 +28810,7 @@ void __cdecl png_check_chunk_name(int *png_ptr,uchar *chunk_name)
         ((0x5a < bVar1 && (bVar1 < 0x61)))) ||
        ((bVar1 = chunk_name[3], bVar1 < 0x29 || (0x7a < bVar1)))))) ||
      ((0x5a < bVar1 && (bVar1 < 0x61)))) {
-    FUN_1001e147(png_ptr,(undefined4 *)"invalid chunk type");
+    FUN_1001e147(png_ptr->jmpbuf,(undefined4 *)"invalid chunk type");
   }
   return;
 }
@@ -29243,7 +29245,7 @@ void __cdecl FUN_10024dc0(int param_1,int param_2,byte *param_3,byte *param_4,in
       }
     }
     else {
-      png_warning((int *)param_1,"Ignoring bad adaptive filter type");
+      png_warning((png_structp)param_1,"Ignoring bad adaptive filter type");
       *param_3 = 0;
     }
   }
@@ -29319,10 +29321,10 @@ void __cdecl FUN_10024f3b(int *param_1)
       uVar3 = ((0x20 < uVar3) - 1 & 0xffffffe0) + 0x40;
     }
   }
-  pvVar4 = png_malloc(param_1,((iVar6 + 7U & 0xfffffff8) * uVar3 + 7 >> 3) + 1 +
-                              ((int)(uVar3 + 7) >> 3));
+  pvVar4 = png_malloc((png_structp)param_1,
+                      ((iVar6 + 7U & 0xfffffff8) * uVar3 + 7 >> 3) + 1 + ((int)(uVar3 + 7) >> 3));
   param_1[0x37] = (int)pvVar4;
-  puVar5 = png_malloc(param_1,param_1[0x32] + 1);
+  puVar5 = png_malloc((png_structp)param_1,param_1[0x32] + 1);
   param_1[0x36] = (int)puVar5;
   FUN_100247b3(param_1,puVar5,0,param_1[0x32] + 1);
   param_1[0x17] = param_1[0x17] | 0x40;
@@ -29335,35 +29337,36 @@ void __cdecl FUN_10024f3b(int *param_1)
 
 /* read remaining chunk bytes and check CRC */
 
-int __cdecl png_crc_finish(int *png_ptr,uint skip)
+int __cdecl png_crc_finish(png_structp png_ptr,png_uint_32 skip)
 
 {
   uint uVar1;
-  int iVar2;
+  byte bVar2;
+  int iVar3;
   
-  uVar1 = png_ptr[0x28];
+  uVar1 = png_ptr->zbuf_size;
   for (; uVar1 < skip; skip = skip - uVar1) {
-    png_crc_read(png_ptr,(uchar *)png_ptr[0x27],png_ptr[0x28]);
+    png_crc_read(png_ptr,png_ptr->zbuf,png_ptr->zbuf_size);
   }
   if (skip != 0) {
-    png_crc_read(png_ptr,(uchar *)png_ptr[0x27],skip);
+    png_crc_read(png_ptr,png_ptr->zbuf,skip);
   }
-  iVar2 = png_crc_error(png_ptr);
-  if (iVar2 == 0) {
-    iVar2 = 0;
+  iVar3 = png_crc_error(png_ptr);
+  if (iVar3 == 0) {
+    iVar3 = 0;
   }
   else {
-    if ((((*(byte *)(png_ptr + 0x43) & 0x20) == 0) || ((*(byte *)((int)png_ptr + 0x5d) & 2) != 0))
-       && (((*(byte *)(png_ptr + 0x43) & 0x20) != 0 || ((*(byte *)((int)png_ptr + 0x5d) & 4) == 0)))
-       ) {
-      FUN_1001e147(png_ptr,(undefined4 *)"CRC error");
+    bVar2 = (byte)png_ptr->chunk_name & 0x20;
+    if (((bVar2 == 0) || ((png_ptr->flags & 0x200) != 0)) &&
+       ((bVar2 != 0 || ((png_ptr->flags & 0x400) == 0)))) {
+      FUN_1001e147(png_ptr->jmpbuf,(undefined4 *)"CRC error");
     }
     else {
       FUN_1001e16c((int)png_ptr,(undefined4 *)"CRC error");
     }
-    iVar2 = 1;
+    iVar3 = 1;
   }
-  return iVar2;
+  return iVar3;
 }
 
 
@@ -29374,10 +29377,10 @@ void __cdecl FUN_10025163(int *param_1,uint *param_2,int param_3)
 
 {
   byte bVar1;
-  uint uVar2;
-  uint uVar3;
-  uchar local_20 [4];
-  uchar local_1c [4];
+  png_uint_32 pVar2;
+  png_uint_32 pVar3;
+  png_byte local_20 [4];
+  png_byte local_1c [4];
   byte local_18;
   byte local_17;
   byte local_16;
@@ -29388,45 +29391,45 @@ void __cdecl FUN_10025163(int *param_1,uint *param_2,int param_3)
   uint local_8;
   
   if (param_1[0x16] != 0) {
-    png_error(param_1,"Out of place IHDR");
+    png_error((png_structp)param_1,"Out of place IHDR");
   }
   if (param_3 != 0xd) {
-    png_error(param_1,"Invalid IHDR chunk");
+    png_error((png_structp)param_1,"Invalid IHDR chunk");
   }
   param_1[0x16] = param_1[0x16] | 1;
-  png_crc_read(param_1,local_20,0xd);
-  png_crc_finish(param_1,0);
-  uVar2 = png_get_uint_32(local_20);
-  uVar3 = png_get_uint_32(local_1c);
+  png_crc_read((png_structp)param_1,local_20,0xd);
+  png_crc_finish((png_structp)param_1,0);
+  pVar2 = png_get_uint_32(local_20);
+  pVar3 = png_get_uint_32(local_1c);
   local_10 = (uint)local_16;
   local_c = (uint)local_15;
   local_8 = (uint)local_14;
-  if ((((uVar2 == 0) || (0x7fffffff < uVar2)) || (uVar3 == 0)) || (0x7fffffff < uVar3)) {
-    png_error(param_1,"Invalid image size in IHDR");
+  if ((((pVar2 == 0) || (0x7fffffff < pVar2)) || (pVar3 == 0)) || (0x7fffffff < pVar3)) {
+    png_error((png_structp)param_1,"Invalid image size in IHDR");
   }
   if (((local_18 != 1) && (local_18 != 2)) &&
      ((local_18 != 4 && ((local_18 != 8 && (local_18 != 0x10)))))) {
-    png_error(param_1,"Invalid bit depth in IHDR");
+    png_error((png_structp)param_1,"Invalid bit depth in IHDR");
   }
   if (((local_17 == 1) || (local_17 == 5)) || (6 < local_17)) {
-    png_error(param_1,"Invalid color type in IHDR");
+    png_error((png_structp)param_1,"Invalid color type in IHDR");
   }
   if (((local_17 == 3) && (8 < local_18)) ||
      (((local_17 == 2 || ((local_17 == 4 || (local_17 == 6)))) && (local_18 < 8)))) {
-    png_error(param_1,"Invalid color type/bit depth combination in IHDR");
+    png_error((png_structp)param_1,"Invalid color type/bit depth combination in IHDR");
   }
   if (1 < (int)local_8) {
-    png_error(param_1,"Unknown interlace method in IHDR");
+    png_error((png_structp)param_1,"Unknown interlace method in IHDR");
   }
   if (local_10 != 0) {
-    png_error(param_1,"Unknown compression method in IHDR");
+    png_error((png_structp)param_1,"Unknown compression method in IHDR");
   }
   if (local_c != 0) {
-    png_error(param_1,"Unknown filter method in IHDR");
+    png_error((png_structp)param_1,"Unknown filter method in IHDR");
   }
   *(undefined1 *)((int)param_1 + 0x113) = (undefined1)local_8;
-  param_1[0x2e] = uVar2;
-  param_1[0x2f] = uVar3;
+  param_1[0x2e] = pVar2;
+  param_1[0x2f] = pVar3;
   *(byte *)((int)param_1 + 0x117) = local_18;
   *(byte *)((int)param_1 + 0x116) = local_17;
   if (local_17 != 0) {
@@ -29448,8 +29451,8 @@ void __cdecl FUN_10025163(int *param_1,uint *param_2,int param_3)
 LAB_1002531b:
   bVar1 = *(char *)((int)param_1 + 0x11a) * local_18;
   *(byte *)((int)param_1 + 0x119) = bVar1;
-  param_1[0x32] = bVar1 * uVar2 + 7 >> 3;
-  FUN_1002031c((int)param_1,param_2,uVar2,uVar3,local_18,local_17,(undefined1)local_8,(char)local_10
+  param_1[0x32] = bVar1 * pVar2 + 7 >> 3;
+  FUN_1002031c((int)param_1,param_2,pVar2,pVar3,local_18,local_17,(undefined1)local_8,(char)local_10
                ,(char)local_c);
   return;
 }
@@ -29466,7 +29469,7 @@ void __thiscall FUN_10025359(void *this,int *param_1,int param_2,uint param_3)
   int iVar2;
   int iVar3;
   undefined4 *puVar4;
-  int *unaff_ESI;
+  png_structp unaff_ESI;
   undefined1 *puVar5;
   char *pcVar6;
   int local_8;
@@ -29476,14 +29479,14 @@ void __thiscall FUN_10025359(void *this,int *param_1,int param_2,uint param_3)
   if ((uVar1 & 1) == 0) {
     pcVar6 = "Missing IHDR before PLTE";
 LAB_10025385:
-    png_error(param_1,pcVar6);
+    png_error((png_structp)param_1,pcVar6);
 LAB_1002538d:
     png_ptr[0x16] = png_ptr[0x16] | 2;
     if (param_3 % 3 != 0) {
       pcVar6 = "Invalid palette chunk";
-      unaff_ESI = png_ptr;
+      unaff_ESI = (png_structp)png_ptr;
       if (*(char *)((int)png_ptr + 0x116) != '\x03') goto LAB_100253ad;
-      png_error(png_ptr,"Invalid palette chunk");
+      png_error((png_structp)png_ptr,"Invalid palette chunk");
     }
     iVar3 = (int)param_3 / 3;
     puVar4 = FUN_1002052b(png_ptr,iVar3,3);
@@ -29492,7 +29495,7 @@ LAB_1002538d:
       puVar5 = (undefined1 *)((int)puVar4 + 2);
       local_8 = iVar3;
       do {
-        png_crc_read(png_ptr,(uchar *)&param_1,3);
+        png_crc_read((png_structp)png_ptr,(png_bytep)&param_1,3);
         puVar5[-2] = param_1._0_1_;
         puVar5[-1] = param_1._1_1_;
         *puVar5 = param_1._2_1_;
@@ -29500,7 +29503,7 @@ LAB_1002538d:
         local_8 = local_8 + -1;
       } while (local_8 != 0);
     }
-    png_crc_finish(png_ptr,0);
+    png_crc_finish((png_structp)png_ptr,0);
     iVar2 = param_2;
     png_ptr[0x41] = (int)puVar4;
     *(short *)(png_ptr + 0x42) = (short)iVar3;
@@ -29508,7 +29511,7 @@ LAB_1002538d:
     if ((((*(char *)((int)png_ptr + 0x116) == '\x03') && (iVar2 != 0)) &&
         ((*(byte *)(iVar2 + 8) & 0x10) != 0)) &&
        (*(ushort *)(png_ptr + 0x42) < *(ushort *)((int)png_ptr + 0x10a))) {
-      png_warning(png_ptr,"Truncating incorrect tRNS chunk length");
+      png_warning((png_structp)png_ptr,"Truncating incorrect tRNS chunk length");
       *(ushort *)((int)png_ptr + 0x10a) = *(ushort *)(png_ptr + 0x42);
     }
   }
@@ -29523,7 +29526,7 @@ LAB_1002538d:
     }
 LAB_100253ad:
     png_warning(unaff_ESI,pcVar6);
-    png_crc_finish(png_ptr,param_3);
+    png_crc_finish((png_structp)png_ptr,param_3);
   }
   return;
 }
@@ -29537,14 +29540,14 @@ FUN_10025483(int *param_1,undefined4 param_2,undefined4 param_3,int param_4,uint
 
 {
   if ((((param_1[0x16] & 1U) == 0) || ((param_1[0x16] & 4U) == 0)) &&
-     (png_error(param_1,"No image in file"), param_4 == 0)) {
+     (png_error((png_structp)param_1,"No image in file"), param_4 == 0)) {
     return;
   }
   param_1[0x16] = param_1[0x16] | 0x18;
   if (param_5 != 0) {
-    png_warning(param_1,"Incorrect IEND chunk length");
+    png_warning((png_structp)param_1,"Incorrect IEND chunk length");
   }
-  png_crc_finish(param_1,param_5);
+  png_crc_finish((png_structp)param_1,param_5);
   return;
 }
 
@@ -29555,25 +29558,26 @@ FUN_10025483(int *param_1,undefined4 param_2,undefined4 param_3,int param_4,uint
 void __cdecl FUN_100254cd(int *param_1,int param_2,uint param_3)
 
 {
-  float fVar1;
+  uint uVar1;
+  float fVar2;
   int *png_ptr;
-  int iVar2;
   int iVar3;
-  uint uVar4;
+  int iVar4;
+  png_uint_32 pVar5;
   char *msg;
   
-  iVar2 = param_2;
+  iVar3 = param_2;
   png_ptr = param_1;
-  uVar4 = param_1[0x16];
-  if ((uVar4 & 1) == 0) {
-    png_error(param_1,"Missing IHDR before gAMA");
+  uVar1 = param_1[0x16];
+  if ((uVar1 & 1) == 0) {
+    png_error((png_structp)param_1,"Missing IHDR before gAMA");
   }
   else {
-    if ((uVar4 & 4) != 0) {
+    if ((uVar1 & 4) != 0) {
       msg = "Invalid gAMA after IDAT";
       goto LAB_100254fe;
     }
-    if ((uVar4 & 2) == 0) {
+    if ((uVar1 & 2) == 0) {
       if (((param_2 != 0) && ((*(uint *)(param_2 + 8) & 1) != 0)) &&
          ((*(uint *)(param_2 + 8) & 0x800) == 0)) {
         msg = "Duplicate gAMA chunk";
@@ -29581,41 +29585,41 @@ void __cdecl FUN_100254cd(int *param_1,int param_2,uint param_3)
       }
     }
     else {
-      png_warning(param_1,"Out of place gAMA chunk");
+      png_warning((png_structp)param_1,"Out of place gAMA chunk");
     }
   }
   if (param_3 == 4) {
-    png_crc_read(png_ptr,(uchar *)&param_1,4);
-    iVar3 = png_crc_finish(png_ptr,0);
-    if (iVar3 != 0) {
+    png_crc_read((png_structp)png_ptr,(png_bytep)&param_1,4);
+    iVar4 = png_crc_finish((png_structp)png_ptr,0);
+    if (iVar4 != 0) {
       return;
     }
-    uVar4 = png_get_uint_32((uchar *)&param_1);
-    if (uVar4 == 0) {
+    pVar5 = png_get_uint_32((png_bytep)&param_1);
+    if (pVar5 == 0) {
       return;
     }
-    if ((*(uint *)(iVar2 + 8) & 0x800) != 0) {
-      fVar1 = (float)(int)uVar4;
-      if ((int)uVar4 < 0) {
-        fVar1 = fVar1 + 4.2949673e+09;
+    if ((*(uint *)(iVar3 + 8) & 0x800) != 0) {
+      fVar2 = (float)(int)pVar5;
+      if ((int)pVar5 < 0) {
+        fVar2 = fVar2 + 4.2949673e+09;
       }
-      if (500.0 < ABS(fVar1 - 45455.0)) {
-        png_warning(png_ptr,"Ignoring incorrect gAMA value when sRGB is also present");
+      if (500.0 < ABS(fVar2 - 45455.0)) {
+        png_warning((png_structp)png_ptr,"Ignoring incorrect gAMA value when sRGB is also present");
         return;
       }
     }
-    fVar1 = (float)(int)uVar4;
-    if ((int)uVar4 < 0) {
-      fVar1 = fVar1 + 4.2949673e+09;
+    fVar2 = (float)(int)pVar5;
+    if ((int)pVar5 < 0) {
+      fVar2 = fVar2 + 4.2949673e+09;
     }
-    png_ptr[0x4c] = (int)(fVar1 * 1e-05);
-    FUN_10020301((int)png_ptr,iVar2,(double)(fVar1 * 1e-05));
+    png_ptr[0x4c] = (int)(fVar2 * 1e-05);
+    FUN_10020301((int)png_ptr,iVar3,(double)(fVar2 * 1e-05));
     return;
   }
   msg = "Incorrect gAMA chunk length";
 LAB_100254fe:
-  png_warning(png_ptr,msg);
-  png_crc_finish(png_ptr,param_3);
+  png_warning((png_structp)png_ptr,msg);
+  png_crc_finish((png_structp)png_ptr,param_3);
   return;
 }
 
@@ -29635,7 +29639,7 @@ void __cdecl FUN_100255d8(int *param_1,int param_2,uint param_3)
   png_ptr = param_1;
   uVar1 = param_1[0x16];
   if ((uVar1 & 1) == 0) {
-    png_error(param_1,"Missing IHDR before sRGB");
+    png_error((png_structp)param_1,"Missing IHDR before sRGB");
   }
   else {
     if ((uVar1 & 4) != 0) {
@@ -29649,31 +29653,31 @@ void __cdecl FUN_100255d8(int *param_1,int param_2,uint param_3)
       }
     }
     else {
-      png_warning(param_1,"Out of place sRGB chunk");
+      png_warning((png_structp)param_1,"Out of place sRGB chunk");
     }
   }
   if (param_3 == 1) {
-    png_crc_read(png_ptr,(uchar *)((int)&param_1 + 3),1);
-    iVar3 = png_crc_finish(png_ptr,0);
+    png_crc_read((png_structp)png_ptr,(png_bytep)((int)&param_1 + 3),1);
+    iVar3 = png_crc_finish((png_structp)png_ptr,0);
     if (iVar3 != 0) {
       return;
     }
     bVar2 = param_1._3_1_;
     if (3 < param_1._3_1_) {
-      png_warning(png_ptr,"Unknown sRGB intent");
+      png_warning((png_structp)png_ptr,"Unknown sRGB intent");
       return;
     }
     if (((*(byte *)(param_2 + 8) & 1) != 0) &&
        (500.0 < ABS(((float)png_ptr[0x4c] * 100000.0 + 0.5) - 45455.0))) {
-      png_warning(png_ptr,"Ignoring incorrect gAMA value when sRGB is also present");
+      png_warning((png_structp)png_ptr,"Ignoring incorrect gAMA value when sRGB is also present");
     }
     FUN_100203fc((int)png_ptr,param_2,bVar2);
     return;
   }
   msg = "Incorrect sRGB chunk length";
 LAB_100255fe:
-  png_warning(png_ptr,msg);
-  png_crc_finish(png_ptr,param_3);
+  png_warning((png_structp)png_ptr,msg);
+  png_crc_finish((png_structp)png_ptr,param_3);
   return;
 }
 
@@ -29685,21 +29689,21 @@ void __cdecl FUN_100256c7(int *param_1,int param_2,uint param_3)
 
 {
   char cVar1;
-  uchar *buf;
+  png_bytep buf;
   int iVar2;
   char *pcVar3;
   undefined4 local_c;
   ushort local_8;
   
   if ((param_1[0x16] & 1U) == 0) {
-    png_error(param_1,"Missing IHDR before tRNS");
+    png_error((png_structp)param_1,"Missing IHDR before tRNS");
   }
   else {
     if ((param_1[0x16] & 4U) != 0) {
       pcVar3 = "Invalid tRNS after IDAT";
 LAB_1002573c:
-      png_warning(param_1,pcVar3);
-      png_crc_finish(param_1,param_3);
+      png_warning((png_structp)param_1,pcVar3);
+      png_crc_finish((png_structp)param_1,param_3);
       return;
     }
     if ((param_2 != 0) && ((*(byte *)(param_2 + 8) & 0x10) != 0)) {
@@ -29710,24 +29714,24 @@ LAB_1002573c:
   cVar1 = *(char *)((int)param_1 + 0x116);
   if (cVar1 == '\x03') {
     if ((*(byte *)(param_1 + 0x16) & 2) == 0) {
-      png_warning(param_1,"Missing PLTE before tRNS");
+      png_warning((png_structp)param_1,"Missing PLTE before tRNS");
 LAB_1002570d:
       if (param_3 != 0) {
-        buf = png_malloc(param_1,param_3);
+        buf = png_malloc((png_structp)param_1,param_3);
         *(byte *)((int)param_1 + 0x5d) = *(byte *)((int)param_1 + 0x5d) | 0x20;
         param_1[0x57] = (int)buf;
-        png_crc_read(param_1,buf,param_3);
+        png_crc_read((png_structp)param_1,buf,param_3);
         *(short *)((int)param_1 + 0x10a) = (short)param_3;
         goto LAB_10025833;
       }
-      png_warning(param_1,"Zero length tRNS chunk");
+      png_warning((png_structp)param_1,"Zero length tRNS chunk");
     }
     else {
       if (param_3 <= *(ushort *)(param_1 + 0x42)) goto LAB_1002570d;
-      png_warning(param_1,"Incorrect tRNS chunk length");
+      png_warning((png_structp)param_1,"Incorrect tRNS chunk length");
     }
 LAB_10025870:
-    png_crc_finish(param_1,param_3);
+    png_crc_finish((png_structp)param_1,param_3);
   }
   else {
     if (cVar1 == '\x02') {
@@ -29735,10 +29739,10 @@ LAB_10025870:
 LAB_100257fe:
         pcVar3 = "Incorrect tRNS chunk length";
 LAB_10025867:
-        png_warning(param_1,pcVar3);
+        png_warning((png_structp)param_1,pcVar3);
         goto LAB_10025870;
       }
-      png_crc_read(param_1,(uchar *)&local_c,6);
+      png_crc_read((png_structp)param_1,(png_bytep)&local_c,6);
       *(short *)((int)param_1 + 0x162) = (short)((local_c & 0xff) * 0x100 + (local_c >> 8 & 0xff));
       *(ushort *)(param_1 + 0x59) = (ushort)local_c._2_1_ * 0x100 + (ushort)local_c._3_1_;
       *(ushort *)((int)param_1 + 0x166) = local_8 * 0x100 + (local_8 >> 8);
@@ -29749,12 +29753,12 @@ LAB_10025867:
         goto LAB_10025867;
       }
       if (param_3 != 2) goto LAB_100257fe;
-      png_crc_read(param_1,(uchar *)&local_c,2);
+      png_crc_read((png_structp)param_1,(png_bytep)&local_c,2);
       *(ushort *)(param_1 + 0x5a) = (ushort)local_c * 0x100 + ((ushort)local_c >> 8);
     }
     *(undefined2 *)((int)param_1 + 0x10a) = 1;
 LAB_10025833:
-    iVar2 = png_crc_finish(param_1,0);
+    iVar2 = png_crc_finish((png_structp)param_1,0);
     if (iVar2 == 0) {
       FUN_10020435((int)param_1,param_2,param_1[0x57],(uint)*(ushort *)((int)param_1 + 0x10a),
                    param_1 + 0x58);
@@ -29770,7 +29774,7 @@ LAB_10025833:
 void __cdecl FUN_1002587e(int *param_1,int param_2,uint param_3)
 
 {
-  png_check_chunk_name(param_1,(uchar *)(param_1 + 0x43));
+  png_check_chunk_name((png_structp)param_1,(png_bytep)(param_1 + 0x43));
   if (((*(byte *)(param_1 + 0x43) & 0x20) == 0) &&
      (FUN_1001e147(param_1,(undefined4 *)"unknown critical chunk"), param_2 == 0)) {
     return;
@@ -29778,7 +29782,7 @@ void __cdecl FUN_1002587e(int *param_1,int param_2,uint param_3)
   if ((param_1[0x16] & 4U) != 0) {
     param_1[0x16] = param_1[0x16] | 8;
   }
-  png_crc_finish(param_1,param_3);
+  png_crc_finish((png_structp)param_1,param_3);
   return;
 }
 
@@ -29793,9 +29797,10 @@ void __thiscall FUN_100258c8(void *this,int *param_1)
   byte bVar2;
   int *png_ptr;
   uint uVar3;
-  byte *pbVar4;
+  png_uint_32 pVar4;
+  byte *pbVar5;
   char *msg;
-  int iVar5;
+  int iVar6;
   void *local_4;
   
   png_ptr = param_1;
@@ -29810,15 +29815,15 @@ void __thiscall FUN_100258c8(void *this,int *param_1)
         *(char *)(png_ptr + 0x45) = (char)png_ptr[0x45] + '\x01';
         bVar2 = *(byte *)(png_ptr + 0x45);
         if (6 < bVar2) goto LAB_10025995;
-        iVar5 = (uint)bVar2 * 4;
-        uVar3 = ((png_ptr[0x2e] - *(int *)(&DAT_1004ea90 + iVar5)) + -1 +
-                *(uint *)(&DAT_1004eaac + iVar5)) / *(uint *)(&DAT_1004eaac + iVar5);
+        iVar6 = (uint)bVar2 * 4;
+        uVar3 = ((png_ptr[0x2e] - *(int *)(&DAT_1004ea90 + iVar6)) + -1 +
+                *(uint *)(&DAT_1004eaac + iVar6)) / *(uint *)(&DAT_1004eaac + iVar6);
         png_ptr[0x34] = uVar3;
         png_ptr[0x33] = (*(byte *)((int)png_ptr + 0x119) * uVar3 + 7 >> 3) + 1;
       } while (((*(byte *)(png_ptr + 0x18) & 2) == 0) &&
               (png_ptr[0x30] =
-                    ((png_ptr[0x2f] - *(int *)(&DAT_1004eac8 + iVar5)) + -1 +
-                    *(uint *)(&DAT_1004eae4 + iVar5)) / *(uint *)(&DAT_1004eae4 + iVar5),
+                    ((png_ptr[0x2f] - *(int *)(&DAT_1004eac8 + iVar6)) + -1 +
+                    *(uint *)(&DAT_1004eae4 + iVar6)) / *(uint *)(&DAT_1004eae4 + iVar6),
               png_ptr[0x34] == 0));
       if (bVar2 < 7) {
         return;
@@ -29832,14 +29837,14 @@ LAB_10025995:
         if (png_ptr[0x1a] == 0) {
           if (png_ptr[0x3f] == 0) {
             do {
-              png_crc_finish(png_ptr,0);
-              png_read_data(png_ptr,(uchar *)&local_4,4);
-              uVar3 = png_get_uint_32((uchar *)&local_4);
-              png_ptr[0x3f] = uVar3;
-              png_reset_crc(png_ptr);
-              png_crc_read(png_ptr,(uchar *)(png_ptr + 0x43),4);
+              png_crc_finish((png_structp)png_ptr,0);
+              png_read_data((png_structp)png_ptr,(png_bytep)&local_4,4);
+              pVar4 = png_get_uint_32((png_bytep)&local_4);
+              png_ptr[0x3f] = pVar4;
+              png_reset_crc((png_structp)png_ptr);
+              png_crc_read((png_structp)png_ptr,(png_bytep)(png_ptr + 0x43),4);
               if (png_ptr[0x43] != 0x54414449) {
-                png_error(png_ptr,"Not enough image data");
+                png_error((png_structp)png_ptr,"Not enough image data");
               }
             } while (png_ptr[0x3f] == 0);
           }
@@ -29848,31 +29853,31 @@ LAB_10025995:
           if ((uint)png_ptr[0x3f] < (uint)png_ptr[0x28]) {
             png_ptr[0x1a] = png_ptr[0x3f];
           }
-          png_crc_read(png_ptr,(uchar *)png_ptr[0x27],png_ptr[0x1a]);
+          png_crc_read((png_structp)png_ptr,(png_bytep)png_ptr[0x27],png_ptr[0x1a]);
           png_ptr[0x3f] = png_ptr[0x3f] - png_ptr[0x1a];
         }
-        pbVar4 = FUN_1002438b(png_ptr + 0x19,1);
-        if (pbVar4 == (byte *)0x1) break;
-        if (pbVar4 != (byte *)0x0) {
+        pbVar5 = FUN_1002438b(png_ptr + 0x19,1);
+        if (pbVar5 == (byte *)0x1) break;
+        if (pbVar5 != (byte *)0x0) {
           msg = (char *)png_ptr[0x1f];
           if (msg == (char *)0x0) {
             msg = "Decompression Error";
           }
-          png_error(png_ptr,msg);
+          png_error((png_structp)png_ptr,msg);
         }
         if (png_ptr[0x1d] == 0) {
-          png_error(png_ptr,"Extra compressed data");
+          png_error((png_structp)png_ptr,"Extra compressed data");
         }
       }
       if (((png_ptr[0x1d] == 0) || (png_ptr[0x1a] != 0)) || (png_ptr[0x3f] != 0)) {
-        png_error(png_ptr,"Extra compressed data");
+        png_error((png_structp)png_ptr,"Extra compressed data");
       }
       png_ptr[0x16] = png_ptr[0x16] | 8;
       png_ptr[0x17] = png_ptr[0x17] | 0x20;
       png_ptr[0x1d] = 0;
     }
     if ((png_ptr[0x3f] != 0) || (png_ptr[0x1a] != 0)) {
-      png_error(png_ptr,"Extra compression data");
+      png_error((png_structp)png_ptr,"Extra compression data");
     }
     FUN_10024212((int)(png_ptr + 0x19));
     png_ptr[0x16] = png_ptr[0x16] | 8;

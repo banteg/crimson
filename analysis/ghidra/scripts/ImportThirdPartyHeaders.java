@@ -39,6 +39,7 @@ public class ImportThirdPartyHeaders extends GhidraScript {
 
         addHeader(headerFiles, missing, new File(root, "jpeglib.h"));
         addHeader(headerFiles, missing, new File(root, "zlib.h"));
+        addHeader(headerFiles, missing, new File(root, "png_struct_stub.h"));
         addHeader(headerFiles, missing, new File(root, "ogg/ogg.h"));
         addHeader(headerFiles, missing, new File(root, "vorbis/codec.h"));
         addHeader(headerFiles, missing, new File(root, "vorbis/vorbisfile.h"));

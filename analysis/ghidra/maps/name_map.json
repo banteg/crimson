@@ -2073,35 +2073,35 @@
     "program": "grim.dll",
     "address": "0x1001e114",
     "name": "png_error",
-    "signature": "void png_error(int *png_ptr, char *msg)",
+    "signature": "void png_error(png_structp png_ptr, char * msg)",
     "comment": "png error handler: call error_fn then longjmp"
   },
   {
     "program": "grim.dll",
     "address": "0x1001e132",
     "name": "png_warning",
-    "signature": "void png_warning(int *png_ptr, char *msg)",
+    "signature": "void png_warning(png_structp png_ptr, char * msg)",
     "comment": "png warning handler: call warning_fn"
   },
   {
     "program": "grim.dll",
     "address": "0x1002047c",
     "name": "png_read_data",
-    "signature": "void png_read_data(int *png_ptr, unsigned char *data, unsigned int length)",
+    "signature": "void png_read_data(png_structp png_ptr, png_bytep data, png_uint_32 length)",
     "comment": "png read callback wrapper (errors if NULL)"
   },
   {
     "program": "grim.dll",
     "address": "0x10020583",
     "name": "png_reset_crc",
-    "signature": "void png_reset_crc(int *png_ptr)",
+    "signature": "void png_reset_crc(png_structp png_ptr)",
     "comment": "reset png CRC state"
   },
   {
     "program": "grim.dll",
     "address": "0x1002059b",
     "name": "png_calculate_crc",
-    "signature": "void png_calculate_crc(int *png_ptr, unsigned char *data, unsigned int length)",
+    "signature": "void png_calculate_crc(png_structp png_ptr, png_bytep data, png_uint_32 length)",
     "comment": "update png CRC with buffer"
   },
   {
@@ -2115,56 +2115,63 @@
     "program": "grim.dll",
     "address": "0x10024734",
     "name": "png_free_ptr",
-    "signature": "void png_free_ptr(void *ptr)",
+    "signature": "void png_free_ptr(void * ptr)",
     "comment": "free wrapper for png allocations"
   },
   {
     "program": "grim.dll",
     "address": "0x10024741",
     "name": "png_malloc",
-    "signature": "void * png_malloc(int *png_ptr, unsigned int size)",
+    "signature": "void * png_malloc(png_structp png_ptr, png_uint_32 size)",
     "comment": "png malloc wrapper (errors on OOM)"
   },
   {
     "program": "grim.dll",
     "address": "0x10024777",
     "name": "png_free",
-    "signature": "void png_free(int *png_ptr, void *ptr)",
+    "signature": "void png_free(png_structp png_ptr, void * ptr)",
     "comment": "png free callback wrapper"
   },
   {
     "program": "grim.dll",
     "address": "0x100247e4",
     "name": "png_get_uint_32",
-    "signature": "unsigned int png_get_uint_32(unsigned char *buf)",
+    "signature": "png_uint_32 png_get_uint_32(png_bytep buf)",
     "comment": "read big-endian 32-bit value"
   },
   {
     "program": "grim.dll",
     "address": "0x10024807",
     "name": "png_crc_read",
-    "signature": "void png_crc_read(int *png_ptr, unsigned char *buf, unsigned int length)",
+    "signature": "void png_crc_read(png_structp png_ptr, png_bytep buf, png_uint_32 length)",
     "comment": "read PNG chunk data and update CRC"
   },
   {
     "program": "grim.dll",
     "address": "0x10024821",
     "name": "png_crc_error",
-    "signature": "int png_crc_error(int *png_ptr)",
+    "signature": "int png_crc_error(png_structp png_ptr)",
     "comment": "read stored CRC and compare with computed"
   },
   {
     "program": "grim.dll",
     "address": "0x1002487f",
     "name": "png_check_chunk_name",
-    "signature": "void png_check_chunk_name(int *png_ptr, unsigned char *chunk_name)",
+    "signature": "void png_check_chunk_name(png_structp png_ptr, png_bytep chunk_name)",
     "comment": "validate PNG chunk type characters"
   },
   {
     "program": "grim.dll",
     "address": "0x100250d7",
     "name": "png_crc_finish",
-    "signature": "int png_crc_finish(int *png_ptr, unsigned int skip)",
+    "signature": "int png_crc_finish(png_structp png_ptr, png_uint_32 skip)",
     "comment": "read remaining chunk bytes and check CRC"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002057e",
+    "name": "png_free",
+    "signature": "void png_free(png_structp png_ptr, void * ptr)",
+    "comment": "libpng 1.1.x internal helper"
   }
 ]

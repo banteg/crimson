@@ -33,10 +33,11 @@ External inputs:
      game_bins/crimsonland/1.9.93-gog/crimsonland.exe
    ```
 
-   The header pack includes DirectX/DirectSound headers as references, but the
-   import script only parses codec headers (JPEG/zlib/ogg/vorbis). The full
-   `png.h` header is kept for reference but skipped in headless parsing due to
-   Ghidra C parser limitations with unnamed callback parameters.
+The header pack includes DirectX/DirectSound headers as references, and the
+import script parses codec headers (JPEG/zlib/ogg/vorbis) plus the
+`png_struct_stub.h` shim used for grim.dll’s libpng 1.1.x layout. The full
+`png.h` header is kept for reference but skipped in headless parsing due to
+Ghidra C parser limitations with unnamed callback parameters.
 
    The WinAPI .gdt is kept in `analysis/ghidra/maps/winapi_32.gdt`; override it
    via `CRIMSON_WINAPI_GDT` or the `ApplyWinapiGDT.java` script arg if needed.
