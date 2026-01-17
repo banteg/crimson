@@ -127,6 +127,42 @@ Notes:
   `effect_id` to a 4x atlas frame (`DAT_00491210/14`).
 - The rotated queue is drawn in two passes with different alpha scales.
 
+## Effect entries (`DAT_004ab330` pool)
+
+Entry size: `0xbc` bytes (`0x2f` floats). Free list head: `DAT_004c2b30`
+with next pointer at offset `0xb8`.
+
+Spawn/update helpers:
+
+- `effect_spawn` (`FUN_0042e120`) allocates an entry and seeds UVs for the
+  selected atlas frame.
+- `effects_update` (`FUN_0042e710`) advances timers/velocities and frees expired entries.
+- `effects_render` (`FUN_0042e820`) draws active entries.
+
+Layout (partial):
+
+| Offset | Field | Evidence |
+| --- | --- | --- |
+| 0x00 | pos_x | Set from `pos[0]` in `effect_spawn`; advanced in `effects_update`. |
+| 0x04 | pos_y | Set from `pos[1]` in `effect_spawn`; advanced in `effects_update`. |
+| 0x08 | effect_id (byte) | Stored in `effect_spawn`; used when expiring to call `fx_queue_add`. |
+| 0x0c | vel_x | `pos_x += vel_x * dt` in `effects_update`. |
+| 0x10 | vel_y | `pos_y += vel_y * dt` in `effects_update`. |
+| 0x14 | rotation | Passed into `fx_queue_add` on expiry. |
+| 0x18 | rotation_2 | Updated when `flags & 0x8` using `0x44`. |
+| 0x1c | half_width | Doubled when queuing the expiry sprite. |
+| 0x20 | half_height | Doubled when queuing the expiry sprite. |
+| 0x24 | age | Incremented by `dt` in `effects_update`. |
+| 0x28 | lifetime | Compared against `age` in `effects_update`. |
+| 0x2c | flags | `0x4` updates `rotation` via `0x40`; `0x8` updates `rotation_2` via `0x44`; `0x10` fades alpha; `0x80` spawns `fx_queue_add` on expiry; `0x100` selects a dimmer expiry alpha. |
+| 0x30 | color_r | Initialized to `1.0`; passed into `fx_queue_add`. |
+| 0x34 | color_g | Initialized to `1.0`; passed into `fx_queue_add`. |
+| 0x38 | color_b | Initialized to `1.0`; passed into `fx_queue_add`. |
+| 0x3c | color_a | Initialized to `1.0`; `0x10` flag drives fade-out. |
+| 0x40 | rotation_step | Added into `rotation` when `flags & 0x4`. |
+| 0x44 | rotation_step_2 | Added into `rotation_2` when `flags & 0x8`. |
+| 0x48 | UV/vertex data | Initialized in `effect_spawn` using atlas tables. |
+
 
 ## Sprite effect pool (`DAT_00496820`)
 
