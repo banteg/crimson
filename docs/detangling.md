@@ -30,18 +30,18 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
 ### `crimsonland.exe`
 
 ```
-  36    2 00401870 FUN_00401870 undefined FUN_00401870(void * param_1, byte * param_2)
-  32    6 004566d3 FUN_004566d3 int FUN_004566d3(int param_1)
-  31    1 004658cc FUN_004658cc undefined FUN_004658cc(int param_1)
-  26    7 0046586b FUN_0046586b undefined FUN_0046586b(int param_1)
   25    1 00465d93 FUN_00465d93 DWORD * FUN_00465d93(void)
   20    1 00460d86 FUN_00460d86 int FUN_00460d86(undefined4 param_1)
   19    0 0042fcf0 FUN_0042fcf0 undefined4 FUN_0042fcf0(int param_1)
   15    2 004616e7 FUN_004616e7 int FUN_004616e7(undefined1 * param_1, byte * param_2)
-  14    8 004654b8 FUN_004654b8 DWORD * FUN_004654b8(void)
+  15    0 0042e120 FUN_0042e120 undefined4 * FUN_0042e120(int param_1, undefined4 * param_2)
+  14    3 0043d120 FUN_0043d120 int FUN_0043d120(int param_1)
   14    1 00460dc7 FUN_00460dc7 undefined FUN_00460dc7(undefined * param_1)
   14    1 00465d9c FUN_00465d9c DWORD * FUN_00465d9c(void)
-  14    0 0042e120 FUN_0042e120 undefined4 * FUN_0042e120(int param_1, undefined4 * param_2)
+  12    8 004625c1 FUN_004625c1 undefined FUN_004625c1(undefined * param_1)
+  12    3 00460e5d FUN_00460e5d undefined4 FUN_00460e5d(FILE * param_1)
+  12    2 0043d550 FUN_0043d550 undefined FUN_0043d550(int param_1)
+  11    3 0043d260 FUN_0043d260 float FUN_0043d260(float param_1)
 ```
 
 ### `grim.dll`

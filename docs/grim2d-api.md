@@ -68,7 +68,7 @@ These offsets appear with keycodes or input-related values:
 - `0x60`/`0x70`/`0x74` read the DirectInput mouse deltas, while
   `0x64`/`0x68`/`0x6c` update or return the accumulated mouse position.
 
-## Provisional mapping (in progress)
+## Vtable map (high confidence)
 
 | Offset | Name | Signature (guess) | Confidence | Notes |
 | --- | --- | --- | --- | --- |
