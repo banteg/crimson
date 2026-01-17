@@ -138,7 +138,7 @@ Known `projs.png` frame selections:
 | `0x15` | 4 | 2 | Ion Minigun | Repeated along a vector to build beam/trail segments; also used by Man Bomb (perk id 53). |
 | `0x16` | 4 | 2 | Ion Cannon | Repeated along a vector to build beam/trail segments; also used by Man Bomb (perk id 53). |
 | `0x17` | 4 | 2 | Shrinkifier 5k | Repeated along a vector to build beam/trail segments. |
-| `0x2d` | 4 | 2 | Fire Cough perk | Used by the perk burst (perk id 54) + weapon-driven pellet path. |
+| `0x2d` | 4 | 2 | Fire Bullets bonus + Fire Cough perk | Used by the Fire Bullets bonus (bonus id 14) and the Fire Cough perk (perk id 54). The bonus path spawns `DAT_004d7aa0[weapon_id]` pellets per shot. |
 
 The same path also calls `grim_set_atlas_frame(2, …)` for these beam types, but
 the exact grid2 index is still unclear from the decompile.

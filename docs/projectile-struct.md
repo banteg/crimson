@@ -46,3 +46,4 @@ current frame mapping table.
 
 Some beam/chain effects override UVs with `grim_set_uv_point` to draw a thin
 strip from inside `projs.png` (see the atlas notes for the grid2 sub-cut).
+The overlays in [Sprite atlas cutting](atlas.md) show the exact UV slice.
