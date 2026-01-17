@@ -159,6 +159,19 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
   - Evidence: loads `sfx.paq` and registers the sound effect ids.
   - See `docs/sfx-id-map.md` for the extracted id-to-file mapping.
   - See `docs/sfx-usage.md` for the most referenced SFX ids in the decompiled code.
+- `FUN_0043c740` -> `sfx_load_sample`
+  - Evidence: allocates a free slot in `DAT_004c84e4`, loads `.ogg`/`.wav` data, and returns the
+    sample id.
+- `FUN_0043c700` -> `sfx_release_sample`
+  - Evidence: releases an sfx entry by id via `sfx_release_entry`.
+- `FUN_0043c090` -> `sfx_release_entry`
+  - Evidence: frees sample buffers/voices and clears entry state.
+- `FUN_0043c8d0` -> `music_load_track`
+  - Evidence: allocates a free track in `DAT_004c4250`, loads the tune, and returns the id.
+- `FUN_0043c960` -> `music_queue_track`
+  - Evidence: appends a track id into `DAT_004cc6d0` playlist array.
+- `FUN_0043c980` -> `music_release_track`
+  - Evidence: releases a music entry by id via `sfx_release_entry`.
 
 ### Global var access (medium confidence)
 
