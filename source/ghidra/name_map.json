@@ -374,6 +374,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004055e0",
+    "name": "perk_apply",
+    "signature": "void perk_apply(int perk_id)",
+    "comment": "applies perk effects and increments perk counter"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0042fb10",
     "name": "perk_can_offer",
     "signature": "int perk_can_offer(int perk_index)",

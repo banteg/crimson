@@ -209,6 +209,9 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
   - Prereq field is checked via `game_var_get` and gates perks like Toxic Avenger (requires
     Veins of Poison), Ninja (requires Dodger), Perk Master (requires Perk Expert), and
     Greater Regeneration (requires Regeneration).
+- `FUN_004055e0` -> `perk_apply`
+  - Evidence: called after selecting a perk in the UI, increments `game_var_get` table, and
+    executes the perk-specific effects (exp, health, weapon changes, perk spawns).
 
 ## Next naming targets
 
