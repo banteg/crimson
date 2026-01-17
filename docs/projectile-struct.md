@@ -49,7 +49,9 @@ Known type_id sources (partial):
 | type_id | Sources | Notes |
 | --- | --- | --- |
 | `0x15` | Ion Minigun weapon (id `0x15`); Man Bomb perk (id `53`); Shock Chain bonus (id `7`) | Beam/chain segment types. |
-| `0x16` | Ion Cannon weapon (id `0x16`); Man Bomb perk (id `53`) | Beam/chain segment type. |
+| `0x16` | Ion Cannon weapon (id `0x16`); Flameburst weapon (id `0x1f`); Man Bomb perk (id `53`) | Beam/chain segment type. |
+| `0x0b` | Rocket Launcher weapon (id `0x0b`); Blow Torch weapon (id `0x0e`); Plasma Minigun spread (id `0x0a`); Angry Reloader perk (id `50`) | Fired as single shots or radial bursts. |
+| `0x1c` | Splitter Gun weapon (id `0x1c`) | Direct weapon spawn. |
 | `0x2d` | Fire Bullets bonus (id `14`); Fire Cough perk (id `54`) | Forced on player shots when Fire Bullets is active. |
 | `0x9` | Fireblast bonus (id `8`); Multi-shot spread path in `player_update` | Radial burst in `bonus_apply`. |
 | `0x29` | Bubblegun weapon (id `0x29`) | Direct weapon spawn. |
