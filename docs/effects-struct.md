@@ -106,6 +106,8 @@ Notes:
 
 - `effect_select_texture` resolves `effect_id` through `DAT_004755f0/4` and sets
   atlas size/frame (`0x10/0x20/0x40/0x80` -> `16/8/4/2` cells).
+- `FUN_00427700` is a small helper that spawns a random `fx_queue_add` entry
+  (effect ids `3..7`) with randomized grayscale color and size.
 
 ## Rotated FX queue (`DAT_004aaf3c`)
 
