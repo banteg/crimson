@@ -111,9 +111,21 @@
     },
     {
       "program": "crimsonland.exe",
-      "address": "0x004908d4",
-      "name": "player_health",
-      "comment": "Per-player health (player table base, stride 0xd8)"
+      "address": "0x00490430",
+      "name": "fx_rotated_pos_x",
+      "comment": "Rotated FX queue position X array"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490434",
+      "name": "fx_rotated_pos_y",
+      "comment": "Rotated FX queue position Y array"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004906a8",
+      "name": "fx_rotated_scale",
+      "comment": "Rotated FX queue scale array"
     },
     {
       "program": "crimsonland.exe",
@@ -147,6 +159,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x004908d4",
+      "name": "player_health",
+      "comment": "Per-player health (player table base, stride 0xd8)"
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004908dc",
       "name": "player_heading",
       "comment": "Per-player body heading radians (player_health + 0x08)"
@@ -174,6 +192,12 @@
       "address": "0x0049090c",
       "name": "player_speed_multiplier",
       "comment": "Per-player movement speed multiplier (player_health + 0x38)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490910",
+      "name": "player_weapon_reset_latch",
+      "comment": "Per-player weapon reset latch (player_health + 0x3c); cleared when weapon timers/ammo are reset."
     },
     {
       "program": "crimsonland.exe",
@@ -216,30 +240,6 @@
       "address": "0x00490b68",
       "name": "player_spread_heat",
       "comment": "Per-player spread/heat accumulator (player_health + 0x294)"
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x00490bc0",
-      "name": "player_low_health_timer",
-      "comment": "Low-health warning timer (player_health + 0x2ec)"
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x00490bd0",
-      "name": "player_auto_target",
-      "comment": "Per-player auto-aim target creature index (player_health + 0x2fc)"
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x00490bd4",
-      "name": "player_move_target_x",
-      "comment": "Per-player movement target X (player_health + 0x300)"
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x00490bd8",
-      "name": "player_move_target_y",
-      "comment": "Per-player movement target Y (player_health + 0x304)"
     },
     {
       "program": "crimsonland.exe",
@@ -339,6 +339,24 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00490bb8",
+      "name": "player_state_aux",
+      "comment": "Per-player aux state (player_health + 0x2e4); zeroed in player reset, no read sites yet."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490bbc",
+      "name": "evil_eyes_target_creature",
+      "comment": "Creature index targeted by Evil Eyes perk; set in FUN_00406b40 and read in creature_update_all."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490bc0",
+      "name": "player_low_health_timer",
+      "comment": "Low-health warning timer (player_health + 0x2ec)"
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00490bc4",
       "name": "player_speed_bonus_timer",
       "comment": "Per-player speed bonus timer (player_health + 0x2f0)"
@@ -354,6 +372,24 @@
       "address": "0x00490bcc",
       "name": "player_fire_bullets_timer",
       "comment": "Per-player Fire Bullets timer (player_health + 0x2f8)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490bd0",
+      "name": "player_auto_target",
+      "comment": "Per-player auto-aim target creature index (player_health + 0x2fc)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490bd4",
+      "name": "player_move_target_x",
+      "comment": "Per-player movement target X (player_health + 0x300)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490bd8",
+      "name": "player_move_target_y",
+      "comment": "Per-player movement target Y (player_health + 0x304)"
     },
     {
       "program": "crimsonland.exe",
@@ -450,6 +486,42 @@
       "address": "0x00490f4c",
       "name": "player_alt_fire_key",
       "comment": "Alternate primary fire key (checked by input_primary_is_down)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00491010",
+      "name": "effect_uv8_u",
+      "comment": "Effect UV table U for 8x8 atlas frames"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00491014",
+      "name": "effect_uv8_v",
+      "comment": "Effect UV table V for 8x8 atlas frames"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00491210",
+      "name": "effect_uv4_u",
+      "comment": "Effect UV table U for 4x4 atlas frames"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00491214",
+      "name": "effect_uv4_v",
+      "comment": "Effect UV table V for 4x4 atlas frames"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00491290",
+      "name": "effect_uv2_u",
+      "comment": "Effect UV table U for 2x2 atlas frames"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00491294",
+      "name": "effect_uv2_v",
+      "comment": "Effect UV table V for 2x2 atlas frames"
     },
     {
       "program": "crimsonland.exe",
@@ -753,6 +825,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x0049669c",
+      "name": "fx_rotated_rotation",
+      "comment": "Rotated FX queue rotation array"
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00496820",
       "name": "sprite_effect_pool",
       "comment": "Sprite effect pool base (stride 0x2c)"
@@ -819,27 +897,9 @@
     },
     {
       "program": "crimsonland.exe",
-      "address": "0x0049bf38",
-      "name": "creature_pool",
-      "comment": "Creature pool base (0x180 entries, stride 0x98)"
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x004aaf3c",
-      "name": "fx_queue_rotated",
-      "comment": "Rotated FX queue base (0x40 entries)"
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x00490430",
-      "name": "fx_rotated_pos_x",
-      "comment": "Rotated FX queue position X array"
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x00490434",
-      "name": "fx_rotated_pos_y",
-      "comment": "Rotated FX queue position Y array"
+      "address": "0x0049ba30",
+      "name": "fx_rotated_effect_id",
+      "comment": "Rotated FX queue effect id array"
     },
     {
       "program": "crimsonland.exe",
@@ -867,21 +927,9 @@
     },
     {
       "program": "crimsonland.exe",
-      "address": "0x0049669c",
-      "name": "fx_rotated_rotation",
-      "comment": "Rotated FX queue rotation array"
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x004906a8",
-      "name": "fx_rotated_scale",
-      "comment": "Rotated FX queue scale array"
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x0049ba30",
-      "name": "fx_rotated_effect_id",
-      "comment": "Rotated FX queue effect id array"
+      "address": "0x0049bf38",
+      "name": "creature_pool",
+      "comment": "Creature pool base (0x180 entries, stride 0x98)"
     },
     {
       "program": "crimsonland.exe",
@@ -897,39 +945,9 @@
     },
     {
       "program": "crimsonland.exe",
-      "address": "0x00491010",
-      "name": "effect_uv8_u",
-      "comment": "Effect UV table U for 8x8 atlas frames"
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x00491014",
-      "name": "effect_uv8_v",
-      "comment": "Effect UV table V for 8x8 atlas frames"
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x00491210",
-      "name": "effect_uv4_u",
-      "comment": "Effect UV table U for 4x4 atlas frames"
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x00491214",
-      "name": "effect_uv4_v",
-      "comment": "Effect UV table V for 4x4 atlas frames"
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x00491290",
-      "name": "effect_uv2_u",
-      "comment": "Effect UV table U for 2x2 atlas frames"
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x00491294",
-      "name": "effect_uv2_v",
-      "comment": "Effect UV table V for 2x2 atlas frames"
+      "address": "0x004aaf3c",
+      "name": "fx_queue_rotated",
+      "comment": "Rotated FX queue base (0x40 entries)"
     },
     {
       "program": "crimsonland.exe",

@@ -25,6 +25,7 @@ High-confidence fields (partial):
 | `0x2c` | aim target x | `player_aim_x` | Used to derive aim vectors and overlay position. |
 | `0x30` | aim target y | `player_aim_y` | Used to derive aim vectors and overlay position. |
 | `0x38` | move speed multiplier | `player_speed_multiplier` | Multiplies movement vector (boosted by Speed bonus). |
+| `0x3c` | weapon reset latch | `player_weapon_reset_latch` | Cleared by `weapon_assign_player` and `bonus_apply` (Weapon Power Up / Fire Bullets) when timers/ammo reset. |
 | `0x44` | move speed / accel | `player_move_speed` | Ramps up/down based on input; scales movement. |
 | `0x70` | move phase | `player_move_phase` | Incremented by movement speed, wrapped to `[0, 14]` for step/anim phase. |
 | `0x78` | Hot Tempered timer | `player_hot_tempered_timer` | Used by perk ring burst logic. |
@@ -48,6 +49,7 @@ High-confidence fields (partial):
 | `0x2d0` | alt reload timer max | `player_alt_reload_timer_max` | Saved when swapping to alt weapon. |
 | `0x2dc` | aim heading (radians) | `player_aim_heading` | Used for projectile direction and overlay rendering. |
 | `0x2e0` | turn speed accumulator | `player_turn_speed` | Turn speed/accel when using keyboard/tank controls. |
+| `0x2e4` | aux state | `player_state_aux` | Zeroed in `FUN_0041fc80` (player reset); no read sites found yet. |
 | `0x2ec` | low-health timer | `player_low_health_timer` | Counts down to play low-health cues when HP is low. |
 | `0x2f0` | speed bonus timer | `player_speed_bonus_timer` | Bonus id 13 (Speed). |
 | `0x2f4` | shield timer | `player_shield_timer` | Bonus id 10 (Shield). |

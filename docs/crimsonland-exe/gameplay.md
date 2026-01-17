@@ -81,6 +81,11 @@ When the Regeneration perk (`DAT_004c2bb0`) is active, `FUN_00406b40` slowly
 increments player health while in the main loop. This is decoupled from
 `player_update` and is skipped in some demo-gated paths.
 
+While Evil Eyes (`DAT_004c2b88`) is active, `FUN_00406b40` picks the nearest
+creature within `12.0` units of `player_aim_x` and stores the index in
+`evil_eyes_target_creature` (`DAT_00490bbc`); `creature_update_all` uses this
+index to special-case the target.
+
 ### Weapon Power Up cooldown scaling
 
 While `_DAT_0048701c > 0` (Weapon Power Up active), `player_update` decays the

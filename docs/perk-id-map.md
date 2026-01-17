@@ -27,7 +27,7 @@ Notes:
 | 8 | DAT_004c2b70 | Grim Deal | I'll make you a deal: I'll give you 18% more experience points, and you'll give me your life. So you'll die but score higher. Ponder that one for a sec. |  |  |
 | 9 | DAT_004c2b74 | Alternate Weapon | Ever fancied about having two weapons available for use? This might be your lucky day; with this perk you'll get an extra weapon slot for another gun! Carrying around two guns slows you down slightly though. (You can switch the weapon slots with RELOAD key) | 0x1 |  |
 | 10 | DAT_004c2b78 | Plaguebearer | You carry a horrible disease. Good for you: you are immune. Bad for them: it is contagious! (Monsters become resistant over time though.) |  |  |
-| 11 | DAT_004c2b88 | Evil Eyes | No living (nor dead) can resist the hypnotic power of your eyes: monsters freeze still as you look at them! |  |  |
+| 11 | DAT_004c2b88 | Evil Eyes | No living (nor dead) can resist the hypnotic power of your eyes: monsters freeze still as you look at them! |  | Target creature index stored in `evil_eyes_target_creature` (`DAT_00490bbc`), set in `FUN_00406b40`, read in `creature_update_all`. |
 | 12 | DAT_004c2b80 | Ammo Maniac | You squeeze and you push and you pack your clips with about 20% more ammo than a regular fellow. They call you Ammo Maniac with a deep respect in their voices. |  |  |
 | 13 | DAT_004c2b7c | Radioactive | You are the Radioactive-man; you have that healthy green glow around you! Others don't like it though, it makes them sick and nauseous whenever near you. It does affect your social life a bit. |  |  |
 | 14 | DAT_004c2b50 | Fastshot | Funny how you make your gun spit bullets faster than the next guy. Even the most professional of engineers are astonished. |  |  |
