@@ -75,6 +75,11 @@ in the same function draws the sprite variants based on `type id`.
 | `4` | Straight projectile; accelerates while speed < ~600; lifetime decays at 1.0x. On hit or timeout, switches to type `3` detonation with base scale `0.25`. | Pulse Gun (weapon id `0x12`). |
 | `3` | Detonation state; expands over ~1s, applies radial damage each tick, spawns `fx_queue_add(0x10)` and clears when the timer > 1.0. | Triggered by types `1/2/4` or when their lifetime expires. |
 
+Render notes:
+
+- Base pass sizes in `projectile_render`: type `1` draws `14x14`, type `2` draws `10x10`,
+  type `4` draws `8x8` (all from `projs.png`, atlas frame `4,3`).
+
 ## FX queue (`DAT_004912b8`)
 
 Entry size: `0x28` bytes. Queue size: `0x80` entries (index `0..0x7f` via `DAT_004aaf18`).
