@@ -153,13 +153,13 @@ These live inside the per-player input struct (stride `0xd8`) and are queried th
 
 | Address | Default (DIK) | Guess | Evidence |
 | --- | --- | --- | --- |
-| `DAT_00490bdc` | `0x11` (W) | move up | queried via `is_key_active` in player movement |
-| `DAT_00490be0` | `0x1f` (S) | move down | queried via `is_key_active` in player movement |
-| `DAT_00490be4` | `0x1e` (A) | move left | queried via `is_key_active` in player movement |
-| `DAT_00490be8` | `0x20` (D) | move right | queried via `is_key_active` in player movement |
-| `DAT_00490bec` | `0x0f` (Tab) | primary fire (player slot) | used by `input_primary_*` with stride `0xd8` |
-| `DAT_00490bf8` | `0x10` (Q) | rotate/aim left | rotates `DAT_00490bb0` in aim update |
-| `DAT_00490bfc` | `0x12` (E) | rotate/aim right | rotates `DAT_00490bb0` in aim update |
+| `DAT_00490bdc` | `0x11` (W) | move forward (`player_move_key_forward`) | queried via `is_key_active` in player movement |
+| `DAT_00490be0` | `0x1f` (S) | move backward (`player_move_key_backward`) | queried via `is_key_active` in player movement |
+| `DAT_00490be4` | `0x1e` (A) | turn left (`player_turn_key_left`) | rotates heading in movement scheme 1/2 |
+| `DAT_00490be8` | `0x20` (D) | turn right (`player_turn_key_right`) | rotates heading in movement scheme 1/2 |
+| `DAT_00490bec` | `0x0f` (Tab) | primary fire (`player_fire_key`) | used by `input_primary_*` with stride `0xd8` |
+| `DAT_00490bf8` | `0x10` (Q) | aim rotate left (`player_aim_key_left`) | rotates `player_aim_heading` in aim scheme 1 |
+| `DAT_00490bfc` | `0x12` (E) | aim rotate right (`player_aim_key_right`) | rotates `player_aim_heading` in aim scheme 1 |
 | `DAT_00490bf0` | `0x11` (W) | unused/reserved | copied from config, but no `is_key_*` callsites found |
 | `DAT_00490bf4` | `0x1f` (S) | unused/reserved | copied from config, but no `is_key_*` callsites found |
 | `DAT_00490f3c` | `0xc8` (Up) | alt move up | used via `is_key_down` when `_DAT_0048035c == 1` |
@@ -173,7 +173,7 @@ These live inside the per-player input struct (stride `0xd8`) and are queried th
 | `DAT_00490f5c` | `0xc9` (PageUp) | unused/reserved | defaults set; no callsites yet |
 
 Key info overlay (`FUN_00405160`) shows the first five entries per player from the config
-blob at `DAT_00480510` (stride 5: Up/Down/Left/Right/Fire), which matches the active runtime
+blob at `DAT_00480510` (stride 5: Forward/Back/TurnLeft/TurnRight/Fire), which matches the active runtime
 binds copied from `DAT_00480540` into `DAT_00490bdc..DAT_00490bec`.
 
 ### Analog axis bindings (per-player, stride `0xd8`)

@@ -333,6 +333,72 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00490bb4",
+      "name": "player_turn_speed",
+      "comment": "Per-player turn speed accumulator for keyboard/tank controls (player_health + 0x2e0)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490bc4",
+      "name": "player_speed_bonus_timer",
+      "comment": "Per-player speed bonus timer (player_health + 0x2f0)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490bc8",
+      "name": "player_shield_timer",
+      "comment": "Per-player shield timer (player_health + 0x2f4)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490bcc",
+      "name": "player_fire_bullets_timer",
+      "comment": "Per-player Fire Bullets timer (player_health + 0x2f8)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490bdc",
+      "name": "player_move_key_forward",
+      "comment": "Per-player forward move key (player_health + 0x308)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490be0",
+      "name": "player_move_key_backward",
+      "comment": "Per-player backward move key (player_health + 0x30c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490be4",
+      "name": "player_turn_key_left",
+      "comment": "Per-player turn-left key (player_health + 0x310)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490be8",
+      "name": "player_turn_key_right",
+      "comment": "Per-player turn-right key (player_health + 0x314)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490bec",
+      "name": "player_fire_key",
+      "comment": "Per-player primary fire key (player_health + 0x318)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490bf8",
+      "name": "player_aim_key_left",
+      "comment": "Per-player aim rotate-left key (player_health + 0x324)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490bfc",
+      "name": "player_aim_key_right",
+      "comment": "Per-player aim rotate-right key (player_health + 0x328)"
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00490c00",
       "name": "player_axis_aim_x",
       "comment": "Per-player aim axis X binding (player_health + 0x32c)"
@@ -354,24 +420,6 @@
       "address": "0x00490c0c",
       "name": "player_axis_move_y",
       "comment": "Per-player move axis Y binding (player_health + 0x338)"
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x00490bc4",
-      "name": "player_speed_bonus_timer",
-      "comment": "Per-player speed bonus timer (player_health + 0x2f0)"
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x00490bc8",
-      "name": "player_shield_timer",
-      "comment": "Per-player shield timer (player_health + 0x2f4)"
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x00490bcc",
-      "name": "player_fire_bullets_timer",
-      "comment": "Per-player Fire Bullets timer (player_health + 0x2f8)"
     },
     {
       "program": "crimsonland.exe",

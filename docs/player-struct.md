@@ -47,6 +47,7 @@ High-confidence fields (partial):
 | `0x2cc` | alt shot cooldown | `player_alt_shot_cooldown` | Saved when swapping to alt weapon. |
 | `0x2d0` | alt reload timer max | `player_alt_reload_timer_max` | Saved when swapping to alt weapon. |
 | `0x2dc` | aim heading (radians) | `player_aim_heading` | Used for projectile direction and overlay rendering. |
+| `0x2e0` | turn speed accumulator | `player_turn_speed` | Turn speed/accel when using keyboard/tank controls. |
 | `0x2ec` | low-health timer | `player_low_health_timer` | Counts down to play low-health cues when HP is low. |
 | `0x2f0` | speed bonus timer | `player_speed_bonus_timer` | Bonus id 13 (Speed). |
 | `0x2f4` | shield timer | `player_shield_timer` | Bonus id 10 (Shield). |
