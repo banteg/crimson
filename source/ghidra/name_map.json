@@ -451,6 +451,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0043c9c0",
+    "name": "audio_init_music",
+    "signature": "void audio_init_music(void)",
+    "comment": "loads music pack and registers music track ids"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043caa0",
+    "name": "audio_init_sfx",
+    "signature": "void audio_init_sfx(void)",
+    "comment": "loads sfx pack and registers sound effect ids"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0043d730",
     "name": "audio_suspend_channels",
     "signature": "void audio_suspend_channels(void)",

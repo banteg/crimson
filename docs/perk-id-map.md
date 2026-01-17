@@ -10,6 +10,7 @@ Notes:
   - `0x2` allows the perk when `_DAT_0048035c == 2` (two-player mode).
   - `0x4` marks stackable perks (random selection accepts them even if already taken).
 - `DAT_004c2c50 + id * 0x14` stores prerequisite perk ids (checked via `game_var_get`).
+- Music track ids are initialized in `audio_init_music` (see `docs/detangling.md`).
 
 | ID | Const | Name | Description | Flags | Prereq |
 | -- | -- | -- | -- | -- | -- |

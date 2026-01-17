@@ -148,6 +148,15 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
 - `FUN_0043d5b0` -> `sfx_update_mute_fades`
   - Evidence: ramps per-id volume toward `DAT_004807b0` when unmuted and fades to zero when muted,
     stopping voices via `FUN_0043bf60`.
+- `FUN_0043c9c0` -> `audio_init_music`
+  - Evidence: loads `music.paq`, logs status, and registers track ids:
+    - `DAT_004c4030` = `music_intro.ogg`
+    - `DAT_004c4034` = `music_shortie_monk.ogg`
+    - `DAT_004c4038` = `music_crimson_theme.ogg`
+    - `DAT_004c4044` = `music_crimsonquest.ogg`
+    - `DAT_004c403c`/`_DAT_004c4040` = subsequent track ids (+1/+2).
+- `FUN_0043caa0` -> `audio_init_sfx`
+  - Evidence: loads `sfx.paq` and registers the sound effect ids.
 
 ### Global var access (medium confidence)
 
