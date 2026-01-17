@@ -111,6 +111,30 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00490420",
+      "name": "fx_queue_random_color_r",
+      "comment": "Randomized grayscale color R used by fx_queue_add helper FUN_00427700."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490424",
+      "name": "fx_queue_random_color_g",
+      "comment": "Randomized grayscale color G used by fx_queue_add helper FUN_00427700."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490428",
+      "name": "fx_queue_random_color_b",
+      "comment": "Randomized grayscale color B used by fx_queue_add helper FUN_00427700."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049042c",
+      "name": "fx_queue_random_color_a",
+      "comment": "Randomized color alpha used by fx_queue_add helper FUN_00427700."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00490430",
       "name": "fx_rotated_pos_x",
       "comment": "Rotated FX queue position X array"
