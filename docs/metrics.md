@@ -53,37 +53,51 @@ regen (from git history).
 - Last regen: 2026-01-17
 
 
-## Formats and systems
+## Docs
 
-### PAQ archives
+### Formats and systems
+
+#### PAQ archives
 
 - Status: Completed
 - Notes: [PAQ format notes](formats/paq.md)
 
 
-### JAZ textures
+#### JAZ textures
 
 - Status: Completed
 - Notes: [JAZ format notes](formats/jaz.md)
 
 
-### Sprite atlas cutting
+#### Sprite atlas cutting
 
 - Status: In progress
 - Notes: [Atlas cutting](atlas.md)
 
 
-### Extraction pipeline
+#### Extraction pipeline
 
 - Status: In progress
 - Notes: [Extraction pipeline](pipeline.md)
 
 
-### Weapon table
+#### Weapon table
 
 - Status: In progress
 - Notes: [Weapon table](weapon-table.md)
 
+
+### Data tables
+
+| Doc | Entries | Notes |
+| --- | --- | --- |
+| [Weapon table](weapon-table.md) | 42 (40 named) | 2 unnamed entries in `WEAPON_TABLE`. |
+| [Perk ID map](perk-id-map.md) | 58 | IDs 0-57 listed. |
+| [Bonus ID map](bonus-id-map.md) | 15 | IDs 0-14 listed; id 0 unused. |
+| [Game mode map](game-mode-map.md) | 5 | Includes hidden tutorial mode. |
+| [SFX ID map](sfx-id-map.md) | 72 + 3 aliases | Main map plus alias table. |
+| [SFX labels](sfx-labels.md) | 72 + 3 aliases | Derived from the SFX ID map. |
+| [SFX usage](sfx-usage.md) | 40 | Top callsite rows listed. |
 
 ## Rewrite progress
 
