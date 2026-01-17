@@ -16,7 +16,7 @@ Table fields:
 | 2 | Energizer | Suddenly monsters run away from you and you can eat them. | 10 | 8 | `bonus_apply` updates `_DAT_00487020`. |
 | 3 | Weapon | You get a new weapon. | -1 | 3 | `bonus_apply` treats `default_amount` as weapon id; often overridden. |
 | 4 | Weapon Power Up | Your firerate and load time increase for a short period. | 7 | 10 | `bonus_apply` updates `_DAT_0048701c`. |
-| 5 | (unknown name) | An amazing explosion of ATOMIC power. | 1 | 0 | `bonus_apply` performs the large explosion + shake sequence. |
+| 5 | Nuke | An amazing explosion of ATOMIC power. | 1 | 0 | `bonus_apply` performs the large explosion + shake sequence. |
 | 6 | Double Experience | Every experience point you get is doubled when this bonus is active. | 4 | 0 | `bonus_apply` updates `_DAT_00487024`. |
 | 7 | Shock Chain | Chain of shocks shock the crowd. | 3 | 0 | `bonus_apply` spawns chained lightning via `FUN_00420440`. |
 | 8 | Fireblast | Fireballs all over the place. | 2 | 0 | `bonus_apply` spawns a radial projectile burst. |
