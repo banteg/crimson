@@ -370,7 +370,7 @@
     "address": "0x10005c80",
     "name": "grim_release",
     "signature": "void grim_release(void)",
-    "comment": "Grim2D vtable 0x0 (provisional): delete interface"
+    "comment": "Grim2D vtable 0x0: delete interface"
   },
   {
     "program": "grim.dll",
@@ -391,7 +391,7 @@
     "address": "0x10005cb0",
     "name": "grim_check_device",
     "signature": "int grim_check_device(void)",
-    "comment": "Grim2D vtable 0xc (provisional): device creation test"
+    "comment": "Grim2D vtable 0xc: device creation test"
   },
   {
     "program": "grim.dll",
@@ -440,14 +440,14 @@
     "address": "0x10007410",
     "name": "grim_is_mouse_button_down",
     "signature": "int grim_is_mouse_button_down(int button)",
-    "comment": "Grim2D vtable 0x58 (provisional)"
+    "comment": "Grim2D vtable 0x58: cached mouse button state or poll"
   },
   {
     "program": "grim.dll",
     "address": "0x10007530",
     "name": "grim_set_mouse_pos",
     "signature": "void grim_set_mouse_pos(float x, float y)",
-    "comment": "Grim2D vtable 0x64 (provisional): set mouse position"
+    "comment": "Grim2D vtable 0x64: set cached mouse position"
   },
   {
     "program": "grim.dll",
@@ -461,49 +461,49 @@
     "address": "0x10007510",
     "name": "grim_get_mouse_x",
     "signature": "float grim_get_mouse_x(void)",
-    "comment": "Grim2D vtable 0x68 (provisional): mouse X position"
+    "comment": "Grim2D vtable 0x68: cached mouse X position"
   },
   {
     "program": "grim.dll",
     "address": "0x10007520",
     "name": "grim_get_mouse_y",
     "signature": "float grim_get_mouse_y(void)",
-    "comment": "Grim2D vtable 0x6c (provisional): mouse Y position"
+    "comment": "Grim2D vtable 0x6c: cached mouse Y position"
   },
   {
     "program": "grim.dll",
     "address": "0x100074d0",
     "name": "grim_get_mouse_dx",
     "signature": "float grim_get_mouse_dx(void)",
-    "comment": "Grim2D vtable 0x70 (provisional): mouse delta X"
+    "comment": "Grim2D vtable 0x70: cached mouse delta X"
   },
   {
     "program": "grim.dll",
     "address": "0x100074e0",
     "name": "grim_get_mouse_dy",
     "signature": "float grim_get_mouse_dy(void)",
-    "comment": "Grim2D vtable 0x74 (provisional): mouse delta Y"
+    "comment": "Grim2D vtable 0x74: cached mouse delta Y"
   },
   {
     "program": "grim.dll",
     "address": "0x100074f0",
     "name": "grim_get_mouse_dx_indexed",
     "signature": "float grim_get_mouse_dx_indexed(int index)",
-    "comment": "Grim2D vtable 0x78 (provisional): mouse delta X (indexed)"
+    "comment": "Grim2D vtable 0x78: alias of get_mouse_dx"
   },
   {
     "program": "grim.dll",
     "address": "0x10007500",
     "name": "grim_get_mouse_dy_indexed",
     "signature": "float grim_get_mouse_dy_indexed(int index)",
-    "comment": "Grim2D vtable 0x7c (provisional): mouse delta Y (indexed)"
+    "comment": "Grim2D vtable 0x7c: alias of get_mouse_dy"
   },
   {
     "program": "grim.dll",
     "address": "0x10006fe0",
     "name": "grim_is_key_active",
     "signature": "int grim_is_key_active(int key)",
-    "comment": "Grim2D vtable 0x80 (provisional)"
+    "comment": "Grim2D vtable 0x80: routes key/mouse/joystick IDs"
   },
   {
     "program": "grim.dll",
@@ -538,7 +538,7 @@
     "address": "0x100071b0",
     "name": "grim_get_config_float",
     "signature": "float grim_get_config_float(int id)",
-    "comment": "Grim2D vtable 0x84 (provisional)"
+    "comment": "Grim2D vtable 0x84: config float lookup (scaled)"
   },
   {
     "program": "grim.dll",
@@ -566,7 +566,7 @@
     "address": "0x100075d0",
     "name": "grim_create_texture",
     "signature": "int grim_create_texture(char *name, int width, int height)",
-    "comment": "Grim2D vtable 0xac (provisional)"
+    "comment": "Grim2D vtable 0xac: create blank texture in a free slot"
   },
   {
     "program": "grim.dll",
@@ -601,35 +601,35 @@
     "address": "0x10007740",
     "name": "grim_get_texture_handle",
     "signature": "int grim_get_texture_handle(char *name)",
-    "comment": "Grim2D vtable 0xc0 (provisional)"
+    "comment": "Grim2D vtable 0xc0: lookup texture handle by name"
   },
   {
     "program": "grim.dll",
     "address": "0x10007750",
     "name": "grim_validate_texture",
     "signature": "int grim_validate_texture(int handle)",
-    "comment": "Grim2D vtable 0xb8 (provisional): validate texture handle"
+    "comment": "Grim2D vtable 0xb8: validate texture handle/device"
   },
   {
     "program": "grim.dll",
     "address": "0x10007790",
     "name": "grim_recreate_texture",
     "signature": "int grim_recreate_texture(int handle)",
-    "comment": "Grim2D vtable 0xb0 (provisional): recreate texture object"
+    "comment": "Grim2D vtable 0xb0: recreate D3D texture surface"
   },
   {
     "program": "grim.dll",
     "address": "0x10007830",
     "name": "grim_bind_texture",
     "signature": "void grim_bind_texture(int handle, int stage)",
-    "comment": "Grim2D vtable 0xc4 (provisional)"
+    "comment": "Grim2D vtable 0xc4: bind texture handle to stage"
   },
   {
     "program": "grim.dll",
     "address": "0x10007870",
     "name": "grim_draw_fullscreen_quad",
     "signature": "void grim_draw_fullscreen_quad(void)",
-    "comment": "Grim2D vtable 0xc8 (provisional): full-screen quad with current texture"
+    "comment": "Grim2D vtable 0xc8: full-screen quad with current texture"
   },
   {
     "program": "grim.dll",
@@ -650,28 +650,28 @@
     "address": "0x100078e0",
     "name": "grim_draw_rect_filled",
     "signature": "void grim_draw_rect_filled(float *xy, float w, float h)",
-    "comment": "Grim2D vtable 0xd0 (provisional): UI panel fill/quad"
+    "comment": "Grim2D vtable 0xd0: UI panel fill/quad"
   },
   {
     "program": "grim.dll",
     "address": "0x10008f10",
     "name": "grim_draw_rect_outline",
     "signature": "void grim_draw_rect_outline(float *xy, float w, float h)",
-    "comment": "Grim2D vtable 0xd4 (provisional): UI panel outline/frame"
+    "comment": "Grim2D vtable 0xd4: UI panel outline/frame (4 edge quads)"
   },
   {
     "program": "grim.dll",
     "address": "0x100079b0",
     "name": "grim_draw_fullscreen_color",
     "signature": "void grim_draw_fullscreen_color(float r, float g, float b, float a)",
-    "comment": "Grim2D vtable 0xcc (provisional): fullscreen color/fade overlay"
+    "comment": "Grim2D vtable 0xcc: fullscreen color/fade overlay"
   },
   {
     "program": "grim.dll",
     "address": "0x10007f30",
     "name": "grim_set_rotation",
     "signature": "void grim_set_rotation(float radians)",
-    "comment": "Grim2D vtable 0xfc (provisional)"
+    "comment": "Grim2D vtable 0xfc: precompute sin/cos (+45deg) for rotation matrix"
   },
   {
     "program": "grim.dll",
@@ -692,14 +692,14 @@
     "address": "0x100082c0",
     "name": "grim_set_sub_rect",
     "signature": "void grim_set_sub_rect(int atlas_size, int width, int height, int frame)",
-    "comment": "Grim2D vtable 0x108 (provisional)"
+    "comment": "Grim2D vtable 0x108: atlas sub-rect from grid table"
   },
   {
     "program": "grim.dll",
     "address": "0x10008040",
     "name": "grim_set_color_ptr",
     "signature": "void grim_set_color_ptr(float *rgba)",
-    "comment": "Grim2D vtable 0x110 (provisional): set color from float[4]"
+    "comment": "Grim2D vtable 0x110: set color from float[4]"
   },
   {
     "program": "grim.dll",
@@ -720,41 +720,41 @@
     "address": "0x100092b0",
     "name": "grim_draw_text_mono",
     "signature": "void grim_draw_text_mono(float x, float y, char *text)",
-    "comment": "Grim2D vtable 0x13c (provisional)"
+    "comment": "Grim2D vtable 0x13c: fixed 16px mono text"
   },
   {
     "program": "grim.dll",
     "address": "0x10009730",
     "name": "grim_draw_text_small",
     "signature": "void grim_draw_text_small(float x, float y, char *text)",
-    "comment": "Grim2D vtable 0x144 (provisional)"
+    "comment": "Grim2D vtable 0x144: small font draw (GRIM_Font2)"
   },
   {
     "program": "grim.dll",
     "address": "0x10009980",
     "name": "grim_draw_text_small_fmt",
     "signature": "void grim_draw_text_small_fmt(float x, float y, char *fmt)",
-    "comment": "Grim2D vtable 0x148 (provisional): formatted small-font text (vsprintf + vtable 0x144)"
+    "comment": "Grim2D vtable 0x148: formatted small-font text (vsprintf + vtable 0x144)"
   },
   {
     "program": "grim.dll",
     "address": "0x100096c0",
     "name": "grim_measure_text_width",
     "signature": "int grim_measure_text_width(char *text)",
-    "comment": "Grim2D vtable 0x14c (provisional)"
+    "comment": "Grim2D vtable 0x14c: small font width metric (handles newlines)"
   },
   {
     "program": "grim.dll",
     "address": "0x10005d40",
     "name": "grim_apply_config",
-    "comment": "Grim2D vtable 0x10 (provisional): invoked by '...invoking grim config' log",
+    "comment": "Grim2D vtable 0x10: opens D3D config dialog and applies settings",
     "signature": "int grim_apply_config(void)"
   },
   {
     "program": "grim.dll",
     "address": "0x10005eb0",
     "name": "grim_init_system",
-    "comment": "Grim2D vtable 0x14 (provisional): Grim2D init; returns success",
+    "comment": "Grim2D vtable 0x14: Grim2D init; returns success",
     "signature": "int grim_init_system(void)"
   },
   {
@@ -768,7 +768,7 @@
     "program": "grim.dll",
     "address": "0x10006020",
     "name": "grim_apply_settings",
-    "comment": "Grim2D vtable 0x1c (provisional): apply Grim2D settings after config load",
+    "comment": "Grim2D vtable 0x1c: apply Grim2D settings after config load",
     "signature": "void grim_apply_settings(void)"
   },
   {
@@ -782,7 +782,7 @@
     "program": "grim.dll",
     "address": "0x10006ca0",
     "name": "grim_get_error_text",
-    "comment": "Grim2D vtable 0x28 (provisional): error string for MessageBox",
+    "comment": "Grim2D vtable 0x28: error string for MessageBox",
     "signature": "char * grim_get_error_text(void)"
   },
   {
@@ -790,7 +790,7 @@
     "address": "0x100083a0",
     "name": "grim_set_uv_point",
     "signature": "void grim_set_uv_point(int index, float u, float v)",
-    "comment": "Grim2D vtable 0x10c (provisional): set UV point"
+    "comment": "Grim2D vtable 0x10c: set UV point"
   },
   {
     "program": "grim.dll",
@@ -804,14 +804,14 @@
     "address": "0x10009940",
     "name": "grim_draw_text_mono_fmt",
     "signature": "void grim_draw_text_mono_fmt(int *self, float x, float y, char *fmt)",
-    "comment": "Grim2D vtable 0x140 (provisional): formatted mono text"
+    "comment": "Grim2D vtable 0x140: printf-style wrapper around draw_text_mono"
   },
   {
     "program": "grim.dll",
     "address": "0x10006cb0",
     "name": "grim_clear_color",
     "signature": "void grim_clear_color(float r, float g, float b, float a)",
-    "comment": "Grim2D vtable 0x2c (provisional): clear color"
+    "comment": "Grim2D vtable 0x2c: packs RGBA into device clear color"
   },
   {
     "program": "grim.dll",
@@ -825,28 +825,28 @@
     "address": "0x10006e40",
     "name": "grim_get_time_ms",
     "signature": "int grim_get_time_ms(void)",
-    "comment": "Grim2D vtable 0x34 (provisional): accumulated time (ms)"
+    "comment": "Grim2D vtable 0x34: accumulated time (ms)"
   },
   {
     "program": "grim.dll",
     "address": "0x10006e50",
     "name": "grim_set_time_ms",
     "signature": "void grim_set_time_ms(int ms)",
-    "comment": "Grim2D vtable 0x38 (provisional): set accumulated time"
+    "comment": "Grim2D vtable 0x38: set accumulated time"
   },
   {
     "program": "grim.dll",
     "address": "0x10006e60",
     "name": "grim_get_frame_dt",
     "signature": "float grim_get_frame_dt(void)",
-    "comment": "Grim2D vtable 0x3c (provisional): clamped frame delta"
+    "comment": "Grim2D vtable 0x3c: clamped frame delta"
   },
   {
     "program": "grim.dll",
     "address": "0x10006e90",
     "name": "grim_get_fps",
     "signature": "float grim_get_fps(void)",
-    "comment": "Grim2D vtable 0x40 (provisional): frames per second"
+    "comment": "Grim2D vtable 0x40: frames per second"
   },
   {
     "program": "grim.dll",
@@ -867,21 +867,21 @@
     "address": "0x10008e30",
     "name": "grim_submit_vertex_raw",
     "signature": "void grim_submit_vertex_raw(float *vertex)",
-    "comment": "Grim2D vtable 0xf4 (provisional): push 1 raw vertex (7 floats)"
+    "comment": "Grim2D vtable 0xf4: push 1 raw vertex (7 floats)"
   },
   {
     "program": "grim.dll",
     "address": "0x10008eb0",
     "name": "grim_submit_quad_raw",
     "signature": "void grim_submit_quad_raw(float *verts)",
-    "comment": "Grim2D vtable 0xf8 (provisional): push 4 raw vertices (28 floats)"
+    "comment": "Grim2D vtable 0xf8: push 4 raw vertices (28 floats)"
   },
   {
     "program": "grim.dll",
     "address": "0x10008720",
     "name": "grim_draw_quad_xy",
     "signature": "void grim_draw_quad_xy(float *xy, float w, float h)",
-    "comment": "Grim2D vtable 0x120 (provisional): draw quad from xy pointer"
+    "comment": "Grim2D vtable 0x120: draw quad from xy pointer"
   },
   {
     "program": "grim.dll",
@@ -895,28 +895,28 @@
     "address": "0x100085c0",
     "name": "grim_submit_vertices_transform",
     "signature": "void grim_submit_vertices_transform(float *verts, int count, float *offset, float *matrix)",
-    "comment": "Grim2D vtable 0x128 (provisional): copy verts, rotate, translate"
+    "comment": "Grim2D vtable 0x128: copy verts, rotate, translate"
   },
   {
     "program": "grim.dll",
     "address": "0x10008680",
     "name": "grim_submit_vertices_offset",
     "signature": "void grim_submit_vertices_offset(float *verts, int count, float *offset)",
-    "comment": "Grim2D vtable 0x12c (provisional): copy verts, translate"
+    "comment": "Grim2D vtable 0x12c: copy verts, translate"
   },
   {
     "program": "grim.dll",
     "address": "0x10008430",
     "name": "grim_submit_vertices_offset_color",
     "signature": "void grim_submit_vertices_offset_color(float *verts, int count, float *offset, float *color)",
-    "comment": "Grim2D vtable 0x130 (provisional): translate + apply color"
+    "comment": "Grim2D vtable 0x130: translate + apply color"
   },
   {
     "program": "grim.dll",
     "address": "0x100084e0",
     "name": "grim_submit_vertices_transform_color",
     "signature": "void grim_submit_vertices_transform_color(float *verts, int count, float *offset, float *matrix, float *color)",
-    "comment": "Grim2D vtable 0x134 (provisional): rotate + translate + apply color"
+    "comment": "Grim2D vtable 0x134: rotate + translate + apply color"
   },
   {
     "program": "grim.dll",
@@ -930,7 +930,7 @@
     "address": "0x100083c0",
     "name": "grim_flush_batch",
     "signature": "void grim_flush_batch(void)",
-    "comment": "Grim2D vtable 0xec (provisional): flush batch when vertex buffer fills"
+    "comment": "Grim2D vtable 0xec: flush batch when vertex buffer fills"
   },
   {
     "program": "grim.dll",

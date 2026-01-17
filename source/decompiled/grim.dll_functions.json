@@ -15,7 +15,7 @@
       "sourceType": "DEFAULT",
       "parameters": [],
       "calls": [],
-      "calledBy": ["grim_restore_textures", "FUN_1000a670", "FUN_10004b70", "FUN_10002fc0", "Unwind@1004b7e0", "FUN_10002cf0", "FUN_1003d0d0", "grim_backup_textures", "FUN_100030b0", "FUN_10003090"]
+      "calledBy": ["grim_backup_textures", "grim_restore_textures", "FUN_1000a670", "Unwind@1004b7e0", "FUN_100030b0", "FUN_10002fc0", "FUN_1003d0d0", "FUN_10004b70", "FUN_10002cf0", "FUN_10003090"]
     },
     {
       "name": "FUN_100019f0",
@@ -29,7 +29,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["fclose", "fopen", "fwrite"],
+      "calls": ["fclose", "fwrite", "fopen"],
       "calledBy": ["FUN_10001a30"]
     },
     {
@@ -44,7 +44,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["FUN_100019f0", "fclose", "fopen", "fseek", "ftell", "fread"],
+      "calls": ["fseek", "fread", "fclose", "fopen", "FUN_100019f0", "ftell"],
       "calledBy": []
     },
     {
@@ -59,7 +59,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["GetDlgItem", "SendMessageA"],
+      "calls": ["SendMessageA", "GetDlgItem"],
       "calledBy": []
     },
     {
@@ -74,7 +74,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["LoadCursorA", "FUN_10002880", "GetStockObject", "GetDesktopWindow", "SetFocus", "AdjustWindowRectEx", "UpdateWindow", "ShowWindow", "GetModuleHandleA", "RegisterClassExA", "GetSystemMetrics", "CreateWindowExA"],
+      "calls": ["GetSystemMetrics", "AdjustWindowRectEx", "ShowWindow", "UpdateWindow", "SetFocus", "GetStockObject", "RegisterClassExA", "GetDesktopWindow", "FUN_10002880", "CreateWindowExA", "LoadCursorA", "GetModuleHandleA"],
       "calledBy": ["FUN_10003e60"]
     },
     {
@@ -90,7 +90,7 @@
       "sourceType": "DEFAULT",
       "parameters": [],
       "calls": ["UnregisterClassA", "DestroyWindow", "PostQuitMessage"],
-      "calledBy": ["FUN_10003e60", "FUN_10002680", "grim_shutdown", "FUN_10003c00", "grim_init_system"]
+      "calledBy": ["FUN_10003e60", "FUN_10002680", "FUN_10003c00", "grim_shutdown", "grim_init_system"]
     },
     {
       "name": "grim_backup_textures",
@@ -120,7 +120,7 @@
       "sourceType": "USER_DEFINED",
       "parameters": [],
       "calls": ["FUN_10001160"],
-      "calledBy": ["FUN_10002cf0", "FUN_100030b0"]
+      "calledBy": ["FUN_100030b0", "FUN_10002cf0"]
     },
     {
       "name": "FUN_10002cf0",
@@ -134,7 +134,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["Sleep", "grim_restore_textures", "FUN_10001160", "FUN_10004520", "MessageBoxA"],
+      "calls": ["MessageBoxA", "grim_restore_textures", "FUN_10004520", "FUN_10001160", "Sleep"],
       "calledBy": ["FUN_10003c00"]
     },
     {
@@ -179,7 +179,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined1 *"}],
-      "calls": ["FUN_10001160", "_getcwd", "GetClientRect"],
+      "calls": ["GetClientRect", "FUN_10001160", "_getcwd"],
       "calledBy": ["FUN_10003c00"]
     },
     {
@@ -224,7 +224,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["Sleep", "grim_restore_textures", "FUN_10001160", "FUN_10004520", "MessageBoxA"],
+      "calls": ["grim_restore_textures", "MessageBoxA", "FUN_10004520", "FUN_10001160", "Sleep"],
       "calledBy": []
     },
     {
@@ -239,7 +239,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["FUN_10002880", "FUN_10004970", "FUN_10002fc0", "SetForegroundWindow", "SetFocus", "FUN_1000a2b0", "FUN_10004920", "FUN_1000a4a0", "PeekMessageA", "Sleep", "FUN_1000a670", "FUN_10002cf0", "timeEndPeriod", "thunk_FUN_10002f60", "TranslateMessage", "ShowCursor", "DispatchMessageA", "FUN_10003090"],
+      "calls": ["PeekMessageA", "FUN_1000a670", "timeEndPeriod", "FUN_10002fc0", "DispatchMessageA", "SetFocus", "FUN_1000a4a0", "thunk_FUN_10002f60", "FUN_10003090", "SetForegroundWindow", "ShowCursor", "TranslateMessage", "Sleep", "FUN_10004970", "FUN_10002880", "FUN_10004920", "FUN_1000a2b0", "FUN_10002cf0"],
       "calledBy": ["grim_apply_settings"]
     },
     {
@@ -254,7 +254,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["FUN_1000cb5c", "FUN_10002880", "Direct3DCreate8", "strchr", "FUN_10004280", "FUN_10004350", "grim_is_texture_format_supported", "LoadResource", "FUN_10002680", "grim_select_texture_format", "FUN_10004520", "MessageBoxA", "SizeofResource", "FindResourceA", "LockResource"],
+      "calls": ["MessageBoxA", "FUN_10002680", "grim_is_texture_format_supported", "grim_select_texture_format", "FUN_10004350", "FUN_10004520", "SizeofResource", "FUN_10004280", "Direct3DCreate8", "LoadResource", "LockResource", "strchr", "FindResourceA", "FUN_1000cb5c", "FUN_10002880"],
       "calledBy": ["grim_init_system"]
     },
     {
@@ -269,7 +269,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["FUN_100044e0", "grim_texture_release", "operator_delete"],
+      "calls": ["FUN_100044e0", "operator_delete", "grim_texture_release"],
       "calledBy": ["FUN_10003e60", "grim_shutdown", "grim_init_system"]
     },
     {
@@ -300,7 +300,7 @@
       "sourceType": "DEFAULT",
       "parameters": [],
       "calls": [],
-      "calledBy": ["FUN_10004280", "FUN_10004350"]
+      "calledBy": ["FUN_10004350", "FUN_10004280"]
     },
     {
       "name": "FUN_10004520",
@@ -315,7 +315,7 @@
       "sourceType": "DEFAULT",
       "parameters": [],
       "calls": [],
-      "calledBy": ["FUN_10003e60", "FUN_10002cf0", "FUN_100030b0"]
+      "calledBy": ["FUN_100030b0", "FUN_10003e60", "FUN_10002cf0"]
     },
     {
       "name": "grim_is_texture_format_supported",
@@ -390,7 +390,7 @@
       "sourceType": "USER_DEFINED",
       "parameters": [{"name": "this", "type": "void *"}, {"name": "texture", "type": "void *"}, {"name": "name", "type": "char *"}],
       "calls": ["operator_new"],
-      "calledBy": ["grim_load_texture_internal", "grim_create_texture"]
+      "calledBy": ["grim_create_texture", "grim_load_texture_internal"]
     },
     {
       "name": "grim_texture_release",
@@ -405,7 +405,7 @@
       "sourceType": "USER_DEFINED",
       "parameters": [{"name": "texture", "type": "void *"}],
       "calls": ["operator_delete"],
-      "calledBy": ["grim_destroy_texture", "grim_load_texture_internal", "FUN_10004280"]
+      "calledBy": ["grim_destroy_texture", "FUN_10004280", "grim_load_texture_internal"]
     },
     {
       "name": "FUN_10004b00",
@@ -434,7 +434,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "char *"}, {"name": "param_2", "type": "undefined4"}, {"name": "param_3", "type": "uint *"}, {"name": "param_4", "type": "uint *"}, {"name": "param_5", "type": "uint *"}],
-      "calls": ["FUN_10009b30", "FUN_1000a810", "operator_delete", "FUN_1000a880", "FUN_10009b20", "FUN_10001160", "FUN_1003a990", "setjmp3", "FUN_1003ab10", "FUN_10009e00", "FUN_1000a070", "FUN_10009ec0", "operator_new", "FUN_10009a50"],
+      "calls": ["FUN_10009b20", "FUN_10009ec0", "FUN_1000a070", "FUN_1000a810", "operator_delete", "FUN_1000a880", "FUN_10009a50", "FUN_1003a990", "FUN_10001160", "FUN_10009b30", "FUN_10009e00", "FUN_1003ab10", "setjmp3", "operator_new"],
       "calledBy": ["grim_texture_load_file"]
     },
     {
@@ -449,7 +449,7 @@
       "hasVarArgs": false,
       "sourceType": "USER_DEFINED",
       "parameters": [{"name": "this", "type": "void *"}, {"name": "texture", "type": "void *"}, {"name": "path", "type": "ushort *"}],
-      "calls": ["fclose", "fopen", "FUN_10004b70", "FUN_1000cb5c", "fseek", "ftell", "FUN_10005b80", "FUN_1000cb9c", "FUN_10005ae0", "operator_new", "FUN_10004b00", "fread"],
+      "calls": ["fseek", "FUN_1000cb9c", "fread", "fclose", "FUN_10005b80", "FUN_1000cb5c", "fopen", "FUN_10005ae0", "ftell", "FUN_10004b00", "FUN_10004b70", "operator_new"],
       "calledBy": ["grim_load_texture_internal"]
     },
     {
@@ -495,7 +495,7 @@
       "sourceType": "USER_DEFINED",
       "parameters": [],
       "calls": [],
-      "calledBy": ["grim_load_texture_internal", "grim_create_texture"]
+      "calledBy": ["grim_create_texture", "grim_load_texture_internal"]
     },
     {
       "name": "grim_load_texture_internal",
@@ -509,7 +509,7 @@
       "hasVarArgs": false,
       "sourceType": "USER_DEFINED",
       "parameters": [{"name": "name", "type": "char *"}, {"name": "path", "type": "ushort *"}],
-      "calls": ["grim_texture_load_file", "grim_texture_init", "grim_find_texture_by_name", "grim_texture_release", "grim_find_free_texture_slot", "operator_new", "operator_delete"],
+      "calls": ["operator_delete", "grim_texture_release", "grim_find_texture_by_name", "grim_texture_load_file", "grim_find_free_texture_slot", "operator_new", "grim_texture_init"],
       "calledBy": ["grim_load_texture"]
     },
     {
@@ -539,8 +539,8 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "char *"}],
-      "calls": ["fclose", "fopen", "fseek", "ftell", "operator_delete", "operator_new", "fread"],
-      "calledBy": ["grim_set_render_state", "grim_shutdown"]
+      "calls": ["fseek", "fread", "fclose", "operator_delete", "fopen", "ftell", "operator_new"],
+      "calledBy": ["grim_shutdown", "grim_set_render_state"]
     },
     {
       "name": "FUN_10005ae0",
@@ -555,7 +555,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "byte *"}],
       "calls": [],
-      "calledBy": ["grim_texture_load_file", "grim_init_system"]
+      "calledBy": ["grim_init_system", "grim_texture_load_file"]
     },
     {
       "name": "FUN_10005b80",
@@ -674,7 +674,7 @@
       "hasVarArgs": false,
       "sourceType": "USER_DEFINED",
       "parameters": [],
-      "calls": ["Direct3DCreate8", "MessageBoxA"],
+      "calls": ["MessageBoxA", "Direct3DCreate8"],
       "calledBy": []
     },
     {
@@ -689,7 +689,7 @@
       "hasVarArgs": false,
       "sourceType": "USER_DEFINED",
       "parameters": [],
-      "calls": ["FUN_10003e60", "FUN_1000a5a0", "FUN_10002880", "FUN_10004970", "FUN_1000a7d0", "FUN_1000a550", "FUN_10004280", "_getcwd", "FUN_10004920", "FUN_1000a390", "FUN_1000a1c0", "FUN_10005ae0"],
+      "calls": ["FUN_10003e60", "FUN_1000a550", "FUN_1000a1c0", "FUN_10004280", "_getcwd", "FUN_1000a5a0", "FUN_1000a390", "FUN_10004970", "FUN_10002880", "FUN_10005ae0", "FUN_10004920", "FUN_1000a7d0"],
       "calledBy": []
     },
     {
@@ -704,7 +704,7 @@
       "hasVarArgs": false,
       "sourceType": "USER_DEFINED",
       "parameters": [],
-      "calls": ["FUN_10002880", "FUN_1000a7d0", "FUN_1000a550", "FUN_10005a40", "FUN_10004280", "FUN_1000a330"],
+      "calls": ["FUN_1000a330", "FUN_1000a550", "FUN_10004280", "FUN_10005a40", "FUN_10002880", "FUN_1000a7d0"],
       "calledBy": []
     },
     {
@@ -749,7 +749,7 @@
       "hasVarArgs": false,
       "sourceType": "USER_DEFINED",
       "parameters": [{"name": "state", "type": "uint"}, {"name": "value", "type": "uint"}],
-      "calls": ["FUN_10006030", "ftol", "FUN_10005a40", "_strdup", "operator_delete", "operator_new"],
+      "calls": ["operator_delete", "FUN_10005a40", "FUN_10006030", "_strdup", "operator_new", "ftol"],
       "calledBy": []
     },
     {
@@ -944,7 +944,7 @@
       "hasVarArgs": false,
       "sourceType": "USER_DEFINED",
       "parameters": [{"name": "this", "type": "void *"}, {"name": "key", "type": "int"}],
-      "calls": ["FUN_10006ef0", "FUN_10006f40", "FUN_10006f90", "FUN_10006ea0"],
+      "calls": ["FUN_10006ea0", "FUN_10006f40", "FUN_10006ef0", "FUN_10006f90"],
       "calledBy": []
     },
     {
@@ -1304,7 +1304,7 @@
       "hasVarArgs": false,
       "sourceType": "USER_DEFINED",
       "parameters": [{"name": "name", "type": "char *"}, {"name": "width", "type": "int"}, {"name": "height", "type": "int"}],
-      "calls": ["grim_texture_init", "grim_find_free_texture_slot", "operator_new"],
+      "calls": ["grim_find_free_texture_slot", "operator_new", "grim_texture_init"],
       "calledBy": []
     },
     {
@@ -1334,7 +1334,7 @@
       "hasVarArgs": false,
       "sourceType": "USER_DEFINED",
       "parameters": [{"name": "handle", "type": "int"}],
-      "calls": ["grim_texture_release", "operator_delete"],
+      "calls": ["operator_delete", "grim_texture_release"],
       "calledBy": []
     },
     {
@@ -1379,7 +1379,7 @@
       "hasVarArgs": false,
       "sourceType": "USER_DEFINED",
       "parameters": [{"name": "handle", "type": "int"}],
-      "calls": ["FUN_1000b3fe", "FUN_1000b297"],
+      "calls": ["FUN_1000b297", "FUN_1000b3fe"],
       "calledBy": []
     },
     {
@@ -1919,7 +1919,7 @@
       "hasVarArgs": false,
       "sourceType": "IMPORTED",
       "parameters": [],
-      "calls": ["FUN_100052f0", "Direct3DCreate8", "MessageBoxA", "operator_new"],
+      "calls": ["MessageBoxA", "FUN_100052f0", "Direct3DCreate8", "operator_new"],
       "calledBy": []
     },
     {
@@ -1949,7 +1949,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "int"}],
-      "calls": ["FUN_1003b770", "FUN_1003acd0", "FUN_1003d0d0"],
+      "calls": ["FUN_1003acd0", "FUN_1003d0d0", "FUN_1003b770"],
       "calledBy": ["FUN_10004b70"]
     },
     {
@@ -1979,7 +1979,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "char"}],
-      "calls": ["FUN_1003dd00", "FUN_10009ba0"],
+      "calls": ["FUN_10009ba0", "FUN_1003dd00"],
       "calledBy": ["FUN_10004b70"]
     },
     {
@@ -2039,7 +2039,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}],
-      "calls": ["FUN_10009fa0", "FUN_1003e040"],
+      "calls": ["FUN_1003e040", "FUN_10009fa0"],
       "calledBy": ["FUN_10004b70"]
     },
     {
@@ -2084,7 +2084,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}],
-      "calls": ["GetDesktopWindow", "GetForegroundWindow", "FUN_1000a2b0", "DirectInput8Create", "GetModuleHandleA"],
+      "calls": ["DirectInput8Create", "GetDesktopWindow", "FUN_1000a2b0", "GetForegroundWindow", "GetModuleHandleA"],
       "calledBy": ["grim_init_system"]
     },
     {
@@ -2100,7 +2100,7 @@
       "sourceType": "DEFAULT",
       "parameters": [],
       "calls": [],
-      "calledBy": ["FUN_10003c00", "FUN_1000a1c0"]
+      "calledBy": ["FUN_1000a1c0", "FUN_10003c00"]
     },
     {
       "name": "FUN_1000a310",
@@ -2145,7 +2145,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "uint"}],
       "calls": [],
-      "calledBy": ["grim_is_key_down", "grim_was_key_pressed"]
+      "calledBy": ["grim_was_key_pressed", "grim_is_key_down"]
     },
     {
       "name": "FUN_1000a390",
@@ -2159,7 +2159,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}],
-      "calls": ["GetDesktopWindow", "GetForegroundWindow", "DirectInput8Create", "FUN_1000a4a0", "GetModuleHandleA"],
+      "calls": ["DirectInput8Create", "GetDesktopWindow", "FUN_1000a4a0", "GetForegroundWindow", "GetModuleHandleA"],
       "calledBy": ["grim_init_system"]
     },
     {
@@ -2219,7 +2219,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["FUN_1000a670", "GetDesktopWindow", "GetForegroundWindow", "DirectInput8Create", "GetModuleHandleA"],
+      "calls": ["DirectInput8Create", "FUN_1000a670", "GetDesktopWindow", "GetForegroundWindow", "GetModuleHandleA"],
       "calledBy": ["grim_init_system"]
     },
     {
@@ -2235,7 +2235,7 @@
       "sourceType": "DEFAULT",
       "parameters": [],
       "calls": ["FUN_10001160"],
-      "calledBy": ["FUN_1000a5a0", "FUN_10003c00"]
+      "calledBy": ["FUN_10003c00", "FUN_1000a5a0"]
     },
     {
       "name": "FUN_1000a7d0",
@@ -2340,7 +2340,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "void *"}],
       "calls": [],
-      "calledBy": ["FUN_1001692e", "Unwind@1004bb0d", "FUN_10014595", "Unwind@1004b947", "Unwind@1004bb85", "FUN_10005a40", "Unwind@1004b965", "Unwind@1004bb5d", "Unwind@1004bae5", "Unwind@1004ba77", "Unwind@1004bb21", "Unwind@1004b9d3", "grim_load_texture_internal", "Unwind@1004b8cf", "Unwind@1004b820", "FUN_1001b493", "Unwind@1004b864", "FUN_10004b70", "Unwind@1004ba8b", "Unwind@1004bab3", "FUN_1000be28", "Unwind@1004b9f9", "Unwind@1004bba3", "Unwind@1004baf9", "FUN_1001bc84", "Unwind@1004b8c5", "Unwind@1004bb53", "Unwind@1004bb3f", "FUN_1001aec8", "grim_set_render_state", "Unwind@1004bb8f", "FUN_1003dbc0", "Unwind@1004bb35", "Unwind@1004babd", "Unwind@1004baef", "Unwind@1004bb7b", "Unwind@1004ba6d", "Unwind@1004ba95", "Unwind@1004bb71", "FID_conflict:`vector_deleting_destructor'", "Unwind@1004b96f", "grim_destroy_texture", "Unwind@1004ba3d", "FUN_100117ff", "Unwind@1004baa9", "Unwind@1004bb99", "Unwind@1004bb17", "Unwind@1004bb49", "FUN_10014799", "FUN_1001ae58"]
+      "calledBy": ["Unwind@1004b9c9", "Unwind@1004ba77", "grim_texture_release", "Unwind@1004ba81", "FUN_1000be28", "Unwind@1004bb85", "FUN_100117ff", "FUN_100142a2", "Unwind@1004b91f", "Unwind@1004ba63", "grim_load_texture_internal", "Unwind@1004ba6d", "Unwind@1004bbad", "Unwind@1004b965", "Unwind@1004badb", "Unwind@1004baef", "FUN_1001aec8", "Unwind@1004bb71", "Unwind@1004bb53", "Unwind@1004bb99", "FUN_1001ae58", "Unwind@1004b8cf", "Unwind@1004bb5d", "Unwind@1004baa9", "Unwind@1004bb8f", "Unwind@1004b96f", "FUN_1001029e", "Unwind@1004b9bf", "FUN_10004280", "Unwind@1004b9ab", "FUN_10014393", "FUN_1001b472", "grim_set_render_state", "Unwind@1004b9a1", "FUN_100102f7", "Unwind@1004ba9f", "Unwind@1004bb17", "FUN_10014799", "Unwind@1004b8c5", "Unwind@1004ba3d", "FUN_10016c3c", "Unwind@1004bb7b", "Unwind@1004bb03", "Unwind@1004b820", "FUN_10010313", "Unwind@1004b864", "Unwind@1004ba0d", "FUN_1001237e", "Unwind@1004b878", "Unwind@1004babd"]
     },
     {
       "name": "operator_new",
@@ -2355,7 +2355,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "uint"}],
       "calls": [],
-      "calledBy": ["FUN_10014799", "FUN_10011d95", "FUN_1001237e", "FUN_1001b0fd", "FUN_1000be28", "FUN_10014595", "FUN_10005a40", "GRIM__GetInterface", "FUN_10010e13", "FUN_100052f0", "FUN_1003d360", "grim_set_render_state", "FUN_1001152a", "FUN_1001288a", "FUN_10011083", "FUN_10012b93", "FUN_1001b50c", "FUN_1003d210", "FUN_10015c65", "grim_load_texture_internal", "FUN_1001a444", "FUN_1001504e", "FUN_10015534", "FUN_10014bbc", "FUN_10014393", "FUN_10004b70", "FUN_100117ff", "grim_texture_load_file", "grim_texture_init", "FUN_10016cdc", "FUN_1000a840", "FUN_100103d6", "FUN_1000b3fe", "FUN_10017361", "FUN_1003d0d0", "FUN_100142a2", "FUN_1001514e", "grim_create_texture"]
+      "calledBy": ["FUN_10017361", "FUN_1000be28", "FUN_10011083", "FUN_1001b50c", "FUN_10014595", "FUN_10005a40", "FUN_10014393", "grim_set_render_state", "FUN_10014bbc", "FUN_1000a840", "FUN_100117ff", "FUN_1001288a", "FUN_100142a2", "FUN_10014799", "FUN_10011d95", "GRIM__GetInterface", "FUN_100103d6", "FUN_10012b93", "FUN_10015c65", "grim_load_texture_internal", "FUN_1001b0fd", "FUN_1001152a", "FUN_10016cdc", "FUN_10015534", "FUN_1000b3fe", "FUN_1003d0d0", "FUN_1003d210", "FUN_1001237e", "FUN_1001514e", "FUN_1001a444", "FUN_1003d360", "FUN_100052f0", "FUN_1001504e", "FUN_10010e13", "grim_create_texture", "grim_texture_load_file", "FUN_10004b70", "grim_texture_init"]
     },
     {
       "name": "setjmp3",
@@ -2370,7 +2370,7 @@
       "sourceType": "DEFAULT",
       "parameters": [],
       "calls": [],
-      "calledBy": ["FUN_10010e13", "FUN_10004b70", "FUN_100117ff", "FUN_1001e191"]
+      "calledBy": ["FUN_100117ff", "FUN_10010e13", "FUN_10004b70", "FUN_1001e191"]
     },
     {
       "name": "longjmp",
@@ -2385,7 +2385,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "_Buf", "type": "int *"}, {"name": "_Value", "type": "int"}],
       "calls": [],
-      "calledBy": ["FUN_1001e114", "FUN_10010dd0"]
+      "calledBy": ["FUN_10010dd0", "FUN_1001e114"]
     },
     {
       "name": "ftol",
@@ -2400,7 +2400,7 @@
       "sourceType": "DEFAULT",
       "parameters": [],
       "calls": [],
-      "calledBy": ["grim_clear_color", "grim_set_color_slot", "FUN_1001fd2d", "grim_draw_text_small", "FUN_100117ff", "grim_set_render_state", "grim_set_color", "grim_draw_circle_outline", "grim_set_color_ptr", "FUN_1001288a", "FUN_10035fa0", "grim_draw_circle_filled"]
+      "calledBy": ["FUN_100117ff", "grim_set_color_ptr", "FUN_1001288a", "grim_set_color", "grim_draw_circle_outline", "FUN_10035fa0", "grim_draw_text_small", "grim_clear_color", "grim_draw_circle_filled", "FUN_1001fd2d", "grim_set_render_state", "grim_set_color_slot"]
     },
     {
       "name": "FUN_1000a900",
@@ -2444,7 +2444,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4"}, {"name": "param_2", "type": "int"}],
-      "calls": ["initterm", "free", "malloc"],
+      "calls": ["malloc", "initterm", "free"],
       "calledBy": ["entry"]
     },
     {
@@ -2459,7 +2459,7 @@
       "hasVarArgs": false,
       "sourceType": "IMPORTED",
       "parameters": [{"name": "param_1", "type": "HINSTANCE"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "undefined4"}],
-      "calls": ["FUN_1000a93e", "FUN_10009a20"],
+      "calls": ["FUN_10009a20", "FUN_1000a93e"],
       "calledBy": []
     },
     {
@@ -2490,7 +2490,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "_Memory", "type": "void *"}],
       "calls": [],
-      "calledBy": ["FUN_10024777", "FUN_1002e665", "FUN_10024734"]
+      "calledBy": ["FUN_1002e665", "FUN_10024777", "FUN_10024734"]
     },
     {
       "name": "initterm",
@@ -2520,7 +2520,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "_Size", "type": "size_t"}],
       "calls": [],
-      "calledBy": ["FUN_100246f2", "FUN_10024741", "FUN_1002e65a"]
+      "calledBy": ["FUN_100246f2", "FUN_1002e65a", "FUN_10024741"]
     },
     {
       "name": "Direct3DCreate8",
@@ -2535,7 +2535,7 @@
       "sourceType": "DEFAULT",
       "parameters": [],
       "calls": [],
-      "calledBy": ["FUN_10003e60", "GRIM__GetInterface", "grim_apply_config"]
+      "calledBy": ["FUN_10003e60", "grim_apply_config", "GRIM__GetInterface"]
     },
     {
       "name": "FUN_1000aaa6",
@@ -2550,7 +2550,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}],
       "calls": [],
-      "calledBy": ["FUN_1000c4e9", "FUN_100120d6", "FUN_10011d95", "FUN_1000ab3f", "FUN_1001237e", "FUN_1000b3fe", "FUN_1000af45"]
+      "calledBy": ["FUN_1000af45", "FUN_1000b3fe", "FUN_10011d95", "FUN_1000c4e9", "FUN_1000ab3f", "FUN_1001237e", "FUN_100120d6"]
     },
     {
       "name": "FUN_1000aaca",
@@ -2565,7 +2565,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}, {"name": "param_2", "type": "int"}],
       "calls": [],
-      "calledBy": ["FUN_1000ab3f", "FUN_1000abad"]
+      "calledBy": ["FUN_1000abad", "FUN_1000ab3f"]
     },
     {
       "name": "FUN_1000ab3f",
@@ -2594,8 +2594,8 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "undefined4"}, {"name": "param_3", "type": "undefined4"}, {"name": "param_4", "type": "int *"}],
-      "calls": ["FUN_1000aaca", "FUN_100101f5"],
-      "calledBy": ["FUN_1000c4e9", "FUN_1000af45"]
+      "calls": ["FUN_100101f5", "FUN_1000aaca"],
+      "calledBy": ["FUN_1000af45", "FUN_1000c4e9"]
     },
     {
       "name": "FUN_1000ac8f",
@@ -2624,8 +2624,8 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "undefined4"}, {"name": "param_3", "type": "uint *"}, {"name": "param_4", "type": "int"}, {"name": "param_5", "type": "undefined4"}, {"name": "param_6", "type": "undefined4"}, {"name": "param_7", "type": "undefined4"}, {"name": "param_8", "type": "undefined4 *"}, {"name": "param_9", "type": "uint"}, {"name": "param_10", "type": "undefined4"}],
-      "calls": ["FUN_100161b6", "FUN_10012856", "FUN_100161bb", "FUN_10016007", "FUN_10016121", "FUN_1001284c"],
-      "calledBy": ["FUN_1000c4e9", "FUN_1000bbfc"]
+      "calls": ["FUN_100161bb", "FUN_10016007", "FUN_1001284c", "FUN_100161b6", "FUN_10016121", "FUN_10012856"],
+      "calledBy": ["FUN_1000bbfc", "FUN_1000c4e9"]
     },
     {
       "name": "FUN_1000ad9f",
@@ -2639,7 +2639,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["FUN_1001029e", "FUN_1004b5b0", "FUN_1001237e", "FUN_10010313", "FUN_100161b6", "FUN_100161bb", "FUN_10010285", "FUN_10016121"],
+      "calls": ["FUN_100161bb", "FUN_1004b5b0", "FUN_1001029e", "FUN_10010313", "FUN_100161b6", "FUN_10010285", "FUN_10016121", "FUN_1001237e"],
       "calledBy": ["FUN_1000ae52"]
     },
     {
@@ -2669,7 +2669,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "undefined4"}, {"name": "param_3", "type": "uint *"}, {"name": "param_4", "type": "int"}, {"name": "param_5", "type": "undefined4"}, {"name": "param_6", "type": "undefined4"}, {"name": "param_7", "type": "undefined4"}, {"name": "param_8", "type": "undefined4"}, {"name": "param_9", "type": "undefined4 *"}, {"name": "param_10", "type": "uint"}, {"name": "param_11", "type": "undefined4"}],
-      "calls": ["FUN_1001619a", "FUN_100165d3", "FUN_10012856", "FUN_10016007", "thunk_FUN_100161a0", "FUN_1001284c"],
+      "calls": ["FUN_100165d3", "FUN_10016007", "FUN_1001284c", "FUN_1001619a", "thunk_FUN_100161a0", "FUN_10012856"],
       "calledBy": ["FUN_1000c4e9", "FUN_1000bda2"]
     },
     {
@@ -2684,8 +2684,8 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4"}, {"name": "param_2", "type": "uint"}, {"name": "param_3", "type": "int *"}, {"name": "param_4", "type": "uint *"}, {"name": "param_5", "type": "uint *"}, {"name": "param_6", "type": "uint *"}, {"name": "param_7", "type": "uint *"}, {"name": "param_8", "type": "int *"}, {"name": "param_9", "type": "int"}, {"name": "param_10", "type": "int"}],
-      "calls": ["FUN_1000aaa6", "FUN_1000abad"],
-      "calledBy": ["FUN_1000c4e9", "FUN_1000b26f"]
+      "calls": ["FUN_1000abad", "FUN_1000aaa6"],
+      "calledBy": ["FUN_1000b26f", "FUN_1000c4e9"]
     },
     {
       "name": "FUN_1000b26f",
@@ -2729,7 +2729,7 @@
       "hasVarArgs": false,
       "sourceType": "ANALYSIS",
       "parameters": [{"name": "this", "type": "CODBCFieldInfo *"}, {"name": "param_1", "type": "uint"}],
-      "calls": ["FUN_100161b6", "FUN_1004b5cf", "operator_delete"],
+      "calls": ["operator_delete", "FUN_100161b6", "FUN_1004b5cf"],
       "calledBy": ["FUN_1000be28"]
     },
     {
@@ -2744,7 +2744,7 @@
       "hasVarArgs": false,
       "sourceType": "ANALYSIS",
       "parameters": [{"name": "this", "type": "void *"}, {"name": "param_1", "type": "byte"}],
-      "calls": ["FUN_1004b5cf", "thunk_FUN_100161a0", "operator_delete"],
+      "calls": ["operator_delete", "FUN_1004b5cf", "thunk_FUN_100161a0"],
       "calledBy": ["FUN_1000be28"]
     },
     {
@@ -2760,7 +2760,7 @@
       "sourceType": "ANALYSIS",
       "parameters": [{"name": "param_1", "type": "void *"}, {"name": "param_2", "type": "uint"}, {"name": "param_3", "type": "int"}, {"name": "param_4", "type": "_func_void_ptr_void_ptr *"}],
       "calls": [],
-      "calledBy": ["FUN_10014799", "FUN_10015c65", "FUN_1001b0fd", "FUN_1001a444", "FUN_10014595", "FUN_10015534", "FUN_10014bbc", "FUN_100170f9", "FUN_10014393", "FUN_10016cdc", "FUN_1000b3fe", "FUN_10017361", "FUN_10012b93", "FUN_100142a2", "FUN_1001514e"]
+      "calledBy": ["FUN_10017361", "FUN_10016cdc", "FUN_10015534", "FUN_1000b3fe", "FUN_10014595", "FUN_10014393", "FUN_10014bbc", "FUN_1001514e", "FUN_100142a2", "FUN_1001a444", "FUN_10014799", "FUN_100170f9", "FUN_10012b93", "FUN_10015c65", "FUN_1001b0fd"]
     },
     {
       "name": "FUN_1000b3b5",
@@ -2789,7 +2789,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "int *"}, {"name": "param_3", "type": "undefined4"}, {"name": "param_4", "type": "uint"}, {"name": "param_5", "type": "uint"}, {"name": "param_6", "type": "float"}],
-      "calls": ["FUN_1000aaa6", "`vector_constructor_iterator'", "thunk_FUN_1000ce69", "FUN_100161b6", "FUN_100161bb", "FUN_10016121", "operator_new", "FUN_1000b3b5", "operator_delete", "FUN_1001b50c"],
+      "calls": ["FUN_100161bb", "operator_delete", "FUN_100161b6", "FUN_1000aaa6", "`vector_constructor_iterator'", "FUN_1001b50c", "FUN_10016121", "FUN_1000b3b5", "thunk_FUN_1000ce69", "operator_new"],
       "calledBy": ["grim_recreate_texture"]
     },
     {
@@ -2804,7 +2804,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "int *"}, {"name": "param_3", "type": "uint *"}, {"name": "param_4", "type": "int *"}, {"name": "param_5", "type": "int *"}, {"name": "param_6", "type": "uint *"}, {"name": "param_7", "type": "uint"}, {"name": "param_8", "type": "int"}],
-      "calls": ["FUN_1000acc0", "FUN_100161b6", "FUN_100101f5", "FUN_100161bb", "FUN_10016121"],
+      "calls": ["FUN_100161bb", "FUN_100161b6", "FUN_10016121", "FUN_100101f5", "FUN_1000acc0"],
       "calledBy": ["FUN_1000c205"]
     },
     {
@@ -2819,7 +2819,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "undefined4"}, {"name": "param_3", "type": "uint *"}, {"name": "param_4", "type": "int *"}, {"name": "param_5", "type": "undefined4"}, {"name": "param_6", "type": "uint *"}, {"name": "param_7", "type": "uint"}, {"name": "param_8", "type": "undefined4"}],
-      "calls": ["FUN_1001619a", "FUN_100165d3", "FUN_1000ae72", "thunk_FUN_100161a0"],
+      "calls": ["FUN_100165d3", "FUN_1000ae72", "FUN_1001619a", "thunk_FUN_100161a0"],
       "calledBy": ["FUN_1000c205"]
     },
     {
@@ -2834,7 +2834,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["`vector_deleting_destructor'", "FUN_1001029e", "FUN_1004b5b0", "FUN_1001237e", "FUN_10010313", "FUN_100165d3", "FUN_1004b6c3", "FUN_100161bb", "FUN_10010285", "FID_conflict:`vector_deleting_destructor'", "operator_new", "operator_delete"],
+      "calls": ["FUN_100161bb", "FUN_1004b5b0", "FUN_1001029e", "FUN_100165d3", "FID_conflict:`vector_deleting_destructor'", "operator_delete", "FUN_10010313", "FUN_1004b6c3", "FUN_10010285", "`vector_deleting_destructor'", "FUN_1001237e", "operator_new"],
       "calledBy": ["FUN_1000c1e8"]
     },
     {
@@ -2879,7 +2879,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["FUN_1000aaa6", "FUN_1001029e", "FUN_1004b5b0", "FUN_10012677", "FUN_1000c205", "FUN_1000acc0", "FUN_1000ac8f", "FUN_1000ae72", "FUN_1000abad", "FUN_1000af45", "FUN_10010285"],
+      "calls": ["FUN_1000af45", "FUN_1004b5b0", "FUN_1001029e", "FUN_1000abad", "FUN_1000ae72", "FUN_1000aaa6", "FUN_1000c205", "FUN_10010285", "FUN_10012677", "FUN_1000ac8f", "FUN_1000acc0"],
       "calledBy": ["FUN_1000cb5c"]
     },
     {
@@ -2895,7 +2895,7 @@
       "sourceType": "DEFAULT",
       "parameters": [],
       "calls": ["FUN_1000c4e9"],
-      "calledBy": ["FUN_10003e60", "grim_texture_load_file", "FUN_1000cb9c"]
+      "calledBy": ["FUN_1000cb9c", "FUN_10003e60", "grim_texture_load_file"]
     },
     {
       "name": "FUN_1000cb9c",
@@ -2909,7 +2909,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4"}, {"name": "param_2", "type": "LPCWSTR"}],
-      "calls": ["FUN_1000cb5c", "FUN_1001bcb7", "FUN_1001bca5", "FUN_1001bed2"],
+      "calls": ["FUN_1001bca5", "FUN_1001bcb7", "FUN_1000cb5c", "FUN_1001bed2"],
       "calledBy": ["grim_texture_load_file"]
     },
     {
@@ -2925,7 +2925,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "float"}, {"name": "param_2", "type": "float"}],
       "calls": [],
-      "calledBy": ["FUN_1000f296", "FUN_1000f44a", "FUN_1000f8dc", "FUN_1000f38e", "FUN_1000ef05", "FUN_1000f4ea"]
+      "calledBy": ["FUN_1000f44a", "FUN_1000f38e", "FUN_1000ef05", "FUN_1000f8dc", "FUN_1000f296", "FUN_1000f4ea"]
     },
     {
       "name": "FUN_1000cc2c",
@@ -3104,7 +3104,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4"}, {"name": "param_2", "type": "undefined4"}, {"name": "param_3", "type": "undefined4"}, {"name": "param_4", "type": "undefined4"}, {"name": "param_5", "type": "undefined4"}, {"name": "param_6", "type": "undefined4"}],
-      "calls": ["FUN_1001c188", "FUN_1000cf54"],
+      "calls": ["FUN_1000cf54", "FUN_1001c188"],
       "calledBy": ["FUN_1000cf54"]
     },
     {
@@ -3300,7 +3300,7 @@
       "sourceType": "DEFAULT",
       "parameters": [],
       "calls": [],
-      "calledBy": ["FUN_1000e568", "FUN_1000f9ce"]
+      "calledBy": ["FUN_1000f9ce", "FUN_1000e568"]
     },
     {
       "name": "FUN_1000d9af",
@@ -3374,7 +3374,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4"}, {"name": "param_2", "type": "undefined4"}, {"name": "param_3", "type": "undefined4"}, {"name": "param_4", "type": "undefined4"}],
-      "calls": ["FUN_1000e012", "FUN_1001c188"],
+      "calls": ["FUN_1001c188", "FUN_1000e012"],
       "calledBy": ["FUN_1000e012"]
     },
     {
@@ -3389,7 +3389,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4"}, {"name": "param_2", "type": "undefined4"}, {"name": "param_3", "type": "undefined4"}, {"name": "param_4", "type": "undefined4"}],
-      "calls": ["FUN_1001c188", "FUN_1000e09c"],
+      "calls": ["FUN_1000e09c", "FUN_1001c188"],
       "calledBy": ["FUN_1000e09c"]
     },
     {
@@ -3540,7 +3540,7 @@
       "sourceType": "DEFAULT",
       "parameters": [],
       "calls": [],
-      "calledBy": ["FUN_1000e568", "FUN_1000f9ce", "FUN_1000f995"]
+      "calledBy": ["FUN_1000f9ce", "FUN_1000f995", "FUN_1000e568"]
     },
     {
       "name": "FUN_1000e502",
@@ -3554,7 +3554,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4"}, {"name": "param_2", "type": "undefined4"}, {"name": "param_3", "type": "undefined4"}, {"name": "param_4", "type": "undefined4"}],
-      "calls": ["FUN_1001c188", "FUN_1000e502"],
+      "calls": ["FUN_1000e502", "FUN_1001c188"],
       "calledBy": ["FUN_1000e502"]
     },
     {
@@ -3584,7 +3584,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4"}, {"name": "param_2", "type": "undefined4"}, {"name": "param_3", "type": "undefined4"}, {"name": "param_4", "type": "undefined4"}, {"name": "param_5", "type": "undefined4"}],
-      "calls": ["FUN_1001c188", "FUN_1000e541"],
+      "calls": ["FUN_1000e541", "FUN_1001c188"],
       "calledBy": ["FUN_1000e541"]
     },
     {
@@ -3599,7 +3599,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4 *"}, {"name": "param_2", "type": "undefined4"}, {"name": "param_3", "type": "float *"}, {"name": "param_4", "type": "int"}, {"name": "param_5", "type": "float *"}],
-      "calls": ["thunk_FUN_1000d766", "thunk_FUN_1000e40d"],
+      "calls": ["thunk_FUN_1000e40d", "thunk_FUN_1000d766"],
       "calledBy": []
     },
     {
@@ -3614,7 +3614,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4"}, {"name": "param_2", "type": "undefined4"}, {"name": "param_3", "type": "undefined4"}],
-      "calls": ["FUN_1001c188", "FUN_1000e853"],
+      "calls": ["FUN_1000e853", "FUN_1001c188"],
       "calledBy": ["FUN_1000e853"]
     },
     {
@@ -3644,7 +3644,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4"}, {"name": "param_2", "type": "undefined4"}, {"name": "param_3", "type": "undefined4"}, {"name": "param_4", "type": "undefined4"}],
-      "calls": ["FUN_1000e8cf", "FUN_1001c188"],
+      "calls": ["FUN_1001c188", "FUN_1000e8cf"],
       "calledBy": ["FUN_1000e8cf"]
     },
     {
@@ -3764,7 +3764,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4"}, {"name": "param_2", "type": "undefined4"}, {"name": "param_3", "type": "undefined4"}, {"name": "param_4", "type": "undefined4"}],
-      "calls": ["FUN_1001c188", "FUN_1000ed37"],
+      "calls": ["FUN_1000ed37", "FUN_1001c188"],
       "calledBy": ["FUN_1000ed37"]
     },
     {
@@ -3794,7 +3794,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4"}, {"name": "param_2", "type": "undefined4"}, {"name": "param_3", "type": "undefined4"}, {"name": "param_4", "type": "undefined4"}, {"name": "param_5", "type": "undefined4"}, {"name": "param_6", "type": "undefined4"}],
-      "calls": ["FUN_1001c188", "FUN_1000ee44"],
+      "calls": ["FUN_1000ee44", "FUN_1001c188"],
       "calledBy": ["FUN_1000ee44"]
     },
     {
@@ -3870,7 +3870,7 @@
       "sourceType": "DEFAULT",
       "parameters": [],
       "calls": [],
-      "calledBy": ["FUN_1000fc82", "FUN_1000fd5c"]
+      "calledBy": ["FUN_1000fd5c", "FUN_1000fc82"]
     },
     {
       "name": "FUN_1000f296",
@@ -4004,7 +4004,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4"}, {"name": "param_2", "type": "undefined4"}, {"name": "param_3", "type": "undefined4"}, {"name": "param_4", "type": "undefined4"}],
-      "calls": ["thunk_FUN_1000e8cf", "thunk_FUN_1000e40d"],
+      "calls": ["thunk_FUN_1000e40d", "thunk_FUN_1000e8cf"],
       "calledBy": []
     },
     {
@@ -4019,7 +4019,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4 *"}, {"name": "param_2", "type": "float *"}, {"name": "param_3", "type": "int"}, {"name": "param_4", "type": "undefined4 *"}, {"name": "param_5", "type": "float *"}, {"name": "param_6", "type": "int"}, {"name": "param_7", "type": "float *"}],
-      "calls": ["thunk_FUN_1000d766", "thunk_FUN_1000e40d", "thunk_FUN_1000d9af"],
+      "calls": ["thunk_FUN_1000e40d", "thunk_FUN_1000d766", "thunk_FUN_1000d9af"],
       "calledBy": []
     },
     {
@@ -4065,7 +4065,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4"}],
       "calls": ["LoadLibraryA", "GetProcAddress", "GetModuleHandleA"],
-      "calledBy": ["FUN_100165d3", "FUN_1000bbfc", "FUN_1000abad", "FUN_100161bb"]
+      "calledBy": ["FUN_100161bb", "FUN_100165d3", "FUN_1000abad", "FUN_1000bbfc"]
     },
     {
       "name": "FUN_10010285",
@@ -4080,7 +4080,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4 *"}],
       "calls": [],
-      "calledBy": ["FUN_1000be28", "FUN_10011d95", "FUN_1000ad9f", "FUN_1000c4e9"]
+      "calledBy": ["FUN_10011d95", "FUN_1000c4e9", "FUN_1000be28", "FUN_1000ad9f"]
     },
     {
       "name": "FUN_1001029e",
@@ -4095,7 +4095,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}],
       "calls": ["FUN_1001029e", "operator_delete"],
-      "calledBy": ["FUN_1000be28", "Unwind@1004b84f", "FUN_1001029e", "Unwind@1004b835", "FUN_100102f7", "FUN_1000ad9f", "Unwind@1004b88c", "FUN_1000c4e9"]
+      "calledBy": ["FUN_1001029e", "Unwind@1004b84f", "FUN_1000c4e9", "FUN_1000be28", "Unwind@1004b835", "Unwind@1004b88c", "FUN_1000ad9f", "FUN_100102f7"]
     },
     {
       "name": "FUN_100102f7",
@@ -4184,7 +4184,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4"}, {"name": "param_2", "type": "undefined4"}],
-      "calls": ["operator_new", "thunk_FUN_10023bc5", "FUN_1001e027", "setjmp3", "FUN_1001c5de", "FUN_1001c6ea", "FUN_1001c265", "FUN_1001c537", "FUN_1001bf5e", "FUN_1001c76e"],
+      "calls": ["thunk_FUN_10023bc5", "FUN_1001bf5e", "FUN_1001c265", "FUN_1001e027", "FUN_1001c76e", "FUN_1001c6ea", "FUN_1001c537", "setjmp3", "operator_new", "FUN_1001c5de"],
       "calledBy": ["FUN_10012677"]
     },
     {
@@ -4214,7 +4214,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "this", "type": "void *"}, {"name": "param_1", "type": "uint *"}, {"name": "param_2", "type": "uint"}],
-      "calls": ["operator_new", "isspace", "isdigit"],
+      "calls": ["isdigit", "isspace", "operator_new"],
       "calledBy": ["FUN_10012677"]
     },
     {
@@ -4229,7 +4229,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}, {"name": "param_2", "type": "uint"}],
-      "calls": ["FUN_1001ebdf", "FUN_1001ea05", "FUN_1001ea59", "FUN_1001eb2a", "FUN_100204e3", "setjmp3", "operator_delete", "FUN_1001ea2e", "FUN_1001ebcd", "ftol", "FUN_1001e9d9", "FUN_1001ed4a", "FUN_1001ed80", "FUN_100205e8", "FUN_100204a4", "FUN_1001e407", "FUN_1001e9ef", "_CIpow", "FUN_1001e294", "FUN_1001ebc4", "FUN_1001ec11", "FUN_1001e93e", "FUN_1001e9bf", "operator_new", "FUN_1001e7ce", "FUN_1001eb5d", "FUN_100203e1", "FUN_1001e191"],
+      "calls": ["FUN_1001ed80", "FUN_1001e407", "FUN_1001e9d9", "FUN_100205e8", "FUN_1001ea59", "FUN_100203e1", "FUN_1001ebcd", "FUN_1001eb2a", "FUN_100204a4", "FUN_1001ea2e", "FUN_1001e294", "setjmp3", "FUN_1001ebc4", "FUN_1001e93e", "FUN_1001e9bf", "FUN_1001ea05", "FUN_1001eb5d", "FUN_1001ec11", "FUN_100204e3", "FUN_1001e191", "FUN_1001e7ce", "FUN_1001ed4a", "FUN_1001ebdf", "FUN_1001e9ef", "operator_delete", "_CIpow", "operator_new", "ftol"],
       "calledBy": ["FUN_10012677"]
     },
     {
@@ -4244,7 +4244,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "this", "type": "void *"}, {"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "int *"}],
-      "calls": ["operator_new", "FUN_1000aaa6", "FUN_10010285"],
+      "calls": ["FUN_1000aaa6", "FUN_10010285", "operator_new"],
       "calledBy": ["FUN_10012677"]
     },
     {
@@ -4274,7 +4274,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["FUN_1004b5b0", "FUN_1001bca5", "FUN_1001284c", "FUN_10016007", "FUN_10010aec", "FUN_1000ab3f", "operator_new", "FUN_1001bdc7", "FUN_100120d6", "operator_delete", "FUN_1001bed2", "FUN_10012856", "FUN_1000aaa6"],
+      "calls": ["FUN_1001bca5", "FUN_10010aec", "FUN_10016007", "FUN_1000aaa6", "FUN_1000ab3f", "FUN_10012856", "FUN_1001bed2", "FUN_100120d6", "FUN_1004b5b0", "operator_delete", "FUN_1001284c", "FUN_1001bdc7", "operator_new"],
       "calledBy": ["FUN_1000be28", "FUN_1000ad9f"]
     },
     {
@@ -4304,7 +4304,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "this", "type": "void *"}, {"name": "param_1", "type": "uint *"}, {"name": "param_2", "type": "int *"}, {"name": "param_3", "type": "int *"}, {"name": "param_4", "type": "int"}],
-      "calls": ["FUN_100103d6", "FUN_10012647", "FUN_10011d95", "operator_delete", "FUN_100102f7", "FUN_1001152a", "FUN_1000ac8f", "FUN_10010e13", "FUN_100117ff", "FUN_10011083"],
+      "calls": ["FUN_1001152a", "FUN_100117ff", "operator_delete", "FUN_10012647", "FUN_10011d95", "FUN_10011083", "FUN_10010e13", "FUN_100103d6", "FUN_1000ac8f", "FUN_100102f7"],
       "calledBy": ["FUN_1000c4e9"]
     },
     {
@@ -4320,7 +4320,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4 *"}],
       "calls": [],
-      "calledBy": ["FUN_1000acc0", "FUN_1000ae72", "FUN_1001237e"]
+      "calledBy": ["FUN_1000ae72", "FUN_1001237e", "FUN_1000acc0"]
     },
     {
       "name": "FUN_10012856",
@@ -4335,7 +4335,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}],
       "calls": [],
-      "calledBy": ["FUN_1000acc0", "FUN_1000ae72", "FUN_1001237e", "Unwind@1004b8a9"]
+      "calledBy": ["Unwind@1004b8a9", "FUN_1000ae72", "FUN_1001237e", "FUN_1000acc0"]
     },
     {
       "name": "FUN_1001288a",
@@ -4349,8 +4349,8 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "uint"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "int"}],
-      "calls": ["operator_new", "floor", "ftol"],
-      "calledBy": ["FUN_10015c65", "FUN_10012b93"]
+      "calls": ["floor", "operator_new", "ftol"],
+      "calledBy": ["FUN_10012b93", "FUN_10015c65"]
     },
     {
       "name": "FUN_10012b47",
@@ -4365,7 +4365,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "this", "type": "void *"}, {"name": "param_1", "type": "byte"}],
       "calls": ["operator_delete", "FUN_1004b5cf"],
-      "calledBy": ["FUN_10015c65", "FUN_10012b93"]
+      "calledBy": ["FUN_10012b93", "FUN_10015c65"]
     },
     {
       "name": "FUN_10012b93",
@@ -4379,7 +4379,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["operator_new", "FUN_1001288a", "FUN_1004b5b0", "FUN_1004b6c3", "FUN_10012b47", "operator_delete", "`vector_constructor_iterator'"],
+      "calls": ["FUN_1001288a", "FUN_1004b5b0", "operator_delete", "FUN_10012b47", "`vector_constructor_iterator'", "FUN_1004b6c3", "operator_new"],
       "calledBy": ["FUN_10016007"]
     },
     {
@@ -4679,7 +4679,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["operator_new", "FUN_1004b5b0", "operator_delete", "`vector_constructor_iterator'"],
+      "calls": ["FUN_1004b5b0", "operator_delete", "`vector_constructor_iterator'", "operator_new"],
       "calledBy": ["FUN_10016007"]
     },
     {
@@ -4694,7 +4694,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["operator_new", "FUN_1004b5b0", "operator_delete", "`vector_constructor_iterator'"],
+      "calls": ["FUN_1004b5b0", "operator_delete", "`vector_constructor_iterator'", "operator_new"],
       "calledBy": ["FUN_10016007"]
     },
     {
@@ -4709,7 +4709,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["operator_new", "FUN_1004b5b0", "operator_delete", "`vector_constructor_iterator'"],
+      "calls": ["FUN_1004b5b0", "operator_delete", "`vector_constructor_iterator'", "operator_new"],
       "calledBy": ["FUN_10016007"]
     },
     {
@@ -4724,7 +4724,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["FUN_10013582", "FUN_1001402b", "FUN_10013edf", "FUN_1004b5b0", "FUN_10013945", "FUN_100136d2", "FUN_10013bd7", "FUN_100132bb", "FUN_100137f6", "FUN_10013dbe", "operator_new", "FUN_10013a98", "FUN_10013c72", "FUN_10013551", "operator_delete", "`vector_constructor_iterator'"],
+      "calls": ["FUN_100136d2", "FUN_100137f6", "FUN_10013a98", "FUN_10013bd7", "FUN_10013c72", "FUN_1001402b", "FUN_10013dbe", "FUN_100132bb", "FUN_1004b5b0", "operator_delete", "FUN_10013edf", "`vector_constructor_iterator'", "FUN_10013582", "FUN_10013551", "FUN_10013945", "operator_new"],
       "calledBy": ["FUN_10016007"]
     },
     {
@@ -4739,7 +4739,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["operator_new", "FUN_1004b5b0", "operator_delete", "`vector_constructor_iterator'"],
+      "calls": ["FUN_1004b5b0", "operator_delete", "`vector_constructor_iterator'", "operator_new"],
       "calledBy": ["FUN_10016007"]
     },
     {
@@ -4754,7 +4754,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}],
-      "calls": ["operator_new", "floor"],
+      "calls": ["floor", "operator_new"],
       "calledBy": ["FUN_1001514e", "FUN_10015534"]
     },
     {
@@ -4769,7 +4769,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["operator_new", "FUN_1004b5b0", "operator_delete", "`vector_constructor_iterator'", "FUN_1001504e"],
+      "calls": ["FUN_1004b5b0", "operator_delete", "FUN_1001504e", "`vector_constructor_iterator'", "operator_new"],
       "calledBy": ["FUN_10016007"]
     },
     {
@@ -4784,7 +4784,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["operator_new", "FUN_1004b5b0", "operator_delete", "`vector_constructor_iterator'", "FUN_1001504e"],
+      "calls": ["FUN_1004b5b0", "operator_delete", "FUN_1001504e", "`vector_constructor_iterator'", "operator_new"],
       "calledBy": ["FUN_10016007"]
     },
     {
@@ -4799,7 +4799,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["operator_new", "FUN_1001288a", "FUN_1004b5b0", "FUN_1004b6c3", "FUN_10012b47", "operator_delete", "`vector_constructor_iterator'"],
+      "calls": ["FUN_1001288a", "FUN_1004b5b0", "operator_delete", "FUN_10012b47", "`vector_constructor_iterator'", "FUN_1004b6c3", "operator_new"],
       "calledBy": ["FUN_10016007"]
     },
     {
@@ -4814,8 +4814,8 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "undefined4"}, {"name": "param_4", "type": "uint"}],
-      "calls": ["FUN_10014393", "FUN_10014799", "FUN_10014bbc", "FUN_10015c65", "FUN_1001514e", "FUN_10017361", "FUN_100142a2", "FUN_1001416a", "FUN_1001b50c", "FUN_10012b93", "FUN_10014595", "FUN_10015534"],
-      "calledBy": ["FUN_1000acc0", "FUN_1000ae72", "FUN_1001237e"]
+      "calls": ["FUN_1001416a", "FUN_1001514e", "FUN_10017361", "FUN_100142a2", "FUN_10014799", "FUN_10015534", "FUN_1001b50c", "FUN_10014595", "FUN_10014393", "FUN_10015c65", "FUN_10012b93", "FUN_10014bbc"],
+      "calledBy": ["FUN_1000ae72", "FUN_1001237e", "FUN_1000acc0"]
     },
     {
       "name": "FUN_10016121",
@@ -4830,7 +4830,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4 *"}],
       "calls": [],
-      "calledBy": ["FUN_1000acc0", "FUN_1000bbfc", "FUN_1000b3fe", "FUN_1000ad9f"]
+      "calledBy": ["FUN_1000b3fe", "FUN_1000bbfc", "FUN_1000ad9f", "FUN_1000acc0"]
     },
     {
       "name": "FUN_10016131",
@@ -4890,7 +4890,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "byte *"}],
       "calls": [],
-      "calledBy": ["FUN_1000acc0", "`vector_deleting_destructor'", "FUN_1000bbfc", "Unwind@1004b83d", "FUN_1000b3fe", "FUN_1000ad9f"]
+      "calledBy": ["Unwind@1004b83d", "FUN_1000b3fe", "FUN_1000bbfc", "FUN_1000ad9f", "`vector_deleting_destructor'", "FUN_1000acc0"]
     },
     {
       "name": "FUN_100161bb",
@@ -4905,7 +4905,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "this", "type": "void *"}, {"name": "param_1", "type": "undefined4 *"}, {"name": "param_2", "type": "int *"}, {"name": "param_3", "type": "undefined4"}, {"name": "param_4", "type": "uint *"}, {"name": "param_5", "type": "undefined4"}, {"name": "param_6", "type": "uint"}],
       "calls": ["FUN_10016131", "FUN_100101f5"],
-      "calledBy": ["FUN_1000acc0", "FUN_1000be28", "FUN_1000bbfc", "FUN_1000b3fe", "FUN_1000ad9f"]
+      "calledBy": ["FUN_1000b3fe", "FUN_1000bbfc", "FUN_1000be28", "FUN_1000ad9f", "FUN_1000acc0"]
     },
     {
       "name": "thunk_FUN_100161a0",
@@ -4935,7 +4935,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "this", "type": "void *"}, {"name": "param_1", "type": "undefined4 *"}, {"name": "param_2", "type": "int *"}, {"name": "param_3", "type": "undefined4"}, {"name": "param_4", "type": "uint *"}, {"name": "param_5", "type": "undefined4"}, {"name": "param_6", "type": "uint"}],
       "calls": ["FUN_100161a0", "FUN_100101f5"],
-      "calledBy": ["FUN_1000be28", "FUN_1000ae72", "FUN_1000bda2"]
+      "calledBy": ["FUN_1000ae72", "FUN_1000be28", "FUN_1000bda2"]
     },
     {
       "name": "FUN_1001692e",
@@ -4950,7 +4950,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4 *"}],
       "calls": ["operator_delete"],
-      "calledBy": ["Unwind@1004b9e7", "FUN_10016c3c", "Unwind@1004ba21", "FUN_10017345", "FUN_1001b493", "Unwind@1004ba51"]
+      "calledBy": ["FUN_1001b493", "Unwind@1004ba21", "FUN_10016c3c", "Unwind@1004b9e7", "FUN_10017345", "Unwind@1004ba51"]
     },
     {
       "name": "FUN_10016944",
@@ -4965,7 +4965,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "this", "type": "void *"}, {"name": "param_1", "type": "int"}],
       "calls": [],
-      "calledBy": ["FUN_10017f34", "FUN_10017604", "FUN_10017828", "FUN_10017e11", "FUN_10018885", "FUN_10018caa", "FUN_100184ca", "FUN_10018de0", "FUN_10018158", "FUN_10018035", "FUN_10017c6a", "FUN_10018ea7", "FUN_10016cdc", "FUN_1001ab16", "FUN_10017a2a", "FUN_10017929", "FUN_100173dc", "FUN_10017727", "FUN_10018ba0", "FUN_10018405", "FUN_100186ab", "FUN_1001914b", "FUN_10018f6e", "FUN_10018780", "FUN_10018990", "FUN_10018340", "FUN_100185c0", "FUN_10018228", "FUN_10017b47", "FUN_10017d68", "FUN_1001905c", "FUN_10017518", "FUN_10018aca"]
+      "calledBy": ["FUN_1001ab16", "FUN_10017f34", "FUN_10018158", "FUN_10018990", "FUN_10017b47", "FUN_1001914b", "FUN_10018885", "FUN_10017c6a", "FUN_100173dc", "FUN_10017518", "FUN_10018035", "FUN_10018405", "FUN_10017d68", "FUN_10018f6e", "FUN_10017a2a", "FUN_10017828", "FUN_10018228", "FUN_10018de0", "FUN_10016cdc", "FUN_10018340", "FUN_10018780", "FUN_10017e11", "FUN_10018aca", "FUN_10018ba0", "FUN_10018ea7", "FUN_1001905c", "FUN_100185c0", "FUN_10017604", "FUN_10018caa", "FUN_100186ab", "FUN_10017727", "FUN_10017929", "FUN_100184ca"]
     },
     {
       "name": "FUN_10016c3b",
@@ -5009,7 +5009,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["operator_new", "FUN_1004b5b0", "operator_delete", "`vector_constructor_iterator'", "FUN_10016944"],
+      "calls": ["FUN_1004b5b0", "operator_delete", "`vector_constructor_iterator'", "operator_new", "FUN_10016944"],
       "calledBy": []
     },
     {
@@ -5025,7 +5025,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4"}],
       "calls": [],
-      "calledBy": ["FUN_10017f34", "FUN_10017604", "FUN_10017828", "FUN_10017e11", "FUN_10018885", "FUN_10018caa", "FUN_100184ca", "FUN_10018de0", "FUN_1001b0fd", "FUN_10018158", "FUN_10018035", "FUN_10017c6a", "FUN_10018ea7", "FUN_10017a2a", "FUN_10017929", "FUN_10017727", "FUN_10018ba0", "FUN_10018405", "FUN_100186ab", "FUN_1001914b", "FUN_10018f6e", "FUN_10018780", "FUN_10018990", "FUN_100185c0", "FUN_10018228", "FUN_10017b47", "FUN_10017d68", "FUN_1001905c", "FUN_10017518", "FUN_10018aca"]
+      "calledBy": ["FUN_10017f34", "FUN_10018158", "FUN_10018990", "FUN_10017b47", "FUN_1001914b", "FUN_10018885", "FUN_10017c6a", "FUN_10017518", "FUN_10018035", "FUN_10018405", "FUN_10017d68", "FUN_10018f6e", "FUN_10017a2a", "FUN_10017828", "FUN_10018228", "FUN_1001b0fd", "FUN_10018de0", "FUN_10018780", "FUN_10017e11", "FUN_10018aca", "FUN_10018ba0", "FUN_10018ea7", "FUN_1001905c", "FUN_100185c0", "FUN_10017604", "FUN_10018caa", "FUN_100186ab", "FUN_10017727", "FUN_10017929", "FUN_100184ca"]
     },
     {
       "name": "FUN_100170f9",
@@ -5040,7 +5040,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "this", "type": "void *"}, {"name": "param_1", "type": "undefined4 *"}, {"name": "param_2", "type": "uint"}, {"name": "param_3", "type": "undefined4"}],
       "calls": ["`vector_constructor_iterator'"],
-      "calledBy": ["FUN_1001aee4", "FUN_1001b0e1", "FUN_1001b3a6", "FUN_1001a558", "FUN_1001b039", "FUN_1001ac2e", "FUN_1001a53c", "FUN_1001a444", "FUN_1001aafa", "FUN_1001b01d", "FUN_1001b0c5", "FUN_1001aa8a", "FUN_1001a79d", "FUN_1001b08d", "FUN_1001b001", "FUN_1001ae3c", "FUN_1001b3de", "FUN_1001ae90", "FUN_1001b055", "FUN_1001aaa6", "FUN_1001b0a9", "FUN_1001ac4a", "FUN_1001aeac", "FUN_1001b3c2", "FUN_1001a579", "FUN_1001a781", "FUN_1001ae74", "FUN_1001aba3", "FUN_1001b071", "FUN_1001aac2", "FUN_1001aade", "FUN_1001a428"]
+      "calledBy": ["FUN_1001aee4", "FUN_1001a558", "FUN_1001b08d", "FUN_1001ae3c", "FUN_1001b001", "FUN_1001aeac", "FUN_1001ae90", "FUN_1001aa8a", "FUN_1001aac2", "FUN_1001ae74", "FUN_1001a781", "FUN_1001aaa6", "FUN_1001b0a9", "FUN_1001b3de", "FUN_1001a579", "FUN_1001aba3", "FUN_1001b0c5", "FUN_1001aafa", "FUN_1001a53c", "FUN_1001aade", "FUN_1001b039", "FUN_1001b071", "FUN_1001b3a6", "FUN_1001ac4a", "FUN_1001a444", "FUN_1001a428", "FUN_1001b01d", "FUN_1001ac2e", "FUN_1001b3c2", "FUN_1001b0e1", "FUN_1001a79d", "FUN_1001b055"]
     },
     {
       "name": "FUN_10017345",
@@ -5069,7 +5069,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["operator_new", "FUN_1004b5b0", "`vector_constructor_iterator'"],
+      "calls": ["FUN_1004b5b0", "`vector_constructor_iterator'", "operator_new"],
       "calledBy": ["FUN_10016007"]
     },
     {
@@ -5100,7 +5100,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "this", "type": "void *"}, {"name": "param_1", "type": "uint"}],
       "calls": [],
-      "calledBy": ["FUN_10019883", "FUN_10019bd3", "FUN_10019cca", "FUN_10019f17", "FUN_1001a1be", "FUN_10019ae8", "FUN_10019925", "FUN_10019333", "FUN_10019dd5", "FUN_100192a7", "FUN_10019a49", "FUN_100195bc", "FUN_1001971b", "FUN_1001a031", "FUN_10019fae", "FUN_1001951a", "FUN_1001a0eb", "FUN_10019e86", "FUN_1001966c", "FUN_10019c41", "FUN_1001a2bc", "FUN_1001a22e", "FUN_10019d53", "FUN_100197f1", "FUN_10019997", "FUN_10019475", "FUN_100193d9", "FUN_1001a348"]
+      "calledBy": ["FUN_10019bd3", "FUN_1001a1be", "FUN_10019883", "FUN_10019c41", "FUN_10019925", "FUN_1001a031", "FUN_10019997", "FUN_10019d53", "FUN_1001971b", "FUN_100193d9", "FUN_1001a2bc", "FUN_10019a49", "FUN_1001a0eb", "FUN_10019ae8", "FUN_10019475", "FUN_1001a22e", "FUN_10019e86", "FUN_10019f17", "FUN_10019fae", "FUN_1001951a", "FUN_10019333", "FUN_100195bc", "FUN_1001966c", "FUN_1001a348", "FUN_100197f1", "FUN_10019cca", "FUN_10019dd5", "FUN_100192a7"]
     },
     {
       "name": "FUN_10017518",
@@ -5999,8 +5999,8 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["operator_new", "FUN_1004b5b0", "FUN_100170f9", "`vector_constructor_iterator'"],
-      "calledBy": ["FUN_1001b4f4", "FUN_1001b4dc"]
+      "calls": ["FUN_1004b5b0", "`vector_constructor_iterator'", "FUN_100170f9", "operator_new"],
+      "calledBy": ["FUN_1001b4dc", "FUN_1001b4f4"]
     },
     {
       "name": "FUN_1001a53c",
@@ -6075,7 +6075,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}],
       "calls": [],
-      "calledBy": ["FUN_1001a7b9", "FUN_1001b493"]
+      "calledBy": ["FUN_1001b493", "FUN_1001a7b9"]
     },
     {
       "name": "FUN_1001a781",
@@ -6255,7 +6255,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "this", "type": "void *"}, {"name": "param_1", "type": "undefined4 *"}],
       "calls": ["FUN_100170f9"],
-      "calledBy": ["FUN_1001b3fa", "FUN_1001b42a", "FUN_1001b45a", "FUN_1001b412", "FUN_1001b442"]
+      "calledBy": ["FUN_1001b412", "FUN_1001b442", "FUN_1001b45a", "FUN_1001b3fa", "FUN_1001b42a"]
     },
     {
       "name": "FUN_1001ae3c",
@@ -6284,7 +6284,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "this", "type": "void *"}, {"name": "param_1", "type": "byte"}],
-      "calls": ["thunk_FUN_1001692e", "operator_delete"],
+      "calls": ["operator_delete", "thunk_FUN_1001692e"],
       "calledBy": []
     },
     {
@@ -6524,7 +6524,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["operator_new", "FUN_100170d6", "FUN_1004b5b0", "`vector_constructor_iterator'"],
+      "calls": ["FUN_1004b5b0", "`vector_constructor_iterator'", "FUN_100170d6", "operator_new"],
       "calledBy": []
     },
     {
@@ -6659,7 +6659,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "this", "type": "void *"}, {"name": "param_1", "type": "byte"}],
-      "calls": ["thunk_FUN_10016c3c", "operator_delete"],
+      "calls": ["operator_delete", "thunk_FUN_10016c3c"],
       "calledBy": []
     },
     {
@@ -6734,8 +6734,8 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["FUN_1001b3fa", "FUN_1004b5b0", "FUN_1001aee4", "FUN_1001b0e1", "FUN_1001b3a6", "FUN_1001b4dc", "FUN_1001a558", "FUN_1001ac2e", "FUN_1001b039", "FUN_1001a53c", "FUN_1001aafa", "FUN_1001b01d", "FUN_1001b0c5", "FUN_1001aa8a", "FUN_1001a79d", "FUN_1001b08d", "FUN_1001b001", "FUN_1001b4f4", "FUN_1001ae3c", "FUN_1001b45a", "FUN_1001b3de", "FUN_1001ae90", "FUN_1001b055", "FUN_1001aaa6", "FUN_1001b0a9", "operator_new", "FUN_1001b42a", "FUN_1001a579", "FUN_1001a781", "FUN_1001aeac", "FUN_1001b3c2", "FUN_1001aba3", "FUN_1001ae74", "FUN_1001b071", "FUN_1001b412", "FUN_1001b442", "FUN_1001aac2", "FUN_1001aade", "FUN_1001a428"],
-      "calledBy": ["FUN_1000b3fe", "FUN_10016007"]
+      "calls": ["FUN_1001a558", "FUN_1001aee4", "FUN_1001b08d", "FUN_1001ae3c", "FUN_1001b001", "FUN_1001aeac", "FUN_1001ae90", "FUN_1001b42a", "FUN_1001aa8a", "FUN_1001aac2", "FUN_1001a781", "FUN_1001ae74", "FUN_1001aaa6", "FUN_1001b0a9", "FUN_1001b3fa", "FUN_1001b3de", "FUN_1001a579", "FUN_1001aba3", "FUN_1001b0c5", "FUN_1001aafa", "FUN_1001a53c", "FUN_1001aade", "FUN_1001b45a", "FUN_1001b039", "FUN_1001b4dc", "FUN_1001b071", "FUN_1001b4f4", "FUN_1001b3a6", "FUN_1001b412", "FUN_1001a428", "FUN_1004b5b0", "FUN_1001b01d", "FUN_1001b442", "FUN_1001ac2e", "FUN_1001b3c2", "FUN_1001b0e1", "FUN_1001a79d", "operator_new", "FUN_1001b055"],
+      "calledBy": ["FUN_10016007", "FUN_1000b3fe"]
     },
     {
       "name": "FUN_1001bc84",
@@ -6794,7 +6794,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "this", "type": "void *"}, {"name": "param_1", "type": "LPCWSTR"}, {"name": "param_2", "type": "int"}],
-      "calls": ["CreateFileA", "FUN_1004b790", "GetVersionExA", "CreateFileMappingA", "GetLastError", "GetFileSize", "CreateFileW", "MapViewOfFile", "WideCharToMultiByte"],
+      "calls": ["CreateFileW", "GetFileSize", "WideCharToMultiByte", "FUN_1004b790", "GetLastError", "MapViewOfFile", "GetVersionExA", "CreateFileA", "CreateFileMappingA"],
       "calledBy": ["FUN_1000cb9c"]
     },
     {
@@ -6809,7 +6809,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "this", "type": "void *"}, {"name": "param_1", "type": "LPCWSTR"}, {"name": "param_2", "type": "int"}],
-      "calls": ["CreateFileA", "FUN_1004b790", "GetVersionExA", "GetLastError", "CreateFileW", "WideCharToMultiByte"],
+      "calls": ["CreateFileW", "WideCharToMultiByte", "FUN_1004b790", "GetLastError", "GetVersionExA", "CreateFileA"],
       "calledBy": ["FUN_1001237e"]
     },
     {
@@ -6840,7 +6840,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}],
       "calls": ["FUN_1001be91"],
-      "calledBy": ["Unwind@1004b8a1", "FUN_1000cb9c", "FUN_1001237e"]
+      "calledBy": ["FUN_1000cb9c", "Unwind@1004b8a1", "FUN_1001237e"]
     },
     {
       "name": "FUN_1001bedd",
@@ -6854,7 +6854,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "DWORD"}, {"name": "param_2", "type": "LPCSTR"}, {"name": "param_3", "type": "LPBYTE"}],
-      "calls": ["RegQueryValueExA", "RegOpenKeyA", "RegCloseKey"],
+      "calls": ["RegCloseKey", "RegOpenKeyA", "RegQueryValueExA"],
       "calledBy": ["FUN_1001c188"]
     },
     {
@@ -6884,7 +6884,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["RegQueryValueExA", "RegOpenKeyA", "RegCloseKey", "FUN_1001bf39"],
+      "calls": ["FUN_1001bf39", "RegCloseKey", "RegOpenKeyA", "RegQueryValueExA"],
       "calledBy": ["FUN_10010e13", "FUN_100134ea", "FUN_10013522"]
     },
     {
@@ -6914,7 +6914,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["FUN_1001c075", "FUN_1004b5b0"],
+      "calls": ["FUN_1004b5b0", "FUN_1001c075"],
       "calledBy": ["FUN_1001c0d4"]
     },
     {
@@ -6959,7 +6959,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "DWORD"}],
-      "calls": ["GetVersionExA", "IsProcessorFeaturePresent", "FUN_1001bff7", "FUN_1001c02f"],
+      "calls": ["FUN_1001bff7", "IsProcessorFeaturePresent", "GetVersionExA", "FUN_1001c02f"],
       "calledBy": ["FUN_1001c188"]
     },
     {
@@ -6974,8 +6974,8 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}],
-      "calls": ["FUN_1001c0d4", "FUN_1001bedd", "FUN_10022b47", "FUN_100224c5", "FUN_100222e0", "FUN_100221d0"],
-      "calledBy": ["FUN_1000eec5", "FUN_1000e126", "FUN_1000e1bc", "FUN_1000e8cf", "FUN_1000d173", "FUN_1000e530", "FUN_1000ccf7", "FUN_1000e012", "FUN_1000d53d", "FUN_1000e40d", "FUN_1000d766", "FUN_1000e541", "FUN_1000d04f", "FUN_1000cdd0", "FUN_1000ee44", "FUN_1000ce69", "FUN_1000ef90", "FUN_1000cc2c", "FUN_1000e09c", "FUN_1000dc72", "FUN_1000d1f9", "FUN_1000d420", "FUN_1000e502", "FUN_1000cf54", "FUN_1000ed37", "FUN_1000e9dc", "FUN_1000cc3f", "FUN_1000e253", "FUN_1000e2eb", "FUN_1000eb4b", "FUN_1000d9af", "FUN_1000e853"]
+      "calls": ["FUN_1001c0d4", "FUN_10022b47", "FUN_100224c5", "FUN_100222e0", "FUN_1001bedd", "FUN_100221d0"],
+      "calledBy": ["FUN_1000ee44", "FUN_1000d173", "FUN_1000e1bc", "FUN_1000eb4b", "FUN_1000e126", "FUN_1000d9af", "FUN_1000e530", "FUN_1000ce69", "FUN_1000e9dc", "FUN_1000e853", "FUN_1000d420", "FUN_1000cdd0", "FUN_1000ccf7", "FUN_1000d766", "FUN_1000e40d", "FUN_1000e502", "FUN_1000cf54", "FUN_1000d1f9", "FUN_1000dc72", "FUN_1000e253", "FUN_1000cc2c", "FUN_1000ef90", "FUN_1000d04f", "FUN_1000e8cf", "FUN_1000eec5", "FUN_1000e09c", "FUN_1000d53d", "FUN_1000ed37", "FUN_1000e541", "FUN_1000cc3f", "FUN_1000e012", "FUN_1000e2eb"]
     },
     {
       "name": "FUN_1001c265",
@@ -6989,7 +6989,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "int"}],
-      "calls": ["FUN_1001de99", "FUN_10023139", "FUN_10023aef", "FUN_10022c2f"],
+      "calls": ["FUN_10023139", "FUN_10022c2f", "FUN_10023aef", "FUN_1001de99"],
       "calledBy": ["FUN_10010e13"]
     },
     {
@@ -7410,7 +7410,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "undefined4"}],
       "calls": ["longjmp"],
-      "calledBy": ["FUN_1001e294", "FUN_10024741", "FUN_10020149", "FUN_100258c8", "FUN_10025359", "FUN_100254cd", "FUN_1001e147", "FUN_100256c7", "FUN_100255d8", "FUN_10025483", "FUN_1001e191", "FUN_10025163", "FUN_1001e427", "FUN_1002047c"]
+      "calledBy": ["FUN_1001e147", "FUN_10025163", "FUN_10020149", "FUN_10025359", "FUN_10025483", "FUN_10024741", "FUN_100255d8", "FUN_1001e191", "FUN_1001e427", "FUN_100256c7", "FUN_1002047c", "FUN_100254cd", "FUN_1001e294", "FUN_100258c8"]
     },
     {
       "name": "FUN_1001e132",
@@ -7425,7 +7425,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}, {"name": "param_2", "type": "undefined4"}],
       "calls": [],
-      "calledBy": ["FUN_10025359", "FUN_100254cd", "FUN_100204a4", "FUN_10024dc0", "FUN_100256c7", "FUN_1001e16c", "FUN_100255d8", "FUN_10025483", "FUN_1002031c", "FUN_1001ea59"]
+      "calledBy": ["FUN_1001ea59", "FUN_10025359", "FUN_100204a4", "FUN_100254cd", "FUN_1001e16c", "FUN_10025483", "FUN_10024dc0", "FUN_100255d8", "FUN_1002031c", "FUN_100256c7"]
     },
     {
       "name": "FUN_1001e147",
@@ -7439,8 +7439,8 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "undefined4 *"}],
-      "calls": ["FUN_1001e073", "FUN_1001e114"],
-      "calledBy": ["FUN_1002487f", "FUN_1002587e", "FUN_100250d7"]
+      "calls": ["FUN_1001e114", "FUN_1001e073"],
+      "calledBy": ["FUN_100250d7", "FUN_1002487f", "FUN_1002587e"]
     },
     {
       "name": "FUN_1001e16c",
@@ -7454,7 +7454,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}, {"name": "param_2", "type": "undefined4 *"}],
-      "calls": ["FUN_1001e073", "FUN_1001e132"],
+      "calls": ["FUN_1001e132", "FUN_1001e073"],
       "calledBy": ["FUN_100250d7"]
     },
     {
@@ -7469,7 +7469,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "char *"}, {"name": "param_2", "type": "undefined4"}, {"name": "param_3", "type": "undefined4"}, {"name": "param_4", "type": "undefined4"}],
-      "calls": ["FUN_10024734", "FUN_10024374", "FUN_100204a4", "setjmp3", "FUN_1001e0fa", "FUN_10024741", "FUN_10024777", "FUN_100246f2", "FUN_1001e114"],
+      "calls": ["FUN_10024777", "FUN_100204a4", "FUN_10024374", "FUN_100246f2", "FUN_1001e0fa", "FUN_10024741", "FUN_1001e114", "setjmp3", "FUN_10024734"],
       "calledBy": ["FUN_100117ff"]
     },
     {
@@ -7484,7 +7484,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "uint *"}],
-      "calls": ["FUN_1002587e", "FUN_10024807", "FUN_10020583", "FUN_10025359", "FUN_100254cd", "FUN_100204e3", "FUN_100256c7", "FUN_100247e4", "FUN_100255d8", "FUN_10025483", "FUN_10025163", "FUN_1002047c", "FUN_1001e114"],
+      "calls": ["FUN_10025163", "FUN_100247e4", "FUN_10025359", "FUN_10025483", "FUN_1001e114", "FUN_100255d8", "FUN_100204e3", "FUN_100256c7", "FUN_1002047c", "FUN_100254cd", "FUN_10020583", "FUN_1002587e", "FUN_10024807"],
       "calledBy": ["FUN_100117ff"]
     },
     {
@@ -7499,7 +7499,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "int *"}],
-      "calls": ["FUN_1001ed89", "FUN_10024f3b"],
+      "calls": ["FUN_10024f3b", "FUN_1001ed89"],
       "calledBy": ["FUN_100117ff"]
     },
     {
@@ -7514,7 +7514,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "this", "type": "void *"}, {"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "byte *"}, {"name": "param_3", "type": "byte *"}],
-      "calls": ["FUN_10024af7", "FUN_10024f3b", "FUN_10024807", "FUN_1002438b", "FUN_100250d7", "FUN_100258c8", "FUN_100248e1", "FUN_10020583", "FUN_10020149", "FUN_10024dc0", "FUN_100247e4", "FUN_10024790", "FUN_1002047c", "FUN_1001e114"],
+      "calls": ["FUN_100248e1", "FUN_100247e4", "FUN_10020149", "FUN_100250d7", "FUN_1001e114", "FUN_1002047c", "FUN_10024790", "FUN_10024af7", "FUN_10024f3b", "FUN_10020583", "FUN_1002438b", "FUN_10024dc0", "FUN_10024807", "FUN_100258c8"],
       "calledBy": ["FUN_1001e7ce"]
     },
     {
@@ -7529,7 +7529,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "undefined4 *"}],
-      "calls": ["FUN_1001e427", "FUN_1001ebf8"],
+      "calls": ["FUN_1001ebf8", "FUN_1001e427"],
       "calledBy": ["FUN_100117ff"]
     },
     {
@@ -7544,7 +7544,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4 *"}, {"name": "param_2", "type": "undefined4 *"}, {"name": "param_3", "type": "undefined4 *"}],
-      "calls": ["FUN_10024251", "FUN_10024777", "FUN_100205da", "thunk_FUN_10024777"],
+      "calls": ["FUN_10024777", "thunk_FUN_10024777", "FUN_10024251", "FUN_100205da"],
       "calledBy": ["FUN_1001e93e"]
     },
     {
@@ -7964,7 +7964,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}],
-      "calls": ["_CIpow", "FUN_10024741", "ftol"],
+      "calls": ["FUN_10024741", "_CIpow", "ftol"],
       "calledBy": ["FUN_10020036"]
     },
     {
@@ -7994,7 +7994,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}],
-      "calls": ["FUN_1001f8cd", "FUN_1001fc1f", "FUN_1001ec5e", "FUN_1001f0fb", "FUN_1001ee74", "FUN_1001ef84", "FUN_1001ec8b", "FUN_1001f6c5", "FUN_1001f13f", "FUN_1001e114", "FUN_1001f377"],
+      "calls": ["FUN_1001fc1f", "FUN_1001ec8b", "FUN_1001f8cd", "FUN_1001ef84", "FUN_1001f0fb", "FUN_1001f13f", "FUN_1001e114", "FUN_1001ee74", "FUN_1001f6c5", "FUN_1001ec5e", "FUN_1001f377"],
       "calledBy": ["FUN_1001e427"]
     },
     {
@@ -8010,7 +8010,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "double"}],
       "calls": [],
-      "calledBy": ["FUN_100254cd", "FUN_100203fc"]
+      "calledBy": ["FUN_100203fc", "FUN_100254cd"]
     },
     {
       "name": "FUN_1002031c",
@@ -8055,7 +8055,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "undefined1"}],
       "calls": [],
-      "calledBy": ["FUN_100203fc", "FUN_100117ff"]
+      "calledBy": ["FUN_100117ff", "FUN_100203fc"]
     },
     {
       "name": "FUN_100203fc",
@@ -8069,7 +8069,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "undefined1"}],
-      "calls": ["FUN_10020301", "FUN_100203e1"],
+      "calls": ["FUN_100203e1", "FUN_10020301"],
       "calledBy": ["FUN_100255d8"]
     },
     {
@@ -8100,7 +8100,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "undefined4"}, {"name": "param_3", "type": "undefined4"}],
       "calls": ["FUN_1001e114"],
-      "calledBy": ["FUN_1001e294", "FUN_10024807", "FUN_10024821", "FUN_1001e427", "FUN_100258c8"]
+      "calledBy": ["FUN_1001e294", "FUN_10024807", "FUN_100258c8", "FUN_1001e427", "FUN_10024821"]
     },
     {
       "name": "FUN_100204a4",
@@ -8115,7 +8115,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}, {"name": "param_2", "type": "undefined4"}, {"name": "param_3", "type": "undefined4"}],
       "calls": ["FUN_1001e132"],
-      "calledBy": ["FUN_1001e191", "FUN_100117ff"]
+      "calledBy": ["FUN_100117ff", "FUN_1001e191"]
     },
     {
       "name": "FUN_100204e3",
@@ -8130,7 +8130,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}, {"name": "param_2", "type": "uint"}, {"name": "param_3", "type": "uint"}],
       "calls": [],
-      "calledBy": ["FUN_1001e294", "FUN_100117ff"]
+      "calledBy": ["FUN_100117ff", "FUN_1001e294"]
     },
     {
       "name": "FUN_1002052b",
@@ -8175,7 +8175,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}],
       "calls": ["FUN_10025aec"],
-      "calledBy": ["FUN_1001e294", "FUN_1001e427", "FUN_100258c8"]
+      "calledBy": ["FUN_1001e294", "FUN_100258c8", "FUN_1001e427"]
     },
     {
       "name": "FUN_1002059b",
@@ -8265,7 +8265,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "float *"}],
       "calls": [],
-      "calledBy": ["FUN_1002215a", "FUN_1002218e"]
+      "calledBy": ["FUN_1002218e", "FUN_1002215a"]
     },
     {
       "name": "FUN_10020708",
@@ -8280,7 +8280,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4"}],
       "calls": [],
-      "calledBy": ["FUN_10020825", "FUN_10021095", "FUN_1002072b", "FUN_10021bae", "FUN_10020b2a", "FUN_10021cc2"]
+      "calledBy": ["FUN_10021cc2", "FUN_10021bae", "FUN_10020b2a", "FUN_1002072b", "FUN_10020825", "FUN_10021095"]
     },
     {
       "name": "FUN_1002072b",
@@ -8339,8 +8339,8 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "ushort *"}, {"name": "param_2", "type": "float"}],
-      "calls": ["FUN_1002072b", "FUN_10020708", "FUN_10020b2a", "FUN_1002060e"],
-      "calledBy": ["FUN_10021bae", "FUN_10021cc2"]
+      "calls": ["FUN_1002060e", "FUN_10020b2a", "FUN_1002072b", "FUN_10020708"],
+      "calledBy": ["FUN_10021cc2", "FUN_10021bae"]
     },
     {
       "name": "FUN_10021899",
@@ -8355,7 +8355,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "float *"}, {"name": "param_2", "type": "ushort *"}],
       "calls": ["FUN_1002060e"],
-      "calledBy": ["FUN_100219d7", "FUN_10021a5a"]
+      "calledBy": ["FUN_10021a5a", "FUN_100219d7"]
     },
     {
       "name": "FUN_100219d7",
@@ -8399,7 +8399,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4 *"}, {"name": "param_2", "type": "int"}],
-      "calls": ["FUN_10021095", "FUN_10020708"],
+      "calls": ["FUN_10020708", "FUN_10021095"],
       "calledBy": ["FUN_1002215a"]
     },
     {
@@ -8414,7 +8414,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "char *"}, {"name": "param_2", "type": "int"}],
-      "calls": ["FUN_10020825", "FUN_10021095", "FUN_10020708"],
+      "calls": ["FUN_10020708", "FUN_10020825", "FUN_10021095"],
       "calledBy": ["FUN_1002218e"]
     },
     {
@@ -8429,7 +8429,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4 *"}],
-      "calls": ["FUN_10021bae", "FUN_100206d8"],
+      "calls": ["FUN_100206d8", "FUN_10021bae"],
       "calledBy": []
     },
     {
@@ -8444,7 +8444,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "char *"}],
-      "calls": ["FUN_10021cc2", "FUN_100206d8"],
+      "calls": ["FUN_100206d8", "FUN_10021cc2"],
       "calledBy": []
     },
     {
@@ -8580,7 +8580,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}, {"name": "param_2", "type": "int"}],
       "calls": [],
-      "calledBy": ["FUN_10023c89", "FUN_10022e1c", "FUN_10022c61"]
+      "calledBy": ["FUN_10022e1c", "FUN_10022c61", "FUN_10023c89"]
     },
     {
       "name": "FUN_10022b93",
@@ -8595,7 +8595,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}, {"name": "param_2", "type": "int"}],
       "calls": [],
-      "calledBy": ["FUN_1002f809", "FUN_100316f9", "FUN_1003123a"]
+      "calledBy": ["FUN_100316f9", "FUN_1002f809", "FUN_1003123a"]
     },
     {
       "name": "FUN_10022bab",
@@ -8640,7 +8640,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4 *"}, {"name": "param_2", "type": "uint"}],
       "calls": [],
-      "calledBy": ["FUN_1002ecec", "FUN_100238bb", "FUN_1002379d", "FUN_10033a02", "FUN_10033bec", "FUN_100332e1", "FUN_10033da6"]
+      "calledBy": ["FUN_1002ecec", "FUN_1002379d", "FUN_100238bb", "FUN_10033bec", "FUN_10033a02", "FUN_10033da6", "FUN_100332e1"]
     },
     {
       "name": "FUN_10022c2f",
@@ -8714,7 +8714,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}],
-      "calls": ["FUN_10022e1c", "FUN_10022f92"],
+      "calls": ["FUN_10022f92", "FUN_10022e1c"],
       "calledBy": []
     },
     {
@@ -8760,7 +8760,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4"}, {"name": "param_2", "type": "undefined4"}],
       "calls": [],
-      "calledBy": ["FUN_1002318f", "FUN_1002328b"]
+      "calledBy": ["FUN_1002328b", "FUN_1002318f"]
     },
     {
       "name": "FUN_1002318f",
@@ -8774,8 +8774,8 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "this", "type": "void *"}, {"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "undefined4 *"}],
-      "calls": ["FUN_1002317a", "FUN_1002e65a"],
-      "calledBy": ["FUN_100233ab", "FUN_10023319", "FUN_100234aa", "FUN_10023449"]
+      "calls": ["FUN_1002e65a", "FUN_1002317a"],
+      "calledBy": ["FUN_10023449", "FUN_100233ab", "FUN_10023319", "FUN_100234aa"]
     },
     {
       "name": "FUN_1002328b",
@@ -8789,7 +8789,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "this", "type": "void *"}, {"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "uint"}],
-      "calls": ["FUN_1002317a", "FUN_1002e65a"],
+      "calls": ["FUN_1002e65a", "FUN_1002317a"],
       "calledBy": ["FUN_100233ab", "FUN_10023319"]
     },
     {
@@ -8804,7 +8804,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "uint"}, {"name": "param_4", "type": "uint"}],
-      "calls": ["FUN_1002318f", "FUN_1002328b"],
+      "calls": ["FUN_1002328b", "FUN_1002318f"],
       "calledBy": ["FUN_1002350b"]
     },
     {
@@ -8819,7 +8819,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "int"}, {"name": "param_4", "type": "uint"}],
-      "calls": ["FUN_1002318f", "FUN_1002328b"],
+      "calls": ["FUN_1002328b", "FUN_1002318f"],
       "calledBy": ["FUN_1002350b"]
     },
     {
@@ -8864,7 +8864,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}],
-      "calls": ["FUN_1002e670", "FUN_100233ab", "FUN_1002e675", "FUN_10023319"],
+      "calls": ["FUN_1002e675", "FUN_1002e670", "FUN_100233ab", "FUN_10023319"],
       "calledBy": []
     },
     {
@@ -8924,7 +8924,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "int *"}, {"name": "param_3", "type": "uint"}, {"name": "param_4", "type": "uint"}, {"name": "param_5", "type": "char"}],
-      "calls": ["FUN_10023712", "FUN_10022c14"],
+      "calls": ["FUN_10022c14", "FUN_10023712"],
       "calledBy": []
     },
     {
@@ -8969,7 +8969,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}],
-      "calls": ["FUN_1002e65a", "FUN_1002e689", "FUN_10016c3b"],
+      "calls": ["FUN_10016c3b", "FUN_1002e65a", "FUN_1002e689"],
       "calledBy": ["FUN_1001c265"]
     },
     {
@@ -8985,7 +8985,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}],
       "calls": [],
-      "calledBy": ["FUN_1001c5de", "FUN_1001c537"]
+      "calledBy": ["FUN_1001c537", "FUN_1001c5de"]
     },
     {
       "name": "FUN_10023bc5",
@@ -9045,7 +9045,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4"}, {"name": "param_2", "type": "int"}],
       "calls": [],
-      "calledBy": ["FUN_10023c89", "FUN_10023ee7"]
+      "calledBy": ["FUN_10023ee7", "FUN_10023c89"]
     },
     {
       "name": "FUN_10023c89",
@@ -9089,7 +9089,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [],
-      "calls": ["FUN_10023c89", "FUN_1002f809", "FUN_100333f2", "FUN_100301d9", "FUN_1002ebca", "FUN_10023c18", "FUN_10033e84", "FUN_10030f9f", "FUN_10031e84", "FUN_10023e78", "FUN_100316f9", "FUN_1003123a", "FUN_1003247d", "FUN_10030d87"],
+      "calls": ["FUN_10033e84", "FUN_100301d9", "FUN_10023e78", "FUN_1003123a", "FUN_1002ebca", "FUN_100333f2", "FUN_10023c18", "FUN_1003247d", "FUN_100316f9", "FUN_10030f9f", "FUN_10031e84", "FUN_1002f809", "FUN_10023c89", "FUN_10030d87"],
       "calledBy": ["FUN_100241e2"]
     },
     {
@@ -9120,7 +9120,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}],
       "calls": ["FUN_10033f0b"],
-      "calledBy": ["FUN_1002428f", "FUN_100258c8"]
+      "calledBy": ["FUN_100258c8", "FUN_1002428f"]
     },
     {
       "name": "FUN_10024251",
@@ -9149,7 +9149,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "char *"}, {"name": "param_4", "type": "int"}],
-      "calls": ["FUN_100348eb", "FUN_10033f76", "FUN_10024212", "FUN_10024251"],
+      "calls": ["FUN_100348eb", "FUN_10024251", "FUN_10024212", "FUN_10033f76"],
       "calledBy": ["FUN_10024374"]
     },
     {
@@ -9179,8 +9179,8 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "int"}],
-      "calls": ["FUN_10033f0b", "FUN_10034003"],
-      "calledBy": ["FUN_1001e427", "FUN_100258c8"]
+      "calls": ["FUN_10034003", "FUN_10033f0b"],
+      "calledBy": ["FUN_100258c8", "FUN_1001e427"]
     },
     {
       "name": "FUN_100246f2",
@@ -9210,7 +9210,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "void *"}],
       "calls": ["free"],
-      "calledBy": ["FUN_1001e191", "FUN_1001e93e"]
+      "calledBy": ["FUN_1001e93e", "FUN_1001e191"]
     },
     {
       "name": "FUN_10024741",
@@ -9225,7 +9225,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "size_t"}],
       "calls": ["malloc", "FUN_1001e114"],
-      "calledBy": ["FUN_1001fd2d", "FUN_100256c7", "FUN_10024f3b", "FUN_1002052b", "FUN_1001e191"]
+      "calledBy": ["FUN_1002052b", "FUN_10024f3b", "FUN_1001e191", "FUN_1001fd2d", "FUN_100256c7"]
     },
     {
       "name": "FUN_10024777",
@@ -9240,7 +9240,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}, {"name": "param_2", "type": "void *"}],
       "calls": ["free"],
-      "calledBy": ["FUN_1001e81b", "FUN_1001e191"]
+      "calledBy": ["FUN_1001e191", "FUN_1001e81b"]
     },
     {
       "name": "FUN_10024790",
@@ -9285,7 +9285,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined1 *"}],
       "calls": [],
-      "calledBy": ["FUN_100254cd", "FUN_1001e294", "FUN_10024821", "FUN_10025163", "FUN_1001e427", "FUN_100258c8"]
+      "calledBy": ["FUN_10025163", "FUN_100254cd", "FUN_1001e294", "FUN_100258c8", "FUN_1001e427", "FUN_10024821"]
     },
     {
       "name": "FUN_10024807",
@@ -9299,8 +9299,8 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "byte *"}, {"name": "param_3", "type": "uint"}],
-      "calls": ["FUN_1002059b", "FUN_1002047c"],
-      "calledBy": ["FUN_10025359", "FUN_100254cd", "FUN_100256c7", "FUN_100255d8", "FUN_1001e294", "FUN_100250d7", "FUN_10025163", "FUN_1001e427", "FUN_100258c8"]
+      "calls": ["FUN_1002047c", "FUN_1002059b"],
+      "calledBy": ["FUN_10025163", "FUN_10025359", "FUN_100254cd", "FUN_1001e294", "FUN_100250d7", "FUN_100255d8", "FUN_100258c8", "FUN_1001e427", "FUN_100256c7"]
     },
     {
       "name": "FUN_10024821",
@@ -9314,7 +9314,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}],
-      "calls": ["FUN_100247e4", "FUN_1002047c"],
+      "calls": ["FUN_1002047c", "FUN_100247e4"],
       "calledBy": ["FUN_100250d7"]
     },
     {
@@ -9389,7 +9389,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}],
-      "calls": ["FUN_100247b3", "FUN_10024741", "FUN_10020036"],
+      "calls": ["FUN_10020036", "FUN_100247b3", "FUN_10024741"],
       "calledBy": ["FUN_1001e407", "FUN_1001e427"]
     },
     {
@@ -9405,7 +9405,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "uint"}],
       "calls": ["FUN_1001e147", "FUN_1001e16c", "FUN_10024807", "FUN_10024821"],
-      "calledBy": ["FUN_10025359", "FUN_100254cd", "FUN_100256c7", "FUN_1002587e", "FUN_100255d8", "FUN_10025483", "FUN_10025163", "FUN_1001e427", "FUN_100258c8"]
+      "calledBy": ["FUN_10025163", "FUN_10025359", "FUN_100254cd", "FUN_10025483", "FUN_1002587e", "FUN_100255d8", "FUN_100258c8", "FUN_1001e427", "FUN_100256c7"]
     },
     {
       "name": "FUN_10025163",
@@ -9419,7 +9419,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "uint *"}, {"name": "param_3", "type": "int"}],
-      "calls": ["FUN_100247e4", "FUN_10024807", "FUN_1002031c", "FUN_100250d7", "FUN_1001e114"],
+      "calls": ["FUN_100247e4", "FUN_100250d7", "FUN_1001e114", "FUN_10024807", "FUN_1002031c"],
       "calledBy": ["FUN_1001e294"]
     },
     {
@@ -9434,7 +9434,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "this", "type": "void *"}, {"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "uint"}],
-      "calls": ["FUN_100203bd", "FUN_1001e132", "FUN_10024807", "FUN_1002052b", "FUN_100250d7", "FUN_1001e114"],
+      "calls": ["FUN_1002052b", "FUN_100203bd", "FUN_100250d7", "FUN_1001e132", "FUN_1001e114", "FUN_10024807"],
       "calledBy": ["FUN_1001e294"]
     },
     {
@@ -9449,7 +9449,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "undefined4"}, {"name": "param_3", "type": "undefined4"}, {"name": "param_4", "type": "int"}, {"name": "param_5", "type": "uint"}],
-      "calls": ["FUN_1001e132", "FUN_100250d7", "FUN_1001e114"],
+      "calls": ["FUN_100250d7", "FUN_1001e132", "FUN_1001e114"],
       "calledBy": ["FUN_1001e294"]
     },
     {
@@ -9464,7 +9464,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "uint"}],
-      "calls": ["FUN_10020301", "FUN_100247e4", "FUN_1001e132", "FUN_10024807", "FUN_100250d7", "FUN_1001e114"],
+      "calls": ["FUN_100247e4", "FUN_100250d7", "FUN_10020301", "FUN_1001e132", "FUN_1001e114", "FUN_10024807"],
       "calledBy": ["FUN_1001e294"]
     },
     {
@@ -9479,7 +9479,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "uint"}],
-      "calls": ["FUN_100203fc", "FUN_1001e132", "FUN_10024807", "FUN_100250d7", "FUN_1001e114"],
+      "calls": ["FUN_100203fc", "FUN_100250d7", "FUN_1001e132", "FUN_1001e114", "FUN_10024807"],
       "calledBy": ["FUN_1001e294"]
     },
     {
@@ -9494,7 +9494,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "uint"}],
-      "calls": ["FUN_1001e132", "FUN_10024741", "FUN_10024807", "FUN_10020435", "FUN_100250d7", "FUN_1001e114"],
+      "calls": ["FUN_10020435", "FUN_100250d7", "FUN_10024741", "FUN_1001e132", "FUN_1001e114", "FUN_10024807"],
       "calledBy": ["FUN_1001e294"]
     },
     {
@@ -9509,7 +9509,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "uint"}],
-      "calls": ["FUN_1002487f", "FUN_1001e147", "FUN_100250d7"],
+      "calls": ["FUN_1001e147", "FUN_1002487f", "FUN_100250d7"],
       "calledBy": ["FUN_1001e294"]
     },
     {
@@ -9524,7 +9524,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "this", "type": "void *"}, {"name": "param_1", "type": "int *"}],
-      "calls": ["FUN_10024212", "FUN_100247b3", "FUN_100247e4", "FUN_10024807", "FUN_1002438b", "FUN_100250d7", "FUN_1002047c", "FUN_10020583", "FUN_1001e114"],
+      "calls": ["FUN_1002047c", "FUN_100247e4", "FUN_100247b3", "FUN_10024212", "FUN_100250d7", "FUN_10020583", "FUN_1002438b", "FUN_10024807", "FUN_1001e114"],
       "calledBy": ["FUN_1001e427"]
     },
     {
@@ -9540,7 +9540,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "uint"}, {"name": "param_2", "type": "byte *"}, {"name": "param_3", "type": "uint"}],
       "calls": [],
-      "calledBy": ["FUN_1002059b", "FUN_10020583"]
+      "calledBy": ["FUN_10020583", "FUN_1002059b"]
     },
     {
       "name": "FUN_10025c00",
@@ -9599,7 +9599,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined8 *"}, {"name": "param_2", "type": "ulonglong *"}, {"name": "param_3", "type": "uint"}],
-      "calls": ["FUN_1002d2c2", "FUN_100354e0"],
+      "calls": ["FUN_100354e0", "FUN_1002d2c2"],
       "calledBy": []
     },
     {
@@ -9614,8 +9614,8 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined8 *"}, {"name": "param_2", "type": "undefined8 *"}, {"name": "param_3", "type": "undefined8 *"}, {"name": "param_4", "type": "uint"}],
-      "calls": ["FUN_10034e00", "FUN_10035600"],
-      "calledBy": ["FUN_10028712", "FUN_1002879f"]
+      "calls": ["FUN_10035600", "FUN_10034e00"],
+      "calledBy": ["FUN_1002879f", "FUN_10028712"]
     },
     {
       "name": "FUN_10028712",
@@ -9659,7 +9659,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined8 *"}, {"name": "param_2", "type": "undefined8 *"}],
-      "calls": ["FUN_10035600", "FUN_10034f00"],
+      "calls": ["FUN_10034f00", "FUN_10035600"],
       "calledBy": []
     },
     {
@@ -9674,7 +9674,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined8 *"}, {"name": "param_2", "type": "undefined8 *"}, {"name": "param_3", "type": "ulonglong *"}, {"name": "param_4", "type": "ulonglong *"}, {"name": "param_5", "type": "ulonglong *"}, {"name": "param_6", "type": "ulonglong *"}, {"name": "param_7", "type": "ulonglong *"}],
-      "calls": ["FUN_10035600", "FUN_100354e0", "FUN_10034f00"],
+      "calls": ["FUN_10034f00", "FUN_10035600", "FUN_100354e0"],
       "calledBy": []
     },
     {
@@ -9734,7 +9734,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined8 *"}, {"name": "param_2", "type": "ulonglong *"}],
-      "calls": ["FUN_1002d2c2", "FUN_100354e0"],
+      "calls": ["FUN_100354e0", "FUN_1002d2c2"],
       "calledBy": []
     },
     {
@@ -9854,7 +9854,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "ulonglong *"}, {"name": "param_2", "type": "ulonglong *"}, {"name": "param_3", "type": "undefined8 *"}, {"name": "param_4", "type": "undefined8 *"}, {"name": "param_5", "type": "undefined8 *"}, {"name": "param_6", "type": "undefined8 *"}],
-      "calls": ["FUN_10029b22", "FUN_1002d550", "FUN_1002c7c0", "FUN_1002d5db"],
+      "calls": ["FUN_1002d550", "FUN_1002d5db", "FUN_10029b22", "FUN_1002c7c0"],
       "calledBy": []
     },
     {
@@ -9885,7 +9885,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4"}, {"name": "param_2", "type": "size_t"}],
       "calls": ["malloc"],
-      "calledBy": ["FUN_1002318f", "FUN_10023aef", "FUN_1002328b"]
+      "calledBy": ["FUN_10023aef", "FUN_1002328b", "FUN_1002318f"]
     },
     {
       "name": "FUN_1002e665",
@@ -10079,7 +10079,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}, {"name": "param_2", "type": "int"}],
-      "calls": ["FUN_1002ec9d", "FUN_10022c14"],
+      "calls": ["FUN_10022c14", "FUN_1002ec9d"],
       "calledBy": []
     },
     {
@@ -10170,7 +10170,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "int *"}],
       "calls": [],
-      "calledBy": ["FUN_100300aa", "FUN_10030ae4"]
+      "calledBy": ["FUN_10030ae4", "FUN_100300aa"]
     },
     {
       "name": "FUN_1002faab",
@@ -10185,7 +10185,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4 *"}, {"name": "param_2", "type": "uint"}, {"name": "param_3", "type": "int"}, {"name": "param_4", "type": "int"}],
       "calls": [],
-      "calledBy": ["FUN_10030694", "FUN_1003026e", "FUN_10030776", "FUN_1002fcdd", "FUN_1003046b", "FUN_1002fb95"]
+      "calledBy": ["FUN_10030776", "FUN_1002fcdd", "FUN_1002fb95", "FUN_1003026e", "FUN_1003046b", "FUN_10030694"]
     },
     {
       "name": "FUN_1002fb95",
@@ -10200,7 +10200,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4 *"}, {"name": "param_2", "type": "uint"}, {"name": "param_3", "type": "int"}, {"name": "param_4", "type": "int"}, {"name": "param_5", "type": "int *"}],
       "calls": ["FUN_1002faab"],
-      "calledBy": ["FUN_1003026e", "FUN_10030776", "FUN_1002fcdd", "FUN_1003046b"]
+      "calledBy": ["FUN_10030776", "FUN_1002fcdd", "FUN_1003026e", "FUN_1003046b"]
     },
     {
       "name": "FUN_1002fc7f",
@@ -10229,7 +10229,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}, {"name": "param_2", "type": "int"}],
-      "calls": ["FUN_1002faab", "FUN_1002fc7f", "FUN_1002fb95"],
+      "calls": ["FUN_1002faab", "FUN_1002fb95", "FUN_1002fc7f"],
       "calledBy": []
     },
     {
@@ -10275,7 +10275,7 @@
       "sourceType": "DEFAULT",
       "parameters": [],
       "calls": [],
-      "calledBy": ["FUN_10030694", "FUN_1003026e", "FUN_10030776", "FUN_1003046b"]
+      "calledBy": ["FUN_10030776", "FUN_1003026e", "FUN_1003046b", "FUN_10030694"]
     },
     {
       "name": "FUN_1003026e",
@@ -10289,7 +10289,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "uint"}, {"name": "param_2", "type": "int"}],
-      "calls": ["FUN_1002faab", "FUN_10030213", "FUN_1002fb95"],
+      "calls": ["FUN_10030213", "FUN_1002faab", "FUN_1002fb95"],
       "calledBy": []
     },
     {
@@ -10304,7 +10304,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "uint"}, {"name": "param_2", "type": "int *"}],
-      "calls": ["FUN_1002faab", "FUN_10030213", "FUN_1002fb95"],
+      "calls": ["FUN_10030213", "FUN_1002faab", "FUN_1002fb95"],
       "calledBy": []
     },
     {
@@ -10319,7 +10319,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}, {"name": "param_2", "type": "int"}],
-      "calls": ["FUN_1002faab", "FUN_10030213"],
+      "calls": ["FUN_10030213", "FUN_1002faab"],
       "calledBy": []
     },
     {
@@ -10334,7 +10334,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "int *"}],
-      "calls": ["FUN_1002faab", "FUN_10030213", "FUN_1002fb95"],
+      "calls": ["FUN_10030213", "FUN_1002faab", "FUN_1002fb95"],
       "calledBy": []
     },
     {
@@ -10829,7 +10829,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}],
-      "calls": ["FUN_10032896", "FUN_1003255e", "FUN_100329e9"],
+      "calls": ["FUN_1003255e", "FUN_10032896", "FUN_100329e9"],
       "calledBy": []
     },
     {
@@ -10874,8 +10874,8 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "int"}],
-      "calls": ["FUN_10032bae", "FUN_10032d2e"],
-      "calledBy": ["FUN_10032fc1", "FUN_10032f18"]
+      "calls": ["FUN_10032d2e", "FUN_10032bae"],
+      "calledBy": ["FUN_10032f18", "FUN_10032fc1"]
     },
     {
       "name": "FUN_10032f18",
@@ -10934,7 +10934,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "char"}],
-      "calls": ["FUN_1003322f", "FUN_10022c14"],
+      "calls": ["FUN_10022c14", "FUN_1003322f"],
       "calledBy": []
     },
     {
@@ -11114,7 +11114,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}],
-      "calls": ["FUN_100336fd", "FUN_10022c14", "FUN_10033d70", "FUN_10033828"],
+      "calls": ["FUN_100336fd", "FUN_10033d70", "FUN_10022c14", "FUN_10033828"],
       "calledBy": []
     },
     {
@@ -11145,7 +11145,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "int *"}],
       "calls": ["FUN_10036919"],
-      "calledBy": ["FUN_10024212", "FUN_10033f76", "FUN_1002438b", "FUN_1003479e"]
+      "calledBy": ["FUN_10024212", "FUN_1003479e", "FUN_1002438b", "FUN_10033f76"]
     },
     {
       "name": "FUN_10033f76",
@@ -11295,7 +11295,7 @@
       "sourceType": "DEFAULT",
       "parameters": [],
       "calls": [],
-      "calledBy": ["FUN_100289e1", "FUN_10027fc6", "FUN_10028895"]
+      "calledBy": ["FUN_10028895", "FUN_100289e1", "FUN_10027fc6"]
     },
     {
       "name": "FUN_100354e0",
@@ -11310,7 +11310,7 @@
       "sourceType": "DEFAULT",
       "parameters": [],
       "calls": [],
-      "calledBy": ["FUN_100289e1", "FUN_1002856f", "FUN_1002ae7a", "FUN_1002b553"]
+      "calledBy": ["FUN_1002856f", "FUN_1002ae7a", "FUN_100289e1", "FUN_1002b553"]
     },
     {
       "name": "FUN_10035600",
@@ -11325,7 +11325,7 @@
       "sourceType": "DEFAULT",
       "parameters": [],
       "calls": [],
-      "calledBy": ["FUN_100285db", "FUN_100289e1", "FUN_10028895"]
+      "calledBy": ["FUN_10028895", "FUN_100289e1", "FUN_100285db"]
     },
     {
       "name": "FUN_100359f8",
@@ -11384,7 +11384,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "short *"}, {"name": "param_4", "type": "int"}, {"name": "param_5", "type": "int"}],
-      "calls": ["FUN_10036f75", "FUN_100373d7"],
+      "calls": ["FUN_100373d7", "FUN_10036f75"],
       "calledBy": []
     },
     {
@@ -11399,7 +11399,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "short *"}, {"name": "param_4", "type": "int *"}, {"name": "param_5", "type": "int"}],
-      "calls": ["FUN_10037a8f", "FUN_10037dea"],
+      "calls": ["FUN_10037dea", "FUN_10037a8f"],
       "calledBy": []
     },
     {
@@ -11475,7 +11475,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "uint *"}, {"name": "param_2", "type": "uint"}, {"name": "param_3", "type": "uint"}, {"name": "param_4", "type": "int"}, {"name": "param_5", "type": "int"}, {"name": "param_6", "type": "int *"}, {"name": "param_7", "type": "int"}, {"name": "param_8", "type": "uint *"}, {"name": "param_9", "type": "uint *"}],
       "calls": [],
-      "calledBy": ["FUN_10036caf", "FUN_10036d2e"]
+      "calledBy": ["FUN_10036d2e", "FUN_10036caf"]
     },
     {
       "name": "FUN_10036caf",
@@ -11520,7 +11520,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined1 *"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "int"}],
       "calls": [],
-      "calledBy": ["FUN_100363b5", "FUN_10034003"]
+      "calledBy": ["FUN_10034003", "FUN_100363b5"]
     },
     {
       "name": "FUN_10036f75",
@@ -11610,7 +11610,7 @@
       "sourceType": "DEFAULT",
       "parameters": [],
       "calls": [],
-      "calledBy": ["FUN_1000a390", "FUN_1000a1c0", "FUN_1000a5a0"]
+      "calledBy": ["FUN_1000a1c0", "FUN_1000a390", "FUN_1000a5a0"]
     },
     {
       "name": "HlinkNavigateString",
@@ -11894,7 +11894,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}],
-      "calls": ["operator_new", "sscanf", "getenv", "FUN_1003e560", "FUN_10001160"],
+      "calls": ["FUN_10001160", "FUN_1003e560", "sscanf", "operator_new", "getenv"],
       "calledBy": ["FUN_10009a50"]
     },
     {
@@ -11910,7 +11910,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "uint"}],
       "calls": ["operator_new"],
-      "calledBy": ["FUN_1003d5f0", "FUN_1003d4d0", "FUN_1003d580", "FUN_1003d420"]
+      "calledBy": ["FUN_1003d580", "FUN_1003d5f0", "FUN_1003d420", "FUN_1003d4d0"]
     },
     {
       "name": "FUN_1003d360",
@@ -11925,7 +11925,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "uint"}],
       "calls": ["operator_new"],
-      "calledBy": ["FUN_1003d4d0", "FUN_1003d420"]
+      "calledBy": ["FUN_1003d420", "FUN_1003d4d0"]
     },
     {
       "name": "FUN_1003d420",
@@ -12060,7 +12060,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}],
       "calls": [],
-      "calledBy": ["FUN_10009b20", "FUN_1003ab60"]
+      "calledBy": ["FUN_1003ab60", "FUN_10009b20"]
     },
     {
       "name": "FUN_1003dd50",
@@ -12134,7 +12134,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}],
-      "calls": ["FUN_1003dd90", "FUN_10040070", "FUN_10044210", "FUN_100406a0", "FUN_10041590", "FUN_10042ea0", "FUN_10041ba0", "FUN_10042310", "FUN_10041850", "FUN_100428e0", "FUN_1003dfb0", "FUN_1003e570", "FUN_1003ec50"],
+      "calls": ["FUN_10041850", "FUN_10041ba0", "FUN_10042ea0", "FUN_10041590", "FUN_10044210", "FUN_10042310", "FUN_1003dfb0", "FUN_100406a0", "FUN_1003ec50", "FUN_1003dd90", "FUN_1003e570", "FUN_10040070", "FUN_100428e0"],
       "calledBy": ["FUN_10009ec0"]
     },
     {
@@ -12165,7 +12165,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}, {"name": "param_2", "type": "int"}],
       "calls": [],
-      "calledBy": ["FUN_1003dd90", "FUN_1003b370"]
+      "calledBy": ["FUN_1003b370", "FUN_1003dd90"]
     },
     {
       "name": "FUN_1003e470",
@@ -12180,7 +12180,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}, {"name": "param_2", "type": "int"}],
       "calls": [],
-      "calledBy": ["FUN_10041ba0", "FUN_10041850", "FUN_1003ec50"]
+      "calledBy": ["FUN_1003ec50", "FUN_10041850", "FUN_10041ba0"]
     },
     {
       "name": "FUN_1003e490",
@@ -12629,7 +12629,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}],
-      "calls": ["FUN_10044450", "FUN_10044540"],
+      "calls": ["FUN_10044540", "FUN_10044450"],
       "calledBy": ["FUN_1003e040"]
     },
     {
@@ -12674,7 +12674,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4"}, {"name": "param_2", "type": "undefined4 *"}, {"name": "param_3", "type": "int"}, {"name": "param_4", "type": "undefined4"}],
-      "calls": ["FUN_100475b0", "FUN_100475d0", "FUN_100473f0"],
+      "calls": ["FUN_100475d0", "FUN_100473f0", "FUN_100475b0"],
       "calledBy": ["FUN_1000a840"]
     },
     {
@@ -12704,7 +12704,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "char *"}, {"name": "param_4", "type": "int"}],
-      "calls": ["FUN_10047a20", "FUN_1004a100", "FUN_10047a00", "FUN_10049340", "FUN_100492c0"],
+      "calls": ["FUN_10047a20", "FUN_10047a00", "FUN_1004a100", "FUN_10049340", "FUN_100492c0"],
       "calledBy": ["FUN_100475b0"]
     },
     {
@@ -12734,7 +12734,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "int"}],
-      "calls": ["FUN_10049400", "FUN_100492c0"],
+      "calls": ["FUN_100492c0", "FUN_10049400"],
       "calledBy": ["FUN_10046400"]
     },
     {
@@ -12824,7 +12824,7 @@
       "hasVarArgs": false,
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "uint *"}, {"name": "param_2", "type": "int *"}, {"name": "param_3", "type": "int"}],
-      "calls": ["FUN_1004a9a0", "FUN_1004a1d0", "FUN_1004b0b0", "FUN_1004af20", "FUN_1004a980", "FUN_1004a190", "FUN_1004b0e0"],
+      "calls": ["FUN_1004af20", "FUN_1004a1d0", "FUN_1004a980", "FUN_1004a190", "FUN_1004b0b0", "FUN_1004b0e0", "FUN_1004a9a0"],
       "calledBy": ["FUN_100475d0"]
     },
     {
@@ -12885,7 +12885,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4"}, {"name": "param_2", "type": "int"}],
       "calls": [],
-      "calledBy": ["FUN_10049400", "FUN_1004a100", "FUN_100492c0"]
+      "calledBy": ["FUN_1004a100", "FUN_100492c0", "FUN_10049400"]
     },
     {
       "name": "FUN_1004a9a0",
@@ -12915,7 +12915,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int *"}, {"name": "param_2", "type": "uint"}, {"name": "param_3", "type": "uint"}, {"name": "param_4", "type": "int"}, {"name": "param_5", "type": "int"}, {"name": "param_6", "type": "uint *"}, {"name": "param_7", "type": "uint *"}, {"name": "param_8", "type": "int"}, {"name": "param_9", "type": "uint *"}, {"name": "param_10", "type": "uint *"}],
       "calls": [],
-      "calledBy": ["FUN_1004a9a0", "FUN_1004af20"]
+      "calledBy": ["FUN_1004af20", "FUN_1004a9a0"]
     },
     {
       "name": "FUN_1004af20",
@@ -12960,7 +12960,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "int"}, {"name": "param_2", "type": "int"}, {"name": "param_3", "type": "int"}],
       "calls": [],
-      "calledBy": ["FUN_10049400", "FUN_1004a1d0"]
+      "calledBy": ["FUN_1004a1d0", "FUN_10049400"]
     },
     {
       "name": "FUN_1004b220",
@@ -12990,7 +12990,7 @@
       "sourceType": "DEFAULT",
       "parameters": [],
       "calls": [],
-      "calledBy": ["FUN_10014799", "FUN_10014bbc", "FUN_10015c65", "FUN_1001237e", "FUN_10012b93", "FUN_1001c02f", "FUN_10015534", "FUN_10014393", "FUN_1000be28", "FUN_1001514e", "FUN_1001a444", "FUN_100142a2", "FUN_10017361", "FUN_1001b0fd", "FUN_1001b50c", "FUN_10016c3c", "FUN_1000ad9f", "FUN_1001b493", "FUN_1000c4e9", "FUN_10014595", "FUN_10016cdc"]
+      "calledBy": ["FUN_10017361", "FUN_10016cdc", "FUN_10015534", "FUN_1000c4e9", "FUN_1000be28", "FUN_1001b50c", "FUN_10014595", "FUN_1000ad9f", "FUN_10014393", "FUN_1001237e", "FUN_10014bbc", "FUN_1001514e", "FUN_100142a2", "FUN_1001a444", "FUN_1001b493", "FUN_10014799", "FUN_10016c3c", "FUN_10012b93", "FUN_10015c65", "FUN_1001c02f", "FUN_1001b0fd"]
     },
     {
       "name": "FUN_1004b5cf",
@@ -13005,7 +13005,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4"}, {"name": "param_2", "type": "undefined4"}, {"name": "param_3", "type": "int"}, {"name": "param_4", "type": "undefined *"}],
       "calls": ["FUN_1004b637"],
-      "calledBy": ["`vector_deleting_destructor'", "FID_conflict:`vector_deleting_destructor'", "FUN_10012b47"]
+      "calledBy": ["FID_conflict:`vector_deleting_destructor'", "FUN_10012b47", "`vector_deleting_destructor'"]
     },
     {
       "name": "FUN_1004b637",
@@ -13035,7 +13035,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4"}, {"name": "param_2", "type": "undefined4"}, {"name": "param_3", "type": "int"}, {"name": "param_4", "type": "undefined *"}],
       "calls": [],
-      "calledBy": ["FUN_1004b637", "FUN_1004b72d"]
+      "calledBy": ["FUN_1004b72d", "FUN_1004b637"]
     },
     {
       "name": "FUN_1004b6c3",
@@ -13050,7 +13050,7 @@
       "sourceType": "DEFAULT",
       "parameters": [{"name": "param_1", "type": "undefined4"}, {"name": "param_2", "type": "undefined4"}, {"name": "param_3", "type": "int"}, {"name": "param_4", "type": "undefined *"}],
       "calls": ["FUN_1004b72d"],
-      "calledBy": ["FUN_1000be28", "FUN_10015c65", "FUN_10012b93"]
+      "calledBy": ["FUN_1000be28", "FUN_10012b93", "FUN_10015c65"]
     },
     {
       "name": "FUN_1004b72d",
@@ -13140,7 +13140,7 @@
       "sourceType": "DEFAULT",
       "parameters": [],
       "calls": [],
-      "calledBy": ["FUN_1001fd2d", "FUN_100117ff"]
+      "calledBy": ["FUN_100117ff", "FUN_1001fd2d"]
     },
     {
       "name": "floor",
