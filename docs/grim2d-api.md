@@ -43,6 +43,13 @@ We also generate an evidence appendix with callsite snippets:
 - [Grim2D API evidence](grim2d-api-evidence.md)
 
 
+## Internal helpers (non-vtable)
+
+- `grim_convert_vertex_space` (`0x10016944`) remaps vec4 coordinates between three space
+  modes used by the batcher. Modes 1/2/3 control whether xyz and w are in `[-1, 1]`
+  or `[0, 1]`; see the evidence appendix for inferred mappings.
+
+
 ## Top offsets by callsite count
 
 These are the most frequently used offsets (likely the core draw/state calls):

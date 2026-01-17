@@ -1648,6 +1648,10 @@ grim.dll body:
 - Provisional name: `grim_convert_vertex_space` (medium)
 - Guess: `float *grim_convert_vertex_space(void *this, float *src)`
 - Uses `this+0x1058` as a vertex count and writes vec4s to `this+0x104c`.
-- Remaps coordinates between three space modes (`this+8` and `this+0x1048`): some paths
-  convert `[-1, 1]` to `[0, 1]` via `(v + 1) * 0.5`, others invert to `v * 2 - 1`.
-- Only the xyz components are converted for modes 1↔2; mode 3 applies the same mapping to w.
+- Remaps coordinates between three space modes (`this+8` and `this+0x1048`) with explicit
+  `[-1, 1]` ↔ `[0, 1]` conversions (`(v + 1) * 0.5` and `v * 2 - 1`).
+- Inferred mapping:
+  - Mode 1: xyz in `[-1, 1]`, w in `[-1, 1]`.
+  - Mode 2: xyz in `[0, 1]`, w in `[-1, 1]`.
+  - Mode 3: xyz in `[0, 1]`, w in `[0, 1]`.
+  - Mode 1↔2 converts xyz only; any conversion involving mode 3 also remaps w.
