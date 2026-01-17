@@ -423,6 +423,36 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00490f3c",
+      "name": "player_alt_move_key_forward",
+      "comment": "Alternate forward move key (used when _DAT_0048035c == 1)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490f40",
+      "name": "player_alt_move_key_backward",
+      "comment": "Alternate backward move key (used when _DAT_0048035c == 1)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490f44",
+      "name": "player_alt_turn_key_left",
+      "comment": "Alternate turn-left key (used when _DAT_0048035c == 1)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490f48",
+      "name": "player_alt_turn_key_right",
+      "comment": "Alternate turn-right key (used when _DAT_0048035c == 1)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490f4c",
+      "name": "player_alt_fire_key",
+      "comment": "Alternate primary fire key (checked by input_primary_is_down)"
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004912b8",
       "name": "fx_queue",
       "comment": "FX queue base (0x80 entries, stride 0x28)"

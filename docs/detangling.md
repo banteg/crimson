@@ -94,11 +94,11 @@ You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps
 
 - `FUN_00446030` -> `input_primary_just_pressed`
   - Evidence: edge-detects a primary action by latching `DAT_00478e50`, checks mouse button
-    `(*DAT_0048083c + 0x58)(0)`, and scans per-player fire bindings at `DAT_00490bec` (stride
+    `(*DAT_0048083c + 0x58)(0)`, and scans per-player fire bindings at `player_fire_key` (stride
     `0xd8`). Used across UI click/confirm paths and player fire/selection logic.
 - `FUN_004460f0` -> `input_primary_is_down`
-  - Evidence: returns true while the primary action is held (mouse button 0, `DAT_00490bec`,
-    or `DAT_00490f4c`), used by UI scroll/drag handling.
+  - Evidence: returns true while the primary action is held (mouse button 0, `player_fire_key`,
+    or `player_alt_fire_key`), used by UI scroll/drag handling.
 - `FUN_00446000` -> `input_any_key_pressed`
   - Evidence: scans keycodes `2..0x17e` via the input callback at `(*DAT_0048083c + 0x80)`.
 
@@ -162,11 +162,11 @@ These live inside the per-player input struct (stride `0xd8`) and are queried th
 | `DAT_00490bfc` | `0x12` (E) | aim rotate right (`player_aim_key_right`) | rotates `player_aim_heading` in aim scheme 1 |
 | `DAT_00490bf0` | `0x11` (W) | unused/reserved | copied from config, but no `is_key_*` callsites found |
 | `DAT_00490bf4` | `0x1f` (S) | unused/reserved | copied from config, but no `is_key_*` callsites found |
-| `DAT_00490f3c` | `0xc8` (Up) | alt move up | used via `is_key_down` when `_DAT_0048035c == 1` |
-| `DAT_00490f40` | `0xd0` (Down) | alt move down | used via `is_key_down` when `_DAT_0048035c == 1` |
-| `DAT_00490f44` | `0xcb` (Left) | alt move left | used via `is_key_down` when `_DAT_0048035c == 1` |
-| `DAT_00490f48` | `0xcd` (Right) | alt move right | used via `is_key_down` when `_DAT_0048035c == 1` |
-| `DAT_00490f4c` | `0x9d` (RControl) | alt primary fire | checked in `input_primary_is_down` |
+| `DAT_00490f3c` | `0xc8` (Up) | alt move forward (`player_alt_move_key_forward`) | used via `is_key_down` when `_DAT_0048035c == 1` |
+| `DAT_00490f40` | `0xd0` (Down) | alt move backward (`player_alt_move_key_backward`) | used via `is_key_down` when `_DAT_0048035c == 1` |
+| `DAT_00490f44` | `0xcb` (Left) | alt turn left (`player_alt_turn_key_left`) | used via `is_key_down` when `_DAT_0048035c == 1` |
+| `DAT_00490f48` | `0xcd` (Right) | alt turn right (`player_alt_turn_key_right`) | used via `is_key_down` when `_DAT_0048035c == 1` |
+| `DAT_00490f4c` | `0x9d` (RControl) | alt primary fire (`player_alt_fire_key`) | checked in `input_primary_is_down` |
 | `DAT_00490f50` | `0x11` (W) | unused/reserved | defaults set; no callsites yet |
 | `DAT_00490f54` | `0x1f` (S) | unused/reserved | defaults set; no callsites yet |
 | `DAT_00490f58` | `0xd3` (Delete) | unused/reserved | defaults set; no callsites yet |
