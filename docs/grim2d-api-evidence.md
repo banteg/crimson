@@ -848,7 +848,8 @@ grim.dll inner loop (stride + matrix):
 
 
 ## 0x138 — grim_draw_quad_points @ 0x10009080
-- Ghidra signature: `undefined grim_draw_quad_points()`
+- Notes: pushes quad using 4 explicit points (x0..y3)
+- Ghidra signature: `void grim_draw_quad_points(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3)`
 - Call sites: 4 (unique funcs: 1)
 - Sample calls: FUN_00422c70:L16048; FUN_00422c70:L16204; FUN_00422c70:L16755; FUN_00422c70:L16768
 - First callsite: FUN_00422c70 (line 18185)
