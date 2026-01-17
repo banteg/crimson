@@ -451,6 +451,3 @@ See [Projectile struct](projectile-struct.md) for the expanded field map and not
   - Evidence: returns a label string based on `_DAT_00480360` (Survival, Quests, Typ-o-Shooter, etc.).
 
 
-## Next naming targets
-
-- For `grim.dll`, inspect `FUN_10016944` (coordinate conversions and vertex packing) to pin down the render pipeline stage.

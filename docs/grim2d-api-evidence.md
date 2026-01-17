@@ -1641,3 +1641,13 @@ grim.dll body:
                                    (uint)(byte)(&DAT_1005a570)[(byte)text[iVar6]]);
   }
 ```
+
+
+## grim.dll — coordinate space conversion helper @ 0x10016944
+
+- Provisional name: `grim_convert_vertex_space` (medium)
+- Guess: `float *grim_convert_vertex_space(void *this, float *src)`
+- Uses `this+0x1058` as a vertex count and writes vec4s to `this+0x104c`.
+- Remaps coordinates between three space modes (`this+8` and `this+0x1048`): some paths
+  convert `[-1, 1]` to `[0, 1]` via `(v + 1) * 0.5`, others invert to `v * 2 - 1`.
+- Only the xyz components are converted for modes 1↔2; mode 3 applies the same mapping to w.

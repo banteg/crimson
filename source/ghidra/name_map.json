@@ -1437,5 +1437,12 @@
     "name": "grim_draw_line_quad",
     "signature": "void grim_draw_line_quad(float *p0, float *p1, float *half_vec)",
     "comment": "Grim2D vtable 0xe4 (provisional): line quad from endpoints + half-width vector"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10016944",
+    "name": "grim_convert_vertex_space",
+    "signature": "float *grim_convert_vertex_space(void *this, float *src)",
+    "comment": "converts vec4 coordinates between space modes (1/2/3), writes to this+0x104c, returns the output buffer"
   }
 ]
