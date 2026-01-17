@@ -364,6 +364,8 @@ See [Creature struct](creature-struct.md) for the expanded field map and cross-l
 - `FUN_004295f0` -> `bonus_render`
   - Evidence: renders bonus icons from `DAT_0048f7f0`, scales/fades by timer, and draws label text
     via `bonus_label_for_entry` when players are nearby.
+- `FUN_00429580` -> `bonus_label_for_entry`
+  - Evidence: returns a formatted label string for bonus entries (weapon/score cases use a formatter).
 - `FUN_00409890` -> `bonus_apply`
   - Evidence: applies bonus effects based on entry type (`param_2[0]`), spawns effects via
     `FUN_0042e120`, and plays bonus SFX (`FUN_0043d260`).
