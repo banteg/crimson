@@ -148,7 +148,7 @@ These offsets appear with keycodes or input-related values:
 | `0x12c` | `submit_vertices_offset` | `void submit_vertices_offset(float *verts, int count, float *offset)` | medium | copies verts then offsets XY (7-float stride) |
 | `0x130` | `submit_vertices_offset_color` | `void submit_vertices_offset_color(float *verts, int count, float *offset, float *color)` | medium | copies verts, offsets XY, overrides packed color from `*color` |
 | `0x134` | `submit_vertices_transform_color` | `void submit_vertices_transform_color(float *verts, int count, float *offset, float *matrix, float *color)` | medium | copies verts, applies matrix+offset, overrides packed color from `*color` |
-| `0x138` | `draw_quad_points` | `void draw_quad_points(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3)` | high | pushes quad from 4 points |
+| `0x138` | `draw_quad_points` | `void draw_quad_points(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3)` | high | pushes quad from 4 points using current UV/color slots |
 | `0x13c` | `draw_text_mono` | `void draw_text_mono(float x, float y, const char *text)` | medium | fixed 16px grid; handles a few extended codes |
 | `0x140` | `draw_text_mono_fmt` | `void draw_text_mono_fmt(float x, float y, const char *fmt, ...)` | medium | printf-style wrapper |
 | `0x144` | `draw_text_small` | `void draw_text_small(float x, float y, const char *text)` | medium | uses `smallFnt.dat` widths + `GRIM_Font2` |

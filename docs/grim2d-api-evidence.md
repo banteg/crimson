@@ -862,6 +862,16 @@ grim.dll inner loop (stride + matrix):
           (**(code **)(*DAT_0048083c + 0xf0))();
 ```
 
+grim.dll vertex fill (color + UV slots):
+
+```c
+    DAT_10059e34[4] = DAT_1005bc04;
+    DAT_10059e34[5] = DAT_1005b290;
+    DAT_10059e34[6] = DAT_1005b294;
+    DAT_10059e34 = DAT_10059e34 + 7;
+    *DAT_10059e34 = x1;
+```
+
 
 ## 0x13c — FUN_100092b0 @ 0x100092b0
 - Provisional name: `draw_text_mono` (medium)
