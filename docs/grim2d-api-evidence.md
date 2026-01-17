@@ -536,8 +536,8 @@ LAB_00401add:
 ## 0x100 — FUN_10008350 @ 0x10008350
 - Provisional name: `set_uv` (high)
 - Guess: `void set_uv(float u0, float v0, float u1, float v1)`
-- Notes: sets texture coords
-- Ghidra signature: `undefined FUN_10008350()`
+- Notes: sets all 4 UV pairs (u0/v0/u1/v1) used by draw calls
+- Ghidra signature: `void grim_set_uv(float u0, float v0, float u1, float v1)`
 - Call sites: 59 (unique funcs: 23)
 - Sample calls: FUN_004047c0:L3126; FUN_004061e0:L3884; FUN_0040a510:L5635; FUN_0040a510:L5642; FUN_0040a510:L5664; FUN_0040b740:L6331; FUN_00417ae0:L9121; FUN_00417b80:L9206
 - First callsite: FUN_004047c0 (line 3126)
@@ -548,6 +548,15 @@ LAB_00401add:
   (**(code **)(*DAT_0048083c + 0x100))();
   uStack_190 = 0x4239999a;
   fStack_198 = param_1[1] + 22.0;
+```
+
+grim.dll UV assignment:
+
+```c
+  DAT_1005b290 = u0;
+  DAT_1005b294 = v0;
+  DAT_1005b298 = u1;
+  DAT_1005b29c = v0;
 ```
 
 
@@ -693,7 +702,8 @@ Clamped RGBA example (FUN_00446030):
 
 
 ## 0x118 — FUN_100081c0 @ 0x100081c0
-- Ghidra signature: `undefined FUN_100081c0()`
+- Notes: packs RGBA into color slot `index` (0..3); draw_quad reads slots 0..3
+- Ghidra signature: `void grim_set_color_slot(int index, float r, float g, float b, float a)`
 - Call sites: 12 (unique funcs: 2)
 - Sample calls: FUN_0040b740:L6302; FUN_0040b740:L6308; FUN_0040b740:L6315; FUN_0040b740:L6322; FUN_00422c70:L15993; FUN_00422c70:L16000; FUN_00422c70:L16068; FUN_00422c70:L16075
 - First callsite: FUN_0040b740 (line 6689)
@@ -706,12 +716,18 @@ Clamped RGBA example (FUN_00446030):
     puStack_80 = (undefined1 *)0x0;
 ```
 
+grim.dll slot write:
+
+```c
+  (&DAT_1005bc04)[index] = ((uVar1 & 0xff | iVar2 << 8) << 8 | uVar3 & 0xff) << 8 | uVar4 & 0xff;
+```
+
 
 ## 0x11c — FUN_10008b10 @ 0x10008b10
 - Provisional name: `draw_quad` (high)
 - Guess: `void draw_quad(float x, float y, float w, float h)`
-- Notes: core draw call
-- Ghidra signature: `undefined FUN_10008b10()`
+- Notes: core draw call; uses per-corner color slots + UV array
+- Ghidra signature: `void grim_draw_quad(float x, float y, float w, float h)`
 - Call sites: 100 (unique funcs: 21)
 - Sample calls: FUN_004047c0:L3132; FUN_004061e0:L3888; FUN_004061e0:L3894; FUN_0040a510:L5701; FUN_0040b740:L6344; FUN_00417ae0:L9124; FUN_004188a0:L9613; FUN_00418b60:L9720
 - First callsite: FUN_004047c0 (line 3132)
@@ -722,6 +738,14 @@ Clamped RGBA example (FUN_00446030):
   (**(code **)(*DAT_0048083c + 0x11c))();
   pcStack_1a0 = (char *)0x4048fc;
   (**(code **)(*DAT_0048083c + 0xf0))();
+```
+
+grim.dll vertex fill (color + UV):
+
+```c
+    DAT_10059e34[4] = DAT_1005bc04;
+    DAT_10059e34[5] = DAT_1005b290;
+    DAT_10059e34[6] = DAT_1005b294;
 ```
 
 

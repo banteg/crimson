@@ -134,14 +134,14 @@ These offsets appear with keycodes or input-related values:
 | `0xf4` | `submit_vertex_raw` | `void submit_vertex_raw(const float *vertex)` | medium | pushes 1 raw vertex; auto-flush |
 | `0xf8` | `submit_quad_raw` | `void submit_quad_raw(const float *verts)` | medium | pushes 4 raw vertices; auto-flush |
 | `0xfc` | `set_rotation` | `void set_rotation(float radians)` | medium | rotation before draw |
-| `0x100` | `set_uv` | `void set_uv(float u0, float v0, float u1, float v1)` | high | UV coords |
+| `0x100` | `set_uv` | `void set_uv(float u0, float v0, float u1, float v1)` | high | sets all 4 UV pairs (u0/v0/u1/v1) |
 | `0x104` | `set_atlas_frame` | `void set_atlas_frame(int atlas_size, int frame)` | high | atlas size (cells per side) + frame index |
 | `0x108` | `set_sub_rect` | `void set_sub_rect(int atlas_size, int width, int height, int frame)` | medium | atlas grid sub-rect: `atlas_size` indexes the UV table (2/4/8/16), width/height in cells, `frame` selects top-left cell |
 | `0x10c` | `set_uv_point` | `void set_uv_point(int index, float u, float v)` | medium | sets a single UV pair (index 0..3) for custom quad UVs |
 | `0x110` | `set_color_ptr` | `void set_color_ptr(float *rgba)` | medium | sets current color from float[4] (RGBA 0..1) |
 | `0x114` | `set_color` | `void set_color(float r, float g, float b, float a)` | high | RGBA floats |
-| `0x118` | `set_color_slot` | `void set_color_slot(int index, float r, float g, float b, float a)` | high | packs RGBA into color slot array |
-| `0x11c` | `draw_quad` | `void draw_quad(float x, float y, float w, float h)` | high | core draw call |
+| `0x118` | `set_color_slot` | `void set_color_slot(int index, float r, float g, float b, float a)` | high | packs RGBA into color slot array (index 0..3) |
+| `0x11c` | `draw_quad` | `void draw_quad(float x, float y, float w, float h)` | high | core draw call; uses per-corner color slots + UV array |
 | `0x120` | `draw_quad_xy` | `void draw_quad_xy(float *xy, float w, float h)` | medium | quad using pointer to XY |
 | `0x124` | `draw_quad_rotated_matrix` | `void draw_quad_rotated_matrix(float x, float y, float w, float h)` | high | uses rotation matrix to emit quad vertices |
 | `0x128` | `submit_vertices_transform` | `void submit_vertices_transform(float *verts, int count, float *offset, float *matrix)` | medium | copies `count` verts (7-float stride) then applies 2x2 matrix + offset |

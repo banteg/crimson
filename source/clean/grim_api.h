@@ -77,14 +77,14 @@ struct Grim2DVtable {
     void (*submit_vertex_raw)(const float *vertex); // 0xf4 (grim_submit_vertex_raw)
     void (*submit_quad_raw)(const float *verts); // 0xf8 (grim_submit_quad_raw)
     void (*set_rotation)(float radians); // 0xfc (FUN_10007f30)
-    void (*set_uv)(float u0, float v0, float u1, float v1); // 0x100 (FUN_10008350)
+    void (*set_uv)(float u0, float v0, float u1, float v1); // 0x100 (FUN_10008350) sets all 4 UV pairs
     void (*set_atlas_frame)(int atlas_size, int frame); // 0x104 (FUN_10008230)
     void (*set_sub_rect)(int atlas_size, int width, int height, int frame); // 0x108 (FUN_100082c0) atlas_size indexes UV table (2/4/8/16)
     void (*set_uv_point)(int index, float u, float v); // 0x10c (grim_set_uv_point) index 0..3
     void (*set_color_ptr)(float *rgba); // 0x110 (grim_set_color_ptr)
     void (*set_color)(float r, float g, float b, float a); // 0x114 (FUN_10007f90)
-    void (*set_color_slot)(int index, float r, float g, float b, float a); // 0x118 (grim_set_color_slot)
-    void (*draw_quad)(float x, float y, float w, float h); // 0x11c (FUN_10008b10)
+    void (*set_color_slot)(int index, float r, float g, float b, float a); // 0x118 (grim_set_color_slot) index 0..3
+    void (*draw_quad)(float x, float y, float w, float h); // 0x11c (FUN_10008b10) uses per-corner color+UV
     void (*draw_quad_xy)(float *xy, float w, float h); // 0x120 (grim_draw_quad_xy)
     void (*draw_quad_rotated_matrix)(float x, float y, float w, float h); // 0x124 (grim_draw_quad_rotated_matrix)
     void (*submit_vertices_transform)(float *verts, int count, float *offset, float *matrix); // 0x128 (grim_submit_vertices_transform) verts are 7-float stride
