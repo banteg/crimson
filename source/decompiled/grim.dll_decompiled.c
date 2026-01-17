@@ -2413,183 +2413,10 @@ LAB_10005be6:
 
 
 
-/* grim_set_key_char_buffer @ 10005c20 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x54 (provisional): set input character ring buffer */
-
-void grim_set_key_char_buffer(uchar *buffer,int *count,int size)
-
-{
-  PTR_DAT_10053048 = buffer;
-  PTR_DAT_1005304c = (undefined *)count;
-  DAT_10053050 = size;
-  return;
-}
-
-
-
-/* grim_get_key_char @ 10005c40 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x50 (provisional) */
-
-int grim_get_key_char(void)
-
-{
-  int iVar1;
-  undefined4 *puVar2;
-  int iVar3;
-  
-  if (DAT_1005d3e4 != 0) {
-    iVar1 = DAT_1005d3c4;
-    if (0 < DAT_1005d3e4) {
-      puVar2 = &DAT_1005d3c4;
-      iVar3 = DAT_1005d3e4;
-      do {
-        *puVar2 = puVar2[1];
-        puVar2 = puVar2 + 1;
-        iVar3 = iVar3 + -1;
-      } while (iVar3 != 0);
-    }
-    DAT_1005d3e4 = DAT_1005d3e4 + -1;
-    return iVar1;
-  }
-  return 0;
-}
-
-
-
-/* grim_release @ 10005c80 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x0 (provisional): delete interface */
-
-void grim_release(void)
-
-{
-  void *in_ECX;
-  
-  operator_delete(in_ECX);
-  return;
-}
-
-
-
-/* grim_set_paused @ 10005c90 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x4 (provisional): pause game tick update */
-
-void grim_set_paused(int paused)
-
-{
-  DAT_1005d820 = (undefined1)paused;
-  return;
-}
-
-
-
-/* grim_get_version @ 10005ca0 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x8 (provisional): engine version constant */
-
-float grim_get_version(void)
-
-{
-  return 1.21;
-}
-
-
-
-/* grim_check_device @ 10005cb0 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0xc (provisional): device creation test */
-
-int grim_check_device(void)
-
-{
-  uint uVar1;
-  int iVar2;
-  undefined4 uVar3;
-  int *piVar4;
-  int *piVar5;
-  undefined4 uStack_4;
-  
-  uStack_4 = 0;
-  piVar5 = DAT_10059dbc;
-  uVar1 = (**(code **)(*DAT_10059dbc + 0x6c))(DAT_10059dbc,DAT_10059df8,DAT_10059dfc,0x15,&uStack_4)
-  ;
-  if ((int)uVar1 < 0) {
-    return uVar1 & 0xffffff00;
-  }
-  piVar4 = DAT_10059dbc;
-  iVar2 = (**(code **)(*DAT_10059dbc + 0x78))(DAT_10059dbc,piVar5);
-  if (iVar2 < 0) {
-    uVar1 = (**(code **)(*piVar4 + 8))(piVar4);
-    return uVar1 & 0xffffff00;
-  }
-  iVar2 = FUN_1000ae52();
-  if (iVar2 < 0) {
-    uVar1 = (**(code **)(*piVar4 + 8))(piVar4);
-    return uVar1 & 0xffffff00;
-  }
-  uVar3 = (**(code **)(*piVar4 + 8))(piVar4);
-  return CONCAT31((int3)((uint)uVar3 >> 8),1);
-}
-
-
-
-/* grim_apply_config @ 10005d40 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x10 (provisional): invoked by '...invoking grim config' log */
-
-int grim_apply_config(void)
-
-{
-  uint uVar1;
-  int *in_ECX;
-  
-  if (DAT_10059778 == (HICON)0x0) {
-    DAT_10059778 = LoadIconA(DAT_1005bacc,(LPCSTR)0x72);
-  }
-  DAT_1005d3bc = '\0';
-  DAT_1005b2c4 = (int *)Direct3DCreate8(0xdc);
-  if (DAT_1005b2c4 == (int *)0x0) {
-    DAT_1005c8f8 = s_D3D__Could_not_init_DirectX_8_1__10053a60;
-    uVar1 = MessageBoxA((HWND)0x0,s_D3D__Could_not_init_DirectX_8_1__10053a60,&DAT_10053824,0);
-    return uVar1 & 0xffffff00;
-  }
-  (**(code **)(*DAT_1005b2c4 + 0x34))(DAT_1005b2c4,0,1,&DAT_1005a498);
-  DialogBoxParamA(DAT_1005bacc,(LPCSTR)0x74,(HWND)0x0,(DLGPROC)&LAB_10002120,0);
-  (**(code **)(*DAT_1005b2c4 + 8))(DAT_1005b2c4);
-  if (DAT_1005d3bc == '\0') {
-    (**(code **)(*in_ECX + 0x20))(0x54,DAT_1005d400);
-    if ((char)DAT_1005b2b8 == '\0') {
-      (**(code **)(*in_ECX + 0x20))(0x2b,0x20);
-    }
-    else {
-      (**(code **)(*in_ECX + 0x20))(0x2b,0x10);
-    }
-    (**(code **)(*in_ECX + 0x20))(0x54,DAT_1005d400);
-    (**(code **)(*in_ECX + 0x20))(8,DAT_1005b280);
-    (**(code **)(*in_ECX + 0x20))(0x34,0);
-    (**(code **)(*in_ECX + 0x20))(8,DAT_1005b280);
-    (**(code **)(*in_ECX + 0x20))(0x29,DAT_10053054);
-    (**(code **)(*in_ECX + 0x20))(0x2a,DAT_10053058);
-  }
-  return (uint)(DAT_1005d3bc == '\0');
-}
-
-
-
 /* grim_init_system @ 10005eb0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* Grim2D vtable 0x14 (provisional): Grim2D init; returns success */
+/* Grim2D vtable 0x14: Grim2D init; returns success */
 
 int __fastcall grim_init_system(void)
 
@@ -2656,39 +2483,6 @@ int __fastcall grim_init_system(void)
     }
   }
   return CONCAT31((int3)((uint)puVar3 >> 8),1);
-}
-
-
-
-/* grim_shutdown @ 10005ff0 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x18 (provisional): Grim2D shutdown */
-
-void grim_shutdown(void)
-
-{
-  FUN_10005a40(&DAT_1005d828);
-  FUN_1000a7d0();
-  FUN_1000a550();
-  FUN_1000a330();
-  FUN_10004280();
-  FUN_10002880();
-  return;
-}
-
-
-
-/* grim_apply_settings @ 10006020 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x1c (provisional): apply Grim2D settings after config load */
-
-void grim_apply_settings(void)
-
-{
-  FUN_10003c00();
-  return;
 }
 
 
@@ -2786,448 +2580,6 @@ uint __cdecl FUN_10006030(uint param_1)
 
 
 
-/* grim_set_render_state @ 10006580 */
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x20 (provisional) */
-
-void grim_set_render_state(uint state,uint value)
-
-{
-  byte bVar1;
-  undefined1 uVar2;
-  undefined1 uVar3;
-  undefined1 uVar4;
-  undefined2 uVar5;
-  undefined4 uVar6;
-  int iVar7;
-  char *pcVar8;
-  uint uVar9;
-  uint uVar10;
-  uint *puVar11;
-  undefined2 *puVar12;
-  byte *pbVar13;
-  int iVar14;
-  byte *pbVar15;
-  bool bVar16;
-  undefined4 unaff_retaddr;
-  uint in_stack_0000000c;
-  uint in_stack_00000010;
-  byte *in_stack_00000014;
-  undefined2 auStack_600 [256];
-  undefined2 auStack_400 [256];
-  undefined2 auStack_200 [254];
-  undefined4 uStack_4;
-  
-  switch(state) {
-  case 5:
-    DAT_1005d3a8 = in_stack_00000014;
-    return;
-  case 6:
-    DAT_10059770 = in_stack_00000014;
-    return;
-  case 7:
-    if (DAT_1005bac8 != (byte *)0x0) {
-      operator_delete(DAT_1005bac8);
-    }
-    uVar9 = 0xffffffff;
-    pbVar13 = in_stack_00000014;
-    do {
-      if (uVar9 == 0) break;
-      uVar9 = uVar9 - 1;
-      bVar1 = *pbVar13;
-      pbVar13 = pbVar13 + 1;
-    } while (bVar1 != 0);
-    DAT_1005bac8 = operator_new(~uVar9);
-    uVar9 = 0xffffffff;
-    do {
-      pbVar13 = in_stack_00000014;
-      if (uVar9 == 0) break;
-      uVar9 = uVar9 - 1;
-      pbVar13 = in_stack_00000014 + 1;
-      bVar1 = *in_stack_00000014;
-      in_stack_00000014 = pbVar13;
-    } while (bVar1 != 0);
-    uVar9 = ~uVar9;
-    pbVar13 = pbVar13 + -uVar9;
-    pbVar15 = DAT_1005bac8;
-    for (uVar10 = uVar9 >> 2; uVar10 != 0; uVar10 = uVar10 - 1) {
-      *(undefined4 *)pbVar15 = *(undefined4 *)pbVar13;
-      pbVar13 = pbVar13 + 4;
-      pbVar15 = pbVar15 + 4;
-    }
-    for (uVar9 = uVar9 & 3; uVar9 != 0; uVar9 = uVar9 - 1) {
-      *pbVar15 = *pbVar13;
-      pbVar13 = pbVar13 + 1;
-      pbVar15 = pbVar15 + 1;
-    }
-    *(byte **)(&DAT_1005cb94 + state * 0x10) = DAT_1005bac8;
-    return;
-  default:
-    puVar11 = &DAT_1005cb88 + state * 4;
-    *puVar11 = value;
-    goto LAB_10006b54;
-  case 0xb:
-  case 0xc:
-  case 0xe:
-  case 0x42:
-    *(char *)(&DAT_1005cb88 + state * 4) = (char)value;
-    return;
-  case 0xd:
-    *(char *)(&DAT_1005cb88 + state * 4) = (char)value;
-    if (DAT_1005cc58 != '\0') {
-      DAT_1005cc48 = 1;
-      return;
-    }
-    break;
-  case 0x10:
-    pbVar15 = &DAT_1005d828;
-    pbVar13 = in_stack_00000014;
-    do {
-      bVar1 = *pbVar13;
-      bVar16 = bVar1 < *pbVar15;
-      if (bVar1 != *pbVar15) {
-LAB_10006882:
-        iVar14 = (1 - (uint)bVar16) - (uint)(bVar16 != 0);
-        goto LAB_10006887;
-      }
-      if (bVar1 == 0) break;
-      bVar1 = pbVar13[1];
-      bVar16 = bVar1 < pbVar15[1];
-      if (bVar1 != pbVar15[1]) goto LAB_10006882;
-      pbVar13 = pbVar13 + 2;
-      pbVar15 = pbVar15 + 2;
-    } while (bVar1 != 0);
-    iVar14 = 0;
-LAB_10006887:
-    if (iVar14 == 0) {
-      if (*(void **)(&DAT_1005cb94 + state * 0x10) != (void *)0x0) {
-        operator_delete(*(void **)(&DAT_1005cb94 + state * 0x10));
-      }
-      _DAT_1005cc94 = _strdup(&DAT_1005d828);
-      DAT_1005bc14 = 0;
-    }
-    uVar6 = FUN_10005a40((char *)in_stack_00000014);
-    DAT_1005bc14 = (undefined1)uVar6;
-    if (*(void **)(&DAT_1005cb94 + state * 0x10) != (void *)0x0) {
-      operator_delete(*(void **)(&DAT_1005cb94 + state * 0x10));
-    }
-    pcVar8 = _strdup((char *)in_stack_00000014);
-    *(char **)(&DAT_1005cb94 + state * 0x10) = pcVar8;
-    *(undefined1 *)(&DAT_1005cb88 + state * 4) = DAT_1005bc14;
-    return;
-  case 0x12:
-    if (*(char *)(&DAT_1005cb88 + state * 4) != (char)value) {
-      (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x1b,value & 0xff);
-      *(char *)(&DAT_1005cb88 + state * 4) = (char)value;
-      return;
-    }
-    break;
-  case 0x13:
-    if ((&DAT_1005cb88)[state * 4] != value) {
-      (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x13,value);
-      (&DAT_1005cb88)[state * 4] = value;
-      return;
-    }
-    break;
-  case 0x14:
-    if ((&DAT_1005cb88)[state * 4] != value) {
-      (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x14,value);
-      (&DAT_1005cb88)[state * 4] = value;
-      return;
-    }
-    break;
-  case 0x15:
-    if (0 < (int)value) {
-      if (2 < (int)value) {
-        if (value != 3) {
-          return;
-        }
-        if ((&DAT_1005cb88)[state * 4] != 3) {
-          (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,0x15,3);
-        }
-      }
-      if ((&DAT_1005cb88)[state * 4] == 3) {
-        (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,0x15,1);
-      }
-      (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,0x11,value);
-      (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,0x10,value);
-      (&DAT_1005cb88)[state * 4] = value;
-      return;
-    }
-    break;
-  case 0x1a:
-    uVar6 = FUN_10006030(value);
-    if ((char)uVar6 == '\0') {
-      return;
-    }
-    puVar11 = &DAT_1005cb88 + state * 4;
-    *puVar11 = value;
-LAB_10006b54:
-    puVar11[1] = in_stack_0000000c;
-    puVar11[2] = in_stack_00000010;
-    puVar11[3] = (uint)in_stack_00000014;
-    break;
-  case 0x1b:
-    (&DAT_1005cb88)[state * 4] = value;
-    (&DAT_1005cb8c)[state * 4] = in_stack_0000000c;
-    *(uint *)(&DAT_1005cb90 + state * 0x10) = in_stack_00000010;
-    *(byte **)(&DAT_1005cb94 + state * 0x10) = in_stack_00000014;
-    uVar2 = ftol();
-    uVar3 = ftol();
-    uVar4 = ftol();
-    (**(code **)(*DAT_10059dbc + 200))
-              (DAT_10059dbc,0x3c,(uint)CONCAT21(CONCAT11(uVar2,uVar3),uVar4));
-    return;
-  case 0x1c:
-    iVar14 = 0;
-    puVar12 = auStack_400;
-    do {
-      iVar7 = ftol();
-      if (iVar7 < 0x10000) {
-        if (iVar7 < 0) {
-          iVar7 = 0;
-        }
-      }
-      else {
-        iVar7 = 0xffff;
-      }
-      uVar5 = (undefined2)iVar7;
-      puVar12[-0x100] = uVar5;
-      *puVar12 = uVar5;
-      puVar12[0x100] = uVar5;
-      iVar14 = iVar14 + 1;
-      puVar12 = puVar12 + 1;
-    } while (iVar14 < 0x100);
-    (**(code **)(*DAT_10059dbc + 0x48))(DAT_10059dbc,1,auStack_600);
-    (&DAT_1005cb88)[state * 4] = uStack_4;
-    (&DAT_1005cb8c)[state * 4] = unaff_retaddr;
-    *(uint *)(&DAT_1005cb90 + state * 0x10) = state;
-    *(uint *)(&DAT_1005cb94 + state * 0x10) = value;
-    return;
-  case 0x29:
-    DAT_1005c400 = value;
-    (&DAT_1005cb88)[state * 4] = value;
-    return;
-  case 0x2a:
-    DAT_10059dc0 = value;
-    (&DAT_1005cb88)[state * 4] = value;
-    return;
-  case 0x2b:
-    (&DAT_1005cb88)[state * 4] = value;
-    DAT_1005a488 = (value != 0x20) + 0x16;
-    return;
-  case 0x2d:
-    DAT_1005977c = in_stack_00000014;
-    return;
-  case 0x34:
-    *(char *)(&DAT_1005cb88 + state * 4) = (char)value;
-    return;
-  case 0x36:
-    (**(code **)(*DAT_10059dbc + 0x3c))(DAT_10059dbc,0,0,0,0);
-    return;
-  case 0x52:
-    (&DAT_1005cb88)[state * 4] = value;
-    (&DAT_1005cb8c)[state * 4] = in_stack_0000000c;
-    *(uint *)(&DAT_1005cb90 + state * 0x10) = in_stack_00000010;
-    *(byte **)(&DAT_1005cb94 + state * 0x10) = in_stack_00000014;
-    DAT_1005d3fc = *(undefined4 *)in_stack_00000014;
-    return;
-  case 0x55:
-    DAT_1005d3bd = (char)value;
-    return;
-  }
-  return;
-}
-
-
-
-/* grim_get_config_var @ 10006c30 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x24 (provisional): fills 4 dwords for config entry (id 0..0x7f) */
-
-void grim_get_config_var(uint *out,int id)
-
-{
-  if ((-1 < id) && (id < 0x80)) {
-    *out = (&DAT_1005cb88)[id * 4];
-    out[1] = (&DAT_1005cb8c)[id * 4];
-    out[2] = *(uint *)(&DAT_1005cb90 + id * 0x10);
-    out[3] = *(uint *)(&DAT_1005cb94 + id * 0x10);
-    return;
-  }
-  *out = DAT_1005a478;
-  out[1] = DAT_1005a47c;
-  out[2] = DAT_1005a480;
-  out[3] = DAT_1005a484;
-  return;
-}
-
-
-
-/* grim_get_error_text @ 10006ca0 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x28 (provisional): error string for MessageBox */
-
-char * grim_get_error_text(void)
-
-{
-  return DAT_1005c8f8;
-}
-
-
-
-/* grim_clear_color @ 10006cb0 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x2c (provisional): clear color */
-
-void grim_clear_color(float r,float g,float b,float a)
-
-{
-  int iVar1;
-  int *piVar2;
-  uint uVar3;
-  int iVar4;
-  uint uVar5;
-  uint uVar6;
-  
-  piVar2 = DAT_10059dbc;
-  if ((DAT_1005d3bd == '\0') && (DAT_1005c898 != '\0')) {
-    iVar1 = *DAT_10059dbc;
-    uVar3 = ftol(0,0);
-    iVar4 = ftol();
-    uVar5 = ftol();
-    uVar6 = ftol();
-    (**(code **)(iVar1 + 0x90))
-              (piVar2,0,0,1,((uVar3 & 0xff | iVar4 << 8) << 8 | uVar5 & 0xff) << 8 | uVar6 & 0xff);
-  }
-  return;
-}
-
-
-
-/* grim_set_render_target @ 10006d50 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x30 (provisional): set render target; -1 resets */
-
-int grim_set_render_target(int target_index)
-
-{
-  undefined4 in_EAX;
-  uint uVar1;
-  int iVar2;
-  
-  iVar2 = CONCAT31((int3)((uint)in_EAX >> 8),DAT_1005d3bd);
-  if (DAT_1005d3bd == '\0') {
-    if (target_index < 0) {
-      if (DAT_1005c900 != (int *)0x0) {
-        if (DAT_1005a48c != (int *)0x0) {
-          (**(code **)(*DAT_1005a48c + 8))(DAT_1005a48c);
-        }
-        DAT_1005a48c = (int *)0x0;
-        uVar1 = (**(code **)(*DAT_10059dbc + 0x7c))(DAT_10059dbc,DAT_1005c900,0);
-        if ((int)uVar1 < 0) {
-          return uVar1 & 0xffffff00;
-        }
-        iVar2 = 0;
-        if (DAT_1005c900 != (int *)0x0) {
-          iVar2 = (**(code **)(*DAT_1005c900 + 8))(DAT_1005c900);
-        }
-        DAT_1005c900 = (int *)0x0;
-      }
-    }
-    else {
-      if (DAT_1005a48c != (int *)0x0) {
-        (**(code **)(*DAT_1005a48c + 8))(DAT_1005a48c);
-        DAT_1005a48c = (int *)0x0;
-      }
-      if (DAT_1005c900 == (int *)0x0) {
-        (**(code **)(*DAT_10059dbc + 0x80))(DAT_10059dbc,&DAT_1005c900);
-      }
-      uVar1 = (**(code **)(**(int **)((&DAT_1005d404)[target_index] + 4) + 0x3c))
-                        (*(int **)((&DAT_1005d404)[target_index] + 4),0,&DAT_1005a48c);
-      if ((int)uVar1 < 0) {
-        return uVar1 & 0xffffff00;
-      }
-      iVar2 = (**(code **)(*DAT_10059dbc + 0x7c))(DAT_10059dbc,DAT_1005a48c,0);
-      if (iVar2 < 0) {
-        uVar1 = 0;
-        if (DAT_1005a48c != (int *)0x0) {
-          uVar1 = (**(code **)(*DAT_1005a48c + 8))(DAT_1005a48c);
-        }
-        DAT_1005a48c = (int *)0x0;
-        return uVar1 & 0xffffff00;
-      }
-    }
-  }
-  return CONCAT31((int3)((uint)iVar2 >> 8),1);
-}
-
-
-
-/* grim_get_time_ms @ 10006e40 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x34 (provisional): accumulated time (ms) */
-
-int grim_get_time_ms(void)
-
-{
-  return DAT_1005a054;
-}
-
-
-
-/* grim_set_time_ms @ 10006e50 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x38 (provisional): set accumulated time */
-
-void grim_set_time_ms(int ms)
-
-{
-  DAT_1005a054 = ms;
-  return;
-}
-
-
-
-/* grim_get_frame_dt @ 10006e60 */
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x3c (provisional): clamped frame delta */
-
-float grim_get_frame_dt(void)
-
-{
-  if (0.1 < _DAT_10059768) {
-    return 0.1;
-  }
-  return _DAT_10059768;
-}
-
-
-
-/* grim_get_fps @ 10006e90 */
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x40 (provisional): frames per second */
-
-float grim_get_fps(void)
-
-{
-  return _DAT_1005b2bc;
-}
-
-
-
 /* FUN_10006ea0 @ 10006ea0 */
 
 undefined4 FUN_10006ea0(void)
@@ -3311,7 +2663,7 @@ undefined4 FUN_10006f90(void)
 /* grim_is_key_active @ 10006fe0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* Grim2D vtable 0x80 (provisional) */
+/* Grim2D vtable 0x80: routes key/mouse/joystick IDs */
 
 int __thiscall grim_is_key_active(void *this,int key)
 
@@ -3418,173 +2770,6 @@ int __thiscall grim_is_key_active(void *this,int key)
 
 
 
-/* grim_get_config_float @ 100071b0 */
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x84 (provisional) */
-
-float grim_get_config_float(int id)
-
-{
-  int iVar1;
-  int *in_ECX;
-  int iVar2;
-  float10 fVar3;
-  
-  if (0xff < id) {
-    if (id == 0x13f) {
-      return (float)DAT_1005d830 * 0.001;
-    }
-    if (id == 0x140) {
-      return (float)DAT_1005d834 * 0.001;
-    }
-    if (id == 0x141) {
-      return (float)DAT_1005d838 * 0.001;
-    }
-    if (id == 0x153) {
-      return (float)_DAT_1005d83c * 0.001;
-    }
-    if (id == 0x154) {
-      return (float)_DAT_1005d840 * 0.001;
-    }
-    if (id == 0x155) {
-      return (float)_DAT_1005d844 * 0.001;
-    }
-    if (id == 0x15f) {
-      fVar3 = (float10)(**(code **)(*in_ECX + 0x70))();
-      return (float)fVar3;
-    }
-    if (id == 0x160) {
-      fVar3 = (float10)(**(code **)(*in_ECX + 0x74))();
-      return (float)fVar3;
-    }
-    iVar2 = 0;
-    iVar1 = 0x168;
-    do {
-      if (id == iVar1 + -5) {
-        fVar3 = (float10)(**(code **)(*in_ECX + 0x78))(iVar2);
-        return (float)fVar3;
-      }
-      if (id == iVar1) {
-        fVar3 = (float10)(**(code **)(*in_ECX + 0x7c))(iVar2);
-        return (float)fVar3;
-      }
-      iVar2 = iVar2 + 1;
-      iVar1 = iVar1 + 1;
-    } while (iVar1 < 0x16b);
-  }
-  return 0.0;
-}
-
-
-
-/* grim_get_slot_float @ 100072c0 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x88 (provisional): float slot accessor */
-
-float grim_get_slot_float(int index)
-
-{
-  return *(float *)(&DAT_1005c100 + index * 4);
-}
-
-
-
-/* grim_get_slot_int @ 100072d0 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x8c (provisional): int slot accessor */
-
-int grim_get_slot_int(int index)
-
-{
-  return *(int *)(&DAT_1005bf00 + index * 4);
-}
-
-
-
-/* grim_set_slot_float @ 100072e0 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x90 (provisional): float slot setter */
-
-void grim_set_slot_float(int index,float value)
-
-{
-  *(float *)(&DAT_1005c100 + index * 4) = value;
-  return;
-}
-
-
-
-/* grim_set_slot_int @ 10007300 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x94 (provisional): int slot setter */
-
-void grim_set_slot_int(int index,int value)
-
-{
-  *(int *)(&DAT_1005bf00 + index * 4) = value;
-  return;
-}
-
-
-
-/* grim_is_key_down @ 10007320 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x44 (provisional) */
-
-int grim_is_key_down(uint key)
-
-{
-  byte bVar1;
-  undefined3 extraout_var;
-  
-  bVar1 = FUN_1000a370(key);
-  return CONCAT31(extraout_var,bVar1);
-}
-
-
-
-/* grim_flush_input @ 10007330 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x4c (provisional): clear buffered input/device state */
-
-void grim_flush_input(void)
-
-{
-  int iVar1;
-  undefined4 *puVar2;
-  int iStack_4;
-  
-  iStack_4 = 10;
-  puVar2 = &DAT_1005da28;
-  for (iVar1 = 0x40; iVar1 != 0; iVar1 = iVar1 + -1) {
-    *puVar2 = 0;
-    puVar2 = puVar2 + 1;
-  }
-  iVar1 = 0;
-  do {
-    (**(code **)(*DAT_1005da24 + 0x28))(DAT_1005da24,0x14,&DAT_1005d958,&iStack_4,0);
-    if (99 < iVar1) break;
-    iVar1 = iVar1 + 1;
-  } while (iStack_4 != 0);
-  DAT_1005d3e4 = 0;
-  puVar2 = &DAT_1005da28;
-  for (iVar1 = 0x40; iVar1 != 0; iVar1 = iVar1 + -1) {
-    *puVar2 = 0;
-    puVar2 = puVar2 + 1;
-  }
-  return;
-}
-
-
-
 /* grim_was_key_pressed @ 10007390 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
@@ -3626,262 +2811,9 @@ int grim_was_key_pressed(uint key)
 
 
 
-/* grim_is_mouse_button_down @ 10007410 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x58 (provisional) */
-
-int grim_is_mouse_button_down(int button)
-
-{
-  byte bVar1;
-  undefined3 extraout_var;
-  
-  if (DAT_1005cc58 != '\0') {
-    return CONCAT31((int3)((uint)button >> 8),(&DAT_1005a044)[button]);
-  }
-  bVar1 = FUN_1000a590(button);
-  return CONCAT31(extraout_var,bVar1);
-}
-
-
-
-/* grim_was_mouse_button_pressed @ 10007440 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x5c (provisional): edge-triggered mouse button */
-
-int grim_was_mouse_button_pressed(int button)
-
-{
-  char cVar1;
-  undefined4 in_EAX;
-  uint3 uVar3;
-  undefined4 uVar2;
-  int *in_ECX;
-  undefined1 uVar4;
-  
-  uVar3 = (uint3)((uint)in_EAX >> 8);
-  if (DAT_1005cc58 == '\0') {
-    cVar1 = (**(code **)(*in_ECX + 0x58))(button);
-    if ((cVar1 == '\0') || ((&DAT_1005c8e8)[button] == '\0')) {
-      uVar4 = 0;
-    }
-    else {
-      uVar4 = 1;
-    }
-    uVar2 = (**(code **)(*in_ECX + 0x58))(button);
-    (&DAT_1005c8e8)[button] = (char)uVar2 == '\0';
-    return CONCAT31((int3)((uint)uVar2 >> 8),uVar4);
-  }
-  cVar1 = (&DAT_1005a044)[button];
-  if ((cVar1 != '\0') && ((&DAT_1005c8e8)[button] != '\0')) {
-    (&DAT_1005c8e8)[button] = cVar1 == '\0';
-    return CONCAT31(uVar3,1);
-  }
-  (&DAT_1005c8e8)[button] = cVar1 == '\0';
-  return (uint)uVar3 << 8;
-}
-
-
-
-/* grim_get_mouse_dx @ 100074d0 */
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x70 (provisional): mouse delta X */
-
-float grim_get_mouse_dx(void)
-
-{
-  return _DAT_1005db50;
-}
-
-
-
-/* grim_get_mouse_dy @ 100074e0 */
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x74 (provisional): mouse delta Y */
-
-float grim_get_mouse_dy(void)
-
-{
-  return _DAT_1005db54;
-}
-
-
-
-/* grim_get_mouse_dx_indexed @ 100074f0 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x78 (provisional): mouse delta X (indexed) */
-
-float grim_get_mouse_dx_indexed(int index)
-
-{
-  int *in_ECX;
-  float10 fVar1;
-  
-  fVar1 = (float10)(**(code **)(*in_ECX + 0x70))();
-  return (float)fVar1;
-}
-
-
-
-/* grim_get_mouse_dy_indexed @ 10007500 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x7c (provisional): mouse delta Y (indexed) */
-
-float grim_get_mouse_dy_indexed(int index)
-
-{
-  int *in_ECX;
-  float10 fVar1;
-  
-  fVar1 = (float10)(**(code **)(*in_ECX + 0x74))();
-  return (float)fVar1;
-}
-
-
-
-/* grim_get_mouse_x @ 10007510 */
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x68 (provisional): mouse X position */
-
-float grim_get_mouse_x(void)
-
-{
-  return _DAT_1005b278;
-}
-
-
-
-/* grim_get_mouse_y @ 10007520 */
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x6c (provisional): mouse Y position */
-
-float grim_get_mouse_y(void)
-
-{
-  return _DAT_1005b27c;
-}
-
-
-
-/* grim_set_mouse_pos @ 10007530 */
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x64 (provisional): set mouse position */
-
-void grim_set_mouse_pos(float x,float y)
-
-{
-  DAT_1005db44 = x;
-  DAT_1005db48 = y;
-  _DAT_1005b278 = x;
-  _DAT_1005b27c = y;
-  return;
-}
-
-
-
-/* grim_get_mouse_wheel_delta @ 10007560 */
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x60 (provisional) */
-
-float grim_get_mouse_wheel_delta(void)
-
-{
-  if (DAT_1005cc58 != '\0') {
-    return _DAT_1005d3b8;
-  }
-  return _DAT_1005db58;
-}
-
-
-
-/* grim_get_joystick_x @ 10007580 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x98 (provisional): joystick axis X */
-
-int grim_get_joystick_x(void)
-
-{
-  return DAT_1005d830;
-}
-
-
-
-/* grim_get_joystick_y @ 10007590 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x9c (provisional): joystick axis Y */
-
-int grim_get_joystick_y(void)
-
-{
-  return DAT_1005d834;
-}
-
-
-
-/* grim_get_joystick_z @ 100075a0 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0xa0 (provisional): joystick axis Z */
-
-int grim_get_joystick_z(void)
-
-{
-  return DAT_1005d838;
-}
-
-
-
-/* grim_get_joystick_pov @ 100075b0 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0xa4 (provisional): joystick POV hat value */
-
-int grim_get_joystick_pov(int index)
-
-{
-  return *(int *)(&DAT_1005d850 + index * 4);
-}
-
-
-
-/* grim_is_joystick_button_down @ 100075c0 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0xa8 (provisional): joystick button state */
-
-int grim_is_joystick_button_down(int button)
-
-{
-  byte bVar1;
-  undefined3 extraout_var;
-  
-  bVar1 = FUN_1000a310(button);
-  return CONCAT31(extraout_var,bVar1);
-}
-
-
-
 /* grim_create_texture @ 100075d0 */
 
-/* Grim2D vtable 0xac (provisional) */
+/* Grim2D vtable 0xac: create blank texture in a free slot */
 
 int grim_create_texture(char *name,int width,int height)
 
@@ -3939,88 +2871,9 @@ int grim_create_texture(char *name,int width,int height)
 
 
 
-/* grim_load_texture @ 100076e0 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0xb4 (provisional) */
-
-int grim_load_texture(char *name,char *path)
-
-{
-  int iVar1;
-  
-  iVar1 = grim_load_texture_internal(name,(ushort *)path);
-  return iVar1;
-}
-
-
-
-/* grim_destroy_texture @ 10007700 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0xbc (provisional): release texture handle */
-
-void grim_destroy_texture(int handle)
-
-{
-  void *texture;
-  int iVar1;
-  bool bVar2;
-  
-  texture = (void *)(&DAT_1005d404)[handle];
-  if (texture != (void *)0x0) {
-    grim_texture_release(texture);
-    operator_delete(texture);
-    iVar1 = DAT_1005305c;
-    bVar2 = handle == DAT_1005305c;
-    (&DAT_1005d404)[handle] = 0;
-    if (bVar2) {
-      DAT_1005305c = iVar1 + -1;
-    }
-  }
-  return;
-}
-
-
-
-/* grim_get_texture_handle @ 10007740 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0xc0 (provisional) */
-
-int grim_get_texture_handle(char *name)
-
-{
-  int iVar1;
-  
-  iVar1 = grim_find_texture_by_name(name);
-  return iVar1;
-}
-
-
-
-/* grim_validate_texture @ 10007750 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0xb8 (provisional): validate texture handle */
-
-int grim_validate_texture(int handle)
-
-{
-  int iVar1;
-  
-  if ((&DAT_1005d404)[handle] == 0) {
-    return 0;
-  }
-  iVar1 = FUN_1000c1e8();
-  return CONCAT31((int3)((uint)iVar1 >> 8),-1 < iVar1);
-}
-
-
-
 /* grim_recreate_texture @ 10007790 */
 
-/* Grim2D vtable 0xb0 (provisional): recreate texture object */
+/* Grim2D vtable 0xb0: recreate D3D texture surface */
 
 int grim_recreate_texture(int handle)
 
@@ -4055,7 +2908,7 @@ int grim_recreate_texture(int handle)
 /* grim_bind_texture @ 10007830 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* Grim2D vtable 0xc4 (provisional) */
+/* Grim2D vtable 0xc4: bind texture handle to stage */
 
 void grim_bind_texture(int handle,int stage)
 
@@ -4072,352 +2925,9 @@ void grim_bind_texture(int handle,int stage)
 
 
 
-/* grim_draw_fullscreen_quad @ 10007870 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0xc8 (provisional): full-screen quad with current texture */
-
-void grim_draw_fullscreen_quad(void)
-
-{
-  int *in_ECX;
-  
-  (**(code **)(*in_ECX + 0xfc))(0);
-  (**(code **)(*in_ECX + 0xe8))();
-  (**(code **)(*in_ECX + 0x11c))(0,0,(float)DAT_1005c400,(float)DAT_10059dc0);
-  (**(code **)(*in_ECX + 0xf0))();
-  return;
-}
-
-
-
-/* grim_draw_rect_filled @ 100078e0 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0xd0 (provisional): UI panel fill/quad */
-
-void grim_draw_rect_filled(float *xy,float w,float h)
-
-{
-  int *in_ECX;
-  int in_stack_00000010;
-  undefined4 *puVar1;
-  undefined4 uVar2;
-  undefined4 uVar3;
-  
-  if (0.0 < *(float *)(in_stack_00000010 + 0xc)) {
-    (**(code **)(*DAT_10059dbc + 0xf4))(DAT_10059dbc,0,0);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,1,3);
-    uVar3 = 3;
-    uVar2 = 4;
-    puVar1 = (undefined4 *)0x0;
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,4,3);
-    (**(code **)(*in_ECX + 0x110))();
-    (**(code **)(*in_ECX + 0xfc))(0);
-    (**(code **)(*in_ECX + 0xe8))();
-    (**(code **)(*in_ECX + 0x11c))(*puVar1,puVar1[1],uVar2,uVar3);
-    (**(code **)(*in_ECX + 0xf0))();
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,1,4);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,4,4);
-  }
-  return;
-}
-
-
-
-/* grim_draw_fullscreen_color @ 100079b0 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0xcc (provisional): fullscreen color/fade overlay */
-
-void grim_draw_fullscreen_color(float r,float g,float b,float a)
-
-{
-  int *in_ECX;
-  int *piVar1;
-  undefined4 uVar2;
-  undefined4 uVar3;
-  undefined4 uVar4;
-  
-  if (0.0 < a) {
-    (**(code **)(*DAT_10059dbc + 0xf4))(DAT_10059dbc,0,0);
-    uVar4 = 3;
-    uVar3 = 1;
-    uVar2 = 0;
-    piVar1 = DAT_10059dbc;
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,1,3);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,4,3);
-    (**(code **)(*in_ECX + 0x114))(piVar1,uVar2,uVar3,uVar4);
-    (**(code **)(*in_ECX + 0xfc))(0);
-    (**(code **)(*in_ECX + 0xe8))();
-    (**(code **)(*in_ECX + 0x11c))(0,0,(float)DAT_1005c400,(float)DAT_10059dc0);
-    (**(code **)(*in_ECX + 0xf0))();
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,1,4);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,4,4);
-  }
-  return;
-}
-
-
-
-/* grim_begin_batch @ 10007ac0 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0xe8 (provisional): begin draw batch */
-
-void grim_begin_batch(void)
-
-{
-  int iVar1;
-  
-  if (((DAT_1005d3bd == '\0') && (DAT_1005d3f4 == '\0')) &&
-     (DAT_1005d3f4 = '\x01', DAT_1005c898 != '\0')) {
-    (**(code **)(*DAT_10059dbc + 0x88))(DAT_10059dbc);
-    iVar1 = (**(code **)(*DAT_10059e2c + 0x2c))(DAT_10059e2c,0,0,&DAT_10059e34,0x2800);
-    if (iVar1 < 0) {
-      DAT_1005c898 = '\0';
-    }
-    DAT_1005c8dc._0_2_ = 0;
-  }
-  return;
-}
-
-
-
-/* grim_end_batch @ 10007b20 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0xf0 (provisional): end draw batch/flush */
-
-void grim_end_batch(void)
-
-{
-  if ((DAT_1005d3bd == '\0') && (DAT_1005d3f4 != '\0')) {
-    (**(code **)(*DAT_10059e2c + 0x30))(DAT_10059e2c);
-    if (DAT_1005c898 != '\0') {
-      if ((short)DAT_1005c8dc != 0) {
-        (**(code **)(*DAT_10059dbc + 0x11c))
-                  (DAT_10059dbc,4,0,DAT_1005c8dc & 0xffff,0,(DAT_1005c8dc & 0xffff) >> 1);
-      }
-      (**(code **)(*DAT_10059dbc + 0x8c))(DAT_10059dbc);
-      DAT_1005d3f4 = '\0';
-    }
-  }
-  return;
-}
-
-
-
-/* grim_draw_circle_filled @ 10007b90 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0xd8 (provisional): triangle fan circle fill */
-
-void grim_draw_circle_filled(float x,float y,float radius)
-
-{
-  int iVar1;
-  int iVar2;
-  undefined4 *puVar3;
-  undefined4 *puVar4;
-  float10 fVar5;
-  int iVar6;
-  
-  if ((DAT_1005d3f4 == '\0') && (DAT_1005d3f4 = '\x01', DAT_1005c898 != '\0')) {
-    (**(code **)(*DAT_10059dbc + 0x88))();
-    iVar1 = (**(code **)(*DAT_10059e2c + 0x2c))();
-    if (iVar1 < 0) {
-      DAT_1005c898 = '\0';
-    }
-    DAT_1005c8dc = DAT_1005c8dc & 0xffff0000;
-    (**(code **)(*DAT_10059dbc + 0xf4))(DAT_10059dbc,0,0);
-    puVar3 = (undefined4 *)&stack0xffffffc0;
-    puVar4 = DAT_10059e34;
-    for (iVar1 = 7; iVar1 != 0; iVar1 = iVar1 + -1) {
-      *puVar4 = *puVar3;
-      puVar3 = puVar3 + 1;
-      puVar4 = puVar4 + 1;
-    }
-    DAT_10059e34 = DAT_10059e34 + 7;
-    DAT_1005c8dc._0_2_ = (short)DAT_1005c8dc + 1;
-    iVar1 = ftol();
-    iVar6 = 0;
-    if (-1 < iVar1) {
-      do {
-        iVar2 = 7;
-        fVar5 = ((float10)iVar6 * (float10)6.2831855) / (float10)iVar1;
-        fcos(fVar5);
-        fsin(fVar5);
-        puVar3 = (undefined4 *)&stack0xffffffc0;
-        puVar4 = DAT_10059e34;
-        for (; iVar2 != 0; iVar2 = iVar2 + -1) {
-          *puVar4 = *puVar3;
-          puVar3 = puVar3 + 1;
-          puVar4 = puVar4 + 1;
-        }
-        DAT_10059e34 = DAT_10059e34 + 7;
-        DAT_1005c8dc._0_2_ = (short)DAT_1005c8dc + 1;
-        iVar6 = iVar6 + 1;
-      } while (iVar6 <= iVar1);
-    }
-    (**(code **)(*DAT_10059e2c + 0x30))(DAT_10059e2c);
-    if (DAT_1005c898 != '\0') {
-      (**(code **)(*DAT_10059dbc + 0x118))(DAT_10059dbc,6,0,(DAT_1005c8dc & 0xffff) - 2);
-      (**(code **)(*DAT_10059dbc + 0x8c))(DAT_10059dbc);
-      DAT_1005d3f4 = '\0';
-    }
-  }
-  return;
-}
-
-
-
-/* grim_draw_circle_outline @ 10007d40 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0xdc (provisional): triangle strip ring/outline */
-
-void grim_draw_circle_outline(float x,float y,float radius)
-
-{
-  int iVar1;
-  int iVar2;
-  float *pfVar3;
-  float *pfVar4;
-  float10 fVar5;
-  float10 fVar6;
-  int iVar7;
-  float fStack_34;
-  undefined4 *puStack_30;
-  undefined4 uStack_2c;
-  int *piStack_28;
-  undefined4 uStack_24;
-  undefined4 uStack_20;
-  undefined4 uStack_1c;
-  float fStack_14;
-  float fStack_10;
-  float fStack_c;
-  
-  if ((DAT_1005d3f4 == '\0') && (DAT_1005d3f4 = '\x01', DAT_1005c898 != '\0')) {
-    piStack_28 = DAT_10059dbc;
-    uStack_2c = 0x10007d72;
-    (**(code **)(*DAT_10059dbc + 0x88))();
-    uStack_2c = 0x2800;
-    puStack_30 = &DAT_10059e34;
-    fStack_34 = 0.0;
-    iVar1 = (**(code **)(*DAT_10059e2c + 0x2c))(DAT_10059e2c,0);
-    if (iVar1 < 0) {
-      DAT_1005c898 = '\0';
-    }
-    uStack_2c = DAT_1005b288;
-    piStack_28 = (int *)DAT_1005b28c;
-    DAT_1005c8dc = DAT_1005c8dc & 0xffff0000;
-    uStack_24 = DAT_1005bc04;
-    uStack_20 = DAT_1005b290;
-    uStack_1c = DAT_1005b294;
-    iVar1 = ftol();
-    iVar7 = 0;
-    if (-1 < iVar1) {
-      do {
-        iVar2 = 7;
-        uStack_1c = 0;
-        fVar5 = ((float10)iVar7 * (float10)6.2831855) / (float10)iVar1;
-        fVar6 = (float10)fcos(fVar5);
-        fStack_34 = (float)(fVar6 * (float10)fStack_c + (float10)fStack_14);
-        fVar5 = (float10)fsin(fVar5);
-        puStack_30 = (undefined4 *)(float)(fVar5 * (float10)fStack_c + (float10)fStack_10);
-        pfVar3 = &fStack_34;
-        pfVar4 = DAT_10059e34;
-        for (; iVar2 != 0; iVar2 = iVar2 + -1) {
-          *pfVar4 = *pfVar3;
-          pfVar3 = pfVar3 + 1;
-          pfVar4 = pfVar4 + 1;
-        }
-        fStack_34 = (float)(((float10)fStack_c + (float10)2.0) * (float10)(float)fVar6 +
-                           (float10)fStack_14);
-        DAT_10059e34 = DAT_10059e34 + 7;
-        DAT_1005c8dc._0_2_ = (short)DAT_1005c8dc + 1;
-        puStack_30 = (undefined4 *)
-                     (float)(((float10)fStack_c + (float10)2.0) * fVar5 + (float10)fStack_10);
-        uStack_1c = 0x3f800000;
-        pfVar3 = &fStack_34;
-        pfVar4 = DAT_10059e34;
-        for (iVar2 = 7; iVar2 != 0; iVar2 = iVar2 + -1) {
-          *pfVar4 = *pfVar3;
-          pfVar3 = pfVar3 + 1;
-          pfVar4 = pfVar4 + 1;
-        }
-        DAT_10059e34 = DAT_10059e34 + 7;
-        DAT_1005c8dc._0_2_ = (short)DAT_1005c8dc + 1;
-        iVar7 = iVar7 + 1;
-      } while (iVar7 <= iVar1);
-    }
-    (**(code **)(*DAT_10059e2c + 0x30))(DAT_10059e2c);
-    if (DAT_1005c898 != '\0') {
-      (**(code **)(*DAT_10059dbc + 0x118))(DAT_10059dbc,5,0,(DAT_1005c8dc & 0xffff) - 2);
-      (**(code **)(*DAT_10059dbc + 0x8c))(DAT_10059dbc);
-      DAT_1005d3f4 = '\0';
-    }
-  }
-  return;
-}
-
-
-
-/* grim_set_rotation @ 10007f30 */
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0xfc (provisional) */
-
-void grim_set_rotation(float radians)
-
-{
-  float10 fVar1;
-  
-  _DAT_10059e30 = radians;
-  fVar1 = (float10)fcos((float10)radians + (float10)0.7853982);
-  DAT_1005c8e4 = (float)fVar1;
-  fVar1 = (float10)fsin((float10)radians + (float10)0.7853982);
-  _DAT_1005a460 = DAT_1005c8e4;
-  _DAT_1005a46c = DAT_1005c8e4;
-  DAT_10059f40 = (float)fVar1;
-  _DAT_1005a468 = -DAT_10059f40;
-  _DAT_1005a464 = DAT_10059f40;
-  return;
-}
-
-
-
-/* grim_set_color @ 10007f90 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x114 (provisional) */
-
-void grim_set_color(float r,float g,float b,float a)
-
-{
-  uint uVar1;
-  int iVar2;
-  uint uVar3;
-  uint uVar4;
-  
-  uVar1 = ftol();
-  iVar2 = ftol();
-  uVar3 = ftol();
-  uVar4 = ftol();
-  DAT_1005bc04 = ((uVar1 & 0xff | iVar2 << 8) << 8 | uVar3 & 0xff) << 8 | uVar4 & 0xff;
-  DAT_1005bc10 = DAT_1005bc04;
-  DAT_1005bc0c = DAT_1005bc04;
-  DAT_1005bc08 = DAT_1005bc04;
-  return;
-}
-
-
-
 /* grim_set_color_ptr @ 10008040 */
 
-/* Grim2D vtable 0x110 (provisional) */
+/* Grim2D vtable 0x110: set color from float[4] */
 
 void grim_set_color_ptr(float *rgba)
 
@@ -4441,888 +2951,9 @@ void grim_set_color_ptr(float *rgba)
 
 
 
-/* grim_draw_line @ 100080b0 */
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0xe0 (provisional): builds line quad from endpoints */
-
-void grim_draw_line(float *p0,float *p1,float thickness)
-
-{
-  int *in_ECX;
-  undefined *puVar1;
-  undefined *puVar2;
-  
-  if ((DAT_10059bb4 & 1) == 0) {
-    DAT_10059bb4 = DAT_10059bb4 | 1;
-    FUN_1000a92c((_onexit_t)&DAT_10008140);
-  }
-  puVar2 = &DAT_1005a490;
-  puVar1 = &DAT_1005a490;
-  _DAT_1005a490 = *p1 - *p0;
-  _DAT_1005a494 = p1[1] - p0[1];
-  thunk_FUN_1000cc2c();
-  _DAT_1005a490 = _DAT_1005a494 * (float)p0;
-  _DAT_1005a494 = _DAT_1005a490 * (float)p0;
-  (**(code **)(*in_ECX + 0xe4))(p0,p1,&DAT_1005a490,puVar1,puVar2);
-  return;
-}
-
-
-
-/* grim_draw_line_quad @ 10008150 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0xe4 (provisional): line quad from endpoints + half-width vector */
-
-void grim_draw_line_quad(float *p0,float *p1,float *half_vec)
-
-{
-  int *in_ECX;
-  
-  (**(code **)(*in_ECX + 0x138))
-            (*p0 - *half_vec,p0[1] - half_vec[1],*p0 + *half_vec,p0[1] + half_vec[1],*p1 + *half_vec
-             ,p1[1] + half_vec[1],*p1 - *half_vec,p1[1] - half_vec[1]);
-  return;
-}
-
-
-
-/* grim_set_color_slot @ 100081c0 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x118 (provisional): set color slot */
-
-void grim_set_color_slot(int index,float r,float g,float b,float a)
-
-{
-  uint uVar1;
-  int iVar2;
-  uint uVar3;
-  uint uVar4;
-  
-  uVar1 = ftol();
-  iVar2 = ftol();
-  uVar3 = ftol();
-  uVar4 = ftol();
-  (&DAT_1005bc04)[index] = ((uVar1 & 0xff | iVar2 << 8) << 8 | uVar3 & 0xff) << 8 | uVar4 & 0xff;
-  return;
-}
-
-
-
-/* grim_set_atlas_frame @ 10008230 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x104 (provisional) */
-
-void grim_set_atlas_frame(int atlas_size,int frame)
-
-{
-  float fVar1;
-  
-  fVar1 = 1.0 / (float)atlas_size;
-  DAT_1005b2a8 = *(float *)((&DAT_1005bc78)[atlas_size] + frame * 8);
-  DAT_1005b29c = *(float *)((&DAT_1005bc78)[atlas_size] + 4 + frame * 8);
-  DAT_1005b290 = DAT_1005b2a8;
-  DAT_1005b294 = DAT_1005b29c;
-  DAT_1005b298 = DAT_1005b2a8 + fVar1;
-  DAT_1005b2a0 = DAT_1005b2a8 + fVar1;
-  DAT_1005b2a4 = DAT_1005b29c + fVar1;
-  DAT_1005b2ac = DAT_1005b29c + fVar1;
-  return;
-}
-
-
-
-/* grim_set_sub_rect @ 100082c0 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x108 (provisional) */
-
-void grim_set_sub_rect(int atlas_size,int width,int height,int frame)
-
-{
-  float fVar1;
-  
-  DAT_1005b2a8 = *(float *)((&DAT_1005bc78)[atlas_size] + frame * 8);
-  DAT_1005b29c = *(float *)((&DAT_1005bc78)[atlas_size] + 4 + frame * 8);
-  DAT_1005b290 = DAT_1005b2a8;
-  DAT_1005b294 = DAT_1005b29c;
-  DAT_1005b298 = (float)width * (1.0 / (float)atlas_size) + DAT_1005b2a8;
-  DAT_1005b2a0 = DAT_1005b298;
-  fVar1 = (1.0 / (float)atlas_size) * (float)height;
-  DAT_1005b2a4 = fVar1 + DAT_1005b29c;
-  DAT_1005b2ac = fVar1 + DAT_1005b29c;
-  return;
-}
-
-
-
-/* grim_set_uv @ 10008350 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x100 (provisional) */
-
-void grim_set_uv(float u0,float v0,float u1,float v1)
-
-{
-  DAT_1005b290 = u0;
-  DAT_1005b294 = v0;
-  DAT_1005b298 = u1;
-  DAT_1005b29c = v0;
-  DAT_1005b2a0 = u1;
-  DAT_1005b2a4 = v1;
-  DAT_1005b2a8 = u0;
-  DAT_1005b2ac = v1;
-  return;
-}
-
-
-
-/* grim_set_uv_point @ 100083a0 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x10c (provisional): set UV point */
-
-void grim_set_uv_point(int index,float u,float v)
-
-{
-  (&DAT_1005b290)[index * 2] = u;
-  (&DAT_1005b294)[index * 2] = v;
-  return;
-}
-
-
-
-/* grim_flush_batch @ 100083c0 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0xec (provisional): flush batch when vertex buffer fills */
-
-void grim_flush_batch(void)
-
-{
-  int iVar1;
-  
-  if ((DAT_1005d3bd == '\0') && (DAT_1005d3f4 != '\0')) {
-    (**(code **)(*DAT_10059e2c + 0x30))(DAT_10059e2c);
-    (**(code **)(*DAT_10059dbc + 0x11c))
-              (DAT_10059dbc,4,0,DAT_1005c8dc & 0xffff,0,(DAT_1005c8dc & 0xffff) >> 1);
-    iVar1 = (**(code **)(*DAT_10059e2c + 0x2c))(DAT_10059e2c,0,0,&DAT_10059e34,0x2800);
-    if (-1 < iVar1) {
-      DAT_1005c8dc = DAT_1005c8dc & 0xffff0000;
-    }
-  }
-  return;
-}
-
-
-
-/* grim_submit_vertices_offset_color @ 10008430 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x130 (provisional): translate + apply color */
-
-void grim_submit_vertices_offset_color(float *verts,int count,float *offset,float *color)
-
-{
-  int *in_ECX;
-  uint uVar1;
-  int iVar2;
-  float *pfVar3;
-  
-  if (DAT_1005d3bd == '\0') {
-    pfVar3 = DAT_10059e34;
-    for (uVar1 = (uint)(count * 0x1c) >> 2; uVar1 != 0; uVar1 = uVar1 - 1) {
-      *pfVar3 = *verts;
-      verts = verts + 1;
-      pfVar3 = pfVar3 + 1;
-    }
-    for (iVar2 = 0; iVar2 != 0; iVar2 = iVar2 + -1) {
-      *(undefined1 *)pfVar3 = *(undefined1 *)verts;
-      verts = (float *)((int)verts + 1);
-      pfVar3 = (float *)((int)pfVar3 + 1);
-    }
-    iVar2 = count;
-    if (0 < count) {
-      do {
-        pfVar3 = DAT_10059e34;
-        *DAT_10059e34 = *offset + *DAT_10059e34;
-        pfVar3[1] = offset[1] + pfVar3[1];
-        DAT_10059e34[4] = *color;
-        DAT_10059e34 = DAT_10059e34 + 7;
-        iVar2 = iVar2 + -1;
-      } while (iVar2 != 0);
-    }
-    DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + (short)count;
-    if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
-      (**(code **)(*in_ECX + 0xec))();
-    }
-  }
-  return;
-}
-
-
-
-/* grim_submit_vertices_transform_color @ 100084e0 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x134 (provisional): rotate + translate + apply color */
-
-void grim_submit_vertices_transform_color
-               (float *verts,int count,float *offset,float *matrix,float *color)
-
-{
-  float fVar1;
-  float fVar2;
-  float fVar3;
-  float fVar4;
-  int *in_ECX;
-  uint uVar5;
-  int iVar6;
-  float *pfVar7;
-  
-  if (DAT_1005d3bd == '\0') {
-    pfVar7 = DAT_10059e34;
-    for (uVar5 = (uint)(count * 0x1c) >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
-      *pfVar7 = *verts;
-      verts = verts + 1;
-      pfVar7 = pfVar7 + 1;
-    }
-    for (iVar6 = 0; iVar6 != 0; iVar6 = iVar6 + -1) {
-      *(undefined1 *)pfVar7 = *(undefined1 *)verts;
-      verts = (float *)((int)verts + 1);
-      pfVar7 = (float *)((int)pfVar7 + 1);
-    }
-    iVar6 = count;
-    if (0 < count) {
-      do {
-        pfVar7 = DAT_10059e34;
-        fVar1 = DAT_10059e34[1];
-        fVar2 = matrix[1];
-        fVar3 = *DAT_10059e34;
-        fVar4 = *matrix;
-        DAT_10059e34[1] = *DAT_10059e34 * matrix[2] + DAT_10059e34[1] * matrix[3];
-        *pfVar7 = fVar3 * fVar4 + fVar1 * fVar2;
-        pfVar7 = DAT_10059e34;
-        *DAT_10059e34 = *offset + *DAT_10059e34;
-        pfVar7[1] = offset[1] + pfVar7[1];
-        DAT_10059e34[4] = *color;
-        DAT_10059e34 = DAT_10059e34 + 7;
-        iVar6 = iVar6 + -1;
-      } while (iVar6 != 0);
-    }
-    DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + (short)count;
-    if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
-      (**(code **)(*in_ECX + 0xec))();
-    }
-  }
-  return;
-}
-
-
-
-/* grim_submit_vertices_transform @ 100085c0 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x128 (provisional): copy verts, rotate, translate */
-
-void grim_submit_vertices_transform(float *verts,int count,float *offset,float *matrix)
-
-{
-  float fVar1;
-  float fVar2;
-  float fVar3;
-  float fVar4;
-  int *in_ECX;
-  uint uVar5;
-  int iVar6;
-  float *pfVar7;
-  
-  if (DAT_1005d3bd == '\0') {
-    pfVar7 = DAT_10059e34;
-    for (uVar5 = (uint)(count * 0x1c) >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
-      *pfVar7 = *verts;
-      verts = verts + 1;
-      pfVar7 = pfVar7 + 1;
-    }
-    for (iVar6 = 0; iVar6 != 0; iVar6 = iVar6 + -1) {
-      *(undefined1 *)pfVar7 = *(undefined1 *)verts;
-      verts = (float *)((int)verts + 1);
-      pfVar7 = (float *)((int)pfVar7 + 1);
-    }
-    iVar6 = count;
-    if (0 < count) {
-      do {
-        pfVar7 = DAT_10059e34;
-        fVar1 = DAT_10059e34[1];
-        fVar2 = matrix[1];
-        fVar3 = *matrix;
-        fVar4 = *DAT_10059e34;
-        DAT_10059e34[1] = *DAT_10059e34 * matrix[2] + DAT_10059e34[1] * matrix[3];
-        *pfVar7 = fVar3 * fVar4 + fVar1 * fVar2;
-        pfVar7 = DAT_10059e34;
-        *DAT_10059e34 = *offset + *DAT_10059e34;
-        pfVar7[1] = offset[1] + pfVar7[1];
-        DAT_10059e34 = DAT_10059e34 + 7;
-        iVar6 = iVar6 + -1;
-      } while (iVar6 != 0);
-    }
-    DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + (short)count;
-    if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
-      (**(code **)(*in_ECX + 0xec))();
-    }
-  }
-  return;
-}
-
-
-
-/* grim_submit_vertices_offset @ 10008680 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x12c (provisional): copy verts, translate */
-
-void grim_submit_vertices_offset(float *verts,int count,float *offset)
-
-{
-  int *in_ECX;
-  uint uVar1;
-  int iVar2;
-  float *pfVar3;
-  
-  if (DAT_1005d3bd == '\0') {
-    pfVar3 = DAT_10059e34;
-    for (uVar1 = (uint)(count * 0x1c) >> 2; uVar1 != 0; uVar1 = uVar1 - 1) {
-      *pfVar3 = *verts;
-      verts = verts + 1;
-      pfVar3 = pfVar3 + 1;
-    }
-    for (iVar2 = 0; iVar2 != 0; iVar2 = iVar2 + -1) {
-      *(undefined1 *)pfVar3 = *(undefined1 *)verts;
-      verts = (float *)((int)verts + 1);
-      pfVar3 = (float *)((int)pfVar3 + 1);
-    }
-    iVar2 = count;
-    if (0 < count) {
-      do {
-        pfVar3 = DAT_10059e34;
-        *DAT_10059e34 = *DAT_10059e34 + *offset;
-        pfVar3[1] = offset[1] + pfVar3[1];
-        DAT_10059e34 = DAT_10059e34 + 7;
-        iVar2 = iVar2 + -1;
-      } while (iVar2 != 0);
-    }
-    DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + (short)count;
-    if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
-      (**(code **)(*in_ECX + 0xec))();
-    }
-  }
-  return;
-}
-
-
-
-/* grim_draw_quad_xy @ 10008720 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x120 (provisional): draw quad from xy pointer */
-
-void grim_draw_quad_xy(float *xy,float w,float h)
-
-{
-  int *in_ECX;
-  
-  (**(code **)(*in_ECX + 0x11c))(*xy,xy[1],w,h);
-  return;
-}
-
-
-
-/* grim_draw_quad_rotated_matrix @ 10008750 */
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x124 (provisional): quad with rotation matrix */
-
-void grim_draw_quad_rotated_matrix(float x,float y,float w,float h)
-
-{
-  float fVar1;
-  float fVar2;
-  float fVar3;
-  float fVar4;
-  int *in_ECX;
-  float fStack_20;
-  float fStack_1c;
-  float fStack_18;
-  float fStack_14;
-  float fStack_10;
-  float fStack_c;
-  float fStack_8;
-  float fStack_4;
-  
-  if ((DAT_1005d3bd == '\0') && (DAT_1005c898 != '\0')) {
-    if (DAT_1005d3f4 == '\0') {
-      (**(code **)(*in_ECX + 0xe8))();
-    }
-    if (_DAT_10059e30 == 0.0) {
-      fStack_18 = x + w;
-      fStack_20 = x;
-      fStack_1c = y;
-      fStack_14 = y;
-      fStack_c = y + h;
-      fStack_8 = x;
-      fStack_10 = fStack_18;
-      fStack_4 = fStack_c;
-    }
-    else {
-      fVar3 = w * 0.5;
-      fStack_8 = fVar3 + x;
-      fVar1 = h * 0.5;
-      fStack_4 = fVar1 + y;
-      fVar2 = w * -0.5;
-      fVar4 = h * -0.5;
-      fStack_20 = _DAT_1005a460 * fVar2 + _DAT_1005a464 * fVar4 + fStack_8;
-      fStack_1c = fStack_4 + _DAT_1005a468 * fVar2 + fVar4 * _DAT_1005a46c;
-      fStack_18 = _DAT_1005a460 * fVar3 + _DAT_1005a464 * fVar4 + fStack_8;
-      fStack_14 = fStack_4 + _DAT_1005a468 * fVar3 + fVar4 * _DAT_1005a46c;
-      fStack_10 = _DAT_1005a460 * fVar3 + _DAT_1005a464 * fVar1 + fStack_8;
-      fStack_c = fStack_4 + _DAT_1005a468 * fVar3 + _DAT_1005a46c * fVar1;
-      fStack_8 = _DAT_1005a460 * fVar2 + _DAT_1005a464 * fVar1 + fStack_8;
-      fStack_4 = fStack_4 + _DAT_1005a468 * fVar2 + _DAT_1005a46c * fVar1;
-    }
-    *DAT_10059e34 = fStack_20;
-    DAT_10059e34[1] = fStack_1c;
-    DAT_10059e34[2] = DAT_1005b288;
-    DAT_10059e34[3] = DAT_1005b28c;
-    DAT_10059e34[4] = DAT_1005bc04;
-    DAT_10059e34[5] = DAT_1005b290;
-    DAT_10059e34[6] = DAT_1005b294;
-    DAT_10059e34 = DAT_10059e34 + 7;
-    *DAT_10059e34 = fStack_18;
-    DAT_10059e34[1] = fStack_14;
-    DAT_10059e34[2] = DAT_1005b288;
-    DAT_10059e34[3] = DAT_1005b28c;
-    DAT_10059e34[4] = DAT_1005bc08;
-    DAT_10059e34[5] = DAT_1005b298;
-    DAT_10059e34[6] = DAT_1005b29c;
-    DAT_10059e34 = DAT_10059e34 + 7;
-    *DAT_10059e34 = fStack_10;
-    DAT_10059e34[1] = fStack_c;
-    DAT_10059e34[2] = DAT_1005b288;
-    DAT_10059e34[3] = DAT_1005b28c;
-    DAT_10059e34[4] = DAT_1005bc0c;
-    DAT_10059e34[5] = DAT_1005b2a0;
-    DAT_10059e34[6] = DAT_1005b2a4;
-    DAT_10059e34 = DAT_10059e34 + 7;
-    *DAT_10059e34 = fStack_8;
-    DAT_10059e34[1] = fStack_4;
-    DAT_10059e34[2] = DAT_1005b288;
-    DAT_10059e34[3] = DAT_1005b28c;
-    DAT_10059e34[4] = DAT_1005bc10;
-    DAT_10059e34[5] = DAT_1005b2a8;
-    DAT_10059e34[6] = DAT_1005b2ac;
-    DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + 4;
-    DAT_10059e34 = DAT_10059e34 + 7;
-    if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
-      (**(code **)(*in_ECX + 0xec))();
-    }
-  }
-  return;
-}
-
-
-
-/* grim_draw_quad @ 10008b10 */
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x11c (provisional) */
-
-void grim_draw_quad(float x,float y,float w,float h)
-
-{
-  float fVar1;
-  float fVar2;
-  float fVar3;
-  int *in_ECX;
-  float fStack_28;
-  float fStack_24;
-  float fStack_20;
-  float fStack_1c;
-  float fStack_18;
-  float fStack_14;
-  float fStack_10;
-  
-  if ((DAT_1005d3bd == '\0') && (DAT_1005c898 != '\0')) {
-    if (DAT_1005d3f4 == '\0') {
-      (**(code **)(*in_ECX + 0xe8))();
-    }
-    if (_DAT_10059e30 == 0.0) {
-      fStack_20 = x + w;
-      fStack_28 = x;
-      fStack_24 = y;
-      fStack_1c = y;
-      fVar1 = y + h;
-      fStack_10 = x;
-      fStack_18 = fStack_20;
-      fStack_14 = fVar1;
-    }
-    else {
-      fStack_10 = w * 0.5 + x;
-      fVar1 = h * 0.5 + y;
-      fVar2 = h * h + w * w;
-      fVar3 = (float)(0x5f3759df - ((int)fVar2 >> 1));
-      fVar2 = (1.5 - fVar2 * 0.5 * fVar3 * fVar3) * fVar3 * fVar2 * 0.5;
-      fVar3 = DAT_1005c8e4 * fVar2;
-      fVar2 = fVar2 * DAT_10059f40;
-      fStack_28 = fStack_10 - fVar3;
-      fStack_24 = fVar1 - fVar2;
-      fStack_20 = fStack_10 + fVar2;
-      fStack_1c = -fVar3 + fVar1;
-      fStack_18 = fStack_10 + fVar3;
-      fStack_14 = fVar1 + fVar2;
-      fStack_10 = -fVar2 + fStack_10;
-      fVar1 = fVar1 + fVar3;
-    }
-    *DAT_10059e34 = fStack_28;
-    DAT_10059e34[1] = fStack_24;
-    DAT_10059e34[2] = DAT_1005b288;
-    DAT_10059e34[3] = DAT_1005b28c;
-    DAT_10059e34[4] = DAT_1005bc04;
-    DAT_10059e34[5] = DAT_1005b290;
-    DAT_10059e34[6] = DAT_1005b294;
-    DAT_10059e34 = DAT_10059e34 + 7;
-    *DAT_10059e34 = fStack_20;
-    DAT_10059e34[1] = fStack_1c;
-    DAT_10059e34[2] = DAT_1005b288;
-    DAT_10059e34[3] = DAT_1005b28c;
-    DAT_10059e34[4] = DAT_1005bc08;
-    DAT_10059e34[5] = DAT_1005b298;
-    DAT_10059e34[6] = DAT_1005b29c;
-    DAT_10059e34 = DAT_10059e34 + 7;
-    *DAT_10059e34 = fStack_18;
-    DAT_10059e34[1] = fStack_14;
-    DAT_10059e34[2] = DAT_1005b288;
-    DAT_10059e34[3] = DAT_1005b28c;
-    DAT_10059e34[4] = DAT_1005bc0c;
-    DAT_10059e34[5] = DAT_1005b2a0;
-    DAT_10059e34[6] = DAT_1005b2a4;
-    DAT_10059e34 = DAT_10059e34 + 7;
-    *DAT_10059e34 = fStack_10;
-    DAT_10059e34[1] = fVar1;
-    DAT_10059e34[2] = DAT_1005b288;
-    DAT_10059e34[3] = DAT_1005b28c;
-    DAT_10059e34[4] = DAT_1005bc10;
-    DAT_10059e34[5] = DAT_1005b2a8;
-    DAT_10059e34[6] = DAT_1005b2ac;
-    DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + 4;
-    DAT_10059e34 = DAT_10059e34 + 7;
-    if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
-      (**(code **)(*in_ECX + 0xec))();
-    }
-  }
-  return;
-}
-
-
-
-/* grim_submit_vertex_raw @ 10008e30 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0xf4 (provisional): push 1 raw vertex (7 floats) */
-
-void grim_submit_vertex_raw(float *vertex)
-
-{
-  int *in_ECX;
-  int iVar1;
-  float *pfVar2;
-  
-  if ((DAT_1005d3bd == '\0') && (DAT_1005c898 != '\0')) {
-    if (DAT_1005d3f4 == '\0') {
-      (**(code **)(*in_ECX + 0xe8))();
-    }
-    pfVar2 = DAT_10059e34;
-    for (iVar1 = 7; iVar1 != 0; iVar1 = iVar1 + -1) {
-      *pfVar2 = *vertex;
-      vertex = vertex + 1;
-      pfVar2 = pfVar2 + 1;
-    }
-    DAT_10059e34 = DAT_10059e34 + 7;
-    DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + 1;
-    if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
-      (**(code **)(*in_ECX + 0xec))();
-    }
-  }
-  return;
-}
-
-
-
-/* grim_submit_quad_raw @ 10008eb0 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0xf8 (provisional): push 4 raw vertices (28 floats) */
-
-void grim_submit_quad_raw(float *verts)
-
-{
-  int *in_ECX;
-  int iVar1;
-  float *pfVar2;
-  
-  if (DAT_1005d3bd == '\0') {
-    pfVar2 = DAT_10059e34;
-    for (iVar1 = 0x1c; iVar1 != 0; iVar1 = iVar1 + -1) {
-      *pfVar2 = *verts;
-      verts = verts + 1;
-      pfVar2 = pfVar2 + 1;
-    }
-    DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + 4;
-    DAT_10059e34 = DAT_10059e34 + 0x1c;
-    if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
-      (**(code **)(*in_ECX + 0xec))();
-    }
-  }
-  return;
-}
-
-
-
-/* grim_draw_rect_outline @ 10008f10 */
-
-/* WARNING: Removing unreachable block (ram,0x10008fa9) */
-/* WARNING: Removing unreachable block (ram,0x10008f74) */
-/* WARNING: Removing unreachable block (ram,0x10008f80) */
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0xd4 (provisional): UI panel outline/frame */
-
-void grim_draw_rect_outline(float *xy,float w,float h)
-
-{
-  int *in_ECX;
-  float fVar1;
-  float fVar2;
-  float fVar3;
-  undefined4 uVar4;
-  
-  (**(code **)(*DAT_10059dbc + 0xf4))(DAT_10059dbc,0,0);
-  (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,1,3);
-  (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc);
-  uVar4 = 0;
-  (**(code **)(*in_ECX + 0xfc))(0);
-  (**(code **)(*in_ECX + 0xe8))();
-  fVar3 = 5.60519e-45;
-  fVar2 = fRam00000004;
-  (**(code **)(*in_ECX + 0x11c))(fRam00000000,fRam00000004,4,0x3f800000);
-  fVar1 = fRam00000004;
-  (**(code **)(*in_ECX + 0x11c))(fRam00000000,fRam00000004,0x3f800000,uVar4);
-  (**(code **)(*in_ECX + 0x11c))(fRam00000000,fVar3 + fRam00000004,fVar2 + 1.0,0x3f800000);
-  (**(code **)(*in_ECX + 0x11c))(fVar1 + fRam00000000,fRam00000004,0x3f800000,uVar4);
-  (**(code **)(*in_ECX + 0xf0))();
-  (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,1,4);
-  (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,4,4);
-  return;
-}
-
-
-
-/* grim_draw_quad_points @ 10009080 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x138 (provisional): push quad using 4 points */
-
-void grim_draw_quad_points(float x0,float y0,float x1,float y1,float x2,float y2,float x3,float y3)
-
-{
-  int *in_ECX;
-  
-  if ((DAT_1005d3bd == '\0') && (DAT_1005c898 != '\0')) {
-    if (DAT_1005d3f4 == '\0') {
-      (**(code **)(*in_ECX + 0xe8))();
-    }
-    *DAT_10059e34 = x0;
-    DAT_10059e34[1] = y0;
-    DAT_10059e34[2] = DAT_1005b288;
-    DAT_10059e34[3] = DAT_1005b28c;
-    DAT_10059e34[4] = DAT_1005bc04;
-    DAT_10059e34[5] = DAT_1005b290;
-    DAT_10059e34[6] = DAT_1005b294;
-    DAT_10059e34 = DAT_10059e34 + 7;
-    *DAT_10059e34 = x1;
-    DAT_10059e34[1] = y1;
-    DAT_10059e34[2] = DAT_1005b288;
-    DAT_10059e34[3] = DAT_1005b28c;
-    DAT_10059e34[4] = DAT_1005bc08;
-    DAT_10059e34[5] = DAT_1005b298;
-    DAT_10059e34[6] = DAT_1005b29c;
-    DAT_10059e34 = DAT_10059e34 + 7;
-    *DAT_10059e34 = x2;
-    DAT_10059e34[1] = y2;
-    DAT_10059e34[2] = DAT_1005b288;
-    DAT_10059e34[3] = DAT_1005b28c;
-    DAT_10059e34[4] = DAT_1005bc0c;
-    DAT_10059e34[5] = DAT_1005b2a0;
-    DAT_10059e34[6] = DAT_1005b2a4;
-    DAT_10059e34 = DAT_10059e34 + 7;
-    *DAT_10059e34 = x3;
-    DAT_10059e34[1] = y3;
-    DAT_10059e34[2] = DAT_1005b288;
-    DAT_10059e34[3] = DAT_1005b28c;
-    DAT_10059e34[4] = DAT_1005bc10;
-    DAT_10059e34[5] = DAT_1005b2a8;
-    DAT_10059e34[6] = DAT_1005b2ac;
-    DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + 4;
-    DAT_10059e34 = DAT_10059e34 + 7;
-    if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
-      (**(code **)(*in_ECX + 0xec))();
-    }
-  }
-  return;
-}
-
-
-
-/* grim_draw_text_mono @ 100092b0 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x13c (provisional) */
-
-void grim_draw_text_mono(float x,float y,char *text)
-
-{
-  char cVar1;
-  float fVar2;
-  float fVar3;
-  bool bVar4;
-  float fVar5;
-  float fVar6;
-  float fVar7;
-  float fVar8;
-  int iVar9;
-  int *in_ECX;
-  uint uVar10;
-  float fVar11;
-  char *pcVar12;
-  float unaff_retaddr;
-  float fVar13;
-  float fVar14;
-  float fStack_5c;
-  int iStack_58;
-  float fStack_44;
-  
-  if ((DAT_1005d3bd == '\0') && (text != (char *)0x0)) {
-    if (DAT_1005ccf8 == '\0') {
-      (**(code **)(*DAT_10059dbc + 0xf4))(DAT_10059dbc,0,DAT_1005d3ec);
-    }
-    fStack_44 = y;
-    fVar14 = 0.0;
-    (**(code **)(*in_ECX + 0xfc))(0);
-    (**(code **)(*in_ECX + 0xe8))();
-    fVar2 = fStack_5c * 32.0;
-    uVar10 = 0xffffffff;
-    pcVar12 = text;
-    do {
-      if (uVar10 == 0) break;
-      uVar10 = uVar10 - 1;
-      cVar1 = *pcVar12;
-      pcVar12 = pcVar12 + 1;
-    } while (cVar1 != '\0');
-    fVar3 = fStack_5c * 16.0;
-    bVar4 = false;
-    iStack_58 = 0;
-    if (0 < (int)(~uVar10 - 1)) {
-      do {
-        fVar7 = DAT_1005b644;
-        fVar6 = DAT_1005b640;
-        fVar13 = DAT_1005b5d4;
-        fVar5 = DAT_1005b5d0;
-        cVar1 = text[iStack_58];
-        fVar11 = unaff_retaddr;
-        fVar8 = unaff_retaddr;
-        if (cVar1 != '\n') {
-          if (cVar1 == -0x59) {
-            bVar4 = true;
-            fVar11 = x;
-            fVar8 = fStack_44;
-          }
-          else {
-            if (cVar1 == -0x1b) {
-              fStack_44 = fStack_44 + fVar3;
-              (**(code **)(*in_ECX + 0x100))
-                        (DAT_1005b5d0,DAT_1005b5d4,DAT_1005b5d0 + 0.0625,DAT_1005b5d4 + 0.0625);
-              (**(code **)(*in_ECX + 0x11c))(fVar5,fVar13 + 1.0,fVar2,fVar2);
-              fVar14 = DAT_1005b43c;
-              (**(code **)(*in_ECX + 0x100))
-                        (DAT_1005b438,DAT_1005b43c,DAT_1005b438 + 0.0625,DAT_1005b43c + 0.0625);
-              iVar9 = *in_ECX;
-              fVar13 = fVar14 - 6.0;
-              x = fVar5;
-            }
-            else if (cVar1 == -0x1c) {
-              (**(code **)(*in_ECX + 0x100))
-                        (DAT_1005b5d0,DAT_1005b5d4,DAT_1005b5d0 + 0.0625,DAT_1005b5d4 + 0.0625);
-              (**(code **)(*in_ECX + 0x11c))(fVar5,fVar13 + 1.0,fVar2,fVar2);
-              fStack_44 = DAT_1005b3d8 + 0.0625;
-              fVar13 = DAT_1005b3dc;
-              (**(code **)(*in_ECX + 0x100))
-                        (DAT_1005b3d8,DAT_1005b3dc,fStack_44,DAT_1005b3dc + 0.0625);
-              iVar9 = *in_ECX;
-              x = fVar5;
-              fVar14 = fVar13;
-            }
-            else if (cVar1 == -10) {
-              fStack_44 = fStack_44 + fVar3;
-              (**(code **)(*in_ECX + 0x100))
-                        (DAT_1005b640,DAT_1005b644,DAT_1005b640 + 0.0625,DAT_1005b644 + 0.0625);
-              (**(code **)(*in_ECX + 0x11c))(fVar6,fVar7 + 1.0,fVar2,fVar2);
-              fVar13 = DAT_1005b3dc;
-              (**(code **)(*in_ECX + 0x100))
-                        (DAT_1005b3d8,DAT_1005b3dc,DAT_1005b3d8 + 0.0625,DAT_1005b3dc + 0.0625);
-              iVar9 = *in_ECX;
-              x = fVar6;
-              fVar14 = fVar13;
-            }
-            else {
-              if (bVar4) {
-                bVar4 = false;
-              }
-              else {
-                x = fStack_44 + fVar3;
-                fStack_44 = x;
-              }
-              (**(code **)(*in_ECX + 0x100))
-                        ((&DAT_1005b2c8)[cVar1 * 2],(&DAT_1005b2cc)[cVar1 * 2],
-                         (float)(&DAT_1005b2c8)[cVar1 * 2] + 0.0625,
-                         (float)(&DAT_1005b2cc)[cVar1 * 2] + 0.0625);
-              iVar9 = *in_ECX;
-              fVar13 = fVar14 + 1.0;
-            }
-            (**(code **)(iVar9 + 0x11c))(x,fVar13,fVar2,fVar2);
-            fVar11 = x;
-            fVar8 = fStack_44;
-          }
-        }
-        fStack_44 = fVar8;
-        iStack_58 = iStack_58 + 1;
-        text = (char *)y;
-        x = fVar11;
-      } while (iStack_58 < (int)(~uVar10 - 1));
-    }
-    (**(code **)(*in_ECX + 0xf0))();
-  }
-  return;
-}
-
-
-
 /* grim_measure_text_width @ 100096c0 */
 
-/* Grim2D vtable 0x14c (provisional) */
+/* Grim2D vtable 0x14c: small font width metric (handles newlines) */
 
 int grim_measure_text_width(char *text)
 
@@ -5371,103 +3002,6 @@ int grim_measure_text_width(char *text)
 
 
 
-/* grim_draw_text_small @ 10009730 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x144 (provisional) */
-
-void grim_draw_text_small(float x,float y,char *text)
-
-{
-  char cVar1;
-  int *in_ECX;
-  uint uVar2;
-  uint uVar3;
-  char *pcVar4;
-  int iVar5;
-  undefined4 unaff_retaddr;
-  undefined4 uVar6;
-  int iVar7;
-  undefined4 uStack_14;
-  
-  if ((DAT_1005d3bd == '\0') && (text != (char *)0x0)) {
-    ftol();
-    ftol();
-    if ((DAT_10053070 != -1) ||
-       (DAT_10053070 = (**(code **)(*in_ECX + 0xc0))(s_GRIM_Font2_10053c3c), DAT_10053070 != -1)) {
-      iVar7 = DAT_10053070;
-      (**(code **)(*in_ECX + 0xc4))(DAT_10053070,0);
-      if (DAT_1005ccd8 != 1) {
-        (**(code **)(*in_ECX + 0x20))(0x15,1);
-      }
-      uVar6 = 0;
-      (**(code **)(*in_ECX + 0xfc))(0);
-      (**(code **)(*in_ECX + 0xe8))();
-      uVar2 = 0xffffffff;
-      pcVar4 = text;
-      do {
-        if (uVar2 == 0) break;
-        uVar2 = uVar2 - 1;
-        cVar1 = *pcVar4;
-        pcVar4 = pcVar4 + 1;
-      } while (cVar1 != '\0');
-      iVar5 = 0;
-      if (0 < (int)(~uVar2 - 1)) {
-        do {
-          uVar3 = (uint)(byte)(&DAT_1005a570)[(byte)text[iVar5]];
-          if (text[iVar5] != 10) {
-            (**(code **)(*in_ECX + 0x100))
-                      ((float)(&DAT_1005b2c8)[uVar3 * 2] + 0.001953125,
-                       (float)(&DAT_1005b2cc)[uVar3 * 2] + 0.001953125,
-                       ((float)*(byte *)((int)&DAT_1005bad8 + uVar3) * 0.00390625 +
-                       (float)(&DAT_1005b2c8)[uVar3 * 2] + 0.001953125) - 0.001953125,
-                       ((float)(&DAT_1005b2cc)[uVar3 * 2] + 0.001953125 + 0.0625) - 0.001953125);
-            (**(code **)(*in_ECX + 0x11c))(uVar6,iVar7,uStack_14,0x41800000);
-          }
-          iVar5 = iVar5 + 1;
-        } while (iVar5 < (int)(~uVar2 - 1));
-      }
-      (**(code **)(*in_ECX + 0xf0))();
-      (**(code **)(*in_ECX + 0x20))(0x15,unaff_retaddr);
-    }
-  }
-  return;
-}
-
-
-
-/* grim_draw_text_mono_fmt @ 10009940 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x140 (provisional): formatted mono text */
-
-void grim_draw_text_mono_fmt(int *self,float x,float y,char *fmt)
-
-{
-  vsprintf(&DAT_1005ae78,fmt,&stack0x00000014);
-  (**(code **)(*self + 0x13c))(x,y,&DAT_1005ae78);
-  return;
-}
-
-
-
-/* grim_draw_text_small_fmt @ 10009980 */
-
-/* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x148 (provisional): formatted small-font text (vsprintf + vtable 0x144) */
-
-void grim_draw_text_small_fmt(float x,float y,char *fmt)
-
-{
-  char *in_stack_00000010;
-  
-  vsprintf(&DAT_1005b078,in_stack_00000010,&stack0x00000014);
-  (**(code **)(*(int *)x + 0x144))(y,fmt,&DAT_1005b078);
-  return;
-}
-
-
-
 /* GRIM__GetInterface @ 100099c0 */
 
 undefined4 * GRIM__GetInterface(void)
@@ -5484,7 +3018,7 @@ undefined4 * GRIM__GetInterface(void)
   FUN_100052f0();
   DAT_1005d81c = operator_new(4);
   if (DAT_1005d81c != (undefined4 *)0x0) {
-    *DAT_1005d81c = &PTR_grim_release_1004c238;
+    *DAT_1005d81c = &PTR_LAB_1004c238;
     return DAT_1005d81c;
   }
   DAT_1005d81c = (undefined4 *)0x0;
@@ -16076,9 +13610,12 @@ void __fastcall FUN_1001692e(undefined4 *param_1)
 
 
 
-/* FUN_10016944 @ 10016944 */
+/* grim_convert_vertex_space @ 10016944 */
 
-undefined4 __thiscall FUN_10016944(void *this,int param_1)
+/* converts vec4 coordinates between space modes (1/2/3), writes to this+0x104c, returns the output
+   buffer */
+
+undefined4 __thiscall grim_convert_vertex_space(void *this,int param_1)
 
 {
   undefined4 *puVar1;
@@ -16347,7 +13884,7 @@ void FUN_10016cdc(void)
     }
   }
   if (*(int *)((int)this + 0x1048) != 0) {
-    uVar4 = FUN_10016944(this,*(int *)(unaff_EBP + 0x10));
+    uVar4 = grim_convert_vertex_space(this,*(int *)(unaff_EBP + 0x10));
     *(undefined4 *)(unaff_EBP + 0x10) = uVar4;
   }
   uVar5 = *(int *)((int)this + 0x1030) - *(int *)((int)this + 0x108c);
@@ -16460,9 +13997,12 @@ void __fastcall FUN_100170d6(undefined4 param_1)
 
 
 
-/* FUN_100170f9 @ 100170f9 */
+/* grim_pixel_format_init @ 100170f9 */
 
-undefined4 * __thiscall FUN_100170f9(void *this,undefined4 *param_1,uint param_2,undefined4 param_3)
+/* initializes format descriptor, bytes-per-pixel, palette expansion, and coordinate mode */
+
+undefined4 * __thiscall
+grim_pixel_format_init(void *this,undefined4 *param_1,uint param_2,undefined4 param_3)
 
 {
   undefined4 *puVar1;
@@ -16647,7 +14187,7 @@ void __fastcall FUN_100173dc(int *param_1)
     local_c = *piVar2;
     *piVar1 = 1;
     *piVar2 = (int)(param_1 + 7);
-    FUN_10016944(param_1,(int)(param_1 + 7));
+    grim_convert_vertex_space(param_1,(int)(param_1 + 7));
     *piVar1 = local_8;
     *piVar2 = local_c;
   }
@@ -16708,7 +14248,7 @@ void __thiscall FUN_10017518(void *this,uint param_1,uint param_2,int param_3)
   uint uVar5;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar2 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar2);
@@ -16748,7 +14288,7 @@ void __thiscall FUN_10017604(void *this,uint param_1,uint param_2,int param_3)
   uint uVar9;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar6 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar6);
@@ -16792,7 +14332,7 @@ void __thiscall FUN_10017727(void *this,uint param_1,uint param_2,int param_3)
   uint uVar8;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar5 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar5);
@@ -16834,7 +14374,7 @@ void __thiscall FUN_10017828(void *this,uint param_1,uint param_2,int param_3)
   uint uVar8;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar5 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar5);
@@ -16876,7 +14416,7 @@ void __thiscall FUN_10017929(void *this,uint param_1,uint param_2,int param_3)
   uint uVar8;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar5 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar5);
@@ -16919,7 +14459,7 @@ void __thiscall FUN_10017a2a(void *this,uint param_1,uint param_2,int param_3)
   uint uVar9;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar6 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar6);
@@ -16964,7 +14504,7 @@ void __thiscall FUN_10017b47(void *this,uint param_1,uint param_2,int param_3)
   uint uVar9;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar6 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar6);
@@ -17009,7 +14549,7 @@ void __thiscall FUN_10017c6a(void *this,uint param_1,uint param_2,int param_3)
   
   uVar7 = 0;
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar4 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar4);
@@ -17046,7 +14586,7 @@ void __thiscall FUN_10017d68(void *this,uint param_1,uint param_2,int param_3)
   
   iVar4 = 0;
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar1 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar1);
@@ -17084,7 +14624,7 @@ void __thiscall FUN_10017e11(void *this,uint param_1,uint param_2,int param_3)
   uint uVar9;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar6 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar6);
@@ -17128,7 +14668,7 @@ void __thiscall FUN_10017f34(void *this,uint param_1,uint param_2,int param_3)
   uint uVar8;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar5 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar5);
@@ -17171,7 +14711,7 @@ void __thiscall FUN_10018035(void *this,uint param_1,uint param_2,int param_3)
   uint uVar9;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar6 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar6);
@@ -17213,7 +14753,7 @@ void __thiscall FUN_10018158(void *this,uint param_1,uint param_2,int param_3)
   
   uVar5 = 0;
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar2 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar2);
@@ -17250,7 +14790,7 @@ void __thiscall FUN_10018228(void *this,uint param_1,uint param_2,float *param_3
   uint local_c;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (float *)FUN_10016944(this,(int)param_3);
+    param_3 = (float *)grim_convert_vertex_space(this,(int)param_3);
   }
   iVar2 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar2);
@@ -17298,7 +14838,7 @@ void __thiscall FUN_10018340(void *this,uint param_1,float param_2,uint param_3)
   float *pfVar5;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
     this = extraout_ECX;
   }
   puVar2 = (undefined1 *)
@@ -17349,7 +14889,7 @@ void __thiscall FUN_10018405(void *this,uint param_1,uint param_2,int param_3)
   
   iVar5 = 0;
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar1 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar1);
@@ -17388,7 +14928,7 @@ void __thiscall FUN_100184ca(void *this,uint param_1,uint param_2,int param_3)
   
   uVar7 = 0;
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar3 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar3);
@@ -17427,7 +14967,7 @@ void __thiscall FUN_100185c0(void *this,uint param_1,uint param_2,int param_3)
   
   uVar6 = 0;
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar2 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar2);
@@ -17465,7 +15005,7 @@ void __thiscall FUN_100186ab(void *this,uint param_1,uint param_2,int param_3)
   int iVar7;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar4 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar4);
@@ -17503,7 +15043,7 @@ void __thiscall FUN_10018780(void *this,uint param_1,uint param_2,int param_3)
   
   uVar4 = 0;
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar2 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar2);
@@ -17542,7 +15082,7 @@ void __thiscall FUN_10018885(void *this,uint param_1,uint param_2,int param_3)
   undefined1 local_24;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar5 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar5);
@@ -17581,7 +15121,7 @@ void __thiscall FUN_10018990(void *this,uint param_1,uint param_2,int param_3)
   uint local_c;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar2 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar2);
@@ -17619,7 +15159,7 @@ void __thiscall FUN_10018aca(void *this,uint param_1,uint param_2,int param_3)
   
   uVar4 = 0;
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar2 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar2);
@@ -17654,7 +15194,7 @@ void __thiscall FUN_10018ba0(void *this,uint param_1,uint param_2,int param_3)
   
   uVar5 = 0;
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar2 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar2);
@@ -17690,7 +15230,7 @@ void __thiscall FUN_10018caa(void *this,uint param_1,uint param_2,int param_3)
   uint local_c;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar3 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar3);
@@ -17729,7 +15269,7 @@ void __thiscall FUN_10018de0(void *this,uint param_1,uint param_2,int param_3)
   
   iVar5 = 0;
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar1 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar1);
@@ -17766,7 +15306,7 @@ void __thiscall FUN_10018ea7(void *this,uint param_1,uint param_2,int param_3)
   
   iVar5 = 0;
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar1 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar1);
@@ -17803,7 +15343,7 @@ void __thiscall FUN_10018f6e(void *this,uint param_1,uint param_2,int param_3)
   uint uVar6;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar2 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar2);
@@ -17840,7 +15380,7 @@ void __thiscall FUN_1001905c(void *this,uint param_1,uint param_2,int param_3)
   uint uVar5;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar2 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar2);
@@ -17879,7 +15419,7 @@ void __thiscall FUN_1001914b(void *this,uint param_1,uint param_2,int param_3)
   uint local_c;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = FUN_10016944(this,param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   puVar8 = (uint *)(*(int *)((int)this + 0x1050) * param_1 + *(int *)((int)this + 0x1054) * param_2
                    + *(int *)((int)this + 0x18));
@@ -18688,7 +16228,7 @@ void __thiscall FUN_1001a348(void *this,int param_1,int param_2,float *param_3)
 undefined4 * __thiscall FUN_1001a428(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,0x18,1);
+  grim_pixel_format_init(this,param_1,0x18,1);
   *(undefined ***)this = &PTR_FUN_1004cb6c;
   return this;
 }
@@ -18709,7 +16249,7 @@ undefined4 * FUN_1001a444(void)
   
   FUN_1004b5b0();
   *(undefined4 **)(unaff_EBP + -0x14) = this;
-  FUN_100170f9(this,*(undefined4 **)(unaff_EBP + 8),0,1);
+  grim_pixel_format_init(this,*(undefined4 **)(unaff_EBP + 8),0,1);
   uVar1 = this[0x40c];
   uVar2 = this[0x40e] + 1 & 0xfffffffe;
   iVar4 = uVar2 - (uVar1 & 0xfffffffe);
@@ -18757,7 +16297,7 @@ undefined4 * FUN_1001a444(void)
 undefined4 * __thiscall FUN_1001a53c(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,0x20,1);
+  grim_pixel_format_init(this,param_1,0x20,1);
   *(undefined ***)this = &PTR_FUN_1004cb8c;
   return this;
 }
@@ -18769,7 +16309,7 @@ undefined4 * __thiscall FUN_1001a53c(void *this,undefined4 *param_1)
 undefined4 * __thiscall FUN_1001a558(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,0x20,1);
+  grim_pixel_format_init(this,param_1,0x20,1);
   *(undefined ***)this = &PTR_FUN_1004cb9c;
   return this;
 }
@@ -18781,7 +16321,7 @@ undefined4 * __thiscall FUN_1001a558(void *this,undefined4 *param_1)
 undefined4 * __thiscall FUN_1001a579(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,0x10,1);
+  grim_pixel_format_init(this,param_1,0x10,1);
   *(undefined ***)this = &PTR_FUN_1004cbac;
   return this;
 }
@@ -18863,7 +16403,7 @@ undefined4 __fastcall FUN_1001a595(int param_1)
 undefined4 * __thiscall FUN_1001a781(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,0x10,1);
+  grim_pixel_format_init(this,param_1,0x10,1);
   *(undefined ***)this = &PTR_FUN_1004cbdc;
   return this;
 }
@@ -18875,7 +16415,7 @@ undefined4 * __thiscall FUN_1001a781(void *this,undefined4 *param_1)
 undefined4 * __thiscall FUN_1001a79d(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,0x10,1);
+  grim_pixel_format_init(this,param_1,0x10,1);
   *(undefined ***)this = &PTR_FUN_1004cbec;
   return this;
 }
@@ -19023,7 +16563,7 @@ int __thiscall FUN_1001a7b9(void *this,uint param_1,uint param_2,uint param_3)
 undefined4 * __thiscall FUN_1001aa8a(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,0x10,1);
+  grim_pixel_format_init(this,param_1,0x10,1);
   *(undefined ***)this = &PTR_FUN_1004cc10;
   return this;
 }
@@ -19035,7 +16575,7 @@ undefined4 * __thiscall FUN_1001aa8a(void *this,undefined4 *param_1)
 undefined4 * __thiscall FUN_1001aaa6(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,8,1);
+  grim_pixel_format_init(this,param_1,8,1);
   *(undefined ***)this = &PTR_FUN_1004cc20;
   return this;
 }
@@ -19047,7 +16587,7 @@ undefined4 * __thiscall FUN_1001aaa6(void *this,undefined4 *param_1)
 undefined4 * __thiscall FUN_1001aac2(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,8,1);
+  grim_pixel_format_init(this,param_1,8,1);
   *(undefined ***)this = &PTR_FUN_1004cc30;
   return this;
 }
@@ -19059,7 +16599,7 @@ undefined4 * __thiscall FUN_1001aac2(void *this,undefined4 *param_1)
 undefined4 * __thiscall FUN_1001aade(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,0x10,1);
+  grim_pixel_format_init(this,param_1,0x10,1);
   *(undefined ***)this = &PTR_FUN_1004cc40;
   return this;
 }
@@ -19071,7 +16611,7 @@ undefined4 * __thiscall FUN_1001aade(void *this,undefined4 *param_1)
 undefined4 * __thiscall FUN_1001aafa(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,0x10,1);
+  grim_pixel_format_init(this,param_1,0x10,1);
   *(undefined ***)this = &PTR_FUN_1004cc50;
   return this;
 }
@@ -19088,7 +16628,7 @@ void __thiscall FUN_1001ab16(void *this,int param_1,int param_2,undefined4 *para
   undefined4 *puVar3;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (undefined4 *)FUN_10016944(this,(int)param_3);
+    param_3 = (undefined4 *)grim_convert_vertex_space(this,(int)param_3);
   }
   iVar1 = FUN_1001a7b9(this,param_1 + *(int *)((int)this + 0x1034),
                        param_2 + *(int *)((int)this + 0x1040),
@@ -19119,7 +16659,7 @@ void __thiscall FUN_1001ab16(void *this,int param_1,int param_2,undefined4 *para
 undefined4 * __thiscall FUN_1001aba3(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,0x20,1);
+  grim_pixel_format_init(this,param_1,0x20,1);
   *(undefined ***)this = &PTR_FUN_1004cc60;
   return this;
 }
@@ -19131,7 +16671,7 @@ undefined4 * __thiscall FUN_1001aba3(void *this,undefined4 *param_1)
 undefined4 * __thiscall FUN_1001ac2e(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,0x20,1);
+  grim_pixel_format_init(this,param_1,0x20,1);
   *(undefined ***)this = &PTR_FUN_1004cc70;
   return this;
 }
@@ -19151,7 +16691,7 @@ undefined4 * __thiscall FUN_1001ac4a(void *this,undefined4 *param_1)
   uint uVar6;
   
   uVar4 = 1;
-  FUN_100170f9(this,param_1,0,1);
+  grim_pixel_format_init(this,param_1,0,1);
   *(undefined ***)this = &PTR_FUN_1004caf8;
   if (param_1[6] == 1) {
     *(undefined4 *)((int)this + 0x1078) = 0;
@@ -19229,7 +16769,7 @@ undefined4 * __thiscall FUN_1001ac4a(void *this,undefined4 *param_1)
 undefined4 * __thiscall FUN_1001ae3c(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,0x10,1);
+  grim_pixel_format_init(this,param_1,0x10,1);
   *(undefined ***)this = &PTR_FUN_1004cc80;
   return this;
 }
@@ -19255,7 +16795,7 @@ undefined4 * __thiscall FUN_1001ae58(void *this,byte param_1)
 undefined4 * __thiscall FUN_1001ae74(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,8,1);
+  grim_pixel_format_init(this,param_1,8,1);
   *(undefined ***)this = &PTR_FUN_1004cc90;
   return this;
 }
@@ -19267,7 +16807,7 @@ undefined4 * __thiscall FUN_1001ae74(void *this,undefined4 *param_1)
 undefined4 * __thiscall FUN_1001ae90(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,8,1);
+  grim_pixel_format_init(this,param_1,8,1);
   *(undefined ***)this = &PTR_FUN_1004cca0;
   return this;
 }
@@ -19279,7 +16819,7 @@ undefined4 * __thiscall FUN_1001ae90(void *this,undefined4 *param_1)
 undefined4 * __thiscall FUN_1001aeac(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,0x10,1);
+  grim_pixel_format_init(this,param_1,0x10,1);
   *(undefined ***)this = &PTR_FUN_1004ccb0;
   return this;
 }
@@ -19305,7 +16845,7 @@ void * __thiscall FUN_1001aec8(void *this,byte param_1)
 undefined4 * __thiscall FUN_1001aee4(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,8,1);
+  grim_pixel_format_init(this,param_1,8,1);
   *(undefined ***)this = &PTR_FUN_1004ccc0;
   return this;
 }
@@ -19346,7 +16886,7 @@ void __fastcall FUN_1001af00(int param_1)
 undefined4 * __thiscall FUN_1001b001(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,0x10,2);
+  grim_pixel_format_init(this,param_1,0x10,2);
   *(undefined ***)this = &PTR_FUN_1004ccd0;
   return this;
 }
@@ -19358,7 +16898,7 @@ undefined4 * __thiscall FUN_1001b001(void *this,undefined4 *param_1)
 undefined4 * __thiscall FUN_1001b01d(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,0x10,2);
+  grim_pixel_format_init(this,param_1,0x10,2);
   *(undefined ***)this = &PTR_FUN_1004cce0;
   return this;
 }
@@ -19370,7 +16910,7 @@ undefined4 * __thiscall FUN_1001b01d(void *this,undefined4 *param_1)
 undefined4 * __thiscall FUN_1001b039(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,0x20,2);
+  grim_pixel_format_init(this,param_1,0x20,2);
   *(undefined ***)this = &PTR_FUN_1004ccf0;
   return this;
 }
@@ -19382,7 +16922,7 @@ undefined4 * __thiscall FUN_1001b039(void *this,undefined4 *param_1)
 undefined4 * __thiscall FUN_1001b055(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,0x20,3);
+  grim_pixel_format_init(this,param_1,0x20,3);
   *(undefined ***)this = &PTR_FUN_1004cd00;
   return this;
 }
@@ -19394,7 +16934,7 @@ undefined4 * __thiscall FUN_1001b055(void *this,undefined4 *param_1)
 undefined4 * __thiscall FUN_1001b071(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,0x20,2);
+  grim_pixel_format_init(this,param_1,0x20,2);
   *(undefined ***)this = &PTR_FUN_1004cd10;
   return this;
 }
@@ -19406,7 +16946,7 @@ undefined4 * __thiscall FUN_1001b071(void *this,undefined4 *param_1)
 undefined4 * __thiscall FUN_1001b08d(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,0x20,2);
+  grim_pixel_format_init(this,param_1,0x20,2);
   *(undefined ***)this = &PTR_FUN_1004cd20;
   return this;
 }
@@ -19418,7 +16958,7 @@ undefined4 * __thiscall FUN_1001b08d(void *this,undefined4 *param_1)
 undefined4 * __thiscall FUN_1001b0a9(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,0x20,2);
+  grim_pixel_format_init(this,param_1,0x20,2);
   *(undefined ***)this = &PTR_FUN_1004cd30;
   return this;
 }
@@ -19430,7 +16970,7 @@ undefined4 * __thiscall FUN_1001b0a9(void *this,undefined4 *param_1)
 undefined4 * __thiscall FUN_1001b0c5(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,0x10,1);
+  grim_pixel_format_init(this,param_1,0x10,1);
   *(undefined ***)this = &PTR_FUN_1004cd40;
   return this;
 }
@@ -19442,7 +16982,7 @@ undefined4 * __thiscall FUN_1001b0c5(void *this,undefined4 *param_1)
 undefined4 * __thiscall FUN_1001b0e1(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,0x10,1);
+  grim_pixel_format_init(this,param_1,0x10,1);
   *(undefined ***)this = &PTR_FUN_1004cd50;
   return this;
 }
@@ -19574,7 +17114,7 @@ LAB_1001b396:
 undefined4 * __thiscall FUN_1001b3a6(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,0x20,1);
+  grim_pixel_format_init(this,param_1,0x20,1);
   *(undefined ***)this = &PTR_FUN_1004cd60;
   return this;
 }
@@ -19586,7 +17126,7 @@ undefined4 * __thiscall FUN_1001b3a6(void *this,undefined4 *param_1)
 undefined4 * __thiscall FUN_1001b3c2(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,0x30,1);
+  grim_pixel_format_init(this,param_1,0x30,1);
   *(undefined ***)this = &PTR_FUN_1004cd70;
   return this;
 }
@@ -19598,7 +17138,7 @@ undefined4 * __thiscall FUN_1001b3c2(void *this,undefined4 *param_1)
 undefined4 * __thiscall FUN_1001b3de(void *this,undefined4 *param_1)
 
 {
-  FUN_100170f9(this,param_1,0x40,1);
+  grim_pixel_format_init(this,param_1,0x40,1);
   *(undefined ***)this = &PTR_FUN_1004cd80;
   return this;
 }
@@ -49915,3 +47455,6 @@ void Unwind_1004bbcb(void)
   operator_delete(*(void **)(unaff_EBP + 8));
   return;
 }
+
+
+
