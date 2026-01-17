@@ -33,6 +33,7 @@ This page is generated. Run `uv run python scripts/gen_all_pages.py` to update.
 - [SFX ID map](sfx-id-map.md)
 - [SFX label suggestions](sfx-labels.md)
 - [SFX usage hotspots](sfx-usage.md)
+- [Third-party libraries](third-party-libs.md)
 - [UI elements](ui-elements.md)
 - [Weapon table (weapon_table_init)](weapon-table.md)
 

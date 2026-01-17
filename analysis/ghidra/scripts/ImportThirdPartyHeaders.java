@@ -37,7 +37,7 @@ public class ImportThirdPartyHeaders extends GhidraScript {
         List<String> headerFiles = new ArrayList<>();
         List<String> missing = new ArrayList<>();
 
-        addHeader(headerFiles, missing, new File(root, "jpeglib.h"));
+        addHeader(headerFiles, missing, new File(root, "jpeg_all.h"));
         addHeader(headerFiles, missing, new File(root, "zlib.h"));
         addHeader(headerFiles, missing, new File(root, "png_struct_stub.h"));
         addHeader(headerFiles, missing, new File(root, "ogg/ogg.h"));
@@ -47,7 +47,7 @@ public class ImportThirdPartyHeaders extends GhidraScript {
         addHeader(headerFiles, missing, new File(root, "d3dtypes.h"));
         addHeader(headerFiles, missing, new File(root, "dxguid.h"));
         addHeader(headerFiles, missing, new File(root, "dinput.h"));
-        addHeader(headerFiles, missing, new File(root, "dinputd.h"));
+        addHeader(headerFiles, missing, new File(root, "dinputd_stub.h"));
         addHeader(headerFiles, missing, new File(root, "dsound.h"));
 
         if (headerFiles.isEmpty()) {

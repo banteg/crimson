@@ -21,7 +21,7 @@ undefined4 FUN_100019f0(void)
   _File = fopen(s_crimson_cfg_10053234,&DAT_10053240);
   iVar1 = 0;
   if (_File != (FILE *)0x0) {
-    fwrite(&DAT_1005c418,0x480,1,_File);
+    fwrite(&grim_config_blob,0x480,1,_File);
     iVar1 = fclose(_File);
   }
   return CONCAT31((int3)((uint)iVar1 >> 8),1);
@@ -55,7 +55,7 @@ undefined4 FUN_10001a30(void)
     return CONCAT31((int3)((uint)uVar2 >> 8),1);
   }
   fseek(_File,0,0);
-  fread(&DAT_1005c418,0x480,1,_File);
+  fread(&grim_config_blob,0x480,1,_File);
   iVar3 = fclose(_File);
   return CONCAT31((int3)((uint)iVar3 >> 8),1);
 }
@@ -82,7 +82,7 @@ void FUN_10001e90(void)
   pHVar1 = GetDlgItem(DAT_1005b2b0,0x3ed);
   SendMessageA(pHVar1,UVar5,wParam,LVar6);
   DAT_1005d400 = DAT_1005d0c8;
-  iVar2 = (**(code **)(*DAT_1005b2c4 + 0x24))(DAT_1005b2c4,0,1,0x16,0x16,0);
+  iVar2 = (**(code **)(*grim_d3d8_probe + 0x24))(grim_d3d8_probe,0,1,0x16,0x16,0);
   LVar6 = 0;
   WVar3 = 0;
   DAT_10053065 = -1 < iVar2;
@@ -329,7 +329,7 @@ int grim_backup_textures(void)
   }
   piVar6 = (int *)0x0;
   if (-1 < DAT_1005305c) {
-    piVar5 = &DAT_1005d404;
+    piVar5 = &grim_texture_slots;
     do {
       if ((*piVar5 != 0) && (*(char *)(*piVar5 + 8) != '\0')) {
         piStack_28 = piVar6;
@@ -337,8 +337,8 @@ int grim_backup_textures(void)
         iVar2 = *piVar5;
         piStack_28 = (int *)(iVar2 + 0x14);
         uVar1 = *(undefined4 *)(iVar2 + 0xc);
-        iVar2 = (**(code **)(*DAT_10059dbc + 0x6c))
-                          (DAT_10059dbc,uVar1,*(undefined4 *)(iVar2 + 0x10),DAT_1005a488);
+        iVar2 = (**(code **)(*grim_d3d_device + 0x6c))
+                          (grim_d3d_device,uVar1,*(undefined4 *)(iVar2 + 0x10),DAT_1005a488);
         if (iVar2 < 0) {
           DAT_1005c8f8 = s_D3D__Unable_to_backup_texture____10053678;
           FUN_10001160();
@@ -347,22 +347,22 @@ int grim_backup_textures(void)
         }
         iVar2 = (**(code **)(**(int **)(*piVar5 + 4) + 0x3c))(*(int **)(*piVar5 + 4),0,&piStack_28);
         if (iVar2 < 0) {
-          piVar5 = *(int **)((&DAT_1005d404)[(int)piVar6] + 0x14);
+          piVar5 = *(int **)((&grim_texture_slots)[(int)piVar6] + 0x14);
           if ((piVar5 != (int *)0x0) && (iVar2 = (**(code **)(*piVar5 + 8))(piVar5), iVar2 == 0)) {
-            *(undefined4 *)((&DAT_1005d404)[(int)piVar6] + 0x14) = 0;
+            *(undefined4 *)((&grim_texture_slots)[(int)piVar6] + 0x14) = 0;
           }
           DAT_1005c8f8 = s_D3D__Unable_to_backup_texture____10053644;
           FUN_10001160();
           uVar4 = FUN_10001160();
           return uVar4 & 0xffffff00;
         }
-        piVar3 = (int *)(**(code **)(*DAT_10059dbc + 0x70))
-                                  (DAT_10059dbc,uVar1,0,0,*(undefined4 *)(*piVar5 + 0x14),0);
+        piVar3 = (int *)(**(code **)(*grim_d3d_device + 0x70))
+                                  (grim_d3d_device,uVar1,0,0,*(undefined4 *)(*piVar5 + 0x14),0);
         if ((int)piVar3 < 0) {
-          piStack_28 = *(int **)((&DAT_1005d404)[(int)piVar6] + 0x14);
+          piStack_28 = *(int **)((&grim_texture_slots)[(int)piVar6] + 0x14);
           if ((piStack_28 != (int *)0x0) && (iVar2 = (**(code **)(*piStack_28 + 8))(), iVar2 == 0))
           {
-            *(undefined4 *)((&DAT_1005d404)[(int)piVar6] + 0x14) = 0;
+            *(undefined4 *)((&grim_texture_slots)[(int)piVar6] + 0x14) = 0;
           }
           DAT_1005c8f8 = s_D3D__Unable_to_backup_texture____10053618;
           piStack_28 = piVar6;
@@ -428,7 +428,7 @@ int grim_restore_textures(void)
   iVar5 = 0;
   local_14 = (int *)0x0;
   if (-1 < DAT_1005305c) {
-    piVar4 = &DAT_1005d404;
+    piVar4 = &grim_texture_slots;
     do {
       iVar3 = *piVar4;
       if (((iVar3 != 0) && (*(char *)(iVar3 + 8) != '\0')) && (*(int *)(iVar3 + 0x14) != 0)) {
@@ -442,8 +442,8 @@ int grim_restore_textures(void)
             return uVar2 & 0xffffff00;
           }
         }
-        iVar3 = (**(code **)(*DAT_10059dbc + 0x70))
-                          (DAT_10059dbc,*(undefined4 *)(*piVar4 + 0x14),0,0,local_14,0);
+        iVar3 = (**(code **)(*grim_d3d_device + 0x70))
+                          (grim_d3d_device,*(undefined4 *)(*piVar4 + 0x14),0,0,local_14,0);
         if (iVar3 < 0) {
           if (local_14 != (int *)0x0) {
             iVar3 = (**(code **)(*local_14 + 8))(local_14);
@@ -451,11 +451,11 @@ int grim_restore_textures(void)
               local_14 = (int *)0x0;
             }
           }
-          piVar4 = *(int **)((&DAT_1005d404)[iVar5] + 0x14);
+          piVar4 = *(int **)((&grim_texture_slots)[iVar5] + 0x14);
           if (piVar4 != (int *)0x0) {
             iVar3 = (**(code **)(*piVar4 + 8))(piVar4);
             if (iVar3 == 0) {
-              *(undefined4 *)((&DAT_1005d404)[iVar5] + 0x14) = 0;
+              *(undefined4 *)((&grim_texture_slots)[iVar5] + 0x14) = 0;
             }
           }
           uStack_10 = CONCAT31(uStack_10._1_3_,1);
@@ -509,17 +509,18 @@ undefined4 FUN_10002cf0(void)
   undefined4 uStack_c;
   
   FUN_10001160();
-  if ((DAT_1005a48c != (int *)0x0) &&
-     (iVar2 = (**(code **)(*DAT_1005a48c + 8))(DAT_1005a48c), iVar2 == 0)) {
-    DAT_1005a48c = (int *)0x0;
+  if ((grim_render_target_surface != (int *)0x0) &&
+     (iVar2 = (**(code **)(*grim_render_target_surface + 8))(grim_render_target_surface), iVar2 == 0
+     )) {
+    grim_render_target_surface = (int *)0x0;
   }
-  if ((DAT_1005c900 != (int *)0x0) &&
-     (iVar2 = (**(code **)(*DAT_1005c900 + 8))(DAT_1005c900), iVar2 == 0)) {
-    DAT_1005c900 = (int *)0x0;
+  if ((grim_backbuffer_surface != (int *)0x0) &&
+     (iVar2 = (**(code **)(*grim_backbuffer_surface + 8))(grim_backbuffer_surface), iVar2 == 0)) {
+    grim_backbuffer_surface = (int *)0x0;
   }
   iVar2 = 0;
   if (-1 < DAT_1005305c) {
-    piVar4 = &DAT_1005d404;
+    piVar4 = &grim_texture_slots;
     do {
       iVar3 = *piVar4;
       if ((((iVar3 != 0) && (*(char *)(iVar3 + 8) != '\0')) &&
@@ -531,18 +532,18 @@ undefined4 FUN_10002cf0(void)
       piVar4 = piVar4 + 1;
     } while (iVar2 <= DAT_1005305c);
   }
-  iVar2 = (**(code **)(*DAT_10059dbc + 0x38))(DAT_10059dbc,&DAT_10059df8);
+  iVar2 = (**(code **)(*grim_d3d_device + 0x38))(grim_d3d_device,&DAT_10059df8);
   do {
     if (iVar2 == 0) {
       FUN_10004520();
       iVar2 = 0;
       if (-1 < DAT_1005305c) {
-        piVar4 = &DAT_1005d404;
+        piVar4 = &grim_texture_slots;
         do {
           iVar3 = *piVar4;
           if (((iVar3 != 0) && (*(char *)(iVar3 + 8) != '\0')) &&
-             (iVar3 = (**(code **)(*DAT_10059dbc + 0x50))
-                                (DAT_10059dbc,*(undefined4 *)(iVar3 + 0xc),
+             (iVar3 = (**(code **)(*grim_d3d_device + 0x50))
+                                (grim_d3d_device,*(undefined4 *)(iVar3 + 0xc),
                                  *(undefined4 *)(iVar3 + 0x10),1,1,DAT_1005a488,0,iVar3 + 4),
              iVar3 < 0)) {
             DAT_1005c8f8 = s_D3D__Unable_to_recreate_a_textur_100537e0;
@@ -573,7 +574,7 @@ undefined4 FUN_10002cf0(void)
       }
       iVar2 = 0;
       if (-1 < DAT_1005305c) {
-        piVar4 = &DAT_1005d404;
+        piVar4 = &grim_texture_slots;
         do {
           iVar3 = *piVar4;
           if ((iVar3 != 0) && (*(char *)(iVar3 + 8) != '\0')) {
@@ -598,7 +599,7 @@ undefined4 FUN_10002cf0(void)
         } while (iVar2 <= DAT_1005305c);
       }
     }
-    iVar2 = (**(code **)(*DAT_10059dbc + 0x38))(DAT_10059dbc,&DAT_10059df8);
+    iVar2 = (**(code **)(*grim_d3d_device + 0x38))(grim_d3d_device,&DAT_10059df8);
   } while( true );
 }
 
@@ -722,25 +723,26 @@ undefined4 FUN_100030b0(void)
   undefined4 uStack_10;
   
   uVar4 = 0;
-  if (DAT_10059dbc == (int *)0x0) {
+  if (grim_d3d_device == (int *)0x0) {
 LAB_100033a0:
     return uVar4 & 0xffffff00;
   }
-  iVar2 = (**(code **)(*DAT_10059dbc + 0xc))(DAT_10059dbc);
+  iVar2 = (**(code **)(*grim_d3d_device + 0xc))(grim_d3d_device);
   DAT_1005c898 = iVar2 == 0;
   if ((!(bool)DAT_1005c898) && (iVar2 == -0x7789f797)) {
     Sleep(100);
-    if ((DAT_1005a48c != (int *)0x0) &&
-       (iVar2 = (**(code **)(*DAT_1005a48c + 8))(DAT_1005a48c), iVar2 == 0)) {
-      DAT_1005a48c = (int *)0x0;
+    if ((grim_render_target_surface != (int *)0x0) &&
+       (iVar2 = (**(code **)(*grim_render_target_surface + 8))(grim_render_target_surface),
+       iVar2 == 0)) {
+      grim_render_target_surface = (int *)0x0;
     }
-    if ((DAT_1005c900 != (int *)0x0) &&
-       (iVar2 = (**(code **)(*DAT_1005c900 + 8))(DAT_1005c900), iVar2 == 0)) {
-      DAT_1005c900 = (int *)0x0;
+    if ((grim_backbuffer_surface != (int *)0x0) &&
+       (iVar2 = (**(code **)(*grim_backbuffer_surface + 8))(grim_backbuffer_surface), iVar2 == 0)) {
+      grim_backbuffer_surface = (int *)0x0;
     }
     iVar2 = 0;
     if (-1 < DAT_1005305c) {
-      piVar5 = &DAT_1005d404;
+      piVar5 = &grim_texture_slots;
       do {
         iVar3 = *piVar5;
         if ((((iVar3 != 0) && (*(char *)(iVar3 + 8) != '\0')) &&
@@ -752,17 +754,17 @@ LAB_100033a0:
         piVar5 = piVar5 + 1;
       } while (iVar2 <= DAT_1005305c);
     }
-    iVar2 = (**(code **)(*DAT_10059dbc + 0x38))(DAT_10059dbc,&DAT_10059df8);
+    iVar2 = (**(code **)(*grim_d3d_device + 0x38))(grim_d3d_device,&DAT_10059df8);
     if (iVar2 == 0) {
       FUN_10004520();
       iVar2 = 0;
       if (-1 < DAT_1005305c) {
-        piVar5 = &DAT_1005d404;
+        piVar5 = &grim_texture_slots;
         do {
           iVar3 = *piVar5;
           if (((iVar3 != 0) && (*(char *)(iVar3 + 8) != '\0')) &&
-             (iVar3 = (**(code **)(*DAT_10059dbc + 0x50))
-                                (DAT_10059dbc,*(undefined4 *)(iVar3 + 0xc),
+             (iVar3 = (**(code **)(*grim_d3d_device + 0x50))
+                                (grim_d3d_device,*(undefined4 *)(iVar3 + 0xc),
                                  *(undefined4 *)(iVar3 + 0x10),1,1,DAT_1005a488,0,iVar3 + 4),
              iVar3 < 0)) {
             DAT_1005c8f8 = s_D3D__Unable_to_recreate_a_textur_100537e0;
@@ -785,7 +787,7 @@ LAB_100033a0:
       iVar3 = 0;
       iVar2 = DAT_1005305c;
       if (DAT_1005305c < 0) goto LAB_10003396;
-      piVar5 = &DAT_1005d404;
+      piVar5 = &grim_texture_slots;
       do {
         iVar2 = *piVar5;
         if ((iVar2 != 0) && (*(char *)(iVar2 + 8) != '\0')) {
@@ -815,7 +817,7 @@ LAB_100033a0:
       iVar3 = 0;
       iVar2 = DAT_1005305c;
       if (-1 < DAT_1005305c) {
-        piVar5 = &DAT_1005d404;
+        piVar5 = &grim_texture_slots;
         do {
           iVar2 = *piVar5;
           if ((iVar2 != 0) && (*(char *)(iVar2 + 8) != '\0')) {
@@ -907,7 +909,7 @@ undefined4 FUN_10003c00(void)
                 } while ((int)pfVar5 < 0x1005a458);
               }
               grim_joystick_poll();
-              _DAT_1005cf14 = &DAT_1005d830;
+              _DAT_1005cf14 = &grim_joystick_state;
               if (DAT_1005cc58 == '\0') {
                 _DAT_1005b278 = DAT_1005db44;
                 _DAT_1005b27c = DAT_1005db48;
@@ -924,8 +926,8 @@ undefined4 FUN_10003c00(void)
               Sleep(0x32);
             }
           }
-        } while ((DAT_1005d804 != '\0') || (DAT_10059dbc == (int *)0x0));
-        iVar4 = (**(code **)(*DAT_10059dbc + 0xc))(DAT_10059dbc);
+        } while ((DAT_1005d804 != '\0') || (grim_d3d_device == (int *)0x0));
+        iVar4 = (**(code **)(*grim_d3d_device + 0xc))(grim_d3d_device);
         DAT_1005c898 = iVar4 == 0;
         if (!(bool)DAT_1005c898) break;
         if (DAT_1005d811 != '\0') {
@@ -938,11 +940,11 @@ undefined4 FUN_10003c00(void)
           (**(code **)(*DAT_1005d3b4 + 0x14))();
         }
         if (DAT_1005d3bd == '\0') {
-          (**(code **)(*DAT_10059dbc + 0x3c))(DAT_10059dbc,0,0,0,0);
+          (**(code **)(*grim_d3d_device + 0x3c))(grim_d3d_device,0,0,0,0);
         }
       }
       Sleep(500);
-      iVar4 = (**(code **)(*DAT_10059dbc + 0xc))(DAT_10059dbc);
+      iVar4 = (**(code **)(*grim_d3d_device + 0xc))(grim_d3d_device);
       DAT_1005c898 = iVar4 == 0;
     } while ((iVar4 != -0x7789f797) || (iVar4 = FUN_10002cf0(), iVar4 != -0x7789f797));
   }
@@ -982,33 +984,33 @@ int grim_d3d_init(void)
   D3DADAPTER_IDENTIFIER8 DStack_42c;
   
   DAT_1005c898 = 0;
-  DAT_1005c8fc = (IDirect3D8 *)0x0;
-  DAT_10059dbc = 0;
+  grim_d3d8 = (IDirect3D8 *)0x0;
+  grim_d3d_device = 0;
   DAT_1005b2b4 = D3DDEVTYPE_HAL;
   if ((char)DAT_1005cec8 == '\x01') {
     DAT_1005b2b4 = D3DDEVTYPE_REF;
   }
-  DAT_1005c8fc = Direct3DCreate8(0xdc);
-  if (DAT_1005c8fc == (IDirect3D8 *)0x0) {
+  grim_d3d8 = Direct3DCreate8(0xdc);
+  if (grim_d3d8 == (IDirect3D8 *)0x0) {
     DAT_1005c8f8 = s_D3D__Could_not_init_DirectX_8_1__10053a60;
     return 0;
   }
-  (*DAT_1005c8fc->lpVtbl->GetDeviceCaps)
-            (DAT_1005c8fc,DAT_1005d3e8,DAT_1005b2b4,(D3DCAPS8 *)&DAT_1005a498);
+  (*grim_d3d8->lpVtbl->GetDeviceCaps)(grim_d3d8,DAT_1005d3e8,DAT_1005b2b4,(D3DCAPS8 *)&DAT_1005a498)
+  ;
   bVar1 = 0;
-  (*DAT_1005c8fc->lpVtbl->GetAdapterIdentifier)(DAT_1005c8fc,DAT_1005d3e8,2,&DStack_42c);
+  (*grim_d3d8->lpVtbl->GetAdapterIdentifier)(grim_d3d8,DAT_1005d3e8,2,&DStack_42c);
   pcVar2 = strchr(DStack_42c.Description,0x56);
   if (((((pcVar2 != (char *)0x0) && (pcVar2[1] == 'o')) && (pcVar2[2] == 'o')) &&
       ((pcVar2[3] == 'd' && (pcVar2[4] == 'o')))) && ((pcVar2[5] == 'o' && (pcVar2[6] == '3')))) {
     bVar1 = 1;
   }
-  HVar3 = (*DAT_1005c8fc->lpVtbl->GetAdapterDisplayMode)(DAT_1005c8fc,0,&DStack_43c);
+  HVar3 = (*grim_d3d8->lpVtbl->GetAdapterDisplayMode)(grim_d3d8,0,&DStack_43c);
   if (HVar3 < 0) {
     DAT_1005c8f8 = s_D3D__Error_getting_adapter_displ_10053a34;
     uVar4 = 0;
-    if ((DAT_1005c8fc != (IDirect3D8 *)0x0) &&
-       (uVar4 = (*DAT_1005c8fc->lpVtbl->Release)(DAT_1005c8fc), uVar4 == 0)) {
-      DAT_1005c8fc = (IDirect3D8 *)0x0;
+    if ((grim_d3d8 != (IDirect3D8 *)0x0) &&
+       (uVar4 = (*grim_d3d8->lpVtbl->Release)(grim_d3d8), uVar4 == 0)) {
+      grim_d3d8 = (IDirect3D8 *)0x0;
     }
     return uVar4 & 0xffffff00;
   }
@@ -1044,9 +1046,9 @@ int grim_d3d_init(void)
   if (DAT_1005d3fc == (HWND)0x0) {
     _DAT_10059e10 = DAT_1005d3f8;
   }
-  HVar3 = (*DAT_1005c8fc->lpVtbl->CreateDevice)
-                    (DAT_1005c8fc,DAT_1005d3e8,DAT_1005b2b4,DAT_1005d3f8,0x20,
-                     (D3DPRESENT_PARAMETERS *)&DAT_10059df8,(IDirect3DDevice8 **)&DAT_10059dbc);
+  HVar3 = (*grim_d3d8->lpVtbl->CreateDevice)
+                    (grim_d3d8,DAT_1005d3e8,DAT_1005b2b4,DAT_1005d3f8,0x20,
+                     (D3DPRESENT_PARAMETERS *)&DAT_10059df8,(IDirect3DDevice8 **)&grim_d3d_device);
   if (HVar3 < 0) {
     DAT_1005c8f8 = s_D3D__Could_not_set_the_requested_10053a04;
     MessageBoxA((HWND)0x0,s_D3D__Could_not_set_the_requested_10053a04,&DAT_10053824,0);
@@ -1054,15 +1056,15 @@ int grim_d3d_init(void)
     grim_window_destroy();
     return extraout_EAX & 0xffffff00;
   }
-  (*DAT_1005c8fc->lpVtbl->GetDeviceCaps)
-            (DAT_1005c8fc,DAT_1005d3e8,DAT_1005b2b4,(D3DCAPS8 *)&DAT_1005a498);
+  (*grim_d3d8->lpVtbl->GetDeviceCaps)(grim_d3d8,DAT_1005d3e8,DAT_1005b2b4,(D3DCAPS8 *)&DAT_1005a498)
+  ;
   uVar6 = FUN_10004350();
   if ((char)uVar6 == '\0') {
     FUN_10004280();
     grim_window_destroy();
     return extraout_EAX_00 & 0xffffff00;
   }
-  puVar9 = &DAT_1005d404;
+  puVar9 = &grim_texture_slots;
   for (iVar5 = 0x100; iVar5 != 0; iVar5 = iVar5 + -1) {
     *puVar9 = 0;
     puVar9 = puVar9 + 1;
@@ -1100,12 +1102,12 @@ LAB_10004142:
     DAT_1005c8f8 = s_D3D__Unable_to_load_grim_splash_t_10053978;
     return uVar4 & 0xffffff00;
   }
-  DAT_1005c900 = 0;
-  DAT_1005a48c = 0;
-  _DAT_1005d094 = DAT_1005c8fc;
-  _DAT_1005d0a4 = DAT_10059dbc;
+  grim_backbuffer_surface = 0;
+  grim_render_target_surface = 0;
+  _DAT_1005d094 = grim_d3d8;
+  _DAT_1005d0a4 = grim_d3d_device;
   DAT_1005c898 = 1;
-  return CONCAT31((int3)((uint)DAT_1005c8fc >> 8),1);
+  return CONCAT31((int3)((uint)grim_d3d8 >> 8),1);
 }
 
 
@@ -1119,16 +1121,16 @@ void FUN_10004280(void)
   int iVar1;
   undefined4 *puVar2;
   
-  if (DAT_1005c900 != (int *)0x0) {
-    iVar1 = (**(code **)(*DAT_1005c900 + 8))(DAT_1005c900);
+  if (grim_backbuffer_surface != (int *)0x0) {
+    iVar1 = (**(code **)(*grim_backbuffer_surface + 8))(grim_backbuffer_surface);
     if (iVar1 == 0) {
-      DAT_1005c900 = (int *)0x0;
+      grim_backbuffer_surface = (int *)0x0;
     }
   }
-  if (DAT_1005a48c != (int *)0x0) {
-    iVar1 = (**(code **)(*DAT_1005a48c + 8))(DAT_1005a48c);
+  if (grim_render_target_surface != (int *)0x0) {
+    iVar1 = (**(code **)(*grim_render_target_surface + 8))(grim_render_target_surface);
     if (iVar1 == 0) {
-      DAT_1005a48c = (int *)0x0;
+      grim_render_target_surface = (int *)0x0;
     }
   }
   if (DAT_1005d3ec != (int *)0x0) {
@@ -1143,7 +1145,7 @@ void FUN_10004280(void)
       DAT_1005d3f0 = (int *)0x0;
     }
   }
-  puVar2 = &DAT_1005d404;
+  puVar2 = &grim_texture_slots;
   do {
     texture = (void *)*puVar2;
     if (texture != (void *)0x0) {
@@ -1154,14 +1156,14 @@ void FUN_10004280(void)
     puVar2 = puVar2 + 1;
   } while ((int)puVar2 < 0x1005d804);
   FUN_100044e0();
-  if (DAT_10059dbc != (int *)0x0) {
-    (**(code **)(*DAT_10059dbc + 8))(DAT_10059dbc);
+  if (grim_d3d_device != (int *)0x0) {
+    (**(code **)(*grim_d3d_device + 8))(grim_d3d_device);
   }
-  DAT_10059dbc = (int *)0x0;
-  if (DAT_1005c8fc != (int *)0x0) {
-    (**(code **)(*DAT_1005c8fc + 8))(DAT_1005c8fc);
+  grim_d3d_device = (int *)0x0;
+  if (grim_d3d8 != (int *)0x0) {
+    (**(code **)(*grim_d3d8 + 8))(grim_d3d8);
   }
-  DAT_1005c8fc = (int *)0x0;
+  grim_d3d8 = (int *)0x0;
   return;
 }
 
@@ -1179,13 +1181,13 @@ uint FUN_10004350(void)
   undefined4 uVar5;
   
   DAT_1005976c = 0x100;
-  uVar3 = (**(code **)(*DAT_10059dbc + 0x5c))(DAT_10059dbc,0x1c00,0x218,0,2,&DAT_10059e2c);
+  uVar3 = (**(code **)(*grim_d3d_device + 0x5c))(grim_d3d_device,0x1c00,0x218,0,2,&DAT_10059e2c);
   if ((int)uVar3 < 0) {
     DAT_1005c8f8 = s_D3D__Internal__Could_not_create_v_10053ac4;
     return uVar3 & 0xffffff00;
   }
-  iVar4 = (**(code **)(*DAT_10059dbc + 0x60))
-                    (DAT_10059dbc,DAT_1005976c * 0xc,0x218,0x65,2,&DAT_10059bb8);
+  iVar4 = (**(code **)(*grim_d3d_device + 0x60))
+                    (grim_d3d_device,DAT_1005976c * 0xc,0x218,0x65,2,&DAT_10059bb8);
   if (-1 < iVar4) {
     uVar3 = (**(code **)(*DAT_10059bb8 + 0x2c))(DAT_10059bb8,0,0,&DAT_1005b2c0,0x2000);
     if (-1 < (int)uVar3) {
@@ -1209,8 +1211,8 @@ uint FUN_10004350(void)
         } while (uVar1 < DAT_1005976c);
       }
       (**(code **)(*DAT_10059bb8 + 0x30))(DAT_10059bb8);
-      (**(code **)(*DAT_10059dbc + 0x14c))(DAT_10059dbc,0,DAT_10059e2c,0x1c);
-      uVar5 = (**(code **)(*DAT_10059dbc + 0x154))(DAT_10059dbc,DAT_10059bb8,0);
+      (**(code **)(*grim_d3d_device + 0x14c))(grim_d3d_device,0,DAT_10059e2c,0x1c);
+      uVar5 = (**(code **)(*grim_d3d_device + 0x154))(grim_d3d_device,DAT_10059bb8,0);
       return CONCAT31((int3)((uint)uVar5 >> 8),1);
     }
     DAT_1005c898 = 0;
@@ -1248,41 +1250,41 @@ void FUN_100044e0(void)
 void FUN_10004520(void)
 
 {
-  (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x89,0);
-  (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x1d,0);
-  (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,7,0);
-  (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0xe,0);
-  (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x1c,0);
-  (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x8f,0);
-  (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x16,1);
-  (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,9,2);
-  (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x1a,_DAT_1005d108 & 0xff);
-  (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0xf,1);
-  (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x19,7);
-  (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x18,4);
-  (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,0x11,2);
-  (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,0x10,2);
-  (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,0x12,0);
-  (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,1,4);
-  (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,2,2);
-  (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,3,0);
-  (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,4,4);
-  (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,5,2);
-  (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,6,0);
-  (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,1,1);
-  (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,4,1);
-  (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,0xb,0);
-  (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,0xb,0);
-  (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x80,0);
-  (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x81,0);
-  (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x82,0);
-  (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x83,0);
-  (**(code **)(*DAT_10059dbc + 0x14c))(DAT_10059dbc,0,DAT_10059e2c,0x1c);
-  (**(code **)(*DAT_10059dbc + 0x154))(DAT_10059dbc,DAT_10059bb8,0);
-  (**(code **)(*DAT_10059dbc + 0x130))(DAT_10059dbc,0x144);
-  (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x1b,DAT_1005cca8 & 0xff);
-  (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x13,DAT_1005ccb8);
-  (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x14,DAT_1005ccc8);
+  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x89,0);
+  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x1d,0);
+  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,7,0);
+  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0xe,0);
+  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x1c,0);
+  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x8f,0);
+  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x16,1);
+  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,9,2);
+  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x1a,_DAT_1005d108 & 0xff);
+  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0xf,1);
+  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x19,7);
+  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x18,4);
+  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,0x11,2);
+  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,0x10,2);
+  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,0x12,0);
+  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,4);
+  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,2,2);
+  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,3,0);
+  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,4,4);
+  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,5,2);
+  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,6,0);
+  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,1,1);
+  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,4,1);
+  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,0xb,0);
+  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,0xb,0);
+  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x80,0);
+  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x81,0);
+  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x82,0);
+  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x83,0);
+  (**(code **)(*grim_d3d_device + 0x14c))(grim_d3d_device,0,DAT_10059e2c,0x1c);
+  (**(code **)(*grim_d3d_device + 0x154))(grim_d3d_device,DAT_10059bb8,0);
+  (**(code **)(*grim_d3d_device + 0x130))(grim_d3d_device,0x144);
+  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x1b,DAT_1005cca8 & 0xff);
+  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x13,DAT_1005ccb8);
+  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x14,DAT_1005ccc8);
   return;
 }
 
@@ -1297,8 +1299,8 @@ int __cdecl grim_is_texture_format_supported(uint format)
 {
   int iVar1;
   
-  iVar1 = (**(code **)(*DAT_1005c8fc + 0x28))
-                    (DAT_1005c8fc,DAT_1005d3e8,DAT_1005b2b4,DAT_1005a488,0,3,format);
+  iVar1 = (**(code **)(*grim_d3d8 + 0x28))
+                    (grim_d3d8,DAT_1005d3e8,DAT_1005b2b4,DAT_1005a488,0,3,format);
   return CONCAT31((int3)((uint)iVar1 >> 8),-1 < iVar1);
 }
 
@@ -1743,7 +1745,7 @@ int __thiscall grim_texture_load_file(void *this,void *texture,ushort *path)
       *puVar1 = 0;
       return (uint)uVar7 << 8;
     }
-    uVar4 = FUN_1000cb9c(DAT_10059dbc,texture);
+    uVar4 = FUN_1000cb9c(grim_d3d_device,texture);
     if (-1 < (int)uVar4) {
       *(undefined4 *)((int)this + 0xc) = uStack_1c;
       *(undefined4 *)((int)this + 0x10) = uStack_18;
@@ -1835,7 +1837,7 @@ int __cdecl grim_find_texture_by_name(char *name)
   
   iVar2 = 0;
   if (0 < DAT_1005305c + 1) {
-    puVar3 = &DAT_1005d404;
+    puVar3 = &grim_texture_slots;
     do {
       if ((void *)*puVar3 != (void *)0x0) {
         iVar1 = grim_texture_name_equals((void *)*puVar3,name,unaff_EDI);
@@ -1863,7 +1865,7 @@ int grim_find_free_texture_slot(void)
   int *piVar2;
   
   iVar1 = 0;
-  piVar2 = &DAT_1005d404;
+  piVar2 = &grim_texture_slots;
   do {
     if (*piVar2 == 0) {
       return iVar1;
@@ -1931,7 +1933,7 @@ int grim_load_texture_internal(char *name,ushort *path)
     ExceptionList = local_c;
     return uVar3 & 0xffffff00;
   }
-  (&DAT_1005d404)[iVar2] = pvVar4;
+  (&grim_texture_slots)[iVar2] = pvVar4;
   if (iVar1 < iVar2) {
     DAT_1005305c = iVar2;
   }
@@ -1968,12 +1970,12 @@ void FUN_100052f0(void)
   
   _DAT_1005cbf8 = local_10;
   DAT_1005a47c = 0;
-  DAT_1005cb8c = 0;
+  grim_config_var1_table = 0;
   DAT_1005a480 = 0;
-  DAT_1005cb88 = 0;
-  _DAT_1005cb90 = 0;
-  _DAT_1005cb94 = 0;
-  puVar9 = &DAT_1005cb88;
+  grim_config_var0_table = 0;
+  _grim_config_var2_table = 0;
+  _grim_config_var3_table = 0;
+  puVar9 = &grim_config_var0_table;
   puVar11 = &DAT_1005cb98;
   for (iVar4 = 0x1fc; iVar4 != 0; iVar4 = iVar4 + -1) {
     *puVar11 = *puVar9;
@@ -2143,13 +2145,13 @@ void FUN_100052f0(void)
   DAT_10059770 = &LAB_10001150;
   DAT_1005d3a8 = &LAB_10001150;
   _DAT_1005cc94 = _strdup(&DAT_1005d828);
-  puVar9 = &DAT_1005bad8;
+  puVar9 = &grim_font2_glyph_widths;
   for (iVar4 = 0x40; iVar4 != 0; iVar4 = iVar4 + -1) {
     *puVar9 = 0;
     puVar9 = puVar9 + 1;
   }
   local_14 = 0;
-  pfVar8 = (float *)&DAT_1005b2cc;
+  pfVar8 = (float *)&grim_font2_uv_v;
   do {
     local_10 = 0;
     pfVar3 = pfVar8;
@@ -2170,7 +2172,7 @@ void FUN_100052f0(void)
     puVar9 = puVar9 + 1;
   }
   do {
-    (&DAT_1005a570)[iVar4] = (char)iVar4;
+    (&grim_font2_char_map)[iVar4] = (char)iVar4;
     iVar4 = iVar4 + 1;
   } while (iVar4 < 0x100);
   DAT_1005a654 = 0xe4;
@@ -2518,14 +2520,14 @@ int grim_check_device(void)
   undefined4 uStack_4;
   
   uStack_4 = 0;
-  piVar5 = DAT_10059dbc;
-  uVar1 = (**(code **)(*DAT_10059dbc + 0x6c))(DAT_10059dbc,DAT_10059df8,DAT_10059dfc,0x15,&uStack_4)
-  ;
+  piVar5 = grim_d3d_device;
+  uVar1 = (**(code **)(*grim_d3d_device + 0x6c))
+                    (grim_d3d_device,DAT_10059df8,DAT_10059dfc,0x15,&uStack_4);
   if ((int)uVar1 < 0) {
     return uVar1 & 0xffffff00;
   }
-  piVar4 = DAT_10059dbc;
-  iVar2 = (**(code **)(*DAT_10059dbc + 0x78))(DAT_10059dbc,piVar5);
+  piVar4 = grim_d3d_device;
+  iVar2 = (**(code **)(*grim_d3d_device + 0x78))(grim_d3d_device,piVar5);
   if (iVar2 < 0) {
     uVar1 = (**(code **)(*piVar4 + 8))(piVar4);
     return uVar1 & 0xffffff00;
@@ -2557,15 +2559,16 @@ int grim_apply_config(void)
     DAT_10059778 = LoadIconA(DAT_1005bacc,(LPCSTR)0x72);
   }
   DAT_1005d3bc = '\0';
-  DAT_1005b2c4 = Direct3DCreate8(0xdc);
-  if (DAT_1005b2c4 == (IDirect3D8 *)0x0) {
+  grim_d3d8_probe = Direct3DCreate8(0xdc);
+  if (grim_d3d8_probe == (IDirect3D8 *)0x0) {
     DAT_1005c8f8 = s_D3D__Could_not_init_DirectX_8_1__10053a60;
     uVar1 = MessageBoxA((HWND)0x0,s_D3D__Could_not_init_DirectX_8_1__10053a60,&DAT_10053824,0);
     return uVar1 & 0xffffff00;
   }
-  (*DAT_1005b2c4->lpVtbl->GetDeviceCaps)(DAT_1005b2c4,0,D3DDEVTYPE_HAL,(D3DCAPS8 *)&DAT_1005a498);
+  (*grim_d3d8_probe->lpVtbl->GetDeviceCaps)
+            (grim_d3d8_probe,0,D3DDEVTYPE_HAL,(D3DCAPS8 *)&DAT_1005a498);
   DialogBoxParamA(DAT_1005bacc,(LPCSTR)0x74,(HWND)0x0,(DLGPROC)&LAB_10002120,0);
-  (*DAT_1005b2c4->lpVtbl->Release)(DAT_1005b2c4);
+  (*grim_d3d8_probe->lpVtbl->Release)(grim_d3d8_probe);
   if (DAT_1005d3bc == '\0') {
     (**(code **)(*in_ECX + 0x20))(0x54,DAT_1005d400);
     if ((char)DAT_1005b2b8 == '\0') {
@@ -2648,7 +2651,7 @@ int __fastcall grim_init_system(void)
   puVar1 = (undefined4 *)FUN_10005ae0((byte *)s_load_smallFnt_dat_10053b8c);
   if (puVar1 != (undefined4 *)0x0) {
     puVar3 = puVar1;
-    puVar4 = &DAT_1005bad8;
+    puVar4 = &grim_font2_glyph_widths;
     for (iVar2 = 0x40; iVar2 != 0; iVar2 = iVar2 + -1) {
       *puVar4 = *puVar3;
       puVar3 = puVar3 + 1;
@@ -2702,82 +2705,82 @@ uint __cdecl FUN_10006030(uint param_1)
   
   switch(param_1) {
   case 0:
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,1,3);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,3,0);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,4,3);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,6,0);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,1,1);
-    uVar1 = (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,4,1);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,3);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,3,0);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,4,3);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,6,0);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,1,1);
+    uVar1 = (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,4,1);
     return CONCAT31((int3)((uint)uVar1 >> 8),1);
   case 1:
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,1,4);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,2,2);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,3,0);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,4,4);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,5,2);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,6,0);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,1,1);
-    uVar1 = (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,4,1);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,4);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,2,2);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,3,0);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,4,4);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,5,2);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,6,0);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,1,1);
+    uVar1 = (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,4,1);
     return CONCAT31((int3)((uint)uVar1 >> 8),1);
   case 2:
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,1,4);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,2,2);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,3,0);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,4,4);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,5,2);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,6,0);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,1,4);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,2,2);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,3,1);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,4,4);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,5,2);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,6,1);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,2,1,1);
-    uVar1 = (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,2,4,1);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,4);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,2,2);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,3,0);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,4,4);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,5,2);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,6,0);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,1,4);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,2,2);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,3,1);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,4,4);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,5,2);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,6,1);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,2,1,1);
+    uVar1 = (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,2,4,1);
     return CONCAT31((int3)((uint)uVar1 >> 8),1);
   case 3:
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,1,7);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,2,2);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,3,0);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,4,7);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,5,2);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,6,0);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,1,4);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,2,2);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,3,1);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,4,4);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,5,2);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,6,1);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,2,1,1);
-    uVar1 = (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,2,4,1);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,7);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,2,2);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,3,0);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,4,7);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,5,2);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,6,0);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,1,4);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,2,2);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,3,1);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,4,4);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,5,2);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,6,1);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,2,1,1);
+    uVar1 = (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,2,4,1);
     return CONCAT31((int3)((uint)uVar1 >> 8),1);
   case 4:
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,1,0x18);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,2,2);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,3,3);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,5,2);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,4,2);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,1,1);
-    uVar1 = (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,4,1);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,0x18);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,2,2);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,3,3);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,5,2);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,4,2);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,1,1);
+    uVar1 = (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,4,1);
     return CONCAT31((int3)((uint)uVar1 >> 8),1);
   case 5:
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,1,0x18);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,2,2);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,3,0);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,4,2);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,1,1);
-    uVar1 = (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,4,1);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,0x18);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,2,2);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,3,0);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,4,2);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,1,1);
+    uVar1 = (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,4,1);
     return CONCAT31((int3)((uint)uVar1 >> 8),1);
   case 6:
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,1,2);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,2,2);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,4,1);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,1,0x18);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,2,2);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,3,1);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,1,4,1);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,2,1,1);
-    uVar1 = (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,2,4,1);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,2);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,2,2);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,4,1);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,1,0x18);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,2,2);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,3,1);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,4,1);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,2,1,1);
+    uVar1 = (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,2,4,1);
     return CONCAT31((int3)((uint)uVar1 >> 8),1);
   default:
     return param_1 & 0xffffff00;
@@ -2862,20 +2865,20 @@ void grim_set_render_state(uint state,uint value)
       pbVar13 = pbVar13 + 1;
       pbVar15 = pbVar15 + 1;
     }
-    *(byte **)(&DAT_1005cb94 + state * 0x10) = DAT_1005bac8;
+    *(byte **)(&grim_config_var3_table + state * 0x10) = DAT_1005bac8;
     return;
   default:
-    puVar11 = &DAT_1005cb88 + state * 4;
+    puVar11 = &grim_config_var0_table + state * 4;
     *puVar11 = value;
     goto LAB_10006b54;
   case 0xb:
   case 0xc:
   case 0xe:
   case 0x42:
-    *(char *)(&DAT_1005cb88 + state * 4) = (char)value;
+    *(char *)(&grim_config_var0_table + state * 4) = (char)value;
     return;
   case 0xd:
-    *(char *)(&DAT_1005cb88 + state * 4) = (char)value;
+    *(char *)(&grim_config_var0_table + state * 4) = (char)value;
     if (DAT_1005cc58 != '\0') {
       DAT_1005cc48 = 1;
       return;
@@ -2902,39 +2905,39 @@ LAB_10006882:
     iVar14 = 0;
 LAB_10006887:
     if (iVar14 == 0) {
-      if (*(void **)(&DAT_1005cb94 + state * 0x10) != (void *)0x0) {
-        operator_delete(*(void **)(&DAT_1005cb94 + state * 0x10));
+      if (*(void **)(&grim_config_var3_table + state * 0x10) != (void *)0x0) {
+        operator_delete(*(void **)(&grim_config_var3_table + state * 0x10));
       }
       _DAT_1005cc94 = _strdup(&DAT_1005d828);
       DAT_1005bc14 = 0;
     }
     uVar6 = FUN_10005a40((char *)in_stack_00000014);
     DAT_1005bc14 = (undefined1)uVar6;
-    if (*(void **)(&DAT_1005cb94 + state * 0x10) != (void *)0x0) {
-      operator_delete(*(void **)(&DAT_1005cb94 + state * 0x10));
+    if (*(void **)(&grim_config_var3_table + state * 0x10) != (void *)0x0) {
+      operator_delete(*(void **)(&grim_config_var3_table + state * 0x10));
     }
     pcVar8 = _strdup((char *)in_stack_00000014);
-    *(char **)(&DAT_1005cb94 + state * 0x10) = pcVar8;
-    *(undefined1 *)(&DAT_1005cb88 + state * 4) = DAT_1005bc14;
+    *(char **)(&grim_config_var3_table + state * 0x10) = pcVar8;
+    *(undefined1 *)(&grim_config_var0_table + state * 4) = DAT_1005bc14;
     return;
   case 0x12:
-    if (*(char *)(&DAT_1005cb88 + state * 4) != (char)value) {
-      (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x1b,value & 0xff);
-      *(char *)(&DAT_1005cb88 + state * 4) = (char)value;
+    if (*(char *)(&grim_config_var0_table + state * 4) != (char)value) {
+      (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x1b,value & 0xff);
+      *(char *)(&grim_config_var0_table + state * 4) = (char)value;
       return;
     }
     break;
   case 0x13:
-    if ((&DAT_1005cb88)[state * 4] != value) {
-      (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x13,value);
-      (&DAT_1005cb88)[state * 4] = value;
+    if ((&grim_config_var0_table)[state * 4] != value) {
+      (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x13,value);
+      (&grim_config_var0_table)[state * 4] = value;
       return;
     }
     break;
   case 0x14:
-    if ((&DAT_1005cb88)[state * 4] != value) {
-      (**(code **)(*DAT_10059dbc + 200))(DAT_10059dbc,0x14,value);
-      (&DAT_1005cb88)[state * 4] = value;
+    if ((&grim_config_var0_table)[state * 4] != value) {
+      (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x14,value);
+      (&grim_config_var0_table)[state * 4] = value;
       return;
     }
     break;
@@ -2944,16 +2947,16 @@ LAB_10006887:
         if (value != 3) {
           return;
         }
-        if ((&DAT_1005cb88)[state * 4] != 3) {
-          (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,0x15,3);
+        if ((&grim_config_var0_table)[state * 4] != 3) {
+          (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,0x15,3);
         }
       }
-      if ((&DAT_1005cb88)[state * 4] == 3) {
-        (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,0x15,1);
+      if ((&grim_config_var0_table)[state * 4] == 3) {
+        (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,0x15,1);
       }
-      (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,0x11,value);
-      (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,0x10,value);
-      (&DAT_1005cb88)[state * 4] = value;
+      (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,0x11,value);
+      (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,0x10,value);
+      (&grim_config_var0_table)[state * 4] = value;
       return;
     }
     break;
@@ -2962,7 +2965,7 @@ LAB_10006887:
     if ((char)uVar6 == '\0') {
       return;
     }
-    puVar11 = &DAT_1005cb88 + state * 4;
+    puVar11 = &grim_config_var0_table + state * 4;
     *puVar11 = value;
 LAB_10006b54:
     puVar11[1] = in_stack_0000000c;
@@ -2970,15 +2973,15 @@ LAB_10006b54:
     puVar11[3] = (uint)in_stack_00000014;
     break;
   case 0x1b:
-    (&DAT_1005cb88)[state * 4] = value;
-    (&DAT_1005cb8c)[state * 4] = in_stack_0000000c;
-    *(uint *)(&DAT_1005cb90 + state * 0x10) = in_stack_00000010;
-    *(byte **)(&DAT_1005cb94 + state * 0x10) = in_stack_00000014;
+    (&grim_config_var0_table)[state * 4] = value;
+    (&grim_config_var1_table)[state * 4] = in_stack_0000000c;
+    *(uint *)(&grim_config_var2_table + state * 0x10) = in_stack_00000010;
+    *(byte **)(&grim_config_var3_table + state * 0x10) = in_stack_00000014;
     uVar2 = ftol();
     uVar3 = ftol();
     uVar4 = ftol();
-    (**(code **)(*DAT_10059dbc + 200))
-              (DAT_10059dbc,0x3c,(uint)CONCAT21(CONCAT11(uVar2,uVar3),uVar4));
+    (**(code **)(*grim_d3d_device + 200))
+              (grim_d3d_device,0x3c,(uint)CONCAT21(CONCAT11(uVar2,uVar3),uVar4));
     return;
   case 0x1c:
     iVar14 = 0;
@@ -3000,38 +3003,38 @@ LAB_10006b54:
       iVar14 = iVar14 + 1;
       puVar12 = puVar12 + 1;
     } while (iVar14 < 0x100);
-    (**(code **)(*DAT_10059dbc + 0x48))(DAT_10059dbc,1,auStack_600);
-    (&DAT_1005cb88)[state * 4] = uStack_4;
-    (&DAT_1005cb8c)[state * 4] = unaff_retaddr;
-    *(uint *)(&DAT_1005cb90 + state * 0x10) = state;
-    *(uint *)(&DAT_1005cb94 + state * 0x10) = value;
+    (**(code **)(*grim_d3d_device + 0x48))(grim_d3d_device,1,auStack_600);
+    (&grim_config_var0_table)[state * 4] = uStack_4;
+    (&grim_config_var1_table)[state * 4] = unaff_retaddr;
+    *(uint *)(&grim_config_var2_table + state * 0x10) = state;
+    *(uint *)(&grim_config_var3_table + state * 0x10) = value;
     return;
   case 0x29:
     DAT_1005c400 = value;
-    (&DAT_1005cb88)[state * 4] = value;
+    (&grim_config_var0_table)[state * 4] = value;
     return;
   case 0x2a:
     DAT_10059dc0 = value;
-    (&DAT_1005cb88)[state * 4] = value;
+    (&grim_config_var0_table)[state * 4] = value;
     return;
   case 0x2b:
-    (&DAT_1005cb88)[state * 4] = value;
+    (&grim_config_var0_table)[state * 4] = value;
     DAT_1005a488 = (value != 0x20) + 0x16;
     return;
   case 0x2d:
     DAT_1005977c = in_stack_00000014;
     return;
   case 0x34:
-    *(char *)(&DAT_1005cb88 + state * 4) = (char)value;
+    *(char *)(&grim_config_var0_table + state * 4) = (char)value;
     return;
   case 0x36:
-    (**(code **)(*DAT_10059dbc + 0x3c))(DAT_10059dbc,0,0,0,0);
+    (**(code **)(*grim_d3d_device + 0x3c))(grim_d3d_device,0,0,0,0);
     return;
   case 0x52:
-    (&DAT_1005cb88)[state * 4] = value;
-    (&DAT_1005cb8c)[state * 4] = in_stack_0000000c;
-    *(uint *)(&DAT_1005cb90 + state * 0x10) = in_stack_00000010;
-    *(byte **)(&DAT_1005cb94 + state * 0x10) = in_stack_00000014;
+    (&grim_config_var0_table)[state * 4] = value;
+    (&grim_config_var1_table)[state * 4] = in_stack_0000000c;
+    *(uint *)(&grim_config_var2_table + state * 0x10) = in_stack_00000010;
+    *(byte **)(&grim_config_var3_table + state * 0x10) = in_stack_00000014;
     DAT_1005d3fc = *(undefined4 *)in_stack_00000014;
     return;
   case 0x55:
@@ -3052,10 +3055,10 @@ void grim_get_config_var(uint *out,int id)
 
 {
   if ((-1 < id) && (id < 0x80)) {
-    *out = (&DAT_1005cb88)[id * 4];
-    out[1] = (&DAT_1005cb8c)[id * 4];
-    out[2] = *(uint *)(&DAT_1005cb90 + id * 0x10);
-    out[3] = *(uint *)(&DAT_1005cb94 + id * 0x10);
+    *out = (&grim_config_var0_table)[id * 4];
+    out[1] = (&grim_config_var1_table)[id * 4];
+    out[2] = *(uint *)(&grim_config_var2_table + id * 0x10);
+    out[3] = *(uint *)(&grim_config_var3_table + id * 0x10);
     return;
   }
   *out = DAT_1005a478;
@@ -3095,9 +3098,9 @@ void grim_clear_color(float r,float g,float b,float a)
   uint uVar5;
   uint uVar6;
   
-  piVar2 = DAT_10059dbc;
+  piVar2 = grim_d3d_device;
   if ((DAT_1005d3bd == '\0') && (DAT_1005c898 != '\0')) {
-    iVar1 = *DAT_10059dbc;
+    iVar1 = *grim_d3d_device;
     uVar3 = ftol(0,0);
     iVar4 = ftol();
     uVar5 = ftol();
@@ -3125,42 +3128,43 @@ int grim_set_render_target(int target_index)
   iVar2 = CONCAT31((int3)((uint)in_EAX >> 8),DAT_1005d3bd);
   if (DAT_1005d3bd == '\0') {
     if (target_index < 0) {
-      if (DAT_1005c900 != (int *)0x0) {
-        if (DAT_1005a48c != (int *)0x0) {
-          (**(code **)(*DAT_1005a48c + 8))(DAT_1005a48c);
+      if (grim_backbuffer_surface != (int *)0x0) {
+        if (grim_render_target_surface != (int *)0x0) {
+          (**(code **)(*grim_render_target_surface + 8))(grim_render_target_surface);
         }
-        DAT_1005a48c = (int *)0x0;
-        uVar1 = (**(code **)(*DAT_10059dbc + 0x7c))(DAT_10059dbc,DAT_1005c900,0);
+        grim_render_target_surface = (int *)0x0;
+        uVar1 = (**(code **)(*grim_d3d_device + 0x7c))(grim_d3d_device,grim_backbuffer_surface,0);
         if ((int)uVar1 < 0) {
           return uVar1 & 0xffffff00;
         }
         iVar2 = 0;
-        if (DAT_1005c900 != (int *)0x0) {
-          iVar2 = (**(code **)(*DAT_1005c900 + 8))(DAT_1005c900);
+        if (grim_backbuffer_surface != (int *)0x0) {
+          iVar2 = (**(code **)(*grim_backbuffer_surface + 8))(grim_backbuffer_surface);
         }
-        DAT_1005c900 = (int *)0x0;
+        grim_backbuffer_surface = (int *)0x0;
       }
     }
     else {
-      if (DAT_1005a48c != (int *)0x0) {
-        (**(code **)(*DAT_1005a48c + 8))(DAT_1005a48c);
-        DAT_1005a48c = (int *)0x0;
+      if (grim_render_target_surface != (int *)0x0) {
+        (**(code **)(*grim_render_target_surface + 8))(grim_render_target_surface);
+        grim_render_target_surface = (int *)0x0;
       }
-      if (DAT_1005c900 == (int *)0x0) {
-        (**(code **)(*DAT_10059dbc + 0x80))(DAT_10059dbc,&DAT_1005c900);
+      if (grim_backbuffer_surface == (int *)0x0) {
+        (**(code **)(*grim_d3d_device + 0x80))(grim_d3d_device,&grim_backbuffer_surface);
       }
-      uVar1 = (**(code **)(**(int **)((&DAT_1005d404)[target_index] + 4) + 0x3c))
-                        (*(int **)((&DAT_1005d404)[target_index] + 4),0,&DAT_1005a48c);
+      uVar1 = (**(code **)(**(int **)((&grim_texture_slots)[target_index] + 4) + 0x3c))
+                        (*(int **)((&grim_texture_slots)[target_index] + 4),0,
+                         &grim_render_target_surface);
       if ((int)uVar1 < 0) {
         return uVar1 & 0xffffff00;
       }
-      iVar2 = (**(code **)(*DAT_10059dbc + 0x7c))(DAT_10059dbc,DAT_1005a48c,0);
+      iVar2 = (**(code **)(*grim_d3d_device + 0x7c))(grim_d3d_device,grim_render_target_surface,0);
       if (iVar2 < 0) {
         uVar1 = 0;
-        if (DAT_1005a48c != (int *)0x0) {
-          uVar1 = (**(code **)(*DAT_1005a48c + 8))(DAT_1005a48c);
+        if (grim_render_target_surface != (int *)0x0) {
+          uVar1 = (**(code **)(*grim_render_target_surface + 8))(grim_render_target_surface);
         }
-        DAT_1005a48c = (int *)0x0;
+        grim_render_target_surface = (int *)0x0;
         return uVar1 & 0xffffff00;
       }
     }
@@ -3239,7 +3243,7 @@ undefined4 FUN_10006ea0(void)
   
   fVar2 = DAT_1005d158;
   fVar1 = DAT_1005d138;
-  iVar3 = (**(code **)(*DAT_1005d81c + 0x9c))();
+  iVar3 = (**(code **)(*grim_interface_instance + 0x9c))();
   if ((float)iVar3 - fVar2 < -fVar1) {
     return 1;
   }
@@ -3259,7 +3263,7 @@ undefined4 FUN_10006ef0(void)
   
   fVar2 = DAT_1005d158;
   fVar1 = DAT_1005d138;
-  iVar3 = (**(code **)(*DAT_1005d81c + 0x9c))();
+  iVar3 = (**(code **)(*grim_interface_instance + 0x9c))();
   if (fVar1 < (float)iVar3 - fVar2) {
     return 1;
   }
@@ -3279,7 +3283,7 @@ undefined4 FUN_10006f40(void)
   
   fVar2 = DAT_1005d148;
   fVar1 = DAT_1005d138;
-  iVar3 = (**(code **)(*DAT_1005d81c + 0x98))();
+  iVar3 = (**(code **)(*grim_interface_instance + 0x98))();
   if ((float)iVar3 - fVar2 < -fVar1) {
     return 1;
   }
@@ -3299,7 +3303,7 @@ undefined4 FUN_10006f90(void)
   
   fVar2 = DAT_1005d148;
   fVar1 = DAT_1005d138;
-  iVar3 = (**(code **)(*DAT_1005d81c + 0x98))();
+  iVar3 = (**(code **)(*grim_interface_instance + 0x98))();
   if (fVar1 < (float)iVar3 - fVar2) {
     return 1;
   }
@@ -3371,7 +3375,7 @@ int __thiscall grim_is_key_active(void *this,int key)
     return iVar2;
   }
   if (key == 0x13f) {
-    fVar1 = (float)DAT_1005d830;
+    fVar1 = (float)grim_joystick_state;
   }
   else if (key == 0x140) {
     fVar1 = (float)DAT_1005d834;
@@ -3434,7 +3438,7 @@ float grim_get_config_float(int id)
   
   if (0xff < id) {
     if (id == 0x13f) {
-      return (float)DAT_1005d830 * 0.001;
+      return (float)grim_joystick_state * 0.001;
     }
     if (id == 0x140) {
       return (float)DAT_1005d834 * 0.001;
@@ -3562,19 +3566,20 @@ void grim_flush_input(void)
   int iStack_4;
   
   iStack_4 = 10;
-  puVar2 = &DAT_1005da28;
+  puVar2 = &grim_keyboard_state;
   for (iVar1 = 0x40; iVar1 != 0; iVar1 = iVar1 + -1) {
     *puVar2 = 0;
     puVar2 = puVar2 + 1;
   }
   iVar1 = 0;
   do {
-    (**(code **)(*DAT_1005da24 + 0x28))(DAT_1005da24,0x14,&DAT_1005d958,&iStack_4,0);
+    (**(code **)(*grim_keyboard_device + 0x28))
+              (grim_keyboard_device,0x14,&grim_keyboard_event_buffer,&iStack_4,0);
     if (99 < iVar1) break;
     iVar1 = iVar1 + 1;
   } while (iStack_4 != 0);
   DAT_1005d3e4 = 0;
-  puVar2 = &DAT_1005da28;
+  puVar2 = &grim_keyboard_state;
   for (iVar1 = 0x40; iVar1 != 0; iVar1 = iVar1 + -1) {
     *puVar2 = 0;
     puVar2 = puVar2 + 1;
@@ -3815,7 +3820,7 @@ float grim_get_mouse_wheel_delta(void)
 int grim_get_joystick_x(void)
 
 {
-  return DAT_1005d830;
+  return grim_joystick_state;
 }
 
 
@@ -3906,9 +3911,9 @@ int grim_create_texture(char *name,int width,int height)
   }
   pvVar5 = (void *)0x1;
   uVar4 = 1;
-  name_00 = DAT_10059dbc;
-  uVar2 = (**(code **)(*DAT_10059dbc + 0x50))(DAT_10059dbc,width,height,1,1,DAT_1005a488,0,local_10)
-  ;
+  name_00 = grim_d3d_device;
+  uVar2 = (**(code **)(*grim_d3d_device + 0x50))
+                    (grim_d3d_device,width,height,1,1,DAT_1005a488,0,local_10);
   if ((int)uVar2 < 0) {
     DAT_1005c8f8 = s_D3D__Could_not_create_a_texture__10053c18;
     ExceptionList = pvVar5;
@@ -3921,11 +3926,11 @@ int grim_create_texture(char *name,int width,int height)
   else {
     pvVar3 = grim_texture_init(pvVar3,unaff_EDI,(char *)name_00);
   }
-  (&DAT_1005d404)[uVar1] = pvVar3;
+  (&grim_texture_slots)[uVar1] = pvVar3;
   *(undefined4 *)((int)pvVar3 + 4) = uVar4;
-  *(undefined1 *)((&DAT_1005d404)[uVar1] + 8) = 1;
-  *(int *)((&DAT_1005d404)[uVar1] + 0xc) = width;
-  *(int *)((&DAT_1005d404)[uVar1] + 0x10) = height;
+  *(undefined1 *)((&grim_texture_slots)[uVar1] + 8) = 1;
+  *(int *)((&grim_texture_slots)[uVar1] + 0xc) = width;
+  *(int *)((&grim_texture_slots)[uVar1] + 0x10) = height;
   uVar2 = DAT_1005305c;
   if ((int)DAT_1005305c < (int)uVar1) {
     DAT_1005305c = uVar1;
@@ -3964,13 +3969,13 @@ void grim_destroy_texture(int handle)
   int iVar1;
   bool bVar2;
   
-  texture = (void *)(&DAT_1005d404)[handle];
+  texture = (void *)(&grim_texture_slots)[handle];
   if (texture != (void *)0x0) {
     grim_texture_release(texture);
     operator_delete(texture);
     iVar1 = DAT_1005305c;
     bVar2 = handle == DAT_1005305c;
-    (&DAT_1005d404)[handle] = 0;
+    (&grim_texture_slots)[handle] = 0;
     if (bVar2) {
       DAT_1005305c = iVar1 + -1;
     }
@@ -4006,7 +4011,7 @@ int grim_validate_texture(int handle)
 {
   int iVar1;
   
-  if ((&DAT_1005d404)[handle] == 0) {
+  if ((&grim_texture_slots)[handle] == 0) {
     return 0;
   }
   iVar1 = FUN_1000c1e8();
@@ -4028,22 +4033,23 @@ int grim_recreate_texture(int handle)
   undefined4 unaff_retaddr;
   
   iVar1 = handle;
-  iVar3 = (&DAT_1005d404)[handle];
+  iVar3 = (&grim_texture_slots)[handle];
   if (iVar3 == 0) {
     return 0;
   }
-  uVar2 = FUN_1000b297(*(void **)(iVar3 + 0x10),DAT_10059dbc,*(uint *)(iVar3 + 0xc),
+  uVar2 = FUN_1000b297(*(void **)(iVar3 + 0x10),grim_d3d_device,*(uint *)(iVar3 + 0xc),
                        (uint)*(void **)(iVar3 + 0x10),1,0,DAT_1005a56c,1,(int)&handle);
   if ((int)uVar2 < 0) {
     return uVar2 & 0xffffff00;
   }
-  iVar3 = FUN_1000b3fe((int *)handle,*(int **)((&DAT_1005d404)[iVar1] + 4),0,0,0x10,1.0);
+  iVar3 = FUN_1000b3fe((int *)handle,*(int **)((&grim_texture_slots)[iVar1] + 4),0,0,0x10,1.0);
   if (iVar3 < 0) {
     uVar2 = (**(code **)(*(int *)handle + 8))(handle);
     return uVar2 & 0xffffff00;
   }
-  (**(code **)(**(int **)((&DAT_1005d404)[iVar1] + 4) + 8))(*(int **)((&DAT_1005d404)[iVar1] + 4));
-  *(undefined4 *)((&DAT_1005d404)[iVar1] + 4) = unaff_retaddr;
+  (**(code **)(**(int **)((&grim_texture_slots)[iVar1] + 4) + 8))
+            (*(int **)((&grim_texture_slots)[iVar1] + 4));
+  *(undefined4 *)((&grim_texture_slots)[iVar1] + 4) = unaff_retaddr;
   return CONCAT31((int3)((uint)unaff_retaddr >> 8),1);
 }
 
@@ -4059,9 +4065,9 @@ void grim_bind_texture(int handle,int stage)
 {
   int iVar1;
   
-  if (((-1 < handle) && ((&DAT_1005d404)[handle] != 0)) &&
-     (iVar1 = *(int *)((&DAT_1005d404)[handle] + 4), iVar1 != 0)) {
-    (**(code **)(*DAT_10059dbc + 0xf4))(DAT_10059dbc,stage,iVar1);
+  if (((-1 < handle) && ((&grim_texture_slots)[handle] != 0)) &&
+     (iVar1 = *(int *)((&grim_texture_slots)[handle] + 4), iVar1 != 0)) {
+    (**(code **)(*grim_d3d_device + 0xf4))(grim_d3d_device,stage,iVar1);
     _DAT_10053060 = handle;
   }
   return;
@@ -4103,19 +4109,19 @@ void grim_draw_rect_filled(float *xy,float w,float h)
   undefined4 uVar3;
   
   if (0.0 < *(float *)(in_stack_00000010 + 0xc)) {
-    (**(code **)(*DAT_10059dbc + 0xf4))(DAT_10059dbc,0,0);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,1,3);
+    (**(code **)(*grim_d3d_device + 0xf4))(grim_d3d_device,0,0);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,3);
     uVar3 = 3;
     uVar2 = 4;
     puVar1 = (undefined4 *)0x0;
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,4,3);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,4,3);
     (**(code **)(*in_ECX + 0x110))();
     (**(code **)(*in_ECX + 0xfc))(0);
     (**(code **)(*in_ECX + 0xe8))();
     (**(code **)(*in_ECX + 0x11c))(*puVar1,puVar1[1],uVar2,uVar3);
     (**(code **)(*in_ECX + 0xf0))();
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,1,4);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,4,4);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,4);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,4,4);
   }
   return;
 }
@@ -4137,20 +4143,20 @@ void grim_draw_fullscreen_color(float r,float g,float b,float a)
   undefined4 uVar4;
   
   if (0.0 < a) {
-    (**(code **)(*DAT_10059dbc + 0xf4))(DAT_10059dbc,0,0);
+    (**(code **)(*grim_d3d_device + 0xf4))(grim_d3d_device,0,0);
     uVar4 = 3;
     uVar3 = 1;
     uVar2 = 0;
-    piVar1 = DAT_10059dbc;
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,1,3);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,4,3);
+    piVar1 = grim_d3d_device;
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,3);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,4,3);
     (**(code **)(*in_ECX + 0x114))(piVar1,uVar2,uVar3,uVar4);
     (**(code **)(*in_ECX + 0xfc))(0);
     (**(code **)(*in_ECX + 0xe8))();
     (**(code **)(*in_ECX + 0x11c))(0,0,(float)DAT_1005c400,(float)DAT_10059dc0);
     (**(code **)(*in_ECX + 0xf0))();
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,1,4);
-    (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,4,4);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,4);
+    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,4,4);
   }
   return;
 }
@@ -4169,7 +4175,7 @@ void grim_begin_batch(void)
   
   if (((DAT_1005d3bd == '\0') && (DAT_1005d3f4 == '\0')) &&
      (DAT_1005d3f4 = '\x01', DAT_1005c898 != '\0')) {
-    (**(code **)(*DAT_10059dbc + 0x88))(DAT_10059dbc);
+    (**(code **)(*grim_d3d_device + 0x88))(grim_d3d_device);
     iVar1 = (**(code **)(*DAT_10059e2c + 0x2c))(DAT_10059e2c,0,0,&DAT_10059e34,0x2800);
     if (iVar1 < 0) {
       DAT_1005c898 = '\0';
@@ -4193,10 +4199,10 @@ void grim_end_batch(void)
     (**(code **)(*DAT_10059e2c + 0x30))(DAT_10059e2c);
     if (DAT_1005c898 != '\0') {
       if ((short)DAT_1005c8dc != 0) {
-        (**(code **)(*DAT_10059dbc + 0x11c))
-                  (DAT_10059dbc,4,0,DAT_1005c8dc & 0xffff,0,(DAT_1005c8dc & 0xffff) >> 1);
+        (**(code **)(*grim_d3d_device + 0x11c))
+                  (grim_d3d_device,4,0,DAT_1005c8dc & 0xffff,0,(DAT_1005c8dc & 0xffff) >> 1);
       }
-      (**(code **)(*DAT_10059dbc + 0x8c))(DAT_10059dbc);
+      (**(code **)(*grim_d3d_device + 0x8c))(grim_d3d_device);
       DAT_1005d3f4 = '\0';
     }
   }
@@ -4221,13 +4227,13 @@ void grim_draw_circle_filled(float x,float y,float radius)
   int iVar6;
   
   if ((DAT_1005d3f4 == '\0') && (DAT_1005d3f4 = '\x01', DAT_1005c898 != '\0')) {
-    (**(code **)(*DAT_10059dbc + 0x88))();
+    (**(code **)(*grim_d3d_device + 0x88))();
     iVar1 = (**(code **)(*DAT_10059e2c + 0x2c))();
     if (iVar1 < 0) {
       DAT_1005c898 = '\0';
     }
     DAT_1005c8dc = DAT_1005c8dc & 0xffff0000;
-    (**(code **)(*DAT_10059dbc + 0xf4))(DAT_10059dbc,0,0);
+    (**(code **)(*grim_d3d_device + 0xf4))(grim_d3d_device,0,0);
     puVar3 = (undefined4 *)&stack0xffffffc0;
     puVar4 = DAT_10059e34;
     for (iVar1 = 7; iVar1 != 0; iVar1 = iVar1 + -1) {
@@ -4259,8 +4265,8 @@ void grim_draw_circle_filled(float x,float y,float radius)
     }
     (**(code **)(*DAT_10059e2c + 0x30))(DAT_10059e2c);
     if (DAT_1005c898 != '\0') {
-      (**(code **)(*DAT_10059dbc + 0x118))(DAT_10059dbc,6,0,(DAT_1005c8dc & 0xffff) - 2);
-      (**(code **)(*DAT_10059dbc + 0x8c))(DAT_10059dbc);
+      (**(code **)(*grim_d3d_device + 0x118))(grim_d3d_device,6,0,(DAT_1005c8dc & 0xffff) - 2);
+      (**(code **)(*grim_d3d_device + 0x8c))(grim_d3d_device);
       DAT_1005d3f4 = '\0';
     }
   }
@@ -4296,9 +4302,9 @@ void grim_draw_circle_outline(float x,float y,float radius)
   float fStack_c;
   
   if ((DAT_1005d3f4 == '\0') && (DAT_1005d3f4 = '\x01', DAT_1005c898 != '\0')) {
-    piStack_28 = DAT_10059dbc;
+    piStack_28 = grim_d3d_device;
     uStack_2c = 0x10007d72;
-    (**(code **)(*DAT_10059dbc + 0x88))();
+    (**(code **)(*grim_d3d_device + 0x88))();
     uStack_2c = 0x2800;
     puStack_30 = &DAT_10059e34;
     fStack_34 = 0.0;
@@ -4351,8 +4357,8 @@ void grim_draw_circle_outline(float x,float y,float radius)
     }
     (**(code **)(*DAT_10059e2c + 0x30))(DAT_10059e2c);
     if (DAT_1005c898 != '\0') {
-      (**(code **)(*DAT_10059dbc + 0x118))(DAT_10059dbc,5,0,(DAT_1005c8dc & 0xffff) - 2);
-      (**(code **)(*DAT_10059dbc + 0x8c))(DAT_10059dbc);
+      (**(code **)(*grim_d3d_device + 0x118))(grim_d3d_device,5,0,(DAT_1005c8dc & 0xffff) - 2);
+      (**(code **)(*grim_d3d_device + 0x8c))(grim_d3d_device);
       DAT_1005d3f4 = '\0';
     }
   }
@@ -4605,8 +4611,8 @@ void grim_flush_batch(void)
   
   if ((DAT_1005d3bd == '\0') && (DAT_1005d3f4 != '\0')) {
     (**(code **)(*DAT_10059e2c + 0x30))(DAT_10059e2c);
-    (**(code **)(*DAT_10059dbc + 0x11c))
-              (DAT_10059dbc,4,0,DAT_1005c8dc & 0xffff,0,(DAT_1005c8dc & 0xffff) >> 1);
+    (**(code **)(*grim_d3d_device + 0x11c))
+              (grim_d3d_device,4,0,DAT_1005c8dc & 0xffff,0,(DAT_1005c8dc & 0xffff) >> 1);
     iVar1 = (**(code **)(*DAT_10059e2c + 0x2c))(DAT_10059e2c,0,0,&DAT_10059e34,0x2800);
     if (-1 < iVar1) {
       DAT_1005c8dc = DAT_1005c8dc & 0xffff0000;
@@ -5107,9 +5113,9 @@ void grim_draw_rect_outline(float *xy,float w,float h)
   float fVar3;
   undefined4 uVar4;
   
-  (**(code **)(*DAT_10059dbc + 0xf4))(DAT_10059dbc,0,0);
-  (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,1,3);
-  (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc);
+  (**(code **)(*grim_d3d_device + 0xf4))(grim_d3d_device,0,0);
+  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,3);
+  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device);
   uVar4 = 0;
   (**(code **)(*in_ECX + 0xfc))(0);
   (**(code **)(*in_ECX + 0xe8))();
@@ -5121,8 +5127,8 @@ void grim_draw_rect_outline(float *xy,float w,float h)
   (**(code **)(*in_ECX + 0x11c))(fRam00000000,fVar3 + fRam00000004,fVar2 + 1.0,0x3f800000);
   (**(code **)(*in_ECX + 0x11c))(fVar1 + fRam00000000,fRam00000004,0x3f800000,uVar4);
   (**(code **)(*in_ECX + 0xf0))();
-  (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,1,4);
-  (**(code **)(*DAT_10059dbc + 0xfc))(DAT_10059dbc,0,4,4);
+  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,4);
+  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,4,4);
   return;
 }
 
@@ -5214,7 +5220,7 @@ void grim_draw_text_mono(float x,float y,char *text)
   
   if ((DAT_1005d3bd == '\0') && (text != (char *)0x0)) {
     if (DAT_1005ccf8 == '\0') {
-      (**(code **)(*DAT_10059dbc + 0xf4))(DAT_10059dbc,0,DAT_1005d3ec);
+      (**(code **)(*grim_d3d_device + 0xf4))(grim_d3d_device,0,DAT_1005d3ec);
     }
     fStack_44 = y;
     fVar14 = 0.0;
@@ -5293,9 +5299,9 @@ void grim_draw_text_mono(float x,float y,char *text)
                 fStack_44 = x;
               }
               (**(code **)(*in_ECX + 0x100))
-                        ((&DAT_1005b2c8)[cVar1 * 2],(&DAT_1005b2cc)[cVar1 * 2],
-                         (float)(&DAT_1005b2c8)[cVar1 * 2] + 0.0625,
-                         (float)(&DAT_1005b2cc)[cVar1 * 2] + 0.0625);
+                        ((&grim_font2_uv_u)[cVar1 * 2],(&grim_font2_uv_v)[cVar1 * 2],
+                         (float)(&grim_font2_uv_u)[cVar1 * 2] + 0.0625,
+                         (float)(&grim_font2_uv_v)[cVar1 * 2] + 0.0625);
               iVar9 = *in_ECX;
               fVar13 = fVar14 + 1.0;
             }
@@ -5354,8 +5360,8 @@ int grim_measure_text_width(char *text)
         iVar4 = 0;
       }
       else {
-        iVar4 = iVar4 + (uint)*(byte *)((int)&DAT_1005bad8 +
-                                       (uint)(byte)(&DAT_1005a570)[(byte)text[iVar6]]);
+        iVar4 = iVar4 + (uint)*(byte *)((int)&grim_font2_glyph_widths +
+                                       (uint)(byte)(&grim_font2_char_map)[(byte)text[iVar6]]);
       }
       iVar6 = iVar6 + 1;
     } while (iVar6 < (int)(~uVar3 - 1));
@@ -5390,10 +5396,11 @@ void grim_draw_text_small(float x,float y,char *text)
   if ((DAT_1005d3bd == '\0') && (text != (char *)0x0)) {
     ftol();
     ftol();
-    if ((DAT_10053070 != -1) ||
-       (DAT_10053070 = (**(code **)(*in_ECX + 0xc0))(s_GRIM_Font2_10053c3c), DAT_10053070 != -1)) {
-      iVar7 = DAT_10053070;
-      (**(code **)(*in_ECX + 0xc4))(DAT_10053070,0);
+    if ((grim_font2_texture_handle != -1) ||
+       (grim_font2_texture_handle = (**(code **)(*in_ECX + 0xc0))(s_GRIM_Font2_10053c3c),
+       grim_font2_texture_handle != -1)) {
+      iVar7 = grim_font2_texture_handle;
+      (**(code **)(*in_ECX + 0xc4))(grim_font2_texture_handle,0);
       if (DAT_1005ccd8 != 1) {
         (**(code **)(*in_ECX + 0x20))(0x15,1);
       }
@@ -5411,14 +5418,14 @@ void grim_draw_text_small(float x,float y,char *text)
       iVar5 = 0;
       if (0 < (int)(~uVar2 - 1)) {
         do {
-          uVar3 = (uint)(byte)(&DAT_1005a570)[(byte)text[iVar5]];
+          uVar3 = (uint)(byte)(&grim_font2_char_map)[(byte)text[iVar5]];
           if (text[iVar5] != 10) {
             (**(code **)(*in_ECX + 0x100))
-                      ((float)(&DAT_1005b2c8)[uVar3 * 2] + 0.001953125,
-                       (float)(&DAT_1005b2cc)[uVar3 * 2] + 0.001953125,
-                       ((float)*(byte *)((int)&DAT_1005bad8 + uVar3) * 0.00390625 +
-                       (float)(&DAT_1005b2c8)[uVar3 * 2] + 0.001953125) - 0.001953125,
-                       ((float)(&DAT_1005b2cc)[uVar3 * 2] + 0.001953125 + 0.0625) - 0.001953125);
+                      ((float)(&grim_font2_uv_u)[uVar3 * 2] + 0.001953125,
+                       (float)(&grim_font2_uv_v)[uVar3 * 2] + 0.001953125,
+                       ((float)*(byte *)((int)&grim_font2_glyph_widths + uVar3) * 0.00390625 +
+                       (float)(&grim_font2_uv_u)[uVar3 * 2] + 0.001953125) - 0.001953125,
+                       ((float)(&grim_font2_uv_v)[uVar3 * 2] + 0.001953125 + 0.0625) - 0.001953125);
             (**(code **)(*in_ECX + 0x11c))(uVar6,iVar7,uStack_14,0x41800000);
           }
           iVar5 = iVar5 + 1;
@@ -5473,20 +5480,20 @@ undefined4 * GRIM__GetInterface(void)
 
 {
                     /* 0x99c0  1  GRIM__GetInterface */
-  DAT_1005b2c4 = Direct3DCreate8(0xdc);
-  if (DAT_1005b2c4 == (IDirect3D8 *)0x0) {
+  grim_d3d8_probe = Direct3DCreate8(0xdc);
+  if (grim_d3d8_probe == (IDirect3D8 *)0x0) {
     DAT_1005c8f8 = s_D3D__Could_not_init_DirectX_8_1__10053a60;
     MessageBoxA((HWND)0x0,s_D3D__Could_not_init_DirectX_8_1__10053a60,&DAT_10053824,0);
     return (undefined4 *)0x0;
   }
-  (*DAT_1005b2c4->lpVtbl->Release)(DAT_1005b2c4);
+  (*grim_d3d8_probe->lpVtbl->Release)(grim_d3d8_probe);
   FUN_100052f0();
-  DAT_1005d81c = operator_new(4);
-  if (DAT_1005d81c != (undefined4 *)0x0) {
-    *DAT_1005d81c = &PTR_grim_release_1004c238;
-    return DAT_1005d81c;
+  grim_interface_instance = operator_new(4);
+  if (grim_interface_instance != (undefined4 *)0x0) {
+    *grim_interface_instance = &grim_interface_vtable;
+    return grim_interface_instance;
   }
-  DAT_1005d81c = (undefined4 *)0x0;
+  grim_interface_instance = (undefined4 *)0x0;
   return (undefined4 *)0x0;
 }
 
@@ -5937,20 +5944,20 @@ int __cdecl grim_joystick_init(int hwnd)
   if ((hwnd == 0) && (pHVar1 = GetForegroundWindow(), pHVar1 == (HWND)0x0)) {
     GetDesktopWindow();
   }
-  if (DAT_1005d940 == (LPUNKNOWN)0x0) {
-    ppvVar9 = &DAT_1005d940;
+  if (grim_dinput_joystick == (LPUNKNOWN)0x0) {
+    ppvVar9 = &grim_dinput_joystick;
     pIVar8 = (REFIID)&DAT_1005034c;
     DVar7 = 0x800;
-    pIVar10 = DAT_1005d940;
+    pIVar10 = grim_dinput_joystick;
     pHVar2 = GetModuleHandleA((LPCSTR)0x0);
     uVar3 = DirectInput8Create(pHVar2,DVar7,pIVar8,ppvVar9,pIVar10);
     if ((int)uVar3 < 0) {
-      DAT_1005d940 = (LPUNKNOWN)0x0;
+      grim_dinput_joystick = (LPUNKNOWN)0x0;
       return uVar3 & 0xffffff00;
     }
   }
-  if (DAT_1005d944 == (int *)0x0) {
-    UVar4 = (*DAT_1005d940->lpVtbl[1].AddRef)(DAT_1005d940);
+  if (grim_joystick_device == (int *)0x0) {
+    UVar4 = (*grim_dinput_joystick->lpVtbl[1].AddRef)(grim_dinput_joystick);
     uVar6 = (uint3)(UVar4 >> 8);
     if ((int)UVar4 < 0) {
       return (uint)uVar6 << 8;
@@ -5958,20 +5965,20 @@ int __cdecl grim_joystick_init(int hwnd)
     if (DAT_1005d948 == '\0') {
       return (uint)uVar6 << 8;
     }
-    uVar3 = (**(code **)(*DAT_1005d944 + 0x2c))(DAT_1005d944,&DAT_1004fe74);
+    uVar3 = (**(code **)(*grim_joystick_device + 0x2c))(grim_joystick_device,&DAT_1004fe74);
     if ((int)uVar3 < 0) {
       return uVar3 & 0xffffff00;
     }
-    uVar3 = (**(code **)(*DAT_1005d944 + 0x34))(DAT_1005d944,hwnd,5);
+    uVar3 = (**(code **)(*grim_joystick_device + 0x34))(grim_joystick_device,hwnd,5);
     if ((int)uVar3 < 0) {
       return uVar3 & 0xffffff00;
     }
-    uVar3 = (**(code **)(*DAT_1005d944 + 0x10))(DAT_1005d944,&LAB_1000a150,hwnd,0);
+    uVar3 = (**(code **)(*grim_joystick_device + 0x10))(grim_joystick_device,&LAB_1000a150,hwnd,0);
     if ((int)uVar3 < 0) {
       return uVar3 & 0xffffff00;
     }
-    if (DAT_1005d944 != (int *)0x0) {
-      (**(code **)(*DAT_1005d944 + 0x1c))(DAT_1005d944);
+    if (grim_joystick_device != (int *)0x0) {
+      (**(code **)(*grim_joystick_device + 0x1c))(grim_joystick_device);
     }
   }
   iVar5 = grim_joystick_poll();
@@ -5991,15 +5998,16 @@ int grim_joystick_poll(void)
   uint uVar2;
   
   uVar2 = 0;
-  if ((DAT_1005d940 != 0) && (uVar2 = 0, DAT_1005d944 != (int *)0x0)) {
-    iVar1 = (**(code **)(*DAT_1005d944 + 100))(DAT_1005d944);
+  if ((grim_dinput_joystick != 0) && (uVar2 = 0, grim_joystick_device != (int *)0x0)) {
+    iVar1 = (**(code **)(*grim_joystick_device + 100))(grim_joystick_device);
     if (-1 < iVar1) {
-      iVar1 = (**(code **)(*DAT_1005d944 + 0x24))(DAT_1005d944,0x110,&DAT_1005d830);
+      iVar1 = (**(code **)(*grim_joystick_device + 0x24))
+                        (grim_joystick_device,0x110,&grim_joystick_state);
       return CONCAT31((int3)((uint)iVar1 >> 8),-1 < iVar1);
     }
-    uVar2 = (**(code **)(*DAT_1005d944 + 0x1c))(DAT_1005d944);
+    uVar2 = (**(code **)(*grim_joystick_device + 0x1c))(grim_joystick_device);
     while (uVar2 == 0x8007001e) {
-      uVar2 = (**(code **)(*DAT_1005d944 + 0x1c))(DAT_1005d944);
+      uVar2 = (**(code **)(*grim_joystick_device + 0x1c))(grim_joystick_device);
     }
   }
   return uVar2 & 0xffffff00;
@@ -6012,7 +6020,7 @@ int grim_joystick_poll(void)
 byte __cdecl FUN_1000a310(uint param_1)
 
 {
-  return (byte)(&DAT_1005d860)[param_1 & 0xff] >> 7;
+  return (byte)(&grim_joystick_buttons)[param_1 & 0xff] >> 7;
 }
 
 
@@ -6022,14 +6030,14 @@ byte __cdecl FUN_1000a310(uint param_1)
 void FUN_1000a330(void)
 
 {
-  if (DAT_1005d944 != (int *)0x0) {
-    (**(code **)(*DAT_1005d944 + 0x20))(DAT_1005d944);
-    (**(code **)(*DAT_1005d944 + 8))(DAT_1005d944);
-    DAT_1005d944 = (int *)0x0;
+  if (grim_joystick_device != (int *)0x0) {
+    (**(code **)(*grim_joystick_device + 0x20))(grim_joystick_device);
+    (**(code **)(*grim_joystick_device + 8))(grim_joystick_device);
+    grim_joystick_device = (int *)0x0;
   }
-  if (DAT_1005d940 != (int *)0x0) {
-    (**(code **)(*DAT_1005d940 + 8))(DAT_1005d940);
-    DAT_1005d940 = (int *)0x0;
+  if (grim_dinput_joystick != (int *)0x0) {
+    (**(code **)(*grim_dinput_joystick + 8))(grim_dinput_joystick);
+    grim_dinput_joystick = (int *)0x0;
   }
   return;
 }
@@ -6043,7 +6051,7 @@ void FUN_1000a330(void)
 int __cdecl grim_keyboard_key_down(uint key)
 
 {
-  return (uint)(*(byte *)((int)&DAT_1005da28 + (key & 0xff)) >> 7);
+  return (uint)(*(byte *)((int)&grim_keyboard_state + (key & 0xff)) >> 7);
 }
 
 
@@ -6067,35 +6075,35 @@ int __cdecl grim_keyboard_init(int hwnd)
   if ((hwnd == 0) && (pHVar1 = GetForegroundWindow(), pHVar1 == (HWND)0x0)) {
     GetDesktopWindow();
   }
-  if (DAT_1005da20 == (LPUNKNOWN)0x0) {
-    ppIVar7 = &DAT_1005da20;
+  if (grim_dinput_keyboard == (LPUNKNOWN)0x0) {
+    ppIVar7 = &grim_dinput_keyboard;
     pIVar6 = (REFIID)&DAT_1005034c;
     DVar5 = 0x800;
-    pIVar8 = DAT_1005da20;
+    pIVar8 = grim_dinput_keyboard;
     pHVar2 = GetModuleHandleA((LPCSTR)0x0);
     uVar3 = DirectInput8Create(pHVar2,DVar5,pIVar6,ppIVar7,pIVar8);
     if ((int)uVar3 < 0) {
-      DAT_1005da20 = (LPUNKNOWN)0x0;
+      grim_dinput_keyboard = (LPUNKNOWN)0x0;
       return uVar3 & 0xffffff00;
     }
   }
-  if (DAT_1005da24 == (int *)0x0) {
-    uVar3 = (*DAT_1005da20->lpVtbl[1].QueryInterface)
-                      (DAT_1005da20,(REFIID)&DAT_1005029c,&DAT_1005da24);
+  if (grim_keyboard_device == (int *)0x0) {
+    uVar3 = (*grim_dinput_keyboard->lpVtbl[1].QueryInterface)
+                      (grim_dinput_keyboard,(REFIID)&DAT_1005029c,&grim_keyboard_device);
     if ((int)uVar3 < 0) {
       return uVar3 & 0xffffff00;
     }
-    uVar3 = (**(code **)(*DAT_1005da24 + 0x2c))();
+    uVar3 = (**(code **)(*grim_keyboard_device + 0x2c))();
     if ((int)uVar3 < 0) {
       return uVar3 & 0xffffff00;
     }
-    uVar3 = (**(code **)(*DAT_1005da24 + 0x34))(DAT_1005da24);
+    uVar3 = (**(code **)(*grim_keyboard_device + 0x34))(grim_keyboard_device);
     if ((int)uVar3 < 0) {
       return uVar3 & 0xffffff00;
     }
-    (**(code **)(*DAT_1005da24 + 0x18))(DAT_1005da24,1,&stack0xffffffd4);
-    if (DAT_1005da24 != (int *)0x0) {
-      (**(code **)(*DAT_1005da24 + 0x1c))();
+    (**(code **)(*grim_keyboard_device + 0x18))(grim_keyboard_device,1,&stack0xffffffd4);
+    if (grim_keyboard_device != (int *)0x0) {
+      (**(code **)(*grim_keyboard_device + 0x1c))();
     }
   }
   iVar4 = grim_keyboard_poll();
@@ -6121,33 +6129,34 @@ int grim_keyboard_poll(void)
   undefined4 *puStack_10;
   
   uVar3 = 0;
-  if (DAT_1005da24 != (int *)0x0) {
-    uVar3 = (**(code **)(*DAT_1005da24 + 0x1c))();
+  if (grim_keyboard_device != (int *)0x0) {
+    uVar3 = (**(code **)(*grim_keyboard_device + 0x1c))();
     while ((uVar3 == 0x8007001e || (uVar3 == 0x80070005))) {
       puStack_10 = (undefined4 *)0x1000a4cd;
-      uVar3 = (**(code **)(*DAT_1005da24 + 0x1c))();
+      uVar3 = (**(code **)(*grim_keyboard_device + 0x1c))();
     }
     if (-1 < (int)uVar3) {
-      puVar6 = &DAT_1005da28;
+      puVar6 = &grim_keyboard_state;
       for (iVar5 = 0x40; iVar5 != 0; iVar5 = iVar5 + -1) {
         *puVar6 = 0;
         puVar6 = puVar6 + 1;
       }
-      puStack_10 = &DAT_1005da28;
+      puStack_10 = &grim_keyboard_state;
       uStack_14 = 0x100;
-      (**(code **)(*DAT_1005da24 + 0x24))(DAT_1005da24);
+      (**(code **)(*grim_keyboard_device + 0x24))(grim_keyboard_device);
       uStack_14 = 10;
       iVar5 = 0x14;
-      piVar4 = (int *)(**(code **)(*DAT_1005da24 + 0x28))
-                                (DAT_1005da24,0x14,&DAT_1005d958,&uStack_14,0);
+      piVar4 = (int *)(**(code **)(*grim_keyboard_device + 0x28))
+                                (grim_keyboard_device,0x14,&grim_keyboard_event_buffer,&uStack_14,0)
+      ;
       if ((-1 < (int)piVar4) && (0 < iVar5)) {
-        piVar4 = &DAT_1005d958;
+        piVar4 = &grim_keyboard_event_buffer;
         do {
           iVar2 = *piVar4;
           piVar1 = piVar4 + 1;
           piVar4 = piVar4 + 5;
           iVar5 = iVar5 + -1;
-          *(char *)((int)&DAT_1005da28 + iVar2) = (char)*piVar1;
+          *(char *)((int)&grim_keyboard_state + iVar2) = (char)*piVar1;
         } while (iVar5 != 0);
       }
       return CONCAT31((int3)((uint)piVar4 >> 8),1);
@@ -6165,14 +6174,14 @@ int grim_keyboard_poll(void)
 void grim_keyboard_shutdown(void)
 
 {
-  if (DAT_1005da24 != (int *)0x0) {
-    (**(code **)(*DAT_1005da24 + 0x20))(DAT_1005da24);
-    (**(code **)(*DAT_1005da24 + 8))(DAT_1005da24);
-    DAT_1005da24 = (int *)0x0;
+  if (grim_keyboard_device != (int *)0x0) {
+    (**(code **)(*grim_keyboard_device + 0x20))(grim_keyboard_device);
+    (**(code **)(*grim_keyboard_device + 8))(grim_keyboard_device);
+    grim_keyboard_device = (int *)0x0;
   }
-  if (DAT_1005da20 != (int *)0x0) {
-    (**(code **)(*DAT_1005da20 + 8))(DAT_1005da20);
-    DAT_1005da20 = (int *)0x0;
+  if (grim_dinput_keyboard != (int *)0x0) {
+    (**(code **)(*grim_dinput_keyboard + 8))(grim_dinput_keyboard);
+    grim_dinput_keyboard = (int *)0x0;
   }
   return;
 }
@@ -6186,7 +6195,7 @@ void grim_keyboard_shutdown(void)
 int __cdecl grim_mouse_button_down(int button)
 
 {
-  return CONCAT31((int3)((uint)button >> 8),(byte)(&DAT_1005db3c)[button] >> 7);
+  return CONCAT31((int3)((uint)button >> 8),(byte)(&grim_mouse_buttons)[button] >> 7);
 }
 
 
@@ -6211,34 +6220,34 @@ int grim_mouse_init(void)
   if ((DAT_1005d3f8 == 0) && (pHVar1 = GetForegroundWindow(), pHVar1 == (HWND)0x0)) {
     GetDesktopWindow();
   }
-  if (DAT_1005db28 == (LPUNKNOWN)0x0) {
-    ppvVar7 = &DAT_1005db28;
+  if (grim_dinput_mouse == (LPUNKNOWN)0x0) {
+    ppvVar7 = &grim_dinput_mouse;
     pIVar6 = (REFIID)&DAT_1005034c;
     DVar5 = 0x800;
-    pIVar8 = DAT_1005db28;
+    pIVar8 = grim_dinput_mouse;
     pHVar2 = GetModuleHandleA((LPCSTR)0x0);
     uVar3 = DirectInput8Create(pHVar2,DVar5,pIVar6,ppvVar7,pIVar8);
     if ((int)uVar3 < 0) {
-      DAT_1005db28 = (LPUNKNOWN)0x0;
+      grim_dinput_mouse = (LPUNKNOWN)0x0;
       return uVar3 & 0xffffff00;
     }
   }
-  if (DAT_1005db2c == (int *)0x0) {
-    uVar3 = (*DAT_1005db28->lpVtbl[1].QueryInterface)
-                      (DAT_1005db28,(REFIID)&DAT_100502ac,&DAT_1005db2c);
+  if (grim_mouse_device == (int *)0x0) {
+    uVar3 = (*grim_dinput_mouse->lpVtbl[1].QueryInterface)
+                      (grim_dinput_mouse,(REFIID)&DAT_100502ac,&grim_mouse_device);
     if ((int)uVar3 < 0) {
       return uVar3 & 0xffffff00;
     }
-    uVar3 = (**(code **)(*DAT_1005db2c + 0x2c))(DAT_1005db2c,&DAT_10050284);
+    uVar3 = (**(code **)(*grim_mouse_device + 0x2c))(grim_mouse_device,&DAT_10050284);
     if ((int)uVar3 < 0) {
       return uVar3 & 0xffffff00;
     }
-    uVar3 = (**(code **)(*DAT_1005db2c + 0x34))(DAT_1005db2c,iVar4,5);
+    uVar3 = (**(code **)(*grim_mouse_device + 0x34))(grim_mouse_device,iVar4,5);
     if ((int)uVar3 < 0) {
       return uVar3 & 0xffffff00;
     }
-    if (DAT_1005db2c != (int *)0x0) {
-      (**(code **)(*DAT_1005db2c + 0x1c))(DAT_1005db2c);
+    if (grim_mouse_device != (int *)0x0) {
+      (**(code **)(*grim_mouse_device + 0x1c))(grim_mouse_device);
     }
   }
   iVar4 = grim_mouse_poll();
@@ -6260,24 +6269,24 @@ int grim_mouse_poll(void)
   int iVar3;
   
   iVar2 = 0;
-  if (DAT_1005db2c != (int *)0x0) {
-    DAT_1005db30 = 0;
+  if (grim_mouse_device != (int *)0x0) {
+    grim_mouse_state = 0;
     _DAT_1005db58 = 0.0;
     DAT_1005db34 = 0;
     _DAT_1005db54 = 0.0;
     DAT_1005db38 = 0;
     _DAT_1005db50 = 0.0;
-    _DAT_1005db3c = 0;
+    _grim_mouse_buttons = 0;
     _DAT_1005db40 = 0;
-    iVar1 = (**(code **)(*DAT_1005db2c + 0x24))(DAT_1005db2c,0x14,&DAT_1005db30);
+    iVar1 = (**(code **)(*grim_mouse_device + 0x24))(grim_mouse_device,0x14,&grim_mouse_state);
     iVar2 = 0;
     while (-1 < iVar1) {
       iVar3 = iVar2 + 1;
-      _DAT_1005db50 = (float)DAT_1005db30 + _DAT_1005db50;
+      _DAT_1005db50 = (float)grim_mouse_state + _DAT_1005db50;
       _DAT_1005db54 = (float)DAT_1005db34 + _DAT_1005db54;
       _DAT_1005db58 = (float)DAT_1005db38 + _DAT_1005db58;
       if ((99 < iVar2) ||
-         (((DAT_1005db30 == 0 && (DAT_1005db34 == 0)) && (iVar2 = 0, DAT_1005db38 == 0)))) {
+         (((grim_mouse_state == 0 && (DAT_1005db34 == 0)) && (iVar2 = 0, DAT_1005db38 == 0)))) {
         if (2 < iVar3) {
           iVar2 = FUN_10001160();
         }
@@ -6286,18 +6295,18 @@ int grim_mouse_poll(void)
         _DAT_1005db4c = _DAT_1005db4c + _DAT_1005db58;
         goto LAB_1000a7cb;
       }
-      DAT_1005db30 = 0;
+      grim_mouse_state = 0;
       DAT_1005db34 = 0;
       DAT_1005db38 = 0;
-      _DAT_1005db3c = 0;
+      _grim_mouse_buttons = 0;
       _DAT_1005db40 = 0;
-      iVar1 = (**(code **)(*DAT_1005db2c + 0x24))(DAT_1005db2c,0x14,&DAT_1005db30);
+      iVar1 = (**(code **)(*grim_mouse_device + 0x24))(grim_mouse_device,0x14,&grim_mouse_state);
       iVar2 = iVar3;
     }
-    iVar2 = (**(code **)(*DAT_1005db2c + 0x1c))(DAT_1005db2c);
+    iVar2 = (**(code **)(*grim_mouse_device + 0x1c))(grim_mouse_device);
     if (iVar2 == -0x7ff8ffe2) {
       do {
-        iVar2 = (**(code **)(*DAT_1005db2c + 0x1c))(DAT_1005db2c);
+        iVar2 = (**(code **)(*grim_mouse_device + 0x1c))(grim_mouse_device);
       } while (iVar2 == -0x7ff8ffe2);
       return CONCAT31((int3)((uint)iVar2 >> 8),1);
     }
@@ -6315,14 +6324,14 @@ LAB_1000a7cb:
 void grim_mouse_shutdown(void)
 
 {
-  if (DAT_1005db2c != (int *)0x0) {
-    (**(code **)(*DAT_1005db2c + 0x20))(DAT_1005db2c);
-    (**(code **)(*DAT_1005db2c + 8))(DAT_1005db2c);
-    DAT_1005db2c = (int *)0x0;
+  if (grim_mouse_device != (int *)0x0) {
+    (**(code **)(*grim_mouse_device + 0x20))(grim_mouse_device);
+    (**(code **)(*grim_mouse_device + 8))(grim_mouse_device);
+    grim_mouse_device = (int *)0x0;
   }
-  if (DAT_1005db28 != (int *)0x0) {
-    (**(code **)(*DAT_1005db28 + 8))(DAT_1005db28);
-    DAT_1005db28 = (int *)0x0;
+  if (grim_dinput_mouse != (int *)0x0) {
+    (**(code **)(*grim_dinput_mouse + 8))(grim_dinput_mouse);
+    grim_dinput_mouse = (int *)0x0;
   }
   return;
 }
@@ -11528,23 +11537,24 @@ undefined4 FUN_100117ff(int param_1,uint param_2)
   int local_14;
   uint local_10;
   uint *local_c;
-  int *local_8;
+  png_structp local_8;
   
-  local_8 = (int *)0x0;
+  local_8 = (png_structp)0x0;
   local_c = (uint *)0x0;
   local_20 = (undefined4 *)0x0;
   iVar4 = FUN_100204e3(param_1,0,param_2);
   if (iVar4 != 0) {
     return unaff_ESI;
   }
-  local_8 = FUN_1001e191("1.0.5",0,&DAT_100117f3,&DAT_10010dec);
-  if (((local_8 == (int *)0x0) || (local_c = FUN_100205e8((int)local_8), local_c == (uint *)0x0)) ||
+  local_8 = (png_structp)FUN_1001e191("1.0.5",0,&DAT_100117f3,&DAT_10010dec);
+  if (((local_8 == (png_structp)0x0) ||
+      (local_c = FUN_100205e8((int)local_8), local_c == (uint *)0x0)) ||
      (iVar4 = setjmp3(local_8), iVar4 != 0)) goto LAB_10011d66;
   local_48 = param_1;
   local_44 = param_2;
-  FUN_100204a4((int)local_8,&local_48,&LAB_100117b0);
+  FUN_100204a4(local_8,&local_48,&LAB_100117b0);
   FUN_1001e294(local_8,local_c);
-  FUN_1001ea59((int)local_8,local_c,&local_34,&local_1c,&local_28,&local_30,(uint *)0x0,(uint *)0x0,
+  FUN_1001ea59(local_8,local_c,&local_34,&local_1c,&local_28,&local_30,(uint *)0x0,(uint *)0x0,
                (uint *)0x0);
   if (local_30 == 0) {
     *local_38 = 0x32;
@@ -11620,7 +11630,7 @@ undefined4 FUN_100117ff(int param_1,uint param_2)
     FUN_1001ec11((int)local_8,0xff,1);
     *local_38 = 0x16;
   }
-  FUN_1001e407(local_8,(int *)local_c);
+  FUN_1001e407((int *)local_8,(int *)local_c);
   iVar4 = *local_38;
   uVar5 = 3;
   if (iVar4 < 0x34) {
@@ -11669,7 +11679,7 @@ LAB_10011a8e:
               uVar5 = uVar5 + 1;
             } while (uVar5 < local_1c);
           }
-          FUN_1001e7ce(local_8,local_20);
+          FUN_1001e7ce((int *)local_8,local_20);
           if (*local_38 == 0x29) {
             local_2c = 0;
             local_24 = 0;
@@ -11681,7 +11691,7 @@ LAB_10011a8e:
             if (uVar5 != 0) {
               FUN_1001eb5d((int)local_8,(int)local_c,&local_40,&local_2c,(int *)0x0);
             }
-            if (((float)local_8[0x4c] <= 1e-06) || ((float)local_8[0x4d] <= 1e-06)) {
+            if (((float)local_8[1].jmpbuf[4] <= 1e-06) || ((float)local_8[1].jmpbuf[5] <= 1e-06)) {
               iVar4 = 0;
               do {
                 auStack_158[iVar4] = (char)iVar4;
@@ -11690,7 +11700,8 @@ LAB_10011a8e:
             }
             else {
               local_18 = 0;
-              local_50 = (double)(1.0 / ((float)local_8[0x4d] * (float)local_8[0x4c]));
+              local_50 = (double)(1.0 / ((float)local_8[1].jmpbuf[5] * (float)local_8[1].jmpbuf[4]))
+              ;
               do {
                 _CIpow();
                 uVar3 = ftol();
@@ -11751,7 +11762,7 @@ LAB_10011a8e:
     }
   }
 LAB_10011d66:
-  if (local_8 != (int *)0x0) {
+  if (local_8 != (png_structp)0x0) {
     FUN_1001e93e(&local_8,&local_c,(undefined4 *)0x0);
   }
   if (local_20 != (undefined4 *)0x0) {
@@ -22419,7 +22430,7 @@ void png_error(png_structp png_ptr,char *msg)
     (*png_ptr->error_fn)(png_ptr,msg);
   }
                     /* WARNING: Subroutine does not return */
-  longjmp(png_ptr->jmpbuf,1);
+  longjmp((int *)png_ptr,1);
 }
 
 
@@ -22441,13 +22452,13 @@ void __cdecl png_warning(png_structp png_ptr,char *msg)
 
 /* FUN_1001e147 @ 1001e147 */
 
-void __cdecl FUN_1001e147(int *param_1,undefined4 *param_2)
+void __cdecl FUN_1001e147(png_structp png_ptr,undefined4 *param_2)
 
 {
   char local_54 [80];
   
-  FUN_1001e073(local_54,(int)param_1,param_2);
-  png_error((png_structp)param_1,local_54);
+  FUN_1001e073(local_54,(int)png_ptr,param_2);
+  png_error(png_ptr,local_54);
   return;
 }
 
@@ -22455,13 +22466,13 @@ void __cdecl FUN_1001e147(int *param_1,undefined4 *param_2)
 
 /* FUN_1001e16c @ 1001e16c */
 
-void __cdecl FUN_1001e16c(int param_1,undefined4 *param_2)
+void __cdecl FUN_1001e16c(png_structp png_ptr,undefined4 *param_2)
 
 {
   char local_54 [80];
   
-  FUN_1001e073(local_54,param_1,param_2);
-  png_warning((png_structp)param_1,local_54);
+  FUN_1001e073(local_54,(int)png_ptr,param_2);
+  png_warning(png_ptr,local_54);
   return;
 }
 
@@ -22512,19 +22523,19 @@ int * __cdecl FUN_1001e191(char *param_1,undefined4 param_2,undefined4 param_3,u
 LAB_1001e270:
   (png_ptr->zstream).words[3] = (png_uint_32)png_ptr->zbuf;
   (png_ptr->zstream).words[4] = png_ptr->zbuf_size;
-  FUN_100204a4((int)png_ptr,0,0);
-  return png_ptr->jmpbuf;
+  FUN_100204a4(png_ptr,0,0);
+  return (int *)png_ptr;
 }
 
 
 
 /* FUN_1001e294 @ 1001e294 */
 
-void __cdecl FUN_1001e294(int *param_1,uint *param_2)
+void __cdecl FUN_1001e294(png_structp png_ptr,uint *param_2)
 
 {
-  int *buf;
-  int *png_ptr;
+  png_byte *buf;
+  png_structp png_ptr_00;
   int iVar1;
   int unaff_EBX;
   uint uVar2;
@@ -22532,12 +22543,12 @@ void __cdecl FUN_1001e294(int *param_1,uint *param_2)
   png_uint_32 pVar3;
   char *pcVar4;
   
-  png_ptr = param_1;
-  if (*(byte *)(param_1 + 0x47) < 8) {
-    uVar2 = (uint)*(byte *)(param_1 + 0x47);
+  png_ptr_00 = png_ptr;
+  if (png_ptr->sig_bytes < 8) {
+    uVar2 = (uint)png_ptr->sig_bytes;
     pVar3 = -uVar2 + 8;
-    png_read_data((png_structp)param_1,(png_bytep)(uVar2 + 0x20 + (int)param_2),pVar3);
-    *(undefined1 *)(png_ptr + 0x47) = 8;
+    png_read_data(png_ptr,(png_bytep)(uVar2 + 0x20 + (int)param_2),pVar3);
+    png_ptr_00->sig_bytes = '\b';
     iVar1 = FUN_100204e3((int)(param_2 + 8),uVar2,pVar3);
     if (iVar1 != 0) {
       if ((uVar2 < 4) && (iVar1 = FUN_100204e3((int)(param_2 + 8),uVar2,-uVar2 + 4), iVar1 != 0)) {
@@ -22546,53 +22557,52 @@ void __cdecl FUN_1001e294(int *param_1,uint *param_2)
       else {
         pcVar4 = "PNG file corrupted by ASCII conversion";
       }
-      png_error((png_structp)png_ptr,pcVar4);
+      png_error(png_ptr_00,pcVar4);
     }
   }
-  buf = png_ptr + 0x43;
+  buf = png_ptr_00->chunk_name;
   while( true ) {
     while( true ) {
       while( true ) {
         while( true ) {
-          png_read_data((png_structp)png_ptr,(png_bytep)&param_1,4);
-          pVar3 = png_get_uint_32((png_bytep)&param_1);
-          png_reset_crc((png_structp)png_ptr);
-          png_crc_read((png_structp)png_ptr,(png_bytep)buf,4);
-          if (*buf != 0x52444849) break;
-          FUN_10025163(png_ptr,param_2,pVar3);
+          png_read_data(png_ptr_00,(png_bytep)&png_ptr,4);
+          pVar3 = png_get_uint_32((png_bytep)&png_ptr);
+          png_reset_crc(png_ptr_00);
+          png_crc_read(png_ptr_00,buf,4);
+          if (*(int *)buf != 0x52444849) break;
+          FUN_10025163(png_ptr_00,param_2,pVar3);
         }
-        if (*buf != 0x45544c50) break;
-        FUN_10025359((void *)0x45544c50,png_ptr,(int)param_2,pVar3);
+        if (*(int *)buf != 0x45544c50) break;
+        FUN_10025359((void *)0x45544c50,(int *)png_ptr_00,(int)param_2,pVar3);
       }
-      if (*buf != 0x444e4549) break;
-      FUN_10025483(png_ptr,param_2,pVar3,unaff_EBX,unaff_EBP);
+      if (*(int *)buf != 0x444e4549) break;
+      FUN_10025483(png_ptr_00,param_2,pVar3,unaff_EBX,unaff_EBP);
     }
-    if (*buf == 0x54414449) break;
-    if (*buf == 0x414d4167) {
-      FUN_100254cd(png_ptr,(int)param_2,pVar3);
+    if (*(int *)buf == 0x54414449) break;
+    if (*(int *)buf == 0x414d4167) {
+      FUN_100254cd(png_ptr_00,(int)param_2,pVar3);
     }
-    else if (*buf == 0x42475273) {
-      FUN_100255d8(png_ptr,(int)param_2,pVar3);
+    else if (*(int *)buf == 0x42475273) {
+      FUN_100255d8(png_ptr_00,(int)param_2,pVar3);
     }
-    else if (*buf == 0x534e5274) {
-      FUN_100256c7(png_ptr,(int)param_2,pVar3);
+    else if (*(int *)buf == 0x534e5274) {
+      FUN_100256c7(png_ptr_00,(int)param_2,pVar3);
     }
     else {
-      FUN_1002587e(png_ptr,(int)param_2,pVar3);
+      FUN_1002587e(png_ptr_00,(int)param_2,pVar3);
     }
   }
-  if ((png_ptr[0x16] & 1U) == 0) {
+  if ((png_ptr_00->mode & 1) == 0) {
     pcVar4 = "Missing IHDR before IDAT";
   }
   else {
-    if ((*(char *)((int)png_ptr + 0x116) != '\x03') || ((png_ptr[0x16] & 2U) != 0))
-    goto LAB_1001e3f8;
+    if ((png_ptr_00->color_type != '\x03') || ((png_ptr_00->mode & 2) != 0)) goto LAB_1001e3f8;
     pcVar4 = "Missing PLTE before IDAT";
   }
-  png_error((png_structp)png_ptr,pcVar4);
+  png_error(png_ptr_00,pcVar4);
 LAB_1001e3f8:
-  png_ptr[0x16] = png_ptr[0x16] | 4;
-  png_ptr[0x3f] = pVar3;
+  png_ptr_00->mode = png_ptr_00->mode | 4;
+  png_ptr_00->crc = pVar3;
   return;
 }
 
@@ -22604,7 +22614,7 @@ void __cdecl FUN_1001e407(int *param_1,int *param_2)
 
 {
   if ((*(byte *)(param_1 + 0x17) & 0x40) == 0) {
-    FUN_10024f3b(param_1);
+    FUN_10024f3b((png_structp)param_1);
   }
   FUN_1001ed89((int)param_1,param_2);
   return;
@@ -22637,7 +22647,7 @@ void __thiscall FUN_1001e427(void *this,int *param_1,byte *param_2,byte *param_3
   png_ptr = param_1;
   if ((*(byte *)(param_1 + 0x17) & 0x40) == 0) {
     this = param_1;
-    FUN_10024f3b(param_1);
+    FUN_10024f3b((png_structp)param_1);
   }
   if ((*(char *)((int)png_ptr + 0x113) != '\0') && ((*(byte *)(png_ptr + 0x18) & 2) != 0)) {
     cVar2 = (char)png_ptr[0x45];
@@ -22746,13 +22756,13 @@ LAB_1001e48f:
   puVar1 = (uint *)(png_ptr + 0x3c);
   *puVar1 = png_ptr[0x34];
   png_ptr[0x3d] = (uint)*(byte *)((int)png_ptr + 0x119) * png_ptr[0x34] + 7 >> 3;
-  FUN_10024dc0((int)png_ptr,(int)puVar1,(byte *)png_ptr[0x37] + 1,(byte *)(png_ptr[0x36] + 1),
-               (uint)*(byte *)png_ptr[0x37]);
+  FUN_10024dc0((png_structp)png_ptr,(int)puVar1,(byte *)png_ptr[0x37] + 1,
+               (byte *)(png_ptr[0x36] + 1),(uint)*(byte *)png_ptr[0x37]);
   FUN_10024790(png_ptr,(undefined4 *)png_ptr[0x36],(undefined4 *)png_ptr[0x37],png_ptr[0x32] + 1);
   this_00 = extraout_ECX_00;
   if (png_ptr[0x18] != 0) {
     this_00 = png_ptr;
-    FUN_10020149(png_ptr);
+    FUN_10020149((png_structp)png_ptr);
   }
   if ((*(char *)((int)png_ptr + 0x113) == '\0') || ((png_ptr[0x18] & 2U) == 0)) {
     if (param_2 != (byte *)0x0) {
@@ -22828,73 +22838,73 @@ void __cdecl FUN_1001e7ce(int *param_1,undefined4 *param_2)
 
 /* FUN_1001e81b @ 1001e81b */
 
-void __cdecl FUN_1001e81b(undefined4 *param_1,undefined4 *param_2,undefined4 *param_3)
+void __cdecl FUN_1001e81b(png_structp png_ptr,undefined4 *param_2,undefined4 *param_3)
 
 {
-  undefined4 uVar1;
-  undefined4 uVar2;
-  undefined4 uVar3;
+  png_voidp pvVar1;
+  png_error_ptr ppVar2;
+  png_error_ptr ppVar3;
   int iVar4;
-  undefined4 *puVar5;
-  int iVar6;
-  undefined4 *puVar7;
-  undefined4 local_44 [16];
+  png_structp ppVar5;
+  png_uint_32 *ppVar6;
+  int iVar7;
+  png_uint_32 local_44 [16];
   
-  iVar6 = 0;
+  iVar7 = 0;
   if (param_2 != (undefined4 *)0x0) {
-    FUN_100205da(param_1,param_2);
+    FUN_100205da(png_ptr,param_2);
   }
   if (param_3 != (undefined4 *)0x0) {
-    FUN_100205da(param_1,param_3);
+    FUN_100205da(png_ptr,param_3);
   }
-  png_free((png_structp)param_1,(void *)param_1[0x27]);
-  png_free((png_structp)param_1,(void *)param_1[0x37]);
-  png_free((png_structp)param_1,(void *)param_1[0x36]);
-  png_free((png_structp)param_1,(void *)param_1[0x5d]);
-  png_free((png_structp)param_1,(void *)param_1[0x5e]);
-  png_free((png_structp)param_1,(void *)param_1[0x4e]);
-  if ((*(byte *)((int)param_1 + 0x5d) & 0x10) != 0) {
-    png_free((png_structp)param_1,(void *)param_1[0x41]);
+  png_free(png_ptr,png_ptr->zbuf);
+  png_free(png_ptr,png_ptr->sub_row);
+  png_free(png_ptr,png_ptr->row_buf);
+  png_free(png_ptr,png_ptr[1].io_ptr);
+  png_free(png_ptr,(void *)png_ptr[1].mode);
+  png_free(png_ptr,(void *)png_ptr[1].jmpbuf[6]);
+  if ((png_ptr->flags & 0x1000) != 0) {
+    png_free(png_ptr,*(void **)&png_ptr->num_palette);
   }
-  if ((*(byte *)((int)param_1 + 0x5d) & 0x20) != 0) {
-    png_free((png_structp)param_1,(void *)param_1[0x57]);
+  if ((png_ptr->flags & 0x2000) != 0) {
+    png_free(png_ptr,(void *)png_ptr[1].jmpbuf[0xf]);
   }
-  if (param_1[0x51] != 0) {
-    iVar4 = 1 << (8U - (char)param_1[0x4b] & 0x1f);
+  if (png_ptr[1].jmpbuf[9] != 0) {
+    iVar4 = 1 << (8U - (char)png_ptr[1].jmpbuf[3] & 0x1f);
     if (0 < iVar4) {
       do {
-        png_free((png_structp)param_1,*(void **)(param_1[0x51] + iVar6 * 4));
-        iVar6 = iVar6 + 1;
-      } while (iVar6 < iVar4);
+        png_free(png_ptr,*(void **)(png_ptr[1].jmpbuf[9] + iVar7 * 4));
+        iVar7 = iVar7 + 1;
+      } while (iVar7 < iVar4);
     }
-    png_free((png_structp)param_1,(void *)param_1[0x51]);
+    png_free(png_ptr,(void *)png_ptr[1].jmpbuf[9]);
   }
-  FUN_10024251((int)(param_1 + 0x19));
-  uVar1 = param_1[0x12];
-  uVar2 = param_1[0x10];
-  puVar5 = param_1;
-  puVar7 = local_44;
-  for (iVar6 = 0x10; iVar6 != 0; iVar6 = iVar6 + -1) {
-    *puVar7 = *puVar5;
-    puVar5 = puVar5 + 1;
-    puVar7 = puVar7 + 1;
+  FUN_10024251((int)&png_ptr->zstream);
+  pvVar1 = png_ptr->error_ptr;
+  ppVar2 = png_ptr->error_fn;
+  ppVar5 = png_ptr;
+  ppVar6 = local_44;
+  for (iVar7 = 0x10; iVar7 != 0; iVar7 = iVar7 + -1) {
+    *ppVar6 = ppVar5->jmpbuf[0];
+    ppVar5 = (png_structp)(ppVar5->jmpbuf + 1);
+    ppVar6 = ppVar6 + 1;
   }
-  uVar3 = param_1[0x11];
-  puVar5 = param_1;
-  for (iVar6 = 0x67; iVar6 != 0; iVar6 = iVar6 + -1) {
-    *puVar5 = 0;
-    puVar5 = puVar5 + 1;
+  ppVar3 = png_ptr->warning_fn;
+  ppVar5 = png_ptr;
+  for (iVar7 = 0x67; iVar7 != 0; iVar7 = iVar7 + -1) {
+    ppVar5->jmpbuf[0] = 0;
+    ppVar5 = (png_structp)(ppVar5->jmpbuf + 1);
   }
-  param_1[0x11] = uVar3;
-  puVar5 = local_44;
-  puVar7 = param_1;
-  for (iVar6 = 0x10; iVar6 != 0; iVar6 = iVar6 + -1) {
-    *puVar7 = *puVar5;
-    puVar5 = puVar5 + 1;
-    puVar7 = puVar7 + 1;
+  png_ptr->warning_fn = ppVar3;
+  ppVar6 = local_44;
+  ppVar5 = png_ptr;
+  for (iVar7 = 0x10; iVar7 != 0; iVar7 = iVar7 + -1) {
+    ppVar5->jmpbuf[0] = *ppVar6;
+    ppVar6 = ppVar6 + 1;
+    ppVar5 = (png_structp)(ppVar5->jmpbuf + 1);
   }
-  param_1[0x10] = uVar2;
-  param_1[0x12] = uVar1;
+  png_ptr->error_fn = ppVar2;
+  png_ptr->error_ptr = pvVar1;
   return;
 }
 
@@ -22910,10 +22920,10 @@ void __cdecl FUN_1001e93e(undefined4 *param_1,undefined4 *param_2,undefined4 *pa
   undefined4 local_8;
   
   ptr = (undefined4 *)0x0;
-  local_8 = (undefined4 *)0x0;
+  local_8 = (png_structp)0x0;
   local_c = (undefined4 *)0x0;
   if (param_1 != (undefined4 *)0x0) {
-    local_8 = (undefined4 *)*param_1;
+    local_8 = (png_structp)*param_1;
   }
   if (param_2 != (undefined4 *)0x0) {
     ptr = (undefined4 *)*param_2;
@@ -22921,7 +22931,7 @@ void __cdecl FUN_1001e93e(undefined4 *param_1,undefined4 *param_2,undefined4 *pa
   if (param_3 != (undefined4 *)0x0) {
     local_c = (undefined4 *)*param_3;
   }
-  if (local_8 != (undefined4 *)0x0) {
+  if (local_8 != (png_structp)0x0) {
     FUN_1001e81b(local_8,ptr,local_c);
   }
   if (ptr != (undefined4 *)0x0) {
@@ -22932,7 +22942,7 @@ void __cdecl FUN_1001e93e(undefined4 *param_1,undefined4 *param_2,undefined4 *pa
     png_free_ptr(local_c);
     *param_3 = 0;
   }
-  if (local_8 != (undefined4 *)0x0) {
+  if (local_8 != (png_structp)0x0) {
     png_free_ptr(local_8);
     *param_1 = 0;
   }
@@ -23013,15 +23023,15 @@ undefined4 __cdecl FUN_1001ea2e(int param_1,int param_2,uint *param_3)
 /* FUN_1001ea59 @ 1001ea59 */
 
 undefined4 __cdecl
-FUN_1001ea59(int param_1,uint *param_2,uint *param_3,uint *param_4,uint *param_5,uint *param_6,
-            uint *param_7,uint *param_8,uint *param_9)
+FUN_1001ea59(png_structp png_ptr,uint *param_2,uint *param_3,uint *param_4,uint *param_5,
+            uint *param_6,uint *param_7,uint *param_8,uint *param_9)
 
 {
   uint uVar1;
   uint uVar2;
   undefined4 uVar3;
   
-  if ((((param_1 == 0) || (param_2 == (uint *)0x0)) || (param_3 == (uint *)0x0)) ||
+  if ((((png_ptr == (png_structp)0x0) || (param_2 == (uint *)0x0)) || (param_3 == (uint *)0x0)) ||
      (((param_4 == (uint *)0x0 || (param_5 == (uint *)0x0)) || (param_6 == (uint *)0x0)))) {
     uVar3 = 0;
   }
@@ -23050,7 +23060,7 @@ FUN_1001ea59(int param_1,uint *param_2,uint *param_3,uint *param_4,uint *param_5
       uVar2 = uVar2 + 1;
     }
     if ((uint)(0x7fffffff / (ulonglong)(uint)((int)(*param_5 * uVar2 + 7) >> 3)) < *param_3) {
-      png_warning((png_structp)param_1,"Width too large for libpng to process image data.");
+      png_warning(png_ptr,"Width too large for libpng to process image data.");
     }
     uVar3 = 1;
   }
@@ -24274,51 +24284,53 @@ void __cdecl FUN_1001fc1f(int *param_1,byte *param_2,int param_3,int param_4)
 
 /* FUN_1001fd2d @ 1001fd2d */
 
-void __cdecl FUN_1001fd2d(int *param_1)
+void __cdecl FUN_1001fd2d(png_structp png_ptr)
 
 {
-  ushort *puVar1;
-  int *piVar2;
-  byte bVar3;
-  int *png_ptr;
+  png_structp ppVar1;
+  byte bVar2;
+  png_uint_32 pVar3;
+  png_structp png_ptr_00;
   undefined1 uVar4;
   undefined2 uVar5;
   void *pvVar6;
   uint uVar7;
   uint uVar8;
   byte bVar9;
-  int iVar10;
-  uint uVar11;
-  int iVar12;
-  uint uVar13;
+  uint uVar10;
+  int iVar11;
+  uint uVar12;
+  int iVar13;
   ushort local_10;
   uint local_8;
   
-  png_ptr = param_1;
-  if ((float)param_1[0x4c] != 0.0) {
-    if (*(byte *)((int)param_1 + 0x117) < 9) {
-      pvVar6 = png_malloc((png_structp)param_1,0x100);
-      param_1 = (int *)0x0;
-      png_ptr[0x4e] = (int)pvVar6;
+  png_ptr_00 = png_ptr;
+  if ((float)png_ptr[1].jmpbuf[4] != 0.0) {
+    if (png_ptr->bit_depth < 9) {
+      pvVar6 = png_malloc(png_ptr,0x100);
+      png_ptr = (png_structp)0x0;
+      png_ptr_00[1].jmpbuf[6] = (png_uint_32)pvVar6;
       do {
         _CIpow();
         uVar4 = ftol();
-        piVar2 = (int *)((int)param_1 + 1);
-        *(undefined1 *)((int)param_1 + png_ptr[0x4e]) = uVar4;
-        param_1 = piVar2;
-      } while ((int)piVar2 < 0x100);
+        ppVar1 = (png_structp)((int)png_ptr->jmpbuf + 1);
+        *(undefined1 *)((int)png_ptr->jmpbuf + png_ptr_00[1].jmpbuf[6]) = uVar4;
+        png_ptr = ppVar1;
+      } while ((int)ppVar1 < 0x100);
     }
     else {
-      if ((*(byte *)((int)param_1 + 0x116) & 2) == 0) {
-        local_8 = (uint)*(byte *)((int)param_1 + 0x153);
+      if ((png_ptr->color_type & 2) == 0) {
+        local_8 = (uint)*(byte *)((int)png_ptr[1].jmpbuf + 0x33);
       }
       else {
-        local_8 = (uint)*(byte *)(param_1 + 0x54);
-        if ((uint)*(byte *)(param_1 + 0x54) < (uint)*(byte *)((int)param_1 + 0x151)) {
-          local_8 = (uint)*(byte *)((int)param_1 + 0x151);
+        local_8 = (uint)(byte)png_ptr[1].jmpbuf[0xc];
+        uVar10 = (uint)*(byte *)((int)png_ptr[1].jmpbuf + 0x31);
+        if (local_8 < uVar10) {
+          local_8 = uVar10;
         }
-        if (local_8 < *(byte *)((int)param_1 + 0x152)) {
-          local_8 = (uint)*(byte *)((int)param_1 + 0x152);
+        uVar10 = (uint)*(byte *)((int)png_ptr[1].jmpbuf + 0x32);
+        if (local_8 < uVar10) {
+          local_8 = uVar10;
         }
       }
       if (local_8 == 0) {
@@ -24327,7 +24339,7 @@ void __cdecl FUN_1001fd2d(int *param_1)
       else {
         local_8 = 0x10 - local_8;
       }
-      if (((*(byte *)((int)param_1 + 0x61) & 4) != 0) && ((int)local_8 < 5)) {
+      if (((png_ptr->transformations & 0x400) != 0) && ((int)local_8 < 5)) {
         local_8 = 5;
       }
       if (8 < (int)local_8) {
@@ -24336,62 +24348,63 @@ void __cdecl FUN_1001fd2d(int *param_1)
       if ((int)local_8 < 0) {
         local_8 = 0;
       }
-      bVar3 = (byte)local_8;
-      bVar9 = 8 - bVar3;
-      iVar10 = 1 << (bVar9 & 0x1f);
-      param_1[0x4b] = local_8 & 0xff;
-      pvVar6 = png_malloc((png_structp)param_1,iVar10 << 2);
-      puVar1 = (ushort *)(param_1 + 0x18);
-      param_1[0x51] = (int)pvVar6;
-      param_1 = (int *)0x0;
-      if ((*puVar1 & 0x480) == 0) {
-        if (0 < iVar10) {
+      bVar2 = (byte)local_8;
+      bVar9 = 8 - bVar2;
+      iVar11 = 1 << (bVar9 & 0x1f);
+      png_ptr[1].jmpbuf[3] = local_8 & 0xff;
+      pvVar6 = png_malloc(png_ptr,iVar11 << 2);
+      pVar3 = png_ptr->transformations;
+      png_ptr[1].jmpbuf[9] = (png_uint_32)pvVar6;
+      png_ptr = (png_structp)0x0;
+      if ((pVar3 & 0x480) == 0) {
+        if (0 < iVar11) {
           do {
-            pvVar6 = png_malloc((png_structp)png_ptr,0x200);
-            *(void **)(png_ptr[0x51] + (int)param_1 * 4) = pvVar6;
-            iVar12 = 0;
+            pvVar6 = png_malloc(png_ptr_00,0x200);
+            *(void **)(png_ptr_00[1].jmpbuf[9] + (int)png_ptr * 4) = pvVar6;
+            iVar13 = 0;
             do {
               _CIpow();
               uVar5 = ftol();
-              *(undefined2 *)(iVar12 + *(int *)(png_ptr[0x51] + (int)param_1 * 4)) = uVar5;
-              iVar12 = iVar12 + 2;
-            } while (iVar12 < 0x200);
-            param_1 = (int *)((int)param_1 + 1);
-          } while ((int)param_1 < iVar10);
+              *(undefined2 *)(iVar13 + *(int *)(png_ptr_00[1].jmpbuf[9] + (int)png_ptr * 4)) = uVar5
+              ;
+              iVar13 = iVar13 + 2;
+            } while (iVar13 < 0x200);
+            png_ptr = (png_structp)((int)png_ptr->jmpbuf + 1);
+          } while ((int)png_ptr < iVar11);
         }
       }
       else {
-        if (0 < iVar10) {
+        if (0 < iVar11) {
           do {
-            pvVar6 = png_malloc((png_structp)png_ptr,0x200);
-            piVar2 = (int *)((int)param_1 + 1);
-            *(void **)(png_ptr[0x51] + (int)param_1 * 4) = pvVar6;
-            param_1 = piVar2;
-          } while ((int)piVar2 < iVar10);
+            pvVar6 = png_malloc(png_ptr_00,0x200);
+            ppVar1 = (png_structp)((int)png_ptr->jmpbuf + 1);
+            *(void **)(png_ptr_00[1].jmpbuf[9] + (int)png_ptr * 4) = pvVar6;
+            png_ptr = ppVar1;
+          } while ((int)ppVar1 < iVar11);
         }
-        uVar13 = 0;
-        param_1 = (int *)0x0;
+        uVar10 = 0;
+        png_ptr = (png_structp)0x0;
         do {
           _CIpow();
           uVar7 = ftol();
-          if (uVar13 <= uVar7) {
-            local_10 = (ushort)(((uint)param_1 & 0xff) << 8) | (ushort)param_1;
+          if (uVar10 <= uVar7) {
+            local_10 = (ushort)(((uint)png_ptr & 0xff) << 8) | (ushort)png_ptr;
             do {
-              uVar11 = uVar13 >> (bVar9 & 0x1f);
-              uVar8 = 0xff >> (bVar3 & 0x1f) & uVar13;
-              uVar13 = uVar13 + 1;
-              *(ushort *)(*(int *)(png_ptr[0x51] + uVar8 * 4) + uVar11 * 2) = local_10;
-            } while (uVar13 <= uVar7);
+              uVar12 = uVar10 >> (bVar9 & 0x1f);
+              uVar8 = 0xff >> (bVar2 & 0x1f) & uVar10;
+              uVar10 = uVar10 + 1;
+              *(ushort *)(*(int *)(png_ptr_00[1].jmpbuf[9] + uVar8 * 4) + uVar12 * 2) = local_10;
+            } while (uVar10 <= uVar7);
           }
-          param_1 = (int *)((int)param_1 + 1);
-        } while ((int)param_1 < 0x100);
-        if (uVar13 < (uint)(iVar10 << 8)) {
+          png_ptr = (png_structp)((int)png_ptr->jmpbuf + 1);
+        } while ((int)png_ptr < 0x100);
+        if (uVar10 < (uint)(iVar11 << 8)) {
           do {
             *(undefined2 *)
-             (*(int *)(png_ptr[0x51] + (0xff >> (bVar3 & 0x1f) & uVar13) * 4) +
-             (uVar13 >> (bVar9 & 0x1f)) * 2) = 0xffff;
-            uVar13 = uVar13 + 1;
-          } while (uVar13 < (uint)(iVar10 << 8));
+             (*(int *)(png_ptr_00[1].jmpbuf[9] + (0xff >> (bVar2 & 0x1f) & uVar10) * 4) +
+             (uVar10 >> (bVar9 & 0x1f)) * 2) = 0xffff;
+            uVar10 = uVar10 + 1;
+          } while (uVar10 < (uint)(iVar11 << 8));
         }
       }
     }
@@ -24417,7 +24430,7 @@ void __cdecl FUN_10020036(int *param_1)
   piVar2 = param_1;
   cVar1 = *(char *)((int)param_1 + 0x116);
   if ((param_1[0x18] & 0x602000U) != 0) {
-    FUN_1001fd2d(param_1);
+    FUN_1001fd2d((png_structp)param_1);
     if (cVar1 == '\x03') {
       uVar5 = (uint)*(ushort *)(param_1 + 0x42);
       if (uVar5 != 0) {
@@ -24467,59 +24480,67 @@ void __cdecl FUN_10020036(int *param_1)
 
 /* FUN_10020149 @ 10020149 */
 
-void __cdecl FUN_10020149(int *param_1)
+void __cdecl FUN_10020149(png_structp png_ptr)
 
 {
-  int *piVar1;
+  int iVar1;
+  int iVar2;
+  png_error_ptr *pppVar3;
   
-  if (param_1[0x37] == 0) {
-    png_error((png_structp)param_1,"NULL row buffer");
+  if (png_ptr->sub_row == (png_bytep)0x0) {
+    png_error(png_ptr,"NULL row buffer");
   }
-  if ((*(byte *)((int)param_1 + 0x61) & 0x10) != 0) {
-    if ((char)param_1[0x3e] == '\x03') {
-      FUN_1001f6c5((uint *)(param_1 + 0x3c),param_1[0x37] + 1,param_1[0x41],param_1[0x57],
-                   (uint)*(ushort *)((int)param_1 + 0x10a));
+  if ((png_ptr->transformations & 0x1000) != 0) {
+    if ((char)png_ptr->idat_size == '\x03') {
+      iVar1._0_2_ = png_ptr->num_palette;
+      iVar1._2_2_ = png_ptr->num_trans;
+      FUN_1001f6c5(&(png_ptr->row_info).rowbytes,(int)(png_ptr->sub_row + 1),iVar1,
+                   png_ptr[1].jmpbuf[0xf],(uint)*(ushort *)((int)&png_ptr->chunk_name_pad + 2));
     }
     else {
-      if (*(short *)((int)param_1 + 0x10a) == 0) {
-        piVar1 = (int *)0x0;
+      if (*(short *)((int)&png_ptr->chunk_name_pad + 2) == 0) {
+        pppVar3 = (png_error_ptr *)0x0;
       }
       else {
-        piVar1 = param_1 + 0x58;
+        pppVar3 = &png_ptr[1].error_fn;
       }
-      FUN_1001f8cd(param_1 + 0x3c,param_1[0x37] + 1,(int)piVar1);
+      FUN_1001f8cd((int *)&(png_ptr->row_info).rowbytes,(int)(png_ptr->sub_row + 1),(int)pppVar3);
     }
   }
-  if (((*(byte *)((int)param_1 + 0x61) & 0x20) != 0) && (*(char *)((int)param_1 + 0x116) != '\x03'))
-  {
-    FUN_1001f377(param_1 + 0x3c,(byte *)(param_1[0x37] + 1),param_1[0x4e],param_1[0x51],
-                 (byte)param_1[0x4b]);
+  if (((png_ptr->transformations & 0x2000) != 0) && (png_ptr->color_type != '\x03')) {
+    FUN_1001f377((int *)&(png_ptr->row_info).rowbytes,png_ptr->sub_row + 1,png_ptr[1].jmpbuf[6],
+                 png_ptr[1].jmpbuf[9],(byte)png_ptr[1].jmpbuf[3]);
   }
-  if ((*(byte *)((int)param_1 + 0x61) & 4) != 0) {
-    FUN_1001f0fb(param_1 + 0x3c,(undefined1 *)(param_1[0x37] + 1));
+  if ((png_ptr->transformations & 0x400) != 0) {
+    FUN_1001f0fb((int *)&(png_ptr->row_info).rowbytes,png_ptr->sub_row + 1);
   }
-  if ((*(byte *)(param_1 + 0x18) & 0x40) != 0) {
-    FUN_1001fc1f(param_1 + 0x3c,(byte *)(param_1[0x37] + 1),param_1[0x5d],param_1[0x5e]);
-    if (param_1[0x3d] == 0) {
-      png_error((png_structp)param_1,"png_do_dither returned rowbytes=0");
+  if ((png_ptr->transformations & 0x40) != 0) {
+    FUN_1001fc1f((int *)&(png_ptr->row_info).rowbytes,png_ptr->sub_row + 1,(int)png_ptr[1].io_ptr,
+                 png_ptr[1].mode);
+    iVar2._0_1_ = (png_ptr->row_info).color_type;
+    iVar2._1_1_ = (png_ptr->row_info).bit_depth;
+    iVar2._2_1_ = (png_ptr->row_info).channels;
+    iVar2._3_1_ = (png_ptr->row_info).pixel_depth;
+    if (iVar2 == 0) {
+      png_error(png_ptr,"png_do_dither returned rowbytes=0");
     }
   }
-  if ((*(byte *)(param_1 + 0x18) & 8) != 0) {
-    FUN_1001ef84((byte *)(param_1 + 0x3c),(byte *)(param_1[0x37] + 1),(byte *)((int)param_1 + 0x155)
-                );
+  if ((png_ptr->transformations & 8) != 0) {
+    FUN_1001ef84((byte *)&(png_ptr->row_info).rowbytes,png_ptr->sub_row + 1,
+                 (byte *)((int)png_ptr[1].jmpbuf + 0x35));
   }
-  if ((*(byte *)(param_1 + 0x18) & 4) != 0) {
-    FUN_1001ee74(param_1 + 0x3c,param_1[0x37] + 1);
+  if ((png_ptr->transformations & 4) != 0) {
+    FUN_1001ee74((int *)&(png_ptr->row_info).rowbytes,(int)(png_ptr->sub_row + 1));
   }
-  if ((*(byte *)(param_1 + 0x18) & 1) != 0) {
-    FUN_1001ec8b(param_1 + 0x3c,(undefined1 *)(param_1[0x37] + 1));
+  if ((png_ptr->transformations & 1) != 0) {
+    FUN_1001ec8b((int *)&(png_ptr->row_info).rowbytes,png_ptr->sub_row + 1);
   }
-  if ((*(byte *)((int)param_1 + 0x61) & 0x80) != 0) {
-    FUN_1001f13f((uint *)(param_1 + 0x3c),param_1[0x37] + 1,(uint)*(ushort *)((int)param_1 + 0x11e),
-                 (byte)param_1[0x17]);
+  if ((png_ptr->transformations & 0x8000) != 0) {
+    FUN_1001f13f(&(png_ptr->row_info).rowbytes,(int)(png_ptr->sub_row + 1),
+                 (uint)*(ushort *)&png_ptr->field_0x11e,(byte)png_ptr->flags);
   }
-  if ((*(byte *)(param_1 + 0x18) & 0x10) != 0) {
-    FUN_1001ec5e(param_1 + 0x3c,(undefined1 *)(param_1[0x37] + 1));
+  if ((png_ptr->transformations & 0x10) != 0) {
+    FUN_1001ec5e((int *)&(png_ptr->row_info).rowbytes,png_ptr->sub_row + 1);
   }
   return;
 }
@@ -24543,13 +24564,13 @@ void __cdecl FUN_10020301(int param_1,int param_2,double param_3)
 /* FUN_1002031c @ 1002031c */
 
 void __cdecl
-FUN_1002031c(int param_1,uint *param_2,uint param_3,uint param_4,char param_5,byte param_6,
+FUN_1002031c(png_structp png_ptr,uint *param_2,uint param_3,uint param_4,char param_5,byte param_6,
             undefined1 param_7,undefined1 param_8,undefined1 param_9)
 
 {
   byte bVar1;
   
-  if ((param_1 != 0) && (param_2 != (uint *)0x0)) {
+  if ((png_ptr != (png_structp)0x0) && (param_2 != (uint *)0x0)) {
     *(undefined1 *)((int)param_2 + 0x1a) = param_8;
     param_2[1] = param_4;
     *(undefined1 *)((int)param_2 + 0x1b) = param_9;
@@ -24569,8 +24590,7 @@ FUN_1002031c(int param_1,uint *param_2,uint param_3,uint param_4,char param_5,by
     bVar1 = *(char *)((int)param_2 + 0x1d) * param_5;
     *(byte *)((int)param_2 + 0x1e) = bVar1;
     if ((uint)(0x7fffffff / (ulonglong)(uint)((int)(bVar1 + 7) >> 3)) < param_3) {
-      png_warning((png_structp)param_1,
-                  "Width too large to process image data; rowbytes will overflow.");
+      png_warning(png_ptr,"Width too large to process image data; rowbytes will overflow.");
       param_2[3] = 0;
     }
     else {
@@ -24669,18 +24689,17 @@ void __cdecl png_read_data(png_structp png_ptr,png_bytep data,png_uint_32 length
 
 /* FUN_100204a4 @ 100204a4 */
 
-void __cdecl FUN_100204a4(int param_1,undefined4 param_2,undefined4 param_3)
+void __cdecl FUN_100204a4(png_structp png_ptr,png_voidp param_2,png_rw_ptr param_3)
 
 {
-  *(undefined4 *)(param_1 + 0x54) = param_2;
-  *(undefined4 *)(param_1 + 0x50) = param_3;
-  if (*(int *)(param_1 + 0x4c) != 0) {
-    *(undefined4 *)(param_1 + 0x4c) = 0;
-    png_warning((png_structp)param_1,
-                "It\'s an error to set both read_data_fn and write_data_fn in the ");
-    png_warning((png_structp)param_1,"same structure.  Resetting write_data_fn to NULL.");
+  png_ptr->io_ptr = param_2;
+  png_ptr->read_data_fn = param_3;
+  if (png_ptr->write_data_fn != (png_rw_ptr)0x0) {
+    png_ptr->write_data_fn = (png_rw_ptr)0x0;
+    png_warning(png_ptr,"It\'s an error to set both read_data_fn and write_data_fn in the ");
+    png_warning(png_ptr,"same structure.  Resetting write_data_fn to NULL.");
   }
-  *(undefined4 *)(param_1 + 0x120) = 0;
+  png_ptr[1].jmpbuf[0] = 0;
   return;
 }
 
@@ -24728,7 +24747,7 @@ int __cdecl FUN_100204e3(int param_1,uint param_2,uint param_3)
 
 /* FUN_1002052b @ 1002052b */
 
-undefined4 * __cdecl FUN_1002052b(int *param_1,int param_2,int param_3)
+undefined4 * __cdecl FUN_1002052b(png_structp png_ptr,int param_2,int param_3)
 
 {
   undefined4 *puVar1;
@@ -24739,7 +24758,7 @@ undefined4 * __cdecl FUN_1002052b(int *param_1,int param_2,int param_3)
   undefined4 *puVar6;
   
   uVar5 = param_2 * param_3;
-  puVar1 = png_malloc((png_structp)param_1,uVar5);
+  puVar1 = png_malloc(png_ptr,uVar5);
   puVar2 = (undefined4 *)0x0;
   if (puVar1 != (undefined4 *)0x0) {
     puVar6 = puVar1;
@@ -24773,10 +24792,10 @@ undefined4 * __cdecl FUN_1002052b(int *param_1,int param_2,int param_3)
 void __cdecl png_reset_crc(png_structp png_ptr)
 
 {
-  uint uVar1;
+  png_colorp ppVar1;
   
-  uVar1 = FUN_10025aec(0,(byte *)0x0,0);
-  png_ptr->pad_100 = uVar1;
+  ppVar1 = (png_colorp)FUN_10025aec(0,(byte *)0x0,0);
+  png_ptr->palette = ppVar1;
   return;
 }
 
@@ -24789,9 +24808,9 @@ void __cdecl png_reset_crc(png_structp png_ptr)
 void __cdecl png_calculate_crc(png_structp png_ptr,png_bytep data,png_uint_32 length)
 
 {
-  uint uVar1;
+  png_colorp ppVar1;
   
-  if ((png_ptr->chunk_name & 0x20) == 0) {
+  if ((png_ptr->chunk_name[0] & 0x20) == 0) {
     if ((png_ptr->flags & 0x800) != 0) {
       return;
     }
@@ -24799,8 +24818,8 @@ void __cdecl png_calculate_crc(png_structp png_ptr,png_bytep data,png_uint_32 le
   else if ((png_ptr->flags & 0x300) == 0x300) {
     return;
   }
-  uVar1 = FUN_10025aec(png_ptr->pad_100,data,length);
-  png_ptr->pad_100 = uVar1;
+  ppVar1 = (png_colorp)FUN_10025aec((uint)png_ptr->palette,data,length);
+  png_ptr->palette = ppVar1;
   return;
 }
 
@@ -28769,12 +28788,12 @@ int __cdecl png_crc_error(png_structp png_ptr)
 {
   bool bVar1;
   png_structp ppVar2;
-  png_uint_32 pVar3;
+  png_colorp ppVar3;
   uint uVar4;
   
   ppVar2 = png_ptr;
   bVar1 = true;
-  if ((png_ptr->chunk_name & 0x20) == 0) {
+  if ((png_ptr->chunk_name[0] & 0x20) == 0) {
     if ((png_ptr->flags & 0x800) == 0) goto LAB_1002484d;
   }
   else if ((png_ptr->flags & 0x300) != 0x300) goto LAB_1002484d;
@@ -28782,8 +28801,8 @@ int __cdecl png_crc_error(png_structp png_ptr)
 LAB_1002484d:
   png_read_data(png_ptr,(png_bytep)&png_ptr,4);
   if (bVar1) {
-    pVar3 = png_get_uint_32((png_bytep)&png_ptr);
-    uVar4 = (uint)(pVar3 != ppVar2->pad_100);
+    ppVar3 = (png_colorp)png_get_uint_32((png_bytep)&png_ptr);
+    uVar4 = (uint)(ppVar3 != ppVar2->palette);
   }
   else {
     uVar4 = 0;
@@ -28810,7 +28829,7 @@ void __cdecl png_check_chunk_name(png_structp png_ptr,png_bytep chunk_name)
         ((0x5a < bVar1 && (bVar1 < 0x61)))) ||
        ((bVar1 = chunk_name[3], bVar1 < 0x29 || (0x7a < bVar1)))))) ||
      ((0x5a < bVar1 && (bVar1 < 0x61)))) {
-    FUN_1001e147(png_ptr->jmpbuf,(undefined4 *)"invalid chunk type");
+    FUN_1001e147(png_ptr,(undefined4 *)"invalid chunk type");
   }
   return;
 }
@@ -29148,7 +29167,7 @@ void __cdecl FUN_10024af7(uint *param_1,int *param_2,int param_3)
 
 /* FUN_10024dc0 @ 10024dc0 */
 
-void __cdecl FUN_10024dc0(int param_1,int param_2,byte *param_3,byte *param_4,int param_5)
+void __cdecl FUN_10024dc0(png_structp png_ptr,int param_2,byte *param_3,byte *param_4,int param_5)
 
 {
   byte bVar1;
@@ -29245,7 +29264,7 @@ void __cdecl FUN_10024dc0(int param_1,int param_2,byte *param_3,byte *param_4,in
       }
     }
     else {
-      png_warning((png_structp)param_1,"Ignoring bad adaptive filter type");
+      png_warning(png_ptr,"Ignoring bad adaptive filter type");
       *param_3 = 0;
     }
   }
@@ -29256,78 +29275,78 @@ void __cdecl FUN_10024dc0(int param_1,int param_2,byte *param_3,byte *param_4,in
 
 /* FUN_10024f3b @ 10024f3b */
 
-void __cdecl FUN_10024f3b(int *param_1)
+void __cdecl FUN_10024f3b(png_structp png_ptr)
 
 {
-  char cVar1;
+  png_byte pVar1;
   uint uVar2;
   uint uVar3;
-  void *pvVar4;
-  undefined4 *puVar5;
-  int iVar6;
+  int iVar4;
+  png_bytep ppVar5;
+  png_uint_32 pVar6;
   
-  param_1[0x1a] = 0;
-  FUN_10020036(param_1);
-  uVar3 = param_1[0x2f];
-  if (*(char *)((int)param_1 + 0x113) == '\0') {
-    iVar6 = param_1[0x2e];
-    param_1[0x30] = uVar3;
-    param_1[0x34] = iVar6;
-    param_1[0x33] = param_1[0x32] + 1;
+  (png_ptr->zstream).words[1] = 0;
+  FUN_10020036((int *)png_ptr);
+  uVar3 = png_ptr->height;
+  if (png_ptr->interlaced == '\0') {
+    pVar6 = png_ptr->width;
+    png_ptr->num_rows = uVar3;
+    png_ptr->row_number = pVar6;
+    png_ptr->iwidth = png_ptr->rowbytes + 1;
   }
   else {
-    if ((*(byte *)(param_1 + 0x18) & 2) == 0) {
+    if ((png_ptr->transformations & 2) == 0) {
       uVar3 = uVar3 + 7 >> 3;
     }
-    iVar6 = param_1[0x2e];
-    param_1[0x30] = uVar3;
-    uVar3 = ((iVar6 - *(int *)(&DAT_1004ea90 + (uint)*(byte *)(param_1 + 0x45) * 4)) + -1 +
-            *(uint *)(&DAT_1004eaac + (uint)*(byte *)(param_1 + 0x45) * 4)) /
-            *(uint *)(&DAT_1004eaac + (uint)*(byte *)(param_1 + 0x45) * 4);
-    param_1[0x34] = uVar3;
-    param_1[0x33] = (*(byte *)((int)param_1 + 0x119) * uVar3 + 7 >> 3) + 1;
+    pVar6 = png_ptr->width;
+    png_ptr->num_rows = uVar3;
+    iVar4 = (uint)png_ptr->pass * 4;
+    uVar3 = ((pVar6 - *(int *)(&DAT_1004ea90 + iVar4)) + -1 + *(uint *)(&DAT_1004eaac + iVar4)) /
+            *(uint *)(&DAT_1004eaac + iVar4);
+    png_ptr->row_number = uVar3;
+    png_ptr->iwidth = (png_ptr->pixel_depth * uVar3 + 7 >> 3) + 1;
   }
-  uVar3 = (uint)*(byte *)((int)param_1 + 0x119);
-  uVar2 = param_1[0x18];
-  if (((uVar2 & 4) != 0) && (*(byte *)((int)param_1 + 0x117) < 8)) {
+  uVar3 = (uint)png_ptr->pixel_depth;
+  uVar2 = png_ptr->transformations;
+  if (((uVar2 & 4) != 0) && (png_ptr->bit_depth < 8)) {
     uVar3 = 8;
   }
   if ((uVar2 & 0x1000) != 0) {
-    cVar1 = *(char *)((int)param_1 + 0x116);
-    if (cVar1 == '\x03') {
-      uVar3 = (uint)(*(short *)((int)param_1 + 0x10a) != 0) * 8 + 0x18;
+    pVar1 = png_ptr->color_type;
+    if (pVar1 == '\x03') {
+      uVar3 = (uint)(*(short *)((int)&png_ptr->chunk_name_pad + 2) != 0) * 8 + 0x18;
     }
-    else if (cVar1 == '\0') {
+    else if (pVar1 == '\0') {
       if (uVar3 < 8) {
         uVar3 = 8;
       }
-      if (*(short *)((int)param_1 + 0x10a) != 0) {
+      if (*(short *)((int)&png_ptr->chunk_name_pad + 2) != 0) {
         uVar3 = uVar3 * 2;
       }
     }
-    else if ((cVar1 == '\x02') && (*(short *)((int)param_1 + 0x10a) != 0)) {
+    else if ((pVar1 == '\x02') && (*(short *)((int)&png_ptr->chunk_name_pad + 2) != 0)) {
       uVar3 = (uVar3 << 2) / 3;
     }
   }
   if ((char)(uVar2 >> 8) < '\0') {
-    cVar1 = *(char *)((int)param_1 + 0x116);
-    if (cVar1 == '\x03') {
+    pVar1 = png_ptr->color_type;
+    if (pVar1 == '\x03') {
       uVar3 = 0x20;
     }
-    else if (cVar1 == '\0') {
+    else if (pVar1 == '\0') {
       uVar3 = ((8 < uVar3) - 1 & 0xfffffff0) + 0x20;
     }
-    else if (cVar1 == '\x02') {
+    else if (pVar1 == '\x02') {
       uVar3 = ((0x20 < uVar3) - 1 & 0xffffffe0) + 0x40;
     }
   }
-  pvVar4 = png_malloc((png_structp)param_1,
-                      ((iVar6 + 7U & 0xfffffff8) * uVar3 + 7 >> 3) + 1 + ((int)(uVar3 + 7) >> 3));
-  param_1[0x37] = (int)pvVar4;
-  puVar5 = png_malloc((png_structp)param_1,param_1[0x32] + 1);
-  param_1[0x36] = (int)puVar5;
-  FUN_100247b3(param_1,puVar5,0,param_1[0x32] + 1);
-  param_1[0x17] = param_1[0x17] | 0x40;
+  ppVar5 = png_malloc(png_ptr,((pVar6 + 7 & 0xfffffff8) * uVar3 + 7 >> 3) + 1 +
+                              ((int)(uVar3 + 7) >> 3));
+  png_ptr->sub_row = ppVar5;
+  ppVar5 = png_malloc(png_ptr,png_ptr->rowbytes + 1);
+  png_ptr->row_buf = ppVar5;
+  FUN_100247b3(png_ptr,(undefined4 *)ppVar5,0,png_ptr->rowbytes + 1);
+  png_ptr->flags = png_ptr->flags | 0x40;
   return;
 }
 
@@ -29356,13 +29375,13 @@ int __cdecl png_crc_finish(png_structp png_ptr,png_uint_32 skip)
     iVar3 = 0;
   }
   else {
-    bVar2 = (byte)png_ptr->chunk_name & 0x20;
+    bVar2 = png_ptr->chunk_name[0] & 0x20;
     if (((bVar2 == 0) || ((png_ptr->flags & 0x200) != 0)) &&
        ((bVar2 != 0 || ((png_ptr->flags & 0x400) == 0)))) {
-      FUN_1001e147(png_ptr->jmpbuf,(undefined4 *)"CRC error");
+      FUN_1001e147(png_ptr,(undefined4 *)"CRC error");
     }
     else {
-      FUN_1001e16c((int)png_ptr,(undefined4 *)"CRC error");
+      FUN_1001e16c(png_ptr,(undefined4 *)"CRC error");
     }
     iVar3 = 1;
   }
@@ -29373,7 +29392,7 @@ int __cdecl png_crc_finish(png_structp png_ptr,png_uint_32 skip)
 
 /* FUN_10025163 @ 10025163 */
 
-void __cdecl FUN_10025163(int *param_1,uint *param_2,int param_3)
+void __cdecl FUN_10025163(png_structp png_ptr,uint *param_2,int param_3)
 
 {
   byte bVar1;
@@ -29390,70 +29409,70 @@ void __cdecl FUN_10025163(int *param_1,uint *param_2,int param_3)
   uint local_c;
   uint local_8;
   
-  if (param_1[0x16] != 0) {
-    png_error((png_structp)param_1,"Out of place IHDR");
+  if (png_ptr->mode != 0) {
+    png_error(png_ptr,"Out of place IHDR");
   }
   if (param_3 != 0xd) {
-    png_error((png_structp)param_1,"Invalid IHDR chunk");
+    png_error(png_ptr,"Invalid IHDR chunk");
   }
-  param_1[0x16] = param_1[0x16] | 1;
-  png_crc_read((png_structp)param_1,local_20,0xd);
-  png_crc_finish((png_structp)param_1,0);
+  png_ptr->mode = png_ptr->mode | 1;
+  png_crc_read(png_ptr,local_20,0xd);
+  png_crc_finish(png_ptr,0);
   pVar2 = png_get_uint_32(local_20);
   pVar3 = png_get_uint_32(local_1c);
   local_10 = (uint)local_16;
   local_c = (uint)local_15;
   local_8 = (uint)local_14;
   if ((((pVar2 == 0) || (0x7fffffff < pVar2)) || (pVar3 == 0)) || (0x7fffffff < pVar3)) {
-    png_error((png_structp)param_1,"Invalid image size in IHDR");
+    png_error(png_ptr,"Invalid image size in IHDR");
   }
   if (((local_18 != 1) && (local_18 != 2)) &&
      ((local_18 != 4 && ((local_18 != 8 && (local_18 != 0x10)))))) {
-    png_error((png_structp)param_1,"Invalid bit depth in IHDR");
+    png_error(png_ptr,"Invalid bit depth in IHDR");
   }
   if (((local_17 == 1) || (local_17 == 5)) || (6 < local_17)) {
-    png_error((png_structp)param_1,"Invalid color type in IHDR");
+    png_error(png_ptr,"Invalid color type in IHDR");
   }
   if (((local_17 == 3) && (8 < local_18)) ||
      (((local_17 == 2 || ((local_17 == 4 || (local_17 == 6)))) && (local_18 < 8)))) {
-    png_error((png_structp)param_1,"Invalid color type/bit depth combination in IHDR");
+    png_error(png_ptr,"Invalid color type/bit depth combination in IHDR");
   }
   if (1 < (int)local_8) {
-    png_error((png_structp)param_1,"Unknown interlace method in IHDR");
+    png_error(png_ptr,"Unknown interlace method in IHDR");
   }
   if (local_10 != 0) {
-    png_error((png_structp)param_1,"Unknown compression method in IHDR");
+    png_error(png_ptr,"Unknown compression method in IHDR");
   }
   if (local_c != 0) {
-    png_error((png_structp)param_1,"Unknown filter method in IHDR");
+    png_error(png_ptr,"Unknown filter method in IHDR");
   }
-  *(undefined1 *)((int)param_1 + 0x113) = (undefined1)local_8;
-  param_1[0x2e] = pVar2;
-  param_1[0x2f] = pVar3;
-  *(byte *)((int)param_1 + 0x117) = local_18;
-  *(byte *)((int)param_1 + 0x116) = local_17;
+  png_ptr->interlaced = (png_byte)local_8;
+  png_ptr->width = pVar2;
+  png_ptr->height = pVar3;
+  png_ptr->bit_depth = local_18;
+  png_ptr->color_type = local_17;
   if (local_17 != 0) {
     if (local_17 == 2) {
-      *(undefined1 *)((int)param_1 + 0x11a) = 3;
+      png_ptr->channels = '\x03';
       goto LAB_1002531b;
     }
     if (local_17 != 3) {
       if (local_17 == 4) {
-        *(undefined1 *)((int)param_1 + 0x11a) = 2;
+        png_ptr->channels = '\x02';
       }
       else if (local_17 == 6) {
-        *(undefined1 *)((int)param_1 + 0x11a) = 4;
+        png_ptr->channels = '\x04';
       }
       goto LAB_1002531b;
     }
   }
-  *(undefined1 *)((int)param_1 + 0x11a) = 1;
+  png_ptr->channels = '\x01';
 LAB_1002531b:
-  bVar1 = *(char *)((int)param_1 + 0x11a) * local_18;
-  *(byte *)((int)param_1 + 0x119) = bVar1;
-  param_1[0x32] = bVar1 * pVar2 + 7 >> 3;
-  FUN_1002031c((int)param_1,param_2,pVar2,pVar3,local_18,local_17,(undefined1)local_8,(char)local_10
-               ,(char)local_c);
+  bVar1 = png_ptr->channels * local_18;
+  png_ptr->pixel_depth = bVar1;
+  png_ptr->rowbytes = bVar1 * pVar2 + 7 >> 3;
+  FUN_1002031c(png_ptr,param_2,pVar2,pVar3,local_18,local_17,(png_byte)local_8,(char)local_10,
+               (char)local_c);
   return;
 }
 
@@ -29489,7 +29508,7 @@ LAB_1002538d:
       png_error((png_structp)png_ptr,"Invalid palette chunk");
     }
     iVar3 = (int)param_3 / 3;
-    puVar4 = FUN_1002052b(png_ptr,iVar3,3);
+    puVar4 = FUN_1002052b((png_structp)png_ptr,iVar3,3);
     *(byte *)((int)png_ptr + 0x5d) = *(byte *)((int)png_ptr + 0x5d) | 0x10;
     if (0 < iVar3) {
       puVar5 = (undefined1 *)((int)puVar4 + 2);
@@ -29536,18 +29555,18 @@ LAB_100253ad:
 /* FUN_10025483 @ 10025483 */
 
 void __cdecl
-FUN_10025483(int *param_1,undefined4 param_2,undefined4 param_3,int param_4,uint param_5)
+FUN_10025483(png_structp png_ptr,undefined4 param_2,undefined4 param_3,int param_4,uint param_5)
 
 {
-  if ((((param_1[0x16] & 1U) == 0) || ((param_1[0x16] & 4U) == 0)) &&
-     (png_error((png_structp)param_1,"No image in file"), param_4 == 0)) {
+  if ((((png_ptr->mode & 1) == 0) || ((png_ptr->mode & 4) == 0)) &&
+     (png_error(png_ptr,"No image in file"), param_4 == 0)) {
     return;
   }
-  param_1[0x16] = param_1[0x16] | 0x18;
+  png_ptr->mode = png_ptr->mode | 0x18;
   if (param_5 != 0) {
-    png_warning((png_structp)param_1,"Incorrect IEND chunk length");
+    png_warning(png_ptr,"Incorrect IEND chunk length");
   }
-  png_crc_finish((png_structp)param_1,param_5);
+  png_crc_finish(png_ptr,param_5);
   return;
 }
 
@@ -29555,22 +29574,22 @@ FUN_10025483(int *param_1,undefined4 param_2,undefined4 param_3,int param_4,uint
 
 /* FUN_100254cd @ 100254cd */
 
-void __cdecl FUN_100254cd(int *param_1,int param_2,uint param_3)
+void __cdecl FUN_100254cd(png_structp png_ptr,int param_2,uint param_3)
 
 {
   uint uVar1;
   float fVar2;
-  int *png_ptr;
+  png_structp png_ptr_00;
   int iVar3;
   int iVar4;
   png_uint_32 pVar5;
   char *msg;
   
   iVar3 = param_2;
-  png_ptr = param_1;
-  uVar1 = param_1[0x16];
+  png_ptr_00 = png_ptr;
+  uVar1 = png_ptr->mode;
   if ((uVar1 & 1) == 0) {
-    png_error((png_structp)param_1,"Missing IHDR before gAMA");
+    png_error(png_ptr,"Missing IHDR before gAMA");
   }
   else {
     if ((uVar1 & 4) != 0) {
@@ -29585,16 +29604,16 @@ void __cdecl FUN_100254cd(int *param_1,int param_2,uint param_3)
       }
     }
     else {
-      png_warning((png_structp)param_1,"Out of place gAMA chunk");
+      png_warning(png_ptr,"Out of place gAMA chunk");
     }
   }
   if (param_3 == 4) {
-    png_crc_read((png_structp)png_ptr,(png_bytep)&param_1,4);
-    iVar4 = png_crc_finish((png_structp)png_ptr,0);
+    png_crc_read(png_ptr_00,(png_bytep)&png_ptr,4);
+    iVar4 = png_crc_finish(png_ptr_00,0);
     if (iVar4 != 0) {
       return;
     }
-    pVar5 = png_get_uint_32((png_bytep)&param_1);
+    pVar5 = png_get_uint_32((png_bytep)&png_ptr);
     if (pVar5 == 0) {
       return;
     }
@@ -29604,7 +29623,7 @@ void __cdecl FUN_100254cd(int *param_1,int param_2,uint param_3)
         fVar2 = fVar2 + 4.2949673e+09;
       }
       if (500.0 < ABS(fVar2 - 45455.0)) {
-        png_warning((png_structp)png_ptr,"Ignoring incorrect gAMA value when sRGB is also present");
+        png_warning(png_ptr_00,"Ignoring incorrect gAMA value when sRGB is also present");
         return;
       }
     }
@@ -29612,14 +29631,14 @@ void __cdecl FUN_100254cd(int *param_1,int param_2,uint param_3)
     if ((int)pVar5 < 0) {
       fVar2 = fVar2 + 4.2949673e+09;
     }
-    png_ptr[0x4c] = (int)(fVar2 * 1e-05);
-    FUN_10020301((int)png_ptr,iVar3,(double)(fVar2 * 1e-05));
+    png_ptr_00[1].jmpbuf[4] = (png_uint_32)(fVar2 * 1e-05);
+    FUN_10020301((int)png_ptr_00,iVar3,(double)(fVar2 * 1e-05));
     return;
   }
   msg = "Incorrect gAMA chunk length";
 LAB_100254fe:
-  png_warning((png_structp)png_ptr,msg);
-  png_crc_finish((png_structp)png_ptr,param_3);
+  png_warning(png_ptr_00,msg);
+  png_crc_finish(png_ptr_00,param_3);
   return;
 }
 
@@ -29627,19 +29646,19 @@ LAB_100254fe:
 
 /* FUN_100255d8 @ 100255d8 */
 
-void __cdecl FUN_100255d8(int *param_1,int param_2,uint param_3)
+void __cdecl FUN_100255d8(png_structp png_ptr,int param_2,uint param_3)
 
 {
   uint uVar1;
-  int *png_ptr;
+  png_structp png_ptr_00;
   byte bVar2;
   int iVar3;
   char *msg;
   
-  png_ptr = param_1;
-  uVar1 = param_1[0x16];
+  png_ptr_00 = png_ptr;
+  uVar1 = png_ptr->mode;
   if ((uVar1 & 1) == 0) {
-    png_error((png_structp)param_1,"Missing IHDR before sRGB");
+    png_error(png_ptr,"Missing IHDR before sRGB");
   }
   else {
     if ((uVar1 & 4) != 0) {
@@ -29653,31 +29672,31 @@ void __cdecl FUN_100255d8(int *param_1,int param_2,uint param_3)
       }
     }
     else {
-      png_warning((png_structp)param_1,"Out of place sRGB chunk");
+      png_warning(png_ptr,"Out of place sRGB chunk");
     }
   }
   if (param_3 == 1) {
-    png_crc_read((png_structp)png_ptr,(png_bytep)((int)&param_1 + 3),1);
-    iVar3 = png_crc_finish((png_structp)png_ptr,0);
+    png_crc_read(png_ptr_00,(png_bytep)((int)&png_ptr + 3),1);
+    iVar3 = png_crc_finish(png_ptr_00,0);
     if (iVar3 != 0) {
       return;
     }
-    bVar2 = param_1._3_1_;
-    if (3 < param_1._3_1_) {
-      png_warning((png_structp)png_ptr,"Unknown sRGB intent");
+    bVar2 = png_ptr._3_1_;
+    if (3 < png_ptr._3_1_) {
+      png_warning(png_ptr_00,"Unknown sRGB intent");
       return;
     }
     if (((*(byte *)(param_2 + 8) & 1) != 0) &&
-       (500.0 < ABS(((float)png_ptr[0x4c] * 100000.0 + 0.5) - 45455.0))) {
-      png_warning((png_structp)png_ptr,"Ignoring incorrect gAMA value when sRGB is also present");
+       (500.0 < ABS(((float)png_ptr_00[1].jmpbuf[4] * 100000.0 + 0.5) - 45455.0))) {
+      png_warning(png_ptr_00,"Ignoring incorrect gAMA value when sRGB is also present");
     }
-    FUN_100203fc((int)png_ptr,param_2,bVar2);
+    FUN_100203fc((int)png_ptr_00,param_2,bVar2);
     return;
   }
   msg = "Incorrect sRGB chunk length";
 LAB_100255fe:
-  png_warning((png_structp)png_ptr,msg);
-  png_crc_finish((png_structp)png_ptr,param_3);
+  png_warning(png_ptr_00,msg);
+  png_crc_finish(png_ptr_00,param_3);
   return;
 }
 
@@ -29685,83 +29704,86 @@ LAB_100255fe:
 
 /* FUN_100256c7 @ 100256c7 */
 
-void __cdecl FUN_100256c7(int *param_1,int param_2,uint param_3)
+void __cdecl FUN_100256c7(png_structp png_ptr,int param_2,uint param_3)
 
 {
-  char cVar1;
+  byte *pbVar1;
+  png_byte pVar2;
   png_bytep buf;
-  int iVar2;
-  char *pcVar3;
+  int iVar3;
+  char *pcVar4;
   undefined4 local_c;
   ushort local_8;
   
-  if ((param_1[0x16] & 1U) == 0) {
-    png_error((png_structp)param_1,"Missing IHDR before tRNS");
+  if ((png_ptr->mode & 1) == 0) {
+    png_error(png_ptr,"Missing IHDR before tRNS");
   }
   else {
-    if ((param_1[0x16] & 4U) != 0) {
-      pcVar3 = "Invalid tRNS after IDAT";
+    if ((png_ptr->mode & 4) != 0) {
+      pcVar4 = "Invalid tRNS after IDAT";
 LAB_1002573c:
-      png_warning((png_structp)param_1,pcVar3);
-      png_crc_finish((png_structp)param_1,param_3);
+      png_warning(png_ptr,pcVar4);
+      png_crc_finish(png_ptr,param_3);
       return;
     }
     if ((param_2 != 0) && ((*(byte *)(param_2 + 8) & 0x10) != 0)) {
-      pcVar3 = "Duplicate tRNS chunk";
+      pcVar4 = "Duplicate tRNS chunk";
       goto LAB_1002573c;
     }
   }
-  cVar1 = *(char *)((int)param_1 + 0x116);
-  if (cVar1 == '\x03') {
-    if ((*(byte *)(param_1 + 0x16) & 2) == 0) {
-      png_warning((png_structp)param_1,"Missing PLTE before tRNS");
+  pVar2 = png_ptr->color_type;
+  if (pVar2 == '\x03') {
+    if ((png_ptr->mode & 2) == 0) {
+      png_warning(png_ptr,"Missing PLTE before tRNS");
 LAB_1002570d:
       if (param_3 != 0) {
-        buf = png_malloc((png_structp)param_1,param_3);
-        *(byte *)((int)param_1 + 0x5d) = *(byte *)((int)param_1 + 0x5d) | 0x20;
-        param_1[0x57] = (int)buf;
-        png_crc_read((png_structp)param_1,buf,param_3);
-        *(short *)((int)param_1 + 0x10a) = (short)param_3;
+        buf = png_malloc(png_ptr,param_3);
+        pbVar1 = (byte *)((int)&png_ptr->flags + 1);
+        *pbVar1 = *pbVar1 | 0x20;
+        png_ptr[1].jmpbuf[0xf] = (png_uint_32)buf;
+        png_crc_read(png_ptr,buf,param_3);
+        *(short *)((int)&png_ptr->chunk_name_pad + 2) = (short)param_3;
         goto LAB_10025833;
       }
-      png_warning((png_structp)param_1,"Zero length tRNS chunk");
+      png_warning(png_ptr,"Zero length tRNS chunk");
     }
     else {
-      if (param_3 <= *(ushort *)(param_1 + 0x42)) goto LAB_1002570d;
-      png_warning((png_structp)param_1,"Incorrect tRNS chunk length");
+      if (param_3 <= (ushort)png_ptr->chunk_name_pad) goto LAB_1002570d;
+      png_warning(png_ptr,"Incorrect tRNS chunk length");
     }
 LAB_10025870:
-    png_crc_finish((png_structp)param_1,param_3);
+    png_crc_finish(png_ptr,param_3);
   }
   else {
-    if (cVar1 == '\x02') {
+    if (pVar2 == '\x02') {
       if (param_3 != 6) {
 LAB_100257fe:
-        pcVar3 = "Incorrect tRNS chunk length";
+        pcVar4 = "Incorrect tRNS chunk length";
 LAB_10025867:
-        png_warning((png_structp)param_1,pcVar3);
+        png_warning(png_ptr,pcVar4);
         goto LAB_10025870;
       }
-      png_crc_read((png_structp)param_1,(png_bytep)&local_c,6);
-      *(short *)((int)param_1 + 0x162) = (short)((local_c & 0xff) * 0x100 + (local_c >> 8 & 0xff));
-      *(ushort *)(param_1 + 0x59) = (ushort)local_c._2_1_ * 0x100 + (ushort)local_c._3_1_;
-      *(ushort *)((int)param_1 + 0x166) = local_8 * 0x100 + (local_8 >> 8);
+      png_crc_read(png_ptr,(png_bytep)&local_c,6);
+      *(short *)((int)&png_ptr[1].error_fn + 2) =
+           (short)((local_c & 0xff) * 0x100 + (local_c >> 8 & 0xff));
+      *(ushort *)&png_ptr[1].warning_fn = (ushort)local_c._2_1_ * 0x100 + (ushort)local_c._3_1_;
+      *(ushort *)((int)&png_ptr[1].warning_fn + 2) = local_8 * 0x100 + (local_8 >> 8);
     }
     else {
-      if (cVar1 != '\0') {
-        pcVar3 = "tRNS chunk not allowed with alpha channel";
+      if (pVar2 != '\0') {
+        pcVar4 = "tRNS chunk not allowed with alpha channel";
         goto LAB_10025867;
       }
       if (param_3 != 2) goto LAB_100257fe;
-      png_crc_read((png_structp)param_1,(png_bytep)&local_c,2);
-      *(ushort *)(param_1 + 0x5a) = (ushort)local_c * 0x100 + ((ushort)local_c >> 8);
+      png_crc_read(png_ptr,(png_bytep)&local_c,2);
+      *(ushort *)&png_ptr[1].error_ptr = (ushort)local_c * 0x100 + ((ushort)local_c >> 8);
     }
-    *(undefined2 *)((int)param_1 + 0x10a) = 1;
+    *(undefined2 *)((int)&png_ptr->chunk_name_pad + 2) = 1;
 LAB_10025833:
-    iVar2 = png_crc_finish((png_structp)param_1,0);
-    if (iVar2 == 0) {
-      FUN_10020435((int)param_1,param_2,param_1[0x57],(uint)*(ushort *)((int)param_1 + 0x10a),
-                   param_1 + 0x58);
+    iVar3 = png_crc_finish(png_ptr,0);
+    if (iVar3 == 0) {
+      FUN_10020435((int)png_ptr,param_2,png_ptr[1].jmpbuf[0xf],
+                   (uint)*(ushort *)((int)&png_ptr->chunk_name_pad + 2),&png_ptr[1].error_fn);
     }
   }
   return;
@@ -29771,18 +29793,18 @@ LAB_10025833:
 
 /* FUN_1002587e @ 1002587e */
 
-void __cdecl FUN_1002587e(int *param_1,int param_2,uint param_3)
+void __cdecl FUN_1002587e(png_structp png_ptr,int param_2,uint param_3)
 
 {
-  png_check_chunk_name((png_structp)param_1,(png_bytep)(param_1 + 0x43));
-  if (((*(byte *)(param_1 + 0x43) & 0x20) == 0) &&
-     (FUN_1001e147(param_1,(undefined4 *)"unknown critical chunk"), param_2 == 0)) {
+  png_check_chunk_name(png_ptr,png_ptr->chunk_name);
+  if (((png_ptr->chunk_name[0] & 0x20) == 0) &&
+     (FUN_1001e147(png_ptr,(undefined4 *)"unknown critical chunk"), param_2 == 0)) {
     return;
   }
-  if ((param_1[0x16] & 4U) != 0) {
-    param_1[0x16] = param_1[0x16] | 8;
+  if ((png_ptr->mode & 4) != 0) {
+    png_ptr->mode = png_ptr->mode | 8;
   }
-  png_crc_finish((png_structp)param_1,param_3);
+  png_crc_finish(png_ptr,param_3);
   return;
 }
 

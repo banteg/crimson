@@ -32,6 +32,7 @@ Data map coverage: 7.27% (240 / 3300 symbols)
 - [Entrypoint trace](entrypoint.md) — In progress
 - [Crimsonland.exe overview](crimsonland-exe/index.md) — Draft
 - [Build provenance and hashes](provenance.md) — Tracking
+- [Third-party libraries](third-party-libs.md) — Tracking
 - [Refactor attempt](refactor.md) — Planned
 - [All pages](all-pages.md) — Index
 - [Grim2D overview](grim2d-overview.md) — Draft

@@ -2172,6 +2172,114 @@
     "address": "0x1002057e",
     "name": "png_free",
     "signature": "void png_free(png_structp png_ptr, void * ptr)",
-    "comment": "libpng 1.1.x internal helper"
+    "comment": "libpng 1.0.x internal helper"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001e147",
+    "name": "FUN_1001e147",
+    "signature": "void FUN_1001e147(png_structp png_ptr, undefined4 *param_2)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001e16c",
+    "name": "FUN_1001e16c",
+    "signature": "void FUN_1001e16c(png_structp png_ptr, undefined4 *param_2)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001e294",
+    "name": "FUN_1001e294",
+    "signature": "void FUN_1001e294(png_structp png_ptr, uint *param_2)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001e81b",
+    "name": "FUN_1001e81b",
+    "signature": "void FUN_1001e81b(png_structp png_ptr, undefined4 *param_2, undefined4 *param_3)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001ea59",
+    "name": "FUN_1001ea59",
+    "signature": "undefined4 FUN_1001ea59(png_structp png_ptr, uint *param_2, uint *param_3, uint *param_4, uint *param_5, uint *param_6, uint *param_7, uint *param_8, uint *param_9)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001fd2d",
+    "name": "FUN_1001fd2d",
+    "signature": "void FUN_1001fd2d(png_structp png_ptr)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10020149",
+    "name": "FUN_10020149",
+    "signature": "void FUN_10020149(png_structp png_ptr)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002031c",
+    "name": "FUN_1002031c",
+    "signature": "void FUN_1002031c(png_structp png_ptr, uint *param_2, uint param_3, uint param_4, char param_5, byte param_6, undefined1 param_7, undefined1 param_8, undefined1 param_9)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100204a4",
+    "name": "FUN_100204a4",
+    "signature": "void FUN_100204a4(png_structp png_ptr, undefined4 param_2, undefined4 param_3)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002052b",
+    "name": "FUN_1002052b",
+    "signature": "undefined4 * FUN_1002052b(png_structp png_ptr, int param_2, int param_3)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10024dc0",
+    "name": "FUN_10024dc0",
+    "signature": "void FUN_10024dc0(png_structp png_ptr, int param_2, byte *param_3, byte *param_4, int param_5)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10024f3b",
+    "name": "FUN_10024f3b",
+    "signature": "void FUN_10024f3b(png_structp png_ptr)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10025163",
+    "name": "FUN_10025163",
+    "signature": "void FUN_10025163(png_structp png_ptr, uint *param_2, int param_3)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10025483",
+    "name": "FUN_10025483",
+    "signature": "void FUN_10025483(png_structp png_ptr, undefined4 param_2, undefined4 param_3, int param_4, uint param_5)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100254cd",
+    "name": "FUN_100254cd",
+    "signature": "void FUN_100254cd(png_structp png_ptr, int param_2, uint param_3)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100255d8",
+    "name": "FUN_100255d8",
+    "signature": "void FUN_100255d8(png_structp png_ptr, int param_2, uint param_3)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100256c7",
+    "name": "FUN_100256c7",
+    "signature": "void FUN_100256c7(png_structp png_ptr, int param_2, uint param_3)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002587e",
+    "name": "FUN_1002587e",
+    "signature": "void FUN_1002587e(png_structp png_ptr, int param_2, uint param_3)"
   }
 ]

@@ -5,8 +5,11 @@
 extern "C" {
 #endif
 
-typedef unsigned int png_uint_32;
 typedef unsigned char png_byte;
+typedef unsigned short png_uint_16;
+typedef unsigned int png_uint_32;
+typedef int png_int_32;
+typedef unsigned int png_size_t;
 typedef png_byte *png_bytep;
 typedef void *png_voidp;
 
@@ -15,73 +18,98 @@ typedef png_struct *png_structp;
 
 typedef void (*png_error_ptr)(png_structp, const char *);
 typedef void (*png_rw_ptr)(png_structp, png_bytep, png_uint_32);
-typedef void (*png_row_callback_ptr)(png_structp, png_uint_32, int);
+typedef void (*png_read_status_ptr)(png_structp, png_uint_32, int);
+typedef void (*png_write_status_ptr)(png_structp, png_uint_32, int);
+typedef void (*png_progressive_info_ptr)(png_structp, png_voidp);
+typedef void (*png_progressive_row_ptr)(png_structp, png_bytep, png_uint_32, int);
+typedef void (*png_progressive_end_ptr)(png_structp, png_voidp);
+
+typedef struct png_color_struct {
+    png_byte red;
+    png_byte green;
+    png_byte blue;
+} png_color;
+
+typedef png_color *png_colorp;
+
+typedef struct png_color_16_struct {
+    png_byte index;
+    png_uint_16 red;
+    png_uint_16 green;
+    png_uint_16 blue;
+    png_uint_16 gray;
+} png_color_16;
+
+typedef struct png_row_info_struct {
+    png_uint_32 width;
+    png_uint_32 rowbytes;
+    png_byte color_type;
+    png_byte bit_depth;
+    png_byte channels;
+    png_byte pixel_depth;
+} png_row_info;
 
 typedef struct png_zstream_stub {
     png_uint_32 words[14];
-} png_zstream_stub;
+} z_stream;
 
+/* libpng 1.0.5-era layout (minimal fields for typing) */
 struct png_struct_def {
-    int jmpbuf[16];
+    png_uint_32 jmpbuf[16];
     png_error_ptr error_fn;
     png_error_ptr warning_fn;
     png_voidp error_ptr;
     png_rw_ptr write_data_fn;
     png_rw_ptr read_data_fn;
     png_voidp io_ptr;
+
     png_uint_32 mode;
     png_uint_32 flags;
     png_uint_32 transformations;
-    png_zstream_stub zstream;
+
+    z_stream zstream;
     png_bytep zbuf;
-    png_uint_32 zbuf_size;
-    png_uint_32 pad_a4[5];
-    png_uint_32 bit_depth;
-    png_uint_32 color_type;
-    png_uint_32 pad_c0;
-    png_uint_32 pad_c4;
+    png_size_t zbuf_size;
+    png_int_32 zlib_level;
+    png_int_32 zlib_method;
+    png_int_32 zlib_window_bits;
+    png_int_32 zlib_mem_level;
+    png_int_32 zlib_strategy;
+
     png_uint_32 width;
     png_uint_32 height;
+    png_uint_32 num_rows;
+    png_uint_32 usr_width;
     png_uint_32 rowbytes;
-    png_uint_32 pass;
-    png_bytep row_buf;
+    png_uint_32 iwidth;
+    png_uint_32 row_number;
     png_bytep prev_row;
-    png_uint_32 pad_e0;
-    png_uint_32 pad_e4;
-    png_uint_32 pad_e8;
-    png_uint_32 pad_ec;
-    png_uint_32 pad_f0;
-    png_uint_32 pixel_depth;
-    png_uint_32 pad_f8;
+    png_bytep row_buf;
+    png_bytep sub_row;
+    png_bytep up_row;
+    png_bytep avg_row;
+    png_bytep paeth_row;
+    png_row_info row_info;
+
     png_uint_32 idat_size;
-    png_uint_32 pad_100;
-    png_uint_32 pad_104;
-    png_uint_32 pad_108;
-    png_uint_32 chunk_name;
-    png_uint_32 pad_110;
-    png_uint_32 current_pass;
-    png_uint_32 pad_118;
-    png_uint_32 pad_11c;
-    png_uint_32 pad_120;
-    png_uint_32 pad_124;
-    png_uint_32 pad_128;
-    png_uint_32 pad_12c;
-    png_uint_32 pad_130;
-    png_uint_32 pad_134;
-    png_uint_32 palette_entries;
-    png_uint_32 pad_13c;
-    png_uint_32 pad_140;
-    png_voidp palette;
-    png_uint_32 pad_148;
-    png_uint_32 pad_14c;
-    png_uint_32 pad_150;
-    png_uint_32 pad_154;
-    png_uint_32 pad_158;
-    png_uint_32 pad_15c;
-    png_uint_32 pad_160;
-    png_uint_32 pad_164;
-    png_uint_32 pad_168;
-    png_row_callback_ptr row_callback_fn;
+    png_uint_32 crc;
+    png_colorp palette;
+    png_uint_16 num_palette;
+    png_uint_16 num_trans;
+    png_uint_32 chunk_name_pad; /* observed padding before chunk_name */
+    png_byte chunk_name[5];
+    png_byte compression;
+    png_byte filter;
+    png_byte interlaced;
+    png_byte pass;
+    png_byte do_filter;
+    png_byte color_type;
+    png_byte bit_depth;
+    png_byte usr_bit_depth;
+    png_byte pixel_depth;
+    png_byte channels;
+    png_byte usr_channels;
+    png_byte sig_bytes;
 };
 
 #ifdef __cplusplus
