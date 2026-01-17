@@ -112,6 +112,8 @@ Validation highlights (see the evidence appendix for snippets):
 - `grim_submit_vertices_offset` appears as vtable offset `+ 300` (0x12c) in the decompiler and adds XY
   offsets to 7-float stride vertices before batching.
 - `grim_draw_quad_points` emits four explicit points with current UV/color slots and batches immediately.
+- `grim_draw_line` builds a half-width vector then forwards to `grim_draw_line_quad`, which emits the quad
+  via `grim_draw_quad_points`.
 
 
 ## Input-ish offsets (evidence)

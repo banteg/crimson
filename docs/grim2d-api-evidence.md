@@ -1004,6 +1004,45 @@ grim.dll body:
 ```
 
 
+## 0xe0 — grim_draw_line @ 0x100080b0
+
+- Notes: builds a half-width vector from endpoints then forwards to `0xe4`
+- Ghidra signature: `void grim_draw_line(void *this, float *p0, float *p1, float thickness)`
+- Suggested signature: `void grim_draw_line(const float *p0, const float *p1, float thickness)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+
+grim.dll body:
+
+```c
+  _DAT_1005a490 = *p1 - *p0;
+  _DAT_1005a494 = p1[1] - p0[1];
+  thunk_FUN_1000cc2c();
+  (**(code **)(*(int *)this + 0xe4))(p0,p1,&DAT_1005a490);
+```
+
+
+## 0xe4 — grim_draw_line_quad @ 0x10008150
+
+- Notes: draws a quad from endpoints plus half-width vector
+- Ghidra signature: `void grim_draw_line_quad(void *this, float *p0, float *p1, float *half_vec)`
+- Suggested signature: `void grim_draw_line_quad(const float *p0, const float *p1, const float *half_vec)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+
+grim.dll body:
+
+```c
+  (**(code **)(*(int *)this + 0x138))
+            (*p0 - *half_vec,p0[1] - half_vec[1],*p0 + *half_vec,p0[1] + half_vec[1],
+             *p1 + *half_vec,p1[1] + half_vec[1],*p1 - *half_vec,p1[1] - half_vec[1]);
+```
+
+
 ## 0xe8 — grim_begin_batch @ 0x10007ac0
 
 - Ghidra signature: `void grim_begin_batch(void)`
