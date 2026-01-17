@@ -2,12 +2,21 @@ Interesting Functions and Patterns
 ===================================
 
 [DES related]
+  grim_window_destroy @ 10002880
+  grim_destroy_texture @ 10007700
   `vector_deleting_destructor' @ 1000b2fd
   FID_conflict:`vector_deleting_destructor' @ 1000b348
 
 [KEY related]
+  grim_set_key_char_buffer @ 10005c20
+  grim_get_key_char @ 10005c40
   grim_is_key_active @ 10006fe0
+  grim_is_key_down @ 10007320
   grim_was_key_pressed @ 10007390
+  grim_keyboard_key_down @ 1000a370
+  grim_keyboard_init @ 1000a390
+  grim_keyboard_poll @ 1000a4a0
+  grim_keyboard_shutdown @ 1000a550
 
 [FILE related]
   grim_texture_load_file @ 10004ec0
@@ -29,8 +38,14 @@ Interesting Functions and Patterns
 [SPRINTF related]
   sprintf @ 1000a8d0
 
+[LOG related]
+  grim_config_dialog_proc @ 10002120
+
 [PRINT related]
   sprintf @ 1000a8d0
+
+[ERROR related]
+  grim_get_error_text @ 10006ca0
 
 [POTENTIALLY DANGEROUS FUNCTIONS]
   sprintf @ EXTERNAL:0000004c
