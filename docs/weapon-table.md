@@ -32,10 +32,10 @@ All offsets below are in **bytes**, relative to the pointer returned by
 | `0x50` | float | Spread / heat increment | Added to `DAT_00490b68` after each shot (scaled by perks). |
 | `0x58` | int | Shot SFX base id | Used with `0x5c` to pick a random fire SFX. |
 | `0x5c` | int | Shot SFX variant count | `rand % count + base` in `FUN_00444980`. |
-| `0x60` | int | Reload SFX id | Played when a reload starts in `FUN_00413430`. |
+| `0x60` | int | Reload / equip SFX id | Played when a reload starts and when swapping to the weapon. |
 | `0x64` | int | HUD icon id | Passed into the HUD sprite selection (shifted by `<< 1`). |
 | `0x68` | byte | Flags | Bit `0x1` triggers a muzzle flash / effect burst; bits `0x4/0x8` affect crosshair rendering. |
-| `0x6c` | float | Projectile base value | Copied into projectile entries on spawn; not yet observed elsewhere. |
+| `0x6c` | float | Projectile meta value | Copied into projectile entries on spawn; no direct reads yet. |
 | `0x70` | float | Damage scale | Used in projectile hit damage computation (`DAT_004d7a9c`). |
 | `0x74` | int | Pellet count | Number of pellets spawned in the spread fire path. |
 
