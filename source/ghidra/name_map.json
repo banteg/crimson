@@ -604,6 +604,12 @@
     "comment": "iterates channels and resumes playback"
   },
   {
+    "program": "crimsonland.exe",
+    "address": "0x00408530",
+    "name": "tutorial_prompt_dialog",
+    "comment": "renders tutorial prompt text + Repeat/Play/Skip buttons and handles selections"
+  },
+  {
     "program": "grim.dll",
     "address": "0x100028d0",
     "name": "grim_backup_textures",

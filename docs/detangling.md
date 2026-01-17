@@ -253,6 +253,14 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
   - Evidence: fills `DAT_004807e8` with randomly selected perks using `perk_select_random`,
     enforces uniqueness, and applies special-case handling for mode `8` (fixed perk list).
 
+### Tutorial prompt (medium confidence)
+
+- `FUN_00408530` -> `tutorial_prompt_dialog`
+  - Evidence: renders the tutorial message panel and uses button UI for "Repeat tutorial",
+    "Play a game", and "Skip tutorial"; click handlers restart the tutorial (clears perk count
+    table `DAT_00490968` and resets timers) or exit to game (sets `DAT_00487274`, flushes input,
+    and resets `DAT_00486fe0`).
+
 ### Game mode selector (partial)
 
 - `_DAT_00480360` holds the current game mode. See [Game mode map](game-mode-map.md) for the observed
