@@ -33,6 +33,7 @@ grim.dll body:
 ## 0xc — grim_check_device @ 0x10005cb0
 
 - Ghidra signature: `int grim_check_device(void)`
+- Notes: wraps a D3D device status call; negative results are masked with `0xffffff00`
 - Call sites: 0 (unique funcs: 0)
 - Sample calls: none found
 - First callsite: not found in decompiled output
@@ -232,6 +233,7 @@ grim.dll body:
 ## 0x30 — grim_set_render_target @ 0x10006d50
 
 - Ghidra signature: `int grim_set_render_target(int target_index)`
+- Notes: called with `-1` to restore the backbuffer
 - Call sites: 6 (unique funcs: 3)
 - Sample calls: FUN_00417b80:L9209; FUN_00417b80:L9333; FUN_004181b0:L9446; FUN_004181b0:L9563; FUN_00427920:L17949; FUN_00427920:L18035
 - First callsite: FUN_00417b80 (line 11346)
@@ -249,6 +251,7 @@ grim.dll body:
 ## 0x34 — grim_get_time_ms @ 0x10006e40
 
 - Ghidra signature: `int grim_get_time_ms(void)`
+- Notes: returns the global millisecond counter
 - Call sites: 0 (unique funcs: 0)
 - Sample calls: none found
 - First callsite: not found in decompiled output
@@ -264,6 +267,7 @@ grim.dll body:
 ## 0x38 — grim_set_time_ms @ 0x10006e50
 
 - Ghidra signature: `void grim_set_time_ms(int ms)`
+- Notes: overwrites the global millisecond counter
 - Call sites: 0 (unique funcs: 0)
 - Sample calls: none found
 - First callsite: not found in decompiled output
@@ -279,6 +283,7 @@ grim.dll body:
 ## 0x3c — grim_get_frame_dt @ 0x10006e60
 
 - Ghidra signature: `float grim_get_frame_dt(void)`
+- Notes: clamps the frame delta to `0.1`
 - Call sites: 0 (unique funcs: 0)
 - Sample calls: none found
 - First callsite: not found in decompiled output
@@ -297,6 +302,7 @@ grim.dll body:
 ## 0x40 — grim_get_fps @ 0x10006e90
 
 - Ghidra signature: `float grim_get_fps(void)`
+- Notes: returns the cached FPS estimate
 - Call sites: 0 (unique funcs: 0)
 - Sample calls: none found
 - First callsite: not found in decompiled output
