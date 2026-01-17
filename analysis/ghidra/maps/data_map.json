@@ -225,6 +225,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00486fa8",
+      "name": "survival_reward_handout_enabled",
+      "comment": "Survival handout gate (set on reset; cleared after reward or after 3 death samples)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00486fb4",
       "name": "creature_spawned_count",
       "comment": "Total creatures spawned (incremented in creature_alloc_slot)."
@@ -240,6 +246,18 @@
       "address": "0x00486fcc",
       "name": "creature_active_count",
       "comment": "Active creature count (set each creature_update_all pass)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00486fe4",
+      "name": "survival_reward_fire_seen",
+      "comment": "Set when the player fires; gates survival weapon rewards (cleared when 3 deaths recorded)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00486fe5",
+      "name": "survival_reward_damage_seen",
+      "comment": "Set on player damage; gates survival weapon rewards."
     },
     {
       "program": "crimsonland.exe",
