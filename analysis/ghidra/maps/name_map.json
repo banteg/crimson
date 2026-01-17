@@ -2305,5 +2305,11 @@
     "address": "0x10025359",
     "name": "FUN_10025359",
     "signature": "void FUN_10025359(void *this, png_structp png_ptr, int param_2, uint param_3)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001e7ce",
+    "name": "FUN_1001e7ce",
+    "signature": "void FUN_1001e7ce(png_structp png_ptr, undefined4 *param_2)"
   }
 ]
