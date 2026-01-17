@@ -120,6 +120,7 @@ Validation highlights (see the evidence appendix for snippets):
   grim.dll stores a millisecond counter and clamps frame delta to `0.1`.
 - `grim_apply_config` opens the Grim2D config dialog and initializes Direct3D8 before applying settings.
 - `grim_apply_settings` forwards to Grim2D’s internal settings routine (`FUN_10003c00`).
+- `grim_init_system` initializes D3D and input devices, then loads `smallFnt.dat`.
 - `grim_set_render_target` is invoked with render target handles and `-1` to restore the backbuffer.
 - `grim_get_config_float` maps IDs `0x13f..0x155` to scaled config values and special-cases `0x15f`
   to return the mouse X delta (`grim_get_mouse_dx`).

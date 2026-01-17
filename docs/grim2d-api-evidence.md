@@ -52,6 +52,7 @@ grim.dll body:
 ## 0x10 — grim_apply_config @ 0x10005d40
 
 - Ghidra signature: `int grim_apply_config(void)`
+- Notes: creates the D3D8 interface and shows the config dialog
 - Call sites: 1 (unique funcs: 1)
 - Sample calls: FUN_0042c450:L19443
 - First callsite: FUN_0042c450 (line 21580)
@@ -79,6 +80,7 @@ grim.dll body:
 ## 0x14 — grim_init_system @ 0x10005eb0
 
 - Ghidra signature: `int grim_init_system(void)`
+- Notes: initializes D3D + input devices and loads `smallFnt.dat`
 - Call sites: 1 (unique funcs: 1)
 - Sample calls: FUN_0042c450:L19504
 - First callsite: FUN_0042c450 (line 21641)
@@ -113,6 +115,7 @@ grim.dll body:
 ## 0x1c — grim_apply_settings @ 0x10006020
 
 - Ghidra signature: `void grim_apply_settings(void)`
+- Notes: forwards to Grim2D’s internal settings routine (`FUN_10003c00`)
 - Call sites: 1 (unique funcs: 1)
 - Sample calls: FUN_0042c450:L19581
 - First callsite: FUN_0042c450 (line 21718)
