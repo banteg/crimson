@@ -63,6 +63,7 @@ Global counters:
 - `creature_kill_count` increments on creature death paths (used by the HUD progress ratio).
 - `creature_active_count` is recomputed each `creature_update_all` pass.
 - `creature_update_tick` is a global tick counter used to throttle some target updates.
+- `plaguebearer_infection_count` increments on Plaguebearer contagion kills and caps spread.
 
 Spawn slots (used by `creature_update_all` when `creature_link_index` selects a slot):
 

@@ -225,6 +225,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00486fc8",
+      "name": "plaguebearer_infection_count",
+      "comment": "Plaguebearer infection kill counter (used to cap contagion spread)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00486fcc",
       "name": "creature_active_count",
       "comment": "Active creature count (set each creature_update_all pass)."
@@ -306,6 +312,12 @@
       "address": "0x00487024",
       "name": "bonus_double_xp_timer",
       "comment": "Global Double XP timer (bonus id 6)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048703c",
+      "name": "bonus_spawn_guard",
+      "comment": "Nonzero while bonus/perk effects spawn projectiles; skips bonus drop logic."
     },
     {
       "program": "crimsonland.exe",
