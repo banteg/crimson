@@ -157,6 +157,7 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
     - `DAT_004c403c`/`_DAT_004c4040` = subsequent track ids (+1/+2).
 - `FUN_0043caa0` -> `audio_init_sfx`
   - Evidence: loads `sfx.paq` and registers the sound effect ids.
+  - See `docs/sfx-id-map.md` for the extracted id-to-file mapping.
 
 ### Global var access (medium confidence)
 
