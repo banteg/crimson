@@ -63,7 +63,7 @@ Counts come from `analysis/ghidra/maps/name_map.json` and
 | Map | Total entries | crimsonland.exe | grim.dll | With signatures | With comments | Duplicate names |
 | --- | --- | --- | --- | --- | --- | --- |
 | Name map | 315 | 186 | 129 | 285 | 315 | 1 |
-| Data map | 302 | 302 | 0 | n/a | 302 | 0 |
+| Data map | 327 | 309 | 18 | n/a | 327 | 0 |
 <!-- map-progress:end -->
 
 ### Data map coverage (decompiled symbols)

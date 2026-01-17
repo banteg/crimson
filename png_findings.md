@@ -4,7 +4,9 @@
 
 **Implemented.** We now ship a libpng 1.1.x-compatible shim (`third_party/headers/png_struct_stub.h`)
 and parse it via `ImportThirdPartyHeaders.java` so Ghidra can resolve `png_struct`
-field accesses. Re-run the grim.dll Ghidra export to apply the updated types.
+field accesses. We also synced the full libpng header set from the local repo into
+`third_party/headers/` for reference. Re-run the grim.dll Ghidra export to apply
+the updated types.
 
 ## Problem
 
@@ -17,7 +19,7 @@ png_ptr[0x43]  // chunk name
 
 This happens because:
 1. **Game uses libpng 1.1.3** (from ~2000, confirmed by string `"1.1.3"` in code)
-2. **Our headers are libpng 1.6.54** (2026) - completely different internal layout
+2. **Our reference headers are libpng 1.8.0.git** (from the cloned repo) - completely different internal layout
 3. **`png_struct` is opaque** - the public API doesn't expose field definitions
 4. **Structure layout changed** between major versions (1.0.x → 1.2.x → 1.5.x → 1.6.x)
 
