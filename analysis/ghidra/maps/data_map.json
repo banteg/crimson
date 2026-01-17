@@ -1209,6 +1209,222 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x0049bf3c",
+      "name": "creature_phase_seed",
+      "comment": "Creature phase seed (creature_pool + 0x04)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bf40",
+      "name": "creature_state_flag",
+      "comment": "Creature state flag (creature_pool + 0x08)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bf41",
+      "name": "creature_collision_flag",
+      "comment": "Creature collision/contact flag (creature_pool + 0x09)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bf44",
+      "name": "creature_collision_timer",
+      "comment": "Creature collision timer (creature_pool + 0x0c)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bf48",
+      "name": "creature_hitbox_size",
+      "comment": "Creature hitbox size sentinel (creature_pool + 0x10)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bf4c",
+      "name": "creature_pos_x",
+      "comment": "Creature position X (creature_pool + 0x14)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bf50",
+      "name": "creature_pos_y",
+      "comment": "Creature position Y (creature_pool + 0x18)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bf54",
+      "name": "creature_vel_x",
+      "comment": "Creature velocity X (creature_pool + 0x1c)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bf58",
+      "name": "creature_vel_y",
+      "comment": "Creature velocity Y (creature_pool + 0x20)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bf5c",
+      "name": "creature_health",
+      "comment": "Creature health (creature_pool + 0x24)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bf60",
+      "name": "creature_max_health",
+      "comment": "Creature max health (creature_pool + 0x28)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bf64",
+      "name": "creature_heading",
+      "comment": "Creature heading radians (creature_pool + 0x2c)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bf68",
+      "name": "creature_target_heading",
+      "comment": "Creature desired heading (creature_pool + 0x30)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bf6c",
+      "name": "creature_size",
+      "comment": "Creature size/radius (creature_pool + 0x34)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bf70",
+      "name": "creature_hit_flash_timer",
+      "comment": "Creature hit flash timer (creature_pool + 0x38)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bf74",
+      "name": "creature_tint_r",
+      "comment": "Creature tint red (creature_pool + 0x3c)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bf78",
+      "name": "creature_tint_g",
+      "comment": "Creature tint green (creature_pool + 0x40)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bf7c",
+      "name": "creature_tint_b",
+      "comment": "Creature tint blue (creature_pool + 0x44)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bf80",
+      "name": "creature_tint_a",
+      "comment": "Creature tint alpha (creature_pool + 0x48)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bf84",
+      "name": "creature_force_target",
+      "comment": "Creature force-target flag (creature_pool + 0x4c)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bf88",
+      "name": "creature_target_x",
+      "comment": "Creature target X (creature_pool + 0x50)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bf8c",
+      "name": "creature_target_y",
+      "comment": "Creature target Y (creature_pool + 0x54)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bf90",
+      "name": "creature_contact_damage",
+      "comment": "Creature contact damage (creature_pool + 0x58)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bf94",
+      "name": "creature_move_speed",
+      "comment": "Creature movement speed scalar (creature_pool + 0x5c)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bf98",
+      "name": "creature_attack_cooldown",
+      "comment": "Creature attack cooldown timer (creature_pool + 0x60)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bf9c",
+      "name": "creature_reward_value",
+      "comment": "Creature reward value (creature_pool + 0x64)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bfa4",
+      "name": "creature_type_id",
+      "comment": "Creature type id (creature_pool + 0x6c)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bfa8",
+      "name": "creature_target_player",
+      "comment": "Creature target player index (creature_pool + 0x70)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bfb0",
+      "name": "creature_link_index",
+      "comment": "Creature link index/state timer (creature_pool + 0x78)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bfb4",
+      "name": "creature_target_offset_x",
+      "comment": "Creature target offset X (creature_pool + 0x7c)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bfb8",
+      "name": "creature_target_offset_y",
+      "comment": "Creature target offset Y (creature_pool + 0x80)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bfbc",
+      "name": "creature_orbit_angle",
+      "comment": "Creature orbit angle (creature_pool + 0x84)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bfc0",
+      "name": "creature_orbit_radius",
+      "comment": "Creature orbit radius/timer (creature_pool + 0x88)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bfc4",
+      "name": "creature_flags",
+      "comment": "Creature flags bitfield (creature_pool + 0x8c)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bfc8",
+      "name": "creature_ai_mode",
+      "comment": "Creature AI mode (creature_pool + 0x90)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bfcc",
+      "name": "creature_anim_phase",
+      "comment": "Creature animation phase accumulator (creature_pool + 0x94)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004aa4d8",
       "name": "effect_uv16_u",
       "comment": "Effect UV table U for 16x16 atlas frames"
