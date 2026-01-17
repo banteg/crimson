@@ -751,6 +751,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00407510",
+    "name": "survival_spawn_creature",
+    "signature": "void survival_spawn_creature(float *pos)",
+    "comment": "spawns a creature at the given position, selecting type/stats based on DAT_0049095c"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00407cd0",
+    "name": "survival_update",
+    "signature": "void survival_update(void)",
+    "comment": "main survival mode update: timers, scripted spawns, and enemy wave spawning"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00408530",
     "name": "tutorial_prompt_dialog",
     "comment": "renders tutorial prompt text + Repeat/Play/Skip buttons and handles selections"
