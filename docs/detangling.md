@@ -451,3 +451,21 @@ See [Projectile struct](projectile-struct.md) for the expanded field map and not
   - Evidence: returns a label string based on `_DAT_00480360` (Survival, Quests, Typ-o-Shooter, etc.).
 
 
+### Survival mode (partial)
+
+- `FUN_00407cd0` -> `survival_update`
+  - Evidence: runs only when `_DAT_00480360 == 1`, advances scripted spawn stages, and calls
+    `survival_spawn_creature` when the spawn timer elapses.
+- `FUN_00407510` -> `survival_spawn_creature`
+  - Evidence: allocates a creature slot, assigns spawn position, and selects a type based on
+    `DAT_0049095c` thresholds before seeding speed/health and flags.
+- Key state:
+  - `DAT_00486fc4` acts as the spawn cooldown accumulator; it is decremented by
+    `player_count * frame_dt`, and when it drops below zero a burst of spawns is scheduled.
+  - `DAT_00487060` is the survival elapsed timer (ms). It is incremented each frame and is used
+    to scale spawn cadence and HUD timers.
+  - `DAT_00487190` is the scripted spawn stage index (0..10) that gates bonus/marker spawns by
+    `DAT_00490964` milestones.
+  - `DAT_00490964` is a progression counter used by `survival_update` to gate scripted spawns;
+    it increments when `DAT_0049095c` surpasses a periodic threshold.
+
