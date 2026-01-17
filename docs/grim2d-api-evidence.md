@@ -741,7 +741,8 @@ Clamped RGBA example (FUN_00446030):
 
 
 ## 0x128 — grim_submit_vertices_transform @ 0x100085c0
-- Ghidra signature: `undefined grim_submit_vertices_transform()`
+- Ghidra signature: `void grim_submit_vertices_transform(float * verts, int count, float * offset, float * matrix)`
+- Notes: copies `count * 0x1c` bytes (7-float stride) into the batch, applies 2x2 matrix + offset per vertex
 - Call sites: 5 (unique funcs: 1)
 - Sample calls: FUN_00446c40:L29980; FUN_00446c40:L29985; FUN_00446c40:L29986; FUN_00446c40:L30065; FUN_00446c40:L30107
 - First callsite: FUN_00446c40 (line 32116)
@@ -754,16 +755,31 @@ Clamped RGBA example (FUN_00446030):
         pppcStack_98 = (char ***)0x4;
 ```
 
+grim.dll inner loop (stride + matrix):
+
+```c
+    for (uVar5 = (uint)(count * 0x1c) >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
+      *pfVar7 = *verts;
+```
+
 
 ## 0x12c — grim_submit_vertices_offset @ 0x10008680
-- Ghidra signature: `undefined grim_submit_vertices_offset()`
+- Ghidra signature: `void grim_submit_vertices_offset(float * verts, int count, float * offset)`
+- Notes: decompiler emits decimal offset `+ 300` (0x12c)
 - Call sites: 4 (unique funcs: 1)
 - Sample calls: FUN_00446c40:L30035; FUN_00446c40:L30042; FUN_00446c40:L30045; FUN_00446c40:L30074
-- First callsite: not found in decompiled output
+- First callsite: FUN_00446c40 (line 32196)
+
+```c
+      (**(code **)(*DAT_0048083c + 300))();
+      if (*(int *)(param_1 + 0x120) == 8) {
+        (**(code **)(*DAT_0048083c + 300))();
+```
 
 
 ## 0x130 — grim_submit_vertices_offset_color @ 0x10008430
-- Ghidra signature: `undefined grim_submit_vertices_offset_color()`
+- Ghidra signature: `void grim_submit_vertices_offset_color(float * verts, int count, float * offset, float * color)`
+- Notes: writes `DAT_10059e34[4] = *color;` (packed ARGB)
 - Call sites: 3 (unique funcs: 1)
 - Sample calls: FUN_00446c40:L30006; FUN_00446c40:L30014; FUN_00446c40:L30018
 - First callsite: FUN_00446c40 (line 32142)
@@ -778,7 +794,8 @@ Clamped RGBA example (FUN_00446030):
 
 
 ## 0x134 — grim_submit_vertices_transform_color @ 0x100084e0
-- Ghidra signature: `undefined grim_submit_vertices_transform_color()`
+- Ghidra signature: `void grim_submit_vertices_transform_color(float * verts, int count, float * offset, float * matrix, float * color)`
+- Notes: applies 2x2 matrix + offset, then overwrites vertex color from `*color`
 - Call sites: 5 (unique funcs: 2)
 - Sample calls: FUN_0042e820:L20025; FUN_0042e820:L20053; FUN_00446c40:L29953; FUN_00446c40:L29959; FUN_00446c40:L29962
 - First callsite: FUN_0042e820 (line 22162)

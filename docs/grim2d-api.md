@@ -144,10 +144,10 @@ These offsets appear with keycodes or input-related values:
 | `0x11c` | `draw_quad` | `void draw_quad(float x, float y, float w, float h)` | high | core draw call |
 | `0x120` | `draw_quad_xy` | `void draw_quad_xy(float *xy, float w, float h)` | medium | quad using pointer to XY |
 | `0x124` | `draw_quad_rotated_matrix` | `void draw_quad_rotated_matrix(float x, float y, float w, float h)` | high | uses rotation matrix to emit quad vertices |
-| `0x128` | `submit_vertices_transform` | `void submit_vertices_transform(float *verts, int count, float *offset, float *matrix)` | medium | transforms verts with matrix + offset |
-| `0x12c` | `submit_vertices_offset` | `void submit_vertices_offset(float *verts, int count, float *offset)` | medium | translates verts with offset |
-| `0x130` | `submit_vertices_offset_color` | `void submit_vertices_offset_color(float *verts, int count, float *offset, float *color)` | medium | translates verts + apply color |
-| `0x134` | `submit_vertices_transform_color` | `void submit_vertices_transform_color(float *verts, int count, float *offset, float *matrix, float *color)` | medium | transforms verts + apply color |
+| `0x128` | `submit_vertices_transform` | `void submit_vertices_transform(float *verts, int count, float *offset, float *matrix)` | medium | copies `count` verts (7-float stride) then applies 2x2 matrix + offset |
+| `0x12c` | `submit_vertices_offset` | `void submit_vertices_offset(float *verts, int count, float *offset)` | medium | copies verts then offsets XY (7-float stride) |
+| `0x130` | `submit_vertices_offset_color` | `void submit_vertices_offset_color(float *verts, int count, float *offset, float *color)` | medium | copies verts, offsets XY, overrides packed color from `*color` |
+| `0x134` | `submit_vertices_transform_color` | `void submit_vertices_transform_color(float *verts, int count, float *offset, float *matrix, float *color)` | medium | copies verts, applies matrix+offset, overrides packed color from `*color` |
 | `0x138` | `draw_quad_points` | `void draw_quad_points(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3)` | high | pushes quad from 4 points |
 | `0x13c` | `draw_text_mono` | `void draw_text_mono(float x, float y, const char *text)` | medium | fixed 16px grid; handles a few extended codes |
 | `0x140` | `draw_text_mono_fmt` | `void draw_text_mono_fmt(float x, float y, const char *fmt, ...)` | medium | printf-style wrapper |
