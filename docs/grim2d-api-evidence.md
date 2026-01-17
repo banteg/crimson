@@ -1412,6 +1412,7 @@ grim.dll body:
 ## 0x130 — grim_submit_vertices_offset_color @ 0x10008430
 
 - Ghidra signature: `void grim_submit_vertices_offset_color(float * verts, int count, float * offset, float * color)`
+- Suggested signature: `void grim_submit_vertices_offset_color(const float *verts, int count, const float *offset, const uint32_t *color)`
 - Notes: writes `DAT_10059e34[4] = *color;` (packed ARGB)
 - Call sites: 3 (unique funcs: 1)
 - Sample calls: FUN_00446c40:L30006; FUN_00446c40:L30014; FUN_00446c40:L30018
@@ -1438,6 +1439,7 @@ grim.dll body:
 ## 0x134 — grim_submit_vertices_transform_color @ 0x100084e0
 
 - Ghidra signature: `void grim_submit_vertices_transform_color(float * verts, int count, float * offset, float * matrix, float * color)`
+- Suggested signature: `void grim_submit_vertices_transform_color(const float *verts, int count, const float *offset, const float *matrix, const uint32_t *color)`
 - Notes: applies 2x2 matrix + offset, then overwrites vertex color from `*color`
 - Call sites: 5 (unique funcs: 2)
 - Sample calls: FUN_0042e820:L20025; FUN_0042e820:L20053; FUN_00446c40:L29953; FUN_00446c40:L29959; FUN_00446c40:L29962
