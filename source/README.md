@@ -64,5 +64,20 @@ Regenerating:
      -o source/decompiled \
      game/grim.dll
    ```
+
+   For repeated runs on the same kept project, use `-process` with the raw
+   headless analyzer so it opens the existing `grim.dll` program instead of
+   re-importing it:
+
+   ```bash
+   GHIDRA_OUTPUT_DIR=source/decompiled \
+     /opt/ghidra/support/analyzeHeadless \
+     output/ghidra_project grim_dll \
+     -process grim.dll \
+     -scriptPath "/workspace/scripts/ghidra_scripts;/workspace/.codex/skills/ghidra/scripts/ghidra_scripts" \
+     -postScript CreateGrim2DVtableFunctions.java \
+     -postScript ApplyNameMap.java source/ghidra/name_map.json \
+     -postScript ExportAll.java
+   ```
 2. Copy fresh outputs into `source/decompiled/`.
 3. Only edit files in `source/clean/`.
