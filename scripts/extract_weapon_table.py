@@ -6,8 +6,8 @@ import struct
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-C_PATH = ROOT / "output/crimsonland.exe_decompiled.c"
-STRINGS_PATH = ROOT / "output/crimsonland.exe_strings.txt"
+C_PATH = ROOT / "source/decompiled/crimsonland.exe_decompiled.c"
+STRINGS_PATH = ROOT / "source/decompiled/crimsonland.exe_strings.txt"
 OUT_PATH = ROOT / "src/crimson/weapons.py"
 
 BASE_ADDR = 0x4D7A2C

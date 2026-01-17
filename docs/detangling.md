@@ -11,19 +11,21 @@ Use the hotspot script to refresh the lists when the decompile is regenerated.
 uv run python scripts/function_hotspots.py --top 12 --only-fun
 ```
 
-## Name map workflow
+## Name/data map workflow
 
-We keep authoritative renames/signatures in `source/ghidra/name_map.json` and
-apply them during headless analysis:
+We keep authoritative function renames/signatures in `source/ghidra/name_map.json`
+and data labels in `source/ghidra/data_map.json`, applying both during headless
+analysis:
 
 ```
 ./.codex/skills/ghidra/scripts/ghidra-analyze.sh \
   --script-path scripts/ghidra_scripts \
   -s ApplyNameMap.java -a source/ghidra/name_map.json \
+  -s ApplyDataMap.java -a source/ghidra/data_map.json \
   -s ExportAll.java -o source/decompiled game/crimsonland.exe
 ```
 
-You can also set `CRIMSON_NAME_MAP` to point at a custom map.
+You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps.
 
 ## High-call functions (current)
 
@@ -433,7 +435,7 @@ tail bytes are validated against the current date and the full‑version flag.
   - Evidence: loads `sfx.paq` and registers the sound effect ids.
   - See [SFX ID map](sfx-id-map.md) for the extracted id-to-file mapping.
   - See [SFX usage](sfx-usage.md) for the most referenced SFX ids in the decompiled code.
-  - See [SFX label suggestions](sfx-labels.md) for suggested data labels (ApplyNameMap only renames functions).
+  - See [SFX label suggestions](sfx-labels.md) for suggested data labels (ApplyDataMap applies data labels).
 - `FUN_0043c740` -> `sfx_load_sample`
   - Evidence: allocates a free slot in `DAT_004c84e4`, loads `.ogg`/`.wav` data, and returns the
     sample id.

@@ -9,6 +9,11 @@ Layout:
 - `decompiled/` — raw Ghidra output (treat as read‑only).
 - `clean/` — hand‑refactored C, renamed symbols, notes, etc.
 
+Renames/labels:
+
+- `source/ghidra/name_map.json` — authoritative function renames/signatures.
+- `source/ghidra/data_map.json` — authoritative data labels/comments.
+
 Regenerating:
 
 1. Re-run Ghidra analysis with headers in `source/headers/` added to the
@@ -20,6 +25,8 @@ Regenerating:
      --script-path scripts/ghidra_scripts \
      -s ImportThirdPartyHeaders.java -a source/headers/third_party \
      -s ApplyWinapiGDT.java -a source/ghidra/winapi_32.gdt \
+     -s ApplyNameMap.java -a source/ghidra/name_map.json \
+     -s ApplyDataMap.java -a source/ghidra/data_map.json \
      -s ExportAll.java \
      -o source/decompiled \
      game/crimsonland.exe
@@ -32,6 +39,8 @@ Regenerating:
 
    The WinAPI .gdt is kept in `source/ghidra/winapi_32.gdt`; override it via
    `CRIMSON_WINAPI_GDT` or the `ApplyWinapiGDT.java` script arg if needed.
+   The name/data maps can be overridden via `CRIMSON_NAME_MAP` and
+   `CRIMSON_DATA_MAP`.
 
    For faster iterations, keep the headless project around and re-run with the
    same project name. We store these under `output/ghidra_project/`:
@@ -43,6 +52,7 @@ Regenerating:
      --project-name crimsonland_exe \
      --script-path scripts/ghidra_scripts \
      -s ApplyNameMap.java -a source/ghidra/name_map.json \
+     -s ApplyDataMap.java -a source/ghidra/data_map.json \
      -s ExportAll.java \
      -o source/decompiled \
      game/crimsonland.exe
@@ -60,6 +70,7 @@ Regenerating:
      --script-path scripts/ghidra_scripts \
      -s CreateGrim2DVtableFunctions.java \
      -s ApplyNameMap.java -a source/ghidra/name_map.json \
+     -s ApplyDataMap.java -a source/ghidra/data_map.json \
      -s ExportAll.java \
      -o source/decompiled \
      game/grim.dll
@@ -77,6 +88,7 @@ Regenerating:
      -scriptPath "/workspace/scripts/ghidra_scripts;/workspace/.codex/skills/ghidra/scripts/ghidra_scripts" \
      -postScript CreateGrim2DVtableFunctions.java \
      -postScript ApplyNameMap.java source/ghidra/name_map.json \
+     -postScript ApplyDataMap.java source/ghidra/data_map.json \
      -postScript ExportAll.java
    ```
 2. Copy fresh outputs into `source/decompiled/`.
