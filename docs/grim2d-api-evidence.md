@@ -432,6 +432,32 @@ grim.dll body:
 ```
 
 
+## 0x5c — grim_was_mouse_button_pressed @ 0x10007440
+
+- Notes: edge-triggered mouse button; updates per-button latch
+- Ghidra signature: `int grim_was_mouse_button_pressed(void *this, int button)`
+- Suggested signature: `bool grim_was_mouse_button_pressed(int button)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+
+grim.dll body:
+
+```c
+  cVar1 = (**(code **)(*(int *)this + 0x58))(button);
+  if ((cVar1 == '\0') || ((&DAT_1005c8e8)[button] == '\0')) {
+    uVar4 = 0;
+  }
+  else {
+    uVar4 = 1;
+  }
+  uVar2 = (**(code **)(*(int *)this + 0x58))(button);
+  (&DAT_1005c8e8)[button] = (char)uVar2 == '\0';
+  return CONCAT31((int3)((uint)uVar2 >> 8),uVar4);
+```
+
+
 ## 0x60 — grim_get_mouse_wheel_delta @ 0x10007560
 
 - Provisional name: `get_mouse_wheel_delta` (high)
@@ -660,6 +686,23 @@ grim.dll mapping:
   iVar1 = (**(code **)(*DAT_0048083c + 0xa4))(0);
   return iVar1 == DAT_004804fc;
 }
+```
+
+
+## 0xa8 — grim_is_joystick_button_down @ 0x100075c0
+
+- Ghidra signature: `int grim_is_joystick_button_down(int button)`
+- Suggested signature: `bool grim_is_joystick_button_down(int button)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+
+grim.dll body:
+
+```c
+  bVar1 = FUN_1000a310(button);
+  return CONCAT31(extraout_var,bVar1);
 ```
 
 
