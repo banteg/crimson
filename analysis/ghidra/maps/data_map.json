@@ -453,6 +453,18 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00490bf0",
+      "name": "player_key_reserved_0",
+      "comment": "Per-player reserved keybind slot (player_health + 0x31c); copied from config, no callsites found."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490bf4",
+      "name": "player_key_reserved_1",
+      "comment": "Per-player reserved keybind slot (player_health + 0x320); copied from config, no callsites found."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00490bf8",
       "name": "player_aim_key_left",
       "comment": "Per-player aim rotate-left key (player_health + 0x324)"
@@ -489,6 +501,60 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00490c20",
+      "name": "player2_death_timer",
+      "comment": "Player 2 death/respawn timer (player_death_timer + 0x360)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490c24",
+      "name": "player2_pos_x",
+      "comment": "Player 2 position X (player_pos_x + 0x360)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490c28",
+      "name": "player2_pos_y",
+      "comment": "Player 2 position Y (player_pos_y + 0x360)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490c34",
+      "name": "player2_health",
+      "comment": "Player 2 health (player_health + 0x360)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490ed0",
+      "name": "player2_weapon_id",
+      "comment": "Player 2 current weapon id (player_weapon_id + 0x360)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490edc",
+      "name": "player2_ammo",
+      "comment": "Player 2 current ammo (player_ammo + 0x360)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490f24",
+      "name": "player2_speed_bonus_timer",
+      "comment": "Player 2 speed bonus timer (player_speed_bonus_timer + 0x360)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490f28",
+      "name": "player2_shield_timer",
+      "comment": "Player 2 shield timer (player_shield_timer + 0x360)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490f2c",
+      "name": "player2_fire_bullets_timer",
+      "comment": "Player 2 Fire Bullets timer (player_fire_bullets_timer + 0x360)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00490f3c",
       "name": "player_alt_move_key_forward",
       "comment": "Alternate forward move key (used when _DAT_0048035c == 1)"
@@ -516,6 +582,30 @@
       "address": "0x00490f4c",
       "name": "player_alt_fire_key",
       "comment": "Alternate primary fire key (checked by input_primary_is_down)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490f50",
+      "name": "player_alt_key_reserved_0",
+      "comment": "Per-player reserved alt keybind slot (player_health + 0x37c); copied from config, no callsites found."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490f54",
+      "name": "player_alt_key_reserved_1",
+      "comment": "Per-player reserved alt keybind slot (player_health + 0x380); copied from config, no callsites found."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490f58",
+      "name": "player_alt_key_reserved_2",
+      "comment": "Per-player reserved alt keybind slot (player_health + 0x384); copied from config, no callsites found."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490f5c",
+      "name": "player_alt_key_reserved_3",
+      "comment": "Per-player reserved alt keybind slot (player_health + 0x388); copied from config, no callsites found."
     },
     {
       "program": "crimsonland.exe",

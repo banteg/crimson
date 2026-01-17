@@ -9,6 +9,7 @@ Pool facts:
 - Base address: `player_health` (`DAT_004908d4`).
 - Access pattern: `field_base + player_index * 0x360` (disassembly often shows
   `player_index * 0xd8` because the base pointer is typed as `float*`/`u32*`).
+- Player 2 constants appear as base + `0x360` (e.g. `player2_health` at `DAT_00490c34`).
 - Some high-confidence fields live before `player_health` (negative offsets).
 
 High-confidence fields (partial):
