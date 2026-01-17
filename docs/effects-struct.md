@@ -2,7 +2,7 @@
 
 This page tracks the smaller effect pools used for weapon and perk visuals.
 
-## Particle pool (`DAT_00493eb8`)
+## Particle pool (`particle_pool` / `DAT_00493eb8`)
 
 Entry size: `0x38` bytes. Pool size: `0x80` entries (looping to `0x495ab8`).
 
@@ -40,7 +40,7 @@ Layout (partial):
 | `2` | Mini-Rocket Swarmers (weapon id `0x10`) | `fx_spawn_particle` plus `DAT_00493ee8 = 2`. |
 | `8` | Rainbow Gun (weapon id `0x2a`) | Slow particle (`fx_spawn_particle_slow`). |
 
-## Secondary projectile pool (`DAT_00495ad8`)
+## Secondary projectile pool (`secondary_projectile_pool` / `DAT_00495ad8`)
 
 Entry size: `0x2c` bytes. Pool size: `0x40` entries (looping to `0x4965d8`).
 
@@ -80,7 +80,7 @@ Render notes:
 - Base pass sizes in `projectile_render`: type `1` draws `14x14`, type `2` draws `10x10`,
   type `4` draws `8x8` (all from `projs.png`, atlas frame `4,3`).
 
-## FX queue (`DAT_004912b8`)
+## FX queue (`fx_queue` / `DAT_004912b8`)
 
 Entry size: `0x28` bytes. Queue size: `0x80` entries (index `0..0x7f` via `DAT_004aaf18`).
 
@@ -110,7 +110,7 @@ Notes:
   (effect ids `3..7`) with randomized grayscale color and size.
 - `fx_queue_add` clamps the queue length to `0x7f` if the caller overflows it.
 
-## Rotated FX queue (`DAT_004aaf3c`)
+## Rotated FX queue (`fx_queue_rotated` / `DAT_004aaf3c`)
 
 Queue size: `0x40` entries. Written by `fx_queue_add_rotated` (`FUN_00427840`)
 and rendered by `fx_queue_render`.
@@ -306,7 +306,7 @@ These helpers primarily configure `DAT_004ab1bc` and then call `effect_spawn`.
 | `FUN_0042f6c0` | `1`, `0x11`, `0`, `0xc` | Large multi-stage explosion effect. |
 
 
-## Sprite effect pool (`DAT_00496820`)
+## Sprite effect pool (`sprite_effect_pool` / `DAT_00496820`)
 
 Entry size: `0x2c` bytes. Pool size: `0x180` entries (looping to `0x49aa20`).
 

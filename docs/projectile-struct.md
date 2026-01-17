@@ -74,7 +74,7 @@ Non-projectile weapon paths (player_update):
 | `0x8` | Plasma Rifle | `fx_spawn_particle` | Emits particle shots; no `projectile_spawn`. |
 | `0xf` | HR Flamer | `fx_spawn_particle` | Sets particle flag `1` in `DAT_00493ee8`. |
 | `0x10` | Mini-Rocket Swarmers | `fx_spawn_particle` | Sets particle flag `2` in `DAT_00493ee8`. |
-| `0x0c` | Seeker Rockets | `fx_spawn_secondary_projectile` type `1` | Uses the secondary projectile pool (`DAT_00495ad8`). |
+| `0x0c` | Seeker Rockets | `fx_spawn_secondary_projectile` type `1` | Uses `secondary_projectile_pool` (`DAT_00495ad8`). |
 | `0x0d` | Plasma Shotgun | `fx_spawn_secondary_projectile` type `2` | Uses the secondary projectile pool. |
 | `0x11` | Rocket Minigun | `fx_spawn_secondary_projectile` type `2` | Spawns multiple secondaries per shot. |
 | `0x12` | Pulse Gun | `fx_spawn_secondary_projectile` type `4` | Uses the secondary projectile pool. |

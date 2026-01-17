@@ -108,12 +108,24 @@ You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps
   - Evidence: 0x480‑byte `crimson.cfg` blob; see config layout below.
 - `DAT_00480510` -> `config_keybind_table`
   - Evidence: 2×16 dword keybind table inside config blob; copied into runtime binds.
+- `DAT_00482948` -> `bonus_pool`
+  - Evidence: bonus/pickup pool base with 16 entries (stride `0x1c`).
 - `DAT_004908d4` -> `player_table`
   - Evidence: per-player table base with stride `0xd8` (players/inputs/aim state).
+- `DAT_004912b8` -> `fx_queue`
+  - Evidence: FX queue base with 0x80 entries (stride `0x28`).
 - `DAT_004926b8` -> `projectile_pool`
   - Evidence: base of 0x60-entry projectile pool with stride 0x40.
+- `DAT_00493eb8` -> `particle_pool`
+  - Evidence: particle pool base with 0x80 entries (stride `0x38`).
+- `DAT_00495ad8` -> `secondary_projectile_pool`
+  - Evidence: secondary projectile pool base with 0x40 entries (stride `0x2c`).
+- `DAT_00496820` -> `sprite_effect_pool`
+  - Evidence: sprite effect pool base with stride `0x2c`.
 - `DAT_0049bf38` -> `creature_pool`
   - Evidence: base of 0x180‑entry creature pool with stride 0x98.
+- `DAT_004aaf3c` -> `fx_queue_rotated`
+  - Evidence: rotated FX queue base with 0x40 entries.
 - `DAT_004d7a2c` -> `weapon_table`
   - Evidence: base of weapon table with stride 0x7c (see weapon table doc).
 
@@ -595,7 +607,7 @@ tail bytes are validated against the current date and the full‑version flag.
       resets `DAT_004712fc`, and sets `DAT_00486fe0 = -1000`.
     - Stage 1: waits for any movement key active (`grim_is_key_active` via vtable +0x80),
       then spawns bonus pickups (`FUN_0042ef60`) and sets `DAT_00486fe0 = -1000`.
-    - Stage 2: waits until all 16 bonus slots in `DAT_00482948` clear, then sets
+    - Stage 2: waits until all 16 bonus slots in `bonus_pool` (`DAT_00482948`) clear, then sets
       `DAT_00486fe0 = -1000`.
     - Stage 3: waits for input in `DAT_00490bec` key slots, spawns arrow markers
       (`FUN_00430af0`), then sets `DAT_00486fe0 = -1000`.
@@ -725,7 +737,7 @@ See [Creature struct](creature-struct.md) for the expanded field map and cross-l
     creatures/players, spawns hit effects, and clears expired entries.
 - `FUN_004205d0` -> `projectile_reset_pools`
   - Evidence: clears `projectile_pool` (`DAT_004926b8`, `0x40` stride) and
-    `DAT_00493eb8` (`0x38` stride).
+    `particle_pool` (`DAT_00493eb8`, `0x38` stride).
 - `FUN_00420600` -> `creatures_apply_radius_damage`
   - Evidence: loops active creatures, checks distance vs radius + size, and calls `FUN_004207c0`.
 - `FUN_004206a0` -> `creature_find_in_radius`
@@ -751,24 +763,24 @@ See [Projectile struct](projectile-struct.md) for the expanded field map and not
 ### Effects pools (medium confidence)
 
 - `FUN_00420130` -> `fx_spawn_particle`
-  - Evidence: allocates a `0x38`-byte entry in `DAT_00493eb8`, sets position, angle, and velocity
-    (speed ~90), and returns the slot index.
+  - Evidence: allocates a `0x38`-byte entry in `particle_pool` (`DAT_00493eb8`), sets position, angle,
+    and velocity (speed ~90), and returns the slot index.
 - `FUN_00420240` -> `fx_spawn_particle_slow`
   - Evidence: same pool as `fx_spawn_particle`, but speed ~30 and sets style id `8`.
 - `FUN_00420360` -> `fx_spawn_secondary_projectile`
-  - Evidence: allocates a `0x2c`-byte entry in `DAT_00495ad8` with type id, velocity, and optional
-    nearest-creature target when `type_id == 2`.
+  - Evidence: allocates a `0x2c`-byte entry in `secondary_projectile_pool` (`DAT_00495ad8`) with type
+    id, velocity, and optional nearest-creature target when `type_id == 2`.
 - `FUN_0041fbb0` -> `fx_spawn_sprite`
-  - Evidence: allocates a `0x2c`-byte entry in `DAT_00496820` with position, velocity, tint, and
-    a scalar parameter used by the renderer.
+  - Evidence: allocates a `0x2c`-byte entry in `sprite_effect_pool` (`DAT_00496820`) with position,
+    velocity, tint, and a scalar parameter used by the renderer.
 - Layouts and fields are tracked in [Effects pools](effects-struct.md).
 
 
 ### Bonus / pickup pool (medium confidence)
 
 - `FUN_0041f580` -> `bonus_alloc_slot`
-  - Evidence: scans `DAT_00482948` in `0x1c`-byte strides and returns the first entry with type `0`
-    (or the sentinel `DAT_00490630` when full).
+  - Evidence: scans `bonus_pool` (`DAT_00482948`) in `0x1c`-byte strides and returns the first entry
+    with type `0` (or the sentinel `DAT_00490630` when full).
 - `FUN_0041f5b0` -> `bonus_spawn_at`
   - Evidence: clamps position to arena bounds, writes entry fields (type, lifetime, size, position,
     duration override), and spawns a pickup effect via `FUN_0042e120`.
@@ -784,7 +796,7 @@ See [Projectile struct](projectile-struct.md) for the expanded field map and not
   - Evidence: applies bonus effects based on entry type (`param_2[0]`), spawns effects via
     `FUN_0042e120`, and plays bonus SFX (`FUN_0043d260`).
 - See [Bonus ID map](bonus-id-map.md) for the id-to-name table and default amounts.
-- Layout (entry size `0x1c`, base `DAT_00482948`, 16 entries):
+- Layout (entry size `0x1c`, base `bonus_pool` (`DAT_00482948`), 16 entries):
 
   | Offset | Field | Evidence |
   | --- | --- | --- |

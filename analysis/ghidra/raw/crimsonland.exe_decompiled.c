@@ -5330,7 +5330,7 @@ LAB_00408be2:
       DAT_00486fe0 = 0xfffffc18;
       sfx_play(DAT_004c4014);
       fStack_6c = 260.0;
-      DAT_00482948 = 1;
+      bonus_pool = 1;
       DAT_00482950 = 0x42c80000;
       DAT_00482954 = 0x42c80000;
       DAT_0048294c = 0;
@@ -5360,7 +5360,7 @@ LAB_00408be2:
     }
     if (DAT_00486fd8 == 2) {
       iVar5 = 0;
-      piVar3 = &DAT_00482948;
+      piVar3 = &bonus_pool;
       do {
         if (*piVar3 != 0) break;
         piVar3 = piVar3 + 7;
@@ -5412,7 +5412,7 @@ LAB_00408be2:
       }
       else if (DAT_00486fd8 == 5) {
         iVar5 = 0;
-        piVar3 = &DAT_00482948;
+        piVar3 = &bonus_pool;
         do {
           if (*piVar3 != 0) break;
           piVar3 = piVar3 + 7;
@@ -5535,7 +5535,7 @@ LAB_00408be2:
       }
       else if (DAT_00486fd8 == 7) {
         iVar5 = 0;
-        piVar3 = &DAT_00482948;
+        piVar3 = &bonus_pool;
         do {
           if (*piVar3 != 0) break;
           piVar3 = piVar3 + 7;
@@ -6519,7 +6519,7 @@ void FUN_0040b5d0(void)
   undefined4 *puVar1;
   undefined1 *puVar2;
   
-  puVar1 = &DAT_00482948;
+  puVar1 = &bonus_pool;
   do {
     *puVar1 = 0;
     puVar1 = puVar1 + 7;
@@ -9248,7 +9248,7 @@ void FUN_00412dc0(void)
     puVar1[3] = 0;
     puVar1 = puVar1 + 0xd8;
   } while ((int)puVar1 < 0x491280);
-  puVar1 = &DAT_00482948;
+  puVar1 = &bonus_pool;
   do {
     *puVar1 = 0;
     puVar1 = puVar1 + 7;
@@ -9258,12 +9258,12 @@ void FUN_00412dc0(void)
     *puVar2 = 0;
     puVar2 = puVar2 + 0x40;
   } while ((int)puVar2 < 0x493eb8);
-  puVar2 = &DAT_00496820;
+  puVar2 = &sprite_effect_pool;
   do {
     *puVar2 = 0;
     puVar2 = puVar2 + 0x2c;
   } while ((int)puVar2 < 0x49aa20);
-  puVar2 = &DAT_00495ad8;
+  puVar2 = &secondary_projectile_pool;
   do {
     *puVar2 = 0;
     puVar2 = puVar2 + 0x2c;
@@ -9293,7 +9293,7 @@ void FUN_00412dc0(void)
     *puVar1 = 0;
     puVar1 = puVar1 + 6;
   } while ((int)puVar1 < 0x4852d0);
-  DAT_004aaf3c = 0;
+  fx_queue_rotated = 0;
   DAT_004aaf18 = 0;
   DAT_00487085 = 0;
   DAT_00487060 = 0;
@@ -15348,7 +15348,7 @@ int __cdecl fx_queue_add(int effect_id,float *pos,float w,float h,float rotation
   (&DAT_004912cc)[iVar2 * 10] = w;
   (&DAT_004912c8)[iVar2 * 10] = h;
   (&DAT_004912bc)[iVar2 * 10] = rotation;
-  (&DAT_004912b8)[iVar2 * 10] = effect_id;
+  (&fx_queue)[iVar2 * 10] = effect_id;
   uVar4 = (uint3)((uint)iVar3 >> 8);
   if (0x7f < iVar5) {
     DAT_004aaf18 = 0x7f;
@@ -16040,10 +16040,10 @@ undefined4 * bonus_alloc_slot(void)
   int iVar2;
   
   iVar2 = 0;
-  piVar1 = &DAT_00482948;
+  piVar1 = &bonus_pool;
   do {
     if (*piVar1 == 0) {
-      return &DAT_00482948 + iVar2 * 7;
+      return &bonus_pool + iVar2 * 7;
     }
     piVar1 = piVar1 + 7;
     iVar2 = iVar2 + 1;
@@ -16143,7 +16143,7 @@ uint * __cdecl FUN_0041f790(float *param_1)
     return (uint *)&DAT_00490630;
   }
   puVar1 = bonus_alloc_slot();
-  piVar4 = &DAT_00482948;
+  piVar4 = &bonus_pool;
   while ((*piVar4 == 0 ||
          (32.0 <= SQRT((param_1[1] - (float)piVar4[5]) * (param_1[1] - (float)piVar4[5]) +
                        (*param_1 - (float)piVar4[4]) * (*param_1 - (float)piVar4[4]))))) {
@@ -16220,7 +16220,7 @@ uint * __cdecl FUN_0041f8d0(float *param_1)
     }
     iVar1 = 0;
     if (*puVar2 != 1) {
-      puVar3 = &DAT_00482948;
+      puVar3 = &bonus_pool;
       do {
         if (*puVar3 == *puVar2) {
           iVar1 = iVar1 + 1;
@@ -16259,7 +16259,7 @@ LAB_0041f998:
     }
     iVar1 = 0;
     if (*puVar2 != 1) {
-      puVar3 = &DAT_00482948;
+      puVar3 = &bonus_pool;
       do {
         if (*puVar3 == *puVar2) {
           iVar1 = iVar1 + 1;
@@ -16324,7 +16324,7 @@ int __cdecl fx_spawn_sprite(float *pos,float *vel,float scale)
   int iVar3;
   
   iVar3 = 0;
-  pcVar1 = &DAT_00496820;
+  pcVar1 = &sprite_effect_pool;
   do {
     if (*pcVar1 == '\0') goto LAB_0041fbd8;
     pcVar1 = pcVar1 + 0x2c;
@@ -16333,7 +16333,7 @@ int __cdecl fx_spawn_sprite(float *pos,float *vel,float scale)
   iVar3 = _rand();
   iVar3 = iVar3 % 0x180;
 LAB_0041fbd8:
-  (&DAT_00496820)[iVar3 * 0x2c] = 1;
+  (&sprite_effect_pool)[iVar3 * 0x2c] = 1;
   (&DAT_0049682c)[iVar3 * 0xb] = 0x3f800000;
   (&DAT_00496828)[iVar3 * 0xb] = 0x3f800000;
   (&DAT_00496824)[iVar3 * 0xb] = 0x3f800000;
@@ -16613,7 +16613,7 @@ int __cdecl fx_spawn_particle(float *pos,float angle,void *unused,float intensit
   uint uVar4;
   float10 fVar5;
   
-  pcVar1 = &DAT_00493eb8;
+  pcVar1 = &particle_pool;
   uVar4 = 0;
   do {
     if (*pcVar1 == '\0') goto LAB_00420160;
@@ -16628,7 +16628,7 @@ int __cdecl fx_spawn_particle(float *pos,float angle,void *unused,float intensit
 LAB_00420160:
   fVar5 = (float10)fcos((float10)angle);
   iVar3 = uVar4 * 0x38;
-  (&DAT_00493eb8)[iVar3] = 1;
+  (&particle_pool)[iVar3] = 1;
   (&DAT_00493ebc)[uVar4 * 0xe] = *pos;
   (&DAT_00493ec0)[uVar4 * 0xe] = pos[1];
   (&DAT_00493ec4)[uVar4 * 0xe] = (float)(fVar5 * (float10)90.0);
@@ -16662,7 +16662,7 @@ int __cdecl fx_spawn_particle_slow(float *pos,float angle)
   uint uVar4;
   float10 fVar5;
   
-  pcVar1 = &DAT_00493eb8;
+  pcVar1 = &particle_pool;
   uVar4 = 0;
   do {
     if (*pcVar1 == '\0') goto LAB_00420270;
@@ -16677,7 +16677,7 @@ int __cdecl fx_spawn_particle_slow(float *pos,float angle)
 LAB_00420270:
   fVar5 = (float10)fcos((float10)angle);
   iVar3 = uVar4 * 0x38;
-  (&DAT_00493eb8)[iVar3] = 1;
+  (&particle_pool)[iVar3] = 1;
   (&DAT_00493ebc)[uVar4 * 0xe] = *pos;
   (&DAT_00493ec0)[uVar4 * 0xe] = pos[1];
   (&DAT_00493ec4)[uVar4 * 0xe] = (float)(fVar5 * (float10)30.0);
@@ -16713,7 +16713,7 @@ int __cdecl fx_spawn_secondary_projectile(float *pos,float angle,int type_id)
   float10 fVar5;
   
   iVar3 = 0;
-  pcVar1 = &DAT_00495ad8;
+  pcVar1 = &secondary_projectile_pool;
   do {
     if (*pcVar1 == '\0') goto LAB_0042037f;
     pcVar1 = pcVar1 + 0x2c;
@@ -16723,7 +16723,7 @@ int __cdecl fx_spawn_secondary_projectile(float *pos,float angle,int type_id)
 LAB_0042037f:
   DAT_0048706c = DAT_0048706c + 1;
   fVar4 = (float10)fcos((float10)angle - (float10)1.5707964);
-  (&DAT_00495ad8)[iVar3 * 0x2c] = 1;
+  (&secondary_projectile_pool)[iVar3 * 0x2c] = 1;
   (&DAT_00495ae4)[iVar3 * 0xb] = *pos;
   (&DAT_00495ae8)[iVar3 * 0xb] = pos[1];
   (&DAT_00495ae0)[iVar3 * 0xb] = 0x40000000;
@@ -16838,7 +16838,7 @@ void projectile_reset_pools(void)
     *puVar1 = 0;
     puVar1 = puVar1 + 0x40;
   } while ((int)puVar1 < 0x493eb8);
-  puVar1 = &DAT_00493eb8;
+  puVar1 = &particle_pool;
   do {
     *puVar1 = 0;
     puVar1 = puVar1 + 0x38;
@@ -20132,29 +20132,29 @@ int __cdecl fx_queue_add_rotated(float *pos,float *rgba,float rotation,float sca
   uVar2 = (uint3)((uint)in_EAX >> 8);
   fVar1 = (float)CONCAT31(uVar2,DAT_004871c8);
   if (DAT_004871c8 == '\0') {
-    if (DAT_004aaf3c == 0x3f) {
+    if (fx_queue_rotated == 0x3f) {
       return (uint)uVar2 << 8;
     }
-    (&DAT_0049bb38)[DAT_004aaf3c * 4] = *rgba;
-    (&DAT_0049bb3c)[DAT_004aaf3c * 4] = rgba[1];
-    (&DAT_0049bb40)[DAT_004aaf3c * 4] = rgba[2];
-    (&DAT_0049bb44)[DAT_004aaf3c * 4] = rgba[3];
+    (&DAT_0049bb38)[fx_queue_rotated * 4] = *rgba;
+    (&DAT_0049bb3c)[fx_queue_rotated * 4] = rgba[1];
+    (&DAT_0049bb40)[fx_queue_rotated * 4] = rgba[2];
+    (&DAT_0049bb44)[fx_queue_rotated * 4] = rgba[3];
     if (*(float *)(DAT_00480860 + 0xc) == 0.0) {
-      fVar1 = (float)(&DAT_0049bb44)[DAT_004aaf3c * 4] * 0.8;
+      fVar1 = (float)(&DAT_0049bb44)[fx_queue_rotated * 4] * 0.8;
     }
     else {
-      fVar1 = (1.0 / *(float *)(DAT_00480860 + 0xc)) * (float)(&DAT_0049bb44)[DAT_004aaf3c * 4];
+      fVar1 = (1.0 / *(float *)(DAT_00480860 + 0xc)) * (float)(&DAT_0049bb44)[fx_queue_rotated * 4];
     }
-    (&DAT_0049bb44)[DAT_004aaf3c * 4] = fVar1;
-    (&DAT_0049669c)[DAT_004aaf3c] = rotation;
-    (&DAT_0049ba30)[DAT_004aaf3c] = effect_id;
-    (&DAT_004906a8)[DAT_004aaf3c] = scale;
-    (&DAT_00490430)[DAT_004aaf3c * 2] = *pos;
+    (&DAT_0049bb44)[fx_queue_rotated * 4] = fVar1;
+    (&DAT_0049669c)[fx_queue_rotated] = rotation;
+    (&DAT_0049ba30)[fx_queue_rotated] = effect_id;
+    (&DAT_004906a8)[fx_queue_rotated] = scale;
+    (&DAT_00490430)[fx_queue_rotated * 2] = *pos;
     fVar1 = pos[1];
-    (&DAT_00490434)[DAT_004aaf3c * 2] = fVar1;
-    DAT_004aaf3c = DAT_004aaf3c + 1;
-    if (0x3f < DAT_004aaf3c) {
-      DAT_004aaf3c = 0x3f;
+    (&DAT_00490434)[fx_queue_rotated * 2] = fVar1;
+    fx_queue_rotated = fx_queue_rotated + 1;
+    if (0x3f < fx_queue_rotated) {
+      fx_queue_rotated = 0x3f;
     }
   }
   return CONCAT31((int3)((uint)fVar1 >> 8),1);
@@ -20179,7 +20179,7 @@ void fx_queue_render(void)
   float fVar7;
   
   if (DAT_004871c8 == '\0') {
-    if ((DAT_004aaf3c != 0) || (DAT_004aaf18 != 0)) {
+    if ((fx_queue_rotated != 0) || (DAT_004aaf18 != 0)) {
       (**(code **)(*DAT_0048083c + 0x30))(DAT_0048f530);
       (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7ec,0);
       if (0 < DAT_004aaf18) {
@@ -20203,13 +20203,13 @@ void fx_queue_render(void)
         }
         (**(code **)(*DAT_0048083c + 0xf0))();
       }
-      if (0 < DAT_004aaf3c) {
+      if (0 < fx_queue_rotated) {
         (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7dc,0);
         (**(code **)(*DAT_0048083c + 0x20))(0x13,1);
         (**(code **)(*DAT_0048083c + 0x20))(0x14,6);
         (**(code **)(*DAT_0048083c + 0xe8))();
         iVar3 = 0;
-        if (0 < DAT_004aaf3c) {
+        if (0 < fx_queue_rotated) {
           pfVar2 = (float *)&DAT_00490430;
           puVar4 = &DAT_0049bb40;
           do {
@@ -20232,14 +20232,14 @@ void fx_queue_render(void)
             iVar3 = iVar3 + 1;
             puVar4 = puVar4 + 4;
             pfVar2 = pfVar2 + 2;
-          } while (iVar3 < DAT_004aaf3c);
+          } while (iVar3 < fx_queue_rotated);
         }
         (**(code **)(*DAT_0048083c + 0xf0))();
         (**(code **)(*DAT_0048083c + 0x20))(0x13,5);
         (**(code **)(*DAT_0048083c + 0x20))(0x14,6);
         (**(code **)(*DAT_0048083c + 0xe8))();
         iVar3 = 0;
-        if (0 < DAT_004aaf3c) {
+        if (0 < fx_queue_rotated) {
           pfVar2 = (float *)&DAT_00490430;
           puVar4 = &DAT_0049bb40;
           do {
@@ -20260,22 +20260,22 @@ void fx_queue_render(void)
             iVar3 = iVar3 + 1;
             puVar4 = puVar4 + 4;
             pfVar2 = pfVar2 + 2;
-          } while (iVar3 < DAT_004aaf3c);
+          } while (iVar3 < fx_queue_rotated);
         }
         (**(code **)(*DAT_0048083c + 0xf0))();
       }
       DAT_004aaf18 = 0;
-      DAT_004aaf3c = 0;
+      fx_queue_rotated = 0;
       (**(code **)(*DAT_0048083c + 0x30))(0xffffffff);
     }
   }
-  else if (0 < DAT_004aaf3c) {
+  else if (0 < fx_queue_rotated) {
     (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7dc,0);
     (**(code **)(*DAT_0048083c + 0x20))(0x13,1);
     (**(code **)(*DAT_0048083c + 0x20))(0x14,6);
     (**(code **)(*DAT_0048083c + 0xe8))();
     iVar3 = 0;
-    if (0 < DAT_004aaf3c) {
+    if (0 < fx_queue_rotated) {
       pfVar2 = (float *)&DAT_00490430;
       puVar4 = &DAT_0049bb40;
       do {
@@ -20295,14 +20295,14 @@ void fx_queue_render(void)
         iVar3 = iVar3 + 1;
         puVar4 = puVar4 + 4;
         pfVar2 = pfVar2 + 2;
-      } while (iVar3 < DAT_004aaf3c);
+      } while (iVar3 < fx_queue_rotated);
     }
     (**(code **)(*DAT_0048083c + 0xf0))();
     (**(code **)(*DAT_0048083c + 0x20))(0x13,5);
     (**(code **)(*DAT_0048083c + 0x20))(0x14,6);
     (**(code **)(*DAT_0048083c + 0xe8))();
     iVar3 = 0;
-    if (0 < DAT_004aaf3c) {
+    if (0 < fx_queue_rotated) {
       pfVar2 = (float *)&DAT_00490430;
       puVar4 = &DAT_0049bb40;
       do {
@@ -20320,7 +20320,7 @@ void fx_queue_render(void)
         iVar3 = iVar3 + 1;
         puVar4 = puVar4 + 4;
         pfVar2 = pfVar2 + 2;
-      } while (iVar3 < DAT_004aaf3c);
+      } while (iVar3 < fx_queue_rotated);
     }
     (**(code **)(*DAT_0048083c + 0xf0))();
     return;
@@ -20992,7 +20992,7 @@ void bonus_render(void)
       do {
         if (0.0 < pfVar6[-0xb]) {
           iVar16 = 0;
-          piVar4 = &DAT_00482948;
+          piVar4 = &bonus_pool;
           do {
             if ((*piVar4 != 0) &&
                (SQRT((*pfVar6 - (float)piVar4[4]) * (*pfVar6 - (float)piVar4[4]) +
@@ -21000,7 +21000,7 @@ void bonus_render(void)
               if (DAT_00487270 == 9) {
                 *piVar15 = *piVar15 + DAT_00480844;
               }
-              pcVar7 = bonus_label_for_entry(&DAT_00482948 + iVar16 * 7);
+              pcVar7 = bonus_label_for_entry(&bonus_pool + iVar16 * 7);
               fVar18 = (_DAT_00484fcc + pfVar6[1]) - 7.0;
               piVar15 = (int *)(**(code **)(*DAT_0048083c + 0x14c))(pcVar7);
               if ((float)DAT_00480504 < (float)(int)piVar15 + fVar18) {
@@ -21016,7 +21016,7 @@ void bonus_render(void)
 LAB_00429df8:
           if (((0x28a < *piVar15) && (iVar2 = perk_count_get(DAT_004c2bf8), iVar2 != 0)) &&
              ((&DAT_0048294c)[iVar16 * 0x1c] == '\0')) {
-            bonus_apply(iVar5,&DAT_00482948 + iVar16 * 7);
+            bonus_apply(iVar5,&bonus_pool + iVar16 * 7);
             (&DAT_0048294c)[iVar16 * 0x1c] = 1;
             (&DAT_00482950)[iVar16 * 7] = 0x3f000000;
             (&DAT_004aaf60)[iVar5] = 0;
@@ -26086,7 +26086,7 @@ void __cdecl quest_start_selected(int tier,int index)
   DAT_00482b08 = 0;
   DAT_00486fd0 = 0;
   DAT_00487244 = 0;
-  DAT_004aaf3c = 0;
+  fx_queue_rotated = 0;
   DAT_004aaf18 = 0;
   DAT_00487085 = 0;
   DAT_00487060 = 0;
@@ -31529,7 +31529,7 @@ void FUN_004457c0(void)
   FUN_00409500();
   gameplay_render_world();
   FUN_00445600();
-  puVar8 = &DAT_00482948;
+  puVar8 = &bonus_pool;
   do {
     *puVar8 = 0;
     puVar8 = puVar8 + 7;

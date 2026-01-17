@@ -15,9 +15,21 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00482948",
+      "name": "bonus_pool",
+      "comment": "Bonus/pickup pool base (16 entries, stride 0x1c)"
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004908d4",
       "name": "player_table",
       "comment": "Per-player table base (stride 0xd8)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004912b8",
+      "name": "fx_queue",
+      "comment": "FX queue base (0x80 entries, stride 0x28)"
     },
     {
       "program": "crimsonland.exe",
@@ -27,9 +39,33 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00493eb8",
+      "name": "particle_pool",
+      "comment": "Particle pool base (0x80 entries, stride 0x38)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00495ad8",
+      "name": "secondary_projectile_pool",
+      "comment": "Secondary projectile pool base (0x40 entries, stride 0x2c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00496820",
+      "name": "sprite_effect_pool",
+      "comment": "Sprite effect pool base (stride 0x2c)"
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x0049bf38",
       "name": "creature_pool",
       "comment": "Creature pool base (0x180 entries, stride 0x98)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004aaf3c",
+      "name": "fx_queue_rotated",
+      "comment": "Rotated FX queue base (0x40 entries)"
     },
     {
       "program": "crimsonland.exe",
