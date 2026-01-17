@@ -518,3 +518,630 @@ If you want, paste one or two representative snippets from your *pre-0.15* code 
 [6]: https://zig.guide/standard-library/readers-and-writers/ "https://zig.guide/standard-library/readers-and-writers/"
 [7]: https://zig.guide/standard-library/json/ "https://zig.guide/standard-library/json/"
 [8]: https://renatoathaydes.github.io/zig-common-tasks/ "https://renatoathaydes.github.io/zig-common-tasks/"
+
+---
+
+Below is a “how to write idiomatic Zig” guide aimed at **Zig 0.15.x** (what you called “Zig 15”). I’m going to assume **Zig 0.15.2** as the reference point (released **2025‑10‑11**). ([Zig Programming Language][1])
+
+---
+
+# Idiomatic Zig 0.15: style, patterns, and cheatsheets
+
+## The mindset that produces idiomatic Zig
+
+Zig’s own “Zen” is a good north star. It’s not “rules”, but it explains why idioms look the way they do. ([Zig Programming Language][2])
+
+* **Communicate intent precisely.** ([Zig Programming Language][2])
+* **Edge cases matter.** ([Zig Programming Language][2])
+* **Favor reading code over writing code.** ([Zig Programming Language][2])
+* **Only one obvious way to do things.** ([Zig Programming Language][2])
+* **Runtime crashes are better than bugs.** ([Zig Programming Language][2])
+* **Compile errors are better than runtime crashes.** ([Zig Programming Language][2])
+* **Incremental improvements.** ([Zig Programming Language][2])
+* **Avoid local maximums.** ([Zig Programming Language][2])
+* **Reduce the amount one must remember.** ([Zig Programming Language][2])
+* **Minimize energy spent on coding style.** ([Zig Programming Language][2])
+* **Together we serve the users.** ([Zig Programming Language][2])
+
+Two other “philosophy facts” drive idioms a lot:
+
+* Zig tries hard to avoid **hidden control flow** and **hidden allocations**—you can usually trust what you see. ([Zig Programming Language][3])
+* Zig expects you to **handle allocation failure** and to pass allocators into code that needs them. ([Zig Programming Language][3])
+
+---
+
+## “Style” in Zig: mostly just `zig fmt`
+
+### The golden rule
+
+Run **`zig fmt`** and don’t fight it. The official style guide explicitly says `zig fmt` will apply the recommendations and that a style guide is only needed for cases where `zig fmt` doesn’t format something. ([Zig Programming Language][2])
+
+### Naming conventions (official)
+
+The language reference’s style guide lays out the conventions most people treat as canonical: ([Zig Programming Language][2])
+
+* `lower_snake_case` for:
+
+  * functions
+  * variables
+  * file names (when the file is “a namespace/module”) ([Zig Programming Language][2])
+* `TitleCase` for:
+
+  * types (`struct`, `enum`, `union`, etc.) ([Zig Programming Language][2])
+* Names should **not** redundantly encode the namespace/type (avoid `array_list.ArrayList`-style repetition). ([Zig Programming Language][2])
+
+### Doc comments (official)
+
+* `///` documents the next declaration.
+* `//!` documents the containing *thing* (often a file/module). ([Zig Programming Language][2])
+
+The style guide also recommends a useful convention in API docs:
+
+* Use **“Assume”** for preconditions that are *illegal behavior* if violated.
+* Use **“Assert”** for preconditions that are checked and produce safety-checked failure. ([Zig Programming Language][2])
+
+### Bonus: generating docs
+
+Doc comments can be emitted as HTML using `zig test -femit-docs …`. ([Zig Programming Language][2])
+
+---
+
+## Idiomatic defaults: `const`, explicit lifetimes, explicit ownership
+
+### Prefer `const` by default
+
+Idiomatic Zig code is aggressively immutable until it must be mutable:
+
+```zig
+const std = @import("std");
+
+pub fn main() !void {
+    const greeting = "hello";
+    var counter: usize = 0;
+
+    // counter changes, greeting doesn’t.
+    counter += 1;
+    _ = greeting;
+}
+```
+
+This aligns with “communicate intent precisely”: mutability stands out.
+
+### Ownership & lifetime are part of the API surface
+
+The language reference is blunt: it’s the programmer’s responsibility to ensure pointers aren’t used after the memory is gone, and docs should explain who “owns” returned pointers. ([Zig Programming Language][2])
+
+Idiomatic library functions that return allocated memory typically follow this contract:
+
+* Function takes `allocator: std.mem.Allocator`
+* Return value is `![]u8` / `![]T`
+* Doc says: **caller owns returned memory** → caller frees it with the same allocator
+
+Example pattern:
+
+```zig
+/// Reads an entire file into memory.
+/// Caller owns the returned buffer and must free it with `allocator.free`.
+fn read_file_alloc(allocator: std.mem.Allocator, path: []const u8, max: usize) ![]u8 {
+    const std = @import("std");
+
+    const file = try std.fs.cwd().openFile(path, .{ .read = true });
+    defer file.close();
+
+    var buf: [4096]u8 = undefined;
+    var r = file.reader(&buf);
+
+    // readAlloc allocates up to `max`, else error (e.g. StreamTooLong).
+    const data = try r.interface.readAlloc(allocator, max);
+    return data;
+}
+```
+
+That `file.reader(&buf)` + `r.interface.readAlloc(...)` pattern matches current 0.15-era usage. ([Zig Guide][4])
+
+---
+
+## Strings, bytes, and “arrays vs slices” (the idiomatic mental model)
+
+### Strings are bytes
+
+In Zig, “strings” are usually just `[]const u8` (a byte slice you *treat* as UTF‑8).
+
+### Arrays vs slices (practical meaning)
+
+* `[N]T` is an **array value** with length known at compile time.
+* `[]T` is a **slice**: pointer + length (a view into something else).
+* `[]const u8` is the most common “string view”.
+
+### String literals are *not* mutable slices
+
+The language reference shows this sharp edge clearly: string literals have an array pointer type, and you can’t assign them to `[]u8` (mutable slice).
+
+If you want a mutable buffer, allocate or use an array:
+
+```zig
+var buf: [13]u8 = "hello, world!".*; // make a mutable copy
+const slice: []u8 = buf[0..];
+```
+
+---
+
+## Errors & optionals: idiomatic control flow tools
+
+### Errors are values and can’t be silently ignored
+
+Zig will complain if you discard an error union without handling it, and it tells you to use `try`, `catch`, or `if`. ([Zig Programming Language][3])
+
+### Idiomatic patterns
+
+**1) Propagate with `try`**
+
+```zig
+const file = try std.fs.cwd().openFile("x.txt", .{});
+defer file.close();
+```
+
+**2) Handle or map with `catch`**
+
+```zig
+const file = std.fs.cwd().openFile("x.txt", .{}) catch |err| switch (err) {
+    error.FileNotFound => return, // treat as “no-op”
+    else => return err,
+};
+defer file.close();
+```
+
+**3) Cleanup on errors with `errdefer`**
+This is the “idiomatic RAII substitute”: allocate in steps, `errdefer` cleanup each step.
+
+```zig
+var list: std.ArrayList(u8) = .empty;
+errdefer list.deinit(allocator);
+
+try list.appendSlice(allocator, "hello");
+// if later code errors, list gets deinit’d automatically
+```
+
+**4) Use `?T` for “maybe present”, not `error`**
+
+* `?T` means “this is allowed to be missing”
+* `error!T` means “this operation can fail”
+
+### Heap allocation failure is a first-class error
+
+Zig’s docs explicitly recommend treating `error.OutOfMemory` as the representation of heap allocation failure, rather than unconditionally crashing. ([Zig Programming Language][2])
+
+That’s why idiomatic Zig APIs:
+
+* take allocators explicitly
+* return `error.OutOfMemory` when they allocate
+
+---
+
+## Resource management: `defer` and “make cleanup obvious”
+
+Idiomatic Zig tries to make resource cleanup visually checkable:
+
+```zig
+const file = try std.fs.cwd().openFile("data.bin", .{});
+defer file.close(); // always runs, even on error
+
+// ...
+```
+
+Use `errdefer` when the cleanup is only correct for the error path (e.g., before “ownership” has been transferred).
+
+---
+
+## Containers in Zig 0.15: ArrayList is unmanaged by default
+
+### The big idiom shift
+
+In Zig 0.15, the **unmanaged** variant is the default:
+
+* `std.ArrayList` → `std.array_list.Managed` (old “allocator-storing” flavor)
+* the default `std.ArrayList` now follows the “pass allocator to methods” style
+  The release notes explain the rationale and warn the managed names will eventually be removed. ([Zig Programming Language][5])
+
+### Idiomatic ArrayList usage (0.15)
+
+Use `.empty`, pass an allocator to operations, and `deinit(allocator)`:
+
+```zig
+const std = @import("std");
+
+test "arraylist basics" {
+    const allocator = std.testing.allocator;
+
+    var list: std.ArrayList(u8) = .empty;
+    defer list.deinit(allocator);
+
+    try list.appendSlice(allocator, "Hello");
+    try list.appendSlice(allocator, " World!");
+
+    try std.testing.expectEqualStrings("Hello World!", list.items);
+}
+```
+
+That matches common 0.15-era examples. ([Zig Guide][6])
+
+### Stack-buffer backed “array list”
+
+0.15 also pushes a pattern: if you want a fixed maximum but stack storage, use `ArrayListUnmanaged.initBuffer(&buffer)` and bounded appends. ([Zig Programming Language][5])
+
+---
+
+## I/O in Zig 0.15: the idiomatic Reader/Writer style
+
+Zig 0.15’s I/O story heavily influences “idiomatic Zig”, because it nudges you to write APIs that accept readers/writers rather than concrete streams or generic types.
+
+### The core idiom
+
+* Create a writer/reader with an explicit buffer
+* Pass around `*std.Io.Writer` / `*std.Io.Reader` (the interface)
+* Remember to `flush()` when you need output visible
+
+The release notes are explicit: “Please use buffering! And don’t forget to flush!” and show the new stdout pattern. ([Zig Programming Language][5])
+
+Example (stdout):
+
+```zig
+const std = @import("std");
+
+pub fn main() !void {
+    var buf: [1024]u8 = undefined;
+    var w = std.fs.File.stdout().writer(&buf);
+    const stdout = &w.interface;
+
+    try stdout.print("Hello, {s}!\n", .{"world"});
+    try stdout.flush();
+}
+```
+
+### Write functions that accept a writer (idiomatic library design)
+
+```zig
+fn greet(writer: *std.Io.Writer, name: []const u8) !void {
+    try writer.print("Hello, {s}!\n", .{name});
+}
+```
+
+This is idiomatic because:
+
+* it avoids hidden allocations (callers choose buffering / destination)
+* it composes with files, sockets, memory writers, etc.
+
+### `std.debug.print` is for “debug output; ignore errors”
+
+The language reference notes that `std.debug.print` is appropriate for stderr where errors are irrelevant, and it’s simpler than building your own writer. ([Zig Programming Language][2])
+
+---
+
+## Formatting in Zig 0.15: `{f}`, new `format` signature, and “print everywhere”
+
+### Prefer `writer.print(...)` over `std.fmt.format`
+
+0.15 deprecates/redirects older formatting patterns toward writers:
+
+* `std.fmt.format -> std.Io.Writer.print` ([Zig Programming Language][5])
+
+### `{f}` is how you call a type’s format method now
+
+Zig 0.15.1 changed custom formatting:
+
+* Old `format` took a format string + options + `anytype writer`
+* New `format` is:
+
+  ```zig
+  pub fn format(this: @This(), writer: *std.Io.Writer) std.Io.Writer.Error!void
+  ```
+
+  ([Zig Programming Language][5])
+
+And it’s invoked with `{f}` rather than `{}`. ([Zig Programming Language][5])
+
+### `std.fmt.allocPrint` and friends are still idiomatic when you need a string
+
+If you truly want a string in memory, `std.fmt.allocPrint` is a straightforward idiom. ([Zig Guide][7])
+
+```zig
+const s = try std.fmt.allocPrint(allocator, "{d} + {d}", .{ 1, 2 });
+defer allocator.free(s);
+```
+
+### Formatting specifier cheat sheet (common ones)
+
+A few that show up constantly (examples are from Zig 0.15.2 guides): ([Zig Guide][8])
+
+* `{s}` string / byte slice
+* `{d}` decimal (ints & floats)
+* `{x}` / `{X}` hex (lower/upper)
+* `{b}` binary, `{o}` octal
+* `{c}` ASCII character for a byte
+* `{*}` pointer address formatting ([Zig Guide][8])
+* `{e}` scientific notation ([Zig Guide][8])
+* `{t}` shorthand for `@tagName()` / `@errorName()` ([Zig Programming Language][5])
+* `{B}` / `{Bi}` size formatting variants ([Zig Guide][8])
+* `{f}` call `.format(writer)` on a value ([Zig Programming Language][5])
+
+---
+
+## JSON in Zig 0.15: idiomatic parsing & printing
+
+### Parse into a typed struct (idiomatic)
+
+The “typed parse” pattern is:
+
+* `std.json.parseFromSlice(T, allocator, input, options)`
+* `defer parsed.deinit()`
+* use `parsed.value`
+
+Example: ([Zig Guide][9])
+
+```zig
+const Place = struct { lat: f32, long: f32 };
+
+const parsed = try std.json.parseFromSlice(
+    Place,
+    allocator,
+    input_bytes,
+    .{},
+);
+defer parsed.deinit();
+
+const place = parsed.value;
+```
+
+### Stringify / format JSON (idiomatic)
+
+A convenient idiom in 0.15 is: create an allocating writer, then `print("{f}", .{std.json.fmt(value, .{})})`. ([Zig Guide][9])
+
+```zig
+var out: std.io.Writer.Allocating = .init(allocator);
+defer out.deinit();
+
+try out.writer.print("{f}", .{std.json.fmt(value, .{})});
+const json_bytes = out.written();
+```
+
+(Notice the `{f}`: it matches the 0.15 formatting model.) ([Zig Guide][9])
+
+Also note: JSON parsing needs an allocator for strings/arrays/maps inside JSON data. ([Zig Guide][9])
+
+---
+
+## Build system (0.15 idioms): `root_module` + `createModule`
+
+A minimal, idiomatic `build.zig` in 0.15 looks like this (from Zig’s build system docs): ([Zig Programming Language][10])
+
+```zig
+const std = @import("std");
+
+pub fn build(b: *std.Build) void {
+    const exe = b.addExecutable(.{
+        .name = "hello",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("hello.zig"),
+            .target = b.graph.host,
+        }),
+    });
+
+    b.installArtifact(exe);
+}
+```
+
+If you’re coming from older versions: 0.15 removed deprecated root module fields, so this `root_module = b.createModule(...)` style is the “new normal”. ([Zig Programming Language][5])
+
+---
+
+## Comptime & generics: idiomatic guidance (practical, not dogmatic)
+
+Zig idioms around generics tend to favor:
+
+* **Use `comptime` and `@TypeOf`** when it improves clarity, not just because you can.
+* Prefer a **`*std.Io.Writer` / `*std.Io.Reader`** argument (interface) over `anytype` writer/reader in public APIs if you want to avoid code bloat and keep call sites stable—0.15’s I/O changes reinforce this. ([Zig Programming Language][5])
+* When supporting multiple Zig versions, prefer **feature detection** (`@hasDecl`, `@hasField`) over version checks. ([Zig Programming Language][2])
+
+---
+
+# Cheatsheets
+
+## 1) Declarations & basics
+
+```zig
+const std = @import("std");
+
+// immutable binding
+const x: i32 = 123;
+
+// mutable binding
+var y: usize = 0;
+
+// function
+fn add(a: i32, b: i32) i32 {
+    return a + b;
+}
+
+// error-returning main (common)
+pub fn main() !void {}
+
+// test
+test "something" {
+    try std.testing.expect(true);
+}
+```
+
+## 2) Types: arrays, slices, pointers
+
+* `[N]T` → array value (stack-allocated when local)
+* `[]T` → slice (ptr + len)
+* `[]const u8` → most common “string”
+* `*T` → single-item pointer (non-null)
+* `?*T` → optional pointer
+* `[*]T` → many-item pointer (unknown length)
+* `[*:0]const u8` → sentinel-terminated pointer (C string)
+* `[:0]u8` → sentinel-terminated slice
+
+**String literal reminder:** not a mutable `[]u8` by default.
+
+## 3) Optionals (`?T`)
+
+```zig
+const maybe: ?u32 = 10;
+
+const v1: u32 = maybe orelse 0;
+
+if (maybe) |v| {
+    // v: u32
+} else {
+    // was null
+}
+```
+
+## 4) Errors (`error!T`) and propagation
+
+```zig
+fn mightFail() !u32 {
+    return 123;
+}
+
+pub fn main() !void {
+    const v = try mightFail();
+    _ = v;
+}
+```
+
+Handle an error:
+
+```zig
+const v = mightFail() catch |err| switch (err) {
+    error.OutOfMemory => 0,
+    else => return err,
+};
+```
+
+## 5) Resource cleanup (`defer` / `errdefer`)
+
+```zig
+const file = try std.fs.cwd().openFile("data.txt", .{});
+defer file.close();
+
+// allocate
+var list: std.ArrayList(u8) = .empty;
+errdefer list.deinit(allocator);
+
+try list.appendSlice(allocator, "hi");
+defer list.deinit(allocator); // once ownership is “committed”
+```
+
+## 6) ArrayList (0.15 style)
+
+**Heap-backed:**
+
+```zig
+var list: std.ArrayList(u8) = .empty;
+defer list.deinit(allocator);
+
+try list.append(allocator, 'A');
+try list.appendSlice(allocator, "BC");
+```
+
+(That `.empty` + `deinit(allocator)` style is standard 0.15-era usage.) ([Zig Guide][6])
+
+**Stack-backed buffer:**
+
+```zig
+var buf: [64]u8 = undefined;
+var list = std.ArrayListUnmanaged(u8).initBuffer(&buf);
+// bounded appends exist in 0.15 era
+```
+
+([Zig Programming Language][5])
+
+## 7) I/O (0.15 stdout writer pattern)
+
+```zig
+var buf: [1024]u8 = undefined;
+var w = std.fs.File.stdout().writer(&buf);
+const out = &w.interface;
+
+try out.print("Hello {s}\n", .{"world"});
+try out.flush();
+```
+
+([Zig Programming Language][5])
+
+## 8) “Write to memory” patterns
+
+* Use `std.ArrayList(u8)` and `list.print(allocator, ...)` ([Zig Guide][4])
+* Or use an allocating writer for formatting / JSON output ([Zig Guide][9])
+
+Example with `ArrayList`:
+
+```zig
+var list: std.ArrayList(u8) = .empty;
+defer list.deinit(allocator);
+
+try list.print(allocator, "Hello {s}!", .{"World"});
+```
+
+([Zig Guide][4])
+
+## 9) Formatting quick ref
+
+* Build a string: `std.fmt.allocPrint` ([Zig Guide][7])
+* Print to any writer: `writer.print(...)` (and prefer this over older `std.fmt.format`) ([Zig Programming Language][5])
+* Custom formatting: implement `format(this, writer: *std.Io.Writer) ...` and call with `{f}` ([Zig Programming Language][5])
+
+## 10) JSON quick ref
+
+**Parse:**
+
+```zig
+const parsed = try std.json.parseFromSlice(T, allocator, bytes, .{});
+defer parsed.deinit();
+const value = parsed.value;
+```
+
+([Zig Guide][9])
+
+**Stringify / print:**
+
+```zig
+try writer.print("{f}", .{std.json.fmt(value, .{})});
+```
+
+([Zig Guide][9])
+
+## 11) Build.zig “hello world”
+
+```zig
+pub fn build(b: *std.Build) void {
+    const exe = b.addExecutable(.{
+        .name = "hello",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("hello.zig"),
+            .target = b.graph.host,
+        }),
+    });
+    b.installArtifact(exe);
+}
+```
+
+([Zig Programming Language][10])
+
+---
+
+If you want, I can also provide an **“idiomatic Zig 0.15 project skeleton”** (file layout + `main.zig` template + `build.zig` + common helper modules), but the core patterns above are the ones that make Zig code *feel* idiomatic in 0.15—especially the allocator discipline, the ownership documentation habit, and the new Reader/Writer + `{f}` formatting ecosystem.
+
+[1]: https://ziglang.org/download/ "https://ziglang.org/download/"
+[2]: https://ziglang.org/documentation/0.15.2/ "https://ziglang.org/documentation/0.15.2/"
+[3]: https://ziglang.org/learn/overview/ "https://ziglang.org/learn/overview/"
+[4]: https://zig.guide/standard-library/readers-and-writers/ "https://zig.guide/standard-library/readers-and-writers/"
+[5]: https://ziglang.org/download/0.15.1/release-notes.html "https://ziglang.org/download/0.15.1/release-notes.html"
+[6]: https://zig.guide/standard-library/arraylist/ "https://zig.guide/standard-library/arraylist/"
+[7]: https://zig.guide/standard-library/formatting/ "https://zig.guide/standard-library/formatting/"
+[8]: https://zig.guide/standard-library/formatting-specifiers/ "https://zig.guide/standard-library/formatting-specifiers/"
+[9]: https://zig.guide/standard-library/json/ "https://zig.guide/standard-library/json/"
+[10]: https://ziglang.org/learn/build-system/ "https://ziglang.org/learn/build-system/"
+
