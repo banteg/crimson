@@ -26,7 +26,7 @@ This page is generated. Run `uv run python scripts/gen_all_pages.py` to update.
 - [Progress metrics](metrics.md)
 - [Perk ID map](perk-id-map.md)
 - [Extraction pipeline](pipeline.md)
-- [Player struct (player_table / DAT_004908d4)](player-struct.md)
+- [Player struct (player_health / DAT_004908d4)](player-struct.md)
 - [Projectile struct](projectile-struct.md)
 - [Build provenance and hashes](provenance.md)
 - [Refactor attempt](refactor.md)

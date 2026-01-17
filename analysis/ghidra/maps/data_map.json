@@ -58,194 +58,206 @@
     {
       "program": "crimsonland.exe",
       "address": "0x004908d4",
-      "name": "player_table",
-      "comment": "Per-player table base (stride 0xd8)"
+      "name": "player_health",
+      "comment": "Per-player health (player table base, stride 0xd8)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004908c0",
+      "name": "player_death_timer",
+      "comment": "Per-player death/respawn timer (player_health - 0x14)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x004908c4",
       "name": "player_pos_x",
-      "comment": "Per-player position X (player_table - 0x10)"
+      "comment": "Per-player position X (player_health - 0x10)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x004908c8",
       "name": "player_pos_y",
-      "comment": "Per-player position Y (player_table - 0x0c)"
+      "comment": "Per-player position Y (player_health - 0x0c)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x004908cc",
       "name": "player_move_dx",
-      "comment": "Per-player movement delta X (player_table - 0x08)"
+      "comment": "Per-player movement delta X (player_health - 0x08)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x004908d0",
       "name": "player_move_dy",
-      "comment": "Per-player movement delta Y (player_table - 0x04)"
+      "comment": "Per-player movement delta Y (player_health - 0x04)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x004908dc",
       "name": "player_heading",
-      "comment": "Per-player body heading radians (player_table + 0x08)"
+      "comment": "Per-player body heading radians (player_health + 0x08)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x004908e4",
       "name": "player_size",
-      "comment": "Per-player size/diameter (player_table + 0x10)"
+      "comment": "Per-player size/diameter (player_health + 0x10)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x00490900",
       "name": "player_aim_x",
-      "comment": "Per-player aim target X (player_table + 0x2c)"
+      "comment": "Per-player aim target X (player_health + 0x2c)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x00490904",
       "name": "player_aim_y",
-      "comment": "Per-player aim target Y (player_table + 0x30)"
+      "comment": "Per-player aim target Y (player_health + 0x30)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x0049090c",
       "name": "player_speed_multiplier",
-      "comment": "Per-player movement speed multiplier (player_table + 0x38)"
+      "comment": "Per-player movement speed multiplier (player_health + 0x38)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x00490918",
       "name": "player_move_speed",
-      "comment": "Per-player move speed/accel factor (player_table + 0x44)"
+      "comment": "Per-player move speed/accel factor (player_health + 0x44)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x0049094c",
       "name": "player_hot_tempered_timer",
-      "comment": "Per-player Hot Tempered timer (player_table + 0x78)"
+      "comment": "Per-player Hot Tempered timer (player_health + 0x78)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x00490950",
       "name": "player_man_bomb_timer",
-      "comment": "Per-player Man Bomb charge timer (player_table + 0x7c)"
+      "comment": "Per-player Man Bomb charge timer (player_health + 0x7c)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x00490954",
       "name": "player_living_fortress_timer",
-      "comment": "Per-player Living Fortress timer (player_table + 0x80)"
+      "comment": "Per-player Living Fortress timer (player_health + 0x80)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x00490958",
       "name": "player_fire_cough_timer",
-      "comment": "Per-player Fire Cough timer (player_table + 0x84)"
+      "comment": "Per-player Fire Cough timer (player_health + 0x84)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x00490b68",
       "name": "player_spread_heat",
-      "comment": "Per-player spread/heat accumulator (player_table + 0x294)"
+      "comment": "Per-player spread/heat accumulator (player_health + 0x294)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490bc0",
+      "name": "player_low_health_timer",
+      "comment": "Low-health warning timer (player_health + 0x2ec)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x00490b70",
       "name": "player_weapon_id",
-      "comment": "Per-player current weapon id (player_table + 0x29c)"
+      "comment": "Per-player current weapon id (player_health + 0x29c)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x00490b74",
       "name": "player_clip_size",
-      "comment": "Per-player clip size (player_table + 0x2a0)"
+      "comment": "Per-player clip size (player_health + 0x2a0)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x00490b7c",
       "name": "player_ammo",
-      "comment": "Per-player current ammo (player_table + 0x2a8)"
+      "comment": "Per-player current ammo (player_health + 0x2a8)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x00490b80",
       "name": "player_reload_timer",
-      "comment": "Per-player reload timer (player_table + 0x2ac)"
+      "comment": "Per-player reload timer (player_health + 0x2ac)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x00490b84",
       "name": "player_shot_cooldown",
-      "comment": "Per-player shot cooldown timer (player_table + 0x2b0)"
+      "comment": "Per-player shot cooldown timer (player_health + 0x2b0)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x00490b88",
       "name": "player_reload_timer_max",
-      "comment": "Per-player reload timer max (player_table + 0x2b4)"
+      "comment": "Per-player reload timer max (player_health + 0x2b4)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x00490b8c",
       "name": "player_alt_weapon_id",
-      "comment": "Per-player alt weapon id (player_table + 0x2b8)"
+      "comment": "Per-player alt weapon id (player_health + 0x2b8)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x00490b90",
       "name": "player_alt_clip_size",
-      "comment": "Per-player alt clip size (player_table + 0x2bc)"
+      "comment": "Per-player alt clip size (player_health + 0x2bc)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x00490b98",
       "name": "player_alt_ammo",
-      "comment": "Per-player alt ammo count (player_table + 0x2c4)"
+      "comment": "Per-player alt ammo count (player_health + 0x2c4)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x00490b9c",
       "name": "player_alt_reload_timer",
-      "comment": "Per-player alt reload timer (player_table + 0x2c8)"
+      "comment": "Per-player alt reload timer (player_health + 0x2c8)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x00490ba0",
       "name": "player_alt_shot_cooldown",
-      "comment": "Per-player alt shot cooldown (player_table + 0x2cc)"
+      "comment": "Per-player alt shot cooldown (player_health + 0x2cc)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x00490ba4",
       "name": "player_alt_reload_timer_max",
-      "comment": "Per-player alt reload timer max (player_table + 0x2d0)"
+      "comment": "Per-player alt reload timer max (player_health + 0x2d0)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x00490bb0",
       "name": "player_aim_heading",
-      "comment": "Per-player aim heading radians (player_table + 0x2dc)"
+      "comment": "Per-player aim heading radians (player_health + 0x2dc)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x00490bc4",
       "name": "player_speed_bonus_timer",
-      "comment": "Per-player speed bonus timer (player_table + 0x2f0)"
+      "comment": "Per-player speed bonus timer (player_health + 0x2f0)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x00490bc8",
       "name": "player_shield_timer",
-      "comment": "Per-player shield timer (player_table + 0x2f4)"
+      "comment": "Per-player shield timer (player_health + 0x2f4)"
     },
     {
       "program": "crimsonland.exe",
       "address": "0x00490bcc",
       "name": "player_fire_bullets_timer",
-      "comment": "Per-player Fire Bullets timer (player_table + 0x2f8)"
+      "comment": "Per-player Fire Bullets timer (player_health + 0x2f8)"
     },
     {
       "program": "crimsonland.exe",

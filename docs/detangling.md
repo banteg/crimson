@@ -110,8 +110,8 @@ You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps
   - Evidence: 2×16 dword keybind table inside config blob; copied into runtime binds.
 - `DAT_00482948` -> `bonus_pool`
   - Evidence: bonus/pickup pool base with 16 entries (stride `0x1c`).
-- `DAT_004908d4` -> `player_table`
-  - Evidence: per-player table base with stride `0xd8` (players/inputs/aim state).
+- `DAT_004908d4` -> `player_health`
+  - Evidence: per-player health (table base) with stride `0xd8`; see player struct.
 - `DAT_004912b8` -> `fx_queue`
   - Evidence: FX queue base with 0x80 entries (stride `0x28`).
 - `DAT_004926b8` -> `projectile_pool`
@@ -743,8 +743,8 @@ See [Creature struct](creature-struct.md) for the expanded field map and cross-l
 - `FUN_004206a0` -> `creature_find_in_radius`
   - Evidence: returns the first creature index within `radius` starting at `start_index` (or `-1`).
 - `FUN_00420730` -> `player_find_in_radius`
-  - Evidence: scans the player table (`player_table`, `DAT_004908d4`), skipping the owner id, and
-    returns the first player within range.
+  - Evidence: scans the player health table (`player_health`, `DAT_004908d4`), skipping the owner id,
+    and returns the first player within range.
 - Layout (entry size `0x40`, base `projectile_pool` (`DAT_004926b8`), pool size `0x60`):
 
   | Offset | Field | Evidence |

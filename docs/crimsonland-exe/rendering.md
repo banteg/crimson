@@ -20,9 +20,9 @@ Order of major passes:
 1) `fx_queue_render` (`FUN_00427920`)
 2) `FUN_004188a0` (terrain/backbuffer blit)
 3) `player_render_overlays` (`FUN_00428390`) for players with
-   `player_table` (`DAT_004908d4`) <= 0
+   `player_health` (`DAT_004908d4`) <= 0
 4) `creature_render_all` (`FUN_00419680`)
-5) `player_render_overlays` for players with `player_table` (`DAT_004908d4`) > 0
+5) `player_render_overlays` for players with `player_health` (`DAT_004908d4`) > 0
 6) `projectile_render` (`FUN_00422c70`)
 7) `bonus_render` (`FUN_004295f0`)
 8) `grim_draw_fullscreen_color` fade when `DAT_00487264 > 0`

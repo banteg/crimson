@@ -18,7 +18,7 @@ standalone data tables.
 ### Per-player runtime fields (partial)
 
 These are the most important per-player arrays that bridge weapons, perks, and
-bonuses (stride `0xd8`, base `player_table` / `DAT_004908d4`). See
+bonuses (stride `0xd8`, base `player_health` / `DAT_004908d4`). See
 [Player struct](../player-struct.md) for offsets and related fields.
 
 | Offset | Symbol | Meaning | Source / Notes |
