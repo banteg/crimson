@@ -271,7 +271,7 @@ public class ApplyDataMap extends GhidraScript {
                         }
                         created++;
                         changed = true;
-                    } catch (DuplicateNameException | InvalidInputException e) {
+                    } catch (Exception e) {
                         printerr("Create label failed for " + row.name + ": " + e.getMessage());
                     }
                 } else if (!symbol.getName().equals(row.name)) {
@@ -279,7 +279,7 @@ public class ApplyDataMap extends GhidraScript {
                         symbol.setName(row.name, SourceType.USER_DEFINED);
                         renamed++;
                         changed = true;
-                    } catch (DuplicateNameException | InvalidInputException e) {
+                    } catch (Exception e) {
                         printerr("Rename failed for " + row.name + ": " + e.getMessage());
                     }
                 }

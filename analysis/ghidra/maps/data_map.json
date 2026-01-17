@@ -1,4 +1,29 @@
 {
   "notes": "Data label map for globals and tables. Keep names unique per program.",
-  "entries": []
+  "entries": [
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00480348",
+      "name": "config_blob",
+      "comment": "crimson.cfg blob (0x480 bytes)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00480510",
+      "name": "config_keybind_table",
+      "comment": "keybind table (2x16 dwords) inside config blob"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bf38",
+      "name": "creature_pool",
+      "comment": "Creature pool base (0x180 entries, stride 0x98)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004d7a2c",
+      "name": "weapon_table",
+      "comment": "Weapon table base (stride 0x7c bytes)"
+    }
+  ]
 }

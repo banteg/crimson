@@ -2,15 +2,15 @@ openjdk version "21.0.9" 2025-10-21
 OpenJDK Runtime Environment (build 21.0.9+10-Ubuntu-125.10)
 OpenJDK 64-Bit Server VM (build 21.0.9+10-Ubuntu-125.10, mixed mode)
 INFO  Using log config file: jar:file:/opt/ghidra_12.0.1_PUBLIC/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml (LoggingInitialization)  
-INFO  Using log file: source/decompiled/ghidra_analysis.log (LoggingInitialization)  
+INFO  Using log file: analysis/ghidra/raw/ghidra_analysis.log (LoggingInitialization)  
 INFO  Loading user preferences: /home/node/.config/ghidra/ghidra_12.0.1_PUBLIC/preferences (Preferences)  
 INFO  Searching for classes... (ClassSearcher)  
-INFO  Class search complete (701 ms) (ClassSearcher)  
+INFO  Class search complete (724 ms) (ClassSearcher)  
 INFO  Initializing SSL Context (DefaultSSLContextInitializer)  
 INFO  Initializing Random Number Generator... (SecureRandomFactory)  
 INFO  Random Number Generator initialization complete: NativePRNGNonBlocking (SecureRandomFactory)  
 INFO  Trust manager disabled, cacerts have not been set (DefaultTrustManagerFactory)  
-INFO  Headless startup complete (1326 ms) (AnalyzeHeadless)  
+INFO  Headless startup complete (1430 ms) (AnalyzeHeadless)  
 INFO  Class searcher loaded 58 extension points (18 false positives) (ClassSearcher)  
 INFO  HEADLESS Script Paths:
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger/ghidra_scripts
@@ -29,26 +29,26 @@ INFO  HEADLESS Script Paths:
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Jython/ghidra_scripts
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/DATA/ghidra_scripts
-    /workspace/scripts/ghidra_scripts
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/BSim/ghidra_scripts
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/8051/ghidra_scripts
+    /workspace/analysis/ghidra/scripts
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/PyGhidra/ghidra_scripts
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/SwiftDemangler/ghidra_scripts
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Decompiler/ghidra_scripts
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/FunctionID/ghidra_scripts
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/Atmel/ghidra_scripts (HeadlessAnalyzer)  
 INFO  HEADLESS: execution starts (HeadlessAnalyzer)  
-INFO  Creating temporary project: /tmp/ghidra_crimsonland_exe_172712 (HeadlessAnalyzer)  
-INFO  Creating project: /tmp/ghidra_crimsonland_exe_172712 (DefaultProject)  
+INFO  Creating temporary project: /tmp/ghidra_crimsonland_exe_201777 (HeadlessAnalyzer)  
+INFO  Creating project: /tmp/ghidra_crimsonland_exe_201777 (DefaultProject)  
 INFO  REPORT: Processing input files:  (HeadlessAnalyzer)  
-INFO       project: /tmp/ghidra_crimsonland_exe_172712 (HeadlessAnalyzer)  
-INFO  IMPORTING: file:///workspace/game/crimsonland.exe (HeadlessAnalyzer)  
+INFO       project: /tmp/ghidra_crimsonland_exe_201777 (HeadlessAnalyzer)  
+INFO  IMPORTING: file:///workspace/game_bins/crimsonland/1.9.93-gog/crimsonland.exe (HeadlessAnalyzer)  
 INFO  Using Loader: Portable Executable (PE) (ProgramLoader)  
 INFO  Using Language/Compiler: x86:LE:32:default:windows (ProgramLoader)  
 INFO  Using Library Search Path: [., /bin, /lib, /lib64, /lib/x86_64-linux-gnu, /lib/aarch64-linux-gnu, /usr/bin, /usr/lib, /usr/X11R6/bin, /usr/X11R6/lib, /usr/java/packages/lib, /usr/lib/aarch64-linux-gnu/jni, /usr/lib/aarch64-linux-gnu, /usr/lib/jni] (ProgramLoader)  
 INFO  Additional info:
-Loading file:///workspace/game/crimsonland.exe?MD5=b5734f679649e1e61b79b6071f7e0ee5...
+Loading file:///workspace/game_bins/crimsonland/1.9.93-gog/crimsonland.exe?MD5=b5734f679649e1e61b79b6071f7e0ee5...
 ------------------------------------------------
 
 Searching 8 paths for library ADVAPI32.DLL...
@@ -92,7 +92,7 @@ Library not found.
 ------------------------------------------------
 
 Searching 8 paths for library VORBISFILE.DLL...
-Loading file:///workspace/game/VORBISFILE.DLL?MD5=b226080606e45b6879ea02f1b5f47c5e...
+Loading file:///workspace/game_bins/crimsonland/1.9.93-gog/VORBISFILE.DLL?MD5=b226080606e45b6879ea02f1b5f47c5e...
 Created exports file: /home/node/.config/ghidra/ghidra_12.0.1_PUBLIC/symbols/win32/vorbisfile.exports
 Library not saved to project.
 ------------------------------------------------
@@ -124,7 +124,7 @@ Linking the External Programs of 'crimsonland.exe' to imported libraries...
 
  (ProgramLoader)  
 INFO  IMPORTING: Loaded 0 additional files (HeadlessAnalyzer)  
-INFO  ANALYZING all memory and code: file:///workspace/game/crimsonland.exe (HeadlessAnalyzer)  
+INFO  ANALYZING all memory and code: file:///workspace/game_bins/crimsonland/1.9.93-gog/crimsonland.exe (HeadlessAnalyzer)  
 WARN  Ignoring leading '_' chars on no-return name '___raise_securityfailure' specified in file: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn (NoReturnFunctionAnalyzer)  
 WARN  Ignoring leading '_' chars on no-return name '___report_rangecheckfailure' specified in file: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn (NoReturnFunctionAnalyzer)  
 INFO  Skipping PDB processing: missing PDB information in program metadata (PdbUniversalAnalyzer)  
@@ -132,58 +132,77 @@ INFO  Packed database cache: /var/tmp/node-ghidra/packed-db-cache (PackedDatabas
 INFO  Applied data type archive: windows_vs12_32 (ApplyDataArchiveAnalyzer)  
 INFO  Applied data type archive: windows_vs12_32 (ApplyDataArchiveAnalyzer)  
 INFO  -----------------------------------------------------
-    ASCII Strings                              0.232 secs
-    Apply Data Archives                        0.095 secs
+    ASCII Strings                              0.268 secs
+    Apply Data Archives                        0.121 secs
     Call Convention ID                         0.004 secs
-    Call-Fixup Installer                       0.020 secs
-    Create Address Tables                      0.066 secs
-    Create Address Tables - One Time           0.076 secs
-    Create Function                            0.183 secs
-    Data Reference                             0.094 secs
-    Decompiler Parameter ID                    8.644 secs
-    Decompiler Switch Analysis                21.886 secs
-    Demangler Microsoft                        0.005 secs
-    Disassemble                                0.206 secs
-    Disassemble Entry Points                   0.341 secs
-    Embedded Media                             0.010 secs
+    Call-Fixup Installer                       0.017 secs
+    Create Address Tables                      0.047 secs
+    Create Address Tables - One Time           0.057 secs
+    Create Function                            0.191 secs
+    Data Reference                             0.088 secs
+    Decompiler Parameter ID                    9.233 secs
+    Decompiler Switch Analysis                22.324 secs
+    Demangler Microsoft                        0.006 secs
+    Disassemble                                0.220 secs
+    Disassemble Entry Points                   0.355 secs
+    Embedded Media                             0.013 secs
     External Entry References                  0.000 secs
-    Function ID                                0.398 secs
-    Function Start Pre Search                  0.010 secs
-    Function Start Search                      0.071 secs
-    Function Start Search After Code           0.034 secs
-    Function Start Search After Data           0.020 secs
-    Function Start Search delayed - One Time   0.001 secs
-    Non-Returning Functions - Discovered       0.111 secs
+    Function ID                                0.384 secs
+    Function Start Pre Search                  0.014 secs
+    Function Start Search                      0.070 secs
+    Function Start Search After Code           0.030 secs
+    Function Start Search After Data           0.018 secs
+    Function Start Search delayed - One Time   0.003 secs
+    Non-Returning Functions - Discovered       0.098 secs
     Non-Returning Functions - Known            0.002 secs
     PDB Universal                              0.001 secs
-    Reference                                  0.319 secs
-    Scalar Operand References                  0.369 secs
-    Shared Return Calls                        0.095 secs
-    Stack                                      1.377 secs
-    Subroutine References                      0.828 secs
+    Reference                                  0.304 secs
+    Scalar Operand References                  0.386 secs
+    Shared Return Calls                        0.103 secs
+    Stack                                      1.571 secs
+    Subroutine References                      0.898 secs
     Subroutine References - One Time           0.005 secs
-    Windows x86 PE Exception Handling          0.968 secs
+    Windows x86 PE Exception Handling          1.026 secs
     Windows x86 PE RTTI Analyzer               0.000 secs
-    Windows x86 Thread Environment Block (TEB) Analyzer     0.008 secs
+    Windows x86 Thread Environment Block (TEB) Analyzer     0.011 secs
     WindowsResourceReference                   0.267 secs
-    X86 Function Callee Purge                  0.047 secs
-    x86 Constant Reference Analyzer            2.235 secs
+    X86 Function Callee Purge                  0.057 secs
+    x86 Constant Reference Analyzer            2.459 secs
 -----------------------------------------------------
-     Total Time   39 secs
+     Total Time   40 secs
 -----------------------------------------------------
  (AutoAnalysisManager)  
-INFO  REPORT: Analysis succeeded for file: file:///workspace/game/crimsonland.exe (HeadlessAnalyzer)  
-INFO  REPORT: Execute script: ApplyNameMap.java 'source/ghidra/name_map.json'  (HeadlessAnalyzer)  
-INFO  SCRIPT: /workspace/scripts/ghidra_scripts/ApplyNameMap.java (HeadlessAnalyzer)  
-INFO  ApplyNameMap.java> Applied name map: /workspace/source/ghidra/name_map.json (GhidraScript)  
+INFO  REPORT: Analysis succeeded for file: file:///workspace/game_bins/crimsonland/1.9.93-gog/crimsonland.exe (HeadlessAnalyzer)  
+INFO  REPORT: Execute script: ImportThirdPartyHeaders.java 'third_party/headers'  (HeadlessAnalyzer)  
+INFO  SCRIPT: /workspace/analysis/ghidra/scripts/ImportThirdPartyHeaders.java (HeadlessAnalyzer)  
+INFO  ImportThirdPartyHeaders.java> Parsing third-party headers into: crimsonland.exe (GhidraScript)  
+INFO  ImportThirdPartyHeaders.java> Headers root: /workspace/third_party/headers (GhidraScript)  
+INFO  parse /workspace/third_party/headers/jpeglib.h (CParserUtils)  
+INFO  parse /workspace/third_party/headers/zlib.h (CParserUtils)  
+INFO  parse /workspace/third_party/headers/ogg/ogg.h (CParserUtils)  
+INFO  parse /workspace/third_party/headers/vorbis/codec.h (CParserUtils)  
+INFO  parse /workspace/third_party/headers/vorbis/vorbisfile.h (CParserUtils)  
+INFO  REPORT: Execute script: ApplyWinapiGDT.java 'analysis/ghidra/maps/winapi_32.gdt'  (HeadlessAnalyzer)  
+INFO  SCRIPT: /workspace/analysis/ghidra/scripts/ApplyWinapiGDT.java (HeadlessAnalyzer)  
+INFO  ApplyWinapiGDT.java> Applying WinAPI GDT: /workspace/analysis/ghidra/maps/winapi_32.gdt (GhidraScript)  
+INFO  REPORT: Execute script: ApplyNameMap.java 'analysis/ghidra/maps/name_map.json'  (HeadlessAnalyzer)  
+INFO  SCRIPT: /workspace/analysis/ghidra/scripts/ApplyNameMap.java (HeadlessAnalyzer)  
+INFO  ApplyNameMap.java> Applied name map: /workspace/analysis/ghidra/maps/name_map.json (GhidraScript)  
 INFO  ApplyNameMap.java> Program: crimsonland.exe (GhidraScript)  
-INFO  ApplyNameMap.java> Updated entries: 183 (GhidraScript)  
-INFO  ApplyNameMap.java> Renamed: 183, Signatures: 153, Comments: 183 (GhidraScript)  
+INFO  ApplyNameMap.java> Updated entries: 186 (GhidraScript)  
+INFO  ApplyNameMap.java> Renamed: 186, Signatures: 156, Comments: 186 (GhidraScript)  
 INFO  ApplyNameMap.java> Missing: 0, Skipped: 128 (GhidraScript)  
+INFO  REPORT: Execute script: ApplyDataMap.java 'analysis/ghidra/maps/data_map.json'  (HeadlessAnalyzer)  
+INFO  SCRIPT: /workspace/analysis/ghidra/scripts/ApplyDataMap.java (HeadlessAnalyzer)  
+INFO  ApplyDataMap.java> Applied data map: /workspace/analysis/ghidra/maps/data_map.json (GhidraScript)  
+INFO  ApplyDataMap.java> Program: crimsonland.exe (GhidraScript)  
+INFO  ApplyDataMap.java> Updated entries: 4 (GhidraScript)  
+INFO  ApplyDataMap.java> Created: 0, Renamed: 4, Comments: 4 (GhidraScript)  
+INFO  ApplyDataMap.java> Missing: 0, Skipped: 0 (GhidraScript)  
 INFO  REPORT: Execute script: ExportAll.java  (HeadlessAnalyzer)  
 INFO  SCRIPT: /workspace/.codex/skills/ghidra/scripts/ghidra_scripts/ExportAll.java (HeadlessAnalyzer)  
 INFO  ExportAll.java> === Starting comprehensive export === (GhidraScript)  
-INFO  ExportAll.java> Output directory: source/decompiled (GhidraScript)  
+INFO  ExportAll.java> Output directory: analysis/ghidra/raw (GhidraScript)  
 INFO  ExportAll.java> Program: crimsonland.exe (GhidraScript)  
 INFO  ExportAll.java> Architecture: x86 (GhidraScript)  
 INFO  ExportAll.java>  (GhidraScript)  
@@ -197,8 +216,8 @@ INFO  ExportAll.java>   Exported 1374 strings (GhidraScript)
 INFO  ExportAll.java> Analyzing interesting patterns... (GhidraScript)  
 INFO  ExportAll.java>  (GhidraScript)  
 INFO  ExportAll.java> === Export complete === (GhidraScript)  
-INFO  ANALYZING changes made by post scripts: file:///workspace/game/crimsonland.exe (HeadlessAnalyzer)  
-INFO  REPORT: Post-analysis succeeded for file: file:///workspace/game/crimsonland.exe (HeadlessAnalyzer)  
+INFO  ANALYZING changes made by post scripts: file:///workspace/game_bins/crimsonland/1.9.93-gog/crimsonland.exe (HeadlessAnalyzer)  
+INFO  REPORT: Post-analysis succeeded for file: file:///workspace/game_bins/crimsonland/1.9.93-gog/crimsonland.exe (HeadlessAnalyzer)  
 INFO  /crimsonland.exe: file created (node) (LocalFileSystem)  
-INFO  REPORT: Save succeeded for: /crimsonland.exe (ghidra_crimsonland_exe_172712:/crimsonland.exe) (HeadlessAnalyzer)  
+INFO  REPORT: Save succeeded for: /crimsonland.exe (ghidra_crimsonland_exe_201777:/crimsonland.exe) (HeadlessAnalyzer)  
 INFO  REPORT: Import succeeded (HeadlessAnalyzer)  
