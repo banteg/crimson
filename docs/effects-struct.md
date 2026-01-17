@@ -179,6 +179,15 @@ Notes:
   - `0x40` -> `DAT_00491210/14` with base `_DAT_004755e4`.
   - `0x80` -> `DAT_00491290/94` with base `_DAT_004755e0`.
 
+### Effect id table (`DAT_004755f0`)
+
+Entry size: `0x08` bytes. Indexed by `effect_id`.
+
+| Offset | Field | Evidence |
+| --- | --- | --- |
+| 0x00 | atlas size code | Read by `effect_select_texture`/`effect_spawn`; values `0x10/0x20/0x40/0x80` map to `16/8/4/2` cell atlases. |
+| 0x04 | frame index | Read by `effect_select_texture`/`effect_spawn`; selects the atlas frame. |
+
 
 ## Sprite effect pool (`DAT_00496820`)
 
