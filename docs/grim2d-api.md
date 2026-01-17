@@ -214,7 +214,7 @@ These offsets appear with keycodes or input-related values:
 | `0xf8` | `submit_quad_raw` | `void submit_quad_raw(const float *verts)` | high | pushes 4 raw vertices; auto-flush |
 | `0xfc` | `set_rotation` | `void set_rotation(float radians)` | high | precomputes sin/cos (+45°) for rotation matrix |
 | `0x100` | `set_uv` | `void set_uv(float u0, float v0, float u1, float v1)` | high | sets all 4 UV pairs (u0/v0/u1/v1) |
-| `0x104` | `set_atlas_frame` | `void set_atlas_frame(int atlas_size, int frame)` | high | atlas size (cells per side) + frame index |
+| `0x104` | `set_atlas_frame` | `void set_atlas_frame(int atlas_size, int frame)` | high | atlas size (cells per side) + frame index; extra args in decompiled callsites are ignored |
 | `0x108` | `set_sub_rect` | `void set_sub_rect(int atlas_size, int width, int height, int frame)` | high | atlas grid sub-rect: `atlas_size` indexes the UV table (2/4/8/16), width/height in cells, `frame` selects top-left cell |
 | `0x10c` | `set_uv_point` | `void set_uv_point(int index, float u, float v)` | high | sets a single UV pair (index 0..3) for custom quad UVs |
 | `0x110` | `set_color_ptr` | `void set_color_ptr(const float *rgba)` | high | sets current color from float[4] (RGBA 0..1) |

@@ -77,6 +77,18 @@ Some effects bypass atlas slicing and write UVs directly.
   then draw a quad strip. This targets a thin vertical slice inside
   `projs.png`, so `projs/grid2/frame001` is further sub‑cut at runtime.
 - The same path later resets UVs with `grim_set_uv(0,0,1,1)`.
+- `grim_set_atlas_frame` itself only takes `(atlas_size, frame)` in `grim.dll`;
+  any extra pointer args seen in the decompile are ignored.
+
+### UV debug (grid2 frame 1)
+
+`grim_set_uv_point` uses `u=0.625`, `v=0..0.25`, which lands inside the
+top‑right grid2 cell. The overlays below show the sub‑slice used for beam
+effects.
+
+![projs.png grid2 overlay](images/projs_grid2_uv_debug.png)
+
+![projs.png grid2 cell 1 overlay](images/projs_grid2_cell1_uv_debug.png)
 
 ## How slicing is used in practice
 
@@ -118,12 +130,15 @@ up as float constants in the decompile (e.g. `2.66247e-44` = `0x13`).
 
 Known `projs.png` frame selections:
 
-| type_id | grid | frame | Notes |
-| --- | --- | --- | --- |
-| `0x13` | 2 | 0 | Draws a small glow/splash; size scales with life. |
-| `0x1d` | 4 | 3 | Beam/segment style when life is `0.4`. |
-| `0x19` | 4 | 6 | Beam/segment style when life is `0.4`. |
-| `0x15`, `0x16`, `0x17`, `0x2d` | 4 | 2 | Repeated along a vector to build beam/trail segments. |
+| type_id | grid | frame | Source | Notes |
+| --- | --- | --- | --- | --- |
+| `0x13` | 2 | 0 | Jackhammer | Draws a small glow/splash; size scales with life. |
+| `0x1d` | 4 | 3 | Gauss Shotgun | Beam/segment style when life is `0.4`. |
+| `0x19` | 4 | 6 | Spider Plasma | Beam/segment style when life is `0.4`. |
+| `0x15` | 4 | 2 | Ion Minigun | Repeated along a vector to build beam/trail segments; also used by Man Bomb (perk id 53). |
+| `0x16` | 4 | 2 | Ion Cannon | Repeated along a vector to build beam/trail segments; also used by Man Bomb (perk id 53). |
+| `0x17` | 4 | 2 | Shrinkifier 5k | Repeated along a vector to build beam/trail segments. |
+| `0x2d` | 4 | 2 | Fire Cough perk | Used by the perk burst (perk id 54) + weapon-driven pellet path. |
 
 The same path also calls `grim_set_atlas_frame(2, …)` for these beam types, but
 the exact grid2 index is still unclear from the decompile.
