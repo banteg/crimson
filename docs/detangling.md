@@ -278,6 +278,12 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
 - `FUN_00408990` -> `tutorial_timeline_update`
   - Evidence: loads the tutorial string table, advances `DAT_00486fd8` stage index when
     `DAT_00486fe0` counts up from `-1000`, and renders each stage via `tutorial_prompt_dialog`.
+  - Timers:
+    - `DAT_00486fdc` accumulates per-frame time (`DAT_00480844`), gates stage 0 auto-advance
+      and is used to fade stage 5 after 5 seconds.
+    - `DAT_00486fe0` is a stage transition/fade timer: it counts up from `-1000` toward `-1`
+      to advance the stage, then counts up from `0` to `1000` before snapping back to `-1`.
+      The absolute value is scaled by `0.001` to derive the prompt alpha.
   - Stage transitions observed:
     - Stage 0: after `DAT_00486fdc > 6000` and `DAT_00486fe0 == -1`, clears `DAT_004808a8`,
       resets `DAT_004712fc`, and sets `DAT_00486fe0 = -1000`.
@@ -307,9 +313,14 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
     | 7 | Now learn to shoot and move at the same time.\nClick the left Mouse button to shoot. |
     | 8 | Now, move the mouse to aim at the monsters |
 
-  - Unused strings in the same stack block: indices 9-12 map to perk/tutorial lines
+  - Secondary hint overlay:
+    - `DAT_004712fc` increments when the current bonus object (`DAT_004808ac`) flips inactive with flag `0x400`,
+      and `DAT_004808b4` ramps the hint alpha (up/down at 3x delta, clamped 0..1000).
+    - The hint text is fetched from the same stack string block (`afStack_5c[DAT_004712fc + 2]`),
+      suggesting the powerup/perk strings adjacent to the stage table are used for these overlays.
+  - Additional strings in the same stack block include perk tutorial lines
     ("It will help you to move and shoot...", Perks intro, Perks description, "Great! Now you are ready to start"),
-    and the speed/weapon/x2 powerup strings are assigned to `local_44/local_40/local_3c` but not indexed by `DAT_00486fd8`.
+    plus speed/weapon/x2 powerup blurbs (`local_44/local_40/local_3c`).
   - Helper: `FUN_00428210` -> `creatures_none_active`
     - Evidence: scans the creature table at `DAT_0049bf38` for any active entries, sets `DAT_0048700c`,
       and returns low byte `1` only when the table is empty.
