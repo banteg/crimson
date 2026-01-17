@@ -54,13 +54,13 @@ Global bonus timers used by `player_update` and the main loop:
 `player_update` owns several perk timers that spawn projectiles or FX when the
 timer crosses its threshold:
 
-- **Man Bomb** (`DAT_004c2c24`): uses `DAT_00490950` as a charge timer, then spawns
+- **Man Bomb** (`DAT_004c2c24`): uses `player_man_bomb_timer` (`DAT_00490950`) as a charge timer, then spawns
   8 projectiles in a ring (types `0x15/0x16`) and plays a burst SFX.
-- **Fire Cough** (`DAT_004c2c2c`): uses `DAT_00490958` to periodically spawn a
+- **Fire Cough** (`DAT_004c2c2c`): uses `player_fire_cough_timer` (`DAT_00490958`) to periodically spawn a
   `0x2d` fire projectile from the muzzle and a small sprite burst.
-- **Hot Tempered** (`DAT_004c2bfc`): uses `DAT_0049094c` to periodically spawn a
+- **Hot Tempered** (`DAT_004c2bfc`): uses `player_hot_tempered_timer` (`DAT_0049094c`) to periodically spawn a
   ring of projectiles (`0xb` and `9`).
-- **Living Fortress** (`DAT_004c2c28`): increments `DAT_00490954` while stationary
+- **Living Fortress** (`DAT_004c2c28`): increments `player_living_fortress_timer` (`DAT_00490954`) while stationary
   (clamped to ~30s); likely consumed by damage scaling elsewhere.
 
 ### Reload + spread interactions

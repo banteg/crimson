@@ -7,11 +7,26 @@ Pool facts:
 - Entry size: `0xd8` bytes per player.
 - Base address: `player_table` (`DAT_004908d4`).
 - Access pattern: `field_base + player_index * 0xd8`.
+- Some high-confidence fields live before `player_table` (negative offsets).
 
 High-confidence fields (partial):
 
 | Offset | Field | Symbol | Evidence |
 | --- | --- | --- | --- |
+| `-0x10` | pos_x | `player_pos_x` | Used for camera centering, distance checks, and projectile aim vectors. |
+| `-0x0c` | pos_y | `player_pos_y` | Used for camera centering, distance checks, and projectile aim vectors. |
+| `-0x08` | move dx | `player_move_dx` | Zeroed each tick, then filled by input movement logic. |
+| `-0x04` | move dy | `player_move_dy` | Zeroed each tick, then filled by input movement logic. |
+| `0x08` | body heading (radians) | `player_heading` | Used for overlays and movement vector rotation. |
+| `0x10` | size / diameter | `player_size` | Halved for collision and arena bounds clamping. |
+| `0x2c` | aim target x | `player_aim_x` | Used to derive aim vectors and overlay position. |
+| `0x30` | aim target y | `player_aim_y` | Used to derive aim vectors and overlay position. |
+| `0x38` | move speed multiplier | `player_speed_multiplier` | Multiplies movement vector (boosted by Speed bonus). |
+| `0x44` | move speed / accel | `player_move_speed` | Ramps up/down based on input; scales movement. |
+| `0x78` | Hot Tempered timer | `player_hot_tempered_timer` | Used by perk ring burst logic. |
+| `0x7c` | Man Bomb timer | `player_man_bomb_timer` | Charge timer for perk ring burst. |
+| `0x80` | Living Fortress timer | `player_living_fortress_timer` | Accumulates while stationary. |
+| `0x84` | Fire Cough timer | `player_fire_cough_timer` | Periodic Fire Cough perk timer. |
 | `0x294` | spread / heat | `player_spread_heat` | Decays each frame in `player_update`; incremented by weapon spread value. |
 | `0x29c` | current weapon id | `player_weapon_id` | Set by `weapon_assign_player`. |
 | `0x2a0` | clip size | `player_clip_size` | Loaded from weapon table on swap; used to reset ammo. |
