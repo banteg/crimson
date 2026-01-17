@@ -110,13 +110,14 @@ def run_codex(
 def get_response(output: str, helper_model: str, helper_reasoning: str) -> tuple[str, bool]:
     """Ask helper LLM what to respond with. Returns (response, should_continue)."""
     
-    prompt = f"""You're guiding an automated reverse engineering session. The main AI just output:
+    prompt = f"""You're guiding an automated reverse engineering session as an overseer. The main AI just output:
 
 ---
 {output}
 ---
 
 If it's asking a question or waiting for direction, give a brief answer (like "yes", keep exploring, go deeper).
+Before replying, check whether the git worktree is clean. If it isn't clean, remind the main AI to commit its work (conventional commits).
 If it seems done or stuck, say "STOP".
 
 Reply with just your response, nothing else."""
