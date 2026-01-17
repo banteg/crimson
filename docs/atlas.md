@@ -174,3 +174,26 @@ each frame.
 
 - `ground` texture (terrain)
   - Direct grid call: **8×8** with dynamic index.
+
+## Enemy animation slices (grid 8)
+
+Enemies are rendered from 8×8 sheets (`+0x104(8, frame)`) with two selection
+paths in `FUN_00418b60`:
+
+- **32‑frame strip**: `frame = floor(anim_phase)` (0..31), optionally mirrored
+  if the type table flag `(&DAT_00482768)[type * 0x44] & 1` is set. If the
+  per‑creature flags include `0x10`, the frame offset shifts by `+0x20`
+  (indices 32..63).
+- **8‑frame ping‑pong strip**: `frame = base + 0x10 + pingpong(floor(anim_phase))`
+  where `base = *(int *)(&DAT_00482760 + type * 0x44)` and ping‑pong folds a
+  0..15 phase into 0..7..0.
+
+Examples from the type init table (`FUN_00412dc0`):
+
+- Zombie: base `0x20`
+- Lizard: base `0x10`
+- Spider SP1/SP2: base `0x10`
+- Alien: base `0x20`
+
+The animation phase itself lives at creature offset `0x94` and is advanced in
+`FUN_00426220` using a per‑type rate (`&DAT_0048275c + type * 0x44`).
