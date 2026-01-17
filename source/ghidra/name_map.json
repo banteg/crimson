@@ -325,10 +325,52 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0042de80",
+    "name": "effect_init_entry",
+    "signature": "void effect_init_entry(void *entry)",
+    "comment": "initializes an effect entry to default values"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042df10",
+    "name": "effect_defaults_reset",
+    "signature": "void effect_defaults_reset(void)",
+    "comment": "resets global effect template values"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042e080",
+    "name": "effect_free",
+    "signature": "void effect_free(void *entry)",
+    "comment": "returns an effect entry to the free list"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042e0a0",
+    "name": "effect_select_texture",
+    "signature": "void effect_select_texture(int effect_id)",
+    "comment": "selects effect texture page based on effect id"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0042e120",
     "name": "effect_spawn",
     "signature": "void * effect_spawn(int effect_id, float *pos)",
     "comment": "allocates an effect entry and assigns quad UVs"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042e710",
+    "name": "effects_update",
+    "signature": "void effects_update(void)",
+    "comment": "ticks active effects and frees expired entries"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042e820",
+    "name": "effects_render",
+    "signature": "void effects_render(void)",
+    "comment": "renders active effects (rotated quads)"
   },
   {
     "program": "crimsonland.exe",

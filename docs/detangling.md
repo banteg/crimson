@@ -149,10 +149,25 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
 
 ### Effect spawn helper (medium confidence)
 
+- `FUN_0042de80` -> `effect_init_entry`
+  - Evidence: zeros/sets default fields on a single entry and initializes per-quad color slots.
+- `FUN_0042df10` -> `effect_defaults_reset`
+  - Evidence: resets global template values (`DAT_004ab1*`) used by effect spawners.
+- `FUN_0042e080` -> `effect_free`
+  - Evidence: pushes the entry back onto `DAT_004c2b30` free list and clears live flag.
+- `FUN_0042e0a0` -> `effect_select_texture`
+  - Evidence: maps effect id through `DAT_004755f0/4` and calls Grim vtable +0x104 with
+    texture page bitmasks.
 - `FUN_0042e120` -> `effect_spawn`
   - Evidence: pops an entry from the pool `DAT_004c2b30`, copies template `DAT_004ab1bc`,
     writes position from `param_2`, tags the effect id, and assigns quad UVs from atlas tables
     `DAT_004755f0/4` plus arrays `DAT_004aa4d8`, `DAT_00491010`, `DAT_00491210`, `DAT_00491290`.
+- `FUN_0042e710` -> `effects_update`
+  - Evidence: iterates pool entries, advances timers/positions with `DAT_00480840`, and calls
+    `effect_free` when expired.
+- `FUN_0042e820` -> `effects_render`
+  - Evidence: sets render state, iterates effects, computes rotated quad vertices, and submits
+    via Grim vtable +0x134.
 
 ## Next naming targets
 
