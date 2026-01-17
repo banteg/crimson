@@ -70,6 +70,48 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00460d08",
+    "name": "crt_onexit",
+    "signature": "void * crt_onexit(void *func)",
+    "comment": "registers an onexit/atexit callback"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00460d86",
+    "name": "crt_atexit",
+    "signature": "int crt_atexit(void *func)",
+    "comment": "atexit wrapper (returns 0/-1)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00460dc7",
+    "name": "crt_free",
+    "signature": "void crt_free(void *ptr)",
+    "comment": "CRT free wrapper"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00460e5d",
+    "name": "crt_fclose",
+    "signature": "int crt_fclose(FILE *fp)",
+    "comment": "fclose wrapper with CRT lock/unlock"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004616e7",
+    "name": "crt_sprintf",
+    "signature": "int crt_sprintf(char *dst, char *fmt, ...)",
+    "comment": "sprintf-style formatter (uses CRT output core)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004625c1",
+    "name": "crt_free_base",
+    "signature": "void crt_free_base(void *ptr)",
+    "comment": "CRT heap free implementation"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00465d93",
     "name": "crt_errno_ptr",
     "signature": "int * crt_errno_ptr(void)",
@@ -280,6 +322,41 @@
     "name": "load_textures_step",
     "signature": "int load_textures_step(void)",
     "comment": "stage-based texture loading (advances DAT_004aaf88)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042e120",
+    "name": "effect_spawn",
+    "signature": "void * effect_spawn(int effect_id, float *pos)",
+    "comment": "allocates an effect entry and assigns quad UVs"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042fcf0",
+    "name": "game_var_get",
+    "signature": "int game_var_get(int id)",
+    "comment": "returns entry from global int table (DAT_00490968)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043d120",
+    "name": "sfx_play",
+    "signature": "int sfx_play(int sfx_id)",
+    "comment": "plays a sound effect with centered pan"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043d260",
+    "name": "sfx_play_panned",
+    "signature": "float sfx_play_panned(float sfx_id)",
+    "comment": "plays a sound effect with computed pan"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043d550",
+    "name": "sfx_mark_muted",
+    "signature": "void sfx_mark_muted(int sfx_id)",
+    "comment": "marks sfx as muted (propagates to other unmuted ids)"
   },
   {
     "program": "crimsonland.exe",

@@ -109,6 +109,51 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
 - `FUN_004658cc` -> `crt_unlock`
   - Evidence: calls `LeaveCriticalSection`; invoked by `crt_exit_unlock` and many CRT wrappers.
 
+### CRT exit/stdio helpers (high confidence)
+
+- `FUN_00460d08` -> `crt_onexit`
+  - Evidence: takes exit callback, grows onexit table (`DAT_004db4f4`/`DAT_004db4f0`) via
+    `FUN_004626aa`, stores pointer, and wraps with `crt_exit_lock`/`crt_exit_unlock`.
+- `FUN_00460d86` -> `crt_atexit`
+  - Evidence: calls `crt_onexit` and returns `0` on success, `-1` on failure.
+- `FUN_00460dc7` -> `crt_free`
+  - Evidence: thin wrapper around `FUN_004625c1` (CRT heap free).
+- `FUN_004625c1` -> `crt_free_base`
+  - Evidence: checks heap mode (`DAT_004da3a8`), locks heap, frees via small-block helpers, and
+    falls back to `HeapFree`.
+- `FUN_00460e5d` -> `crt_fclose`
+  - Evidence: if `_flag & 0x40` not set, locks stream, calls `__fclose_lk`, unlocks; otherwise
+    clears `_flag`.
+- `FUN_004616e7` -> `crt_sprintf`
+  - Evidence: uses CRT output core `FUN_00464380` with an unbounded count (`0x7fffffff`) and
+    terminates with `\0` on success.
+
+### Audio SFX helpers (medium confidence)
+
+- `FUN_0043d120` -> `sfx_play`
+  - Evidence: validates entry in `DAT_004c84e4`, checks cooldown `DAT_004c3c80`, sets sample rate
+    via `_DAT_00487014` into `DAT_00477d28`, chooses a voice (`FUN_0043be60`), calls vtable +0x40
+    with pan 0, then sets volume with `FUN_0043bfa0`.
+- `FUN_0043d260` -> `sfx_play_panned`
+  - Evidence: same as `sfx_play`, but converts an FPU value to pan (`__ftol`), clamps to
+    `[-10000, 10000]`, and passes pan to vtable +0x40.
+- `FUN_0043d550` -> `sfx_mark_muted`
+  - Evidence: sets `DAT_004c8450[sfx]=1` and recursively applies to other unmuted ids using
+    `FUN_0043d7c0`; `FUN_0043d460` later clears the chosen id for exclusive playback.
+
+### Global var access (medium confidence)
+
+- `FUN_0042fcf0` -> `game_var_get`
+  - Evidence: returns `(&DAT_00490968)[id]` directly; the table is used as a global int registry
+    (perk/config gating, counters).
+
+### Effect spawn helper (medium confidence)
+
+- `FUN_0042e120` -> `effect_spawn`
+  - Evidence: pops an entry from the pool `DAT_004c2b30`, copies template `DAT_004ab1bc`,
+    writes position from `param_2`, tags the effect id, and assigns quad UVs from atlas tables
+    `DAT_004755f0/4` plus arrays `DAT_004aa4d8`, `DAT_00491010`, `DAT_00491210`, `DAT_00491290`.
+
 ## Next naming targets
 
 - For `grim.dll`, inspect `FUN_10016944` (coordinate conversions and vertex packing) to pin down the render pipeline stage.
