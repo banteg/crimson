@@ -345,6 +345,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041fbb0",
+    "name": "fx_spawn_sprite",
+    "signature": "int fx_spawn_sprite(float *pos, float *vel, float scale)",
+    "comment": "spawns a sprite effect entry in DAT_00496820"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00420440",
     "name": "projectile_spawn",
     "signature": "int projectile_spawn(float *pos, float angle, int type_id, int owner_id)",

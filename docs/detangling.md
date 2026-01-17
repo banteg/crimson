@@ -392,6 +392,9 @@ See [Projectile struct](projectile-struct.md) for the expanded field map and not
 - `FUN_00420360` -> `fx_spawn_secondary_projectile`
   - Evidence: allocates a `0x2c`-byte entry in `DAT_00495ad8` with type id, velocity, and optional
     nearest-creature target when `type_id == 2`.
+- `FUN_0041fbb0` -> `fx_spawn_sprite`
+  - Evidence: allocates a `0x2c`-byte entry in `DAT_00496820` with position, velocity, tint, and
+    a scalar parameter used by the renderer.
 - Layouts and fields are tracked in [Effects pools](effects-struct.md).
 
 

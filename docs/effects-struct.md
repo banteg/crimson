@@ -57,3 +57,27 @@ Layout (partial):
 `projectile_update` (`FUN_00420b90`) advances and damages creatures for this pool, and the render path
 in the same function draws the sprite variants based on `type id`.
 
+
+## Sprite effect pool (`DAT_00496820`)
+
+Entry size: `0x2c` bytes. Pool size: `0x180` entries (looping to `0x49aa20`).
+
+Spawn helper:
+
+- `FUN_0041fbb0` -> `fx_spawn_sprite`
+
+Layout (partial):
+
+| Offset | Field | Evidence |
+| --- | --- | --- |
+| 0x00 | active (byte) | Set to `1` on spawn; cleared when lifetime reaches zero. |
+| 0x04 | color_r | Initialized to `1.0` on spawn; passed into render color. |
+| 0x08 | color_g | Initialized to `1.0` on spawn; passed into render color. |
+| 0x0c | color_b | Initialized to `1.0` on spawn; passed into render color. |
+| 0x10 | color_a | Initialized to `1.0` on spawn; passed into render color. |
+| 0x14 | rotation / sprite param | Seeded from `rand`, incremented each tick, passed into render helper. |
+| 0x18 | pos_x | Written from `param_1[0]`; advanced by `vel_x` each tick. |
+| 0x1c | pos_y | Written from `param_1[1]`; advanced by `vel_y` each tick. |
+| 0x20 | vel_x | Written from `param_2[0]`; scaled by `DAT_00480840` in update. |
+| 0x24 | vel_y | Written from `param_2[1]`; scaled by `DAT_00480840` in update. |
+| 0x28 | scale / size | Written from `param_3`; incremented each tick before render. |
