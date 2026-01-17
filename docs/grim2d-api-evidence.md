@@ -365,7 +365,7 @@ LAB_00401add:
 - Provisional name: `get_texture_handle` (high)
 - Guess: `int get_texture_handle(const char *name)`
 - Notes: returns -1 on missing
-- Ghidra signature: `undefined FUN_10007740()`
+- Ghidra signature: `int grim_get_texture_handle(char *name)`
 - Call sites: 22 (unique funcs: 8)
 - Sample calls: FUN_0040b740:L6362; FUN_0040b740:L6374; FUN_00412dc0:L8687; FUN_00412dc0:L8698; FUN_00412dc0:L8710; FUN_00412dc0:L8722; FUN_00412dc0:L8734; FUN_00412dc0:L8750
 - First callsite: FUN_0040b740 (line 6749)
@@ -383,7 +383,7 @@ LAB_00401add:
 - Provisional name: `bind_texture` (medium)
 - Guess: `void bind_texture(int handle, int stage)`
 - Notes: often called with handle,0
-- Ghidra signature: `undefined FUN_10007830(int param_1, undefined4 param_2)`
+- Ghidra signature: `void grim_bind_texture(int handle, int stage)`
 - Call sites: 66 (unique funcs: 22)
 - Sample calls: FUN_004061e0:L3882; FUN_004061e0:L3891; FUN_0040a510:L5641; FUN_0040a510:L5663; FUN_00417ae0:L9120; FUN_00417b80:L9220; FUN_00417b80:L9265; FUN_00417b80:L9296
 - First callsite: FUN_004061e0 (line 3882)
@@ -398,14 +398,14 @@ LAB_00401add:
 
 
 ## 0xc8 — grim_draw_fullscreen_quad @ 0x10007870
-- Ghidra signature: `undefined grim_draw_fullscreen_quad()`
+- Ghidra signature: `void grim_draw_fullscreen_quad(void)`
 - Call sites: 1 (unique funcs: 1)
 - Sample calls: FUN_004188a0:L9637
 - First callsite: not found in decompiled output
 
 
 ## 0xcc — FUN_100079b0 @ 0x100079b0
-- Ghidra signature: `undefined FUN_100079b0()`
+- Ghidra signature: `void grim_draw_fullscreen_color(float r, float g, float b, float a)`
 - Call sites: 2 (unique funcs: 2)
 - Sample calls: FUN_00405960:L3696; FUN_00406af0:L4120
 - First callsite: FUN_00405960 (line 3696)
@@ -423,7 +423,7 @@ LAB_00401add:
 - Provisional name: `draw_rect_filled` (medium)
 - Guess: `void draw_rect_filled(const float *xy, float w, float h)`
 - Notes: used for UI panel backgrounds before setting color
-- Ghidra signature: `undefined grim_draw_rect_filled()`
+- Ghidra signature: `void grim_draw_rect_filled(float *xy, float w, float h)`
 - Call sites: 24 (unique funcs: 14)
 - Sample calls: FUN_00401dd0:L740; FUN_00401dd0:L752; FUN_00402d50:L1448; FUN_004047c0:L3096; FUN_00405160:L3369; FUN_00408530:L5029; FUN_0040b740:L6476; FUN_0040b740:L6480
 - First callsite: FUN_00401dd0 (line 740)
@@ -441,7 +441,7 @@ LAB_00401add:
 - Provisional name: `draw_rect_outline` (medium)
 - Guess: `void draw_rect_outline(const float *xy, float w, float h)`
 - Notes: used for UI framing with explicit width/height
-- Ghidra signature: `undefined grim_draw_rect_outline()`
+- Ghidra signature: `void grim_draw_rect_outline(float *xy, float w, float h)`
 - Call sites: 12 (unique funcs: 11)
 - Sample calls: FUN_00402d50:L1454; FUN_004047c0:L3107; FUN_00405160:L3372; FUN_00408530:L5031; FUN_00410d20:L7694; FUN_0043e5e0:L27177; FUN_0043ecf0:L27413; FUN_0043ecf0:L27448
 - First callsite: FUN_00402d50 (line 1454)
@@ -456,7 +456,7 @@ LAB_00401add:
 
 
 ## 0xd8 — grim_draw_circle_filled @ 0x10007b90
-- Ghidra signature: `undefined grim_draw_circle_filled()`
+- Ghidra signature: `void grim_draw_circle_filled(float x, float y, float radius)`
 - Call sites: 1 (unique funcs: 1)
 - Sample calls: FUN_0040a510:L5640
 - First callsite: FUN_0040a510 (line 6027)
@@ -471,7 +471,7 @@ LAB_00401add:
 
 
 ## 0xdc — grim_draw_circle_outline @ 0x10007d40
-- Ghidra signature: `undefined grim_draw_circle_outline()`
+- Ghidra signature: `void grim_draw_circle_outline(float x, float y, float radius)`
 - Call sites: 1 (unique funcs: 1)
 - Sample calls: FUN_0040a510:L5644
 - First callsite: FUN_0040a510 (line 6031)
@@ -486,7 +486,7 @@ LAB_00401add:
 
 
 ## 0xe8 — FUN_10007ac0 @ 0x10007ac0
-- Ghidra signature: `undefined FUN_10007ac0()`
+- Ghidra signature: `void grim_begin_batch(void)`
 - Call sites: 79 (unique funcs: 23)
 - Sample calls: FUN_004061e0:L3887; FUN_004061e0:L3892; FUN_0040a510:L5683; FUN_00417b80:L9228; FUN_00417b80:L9271; FUN_00417b80:L9299; FUN_004181b0:L9464; FUN_004181b0:L9506
 - First callsite: FUN_004061e0 (line 3887)
@@ -501,7 +501,7 @@ LAB_00401add:
 
 
 ## 0xf0 — FUN_10007b20 @ 0x10007b20
-- Ghidra signature: `undefined FUN_10007b20()`
+- Ghidra signature: `void grim_end_batch(void)`
 - Call sites: 86 (unique funcs: 28)
 - Sample calls: FUN_00401dd0:L753; FUN_004047c0:L3134; FUN_004061e0:L3889; FUN_004061e0:L3895; FUN_0040a510:L5702; FUN_0040b740:L6346; FUN_00417ae0:L9125; FUN_00417b80:L9261
 - First callsite: FUN_00401dd0 (line 753)
