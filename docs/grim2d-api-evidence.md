@@ -391,6 +391,7 @@ LAB_00401add:
 ## 0x54 — grim_set_key_char_buffer @ 0x10005c20
 
 - Ghidra signature: `void grim_set_key_char_buffer(unsigned char *buffer, int *count, int size)`
+- Notes: stores pointers to the caller-managed ring buffer + count
 - Suggested signature: `void grim_set_key_char_buffer(unsigned char *buffer, int *count, int size)`
 - Call sites: 2 (unique funcs: 2)
 - Sample calls: FUN_0042c450:L19559; FUN_0043ecf0:L27394
@@ -648,6 +649,7 @@ grim.dll routing:
 - Guess: `float get_config_float(int id)`
 - Notes: IDs 0x13f..0x155
 - Ghidra signature: `float grim_get_config_float(int id)`
+- Suggested signature: `float grim_get_config_float(int id)` (special-cases `0x15f` to return `grim_get_mouse_dx`)
 - Call sites: 6 (unique funcs: 1)
 - Sample calls: FUN_00448b50:L30229; FUN_00448b50:L30233; FUN_00448b50:L30237; FUN_00448b50:L30241; FUN_00448b50:L30245; FUN_00448b50:L30249
 - First callsite: FUN_004136b0 (line 9703)
