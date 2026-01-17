@@ -29,5 +29,8 @@ Notes:
 
 Related tables:
 
-- `DAT_004d7a28` and `DAT_004d7a9c` appear to hold per-type metadata (collision type, damage scaling).
-
+- `DAT_004d7a28` is consulted during `projectile_update` to gate one of the hit
+  effect paths (value `4` skips it).
+- `DAT_004d7a9c` is used as the damage scale for each `type_id`.
+- `DAT_004d7a98` is copied into the projectile entry on spawn and shares the
+  same stride as the weapon table.
