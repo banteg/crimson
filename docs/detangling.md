@@ -147,9 +147,9 @@ You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps
 
 ### Key binding block (`DAT_00490bdc`..`DAT_00490f5c`) (medium confidence)
 
-These live inside the per-player input struct (stride `0xd8`) and are queried through
-`grim_is_key_active` (`+0x80`) or `grim_is_key_down` (`+0x44`). Defaults are set in
-`config_load_presets`.
+These live inside the per-player input struct (stride `0x360` bytes / `0xd8` dwords) and are
+queried through `grim_is_key_active` (`+0x80`) or `grim_is_key_down` (`+0x44`).
+Defaults are set in `config_load_presets`.
 
 | Address | Default (DIK) | Guess | Evidence |
 | --- | --- | --- | --- |
@@ -176,7 +176,7 @@ Key info overlay (`FUN_00405160`) shows the first five entries per player from t
 blob at `DAT_00480510` (stride 5: Forward/Back/TurnLeft/TurnRight/Fire), which matches the active runtime
 binds copied from `DAT_00480540` into `DAT_00490bdc..DAT_00490bec`.
 
-### Analog axis bindings (per-player, stride `0xd8`)
+### Analog axis bindings (per-player, stride `0x360` bytes / `0xd8` dwords)
 
 These bindings are read via `grim_get_config_float` (`+0x84`) and map to the
 analog control schemes selected in the per-player mode flags:

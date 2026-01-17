@@ -5,9 +5,10 @@ This page tracks the per-player runtime struct stored in `player_health`
 
 Pool facts:
 
-- Entry size: `0xd8` bytes per player.
+- Entry size: `0x360` bytes per player (`0xd8` dwords/floats).
 - Base address: `player_health` (`DAT_004908d4`).
-- Access pattern: `field_base + player_index * 0xd8`.
+- Access pattern: `field_base + player_index * 0x360` (disassembly often shows
+  `player_index * 0xd8` because the base pointer is typed as `float*`/`u32*`).
 - Some high-confidence fields live before `player_health` (negative offsets).
 
 High-confidence fields (partial):
@@ -19,6 +20,7 @@ High-confidence fields (partial):
 | `-0x0c` | pos_y | `player_pos_y` | Used for camera centering, distance checks, and projectile aim vectors. |
 | `-0x08` | move dx | `player_move_dx` | Zeroed each tick, then filled by input movement logic. |
 | `-0x04` | move dy | `player_move_dy` | Zeroed each tick, then filled by input movement logic. |
+| `-0x1b` | Plaguebearer active flag | `player_plaguebearer_active` | Set when Plaguebearer is acquired; used by creature update to infect nearby monsters. |
 | `0x00` | health | `player_health` | Reduced by `player_take_damage`; `<= 0` counts as dead. |
 | `0x08` | body heading (radians) | `player_heading` | Used for overlays and movement vector rotation. |
 | `0x10` | size / diameter | `player_size` | Halved for collision and arena bounds clamping. |
@@ -32,6 +34,9 @@ High-confidence fields (partial):
 | `0x7c` | Man Bomb timer | `player_man_bomb_timer` | Charge timer for perk ring burst. |
 | `0x80` | Living Fortress timer | `player_living_fortress_timer` | Accumulates while stationary. |
 | `0x84` | Fire Cough timer | `player_fire_cough_timer` | Periodic Fire Cough perk timer. |
+| `0x88` | experience points | `player_experience` | XP counter; drives level-ups and survival scaling. |
+| `0x90` | level / perk tier | `player_level` | Increments when XP crosses thresholds; gates survival waves. |
+| `0x94` | perk counts table | `player_perk_counts` | `int[0x80]` table indexed by perk id (ends at `0x294`). |
 | `0x294` | spread / heat | `player_spread_heat` | Decays each frame in `player_update`; incremented by weapon spread value. |
 | `0x29c` | current weapon id | `player_weapon_id` | Set by `weapon_assign_player`. |
 | `0x2a0` | clip size | `player_clip_size` | Loaded from weapon table on swap; used to reset ammo. |
@@ -47,6 +52,7 @@ High-confidence fields (partial):
 | `0x2c8` | alt reload timer | `player_alt_reload_timer` | Saved when swapping to alt weapon. |
 | `0x2cc` | alt shot cooldown | `player_alt_shot_cooldown` | Saved when swapping to alt weapon. |
 | `0x2d0` | alt reload timer max | `player_alt_reload_timer_max` | Saved when swapping to alt weapon. |
+| `0x2d8` | muzzle flash intensity | `player_muzzle_flash_alpha` | Decays each frame; accumulates on fire and drives weapon glow. |
 | `0x2dc` | aim heading (radians) | `player_aim_heading` | Used for projectile direction and overlay rendering. |
 | `0x2e0` | turn speed accumulator | `player_turn_speed` | Turn speed/accel when using keyboard/tank controls. |
 | `0x2e4` | aux state | `player_state_aux` | Zeroed in `FUN_0041fc80` (player reset); no read sites found yet. |

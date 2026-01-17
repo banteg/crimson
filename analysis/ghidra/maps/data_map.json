@@ -129,6 +129,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x004908b9",
+      "name": "player_plaguebearer_active",
+      "comment": "Per-player Plaguebearer perk active flag (checked in creature_update_all, set in perk_apply)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004908c0",
       "name": "player_death_timer",
       "comment": "Per-player death/respawn timer (player_health - 0x14)"
@@ -237,6 +243,24 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x0049095c",
+      "name": "player_experience",
+      "comment": "Per-player experience points (XP) used for level-ups, survival scaling, and Regression Bullets/Ammunition Within costs."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490964",
+      "name": "player_level",
+      "comment": "Per-player level/perk tier; increments when XP crosses thresholds and gates survival wave milestones."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490968",
+      "name": "player_perk_counts",
+      "comment": "Per-player perk count table (0x80 ints), indexed by perk id; stride 0x360 bytes."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00490b68",
       "name": "player_spread_heat",
       "comment": "Per-player spread/heat accumulator (player_health + 0x294)"
@@ -324,6 +348,12 @@
       "address": "0x00490ba4",
       "name": "player_alt_reload_timer_max",
       "comment": "Per-player alt reload timer max (player_health + 0x2d0)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490bac",
+      "name": "player_muzzle_flash_alpha",
+      "comment": "Per-player muzzle flash / weapon glow intensity; decays each frame and accumulates on fire."
     },
     {
       "program": "crimsonland.exe",
