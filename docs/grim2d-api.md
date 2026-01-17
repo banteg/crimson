@@ -133,7 +133,7 @@ These offsets appear with keycodes or input-related values:
 | `0xf0` | `end_batch` | `void end_batch(void)` | high | flush buffered batch |
 | `0xf4` | `submit_vertex_raw` | `void submit_vertex_raw(const float *vertex)` | medium | pushes 1 raw vertex; auto-flush |
 | `0xf8` | `submit_quad_raw` | `void submit_quad_raw(const float *verts)` | medium | pushes 4 raw vertices; auto-flush |
-| `0xfc` | `set_rotation` | `void set_rotation(float radians)` | medium | rotation before draw |
+| `0xfc` | `set_rotation` | `void set_rotation(float radians)` | medium | rotation before draw; precomputes matrix terms |
 | `0x100` | `set_uv` | `void set_uv(float u0, float v0, float u1, float v1)` | high | sets all 4 UV pairs (u0/v0/u1/v1) |
 | `0x104` | `set_atlas_frame` | `void set_atlas_frame(int atlas_size, int frame)` | high | atlas size (cells per side) + frame index |
 | `0x108` | `set_sub_rect` | `void set_sub_rect(int atlas_size, int width, int height, int frame)` | medium | atlas grid sub-rect: `atlas_size` indexes the UV table (2/4/8/16), width/height in cells, `frame` selects top-left cell |

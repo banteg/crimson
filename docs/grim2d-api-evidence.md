@@ -518,8 +518,8 @@ LAB_00401add:
 ## 0xfc — FUN_10007f30 @ 0x10007f30
 - Provisional name: `set_rotation` (medium)
 - Guess: `void set_rotation(float radians)`
-- Notes: rotation angle before draw
-- Ghidra signature: `undefined FUN_10007f30()`
+- Notes: stores radians and precomputes rotation matrix terms
+- Ghidra signature: `void grim_set_rotation(float radians)`
 - Call sites: 65 (unique funcs: 17)
 - Sample calls: FUN_00401dd0:L736; FUN_004061e0:L3886; FUN_004061e0:L3893; FUN_0040a510:L5662; FUN_0040b740:L6325; FUN_004188a0:L9599; FUN_004188a0:L9630; FUN_00418b60:L9718
 - First callsite: FUN_00401dd0 (line 736)
@@ -530,6 +530,14 @@ LAB_00401add:
     (**(code **)(*DAT_0048083c + 0xfc))();
     puStack_44 = &stack0xffffffdc;
     fStack_48 = (float)*(int *)(param_1 + 0x18);
+```
+
+grim.dll precompute:
+
+```c
+  _DAT_10059e30 = radians;
+  fVar1 = (float10)fcos((float10)radians + (float10)0.7853982);
+  DAT_1005c8e4 = (float)fVar1;
 ```
 
 

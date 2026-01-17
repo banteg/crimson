@@ -76,7 +76,7 @@ struct Grim2DVtable {
     void (*end_batch)(void); // 0xf0 (grim_end_batch)
     void (*submit_vertex_raw)(const float *vertex); // 0xf4 (grim_submit_vertex_raw)
     void (*submit_quad_raw)(const float *verts); // 0xf8 (grim_submit_quad_raw)
-    void (*set_rotation)(float radians); // 0xfc (FUN_10007f30)
+    void (*set_rotation)(float radians); // 0xfc (FUN_10007f30) precomputes rotation matrix
     void (*set_uv)(float u0, float v0, float u1, float v1); // 0x100 (FUN_10008350) sets all 4 UV pairs
     void (*set_atlas_frame)(int atlas_size, int frame); // 0x104 (FUN_10008230)
     void (*set_sub_rect)(int atlas_size, int width, int height, int frame); // 0x108 (FUN_100082c0) atlas_size indexes UV table (2/4/8/16)
