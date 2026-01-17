@@ -6,8 +6,8 @@ The small font is stored as a 256-byte width table and a 16x16 glyph atlas.
 
 ## Location
 
-- `game/crimson.paq`: `load\smallFnt.dat`, `load\smallWhite.tga`
-- Extracted to `assets/crimson/load/smallFnt.dat` and `assets/crimson/load/smallWhite.png`
+- `game_bins/crimsonland/<version>/crimson.paq`: `load\smallFnt.dat`, `load\smallWhite.tga`
+- Extracted to `artifacts/assets/crimson/load/smallFnt.dat` and `artifacts/assets/crimson/load/smallWhite.png`
 
 
 ## smallFnt.dat layout
@@ -55,11 +55,11 @@ A small bias of 1/512 is applied to the U/V values in code to reduce bleeding.
 ## Sample render
 
 ```
-uv run paq font --assets-dir assets --out output/small_font_sample.png
+uv run paq font --assets-dir artifacts/assets --out artifacts/fonts/small_font_sample.png
 ```
 
 Custom text:
 
 ```
-uv run paq font --text "Hello, world!" --scale 2.0
+uv run paq font --assets-dir artifacts/assets --text "Hello, world!" --scale 2.0
 ```

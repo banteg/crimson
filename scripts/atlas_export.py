@@ -149,7 +149,7 @@ def export_all(args: argparse.Namespace) -> int:
     if not textures:
         raise SystemExit("usage json has no textures")
 
-    output_root = args.out_root or Path("assets_frames")
+    output_root = args.out_root or Path("artifacts") / "atlas" / "frames"
     assets_root = args.assets_root
     exported = 0
 
@@ -237,7 +237,7 @@ def main() -> int:
     parser.add_argument(
         "--out-dir",
         type=Path,
-        help="output directory (default: output/atlas/<name>/grid<grid>/)",
+        help="output directory (default: artifacts/atlas/<name>/grid<grid>/)",
     )
     parser.add_argument(
         "--manifest",
@@ -253,18 +253,18 @@ def main() -> int:
     parser.add_argument(
         "--usage-json",
         type=Path,
-        help="atlas usage json (default: output/atlas/atlas_usage.json)",
+        help="atlas usage json (default: artifacts/atlas/atlas_usage.json)",
     )
     parser.add_argument(
         "--out-root",
         type=Path,
-        help="root output directory for --all (default: assets_frames/)",
+        help="root output directory for --all (default: artifacts/atlas/frames/)",
     )
     parser.add_argument(
         "--assets-root",
         type=Path,
-        default=Path("assets") / "crimson",
-        help="assets root for resolving textures (default: assets/crimson)",
+        default=Path("artifacts") / "assets" / "crimson",
+        help="assets root for resolving textures (default: artifacts/assets/crimson)",
     )
     args = parser.parse_args()
 
@@ -287,7 +287,7 @@ def main() -> int:
         raise SystemExit("no valid indices to export")
 
     base_name = args.image.stem
-    out_dir = args.out_dir or Path("output") / "atlas" / base_name / f"grid{grid}"
+    out_dir = args.out_dir or Path("artifacts") / "atlas" / base_name / f"grid{grid}"
     manifest_path = args.manifest or (out_dir / "manifest.json")
 
     export_frames(

@@ -70,8 +70,8 @@ def main() -> int:
     inputs = args.inputs
     if not inputs:
         inputs = [
-            Path("source/decompiled/crimsonland.exe_functions.json"),
-            Path("source/decompiled/grim.dll_functions.json"),
+            Path("analysis/ghidra/raw/crimsonland.exe_functions.json"),
+            Path("analysis/ghidra/raw/grim.dll_functions.json"),
         ]
 
     for path in inputs:

@@ -1,8 +1,0 @@
-#ifndef JCONFIG_H
-#define JCONFIG_H
-
-#define HAVE_PROTOTYPES 1
-#define HAVE_UNSIGNED_CHAR 1
-#define HAVE_UNSIGNED_SHORT 1
-
-#endif /* JCONFIG_H */

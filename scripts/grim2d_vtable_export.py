@@ -304,37 +304,37 @@ def main() -> int:
     parser.add_argument(
         "--functions",
         type=Path,
-        default=Path("source/decompiled/grim.dll_functions.json"),
+        default=Path("analysis/ghidra/raw/grim.dll_functions.json"),
         help="grim.dll functions JSON",
     )
     parser.add_argument(
         "--calls",
         type=Path,
-        default=Path("source/decompiled/grim2d_vtable_calls.json"),
+        default=Path("analysis/ghidra/derived/grim2d_vtable_calls.json"),
         help="calls JSON/CSV path",
     )
     parser.add_argument(
         "--entries",
         type=Path,
-        default=Path("source/decompiled/grim2d_vtable_entries.json"),
+        default=Path("analysis/ghidra/derived/grim2d_vtable_entries.json"),
         help="entries JSON/CSV path",
     )
     parser.add_argument(
         "--map",
         type=Path,
-        default=Path("source/decompiled/grim2d_vtable_map.json"),
+        default=Path("analysis/ghidra/derived/grim2d_vtable_map.json"),
         help="map JSON/CSV path",
     )
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=Path("source/decompiled"),
+        default=Path("analysis/ghidra/derived"),
         help="output directory for JSON files",
     )
     parser.add_argument(
         "--summary",
         type=Path,
-        default=Path("source/decompiled/grim.dll_summary.txt"),
+        default=Path("analysis/ghidra/raw/grim.dll_summary.txt"),
         help="grim.dll summary file (used to detect .text range)",
     )
     parser.add_argument(

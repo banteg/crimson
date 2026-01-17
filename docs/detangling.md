@@ -13,16 +13,17 @@ uv run python scripts/function_hotspots.py --top 12 --only-fun
 
 ## Name/data map workflow
 
-We keep authoritative function renames/signatures in `source/ghidra/name_map.json`
-and data labels in `source/ghidra/data_map.json`, applying both during headless
+We keep authoritative function renames/signatures in `analysis/ghidra/maps/name_map.json`
+and data labels in `analysis/ghidra/maps/data_map.json`, applying both during headless
 analysis:
 
 ```
 ./.codex/skills/ghidra/scripts/ghidra-analyze.sh \
-  --script-path scripts/ghidra_scripts \
-  -s ApplyNameMap.java -a source/ghidra/name_map.json \
-  -s ApplyDataMap.java -a source/ghidra/data_map.json \
-  -s ExportAll.java -o source/decompiled game/crimsonland.exe
+  --script-path analysis/ghidra/scripts \
+  -s ApplyNameMap.java -a analysis/ghidra/maps/name_map.json \
+  -s ApplyDataMap.java -a analysis/ghidra/maps/data_map.json \
+  -s ExportAll.java -o analysis/ghidra/raw \
+  game_bins/crimsonland/<version>/crimsonland.exe
 ```
 
 You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps.
@@ -142,7 +143,7 @@ Config edit path status:
   global blob (`DAT_00480348`, size `0x480`) using mode `DAT_00473668` (`"wb"`).
 - `FUN_0041f130` is a fallback path that writes the same `DAT_00480348` blob using
   mode `DAT_00473668` (`"wb"`) when the `DAT_00472998` config file is missing.
-- File evidence: `game/crimson.cfg` is exactly `0x480` bytes; `game/game.cfg` is not
+- File evidence: `game_bins/crimsonland/<version>/crimson.cfg` is exactly `0x480` bytes; `game_bins/crimsonland/<version>/game.cfg` is not
   (likely a save/progress file). `DAT_00472998` is `"rb"`; the filename is supplied
   by `FUN_00402bd0` (`"%s\\%s"`).
 

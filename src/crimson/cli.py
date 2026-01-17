@@ -93,13 +93,13 @@ def main(argv: list[str] | None = None) -> None:
     font_p.add_argument(
         "--assets-dir",
         type=Path,
-        default=Path("assets"),
-        help="assets root (default: ./assets)",
+        default=Path("artifacts") / "assets",
+        help="assets root (default: ./artifacts/assets)",
     )
     font_p.add_argument(
         "--out",
         type=Path,
-        default=Path("output/small_font_sample.png"),
+        default=Path("artifacts") / "fonts" / "small_font_sample.png",
         help="output image path",
     )
     font_p.add_argument("--text", type=str, help="text to render")

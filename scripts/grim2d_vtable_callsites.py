@@ -92,19 +92,19 @@ def main() -> int:
     parser.add_argument(
         "--input",
         type=Path,
-        default=Path("source/decompiled/crimsonland.exe_decompiled.c"),
+        default=Path("analysis/ghidra/raw/crimsonland.exe_decompiled.c"),
         help="decompiled EXE path",
     )
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("source/decompiled/grim2d_vtable_callsites.json"),
+        default=Path("analysis/ghidra/derived/grim2d_vtable_callsites.json"),
         help="output JSON path",
     )
     parser.add_argument(
         "--summary-output",
         type=Path,
-        default=Path("source/decompiled/grim2d_vtable_callsites_summary.json"),
+        default=Path("analysis/ghidra/derived/grim2d_vtable_callsites_summary.json"),
         help="summary JSON path",
     )
     args = parser.parse_args()

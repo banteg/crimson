@@ -8,13 +8,13 @@ Overall naming coverage: 26.3% (468 / 1779 functions named or inferred).
 ## Quick start
 
 ```bash
-uv run paq extract game assets
+uv run paq extract game_bins/crimsonland/<version> artifacts/assets
 ```
 
-This scans `game/` for `.paq` archives and extracts them under:
+This scans `game_bins/` for `.paq` archives and extracts them under:
 
 ```
-assets/{paq_name}/{path}
+artifacts/assets/{paq_name}/{path}
 ```
 
 Special handling during extraction:
@@ -46,10 +46,9 @@ Special handling during extraction:
 - [Detangling notes](detangling.md) — In progress
 - [Entrypoint trace](entrypoint.md) — In progress
 - [Crimsonland.exe overview](crimsonland-exe/index.md) — Draft
+- [Build provenance and hashes](provenance.md) — Tracking
 - [Refactor attempt](refactor.md) — Planned
 - [All pages](all-pages.md) — Index
-- [Modern Linux build name mining](modern-linux.md) — Reference
-- [Modern Android build name mining](modern-android.md) — Reference
 - [Grim2D overview](grim2d-overview.md) — Draft
 - [Grim2D API vtable](grim2d-api.md) — Draft
 - [Grim2D API evidence](grim2d-api-evidence.md) — Draft

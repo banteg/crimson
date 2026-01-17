@@ -1,7 +1,7 @@
 # SFX label suggestions
 
 Suggested data label names derived from [SFX ID map](sfx-id-map.md).
-These can be copied into `source/ghidra/data_map.json` and applied with
+These can be copied into `analysis/ghidra/maps/data_map.json` and applied with
 `ApplyDataMap.java` during headless analysis.
 
 | Var | File | Suggested label |

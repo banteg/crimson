@@ -85,7 +85,7 @@ See [Effects pools](effects-struct.md) for secondary projectile type behaviors a
 ## Rendering notes
 
 `projectile_render` uses `type_id` to select atlas frames in
-`assets/crimson/game/projs.png`. See [Sprite atlas cutting](atlas.md) for the
+`artifacts/assets/crimson/game/projs.png`. See [Sprite atlas cutting](atlas.md) for the
 current frame mapping table.
 
 Some beam/chain effects override UVs with `grim_set_uv_point` to draw a thin

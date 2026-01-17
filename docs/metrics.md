@@ -7,8 +7,8 @@ numbers after each Ghidra regen or when a format/system is confirmed.
 
 ## Binary coverage
 
-Counts come from `source/decompiled/*_summary.txt` and
-`source/decompiled/ghidra_analysis.log`. “Named/inferred” counts functions
+Counts come from `analysis/ghidra/raw/*_summary.txt` and
+`analysis/ghidra/raw/ghidra_analysis.log`. “Named/inferred” counts functions
 whose names are not the default Ghidra stubs (`FUN_*`, `thunk_FUN_*`, `LAB_*`).
 “Typed signature” means the function signature does not start with
 `undefined`/`undefinedN`. “GDT hits” count signature changes vs the previous
@@ -85,15 +85,15 @@ regen (from git history).
 - Notes: [Weapon table](weapon-table.md)
 
 
-## Refactor progress
+## Rewrite progress
 
-### Clean C files
+### Zig modules
 
 - Value: 0
-- Notes: `source/clean/` only has `grim_api.h` so far; no cleaned C yet.
+- Notes: `rewrite/` is the canonical clean layer; no Zig modules committed yet.
 
 
 ### Header packs
 
 - Value: 1
-- Notes: `source/headers/third_party` (PNG/JPEG/zlib/ogg/vorbis + DirectX/DirectSound refs).
+- Notes: `third_party/headers` (PNG/JPEG/zlib/ogg/vorbis + DirectX/DirectSound refs).

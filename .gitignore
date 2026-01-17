@@ -1,8 +1,6 @@
-/game/
-/game_linux/
-/assets/
-/assets_frames/
-/output/
-/site/
+/game_bins/
+/artifacts/
+/_site/
+/analysis/ghidra/projects/
 .venv/
 .DS_Store

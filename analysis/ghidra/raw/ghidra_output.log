@@ -1,0 +1,204 @@
+openjdk version "21.0.9" 2025-10-21
+OpenJDK Runtime Environment (build 21.0.9+10-Ubuntu-125.10)
+OpenJDK 64-Bit Server VM (build 21.0.9+10-Ubuntu-125.10, mixed mode)
+INFO  Using log config file: jar:file:/opt/ghidra_12.0.1_PUBLIC/Ghidra/Framework/Generic/lib/Generic.jar!/generic.log4j.xml (LoggingInitialization)  
+INFO  Using log file: source/decompiled/ghidra_analysis.log (LoggingInitialization)  
+INFO  Loading user preferences: /home/node/.config/ghidra/ghidra_12.0.1_PUBLIC/preferences (Preferences)  
+INFO  Searching for classes... (ClassSearcher)  
+INFO  Class search complete (701 ms) (ClassSearcher)  
+INFO  Initializing SSL Context (DefaultSSLContextInitializer)  
+INFO  Initializing Random Number Generator... (SecureRandomFactory)  
+INFO  Random Number Generator initialization complete: NativePRNGNonBlocking (SecureRandomFactory)  
+INFO  Trust manager disabled, cacerts have not been set (DefaultTrustManagerFactory)  
+INFO  Headless startup complete (1326 ms) (AnalyzeHeadless)  
+INFO  Class searcher loaded 58 extension points (18 false positives) (ClassSearcher)  
+INFO  HEADLESS Script Paths:
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/PIC/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/VersionTracking/ghidra_scripts
+    /workspace/.codex/skills/ghidra/scripts/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/DecompilerDependent/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/PDB/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/JVM/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/WildcardAssembler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/GnuDemangler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/SystemEmulation/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/FileFormats/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/BytePatterns/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Jython/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/MicrosoftCodeAnalyzer/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/DATA/ghidra_scripts
+    /workspace/scripts/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger-rmi-trace/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/BSim/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/8051/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/PyGhidra/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/SwiftDemangler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Decompiler/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/FunctionID/ghidra_scripts
+    /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/Atmel/ghidra_scripts (HeadlessAnalyzer)  
+INFO  HEADLESS: execution starts (HeadlessAnalyzer)  
+INFO  Creating temporary project: /tmp/ghidra_crimsonland_exe_172712 (HeadlessAnalyzer)  
+INFO  Creating project: /tmp/ghidra_crimsonland_exe_172712 (DefaultProject)  
+INFO  REPORT: Processing input files:  (HeadlessAnalyzer)  
+INFO       project: /tmp/ghidra_crimsonland_exe_172712 (HeadlessAnalyzer)  
+INFO  IMPORTING: file:///workspace/game/crimsonland.exe (HeadlessAnalyzer)  
+INFO  Using Loader: Portable Executable (PE) (ProgramLoader)  
+INFO  Using Language/Compiler: x86:LE:32:default:windows (ProgramLoader)  
+INFO  Using Library Search Path: [., /bin, /lib, /lib64, /lib/x86_64-linux-gnu, /lib/aarch64-linux-gnu, /usr/bin, /usr/lib, /usr/X11R6/bin, /usr/X11R6/lib, /usr/java/packages/lib, /usr/lib/aarch64-linux-gnu/jni, /usr/lib/aarch64-linux-gnu, /usr/lib/jni] (ProgramLoader)  
+INFO  Additional info:
+Loading file:///workspace/game/crimsonland.exe?MD5=b5734f679649e1e61b79b6071f7e0ee5...
+------------------------------------------------
+
+Searching 8 paths for library ADVAPI32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library D3D8.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library DSOUND.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library KERNEL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library OLE32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library OLEAUT32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library SHELL32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library URLMON.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library USER32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library VERSION.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library VORBISFILE.DLL...
+Loading file:///workspace/game/VORBISFILE.DLL?MD5=b226080606e45b6879ea02f1b5f47c5e...
+Created exports file: /home/node/.config/ghidra/ghidra_12.0.1_PUBLIC/symbols/win32/vorbisfile.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 8 paths for library WININET.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library WINMM.DLL...
+Library not found.
+------------------------------------------------
+
+Applying cached symbols from VORBISFILE.DLL
+Linking the External Programs of 'crimsonland.exe' to imported libraries...
+  [KERNEL32.DLL] -> not found in project
+  [USER32.DLL] -> not found in project
+  [ADVAPI32.DLL] -> not found in project
+  [SHELL32.DLL] -> not found in project
+  [OLE32.DLL] -> not found in project
+  [OLEAUT32.DLL] -> not found in project
+  [VORBISFILE.DLL] -> not found in project
+  [URLMON.DLL] -> not found in project
+  [WINMM.DLL] -> not found in project
+  [D3D8.DLL] -> not found in project
+  [VERSION.DLL] -> not found in project
+  [WININET.DLL] -> not found in project
+  [DSOUND.DLL] -> not found in project
+------------------------------------------------
+
+ (ProgramLoader)  
+INFO  IMPORTING: Loaded 0 additional files (HeadlessAnalyzer)  
+INFO  ANALYZING all memory and code: file:///workspace/game/crimsonland.exe (HeadlessAnalyzer)  
+WARN  Ignoring leading '_' chars on no-return name '___raise_securityfailure' specified in file: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn (NoReturnFunctionAnalyzer)  
+WARN  Ignoring leading '_' chars on no-return name '___report_rangecheckfailure' specified in file: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn (NoReturnFunctionAnalyzer)  
+INFO  Skipping PDB processing: missing PDB information in program metadata (PdbUniversalAnalyzer)  
+INFO  Packed database cache: /var/tmp/node-ghidra/packed-db-cache (PackedDatabaseCache)  
+INFO  Applied data type archive: windows_vs12_32 (ApplyDataArchiveAnalyzer)  
+INFO  Applied data type archive: windows_vs12_32 (ApplyDataArchiveAnalyzer)  
+INFO  -----------------------------------------------------
+    ASCII Strings                              0.232 secs
+    Apply Data Archives                        0.095 secs
+    Call Convention ID                         0.004 secs
+    Call-Fixup Installer                       0.020 secs
+    Create Address Tables                      0.066 secs
+    Create Address Tables - One Time           0.076 secs
+    Create Function                            0.183 secs
+    Data Reference                             0.094 secs
+    Decompiler Parameter ID                    8.644 secs
+    Decompiler Switch Analysis                21.886 secs
+    Demangler Microsoft                        0.005 secs
+    Disassemble                                0.206 secs
+    Disassemble Entry Points                   0.341 secs
+    Embedded Media                             0.010 secs
+    External Entry References                  0.000 secs
+    Function ID                                0.398 secs
+    Function Start Pre Search                  0.010 secs
+    Function Start Search                      0.071 secs
+    Function Start Search After Code           0.034 secs
+    Function Start Search After Data           0.020 secs
+    Function Start Search delayed - One Time   0.001 secs
+    Non-Returning Functions - Discovered       0.111 secs
+    Non-Returning Functions - Known            0.002 secs
+    PDB Universal                              0.001 secs
+    Reference                                  0.319 secs
+    Scalar Operand References                  0.369 secs
+    Shared Return Calls                        0.095 secs
+    Stack                                      1.377 secs
+    Subroutine References                      0.828 secs
+    Subroutine References - One Time           0.005 secs
+    Windows x86 PE Exception Handling          0.968 secs
+    Windows x86 PE RTTI Analyzer               0.000 secs
+    Windows x86 Thread Environment Block (TEB) Analyzer     0.008 secs
+    WindowsResourceReference                   0.267 secs
+    X86 Function Callee Purge                  0.047 secs
+    x86 Constant Reference Analyzer            2.235 secs
+-----------------------------------------------------
+     Total Time   39 secs
+-----------------------------------------------------
+ (AutoAnalysisManager)  
+INFO  REPORT: Analysis succeeded for file: file:///workspace/game/crimsonland.exe (HeadlessAnalyzer)  
+INFO  REPORT: Execute script: ApplyNameMap.java 'source/ghidra/name_map.json'  (HeadlessAnalyzer)  
+INFO  SCRIPT: /workspace/scripts/ghidra_scripts/ApplyNameMap.java (HeadlessAnalyzer)  
+INFO  ApplyNameMap.java> Applied name map: /workspace/source/ghidra/name_map.json (GhidraScript)  
+INFO  ApplyNameMap.java> Program: crimsonland.exe (GhidraScript)  
+INFO  ApplyNameMap.java> Updated entries: 183 (GhidraScript)  
+INFO  ApplyNameMap.java> Renamed: 183, Signatures: 153, Comments: 183 (GhidraScript)  
+INFO  ApplyNameMap.java> Missing: 0, Skipped: 128 (GhidraScript)  
+INFO  REPORT: Execute script: ExportAll.java  (HeadlessAnalyzer)  
+INFO  SCRIPT: /workspace/.codex/skills/ghidra/scripts/ghidra_scripts/ExportAll.java (HeadlessAnalyzer)  
+INFO  ExportAll.java> === Starting comprehensive export === (GhidraScript)  
+INFO  ExportAll.java> Output directory: source/decompiled (GhidraScript)  
+INFO  ExportAll.java> Program: crimsonland.exe (GhidraScript)  
+INFO  ExportAll.java> Architecture: x86 (GhidraScript)  
+INFO  ExportAll.java>  (GhidraScript)  
+INFO  ExportAll.java> Exporting summary to: crimsonland.exe_summary.txt (GhidraScript)  
+INFO  ExportAll.java> Exporting decompiled code to: crimsonland.exe_decompiled.c (GhidraScript)  
+INFO  ExportAll.java>   Decompiled 792 functions (GhidraScript)  
+INFO  ExportAll.java> Exporting functions to: crimsonland.exe_functions.json (GhidraScript)  
+INFO  ExportAll.java>   Exported 819 functions (GhidraScript)  
+INFO  ExportAll.java> Exporting strings to: crimsonland.exe_strings.txt (GhidraScript)  
+INFO  ExportAll.java>   Exported 1374 strings (GhidraScript)  
+INFO  ExportAll.java> Analyzing interesting patterns... (GhidraScript)  
+INFO  ExportAll.java>  (GhidraScript)  
+INFO  ExportAll.java> === Export complete === (GhidraScript)  
+INFO  ANALYZING changes made by post scripts: file:///workspace/game/crimsonland.exe (HeadlessAnalyzer)  
+INFO  REPORT: Post-analysis succeeded for file: file:///workspace/game/crimsonland.exe (HeadlessAnalyzer)  
+INFO  /crimsonland.exe: file created (node) (LocalFileSystem)  
+INFO  REPORT: Save succeeded for: /crimsonland.exe (ghidra_crimsonland_exe_172712:/crimsonland.exe) (HeadlessAnalyzer)  
+INFO  REPORT: Import succeeded (HeadlessAnalyzer)  

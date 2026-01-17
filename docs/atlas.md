@@ -2,7 +2,7 @@
 
 **Status:** In progress
 
-This is based on the decompiled engine in `source/decompiled/crimsonland.exe_decompiled.c`.
+This is based on the decompiled engine in `analysis/ghidra/raw/crimsonland.exe_decompiled.c`.
 The engine does **not** load atlas metadata from disk; all slicing is hard‑coded.
 
 ## UV grid tables
@@ -70,7 +70,7 @@ rectangle that spans multiple grid cells (not a single cell).
 
 Known uses:
 
-- `assets/crimson/ui/ui_wicons.png` uses an **8×8** grid but selects **2×1**
+- `artifacts/assets/crimson/ui/ui_wicons.png` uses an **8×8** grid but selects **2×1**
   sub-rects. The `frame` argument is derived from the weapon table
   (`weapon_id * 2`) and is reused across HUD + menu renders.
 - Some UI paths call `grim_set_sub_rect` twice in a row to draw two adjacent
@@ -110,19 +110,19 @@ The engine uses **two patterns**:
 
 ### Known assets and grids
 
-- `assets/crimson/game/projs.png` (DAT_0048f7d4)
-  - Uses **grid=4** (e.g. `+0x104(4, …)` around `source/decompiled/crimsonland.exe_decompiled.c:18448`).
+- `artifacts/assets/crimson/game/projs.png` (DAT_0048f7d4)
+  - Uses **grid=4** (e.g. `+0x104(4, …)` around `analysis/ghidra/raw/crimsonland.exe_decompiled.c:18448`).
   - Uses **grid=2** for some effects (e.g. `+0x104(2, 0)` around `:16479`).
   - Several projectile/beam effects draw **repeated quads** along a vector
     using a single frame (segment tiling instead of unique frames).
   - One beam path calls `set_atlas_frame(4,2,<dir>,<dir>)` with extra vector
     pointers; this likely orients the UVs for directional beam segments.
 
-- `assets/crimson/game/bonuses.png` (DAT_0048f7f0)
+- `artifacts/assets/crimson/game/bonuses.png` (DAT_0048f7f0)
   - Uses **sprite table index 0x10** (call at `:18550`), which maps to **grid=4**.
   - Sheet is 128×128 → 32×32 cells.
 
-- `assets/crimson/game/particles.png` (DAT_0048f7ec)
+- `artifacts/assets/crimson/game/particles.png` (DAT_0048f7ec)
   - Uses **grid=8** for the main particle system (see `+0x104(8, …)` at `:9704`).
   - Uses **sprite table indices 0x10, 0x0e, 0x0d, 0x0c** for UI/overlay effects
     (calls at `:996?`, `:16217`, `:16854`, `:18788`, `:18824`). These indices map to **grid=4**.
@@ -130,7 +130,7 @@ The engine uses **two patterns**:
     (`0x00..0x12`). Muzzle flash uses `effect_id 0x12` → grid 16, frame `0x26`
     (the sprite itself resembles a shell casing).
 
-- `assets/crimson/ui/ui_wicons.png` (DAT_0048f7e4)
+- `artifacts/assets/crimson/ui/ui_wicons.png` (DAT_0048f7e4)
   - Uses **grid=8**, but rendered via `grim_set_sub_rect(8, 2, 1, frame)`.
   - This implies each weapon icon spans **2×1 cells** (wider than a single cell).
 
@@ -154,9 +154,9 @@ Known `projs.png` frame selections:
 The same path also calls `grim_set_atlas_frame(2, …)` for these beam types, but
 the exact grid2 index is still unclear from the decompile.
 
-- Enemy sheets (`assets/crimson/game/zombie.png`, `assets/crimson/game/lizard.png`,
-  `assets/crimson/game/alien.png`, `assets/crimson/game/spider_sp1.png`,
-  `assets/crimson/game/spider_sp2.png`, `assets/crimson/game/trooper.png`)
+- Enemy sheets (`artifacts/assets/crimson/game/zombie.png`, `artifacts/assets/crimson/game/lizard.png`,
+  `artifacts/assets/crimson/game/alien.png`, `artifacts/assets/crimson/game/spider_sp1.png`,
+  `artifacts/assets/crimson/game/spider_sp2.png`, `artifacts/assets/crimson/game/trooper.png`)
   - Drawn via **grid=8** (`+0x104(8, …)` in the enemy render path around `:9704`).
   - Per‑enemy base frame offsets are stored in the enemy data struct
     (e.g. `_DAT_00482760 = 0x20`, `_DAT_004827a4 = 0x10`, etc).
@@ -183,12 +183,12 @@ uniform grids (2/4/8/16).
 out a JSON manifest with rect/UV data.
 
 ```bash
-uv run python scripts/atlas_export.py --image assets/crimson/game/projs.png --grid 4
+uv run python scripts/atlas_export.py --image artifacts/assets/crimson/game/projs.png --grid 4
 ```
 
 Outputs:
 
-- Frames under `output/atlas/projs/grid4/` (e.g. `frame_000.png`).
+- Frames under `artifacts/atlas/projs/grid4/` (e.g. `frame_000.png`).
 - `manifest.json` with `image`, `grid`, `cell_size`, and `frames` entries.
 
 Use `--indices 0-3,8-11` to export a subset, or `--table-index 0x10` to use the
@@ -196,30 +196,30 @@ engine sprite table (grid 4).
 
 ### Bulk export
 
-To export all textures referenced by the static scan into `assets_frames/`,
+To export all textures referenced by the static scan into `artifacts/atlas/frames/`,
 run:
 
 ```bash
-uv run python scripts/atlas_scan.py --output-json output/atlas/atlas_usage.json
+uv run python scripts/atlas_scan.py --output-json artifacts/atlas/atlas_usage.json
 uv run python scripts/atlas_export.py --all
 ```
 
 The output layout is:
 
-- `assets_frames/<relative_path>/<texture_name>/grid<grid>/frame_###.png`
-- `assets_frames/<relative_path>/<texture_name>/grid<grid>/manifest.json`
+- `artifacts/atlas/frames/<relative_path>/<texture_name>/grid<grid>/frame_###.png`
+- `artifacts/atlas/frames/<relative_path>/<texture_name>/grid<grid>/manifest.json`
 
 Manifests include `used_indices` when the static scan reported concrete frame
 indices for a grid.
 
 ## Atlas usage by texture (static scan)
 
-The notes below come from scanning `source/decompiled/crimsonland.exe_decompiled.c`
+The notes below come from scanning `analysis/ghidra/raw/crimsonland.exe_decompiled.c`
 for texture binds (`+0xc4`) followed by atlas selection (`+0x104` or
 `FUN_0042e0a0`). Use:
 
 ```bash
-uv run python scripts/atlas_scan.py --output-json output/atlas/atlas_usage.json
+uv run python scripts/atlas_scan.py --output-json artifacts/atlas/atlas_usage.json
 ```
 
 The JSON output includes `texture`, `direct` (grid/index), and `table_indices`
@@ -228,19 +228,19 @@ per bound texture.
 They list which grids and indices are used, but not the semantic meaning of
 each frame.
 
-- `assets/crimson/game/projs.png` (`projs`)
+- `artifacts/assets/crimson/game/projs.png` (`projs`)
   - Direct grid calls: **4×4** indices `2`, `3`, `6` (plus one call with extra
     parameters using `grid=4, index=2`), and **2×2** index `0`.
   - Table index `0x10` → **4×4**.
 
-- `assets/crimson/game/bonuses.png` (`bonuses`)
+- `artifacts/assets/crimson/game/bonuses.png` (`bonuses`)
   - Direct grid calls: **4×4** index `0`, plus dynamic indices `iVar6` and
     `iVar6 + 1` (frame selection happens in code).
 
-- `assets/crimson/game/bodyset.png` (`bodyset`)
+- `artifacts/assets/crimson/game/bodyset.png` (`bodyset`)
   - Table index `0x10` → **4×4**.
 
-- `assets/crimson/game/particles.png`
+- `artifacts/assets/crimson/game/particles.png`
   - Table indices `0x10`, `0x0e`, `0x0d`, `0x0c` → **4×4**.
   - Table index `0x02` → **8×8**.
   - Direct grid calls: **2×2**, **4×4**, **8×8**, **16×16** with a dynamic

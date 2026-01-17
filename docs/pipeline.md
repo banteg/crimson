@@ -2,14 +2,14 @@
 
 **Status:** In progress
 
-The extractor walks the `game/` directory, finds all `.paq` archives, and
-writes files under `assets/{paq_name}/...` while applying a couple of format
+The extractor walks the `game_bins/` directory, finds all `.paq` archives, and
+writes files under `artifacts/assets/{paq_name}/...` while applying a couple of format
 conversions.
 
 ## Command
 
 ```bash
-uv run paq extract game assets
+uv run paq extract game_bins/crimsonland/<version> artifacts/assets
 ```
 
 ## Output rules

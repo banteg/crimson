@@ -2,13 +2,13 @@
 
 This is a first-pass extraction of the Grim2D API vtable usage from the
 classic `crimsonland.exe` decompilation. The engine interface pointer is
-`DAT_0048083c` in `source/decompiled/crimsonland.exe_decompiled.c`.
+`DAT_0048083c` in `analysis/ghidra/raw/crimsonland.exe_decompiled.c`.
 
 The interface is created in `GRIM__GetInterface` (`grim.dll`), which sets the
 object vtable to `PTR_LAB_1004c238` (address `0x1004c238` in the DLL).
 
 We created functions at vtable entry addresses via
-`scripts/ghidra_scripts/CreateGrim2DVtableFunctions.java` and re-exported
+`analysis/ghidra/scripts/CreateGrim2DVtableFunctions.java` and re-exported
 `grim.dll_functions.json` to capture those entry names. The latest vtable JSON
 exports now include 84 entry points created from the vtable.
 
@@ -18,17 +18,17 @@ For a high-level summary, see [Grim2D overview](grim2d-overview.md).
 
 We extracted all `(*DAT_0048083c + offset)` callsites and wrote them to:
 
-- `source/decompiled/grim2d_vtable_calls.json`
-- `source/decompiled/grim2d_vtable_callsites.json` (full callsite index with line numbers)
+- `analysis/ghidra/derived/grim2d_vtable_calls.json`
+- `analysis/ghidra/derived/grim2d_vtable_callsites.json` (full callsite index with line numbers)
 
 
 The JSON includes offset, callsite count, unique functions, and sample lines.
 
-We also dumped the Grim2D vtable itself from `game/grim.dll` and joined the
+We also dumped the Grim2D vtable itself from `game_bins/crimsonland/<version>/grim.dll` and joined the
 two datasets:
 
-- `source/decompiled/grim2d_vtable_entries.json`
-- `source/decompiled/grim2d_vtable_map.json`
+- `analysis/ghidra/derived/grim2d_vtable_entries.json`
+- `analysis/ghidra/derived/grim2d_vtable_map.json`
 
 
 The map JSON includes function size, calling convention, return type, parameter
@@ -234,13 +234,13 @@ These offsets appear with keycodes or input-related values:
 | `0x148` | `draw_text_small_fmt` | `void draw_text_small_fmt(float x, float y, const char *fmt, ...)` | high | formatted small-font text (wrapper around `0x144`) |
 | `0x14c` | `measure_text_width` | `int measure_text_width(const char *text)` | high | width metric for small font (handles newlines) |
 
-The working vtable skeleton lives in:
-
-- `source/clean/grim_api.h`
+The working vtable skeleton lives in the Zig rewrite under `rewrite/` once a
+signature is confirmed. Until then, the authoritative source is the vtable map
+JSON in `analysis/ghidra/derived/`.
 
 
 ## Next steps
 
 1. Validate the high-callsite entries in the table above with runtime evidence.
-2. Refine signatures in `source/clean/grim_api.h`.
+2. Port confirmed signatures into the Zig rewrite under `rewrite/`.
 3. Validate behavior with runtime toggles (config, input, draw calls).

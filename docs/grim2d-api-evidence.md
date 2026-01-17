@@ -4,7 +4,7 @@ This appendix collects one concrete callsite snippet per vtable offset,
 
 plus the current grim.dll entry signature and address from
 
-`source/decompiled/grim2d_vtable_map.json`.
+`analysis/ghidra/derived/grim2d_vtable_map.json`.
 
 Ghidra signatures include the implicit `this` pointer on vtable calls; the
 Suggested signature lines omit it and add const qualifiers where evidence

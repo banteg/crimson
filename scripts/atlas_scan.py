@@ -9,9 +9,9 @@ from pathlib import Path
 from crimson.atlas import GRID_SIZE_BY_CODE, SPRITE_TABLE
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_C_PATH = ROOT / "source/decompiled/crimsonland.exe_decompiled.c"
-DEFAULT_STRINGS_PATH = ROOT / "source/decompiled/crimsonland.exe_strings.txt"
-DEFAULT_ASSETS_ROOT = ROOT / "assets" / "crimson"
+DEFAULT_C_PATH = ROOT / "analysis/ghidra/raw/crimsonland.exe_decompiled.c"
+DEFAULT_STRINGS_PATH = ROOT / "analysis/ghidra/raw/crimsonland.exe_strings.txt"
+DEFAULT_ASSETS_ROOT = ROOT / "artifacts" / "assets" / "crimson"
 
 ADDR_RE = re.compile(r"^([0-9A-Fa-f]{8}):\s+(.*)$")
 LOAD_RE = re.compile(

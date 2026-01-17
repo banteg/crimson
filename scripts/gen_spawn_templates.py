@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 
 
-DECOMP_PATH = Path("source/decompiled/crimsonland.exe_decompiled.c")
+DECOMP_PATH = Path("analysis/ghidra/raw/crimsonland.exe_decompiled.c")
 DOC_PATH = Path("docs/creature-struct.md")
 
 START_MARKER = "<!-- spawn-templates:start -->"

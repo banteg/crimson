@@ -85,7 +85,7 @@ def main() -> int:
         "functions_json",
         type=Path,
         nargs="?",
-        default=Path("source/decompiled/crimsonland.exe_functions.json"),
+        default=Path("analysis/ghidra/raw/crimsonland.exe_functions.json"),
         help="functions.json path",
     )
     parser.add_argument("--entry", type=str, default="entry")

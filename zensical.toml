@@ -12,6 +12,7 @@
 #
 # Read more: https://zensical.org/docs/setup/basics/#site_name
 site_name = "Crimsonland decompile notes"
+site_dir = "_site"
 
 # The site_description is included in the HTML head and should contain a
 # meaningful description of the site content for use by search engines.
@@ -72,6 +73,7 @@ nav = [
   { "Pipeline" = [
     { "Extraction pipeline" = "pipeline.md" },
   ]},
+  { "Provenance" = "provenance.md" },
   { "Analysis" = [
     { "Progress metrics" = "metrics.md" },
     { "Detangling notes" = "detangling.md" },
@@ -86,10 +88,6 @@ nav = [
       { "Gameplay glue" = "crimsonland-exe/gameplay.md" },
     ]},
     { "Refactor attempt" = "refactor.md" },
-  ]},
-  { "Modern builds" = [
-    { "Modern Linux build name mining" = "modern-linux.md" },
-    { "Modern Android build name mining" = "modern-android.md" },
   ]},
 ]
 

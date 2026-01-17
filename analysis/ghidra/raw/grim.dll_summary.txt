@@ -1,0 +1,24 @@
+Binary Analysis Summary
+=======================
+
+File: grim.dll
+Architecture: x86
+Address Size: 32 bit
+Endianness: false (big endian)
+Compiler: windows
+
+Functions:
+  Total: 960
+  External: 0
+  Thunks: 40
+  User-defined: 920
+
+Memory Sections:
+  Headers: 10000000 - 10000fff (4096 bytes) [R]
+  .text: 10001000 - 1004bfff (307200 bytes) [X] [R]
+  .rdata: 1004c000 - 10052fff (28672 bytes) [R]
+  .data: 10053000 - 1005dbf3 (44020 bytes) [W] [R]
+  .data1: 1005e000 - 1005efff (4096 bytes) [W] [R]
+  .rsrc: 1005f000 - 1008dfff (192512 bytes) [R]
+  .reloc: 1008e000 - 10091fff (16384 bytes) [R]
+  tdb: ffdff000 - ffdfffff (4096 bytes) [W] [R]
