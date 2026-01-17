@@ -72,23 +72,23 @@ These offsets appear with keycodes or input-related values:
 
 | Offset | Name | Signature (guess) | Confidence | Notes |
 | --- | --- | --- | --- | --- |
-| `0x0` | `release` | `void release(void)` | medium | vtable destructor (operator_delete) |
+| `0x0` | `release` | `void release(void)` | high | vtable destructor (operator_delete) |
 | `0x4` | `set_paused` | `void set_paused(int paused)` | high | sets global pause flag |
 | `0x8` | `get_version` | `float get_version(void)` | high | returns constant 1.21 |
-| `0xc` | `check_device` | `int check_device(void)` | medium | tests D3D device/state; returns success |
-| `0x10` | `apply_config` | `int apply_config(void)` | medium | invoked by "...invoking grim config" log |
+| `0xc` | `check_device` | `int check_device(void)` | high | tests D3D device/state; returns success |
+| `0x10` | `apply_config` | `int apply_config(void)` | high | opens D3D config dialog and applies settings |
 | `0x14` | `init_system` | `int init_system(void)` | high | returns success before game starts |
 | `0x18` | `shutdown` | `void shutdown(void)` | high | shutdown path before DLL release |
-| `0x1c` | `apply_settings` | `void apply_settings(void)` | medium | calls FUN_10003c00 (apply settings) |
+| `0x1c` | `apply_settings` | `void apply_settings(void)` | high | calls FUN_10003c00 (apply settings) |
 | `0x20` | `set_render_state` | `void set_render_state(uint32_t state, uint32_t value)` | high | D3D-style render state usage |
 | `0x24` | `get_config_var` | `void get_config_var(uint32_t *out, int id)` | high | fills 4 dwords for config entry (`id` 0..0x7f) |
-| `0x28` | `get_error_text` | `char * get_error_text(void)` | medium | error string for MessageBox |
+| `0x28` | `get_error_text` | `char * get_error_text(void)` | high | error string for MessageBox |
 | `0x2c` | `clear_color` | `void clear_color(float r, float g, float b, float a)` | high | packs RGBA into device clear color |
 | `0x30` | `set_render_target` | `int set_render_target(int target_index)` | high | switches render target surfaces; -1 restores backbuffer |
-| `0x34` | `get_time_ms` | `int get_time_ms(void)` | medium | frame time accumulator (ms) |
-| `0x38` | `set_time_ms` | `void set_time_ms(int ms)` | medium | overrides time accumulator |
-| `0x3c` | `get_frame_dt` | `float get_frame_dt(void)` | medium | clamped frame delta |
-| `0x40` | `get_fps` | `float get_fps(void)` | medium | frame rate estimate |
+| `0x34` | `get_time_ms` | `int get_time_ms(void)` | high | frame time accumulator (ms) |
+| `0x38` | `set_time_ms` | `void set_time_ms(int ms)` | high | overrides time accumulator |
+| `0x3c` | `get_frame_dt` | `float get_frame_dt(void)` | high | clamped frame delta |
+| `0x40` | `get_fps` | `float get_fps(void)` | high | frame rate estimate |
 | `0x44` | `is_key_down` | `bool is_key_down(uint32_t key)` | high | Ctrl/arrow keycodes |
 | `0x48` | `was_key_pressed` | `bool was_key_pressed(uint32_t key)` | high | edge-triggered key checks |
 | `0x4c` | `flush_input` | `void flush_input(void)` | high | clears input buffers + drains DirectInput |
@@ -138,18 +138,18 @@ These offsets appear with keycodes or input-related values:
 | `0xfc` | `set_rotation` | `void set_rotation(float radians)` | high | precomputes sin/cos (+45°) for rotation matrix |
 | `0x100` | `set_uv` | `void set_uv(float u0, float v0, float u1, float v1)` | high | sets all 4 UV pairs (u0/v0/u1/v1) |
 | `0x104` | `set_atlas_frame` | `void set_atlas_frame(int atlas_size, int frame)` | high | atlas size (cells per side) + frame index |
-| `0x108` | `set_sub_rect` | `void set_sub_rect(int atlas_size, int width, int height, int frame)` | medium | atlas grid sub-rect: `atlas_size` indexes the UV table (2/4/8/16), width/height in cells, `frame` selects top-left cell |
-| `0x10c` | `set_uv_point` | `void set_uv_point(int index, float u, float v)` | medium | sets a single UV pair (index 0..3) for custom quad UVs |
-| `0x110` | `set_color_ptr` | `void set_color_ptr(float *rgba)` | medium | sets current color from float[4] (RGBA 0..1) |
+| `0x108` | `set_sub_rect` | `void set_sub_rect(int atlas_size, int width, int height, int frame)` | high | atlas grid sub-rect: `atlas_size` indexes the UV table (2/4/8/16), width/height in cells, `frame` selects top-left cell |
+| `0x10c` | `set_uv_point` | `void set_uv_point(int index, float u, float v)` | high | sets a single UV pair (index 0..3) for custom quad UVs |
+| `0x110` | `set_color_ptr` | `void set_color_ptr(float *rgba)` | high | sets current color from float[4] (RGBA 0..1) |
 | `0x114` | `set_color` | `void set_color(float r, float g, float b, float a)` | high | RGBA floats |
 | `0x118` | `set_color_slot` | `void set_color_slot(int index, float r, float g, float b, float a)` | high | packs RGBA into color slot array (index 0..3, per-corner) |
 | `0x11c` | `draw_quad` | `void draw_quad(float x, float y, float w, float h)` | high | core draw call; uses per-corner color slots + UV array |
-| `0x120` | `draw_quad_xy` | `void draw_quad_xy(float *xy, float w, float h)` | medium | wrapper for draw_quad using `xy` pointer |
+| `0x120` | `draw_quad_xy` | `void draw_quad_xy(float *xy, float w, float h)` | high | wrapper for draw_quad using `xy` pointer |
 | `0x124` | `draw_quad_rotated_matrix` | `void draw_quad_rotated_matrix(float x, float y, float w, float h)` | high | uses rotation matrix to emit quad vertices |
-| `0x128` | `submit_vertices_transform` | `void submit_vertices_transform(float *verts, int count, float *offset, float *matrix)` | medium | copies `count` verts (7-float stride) then applies 2x2 matrix + offset |
-| `0x12c` | `submit_vertices_offset` | `void submit_vertices_offset(float *verts, int count, float *offset)` | medium | copies verts then offsets XY (7-float stride) |
-| `0x130` | `submit_vertices_offset_color` | `void submit_vertices_offset_color(float *verts, int count, float *offset, float *color)` | medium | copies verts, offsets XY, overrides packed color from `*color` |
-| `0x134` | `submit_vertices_transform_color` | `void submit_vertices_transform_color(float *verts, int count, float *offset, float *matrix, float *color)` | medium | copies verts, applies matrix+offset, overrides packed color from `*color` |
+| `0x128` | `submit_vertices_transform` | `void submit_vertices_transform(float *verts, int count, float *offset, float *matrix)` | high | copies `count` verts (7-float stride) then applies 2x2 matrix + offset |
+| `0x12c` | `submit_vertices_offset` | `void submit_vertices_offset(float *verts, int count, float *offset)` | high | copies verts then offsets XY (7-float stride) |
+| `0x130` | `submit_vertices_offset_color` | `void submit_vertices_offset_color(float *verts, int count, float *offset, float *color)` | high | copies verts, offsets XY, overrides packed color from `*color` |
+| `0x134` | `submit_vertices_transform_color` | `void submit_vertices_transform_color(float *verts, int count, float *offset, float *matrix, float *color)` | high | copies verts, applies matrix+offset, overrides packed color from `*color` |
 | `0x138` | `draw_quad_points` | `void draw_quad_points(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3)` | high | pushes quad from 4 points using current UV/color slots |
 | `0x13c` | `draw_text_mono` | `void draw_text_mono(float x, float y, const char *text)` | high | fixed 16px grid; handles a few extended codes |
 | `0x140` | `draw_text_mono_fmt` | `void draw_text_mono_fmt(float x, float y, const char *fmt, ...)` | high | printf-style wrapper around `draw_text_mono` |

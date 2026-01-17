@@ -6,6 +6,38 @@ plus the current grim.dll entry signature and address from
 
 `source/decompiled/grim2d_vtable_map.json`.
 
+## 0x0 — grim_release @ 0x10005c80
+- Ghidra signature: `void grim_release(void)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: crimsonland_main:L21607 (base vtable call)
+- First callsite: crimsonland_main (line 21607)
+
+```c
+    (**(code **)*DAT_0048083c)();
+    return 0;
+```
+
+grim.dll body:
+
+```c
+  operator_delete(in_ECX);
+```
+
+
+## 0xc — grim_check_device @ 0x10005cb0
+- Ghidra signature: `int grim_check_device(void)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+grim.dll body:
+
+```c
+  uVar1 = (**(code **)(*DAT_10059dbc + 0x6c))(DAT_10059dbc,DAT_10059df8,DAT_10059dfc,0x15,&uStack_4);
+  if ((int)uVar1 < 0) {
+    return uVar1 & 0xffffff00;
+  }
+```
 
 
 ## 0x10 — FUN_10005d40 @ 0x10005d40
@@ -20,6 +52,16 @@ plus the current grim.dll entry signature and address from
   cVar1 = (**(code **)(*DAT_0048083c + 0x10))();
   DAT_004aaf45 = 1;
   if (cVar1 == '\0') {
+```
+
+grim.dll body:
+
+```c
+  DAT_1005b2c4 = (int *)Direct3DCreate8(0xdc);
+  DialogBoxParamA(DAT_1005bacc,(LPCSTR)0x74,(HWND)0x0,(DLGPROC)&LAB_10002120,0);
+  (**(code **)(*DAT_1005b2c4 + 8))(DAT_1005b2c4);
+  if (DAT_1005d3bc == '\0') {
+    (**(code **)(*in_ECX + 0x20))(0x54,DAT_1005d400);
 ```
 
 
@@ -65,6 +107,12 @@ plus the current grim.dll entry signature and address from
   (**(code **)(*DAT_0048083c + 0x1c))();
   LVar11 = RegCreateKeyExA((HKEY)0x80000001,s_Software_10tons_entertainment_Cr_00474604,0,(LPSTR)0x0
                            ,0,0xf003f,(LPSECURITY_ATTRIBUTES)0x0,&pHStack_5c4,(LPDWORD)0x0);
+```
+
+grim.dll body:
+
+```c
+  FUN_10003c00();
 ```
 
 
@@ -123,6 +171,12 @@ plus the current grim.dll entry signature and address from
     (**(code **)*DAT_0048083c)();
 ```
 
+grim.dll body:
+
+```c
+  return DAT_1005c8f8;
+```
+
 
 ## 0x2c — FUN_10006cb0 @ 0x10006cb0
 - Ghidra signature: `void grim_clear_color(float r, float g, float b, float a)`
@@ -162,6 +216,61 @@ grim.dll body:
   (**(code **)(*DAT_0048083c + 0x30))();
   iStack_8c = 0x3f800000;
   uStack_90 = 0x3dc8c8c9;
+```
+
+
+## 0x34 — grim_get_time_ms @ 0x10006e40
+- Ghidra signature: `int grim_get_time_ms(void)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+grim.dll body:
+
+```c
+  return DAT_1005a054;
+```
+
+
+## 0x38 — grim_set_time_ms @ 0x10006e50
+- Ghidra signature: `void grim_set_time_ms(int ms)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+grim.dll body:
+
+```c
+  DAT_1005a054 = ms;
+```
+
+
+## 0x3c — grim_get_frame_dt @ 0x10006e60
+- Ghidra signature: `float grim_get_frame_dt(void)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+grim.dll body:
+
+```c
+  if (0.1 < _DAT_10059768) {
+    return 0.1;
+  }
+  return _DAT_10059768;
+```
+
+
+## 0x40 — grim_get_fps @ 0x10006e90
+- Ghidra signature: `float grim_get_fps(void)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+grim.dll body:
+
+```c
+  return _DAT_1005b2bc;
 ```
 
 
@@ -931,7 +1040,7 @@ grim.dll UV assignment:
 
 
 ## 0x108 — FUN_100082c0 @ 0x100082c0
-- Provisional name: `set_sub_rect` (medium)
+- Provisional name: `set_sub_rect` (high)
 - Guess: `void set_sub_rect(int atlas_size, int width, int height, int frame)`
 - Notes: atlas grid sub-rect; `atlas_size` indexes a pointer table with entries at 2/4/8/16; explicit call uses `(8, 2, 1, frame<<1)`
 - Ghidra signature: `void grim_set_sub_rect(int atlas_size, int width, int height, int frame)`
@@ -994,7 +1103,7 @@ Atlas pointer table setup (grim.dll init):
 
 
 ## 0x110 — FUN_10008040 @ 0x10008040
-- Provisional name: `set_color_ptr` (medium)
+- Provisional name: `set_color_ptr` (high)
 - Guess: `void set_color_ptr(float *rgba)`
 - Notes: pointer to RGBA floats (0..1); values are clamped before call
 - Ghidra signature: `void grim_set_color_ptr(float *rgba)`
@@ -1166,6 +1275,17 @@ grim.dll inner loop (stride + matrix):
         (**(code **)(*DAT_0048083c + 300))();
 ```
 
+grim.dll body:
+
+```c
+  *DAT_10059e34 = *DAT_10059e34 + *offset;
+  DAT_10059e34[1] = offset[1] + DAT_10059e34[1];
+  DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + (short)count;
+  if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
+    (**(code **)(*in_ECX + 0xec))();
+  }
+```
+
 
 ## 0x130 — grim_submit_vertices_offset_color @ 0x10008430
 - Ghidra signature: `void grim_submit_vertices_offset_color(float * verts, int count, float * offset, float * color)`
@@ -1182,6 +1302,14 @@ grim.dll inner loop (stride + matrix):
           pfStack_74 = (float *)(*(float *)(param_1 + 0x1c) + 7.0);
 ```
 
+grim.dll body:
+
+```c
+  *DAT_10059e34 = *offset + *DAT_10059e34;
+  DAT_10059e34[1] = offset[1] + DAT_10059e34[1];
+  DAT_10059e34[4] = *color;
+```
+
 
 ## 0x134 — grim_submit_vertices_transform_color @ 0x100084e0
 - Ghidra signature: `void grim_submit_vertices_transform_color(float * verts, int count, float * offset, float * matrix, float * color)`
@@ -1196,6 +1324,16 @@ grim.dll inner loop (stride + matrix):
       (**(code **)(*DAT_0048083c + 0x134))(puVar2 + 5,4);
     }
     puVar2 = puVar2 + 0x2f;
+```
+
+grim.dll body:
+
+```c
+  DAT_10059e34[1] = *DAT_10059e34 * matrix[2] + DAT_10059e34[1] * matrix[3];
+  *DAT_10059e34 = *DAT_10059e34 * *matrix + DAT_10059e34[1] * matrix[1];
+  *DAT_10059e34 = *offset + *DAT_10059e34;
+  DAT_10059e34[1] = offset[1] + DAT_10059e34[1];
+  DAT_10059e34[4] = *color;
 ```
 
 
