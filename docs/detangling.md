@@ -546,12 +546,12 @@ tail bytes are validated against the current date and the full‑version flag.
 - `FUN_0042e080` -> `effect_free`
   - Evidence: pushes the entry back onto `DAT_004c2b30` free list and clears live flag.
 - `FUN_0042e0a0` -> `effect_select_texture`
-  - Evidence: maps effect id through `DAT_004755f0/4` and calls Grim vtable +0x104 with
+  - Evidence: maps effect id through `effect_id_size_code` / `effect_id_frame` and calls Grim vtable +0x104 with
     texture page bitmasks.
 - `FUN_0042e120` -> `effect_spawn`
-  - Evidence: pops an entry from the pool `DAT_004c2b30`, copies template `DAT_004ab1bc`,
+  - Evidence: pops an entry from the pool `DAT_004c2b30`, copies template `effect_template_vel_x`,
     writes position from `param_2`, tags the effect id, and assigns quad UVs from atlas tables
-    `DAT_004755f0/4` plus arrays `DAT_004aa4d8`, `DAT_00491010`, `DAT_00491210`, `DAT_00491290`.
+    `effect_id_size_code` / `effect_id_frame` plus arrays `DAT_004aa4d8`, `DAT_00491010`, `DAT_00491210`, `DAT_00491290`.
 - `FUN_0042e710` -> `effects_update`
   - Evidence: iterates pool entries, advances timers/positions with `DAT_00480840`, and calls
     `effect_free` when expired.

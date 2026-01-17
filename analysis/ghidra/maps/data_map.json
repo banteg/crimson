@@ -3,6 +3,18 @@
   "entries": [
     {
       "program": "crimsonland.exe",
+      "address": "0x004755f0",
+      "name": "effect_id_size_code",
+      "comment": "Effect id table size code (stride 0x08 bytes)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004755f4",
+      "name": "effect_id_frame",
+      "comment": "Effect id table frame index (effect_id_size_code + 0x04)"
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00480348",
       "name": "config_blob",
       "comment": "crimson.cfg blob (0x480 bytes)"
@@ -768,6 +780,210 @@
       "address": "0x0049ba30",
       "name": "fx_rotated_effect_id",
       "comment": "Rotated FX queue effect id array"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab1bc",
+      "name": "effect_template_vel_x",
+      "comment": "Effect template vel_x (effect template block base)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab1c0",
+      "name": "effect_template_vel_y",
+      "comment": "Effect template vel_y (effect_template_vel_x + 0x04)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab1c4",
+      "name": "effect_template_rotation",
+      "comment": "Effect template rotation (effect_template_vel_x + 0x08)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab1c8",
+      "name": "effect_template_scale",
+      "comment": "Effect template scale (effect_template_vel_x + 0x0c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab1cc",
+      "name": "effect_template_half_width",
+      "comment": "Effect template half width (effect_template_vel_x + 0x10)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab1d0",
+      "name": "effect_template_half_height",
+      "comment": "Effect template half height (effect_template_vel_x + 0x14)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab1d4",
+      "name": "effect_template_age",
+      "comment": "Effect template age (effect_template_vel_x + 0x18)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab1d8",
+      "name": "effect_template_lifetime",
+      "comment": "Effect template lifetime (effect_template_vel_x + 0x1c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab1dc",
+      "name": "effect_template_flags",
+      "comment": "Effect template flags (effect_template_vel_x + 0x20)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab1e0",
+      "name": "effect_template_color_r",
+      "comment": "Effect template color R (effect_template_vel_x + 0x24)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab1e4",
+      "name": "effect_template_color_g",
+      "comment": "Effect template color G (effect_template_vel_x + 0x28)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab1e8",
+      "name": "effect_template_color_b",
+      "comment": "Effect template color B (effect_template_vel_x + 0x2c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab1ec",
+      "name": "effect_template_color_a",
+      "comment": "Effect template color A (effect_template_vel_x + 0x30)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab1f0",
+      "name": "effect_template_rotation_step",
+      "comment": "Effect template rotation step (effect_template_vel_x + 0x34)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab1f4",
+      "name": "effect_template_scale_step",
+      "comment": "Effect template scale step (effect_template_vel_x + 0x38)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab330",
+      "name": "effect_pool_pos_x",
+      "comment": "Effect pool pos_x (stride 0xbc bytes)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab334",
+      "name": "effect_pool_pos_y",
+      "comment": "Effect pool pos_y (effect_pool_pos_x + 0x04)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab338",
+      "name": "effect_pool_effect_id",
+      "comment": "Effect pool effect id (effect_pool_pos_x + 0x08)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab33c",
+      "name": "effect_pool_vel_x",
+      "comment": "Effect pool vel_x (effect_pool_pos_x + 0x0c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab340",
+      "name": "effect_pool_vel_y",
+      "comment": "Effect pool vel_y (effect_pool_pos_x + 0x10)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab344",
+      "name": "effect_pool_rotation",
+      "comment": "Effect pool rotation (effect_pool_pos_x + 0x14)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab348",
+      "name": "effect_pool_scale",
+      "comment": "Effect pool scale (effect_pool_pos_x + 0x18)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab34c",
+      "name": "effect_pool_half_width",
+      "comment": "Effect pool half width (effect_pool_pos_x + 0x1c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab350",
+      "name": "effect_pool_half_height",
+      "comment": "Effect pool half height (effect_pool_pos_x + 0x20)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab354",
+      "name": "effect_pool_age",
+      "comment": "Effect pool age (effect_pool_pos_x + 0x24)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab358",
+      "name": "effect_pool_lifetime",
+      "comment": "Effect pool lifetime (effect_pool_pos_x + 0x28)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab35c",
+      "name": "effect_pool_flags",
+      "comment": "Effect pool flags (effect_pool_pos_x + 0x2c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab360",
+      "name": "effect_pool_color_r",
+      "comment": "Effect pool color R (effect_pool_pos_x + 0x30)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab364",
+      "name": "effect_pool_color_g",
+      "comment": "Effect pool color G (effect_pool_pos_x + 0x34)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab368",
+      "name": "effect_pool_color_b",
+      "comment": "Effect pool color B (effect_pool_pos_x + 0x38)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab36c",
+      "name": "effect_pool_color_a",
+      "comment": "Effect pool color A (effect_pool_pos_x + 0x3c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab370",
+      "name": "effect_pool_rotation_step",
+      "comment": "Effect pool rotation step (effect_pool_pos_x + 0x40)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab374",
+      "name": "effect_pool_scale_step",
+      "comment": "Effect pool scale step (effect_pool_pos_x + 0x44)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ab378",
+      "name": "effect_pool_quad_data",
+      "comment": "Effect pool quad vertex data (effect_pool_pos_x + 0x48)"
     },
     {
       "program": "crimsonland.exe",

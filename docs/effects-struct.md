@@ -113,7 +113,7 @@ Layout (struct view of the SoA block):
 
 Notes:
 
-- `effect_select_texture` resolves `effect_id` through `DAT_004755f0/4` and sets
+- `effect_select_texture` resolves `effect_id` through `effect_id_size_code` / `effect_id_frame` and sets
   atlas size/frame (`0x10/0x20/0x40/0x80` -> `16/8/4/2` cells).
 - `FUN_00427700` is a small helper that spawns a random `fx_queue_add` entry
   (effect ids `3..7`) with randomized grayscale color and size.
@@ -151,7 +151,7 @@ Notes:
   slightly inflated size (`scale * 1.064`), the second uses full alpha/size.
 - `fx_queue_add_rotated` skips enqueuing when `DAT_004871c8 != 0` or the queue is full.
 
-## Effect entries (`DAT_004ab330` pool)
+## Effect entries (`effect_pool_pos_x` pool)
 
 Entry size: `0xbc` bytes (`0x2f` floats). Free list head: `DAT_004c2b30`
 with next pointer at offset `0xb8`.
@@ -219,39 +219,39 @@ Quad layout (from `effect_spawn` writes):
 | 2 | `0x80/0x84` | `0x94/0x98` | `( half_w,  half_h)` + `(u1, v1)` |
 | 3 | `0xa0/0xa4` | `0xb0/0xb4` | `(-half_w,  half_h)` + `(u0, v1)` |
 
-- `effect_spawn` reads `DAT_004755f0/4` to pick atlas size + frame index, then
+- `effect_spawn` reads `effect_id_size_code` / `effect_id_frame` to pick atlas size + frame index, then
   pulls UVs from size-specific tables:
   - `0x10` -> `DAT_004aa4d8/4` with base `_DAT_004755ec`.
   - `0x20` -> `DAT_00491010/14` with base `_DAT_004755e8`.
   - `0x40` -> `DAT_00491210/14` with base `_DAT_004755e4`.
   - `0x80` -> `DAT_00491290/94` with base `_DAT_004755e0`.
-- `effect_spawn` copies 15 floats from the template block at `DAT_004ab1bc`
+- `effect_spawn` copies 15 floats from the template block at `effect_template_vel_x`
   into offsets `0x0c..0x44` (see template map below).
 
-### Effect template block (`DAT_004ab1bc`)
+### Effect template block (`effect_template_vel_x`)
 
 These globals act as a staging area for `effect_spawn`. They are copied into
 the effect entry (offsets `0x0c..0x44`) before the UVs are assigned.
 
 | Template | Entry offset | Meaning |
 | --- | --- | --- |
-| `DAT_004ab1bc` | 0x0c | vel_x |
-| `DAT_004ab1c0` | 0x10 | vel_y |
-| `DAT_004ab1c4` | 0x14 | rotation |
-| `DAT_004ab1c8` | 0x18 | scale |
-| `DAT_004ab1cc` | 0x1c | half_width |
-| `DAT_004ab1d0` | 0x20 | half_height |
-| `DAT_004ab1d4` | 0x24 | age |
-| `DAT_004ab1d8` | 0x28 | lifetime |
-| `DAT_004ab1dc` | 0x2c | flags |
-| `DAT_004ab1e0` | 0x30 | color_r |
-| `DAT_004ab1e4` | 0x34 | color_g |
-| `DAT_004ab1e8` | 0x38 | color_b |
-| `DAT_004ab1ec` | 0x3c | color_a |
-| `DAT_004ab1f0` | 0x40 | rotation_step |
-| `DAT_004ab1f4` | 0x44 | scale_step |
+| `effect_template_vel_x` | 0x0c | vel_x |
+| `effect_template_vel_y` | 0x10 | vel_y |
+| `effect_template_rotation` | 0x14 | rotation |
+| `effect_template_scale` | 0x18 | scale |
+| `effect_template_half_width` | 0x1c | half_width |
+| `effect_template_half_height` | 0x20 | half_height |
+| `effect_template_age` | 0x24 | age |
+| `effect_template_lifetime` | 0x28 | lifetime |
+| `effect_template_flags` | 0x2c | flags |
+| `effect_template_color_r` | 0x30 | color_r |
+| `effect_template_color_g` | 0x34 | color_g |
+| `effect_template_color_b` | 0x38 | color_b |
+| `effect_template_color_a` | 0x3c | color_a |
+| `effect_template_rotation_step` | 0x40 | rotation_step |
+| `effect_template_scale_step` | 0x44 | scale_step |
 
-### Effect id table (`DAT_004755f0`)
+### Effect id table (`effect_id_size_code`)
 
 Entry size: `0x08` bytes. Indexed by `effect_id`.
 
@@ -263,7 +263,7 @@ with grid sizes `16/8/4/2` depending on the size code (`0x10/0x20/0x40/0x80`).
 | 0x00 | atlas size code | Read by `effect_select_texture`/`effect_spawn`; values `0x10/0x20/0x40/0x80` map to `16/8/4/2` cell atlases. |
 | 0x04 | frame index | Read by `effect_select_texture`/`effect_spawn`; selects the atlas frame. |
 
-Known entries (extracted from `crimsonland.exe` at `DAT_004755f0`):
+Known entries (extracted from `crimsonland.exe` at `effect_id_size_code`):
 
 | effect_id | size code | frame |
 | --- | --- | --- |
@@ -302,7 +302,7 @@ Known entries (extracted from `crimsonland.exe` at `DAT_004755f0`):
 
 ### Effect template helpers (partial)
 
-These helpers primarily configure `DAT_004ab1bc` and then call `effect_spawn`.
+These helpers primarily configure `effect_template_vel_x` and then call `effect_spawn`.
 
 | Function | Effect ids | Notes |
 | --- | --- | --- |
