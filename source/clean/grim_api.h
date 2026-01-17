@@ -30,14 +30,14 @@ struct Grim2DVtable {
     void (*set_time_ms)(int ms); // 0x38 (grim_set_time_ms)
     float (*get_frame_dt)(void); // 0x3c (grim_get_frame_dt)
     float (*get_fps)(void); // 0x40 (grim_get_fps)
-    bool (*is_key_down)(uint32_t key); // 0x44 (FUN_10007320)
-    bool (*was_key_pressed)(uint32_t key); // 0x48 (FUN_10007390)
+    bool (*is_key_down)(uint32_t key); // 0x44 (grim_is_key_down)
+    bool (*was_key_pressed)(uint32_t key); // 0x48 (grim_was_key_pressed)
     void (*flush_input)(void); // 0x4c (grim_flush_input)
-    int (*get_key_char)(void); // 0x50 (FUN_10005c40)
+    int (*get_key_char)(void); // 0x50 (grim_get_key_char)
     void (*set_key_char_buffer)(unsigned char *buffer, int *count, int size); // 0x54 (grim_set_key_char_buffer)
     bool (*is_mouse_button_down)(int button); // 0x58 (grim_is_mouse_button_down)
     bool (*was_mouse_button_pressed)(int button); // 0x5c (grim_was_mouse_button_pressed)
-    float (*get_mouse_wheel_delta)(void); // 0x60 (FUN_10007560)
+    float (*get_mouse_wheel_delta)(void); // 0x60 (grim_get_mouse_wheel_delta)
     void (*set_mouse_pos)(float x, float y); // 0x64 (grim_set_mouse_pos)
     float (*get_mouse_x)(void); // 0x68 (grim_get_mouse_x)
     float (*get_mouse_y)(void); // 0x6c (grim_get_mouse_y)
@@ -58,10 +58,10 @@ struct Grim2DVtable {
     bool (*is_joystick_button_down)(int button); // 0xa8 (grim_is_joystick_button_down)
     bool (*create_texture)(const char *name, int width, int height); // 0xac (grim_create_texture)
     bool (*recreate_texture)(int handle); // 0xb0 (grim_recreate_texture)
-    bool (*load_texture)(const char *name, const char *path); // 0xb4 (FUN_100076e0)
+    bool (*load_texture)(const char *name, const char *path); // 0xb4 (grim_load_texture)
     bool (*validate_texture)(int handle); // 0xb8 (grim_validate_texture)
     void (*destroy_texture)(int handle); // 0xbc (grim_destroy_texture)
-    int (*get_texture_handle)(const char *name); // 0xc0 (FUN_10007740)
+    int (*get_texture_handle)(const char *name); // 0xc0 (grim_get_texture_handle)
     void (*bind_texture)(int handle, int stage); // 0xc4 (grim_bind_texture)
     void (*draw_fullscreen_quad)(void); // 0xc8 (grim_draw_fullscreen_quad)
     void (*draw_fullscreen_color)(float r, float g, float b, float a); // 0xcc (grim_draw_fullscreen_color)
@@ -79,12 +79,12 @@ struct Grim2DVtable {
     void (*set_rotation)(float radians); // 0xfc (grim_set_rotation) precomputes rotation matrix
     void (*set_uv)(float u0, float v0, float u1, float v1); // 0x100 (grim_set_uv) sets all 4 UV pairs
     void (*set_atlas_frame)(int atlas_size, int frame); // 0x104 (grim_set_atlas_frame)
-    void (*set_sub_rect)(int atlas_size, int width, int height, int frame); // 0x108 (FUN_100082c0) atlas_size indexes UV table (2/4/8/16)
+    void (*set_sub_rect)(int atlas_size, int width, int height, int frame); // 0x108 (grim_set_sub_rect) atlas_size indexes UV table (2/4/8/16)
     void (*set_uv_point)(int index, float u, float v); // 0x10c (grim_set_uv_point) index 0..3
     void (*set_color_ptr)(const float *rgba); // 0x110 (grim_set_color_ptr)
     void (*set_color)(float r, float g, float b, float a); // 0x114 (grim_set_color)
     void (*set_color_slot)(int index, float r, float g, float b, float a); // 0x118 (grim_set_color_slot) index 0..3 per-corner
-    void (*draw_quad)(float x, float y, float w, float h); // 0x11c (FUN_10008b10) uses per-corner color+UV
+    void (*draw_quad)(float x, float y, float w, float h); // 0x11c (grim_draw_quad) uses per-corner color+UV
     void (*draw_quad_xy)(const float *xy, float w, float h); // 0x120 (grim_draw_quad_xy) wrapper over draw_quad
     void (*draw_quad_rotated_matrix)(float x, float y, float w, float h); // 0x124 (grim_draw_quad_rotated_matrix)
     void (*submit_vertices_transform)(const float *verts, int count, const float *offset, const float *matrix); // 0x128 (grim_submit_vertices_transform) verts are 7-float stride
