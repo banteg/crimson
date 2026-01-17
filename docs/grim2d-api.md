@@ -134,8 +134,9 @@ These offsets appear with keycodes or input-related values:
   in `FUN_00401a40` (likely key down / key pressed checks).
 - `0x50` is a zero-arg call in `FUN_00401060` (likely a per-frame poll).
 - `0x58` / `0x80` appear in input handling loops in `FUN_00446030`.
+- `0x80` routes IDs `< 0x100` to `is_key_down` and uses `0x100/0x101` for mouse buttons 0/1.
 - `0x84` returns a float and is queried with IDs `0x13f..0x155`
-  in `FUN_00448b50` (likely config values).
+  in `FUN_00448b50` (likely config values); ID `0x15f` returns mouse X delta.
 - `0x60`/`0x70`/`0x74` read the DirectInput mouse deltas, while
   `0x64`/`0x68`/`0x6c` update or return the accumulated mouse position.
 
