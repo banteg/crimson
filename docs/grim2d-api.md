@@ -101,11 +101,17 @@ Validation highlights (see the evidence appendix for snippets):
   confirming a 4-float UV rectangle.
 - `grim_set_atlas_frame` uses atlas sizes `4/8/16` plus frame indices, while `grim_set_sub_rect` supplies
   width/height for multi-cell frames.
+- `grim_set_sub_rect` shows explicit calls like `(8, 2, 1, frame<<1)` and is followed by `grim_draw_quad`,
+  matching atlas grid sub-rect selection.
 - `grim_begin_batch` / `grim_end_batch` bracket `grim_draw_quad` and `submit_*` calls in most UI paths.
+- `grim_draw_quad_xy` is a thin wrapper around `grim_draw_quad` that forwards `xy[0]/xy[1]`.
 - `grim_draw_text_small_fmt` calls `vsprintf` in grim.dll and forwards to `grim_draw_text_small`, so the
   varargs signature is correct.
 - `grim_measure_text_width` returns an integer width used for layout/centering in menus.
 - `grim_set_color` / `grim_set_color_slot` pass RGBA floats or float pointers that grim.dll packs into ARGB.
+- `grim_submit_vertices_offset` appears as vtable offset `+ 300` (0x12c) in the decompiler and adds XY
+  offsets to 7-float stride vertices before batching.
+- `grim_draw_quad_points` emits four explicit points with current UV/color slots and batches immediately.
 
 
 ## Input-ish offsets (evidence)

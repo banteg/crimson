@@ -1337,6 +1337,7 @@ grim.dll vertex fill (color + UV):
 
 - Notes: wrapper around `draw_quad` using `xy` pointer
 - Ghidra signature: `void grim_draw_quad_xy(float *xy, float w, float h)`
+- Suggested signature: `void grim_draw_quad_xy(const float *xy, float w, float h)`
 - Call sites: 6 (unique funcs: 2)
 - Sample calls: FUN_00417b80:L9255; FUN_00417b80:L9289; FUN_00417b80:L9317; FUN_004181b0:L9491; FUN_004181b0:L9524; FUN_004181b0:L9547
 - First callsite: FUN_00417b80 (line 11392)
@@ -1360,6 +1361,7 @@ grim.dll body:
 ## 0x128 — grim_submit_vertices_transform @ 0x100085c0
 
 - Ghidra signature: `void grim_submit_vertices_transform(float * verts, int count, float * offset, float * matrix)`
+- Suggested signature: `void grim_submit_vertices_transform(const float *verts, int count, const float *offset, const float *matrix)`
 - Notes: copies `count * 0x1c` bytes (7-float stride) into the batch, applies 2x2 matrix + offset per vertex
 - Call sites: 5 (unique funcs: 1)
 - Sample calls: FUN_00446c40:L29980; FUN_00446c40:L29985; FUN_00446c40:L29986; FUN_00446c40:L30065; FUN_00446c40:L30107
@@ -1385,6 +1387,7 @@ grim.dll inner loop (stride + matrix):
 ## 0x12c — grim_submit_vertices_offset @ 0x10008680
 
 - Ghidra signature: `void grim_submit_vertices_offset(float * verts, int count, float * offset)`
+- Suggested signature: `void grim_submit_vertices_offset(const float *verts, int count, const float *offset)`
 - Notes: decompiler emits decimal offset `+ 300` (0x12c)
 - Call sites: 4 (unique funcs: 1)
 - Sample calls: FUN_00446c40:L30035; FUN_00446c40:L30042; FUN_00446c40:L30045; FUN_00446c40:L30074
