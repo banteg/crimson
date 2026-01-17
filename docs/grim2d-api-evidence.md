@@ -1674,3 +1674,39 @@ grim.dll body:
   - `param_1` appears to be a descriptor block: width/height/stride fields copy into
     `this+0x1030..0x1044`, and palette data (if present at `param_1[0x12]`) is expanded into
     a 0x400-byte RGBA table at `this+0x34`.
+
+Constructor mapping (observed):
+
+| Ctor addr | Vtable | bpp param | Mode |
+| --- | --- | --- | --- |
+| `0x1001a428` | `PTR_FUN_1004cb6c` | `0x18` | 1 |
+| `0x1001a53c` | `PTR_FUN_1004cb8c` | `0x20` | 1 |
+| `0x1001a558` | `PTR_FUN_1004cb9c` | `0x20` | 1 |
+| `0x1001a579` | `PTR_FUN_1004cbac` | `0x10` | 1 |
+| `0x1001a781` | `PTR_FUN_1004cbdc` | `0x10` | 1 |
+| `0x1001a79d` | `PTR_FUN_1004cbec` | `0x10` | 1 |
+| `0x1001aa8a` | `PTR_FUN_1004cc10` | `0x10` | 1 |
+| `0x1001aaa6` | `PTR_FUN_1004cc20` | `0x8` | 1 |
+| `0x1001aac2` | `PTR_FUN_1004cc30` | `0x8` | 1 |
+| `0x1001aade` | `PTR_FUN_1004cc40` | `0x10` | 1 |
+| `0x1001aafa` | `PTR_FUN_1004cc50` | `0x10` | 1 |
+| `0x1001aba3` | `PTR_FUN_1004cc60` | `0x20` | 1 |
+| `0x1001ac2e` | `PTR_FUN_1004cc70` | `0x20` | 1 |
+| `0x1001ac4a` | `PTR_FUN_1004caf8` | `0x0` | 1 |
+| `0x1001ae3c` | `PTR_FUN_1004cc80` | `0x10` | 1 |
+| `0x1001ae74` | `PTR_FUN_1004cc90` | `0x8` | 1 |
+| `0x1001ae90` | `PTR_FUN_1004cca0` | `0x8` | 1 |
+| `0x1001aeac` | `PTR_FUN_1004ccb0` | `0x10` | 1 |
+| `0x1001aee4` | `PTR_FUN_1004ccc0` | `0x8` | 1 |
+| `0x1001b001` | `PTR_FUN_1004ccd0` | `0x10` | 2 |
+| `0x1001b01d` | `PTR_FUN_1004cce0` | `0x10` | 2 |
+| `0x1001b039` | `PTR_FUN_1004ccf0` | `0x20` | 2 |
+| `0x1001b055` | `PTR_FUN_1004cd00` | `0x20` | 3 |
+| `0x1001b071` | `PTR_FUN_1004cd10` | `0x20` | 2 |
+| `0x1001b08d` | `PTR_FUN_1004cd20` | `0x20` | 2 |
+| `0x1001b0a9` | `PTR_FUN_1004cd30` | `0x20` | 2 |
+| `0x1001b0c5` | `PTR_FUN_1004cd40` | `0x10` | 1 |
+| `0x1001b0e1` | `PTR_FUN_1004cd50` | `0x10` | 1 |
+| `0x1001b3a6` | `PTR_FUN_1004cd60` | `0x20` | 1 |
+| `0x1001b3c2` | `PTR_FUN_1004cd70` | `0x30` | 1 |
+| `0x1001b3de` | `PTR_FUN_1004cd80` | `0x40` | 1 |
