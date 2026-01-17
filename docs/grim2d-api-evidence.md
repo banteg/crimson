@@ -1502,6 +1502,7 @@ grim.dll vertex fill (color + UV slots):
 - Guess: `void draw_text_mono(float x, float y, const char *text)`
 - Notes: fixed 16px grid; special-cases a few extended codes (0xA7, 0xE4, 0xE5, 0xF6)
 - Ghidra signature: `void grim_draw_text_mono(float x, float y, char *text)`
+- Suggested signature: `void grim_draw_text_mono(float x, float y, const char *text)`
 - Call sites: 5 (unique funcs: 3)
 - Sample calls: FUN_00401dd0:L781; FUN_00401dd0:L804; FUN_00401dd0:L843; FUN_0040b740:L6491; FUN_0041aed0:L11263
 - First callsite: FUN_00401dd0 (line 781)
@@ -1530,6 +1531,7 @@ grim.dll body:
 
 - Notes: printf-style wrapper around 0x13c
 - Ghidra signature: `void grim_draw_text_mono_fmt(int *self, float x, float y, char *fmt)`
+- Suggested signature: `void grim_draw_text_mono_fmt(float x, float y, const char *fmt, ...)`
 - Call sites: 3 (unique funcs: 3)
 - Sample calls: FUN_00405160:L3374; FUN_00406350:L3950; FUN_0041aed0:L11281
 - First callsite: FUN_00405160 (line 3374)
@@ -1592,6 +1594,7 @@ grim.dll body:
 - Guess: `void draw_text_small_fmt(float x, float y, const char *fmt, ...)`
 - Notes: `vsprintf` wrapper that forwards to `0x144` (small font draw)
 - Ghidra signature: `void grim_draw_text_small_fmt(float x, float y, char *fmt)`
+- Suggested signature: `void grim_draw_text_small_fmt(float x, float y, const char *fmt, ...)`
 - Call sites: 86 (unique funcs: 15)
 - Sample calls: FUN_004047c0:L3140; FUN_004047c0:L3193; FUN_004047c0:L3197; FUN_004047c0:L3201; FUN_004047c0:L3206; FUN_004047c0:L3211; FUN_004047c0:L3214; FUN_004047c0:L3217
 - First callsite: FUN_004047c0 (line 3140)
@@ -1619,6 +1622,7 @@ grim.dll body:
 - Guess: `int measure_text_width(const char *text)`
 - Notes: returns width for small font
 - Ghidra signature: `int grim_measure_text_width(char *text)`
+- Suggested signature: `int grim_measure_text_width(const char *text)`
 - Call sites: 14 (unique funcs: 10)
 - Sample calls: FUN_00408530:L5007; FUN_004295f0:L18761; FUN_0042fd00:L20753; FUN_0043dc80:L26810; FUN_0043e5e0:L27164; FUN_0043e830:L27225; FUN_0043ecf0:L27429; FUN_0043efc0:L27482
 - First callsite: FUN_00408530 (line 5007)
