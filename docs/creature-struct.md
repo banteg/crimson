@@ -57,6 +57,11 @@ Field map (medium confidence):
 | `0x90` | AI mode | `creature_ai_mode` | selects movement pattern (cases 0/1/3/4/5/6/7/8). |
 | `0x94` | anim phase | `creature_anim_phase` | accumulates to drive sprite timing; wraps at 31 or 15 depending on flags. |
 
+Global counters:
+
+- `creature_spawned_count` increments on each `creature_alloc_slot` call (total spawns).
+- `creature_kill_count` increments on creature death paths (used by the HUD progress ratio).
+
 ## AI mode behaviors (DAT_0049bfc8 / offset 0x90)
 
 The AI mode selects how the target position (`target_x/target_y`) is computed
