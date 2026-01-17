@@ -352,6 +352,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041fc60",
+    "name": "weapon_table_entry",
+    "signature": "int * weapon_table_entry(int weapon_id)",
+    "comment": "returns &DAT_004d7a2c + weapon_id * 0x1f"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004519b0",
+    "name": "weapon_table_init",
+    "signature": "void weapon_table_init(void)",
+    "comment": "initializes the weapon stats table at DAT_004d7a28"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00420440",
     "name": "projectile_spawn",
     "signature": "int projectile_spawn(float *pos, float angle, int type_id, int owner_id)",
