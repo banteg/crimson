@@ -120,6 +120,24 @@ Outputs:
 Use `--indices 0-3,8-11` to export a subset, or `--table-index 0x10` to use the
 engine sprite table (grid 4).
 
+### Bulk export
+
+To export all textures referenced by the static scan into `assets_frames/`,
+run:
+
+```bash
+uv run python scripts/atlas_scan.py --output-json output/atlas/atlas_usage.json
+uv run python scripts/atlas_export.py --all
+```
+
+The output layout is:
+
+- `assets_frames/<relative_path>/<texture_name>/grid<grid>/frame_###.png`
+- `assets_frames/<relative_path>/<texture_name>/grid<grid>/manifest.json`
+
+Manifests include `used_indices` when the static scan reported concrete frame
+indices for a grid.
+
 ## Atlas usage by texture (static scan)
 
 The notes below come from scanning `source/decompiled/crimsonland.exe_decompiled.c`
