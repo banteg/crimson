@@ -137,6 +137,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("prompt", nargs="?", default=DEFAULT_PROMPT)
     parser.add_argument(
+        "-i",
+        "--initial-prompt",
+        help="Override the initial prompt for the first iteration.",
+    )
+    parser.add_argument(
         "-s",
         "--session",
         default=DEFAULT_SESSION,
@@ -144,7 +149,7 @@ def main():
     )
     args = parser.parse_args()
 
-    current_prompt = args.prompt
+    current_prompt = args.initial_prompt or args.prompt
     session_id = args.session if args.session != "new" else None
     
     for i in range(MAX_ITERATIONS):
