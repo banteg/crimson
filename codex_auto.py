@@ -1,9 +1,4 @@
 #!/usr/bin/env python3
-"""
-Simple Codex Auto-Pilot for Reverse Engineering
-Runs codex exec in a loop, uses a helper LLM to respond to whatever it outputs.
-"""
-
 import argparse
 import os
 import subprocess
@@ -174,7 +169,7 @@ def main():
             print("\n[done] Helper said stop.")
             break
         
-        current_prompt = f"Previous output:\n{output[-1500:]}\n\nUser response: {response}\n\nContinue."
+        current_prompt = response
 
     print(f"\nFinished after {i+1} iterations.")
 
