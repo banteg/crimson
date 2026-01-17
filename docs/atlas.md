@@ -58,6 +58,11 @@ Extracted table (effect_id → size code + frame index):
 The frame index is passed to the renderer alongside the grid size;
 its semantics aren’t obvious from the decompile.
 
+Visual note:
+
+- `effect_id 0x12` (grid 16, frame `0x26`) looks like a small brass shell/casing
+  sprite rather than a classic muzzle flash.
+
 ## Non-uniform sub-rects (grim_set_sub_rect)
 
 The engine sometimes uses Grim2D vtable `0x108` (`grim_set_sub_rect`) to pick a
@@ -122,7 +127,8 @@ The engine uses **two patterns**:
   - Uses **sprite table indices 0x10, 0x0e, 0x0d, 0x0c** for UI/overlay effects
     (calls at `:996?`, `:16217`, `:16854`, `:18788`, `:18824`). These indices map to **grid=4**.
   - Effects pool binds `particles.png` and uses the effect_id table above
-    (`0x00..0x12`). Muzzle flash uses `effect_id 0x12` → grid 16, frame `0x26`.
+    (`0x00..0x12`). Muzzle flash uses `effect_id 0x12` → grid 16, frame `0x26`
+    (the sprite itself resembles a shell casing).
 
 - `assets/crimson/ui/ui_wicons.png` (DAT_0048f7e4)
   - Uses **grid=8**, but rendered via `grim_set_sub_rect(8, 2, 1, frame)`.
