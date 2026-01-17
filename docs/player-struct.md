@@ -33,6 +33,7 @@ High-confidence fields (partial):
 | `0x294` | spread / heat | `player_spread_heat` | Decays each frame in `player_update`; incremented by weapon spread value. |
 | `0x29c` | current weapon id | `player_weapon_id` | Set by `weapon_assign_player`. |
 | `0x2a0` | clip size | `player_clip_size` | Loaded from weapon table on swap; used to reset ammo. |
+| `0x2a4` | reload active flag | `player_reload_active` | Set when a reload starts; used by Tough Reloader damage reduction. |
 | `0x2a8` | current ammo | `player_ammo` | Decrements on fire; reset when reload completes. |
 | `0x2ac` | reload timer | `player_reload_timer` | Decremented each frame; used by reload perks. |
 | `0x2b0` | shot cooldown | `player_shot_cooldown` | Decays each frame; scaled by Weapon Power Up. |
@@ -48,6 +49,17 @@ High-confidence fields (partial):
 | `0x2f0` | speed bonus timer | `player_speed_bonus_timer` | Bonus id 13 (Speed). |
 | `0x2f4` | shield timer | `player_shield_timer` | Bonus id 10 (Shield). |
 | `0x2f8` | Fire Bullets timer | `player_fire_bullets_timer` | Bonus id 14 (Fire Bullets). |
+
+## Defense state (summary)
+
+- **Health gate:** `player_health` at the table base is decremented by `player_take_damage`; `<= 0`
+  counts as dead and starts `player_death_timer`.
+- **Shield immunity:** when `player_shield_timer > 0`, `player_take_damage` returns early and the
+  damage is ignored.
+- **Reload mitigation:** `player_reload_active` is set when a reload starts; with Tough Reloader
+  active, incoming damage is halved while this flag is set.
+- **Low-health warning:** `player_low_health_timer` is reset when HP dips below 20 and is used to
+  drive warning effects/SFX while it counts down.
 
 Related docs:
 

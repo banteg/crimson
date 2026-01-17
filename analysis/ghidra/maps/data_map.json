@@ -177,6 +177,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00490b78",
+      "name": "player_reload_active",
+      "comment": "Per-player reload active flag (player_health + 0x2a4)"
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00490b7c",
       "name": "player_ammo",
       "comment": "Per-player current ammo (player_health + 0x2a8)"

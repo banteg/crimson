@@ -72,6 +72,8 @@ timer crosses its threshold:
 - **Stationary Reloader** (`DAT_004c2c10`) triples reload decay when stationary.
 - **Angry Reloader** (`DAT_004c2c20`) triggers a projectile ring (`0xb`) when the
   reload timer crosses the 50% mark.
+- **Tough Reloader** (`DAT_004c2c30`) halves incoming damage while
+  `player_reload_active` (`DAT_00490b78`) is set.
 
 ### Regeneration tick (FUN_00406b40)
 

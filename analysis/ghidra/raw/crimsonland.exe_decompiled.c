@@ -9331,14 +9331,14 @@ void FUN_00413430(void)
   int iVar2;
   int iVar3;
   
-  if (((&DAT_00490b78)[DAT_004aaf0c * 0x360] == '\0') ||
+  if (((&player_reload_active)[DAT_004aaf0c * 0x360] == '\0') ||
      ((iVar3 = perk_count_get(DAT_004c2bc8), iVar3 == 0 &&
       (iVar3 = perk_count_get(DAT_004c2bd0), iVar3 == 0)))) {
     iVar3 = DAT_004aaf0c * 0x360;
-    if ((&DAT_00490b78)[iVar3] == '\0') {
+    if ((&player_reload_active)[iVar3] == '\0') {
       sfx_play_panned(*(float *)(&DAT_004d7a8c + (&player_weapon_id)[DAT_004aaf0c * 0xd8] * 0x7c));
       iVar3 = DAT_004aaf0c * 0x360;
-      (&DAT_00490b78)[iVar3] = 1;
+      (&player_reload_active)[iVar3] = 1;
     }
     iVar2 = DAT_004c2b5c;
     fVar1 = (float)(&DAT_004d7a78)[*(int *)((int)&player_weapon_id + iVar3) * 0x1f];
@@ -10433,7 +10433,7 @@ LAB_0041572e:
   (&player_aim_heading)[iVar7 * 0xd8] = (float)(fVar19 - (float10)1.5707964);
   if ((*pfVar13 <= 0.0) && ((float)(&player_reload_timer)[iVar7 * 0xd8] == 0.0)) {
     bVar9 = true;
-    (&DAT_00490b78)[iVar17] = 0;
+    (&player_reload_active)[iVar17] = 0;
   }
   if (((*pfVar13 <= 0.0) && (0 < (int)(&DAT_0049095c)[iVar7 * 0xd8])) &&
      ((iVar11 = perk_count_get(DAT_004c2bd0), iVar11 != 0 ||
@@ -10451,8 +10451,8 @@ LAB_0041572e:
       (&player_alt_clip_size)[iVar7 * 0xd8] = (&player_clip_size)[iVar7 * 0xd8];
       (&player_clip_size)[iVar7 * 0xd8] = uVar2;
       uVar4 = (&DAT_00490b94)[iVar17];
-      (&DAT_00490b94)[iVar17] = (&DAT_00490b78)[iVar17];
-      (&DAT_00490b78)[iVar17] = uVar4;
+      (&DAT_00490b94)[iVar17] = (&player_reload_active)[iVar17];
+      (&player_reload_active)[iVar17] = uVar4;
       uVar2 = (&player_alt_ammo)[iVar7 * 0xd8];
       (&player_alt_ammo)[iVar7 * 0xd8] = (&player_ammo)[iVar7 * 0xd8];
       (&player_ammo)[iVar7 * 0xd8] = uVar2;
@@ -19360,7 +19360,7 @@ void __cdecl player_take_damage(int player_index,float damage)
     return;
   }
   iVar4 = perk_count_get(DAT_004c2c30);
-  if ((iVar4 != 0) && ((&DAT_00490b78)[player_index * 0x360] != '\0')) {
+  if ((iVar4 != 0) && ((&player_reload_active)[player_index * 0x360] != '\0')) {
     damage = damage * 0.5;
   }
   DAT_00486fe5 = 1;
@@ -30781,7 +30781,7 @@ void __cdecl FUN_00444980(char param_1,char param_2)
     if (((float)(&player_shot_cooldown)[iVar6 * 0xd8] <= 0.0) &&
        ((float)(&player_reload_timer)[iVar6 * 0xd8] == 0.0)) {
       bVar3 = true;
-      (&DAT_00490b78)[iVar6 * 0x360] = 0;
+      (&player_reload_active)[iVar6 * 0x360] = 0;
     }
     bVar4 = false;
     if ((((float)(&player_shot_cooldown)[iVar6 * 0xd8] <= 0.0) &&
