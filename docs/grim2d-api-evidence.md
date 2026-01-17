@@ -44,7 +44,7 @@ grim.dll body:
 ```
 
 
-## 0x10 — FUN_10005d40 @ 0x10005d40
+## 0x10 — grim_apply_config @ 0x10005d40
 
 - Ghidra signature: `int grim_apply_config(void)`
 - Call sites: 1 (unique funcs: 1)
@@ -71,7 +71,7 @@ grim.dll body:
 ```
 
 
-## 0x14 — FUN_10005eb0 @ 0x10005eb0
+## 0x14 — grim_init_system @ 0x10005eb0
 
 - Ghidra signature: `int grim_init_system(void)`
 - Call sites: 1 (unique funcs: 1)
@@ -88,7 +88,7 @@ grim.dll body:
 ```
 
 
-## 0x18 — FUN_10005ff0 @ 0x10005ff0
+## 0x18 — grim_shutdown @ 0x10005ff0
 
 - Ghidra signature: `void grim_shutdown(void)`
 - Call sites: 1 (unique funcs: 1)
@@ -105,7 +105,7 @@ grim.dll body:
 ```
 
 
-## 0x1c — FUN_10006020 @ 0x10006020
+## 0x1c — grim_apply_settings @ 0x10006020
 
 - Ghidra signature: `void grim_apply_settings(void)`
 - Call sites: 1 (unique funcs: 1)
@@ -173,7 +173,7 @@ grim.dll body:
 ```
 
 
-## 0x28 — FUN_10006ca0 @ 0x10006ca0
+## 0x28 — grim_get_error_text @ 0x10006ca0
 
 - Ghidra signature: `char * grim_get_error_text(void)`
 - Call sites: 1 (unique funcs: 1)
@@ -196,7 +196,7 @@ grim.dll body:
 ```
 
 
-## 0x2c — FUN_10006cb0 @ 0x10006cb0
+## 0x2c — grim_clear_color @ 0x10006cb0
 
 - Ghidra signature: `void grim_clear_color(float r, float g, float b, float a)`
 - Call sites: 5 (unique funcs: 3)
@@ -224,7 +224,7 @@ grim.dll body:
 ```
 
 
-## 0x30 — FUN_10006d50 @ 0x10006d50
+## 0x30 — grim_set_render_target @ 0x10006d50
 
 - Ghidra signature: `int grim_set_render_target(int target_index)`
 - Call sites: 6 (unique funcs: 3)
@@ -304,7 +304,7 @@ grim.dll body:
 ```
 
 
-## 0x44 — FUN_10007320 @ 0x10007320
+## 0x44 — grim_is_key_down @ 0x10007320
 
 - Provisional name: `is_key_down` (high)
 - Guess: `bool is_key_down(uint32_t key)`
@@ -361,7 +361,7 @@ LAB_00401add:
 ```
 
 
-## 0x50 — FUN_10005c40 @ 0x10005c40
+## 0x50 — grim_get_key_char @ 0x10005c40
 
 - Provisional name: `get_key_char` (high)
 - Guess: `int get_key_char(void)`
@@ -398,7 +398,7 @@ LAB_00401add:
 ```
 
 
-## 0x58 — FUN_10007410 @ 0x10007410
+## 0x58 — grim_is_mouse_button_down @ 0x10007410
 
 - Provisional name: `is_mouse_button_down` (high)
 - Guess: `bool is_mouse_button_down(int button)`
@@ -428,7 +428,7 @@ grim.dll body:
 ```
 
 
-## 0x60 — FUN_10007560 @ 0x10007560
+## 0x60 — grim_get_mouse_wheel_delta @ 0x10007560
 
 - Provisional name: `get_mouse_wheel_delta` (high)
 - Guess: `float get_mouse_wheel_delta(void)`
@@ -572,7 +572,7 @@ grim.dll body:
 ```
 
 
-## 0x80 — FUN_10006fe0 @ 0x10006fe0
+## 0x80 — grim_is_key_active @ 0x10006fe0
 
 - Provisional name: `is_key_active` (high)
 - Guess: `bool is_key_active(int key)`
@@ -606,7 +606,7 @@ grim.dll routing:
 ```
 
 
-## 0x84 — FUN_100071b0 @ 0x100071b0
+## 0x84 — grim_get_config_float @ 0x100071b0
 
 - Provisional name: `get_config_float` (high)
 - Guess: `float get_config_float(int id)`
@@ -658,7 +658,7 @@ grim.dll mapping:
 ```
 
 
-## 0xac — FUN_100075d0 @ 0x100075d0
+## 0xac — grim_create_texture @ 0x100075d0
 
 - Provisional name: `create_texture` (high)
 - Guess: `bool create_texture(const char *name, int width, int height)`
@@ -688,7 +688,7 @@ grim.dll body:
 ```
 
 
-## 0xb0 — FUN_10007790 @ 0x10007790
+## 0xb0 — grim_recreate_texture @ 0x10007790
 
 - Provisional name: `recreate_texture` (high)
 - Guess: `bool recreate_texture(int handle)`
@@ -710,7 +710,7 @@ grim.dll body:
 ```
 
 
-## 0xb8 — FUN_10007750 @ 0x10007750
+## 0xb8 — grim_validate_texture @ 0x10007750
 
 - Provisional name: `validate_texture` (high)
 - Guess: `bool validate_texture(int handle)`
@@ -731,7 +731,7 @@ grim.dll body:
 ```
 
 
-## 0xb4 — FUN_100076e0 @ 0x100076e0
+## 0xb4 — grim_load_texture @ 0x100076e0
 
 - Provisional name: `load_texture` (high)
 - Guess: `bool load_texture(const char *name, const char *path)`
@@ -823,7 +823,7 @@ grim.dll body:
 ```
 
 
-## 0xcc — FUN_100079b0 @ 0x100079b0
+## 0xcc — grim_draw_fullscreen_color @ 0x100079b0
 
 - Ghidra signature: `void grim_draw_fullscreen_color(float r, float g, float b, float a)`
 - Call sites: 2 (unique funcs: 2)
@@ -968,7 +968,7 @@ grim.dll body:
 ```
 
 
-## 0xec — FUN_100083c0 @ 0x100083c0
+## 0xec — grim_flush_batch @ 0x100083c0
 
 - Provisional name: `flush_batch` (high)
 - Guess: `void flush_batch(void)`
@@ -1011,7 +1011,7 @@ grim.dll body:
 ```
 
 
-## 0xf4 — FUN_10008e30 @ 0x10008e30
+## 0xf4 — grim_submit_vertex_raw @ 0x10008e30
 
 - Provisional name: `submit_vertex_raw` (high)
 - Guess: `void submit_vertex_raw(const float *vertex)`
@@ -1040,7 +1040,7 @@ grim.dll body:
 ```
 
 
-## 0xf8 — FUN_10008eb0 @ 0x10008eb0
+## 0xf8 — grim_submit_quad_raw @ 0x10008eb0
 
 - Provisional name: `submit_quad_raw` (high)
 - Guess: `void submit_quad_raw(const float *verts)`
@@ -1143,7 +1143,7 @@ grim.dll UV assignment:
 ```
 
 
-## 0x108 — FUN_100082c0 @ 0x100082c0
+## 0x108 — grim_set_sub_rect @ 0x100082c0
 
 - Provisional name: `set_sub_rect` (high)
 - Guess: `void set_sub_rect(int atlas_size, int width, int height, int frame)`
@@ -1185,7 +1185,7 @@ Atlas pointer table setup (grim.dll init):
 ```
 
 
-## 0x10c — FUN_100083a0 @ 0x100083a0
+## 0x10c — grim_set_uv_point @ 0x100083a0
 
 - Ghidra signature: `void grim_set_uv_point(int index, float u, float v)`
 - Notes: called as four consecutive `set_uv_point` calls (indices 0..3) to override per-corner UVs; u=0.625, v in {0, 0.25}
@@ -1333,7 +1333,7 @@ grim.dll vertex fill (color + UV):
 ```
 
 
-## 0x120 — FUN_10008720 @ 0x10008720
+## 0x120 — grim_draw_quad_xy @ 0x10008720
 
 - Notes: wrapper around `draw_quad` using `xy` pointer
 - Ghidra signature: `void grim_draw_quad_xy(float *xy, float w, float h)`
@@ -1491,7 +1491,7 @@ grim.dll vertex fill (color + UV slots):
 ```
 
 
-## 0x13c — FUN_100092b0 @ 0x100092b0
+## 0x13c — grim_draw_text_mono @ 0x100092b0
 
 - Provisional name: `draw_text_mono` (high)
 - Guess: `void draw_text_mono(float x, float y, const char *text)`
@@ -1521,7 +1521,7 @@ grim.dll body:
 ```
 
 
-## 0x140 — FUN_10009940 @ 0x10009940
+## 0x140 — grim_draw_text_mono_fmt @ 0x10009940
 
 - Notes: printf-style wrapper around 0x13c
 - Ghidra signature: `void grim_draw_text_mono_fmt(int *self, float x, float y, char *fmt)`
