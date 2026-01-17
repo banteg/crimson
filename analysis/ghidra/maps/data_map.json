@@ -111,6 +111,42 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00486fbc",
+      "name": "shock_chain_links_left",
+      "comment": "Shock Chain link counter; decremented on each chained hit."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00486fc0",
+      "name": "shock_chain_projectile_id",
+      "comment": "Projectile index for the active Shock Chain segment."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004871d8",
+      "name": "camera_shake_offset_x",
+      "comment": "Camera shake offset X (applied to camera center)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004871dc",
+      "name": "camera_shake_offset_y",
+      "comment": "Camera shake offset Y (applied to camera center)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004871e0",
+      "name": "camera_shake_timer",
+      "comment": "Camera shake timer; counts down between shake pulses."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004871e4",
+      "name": "camera_shake_pulses",
+      "comment": "Camera shake pulse counter; decremented as shake pulses complete."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x0048700e",
       "name": "time_scale_active",
       "comment": "Time-scale active flag (set while Reflex Boost is active)."
@@ -1134,6 +1170,12 @@
       "address": "0x004aa4dc",
       "name": "effect_uv16_v",
       "comment": "Effect UV table V for 16x16 atlas frames"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004aaf18",
+      "name": "fx_queue_count",
+      "comment": "FX queue length (fx_queue entry count, capped at 0x7f)."
     },
     {
       "program": "crimsonland.exe",

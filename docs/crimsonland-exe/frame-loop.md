@@ -40,6 +40,12 @@ Other states have their own loops but reuse the same render pass (`FUN_00405960`
     - `ui_elements_update_and_render`
 14) Demo overlay and cursor handling.
 
+Camera shake state (used by `FUN_00409500`):
+
+- `camera_shake_offset_x` / `camera_shake_offset_y` are added to the camera center each frame.
+- `camera_shake_timer` counts down between shake pulses.
+- `camera_shake_pulses` is decremented as pulses complete (larger values yield stronger shakes).
+
 ## Game over transition
 
 When all players are dead, the loop queues a state transition:

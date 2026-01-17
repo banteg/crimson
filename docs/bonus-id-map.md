@@ -18,7 +18,7 @@ Table fields:
 | 4 | Weapon Power Up | Your firerate and load time increase for a short period. | 7 | 10 | `bonus_apply` updates `bonus_weapon_power_up_timer`. |
 | 5 | Nuke | An amazing explosion of ATOMIC power. | 1 | 0 | `bonus_apply` performs the large explosion + shake sequence. |
 | 6 | Double Experience | Every experience point you get is doubled when this bonus is active. | 4 | 0 | `bonus_apply` updates `bonus_double_xp_timer`. |
-| 7 | Shock Chain | Chain of shocks shock the crowd. | 3 | 0 | `bonus_apply` spawns chained lightning via `projectile_spawn` type `0x15`. |
+| 7 | Shock Chain | Chain of shocks shock the crowd. | 3 | 0 | `bonus_apply` spawns chained lightning via `projectile_spawn` type `0x15`; `shock_chain_links_left` / `shock_chain_projectile_id` track the active chain. |
 | 8 | Fireblast | Fireballs all over the place. | 2 | 0 | `bonus_apply` spawns a radial projectile burst (type `9`). |
 | 9 | Reflex Boost | You get more time to react as the game slows down. | 5 | 3 | `bonus_apply` updates `bonus_reflex_boost_timer`. |
 | 10 | Shield | Force field protects you for a while. | 6 | 7 | `bonus_apply` updates `DAT_00490bc8`. |

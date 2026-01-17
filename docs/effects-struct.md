@@ -88,7 +88,7 @@ Render notes:
 
 ## FX queue (`fx_queue` / `DAT_004912b8`)
 
-Entry size: `0x28` bytes. Queue size: `0x80` entries (index `0..0x7f` via `DAT_004aaf18`).
+Entry size: `0x28` bytes. Queue size: `0x80` entries (index `0..0x7f` via `fx_queue_count`).
 
 Field arrays are labeled in the data map (e.g. `fx_queue_pos_x`, `fx_queue_color_a`)
 at `fx_queue` + offsets.
