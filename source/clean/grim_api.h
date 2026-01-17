@@ -15,8 +15,8 @@ typedef struct Grim2DVtable Grim2DVtable;
 struct Grim2DVtable {
     void (*release)(void); // 0x0 (grim_release)
     void (*set_paused)(int paused); // 0x4 (grim_set_paused)
-    float (*get_version)(void); // 0x8 (grim_get_version)
-    int (*check_device)(void); // 0xc (grim_check_device)
+    float (*get_version)(void); // 0x8 (grim_get_version) returns constant 1.21
+    int (*check_device)(void); // 0xc (grim_check_device) returns D3D status code
     bool (*apply_config)(void); // 0x10 (grim_apply_config) low byte indicates success
     bool (*init_system)(void); // 0x14 (grim_init_system) low byte indicates success
     void (*shutdown)(void); // 0x18 (grim_shutdown)
