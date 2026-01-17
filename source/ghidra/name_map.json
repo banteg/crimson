@@ -70,6 +70,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00465d93",
+    "name": "crt_errno_ptr",
+    "signature": "int * crt_errno_ptr(void)",
+    "comment": "CRT errno pointer accessor (thread-local)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00465d9c",
+    "name": "crt_doserrno_ptr",
+    "signature": "unsigned int * crt_doserrno_ptr(void)",
+    "comment": "CRT doserrno pointer accessor (thread-local)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0046623d",
     "name": "crt_io_init",
     "comment": "CRT file handle table init"

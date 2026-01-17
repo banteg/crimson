@@ -86,8 +86,29 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
 - `FUN_0042a700` -> `texture_get_or_load_alt`
   - Evidence: identical body to `texture_get_or_load`; primary callers pass `.jaz` assets.
 
+### CRT errno accessors (high confidence)
+
+- `FUN_00465d93` -> `crt_errno_ptr` (`_errno`-style accessor)
+- `FUN_00465d9c` -> `crt_doserrno_ptr` (`__doserrno`-style accessor)
+- Evidence:
+  - Both call `crt_get_thread_data()` and return pointer offsets (`+2`, `+3`).
+  - `FUN_00465d20` stores Win32 errors into `*FUN_00465d9c` and maps to `*FUN_00465d93`
+    via the error table at `DAT_0047b7c0`.
+  - File I/O wrappers set these directly on failure:
+    - `FUN_004655bf` (FlushFileBuffers) stores `GetLastError()` in `*FUN_00465d9c` and sets
+      `*FUN_00465d93 = 9` (EBADF).
+    - `FUN_004656b7` (WriteFile) and `FUN_00466064` (ReadFile) call `FUN_00465d20` after
+      `GetLastError()` for non-trivial errors.
+    - `FUN_0046645e` (SetFilePointer) maps `GetLastError()` through `FUN_00465d20`.
+
+### CRT lock/unlock helpers (high confidence)
+
+- `FUN_0046586b` -> `crt_lock`
+  - Evidence: calls `InitializeCriticalSection`, `EnterCriticalSection`, and `__amsg_exit` in the
+    lock path; invoked by `crt_exit_lock` and many CRT wrappers.
+- `FUN_004658cc` -> `crt_unlock`
+  - Evidence: calls `LeaveCriticalSection`; invoked by `crt_exit_unlock` and many CRT wrappers.
+
 ## Next naming targets
 
-- Trace `FUN_0046586b` / `FUN_004658cc` (called by error paths); likely error reporting or fatal handling.
-- Resolve `FUN_00465d93` / `FUN_00465d9c` (errno getters?) referenced from string parsing.
 - For `grim.dll`, inspect `FUN_10016944` (coordinate conversions and vertex packing) to pin down the render pipeline stage.
