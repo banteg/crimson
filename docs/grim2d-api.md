@@ -12,6 +12,8 @@ We created functions at vtable entry addresses via
 `grim.dll_functions.json` to capture those entry names. The latest vtable JSON
 exports now include 84 entry points created from the vtable.
 
+For a high-level summary, see `docs/grim2d-overview.md`.
+
 ## Extraction artifact
 
 We extracted all `(*DAT_0048083c + offset)` callsites and wrote them to:
@@ -92,16 +94,16 @@ These offsets appear with keycodes or input-related values:
 | `0x4c` | `flush_input` | `void flush_input(void)` | high | clears input buffers + drains DirectInput |
 | `0x50` | `get_key_char` | `int get_key_char(void)` | high | console text input |
 | `0x54` | `set_key_char_buffer` | `void set_key_char_buffer(uint8_t *buffer, int *count, int size)` | high | stores ring buffer pointers |
-| `0x58` | `is_mouse_button_down` | `bool is_mouse_button_down(int button)` | medium | button 0 used |
+| `0x58` | `is_mouse_button_down` | `bool is_mouse_button_down(int button)` | high | returns cached button state or polls input |
 | `0x5c` | `was_mouse_button_pressed` | `bool was_mouse_button_pressed(int button)` | high | edge-triggered mouse button using cached state |
 | `0x60` | `get_mouse_wheel_delta` | `float get_mouse_wheel_delta(void)` | high | +/- wheel to change selection |
-| `0x64` | `set_mouse_pos` | `void set_mouse_pos(float x, float y)` | medium | updates mouse position |
-| `0x68` | `get_mouse_x` | `float get_mouse_x(void)` | medium | mouse position X |
-| `0x6c` | `get_mouse_y` | `float get_mouse_y(void)` | medium | mouse position Y |
-| `0x70` | `get_mouse_dx` | `float get_mouse_dx(void)` | medium | mouse delta X |
-| `0x74` | `get_mouse_dy` | `float get_mouse_dy(void)` | medium | mouse delta Y |
-| `0x78` | `get_mouse_dx_indexed` | `float get_mouse_dx_indexed(int index)` | medium | aliases mouse dx (calls 0x70); index unused |
-| `0x7c` | `get_mouse_dy_indexed` | `float get_mouse_dy_indexed(int index)` | medium | aliases mouse dy (calls 0x74); index unused |
+| `0x64` | `set_mouse_pos` | `void set_mouse_pos(float x, float y)` | high | updates cached mouse position |
+| `0x68` | `get_mouse_x` | `float get_mouse_x(void)` | high | cached mouse position X |
+| `0x6c` | `get_mouse_y` | `float get_mouse_y(void)` | high | cached mouse position Y |
+| `0x70` | `get_mouse_dx` | `float get_mouse_dx(void)` | high | cached mouse delta X |
+| `0x74` | `get_mouse_dy` | `float get_mouse_dy(void)` | high | cached mouse delta Y |
+| `0x78` | `get_mouse_dx_indexed` | `float get_mouse_dx_indexed(int index)` | high | aliases mouse dx (calls 0x70); index unused |
+| `0x7c` | `get_mouse_dy_indexed` | `float get_mouse_dy_indexed(int index)` | high | aliases mouse dy (calls 0x74); index unused |
 | `0x80` | `is_key_active` | `bool is_key_active(int key)` | high | routes key/mouse/joystick IDs to input queries |
 | `0x84` | `get_config_float` | `float get_config_float(int id)` | high | IDs `0x13f..0x155` map to scaled config floats |
 | `0x88` | `get_slot_float` | `float get_slot_float(int index)` | high | reads float slot array |
@@ -113,10 +115,10 @@ These offsets appear with keycodes or input-related values:
 | `0xa0` | `get_joystick_z` | `int get_joystick_z(void)` | high | returns cached joystick Z |
 | `0xa4` | `get_joystick_pov` | `int get_joystick_pov(int index)` | high | returns cached POV value |
 | `0xa8` | `is_joystick_button_down` | `bool is_joystick_button_down(int button)` | high | returns cached joystick button bit |
-| `0xac` | `create_texture` | `bool create_texture(const char *name, int width, int height)` | medium | terrain texture path |
-| `0xb0` | `recreate_texture` | `bool recreate_texture(int handle)` | medium | recreates D3D texture surface for handle |
+| `0xac` | `create_texture` | `bool create_texture(const char *name, int width, int height)` | high | creates blank texture in a free slot |
+| `0xb0` | `recreate_texture` | `bool recreate_texture(int handle)` | high | recreates D3D texture surface for handle |
 | `0xb4` | `load_texture` | `bool load_texture(const char *name, const char *path)` | high | `(name, filename)` |
-| `0xb8` | `validate_texture` | `bool validate_texture(int handle)` | medium | checks handle + device validation |
+| `0xb8` | `validate_texture` | `bool validate_texture(int handle)` | high | checks handle + device validation |
 | `0xbc` | `destroy_texture` | `void destroy_texture(int handle)` | high | releases texture and clears slot |
 | `0xc0` | `get_texture_handle` | `int get_texture_handle(const char *name)` | high | returns `-1` on missing |
 | `0xc4` | `bind_texture` | `void bind_texture(int handle, int stage)` | high | validates handle then sets device texture stage |
@@ -128,11 +130,11 @@ These offsets appear with keycodes or input-related values:
 | `0xdc` | `draw_circle_outline` | `void draw_circle_outline(float x, float y, float radius)` | high | builds ring with sin/cos |
 | `0xe0` | `draw_line` | `void draw_line(float *p0, float *p1, float thickness)` | high | computes line quad then calls 0xe4 |
 | `0xe4` | `draw_line_quad` | `void draw_line_quad(float *p0, float *p1, float *half_vec)` | high | draws quad from endpoints + half_vec |
-| `0xec` | `flush_batch` | `void flush_batch(void)` | medium | flushes batch when buffer fills |
+| `0xec` | `flush_batch` | `void flush_batch(void)` | high | flushes batch when buffer fills |
 | `0xe8` | `begin_batch` | `void begin_batch(void)` | high | start buffered quad batch |
 | `0xf0` | `end_batch` | `void end_batch(void)` | high | flush buffered batch |
-| `0xf4` | `submit_vertex_raw` | `void submit_vertex_raw(const float *vertex)` | medium | pushes 1 raw vertex; auto-flush |
-| `0xf8` | `submit_quad_raw` | `void submit_quad_raw(const float *verts)` | medium | pushes 4 raw vertices; auto-flush |
+| `0xf4` | `submit_vertex_raw` | `void submit_vertex_raw(const float *vertex)` | high | pushes 1 raw vertex; auto-flush |
+| `0xf8` | `submit_quad_raw` | `void submit_quad_raw(const float *verts)` | high | pushes 4 raw vertices; auto-flush |
 | `0xfc` | `set_rotation` | `void set_rotation(float radians)` | high | precomputes sin/cos (+45°) for rotation matrix |
 | `0x100` | `set_uv` | `void set_uv(float u0, float v0, float u1, float v1)` | high | sets all 4 UV pairs (u0/v0/u1/v1) |
 | `0x104` | `set_atlas_frame` | `void set_atlas_frame(int atlas_size, int frame)` | high | atlas size (cells per side) + frame index |

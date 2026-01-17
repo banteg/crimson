@@ -250,13 +250,13 @@ LAB_00401add:
 
 
 ## 0x58 — FUN_10007410 @ 0x10007410
-- Provisional name: `is_mouse_button_down` (medium)
+- Provisional name: `is_mouse_button_down` (high)
 - Guess: `bool is_mouse_button_down(int button)`
 - Notes: button 0 used
 - Ghidra signature: `int grim_is_mouse_button_down(int button)`
 - Call sites: 4 (unique funcs: 3)
-- Sample calls: FUN_0040aab0:L5953; FUN_00446030:L29260; FUN_00446030:L29278; FUN_004460f0:L29306
-- First callsite: FUN_0040aab0 (line 6340)
+- Sample calls: FUN_0040aab0:L6349; FUN_00446030:L31421; FUN_00446030:L31439; FUN_004460f0:L31467
+- First callsite: FUN_0040aab0 (line 6349)
 
 ```c
     }
@@ -264,6 +264,16 @@ LAB_00401add:
   cVar3 = (**(code **)(*DAT_0048083c + 0x58))(0);
   DAT_004808b9 = cVar3 != '\0';
   FUN_0040a320();
+```
+
+grim.dll body:
+
+```c
+  if (DAT_1005cc58 != '\0') {
+    return CONCAT31((int3)((uint)button >> 8),(&DAT_1005a044)[button]);
+  }
+  bVar1 = FUN_1000a590(button);
+  return CONCAT31(extraout_var,bVar1);
 ```
 
 
@@ -282,6 +292,116 @@ LAB_00401add:
   fVar8 = (float10)(**(code **)(*DAT_0048083c + 0x60))();
   if ((float10)0.0 < fVar8) {
     *param_2 = *param_2 - 1.0;
+```
+
+
+## 0x64 — grim_set_mouse_pos @ 0x10007530
+- Provisional name: `set_mouse_pos` (high)
+- Guess: `void set_mouse_pos(float x, float y)`
+- Ghidra signature: `void grim_set_mouse_pos(float x, float y)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+grim.dll body:
+
+```c
+  DAT_1005db44 = x;
+  DAT_1005db48 = y;
+  _DAT_1005b278 = x;
+  _DAT_1005b27c = y;
+```
+
+
+## 0x68 — grim_get_mouse_x @ 0x10007510
+- Provisional name: `get_mouse_x` (high)
+- Guess: `float get_mouse_x(void)`
+- Ghidra signature: `float grim_get_mouse_x(void)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+grim.dll body:
+
+```c
+  return _DAT_1005b278;
+```
+
+
+## 0x6c — grim_get_mouse_y @ 0x10007520
+- Provisional name: `get_mouse_y` (high)
+- Guess: `float get_mouse_y(void)`
+- Ghidra signature: `float grim_get_mouse_y(void)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+grim.dll body:
+
+```c
+  return _DAT_1005b27c;
+```
+
+
+## 0x70 — grim_get_mouse_dx @ 0x100074d0
+- Provisional name: `get_mouse_dx` (high)
+- Guess: `float get_mouse_dx(void)`
+- Ghidra signature: `float grim_get_mouse_dx(void)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+grim.dll body:
+
+```c
+  return _DAT_1005db50;
+```
+
+
+## 0x74 — grim_get_mouse_dy @ 0x100074e0
+- Provisional name: `get_mouse_dy` (high)
+- Guess: `float get_mouse_dy(void)`
+- Ghidra signature: `float grim_get_mouse_dy(void)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+grim.dll body:
+
+```c
+  return _DAT_1005db54;
+```
+
+
+## 0x78 — grim_get_mouse_dx_indexed @ 0x100074f0
+- Provisional name: `get_mouse_dx_indexed` (high)
+- Guess: `float get_mouse_dx_indexed(int index)`
+- Ghidra signature: `float grim_get_mouse_dx_indexed(int index)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+grim.dll body:
+
+```c
+  fVar1 = (float10)(**(code **)(*in_ECX + 0x70))();
+  return (float)fVar1;
+```
+
+
+## 0x7c — grim_get_mouse_dy_indexed @ 0x10007500
+- Provisional name: `get_mouse_dy_indexed` (high)
+- Guess: `float get_mouse_dy_indexed(int index)`
+- Ghidra signature: `float grim_get_mouse_dy_indexed(int index)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+grim.dll body:
+
+```c
+  fVar1 = (float10)(**(code **)(*in_ECX + 0x74))();
+  return (float)fVar1;
 ```
 
 
@@ -366,12 +486,12 @@ grim.dll mapping:
 
 
 ## 0xac — FUN_100075d0 @ 0x100075d0
-- Provisional name: `create_texture` (medium)
+- Provisional name: `create_texture` (high)
 - Guess: `bool create_texture(const char *name, int width, int height)`
 - Notes: used for terrain texture
 - Ghidra signature: `int grim_create_texture(char *name, int width, int height)`
-- Call sites: 1 (unique funcs: 1)
-- Sample calls: FUN_0042a9f0:L19084
+- Call sites: 2 (unique funcs: 1)
+- Sample calls: init_audio_and_terrain:L21242; init_audio_and_terrain:L21250
 - First callsite: FUN_0042a9f0 (line 21221)
 
 ```c
@@ -380,6 +500,55 @@ grim.dll mapping:
     cVar3 = (**(code **)(*DAT_0048083c + 0xac))(s_ground_004740c4,(int)lVar5,(int)lVar5);
     fVar2 = DAT_004803b8;
     if (cVar3 == '\0') {
+```
+
+grim.dll body:
+
+```c
+  uVar1 = grim_find_free_texture_slot();
+  uVar2 = (**(code **)(*DAT_10059dbc + 0x50))(DAT_10059dbc,width,height,1,1,DAT_1005a488,0,local_10);
+  pvVar3 = operator_new(0x18);
+  pvVar3 = grim_texture_init(pvVar3,unaff_EDI,(char *)name_00);
+  (&DAT_1005d404)[uVar1] = pvVar3;
+```
+
+
+## 0xb0 — FUN_10007790 @ 0x10007790
+- Provisional name: `recreate_texture` (high)
+- Guess: `bool recreate_texture(int handle)`
+- Ghidra signature: `int grim_recreate_texture(int handle)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+grim.dll body:
+
+```c
+  iVar3 = (&DAT_1005d404)[handle];
+  if (iVar3 == 0) {
+    return 0;
+  }
+  uVar2 = FUN_1000b297(*(void **)(iVar3 + 0x10),DAT_10059dbc,*(uint *)(iVar3 + 0xc),
+                       (uint)*(void **)(iVar3 + 0x10),1,0,DAT_1005a56c,1,(int)&handle);
+```
+
+
+## 0xb8 — FUN_10007750 @ 0x10007750
+- Provisional name: `validate_texture` (high)
+- Guess: `bool validate_texture(int handle)`
+- Ghidra signature: `int grim_validate_texture(int handle)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+grim.dll body:
+
+```c
+  if ((&DAT_1005d404)[handle] == 0) {
+    return 0;
+  }
+  iVar1 = FUN_1000c1e8();
+  return CONCAT31((int3)((uint)iVar1 >> 8),-1 < iVar1);
 ```
 
 
@@ -600,6 +769,30 @@ grim.dll body:
 ```
 
 
+## 0xec — FUN_100083c0 @ 0x100083c0
+- Provisional name: `flush_batch` (high)
+- Guess: `void flush_batch(void)`
+- Notes: submits vertex buffer when filled
+- Ghidra signature: `void grim_flush_batch(void)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+grim.dll body:
+
+```c
+  if ((DAT_1005d3bd == '\0') && (DAT_1005d3f4 != '\0')) {
+    (**(code **)(*DAT_10059e2c + 0x30))(DAT_10059e2c);
+    (**(code **)(*DAT_10059dbc + 0x11c))
+              (DAT_10059dbc,4,0,DAT_1005c8dc & 0xffff,0,(DAT_1005c8dc & 0xffff) >> 1);
+    iVar1 = (**(code **)(*DAT_10059e2c + 0x2c))(DAT_10059e2c,0,0,&DAT_10059e34,0x2800);
+    if (-1 < iVar1) {
+      DAT_1005c8dc = DAT_1005c8dc & 0xffff0000;
+    }
+  }
+```
+
+
 ## 0xf0 — FUN_10007b20 @ 0x10007b20
 - Ghidra signature: `void grim_end_batch(void)`
 - Call sites: 86 (unique funcs: 28)
@@ -612,6 +805,57 @@ grim.dll body:
     (**(code **)(*DAT_0048083c + 0xf0))();
     (**(code **)(*DAT_0048083c + 0x20))(0x15,2);
     (**(code **)(*DAT_0048083c + 0x20))(0x18,0x3f000000);
+```
+
+
+## 0xf4 — FUN_10008e30 @ 0x10008e30
+- Provisional name: `submit_vertex_raw` (high)
+- Guess: `void submit_vertex_raw(const float *vertex)`
+- Notes: copies 7 floats and auto-flushes when the batch is full
+- Ghidra signature: `void grim_submit_vertex_raw(float *vertex)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+grim.dll body:
+
+```c
+  if (DAT_1005d3f4 == '\0') {
+    (**(code **)(*in_ECX + 0xe8))();
+  }
+  for (iVar1 = 7; iVar1 != 0; iVar1 = iVar1 + -1) {
+    *pfVar2 = *vertex;
+    vertex = vertex + 1;
+    pfVar2 = pfVar2 + 1;
+  }
+  DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + 1;
+  if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
+    (**(code **)(*in_ECX + 0xec))();
+  }
+```
+
+
+## 0xf8 — FUN_10008eb0 @ 0x10008eb0
+- Provisional name: `submit_quad_raw` (high)
+- Guess: `void submit_quad_raw(const float *verts)`
+- Notes: copies 28 floats (4 vertices) and auto-flushes when the batch is full
+- Ghidra signature: `void grim_submit_quad_raw(float *verts)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+grim.dll body:
+
+```c
+  for (iVar1 = 0x1c; iVar1 != 0; iVar1 = iVar1 + -1) {
+    *pfVar2 = *verts;
+    verts = verts + 1;
+    pfVar2 = pfVar2 + 1;
+  }
+  DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + 4;
+  if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
+    (**(code **)(*in_ECX + 0xec))();
+  }
 ```
 
 
