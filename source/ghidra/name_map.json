@@ -410,9 +410,9 @@
   {
     "program": "crimsonland.exe",
     "address": "0x0042fcf0",
-    "name": "game_var_get",
-    "signature": "int game_var_get(int id)",
-    "comment": "returns entry from global int table (DAT_00490968)"
+    "name": "perk_count_get",
+    "signature": "int perk_count_get(int perk_id)",
+    "comment": "returns perk count from DAT_00490968"
   },
   {
     "program": "crimsonland.exe",

@@ -162,9 +162,8 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
 
 ### Global var access (medium confidence)
 
-- `FUN_0042fcf0` -> `game_var_get`
-  - Evidence: returns `(&DAT_00490968)[id]` directly; the table is used as a global int registry
-    (perk/config gating, counters).
+- `FUN_0042fcf0` -> `perk_count_get`
+  - Evidence: returns `(&DAT_00490968)[perk_id]` directly; used to track perk picks and gating.
 
 ### Effect spawn helper (medium confidence)
 
@@ -207,11 +206,11 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
     - `0x1` allows perks when `_DAT_00480360 == 3`.
     - `0x2` allows perks when `_DAT_0048035c == 2` (two-player mode).
     - `0x4` marks stackable perks (random selection accepts them even if already taken).
-  - Prereq field is checked via `game_var_get` and gates perks like Toxic Avenger (requires
+  - Prereq field is checked via `perk_count_get` and gates perks like Toxic Avenger (requires
     Veins of Poison), Ninja (requires Dodger), Perk Master (requires Perk Expert), and
     Greater Regeneration (requires Regeneration).
 - `FUN_004055e0` -> `perk_apply`
-  - Evidence: called after selecting a perk in the UI, increments `game_var_get` table, and
+  - Evidence: called after selecting a perk in the UI, increments `perk_count_get` table, and
     executes the perk-specific effects (exp, health, weapon changes, perk spawns).
 
 ### Game mode selector (partial)
