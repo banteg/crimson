@@ -1,0 +1,30 @@
+# All pages
+
+This page is generated. Run `uv run python scripts/gen_all_pages.py` to update.
+
+- [Sprite atlas cutting (Crimsonland)](atlas.md)
+- [Bonus ID map](bonus-id-map.md)
+- [Creature struct (DAT_0049bf38)](creature-struct.md)
+- [Detangling notes](detangling.md)
+- [Effects pools](effects-struct.md)
+- [Entrypoint trace](entrypoint.md)
+- [Small font (smallFnt.dat)](formats/font.md)
+- [JAZ texture format](formats/jaz.md)
+- [PAQ archive format](formats/paq.md)
+- [Game mode map](game-mode-map.md)
+- [Grim2D vtable evidence appendix](grim2d-api-evidence.md)
+- [Grim2D API vtable (draft)](grim2d-api.md)
+- [Grim2D overview](grim2d-overview.md)
+- [Crimsonland reverse engineering notes](index.md)
+- [Progress metrics](metrics.md)
+- [Modern Android build (v1.4.2.8) name mining](modern-android.md)
+- [Modern Linux build (1.35) name mining](modern-linux.md)
+- [Perk ID map](perk-id-map.md)
+- [Extraction pipeline](pipeline.md)
+- [Projectile struct](projectile-struct.md)
+- [Refactor attempt](refactor.md)
+- [SFX ID map](sfx-id-map.md)
+- [SFX label suggestions](sfx-labels.md)
+- [SFX usage hotspots](sfx-usage.md)
+- [Weapon table (weapon_table_init)](weapon-table.md)
+

@@ -45,6 +45,7 @@ Special handling during extraction:
 - [Detangling notes](detangling.md) — In progress
 - [Entrypoint trace](entrypoint.md) — In progress
 - [Refactor attempt](refactor.md) — Planned
+- [All pages](all-pages.md) — Index
 - [Modern Linux build name mining](modern-linux.md) — Reference
 - [Modern Android build name mining](modern-android.md) — Reference
 - [Grim2D overview](grim2d-overview.md) — Draft

@@ -38,33 +38,46 @@ site_author = "banteg"
 # Read more: https://zensical.org/docs/setup/navigation/
 nav = [
   { "Home" = "index.md" },
+  { "All pages" = "all-pages.md" },
   { "Formats" = [
     { "PAQ" = "formats/paq.md" },
     { "JAZ" = "formats/jaz.md" },
     { "Small font" = "formats/font.md" },
   ]},
-  { "Extraction pipeline" = "pipeline.md" },
-  { "Atlas cutting" = "atlas.md" },
-  { "Weapon table" = "weapon-table.md" },
-  { "Progress metrics" = "metrics.md" },
-  { "Detangling notes" = "detangling.md" },
-  { "Creature struct" = "creature-struct.md" },
-  { "Projectile struct" = "projectile-struct.md" },
-  { "Effects pools" = "effects-struct.md" },
-  { "Perk ID map" = "perk-id-map.md" },
-  { "Bonus ID map" = "bonus-id-map.md" },
-  { "SFX ID map" = "sfx-id-map.md" },
-  { "SFX usage" = "sfx-usage.md" },
-  { "SFX labels" = "sfx-labels.md" },
-  { "Game mode map" = "game-mode-map.md" },
-  { "Entrypoint trace" = "entrypoint.md" },
-  { "Refactor attempt" = "refactor.md" },
-  { "Modern Linux build name mining" = "modern-linux.md" },
-  { "Modern Android build name mining" = "modern-android.md" },
-  { "Grim2D" = [
-    { "Overview" = "grim2d-overview.md" },
-    { "API vtable" = "grim2d-api.md" },
-    { "API evidence" = "grim2d-api-evidence.md" },
+  { "Assets & rendering" = [
+    { "Atlas cutting" = "atlas.md" },
+    { "Grim2D" = [
+      { "Overview" = "grim2d-overview.md" },
+      { "API vtable" = "grim2d-api.md" },
+      { "API evidence" = "grim2d-api-evidence.md" },
+    ]},
+  ]},
+  { "Gameplay" = [
+    { "Weapon table" = "weapon-table.md" },
+    { "Game mode map" = "game-mode-map.md" },
+    { "Perk ID map" = "perk-id-map.md" },
+    { "Bonus ID map" = "bonus-id-map.md" },
+    { "Creature struct" = "creature-struct.md" },
+    { "Projectile struct" = "projectile-struct.md" },
+    { "Effects pools" = "effects-struct.md" },
+  ]},
+  { "Audio" = [
+    { "SFX ID map" = "sfx-id-map.md" },
+    { "SFX usage" = "sfx-usage.md" },
+    { "SFX labels" = "sfx-labels.md" },
+  ]},
+  { "Pipeline" = [
+    { "Extraction pipeline" = "pipeline.md" },
+  ]},
+  { "Analysis" = [
+    { "Progress metrics" = "metrics.md" },
+    { "Detangling notes" = "detangling.md" },
+    { "Entrypoint trace" = "entrypoint.md" },
+    { "Refactor attempt" = "refactor.md" },
+  ]},
+  { "Modern builds" = [
+    { "Modern Linux build name mining" = "modern-linux.md" },
+    { "Modern Android build name mining" = "modern-android.md" },
   ]},
 ]
 
