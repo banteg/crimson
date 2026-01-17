@@ -33,6 +33,7 @@ Special handling during extraction:
 - [Extraction pipeline](pipeline.md) — In progress
 - [Weapon table](weapon-table.md) — In progress
 - [Progress metrics](metrics.md) — Tracking
+- [Bonus ID map](bonus-id-map.md) — Tracking
 - [Detangling notes](detangling.md) — In progress
 - [Entrypoint trace](entrypoint.md) — In progress
 - [Refactor attempt](refactor.md) — Planned

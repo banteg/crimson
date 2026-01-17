@@ -369,6 +369,7 @@ See [Creature struct](creature-struct.md) for the expanded field map and cross-l
 - `FUN_00409890` -> `bonus_apply`
   - Evidence: applies bonus effects based on entry type (`param_2[0]`), spawns effects via
     `FUN_0042e120`, and plays bonus SFX (`FUN_0043d260`).
+- See [Bonus ID map](bonus-id-map.md) for the id-to-name table and default amounts.
 - Layout (entry size `0x1c`, base `DAT_00482948`, 16 entries):
 
   | Offset | Field | Evidence |
