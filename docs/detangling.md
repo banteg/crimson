@@ -187,6 +187,21 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
 - `FUN_0042fcf0` -> `perk_count_get`
   - Evidence: returns `(&DAT_00490968)[perk_id]` directly; used to track perk picks and gating.
 
+### Save/load helpers (medium confidence)
+
+- `FUN_0042a980` -> `reg_read_dword_default`
+  - Evidence: wraps `RegQueryValueExA` for `REG_DWORD` and writes fallback on failure.
+- `FUN_0042a9c0` -> `reg_write_dword`
+  - Evidence: wraps `RegSetValueExA` with `REG_DWORD`.
+- `FUN_00412a10` -> `game_sequence_load`
+  - Evidence: reads the `sequence` registry value and updates `DAT_00485794`.
+- `FUN_00412a80` -> `game_save_status`
+  - Evidence: writes registry values (`sequence`, `dataPathId`, `transferFailed`) and saves a
+    `game.cfg`-style status file; logs `GAME_SaveStatus OK/FAILED`.
+- `FUN_00412c10` -> `game_load_status`
+  - Evidence: loads the status file, validates checksum/size, and regenerates it on failure;
+    logs `GAME_LoadStatus ...`.
+
 ### Effect spawn helper (medium confidence)
 
 - `FUN_0042de80` -> `effect_init_entry`

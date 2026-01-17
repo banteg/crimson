@@ -318,6 +318,27 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00412a10",
+    "name": "game_sequence_load",
+    "signature": "void game_sequence_load(void)",
+    "comment": "reads the sequence value from registry"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412a80",
+    "name": "game_save_status",
+    "signature": "void game_save_status(void)",
+    "comment": "writes registry state and saves status file"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412c10",
+    "name": "game_load_status",
+    "signature": "void game_load_status(void)",
+    "comment": "loads status file; regenerates on failure"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00412960",
     "name": "game_mode_label",
     "signature": "char * game_mode_label(void)",
@@ -329,6 +350,20 @@
     "name": "init_audio_and_terrain",
     "signature": "void init_audio_and_terrain(void)",
     "comment": "sound init + terrain texture setup"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042a980",
+    "name": "reg_read_dword_default",
+    "signature": "int reg_read_dword_default(HKEY key, char *name, unsigned int *out, unsigned int fallback)",
+    "comment": "reads a registry DWORD or writes fallback to output"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042a9c0",
+    "name": "reg_write_dword",
+    "signature": "int reg_write_dword(HKEY key, char *name, unsigned int value)",
+    "comment": "writes a registry DWORD"
   },
   {
     "program": "crimsonland.exe",
