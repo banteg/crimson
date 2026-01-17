@@ -17,8 +17,8 @@ struct Grim2DVtable {
     void (*set_paused)(int paused); // 0x4 (grim_set_paused)
     float (*get_version)(void); // 0x8 (grim_get_version)
     int (*check_device)(void); // 0xc (grim_check_device)
-    int (*apply_config)(void); // 0x10 (grim_apply_config)
-    int (*init_system)(void); // 0x14 (grim_init_system)
+    bool (*apply_config)(void); // 0x10 (grim_apply_config) low byte indicates success
+    bool (*init_system)(void); // 0x14 (grim_init_system) low byte indicates success
     void (*shutdown)(void); // 0x18 (grim_shutdown)
     void (*apply_settings)(void); // 0x1c (grim_apply_settings)
     void (*set_render_state)(uint32_t state, uint32_t value); // 0x20 (grim_set_render_state)
