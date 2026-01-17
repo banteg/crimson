@@ -68,6 +68,7 @@ public class ImportThirdPartyHeaders extends GhidraScript {
         String[] cppArgs = new String[] {
             "-D_WIN32",
             "-DWIN32",
+            "-Dinterface=struct",
             "-DCHAR_BIT=8",
             "-DUCHAR_MAX=255",
             "-DSHRT_MIN=-32768",
