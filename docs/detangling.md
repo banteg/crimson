@@ -471,3 +471,5 @@ See [Projectile struct](projectile-struct.md) for the expanded field map and not
   - `DAT_00490964` is the survival level/milestone counter (drawn as `%d` in the HUD) that gates
     scripted spawns in `survival_update`; it increments when `DAT_0049095c` surpasses a periodic
     threshold.
+  - The HUD shows `Xp`, the smoothed XP value, and a `Progress` label with a bar fed by
+    `DAT_0049095c`/`DAT_00490964` and a 1-second timer derived from `FUN_00461140()`.
