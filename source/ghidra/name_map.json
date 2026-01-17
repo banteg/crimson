@@ -324,6 +324,48 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00420440",
+    "name": "projectile_spawn",
+    "signature": "int projectile_spawn(float *pos, float angle, int type_id, int owner_id)",
+    "comment": "allocates a projectile slot, initializes fields, and returns the index"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004205d0",
+    "name": "projectile_reset_pools",
+    "signature": "void projectile_reset_pools(void)",
+    "comment": "clears projectile and effect pools (DAT_004926b8, DAT_00493eb8)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00420600",
+    "name": "creatures_apply_radius_damage",
+    "signature": "void creatures_apply_radius_damage(float *pos, float radius, float damage, int damage_type)",
+    "comment": "applies damage to creatures within radius using FUN_004207c0"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004206a0",
+    "name": "creature_find_in_radius",
+    "signature": "int creature_find_in_radius(float *pos, float radius, int start_index)",
+    "comment": "returns the first creature index in range, or -1"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00420730",
+    "name": "player_find_in_radius",
+    "signature": "int player_find_in_radius(int owner_id, float *pos, float radius)",
+    "comment": "returns a player index in range, skipping owner_id (-1/-2/-3 -> player 0/1/2)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00420b90",
+    "name": "projectile_update",
+    "signature": "void projectile_update(void)",
+    "comment": "updates projectile movement, collisions, and hit effects"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0042a5f0",
     "name": "audio_resume_all",
     "signature": "int audio_resume_all(void)",

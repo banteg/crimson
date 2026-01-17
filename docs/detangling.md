@@ -350,6 +350,38 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
 See [Creature struct](creature-struct.md) for the expanded field map and cross-links.
 
 
+### Projectile pool (partial)
+
+- `FUN_00420440` -> `projectile_spawn`
+  - Evidence: allocates a slot in `DAT_004926b8`, initializes angle/pos/type/owner, and callers store
+    the return index.
+- `FUN_00420b90` -> `projectile_update`
+  - Evidence: iterates `0x60` projectile entries, advances movement, checks collisions against
+    creatures/players, spawns hit effects, and clears expired entries.
+- `FUN_004205d0` -> `projectile_reset_pools`
+  - Evidence: clears `DAT_004926b8` (`0x40` stride) and `DAT_00493eb8` (`0x38` stride).
+- `FUN_00420600` -> `creatures_apply_radius_damage`
+  - Evidence: loops active creatures, checks distance vs radius + size, and calls `FUN_004207c0`.
+- `FUN_004206a0` -> `creature_find_in_radius`
+  - Evidence: returns the first creature index within `radius` starting at `start_index` (or `-1`).
+- `FUN_00420730` -> `player_find_in_radius`
+  - Evidence: scans the player table (`DAT_004908d4`), skipping the owner id, and returns the first
+    player within range.
+- Layout (entry size `0x40`, base `DAT_004926b8`, pool size `0x60`):
+
+  | Offset | Field | Evidence |
+  | --- | --- | --- |
+  | 0x00 | active (byte) | Set on spawn; cleared when lifetime expires. |
+  | 0x08 | pos_x | Spawn position and update movement use. |
+  | 0x0c | pos_y | Spawn position and update movement use. |
+  | 0x20 | type id | Spawn parameter, drives branch logic. |
+  | 0x24 | life timer | Decrements by `DAT_00480840`, clearing when <= 0. |
+  | 0x34 | hit radius | Used for creature collision checks. |
+  | 0x3c | owner id | Used to skip the shooter in hit tests. |
+
+See [Projectile struct](projectile-struct.md) for the expanded field map and notes.
+
+
 ### Bonus / pickup pool (medium confidence)
 
 - `FUN_0041f580` -> `bonus_alloc_slot`
