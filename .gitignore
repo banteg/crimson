@@ -1,6 +1,7 @@
 /game/
 /game_linux/
 /assets/
+/assets_frames/
 /output/
 /site/
 .venv/
