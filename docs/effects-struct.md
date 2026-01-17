@@ -286,7 +286,7 @@ Known entries (extracted from `crimsonland.exe` at `DAT_004755f0`):
 | `0xc` | `FUN_0042f6c0` | Used during large explosion sequences. |
 | `0xe` | `FUN_0042ee00` | Four-way burst helper. |
 | `0x11` | `FUN_0042f6c0` | Extra burst when difficulty is high. |
-| `0x12` | `player_update` (`FUN_004136b0`) | Muzzle flash path when weapon flag `0x1` is set. |
+| `0x12` | `player_update` (`FUN_004136b0`) | Muzzle flash path when weapon flag `0x1` is set (grid 16, frame `0x26` in `particles.png`). |
 
 ### Effect template helpers (partial)
 

@@ -31,28 +31,31 @@ Each entry is `(cell_code, group_id)`; `cell_code` maps to grid size:
 - `0x80 → 2`, `0x40 → 4`, `0x20 → 8`, `0x10 → 16`.
 
 
-Extracted table (index → `(cell_code, group_id)`):
-```
-0:  (0x80, 0x2)
-1:  (0x80, 0x3)
-2:  (0x20, 0x0)
-3:  (0x20, 0x1)
-4:  (0x20, 0x2)
-5:  (0x20, 0x3)
-6:  (0x20, 0x4)
-7:  (0x20, 0x5)
-8:  (0x20, 0x8)
-9:  (0x20, 0x9)
-10: (0x20, 0xA)
-11: (0x20, 0xB)
-12: (0x40, 0x5)
-13: (0x40, 0x3)
-14: (0x40, 0x4)
-15: (0x40, 0x5)
-16: (0x40, 0x6)
-```
+Extracted table (effect_id → size code + frame index):
 
-The `group_id` is passed to the renderer alongside the grid size;
+| effect_id | size code | grid | frame |
+| --- | --- | --- | --- |
+| `0x00` | `0x80` | 2 | `0x2` |
+| `0x01` | `0x80` | 2 | `0x3` |
+| `0x02` | `0x20` | 8 | `0x0` |
+| `0x03` | `0x20` | 8 | `0x1` |
+| `0x04` | `0x20` | 8 | `0x2` |
+| `0x05` | `0x20` | 8 | `0x3` |
+| `0x06` | `0x20` | 8 | `0x4` |
+| `0x07` | `0x20` | 8 | `0x5` |
+| `0x08` | `0x20` | 8 | `0x8` |
+| `0x09` | `0x20` | 8 | `0x9` |
+| `0x0a` | `0x20` | 8 | `0xa` |
+| `0x0b` | `0x20` | 8 | `0xb` |
+| `0x0c` | `0x40` | 4 | `0x5` |
+| `0x0d` | `0x40` | 4 | `0x3` |
+| `0x0e` | `0x40` | 4 | `0x4` |
+| `0x0f` | `0x40` | 4 | `0x5` |
+| `0x10` | `0x40` | 4 | `0x6` |
+| `0x11` | `0x40` | 4 | `0x7` |
+| `0x12` | `0x10` | 16 | `0x26` |
+
+The frame index is passed to the renderer alongside the grid size;
 its semantics aren’t obvious from the decompile.
 
 ## Non-uniform sub-rects (grim_set_sub_rect)
@@ -118,6 +121,8 @@ The engine uses **two patterns**:
   - Uses **grid=8** for the main particle system (see `+0x104(8, …)` at `:9704`).
   - Uses **sprite table indices 0x10, 0x0e, 0x0d, 0x0c** for UI/overlay effects
     (calls at `:996?`, `:16217`, `:16854`, `:18788`, `:18824`). These indices map to **grid=4**.
+  - Effects pool binds `particles.png` and uses the effect_id table above
+    (`0x00..0x12`). Muzzle flash uses `effect_id 0x12` → grid 16, frame `0x26`.
 
 - `assets/crimson/ui/ui_wicons.png` (DAT_0048f7e4)
   - Uses **grid=8**, but rendered via `grim_set_sub_rect(8, 2, 1, frame)`.
