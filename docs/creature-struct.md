@@ -76,6 +76,36 @@ Related notes:
   `0x4` selects the short 8‑frame ping‑pong strip, `0x40` forces the long strip
   even when `0x4` is set, and `0x10` offsets the long strip by `+0x20`.
 
+## Creature type table (DAT_00482728)
+
+Stride: `0x44` bytes (`0x11` floats). Indexed by `type_id`.
+
+Field map (partial):
+
+| Offset | Field | Evidence |
+| --- | --- | --- |
+| 0x00 | sprite texture handle | Bound in `creature_render_type` via `grim_bind_texture`. |
+| 0x04 | death sfx[0] | Random pick in `FUN_004207c0` (on death). |
+| 0x08 | death sfx[1] | Random pick in `FUN_004207c0`. |
+| 0x0c | death sfx[2] | Random pick in `FUN_004207c0`. |
+| 0x14 | attack/contact sfx[0] | Random pick when the creature hits a player in `creature_update_all`. |
+| 0x18 | attack/contact sfx[1] | Random pick when the creature hits a player in `creature_update_all`. |
+| 0x34 | anim rate | Multiplies animation step in `creature_update_all`. |
+| 0x38 | atlas base frame | Base frame index for creature animation strips (used in `creature_render_type`). |
+| 0x3c | corpse frame | Used by `fx_queue_render` to select the bodyset frame for corpse sprites. |
+| 0x40 | anim mirror flag | When bit `1` is set, the long strip mirrors frames `> 0x0f` in `creature_render_type`. |
+
+Known initial entries (from the reset/init routine that loads creature textures):
+
+| type_id | texture | anim rate | base frame | corpse frame | flags |
+| --- | --- | --- | --- | --- | --- |
+| `0` | `s_zombie_0047375c` | `1.2` | `0x20` | `0` | `0` |
+| `1` | `s_lizard_00473754` | `1.6` | `0x10` | `3` | `1` |
+| `2` | `s_alien_00473734` | `1.35` | `0x20` | `4` | `0` |
+| `3` | `s_spider_sp1_00473748` | `1.5` | `0x10` | `1` | `1` |
+| `4` | `s_spider_sp2_0047373c` | `1.5` | `0x10` | `2` | `1` |
+| `5` | `s_trooper_0047372c` | unknown | unknown | `7` | unknown |
+
 ## Spawn template ids (FUN_00430af0)
 
 `FUN_00430af0` uses `param_1` as a spawn template id. It assigns the creature
