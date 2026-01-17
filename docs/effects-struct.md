@@ -306,3 +306,11 @@ Notes:
 - Render is gated by `DAT_00480359` and binds `DAT_0048f7ec` (`particles.png`)
   with a fixed 4x atlas UV (`DAT_00491248/4c`), then draws each active entry
   with the per-entry rotation and RGBA.
+
+Common color overrides (callers mutate the RGBA fields after spawning):
+
+| Override | Fields | Notes |
+| --- | --- | --- |
+| dim spark | `color_r/g/b = 0.5`, `color_a = 0.25` | Used by projectile detonation sparks (`FUN_00420b90`). |
+| soft burst | `color_a = 0.37` | Used by radial burst loops (`FUN_00420b90`). |
+| mid alpha | `color_a = 0.7` | Used by periodic spark spawns (`FUN_00420b90`). |
