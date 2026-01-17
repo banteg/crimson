@@ -3,7 +3,7 @@
 This site tracks the file formats and asset pipeline we have verified from the
 decompiled Crimsonland v1.9.93 executable and game data.
 
-Overall naming coverage: 16.6% (295 / 1778 functions named or inferred).
+Overall naming coverage: 22.6% (404 / 1787 functions named or inferred).
 
 ## Quick start
 
@@ -36,6 +36,7 @@ Special handling during extraction:
 - [Creature struct](creature-struct.md) — Tracking
 - [Projectile struct](projectile-struct.md) — Tracking
 - [Effects pools](effects-struct.md) — Tracking
+- [UI elements](ui-elements.md) — Draft
 - [Perk ID map](perk-id-map.md) — Tracking
 - [Bonus ID map](bonus-id-map.md) — Tracking
 - [SFX ID map](sfx-id-map.md) — Tracking

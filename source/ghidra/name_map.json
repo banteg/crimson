@@ -618,6 +618,55 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004047c0",
+    "name": "demo_trial_overlay_render",
+    "signature": "void demo_trial_overlay_render(float *xy, float alpha)",
+    "comment": "renders the demo trial warning panel and remaining time message"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040b740",
+    "name": "demo_purchase_screen_update",
+    "signature": "void demo_purchase_screen_update(void)",
+    "comment": "demo upsell screen: feature list, purchase link, and exit handling"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00410d20",
+    "name": "quest_results_screen_update",
+    "signature": "void quest_results_screen_update(void)",
+    "comment": "quest/campaign results screen: final time, perk bonus, high score entry, and buttons"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004136b0",
+    "name": "player_update",
+    "signature": "void player_update(void)",
+    "comment": "per-player gameplay update: movement, firing, status timers, and effects"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00417b80",
+    "name": "terrain_generate",
+    "signature": "void terrain_generate(void *desc)",
+    "comment": "generates terrain texture into a render target using a level descriptor"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041a040",
+    "name": "ui_cursor_render",
+    "signature": "void ui_cursor_render(void)",
+    "comment": "renders the in-game cursor/crosshair sprites"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00446c40",
+    "name": "ui_element_render",
+    "signature": "void ui_element_render(void *element)",
+    "comment": "updates focus/click handling and renders a UI element"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00434220",
     "name": "quest_spawn_table_empty",
     "signature": "int quest_spawn_table_empty(void)",

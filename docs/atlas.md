@@ -99,6 +99,23 @@ The engine uses **two patterns**:
   - Uses **grid=8**, but rendered via `grim_set_sub_rect(8, 2, 1, frame)`.
   - This implies each weapon icon spans **2×1 cells** (wider than a single cell).
 
+### Projectile frames (projs.png)
+
+In `projectile_render`, the projectile `type_id` is stored as an int but shows
+up as float constants in the decompile (e.g. `2.66247e-44` = `0x13`).
+
+Known `projs.png` frame selections:
+
+| type_id | grid | frame | Notes |
+| --- | --- | --- | --- |
+| `0x13` | 2 | 0 | Draws a small glow/splash; size scales with life. |
+| `0x1d` | 4 | 3 | Beam/segment style when life is `0.4`. |
+| `0x19` | 4 | 6 | Beam/segment style when life is `0.4`. |
+| `0x15`, `0x16`, `0x17`, `0x2d` | 4 | 2 | Repeated along a vector to build beam/trail segments. |
+
+The same path also calls `grim_set_atlas_frame(2, …)` for these beam types, but
+the exact grid2 index is still unclear from the decompile.
+
 - Enemy sheets (`assets/crimson/game/zombie.png`, `assets/crimson/game/lizard.png`,
   `assets/crimson/game/alien.png`, `assets/crimson/game/spider_sp1.png`,
   `assets/crimson/game/spider_sp2.png`, `assets/crimson/game/trooper.png`)

@@ -61,6 +61,9 @@ nav = [
     { "Projectile struct" = "projectile-struct.md" },
     { "Effects pools" = "effects-struct.md" },
   ]},
+  { "UI" = [
+    { "UI elements" = "ui-elements.md" },
+  ]},
   { "Audio" = [
     { "SFX ID map" = "sfx-id-map.md" },
     { "SFX usage" = "sfx-usage.md" },

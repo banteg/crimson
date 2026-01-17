@@ -20,21 +20,21 @@ regen (from git history).
 - Thunks: 26
 - User-defined: 793
 - Decompiled: 792 (99.7% coverage)
-- Named/inferred: 94 (11.5%)
-- Typed signatures: 230 (28.1%)
+- Named/inferred: 186 (22.7%)
+- Typed signatures: 302 (36.9%)
 - External typed: 0 / 0
 - GDT hits (since previous regen): 1
-- Last regen: 2026-01-16
+- Last regen: 2026-01-17
 
 
 ### `grim.dll`
 
-- Total funcs: 959
-- Thunks: 40
-- User-defined: 919
-- Decompiled: 919 (100% coverage)
-- Named/inferred: 201 (21.0%)
-- Typed signatures: 232 (24.2%)
+- Total funcs: 968
+- Thunks: 41
+- User-defined: 927
+- Decompiled: 927 (100% coverage)
+- Named/inferred: 218 (22.5%)
+- Typed signatures: 287 (29.6%)
 - External typed: 0 / 0
 - GDT hits (since previous regen): 0
 - Last regen: 2026-01-16
@@ -42,15 +42,15 @@ regen (from git history).
 
 ### Total
 
-- Total funcs: 1778
-- Thunks: 66
-- User-defined: 1712
-- Decompiled: 1711 (99.9% coverage)
-- Named/inferred: 295 (16.6%)
-- Typed signatures: 462 (26.0%)
+- Total funcs: 1787
+- Thunks: 67
+- User-defined: 1720
+- Decompiled: 1719 (99.9% coverage)
+- Named/inferred: 404 (22.6%)
+- Typed signatures: 589 (33.0%)
 - External typed: 0 / 0
 - GDT hits (since previous regen): 1
-- Last regen: 2026-01-16
+- Last regen: 2026-01-17
 
 
 ## Formats and systems

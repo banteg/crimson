@@ -37,3 +37,9 @@ Related tables:
 - `DAT_004926e8` (offset `0x30`) acts like a shared damage pool for piercing
   projectiles: it is decremented on hit and, if still positive, passed into
   `FUN_004207c0` as the damage value before subtracting the target's health.
+
+## Rendering notes
+
+`projectile_render` uses `type_id` to select atlas frames in
+`assets/crimson/game/projs.png`. See [Sprite atlas cutting](atlas.md) for the
+current frame mapping table.
