@@ -42,10 +42,10 @@ Field map (medium confidence):
 | 0x4c | force-target flag | set when target is too near/far; snaps target position to player. |
 | 0x50 | target_x | derived from player/formation/linked enemy. |
 | 0x54 | target_y | derived from player/formation/linked enemy. |
-| 0x58 | contact damage | passed to `FUN_00425e50` when touching a player. |
-| 0x5c | move speed | per-type speed scalar used to compute velocity. |
-| 0x60 | attack cooldown | decremented each frame; gates projectile spawns. |
-| 0x64 | reward value (?) | derived from health/speed; reduced by perks. |
+| 0x58 | contact damage | Passed to `FUN_00425e50` on player contact; seeded as `size * 0.0952381` in `FUN_00407611`. |
+| 0x5c | move speed | Per-type speed scalar used to compute velocity; seeded to `0.9..` range in `FUN_00407611`. |
+| 0x60 | attack cooldown | Decremented each frame; gates projectile spawns. |
+| 0x64 | reward value | Seeded from health/contact/speed (`health * 0.4 + contact * 0.8 + speed * 5 + rand(10..19)`), then scaled by `0.8` in the spawner. |
 | 0x6c | type id | written from spawn param; indexes behavior tables. |
 | 0x70 | target player index | toggled based on distance; indexes player arrays. |
 | 0x7c | target offset x | used when AI mode links to another creature. |
