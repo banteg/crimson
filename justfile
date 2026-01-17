@@ -31,6 +31,9 @@ font-sample:
 docs-all-pages:
     uv run python scripts/gen_all_pages.py
 
+docs-map-progress:
+    uv run python scripts/update_map_progress_docs.py
+
 docs-build:
     uv run zensical build
 

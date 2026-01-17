@@ -53,6 +53,20 @@ regen (from git history).
 - Last regen: 2026-01-17
 
 
+## Ghidra map progress
+
+Counts come from `analysis/ghidra/maps/name_map.json` and
+`analysis/ghidra/maps/data_map.json`. Run
+`uv run python scripts/update_map_progress_docs.py` to refresh.
+
+<!-- map-progress:start -->
+| Map | Total entries | crimsonland.exe | grim.dll | With signatures | With comments | Duplicate names |
+| --- | --- | --- | --- | --- | --- | --- |
+| Name map | 314 | 186 | 128 | 284 | 314 | 0 |
+| Data map | 116 | 116 | 0 | n/a | 116 | 0 |
+<!-- map-progress:end -->
+
+
 ## Docs
 
 ### Formats and systems
