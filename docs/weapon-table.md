@@ -39,6 +39,12 @@ All offsets below are in **bytes**, relative to the pointer returned by
 
 ## Notes
 
+- Ammo class values (offset `-0x04`): `0` bullet (`ui_ui_indBullet.jaz`), `1` fire
+  (`ui_ui_indFire.jaz`), `2` rocket (`ui_ui_indRocket.jaz`), `>= 3` electric
+  (`ui_ui_indElectric.jaz`).
+- Flag bits (offset `0x68`): `0x1` spawn muzzle flash / shot burst effect
+  (`FUN_0042e120(0x12, ...)`), `0x4` use the smaller crosshair size, `0x8` hide
+  the crosshair entirely.
 - The same stride is used by projectile metadata lookups (`DAT_004d7a98`,
   `DAT_004d7a9c`) keyed by projectile type ids in `projectile_spawn` and
   `projectile_update`.
