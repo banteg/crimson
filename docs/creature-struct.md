@@ -61,6 +61,10 @@ Related notes:
 
 - See [Detangling notes](detangling.md) for helper naming and other pool context.
 - The pool is updated in `creature_update_all`; use that routine for new field discoveries.
+- On death, `creature_update_all` queues a rotated sprite via `fx_queue_add_rotated`
+  using the creature tint and size. The `effect_id` is usually the creature `type_id`,
+  but short-strip creatures (`flags & 0x4` without `0x40`) force `effect_id = 7`
+  (likely a generic corpse sprite).
 - Animation phase (`0x94`) is incremented by a per-type rate stored at
   `&DAT_0048275c + type_id * 0x44` and wraps at **31** for the primary strip or **15**
   for the short ping‑pong strip. The renderer then selects a frame index for the 8×8
