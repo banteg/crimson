@@ -93,7 +93,7 @@ struct Grim2DVtable {
     void (*submit_vertices_transform_color)(float *verts, int count, float *offset, float *matrix, float *color); // 0x134 (grim_submit_vertices_transform_color) *color is packed ARGB
     void (*draw_quad_points)(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3); // 0x138 (grim_draw_quad_points) uses current UV/color slots
     void (*draw_text_mono)(float x, float y, const char *text); // 0x13c (FUN_100092b0)
-    void (*draw_text_mono_fmt)(float x, float y, const char *fmt, ...); // 0x140 (grim_draw_text_mono_fmt)
+    void (*draw_text_mono_fmt)(float x, float y, const char *fmt, ...); // 0x140 (grim_draw_text_mono_fmt) printf wrapper
     void (*draw_text_small)(float x, float y, const char *text); // 0x144 (FUN_10009730)
     void (*draw_text_small_fmt)(float x, float y, const char *fmt, ...); // 0x148 (FUN_10009980)
     int (*measure_text_width)(const char *text); // 0x14c (FUN_100096c0, small font)
