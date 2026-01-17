@@ -7,7 +7,7 @@ PROGRESS_FILE="${ROOT_DIR}/plan_progress.log"
 
 CODEX_BIN=${CODEX_BIN:-codex}
 CODEX_SUBCMD=${CODEX_SUBCMD:-exec}
-CODEX_ARGS=${CODEX_ARGS:---single-turn}
+CODEX_ARGS=${CODEX_ARGS:-}
 
 read -r -a CODEX_ARGS_ARR <<< "${CODEX_ARGS}"
 
