@@ -69,7 +69,7 @@ Notes:
 | 50 | DAT_004c2c20 | Angry Reloader | You hate it when you run out of shots. You HATE HATE HATE reloading your gun. Lucky for you, and strangely enough, your hate materializes as Mighty Balls of Fire. Or more like Quite Decent Balls of Fire, but it's still kinda neat, huh? |  |  |
 | 51 | DAT_004c2c0c | Ion Gun Master | You're good with ion weapons. You're so good that not only your shots do slightly more damage but your ion blast radius is also increased. |  |  |
 | 52 | DAT_004c2c10 | Stationary Reloader | It's incredibly hard to reload your piece while moving around, you've noticed. In fact, realizing that, when you don't move a (leg) muscle you can reload the gun THREE TIMES FASTER! |  |  |
-| 53 | DAT_004c2c24 | Man Bomb | You have the ability to go boom for you are the MAN BOMB. Going boom requires a lot of concentration and standing completely still for a few seconds. |  |  |
+| 53 | DAT_004c2c24 | Man Bomb | You have the ability to go boom for you are the MAN BOMB. Going boom requires a lot of concentration and standing completely still for a few seconds. |  | Burst spawns projectile types `0x15/0x16`. |
 | 54 | DAT_004c2c2c | Fire Caugh | You have a fireball stuck in your throat. Repeatedly. Mind your manners. |  | Uses projectile type `0x2d` (see Fire Bullets in the atlas notes). |
 | 55 | DAT_004c2c28 | Living Fortress | It comes a time in each man's life when you'd just rather not move anymore. Being living fortress not moving comes with extra benefits as well. You do the more damage the longer you stand still. |  |  |
 | 56 | DAT_004c2c30 | Tough Reloader | Damage received during reloading a weapon is halved. |  |  |

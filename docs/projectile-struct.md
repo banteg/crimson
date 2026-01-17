@@ -44,6 +44,17 @@ Spawn notes:
   owner is a player (`owner_id == -100 / -1 / -2 / -3`), `projectile_spawn`
   forces `type_id` to `0x2d` regardless of the requested type.
 
+Known type_id sources (partial):
+
+| type_id | Sources | Notes |
+| --- | --- | --- |
+| `0x15` | Ion Minigun weapon (id `0x15`); Man Bomb perk (id `53`); Shock Chain bonus (id `7`) | Beam/chain segment types. |
+| `0x16` | Ion Cannon weapon (id `0x16`); Man Bomb perk (id `53`) | Beam/chain segment type. |
+| `0x2d` | Fire Bullets bonus (id `14`); Fire Cough perk (id `54`) | Forced on player shots when Fire Bullets is active. |
+| `0x9` | Fireblast bonus (id `8`); Multi-shot spread path in `player_update` | Radial burst in `bonus_apply`. |
+| `0x29` | Bubblegun weapon (id `0x29`) | Direct weapon spawn. |
+| `0x2b` | Grim Weapon (id `0x2b`) | Direct weapon spawn. |
+
 ## Rendering notes
 
 `projectile_render` uses `type_id` to select atlas frames in
