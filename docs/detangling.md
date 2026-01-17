@@ -190,6 +190,15 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
     selection runs too long.
 - `FUN_0042fc30` -> `perks_rebuild_available`
   - Evidence: resets `DAT_004c2c4c` flags and re-enables base/unlocked perks.
+  - Table layout (stride `0x14`): `name` @ `DAT_004c2c40`, `desc` @ `DAT_004c2c44`,
+    `flags` @ `DAT_004c2c48`, `available` @ `DAT_004c2c4c`, `prereq` @ `DAT_004c2c50`.
+  - Flag bits (inferred):
+    - `0x1` allows perks when `_DAT_00480360 == 3`.
+    - `0x2` allows perks when `_DAT_0048035c == 2` (two-player mode).
+    - `0x4` marks stackable perks (random selection accepts them even if already taken).
+  - Prereq field is checked via `game_var_get` and gates perks like Toxic Avenger (requires
+    Veins of Poison), Ninja (requires Dodger), Perk Master (requires Perk Expert), and
+    Greater Regeneration (requires Regeneration).
 
 ## Next naming targets
 
