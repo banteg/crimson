@@ -382,6 +382,19 @@ See [Creature struct](creature-struct.md) for the expanded field map and cross-l
 See [Projectile struct](projectile-struct.md) for the expanded field map and notes.
 
 
+### Effects pools (medium confidence)
+
+- `FUN_00420130` -> `fx_spawn_particle`
+  - Evidence: allocates a `0x38`-byte entry in `DAT_00493eb8`, sets position, angle, and velocity
+    (speed ~90), and returns the slot index.
+- `FUN_00420240` -> `fx_spawn_particle_slow`
+  - Evidence: same pool as `fx_spawn_particle`, but speed ~30 and sets style id `8`.
+- `FUN_00420360` -> `fx_spawn_secondary_projectile`
+  - Evidence: allocates a `0x2c`-byte entry in `DAT_00495ad8` with type id, velocity, and optional
+    nearest-creature target when `type_id == 2`.
+- Layouts and fields are tracked in [Effects pools](effects-struct.md).
+
+
 ### Bonus / pickup pool (medium confidence)
 
 - `FUN_0041f580` -> `bonus_alloc_slot`

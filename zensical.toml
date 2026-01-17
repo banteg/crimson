@@ -50,6 +50,7 @@ nav = [
   { "Detangling notes" = "detangling.md" },
   { "Creature struct" = "creature-struct.md" },
   { "Projectile struct" = "projectile-struct.md" },
+  { "Effects pools" = "effects-struct.md" },
   { "Perk ID map" = "perk-id-map.md" },
   { "Bonus ID map" = "bonus-id-map.md" },
   { "SFX ID map" = "sfx-id-map.md" },

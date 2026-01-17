@@ -35,6 +35,7 @@ Special handling during extraction:
 - [Progress metrics](metrics.md) — Tracking
 - [Creature struct](creature-struct.md) — Tracking
 - [Projectile struct](projectile-struct.md) — Tracking
+- [Effects pools](effects-struct.md) — Tracking
 - [Bonus ID map](bonus-id-map.md) — Tracking
 - [Detangling notes](detangling.md) — In progress
 - [Entrypoint trace](entrypoint.md) — In progress

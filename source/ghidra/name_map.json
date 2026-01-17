@@ -324,6 +324,27 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00420130",
+    "name": "fx_spawn_particle",
+    "signature": "int fx_spawn_particle(float *pos, float angle, void *unused, float intensity)",
+    "comment": "spawns a fast particle entry in DAT_00493eb8"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00420240",
+    "name": "fx_spawn_particle_slow",
+    "signature": "int fx_spawn_particle_slow(float *pos, float angle)",
+    "comment": "spawns a slow particle entry in DAT_00493eb8"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00420360",
+    "name": "fx_spawn_secondary_projectile",
+    "signature": "int fx_spawn_secondary_projectile(float *pos, float angle, int type_id)",
+    "comment": "spawns a typed entry in DAT_00495ad8 (secondary projectile pool)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00420440",
     "name": "projectile_spawn",
     "signature": "int projectile_spawn(float *pos, float angle, int type_id, int owner_id)",
