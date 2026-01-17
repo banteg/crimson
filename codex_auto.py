@@ -116,7 +116,7 @@ def get_response(output: str, helper_model: str, helper_reasoning: str) -> tuple
 {output}
 ---
 
-If it's asking a question or waiting for direction, give a brief answer.
+If it's asking a question or waiting for direction, give a brief answer (like "yes", keep exploring, go deeper).
 If it seems done or stuck, say "STOP".
 
 Reply with just your response, nothing else."""
