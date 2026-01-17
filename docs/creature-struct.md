@@ -53,7 +53,7 @@ Field map (medium confidence):
 | 0x84 | orbit angle | combined with heading for orbiting AI modes. |
 | 0x88 | orbit radius/timer | used by orbiting and tethered AI modes. |
 | 0x78 | link index / state timer | used as linked creature index in AI modes; also used as a timer when the `0x80` flag is set. |
-| 0x8c | flags | bit tests (`0x4/0x8/0x40/0x80/0x100/0x400`) gate behaviors. |
+| 0x8c | flags | bit tests (`0x4/0x8/0x10/0x40/0x80/0x100/0x400`) gate behaviors. |
 | 0x90 | AI mode | selects movement pattern (cases 0/1/3/4/5/6/7/8). |
 | 0x94 | anim phase | accumulates to drive sprite timing; wraps at 31 or 15 depending on flags. |
 
@@ -65,3 +65,6 @@ Related notes:
   `&DAT_0048275c + type_id * 0x44` and wraps at **31** for the primary strip or **15**
   for the short ping‑pong strip. The renderer then selects a frame index for the 8×8
   atlas (see `FUN_00418b60`).
+- Flags `0x4`, `0x10`, and `0x40` influence sprite selection in `FUN_00418b60`:
+  `0x4` selects the short 8‑frame ping‑pong strip, `0x40` forces the long strip
+  even when `0x4` is set, and `0x10` offsets the long strip by `+0x20`.

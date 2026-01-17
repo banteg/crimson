@@ -197,3 +197,29 @@ Examples from the type init table (`FUN_00412dc0`):
 
 The animation phase itself lives at creature offset `0x94` and is advanced in
 `FUN_00426220` using a per‑type rate (`&DAT_0048275c + type * 0x44`).
+
+### Enemy type table (DAT_00482728)
+
+The render helper indexes a 0x44‑byte type table starting at `DAT_00482728`.
+Known entries from `FUN_00412dc0`:
+
+| Type id | Texture | Base (short strip) | Anim rate (hex) | Mirror flag | Notes |
+| --- | --- | --- | --- | --- | --- |
+| 0 | `zombie.png` | `0x20` | `0x3f99999a` | 0 | uses 32‑frame strip by default |
+| 1 | `lizard.png` | `0x10` | `0x3fcccccd` | 1 | mirror flag set (`DAT_004827ac = 1`) |
+| 2 | `alien.png` | `0x20` | `0x3faccccd` | 0 | alt strip via creature flag `0x10` |
+| 3 | `spider_sp1.png` | `0x10` | `0x3fc00000` | 1 | mirror flag set (`DAT_00482834 = 1`) |
+| 4 | `spider_sp2.png` | `0x10` | `0x3fc00000` | 1 | mirror flag set (`DAT_00482878 = 1`) |
+| 5 | `trooper.png` | unknown | unknown | unknown | not initialized in `FUN_00412dc0` |
+
+### Creature flags that select animation strips
+
+Creature flags are written in the spawn helper `FUN_00430af0` and control which
+strip is used in `FUN_00418b60`.
+
+Examples:
+
+- `param_1 == 0x3a` sets `DAT_0049bfc4 = 0x10` (forces the `+0x20` strip).
+- Many IDs (e.g. `0x7`, `0x8`, `0x9`, `0x0b`) set `DAT_0049bfc4 = 0x4` (short strip).
+- `param_1 == 0` sets `DAT_0049bfc4 = 0x44`, which still uses the long strip
+  because bit `0x40` overrides the short‑strip branch.
