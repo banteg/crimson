@@ -25,7 +25,7 @@ struct Grim2DVtable {
     void (*get_config_var)(uint32_t *out, int id); // 0x24 (grim_get_config_var)
     const char *(*get_error_text)(void); // 0x28 (grim_get_error_text)
     void (*clear_color)(float r, float g, float b, float a); // 0x2c (grim_clear_color)
-    int (*set_render_target)(int target_index); // 0x30 (grim_set_render_target)
+    int (*set_render_target)(int target_index); // 0x30 (grim_set_render_target) -1 restores backbuffer
     int (*get_time_ms)(void); // 0x34 (grim_get_time_ms)
     void (*set_time_ms)(int ms); // 0x38 (grim_set_time_ms)
     float (*get_frame_dt)(void); // 0x3c (grim_get_frame_dt)
@@ -46,7 +46,7 @@ struct Grim2DVtable {
     float (*get_mouse_dx_indexed)(int index); // 0x78 (grim_get_mouse_dx_indexed)
     float (*get_mouse_dy_indexed)(int index); // 0x7c (grim_get_mouse_dy_indexed)
     bool (*is_key_active)(int key); // 0x80 (grim_is_key_active)
-    float (*get_config_float)(int id); // 0x84 (grim_get_config_float)
+    float (*get_config_float)(int id); // 0x84 (grim_get_config_float) ids 0x13f..0x155 config, 0x15f mouse dx
     float (*get_slot_float)(int index); // 0x88 (grim_get_slot_float)
     int (*get_slot_int)(int index); // 0x8c (grim_get_slot_int)
     void (*set_slot_float)(int index, float value); // 0x90 (grim_set_slot_float)
