@@ -64,6 +64,14 @@ Global counters:
 - `creature_active_count` is recomputed each `creature_update_all` pass.
 - `creature_update_tick` is a global tick counter used to throttle some target updates.
 
+Spawn slots (used by `creature_update_all` when `creature_link_index` selects a slot):
+
+- `creature_spawn_slot_count` — current spawn count.
+- `creature_spawn_slot_limit` — max spawns before the slot stops.
+- `creature_spawn_slot_interval` — seconds between spawns.
+- `creature_spawn_slot_timer` — countdown timer to the next spawn.
+- `creature_spawn_slot_template` — spawn template id passed to `creature_spawn_template`.
+
 ## AI mode behaviors (DAT_0049bfc8 / offset 0x90)
 
 The AI mode selects how the target position (`target_x/target_y`) is computed

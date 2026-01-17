@@ -189,6 +189,36 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00484fd4",
+      "name": "creature_spawn_slot_count",
+      "comment": "Spawn slot current count (stride 0x18 bytes; indexed by creature_link_index)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00484fd8",
+      "name": "creature_spawn_slot_limit",
+      "comment": "Spawn slot spawn limit (creature_spawn_slot_count + 0x04)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00484fdc",
+      "name": "creature_spawn_slot_interval",
+      "comment": "Spawn slot interval seconds (creature_spawn_slot_count + 0x08)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00484fe0",
+      "name": "creature_spawn_slot_timer",
+      "comment": "Spawn slot countdown timer (creature_spawn_slot_count + 0x0c)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00484fe4",
+      "name": "creature_spawn_slot_template",
+      "comment": "Spawn slot template id (creature_spawn_slot_count + 0x10)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00486fb4",
       "name": "creature_spawned_count",
       "comment": "Total creatures spawned (incremented in creature_alloc_slot)."
