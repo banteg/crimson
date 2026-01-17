@@ -6,6 +6,10 @@ plus the current grim.dll entry signature and address from
 
 `source/decompiled/grim2d_vtable_map.json`.
 
+Ghidra signatures include the implicit `this` pointer on vtable calls; the
+Suggested signature lines omit it and add const qualifiers where evidence
+supports them.
+
 ## 0x0 — grim_release @ 0x10005c80
 
 - Ghidra signature: `void grim_release(void)`
