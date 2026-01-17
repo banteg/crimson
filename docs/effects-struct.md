@@ -226,6 +226,23 @@ Entry size: `0x08` bytes. Indexed by `effect_id`.
 | `0x11` | `FUN_0042f6c0` | Extra burst when difficulty is high. |
 | `0x12` | `player_update` (`FUN_004136b0`) | Muzzle flash path when weapon flag `0x1` is set. |
 
+### Effect template helpers (partial)
+
+These helpers primarily configure `DAT_004ab1bc` and then call `effect_spawn`.
+
+| Function | Effect ids | Notes |
+| --- | --- | --- |
+| `FUN_0042eb10` | `7` | Spawns two bursts with randomized direction/size; used in projectile/chain effects. |
+| `FUN_0042ec80` | `8..10` | Picks a random variant (`iVar3 % 3 + 8`); used by freeze/shatter logic. |
+| `FUN_0042ee00` | `0xe`, `8..10` | Four-way burst (`0xe`) plus additional `FUN_0042ec80` calls. |
+| `FUN_0042ef60` | `0` | Generic burst loop with randomized velocity. |
+| `FUN_0042f080` | `1`, `0` | Ring + burst combo used for power-up visuals. |
+| `FUN_0042f270` | `1` | Single ring burst. |
+| `FUN_0042f330` | `1` | Single ring burst with different color/alpha defaults. |
+| `FUN_0042f3f0` | `0` | Radial scatter of bursts (count parameter). |
+| `FUN_0042f540` | `0` | Scaled burst loop used for explosions. |
+| `FUN_0042f6c0` | `1`, `0x11`, `0`, `0xc` | Large multi-stage explosion effect. |
+
 
 ## Sprite effect pool (`DAT_00496820`)
 
