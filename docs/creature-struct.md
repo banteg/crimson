@@ -61,6 +61,8 @@ Global counters:
 
 - `creature_spawned_count` increments on each `creature_alloc_slot` call (total spawns).
 - `creature_kill_count` increments on creature death paths (used by the HUD progress ratio).
+- `creature_active_count` is recomputed each `creature_update_all` pass.
+- `creature_update_tick` is a global tick counter used to throttle some target updates.
 
 ## AI mode behaviors (DAT_0049bfc8 / offset 0x90)
 

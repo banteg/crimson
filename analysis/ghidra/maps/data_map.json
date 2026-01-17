@@ -195,6 +195,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00486fcc",
+      "name": "creature_active_count",
+      "comment": "Active creature count (set each creature_update_all pass)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00486fbc",
       "name": "shock_chain_links_left",
       "comment": "Shock Chain link counter; decremented on each chained hit."
@@ -276,6 +282,12 @@
       "address": "0x00487074",
       "name": "creature_kill_count",
       "comment": "Total creature kills (incremented on creature death paths)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004aaf58",
+      "name": "creature_update_tick",
+      "comment": "Creature update tick counter used to throttle target recalculation."
     },
     {
       "program": "crimsonland.exe",
