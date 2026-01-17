@@ -48,6 +48,9 @@ We also generate an evidence appendix with callsite snippets:
 - `grim_convert_vertex_space` (`0x10016944`) remaps vec4 coordinates between three space
   modes used by the batcher. Modes 1/2/3 control whether xyz and w are in `[-1, 1]`
   or `[0, 1]`; see the evidence appendix for inferred mappings.
+- `grim_pixel_format_init` (`0x100170f9`) initializes format descriptors and palette
+  expansion; it also stores the coordinate mode later compared against the current
+  mode before converting vertices.
 
 
 ## Top offsets by callsite count

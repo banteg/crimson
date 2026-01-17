@@ -1444,5 +1444,12 @@
     "name": "grim_convert_vertex_space",
     "signature": "float *grim_convert_vertex_space(void *this, float *src)",
     "comment": "converts vec4 coordinates between space modes (1/2/3), writes to this+0x104c, returns the output buffer"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100170f9",
+    "name": "grim_pixel_format_init",
+    "signature": "void *grim_pixel_format_init(void *this, unsigned int *desc, unsigned int bits_per_pixel, unsigned int coord_mode)",
+    "comment": "initializes format descriptor, bytes-per-pixel, palette expansion, and coordinate mode"
   }
 ]
