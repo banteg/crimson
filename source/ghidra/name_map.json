@@ -318,6 +318,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00412960",
+    "name": "game_mode_label",
+    "signature": "char * game_mode_label(void)",
+    "comment": "returns a display label for the current game mode"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0042a9f0",
     "name": "init_audio_and_terrain",
     "signature": "void init_audio_and_terrain(void)",

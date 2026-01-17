@@ -220,6 +220,8 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
 
 - `_DAT_00480360` holds the current game mode. See `docs/game-mode-map.md` for the observed
   values and evidence.
+- `FUN_00412960` -> `game_mode_label`
+  - Evidence: returns a label string based on `_DAT_00480360` (Survival, Quests, Typ-o-Shooter, etc.).
 
 ## Next naming targets
 
