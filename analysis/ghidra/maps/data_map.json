@@ -756,6 +756,24 @@
       "address": "0x004d7a2c",
       "name": "weapon_table",
       "comment": "Weapon table base (stride 0x7c bytes)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004d7a98",
+      "name": "weapon_projectile_meta",
+      "comment": "Weapon table projectile meta value (weapon_table + 0x6c, stride 0x7c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004d7a9c",
+      "name": "weapon_projectile_damage_scale",
+      "comment": "Weapon table projectile damage scale (weapon_table + 0x70, stride 0x7c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004d7aa0",
+      "name": "weapon_projectile_pellet_count",
+      "comment": "Weapon table projectile pellet count (weapon_table + 0x74, stride 0x7c)"
     }
   ]
 }

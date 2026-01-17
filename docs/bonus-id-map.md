@@ -25,4 +25,4 @@ Table fields:
 | 11 | Freeze | Monsters are frozen. | 8 | 5 | `bonus_apply` updates `_DAT_00487018`. |
 | 12 | MediKit | You regain some of your health. | 14 | 10 | `bonus_apply` restores health in 10-point increments. |
 | 13 | Speed | Your movement speed increases for a while. | 9 | 8 | `bonus_apply` updates `DAT_00490bc4`. |
-| 14 | Fire Bullets | For few seconds -- make them count. | 11 | 4 | `bonus_apply` updates `DAT_00490bcc`. While active, `projectile_spawn` overrides player-owned projectiles to type `0x2d` (pellet count from `DAT_004d7aa0[weapon_id]`). |
+| 14 | Fire Bullets | For few seconds -- make them count. | 11 | 4 | `bonus_apply` updates `DAT_00490bcc`. While active, `projectile_spawn` overrides player-owned projectiles to type `0x2d` (pellet count from `weapon_projectile_pellet_count[weapon_id]`). |

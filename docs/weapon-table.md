@@ -35,9 +35,9 @@ All offsets below are in **bytes**, relative to the pointer returned by
 | `0x60` | int | Reload / equip SFX id | Played when a reload starts and when swapping to the weapon. |
 | `0x64` | int | HUD icon id | Passed into the HUD sprite selection (shifted by `<< 1`). |
 | `0x68` | byte | Flags | Bit `0x1` triggers a muzzle flash / effect burst; bits `0x4/0x8` affect crosshair rendering. |
-| `0x6c` | float | Projectile meta value | Copied into projectile entries on spawn; no direct reads yet. |
-| `0x70` | float | Damage scale | Used in projectile hit damage computation (`DAT_004d7a9c`). |
-| `0x74` | int | Pellet count | Number of pellets spawned in the spread fire path. |
+| `0x6c` | float | Projectile meta value | Copied into projectile entries on spawn (`weapon_projectile_meta`). |
+| `0x70` | float | Damage scale | Used in projectile hit damage computation (`weapon_projectile_damage_scale`). |
+| `0x74` | int | Pellet count | Number of pellets spawned in the spread fire path (`weapon_projectile_pellet_count`). |
 
 ## Notes
 
@@ -47,7 +47,7 @@ All offsets below are in **bytes**, relative to the pointer returned by
 - Flag bits (offset `0x68`): `0x1` spawn muzzle flash / shot burst effect
   (`FUN_0042e120(0x12, ...)`), `0x4` use the smaller crosshair size, `0x8` hide
   the crosshair entirely.
-- Pellet count (offset `0x74`, `DAT_004d7aa0`) is used by the Fire Bullets bonus
+- Pellet count (offset `0x74`, `weapon_projectile_pellet_count`) is used by the Fire Bullets bonus
   to spawn multiple `0x2d` pellets per shot.
 - Several weapons bypass the main projectile pool and use particle or secondary
   projectile pools instead (Plasma Rifle `0x8`, HR Flamer `0xf`, Mini-Rocket
@@ -59,8 +59,8 @@ All offsets below are in **bytes**, relative to the pointer returned by
   `DAT_00490b8c` (weapon id), `DAT_00490b90` (clip size), `DAT_00490b94` (reload
   active), `DAT_00490b98` (current ammo), `DAT_00490b9c` (reload timer),
   `DAT_00490ba0` (shot cooldown), and `DAT_00490ba4` (reload timer max).
-- The same stride is used by projectile metadata lookups (`DAT_004d7a98`,
-  `DAT_004d7a9c`) keyed by projectile type ids in `projectile_spawn` and
+- The same stride is used by projectile metadata lookups (`weapon_projectile_meta`,
+  `weapon_projectile_damage_scale`) keyed by projectile type ids in `projectile_spawn` and
   `projectile_update`.
 - Many fields are only written in `FUN_004519b0`; only a subset are referenced
   by symbol elsewhere (reload/spread/sfx/flags/damage).

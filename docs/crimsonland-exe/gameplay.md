@@ -90,7 +90,7 @@ shot cooldown (`DAT_00490b84`) at 1.5x speed.
 
 - **Fire Bullets** (bonus id 14): while `DAT_00490bcc > 0`, `projectile_spawn`
   forces player-owned projectiles to type `0x2d` and uses the pellet count from
-  the weapon table (`DAT_004d7aa0[weapon_id]`).
+  the weapon table (`weapon_projectile_pellet_count[weapon_id]`).
 
 See the data tables for concrete values:
 

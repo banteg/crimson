@@ -26,15 +26,15 @@ Notes:
 | 0x2c | speed_scale | Multiplier applied to movement step in `projectile_update`. |
 | 0x30 | damage pool / pierce budget | Seeded to `1.0` for most types; special cases set `300` (type `6`), `240` (type `0x2d`), or `50` (type `0x19`). Decremented on hit and used as the damage parameter for multi-hit projectiles. |
 | 0x34 | hit_radius | Passed into `creature_find_in_radius` and `creatures_apply_radius_damage`. Set to `3.0` for type `0x16`, `5.0` for type `0x15`, and `10.0` for type `0x17/0x1c` (default `1.0`). |
-| 0x38 | base_damage / weapon meta | Copied from `DAT_004d7a98[type_id]`; no direct reads observed yet. |
+| 0x38 | base_damage / weapon meta | Copied from `weapon_projectile_meta[type_id]`; no direct reads observed yet. |
 | 0x3c | owner_id | Stored on spawn; used to skip the shooter in hit tests. |
 
 Related tables:
 
 - `DAT_004d7a28` is consulted during `projectile_update` to gate one of the hit
   effect paths (value `4` skips it).
-- `DAT_004d7a9c` is used as the damage scale for each `type_id`.
-- `DAT_004d7a98` is copied into the projectile entry on spawn and shares the
+- `weapon_projectile_damage_scale` is used as the damage scale for each `type_id`.
+- `weapon_projectile_meta` is copied into the projectile entry on spawn and shares the
   same stride as the weapon table.
 - `projectile_pool + 0x30` (`DAT_004926e8`) acts like a shared damage pool for
   piercing projectiles: it is decremented on hit and, if still positive, passed
