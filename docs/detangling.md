@@ -275,12 +275,30 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
       `DAT_00486fe0 = -1000`.
     - Stage 3: waits for input in `DAT_00490bec` key slots, spawns arrow markers
       (`FUN_00430af0`), then sets `DAT_00486fe0 = -1000`.
-    - Stage 4: waits for `FUN_00428210()` to fire, spawns arrow markers, sets `DAT_00486fdc = 1000`,
+    - Stage 4: waits for `creatures_none_active()`, spawns arrow markers, sets `DAT_00486fdc = 1000`,
       then sets `DAT_00486fe0 = -1000`.
-    - Stage 5: increments `DAT_004808a8` on repeated `FUN_00428210()` events, spawns markers/bonuses,
+    - Stage 5: increments `DAT_004808a8` on repeated `creatures_none_active()` events, spawns markers/bonuses,
       and after 8 iterations sets `DAT_0049095c = 3000` and `DAT_00486fe0 = -1000`.
     - Stage 6: waits for `DAT_00486fac < 1`, spawns markers, then sets `DAT_00486fe0 = -1000`.
-    - Stage 7: waits for `FUN_00428210()` with no active bonus slots, then sets `DAT_00486fe0 = -1000`.
+    - Stage 7: waits for `creatures_none_active()` with no active bonus slots, then sets `DAT_00486fe0 = -1000`.
+  - Stage text table (array indexed by `DAT_00486fd8`, base is `local_38`):
+    | Stage | Text |
+    | --- | --- |
+    | 0 | This is the nuke powerup, picking it up causes a huge\nexposion harming all monsters nearby! |
+    | 1 | Reflex Boost powerup slows down time giving you a chance to react better |
+    | 2 | (empty string, `DAT_00472718`) |
+    | 3 | (empty string, `DAT_00472718`) |
+    | 4 | In this tutorial you'll learn how to play Crimsonland |
+    | 5 | First learn to move by pushing the arrow keys. |
+    | 6 | Now pick up the bonuses by walking over them |
+    | 7 | Now learn to shoot and move at the same time.\nClick the left Mouse button to shoot. |
+    | 8 | Now, move the mouse to aim at the monsters |
+  - Unused strings in the same stack block: indices 9-12 map to perk/tutorial lines
+    ("It will help you to move and shoot...", Perks intro, Perks description, "Great! Now you are ready to start"),
+    and the speed/weapon/x2 powerup strings are assigned to `local_44/local_40/local_3c` but not indexed by `DAT_00486fd8`.
+  - Helper: `FUN_00428210` -> `creatures_none_active`
+    - Evidence: scans the creature table at `DAT_0049bf38` for any active entries, sets `DAT_0048700c`,
+      and returns low byte `1` only when the table is empty.
   - Stage index wraps to 0 when `DAT_00486fd8` reaches 9; counters are initialized in `FUN_00412dc0`
     (`DAT_00486fd8 = -1`, `DAT_00486fe0 = -1000`) and reset by `tutorial_prompt_dialog`.
 

@@ -616,6 +616,12 @@
     "comment": "drives tutorial stage timing, messages, and scripted spawns"
   },
   {
+    "program": "crimsonland.exe",
+    "address": "0x00428210",
+    "name": "creatures_none_active",
+    "comment": "returns low byte 1 when no active creature entries exist (0 otherwise); sets DAT_0048700c"
+  },
+  {
     "program": "grim.dll",
     "address": "0x100028d0",
     "name": "grim_backup_textures",
