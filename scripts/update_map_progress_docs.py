@@ -93,9 +93,8 @@ def main() -> int:
 
     index_path = args.index
     index_line = (
-        "Data map coverage (decompiled): "
-        f"{map_progress.format_percent(total_cov.coverage_pct)} ({total_cov.labeled_in_decompiled} / {total_cov.total_symbols} symbols; "
-        f"crimsonland.exe {map_progress.format_percent(crimson_cov.coverage_pct)}, grim.dll {map_progress.format_percent(grim_cov.coverage_pct)})."
+        "Data map coverage: "
+        f"{map_progress.format_percent(total_cov.coverage_pct)} ({total_cov.labeled_in_decompiled} / {total_cov.total_symbols} symbols)"
     )
     index_text = replace_block(
         index_path.read_text(encoding="utf-8"),

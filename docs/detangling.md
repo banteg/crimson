@@ -176,6 +176,18 @@ Key info overlay (`FUN_00405160`) shows the first five entries per player from t
 blob at `DAT_00480510` (stride 5: Up/Down/Left/Right/Fire), which matches the active runtime
 binds copied from `DAT_00480540` into `DAT_00490bdc..DAT_00490bec`.
 
+### Analog axis bindings (per-player, stride `0xd8`)
+
+These bindings are read via `grim_get_config_float` (`+0x84`) and map to the
+analog control schemes selected in the per-player mode flags:
+
+| Address | Symbol | Scheme | Notes |
+| --- | --- | --- | --- |
+| `DAT_00490c08` | `player_axis_move_x` | movement scheme `DAT_00480364 == 3` | Used with `player_axis_move_y` to drive movement vectors. |
+| `DAT_00490c0c` | `player_axis_move_y` | movement scheme `DAT_00480364 == 3` | Paired with `player_axis_move_x`. |
+| `DAT_00490c00` | `player_axis_aim_x` | aim scheme `DAT_0048038c == 4` | Used to derive aim vectors for stick/axis aiming. |
+| `DAT_00490c04` | `player_axis_aim_y` | aim scheme `DAT_0048038c == 4` | Paired with `player_axis_aim_x`. |
+
 Config edit path status:
 - No in-game rebind writes to `DAT_00480540` found in the decompile.
 - `config_load_presets` reads the 0x480‑byte config blob from disk into `DAT_00480348`

@@ -69,6 +69,13 @@ High-confidence fields (partial):
 - **Low-health warning:** `player_low_health_timer` is reset when HP dips below 20 and is used to
   drive warning effects/SFX while it counts down.
 
+## Control schemes (summary)
+
+- Movement scheme `DAT_00480364 == 3` reads analog inputs from
+  `player_axis_move_x` / `player_axis_move_y`.
+- Aim scheme `DAT_0048038c == 4` reads analog inputs from
+  `player_axis_aim_x` / `player_axis_aim_y`.
+
 Related docs:
 
 - [Gameplay glue](crimsonland-exe/gameplay.md)
