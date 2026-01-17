@@ -255,6 +255,60 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x004912bc",
+      "name": "fx_queue_rotation",
+      "comment": "FX queue rotation (fx_queue + 0x04)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004912c0",
+      "name": "fx_queue_pos_x",
+      "comment": "FX queue position X (fx_queue + 0x08)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004912c4",
+      "name": "fx_queue_pos_y",
+      "comment": "FX queue position Y (fx_queue + 0x0c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004912c8",
+      "name": "fx_queue_height",
+      "comment": "FX queue height (fx_queue + 0x10)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004912cc",
+      "name": "fx_queue_width",
+      "comment": "FX queue width (fx_queue + 0x14)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004912d0",
+      "name": "fx_queue_color_r",
+      "comment": "FX queue color R (fx_queue + 0x18)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004912d4",
+      "name": "fx_queue_color_g",
+      "comment": "FX queue color G (fx_queue + 0x1c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004912d8",
+      "name": "fx_queue_color_b",
+      "comment": "FX queue color B (fx_queue + 0x20)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004912dc",
+      "name": "fx_queue_color_a",
+      "comment": "FX queue color A (fx_queue + 0x24)"
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004926b8",
       "name": "projectile_pool",
       "comment": "Projectile pool base (0x60 entries, stride 0x40)"
@@ -357,15 +411,207 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00493ebc",
+      "name": "particle_pos_x",
+      "comment": "Particle position X (particle_pool + 0x04)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00493ec0",
+      "name": "particle_pos_y",
+      "comment": "Particle position Y (particle_pool + 0x08)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00493ec4",
+      "name": "particle_vel_x",
+      "comment": "Particle velocity X (particle_pool + 0x0c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00493ec8",
+      "name": "particle_vel_y",
+      "comment": "Particle velocity Y (particle_pool + 0x10)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00493ecc",
+      "name": "particle_scale_x",
+      "comment": "Particle scale X (particle_pool + 0x14)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00493ed0",
+      "name": "particle_scale_y",
+      "comment": "Particle scale Y (particle_pool + 0x18)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00493ed4",
+      "name": "particle_scale_z",
+      "comment": "Particle scale Z (particle_pool + 0x1c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00493ed8",
+      "name": "particle_age",
+      "comment": "Particle age/timer (particle_pool + 0x20)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00493edc",
+      "name": "particle_intensity",
+      "comment": "Particle intensity (particle_pool + 0x24)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00493ee0",
+      "name": "particle_angle",
+      "comment": "Particle angle (particle_pool + 0x28)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00493ee4",
+      "name": "particle_spin",
+      "comment": "Particle spin (particle_pool + 0x2c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00493ee8",
+      "name": "particle_style_id",
+      "comment": "Particle style id (particle_pool + 0x30)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00493eec",
+      "name": "particle_target_id",
+      "comment": "Particle target id (particle_pool + 0x34)"
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00495ad8",
       "name": "secondary_projectile_pool",
       "comment": "Secondary projectile pool base (0x40 entries, stride 0x2c)"
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00495adc",
+      "name": "secondary_proj_angle",
+      "comment": "Secondary projectile angle (secondary_projectile_pool + 0x04)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00495ae0",
+      "name": "secondary_proj_speed",
+      "comment": "Secondary projectile speed (secondary_projectile_pool + 0x08)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00495ae4",
+      "name": "secondary_proj_pos_x",
+      "comment": "Secondary projectile position X (secondary_projectile_pool + 0x0c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00495ae8",
+      "name": "secondary_proj_pos_y",
+      "comment": "Secondary projectile position Y (secondary_projectile_pool + 0x10)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00495aec",
+      "name": "secondary_proj_vel_x",
+      "comment": "Secondary projectile velocity X (secondary_projectile_pool + 0x14)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00495af0",
+      "name": "secondary_proj_vel_y",
+      "comment": "Secondary projectile velocity Y (secondary_projectile_pool + 0x18)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00495af4",
+      "name": "secondary_proj_type_id",
+      "comment": "Secondary projectile type id (secondary_projectile_pool + 0x1c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00495af8",
+      "name": "secondary_proj_lifetime",
+      "comment": "Secondary projectile lifetime (secondary_projectile_pool + 0x20)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00495afc",
+      "name": "secondary_proj_target_id",
+      "comment": "Secondary projectile target id (secondary_projectile_pool + 0x24)"
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00496820",
       "name": "sprite_effect_pool",
       "comment": "Sprite effect pool base (stride 0x2c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00496824",
+      "name": "sprite_effect_color_r",
+      "comment": "Sprite effect color R (sprite_effect_pool + 0x04)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00496828",
+      "name": "sprite_effect_color_g",
+      "comment": "Sprite effect color G (sprite_effect_pool + 0x08)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049682c",
+      "name": "sprite_effect_color_b",
+      "comment": "Sprite effect color B (sprite_effect_pool + 0x0c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00496830",
+      "name": "sprite_effect_color_a",
+      "comment": "Sprite effect color A / lifetime (sprite_effect_pool + 0x10)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00496834",
+      "name": "sprite_effect_rotation",
+      "comment": "Sprite effect rotation (sprite_effect_pool + 0x14)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00496838",
+      "name": "sprite_effect_pos_x",
+      "comment": "Sprite effect position X (sprite_effect_pool + 0x18)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049683c",
+      "name": "sprite_effect_pos_y",
+      "comment": "Sprite effect position Y (sprite_effect_pool + 0x1c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00496840",
+      "name": "sprite_effect_vel_x",
+      "comment": "Sprite effect velocity X (sprite_effect_pool + 0x20)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00496844",
+      "name": "sprite_effect_vel_y",
+      "comment": "Sprite effect velocity Y (sprite_effect_pool + 0x24)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00496848",
+      "name": "sprite_effect_scale",
+      "comment": "Sprite effect scale/size (sprite_effect_pool + 0x28)"
     },
     {
       "program": "crimsonland.exe",
@@ -378,6 +624,60 @@
       "address": "0x004aaf3c",
       "name": "fx_queue_rotated",
       "comment": "Rotated FX queue base (0x40 entries)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490430",
+      "name": "fx_rotated_pos_x",
+      "comment": "Rotated FX queue position X array"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490434",
+      "name": "fx_rotated_pos_y",
+      "comment": "Rotated FX queue position Y array"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bb38",
+      "name": "fx_rotated_color_r",
+      "comment": "Rotated FX queue color R array"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bb3c",
+      "name": "fx_rotated_color_g",
+      "comment": "Rotated FX queue color G array"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bb40",
+      "name": "fx_rotated_color_b",
+      "comment": "Rotated FX queue color B array"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049bb44",
+      "name": "fx_rotated_color_a",
+      "comment": "Rotated FX queue color A array"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049669c",
+      "name": "fx_rotated_rotation",
+      "comment": "Rotated FX queue rotation array"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004906a8",
+      "name": "fx_rotated_scale",
+      "comment": "Rotated FX queue scale array"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0049ba30",
+      "name": "fx_rotated_effect_id",
+      "comment": "Rotated FX queue effect id array"
     },
     {
       "program": "crimsonland.exe",

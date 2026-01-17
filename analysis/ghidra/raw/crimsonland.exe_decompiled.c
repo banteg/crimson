@@ -9612,10 +9612,10 @@ void player_update(void)
       local_14 = local_14 + (float)(&player_pos_y)[iVar7 * 0xd8];
       local_18 = local_18 + *pfVar18;
       iVar11 = fx_spawn_sprite(&local_18,&local_10,1.0);
-      (&DAT_00496824)[iVar11 * 0xb] = 0x3f000000;
-      (&DAT_00496828)[iVar11 * 0xb] = 0x3f000000;
-      (&DAT_0049682c)[iVar11 * 0xb] = 0x3f000000;
-      (&DAT_00496830)[iVar11 * 0xb] = 0x3ed374bc;
+      (&sprite_effect_color_r)[iVar11 * 0xb] = 0x3f000000;
+      (&sprite_effect_color_g)[iVar11 * 0xb] = 0x3f000000;
+      (&sprite_effect_color_b)[iVar11 * 0xb] = 0x3f000000;
+      (&sprite_effect_color_a)[iVar11 * 0xb] = 0x3ed374bc;
       (&player_fire_cough_timer)[iVar7 * 0xd8] =
            (float)(&player_fire_cough_timer)[iVar7 * 0xd8] - _DAT_00473314;
       uVar10 = _rand();
@@ -10604,10 +10604,10 @@ LAB_0041572e:
       local_14 = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
       local_18 = local_20 + *pfVar18;
       iVar17 = fx_spawn_sprite(&local_18,&local_10,1.0);
-      (&DAT_00496824)[iVar17 * 0xb] = 0x3f000000;
-      (&DAT_00496828)[iVar17 * 0xb] = 0x3f000000;
-      (&DAT_0049682c)[iVar17 * 0xb] = 0x3f000000;
-      (&DAT_00496830)[iVar17 * 0xb] = 0x3e6b851f;
+      (&sprite_effect_color_r)[iVar17 * 0xb] = 0x3f000000;
+      (&sprite_effect_color_g)[iVar17 * 0xb] = 0x3f000000;
+      (&sprite_effect_color_b)[iVar17 * 0xb] = 0x3f000000;
+      (&sprite_effect_color_a)[iVar17 * 0xb] = 0x3e6b851f;
       local_14 = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
       local_18 = local_20 + *pfVar18;
 LAB_0041600e:
@@ -10616,10 +10616,10 @@ LAB_0041600e:
       local_c = local_3c * 15.0;
       local_10 = local_40 * 15.0;
       iVar17 = fx_spawn_sprite(&local_18,&local_10,2.0);
-      (&DAT_00496824)[iVar17 * 0xb] = 0x3f000000;
-      (&DAT_00496828)[iVar17 * 0xb] = 0x3f000000;
-      (&DAT_0049682c)[iVar17 * 0xb] = 0x3f000000;
-      (&DAT_00496830)[iVar17 * 0xb] = 0x3e5a1cac;
+      (&sprite_effect_color_r)[iVar17 * 0xb] = 0x3f000000;
+      (&sprite_effect_color_g)[iVar17 * 0xb] = 0x3f000000;
+      (&sprite_effect_color_b)[iVar17 * 0xb] = 0x3f000000;
+      (&sprite_effect_color_a)[iVar17 * 0xb] = 0x3e5a1cac;
     }
     else {
       if (iVar11 == 1) {
@@ -10633,10 +10633,10 @@ LAB_0041600e:
         local_14 = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
         local_18 = local_20 + *pfVar18;
         iVar17 = fx_spawn_sprite(&local_18,&local_10,1.0);
-        (&DAT_00496824)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496828)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_0049682c)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496830)[iVar17 * 0xb] = 0x3e6b851f;
+        (&sprite_effect_color_r)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_g)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_b)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_a)[iVar17 * 0xb] = 0x3e6b851f;
         local_14 = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
         local_18 = local_20 + *pfVar18;
         goto LAB_0041600e;
@@ -10651,17 +10651,17 @@ LAB_0041600e:
         iVar17 = fx_spawn_sprite(&local_18,&local_10,1.0);
         local_10 = (float)fVar19 * 15.0;
         local_c = (float)fVar20 * 15.0;
-        (&DAT_00496824)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496828)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_0049682c)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496830)[iVar17 * 0xb] = 0x3e6b851f;
+        (&sprite_effect_color_r)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_g)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_b)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_a)[iVar17 * 0xb] = 0x3e6b851f;
         local_14 = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
         local_18 = local_20 + *pfVar18;
         iVar17 = fx_spawn_sprite(&local_18,&local_10,2.0);
-        (&DAT_00496824)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496828)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_0049682c)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496830)[iVar17 * 0xb] = 0x3e5a1cac;
+        (&sprite_effect_color_r)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_g)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_b)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_a)[iVar17 * 0xb] = 0x3e5a1cac;
         local_c = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
         local_10 = local_20 + *pfVar18;
         projectile_spawn(&local_10,fVar3,2,iVar22);
@@ -10676,18 +10676,18 @@ LAB_0041600e:
         iVar17 = fx_spawn_sprite(&local_18,&local_10,1.0);
         local_10 = (float)fVar19 * 15.0;
         local_c = (float)fVar20 * 15.0;
-        (&DAT_00496824)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496828)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_0049682c)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496830)[iVar17 * 0xb] = 0x3e800000;
+        (&sprite_effect_color_r)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_g)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_b)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_a)[iVar17 * 0xb] = 0x3e800000;
         local_14 = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
         local_18 = local_20 + *pfVar18;
         iVar17 = fx_spawn_sprite(&local_18,&local_10,2.0);
         local_3c = 1.68156e-44;
-        (&DAT_00496824)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496828)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_0049682c)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496830)[iVar17 * 0xb] = 0x3e645a1d;
+        (&sprite_effect_color_r)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_g)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_b)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_a)[iVar17 * 0xb] = 0x3e645a1d;
         do {
           iVar12 = 3;
           local_c = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
@@ -10711,10 +10711,10 @@ LAB_0041600e:
         local_18 = local_20 + *pfVar18;
         iVar17 = fx_spawn_sprite(&local_18,&local_10,2.0);
         local_3c = 5.60519e-45;
-        (&DAT_00496824)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496828)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_0049682c)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496830)[iVar17 * 0xb] = 0x3e645a1d;
+        (&sprite_effect_color_r)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_g)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_b)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_a)[iVar17 * 0xb] = 0x3e645a1d;
         do {
           iVar12 = 3;
           local_c = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
@@ -10739,18 +10739,18 @@ LAB_0041600e:
         iVar17 = fx_spawn_sprite(&local_18,&local_10,1.0);
         local_10 = (float)fVar19 * 15.0;
         local_c = (float)fVar20 * 15.0;
-        (&DAT_00496824)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496828)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_0049682c)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496830)[iVar17 * 0xb] = 0x3e851eb8;
+        (&sprite_effect_color_r)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_g)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_b)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_a)[iVar17 * 0xb] = 0x3e851eb8;
         local_14 = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
         local_18 = local_20 + *pfVar18;
         iVar17 = fx_spawn_sprite(&local_18,&local_10,2.0);
         local_3c = 1.68156e-44;
-        (&DAT_00496824)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496828)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_0049682c)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496830)[iVar17 * 0xb] = 0x3e6e978d;
+        (&sprite_effect_color_r)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_g)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_b)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_a)[iVar17 * 0xb] = 0x3e6e978d;
         do {
           iVar12 = 3;
           local_c = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
@@ -10776,7 +10776,7 @@ LAB_0041600e:
         local_10 = local_20 + *pfVar18;
         iVar17 = fx_spawn_particle(&local_10,fVar15,&player_move_dx + iVar17,1.0);
         if (iVar17 != -1) {
-          (&DAT_00493ee8)[iVar17 * 0x38] = 2;
+          (&particle_style_id)[iVar17 * 0x38] = 2;
         }
         local_38 = 0.1;
       }
@@ -10785,7 +10785,7 @@ LAB_0041600e:
         local_10 = local_20 + *pfVar18;
         iVar17 = fx_spawn_particle(&local_10,fVar15,&player_move_dx + iVar17,1.0);
         if (iVar17 != -1) {
-          (&DAT_00493ee8)[iVar17 * 0x38] = 1;
+          (&particle_style_id)[iVar17 * 0x38] = 1;
         }
         local_38 = 0.05;
       }
@@ -10799,17 +10799,17 @@ LAB_0041600e:
         iVar17 = fx_spawn_sprite(&local_18,&local_10,1.0);
         local_10 = (float)fVar19 * 15.0;
         local_c = (float)fVar20 * 15.0;
-        (&DAT_00496824)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496828)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_0049682c)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496830)[iVar17 * 0xb] = 0x3e6b851f;
+        (&sprite_effect_color_r)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_g)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_b)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_a)[iVar17 * 0xb] = 0x3e6b851f;
         local_14 = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
         local_18 = local_20 + *pfVar18;
         iVar17 = fx_spawn_sprite(&local_18,&local_10,2.0);
-        (&DAT_00496824)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496828)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_0049682c)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496830)[iVar17 * 0xb] = 0x3e5a1cac;
+        (&sprite_effect_color_r)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_g)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_b)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_a)[iVar17 * 0xb] = 0x3e5a1cac;
         local_c = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
         local_10 = local_20 + *pfVar18;
         projectile_spawn(&local_10,fVar3,5,iVar22);
@@ -10902,18 +10902,18 @@ LAB_0041600e:
         iVar17 = fx_spawn_sprite(&local_18,&local_10,1.0);
         local_10 = (float)fVar19 * 15.0;
         local_c = (float)fVar20 * 15.0;
-        (&DAT_00496824)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496828)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_0049682c)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496830)[iVar17 * 0xb] = 0x3ea8f5c3;
+        (&sprite_effect_color_r)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_g)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_b)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_a)[iVar17 * 0xb] = 0x3ea8f5c3;
         local_14 = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
         local_18 = local_20 + *pfVar18;
         iVar17 = fx_spawn_sprite(&local_18,&local_10,2.0);
         local_3c = 8.40779e-45;
-        (&DAT_00496824)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496828)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_0049682c)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496830)[iVar17 * 0xb] = 0x3e86a7f0;
+        (&sprite_effect_color_r)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_g)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_b)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_a)[iVar17 * 0xb] = 0x3e86a7f0;
         do {
           iVar12 = 6;
           local_c = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
@@ -10938,17 +10938,17 @@ LAB_0041600e:
         iVar17 = fx_spawn_sprite(&local_18,&local_10,1.0);
         local_10 = (float)fVar19 * 15.0;
         local_c = (float)fVar20 * 15.0;
-        (&DAT_00496824)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496828)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_0049682c)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496830)[iVar17 * 0xb] = 0x3ea8f5c3;
+        (&sprite_effect_color_r)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_g)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_b)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_a)[iVar17 * 0xb] = 0x3ea8f5c3;
         local_14 = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
         local_18 = local_20 + *pfVar18;
         iVar17 = fx_spawn_sprite(&local_18,&local_10,2.0);
-        (&DAT_00496824)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496828)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_0049682c)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496830)[iVar17 * 0xb] = 0x3e86a7f0;
+        (&sprite_effect_color_r)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_g)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_b)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_a)[iVar17 * 0xb] = 0x3e86a7f0;
         local_c = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
         local_10 = local_20 + *pfVar18;
         projectile_spawn(&local_10,fVar3,6,iVar22);
@@ -10963,17 +10963,17 @@ LAB_0041600e:
         iVar17 = fx_spawn_sprite(&local_18,&local_10,1.0);
         local_10 = (float)fVar19 * 15.0;
         local_c = (float)fVar20 * 15.0;
-        (&DAT_00496824)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496828)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_0049682c)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496830)[iVar17 * 0xb] = 0x3eae147b;
+        (&sprite_effect_color_r)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_g)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_b)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_a)[iVar17 * 0xb] = 0x3eae147b;
         local_14 = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
         local_18 = local_20 + *pfVar18;
         iVar17 = fx_spawn_sprite(&local_18,&local_10,2.0);
-        (&DAT_00496824)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496828)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_0049682c)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496830)[iVar17 * 0xb] = 0x3e90e560;
+        (&sprite_effect_color_r)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_g)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_b)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_a)[iVar17 * 0xb] = 0x3e90e560;
         local_c = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
         local_10 = local_20 + *pfVar18;
         fx_spawn_secondary_projectile(&local_10,fVar3,1);
@@ -10988,17 +10988,17 @@ LAB_0041600e:
         iVar17 = fx_spawn_sprite(&local_18,&local_10,1.0);
         local_10 = (float)fVar19 * 15.0;
         local_c = (float)fVar20 * 15.0;
-        (&DAT_00496824)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496828)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_0049682c)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496830)[iVar17 * 0xb] = 0x3eae147b;
+        (&sprite_effect_color_r)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_g)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_b)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_a)[iVar17 * 0xb] = 0x3eae147b;
         local_14 = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
         local_18 = local_20 + *pfVar18;
         iVar17 = fx_spawn_sprite(&local_18,&local_10,2.0);
-        (&DAT_00496824)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496828)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_0049682c)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496830)[iVar17 * 0xb] = 0x3e90e560;
+        (&sprite_effect_color_r)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_g)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_b)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_a)[iVar17 * 0xb] = 0x3e90e560;
         fVar16 = (float)(&player_ammo)[iVar7 * 0xd8];
         fVar15 = 0.0;
         local_3c = (fVar3 - 3.1415927) -
@@ -11023,10 +11023,10 @@ LAB_0041600e:
         local_14 = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
         local_18 = local_20 + *pfVar18;
         iVar17 = fx_spawn_sprite(&local_18,&local_10,1.0);
-        (&DAT_00496824)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496828)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_0049682c)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496830)[iVar17 * 0xb] = 0x3eae147b;
+        (&sprite_effect_color_r)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_g)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_b)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_a)[iVar17 * 0xb] = 0x3eae147b;
         local_c = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
         local_10 = local_20 + *pfVar18;
         fx_spawn_secondary_projectile(&local_10,fVar3,4);
@@ -11041,17 +11041,17 @@ LAB_0041600e:
         iVar17 = fx_spawn_sprite(&local_18,&local_10,1.0);
         local_10 = (float)fVar19 * 15.0;
         local_c = (float)fVar20 * 15.0;
-        (&DAT_00496824)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496828)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_0049682c)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496830)[iVar17 * 0xb] = 0x3e9eb852;
+        (&sprite_effect_color_r)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_g)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_b)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_a)[iVar17 * 0xb] = 0x3e9eb852;
         local_14 = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
         local_18 = local_20 + *pfVar18;
         iVar17 = fx_spawn_sprite(&local_18,&local_10,2.0);
-        (&DAT_00496824)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496828)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_0049682c)[iVar17 * 0xb] = 0x3f000000;
-        (&DAT_00496830)[iVar17 * 0xb] = 0x3e78d4fe;
+        (&sprite_effect_color_r)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_g)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_b)[iVar17 * 0xb] = 0x3f000000;
+        (&sprite_effect_color_a)[iVar17 * 0xb] = 0x3e78d4fe;
         local_c = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
         local_10 = local_20 + *pfVar18;
         fx_spawn_secondary_projectile(&local_10,fVar3,2);
@@ -11136,10 +11136,10 @@ LAB_0041600e:
     local_18 = local_20 + *pfVar18;
     iVar11 = fx_spawn_sprite(&local_18,&local_10,1.0);
     iVar17 = DAT_004c2b48;
-    (&DAT_00496824)[iVar11 * 0xb] = 0x3f000000;
-    (&DAT_00496828)[iVar11 * 0xb] = 0x3f000000;
-    (&DAT_0049682c)[iVar11 * 0xb] = 0x3f000000;
-    (&DAT_00496830)[iVar11 * 0xb] = 0x3ed374bc;
+    (&sprite_effect_color_r)[iVar11 * 0xb] = 0x3f000000;
+    (&sprite_effect_color_g)[iVar11 * 0xb] = 0x3f000000;
+    (&sprite_effect_color_b)[iVar11 * 0xb] = 0x3f000000;
+    (&sprite_effect_color_a)[iVar11 * 0xb] = 0x3ed374bc;
     iVar17 = perk_count_get(iVar17);
     if (iVar17 == 0) {
       (&player_spread_heat)[iVar7 * 0xd8] =
@@ -15372,17 +15372,17 @@ int __cdecl fx_queue_add(int effect_id,float *pos,float w,float h,float rotation
   iVar2 = DAT_004aaf18;
   iVar3 = DAT_004aaf18 * 0x28;
   iVar5 = DAT_004aaf18 + 1;
-  (&DAT_004912c0)[DAT_004aaf18 * 10] = *pos;
-  (&DAT_004912c4)[DAT_004aaf18 * 10] = pos[1];
-  (&DAT_004912d0)[DAT_004aaf18 * 10] = *rgba;
-  (&DAT_004912d4)[DAT_004aaf18 * 10] = rgba[1];
-  (&DAT_004912d8)[DAT_004aaf18 * 10] = rgba[2];
+  (&fx_queue_pos_x)[DAT_004aaf18 * 10] = *pos;
+  (&fx_queue_pos_y)[DAT_004aaf18 * 10] = pos[1];
+  (&fx_queue_color_r)[DAT_004aaf18 * 10] = *rgba;
+  (&fx_queue_color_g)[DAT_004aaf18 * 10] = rgba[1];
+  (&fx_queue_color_b)[DAT_004aaf18 * 10] = rgba[2];
   iVar1 = DAT_004aaf18 * 10;
   DAT_004aaf18 = iVar5;
-  (&DAT_004912dc)[iVar1] = rgba[3];
-  (&DAT_004912cc)[iVar2 * 10] = w;
-  (&DAT_004912c8)[iVar2 * 10] = h;
-  (&DAT_004912bc)[iVar2 * 10] = rotation;
+  (&fx_queue_color_a)[iVar1] = rgba[3];
+  (&fx_queue_width)[iVar2 * 10] = w;
+  (&fx_queue_height)[iVar2 * 10] = h;
+  (&fx_queue_rotation)[iVar2 * 10] = rotation;
   (&fx_queue)[iVar2 * 10] = effect_id;
   uVar4 = (uint3)((uint)iVar3 >> 8);
   if (0x7f < iVar5) {
@@ -16370,17 +16370,17 @@ int __cdecl fx_spawn_sprite(float *pos,float *vel,float scale)
   iVar3 = iVar3 % 0x180;
 LAB_0041fbd8:
   (&sprite_effect_pool)[iVar3 * 0x2c] = 1;
-  (&DAT_0049682c)[iVar3 * 0xb] = 0x3f800000;
-  (&DAT_00496828)[iVar3 * 0xb] = 0x3f800000;
-  (&DAT_00496824)[iVar3 * 0xb] = 0x3f800000;
-  (&DAT_00496830)[iVar3 * 0xb] = 0x3f800000;
-  (&DAT_00496838)[iVar3 * 0xb] = *pos;
-  (&DAT_0049683c)[iVar3 * 0xb] = pos[1];
-  (&DAT_00496840)[iVar3 * 0xb] = *vel;
-  (&DAT_00496844)[iVar3 * 0xb] = vel[1];
-  (&DAT_00496848)[iVar3 * 0xb] = scale;
+  (&sprite_effect_color_b)[iVar3 * 0xb] = 0x3f800000;
+  (&sprite_effect_color_g)[iVar3 * 0xb] = 0x3f800000;
+  (&sprite_effect_color_r)[iVar3 * 0xb] = 0x3f800000;
+  (&sprite_effect_color_a)[iVar3 * 0xb] = 0x3f800000;
+  (&sprite_effect_pos_x)[iVar3 * 0xb] = *pos;
+  (&sprite_effect_pos_y)[iVar3 * 0xb] = pos[1];
+  (&sprite_effect_vel_x)[iVar3 * 0xb] = *vel;
+  (&sprite_effect_vel_y)[iVar3 * 0xb] = vel[1];
+  (&sprite_effect_scale)[iVar3 * 0xb] = scale;
   iVar2 = _rand();
-  (&DAT_00496834)[iVar3 * 0xb] = (float)(iVar2 % 0x274) * 0.01;
+  (&sprite_effect_rotation)[iVar3 * 0xb] = (float)(iVar2 % 0x274) * 0.01;
   return iVar3;
 }
 
@@ -16665,21 +16665,21 @@ LAB_00420160:
   fVar5 = (float10)fcos((float10)angle);
   iVar3 = uVar4 * 0x38;
   (&particle_pool)[iVar3] = 1;
-  (&DAT_00493ebc)[uVar4 * 0xe] = *pos;
-  (&DAT_00493ec0)[uVar4 * 0xe] = pos[1];
-  (&DAT_00493ec4)[uVar4 * 0xe] = (float)(fVar5 * (float10)90.0);
+  (&particle_pos_x)[uVar4 * 0xe] = *pos;
+  (&particle_pos_y)[uVar4 * 0xe] = pos[1];
+  (&particle_vel_x)[uVar4 * 0xe] = (float)(fVar5 * (float10)90.0);
   fVar5 = (float10)fsin((float10)angle);
-  (&DAT_00493ec8)[uVar4 * 0xe] = (float)(fVar5 * (float10)90.0);
-  (&DAT_00493edc)[uVar4 * 0xe] = intensity;
-  (&DAT_00493ecc)[uVar4 * 0xe] = 0x3f800000;
-  (&DAT_00493ed0)[uVar4 * 0xe] = 0x3f800000;
-  (&DAT_00493ed4)[uVar4 * 0xe] = 0x3f800000;
-  (&DAT_00493ed8)[uVar4 * 0xe] = 0;
-  *(float *)(&DAT_00493ee0 + iVar3) = angle;
+  (&particle_vel_y)[uVar4 * 0xe] = (float)(fVar5 * (float10)90.0);
+  (&particle_intensity)[uVar4 * 0xe] = intensity;
+  (&particle_scale_x)[uVar4 * 0xe] = 0x3f800000;
+  (&particle_scale_y)[uVar4 * 0xe] = 0x3f800000;
+  (&particle_scale_z)[uVar4 * 0xe] = 0x3f800000;
+  (&particle_age)[uVar4 * 0xe] = 0;
+  *(float *)(&particle_angle + iVar3) = angle;
   iVar2 = _rand();
-  (&DAT_00493ee4)[uVar4 * 0xe] = (float)(iVar2 % 0x274) * 0.01;
+  (&particle_spin)[uVar4 * 0xe] = (float)(iVar2 % 0x274) * 0.01;
   (&DAT_00493eb9)[iVar3] = 1;
-  (&DAT_00493ee8)[iVar3] = 0;
+  (&particle_style_id)[iVar3] = 0;
   return uVar4;
 }
 
@@ -16714,22 +16714,22 @@ LAB_00420270:
   fVar5 = (float10)fcos((float10)angle);
   iVar3 = uVar4 * 0x38;
   (&particle_pool)[iVar3] = 1;
-  (&DAT_00493ebc)[uVar4 * 0xe] = *pos;
-  (&DAT_00493ec0)[uVar4 * 0xe] = pos[1];
-  (&DAT_00493ec4)[uVar4 * 0xe] = (float)(fVar5 * (float10)30.0);
+  (&particle_pos_x)[uVar4 * 0xe] = *pos;
+  (&particle_pos_y)[uVar4 * 0xe] = pos[1];
+  (&particle_vel_x)[uVar4 * 0xe] = (float)(fVar5 * (float10)30.0);
   fVar5 = (float10)fsin((float10)angle);
-  (&DAT_00493ec8)[uVar4 * 0xe] = (float)(fVar5 * (float10)30.0);
-  (&DAT_00493edc)[uVar4 * 0xe] = 0x3f800000;
-  (&DAT_00493ecc)[uVar4 * 0xe] = 0x3f800000;
-  (&DAT_00493ed0)[uVar4 * 0xe] = 0x3f800000;
-  (&DAT_00493ed4)[uVar4 * 0xe] = 0x3f800000;
-  (&DAT_00493ed8)[uVar4 * 0xe] = 0;
-  *(float *)(&DAT_00493ee0 + iVar3) = angle;
+  (&particle_vel_y)[uVar4 * 0xe] = (float)(fVar5 * (float10)30.0);
+  (&particle_intensity)[uVar4 * 0xe] = 0x3f800000;
+  (&particle_scale_x)[uVar4 * 0xe] = 0x3f800000;
+  (&particle_scale_y)[uVar4 * 0xe] = 0x3f800000;
+  (&particle_scale_z)[uVar4 * 0xe] = 0x3f800000;
+  (&particle_age)[uVar4 * 0xe] = 0;
+  *(float *)(&particle_angle + iVar3) = angle;
   iVar2 = _rand();
-  (&DAT_00493ee4)[uVar4 * 0xe] = (float)(iVar2 % 0x274) * 0.01;
+  (&particle_spin)[uVar4 * 0xe] = (float)(iVar2 % 0x274) * 0.01;
   (&DAT_00493eb9)[iVar3] = 1;
-  (&DAT_00493ee8)[iVar3] = 8;
-  (&DAT_00493eec)[uVar4 * 0xe] = 0xffffffff;
+  (&particle_style_id)[iVar3] = 8;
+  (&particle_target_id)[uVar4 * 0xe] = 0xffffffff;
   return uVar4;
 }
 
@@ -16760,20 +16760,20 @@ LAB_0042037f:
   DAT_0048706c = DAT_0048706c + 1;
   fVar4 = (float10)fcos((float10)angle - (float10)1.5707964);
   (&secondary_projectile_pool)[iVar3 * 0x2c] = 1;
-  (&DAT_00495ae4)[iVar3 * 0xb] = *pos;
-  (&DAT_00495ae8)[iVar3 * 0xb] = pos[1];
-  (&DAT_00495ae0)[iVar3 * 0xb] = 0x40000000;
-  (&DAT_00495adc)[iVar3 * 0xb] = angle;
-  (&DAT_00495af8)[iVar3 * 0xb] = 0;
-  (&DAT_00495af4)[iVar3 * 0xb] = type_id;
-  (&DAT_00495aec)[iVar3 * 0xb] = (float)(fVar4 * (float10)90.0);
+  (&secondary_proj_pos_x)[iVar3 * 0xb] = *pos;
+  (&secondary_proj_pos_y)[iVar3 * 0xb] = pos[1];
+  (&secondary_proj_speed)[iVar3 * 0xb] = 0x40000000;
+  (&secondary_proj_angle)[iVar3 * 0xb] = angle;
+  (&secondary_proj_lifetime)[iVar3 * 0xb] = 0;
+  (&secondary_proj_type_id)[iVar3 * 0xb] = type_id;
+  (&secondary_proj_vel_x)[iVar3 * 0xb] = (float)(fVar4 * (float10)90.0);
   fVar5 = (float10)fsin((float10)angle - (float10)1.5707964);
-  (&DAT_00495af0)[iVar3 * 0xb] = (float)(fVar5 * (float10)90.0);
+  (&secondary_proj_vel_y)[iVar3 * 0xb] = (float)(fVar5 * (float10)90.0);
   if (type_id == 2) {
     iVar2 = FUN_00420040((float *)(&player_aim_x + DAT_004aaf0c * 0xd8),-1,0.0);
-    *(int *)(iVar3 * 0x2c + 0x495afc) = iVar2;
-    (&DAT_00495aec)[iVar3 * 0xb] = (float)fVar4 * 190.0;
-    (&DAT_00495af0)[iVar3 * 0xb] = (float)fVar5 * 190.0;
+    *(int *)(&secondary_proj_target_id + iVar3 * 0x2c) = iVar2;
+    (&secondary_proj_vel_x)[iVar3 * 0xb] = (float)fVar4 * 190.0;
+    (&secondary_proj_vel_y)[iVar3 * 0xb] = (float)fVar5 * 190.0;
   }
   return iVar3;
 }
@@ -17588,7 +17588,7 @@ LAB_004219f8:
     }
     local_e8 = local_e8 + 1;
   } while (local_e8 < 0x60);
-  pfVar11 = (float *)&DAT_00495af0;
+  pfVar11 = (float *)&secondary_proj_vel_y;
   do {
     if (*(char *)(pfVar11 + -6) != '\0') {
       if (pfVar11[1] == 4.2039e-45) {
@@ -17699,7 +17699,7 @@ LAB_00421d65:
           local_a4 = (float)((float10)pfVar11[-2] - fVar17 * (float10)9.0);
           iVar4 = fx_spawn_sprite(&local_a8,&local_b0,14.0);
           pfVar11[2] = 0.06;
-          (&DAT_00496830)[iVar4 * 0xb] = 0x3e800000;
+          (&sprite_effect_color_a)[iVar4 * 0xb] = 0x3e800000;
         }
         iVar4 = creature_find_in_radius(pfVar12,8.0,0);
         if (iVar4 != -1) {
@@ -17863,7 +17863,7 @@ LAB_00421d65:
             local_1c = (float)(fVar16 * fVar17);
             iVar4 = fx_spawn_sprite(pfVar12,&local_20,14.0);
             local_ec = local_ec + 1;
-            (&DAT_00496830)[iVar4 * 0xb] = 0x3ebd70a4;
+            (&sprite_effect_color_a)[iVar4 * 0xb] = 0x3ebd70a4;
           } while (local_ec < 10);
         }
         if (pfVar11[-4] <= 0.0) {
@@ -17875,7 +17875,7 @@ LAB_00421d65:
     }
     pfVar11 = pfVar11 + 0xb;
   } while ((int)pfVar11 < 0x4965f0);
-  pfVar11 = (float *)&DAT_0049683c;
+  pfVar11 = (float *)&sprite_effect_pos_y;
   do {
     if (*(char *)(pfVar11 + -7) != '\0') {
       local_68 = DAT_00480840 * pfVar11[1];
@@ -17893,7 +17893,7 @@ LAB_00421d65:
     pfVar11 = pfVar11 + 0xb;
   } while ((int)pfVar11 < 0x49aa3c);
   local_e8 = 0;
-  pfVar11 = (float *)&DAT_00493ec8;
+  pfVar11 = (float *)&particle_vel_y;
   do {
     if (*(char *)(pfVar11 + -4) != '\0') {
       if (*(char *)(pfVar11 + 8) == '\b') {
@@ -18094,7 +18094,7 @@ LAB_00422821:
                   local_a4 = (float)(iVar10 % 0x3c + -0x1e);
                   local_a8 = (float)(iVar4 % 0x3c + -0x1e);
                   iVar4 = fx_spawn_sprite(pfVar12,&local_a8,13.0);
-                  (&DAT_00496830)[iVar4 * 0xb] = 0x3f333333;
+                  (&sprite_effect_color_a)[iVar4 * 0xb] = 0x3f333333;
                 }
                 FUN_00427700(pfVar12);
                 local_74 = *pfVar11;
@@ -19191,7 +19191,7 @@ LAB_00424475:
     (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7ec,0);
     effect_select_texture(0xd);
     (**(code **)(*DAT_0048083c + 0xe8))();
-    pfVar2 = (float *)&DAT_00495adc;
+    pfVar2 = (float *)&secondary_proj_angle;
     do {
       if (*(char *)(pfVar2 + -1) != '\0') {
         (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,fStack_1d0 * 0.48);
@@ -19215,7 +19215,7 @@ LAB_00424475:
   (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7d4,0);
   (**(code **)(*DAT_0048083c + 0x104))(4,3);
   (**(code **)(*DAT_0048083c + 0xe8))();
-  puVar5 = &DAT_00495ae8;
+  puVar5 = &secondary_proj_pos_y;
   do {
     if ((*(char *)(puVar5 + -4) != '\0') && (puVar5[3] != 3)) {
       (**(code **)(*DAT_0048083c + 0xfc))(puVar5[-3]);
@@ -19255,7 +19255,7 @@ LAB_00425a07:
     (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7ec,0);
     effect_select_texture(0xd);
     (**(code **)(*DAT_0048083c + 0xe8))();
-    pfVar2 = (float *)&DAT_00495ae8;
+    pfVar2 = (float *)&secondary_proj_pos_y;
     do {
       if (*(char *)(pfVar2 + -4) != '\0') {
         fVar31 = pfVar2[3];
@@ -20179,23 +20179,24 @@ int __cdecl fx_queue_add_rotated(float *pos,float *rgba,float rotation,float sca
     if (fx_queue_rotated == 0x3f) {
       return (uint)uVar2 << 8;
     }
-    (&DAT_0049bb38)[fx_queue_rotated * 4] = *rgba;
-    (&DAT_0049bb3c)[fx_queue_rotated * 4] = rgba[1];
-    (&DAT_0049bb40)[fx_queue_rotated * 4] = rgba[2];
-    (&DAT_0049bb44)[fx_queue_rotated * 4] = rgba[3];
+    (&fx_rotated_color_r)[fx_queue_rotated * 4] = *rgba;
+    (&fx_rotated_color_g)[fx_queue_rotated * 4] = rgba[1];
+    (&fx_rotated_color_b)[fx_queue_rotated * 4] = rgba[2];
+    (&fx_rotated_color_a)[fx_queue_rotated * 4] = rgba[3];
     if (*(float *)(DAT_00480860 + 0xc) == 0.0) {
-      fVar1 = (float)(&DAT_0049bb44)[fx_queue_rotated * 4] * 0.8;
+      fVar1 = (float)(&fx_rotated_color_a)[fx_queue_rotated * 4] * 0.8;
     }
     else {
-      fVar1 = (1.0 / *(float *)(DAT_00480860 + 0xc)) * (float)(&DAT_0049bb44)[fx_queue_rotated * 4];
+      fVar1 = (1.0 / *(float *)(DAT_00480860 + 0xc)) *
+              (float)(&fx_rotated_color_a)[fx_queue_rotated * 4];
     }
-    (&DAT_0049bb44)[fx_queue_rotated * 4] = fVar1;
-    (&DAT_0049669c)[fx_queue_rotated] = rotation;
-    (&DAT_0049ba30)[fx_queue_rotated] = effect_id;
-    (&DAT_004906a8)[fx_queue_rotated] = scale;
-    (&DAT_00490430)[fx_queue_rotated * 2] = *pos;
+    (&fx_rotated_color_a)[fx_queue_rotated * 4] = fVar1;
+    (&fx_rotated_rotation)[fx_queue_rotated] = rotation;
+    (&fx_rotated_effect_id)[fx_queue_rotated] = effect_id;
+    (&fx_rotated_scale)[fx_queue_rotated] = scale;
+    (&fx_rotated_pos_x)[fx_queue_rotated * 2] = *pos;
     fVar1 = pos[1];
-    (&DAT_00490434)[fx_queue_rotated * 2] = fVar1;
+    (&fx_rotated_pos_y)[fx_queue_rotated * 2] = fVar1;
     fx_queue_rotated = fx_queue_rotated + 1;
     if (0x3f < fx_queue_rotated) {
       fx_queue_rotated = 0x3f;
@@ -20232,7 +20233,7 @@ void fx_queue_render(void)
         (**(code **)(*DAT_0048083c + 0x100))(0,0,0x3f800000,0x3f800000);
         iVar3 = 0;
         if (0 < DAT_004aaf18) {
-          puVar4 = &DAT_004912bc;
+          puVar4 = &fx_queue_rotation;
           do {
             (**(code **)(*DAT_0048083c + 0x110))(puVar4 + 5);
             (**(code **)(*DAT_0048083c + 0xfc))(*puVar4);
@@ -20254,10 +20255,10 @@ void fx_queue_render(void)
         (**(code **)(*DAT_0048083c + 0xe8))();
         iVar3 = 0;
         if (0 < fx_queue_rotated) {
-          pfVar2 = (float *)&DAT_00490430;
-          puVar4 = &DAT_0049bb40;
+          pfVar2 = (float *)&fx_rotated_pos_x;
+          puVar4 = &fx_rotated_color_b;
           do {
-            iVar1 = *(int *)(&DAT_00482764 + (&DAT_0049ba30)[iVar3] * 0x44);
+            iVar1 = *(int *)(&DAT_00482764 + (&fx_rotated_effect_id)[iVar3] * 0x44);
             DAT_004965d8 = (float)(&DAT_00491210)[iVar1 * 2];
             DAT_004965dc = (float)(&DAT_00491214)[iVar1 * 2];
             _DAT_004965e0 = (float)(&DAT_00491210)[iVar1 * 2] + 0.25;
@@ -20267,10 +20268,10 @@ void fx_queue_render(void)
                       (DAT_004965d8,DAT_004965dc,_DAT_004965e0,_DAT_004965e4);
             fVar7 = (float)puVar4[1] * 0.5;
             (**(code **)(*DAT_0048083c + 0x114))(puVar4[-2],puVar4[-1],*puVar4,fVar7);
-            (**(code **)(*DAT_0048083c + 0xfc))((float)(&DAT_0049669c)[iVar3] - 1.5707964);
+            (**(code **)(*DAT_0048083c + 0xfc))((float)(&fx_rotated_rotation)[iVar3] - 1.5707964);
             DAT_004965d8 = *pfVar2 - 0.5;
             DAT_004965dc = pfVar2[1] - 0.5;
-            fVar5 = fVar7 * (float)(&DAT_004906a8)[iVar3] * 1.064;
+            fVar5 = fVar7 * (float)(&fx_rotated_scale)[iVar3] * 1.064;
             (**(code **)(*DAT_0048083c + 0x11c))
                       (DAT_004965d8 * fVar7 - fVar6,DAT_004965dc * fVar7 - fVar6,fVar5,fVar5);
             iVar3 = iVar3 + 1;
@@ -20284,10 +20285,10 @@ void fx_queue_render(void)
         (**(code **)(*DAT_0048083c + 0xe8))();
         iVar3 = 0;
         if (0 < fx_queue_rotated) {
-          pfVar2 = (float *)&DAT_00490430;
-          puVar4 = &DAT_0049bb40;
+          pfVar2 = (float *)&fx_rotated_pos_x;
+          puVar4 = &fx_rotated_color_b;
           do {
-            iVar1 = *(int *)(&DAT_00482764 + (&DAT_0049ba30)[iVar3] * 0x44);
+            iVar1 = *(int *)(&DAT_00482764 + (&fx_rotated_effect_id)[iVar3] * 0x44);
             DAT_004965d8 = (float)(&DAT_00491210)[iVar1 * 2];
             DAT_004965dc = (float)(&DAT_00491214)[iVar1 * 2];
             _DAT_004965e0 = (float)(&DAT_00491210)[iVar1 * 2] + 0.25;
@@ -20297,10 +20298,11 @@ void fx_queue_render(void)
                       (DAT_004965d8,DAT_004965dc,_DAT_004965e0,_DAT_004965e4);
             fVar7 = (float)puVar4[1];
             (**(code **)(*DAT_0048083c + 0x114))(puVar4[-2],puVar4[-1],*puVar4,fVar7);
-            (**(code **)(*DAT_0048083c + 0xfc))((float)(&DAT_0049669c)[iVar3] - 1.5707964);
+            (**(code **)(*DAT_0048083c + 0xfc))((float)(&fx_rotated_rotation)[iVar3] - 1.5707964);
             (**(code **)(*DAT_0048083c + 0x11c))
                       (fVar7 * *pfVar2 - fVar5,fVar7 * pfVar2[1] - fVar5,
-                       fVar7 * (float)(&DAT_004906a8)[iVar3],fVar7 * (float)(&DAT_004906a8)[iVar3]);
+                       fVar7 * (float)(&fx_rotated_scale)[iVar3],
+                       fVar7 * (float)(&fx_rotated_scale)[iVar3]);
             iVar3 = iVar3 + 1;
             puVar4 = puVar4 + 4;
             pfVar2 = pfVar2 + 2;
@@ -20320,22 +20322,23 @@ void fx_queue_render(void)
     (**(code **)(*DAT_0048083c + 0xe8))();
     iVar3 = 0;
     if (0 < fx_queue_rotated) {
-      pfVar2 = (float *)&DAT_00490430;
-      puVar4 = &DAT_0049bb40;
+      pfVar2 = (float *)&fx_rotated_pos_x;
+      puVar4 = &fx_rotated_color_b;
       do {
-        iVar1 = *(int *)(&DAT_00482764 + (&DAT_0049ba30)[iVar3] * 0x44);
+        iVar1 = *(int *)(&DAT_00482764 + (&fx_rotated_effect_id)[iVar3] * 0x44);
         DAT_004965d8 = (float)(&DAT_00491210)[iVar1 * 2];
         DAT_004965dc = (float)(&DAT_00491214)[iVar1 * 2];
         _DAT_004965e0 = (float)(&DAT_00491210)[iVar1 * 2] + 0.25;
         _DAT_004965e4 = (float)(&DAT_00491214)[iVar1 * 2] + 0.25;
         (**(code **)(*DAT_0048083c + 0x100))(DAT_004965d8,DAT_004965dc,_DAT_004965e0,_DAT_004965e4);
         (**(code **)(*DAT_0048083c + 0x114))(puVar4[-2],puVar4[-1],*puVar4,(float)puVar4[1] * 0.5);
-        (**(code **)(*DAT_0048083c + 0xfc))((float)(&DAT_0049669c)[iVar3] - 1.5707964);
+        (**(code **)(*DAT_0048083c + 0xfc))((float)(&fx_rotated_rotation)[iVar3] - 1.5707964);
         DAT_004965d8 = *pfVar2 + 2.0;
         DAT_004965dc = pfVar2[1] + 2.0;
         (**(code **)(*DAT_0048083c + 0x11c))
                   (DAT_004965d8 + _DAT_00484fc8,DAT_004965dc + _DAT_00484fcc,
-                   (float)(&DAT_004906a8)[iVar3] * 1.04,(float)(&DAT_004906a8)[iVar3] * 1.04);
+                   (float)(&fx_rotated_scale)[iVar3] * 1.04,(float)(&fx_rotated_scale)[iVar3] * 1.04
+                  );
         iVar3 = iVar3 + 1;
         puVar4 = puVar4 + 4;
         pfVar2 = pfVar2 + 2;
@@ -20347,20 +20350,20 @@ void fx_queue_render(void)
     (**(code **)(*DAT_0048083c + 0xe8))();
     iVar3 = 0;
     if (0 < fx_queue_rotated) {
-      pfVar2 = (float *)&DAT_00490430;
-      puVar4 = &DAT_0049bb40;
+      pfVar2 = (float *)&fx_rotated_pos_x;
+      puVar4 = &fx_rotated_color_b;
       do {
-        iVar1 = *(int *)(&DAT_00482764 + (&DAT_0049ba30)[iVar3] * 0x44);
+        iVar1 = *(int *)(&DAT_00482764 + (&fx_rotated_effect_id)[iVar3] * 0x44);
         DAT_004965d8 = (float)(&DAT_00491210)[iVar1 * 2];
         DAT_004965dc = (float)(&DAT_00491214)[iVar1 * 2];
         _DAT_004965e0 = (float)(&DAT_00491210)[iVar1 * 2] + 0.25;
         _DAT_004965e4 = (float)(&DAT_00491214)[iVar1 * 2] + 0.25;
         (**(code **)(*DAT_0048083c + 0x100))(DAT_004965d8,DAT_004965dc,_DAT_004965e0,_DAT_004965e4);
         (**(code **)(*DAT_0048083c + 0x114))(puVar4[-2],puVar4[-1],*puVar4,puVar4[1]);
-        (**(code **)(*DAT_0048083c + 0xfc))((float)(&DAT_0049669c)[iVar3] - 1.5707964);
+        (**(code **)(*DAT_0048083c + 0xfc))((float)(&fx_rotated_rotation)[iVar3] - 1.5707964);
         (**(code **)(*DAT_0048083c + 0x11c))
-                  (_DAT_00484fc8 + *pfVar2,_DAT_00484fcc + pfVar2[1],(&DAT_004906a8)[iVar3],
-                   (&DAT_004906a8)[iVar3]);
+                  (_DAT_00484fc8 + *pfVar2,_DAT_00484fcc + pfVar2[1],(&fx_rotated_scale)[iVar3],
+                   (&fx_rotated_scale)[iVar3]);
         iVar3 = iVar3 + 1;
         puVar4 = puVar4 + 4;
         pfVar2 = pfVar2 + 2;
@@ -21081,7 +21084,7 @@ LAB_00429df8:
       (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,0x3d851eb8);
       (**(code **)(*DAT_0048083c + 0xe8))();
       uVar9 = 0;
-      pcVar7 = &DAT_00493ee8;
+      pcVar7 = &particle_style_id;
       do {
         if (pcVar7[-0x30] != '\0') {
           uVar3 = uVar9 & 0x80000001;
@@ -21115,7 +21118,7 @@ LAB_00429df8:
     effect_select_texture(0xc);
     (**(code **)(*DAT_0048083c + 0xfc))(0);
     (**(code **)(*DAT_0048083c + 0xe8))();
-    puVar8 = &DAT_00493ee4;
+    puVar8 = &particle_spin;
     do {
       if ((*(char *)(puVar8 + -0xb) != '\0') && (*(char *)(puVar8 + 1) != '\b')) {
         (**(code **)(*DAT_0048083c + 0xfc))(*puVar8);
@@ -21139,7 +21142,7 @@ LAB_00429df8:
     effect_select_texture(2);
     (**(code **)(*DAT_0048083c + 0xfc))(0);
     (**(code **)(*DAT_0048083c + 0xe8))();
-    pcVar7 = &DAT_00493ee8;
+    pcVar7 = &particle_style_id;
     do {
       if ((pcVar7[-0x30] != '\0') && (*pcVar7 == '\b')) {
         (**(code **)(*DAT_0048083c + 0x114))
@@ -21162,7 +21165,7 @@ LAB_00429df8:
     (**(code **)(*DAT_0048083c + 0x100))(0,0,0x3f800000,0x3f800000);
     (**(code **)(*DAT_0048083c + 0xfc))(0);
     (**(code **)(*DAT_0048083c + 0xe8))();
-    pfVar6 = (float *)&DAT_00495aec;
+    pfVar6 = (float *)&secondary_proj_vel_x;
     do {
       if ((*(char *)(pfVar6 + -5) != '\0') && (pfVar6[2] == 4.2039e-45)) {
         (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f19999a,0x3dcccccd,1.0 - *pfVar6);
@@ -21188,7 +21191,7 @@ LAB_00429df8:
       fVar18 = DAT_00491248 + 0.25;
       (**(code **)(*DAT_0048083c + 0x100))(DAT_00491248,DAT_0049124c,fVar18,DAT_0049124c + 0.25);
       (**(code **)(*DAT_0048083c + 0xe8))();
-      puVar8 = &DAT_00496848;
+      puVar8 = &sprite_effect_scale;
       do {
         if (*(char *)(puVar8 + -10) != '\0') {
           (**(code **)(*DAT_0048083c + 0xfc))(puVar8[-5]);
@@ -30815,19 +30818,19 @@ void __cdecl FUN_00444980(char param_1,char param_2)
           local_c = fVar11 + (float)(&player_pos_x)[DAT_004aaf0c * 0xd8];
           iVar6 = fx_spawn_sprite(&local_c,&local_14,1.0);
           local_c = (float)fVar9 * 15.0;
-          (&DAT_00496824)[iVar6 * 0xb] = 0x3f000000;
-          (&DAT_00496828)[iVar6 * 0xb] = 0x3f000000;
+          (&sprite_effect_color_r)[iVar6 * 0xb] = 0x3f000000;
+          (&sprite_effect_color_g)[iVar6 * 0xb] = 0x3f000000;
           local_8 = (float)fVar8 * 15.0;
-          (&DAT_0049682c)[iVar6 * 0xb] = 0x3f000000;
-          (&DAT_00496830)[iVar6 * 0xb] = 0x3e800000;
+          (&sprite_effect_color_b)[iVar6 * 0xb] = 0x3f000000;
+          (&sprite_effect_color_a)[iVar6 * 0xb] = 0x3e800000;
           local_10 = fVar1 + (float)(&player_pos_y)[DAT_004aaf0c * 0xd8];
           local_14 = fVar11 + (float)(&player_pos_x)[DAT_004aaf0c * 0xd8];
           iVar6 = fx_spawn_sprite(&local_14,&local_c,2.0);
           iVar7 = 0xc;
-          (&DAT_00496824)[iVar6 * 0xb] = 0x3f000000;
-          (&DAT_00496828)[iVar6 * 0xb] = 0x3f000000;
-          (&DAT_0049682c)[iVar6 * 0xb] = 0x3f000000;
-          (&DAT_00496830)[iVar6 * 0xb] = 0x3e645a1d;
+          (&sprite_effect_color_r)[iVar6 * 0xb] = 0x3f000000;
+          (&sprite_effect_color_g)[iVar6 * 0xb] = 0x3f000000;
+          (&sprite_effect_color_b)[iVar6 * 0xb] = 0x3f000000;
+          (&sprite_effect_color_a)[iVar6 * 0xb] = 0x3e645a1d;
           do {
             owner_id = -100;
             iVar10 = 3;

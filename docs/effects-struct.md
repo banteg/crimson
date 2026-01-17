@@ -6,6 +6,9 @@ This page tracks the smaller effect pools used for weapon and perk visuals.
 
 Entry size: `0x38` bytes. Pool size: `0x80` entries (looping to `0x495ab8`).
 
+Field arrays are labeled in the data map (e.g. `particle_pos_x`, `particle_vel_y`,
+`particle_style_id`, `particle_target_id`) at `particle_pool` + offsets.
+
 Spawn helpers:
 
 - `FUN_00420130` -> `fx_spawn_particle` (fast variant, speed ~90)
@@ -43,6 +46,9 @@ Layout (partial):
 ## Secondary projectile pool (`secondary_projectile_pool` / `DAT_00495ad8`)
 
 Entry size: `0x2c` bytes. Pool size: `0x40` entries (looping to `0x4965d8`).
+
+Field arrays are labeled in the data map (e.g. `secondary_proj_pos_x`,
+`secondary_proj_type_id`, `secondary_proj_target_id`) at `secondary_projectile_pool` + offsets.
 
 Spawn helper:
 
@@ -84,6 +90,9 @@ Render notes:
 
 Entry size: `0x28` bytes. Queue size: `0x80` entries (index `0..0x7f` via `DAT_004aaf18`).
 
+Field arrays are labeled in the data map (e.g. `fx_queue_pos_x`, `fx_queue_color_a`)
+at `fx_queue` + offsets.
+
 This queue is written by `fx_queue_add` (`FUN_0041e840`) and rendered (then
 cleared) by `fx_queue_render` once per frame.
 
@@ -114,6 +123,9 @@ Notes:
 
 Queue size: `0x40` entries. Written by `fx_queue_add_rotated` (`FUN_00427840`)
 and rendered by `fx_queue_render`.
+
+Backing arrays are labeled in the data map (e.g. `fx_rotated_pos_x`, `fx_rotated_color_a`,
+`fx_rotated_effect_id`).
 
 Layout (structure-of-arrays):
 
@@ -309,6 +321,9 @@ These helpers primarily configure `DAT_004ab1bc` and then call `effect_spawn`.
 ## Sprite effect pool (`sprite_effect_pool` / `DAT_00496820`)
 
 Entry size: `0x2c` bytes. Pool size: `0x180` entries (looping to `0x49aa20`).
+
+Field arrays are labeled in the data map (e.g. `sprite_effect_pos_x`,
+`sprite_effect_color_a`, `sprite_effect_scale`) at `sprite_effect_pool` + offsets.
 
 Spawn helper:
 
