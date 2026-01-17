@@ -110,7 +110,7 @@ Related notes:
   (mirrored to `0x1f - frame` when `type_flags & 1` and `frame > 0x0f`), with
   negative phases falling back to `base + 0x0f`.
 
-## Creature type table (DAT_00482728)
+## Creature type table (`creature_type_texture` / `DAT_00482728`)
 
 Stride: `0x44` bytes (`0x11` floats). Indexed by `type_id`.
 
@@ -118,18 +118,18 @@ Field map (partial):
 
 | Offset | Field | Evidence |
 | --- | --- | --- |
-| 0x00 | sprite texture handle | Bound in `creature_render_type` via `grim_bind_texture`. |
-| 0x04 | sfx bank A [0] | `FUN_004207c0` chooses `uVar3 = rand() & 3` and calls `FUN_0043d260` on `&DAT_0048272c + (uVar3 + type_id * 0x11) * 4`. |
-| 0x08 | sfx bank A [1] | Same selection as above. |
-| 0x0c | sfx bank A [2] | Same selection as above; also used by chain-kill paths. |
-| 0x10 | sfx bank A [3] | Same selection as above (the 0..3 range proves this slot is live). |
-| 0x14 | sfx bank B [0] | Contact-damage removal path picks `uVar7 = rand() & 1` and calls `FUN_0043d260` on `&DAT_0048273c + (uVar7 + type_id * 0x11) * 4`. |
-| 0x18 | sfx bank B [1] | Same selection as above (second slot in the 0..1 range). |
+| 0x00 | sprite texture handle | `creature_type_texture`; bound in `creature_render_type` via `grim_bind_texture`. |
+| 0x04 | sfx bank A [0] | `creature_type_sfx_a0`; `FUN_004207c0` chooses `uVar3 = rand() & 3` and calls `FUN_0043d260` on `&creature_type_sfx_a0 + (uVar3 + type_id * 0x11) * 4`. |
+| 0x08 | sfx bank A [1] | `creature_type_sfx_a1`; same selection as above. |
+| 0x0c | sfx bank A [2] | `creature_type_sfx_a2`; same selection as above; also used by chain-kill paths. |
+| 0x10 | sfx bank A [3] | `creature_type_sfx_a3`; same selection as above (the 0..3 range proves this slot is live). |
+| 0x14 | sfx bank B [0] | `creature_type_sfx_b0`; contact-damage removal path picks `uVar7 = rand() & 1` and calls `FUN_0043d260` on `&creature_type_sfx_b0 + (uVar7 + type_id * 0x11) * 4`. |
+| 0x18 | sfx bank B [1] | `creature_type_sfx_b1`; same selection as above (second slot in the 0..1 range). |
 | 0x20 | unknown (const 1.0) | Set to `1.0` for every type in the init routine; no reads found in the decompiled output. |
-| 0x34 | anim rate | Multiplies animation step in `creature_update_all` (drives `anim phase`). |
-| 0x38 | atlas base frame | Start frame for the long strip (used with `+0x10` or `+0x20` offsets in `creature_render_type`). |
-| 0x3c | corpse frame | Used by `fx_queue_render` to select the bodyset frame for corpse sprites. |
-| 0x40 | anim mirror flag | When bit `1` is set, the long strip mirrors frames `> 0x0f` in `creature_render_type`. |
+| 0x34 | anim rate | `creature_type_anim_rate`; multiplies animation step in `creature_update_all` (drives `anim phase`). |
+| 0x38 | atlas base frame | `creature_type_base_frame`; start frame for the long strip (used with `+0x10` or `+0x20` offsets in `creature_render_type`). |
+| 0x3c | corpse frame | `creature_type_corpse_frame`; used by `fx_queue_render` to select the bodyset frame for corpse sprites. |
+| 0x40 | anim mirror flag | `creature_type_anim_flags`; when bit `1` is set, the long strip mirrors frames `> 0x0f` in `creature_render_type`. |
 
 Known initial entries (from the reset/init routine that loads creature textures):
 

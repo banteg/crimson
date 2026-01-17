@@ -57,6 +57,72 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00482728",
+      "name": "creature_type_texture",
+      "comment": "Creature type table: texture handle (stride 0x44 bytes)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048272c",
+      "name": "creature_type_sfx_a0",
+      "comment": "Creature type SFX bank A [0] (creature_type_texture + 0x04)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00482730",
+      "name": "creature_type_sfx_a1",
+      "comment": "Creature type SFX bank A [1] (creature_type_texture + 0x08)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00482734",
+      "name": "creature_type_sfx_a2",
+      "comment": "Creature type SFX bank A [2] (creature_type_texture + 0x0c)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00482738",
+      "name": "creature_type_sfx_a3",
+      "comment": "Creature type SFX bank A [3] (creature_type_texture + 0x10)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048273c",
+      "name": "creature_type_sfx_b0",
+      "comment": "Creature type SFX bank B [0] (creature_type_texture + 0x14)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00482740",
+      "name": "creature_type_sfx_b1",
+      "comment": "Creature type SFX bank B [1] (creature_type_texture + 0x18)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048275c",
+      "name": "creature_type_anim_rate",
+      "comment": "Creature type anim rate (creature_type_texture + 0x34)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00482760",
+      "name": "creature_type_base_frame",
+      "comment": "Creature type atlas base frame (creature_type_texture + 0x38)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00482764",
+      "name": "creature_type_corpse_frame",
+      "comment": "Creature type corpse frame (creature_type_texture + 0x3c)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00482768",
+      "name": "creature_type_anim_flags",
+      "comment": "Creature type animation flags (creature_type_texture + 0x40)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x0048294c",
       "name": "bonus_state",
       "comment": "Bonus state flag (bonus_pool + 0x04)"
