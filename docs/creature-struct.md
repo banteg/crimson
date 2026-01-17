@@ -96,6 +96,7 @@ Field map (partial):
 | 0x10 | sfx bank A [3] | Same selection as above (the 0..3 range proves this slot is live). |
 | 0x14 | sfx bank B [0] | Contact-damage removal path picks `uVar7 = rand() & 1` and calls `FUN_0043d260` on `&DAT_0048273c + (uVar7 + type_id * 0x11) * 4`. |
 | 0x18 | sfx bank B [1] | Same selection as above (second slot in the 0..1 range). |
+| 0x20 | unknown (const 1.0) | Set to `1.0` for every type in the init routine; no reads found in the decompiled output. |
 | 0x34 | anim rate | Multiplies animation step in `creature_update_all` (drives `anim phase`). |
 | 0x38 | atlas base frame | Start frame for the long strip (used with `+0x10` or `+0x20` offsets in `creature_render_type`). |
 | 0x3c | corpse frame | Used by `fx_queue_render` to select the bodyset frame for corpse sprites. |
@@ -111,6 +112,12 @@ Known initial entries (from the reset/init routine that loads creature textures)
 | `3` | `s_spider_sp1_00473748` | `1.5` | `0x10` | `1` | `1` |
 | `4` | `s_spider_sp2_0047373c` | `1.5` | `0x10` | `2` | `1` |
 | `5` | `s_trooper_0047372c` | not set in init | not set in init | `7` | not set in init |
+
+Notes:
+
+- No references to offsets `0x1c..0x30` were found in the decompiled output.
+  Only offset `0x20` is initialized (to `1.0`), so the remaining fields appear
+  unused or reserved in this build.
 
 ## Spawn template ids (FUN_00430af0)
 
