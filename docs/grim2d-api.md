@@ -116,6 +116,8 @@ Validation highlights (see the evidence appendix for snippets):
   via `grim_draw_quad_points`.
 - `grim_draw_circle_filled` / `grim_draw_circle_outline` appear in gameplay effects with UV + color setup
   immediately before the draw calls.
+- The timing helpers (`get_time_ms`, `set_time_ms`, `get_frame_dt`, `get_fps`) have no decompiled callsites yet;
+  grim.dll stores a millisecond counter and clamps frame delta to `0.1`.
 
 
 ## Input-ish offsets (evidence)
