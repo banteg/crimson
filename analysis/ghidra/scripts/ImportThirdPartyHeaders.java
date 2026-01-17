@@ -69,6 +69,8 @@ public class ImportThirdPartyHeaders extends GhidraScript {
             "-D_WIN32",
             "-DWIN32",
             "-Dinterface=struct",
+            "-DBEGIN_INTERFACE=",
+            "-DEND_INTERFACE=",
             "-DCHAR_BIT=8",
             "-DUCHAR_MAX=255",
             "-DSHRT_MIN=-32768",
