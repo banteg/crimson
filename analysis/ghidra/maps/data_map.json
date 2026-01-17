@@ -57,6 +57,24 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x004853d0",
+      "name": "bonus_meta_label",
+      "comment": "Bonus metadata label pointer (stride 0x14 bytes)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004853d8",
+      "name": "bonus_meta_icon_id",
+      "comment": "Bonus metadata icon id (bonus_meta_label + 0x08)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004853e0",
+      "name": "bonus_meta_default_amount",
+      "comment": "Bonus metadata default amount (bonus_meta_label + 0x10)"
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004908d4",
       "name": "player_health",
       "comment": "Per-player health (player table base, stride 0xd8)"

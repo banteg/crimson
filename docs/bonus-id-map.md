@@ -1,12 +1,12 @@
 # Bonus ID map
 
-This map is derived from `FUN_00412660`, which builds the bonus metadata table at `DAT_004853d0`.
+This map is derived from `FUN_00412660`, which builds the bonus metadata table at `bonus_meta_label`.
 The entry index is the bonus type id used by `bonus_apply` and `bonus_spawn_at`.
 
 Table fields:
 
-- `icon_id` comes from `DAT_004853d8 + id * 0x14`, used by `bonus_render` to select the icon sprite.
-- `default_amount` comes from `DAT_004853e0 + id * 0x14`, used when `bonus_spawn_at` is called with
+- `icon_id` comes from `bonus_meta_icon_id + id * 0x14`, used by `bonus_render` to select the icon sprite.
+- `default_amount` comes from `bonus_meta_default_amount + id * 0x14`, used when `bonus_spawn_at` is called with
   `duration_override == -1`.
 
 | ID | Name | Description | icon_id | default_amount | Notes |
