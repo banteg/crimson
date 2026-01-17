@@ -85,7 +85,7 @@ struct Grim2DVtable {
     void (*set_color)(float r, float g, float b, float a); // 0x114 (FUN_10007f90)
     void (*set_color_slot)(int index, float r, float g, float b, float a); // 0x118 (grim_set_color_slot) index 0..3
     void (*draw_quad)(float x, float y, float w, float h); // 0x11c (FUN_10008b10) uses per-corner color+UV
-    void (*draw_quad_xy)(float *xy, float w, float h); // 0x120 (grim_draw_quad_xy)
+    void (*draw_quad_xy)(float *xy, float w, float h); // 0x120 (grim_draw_quad_xy) wrapper over draw_quad
     void (*draw_quad_rotated_matrix)(float x, float y, float w, float h); // 0x124 (grim_draw_quad_rotated_matrix)
     void (*submit_vertices_transform)(float *verts, int count, float *offset, float *matrix); // 0x128 (grim_submit_vertices_transform) verts are 7-float stride
     void (*submit_vertices_offset)(float *verts, int count, float *offset); // 0x12c (grim_submit_vertices_offset) verts are 7-float stride

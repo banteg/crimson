@@ -750,6 +750,7 @@ grim.dll vertex fill (color + UV):
 
 
 ## 0x120 — FUN_10008720 @ 0x10008720
+- Notes: wrapper around `draw_quad` using `xy` pointer
 - Ghidra signature: `undefined FUN_10008720()`
 - Call sites: 6 (unique funcs: 2)
 - Sample calls: FUN_00417b80:L9255; FUN_00417b80:L9289; FUN_00417b80:L9317; FUN_004181b0:L9491; FUN_004181b0:L9524; FUN_004181b0:L9547
@@ -761,6 +762,12 @@ grim.dll vertex fill (color + UV):
       (**(code **)(*DAT_0048083c + 0x120))();
       iVar4 = iVar4 + 1;
       iVar1 = DAT_0048f538 * DAT_0048f534 * 800;
+```
+
+grim.dll body:
+
+```c
+  (**(code **)(*in_ECX + 0x11c))(*xy,xy[1],w,h);
 ```
 
 
