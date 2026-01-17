@@ -466,6 +466,7 @@ See [Projectile struct](projectile-struct.md) for the expanded field map and not
     to scale spawn cadence and HUD timers.
   - `DAT_00487190` is the scripted spawn stage index (0..10) that gates bonus/marker spawns by
     `DAT_00490964` milestones.
+  - `DAT_0049095c` is the survival progression score (displayed via the smoothed `DAT_00490300`)
+    and is used for creature type/health scaling in `survival_spawn_creature`.
   - `DAT_00490964` is a progression counter used by `survival_update` to gate scripted spawns;
     it increments when `DAT_0049095c` surpasses a periodic threshold.
-
