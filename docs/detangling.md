@@ -464,7 +464,7 @@ tail bytes are validated against the current date and the full‑version flag.
 
 - `FUN_0043d120` -> `sfx_play`
   - Evidence: validates entry in `DAT_004c84e4`, checks cooldown `DAT_004c3c80`, sets sample rate
-    via `_DAT_00487014` into `DAT_00477d28`, chooses a voice (`FUN_0043be60`), calls vtable +0x40
+    via `bonus_reflex_boost_timer` into `DAT_00477d28`, chooses a voice (`FUN_0043be60`), calls vtable +0x40
     with pan 0, then sets volume with `FUN_0043bfa0`.
 - `FUN_0043d260` -> `sfx_play_panned`
   - Evidence: same as `sfx_play`, but converts an FPU value to pan (`__ftol`), clamps to

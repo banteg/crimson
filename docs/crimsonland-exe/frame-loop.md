@@ -15,7 +15,7 @@ Other states have their own loops but reuse the same render pass (`FUN_00405960`
 
 ## Update order (simplified)
 
-1) Time scaling: if Reflex Boost is active (`DAT_0048700e`), scale `DAT_00480840`
+1) Time scaling: if Reflex Boost is active (`time_scale_active`), scale `DAT_00480840`
    and recompute `DAT_00480844`.
 2) Perk tick helpers (`FUN_00406b40`) when not gated by demo logic.
 3) `effects_update`.

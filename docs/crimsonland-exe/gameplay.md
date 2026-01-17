@@ -42,12 +42,12 @@ Global bonus timers used by `player_update` and the main loop:
 
 | Symbol | Meaning | Source |
 | --- | --- | --- |
-| `_DAT_0048701c` | Weapon Power Up timer | Bonus id 4 |
-| `_DAT_00487014` | Reflex Boost timer | Bonus id 9 |
-| `_DAT_00487020` | Energizer timer | Bonus id 2 |
-| `_DAT_00487024` | Double XP timer | Bonus id 6 |
-| `_DAT_00487018` | Freeze timer | Bonus id 11 |
-| `DAT_0048700e` / `_DAT_00487010` | time-scale active + factor | driven by Reflex Boost |
+| `bonus_weapon_power_up_timer` | Weapon Power Up timer | Bonus id 4 |
+| `bonus_reflex_boost_timer` | Reflex Boost timer | Bonus id 9 |
+| `bonus_energizer_timer` | Energizer timer | Bonus id 2 |
+| `bonus_double_xp_timer` | Double XP timer | Bonus id 6 |
+| `bonus_freeze_timer` | Freeze timer | Bonus id 11 |
+| `time_scale_active` / `time_scale_factor` | time-scale active + factor | driven by Reflex Boost |
 
 ### Perk-triggered projectile spawns (player_update)
 
@@ -88,7 +88,7 @@ index to special-case the target.
 
 ### Weapon Power Up cooldown scaling
 
-While `_DAT_0048701c > 0` (Weapon Power Up active), `player_update` decays the
+While `bonus_weapon_power_up_timer > 0` (Weapon Power Up active), `player_update` decays the
 shot cooldown (`DAT_00490b84`) at 1.5x speed.
 
 ### Bonus overrides

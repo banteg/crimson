@@ -111,6 +111,48 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x0048700e",
+      "name": "time_scale_active",
+      "comment": "Time-scale active flag (set while Reflex Boost is active)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00487010",
+      "name": "time_scale_factor",
+      "comment": "Time-scale factor applied to frame dt when Reflex Boost is active."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00487014",
+      "name": "bonus_reflex_boost_timer",
+      "comment": "Global Reflex Boost timer (bonus id 9)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00487018",
+      "name": "bonus_freeze_timer",
+      "comment": "Global Freeze timer (bonus id 11)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048701c",
+      "name": "bonus_weapon_power_up_timer",
+      "comment": "Global Weapon Power Up timer (bonus id 4)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00487020",
+      "name": "bonus_energizer_timer",
+      "comment": "Global Energizer timer (bonus id 2)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00487024",
+      "name": "bonus_double_xp_timer",
+      "comment": "Global Double XP timer (bonus id 6)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00490420",
       "name": "fx_queue_random_color_r",
       "comment": "Randomized grayscale color R used by fx_queue_add helper FUN_00427700."
