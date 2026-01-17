@@ -18,21 +18,25 @@ standalone data tables.
 ### Per-player runtime fields (partial)
 
 These are the most important per-player arrays that bridge weapons, perks, and
-bonuses (stride `0xd8`):
+bonuses (stride `0xd8`, base `player_table` / `DAT_004908d4`). See
+[Player struct](../player-struct.md) for offsets and related fields.
 
-| Symbol | Meaning | Source / Notes |
-| --- | --- | --- |
-| `DAT_00490b70` | current weapon id | set by `weapon_assign_player` |
-| `DAT_00490b74` | clip size | from weapon table, modified by Ammo Maniac + My Favourite Weapon |
-| `DAT_00490b7c` | current ammo | reset to clip size when reload completes |
-| `DAT_00490b80` | reload timer | decremented each frame; used by Angry/Anxious/Stationary Reloader |
-| `DAT_00490b84` | shot cooldown | decremented each frame; slowed by Weapon Power Up timer |
-| `DAT_00490b88` | reload timer max | used to compute reload progress (HUD + Angry Reloader) |
-| `DAT_00490b68` | spread/heat | decays each frame; Sharpshooter changes decay + minimum |
-| `DAT_00490bb0` | aim heading (radians) | used for projectile direction + overlays |
-| `DAT_00490bc4` | speed bonus timer | Bonus id 13 (Speed) |
-| `DAT_00490bc8` | shield timer | Bonus id 10 (Shield) |
-| `DAT_00490bcc` | Fire Bullets timer | Bonus id 14 (Fire Bullets) |
+| Offset | Symbol | Meaning | Source / Notes |
+| --- | --- | --- | --- |
+| `0x294` | `player_spread_heat` | spread/heat | decays each frame; Sharpshooter changes decay + minimum |
+| `0x29c` | `player_weapon_id` | current weapon id | set by `weapon_assign_player` |
+| `0x2a0` | `player_clip_size` | clip size | from weapon table, modified by Ammo Maniac + My Favourite Weapon |
+| `0x2a8` | `player_ammo` | current ammo | reset to clip size when reload completes |
+| `0x2ac` | `player_reload_timer` | reload timer | decremented each frame; used by Angry/Anxious/Stationary Reloader |
+| `0x2b0` | `player_shot_cooldown` | shot cooldown | decremented each frame; slowed by Weapon Power Up timer |
+| `0x2b4` | `player_reload_timer_max` | reload timer max | used to compute reload progress (HUD + Angry Reloader) |
+| `0x2dc` | `player_aim_heading` | aim heading (radians) | used for projectile direction + overlays |
+| `0x2f0` | `player_speed_bonus_timer` | speed bonus timer | Bonus id 13 (Speed) |
+| `0x2f4` | `player_shield_timer` | shield timer | Bonus id 10 (Shield) |
+| `0x2f8` | `player_fire_bullets_timer` | Fire Bullets timer | Bonus id 14 (Fire Bullets) |
+
+Alt-weapon swap caches live in the same struct (offsets `0x2b8..0x2d0`); see
+[Weapon table](../weapon-table.md) for the current field map.
 
 Global bonus timers used by `player_update` and the main loop:
 

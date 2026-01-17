@@ -14,6 +14,7 @@ Overall naming coverage: 26.3% (468 / 1779 functions named or inferred).
 - [Extraction pipeline](pipeline.md) — In progress
 - [Weapon table](weapon-table.md) — In progress
 - [Progress metrics](metrics.md) — Tracking
+- [Player struct](player-struct.md) — Tracking
 - [Creature struct](creature-struct.md) — Tracking
 - [Projectile struct](projectile-struct.md) — Tracking
 - [Effects pools](effects-struct.md) — Tracking

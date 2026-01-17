@@ -27,6 +27,108 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00490b68",
+      "name": "player_spread_heat",
+      "comment": "Per-player spread/heat accumulator (player_table + 0x294)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490b70",
+      "name": "player_weapon_id",
+      "comment": "Per-player current weapon id (player_table + 0x29c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490b74",
+      "name": "player_clip_size",
+      "comment": "Per-player clip size (player_table + 0x2a0)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490b7c",
+      "name": "player_ammo",
+      "comment": "Per-player current ammo (player_table + 0x2a8)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490b80",
+      "name": "player_reload_timer",
+      "comment": "Per-player reload timer (player_table + 0x2ac)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490b84",
+      "name": "player_shot_cooldown",
+      "comment": "Per-player shot cooldown timer (player_table + 0x2b0)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490b88",
+      "name": "player_reload_timer_max",
+      "comment": "Per-player reload timer max (player_table + 0x2b4)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490b8c",
+      "name": "player_alt_weapon_id",
+      "comment": "Per-player alt weapon id (player_table + 0x2b8)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490b90",
+      "name": "player_alt_clip_size",
+      "comment": "Per-player alt clip size (player_table + 0x2bc)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490b98",
+      "name": "player_alt_ammo",
+      "comment": "Per-player alt ammo count (player_table + 0x2c4)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490b9c",
+      "name": "player_alt_reload_timer",
+      "comment": "Per-player alt reload timer (player_table + 0x2c8)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490ba0",
+      "name": "player_alt_shot_cooldown",
+      "comment": "Per-player alt shot cooldown (player_table + 0x2cc)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490ba4",
+      "name": "player_alt_reload_timer_max",
+      "comment": "Per-player alt reload timer max (player_table + 0x2d0)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490bb0",
+      "name": "player_aim_heading",
+      "comment": "Per-player aim heading radians (player_table + 0x2dc)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490bc4",
+      "name": "player_speed_bonus_timer",
+      "comment": "Per-player speed bonus timer (player_table + 0x2f0)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490bc8",
+      "name": "player_shield_timer",
+      "comment": "Per-player shield timer (player_table + 0x2f4)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490bcc",
+      "name": "player_fire_bullets_timer",
+      "comment": "Per-player Fire Bullets timer (player_table + 0x2f8)"
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004912b8",
       "name": "fx_queue",
       "comment": "FX queue base (0x80 entries, stride 0x28)"

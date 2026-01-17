@@ -5,12 +5,12 @@ INFO  Using log config file: jar:file:/opt/ghidra_12.0.1_PUBLIC/Ghidra/Framework
 INFO  Using log file: analysis/ghidra/raw/ghidra_analysis.log (LoggingInitialization)  
 INFO  Loading user preferences: /home/node/.config/ghidra/ghidra_12.0.1_PUBLIC/preferences (Preferences)  
 INFO  Searching for classes... (ClassSearcher)  
-INFO  Class search complete (724 ms) (ClassSearcher)  
+INFO  Class search complete (743 ms) (ClassSearcher)  
 INFO  Initializing SSL Context (DefaultSSLContextInitializer)  
 INFO  Initializing Random Number Generator... (SecureRandomFactory)  
 INFO  Random Number Generator initialization complete: NativePRNGNonBlocking (SecureRandomFactory)  
 INFO  Trust manager disabled, cacerts have not been set (DefaultTrustManagerFactory)  
-INFO  Headless startup complete (1420 ms) (AnalyzeHeadless)  
+INFO  Headless startup complete (1455 ms) (AnalyzeHeadless)  
 INFO  Class searcher loaded 58 extension points (18 false positives) (ClassSearcher)  
 INFO  HEADLESS Script Paths:
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger/ghidra_scripts
@@ -39,10 +39,10 @@ INFO  HEADLESS Script Paths:
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/FunctionID/ghidra_scripts
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/Atmel/ghidra_scripts (HeadlessAnalyzer)  
 INFO  HEADLESS: execution starts (HeadlessAnalyzer)  
-INFO  Creating temporary project: /tmp/ghidra_crimsonland_exe_204808 (HeadlessAnalyzer)  
-INFO  Creating project: /tmp/ghidra_crimsonland_exe_204808 (DefaultProject)  
+INFO  Creating temporary project: /tmp/ghidra_crimsonland_exe_205939 (HeadlessAnalyzer)  
+INFO  Creating project: /tmp/ghidra_crimsonland_exe_205939 (DefaultProject)  
 INFO  REPORT: Processing input files:  (HeadlessAnalyzer)  
-INFO       project: /tmp/ghidra_crimsonland_exe_204808 (HeadlessAnalyzer)  
+INFO       project: /tmp/ghidra_crimsonland_exe_205939 (HeadlessAnalyzer)  
 INFO  IMPORTING: file:///workspace/game_bins/crimsonland/1.9.93-gog/crimsonland.exe (HeadlessAnalyzer)  
 INFO  Using Loader: Portable Executable (PE) (ProgramLoader)  
 INFO  Using Language/Compiler: x86:LE:32:default:windows (ProgramLoader)  
@@ -132,42 +132,42 @@ INFO  Packed database cache: /var/tmp/node-ghidra/packed-db-cache (PackedDatabas
 INFO  Applied data type archive: windows_vs12_32 (ApplyDataArchiveAnalyzer)  
 INFO  Applied data type archive: windows_vs12_32 (ApplyDataArchiveAnalyzer)  
 INFO  -----------------------------------------------------
-    ASCII Strings                              0.248 secs
-    Apply Data Archives                        0.106 secs
-    Call Convention ID                         0.006 secs
-    Call-Fixup Installer                       0.019 secs
-    Create Address Tables                      0.063 secs
-    Create Address Tables - One Time           0.117 secs
-    Create Function                            0.183 secs
-    Data Reference                             0.115 secs
-    Decompiler Parameter ID                   10.430 secs
-    Decompiler Switch Analysis                21.907 secs
-    Demangler Microsoft                        0.006 secs
-    Disassemble                                0.197 secs
-    Disassemble Entry Points                   0.357 secs
-    Embedded Media                             0.011 secs
+    ASCII Strings                              0.276 secs
+    Apply Data Archives                        0.139 secs
+    Call Convention ID                         0.004 secs
+    Call-Fixup Installer                       0.018 secs
+    Create Address Tables                      0.075 secs
+    Create Address Tables - One Time           0.072 secs
+    Create Function                            0.212 secs
+    Data Reference                             0.092 secs
+    Decompiler Parameter ID                    9.326 secs
+    Decompiler Switch Analysis                22.620 secs
+    Demangler Microsoft                        0.007 secs
+    Disassemble                                0.222 secs
+    Disassemble Entry Points                   0.358 secs
+    Embedded Media                             0.012 secs
     External Entry References                  0.000 secs
-    Function ID                                0.449 secs
+    Function ID                                0.385 secs
     Function Start Pre Search                  0.011 secs
-    Function Start Search                      0.073 secs
-    Function Start Search After Code           0.034 secs
-    Function Start Search After Data           0.019 secs
-    Function Start Search delayed - One Time   0.001 secs
-    Non-Returning Functions - Discovered       0.128 secs
+    Function Start Search                      0.086 secs
+    Function Start Search After Code           0.031 secs
+    Function Start Search After Data           0.024 secs
+    Function Start Search delayed - One Time   0.003 secs
+    Non-Returning Functions - Discovered       0.111 secs
     Non-Returning Functions - Known            0.002 secs
-    PDB Universal                              0.002 secs
-    Reference                                  0.295 secs
-    Scalar Operand References                  0.376 secs
-    Shared Return Calls                        0.084 secs
-    Stack                                      1.832 secs
-    Subroutine References                      0.833 secs
-    Subroutine References - One Time           0.004 secs
-    Windows x86 PE Exception Handling          1.010 secs
+    PDB Universal                              0.001 secs
+    Reference                                  0.337 secs
+    Scalar Operand References                  0.408 secs
+    Shared Return Calls                        0.101 secs
+    Stack                                      1.488 secs
+    Subroutine References                      0.955 secs
+    Subroutine References - One Time           0.003 secs
+    Windows x86 PE Exception Handling          1.000 secs
     Windows x86 PE RTTI Analyzer               0.000 secs
-    Windows x86 Thread Environment Block (TEB) Analyzer     0.010 secs
-    WindowsResourceReference                   0.268 secs
-    X86 Function Callee Purge                  0.050 secs
-    x86 Constant Reference Analyzer            2.345 secs
+    Windows x86 Thread Environment Block (TEB) Analyzer     0.011 secs
+    WindowsResourceReference                   0.270 secs
+    X86 Function Callee Purge                  0.064 secs
+    x86 Constant Reference Analyzer            2.474 secs
 -----------------------------------------------------
      Total Time   41 secs
 -----------------------------------------------------
@@ -196,8 +196,8 @@ INFO  REPORT: Execute script: ApplyDataMap.java 'analysis/ghidra/maps/data_map.j
 INFO  SCRIPT: /workspace/analysis/ghidra/scripts/ApplyDataMap.java (HeadlessAnalyzer)  
 INFO  ApplyDataMap.java> Applied data map: /workspace/analysis/ghidra/maps/data_map.json (GhidraScript)  
 INFO  ApplyDataMap.java> Program: crimsonland.exe (GhidraScript)  
-INFO  ApplyDataMap.java> Updated entries: 12 (GhidraScript)  
-INFO  ApplyDataMap.java> Created: 0, Renamed: 12, Comments: 12 (GhidraScript)  
+INFO  ApplyDataMap.java> Updated entries: 29 (GhidraScript)  
+INFO  ApplyDataMap.java> Created: 0, Renamed: 29, Comments: 29 (GhidraScript)  
 INFO  ApplyDataMap.java> Missing: 0, Skipped: 0 (GhidraScript)  
 INFO  REPORT: Execute script: ExportAll.java  (HeadlessAnalyzer)  
 INFO  SCRIPT: /workspace/.codex/skills/ghidra/scripts/ghidra_scripts/ExportAll.java (HeadlessAnalyzer)  
@@ -219,5 +219,5 @@ INFO  ExportAll.java> === Export complete === (GhidraScript)
 INFO  ANALYZING changes made by post scripts: file:///workspace/game_bins/crimsonland/1.9.93-gog/crimsonland.exe (HeadlessAnalyzer)  
 INFO  REPORT: Post-analysis succeeded for file: file:///workspace/game_bins/crimsonland/1.9.93-gog/crimsonland.exe (HeadlessAnalyzer)  
 INFO  /crimsonland.exe: file created (node) (LocalFileSystem)  
-INFO  REPORT: Save succeeded for: /crimsonland.exe (ghidra_crimsonland_exe_204808:/crimsonland.exe) (HeadlessAnalyzer)  
+INFO  REPORT: Save succeeded for: /crimsonland.exe (ghidra_crimsonland_exe_205939:/crimsonland.exe) (HeadlessAnalyzer)  
 INFO  REPORT: Import succeeded (HeadlessAnalyzer)  

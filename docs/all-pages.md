@@ -4,7 +4,7 @@ This page is generated. Run `uv run python scripts/gen_all_pages.py` to update.
 
 - [Sprite atlas cutting (Crimsonland)](atlas.md)
 - [Bonus ID map](bonus-id-map.md)
-- [Creature struct (DAT_0049bf38)](creature-struct.md)
+- [Creature struct (creature_pool / DAT_0049bf38)](creature-struct.md)
 - [Frame loop (gameplay)](crimsonland-exe/frame-loop.md)
 - [Gameplay glue](crimsonland-exe/gameplay.md)
 - [Crimsonland.exe overview (by concern)](crimsonland-exe/index.md)
@@ -26,6 +26,7 @@ This page is generated. Run `uv run python scripts/gen_all_pages.py` to update.
 - [Progress metrics](metrics.md)
 - [Perk ID map](perk-id-map.md)
 - [Extraction pipeline](pipeline.md)
+- [Player struct (player_table / DAT_004908d4)](player-struct.md)
 - [Projectile struct](projectile-struct.md)
 - [Build provenance and hashes](provenance.md)
 - [Refactor attempt](refactor.md)

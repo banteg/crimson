@@ -3009,7 +3009,7 @@ LAB_00404603:
     iVar2 = DAT_004c2bd4;
     (&DAT_004807e8)[iVar5] = iVar1;
     if (iVar1 == iVar2) {
-      if (DAT_00490b70 != 8) goto LAB_00404603;
+      if (player_weapon_id != 8) goto LAB_00404603;
     }
     iVar2 = perk_count_get(DAT_004c2c14);
     if (((iVar2 == 0) ||
@@ -3567,7 +3567,7 @@ void __cdecl perk_apply(int perk_id)
     do {
       iVar6 = weapon_pick_random_available();
       iVar3 = iVar3 + 1;
-      if ((iVar6 != 1) && (iVar6 != DAT_00490b70)) break;
+      if ((iVar6 != 1) && (iVar6 != player_weapon_id)) break;
     } while (iVar3 < 100);
     weapon_assign_player(0,iVar6);
     iVar3 = _DAT_0048035c;
@@ -3588,7 +3588,7 @@ void __cdecl perk_apply(int perk_id)
     DAT_0049095c = DAT_0049095c + (int)lVar9;
   }
   if ((perk_id == DAT_004c2b80) && (iVar6 = 0, 0 < iVar3)) {
-    piVar7 = &DAT_00490b70;
+    piVar7 = &player_weapon_id;
     do {
       weapon_assign_player(iVar6,*piVar7);
       iVar6 = iVar6 + 1;
@@ -3628,7 +3628,7 @@ void __cdecl perk_apply(int perk_id)
     } while (iVar6 < _DAT_0048035c);
   }
   if ((perk_id == DAT_004c2c18) && (0 < iVar3)) {
-    pfVar4 = (float *)&DAT_00490b74;
+    pfVar4 = (float *)&player_clip_size;
     do {
       iVar3 = iVar3 + -1;
       *pfVar4 = *pfVar4 + 2.0;
@@ -3657,7 +3657,7 @@ void gameplay_render_world(void)
   
   DAT_00487278 = (float)DAT_00487248 / (float)(DAT_0048eb48 - DAT_0048eb4c);
   if (DAT_00487038 < 0x28) {
-    if (DAT_00490b70 == 0x1d) {
+    if (player_weapon_id == 0x1d) {
       weapon_assign_player(0,1);
     }
     if (DAT_00490ed0 == 0x1d) {
@@ -3665,7 +3665,7 @@ void gameplay_render_world(void)
     }
   }
   player_index = 0;
-  piVar1 = &DAT_00490b70;
+  piVar1 = &player_weapon_id;
   do {
     if ((*piVar1 == 0x19) && (DAT_00486fb8 != 0x19)) {
       weapon_assign_player(player_index,1);
@@ -4213,26 +4213,26 @@ void FUN_00406b40(void)
           *pfVar1 = *pfVar1 - DAT_00480840 * 3.3333333;
         }
       }
-      if ((float)(&DAT_00490bc8)[DAT_004aaf0c * 0xd8] <= 0.0) {
-        (&DAT_00490bc8)[DAT_004aaf0c * 0xd8] = 0;
+      if ((float)(&player_shield_timer)[DAT_004aaf0c * 0xd8] <= 0.0) {
+        (&player_shield_timer)[DAT_004aaf0c * 0xd8] = 0;
       }
       else {
-        (&DAT_00490bc8)[DAT_004aaf0c * 0xd8] =
-             (float)(&DAT_00490bc8)[DAT_004aaf0c * 0xd8] - DAT_00480840;
+        (&player_shield_timer)[DAT_004aaf0c * 0xd8] =
+             (float)(&player_shield_timer)[DAT_004aaf0c * 0xd8] - DAT_00480840;
       }
-      if ((float)(&DAT_00490bcc)[DAT_004aaf0c * 0xd8] <= 0.0) {
-        (&DAT_00490bcc)[DAT_004aaf0c * 0xd8] = 0;
-      }
-      else {
-        (&DAT_00490bcc)[DAT_004aaf0c * 0xd8] =
-             (float)(&DAT_00490bcc)[DAT_004aaf0c * 0xd8] - DAT_00480840;
-      }
-      if ((float)(&DAT_00490bc4)[DAT_004aaf0c * 0xd8] <= 0.0) {
-        (&DAT_00490bc4)[DAT_004aaf0c * 0xd8] = 0;
+      if ((float)(&player_fire_bullets_timer)[DAT_004aaf0c * 0xd8] <= 0.0) {
+        (&player_fire_bullets_timer)[DAT_004aaf0c * 0xd8] = 0;
       }
       else {
-        (&DAT_00490bc4)[DAT_004aaf0c * 0xd8] =
-             (float)(&DAT_00490bc4)[DAT_004aaf0c * 0xd8] - DAT_00480840;
+        (&player_fire_bullets_timer)[DAT_004aaf0c * 0xd8] =
+             (float)(&player_fire_bullets_timer)[DAT_004aaf0c * 0xd8] - DAT_00480840;
+      }
+      if ((float)(&player_speed_bonus_timer)[DAT_004aaf0c * 0xd8] <= 0.0) {
+        (&player_speed_bonus_timer)[DAT_004aaf0c * 0xd8] = 0;
+      }
+      else {
+        (&player_speed_bonus_timer)[DAT_004aaf0c * 0xd8] =
+             (float)(&player_speed_bonus_timer)[DAT_004aaf0c * 0xd8] - DAT_00480840;
       }
       DAT_004aaf0c = DAT_004aaf0c + 1;
     } while (DAT_004aaf0c < _DAT_0048035c);
@@ -4423,8 +4423,8 @@ void FUN_004072b0(void)
   float local_8;
   undefined4 local_4;
   
-  DAT_00490b70 = 2;
-  DAT_00490b7c = 0x41f00000;
+  player_weapon_id = 2;
+  player_ammo = 0x41f00000;
   DAT_00490ed0 = 2;
   DAT_00490edc = 0x41f00000;
   if (DAT_0047eec8 == '\0') {
@@ -4776,7 +4776,7 @@ void survival_update(void)
   if (_DAT_0048035c == 1) {
     if ((((DAT_00486fe5 == '\0') && (DAT_00486fe4 == '\0')) && (64000 < DAT_00487060)) &&
        (DAT_00486fa8 != '\0')) {
-      if (DAT_00490b70 == 1) {
+      if (player_weapon_id == 1) {
         weapon_assign_player(0,0x18);
         DAT_00486fb8 = 0x18;
       }
@@ -5696,7 +5696,7 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
     }
     _DAT_00487014 = (float)bonus_entry[6] * local_10[0] + _DAT_00487014;
     if (0 < _DAT_0048035c) {
-      puVar4 = &DAT_00490b7c;
+      puVar4 = &player_ammo;
       iVar3 = _DAT_0048035c;
       do {
         *puVar4 = puVar4[-2];
@@ -5733,16 +5733,16 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
     }
     _DAT_0048701c = (float)bonus_entry[6] * local_10[0] + _DAT_0048701c;
     *(undefined4 *)(&DAT_00490910 + player_index * 0x360) = 0;
-    (&DAT_00490b84)[player_index * 0xd8] = 0;
-    (&DAT_00490b80)[player_index * 0xd8] = 0;
-    (&DAT_00490b7c)[player_index * 0xd8] = (&DAT_00490b74)[player_index * 0xd8];
+    (&player_shot_cooldown)[player_index * 0xd8] = 0;
+    (&player_reload_timer)[player_index * 0xd8] = 0;
+    (&player_ammo)[player_index * 0xd8] = (&player_clip_size)[player_index * 0xd8];
   }
   else if (iVar3 == 0xd) {
-    if ((DAT_00490bc4 <= 0.0) && (DAT_00490f24 <= 0.0)) {
-      FUN_0041a810(DAT_004854d4,DAT_004854dc,&DAT_00490bc4,&DAT_00490f24);
+    if ((player_speed_bonus_timer <= 0.0) && (DAT_00490f24 <= 0.0)) {
+      FUN_0041a810(DAT_004854d4,DAT_004854dc,&player_speed_bonus_timer,&DAT_00490f24);
     }
-    (&DAT_00490bc4)[player_index * 0xd8] =
-         (float)bonus_entry[6] * local_10[0] + (&DAT_00490bc4)[player_index * 0xd8];
+    (&player_speed_bonus_timer)[player_index * 0xd8] =
+         (float)bonus_entry[6] * local_10[0] + (&player_speed_bonus_timer)[player_index * 0xd8];
   }
   else if (iVar3 == 0xb) {
     if (_DAT_00487018 <= 0.0) {
@@ -5788,11 +5788,11 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
     DAT_004ab1c0 = 0.0;
   }
   else if (iVar3 == 10) {
-    if ((DAT_00490bc8 <= 0.0) && (DAT_00490f28 <= 0.0)) {
-      FUN_0041a810(DAT_00485498,DAT_004854a0,&DAT_00490bc8,&DAT_00490f28);
+    if ((player_shield_timer <= 0.0) && (DAT_00490f28 <= 0.0)) {
+      FUN_0041a810(DAT_00485498,DAT_004854a0,&player_shield_timer,&DAT_00490f28);
     }
-    (&DAT_00490bc8)[player_index * 0xd8] =
-         (float)bonus_entry[6] * local_10[0] + (&DAT_00490bc8)[player_index * 0xd8];
+    (&player_shield_timer)[player_index * 0xd8] =
+         (float)bonus_entry[6] * local_10[0] + (&player_shield_timer)[player_index * 0xd8];
   }
   else if (iVar3 == 7) {
     DAT_0048703c = 1;
@@ -5830,14 +5830,15 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
     sfx_play_panned(DAT_004c3fec);
   }
   else if (iVar3 == 0xe) {
-    if ((DAT_00490bcc <= 0.0) && (DAT_00490f2c <= 0.0)) {
-      FUN_0041a810(DAT_004854e8,DAT_004854f0,&DAT_00490bcc,&DAT_00490f2c);
+    if ((player_fire_bullets_timer <= 0.0) && (DAT_00490f2c <= 0.0)) {
+      FUN_0041a810(DAT_004854e8,DAT_004854f0,&player_fire_bullets_timer,&DAT_00490f2c);
     }
-    (&DAT_00490bcc)[player_index * 0xd8] = local_10[0] * 5.0 + (&DAT_00490bcc)[player_index * 0xd8];
+    (&player_fire_bullets_timer)[player_index * 0xd8] =
+         local_10[0] * 5.0 + (&player_fire_bullets_timer)[player_index * 0xd8];
     *(undefined4 *)(&DAT_00490910 + player_index * 0x360) = 0;
-    (&DAT_00490b84)[player_index * 0xd8] = 0;
-    (&DAT_00490b80)[player_index * 0xd8] = 0;
-    (&DAT_00490b7c)[player_index * 0xd8] = (&DAT_00490b74)[player_index * 0xd8];
+    (&player_shot_cooldown)[player_index * 0xd8] = 0;
+    (&player_reload_timer)[player_index * 0xd8] = 0;
+    (&player_ammo)[player_index * 0xd8] = (&player_clip_size)[player_index * 0xd8];
   }
   else if (iVar3 == 2) {
     if (_DAT_00487020 <= 0.0) {
@@ -6079,8 +6080,8 @@ void FUN_0040a510(void)
           DAT_004802a8 = _DAT_00484fc8 + (float)(&DAT_00490900)[DAT_004aaf0c * 0xd8];
           DAT_004802ac = _DAT_00484fcc + (float)(&DAT_00490904)[DAT_004aaf0c * 0xd8];
           FUN_0040a4c0(&DAT_004802a8,0x42400000,
-                       (float)(&DAT_00490b80)[DAT_004aaf0c * 0xd8] /
-                       (float)(&DAT_00490b88)[DAT_004aaf0c * 0xd8]);
+                       (float)(&player_reload_timer)[DAT_004aaf0c * 0xd8] /
+                       (float)(&player_reload_timer_max)[DAT_004aaf0c * 0xd8]);
           (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,0x3f333333);
           iVar2 = _DAT_0048035c;
         }
@@ -6290,7 +6291,7 @@ LAB_0040ad8e:
       _DAT_00487014 = _DAT_00487014 - DAT_00480840;
     }
     DAT_00487060 = DAT_00487060 + DAT_00480844;
-    (&DAT_0048708c)[DAT_00490b70] = (&DAT_0048708c)[DAT_00490b70] + DAT_00480844;
+    (&DAT_0048708c)[player_weapon_id] = (&DAT_0048708c)[player_weapon_id] + DAT_00480844;
   }
   fStack_20 = 5.940078e-39;
   FUN_00409500();
@@ -8700,7 +8701,7 @@ joined_r0x00412584:
       else {
 LAB_0041258a:
         if ((((_DAT_00487018 <= 0.0) || (uVar7 != 0xb)) &&
-            ((((DAT_00490bc8 <= 0.0 && (DAT_00490f28 <= 0.0)) || (uVar7 != 10)) &&
+            ((((player_shield_timer <= 0.0 && (DAT_00490f28 <= 0.0)) || (uVar7 != 10)) &&
              ((iVar4 = perk_count_get(DAT_004c2c18), iVar4 == 0 || (uVar7 != 3)))))) &&
            (((iVar4 = perk_count_get(DAT_004c2c14), iVar4 == 0 || (uVar7 != 0xc)) &&
             (((uVar7 != 3 || (!bVar2)) && ((&DAT_004853dc)[uVar7 * 0x14] != '\0')))))) {
@@ -9334,20 +9335,22 @@ void FUN_00413430(void)
       (iVar3 = perk_count_get(DAT_004c2bd0), iVar3 == 0)))) {
     iVar3 = DAT_004aaf0c * 0x360;
     if ((&DAT_00490b78)[iVar3] == '\0') {
-      sfx_play_panned(*(float *)(&DAT_004d7a8c + (&DAT_00490b70)[DAT_004aaf0c * 0xd8] * 0x7c));
+      sfx_play_panned(*(float *)(&DAT_004d7a8c + (&player_weapon_id)[DAT_004aaf0c * 0xd8] * 0x7c));
       iVar3 = DAT_004aaf0c * 0x360;
       (&DAT_00490b78)[iVar3] = 1;
     }
     iVar2 = DAT_004c2b5c;
-    fVar1 = (float)(&DAT_004d7a78)[*(int *)((int)&DAT_00490b70 + iVar3) * 0x1f];
-    *(float *)((int)&DAT_00490b80 + iVar3) = fVar1;
+    fVar1 = (float)(&DAT_004d7a78)[*(int *)((int)&player_weapon_id + iVar3) * 0x1f];
+    *(float *)((int)&player_reload_timer + iVar3) = fVar1;
     if (0 < (int)(&DAT_00490968)[iVar2]) {
-      *(float *)((int)&DAT_00490b80 + iVar3) = fVar1 * 0.7;
+      *(float *)((int)&player_reload_timer + iVar3) = fVar1 * 0.7;
     }
     if (0.0 < _DAT_0048701c) {
-      *(float *)((int)&DAT_00490b80 + iVar3) = *(float *)((int)&DAT_00490b80 + iVar3) * 0.6;
+      *(float *)((int)&player_reload_timer + iVar3) =
+           *(float *)((int)&player_reload_timer + iVar3) * 0.6;
     }
-    *(undefined4 *)((int)&DAT_00490b88 + iVar3) = *(undefined4 *)((int)&DAT_00490b80 + iVar3);
+    *(undefined4 *)((int)&player_reload_timer_max + iVar3) =
+         *(undefined4 *)((int)&player_reload_timer + iVar3);
   }
   return;
 }
@@ -9471,18 +9474,18 @@ void player_update(void)
     (&DAT_004908c0)[iVar7 * 0xd8] = (float)(&DAT_004908c0)[iVar7 * 0xd8] - DAT_00480840 * 20.0;
     return;
   }
-  if (0.0 < (float)(&DAT_00490bc4)[iVar7 * 0xd8]) {
+  if (0.0 < (float)(&player_speed_bonus_timer)[iVar7 * 0xd8]) {
     (&DAT_0049090c)[iVar7 * 0xd8] = (float)(&DAT_0049090c)[iVar7 * 0xd8] + 1.0;
   }
   if ((((&DAT_00490bc0)[iVar7 * 0xd8] != 0x42c80000) &&
       ((float)(&player_table)[iVar7 * 0xd8] < 20.0)) &&
      (fVar16 = (float)(&DAT_00490bc0)[iVar7 * 0xd8] - DAT_00480840,
      (&DAT_00490bc0)[iVar7 * 0xd8] = fVar16, fVar16 < 0.0)) {
-    fVar19 = (float10)fcos(((float10)(float)(&DAT_00490bb0)[iVar7 * 0xd8] + (float10)1.5707964) -
-                           (float10)0.5);
-    fVar20 = (float10)fsin(((float10)(float)(&DAT_00490bb0)[iVar7 * 0xd8] + (float10)1.5707964) -
-                           (float10)0.5);
-    fVar16 = (float)(&DAT_00490bb0)[iVar7 * 0xd8];
+    fVar19 = (float10)fcos(((float10)(float)(&player_aim_heading)[iVar7 * 0xd8] + (float10)1.5707964
+                           ) - (float10)0.5);
+    fVar20 = (float10)fsin(((float10)(float)(&player_aim_heading)[iVar7 * 0xd8] + (float10)1.5707964
+                           ) - (float10)0.5);
+    fVar16 = (float)(&player_aim_heading)[iVar7 * 0xd8];
     local_18 = (float)(fVar19 * (float10)-6.0 + (float10)*pfVar18);
     local_14 = (float)(fVar20 * (float10)-6.0) + (float)(&DAT_004908c8)[iVar7 * 0xd8];
     FUN_0042eb10(&local_18,fVar16,0.0);
@@ -9499,14 +9502,14 @@ void player_update(void)
     *pfVar1 = 0.0;
   }
   if (_DAT_0048701c <= 0.0) {
-    fVar16 = (float)(&DAT_00490b84)[iVar7 * 0xd8] - DAT_00480840;
+    fVar16 = (float)(&player_shot_cooldown)[iVar7 * 0xd8] - DAT_00480840;
   }
   else {
-    fVar16 = (float)(&DAT_00490b84)[iVar7 * 0xd8] - DAT_00480840 * 1.5;
+    fVar16 = (float)(&player_shot_cooldown)[iVar7 * 0xd8] - DAT_00480840 * 1.5;
   }
-  (&DAT_00490b84)[iVar7 * 0xd8] = fVar16;
-  if ((float)(&DAT_00490b84)[iVar7 * 0xd8] < 0.0) {
-    (&DAT_00490b84)[iVar7 * 0xd8] = 0;
+  (&player_shot_cooldown)[iVar7 * 0xd8] = fVar16;
+  if ((float)(&player_shot_cooldown)[iVar7 * 0xd8] < 0.0) {
+    (&player_shot_cooldown)[iVar7 * 0xd8] = 0;
   }
   iVar11 = perk_count_get(DAT_004c2c24);
   if (iVar11 == 0) {
@@ -9570,7 +9573,7 @@ void player_update(void)
       sfx_play_panned(DAT_004d9050);
       sfx_play_panned(DAT_004d7fd8);
       iVar22 = DAT_004aaf0c;
-      local_38 = (float)(&DAT_00490bb0)[iVar7 * 0xd8];
+      local_38 = (float)(&player_aim_heading)[iVar7 * 0xd8];
       fVar19 = ((float10)local_38 - (float10)1.5707964) - (float10)0.150915;
       fVar20 = (float10)fcos(fVar19);
       local_1c = (float)(&DAT_00490904)[DAT_004aaf0c * 0xd8];
@@ -9587,7 +9590,7 @@ void player_update(void)
       fVar16 = (float)(uVar10 & 0x1ff) * 0.012271847;
       uVar10 = _rand();
       local_44 = (float)(uVar10 & 0x1ff);
-      fVar19 = (float10)local_30[0] * (float10)(float)(&DAT_00490b68)[iVar22 * 0xd8] *
+      fVar19 = (float10)local_30[0] * (float10)(float)(&player_spread_heat)[iVar22 * 0xd8] *
                (float10)(int)local_44 * (float10)0.001953125;
       fVar20 = (float10)fcos((float10)fVar16);
       local_20 = (float)(fVar20 * fVar19 + (float10)local_20);
@@ -9739,7 +9742,8 @@ LAB_0041412c:
           (&DAT_00490918)[iVar7 * 0xd8] = 0x40333333;
         }
       }
-      if (((&DAT_00490b70)[iVar7 * 0xd8] == 7) && (0.8 < (float)(&DAT_00490918)[iVar7 * 0xd8])) {
+      if (((&player_weapon_id)[iVar7 * 0xd8] == 7) && (0.8 < (float)(&DAT_00490918)[iVar7 * 0xd8]))
+      {
         (&DAT_00490918)[iVar7 * 0xd8] = 0x3f4ccccd;
       }
       fVar20 = (float10)fcos((float10)(float)(&DAT_004908dc)[iVar7 * 0xd8] - (float10)1.5707964);
@@ -9813,7 +9817,8 @@ LAB_00414390:
             (&DAT_00490918)[iVar7 * 0xd8] = 0x40333333;
           }
         }
-        if (((&DAT_00490b70)[iVar7 * 0xd8] == 7) && (0.8 < (float)(&DAT_00490918)[iVar7 * 0xd8])) {
+        if (((&player_weapon_id)[iVar7 * 0xd8] == 7) && (0.8 < (float)(&DAT_00490918)[iVar7 * 0xd8])
+           ) {
           (&DAT_00490918)[iVar7 * 0xd8] = 0x3f4ccccd;
         }
         local_40 = (float)((float10)3.1415927 - fVar19);
@@ -9851,7 +9856,7 @@ LAB_00414390:
           (&DAT_004908dc)[iVar7 * 0xd8] =
                fVar16 * DAT_00480840 * 0.5 + (float)(&DAT_004908dc)[iVar7 * 0xd8];
           fVar16 = DAT_00480840 * (float)(&DAT_00490bb4)[iVar7 * 0xd8] * 0.5 +
-                   (float)(&DAT_00490bb0)[iVar7 * 0xd8];
+                   (float)(&player_aim_heading)[iVar7 * 0xd8];
           goto LAB_00414562;
         }
       }
@@ -9860,10 +9865,10 @@ LAB_00414390:
         (&DAT_00490bb4)[iVar7 * 0xd8] = fVar16;
         (&DAT_004908dc)[iVar7 * 0xd8] =
              (float)(&DAT_004908dc)[iVar7 * 0xd8] - fVar16 * DAT_00480840 * 0.5;
-        fVar16 = (float)(&DAT_00490bb0)[iVar7 * 0xd8] -
+        fVar16 = (float)(&player_aim_heading)[iVar7 * 0xd8] -
                  DAT_00480840 * (float)(&DAT_00490bb4)[iVar7 * 0xd8] * 0.5;
 LAB_00414562:
-        (&DAT_00490bb0)[iVar7 * 0xd8] = fVar16;
+        (&player_aim_heading)[iVar7 * 0xd8] = fVar16;
         bVar5 = true;
       }
       cVar8 = (**(code **)(*DAT_0048083c + 0x80))((&DAT_00490bdc)[iVar7 * 0xd8]);
@@ -9948,7 +9953,8 @@ LAB_00414562:
             (&DAT_00490918)[iVar7 * 0xd8] = 0x40333333;
           }
         }
-        if (((&DAT_00490b70)[iVar7 * 0xd8] == 7) && (0.8 < (float)(&DAT_00490918)[iVar7 * 0xd8])) {
+        if (((&player_weapon_id)[iVar7 * 0xd8] == 7) && (0.8 < (float)(&DAT_00490918)[iVar7 * 0xd8])
+           ) {
           (&DAT_00490918)[iVar7 * 0xd8] = 0x3f4ccccd;
         }
         fVar19 = (float10)fcos((float10)(float)(&DAT_004908dc)[iVar7 * 0xd8] - (float10)1.5707964);
@@ -10026,7 +10032,8 @@ LAB_00414562:
           local_40 = 3.926991;
         }
         fVar19 = (float10)FUN_00413540(local_40);
-        (&DAT_00490bb0)[iVar7 * 0xd8] = _DAT_00487198 + (float)(&DAT_00490bb0)[iVar7 * 0xd8];
+        (&player_aim_heading)[iVar7 * 0xd8] =
+             _DAT_00487198 + (float)(&player_aim_heading)[iVar7 * 0xd8];
         if ((int)(&DAT_00490968)[DAT_004c2b54] < 1) {
           fVar15 = DAT_00480840 * 5.0 + (float)(&DAT_00490918)[iVar7 * 0xd8];
           (&DAT_00490918)[iVar7 * 0xd8] = fVar15;
@@ -10045,7 +10052,8 @@ LAB_00414562:
             (&DAT_00490918)[iVar7 * 0xd8] = 0x40333333;
           }
         }
-        if (((&DAT_00490b70)[iVar7 * 0xd8] == 7) && (0.8 < (float)(&DAT_00490918)[iVar7 * 0xd8])) {
+        if (((&player_weapon_id)[iVar7 * 0xd8] == 7) && (0.8 < (float)(&DAT_00490918)[iVar7 * 0xd8])
+           ) {
           (&DAT_00490918)[iVar7 * 0xd8] = 0x3f4ccccd;
         }
         fVar20 = (float10)fcos((float10)(float)(&DAT_004908dc)[iVar7 * 0xd8] - (float10)1.5707964);
@@ -10160,7 +10168,8 @@ LAB_00414f13:
           (&DAT_00490918)[iVar7 * 0xd8] = 0x40333333;
         }
       }
-      if (((&DAT_00490b70)[iVar7 * 0xd8] == 7) && (0.8 < (float)(&DAT_00490918)[iVar7 * 0xd8])) {
+      if (((&player_weapon_id)[iVar7 * 0xd8] == 7) && (0.8 < (float)(&DAT_00490918)[iVar7 * 0xd8]))
+      {
         (&DAT_00490918)[iVar7 * 0xd8] = 0x3f4ccccd;
       }
       pfVar23 = &local_10;
@@ -10188,30 +10197,30 @@ LAB_00414f2d:
   }
   iVar11 = perk_count_get(DAT_004c2b48);
   if (iVar11 == 0) {
-    fVar16 = (float)(&DAT_00490b68)[iVar7 * 0xd8] - DAT_00480840 * 0.4;
-    (&DAT_00490b68)[iVar7 * 0xd8] = fVar16;
+    fVar16 = (float)(&player_spread_heat)[iVar7 * 0xd8] - DAT_00480840 * 0.4;
+    (&player_spread_heat)[iVar7 * 0xd8] = fVar16;
     if (fVar16 < 0.01) {
-      (&DAT_00490b68)[iVar7 * 0xd8] = 0x3c23d70a;
+      (&player_spread_heat)[iVar7 * 0xd8] = 0x3c23d70a;
     }
   }
   else {
-    fVar16 = (float)(&DAT_00490b68)[iVar7 * 0xd8] - (DAT_00480840 + DAT_00480840);
-    (&DAT_00490b68)[iVar7 * 0xd8] = fVar16;
+    fVar16 = (float)(&player_spread_heat)[iVar7 * 0xd8] - (DAT_00480840 + DAT_00480840);
+    (&player_spread_heat)[iVar7 * 0xd8] = fVar16;
     if (fVar16 < 0.25) {
-      (&DAT_00490b68)[iVar7 * 0xd8] = 0x3e800000;
+      (&player_spread_heat)[iVar7 * 0xd8] = 0x3e800000;
     }
-    (&DAT_00490b68)[iVar7 * 0xd8] = 0x3ca3d70a;
+    (&player_spread_heat)[iVar7 * 0xd8] = 0x3ca3d70a;
   }
   iVar11 = perk_count_get(DAT_004c2b90);
   if ((((iVar11 != 0) && (iVar11 = input_primary_just_pressed(), (char)iVar11 != '\0')) &&
-      (0.0 < (float)(&DAT_00490b80)[iVar7 * 0xd8])) &&
-     (fVar16 = (float)(&DAT_00490b80)[iVar7 * 0xd8], (&DAT_00490b80)[iVar7 * 0xd8] = fVar16 - 0.05,
-     fVar16 - 0.05 <= 0.0)) {
-    (&DAT_00490b80)[iVar7 * 0xd8] = DAT_00480840 * 0.8;
+      (0.0 < (float)(&player_reload_timer)[iVar7 * 0xd8])) &&
+     (fVar16 = (float)(&player_reload_timer)[iVar7 * 0xd8],
+     (&player_reload_timer)[iVar7 * 0xd8] = fVar16 - 0.05, fVar16 - 0.05 <= 0.0)) {
+    (&player_reload_timer)[iVar7 * 0xd8] = DAT_00480840 * 0.8;
   }
-  if (((float)(&DAT_00490b80)[iVar7 * 0xd8] - DAT_00480840 < 0.0) &&
-     (0.0 <= (float)(&DAT_00490b80)[iVar7 * 0xd8])) {
-    (&DAT_00490b7c)[iVar7 * 0xd8] = (&DAT_00490b74)[iVar7 * 0xd8];
+  if (((float)(&player_reload_timer)[iVar7 * 0xd8] - DAT_00480840 < 0.0) &&
+     (0.0 <= (float)(&player_reload_timer)[iVar7 * 0xd8])) {
+    (&player_ammo)[iVar7 * 0xd8] = (&player_clip_size)[iVar7 * 0xd8];
   }
   local_38 = 1.0;
   if ((*pfVar18 == local_28) && ((float)(&DAT_004908c8)[iVar7 * 0xd8] == local_24)) {
@@ -10225,14 +10234,16 @@ LAB_00414f2d:
     (&DAT_00490954)[iVar7 * 0xd8] = 0;
   }
   iVar11 = perk_count_get(DAT_004c2c20);
-  if (((iVar11 == 0) || ((float)(&DAT_00490b88)[iVar7 * 0xd8] <= 0.5)) ||
-     ((float)(&DAT_00490b80)[iVar7 * 0xd8] <= (float)(&DAT_00490b88)[iVar7 * 0xd8] * 0.5)) {
-    (&DAT_00490b80)[iVar7 * 0xd8] = (float)(&DAT_00490b80)[iVar7 * 0xd8] - local_38 * DAT_00480840;
+  if (((iVar11 == 0) || ((float)(&player_reload_timer_max)[iVar7 * 0xd8] <= 0.5)) ||
+     ((float)(&player_reload_timer)[iVar7 * 0xd8] <=
+      (float)(&player_reload_timer_max)[iVar7 * 0xd8] * 0.5)) {
+    (&player_reload_timer)[iVar7 * 0xd8] =
+         (float)(&player_reload_timer)[iVar7 * 0xd8] - local_38 * DAT_00480840;
   }
   else {
-    fVar16 = (float)(&DAT_00490b80)[iVar7 * 0xd8] - local_38 * DAT_00480840;
-    (&DAT_00490b80)[iVar7 * 0xd8] = fVar16;
-    if (fVar16 <= (float)(&DAT_00490b88)[iVar7 * 0xd8] * 0.5) {
+    fVar16 = (float)(&player_reload_timer)[iVar7 * 0xd8] - local_38 * DAT_00480840;
+    (&player_reload_timer)[iVar7 * 0xd8] = fVar16;
+    if (fVar16 <= (float)(&player_reload_timer_max)[iVar7 * 0xd8] * 0.5) {
       DAT_0048703c = 1;
       if (*(float *)(DAT_0048086c + 0xc) == 0.0) {
         local_38 = -NAN;
@@ -10255,13 +10266,13 @@ LAB_00414f2d:
       sfx_play_panned(DAT_004c3fe8);
     }
   }
-  if ((float)(&DAT_00490b80)[iVar7 * 0xd8] < 0.0) {
-    (&DAT_00490b80)[iVar7 * 0xd8] = 0;
+  if ((float)(&player_reload_timer)[iVar7 * 0xd8] < 0.0) {
+    (&player_reload_timer)[iVar7 * 0xd8] = 0;
   }
   if ((((DAT_0048700d == '\0') && (iVar11 = perk_count_get(DAT_004c2b74), iVar11 == 0)) &&
       (((&DAT_00480364)[DAT_004aaf0c] != 4 &&
        ((cVar8 = (**(code **)(*DAT_0048083c + 0x80))(DAT_004807c4), cVar8 != '\0' &&
-        ((float)(&DAT_00490b80)[iVar7 * 0xd8] == 0.0)))))) && (_DAT_0048035c == 1)) {
+        ((float)(&player_reload_timer)[iVar7 * 0xd8] == 0.0)))))) && (_DAT_0048035c == 1)) {
     FUN_00413430();
   }
   bVar5 = false;
@@ -10281,7 +10292,7 @@ LAB_00414f2d:
           local_1c = (float)fVar19;
           if ((local_20 != 0.0) || (fVar19 != (float10)0.0)) {
             fVar19 = (float10)fpatan(fVar19,(float10)local_20);
-            (&DAT_00490bb0)[iVar7 * 0xd8] = (float)(fVar19 + (float10)1.5707964);
+            (&player_aim_heading)[iVar7 * 0xd8] = (float)(fVar19 + (float10)1.5707964);
             fVar19 = (fVar19 + (float10)1.5707964) - (float10)1.5707964;
             local_30[0] = (float)fVar19;
             fVar19 = (float10)fcos(fVar19);
@@ -10306,17 +10317,17 @@ LAB_00414f2d:
           if (((&DAT_00480364)[DAT_004aaf0c] == 1) || ((&DAT_00480364)[DAT_004aaf0c] == 2)) {
             cVar8 = (**(code **)(*DAT_0048083c + 0x80))((&DAT_00490bfc)[iVar7 * 0xd8]);
             if (cVar8 != '\0') {
-              (&DAT_00490bb0)[iVar7 * 0xd8] =
-                   DAT_00480840 * 3.0 + (float)(&DAT_00490bb0)[iVar7 * 0xd8];
+              (&player_aim_heading)[iVar7 * 0xd8] =
+                   DAT_00480840 * 3.0 + (float)(&player_aim_heading)[iVar7 * 0xd8];
             }
             cVar8 = (**(code **)(*DAT_0048083c + 0x80))((&DAT_00490bf8)[iVar7 * 0xd8]);
             if (cVar8 != '\0') {
-              (&DAT_00490bb0)[iVar7 * 0xd8] =
-                   (float)(&DAT_00490bb0)[iVar7 * 0xd8] - DAT_00480840 * 3.0;
+              (&player_aim_heading)[iVar7 * 0xd8] =
+                   (float)(&player_aim_heading)[iVar7 * 0xd8] - DAT_00480840 * 3.0;
             }
-            local_30[0] = (float)((float10)(float)(&DAT_00490bb0)[iVar7 * 0xd8] - (float10)1.5707964
-                                 );
-            fVar19 = (float10)fcos((float10)(float)(&DAT_00490bb0)[iVar7 * 0xd8] -
+            local_30[0] = (float)((float10)(float)(&player_aim_heading)[iVar7 * 0xd8] -
+                                 (float10)1.5707964);
+            fVar19 = (float10)fcos((float10)(float)(&player_aim_heading)[iVar7 * 0xd8] -
                                    (float10)1.5707964);
             fVar20 = (float10)fsin((float10)local_30[0]);
             local_c = (float)fVar20;
@@ -10329,17 +10340,18 @@ LAB_00414f2d:
         else {
           bVar9 = FUN_0041e8d0();
           if (bVar9) {
-            (&DAT_00490bb0)[iVar7 * 0xd8] =
-                 (float)(&DAT_00490bb0)[iVar7 * 0xd8] - DAT_00480840 * 4.0;
+            (&player_aim_heading)[iVar7 * 0xd8] =
+                 (float)(&player_aim_heading)[iVar7 * 0xd8] - DAT_00480840 * 4.0;
           }
           bVar9 = FUN_0041e8f0();
           if (bVar9) {
-            (&DAT_00490bb0)[iVar7 * 0xd8] =
-                 DAT_00480840 * 4.0 + (float)(&DAT_00490bb0)[iVar7 * 0xd8];
+            (&player_aim_heading)[iVar7 * 0xd8] =
+                 DAT_00480840 * 4.0 + (float)(&player_aim_heading)[iVar7 * 0xd8];
           }
-          local_30[0] = (float)((float10)(float)(&DAT_00490bb0)[iVar7 * 0xd8] - (float10)1.5707964);
-          fVar19 = (float10)fcos((float10)(float)(&DAT_00490bb0)[iVar7 * 0xd8] - (float10)1.5707964)
-          ;
+          local_30[0] = (float)((float10)(float)(&player_aim_heading)[iVar7 * 0xd8] -
+                               (float10)1.5707964);
+          fVar19 = (float10)fcos((float10)(float)(&player_aim_heading)[iVar7 * 0xd8] -
+                                 (float10)1.5707964);
           fVar20 = (float10)fsin((float10)local_30[0]);
           local_c = (float)fVar20;
           local_14 = local_c * 60.0 + (float)(&DAT_004908c8)[iVar7 * 0xd8];
@@ -10368,7 +10380,7 @@ LAB_00414f2d:
     fVar19 = (float10)fpatan((float10)(float)(&DAT_004908c8)[iVar7 * 0xd8] -
                              (float10)(float)(&DAT_00490904)[iVar7 * 0xd8],
                              (float10)*pfVar18 - (float10)(float)(&DAT_00490900)[iVar7 * 0xd8]);
-    (&DAT_00490bb0)[iVar7 * 0xd8] = (float)(fVar19 - (float10)1.5707964);
+    (&player_aim_heading)[iVar7 * 0xd8] = (float)(fVar19 - (float10)1.5707964);
   }
   else {
     pfVar13 = (float *)(&DAT_00490900 + iVar7 * 0xd8);
@@ -10395,11 +10407,11 @@ LAB_0041572e:
   fVar19 = (float10)fpatan((float10)(float)(&DAT_004908c8)[iVar7 * 0xd8] -
                            (float10)(float)(&DAT_00490904)[iVar7 * 0xd8],
                            (float10)*pfVar18 - (float10)(float)(&DAT_00490900)[iVar7 * 0xd8]);
-  pfVar13 = (float *)(&DAT_00490b84 + iVar7 * 0xd8);
+  pfVar13 = (float *)(&player_shot_cooldown + iVar7 * 0xd8);
   bVar9 = false;
   bVar6 = false;
-  (&DAT_00490bb0)[iVar7 * 0xd8] = (float)(fVar19 - (float10)1.5707964);
-  if ((*pfVar13 <= 0.0) && ((float)(&DAT_00490b80)[iVar7 * 0xd8] == 0.0)) {
+  (&player_aim_heading)[iVar7 * 0xd8] = (float)(fVar19 - (float10)1.5707964);
+  if ((*pfVar13 <= 0.0) && ((float)(&player_reload_timer)[iVar7 * 0xd8] == 0.0)) {
     bVar9 = true;
     (&DAT_00490b78)[iVar17] = 0;
   }
@@ -10412,28 +10424,28 @@ LAB_0041572e:
   if (iVar11 != 0) {
     if (((DAT_0048719c < 1) || (DAT_0048719c = DAT_0048719c - DAT_00480844, DAT_0048719c < 1)) &&
        (cVar8 = (**(code **)(*DAT_0048083c + 0x80))(DAT_004807c4), cVar8 != '\0')) {
-      iVar11 = (&DAT_00490b8c)[iVar7 * 0xd8];
-      (&DAT_00490b8c)[iVar7 * 0xd8] = (&DAT_00490b70)[iVar7 * 0xd8];
-      (&DAT_00490b70)[iVar7 * 0xd8] = iVar11;
-      uVar2 = (&DAT_00490b90)[iVar7 * 0xd8];
-      (&DAT_00490b90)[iVar7 * 0xd8] = (&DAT_00490b74)[iVar7 * 0xd8];
-      (&DAT_00490b74)[iVar7 * 0xd8] = uVar2;
+      iVar11 = (&player_alt_weapon_id)[iVar7 * 0xd8];
+      (&player_alt_weapon_id)[iVar7 * 0xd8] = (&player_weapon_id)[iVar7 * 0xd8];
+      (&player_weapon_id)[iVar7 * 0xd8] = iVar11;
+      uVar2 = (&player_alt_clip_size)[iVar7 * 0xd8];
+      (&player_alt_clip_size)[iVar7 * 0xd8] = (&player_clip_size)[iVar7 * 0xd8];
+      (&player_clip_size)[iVar7 * 0xd8] = uVar2;
       uVar4 = (&DAT_00490b94)[iVar17];
       (&DAT_00490b94)[iVar17] = (&DAT_00490b78)[iVar17];
       (&DAT_00490b78)[iVar17] = uVar4;
-      uVar2 = (&DAT_00490b98)[iVar7 * 0xd8];
-      (&DAT_00490b98)[iVar7 * 0xd8] = (&DAT_00490b7c)[iVar7 * 0xd8];
-      (&DAT_00490b7c)[iVar7 * 0xd8] = uVar2;
-      uVar2 = (&DAT_00490b9c)[iVar7 * 0xd8];
-      (&DAT_00490b9c)[iVar7 * 0xd8] = (&DAT_00490b80)[iVar7 * 0xd8];
-      (&DAT_00490b80)[iVar7 * 0xd8] = uVar2;
-      fVar16 = (float)(&DAT_00490ba0)[iVar7 * 0xd8];
-      (&DAT_00490ba0)[iVar7 * 0xd8] = *pfVar13;
+      uVar2 = (&player_alt_ammo)[iVar7 * 0xd8];
+      (&player_alt_ammo)[iVar7 * 0xd8] = (&player_ammo)[iVar7 * 0xd8];
+      (&player_ammo)[iVar7 * 0xd8] = uVar2;
+      uVar2 = (&player_alt_reload_timer)[iVar7 * 0xd8];
+      (&player_alt_reload_timer)[iVar7 * 0xd8] = (&player_reload_timer)[iVar7 * 0xd8];
+      (&player_reload_timer)[iVar7 * 0xd8] = uVar2;
+      fVar16 = (float)(&player_alt_shot_cooldown)[iVar7 * 0xd8];
+      (&player_alt_shot_cooldown)[iVar7 * 0xd8] = *pfVar13;
       *pfVar13 = fVar16;
-      uVar2 = (&DAT_00490ba4)[iVar7 * 0xd8];
-      (&DAT_00490ba4)[iVar7 * 0xd8] = (&DAT_00490b88)[iVar7 * 0xd8];
-      (&DAT_00490b88)[iVar7 * 0xd8] = uVar2;
-      sfx_play_panned(*(float *)(&DAT_004d7a8c + (&DAT_00490b70)[iVar7 * 0xd8] * 0x7c));
+      uVar2 = (&player_alt_reload_timer_max)[iVar7 * 0xd8];
+      (&player_alt_reload_timer_max)[iVar7 * 0xd8] = (&player_reload_timer_max)[iVar7 * 0xd8];
+      (&player_reload_timer_max)[iVar7 * 0xd8] = uVar2;
+      sfx_play_panned(*(float *)(&DAT_004d7a8c + (&player_weapon_id)[iVar7 * 0xd8] * 0x7c));
       *pfVar13 = *pfVar13 + 0.1;
       DAT_0048719c = 200;
     }
@@ -10445,7 +10457,7 @@ LAB_0041572e:
     }
   }
   if ((!bVar9) && (!bVar6)) goto LAB_0041753e;
-  fVar16 = (float)(&DAT_00490bb0)[iVar7 * 0xd8];
+  fVar16 = (float)(&player_aim_heading)[iVar7 * 0xd8];
   cVar8 = (**(code **)(*DAT_0048083c + 0x80))((&DAT_00490bec)[iVar7 * 0xd8]);
   if ((cVar8 == '\0') && (!bVar5)) goto LAB_0041753e;
   DAT_00486fe4 = 1;
@@ -10454,7 +10466,7 @@ LAB_0041572e:
     if (iVar11 == 0) {
       iVar11 = perk_count_get(DAT_004c2bc8);
       if (iVar11 != 0) {
-        if ((&DAT_004d7a28)[(&DAT_00490b70)[iVar7 * 0xd8] * 0x1f] == 1) {
+        if ((&DAT_004d7a28)[(&player_weapon_id)[iVar7 * 0xd8] * 0x1f] == 1) {
           fVar15 = 0.15;
         }
         else {
@@ -10463,7 +10475,7 @@ LAB_0041572e:
         player_take_damage(DAT_004aaf0c,fVar15);
       }
     }
-    else if ((&DAT_004d7a28)[(&DAT_00490b70)[iVar7 * 0xd8] * 0x1f] == 1) {
+    else if ((&DAT_004d7a28)[(&player_weapon_id)[iVar7 * 0xd8] * 0x1f] == 1) {
       lVar21 = __ftol();
       (&DAT_0049095c)[iVar7 * 0xd8] = (int)lVar21;
     }
@@ -10481,7 +10493,7 @@ LAB_0041572e:
   local_20 = (float)(fVar20 * (float10)16.0);
   fVar19 = (float10)fsin(fVar19);
   local_1c = (float)(fVar19 * (float10)16.0);
-  if ((*(byte *)(&DAT_004d7a94 + (&DAT_00490b70)[iVar7 * 0xd8] * 0x1f) & 1) != 0) {
+  if ((*(byte *)(&DAT_004d7a94 + (&player_weapon_id)[iVar7 * 0xd8] * 0x1f) & 1) != 0) {
     uVar10 = _rand();
     local_30[0] = (float)(uVar10 & 0x3f);
     fVar3 = (float)(int)local_30[0] * 0.01 + fVar16;
@@ -10540,7 +10552,7 @@ LAB_0041572e:
   fVar3 = (float)(int)local_30[0];
   uVar10 = _rand();
   local_30[0] = (float)(uVar10 & 0x1ff);
-  fVar19 = (float10)local_28 * (float10)(float)(&DAT_00490b68)[iVar11 * 0xd8] *
+  fVar19 = (float10)local_28 * (float10)(float)(&player_spread_heat)[iVar11 * 0xd8] *
            (float10)(int)local_30[0] * (float10)0.001953125;
   fVar20 = (float10)fcos((float10)(fVar3 * 0.012271847));
   local_18 = (float)(fVar20 * fVar19 + (float10)local_18);
@@ -10551,16 +10563,17 @@ LAB_0041572e:
   fVar3 = (float)(fVar19 - (float10)1.5707964);
   cVar8 = (**(code **)(*DAT_0048083c + 0x80))(0x22);
   if (cVar8 != '\0') {
-    (&DAT_00490bcc)[iVar7 * 0xd8] = 0x41200000;
+    (&player_fire_bullets_timer)[iVar7 * 0xd8] = 0x41200000;
   }
-  if ((float)(&DAT_00490bcc)[iVar7 * 0xd8] <= 0.0) {
-    (&DAT_00490b84)[iVar7 * 0xd8] = (&DAT_004d7a74)[(&DAT_00490b70)[iVar7 * 0xd8] * 0x1f];
-    *pfVar1 = (float)(&DAT_004d7a7c)[(&DAT_00490b70)[iVar7 * 0xd8] * 0x1f] + *pfVar1;
-    iVar11 = (&DAT_00490b70)[iVar7 * 0xd8];
+  if ((float)(&player_fire_bullets_timer)[iVar7 * 0xd8] <= 0.0) {
+    (&player_shot_cooldown)[iVar7 * 0xd8] =
+         (&DAT_004d7a74)[(&player_weapon_id)[iVar7 * 0xd8] * 0x1f];
+    *pfVar1 = (float)(&DAT_004d7a7c)[(&player_weapon_id)[iVar7 * 0xd8] * 0x1f] + *pfVar1;
+    iVar11 = (&player_weapon_id)[iVar7 * 0xd8];
     iVar12 = _rand();
     sfx_play_panned((float)(iVar12 % (int)(&DAT_004d7a88)[iVar11 * 0x1f] +
                            *(int *)(&DAT_004d7a84 + iVar11 * 0x7c)));
-    iVar11 = (&DAT_00490b70)[iVar7 * 0xd8];
+    iVar11 = (&player_weapon_id)[iVar7 * 0xd8];
     if (iVar11 == 0x18) {
       local_c = local_1c + (float)(&DAT_004908c8)[iVar7 * 0xd8];
       local_10 = local_20 + *pfVar18;
@@ -10967,11 +10980,11 @@ LAB_0041600e:
         (&DAT_00496828)[iVar17 * 0xb] = 0x3f000000;
         (&DAT_0049682c)[iVar17 * 0xb] = 0x3f000000;
         (&DAT_00496830)[iVar17 * 0xb] = 0x3e90e560;
-        fVar16 = (float)(&DAT_00490b7c)[iVar7 * 0xd8];
+        fVar16 = (float)(&player_ammo)[iVar7 * 0xd8];
         fVar15 = 0.0;
         local_3c = (fVar3 - 3.1415927) -
-                   fVar16 * 1.0471976 * (float)(&DAT_00490b7c)[iVar7 * 0xd8] * 0.5;
-        if (0.0 < (float)(&DAT_00490b7c)[iVar7 * 0xd8]) {
+                   fVar16 * 1.0471976 * (float)(&player_ammo)[iVar7 * 0xd8] * 0.5;
+        if (0.0 < (float)(&player_ammo)[iVar7 * 0xd8]) {
           do {
             local_c = local_1c + (float)(&DAT_004908c8)[iVar7 * 0xd8];
             local_10 = local_20 + *pfVar18;
@@ -10979,9 +10992,9 @@ LAB_0041600e:
             local_3c = local_3c + fVar16 * 1.0471976;
             fVar15 = (float)((int)fVar15 + 1);
             local_28 = fVar15;
-          } while ((float)(int)fVar15 < (float)(&DAT_00490b7c)[iVar7 * 0xd8]);
+          } while ((float)(int)fVar15 < (float)(&player_ammo)[iVar7 * 0xd8]);
         }
-        local_38 = (float)(&DAT_00490b7c)[iVar7 * 0xd8];
+        local_38 = (float)(&player_ammo)[iVar7 * 0xd8];
       }
       else if (iVar11 == 0x12) {
         fVar19 = (float10)fcos((float10)fVar16);
@@ -11064,28 +11077,29 @@ LAB_0041600e:
     }
     iVar17 = perk_count_get(DAT_004c2b48);
     if (iVar17 == 0) {
-      (&DAT_00490b68)[iVar7 * 0xd8] =
-           (float)(&DAT_004d7a7c)[(&DAT_00490b70)[iVar7 * 0xd8] * 0x1f] * 1.3 +
-           (float)(&DAT_00490b68)[iVar7 * 0xd8];
+      (&player_spread_heat)[iVar7 * 0xd8] =
+           (float)(&DAT_004d7a7c)[(&player_weapon_id)[iVar7 * 0xd8] * 0x1f] * 1.3 +
+           (float)(&player_spread_heat)[iVar7 * 0xd8];
     }
     if (_DAT_00487014 <= 0.0) {
-      (&DAT_00490b7c)[iVar7 * 0xd8] = (float)(&DAT_00490b7c)[iVar7 * 0xd8] - local_38;
+      (&player_ammo)[iVar7 * 0xd8] = (float)(&player_ammo)[iVar7 * 0xd8] - local_38;
     }
   }
   else {
     sfx_play_panned(DAT_004d9050);
     sfx_play_panned(DAT_004d7fd8);
-    if ((&DAT_004d7aa0)[(&DAT_00490b70)[iVar7 * 0xd8] * 0x1f] == 1) {
-      (&DAT_00490b84)[iVar7 * 0xd8] = DAT_004d9040;
+    if ((&DAT_004d7aa0)[(&player_weapon_id)[iVar7 * 0xd8] * 0x1f] == 1) {
+      (&player_shot_cooldown)[iVar7 * 0xd8] = DAT_004d9040;
       fVar15 = _DAT_004d9048;
     }
     else {
-      (&DAT_00490b84)[iVar7 * 0xd8] = (&DAT_004d7a74)[(&DAT_00490b70)[iVar7 * 0xd8] * 0x1f];
-      fVar15 = (float)(&DAT_004d7a7c)[(&DAT_00490b70)[iVar7 * 0xd8] * 0x1f];
+      (&player_shot_cooldown)[iVar7 * 0xd8] =
+           (&DAT_004d7a74)[(&player_weapon_id)[iVar7 * 0xd8] * 0x1f];
+      fVar15 = (float)(&DAT_004d7a7c)[(&player_weapon_id)[iVar7 * 0xd8] * 0x1f];
     }
     iVar17 = 0;
     *pfVar1 = fVar15 + *pfVar1;
-    if (0 < (int)(&DAT_004d7aa0)[(&DAT_00490b70)[iVar7 * 0xd8] * 0x1f]) {
+    if (0 < (int)(&DAT_004d7aa0)[(&player_weapon_id)[iVar7 * 0xd8] * 0x1f]) {
       do {
         iVar11 = _rand();
         local_28 = (float)(iVar11 % 200 + -100) * 0.0015 + fVar3;
@@ -11093,7 +11107,7 @@ LAB_0041600e:
         local_10 = local_20 + *pfVar18;
         projectile_spawn(&local_10,local_28,0x2d,iVar22);
         iVar17 = iVar17 + 1;
-      } while (iVar17 < (int)(&DAT_004d7aa0)[(&DAT_00490b70)[iVar7 * 0xd8] * 0x1f]);
+      } while (iVar17 < (int)(&DAT_004d7aa0)[(&player_weapon_id)[iVar7 * 0xd8] * 0x1f]);
     }
     fVar19 = (float10)fcos((float10)fVar16);
     local_10 = (float)(fVar19 * (float10)25.0);
@@ -11109,19 +11123,20 @@ LAB_0041600e:
     (&DAT_00496830)[iVar11 * 0xb] = 0x3ed374bc;
     iVar17 = perk_count_get(iVar17);
     if (iVar17 == 0) {
-      (&DAT_00490b68)[iVar7 * 0xd8] = _DAT_004d9048 * 1.3 + (float)(&DAT_00490b68)[iVar7 * 0xd8];
+      (&player_spread_heat)[iVar7 * 0xd8] =
+           _DAT_004d9048 * 1.3 + (float)(&player_spread_heat)[iVar7 * 0xd8];
     }
   }
-  if (0.48 < (float)(&DAT_00490b68)[iVar7 * 0xd8]) {
-    (&DAT_00490b68)[iVar7 * 0xd8] = 0x3ef5c28f;
+  if (0.48 < (float)(&player_spread_heat)[iVar7 * 0xd8]) {
+    (&player_spread_heat)[iVar7 * 0xd8] = 0x3ef5c28f;
   }
   if (0 < (int)(&DAT_00490968)[DAT_004c2b50]) {
-    (&DAT_00490b84)[iVar7 * 0xd8] = (float)(&DAT_00490b84)[iVar7 * 0xd8] * 0.88;
+    (&player_shot_cooldown)[iVar7 * 0xd8] = (float)(&player_shot_cooldown)[iVar7 * 0xd8] * 0.88;
   }
   if (0 < (int)(&DAT_00490968)[DAT_004c2b48]) {
-    (&DAT_00490b84)[iVar7 * 0xd8] = (float)(&DAT_00490b84)[iVar7 * 0xd8] * 1.05;
+    (&player_shot_cooldown)[iVar7 * 0xd8] = (float)(&player_shot_cooldown)[iVar7 * 0xd8] * 1.05;
   }
-  if ((float)(&DAT_00490b7c)[iVar7 * 0xd8] <= 0.0) {
+  if ((float)(&player_ammo)[iVar7 * 0xd8] <= 0.0) {
     FUN_00413430();
   }
 LAB_0041753e:
@@ -11135,7 +11150,7 @@ LAB_0041753e:
     fVar16 = (float)(&DAT_00490944)[iVar7 * 0xd8] + 14.0;
     (&DAT_00490944)[iVar7 * 0xd8] = fVar16;
   }
-  if (0.0 < (float)(&DAT_00490bc4)[iVar7 * 0xd8]) {
+  if (0.0 < (float)(&player_speed_bonus_timer)[iVar7 * 0xd8]) {
     (&DAT_0049090c)[iVar7 * 0xd8] = (float)(&DAT_0049090c)[iVar7 * 0xd8] - 1.0;
   }
   fVar16 = (float)(&DAT_004908e4)[iVar7 * 0xd8] * 0.5;
@@ -13142,7 +13157,7 @@ void ui_render_hud(void)
     pcStack_ec = (char *)0x41b319;
     (**(code **)(*DAT_0048083c + 0xe8))();
     if (_DAT_0048035c == 1) {
-      pcStack_ec = (char *)((&DAT_004d7a90)[DAT_00490b70 * 0x1f] << 1);
+      pcStack_ec = (char *)((&DAT_004d7a90)[player_weapon_id * 0x1f] << 1);
       fStack_f0 = 1.4013e-45;
       fStack_f4 = 2.8026e-45;
       fStack_f8 = 1.12104e-44;
@@ -13153,7 +13168,7 @@ void ui_render_hud(void)
       iVar7 = *DAT_0048083c;
     }
     else {
-      pcStack_ec = (char *)((&DAT_004d7a90)[DAT_00490b70 * 0x1f] << 1);
+      pcStack_ec = (char *)((&DAT_004d7a90)[player_weapon_id * 0x1f] << 1);
       fStack_f0 = 1.4013e-45;
       fStack_f4 = 2.8026e-45;
       fStack_f8 = 1.12104e-44;
@@ -13237,7 +13252,7 @@ void ui_render_hud(void)
     DAT_004aaf0c = 0;
     if (0 < _DAT_0048035c) {
       do {
-        iVar7 = (&DAT_004d7a28)[(&DAT_00490b70)[DAT_004aaf0c * 0xd8] * 0x1f];
+        iVar7 = (&DAT_004d7a28)[(&player_weapon_id)[DAT_004aaf0c * 0xd8] * 0x1f];
         if (iVar7 == 1) {
           pcStack_ec = s_ui_ui_indFire_jaz_00473878;
           iVar7 = *DAT_0048083c;
@@ -13680,7 +13695,7 @@ LAB_0041c783:
         uStack_174 = DAT_0048f7e4;
         fStack_178 = 6.041487e-39;
         (**(code **)(*DAT_0048083c + 0xc4))();
-        fStack_178 = (float)((&DAT_004d7a90)[(&DAT_00490b70)[DAT_004aaf0c * 0xd8] * 0x1f] << 1);
+        fStack_178 = (float)((&DAT_004d7a90)[(&player_weapon_id)[DAT_004aaf0c * 0xd8] * 0x1f] << 1);
         iStack_17c = 1;
         puStack_180 = (undefined4 *)0x2;
         puStack_184 = (undefined *)0x8;
@@ -13707,7 +13722,7 @@ LAB_0041c783:
         puStack_1bc = (undefined4 *)0x41c9e9;
         (**(code **)(*DAT_0048083c + 0x114))();
         fStack_1c0 = (float)(int)fStack_1a0;
-        puStack_1bc = &weapon_table + (&DAT_00490b70)[DAT_004aaf0c * 0xd8] * 0x1f;
+        puStack_1bc = &weapon_table + (&player_weapon_id)[DAT_004aaf0c * 0xd8] * 0x1f;
         uStack_1c4 = 0x41000000;
         puStack_1c8 = (undefined *)0x41ca27;
         (**(code **)(*DAT_0048083c + 0x144))();
@@ -16208,7 +16223,7 @@ uint * __cdecl FUN_0041f8d0(float *param_1)
   if (_DAT_00480360 == (uint *)0x8) {
     return (uint *)0x8;
   }
-  if (((DAT_00490b70 == (uint *)0x1) || ((DAT_00490ed0 == 1 && (_DAT_0048035c == 2)))) &&
+  if (((player_weapon_id == (uint *)0x1) || ((DAT_00490ed0 == 1 && (_DAT_0048035c == 2)))) &&
      (iVar1 = _rand(), ((byte)iVar1 & 3) < 3)) {
     puVar2 = FUN_0041f790(param_1);
     *puVar2 = 3;
@@ -16240,7 +16255,8 @@ LAB_0041f998:
   }
   else {
     iVar1 = _rand();
-    if ((iVar1 % 9 != 1) && ((DAT_00490b70 != (uint *)0x1 || (iVar1 = _rand(), iVar1 % 5 != 1)))) {
+    if ((iVar1 % 9 != 1) && ((player_weapon_id != (uint *)0x1 || (iVar1 = _rand(), iVar1 % 5 != 1)))
+       ) {
       iVar1 = perk_count_get(DAT_004c2ba8);
       if (iVar1 == 0) {
         return (uint *)0x0;
@@ -16268,9 +16284,9 @@ LAB_0041f998:
       } while ((int)puVar3 < 0x482b08);
       if (1 < iVar1) goto LAB_0041fa76;
     }
-    puVar3 = DAT_00490b70;
-    puVar6 = DAT_00490b70;
-    if ((uint *)puVar2[6] == DAT_00490b70) {
+    puVar3 = player_weapon_id;
+    puVar6 = player_weapon_id;
+    if ((uint *)puVar2[6] == player_weapon_id) {
 LAB_0041fa76:
       *puVar2 = 0;
       return puVar3;
@@ -16390,8 +16406,8 @@ void FUN_0041fc80(void)
     _DAT_004aaf30 = 0;
     iVar6 = DAT_004aaf0c * 0x360;
     fVar2 = (float)DAT_0048f538;
-    (&DAT_00490bc4)[DAT_004aaf0c * 0xd8] = 0;
-    (&DAT_00490bc8)[uVar4 * 0xd8] = 0;
+    (&player_speed_bonus_timer)[DAT_004aaf0c * 0xd8] = 0;
+    (&player_shield_timer)[uVar4 * 0xd8] = 0;
     (&DAT_00490bb8)[uVar4 * 0xd8] = 0;
     (&DAT_004908b9)[iVar6] = 0;
     (&DAT_004908c4)[uVar4 * 0xd8] = fVar1 * 0.5;
@@ -16421,23 +16437,23 @@ void FUN_0041fc80(void)
     (&DAT_004908dc)[DAT_004aaf0c * 0xd8] = 0;
     (&DAT_0049095c)[DAT_004aaf0c * 0xd8] = 0;
     (&DAT_00490960)[DAT_004aaf0c * 0xd8] = 0;
-    (&DAT_00490b68)[DAT_004aaf0c * 0xd8] = 0;
+    (&player_spread_heat)[DAT_004aaf0c * 0xd8] = 0;
     (&DAT_00490918)[DAT_004aaf0c * 0xd8] = 0;
-    (&DAT_00490b7c)[DAT_004aaf0c * 0xd8] = 0x41200000;
-    (&DAT_00490b74)[DAT_004aaf0c * 0xd8] = 0x41200000;
-    (&DAT_00490b88)[DAT_004aaf0c * 0xd8] = 0x3f800000;
-    (&DAT_00490b80)[DAT_004aaf0c * 0xd8] = 0;
-    (&DAT_00490b8c)[DAT_004aaf0c * 0xd8] = 1;
-    (&DAT_00490b90)[DAT_004aaf0c * 0xd8] = fVar1;
+    (&player_ammo)[DAT_004aaf0c * 0xd8] = 0x41200000;
+    (&player_clip_size)[DAT_004aaf0c * 0xd8] = 0x41200000;
+    (&player_reload_timer_max)[DAT_004aaf0c * 0xd8] = 0x3f800000;
+    (&player_reload_timer)[DAT_004aaf0c * 0xd8] = 0;
+    (&player_alt_weapon_id)[DAT_004aaf0c * 0xd8] = 1;
+    (&player_alt_clip_size)[DAT_004aaf0c * 0xd8] = fVar1;
     (&DAT_00490b94)[DAT_004aaf0c * 0x360] = 0;
-    (&DAT_00490b98)[DAT_004aaf0c * 0xd8] = (&DAT_00490b90)[DAT_004aaf0c * 0xd8];
+    (&player_alt_ammo)[DAT_004aaf0c * 0xd8] = (&player_alt_clip_size)[DAT_004aaf0c * 0xd8];
     uVar5 = DAT_004d7af4;
-    (&DAT_00490b9c)[DAT_004aaf0c * 0xd8] = 0;
-    (&DAT_00490ba0)[DAT_004aaf0c * 0xd8] = 0;
-    (&DAT_00490ba4)[DAT_004aaf0c * 0xd8] = uVar5;
+    (&player_alt_reload_timer)[DAT_004aaf0c * 0xd8] = 0;
+    (&player_alt_shot_cooldown)[DAT_004aaf0c * 0xd8] = 0;
+    (&player_alt_reload_timer_max)[DAT_004aaf0c * 0xd8] = uVar5;
     cVar3 = DAT_0048700d;
-    (&DAT_00490b84)[DAT_004aaf0c * 0xd8] = 0x3f4ccccd;
-    (&DAT_00490b70)[DAT_004aaf0c * 0xd8] = 1;
+    (&player_shot_cooldown)[DAT_004aaf0c * 0xd8] = 0x3f4ccccd;
+    (&player_weapon_id)[DAT_004aaf0c * 0xd8] = 1;
     (&DAT_00490ba8)[DAT_004aaf0c * 0xd8] = 0;
     (&DAT_004908c0)[DAT_004aaf0c * 0xd8] = 0x41800000;
     if (cVar3 == '\0') {
@@ -16760,7 +16776,7 @@ int __cdecl projectile_spawn(float *pos,float angle,int type_id,int owner_id)
   if (DAT_0048703c == '\0') {
     while (((((owner_id == -100 || (owner_id == -1)) || (owner_id == -2)) || (owner_id == -3)) &&
            ((DAT_0048706c = DAT_0048706c + 1, type_id != 0x2d &&
-            ((0.0 < DAT_00490bcc || (0.0 < DAT_00490f2c))))))) {
+            ((0.0 < player_fire_bullets_timer || (0.0 < DAT_00490f2c))))))) {
       type_id = 0x2d;
     }
   }
@@ -17198,7 +17214,7 @@ LAB_004219f8:
                     }
                     if (iVar10 != -1) {
                       (&DAT_004926dc)[local_e8 * 0x10] = 0x3e800000;
-                      if ((float)(&DAT_00490bc8)[iVar10 * 0xd8] <= 0.0) {
+                      if ((float)(&player_shield_timer)[iVar10 * 0xd8] <= 0.0) {
                         (&player_table)[iVar10 * 0xd8] =
                              (float)(&player_table)[iVar10 * 0xd8] - 10.0;
                       }
@@ -18237,7 +18253,7 @@ void projectile_render(void)
   (**(code **)(*DAT_0048083c + 0x100))();
   iVar6 = 0;
   if (0 < _DAT_0048035c) {
-    pfVar2 = (float *)&DAT_00490bb0;
+    pfVar2 = (float *)&player_aim_heading;
     do {
       if (0.0 < pfVar2[-0xb7]) {
         fVar8 = (float10)*pfVar2 - (float10)1.5707964;
@@ -18448,7 +18464,7 @@ void projectile_render(void)
   fVar29 = 0.0;
   (**(code **)(*DAT_0048083c + 0xfc))();
   if (0.0 < (float)(&DAT_00490bac)[DAT_004aaf0c * 0xd8]) {
-    fVar8 = ((float10)(float)(&DAT_00490bb0)[DAT_004aaf0c * 0xd8] - (float10)1.5707964) -
+    fVar8 = ((float10)(float)(&player_aim_heading)[DAT_004aaf0c * 0xd8] - (float10)1.5707964) -
             (float10)0.150915;
     fVar9 = (float10)fcos(fVar8);
     fStack_264 = (float)(fVar9 * (float10)15.0);
@@ -19320,7 +19336,7 @@ void __cdecl player_take_damage(int player_index,float damage)
   }
   DAT_00486fe5 = 1;
   local_c = 1.0;
-  if (0.0 < (float)(&DAT_00490bc8)[player_index * 0xd8]) {
+  if (0.0 < (float)(&player_shield_timer)[player_index * 0xd8]) {
     DAT_00486fe5 = 1;
     return;
   }
@@ -19411,10 +19427,10 @@ LAB_00425fa1:
       iVar4 = _rand();
       (&DAT_004908dc)[player_index * 0xd8] =
            (float)(iVar4 % 100 + -0x32) * 0.04 + (float)(&DAT_004908dc)[player_index * 0xd8];
-      fVar2 = damage * 0.01 + (float)(&DAT_00490b68)[player_index * 0xd8];
-      (&DAT_00490b68)[player_index * 0xd8] = fVar2;
+      fVar2 = damage * 0.01 + (float)(&player_spread_heat)[player_index * 0xd8];
+      (&player_spread_heat)[player_index * 0xd8] = fVar2;
       if (0.48 < fVar2) {
-        (&DAT_00490b68)[player_index * 0xd8] = 0x3ef5c28f;
+        (&player_spread_heat)[player_index * 0xd8] = 0x3ef5c28f;
       }
     }
     if (((&player_table)[player_index * 0xd8] <= 20.0) && (iVar4 = _rand(), ((byte)iVar4 & 7) == 3))
@@ -19942,7 +19958,7 @@ LAB_00426ac8:
                     local_50[9] = 0.0;
                     creature_apply_damage(local_7c,25.0,2,local_50 + 8);
                   }
-                  if ((float)(&DAT_00490bc8)[*pcVar4 * 0xd8] <= 0.0) {
+                  if ((float)(&player_shield_timer)[*pcVar4 * 0xd8] <= 0.0) {
                     iVar6 = perk_count_get(DAT_004c2bbc);
                     if (iVar6 == 0) {
                       iVar6 = perk_count_get(DAT_004c2bb8);
@@ -20537,8 +20553,8 @@ void player_render_overlays(void)
     }
     lVar7 = __ftol();
     iVar4 = (int)lVar7;
-    fcos((float10)(float)(&DAT_00490bb0)[iVar3 * 0xd8] + (float10)1.5707964);
-    fsin((float10)(float)(&DAT_00490bb0)[iVar3 * 0xd8] + (float10)1.5707964);
+    fcos((float10)(float)(&player_aim_heading)[iVar3 * 0xd8] + (float10)1.5707964);
+    fsin((float10)(float)(&player_aim_heading)[iVar3 * 0xd8] + (float10)1.5707964);
     (**(code **)(*DAT_0048083c + 0x114))();
     (**(code **)(*DAT_0048083c + 0xfc))();
     DAT_004965d8 = (float)(&DAT_00491010)[iVar4 * 2];
@@ -20606,7 +20622,7 @@ void player_render_overlays(void)
                    (float)(&DAT_004908e4)[DAT_004aaf0c * 0xd8] * 0.5) + fVar14;
     (**(code **)(*DAT_0048083c + 0x11c))();
     (**(code **)(*DAT_0048083c + 0xf0))();
-    if (0.0 < (float)(&DAT_00490bc8)[DAT_004aaf0c * 0xd8]) {
+    if (0.0 < (float)(&player_shield_timer)[DAT_004aaf0c * 0xd8]) {
       fVar14 = 7.00649e-45;
       (**(code **)(*DAT_0048083c + 0x20))(0x13,5);
       in_stack_fffffe80 = 2.8026e-45;
@@ -20615,7 +20631,7 @@ void player_render_overlays(void)
       (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7ec,0);
       effect_select_texture(2);
       fVar6 = (float10)fsin((float10)_DAT_0047ea4c);
-      pfVar1 = (float *)(&DAT_00490bc8 + DAT_004aaf0c * 0xd8);
+      pfVar1 = (float *)(&player_shield_timer + DAT_004aaf0c * 0xd8);
       fVar6 = (fVar6 + (float10)1.0) * (float10)0.25 + (float10)*pfVar1;
       if (*pfVar1 < 1.0) {
         fVar6 = fVar6 * (float10)*pfVar1;
@@ -20626,9 +20642,9 @@ void player_render_overlays(void)
       fVar10 = (float)(fVar6 * (float10)fStack_17c) * 0.4;
       (**(code **)(*DAT_0048083c + 0x114))(0x3eb6b6b7,0x3f34b4b5,0x3f800000,fVar10);
       fsin((float10)_DAT_0047ea4c * (float10)3.0);
-      fVar6 = (float10)fcos((float10)(float)(&DAT_00490bb0)[DAT_004aaf0c * 0xd8] -
+      fVar6 = (float10)fcos((float10)(float)(&player_aim_heading)[DAT_004aaf0c * 0xd8] -
                             (float10)1.5707964);
-      fsin((float10)(float)(&DAT_00490bb0)[DAT_004aaf0c * 0xd8] - (float10)1.5707964);
+      fsin((float10)(float)(&player_aim_heading)[DAT_004aaf0c * 0xd8] - (float10)1.5707964);
       (**(code **)(*DAT_0048083c + 0xfc))(_DAT_0047ea4c + _DAT_0047ea4c);
       (**(code **)(*DAT_0048083c + 0xe8))();
       in_stack_fffffe7c = fVar11 + fVar11;
@@ -20646,9 +20662,9 @@ void player_render_overlays(void)
       (**(code **)(*DAT_0048083c + 0xf0))();
       (**(code **)(*DAT_0048083c + 0x20))(0x14,6);
     }
-    if ((*(byte *)(&DAT_004d7a94 + (&DAT_00490b70)[DAT_004aaf0c * 0xd8] * 0x1f) & 8) == 0) {
-      fcos((float10)(float)(&DAT_00490bb0)[DAT_004aaf0c * 0xd8] + (float10)1.5707964);
-      fsin((float10)(float)(&DAT_00490bb0)[DAT_004aaf0c * 0xd8] + (float10)1.5707964);
+    if ((*(byte *)(&DAT_004d7a94 + (&player_weapon_id)[DAT_004aaf0c * 0xd8] * 0x1f) & 8) == 0) {
+      fcos((float10)(float)(&player_aim_heading)[DAT_004aaf0c * 0xd8] + (float10)1.5707964);
+      fsin((float10)(float)(&player_aim_heading)[DAT_004aaf0c * 0xd8] + (float10)1.5707964);
       (**(code **)(*DAT_0048083c + 0xc4))(DAT_0048f7e0);
       (**(code **)(*DAT_0048083c + 0x20))(0x13,2);
       fVar11 = 2.8026e-44;
@@ -20660,8 +20676,8 @@ void player_render_overlays(void)
       }
       (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,fVar14 * fVar11);
       (**(code **)(*DAT_0048083c + 0xe8))();
-      (**(code **)(*DAT_0048083c + 0xfc))((&DAT_00490bb0)[DAT_004aaf0c * 0xd8]);
-      if ((*(byte *)(&DAT_004d7a94 + (&DAT_00490b70)[DAT_004aaf0c * 0xd8] * 0x1f) & 4) == 0) {
+      (**(code **)(*DAT_0048083c + 0xfc))((&player_aim_heading)[DAT_004aaf0c * 0xd8]);
+      if ((*(byte *)(&DAT_004d7a94 + (&player_weapon_id)[DAT_004aaf0c * 0xd8] * 0x1f) & 4) == 0) {
         fVar11 = (float)(&DAT_004908e4)[DAT_004aaf0c * 0xd8] * 0.5;
         fVar14 = (float)(&DAT_004908e4)[DAT_004aaf0c * 0xd8];
         fVar10 = (_DAT_00484fc8 + (float)(&DAT_004908c4)[DAT_004aaf0c * 0xd8]) - fVar11;
@@ -30711,12 +30727,12 @@ void __cdecl FUN_00444980(char param_1,char param_2)
     if (fVar2 < 0.0) {
       (&DAT_00490bac)[iVar6 * 0xd8] = 0;
     }
-    (&DAT_00490b84)[iVar6 * 0xd8] = 0;
+    (&player_shot_cooldown)[iVar6 * 0xd8] = 0;
     *(undefined4 *)(&DAT_004908cc + iVar7) = 0;
     *(undefined4 *)(&DAT_004908d0 + iVar7) = 0;
-    (&DAT_00490b68)[iVar6 * 0xd8] = 0;
-    (&DAT_00490b7c)[iVar6 * 0xd8] = (&DAT_00490b74)[iVar6 * 0xd8];
-    (&DAT_00490b80)[iVar6 * 0xd8] = 0;
+    (&player_spread_heat)[iVar6 * 0xd8] = 0;
+    (&player_ammo)[iVar6 * 0xd8] = (&player_clip_size)[iVar6 * 0xd8];
+    (&player_reload_timer)[iVar6 * 0xd8] = 0;
     if (param_2 != '\0') {
       FUN_00413430();
       iVar6 = DAT_004aaf0c;
@@ -30728,29 +30744,29 @@ void __cdecl FUN_00444980(char param_1,char param_2)
                             (float10)(float)(&DAT_00490904)[iVar6 * 0xd8],
                             (float10)(float)(&DAT_004908c4)[iVar6 * 0xd8] -
                             (float10)(float)(&DAT_00490900)[iVar6 * 0xd8]);
-    (&DAT_00490bb0)[iVar6 * 0xd8] = (float)(fVar9 - (float10)1.5707964);
-    if (((float)(&DAT_00490b84)[iVar6 * 0xd8] <= 0.0) &&
-       ((float)(&DAT_00490b80)[iVar6 * 0xd8] == 0.0)) {
+    (&player_aim_heading)[iVar6 * 0xd8] = (float)(fVar9 - (float10)1.5707964);
+    if (((float)(&player_shot_cooldown)[iVar6 * 0xd8] <= 0.0) &&
+       ((float)(&player_reload_timer)[iVar6 * 0xd8] == 0.0)) {
       bVar3 = true;
       (&DAT_00490b78)[iVar6 * 0x360] = 0;
     }
     bVar4 = false;
-    if ((((float)(&DAT_00490b84)[iVar6 * 0xd8] <= 0.0) && (0 < (int)(&DAT_0049095c)[iVar6 * 0xd8]))
-       && ((iVar6 = perk_count_get(DAT_004c2bd0), iVar6 != 0 ||
-           (iVar7 = perk_count_get(DAT_004c2bc8), iVar6 = DAT_004aaf0c, bVar4 = false, iVar7 != 0)))
-       ) {
+    if ((((float)(&player_shot_cooldown)[iVar6 * 0xd8] <= 0.0) &&
+        (0 < (int)(&DAT_0049095c)[iVar6 * 0xd8])) &&
+       ((iVar6 = perk_count_get(DAT_004c2bd0), iVar6 != 0 ||
+        (iVar7 = perk_count_get(DAT_004c2bc8), iVar6 = DAT_004aaf0c, bVar4 = false, iVar7 != 0)))) {
       bVar4 = true;
       iVar6 = DAT_004aaf0c;
     }
     if ((bVar3) || (bVar4)) {
-      fVar2 = (float)(&DAT_00490bb0)[iVar6 * 0xd8];
+      fVar2 = (float)(&player_aim_heading)[iVar6 * 0xd8];
       if (param_1 != '\0') {
         fVar9 = ((float10)fVar2 - (float10)1.5707964) - (float10)0.150915;
         fVar8 = (float10)fcos(fVar9);
         fVar11 = (float)(fVar8 * (float10)16.0);
         fVar9 = (float10)fsin(fVar9);
         fVar1 = (float)(fVar9 * (float10)16.0);
-        if ((*(byte *)(&DAT_004d7a94 + (&DAT_00490b70)[iVar6 * 0xd8] * 0x1f) & 1) != 0) {
+        if ((*(byte *)(&DAT_004d7a94 + (&player_weapon_id)[iVar6 * 0xd8] * 0x1f) & 1) != 0) {
           _rand();
           _rand();
           iVar6 = DAT_004aaf0c;
@@ -30759,10 +30775,10 @@ void __cdecl FUN_00444980(char param_1,char param_2)
           (&DAT_00490bac)[iVar6 * 0xd8] = 0x3f800000;
         }
         (&DAT_00490bac)[iVar6 * 0xd8] =
-             (float)(&DAT_004d7a7c)[(&DAT_00490b70)[iVar6 * 0xd8] * 0x1f] +
+             (float)(&DAT_004d7a7c)[(&player_weapon_id)[iVar6 * 0xd8] * 0x1f] +
              (float)(&DAT_00490bac)[iVar6 * 0xd8];
-        sfx_play_panned(*(float *)(&DAT_004d7a84 + (&DAT_00490b70)[iVar6 * 0xd8] * 0x7c));
-        if ((&DAT_00490b70)[DAT_004aaf0c * 0xd8] == 3) {
+        sfx_play_panned(*(float *)(&DAT_004d7a84 + (&player_weapon_id)[iVar6 * 0xd8] * 0x7c));
+        if ((&player_weapon_id)[DAT_004aaf0c * 0xd8] == 3) {
           fVar9 = (float10)fcos((float10)fVar2);
           local_14 = (float)(fVar9 * (float10)25.0);
           fVar8 = (float10)fsin((float10)fVar2);
@@ -30800,21 +30816,25 @@ void __cdecl FUN_00444980(char param_1,char param_2)
         iVar7 = DAT_004c2b48;
         iVar6 = DAT_004aaf0c;
         if ((int)(&DAT_00490968)[DAT_004c2b48] < 1) {
-          (&DAT_00490b68)[DAT_004aaf0c * 0xd8] =
-               _DAT_00473a40 * DAT_00480840 * 150.0 + (float)(&DAT_00490b68)[DAT_004aaf0c * 0xd8];
+          (&player_spread_heat)[DAT_004aaf0c * 0xd8] =
+               _DAT_00473a40 * DAT_00480840 * 150.0 +
+               (float)(&player_spread_heat)[DAT_004aaf0c * 0xd8];
         }
-        if (_DAT_00473a40 + _DAT_00473a40 < (float)(&DAT_00490b68)[iVar6 * 0xd8]) {
-          (&DAT_00490b68)[iVar6 * 0xd8] = _DAT_00473a40 + _DAT_00473a40;
+        if (_DAT_00473a40 + _DAT_00473a40 < (float)(&player_spread_heat)[iVar6 * 0xd8]) {
+          (&player_spread_heat)[iVar6 * 0xd8] = _DAT_00473a40 + _DAT_00473a40;
         }
         iVar10 = DAT_004c2b50;
-        (&DAT_00490b68)[iVar6 * 0xd8] = _DAT_00473a40 * (float)(&DAT_00490b68)[iVar6 * 0xd8];
+        (&player_spread_heat)[iVar6 * 0xd8] =
+             _DAT_00473a40 * (float)(&player_spread_heat)[iVar6 * 0xd8];
         if (0 < (int)(&DAT_00490968)[iVar10]) {
-          (&DAT_00490b84)[iVar6 * 0xd8] = (float)(&DAT_00490b84)[iVar6 * 0xd8] * 0.88;
+          (&player_shot_cooldown)[iVar6 * 0xd8] =
+               (float)(&player_shot_cooldown)[iVar6 * 0xd8] * 0.88;
         }
         if (0 < (int)(&DAT_00490968)[iVar7]) {
-          (&DAT_00490b84)[iVar6 * 0xd8] = (float)(&DAT_00490b84)[iVar6 * 0xd8] * 1.05;
+          (&player_shot_cooldown)[iVar6 * 0xd8] =
+               (float)(&player_shot_cooldown)[iVar6 * 0xd8] * 1.05;
         }
-        if ((float)(&DAT_00490b7c)[iVar6 * 0xd8] <= 0.0) {
+        if ((float)(&player_ammo)[iVar6 * 0xd8] <= 0.0) {
           FUN_00413430();
           iVar6 = DAT_004aaf0c;
         }
@@ -31468,8 +31488,8 @@ void FUN_004457c0(void)
     }
   }
   DAT_004aaf0c = 0;
-  DAT_00490b70 = 3;
-  DAT_00490b7c = 0x41f00000;
+  player_weapon_id = 3;
+  player_ammo = 0x41f00000;
   if (DAT_0047eec8 == '\0') {
     DAT_00486fc4 = DAT_00486fc4 - _DAT_0048035c * DAT_00480844;
   }
@@ -31524,7 +31544,7 @@ void FUN_004457c0(void)
     DAT_00487060 = DAT_00487060 + DAT_00480844;
     _DAT_00487014 = 0;
     DAT_0048700e = '\0';
-    (&DAT_0048708c)[DAT_00490b70] = (&DAT_0048708c)[DAT_00490b70] + DAT_00480844;
+    (&DAT_0048708c)[player_weapon_id] = (&DAT_0048708c)[player_weapon_id] + DAT_00480844;
   }
   FUN_00409500();
   gameplay_render_world();
@@ -34989,9 +35009,9 @@ void __cdecl weapon_assign_player(int player_index,int weapon_id)
     (&DAT_00485544)[weapon_id] = (&DAT_00485544)[weapon_id] + 1;
   }
   iVar2 = weapon_id * 0x7c;
-  (&DAT_00490b70)[player_index * 0xd8] = weapon_id;
+  (&player_weapon_id)[player_index * 0xd8] = weapon_id;
   iVar1 = DAT_004c2b80;
-  (&DAT_00490b74)[player_index * 0xd8] = (float)(int)(&DAT_004d7a70)[weapon_id * 0x1f];
+  (&player_clip_size)[player_index * 0xd8] = (float)(int)(&DAT_004d7a70)[weapon_id * 0x1f];
   iVar1 = perk_count_get(iVar1);
   if (iVar1 != 0) {
     lVar3 = __ftol();
@@ -34999,18 +35019,19 @@ void __cdecl weapon_assign_player(int player_index,int weapon_id)
     if (weapon_id < 2) {
       weapon_id = 1;
     }
-    (&DAT_00490b74)[player_index * 0xd8] =
-         (float)weapon_id + (float)(&DAT_00490b74)[player_index * 0xd8];
+    (&player_clip_size)[player_index * 0xd8] =
+         (float)weapon_id + (float)(&player_clip_size)[player_index * 0xd8];
   }
   iVar1 = perk_count_get(DAT_004c2c18);
   if (iVar1 != 0) {
-    (&DAT_00490b74)[player_index * 0xd8] = (float)(&DAT_00490b74)[player_index * 0xd8] + 2.0;
+    (&player_clip_size)[player_index * 0xd8] = (float)(&player_clip_size)[player_index * 0xd8] + 2.0
+    ;
   }
   sfx_id = *(float *)(&DAT_004d7a8c + iVar2);
-  (&DAT_00490b7c)[player_index * 0xd8] = (&DAT_00490b74)[player_index * 0xd8];
+  (&player_ammo)[player_index * 0xd8] = (&player_clip_size)[player_index * 0xd8];
   *(undefined4 *)(&DAT_00490910 + player_index * 0x360) = 0;
-  (&DAT_00490b84)[player_index * 0xd8] = 0;
-  (&DAT_00490b80)[player_index * 0xd8] = 0;
+  (&player_shot_cooldown)[player_index * 0xd8] = 0;
+  (&player_reload_timer)[player_index * 0xd8] = 0;
   (&DAT_004871d0)[player_index] = 0x40000000;
   sfx_play_panned(sfx_id);
   return;
