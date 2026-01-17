@@ -213,6 +213,11 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
   - Evidence: called after selecting a perk in the UI, increments `game_var_get` table, and
     executes the perk-specific effects (exp, health, weapon changes, perk spawns).
 
+### Game mode selector (partial)
+
+- `_DAT_00480360` holds the current game mode. See `docs/game-mode-map.md` for the observed
+  values and evidence.
+
 ## Next naming targets
 
 - For `grim.dll`, inspect `FUN_10016944` (coordinate conversions and vertex packing) to pin down the render pipeline stage.
