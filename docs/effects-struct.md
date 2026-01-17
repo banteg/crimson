@@ -130,8 +130,10 @@ Layout (structure-of-arrays):
 
 Notes:
 
-- `fx_queue_render` binds `DAT_0048f7dc` and uses `DAT_00482764` to map
-  `effect_id` to a 4x atlas frame (`DAT_00491210/14`).
+- `fx_queue_render` binds `DAT_0048f7dc` (bodyset atlas) and maps `effect_id`
+  through the creature type table: `frame = *(int *)(&DAT_00482764 + effect_id * 0x44)`.
+  That offset is the per‑type `corpse frame` (see `docs/creature-struct.md`),
+  and the frame is converted to UVs via the 4x atlas tables (`DAT_00491210/14`).
 - The rotated queue is drawn in two passes with different alpha scales.
 
 ## Effect entries (`DAT_004ab330` pool)
