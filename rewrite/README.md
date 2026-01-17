@@ -5,6 +5,12 @@ artifacts.
 
 ## Toolchain
 
-- Minimum Zig version: **0.12.0** (see `build.zig.zon`).
+- Minimum Zig version: **0.15.2** (see `build.zig.zon`).
 - Build: `zig build`
 - Run: `zig build run`
+
+If Zig is not on your PATH, use the repo toolchain:
+
+```bash
+../tools/zig/current/zig build
+```
