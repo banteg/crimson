@@ -347,6 +347,8 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
   | 0x90 | AI mode | selects movement pattern (cases 0/1/3/4/5/6/7/8 in update loop). |
   | 0x94 | anim phase | accumulates and wraps (31/15) to drive sprite animation timing. |
 
+See [Creature struct](creature-struct.md) for the expanded field map and cross-links.
+
 
 ### Bonus / pickup pool (medium confidence)
 
@@ -361,7 +363,7 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
     and clears entries when `time_left` expires.
 - `FUN_004295f0` -> `bonus_render`
   - Evidence: renders bonus icons from `DAT_0048f7f0`, scales/fades by timer, and draws label text
-    via `FUN_00429580` when players are nearby.
+    via `bonus_label_for_entry` when players are nearby.
 - `FUN_00409890` -> `bonus_apply`
   - Evidence: applies bonus effects based on entry type (`param_2[0]`), spawns effects via
     `FUN_0042e120`, and plays bonus SFX (`FUN_0043d260`).

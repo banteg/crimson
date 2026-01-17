@@ -310,6 +310,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00429580",
+    "name": "bonus_label_for_entry",
+    "signature": "char * bonus_label_for_entry(int *bonus_entry)",
+    "comment": "returns the label string for a bonus entry (formatting weapon/score cases)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004295f0",
     "name": "bonus_render",
     "signature": "void bonus_render(void)",

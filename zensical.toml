@@ -48,6 +48,7 @@ nav = [
   { "Weapon table" = "weapon-table.md" },
   { "Progress metrics" = "metrics.md" },
   { "Detangling notes" = "detangling.md" },
+  { "Creature struct" = "creature-struct.md" },
   { "Perk ID map" = "perk-id-map.md" },
   { "SFX ID map" = "sfx-id-map.md" },
   { "SFX usage" = "sfx-usage.md" },
@@ -62,8 +63,6 @@ nav = [
     { "API vtable" = "grim2d-api.md" },
     { "API evidence" = "grim2d-api-evidence.md" },
   ]},
-  { "Plan" = "plan.md" },
-  { "Plan 2" = "plan2.md" },
 ]
 
 [project.extra]
