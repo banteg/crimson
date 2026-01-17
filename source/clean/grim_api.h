@@ -89,8 +89,8 @@ struct Grim2DVtable {
     void (*draw_quad_rotated_matrix)(float x, float y, float w, float h); // 0x124 (grim_draw_quad_rotated_matrix)
     void (*submit_vertices_transform)(const float *verts, int count, const float *offset, const float *matrix); // 0x128 (grim_submit_vertices_transform) verts are 7-float stride
     void (*submit_vertices_offset)(const float *verts, int count, const float *offset); // 0x12c (grim_submit_vertices_offset) verts are 7-float stride
-    void (*submit_vertices_offset_color)(const float *verts, int count, const float *offset, const float *color); // 0x130 (grim_submit_vertices_offset_color) *color is packed ARGB
-    void (*submit_vertices_transform_color)(const float *verts, int count, const float *offset, const float *matrix, const float *color); // 0x134 (grim_submit_vertices_transform_color) *color is packed ARGB
+    void (*submit_vertices_offset_color)(const float *verts, int count, const float *offset, const uint32_t *color); // 0x130 (grim_submit_vertices_offset_color) *color is packed ARGB
+    void (*submit_vertices_transform_color)(const float *verts, int count, const float *offset, const float *matrix, const uint32_t *color); // 0x134 (grim_submit_vertices_transform_color) *color is packed ARGB
     void (*draw_quad_points)(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3); // 0x138 (grim_draw_quad_points) uses current UV/color slots
     void (*draw_text_mono)(float x, float y, const char *text); // 0x13c (grim_draw_text_mono)
     void (*draw_text_mono_fmt)(float x, float y, const char *fmt, ...); // 0x140 (grim_draw_text_mono_fmt) printf wrapper
