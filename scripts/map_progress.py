@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
@@ -16,6 +17,17 @@ class MapProgress:
     with_signatures: int | None
     with_comments: int
     duplicate_names: int
+
+
+@dataclass(frozen=True)
+class DataMapCoverage:
+    program: str
+    labeled_in_decompiled: int
+    total_symbols: int
+    coverage_pct: float
+
+
+DATA_LABEL_PATTERN = re.compile(r"\b(?:_?DAT|PTR_DAT)_[0-9A-Fa-f]{8}\b")
 
 
 def _load_json(path: Path) -> object:
@@ -84,6 +96,10 @@ def format_count(value: int | None) -> str:
     return "n/a" if value is None else str(value)
 
 
+def format_percent(value: float, digits: int = 2) -> str:
+    return f"{value:.{digits}f}%"
+
+
 def build_markdown_table(progress: Iterable[MapProgress]) -> list[str]:
     lines = [
         "| Map | Total entries | crimsonland.exe | grim.dll | With signatures | With comments | Duplicate names |",
@@ -99,6 +115,58 @@ def build_markdown_table(progress: Iterable[MapProgress]) -> list[str]:
                 sigs=format_count(item.with_signatures),
                 comments=item.with_comments,
                 dupes=item.duplicate_names,
+            )
+        )
+    return lines
+
+
+def scan_data_addresses(text: str) -> set[str]:
+    return {match.split("_")[-1].upper() for match in DATA_LABEL_PATTERN.findall(text)}
+
+
+def count_named_in_decompiled(names: Iterable[str], text: str) -> int:
+    patterns = [re.compile(rf"\b{re.escape(name)}\b") for name in names]
+    return sum(1 for pattern in patterns if pattern.search(text))
+
+
+def compute_data_map_coverage(entries: list[dict], decompiled_text: str, program: str) -> DataMapCoverage:
+    unlabeled = scan_data_addresses(decompiled_text)
+    names = [entry["name"] for entry in entries if entry.get("program") == program and entry.get("name")]
+    labeled_in_decompiled = count_named_in_decompiled(names, decompiled_text)
+    total_symbols = len(unlabeled) + labeled_in_decompiled
+    coverage_pct = (labeled_in_decompiled / total_symbols * 100.0) if total_symbols else 0.0
+    return DataMapCoverage(
+        program=program,
+        labeled_in_decompiled=labeled_in_decompiled,
+        total_symbols=total_symbols,
+        coverage_pct=coverage_pct,
+    )
+
+
+def combine_coverages(coverages: Iterable[DataMapCoverage], program: str = "Total") -> DataMapCoverage:
+    labeled = sum(item.labeled_in_decompiled for item in coverages)
+    total = sum(item.total_symbols for item in coverages)
+    pct = (labeled / total * 100.0) if total else 0.0
+    return DataMapCoverage(
+        program=program,
+        labeled_in_decompiled=labeled,
+        total_symbols=total,
+        coverage_pct=pct,
+    )
+
+
+def build_coverage_table(coverages: Iterable[DataMapCoverage]) -> list[str]:
+    lines = [
+        "| Program | Labeled symbols | Total data symbols | Coverage |",
+        "| --- | --- | --- | --- |",
+    ]
+    for item in coverages:
+        lines.append(
+            "| {program} | {labeled} | {total} | {coverage} |".format(
+                program=item.program,
+                labeled=item.labeled_in_decompiled,
+                total=item.total_symbols,
+                coverage=format_percent(item.coverage_pct),
             )
         )
     return lines
@@ -145,6 +213,23 @@ def main() -> int:
         default="md",
         help="output format",
     )
+    parser.add_argument(
+        "--coverage",
+        action="store_true",
+        help="emit data-map coverage table instead of map counts",
+    )
+    parser.add_argument(
+        "--crimsonland-decompiled",
+        type=Path,
+        default=Path("analysis/ghidra/raw/crimsonland.exe_decompiled.c"),
+        help="path to crimsonland.exe decompiled C",
+    )
+    parser.add_argument(
+        "--grim-decompiled",
+        type=Path,
+        default=Path("analysis/ghidra/raw/grim.dll_decompiled.c"),
+        help="path to grim.dll decompiled C",
+    )
     args = parser.parse_args()
 
     name_entries = load_name_map(args.name_map)
@@ -153,6 +238,18 @@ def main() -> int:
         compute_progress("Name map", name_entries, include_signatures=True),
         compute_progress("Data map", data_entries, include_signatures=False),
     ]
+
+    if args.coverage:
+        crimson_text = args.crimsonland_decompiled.read_text(encoding="utf-8", errors="ignore")
+        grim_text = args.grim_decompiled.read_text(encoding="utf-8", errors="ignore")
+        coverage = [
+            compute_data_map_coverage(data_entries, crimson_text, "crimsonland.exe"),
+            compute_data_map_coverage(data_entries, grim_text, "grim.dll"),
+        ]
+        coverage.append(combine_coverages(coverage))
+        for line in build_coverage_table(coverage):
+            print(line)
+        return 0
 
     if args.format == "json":
         emit_json(progress)

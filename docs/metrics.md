@@ -63,8 +63,22 @@ Counts come from `analysis/ghidra/maps/name_map.json` and
 | Map | Total entries | crimsonland.exe | grim.dll | With signatures | With comments | Duplicate names |
 | --- | --- | --- | --- | --- | --- | --- |
 | Name map | 314 | 186 | 128 | 284 | 314 | 0 |
-| Data map | 116 | 116 | 0 | n/a | 116 | 0 |
+| Data map | 125 | 125 | 0 | n/a | 125 | 0 |
 <!-- map-progress:end -->
+
+### Data map coverage (decompiled symbols)
+
+Coverage is based on the decompiled C output, counting unique `DAT_*`/`PTR_DAT_*`
+symbols plus applied data-map labels. Run
+`uv run python scripts/update_map_progress_docs.py` to refresh.
+
+<!-- data-map-coverage:start -->
+| Program | Labeled symbols | Total data symbols | Coverage |
+| --- | --- | --- | --- |
+| crimsonland.exe | 125 | 2832 | 4.41% |
+| grim.dll | 0 | 493 | 0.00% |
+| Total | 125 | 3325 | 3.76% |
+<!-- data-map-coverage:end -->
 
 
 ## Docs

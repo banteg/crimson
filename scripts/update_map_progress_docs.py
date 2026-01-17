@@ -39,6 +39,24 @@ def main() -> int:
         default=Path("analysis/ghidra/maps/data_map.json"),
         help="path to data_map.json",
     )
+    parser.add_argument(
+        "--crimsonland-decompiled",
+        type=Path,
+        default=Path("analysis/ghidra/raw/crimsonland.exe_decompiled.c"),
+        help="path to crimsonland.exe decompiled C",
+    )
+    parser.add_argument(
+        "--grim-decompiled",
+        type=Path,
+        default=Path("analysis/ghidra/raw/grim.dll_decompiled.c"),
+        help="path to grim.dll decompiled C",
+    )
+    parser.add_argument(
+        "--index",
+        type=Path,
+        default=Path("docs/index.md"),
+        help="index doc to update",
+    )
     args = parser.parse_args()
 
     name_entries = map_progress.load_name_map(args.name_map)
@@ -50,14 +68,43 @@ def main() -> int:
     table_lines = map_progress.build_markdown_table(progress)
 
     metrics_path = args.metrics
-    updated = replace_block(
-        metrics_path.read_text(encoding="utf-8"),
+    metrics_text = metrics_path.read_text(encoding="utf-8")
+    metrics_text = replace_block(
+        metrics_text,
         "<!-- map-progress:start -->",
         "<!-- map-progress:end -->",
         table_lines,
     )
-    metrics_path.write_text(updated, encoding="utf-8")
+
+    crimson_text = args.crimsonland_decompiled.read_text(encoding="utf-8", errors="ignore")
+    grim_text = args.grim_decompiled.read_text(encoding="utf-8", errors="ignore")
+    crimson_cov = map_progress.compute_data_map_coverage(data_entries, crimson_text, "crimsonland.exe")
+    grim_cov = map_progress.compute_data_map_coverage(data_entries, grim_text, "grim.dll")
+    total_cov = map_progress.combine_coverages([crimson_cov, grim_cov])
+    coverage_lines = map_progress.build_coverage_table([crimson_cov, grim_cov, total_cov])
+    metrics_text = replace_block(
+        metrics_text,
+        "<!-- data-map-coverage:start -->",
+        "<!-- data-map-coverage:end -->",
+        coverage_lines,
+    )
+    metrics_path.write_text(metrics_text, encoding="utf-8")
     print(f"Updated {metrics_path}")
+
+    index_path = args.index
+    index_line = (
+        "Data map coverage (decompiled): "
+        f"{map_progress.format_percent(total_cov.coverage_pct)} ({total_cov.labeled_in_decompiled} / {total_cov.total_symbols} symbols; "
+        f"crimsonland.exe {map_progress.format_percent(crimson_cov.coverage_pct)}, grim.dll {map_progress.format_percent(grim_cov.coverage_pct)})."
+    )
+    index_text = replace_block(
+        index_path.read_text(encoding="utf-8"),
+        "<!-- data-map-coverage:start -->",
+        "<!-- data-map-coverage:end -->",
+        [index_line],
+    )
+    index_path.write_text(index_text, encoding="utf-8")
+    print(f"Updated {index_path}")
     return 0
 
 

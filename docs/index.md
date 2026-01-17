@@ -4,6 +4,9 @@ This site tracks the file formats and asset pipeline we have verified from the
 decompiled Crimsonland v1.9.93 executable and game data.
 
 Overall naming coverage: 26.3% (468 / 1779 functions named or inferred).
+<!-- data-map-coverage:start -->
+Data map coverage (decompiled): 3.76% (125 / 3325 symbols; crimsonland.exe 4.41%, grim.dll 0.00%).
+<!-- data-map-coverage:end -->
 
 ## What is documented
 
