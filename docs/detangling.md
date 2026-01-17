@@ -158,6 +158,7 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
 - `FUN_0043caa0` -> `audio_init_sfx`
   - Evidence: loads `sfx.paq` and registers the sound effect ids.
   - See `docs/sfx-id-map.md` for the extracted id-to-file mapping.
+  - See `docs/sfx-usage.md` for the most referenced SFX ids in the decompiled code.
 
 ### Global var access (medium confidence)
 
