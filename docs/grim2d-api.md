@@ -118,6 +118,8 @@ Validation highlights (see the evidence appendix for snippets):
   immediately before the draw calls.
 - The timing helpers (`get_time_ms`, `set_time_ms`, `get_frame_dt`, `get_fps`) have no decompiled callsites yet;
   grim.dll stores a millisecond counter and clamps frame delta to `0.1`.
+- `grim_apply_config` opens the Grim2D config dialog and initializes Direct3D8 before applying settings.
+- `grim_apply_settings` forwards to Grim2D’s internal settings routine (`FUN_10003c00`).
 
 
 ## Input-ish offsets (evidence)
