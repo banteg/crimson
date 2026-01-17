@@ -15,6 +15,18 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x004908d4",
+      "name": "player_table",
+      "comment": "Per-player table base (stride 0xd8)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004926b8",
+      "name": "projectile_pool",
+      "comment": "Projectile pool base (0x60 entries, stride 0x40)"
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x0049bf38",
       "name": "creature_pool",
       "comment": "Creature pool base (0x180 entries, stride 0x98)"

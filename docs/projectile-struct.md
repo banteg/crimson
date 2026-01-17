@@ -1,6 +1,6 @@
 # Projectile struct
 
-This map documents the projectile pool at `DAT_004926b8`.
+This map documents `projectile_pool` (`DAT_004926b8`).
 
 Notes:
 
@@ -34,9 +34,9 @@ Related tables:
 - `DAT_004d7a9c` is used as the damage scale for each `type_id`.
 - `DAT_004d7a98` is copied into the projectile entry on spawn and shares the
   same stride as the weapon table.
-- `DAT_004926e8` (offset `0x30`) acts like a shared damage pool for piercing
-  projectiles: it is decremented on hit and, if still positive, passed into
-  `FUN_004207c0` as the damage value before subtracting the target's health.
+- `projectile_pool + 0x30` (`DAT_004926e8`) acts like a shared damage pool for
+  piercing projectiles: it is decremented on hit and, if still positive, passed
+  into `FUN_004207c0` as the damage value before subtracting the target's health.
 
 Spawn notes:
 

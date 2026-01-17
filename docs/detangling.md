@@ -108,6 +108,10 @@ You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps
   - Evidence: 0x480‑byte `crimson.cfg` blob; see config layout below.
 - `DAT_00480510` -> `config_keybind_table`
   - Evidence: 2×16 dword keybind table inside config blob; copied into runtime binds.
+- `DAT_004908d4` -> `player_table`
+  - Evidence: per-player table base with stride `0xd8` (players/inputs/aim state).
+- `DAT_004926b8` -> `projectile_pool`
+  - Evidence: base of 0x60-entry projectile pool with stride 0x40.
 - `DAT_0049bf38` -> `creature_pool`
   - Evidence: base of 0x180‑entry creature pool with stride 0x98.
 - `DAT_004d7a2c` -> `weapon_table`
@@ -714,21 +718,22 @@ See [Creature struct](creature-struct.md) for the expanded field map and cross-l
 ### Projectile pool (partial)
 
 - `FUN_00420440` -> `projectile_spawn`
-  - Evidence: allocates a slot in `DAT_004926b8`, initializes angle/pos/type/owner, and callers store
-    the return index.
+  - Evidence: allocates a slot in `projectile_pool` (`DAT_004926b8`), initializes angle/pos/type/owner,
+    and callers store the return index.
 - `FUN_00420b90` -> `projectile_update`
   - Evidence: iterates `0x60` projectile entries, advances movement, checks collisions against
     creatures/players, spawns hit effects, and clears expired entries.
 - `FUN_004205d0` -> `projectile_reset_pools`
-  - Evidence: clears `DAT_004926b8` (`0x40` stride) and `DAT_00493eb8` (`0x38` stride).
+  - Evidence: clears `projectile_pool` (`DAT_004926b8`, `0x40` stride) and
+    `DAT_00493eb8` (`0x38` stride).
 - `FUN_00420600` -> `creatures_apply_radius_damage`
   - Evidence: loops active creatures, checks distance vs radius + size, and calls `FUN_004207c0`.
 - `FUN_004206a0` -> `creature_find_in_radius`
   - Evidence: returns the first creature index within `radius` starting at `start_index` (or `-1`).
 - `FUN_00420730` -> `player_find_in_radius`
-  - Evidence: scans the player table (`DAT_004908d4`), skipping the owner id, and returns the first
-    player within range.
-- Layout (entry size `0x40`, base `DAT_004926b8`, pool size `0x60`):
+  - Evidence: scans the player table (`player_table`, `DAT_004908d4`), skipping the owner id, and
+    returns the first player within range.
+- Layout (entry size `0x40`, base `projectile_pool` (`DAT_004926b8`), pool size `0x60`):
 
   | Offset | Field | Evidence |
   | --- | --- | --- |
