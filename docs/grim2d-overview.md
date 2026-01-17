@@ -15,3 +15,15 @@ At a high level, Grim2D provides:
   switching for offscreen draws.
 - Input/config/time helpers: keyboard/mouse/joystick queries, config floats,
   and timing values used by the game loop.
+
+## Data map highlights (grim.dll)
+
+High-confidence globals from the grim.dll decompilation:
+
+- **Interface:** `grim_interface_vtable` (vtable base) and `grim_interface_instance` (singleton object).
+- **D3D core:** `grim_d3d8`, `grim_d3d_device`, `grim_d3d8_probe` (temporary Create8 check).
+- **Render targets:** `grim_backbuffer_surface` and `grim_render_target_surface`.
+- **Texture slots:** `grim_texture_slots` (handle-indexed texture pointer table).
+- **Config storage:** `grim_config_blob` plus `grim_config_var0_table`..`grim_config_var3_table`.
+- **Font tables:** `grim_font2_char_map`, `grim_font2_glyph_widths`, `grim_font2_uv_u`,
+  `grim_font2_uv_v`, and `grim_font2_texture_handle`.

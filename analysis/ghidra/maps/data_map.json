@@ -1854,6 +1854,114 @@
       "address": "0x004d7aa0",
       "name": "weapon_projectile_pellet_count",
       "comment": "Weapon table projectile pellet count (weapon_table + 0x74, stride 0x7c)"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1004c238",
+      "name": "grim_interface_vtable",
+      "comment": "Grim2D interface vtable (used by GRIM__GetInterface)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005d81c",
+      "name": "grim_interface_instance",
+      "comment": "Singleton Grim2D interface instance (vtable pointer stored at grim_interface_vtable)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005b2c4",
+      "name": "grim_d3d8_probe",
+      "comment": "Temporary IDirect3D8 pointer used to sanity-check Direct3DCreate8."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005c8fc",
+      "name": "grim_d3d8",
+      "comment": "Primary IDirect3D8 interface."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10059dbc",
+      "name": "grim_d3d_device",
+      "comment": "Primary IDirect3DDevice8 pointer."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005c900",
+      "name": "grim_backbuffer_surface",
+      "comment": "Cached backbuffer render target (IDirect3DSurface8)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005a48c",
+      "name": "grim_render_target_surface",
+      "comment": "Current offscreen render target surface (IDirect3DSurface8)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005d404",
+      "name": "grim_texture_slots",
+      "comment": "Texture slot table (array of Grim2D texture pointers; indexed by handle)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005c418",
+      "name": "grim_config_blob",
+      "comment": "Raw crimson_cfg config blob (0x480 bytes read/write)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005cb88",
+      "name": "grim_config_var0_table",
+      "comment": "Config var table element 0 (id * 4; used by grim_get_config_var)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005cb8c",
+      "name": "grim_config_var1_table",
+      "comment": "Config var table element 1 (id * 4; used by grim_get_config_var)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005cb90",
+      "name": "grim_config_var2_table",
+      "comment": "Config var table element 2 (id * 0x10; used by grim_get_config_var)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005cb94",
+      "name": "grim_config_var3_table",
+      "comment": "Config var table element 3 (id * 0x10; used by grim_get_config_var)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10053070",
+      "name": "grim_font2_texture_handle",
+      "comment": "Texture handle for GRIM_Font2 (small font atlas)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005a570",
+      "name": "grim_font2_char_map",
+      "comment": "Small-font character map (char -> glyph index)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005bad8",
+      "name": "grim_font2_glyph_widths",
+      "comment": "Small-font glyph widths (byte per glyph)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005b2c8",
+      "name": "grim_font2_uv_u",
+      "comment": "Small-font glyph U coordinates (float, indexed by glyph * 2)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005b2cc",
+      "name": "grim_font2_uv_v",
+      "comment": "Small-font glyph V coordinates (float, indexed by glyph * 2)."
     }
   ]
 }
