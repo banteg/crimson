@@ -142,7 +142,7 @@ These offsets appear with keycodes or input-related values:
 | `0x1c` | `apply_settings` | `void apply_settings(void)` | high | calls FUN_10003c00 (apply settings) |
 | `0x20` | `set_render_state` | `void set_render_state(uint32_t state, uint32_t value)` | high | D3D-style render state usage |
 | `0x24` | `get_config_var` | `void get_config_var(uint32_t *out, int id)` | high | fills 4 dwords for config entry (`id` 0..0x7f) |
-| `0x28` | `get_error_text` | `char * get_error_text(void)` | high | error string for MessageBox |
+| `0x28` | `get_error_text` | `const char * get_error_text(void)` | high | error string for MessageBox |
 | `0x2c` | `clear_color` | `void clear_color(float r, float g, float b, float a)` | high | packs RGBA into device clear color |
 | `0x30` | `set_render_target` | `int set_render_target(int target_index)` | high | switches render target surfaces; -1 restores backbuffer |
 | `0x34` | `get_time_ms` | `int get_time_ms(void)` | high | frame time accumulator (ms) |

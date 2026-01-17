@@ -176,6 +176,7 @@ grim.dll body:
 ## 0x28 — grim_get_error_text @ 0x10006ca0
 
 - Ghidra signature: `char * grim_get_error_text(void)`
+- Suggested signature: `const char * grim_get_error_text(void)`
 - Call sites: 1 (unique funcs: 1)
 - Sample calls: FUN_0042c450:L19509
 - First callsite: FUN_0042c450 (line 21646)
@@ -664,6 +665,7 @@ grim.dll mapping:
 - Guess: `bool create_texture(const char *name, int width, int height)`
 - Notes: used for terrain texture
 - Ghidra signature: `int grim_create_texture(char *name, int width, int height)`
+- Suggested signature: `bool grim_create_texture(const char *name, int width, int height)`
 - Call sites: 2 (unique funcs: 1)
 - Sample calls: init_audio_and_terrain:L21242; init_audio_and_terrain:L21250
 - First callsite: FUN_0042a9f0 (line 21221)
@@ -737,6 +739,7 @@ grim.dll body:
 - Guess: `bool load_texture(const char *name, const char *path)`
 - Notes: name + filename
 - Ghidra signature: `int grim_load_texture(char *name, char *path)`
+- Suggested signature: `bool grim_load_texture(const char *name, const char *path)`
 - Call sites: 3 (unique funcs: 3)
 - Sample calls: FUN_00419d00:L10132; FUN_0042a670:L18970; FUN_0042a700:L18996
 - First callsite: FUN_00419d00 (line 12269)
@@ -757,6 +760,7 @@ grim.dll body:
 - Guess: `int get_texture_handle(const char *name)`
 - Notes: returns -1 on missing
 - Ghidra signature: `int grim_get_texture_handle(char *name)`
+- Suggested signature: `int grim_get_texture_handle(const char *name)`
 - Call sites: 22 (unique funcs: 8)
 - Sample calls: FUN_0040b740:L6362; FUN_0040b740:L6374; FUN_00412dc0:L8687; FUN_00412dc0:L8698; FUN_00412dc0:L8710; FUN_00412dc0:L8722; FUN_00412dc0:L8734; FUN_00412dc0:L8750
 - First callsite: FUN_0040b740 (line 6749)
@@ -1559,6 +1563,7 @@ grim.dll body:
 - Guess: `void draw_text_small(float x, float y, const char *text)`
 - Notes: uses `smallFnt.dat` widths + `GRIM_Font2`
 - Ghidra signature: `void grim_draw_text_small(float x, float y, char *text)`
+- Suggested signature: `void grim_draw_text_small(float x, float y, const char *text)`
 - Call sites: 20 (unique funcs: 9)
 - Sample calls: FUN_00401dd0:L760; FUN_00401dd0:L800; FUN_00405be0:L3808; FUN_0040b740:L6398; FUN_0040b740:L6401; FUN_0040b740:L6409; FUN_0040b740:L6426; FUN_0040b740:L6428
 - First callsite: FUN_00401dd0 (line 760)
