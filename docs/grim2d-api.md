@@ -141,6 +141,8 @@ These offsets appear with keycodes or input-related values:
   in `FUN_00448b50` (likely config values); ID `0x15f` returns mouse X delta.
 - `0x60`/`0x70`/`0x74` read the DirectInput mouse deltas, while
   `0x64`/`0x68`/`0x6c` update or return the accumulated mouse position.
+- `0x88`..`0x94` are scratch slot accessors (float/int arrays).
+- `0x98`..`0xa0` return cached joystick axis values.
 
 
 ## Vtable map (high confidence)

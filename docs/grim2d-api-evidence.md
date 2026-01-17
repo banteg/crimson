@@ -722,6 +722,118 @@ grim.dll mapping:
 ```
 
 
+## 0x88 — grim_get_slot_float @ 0x100072c0
+
+- Notes: returns a float slot from the engine scratch array
+- Ghidra signature: `float grim_get_slot_float(int index)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+
+grim.dll body:
+
+```c
+  return *(float *)(&DAT_1005c100 + index * 4);
+```
+
+
+## 0x8c — grim_get_slot_int @ 0x100072d0
+
+- Notes: returns an int slot from the engine scratch array
+- Ghidra signature: `int grim_get_slot_int(int index)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+
+grim.dll body:
+
+```c
+  return *(int *)(&DAT_1005bf00 + index * 4);
+```
+
+
+## 0x90 — grim_set_slot_float @ 0x100072e0
+
+- Notes: writes a float slot in the engine scratch array
+- Ghidra signature: `void grim_set_slot_float(int index, float value)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+
+grim.dll body:
+
+```c
+  *(float *)(&DAT_1005c100 + index * 4) = value;
+```
+
+
+## 0x94 — grim_set_slot_int @ 0x10007300
+
+- Notes: writes an int slot in the engine scratch array
+- Ghidra signature: `void grim_set_slot_int(int index, int value)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+
+grim.dll body:
+
+```c
+  *(int *)(&DAT_1005bf00 + index * 4) = value;
+```
+
+
+## 0x98 — grim_get_joystick_x @ 0x10007580
+
+- Notes: returns cached joystick axis X
+- Ghidra signature: `int grim_get_joystick_x(void)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+
+grim.dll body:
+
+```c
+  return DAT_1005d830;
+```
+
+
+## 0x9c — grim_get_joystick_y @ 0x10007590
+
+- Notes: returns cached joystick axis Y
+- Ghidra signature: `int grim_get_joystick_y(void)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+
+grim.dll body:
+
+```c
+  return DAT_1005d834;
+```
+
+
+## 0xa0 — grim_get_joystick_z @ 0x100075a0
+
+- Notes: returns cached joystick axis Z
+- Ghidra signature: `int grim_get_joystick_z(void)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+
+grim.dll body:
+
+```c
+  return DAT_1005d838;
+```
+
+
 ## 0xa4 — grim_get_joystick_pov @ 0x100075b0
 
 - Ghidra signature: `int grim_get_joystick_pov(int index)`
@@ -810,6 +922,26 @@ grim.dll body:
 ```
 
 
+## 0xb4 — grim_load_texture @ 0x100076e0
+
+- Provisional name: `load_texture` (high)
+- Guess: `bool load_texture(const char *name, const char *path)`
+- Notes: name + filename
+- Ghidra signature: `int grim_load_texture(char *name, char *path)`
+- Suggested signature: `bool grim_load_texture(const char *name, const char *path)`
+- Call sites: 3 (unique funcs: 3)
+- Sample calls: FUN_00419d00:L10132; FUN_0042a670:L18970; FUN_0042a700:L18996
+- First callsite: FUN_00419d00 (line 12269)
+
+```c
+    FUN_00401870(&DAT_0047eea0,(byte *)s_Loading_uiElement__s_004737b4);
+  }
+  (**(code **)(*DAT_0048083c + 0xb4))(local_100,param_2);
+  iVar2 = (**(code **)(*DAT_0048083c + 0xc0))(&stack0xfffffef8);
+  *(int *)(iStack_8 + 0xe0) = iVar2;
+```
+
+
 ## 0xb8 — grim_validate_texture @ 0x10007750
 
 - Provisional name: `validate_texture` (high)
@@ -832,24 +964,24 @@ grim.dll body:
 ```
 
 
-## 0xb4 — grim_load_texture @ 0x100076e0
+## 0xbc — grim_destroy_texture @ 0x10007700
 
-- Provisional name: `load_texture` (high)
-- Guess: `bool load_texture(const char *name, const char *path)`
-- Notes: name + filename
-- Ghidra signature: `int grim_load_texture(char *name, char *path)`
-- Suggested signature: `bool grim_load_texture(const char *name, const char *path)`
-- Call sites: 3 (unique funcs: 3)
-- Sample calls: FUN_00419d00:L10132; FUN_0042a670:L18970; FUN_0042a700:L18996
-- First callsite: FUN_00419d00 (line 12269)
+- Notes: releases the texture, clears the slot, and adjusts the max handle
+- Ghidra signature: `void grim_destroy_texture(int handle)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
 
+
+grim.dll body:
 
 ```c
-    FUN_00401870(&DAT_0047eea0,(byte *)s_Loading_uiElement__s_004737b4);
+  texture = (void *)(&DAT_1005d404)[handle];
+  if (texture != (void *)0x0) {
+    grim_texture_release(texture);
+    operator_delete(texture);
+    (&DAT_1005d404)[handle] = 0;
   }
-  (**(code **)(*DAT_0048083c + 0xb4))(local_100,param_2);
-  iVar2 = (**(code **)(*DAT_0048083c + 0xc0))(&stack0xfffffef8);
-  *(int *)(iStack_8 + 0xe0) = iVar2;
 ```
 
 
@@ -1504,6 +1636,30 @@ grim.dll body:
 
 ```c
   (**(code **)(*in_ECX + 0x11c))(*xy,xy[1],w,h);
+```
+
+
+## 0x124 — grim_draw_quad_rotated_matrix @ 0x10008750
+
+- Notes: emits a quad using the current rotation matrix and UV/color slots
+- Ghidra signature: `void grim_draw_quad_rotated_matrix(void *this, float x, float y, float w, float h)`
+- Suggested signature: `void grim_draw_quad_rotated_matrix(float x, float y, float w, float h)`
+- Call sites: 0 (unique funcs: 0)
+- Sample calls: none found
+- First callsite: not found in decompiled output
+
+
+grim.dll body:
+
+```c
+  if (_DAT_10059e30 == 0.0) {
+    local_18 = x + w;
+    local_20 = x;
+    local_1c = y;
+    local_14 = y;
+  } else {
+    fVar3 = w * 0.5;
+    fStack_8 = fVar3 + x;
 ```
 
 
