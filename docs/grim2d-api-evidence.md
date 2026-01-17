@@ -9,7 +9,7 @@ plus the current grim.dll entry signature and address from
 
 
 ## 0x10 — FUN_10005d40 @ 0x10005d40
-- Ghidra signature: `undefined FUN_10005d40()`
+- Ghidra signature: `int grim_apply_config(void)`
 - Call sites: 1 (unique funcs: 1)
 - Sample calls: FUN_0042c450:L19443
 - First callsite: FUN_0042c450 (line 21580)
@@ -24,7 +24,7 @@ plus the current grim.dll entry signature and address from
 
 
 ## 0x14 — FUN_10005eb0 @ 0x10005eb0
-- Ghidra signature: `undefined4 FUN_10005eb0(int * param_1)`
+- Ghidra signature: `int grim_init_system(void)`
 - Call sites: 1 (unique funcs: 1)
 - Sample calls: FUN_0042c450:L19504
 - First callsite: FUN_0042c450 (line 21641)
@@ -39,7 +39,7 @@ plus the current grim.dll entry signature and address from
 
 
 ## 0x18 — FUN_10005ff0 @ 0x10005ff0
-- Ghidra signature: `undefined FUN_10005ff0()`
+- Ghidra signature: `void grim_shutdown(void)`
 - Call sites: 1 (unique funcs: 1)
 - Sample calls: FUN_0042c450:L19599
 - First callsite: FUN_0042c450 (line 21736)
@@ -54,7 +54,7 @@ plus the current grim.dll entry signature and address from
 
 
 ## 0x1c — FUN_10006020 @ 0x10006020
-- Ghidra signature: `undefined FUN_10006020()`
+- Ghidra signature: `void grim_apply_settings(void)`
 - Call sites: 1 (unique funcs: 1)
 - Sample calls: FUN_0042c450:L19581
 - First callsite: FUN_0042c450 (line 21718)
@@ -72,7 +72,7 @@ plus the current grim.dll entry signature and address from
 - Provisional name: `set_render_state` (high)
 - Guess: `void set_render_state(uint32_t state, uint32_t value)`
 - Notes: D3D-style SetRenderState usage
-- Ghidra signature: `undefined FUN_10006580()`
+- Ghidra signature: `void grim_set_render_state(unsigned int state, unsigned int value)`
 - Call sites: 206 (unique funcs: 35)
 - Sample calls: FUN_00401dd0:L754; FUN_00401dd0:L755; FUN_00401dd0:L847; FUN_00402d50:L1438; FUN_00402d50:L1460; FUN_004047c0:L3147; FUN_00405160:L3373; FUN_00405160:L3377
 - First callsite: FUN_00401dd0 (line 754)
@@ -110,7 +110,7 @@ plus the current grim.dll entry signature and address from
 
 
 ## 0x28 — FUN_10006ca0 @ 0x10006ca0
-- Ghidra signature: `undefined FUN_10006ca0()`
+- Ghidra signature: `char * grim_get_error_text(void)`
 - Call sites: 1 (unique funcs: 1)
 - Sample calls: FUN_0042c450:L19509
 - First callsite: FUN_0042c450 (line 21646)
@@ -125,7 +125,7 @@ plus the current grim.dll entry signature and address from
 
 
 ## 0x2c — FUN_10006cb0 @ 0x10006cb0
-- Ghidra signature: `undefined FUN_10006cb0()`
+- Ghidra signature: `void grim_clear_color(float r, float g, float b, float a)`
 - Call sites: 5 (unique funcs: 3)
 - Sample calls: FUN_00417b80:L9215; FUN_004181b0:L9452; FUN_0042c450:L19534; FUN_0042c450:L19538; FUN_0042c450:L19547
 - First callsite: FUN_00417b80 (line 11352)
@@ -140,7 +140,7 @@ plus the current grim.dll entry signature and address from
 
 
 ## 0x30 — FUN_10006d50 @ 0x10006d50
-- Ghidra signature: `undefined FUN_10006d50()`
+- Ghidra signature: `int grim_set_render_target(int target_index)`
 - Call sites: 6 (unique funcs: 3)
 - Sample calls: FUN_00417b80:L9209; FUN_00417b80:L9333; FUN_004181b0:L9446; FUN_004181b0:L9563; FUN_00427920:L17949; FUN_00427920:L18035
 - First callsite: FUN_00417b80 (line 11346)
@@ -158,7 +158,7 @@ plus the current grim.dll entry signature and address from
 - Provisional name: `is_key_down` (high)
 - Guess: `bool is_key_down(uint32_t key)`
 - Notes: Ctrl/arrow keycodes
-- Ghidra signature: `undefined FUN_10007320()`
+- Ghidra signature: `int grim_is_key_down(unsigned int key)`
 - Call sites: 6 (unique funcs: 2)
 - Sample calls: FUN_00401a40:L509; FUN_00401a40:L511; FUN_00401a40:L526; FUN_00401a40:L528; FUN_0043d830:L26638; FUN_0043d830:L26639
 - First callsite: FUN_00401a40 (line 509)
@@ -176,7 +176,7 @@ plus the current grim.dll entry signature and address from
 - Provisional name: `was_key_pressed` (high)
 - Guess: `bool was_key_pressed(uint32_t key)`
 - Notes: edge-triggered key checks
-- Ghidra signature: `uint FUN_10007390(uint param_1)`
+- Ghidra signature: `int grim_was_key_pressed(unsigned int key)`
 - Call sites: 39 (unique funcs: 16)
 - Sample calls: FUN_00401a40:L514; FUN_00401a40:L522; FUN_00401a40:L531; FUN_00401a40:L543; FUN_00401a40:L547; FUN_00401a40:L551; FUN_00401a40:L574; FUN_00401a40:L578
 - First callsite: FUN_00401a40 (line 514)
@@ -191,7 +191,7 @@ LAB_00401add:
 
 
 ## 0x4c — grim_flush_input @ 0x10007330
-- Ghidra signature: `undefined grim_flush_input()`
+- Ghidra signature: `void grim_flush_input(void)`
 - Call sites: 12 (unique funcs: 10)
 - Sample calls: FUN_004018b0:L346; FUN_004070e0:L4357; FUN_00408530:L5083; FUN_00408530:L5104; FUN_0040aab0:L5879; FUN_0040ffc0:L7055; FUN_004107e0:L7326; FUN_00410d20:L7702
 - First callsite: FUN_004018b0 (line 346)
@@ -209,7 +209,7 @@ LAB_00401add:
 - Provisional name: `get_key_char` (high)
 - Guess: `int get_key_char(void)`
 - Notes: console text input
-- Ghidra signature: `undefined FUN_10005c40()`
+- Ghidra signature: `int grim_get_key_char(void)`
 - Call sites: 1 (unique funcs: 1)
 - Sample calls: FUN_00401060:L33
 - First callsite: FUN_00401060 (line 33)
@@ -224,7 +224,7 @@ LAB_00401add:
 
 
 ## 0x54 — grim_set_key_char_buffer @ 0x10005c20
-- Ghidra signature: `undefined grim_set_key_char_buffer()`
+- Ghidra signature: `void grim_set_key_char_buffer(unsigned char *buffer, int *count, int size)`
 - Call sites: 2 (unique funcs: 2)
 - Sample calls: FUN_0042c450:L19559; FUN_0043ecf0:L27394
 - First callsite: FUN_0042c450 (line 21696)
@@ -242,7 +242,7 @@ LAB_00401add:
 - Provisional name: `is_mouse_button_down` (medium)
 - Guess: `bool is_mouse_button_down(int button)`
 - Notes: button 0 used
-- Ghidra signature: `undefined FUN_10007410()`
+- Ghidra signature: `int grim_is_mouse_button_down(int button)`
 - Call sites: 4 (unique funcs: 3)
 - Sample calls: FUN_0040aab0:L5953; FUN_00446030:L29260; FUN_00446030:L29278; FUN_004460f0:L29306
 - First callsite: FUN_0040aab0 (line 6340)
@@ -260,7 +260,7 @@ LAB_00401add:
 - Provisional name: `get_mouse_wheel_delta` (high)
 - Guess: `float get_mouse_wheel_delta(void)`
 - Notes: positive/negative scroll used to change selection
-- Ghidra signature: `undefined FUN_10007560()`
+- Ghidra signature: `float grim_get_mouse_wheel_delta(void)`
 - Call sites: 2 (unique funcs: 1)
 - Sample calls: FUN_0043def0:L26948; FUN_0043def0:L26952
 - First callsite: FUN_0043def0 (line 29084)
@@ -278,7 +278,7 @@ LAB_00401add:
 - Provisional name: `is_key_active` (medium)
 - Guess: `bool is_key_active(int key)`
 - Notes: called with key mapping entries
-- Ghidra signature: `uint FUN_10006fe0(void * this, int param_1)`
+- Ghidra signature: `int grim_is_key_active(int key)`
 - Call sites: 6 (unique funcs: 4)
 - Sample calls: FUN_0040aab0:L5929; FUN_00446000:L29232; FUN_00446030:L29266; FUN_00446030:L29282; FUN_004460f0:L29308; FUN_004460f0:L29310
 - First callsite: FUN_00408990 (line 5277)
@@ -296,7 +296,7 @@ LAB_00401add:
 - Provisional name: `get_config_float` (medium)
 - Guess: `float get_config_float(int id)`
 - Notes: IDs 0x13f..0x155
-- Ghidra signature: `undefined FUN_100071b0()`
+- Ghidra signature: `float grim_get_config_float(int id)`
 - Call sites: 6 (unique funcs: 1)
 - Sample calls: FUN_00448b50:L30229; FUN_00448b50:L30233; FUN_00448b50:L30237; FUN_00448b50:L30241; FUN_00448b50:L30245; FUN_00448b50:L30249
 - First callsite: FUN_004136b0 (line 9703)
@@ -311,7 +311,7 @@ LAB_00401add:
 
 
 ## 0xa4 — grim_get_joystick_pov @ 0x100075b0
-- Ghidra signature: `undefined grim_get_joystick_pov()`
+- Ghidra signature: `int grim_get_joystick_pov(int index)`
 - Call sites: 2 (unique funcs: 2)
 - Sample calls: FUN_0041e8d0:L13164; FUN_0041e8f0:L13177
 - First callsite: FUN_0041e8d0 (line 15301)
@@ -329,7 +329,7 @@ LAB_00401add:
 - Provisional name: `create_texture` (medium)
 - Guess: `bool create_texture(const char *name, int width, int height)`
 - Notes: used for terrain texture
-- Ghidra signature: `uint FUN_100075d0(undefined4 param_1, undefined4 param_2, undefined4 param_3)`
+- Ghidra signature: `int grim_create_texture(char *name, int width, int height)`
 - Call sites: 1 (unique funcs: 1)
 - Sample calls: FUN_0042a9f0:L19084
 - First callsite: FUN_0042a9f0 (line 21221)
@@ -347,7 +347,7 @@ LAB_00401add:
 - Provisional name: `load_texture` (high)
 - Guess: `bool load_texture(const char *name, const char *path)`
 - Notes: name + filename
-- Ghidra signature: `undefined FUN_100076e0()`
+- Ghidra signature: `int grim_load_texture(char *name, char *path)`
 - Call sites: 3 (unique funcs: 3)
 - Sample calls: FUN_00419d00:L10132; FUN_0042a670:L18970; FUN_0042a700:L18996
 - First callsite: FUN_00419d00 (line 12269)
@@ -627,7 +627,7 @@ Atlas pointer table setup (grim.dll init):
 
 
 ## 0x10c — FUN_100083a0 @ 0x100083a0
-- Ghidra signature: `undefined FUN_100083a0()`
+- Ghidra signature: `void grim_set_uv_point(int index, float u, float v)`
 - Notes: called as four consecutive `set_uv_point` calls (indices 0..3) to override per-corner UVs; u=0.625, v in {0, 0.25}
 - Call sites: 4 (unique funcs: 1)
 - Sample calls: FUN_00422c70:L16721; FUN_00422c70:L16725; FUN_00422c70:L16728; FUN_00422c70:L16729
