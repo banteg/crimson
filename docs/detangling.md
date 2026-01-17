@@ -292,8 +292,9 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
     - Stage 5: increments `DAT_004808a8` on repeated `creatures_none_active()` events, spawns markers/bonuses,
       and after 8 iterations sets `DAT_0049095c = 3000` and `DAT_00486fe0 = -1000`.
     - Stage 6: waits for `DAT_00486fac < 1`, spawns markers, then sets `DAT_00486fe0 = -1000`.
-    - Stage 7: waits for `creatures_none_active()` with no active bonus slots, then sets `DAT_00486fe0 = -1000`.
+  - Stage 7: waits for `creatures_none_active()` with no active bonus slots, then sets `DAT_00486fe0 = -1000`.
   - Stage text table (array indexed by `DAT_00486fd8`, base is `local_38`):
+
     | Stage | Text |
     | --- | --- |
     | 0 | This is the nuke powerup, picking it up causes a huge\nexposion harming all monsters nearby! |
@@ -305,6 +306,7 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
     | 6 | Now pick up the bonuses by walking over them |
     | 7 | Now learn to shoot and move at the same time.\nClick the left Mouse button to shoot. |
     | 8 | Now, move the mouse to aim at the monsters |
+
   - Unused strings in the same stack block: indices 9-12 map to perk/tutorial lines
     ("It will help you to move and shoot...", Perks intro, Perks description, "Great! Now you are ready to start"),
     and the speed/weapon/x2 powerup strings are assigned to `local_44/local_40/local_3c` but not indexed by `DAT_00486fd8`.
