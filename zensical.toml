@@ -76,7 +76,15 @@ nav = [
     { "Progress metrics" = "metrics.md" },
     { "Detangling notes" = "detangling.md" },
     { "Entrypoint trace" = "entrypoint.md" },
-    { "Crimsonland.exe overview" = "crimsonland-exe.md" },
+    { "Crimsonland.exe" = [
+      { "Overview" = "crimsonland-exe/index.md" },
+      { "State machine" = "crimsonland-exe/state-machine.md" },
+      { "Frame loop" = "crimsonland-exe/frame-loop.md" },
+      { "Rendering" = "crimsonland-exe/rendering.md" },
+      { "UI and menus" = "crimsonland-exe/ui.md" },
+      { "Screens and flows" = "crimsonland-exe/screens.md" },
+      { "Gameplay glue" = "crimsonland-exe/gameplay.md" },
+    ]},
     { "Refactor attempt" = "refactor.md" },
   ]},
   { "Modern builds" = [
@@ -157,6 +165,7 @@ features = [
     "navigation.footer",
     "navigation.instant",
     "navigation.sections",
+    "search.highlight",
 ]
 
 # ----------------------------------------------------------------------------
