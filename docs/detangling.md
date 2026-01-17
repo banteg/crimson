@@ -792,7 +792,7 @@ See [Projectile struct](projectile-struct.md) for the expanded field map and not
 
 - `FUN_0041f580` -> `bonus_alloc_slot`
   - Evidence: scans `bonus_pool` (`DAT_00482948`) in `0x1c`-byte strides and returns the first entry
-    with type `0` (or the sentinel `DAT_00490630` when full).
+    with type `0` (or the sentinel `bonus_pool_sentinel` / `DAT_00490630` when full).
 - `FUN_0041f5b0` -> `bonus_spawn_at`
   - Evidence: clamps position to arena bounds, writes entry fields (type, lifetime, size, position,
     duration override), and spawns a pickup effect via `FUN_0042e120`.

@@ -123,6 +123,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00490630",
+      "name": "bonus_pool_sentinel",
+      "comment": "Bonus pool sentinel pointer returned by bonus_alloc_slot/bonus_spawn when no slot is available."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004906a8",
       "name": "fx_rotated_scale",
       "comment": "Rotated FX queue scale array"
