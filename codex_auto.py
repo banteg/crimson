@@ -9,7 +9,7 @@ DEFAULT_PROMPT = "Continue reverse engineering. Map structures and functions sys
 MAIN_MODEL = "gpt-5.2-codex"
 MAIN_REASONING = "xhigh"
 HELPER_MODEL = "gpt-5.2-codex"
-HELPER_REASONING = "low"
+HELPER_REASONING = "medium"
 MAX_ITERATIONS = 50
 DEFAULT_SESSION = "last"
 COLOR_MODE = "always"
@@ -113,10 +113,10 @@ def get_response(output: str, helper_model: str, helper_reasoning: str) -> tuple
     prompt = f"""You're guiding an automated reverse engineering session. The main AI just output:
 
 ---
-{output[-3000:]}
+{output}
 ---
 
-If it's asking a question or waiting for direction, give a brief answer (prefer "yes", keep exploring, go deeper).
+If it's asking a question or waiting for direction, give a brief answer.
 If it seems done or stuck, say "STOP".
 
 Reply with just your response, nothing else."""
