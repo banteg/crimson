@@ -48,12 +48,22 @@ Known type_id sources (partial):
 
 | type_id | Sources | Notes |
 | --- | --- | --- |
+| `0x1` | Assault Rifle (id `0x1`); Flamethrower (id `0x7`) | Direct weapon spawn. |
+| `0x2` | Weapon id `0x2` (unnamed in table) | Direct weapon spawn. |
+| `0x3` | Sawed-off Shotgun (id `0x3`); Submachine Gun (id `0x4`); Ion Rifle (id `0x14`) | Pellet-style multi-spawn. |
+| `0x5` | Gauss Gun (id `0x5`) | Direct weapon spawn. |
+| `0x6` | Mean Minigun (id `0x6`); Ion Shotgun (id `0x1e`) | Direct spawn + spread variant. |
+| `0x9` | Multi-Plasma (id `0x9`); Plasma Minigun (id `0x0a`); Fireblast bonus (id `8`) | Radial burst in `bonus_apply`. |
+| `0x0b` | Rocket Launcher (id `0x0b`); Blow Torch (id `0x0e`); Plasma Minigun spread (id `0x0a`); Angry Reloader perk (id `50`) | Fired as single shots or radial bursts. |
+| `0x13` | Jackhammer (id `0x13`) | Direct weapon spawn. |
 | `0x15` | Ion Minigun weapon (id `0x15`); Man Bomb perk (id `53`); Shock Chain bonus (id `7`) | Beam/chain segment types. |
 | `0x16` | Ion Cannon weapon (id `0x16`); Flameburst weapon (id `0x1f`); Man Bomb perk (id `53`) | Beam/chain segment type. |
-| `0x0b` | Rocket Launcher weapon (id `0x0b`); Blow Torch weapon (id `0x0e`); Plasma Minigun spread (id `0x0a`); Angry Reloader perk (id `50`) | Fired as single shots or radial bursts. |
+| `0x17` | Shrinkifier 5k (id `0x17`) | Beam segment type. |
+| `0x18` | Blade Gun (id `0x18`) | Direct weapon spawn. |
+| `0x19` | Spider Plasma (id `0x19`) | Direct weapon spawn. |
 | `0x1c` | Splitter Gun weapon (id `0x1c`) | Direct weapon spawn. |
+| `0x1d` | Gauss Shotgun (id `0x1d`) | Direct weapon spawn. |
 | `0x2d` | Fire Bullets bonus (id `14`); Fire Cough perk (id `54`) | Forced on player shots when Fire Bullets is active. |
-| `0x9` | Fireblast bonus (id `8`); Multi-shot spread path in `player_update` | Radial burst in `bonus_apply`. |
 | `0x29` | Bubblegun weapon (id `0x29`) | Direct weapon spawn. |
 | `0x2b` | Grim Weapon (id `0x2b`) | Direct weapon spawn. |
 
