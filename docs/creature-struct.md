@@ -121,6 +121,22 @@ Related notes:
   (mirrored to `0x1f - frame` when `type_flags & 1` and `frame > 0x0f`), with
   negative phases falling back to `base + 0x0f`.
 
+### Creature flags (partial)
+
+The `creature_flags` bitfield is consulted in `creature_update_all` and related helpers:
+
+- **0x1** — periodic self‑damage tick (`creature_apply_damage` with magnitude `dt * 60`).
+- **0x2** — stronger periodic self‑damage tick (`creature_apply_damage` with magnitude `dt * 180`).
+- **0x4** — short ping‑pong animation strip (see render notes above).
+- **0x10** — ranged attack: when `attack_cooldown <= 0` and target distance > 64,
+  spawns projectile type `9` and plays `sfx_shock_fire` (`DAT_004c3f9c`).
+- **0x40** — force long animation strip even if `0x4` is set.
+- **0x80** — uses `creature_link_index` as a timer that toggles AI mode `7`
+  with randomized positive/negative durations.
+- **0x100** — ranged attack variant: spawns projectile using the
+  `creature_orbit_radius` field as the projectile type id and plays
+  `sfx_plasmaminigun_fire` (`DAT_004c3fa0`).
+
 ## Creature type table (`creature_type_texture` / `DAT_00482728`)
 
 Stride: `0x44` bytes (`0x11` floats). Indexed by `type_id`.
