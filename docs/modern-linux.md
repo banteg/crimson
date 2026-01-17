@@ -13,12 +13,14 @@ Location in this repo:
 - `source/decompiled-modern/crimsonland_linux_135/crimsonland_calls.json`
 - `source/decompiled-modern/crimsonland_linux_135/crimsonland_strings.json`
 
+
 ## Suggested mining workflow
 
 1. Start with `crimsonland_symbols.json` to extract named APIs (e.g.
    `Crimsonland_*`, `GAME_*`, `QUEST_*`, `SND_*`, `AI*`, `Weapon*`).
 2. Use `crimsonland_calls.json` to find call clusters around known names.
 3. Validate candidate names against classic behavior and data formats.
+
 
 Example: quick name dictionary (Python, no dependencies):
 

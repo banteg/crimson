@@ -10,6 +10,7 @@ can hang names and subsystems off a stable boot sequence.
 - PE entrypoint VA: `0x00463026`
 - Ghidra function: `entry` (`entry @ 00463026`)
 
+
 ## Regenerate trace
 
 ```
@@ -97,10 +98,12 @@ High-level call order:
 15) `crt_exception_filter(exception_code, exception_ptr)` → CRT exception filter
 
 Notes:
+
 - `crimsonland_main()` includes DirectX version checks, Grim2D loading, config
   load/apply, input/audio/renderer setup, and the game loop + shutdown.
 - The early CRT cluster is now tagged as `crt_*` (heap/TLS/IO); confirm exact
   MSVCRT symbol names later.
+
 
 ## Modern Linux main trace (depth 2, internal calls only)
 

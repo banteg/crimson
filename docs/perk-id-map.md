@@ -4,6 +4,7 @@ Derived from `FUN_0042fd90` (perk database init). IDs are stored in `DAT_004c2b*
 constants; names and descriptions are filled via `FUN_0042fd00`.
 
 Notes:
+
 - `DAT_004c2b44` selects between two perk definitions depending on `DAT_004807b4`.
 - Flags live at `DAT_004c2c48 + id * 0x14` and gate availability in `perk_can_offer`:
   - `0x1` allows the perk when `_DAT_00480360 == 3`.
@@ -11,6 +12,7 @@ Notes:
   - `0x4` marks stackable perks (random selection accepts them even if already taken).
 - `DAT_004c2c50 + id * 0x14` stores prerequisite perk ids (checked via `perk_count_get`).
 - Music track ids are initialized in `audio_init_music` (see [detangling notes](detangling.md)).
+
 
 | ID | Const | Name | Description | Flags | Prereq |
 | -- | -- | -- | -- | -- | -- |

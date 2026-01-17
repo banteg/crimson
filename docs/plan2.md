@@ -8,6 +8,7 @@ Your symbol lists are large:
 * Android exports: **5,024** names
 * Overlap between them: **~3,224** names
 
+
 More importantly, they include **names that line up with the classic Crimsonland/Grim world**:
 
 #### 1) A Grim compatibility layer exists in the modern builds
@@ -17,6 +18,7 @@ These two are huge:
 * `GrimNexus_GetInterface`
 * `GRIM_LoadTexture`
 
+
 That strongly suggests the modern code still has a **Grim-facing entry point** (or a compatibility wrapper) that adapts “old Grim-ish API” onto a newer internal engine (the “Nexus” / `NX_*` layer you also have tons of symbols for).
 
 **Why this matters for classic reversing:**
@@ -25,6 +27,7 @@ In the classic game, the EXE loads the engine DLL and calls an exported “get i
 * the *intended method names*
 * the *grouping* of methods (render/input/audio/fs)
 * sometimes even the *argument conventions* by reading the wrapper code
+
 
 Even if the implementation changed, **the *contract* tends to remain similar**, and that’s exactly what you need to name and understand the classic vtable calls.
 
@@ -59,6 +62,7 @@ A few examples (there are many):
 
   * `GDI_GenerateTerrain`, `GDI_GenerateTerrainById`
 
+
 That last one is a nice direct tie-in: your classic EXE has a `generateterrain` console command; modern has a clearly named terrain generator entry point.
 
 #### 3) Modern “engine layer” symbols can help you name the classic Grim/engine calls
@@ -70,11 +74,13 @@ Modern exports include a *ton* of `NX_*` and `NXI_*` symbols like:
 * Audio: `NX_Audio_PlaySound`, `NX_Audio_SetChannelFrequency`, etc.
 * Console: `NX_AddConsoleAutocompletionString`, `nxConsole`
 
+
 Even if classic uses Direct3D8 + DirectInput directly inside grim.dll, the **conceptual operations match**: draw quads, draw text, mount packages, open/read files, play sounds, etc.
 
 So these names can provide a *target vocabulary* for your classic decompilation:
 
 * instead of “FUN_00428a10”, you can label it “DrawQuad” / “LoadSound” / “InitPerks” / “QuestFrame”, etc., once you confirm by behavior.
+
 
 ---
 
@@ -94,6 +100,7 @@ Take the modern symbols and use them to drive your *classic* renaming work:
   * the console command handlers (`generateterrain`, `loadtexture`, `snd_addGameTune`, etc.)
 * Rename the handler functions to match the modern terms once verified.
 
+
 This doesn’t require binary diffing; it’s just “use the modern names to guide what you call things.”
 
 ### 2) Use `GrimNexus_GetInterface` as a bridge to recover the classic Grim vtable meaning
@@ -105,6 +112,7 @@ If your modern decompilation includes code (not just exports), this is the best 
 * Enumerate that vtable in the modern build
 * Map each method to underlying `NX_*` calls inside the wrapper
 
+
 That effectively gives you a **labeled Grim API**.
 
 Then, in the classic EXE:
@@ -112,11 +120,13 @@ Then, in the classic EXE:
 * you already have dozens of calls like `(**(code **)(*DAT_... + 0xb4))(...)`
 * once you know what vtable slot `0xb4` corresponds to in the modern “Grim wrapper,” you can label it in classic too (or at least strongly hypothesize it, then verify by effect).
 
+
 Even if the slot order changed between versions, the wrapper is still a goldmine for:
 
 * expected method set,
 * typical arguments,
 * return/error conventions.
+
 
 ### 3) Use the modern `QUEST_*` list to map quest callbacks in classic
 
@@ -131,6 +141,7 @@ A strong strategy is:
 * in classic, locate the function that references that quest string → that’s your quest setup routine
 * rename accordingly
 
+
 This can save a *ton* of time because quests otherwise look like “random spawn logic.”
 
 ### 4) Validate differences instead of assuming equivalence
@@ -142,14 +153,17 @@ Modern may have:
 * different RNG seeding,
 * different asset pipeline (PNG/libpng shows up in modern exports; classic uses `.jaz`)
 
+
 So treat modern symbols as:
 
 * **names + structure hints**, not guaranteed identical behavior.
+
 
 Whenever you “import” an idea from modern into classic, do a quick equivalence check:
 
 * same inputs (seed, difficulty, time)
 * compare output (spawn list, score curve, terrain pattern, etc.)
+
 
 ---
 

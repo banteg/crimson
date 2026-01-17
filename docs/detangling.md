@@ -72,11 +72,13 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
 - `FUN_00401870` -> `console_printf`
   - Evidence: formats strings (uses `FUN_00461089`) then pushes into the console queue; callsites include `Unknown command`/CMOD logs.
 
+
 ### Renderer backend selection (medium confidence)
 
 - `FUN_004566d3` -> `renderer_select_backend`
   - Evidence: copies a function table, reads config `DisableD3DXPSGP`,
     and switches between multiple vtable variants (`FUN_004567b0`, `FUN_004568c0`, `FUN_00456aa5`).
+
 
 ### Texture loading helpers (high confidence)
 
@@ -85,6 +87,7 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
     logs success/failure, and re-queries handle.
 - `FUN_0042a700` -> `texture_get_or_load_alt`
   - Evidence: identical body to `texture_get_or_load`; primary callers pass `.jaz` assets.
+
 
 ### CRT errno accessors (high confidence)
 
@@ -101,6 +104,7 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
       `GetLastError()` for non-trivial errors.
     - `FUN_0046645e` (SetFilePointer) maps `GetLastError()` through `FUN_00465d20`.
 
+
 ### CRT lock/unlock helpers (high confidence)
 
 - `FUN_0046586b` -> `crt_lock`
@@ -108,6 +112,7 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
     lock path; invoked by `crt_exit_lock` and many CRT wrappers.
 - `FUN_004658cc` -> `crt_unlock`
   - Evidence: calls `LeaveCriticalSection`; invoked by `crt_exit_unlock` and many CRT wrappers.
+
 
 ### CRT exit/stdio helpers (high confidence)
 
@@ -127,6 +132,7 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
 - `FUN_004616e7` -> `crt_sprintf`
   - Evidence: uses CRT output core `FUN_00464380` with an unbounded count (`0x7fffffff`) and
     terminates with `\0` on success.
+
 
 ### Audio SFX helpers (medium confidence)
 
@@ -182,10 +188,12 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
 - `FUN_0043d110` -> `audio_shutdown_all`
   - Evidence: calls `sfx_release_all`, `music_release_all`, and the audio backend shutdown helper.
 
+
 ### Global var access (medium confidence)
 
 - `FUN_0042fcf0` -> `perk_count_get`
   - Evidence: returns `(&DAT_00490968)[perk_id]` directly; used to track perk picks and gating.
+
 
 ### Save/load helpers (medium confidence)
 
@@ -201,6 +209,7 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
 - `FUN_00412c10` -> `game_load_status`
   - Evidence: loads the status file, validates checksum/size, and regenerates it on failure;
     logs `GAME_LoadStatus ...`.
+
 
 ### Effect spawn helper (medium confidence)
 
@@ -223,6 +232,7 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
 - `FUN_0042e820` -> `effects_render`
   - Evidence: sets render state, iterates effects, computes rotated quad vertices, and submits
     via Grim vtable +0x134.
+
 
 ### Perk database + selection (medium confidence)
 
@@ -253,6 +263,7 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
   - Evidence: fills `DAT_004807e8` with randomly selected perks using `perk_select_random`,
     enforces uniqueness, and applies special-case handling for mode `8` (fixed perk list).
 
+
 ### Tutorial prompt (medium confidence)
 
 - `FUN_00408530` -> `tutorial_prompt_dialog`
@@ -260,6 +271,7 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
     "Play a game", and "Skip tutorial"; click handlers restart the tutorial (clears perk count
     table `DAT_00490968` and resets timers) or exit to game (sets `DAT_00487274`, flushes input,
     and resets `DAT_00486fe0`).
+
 
 ### Tutorial timeline (medium confidence)
 
@@ -302,6 +314,7 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
   - Stage index wraps to 0 when `DAT_00486fd8` reaches 9; counters are initialized in `FUN_00412dc0`
     (`DAT_00486fd8 = -1`, `DAT_00486fe0 = -1000`) and reset by `tutorial_prompt_dialog`.
 
+
 ### Creature table (partial)
 
 - `FUN_00428140` -> `creature_alloc_slot`
@@ -320,6 +333,7 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
   | 0x34 | collision radius (?) | used in collision tests in `FUN_00420600`. |
   | 0x6c | type id (spawn param) | written from `param_3` in `FUN_00428240`. |
   | 0x8c | flags | bit tests `0x4/0x8/0x400` guard behaviors in update/split logic. |
+
 
 ### Bonus / pickup pool (medium confidence)
 
@@ -341,12 +355,14 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
   | 0x14 | pos_y | set on spawn; used for distance checks. |
   | 0x18 | amount/duration | used by `FUN_00409890` when applying certain bonus types. |
 
+
 ### Game mode selector (partial)
 
 - `_DAT_00480360` holds the current game mode. See [Game mode map](game-mode-map.md) for the observed
   values and evidence.
 - `FUN_00412960` -> `game_mode_label`
   - Evidence: returns a label string based on `_DAT_00480360` (Survival, Quests, Typ-o-Shooter, etc.).
+
 
 ## Next naming targets
 

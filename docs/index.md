@@ -23,6 +23,7 @@ Special handling during extraction:
 - `.tga` files are converted to PNG.
 - Everything else is written as raw bytes.
 
+
 ## What is documented
 
 - [PAQ archives](formats/paq.md) — Completed

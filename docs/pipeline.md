@@ -18,6 +18,7 @@ uv run paq extract game assets
 - `.tga` → convert to PNG.
 - everything else → write as raw bytes.
 
+
 The extractor normalizes path separators and rejects `.`/`..` segments to
 avoid directory traversal.
 

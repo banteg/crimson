@@ -21,6 +21,7 @@ We extracted all `(*DAT_0048083c + offset)` callsites and wrote them to:
 - `source/decompiled/grim2d_vtable_calls.json`
 - `source/decompiled/grim2d_vtable_callsites.json` (full callsite index with line numbers)
 
+
 The JSON includes offset, callsite count, unique functions, and sample lines.
 
 We also dumped the Grim2D vtable itself from `game/grim.dll` and joined the
@@ -28,6 +29,7 @@ two datasets:
 
 - `source/decompiled/grim2d_vtable_entries.json`
 - `source/decompiled/grim2d_vtable_map.json`
+
 
 The map JSON includes function size, calling convention, return type, parameter
 count, and the raw Ghidra signature for faster triage.
@@ -39,6 +41,7 @@ data, not executable pointers.
 We also generate an evidence appendix with callsite snippets:
 
 - [Grim2D API evidence](grim2d-api-evidence.md)
+
 
 ## Top offsets by callsite count
 
@@ -55,6 +58,7 @@ These are the most frequently used offsets (likely the core draw/state calls):
 - `0x100` (59)
 - `0x48` (39)
 
+
 ## Input-ish offsets (evidence)
 
 These offsets appear with keycodes or input-related values:
@@ -67,6 +71,7 @@ These offsets appear with keycodes or input-related values:
   in `FUN_00448b50` (likely config values).
 - `0x60`/`0x70`/`0x74` read the DirectInput mouse deltas, while
   `0x64`/`0x68`/`0x6c` update or return the accumulated mouse position.
+
 
 ## Vtable map (high confidence)
 
@@ -160,6 +165,7 @@ These offsets appear with keycodes or input-related values:
 The working vtable skeleton lives in:
 
 - `source/clean/grim_api.h`
+
 
 ## Next steps
 

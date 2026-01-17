@@ -3,6 +3,7 @@ I can read the two decompiled sources you uploaded:
 * `/mnt/data/crimsonland.exe_decompiled.c` (game executable: a lot of gameplay + glue)
 * `/mnt/data/grim.dll_decompiled.c` (the “Grim/Grim2D” engine DLL: rendering/input/config)
 
+
 Note: the file-indexing tool reports that *some* previously-uploaded files have expired from its index. I can still analyze the two decompiled C files above (they’re present), but if you meant additional files beyond these two, you’ll need to re-upload them.
 
 Below is a long, practical reverse‑engineering plan organized around what these files show you’ll need to understand. I’ll keep it focused on **complete behavioral understanding / clean reimplementation** (not bypassing licensing/DRM).
@@ -30,6 +31,7 @@ Below is a long, practical reverse‑engineering plan organized around what thes
   * file loading helpers (e.g., `load_smallFnt.dat` is referenced),
   * the “Grim2D API” object that the EXE calls via a vtable.
 
+
 ### Formats & resources beyond what you already solved
 
 You said you fully understand `.paq` and `.jaz`. Great. In the EXE code, I also see:
@@ -39,6 +41,7 @@ You said you fully understand `.paq` and `.jaz`. Great. In the EXE code, I also 
 * at least one `.dat` file in the engine: `load_smallFnt.dat`.
 * script-ish text files: `autoexec.txt`, `music_game_tunes.txt`.
 
+
 ### A concrete “surface area” to map
 
 The EXE registers a small but important console surface:
@@ -47,6 +50,7 @@ The EXE registers a small but important console surface:
   `clear`, `cmdlist`, `extendconsole`, `generateterrain`, `loadtexture`, `minimizeconsole`, `openurl`, `setGammaRamp`, `setresourcepaq`, `snd_addGameTune`, `sndfreqadjustment`, `telltimesurvived`
 * **Variables found (8):**
   `con_monoFont`, `cv_bodiesFade`, `cv_friendlyFire`, `cv_showFPS`, `cv_silentloads`, `cv_verbose`, `v_height`, `v_width`
+
 
 These are excellent “anchors” for understanding initialization, subsystems, and data flow.
 
@@ -63,17 +67,20 @@ Even with full decompilation, “fully reverse engineer” can mean different de
 * **A compatibility layer** (reimplement Grim2D API so original logic can run)
 * **A modern port** (rebuild gameplay with new renderer/input/audio, reuse assets legally)
 
+
 Guardrails to establish early:
 
 * Keep the work scoped to **interoperability / preservation / modding / research**.
 * Avoid distributing proprietary assets or code you don’t own.
 * If the game has trial/full gating, treat it as “behavior to document,” not something to defeat.
 
+
 Deliverables to set up right away:
 
 * A repo with `/docs`, `/tools`, `/engine`, `/game`, `/tests`.
 * A naming convention for recovered structs/functions (e.g., `GrimSystem::LoadTexture`, `Game::InitPerks`, etc.).
 * A “facts ledger”: every conclusion links back to evidence (decompiled snippet, runtime log, etc.).
+
 
 ---
 
@@ -94,6 +101,7 @@ Deliverables to set up right away:
 
 2. **Document responsibilities by boundary**
    Create a one-page “ownership table”:
+
 
 | System                             |                  In EXE |                   In grim.dll |
 | ---------------------------------- | ----------------------: | ----------------------------: |
@@ -117,6 +125,7 @@ Why this matters:
 
 * The EXE calls Grim entirely through `(**(code **)(*DAT_... + offset))(...)`.
 * Until you name these methods and their contracts, the rest stays foggy.
+
 
 Approach:
 
@@ -146,6 +155,7 @@ Approach:
 * the initialization sequence that sets up input devices,
 * the D3D lost-device restore logic and texture restore logic.
 
+
 Even if you don’t get perfect 1:1 mapping immediately, you can:
 
 * name methods by effect: `BeginFrame`, `EndFrame`, `SetColor`, `DrawQuad`, `BindTexture`, `IsKeyDown`, `GetKeyChar`, etc.
@@ -159,10 +169,12 @@ Even if you don’t get perfect 1:1 mapping immediately, you can:
 * ownership rules (who frees textures),
 * error behavior (-1? 0?).
 
+
 This becomes the spec for either:
 
 * reimplementing Grim on a new backend, or
 * stubbing Grim to isolate gameplay.
+
 
 ---
 
@@ -181,6 +193,7 @@ You have *two* important fixed-size blobs in play:
   * windowed variants are present if a flag is enabled
   * 32-bit options appear if supported (it probes capability)
 
+
 Plan:
 
 * Run the config dialog, flip one setting at a time, and diff the 0x480 bytes.
@@ -194,6 +207,7 @@ Plan:
 * gameplay defaults (friendly fire, show FPS, etc.),
 * possibly UI behavior.
 
+
 Plan:
 
 * Identify the filename by runtime file I/O tracing (or by locating the string in the original binary).
@@ -205,6 +219,7 @@ Plan:
 * Identify each table’s base address and stride (e.g., perks appear to be laid out in fixed-size records).
 * Reconstruct a struct definition.
 * Dump the table at runtime into JSON (even using the original game) so you have a canonical, versioned reference.
+
 
 ---
 
@@ -220,6 +235,7 @@ You’ve solved `.paq` and `.jaz`; the code tells you what to do next:
 * It loads **tons** of `.ogg` samples (aliens, trooper, bullet hits, explosions, UI clicks, etc.)
 * It also loads music tracks like `music_intro.ogg`, `music_crimson_theme.ogg`, `music_crimsonquest.ogg`, etc.
 * It runs `exec music_game_tunes.txt`, and there’s a console command `snd_addGameTune`.
+
 
 Plan:
 
@@ -245,6 +261,7 @@ Plan:
 * UI `.jaz` loader strips the extension to create a resource name, then calls `Load(name, filename)`.
 * Other textures sometimes use the same string for name and filename.
 
+
 Plan:
 
 * Standardize your reimplementation to mirror the original lookup rules:
@@ -253,6 +270,7 @@ Plan:
   * case sensitivity
   * directory separator normalization
 * Build a tool that scans the EXE for all `s_*` resource references and outputs likely filenames/categories.
+
 
 ---
 
@@ -264,6 +282,7 @@ The console system in the EXE is real (not just debug fluff):
 
 * It parses input, finds either a **variable** or a **command**, then executes.
 * It runs `exec autoexec.txt`, so scripting is part of normal boot.
+
 
 Plan:
 
@@ -284,6 +303,7 @@ Plan:
 * Add your own logging commands (in a custom build) *or* hook existing ones.
 * Use scripts to create deterministic test scenarios: load a terrain seed, spawn known enemies, etc.
 
+
 ---
 
 ### Phase 6 — Game state machine and modes (Survival / Quests / Typ-o-Shooter)
@@ -295,6 +315,7 @@ You want to identify:
 * **Top-level states:** splash/logo, main menu, mode select, gameplay, pause, score screens, perk selection, etc.
 * **Per-mode logic:**
   Survival spawn rules differ from quest objectives; Typ-o-Shooter likely changes input and scoring.
+
 
 Plan:
 
@@ -316,6 +337,7 @@ Plan:
 
 * easiest is to hook the functions that print UI labels (menus) or the ones that load state-specific textures/music.
 
+
 ---
 
 ### Phase 7 — Entities, combat, and simulation core
@@ -332,6 +354,7 @@ This is the largest “hardcoded” region in the EXE. The plan is to convert it
 * bullets/projectiles
 * pickups/perks
 * particles/decals (blood spills, muzzle flashes)
+
 
 For each entity type, identify:
 
@@ -357,6 +380,7 @@ For each entity type, identify:
 * decide how to seed it per mode/quest
 * build a “deterministic replay” harness (record inputs + seed, verify identical outputs)
 
+
 ---
 
 ### Phase 8 — Quests system (it’s table-driven but hardcoded)
@@ -368,6 +392,7 @@ What I can see:
 * There’s a list of quest names (“Monster Blues”, “Nagolipoli”, “The Gathering”, etc.)
 * Many quest setups are function pointers; there’s a fallback quest generator.
 * Quest setup computes spawn schedules/objectives.
+
 
 Plan:
 
@@ -390,6 +415,7 @@ Plan:
 * quest definition: static schedule/objectives
 * quest runtime: counters, timers, failure/success conditions
 
+
 Once you have this separation, externalizing quests becomes straightforward.
 
 ---
@@ -406,6 +432,7 @@ From the EXE:
   * transforms bytes and validates checksum
 * There is also score data with checksums and “illegal score” warnings.
 
+
 Plan:
 
 1. **Identify what the status blob represents**
@@ -413,6 +440,7 @@ Plan:
 
 * unlocks, progress, last selected weapon/perk, or totals
 * maybe registry mirrors (`sequence`, `dataPathId`, `transferFailed` keys are manipulated)
+
 
 Method:
 
@@ -429,6 +457,7 @@ Method:
 * Golden files: a set of save/score files from real gameplay sessions.
 * Your parser must round-trip them without changes (unless you’re explicitly migrating).
 
+
 ---
 
 ### Phase 10 — UI, HUD, and UX fidelity
@@ -439,6 +468,7 @@ Because you understand `.jaz`, you can tie it directly to UI behaviors:
 
 * UI elements load textures, compute UV rectangles, and then draw quads with Grim.
 * There are lots of “hardcoded placements” (pixel constants, scale factor logic).
+
 
 Plan:
 
@@ -461,6 +491,7 @@ Plan:
 
 * Determine font(s): `GRIM_Font2` is referenced in EXE; `load_smallFnt.dat` in grim.dll.
 * Identify text measurement and wrapping behavior.
+
 
 ---
 
@@ -489,6 +520,7 @@ To “fully reverse engineer,” you need repeatable validation:
 
 * Keep the EXE logic running against your replacement Grim and ensure it boots and reaches menus before you tackle full gameplay.
 
+
 ---
 
 ### Phase 12 — Optional but high-value: Make it data-driven (taming the hardcoded stuff)
@@ -503,11 +535,13 @@ Targets to externalize:
 * quest schedules/objectives
 * input bindings defaults
 
+
 Strategy:
 
 * First: **extract** the hardcoded tables into JSON/YAML via a dumping tool.
 * Second: add a loader that can override hardcoded defaults.
 * Third: gradually flip the source of truth to the external files.
+
 
 This keeps “original behavior” as the baseline while enabling mods and easier iteration.
 
@@ -532,6 +566,7 @@ This keeps “original behavior” as the baseline while enabling mods and easie
    * Example: “spawn one enemy type + one weapon + bullets + collisions + one sound + one UI HUD element”
    * This forces you to touch engine API, resources, simulation, and rendering in a controlled scope.
 
+
 ---
 
 ## If you want, I can also generate “working docs” artifacts from these sources
@@ -542,6 +577,7 @@ Without needing any more files, I can produce:
 * a **JSON list of detected console commands/cvars** (already partially extracted),
 * a **JSON list of referenced `.ogg`** sample/tune names and `.jaz` identifiers from the EXE,
 * a **save/status format starter spec** (structure + checksum/transform description).
+
 
 If you upload (or re-upload) any of these, I can extend the plan into concrete specs/tools:
 

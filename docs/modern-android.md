@@ -13,12 +13,14 @@ Location in this repo:
 - `source/decompiled-modern/crimsonland_android_1_4_2_8/libNativeGame.so_calls.json`
 - `source/decompiled-modern/crimsonland_android_1_4_2_8/libNativeGame.so_strings.json`
 
+
 ## Suggested mining workflow
 
 1. Start with `libNativeGame.so_symbols.json` and pull `Crimsonland_*`,
    `GAME_*`, `QUEST_*`, `SND_*`, `AI*`, `Weapon*`, and `Powerup*` names.
 2. Use `libNativeGame.so_calls.json` to cluster related functions.
 3. Check `libNativeGame.so_strings.json` for UI labels and event names.
+
 
 Example: quick name dictionary (Python, no dependencies):
 

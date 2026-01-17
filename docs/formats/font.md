@@ -9,6 +9,7 @@ The small font is stored as a 256-byte width table and a 16x16 glyph atlas.
 - `game/crimson.paq`: `load\smallFnt.dat`, `load\smallWhite.tga`
 - Extracted to `assets/crimson/load/smallFnt.dat` and `assets/crimson/load/smallWhite.png`
 
+
 ## smallFnt.dat layout
 
 ```
@@ -42,12 +43,14 @@ A small bias of 1/512 is applied to the U/V values in code to reduce bleeding.
 - `DAT_1005a570` is initialized as an identity lookup table, so glyph index
   equals the byte value.
 
+
 ## Notes
 
 - No kerning table is referenced; widths are the only per-glyph metric.
 - Empty atlas cells observed at indices 32, 160, 253-255 (space + unused).
 - `default_font_courier.tga` in `crimson.paq` is likely the fixed-width font
   used by vtable offset `0x13c`, but that mapping still needs confirmation.
+
 
 ## Sample render
 

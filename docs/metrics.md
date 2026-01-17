@@ -26,6 +26,7 @@ regen (from git history).
 - GDT hits (since previous regen): 1
 - Last regen: 2026-01-16
 
+
 ### `grim.dll`
 
 - Total funcs: 959
@@ -37,6 +38,7 @@ regen (from git history).
 - External typed: 0 / 0
 - GDT hits (since previous regen): 0
 - Last regen: 2026-01-16
+
 
 ### Total
 
@@ -50,6 +52,7 @@ regen (from git history).
 - GDT hits (since previous regen): 1
 - Last regen: 2026-01-16
 
+
 ## Formats and systems
 
 ### PAQ archives
@@ -57,25 +60,30 @@ regen (from git history).
 - Status: Completed
 - Notes: [PAQ format notes](formats/paq.md)
 
+
 ### JAZ textures
 
 - Status: Completed
 - Notes: [JAZ format notes](formats/jaz.md)
+
 
 ### Sprite atlas cutting
 
 - Status: In progress
 - Notes: [Atlas cutting](atlas.md)
 
+
 ### Extraction pipeline
 
 - Status: In progress
 - Notes: [Extraction pipeline](pipeline.md)
 
+
 ### Weapon table
 
 - Status: In progress
 - Notes: [Weapon table](weapon-table.md)
+
 
 ## Refactor progress
 
@@ -83,6 +91,7 @@ regen (from git history).
 
 - Value: 0
 - Notes: `source/clean/` is currently empty.
+
 
 ### Header packs
 
