@@ -161,7 +161,7 @@ Layout (partial):
 | 0x20 | half_height | Doubled when queuing the expiry sprite. |
 | 0x24 | age | Incremented by `dt` in `effects_update`. |
 | 0x28 | lifetime | Compared against `age` in `effects_update`. |
-| 0x2c | flags | `0x4` updates `rotation` via `0x40`; `0x8` updates `scale` via `0x44`; `0x10` fades alpha; `0x80` spawns `fx_queue_add` on expiry; `0x100` selects a dimmer expiry alpha. |
+| 0x2c | flags | `0x4` updates `rotation` via `0x40`; `0x8` updates `scale` via `0x44`; `0x10` fades alpha; `0x40` draws in the first `effects_render` batch; `0x80` spawns `fx_queue_add` on expiry; `0x100` selects a dimmer expiry alpha. |
 | 0x30 | color_r | Initialized to `1.0`; passed into `fx_queue_add`. |
 | 0x34 | color_g | Initialized to `1.0`; passed into `fx_queue_add`. |
 | 0x38 | color_b | Initialized to `1.0`; passed into `fx_queue_add`. |
@@ -175,6 +175,9 @@ Notes:
 - `effect_spawn` fills a 4‑corner quad starting at `0x48`. The position and UV
   components are spaced with a 7‑float stride, leaving three unknown floats
   between the position and UV fields for each corner.
+- `effects_render` splits entries by `flags & 0x40`. Both passes build a 2x2
+  rotation/scale matrix from `rotation` + `scale` and draw the quad data starting
+  at `0x48`.
 
 Quad layout (from `effect_spawn` writes):
 
