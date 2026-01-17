@@ -271,6 +271,10 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
     "Play a game", and "Skip tutorial"; click handlers restart the tutorial (clears perk count
     table `DAT_00490968` and resets timers) or exit to game (sets `DAT_00487274`, flushes input,
     and resets `DAT_00486fe0`).
+  - Signature (inferred): `void tutorial_prompt_dialog(char *text, float alpha)`
+  - `alpha` comes from `tutorial_timeline_update` (0..1), controls the prompt fade, and is used
+    to scale the button visuals; the decompiler currently shows it as a `char` because the call
+    site passes `SUB41` of a float.
 
 
 ### Tutorial timeline (medium confidence)
@@ -341,6 +345,39 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
 - `FUN_0043e830` -> `ui_button_update`
   - Evidence: draws the small/medium button textures, updates hover/press timers using
     `ui_mouse_inside_rect`, and returns nonzero when the button is activated.
+
+Button struct (size `0x18`, used by `DAT_0047f5f8` / `DAT_00480250` / `DAT_004807d0`):
+
+| Offset | Field | Notes |
+| --- | --- | --- |
+| 0x00 | `label` | `char *` text pointer passed to `grim_measure_text_width`. |
+| 0x04 | `hovered` | low byte set from `ui_mouse_inside_rect`. |
+| 0x05 | `activated` | set to 1 when `ui_button_update` triggers; cleared otherwise. |
+| 0x06 | `enabled` | when 0, disables hover/press and decays the hover timer. |
+| 0x08 | `hover_t` | 0..1000 hover animation timer (ramps ±4/±6 per frame). |
+| 0x0c | `press_t` | 0..1000 press flash timer (decays by 6 per frame). |
+| 0x10 | `alpha` | base alpha scale (1.0 default). |
+| 0x14 | `flags` | byte flags; `0x15` is checked to force a wide button. |
+| 0x15 | `force_wide` | overrides width selection for short labels. |
+
+### Quest timeline (medium confidence)
+
+- `FUN_0043a790` -> `quest_start_selected`
+  - Evidence: resets quest state, selects quest metadata at `DAT_00484730`, queues perk state, and
+    runs the quest builder at `DAT_0048474c` (or `quest_build_fallback` when null).
+- `FUN_00434250` -> `quest_spawn_timeline_update`
+  - Evidence: walks the quest spawn table (`DAT_004857a8`, count `DAT_00482b08`), checks trigger
+    time vs `DAT_00486fd0`, and spawns each entry with `FUN_00430af0` using a 0x28 spacing offset.
+- `FUN_00434220` -> `quest_spawn_table_empty`
+  - Evidence: returns 1 when all spawn entries have been cleared (no pending spawns).
+- `FUN_004343e0` -> `quest_build_fallback`
+  - Evidence: logs a fallback warning and writes two default entries (spawn id `0x40`, counts 10/0x14,
+    trigger times 500/5000).
+- `FUN_004343c0` -> `quest_database_advance_slot`
+  - Evidence: increments quest index, wraps every 10, and advances the tier.
+- `FUN_00439230` -> `quest_database_init`
+  - Evidence: populates the quest metadata table (`DAT_00484730`) with names, durations, and builder
+    function pointers.
 
 
 ### Creature table (partial)

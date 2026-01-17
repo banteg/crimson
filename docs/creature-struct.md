@@ -160,16 +160,16 @@ Notes:
   `0x2c`, `0x35`, `0x38`, `0x3a`, `0x3c`, and `1`.
 - Tutorial timeline (`FUN_00408990`): scripted spawns using `0x24`, `0x26`,
   `0x27`, `0x28`, `0x40`.
-- Quest/timeline spawner (`FUN_00434250`): pulls spawn ids from the table at
-  `DAT_004857a8` (`pfVar4[3]`) with counts in `pfVar4[5]`.
+- Quest/timeline spawner (`quest_spawn_timeline_update`, `FUN_00434250`): pulls spawn ids from the
+  table at `DAT_004857a8` (`pfVar4[3]`) with counts in `pfVar4[5]`.
 - AI subspawns (`FUN_00426220`): periodic spawns using `&DAT_00484fe4 + iVar6 * 0x18`,
   which is seeded for some template ids inside `FUN_00430af0`.
 
 ## Quest spawn table (DAT_004857a8)
 
 Quests populate a fixed table at `DAT_004857a8` (entry size `0x18`, count in
-`DAT_00482b08`). `FUN_00434250` walks the table and spawns entries whose trigger
-time has elapsed.
+`DAT_00482b08`). `quest_spawn_timeline_update` (`FUN_00434250`) walks the table and
+spawns entries whose trigger time has elapsed.
 
 Entry layout (dwords):
 
@@ -184,9 +184,10 @@ Entry layout (dwords):
 
 Notes:
 
-- `FUN_0043a790` chooses a quest builder from the table at `DAT_00484730`.
-  The function pointer lives at `&DAT_0048474c`; when null, it falls back to
-  `FUN_004343e0` (two entries with spawn id `0x40`, counts 10/0x14, trigger times
+- `quest_start_selected` (`FUN_0043a790`) chooses a quest builder from the table at
+  `DAT_00484730`. The function pointer lives at `&DAT_0048474c`; when null, it
+  falls back to `quest_build_fallback` (`FUN_004343e0`) (two entries with spawn id
+  `0x40`, counts 10/0x14, trigger times
   500/5000).
 - `FUN_00437d70`, `FUN_00438840`, and `FUN_00438940` are examples of quest builders
   that write multiple `DAT_004857a8` entries with varying spawn ids and timings.

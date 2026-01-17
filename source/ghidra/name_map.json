@@ -618,6 +618,48 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00434220",
+    "name": "quest_spawn_table_empty",
+    "signature": "int quest_spawn_table_empty(void)",
+    "comment": "returns 1 when the quest spawn table has no pending entries"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00434250",
+    "name": "quest_spawn_timeline_update",
+    "signature": "void quest_spawn_timeline_update(void)",
+    "comment": "updates quest spawn entries based on the quest timer"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004343c0",
+    "name": "quest_database_advance_slot",
+    "signature": "void quest_database_advance_slot(int *tier, int *index)",
+    "comment": "advances quest database tier/index (wraps every 10)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004343e0",
+    "name": "quest_build_fallback",
+    "signature": "void quest_build_fallback(float *entries, int *count)",
+    "comment": "fills a default quest spawn table when no quest builder is present"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00439230",
+    "name": "quest_database_init",
+    "signature": "void quest_database_init(void)",
+    "comment": "builds the quest metadata table and registers quest builders"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043a790",
+    "name": "quest_start_selected",
+    "signature": "void quest_start_selected(int tier, int index)",
+    "comment": "resets quest state, selects quest metadata, and runs its builder"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0043d120",
     "name": "sfx_play",
     "signature": "int sfx_play(int sfx_id)",
@@ -795,6 +837,7 @@
     "program": "crimsonland.exe",
     "address": "0x00408530",
     "name": "tutorial_prompt_dialog",
+    "signature": "void tutorial_prompt_dialog(char *text, float alpha)",
     "comment": "renders tutorial prompt text + Repeat/Play/Skip buttons and handles selections"
   },
   {
