@@ -138,6 +138,17 @@ plus the current grim.dll entry signature and address from
   uStack_9c = 0;
 ```
 
+grim.dll body:
+
+```c
+  uVar3 = ftol(0,0);
+  iVar4 = ftol();
+  uVar5 = ftol();
+  uVar6 = ftol();
+  (**(code **)(iVar1 + 0x90))(piVar2,0,0,1,
+      ((uVar3 & 0xff | iVar4 << 8) << 8 | uVar5 & 0xff) << 8 | uVar6 & 0xff);
+```
+
 
 ## 0x30 — FUN_10006d50 @ 0x10006d50
 - Ghidra signature: `int grim_set_render_target(int target_index)`
@@ -275,7 +286,7 @@ LAB_00401add:
 
 
 ## 0x80 — FUN_10006fe0 @ 0x10006fe0
-- Provisional name: `is_key_active` (medium)
+- Provisional name: `is_key_active` (high)
 - Guess: `bool is_key_active(int key)`
 - Notes: called with key mapping entries
 - Ghidra signature: `int grim_is_key_active(int key)`
@@ -291,9 +302,23 @@ LAB_00401add:
               ((cVar2 = (**(code **)(*DAT_0048083c + 0x80))(puVar6[1]), cVar2 == '\0' &&
 ```
 
+grim.dll routing:
+
+```c
+  if (key < 0x100) {
+    return (**(code **)(*(int *)this + 0x44))(key);
+  }
+  if (key == 0x100) {
+    return (**(code **)(*(int *)this + 0x58))(0);
+  }
+  if (key == 0x101) {
+    return (**(code **)(*(int *)this + 0x58))(1);
+  }
+```
+
 
 ## 0x84 — FUN_100071b0 @ 0x100071b0
-- Provisional name: `get_config_float` (medium)
+- Provisional name: `get_config_float` (high)
 - Guess: `float get_config_float(int id)`
 - Notes: IDs 0x13f..0x155
 - Ghidra signature: `float grim_get_config_float(int id)`
@@ -307,6 +332,21 @@ LAB_00401add:
       fVar19 = (float10)(**(code **)(*DAT_0048083c + 0x84))((&DAT_00490c0c)[iVar6 * 0xd8]);
       pfVar12 = (float *)(&DAT_00490c08)[iVar6 * 0xd8];
       fVar20 = (float10)(**(code **)(*DAT_0048083c + 0x84))();
+```
+
+grim.dll mapping:
+
+```c
+  if (id == 0x13f) {
+    return (float)DAT_1005d830 * 0.001;
+  }
+  if (id == 0x140) {
+    return (float)DAT_1005d834 * 0.001;
+  }
+  if (id == 0x15f) {
+    fVar3 = (float10)(**(code **)(*in_ECX + 0x70))();
+    return (float)fVar3;
+  }
 ```
 
 
@@ -380,7 +420,7 @@ LAB_00401add:
 
 
 ## 0xc4 — FUN_10007830 @ 0x10007830
-- Provisional name: `bind_texture` (medium)
+- Provisional name: `bind_texture` (high)
 - Guess: `void bind_texture(int handle, int stage)`
 - Notes: often called with handle,0
 - Ghidra signature: `void grim_bind_texture(int handle, int stage)`
@@ -396,12 +436,35 @@ LAB_00401add:
   (**(code **)(*DAT_0048083c + 0x100))(0,0,0x3f800000,0x3f800000);
 ```
 
+grim.dll body:
+
+```c
+  if (((-1 < handle) && ((&DAT_1005d404)[handle] != 0)) &&
+     (iVar1 = *(int *)((&DAT_1005d404)[handle] + 4), iVar1 != 0)) {
+    (**(code **)(*DAT_10059dbc + 0xf4))(DAT_10059dbc,stage,iVar1);
+    _DAT_10053060 = handle;
+  }
+```
+
 
 ## 0xc8 — grim_draw_fullscreen_quad @ 0x10007870
 - Ghidra signature: `void grim_draw_fullscreen_quad(void)`
 - Call sites: 1 (unique funcs: 1)
-- Sample calls: FUN_004188a0:L9637
-- First callsite: not found in decompiled output
+- Sample calls: FUN_004188a0:L11783
+- First callsite: FUN_004188a0 (line 11783)
+
+```c
+  (**(code **)(*DAT_0048083c + 200))(0);
+```
+
+grim.dll body:
+
+```c
+  (**(code **)(*in_ECX + 0xfc))(0);
+  (**(code **)(*in_ECX + 0xe8))();
+  (**(code **)(*in_ECX + 0x11c))(0,0,(float)DAT_1005c400,(float)DAT_10059dc0);
+  (**(code **)(*in_ECX + 0xf0))();
+```
 
 
 ## 0xcc — FUN_100079b0 @ 0x100079b0
@@ -418,9 +481,22 @@ LAB_00401add:
   return;
 ```
 
+grim.dll body:
+
+```c
+  if (0.0 < a) {
+    (**(code **)(*DAT_10059dbc + 0xf4))(DAT_10059dbc,0,0);
+    (**(code **)(*in_ECX + 0x114))(piVar1,uVar2,uVar3,uVar4);
+    (**(code **)(*in_ECX + 0xfc))(0);
+    (**(code **)(*in_ECX + 0xe8))();
+    (**(code **)(*in_ECX + 0x11c))(0,0,(float)DAT_1005c400,(float)DAT_10059dc0);
+    (**(code **)(*in_ECX + 0xf0))();
+  }
+```
+
 
 ## 0xd0 — grim_draw_rect_filled @ 0x100078e0
-- Provisional name: `draw_rect_filled` (medium)
+- Provisional name: `draw_rect_filled` (high)
 - Guess: `void draw_rect_filled(const float *xy, float w, float h)`
 - Notes: used for UI panel backgrounds before setting color
 - Ghidra signature: `void grim_draw_rect_filled(float *xy, float w, float h)`
@@ -436,9 +512,21 @@ LAB_00401add:
               (0x3dcccccd,0x3f19999a,0x3f800000,
 ```
 
+grim.dll body:
+
+```c
+  if (0.0 < *(float *)(in_stack_00000010 + 0xc)) {
+    (**(code **)(*DAT_10059dbc + 0xf4))(DAT_10059dbc,0,0);
+    (**(code **)(*in_ECX + 0xfc))(0);
+    (**(code **)(*in_ECX + 0xe8))();
+    (**(code **)(*in_ECX + 0x11c))(*puVar1,puVar1[1],uVar2,uVar3);
+    (**(code **)(*in_ECX + 0xf0))();
+  }
+```
+
 
 ## 0xd4 — grim_draw_rect_outline @ 0x10008f10
-- Provisional name: `draw_rect_outline` (medium)
+- Provisional name: `draw_rect_outline` (high)
 - Guess: `void draw_rect_outline(const float *xy, float w, float h)`
 - Notes: used for UI framing with explicit width/height
 - Ghidra signature: `void grim_draw_rect_outline(float *xy, float w, float h)`
@@ -452,6 +540,18 @@ LAB_00401add:
   (**(code **)(*DAT_0048083c + 0xd4))(&fStack_4c,0x435c0000,0x42700000);
   iVar1 = *DAT_0048083c;
   iVar2 = (**(code **)(iVar1 + 0x14c))
+```
+
+grim.dll body:
+
+```c
+  (**(code **)(*in_ECX + 0xfc))(0);
+  (**(code **)(*in_ECX + 0xe8))();
+  (**(code **)(*in_ECX + 0x11c))(fRam00000000,fRam00000004,4,0x3f800000);
+  (**(code **)(*in_ECX + 0x11c))(fRam00000000,fRam00000004,0x3f800000,0);
+  (**(code **)(*in_ECX + 0x11c))(fRam00000000,fVar3 + fRam00000004,fVar2 + 1.0,0x3f800000);
+  (**(code **)(*in_ECX + 0x11c))(fVar1 + fRam00000000,fRam00000004,0x3f800000,0);
+  (**(code **)(*in_ECX + 0xf0))();
 ```
 
 
@@ -516,7 +616,7 @@ LAB_00401add:
 
 
 ## 0xfc — FUN_10007f30 @ 0x10007f30
-- Provisional name: `set_rotation` (medium)
+- Provisional name: `set_rotation` (high)
 - Guess: `void set_rotation(float radians)`
 - Notes: stores radians and precomputes rotation matrix terms
 - Ghidra signature: `void grim_set_rotation(float radians)`
@@ -882,7 +982,7 @@ grim.dll vertex fill (color + UV slots):
 
 
 ## 0x13c — FUN_100092b0 @ 0x100092b0
-- Provisional name: `draw_text_mono` (medium)
+- Provisional name: `draw_text_mono` (high)
 - Guess: `void draw_text_mono(float x, float y, const char *text)`
 - Notes: fixed 16px grid; special-cases a few extended codes (0xA7, 0xE4, 0xE5, 0xF6)
 - Ghidra signature: `void grim_draw_text_mono(float x, float y, char *text)`
@@ -896,6 +996,16 @@ grim.dll vertex fill (color + UV slots):
       (**(code **)(*DAT_0048083c + 0x13c))
                 (0x41200000,(float)((iVar1 + 1) * 0x10) + *(float *)(param_1 + 0x1c),&DAT_004712c0);
       iVar3 = *DAT_0048083c;
+```
+
+grim.dll body:
+
+```c
+  if (DAT_1005ccf8 == '\0') {
+    (**(code **)(*DAT_10059dbc + 0xf4))(DAT_10059dbc,0,DAT_1005d3ec);
+  }
+  (**(code **)(*in_ECX + 0xfc))(0);
+  (**(code **)(*in_ECX + 0xe8))();
 ```
 
 
@@ -914,9 +1024,16 @@ grim.dll vertex fill (color + UV slots):
   (**(code **)(*DAT_0048083c + 0x114))(0x3f800000,0x3f800000,0x3f800000,uVar4);
 ```
 
+grim.dll body:
+
+```c
+  vsprintf(&DAT_1005ae78,fmt,&stack0x00000014);
+  (**(code **)(*self + 0x13c))(x,y,&DAT_1005ae78);
+```
+
 
 ## 0x144 — FUN_10009730 @ 0x10009730
-- Provisional name: `draw_text_small` (medium)
+- Provisional name: `draw_text_small` (high)
 - Guess: `void draw_text_small(float x, float y, const char *text)`
 - Notes: uses `smallFnt.dat` widths + `GRIM_Font2`
 - Ghidra signature: `void grim_draw_text_small(float x, float y, char *text)`
@@ -932,9 +1049,24 @@ grim.dll vertex fill (color + UV slots):
                ((float)*(int *)(param_1 + 0x18) + *(float *)(param_1 + 0x1c)) - 18.0,
 ```
 
+grim.dll body:
+
+```c
+  if ((DAT_10053070 != -1) ||
+     (DAT_10053070 = (**(code **)(*in_ECX + 0xc0))(s_GRIM_Font2_10053c3c), DAT_10053070 != -1)) {
+    (**(code **)(*in_ECX + 0xc4))(DAT_10053070,0);
+    uVar3 = (uint)(byte)(&DAT_1005a570)[(byte)text[iVar5]];
+    (**(code **)(*in_ECX + 0x100))
+              ((float)(&DAT_1005b2c8)[uVar3 * 2] + 0.001953125,
+               (float)(&DAT_1005b2cc)[uVar3 * 2] + 0.001953125,
+               ((float)*(byte *)((int)&DAT_1005bad8 + uVar3) * 0.00390625 +
+               (float)(&DAT_1005b2c8)[uVar3 * 2] + 0.001953125) - 0.001953125,
+               ((float)(&DAT_1005b2cc)[uVar3 * 2] + 0.001953125 + 0.0625) - 0.001953125);
+```
+
 
 ## 0x148 — grim_draw_text_small_fmt @ 0x10009980
-- Provisional name: `draw_text_small_fmt` (medium)
+- Provisional name: `draw_text_small_fmt` (high)
 - Guess: `void draw_text_small_fmt(float x, float y, const char *fmt, ...)`
 - Notes: `vsprintf` wrapper that forwards to `0x144` (small font draw)
 - Ghidra signature: `void grim_draw_text_small_fmt(float x, float y, char *fmt)`
@@ -950,9 +1082,16 @@ grim.dll vertex fill (color + UV slots):
   fStack_1a4 = 1.0;
 ```
 
+grim.dll body:
+
+```c
+  vsprintf(&DAT_1005b078,in_stack_00000010,&stack0x00000014);
+  (**(code **)(*(int *)x + 0x144))(y,fmt,&DAT_1005b078);
+```
+
 
 ## 0x14c — FUN_100096c0 @ 0x100096c0
-- Provisional name: `measure_text_width` (medium)
+- Provisional name: `measure_text_width` (high)
 - Guess: `int measure_text_width(const char *text)`
 - Notes: returns width for small font
 - Ghidra signature: `int grim_measure_text_width(char *text)`
@@ -966,4 +1105,19 @@ grim.dll vertex fill (color + UV slots):
   iVar3 = (**(code **)(*DAT_0048083c + 0x14c))();
   iVar6 = 1;
   fStack_4c = 5.925313e-39;
+```
+
+grim.dll body:
+
+```c
+  if (text[iVar6] == 10) {
+    if (iVar2 < iVar4) {
+      iVar2 = iVar4;
+    }
+    iVar4 = 0;
+  }
+  else {
+    iVar4 = iVar4 + (uint)*(byte *)((int)&DAT_1005bad8 +
+                                   (uint)(byte)(&DAT_1005a570)[(byte)text[iVar6]]);
+  }
 ```

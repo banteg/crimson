@@ -81,7 +81,7 @@ These offsets appear with keycodes or input-related values:
 | `0x20` | `set_render_state` | `void set_render_state(uint32_t state, uint32_t value)` | high | D3D-style render state usage |
 | `0x24` | `get_config_var` | `void get_config_var(uint32_t *out, int id)` | high | fills 4 dwords for config entry (`id` 0..0x7f) |
 | `0x28` | `get_error_text` | `char * get_error_text(void)` | medium | error string for MessageBox |
-| `0x2c` | `clear_color` | `void clear_color(float r, float g, float b, float a)` | medium | clear color before render |
+| `0x2c` | `clear_color` | `void clear_color(float r, float g, float b, float a)` | high | packs RGBA into device clear color |
 | `0x30` | `set_render_target` | `int set_render_target(int target_index)` | high | switches render target surfaces; -1 restores backbuffer |
 | `0x34` | `get_time_ms` | `int get_time_ms(void)` | medium | frame time accumulator (ms) |
 | `0x38` | `set_time_ms` | `void set_time_ms(int ms)` | medium | overrides time accumulator |
@@ -102,8 +102,8 @@ These offsets appear with keycodes or input-related values:
 | `0x74` | `get_mouse_dy` | `float get_mouse_dy(void)` | medium | mouse delta Y |
 | `0x78` | `get_mouse_dx_indexed` | `float get_mouse_dx_indexed(int index)` | medium | aliases mouse dx (calls 0x70); index unused |
 | `0x7c` | `get_mouse_dy_indexed` | `float get_mouse_dy_indexed(int index)` | medium | aliases mouse dy (calls 0x74); index unused |
-| `0x80` | `is_key_active` | `bool is_key_active(int key)` | medium | uses key mapping entries |
-| `0x84` | `get_config_float` | `float get_config_float(int id)` | medium | IDs `0x13f..0x155` |
+| `0x80` | `is_key_active` | `bool is_key_active(int key)` | high | routes key/mouse/joystick IDs to input queries |
+| `0x84` | `get_config_float` | `float get_config_float(int id)` | high | IDs `0x13f..0x155` map to scaled config floats |
 | `0x88` | `get_slot_float` | `float get_slot_float(int index)` | high | reads float slot array |
 | `0x8c` | `get_slot_int` | `int get_slot_int(int index)` | high | reads int slot array |
 | `0x90` | `set_slot_float` | `void set_slot_float(int index, float value)` | high | writes float slot array |
@@ -119,11 +119,11 @@ These offsets appear with keycodes or input-related values:
 | `0xb8` | `validate_texture` | `bool validate_texture(int handle)` | medium | checks handle + device validation |
 | `0xbc` | `destroy_texture` | `void destroy_texture(int handle)` | high | releases texture and clears slot |
 | `0xc0` | `get_texture_handle` | `int get_texture_handle(const char *name)` | high | returns `-1` on missing |
-| `0xc4` | `bind_texture` | `void bind_texture(int handle, int stage)` | medium | often `(handle, 0)` |
+| `0xc4` | `bind_texture` | `void bind_texture(int handle, int stage)` | high | validates handle then sets device texture stage |
 | `0xc8` | `draw_fullscreen_quad` | `void draw_fullscreen_quad(void)` | high | batch draw fullscreen quad |
-| `0xcc` | `draw_fullscreen_color` | `void draw_fullscreen_color(float r, float g, float b, float a)` | medium | fade/overlay quad (often black + alpha) |
-| `0xd0` | `draw_rect_filled` | `void draw_rect_filled(float *xy, float w, float h)` | medium | UI panel fill / background quad |
-| `0xd4` | `draw_rect_outline` | `void draw_rect_outline(float *xy, float w, float h)` | medium | UI panel outline/frame |
+| `0xcc` | `draw_fullscreen_color` | `void draw_fullscreen_color(float r, float g, float b, float a)` | high | alpha>0 draws a fullscreen color quad |
+| `0xd0` | `draw_rect_filled` | `void draw_rect_filled(float *xy, float w, float h)` | high | UI panel fill / background quad |
+| `0xd4` | `draw_rect_outline` | `void draw_rect_outline(float *xy, float w, float h)` | high | UI panel outline/frame (4 edge quads) |
 | `0xd8` | `draw_circle_filled` | `void draw_circle_filled(float x, float y, float radius)` | high | builds circle fan with sin/cos |
 | `0xdc` | `draw_circle_outline` | `void draw_circle_outline(float x, float y, float radius)` | high | builds ring with sin/cos |
 | `0xe0` | `draw_line` | `void draw_line(float *p0, float *p1, float thickness)` | high | computes line quad then calls 0xe4 |
@@ -133,7 +133,7 @@ These offsets appear with keycodes or input-related values:
 | `0xf0` | `end_batch` | `void end_batch(void)` | high | flush buffered batch |
 | `0xf4` | `submit_vertex_raw` | `void submit_vertex_raw(const float *vertex)` | medium | pushes 1 raw vertex; auto-flush |
 | `0xf8` | `submit_quad_raw` | `void submit_quad_raw(const float *verts)` | medium | pushes 4 raw vertices; auto-flush |
-| `0xfc` | `set_rotation` | `void set_rotation(float radians)` | medium | rotation before draw; precomputes matrix terms |
+| `0xfc` | `set_rotation` | `void set_rotation(float radians)` | high | precomputes sin/cos (+45°) for rotation matrix |
 | `0x100` | `set_uv` | `void set_uv(float u0, float v0, float u1, float v1)` | high | sets all 4 UV pairs (u0/v0/u1/v1) |
 | `0x104` | `set_atlas_frame` | `void set_atlas_frame(int atlas_size, int frame)` | high | atlas size (cells per side) + frame index |
 | `0x108` | `set_sub_rect` | `void set_sub_rect(int atlas_size, int width, int height, int frame)` | medium | atlas grid sub-rect: `atlas_size` indexes the UV table (2/4/8/16), width/height in cells, `frame` selects top-left cell |
@@ -149,11 +149,11 @@ These offsets appear with keycodes or input-related values:
 | `0x130` | `submit_vertices_offset_color` | `void submit_vertices_offset_color(float *verts, int count, float *offset, float *color)` | medium | copies verts, offsets XY, overrides packed color from `*color` |
 | `0x134` | `submit_vertices_transform_color` | `void submit_vertices_transform_color(float *verts, int count, float *offset, float *matrix, float *color)` | medium | copies verts, applies matrix+offset, overrides packed color from `*color` |
 | `0x138` | `draw_quad_points` | `void draw_quad_points(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3)` | high | pushes quad from 4 points using current UV/color slots |
-| `0x13c` | `draw_text_mono` | `void draw_text_mono(float x, float y, const char *text)` | medium | fixed 16px grid; handles a few extended codes |
-| `0x140` | `draw_text_mono_fmt` | `void draw_text_mono_fmt(float x, float y, const char *fmt, ...)` | medium | printf-style wrapper around `draw_text_mono` |
-| `0x144` | `draw_text_small` | `void draw_text_small(float x, float y, const char *text)` | medium | uses `smallFnt.dat` widths + `GRIM_Font2` |
-| `0x148` | `draw_text_small_fmt` | `void draw_text_small_fmt(float x, float y, const char *fmt, ...)` | medium | formatted small-font text (wrapper around `0x144`) |
-| `0x14c` | `measure_text_width` | `int measure_text_width(const char *text)` | medium | width metric for small font |
+| `0x13c` | `draw_text_mono` | `void draw_text_mono(float x, float y, const char *text)` | high | fixed 16px grid; handles a few extended codes |
+| `0x140` | `draw_text_mono_fmt` | `void draw_text_mono_fmt(float x, float y, const char *fmt, ...)` | high | printf-style wrapper around `draw_text_mono` |
+| `0x144` | `draw_text_small` | `void draw_text_small(float x, float y, const char *text)` | high | binds `GRIM_Font2`, uses width/UV tables |
+| `0x148` | `draw_text_small_fmt` | `void draw_text_small_fmt(float x, float y, const char *fmt, ...)` | high | formatted small-font text (wrapper around `0x144`) |
+| `0x14c` | `measure_text_width` | `int measure_text_width(const char *text)` | high | width metric for small font (handles newlines) |
 
 The working vtable skeleton lives in:
 

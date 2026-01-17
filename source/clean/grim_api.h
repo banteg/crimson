@@ -45,8 +45,8 @@ struct Grim2DVtable {
     float (*get_mouse_dy)(void); // 0x74 (grim_get_mouse_dy)
     float (*get_mouse_dx_indexed)(int index); // 0x78 (grim_get_mouse_dx_indexed)
     float (*get_mouse_dy_indexed)(int index); // 0x7c (grim_get_mouse_dy_indexed)
-    bool (*is_key_active)(int key); // 0x80 (FUN_10006fe0)
-    float (*get_config_float)(int id); // 0x84 (FUN_100071b0)
+    bool (*is_key_active)(int key); // 0x80 (grim_is_key_active)
+    float (*get_config_float)(int id); // 0x84 (grim_get_config_float)
     float (*get_slot_float)(int index); // 0x88 (grim_get_slot_float)
     int (*get_slot_int)(int index); // 0x8c (grim_get_slot_int)
     void (*set_slot_float)(int index, float value); // 0x90 (grim_set_slot_float)
@@ -62,7 +62,7 @@ struct Grim2DVtable {
     bool (*validate_texture)(int handle); // 0xb8 (grim_validate_texture)
     void (*destroy_texture)(int handle); // 0xbc (grim_destroy_texture)
     int (*get_texture_handle)(const char *name); // 0xc0 (FUN_10007740)
-    void (*bind_texture)(int handle, int stage); // 0xc4 (FUN_10007830)
+    void (*bind_texture)(int handle, int stage); // 0xc4 (grim_bind_texture)
     void (*draw_fullscreen_quad)(void); // 0xc8 (grim_draw_fullscreen_quad)
     void (*draw_fullscreen_color)(float r, float g, float b, float a); // 0xcc (grim_draw_fullscreen_color)
     void (*draw_rect_filled)(float *xy, float w, float h); // 0xd0 (grim_draw_rect_filled)
@@ -76,7 +76,7 @@ struct Grim2DVtable {
     void (*end_batch)(void); // 0xf0 (grim_end_batch)
     void (*submit_vertex_raw)(const float *vertex); // 0xf4 (grim_submit_vertex_raw)
     void (*submit_quad_raw)(const float *verts); // 0xf8 (grim_submit_quad_raw)
-    void (*set_rotation)(float radians); // 0xfc (FUN_10007f30) precomputes rotation matrix
+    void (*set_rotation)(float radians); // 0xfc (grim_set_rotation) precomputes rotation matrix
     void (*set_uv)(float u0, float v0, float u1, float v1); // 0x100 (FUN_10008350) sets all 4 UV pairs
     void (*set_atlas_frame)(int atlas_size, int frame); // 0x104 (FUN_10008230)
     void (*set_sub_rect)(int atlas_size, int width, int height, int frame); // 0x108 (FUN_100082c0) atlas_size indexes UV table (2/4/8/16)
@@ -92,11 +92,11 @@ struct Grim2DVtable {
     void (*submit_vertices_offset_color)(float *verts, int count, float *offset, float *color); // 0x130 (grim_submit_vertices_offset_color) *color is packed ARGB
     void (*submit_vertices_transform_color)(float *verts, int count, float *offset, float *matrix, float *color); // 0x134 (grim_submit_vertices_transform_color) *color is packed ARGB
     void (*draw_quad_points)(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3); // 0x138 (grim_draw_quad_points) uses current UV/color slots
-    void (*draw_text_mono)(float x, float y, const char *text); // 0x13c (FUN_100092b0)
+    void (*draw_text_mono)(float x, float y, const char *text); // 0x13c (grim_draw_text_mono)
     void (*draw_text_mono_fmt)(float x, float y, const char *fmt, ...); // 0x140 (grim_draw_text_mono_fmt) printf wrapper
-    void (*draw_text_small)(float x, float y, const char *text); // 0x144 (FUN_10009730)
-    void (*draw_text_small_fmt)(float x, float y, const char *fmt, ...); // 0x148 (FUN_10009980)
-    int (*measure_text_width)(const char *text); // 0x14c (FUN_100096c0, small font)
+    void (*draw_text_small)(float x, float y, const char *text); // 0x144 (grim_draw_text_small)
+    void (*draw_text_small_fmt)(float x, float y, const char *fmt, ...); // 0x148 (grim_draw_text_small_fmt)
+    int (*measure_text_width)(const char *text); // 0x14c (grim_measure_text_width, small font)
 };
 
 struct Grim2D {
