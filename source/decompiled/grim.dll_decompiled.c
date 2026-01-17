@@ -17347,7 +17347,7 @@ void __thiscall FUN_100174a8(void *this,uint param_1)
 
 /* FUN_10017518 @ 10017518 */
 
-void __thiscall FUN_10017518(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_10017518(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   float fVar1;
@@ -17358,7 +17358,7 @@ void __thiscall FUN_10017518(void *this,uint param_1,uint param_2,int param_3)
   uint uVar5;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar2 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar2);
@@ -17368,9 +17368,9 @@ void __thiscall FUN_10017518(void *this,uint param_1,uint param_2,int param_3)
   if (*(int *)((int)this + 0x1058) != 0) {
     do {
       fVar1 = *(float *)(iVar2 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 + (uVar5 & 3) * 4);
-      *puVar4 = (char)(int)ROUND(*(float *)(iVar3 + 8 + param_3) * 255.0 + fVar1);
-      puVar4[1] = (char)(int)ROUND(*(float *)(iVar3 + 4 + param_3) * 255.0 + fVar1);
-      puVar4[2] = (char)(int)ROUND(*(float *)(iVar3 + param_3) * 255.0 + fVar1);
+      *puVar4 = (char)(int)ROUND(*(float *)(iVar3 + 8 + (int)param_3) * 255.0 + fVar1);
+      puVar4[1] = (char)(int)ROUND(*(float *)(iVar3 + 4 + (int)param_3) * 255.0 + fVar1);
+      puVar4[2] = (char)(int)ROUND(*(float *)(iVar3 + (int)param_3) * 255.0 + fVar1);
       puVar4 = puVar4 + 3;
       uVar5 = uVar5 + 1;
       iVar3 = iVar3 + 0x10;
@@ -17383,7 +17383,7 @@ void __thiscall FUN_10017518(void *this,uint param_1,uint param_2,int param_3)
 
 /* FUN_10017604 @ 10017604 */
 
-void __thiscall FUN_10017604(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_10017604(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   float *pfVar1;
@@ -17398,7 +17398,7 @@ void __thiscall FUN_10017604(void *this,uint param_1,uint param_2,int param_3)
   uint uVar9;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar6 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar6);
@@ -17408,15 +17408,15 @@ void __thiscall FUN_10017604(void *this,uint param_1,uint param_2,int param_3)
     puVar8 = extraout_EDX;
     do {
       fVar5 = *(float *)(iVar6 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 + (uVar9 & 3) * 4);
-      pfVar1 = (float *)(iVar7 + param_3);
+      pfVar1 = (float *)(iVar7 + (int)param_3);
       iVar2 = iVar7 + 4;
       iVar3 = iVar7 + 8;
       iVar4 = iVar7 + 0xc;
       iVar7 = iVar7 + 0x10;
-      *puVar8 = (((int)ROUND(*(float *)(iVar4 + param_3) * 255.0 + fVar5) << 8 |
+      *puVar8 = (((int)ROUND(*(float *)(iVar4 + (int)param_3) * 255.0 + fVar5) << 8 |
                  (int)ROUND(*pfVar1 * 255.0 + fVar5)) << 8 |
-                (int)ROUND(*(float *)(iVar2 + param_3) * 255.0 + fVar5)) << 8 |
-                (int)ROUND(*(float *)(iVar3 + param_3) * 255.0 + fVar5);
+                (int)ROUND(*(float *)(iVar2 + (int)param_3) * 255.0 + fVar5)) << 8 |
+                (int)ROUND(*(float *)(iVar3 + (int)param_3) * 255.0 + fVar5);
       puVar8 = puVar8 + 1;
       uVar9 = uVar9 + 1;
     } while (uVar9 < *(uint *)((int)this + 0x1058));
@@ -17428,7 +17428,7 @@ void __thiscall FUN_10017604(void *this,uint param_1,uint param_2,int param_3)
 
 /* FUN_10017727 @ 10017727 */
 
-void __thiscall FUN_10017727(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_10017727(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   float *pfVar1;
@@ -17442,7 +17442,7 @@ void __thiscall FUN_10017727(void *this,uint param_1,uint param_2,int param_3)
   uint uVar8;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar5 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar5);
@@ -17452,13 +17452,13 @@ void __thiscall FUN_10017727(void *this,uint param_1,uint param_2,int param_3)
     puVar7 = extraout_EDX;
     do {
       fVar4 = *(float *)(iVar5 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 + (uVar8 & 3) * 4);
-      pfVar1 = (float *)(iVar6 + param_3);
+      pfVar1 = (float *)(iVar6 + (int)param_3);
       iVar2 = iVar6 + 4;
       iVar3 = iVar6 + 8;
       iVar6 = iVar6 + 0x10;
       *puVar7 = ((int)ROUND(*pfVar1 * 255.0 + fVar4) << 8 |
-                (int)ROUND(*(float *)(iVar2 + param_3) * 255.0 + fVar4)) << 8 |
-                (int)ROUND(*(float *)(iVar3 + param_3) * 255.0 + fVar4);
+                (int)ROUND(*(float *)(iVar2 + (int)param_3) * 255.0 + fVar4)) << 8 |
+                (int)ROUND(*(float *)(iVar3 + (int)param_3) * 255.0 + fVar4);
       puVar7 = puVar7 + 1;
       uVar8 = uVar8 + 1;
     } while (uVar8 < *(uint *)((int)this + 0x1058));
@@ -17470,7 +17470,7 @@ void __thiscall FUN_10017727(void *this,uint param_1,uint param_2,int param_3)
 
 /* FUN_10017828 @ 10017828 */
 
-void __thiscall FUN_10017828(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_10017828(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   float *pfVar1;
@@ -17484,7 +17484,7 @@ void __thiscall FUN_10017828(void *this,uint param_1,uint param_2,int param_3)
   uint uVar8;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar5 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar5);
@@ -17494,13 +17494,13 @@ void __thiscall FUN_10017828(void *this,uint param_1,uint param_2,int param_3)
     puVar7 = extraout_EDX;
     do {
       fVar4 = *(float *)(iVar5 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 + (uVar8 & 3) * 4);
-      pfVar1 = (float *)(iVar6 + param_3);
+      pfVar1 = (float *)(iVar6 + (int)param_3);
       iVar2 = iVar6 + 4;
       iVar3 = iVar6 + 8;
       iVar6 = iVar6 + 0x10;
       *puVar7 = (ushort)(((int)ROUND(*pfVar1 * 31.0 + fVar4) << 6 |
-                         (int)ROUND(*(float *)(iVar2 + param_3) * 63.0 + fVar4)) << 5) |
-                (ushort)(int)ROUND(*(float *)(iVar3 + param_3) * 31.0 + fVar4);
+                         (int)ROUND(*(float *)(iVar2 + (int)param_3) * 63.0 + fVar4)) << 5) |
+                (ushort)(int)ROUND(*(float *)(iVar3 + (int)param_3) * 31.0 + fVar4);
       puVar7 = puVar7 + 1;
       uVar8 = uVar8 + 1;
     } while (uVar8 < *(uint *)((int)this + 0x1058));
@@ -17512,7 +17512,7 @@ void __thiscall FUN_10017828(void *this,uint param_1,uint param_2,int param_3)
 
 /* FUN_10017929 @ 10017929 */
 
-void __thiscall FUN_10017929(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_10017929(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   float *pfVar1;
@@ -17526,7 +17526,7 @@ void __thiscall FUN_10017929(void *this,uint param_1,uint param_2,int param_3)
   uint uVar8;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar5 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar5);
@@ -17536,13 +17536,13 @@ void __thiscall FUN_10017929(void *this,uint param_1,uint param_2,int param_3)
     puVar7 = extraout_EDX;
     do {
       fVar4 = *(float *)(iVar5 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 + (uVar8 & 3) * 4);
-      pfVar1 = (float *)(iVar6 + param_3);
+      pfVar1 = (float *)(iVar6 + (int)param_3);
       iVar2 = iVar6 + 4;
       iVar3 = iVar6 + 8;
       iVar6 = iVar6 + 0x10;
       *puVar7 = (ushort)(((int)ROUND(*pfVar1 * 31.0 + fVar4) << 5 |
-                         (int)ROUND(*(float *)(iVar2 + param_3) * 31.0 + fVar4)) << 5) |
-                (ushort)(int)ROUND(*(float *)(iVar3 + param_3) * 31.0 + fVar4);
+                         (int)ROUND(*(float *)(iVar2 + (int)param_3) * 31.0 + fVar4)) << 5) |
+                (ushort)(int)ROUND(*(float *)(iVar3 + (int)param_3) * 31.0 + fVar4);
       puVar7 = puVar7 + 1;
       uVar8 = uVar8 + 1;
     } while (uVar8 < *(uint *)((int)this + 0x1058));
@@ -17554,7 +17554,7 @@ void __thiscall FUN_10017929(void *this,uint param_1,uint param_2,int param_3)
 
 /* FUN_10017a2a @ 10017a2a */
 
-void __thiscall FUN_10017a2a(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_10017a2a(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   float *pfVar1;
@@ -17569,7 +17569,7 @@ void __thiscall FUN_10017a2a(void *this,uint param_1,uint param_2,int param_3)
   uint uVar9;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar6 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar6);
@@ -17579,15 +17579,15 @@ void __thiscall FUN_10017a2a(void *this,uint param_1,uint param_2,int param_3)
     puVar8 = extraout_EDX;
     do {
       fVar5 = *(float *)(iVar6 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 + (uVar9 & 3) * 4);
-      pfVar1 = (float *)(iVar7 + param_3);
+      pfVar1 = (float *)(iVar7 + (int)param_3);
       iVar2 = iVar7 + 4;
       iVar3 = iVar7 + 8;
       iVar4 = iVar7 + 0xc;
       iVar7 = iVar7 + 0x10;
-      *puVar8 = (ushort)((((int)ROUND(fVar5 + *(float *)(iVar4 + param_3)) << 5 |
+      *puVar8 = (ushort)((((int)ROUND(fVar5 + *(float *)(iVar4 + (int)param_3)) << 5 |
                           (int)ROUND(*pfVar1 * 31.0 + fVar5)) << 5 |
-                         (int)ROUND(*(float *)(iVar2 + param_3) * 31.0 + fVar5)) << 5) |
-                (ushort)(int)ROUND(*(float *)(iVar3 + param_3) * 31.0 + fVar5);
+                         (int)ROUND(*(float *)(iVar2 + (int)param_3) * 31.0 + fVar5)) << 5) |
+                (ushort)(int)ROUND(*(float *)(iVar3 + (int)param_3) * 31.0 + fVar5);
       puVar8 = puVar8 + 1;
       uVar9 = uVar9 + 1;
     } while (uVar9 < *(uint *)((int)this + 0x1058));
@@ -17599,7 +17599,7 @@ void __thiscall FUN_10017a2a(void *this,uint param_1,uint param_2,int param_3)
 
 /* FUN_10017b47 @ 10017b47 */
 
-void __thiscall FUN_10017b47(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_10017b47(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   float *pfVar1;
@@ -17614,7 +17614,7 @@ void __thiscall FUN_10017b47(void *this,uint param_1,uint param_2,int param_3)
   uint uVar9;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar6 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar6);
@@ -17624,15 +17624,15 @@ void __thiscall FUN_10017b47(void *this,uint param_1,uint param_2,int param_3)
     puVar8 = extraout_EDX;
     do {
       fVar5 = *(float *)(iVar6 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 + (uVar9 & 3) * 4);
-      pfVar1 = (float *)(iVar7 + param_3);
+      pfVar1 = (float *)(iVar7 + (int)param_3);
       iVar2 = iVar7 + 4;
       iVar3 = iVar7 + 8;
       iVar4 = iVar7 + 0xc;
       iVar7 = iVar7 + 0x10;
-      *puVar8 = (ushort)((((int)ROUND(*(float *)(iVar4 + param_3) * 15.0 + fVar5) << 4 |
+      *puVar8 = (ushort)((((int)ROUND(*(float *)(iVar4 + (int)param_3) * 15.0 + fVar5) << 4 |
                           (int)ROUND(*pfVar1 * 15.0 + fVar5)) << 4 |
-                         (int)ROUND(*(float *)(iVar2 + param_3) * 15.0 + fVar5)) << 4) |
-                (ushort)(int)ROUND(*(float *)(iVar3 + param_3) * 15.0 + fVar5);
+                         (int)ROUND(*(float *)(iVar2 + (int)param_3) * 15.0 + fVar5)) << 4) |
+                (ushort)(int)ROUND(*(float *)(iVar3 + (int)param_3) * 15.0 + fVar5);
       puVar8 = puVar8 + 1;
       uVar9 = uVar9 + 1;
     } while (uVar9 < *(uint *)((int)this + 0x1058));
@@ -17644,7 +17644,7 @@ void __thiscall FUN_10017b47(void *this,uint param_1,uint param_2,int param_3)
 
 /* FUN_10017c6a @ 10017c6a */
 
-void __thiscall FUN_10017c6a(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_10017c6a(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   float *pfVar1;
@@ -17659,7 +17659,7 @@ void __thiscall FUN_10017c6a(void *this,uint param_1,uint param_2,int param_3)
   
   uVar7 = 0;
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar4 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar4);
@@ -17668,12 +17668,12 @@ void __thiscall FUN_10017c6a(void *this,uint param_1,uint param_2,int param_3)
     pbVar5 = extraout_EDX;
     do {
       fVar3 = *(float *)(iVar4 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 + (uVar7 & 3) * 4);
-      pfVar1 = (float *)(iVar6 + param_3);
+      pfVar1 = (float *)(iVar6 + (int)param_3);
       iVar2 = iVar6 + 8;
-      local_20 = (byte)(int)ROUND(*(float *)(iVar6 + 4 + param_3) * 7.0 + fVar3);
+      local_20 = (byte)(int)ROUND(*(float *)(iVar6 + 4 + (int)param_3) * 7.0 + fVar3);
       iVar6 = iVar6 + 0x10;
       *pbVar5 = ((char)(int)ROUND(*pfVar1 * 7.0 + fVar3) << 3 | local_20) << 2 |
-                (byte)(int)ROUND(*(float *)(iVar2 + param_3) * 3.0 + fVar3);
+                (byte)(int)ROUND(*(float *)(iVar2 + (int)param_3) * 3.0 + fVar3);
       pbVar5 = pbVar5 + 1;
       uVar7 = uVar7 + 1;
     } while (uVar7 < *(uint *)((int)this + 0x1058));
@@ -17685,7 +17685,7 @@ void __thiscall FUN_10017c6a(void *this,uint param_1,uint param_2,int param_3)
 
 /* FUN_10017d68 @ 10017d68 */
 
-void __thiscall FUN_10017d68(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_10017d68(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   int iVar1;
@@ -17696,7 +17696,7 @@ void __thiscall FUN_10017d68(void *this,uint param_1,uint param_2,int param_3)
   
   iVar4 = 0;
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar1 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar1);
@@ -17704,7 +17704,7 @@ void __thiscall FUN_10017d68(void *this,uint param_1,uint param_2,int param_3)
   puVar3 = extraout_EDX;
   if (*(int *)((int)this + 0x1058) != 0) {
     do {
-      *puVar3 = (char)(int)ROUND(*(float *)(iVar4 + 0xc + param_3) * 255.0 +
+      *puVar3 = (char)(int)ROUND(*(float *)(iVar4 + 0xc + (int)param_3) * 255.0 +
                                  *(float *)(iVar1 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 +
                                            (uVar2 & 3) * 4));
       puVar3 = puVar3 + 1;
@@ -17719,7 +17719,7 @@ void __thiscall FUN_10017d68(void *this,uint param_1,uint param_2,int param_3)
 
 /* FUN_10017e11 @ 10017e11 */
 
-void __thiscall FUN_10017e11(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_10017e11(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   float *pfVar1;
@@ -17734,7 +17734,7 @@ void __thiscall FUN_10017e11(void *this,uint param_1,uint param_2,int param_3)
   uint uVar9;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar6 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar6);
@@ -17744,15 +17744,15 @@ void __thiscall FUN_10017e11(void *this,uint param_1,uint param_2,int param_3)
     puVar8 = extraout_EDX;
     do {
       fVar5 = *(float *)(iVar6 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 + (uVar9 & 3) * 4);
-      pfVar1 = (float *)(iVar7 + param_3);
+      pfVar1 = (float *)(iVar7 + (int)param_3);
       iVar2 = iVar7 + 4;
       iVar3 = iVar7 + 8;
       iVar4 = iVar7 + 0xc;
       iVar7 = iVar7 + 0x10;
-      *puVar8 = (ushort)((((int)ROUND(*(float *)(iVar4 + param_3) * 255.0 + fVar5) << 3 |
+      *puVar8 = (ushort)((((int)ROUND(*(float *)(iVar4 + (int)param_3) * 255.0 + fVar5) << 3 |
                           (int)ROUND(*pfVar1 * 7.0 + fVar5)) << 3 |
-                         (int)ROUND(*(float *)(iVar2 + param_3) * 7.0 + fVar5)) << 2) |
-                (ushort)(int)ROUND(*(float *)(iVar3 + param_3) * 3.0 + fVar5);
+                         (int)ROUND(*(float *)(iVar2 + (int)param_3) * 7.0 + fVar5)) << 2) |
+                (ushort)(int)ROUND(*(float *)(iVar3 + (int)param_3) * 3.0 + fVar5);
       puVar8 = puVar8 + 1;
       uVar9 = uVar9 + 1;
     } while (uVar9 < *(uint *)((int)this + 0x1058));
@@ -17764,7 +17764,7 @@ void __thiscall FUN_10017e11(void *this,uint param_1,uint param_2,int param_3)
 
 /* FUN_10017f34 @ 10017f34 */
 
-void __thiscall FUN_10017f34(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_10017f34(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   float *pfVar1;
@@ -17778,7 +17778,7 @@ void __thiscall FUN_10017f34(void *this,uint param_1,uint param_2,int param_3)
   uint uVar8;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar5 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar5);
@@ -17788,13 +17788,13 @@ void __thiscall FUN_10017f34(void *this,uint param_1,uint param_2,int param_3)
     puVar7 = extraout_EDX;
     do {
       fVar4 = *(float *)(iVar5 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 + (uVar8 & 3) * 4);
-      pfVar1 = (float *)(iVar6 + param_3);
+      pfVar1 = (float *)(iVar6 + (int)param_3);
       iVar2 = iVar6 + 4;
       iVar3 = iVar6 + 8;
       iVar6 = iVar6 + 0x10;
       *puVar7 = (ushort)(((int)ROUND(*pfVar1 * 15.0 + fVar4) << 4 |
-                         (int)ROUND(*(float *)(iVar2 + param_3) * 15.0 + fVar4)) << 4) |
-                (ushort)(int)ROUND(*(float *)(iVar3 + param_3) * 15.0 + fVar4);
+                         (int)ROUND(*(float *)(iVar2 + (int)param_3) * 15.0 + fVar4)) << 4) |
+                (ushort)(int)ROUND(*(float *)(iVar3 + (int)param_3) * 15.0 + fVar4);
       puVar7 = puVar7 + 1;
       uVar8 = uVar8 + 1;
     } while (uVar8 < *(uint *)((int)this + 0x1058));
@@ -17806,7 +17806,7 @@ void __thiscall FUN_10017f34(void *this,uint param_1,uint param_2,int param_3)
 
 /* FUN_10018035 @ 10018035 */
 
-void __thiscall FUN_10018035(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_10018035(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   float *pfVar1;
@@ -17821,7 +17821,7 @@ void __thiscall FUN_10018035(void *this,uint param_1,uint param_2,int param_3)
   uint uVar9;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar6 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar6);
@@ -17831,14 +17831,14 @@ void __thiscall FUN_10018035(void *this,uint param_1,uint param_2,int param_3)
     puVar8 = extraout_EDX;
     do {
       fVar5 = *(float *)(iVar6 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 + (uVar9 & 3) * 4);
-      pfVar1 = (float *)(iVar7 + param_3);
+      pfVar1 = (float *)(iVar7 + (int)param_3);
       iVar2 = iVar7 + 4;
       iVar3 = iVar7 + 8;
       iVar4 = iVar7 + 0xc;
       iVar7 = iVar7 + 0x10;
-      *puVar8 = (((int)ROUND(*(float *)(iVar4 + param_3) * 3.0 + fVar5) << 10 |
-                 (int)ROUND(*(float *)(iVar3 + param_3) * 1023.0 + fVar5)) << 10 |
-                (int)ROUND(*(float *)(iVar2 + param_3) * 1023.0 + fVar5)) << 10 |
+      *puVar8 = (((int)ROUND(*(float *)(iVar4 + (int)param_3) * 3.0 + fVar5) << 10 |
+                 (int)ROUND(*(float *)(iVar3 + (int)param_3) * 1023.0 + fVar5)) << 10 |
+                (int)ROUND(*(float *)(iVar2 + (int)param_3) * 1023.0 + fVar5)) << 10 |
                 (int)ROUND(*pfVar1 * 1023.0 + fVar5);
       puVar8 = puVar8 + 1;
       uVar9 = uVar9 + 1;
@@ -17851,7 +17851,7 @@ void __thiscall FUN_10018035(void *this,uint param_1,uint param_2,int param_3)
 
 /* FUN_10018158 @ 10018158 */
 
-void __thiscall FUN_10018158(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_10018158(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   float fVar1;
@@ -17863,7 +17863,7 @@ void __thiscall FUN_10018158(void *this,uint param_1,uint param_2,int param_3)
   
   uVar5 = 0;
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar2 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar2);
@@ -17872,8 +17872,8 @@ void __thiscall FUN_10018158(void *this,uint param_1,uint param_2,int param_3)
     puVar4 = extraout_EDX;
     do {
       fVar1 = *(float *)(iVar2 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 + (uVar5 & 3) * 4);
-      *puVar4 = (int)ROUND(*(float *)(iVar3 + 4 + param_3) * 65535.0 + fVar1) << 0x10 |
-                (int)ROUND(*(float *)(iVar3 + param_3) * 65535.0 + fVar1);
+      *puVar4 = (int)ROUND(*(float *)(iVar3 + 4 + (int)param_3) * 65535.0 + fVar1) << 0x10 |
+                (int)ROUND(*(float *)(iVar3 + (int)param_3) * 65535.0 + fVar1);
       puVar4 = puVar4 + 1;
       uVar5 = uVar5 + 1;
       iVar3 = iVar3 + 0x10;
@@ -17937,18 +17937,18 @@ void __thiscall FUN_10018228(void *this,uint param_1,uint param_2,float *param_3
 
 /* FUN_10018340 @ 10018340 */
 
-void __thiscall FUN_10018340(void *this,uint param_1,float param_2,uint param_3)
+void __thiscall FUN_10018340(void *this,uint param_1,float param_2,float *param_3)
 
 {
   float fVar1;
   void *extraout_ECX;
   undefined1 *puVar2;
-  uint uVar3;
+  float *pfVar3;
   float *pfVar4;
   float *pfVar5;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (uint)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
     this = extraout_ECX;
   }
   puVar2 = (undefined1 *)
@@ -17956,11 +17956,11 @@ void __thiscall FUN_10018340(void *this,uint param_1,float param_2,uint param_3)
            *(int *)((int)this + 0x18));
   param_1 = 0;
   if (*(int *)((int)this + 0x1058) != 0) {
-    pfVar4 = (float *)(param_3 + 8);
+    pfVar4 = param_3 + 2;
     do {
-      uVar3 = 0;
+      pfVar3 = (float *)0x0;
       param_2 = 3.4028235e+38;
-      param_3 = 0;
+      param_3 = (float *)0x0;
       pfVar5 = (float *)((int)this + 0x38);
       do {
         fVar1 = (pfVar4[-2] - pfVar5[-2]) * (pfVar4[-2] - pfVar5[-2]) +
@@ -17968,13 +17968,13 @@ void __thiscall FUN_10018340(void *this,uint param_1,float param_2,uint param_3)
                 (*pfVar4 - *pfVar5) * (*pfVar4 - *pfVar5) +
                 (pfVar4[1] - pfVar5[1]) * (pfVar4[1] - pfVar5[1]);
         if (fVar1 < param_2) {
-          uVar3 = param_3;
+          pfVar3 = param_3;
           param_2 = fVar1;
         }
-        param_3 = param_3 + 1;
+        param_3 = (float *)((int)param_3 + 1);
         pfVar5 = pfVar5 + 4;
-      } while (param_3 < 0x100);
-      *puVar2 = (char)uVar3;
+      } while (param_3 < (float *)0x100);
+      *puVar2 = (char)pfVar3;
       puVar2 = puVar2 + 1;
       param_1 = param_1 + 1;
       pfVar4 = pfVar4 + 4;
@@ -17987,7 +17987,7 @@ void __thiscall FUN_10018340(void *this,uint param_1,float param_2,uint param_3)
 
 /* FUN_10018405 @ 10018405 */
 
-void __thiscall FUN_10018405(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_10018405(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   int iVar1;
@@ -17999,7 +17999,7 @@ void __thiscall FUN_10018405(void *this,uint param_1,uint param_2,int param_3)
   
   iVar5 = 0;
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar1 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar1);
@@ -18007,7 +18007,7 @@ void __thiscall FUN_10018405(void *this,uint param_1,uint param_2,int param_3)
   puVar4 = extraout_EDX;
   if (*(int *)((int)this + 0x1058) != 0) {
     do {
-      pfVar2 = (float *)(param_3 + iVar5);
+      pfVar2 = (float *)((int)param_3 + iVar5);
       *puVar4 = (char)(int)ROUND(*(float *)(iVar1 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 +
                                            (uVar3 & 3) * 4) +
                                  (*pfVar2 * 0.2125 + pfVar2[1] * 0.7154 + pfVar2[2] * 0.0721) *
@@ -18024,7 +18024,7 @@ void __thiscall FUN_10018405(void *this,uint param_1,uint param_2,int param_3)
 
 /* FUN_100184ca @ 100184ca */
 
-void __thiscall FUN_100184ca(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_100184ca(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   int iVar1;
@@ -18038,7 +18038,7 @@ void __thiscall FUN_100184ca(void *this,uint param_1,uint param_2,int param_3)
   
   uVar7 = 0;
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar3 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar3);
@@ -18047,10 +18047,11 @@ void __thiscall FUN_100184ca(void *this,uint param_1,uint param_2,int param_3)
     puVar5 = extraout_EDX;
     do {
       fVar2 = *(float *)(iVar3 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 + (uVar7 & 3) * 4);
-      pfVar4 = (float *)(param_3 + iVar6);
+      pfVar4 = (float *)((int)param_3 + iVar6);
       iVar1 = iVar6 + 0xc;
       iVar6 = iVar6 + 0x10;
-      *puVar5 = (ushort)(((int)ROUND(*(float *)(iVar1 + param_3) * 255.0 + fVar2) & 0xffU) << 8) |
+      *puVar5 = (ushort)(((int)ROUND(*(float *)(iVar1 + (int)param_3) * 255.0 + fVar2) & 0xffU) << 8
+                        ) |
                 (ushort)(int)ROUND((*pfVar4 * 0.2125 + pfVar4[1] * 0.7154 + pfVar4[2] * 0.0721) *
                                    255.0 + fVar2);
       puVar5 = puVar5 + 1;
@@ -18064,7 +18065,7 @@ void __thiscall FUN_100184ca(void *this,uint param_1,uint param_2,int param_3)
 
 /* FUN_100185c0 @ 100185c0 */
 
-void __thiscall FUN_100185c0(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_100185c0(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   float fVar1;
@@ -18077,7 +18078,7 @@ void __thiscall FUN_100185c0(void *this,uint param_1,uint param_2,int param_3)
   
   uVar6 = 0;
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar2 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar2);
@@ -18086,8 +18087,8 @@ void __thiscall FUN_100185c0(void *this,uint param_1,uint param_2,int param_3)
     pbVar4 = extraout_EDX;
     do {
       fVar1 = *(float *)(iVar2 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 + (uVar6 & 3) * 4);
-      pfVar3 = (float *)(param_3 + iVar5);
-      *pbVar4 = (char)(int)ROUND(*(float *)(iVar5 + 0xc + param_3) * 15.0 + fVar1) << 4 |
+      pfVar3 = (float *)((int)param_3 + iVar5);
+      *pbVar4 = (char)(int)ROUND(*(float *)(iVar5 + 0xc + (int)param_3) * 15.0 + fVar1) << 4 |
                 (byte)(int)ROUND((*pfVar3 * 0.2125 + pfVar3[1] * 0.7154 + pfVar3[2] * 0.0721) * 15.0
                                  + fVar1);
       pbVar4 = pbVar4 + 1;
@@ -18102,7 +18103,7 @@ void __thiscall FUN_100185c0(void *this,uint param_1,uint param_2,int param_3)
 
 /* FUN_100186ab @ 100186ab */
 
-void __thiscall FUN_100186ab(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_100186ab(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   float *pfVar1;
@@ -18115,7 +18116,7 @@ void __thiscall FUN_100186ab(void *this,uint param_1,uint param_2,int param_3)
   int iVar7;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar4 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar4);
@@ -18125,10 +18126,10 @@ void __thiscall FUN_100186ab(void *this,uint param_1,uint param_2,int param_3)
     puVar6 = extraout_EDX;
     do {
       fVar3 = *(float *)(iVar4 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 + (uVar5 & 3) * 4);
-      pfVar1 = (float *)(iVar7 + param_3);
+      pfVar1 = (float *)(iVar7 + (int)param_3);
       iVar2 = iVar7 + 4;
       iVar7 = iVar7 + 0x10;
-      *puVar6 = CONCAT11((char)(int)ROUND(*(float *)(iVar2 + param_3) * 128.0 + fVar3),
+      *puVar6 = CONCAT11((char)(int)ROUND(*(float *)(iVar2 + (int)param_3) * 128.0 + fVar3),
                          (char)(int)ROUND(*pfVar1 * 128.0 + fVar3));
       puVar6 = puVar6 + 1;
       uVar5 = uVar5 + 1;
@@ -18141,7 +18142,7 @@ void __thiscall FUN_100186ab(void *this,uint param_1,uint param_2,int param_3)
 
 /* FUN_10018780 @ 10018780 */
 
-void __thiscall FUN_10018780(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_10018780(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   float fVar1;
@@ -18153,7 +18154,7 @@ void __thiscall FUN_10018780(void *this,uint param_1,uint param_2,int param_3)
   
   uVar4 = 0;
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar2 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar2);
@@ -18162,9 +18163,10 @@ void __thiscall FUN_10018780(void *this,uint param_1,uint param_2,int param_3)
     puVar3 = extraout_EDX;
     do {
       fVar1 = *(float *)(iVar2 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 + (uVar4 & 3) * 4);
-      *puVar3 = (ushort)(((int)ROUND(*(float *)(iVar5 + 4 + param_3) * 16.0 + fVar1) & 0x1fU |
-                         (int)ROUND(*(float *)(iVar5 + 0xc + param_3) * 63.0 + fVar1) << 5) << 5) |
-                (ushort)(int)ROUND(*(float *)(iVar5 + param_3) * 16.0 + fVar1) & 0x1f;
+      *puVar3 = (ushort)(((int)ROUND(*(float *)(iVar5 + 4 + (int)param_3) * 16.0 + fVar1) & 0x1fU |
+                         (int)ROUND(*(float *)(iVar5 + 0xc + (int)param_3) * 63.0 + fVar1) << 5) <<
+                        5) |
+                (ushort)(int)ROUND(*(float *)(iVar5 + (int)param_3) * 16.0 + fVar1) & 0x1f;
       puVar3 = puVar3 + 1;
       uVar4 = uVar4 + 1;
       iVar5 = iVar5 + 0x10;
@@ -18177,7 +18179,7 @@ void __thiscall FUN_10018780(void *this,uint param_1,uint param_2,int param_3)
 
 /* FUN_10018885 @ 10018885 */
 
-void __thiscall FUN_10018885(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_10018885(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   float *pfVar1;
@@ -18192,7 +18194,7 @@ void __thiscall FUN_10018885(void *this,uint param_1,uint param_2,int param_3)
   undefined1 local_24;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar5 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar5);
@@ -18202,12 +18204,12 @@ void __thiscall FUN_10018885(void *this,uint param_1,uint param_2,int param_3)
     puVar7 = extraout_EDX;
     do {
       fVar4 = *(float *)(iVar5 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 + (uVar6 & 3) * 4);
-      pfVar1 = (float *)(iVar8 + param_3);
+      pfVar1 = (float *)(iVar8 + (int)param_3);
       iVar2 = iVar8 + 4;
       iVar3 = iVar8 + 0xc;
       iVar8 = iVar8 + 0x10;
-      local_24 = (undefined1)(int)ROUND(*(float *)(iVar2 + param_3) * 128.0 + fVar4);
-      *puVar7 = (uint)CONCAT11((char)(int)ROUND(*(float *)(iVar3 + param_3) * 255.0 + fVar4),
+      local_24 = (undefined1)(int)ROUND(*(float *)(iVar2 + (int)param_3) * 128.0 + fVar4);
+      *puVar7 = (uint)CONCAT11((char)(int)ROUND(*(float *)(iVar3 + (int)param_3) * 255.0 + fVar4),
                                local_24) << 8 | (int)ROUND(*pfVar1 * 128.0 + fVar4) & 0xffU;
       puVar7 = puVar7 + 1;
       uVar6 = uVar6 + 1;
@@ -18220,7 +18222,7 @@ void __thiscall FUN_10018885(void *this,uint param_1,uint param_2,int param_3)
 
 /* FUN_10018990 @ 10018990 */
 
-void __thiscall FUN_10018990(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_10018990(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   float fVar1;
@@ -18231,7 +18233,7 @@ void __thiscall FUN_10018990(void *this,uint param_1,uint param_2,int param_3)
   uint local_c;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar2 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar2);
@@ -18241,10 +18243,10 @@ void __thiscall FUN_10018990(void *this,uint param_1,uint param_2,int param_3)
     puVar4 = extraout_EDX;
     do {
       fVar1 = *(float *)(iVar2 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 + (local_c & 3) * 4);
-      *puVar4 = (((int)ROUND(*(float *)(iVar3 + 8 + param_3) * 128.0 + fVar1) & 0xffU |
-                 (int)ROUND(*(float *)(iVar3 + 0xc + param_3) * 128.0 + fVar1) << 8) << 8 |
-                (int)ROUND(*(float *)(iVar3 + 4 + param_3) * 128.0 + fVar1) & 0xffU) << 8 |
-                (int)ROUND(*(float *)(iVar3 + param_3) * 128.0 + fVar1) & 0xffU;
+      *puVar4 = (((int)ROUND(*(float *)(iVar3 + 8 + (int)param_3) * 128.0 + fVar1) & 0xffU |
+                 (int)ROUND(*(float *)(iVar3 + 0xc + (int)param_3) * 128.0 + fVar1) << 8) << 8 |
+                (int)ROUND(*(float *)(iVar3 + 4 + (int)param_3) * 128.0 + fVar1) & 0xffU) << 8 |
+                (int)ROUND(*(float *)(iVar3 + (int)param_3) * 128.0 + fVar1) & 0xffU;
       puVar4 = puVar4 + 1;
       local_c = local_c + 1;
       iVar3 = iVar3 + 0x10;
@@ -18257,7 +18259,7 @@ void __thiscall FUN_10018990(void *this,uint param_1,uint param_2,int param_3)
 
 /* FUN_10018aca @ 10018aca */
 
-void __thiscall FUN_10018aca(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_10018aca(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   float fVar1;
@@ -18269,7 +18271,7 @@ void __thiscall FUN_10018aca(void *this,uint param_1,uint param_2,int param_3)
   
   uVar4 = 0;
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar2 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar2);
@@ -18278,8 +18280,8 @@ void __thiscall FUN_10018aca(void *this,uint param_1,uint param_2,int param_3)
     puVar3 = extraout_EDX;
     do {
       fVar1 = *(float *)(iVar2 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 + (uVar4 & 3) * 4);
-      *puVar3 = (int)ROUND(*(float *)(iVar5 + 4 + param_3) * 32768.0 + fVar1) << 0x10 |
-                (int)ROUND(*(float *)(iVar5 + param_3) * 32768.0 + fVar1) & 0xffffU;
+      *puVar3 = (int)ROUND(*(float *)(iVar5 + 4 + (int)param_3) * 32768.0 + fVar1) << 0x10 |
+                (int)ROUND(*(float *)(iVar5 + (int)param_3) * 32768.0 + fVar1) & 0xffffU;
       puVar3 = puVar3 + 1;
       uVar4 = uVar4 + 1;
       iVar5 = iVar5 + 0x10;
@@ -18292,7 +18294,7 @@ void __thiscall FUN_10018aca(void *this,uint param_1,uint param_2,int param_3)
 
 /* FUN_10018ba0 @ 10018ba0 */
 
-void __thiscall FUN_10018ba0(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_10018ba0(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   float fVar1;
@@ -18304,7 +18306,7 @@ void __thiscall FUN_10018ba0(void *this,uint param_1,uint param_2,int param_3)
   
   uVar5 = 0;
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar2 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar2);
@@ -18313,9 +18315,9 @@ void __thiscall FUN_10018ba0(void *this,uint param_1,uint param_2,int param_3)
     puVar4 = extraout_EDX;
     do {
       fVar1 = *(float *)(iVar2 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 + (uVar5 & 3) * 4);
-      *puVar4 = ((int)ROUND(*(float *)(iVar3 + 4 + param_3) * 1024.0 + fVar1) & 0x7ffU |
-                (int)ROUND(*(float *)(iVar3 + 8 + param_3) * 1024.0 + fVar1) << 0xb) << 10 |
-                (int)ROUND(*(float *)(iVar3 + param_3) * 512.0 + fVar1) & 0x3ffU;
+      *puVar4 = ((int)ROUND(*(float *)(iVar3 + 4 + (int)param_3) * 1024.0 + fVar1) & 0x7ffU |
+                (int)ROUND(*(float *)(iVar3 + 8 + (int)param_3) * 1024.0 + fVar1) << 0xb) << 10 |
+                (int)ROUND(*(float *)(iVar3 + (int)param_3) * 512.0 + fVar1) & 0x3ffU;
       puVar4 = puVar4 + 1;
       uVar5 = uVar5 + 1;
       iVar3 = iVar3 + 0x10;
@@ -18328,7 +18330,7 @@ void __thiscall FUN_10018ba0(void *this,uint param_1,uint param_2,int param_3)
 
 /* FUN_10018caa @ 10018caa */
 
-void __thiscall FUN_10018caa(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_10018caa(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   float fVar1;
@@ -18340,7 +18342,7 @@ void __thiscall FUN_10018caa(void *this,uint param_1,uint param_2,int param_3)
   uint local_c;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar3 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar3);
@@ -18350,11 +18352,11 @@ void __thiscall FUN_10018caa(void *this,uint param_1,uint param_2,int param_3)
     puVar5 = extraout_EDX;
     do {
       fVar1 = *(float *)(iVar3 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 + (local_c & 3) * 4);
-      fVar2 = *(float *)(iVar4 + 0xc + param_3);
-      *puVar5 = (((int)ROUND(*(float *)(iVar4 + 8 + param_3) * 512.0 + fVar1) & 0x3ffU |
+      fVar2 = *(float *)(iVar4 + 0xc + (int)param_3);
+      *puVar5 = (((int)ROUND(*(float *)(iVar4 + 8 + (int)param_3) * 512.0 + fVar1) & 0x3ffU |
                  (int)ROUND(fVar2 + fVar2 + fVar1) << 10) << 10 |
-                (int)ROUND(*(float *)(iVar4 + 4 + param_3) * 512.0 + fVar1) & 0x3ffU) << 10 |
-                (int)ROUND(*(float *)(iVar4 + param_3) * 512.0 + fVar1) & 0x3ffU;
+                (int)ROUND(*(float *)(iVar4 + 4 + (int)param_3) * 512.0 + fVar1) & 0x3ffU) << 10 |
+                (int)ROUND(*(float *)(iVar4 + (int)param_3) * 512.0 + fVar1) & 0x3ffU;
       puVar5 = puVar5 + 1;
       local_c = local_c + 1;
       iVar4 = iVar4 + 0x10;
@@ -18367,7 +18369,7 @@ void __thiscall FUN_10018caa(void *this,uint param_1,uint param_2,int param_3)
 
 /* FUN_10018de0 @ 10018de0 */
 
-void __thiscall FUN_10018de0(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_10018de0(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   int iVar1;
@@ -18379,7 +18381,7 @@ void __thiscall FUN_10018de0(void *this,uint param_1,uint param_2,int param_3)
   
   iVar5 = 0;
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar1 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar1);
@@ -18387,7 +18389,7 @@ void __thiscall FUN_10018de0(void *this,uint param_1,uint param_2,int param_3)
   puVar4 = extraout_EDX;
   if (*(int *)((int)this + 0x1058) != 0) {
     do {
-      pfVar2 = (float *)(param_3 + iVar5);
+      pfVar2 = (float *)((int)param_3 + iVar5);
       *puVar4 = (short)(int)ROUND(*(float *)(iVar1 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 +
                                             (uVar3 & 3) * 4) +
                                   (*pfVar2 * 0.2125 + pfVar2[1] * 0.7154 + pfVar2[2] * 0.0721) *
@@ -18404,7 +18406,7 @@ void __thiscall FUN_10018de0(void *this,uint param_1,uint param_2,int param_3)
 
 /* FUN_10018ea7 @ 10018ea7 */
 
-void __thiscall FUN_10018ea7(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_10018ea7(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   int iVar1;
@@ -18416,7 +18418,7 @@ void __thiscall FUN_10018ea7(void *this,uint param_1,uint param_2,int param_3)
   
   iVar5 = 0;
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar1 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar1);
@@ -18424,7 +18426,7 @@ void __thiscall FUN_10018ea7(void *this,uint param_1,uint param_2,int param_3)
   puVar4 = extraout_EDX;
   if (*(int *)((int)this + 0x1058) != 0) {
     do {
-      pfVar2 = (float *)(param_3 + iVar5);
+      pfVar2 = (float *)((int)param_3 + iVar5);
       *puVar4 = (short)(int)ROUND(*(float *)(iVar1 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 +
                                             (uVar3 & 3) * 4) +
                                   (*pfVar2 * 0.2125 + pfVar2[1] * 0.7154 + pfVar2[2] * 0.0721) *
@@ -18441,7 +18443,7 @@ void __thiscall FUN_10018ea7(void *this,uint param_1,uint param_2,int param_3)
 
 /* FUN_10018f6e @ 10018f6e */
 
-void __thiscall FUN_10018f6e(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_10018f6e(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   float fVar1;
@@ -18453,7 +18455,7 @@ void __thiscall FUN_10018f6e(void *this,uint param_1,uint param_2,int param_3)
   uint uVar6;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar2 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar2);
@@ -18463,8 +18465,8 @@ void __thiscall FUN_10018f6e(void *this,uint param_1,uint param_2,int param_3)
     puVar5 = extraout_EDX;
     do {
       fVar1 = *(float *)(iVar2 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 + (uVar6 & 3) * 4);
-      pfVar3 = (float *)(param_3 + iVar4);
-      *puVar5 = (int)ROUND(*(float *)(iVar4 + 0xc + param_3) * 65535.0 + fVar1) << 0x10 |
+      pfVar3 = (float *)((int)param_3 + iVar4);
+      *puVar5 = (int)ROUND(*(float *)(iVar4 + 0xc + (int)param_3) * 65535.0 + fVar1) << 0x10 |
                 (int)ROUND((*pfVar3 * 0.2125 + pfVar3[1] * 0.7154 + pfVar3[2] * 0.0721) * 65535.0 +
                            fVar1);
       puVar5 = puVar5 + 1;
@@ -18479,7 +18481,7 @@ void __thiscall FUN_10018f6e(void *this,uint param_1,uint param_2,int param_3)
 
 /* FUN_1001905c @ 1001905c */
 
-void __thiscall FUN_1001905c(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_1001905c(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   float fVar1;
@@ -18490,7 +18492,7 @@ void __thiscall FUN_1001905c(void *this,uint param_1,uint param_2,int param_3)
   uint uVar5;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar2 = *(int *)((int)this + 0x2c);
   FUN_100170d6(iVar2);
@@ -18500,9 +18502,9 @@ void __thiscall FUN_1001905c(void *this,uint param_1,uint param_2,int param_3)
     puVar4 = extraout_EDX;
     do {
       fVar1 = *(float *)(iVar2 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 + (uVar5 & 3) * 4);
-      *puVar4 = (short)(int)ROUND(*(float *)(iVar3 + 8 + param_3) * 65535.0 + fVar1);
-      puVar4[1] = (short)(int)ROUND(*(float *)(iVar3 + 4 + param_3) * 65535.0 + fVar1);
-      puVar4[2] = (short)(int)ROUND(*(float *)(iVar3 + param_3) * 65535.0 + fVar1);
+      *puVar4 = (short)(int)ROUND(*(float *)(iVar3 + 8 + (int)param_3) * 65535.0 + fVar1);
+      puVar4[1] = (short)(int)ROUND(*(float *)(iVar3 + 4 + (int)param_3) * 65535.0 + fVar1);
+      puVar4[2] = (short)(int)ROUND(*(float *)(iVar3 + (int)param_3) * 65535.0 + fVar1);
       puVar4 = puVar4 + 3;
       uVar5 = uVar5 + 1;
       iVar3 = iVar3 + 0x10;
@@ -18515,7 +18517,7 @@ void __thiscall FUN_1001905c(void *this,uint param_1,uint param_2,int param_3)
 
 /* FUN_1001914b @ 1001914b */
 
-void __thiscall FUN_1001914b(void *this,uint param_1,uint param_2,int param_3)
+void __thiscall FUN_1001914b(void *this,uint param_1,uint param_2,float *param_3)
 
 {
   uint uVar1;
@@ -18529,7 +18531,7 @@ void __thiscall FUN_1001914b(void *this,uint param_1,uint param_2,int param_3)
   uint local_c;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = (int)grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   puVar8 = (uint *)(*(int *)((int)this + 0x1050) * param_1 + *(int *)((int)this + 0x1054) * param_2
                    + *(int *)((int)this + 0x18));
@@ -18540,10 +18542,10 @@ void __thiscall FUN_1001914b(void *this,uint param_1,uint param_2,int param_3)
     iVar7 = 0;
     do {
       fVar4 = *(float *)(iVar6 + ((param_2 & 3) + (param_1 & 3) * 8) * 4 + (local_c & 3) * 4);
-      uVar1 = (uint)ROUND(*(float *)(iVar7 + param_3) * 65535.0 + fVar4);
-      uVar2 = (uint)ROUND(*(float *)(iVar7 + 4 + param_3) * 65535.0 + fVar4);
-      uVar3 = (uint)ROUND(*(float *)(iVar7 + 8 + param_3) * 65535.0 + fVar4);
-      fVar5 = *(float *)(iVar7 + 0xc + param_3);
+      uVar1 = (uint)ROUND(*(float *)(iVar7 + (int)param_3) * 65535.0 + fVar4);
+      uVar2 = (uint)ROUND(*(float *)(iVar7 + 4 + (int)param_3) * 65535.0 + fVar4);
+      uVar3 = (uint)ROUND(*(float *)(iVar7 + 8 + (int)param_3) * 65535.0 + fVar4);
+      fVar5 = *(float *)(iVar7 + 0xc + (int)param_3);
       *puVar8 = uVar2 << 0x10 | uVar3;
       puVar8[1] = (((int)ROUND(fVar5 * 65535.0 + fVar4) << 0x10 | uVar1) >> 0x10 |
                   (int)uVar2 >> 0x1f) << 0x10 | (uVar1 << 0x10 | uVar2) >> 0x10 | (int)uVar3 >> 0x1f
@@ -19335,7 +19337,7 @@ void __thiscall FUN_1001a348(void *this,int param_1,int param_2,float *param_3)
 
 /* FUN_1001a428 @ 1001a428 */
 
-void * __thiscall FUN_1001a428(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001a428(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,0x18,1);
@@ -19404,7 +19406,7 @@ undefined4 * FUN_1001a444(void)
 
 /* FUN_1001a53c @ 1001a53c */
 
-void * __thiscall FUN_1001a53c(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001a53c(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,0x20,1);
@@ -19416,7 +19418,7 @@ void * __thiscall FUN_1001a53c(void *this,undefined4 *param_1)
 
 /* FUN_1001a558 @ 1001a558 */
 
-void * __thiscall FUN_1001a558(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001a558(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,0x20,1);
@@ -19428,7 +19430,7 @@ void * __thiscall FUN_1001a558(void *this,undefined4 *param_1)
 
 /* FUN_1001a579 @ 1001a579 */
 
-void * __thiscall FUN_1001a579(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001a579(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,0x10,1);
@@ -19510,7 +19512,7 @@ undefined4 __fastcall FUN_1001a595(int param_1)
 
 /* FUN_1001a781 @ 1001a781 */
 
-void * __thiscall FUN_1001a781(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001a781(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,0x10,1);
@@ -19522,7 +19524,7 @@ void * __thiscall FUN_1001a781(void *this,undefined4 *param_1)
 
 /* FUN_1001a79d @ 1001a79d */
 
-void * __thiscall FUN_1001a79d(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001a79d(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,0x10,1);
@@ -19670,7 +19672,7 @@ int __thiscall FUN_1001a7b9(void *this,uint param_1,uint param_2,uint param_3)
 
 /* FUN_1001aa8a @ 1001aa8a */
 
-void * __thiscall FUN_1001aa8a(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001aa8a(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,0x10,1);
@@ -19682,7 +19684,7 @@ void * __thiscall FUN_1001aa8a(void *this,undefined4 *param_1)
 
 /* FUN_1001aaa6 @ 1001aaa6 */
 
-void * __thiscall FUN_1001aaa6(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001aaa6(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,8,1);
@@ -19694,7 +19696,7 @@ void * __thiscall FUN_1001aaa6(void *this,undefined4 *param_1)
 
 /* FUN_1001aac2 @ 1001aac2 */
 
-void * __thiscall FUN_1001aac2(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001aac2(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,8,1);
@@ -19706,7 +19708,7 @@ void * __thiscall FUN_1001aac2(void *this,undefined4 *param_1)
 
 /* FUN_1001aade @ 1001aade */
 
-void * __thiscall FUN_1001aade(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001aade(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,0x10,1);
@@ -19718,7 +19720,7 @@ void * __thiscall FUN_1001aade(void *this,undefined4 *param_1)
 
 /* FUN_1001aafa @ 1001aafa */
 
-void * __thiscall FUN_1001aafa(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001aafa(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,0x10,1);
@@ -19730,32 +19732,31 @@ void * __thiscall FUN_1001aafa(void *this,undefined4 *param_1)
 
 /* FUN_1001ab16 @ 1001ab16 */
 
-void __thiscall FUN_1001ab16(void *this,int param_1,int param_2,undefined4 *param_3)
+void __thiscall FUN_1001ab16(void *this,int param_1,int param_2,float *param_3)
 
 {
   int iVar1;
   uint uVar2;
-  undefined4 *puVar3;
+  float *pfVar3;
   
   if (*(int *)((int)this + 0x1048) != 0) {
-    param_3 = grim_convert_vertex_space(this,(float *)param_3);
+    param_3 = grim_convert_vertex_space(this,param_3);
   }
   iVar1 = FUN_1001a7b9(this,param_1 + *(int *)((int)this + 0x1034),
                        param_2 + *(int *)((int)this + 0x1040),
                        (uint)(*(int *)((int)this + 0x1088) != *(int *)((int)this + 0x1058)));
   if (-1 < iVar1) {
-    puVar3 = (undefined4 *)
-             ((*(int *)((int)this + 0x1030) - *(int *)((int)this + 0x1070)) * 0x10 +
-             *(int *)((int)this + 0x106c));
+    pfVar3 = (float *)((*(int *)((int)this + 0x1030) - *(int *)((int)this + 0x1070)) * 0x10 +
+                      *(int *)((int)this + 0x106c));
     for (uVar2 = (uint)(*(int *)((int)this + 0x1058) << 4) >> 2; uVar2 != 0; uVar2 = uVar2 - 1) {
-      *puVar3 = *param_3;
+      *pfVar3 = *param_3;
       param_3 = param_3 + 1;
-      puVar3 = puVar3 + 1;
+      pfVar3 = pfVar3 + 1;
     }
     for (iVar1 = 0; iVar1 != 0; iVar1 = iVar1 + -1) {
-      *(undefined1 *)puVar3 = *(undefined1 *)param_3;
-      param_3 = (undefined4 *)((int)param_3 + 1);
-      puVar3 = (undefined4 *)((int)puVar3 + 1);
+      *(undefined1 *)pfVar3 = *(undefined1 *)param_3;
+      param_3 = (float *)((int)param_3 + 1);
+      pfVar3 = (float *)((int)pfVar3 + 1);
     }
     *(undefined4 *)((int)this + 0x108c) = 1;
   }
@@ -19766,7 +19767,7 @@ void __thiscall FUN_1001ab16(void *this,int param_1,int param_2,undefined4 *para
 
 /* FUN_1001aba3 @ 1001aba3 */
 
-void * __thiscall FUN_1001aba3(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001aba3(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,0x20,1);
@@ -19778,7 +19779,7 @@ void * __thiscall FUN_1001aba3(void *this,undefined4 *param_1)
 
 /* FUN_1001ac2e @ 1001ac2e */
 
-void * __thiscall FUN_1001ac2e(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001ac2e(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,0x20,1);
@@ -19790,7 +19791,7 @@ void * __thiscall FUN_1001ac2e(void *this,undefined4 *param_1)
 
 /* FUN_1001ac4a @ 1001ac4a */
 
-void * __thiscall FUN_1001ac4a(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001ac4a(void *this,uint *param_1)
 
 {
   int iVar1;
@@ -19876,7 +19877,7 @@ void * __thiscall FUN_1001ac4a(void *this,undefined4 *param_1)
 
 /* FUN_1001ae3c @ 1001ae3c */
 
-void * __thiscall FUN_1001ae3c(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001ae3c(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,0x10,1);
@@ -19902,7 +19903,7 @@ void * __thiscall FUN_1001ae58(void *this,byte param_1)
 
 /* FUN_1001ae74 @ 1001ae74 */
 
-void * __thiscall FUN_1001ae74(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001ae74(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,8,1);
@@ -19914,7 +19915,7 @@ void * __thiscall FUN_1001ae74(void *this,undefined4 *param_1)
 
 /* FUN_1001ae90 @ 1001ae90 */
 
-void * __thiscall FUN_1001ae90(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001ae90(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,8,1);
@@ -19926,7 +19927,7 @@ void * __thiscall FUN_1001ae90(void *this,undefined4 *param_1)
 
 /* FUN_1001aeac @ 1001aeac */
 
-void * __thiscall FUN_1001aeac(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001aeac(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,0x10,1);
@@ -19952,7 +19953,7 @@ void * __thiscall FUN_1001aec8(void *this,byte param_1)
 
 /* FUN_1001aee4 @ 1001aee4 */
 
-void * __thiscall FUN_1001aee4(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001aee4(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,8,1);
@@ -19993,7 +19994,7 @@ void __fastcall FUN_1001af00(int param_1)
 
 /* FUN_1001b001 @ 1001b001 */
 
-void * __thiscall FUN_1001b001(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001b001(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,0x10,2);
@@ -20005,7 +20006,7 @@ void * __thiscall FUN_1001b001(void *this,undefined4 *param_1)
 
 /* FUN_1001b01d @ 1001b01d */
 
-void * __thiscall FUN_1001b01d(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001b01d(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,0x10,2);
@@ -20017,7 +20018,7 @@ void * __thiscall FUN_1001b01d(void *this,undefined4 *param_1)
 
 /* FUN_1001b039 @ 1001b039 */
 
-void * __thiscall FUN_1001b039(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001b039(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,0x20,2);
@@ -20029,7 +20030,7 @@ void * __thiscall FUN_1001b039(void *this,undefined4 *param_1)
 
 /* FUN_1001b055 @ 1001b055 */
 
-void * __thiscall FUN_1001b055(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001b055(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,0x20,3);
@@ -20041,7 +20042,7 @@ void * __thiscall FUN_1001b055(void *this,undefined4 *param_1)
 
 /* FUN_1001b071 @ 1001b071 */
 
-void * __thiscall FUN_1001b071(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001b071(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,0x20,2);
@@ -20053,7 +20054,7 @@ void * __thiscall FUN_1001b071(void *this,undefined4 *param_1)
 
 /* FUN_1001b08d @ 1001b08d */
 
-void * __thiscall FUN_1001b08d(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001b08d(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,0x20,2);
@@ -20065,7 +20066,7 @@ void * __thiscall FUN_1001b08d(void *this,undefined4 *param_1)
 
 /* FUN_1001b0a9 @ 1001b0a9 */
 
-void * __thiscall FUN_1001b0a9(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001b0a9(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,0x20,2);
@@ -20077,7 +20078,7 @@ void * __thiscall FUN_1001b0a9(void *this,undefined4 *param_1)
 
 /* FUN_1001b0c5 @ 1001b0c5 */
 
-void * __thiscall FUN_1001b0c5(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001b0c5(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,0x10,1);
@@ -20089,7 +20090,7 @@ void * __thiscall FUN_1001b0c5(void *this,undefined4 *param_1)
 
 /* FUN_1001b0e1 @ 1001b0e1 */
 
-void * __thiscall FUN_1001b0e1(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001b0e1(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,0x10,1);
@@ -20220,7 +20221,7 @@ LAB_1001b396:
 
 /* FUN_1001b3a6 @ 1001b3a6 */
 
-void * __thiscall FUN_1001b3a6(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001b3a6(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,0x20,1);
@@ -20232,7 +20233,7 @@ void * __thiscall FUN_1001b3a6(void *this,undefined4 *param_1)
 
 /* FUN_1001b3c2 @ 1001b3c2 */
 
-void * __thiscall FUN_1001b3c2(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001b3c2(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,0x30,1);
@@ -20244,7 +20245,7 @@ void * __thiscall FUN_1001b3c2(void *this,undefined4 *param_1)
 
 /* FUN_1001b3de @ 1001b3de */
 
-void * __thiscall FUN_1001b3de(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001b3de(void *this,uint *param_1)
 
 {
   grim_pixel_format_init(this,param_1,0x40,1);
@@ -20256,7 +20257,7 @@ void * __thiscall FUN_1001b3de(void *this,undefined4 *param_1)
 
 /* FUN_1001b3fa @ 1001b3fa */
 
-void * __thiscall FUN_1001b3fa(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001b3fa(void *this,uint *param_1)
 
 {
   FUN_1001ac4a(this,param_1);
@@ -20268,7 +20269,7 @@ void * __thiscall FUN_1001b3fa(void *this,undefined4 *param_1)
 
 /* FUN_1001b412 @ 1001b412 */
 
-void * __thiscall FUN_1001b412(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001b412(void *this,uint *param_1)
 
 {
   FUN_1001ac4a(this,param_1);
@@ -20280,7 +20281,7 @@ void * __thiscall FUN_1001b412(void *this,undefined4 *param_1)
 
 /* FUN_1001b42a @ 1001b42a */
 
-void * __thiscall FUN_1001b42a(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001b42a(void *this,uint *param_1)
 
 {
   FUN_1001ac4a(this,param_1);
@@ -20292,7 +20293,7 @@ void * __thiscall FUN_1001b42a(void *this,undefined4 *param_1)
 
 /* FUN_1001b442 @ 1001b442 */
 
-void * __thiscall FUN_1001b442(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001b442(void *this,uint *param_1)
 
 {
   FUN_1001ac4a(this,param_1);
@@ -20304,7 +20305,7 @@ void * __thiscall FUN_1001b442(void *this,undefined4 *param_1)
 
 /* FUN_1001b45a @ 1001b45a */
 
-void * __thiscall FUN_1001b45a(void *this,undefined4 *param_1)
+void * __thiscall FUN_1001b45a(void *this,uint *param_1)
 
 {
   FUN_1001ac4a(this,param_1);
@@ -20383,304 +20384,305 @@ undefined4 * __fastcall FUN_1001b4f4(undefined4 *param_1)
 int * FUN_1001b50c(void)
 
 {
-  int iVar1;
-  void *pvVar2;
-  undefined4 *puVar3;
+  uint *puVar1;
+  uint uVar2;
+  void *pvVar3;
+  undefined4 *puVar4;
   int unaff_EBP;
-  int *piVar4;
+  int *piVar5;
   
   FUN_1004b5b0();
-  puVar3 = *(undefined4 **)(unaff_EBP + 8);
-  iVar1 = puVar3[1];
-  piVar4 = (int *)0x0;
-  if (iVar1 < 0x31545845) {
-    if (iVar1 == 0x31545844) {
-      pvVar2 = operator_new(0x10c4);
-      *(void **)(unaff_EBP + 8) = pvVar2;
+  puVar1 = *(uint **)(unaff_EBP + 8);
+  uVar2 = puVar1[1];
+  piVar5 = (int *)0x0;
+  if ((int)uVar2 < 0x31545845) {
+    if (uVar2 == 0x31545844) {
+      pvVar3 = operator_new(0x10c4);
+      *(void **)(unaff_EBP + 8) = pvVar3;
       *(undefined4 *)(unaff_EBP + -4) = 0x20;
-      if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar4 = FUN_1001b3fa(pvVar2,puVar3);
+      if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+      piVar5 = FUN_1001b3fa(pvVar3,puVar1);
     }
-    else if (iVar1 < 0x29) {
-      if (iVar1 == 0x28) {
-        pvVar2 = operator_new(0x106c);
-        *(void **)(unaff_EBP + 8) = pvVar2;
+    else if ((int)uVar2 < 0x29) {
+      if (uVar2 == 0x28) {
+        pvVar3 = operator_new(0x106c);
+        *(void **)(unaff_EBP + 8) = pvVar3;
         *(undefined4 *)(unaff_EBP + -4) = 0xd;
-        if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-        piVar4 = FUN_1001ae3c(pvVar2,puVar3);
+        if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+        piVar5 = FUN_1001ae3c(pvVar3,puVar1);
       }
       else {
-        switch(iVar1) {
+        switch(uVar2) {
         case 0x14:
-          pvVar2 = operator_new(0x106c);
-          *(void **)(unaff_EBP + 8) = pvVar2;
+          pvVar3 = operator_new(0x106c);
+          *(void **)(unaff_EBP + 8) = pvVar3;
           *(undefined4 *)(unaff_EBP + -4) = 0;
-          if (pvVar2 == (void *)0x0) {
+          if (pvVar3 == (void *)0x0) {
 LAB_1001bc03:
-            piVar4 = (int *)0x0;
+            piVar5 = (int *)0x0;
           }
           else {
-            piVar4 = FUN_1001a428(pvVar2,puVar3);
+            piVar5 = FUN_1001a428(pvVar3,puVar1);
           }
           break;
         case 0x15:
-          pvVar2 = operator_new(0x106c);
-          *(void **)(unaff_EBP + 8) = pvVar2;
+          pvVar3 = operator_new(0x106c);
+          *(void **)(unaff_EBP + 8) = pvVar3;
           *(undefined4 *)(unaff_EBP + -4) = 1;
-          if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar4 = FUN_1001a53c(pvVar2,puVar3);
+          if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+          piVar5 = FUN_1001a53c(pvVar3,puVar1);
           break;
         case 0x16:
-          pvVar2 = operator_new(0x106c);
-          *(void **)(unaff_EBP + 8) = pvVar2;
+          pvVar3 = operator_new(0x106c);
+          *(void **)(unaff_EBP + 8) = pvVar3;
           *(undefined4 *)(unaff_EBP + -4) = 2;
-          if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar4 = FUN_1001a558(pvVar2,puVar3);
+          if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+          piVar5 = FUN_1001a558(pvVar3,puVar1);
           break;
         case 0x17:
-          pvVar2 = operator_new(0x106c);
-          *(void **)(unaff_EBP + 8) = pvVar2;
+          pvVar3 = operator_new(0x106c);
+          *(void **)(unaff_EBP + 8) = pvVar3;
           *(undefined4 *)(unaff_EBP + -4) = 3;
-          if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar4 = FUN_1001a579(pvVar2,puVar3);
+          if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+          piVar5 = FUN_1001a579(pvVar3,puVar1);
           break;
         case 0x18:
-          pvVar2 = operator_new(0x106c);
-          *(void **)(unaff_EBP + 8) = pvVar2;
+          pvVar3 = operator_new(0x106c);
+          *(void **)(unaff_EBP + 8) = pvVar3;
           *(undefined4 *)(unaff_EBP + -4) = 4;
-          if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar4 = FUN_1001a781(pvVar2,puVar3);
+          if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+          piVar5 = FUN_1001a781(pvVar3,puVar1);
           break;
         case 0x19:
-          pvVar2 = operator_new(0x106c);
-          *(void **)(unaff_EBP + 8) = pvVar2;
+          pvVar3 = operator_new(0x106c);
+          *(void **)(unaff_EBP + 8) = pvVar3;
           *(undefined4 *)(unaff_EBP + -4) = 5;
-          if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar4 = FUN_1001a79d(pvVar2,puVar3);
+          if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+          piVar5 = FUN_1001a79d(pvVar3,puVar1);
           break;
         case 0x1a:
-          pvVar2 = operator_new(0x106c);
-          *(void **)(unaff_EBP + 8) = pvVar2;
+          pvVar3 = operator_new(0x106c);
+          *(void **)(unaff_EBP + 8) = pvVar3;
           *(undefined4 *)(unaff_EBP + -4) = 6;
-          if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar4 = FUN_1001aa8a(pvVar2,puVar3);
+          if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+          piVar5 = FUN_1001aa8a(pvVar3,puVar1);
           break;
         case 0x1b:
-          pvVar2 = operator_new(0x106c);
-          *(void **)(unaff_EBP + 8) = pvVar2;
+          pvVar3 = operator_new(0x106c);
+          *(void **)(unaff_EBP + 8) = pvVar3;
           *(undefined4 *)(unaff_EBP + -4) = 7;
-          if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar4 = FUN_1001aaa6(pvVar2,puVar3);
+          if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+          piVar5 = FUN_1001aaa6(pvVar3,puVar1);
           break;
         case 0x1c:
-          pvVar2 = operator_new(0x106c);
-          *(void **)(unaff_EBP + 8) = pvVar2;
+          pvVar3 = operator_new(0x106c);
+          *(void **)(unaff_EBP + 8) = pvVar3;
           *(undefined4 *)(unaff_EBP + -4) = 8;
-          if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar4 = FUN_1001aac2(pvVar2,puVar3);
+          if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+          piVar5 = FUN_1001aac2(pvVar3,puVar1);
           break;
         case 0x1d:
-          pvVar2 = operator_new(0x106c);
-          *(void **)(unaff_EBP + 8) = pvVar2;
+          pvVar3 = operator_new(0x106c);
+          *(void **)(unaff_EBP + 8) = pvVar3;
           *(undefined4 *)(unaff_EBP + -4) = 9;
-          if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar4 = FUN_1001aade(pvVar2,puVar3);
+          if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+          piVar5 = FUN_1001aade(pvVar3,puVar1);
           break;
         case 0x1e:
-          pvVar2 = operator_new(0x106c);
-          *(void **)(unaff_EBP + 8) = pvVar2;
+          pvVar3 = operator_new(0x106c);
+          *(void **)(unaff_EBP + 8) = pvVar3;
           *(undefined4 *)(unaff_EBP + -4) = 10;
-          if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar4 = FUN_1001aafa(pvVar2,puVar3);
+          if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+          piVar5 = FUN_1001aafa(pvVar3,puVar1);
           break;
         case 0x1f:
-          pvVar2 = operator_new(0x106c);
-          *(void **)(unaff_EBP + 8) = pvVar2;
+          pvVar3 = operator_new(0x106c);
+          *(void **)(unaff_EBP + 8) = pvVar3;
           *(undefined4 *)(unaff_EBP + -4) = 0xb;
-          if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar4 = FUN_1001aba3(pvVar2,puVar3);
+          if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+          piVar5 = FUN_1001aba3(pvVar3,puVar1);
           break;
         default:
           goto switchD_1001b54e_caseD_20;
         case 0x22:
-          pvVar2 = operator_new(0x106c);
-          *(void **)(unaff_EBP + 8) = pvVar2;
+          pvVar3 = operator_new(0x106c);
+          *(void **)(unaff_EBP + 8) = pvVar3;
           *(undefined4 *)(unaff_EBP + -4) = 0xc;
-          if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar4 = FUN_1001ac2e(pvVar2,puVar3);
+          if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+          piVar5 = FUN_1001ac2e(pvVar3,puVar1);
         }
       }
     }
-    else if (iVar1 < 0x3f) {
-      if (iVar1 == 0x3e) {
-        pvVar2 = operator_new(0x106c);
-        *(void **)(unaff_EBP + 8) = pvVar2;
+    else if ((int)uVar2 < 0x3f) {
+      if (uVar2 == 0x3e) {
+        pvVar3 = operator_new(0x106c);
+        *(void **)(unaff_EBP + 8) = pvVar3;
         *(undefined4 *)(unaff_EBP + -4) = 0x14;
-        if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-        piVar4 = FUN_1001b039(pvVar2,puVar3);
+        if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+        piVar5 = FUN_1001b039(pvVar3,puVar1);
       }
-      else if (iVar1 == 0x29) {
-        pvVar2 = operator_new(0x106c);
-        *(void **)(unaff_EBP + 8) = pvVar2;
+      else if (uVar2 == 0x29) {
+        pvVar3 = operator_new(0x106c);
+        *(void **)(unaff_EBP + 8) = pvVar3;
         *(undefined4 *)(unaff_EBP + -4) = 0xe;
-        if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-        piVar4 = FUN_1001ae74(pvVar2,puVar3);
+        if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+        piVar5 = FUN_1001ae74(pvVar3,puVar1);
       }
-      else if (iVar1 == 0x32) {
-        pvVar2 = operator_new(0x106c);
-        *(void **)(unaff_EBP + 8) = pvVar2;
+      else if (uVar2 == 0x32) {
+        pvVar3 = operator_new(0x106c);
+        *(void **)(unaff_EBP + 8) = pvVar3;
         *(undefined4 *)(unaff_EBP + -4) = 0xf;
-        if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-        piVar4 = FUN_1001ae90(pvVar2,puVar3);
+        if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+        piVar5 = FUN_1001ae90(pvVar3,puVar1);
       }
-      else if (iVar1 == 0x33) {
-        pvVar2 = operator_new(0x106c);
-        *(void **)(unaff_EBP + 8) = pvVar2;
+      else if (uVar2 == 0x33) {
+        pvVar3 = operator_new(0x106c);
+        *(void **)(unaff_EBP + 8) = pvVar3;
         *(undefined4 *)(unaff_EBP + -4) = 0x10;
-        if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-        piVar4 = FUN_1001aeac(pvVar2,puVar3);
+        if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+        piVar5 = FUN_1001aeac(pvVar3,puVar1);
       }
-      else if (iVar1 == 0x34) {
-        pvVar2 = operator_new(0x106c);
-        *(void **)(unaff_EBP + 8) = pvVar2;
+      else if (uVar2 == 0x34) {
+        pvVar3 = operator_new(0x106c);
+        *(void **)(unaff_EBP + 8) = pvVar3;
         *(undefined4 *)(unaff_EBP + -4) = 0x11;
-        if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-        piVar4 = FUN_1001aee4(pvVar2,puVar3);
+        if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+        piVar5 = FUN_1001aee4(pvVar3,puVar1);
       }
-      else if (iVar1 == 0x3c) {
-        pvVar2 = operator_new(0x106c);
-        *(void **)(unaff_EBP + 8) = pvVar2;
+      else if (uVar2 == 0x3c) {
+        pvVar3 = operator_new(0x106c);
+        *(void **)(unaff_EBP + 8) = pvVar3;
         *(undefined4 *)(unaff_EBP + -4) = 0x12;
-        if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-        piVar4 = FUN_1001b001(pvVar2,puVar3);
+        if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+        piVar5 = FUN_1001b001(pvVar3,puVar1);
       }
       else {
-        if (iVar1 != 0x3d) goto switchD_1001b54e_caseD_20;
-        pvVar2 = operator_new(0x106c);
-        *(void **)(unaff_EBP + 8) = pvVar2;
+        if (uVar2 != 0x3d) goto switchD_1001b54e_caseD_20;
+        pvVar3 = operator_new(0x106c);
+        *(void **)(unaff_EBP + 8) = pvVar3;
         *(undefined4 *)(unaff_EBP + -4) = 0x13;
-        if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-        piVar4 = FUN_1001b01d(pvVar2,puVar3);
+        if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+        piVar5 = FUN_1001b01d(pvVar3,puVar1);
       }
     }
-    else if (iVar1 == 0x3f) {
-      pvVar2 = operator_new(0x106c);
-      *(void **)(unaff_EBP + 8) = pvVar2;
+    else if (uVar2 == 0x3f) {
+      pvVar3 = operator_new(0x106c);
+      *(void **)(unaff_EBP + 8) = pvVar3;
       *(undefined4 *)(unaff_EBP + -4) = 0x15;
-      if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar4 = FUN_1001b055(pvVar2,puVar3);
+      if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+      piVar5 = FUN_1001b055(pvVar3,puVar1);
     }
-    else if (iVar1 == 0x40) {
-      pvVar2 = operator_new(0x106c);
-      *(void **)(unaff_EBP + 8) = pvVar2;
+    else if (uVar2 == 0x40) {
+      pvVar3 = operator_new(0x106c);
+      *(void **)(unaff_EBP + 8) = pvVar3;
       *(undefined4 *)(unaff_EBP + -4) = 0x16;
-      if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar4 = FUN_1001b071(pvVar2,puVar3);
+      if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+      piVar5 = FUN_1001b071(pvVar3,puVar1);
     }
-    else if (iVar1 == 0x41) {
-      pvVar2 = operator_new(0x106c);
-      *(void **)(unaff_EBP + 8) = pvVar2;
+    else if (uVar2 == 0x41) {
+      pvVar3 = operator_new(0x106c);
+      *(void **)(unaff_EBP + 8) = pvVar3;
       *(undefined4 *)(unaff_EBP + -4) = 0x17;
-      if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar4 = FUN_1001b08d(pvVar2,puVar3);
+      if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+      piVar5 = FUN_1001b08d(pvVar3,puVar1);
     }
-    else if (iVar1 == 0x43) {
-      pvVar2 = operator_new(0x106c);
-      *(void **)(unaff_EBP + 8) = pvVar2;
+    else if (uVar2 == 0x43) {
+      pvVar3 = operator_new(0x106c);
+      *(void **)(unaff_EBP + 8) = pvVar3;
       *(undefined4 *)(unaff_EBP + -4) = 0x18;
-      if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar4 = FUN_1001b0a9(pvVar2,puVar3);
+      if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+      piVar5 = FUN_1001b0a9(pvVar3,puVar1);
     }
     else {
-      if (iVar1 != 0x46) goto switchD_1001b54e_caseD_20;
-      pvVar2 = operator_new(0x106c);
-      *(void **)(unaff_EBP + 8) = pvVar2;
+      if (uVar2 != 0x46) goto switchD_1001b54e_caseD_20;
+      pvVar3 = operator_new(0x106c);
+      *(void **)(unaff_EBP + 8) = pvVar3;
       *(undefined4 *)(unaff_EBP + -4) = 0x19;
-      if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar4 = FUN_1001b0c5(pvVar2,puVar3);
+      if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+      piVar5 = FUN_1001b0c5(pvVar3,puVar1);
     }
   }
-  else if (iVar1 < 0x36314c21) {
-    if (iVar1 == 0x36314c20) {
-      pvVar2 = operator_new(0x106c);
-      *(void **)(unaff_EBP + 8) = pvVar2;
+  else if ((int)uVar2 < 0x36314c21) {
+    if (uVar2 == 0x36314c20) {
+      pvVar3 = operator_new(0x106c);
+      *(void **)(unaff_EBP + 8) = pvVar3;
       *(undefined4 *)(unaff_EBP + -4) = 0x1a;
-      if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar4 = FUN_1001b0e1(pvVar2,puVar3);
+      if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+      piVar5 = FUN_1001b0e1(pvVar3,puVar1);
     }
-    else if (iVar1 == 0x32545844) {
-      pvVar2 = operator_new(0x10c4);
-      *(void **)(unaff_EBP + 8) = pvVar2;
+    else if (uVar2 == 0x32545844) {
+      pvVar3 = operator_new(0x10c4);
+      *(void **)(unaff_EBP + 8) = pvVar3;
       *(undefined4 *)(unaff_EBP + -4) = 0x21;
-      if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar4 = FUN_1001b412(pvVar2,puVar3);
+      if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+      piVar5 = FUN_1001b412(pvVar3,puVar1);
     }
-    else if (iVar1 == 0x32595559) {
-      puVar3 = operator_new(0x109c);
-      *(undefined4 **)(unaff_EBP + 8) = puVar3;
+    else if (uVar2 == 0x32595559) {
+      puVar4 = operator_new(0x109c);
+      *(undefined4 **)(unaff_EBP + 8) = puVar4;
       *(undefined4 *)(unaff_EBP + -4) = 0x1f;
-      if (puVar3 == (undefined4 *)0x0) goto LAB_1001bc03;
-      piVar4 = FUN_1001b4f4(puVar3);
+      if (puVar4 == (undefined4 *)0x0) goto LAB_1001bc03;
+      piVar5 = FUN_1001b4f4(puVar4);
     }
-    else if (iVar1 == 0x33545844) {
-      pvVar2 = operator_new(0x10c4);
-      *(void **)(unaff_EBP + 8) = pvVar2;
+    else if (uVar2 == 0x33545844) {
+      pvVar3 = operator_new(0x10c4);
+      *(void **)(unaff_EBP + 8) = pvVar3;
       *(undefined4 *)(unaff_EBP + -4) = 0x22;
-      if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar4 = FUN_1001b42a(pvVar2,puVar3);
+      if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+      piVar5 = FUN_1001b42a(pvVar3,puVar1);
     }
-    else if (iVar1 == 0x34545844) {
-      pvVar2 = operator_new(0x10c4);
-      *(void **)(unaff_EBP + 8) = pvVar2;
+    else if (uVar2 == 0x34545844) {
+      pvVar3 = operator_new(0x10c4);
+      *(void **)(unaff_EBP + 8) = pvVar3;
       *(undefined4 *)(unaff_EBP + -4) = 0x23;
-      if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar4 = FUN_1001b442(pvVar2,puVar3);
+      if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+      piVar5 = FUN_1001b442(pvVar3,puVar1);
     }
     else {
-      if (iVar1 != 0x35545844) goto switchD_1001b54e_caseD_20;
-      pvVar2 = operator_new(0x10c4);
-      *(void **)(unaff_EBP + 8) = pvVar2;
+      if (uVar2 != 0x35545844) goto switchD_1001b54e_caseD_20;
+      pvVar3 = operator_new(0x10c4);
+      *(void **)(unaff_EBP + 8) = pvVar3;
       *(undefined4 *)(unaff_EBP + -4) = 0x24;
-      if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar4 = FUN_1001b45a(pvVar2,puVar3);
+      if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+      piVar5 = FUN_1001b45a(pvVar3,puVar1);
     }
   }
-  else if (iVar1 == 0x36314c41) {
-    pvVar2 = operator_new(0x106c);
-    *(void **)(unaff_EBP + 8) = pvVar2;
+  else if (uVar2 == 0x36314c41) {
+    pvVar3 = operator_new(0x106c);
+    *(void **)(unaff_EBP + 8) = pvVar3;
     *(undefined4 *)(unaff_EBP + -4) = 0x1b;
-    if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-    piVar4 = FUN_1001b3a6(pvVar2,puVar3);
+    if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+    piVar5 = FUN_1001b3a6(pvVar3,puVar1);
   }
-  else if (iVar1 == 0x36315220) {
-    pvVar2 = operator_new(0x106c);
-    *(void **)(unaff_EBP + 8) = pvVar2;
+  else if (uVar2 == 0x36315220) {
+    pvVar3 = operator_new(0x106c);
+    *(void **)(unaff_EBP + 8) = pvVar3;
     *(undefined4 *)(unaff_EBP + -4) = 0x1c;
-    if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-    piVar4 = FUN_1001b3c2(pvVar2,puVar3);
+    if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+    piVar5 = FUN_1001b3c2(pvVar3,puVar1);
   }
-  else if (iVar1 == 0x36315241) {
-    pvVar2 = operator_new(0x106c);
-    *(void **)(unaff_EBP + 8) = pvVar2;
+  else if (uVar2 == 0x36315241) {
+    pvVar3 = operator_new(0x106c);
+    *(void **)(unaff_EBP + 8) = pvVar3;
     *(undefined4 *)(unaff_EBP + -4) = 0x1d;
-    if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-    piVar4 = FUN_1001b3de(pvVar2,puVar3);
+    if (pvVar3 == (void *)0x0) goto LAB_1001bc03;
+    piVar5 = FUN_1001b3de(pvVar3,puVar1);
   }
   else {
-    if (iVar1 != 0x59565955) goto switchD_1001b54e_caseD_20;
-    puVar3 = operator_new(0x109c);
-    *(undefined4 **)(unaff_EBP + 8) = puVar3;
+    if (uVar2 != 0x59565955) goto switchD_1001b54e_caseD_20;
+    puVar4 = operator_new(0x109c);
+    *(undefined4 **)(unaff_EBP + 8) = puVar4;
     *(undefined4 *)(unaff_EBP + -4) = 0x1e;
-    if (puVar3 == (undefined4 *)0x0) goto LAB_1001bc03;
-    piVar4 = FUN_1001b4dc(puVar3);
+    if (puVar4 == (undefined4 *)0x0) goto LAB_1001bc03;
+    piVar5 = FUN_1001b4dc(puVar4);
   }
   *(undefined4 *)(unaff_EBP + -4) = 0xffffffff;
-  if ((piVar4 != (int *)0x0) && (piVar4[4] != 0)) {
-    (**(code **)(*piVar4 + 0xc))();
+  if ((piVar5 != (int *)0x0) && (piVar5[4] != 0)) {
+    (**(code **)(*piVar5 + 0xc))();
   }
 switchD_1001b54e_caseD_20:
   ExceptionList = *(void **)(unaff_EBP + -0xc);
-  return piVar4;
+  return piVar5;
 }
 
 

@@ -429,6 +429,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00425e50",
+    "name": "player_take_damage",
+    "signature": "void player_take_damage(int player_index, float damage)",
+    "comment": "applies player damage with perk modifiers, SFX, and retaliation effects"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00426220",
+    "name": "creature_update_all",
+    "signature": "void creature_update_all(void)",
+    "comment": "primary creature update loop: AI, movement, attacks, and animation phase"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0042a5f0",
     "name": "audio_resume_all",
     "signature": "int audio_resume_all(void)",
@@ -909,6 +923,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00428240",
+    "name": "creature_spawn",
+    "signature": "int creature_spawn(float *pos, float *tint_rgba, int type_id)",
+    "comment": "allocates a creature slot and seeds position, type, and tint defaults"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00418b60",
     "name": "creature_render_type",
     "signature": "void creature_render_type(int type_id)",
@@ -930,10 +951,31 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041e400",
+    "name": "vec2_add_inplace",
+    "signature": "void vec2_add_inplace(int unused, float *pos, float *delta)",
+    "comment": "adds delta XY into pos; unused param_1 in decompile"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041e840",
     "name": "fx_queue_add",
     "signature": "int fx_queue_add(int effect_id, float *pos, float w, float h, float rotation, float *rgba)",
     "comment": "pushes a quad entry into DAT_004aaf18 (capped at 0x80); returns 1 on success"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e910",
+    "name": "creature_handle_death",
+    "signature": "void creature_handle_death(int creature_id, bool keep_corpse)",
+    "comment": "death handler: bonus spawns, split-on-death, score, and cleanup"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041f430",
+    "name": "angle_approach",
+    "signature": "void angle_approach(float *angle, float target, float rate)",
+    "comment": "wraps angle into [0,2pi] and steps toward target using shortest arc"
   },
   {
     "program": "crimsonland.exe",

@@ -68,6 +68,16 @@ Known uses:
 - Some UI paths call `grim_set_sub_rect` twice in a row to draw two adjacent
   slices from the same sheet (split-screen layouts).
 
+## Manual UV overrides (grim_set_uv_point)
+
+Some effects bypass atlas slicing and write UVs directly.
+
+- In `projectile_render`, beam/chain effects (type_id `0x15/0x16/0x17/0x2d`)
+  call `grim_set_uv_point` to force all U values to `0.625` and V to `0..0.25`,
+  then draw a quad strip. This targets a thin vertical slice inside
+  `projs.png`, so `projs/grid2/frame001` is further sub‑cut at runtime.
+- The same path later resets UVs with `grim_set_uv(0,0,1,1)`.
+
 ## How slicing is used in practice
 
 The engine uses **two patterns**:
@@ -85,6 +95,8 @@ The engine uses **two patterns**:
   - Uses **grid=2** for some effects (e.g. `+0x104(2, 0)` around `:16479`).
   - Several projectile/beam effects draw **repeated quads** along a vector
     using a single frame (segment tiling instead of unique frames).
+  - One beam path calls `set_atlas_frame(4,2,<dir>,<dir>)` with extra vector
+    pointers; this likely orients the UVs for directional beam segments.
 
 - `assets/crimson/game/bonuses.png` (DAT_0048f7f0)
   - Uses **sprite table index 0x10** (call at `:18550`), which maps to **grid=4**.

@@ -11,8 +11,8 @@ Pool facts:
 Key helpers:
 
 - `creature_alloc_slot` (`FUN_00428140`) finds a free slot and seeds defaults.
-- `FUN_00428240` spawns a creature and writes position/type/heading.
-- `FUN_00426220` is the primary update loop (movement, targeting, AI, attacks).
+- `creature_spawn` (`FUN_00428240`) spawns a creature and writes position/type/heading.
+- `creature_update_all` (`FUN_00426220`) is the primary update loop (movement, targeting, AI, attacks).
 - `creatures_none_active` (`FUN_00428210`) scans the pool and returns nonzero when empty.
 
 Field map (medium confidence):
@@ -60,11 +60,14 @@ Field map (medium confidence):
 Related notes:
 
 - See [Detangling notes](detangling.md) for helper naming and other pool context.
-- The pool is updated in `FUN_00426220`; use that routine for new field discoveries.
+- The pool is updated in `creature_update_all`; use that routine for new field discoveries.
 - Animation phase (`0x94`) is incremented by a per-type rate stored at
   `&DAT_0048275c + type_id * 0x44` and wraps at **31** for the primary strip or **15**
   for the short ping‑pong strip. The renderer then selects a frame index for the 8×8
   atlas (see `FUN_00418b60`).
+- `creature_update_all` scales the animation step by movement speed, size, and a
+  local scale factor (tether/orbit cases), using `rate * speed * dt * (30/size)`
+  multiplied by **25** (long strip) or **22** (short strip) before wrapping.
 - Flags `0x4`, `0x10`, and `0x40` influence sprite selection in `FUN_00418b60`:
   `0x4` selects the short 8‑frame ping‑pong strip, `0x40` forces the long strip
   even when `0x4` is set, and `0x10` offsets the long strip by `+0x20`.
@@ -162,7 +165,7 @@ Notes:
   `0x27`, `0x28`, `0x40`.
 - Quest/timeline spawner (`quest_spawn_timeline_update`, `FUN_00434250`): pulls spawn ids from the
   table at `DAT_004857a8` (`pfVar4[3]`) with counts in `pfVar4[5]`.
-- AI subspawns (`FUN_00426220`): periodic spawns using `&DAT_00484fe4 + iVar6 * 0x18`,
+- AI subspawns (`creature_update_all`): periodic spawns using `&DAT_00484fe4 + iVar6 * 0x18`,
   which is seeded for some template ids inside `FUN_00430af0`.
 
 ## Quest spawn table (DAT_004857a8)
