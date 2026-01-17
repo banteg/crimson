@@ -2281,5 +2281,29 @@
     "address": "0x1002587e",
     "name": "FUN_1002587e",
     "signature": "void FUN_1002587e(png_structp png_ptr, int param_2, uint param_3)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001e407",
+    "name": "FUN_1001e407",
+    "signature": "void FUN_1001e407(png_structp png_ptr, int *param_2)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001e427",
+    "name": "FUN_1001e427",
+    "signature": "void FUN_1001e427(void *this, png_structp png_ptr, byte *param_2, byte *param_3)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10020036",
+    "name": "FUN_10020036",
+    "signature": "void FUN_10020036(png_structp png_ptr)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10025359",
+    "name": "FUN_10025359",
+    "signature": "void FUN_10025359(void *this, png_structp png_ptr, int param_2, uint param_3)"
   }
 ]

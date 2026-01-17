@@ -3560,7 +3560,7 @@ void __cdecl perk_apply(int perk_id)
       }
       pfVar4 = pfVar4 + 0x26;
     } while ((int)pfVar4 < 0x4aa348);
-    DAT_0048703c = 0;
+    bonus_spawn_guard = 0;
   }
   else if (perk_id == DAT_004c2c04) {
     iVar3 = 0;
@@ -4777,25 +4777,26 @@ void survival_update(void)
     return;
   }
   if (_DAT_0048035c == 1) {
-    if ((((DAT_00486fe5 == '\0') && (DAT_00486fe4 == '\0')) && (64000 < DAT_00487060)) &&
-       (DAT_00486fa8 != '\0')) {
+    if ((((survival_reward_damage_seen == '\0') && (survival_reward_fire_seen == '\0')) &&
+        (64000 < DAT_00487060)) && (survival_reward_handout_enabled != '\0')) {
       if (player_weapon_id == 1) {
         weapon_assign_player(0,0x18);
         DAT_00486fb8 = 0x18;
       }
-      DAT_00486fa8 = '\0';
-      DAT_00486fe5 = '\x01';
-      DAT_00486fe4 = '\x01';
+      survival_reward_handout_enabled = '\0';
+      survival_reward_damage_seen = '\x01';
+      survival_reward_fire_seen = '\x01';
     }
-    if (((DAT_00487000 == 3) && (DAT_00486fe4 == '\0')) &&
-       ((local_44 = (_DAT_00486ffc + _DAT_00486ff4 + DAT_00486fec) * 0.33333334,
-        fVar1 = player_pos_x - (_DAT_00486fe8 + _DAT_00486ff0 + _DAT_00486ff8) * 0.33333334,
+    if (((survival_recent_death_count == 3) && (survival_reward_fire_seen == '\0')) &&
+       ((local_44 = (_DAT_00486ffc + _DAT_00486ff4 + survival_recent_death_pos_y) * 0.33333334,
+        fVar1 = player_pos_x -
+                (_survival_recent_death_pos_x + _DAT_00486ff0 + _DAT_00486ff8) * 0.33333334,
         SQRT(fVar1 * fVar1 + (player_pos_y - local_44) * (player_pos_y - local_44)) < 16.0 &&
         (player_health < 15.0)))) {
       weapon_assign_player(0,0x19);
       DAT_00486fb8 = 0x19;
-      DAT_00486fe4 = '\x01';
-      DAT_00486fa8 = '\0';
+      survival_reward_fire_seen = '\x01';
+      survival_reward_handout_enabled = '\0';
     }
   }
   if (DAT_00487190 == 0) {
@@ -5799,7 +5800,7 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
          (float)bonus_entry[6] * local_10[0] + (&player_shield_timer)[player_index * 0xd8];
   }
   else if (iVar3 == 7) {
-    DAT_0048703c = 1;
+    bonus_spawn_guard = 1;
     if (*(float *)(DAT_0048086c + 0xc) == 0.0) {
       iVar3 = -100;
     }
@@ -5815,11 +5816,11 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
     shock_chain_projectile_id =
          projectile_spawn(pfVar1,(float)((fVar8 - (float10)1.5707964) - (float10)3.1415927),0x15,
                           iVar3);
-    DAT_0048703c = 0;
+    bonus_spawn_guard = 0;
     sfx_play_panned(DAT_004c3fe4);
   }
   else if (iVar3 == 8) {
-    DAT_0048703c = 1;
+    bonus_spawn_guard = 1;
     if (*(float *)(DAT_0048086c + 0xc) == 0.0) {
       iVar3 = -100;
     }
@@ -5831,7 +5832,7 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
       projectile_spawn((float *)(bonus_entry + 4),(float)player_index * 0.3926991,9,iVar3);
       player_index = player_index + 1;
     } while (player_index < 0x10);
-    DAT_0048703c = 0;
+    bonus_spawn_guard = 0;
     sfx_play_panned(DAT_004c3fec);
   }
   else if (iVar3 == 0xe) {
@@ -5889,7 +5890,7 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
     FUN_0042f6c0(pfVar1,1.0);
     camera_shake_pulses = 0x14;
     _camera_shake_timer = 0x3e4ccccd;
-    DAT_0048703c = 1;
+    bonus_spawn_guard = 1;
     iVar3 = 0;
     pcVar7 = &creature_pool;
     do {
@@ -5906,7 +5907,7 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
       pcVar7 = pcVar7 + 0x98;
       iVar3 = iVar3 + 1;
     } while ((int)pcVar7 < 0x4aa338);
-    DAT_0048703c = 0;
+    bonus_spawn_guard = 0;
     sfx_play_panned(DAT_004c3ff0);
     sfx_play_panned(DAT_004c3ff4);
   }
@@ -8504,7 +8505,7 @@ void FUN_004120b0(void)
   DAT_0048700d = 0;
   DAT_00486faa = 0;
   DAT_00487034 = 0;
-  DAT_00486fcc = 0;
+  creature_active_count = 0;
   DAT_0048718c = 0;
   DAT_00487088 = 0xffffffff;
   _DAT_00487004 = 1;
@@ -9122,11 +9123,11 @@ void FUN_00412dc0(void)
   shock_chain_links_left = 0;
   DAT_00486fb8 = 1;
   creature_spawned_count = 0;
-  DAT_00487000 = 0;
-  DAT_00486fe5 = 0;
-  DAT_00486fe4 = 0;
+  survival_recent_death_count = 0;
+  survival_reward_damage_seen = 0;
+  survival_reward_fire_seen = 0;
   DAT_00486fa9 = 1;
-  DAT_00486fa8 = 1;
+  survival_reward_handout_enabled = 1;
   DAT_00486fd8 = 0xffffffff;
   DAT_00486fdc = 0;
   DAT_00486fe0 = 0xfffffc18;
@@ -9136,17 +9137,17 @@ void FUN_00412dc0(void)
   camera_shake_pulses = 0;
   FUN_00412940();
   _DAT_00482940 = 6;
-  _DAT_00482728 = (**(code **)(*DAT_0048083c + 0xc0))(s_zombie_0047375c);
-  _DAT_0048273c = DAT_004c3f28;
-  _DAT_00482740 = DAT_004c3f2c;
-  _DAT_0048272c = DAT_004c3f18;
-  _DAT_00482730 = DAT_004c3f1c;
+  _creature_type_texture = (**(code **)(*DAT_0048083c + 0xc0))(s_zombie_0047375c);
+  _creature_type_sfx_b0 = DAT_004c3f28;
+  _creature_type_sfx_b1 = DAT_004c3f2c;
+  _creature_type_sfx_a0 = DAT_004c3f18;
+  _creature_type_sfx_a1 = DAT_004c3f1c;
   _DAT_00482748 = 0x3f800000;
-  _DAT_0048275c = 0x3f99999a;
-  _DAT_00482734 = DAT_004c3f20;
-  _DAT_00482738 = DAT_004c3f24;
-  _DAT_00482760 = 0x20;
-  _DAT_00482764 = 0;
+  _creature_type_anim_rate = 0x3f99999a;
+  _creature_type_sfx_a2 = DAT_004c3f20;
+  _creature_type_sfx_a3 = DAT_004c3f24;
+  _creature_type_base_frame = 0x20;
+  _creature_type_corpse_frame = 0;
   _DAT_0048276c = (**(code **)(*DAT_0048083c + 0xc0))(s_lizard_00473754);
   _DAT_00482784 = DAT_004c3f5c;
   _DAT_00482780 = DAT_004c3f58;
@@ -9202,7 +9203,7 @@ void FUN_00412dc0(void)
   DAT_0048287c = (**(code **)(*DAT_0048083c + 0xc0))(s_trooper_0047372c);
   _DAT_00484fc8 = (float)DAT_0048f534 * 0.5;
   DAT_00486fb0 = 1;
-  DAT_0048703c = 0;
+  bonus_spawn_guard = 0;
   puVar1 = &DAT_0048708c;
   for (iVar4 = 0x40; iVar4 != 0; iVar4 = iVar4 + -1) {
     *puVar1 = 0;
@@ -9221,7 +9222,7 @@ void FUN_00412dc0(void)
   _bonus_reflex_boost_timer = 0;
   _bonus_weapon_power_up_timer = 0;
   _bonus_energizer_timer = 0;
-  DAT_00486fc8 = 0;
+  plaguebearer_infection_count = 0;
   DAT_00487268 = 0xffffffff;
   DAT_00487085 = 0;
   DAT_00487060 = 0;
@@ -9297,7 +9298,7 @@ void FUN_00412dc0(void)
     *(float *)(puVar2 + 0x24) = (float)(iVar3 % 0x1f);
     puVar2 = puVar5;
   } while ((int)puVar5 < 0x4aa3a8);
-  puVar1 = &DAT_00484fd0;
+  puVar1 = &creature_spawn_slot_owner;
   do {
     *puVar1 = 0;
     puVar1 = puVar1 + 6;
@@ -10280,7 +10281,7 @@ LAB_00414f2d:
     fVar16 = (float)(&player_reload_timer)[iVar7 * 0xd8] - local_38 * DAT_00480840;
     (&player_reload_timer)[iVar7 * 0xd8] = fVar16;
     if (fVar16 <= (float)(&player_reload_timer_max)[iVar7 * 0xd8] * 0.5) {
-      DAT_0048703c = 1;
+      bonus_spawn_guard = 1;
       if (*(float *)(DAT_0048086c + 0xc) == 0.0) {
         local_38 = -NAN;
       }
@@ -10298,7 +10299,7 @@ LAB_00414f2d:
           local_3c = (float)((int)local_3c + 1);
         } while ((int)local_3c < (int)fVar16);
       }
-      DAT_0048703c = 0;
+      bonus_spawn_guard = 0;
       sfx_play_panned(DAT_004c3fe8);
     }
   }
@@ -10497,7 +10498,7 @@ LAB_0041572e:
   fVar16 = (float)(&player_aim_heading)[iVar7 * 0xd8];
   cVar8 = (**(code **)(*DAT_0048083c + 0x80))((&player_fire_key)[iVar7 * 0xd8]);
   if ((cVar8 == '\0') && (!bVar5)) goto LAB_0041753e;
-  DAT_00486fe4 = 1;
+  survival_reward_fire_seen = 1;
   if (!bVar9) {
     iVar11 = perk_count_get(DAT_004c2bd0);
     if (iVar11 == 0) {
@@ -11916,7 +11917,7 @@ void __cdecl creature_render_type(int type_id)
   
   iVar7 = type_id * 0x44;
   fStack_50 = 0.0;
-  uStack_54 = *(undefined4 *)(&DAT_00482728 + iVar7);
+  uStack_54 = *(undefined4 *)(&creature_type_texture + iVar7);
   fStack_58 = 6.019367e-39;
   (**(code **)(*DAT_0048083c + 0xc4))();
   fStack_58 = 1.0;
@@ -11937,7 +11938,7 @@ void __cdecl creature_render_type(int type_id)
             if (16.0 <= *pfVar5) {
               lVar8 = __ftol();
               iVar2 = (int)lVar8;
-              if ((((&DAT_00482768)[iVar7] & 1) != 0) && (0xf < iVar2)) {
+              if ((((&creature_type_anim_flags)[iVar7] & 1) != 0) && (0xf < iVar2)) {
                 iVar2 = 0x1f - iVar2;
               }
             }
@@ -11946,7 +11947,7 @@ void __cdecl creature_render_type(int type_id)
               iVar2 = (int)lVar8;
             }
             else {
-              iVar2 = *(int *)(&DAT_00482760 + iVar7) + 0xf;
+              iVar2 = *(int *)(&creature_type_base_frame + iVar7) + 0xf;
             }
             if (((uint)fVar10 & 0x10) != 0) {
               iVar2 = iVar2 + 0x20;
@@ -11962,7 +11963,8 @@ void __cdecl creature_render_type(int type_id)
             if (7 < (int)uVar3) {
               uVar3 = 0xf - uVar3;
             }
-            (**(code **)(*DAT_0048083c + 0x104))(8,*(int *)(&DAT_00482760 + iVar7) + 0x10 + uVar3);
+            (**(code **)(*DAT_0048083c + 0x104))
+                      (8,*(int *)(&creature_type_base_frame + iVar7) + 0x10 + uVar3);
           }
           (**(code **)(*DAT_0048083c + 0x110))(&fStack_58);
           (**(code **)(*DAT_0048083c + 0xfc))(pfVar5[7] - 1.5707964);
@@ -11992,7 +11994,7 @@ void __cdecl creature_render_type(int type_id)
           if (16.0 <= (float)puVar6[-0x21]) {
             lVar8 = __ftol();
             iVar2 = (int)lVar8;
-            if ((((&DAT_00482768)[iVar7] & 1) != 0) && (0xf < iVar2)) {
+            if ((((&creature_type_anim_flags)[iVar7] & 1) != 0) && (0xf < iVar2)) {
               iVar2 = 0x1f - iVar2;
             }
           }
@@ -12001,7 +12003,7 @@ void __cdecl creature_render_type(int type_id)
             iVar2 = (int)lVar8;
           }
           else {
-            iVar2 = *(int *)(&DAT_00482760 + iVar7) + 0xf;
+            iVar2 = *(int *)(&creature_type_base_frame + iVar7) + 0xf;
           }
           if ((uVar3 & 0x10) != 0) {
             iVar2 = iVar2 + 0x20;
@@ -12017,7 +12019,8 @@ void __cdecl creature_render_type(int type_id)
           if (7 < (int)uVar3) {
             uVar3 = 0xf - uVar3;
           }
-          (**(code **)(*DAT_0048083c + 0x104))(8,*(int *)(&DAT_00482760 + iVar7) + 0x10 + uVar3);
+          (**(code **)(*DAT_0048083c + 0x104))
+                    (8,*(int *)(&creature_type_base_frame + iVar7) + 0x10 + uVar3);
         }
         (**(code **)(*DAT_0048083c + 0x110))(&fStack_58);
         (**(code **)(*DAT_0048083c + 0xfc))((float)puVar6[-0x1a] - 1.5707964);
@@ -12027,7 +12030,7 @@ void __cdecl creature_render_type(int type_id)
                    (_DAT_00484fcc + (float)puVar6[-0x1f]) - (float)puVar6[-0x18] * 0.5,uVar9,uVar9);
         if (((float)puVar6[-0x21] < -10.0) &&
            (*(undefined1 *)(puVar6 + -0x25) = 0, (*(byte *)(puVar6 + -2) & 4) != 0)) {
-          (&DAT_00484fd0)[puVar6[-7] * 6] = 0;
+          (&creature_spawn_slot_owner)[puVar6[-7] * 6] = 0;
         }
       }
       puVar6 = puVar6 + 0x26;
@@ -12052,7 +12055,7 @@ void __cdecl creature_render_type(int type_id)
           if (16.0 <= pfVar5[-6]) {
             lVar8 = __ftol();
             iVar2 = (int)lVar8;
-            if ((((&DAT_00482768)[iVar7] & 1) != 0) && (0xf < iVar2)) {
+            if ((((&creature_type_anim_flags)[iVar7] & 1) != 0) && (0xf < iVar2)) {
               iVar2 = 0x1f - iVar2;
             }
           }
@@ -12061,7 +12064,7 @@ void __cdecl creature_render_type(int type_id)
             iVar2 = (int)lVar8;
           }
           else {
-            iVar2 = *(int *)(&DAT_00482760 + iVar7) + 0xf;
+            iVar2 = *(int *)(&creature_type_base_frame + iVar7) + 0xf;
           }
           if (((uint)fVar10 & 0x10) != 0) {
             iVar2 = iVar2 + 0x20;
@@ -12077,7 +12080,8 @@ void __cdecl creature_render_type(int type_id)
           if (7 < (int)uVar3) {
             uVar3 = 0xf - uVar3;
           }
-          (**(code **)(*DAT_0048083c + 0x104))(8,*(int *)(&DAT_00482760 + iVar7) + 0x10 + uVar3);
+          (**(code **)(*DAT_0048083c + 0x104))
+                    (8,*(int *)(&creature_type_base_frame + iVar7) + 0x10 + uVar3);
         }
         (**(code **)(*DAT_0048083c + 0x110))(&fStack_58);
         (**(code **)(*DAT_0048083c + 0xfc))(pfVar5[1] - 1.5707964);
@@ -12088,7 +12092,7 @@ void __cdecl creature_render_type(int type_id)
                    ,fVar10);
         if ((pfVar5[-6] < -10.0) &&
            (*(undefined1 *)(pfVar5 + -10) = 0, ((uint)pfVar5[0x19] & 4) != 0)) {
-          (&DAT_00484fd0)[(int)pfVar5[0x14] * 6] = 0;
+          (&creature_spawn_slot_owner)[(int)pfVar5[0x14] * 6] = 0;
         }
       }
       pfVar5 = pfVar5 + 0x26;
@@ -12112,7 +12116,7 @@ void __cdecl creature_render_type(int type_id)
           if (16.0 <= *pfVar5) {
             lVar8 = __ftol();
             iVar2 = (int)lVar8;
-            if ((((&DAT_00482768)[iVar7] & 1) != 0) && (0xf < iVar2)) {
+            if ((((&creature_type_anim_flags)[iVar7] & 1) != 0) && (0xf < iVar2)) {
               iVar2 = 0x1f - iVar2;
             }
             if (((uint)fVar10 & 0x10) != 0) {
@@ -12124,7 +12128,7 @@ void __cdecl creature_render_type(int type_id)
             iVar2 = (int)lVar8;
           }
           else {
-            iVar2 = *(int *)(&DAT_00482760 + iVar7) + 0xf;
+            iVar2 = *(int *)(&creature_type_base_frame + iVar7) + 0xf;
           }
           iVar4 = *DAT_0048083c;
         }
@@ -12138,7 +12142,7 @@ void __cdecl creature_render_type(int type_id)
             uVar3 = 0xf - uVar3;
           }
           iVar4 = *DAT_0048083c;
-          iVar2 = *(int *)(&DAT_00482760 + iVar7) + 0x10 + uVar3;
+          iVar2 = *(int *)(&creature_type_base_frame + iVar7) + 0x10 + uVar3;
         }
         (**(code **)(iVar4 + 0x104))(8,iVar2);
         (**(code **)(*DAT_0048083c + 0x110))(&fStack_6c);
@@ -15321,7 +15325,7 @@ undefined4 __cdecl FUN_0041e290(int param_1,float *param_2,float *param_3)
     *param_3 = *param_3 * 0.8;
     param_3[1] = param_3[1] * 0.8;
   }
-  piVar6 = &DAT_00484fd0;
+  piVar6 = &creature_spawn_slot_owner;
   *param_2 = *param_2 + *param_3;
   param_2[1] = param_3[1] + param_2[1];
   do {
@@ -15466,20 +15470,22 @@ void __cdecl creature_handle_death(int creature_id,bool keep_corpse)
                    (int)*(short *)(&creature_link_index + creature_id * 0x26),
                    (int)*(short *)((int)&creature_link_index + iVar3 + 2));
   }
-  if (DAT_00487000 < 6) {
-    if (DAT_00487000 < 3) {
-      *(undefined4 *)(&DAT_00486fe8 + DAT_00487000 * 8) = (&creature_pos_x)[creature_id * 0x26];
-      (&DAT_00486fec)[DAT_00487000 * 2] = (&creature_pos_y)[creature_id * 0x26];
+  if (survival_recent_death_count < 6) {
+    if (survival_recent_death_count < 3) {
+      *(undefined4 *)(&survival_recent_death_pos_x + survival_recent_death_count * 8) =
+           (&creature_pos_x)[creature_id * 0x26];
+      (&survival_recent_death_pos_y)[survival_recent_death_count * 2] =
+           (&creature_pos_y)[creature_id * 0x26];
     }
-    DAT_00487000 = DAT_00487000 + 1;
-    if (DAT_00487000 == 3) {
-      DAT_00486fe4 = 0;
-      DAT_00486fa8 = 0;
+    survival_recent_death_count = survival_recent_death_count + 1;
+    if (survival_recent_death_count == 3) {
+      survival_reward_fire_seen = 0;
+      survival_reward_handout_enabled = 0;
     }
   }
   if (*pcVar2 != '\0') {
     if (((&creature_flags)[iVar3] & 4) != 0) {
-      (&DAT_00484fd0)[(&creature_link_index)[creature_id * 0x26] * 6] = 0;
+      (&creature_spawn_slot_owner)[(&creature_link_index)[creature_id * 0x26] * 6] = 0;
     }
     if ((((&creature_flags)[iVar3] & 8) != 0) &&
        (35.0 < (float)(&creature_size)[creature_id * 0x26])) {
@@ -15551,7 +15557,7 @@ void __cdecl creature_handle_death(int creature_id,bool keep_corpse)
         player_experience = player_experience + (int)lVar8;
       }
     }
-    if (DAT_0048703c == '\0') {
+    if (bonus_spawn_guard == '\0') {
       FUN_0041f8d0((float *)(&creature_pos_x + creature_id * 0x26));
     }
     if (0.0 < _bonus_freeze_timer) {
@@ -16821,7 +16827,7 @@ int __cdecl projectile_spawn(float *pos,float angle,int type_id,int owner_id)
   int iVar3;
   float10 fVar4;
   
-  if (DAT_0048703c == '\0') {
+  if (bonus_spawn_guard == '\0') {
     while (((((owner_id == -100 || (owner_id == -1)) || (owner_id == -2)) || (owner_id == -3)) &&
            ((DAT_0048706c = DAT_0048706c + 1, type_id != 0x2d &&
             ((0.0 < player_fire_bullets_timer || (0.0 < player2_fire_bullets_timer))))))) {
@@ -17087,7 +17093,7 @@ int __cdecl creature_apply_damage(int creature_id,float damage,int damage_type,f
         if ((int)uVar3 < 0) {
           uVar3 = (uVar3 - 1 | 0xfffffffc) + 1;
         }
-        sfx_play_panned(*(float *)(&DAT_0048272c +
+        sfx_play_panned(*(float *)(&creature_type_sfx_a0 +
                                   (uVar3 + (&creature_type_id)[creature_id * 0x26] * 0x11) * 4));
       }
       else {
@@ -17397,7 +17403,7 @@ LAB_004219f8:
                     if ((0 < shock_chain_links_left) && (local_e8 == shock_chain_projectile_id)) {
                       shock_chain_links_left = shock_chain_links_left + -1;
                       iVar7 = FUN_00420040(pfVar11,iVar10,100.0);
-                      DAT_0048703c = 1;
+                      bonus_spawn_guard = 1;
                       fVar15 = (float10)fpatan((float10)(float)(&creature_pos_y)[iVar7 * 0x26] -
                                                (float10)(float)(&creature_pos_y)[iVar10 * 0x26],
                                                (float10)(float)(&creature_pos_x)[iVar7 * 0x26] -
@@ -17405,7 +17411,7 @@ LAB_004219f8:
                       shock_chain_projectile_id =
                            projectile_spawn(pfVar11,(float)((fVar15 - (float10)1.5707964) -
                                                            (float10)3.1415927),0x15,iVar10);
-                      DAT_0048703c = 0;
+                      bonus_spawn_guard = 0;
                     }
                     FUN_0042f270(pfVar11,1.2,0.4);
                     FUN_0042f540(pfVar11,1.2);
@@ -17416,7 +17422,7 @@ LAB_004219f8:
                     sfx_play_panned(DAT_004c3ff4);
                   }
                   else if (iVar7 == 0x1c) {
-                    DAT_0048703c = 1;
+                    bonus_spawn_guard = 1;
                     local_e4 = 0;
                     fVar2 = (float)(&creature_size)[iVar10 * 0x26] * 0.5 + 1.0;
                     do {
@@ -17429,7 +17435,7 @@ LAB_004219f8:
                       projectile_spawn(&local_88,fVar1,9,-100);
                       local_e4 = local_e4 + 1;
                     } while (local_e4 < 0xc);
-                    DAT_0048703c = 0;
+                    bonus_spawn_guard = 0;
                     sfx_play_panned(DAT_004c3fec);
                     sfx_play_panned(DAT_004c3ff4);
                     FUN_0042f330(pfVar11,1.5,0x3f800000);
@@ -18146,7 +18152,7 @@ LAB_00422821:
         if ((*(char *)(pfVar11 + 8) == '\b') && (pfVar11[9] != -NAN)) {
           if ((&creature_pool)[(int)pfVar11[9] * 0x98] != '\0') {
             iVar4 = _rand();
-            sfx_play_panned(*(float *)(&DAT_0048272c +
+            sfx_play_panned(*(float *)(&creature_type_sfx_a0 +
                                       (iVar4 % 3 +
                                       (&creature_type_id)[(int)pfVar11[9] * 0x26] * 0x11) * 4));
           }
@@ -19392,10 +19398,10 @@ void __cdecl player_take_damage(int player_index,float damage)
   if ((iVar4 != 0) && ((&player_reload_active)[player_index * 0x360] != '\0')) {
     damage = damage * 0.5;
   }
-  DAT_00486fe5 = 1;
+  survival_reward_damage_seen = 1;
   local_c = 1.0;
   if (0.0 < (float)(&player_shield_timer)[player_index * 0xd8]) {
-    DAT_00486fe5 = 1;
+    survival_reward_damage_seen = 1;
     return;
   }
   bVar7 = player_health <= 0.0;
@@ -19456,7 +19462,7 @@ LAB_00425fa1:
     else {
       pfVar1 = (float *)(&player_pos_x + player_index * 0xd8);
       FUN_0042f6c0(pfVar1,1.8);
-      DAT_0048703c = 1;
+      bonus_spawn_guard = 1;
       iVar4 = 0;
       pcVar6 = &creature_pool;
       do {
@@ -19475,7 +19481,7 @@ LAB_00425fa1:
         pcVar6 = pcVar6 + 0x98;
         iVar4 = iVar4 + 1;
       } while ((int)pcVar6 < 0x4aa338);
-      DAT_0048703c = 0;
+      bonus_spawn_guard = 0;
       sfx_play_panned(DAT_004c3ff0);
       sfx_play_panned(DAT_004c3ff4);
     }
@@ -19539,12 +19545,12 @@ void creature_update_all(void)
   float local_10;
   float local_8;
   
-  DAT_004aaf58 = DAT_004aaf58 + 1;
-  DAT_00486fcc = 0;
+  creature_update_tick = creature_update_tick + 1;
+  creature_active_count = 0;
   local_7c = 0;
   do {
     if ((&creature_pool)[local_7c * 0x98] != '\0') {
-      DAT_00486fcc = DAT_00486fcc + 1;
+      creature_active_count = creature_active_count + 1;
       if (0.0 < (float)(&creature_hit_flash_timer)[local_7c * 0x26]) {
         (&creature_hit_flash_timer)[local_7c * 0x26] =
              (float)(&creature_hit_flash_timer)[local_7c * 0x26] - DAT_00480840;
@@ -19605,7 +19611,7 @@ LAB_0042634c:
                         * ((&player_pos_y)[iVar6 * 0xd8] - (float)(&creature_pos_y)[local_7c * 0x26]
                           ) + ((&player_pos_x)[iVar6 * 0xd8] - *pfVar15) *
                               ((&player_pos_x)[iVar6 * 0xd8] - *pfVar15));
-        if (DAT_004aaf58 % 0x46 != 0) {
+        if (creature_update_tick % 0x46 != 0) {
           if (_DAT_0048035c == 2) {
             if ((0.0 < (float)(&player2_health)[iVar6 * -0xd8]) &&
                (local_6c = SQRT(((float)(&player2_pos_y)[iVar6 * -0xd8] -
@@ -19654,14 +19660,14 @@ LAB_0042634c:
               fVar16 = *pfVar13;
               *pfVar13 = fVar16 - 15.0;
               if (fVar16 - 15.0 < 0.0) {
-                DAT_00486fc8 = DAT_00486fc8 + 1;
+                plaguebearer_infection_count = plaguebearer_infection_count + 1;
                 creature_handle_death(local_7c,true);
                 uVar7 = _rand();
                 uVar7 = uVar7 & 0x80000001;
                 if ((int)uVar7 < 0) {
                   uVar7 = (uVar7 - 1 | 0xfffffffe) + 1;
                 }
-                sfx_play_panned(*(float *)(&DAT_0048273c +
+                sfx_play_panned(*(float *)(&creature_type_sfx_b0 +
                                           (uVar7 + (&creature_type_id)[local_7c * 0x26] * 0x11) * 4)
                                );
               }
@@ -19908,24 +19914,29 @@ LAB_00426ac8:
                 vec2_add_inplace(local_7c,pfVar15,(float *)(&creature_vel_x + local_7c * 0x26));
               }
               iVar6 = (&creature_link_index)[local_7c * 0x26];
-              fVar16 = (float)(&DAT_00484fe0)[iVar6 * 6] - DAT_00480840;
-              (&DAT_00484fe0)[iVar6 * 6] = fVar16;
+              fVar16 = (float)(&creature_spawn_slot_timer)[iVar6 * 6] - DAT_00480840;
+              (&creature_spawn_slot_timer)[iVar6 * 6] = fVar16;
               if (fVar16 < 0.0) {
-                (&DAT_00484fe0)[iVar6 * 6] = fVar16 + (float)(&DAT_00484fdc)[iVar6 * 6];
-                if ((int)(&DAT_00484fd4)[iVar6 * 6] < (int)(&DAT_00484fd8)[iVar6 * 6]) {
-                  (&DAT_00484fd4)[iVar6 * 6] = (&DAT_00484fd4)[iVar6 * 6] + 1;
-                  creature_spawn_template(*(int *)(&DAT_00484fe4 + iVar6 * 0x18),pfVar15,-100.0);
+                (&creature_spawn_slot_timer)[iVar6 * 6] =
+                     fVar16 + (float)(&creature_spawn_slot_interval)[iVar6 * 6];
+                if ((int)(&creature_spawn_slot_count)[iVar6 * 6] <
+                    (int)(&creature_spawn_slot_limit)[iVar6 * 6]) {
+                  (&creature_spawn_slot_count)[iVar6 * 6] =
+                       (&creature_spawn_slot_count)[iVar6 * 6] + 1;
+                  creature_spawn_template
+                            (*(int *)(&creature_spawn_slot_template + iVar6 * 0x18),pfVar15,-100.0);
                 }
               }
             }
             iVar6 = perk_count_get(DAT_004c2b78);
-            if ((iVar6 != 0) && (DAT_00486fc8 < 0x3c)) {
+            if ((iVar6 != 0) && (plaguebearer_infection_count < 0x3c)) {
               FUN_00425d80(local_7c);
             }
             if (((*(uint *)(&creature_flags + local_7c * 0x98) & 4) == 0) ||
                ((*(uint *)(&creature_flags + local_7c * 0x98) & 0x40) != 0)) {
               if ((&creature_ai_mode)[local_7c * 0x26] != 7) {
-                fVar16 = *(float *)(&DAT_0048275c + (&creature_type_id)[local_7c * 0x26] * 0x44) *
+                fVar16 = *(float *)(&creature_type_anim_rate +
+                                   (&creature_type_id)[local_7c * 0x26] * 0x44) *
                          (float)(&creature_move_speed)[local_7c * 0x26] * DAT_00480840 *
                          (30.0 / (float)(&creature_size)[local_7c * 0x26]) * local_70 * 25.0 +
                          (float)(&creature_anim_phase)[local_7c * 0x26];
@@ -19937,7 +19948,8 @@ LAB_00426ac8:
               }
             }
             else {
-              fVar16 = *(float *)(&DAT_0048275c + (&creature_type_id)[local_7c * 0x26] * 0x44) *
+              fVar16 = *(float *)(&creature_type_anim_rate +
+                                 (&creature_type_id)[local_7c * 0x26] * 0x44) *
                        (float)(&creature_move_speed)[local_7c * 0x26] * DAT_00480840 *
                        (30.0 / (float)(&creature_size)[local_7c * 0x26]) * local_70 * 22.0 +
                        (float)(&creature_anim_phase)[local_7c * 0x26];
@@ -20018,9 +20030,9 @@ LAB_00426ac8:
                 player_experience = (undefined4)lVar12;
                 effect_spawn_burst(pfVar15,6);
                 sfx_play_panned(DAT_004c3ffc);
-                DAT_0048703c = 1;
+                bonus_spawn_guard = 1;
                 creature_handle_death(local_7c,false);
-                DAT_0048703c = 0;
+                bonus_spawn_guard = 0;
               }
             }
             if (16.0 < (float)(&creature_size)[local_7c * 0x26]) {
@@ -20033,7 +20045,7 @@ LAB_00426ac8:
                   if ((int)uVar7 < 0) {
                     uVar7 = (uVar7 - 1 | 0xfffffffe) + 1;
                   }
-                  sfx_play_panned(*(float *)(&DAT_0048273c +
+                  sfx_play_panned(*(float *)(&creature_type_sfx_b0 +
                                             (uVar7 + (&creature_type_id)[local_7c * 0x26] * 0x11) *
                                             4));
                   iVar6 = perk_count_get(DAT_004c2bac);
@@ -20064,7 +20076,7 @@ LAB_0042733a:
                   *pfVar3 = *pfVar3 + 1.0;
                 }
                 if ((((&player_plaguebearer_active)[*pcVar4 * 0x360] != '\0') && (*pfVar13 < 150.0))
-                   && (DAT_00486fc8 < 0x32)) {
+                   && (plaguebearer_infection_count < 0x32)) {
                   *pcVar2 = '\x01';
                 }
               }
@@ -20315,7 +20327,7 @@ void fx_queue_render(void)
           pfVar2 = (float *)&fx_rotated_pos_x;
           puVar4 = &fx_rotated_color_b;
           do {
-            iVar1 = *(int *)(&DAT_00482764 + (&fx_rotated_effect_id)[iVar3] * 0x44);
+            iVar1 = *(int *)(&creature_type_corpse_frame + (&fx_rotated_effect_id)[iVar3] * 0x44);
             DAT_004965d8 = (float)(&effect_uv4_u)[iVar1 * 2];
             DAT_004965dc = (float)(&effect_uv4_v)[iVar1 * 2];
             _DAT_004965e0 = (float)(&effect_uv4_u)[iVar1 * 2] + 0.25;
@@ -20345,7 +20357,7 @@ void fx_queue_render(void)
           pfVar2 = (float *)&fx_rotated_pos_x;
           puVar4 = &fx_rotated_color_b;
           do {
-            iVar1 = *(int *)(&DAT_00482764 + (&fx_rotated_effect_id)[iVar3] * 0x44);
+            iVar1 = *(int *)(&creature_type_corpse_frame + (&fx_rotated_effect_id)[iVar3] * 0x44);
             DAT_004965d8 = (float)(&effect_uv4_u)[iVar1 * 2];
             DAT_004965dc = (float)(&effect_uv4_v)[iVar1 * 2];
             _DAT_004965e0 = (float)(&effect_uv4_u)[iVar1 * 2] + 0.25;
@@ -20382,7 +20394,7 @@ void fx_queue_render(void)
       pfVar2 = (float *)&fx_rotated_pos_x;
       puVar4 = &fx_rotated_color_b;
       do {
-        iVar1 = *(int *)(&DAT_00482764 + (&fx_rotated_effect_id)[iVar3] * 0x44);
+        iVar1 = *(int *)(&creature_type_corpse_frame + (&fx_rotated_effect_id)[iVar3] * 0x44);
         DAT_004965d8 = (float)(&effect_uv4_u)[iVar1 * 2];
         DAT_004965dc = (float)(&effect_uv4_v)[iVar1 * 2];
         _DAT_004965e0 = (float)(&effect_uv4_u)[iVar1 * 2] + 0.25;
@@ -20410,7 +20422,7 @@ void fx_queue_render(void)
       pfVar2 = (float *)&fx_rotated_pos_x;
       puVar4 = &fx_rotated_color_b;
       do {
-        iVar1 = *(int *)(&DAT_00482764 + (&fx_rotated_effect_id)[iVar3] * 0x44);
+        iVar1 = *(int *)(&creature_type_corpse_frame + (&fx_rotated_effect_id)[iVar3] * 0x44);
         DAT_004965d8 = (float)(&effect_uv4_u)[iVar1 * 2];
         DAT_004965dc = (float)(&effect_uv4_v)[iVar1 * 2];
         _DAT_004965e0 = (float)(&effect_uv4_u)[iVar1 * 2] + 0.25;
@@ -20479,7 +20491,7 @@ void FUN_004281e0(void)
   do {
     pbVar1[-0x8c] = 0;
     if ((*pbVar1 & 4) != 0) {
-      (&DAT_00484fd0)[*(int *)(pbVar1 + -0x14) * 6] = 0;
+      (&creature_spawn_slot_owner)[*(int *)(pbVar1 + -0x14) * 6] = 0;
     }
     pbVar1 = pbVar1 + 0x98;
   } while ((int)pbVar1 < 0x4aa3c4);
@@ -23601,7 +23613,7 @@ int FUN_00430ad0(void)
   int *piVar2;
   
   iVar1 = 0;
-  piVar2 = &DAT_00484fd0;
+  piVar2 = &creature_spawn_slot_owner;
   do {
     if (*piVar2 == 0) {
       return iVar1;
@@ -24135,12 +24147,12 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
               *(undefined4 *)(&creature_flags + iVar8) = 4;
               iVar5 = FUN_00430ad0();
               (&creature_link_index)[iVar4 * 0x26] = iVar5;
-              (&DAT_00484fe0)[iVar5 * 6] = 0x40000000;
-              (&DAT_00484fd4)[iVar5 * 6] = 0;
-              (&DAT_00484fd8)[iVar5 * 6] = 100;
-              (&DAT_00484fdc)[iVar5 * 6] = 0x40a00000;
-              *(undefined4 *)(&DAT_00484fe4 + iVar5 * 0x18) = 0x32;
-              (&DAT_00484fd0)[iVar5 * 6] = puVar9;
+              (&creature_spawn_slot_timer)[iVar5 * 6] = 0x40000000;
+              (&creature_spawn_slot_count)[iVar5 * 6] = 0;
+              (&creature_spawn_slot_limit)[iVar5 * 6] = 100;
+              (&creature_spawn_slot_interval)[iVar5 * 6] = 0x40a00000;
+              *(undefined4 *)(&creature_spawn_slot_template + iVar5 * 0x18) = 0x32;
+              (&creature_spawn_slot_owner)[iVar5 * 6] = puVar9;
               (&creature_size)[iVar4 * 0x26] = 0x425c0000;
               (&creature_health)[iVar4 * 0x26] = 0x447a0000;
               (&creature_move_speed)[iVar4 * 0x26] = 0x3fc00000;
@@ -24157,12 +24169,12 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
               *(undefined4 *)(&creature_flags + iVar8) = 4;
               iVar5 = FUN_00430ad0();
               (&creature_link_index)[iVar4 * 0x26] = iVar5;
-              (&DAT_00484fe0)[iVar5 * 6] = 0x40000000;
-              (&DAT_00484fd4)[iVar5 * 6] = 0;
-              (&DAT_00484fd8)[iVar5 * 6] = 100;
-              (&DAT_00484fdc)[iVar5 * 6] = 0x40c00000;
-              *(undefined4 *)(&DAT_00484fe4 + iVar5 * 0x18) = 0x3c;
-              (&DAT_00484fd0)[iVar5 * 6] = puVar9;
+              (&creature_spawn_slot_timer)[iVar5 * 6] = 0x40000000;
+              (&creature_spawn_slot_count)[iVar5 * 6] = 0;
+              (&creature_spawn_slot_limit)[iVar5 * 6] = 100;
+              (&creature_spawn_slot_interval)[iVar5 * 6] = 0x40c00000;
+              *(undefined4 *)(&creature_spawn_slot_template + iVar5 * 0x18) = 0x3c;
+              (&creature_spawn_slot_owner)[iVar5 * 6] = puVar9;
               (&creature_size)[iVar4 * 0x26] = 0x42820000;
               (&creature_health)[iVar4 * 0x26] = 0x455ac000;
               (&creature_move_speed)[iVar4 * 0x26] = 0x3fc00000;
@@ -24179,12 +24191,12 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
               *(undefined4 *)(&creature_flags + iVar8) = 4;
               iVar5 = FUN_00430ad0();
               (&creature_link_index)[iVar4 * 0x26] = iVar5;
-              (&DAT_00484fe0)[iVar5 * 6] = 0x3fc00000;
-              (&DAT_00484fd4)[iVar5 * 6] = 0;
-              (&DAT_00484fd8)[iVar5 * 6] = 100;
-              (&DAT_00484fdc)[iVar5 * 6] = 0x40133333;
-              *(undefined4 *)(&DAT_00484fe4 + iVar5 * 0x18) = 0x32;
-              (&DAT_00484fd0)[iVar5 * 6] = puVar9;
+              (&creature_spawn_slot_timer)[iVar5 * 6] = 0x3fc00000;
+              (&creature_spawn_slot_count)[iVar5 * 6] = 0;
+              (&creature_spawn_slot_limit)[iVar5 * 6] = 100;
+              (&creature_spawn_slot_interval)[iVar5 * 6] = 0x40133333;
+              *(undefined4 *)(&creature_spawn_slot_template + iVar5 * 0x18) = 0x32;
+              (&creature_spawn_slot_owner)[iVar5 * 6] = puVar9;
               (&creature_size)[iVar4 * 0x26] = 0x42000000;
               (&creature_health)[iVar4 * 0x26] = 0x42480000;
               (&creature_move_speed)[iVar4 * 0x26] = 0x40333333;
@@ -24197,12 +24209,12 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                 iVar5 = FUN_00430ad0();
                 (&creature_link_index)[iVar4 * 0x26] = iVar5;
                 pos = (float *)0x0;
-                (&DAT_00484fe0)[iVar5 * 6] = 0x3fc00000;
-                (&DAT_00484fd4)[iVar5 * 6] = 0;
-                (&DAT_00484fd8)[iVar5 * 6] = 0x40;
-                (&DAT_00484fdc)[iVar5 * 6] = 0x3f866666;
-                *(undefined4 *)(&DAT_00484fe4 + iVar5 * 0x18) = 0x1c;
-                (&DAT_00484fd0)[iVar5 * 6] = puVar9;
+                (&creature_spawn_slot_timer)[iVar5 * 6] = 0x3fc00000;
+                (&creature_spawn_slot_count)[iVar5 * 6] = 0;
+                (&creature_spawn_slot_limit)[iVar5 * 6] = 0x40;
+                (&creature_spawn_slot_interval)[iVar5 * 6] = 0x3f866666;
+                *(undefined4 *)(&creature_spawn_slot_template + iVar5 * 0x18) = 0x1c;
+                (&creature_spawn_slot_owner)[iVar5 * 6] = puVar9;
                 (&creature_size)[iVar4 * 0x26] = 0x42000000;
                 (&creature_health)[iVar4 * 0x26] = 0x42480000;
                 (&creature_move_speed)[iVar4 * 0x26] = 0x40333333;
@@ -24254,12 +24266,12 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                 *(undefined4 *)(&creature_flags + iVar8) = 4;
                 iVar5 = FUN_00430ad0();
                 (&creature_link_index)[iVar4 * 0x26] = iVar5;
-                (&DAT_00484fe0)[iVar5 * 6] = 0x3fc00000;
-                (&DAT_00484fd4)[iVar5 * 6] = 0;
-                (&DAT_00484fd8)[iVar5 * 6] = 100;
-                (&DAT_00484fdc)[iVar5 * 6] = 0x40000000;
-                *(undefined4 *)(&DAT_00484fe4 + iVar5 * 0x18) = 0x31;
-                (&DAT_00484fd0)[iVar5 * 6] = puVar9;
+                (&creature_spawn_slot_timer)[iVar5 * 6] = 0x3fc00000;
+                (&creature_spawn_slot_count)[iVar5 * 6] = 0;
+                (&creature_spawn_slot_limit)[iVar5 * 6] = 100;
+                (&creature_spawn_slot_interval)[iVar5 * 6] = 0x40000000;
+                *(undefined4 *)(&creature_spawn_slot_template + iVar5 * 0x18) = 0x31;
+                (&creature_spawn_slot_owner)[iVar5 * 6] = puVar9;
                 (&creature_size)[iVar4 * 0x26] = 0x42000000;
                 (&creature_health)[iVar4 * 0x26] = 0x42480000;
                 (&creature_move_speed)[iVar4 * 0x26] = 0x40333333;
@@ -24272,12 +24284,12 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                     *(undefined4 *)(&creature_flags + iVar8) = 4;
                     iVar5 = FUN_00430ad0();
                     (&creature_link_index)[iVar4 * 0x26] = iVar5;
-                    (&DAT_00484fe0)[iVar5 * 6] = 0x3f800000;
-                    (&DAT_00484fd4)[iVar5 * 6] = 0;
-                    (&DAT_00484fd8)[iVar5 * 6] = 0x10;
-                    (&DAT_00484fdc)[iVar5 * 6] = 0x40000000;
-                    *(undefined4 *)(&DAT_00484fe4 + iVar5 * 0x18) = 0x1d;
-                    (&DAT_00484fd0)[iVar5 * 6] = puVar9;
+                    (&creature_spawn_slot_timer)[iVar5 * 6] = 0x3f800000;
+                    (&creature_spawn_slot_count)[iVar5 * 6] = 0;
+                    (&creature_spawn_slot_limit)[iVar5 * 6] = 0x10;
+                    (&creature_spawn_slot_interval)[iVar5 * 6] = 0x40000000;
+                    *(undefined4 *)(&creature_spawn_slot_template + iVar5 * 0x18) = 0x1d;
+                    (&creature_spawn_slot_owner)[iVar5 * 6] = puVar9;
                     (&creature_size)[iVar4 * 0x26] = 0x42200000;
                     (&creature_health)[iVar4 * 0x26] = 0x43e10000;
                     (&creature_move_speed)[iVar4 * 0x26] = 0x40000000;
@@ -24294,10 +24306,10 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                     *(undefined4 *)(&creature_flags + iVar8) = 4;
                     iVar5 = FUN_00430ad0();
                     (&creature_link_index)[iVar4 * 0x26] = iVar5;
-                    (&DAT_00484fe0)[iVar5 * 6] = 0x3f800000;
-                    (&DAT_00484fd4)[iVar5 * 6] = 0;
-                    (&DAT_00484fd8)[iVar5 * 6] = 100;
-                    (&DAT_00484fdc)[iVar5 * 6] = 0x400ccccd;
+                    (&creature_spawn_slot_timer)[iVar5 * 6] = 0x3f800000;
+                    (&creature_spawn_slot_count)[iVar5 * 6] = 0;
+                    (&creature_spawn_slot_limit)[iVar5 * 6] = 100;
+                    (&creature_spawn_slot_interval)[iVar5 * 6] = 0x400ccccd;
                   }
                   else {
                     if (template_id != 8) {
@@ -25022,12 +25034,13 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                                       (&creature_contact_damage)[iVar4 * 0x26] = 0x42480000;
                                       iVar5 = FUN_00430ad0();
                                       (&creature_link_index)[iVar4 * 0x26] = iVar5;
-                                      (&DAT_00484fe0)[iVar5 * 6] = 0x3f800000;
-                                      (&DAT_00484fd4)[iVar5 * 6] = 0;
-                                      (&DAT_00484fd8)[iVar5 * 6] = 0x32c;
-                                      (&DAT_00484fdc)[iVar5 * 6] = 0x3f333333;
-                                      *(undefined4 *)(&DAT_00484fe4 + iVar5 * 0x18) = 0x41;
-                                      (&DAT_00484fd0)[iVar5 * 6] = puVar9;
+                                      (&creature_spawn_slot_timer)[iVar5 * 6] = 0x3f800000;
+                                      (&creature_spawn_slot_count)[iVar5 * 6] = 0;
+                                      (&creature_spawn_slot_limit)[iVar5 * 6] = 0x32c;
+                                      (&creature_spawn_slot_interval)[iVar5 * 6] = 0x3f333333;
+                                      *(undefined4 *)(&creature_spawn_slot_template + iVar5 * 0x18)
+                                           = 0x41;
+                                      (&creature_spawn_slot_owner)[iVar5 * 6] = puVar9;
                                       goto LAB_004310b8;
                                     }
                                     if (template_id == 0x38) {
@@ -25218,13 +25231,13 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                     *(undefined4 *)(&creature_flags + iVar8) = 4;
                     iVar5 = FUN_00430ad0();
                     (&creature_link_index)[iVar4 * 0x26] = iVar5;
-                    (&DAT_00484fe0)[iVar5 * 6] = 0x3f800000;
-                    (&DAT_00484fd4)[iVar5 * 6] = 0;
-                    (&DAT_00484fd8)[iVar5 * 6] = 100;
-                    (&DAT_00484fdc)[iVar5 * 6] = 0x40333333;
+                    (&creature_spawn_slot_timer)[iVar5 * 6] = 0x3f800000;
+                    (&creature_spawn_slot_count)[iVar5 * 6] = 0;
+                    (&creature_spawn_slot_limit)[iVar5 * 6] = 100;
+                    (&creature_spawn_slot_interval)[iVar5 * 6] = 0x40333333;
                   }
-                  *(undefined4 *)(&DAT_00484fe4 + iVar5 * 0x18) = 0x1d;
-                  (&DAT_00484fd0)[iVar5 * 6] = puVar9;
+                  *(undefined4 *)(&creature_spawn_slot_template + iVar5 * 0x18) = 0x1d;
+                  (&creature_spawn_slot_owner)[iVar5 * 6] = puVar9;
                   (&creature_size)[iVar4 * 0x26] = 0x42480000;
                   (&creature_health)[iVar4 * 0x26] = 0x447a0000;
                   (&creature_move_speed)[iVar4 * 0x26] = 0x40000000;
@@ -25240,12 +25253,12 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                 *(undefined4 *)(&creature_flags + iVar8) = 4;
                 iVar5 = FUN_00430ad0();
                 (&creature_link_index)[iVar4 * 0x26] = iVar5;
-                (&DAT_00484fe0)[iVar5 * 6] = 0x40000000;
-                (&DAT_00484fd4)[iVar5 * 6] = 0;
-                (&DAT_00484fd8)[iVar5 * 6] = 100;
-                (&DAT_00484fdc)[iVar5 * 6] = 0x40c00000;
-                *(undefined4 *)(&DAT_00484fe4 + iVar5 * 0x18) = 0x31;
-                (&DAT_00484fd0)[iVar5 * 6] = puVar9;
+                (&creature_spawn_slot_timer)[iVar5 * 6] = 0x40000000;
+                (&creature_spawn_slot_count)[iVar5 * 6] = 0;
+                (&creature_spawn_slot_limit)[iVar5 * 6] = 100;
+                (&creature_spawn_slot_interval)[iVar5 * 6] = 0x40c00000;
+                *(undefined4 *)(&creature_spawn_slot_template + iVar5 * 0x18) = 0x31;
+                (&creature_spawn_slot_owner)[iVar5 * 6] = puVar9;
                 (&creature_size)[iVar4 * 0x26] = 0x42000000;
                 (&creature_health)[iVar4 * 0x26] = 0x42480000;
                 (&creature_move_speed)[iVar4 * 0x26] = 0x3fa66666;
@@ -25362,8 +25375,9 @@ LAB_004310b8:
   *(float *)(puVar9 + 0x2c) = heading;
   if ((DAT_00480790 == '\0') &&
      (((puVar9[0x8c] & 4) == 0 ||
-      ((&DAT_00484fdc)[*(int *)(puVar9 + 0x78) * 6] =
-            (float)(&DAT_00484fdc)[*(int *)(puVar9 + 0x78) * 6] + 0.2, DAT_00480790 == '\0')))) {
+      ((&creature_spawn_slot_interval)[*(int *)(puVar9 + 0x78) * 6] =
+            (float)(&creature_spawn_slot_interval)[*(int *)(puVar9 + 0x78) * 6] + 0.2,
+      DAT_00480790 == '\0')))) {
     if (0 < DAT_00487194) {
       switch(DAT_00487194) {
       case 1:
@@ -25402,8 +25416,8 @@ LAB_004310b8:
         if (3.0 < fVar2) {
           fVar2 = 3.0;
         }
-        (&DAT_00484fdc)[*(int *)(puVar9 + 0x78) * 6] =
-             fVar2 + (float)(&DAT_00484fdc)[*(int *)(puVar9 + 0x78) * 6];
+        (&creature_spawn_slot_interval)[*(int *)(puVar9 + 0x78) * 6] =
+             fVar2 + (float)(&creature_spawn_slot_interval)[*(int *)(puVar9 + 0x78) * 6];
       }
     }
   }
@@ -25414,10 +25428,10 @@ LAB_004310b8:
     *(float *)(puVar9 + 0x24) = *(float *)(puVar9 + 0x24) * 1.2;
     if ((puVar9[0x8c] & 4) != 0) {
       iVar4 = *(int *)(puVar9 + 0x78);
-      fVar2 = (float)(&DAT_00484fdc)[iVar4 * 6];
-      (&DAT_00484fdc)[iVar4 * 6] = fVar2 - 0.2;
+      fVar2 = (float)(&creature_spawn_slot_interval)[iVar4 * 6];
+      (&creature_spawn_slot_interval)[iVar4 * 6] = fVar2 - 0.2;
       if (fVar2 - 0.2 < 0.1) {
-        (&DAT_00484fdc)[iVar4 * 6] = 0x3dcccccd;
+        (&creature_spawn_slot_interval)[iVar4 * 6] = 0x3dcccccd;
         return puVar9;
       }
     }
