@@ -387,6 +387,7 @@ LAB_00401add:
 ## 0x54 — grim_set_key_char_buffer @ 0x10005c20
 
 - Ghidra signature: `void grim_set_key_char_buffer(unsigned char *buffer, int *count, int size)`
+- Suggested signature: `void grim_set_key_char_buffer(unsigned char *buffer, int *count, int size)`
 - Call sites: 2 (unique funcs: 2)
 - Sample calls: FUN_0042c450:L19559; FUN_0043ecf0:L27394
 - First callsite: FUN_0042c450 (line 21696)
@@ -912,6 +913,7 @@ grim.dll body:
 - Guess: `void draw_rect_filled(const float *xy, float w, float h)`
 - Notes: used for UI panel backgrounds before setting color
 - Ghidra signature: `void grim_draw_rect_filled(float *xy, float w, float h)`
+- Suggested signature: `void grim_draw_rect_filled(const float *xy, float w, float h)`
 - Call sites: 24 (unique funcs: 14)
 - Sample calls: FUN_00401dd0:L740; FUN_00401dd0:L752; FUN_00402d50:L1448; FUN_004047c0:L3096; FUN_00405160:L3369; FUN_00408530:L5029; FUN_0040b740:L6476; FUN_0040b740:L6480
 - First callsite: FUN_00401dd0 (line 740)
@@ -944,6 +946,7 @@ grim.dll body:
 - Guess: `void draw_rect_outline(const float *xy, float w, float h)`
 - Notes: used for UI framing with explicit width/height
 - Ghidra signature: `void grim_draw_rect_outline(float *xy, float w, float h)`
+- Suggested signature: `void grim_draw_rect_outline(const float *xy, float w, float h)`
 - Call sites: 12 (unique funcs: 11)
 - Sample calls: FUN_00402d50:L1454; FUN_004047c0:L3107; FUN_00405160:L3372; FUN_00408530:L5031; FUN_00410d20:L7694; FUN_0043e5e0:L27177; FUN_0043ecf0:L27413; FUN_0043ecf0:L27448
 - First callsite: FUN_00402d50 (line 1454)
@@ -1109,6 +1112,7 @@ grim.dll body:
 - Guess: `void submit_vertex_raw(const float *vertex)`
 - Notes: copies 7 floats and auto-flushes when the batch is full
 - Ghidra signature: `void grim_submit_vertex_raw(float *vertex)`
+- Suggested signature: `void grim_submit_vertex_raw(const float *vertex)`
 - Call sites: 0 (unique funcs: 0)
 - Sample calls: none found
 - First callsite: not found in decompiled output
@@ -1138,6 +1142,7 @@ grim.dll body:
 - Guess: `void submit_quad_raw(const float *verts)`
 - Notes: copies 28 floats (4 vertices) and auto-flushes when the batch is full
 - Ghidra signature: `void grim_submit_quad_raw(float *verts)`
+- Suggested signature: `void grim_submit_quad_raw(const float *verts)`
 - Call sites: 0 (unique funcs: 0)
 - Sample calls: none found
 - First callsite: not found in decompiled output
@@ -1308,6 +1313,7 @@ Atlas pointer table setup (grim.dll init):
 - Guess: `void set_color_ptr(float *rgba)`
 - Notes: pointer to RGBA floats (0..1); values are clamped before call
 - Ghidra signature: `void grim_set_color_ptr(float *rgba)`
+- Suggested signature: `void grim_set_color_ptr(const float *rgba)`
 - Call sites: 20 (unique funcs: 10)
 - Sample calls: FUN_0040ffc0:L7098; FUN_0040ffc0:L7171; FUN_00410d20:L7782; FUN_00410d20:L7851; FUN_00418b60:L9717; FUN_00418b60:L9772; FUN_00418b60:L9832; FUN_00418b60:L9894
 - First callsite: FUN_0040ffc0 (line 7485)
