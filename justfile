@@ -69,6 +69,13 @@ ghidra-grim:
       -o analysis/ghidra/raw \
       {{game_dir}}/grim.dll
 
+# PE metadata
+pe-info target="crimsonland.exe":
+    rabin2 -I {{game_dir}}/{{target}}
+
+pe-imports target="crimsonland.exe":
+    rabin2 -i {{game_dir}}/{{target}}
+
 # Zig
 zig-build:
     cd rewrite && zig build
