@@ -374,6 +374,34 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0042fb10",
+    "name": "perk_can_offer",
+    "signature": "int perk_can_offer(int perk_index)",
+    "comment": "returns nonzero when perk is eligible for selection"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042fbd0",
+    "name": "perk_select_random",
+    "signature": "int perk_select_random(void)",
+    "comment": "randomly selects an eligible perk index"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042fc30",
+    "name": "perks_rebuild_available",
+    "signature": "void perks_rebuild_available(void)",
+    "comment": "rebuilds perk availability/unlock flags"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042fd90",
+    "name": "perks_init_database",
+    "signature": "void perks_init_database(void)",
+    "comment": "builds the perk table (ids, names, descriptions)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0042fcf0",
     "name": "game_var_get",
     "signature": "int game_var_get(int id)",

@@ -1,0 +1,68 @@
+# Perk ID map
+
+Derived from `FUN_0042fd90` (perk database init). IDs are stored in `DAT_004c2b**`/`DAT_004c2c**`
+constants; names and descriptions are filled via `FUN_0042fd00`.
+
+Notes:
+- `DAT_004c2b44` selects between two perk definitions depending on `DAT_004807b4`.
+
+| ID | Const | Name | Description |
+| -- | -- | -- | -- |
+| 0 | DAT_004c2b40 | AntiPerk | You shouldn't be seeing this.. |
+| 1 | DAT_004c2b44 | Bloody Mess / Quick Learner | More the merrier. More blood guarantees a 30% better experience. You spill more blood and gain more experience points. / You learn things faster than a regular Joe from now on gaining 30% more experience points from everything you do. |
+| 2 | DAT_004c2b48 | Sharpshooter | Miraculously your aiming improves drastically, but you take a little bit more time on actually firing the gun. If you order now, you also get a fancy LASER SIGHT without ANY charge! |
+| 3 | DAT_004c2b5c | Fastloader | Man, you sure know how to load a gun. |
+| 4 | DAT_004c2b84 | Lean Mean Exp Machine | Why kill for experience when you can make some of your own for free! With this perk the experience just keeps flowing in at a constant rate. |
+| 5 | DAT_004c2b54 | Long Distance Runner | You move like a train that has feet and runs. You just need a little time to warm up. In other words you'll move faster the longer you run without stopping. |
+| 6 | DAT_004c2b64 | Pyrokinetic | You see flames everywhere. Bare aiming at creatures causes them to heat up. |
+| 7 | DAT_004c2b4c | Instant Winner | 2500 experience points. Right away. Take it or leave it. |
+| 8 | DAT_004c2b70 | Grim Deal | I'll make you a deal: I'll give you 18% more experience points, and you'll give me your life. So you'll die but score higher. Ponder that one for a sec. |
+| 9 | DAT_004c2b74 | Alternate Weapon | Ever fancied about having two weapons available for use? This might be your lucky day; with this perk you'll get an extra weapon slot for another gun! Carrying around two guns slows you down slightly though. (You can switch the weapon slots with RELOAD key) |
+| 10 | DAT_004c2b78 | Plaguebearer | You carry a horrible disease. Good for you: you are immune. Bad for them: it is contagious! (Monsters become resistant over time though.) |
+| 11 | DAT_004c2b88 | Evil Eyes | No living (nor dead) can resist the hypnotic power of your eyes: monsters freeze still as you look at them! |
+| 12 | DAT_004c2b80 | Ammo Maniac | You squeeze and you push and you pack your clips with about 20% more ammo than a regular fellow. They call you Ammo Maniac with a deep respect in their voices. |
+| 13 | DAT_004c2b7c | Radioactive | You are the Radioactive-man; you have that healthy green glow around you! Others don't like it though, it makes them sick and nauseous whenever near you. It does affect your social life a bit. |
+| 14 | DAT_004c2b50 | Fastshot | Funny how you make your gun spit bullets faster than the next guy. Even the most professional of engineers are astonished. |
+| 15 | DAT_004c2c08 | Fatal Lottery | Fifty-fifty chance of dying OR gaining 10k experience points. Place your bets. Interested, anyone? |
+| 16 | DAT_004c2c04 | Random Weapon | Here, have this weapon. No questions asked. |
+| 17 | DAT_004c2bac | Mr. Melee | You master the art of melee fighting. You don't just stand still when monsters come near -- you hit back. Hard. |
+| 18 | DAT_004c2b90 | Anxious Loader | When you can't stand waiting your gun to be reloaded you can speed up the process by clicking your FIRE button repeatedly as fast as you can. |
+| 19 | DAT_004c2b94 | Final Revenge | Pick this and you'll get your revenge. It's a promise. |
+| 20 | DAT_004c2bf8 | Telekinetic | Picking up bonuses has never been so easy and FUN. You can pick up bonuses simply by aiming at them for a while. Ingenious. |
+| 21 | DAT_004c2ba0 | Perk Expert | You sure know how to pick a perk -- most people just don't see that extra perk laying around. This gives you the opportunity to pick the freshest and shiniest perks from the top. |
+| 22 | DAT_004c2b98 | Unstoppable | Monsters can't slow you down with their nasty scratches and bites. It still hurts but you simply ignore the pain. |
+| 23 | DAT_004c2bd0 | Regression Bullets | Attempt to shoot with an empty clip leads to a severe loss of experience. But hey, whatever makes them go down, right? |
+| 24 | DAT_004c2b9c | Infernal Contract | In exchange for your soul, a dark stranger is offering you three (3) new perks. To collect his part of the bargain soon enough, your health is reduced to a near-death status. Just sign down here below this pentagram.. |
+| 25 | DAT_004c2bf4 | Poison Bullets | You tend to explicitly treat each of your bullets with rat poison. You do it for good luck, but it seems to have other side effects too. |
+| 26 | DAT_004c2bdc | Dodger | It seems so stupid just to take the hits. Each time a monster attacks you you have a chance to dodge the attack. |
+| 27 | DAT_004c2ba8 | Bonus Magnet | You somehow seem to lure all kinds of bonuses to appear around you more often. |
+| 28 | DAT_004c2c00 | Uranium Filled Bullets | Your bullets have a nice creamy uranium filling. Yummy. Now that's gotta hurt the monsters more, right? |
+| 29 | DAT_004c2b60 | Doctor | With a single glance you can tell the medical condition of, well, anything. Also, being a doctor, you know exactly what hurts the most enabling you to do slightly more damage with your attacks. |
+| 30 | DAT_004c2be8 | Monster Vision | With your newly enhanced senses you can see all bad energy VERY clearly. That's got to be enough. |
+| 31 | DAT_004c2bfc | Hot Tempered | It literally boils inside you. That's exactly why you need to let it out once in a while, unfortunately for those near you. |
+| 32 | DAT_004c2bf0 | Bonus Economist | Your bonus power-ups last 50% longer than they normally would. |
+| 33 | DAT_004c2bc0 | Thick Skinned | Trade 1/3 of your health for only receiving 2/3rds damage on attacks. |
+| 34 | DAT_004c2bec | Barrel Greaser | After studying a lot of physics and friction you've come up with a way to make your bullets fly faster. More speed, more damage. |
+| 35 | DAT_004c2bc8 | Ammunition Within | Empty clip doesn't prevent you from shooting with a weapon; instead the ammunition is drawn from your health while you are reloading. |
+| 36 | DAT_004c2bb8 | Veins of Poison | A strong poison runs through your veins. Monsters taking a bite of you are eventually to experience an agonizing death. |
+| 37 | DAT_004c2bbc | Toxic Avenger | You started out just by being poisonous. The next logical step for you is to become highly toxic -- the ULTIMATE TOXIC AVENGER. Most monsters touching you will just drop dead within seconds! |
+| 38 | DAT_004c2bb0 | Regeneration | Your health replenishes but very slowly. What more there is to say? |
+| 39 | DAT_004c2bd4 | Pyromaniac | You just enjoy using fire as your Tool of Destruction and you're good at it too; your fire based weapons do a lot more damage. |
+| 40 | DAT_004c2be0 | Ninja | You've taken your dodging abilities to the next level; monsters have really hard time hitting you. |
+| 41 | DAT_004c2bd8 | Highlander | You are immortal. Well, almost immortal. Instead of actually losing health on attacks you've got a 10% chance of just dropping dead whenever a monster attacks you. There really can be only one, you know. |
+| 42 | DAT_004c2b68 | Jinxed | Things happen near you. Strangest things. Creatures just drop dead and accidents happen. Beware. |
+| 43 | DAT_004c2ba4 | Perk Master | Being the Perk Expert taught you a few things and now you are ready to take your training to the next level doubling the ability effect. |
+| 44 | DAT_004c2b58 | Reflex Boosted | To you the world seems to go on about 10% slower than to an average person. It can be rather irritating sometimes, but it does give you a chance to react better. |
+| 45 | DAT_004c2bb4 | Greater Regeneration | Your health replenishes faster than ever. |
+| 46 | DAT_004c2bc4 | Breathing Room | Trade 2/3rds of your health for the killing of every single creature on the screen. No, you don't get the experience. |
+| 47 | DAT_004c2c14 | Death Clock | You die exactly in 30 seconds. You can't escape your destiny, but feel free to go on a spree. Tick, tock. |
+| 48 | DAT_004c2c18 | My Favourite Weapon | You've grown very fond of your piece. You polish it all the time and talk nice to it, your precious. (+2 clip size, no more random weapon bonuses) |
+| 49 | DAT_004c2c1c | Bandage | Here, eat this bandage and you'll feel a lot better in no time. (restores up to 50% health) |
+| 50 | DAT_004c2c20 | Angry Reloader | You hate it when you run out of shots. You HATE HATE HATE reloading your gun. Lucky for you, and strangely enough, your hate materializes as Mighty Balls of Fire. Or more like Quite Decent Balls of Fire, but it's still kinda neat, huh? |
+| 51 | DAT_004c2c0c | Ion Gun Master | You're good with ion weapons. You're so good that not only your shots do slightly more damage but your ion blast radius is also increased. |
+| 52 | DAT_004c2c10 | Stationary Reloader | It's incredibly hard to reload your piece while moving around, you've noticed. In fact, realizing that, when you don't move a (leg) muscle you can reload the gun THREE TIMES FASTER! |
+| 53 | DAT_004c2c24 | Man Bomb | You have the ability to go boom for you are the MAN BOMB. Going boom requires a lot of concentration and standing completely still for a few seconds. |
+| 54 | DAT_004c2c2c | Fire Caugh | You have a fireball stuck in your throat. Repeatedly. Mind your manners. |
+| 55 | DAT_004c2c28 | Living Fortress | It comes a time in each man's life when you'd just rather not move anymore. Being living fortress not moving comes with extra benefits as well. You do the more damage the longer you stand still. |
+| 56 | DAT_004c2c30 | Tough Reloader | Damage received during reloading a weapon is halved. |
+| 57 | DAT_004c2be4 | Lifeline 50-50 | The computer removes half of the wrong monsters for you. You don't gain any experience. |

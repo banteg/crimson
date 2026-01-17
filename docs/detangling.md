@@ -169,6 +169,20 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
   - Evidence: sets render state, iterates effects, computes rotated quad vertices, and submits
     via Grim vtable +0x134.
 
+### Perk database + selection (medium confidence)
+
+- `FUN_0042fd90` -> `perks_init_database`
+  - Evidence: assigns perk id constants (`DAT_004c2b**`/`DAT_004c2c**`) and fills the perk
+    name/description tables via `FUN_0042fd00`.
+  - See `docs/perk-id-map.md` for the extracted id-to-name mapping.
+- `FUN_0042fb10` -> `perk_can_offer`
+  - Evidence: checks mode gates and perk flags, then returns a nonzero byte if the perk is eligible.
+- `FUN_0042fbd0` -> `perk_select_random`
+  - Evidence: randomizes an id from the perk table, calls `perk_can_offer`, and logs a failure when
+    selection runs too long.
+- `FUN_0042fc30` -> `perks_rebuild_available`
+  - Evidence: resets `DAT_004c2c4c` flags and re-enables base/unlocked perks.
+
 ## Next naming targets
 
 - For `grim.dll`, inspect `FUN_10016944` (coordinate conversions and vertex packing) to pin down the render pipeline stage.
