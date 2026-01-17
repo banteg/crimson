@@ -75,6 +75,58 @@ in the same function draws the sprite variants based on `type id`.
 | `4` | Straight projectile; accelerates while speed < ~600; lifetime decays at 1.0x. On hit or timeout, switches to type `3` detonation with base scale `0.25`. | Pulse Gun (weapon id `0x12`). |
 | `3` | Detonation state; expands over ~1s, applies radial damage each tick, spawns `fx_queue_add(0x10)` and clears when the timer > 1.0. | Triggered by types `1/2/4` or when their lifetime expires. |
 
+## FX queue (`DAT_004912b8`)
+
+Entry size: `0x28` bytes. Queue size: `0x80` entries (index `0..0x7f` via `DAT_004aaf18`).
+
+This queue is written by `fx_queue_add` and rendered (then cleared) by
+`fx_queue_render` once per frame.
+
+Layout (struct view of the SoA block):
+
+| Offset | Field | Evidence |
+| --- | --- | --- |
+| 0x00 | effect_id | Stored by `fx_queue_add`; passed into `effect_select_texture` in `fx_queue_render`. |
+| 0x04 | rotation | Stored by `fx_queue_add`; passed to `grim_set_rotation`. |
+| 0x08 | pos_x | Stored from `pos[0]` in `fx_queue_add`. |
+| 0x0c | pos_y | Stored from `pos[1]` in `fx_queue_add`. |
+| 0x10 | height | Stored from `h` in `fx_queue_add`; used as draw height. |
+| 0x14 | width | Stored from `w` in `fx_queue_add`; used as draw width. |
+| 0x18 | color_r | Stored from `rgba[0]` in `fx_queue_add`. |
+| 0x1c | color_g | Stored from `rgba[1]` in `fx_queue_add`. |
+| 0x20 | color_b | Stored from `rgba[2]` in `fx_queue_add`. |
+| 0x24 | color_a | Stored from `rgba[3]` in `fx_queue_add`. |
+
+Notes:
+
+- `effect_select_texture` resolves `effect_id` through `DAT_004755f0/4` and sets
+  atlas size/frame (`0x10/0x20/0x40/0x80` -> `16/8/4/2` cells).
+
+## Rotated FX queue (`DAT_004aaf3c`)
+
+Queue size: `0x40` entries. Written by `fx_queue_add_rotated` and rendered by
+`fx_queue_render`.
+
+Layout (structure-of-arrays):
+
+| Array base | Field | Notes |
+| --- | --- | --- |
+| `DAT_00490430` | pos_x | Stride 2 floats. |
+| `DAT_00490434` | pos_y | Stride 2 floats. |
+| `DAT_0049bb38` | color_r | Stride 4 floats. |
+| `DAT_0049bb3c` | color_g | Stride 4 floats. |
+| `DAT_0049bb40` | color_b | Stride 4 floats. |
+| `DAT_0049bb44` | color_a | Stride 4 floats; scaled by view factor in `fx_queue_add_rotated`. |
+| `DAT_0049669c` | rotation | Stored from `rotation` in `fx_queue_add_rotated`. |
+| `DAT_004906a8` | scale | Stored from `scale` in `fx_queue_add_rotated`. |
+| `DAT_0049ba30` | effect_id | Used to index the atlas table in `fx_queue_render`. |
+
+Notes:
+
+- `fx_queue_render` binds `DAT_0048f7dc` and uses `DAT_00482764` to map
+  `effect_id` to a 4x atlas frame (`DAT_00491210/14`).
+- The rotated queue is drawn in two passes with different alpha scales.
+
 
 ## Sprite effect pool (`DAT_00496820`)
 
