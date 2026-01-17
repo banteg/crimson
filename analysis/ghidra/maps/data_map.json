@@ -99,9 +99,21 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x004853d4",
+      "name": "bonus_meta_description",
+      "comment": "Bonus metadata description pointer (bonus_meta_label + 0x04)"
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004853d8",
       "name": "bonus_meta_icon_id",
       "comment": "Bonus metadata icon id (bonus_meta_label + 0x08)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004853dc",
+      "name": "bonus_meta_enabled",
+      "comment": "Bonus metadata enabled flag (bonus_meta_label + 0x0c); id 0 is disabled."
     },
     {
       "program": "crimsonland.exe",
@@ -186,6 +198,42 @@
       "address": "0x00487024",
       "name": "bonus_double_xp_timer",
       "comment": "Global Double XP timer (bonus id 6)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f588",
+      "name": "bonus_hud_slot_active",
+      "comment": "Bonus HUD slot active flag array (stride 0x20 bytes)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f58c",
+      "name": "bonus_hud_slot_y",
+      "comment": "Bonus HUD slot Y/slide offset (bonus_hud_slot_active + 0x04)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f594",
+      "name": "bonus_hud_slot_timer_ptr",
+      "comment": "Bonus HUD slot timer pointer (bonus_hud_slot_active + 0x0c)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f598",
+      "name": "bonus_hud_slot_alt_timer_ptr",
+      "comment": "Bonus HUD slot alternate timer pointer (bonus_hud_slot_active + 0x10); used for player 2 timers."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f59c",
+      "name": "bonus_hud_slot_label",
+      "comment": "Bonus HUD slot label string pointer (bonus_hud_slot_active + 0x14)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f5a0",
+      "name": "bonus_hud_slot_icon_id",
+      "comment": "Bonus HUD slot icon id (bonus_hud_slot_active + 0x18)."
     },
     {
       "program": "crimsonland.exe",

@@ -6,8 +6,10 @@ The entry index is the bonus type id used by `bonus_apply` and `bonus_spawn_at`.
 Table fields:
 
 - `icon_id` comes from `bonus_meta_icon_id + id * 0x14`, used by `bonus_render` to select the icon sprite.
+- `description` comes from `bonus_meta_description + id * 0x14`, used for the bonus info strings.
 - `default_amount` comes from `bonus_meta_default_amount + id * 0x14`, used when `bonus_spawn_at` is called with
   `duration_override == -1`.
+- `enabled` comes from `bonus_meta_enabled + id * 0x14`; id `0` is cleared during init.
 
 | ID | Name | Description | icon_id | default_amount | Notes |
 | --- | --- | --- | --- | --- | --- |

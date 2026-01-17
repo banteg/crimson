@@ -49,6 +49,18 @@ Global bonus timers used by `player_update` and the main loop:
 | `bonus_freeze_timer` | Freeze timer | Bonus id 11 |
 | `time_scale_active` / `time_scale_factor` | time-scale active + factor | driven by Reflex Boost |
 
+### Bonus HUD slots (active bonus list)
+
+`bonus_apply` registers timed bonuses in the HUD list via `FUN_0041a810`, and
+`FUN_0041a8b0` renders up to 16 active slots using the following fields:
+
+- `bonus_hud_slot_active` — per-slot active flag (stride `0x20` bytes).
+- `bonus_hud_slot_y` — slide/position accumulator for the slot.
+- `bonus_hud_slot_timer_ptr` — pointer to the primary timer (global or per‑player).
+- `bonus_hud_slot_alt_timer_ptr` — optional pointer to the player‑2 timer.
+- `bonus_hud_slot_label` — string label for the bonus.
+- `bonus_hud_slot_icon_id` — icon id used to select a frame from `bonuses.png`.
+
 ### Perk-triggered projectile spawns (player_update)
 
 `player_update` owns several perk timers that spawn projectiles or FX when the
