@@ -155,7 +155,7 @@ These offsets appear with keycodes or input-related values:
 | `0x50` | `get_key_char` | `int get_key_char(void)` | high | console text input |
 | `0x54` | `set_key_char_buffer` | `void set_key_char_buffer(uint8_t *buffer, int *count, int size)` | high | stores ring buffer pointers |
 | `0x58` | `is_mouse_button_down` | `bool is_mouse_button_down(int button)` | high | returns cached button state or polls input |
-| `0x5c` | `was_mouse_button_pressed` | `bool was_mouse_button_pressed(int button)` | high | edge-triggered mouse button using cached state |
+| `0x5c` | `was_mouse_button_pressed` | `bool was_mouse_button_pressed(int button)` | high | edge-triggered mouse button using cached state; no decompiled callsites yet |
 | `0x60` | `get_mouse_wheel_delta` | `float get_mouse_wheel_delta(void)` | high | +/- wheel to change selection |
 | `0x64` | `set_mouse_pos` | `void set_mouse_pos(float x, float y)` | high | updates cached mouse position |
 | `0x68` | `get_mouse_x` | `float get_mouse_x(void)` | high | cached mouse position X |
@@ -174,7 +174,7 @@ These offsets appear with keycodes or input-related values:
 | `0x9c` | `get_joystick_y` | `int get_joystick_y(void)` | high | returns cached joystick Y |
 | `0xa0` | `get_joystick_z` | `int get_joystick_z(void)` | high | returns cached joystick Z |
 | `0xa4` | `get_joystick_pov` | `int get_joystick_pov(int index)` | high | returns cached POV value |
-| `0xa8` | `is_joystick_button_down` | `bool is_joystick_button_down(int button)` | high | returns cached joystick button bit |
+| `0xa8` | `is_joystick_button_down` | `bool is_joystick_button_down(int button)` | high | returns cached joystick button bit; no decompiled callsites yet |
 | `0xac` | `create_texture` | `bool create_texture(const char *name, int width, int height)` | high | creates blank texture in a free slot |
 | `0xb0` | `recreate_texture` | `bool recreate_texture(int handle)` | high | recreates D3D texture surface for handle |
 | `0xb4` | `load_texture` | `bool load_texture(const char *name, const char *path)` | high | `(name, filename)` |
