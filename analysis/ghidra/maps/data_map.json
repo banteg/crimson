@@ -129,6 +129,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00490944",
+      "name": "player_move_phase",
+      "comment": "Per-player movement phase accumulator (player_health + 0x70)"
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x0049094c",
       "name": "player_hot_tempered_timer",
       "comment": "Per-player Hot Tempered timer (player_health + 0x78)"
@@ -162,6 +168,24 @@
       "address": "0x00490bc0",
       "name": "player_low_health_timer",
       "comment": "Low-health warning timer (player_health + 0x2ec)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490bd0",
+      "name": "player_auto_target",
+      "comment": "Per-player auto-aim target creature index (player_health + 0x2fc)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490bd4",
+      "name": "player_move_target_x",
+      "comment": "Per-player movement target X (player_health + 0x300)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490bd8",
+      "name": "player_move_target_y",
+      "comment": "Per-player movement target Y (player_health + 0x304)"
     },
     {
       "program": "crimsonland.exe",
@@ -246,6 +270,30 @@
       "address": "0x00490bb0",
       "name": "player_aim_heading",
       "comment": "Per-player aim heading radians (player_health + 0x2dc)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490c00",
+      "name": "player_axis_aim_x",
+      "comment": "Per-player aim axis X binding (player_health + 0x32c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490c04",
+      "name": "player_axis_aim_y",
+      "comment": "Per-player aim axis Y binding (player_health + 0x330)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490c08",
+      "name": "player_axis_move_x",
+      "comment": "Per-player move axis X binding (player_health + 0x334)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490c0c",
+      "name": "player_axis_move_y",
+      "comment": "Per-player move axis Y binding (player_health + 0x338)"
     },
     {
       "program": "crimsonland.exe",

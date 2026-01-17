@@ -26,6 +26,7 @@ High-confidence fields (partial):
 | `0x30` | aim target y | `player_aim_y` | Used to derive aim vectors and overlay position. |
 | `0x38` | move speed multiplier | `player_speed_multiplier` | Multiplies movement vector (boosted by Speed bonus). |
 | `0x44` | move speed / accel | `player_move_speed` | Ramps up/down based on input; scales movement. |
+| `0x70` | move phase | `player_move_phase` | Incremented by movement speed, wrapped to `[0, 14]` for step/anim phase. |
 | `0x78` | Hot Tempered timer | `player_hot_tempered_timer` | Used by perk ring burst logic. |
 | `0x7c` | Man Bomb timer | `player_man_bomb_timer` | Charge timer for perk ring burst. |
 | `0x80` | Living Fortress timer | `player_living_fortress_timer` | Accumulates while stationary. |
@@ -49,6 +50,13 @@ High-confidence fields (partial):
 | `0x2f0` | speed bonus timer | `player_speed_bonus_timer` | Bonus id 13 (Speed). |
 | `0x2f4` | shield timer | `player_shield_timer` | Bonus id 10 (Shield). |
 | `0x2f8` | Fire Bullets timer | `player_fire_bullets_timer` | Bonus id 14 (Fire Bullets). |
+| `0x2fc` | auto-aim target | `player_auto_target` | Stores the nearest creature index for auto-aim modes. |
+| `0x300` | move target x | `player_move_target_x` | Cached target position for click/assist movement mode. |
+| `0x304` | move target y | `player_move_target_y` | Cached target position for click/assist movement mode. |
+| `0x32c` | aim axis x binding | `player_axis_aim_x` | Axis binding read via input API for aim stick. |
+| `0x330` | aim axis y binding | `player_axis_aim_y` | Axis binding read via input API for aim stick. |
+| `0x334` | move axis x binding | `player_axis_move_x` | Axis binding read via input API for movement stick. |
+| `0x338` | move axis y binding | `player_axis_move_y` | Axis binding read via input API for movement stick. |
 
 ## Defense state (summary)
 
