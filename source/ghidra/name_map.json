@@ -366,6 +366,27 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00452cd0",
+    "name": "weapon_pick_random_available",
+    "signature": "int weapon_pick_random_available(void)",
+    "comment": "selects a random weapon id that is marked available"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00452d40",
+    "name": "weapon_assign_player",
+    "signature": "void weapon_assign_player(int player_index, int weapon_id)",
+    "comment": "assigns a weapon to a player and resets ammo timers"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00452e40",
+    "name": "weapon_refresh_available",
+    "signature": "void weapon_refresh_available(void)",
+    "comment": "rebuilds availability flags from the unlock list"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00420440",
     "name": "projectile_spawn",
     "signature": "int projectile_spawn(float *pos, float angle, int type_id, int owner_id)",
