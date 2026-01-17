@@ -302,6 +302,43 @@ You can also set `CRIMSON_NAME_MAP` to point at a custom map.
   - Stage index wraps to 0 when `DAT_00486fd8` reaches 9; counters are initialized in `FUN_00412dc0`
     (`DAT_00486fd8 = -1`, `DAT_00486fe0 = -1000`) and reset by `tutorial_prompt_dialog`.
 
+### Creature table (partial)
+
+- `FUN_00428140` -> `creature_alloc_slot`
+  - Evidence: scans `DAT_0049bf38` in `0x98`-byte strides for `active == 0`, clears flags/seed fields,
+    increments `DAT_00486fb4`, and returns the slot index (or `0x180` on failure).
+- Layout (entry size `0x98`, base `DAT_0049bf38`, pool size `0x180`):
+  | Offset | Field | Evidence |
+  | --- | --- | --- |
+  | 0x00 | active (byte) | checked for zero in most creature loops; set to `1` on spawn, cleared on death. |
+  | 0x14 | pos_x | set in `FUN_00428240`, used in distance checks and targeting. |
+  | 0x18 | pos_y | set in `FUN_00428240`, used in distance checks and targeting. |
+  | 0x24 | health | checked as `> 0` for valid targets and in perk kill logic (`<= 500`). |
+  | 0x28 | max_health | set from `health` on spawn; used when splitting (clone health is `max_health * 0.25`). |
+  | 0x2c | heading (radians) | set from `rand % 0x13a * 0.01` on spawn. |
+  | 0x34 | collision radius (?) | used in collision tests in `FUN_00420600`. |
+  | 0x6c | type id (spawn param) | written from `param_3` in `FUN_00428240`. |
+  | 0x8c | flags | bit tests `0x4/0x8/0x400` guard behaviors in update/split logic. |
+
+### Bonus / pickup pool (medium confidence)
+
+- `FUN_0041f580` -> `bonus_alloc_slot`
+  - Evidence: scans `DAT_00482948` in `0x1c`-byte strides and returns the first entry with type `0`
+    (or the sentinel `DAT_00490630` when full).
+- `FUN_0041f5b0` -> `bonus_spawn_at`
+  - Evidence: clamps position to arena bounds, writes entry fields (type, lifetime, size, position,
+    duration override), and spawns a pickup effect via `FUN_0042e120`.
+- Layout (entry size `0x1c`, base `DAT_00482948`, 16 entries):
+  | Offset | Field | Evidence |
+  | --- | --- | --- |
+  | 0x00 | type id (0 = free) | `bonus_alloc_slot` scans for `0`; render/update skip `0`. |
+  | 0x04 | state flag (picked) | `FUN_0040a320` sets to `1` after pickup and accelerates lifetime decay. |
+  | 0x08 | time_left | decremented each frame in `FUN_0040a320`; set to `0.5` on pickup; expiry clears type to `0`. |
+  | 0x0c | time_max | set to `10.0` on spawn; used for fade/flash in `FUN_004295f0`. |
+  | 0x10 | pos_x | set on spawn; used for distance checks. |
+  | 0x14 | pos_y | set on spawn; used for distance checks. |
+  | 0x18 | amount/duration | used by `FUN_00409890` when applying certain bonus types. |
+
 ### Game mode selector (partial)
 
 - `_DAT_00480360` holds the current game mode. See [Game mode map](game-mode-map.md) for the observed
