@@ -27,3 +27,6 @@ High-confidence globals from the grim.dll decompilation:
 - **Config storage:** `grim_config_blob` plus `grim_config_var0_table`..`grim_config_var3_table`.
 - **Font tables:** `grim_font2_char_map`, `grim_font2_glyph_widths`, `grim_font2_uv_u`,
   `grim_font2_uv_v`, and `grim_font2_texture_handle`.
+- **DirectInput:** `grim_dinput_keyboard`/`grim_keyboard_device`/`grim_keyboard_state`,
+  `grim_dinput_mouse`/`grim_mouse_device`/`grim_mouse_state`,
+  `grim_dinput_joystick`/`grim_joystick_device`/`grim_joystick_state`.

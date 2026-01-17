@@ -1962,6 +1962,78 @@
       "address": "0x1005b2cc",
       "name": "grim_font2_uv_v",
       "comment": "Small-font glyph V coordinates (float, indexed by glyph * 2)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005da20",
+      "name": "grim_dinput_keyboard",
+      "comment": "DirectInput8 interface for keyboard input."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005da24",
+      "name": "grim_keyboard_device",
+      "comment": "DirectInput keyboard device (IDirectInputDevice8)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005da28",
+      "name": "grim_keyboard_state",
+      "comment": "Keyboard state buffer (256-byte key array)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005d958",
+      "name": "grim_keyboard_event_buffer",
+      "comment": "Keyboard event buffer (DIDEVICEOBJECTDATA[10])."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005db28",
+      "name": "grim_dinput_mouse",
+      "comment": "DirectInput8 interface for mouse input."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005db2c",
+      "name": "grim_mouse_device",
+      "comment": "DirectInput mouse device (IDirectInputDevice8)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005db30",
+      "name": "grim_mouse_state",
+      "comment": "Mouse state buffer (DIMOUSESTATE2; dx/dy/dz + button bytes)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005db3c",
+      "name": "grim_mouse_buttons",
+      "comment": "Mouse button byte array (DIMOUSESTATE2.rgbButtons, offset +0x0c)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005d940",
+      "name": "grim_dinput_joystick",
+      "comment": "DirectInput8 interface for joystick input."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005d944",
+      "name": "grim_joystick_device",
+      "comment": "DirectInput joystick device (IDirectInputDevice8)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005d830",
+      "name": "grim_joystick_state",
+      "comment": "Joystick state buffer (DIJOYSTATE2)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005d860",
+      "name": "grim_joystick_buttons",
+      "comment": "Joystick button byte array (DIJOYSTATE2.rgbButtons, offset +0x30)."
     }
   ]
 }
