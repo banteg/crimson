@@ -65,18 +65,31 @@ We also generate an evidence appendix with callsite snippets:
 
 ## Top offsets by callsite count
 
-These are the most frequently used offsets (likely the core draw/state calls):
+These are the most frequently used offsets (likely the core draw/state calls).
+Use them to prioritize runtime validation and signature cleanup.
 
-- `0x20` (206)
-- `0x114` (203)
-- `0x11c` (100)
-- `0xf0` (86)
-- `0x148` (86)
-- `0xe8` (79)
-- `0xc4` (66)
-- `0xfc` (65)
-- `0x100` (59)
-- `0x48` (39)
+| Offset | Name | Callsites | Unique funcs |
+| --- | --- | --- | --- |
+| `0x20` | `grim_set_render_state` | 206 | 35 |
+| `0x114` | `grim_set_color` | 203 | 37 |
+| `0x11c` | `grim_draw_quad` | 100 | 21 |
+| `0xf0` | `grim_end_batch` | 86 | 28 |
+| `0x148` | `grim_draw_text_small_fmt` | 86 | 15 |
+| `0xe8` | `grim_begin_batch` | 79 | 23 |
+| `0xc4` | `grim_bind_texture` | 66 | 22 |
+| `0xfc` | `grim_set_rotation` | 65 | 17 |
+| `0x100` | `grim_set_uv` | 59 | 23 |
+| `0x48` | `grim_was_key_pressed` | 39 | 16 |
+| `0x104` | `grim_set_atlas_frame` | 25 | 6 |
+| `0xd0` | `grim_draw_rect_filled` | 24 | 14 |
+| `0xc0` | `grim_get_texture_handle` | 22 | 8 |
+| `0x110` | `grim_set_color_ptr` | 20 | 10 |
+| `0x144` | `grim_draw_text_small` | 20 | 9 |
+| `0x24` | `grim_get_config_var` | 17 | 4 |
+| `0x14c` | `grim_measure_text_width` | 14 | 10 |
+| `0xd4` | `grim_draw_rect_outline` | 12 | 11 |
+| `0x4c` | `grim_flush_input` | 12 | 10 |
+| `0x118` | `grim_set_color_slot` | 12 | 2 |
 
 
 ## Input-ish offsets (evidence)
@@ -189,6 +202,6 @@ The working vtable skeleton lives in:
 
 ## Next steps
 
-1. Expand the provisional mapping table as evidence improves.
+1. Validate the high-callsite entries in the table above with runtime evidence.
 2. Refine signatures in `source/clean/grim_api.h`.
 3. Validate behavior with runtime toggles (config, input, draw calls).
