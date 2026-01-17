@@ -1,10 +1,24 @@
 [
   {
     "program": "crimsonland.exe",
-    "address": "0x0046e8f4",
-    "name": "strdup_malloc",
-    "signature": "char * strdup_malloc(char * src)",
-    "comment": "malloc+copy helper"
+    "address": "0x00401030",
+    "name": "console_input_clear",
+    "signature": "void console_input_clear(void)",
+    "comment": "clears console input buffer"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00401050",
+    "name": "console_input_buffer",
+    "signature": "char * console_input_buffer(void)",
+    "comment": "returns console input buffer pointer"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00401060",
+    "name": "console_input_poll",
+    "signature": "int console_input_poll(void)",
+    "comment": "polls text input and updates console buffer"
   },
   {
     "program": "crimsonland.exe",
@@ -20,6 +34,177 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004026e0",
+    "name": "console_register_command",
+    "comment": "registers a console command and handler"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00402860",
+    "name": "console_flush_log",
+    "comment": "flushes console lines to the log file"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00402c00",
+    "name": "register_core_cvars",
+    "comment": "registers built-in cvars"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004034a0",
+    "name": "ui_mouse_inside_rect",
+    "signature": "int ui_mouse_inside_rect(float *xy, int h, int w)",
+    "comment": "returns 1 when the mouse is inside the rect and mouse capture is clear"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004045a0",
+    "name": "perks_generate_choices",
+    "signature": "void perks_generate_choices(void)",
+    "comment": "builds the current perk choice list"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004047c0",
+    "name": "demo_trial_overlay_render",
+    "signature": "void demo_trial_overlay_render(float *xy, float alpha)",
+    "comment": "renders the demo trial warning panel and remaining time message"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004055e0",
+    "name": "perk_apply",
+    "signature": "void perk_apply(int perk_id)",
+    "comment": "applies perk effects and increments perk counter"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00405960",
+    "name": "gameplay_render_world",
+    "signature": "void gameplay_render_world(void)",
+    "comment": "world render pass: updates gameplay fade and draws fx queue, creatures, players, projectiles, bonuses"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00407510",
+    "name": "survival_spawn_creature",
+    "signature": "void survival_spawn_creature(float *pos)",
+    "comment": "spawns a creature at the given position, selecting type/stats based on DAT_0049095c"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00407cd0",
+    "name": "survival_update",
+    "signature": "void survival_update(void)",
+    "comment": "main survival mode update: timers, scripted spawns, and enemy wave spawning"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00408530",
+    "name": "tutorial_prompt_dialog",
+    "signature": "void tutorial_prompt_dialog(char *text, float alpha)",
+    "comment": "renders tutorial prompt text + Repeat/Play/Skip buttons and handles selections"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00408990",
+    "name": "tutorial_timeline_update",
+    "comment": "drives tutorial stage timing, messages, and scripted spawns"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00409890",
+    "name": "bonus_apply",
+    "signature": "void bonus_apply(int player_index, int *bonus_entry)",
+    "comment": "applies a picked bonus to the player and spawns related effects"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040a320",
+    "name": "bonus_update",
+    "signature": "void bonus_update(void)",
+    "comment": "updates bonus lifetimes and handles player pickups"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040b740",
+    "name": "demo_purchase_screen_update",
+    "signature": "void demo_purchase_screen_update(void)",
+    "comment": "demo upsell screen: feature list, purchase link, and exit handling"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00410d20",
+    "name": "quest_results_screen_update",
+    "signature": "void quest_results_screen_update(void)",
+    "comment": "quest/campaign results screen: final time, perk bonus, high score entry, and buttons"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412960",
+    "name": "game_mode_label",
+    "signature": "char * game_mode_label(void)",
+    "comment": "returns a display label for the current game mode"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412a10",
+    "name": "game_sequence_load",
+    "signature": "void game_sequence_load(void)",
+    "comment": "reads the sequence value from registry"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412a80",
+    "name": "game_save_status",
+    "signature": "void game_save_status(void)",
+    "comment": "writes registry state and saves status file"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412c10",
+    "name": "game_load_status",
+    "signature": "void game_load_status(void)",
+    "comment": "loads status file; regenerates on failure"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004136b0",
+    "name": "player_update",
+    "signature": "void player_update(void)",
+    "comment": "per-player gameplay update: movement, firing, status timers, and effects"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00417b80",
+    "name": "terrain_generate",
+    "signature": "void terrain_generate(void *desc)",
+    "comment": "generates terrain texture into a render target using a level descriptor"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00418b60",
+    "name": "creature_render_type",
+    "signature": "void creature_render_type(int type_id)",
+    "comment": "renders active creatures matching type_id using 8x8 atlases and animation strips"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00419680",
+    "name": "creature_render_all",
+    "signature": "void creature_render_all(void)",
+    "comment": "creature render pass: overlays + per-type draws via creature_render_type"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041a040",
+    "name": "ui_cursor_render",
+    "signature": "void ui_cursor_render(void)",
+    "comment": "renders the in-game cursor/crosshair sprites"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041a530",
     "name": "ui_elements_update_and_render",
     "signature": "void ui_elements_update_and_render(void)",
@@ -27,10 +212,594 @@
   },
   {
     "program": "crimsonland.exe",
-    "address": "0x00446030",
-    "name": "input_primary_just_pressed",
-    "signature": "int input_primary_just_pressed(void)",
-    "comment": "edge-detect primary action (mouse button 0 or per-player fire key DAT_00490bec)"
+    "address": "0x0041aed0",
+    "name": "ui_render_hud",
+    "signature": "void ui_render_hud(void)",
+    "comment": "renders the in-game HUD (health, weapon icons, player UI)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041ccb0",
+    "name": "dx_get_version",
+    "signature": "int dx_get_version(int *version, char *out, int out_len)",
+    "comment": "query DirectX version"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041dc80",
+    "name": "grim_load_interface",
+    "signature": "int grim_load_interface(char *dll_name)",
+    "comment": "load grim DLL and fetch GRIM_GetInterface"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e400",
+    "name": "vec2_add_inplace",
+    "signature": "void vec2_add_inplace(int unused, float *pos, float *delta)",
+    "comment": "adds delta XY into pos; unused param_1 in decompile"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e840",
+    "name": "fx_queue_add",
+    "signature": "int fx_queue_add(int effect_id, float *pos, float w, float h, float rotation, float *rgba)",
+    "comment": "pushes a quad entry into DAT_004aaf18 (capped at 0x80); returns 1 on success"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e910",
+    "name": "creature_handle_death",
+    "signature": "void creature_handle_death(int creature_id, bool keep_corpse)",
+    "comment": "death handler: bonus spawns, split-on-death, score, and cleanup"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041f1a0",
+    "name": "config_load_presets",
+    "comment": "loads config presets into globals"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041f430",
+    "name": "angle_approach",
+    "signature": "void angle_approach(float *angle, float target, float rate)",
+    "comment": "wraps angle into [0,2pi] and steps toward target using shortest arc"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041f580",
+    "name": "bonus_alloc_slot",
+    "comment": "returns a free bonus slot in DAT_00482948 (or DAT_00490630 sentinel)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041f5b0",
+    "name": "bonus_spawn_at",
+    "signature": "int * bonus_spawn_at(float *pos, int bonus_id, int duration_override)",
+    "comment": "clamps position, fills bonus entry fields, and spawns pickup effect"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041fbb0",
+    "name": "fx_spawn_sprite",
+    "signature": "int fx_spawn_sprite(float *pos, float *vel, float scale)",
+    "comment": "spawns a sprite effect entry in DAT_00496820"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041fc60",
+    "name": "weapon_table_entry",
+    "signature": "char * weapon_table_entry(int weapon_id)",
+    "comment": "returns the entry base (&DAT_004d7a2c + weapon_id * 0x1f)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00420130",
+    "name": "fx_spawn_particle",
+    "signature": "int fx_spawn_particle(float *pos, float angle, void *unused, float intensity)",
+    "comment": "spawns a fast particle entry in DAT_00493eb8"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00420240",
+    "name": "fx_spawn_particle_slow",
+    "signature": "int fx_spawn_particle_slow(float *pos, float angle)",
+    "comment": "spawns a slow particle entry in DAT_00493eb8"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00420360",
+    "name": "fx_spawn_secondary_projectile",
+    "signature": "int fx_spawn_secondary_projectile(float *pos, float angle, int type_id)",
+    "comment": "spawns a typed entry in DAT_00495ad8 (secondary projectile pool)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00420440",
+    "name": "projectile_spawn",
+    "signature": "int projectile_spawn(float *pos, float angle, int type_id, int owner_id)",
+    "comment": "allocates a projectile slot, initializes fields, and returns the index (overrides to type 0x2d when Fire Bullets is active)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004205d0",
+    "name": "projectile_reset_pools",
+    "signature": "void projectile_reset_pools(void)",
+    "comment": "clears projectile and effect pools (DAT_004926b8, DAT_00493eb8)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00420600",
+    "name": "creatures_apply_radius_damage",
+    "signature": "void creatures_apply_radius_damage(float *pos, float radius, float damage, int damage_type)",
+    "comment": "applies damage to creatures within radius using FUN_004207c0"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004206a0",
+    "name": "creature_find_in_radius",
+    "signature": "int creature_find_in_radius(float *pos, float radius, int start_index)",
+    "comment": "returns the first creature index in range, or -1"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00420730",
+    "name": "player_find_in_radius",
+    "signature": "int player_find_in_radius(int owner_id, float *pos, float radius)",
+    "comment": "returns a player index in range, skipping owner_id (-1/-2/-3 -> player 0/1/2)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004207c0",
+    "name": "creature_apply_damage",
+    "signature": "int creature_apply_damage(int creature_id, float damage, int damage_type, float *impulse)",
+    "comment": "applies damage + impulse, handles death side effects; returns 1 when killed"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00420b90",
+    "name": "projectile_update",
+    "signature": "void projectile_update(void)",
+    "comment": "updates projectile movement, collisions, and hit effects"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00422c70",
+    "name": "projectile_render",
+    "signature": "void projectile_render(void)",
+    "comment": "renders projectiles/secondary projectiles and related beam/trail effects"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00425e50",
+    "name": "player_take_damage",
+    "signature": "void player_take_damage(int player_index, float damage)",
+    "comment": "applies player damage with perk modifiers, SFX, and retaliation effects"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00426220",
+    "name": "creature_update_all",
+    "signature": "void creature_update_all(void)",
+    "comment": "primary creature update loop: AI, movement, attacks, and animation phase"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00427840",
+    "name": "fx_queue_add_rotated",
+    "signature": "int fx_queue_add_rotated(float *pos, float *rgba, float rotation, float scale, int effect_id)",
+    "comment": "pushes a rotated sprite into DAT_004aaf3c (capped at 0x40); returns 1 on success"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00427920",
+    "name": "fx_queue_render",
+    "signature": "void fx_queue_render(void)",
+    "comment": "renders DAT_004aaf18/DAT_004aaf3c queues and clears them"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00428140",
+    "name": "creature_alloc_slot",
+    "comment": "finds a free creature entry in DAT_0049bf38 and seeds defaults"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00428210",
+    "name": "creatures_none_active",
+    "comment": "returns low byte 1 when no active creature entries exist (0 otherwise); sets DAT_0048700c"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00428240",
+    "name": "creature_spawn",
+    "signature": "int creature_spawn(float *pos, float *tint_rgba, int type_id)",
+    "comment": "allocates a creature slot and seeds position, type, and tint defaults"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00428390",
+    "name": "player_render_overlays",
+    "signature": "void player_render_overlays(void)",
+    "comment": "renders per-player overlays/indicators using DAT_004908** tables"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00429580",
+    "name": "bonus_label_for_entry",
+    "signature": "char * bonus_label_for_entry(int *bonus_entry)",
+    "comment": "returns the label string for a bonus entry (formatting weapon/score cases)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004295f0",
+    "name": "bonus_render",
+    "signature": "void bonus_render(void)",
+    "comment": "renders bonus icons and labels from the pickup pool"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042a5f0",
+    "name": "audio_resume_all",
+    "signature": "int audio_resume_all(void)",
+    "comment": "resume active audio channels"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042a630",
+    "name": "audio_suspend_all",
+    "signature": "void audio_suspend_all(void)",
+    "comment": "suspend active audio channels"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042a670",
+    "name": "texture_get_or_load",
+    "signature": "int texture_get_or_load(char *name)",
+    "comment": "lookup texture handle; load if missing"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042a700",
+    "name": "texture_get_or_load_alt",
+    "signature": "int texture_get_or_load_alt(char *name)",
+    "comment": "duplicate of texture_get_or_load (callers are mostly .jaz assets)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042a980",
+    "name": "reg_read_dword_default",
+    "signature": "int reg_read_dword_default(HKEY key, char *name, unsigned int *out, unsigned int fallback)",
+    "comment": "reads a registry DWORD or writes fallback to output"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042a9c0",
+    "name": "reg_write_dword",
+    "signature": "int reg_write_dword(HKEY key, char *name, unsigned int value)",
+    "comment": "writes a registry DWORD"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042a9f0",
+    "name": "init_audio_and_terrain",
+    "signature": "void init_audio_and_terrain(void)",
+    "comment": "sound init + terrain texture setup"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042abd0",
+    "name": "load_textures_step",
+    "signature": "int load_textures_step(void)",
+    "comment": "stage-based texture loading (advances DAT_004aaf88)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042c450",
+    "name": "crimsonland_main",
+    "signature": "int crimsonland_main(void)",
+    "comment": "primary game init/run/shutdown sequence"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042de80",
+    "name": "effect_init_entry",
+    "signature": "void effect_init_entry(void *entry)",
+    "comment": "initializes an effect entry to default values"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042df10",
+    "name": "effect_defaults_reset",
+    "signature": "void effect_defaults_reset(void)",
+    "comment": "resets global effect template values"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042e080",
+    "name": "effect_free",
+    "signature": "void effect_free(void *entry)",
+    "comment": "returns an effect entry to the free list"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042e0a0",
+    "name": "effect_select_texture",
+    "signature": "void effect_select_texture(int effect_id)",
+    "comment": "selects effect texture page based on effect id"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042e120",
+    "name": "effect_spawn",
+    "signature": "void * effect_spawn(int effect_id, float *pos)",
+    "comment": "allocates an effect entry and assigns quad UVs"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042e710",
+    "name": "effects_update",
+    "signature": "void effects_update(void)",
+    "comment": "ticks active effects and frees expired entries"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042e820",
+    "name": "effects_render",
+    "signature": "void effects_render(void)",
+    "comment": "renders active effects (rotated quads)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042ef60",
+    "name": "effect_spawn_burst",
+    "signature": "void effect_spawn_burst(float *pos, int count)",
+    "comment": "generic burst loop for effect id 0"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042fb10",
+    "name": "perk_can_offer",
+    "signature": "int perk_can_offer(int perk_index)",
+    "comment": "returns nonzero when perk is eligible for selection"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042fbd0",
+    "name": "perk_select_random",
+    "signature": "int perk_select_random(void)",
+    "comment": "randomly selects an eligible perk index"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042fc30",
+    "name": "perks_rebuild_available",
+    "signature": "void perks_rebuild_available(void)",
+    "comment": "rebuilds perk availability/unlock flags"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042fcf0",
+    "name": "perk_count_get",
+    "signature": "int perk_count_get(int perk_id)",
+    "comment": "returns perk count from DAT_00490968"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042fd90",
+    "name": "perks_init_database",
+    "signature": "void perks_init_database(void)",
+    "comment": "builds the perk table (ids, names, descriptions)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00430af0",
+    "name": "creature_spawn_template",
+    "signature": "void * creature_spawn_template(int template_id, float *pos, float heading)",
+    "comment": "spawns creature(s) from template id; heading -100 uses a random heading"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00434220",
+    "name": "quest_spawn_table_empty",
+    "signature": "int quest_spawn_table_empty(void)",
+    "comment": "returns 1 when the quest spawn table has no pending entries"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00434250",
+    "name": "quest_spawn_timeline_update",
+    "signature": "void quest_spawn_timeline_update(void)",
+    "comment": "updates quest spawn entries based on the quest timer"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004343c0",
+    "name": "quest_database_advance_slot",
+    "signature": "void quest_database_advance_slot(int *tier, int *index)",
+    "comment": "advances quest database tier/index (wraps every 10)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004343e0",
+    "name": "quest_build_fallback",
+    "signature": "void quest_build_fallback(float *entries, int *count)",
+    "comment": "fills a default quest spawn table when no quest builder is present"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00439230",
+    "name": "quest_database_init",
+    "signature": "void quest_database_init(void)",
+    "comment": "builds the quest metadata table and registers quest builders"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043a790",
+    "name": "quest_start_selected",
+    "signature": "void quest_start_selected(int tier, int index)",
+    "comment": "resets quest state, selects quest metadata, and runs its builder"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043c090",
+    "name": "sfx_release_entry",
+    "signature": "void sfx_release_entry(int entry)",
+    "comment": "frees a sound entry (sample/voices)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043c700",
+    "name": "sfx_release_sample",
+    "signature": "int sfx_release_sample(int sfx_id)",
+    "comment": "releases an sfx sample by id"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043c740",
+    "name": "sfx_load_sample",
+    "signature": "int sfx_load_sample(char *path)",
+    "comment": "loads an sfx sample and returns its id"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043c8d0",
+    "name": "music_load_track",
+    "signature": "int music_load_track(char *path)",
+    "comment": "loads a music track and returns its id"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043c960",
+    "name": "music_queue_track",
+    "signature": "void music_queue_track(int track_id)",
+    "comment": "queues a music track id"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043c980",
+    "name": "music_release_track",
+    "signature": "int music_release_track(int track_id)",
+    "comment": "releases a music track by id"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043c9c0",
+    "name": "audio_init_music",
+    "signature": "void audio_init_music(void)",
+    "comment": "loads music pack and registers music track ids"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043caa0",
+    "name": "audio_init_sfx",
+    "signature": "void audio_init_sfx(void)",
+    "comment": "loads sfx pack and registers sound effect ids"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043cf90",
+    "name": "sfx_system_init",
+    "signature": "int sfx_system_init(void)",
+    "comment": "initializes the Grim SFX system and clears per-sfx state"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043d070",
+    "name": "sfx_release_all",
+    "signature": "void sfx_release_all(void)",
+    "comment": "releases all loaded sfx samples"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043d0d0",
+    "name": "music_release_all",
+    "signature": "void music_release_all(void)",
+    "comment": "releases all loaded music tracks"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043d110",
+    "name": "audio_shutdown_all",
+    "signature": "void audio_shutdown_all(void)",
+    "comment": "shuts down sfx + music systems"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043d120",
+    "name": "sfx_play",
+    "signature": "int sfx_play(int sfx_id)",
+    "comment": "plays a sound effect with centered pan"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043d260",
+    "name": "sfx_play_panned",
+    "signature": "float sfx_play_panned(float sfx_id)",
+    "comment": "plays a sound effect with computed pan"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043d460",
+    "name": "sfx_play_exclusive",
+    "signature": "void sfx_play_exclusive(int sfx_id)",
+    "comment": "mutes other sfx ids and ensures the chosen id is audible"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043d550",
+    "name": "sfx_mute_all",
+    "signature": "void sfx_mute_all(int sfx_id)",
+    "comment": "mutes all unmuted sfx ids (recursive)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043d5b0",
+    "name": "sfx_update_mute_fades",
+    "signature": "void sfx_update_mute_fades(void)",
+    "comment": "ramps volume up/down based on mute flags"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043d730",
+    "name": "audio_suspend_channels",
+    "signature": "void audio_suspend_channels(void)",
+    "comment": "iterates channels and suspends playback"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043d770",
+    "name": "audio_resume_channels",
+    "signature": "void audio_resume_channels(void)",
+    "comment": "iterates channels and resumes playback"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043d7c0",
+    "name": "sfx_is_unmuted",
+    "signature": "int sfx_is_unmuted(int sfx_id)",
+    "comment": "returns nonzero when sfx id is not muted"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043d830",
+    "name": "ui_focus_update",
+    "signature": "int ui_focus_update(int id)",
+    "comment": "handles menu focus navigation and returns 1 when the given id is focused"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043d940",
+    "name": "ui_focus_draw",
+    "signature": "void ui_focus_draw(float *xy)",
+    "comment": "draws the focus highlight for the active menu item"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043e830",
+    "name": "ui_button_update",
+    "signature": "int ui_button_update(float *xy, int *button)",
+    "comment": "draws a UI button, updates hover/press state, and returns 1 when activated"
   },
   {
     "program": "crimsonland.exe",
@@ -38,6 +807,13 @@
     "name": "input_any_key_pressed",
     "signature": "int input_any_key_pressed(void)",
     "comment": "returns true if any key is down (scans keycodes 2..0x17e)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00446030",
+    "name": "input_primary_just_pressed",
+    "signature": "int input_primary_just_pressed(void)",
+    "comment": "edge-detect primary action (mouse button 0 or per-player fire key DAT_00490bec)"
   },
   {
     "program": "crimsonland.exe",
@@ -62,24 +838,38 @@
   },
   {
     "program": "crimsonland.exe",
-    "address": "0x00401030",
-    "name": "console_input_clear",
-    "signature": "void console_input_clear(void)",
-    "comment": "clears console input buffer"
+    "address": "0x00446c40",
+    "name": "ui_element_render",
+    "signature": "void ui_element_render(void *element)",
+    "comment": "updates focus/click handling and renders a UI element"
   },
   {
     "program": "crimsonland.exe",
-    "address": "0x00401050",
-    "name": "console_input_buffer",
-    "signature": "char * console_input_buffer(void)",
-    "comment": "returns console input buffer pointer"
+    "address": "0x004519b0",
+    "name": "weapon_table_init",
+    "signature": "void weapon_table_init(void)",
+    "comment": "initializes the weapon stats table at DAT_004d7a28"
   },
   {
     "program": "crimsonland.exe",
-    "address": "0x00401060",
-    "name": "console_input_poll",
-    "signature": "int console_input_poll(void)",
-    "comment": "polls text input and updates console buffer"
+    "address": "0x00452cd0",
+    "name": "weapon_pick_random_available",
+    "signature": "int weapon_pick_random_available(void)",
+    "comment": "selects a random weapon id that is marked available"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00452d40",
+    "name": "weapon_assign_player",
+    "signature": "void weapon_assign_player(int player_index, int weapon_id)",
+    "comment": "assigns a weapon to a player and resets ammo timers"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00452e40",
+    "name": "weapon_refresh_available",
+    "signature": "void weapon_refresh_available(void)",
+    "comment": "rebuilds availability flags from the unlock list"
   },
   {
     "program": "crimsonland.exe",
@@ -87,49 +877,6 @@
     "name": "renderer_select_backend",
     "signature": "int renderer_select_backend(int reset)",
     "comment": "selects renderer table based on config"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0042c450",
-    "name": "crimsonland_main",
-    "signature": "int crimsonland_main(void)",
-    "comment": "primary game init/run/shutdown sequence"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00465451",
-    "name": "crt_mt_init",
-    "comment": "CRT thread init (TLS + locks)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004654b8",
-    "name": "crt_get_thread_data",
-    "comment": "CRT per-thread data accessor"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0046551f",
-    "name": "crt_free_thread_data",
-    "comment": "frees CRT per-thread data"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00465842",
-    "name": "crt_init_locks",
-    "comment": "initializes CRT critical sections"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0046586b",
-    "name": "crt_lock",
-    "comment": "CRT lock table enter"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004658cc",
-    "name": "crt_unlock",
-    "comment": "CRT lock table leave"
   },
   {
     "program": "crimsonland.exe",
@@ -158,27 +905,6 @@
     "name": "crt_fclose",
     "signature": "int crt_fclose(FILE *fp)",
     "comment": "fclose wrapper with CRT lock/unlock"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00462fd0",
-    "name": "crt_isalpha",
-    "signature": "uint crt_isalpha(void *this, int c)",
-    "comment": "ctype alpha check (MBCS-aware)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00462ffe",
-    "name": "crt_isspace",
-    "signature": "uint crt_isspace(void *this, int c)",
-    "comment": "ctype space check (MBCS-aware)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00463c74",
-    "name": "crt_isctype",
-    "signature": "uint crt_isctype(void *this, int c, uint mask)",
-    "comment": "ctype classification (MBCS via GetStringTypeA/W)"
   },
   {
     "program": "crimsonland.exe",
@@ -252,6 +978,65 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00462eb0",
+    "name": "crt_run_initializers",
+    "comment": "invokes CRT initializer function ranges"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462edd",
+    "name": "crt_exit",
+    "signature": "void crt_exit(unsigned int code)",
+    "comment": "CRT exit path (atexit/onexit + ExitProcess)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462eff",
+    "name": "crt_doexit",
+    "signature": "void crt_doexit(unsigned int code, int full, int quick)",
+    "comment": "CRT exit worker (atexit/onexit + ExitProcess)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462fa4",
+    "name": "crt_exit_lock",
+    "comment": "exit lock"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462fad",
+    "name": "crt_exit_unlock",
+    "comment": "exit unlock"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462fb6",
+    "name": "crt_call_fn_range",
+    "comment": "call function pointers in a range"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462fd0",
+    "name": "crt_isalpha",
+    "signature": "uint crt_isalpha(void *this, int c)",
+    "comment": "ctype alpha check (MBCS-aware)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462ffe",
+    "name": "crt_isspace",
+    "signature": "uint crt_isspace(void *this, int c)",
+    "comment": "ctype space check (MBCS-aware)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463c74",
+    "name": "crt_isctype",
+    "signature": "uint crt_isctype(void *this, int c, uint mask)",
+    "comment": "ctype classification (MBCS via GetStringTypeA/W)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00463da5",
     "name": "crt_lock_file",
     "signature": "void crt_lock_file(FILE *fp)",
@@ -294,6 +1079,42 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00465451",
+    "name": "crt_mt_init",
+    "comment": "CRT thread init (TLS + locks)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004654b8",
+    "name": "crt_get_thread_data",
+    "comment": "CRT per-thread data accessor"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046551f",
+    "name": "crt_free_thread_data",
+    "comment": "frees CRT per-thread data"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00465842",
+    "name": "crt_init_locks",
+    "comment": "initializes CRT critical sections"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046586b",
+    "name": "crt_lock",
+    "comment": "CRT lock table enter"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004658cc",
+    "name": "crt_unlock",
+    "comment": "CRT lock table leave"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00465c30",
     "name": "crt_strcpy",
     "signature": "char * crt_strcpy(char *dst, char *src)",
@@ -329,6 +1150,12 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0046623d",
+    "name": "crt_io_init",
+    "comment": "CRT file handle table init"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004663f9",
     "name": "crt_lseek",
     "signature": "long crt_lseek(int fd, long offset, int origin)",
@@ -343,30 +1170,10 @@
   },
   {
     "program": "crimsonland.exe",
-    "address": "0x0046dd16",
-    "name": "crt_chsize",
-    "signature": "int crt_chsize(int fd, int size)",
-    "comment": "resize file (truncate/extend via lseek + SetEndOfFile/zero fill)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0046acf8",
-    "name": "crt_lock_fh",
-    "signature": "void crt_lock_fh(uint fd)",
-    "comment": "lock CRT file handle entry"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0046ad57",
-    "name": "crt_unlock_fh",
-    "signature": "void crt_unlock_fh(uint fd)",
-    "comment": "unlock CRT file handle entry"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0046623d",
-    "name": "crt_io_init",
-    "comment": "CRT file handle table init"
+    "address": "0x004668e9",
+    "name": "crt_exception_filter",
+    "signature": "long crt_exception_filter(int code, _EXCEPTION_POINTERS *info)",
+    "comment": "CRT exception filter/dispatch"
   },
   {
     "program": "crimsonland.exe",
@@ -391,51 +1198,6 @@
     "address": "0x0046777a",
     "name": "crt_sbh_create_region",
     "comment": "CRT small-block heap region init"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00462eb0",
-    "name": "crt_run_initializers",
-    "comment": "invokes CRT initializer function ranges"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00462eff",
-    "name": "crt_doexit",
-    "signature": "void crt_doexit(unsigned int code, int full, int quick)",
-    "comment": "CRT exit worker (atexit/onexit + ExitProcess)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00462fa4",
-    "name": "crt_exit_lock",
-    "comment": "exit lock"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00462fad",
-    "name": "crt_exit_unlock",
-    "comment": "exit unlock"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00462fb6",
-    "name": "crt_call_fn_range",
-    "comment": "call function pointers in a range"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00462edd",
-    "name": "crt_exit",
-    "signature": "void crt_exit(unsigned int code)",
-    "comment": "CRT exit path (atexit/onexit + ExitProcess)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004668e9",
-    "name": "crt_exception_filter",
-    "signature": "long crt_exception_filter(int code, _EXCEPTION_POINTERS *info)",
-    "comment": "CRT exception filter/dispatch"
   },
   {
     "program": "crimsonland.exe",
@@ -464,6 +1226,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00468c71",
+    "name": "crt_get_environment_strings",
+    "signature": "char * crt_get_environment_strings(void)",
+    "comment": "returns a malloc'd copy of the environment block"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00468da3",
     "name": "crt_runtime_error_banner",
     "comment": "runtime error prolog/epilog around report"
@@ -476,779 +1245,31 @@
   },
   {
     "program": "crimsonland.exe",
-    "address": "0x00468c71",
-    "name": "crt_get_environment_strings",
-    "signature": "char * crt_get_environment_strings(void)",
-    "comment": "returns a malloc'd copy of the environment block"
+    "address": "0x0046acf8",
+    "name": "crt_lock_fh",
+    "signature": "void crt_lock_fh(uint fd)",
+    "comment": "lock CRT file handle entry"
   },
   {
     "program": "crimsonland.exe",
-    "address": "0x004026e0",
-    "name": "console_register_command",
-    "comment": "registers a console command and handler"
+    "address": "0x0046ad57",
+    "name": "crt_unlock_fh",
+    "signature": "void crt_unlock_fh(uint fd)",
+    "comment": "unlock CRT file handle entry"
   },
   {
     "program": "crimsonland.exe",
-    "address": "0x00402860",
-    "name": "console_flush_log",
-    "comment": "flushes console lines to the log file"
+    "address": "0x0046dd16",
+    "name": "crt_chsize",
+    "signature": "int crt_chsize(int fd, int size)",
+    "comment": "resize file (truncate/extend via lseek + SetEndOfFile/zero fill)"
   },
   {
     "program": "crimsonland.exe",
-    "address": "0x00402c00",
-    "name": "register_core_cvars",
-    "comment": "registers built-in cvars"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0041ccb0",
-    "name": "dx_get_version",
-    "signature": "int dx_get_version(int *version, char *out, int out_len)",
-    "comment": "query DirectX version"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0041dc80",
-    "name": "grim_load_interface",
-    "signature": "int grim_load_interface(char *dll_name)",
-    "comment": "load grim DLL and fetch GRIM_GetInterface"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0041f1a0",
-    "name": "config_load_presets",
-    "comment": "loads config presets into globals"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0041f580",
-    "name": "bonus_alloc_slot",
-    "comment": "returns a free bonus slot in DAT_00482948 (or DAT_00490630 sentinel)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0041f5b0",
-    "name": "bonus_spawn_at",
-    "signature": "int * bonus_spawn_at(float *pos, int bonus_id, int duration_override)",
-    "comment": "clamps position, fills bonus entry fields, and spawns pickup effect"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00409890",
-    "name": "bonus_apply",
-    "signature": "void bonus_apply(int player_index, int *bonus_entry)",
-    "comment": "applies a picked bonus to the player and spawns related effects"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0040a320",
-    "name": "bonus_update",
-    "signature": "void bonus_update(void)",
-    "comment": "updates bonus lifetimes and handles player pickups"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00429580",
-    "name": "bonus_label_for_entry",
-    "signature": "char * bonus_label_for_entry(int *bonus_entry)",
-    "comment": "returns the label string for a bonus entry (formatting weapon/score cases)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004295f0",
-    "name": "bonus_render",
-    "signature": "void bonus_render(void)",
-    "comment": "renders bonus icons and labels from the pickup pool"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00420130",
-    "name": "fx_spawn_particle",
-    "signature": "int fx_spawn_particle(float *pos, float angle, void *unused, float intensity)",
-    "comment": "spawns a fast particle entry in DAT_00493eb8"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00420240",
-    "name": "fx_spawn_particle_slow",
-    "signature": "int fx_spawn_particle_slow(float *pos, float angle)",
-    "comment": "spawns a slow particle entry in DAT_00493eb8"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00420360",
-    "name": "fx_spawn_secondary_projectile",
-    "signature": "int fx_spawn_secondary_projectile(float *pos, float angle, int type_id)",
-    "comment": "spawns a typed entry in DAT_00495ad8 (secondary projectile pool)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0041fbb0",
-    "name": "fx_spawn_sprite",
-    "signature": "int fx_spawn_sprite(float *pos, float *vel, float scale)",
-    "comment": "spawns a sprite effect entry in DAT_00496820"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0041fc60",
-    "name": "weapon_table_entry",
-    "signature": "char * weapon_table_entry(int weapon_id)",
-    "comment": "returns the entry base (&DAT_004d7a2c + weapon_id * 0x1f)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004519b0",
-    "name": "weapon_table_init",
-    "signature": "void weapon_table_init(void)",
-    "comment": "initializes the weapon stats table at DAT_004d7a28"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00452cd0",
-    "name": "weapon_pick_random_available",
-    "signature": "int weapon_pick_random_available(void)",
-    "comment": "selects a random weapon id that is marked available"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00452d40",
-    "name": "weapon_assign_player",
-    "signature": "void weapon_assign_player(int player_index, int weapon_id)",
-    "comment": "assigns a weapon to a player and resets ammo timers"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00452e40",
-    "name": "weapon_refresh_available",
-    "signature": "void weapon_refresh_available(void)",
-    "comment": "rebuilds availability flags from the unlock list"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00420440",
-    "name": "projectile_spawn",
-    "signature": "int projectile_spawn(float *pos, float angle, int type_id, int owner_id)",
-    "comment": "allocates a projectile slot, initializes fields, and returns the index (overrides to type 0x2d when Fire Bullets is active)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004205d0",
-    "name": "projectile_reset_pools",
-    "signature": "void projectile_reset_pools(void)",
-    "comment": "clears projectile and effect pools (DAT_004926b8, DAT_00493eb8)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00420600",
-    "name": "creatures_apply_radius_damage",
-    "signature": "void creatures_apply_radius_damage(float *pos, float radius, float damage, int damage_type)",
-    "comment": "applies damage to creatures within radius using FUN_004207c0"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004206a0",
-    "name": "creature_find_in_radius",
-    "signature": "int creature_find_in_radius(float *pos, float radius, int start_index)",
-    "comment": "returns the first creature index in range, or -1"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00420730",
-    "name": "player_find_in_radius",
-    "signature": "int player_find_in_radius(int owner_id, float *pos, float radius)",
-    "comment": "returns a player index in range, skipping owner_id (-1/-2/-3 -> player 0/1/2)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00420b90",
-    "name": "projectile_update",
-    "signature": "void projectile_update(void)",
-    "comment": "updates projectile movement, collisions, and hit effects"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00425e50",
-    "name": "player_take_damage",
-    "signature": "void player_take_damage(int player_index, float damage)",
-    "comment": "applies player damage with perk modifiers, SFX, and retaliation effects"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00426220",
-    "name": "creature_update_all",
-    "signature": "void creature_update_all(void)",
-    "comment": "primary creature update loop: AI, movement, attacks, and animation phase"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0042a5f0",
-    "name": "audio_resume_all",
-    "signature": "int audio_resume_all(void)",
-    "comment": "resume active audio channels"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0042a630",
-    "name": "audio_suspend_all",
-    "signature": "void audio_suspend_all(void)",
-    "comment": "suspend active audio channels"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0042a670",
-    "name": "texture_get_or_load",
-    "signature": "int texture_get_or_load(char *name)",
-    "comment": "lookup texture handle; load if missing"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0042a700",
-    "name": "texture_get_or_load_alt",
-    "signature": "int texture_get_or_load_alt(char *name)",
-    "comment": "duplicate of texture_get_or_load (callers are mostly .jaz assets)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004045a0",
-    "name": "perks_generate_choices",
-    "signature": "void perks_generate_choices(void)",
-    "comment": "builds the current perk choice list"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00412a10",
-    "name": "game_sequence_load",
-    "signature": "void game_sequence_load(void)",
-    "comment": "reads the sequence value from registry"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00412a80",
-    "name": "game_save_status",
-    "signature": "void game_save_status(void)",
-    "comment": "writes registry state and saves status file"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00412c10",
-    "name": "game_load_status",
-    "signature": "void game_load_status(void)",
-    "comment": "loads status file; regenerates on failure"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00412960",
-    "name": "game_mode_label",
-    "signature": "char * game_mode_label(void)",
-    "comment": "returns a display label for the current game mode"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0042a9f0",
-    "name": "init_audio_and_terrain",
-    "signature": "void init_audio_and_terrain(void)",
-    "comment": "sound init + terrain texture setup"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0042a980",
-    "name": "reg_read_dword_default",
-    "signature": "int reg_read_dword_default(HKEY key, char *name, unsigned int *out, unsigned int fallback)",
-    "comment": "reads a registry DWORD or writes fallback to output"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0042a9c0",
-    "name": "reg_write_dword",
-    "signature": "int reg_write_dword(HKEY key, char *name, unsigned int value)",
-    "comment": "writes a registry DWORD"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0042abd0",
-    "name": "load_textures_step",
-    "signature": "int load_textures_step(void)",
-    "comment": "stage-based texture loading (advances DAT_004aaf88)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0042de80",
-    "name": "effect_init_entry",
-    "signature": "void effect_init_entry(void *entry)",
-    "comment": "initializes an effect entry to default values"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0042df10",
-    "name": "effect_defaults_reset",
-    "signature": "void effect_defaults_reset(void)",
-    "comment": "resets global effect template values"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0042e080",
-    "name": "effect_free",
-    "signature": "void effect_free(void *entry)",
-    "comment": "returns an effect entry to the free list"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0042e0a0",
-    "name": "effect_select_texture",
-    "signature": "void effect_select_texture(int effect_id)",
-    "comment": "selects effect texture page based on effect id"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0042e120",
-    "name": "effect_spawn",
-    "signature": "void * effect_spawn(int effect_id, float *pos)",
-    "comment": "allocates an effect entry and assigns quad UVs"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0042e710",
-    "name": "effects_update",
-    "signature": "void effects_update(void)",
-    "comment": "ticks active effects and frees expired entries"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0042e820",
-    "name": "effects_render",
-    "signature": "void effects_render(void)",
-    "comment": "renders active effects (rotated quads)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0042ef60",
-    "name": "effect_spawn_burst",
-    "signature": "void effect_spawn_burst(float *pos, int count)",
-    "comment": "generic burst loop for effect id 0"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004055e0",
-    "name": "perk_apply",
-    "signature": "void perk_apply(int perk_id)",
-    "comment": "applies perk effects and increments perk counter"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0042fb10",
-    "name": "perk_can_offer",
-    "signature": "int perk_can_offer(int perk_index)",
-    "comment": "returns nonzero when perk is eligible for selection"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0042fbd0",
-    "name": "perk_select_random",
-    "signature": "int perk_select_random(void)",
-    "comment": "randomly selects an eligible perk index"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0042fc30",
-    "name": "perks_rebuild_available",
-    "signature": "void perks_rebuild_available(void)",
-    "comment": "rebuilds perk availability/unlock flags"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0042fd90",
-    "name": "perks_init_database",
-    "signature": "void perks_init_database(void)",
-    "comment": "builds the perk table (ids, names, descriptions)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0042fcf0",
-    "name": "perk_count_get",
-    "signature": "int perk_count_get(int perk_id)",
-    "comment": "returns perk count from DAT_00490968"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004034a0",
-    "name": "ui_mouse_inside_rect",
-    "signature": "int ui_mouse_inside_rect(float *xy, int h, int w)",
-    "comment": "returns 1 when the mouse is inside the rect and mouse capture is clear"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004047c0",
-    "name": "demo_trial_overlay_render",
-    "signature": "void demo_trial_overlay_render(float *xy, float alpha)",
-    "comment": "renders the demo trial warning panel and remaining time message"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0040b740",
-    "name": "demo_purchase_screen_update",
-    "signature": "void demo_purchase_screen_update(void)",
-    "comment": "demo upsell screen: feature list, purchase link, and exit handling"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00410d20",
-    "name": "quest_results_screen_update",
-    "signature": "void quest_results_screen_update(void)",
-    "comment": "quest/campaign results screen: final time, perk bonus, high score entry, and buttons"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004136b0",
-    "name": "player_update",
-    "signature": "void player_update(void)",
-    "comment": "per-player gameplay update: movement, firing, status timers, and effects"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00417b80",
-    "name": "terrain_generate",
-    "signature": "void terrain_generate(void *desc)",
-    "comment": "generates terrain texture into a render target using a level descriptor"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0041a040",
-    "name": "ui_cursor_render",
-    "signature": "void ui_cursor_render(void)",
-    "comment": "renders the in-game cursor/crosshair sprites"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00446c40",
-    "name": "ui_element_render",
-    "signature": "void ui_element_render(void *element)",
-    "comment": "updates focus/click handling and renders a UI element"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00434220",
-    "name": "quest_spawn_table_empty",
-    "signature": "int quest_spawn_table_empty(void)",
-    "comment": "returns 1 when the quest spawn table has no pending entries"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00434250",
-    "name": "quest_spawn_timeline_update",
-    "signature": "void quest_spawn_timeline_update(void)",
-    "comment": "updates quest spawn entries based on the quest timer"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004343c0",
-    "name": "quest_database_advance_slot",
-    "signature": "void quest_database_advance_slot(int *tier, int *index)",
-    "comment": "advances quest database tier/index (wraps every 10)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004343e0",
-    "name": "quest_build_fallback",
-    "signature": "void quest_build_fallback(float *entries, int *count)",
-    "comment": "fills a default quest spawn table when no quest builder is present"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00439230",
-    "name": "quest_database_init",
-    "signature": "void quest_database_init(void)",
-    "comment": "builds the quest metadata table and registers quest builders"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0043a790",
-    "name": "quest_start_selected",
-    "signature": "void quest_start_selected(int tier, int index)",
-    "comment": "resets quest state, selects quest metadata, and runs its builder"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0043d120",
-    "name": "sfx_play",
-    "signature": "int sfx_play(int sfx_id)",
-    "comment": "plays a sound effect with centered pan"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0043d830",
-    "name": "ui_focus_update",
-    "signature": "int ui_focus_update(int id)",
-    "comment": "handles menu focus navigation and returns 1 when the given id is focused"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0043d940",
-    "name": "ui_focus_draw",
-    "signature": "void ui_focus_draw(float *xy)",
-    "comment": "draws the focus highlight for the active menu item"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0043d260",
-    "name": "sfx_play_panned",
-    "signature": "float sfx_play_panned(float sfx_id)",
-    "comment": "plays a sound effect with computed pan"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0043d550",
-    "name": "sfx_mute_all",
-    "signature": "void sfx_mute_all(int sfx_id)",
-    "comment": "mutes all unmuted sfx ids (recursive)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0043d460",
-    "name": "sfx_play_exclusive",
-    "signature": "void sfx_play_exclusive(int sfx_id)",
-    "comment": "mutes other sfx ids and ensures the chosen id is audible"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0043d5b0",
-    "name": "sfx_update_mute_fades",
-    "signature": "void sfx_update_mute_fades(void)",
-    "comment": "ramps volume up/down based on mute flags"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0043d7c0",
-    "name": "sfx_is_unmuted",
-    "signature": "int sfx_is_unmuted(int sfx_id)",
-    "comment": "returns nonzero when sfx id is not muted"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0043c9c0",
-    "name": "audio_init_music",
-    "signature": "void audio_init_music(void)",
-    "comment": "loads music pack and registers music track ids"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0043caa0",
-    "name": "audio_init_sfx",
-    "signature": "void audio_init_sfx(void)",
-    "comment": "loads sfx pack and registers sound effect ids"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0043c740",
-    "name": "sfx_load_sample",
-    "signature": "int sfx_load_sample(char *path)",
-    "comment": "loads an sfx sample and returns its id"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0043c700",
-    "name": "sfx_release_sample",
-    "signature": "int sfx_release_sample(int sfx_id)",
-    "comment": "releases an sfx sample by id"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0043c090",
-    "name": "sfx_release_entry",
-    "signature": "void sfx_release_entry(int entry)",
-    "comment": "frees a sound entry (sample/voices)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0043c8d0",
-    "name": "music_load_track",
-    "signature": "int music_load_track(char *path)",
-    "comment": "loads a music track and returns its id"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0043c960",
-    "name": "music_queue_track",
-    "signature": "void music_queue_track(int track_id)",
-    "comment": "queues a music track id"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0043c980",
-    "name": "music_release_track",
-    "signature": "int music_release_track(int track_id)",
-    "comment": "releases a music track by id"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0043cf90",
-    "name": "sfx_system_init",
-    "signature": "int sfx_system_init(void)",
-    "comment": "initializes the Grim SFX system and clears per-sfx state"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0043d070",
-    "name": "sfx_release_all",
-    "signature": "void sfx_release_all(void)",
-    "comment": "releases all loaded sfx samples"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0043d0d0",
-    "name": "music_release_all",
-    "signature": "void music_release_all(void)",
-    "comment": "releases all loaded music tracks"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0043d110",
-    "name": "audio_shutdown_all",
-    "signature": "void audio_shutdown_all(void)",
-    "comment": "shuts down sfx + music systems"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0043d730",
-    "name": "audio_suspend_channels",
-    "signature": "void audio_suspend_channels(void)",
-    "comment": "iterates channels and suspends playback"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0043d770",
-    "name": "audio_resume_channels",
-    "signature": "void audio_resume_channels(void)",
-    "comment": "iterates channels and resumes playback"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0043e830",
-    "name": "ui_button_update",
-    "signature": "int ui_button_update(float *xy, int *button)",
-    "comment": "draws a UI button, updates hover/press state, and returns 1 when activated"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00407510",
-    "name": "survival_spawn_creature",
-    "signature": "void survival_spawn_creature(float *pos)",
-    "comment": "spawns a creature at the given position, selecting type/stats based on DAT_0049095c"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00407cd0",
-    "name": "survival_update",
-    "signature": "void survival_update(void)",
-    "comment": "main survival mode update: timers, scripted spawns, and enemy wave spawning"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00408530",
-    "name": "tutorial_prompt_dialog",
-    "signature": "void tutorial_prompt_dialog(char *text, float alpha)",
-    "comment": "renders tutorial prompt text + Repeat/Play/Skip buttons and handles selections"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00408990",
-    "name": "tutorial_timeline_update",
-    "comment": "drives tutorial stage timing, messages, and scripted spawns"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00428210",
-    "name": "creatures_none_active",
-    "comment": "returns low byte 1 when no active creature entries exist (0 otherwise); sets DAT_0048700c"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00428140",
-    "name": "creature_alloc_slot",
-    "comment": "finds a free creature entry in DAT_0049bf38 and seeds defaults"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00428240",
-    "name": "creature_spawn",
-    "signature": "int creature_spawn(float *pos, float *tint_rgba, int type_id)",
-    "comment": "allocates a creature slot and seeds position, type, and tint defaults"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00418b60",
-    "name": "creature_render_type",
-    "signature": "void creature_render_type(int type_id)",
-    "comment": "renders active creatures matching type_id using 8x8 atlases and animation strips"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00419680",
-    "name": "creature_render_all",
-    "signature": "void creature_render_all(void)",
-    "comment": "creature render pass: overlays + per-type draws via creature_render_type"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0041aed0",
-    "name": "ui_render_hud",
-    "signature": "void ui_render_hud(void)",
-    "comment": "renders the in-game HUD (health, weapon icons, player UI)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0041e400",
-    "name": "vec2_add_inplace",
-    "signature": "void vec2_add_inplace(int unused, float *pos, float *delta)",
-    "comment": "adds delta XY into pos; unused param_1 in decompile"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0041e840",
-    "name": "fx_queue_add",
-    "signature": "int fx_queue_add(int effect_id, float *pos, float w, float h, float rotation, float *rgba)",
-    "comment": "pushes a quad entry into DAT_004aaf18 (capped at 0x80); returns 1 on success"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0041e910",
-    "name": "creature_handle_death",
-    "signature": "void creature_handle_death(int creature_id, bool keep_corpse)",
-    "comment": "death handler: bonus spawns, split-on-death, score, and cleanup"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0041f430",
-    "name": "angle_approach",
-    "signature": "void angle_approach(float *angle, float target, float rate)",
-    "comment": "wraps angle into [0,2pi] and steps toward target using shortest arc"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00422c70",
-    "name": "projectile_render",
-    "signature": "void projectile_render(void)",
-    "comment": "renders projectiles/secondary projectiles and related beam/trail effects"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00427840",
-    "name": "fx_queue_add_rotated",
-    "signature": "int fx_queue_add_rotated(float *pos, float *rgba, float rotation, float scale, int effect_id)",
-    "comment": "pushes a rotated sprite into DAT_004aaf3c (capped at 0x40); returns 1 on success"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00427920",
-    "name": "fx_queue_render",
-    "signature": "void fx_queue_render(void)",
-    "comment": "renders DAT_004aaf18/DAT_004aaf3c queues and clears them"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00428390",
-    "name": "player_render_overlays",
-    "signature": "void player_render_overlays(void)",
-    "comment": "renders per-player overlays/indicators using DAT_004908** tables"
+    "address": "0x0046e8f4",
+    "name": "strdup_malloc",
+    "signature": "char * strdup_malloc(char * src)",
+    "comment": "malloc+copy helper"
   },
   {
     "program": "grim.dll",
@@ -1266,122 +1287,10 @@
   },
   {
     "program": "grim.dll",
-    "address": "0x1000aaa6",
-    "name": "grim_format_info_lookup",
-    "signature": "int * grim_format_info_lookup(int format)",
-    "comment": "returns pointer to the D3D format descriptor entry (fallbacks to default)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001c188",
-    "name": "grim_select_renderer_backend",
-    "signature": "int grim_select_renderer_backend(int force)",
-    "comment": "copies the render backend vtable and selects D3DX/alt paths based on config"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001e114",
-    "name": "png_error",
-    "signature": "void png_error(int *png_ptr, char *msg)",
-    "comment": "png error handler: call error_fn then longjmp"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001e132",
-    "name": "png_warning",
-    "signature": "void png_warning(int *png_ptr, char *msg)",
-    "comment": "png warning handler: call warning_fn"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1002047c",
-    "name": "png_read_data",
-    "signature": "void png_read_data(int *png_ptr, unsigned char *data, unsigned int length)",
-    "comment": "png read callback wrapper (errors if NULL)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10020583",
-    "name": "png_reset_crc",
-    "signature": "void png_reset_crc(int *png_ptr)",
-    "comment": "reset png CRC state"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1002059b",
-    "name": "png_calculate_crc",
-    "signature": "void png_calculate_crc(int *png_ptr, unsigned char *data, unsigned int length)",
-    "comment": "update png CRC with buffer"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10024734",
-    "name": "png_free_ptr",
-    "signature": "void png_free_ptr(void *ptr)",
-    "comment": "free wrapper for png allocations"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10024741",
-    "name": "png_malloc",
-    "signature": "void * png_malloc(int *png_ptr, unsigned int size)",
-    "comment": "png malloc wrapper (errors on OOM)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10024777",
-    "name": "png_free",
-    "signature": "void png_free(int *png_ptr, void *ptr)",
-    "comment": "png free callback wrapper"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100247e4",
-    "name": "png_get_uint_32",
-    "signature": "unsigned int png_get_uint_32(unsigned char *buf)",
-    "comment": "read big-endian 32-bit value"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10024807",
-    "name": "png_crc_read",
-    "signature": "void png_crc_read(int *png_ptr, unsigned char *buf, unsigned int length)",
-    "comment": "read PNG chunk data and update CRC"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10024821",
-    "name": "png_crc_error",
-    "signature": "int png_crc_error(int *png_ptr)",
-    "comment": "read stored CRC and compare with computed"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1002487f",
-    "name": "png_check_chunk_name",
-    "signature": "void png_check_chunk_name(int *png_ptr, unsigned char *chunk_name)",
-    "comment": "validate PNG chunk type characters"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100250d7",
-    "name": "png_crc_finish",
-    "signature": "int png_crc_finish(int *png_ptr, unsigned int skip)",
-    "comment": "read remaining chunk bytes and check CRC"
-  },
-  {
-    "program": "grim.dll",
     "address": "0x10002880",
     "name": "grim_window_destroy",
     "signature": "void grim_window_destroy(void)",
     "comment": "posts quit and destroys the main window"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10003e60",
-    "name": "grim_d3d_init",
-    "signature": "int grim_d3d_init(void)",
-    "comment": "creates the Direct3D8 interface, configures display mode, and opens the window"
   },
   {
     "program": "grim.dll",
@@ -1396,6 +1305,13 @@
     "name": "grim_restore_textures",
     "signature": "int grim_restore_textures(void)",
     "comment": "restore texture surfaces after device reset"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10003e60",
+    "name": "grim_d3d_init",
+    "signature": "int grim_d3d_init(void)",
+    "comment": "creates the Direct3D8 interface, configures display mode, and opens the window"
   },
   {
     "program": "grim.dll",
@@ -1452,6 +1368,601 @@
     "name": "grim_find_free_texture_slot",
     "signature": "int grim_find_free_texture_slot(void)",
     "comment": "finds the first free texture slot"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100051e0",
+    "name": "grim_load_texture_internal",
+    "signature": "int grim_load_texture_internal(char *name, ushort *path)",
+    "comment": "allocates texture slot and loads file"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10005c20",
+    "name": "grim_set_key_char_buffer",
+    "signature": "void grim_set_key_char_buffer(unsigned char *buffer, int *count, int size)",
+    "comment": "Grim2D vtable 0x54 (provisional): set input character ring buffer"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10005c40",
+    "name": "grim_get_key_char",
+    "signature": "int grim_get_key_char(void)",
+    "comment": "Grim2D vtable 0x50 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10005c80",
+    "name": "grim_release",
+    "signature": "void grim_release(void)",
+    "comment": "Grim2D vtable 0x0: delete interface"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10005c90",
+    "name": "grim_set_paused",
+    "signature": "void grim_set_paused(int paused)",
+    "comment": "Grim2D vtable 0x4 (provisional): pause game tick update"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10005ca0",
+    "name": "grim_get_version",
+    "signature": "float grim_get_version(void)",
+    "comment": "Grim2D vtable 0x8 (provisional): engine version constant"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10005cb0",
+    "name": "grim_check_device",
+    "signature": "int grim_check_device(void)",
+    "comment": "Grim2D vtable 0xc: device creation test"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10005d40",
+    "name": "grim_apply_config",
+    "comment": "Grim2D vtable 0x10: opens D3D config dialog and applies settings",
+    "signature": "int grim_apply_config(void)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10005eb0",
+    "name": "grim_init_system",
+    "comment": "Grim2D vtable 0x14: Grim2D init; returns success",
+    "signature": "int grim_init_system(void)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10005ff0",
+    "name": "grim_shutdown",
+    "comment": "Grim2D vtable 0x18 (provisional): Grim2D shutdown",
+    "signature": "void grim_shutdown(void)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10006020",
+    "name": "grim_apply_settings",
+    "comment": "Grim2D vtable 0x1c: apply Grim2D settings after config load",
+    "signature": "void grim_apply_settings(void)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10006580",
+    "name": "grim_set_render_state",
+    "signature": "void grim_set_render_state(unsigned int state, unsigned int value)",
+    "comment": "Grim2D vtable 0x20 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10006c30",
+    "name": "grim_get_config_var",
+    "signature": "void grim_get_config_var(unsigned int *out, int id)",
+    "comment": "Grim2D vtable 0x24 (provisional): fills 4 dwords for config entry (id 0..0x7f)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10006ca0",
+    "name": "grim_get_error_text",
+    "comment": "Grim2D vtable 0x28: error string for MessageBox",
+    "signature": "char * grim_get_error_text(void)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10006cb0",
+    "name": "grim_clear_color",
+    "signature": "void grim_clear_color(float r, float g, float b, float a)",
+    "comment": "Grim2D vtable 0x2c: packs RGBA into device clear color"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10006d50",
+    "name": "grim_set_render_target",
+    "signature": "int grim_set_render_target(int target_index)",
+    "comment": "Grim2D vtable 0x30 (provisional): set render target; -1 resets"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10006e40",
+    "name": "grim_get_time_ms",
+    "signature": "int grim_get_time_ms(void)",
+    "comment": "Grim2D vtable 0x34: accumulated time (ms)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10006e50",
+    "name": "grim_set_time_ms",
+    "signature": "void grim_set_time_ms(int ms)",
+    "comment": "Grim2D vtable 0x38: set accumulated time"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10006e60",
+    "name": "grim_get_frame_dt",
+    "signature": "float grim_get_frame_dt(void)",
+    "comment": "Grim2D vtable 0x3c: clamped frame delta"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10006e90",
+    "name": "grim_get_fps",
+    "signature": "float grim_get_fps(void)",
+    "comment": "Grim2D vtable 0x40: frames per second"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10006fe0",
+    "name": "grim_is_key_active",
+    "signature": "int grim_is_key_active(int key)",
+    "comment": "Grim2D vtable 0x80: routes key/mouse/joystick IDs"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100071b0",
+    "name": "grim_get_config_float",
+    "signature": "float grim_get_config_float(int id)",
+    "comment": "Grim2D vtable 0x84: config float lookup (scaled)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100072c0",
+    "name": "grim_get_slot_float",
+    "signature": "float grim_get_slot_float(int index)",
+    "comment": "Grim2D vtable 0x88 (provisional): float slot accessor"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100072d0",
+    "name": "grim_get_slot_int",
+    "signature": "int grim_get_slot_int(int index)",
+    "comment": "Grim2D vtable 0x8c (provisional): int slot accessor"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100072e0",
+    "name": "grim_set_slot_float",
+    "signature": "void grim_set_slot_float(int index, float value)",
+    "comment": "Grim2D vtable 0x90 (provisional): float slot setter"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007300",
+    "name": "grim_set_slot_int",
+    "signature": "void grim_set_slot_int(int index, int value)",
+    "comment": "Grim2D vtable 0x94 (provisional): int slot setter"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007320",
+    "name": "grim_is_key_down",
+    "signature": "int grim_is_key_down(unsigned int key)",
+    "comment": "Grim2D vtable 0x44 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007330",
+    "name": "grim_flush_input",
+    "signature": "void grim_flush_input(void)",
+    "comment": "Grim2D vtable 0x4c (provisional): clear buffered input/device state"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007390",
+    "name": "grim_was_key_pressed",
+    "signature": "int grim_was_key_pressed(unsigned int key)",
+    "comment": "Grim2D vtable 0x48 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007410",
+    "name": "grim_is_mouse_button_down",
+    "signature": "int grim_is_mouse_button_down(int button)",
+    "comment": "Grim2D vtable 0x58: cached mouse button state or poll"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007440",
+    "name": "grim_was_mouse_button_pressed",
+    "signature": "int grim_was_mouse_button_pressed(int button)",
+    "comment": "Grim2D vtable 0x5c (provisional): edge-triggered mouse button"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100074d0",
+    "name": "grim_get_mouse_dx",
+    "signature": "float grim_get_mouse_dx(void)",
+    "comment": "Grim2D vtable 0x70: cached mouse delta X"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100074e0",
+    "name": "grim_get_mouse_dy",
+    "signature": "float grim_get_mouse_dy(void)",
+    "comment": "Grim2D vtable 0x74: cached mouse delta Y"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100074f0",
+    "name": "grim_get_mouse_dx_indexed",
+    "signature": "float grim_get_mouse_dx_indexed(int index)",
+    "comment": "Grim2D vtable 0x78: alias of get_mouse_dx"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007500",
+    "name": "grim_get_mouse_dy_indexed",
+    "signature": "float grim_get_mouse_dy_indexed(int index)",
+    "comment": "Grim2D vtable 0x7c: alias of get_mouse_dy"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007510",
+    "name": "grim_get_mouse_x",
+    "signature": "float grim_get_mouse_x(void)",
+    "comment": "Grim2D vtable 0x68: cached mouse X position"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007520",
+    "name": "grim_get_mouse_y",
+    "signature": "float grim_get_mouse_y(void)",
+    "comment": "Grim2D vtable 0x6c: cached mouse Y position"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007530",
+    "name": "grim_set_mouse_pos",
+    "signature": "void grim_set_mouse_pos(float x, float y)",
+    "comment": "Grim2D vtable 0x64: set cached mouse position"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007560",
+    "name": "grim_get_mouse_wheel_delta",
+    "signature": "float grim_get_mouse_wheel_delta(void)",
+    "comment": "Grim2D vtable 0x60 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007580",
+    "name": "grim_get_joystick_x",
+    "signature": "int grim_get_joystick_x(void)",
+    "comment": "Grim2D vtable 0x98 (provisional): joystick axis X"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007590",
+    "name": "grim_get_joystick_y",
+    "signature": "int grim_get_joystick_y(void)",
+    "comment": "Grim2D vtable 0x9c (provisional): joystick axis Y"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100075a0",
+    "name": "grim_get_joystick_z",
+    "signature": "int grim_get_joystick_z(void)",
+    "comment": "Grim2D vtable 0xa0 (provisional): joystick axis Z"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100075b0",
+    "name": "grim_get_joystick_pov",
+    "signature": "int grim_get_joystick_pov(int index)",
+    "comment": "Grim2D vtable 0xa4 (provisional): joystick POV hat value"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100075c0",
+    "name": "grim_is_joystick_button_down",
+    "signature": "int grim_is_joystick_button_down(int button)",
+    "comment": "Grim2D vtable 0xa8 (provisional): joystick button state"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100075d0",
+    "name": "grim_create_texture",
+    "signature": "int grim_create_texture(char *name, int width, int height)",
+    "comment": "Grim2D vtable 0xac: create blank texture in a free slot"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100076e0",
+    "name": "grim_load_texture",
+    "signature": "int grim_load_texture(char *name, char *path)",
+    "comment": "Grim2D vtable 0xb4 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007700",
+    "name": "grim_destroy_texture",
+    "signature": "void grim_destroy_texture(int handle)",
+    "comment": "Grim2D vtable 0xbc (provisional): release texture handle"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007740",
+    "name": "grim_get_texture_handle",
+    "signature": "int grim_get_texture_handle(char *name)",
+    "comment": "Grim2D vtable 0xc0: lookup texture handle by name"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007750",
+    "name": "grim_validate_texture",
+    "signature": "int grim_validate_texture(int handle)",
+    "comment": "Grim2D vtable 0xb8: validate texture handle/device"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007790",
+    "name": "grim_recreate_texture",
+    "signature": "int grim_recreate_texture(int handle)",
+    "comment": "Grim2D vtable 0xb0: recreate D3D texture surface"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007830",
+    "name": "grim_bind_texture",
+    "signature": "void grim_bind_texture(int handle, int stage)",
+    "comment": "Grim2D vtable 0xc4: bind texture handle to stage"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007870",
+    "name": "grim_draw_fullscreen_quad",
+    "signature": "void grim_draw_fullscreen_quad(void)",
+    "comment": "Grim2D vtable 0xc8: full-screen quad with current texture"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100078e0",
+    "name": "grim_draw_rect_filled",
+    "signature": "void grim_draw_rect_filled(float *xy, float w, float h)",
+    "comment": "Grim2D vtable 0xd0: UI panel fill/quad"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100079b0",
+    "name": "grim_draw_fullscreen_color",
+    "signature": "void grim_draw_fullscreen_color(float r, float g, float b, float a)",
+    "comment": "Grim2D vtable 0xcc: fullscreen color/fade overlay"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007ac0",
+    "name": "grim_begin_batch",
+    "signature": "void grim_begin_batch(void)",
+    "comment": "Grim2D vtable 0xe8 (provisional): begin draw batch"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007b20",
+    "name": "grim_end_batch",
+    "signature": "void grim_end_batch(void)",
+    "comment": "Grim2D vtable 0xf0 (provisional): end draw batch/flush"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007b90",
+    "name": "grim_draw_circle_filled",
+    "signature": "void grim_draw_circle_filled(float x, float y, float radius)",
+    "comment": "Grim2D vtable 0xd8 (provisional): triangle fan circle fill"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007d40",
+    "name": "grim_draw_circle_outline",
+    "signature": "void grim_draw_circle_outline(float x, float y, float radius)",
+    "comment": "Grim2D vtable 0xdc (provisional): triangle strip ring/outline"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007f30",
+    "name": "grim_set_rotation",
+    "signature": "void grim_set_rotation(float radians)",
+    "comment": "Grim2D vtable 0xfc: precompute sin/cos (+45deg) for rotation matrix"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10007f90",
+    "name": "grim_set_color",
+    "signature": "void grim_set_color(float r, float g, float b, float a)",
+    "comment": "Grim2D vtable 0x114 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10008040",
+    "name": "grim_set_color_ptr",
+    "signature": "void grim_set_color_ptr(float *rgba)",
+    "comment": "Grim2D vtable 0x110: set color from float[4]"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100080b0",
+    "name": "grim_draw_line",
+    "signature": "void grim_draw_line(float *p0, float *p1, float thickness)",
+    "comment": "Grim2D vtable 0xe0 (provisional): builds line quad from endpoints"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10008150",
+    "name": "grim_draw_line_quad",
+    "signature": "void grim_draw_line_quad(float *p0, float *p1, float *half_vec)",
+    "comment": "Grim2D vtable 0xe4 (provisional): line quad from endpoints + half-width vector"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100081c0",
+    "name": "grim_set_color_slot",
+    "signature": "void grim_set_color_slot(int index, float r, float g, float b, float a)",
+    "comment": "Grim2D vtable 0x118 (provisional): set color slot"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10008230",
+    "name": "grim_set_atlas_frame",
+    "signature": "void grim_set_atlas_frame(int atlas_size, int frame)",
+    "comment": "Grim2D vtable 0x104 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100082c0",
+    "name": "grim_set_sub_rect",
+    "signature": "void grim_set_sub_rect(int atlas_size, int width, int height, int frame)",
+    "comment": "Grim2D vtable 0x108: atlas sub-rect from grid table"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10008350",
+    "name": "grim_set_uv",
+    "signature": "void grim_set_uv(float u0, float v0, float u1, float v1)",
+    "comment": "Grim2D vtable 0x100 (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100083a0",
+    "name": "grim_set_uv_point",
+    "signature": "void grim_set_uv_point(int index, float u, float v)",
+    "comment": "Grim2D vtable 0x10c: set UV point"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100083c0",
+    "name": "grim_flush_batch",
+    "signature": "void grim_flush_batch(void)",
+    "comment": "Grim2D vtable 0xec: flush batch when vertex buffer fills"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10008430",
+    "name": "grim_submit_vertices_offset_color",
+    "signature": "void grim_submit_vertices_offset_color(float *verts, int count, float *offset, float *color)",
+    "comment": "Grim2D vtable 0x130: translate + apply color"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100084e0",
+    "name": "grim_submit_vertices_transform_color",
+    "signature": "void grim_submit_vertices_transform_color(float *verts, int count, float *offset, float *matrix, float *color)",
+    "comment": "Grim2D vtable 0x134: rotate + translate + apply color"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100085c0",
+    "name": "grim_submit_vertices_transform",
+    "signature": "void grim_submit_vertices_transform(float *verts, int count, float *offset, float *matrix)",
+    "comment": "Grim2D vtable 0x128: copy verts, rotate, translate"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10008680",
+    "name": "grim_submit_vertices_offset",
+    "signature": "void grim_submit_vertices_offset(float *verts, int count, float *offset)",
+    "comment": "Grim2D vtable 0x12c: copy verts, translate"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10008720",
+    "name": "grim_draw_quad_xy",
+    "signature": "void grim_draw_quad_xy(float *xy, float w, float h)",
+    "comment": "Grim2D vtable 0x120: draw quad from xy pointer"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10008750",
+    "name": "grim_draw_quad_rotated_matrix",
+    "signature": "void grim_draw_quad_rotated_matrix(float x, float y, float w, float h)",
+    "comment": "Grim2D vtable 0x124 (provisional): quad with rotation matrix"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10008b10",
+    "name": "grim_draw_quad",
+    "signature": "void grim_draw_quad(float x, float y, float w, float h)",
+    "comment": "Grim2D vtable 0x11c (provisional)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10008e30",
+    "name": "grim_submit_vertex_raw",
+    "signature": "void grim_submit_vertex_raw(float *vertex)",
+    "comment": "Grim2D vtable 0xf4: push 1 raw vertex (7 floats)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10008eb0",
+    "name": "grim_submit_quad_raw",
+    "signature": "void grim_submit_quad_raw(float *verts)",
+    "comment": "Grim2D vtable 0xf8: push 4 raw vertices (28 floats)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10008f10",
+    "name": "grim_draw_rect_outline",
+    "signature": "void grim_draw_rect_outline(float *xy, float w, float h)",
+    "comment": "Grim2D vtable 0xd4: UI panel outline/frame (4 edge quads)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10009080",
+    "name": "grim_draw_quad_points",
+    "signature": "void grim_draw_quad_points(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3)",
+    "comment": "Grim2D vtable 0x138 (provisional): push quad using 4 points"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100092b0",
+    "name": "grim_draw_text_mono",
+    "signature": "void grim_draw_text_mono(float x, float y, char *text)",
+    "comment": "Grim2D vtable 0x13c: fixed 16px mono text"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100096c0",
+    "name": "grim_measure_text_width",
+    "signature": "int grim_measure_text_width(char *text)",
+    "comment": "Grim2D vtable 0x14c: small font width metric (handles newlines)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10009730",
+    "name": "grim_draw_text_small",
+    "signature": "void grim_draw_text_small(float x, float y, char *text)",
+    "comment": "Grim2D vtable 0x144: small font draw (GRIM_Font2)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10009940",
+    "name": "grim_draw_text_mono_fmt",
+    "signature": "void grim_draw_text_mono_fmt(int *self, float x, float y, char *fmt)",
+    "comment": "Grim2D vtable 0x140: printf-style wrapper around draw_text_mono"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10009980",
+    "name": "grim_draw_text_small_fmt",
+    "signature": "void grim_draw_text_small_fmt(float x, float y, char *fmt)",
+    "comment": "Grim2D vtable 0x148: formatted small-font text (vsprintf + vtable 0x144)"
   },
   {
     "program": "grim.dll",
@@ -1525,598 +2036,10 @@
   },
   {
     "program": "grim.dll",
-    "address": "0x100051e0",
-    "name": "grim_load_texture_internal",
-    "signature": "int grim_load_texture_internal(char *name, ushort *path)",
-    "comment": "allocates texture slot and loads file"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10006580",
-    "name": "grim_set_render_state",
-    "signature": "void grim_set_render_state(unsigned int state, unsigned int value)",
-    "comment": "Grim2D vtable 0x20 (provisional)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10005c80",
-    "name": "grim_release",
-    "signature": "void grim_release(void)",
-    "comment": "Grim2D vtable 0x0: delete interface"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10005c90",
-    "name": "grim_set_paused",
-    "signature": "void grim_set_paused(int paused)",
-    "comment": "Grim2D vtable 0x4 (provisional): pause game tick update"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10005ca0",
-    "name": "grim_get_version",
-    "signature": "float grim_get_version(void)",
-    "comment": "Grim2D vtable 0x8 (provisional): engine version constant"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10005cb0",
-    "name": "grim_check_device",
-    "signature": "int grim_check_device(void)",
-    "comment": "Grim2D vtable 0xc: device creation test"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10007320",
-    "name": "grim_is_key_down",
-    "signature": "int grim_is_key_down(unsigned int key)",
-    "comment": "Grim2D vtable 0x44 (provisional)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10007390",
-    "name": "grim_was_key_pressed",
-    "signature": "int grim_was_key_pressed(unsigned int key)",
-    "comment": "Grim2D vtable 0x48 (provisional)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10007330",
-    "name": "grim_flush_input",
-    "signature": "void grim_flush_input(void)",
-    "comment": "Grim2D vtable 0x4c (provisional): clear buffered input/device state"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10007440",
-    "name": "grim_was_mouse_button_pressed",
-    "signature": "int grim_was_mouse_button_pressed(int button)",
-    "comment": "Grim2D vtable 0x5c (provisional): edge-triggered mouse button"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10005c40",
-    "name": "grim_get_key_char",
-    "signature": "int grim_get_key_char(void)",
-    "comment": "Grim2D vtable 0x50 (provisional)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10005c20",
-    "name": "grim_set_key_char_buffer",
-    "signature": "void grim_set_key_char_buffer(unsigned char *buffer, int *count, int size)",
-    "comment": "Grim2D vtable 0x54 (provisional): set input character ring buffer"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10007410",
-    "name": "grim_is_mouse_button_down",
-    "signature": "int grim_is_mouse_button_down(int button)",
-    "comment": "Grim2D vtable 0x58: cached mouse button state or poll"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10007530",
-    "name": "grim_set_mouse_pos",
-    "signature": "void grim_set_mouse_pos(float x, float y)",
-    "comment": "Grim2D vtable 0x64: set cached mouse position"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10007560",
-    "name": "grim_get_mouse_wheel_delta",
-    "signature": "float grim_get_mouse_wheel_delta(void)",
-    "comment": "Grim2D vtable 0x60 (provisional)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10007510",
-    "name": "grim_get_mouse_x",
-    "signature": "float grim_get_mouse_x(void)",
-    "comment": "Grim2D vtable 0x68: cached mouse X position"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10007520",
-    "name": "grim_get_mouse_y",
-    "signature": "float grim_get_mouse_y(void)",
-    "comment": "Grim2D vtable 0x6c: cached mouse Y position"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100074d0",
-    "name": "grim_get_mouse_dx",
-    "signature": "float grim_get_mouse_dx(void)",
-    "comment": "Grim2D vtable 0x70: cached mouse delta X"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100074e0",
-    "name": "grim_get_mouse_dy",
-    "signature": "float grim_get_mouse_dy(void)",
-    "comment": "Grim2D vtable 0x74: cached mouse delta Y"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100074f0",
-    "name": "grim_get_mouse_dx_indexed",
-    "signature": "float grim_get_mouse_dx_indexed(int index)",
-    "comment": "Grim2D vtable 0x78: alias of get_mouse_dx"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10007500",
-    "name": "grim_get_mouse_dy_indexed",
-    "signature": "float grim_get_mouse_dy_indexed(int index)",
-    "comment": "Grim2D vtable 0x7c: alias of get_mouse_dy"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10006fe0",
-    "name": "grim_is_key_active",
-    "signature": "int grim_is_key_active(int key)",
-    "comment": "Grim2D vtable 0x80: routes key/mouse/joystick IDs"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100072c0",
-    "name": "grim_get_slot_float",
-    "signature": "float grim_get_slot_float(int index)",
-    "comment": "Grim2D vtable 0x88 (provisional): float slot accessor"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100072d0",
-    "name": "grim_get_slot_int",
-    "signature": "int grim_get_slot_int(int index)",
-    "comment": "Grim2D vtable 0x8c (provisional): int slot accessor"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100072e0",
-    "name": "grim_set_slot_float",
-    "signature": "void grim_set_slot_float(int index, float value)",
-    "comment": "Grim2D vtable 0x90 (provisional): float slot setter"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10007300",
-    "name": "grim_set_slot_int",
-    "signature": "void grim_set_slot_int(int index, int value)",
-    "comment": "Grim2D vtable 0x94 (provisional): int slot setter"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100071b0",
-    "name": "grim_get_config_float",
-    "signature": "float grim_get_config_float(int id)",
-    "comment": "Grim2D vtable 0x84: config float lookup (scaled)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10007580",
-    "name": "grim_get_joystick_x",
-    "signature": "int grim_get_joystick_x(void)",
-    "comment": "Grim2D vtable 0x98 (provisional): joystick axis X"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10007590",
-    "name": "grim_get_joystick_y",
-    "signature": "int grim_get_joystick_y(void)",
-    "comment": "Grim2D vtable 0x9c (provisional): joystick axis Y"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100075a0",
-    "name": "grim_get_joystick_z",
-    "signature": "int grim_get_joystick_z(void)",
-    "comment": "Grim2D vtable 0xa0 (provisional): joystick axis Z"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100075d0",
-    "name": "grim_create_texture",
-    "signature": "int grim_create_texture(char *name, int width, int height)",
-    "comment": "Grim2D vtable 0xac: create blank texture in a free slot"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100075b0",
-    "name": "grim_get_joystick_pov",
-    "signature": "int grim_get_joystick_pov(int index)",
-    "comment": "Grim2D vtable 0xa4 (provisional): joystick POV hat value"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100075c0",
-    "name": "grim_is_joystick_button_down",
-    "signature": "int grim_is_joystick_button_down(int button)",
-    "comment": "Grim2D vtable 0xa8 (provisional): joystick button state"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100076e0",
-    "name": "grim_load_texture",
-    "signature": "int grim_load_texture(char *name, char *path)",
-    "comment": "Grim2D vtable 0xb4 (provisional)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10007700",
-    "name": "grim_destroy_texture",
-    "signature": "void grim_destroy_texture(int handle)",
-    "comment": "Grim2D vtable 0xbc (provisional): release texture handle"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10007740",
-    "name": "grim_get_texture_handle",
-    "signature": "int grim_get_texture_handle(char *name)",
-    "comment": "Grim2D vtable 0xc0: lookup texture handle by name"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10007750",
-    "name": "grim_validate_texture",
-    "signature": "int grim_validate_texture(int handle)",
-    "comment": "Grim2D vtable 0xb8: validate texture handle/device"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10007790",
-    "name": "grim_recreate_texture",
-    "signature": "int grim_recreate_texture(int handle)",
-    "comment": "Grim2D vtable 0xb0: recreate D3D texture surface"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10007830",
-    "name": "grim_bind_texture",
-    "signature": "void grim_bind_texture(int handle, int stage)",
-    "comment": "Grim2D vtable 0xc4: bind texture handle to stage"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10007870",
-    "name": "grim_draw_fullscreen_quad",
-    "signature": "void grim_draw_fullscreen_quad(void)",
-    "comment": "Grim2D vtable 0xc8: full-screen quad with current texture"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10007b90",
-    "name": "grim_draw_circle_filled",
-    "signature": "void grim_draw_circle_filled(float x, float y, float radius)",
-    "comment": "Grim2D vtable 0xd8 (provisional): triangle fan circle fill"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10007d40",
-    "name": "grim_draw_circle_outline",
-    "signature": "void grim_draw_circle_outline(float x, float y, float radius)",
-    "comment": "Grim2D vtable 0xdc (provisional): triangle strip ring/outline"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100078e0",
-    "name": "grim_draw_rect_filled",
-    "signature": "void grim_draw_rect_filled(float *xy, float w, float h)",
-    "comment": "Grim2D vtable 0xd0: UI panel fill/quad"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10008f10",
-    "name": "grim_draw_rect_outline",
-    "signature": "void grim_draw_rect_outline(float *xy, float w, float h)",
-    "comment": "Grim2D vtable 0xd4: UI panel outline/frame (4 edge quads)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100079b0",
-    "name": "grim_draw_fullscreen_color",
-    "signature": "void grim_draw_fullscreen_color(float r, float g, float b, float a)",
-    "comment": "Grim2D vtable 0xcc: fullscreen color/fade overlay"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10007f30",
-    "name": "grim_set_rotation",
-    "signature": "void grim_set_rotation(float radians)",
-    "comment": "Grim2D vtable 0xfc: precompute sin/cos (+45deg) for rotation matrix"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10008350",
-    "name": "grim_set_uv",
-    "signature": "void grim_set_uv(float u0, float v0, float u1, float v1)",
-    "comment": "Grim2D vtable 0x100 (provisional)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10008230",
-    "name": "grim_set_atlas_frame",
-    "signature": "void grim_set_atlas_frame(int atlas_size, int frame)",
-    "comment": "Grim2D vtable 0x104 (provisional)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100082c0",
-    "name": "grim_set_sub_rect",
-    "signature": "void grim_set_sub_rect(int atlas_size, int width, int height, int frame)",
-    "comment": "Grim2D vtable 0x108: atlas sub-rect from grid table"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10008040",
-    "name": "grim_set_color_ptr",
-    "signature": "void grim_set_color_ptr(float *rgba)",
-    "comment": "Grim2D vtable 0x110: set color from float[4]"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10007f90",
-    "name": "grim_set_color",
-    "signature": "void grim_set_color(float r, float g, float b, float a)",
-    "comment": "Grim2D vtable 0x114 (provisional)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10008b10",
-    "name": "grim_draw_quad",
-    "signature": "void grim_draw_quad(float x, float y, float w, float h)",
-    "comment": "Grim2D vtable 0x11c (provisional)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100092b0",
-    "name": "grim_draw_text_mono",
-    "signature": "void grim_draw_text_mono(float x, float y, char *text)",
-    "comment": "Grim2D vtable 0x13c: fixed 16px mono text"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10009730",
-    "name": "grim_draw_text_small",
-    "signature": "void grim_draw_text_small(float x, float y, char *text)",
-    "comment": "Grim2D vtable 0x144: small font draw (GRIM_Font2)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10009980",
-    "name": "grim_draw_text_small_fmt",
-    "signature": "void grim_draw_text_small_fmt(float x, float y, char *fmt)",
-    "comment": "Grim2D vtable 0x148: formatted small-font text (vsprintf + vtable 0x144)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100096c0",
-    "name": "grim_measure_text_width",
-    "signature": "int grim_measure_text_width(char *text)",
-    "comment": "Grim2D vtable 0x14c: small font width metric (handles newlines)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10005d40",
-    "name": "grim_apply_config",
-    "comment": "Grim2D vtable 0x10: opens D3D config dialog and applies settings",
-    "signature": "int grim_apply_config(void)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10005eb0",
-    "name": "grim_init_system",
-    "comment": "Grim2D vtable 0x14: Grim2D init; returns success",
-    "signature": "int grim_init_system(void)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10005ff0",
-    "name": "grim_shutdown",
-    "comment": "Grim2D vtable 0x18 (provisional): Grim2D shutdown",
-    "signature": "void grim_shutdown(void)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10006020",
-    "name": "grim_apply_settings",
-    "comment": "Grim2D vtable 0x1c: apply Grim2D settings after config load",
-    "signature": "void grim_apply_settings(void)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10006c30",
-    "name": "grim_get_config_var",
-    "signature": "void grim_get_config_var(unsigned int *out, int id)",
-    "comment": "Grim2D vtable 0x24 (provisional): fills 4 dwords for config entry (id 0..0x7f)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10006ca0",
-    "name": "grim_get_error_text",
-    "comment": "Grim2D vtable 0x28: error string for MessageBox",
-    "signature": "char * grim_get_error_text(void)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100083a0",
-    "name": "grim_set_uv_point",
-    "signature": "void grim_set_uv_point(int index, float u, float v)",
-    "comment": "Grim2D vtable 0x10c: set UV point"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100081c0",
-    "name": "grim_set_color_slot",
-    "signature": "void grim_set_color_slot(int index, float r, float g, float b, float a)",
-    "comment": "Grim2D vtable 0x118 (provisional): set color slot"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10009940",
-    "name": "grim_draw_text_mono_fmt",
-    "signature": "void grim_draw_text_mono_fmt(int *self, float x, float y, char *fmt)",
-    "comment": "Grim2D vtable 0x140: printf-style wrapper around draw_text_mono"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10006cb0",
-    "name": "grim_clear_color",
-    "signature": "void grim_clear_color(float r, float g, float b, float a)",
-    "comment": "Grim2D vtable 0x2c: packs RGBA into device clear color"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10006d50",
-    "name": "grim_set_render_target",
-    "signature": "int grim_set_render_target(int target_index)",
-    "comment": "Grim2D vtable 0x30 (provisional): set render target; -1 resets"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10006e40",
-    "name": "grim_get_time_ms",
-    "signature": "int grim_get_time_ms(void)",
-    "comment": "Grim2D vtable 0x34: accumulated time (ms)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10006e50",
-    "name": "grim_set_time_ms",
-    "signature": "void grim_set_time_ms(int ms)",
-    "comment": "Grim2D vtable 0x38: set accumulated time"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10006e60",
-    "name": "grim_get_frame_dt",
-    "signature": "float grim_get_frame_dt(void)",
-    "comment": "Grim2D vtable 0x3c: clamped frame delta"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10006e90",
-    "name": "grim_get_fps",
-    "signature": "float grim_get_fps(void)",
-    "comment": "Grim2D vtable 0x40: frames per second"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10007ac0",
-    "name": "grim_begin_batch",
-    "signature": "void grim_begin_batch(void)",
-    "comment": "Grim2D vtable 0xe8 (provisional): begin draw batch"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10007b20",
-    "name": "grim_end_batch",
-    "signature": "void grim_end_batch(void)",
-    "comment": "Grim2D vtable 0xf0 (provisional): end draw batch/flush"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10008e30",
-    "name": "grim_submit_vertex_raw",
-    "signature": "void grim_submit_vertex_raw(float *vertex)",
-    "comment": "Grim2D vtable 0xf4: push 1 raw vertex (7 floats)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10008eb0",
-    "name": "grim_submit_quad_raw",
-    "signature": "void grim_submit_quad_raw(float *verts)",
-    "comment": "Grim2D vtable 0xf8: push 4 raw vertices (28 floats)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10008720",
-    "name": "grim_draw_quad_xy",
-    "signature": "void grim_draw_quad_xy(float *xy, float w, float h)",
-    "comment": "Grim2D vtable 0x120: draw quad from xy pointer"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10008750",
-    "name": "grim_draw_quad_rotated_matrix",
-    "signature": "void grim_draw_quad_rotated_matrix(float x, float y, float w, float h)",
-    "comment": "Grim2D vtable 0x124 (provisional): quad with rotation matrix"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100085c0",
-    "name": "grim_submit_vertices_transform",
-    "signature": "void grim_submit_vertices_transform(float *verts, int count, float *offset, float *matrix)",
-    "comment": "Grim2D vtable 0x128: copy verts, rotate, translate"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10008680",
-    "name": "grim_submit_vertices_offset",
-    "signature": "void grim_submit_vertices_offset(float *verts, int count, float *offset)",
-    "comment": "Grim2D vtable 0x12c: copy verts, translate"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10008430",
-    "name": "grim_submit_vertices_offset_color",
-    "signature": "void grim_submit_vertices_offset_color(float *verts, int count, float *offset, float *color)",
-    "comment": "Grim2D vtable 0x130: translate + apply color"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100084e0",
-    "name": "grim_submit_vertices_transform_color",
-    "signature": "void grim_submit_vertices_transform_color(float *verts, int count, float *offset, float *matrix, float *color)",
-    "comment": "Grim2D vtable 0x134: rotate + translate + apply color"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10009080",
-    "name": "grim_draw_quad_points",
-    "signature": "void grim_draw_quad_points(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3)",
-    "comment": "Grim2D vtable 0x138 (provisional): push quad using 4 points"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100083c0",
-    "name": "grim_flush_batch",
-    "signature": "void grim_flush_batch(void)",
-    "comment": "Grim2D vtable 0xec: flush batch when vertex buffer fills"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100080b0",
-    "name": "grim_draw_line",
-    "signature": "void grim_draw_line(float *p0, float *p1, float thickness)",
-    "comment": "Grim2D vtable 0xe0 (provisional): builds line quad from endpoints"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10008150",
-    "name": "grim_draw_line_quad",
-    "signature": "void grim_draw_line_quad(float *p0, float *p1, float *half_vec)",
-    "comment": "Grim2D vtable 0xe4 (provisional): line quad from endpoints + half-width vector"
+    "address": "0x1000aaa6",
+    "name": "grim_format_info_lookup",
+    "signature": "int * grim_format_info_lookup(int format)",
+    "comment": "returns pointer to the D3D format descriptor entry (fallbacks to default)"
   },
   {
     "program": "grim.dll",
@@ -2141,9 +2064,107 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1001c188",
+    "name": "grim_select_renderer_backend",
+    "signature": "int grim_select_renderer_backend(int force)",
+    "comment": "copies the render backend vtable and selects D3DX/alt paths based on config"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001e114",
+    "name": "png_error",
+    "signature": "void png_error(int *png_ptr, char *msg)",
+    "comment": "png error handler: call error_fn then longjmp"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001e132",
+    "name": "png_warning",
+    "signature": "void png_warning(int *png_ptr, char *msg)",
+    "comment": "png warning handler: call warning_fn"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002047c",
+    "name": "png_read_data",
+    "signature": "void png_read_data(int *png_ptr, unsigned char *data, unsigned int length)",
+    "comment": "png read callback wrapper (errors if NULL)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10020583",
+    "name": "png_reset_crc",
+    "signature": "void png_reset_crc(int *png_ptr)",
+    "comment": "reset png CRC state"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002059b",
+    "name": "png_calculate_crc",
+    "signature": "void png_calculate_crc(int *png_ptr, unsigned char *data, unsigned int length)",
+    "comment": "update png CRC with buffer"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10022c14",
     "name": "memzero",
     "signature": "void memzero(void *dst, unsigned int size)",
     "comment": "zero-fill helper (memset to 0)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10024734",
+    "name": "png_free_ptr",
+    "signature": "void png_free_ptr(void *ptr)",
+    "comment": "free wrapper for png allocations"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10024741",
+    "name": "png_malloc",
+    "signature": "void * png_malloc(int *png_ptr, unsigned int size)",
+    "comment": "png malloc wrapper (errors on OOM)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10024777",
+    "name": "png_free",
+    "signature": "void png_free(int *png_ptr, void *ptr)",
+    "comment": "png free callback wrapper"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100247e4",
+    "name": "png_get_uint_32",
+    "signature": "unsigned int png_get_uint_32(unsigned char *buf)",
+    "comment": "read big-endian 32-bit value"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10024807",
+    "name": "png_crc_read",
+    "signature": "void png_crc_read(int *png_ptr, unsigned char *buf, unsigned int length)",
+    "comment": "read PNG chunk data and update CRC"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10024821",
+    "name": "png_crc_error",
+    "signature": "int png_crc_error(int *png_ptr)",
+    "comment": "read stored CRC and compare with computed"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002487f",
+    "name": "png_check_chunk_name",
+    "signature": "void png_check_chunk_name(int *png_ptr, unsigned char *chunk_name)",
+    "comment": "validate PNG chunk type characters"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100250d7",
+    "name": "png_crc_finish",
+    "signature": "int png_crc_finish(int *png_ptr, unsigned int skip)",
+    "comment": "read remaining chunk bytes and check CRC"
   }
 ]

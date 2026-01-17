@@ -143,7 +143,7 @@ Notes:
   Only offset `0x20` is initialized (to `1.0`), so the remaining fields appear
   unused or reserved in this build.
 
-## Spawn template ids (FUN_00430af0)
+## Spawn template ids (creature_spawn_template)
 
 `FUN_00430af0` uses `param_1` as a spawn template id. It assigns the creature
 type id (`&DAT_0049bfa4`) and optional flags (`&DAT_0049bfc4`). The table below

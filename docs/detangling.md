@@ -102,6 +102,22 @@ You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps
 - `FUN_00446000` -> `input_any_key_pressed`
   - Evidence: scans keycodes `2..0x17e` via the input callback at `(*DAT_0048083c + 0x80)`.
 
+### Creature spawn + damage (high confidence)
+
+- `FUN_00430af0` -> `creature_spawn_template`
+  - Evidence: calls `creature_alloc_slot`, writes the `DAT_0049bf38` pool fields, maps
+    `template_id` to type/flags, and spawns linked satellites; heading `-100` uses
+    a randomized heading.
+- `FUN_004207c0` -> `creature_apply_damage`
+  - Evidence: applies perk multipliers, reduces HP and knockback, calls
+    `creature_handle_death`, spawns effects, and returns `1` when the creature dies.
+
+### Gameplay render pass (high confidence)
+
+- `FUN_00405960` -> `gameplay_render_world`
+  - Evidence: updates `DAT_00487278` (fade), renders the FX queue, creatures,
+    player overlays (dead/alive ordering), projectiles, and bonuses.
+
 ### Key binding block (`DAT_00490bdc`..`DAT_00490f5c`) (medium confidence)
 
 These live inside the per-player input struct (stride `0xd8`) and are queried through
