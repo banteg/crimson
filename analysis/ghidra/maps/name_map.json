@@ -311,6 +311,34 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0040d000",
+    "name": "credits_line_set",
+    "signature": "void credits_line_set(int index, char *text, int flags)",
+    "comment": "stores a credits line string + flags into the credits line table"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040d040",
+    "name": "credits_line_clear_flag",
+    "signature": "void credits_line_clear_flag(int index)",
+    "comment": "walks backward to find a line with flag 0x4 and clears it (plays sfx)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040d090",
+    "name": "credits_build_lines",
+    "signature": "void credits_build_lines(void)",
+    "comment": "populates credits line table with headings, names, and hint lines"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040d800",
+    "name": "credits_screen_update",
+    "signature": "void credits_screen_update(void)",
+    "comment": "credits screen update/render loop; draws labels and handles clicks"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0040ffc0",
     "name": "game_over_screen_update",
     "signature": "void game_over_screen_update(void)",

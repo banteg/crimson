@@ -42,14 +42,32 @@ an intentional debug/anti-tamper check that needs disassembly confirmation.
 guard condition passes.” The actual gameplay unlock logic (Secret Path, secret weapons, etc.) is still
 unmapped.
 
+## Credits screen code (verified)
+
+The credits screen logic is separate from the startup hint block. We can identify the credits update
+loop and its line builder in the `.text` section and verify that it renders the **credits** / **Secret**
+labels and consumes the credits line table.
+
+- `credits_screen_update` (`0x0040d800`): update/render loop for the credits screen. It draws the
+  `credits` label (`0x00472e88`) and sets the `Secret` label pointer (`0x00472e90`). It calls
+  `credits_build_lines` on first entry to populate the table, then loops over visible lines and
+  handles clicks (including SFX feedback).
+- `credits_build_lines` (`0x0040d090`): populates the credits line table with headings, names, and
+  trailing hint lines (including “Click the ones with the round on...”).
+- `credits_line_set` (`0x0040d000`): stores a single line + flags in the credits line table.
+
+These functions provide a concrete anchor for the **credits click puzzle** logic, but we still have not
+located any code that branches into the **Secret Path** or unlocks secret weapons based on the click
+pattern. That logic remains to be found.
+
 ## Preconditions and logic (what we do / do not know)
 
 ### Secret Path (credits click puzzle)
 
 - **Hinted precondition (string)**: click every credits line containing letter `o` and **avoid clicking**
   other lines; this should start “The Secret Path.”
-- **Verified code**: the hint string is printed in the startup secret block only. We have not yet located
-  the credits UI click handler or any branching logic that starts the Secret Path.
+- **Verified code**: credits UI click handling lives in `credits_screen_update` (`0x0040d800`), but we
+  have not yet found any branching logic that starts the Secret Path.
 
 ### Secret weapons
 
