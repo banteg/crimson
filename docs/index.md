@@ -5,7 +5,7 @@ decompiled Crimsonland v1.9.93 executable and game data.
 
 Overall naming coverage: 36.4% (648 / 1779 functions named or inferred).
 <!-- data-map-coverage:start -->
-Data map coverage: 19.60% (640 / 3266 symbols)
+Data map coverage: 19.47% (642 / 3298 symbols)
 <!-- data-map-coverage:end -->
 
 ## What is documented

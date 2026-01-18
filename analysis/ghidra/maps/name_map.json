@@ -130,6 +130,34 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00402ed0",
+    "name": "demo_setup_variant_0",
+    "signature": "void demo_setup_variant_0(void)",
+    "comment": "demo setup 0: 2P, spawns template 0x38 grid, assigns weapon 0xb"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004030f0",
+    "name": "demo_setup_variant_1",
+    "signature": "void demo_setup_variant_1(void)",
+    "comment": "demo setup 1: 2P, terrain preset DAT_00484914, templates 0x34/0x35, weapon 5, power-up timer"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00402fe0",
+    "name": "demo_setup_variant_2",
+    "signature": "void demo_setup_variant_2(void)",
+    "comment": "demo setup 2: 1P, spawns template 0x41 columns, assigns weapon 0x15"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00403250",
+    "name": "demo_setup_variant_3",
+    "signature": "void demo_setup_variant_3(void)",
+    "comment": "demo setup 3: 1P, quest-selected terrain, templates 0x24/0x25, weapon 0x12"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00403390",
     "name": "demo_mode_start",
     "signature": "int demo_mode_start(void)",
@@ -357,6 +385,13 @@
     "name": "quest_results_screen_update",
     "signature": "void quest_results_screen_update(void)",
     "comment": "quest/campaign results screen: final time, perk bonus, high score entry, and buttons"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412470",
+    "name": "bonus_pick_random_type",
+    "signature": "uint bonus_pick_random_type(void)",
+    "comment": "rolls a bonus id while respecting timers, perks, quest stage, and enabled flags"
   },
   {
     "program": "crimsonland.exe",
@@ -598,6 +633,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041e290",
+    "name": "player_apply_move_with_spawn_avoidance",
+    "signature": "void player_apply_move_with_spawn_avoidance(int player_index, float *pos, float *delta)",
+    "comment": "applies movement delta (scaled by alternate-weapon perk) and resolves collisions with creature spawn slots"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041e400",
     "name": "vec2_add_inplace",
     "signature": "void vec2_add_inplace(int unused, float *pos, float *delta)",
@@ -656,6 +698,20 @@
     "name": "bonus_spawn_at",
     "signature": "int * bonus_spawn_at(float *pos, int bonus_id, int duration_override)",
     "comment": "clamps position, fills bonus entry fields, and spawns pickup effect"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041f790",
+    "name": "bonus_spawn_at_pos",
+    "signature": "uint * bonus_spawn_at_pos(float *pos)",
+    "comment": "allocates a bonus slot near pos, enforces spacing/edges, picks bonus type + amount"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041f8d0",
+    "name": "bonus_try_spawn_on_kill",
+    "signature": "uint * bonus_try_spawn_on_kill(float *pos)",
+    "comment": "decides whether to drop a bonus on kill (mode/perk rules) and spawns pickup burst"
   },
   {
     "program": "crimsonland.exe",
@@ -1585,6 +1641,34 @@
     "name": "player_fire_weapon",
     "signature": "void player_fire_weapon(char param_1, char param_2)",
     "comment": "handles player firing: cooldowns, ammo, projectiles, and muzzle effects"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00445380",
+    "name": "creature_name_assign_random",
+    "signature": "void creature_name_assign_random(int creature_id)",
+    "comment": "builds a randomized creature name string into DAT_004d152c for debug overlays"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00445590",
+    "name": "creature_find_by_name",
+    "signature": "int creature_find_by_name(char *name)",
+    "comment": "returns the first creature index whose name matches DAT_004d152c, or -1"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00445600",
+    "name": "creature_name_draw_labels",
+    "signature": "void creature_name_draw_labels(void)",
+    "comment": "debug overlay: draws creature name labels over world positions"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004457c0",
+    "name": "survival_gameplay_update_and_render",
+    "signature": "void survival_gameplay_update_and_render(void)",
+    "comment": "survival mode frame loop: effects, spawns, death handling, world render, HUD, and debug name input"
   },
   {
     "program": "crimsonland.exe",

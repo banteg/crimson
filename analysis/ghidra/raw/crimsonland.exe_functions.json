@@ -217,30 +217,30 @@
     "calls": []
   },
   {
-    "name": "FUN_00402ed0",
+    "name": "demo_setup_variant_0",
     "address": "00402ed0",
-    "signature": "undefined FUN_00402ed0(void)",
+    "signature": "void demo_setup_variant_0(void)",
     "external": false,
     "calls": ["creature_spawn_template", "weapon_assign_player"]
   },
   {
-    "name": "FUN_00402fe0",
+    "name": "demo_setup_variant_2",
     "address": "00402fe0",
-    "signature": "undefined FUN_00402fe0(void)",
+    "signature": "void demo_setup_variant_2(void)",
     "external": false,
     "calls": ["creature_spawn_template", "weapon_assign_player"]
   },
   {
-    "name": "FUN_004030f0",
+    "name": "demo_setup_variant_1",
     "address": "004030f0",
-    "signature": "undefined FUN_004030f0(void)",
+    "signature": "void demo_setup_variant_1(void)",
     "external": false,
     "calls": ["creature_spawn_template", "crt_rand", "terrain_generate", "weapon_assign_player"]
   },
   {
-    "name": "FUN_00403250",
+    "name": "demo_setup_variant_3",
     "address": "00403250",
-    "signature": "undefined FUN_00403250(void)",
+    "signature": "void demo_setup_variant_3(void)",
     "external": false,
     "calls": ["creature_spawn_template", "crt_rand", "terrain_generate", "weapon_assign_player"]
   },
@@ -256,7 +256,7 @@
     "address": "00403390",
     "signature": "int demo_mode_start(void)",
     "external": false,
-    "calls": ["FUN_00402ed0", "FUN_00402fe0", "FUN_004030f0", "FUN_00403250", "FUN_00403370", "game_state_set", "gameplay_reset_state"]
+    "calls": ["FUN_00403370", "demo_setup_variant_0", "demo_setup_variant_1", "demo_setup_variant_2", "demo_setup_variant_3", "game_state_set", "gameplay_reset_state"]
   },
   {
     "name": "FUN_00403430",
@@ -497,6 +497,13 @@
     "calls": ["credits_line_set"]
   },
   {
+    "name": "credits_screen_update",
+    "address": "0040d800",
+    "signature": "void credits_screen_update(void)",
+    "external": false,
+    "calls": ["FUN_00446140", "__ftol", "_strchr", "credits_build_lines", "credits_line_clear_flag", "crt_atexit", "crt_free", "input_primary_just_pressed", "sfx_play", "strdup_malloc", "ui_button_update", "ui_mouse_inside_rect"]
+  },
+  {
     "name": "FUN_0040e000",
     "address": "0040e000",
     "signature": "undefined FUN_0040e000(byte * param_1)",
@@ -630,9 +637,9 @@
     "calls": ["crt_atexit"]
   },
   {
-    "name": "FUN_00412470",
+    "name": "bonus_pick_random_type",
     "address": "00412470",
-    "signature": "uint FUN_00412470(void)",
+    "signature": "uint bonus_pick_random_type(void)",
     "external": false,
     "calls": ["crt_rand", "perk_count_get"]
   },
@@ -704,7 +711,7 @@
     "address": "004136b0",
     "signature": "void player_update(void)",
     "external": false,
-    "calls": ["FUN_00413540", "FUN_00417640", "FUN_00417660", "FUN_0041e290", "FUN_0041e8d0", "FUN_0041e8f0", "__ftol", "crt_rand", "effect_spawn", "effect_spawn_blood_splatter", "fx_spawn_particle", "fx_spawn_particle_slow", "fx_spawn_secondary_projectile", "fx_spawn_sprite", "input_primary_just_pressed", "perk_count_get", "player_start_reload", "player_take_damage", "projectile_spawn", "sfx_play_panned"]
+    "calls": ["FUN_00413540", "FUN_00417640", "FUN_00417660", "FUN_0041e8d0", "FUN_0041e8f0", "__ftol", "crt_rand", "effect_spawn", "effect_spawn_blood_splatter", "fx_spawn_particle", "fx_spawn_particle_slow", "fx_spawn_secondary_projectile", "fx_spawn_sprite", "input_primary_just_pressed", "perk_count_get", "player_apply_move_with_spawn_avoidance", "player_start_reload", "player_take_damage", "projectile_spawn", "sfx_play_panned"]
   },
   {
     "name": "FUN_00417640",
@@ -987,9 +994,9 @@
     "calls": []
   },
   {
-    "name": "FUN_0041e290",
+    "name": "player_apply_move_with_spawn_avoidance",
     "address": "0041e290",
-    "signature": "undefined4 FUN_0041e290(int param_1, float * param_2, float * param_3)",
+    "signature": "void player_apply_move_with_spawn_avoidance(int player_index, float * pos, float * delta)",
     "external": false,
     "calls": ["perk_count_get"]
   },
@@ -1026,7 +1033,7 @@
     "address": "0041e910",
     "signature": "void creature_handle_death(int creature_id, bool keep_corpse)",
     "external": false,
-    "calls": ["FUN_0041f8d0", "__ftol", "bonus_spawn_at", "creature_alloc_slot", "crt_rand", "effect_spawn_burst", "effect_spawn_freeze_shard", "effect_spawn_freeze_shatter", "fx_queue_add_random"]
+    "calls": ["__ftol", "bonus_spawn_at", "bonus_try_spawn_on_kill", "creature_alloc_slot", "crt_rand", "effect_spawn_burst", "effect_spawn_freeze_shard", "effect_spawn_freeze_shatter", "fx_queue_add_random"]
   },
   {
     "name": "config_sync_from_grim",
@@ -1071,18 +1078,18 @@
     "calls": ["bonus_alloc_slot", "crt_rand", "effect_spawn"]
   },
   {
-    "name": "FUN_0041f790",
+    "name": "bonus_spawn_at_pos",
     "address": "0041f790",
-    "signature": "uint * FUN_0041f790(float * param_1)",
+    "signature": "uint * bonus_spawn_at_pos(float * pos)",
     "external": false,
-    "calls": ["FUN_00412470", "bonus_alloc_slot", "crt_rand", "weapon_pick_random_available"]
+    "calls": ["bonus_alloc_slot", "bonus_pick_random_type", "crt_rand", "weapon_pick_random_available"]
   },
   {
-    "name": "FUN_0041f8d0",
+    "name": "bonus_try_spawn_on_kill",
     "address": "0041f8d0",
-    "signature": "uint * FUN_0041f8d0(float * param_1)",
+    "signature": "uint * bonus_try_spawn_on_kill(float * pos)",
     "external": false,
-    "calls": ["FUN_0041f790", "crt_rand", "effect_spawn", "perk_count_get", "weapon_pick_random_available"]
+    "calls": ["bonus_spawn_at_pos", "crt_rand", "effect_spawn", "perk_count_get", "weapon_pick_random_available"]
   },
   {
     "name": "fx_spawn_sprite",
@@ -2226,32 +2233,32 @@
     "calls": []
   },
   {
-    "name": "FUN_00445380",
+    "name": "creature_name_assign_random",
     "address": "00445380",
-    "signature": "undefined FUN_00445380(int param_1)",
+    "signature": "void creature_name_assign_random(int creature_id)",
     "external": false,
     "calls": ["FUN_00444f70", "FUN_004451b0", "FUN_00445310", "crt_rand", "crt_sprintf"]
   },
   {
-    "name": "FUN_00445590",
+    "name": "creature_find_by_name",
     "address": "00445590",
-    "signature": "int FUN_00445590(byte * param_1)",
+    "signature": "int creature_find_by_name(char * name)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_00445600",
+    "name": "creature_name_draw_labels",
     "address": "00445600",
-    "signature": "undefined FUN_00445600(void)",
+    "signature": "void creature_name_draw_labels(void)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_004457c0",
+    "name": "survival_gameplay_update_and_render",
     "address": "004457c0",
-    "signature": "undefined FUN_004457c0(void)",
+    "signature": "void survival_gameplay_update_and_render(void)",
     "external": false,
-    "calls": ["FUN_00445380", "FUN_00445590", "FUN_00445600", "__ftol", "camera_update", "console_input_poll", "creature_spawn_tinted", "creature_update_all", "crt_atexit", "crt_rand", "effects_update", "gameplay_render_world", "hud_update_and_render", "perk_prompt_update_and_render", "perks_update_effects", "player_fire_weapon", "projectile_update", "sfx_mute_all", "sfx_play", "sfx_play_exclusive"]
+    "calls": ["__ftol", "camera_update", "console_input_poll", "creature_find_by_name", "creature_name_assign_random", "creature_name_draw_labels", "creature_spawn_tinted", "creature_update_all", "crt_atexit", "crt_rand", "effects_update", "gameplay_render_world", "hud_update_and_render", "perk_prompt_update_and_render", "perks_update_effects", "player_fire_weapon", "projectile_update", "sfx_mute_all", "sfx_play", "sfx_play_exclusive"]
   },
   {
     "name": "input_any_key_pressed",

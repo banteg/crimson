@@ -60,6 +60,7 @@ with unnamed callback parameters.
      --project-dir analysis/ghidra/projects \
      --project-name crimsonland_exe \
      --script-path analysis/ghidra/scripts \
+     -s CreateCreditsScreenUpdate.java \
      -s ApplyNameMap.java -a analysis/ghidra/maps/name_map.json \
      -s ApplyDataMap.java -a analysis/ghidra/maps/data_map.json \
      -s ExportAll.java \
