@@ -1743,58 +1743,58 @@
     "calls": []
   },
   {
-    "name": "FUN_0043b850",
+    "name": "buffer_reader_init",
     "address": "0043b850",
-    "signature": "undefined FUN_0043b850(undefined4 param_1, undefined4 param_2)",
+    "signature": "void buffer_reader_init(void * data, int size)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_0043b870",
+    "name": "buffer_reader_seek",
     "address": "0043b870",
-    "signature": "undefined FUN_0043b870(undefined4 param_1)",
+    "signature": "void buffer_reader_seek(int offset)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_0043b880",
+    "name": "buffer_reader_read_u16",
     "address": "0043b880",
-    "signature": "undefined4 FUN_0043b880(void)",
+    "signature": "int buffer_reader_read_u16(void)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_0043b8a0",
+    "name": "buffer_reader_read_u32",
     "address": "0043b8a0",
-    "signature": "undefined4 FUN_0043b8a0(void)",
+    "signature": "uint buffer_reader_read_u32(void)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_0043b8c0",
+    "name": "buffer_reader_skip",
     "address": "0043b8c0",
-    "signature": "undefined FUN_0043b8c0(int param_1)",
+    "signature": "void buffer_reader_skip(int count)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_0043b8e0",
+    "name": "buffer_reader_find_tag",
     "address": "0043b8e0",
-    "signature": "uint FUN_0043b8e0(int param_1, int param_2)",
+    "signature": "int buffer_reader_find_tag(char * tag, int tag_len)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_0043b940",
+    "name": "resource_pack_read_cstring",
     "address": "0043b940",
-    "signature": "uint FUN_0043b940(undefined4 * param_1)",
+    "signature": "int resource_pack_read_cstring(FILE * fp)",
     "external": false,
     "calls": ["crt_getc"]
   },
   {
-    "name": "FUN_0043b980",
+    "name": "resource_pack_set",
     "address": "0043b980",
-    "signature": "undefined4 FUN_0043b980(LPCSTR param_1)",
+    "signature": "int resource_pack_set(char * path)",
     "external": false,
     "calls": ["crt_fclose", "crt_fopen"]
   },
@@ -1803,49 +1803,49 @@
     "address": "0043b9e0",
     "signature": "int resource_open_read(byte * path, int * size_out)",
     "external": false,
-    "calls": ["FUN_0043b940", "FUN_00462de0", "crt_fclose", "crt_fopen", "crt_fread", "crt_fseek", "crt_ftell"]
+    "calls": ["FUN_00462de0", "crt_fclose", "crt_fopen", "crt_fread", "crt_fseek", "crt_ftell", "resource_pack_read_cstring"]
   },
   {
-    "name": "FUN_0043bad0",
+    "name": "resource_close",
     "address": "0043bad0",
-    "signature": "undefined FUN_0043bad0(void)",
+    "signature": "void resource_close(void)",
     "external": false,
     "calls": ["crt_fclose"]
   },
   {
-    "name": "FUN_0043baf0",
+    "name": "dsound_init",
     "address": "0043baf0",
-    "signature": "undefined4 FUN_0043baf0(undefined4 param_1, uint param_2)",
+    "signature": "int dsound_init(void * hwnd, uint coop_level)",
     "external": false,
     "calls": ["DirectSoundCreate8"]
   },
   {
-    "name": "FUN_0043bc20",
+    "name": "dsound_shutdown",
     "address": "0043bc20",
-    "signature": "undefined FUN_0043bc20(void)",
+    "signature": "void dsound_shutdown(void)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_0043bc40",
+    "name": "dsound_restore_buffer",
     "address": "0043bc40",
-    "signature": "undefined4 FUN_0043bc40(int * param_1)",
+    "signature": "int dsound_restore_buffer(void * buffer)",
     "external": false,
     "calls": ["OutputDebugStringA", "Sleep"]
   },
   {
-    "name": "FUN_0043bca0",
+    "name": "resource_read_alloc",
     "address": "0043bca0",
-    "signature": "undefined4 FUN_0043bca0(byte * param_1, undefined4 * param_2, uint * param_3)",
+    "signature": "int resource_read_alloc(byte * path, void * * out_data, uint * out_size)",
     "external": false,
-    "calls": ["FUN_0043bad0", "crt_fread", "operator_new", "resource_open_read"]
+    "calls": ["crt_fread", "operator_new", "resource_close", "resource_open_read"]
   },
   {
-    "name": "FUN_0043bcf0",
+    "name": "sfx_entry_load_ogg",
     "address": "0043bcf0",
-    "signature": "uint FUN_0043bcf0(undefined4 * param_1, byte * param_2)",
+    "signature": "int sfx_entry_load_ogg(void * entry, byte * path)",
     "external": false,
-    "calls": ["FUN_0041ddd0", "FUN_0041dee0", "FUN_0041df00", "FUN_0043bad0", "FUN_0043c2b0", "crt_fread", "operator_new", "resource_open_read"]
+    "calls": ["FUN_0041ddd0", "FUN_0041dee0", "FUN_0041df00", "crt_fread", "operator_new", "resource_close", "resource_open_read", "sfx_entry_create_buffers"]
   },
   {
     "name": "FUN_0043be20",
@@ -1859,7 +1859,7 @@
     "address": "0043be60",
     "signature": "uint FUN_0043be60(uint param_1)",
     "external": false,
-    "calls": ["FUN_0043bc40", "FUN_0043be20", "FUN_0043c230", "FUN_0043c590", "_rand"]
+    "calls": ["FUN_0043be20", "_rand", "dsound_restore_buffer", "music_stream_fill", "sfx_entry_upload_buffer"]
   },
   {
     "name": "FUN_0043bf40",
@@ -1883,11 +1883,11 @@
     "calls": ["__ftol"]
   },
   {
-    "name": "FUN_0043c020",
+    "name": "sfx_entry_load_wav",
     "address": "0043c020",
-    "signature": "uint FUN_0043c020(undefined4 * param_1, byte * param_2)",
+    "signature": "int sfx_entry_load_wav(void * entry, byte * path)",
     "external": false,
-    "calls": ["FUN_0043bca0", "FUN_0043c110", "FUN_0043c2b0", "crt_free"]
+    "calls": ["crt_free", "resource_read_alloc", "sfx_entry_create_buffers", "wav_parse_into_entry"]
   },
   {
     "name": "sfx_release_entry",
@@ -1897,44 +1897,44 @@
     "calls": ["FUN_0041dee0", "crt_free"]
   },
   {
-    "name": "FUN_0043c110",
+    "name": "wav_parse_into_entry",
     "address": "0043c110",
-    "signature": "uint FUN_0043c110(undefined4 * param_1, int param_2, undefined4 param_3)",
+    "signature": "int wav_parse_into_entry(void * entry, void * data, int size)",
     "external": false,
-    "calls": ["FUN_0043b850", "FUN_0043b870", "FUN_0043b880", "FUN_0043b8a0", "FUN_0043b8c0", "FUN_0043b8e0", "operator_new"]
+    "calls": ["buffer_reader_find_tag", "buffer_reader_init", "buffer_reader_read_u16", "buffer_reader_read_u32", "buffer_reader_seek", "buffer_reader_skip", "operator_new"]
   },
   {
-    "name": "FUN_0043c230",
+    "name": "sfx_entry_upload_buffer",
     "address": "0043c230",
-    "signature": "undefined4 FUN_0043c230(int param_1)",
+    "signature": "int sfx_entry_upload_buffer(int entry)",
     "external": false,
-    "calls": ["FUN_0043bc40"]
+    "calls": ["dsound_restore_buffer"]
   },
   {
-    "name": "FUN_0043c2b0",
+    "name": "sfx_entry_create_buffers",
     "address": "0043c2b0",
-    "signature": "undefined4 FUN_0043c2b0(int param_1)",
+    "signature": "int sfx_entry_create_buffers(int entry)",
     "external": false,
-    "calls": ["FUN_0043c230", "OutputDebugStringA"]
+    "calls": ["OutputDebugStringA", "sfx_entry_upload_buffer"]
   },
   {
-    "name": "FUN_0043c3a0",
+    "name": "music_entry_load_ogg",
     "address": "0043c3a0",
-    "signature": "undefined4 FUN_0043c3a0(undefined4 * param_1, byte * param_2)",
+    "signature": "int music_entry_load_ogg(void * entry, byte * path)",
     "external": false,
-    "calls": ["FUN_0041ddd0", "FUN_0043bad0", "crt_fread", "operator_new", "resource_open_read"]
+    "calls": ["FUN_0041ddd0", "crt_fread", "operator_new", "resource_close", "resource_open_read"]
   },
   {
-    "name": "FUN_0043c520",
+    "name": "music_stream_update",
     "address": "0043c520",
-    "signature": "undefined FUN_0043c520(int param_1)",
+    "signature": "void music_stream_update(int entry)",
     "external": false,
-    "calls": ["FUN_0043c590"]
+    "calls": ["music_stream_fill"]
   },
   {
-    "name": "FUN_0043c590",
+    "name": "music_stream_fill",
     "address": "0043c590",
-    "signature": "uint FUN_0043c590(int param_1)",
+    "signature": "int music_stream_fill(int entry)",
     "external": false,
     "calls": ["FUN_0041df00", "OutputDebugStringA"]
   },
@@ -1950,14 +1950,14 @@
     "address": "0043c740",
     "signature": "int sfx_load_sample(char * path)",
     "external": false,
-    "calls": ["FUN_0043bcf0", "FUN_0043c020", "_strstr", "console_printf", "crt_sprintf"]
+    "calls": ["_strstr", "console_printf", "crt_sprintf", "sfx_entry_load_ogg", "sfx_entry_load_wav"]
   },
   {
     "name": "music_load_track",
     "address": "0043c8d0",
     "signature": "int music_load_track(char * path)",
     "external": false,
-    "calls": ["FUN_0043c3a0", "console_printf"]
+    "calls": ["console_printf", "music_entry_load_ogg"]
   },
   {
     "name": "music_queue_track",
@@ -1978,21 +1978,21 @@
     "address": "0043c9c0",
     "signature": "void audio_init_music(void)",
     "external": false,
-    "calls": ["FUN_0043b980", "console_exec_line", "console_printf", "music_load_track"]
+    "calls": ["console_exec_line", "console_printf", "music_load_track", "resource_pack_set"]
   },
   {
     "name": "audio_init_sfx",
     "address": "0043caa0",
     "signature": "void audio_init_sfx(void)",
     "external": false,
-    "calls": ["FUN_0043b980", "console_printf", "sfx_load_sample", "timeGetTime"]
+    "calls": ["console_printf", "resource_pack_set", "sfx_load_sample", "timeGetTime"]
   },
   {
     "name": "sfx_system_init",
     "address": "0043cf90",
     "signature": "int sfx_system_init(void)",
     "external": false,
-    "calls": ["FUN_0043baf0", "GetForegroundWindow", "console_printf"]
+    "calls": ["GetForegroundWindow", "console_printf", "dsound_init"]
   },
   {
     "name": "sfx_release_all",
@@ -2013,7 +2013,7 @@
     "address": "0043d110",
     "signature": "void audio_shutdown_all(void)",
     "external": false,
-    "calls": ["FUN_0043bc20", "music_release_all", "sfx_release_all"]
+    "calls": ["dsound_shutdown", "music_release_all", "sfx_release_all"]
   },
   {
     "name": "sfx_play",
@@ -2034,7 +2034,7 @@
     "address": "0043d3f0",
     "signature": "undefined FUN_0043d3f0(void)",
     "external": false,
-    "calls": ["FUN_0043c520", "sfx_update_mute_fades"]
+    "calls": ["music_stream_update", "sfx_update_mute_fades"]
   },
   {
     "name": "sfx_play_exclusive",

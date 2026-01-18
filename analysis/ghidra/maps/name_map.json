@@ -677,6 +677,62 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0043b850",
+    "name": "buffer_reader_init",
+    "signature": "void buffer_reader_init(void *data, int size)",
+    "comment": "initializes the buffer reader cursor and length"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043b870",
+    "name": "buffer_reader_seek",
+    "signature": "void buffer_reader_seek(int offset)",
+    "comment": "sets the buffer reader cursor"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043b880",
+    "name": "buffer_reader_read_u16",
+    "signature": "int buffer_reader_read_u16(void)",
+    "comment": "reads a little-endian u16 from the buffer"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043b8a0",
+    "name": "buffer_reader_read_u32",
+    "signature": "uint buffer_reader_read_u32(void)",
+    "comment": "reads a little-endian u32 from the buffer"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043b8c0",
+    "name": "buffer_reader_skip",
+    "signature": "void buffer_reader_skip(int count)",
+    "comment": "advances the buffer reader cursor"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043b8e0",
+    "name": "buffer_reader_find_tag",
+    "signature": "int buffer_reader_find_tag(char *tag, int tag_len)",
+    "comment": "searches the buffer for a tag and updates the cursor"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043b940",
+    "name": "resource_pack_read_cstring",
+    "signature": "int resource_pack_read_cstring(FILE *fp)",
+    "comment": "reads a NUL-terminated pack entry name into DAT_004c3a68"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043b980",
+    "name": "resource_pack_set",
+    "signature": "int resource_pack_set(char *path)",
+    "comment": "validates and sets the active resource pack path"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0043b9e0",
     "name": "resource_open_read",
     "signature": "int resource_open_read(byte *path, int *size_out)",
@@ -684,10 +740,101 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0043bad0",
+    "name": "resource_close",
+    "signature": "void resource_close(void)",
+    "comment": "closes the current resource file handle"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043baf0",
+    "name": "dsound_init",
+    "signature": "int dsound_init(void *hwnd, uint coop_level)",
+    "comment": "initializes DirectSound and the primary buffer"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043bc20",
+    "name": "dsound_shutdown",
+    "signature": "void dsound_shutdown(void)",
+    "comment": "releases the DirectSound interface"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043bc40",
+    "name": "dsound_restore_buffer",
+    "signature": "int dsound_restore_buffer(void *buffer)",
+    "comment": "restores a lost DirectSound buffer"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043bca0",
+    "name": "resource_read_alloc",
+    "signature": "int resource_read_alloc(byte *path, void **out_data, uint *out_size)",
+    "comment": "reads a resource into a newly allocated buffer"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043bcf0",
+    "name": "sfx_entry_load_ogg",
+    "signature": "int sfx_entry_load_ogg(void *entry, byte *path)",
+    "comment": "loads an OGG sample into an sfx entry"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043c020",
+    "name": "sfx_entry_load_wav",
+    "signature": "int sfx_entry_load_wav(void *entry, byte *path)",
+    "comment": "loads a WAV sample into an sfx entry"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0043c090",
     "name": "sfx_release_entry",
     "signature": "void sfx_release_entry(int entry)",
     "comment": "frees a sound entry (sample/voices)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043c110",
+    "name": "wav_parse_into_entry",
+    "signature": "int wav_parse_into_entry(void *entry, void *data, int size)",
+    "comment": "parses WAV data into an entry and copies PCM"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043c230",
+    "name": "sfx_entry_upload_buffer",
+    "signature": "int sfx_entry_upload_buffer(int entry)",
+    "comment": "uploads PCM data into a DirectSound buffer"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043c2b0",
+    "name": "sfx_entry_create_buffers",
+    "signature": "int sfx_entry_create_buffers(int entry)",
+    "comment": "creates DirectSound buffers for an sfx entry"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043c3a0",
+    "name": "music_entry_load_ogg",
+    "signature": "int music_entry_load_ogg(void *entry, byte *path)",
+    "comment": "loads an OGG stream into a music entry"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043c520",
+    "name": "music_stream_update",
+    "signature": "void music_stream_update(int entry)",
+    "comment": "updates streaming cursor and refills if needed"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043c590",
+    "name": "music_stream_fill",
+    "signature": "int music_stream_fill(int entry)",
+    "comment": "decodes and writes the next music stream chunk"
   },
   {
     "program": "crimsonland.exe",

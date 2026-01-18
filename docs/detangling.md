@@ -118,11 +118,53 @@ You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps
   - Evidence: renders the text input field with caret blink and state‑dependent colors; used by high‑score
     entry paths and other text input flows.
 
-### Audio resource packs (high confidence)
+### Audio resource packs + loaders (high confidence)
 
+- `FUN_0043b980` -> `resource_pack_set`
+  - Evidence: opens the pack file to validate it, caches the path, and flips the pack-enabled flag.
+- `FUN_0043b940` -> `resource_pack_read_cstring`
+  - Evidence: reads NUL-terminated entry names from the pack file into `DAT_004c3a68`.
 - `FUN_0043b9e0` -> `resource_open_read`
   - Evidence: when a resource pack is active, opens the pack and searches entries; otherwise opens the file
     directly, returns the file size, and leaves the file handle in a global used by sample/track loaders.
+- `FUN_0043bad0` -> `resource_close`
+  - Evidence: closes the global resource file handle (`DAT_004c3c68`) after a read.
+- `FUN_0043bca0` -> `resource_read_alloc`
+  - Evidence: opens a resource, allocates a buffer of the reported size, reads it fully, and returns the pointer.
+- `FUN_0043c020` -> `sfx_entry_load_wav`
+  - Evidence: reads a WAV resource into memory then parses headers/data into an sfx entry.
+- `FUN_0043c110` -> `wav_parse_into_entry`
+  - Evidence: parses RIFF/WAV headers from a memory buffer and copies PCM into the entry.
+- `FUN_0043bcf0` -> `sfx_entry_load_ogg`
+  - Evidence: initializes an Ogg/Vorbis decoder from a resource buffer and fills an sfx entry.
+- `FUN_0043c3a0` -> `music_entry_load_ogg`
+  - Evidence: initializes an Ogg/Vorbis decoder for music streaming and allocates the stream buffer.
+- `FUN_0043b850` -> `buffer_reader_init`
+  - Evidence: sets the buffer pointer/size used by the WAV parser.
+- `FUN_0043b870` -> `buffer_reader_seek`
+  - Evidence: sets the current read cursor for the WAV parser.
+- `FUN_0043b880` -> `buffer_reader_read_u16`
+  - Evidence: reads a little-endian 16-bit value and advances the cursor.
+- `FUN_0043b8a0` -> `buffer_reader_read_u32`
+  - Evidence: reads a little-endian 32-bit value and advances the cursor.
+- `FUN_0043b8c0` -> `buffer_reader_skip`
+  - Evidence: advances the read cursor by N bytes.
+- `FUN_0043b8e0` -> `buffer_reader_find_tag`
+  - Evidence: scans the buffer for a tag (e.g., RIFF/data) and advances the cursor to it.
+- `FUN_0043baf0` -> `dsound_init`
+  - Evidence: creates the DirectSound device and primary buffer (used by `sfx_system_init`).
+- `FUN_0043bc20` -> `dsound_shutdown`
+  - Evidence: releases the DirectSound device.
+- `FUN_0043bc40` -> `dsound_restore_buffer`
+  - Evidence: handles `DSERR_BUFFERLOST` by restoring the buffer.
+- `FUN_0043c230` -> `sfx_entry_upload_buffer`
+  - Evidence: locks a DirectSound buffer, copies PCM data, and unlocks it.
+- `FUN_0043c2b0` -> `sfx_entry_create_buffers`
+  - Evidence: creates and duplicates DirectSound buffers for an sfx entry.
+- `FUN_0043c520` -> `music_stream_update`
+  - Evidence: advances stream cursors and triggers refills when the play cursor wraps.
+- `FUN_0043c590` -> `music_stream_fill`
+  - Evidence: decodes Ogg data and writes the next streaming chunk.
 
 
 ### Input primary action (high confidence)

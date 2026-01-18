@@ -27464,33 +27464,39 @@ void __fastcall FUN_0043b810(int param_1)
 
 
 
-/* FUN_0043b850 @ 0043b850 */
+/* buffer_reader_init @ 0043b850 */
 
-void __cdecl FUN_0043b850(undefined4 param_1,undefined4 param_2)
+/* initializes the buffer reader cursor and length */
+
+void __cdecl buffer_reader_init(void *data,int size)
 
 {
-  DAT_004c3c70 = param_1;
-  DAT_004c3c74 = param_2;
+  DAT_004c3c70 = data;
+  DAT_004c3c74 = size;
   DAT_004c3c78 = 0;
   return;
 }
 
 
 
-/* FUN_0043b870 @ 0043b870 */
+/* buffer_reader_seek @ 0043b870 */
 
-void __cdecl FUN_0043b870(undefined4 param_1)
+/* sets the buffer reader cursor */
+
+void __cdecl buffer_reader_seek(int offset)
 
 {
-  DAT_004c3c78 = param_1;
+  DAT_004c3c78 = offset;
   return;
 }
 
 
 
-/* FUN_0043b880 @ 0043b880 */
+/* buffer_reader_read_u16 @ 0043b880 */
 
-undefined4 FUN_0043b880(void)
+/* reads a little-endian u16 from the buffer */
+
+int buffer_reader_read_u16(void)
 
 {
   undefined2 *puVar1;
@@ -27502,34 +27508,40 @@ undefined4 FUN_0043b880(void)
 
 
 
-/* FUN_0043b8a0 @ 0043b8a0 */
+/* buffer_reader_read_u32 @ 0043b8a0 */
 
-undefined4 FUN_0043b8a0(void)
+/* reads a little-endian u32 from the buffer */
+
+uint buffer_reader_read_u32(void)
 
 {
-  undefined4 *puVar1;
+  uint *puVar1;
   
-  puVar1 = (undefined4 *)(DAT_004c3c78 + DAT_004c3c70);
+  puVar1 = (uint *)(DAT_004c3c78 + DAT_004c3c70);
   DAT_004c3c78 = DAT_004c3c78 + 4;
   return *puVar1;
 }
 
 
 
-/* FUN_0043b8c0 @ 0043b8c0 */
+/* buffer_reader_skip @ 0043b8c0 */
 
-void __cdecl FUN_0043b8c0(int param_1)
+/* advances the buffer reader cursor */
+
+void __cdecl buffer_reader_skip(int count)
 
 {
-  DAT_004c3c78 = DAT_004c3c78 + param_1;
+  DAT_004c3c78 = DAT_004c3c78 + count;
   return;
 }
 
 
 
-/* FUN_0043b8e0 @ 0043b8e0 */
+/* buffer_reader_find_tag @ 0043b8e0 */
 
-uint __cdecl FUN_0043b8e0(int param_1,int param_2)
+/* searches the buffer for a tag and updates the cursor */
+
+int __cdecl buffer_reader_find_tag(char *tag,int tag_len)
 
 {
   int iVar1;
@@ -27539,14 +27551,14 @@ uint __cdecl FUN_0043b8e0(int param_1,int param_2)
   if (0 < (int)DAT_004c3c74) {
     do {
       iVar1 = 0;
-      if (0 < param_2) {
+      if (0 < tag_len) {
         do {
-          if (*(char *)(DAT_004c3c70 + iVar2 + iVar1) != *(char *)(iVar1 + param_1)) break;
+          if (*(char *)(DAT_004c3c70 + iVar2 + iVar1) != tag[iVar1]) break;
           iVar1 = iVar1 + 1;
-        } while (iVar1 < param_2);
+        } while (iVar1 < tag_len);
       }
-      if (iVar1 == param_2) {
-        DAT_004c3c78 = iVar2 + param_2;
+      if (iVar1 == tag_len) {
+        DAT_004c3c78 = iVar2 + tag_len;
         return CONCAT31((int3)((uint)iVar1 >> 8),1);
       }
       iVar2 = iVar2 + 1;
@@ -27557,9 +27569,11 @@ uint __cdecl FUN_0043b8e0(int param_1,int param_2)
 
 
 
-/* FUN_0043b940 @ 0043b940 */
+/* resource_pack_read_cstring @ 0043b940 */
 
-uint __cdecl FUN_0043b940(undefined4 *param_1)
+/* reads a NUL-terminated pack entry name into DAT_004c3a68 */
+
+int __cdecl resource_pack_read_cstring(FILE *fp)
 
 {
   byte bVar1;
@@ -27567,21 +27581,23 @@ uint __cdecl FUN_0043b940(undefined4 *param_1)
   int iVar3;
   
   iVar3 = 0;
-  bVar1 = *(byte *)(param_1 + 3);
-  while (((bVar1 & 0x10) == 0 && (iVar2 = crt_getc((FILE *)param_1), iVar2 != 0))) {
+  bVar1 = (byte)fp->_flag;
+  while (((bVar1 & 0x10) == 0 && (iVar2 = crt_getc(fp), iVar2 != 0))) {
     (&DAT_004c3a68)[iVar3] = (char)iVar2;
-    bVar1 = *(byte *)(param_1 + 3);
+    bVar1 = (byte)fp->_flag;
     iVar3 = iVar3 + 1;
   }
   (&DAT_004c3a68)[iVar3] = 0;
-  return (uint)~param_1[3] >> 4 & 1;
+  return (uint)~fp->_flag >> 4 & 1;
 }
 
 
 
-/* FUN_0043b980 @ 0043b980 */
+/* resource_pack_set @ 0043b980 */
 
-undefined4 __cdecl FUN_0043b980(LPCSTR param_1)
+/* validates and sets the active resource pack path */
+
+int __cdecl resource_pack_set(char *path)
 
 {
   char cVar1;
@@ -27592,7 +27608,7 @@ undefined4 __cdecl FUN_0043b980(LPCSTR param_1)
   char *pcVar5;
   char *pcVar6;
   
-  fp = crt_fopen(param_1,&file_mode_read_binary);
+  fp = crt_fopen(path,&file_mode_read_binary);
   if (fp == (FILE *)0x0) {
     DAT_004c3968._0_1_ = 0;
     DAT_004c3c6c = 0;
@@ -27600,12 +27616,12 @@ undefined4 __cdecl FUN_0043b980(LPCSTR param_1)
   }
   uVar3 = 0xffffffff;
   do {
-    pcVar5 = param_1;
+    pcVar5 = path;
     if (uVar3 == 0) break;
     uVar3 = uVar3 - 1;
-    pcVar5 = param_1 + 1;
-    cVar1 = *param_1;
-    param_1 = pcVar5;
+    pcVar5 = path + 1;
+    cVar1 = *path;
+    path = pcVar5;
   } while (cVar1 != '\0');
   uVar3 = ~uVar3;
   pcVar5 = pcVar5 + -uVar3;
@@ -27637,9 +27653,9 @@ int __cdecl resource_open_read(byte *path,int *size_out)
   int *piVar1;
   char cVar2;
   FILE *fp;
-  uint uVar3;
-  long lVar4;
-  int iVar5;
+  int iVar3;
+  uint uVar4;
+  long lVar5;
   
   piVar1 = size_out;
   if (DAT_004c3c6c != '\0') {
@@ -27649,17 +27665,17 @@ int __cdecl resource_open_read(byte *path,int *size_out)
       return 0;
     }
     crt_fseek(fp,4,0);
-    uVar3 = FUN_0043b940(&fp->_ptr);
-    cVar2 = (char)uVar3;
+    iVar3 = resource_pack_read_cstring(fp);
+    cVar2 = (char)iVar3;
     while (cVar2 != '\0') {
       crt_fread(&size_out,4,1,fp);
       *piVar1 = (int)size_out;
-      uVar3 = FUN_00462de0(size_out,&DAT_004c3a68,path);
-      iVar5 = 0;
-      if (uVar3 == 0) goto LAB_0043bac3;
+      uVar4 = FUN_00462de0(size_out,&DAT_004c3a68,path);
+      iVar3 = 0;
+      if (uVar4 == 0) goto LAB_0043bac3;
       crt_fseek(fp,(long)size_out,1);
-      uVar3 = FUN_0043b940(&fp->_ptr);
-      cVar2 = (char)uVar3;
+      iVar3 = resource_pack_read_cstring(fp);
+      cVar2 = (char)iVar3;
     }
     crt_fclose(fp);
   }
@@ -27668,18 +27684,20 @@ int __cdecl resource_open_read(byte *path,int *size_out)
     return 0;
   }
   crt_fseek(DAT_004c3c68,0,2);
-  lVar4 = crt_ftell(DAT_004c3c68);
-  *piVar1 = lVar4;
-  iVar5 = crt_fseek(DAT_004c3c68,0,0);
+  lVar5 = crt_ftell(DAT_004c3c68);
+  *piVar1 = lVar5;
+  iVar3 = crt_fseek(DAT_004c3c68,0,0);
 LAB_0043bac3:
-  return CONCAT31((int3)((uint)iVar5 >> 8),1);
+  return CONCAT31((int3)((uint)iVar3 >> 8),1);
 }
 
 
 
-/* FUN_0043bad0 @ 0043bad0 */
+/* resource_close @ 0043bad0 */
 
-void FUN_0043bad0(void)
+/* closes the current resource file handle */
+
+void resource_close(void)
 
 {
   if (DAT_004c3c68 != (FILE *)0x0) {
@@ -27690,11 +27708,12 @@ void FUN_0043bad0(void)
 
 
 
-/* FUN_0043baf0 @ 0043baf0 */
+/* dsound_init @ 0043baf0 */
 
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
+/* initializes DirectSound and the primary buffer */
 
-uint __cdecl FUN_0043baf0(undefined4 param_1,uint param_2)
+int __cdecl dsound_init(void *hwnd,uint coop_level)
 
 {
   uint uVar1;
@@ -27749,9 +27768,11 @@ uint __cdecl FUN_0043baf0(undefined4 param_1,uint param_2)
 
 
 
-/* FUN_0043bc20 @ 0043bc20 */
+/* dsound_shutdown @ 0043bc20 */
 
-void FUN_0043bc20(void)
+/* releases the DirectSound interface */
+
+void dsound_shutdown(void)
 
 {
   if (DAT_004c3964 != (int *)0x0) {
@@ -27763,23 +27784,25 @@ void FUN_0043bc20(void)
 
 
 
-/* FUN_0043bc40 @ 0043bc40 */
+/* dsound_restore_buffer @ 0043bc40 */
 
-undefined4 __cdecl FUN_0043bc40(int *param_1)
+/* restores a lost DirectSound buffer */
+
+int __cdecl dsound_restore_buffer(void *buffer)
 
 {
-  int *piVar1;
+  void *pvVar1;
   uint in_EAX;
   int iVar2;
   undefined4 extraout_EAX;
   uint unaff_ESI;
   
-  piVar1 = param_1;
-  if (((param_1 != (int *)0x0) &&
-      (in_EAX = (**(code **)(*param_1 + 0x24))(param_1,&param_1), -1 < (int)in_EAX)) &&
+  pvVar1 = buffer;
+  if (((buffer != (void *)0x0) &&
+      (in_EAX = (**(code **)(*(int *)buffer + 0x24))(buffer,&buffer), -1 < (int)in_EAX)) &&
      ((unaff_ESI & 2) != 0)) {
     do {
-      while (iVar2 = (**(code **)(*piVar1 + 0x50))(piVar1), iVar2 == -0x7787ff6a) {
+      while (iVar2 = (**(code **)(*(int *)pvVar1 + 0x50))(pvVar1), iVar2 == -0x7787ff6a) {
         Sleep(10);
       }
     } while (iVar2 != 0);
@@ -27791,83 +27814,88 @@ undefined4 __cdecl FUN_0043bc40(int *param_1)
 
 
 
-/* FUN_0043bca0 @ 0043bca0 */
+/* resource_read_alloc @ 0043bca0 */
 
-int __cdecl FUN_0043bca0(byte *param_1,undefined4 *param_2,uint *param_3)
+/* reads a resource into a newly allocated buffer */
+
+int __cdecl resource_read_alloc(byte *path,void **out_data,uint *out_size)
 
 {
   FILE *fp;
   int iVar1;
   void *ptr;
   
-  iVar1 = resource_open_read(param_1,(int *)param_3);
+  iVar1 = resource_open_read(path,(int *)out_size);
   fp = DAT_004c3c68;
   if ((char)iVar1 == '\0') {
     return iVar1;
   }
-  ptr = operator_new(*param_3);
-  crt_fread(ptr,*param_3,1,fp);
-  FUN_0043bad0();
-  *param_2 = ptr;
-  return CONCAT31((int3)((uint)param_2 >> 8),1);
+  ptr = operator_new(*out_size);
+  crt_fread(ptr,*out_size,1,fp);
+  resource_close();
+  *out_data = ptr;
+  return CONCAT31((int3)((uint)out_data >> 8),1);
 }
 
 
 
-/* FUN_0043bcf0 @ 0043bcf0 */
+/* sfx_entry_load_ogg @ 0043bcf0 */
 
-uint __cdecl FUN_0043bcf0(undefined4 *param_1,byte *param_2)
+/* loads an OGG sample into an sfx entry */
+
+int __cdecl sfx_entry_load_ogg(void *entry,byte *path)
 
 {
   FILE *fp;
-  uint uVar1;
+  int iVar1;
   undefined4 *puVar2;
-  void *pvVar3;
-  undefined4 uVar4;
-  int iVar5;
+  uint uVar3;
+  void *pvVar4;
   uint local_314;
   undefined1 local_310 [740];
   uint local_2c;
   uint local_1c;
   int local_18;
   
-  uVar1 = resource_open_read(param_2,(int *)&local_314);
+  iVar1 = resource_open_read(path,(int *)&local_314);
   fp = DAT_004c3c68;
-  if ((char)uVar1 == '\0') {
-    return uVar1;
+  if ((char)iVar1 == '\0') {
+    return iVar1;
   }
   puVar2 = operator_new(local_314 + 8);
   crt_fread(puVar2 + 2,local_314,1,fp);
-  FUN_0043bad0();
-  uVar1 = FUN_0041ddd0(local_310,puVar2,local_314);
-  if ((char)uVar1 != '\0') {
-    *param_1 = 0;
-    param_1[1] = 0;
-    param_1[2] = 0;
-    param_1[3] = 0;
-    *(undefined2 *)(param_1 + 4) = 0;
-    *(short *)((int)param_1 + 2) = (short)local_1c;
-    *(undefined2 *)param_1 = 1;
-    uVar1 = (int)((local_1c & 0xffff) * 0x10) >> 3;
-    *(short *)(param_1 + 3) = (short)uVar1;
-    param_1[2] = (uVar1 & 0xffff) * local_18;
-    param_1[1] = local_18;
-    *(undefined2 *)((int)param_1 + 0xe) = 0x10;
-    *(undefined2 *)(param_1 + 4) = 0;
-    param_1[6] = local_2c;
-    pvVar3 = operator_new(local_2c);
-    iVar5 = param_1[6];
-    param_1[5] = pvVar3;
-    uVar1 = 1;
-    while ((iVar5 != 0 && (uVar1 != 0))) {
-      uVar1 = FUN_0041df00(local_310,(param_1[6] - iVar5) + param_1[5],iVar5);
-      iVar5 = iVar5 - uVar1;
+  resource_close();
+  iVar1 = FUN_0041ddd0(local_310,puVar2,local_314);
+  if ((char)iVar1 != '\0') {
+    *(undefined4 *)entry = 0;
+    *(undefined4 *)((int)entry + 4) = 0;
+    *(undefined4 *)((int)entry + 8) = 0;
+    *(undefined4 *)((int)entry + 0xc) = 0;
+    *(undefined2 *)((int)entry + 0x10) = 0;
+    *(short *)((int)entry + 2) = (short)local_1c;
+    *(undefined2 *)entry = 1;
+    uVar3 = (int)((local_1c & 0xffff) * 0x10) >> 3;
+    *(short *)((int)entry + 0xc) = (short)uVar3;
+    *(uint *)((int)entry + 8) = (uVar3 & 0xffff) * local_18;
+    *(int *)((int)entry + 4) = local_18;
+    *(undefined2 *)((int)entry + 0xe) = 0x10;
+    *(undefined2 *)((int)entry + 0x10) = 0;
+    *(uint *)((int)entry + 0x18) = local_2c;
+    pvVar4 = operator_new(local_2c);
+    iVar1 = *(int *)((int)entry + 0x18);
+    *(void **)((int)entry + 0x14) = pvVar4;
+    uVar3 = 1;
+    while ((iVar1 != 0 && (uVar3 != 0))) {
+      uVar3 = FUN_0041df00(local_310,
+                           (*(int *)((int)entry + 0x18) - iVar1) + *(int *)((int)entry + 0x14),iVar1
+                          );
+      iVar1 = iVar1 - uVar3;
     }
     FUN_0041dee0((int)local_310);
-    uVar4 = FUN_0043c2b0((int)param_1);
-    return CONCAT31((int3)((uint)uVar4 >> 8),(char)uVar4 != '\0');
+    iVar1 = sfx_entry_create_buffers((int)entry);
+    return CONCAT31((int3)((uint)iVar1 >> 8),(char)iVar1 != '\0');
   }
-  return uVar1;
+  return iVar1;
 }
 
 
@@ -27896,52 +27924,52 @@ uint __cdecl FUN_0043be60(uint param_1)
 
 {
   int *piVar1;
-  uint uVar2;
-  undefined4 uVar3;
-  int *piVar4;
-  uint uVar5;
+  uint entry;
+  int iVar2;
+  int *piVar3;
+  uint uVar4;
   
-  uVar2 = param_1;
+  entry = param_1;
   if (param_1 == 0) {
     return 0xffffffff;
   }
-  piVar4 = (int *)(param_1 + 0x24);
-  uVar3 = FUN_0043bc40(*(int **)(param_1 + 0x24));
-  if ((char)uVar3 != '\0') {
-    if (*(int *)(uVar2 + 0x74) != 0) goto LAB_0043be9c;
-    FUN_0043c230(uVar2);
+  piVar3 = (int *)(param_1 + 0x24);
+  iVar2 = dsound_restore_buffer(*(void **)(param_1 + 0x24));
+  if ((char)iVar2 != '\0') {
+    if (*(int *)(entry + 0x74) != 0) goto LAB_0043be9c;
+    sfx_entry_upload_buffer(entry);
   }
-  if (*(int *)(uVar2 + 0x74) == 0) {
-    uVar5 = 0;
+  if (*(int *)(entry + 0x74) == 0) {
+    uVar4 = 0;
     do {
-      piVar1 = (int *)*piVar4;
+      piVar1 = (int *)*piVar3;
       if (piVar1 != (int *)0x0) {
         (**(code **)(*piVar1 + 0x24))(piVar1,&param_1);
         if ((param_1 & 1) == 0) goto LAB_0043bf10;
       }
-      uVar5 = uVar5 + 1;
-      piVar4 = piVar4 + 1;
-    } while ((int)uVar5 < 0x10);
-    uVar5 = _rand();
-    uVar5 = uVar5 & 0x8000000f;
-    if ((int)uVar5 < 0) {
-      uVar5 = (uVar5 - 1 | 0xfffffff0) + 1;
+      uVar4 = uVar4 + 1;
+      piVar3 = piVar3 + 1;
+    } while ((int)uVar4 < 0x10);
+    uVar4 = _rand();
+    uVar4 = uVar4 & 0x8000000f;
+    if ((int)uVar4 < 0) {
+      uVar4 = (uVar4 - 1 | 0xfffffff0) + 1;
     }
-    piVar4 = *(int **)(uVar2 + 0x24 + uVar5 * 4);
-    (**(code **)(*piVar4 + 0x48))(piVar4);
+    piVar3 = *(int **)(entry + 0x24 + uVar4 * 4);
+    (**(code **)(*piVar3 + 0x48))(piVar3);
 LAB_0043bf10:
-    piVar4 = *(int **)(uVar2 + 0x24 + uVar5 * 4);
-    (**(code **)(*piVar4 + 0x44))(piVar4,sfx_rate_scale);
-    piVar4 = *(int **)(uVar2 + 0x24 + uVar5 * 4);
-    (**(code **)(*piVar4 + 0x30))(piVar4,0,0,0);
-    return uVar5;
+    piVar3 = *(int **)(entry + 0x24 + uVar4 * 4);
+    (**(code **)(*piVar3 + 0x44))(piVar3,sfx_rate_scale);
+    piVar3 = *(int **)(entry + 0x24 + uVar4 * 4);
+    (**(code **)(*piVar3 + 0x30))(piVar3,0,0,0);
+    return uVar4;
   }
 LAB_0043be9c:
-  FUN_0043be20(uVar2,0);
-  FUN_0043c590(uVar2);
-  FUN_0043c590(uVar2);
-  FUN_0043c590(uVar2);
-  (**(code **)(*(int *)*piVar4 + 0x30))((int *)*piVar4,0,0,1);
+  FUN_0043be20(entry,0);
+  music_stream_fill(entry);
+  music_stream_fill(entry);
+  music_stream_fill(entry);
+  (**(code **)(*(int *)*piVar3 + 0x30))((int *)*piVar3,0,0,1);
   return 0;
 }
 
@@ -28031,28 +28059,29 @@ void __cdecl FUN_0043bfa0(int param_1,float param_2)
 
 
 
-/* FUN_0043c020 @ 0043c020 */
+/* sfx_entry_load_wav @ 0043c020 */
 
-uint __cdecl FUN_0043c020(undefined4 *param_1,byte *param_2)
+/* loads a WAV sample into an sfx entry */
+
+int __cdecl sfx_entry_load_wav(void *entry,byte *path)
 
 {
-  uint uVar1;
+  int iVar1;
   uint extraout_EAX;
-  undefined4 uVar2;
   uint local_4;
   
-  uVar1 = FUN_0043bca0(param_2,&param_2,&local_4);
-  if ((char)uVar1 == '\0') {
-    return uVar1;
+  iVar1 = resource_read_alloc(path,&path,&local_4);
+  if ((char)iVar1 == '\0') {
+    return iVar1;
   }
-  uVar1 = FUN_0043c110(param_1,(int)param_2,local_4);
-  if ((char)uVar1 == '\0') {
-    crt_free(param_2);
+  iVar1 = wav_parse_into_entry(entry,path,local_4);
+  if ((char)iVar1 == '\0') {
+    crt_free(path);
     return extraout_EAX & 0xffffff00;
   }
-  crt_free(param_2);
-  uVar2 = FUN_0043c2b0((int)param_1);
-  return CONCAT31((int3)((uint)uVar2 >> 8),(char)uVar2 != '\0');
+  crt_free(path);
+  iVar1 = sfx_entry_create_buffers((int)entry);
+  return CONCAT31((int3)((uint)iVar1 >> 8),(char)iVar1 != '\0');
 }
 
 
@@ -28099,121 +28128,124 @@ void __cdecl sfx_release_entry(int entry)
 
 
 
-/* FUN_0043c110 @ 0043c110 */
+/* wav_parse_into_entry @ 0043c110 */
 
-uint __cdecl FUN_0043c110(undefined4 *param_1,int param_2,undefined4 param_3)
+/* parses WAV data into an entry and copies PCM */
+
+int __cdecl wav_parse_into_entry(void *entry,void *data,int size)
 
 {
-  uint uVar1;
-  undefined4 uVar2;
-  int iVar3;
-  undefined4 *puVar4;
-  uint uVar5;
-  undefined4 *puVar6;
+  int iVar1;
+  uint uVar2;
+  undefined4 *puVar3;
+  uint uVar4;
+  undefined4 *puVar5;
   
-  *param_1 = 0;
-  param_1[1] = 0;
-  param_1[2] = 0;
-  param_1[3] = 0;
-  *(undefined2 *)(param_1 + 4) = 0;
-  *(undefined2 *)param_1 = 1;
-  *(undefined2 *)((int)param_1 + 2) = 1;
-  *(undefined2 *)((int)param_1 + 0xe) = 0x10;
-  param_1[1] = 0x5622;
-  *(undefined2 *)(param_1 + 3) = 2;
-  *(undefined2 *)(param_1 + 4) = 0;
-  param_1[2] = 0xac44;
-  FUN_0043b850(param_2,param_3);
-  FUN_0043b870(0);
-  uVar1 = FUN_0043b8e0(0x477c98,4);
-  if ((char)uVar1 == '\0') {
-    return uVar1;
+  *(undefined4 *)entry = 0;
+  *(undefined4 *)((int)entry + 4) = 0;
+  *(undefined4 *)((int)entry + 8) = 0;
+  *(undefined4 *)((int)entry + 0xc) = 0;
+  *(undefined2 *)((int)entry + 0x10) = 0;
+  *(undefined2 *)entry = 1;
+  *(undefined2 *)((int)entry + 2) = 1;
+  *(undefined2 *)((int)entry + 0xe) = 0x10;
+  *(undefined4 *)((int)entry + 4) = 0x5622;
+  *(undefined2 *)((int)entry + 0xc) = 2;
+  *(undefined2 *)((int)entry + 0x10) = 0;
+  *(undefined4 *)((int)entry + 8) = 0xac44;
+  buffer_reader_init(data,size);
+  buffer_reader_seek(0);
+  iVar1 = buffer_reader_find_tag(&DAT_00477c98,4);
+  if ((char)iVar1 == '\0') {
+    return iVar1;
   }
-  FUN_0043b8c0(4);
-  FUN_0043b8c0(2);
-  uVar2 = FUN_0043b880();
-  *(short *)((int)param_1 + 2) = (short)uVar2;
-  uVar2 = FUN_0043b8a0();
-  param_1[1] = uVar2;
-  FUN_0043b8c0(6);
-  uVar1 = FUN_0043b880();
-  *(short *)((int)param_1 + 0xe) = (short)uVar1;
-  iVar3 = (uint)*(ushort *)((int)param_1 + 2) * (uVar1 & 0xffff);
-  *(undefined2 *)(param_1 + 4) = 0;
-  uVar1 = (int)(iVar3 + (iVar3 >> 0x1f & 7U)) >> 3;
-  *(short *)(param_1 + 3) = (short)uVar1;
-  param_1[2] = (uVar1 & 0xffff) * param_1[1];
-  FUN_0043b8e0(0x477c90,4);
-  uVar1 = FUN_0043b8a0();
-  param_1[6] = uVar1;
-  puVar4 = operator_new(uVar1);
-  param_1[5] = puVar4;
-  puVar6 = (undefined4 *)(DAT_004c3c78 + param_2);
-  for (uVar5 = uVar1 >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
-    *puVar4 = *puVar6;
-    puVar6 = puVar6 + 1;
-    puVar4 = puVar4 + 1;
+  buffer_reader_skip(4);
+  buffer_reader_skip(2);
+  iVar1 = buffer_reader_read_u16();
+  *(short *)((int)entry + 2) = (short)iVar1;
+  uVar2 = buffer_reader_read_u32();
+  *(uint *)((int)entry + 4) = uVar2;
+  buffer_reader_skip(6);
+  uVar2 = buffer_reader_read_u16();
+  *(short *)((int)entry + 0xe) = (short)uVar2;
+  iVar1 = (uint)*(ushort *)((int)entry + 2) * (uVar2 & 0xffff);
+  *(undefined2 *)((int)entry + 0x10) = 0;
+  uVar2 = (int)(iVar1 + (iVar1 >> 0x1f & 7U)) >> 3;
+  *(short *)((int)entry + 0xc) = (short)uVar2;
+  *(uint *)((int)entry + 8) = (uVar2 & 0xffff) * *(int *)((int)entry + 4);
+  buffer_reader_find_tag(&DAT_00477c90,4);
+  uVar2 = buffer_reader_read_u32();
+  *(uint *)((int)entry + 0x18) = uVar2;
+  puVar3 = operator_new(uVar2);
+  *(undefined4 **)((int)entry + 0x14) = puVar3;
+  puVar5 = (undefined4 *)(DAT_004c3c78 + (int)data);
+  for (uVar4 = uVar2 >> 2; uVar4 != 0; uVar4 = uVar4 - 1) {
+    *puVar3 = *puVar5;
+    puVar5 = puVar5 + 1;
+    puVar3 = puVar3 + 1;
   }
-  for (uVar5 = uVar1 & 3; uVar5 != 0; uVar5 = uVar5 - 1) {
-    *(undefined1 *)puVar4 = *(undefined1 *)puVar6;
-    puVar6 = (undefined4 *)((int)puVar6 + 1);
-    puVar4 = (undefined4 *)((int)puVar4 + 1);
+  for (uVar4 = uVar2 & 3; uVar4 != 0; uVar4 = uVar4 - 1) {
+    *(undefined1 *)puVar3 = *(undefined1 *)puVar5;
+    puVar5 = (undefined4 *)((int)puVar5 + 1);
+    puVar3 = (undefined4 *)((int)puVar3 + 1);
   }
-  return CONCAT31((int3)(uVar1 >> 8),1);
+  return CONCAT31((int3)(uVar2 >> 8),1);
 }
 
 
 
-/* FUN_0043c230 @ 0043c230 */
+/* sfx_entry_upload_buffer @ 0043c230 */
 
-undefined4 __cdecl FUN_0043c230(int param_1)
+/* uploads PCM data into a DirectSound buffer */
+
+int __cdecl sfx_entry_upload_buffer(int entry)
 
 {
   int iVar1;
   int iVar2;
-  undefined4 uVar3;
+  uint uVar3;
   uint uVar4;
-  uint uVar5;
+  int *piVar5;
   int *piVar6;
-  int *piVar7;
-  undefined4 uVar8;
-  int *piVar9;
+  undefined4 uVar7;
+  int *piVar8;
   undefined1 local_4 [4];
   
-  iVar1 = param_1;
-  piVar9 = &param_1;
-  uVar8 = 0;
-  iVar2 = (**(code **)(**(int **)(param_1 + 0x24) + 0x2c))
-                    (*(int **)(param_1 + 0x24),0,*(undefined4 *)(param_1 + 0x18),piVar9,local_4,0,0,
-                     0);
+  iVar1 = entry;
+  piVar8 = &entry;
+  uVar7 = 0;
+  iVar2 = (**(code **)(**(int **)(entry + 0x24) + 0x2c))
+                    (*(int **)(entry + 0x24),0,*(undefined4 *)(entry + 0x18),piVar8,local_4,0,0,0);
   if ((iVar2 < 0) && (iVar2 == -0x7787ff6a)) {
-    uVar3 = FUN_0043bc40(*(int **)(iVar1 + 0x24));
-    if ((char)uVar3 == '\0') {
-      return uVar3;
+    iVar2 = dsound_restore_buffer(*(void **)(iVar1 + 0x24));
+    if ((char)iVar2 == '\0') {
+      return iVar2;
     }
   }
-  uVar5 = *(uint *)(iVar1 + 0x18);
-  piVar6 = *(int **)(iVar1 + 0x14);
-  piVar7 = piVar9;
-  for (uVar4 = uVar5 >> 2; uVar4 != 0; uVar4 = uVar4 - 1) {
-    *piVar7 = *piVar6;
+  uVar4 = *(uint *)(iVar1 + 0x18);
+  piVar5 = *(int **)(iVar1 + 0x14);
+  piVar6 = piVar8;
+  for (uVar3 = uVar4 >> 2; uVar3 != 0; uVar3 = uVar3 - 1) {
+    *piVar6 = *piVar5;
+    piVar5 = piVar5 + 1;
     piVar6 = piVar6 + 1;
-    piVar7 = piVar7 + 1;
   }
-  for (uVar5 = uVar5 & 3; uVar5 != 0; uVar5 = uVar5 - 1) {
-    *(char *)piVar7 = (char)*piVar6;
+  for (uVar4 = uVar4 & 3; uVar4 != 0; uVar4 = uVar4 - 1) {
+    *(char *)piVar6 = (char)*piVar5;
+    piVar5 = (int *)((int)piVar5 + 1);
     piVar6 = (int *)((int)piVar6 + 1);
-    piVar7 = (int *)((int)piVar7 + 1);
   }
-  uVar8 = (**(code **)(**(int **)(iVar1 + 0x24) + 0x4c))(*(int **)(iVar1 + 0x24),piVar9,uVar8,0,0);
-  return CONCAT31((int3)((uint)uVar8 >> 8),1);
+  uVar7 = (**(code **)(**(int **)(iVar1 + 0x24) + 0x4c))(*(int **)(iVar1 + 0x24),piVar8,uVar7,0,0);
+  return CONCAT31((int3)((uint)uVar7 >> 8),1);
 }
 
 
 
-/* FUN_0043c2b0 @ 0043c2b0 */
+/* sfx_entry_create_buffers @ 0043c2b0 */
 
-uint __cdecl FUN_0043c2b0(int param_1)
+/* creates DirectSound buffers for an sfx entry */
+
+int __cdecl sfx_entry_create_buffers(int entry)
 
 {
   uint uVar1;
@@ -28231,26 +28263,26 @@ uint __cdecl FUN_0043c2b0(int param_1)
   undefined4 local_8;
   undefined4 local_4;
   
-  puVar7 = (undefined4 *)(param_1 + 0x24);
+  puVar7 = (undefined4 *)(entry + 0x24);
   puVar5 = local_24;
   for (iVar4 = 9; iVar4 != 0; iVar4 = iVar4 + -1) {
     *puVar5 = 0;
     puVar5 = puVar5 + 1;
   }
-  local_24[2] = *(undefined4 *)(param_1 + 0x18);
+  local_24[2] = *(undefined4 *)(entry + 0x18);
   local_10 = 0;
   local_8 = 0;
   local_4 = 0;
   local_24[0] = 0x24;
   local_24[1] = 0x80e0;
   local_c = 0;
-  local_14 = param_1;
+  local_14 = entry;
   uVar1 = (**(code **)(*DAT_004c3964 + 0xc))(DAT_004c3964,local_24,puVar7,0);
   if ((int)uVar1 < 0) {
     return uVar1 & 0xffffff00;
   }
   iVar6 = 1;
-  iVar4 = param_1 + 0x28;
+  iVar4 = entry + 0x28;
   do {
     iVar2 = (**(code **)(*DAT_004c3964 + 0x14))(DAT_004c3964,*puVar7,iVar4);
     if (iVar2 < 0) {
@@ -28260,10 +28292,10 @@ uint __cdecl FUN_0043c2b0(int param_1)
     iVar6 = iVar6 + 1;
     iVar4 = iVar4 + 4;
   } while (iVar6 < 0x10);
-  FUN_0043c230(param_1);
+  sfx_entry_upload_buffer(entry);
   iVar4 = 0;
   do {
-    *(undefined1 *)(iVar4 + 100 + param_1) = 0;
+    *(undefined1 *)(iVar4 + 100 + entry) = 0;
     (**(code **)(*(int *)*puVar7 + 0x48))((int *)*puVar7);
     uVar3 = (**(code **)(*(int *)*puVar7 + 0x34))((int *)*puVar7,0);
     iVar4 = iVar4 + 1;
@@ -28274,9 +28306,11 @@ uint __cdecl FUN_0043c2b0(int param_1)
 
 
 
-/* FUN_0043c3a0 @ 0043c3a0 */
+/* music_entry_load_ogg @ 0043c3a0 */
 
-int __cdecl FUN_0043c3a0(undefined4 *param_1,byte *param_2)
+/* loads an OGG stream into a music entry */
+
+int __cdecl music_entry_load_ogg(void *entry,byte *path)
 
 {
   ushort uVar1;
@@ -28284,56 +28318,55 @@ int __cdecl FUN_0043c3a0(undefined4 *param_1,byte *param_2)
   int iVar2;
   undefined4 *puVar3;
   void *this;
-  undefined4 uVar4;
-  uint uVar5;
-  uint3 uVar6;
-  uint uVar7;
+  uint uVar4;
+  uint3 uVar5;
+  uint uVar6;
   undefined4 local_24 [4];
-  undefined4 *local_14;
+  void *local_14;
   undefined4 local_10;
   undefined4 local_c;
   undefined4 local_8;
   undefined4 local_4;
   
-  iVar2 = resource_open_read(param_2,(int *)&param_2);
+  iVar2 = resource_open_read(path,(int *)&path);
   fp = DAT_004c3c68;
   if ((char)iVar2 == '\0') {
     return iVar2;
   }
-  puVar3 = operator_new((uint)(param_2 + 8));
-  crt_fread(puVar3 + 2,(uint)param_2,1,fp);
-  FUN_0043bad0();
+  puVar3 = operator_new((uint)(path + 8));
+  crt_fread(puVar3 + 2,(uint)path,1,fp);
+  resource_close();
   this = operator_new(0x310);
-  param_1[0x1d] = this;
-  uVar4 = FUN_0041ddd0(this,puVar3,param_2);
-  if ((char)uVar4 == '\0') {
-    return uVar4;
+  *(void **)((int)entry + 0x74) = this;
+  iVar2 = FUN_0041ddd0(this,puVar3,path);
+  if ((char)iVar2 == '\0') {
+    return iVar2;
   }
-  *param_1 = 0;
-  param_1[1] = 0;
-  param_1[2] = 0;
-  param_1[3] = 0;
-  *(undefined2 *)(param_1 + 4) = 0;
-  *(undefined2 *)param_1 = 1;
-  uVar1 = *(ushort *)(param_1[0x1d] + 0x2f4);
-  *(ushort *)((int)param_1 + 2) = uVar1;
-  param_1[1] = *(undefined4 *)(param_1[0x1d] + 0x2f8);
-  *(undefined2 *)((int)param_1 + 0xe) = 0x10;
-  *(undefined2 *)(param_1 + 4) = 0;
-  uVar5 = (int)((uint)uVar1 * 0x10) >> 3;
-  *(short *)(param_1 + 3) = (short)uVar5;
-  iVar2 = (uVar5 & 0xffff) * param_1[1];
-  param_1[2] = iVar2;
-  uVar5 = iVar2 * 2;
-  param_1[6] = uVar5;
-  puVar3 = operator_new(uVar5);
-  uVar5 = param_1[6];
-  param_1[5] = puVar3;
-  for (uVar7 = uVar5 >> 2; uVar7 != 0; uVar7 = uVar7 - 1) {
+  *(undefined4 *)entry = 0;
+  *(undefined4 *)((int)entry + 4) = 0;
+  *(undefined4 *)((int)entry + 8) = 0;
+  *(undefined4 *)((int)entry + 0xc) = 0;
+  *(undefined2 *)((int)entry + 0x10) = 0;
+  *(undefined2 *)entry = 1;
+  uVar1 = *(ushort *)(*(int *)((int)entry + 0x74) + 0x2f4);
+  *(ushort *)((int)entry + 2) = uVar1;
+  *(undefined4 *)((int)entry + 4) = *(undefined4 *)(*(int *)((int)entry + 0x74) + 0x2f8);
+  *(undefined2 *)((int)entry + 0xe) = 0x10;
+  *(undefined2 *)((int)entry + 0x10) = 0;
+  uVar4 = (int)((uint)uVar1 * 0x10) >> 3;
+  *(short *)((int)entry + 0xc) = (short)uVar4;
+  iVar2 = (uVar4 & 0xffff) * *(int *)((int)entry + 4);
+  *(int *)((int)entry + 8) = iVar2;
+  uVar4 = iVar2 * 2;
+  *(uint *)((int)entry + 0x18) = uVar4;
+  puVar3 = operator_new(uVar4);
+  uVar4 = *(uint *)((int)entry + 0x18);
+  *(undefined4 **)((int)entry + 0x14) = puVar3;
+  for (uVar6 = uVar4 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
     *puVar3 = 0;
     puVar3 = puVar3 + 1;
   }
-  for (uVar5 = uVar5 & 3; uVar5 != 0; uVar5 = uVar5 - 1) {
+  for (uVar4 = uVar4 & 3; uVar4 != 0; uVar4 = uVar4 - 1) {
     *(undefined1 *)puVar3 = 0;
     puVar3 = (undefined4 *)((int)puVar3 + 1);
   }
@@ -28342,52 +28375,54 @@ int __cdecl FUN_0043c3a0(undefined4 *param_1,byte *param_2)
     *puVar3 = 0;
     puVar3 = puVar3 + 1;
   }
-  local_24[2] = param_1[6];
+  local_24[2] = *(undefined4 *)((int)entry + 0x18);
   local_10 = 0;
   local_4 = 0;
   local_8 = 0;
   local_24[0] = 0x24;
   local_24[1] = 0x180c0;
   local_c = 0;
-  local_14 = param_1;
-  iVar2 = (**(code **)(*DAT_004c3964 + 0xc))(DAT_004c3964,local_24,param_1 + 9,0);
-  uVar6 = (uint3)((uint)iVar2 >> 8);
+  local_14 = entry;
+  iVar2 = (**(code **)(*DAT_004c3964 + 0xc))(DAT_004c3964,local_24,(int)entry + 0x24,0);
+  uVar5 = (uint3)((uint)iVar2 >> 8);
   if (iVar2 < 0) {
-    return (uint)uVar6 << 8;
+    return (uint)uVar5 << 8;
   }
-  param_1[0x20] = 0;
-  return CONCAT31(uVar6,1);
+  *(undefined4 *)((int)entry + 0x80) = 0;
+  return CONCAT31(uVar5,1);
 }
 
 
 
-/* FUN_0043c520 @ 0043c520 */
+/* music_stream_update @ 0043c520 */
 
-void __cdecl FUN_0043c520(int param_1)
+/* updates streaming cursor and refills if needed */
+
+void __cdecl music_stream_update(int entry)
 
 {
+  int entry_00;
   int iVar1;
-  int iVar2;
+  uint uVar2;
   uint uVar3;
-  uint uVar4;
   
-  iVar1 = param_1;
-  iVar2 = (**(code **)(**(int **)(param_1 + 0x24) + 0x10))(*(int **)(param_1 + 0x24),&param_1);
-  if (-1 < iVar2) {
-    if (*(int *)(iVar1 + 0x78) == 0) {
-      iVar2 = 0;
+  entry_00 = entry;
+  iVar1 = (**(code **)(**(int **)(entry + 0x24) + 0x10))(*(int **)(entry + 0x24),&entry);
+  if (-1 < iVar1) {
+    if (*(int *)(entry_00 + 0x78) == 0) {
+      iVar1 = 0;
     }
     else {
-      iVar2 = *(int *)(iVar1 + 0x18) - *(int *)(iVar1 + 0x78);
+      iVar1 = *(int *)(entry_00 + 0x18) - *(int *)(entry_00 + 0x78);
     }
-    *(undefined4 *)(iVar1 + 0x78) = 0;
-    uVar4 = *(int *)(iVar1 + 0x80) + iVar2;
-    *(int *)(iVar1 + 0x7c) = *(int *)(iVar1 + 0x7c) + iVar2;
-    *(uint *)(iVar1 + 0x80) = uVar4;
-    uVar3 = (int)(*(int *)(iVar1 + 0x18) + (*(int *)(iVar1 + 0x18) >> 0x1f & 3U)) >> 2;
-    if (uVar3 < uVar4) {
-      *(uint *)(iVar1 + 0x80) = uVar4 - uVar3;
-      FUN_0043c590(iVar1);
+    *(undefined4 *)(entry_00 + 0x78) = 0;
+    uVar3 = *(int *)(entry_00 + 0x80) + iVar1;
+    *(int *)(entry_00 + 0x7c) = *(int *)(entry_00 + 0x7c) + iVar1;
+    *(uint *)(entry_00 + 0x80) = uVar3;
+    uVar2 = (int)(*(int *)(entry_00 + 0x18) + (*(int *)(entry_00 + 0x18) >> 0x1f & 3U)) >> 2;
+    if (uVar2 < uVar3) {
+      *(uint *)(entry_00 + 0x80) = uVar3 - uVar2;
+      music_stream_fill(entry_00);
     }
   }
   return;
@@ -28395,9 +28430,11 @@ void __cdecl FUN_0043c520(int param_1)
 
 
 
-/* FUN_0043c590 @ 0043c590 */
+/* music_stream_fill @ 0043c590 */
 
-uint __cdecl FUN_0043c590(int param_1)
+/* decodes and writes the next music stream chunk */
+
+int __cdecl music_stream_fill(int entry)
 
 {
   int iVar1;
@@ -28406,9 +28443,9 @@ uint __cdecl FUN_0043c590(int param_1)
   int iVar3;
   int iVar4;
   
-  iVar1 = (int)(*(int *)(param_1 + 0x18) + (*(int *)(param_1 + 0x18) >> 0x1f & 3U)) >> 2;
-  iVar3 = *(int *)(param_1 + 0x1c);
-  uVar2 = (**(code **)(**(int **)(param_1 + 0x24) + 0x2c))(*(int **)(param_1 + 0x24));
+  iVar1 = (int)(*(int *)(entry + 0x18) + (*(int *)(entry + 0x18) >> 0x1f & 3U)) >> 2;
+  iVar3 = *(int *)(entry + 0x1c);
+  uVar2 = (**(code **)(**(int **)(entry + 0x24) + 0x2c))(*(int **)(entry + 0x24));
   if (-1 < (int)uVar2) {
     if (&stack0x00000000 != (undefined1 *)0xc) {
       OutputDebugStringA(s_____SND__Somehow_data_on_the_sec_00477ccc);
@@ -28416,16 +28453,16 @@ uint __cdecl FUN_0043c590(int param_1)
     }
     iVar4 = 8;
     do {
-      uVar2 = FUN_0041df00(*(void **)(param_1 + 0x74),(8 - iVar4) + iVar1,iVar4);
+      uVar2 = FUN_0041df00(*(void **)(entry + 0x74),(8 - iVar4) + iVar1,iVar4);
       if ((int)uVar2 < 1) {
-        uVar2 = FUN_0041df00(*(void **)(param_1 + 0x74),(8 - iVar4) + iVar1,iVar4);
+        uVar2 = FUN_0041df00(*(void **)(entry + 0x74),(8 - iVar4) + iVar1,iVar4);
       }
       iVar4 = iVar4 - uVar2;
     } while ((0 < iVar4) && (uVar2 != 0));
-    (**(code **)(**(int **)(param_1 + 0x24) + 0x4c))(*(int **)(param_1 + 0x24),iVar1,8,0,0);
-    iVar3 = iVar3 + *(int *)(param_1 + 0x1c);
-    uVar2 = iVar3 / *(int *)(param_1 + 0x18);
-    *(int *)(param_1 + 0x1c) = iVar3 % *(int *)(param_1 + 0x18);
+    (**(code **)(**(int **)(entry + 0x24) + 0x4c))(*(int **)(entry + 0x24),iVar1,8,0,0);
+    iVar3 = iVar3 + *(int *)(entry + 0x1c);
+    uVar2 = iVar3 / *(int *)(entry + 0x18);
+    *(int *)(entry + 0x1c) = iVar3 % *(int *)(entry + 0x18);
   }
   return uVar2 & 0xffffff00;
 }
@@ -28464,41 +28501,40 @@ int __cdecl sfx_load_sample(char *path)
   byte *pbVar3;
   int iVar4;
   char *pcVar5;
-  uint uVar6;
-  int iVar7;
-  byte *pbVar8;
-  bool bVar9;
+  int iVar6;
+  byte *pbVar7;
+  bool bVar8;
   byte local_80 [128];
   
   if (config_blob != '\0') {
     return 1;
   }
-  iVar7 = 0;
+  iVar6 = 0;
   piVar2 = &sfx_entry_table_state;
   while (*piVar2 != 0) {
     piVar2 = piVar2 + 0x21;
-    iVar7 = iVar7 + 1;
+    iVar6 = iVar6 + 1;
     if (0x4cc6e3 < (int)piVar2) {
       return -1;
     }
   }
-  if (iVar7 != -1) {
-    pbVar8 = &DAT_00477dd4;
+  if (iVar6 != -1) {
+    pbVar7 = &DAT_00477dd4;
     pbVar3 = (byte *)path;
     do {
       bVar1 = *pbVar3;
-      bVar9 = bVar1 < *pbVar8;
-      if (bVar1 != *pbVar8) {
+      bVar8 = bVar1 < *pbVar7;
+      if (bVar1 != *pbVar7) {
 LAB_0043c7c5:
-        iVar4 = (1 - (uint)bVar9) - (uint)(bVar9 != 0);
+        iVar4 = (1 - (uint)bVar8) - (uint)(bVar8 != 0);
         goto LAB_0043c7ca;
       }
       if (bVar1 == 0) break;
       bVar1 = pbVar3[1];
-      bVar9 = bVar1 < pbVar8[1];
-      if (bVar1 != pbVar8[1]) goto LAB_0043c7c5;
+      bVar8 = bVar1 < pbVar7[1];
+      if (bVar1 != pbVar7[1]) goto LAB_0043c7c5;
       pbVar3 = pbVar3 + 2;
-      pbVar8 = pbVar8 + 2;
+      pbVar7 = pbVar7 + 2;
     } while (bVar1 != 0);
     iVar4 = 0;
 LAB_0043c7ca:
@@ -28508,8 +28544,8 @@ LAB_0043c7ca:
     }
     pcVar5 = _strstr(path,&DAT_00477dd4);
     if (pcVar5 == (char *)0x0) {
-      uVar6 = FUN_0043c020((undefined4 *)(&sfx_entry_table + iVar7 * 0x84),(byte *)path);
-      if ((char)uVar6 != '\0') goto LAB_0043c885;
+      iVar4 = sfx_entry_load_wav(&sfx_entry_table + iVar6 * 0x84,(byte *)path);
+      if ((char)iVar4 != '\0') goto LAB_0043c885;
       pcVar5 = s____loading_wav_sample___s__faile_00477d48;
     }
     else {
@@ -28520,14 +28556,14 @@ LAB_0043c7ca:
         pcVar5 = &DAT_00471fc4;
       }
       crt_sprintf((char *)local_80,pcVar5,path);
-      uVar6 = FUN_0043bcf0((undefined4 *)(&sfx_entry_table + iVar7 * 0x84),local_80);
-      if ((char)uVar6 != '\0') {
+      iVar4 = sfx_entry_load_ogg(&sfx_entry_table + iVar6 * 0x84,local_80);
+      if ((char)iVar4 != '\0') {
 LAB_0043c885:
         if (*(float *)(DAT_00480854 + 0xc) == 0.0) {
           console_printf(&console_log_queue,(byte *)s_SFX_Sample__d_<____s__ok_00477d2c);
         }
         DAT_004cc8d8 = DAT_004cc8d8 + 1;
-        return iVar7;
+        return iVar6;
       }
       pcVar5 = s____loading_ogg_sample___s__faile_00477d6c;
     }
@@ -28546,7 +28582,7 @@ int __cdecl music_load_track(char *path)
 
 {
   int *piVar1;
-  undefined4 uVar2;
+  int iVar2;
   int iVar3;
   
   DAT_004cc8d8 = DAT_004cc8d8 + 1;
@@ -28562,8 +28598,8 @@ int __cdecl music_load_track(char *path)
   if (iVar3 == -1) {
     return -1;
   }
-  uVar2 = FUN_0043c3a0((undefined4 *)(&music_entry_table + iVar3 * 0x84),(byte *)path);
-  if ((char)uVar2 == '\0') {
+  iVar2 = music_entry_load_ogg(&music_entry_table + iVar3 * 0x84,(byte *)path);
+  if ((char)iVar2 == '\0') {
     console_printf(&console_log_queue,(byte *)s_SFX_Tune__d_<____s__FAILED_00477df4);
     return iVar3;
   }
@@ -28617,32 +28653,31 @@ int __cdecl music_release_track(int track_id)
 void audio_init_music(void)
 
 {
-  undefined4 uVar1;
-  int iVar2;
-  undefined4 *puVar3;
+  int iVar1;
+  undefined4 *puVar2;
   char *unaff_retaddr;
-  char *pcVar4;
+  char *pcVar3;
   
   if ((config_blob == '\0') && (config_music_disabled == '\0')) {
-    puVar3 = &sfx_mute_flags;
-    for (iVar2 = 0x20; iVar2 != 0; iVar2 = iVar2 + -1) {
-      *puVar3 = 0x1010101;
-      puVar3 = puVar3 + 1;
+    puVar2 = &sfx_mute_flags;
+    for (iVar1 = 0x20; iVar1 != 0; iVar1 = iVar1 + -1) {
+      *puVar2 = 0x1010101;
+      puVar2 = puVar2 + 1;
     }
-    puVar3 = &sfx_volume_table;
-    for (iVar2 = 0x80; iVar2 != 0; iVar2 = iVar2 + -1) {
-      *puVar3 = 0;
-      puVar3 = puVar3 + 1;
+    puVar2 = &sfx_volume_table;
+    for (iVar1 = 0x80; iVar1 != 0; iVar1 = iVar1 + -1) {
+      *puVar2 = 0;
+      puVar2 = puVar2 + 1;
     }
-    uVar1 = FUN_0043b980(s_music_paq_00477eec);
-    DAT_004cc8d5 = (char)uVar1;
+    iVar1 = resource_pack_set(s_music_paq_00477eec);
+    DAT_004cc8d5 = (char)iVar1;
     if (DAT_004cc8d5 == '\0') {
-      pcVar4 = s____resource_paq__music_paq__not_f_00477e84;
+      pcVar3 = s____resource_paq__music_paq__not_f_00477e84;
     }
     else {
-      pcVar4 = s____set_sound_resource_paq__music_00477ec4;
+      pcVar3 = s____set_sound_resource_paq__music_00477ec4;
     }
-    console_printf(&console_log_queue,(byte *)pcVar4);
+    console_printf(&console_log_queue,(byte *)pcVar3);
     music_track_intro_id = music_load_track(s_music_intro_ogg_00477e74);
     music_track_shortie_monk_id = music_load_track(s_music_shortie_monk_ogg_00477e5c);
     console_exec_line(&console_log_queue,s_exec_music_game_tunes_txt_00477e40,unaff_retaddr);
@@ -28665,13 +28700,13 @@ void audio_init_music(void)
 void audio_init_sfx(void)
 
 {
-  undefined4 uVar1;
+  int iVar1;
   int *piVar2;
   char *pcVar3;
   
   if (config_blob == '\0') {
-    uVar1 = FUN_0043b980(s_sfx_paq_004784f4);
-    DAT_004cc8d5 = (char)uVar1;
+    iVar1 = resource_pack_set(s_sfx_paq_004784f4);
+    DAT_004cc8d5 = (char)iVar1;
     if (DAT_004cc8d5 == '\0') {
       pcVar3 = s____failed_to_set_sound_resource_p_0047849c;
     }
@@ -28776,38 +28811,38 @@ int sfx_system_init(void)
 
 {
   undefined4 in_EAX;
-  HWND pHVar1;
+  HWND hwnd;
+  int iVar1;
   undefined4 uVar2;
-  int iVar3;
-  undefined4 *puVar4;
-  uint uVar5;
+  undefined4 *puVar3;
+  uint uVar4;
   
   if (config_blob != '\0') {
     return CONCAT31((int3)((uint)in_EAX >> 8),1);
   }
   console_printf(&console_log_queue,(byte *)s_Initializing_Grim_SFX_sound_syst_004785c8);
-  uVar5 = 2;
-  pHVar1 = GetForegroundWindow();
-  uVar2 = FUN_0043baf0(pHVar1,uVar5);
-  if ((char)uVar2 == '\0') {
-    uVar5 = console_printf(&console_log_queue,(byte *)s____FAILED__unable_to_init_Grim_S_00478590);
+  uVar4 = 2;
+  hwnd = GetForegroundWindow();
+  iVar1 = dsound_init(hwnd,uVar4);
+  if ((char)iVar1 == '\0') {
+    uVar4 = console_printf(&console_log_queue,(byte *)s____FAILED__unable_to_init_Grim_S_00478590);
     config_blob = 1;
     config_music_disabled = 1;
-    return uVar5 & 0xffffff00;
+    return uVar4 & 0xffffff00;
   }
   console_printf(&console_log_queue,(byte *)s____init_44100_Hz_16_bit_ok_00478574);
   console_printf(&console_log_queue,(byte *)s____using_DirectSound_output_00478554);
   console_printf(&console_log_queue,(byte *)s____using_default_speaker_config_00478530);
   console_printf(&console_log_queue,(byte *)s____saying_hello_to_the_Ogg__00478510);
-  puVar4 = &sfx_cooldown_table;
-  for (iVar3 = 0x80; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *puVar4 = 0;
-    puVar4 = puVar4 + 1;
+  puVar3 = &sfx_cooldown_table;
+  for (iVar1 = 0x80; iVar1 != 0; iVar1 = iVar1 + -1) {
+    *puVar3 = 0;
+    puVar3 = puVar3 + 1;
   }
-  puVar4 = &sfx_voice_table;
-  for (iVar3 = 0x20; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *puVar4 = 0;
-    puVar4 = puVar4 + 1;
+  puVar3 = &sfx_voice_table;
+  for (iVar1 = 0x20; iVar1 != 0; iVar1 = iVar1 + -1) {
+    *puVar3 = 0;
+    puVar3 = puVar3 + 1;
   }
   uVar2 = console_printf(&console_log_queue,(byte *)s_Init_Grim_SFX_done_004784fc);
   return CONCAT31((int3)((uint)uVar2 >> 8),1);
@@ -28870,7 +28905,7 @@ void audio_shutdown_all(void)
 {
   sfx_release_all();
   music_release_all();
-  FUN_0043bc20();
+  dsound_shutdown();
   return;
 }
 
@@ -28991,7 +29026,7 @@ void FUN_0043d3f0(void)
 
 {
   float *pfVar1;
-  undefined *puVar2;
+  undefined *entry;
   
   if (config_blob == '\0') {
     pfVar1 = (float *)&sfx_cooldown_table;
@@ -29002,13 +29037,13 @@ void FUN_0043d3f0(void)
       pfVar1 = pfVar1 + 1;
     } while ((int)pfVar1 < 0x4c3e80);
     if (sfx_unmuted_flag != '\0') {
-      puVar2 = &music_entry_table;
+      entry = &music_entry_table;
       do {
-        if (*(int *)(puVar2 + 0x74) != 0) {
-          FUN_0043c520((int)puVar2);
+        if (*(int *)(entry + 0x74) != 0) {
+          music_stream_update((int)entry);
         }
-        puVar2 = puVar2 + 0x84;
-      } while ((int)puVar2 < 0x4c8450);
+        entry = entry + 0x84;
+      } while ((int)entry < 0x4c8450);
       sfx_update_mute_fades();
     }
   }
