@@ -30,6 +30,7 @@ Data map coverage: 19.60% (640 / 3266 symbols)
 - [SFX usage](sfx-usage.md) — Tracking
 - [SFX labels](sfx-labels.md) — Tracking
 - [Game mode map](game-mode-map.md) — Tracking
+- [Save/status file (game.cfg)](save-status-format.md) — Draft
 - [Detangling notes](detangling.md) — In progress
 - [Frida workflow](frida-workflow.md) — In progress
 - [Entrypoint trace](entrypoint.md) — In progress

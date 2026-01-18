@@ -44,6 +44,9 @@ entrypoint-trace:
 function-hotspots:
     uv run python scripts/function_hotspots.py --top 12 --only-fun
 
+save-status *args:
+    uv run python scripts/save_status.py {{args}}
+
 weapon-table:
     uv run python scripts/extract_weapon_table.py
 
