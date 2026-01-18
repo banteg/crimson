@@ -348,6 +348,9 @@ High score validation (`FUN_0043afa0`):
 - `quest_stage_minor` (`DAT_00487008`) tracks the quest mission within the episode.
   - Evidence: used in quest string lookups and final‑mission checks (`major == 5 && minor == 10`).
 - Incremented on quest results screen when the player chooses “Play Next”.
+- Persistence: no direct save/load path found for quest progress. The counters are reset at
+  startup and only used to select metadata and to build per‑quest high‑score filenames
+  (`scores5\\quest*.hi`); there is no config blob or save file that writes them.
 
 Record match + display selection:
 - `FUN_0043abd0` is the equality predicate used during save‑file replacement; it compares the
