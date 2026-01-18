@@ -51,6 +51,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00472ef0",
+      "name": "credits_secret_selected_index",
+      "comment": "Credits secret match-3: selected board index for swap (-1 when none)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x0047365c",
       "name": "game_status_filename",
       "comment": "Filename for the status blob (game.cfg)."
@@ -519,9 +525,75 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x004819d0",
+      "name": "credits_secret_reset_button",
+      "comment": "Credits secret UI button state for Reset (ui_button_update target)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004819ec",
+      "name": "credits_secret_board",
+      "comment": "Credits secret match-3 board (6x6 ints; values 0..4, -1 empty, -3 clearing)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004819f0",
+      "name": "credits_secret_match_mask_h0",
+      "comment": "Credits secret match mask array (horizontal set 0, per-cell -3 on match)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004819f4",
+      "name": "credits_secret_match_mask_h1",
+      "comment": "Credits secret match mask array (horizontal set 1, per-cell -3 on match)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00481a04",
+      "name": "credits_secret_match_mask_v0",
+      "comment": "Credits secret match mask array (vertical set 0, per-cell -3 on match)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00481a1c",
+      "name": "credits_secret_match_mask_v1",
+      "comment": "Credits secret match mask array (vertical set 1, per-cell -3 on match)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00481bc0",
+      "name": "credits_secret_back_button",
+      "comment": "Credits secret UI button state for Back (ui_button_update target)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00481c10",
+      "name": "credits_secret_flags",
+      "comment": "Credits secret flags; bit0 initializes Reset button, bit1 initializes Back button."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004824d4",
       "name": "plugin_interface_ptr",
       "comment": "Modal/plugin interface pointer used when game_state_id == 0x16."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004824e4",
+      "name": "credits_secret_timer_ms",
+      "comment": "Credits secret countdown timer in ms (adds 2000 on match, reset to 0x2580)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004824e8",
+      "name": "credits_secret_anim_time_ms",
+      "comment": "Credits secret animation time accumulator in ms."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004824ec",
+      "name": "credits_secret_score",
+      "comment": "Credits secret score counter displayed as \"score: %d\"."
     },
     {
       "program": "crimsonland.exe",

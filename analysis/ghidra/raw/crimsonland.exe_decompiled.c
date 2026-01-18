@@ -7783,15 +7783,15 @@ void credits_secret_alien_zookeeper_update(void)
   (**(code **)(*grim_interface_ptr + 0x114))();
   auStack_bc[0] = 0x3ed70a3d;
   (**(code **)(*grim_interface_ptr + 0x20))();
-  DAT_004824e8 = DAT_004824e8 + frame_dt_ms;
-  if (0 < DAT_004824e4) {
-    DAT_004824e4 = DAT_004824e4 - frame_dt_ms;
-    if (0 < DAT_004824e4) goto LAB_0040f6cc;
+  credits_secret_anim_time_ms = credits_secret_anim_time_ms + frame_dt_ms;
+  if (0 < credits_secret_timer_ms) {
+    credits_secret_timer_ms = credits_secret_timer_ms - frame_dt_ms;
+    if (0 < credits_secret_timer_ms) goto LAB_0040f6cc;
     uStack_cc = 0x40f6ba;
     sfx_play(sfx_trooper_die_01);
   }
-  if (DAT_004824e4 < 0) {
-    DAT_004824e4 = 0;
+  if (credits_secret_timer_ms < 0) {
+    credits_secret_timer_ms = 0;
   }
 LAB_0040f6cc:
   fStack_88 = fStack_88 + 40.0;
@@ -7801,7 +7801,7 @@ LAB_0040f6cc:
   pcStack_8c = (char *)((float)pcStack_8c + 22.0);
   puStack_d4 = (undefined4 *)0x40f70a;
   (**(code **)(*grim_interface_ptr + 0x114))();
-  puStack_d4 = DAT_004824ec;
+  puStack_d4 = credits_secret_score;
   fStack_dc = (float)piStack_98 - 16.0;
   pcStack_d8 = s_score___d_004730e8;
   pfStack_e0 = (float *)(fStack_9c + 124.0);
@@ -7830,7 +7830,7 @@ LAB_0040f6cc:
   pfStack_100 = (float *)0x40f7c4;
   (**(code **)(*grim_interface_ptr + 0xd4))();
   pcStack_d8 = pcVar9;
-  iStack_d0 = DAT_004824e4 / 100;
+  iStack_d0 = credits_secret_timer_ms / 100;
   if (0xc0 < iStack_d0) {
     iStack_d0 = 0xc0;
   }
@@ -7862,7 +7862,7 @@ LAB_0040f6cc:
     iStack_114 = 0;
     do {
       iVar1 = iStack_114;
-      if (DAT_00472ef0 == iVar3) {
+      if (credits_secret_selected_index == iVar3) {
         pfStack_e0 = (float *)(float)(int)fStack_110;
         puStack_d4 = (undefined4 *)0x3e4ccccd;
         iStack_d0 = 0x3ecccccd;
@@ -7886,14 +7886,14 @@ LAB_0040f6cc:
   iStack_11c = 0;
   fStack_108 = 0.0;
   fStack_110 = 0.0;
-  piVar4 = &DAT_004819ec;
+  piVar4 = &credits_secret_board;
   do {
     iStack_120 = 0;
     iStack_118 = 0;
     do {
       iVar3 = iStack_118;
       if (*piVar4 != -3) {
-        uVar2 = DAT_004824e8 / 0x32 + *piVar4 * 2 & 0x8000001f;
+        uVar2 = credits_secret_anim_time_ms / 0x32 + *piVar4 * 2 & 0x8000001f;
         if ((int)uVar2 < 0) {
           uVar2 = (uVar2 - 1 | 0xffffffe0) + 1;
         }
@@ -7929,7 +7929,7 @@ LAB_0040fae2:
         (**(code **)(*grim_interface_ptr + 0x11c))
                   ((float)iStack_120 + fStack_108,(float)(int)fStack_110 + fStack_104,0x42000000,
                    0x42000000);
-        if (0 < DAT_004824e4) {
+        if (0 < credits_secret_timer_ms) {
           piStack_e4 = (int *)(float)iStack_11c;
           fStack_dc = (float)piStack_e4 * 32.0;
           fStack_f0 = (float)iStack_120 * 32.0 + (float)pfStack_100;
@@ -7939,31 +7939,32 @@ LAB_0040fae2:
             iVar1 = input_primary_just_pressed();
             if ((char)iVar1 != '\0') {
               sfx_play(sfx_ui_clink_01);
-              if (DAT_00472ef0 == -1) {
-                DAT_00472ef0 = (int)fStack_110 + iStack_120;
+              if (credits_secret_selected_index == -1) {
+                credits_secret_selected_index = (int)fStack_110 + iStack_120;
               }
               else {
                 iVar1 = *piVar4;
-                *piVar4 = (&DAT_004819ec)[DAT_00472ef0];
-                (&DAT_004819ec)[DAT_00472ef0] = iVar1;
-                DAT_00472ef0 = -1;
+                *piVar4 = (&credits_secret_board)[credits_secret_selected_index];
+                (&credits_secret_board)[credits_secret_selected_index] = iVar1;
+                credits_secret_selected_index = -1;
                 iStack_118 = 0;
                 uStack_124 = uStack_124 & 0xffffff;
                 uVar2 = credits_secret_match3_find
-                                  (&DAT_004819ec,&iStack_118,(uchar *)((int)&uStack_124 + 3));
+                                  (&credits_secret_board,&iStack_118,(uchar *)((int)&uStack_124 + 3)
+                                  );
                 if ((char)uVar2 != '\0') {
-                  (&DAT_004819ec)[iStack_118] = 0xfffffffd;
+                  (&credits_secret_board)[iStack_118] = 0xfffffffd;
                   if (uStack_124._3_1_ == '\0') {
-                    *(undefined4 *)(&DAT_00481a04 + iStack_118 * 4) = 0xfffffffd;
-                    *(undefined4 *)(&DAT_00481a1c + iStack_118 * 4) = 0xfffffffd;
+                    *(undefined4 *)(&credits_secret_match_mask_v0 + iStack_118 * 4) = 0xfffffffd;
+                    *(undefined4 *)(&credits_secret_match_mask_v1 + iStack_118 * 4) = 0xfffffffd;
                   }
                   else {
-                    (&DAT_004819f0)[iStack_118] = 0xfffffffd;
-                    (&DAT_004819f4)[iStack_118] = 0xfffffffd;
+                    (&credits_secret_match_mask_h0)[iStack_118] = 0xfffffffd;
+                    (&credits_secret_match_mask_h1)[iStack_118] = 0xfffffffd;
                   }
-                  DAT_004824ec = (undefined4 *)((int)DAT_004824ec + 1);
+                  credits_secret_score = (undefined4 *)((int)credits_secret_score + 1);
                   sfx_play(sfx_ui_bonus);
-                  DAT_004824e4 = DAT_004824e4 + 2000;
+                  credits_secret_timer_ms = credits_secret_timer_ms + 2000;
                 }
               }
             }
@@ -7979,17 +7980,17 @@ LAB_0040fae2:
     fStack_108 = (float)((int)fStack_108 + 0x20);
     if (0x481a7b < (int)piVar4) {
       (**(code **)(*grim_interface_ptr + 0xf0))();
-      if (DAT_004824e4 == 0) {
+      if (credits_secret_timer_ms == 0) {
         (**(code **)(*grim_interface_ptr + 0x114))(0x3f800000,0x3f800000,0x3f800000,0x3f800000);
         (**(code **)(*grim_interface_ptr + 0x20))(0x18,0x3f800000);
-        fVar6 = (float10)fcos((float10)DAT_004824e8 * (float10)0.005);
+        fVar6 = (float10)fcos((float10)credits_secret_anim_time_ms * (float10)0.005);
         if ((float10)0.0 < fVar6) {
           (**(code **)(*grim_interface_ptr + 0x148))
                     (grim_interface_ptr,(float)pfStack_100 + 38.0,((float)puStack_fc + 96.0) - 22.0,
                      s_Game_Over_004730dc);
         }
       }
-      piVar4 = &DAT_004819ec;
+      piVar4 = &credits_secret_board;
       do {
         iVar3 = 6;
         do {
@@ -8001,29 +8002,29 @@ LAB_0040fae2:
           iVar3 = iVar3 + -1;
         } while (iVar3 != 0);
       } while ((int)piVar4 < 0x481a7c);
-      if ((DAT_00481c10 & 1) == 0) {
-        DAT_00481c10 = DAT_00481c10 | 1;
+      if ((credits_secret_flags & 1) == 0) {
+        credits_secret_flags = credits_secret_flags | 1;
         DAT_004819d6 = 1;
         DAT_004819e5 = 0;
         DAT_004819e4 = 0;
         _DAT_004819e0 = 0x3f800000;
         _DAT_004819dc = 0;
-        _DAT_004819d0 = (char *)0x0;
+        _credits_secret_reset_button = (char *)0x0;
         DAT_004819d4 = 0;
         DAT_004819d5 = 0;
         _DAT_004819d8 = 0;
         crt_atexit(&DAT_0040ff40);
       }
       fStack_f0 = fStack_f8 + 38.0;
-      _DAT_004819d0 = s_Reset_004730d4;
+      _credits_secret_reset_button = s_Reset_004730d4;
       fStack_110 = fStack_f4 + 256.0;
       fStack_ec = fStack_110;
-      iVar3 = ui_button_update(&fStack_f0,(int *)&DAT_004819d0);
+      iVar3 = ui_button_update(&fStack_f0,(int *)&credits_secret_reset_button);
       if ((char)iVar3 != '\0') {
         fStack_108 = 0.0;
         uStack_124 = uStack_124 & 0xffffff;
         do {
-          piVar4 = &DAT_004819ec;
+          piVar4 = &credits_secret_board;
           do {
             iVar3 = 6;
             piVar5 = piVar4;
@@ -8036,29 +8037,30 @@ LAB_0040fae2:
             } while (iVar3 != 0);
           } while ((int)piVar4 < 0x481a7c);
           uVar2 = credits_secret_match3_find
-                            (&DAT_004819ec,(int *)&fStack_108,(uchar *)((int)&uStack_124 + 3));
+                            (&credits_secret_board,(int *)&fStack_108,
+                             (uchar *)((int)&uStack_124 + 3));
         } while ((char)uVar2 != '\0');
-        DAT_00472ef0 = -1;
-        DAT_004824ec = (undefined4 *)0x0;
-        DAT_004824e4 = 0x2580;
+        credits_secret_selected_index = -1;
+        credits_secret_score = (undefined4 *)0x0;
+        credits_secret_timer_ms = 0x2580;
       }
-      if ((DAT_00481c10 & 2) == 0) {
-        DAT_00481c10 = DAT_00481c10 | 2;
+      if ((credits_secret_flags & 2) == 0) {
+        credits_secret_flags = credits_secret_flags | 2;
         DAT_00481bc6 = 1;
         DAT_00481bd5 = 0;
         DAT_00481bd4 = 0;
         _DAT_00481bd0 = 0x3f800000;
         _DAT_00481bcc = 0;
-        _DAT_00481bc0 = (undefined *)0x0;
+        _credits_secret_back_button = (undefined *)0x0;
         DAT_00481bc4 = 0;
         DAT_00481bc5 = 0;
         _DAT_00481bc8 = 0;
         crt_atexit(&DAT_0040ff30);
       }
       fStack_f0 = fStack_f8 + 138.0;
-      _DAT_00481bc0 = &DAT_00472e80;
+      _credits_secret_back_button = &DAT_00472e80;
       fStack_ec = fStack_110;
-      iVar3 = ui_button_update(&fStack_f0,(int *)&DAT_00481bc0);
+      iVar3 = ui_button_update(&fStack_f0,(int *)&credits_secret_back_button);
       if ((char)iVar3 != '\0') {
         ui_transition_direction = 0;
         game_state_pending = 4;

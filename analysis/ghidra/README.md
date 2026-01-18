@@ -105,3 +105,11 @@ with unnamed callback parameters.
      -postScript ApplyDataMap.java analysis/ghidra/maps/data_map.json \
      -postScript ExportAll.java
    ```
+
+## WinDbg wishlist (credits secret)
+
+- Log `*out_idx` and `*out_dir` after calls to `0x0040f400` (match-3 finder), for both hit and miss cases.
+- Dump globals each visit to `0x0040f4f0`: `0x00472ef0`, `0x004824e4`, `0x004824e8`, `0x004824ec`, `0x00481c10`.
+- Snapshot boards and masks: `0x004819ec` (6x6 ints), `0x004819f0`, `0x004819f4`, `0x00481a04`, `0x00481a1c`.
+- Break on writes to `0x00472ef0` to capture selection/swap flow (EIP + regs + stack).
+- Grab a call stack the first time `0x0040f4f0` runs to confirm the caller chain.
