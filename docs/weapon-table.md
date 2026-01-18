@@ -42,6 +42,12 @@ All offsets below are in **bytes**, relative to the pointer returned by
 
 ## Notes
 
+- Runtime probe (2026-01-18) sample entry confirms indexing scheme:
+  - `weapon_id=1` (Assault Rifle) resolved to entry index **2** (`weapon_id+1`).
+  - Observed fields: `clip_size=25`, `shot_cooldown=0.117`, `reload_time=1.2`, `spread_heat=0.09`,
+    `shot_sfx_base=34`, `shot_sfx_count=1`, `reload_sfx=35`, `hud_icon_id=1`, `flags=1`,
+    `projectile_meta=50`, `damage_scale=1`, `pellet_count=1`, `ammo_class=0` (from `-0x04`).
+
 - UI text for weapons is pulled directly from the `weapon_table` name field (`offset 0x00`).
   Examples:
   - **HUD** (`ui_render_hud`): passes `&weapon_table + player_weapon_id * 0x1f` into

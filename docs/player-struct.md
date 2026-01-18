@@ -12,6 +12,20 @@ Pool facts:
 - Player 2 constants appear as base + `0x360` (e.g. `player2_health` at `DAT_00490c34`).
 - Some high-confidence fields live before `player_health` (negative offsets).
 
+## Runtime probe notes (2026-01-18)
+
+Captured with `scripts/frida/crimsonland_probe.js` after fixing pointer-based reads.
+
+- `player_take_damage` logs show sane values and health deltas (e.g. 100 -> 95 with `damage_f32=5`),
+  confirming that the base/stride assumptions are valid for the current build.
+- The unknown-field tracker flagged offsets **0x2BC / 0x2C4 / 0x2D0** as frequently changing; these
+  correspond to the **alt-weapon** block already listed below (good cross-check).
+- The tracker also flagged offsets **0x34C / 0x350 / 0x354** near the tail of the struct
+  (observed values included `16.0` and `432.0`). These are likely real fields; add candidates below.
+- The runtime probe currently reads `player_clip_size` / `player_ammo` as float bit patterns
+  (e.g. `0x41200000` = `10.0`, `0x41400000` = `12.0`). This suggests those fields may be stored
+  as floats in the struct (or our type assignment is still off). Needs Ghidra confirmation.
+
 High-confidence fields (partial):
 
 | Offset | Field | Symbol | Evidence |
@@ -68,6 +82,16 @@ High-confidence fields (partial):
 | `0x330` | aim axis y binding | `player_axis_aim_y` | Axis binding read via input API for aim stick. |
 | `0x334` | move axis x binding | `player_axis_move_x` | Axis binding read via input API for movement stick. |
 | `0x338` | move axis y binding | `player_axis_move_y` | Axis binding read via input API for movement stick. |
+
+## Candidate / unknown offsets
+
+Runtime probe flagged the following offsets as frequently changing but not yet mapped:
+
+| Offset | Observed values | Notes |
+| --- | --- | --- |
+| `0x34c` | `16.0` | Tail region, likely gameplay state. |
+| `0x350` | `432.0` | Tail region, likely gameplay state. |
+| `0x354` | `432.0` | Tail region, likely gameplay state. |
 
 ## Defense state (summary)
 
