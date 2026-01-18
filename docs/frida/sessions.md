@@ -242,3 +242,35 @@ Short session with a small amount of gameplay. One bonus pickup, then low-health
   a low-health event should confirm which field drives the effect.
 - The small SFX set here may help label `quest_failed`/gameplay fail sounds; a slightly longer quest run
   would likely stabilize these IDs.
+
+## Session 5
+
+- **Date:** 2026-01-18
+- **Build / platform:** Win11 ARM64 (UTM), Crimsonland v1.9.93
+- **Scripts:** `grim_hooks.js`, `crimsonland_probe.js`
+- **Attach method:** `frida -n crimsonland.exe -l Z:\grim_hooks.js` + `frida -n crimsonland.exe -l Z:\crimsonland_probe.js`
+- **Artifacts:** `analysis/frida/raw/*.jsonl`, `analysis/frida/*summary*.json`
+
+### Wants (pre-run)
+
+Goal: short run to confirm callsite recording changes and capture a low-health trigger.
+
+### Run summary (actual)
+
+Short gameplay segment with one bonus pickup and a low-health event.
+
+### Findings
+
+- **Callsite format:** both scripts now emit `module+0xOFFSET` (e.g., `crimsonland.exe+0x1ec7c`),
+  and `unmapped_calls.json` is now dominated by `grim.dll+0x...` entries.
+- **Auto-dump triggers:** `startup` (1), `bonus_apply` (1), `low_health` (1).
+- **Low-health snapshot:** health dropped to `-13.86` while `low_health_timer_f32` stayed at `100`.
+- **SFX evidence:** `quest_failed_screen_update` shows **1** (x17) + **4** (x1); `player_update`
+  continues to emit **30/42/43**; `creature_update_all` emits **38**.
+- **Unknown-field tracker:** still only offsets `0x2BC/0x2C4/0x2D0/0x34C/0x350/0x354` (count=1 each).
+
+### Actionable insights
+
+- If `unmapped_calls.json` should only track `crimsonland.exe` callsites, consider filtering out
+  `grim.dll` entries now that callsites are module-qualified.
+- A slightly longer quest-fail capture should stabilize the sfx ID **1** mapping and confirm **4**.
