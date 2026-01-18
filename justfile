@@ -52,7 +52,7 @@ spawn-templates:
 
 # Ghidra
 ghidra-exe:
-    ./.codex/skills/ghidra/scripts/ghidra-analyze.sh \
+    ./analysis/ghidra/tooling/ghidra-analyze.sh \
       --script-path analysis/ghidra/scripts \
       -s ImportThirdPartyHeaders.java -a third_party/headers \
       -s ApplyWinapiGDT.java -a analysis/ghidra/maps/winapi_32.gdt \
@@ -63,7 +63,7 @@ ghidra-exe:
       {{game_dir}}/crimsonland.exe
 
 ghidra-grim:
-    ./.codex/skills/ghidra/scripts/ghidra-analyze.sh \
+    ./analysis/ghidra/tooling/ghidra-analyze.sh \
       --script-path analysis/ghidra/scripts \
       -s ImportThirdPartyHeaders.java -a third_party/headers \
       -s ApplyWinapiGDT.java -a analysis/ghidra/maps/winapi_32.gdt \
