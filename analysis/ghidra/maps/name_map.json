@@ -1763,6 +1763,62 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00461739",
+    "name": "crt_srand",
+    "signature": "void crt_srand(uint seed)",
+    "comment": "sets the per-thread RNG seed (srand)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00461746",
+    "name": "crt_rand",
+    "signature": "int crt_rand(void)",
+    "comment": "returns a pseudo-random value using the per-thread seed (rand)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00461768",
+    "name": "crt_findfirst",
+    "signature": "HANDLE crt_findfirst(char *pattern, uint *finddata)",
+    "comment": "CRT _findfirst wrapper over FindFirstFileA"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00461835",
+    "name": "crt_findnext",
+    "signature": "int crt_findnext(HANDLE handle, uint *finddata)",
+    "comment": "CRT _findnext wrapper over FindNextFileA (returns 0/-1)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004618fd",
+    "name": "crt_findclose",
+    "signature": "int crt_findclose(HANDLE handle)",
+    "comment": "CRT _findclose wrapper over FindClose"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00461981",
+    "name": "crt_ehvec_ctor",
+    "signature": "void crt_ehvec_ctor(void *ptr, uint size, int count, void *ctor, void *dtor)",
+    "comment": "MSVC __ehvec_ctor: constructs an array; uses dtor to unwind on exception"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00461a03",
+    "name": "crt_ehvec_dtor",
+    "signature": "void crt_ehvec_dtor(void *ptr, uint size, int count, void *dtor)",
+    "comment": "MSVC __ehvec_dtor: destroys an array with exception handling"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00461a83",
+    "name": "crt_array_unwind",
+    "signature": "void crt_array_unwind(void *ptr, uint size, int count, void *dtor)",
+    "comment": "destructor loop used for array unwinding (backward walk)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00461af7",
     "name": "crt_fread",
     "signature": "uint crt_fread(void *ptr, uint size, uint count, FILE *fp)",

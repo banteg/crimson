@@ -1655,14 +1655,14 @@ void FUN_004030f0(void)
   DAT_004712f0 = 5000;
   iVar3 = 0;
   do {
-    iVar1 = _rand();
-    iVar2 = _rand();
+    iVar1 = crt_rand();
+    iVar2 = crt_rand();
     local_c = (float)(iVar2 % 899 + 0x40);
     local_10 = (float)(iVar1 % 200 + 0x20);
     creature_spawn_template(0x34,&local_10,-100.0);
     if (iVar3 % 3 != 0) {
-      iVar1 = _rand();
-      iVar2 = _rand();
+      iVar1 = crt_rand();
+      iVar2 = crt_rand();
       local_4 = (float)(iVar2 % 899 + 0x40);
       local_8 = (float)(iVar1 % 0x1e + 0x20);
       creature_spawn_template(0x35,&local_8,-100.0);
@@ -1701,14 +1701,14 @@ void FUN_00403250(void)
   DAT_004712f0 = 4000;
   iVar3 = 0;
   do {
-    iVar1 = _rand();
-    iVar2 = _rand();
+    iVar1 = crt_rand();
+    iVar2 = crt_rand();
     local_c = (float)(iVar2 % 899 + 0x40);
     local_10 = (float)(iVar1 % 200 + 0x20);
     creature_spawn_template(0x24,&local_10,0.0);
     if (iVar3 % 3 != 0) {
-      iVar1 = _rand();
-      iVar2 = _rand();
+      iVar1 = crt_rand();
+      iVar2 = crt_rand();
       local_4 = (float)(iVar2 % 899 + 0x40);
       local_8 = (float)(iVar1 % 0x1e + 0x20);
       creature_spawn_template(0x25,&local_8,0.0);
@@ -3097,7 +3097,7 @@ LAB_00404603:
        ((((iVar2 = (&perk_choice_ids)[iVar5], iVar2 != perk_id_jinxed &&
           (iVar2 != perk_id_ammunition_within)) &&
          ((iVar2 != perk_id_anxious_loader && (iVar2 != perk_id_monster_vision)))) ||
-        (iVar2 = _rand(), ((byte)iVar2 & 3) != 1)))) {
+        (iVar2 = crt_rand(), ((byte)iVar2 & 3) != 1)))) {
       if ((10000 < iVar3) && (((&perk_flags_table)[(&perk_choice_ids)[iVar5] * 0x14] & 4) != 0))
       break;
       piVar4 = &perk_choice_ids;
@@ -3592,7 +3592,7 @@ void __cdecl perk_apply(int perk_id)
     player_experience = player_experience + 0x9c4;
   }
   else if (perk_id == perk_id_fatal_lottery) {
-    uVar2 = _rand();
+    uVar2 = crt_rand();
     iVar3 = _config_player_count;
     if ((uVar2 & 1) == 0) {
       player_experience = player_experience + 10000;
@@ -3701,7 +3701,7 @@ void __cdecl perk_apply(int perk_id)
   if ((perk_id == perk_id_bandage) && (iVar6 = 0, 0 < iVar3)) {
     pfVar4 = &player_health;
     do {
-      iVar3 = _rand();
+      iVar3 = crt_rand();
       fVar1 = ((float)(iVar3 % 0x32) + 1.0) * *pfVar4;
       *pfVar4 = fVar1;
       if (100.0 < fVar1) {
@@ -4293,7 +4293,7 @@ void perks_update_effects(void)
   undefined4 local_4;
   
   iVar2 = perk_count_get(perk_id_regeneration);
-  if (((iVar2 != 0) && (uVar3 = _rand(), (uVar3 & 1) != 0)) &&
+  if (((iVar2 != 0) && (uVar3 = crt_rand(), (uVar3 & 1) != 0)) &&
      (iVar2 = _config_player_count, 0 < _config_player_count)) {
     do {
       if (((player_health < 100.0) && (0.0 < player_health)) &&
@@ -4370,31 +4370,31 @@ void perks_update_effects(void)
           fVar7 = 0.8;
           local_8 = 0;
           local_4 = 0;
-          iVar4 = _rand();
+          iVar4 = crt_rand();
           fx_spawn_particle(pfVar1,(float)(iVar4 % 0x274) * 0.01,puVar6,fVar7);
           puVar6 = &local_8;
           local_8 = 0;
           local_4 = 0;
           fVar7 = 0.6;
-          iVar4 = _rand();
+          iVar4 = crt_rand();
           fx_spawn_particle(pfVar1,(float)(iVar4 % 0x274) * 0.01,puVar6,fVar7);
           puVar6 = &local_8;
           local_8 = 0;
           local_4 = 0;
           fVar7 = 0.4;
-          iVar4 = _rand();
+          iVar4 = crt_rand();
           fx_spawn_particle(pfVar1,(float)(iVar4 % 0x274) * 0.01,puVar6,fVar7);
           puVar6 = &local_8;
           local_8 = 0;
           local_4 = 0;
           fVar7 = 0.3;
-          iVar4 = _rand();
+          iVar4 = crt_rand();
           fx_spawn_particle(pfVar1,(float)(iVar4 % 0x274) * 0.01,puVar6,fVar7);
           puVar6 = &local_8;
           local_8 = 0;
           local_4 = 0;
           fVar7 = 0.2;
-          iVar4 = _rand();
+          iVar4 = crt_rand();
           fx_spawn_particle(pfVar1,(float)(iVar4 % 0x274) * 0.01,puVar6,fVar7);
           fx_queue_add_random(pfVar1);
         }
@@ -4411,21 +4411,21 @@ void perks_update_effects(void)
   }
   if (((_DAT_004aaf1c < 0.0) || (_DAT_004aaf1c = _DAT_004aaf1c - frame_dt, _DAT_004aaf1c < 0.0)) &&
      (0 < (int)(&player_perk_counts)[perk_id_jinxed])) {
-    iVar2 = _rand();
+    iVar2 = crt_rand();
     if (iVar2 % 10 == 3) {
       player_health = player_health - 5.0;
       fx_queue_add_random((float *)&player_pos_x);
       fx_queue_add_random((float *)&player_pos_x);
     }
-    iVar2 = _rand();
+    iVar2 = crt_rand();
     _DAT_004aaf1c = (float)(iVar2 % 0x14) * 0.1 + _DAT_004aaf1c + 2.0;
     if (_bonus_freeze_timer <= 0.0) {
-      iVar2 = _rand();
+      iVar2 = crt_rand();
       render_overlay_player_index = 0;
       iVar2 = iVar2 % 0x17f;
       do {
         if ((&creature_pool)[iVar2 * 0x98] != '\0') break;
-        iVar2 = _rand();
+        iVar2 = crt_rand();
         iVar2 = iVar2 % 0x17f;
         render_overlay_player_index = render_overlay_player_index + 1;
       } while (render_overlay_player_index < 10);
@@ -4621,7 +4621,7 @@ void __cdecl survival_spawn_creature(float *pos)
   (&creature_collision_flag)[iVar1] = 0;
   (&creature_collision_timer)[iVar4 * 0x26] = 0;
   (&creature_ai_mode)[iVar4 * 0x26] = 0;
-  iVar5 = _rand();
+  iVar5 = crt_rand();
   iVar5 = iVar5 % 10;
   if (player_experience < 12000) {
     if (iVar5 < 9) {
@@ -4647,7 +4647,7 @@ void __cdecl survival_spawn_creature(float *pos)
       (&creature_type_id)[iVar4 * 0x26] = 2;
     }
     else {
-      uVar6 = _rand();
+      uVar6 = crt_rand();
       uVar6 = uVar6 & 0x80000001;
       if ((int)uVar6 < 0) {
         uVar6 = (uVar6 - 1 | 0xfffffffe) + 1;
@@ -4675,18 +4675,18 @@ void __cdecl survival_spawn_creature(float *pos)
     (&creature_type_id)[iVar4 * 0x26] = 0;
   }
 LAB_00407611:
-  iVar5 = _rand();
+  iVar5 = crt_rand();
   if (((byte)iVar5 & 0x1f) == 2) {
     (&creature_type_id)[iVar4 * 0x26] = 3;
   }
-  iVar5 = _rand();
+  iVar5 = crt_rand();
   (&creature_pool)[iVar1] = 1;
   (&creature_force_target)[iVar1] = 0;
   (&creature_hitbox_size)[iVar4 * 0x26] = 0x41800000;
   (&creature_vel_x)[iVar4 * 0x26] = 0;
   (&creature_vel_y)[iVar4 * 0x26] = 0;
   (&creature_size)[iVar4 * 0x26] = (float)(iVar5 % 0x14 + 0x2c);
-  iVar5 = _rand();
+  iVar5 = crt_rand();
   (&creature_heading)[iVar4 * 0x26] = (float)(iVar5 % 0x13a) * 0.01;
   (&creature_move_speed)[iVar4 * 0x26] = (float)(player_experience / 4000) * 0.045 + 0.9;
   if ((&creature_type_id)[iVar4 * 0x26] == 3) {
@@ -4694,7 +4694,7 @@ LAB_00407611:
     *(uint *)(&creature_flags + iVar1) = *(uint *)(&creature_flags + iVar1) | 0x80;
     (&creature_move_speed)[iVar4 * 0x26] = fVar2 * 1.3;
   }
-  uVar6 = _rand();
+  uVar6 = crt_rand();
   (&creature_health)[iVar4 * 0x26] =
        (float)player_experience * 0.00125 + (float)(uVar6 & 0xf) + 52.0;
   if ((&creature_type_id)[iVar4 * 0x26] == 0) {
@@ -4712,27 +4712,27 @@ LAB_00407611:
   (&creature_reward_value)[iVar4 * 0x26] = 0;
   if (player_experience < 50000) {
     (&creature_tint_r)[iVar4 * 0x26] = 1.0 - 1.0 / ((float)(player_experience / 1000) + 10.0);
-    iVar5 = _rand();
+    iVar5 = crt_rand();
     (&creature_tint_g)[iVar4 * 0x26] =
          ((float)(iVar5 % 10) * 0.01 + 0.9) - 1.0 / ((float)(player_experience / 10000) + 10.0);
-    iVar5 = _rand();
+    iVar5 = crt_rand();
     (&creature_tint_b)[iVar4 * 0x26] = (float)(iVar5 % 10) * 0.01 + 0.7;
   }
   else if (player_experience < 100000) {
     (&creature_tint_r)[iVar4 * 0x26] = 0.9 - 1.0 / ((float)(player_experience / 1000) + 10.0);
-    iVar5 = _rand();
+    iVar5 = crt_rand();
     (&creature_tint_g)[iVar4 * 0x26] =
          ((float)(iVar5 % 10) * 0.01 + 0.8) - 1.0 / ((float)(player_experience / 10000) + 10.0);
-    iVar5 = _rand();
+    iVar5 = crt_rand();
     (&creature_tint_b)[iVar4 * 0x26] =
          (float)(player_experience + -50000) * 6e-06 + (float)(iVar5 % 10) * 0.01 + 0.7;
   }
   else {
     (&creature_tint_r)[iVar4 * 0x26] = 1.0 - 1.0 / ((float)(player_experience / 1000) + 10.0);
-    iVar5 = _rand();
+    iVar5 = crt_rand();
     (&creature_tint_g)[iVar4 * 0x26] =
          ((float)(iVar5 % 10) * 0.01 + 0.9) - 1.0 / ((float)(player_experience / 10000) + 10.0);
-    iVar5 = _rand();
+    iVar5 = crt_rand();
     fVar2 = ((float)(iVar5 % 10) * 0.01 + 1.0) - (float)(player_experience + -100000) * 3e-06;
     (&creature_tint_b)[iVar4 * 0x26] = fVar2;
     if (fVar2 < 0.5) {
@@ -4743,13 +4743,13 @@ LAB_00407611:
   (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
   (&creature_contact_damage)[iVar4 * 0x26] = (float)(&creature_size)[iVar4 * 0x26] * 0.0952381;
   if ((float)(&creature_reward_value)[iVar4 * 0x26] == 0.0) {
-    iVar5 = _rand();
+    iVar5 = crt_rand();
     (&creature_reward_value)[iVar4 * 0x26] =
          (float)(&creature_health)[iVar4 * 0x26] * 0.4 +
          (float)(&creature_contact_damage)[iVar4 * 0x26] * 0.8 +
          (float)(&creature_move_speed)[iVar4 * 0x26] * 5.0 + (float)(iVar5 % 10 + 10);
   }
-  iVar5 = _rand();
+  iVar5 = crt_rand();
   if (iVar5 % 0xb4 < 2) {
     *pfVar7 = 0.9;
     (&creature_health)[iVar4 * 0x26] = 0x42820000;
@@ -4759,7 +4759,7 @@ LAB_00407611:
     (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
   }
   else {
-    iVar5 = _rand();
+    iVar5 = crt_rand();
     if (iVar5 % 0xf0 < 2) {
       *pfVar7 = 0.4;
       (&creature_health)[iVar4 * 0x26] = 0x42aa0000;
@@ -4769,7 +4769,7 @@ LAB_00407611:
       (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
     }
     else {
-      iVar5 = _rand();
+      iVar5 = crt_rand();
       if (iVar5 % 0x168 < 2) {
         *pfVar7 = 0.4;
         (&creature_health)[iVar4 * 0x26] = 0x42fa0000;
@@ -4780,7 +4780,7 @@ LAB_00407611:
       }
     }
   }
-  iVar5 = _rand();
+  iVar5 = crt_rand();
   if (iVar5 % 0x528 < 4) {
     *pfVar7 = 0.84;
     (&creature_health)[iVar4 * 0x26] = (float)(&creature_health)[iVar4 * 0x26] + 230.0;
@@ -4791,7 +4791,7 @@ LAB_00407611:
     (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
   }
   else {
-    iVar5 = _rand();
+    iVar5 = crt_rand();
     if (iVar5 % 0x654 < 4) {
       *pfVar7 = 0.94;
       (&creature_health)[iVar4 * 0x26] = (float)(&creature_health)[iVar4 * 0x26] + 2230.0;
@@ -5054,33 +5054,33 @@ joined_r0x004082fb:
     uVar6 = 1U - iVar5 >> 1;
     iVar5 = iVar5 + uVar6 * 2;
     do {
-      uVar2 = _rand();
+      uVar2 = crt_rand();
       iVar3 = terrain_texture_height;
       iVar4 = terrain_texture_width;
       switch(uVar2 & 3) {
       case 0:
-        iVar3 = _rand();
+        iVar3 = crt_rand();
         local_48 = (float)(iVar3 % iVar4);
         local_3c = -40.0;
         pfVar7 = &local_40;
         local_40 = (float)(int)local_48;
         break;
       case 1:
-        iVar3 = _rand();
+        iVar3 = crt_rand();
         local_48 = (float)(iVar3 % iVar4);
         pfVar7 = &local_38;
         local_38 = (float)(int)local_48;
         local_34 = (float)terrain_texture_height + 40.0;
         break;
       case 2:
-        iVar4 = _rand();
+        iVar4 = crt_rand();
         local_48 = (float)(iVar4 % iVar3);
         pfVar7 = &local_30;
         local_30 = -40.0;
         local_2c = (float)(int)local_48;
         break;
       case 3:
-        iVar4 = _rand();
+        iVar4 = crt_rand();
         local_48 = (float)(iVar4 % iVar3);
         pfVar7 = &local_28;
         local_24 = (float)(int)local_48;
@@ -5098,33 +5098,33 @@ switchD_00408344_default:
     iVar5 = 1;
   }
   survival_spawn_cooldown = survival_spawn_cooldown + iVar5;
-  uVar6 = _rand();
+  uVar6 = crt_rand();
   iVar4 = terrain_texture_height;
   iVar5 = terrain_texture_width;
   switch(uVar6 & 3) {
   case 0:
-    iVar4 = _rand();
+    iVar4 = crt_rand();
     local_48 = (float)(iVar4 % iVar5);
     local_1c = 0xc2200000;
     pfVar7 = &local_20;
     local_20 = (float)(int)local_48;
     break;
   case 1:
-    iVar4 = _rand();
+    iVar4 = crt_rand();
     local_48 = (float)(iVar4 % iVar5);
     pfVar7 = &local_18;
     local_18 = (float)(int)local_48;
     local_14 = (float)terrain_texture_height + 40.0;
     break;
   case 2:
-    iVar5 = _rand();
+    iVar5 = crt_rand();
     local_48 = (float)(iVar5 % iVar4);
     pfVar7 = &local_10;
     local_10 = -40.0;
     local_c = (float)(int)local_48;
     break;
   case 3:
-    iVar5 = _rand();
+    iVar5 = crt_rand();
     local_48 = (float)(iVar5 % iVar4);
     pfVar7 = &local_8;
     local_4 = (float)(int)local_48;
@@ -5702,20 +5702,20 @@ void camera_update(void)
         if (time_scale_active != '\0') {
           _camera_shake_timer = 0.06;
         }
-        iVar1 = _rand();
+        iVar1 = crt_rand();
         iVar4 = camera_shake_pulses * 0x3c;
-        iVar2 = _rand();
+        iVar2 = crt_rand();
         iVar1 = iVar1 % (iVar4 / 0x14) + iVar2 % 10;
-        uVar3 = _rand();
+        uVar3 = crt_rand();
         if ((uVar3 & 1) == 0) {
           iVar1 = -iVar1;
         }
         _camera_shake_offset_x = (float)iVar1;
-        iVar1 = _rand();
+        iVar1 = crt_rand();
         iVar4 = camera_shake_pulses * 0x3c;
-        iVar2 = _rand();
+        iVar2 = crt_rand();
         iVar1 = iVar1 % (iVar4 / 0x14) + iVar2 % 10;
-        uVar3 = _rand();
+        uVar3 = crt_rand();
         if ((uVar3 & 1) == 0) {
           _camera_shake_offset_y = (float)-iVar1;
         }
@@ -5878,11 +5878,11 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
       if ((*(char *)(pfVar6 + -5) != '\0') && (pfVar6[4] <= 0.0)) {
         iVar2 = 8;
         do {
-          iVar4 = _rand();
+          iVar4 = crt_rand();
           effect_spawn_freeze_shard(pfVar6,(float)(iVar4 % 0x264) * 0.01);
           iVar2 = iVar2 + -1;
         } while (iVar2 != 0);
-        iVar2 = _rand();
+        iVar2 = crt_rand();
         effect_spawn_freeze_shatter(pfVar6,(float)(iVar2 % 0x264) * 0.01);
         *(undefined1 *)(pfVar6 + -5) = 0;
       }
@@ -5979,17 +5979,17 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
     _bonus_double_xp_timer = local_10[0] * 6.0 + _bonus_double_xp_timer;
   }
   else if (iVar2 == 5) {
-    uVar5 = _rand();
+    uVar5 = crt_rand();
     iVar2 = (uVar5 & 3) + 4;
     if (iVar2 != 0) {
       do {
         owner_id = -100;
         iVar9 = 1;
-        iVar4 = _rand();
+        iVar4 = crt_rand();
         iVar4 = projectile_spawn((float *)(bonus_entry + 4),(float)(iVar4 % 0x274) * 0.01,iVar9,
                                  owner_id);
         if (iVar4 != -1) {
-          iVar9 = _rand();
+          iVar9 = crt_rand();
           (&projectile_speed_scale)[iVar4 * 0x10] =
                ((float)(iVar9 % 0x32) * 0.01 + 0.5) * (float)(&projectile_speed_scale)[iVar4 * 0x10]
           ;
@@ -6000,11 +6000,11 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
     iVar9 = -100;
     iVar4 = 6;
     pfVar6 = (float *)(bonus_entry + 4);
-    iVar2 = _rand();
+    iVar2 = crt_rand();
     projectile_spawn(pfVar6,(float)(iVar2 % 0x274) * 0.01,iVar4,iVar9);
     iVar9 = -100;
     iVar4 = 6;
-    iVar2 = _rand();
+    iVar2 = crt_rand();
     projectile_spawn(pfVar6,(float)(iVar2 % 0x274) * 0.01,iVar4,iVar9);
     effect_spawn_explosion_burst(pfVar6,1.0);
     camera_shake_pulses = 0x14;
@@ -6048,15 +6048,15 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
   if (*bonus_entry != 5) {
     iVar2 = 0xc;
     do {
-      uVar5 = _rand();
+      uVar5 = crt_rand();
       _effect_template_rotation = (float)(uVar5 & 0x7f) * 0.049087387;
-      uVar5 = _rand();
+      uVar5 = crt_rand();
       uVar5 = uVar5 & 0x8000007f;
       if ((int)uVar5 < 0) {
         uVar5 = (uVar5 - 1 | 0xffffff80) + 1;
       }
       effect_template_vel_x = (float)(int)(uVar5 - 0x40);
-      uVar5 = _rand();
+      uVar5 = crt_rand();
       uVar5 = uVar5 & 0x8000007f;
       if ((int)uVar5 < 0) {
         uVar5 = (uVar5 - 1 | 0xffffff80) + 1;
@@ -7336,21 +7336,21 @@ int FUN_0040e860(void)
 bool FUN_0040e940(void)
 
 {
-  HANDLE pvVar1;
+  HANDLE handle;
+  int iVar1;
   int iVar2;
-  int iVar3;
   uint local_118 [70];
   
-  iVar3 = 0;
-  pvVar1 = FUN_00461768(s_mods___dll_00473050,local_118);
-  if ((pvVar1 != (HANDLE)0xffffffff) && (&stack0x00000000 != (undefined1 *)0x104)) {
+  iVar2 = 0;
+  handle = crt_findfirst(s_mods___dll_00473050,local_118);
+  if ((handle != (HANDLE)0xffffffff) && (&stack0x00000000 != (undefined1 *)0x104)) {
     do {
-      iVar3 = iVar3 + 1;
-      iVar2 = FUN_00461835(pvVar1,local_118);
-    } while (iVar2 == 0);
+      iVar2 = iVar2 + 1;
+      iVar1 = crt_findnext(handle,local_118);
+    } while (iVar1 == 0);
   }
-  FUN_004618fd(pvVar1);
-  return iVar3 != 0;
+  crt_findclose(handle);
+  return iVar2 != 0;
 }
 
 
@@ -8548,7 +8548,7 @@ void FUN_004120b0(void)
   highscore_flags = 0;
   DAT_00487086 = 0x7c;
   DAT_00487087 = 0xff;
-  uVar3 = _rand();
+  uVar3 = crt_rand();
   _DAT_00487078 = uVar3 & 0xfee050f;
   _bonus_energizer_timer = 0;
   survival_spawn_stage = 0;
@@ -8572,7 +8572,7 @@ void FUN_004120b0(void)
 void FUN_00412190(void)
 
 {
-  FUN_00461981(&quest_selected_meta,0x2c,0x32,&LAB_004121b0);
+  crt_ehvec_ctor(&quest_selected_meta,0x2c,0x32,&LAB_004121b0,&LAB_004121e0);
   return;
 }
 
@@ -8640,7 +8640,7 @@ void FUN_00412360(void)
     puVar6[-2] = 0;
     *puVar6 = 0x7c;
     puVar6[1] = 0xff;
-    uVar3 = _rand();
+    uVar3 = crt_rand();
     *(uint *)(puVar6 + -0xe) = uVar3 & 0xfee050f;
     puVar6 = puVar6 + 0x48;
     iVar5 = iVar5 + -1;
@@ -8657,7 +8657,7 @@ void FUN_00412360(void)
 void FUN_004123d0(void)
 
 {
-  FUN_00461981(&bonus_meta_label,0x14,0xf,&LAB_004123f0);
+  crt_ehvec_ctor(&bonus_meta_label,0x14,0xf,&LAB_004123f0,FUN_00412410);
   return;
 }
 
@@ -8716,7 +8716,7 @@ uint FUN_00412470(void)
     pcVar3 = pcVar3 + 0x1c;
   } while ((int)pcVar3 < 0x482b0c);
   do {
-    iVar4 = _rand();
+    iVar4 = crt_rand();
     iVar4 = iVar4 % 0xa2;
     uVar6 = (uint)(iVar4 + 1 < 0xe);
     if ((uVar6 == 0) && (iVar4 + -0xc < 2)) {
@@ -8725,7 +8725,7 @@ uint FUN_00412470(void)
     iVar4 = iVar4 + -0xd;
     uVar7 = uVar6;
     if (uVar6 == 2) {
-      uVar6 = _rand();
+      uVar6 = crt_rand();
       if ((uVar6 & 0x3f) != 0) {
         uVar6 = 0;
 LAB_004124e2:
@@ -9294,7 +9294,7 @@ void gameplay_reset_state(void)
   highscore_month = 0;
   highscore_day = 0;
   highscore_flags = 0;
-  _DAT_00487078 = _rand();
+  _DAT_00487078 = crt_rand();
   _DAT_00487078 = _DAT_00487078 & 0xfee050f;
   _DAT_004aaf24 = 0;
   _bonus_freeze_timer = 0;
@@ -9347,7 +9347,7 @@ void gameplay_reset_state(void)
     }
     puVar2[-0x68] = 1;
     *(undefined4 *)(puVar2 + 0x1c) = 0;
-    iVar3 = _rand();
+    iVar3 = crt_rand();
     puVar5 = puVar2 + 0x98;
     iVar4 = iVar4 + 1;
     *(float *)(puVar2 + 0x24) = (float)(iVar3 % 0x1f);
@@ -9375,7 +9375,7 @@ void gameplay_reset_state(void)
   highscore_month = 0;
   highscore_day = 0;
   highscore_flags = 0;
-  _DAT_00487078 = _rand();
+  _DAT_00487078 = crt_rand();
   _DAT_00487078 = _DAT_00487078 & 0xfee050f;
   terrain_generate_random();
   return;
@@ -9559,7 +9559,7 @@ void player_update(void)
     effect_spawn_blood_splatter(&local_18,fVar16,0.0);
     effect_spawn_blood_splatter(&local_18,fVar16,0.0);
     effect_spawn_blood_splatter(&local_18,fVar16,0.0);
-    uVar10 = _rand();
+    uVar10 = crt_rand();
     sfx_play_panned((float)((uVar10 & 1) + sfx_bloodspill_01));
     (&player_low_health_timer)[iVar7 * 0xd8] = 0x3f800000;
   }
@@ -9598,11 +9598,11 @@ void player_update(void)
         iVar22 = iVar11;
         if (((uint)local_38 & 1) == 0) {
           type_id = 0x16;
-          iVar12 = _rand();
+          iVar12 = crt_rand();
         }
         else {
           type_id = 0x15;
-          iVar12 = _rand();
+          iVar12 = crt_rand();
         }
         projectile_spawn(pfVar18,((float)(int)local_38 * 0.7853982 + (float)(iVar12 % 0x32) * 0.01)
                                  - 0.25,type_id,iVar22);
@@ -9655,9 +9655,9 @@ void player_update(void)
       local_10 = local_20 - (float)(&player_pos_x)[iVar11];
       fVar19 = FUN_00417660(&local_10);
       local_30[0] = (float)(fVar19 * (float10)0.5);
-      uVar10 = _rand();
+      uVar10 = crt_rand();
       fVar16 = (float)(uVar10 & 0x1ff) * 0.012271847;
-      uVar10 = _rand();
+      uVar10 = crt_rand();
       local_44 = (float)(uVar10 & 0x1ff);
       fVar19 = (float10)local_30[0] * (float10)(float)(&player_spread_heat)[iVar22 * 0xd8] *
                (float10)(int)local_44 * (float10)0.001953125;
@@ -9684,7 +9684,7 @@ void player_update(void)
       (&sprite_effect_color_a)[iVar11 * 0xb] = 0x3ed374bc;
       (&player_fire_cough_timer)[iVar7 * 0xd8] =
            (float)(&player_fire_cough_timer)[iVar7 * 0xd8] - _DAT_00473314;
-      uVar10 = _rand();
+      uVar10 = crt_rand();
       local_30[0] = (float)(uVar10 & 0x80000003);
       if ((int)local_30[0] < 0) {
         local_30[0] = (float)(((int)local_30[0] - 1U | 0xfffffffc) + 1);
@@ -9720,7 +9720,7 @@ void player_update(void)
       sfx_play_panned(sfx_explosion_small);
       (&player_hot_tempered_timer)[iVar7 * 0xd8] =
            (float)(&player_hot_tempered_timer)[iVar7 * 0xd8] - _DAT_00473318;
-      uVar10 = _rand();
+      uVar10 = crt_rand();
       local_30[0] = (float)(uVar10 & 0x80000007);
       if ((int)local_30[0] < 0) {
         local_30[0] = (float)(((int)local_30[0] - 1U | 0xfffffff8) + 1);
@@ -10599,10 +10599,10 @@ LAB_0041572e:
   fVar19 = (float10)fsin(fVar19);
   local_1c = (float)(fVar19 * (float10)16.0);
   if ((*(byte *)(&DAT_004d7a94 + (&player_weapon_id)[iVar7 * 0xd8] * 0x1f) & 1) != 0) {
-    uVar10 = _rand();
+    uVar10 = crt_rand();
     local_30[0] = (float)(uVar10 & 0x3f);
     fVar3 = (float)(int)local_30[0] * 0.01 + fVar16;
-    uVar10 = _rand();
+    uVar10 = crt_rand();
     local_30[0] = (float)(uVar10 & 0x3f);
     local_10 = 1.0;
     local_c = 1.0;
@@ -10620,14 +10620,14 @@ LAB_0041572e:
     local_18 = (float)(fVar20 * fVar19);
     fVar20 = (float10)fsin((float10)fVar3);
     local_14 = (float)(fVar20 * fVar19);
-    uVar10 = _rand();
+    uVar10 = crt_rand();
     _effect_template_half_height = 0x40000000;
     local_30[0] = (float)((uVar10 & 0x3f) - 0x20);
     _effect_template_half_width = 0x40000000;
     _effect_template_rotation = (float)(int)local_30[0] * 0.1;
     effect_template_vel_x = local_18 * 100.0;
     effect_template_vel_y = local_14 * 100.0;
-    iVar11 = _rand();
+    iVar11 = crt_rand();
     _effect_template_scale_step = 0;
     local_30[0] = (float)(iVar11 % 0x14);
     _effect_template_rotation_step = ((float)(int)local_30[0] * 0.1 - 1.0) * 14.0;
@@ -10652,10 +10652,10 @@ LAB_0041572e:
   local_10 = local_18 - (float)(&player_pos_x)[render_overlay_player_index * 0xd8];
   fVar19 = FUN_00417660(&local_10);
   local_28 = (float)(fVar19 * (float10)0.5);
-  uVar10 = _rand();
+  uVar10 = crt_rand();
   local_30[0] = (float)(uVar10 & 0x1ff);
   fVar3 = (float)(int)local_30[0];
-  uVar10 = _rand();
+  uVar10 = crt_rand();
   local_30[0] = (float)(uVar10 & 0x1ff);
   fVar19 = (float10)local_28 * (float10)(float)(&player_spread_heat)[iVar11 * 0xd8] *
            (float10)(int)local_30[0] * (float10)0.001953125;
@@ -10675,7 +10675,7 @@ LAB_0041572e:
          (&DAT_004d7a74)[(&player_weapon_id)[iVar7 * 0xd8] * 0x1f];
     *pfVar1 = (float)(&DAT_004d7a7c)[(&player_weapon_id)[iVar7 * 0xd8] * 0x1f] + *pfVar1;
     iVar11 = (&player_weapon_id)[iVar7 * 0xd8];
-    iVar12 = _rand();
+    iVar12 = crt_rand();
     sfx_play_panned((float)(iVar12 % (int)(&DAT_004d7a88)[iVar11 * 0x1f] +
                            *(int *)(&DAT_004d7a84 + iVar11 * 0x7c)));
     iVar11 = (&player_weapon_id)[iVar7 * 0xd8];
@@ -10779,10 +10779,10 @@ LAB_0041600e:
           local_c = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
           local_10 = local_20 + *pfVar18;
           iVar17 = iVar22;
-          iVar11 = _rand();
+          iVar11 = crt_rand();
           local_28 = (float)(iVar11 % 200 + -100);
           iVar17 = projectile_spawn(&local_10,(float)(int)local_28 * 0.0013 + fVar3,iVar12,iVar17);
-          iVar11 = _rand();
+          iVar11 = crt_rand();
           local_28 = (float)(iVar11 % 100);
           local_3c = (float)((int)local_3c + -1);
           (&projectile_speed_scale)[iVar17 * 0x10] = (float)(int)local_28 * 0.01 + 1.0;
@@ -10806,10 +10806,10 @@ LAB_0041600e:
           local_c = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
           local_10 = local_20 + *pfVar18;
           iVar17 = iVar22;
-          iVar11 = _rand();
+          iVar11 = crt_rand();
           local_28 = (float)(iVar11 % 200 + -100);
           iVar17 = projectile_spawn(&local_10,(float)(int)local_28 * 0.0013 + fVar3,iVar12,iVar17);
-          iVar11 = _rand();
+          iVar11 = crt_rand();
           local_28 = (float)(iVar11 % 100);
           local_3c = (float)((int)local_3c + -1);
           (&projectile_speed_scale)[iVar17 * 0x10] = (float)(int)local_28 * 0.01 + 1.0;
@@ -10842,10 +10842,10 @@ LAB_0041600e:
           local_c = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
           local_10 = local_20 + *pfVar18;
           iVar17 = iVar22;
-          iVar11 = _rand();
+          iVar11 = crt_rand();
           local_28 = (float)(iVar11 % 200 + -100);
           iVar17 = projectile_spawn(&local_10,(float)(int)local_28 * 0.004 + fVar3,iVar12,iVar17);
-          iVar11 = _rand();
+          iVar11 = crt_rand();
           local_28 = (float)(iVar11 % 100);
           local_3c = (float)((int)local_3c + -1);
           (&projectile_speed_scale)[iVar17 * 0x10] = (float)(int)local_28 * 0.01 + 1.0;
@@ -10964,10 +10964,10 @@ LAB_0041600e:
           local_c = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
           local_10 = local_20 + *pfVar18;
           iVar17 = iVar22;
-          iVar11 = _rand();
+          iVar11 = crt_rand();
           local_28 = (float)(iVar11 % 200 + -100);
           iVar17 = projectile_spawn(&local_10,(float)(int)local_28 * 0.0026 + fVar3,iVar12,iVar17);
-          iVar11 = _rand();
+          iVar11 = crt_rand();
           local_28 = (float)(iVar11 % 0x50);
           local_3c = (float)((int)local_3c + -1);
           (&projectile_speed_scale)[iVar17 * 0x10] = (float)(int)local_28 * 0.01 + 1.4;
@@ -11005,10 +11005,10 @@ LAB_0041600e:
           local_c = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
           local_10 = local_20 + *pfVar18;
           iVar17 = iVar22;
-          iVar11 = _rand();
+          iVar11 = crt_rand();
           local_28 = (float)(iVar11 % 200 + -100);
           iVar17 = projectile_spawn(&local_10,(float)(int)local_28 * 0.002 + fVar3,iVar12,iVar17);
-          iVar11 = _rand();
+          iVar11 = crt_rand();
           local_28 = (float)(iVar11 % 0x50);
           local_3c = (float)((int)local_3c + -1);
           (&projectile_speed_scale)[iVar17 * 0x10] = (float)(int)local_28 * 0.01 + 1.4;
@@ -11154,10 +11154,10 @@ LAB_0041600e:
           local_c = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
           local_10 = local_20 + *pfVar18;
           iVar17 = iVar22;
-          uVar10 = _rand();
+          uVar10 = crt_rand();
           local_28 = (float)((uVar10 & 0xff) - 0x80);
           iVar17 = projectile_spawn(&local_10,(float)(int)local_28 * 0.002 + fVar3,iVar11,iVar17);
-          iVar11 = _rand();
+          iVar11 = crt_rand();
           local_28 = (float)(iVar11 % 100);
           local_3c = (float)((int)local_3c + -1);
           (&projectile_speed_scale)[iVar17 * 0x10] = (float)(int)local_28 * 0.01 + 1.0;
@@ -11206,7 +11206,7 @@ LAB_0041600e:
     *pfVar1 = fVar15 + *pfVar1;
     if (0 < (int)(&weapon_projectile_pellet_count)[(&player_weapon_id)[iVar7 * 0xd8] * 0x1f]) {
       do {
-        iVar11 = _rand();
+        iVar11 = crt_rand();
         local_28 = (float)(iVar11 % 200 + -100) * 0.0015 + fVar3;
         local_c = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
         local_10 = local_20 + *pfVar18;
@@ -11554,17 +11554,17 @@ void __cdecl terrain_generate(void *desc)
     do {
       iVar1 = *grim_interface_ptr;
       fStack_b4 = 6.014196e-39;
-      iVar2 = _rand();
+      iVar2 = crt_rand();
       fStack_88 = (float)(iVar2 % 0x13a);
       fStack_b4 = (float)(int)fStack_88 * 0.01;
       fStack_b8 = 6.01425e-39;
       (**(code **)(iVar1 + 0xfc))();
       fStack_b8 = 6.014257e-39;
-      iStack_8c = _rand();
+      iStack_8c = crt_rand();
       iStack_8c = iStack_8c % (terrain_texture_width + 0x80);
       fStack_a0 = (float)iStack_8c - 64.0;
       fStack_b8 = 6.01431e-39;
-      iStack_8c = _rand();
+      iStack_8c = crt_rand();
       iStack_8c = iStack_8c % (terrain_texture_width + 0x80);
       pfStack_c0 = &fStack_98;
       fStack_98 = ((float)iStack_8c - 64.0) * fStack_a4;
@@ -11596,13 +11596,13 @@ void __cdecl terrain_generate(void *desc)
     fStack_a0 = fVar6;
     do {
       iVar1 = *grim_interface_ptr;
-      iVar2 = _rand();
+      iVar2 = crt_rand();
       fStack_a0 = (float)(iVar2 % 0x13a);
       (**(code **)(iVar1 + 0xfc))((float)(int)fStack_a0 * 0.01);
-      iVar1 = _rand();
+      iVar1 = crt_rand();
       fStack_a4 = (float)(iVar1 % (terrain_texture_width + 0x80));
       fStack_b8 = (float)(int)fStack_a4 - 64.0;
-      iVar1 = _rand();
+      iVar1 = crt_rand();
       fStack_a4 = (float)(iVar1 % (terrain_texture_width + 0x80));
       fStack_b0 = ((float)(int)fStack_a4 - 64.0) * fStack_bc;
       fStack_ac = fStack_b8 * fStack_bc;
@@ -11624,13 +11624,13 @@ void __cdecl terrain_generate(void *desc)
     fStack_b8 = fVar6;
     do {
       iVar3 = *grim_interface_ptr;
-      iVar4 = _rand();
+      iVar4 = crt_rand();
       fStack_b8 = (float)(iVar4 % 0x13a);
       (**(code **)(iVar3 + 0xfc))((float)(int)fStack_b8 * 0.01);
-      iVar3 = _rand();
+      iVar3 = crt_rand();
       fStack_bc = (float)(iVar3 % (terrain_texture_width + 0x80));
       fVar7 = (float)(int)fStack_bc - 64.0;
-      iVar3 = _rand();
+      iVar3 = crt_rand();
       fStack_bc = (float)(iVar3 % (terrain_texture_width + 0x80));
       fStack_c8 = ((float)(int)fStack_bc - 64.0) * fVar5;
       fStack_c4 = fVar7 * fVar5;
@@ -11703,18 +11703,18 @@ void terrain_generate_random(void)
   undefined1 local_44;
   undefined4 uStack_3c;
   
-  _DAT_0048f53c = _rand();
+  _DAT_0048f53c = crt_rand();
   _DAT_0048f53c = _DAT_0048f53c % 7;
-  _DAT_0048f540 = _rand();
+  _DAT_0048f540 = crt_rand();
   _DAT_0048f540 = _DAT_0048f540 % 7;
-  _rand();
+  crt_rand();
   fVar4 = DAT_0048f54c;
   fVar5 = DAT_0048f548;
   _DAT_0048f53c = 0;
   _DAT_0048f540 = 1;
   _DAT_0048f544 = 0;
   if (0x27 < (ushort)game_status_blob) {
-    iVar1 = _rand();
+    iVar1 = crt_rand();
     if (((byte)iVar1 & 7) == 3) {
       uStack_3c = 0x41823a;
       terrain_generate(&DAT_00484c84);
@@ -11722,7 +11722,7 @@ void terrain_generate_random(void)
     }
   }
   if (0x1d < (ushort)game_status_blob) {
-    iVar1 = _rand();
+    iVar1 = crt_rand();
     if (((byte)iVar1 & 7) == 3) {
       uStack_3c = 0x418265;
       terrain_generate(&DAT_00484acc);
@@ -11730,7 +11730,7 @@ void terrain_generate_random(void)
     }
   }
   if (0x13 < (ushort)game_status_blob) {
-    iVar1 = _rand();
+    iVar1 = crt_rand();
     if (((byte)iVar1 & 7) == 3) {
       uStack_3c = 0x418290;
       terrain_generate(&DAT_00484914);
@@ -11791,17 +11791,17 @@ void terrain_generate_random(void)
       do {
         iVar1 = *grim_interface_ptr;
         fStack_c4 = 6.016654e-39;
-        iVar2 = _rand();
+        iVar2 = crt_rand();
         fStack_ac = (float)(iVar2 % 0x13a);
         fStack_c4 = (float)(int)fStack_ac * 0.01;
         fStack_c8 = 6.016708e-39;
         (**(code **)(iVar1 + 0xfc))();
         fStack_c8 = 6.016715e-39;
-        iVar1 = _rand();
+        iVar1 = crt_rand();
         fStack_b0 = (float)(iVar1 % (terrain_texture_width + 0x80));
         fStack_ac = (float)(int)fStack_b0 - 64.0;
         fStack_c8 = 6.016768e-39;
-        iVar1 = _rand();
+        iVar1 = crt_rand();
         fStack_b0 = (float)(iVar1 % (terrain_texture_width + 0x80));
         pfStack_d0 = &fStack_a4;
         fStack_a4 = ((float)(int)fStack_b0 - 64.0) * fStack_b4;
@@ -11832,13 +11832,13 @@ void terrain_generate_random(void)
       fStack_c4 = fVar5;
       do {
         iVar1 = *grim_interface_ptr;
-        iStack_c0 = _rand();
+        iStack_c0 = crt_rand();
         iStack_c0 = iStack_c0 % 0x13a;
         (**(code **)(iVar1 + 0xfc))((float)iStack_c0 * 0.01);
-        iVar1 = _rand();
+        iVar1 = crt_rand();
         fStack_c4 = (float)(iVar1 % (terrain_texture_width + 0x80));
         fStack_c8 = (float)(int)fStack_c4 - 64.0;
-        iVar1 = _rand();
+        iVar1 = crt_rand();
         fStack_c4 = (float)(iVar1 % (terrain_texture_width + 0x80));
         fStack_bc = ((float)(int)fStack_c4 - 64.0) * fStack_cc;
         fStack_b8 = fStack_c8 * fStack_cc;
@@ -11858,11 +11858,11 @@ void terrain_generate_random(void)
     if (0 < (int)(iVar1 + (iVar1 >> 0x1f & 0x7ffffU)) >> 0x13) {
       do {
         iVar1 = *grim_interface_ptr;
-        iVar2 = _rand();
+        iVar2 = crt_rand();
         (**(code **)(iVar1 + 0xfc))((float)(iVar2 % 0x13a) * 0.01);
-        iVar1 = _rand();
+        iVar1 = crt_rand();
         fVar6 = (float)(iVar1 % (terrain_texture_width + 0x80)) - 64.0;
-        iVar1 = _rand();
+        iVar1 = crt_rand();
         fStack_d4 = ((float)(iVar1 % (terrain_texture_width + 0x80)) - 64.0) * fVar4;
         pfStack_d0 = (float *)(fVar6 * fVar4);
         (**(code **)(*grim_interface_ptr + 0x120))(&fStack_d4,fVar5 * 128.0,fVar5 * 128.0);
@@ -15594,7 +15594,7 @@ void __cdecl creature_handle_death(int creature_id,bool keep_corpse)
         pcVar5 = pcVar5 + 4;
         puVar6 = puVar6 + 1;
       }
-      uVar3 = _rand();
+      uVar3 = crt_rand();
       (&creature_phase_seed)[iVar2 * 0x26] = uVar3 & 0xff;
       (&creature_heading)[iVar2 * 0x26] = (float)(&creature_heading)[creature_id * 0x26] - 1.5707964
       ;
@@ -15614,7 +15614,7 @@ void __cdecl creature_handle_death(int creature_id,bool keep_corpse)
         pcVar5 = pcVar5 + 4;
         puVar6 = puVar6 + 1;
       }
-      uVar3 = _rand();
+      uVar3 = crt_rand();
       (&creature_phase_seed)[iVar2 * 0x26] = uVar3 & 0xff;
       (&creature_heading)[iVar2 * 0x26] = (float)(&creature_heading)[creature_id * 0x26] + 1.5707964
       ;
@@ -15661,11 +15661,11 @@ void __cdecl creature_handle_death(int creature_id,bool keep_corpse)
       pos = (float *)(&creature_pos_x + creature_id * 0x26);
       iVar2 = 8;
       do {
-        iVar4 = _rand();
+        iVar4 = crt_rand();
         effect_spawn_freeze_shard(pos,(float)(iVar4 % 0x264) * 0.01);
         iVar2 = iVar2 + -1;
       } while (iVar2 != 0);
-      iVar2 = _rand();
+      iVar2 = crt_rand();
       effect_spawn_freeze_shatter(pos,(float)(iVar2 % 0x264) * 0.01);
       creature_kill_count = creature_kill_count + 1;
       *pcVar1 = '\0';
@@ -16271,21 +16271,21 @@ int * __cdecl bonus_spawn_at(float *pos,int bonus_id,int duration_override)
     _effect_template_half_height = 0x42000000;
     iVar4 = 0x10;
     do {
-      uVar2 = _rand();
+      uVar2 = crt_rand();
       _effect_template_rotation = (float)(uVar2 & 0x7f) * 0.049087387;
-      uVar2 = _rand();
+      uVar2 = crt_rand();
       uVar2 = uVar2 & 0x8000007f;
       if ((int)uVar2 < 0) {
         uVar2 = (uVar2 - 1 | 0xffffff80) + 1;
       }
       effect_template_vel_x = (float)(int)(uVar2 - 0x40);
-      uVar2 = _rand();
+      uVar2 = crt_rand();
       uVar2 = uVar2 & 0x8000007f;
       if ((int)uVar2 < 0) {
         uVar2 = (uVar2 - 1 | 0xffffff80) + 1;
       }
       effect_template_vel_y = (float)(int)(uVar2 - 0x40);
-      iVar3 = _rand();
+      iVar3 = crt_rand();
       _effect_template_scale_step = (float)(iVar3 % 100) * 0.01 + 0.1;
       effect_spawn(0,pos);
       iVar4 = iVar4 + -1;
@@ -16336,7 +16336,7 @@ LAB_0041f853:
       }
       if (*puVar1 == 1) {
         puVar1[6] = 500;
-        iVar3 = _rand();
+        iVar3 = crt_rand();
         if (((byte)iVar3 & 7) < 3) {
           puVar1[6] = 1000;
           return puVar1;
@@ -16382,7 +16382,7 @@ uint * __cdecl FUN_0041f8d0(float *param_1)
   }
   if (((player_weapon_id == (uint *)0x1) ||
       ((player2_weapon_id == 1 && (_config_player_count == 2)))) &&
-     (iVar1 = _rand(), ((byte)iVar1 & 3) < 3)) {
+     (iVar1 = crt_rand(), ((byte)iVar1 & 3) < 3)) {
     puVar2 = FUN_0041f790(param_1);
     *puVar2 = 3;
     puVar3 = (uint *)weapon_pick_random_available();
@@ -16412,14 +16412,14 @@ LAB_0041f998:
     if (puVar3 != (uint *)0x0) goto LAB_0041f998;
   }
   else {
-    iVar1 = _rand();
-    if ((iVar1 % 9 != 1) && ((player_weapon_id != (uint *)0x1 || (iVar1 = _rand(), iVar1 % 5 != 1)))
-       ) {
+    iVar1 = crt_rand();
+    if ((iVar1 % 9 != 1) &&
+       ((player_weapon_id != (uint *)0x1 || (iVar1 = crt_rand(), iVar1 % 5 != 1)))) {
       iVar1 = perk_count_get(perk_id_bonus_magnet);
       if (iVar1 == 0) {
         return (uint *)0x0;
       }
-      iVar1 = _rand();
+      iVar1 = crt_rand();
       if (iVar1 % 10 != 2) {
         return (uint *)(iVar1 / 10);
       }
@@ -16461,21 +16461,21 @@ LAB_0041fa76:
     _effect_template_half_height = 0x42000000;
     iVar1 = 0x10;
     do {
-      uVar4 = _rand();
+      uVar4 = crt_rand();
       _effect_template_rotation = (float)(uVar4 & 0x7f) * 0.049087387;
-      uVar4 = _rand();
+      uVar4 = crt_rand();
       uVar4 = uVar4 & 0x8000007f;
       if ((int)uVar4 < 0) {
         uVar4 = (uVar4 - 1 | 0xffffff80) + 1;
       }
       effect_template_vel_x = (float)(int)(uVar4 - 0x40);
-      uVar4 = _rand();
+      uVar4 = crt_rand();
       uVar4 = uVar4 & 0x8000007f;
       if ((int)uVar4 < 0) {
         uVar4 = (uVar4 - 1 | 0xffffff80) + 1;
       }
       effect_template_vel_y = (float)(int)(uVar4 - 0x40);
-      iVar5 = _rand();
+      iVar5 = crt_rand();
       _effect_template_scale_step = (float)(iVar5 % 100) * 0.01 + 0.1;
       puVar6 = effect_spawn(0,param_1);
       iVar1 = iVar1 + -1;
@@ -16504,7 +16504,7 @@ int __cdecl fx_spawn_sprite(float *pos,float *vel,float scale)
     pcVar1 = pcVar1 + 0x2c;
     iVar3 = iVar3 + 1;
   } while ((int)pcVar1 < 0x49aa20);
-  iVar3 = _rand();
+  iVar3 = crt_rand();
   iVar3 = iVar3 % 0x180;
 LAB_0041fbd8:
   (&sprite_effect_pool)[iVar3 * 0x2c] = 1;
@@ -16517,7 +16517,7 @@ LAB_0041fbd8:
   (&sprite_effect_vel_x)[iVar3 * 0xb] = *vel;
   (&sprite_effect_vel_y)[iVar3 * 0xb] = vel[1];
   (&sprite_effect_scale)[iVar3 * 0xb] = scale;
-  iVar2 = _rand();
+  iVar2 = crt_rand();
   (&sprite_effect_rotation)[iVar3 * 0xb] = (float)(iVar2 % 0x274) * 0.01;
   return iVar3;
 }
@@ -16796,7 +16796,7 @@ int __cdecl fx_spawn_particle(float *pos,float angle,void *unused,float intensit
     pcVar1 = pcVar1 + 0x38;
     uVar4 = uVar4 + 1;
   } while ((int)pcVar1 < 0x495ab8);
-  uVar4 = _rand();
+  uVar4 = crt_rand();
   uVar4 = uVar4 & 0x8000007f;
   if ((int)uVar4 < 0) {
     uVar4 = (uVar4 - 1 | 0xffffff80) + 1;
@@ -16816,7 +16816,7 @@ LAB_00420160:
   (&particle_scale_z)[uVar4 * 0xe] = 0x3f800000;
   (&particle_age)[uVar4 * 0xe] = 0;
   *(float *)(&particle_angle + iVar3) = angle;
-  iVar2 = _rand();
+  iVar2 = crt_rand();
   (&particle_spin)[uVar4 * 0xe] = (float)(iVar2 % 0x274) * 0.01;
   (&DAT_00493eb9)[iVar3] = 1;
   (&particle_style_id)[iVar3] = 0;
@@ -16845,7 +16845,7 @@ int __cdecl fx_spawn_particle_slow(float *pos,float angle)
     pcVar1 = pcVar1 + 0x38;
     uVar4 = uVar4 + 1;
   } while ((int)pcVar1 < 0x495ab8);
-  uVar4 = _rand();
+  uVar4 = crt_rand();
   uVar4 = uVar4 & 0x8000007f;
   if ((int)uVar4 < 0) {
     uVar4 = (uVar4 - 1 | 0xffffff80) + 1;
@@ -16865,7 +16865,7 @@ LAB_00420270:
   (&particle_scale_z)[uVar4 * 0xe] = 0x3f800000;
   (&particle_age)[uVar4 * 0xe] = 0;
   *(float *)(&particle_angle + iVar3) = angle;
-  iVar2 = _rand();
+  iVar2 = crt_rand();
   (&particle_spin)[uVar4 * 0xe] = (float)(iVar2 % 0x274) * 0.01;
   (&DAT_00493eb9)[iVar3] = 1;
   (&particle_style_id)[iVar3] = 8;
@@ -17159,7 +17159,7 @@ int __cdecl creature_apply_damage(int creature_id,float damage,int damage_type,f
       damage = damage * 1.2;
     }
     if (((&creature_flags)[creature_id * 0x98] & 4) == 0) {
-      uVar3 = _rand();
+      uVar3 = crt_rand();
       fVar1 = ((float)(int)((uVar3 & 0x7f) - 0x40) * 0.002) /
               ((float)(&creature_size)[creature_id * 0x26] * 0.025);
       if (1.5707964 < fVar1) {
@@ -17179,7 +17179,7 @@ int __cdecl creature_apply_damage(int creature_id,float damage,int damage_type,f
   else {
     if ((damage_type == 4) && (iVar2 = perk_count_get(perk_id_pyromaniac), iVar2 != 0)) {
       damage = damage * 1.5;
-      _rand();
+      crt_rand();
     }
     (&creature_health)[creature_id * 0x26] = (float)(&creature_health)[creature_id * 0x26] - damage;
     (&creature_vel_x)[creature_id * 0x26] = (float)(&creature_vel_x)[creature_id * 0x26] - *impulse;
@@ -17195,7 +17195,7 @@ int __cdecl creature_apply_damage(int creature_id,float damage,int damage_type,f
       (&creature_vel_y)[creature_id * 0x26] =
            (float)(&creature_vel_y)[creature_id * 0x26] - (fVar1 + fVar1);
       if (((&creature_flags)[creature_id * 0x98] & 0x10) == 0) {
-        uVar3 = _rand();
+        uVar3 = crt_rand();
         uVar3 = uVar3 & 0x80000003;
         if ((int)uVar3 < 0) {
           uVar3 = (uVar3 - 1 | 0xfffffffc) + 1;
@@ -17214,13 +17214,13 @@ int __cdecl creature_apply_damage(int creature_id,float damage,int damage_type,f
         _effect_template_half_height = 0x42100000;
         iVar2 = 5;
         do {
-          uVar3 = _rand();
+          uVar3 = crt_rand();
           _effect_template_rotation = (float)(uVar3 & 0x7f) * 0.049087387;
-          uVar3 = _rand();
+          uVar3 = crt_rand();
           effect_template_vel_x = (float)(int)((uVar3 & 0x7f) - 0x40);
-          uVar3 = _rand();
+          uVar3 = crt_rand();
           effect_template_vel_y = (float)(int)((uVar3 & 0x7f) - 0x40);
-          iVar4 = _rand();
+          iVar4 = crt_rand();
           _effect_template_scale_step = (float)(iVar4 % 0x8c) * 0.01 + 0.3;
           effect_spawn(0,(float *)(&creature_pos_x + creature_id * 0x26));
           iVar2 = iVar2 + -1;
@@ -17387,7 +17387,7 @@ LAB_004219f8:
                 }
                 else {
                   iVar7 = perk_count_get(perk_id_poison_bullets);
-                  if ((iVar7 != 0) && (iVar7 = _rand(), ((byte)iVar7 & 7) == 1)) {
+                  if ((iVar7 != 0) && (iVar7 = crt_rand(), ((byte)iVar7 & 7) == 1)) {
                     *(uint *)(&creature_flags + iVar10 * 0x98) =
                          *(uint *)(&creature_flags + iVar10 * 0x98) | 1;
                   }
@@ -17395,7 +17395,7 @@ LAB_004219f8:
                     iVar7 = 8;
                     do {
                       fVar9 = 0.0;
-                      uVar8 = _rand();
+                      uVar8 = crt_rand();
                       effect_spawn_blood_splatter(pfVar11,(float)(uVar8 & 0xff) * 0.024543693,fVar9)
                       ;
                       iVar7 = iVar7 + -1;
@@ -17430,7 +17430,7 @@ LAB_004219f8:
                           effect_spawn_blood_splatter
                                     (pfVar11,(float)(&projectile_angle)[local_e8 * 0x10] - 1.5707964
                                      ,0.0);
-                          iVar5 = _rand();
+                          iVar5 = crt_rand();
                           if (((byte)iVar5 & 7) == 2) {
                             effect_spawn_blood_splatter
                                       (pfVar11,((float)(&projectile_angle)[local_e8 * 0x10] -
@@ -17444,7 +17444,7 @@ LAB_004219f8:
                       iVar7 = 8;
                       do {
                         fVar9 = 0.0;
-                        uVar8 = _rand();
+                        uVar8 = crt_rand();
                         effect_spawn_blood_splatter
                                   (pfVar11,((float)(&projectile_angle)[local_e8 * 0x10] - 1.5707964)
                                            + (float)(int)((uVar8 & 0x1f) - 0x10) * 0.0625,fVar9);
@@ -17464,16 +17464,16 @@ LAB_004219f8:
                     iVar7 = -0x1e;
                     do {
                       iVar5 = local_d8 - iVar7;
-                      iVar6 = _rand();
+                      iVar6 = crt_rand();
                       local_58 = (float)(iVar6 % iVar5 + iVar7);
-                      iVar6 = _rand();
+                      iVar6 = crt_rand();
                       local_20 = local_58 + (float)(&creature_pos_x)[iVar10 * 0x26];
                       local_1c = (float)(iVar6 % iVar5 + iVar7) +
                                  (float)(&creature_pos_y)[iVar10 * 0x26];
                       fx_queue_add_random(&local_20);
-                      iVar6 = _rand();
+                      iVar6 = crt_rand();
                       local_28 = (float)(iVar6 % iVar5 + iVar7);
-                      iVar6 = _rand();
+                      iVar6 = crt_rand();
                       local_48 = local_28 + (float)(&creature_pos_x)[iVar10 * 0x26];
                       local_44 = (float)(iVar6 % iVar5 + iVar7) +
                                  (float)(&creature_pos_y)[iVar10 * 0x26];
@@ -17485,7 +17485,7 @@ LAB_004219f8:
                   iVar7 = (&projectile_type_id)[local_e8 * 0x10];
                   if (((iVar7 != 0x2d) && (iVar7 != 6)) && (iVar7 != 0x19)) {
                     (&projectile_life_timer)[local_e8 * 0x10] = 0x3e800000;
-                    uVar8 = _rand();
+                    uVar8 = crt_rand();
                     fVar15 = (float10)fcos((float10)(float)(&projectile_angle)[local_e8 * 0x10] -
                                            (float10)1.5707964);
                     *pfVar11 = (float)(fVar15 * (float10)(uVar8 & 3) + (float10)*pfVar11);
@@ -17604,20 +17604,20 @@ LAB_004219f8:
                     (&projectile_life_timer)[local_e8 * 0x10] = 0x3e800000;
                   }
                   (&creature_state_flag)[iVar10 * 0x98] = 1;
-                  _rand();
+                  crt_rand();
                   if (((&projectile_type_id)[local_e8 * 0x10] == 6) ||
                      ((&projectile_type_id)[local_e8 * 0x10] == 0x2d)) {
                     perk_count_get(perk_id_bloody_mess_quick_learner);
                     local_ec = 6;
                     do {
-                      iVar7 = _rand();
+                      iVar7 = crt_rand();
                       fVar15 = (float10)(iVar7 % 100) * (float10)0.1;
                       if ((float10)4.0 < fVar15) {
-                        iVar7 = _rand();
+                        iVar7 = crt_rand();
                         fVar15 = (float10)(iVar7 % 0x5a + 10) * (float10)0.1;
                       }
                       if ((float10)7.0 < fVar15) {
-                        iVar7 = _rand();
+                        iVar7 = crt_rand();
                         fVar15 = (float10)(iVar7 % 0x50 + 0x14) * (float10)0.1;
                       }
                       fVar18 = (float10)fcos((float10)(float)(&projectile_angle)[local_e8 * 0x10] -
@@ -17631,11 +17631,11 @@ LAB_004219f8:
                       local_b0 = fVar9 + (float)(&creature_pos_x)[iVar10 * 0x26];
                       local_ac = fVar20 + (float)(&creature_pos_y)[iVar10 * 0x26];
                       vec2_add_inplace(iVar10,&local_b0,&local_a8);
-                      _rand();
+                      crt_rand();
                       if (0.0 < _bonus_freeze_timer) {
                         local_a0 = fVar9 + *pfVar11;
                         local_9c = fVar20 + (float)(&projectile_pos_y)[local_e8 * 0x10];
-                        iVar7 = _rand();
+                        iVar7 = crt_rand();
                         effect_spawn_freeze_shard
                                   (&local_a0,
                                    ((float)(&projectile_angle)[local_e8 * 0x10] - 1.5707964) +
@@ -17651,7 +17651,7 @@ LAB_004219f8:
                     pfVar12 = (float *)(&creature_pos_x + iVar10 * 0x26);
                     iVar7 = 3;
                     do {
-                      iVar5 = _rand();
+                      iVar5 = crt_rand();
                       fVar18 = ((float10)(float)(&projectile_angle)[local_e8 * 0x10] -
                                (float10)1.5707964) + (float10)(iVar5 % 0x14 + -10) * (float10)0.1;
                       fVar15 = (float10)fcos(fVar18);
@@ -17675,7 +17675,7 @@ LAB_004219f8:
                     } while (iVar7 != 0);
                   }
                   else {
-                    iVar10 = _rand();
+                    iVar10 = crt_rand();
                     effect_spawn_freeze_shard
                               (pfVar11,((float)(&projectile_angle)[local_e8 * 0x10] - 1.5707964) +
                                        (float)(iVar10 % 100) * 0.01);
@@ -17687,7 +17687,7 @@ LAB_004219f8:
                   else {
                     fVar9 = sfx_shock_hit_01;
                     if ((&weapon_ammo_class)[(&projectile_type_id)[local_e8 * 0x10] * 0x1f] != 4) {
-                      iVar10 = _rand();
+                      iVar10 = crt_rand();
                       fVar9 = (float)(iVar10 % 6 + sfx_bullet_hit_01);
                     }
                     sfx_play_panned(fVar9);
@@ -17856,21 +17856,21 @@ LAB_00421d65:
             highscore_record_shots_hit = highscore_record_shots_hit + 1;
           }
           if (_bonus_freeze_timer <= 0.0) {
-            iVar10 = _rand();
+            iVar10 = crt_rand();
             fStack_18 = (float)(iVar10 % 0x14 + -10);
-            iVar10 = _rand();
+            iVar10 = crt_rand();
             local_90 = fStack_18 + (float)(&creature_pos_x)[iVar4 * 0x26];
             local_8c = (float)(iVar10 % 0x14 + -10) + (float)(&creature_pos_y)[iVar4 * 0x26];
             fx_queue_add_random(&local_90);
-            iVar10 = _rand();
+            iVar10 = crt_rand();
             fStack_38 = (float)(iVar10 % 0x14 + -10);
-            iVar10 = _rand();
+            iVar10 = crt_rand();
             local_80 = fStack_38 + (float)(&creature_pos_x)[iVar4 * 0x26];
             local_7c = (float)(iVar10 % 0x14 + -10) + (float)(&creature_pos_y)[iVar4 * 0x26];
             fx_queue_add_random(&local_80);
-            iVar10 = _rand();
+            iVar10 = crt_rand();
             local_28 = (float)(iVar10 % 0x14 + -10);
-            iVar10 = _rand();
+            iVar10 = crt_rand();
             local_70 = local_28 + (float)(&creature_pos_x)[iVar4 * 0x26];
             local_6c = (float)(iVar10 % 0x14 + -10) + (float)(&creature_pos_y)[iVar4 * 0x26];
             fx_queue_add_random(&local_70);
@@ -17878,7 +17878,7 @@ LAB_00421d65:
           else {
             local_ec = 4;
             do {
-              iVar10 = _rand();
+              iVar10 = crt_rand();
               effect_spawn_freeze_shard(pfVar12,(float)(iVar10 % 0x264) * 0.01);
               local_ec = local_ec + -1;
             } while (local_ec != 0);
@@ -17917,9 +17917,9 @@ LAB_00421d65:
             if (fVar20 <= 0.0) {
               iVar10 = 0x14;
               do {
-                iVar7 = _rand();
+                iVar7 = crt_rand();
                 fVar9 = (float)(iVar7 % 0x274) * 0.01;
-                iVar7 = _rand();
+                iVar7 = crt_rand();
                 fVar17 = (float10)fcos((float10)fVar9);
                 local_58 = (float)(fVar17 * (float10)(iVar7 % 0x5a));
                 fVar17 = (float10)fsin((float10)fVar9);
@@ -17933,7 +17933,7 @@ LAB_00421d65:
             else {
               iVar4 = 8;
               do {
-                iVar10 = _rand();
+                iVar10 = crt_rand();
                 effect_spawn_freeze_shard(pfVar12,(float)(iVar10 % 0x264) * 0.01);
                 iVar4 = iVar4 + -1;
               } while (iVar4 != 0);
@@ -17946,9 +17946,9 @@ LAB_00421d65:
             if (fVar20 <= 0.0) {
               iVar10 = 10;
               do {
-                iVar7 = _rand();
+                iVar7 = crt_rand();
                 fVar9 = (float)(iVar7 % 0x274) * 0.01;
-                uVar8 = _rand();
+                uVar8 = crt_rand();
                 uVar8 = uVar8 & 0x8000003f;
                 if ((int)uVar8 < 0) {
                   uVar8 = (uVar8 - 1 | 0xffffffc0) + 1;
@@ -17966,7 +17966,7 @@ LAB_00421d65:
             else {
               iVar4 = 8;
               do {
-                iVar10 = _rand();
+                iVar10 = crt_rand();
                 effect_spawn_freeze_shard(pfVar12,(float)(iVar10 % 0x264) * 0.01);
                 iVar4 = iVar4 + -1;
               } while (iVar4 != 0);
@@ -17979,9 +17979,9 @@ LAB_00421d65:
             if (fVar20 <= 0.0) {
               iVar10 = 3;
               do {
-                iVar7 = _rand();
+                iVar7 = crt_rand();
                 fVar9 = (float)(iVar7 % 0x274) * 0.01;
-                iVar7 = _rand();
+                iVar7 = crt_rand();
                 fVar17 = (float10)fcos((float10)fVar9);
                 fVar16 = (float10)fsin((float10)fVar9);
                 local_48 = (float)(fVar17 * (float10)(iVar7 % 0x2c)) +
@@ -17995,7 +17995,7 @@ LAB_00421d65:
             else {
               iVar10 = 8;
               do {
-                iVar7 = _rand();
+                iVar7 = crt_rand();
                 effect_spawn_freeze_shard
                           ((float *)(&creature_pos_x + iVar4 * 0x26),(float)(iVar7 % 0x264) * 0.01);
                 iVar10 = iVar10 + -1;
@@ -18004,7 +18004,7 @@ LAB_00421d65:
           }
           local_ec = 0;
           do {
-            iVar4 = _rand();
+            iVar4 = crt_rand();
             fVar17 = (float10)(iVar4 % 800) * (float10)0.1;
             fVar16 = (float10)fcos((float10)local_ec * (float10)0.62831855);
             local_68 = (float)fVar16;
@@ -18093,7 +18093,7 @@ LAB_004226a3:
 LAB_00422767:
           if (*(char *)((int)pfVar11 + -0xf) == '\x01') {
             if (cVar3 == '\0') {
-              iVar4 = _rand();
+              iVar4 = crt_rand();
               fVar17 = (float10)(iVar4 % 100 + -0x32) * (float10)0.06 * (float10)pfVar11[5] *
                        (float10)frame_dt * (float10)1.96;
 LAB_00422821:
@@ -18106,12 +18106,12 @@ LAB_00422821:
             }
             else {
               if (cVar3 != '\b') {
-                iVar4 = _rand();
+                iVar4 = crt_rand();
                 fVar17 = (float10)(iVar4 % 100 + -0x32) * (float10)0.06 * (float10)pfVar11[5] *
                          (float10)frame_dt * (float10)1.1;
                 goto LAB_00422821;
               }
-              iVar4 = _rand();
+              iVar4 = crt_rand();
               fVar17 = (float10)pfVar11[6] -
                        (float10)(iVar4 % 100 + -0x32) * (float10)0.06 * (float10)pfVar11[5] *
                        (float10)frame_dt * (float10)1.1;
@@ -18187,7 +18187,7 @@ LAB_00422821:
                 pfVar11[-1] = (float)(fVar17 * (float10)82.0);
                 fVar17 = (float10)fsin((float10)pfVar11[6]);
                 *pfVar11 = (float)(fVar17 * (float10)82.0);
-                iVar4 = _rand();
+                iVar4 = crt_rand();
                 (&creature_state_flag)[(int)fVar9 * 0x98] = 1;
                 local_b0 = 0.0;
                 local_ac = 0.0;
@@ -18239,8 +18239,8 @@ LAB_00422821:
                   }
                 }
                 if (local_e8 % 3 == 0) {
-                  iVar4 = _rand();
-                  iVar10 = _rand();
+                  iVar4 = crt_rand();
+                  iVar10 = crt_rand();
                   local_a4 = (float)(iVar10 % 0x3c + -0x1e);
                   local_a8 = (float)(iVar4 % 0x3c + -0x1e);
                   iVar4 = fx_spawn_sprite(pfVar12,&local_a8,13.0);
@@ -18265,7 +18265,7 @@ LAB_00422821:
         *(undefined1 *)(pfVar11 + -4) = 0;
         if ((*(char *)(pfVar11 + 8) == '\b') && (pfVar11[9] != -NAN)) {
           if ((&creature_pool)[(int)pfVar11[9] * 0x98] != '\0') {
-            iVar4 = _rand();
+            iVar4 = crt_rand();
             sfx_play_panned(*(float *)(&creature_type_sfx_a0 +
                                       (iVar4 % 3 +
                                       (&creature_type_id)[(int)pfVar11[9] * 0x26] * 0x11) * 4));
@@ -19541,13 +19541,13 @@ void __cdecl player_take_damage(int player_index,float damage)
   iVar3 = perk_count_get(perk_id_ninja);
   if (iVar3 == 0) {
     iVar3 = perk_count_get(perk_id_dodger);
-    if ((iVar3 != 0) && (iVar3 = _rand(), iVar3 % 5 == 0)) {
+    if ((iVar3 != 0) && (iVar3 = crt_rand(), iVar3 % 5 == 0)) {
       bVar2 = true;
       goto LAB_00425fa1;
     }
   }
   else {
-    iVar3 = _rand();
+    iVar3 = crt_rand();
     if (iVar3 % 3 == 0) {
       bVar2 = true;
       goto LAB_00425fa1;
@@ -19559,14 +19559,14 @@ void __cdecl player_take_damage(int player_index,float damage)
     ;
   }
   else {
-    iVar3 = _rand();
+    iVar3 = crt_rand();
     if (iVar3 % 10 == 0) {
       (&player_health)[player_index * 0xd8] = 0.0;
     }
   }
 LAB_00425fa1:
   if (0.0 <= (&player_health)[player_index * 0xd8]) {
-    iVar3 = _rand();
+    iVar3 = crt_rand();
     sfx_play_panned((float)(iVar3 % 3 + sfx_trooper_inpain_01));
     if (bVar6) {
       return;
@@ -19580,7 +19580,7 @@ LAB_00425fa1:
     }
     iVar3 = perk_count_get(perk_id_final_revenge);
     if (iVar3 == 0) {
-      uVar4 = _rand();
+      uVar4 = crt_rand();
       uVar4 = uVar4 & 0x80000001;
       if ((int)uVar4 < 0) {
         uVar4 = (uVar4 - 1 | 0xfffffffe) + 1;
@@ -19617,7 +19617,7 @@ LAB_00425fa1:
   if (!bVar2) {
     iVar3 = perk_count_get(perk_id_unstoppable);
     if (iVar3 == 0) {
-      iVar3 = _rand();
+      iVar3 = crt_rand();
       (&player_heading)[player_index * 0xd8] =
            (float)(iVar3 % 100 + -0x32) * 0.04 + (float)(&player_heading)[player_index * 0xd8];
       fVar1 = damage * 0.01 + (float)(&player_spread_heat)[player_index * 0xd8];
@@ -19626,8 +19626,8 @@ LAB_00425fa1:
         (&player_spread_heat)[player_index * 0xd8] = 0x3ef5c28f;
       }
     }
-    if (((&player_health)[player_index * 0xd8] <= 20.0) && (iVar3 = _rand(), ((byte)iVar3 & 7) == 3)
-       ) {
+    if (((&player_health)[player_index * 0xd8] <= 20.0) &&
+       (iVar3 = crt_rand(), ((byte)iVar3 & 7) == 3)) {
       (&player_low_health_timer)[player_index * 0xd8] = 0;
     }
   }
@@ -19713,7 +19713,7 @@ LAB_0042634c:
             iVar6 = iVar6 + frame_dt_ms;
             (&creature_link_index)[local_7c * 0x26] = iVar6;
             if (-1 < iVar6) {
-              uVar7 = _rand();
+              uVar7 = crt_rand();
               (&creature_ai_mode)[local_7c * 0x26] = 7;
               (&creature_link_index)[local_7c * 0x26] = (uVar7 & 0x1ff) + 500;
             }
@@ -19722,7 +19722,7 @@ LAB_0042634c:
             iVar6 = iVar6 - frame_dt_ms;
             (&creature_link_index)[local_7c * 0x26] = iVar6;
             if (iVar6 < 1) {
-              uVar7 = _rand();
+              uVar7 = crt_rand();
               (&creature_link_index)[local_7c * 0x26] = -700 - (uVar7 & 0x3ff);
             }
           }
@@ -19790,7 +19790,7 @@ LAB_0042634c:
               if (fVar16 - 15.0 < 0.0) {
                 plaguebearer_infection_count = plaguebearer_infection_count + 1;
                 creature_handle_death(local_7c,true);
-                uVar7 = _rand();
+                uVar7 = crt_rand();
                 uVar7 = uVar7 & 0x80000001;
                 if ((int)uVar7 < 0) {
                   uVar7 = (uVar7 - 1 | 0xfffffffe) + 1;
@@ -20139,7 +20139,7 @@ LAB_00426ac8:
               {
                 projectile_spawn(pfVar15,(float)(&creature_heading)[local_7c * 0x26],
                                  (&creature_orbit_radius)[local_7c * 0x26],local_7c);
-                uVar7 = _rand();
+                uVar7 = crt_rand();
                 fVar14 = sfx_plasmaminigun_fire;
                 local_60 = (float)(uVar7 & 3);
                 *pfVar3 = (float)(int)local_60 * 0.1 +
@@ -20168,7 +20168,7 @@ LAB_00426ac8:
               if ((0.0 < (float)(&player_health)[*pcVar4 * 0xd8]) && (_bonus_energizer_timer <= 0.0)
                  ) {
                 if (*pfVar3 <= 0.0) {
-                  uVar7 = _rand();
+                  uVar7 = crt_rand();
                   uVar7 = uVar7 & 0x80000001;
                   if ((int)uVar7 < 0) {
                     uVar7 = (uVar7 - 1 | 0xfffffffe) + 1;
@@ -20276,21 +20276,21 @@ LAB_0042733a:
               iVar6 = 8;
               do {
                 fVar16 = 0.0;
-                iVar8 = _rand();
+                iVar8 = crt_rand();
                 effect_spawn_blood_splatter(pfVar15,(float)(iVar8 % 0x264) * 0.01,fVar16);
                 iVar6 = iVar6 + -1;
               } while (iVar6 != 0);
               iVar6 = 6;
               do {
                 fVar16 = -0.07;
-                iVar8 = _rand();
+                iVar8 = crt_rand();
                 effect_spawn_blood_splatter(pfVar15,(float)(iVar8 % 0x264) * 0.01,fVar16);
                 iVar6 = iVar6 + -1;
               } while (iVar6 != 0);
               iVar6 = 5;
               do {
                 fVar16 = -0.12;
-                iVar8 = _rand();
+                iVar8 = crt_rand();
                 effect_spawn_blood_splatter(pfVar15,(float)(iVar8 % 0x264) * 0.01,fVar16);
                 iVar6 = iVar6 + -1;
               } while (iVar6 != 0);
@@ -20339,20 +20339,20 @@ void __cdecl fx_queue_add_random(float *pos)
       _fx_queue_random_color_a = 0x3f47ae14;
       crt_atexit(&DAT_00427830);
     }
-    uVar1 = _rand();
+    uVar1 = crt_rand();
     _fx_queue_random_color_r = (float)(uVar1 & 0xf) * 0.01 + 0.84;
     _fx_queue_random_color_g = _fx_queue_random_color_r;
     _fx_queue_random_color_b = _fx_queue_random_color_r;
-    iVar2 = _rand();
+    iVar2 = crt_rand();
     w = (float)(iVar2 % 0x18 + -0xc) + 30.0;
-    iVar2 = _rand();
+    iVar2 = crt_rand();
     rgba = (float *)&fx_queue_random_color_r;
     rotation = (float)(iVar2 % 0x274) * 0.01;
     local_8 = *pos - w * 0.5;
     local_4 = pos[1] - w * 0.5;
     pos_00 = &local_8;
     h = w;
-    iVar2 = _rand();
+    iVar2 = crt_rand();
     fx_queue_add(iVar2 % 5 + 3,pos_00,w,h,rotation,rgba);
   }
   return;
@@ -20596,7 +20596,7 @@ int creature_alloc_slot(void)
   do {
     if (*pcVar1 == '\0') {
       *(undefined4 *)(&creature_flags + iVar3 * 0x98) = 0;
-      uVar2 = _rand();
+      uVar2 = crt_rand();
       (&creature_phase_seed)[iVar3 * 0x26] = uVar2 & 0x17f;
       (&DAT_0049bfac)[iVar3 * 0x26] = 0;
       (&creature_anim_phase)[iVar3 * 0x26] = 0;
@@ -20684,10 +20684,10 @@ int __cdecl creature_spawn(float *pos,float *tint_rgba,int type_id)
   (&creature_vel_x)[iVar2 * 0x26] = 0;
   (&creature_vel_y)[iVar2 * 0x26] = 0;
   (&creature_health)[iVar2 * 0x26] = fVar1 * 0.000100000005 + 10.0;
-  iVar3 = _rand();
+  iVar3 = crt_rand();
   (&creature_heading)[iVar2 * 0x26] = (float)(iVar3 % 0x13a) * 0.01;
   (&creature_move_speed)[iVar2 * 0x26] = (float)survival_elapsed_ms * 1.0000001e-05 + 2.5;
-  iVar3 = _rand();
+  iVar3 = crt_rand();
   (&creature_attack_cooldown)[iVar2 * 0x26] = 0;
   (&creature_reward_value)[iVar2 * 0x26] = (float)(iVar3 % 0x1e + 0x8c);
   (&creature_tint_r)[iVar2 * 0x26] = *tint_rgba;
@@ -21857,7 +21857,7 @@ LAB_0042b17a:
   (**(code **)(*grim_interface_ptr + 0x20))();
   uStack_58 = (uint)qpc_timestamp_scratch;
   QueryPerformanceCounter((LARGE_INTEGER *)&uStack_58);
-  FUN_00461739(uStack_58);
+  crt_srand(uStack_58);
   gameplay_reset_state();
   DAT_004aaed9 = 1;
   terrain_generate_random();
@@ -21884,7 +21884,7 @@ int crimsonland_main(void)
 
 {
   char cVar1;
-  DWORD DVar2;
+  uint uVar2;
   int iVar3;
   HRESULT HVar4;
   IDirect3D8 *This;
@@ -21899,7 +21899,6 @@ int crimsonland_main(void)
   LONG LVar12;
   uint uVar13;
   undefined4 *puVar14;
-  uint uVar15;
   char *filename;
   char *filename_00;
   char *filename_01;
@@ -21918,7 +21917,7 @@ int crimsonland_main(void)
   char *extraout_EDX_05;
   char *extraout_EDX_06;
   char *extraout_EDX_07;
-  LPCCH pCVar16;
+  LPCCH pCVar15;
   HKEY pHStack_5bc;
   undefined4 uStack_5b8;
   undefined4 uStack_5b4;
@@ -21932,8 +21931,8 @@ int crimsonland_main(void)
   char local_40c [12];
   WCHAR local_400 [512];
   
-  DVar2 = FUN_004623b2((int *)0x0);
-  FUN_00461739(DVar2);
+  uVar2 = FUN_004623b2((int *)0x0);
+  crt_srand(uVar2);
   local_420[0] = 0;
   iVar3 = dx_get_version((int *)local_420,local_40c,10);
   if (iVar3 < 0) {
@@ -22170,18 +22169,18 @@ int crimsonland_main(void)
   uStack_5b8 = 0;
   pHStack_5bc = (HKEY)0x0;
   (**(code **)(*grim_interface_ptr + 0x2c))();
-  uVar15 = DAT_00473a30;
+  uVar2 = DAT_00473a30;
   _key_char_count = 0;
   puVar10 = &key_char_buffer;
   for (uVar13 = DAT_00473a30 >> 2; uVar13 != 0; uVar13 = uVar13 - 1) {
     *puVar10 = 0;
     puVar10 = puVar10 + 1;
   }
-  for (uVar13 = uVar15 & 3; uVar13 != 0; uVar13 = uVar13 - 1) {
+  for (uVar13 = uVar2 & 3; uVar13 != 0; uVar13 = uVar13 - 1) {
     *(undefined1 *)puVar10 = 0;
     puVar10 = (undefined4 *)((int)puVar10 + 1);
   }
-  (**(code **)(*grim_interface_ptr + 0x54))(&key_char_buffer,&key_char_count,uVar15);
+  (**(code **)(*grim_interface_ptr + 0x54))(&key_char_buffer,&key_char_count,uVar2);
   config_sync_from_grim();
   puVar14 = &player_move_key_backward;
   puVar10 = &config_keybind_table_p2;
@@ -22238,15 +22237,15 @@ int crimsonland_main(void)
       puVar10 = puVar10 + 1;
     }
     *(undefined2 *)puVar10 = 0;
-    uVar15 = 0xffffffff;
-    pCVar16 = DAT_004d11f4;
+    uVar2 = 0xffffffff;
+    pCVar15 = DAT_004d11f4;
     do {
-      if (uVar15 == 0) break;
-      uVar15 = uVar15 - 1;
-      cVar1 = *pCVar16;
-      pCVar16 = pCVar16 + 1;
+      if (uVar2 == 0) break;
+      uVar2 = uVar2 - 1;
+      cVar1 = *pCVar15;
+      pCVar15 = pCVar15 + 1;
     } while (cVar1 != '\0');
-    MultiByteToWideChar(0,1,DAT_004d11f4,~uVar15 - 1,(LPWSTR)&uStack_598,0x1ff);
+    MultiByteToWideChar(0,1,DAT_004d11f4,~uVar2 - 1,(LPWSTR)&uStack_598,0x1ff);
     HVar4 = HlinkNavigateString((IUnknown *)0x0,(LPCWSTR)&uStack_598);
     pcVar5 = extraout_EDX_06;
     if (HVar4 < 0) {
@@ -22729,17 +22728,17 @@ void __cdecl effect_spawn_blood_splatter(float *pos,float angle,float age)
     iVar2 = 2;
     fVar5 = (float10)fsin(fVar3);
     do {
-      uVar1 = _rand();
+      uVar1 = crt_rand();
       _effect_template_rotation = (float)(int)((uVar1 & 0x3f) - 0x20) * 0.1 + (float)fVar3;
-      uVar1 = _rand();
+      uVar1 = crt_rand();
       _effect_template_half_width = (float)((uVar1 & 7) + 1);
       _effect_template_half_height = _effect_template_half_width;
-      uVar1 = _rand();
+      uVar1 = crt_rand();
       effect_template_vel_x = (float)((uVar1 & 0x3f) + 100) * (float)fVar4;
-      uVar1 = _rand();
+      uVar1 = crt_rand();
       _effect_template_rotation_step = 0;
       effect_template_vel_y = (float)((uVar1 & 0x3f) + 100) * (float)fVar5;
-      uVar1 = _rand();
+      uVar1 = crt_rand();
       _effect_template_scale_step = (float)(uVar1 & 0x7f) * 0.03 + 0.1;
       effect_spawn(7,pos);
       iVar2 = iVar2 + -1;
@@ -22768,26 +22767,26 @@ void __cdecl effect_spawn_freeze_shard(float *pos,float angle)
   _effect_template_color_g = 0x3f800000;
   _effect_template_color_b = 0x3f800000;
   _effect_template_color_a = 0x3f000000;
-  uVar2 = _rand();
+  uVar2 = crt_rand();
   _effect_template_age = 0;
   _effect_template_half_width = 8.0;
   _effect_template_half_height = 8.0;
   _effect_template_lifetime = (float)(uVar2 & 0xf) * 0.01 + 0.2;
   fVar1 = angle + 3.1415927;
-  iVar3 = _rand();
+  iVar3 = crt_rand();
   _effect_template_rotation = (float)(iVar3 % 100) * 0.01 + fVar1;
-  iVar3 = _rand();
+  iVar3 = crt_rand();
   _effect_template_half_width = (float)(iVar3 % 5 + 7);
   fVar4 = (float10)fcos((float10)fVar1);
   effect_template_vel_x = (float)(fVar4 * (float10)114.0);
   fVar4 = (float10)fsin((float10)fVar1);
   effect_template_vel_y = (float)(fVar4 * (float10)114.0);
   _effect_template_half_height = _effect_template_half_width;
-  iVar3 = _rand();
+  iVar3 = crt_rand();
   _effect_template_rotation_step = ((float)(iVar3 % 0x14) * 0.1 - 1.0) * 4.0;
-  uVar2 = _rand();
+  uVar2 = crt_rand();
   _effect_template_scale_step = (float)(int)-(uVar2 & 0xf) * 0.1;
-  iVar3 = _rand();
+  iVar3 = crt_rand();
   effect_spawn(iVar3 % 3 + 8,pos);
   return;
 }
@@ -22823,17 +22822,17 @@ void __cdecl effect_spawn_freeze_shatter(float *pos,float angle)
     effect_template_vel_x = (float)(fVar3 * (float10)42.0);
     fVar3 = (float10)fsin((float10)_effect_template_rotation);
     effect_template_vel_y = (float)(fVar3 * (float10)42.0);
-    iVar1 = _rand();
+    iVar1 = crt_rand();
     _effect_template_half_width = (float)(iVar1 % 10 + 0x12);
     _effect_template_half_height = _effect_template_half_width;
-    iVar1 = _rand();
+    iVar1 = crt_rand();
     _effect_template_rotation_step = ((float)(iVar1 % 0x14) * 0.1 - 1.0) * 1.9;
     effect_spawn(0xe,pos);
     local_14 = local_14 + 1;
   } while (local_14 < 4);
   iVar1 = 4;
   do {
-    iVar2 = _rand();
+    iVar2 = crt_rand();
     effect_spawn_freeze_shard(pos,(float)(iVar2 % 0x264) * 0.01);
     iVar1 = iVar1 + -1;
   } while (iVar1 != 0);
@@ -22864,13 +22863,13 @@ void __cdecl effect_spawn_burst(float *pos,int count)
   _effect_template_half_height = 0x42000000;
   if (0 < count) {
     do {
-      uVar1 = _rand();
+      uVar1 = crt_rand();
       _effect_template_rotation = (float)(uVar1 & 0x7f) * 0.049087387;
-      uVar1 = _rand();
+      uVar1 = crt_rand();
       effect_template_vel_x = (float)(int)((uVar1 & 0x7f) - 0x40);
-      uVar1 = _rand();
+      uVar1 = crt_rand();
       effect_template_vel_y = (float)(int)((uVar1 & 0x7f) - 0x40);
-      iVar2 = _rand();
+      iVar2 = crt_rand();
       _effect_template_scale_step = (float)(iVar2 % 100) * 0.01 + 0.1;
       effect_spawn(0,pos);
       count = count + -1;
@@ -22920,13 +22919,13 @@ void __cdecl FUN_0042f080(undefined4 *param_1)
     iVar3 = 2;
   }
   for (; iVar3 != 0; iVar3 = iVar3 + -1) {
-    uVar1 = _rand();
+    uVar1 = crt_rand();
     _effect_template_rotation = (float)(uVar1 & 0x7f) * 0.049087387;
-    uVar1 = _rand();
+    uVar1 = crt_rand();
     effect_template_vel_x = (float)(int)((uVar1 & 0x7f) - 0x40) * 1.4;
-    uVar1 = _rand();
+    uVar1 = crt_rand();
     effect_template_vel_y = (float)(int)((uVar1 & 0x7f) - 0x40) * 1.4;
-    iVar2 = _rand();
+    iVar2 = crt_rand();
     _effect_template_scale_step = (float)(iVar2 % 100) * 0.01 + 0.1;
     effect_spawn(0,(float *)param_1);
   }
@@ -23023,15 +23022,15 @@ void __cdecl FUN_0042f3f0(float *param_1,undefined4 param_2,int param_3)
   if (0 < param_3) {
     lVar6 = __ftol();
     do {
-      uVar2 = _rand();
+      uVar2 = crt_rand();
       fVar1 = (float)(uVar2 & 0x1ff) * 0.001953125 * 6.2831855;
-      iVar3 = _rand();
+      iVar3 = crt_rand();
       fVar4 = (float10)(iVar3 % (int)lVar6);
       fVar5 = (float10)fcos((float10)fVar1);
       local_10 = (float)(fVar5 * fVar4 + (float10)*param_1);
       fVar5 = (float10)fsin((float10)fVar1);
       local_c = (float)(fVar5 * fVar4 + (float10)param_1[1]);
-      uVar2 = _rand();
+      uVar2 = crt_rand();
       _effect_template_age = (float)(int)-(uVar2 & 0xff) * 0.0012;
       _effect_template_lifetime = 0.1 - _effect_template_age;
       effect_spawn(0,&local_10);
@@ -23076,13 +23075,13 @@ void __cdecl FUN_0042f540(undefined4 *param_1,float param_2)
   }
   if (0 < iVar2) {
     do {
-      uVar3 = _rand();
+      uVar3 = crt_rand();
       _effect_template_rotation = (float)(uVar3 & 0x7f) * 0.049087387;
-      uVar3 = _rand();
+      uVar3 = crt_rand();
       effect_template_vel_x = (float)(int)((uVar3 & 0x7f) - 0x40) * fVar1 * 1.4;
-      uVar3 = _rand();
+      uVar3 = crt_rand();
       effect_template_vel_y = (float)(int)((uVar3 & 0x7f) - 0x40) * fVar1 * 1.4;
-      iVar4 = _rand();
+      iVar4 = crt_rand();
       _effect_template_scale_step = ((float)(iVar4 % 100) * 0.01 + 0.1) * fVar1;
       effect_spawn(0,(float *)param_1);
       iVar2 = iVar2 + -1;
@@ -23136,7 +23135,7 @@ void __cdecl effect_spawn_explosion_burst(float *pos,float scale)
       _effect_template_half_height = 0x42000000;
       _effect_template_age = (float)(int)pos * 0.2 - 0.5;
       _effect_template_lifetime = (float)(int)pos * 0.2 + 0.6;
-      iVar1 = _rand();
+      iVar1 = crt_rand();
       _effect_template_rotation_step = 1.4;
       _effect_template_rotation = (float)(iVar1 % 0x266) * 0.02;
       _effect_template_scale_step = scale * 5.0;
@@ -23174,15 +23173,15 @@ void __cdecl effect_spawn_explosion_burst(float *pos,float scale)
     iVar1 = (3 < config_detail_preset) + 3;
   }
   for (; iVar1 != 0; iVar1 = iVar1 + -1) {
-    iVar2 = _rand();
+    iVar2 = crt_rand();
     _effect_template_rotation = (float)(iVar2 % 0x13a) * 0.02;
-    uVar3 = _rand();
+    uVar3 = crt_rand();
     effect_template_vel_x = (float)(int)((uVar3 & 0x3f) * 2 + -0x40);
-    uVar3 = _rand();
+    uVar3 = crt_rand();
     effect_template_vel_y = (float)(int)((uVar3 & 0x3f) * 2 + -0x40);
-    iVar2 = _rand();
+    iVar2 = crt_rand();
     _effect_template_scale_step = (float)(iVar2 - 3U & 7) * scale;
-    iVar2 = _rand();
+    iVar2 = crt_rand();
     _effect_template_rotation_step = (float)(iVar2 + 3U & 7);
     effect_spawn(0xc,pos_00);
   }
@@ -23196,7 +23195,7 @@ void __cdecl effect_spawn_explosion_burst(float *pos,float scale)
 void FUN_0042faa0(void)
 
 {
-  FUN_00461981(&perk_name_table,0x14,0x80,&LAB_0042fac0);
+  crt_ehvec_ctor(&perk_name_table,0x14,0x80,&LAB_0042fac0,FUN_00412410);
   return;
 }
 
@@ -23263,7 +23262,7 @@ int perk_select_random(void)
   
   iVar3 = 1;
   do {
-    iVar1 = _rand();
+    iVar1 = crt_rand();
     iVar1 = iVar1 % DAT_004c2c38 + 1;
     if ((&perk_available_table)[iVar1 * 0x14] != '\0') {
       iVar2 = perk_can_offer(iVar1);
@@ -23905,7 +23904,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
   pfVar3 = pos;
   iVar4 = creature_alloc_slot();
   if (heading == -100.0) {
-    iVar5 = _rand();
+    iVar5 = crt_rand();
     heading = (float)(iVar5 % 0x274) * 0.01;
   }
   iVar8 = iVar4 * 0x98;
@@ -23922,7 +23921,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
   (&creature_state_flag)[iVar8] = 1;
   (&creature_hitbox_size)[iVar4 * 0x26] = 0x41800000;
   (&creature_vel_y)[iVar4 * 0x26] = 0;
-  iVar5 = _rand();
+  iVar5 = crt_rand();
   (&creature_attack_cooldown)[iVar4 * 0x26] = 0;
   (&creature_heading)[iVar4 * 0x26] = (float)(iVar5 % 0x13a) * 0.01;
   if (template_id == 0x12) {
@@ -24576,7 +24575,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                         (&creature_move_speed)[iVar4 * 0x26] = 0x4019999a;
                         (&creature_reward_value)[iVar4 * 0x26] = 0x42fa0000;
                         (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                        iVar5 = _rand();
+                        iVar5 = crt_rand();
                         fVar2 = (float)(iVar5 % 0x28);
                       }
                       else if (template_id == 0x1b) {
@@ -24587,43 +24586,43 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                         (&creature_move_speed)[iVar4 * 0x26] = 0x4019999a;
                         (&creature_reward_value)[iVar4 * 0x26] = 0x42fa0000;
                         (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                        iVar5 = _rand();
+                        iVar5 = crt_rand();
                         fVar2 = (float)(iVar5 % 0x28);
                       }
                       else {
                         if (template_id != 0x1c) {
                           if (template_id == 0x41) {
                             (&creature_type_id)[iVar4 * 0x26] = 0;
-                            iVar5 = _rand();
+                            iVar5 = crt_rand();
                             (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
                             fVar2 = (float)(iVar5 % 0x1e + 0x28);
                             (&creature_size)[iVar4 * 0x26] = fVar2;
                             (&creature_health)[iVar4 * 0x26] = fVar2 * 1.1428572 + 10.0;
                             (&creature_move_speed)[iVar4 * 0x26] = fVar2 * 0.0025 + 0.9;
                             (&creature_reward_value)[iVar4 * 0x26] = fVar2 + fVar2 + 50.0;
-                            iVar5 = _rand();
+                            iVar5 = crt_rand();
                             fVar2 = (float)(iVar5 % 0x28) * 0.01 + 0.6;
                             (&creature_tint_r)[iVar4 * 0x26] = fVar2;
                             (&creature_tint_g)[iVar4 * 0x26] = fVar2;
                             (&creature_tint_b)[iVar4 * 0x26] = fVar2;
-                            iVar5 = _rand();
+                            iVar5 = crt_rand();
                             (&creature_contact_damage)[iVar4 * 0x26] = (float)(iVar5 % 10) + 4.0;
                             goto LAB_004310b8;
                           }
                           if (template_id == 0x31) {
                             (&creature_type_id)[iVar4 * 0x26] = 1;
-                            iVar5 = _rand();
+                            iVar5 = crt_rand();
                             fVar2 = (float)(iVar5 % 0x1e + 0x28);
                             (&creature_size)[iVar4 * 0x26] = fVar2;
                             (&creature_health)[iVar4 * 0x26] = fVar2 * 1.1428572 + 10.0;
-                            iVar5 = _rand();
+                            iVar5 = crt_rand();
                             (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
                             (&creature_move_speed)[iVar4 * 0x26] = (float)(iVar5 % 0x12) * 0.1 + 1.1
                             ;
                             (&creature_reward_value)[iVar4 * 0x26] =
                                  (float)(&creature_size)[iVar4 * 0x26] +
                                  (float)(&creature_size)[iVar4 * 0x26] + 50.0;
-                            iVar5 = _rand();
+                            iVar5 = crt_rand();
                             (&creature_tint_b)[iVar4 * 0x26] = 0x3ec28f5c;
                             fVar2 = (float)(iVar5 % 0x1e) * 0.01 + 0.6;
                             (&creature_tint_r)[iVar4 * 0x26] = fVar2;
@@ -24633,57 +24632,57 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                             if (template_id != 0x32) {
                               if (template_id == 0x33) {
                                 (&creature_type_id)[iVar4 * 0x26] = 3;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 fVar2 = (float)(iVar5 % 0xf + 0x2d);
                                 (&creature_size)[iVar4 * 0x26] = fVar2;
                                 (&creature_health)[iVar4 * 0x26] = fVar2 * 1.1428572 + 20.0;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
                                 (&creature_move_speed)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0x12) * 0.1 + 1.1;
                                 (&creature_reward_value)[iVar4 * 0x26] =
                                      (float)(&creature_size)[iVar4 * 0x26] +
                                      (float)(&creature_size)[iVar4 * 0x26] + 50.0;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_g)[iVar4 * 0x26] = 0x3f000000;
                                 (&creature_tint_b)[iVar4 * 0x26] = 0x3f000000;
                                 (&creature_tint_r)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0x28) * 0.01 + 0.6;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_contact_damage)[iVar4 * 0x26] = (float)(iVar5 % 10) + 4.0
                                 ;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 0x34) {
                                 (&creature_type_id)[iVar4 * 0x26] = 3;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 fVar2 = (float)(iVar5 % 0x14 + 0x28);
                                 (&creature_size)[iVar4 * 0x26] = fVar2;
                                 (&creature_health)[iVar4 * 0x26] = fVar2 * 1.1428572 + 20.0;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
                                 (&creature_move_speed)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0x12) * 0.1 + 1.1;
                                 (&creature_reward_value)[iVar4 * 0x26] =
                                      (float)(&creature_size)[iVar4 * 0x26] +
                                      (float)(&creature_size)[iVar4 * 0x26] + 50.0;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_r)[iVar4 * 0x26] = 0x3f000000;
                                 (&creature_tint_b)[iVar4 * 0x26] = 0x3f000000;
                                 (&creature_tint_g)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0x28) * 0.01 + 0.6;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_contact_damage)[iVar4 * 0x26] = (float)(iVar5 % 10) + 4.0
                                 ;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 0x20) {
                                 (&creature_type_id)[iVar4 * 0x26] = 2;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 fVar2 = (float)(iVar5 % 0x1e + 0x28);
                                 (&creature_size)[iVar4 * 0x26] = fVar2;
                                 (&creature_health)[iVar4 * 0x26] = fVar2 * 1.1428572 + 20.0;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
                                 (&creature_tint_r)[iVar4 * 0x26] = 0x3e99999a;
                                 (&creature_move_speed)[iVar4 * 0x26] =
@@ -24691,22 +24690,22 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                                 (&creature_reward_value)[iVar4 * 0x26] =
                                      (float)(&creature_size)[iVar4 * 0x26] +
                                      (float)(&creature_size)[iVar4 * 0x26] + 50.0;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_b)[iVar4 * 0x26] = 0x3e99999a;
                                 (&creature_tint_g)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0x28) * 0.01 + 0.6;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_contact_damage)[iVar4 * 0x26] = (float)(iVar5 % 10) + 4.0
                                 ;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 3) {
                                 (&creature_type_id)[iVar4 * 0x26] = 3;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 fVar2 = (float)(iVar5 % 0xf + 0x26);
                                 (&creature_size)[iVar4 * 0x26] = fVar2;
                                 (&creature_health)[iVar4 * 0x26] = fVar2 * 1.1428572 + 20.0;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
                                 (&creature_tint_r)[iVar4 * 0x26] = 0x3f19999a;
                                 (&creature_tint_g)[iVar4 * 0x26] = 0x3f19999a;
@@ -24715,7 +24714,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                                 (&creature_reward_value)[iVar4 * 0x26] =
                                      (float)(&creature_size)[iVar4 * 0x26] +
                                      (float)(&creature_size)[iVar4 * 0x26] + 50.0;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_b)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0x19) * 0.01 + 0.8;
                                 if (0.0 <= (float)(&creature_tint_r)[iVar4 * 0x26]) {
@@ -24750,18 +24749,18 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                                 else {
                                   (&creature_tint_a)[iVar4 * 0x26] = 0;
                                 }
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_contact_damage)[iVar4 * 0x26] = (float)(iVar5 % 10) + 4.0
                                 ;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 5) {
                                 (&creature_type_id)[iVar4 * 0x26] = 4;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 fVar2 = (float)(iVar5 % 0xf + 0x26);
                                 (&creature_size)[iVar4 * 0x26] = fVar2;
                                 (&creature_health)[iVar4 * 0x26] = fVar2 * 1.1428572 + 20.0;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
                                 (&creature_tint_r)[iVar4 * 0x26] = 0x3f19999a;
                                 (&creature_tint_g)[iVar4 * 0x26] = 0x3f19999a;
@@ -24770,7 +24769,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                                 (&creature_reward_value)[iVar4 * 0x26] =
                                      (float)(&creature_size)[iVar4 * 0x26] +
                                      (float)(&creature_size)[iVar4 * 0x26] + 50.0;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_b)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0x19) * 0.01 + 0.8;
                                 if (0.0 <= (float)(&creature_tint_r)[iVar4 * 0x26]) {
@@ -24805,18 +24804,18 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                                 else {
                                   (&creature_tint_a)[iVar4 * 0x26] = 0;
                                 }
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_contact_damage)[iVar4 * 0x26] = (float)(iVar5 % 10) + 4.0
                                 ;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 4) {
                                 (&creature_type_id)[iVar4 * 0x26] = 1;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 fVar2 = (float)(iVar5 % 0xf + 0x26);
                                 (&creature_size)[iVar4 * 0x26] = fVar2;
                                 (&creature_health)[iVar4 * 0x26] = fVar2 * 1.1428572 + 20.0;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
                                 (&creature_tint_r)[iVar4 * 0x26] = 0x3f2b851f;
                                 (&creature_tint_g)[iVar4 * 0x26] = 0x3f2b851f;
@@ -24826,18 +24825,18 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                                 (&creature_reward_value)[iVar4 * 0x26] =
                                      (float)(&creature_size)[iVar4 * 0x26] +
                                      (float)(&creature_size)[iVar4 * 0x26] + 50.0;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_contact_damage)[iVar4 * 0x26] = (float)(iVar5 % 10) + 4.0
                                 ;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 6) {
                                 (&creature_type_id)[iVar4 * 0x26] = 2;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 fVar2 = (float)(iVar5 % 0xf + 0x26);
                                 (&creature_size)[iVar4 * 0x26] = fVar2;
                                 (&creature_health)[iVar4 * 0x26] = fVar2 * 1.1428572 + 20.0;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
                                 (&creature_tint_r)[iVar4 * 0x26] = 0x3f19999a;
                                 (&creature_tint_g)[iVar4 * 0x26] = 0x3f19999a;
@@ -24846,7 +24845,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                                 (&creature_reward_value)[iVar4 * 0x26] =
                                      (float)(&creature_size)[iVar4 * 0x26] +
                                      (float)(&creature_size)[iVar4 * 0x26] + 50.0;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_b)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0x19) * 0.01 + 0.8;
                                 if (0.0 <= (float)(&creature_tint_r)[iVar4 * 0x26]) {
@@ -24881,18 +24880,18 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                                 else {
                                   (&creature_tint_a)[iVar4 * 0x26] = 0;
                                 }
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_contact_damage)[iVar4 * 0x26] = (float)(iVar5 % 10) + 4.0
                                 ;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 0x35) {
                                 (&creature_type_id)[iVar4 * 0x26] = 4;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 fVar2 = (float)(iVar5 % 10 + 0x1e);
                                 (&creature_size)[iVar4 * 0x26] = fVar2;
                                 (&creature_health)[iVar4 * 0x26] = fVar2 * 1.1428572 + 20.0;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
                                 (&creature_tint_b)[iVar4 * 0x26] = 0x3f4ccccd;
                                 (&creature_move_speed)[iVar4 * 0x26] =
@@ -24900,38 +24899,38 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                                 (&creature_reward_value)[iVar4 * 0x26] =
                                      (float)(&creature_size)[iVar4 * 0x26] +
                                      (float)(&creature_size)[iVar4 * 0x26] + 50.0;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_r)[iVar4 * 0x26] = 0x3f4ccccd;
                                 (&creature_tint_g)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0x14) * 0.01 + 0.8;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_contact_damage)[iVar4 * 0x26] = (float)(iVar5 % 10) + 4.0
                                 ;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 0x2e) {
                                 (&creature_type_id)[iVar4 * 0x26] = 1;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 fVar2 = (float)(iVar5 % 0x1e + 0x28);
                                 (&creature_size)[iVar4 * 0x26] = fVar2;
                                 (&creature_health)[iVar4 * 0x26] = fVar2 * 1.1428572 + 20.0;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
                                 (&creature_move_speed)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0x12) * 0.1 + 1.1;
                                 (&creature_reward_value)[iVar4 * 0x26] =
                                      (float)(&creature_size)[iVar4 * 0x26] +
                                      (float)(&creature_size)[iVar4 * 0x26] + 50.0;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_r)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0x28) * 0.01 + 0.6;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_g)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0x28) * 0.01 + 0.6;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_b)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0x28) * 0.01 + 0.6;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_contact_damage)[iVar4 * 0x26] = (float)(iVar5 % 10) + 4.0
                                 ;
                                 goto LAB_004310b8;
@@ -24945,7 +24944,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                                 (&creature_move_speed)[iVar4 * 0x26] = 0x3fe66666;
                                 (&creature_reward_value)[iVar4 * 0x26] = 0x43160000;
                                 (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_g)[iVar4 * 0x26] = (float)(iVar5 % 5) * 0.01 + 0.65;
                                 (&creature_tint_r)[iVar4 * 0x26] = 0x3f266666;
                                 (&creature_tint_b)[iVar4 * 0x26] = 0x3f733333;
@@ -24954,81 +24953,81 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                               }
                               if (template_id == 0x1d) {
                                 (&creature_type_id)[iVar4 * 0x26] = 2;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 fVar2 = (float)(iVar5 % 0x14 + 0x23);
                                 (&creature_size)[iVar4 * 0x26] = fVar2;
                                 (&creature_health)[iVar4 * 0x26] = fVar2 * 1.1428572 + 10.0;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_move_speed)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0xf) * 0.1 + 1.1;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_reward_value)[iVar4 * 0x26] = (float)(iVar5 % 100 + 0x32)
                                 ;
                                 (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_r)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0x32) * 0.001 + 0.6;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_g)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0x32) * 0.01 + 0.5;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_b)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0x32) * 0.001 + 0.6;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_contact_damage)[iVar4 * 0x26] = (float)(iVar5 % 10) + 4.0
                                 ;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 0x1e) {
                                 (&creature_type_id)[iVar4 * 0x26] = 2;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 fVar2 = (float)(iVar5 % 0x1e + 0x23);
                                 (&creature_size)[iVar4 * 0x26] = fVar2;
                                 (&creature_health)[iVar4 * 0x26] = fVar2 * 2.2857144 + 10.0;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_move_speed)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0x11) * 0.1 + 1.5;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_reward_value)[iVar4 * 0x26] = (float)(iVar5 % 200 + 0x32)
                                 ;
                                 (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_r)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0x32) * 0.001 + 0.6;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_g)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0x32) * 0.001 + 0.6;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_b)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0x32) * 0.01 + 0.5;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_contact_damage)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0x1e) + 4.0;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 0x1f) {
                                 (&creature_type_id)[iVar4 * 0x26] = 2;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 fVar2 = (float)(iVar5 % 0x1e + 0x2d);
                                 (&creature_size)[iVar4 * 0x26] = fVar2;
                                 (&creature_health)[iVar4 * 0x26] = fVar2 * 3.7142856 + 30.0;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_move_speed)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0x15) * 0.1 + 1.6;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_reward_value)[iVar4 * 0x26] = (float)(iVar5 % 200 + 0x50)
                                 ;
                                 (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_r)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0x32) * 0.01 + 0.5;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_g)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0x32) * 0.001 + 0.6;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_tint_b)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0x32) * 0.001 + 0.6;
-                                iVar5 = _rand();
+                                iVar5 = crt_rand();
                                 (&creature_contact_damage)[iVar4 * 0x26] =
                                      (float)(iVar5 % 0x23) + 8.0;
                                 goto LAB_004310b8;
@@ -25251,12 +25250,12 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                                       (&creature_move_speed)[iVar4 * 0x26] = 0x40266666;
                                       (&creature_reward_value)[iVar4 * 0x26] = 0x42f00000;
                                       (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                      iVar5 = _rand();
+                                      iVar5 = crt_rand();
                                       fVar2 = (float)(iVar5 % 0x14) * 0.01 + 0.8;
                                       (&creature_tint_r)[iVar4 * 0x26] = fVar2;
                                       (&creature_tint_b)[iVar4 * 0x26] = fVar2;
                                       (&creature_tint_g)[iVar4 * 0x26] = fVar2;
-                                      iVar5 = _rand();
+                                      iVar5 = crt_rand();
                                       fVar2 = (float)(iVar5 % 7 + 0x2d);
                                       (&creature_size)[iVar4 * 0x26] = fVar2;
                                       (&creature_contact_damage)[iVar4 * 0x26] = fVar2 * 0.22;
@@ -25309,7 +25308,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                                       (&creature_tint_g)[iVar4 * 0x26] = 0x3f400000;
                                       (&creature_tint_b)[iVar4 * 0x26] = 0x3dcccccd;
                                       (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                      uVar7 = _rand();
+                                      uVar7 = crt_rand();
                                       uVar7 = uVar7 & 0x80000003;
                                       if ((int)uVar7 < 0) {
                                         uVar7 = (uVar7 - 1 | 0xfffffffc) + 1;
@@ -25329,7 +25328,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                                       (&creature_tint_g)[iVar4 * 0x26] = 0x3f400000;
                                       (&creature_tint_b)[iVar4 * 0x26] = 0x3dcccccd;
                                       (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                      uVar7 = _rand();
+                                      uVar7 = crt_rand();
                                       uVar7 = uVar7 & 0x80000003;
                                       if ((int)uVar7 < 0) {
                                         uVar7 = (uVar7 - 1 | 0xfffffffc) + 1;
@@ -25349,7 +25348,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                                       (&creature_tint_g)[iVar4 * 0x26] = 0x3f266666;
                                       (&creature_tint_b)[iVar4 * 0x26] = 0x3dcccccd;
                                       (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                      uVar7 = _rand();
+                                      uVar7 = crt_rand();
                                       uVar7 = uVar7 & 0x80000003;
                                       if ((int)uVar7 < 0) {
                                         uVar7 = (uVar7 - 1 | 0xfffffffc) + 1;
@@ -25444,18 +25443,18 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                               goto LAB_004310b8;
                             }
                             (&creature_type_id)[iVar4 * 0x26] = 3;
-                            iVar5 = _rand();
+                            iVar5 = crt_rand();
                             fVar2 = (float)(iVar5 % 0x19 + 0x28);
                             (&creature_size)[iVar4 * 0x26] = fVar2;
                             (&creature_health)[iVar4 * 0x26] = fVar2 + 10.0;
-                            iVar5 = _rand();
+                            iVar5 = crt_rand();
                             (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
                             (&creature_move_speed)[iVar4 * 0x26] = (float)(iVar5 % 0x11) * 0.1 + 1.1
                             ;
                             (&creature_reward_value)[iVar4 * 0x26] =
                                  (float)(&creature_size)[iVar4 * 0x26] +
                                  (float)(&creature_size)[iVar4 * 0x26] + 50.0;
-                            iVar5 = _rand();
+                            iVar5 = crt_rand();
                             fVar2 = (float)(iVar5 % 0x28) * 0.01 + 0.6;
                             (&creature_tint_r)[iVar4 * 0x26] = fVar2;
                             (&creature_tint_g)[iVar4 * 0x26] = fVar2;
@@ -25472,7 +25471,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                         (&creature_move_speed)[iVar4 * 0x26] = 0x4019999a;
                         (&creature_reward_value)[iVar4 * 0x26] = 0x42fa0000;
                         (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                        iVar5 = _rand();
+                        iVar5 = crt_rand();
                         fVar2 = (float)(iVar5 % 0x28);
                       }
                       fVar2 = fVar2 * 0.01 + 0.5;
@@ -25885,7 +25884,7 @@ float __cdecl FUN_00436350(int param_1,int *param_2)
     puVar2[3] = 0x1d;
     puVar2[4] = (int)fVar7 + 200;
     puVar2[5] = 6;
-    iVar3 = _rand();
+    iVar3 = crt_rand();
     fVar4 = (float)(iVar3 / 5);
     if (iVar3 % 5 == 3) {
       pfVar1 = (float *)(param_1 + iVar6 * 0x18);
@@ -26538,7 +26537,7 @@ void __cdecl quest_start_selected(int tier,int index)
   highscore_month = 0;
   highscore_day = 0;
   highscore_flags = 0;
-  _DAT_00487078 = _rand();
+  _DAT_00487078 = crt_rand();
   _DAT_00487078 = _DAT_00487078 & 0xfee050f;
   projectile_reset_pools();
   player_pos_x = (float)terrain_texture_width * 0.5;
@@ -26830,7 +26829,7 @@ int __cdecl highscore_update_record(char *path,byte *record)
   local_4 = 0;
   local_2 = 0x7c;
   local_1 = 0xff;
-  local_10 = _rand();
+  local_10 = crt_rand();
   local_10 = local_10 & 0xfee050f;
   fp = crt_fopen(path,&DAT_00477b68);
   uVar5 = 0;
@@ -26919,7 +26918,7 @@ void __cdecl highscore_write_record(byte *record,FILE *fp)
   local_4 = 0;
   local_2 = 0x7c;
   local_1 = 0xff;
-  uVar3 = _rand();
+  uVar3 = crt_rand();
   local_10 = uVar3 & 0xfee050f;
   if (record[0x40] == 0) {
     record[0x40] = (byte)local_system_day;
@@ -27081,7 +27080,7 @@ void highscore_load_table(void)
   bStack_4 = 0;
   uStack_2 = 0x7c;
   local_1 = 0xff;
-  local_10 = _rand();
+  local_10 = crt_rand();
   local_10 = local_10 & 0xfee050f;
   pcVar3 = highscore_build_path();
   DAT_004c395c = 0;
@@ -27121,7 +27120,7 @@ void highscore_load_table(void)
     puVar11[-2] = 0;
     *puVar11 = 0x7c;
     puVar11[1] = 0xff;
-    uVar8 = _rand();
+    uVar8 = crt_rand();
     *(uint *)(puVar11 + -0xe) = uVar8 & 0xfee050f;
     puVar11 = puVar11 + 0x48;
   } while ((int)puVar11 < 0x484776);
@@ -27549,7 +27548,7 @@ void highscore_record_init(void)
   highscore_record_quest_major = quest_stage_major;
   highscore_record_quest_minor = quest_stage_minor;
   highscore_flags = 0;
-  uVar2 = _rand();
+  uVar2 = crt_rand();
   uVar2 = uVar2 & 0x8fffffff;
   if ((int)uVar2 < 0) {
     uVar2 = (uVar2 - 1 | 0xf0000000) + 1;
@@ -28079,7 +28078,7 @@ int __cdecl sfx_entry_start_playback(int entry)
       uVar4 = uVar4 + 1;
       piVar3 = piVar3 + 1;
     } while ((int)uVar4 < 0x10);
-    uVar4 = _rand();
+    uVar4 = crt_rand();
     uVar4 = uVar4 & 0x8000000f;
     if ((int)uVar4 < 0) {
       uVar4 = (uVar4 - 1 | 0xfffffff0) + 1;
@@ -29209,7 +29208,7 @@ void __cdecl sfx_play_exclusive(int sfx_id)
         if (DAT_004cc8d0 == 0) {
           return;
         }
-        iVar2 = _rand();
+        iVar2 = crt_rand();
         DAT_004cc8d4 = '\x01';
         sfx_id = *(int *)(&music_playlist + (iVar2 % DAT_004cc8d0) * 4);
       }
@@ -30246,7 +30245,7 @@ int __cdecl ui_text_input_update(float *xy,int *input_state)
   else {
     (**(code **)(*grim_interface_ptr + 0x54))();
     if (iVar1 != 0) {
-      uVar3 = _rand();
+      uVar3 = crt_rand();
       uVar3 = uVar3 & 0x80000001;
       if ((int)uVar3 < 0) {
         uVar3 = (uVar3 - 1 | 0xfffffffe) + 1;
@@ -31154,7 +31153,7 @@ int __cdecl creature_spawn_tinted(float *pos,float *rgba,int type_id)
   (&creature_hitbox_size)[iVar3 * 0x26] = 0x41800000;
   (&creature_health)[iVar3 * 0x26] = 0x3f800000;
   (&creature_vel_y)[iVar3 * 0x26] = 0;
-  iVar4 = _rand();
+  iVar4 = crt_rand();
   (&creature_move_speed)[iVar3 * 0x26] = 0x3fd9999a;
   (&creature_reward_value)[iVar3 * 0x26] = 0x3f800000;
   (&creature_attack_cooldown)[iVar3 * 0x26] = 0;
@@ -31163,7 +31162,7 @@ int __cdecl creature_spawn_tinted(float *pos,float *rgba,int type_id)
   (&creature_tint_g)[iVar3 * 0x26] = rgba[1];
   (&creature_tint_b)[iVar3 * 0x26] = rgba[2];
   (&creature_tint_a)[iVar3 * 0x26] = rgba[3];
-  iVar4 = _rand();
+  iVar4 = crt_rand();
   (&creature_contact_damage)[iVar3 * 0x26] = 0x42c80000;
   (&creature_max_health)[iVar3 * 0x26] = (&creature_health)[iVar3 * 0x26];
   fVar2 = (float)(iVar4 % 0x14) + 47.0;
@@ -31264,8 +31263,8 @@ void __cdecl player_fire_weapon(char param_1,char param_2)
         fVar8 = (float10)fsin(fVar8);
         fVar1 = (float)(fVar8 * (float10)16.0);
         if ((*(byte *)(&DAT_004d7a94 + (&player_weapon_id)[iVar5 * 0xd8] * 0x1f) & 1) != 0) {
-          _rand();
-          _rand();
+          crt_rand();
+          crt_rand();
           iVar5 = render_overlay_player_index;
         }
         if (1.0 < (float)(&player_muzzle_flash_alpha)[iVar5 * 0xd8]) {
@@ -31302,10 +31301,10 @@ void __cdecl player_fire_weapon(char param_1,char param_2)
             iVar9 = 3;
             local_8 = fVar1 + (float)(&player_pos_y)[render_overlay_player_index * 0xd8];
             local_c = fVar10 + (float)(&player_pos_x)[render_overlay_player_index * 0xd8];
-            iVar5 = _rand();
+            iVar5 = crt_rand();
             iVar5 = projectile_spawn(&local_c,(float)(iVar5 % 200 + -100) * 0.0013 + fVar2,iVar9,
                                      owner_id);
-            iVar9 = _rand();
+            iVar9 = crt_rand();
             iVar6 = iVar6 + -1;
             (&projectile_speed_scale)[iVar5 * 0x10] = (float)(iVar9 % 100) * 0.01 + 1.0;
           } while (iVar6 != 0);
@@ -31376,7 +31375,7 @@ char * __cdecl FUN_00444f70(char param_1)
   if (param_1 == '\0') {
     iVar2 = 0x33;
   }
-  iVar1 = _rand();
+  iVar1 = crt_rand();
   switch(iVar1 % iVar2) {
   case 0:
     return &DAT_00478dfc;
@@ -31606,7 +31605,7 @@ LAB_004452a7:
   if (DAT_004d7584 < 1) {
     return &DAT_004d1228;
   }
-  iVar8 = _rand();
+  iVar8 = crt_rand();
   return &DAT_004d1228 + (iVar8 % DAT_004d7584) * 0x20;
 }
 
@@ -31688,10 +31687,10 @@ void __cdecl FUN_00445380(int param_1)
   do {
     if (highscore_score_xp < 0x79) {
 LAB_0044544d:
-      if (((highscore_score_xp < 0x51) || (iVar4 = _rand(), 0x4f < iVar4 % 100)) &&
-         ((highscore_score_xp < 0x3d || (iVar4 = _rand(), 0x27 < iVar4 % 100)))) {
-        if (((highscore_score_xp < 0x29) || (iVar4 = _rand(), 0x4f < iVar4 % 100)) &&
-           ((highscore_score_xp < 0x15 || (iVar4 = _rand(), 0x27 < iVar4 % 100)))) {
+      if (((highscore_score_xp < 0x51) || (iVar4 = crt_rand(), 0x4f < iVar4 % 100)) &&
+         ((highscore_score_xp < 0x3d || (iVar4 = crt_rand(), 0x27 < iVar4 % 100)))) {
+        if (((highscore_score_xp < 0x29) || (iVar4 = crt_rand(), 0x4f < iVar4 % 100)) &&
+           ((highscore_score_xp < 0x15 || (iVar4 = crt_rand(), 0x27 < iVar4 % 100)))) {
           dst = &DAT_004d152c + param_1 * 0x40;
           pcVar5 = FUN_00444f70('\0');
           crt_sprintf((char *)dst,&DAT_00471fc4,pcVar5);
@@ -31712,7 +31711,7 @@ LAB_0044544d:
       }
     }
     else {
-      iVar4 = _rand();
+      iVar4 = crt_rand();
       if (iVar4 % 100 < 10) {
         dst = &DAT_004d152c + param_1 * 0x40;
         pcVar5 = FUN_004451b0();
@@ -31740,7 +31739,8 @@ LAB_0044544d:
         }
       }
       else {
-        if ((highscore_score_xp < 0x79) || (iVar4 = _rand(), 0x4f < iVar4 % 100)) goto LAB_0044544d;
+        if ((highscore_score_xp < 0x79) || (iVar4 = crt_rand(), 0x4f < iVar4 % 100))
+        goto LAB_0044544d;
         dst = &DAT_004d152c + param_1 * 0x40;
         pcVar5 = FUN_00444f70('\0');
         pcVar6 = FUN_00444f70('\0');
@@ -31937,7 +31937,7 @@ void FUN_004457c0(void)
   iVar5 = console_input_poll();
   if ((iVar5 != 0) && (iVar5 != 0xd)) {
     if (iVar5 == 8) {
-      uVar7 = _rand();
+      uVar7 = crt_rand();
       uVar7 = uVar7 & 0x80000001;
       if ((int)uVar7 < 0) {
         uVar7 = (uVar7 - 1 | 0xfffffffe) + 1;
@@ -31958,7 +31958,7 @@ void FUN_004457c0(void)
         DAT_004d7588 = DAT_004d7588 + 1;
       }
       (&DAT_004d14a8)[DAT_004d7588] = 0;
-      uVar7 = _rand();
+      uVar7 = crt_rand();
       uVar7 = uVar7 & 0x80000001;
       if ((int)uVar7 < 0) {
         uVar7 = (uVar7 - 1 | 0xfffffffe) + 1;
@@ -35475,12 +35475,12 @@ int weapon_pick_random_available(void)
   uint uVar2;
   
   do {
-    iVar1 = _rand();
+    iVar1 = crt_rand();
     iVar1 = iVar1 % 0x21 + 1;
     if ((&DAT_00485544)[iVar1] != 0) {
-      uVar2 = _rand();
+      uVar2 = crt_rand();
       if ((uVar2 & 1) == 0) {
-        iVar1 = _rand();
+        iVar1 = crt_rand();
         iVar1 = iVar1 % 0x21 + 1;
       }
     }
@@ -42524,28 +42524,27 @@ int __cdecl crt_sprintf(char *dst,char *fmt,...)
 
 
 
-/* FUN_00461739 @ 00461739 */
+/* crt_srand @ 00461739 */
 
-void __cdecl FUN_00461739(DWORD param_1)
+/* sets the per-thread RNG seed (srand) */
+
+void __cdecl crt_srand(uint seed)
 
 {
   DWORD *pDVar1;
   
   pDVar1 = crt_get_thread_data();
-  pDVar1[5] = param_1;
+  pDVar1[5] = seed;
   return;
 }
 
 
 
-/* _rand @ 00461746 */
+/* crt_rand @ 00461746 */
 
-/* Library Function - Single Match
-    _rand
-   
-   Libraries: Visual Studio 2003 Release, Visual Studio 2005 Release, Visual Studio 2008 Release */
+/* returns a pseudo-random value using the per-thread seed (rand) */
 
-int __cdecl _rand(void)
+int __cdecl crt_rand(void)
 
 {
   DWORD *pDVar1;
@@ -42559,9 +42558,11 @@ int __cdecl _rand(void)
 
 
 
-/* FUN_00461768 @ 00461768 */
+/* crt_findfirst @ 00461768 */
 
-HANDLE __cdecl FUN_00461768(LPCSTR param_1,uint *param_2)
+/* CRT _findfirst wrapper over FindFirstFileA */
+
+HANDLE __cdecl crt_findfirst(char *pattern,uint *finddata)
 
 {
   HANDLE pvVar1;
@@ -42570,17 +42571,17 @@ HANDLE __cdecl FUN_00461768(LPCSTR param_1,uint *param_2)
   uint uVar4;
   _WIN32_FIND_DATAA local_144;
   
-  pvVar1 = FindFirstFileA(param_1,&local_144);
+  pvVar1 = FindFirstFileA(pattern,&local_144);
   if (pvVar1 != (HANDLE)0xffffffff) {
-    *param_2 = -(uint)(local_144.dwFileAttributes != 0x80) & local_144.dwFileAttributes;
+    *finddata = -(uint)(local_144.dwFileAttributes != 0x80) & local_144.dwFileAttributes;
     uVar4 = ___timet_from_ft((FILETIME *)&local_144.ftCreationTime);
-    param_2[1] = uVar4;
+    finddata[1] = uVar4;
     uVar4 = ___timet_from_ft((FILETIME *)&local_144.ftLastAccessTime);
-    param_2[2] = uVar4;
+    finddata[2] = uVar4;
     uVar4 = ___timet_from_ft((FILETIME *)&local_144.ftLastWriteTime);
-    param_2[3] = uVar4;
-    param_2[4] = local_144.nFileSizeLow;
-    crt_strcpy((char *)(param_2 + 5),local_144.cFileName);
+    finddata[3] = uVar4;
+    finddata[4] = local_144.nFileSizeLow;
+    crt_strcpy((char *)(finddata + 5),local_144.cFileName);
     return pvVar1;
   }
   DVar2 = GetLastError();
@@ -42606,9 +42607,11 @@ LAB_004617a6:
 
 
 
-/* FUN_00461835 @ 00461835 */
+/* crt_findnext @ 00461835 */
 
-undefined4 __cdecl FUN_00461835(HANDLE param_1,uint *param_2)
+/* CRT _findnext wrapper over FindNextFileA (returns 0/-1) */
+
+int __cdecl crt_findnext(HANDLE handle,uint *finddata)
 
 {
   WINBOOL WVar1;
@@ -42617,17 +42620,17 @@ undefined4 __cdecl FUN_00461835(HANDLE param_1,uint *param_2)
   uint uVar4;
   _WIN32_FIND_DATAA local_144;
   
-  WVar1 = FindNextFileA(param_1,&local_144);
+  WVar1 = FindNextFileA(handle,&local_144);
   if (WVar1 != 0) {
-    *param_2 = -(uint)(local_144.dwFileAttributes != 0x80) & local_144.dwFileAttributes;
+    *finddata = -(uint)(local_144.dwFileAttributes != 0x80) & local_144.dwFileAttributes;
     uVar4 = ___timet_from_ft((FILETIME *)&local_144.ftCreationTime);
-    param_2[1] = uVar4;
+    finddata[1] = uVar4;
     uVar4 = ___timet_from_ft((FILETIME *)&local_144.ftLastAccessTime);
-    param_2[2] = uVar4;
+    finddata[2] = uVar4;
     uVar4 = ___timet_from_ft((FILETIME *)&local_144.ftLastWriteTime);
-    param_2[3] = uVar4;
-    param_2[4] = local_144.nFileSizeLow;
-    crt_strcpy((char *)(param_2 + 5),local_144.cFileName);
+    finddata[3] = uVar4;
+    finddata[4] = local_144.nFileSizeLow;
+    crt_strcpy((char *)(finddata + 5),local_144.cFileName);
     return 0;
   }
   DVar2 = GetLastError();
@@ -42641,31 +42644,33 @@ LAB_0046186f:
       if (DVar2 == 8) {
         piVar3 = crt_errno_ptr();
         *piVar3 = 0xc;
-        return 0xffffffff;
+        return -1;
       }
       if (DVar2 != 0x12) goto LAB_0046186f;
     }
     piVar3 = crt_errno_ptr();
     *piVar3 = 2;
   }
-  return 0xffffffff;
+  return -1;
 }
 
 
 
-/* FUN_004618fd @ 004618fd */
+/* crt_findclose @ 004618fd */
 
-undefined4 __cdecl FUN_004618fd(HANDLE param_1)
+/* CRT _findclose wrapper over FindClose */
+
+int __cdecl crt_findclose(HANDLE handle)
 
 {
   WINBOOL WVar1;
   int *piVar2;
   
-  WVar1 = FindClose(param_1);
+  WVar1 = FindClose(handle);
   if (WVar1 == 0) {
     piVar2 = crt_errno_ptr();
     *piVar2 = 0x16;
-    return 0xffffffff;
+    return -1;
   }
   return 0;
 }
@@ -42703,9 +42708,11 @@ int __cdecl ___timet_from_ft(FILETIME *param_1)
 
 
 
-/* FUN_00461981 @ 00461981 */
+/* crt_ehvec_ctor @ 00461981 */
 
-void FUN_00461981(undefined4 param_1,undefined4 param_2,int param_3,undefined *param_4)
+/* MSVC __ehvec_ctor: constructs an array; uses dtor to unwind on exception */
+
+void crt_ehvec_ctor(void *ptr,uint size,int count,void *ctor,void *dtor)
 
 {
   int local_20;
@@ -42719,8 +42726,8 @@ void FUN_00461981(undefined4 param_1,undefined4 param_2,int param_3,undefined *p
   local_14 = ExceptionList;
   local_8 = 0;
   ExceptionList = &local_14;
-  for (local_20 = 0; local_20 < param_3; local_20 = local_20 + 1) {
-    (*(code *)param_4)();
+  for (local_20 = 0; local_20 < count; local_20 = local_20 + 1) {
+    (*ctor)();
   }
   local_8 = 0xffffffff;
   FUN_004619eb();
@@ -42738,17 +42745,19 @@ void FUN_004619eb(void)
   int unaff_EBP;
   
   if (*(int *)(unaff_EBP + -0x20) == 0) {
-    FUN_00461a83(*(undefined4 *)(unaff_EBP + 8),*(undefined4 *)(unaff_EBP + 0xc),
-                 *(int *)(unaff_EBP + -0x1c),*(undefined **)(unaff_EBP + 0x18));
+    crt_array_unwind(*(void **)(unaff_EBP + 8),*(uint *)(unaff_EBP + 0xc),
+                     *(int *)(unaff_EBP + -0x1c),*(void **)(unaff_EBP + 0x18));
   }
   return;
 }
 
 
 
-/* FUN_00461a03 @ 00461a03 */
+/* crt_ehvec_dtor @ 00461a03 */
 
-void FUN_00461a03(undefined4 param_1,undefined4 param_2,int param_3,undefined *param_4)
+/* MSVC __ehvec_dtor: destroys an array with exception handling */
+
+void crt_ehvec_dtor(void *ptr,uint size,int count,void *dtor)
 
 {
   void *local_14;
@@ -42762,9 +42771,9 @@ void FUN_00461a03(undefined4 param_1,undefined4 param_2,int param_3,undefined *p
   local_8 = 0;
   ExceptionList = &local_14;
   while( true ) {
-    param_3 = param_3 + -1;
-    if (param_3 < 0) break;
-    (*(code *)param_4)();
+    count = count + -1;
+    if (count < 0) break;
+    (*dtor)();
   }
   local_8 = 0xffffffff;
   FUN_00461a6b();
@@ -42782,17 +42791,19 @@ void FUN_00461a6b(void)
   int unaff_EBP;
   
   if (*(int *)(unaff_EBP + -0x1c) == 0) {
-    FUN_00461a83(*(undefined4 *)(unaff_EBP + 8),*(undefined4 *)(unaff_EBP + 0xc),
-                 *(int *)(unaff_EBP + 0x10),*(undefined **)(unaff_EBP + 0x14));
+    crt_array_unwind(*(void **)(unaff_EBP + 8),*(uint *)(unaff_EBP + 0xc),*(int *)(unaff_EBP + 0x10)
+                     ,*(void **)(unaff_EBP + 0x14));
   }
   return;
 }
 
 
 
-/* FUN_00461a83 @ 00461a83 */
+/* crt_array_unwind @ 00461a83 */
 
-void FUN_00461a83(undefined4 param_1,undefined4 param_2,int param_3,undefined *param_4)
+/* destructor loop used for array unwinding (backward walk) */
+
+void crt_array_unwind(void *ptr,uint size,int count,void *dtor)
 
 {
   void *local_14;
@@ -42806,9 +42817,9 @@ void FUN_00461a83(undefined4 param_1,undefined4 param_2,int param_3,undefined *p
   local_8 = 0;
   ExceptionList = &local_14;
   while( true ) {
-    param_3 = param_3 + -1;
-    if (param_3 < 0) break;
-    (*(code *)param_4)();
+    count = count + -1;
+    if (count < 0) break;
+    (*dtor)();
   }
   ExceptionList = local_14;
   return;
