@@ -3006,8 +3006,8 @@ void perks_generate_choices(void)
     puVar6 = puVar6 + 1;
   }
 LAB_004045be:
-  if ((((iVar5 == 0) && (_quest_stage_major == *DAT_004c3658)) &&
-      (_quest_stage_minor == DAT_004c3658[1])) &&
+  if ((((iVar5 == 0) && (_quest_stage_major == *quest_monster_vision_meta)) &&
+      (_quest_stage_minor == quest_monster_vision_meta[1])) &&
      (iVar3 = perk_count_get(perk_id_monster_vision), iVar3 == 0)) {
     iVar5 = 1;
     perk_choice_ids = perk_id_monster_vision;
@@ -3680,7 +3680,7 @@ void gameplay_render_world(void)
   int *piVar1;
   
   ui_transition_alpha = (float)ui_elements_timeline / (float)(DAT_0048eb48 - DAT_0048eb4c);
-  if (DAT_00487038 < 0x28) {
+  if (quest_unlock_index_full < 0x28) {
     if (player_weapon_id == 0x1d) {
       weapon_assign_player(0,1);
     }
@@ -4414,11 +4414,11 @@ LAB_00407129:
         }
         if (0x9c4 < DAT_00487088) {
           iVar2 = _quest_stage_minor + -10 + _quest_stage_major * 10;
-          if (DAT_00487034 < iVar2) {
-            DAT_00487034 = iVar2;
+          if (quest_unlock_index < iVar2) {
+            quest_unlock_index = iVar2;
           }
-          if ((config_full_version != '\0') && (DAT_00487038 < iVar2)) {
-            DAT_00487038 = iVar2;
+          if ((config_full_version != '\0') && (quest_unlock_index_full < iVar2)) {
+            quest_unlock_index_full = iVar2;
           }
           game_save_status();
           game_state_pending = 8;
@@ -8564,7 +8564,7 @@ void FUN_004120b0(void)
   DAT_00487194 = 0;
   demo_mode_active = 0;
   DAT_00486faa = 0;
-  DAT_00487034 = 0;
+  quest_unlock_index = 0;
   creature_active_count = 0;
   DAT_0048718c = 0;
   DAT_00487088 = 0xffffffff;
@@ -9049,22 +9049,22 @@ void game_save_status(void)
   path = FUN_00402bd0();
   fp = crt_fopen(path,mode);
   if (fp != (FILE *)0x0) {
-    DAT_00485540._0_2_ = (undefined2)DAT_00487034;
+    game_status_blob._0_2_ = (undefined2)quest_unlock_index;
     local_4 = 0;
     iVar4 = 0;
-    DAT_00485540._2_2_ = (undefined2)DAT_00487038;
+    game_status_blob._2_2_ = (undefined2)quest_unlock_index_full;
     uVar6 = 0;
     do {
-      cVar1 = *(char *)((int)&DAT_00485540 + iVar4);
+      cVar1 = *(char *)((int)&game_status_blob + iVar4);
       iVar5 = (cVar1 * 7 + iVar4) * (int)cVar1 + uVar6;
       cVar3 = (char)iVar4;
       uVar6 = uVar6 + 0x6f;
       local_4 = local_4 + 0xd + iVar5;
-      *(char *)((int)&DAT_00485540 + iVar4) =
+      *(char *)((int)&game_status_blob + iVar4) =
            ((cVar3 * '\a' + '\x0f') * cVar3 + '\x03') * cVar3 + cVar1 + 'o';
       iVar4 = iVar4 + 1;
     } while (uVar6 < 0x10b18);
-    crt_fwrite(&DAT_00485540,0x268,1,fp);
+    crt_fwrite(&game_status_blob,0x268,1,fp);
     crt_fwrite(&local_4,4,1,fp);
     crt_fclose(fp);
     if (*(float *)(DAT_00480864 + 0xc) != 0.0) {
@@ -9107,7 +9107,7 @@ void game_load_status(void)
   if (fp == (FILE *)0x0) {
     console_printf(&console_log_queue,(byte *)s_GAME_LoadStatus_FAILED__004736a0);
     console_printf(&console_log_queue,(byte *)s_Generating_new_file___00473688);
-    DAT_00485540 = 0;
+    game_status_blob = 0;
     game_sequence_load();
     game_save_status();
     game_sequence_load();
@@ -9122,16 +9122,16 @@ void game_load_status(void)
       return;
     }
     crt_fseek(fp,0,0);
-    crt_fread(&DAT_00485540,0x268,1,fp);
+    crt_fread(&game_status_blob,0x268,1,fp);
     local_4 = 0;
     crt_fread(&local_4,4,1,fp);
     iVar6 = 0;
     iVar3 = 0;
     do {
       cVar1 = (char)iVar3;
-      cVar1 = *(char *)((int)&DAT_00485540 + iVar3) +
+      cVar1 = *(char *)((int)&game_status_blob + iVar3) +
               (-0x6f - ((cVar1 * '\a' + '\x0f') * cVar1 + '\x03') * cVar1);
-      *(char *)((int)&DAT_00485540 + iVar3) = cVar1;
+      *(char *)((int)&game_status_blob + iVar3) = cVar1;
       iVar4 = (cVar1 * 7 + iVar3) * (int)cVar1 + uVar5;
       uVar5 = uVar5 + 0x6f;
       iVar3 = iVar3 + 1;
@@ -9143,8 +9143,8 @@ void game_load_status(void)
       game_sequence_load();
       return;
     }
-    DAT_00487038 = DAT_00485540 >> 0x10;
-    DAT_00487034 = DAT_00485540 & 0xffff;
+    quest_unlock_index_full = game_status_blob >> 0x10;
+    quest_unlock_index = game_status_blob & 0xffff;
     crt_fclose(fp);
     if (*(float *)(DAT_00480864 + 0xc) != 0.0) {
       console_printf(&console_log_queue,(byte *)s_GAME_LoadStatus_OK__004736bc);
@@ -11715,7 +11715,7 @@ void FUN_004181b0(void)
   _DAT_0048f53c = 0;
   _DAT_0048f540 = 1;
   _DAT_0048f544 = 0;
-  if (0x27 < (ushort)DAT_00485540) {
+  if (0x27 < (ushort)game_status_blob) {
     iVar1 = _rand();
     if (((byte)iVar1 & 7) == 3) {
       uStack_3c = 0x41823a;
@@ -11723,7 +11723,7 @@ void FUN_004181b0(void)
       return;
     }
   }
-  if (0x1d < (ushort)DAT_00485540) {
+  if (0x1d < (ushort)game_status_blob) {
     iVar1 = _rand();
     if (((byte)iVar1 & 7) == 3) {
       uStack_3c = 0x418265;
@@ -11731,7 +11731,7 @@ void FUN_004181b0(void)
       return;
     }
   }
-  if (0x13 < (ushort)DAT_00485540) {
+  if (0x13 < (ushort)game_status_blob) {
     iVar1 = _rand();
     if (((byte)iVar1 & 7) == 3) {
       uStack_3c = 0x418290;
@@ -23172,7 +23172,7 @@ void perks_rebuild_available(void)
     *puVar3 = 1;
     iVar1 = perk_id_fire_caugh;
     iVar5 = perk_id_living_fortress;
-    iVar2 = DAT_00487034;
+    iVar2 = quest_unlock_index;
     puVar3 = puVar3 + 0x14;
   } while ((int)puVar3 < 0x4c2e7c);
   (&perk_available_table)[perk_id_man_bomb * 0x14] = 1;
@@ -23716,7 +23716,7 @@ void __cdecl FUN_00430a20(int *param_1,int param_2,uint param_3,uint *param_4)
     param_1[6] = 3;
     param_1[7] = 5;
   }
-  DAT_004c3650 = param_1;
+  quest_meta_cursor = param_1;
   return;
 }
 
@@ -25962,304 +25962,304 @@ void quest_database_init(void)
   local_8 = 0;
   local_4 = 0;
   FUN_00430a20((int *)&quest_selected_meta,1,1,(uint *)s_Land_Hostile_00477adc);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 120000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00435bd0;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 120000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00435bd0;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Minor_Alien_Breach_00477ac8);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 120000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00435cc0;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 120000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00435cc0;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Target_Practice_00477ab8);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 65000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00437a00;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 65000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00437a00;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Frontline_Assault_00477aa4);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 300000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00437e10;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00437e10;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Alien_Dens_00477a98);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 180000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00436720;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 180000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00436720;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_The_Random_Factor_00477a84);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 300000;
-  *(code **)(DAT_004c3650 + 0x1c) = FUN_00436350;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
+  *(code **)(quest_meta_cursor + 0x1c) = FUN_00436350;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Spider_Wave_Syndrome_00477a6c);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 240000;
-  *(code **)(DAT_004c3650 + 0x1c) = FUN_00436440;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 240000;
+  *(code **)(quest_meta_cursor + 0x1c) = FUN_00436440;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Alien_Squads_00477a5c);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 180000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00435ea0;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 180000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00435ea0;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Nesting_Grounds_00477a4c);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 240000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_004364a0;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 240000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_004364a0;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_8_legged_Terror_00477a3c);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 240000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00436120;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 240000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00436120;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Everred_Pastures_00477a28);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 300000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_004375a0;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_004375a0;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Spider_Spawns_00477a18);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 300000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00436d70;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00436d70;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Arachnoid_Farm_00477a08);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 240000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00436820;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 240000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00436820;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Two_Fronts_004779fc);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 240000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00436ee0;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 240000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00436ee0;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Sweep_Stakes_004779ec);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 6;
-  *(undefined4 *)(DAT_004c3650 + 8) = 35000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00437810;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 6;
+  *(undefined4 *)(quest_meta_cursor + 8) = 35000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00437810;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Evil_Zombies_At_Large_004779d4);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 180000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_004374a0;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 180000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_004374a0;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Survival_Of_The_Fastest_004779bc);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 5;
-  *(undefined4 *)(DAT_004c3650 + 8) = 120000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00437060;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 5;
+  *(undefined4 *)(quest_meta_cursor + 8) = 120000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00437060;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Land_Of_Lizards_004779ac);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 180000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00437ba0;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 180000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00437ba0;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Ghost_Patrols_0047799c);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 180000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00436200;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 180000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00436200;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Spideroids_00477990);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 360000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_004373c0;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 360000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_004373c0;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_The_Blighting_00477980);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 300000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00438050;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00438050;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Lizard_Kings_00477970);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 180000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00437710;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 180000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00437710;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_The_Killing_00477964);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 300000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_004384a0;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_004384a0;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Hidden_Evil_00477958);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 300000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00435a30;
-  DAT_004c3658 = DAT_004c3650;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00435a30;
+  quest_monster_vision_meta = quest_meta_cursor;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Surrounded_By_Reptiles_00477940);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 300000;
-  *(code **)(DAT_004c3650 + 0x1c) = FUN_00438940;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
+  *(code **)(quest_meta_cursor + 0x1c) = FUN_00438940;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_The_Lizquidation_0047792c);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 300000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00437c70;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00437c70;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Spiders_Inc__0047791c);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 0xb;
-  *(undefined4 *)(DAT_004c3650 + 8) = 300000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_004390d0;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 0xb;
+  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_004390d0;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Lizard_Raze_00477910);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 300000;
-  *(code **)(DAT_004c3650 + 0x1c) = FUN_00438840;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
+  *(code **)(quest_meta_cursor + 0x1c) = FUN_00438840;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Deja_vu_00477908);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 6;
-  *(undefined4 *)(DAT_004c3650 + 8) = 120000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00437920;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 6;
+  *(undefined4 *)(quest_meta_cursor + 8) = 120000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00437920;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Zombie_Masters_004778f8);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 300000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_004360a0;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_004360a0;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Major_Alien_Breach_004778e4);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 0x12;
-  *(undefined4 *)(DAT_004c3650 + 8) = 300000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00437af0;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 0x12;
+  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00437af0;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Zombie_Time_004778d8);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 300000;
-  *(code **)(DAT_004c3650 + 0x1c) = FUN_00437d70;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
+  *(code **)(quest_meta_cursor + 0x1c) = FUN_00437d70;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Lizard_Zombie_Pact_004778c4);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 300000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00438700;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00438700;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_The_Collaboration_004778b0);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 360000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00437f30;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 360000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00437f30;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_The_Massacre_004778a0);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 300000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_004383e0;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_004383e0;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_The_Unblitzkrieg_0047788c);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 600000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00438a40;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 600000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00438a40;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Gauntlet_00477880);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 300000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_004369a0;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_004369a0;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Syntax_Terror_00477870);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 300000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00436c10;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00436c10;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_The_Annihilation_0047785c);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 300000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_004382c0;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_004382c0;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_The_End_of_All_0047784c);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 480000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00438e10;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 480000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00438e10;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_The_Beating_00477840);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 480000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00435610;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 480000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00435610;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_The_Spanking_Of_The_Dead_00477824);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 480000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_004358a0;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 480000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_004358a0;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_The_Fortress_00477814);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 480000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_004352d0;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 480000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_004352d0;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_The_Gang_Wars_00477804);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 480000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00435120;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 480000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00435120;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Knee_deep_in_the_Dead_004777ec);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 480000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00434f00;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 480000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00434f00;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Cross_Fire_004777e0);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 480000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00435480;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 480000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00435480;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Army_of_Three_004777d0);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 480000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00434ca0;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 480000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00434ca0;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Monster_Blues_004777c0);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 480000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00434860;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 480000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00434860;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_Nagolipoli_004777b4);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 480000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_00434480;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 480000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_00434480;
   quest_database_advance_slot(&local_4,&local_8);
   FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
                local_8 + 1,(uint *)s_The_Gathering_004777a4);
-  *(undefined4 *)(DAT_004c3650 + 0x28) = 1;
-  *(undefined4 *)(DAT_004c3650 + 8) = 480000;
-  *(undefined1 **)(DAT_004c3650 + 0x1c) = &LAB_004349c0;
+  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
+  *(undefined4 *)(quest_meta_cursor + 8) = 480000;
+  *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_004349c0;
   quest_database_advance_slot(&local_4,&local_8);
   DAT_00484754 = 2;
   DAT_00484780 = 3;
@@ -32198,8 +32198,8 @@ void __cdecl FUN_004461c0(int param_1)
       iVar7 = _quest_stage_minor;
       iVar6 = _quest_stage_major;
       if (_config_game_mode == 3) {
-        *(int *)(&DAT_00485618 + (_quest_stage_minor + _quest_stage_major * 10) * 4) =
-             *(int *)(&DAT_00485618 + (_quest_stage_minor + _quest_stage_major * 10) * 4) + 1;
+        *(int *)(&quest_play_counts + (_quest_stage_minor + _quest_stage_major * 10) * 4) =
+             *(int *)(&quest_play_counts + (_quest_stage_minor + _quest_stage_major * 10) * 4) + 1;
         quest_start_selected(iVar6,iVar7);
         render_pass_mode = '\x01';
         DAT_00487241 = 1;
@@ -35349,12 +35349,12 @@ void weapon_refresh_available(void)
   puVar3 = &DAT_004d7a6c;
   do {
     *puVar3 = 0;
-    iVar2 = DAT_00487034;
+    iVar2 = quest_unlock_index;
     puVar3 = puVar3 + 0x7c;
   } while ((int)puVar3 < 0x4d996c);
   iVar5 = 0;
   DAT_004d7ae8 = 1;
-  if (0 < DAT_00487034) {
+  if (0 < quest_unlock_index) {
     piVar4 = &DAT_00484754;
     do {
       if (0x484feb < (int)piVar4) break;
@@ -35371,10 +35371,10 @@ void weapon_refresh_available(void)
   }
   DAT_004d7a6c = FUN_0041df40();
   if (DAT_004d7a6c == '\0') {
-    DAT_00487038 = 0;
+    quest_unlock_index_full = 0;
     return;
   }
-  if (0x27 < DAT_00487038) {
+  if (0x27 < quest_unlock_index_full) {
     DAT_004d8878 = 1;
   }
   DAT_004d7a6c = 0;

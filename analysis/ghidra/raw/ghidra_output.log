@@ -5,12 +5,12 @@ INFO  Using log config file: jar:file:/opt/ghidra_12.0.1_PUBLIC/Ghidra/Framework
 INFO  Using log file: analysis/ghidra/raw/ghidra_analysis.log (LoggingInitialization)  
 INFO  Loading user preferences: /home/node/.config/ghidra/ghidra_12.0.1_PUBLIC/preferences (Preferences)  
 INFO  Searching for classes... (ClassSearcher)  
-INFO  Class search complete (714 ms) (ClassSearcher)  
+INFO  Class search complete (747 ms) (ClassSearcher)  
 INFO  Initializing SSL Context (DefaultSSLContextInitializer)  
 INFO  Initializing Random Number Generator... (SecureRandomFactory)  
 INFO  Random Number Generator initialization complete: NativePRNGNonBlocking (SecureRandomFactory)  
 INFO  Trust manager disabled, cacerts have not been set (DefaultTrustManagerFactory)  
-INFO  Headless startup complete (1332 ms) (AnalyzeHeadless)  
+INFO  Headless startup complete (1396 ms) (AnalyzeHeadless)  
 INFO  Class searcher loaded 58 extension points (18 false positives) (ClassSearcher)  
 INFO  HEADLESS Script Paths:
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger/ghidra_scripts
@@ -39,10 +39,10 @@ INFO  HEADLESS Script Paths:
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/FunctionID/ghidra_scripts
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/Atmel/ghidra_scripts (HeadlessAnalyzer)  
 INFO  HEADLESS: execution starts (HeadlessAnalyzer)  
-INFO  Creating temporary project: /tmp/ghidra_grim_dll_300003 (HeadlessAnalyzer)  
-INFO  Creating project: /tmp/ghidra_grim_dll_300003 (DefaultProject)  
+INFO  Creating temporary project: /tmp/ghidra_grim_dll_302600 (HeadlessAnalyzer)  
+INFO  Creating project: /tmp/ghidra_grim_dll_302600 (DefaultProject)  
 INFO  REPORT: Processing input files:  (HeadlessAnalyzer)  
-INFO       project: /tmp/ghidra_grim_dll_300003 (HeadlessAnalyzer)  
+INFO       project: /tmp/ghidra_grim_dll_302600 (HeadlessAnalyzer)  
 INFO  IMPORTING: file:///workspace/game_bins/crimsonland/1.9.93-gog/grim.dll (HeadlessAnalyzer)  
 INFO  Using Loader: Portable Executable (PE) (ProgramLoader)  
 INFO  Using Language/Compiler: x86:LE:32:default:windows (ProgramLoader)  
@@ -119,43 +119,43 @@ INFO  Applied data type archive: windows_vs12_32 (ApplyDataArchiveAnalyzer)
 INFO  hit non-returning function, restarting decompiler switch analyzer later (DecompilerSwitchAnalyzer)  
 INFO  Applied data type archive: windows_vs12_32 (ApplyDataArchiveAnalyzer)  
 INFO  -----------------------------------------------------
-    ASCII Strings                              0.217 secs
-    Apply Data Archives                        0.105 secs
+    ASCII Strings                              0.206 secs
+    Apply Data Archives                        0.090 secs
     Call Convention ID                         0.003 secs
-    Call-Fixup Installer                       0.022 secs
-    Create Address Tables                      0.051 secs
-    Create Address Tables - One Time           0.042 secs
-    Create Function                            0.172 secs
-    Data Reference                             0.133 secs
-    Decompiler Parameter ID                    4.542 secs
-    Decompiler Switch Analysis                 7.570 secs
-    Decompiler Switch Analysis - One Time      2.511 secs
+    Call-Fixup Installer                       0.020 secs
+    Create Address Tables                      0.068 secs
+    Create Address Tables - One Time           0.049 secs
+    Create Function                            0.207 secs
+    Data Reference                             0.113 secs
+    Decompiler Parameter ID                    4.587 secs
+    Decompiler Switch Analysis                 7.664 secs
+    Decompiler Switch Analysis - One Time      2.405 secs
     Demangler Microsoft                        0.015 secs
-    Disassemble                                0.944 secs
-    Disassemble Entry Points                   0.026 secs
+    Disassemble                                0.970 secs
+    Disassemble Entry Points                   0.027 secs
     Embedded Media                             0.013 secs
     External Entry References                  0.000 secs
-    Function ID                                0.359 secs
+    Function ID                                0.282 secs
     Function Start Pre Search                  0.011 secs
-    Function Start Search                      0.053 secs
-    Function Start Search After Code           0.020 secs
+    Function Start Search                      0.059 secs
+    Function Start Search After Code           0.022 secs
     Function Start Search After Data           0.014 secs
-    Function Start Search delayed - One Time   0.003 secs
-    Non-Returning Functions - Discovered       0.076 secs
+    Function Start Search delayed - One Time   0.002 secs
+    Non-Returning Functions - Discovered       0.077 secs
     Non-Returning Functions - Known            0.002 secs
     PDB Universal                              0.002 secs
-    Reference                                  0.218 secs
-    Scalar Operand References                  0.497 secs
-    Shared Return Calls                        0.090 secs
-    Stack                                      1.353 secs
-    Subroutine References                      0.258 secs
-    Subroutine References - One Time           0.001 secs
-    Windows x86 PE Exception Handling          1.072 secs
+    Reference                                  0.182 secs
+    Scalar Operand References                  0.452 secs
+    Shared Return Calls                        0.106 secs
+    Stack                                      1.352 secs
+    Subroutine References                      0.309 secs
+    Subroutine References - One Time           0.002 secs
+    Windows x86 PE Exception Handling          1.054 secs
     Windows x86 PE RTTI Analyzer               0.000 secs
     Windows x86 Thread Environment Block (TEB) Analyzer     0.009 secs
-    WindowsResourceReference                   0.541 secs
-    X86 Function Callee Purge                  0.050 secs
-    x86 Constant Reference Analyzer            1.612 secs
+    WindowsResourceReference                   0.580 secs
+    X86 Function Callee Purge                  0.051 secs
+    x86 Constant Reference Analyzer            1.539 secs
 -----------------------------------------------------
      Total Time   22 secs
 -----------------------------------------------------
@@ -199,7 +199,7 @@ INFO  ApplyDataMap.java> Applied data map: /workspace/analysis/ghidra/maps/data_
 INFO  ApplyDataMap.java> Program: grim.dll (GhidraScript)  
 INFO  ApplyDataMap.java> Updated entries: 86 (GhidraScript)  
 INFO  ApplyDataMap.java> Created: 0, Renamed: 86, Comments: 86, Types: 13 (GhidraScript)  
-INFO  ApplyDataMap.java> Missing: 0, Skipped: 614 (GhidraScript)  
+INFO  ApplyDataMap.java> Missing: 0, Skipped: 620 (GhidraScript)  
 INFO  REPORT: Execute script: ExportAll.java  (HeadlessAnalyzer)  
 INFO  SCRIPT: /workspace/analysis/ghidra/tooling/ghidra_scripts/ExportAll.java (HeadlessAnalyzer)  
 INFO  ExportAll.java> === Starting comprehensive export === (GhidraScript)  
@@ -219,14 +219,14 @@ INFO  ExportAll.java>  (GhidraScript)
 INFO  ExportAll.java> === Export complete === (GhidraScript)  
 INFO  ANALYZING changes made by post scripts: file:///workspace/game_bins/crimsonland/1.9.93-gog/grim.dll (HeadlessAnalyzer)  
 INFO  -----------------------------------------------------
-    Call Convention ID                         2.518 secs
-    Call-Fixup Installer                       0.001 secs
+    Call Convention ID                         2.498 secs
+    Call-Fixup Installer                       0.000 secs
     Data Reference                             0.000 secs
-    Decompiler Parameter ID                    1.452 secs
+    Decompiler Parameter ID                    2.136 secs
     Function Start Search                      0.000 secs
-    Function Start Search After Data           0.001 secs
+    Function Start Search After Data           0.000 secs
     Shared Return Calls                        0.002 secs
-    Stack                                      0.067 secs
+    Stack                                      0.080 secs
     X86 Function Callee Purge                  0.000 secs
 -----------------------------------------------------
      Total Time   4 secs
@@ -234,5 +234,5 @@ INFO  -----------------------------------------------------
  (AutoAnalysisManager)  
 INFO  REPORT: Post-analysis succeeded for file: file:///workspace/game_bins/crimsonland/1.9.93-gog/grim.dll (HeadlessAnalyzer)  
 INFO  /grim.dll: file created (node) (LocalFileSystem)  
-INFO  REPORT: Save succeeded for: /grim.dll (ghidra_grim_dll_300003:/grim.dll) (HeadlessAnalyzer)  
+INFO  REPORT: Save succeeded for: /grim.dll (ghidra_grim_dll_302600:/grim.dll) (HeadlessAnalyzer)  
 INFO  REPORT: Import succeeded (HeadlessAnalyzer)  

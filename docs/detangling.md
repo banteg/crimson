@@ -348,9 +348,21 @@ High score validation (`FUN_0043afa0`):
 - `quest_stage_minor` (`DAT_00487008`) tracks the quest mission within the episode.
   - Evidence: used in quest string lookups and final‑mission checks (`major == 5 && minor == 10`).
 - Incremented on quest results screen when the player chooses “Play Next”.
-- Persistence: no direct save/load path found for quest progress. The counters are reset at
-  startup and only used to select metadata and to build per‑quest high‑score filenames
-  (`scores5\\quest*.hi`); there is no config blob or save file that writes them.
+- Persistence: `quest_stage_major/minor` are runtime-only (reset on startup) and only used to
+  select metadata and to build per‑quest high‑score filenames (`scores5\\quest*.hi`). Quest
+  unlock progress is saved separately in `game_status_blob` via `quest_unlock_index` and
+  `quest_unlock_index_full` (see below).
+- `quest_play_counts` (`DAT_00485618`) increments on quest start (`game_state_id == 9`,
+  `_config_game_mode == 3`) using the `[major * 10 + minor]` index.
+- `quest_unlock_index` (`DAT_00487034`) stores the max quest unlock index (computed as
+  `quest_stage_major * 10 + quest_stage_minor - 10`). It is updated on quest completion and
+  persisted via `game_save_status`/`game_load_status`.
+- `quest_unlock_index_full` (`DAT_00487038`) stores the full‑version unlock index (same
+  calculation) and is only updated when `config_full_version` is set.
+- `quest_meta_cursor` (`DAT_004c3650`) tracks the quest metadata entry last written by
+  `FUN_00430a20` during `quest_database_init`.
+- `quest_monster_vision_meta` (`DAT_004c3658`) points to a specific quest metadata entry
+  used to force the Monster Vision perk in `perks_generate_choices`.
 
 Record match + display selection:
 - `FUN_0043abd0` is the equality predicate used during save‑file replacement; it compares the

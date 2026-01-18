@@ -651,6 +651,18 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00485540",
+      "name": "game_status_blob",
+      "comment": "Status file blob (0x268 bytes). Header stores quest_unlock_index (low u16) + quest_unlock_index_full (high u16)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00485618",
+      "name": "quest_play_counts",
+      "comment": "Quest play/attempt counters (u32[?]); indexed by quest_stage_major * 10 + quest_stage_minor."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00485794",
       "name": "game_sequence_id",
       "comment": "Saved game sequence id loaded from registry."
@@ -834,6 +846,18 @@
       "address": "0x00487024",
       "name": "bonus_double_xp_timer",
       "comment": "Global Double XP timer (bonus id 6)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00487034",
+      "name": "quest_unlock_index",
+      "comment": "Max quest unlock index (u16). Updated on quest completion; used to unlock perks/weapons; saved in game_status_blob."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00487038",
+      "name": "quest_unlock_index_full",
+      "comment": "Full-version quest unlock index (u16). Saved in game_status_blob; gated by config_full_version."
     },
     {
       "program": "crimsonland.exe",
@@ -3084,6 +3108,18 @@
       "address": "0x004c2c50",
       "name": "perk_prereq_table",
       "comment": "Perk prerequisite table (perk_name_table + 0x10)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3650",
+      "name": "quest_meta_cursor",
+      "comment": "Pointer to the quest metadata entry last written by FUN_00430a20."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3658",
+      "name": "quest_monster_vision_meta",
+      "comment": "Pointer to the quest metadata entry that unlocks Monster Vision (checked in perks_generate_choices)."
     },
     {
       "program": "crimsonland.exe",
