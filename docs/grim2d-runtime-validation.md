@@ -17,15 +17,23 @@ Goal: validate a small backlog subset using Frida hooks without pausing.
 
 How to run (Frida hook script):
 
-1) Copy `scripts/frida/grim_hooks.js` and `scripts/frida/grim_hooks_targets.json`
+1) Game path (this VM): `C:\Crimsonland\crimsonland.exe`.
+2) Copy `scripts/frida/grim_hooks.js` and `scripts/frida/grim_hooks_targets.json`
    into the VM shared drive (example uses `Z:\`).
-2) Optionally edit `grim_hooks_targets.json` to swap the target list.
-3) Launch the game, find its PID, and attach:
+3) Optionally edit `grim_hooks_targets.json` to swap the target list.
+4) Launch the game, find its PID, and attach:
 
    ```text
    frida -p <pid> -l Z:\grim_hooks.js
    ```
-4) Logs are written to `Z:\grim_hits.log` by default.
+5) To capture the very beginning, spawn instead of attach:
+
+   ```text
+   frida -f "C:\Crimsonland\crimsonland.exe" -l Z:\grim_hooks.js
+   ```
+
+   If the process pauses on spawn, type `%resume` in the Frida REPL.
+6) Logs are written to `Z:\grim_hits.log` by default.
 
 Artifacts:
 
