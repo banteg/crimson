@@ -1,282 +1,110 @@
 [
   {
-    "callsite": "0xbe6100f",
-    "count": 15450
+    "callsite": "0xd2b97b0",
+    "count": 6243
   },
   {
-    "callsite": "0xd2197b0",
-    "count": 5510
+    "callsite": "0xd2b9804",
+    "count": 6243
   },
   {
-    "callsite": "0xd219804",
-    "count": 5510
+    "callsite": "0xd2b9915",
+    "count": 6243
   },
   {
-    "callsite": "0xd219915",
-    "count": 5510
+    "callsite": "0xd2b7957",
+    "count": 4041
   },
   {
-    "callsite": "0xd217957",
-    "count": 3087
+    "callsite": "0xd2b7980",
+    "count": 4041
   },
   {
-    "callsite": "0xd217980",
-    "count": 3087
+    "callsite": "0xd2b788a",
+    "count": 3048
   },
   {
-    "callsite": "0xbe60f0f",
-    "count": 1874
+    "callsite": "0xd2b78d6",
+    "count": 3048
   },
   {
-    "callsite": "0xd1d9804",
-    "count": 1812
+    "callsite": "0xd2b8e29",
+    "count": 1766
   },
   {
-    "callsite": "0xd1d9915",
-    "count": 1812
+    "callsite": "0xd2b90b1",
+    "count": 1047
   },
   {
-    "callsite": "0xaac97b0",
-    "count": 1557
+    "callsite": "0xd2b8f63",
+    "count": 1019
   },
   {
-    "callsite": "0xaac9804",
-    "count": 1557
+    "callsite": "0xd2b9048",
+    "count": 1019
   },
   {
-    "callsite": "0xaac9915",
-    "count": 1557
+    "callsite": "0xd2b8b41",
+    "count": 876
   },
   {
-    "callsite": "0xd21788a",
-    "count": 1524
+    "callsite": "0xd2b85b6",
+    "count": 173
   },
   {
-    "callsite": "0xd2178d6",
-    "count": 1524
-  },
-  {
-    "callsite": "0xd218e29",
-    "count": 1458
-  },
-  {
-    "callsite": "0xd1d7957",
-    "count": 912
-  },
-  {
-    "callsite": "0xd1d7980",
-    "count": 912
-  },
-  {
-    "callsite": "0xd218f63",
-    "count": 802
-  },
-  {
-    "callsite": "0xd219048",
-    "count": 802
-  },
-  {
-    "callsite": "0xaac7957",
-    "count": 801
-  },
-  {
-    "callsite": "0xaac7980",
-    "count": 801
-  },
-  {
-    "callsite": "0xd2190b1",
-    "count": 671
-  },
-  {
-    "callsite": "0xd1d8f63",
-    "count": 543
-  },
-  {
-    "callsite": "0xd1d9048",
-    "count": 543
-  },
-  {
-    "callsite": "0xaac8f63",
-    "count": 460
-  },
-  {
-    "callsite": "0xaac9048",
-    "count": 460
-  },
-  {
-    "callsite": "0xaac788a",
-    "count": 442
-  },
-  {
-    "callsite": "0xaac78d6",
-    "count": 442
-  },
-  {
-    "callsite": "0xd1d932d",
-    "count": 432
-  },
-  {
-    "callsite": "0xd1d96b0",
-    "count": 432
-  },
-  {
-    "callsite": "0xd1d788a",
-    "count": 406
-  },
-  {
-    "callsite": "0xd1d78d6",
-    "count": 406
-  },
-  {
-    "callsite": "0xd218b41",
-    "count": 394
-  },
-  {
-    "callsite": "0xaac932d",
-    "count": 380
-  },
-  {
-    "callsite": "0xaac96b0",
-    "count": 380
-  },
-  {
-    "callsite": "0xbe61a0f",
-    "count": 150
-  },
-  {
-    "callsite": "0xd1d90b1",
-    "count": 127
-  },
-  {
-    "callsite": "0xaac8e29",
-    "count": 109
-  },
-  {
-    "callsite": "0xaac90b1",
-    "count": 100
-  },
-  {
-    "callsite": "0xbe60b0f",
-    "count": 69
-  },
-  {
-    "callsite": "0xd1d8b41",
-    "count": 43
-  },
-  {
-    "callsite": "0xd217a39",
+    "callsite": "0xd2b7a39",
     "count": 40
   },
   {
-    "callsite": "0xd217a84",
+    "callsite": "0xd2b7a84",
     "count": 40
-  },
-  {
-    "callsite": "0xaac7a39",
-    "count": 24
-  },
-  {
-    "callsite": "0xaac7a84",
-    "count": 24
-  },
-  {
-    "callsite": "0xaac8b41",
-    "count": 21
-  },
-  {
-    "callsite": "0xd1d7a39",
-    "count": 21
-  },
-  {
-    "callsite": "0xd1d7a84",
-    "count": 21
-  },
-  {
-    "callsite": "grim.dll+0x8e29",
-    "count": 8
-  },
-  {
-    "callsite": "grim.dll+0x7941",
-    "count": 8
   },
   {
     "callsite": "grim.dll+0x5dee",
-    "count": 6
+    "count": 1
   },
   {
     "callsite": "grim.dll+0x5e21",
-    "count": 6
+    "count": 1
   },
   {
     "callsite": "grim.dll+0x5e37",
-    "count": 6
-  },
-  {
-    "callsite": "0xbe60d0f",
-    "count": 4
-  },
-  {
-    "callsite": "0xaac85b6",
-    "count": 3
-  },
-  {
-    "callsite": "grim.dll+0x85b6",
-    "count": 2
-  },
-  {
-    "callsite": "0xd2185b6",
-    "count": 2
-  },
-  {
-    "callsite": "grim.dll+0x873e",
     "count": 1
   },
   {
-    "callsite": "0xbee1b0f",
+    "callsite": "0xbf91b0f",
     "count": 1
   },
   {
-    "callsite": "0xbee390f",
+    "callsite": "0xbf9390f",
     "count": 1
   },
   {
-    "callsite": "0xbee360f",
+    "callsite": "0xbf9360f",
     "count": 1
   },
   {
-    "callsite": "0xbee1d0f",
+    "callsite": "0xbf91d0f",
     "count": 1
   },
   {
-    "callsite": "0xbee3a0f",
+    "callsite": "0xbf93a0f",
     "count": 1
   },
   {
-    "callsite": "0xbee3c0f",
+    "callsite": "0xbf93c0f",
     "count": 1
   },
   {
-    "callsite": "0xbee380f",
+    "callsite": "0xbf9380f",
     "count": 1
   },
   {
-    "callsite": "grim.dll+0x92a3",
+    "callsite": "grim.dll+0x7941",
     "count": 1
   },
   {
-    "callsite": "0xaac9795",
-    "count": 1
-  },
-  {
-    "callsite": "0xbe6060f",
-    "count": 1
-  },
-  {
-    "callsite": "0xbe6070f",
-    "count": 1
-  },
-  {
-    "callsite": "0xd219795",
+    "callsite": "0xd2b9795",
     "count": 1
   }
 ]

@@ -139,6 +139,13 @@ const CONFIG = {
     hotWindowMs: 2000,
     hotWindowCooldownMs: 8000,
   },
+
+  // Texture logging: dump raw bytes for the first N calls to diagnose non-NUL paths.
+  textureDump: {
+    enabled: true,
+    maxEntries: 8,
+    bytes: 64,
+  },
 };
 
 const SESSION_ID = Date.now().toString(16) + '-' + Math.floor(Math.random() * 0xfffff).toString(16);
@@ -982,6 +989,7 @@ function scheduleStartupDump() {
 
 let gGrimHooksInstalled = false;
 let gHotWindowUntil = 0;
+let gTextureDumpCount = 0;
 
 function hotWindowActive() {
   return Date.now() <= gHotWindowUntil;
@@ -1448,6 +1456,17 @@ function hookResources() {
         name_info: nameInfo,
         path_info: pathInfo,
       };
+      if (CONFIG.textureDump && CONFIG.textureDump.enabled && gTextureDumpCount < CONFIG.textureDump.maxEntries) {
+        try {
+          const size = CONFIG.textureDump.bytes || 64;
+          const bytes = args[1].readByteArray(size);
+          this._evt.path_bytes_hex = hexdump(bytes, { offset: 0, length: size, header: false, ansi: false });
+          this._evt.path_ptr = args[1].toString();
+          gTextureDumpCount += 1;
+        } catch (_) {
+          this._evt.path_bytes_hex = null;
+        }
+      }
       if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
     },
     onLeave(retval) {
@@ -1468,6 +1487,17 @@ function hookResources() {
         name_info: nameInfo,
         path_info: pathInfo,
       };
+      if (CONFIG.textureDump && CONFIG.textureDump.enabled && gTextureDumpCount < CONFIG.textureDump.maxEntries) {
+        try {
+          const size = CONFIG.textureDump.bytes || 64;
+          const bytes = args[1].readByteArray(size);
+          this._evt.path_bytes_hex = hexdump(bytes, { offset: 0, length: size, header: false, ansi: false });
+          this._evt.path_ptr = args[1].toString();
+          gTextureDumpCount += 1;
+        } catch (_) {
+          this._evt.path_bytes_hex = null;
+        }
+      }
       if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
     },
     onLeave(retval) {
