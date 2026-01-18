@@ -252,9 +252,9 @@
     "calls": []
   },
   {
-    "name": "FUN_00403390",
+    "name": "demo_mode_start",
     "address": "00403390",
-    "signature": "int FUN_00403390(void)",
+    "signature": "int demo_mode_start(void)",
     "external": false,
     "calls": ["FUN_00402ed0", "FUN_00402fe0", "FUN_004030f0", "FUN_00403250", "FUN_00403370", "game_state_set", "gameplay_reset_state"]
   },
@@ -382,7 +382,7 @@
     "address": "004072b0",
     "signature": "undefined FUN_004072b0(void)",
     "external": false,
-    "calls": ["FUN_00403390", "creature_spawn"]
+    "calls": ["creature_spawn", "demo_mode_start"]
   },
   {
     "name": "survival_spawn_creature",
@@ -396,7 +396,7 @@
     "address": "00407cd0",
     "signature": "void survival_update(void)",
     "external": false,
-    "calls": ["FUN_00403390", "_rand", "creature_spawn_template", "survival_spawn_creature", "weapon_assign_player"]
+    "calls": ["_rand", "creature_spawn_template", "demo_mode_start", "survival_spawn_creature", "weapon_assign_player"]
   },
   {
     "name": "tutorial_prompt_dialog",
@@ -473,7 +473,7 @@
     "address": "0040b740",
     "signature": "void demo_purchase_screen_update(void)",
     "external": false,
-    "calls": ["FUN_00403390", "FUN_00417ae0", "FUN_0041df40", "ShellExecuteA", "__ftol", "config_load_presets", "crt_atexit", "input_primary_just_pressed", "sfx_mute_all", "sfx_play_exclusive", "ui_button_update", "ui_cursor_render", "ui_elements_update_and_render"]
+    "calls": ["FUN_00417ae0", "FUN_0041df40", "ShellExecuteA", "__ftol", "config_load_presets", "crt_atexit", "demo_mode_start", "input_primary_just_pressed", "sfx_mute_all", "sfx_play_exclusive", "ui_button_update", "ui_cursor_render", "ui_elements_update_and_render"]
   },
   {
     "name": "FUN_0040d000",

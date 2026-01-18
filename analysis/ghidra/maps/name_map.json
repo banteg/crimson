@@ -66,6 +66,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00403390",
+    "name": "demo_mode_start",
+    "signature": "int demo_mode_start(void)",
+    "comment": "starts demo mode and cycles the demo setup"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004034a0",
     "name": "ui_mouse_inside_rect",
     "signature": "int ui_mouse_inside_rect(float *xy, int h, int w)",

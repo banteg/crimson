@@ -103,6 +103,12 @@ You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps
     weapon/perk availability, and zeroes run/high-score counters; invoked when demo mode starts and on state
     transitions that require a fresh session.
 
+### Demo mode bootstrap (high confidence)
+
+- `FUN_00403390` -> `demo_mode_start`
+  - Evidence: forces the demo game state, sets `demo_mode_active`, calls `gameplay_reset_state`, selects one of
+    several demo setups, and advances the demo cycle index.
+
 ### UI text input (high confidence)
 
 - `FUN_0043ecf0` -> `ui_text_input_update`

@@ -1702,11 +1702,12 @@ void FUN_00403370(void)
 
 
 
-/* FUN_00403390 @ 00403390 */
+/* demo_mode_start @ 00403390 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* starts demo mode and cycles the demo setup */
 
-int FUN_00403390(void)
+int demo_mode_start(void)
 
 {
   int iVar1;
@@ -4528,7 +4529,7 @@ void FUN_004072b0(void)
     }
     if ((demo_mode_active != '\0') && (DAT_004712f0 < quest_spawn_timeline)) {
       render_pass_mode = 0;
-      FUN_00403390();
+      demo_mode_start();
     }
   }
   return;
@@ -4823,7 +4824,7 @@ void survival_update(void)
       return;
     }
     render_pass_mode = 0;
-    FUN_00403390();
+    demo_mode_start();
     return;
   }
   if (_config_player_count == 1) {
@@ -6978,7 +6979,7 @@ void demo_purchase_screen_update(void)
     quest_spawn_timeline = quest_spawn_timeline + frame_dt_ms;
     if (DAT_004712f0 < quest_spawn_timeline) {
       render_pass_mode = 0;
-      FUN_00403390();
+      demo_mode_start();
     }
     if (DAT_00480890 != '\0') goto LAB_0040c103;
   }
