@@ -28,6 +28,7 @@ outputs.
   `analysis/ghidra/raw/grim.dll_strings.txt:11` through `:121`.
 - Evidence (headers): `JPEG_LIB_VERSION 62` (IJG 6b) in
   `third_party/headers/jpeglib.h:33`.
+- Evidence (binary): no explicit version string found in grim.dll.
 - Status: headers imported (`third_party/headers/jpeg_all.h`).
 - Status: no signature mapping yet.
 
@@ -44,6 +45,13 @@ outputs.
   header $Id lines for `include/vorbis/vorbisfile.h` and `include/vorbis/codec.h`.
 - Evidence (binary metadata): radare2 `iI` reports VORBISFILE.DLL compiled
   Fri Jul 19 11:35:16 2002 (matches the v1.0.0 tag date).
+- Evidence (binary metadata): radare2 `iI` reports OGG.DLL compiled
+  Fri Jul 19 11:34:39 2002 and VORBIS.DLL compiled Fri Jul 19 11:34:55 2002.
+- Evidence: bundled DLL hashes (sha256) for:
+  `game_bins/crimsonland/1.9.93-gog/OGG.DLL` →
+  `308540dbd488f3bceca2dbadefe02cf29d10a27c4ac096bb3da053e3e0b923ea`,
+  `game_bins/crimsonland/1.9.93-gog/VORBIS.DLL` →
+  `b4fa55cfe7547ade0a2d5b800ef085ce20cdd71f61898d2461ea61eb0241812b`.
 - Status: headers imported (`third_party/headers/ogg/ogg.h`,
   `third_party/headers/vorbis/codec.h`, `third_party/headers/vorbis/vorbisfile.h`).
 - Status: no signature mapping yet.
