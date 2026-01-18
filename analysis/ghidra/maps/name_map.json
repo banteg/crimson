@@ -2752,5 +2752,19 @@
     "name": "crt_commit",
     "signature": "int crt_commit(int fd)",
     "comment": "CRT: commit file buffers to disk"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046acb6",
+    "name": "crt_get_osfhandle",
+    "signature": "void * crt_get_osfhandle(int fd)",
+    "comment": "CRT: map file descriptor to OS handle"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046cda0",
+    "name": "crt_chkstk",
+    "signature": "void crt_chkstk(void)",
+    "comment": "CRT: stack probing helper for large alloca (size in EAX)"
   }
 ]

@@ -1,7 +1,7 @@
 # CRT Checklist
 
-- Mapped CRT entries (name_map): 94
-- Unmapped candidates (upper bound in 0x00460000–0x0046ffff): 211 FUN_ functions
+- Mapped CRT entries (name_map): 96
+- Unmapped candidates (upper bound in 0x00460000–0x0046ffff): 209 FUN_ functions
 
 ## Mapped
 - [x] crt_atexit
@@ -10,6 +10,7 @@
 - [x] crt_build_argv
 - [x] crt_build_environ
 - [x] crt_call_fn_range
+- [x] crt_chkstk
 - [x] crt_chsize
 - [x] crt_close
 - [x] crt_close_nolock
@@ -43,6 +44,7 @@
 - [x] crt_fwrite
 - [x] crt_fwrite_nolock
 - [x] crt_get_environment_strings
+- [x] crt_get_osfhandle
 - [x] crt_get_thread_data
 - [x] crt_getc
 - [x] crt_getstream
@@ -101,240 +103,215 @@
 
 ## Remaining (Estimate)
 
-- [ ] Review 211 FUN_ functions in 0x00460000–0x0046ffff for CRT matches (upper bound)
-- [ ] FUN_004600c0 @ 004600c0
-- [ ] FUN_004601c0 @ 004601c0
-- [ ] FUN_004607a0 @ 004607a0
-- [ ] FUN_004608c0 @ 004608c0
-- [ ] FUN_00460cb8 @ 00460cb8
-- [ ] FUN_00460ccf @ 00460ccf
-- [ ] FUN_00460cd0 @ 00460cd0
-- [ ] FUN_00460dd2 @ 00460dd2
-- [ ] FUN_00460fac @ 00460fac
-- [x] crt_atof_l @ 004610da
-- [ ] FUN_00461140 @ 00461140
-- [ ] FUN_00461162 @ 00461162
-- [ ] FUN_00461335 @ 00461335
-- [x] crt_fflush @ 00461448
-- [x] crt_fflush_nolock @ 00461477
-- [x] crt_flushbuf @ 004614a5
-- [x] crt_flushall @ 0046150a
-- [ ] FUN_00461739 @ 00461739
-- [ ] FUN_00461768 @ 00461768
-- [ ] FUN_00461835 @ 00461835
-- [ ] FUN_004618fd @ 004618fd
-- [ ] FUN_00461981 @ 00461981
-- [ ] FUN_004619eb @ 004619eb
-- [ ] FUN_00461a03 @ 00461a03
-- [ ] FUN_00461a6b @ 00461a6b
-- [ ] FUN_00461a83 @ 00461a83
-- [x] crt_ftell @ 00461c0e
-- [x] crt_ftell_nolock @ 00461c30
-- [x] crt_snprintf @ 00461e4a
-- [x] crt_tolower @ 00461e9b
-- [x] crt_tolower_l @ 00461f0a
-- [ ] FUN_00461fd5 @ 00461fd5
-- [x] crt_toupper @ 00462104
-- [x] crt_toupper_l @ 00462173
-- [ ] FUN_0046223f @ 0046223f
-- [ ] FUN_004622b6 @ 004622b6
-- [ ] FUN_00462373 @ 00462373
-- [ ] FUN_004623b2 @ 004623b2
-- [ ] FUN_0046248e @ 0046248e
-- [ ] FUN_004624b5 @ 004624b5
-- [ ] FUN_0046258a @ 0046258a
-- [ ] FUN_0046262b @ 0046262b
-- [ ] FUN_00462683 @ 00462683
-- [ ] FUN_004626aa @ 004626aa
-- [ ] FUN_00462835 @ 00462835
-- [ ] FUN_00462983 @ 00462983
-- [ ] FUN_00462a17 @ 00462a17
-- [ ] FUN_00462a7e @ 00462a7e
-- [ ] FUN_00462add @ 00462add
-- [ ] FUN_00462ba0 @ 00462ba0
-- [x] crt_getc @ 00462da2
-- [ ] FUN_00462de0 @ 00462de0
-- [ ] FUN_00463153 @ 00463153
-- [ ] FUN_00463180 @ 00463180
-- [ ] FUN_0046319d @ 0046319d
-- [ ] FUN_0046324b @ 0046324b
-- [ ] FUN_0046325f @ 0046325f
-- [ ] FUN_004632f1 @ 004632f1
-- [ ] FUN_00463325 @ 00463325
-- [ ] FUN_0046332c @ 0046332c
-- [ ] FUN_00463333 @ 00463333
-- [ ] FUN_00463382 @ 00463382
-- [ ] FUN_004633b8 @ 004633b8
-- [ ] FUN_0046340c @ 0046340c
-- [ ] FUN_00463431 @ 00463431
-- [ ] FUN_004634e7 @ 004634e7
-- [ ] FUN_0046355c @ 0046355c
-- [ ] FUN_004636ae @ 004636ae
-- [ ] FUN_004636c8 @ 004636c8
-- [ ] FUN_004636e7 @ 004636e7
-- [ ] FUN_004636f9 @ 004636f9
-- [ ] FUN_00463737 @ 00463737
-- [ ] FUN_00463760 @ 00463760
-- [ ] FUN_0046385e @ 0046385e
-- [ ] FUN_004638bf @ 004638bf
-- [ ] FUN_00463981 @ 00463981
-- [ ] FUN_004639d6 @ 004639d6
-- [ ] FUN_00463a7d @ 00463a7d
-- [ ] FUN_00463b61 @ 00463b61
-- [x] crt_msize @ 00463b86
-- [ ] FUN_00463bf0 @ 00463bf0
-- [ ] FUN_00463c6b @ 00463c6b
-- [ ] FUN_00463dd4 @ 00463dd4
-- [ ] FUN_00463e26 @ 00463e26
-- [x] crt_close @ 00463e49
-- [x] crt_close_nolock @ 00463ea6
-- [x] crt_filbuf @ 00463f54
-- [ ] FUN_00464bbc @ 00464bbc
-- [ ] FUN_00464bc9 @ 00464bc9
-- [ ] FUN_00464bd9 @ 00464bd9
-- [ ] FUN_00464be7 @ 00464be7
-- [ ] FUN_004650d0 @ 004650d0
-- [ ] FUN_00465130 @ 00465130
-- [ ] FUN_00465145 @ 00465145
-- [ ] FUN_0046515c @ 0046515c
-- [ ] FUN_004651b8 @ 004651b8
-- [ ] FUN_004651ce @ 004651ce
-- [ ] FUN_00465219 @ 00465219
-- [ ] FUN_004652bc @ 004652bc
-- [ ] FUN_004653ec @ 004653ec
-- [ ] FUN_004654a5 @ 004654a5
-- [x] crt_commit @ 004655bf
-- [x] crt_write @ 00465652
-- [x] crt_write_nolock @ 004656b7
-- [x] crt_bufcpy @ 004658f0
-- [ ] FUN_00465f2d @ 00465f2d
-- [ ] FUN_00465f48 @ 00465f48
-- [ ] FUN_00465fa9 @ 00465fa9
-- [x] crt_read @ 00465fff
-- [x] crt_read_nolock @ 00466064
-- [ ] FUN_004664d1 @ 004664d1
-- [ ] FUN_004666f5 @ 004666f5
-- [ ] FUN_00466782 @ 00466782
-- [ ] FUN_004667ac @ 004667ac
-- [ ] FUN_00466845 @ 00466845
-- [ ] FUN_004668ce @ 004668ce
-- [ ] FUN_00466a27 @ 00466a27
-- [ ] FUN_00466a61 @ 00466a61
-- [ ] FUN_00466c7b @ 00466c7b
-- [ ] FUN_00466ca6 @ 00466ca6
-- [ ] FUN_00466fcf @ 00466fcf
-- [ ] FUN_004672d8 @ 004672d8
-- [ ] FUN_00467389 @ 00467389
-- [ ] FUN_00467484 @ 00467484
-- [ ] FUN_004678be @ 004678be
-- [ ] FUN_00467914 @ 00467914
-- [ ] FUN_004679d6 @ 004679d6
-- [ ] FUN_00467a2d @ 00467a2d
-- [ ] FUN_00467a72 @ 00467a72
-- [ ] FUN_00467c7a @ 00467c7a
-- [ ] FUN_00467d9e @ 00467d9e
-- [ ] FUN_00467e47 @ 00467e47
-- [ ] FUN_00467e62 @ 00467e62
-- [ ] FUN_00468887 @ 00468887
-- [ ] FUN_004688be @ 004688be
-- [ ] FUN_004688d8 @ 004688d8
-- [ ] FUN_004688ef @ 004688ef
-- [ ] FUN_00468f2f @ 00468f2f
-- [ ] FUN_00468f58 @ 00468f58
-- [ ] FUN_00468fb2 @ 00468fb2
-- [ ] FUN_00469073 @ 00469073
-- [ ] FUN_00469326 @ 00469326
-- [ ] FUN_0046953d @ 0046953d
-- [ ] FUN_00469565 @ 00469565
-- [ ] FUN_00469573 @ 00469573
-- [ ] FUN_00469582 @ 00469582
-- [ ] FUN_004695a5 @ 004695a5
-- [ ] FUN_004695fb @ 004695fb
-- [ ] FUN_00469696 @ 00469696
-- [ ] FUN_00469849 @ 00469849
-- [ ] FUN_004698f3 @ 004698f3
-- [ ] FUN_00469950 @ 00469950
-- [ ] FUN_004699ee @ 004699ee
-- [ ] FUN_00469a69 @ 00469a69
-- [ ] FUN_00469b36 @ 00469b36
-- [ ] FUN_00469bae @ 00469bae
-- [ ] FUN_00469d72 @ 00469d72
-- [ ] FUN_00469dd9 @ 00469dd9
-- [ ] FUN_00469e4c @ 00469e4c
-- [ ] FUN_00469e81 @ 00469e81
-- [ ] FUN_00469e97 @ 00469e97
-- [ ] FUN_00469f29 @ 00469f29
-- [ ] FUN_00469fb2 @ 00469fb2
-- [ ] FUN_00469ffb @ 00469ffb
-- [ ] FUN_0046a051 @ 0046a051
-- [ ] FUN_0046a0dd @ 0046a0dd
-- [ ] FUN_0046a0f8 @ 0046a0f8
-- [ ] FUN_0046a104 @ 0046a104
-- [ ] FUN_0046a11f @ 0046a11f
-- [ ] FUN_0046a1ac @ 0046a1ac
-- [ ] FUN_0046a318 @ 0046a318
-- [ ] FUN_0046a32e @ 0046a32e
-- [ ] FUN_0046a344 @ 0046a344
-- [ ] FUN_0046a371 @ 0046a371
-- [ ] FUN_0046a39e @ 0046a39e
-- [ ] FUN_0046a415 @ 0046a415
-- [ ] FUN_0046a471 @ 0046a471
-- [ ] FUN_0046a8c5 @ 0046a8c5
-- [ ] FUN_0046a8ce @ 0046a8ce
-- [ ] FUN_0046aa98 @ 0046aa98
-- [ ] FUN_0046abbb @ 0046abbb
-- [ ] FUN_0046ac37 @ 0046ac37
-- [ ] FUN_0046acb6 @ 0046acb6
-- [ ] FUN_0046ad79 @ 0046ad79
-- [ ] FUN_0046b08c @ 0046b08c
-- [ ] FUN_0046b0b5 @ 0046b0b5
-- [ ] FUN_0046b10e @ 0046b10e
-- [ ] FUN_0046b265 @ 0046b265
-- [ ] FUN_0046c4cb @ 0046c4cb
-- [ ] FUN_0046c5ad @ 0046c5ad
-- [ ] FUN_0046c5db @ 0046c5db
-- [ ] FUN_0046c862 @ 0046c862
-- [ ] FUN_0046c883 @ 0046c883
-- [ ] FUN_0046ca2f @ 0046ca2f
-- [ ] FUN_0046cb6f @ 0046cb6f
-- [ ] FUN_0046cd20 @ 0046cd20
-- [ ] FUN_0046cd60 @ 0046cd60
-- [ ] FUN_0046cda0 @ 0046cda0
-- [x] crt_strtol_l @ 0046cdcf
-- [x] crt_strtoxl @ 0046cde6
-- [ ] FUN_0046cfeb @ 0046cfeb
-- [ ] FUN_0046d048 @ 0046d048
-- [ ] FUN_0046d13f @ 0046d13f
-- [ ] FUN_0046d1ad @ 0046d1ad
-- [ ] FUN_0046d1be @ 0046d1be
-- [ ] FUN_0046d1ef @ 0046d1ef
-- [ ] FUN_0046d39c @ 0046d39c
-- [ ] FUN_0046d3e6 @ 0046d3e6
-- [ ] FUN_0046d419 @ 0046d419
-- [ ] FUN_0046d442 @ 0046d442
-- [ ] FUN_0046d5c7 @ 0046d5c7
-- [ ] FUN_0046d5e3 @ 0046d5e3
-- [ ] FUN_0046d66c @ 0046d66c
-- [ ] FUN_0046d66f @ 0046d66f
-- [ ] FUN_0046d6d3 @ 0046d6d3
-- [ ] FUN_0046d6ef @ 0046d6ef
-- [ ] FUN_0046d70b @ 0046d70b
-- [ ] FUN_0046d723 @ 0046d723
-- [ ] FUN_0046d8a5 @ 0046d8a5
-- [ ] FUN_0046d8e2 @ 0046d8e2
-- [ ] FUN_0046d961 @ 0046d961
-- [ ] FUN_0046d98f @ 0046d98f
-- [ ] FUN_0046d9bc @ 0046d9bc
-- [ ] FUN_0046da83 @ 0046da83
-- [ ] FUN_0046de3b @ 0046de3b
-- [ ] FUN_0046e05b @ 0046e05b
-- [ ] FUN_0046e0d7 @ 0046e0d7
-- [ ] FUN_0046e160 @ 0046e160
-- [ ] FUN_0046e261 @ 0046e261
-- [ ] FUN_0046e301 @ 0046e301
-- [ ] FUN_0046e36f @ 0046e36f
-- [ ] FUN_0046e5ec @ 0046e5ec
-- [ ] FUN_0046e617 @ 0046e617
-- [ ] FUN_0046e79e @ 0046e79e
-- [ ] FUN_0046e7f6 @ 0046e7f6
-- [ ] FUN_0046e85d @ 0046e85d
+- [ ] Review 209 FUN_ functions in 0x00460000–0x0046ffff for CRT matches (upper bound)
+- [ ] FUN_00461140 @ 00461140 (uses: 5)
+- [ ] FUN_00465fa9 @ 00465fa9 (uses: 5)
+- [x] crt_chkstk @ 0046cda0 (uses: 5)
+- [ ] FUN_004607a0 @ 004607a0 (uses: 4)
+- [x] crt_get_osfhandle @ 0046acb6 (uses: 4)
+- [ ] FUN_004601c0 @ 004601c0 (uses: 3)
+- [ ] FUN_004608c0 @ 004608c0 (uses: 3)
+- [ ] FUN_00461981 @ 00461981 (uses: 3)
+- [ ] FUN_00463dd4 @ 00463dd4 (uses: 3)
+- [ ] FUN_00463e26 @ 00463e26 (uses: 3)
+- [ ] FUN_004654a5 @ 004654a5 (uses: 3)
+- [ ] FUN_00465f48 @ 00465f48 (uses: 3)
+- [ ] FUN_004664d1 @ 004664d1 (uses: 3)
+- [ ] FUN_004667ac @ 004667ac (uses: 3)
+- [ ] FUN_00466c7b @ 00466c7b (uses: 3)
+- [ ] FUN_00466fcf @ 00466fcf (uses: 3)
+- [ ] FUN_004679d6 @ 004679d6 (uses: 3)
+- [ ] FUN_00467a72 @ 00467a72 (uses: 3)
+- [ ] FUN_00467e47 @ 00467e47 (uses: 3)
+- [ ] FUN_004695fb @ 004695fb (uses: 3)
+- [ ] FUN_0046a39e @ 0046a39e (uses: 3)
+- [ ] FUN_0046a415 @ 0046a415 (uses: 3)
+- [ ] FUN_0046ad79 @ 0046ad79 (uses: 3)
+- [ ] FUN_0046b265 @ 0046b265 (uses: 3)
+- [ ] FUN_0046d5c7 @ 0046d5c7 (uses: 3)
+- [ ] FUN_0046d8e2 @ 0046d8e2 (uses: 3)
+- [ ] FUN_0046d961 @ 0046d961 (uses: 3)
+- [ ] FUN_00460ccf @ 00460ccf (uses: 2)
+- [ ] FUN_00461739 @ 00461739 (uses: 2)
+- [ ] FUN_00461a83 @ 00461a83 (uses: 2)
+- [ ] FUN_0046248e @ 0046248e (uses: 2)
+- [ ] FUN_004626aa @ 004626aa (uses: 2)
+- [ ] FUN_00463325 @ 00463325 (uses: 2)
+- [ ] FUN_00463333 @ 00463333 (uses: 2)
+- [ ] FUN_0046355c @ 0046355c (uses: 2)
+- [ ] FUN_004638bf @ 004638bf (uses: 2)
+- [ ] FUN_004639d6 @ 004639d6 (uses: 2)
+- [ ] FUN_00463b61 @ 00463b61 (uses: 2)
+- [ ] FUN_004650d0 @ 004650d0 (uses: 2)
+- [ ] FUN_00465145 @ 00465145 (uses: 2)
+- [ ] FUN_00466ca6 @ 00466ca6 (uses: 2)
+- [ ] FUN_00467a2d @ 00467a2d (uses: 2)
+- [ ] FUN_004688be @ 004688be (uses: 2)
+- [ ] FUN_00469950 @ 00469950 (uses: 2)
+- [ ] FUN_004699ee @ 004699ee (uses: 2)
+- [ ] FUN_00469d72 @ 00469d72 (uses: 2)
+- [ ] FUN_0046a1ac @ 0046a1ac (uses: 2)
+- [ ] FUN_0046a318 @ 0046a318 (uses: 2)
+- [ ] FUN_0046a8c5 @ 0046a8c5 (uses: 2)
+- [ ] FUN_0046a8ce @ 0046a8ce (uses: 2)
+- [ ] FUN_0046b08c @ 0046b08c (uses: 2)
+- [ ] FUN_0046d6d3 @ 0046d6d3 (uses: 2)
+- [ ] FUN_0046d70b @ 0046d70b (uses: 2)
+- [ ] FUN_0046d98f @ 0046d98f (uses: 2)
+- [ ] FUN_0046de3b @ 0046de3b (uses: 2)
+- [ ] FUN_0046e05b @ 0046e05b (uses: 2)
+- [ ] FUN_0046e301 @ 0046e301 (uses: 2)
+- [ ] FUN_0046e5ec @ 0046e5ec (uses: 2)
+- [ ] FUN_004600c0 @ 004600c0 (uses: 1)
+- [ ] FUN_00460cb8 @ 00460cb8 (uses: 1)
+- [ ] FUN_00460cd0 @ 00460cd0 (uses: 1)
+- [ ] FUN_00460dd2 @ 00460dd2 (uses: 1)
+- [ ] FUN_00461162 @ 00461162 (uses: 1)
+- [ ] FUN_00461335 @ 00461335 (uses: 1)
+- [ ] FUN_00461768 @ 00461768 (uses: 1)
+- [ ] FUN_00461835 @ 00461835 (uses: 1)
+- [ ] FUN_004618fd @ 004618fd (uses: 1)
+- [ ] FUN_004619eb @ 004619eb (uses: 1)
+- [ ] FUN_00461a6b @ 00461a6b (uses: 1)
+- [ ] FUN_00461fd5 @ 00461fd5 (uses: 1)
+- [ ] FUN_00462373 @ 00462373 (uses: 1)
+- [ ] FUN_004623b2 @ 004623b2 (uses: 1)
+- [ ] FUN_004624b5 @ 004624b5 (uses: 1)
+- [ ] FUN_0046258a @ 0046258a (uses: 1)
+- [ ] FUN_0046262b @ 0046262b (uses: 1)
+- [ ] FUN_00462683 @ 00462683 (uses: 1)
+- [ ] FUN_00462835 @ 00462835 (uses: 1)
+- [ ] FUN_00462983 @ 00462983 (uses: 1)
+- [ ] FUN_00462a17 @ 00462a17 (uses: 1)
+- [ ] FUN_00462a7e @ 00462a7e (uses: 1)
+- [ ] FUN_00462add @ 00462add (uses: 1)
+- [ ] FUN_00462de0 @ 00462de0 (uses: 1)
+- [ ] FUN_00463153 @ 00463153 (uses: 1)
+- [ ] FUN_0046319d @ 0046319d (uses: 1)
+- [ ] FUN_0046325f @ 0046325f (uses: 1)
+- [ ] FUN_004632f1 @ 004632f1 (uses: 1)
+- [ ] FUN_0046332c @ 0046332c (uses: 1)
+- [ ] FUN_004633b8 @ 004633b8 (uses: 1)
+- [ ] FUN_00463431 @ 00463431 (uses: 1)
+- [ ] FUN_004636ae @ 004636ae (uses: 1)
+- [ ] FUN_004636c8 @ 004636c8 (uses: 1)
+- [ ] FUN_004636e7 @ 004636e7 (uses: 1)
+- [ ] FUN_004636f9 @ 004636f9 (uses: 1)
+- [ ] FUN_00463737 @ 00463737 (uses: 1)
+- [ ] FUN_0046385e @ 0046385e (uses: 1)
+- [ ] FUN_00463981 @ 00463981 (uses: 1)
+- [ ] FUN_00463a7d @ 00463a7d (uses: 1)
+- [ ] FUN_00463bf0 @ 00463bf0 (uses: 1)
+- [ ] FUN_00463c6b @ 00463c6b (uses: 1)
+- [ ] FUN_00464bbc @ 00464bbc (uses: 1)
+- [ ] FUN_00464bc9 @ 00464bc9 (uses: 1)
+- [ ] FUN_00464bd9 @ 00464bd9 (uses: 1)
+- [ ] FUN_00464be7 @ 00464be7 (uses: 1)
+- [ ] FUN_00465130 @ 00465130 (uses: 1)
+- [ ] FUN_0046515c @ 0046515c (uses: 1)
+- [ ] FUN_004651b8 @ 004651b8 (uses: 1)
+- [ ] FUN_004651ce @ 004651ce (uses: 1)
+- [ ] FUN_00465219 @ 00465219 (uses: 1)
+- [ ] FUN_004652bc @ 004652bc (uses: 1)
+- [ ] FUN_004653ec @ 004653ec (uses: 1)
+- [ ] FUN_004666f5 @ 004666f5 (uses: 1)
+- [ ] FUN_00466782 @ 00466782 (uses: 1)
+- [ ] FUN_00466845 @ 00466845 (uses: 1)
+- [ ] FUN_004668ce @ 004668ce (uses: 1)
+- [ ] FUN_00466a27 @ 00466a27 (uses: 1)
+- [ ] FUN_00466a61 @ 00466a61 (uses: 1)
+- [ ] FUN_004672d8 @ 004672d8 (uses: 1)
+- [ ] FUN_00467389 @ 00467389 (uses: 1)
+- [ ] FUN_00467484 @ 00467484 (uses: 1)
+- [ ] FUN_004678be @ 004678be (uses: 1)
+- [ ] FUN_00467914 @ 00467914 (uses: 1)
+- [ ] FUN_00467c7a @ 00467c7a (uses: 1)
+- [ ] FUN_00467d9e @ 00467d9e (uses: 1)
+- [ ] FUN_00467e62 @ 00467e62 (uses: 1)
+- [ ] FUN_00468887 @ 00468887 (uses: 1)
+- [ ] FUN_004688d8 @ 004688d8 (uses: 1)
+- [ ] FUN_004688ef @ 004688ef (uses: 1)
+- [ ] FUN_00468f2f @ 00468f2f (uses: 1)
+- [ ] FUN_00468f58 @ 00468f58 (uses: 1)
+- [ ] FUN_00468fb2 @ 00468fb2 (uses: 1)
+- [ ] FUN_00469073 @ 00469073 (uses: 1)
+- [ ] FUN_00469326 @ 00469326 (uses: 1)
+- [ ] FUN_0046953d @ 0046953d (uses: 1)
+- [ ] FUN_00469565 @ 00469565 (uses: 1)
+- [ ] FUN_00469573 @ 00469573 (uses: 1)
+- [ ] FUN_00469582 @ 00469582 (uses: 1)
+- [ ] FUN_004695a5 @ 004695a5 (uses: 1)
+- [ ] FUN_00469696 @ 00469696 (uses: 1)
+- [ ] FUN_00469849 @ 00469849 (uses: 1)
+- [ ] FUN_004698f3 @ 004698f3 (uses: 1)
+- [ ] FUN_00469a69 @ 00469a69 (uses: 1)
+- [ ] FUN_00469b36 @ 00469b36 (uses: 1)
+- [ ] FUN_00469bae @ 00469bae (uses: 1)
+- [ ] FUN_00469dd9 @ 00469dd9 (uses: 1)
+- [ ] FUN_00469e4c @ 00469e4c (uses: 1)
+- [ ] FUN_00469e81 @ 00469e81 (uses: 1)
+- [ ] FUN_00469e97 @ 00469e97 (uses: 1)
+- [ ] FUN_00469f29 @ 00469f29 (uses: 1)
+- [ ] FUN_00469fb2 @ 00469fb2 (uses: 1)
+- [ ] FUN_00469ffb @ 00469ffb (uses: 1)
+- [ ] FUN_0046a051 @ 0046a051 (uses: 1)
+- [ ] FUN_0046a0dd @ 0046a0dd (uses: 1)
+- [ ] FUN_0046a0f8 @ 0046a0f8 (uses: 1)
+- [ ] FUN_0046a104 @ 0046a104 (uses: 1)
+- [ ] FUN_0046a11f @ 0046a11f (uses: 1)
+- [ ] FUN_0046a32e @ 0046a32e (uses: 1)
+- [ ] FUN_0046a344 @ 0046a344 (uses: 1)
+- [ ] FUN_0046a371 @ 0046a371 (uses: 1)
+- [ ] FUN_0046a471 @ 0046a471 (uses: 1)
+- [ ] FUN_0046aa98 @ 0046aa98 (uses: 1)
+- [ ] FUN_0046abbb @ 0046abbb (uses: 1)
+- [ ] FUN_0046ac37 @ 0046ac37 (uses: 1)
+- [ ] FUN_0046b0b5 @ 0046b0b5 (uses: 1)
+- [ ] FUN_0046b10e @ 0046b10e (uses: 1)
+- [ ] FUN_0046c4cb @ 0046c4cb (uses: 1)
+- [ ] FUN_0046c5ad @ 0046c5ad (uses: 1)
+- [ ] FUN_0046c5db @ 0046c5db (uses: 1)
+- [ ] FUN_0046c862 @ 0046c862 (uses: 1)
+- [ ] FUN_0046c883 @ 0046c883 (uses: 1)
+- [ ] FUN_0046ca2f @ 0046ca2f (uses: 1)
+- [ ] FUN_0046cb6f @ 0046cb6f (uses: 1)
+- [ ] FUN_0046cfeb @ 0046cfeb (uses: 1)
+- [ ] FUN_0046d048 @ 0046d048 (uses: 1)
+- [ ] FUN_0046d13f @ 0046d13f (uses: 1)
+- [ ] FUN_0046d1ad @ 0046d1ad (uses: 1)
+- [ ] FUN_0046d1be @ 0046d1be (uses: 1)
+- [ ] FUN_0046d1ef @ 0046d1ef (uses: 1)
+- [ ] FUN_0046d39c @ 0046d39c (uses: 1)
+- [ ] FUN_0046d3e6 @ 0046d3e6 (uses: 1)
+- [ ] FUN_0046d419 @ 0046d419 (uses: 1)
+- [ ] FUN_0046d442 @ 0046d442 (uses: 1)
+- [ ] FUN_0046d5e3 @ 0046d5e3 (uses: 1)
+- [ ] FUN_0046d66c @ 0046d66c (uses: 1)
+- [ ] FUN_0046d6ef @ 0046d6ef (uses: 1)
+- [ ] FUN_0046d723 @ 0046d723 (uses: 1)
+- [ ] FUN_0046d8a5 @ 0046d8a5 (uses: 1)
+- [ ] FUN_0046d9bc @ 0046d9bc (uses: 1)
+- [ ] FUN_0046da83 @ 0046da83 (uses: 1)
+- [ ] FUN_0046e0d7 @ 0046e0d7 (uses: 1)
+- [ ] FUN_0046e261 @ 0046e261 (uses: 1)
+- [ ] FUN_0046e36f @ 0046e36f (uses: 1)
+- [ ] FUN_0046e617 @ 0046e617 (uses: 1)
+- [ ] FUN_0046e79e @ 0046e79e (uses: 1)
+- [ ] FUN_0046e7f6 @ 0046e7f6 (uses: 1)
+- [ ] FUN_0046e85d @ 0046e85d (uses: 1)
+- [ ] FUN_00460fac @ 00460fac (uses: 0)
+- [ ] FUN_00461a03 @ 00461a03 (uses: 0)
+- [ ] FUN_0046223f @ 0046223f (uses: 0)
+- [ ] FUN_004622b6 @ 004622b6 (uses: 0)
+- [ ] FUN_00462ba0 @ 00462ba0 (uses: 0)
+- [ ] FUN_00463180 @ 00463180 (uses: 0)
+- [ ] FUN_0046324b @ 0046324b (uses: 0)
+- [ ] FUN_00463382 @ 00463382 (uses: 0)
+- [ ] FUN_0046340c @ 0046340c (uses: 0)
+- [ ] FUN_004634e7 @ 004634e7 (uses: 0)
+- [ ] FUN_00463760 @ 00463760 (uses: 0)
+- [ ] FUN_00465f2d @ 00465f2d (uses: 0)
+- [ ] FUN_0046cd20 @ 0046cd20 (uses: 0)
+- [ ] FUN_0046cd60 @ 0046cd60 (uses: 0)
+- [ ] FUN_0046d66f @ 0046d66f (uses: 0)
+- [ ] FUN_0046e160 @ 0046e160 (uses: 0)
