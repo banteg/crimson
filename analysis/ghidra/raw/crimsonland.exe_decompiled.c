@@ -3006,7 +3006,8 @@ void perks_generate_choices(void)
     puVar6 = puVar6 + 1;
   }
 LAB_004045be:
-  if ((((iVar5 == 0) && (_DAT_00487004 == *DAT_004c3658)) && (_DAT_00487008 == DAT_004c3658[1])) &&
+  if ((((iVar5 == 0) && (_quest_stage_major == *DAT_004c3658)) &&
+      (_quest_stage_minor == DAT_004c3658[1])) &&
      (iVar3 = perk_count_get(perk_id_monster_vision), iVar3 == 0)) {
     iVar5 = 1;
     perk_choice_ids = perk_id_monster_vision;
@@ -3240,7 +3241,7 @@ void __cdecl demo_trial_overlay_render(float *xy,float alpha)
             (fStack_1a8 = (float)(DAT_0048084c / 1000), (float)(int)fStack_1a8 * 0.016666668 <= 5.0)
             ) {
 LAB_00404b1b:
-      if ((game_state_id == 9) && ((1 < _DAT_00487004 || (10 < _DAT_00487008)))) {
+      if ((game_state_id == 9) && ((1 < _quest_stage_major || (10 < _quest_stage_minor)))) {
         piStack_1ac = (int *)((float)piStack_1ac - 6.0);
         if (DAT_0048084c < 1) {
           (**(code **)(*grim_interface_ptr + 0x148))
@@ -4394,7 +4395,7 @@ LAB_00407129:
         _bonus_reflex_boost_timer = 0;
         if (DAT_00487088 < 0) {
           sfx_mute_all(music_track_extra_0);
-          iVar2 = _DAT_00487008 + _DAT_00487004 * 10;
+          iVar2 = _quest_stage_minor + _quest_stage_major * 10;
           *(int *)(&DAT_004856b8 + iVar2 * 4) = *(int *)(&DAT_004856b8 + iVar2 * 4) + 1;
           DAT_00487088 = frame_dt_ms;
           return;
@@ -4412,7 +4413,7 @@ LAB_00407129:
           return;
         }
         if (0x9c4 < DAT_00487088) {
-          iVar2 = _DAT_00487008 + -10 + _DAT_00487004 * 10;
+          iVar2 = _quest_stage_minor + -10 + _quest_stage_major * 10;
           if (DAT_00487034 < iVar2) {
             DAT_00487034 = iVar2;
           }
@@ -6246,7 +6247,7 @@ void FUN_0040aab0(void)
         }
         else if ((_config_game_mode != 3) || (5.0 < (float)(DAT_0048084c / 1000) * 0.016666668))
         goto LAB_0040abae;
-        if ((game_state_id != 9) || ((_DAT_00487004 < 2 && (_DAT_00487008 < 0xb))))
+        if ((game_state_id != 9) || ((_quest_stage_major < 2 && (_quest_stage_minor < 0xb))))
         goto LAB_0040abea;
       }
 LAB_0040abae:
@@ -6280,7 +6281,8 @@ LAB_0040abf9:
       }
       else if ((_config_game_mode != 3) || (5.0 < (float)(DAT_0048084c / 1000) * 0.016666668))
       goto LAB_0040acbb;
-      if ((game_state_id != 9) || ((_DAT_00487004 < 2 && (_DAT_00487008 < 0xb)))) goto LAB_0040aca0;
+      if ((game_state_id != 9) || ((_quest_stage_major < 2 && (_quest_stage_minor < 0xb))))
+      goto LAB_0040aca0;
     }
   }
   else {
@@ -6305,7 +6307,8 @@ LAB_0040acbb:
       }
       else if ((_config_game_mode != 3) || (5.0 < (float)(DAT_0048084c / 1000) * 0.016666668))
       goto LAB_0040ad8e;
-      if ((game_state_id != 9) || ((_DAT_00487004 < 2 && (_DAT_00487008 < 0xb)))) goto LAB_0040ad54;
+      if ((game_state_id != 9) || ((_quest_stage_major < 2 && (_quest_stage_minor < 0xb))))
+      goto LAB_0040ad54;
     }
   }
   else {
@@ -6454,7 +6457,8 @@ joined_r0x0040b1bc:
       }
       else if ((_config_game_mode != 3) || (5.0 < (float)(DAT_0048084c / 1000) * 0.016666668))
       goto LAB_0040b2b2;
-      if ((game_state_id != 9) || ((_DAT_00487004 < 2 && (_DAT_00487008 < 0xb)))) goto LAB_0040b2ad;
+      if ((game_state_id != 9) || ((_quest_stage_major < 2 && (_quest_stage_minor < 0xb))))
+      goto LAB_0040b2ad;
     }
   }
   else {
@@ -6475,7 +6479,7 @@ LAB_0040b2b2:
         }
         else if ((_config_game_mode != 3) || (5.0 < (float)(DAT_0048084c / 1000) * 0.016666668))
         goto LAB_0040b35f;
-        if ((game_state_id != 9) || ((_DAT_00487004 < 2 && (_DAT_00487008 < 0xb))))
+        if ((game_state_id != 9) || ((_quest_stage_major < 2 && (_quest_stage_minor < 0xb))))
         goto LAB_0040b3bd;
       }
 LAB_0040b35f:
@@ -6509,7 +6513,8 @@ LAB_0040b3bd:
       else if ((_config_game_mode != 3) ||
               (fStack_20 = (float)(DAT_0048084c / 1000), 5.0 < (float)(int)fStack_20 * 0.016666668))
       goto LAB_0040b494;
-      if ((game_state_id != 9) || ((_DAT_00487004 < 2 && (_DAT_00487008 < 0xb)))) goto LAB_0040b4bc;
+      if ((game_state_id != 9) || ((_quest_stage_major < 2 && (_quest_stage_minor < 0xb))))
+      goto LAB_0040b4bc;
     }
 LAB_0040b494:
     game_paused_flag = '\0';
@@ -6555,7 +6560,7 @@ LAB_0040b52d:
     if (game_state_id != 9) {
       return;
     }
-    if ((_DAT_00487004 < 2) && (_DAT_00487008 < 0xb)) {
+    if ((_quest_stage_major < 2) && (_quest_stage_minor < 0xb)) {
       return;
     }
   }
@@ -7758,8 +7763,8 @@ LAB_004103c2:
   if (DAT_00482555 != '\0') {
     DAT_00487258 = _config_game_mode;
     DAT_0048724d = '\x01';
-    DAT_00487250 = _DAT_00487004;
-    DAT_00487254 = _DAT_00487008;
+    DAT_00487250 = _quest_stage_major;
+    DAT_00487254 = _quest_stage_minor;
     DAT_0048725c = config_full_version;
     ui_transition_direction = '\0';
     game_state_pending = 0xe;
@@ -8029,7 +8034,7 @@ void quest_results_screen_update(void)
   }
   else {
     if (DAT_00487234 == -2) {
-      iVar2 = _DAT_00487008 + -0xb + _DAT_00487004 * 10;
+      iVar2 = _quest_stage_minor + -0xb + _quest_stage_major * 10;
       DAT_00482700 = (&DAT_00484754)[iVar2 * 0xb];
       DAT_00482704 = (&DAT_00484750)[iVar2 * 0xb];
       lVar9 = __ftol();
@@ -8376,7 +8381,8 @@ LAB_00411906:
     (**(code **)(*grim_interface_ptr + 0x148))();
     (**(code **)(*grim_interface_ptr + 0x114))();
     iVar2 = *grim_interface_ptr;
-    weapon_table_entry((&DAT_00484754)[(_DAT_00487008 + -0xb + _DAT_00487004 * 10) * 0xb]);
+    weapon_table_entry((&DAT_00484754)[(_quest_stage_minor + -0xb + _quest_stage_major * 10) * 0xb])
+    ;
     puStack_70 = (undefined *)0x411b4e;
     (**(code **)(iVar2 + 0x148))();
   }
@@ -8443,7 +8449,7 @@ LAB_00411906:
     crt_atexit(&DAT_00412020);
   }
   _DAT_004826b0 = s_Main_Menu_00472084;
-  if ((_DAT_00487004 == 5) && (_DAT_00487008 == 10)) {
+  if ((_quest_stage_major == 5) && (_quest_stage_minor == 10)) {
     _DAT_004825c0 = s_Show_End_Note_00473268;
   }
   _DAT_004825d0 = fVar10;
@@ -8455,7 +8461,7 @@ LAB_00411906:
   ui_button_update((float *)&stack0xffffffe0,(int *)&DAT_00482668);
   ui_button_update((float *)&stack0xffffffe0,(int *)&DAT_004826b0);
   if (DAT_004825c5 != '\0') {
-    if ((_DAT_00487004 == 5) && (_DAT_00487008 == 10)) {
+    if ((_quest_stage_major == 5) && (_quest_stage_minor == 10)) {
       render_pass_mode = 0;
       game_state_pending = 0x15;
       ui_transition_direction = '\0';
@@ -8464,7 +8470,7 @@ LAB_00411906:
       sfx_mute_all(music_track_extra_0);
       sfx_mute_all(music_track_crimson_theme_id);
       sfx_mute_all(music_track_shortie_monk_id);
-      _DAT_00487008 = _DAT_00487008 + 1;
+      _quest_stage_minor = _quest_stage_minor + 1;
       ui_transition_direction = '\0';
       game_state_pending = 9;
       render_pass_mode = 0;
@@ -8481,8 +8487,8 @@ LAB_00411906:
   if (DAT_0048266d != '\0') {
     DAT_00487258 = _config_game_mode;
     DAT_0048724d = '\x01';
-    DAT_00487250 = _DAT_00487004;
-    DAT_00487254 = _DAT_00487008;
+    DAT_00487250 = _quest_stage_major;
+    DAT_00487254 = _quest_stage_minor;
     DAT_0048725c = config_full_version;
     ui_transition_direction = '\0';
     game_state_pending = 0xe;
@@ -8562,8 +8568,8 @@ void FUN_004120b0(void)
   creature_active_count = 0;
   DAT_0048718c = 0;
   DAT_00487088 = 0xffffffff;
-  _DAT_00487004 = 1;
-  _DAT_00487008 = 1;
+  _quest_stage_major = 1;
+  _quest_stage_minor = 1;
   return;
 }
 
@@ -8744,20 +8750,20 @@ LAB_004124e2:
     else if (uVar6 == 0) goto LAB_004124e2;
     if ((shock_chain_links_left < 1) || (uVar7 != 7)) {
       if (_config_game_mode == 3) {
-        if ((((config_full_version == '\0') || (_DAT_00487004 != 3)) && (_DAT_00487004 != 2)) ||
-           ((_DAT_00487008 != 10 || (uVar7 != 5)))) {
-          if ((config_full_version != '\0') && (_DAT_00487004 == 2)) {
-            if (_DAT_00487008 == 10) {
+        if ((((config_full_version == '\0') || (_quest_stage_major != 3)) &&
+            (_quest_stage_major != 2)) || ((_quest_stage_minor != 10 || (uVar7 != 5)))) {
+          if ((config_full_version != '\0') && (_quest_stage_major == 2)) {
+            if (_quest_stage_minor == 10) {
 joined_r0x00412584:
               if (uVar7 == 0xb) goto LAB_00412613;
             }
             goto LAB_0041258a;
           }
-          if (_DAT_00487004 == 4) {
-            if (_DAT_00487008 != 10) goto LAB_0041258a;
+          if (_quest_stage_major == 4) {
+            if (_quest_stage_minor != 10) goto LAB_0041258a;
             if (uVar7 != 5) goto joined_r0x00412584;
           }
-          else if (((_DAT_00487004 != 5) || (_DAT_00487008 != 10)) || (uVar7 != 5))
+          else if (((_quest_stage_major != 5) || (_quest_stage_minor != 10)) || (uVar7 != 5))
           goto LAB_0041258a;
         }
       }
@@ -13587,7 +13593,8 @@ LAB_0041bdf8:
     (**(code **)(*grim_interface_ptr + 0x114))
               (0x3f800000,0x3f800000,0x3f800000,fVar11 * afStack_204[3]);
     uVar4 = 0xffffffff;
-    pcVar10 = *(char **)(&DAT_0048473c + (_DAT_00487008 + -0xb + _DAT_00487004 * 10) * 0x2c);
+    pcVar10 = *(char **)(&DAT_0048473c +
+                        (_quest_stage_minor + -0xb + _quest_stage_major * 10) * 0x2c);
     do {
       if (uVar4 == 0) break;
       uVar4 = uVar4 - 1;
@@ -13601,9 +13608,9 @@ LAB_0041bdf8:
     (**(code **)(*grim_interface_ptr + 0x13c))();
     (**(code **)(*grim_interface_ptr + 0x20))();
     (**(code **)(*grim_interface_ptr + 0x114))();
-    if (10 < _DAT_00487008) {
-      _DAT_00487004 = _DAT_00487004 + 1;
-      _DAT_00487008 = _DAT_00487008 + -10;
+    if (10 < _quest_stage_minor) {
+      _quest_stage_major = _quest_stage_major + 1;
+      _quest_stage_minor = _quest_stage_minor + -10;
     }
     uStack_174 = 0x41bf99;
     crt_sprintf(&DAT_0048f788,s__d__d_0047381c);
@@ -23080,10 +23087,10 @@ int __cdecl perk_can_offer(int perk_index)
   uint uVar3;
   
   uVar3 = _config_game_mode;
-  if (((((_config_game_mode != 3) || (config_full_version == '\0')) || (_DAT_00487008 != 10)) ||
-      ((_DAT_00487004 != 2 ||
-       (((perk_index != perk_id_poison_bullets && (perk_index != perk_id_veins_of_poison)) &&
-        (perk_index != perk_id_plaguebearer)))))) &&
+  if (((((_config_game_mode != 3) || (config_full_version == '\0')) || (_quest_stage_minor != 10))
+      || ((_quest_stage_major != 2 ||
+          (((perk_index != perk_id_poison_bullets && (perk_index != perk_id_veins_of_poison)) &&
+           (perk_index != perk_id_plaguebearer)))))) &&
      (((_config_player_count != 2 || (((&perk_flags_table)[perk_index * 0x14] & 2) != 0)) &&
       ((_config_game_mode != 3 ||
        (uVar3 = perk_index * 5, ((&perk_flags_table)[perk_index * 0x14] & 1) != 0)))))) {
@@ -27315,12 +27322,12 @@ undefined * FUN_0043b5b0(void)
   else {
     if (_config_game_mode == 3) {
       if (config_full_version == '\0') {
-        crt_sprintf(&DAT_004c36dc,s__s_scores5_questhc_d__d_hi_00477c10,&DAT_004c375c,_DAT_00487004,
-                    _DAT_00487008);
+        crt_sprintf(&DAT_004c36dc,s__s_scores5_questhc_d__d_hi_00477c10,&DAT_004c375c,
+                    _quest_stage_major,_quest_stage_minor);
       }
       else {
-        crt_sprintf(&DAT_004c36dc,s__s_scores5_quest_d__d_hi_00477c2c,&DAT_004c375c,_DAT_00487004,
-                    _DAT_00487008);
+        crt_sprintf(&DAT_004c36dc,s__s_scores5_quest_d__d_hi_00477c2c,&DAT_004c375c,
+                    _quest_stage_major,_quest_stage_minor);
       }
       goto LAB_0043b67f;
     }
@@ -27387,8 +27394,8 @@ void FUN_0043b750(void)
     highscore_record_shots_hit = highscore_record_shots_fired;
   }
   highscore_record_game_mode = config_game_mode;
-  highscore_record_quest_major = DAT_00487004;
-  highscore_record_quest_minor = DAT_00487008;
+  highscore_record_quest_major = quest_stage_major;
+  highscore_record_quest_minor = quest_stage_minor;
   highscore_flags = 0;
   uVar2 = _rand();
   uVar2 = uVar2 & 0x8fffffff;
@@ -32188,11 +32195,11 @@ void __cdecl FUN_004461c0(int param_1)
     if (render_pass_mode == '\0') {
       DAT_0048724d = '\0';
       FUN_00412dc0();
-      iVar7 = _DAT_00487008;
-      iVar6 = _DAT_00487004;
+      iVar7 = _quest_stage_minor;
+      iVar6 = _quest_stage_major;
       if (_config_game_mode == 3) {
-        *(int *)(&DAT_00485618 + (_DAT_00487008 + _DAT_00487004 * 10) * 4) =
-             *(int *)(&DAT_00485618 + (_DAT_00487008 + _DAT_00487004 * 10) * 4) + 1;
+        *(int *)(&DAT_00485618 + (_quest_stage_minor + _quest_stage_major * 10) * 4) =
+             *(int *)(&DAT_00485618 + (_quest_stage_minor + _quest_stage_major * 10) * 4) + 1;
         quest_start_selected(iVar6,iVar7);
         render_pass_mode = '\x01';
         DAT_00487241 = 1;
@@ -35272,7 +35279,7 @@ int weapon_pick_random_available(void)
       }
     }
   } while (((&DAT_004d7a6c)[iVar1 * 0x7c] == '\0') ||
-          ((((_config_game_mode == 3 && (_DAT_00487004 == 5)) && (_DAT_00487008 == 10)) &&
+          ((((_config_game_mode == 3 && (_quest_stage_major == 5)) && (_quest_stage_minor == 10)) &&
            (iVar1 == 0x17))));
   return iVar1;
 }

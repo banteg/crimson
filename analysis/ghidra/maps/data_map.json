@@ -771,6 +771,18 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00487004",
+      "name": "quest_stage_major",
+      "comment": "Quest stage major index (episode/tier). Advances after every 10 minor stages."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00487008",
+      "name": "quest_stage_minor",
+      "comment": "Quest stage minor index (mission within major tier)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x0048700c",
       "name": "creatures_any_active_flag",
       "comment": "Creature pool active flag cached by creatures_none_active()."
