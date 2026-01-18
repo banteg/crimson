@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import csv
 import io
+import signal
 import socket
 import subprocess
 import threading
@@ -32,6 +33,7 @@ class CdbBridge:
         args: list[str],
         log_path: Path,
         tail_size: int,
+        auto_break: bool,
     ) -> None:
         self.cdb_path = cdb_path
         self.args = args
@@ -41,6 +43,7 @@ class CdbBridge:
         self.lock = threading.Lock()
         self.proc: subprocess.Popen[str] | None = None
         self.log_handle = log_path.open("a", encoding="utf-8")
+        self.auto_break = auto_break
 
     def start(self) -> None:
         self.proc = subprocess.Popen(
@@ -50,6 +53,7 @@ class CdbBridge:
             stderr=subprocess.STDOUT,
             text=True,
             bufsize=1,
+            creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,
         )
         thread = threading.Thread(target=self._reader, daemon=True)
         thread.start()
@@ -75,6 +79,9 @@ class CdbBridge:
 
     def send_command(self, command: str, timeout: float) -> list[str]:
         assert self.proc and self.proc.stdin
+        stripped = command.strip()
+        if self.auto_break and not _is_continue_command(stripped):
+            self._break_in()
         cmd_id = uuid.uuid4().hex[:8]
         marker = f".echo __CDB_BRIDGE_DONE__{cmd_id}"
         with self.lock:
@@ -110,6 +117,28 @@ class CdbBridge:
             self.proc.terminate()
         self.log_handle.close()
 
+    def _break_in(self) -> None:
+        if not self.proc:
+            return
+        try:
+            self.proc.send_signal(signal.CTRL_BREAK_EVENT)
+            time.sleep(0.05)
+        except Exception:
+            pass
+
+
+def _is_continue_command(command: str) -> bool:
+    lowered = command.lower()
+    if lowered in {"g", "gh", "gn", "go"}:
+        return True
+    if lowered.startswith("g "):
+        return True
+    if lowered.startswith("gc") or lowered.startswith("go"):
+        return True
+    if lowered.startswith("q"):
+        return True
+    return False
+
 
 def serve(
     bridge: CdbBridge,
@@ -141,6 +170,10 @@ def serve(
                 lines = bridge.tail_lines(count)
                 payload = "\n".join(lines) + "\n<<<END>>>\n"
                 conn.sendall(payload.encode("utf-8"))
+                continue
+            if line.startswith(":break"):
+                bridge._break_in()
+                conn.sendall(b"OK\n<<<END>>>\n")
                 continue
             if line.startswith(":quit"):
                 bridge.close()
@@ -182,6 +215,12 @@ def main() -> int:
     parser.add_argument("--tail", type=int, default=400)
     parser.add_argument("--timeout", type=float, default=5.0)
     parser.add_argument("--init", type=str, default="", help="init commands to send")
+    parser.add_argument(
+        "--auto-break",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="send CTRL+BREAK before each command",
+    )
     args = parser.parse_args()
 
     if not args.pid and not args.exe:
@@ -199,7 +238,13 @@ def main() -> int:
 
     args.log.parent.mkdir(parents=True, exist_ok=True)
 
-    bridge = CdbBridge(args.cdb, cdb_args, args.log, tail_size=args.tail)
+    bridge = CdbBridge(
+        args.cdb,
+        cdb_args,
+        args.log,
+        tail_size=args.tail,
+        auto_break=args.auto_break,
+    )
     bridge.start()
     time.sleep(0.5)
 
