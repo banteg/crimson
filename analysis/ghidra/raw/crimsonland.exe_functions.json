@@ -1799,9 +1799,9 @@
     "calls": ["crt_fclose", "crt_fopen"]
   },
   {
-    "name": "FUN_0043b9e0",
+    "name": "resource_open_read",
     "address": "0043b9e0",
-    "signature": "undefined4 FUN_0043b9e0(byte * param_1, int * param_2)",
+    "signature": "int resource_open_read(byte * path, int * size_out)",
     "external": false,
     "calls": ["FUN_0043b940", "FUN_00462de0", "crt_fclose", "crt_fopen", "crt_fread", "crt_fseek", "crt_ftell"]
   },
@@ -1838,14 +1838,14 @@
     "address": "0043bca0",
     "signature": "undefined4 FUN_0043bca0(byte * param_1, undefined4 * param_2, uint * param_3)",
     "external": false,
-    "calls": ["FUN_0043b9e0", "FUN_0043bad0", "crt_fread", "operator_new"]
+    "calls": ["FUN_0043bad0", "crt_fread", "operator_new", "resource_open_read"]
   },
   {
     "name": "FUN_0043bcf0",
     "address": "0043bcf0",
     "signature": "uint FUN_0043bcf0(undefined4 * param_1, byte * param_2)",
     "external": false,
-    "calls": ["FUN_0041ddd0", "FUN_0041dee0", "FUN_0041df00", "FUN_0043b9e0", "FUN_0043bad0", "FUN_0043c2b0", "crt_fread", "operator_new"]
+    "calls": ["FUN_0041ddd0", "FUN_0041dee0", "FUN_0041df00", "FUN_0043bad0", "FUN_0043c2b0", "crt_fread", "operator_new", "resource_open_read"]
   },
   {
     "name": "FUN_0043be20",
@@ -1922,7 +1922,7 @@
     "address": "0043c3a0",
     "signature": "undefined4 FUN_0043c3a0(undefined4 * param_1, byte * param_2)",
     "external": false,
-    "calls": ["FUN_0041ddd0", "FUN_0043b9e0", "FUN_0043bad0", "crt_fread", "operator_new"]
+    "calls": ["FUN_0041ddd0", "FUN_0043bad0", "crt_fread", "operator_new", "resource_open_read"]
   },
   {
     "name": "FUN_0043c520",

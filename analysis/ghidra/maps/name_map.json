@@ -677,6 +677,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0043b9e0",
+    "name": "resource_open_read",
+    "signature": "int resource_open_read(byte *path, int *size_out)",
+    "comment": "opens a resource from the active pack or filesystem and returns its size"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0043c090",
     "name": "sfx_release_entry",
     "signature": "void sfx_release_entry(int entry)",

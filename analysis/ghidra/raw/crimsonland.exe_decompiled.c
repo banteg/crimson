@@ -27627,9 +27627,11 @@ undefined4 __cdecl FUN_0043b980(LPCSTR param_1)
 
 
 
-/* FUN_0043b9e0 @ 0043b9e0 */
+/* resource_open_read @ 0043b9e0 */
 
-undefined4 __cdecl FUN_0043b9e0(byte *param_1,int *param_2)
+/* opens a resource from the active pack or filesystem and returns its size */
+
+int __cdecl resource_open_read(byte *path,int *size_out)
 
 {
   int *piVar1;
@@ -27639,7 +27641,7 @@ undefined4 __cdecl FUN_0043b9e0(byte *param_1,int *param_2)
   long lVar4;
   int iVar5;
   
-  piVar1 = param_2;
+  piVar1 = size_out;
   if (DAT_004c3c6c != '\0') {
     fp = crt_fopen((char *)&DAT_004c3968,&file_mode_read_binary);
     DAT_004c3c68 = fp;
@@ -27650,18 +27652,18 @@ undefined4 __cdecl FUN_0043b9e0(byte *param_1,int *param_2)
     uVar3 = FUN_0043b940(&fp->_ptr);
     cVar2 = (char)uVar3;
     while (cVar2 != '\0') {
-      crt_fread(&param_2,4,1,fp);
-      *piVar1 = (int)param_2;
-      uVar3 = FUN_00462de0(param_2,&DAT_004c3a68,param_1);
+      crt_fread(&size_out,4,1,fp);
+      *piVar1 = (int)size_out;
+      uVar3 = FUN_00462de0(size_out,&DAT_004c3a68,path);
       iVar5 = 0;
       if (uVar3 == 0) goto LAB_0043bac3;
-      crt_fseek(fp,(long)param_2,1);
+      crt_fseek(fp,(long)size_out,1);
       uVar3 = FUN_0043b940(&fp->_ptr);
       cVar2 = (char)uVar3;
     }
     crt_fclose(fp);
   }
-  DAT_004c3c68 = crt_fopen((char *)param_1,&file_mode_read_binary);
+  DAT_004c3c68 = crt_fopen((char *)path,&file_mode_read_binary);
   if (DAT_004c3c68 == (FILE *)0x0) {
     return 0;
   }
@@ -27791,17 +27793,17 @@ undefined4 __cdecl FUN_0043bc40(int *param_1)
 
 /* FUN_0043bca0 @ 0043bca0 */
 
-undefined4 __cdecl FUN_0043bca0(byte *param_1,undefined4 *param_2,uint *param_3)
+int __cdecl FUN_0043bca0(byte *param_1,undefined4 *param_2,uint *param_3)
 
 {
   FILE *fp;
-  undefined4 uVar1;
+  int iVar1;
   void *ptr;
   
-  uVar1 = FUN_0043b9e0(param_1,(int *)param_3);
+  iVar1 = resource_open_read(param_1,(int *)param_3);
   fp = DAT_004c3c68;
-  if ((char)uVar1 == '\0') {
-    return uVar1;
+  if ((char)iVar1 == '\0') {
+    return iVar1;
   }
   ptr = operator_new(*param_3);
   crt_fread(ptr,*param_3,1,fp);
@@ -27829,7 +27831,7 @@ uint __cdecl FUN_0043bcf0(undefined4 *param_1,byte *param_2)
   uint local_1c;
   int local_18;
   
-  uVar1 = FUN_0043b9e0(param_2,(int *)&local_314);
+  uVar1 = resource_open_read(param_2,(int *)&local_314);
   fp = DAT_004c3c68;
   if ((char)uVar1 == '\0') {
     return uVar1;
@@ -28274,16 +28276,16 @@ uint __cdecl FUN_0043c2b0(int param_1)
 
 /* FUN_0043c3a0 @ 0043c3a0 */
 
-undefined4 __cdecl FUN_0043c3a0(undefined4 *param_1,byte *param_2)
+int __cdecl FUN_0043c3a0(undefined4 *param_1,byte *param_2)
 
 {
   ushort uVar1;
   FILE *fp;
-  undefined4 uVar2;
+  int iVar2;
   undefined4 *puVar3;
   void *this;
-  uint uVar4;
-  int iVar5;
+  undefined4 uVar4;
+  uint uVar5;
   uint3 uVar6;
   uint uVar7;
   undefined4 local_24 [4];
@@ -28293,19 +28295,19 @@ undefined4 __cdecl FUN_0043c3a0(undefined4 *param_1,byte *param_2)
   undefined4 local_8;
   undefined4 local_4;
   
-  uVar2 = FUN_0043b9e0(param_2,(int *)&param_2);
+  iVar2 = resource_open_read(param_2,(int *)&param_2);
   fp = DAT_004c3c68;
-  if ((char)uVar2 == '\0') {
-    return uVar2;
+  if ((char)iVar2 == '\0') {
+    return iVar2;
   }
   puVar3 = operator_new((uint)(param_2 + 8));
   crt_fread(puVar3 + 2,(uint)param_2,1,fp);
   FUN_0043bad0();
   this = operator_new(0x310);
   param_1[0x1d] = this;
-  uVar2 = FUN_0041ddd0(this,puVar3,param_2);
-  if ((char)uVar2 == '\0') {
-    return uVar2;
+  uVar4 = FUN_0041ddd0(this,puVar3,param_2);
+  if ((char)uVar4 == '\0') {
+    return uVar4;
   }
   *param_1 = 0;
   param_1[1] = 0;
@@ -28318,25 +28320,25 @@ undefined4 __cdecl FUN_0043c3a0(undefined4 *param_1,byte *param_2)
   param_1[1] = *(undefined4 *)(param_1[0x1d] + 0x2f8);
   *(undefined2 *)((int)param_1 + 0xe) = 0x10;
   *(undefined2 *)(param_1 + 4) = 0;
-  uVar4 = (int)((uint)uVar1 * 0x10) >> 3;
-  *(short *)(param_1 + 3) = (short)uVar4;
-  iVar5 = (uVar4 & 0xffff) * param_1[1];
-  param_1[2] = iVar5;
-  uVar4 = iVar5 * 2;
-  param_1[6] = uVar4;
-  puVar3 = operator_new(uVar4);
-  uVar4 = param_1[6];
+  uVar5 = (int)((uint)uVar1 * 0x10) >> 3;
+  *(short *)(param_1 + 3) = (short)uVar5;
+  iVar2 = (uVar5 & 0xffff) * param_1[1];
+  param_1[2] = iVar2;
+  uVar5 = iVar2 * 2;
+  param_1[6] = uVar5;
+  puVar3 = operator_new(uVar5);
+  uVar5 = param_1[6];
   param_1[5] = puVar3;
-  for (uVar7 = uVar4 >> 2; uVar7 != 0; uVar7 = uVar7 - 1) {
+  for (uVar7 = uVar5 >> 2; uVar7 != 0; uVar7 = uVar7 - 1) {
     *puVar3 = 0;
     puVar3 = puVar3 + 1;
   }
-  for (uVar4 = uVar4 & 3; uVar4 != 0; uVar4 = uVar4 - 1) {
+  for (uVar5 = uVar5 & 3; uVar5 != 0; uVar5 = uVar5 - 1) {
     *(undefined1 *)puVar3 = 0;
     puVar3 = (undefined4 *)((int)puVar3 + 1);
   }
   puVar3 = local_24;
-  for (iVar5 = 9; iVar5 != 0; iVar5 = iVar5 + -1) {
+  for (iVar2 = 9; iVar2 != 0; iVar2 = iVar2 + -1) {
     *puVar3 = 0;
     puVar3 = puVar3 + 1;
   }
@@ -28348,9 +28350,9 @@ undefined4 __cdecl FUN_0043c3a0(undefined4 *param_1,byte *param_2)
   local_24[1] = 0x180c0;
   local_c = 0;
   local_14 = param_1;
-  iVar5 = (**(code **)(*DAT_004c3964 + 0xc))(DAT_004c3964,local_24,param_1 + 9,0);
-  uVar6 = (uint3)((uint)iVar5 >> 8);
-  if (iVar5 < 0) {
+  iVar2 = (**(code **)(*DAT_004c3964 + 0xc))(DAT_004c3964,local_24,param_1 + 9,0);
+  uVar6 = (uint3)((uint)iVar2 >> 8);
+  if (iVar2 < 0) {
     return (uint)uVar6 << 8;
   }
   param_1[0x20] = 0;

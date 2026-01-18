@@ -115,6 +115,12 @@ You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps
   - Evidence: handles focus/hover, polls text input via `console_input_poll`, plays typing SFX, and renders
     the input box plus caret.
 
+### Audio resource packs (high confidence)
+
+- `FUN_0043b9e0` -> `resource_open_read`
+  - Evidence: when a resource pack is active, opens the pack and searches entries; otherwise opens the file
+    directly, returns the file size, and leaves the file handle in a global used by sample/track loaders.
+
 
 ### Input primary action (high confidence)
 
