@@ -28,6 +28,18 @@ def main() -> int:
     parser.add_argument("--cmd", help="command to send")
     parser.add_argument("--tail", type=int, help="tail lines from log")
     parser.add_argument("--timeout", type=float, default=10.0)
+    parser.add_argument(
+        "--break",
+        dest="do_break",
+        action="store_true",
+        help="send :break before the command",
+    )
+    parser.add_argument(
+        "--continue",
+        dest="do_continue",
+        action="store_true",
+        help="send g after the command",
+    )
     args = parser.parse_args()
 
     if args.tail is not None:
@@ -37,7 +49,13 @@ def main() -> int:
     else:
         raise SystemExit("Provide --cmd or --tail")
 
-    output = send(args.host, args.port, line, timeout=args.timeout)
+    outputs = []
+    if args.do_break:
+        outputs.append(send(args.host, args.port, ":break", timeout=args.timeout))
+    outputs.append(send(args.host, args.port, line, timeout=args.timeout))
+    if args.do_continue:
+        outputs.append(send(args.host, args.port, "g", timeout=args.timeout))
+    output = "\n".join([out for out in outputs if out])
     if output:
         print(output)
     return 0
