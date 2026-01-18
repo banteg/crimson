@@ -110,7 +110,7 @@ The engine uses **two patterns**:
 
 ### Known assets and grids
 
-- `artifacts/assets/crimson/game/projs.png` (DAT_0048f7d4)
+- `artifacts/assets/crimson/game/projs.png` (`projectile_texture` / `DAT_0048f7d4`)
   - Uses **grid=4** (e.g. `+0x104(4, …)` around `analysis/ghidra/raw/crimsonland.exe_decompiled.c:18448`).
   - Uses **grid=2** for some effects (e.g. `+0x104(2, 0)` around `:16479`).
   - Several projectile/beam effects draw **repeated quads** along a vector
@@ -130,7 +130,7 @@ The engine uses **two patterns**:
     (`0x00..0x12`). Muzzle flash uses `effect_id 0x12` → grid 16, frame `0x26`
     (the sprite itself resembles a shell casing).
 
-- `artifacts/assets/crimson/ui/ui_wicons.png` (DAT_0048f7e4)
+- `artifacts/assets/crimson/ui/ui_wicons.png` (`ui_weapon_icons_texture` / `DAT_0048f7e4`)
   - Uses **grid=8**, but rendered via `grim_set_sub_rect(8, 2, 1, frame)`.
   - This implies each weapon icon spans **2×1 cells** (wider than a single cell).
 

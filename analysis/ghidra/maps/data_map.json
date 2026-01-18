@@ -417,6 +417,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x004808b8",
+      "name": "game_paused_flag",
+      "comment": "Pause toggle; when nonzero gameplay updates are skipped in the main loop."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004808b9",
       "name": "mouse_button_down",
       "comment": "Cached mouse button 0 state (from grim_is_mouse_button_down)."
@@ -426,6 +432,12 @@
       "address": "0x004808c0",
       "name": "ui_pulse_timer_ms",
       "comment": "UI pulse timer in ms (used for sine-based effects)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004824d4",
+      "name": "plugin_interface_ptr",
+      "comment": "Modal/plugin interface pointer used when game_state_id == 0x16."
     },
     {
       "program": "crimsonland.exe",
@@ -753,6 +765,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x0048700d",
+      "name": "demo_mode_active",
+      "comment": "Demo/attract mode flag; disables HUD and alters update behavior."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x0048700e",
       "name": "time_scale_active",
       "comment": "Time-scale active flag (set while Reflex Boost is active)."
@@ -915,15 +933,51 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00487240",
+      "name": "render_pass_mode",
+      "comment": "Render pass mode gate; 0 triggers terrain-only pass."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00487248",
       "name": "ui_elements_timeline",
       "comment": "UI elements timeline accumulator."
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x0048724c",
+      "name": "ui_transition_direction",
+      "comment": "UI transition direction flag (0 = countdown, nonzero = count up)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00487264",
       "name": "screen_fade_alpha",
       "comment": "Fullscreen fade alpha used by grim_draw_fullscreen_color."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048726c",
+      "name": "game_state_prev",
+      "comment": "Previous game state id set before transitions."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00487270",
+      "name": "game_state_id",
+      "comment": "Current game state id checked by update/render loops."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00487274",
+      "name": "game_state_pending",
+      "comment": "Pending transition target set before ui_elements_update_and_render switches state."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00487278",
+      "name": "ui_transition_alpha",
+      "comment": "UI transition alpha computed from ui_elements_timeline."
     },
     {
       "program": "crimsonland.exe",
@@ -999,9 +1053,21 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x0048f7d4",
+      "name": "projectile_texture",
+      "comment": "Texture handle for projs.png (projectile sheet)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x0048f7dc",
       "name": "bodyset_texture",
       "comment": "Texture handle for bodyset atlas (fx_queue_render / corpse frame atlas)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f7e4",
+      "name": "ui_weapon_icons_texture",
+      "comment": "Texture handle for ui_wicons.png (weapon icon atlas)."
     },
     {
       "program": "crimsonland.exe",

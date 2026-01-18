@@ -6,10 +6,10 @@ This page groups full-screen or modal flows that have their own update loops.
 
 ## Game over / high score entry (FUN_0040ffc0)
 
-- Used for non-quest modes (state `DAT_00487270 == 7`).
+- Used for non-quest modes (state `game_state_id` (`DAT_00487270`) == `7`).
 - Handles high score entry, shows stats, and routes back to menu.
-- Plays exclusive SFX on entry when `DAT_00487274 == 0x19` and transition flag
-  `DAT_0048724c` is set.
+- Plays exclusive SFX on entry when `game_state_pending` (`DAT_00487274`) == `0x19` and transition flag
+  `ui_transition_direction` (`DAT_0048724c`) is set.
 
 ## Quest results (quest_results_screen_update / FUN_00410d20)
 
@@ -22,7 +22,7 @@ Renders the post-mission summary and buttons:
 
 ## Quest failed screen (FUN_004107e0)
 
-- Used when the player fails a quest (state `DAT_00487270 == 0xc`).
+- Used when the player fails a quest (state `game_state_id` (`DAT_00487270`) == `0xc`).
 - Renders failure text and retry options.
 
 ## Demo purchase screen (demo_purchase_screen_update / FUN_0040b740)
@@ -38,6 +38,6 @@ Renders the post-mission summary and buttons:
 
 ## Modal/plugin flow (FUN_0040b630)
 
-There is a modal flow keyed off state `DAT_00487270 == 0x16` that appears to
-call into a plugin interface (`DAT_004824d4`). This likely represents a
+There is a modal flow keyed off state `game_state_id` (`DAT_00487270`) == `0x16` that appears to
+call into a plugin interface (`plugin_interface_ptr` (`DAT_004824d4`)). This likely represents a
 modal screen or external module. The exact UI and state name remain unknown.

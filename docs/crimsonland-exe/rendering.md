@@ -6,7 +6,7 @@ This page summarizes the primary render paths in `crimsonland.exe`.
 
 ## Render dispatcher (FUN_00406af0)
 
-- If `DAT_00487240 == 0` and `DAT_00487270 != 5`, it draws terrain only via
+- If `render_pass_mode` (`DAT_00487240`) == `0` and `game_state_id` (`DAT_00487270`) != `5`, it draws terrain only via
   `FUN_004188a0`.
 - Otherwise it runs the full gameplay render pass `FUN_00405960`.
 - After either branch it applies a fullscreen fade (`DAT_00487264`), runs
@@ -30,11 +30,11 @@ Order of major passes:
 Notes:
 
 - `DAT_004aaf0c` is used as the player index during the two overlay passes.
-- `DAT_00487278` is the frame alpha used by multiple render paths.
+- `ui_transition_alpha` (`DAT_00487278`) is the frame alpha used by multiple render paths.
 
 ## HUD render (FUN_0041ca90 / FUN_0041aed0)
 
-The in-game HUD render is gated by `DAT_0048700d` and is called from the main
+The in-game HUD render is gated by `demo_mode_active` (`DAT_0048700d`) and is called from the main
 UI pass (`FUN_0041ca90`). It binds `ui_wicons` and uses `grim_set_sub_rect` for
 weapon icons, along with health/score overlays.
 
@@ -46,8 +46,8 @@ its base texture index from a per-level descriptor.
 ## UI overlays
 
 `player_render_overlays` draws per-player indicators (aim reticles, shields,
-weapon indicators). It is gated by `DAT_00487270` values (not drawn in modal
-states like `0x14/0x16`) and `DAT_00487278` (transition alpha).
+weapon indicators). It is gated by `game_state_id` (`DAT_00487270`) values (not drawn in modal
+states like `0x14/0x16`) and `ui_transition_alpha` (`DAT_00487278`) (transition alpha).
 
 See also:
 

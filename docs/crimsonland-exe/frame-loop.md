@@ -7,10 +7,10 @@ Other states have their own loops but reuse the same render pass (`FUN_00405960`
 
 ## Gating flags
 
-- `DAT_004808b8`: pause toggle. When set, gameplay updates are skipped and UI
+- `game_paused_flag` (`DAT_004808b8`): pause toggle. When set, gameplay updates are skipped and UI
   timers are adjusted.
-- `DAT_0048700d`: demo/attract gating. Disables HUD and alters update behavior.
-- `DAT_00487270`: must be `9` for creature/projectile/player updates.
+- `demo_mode_active` (`DAT_0048700d`): demo/attract gating. Disables HUD and alters update behavior.
+- `game_state_id` (`DAT_00487270`): must be `9` for creature/projectile/player updates.
 - `FUN_0041df40()`: used in multiple places to gate demo/trial timing behavior.
 
 ## Update order (simplified)
@@ -50,8 +50,8 @@ Camera shake state (used by `FUN_00409500`):
 
 When all players are dead, the loop queues a state transition:
 
-- Non-quest modes: `DAT_00487274 = 7`
-- Quest mode: `DAT_00487274 = 0xc`
+- Non-quest modes: `game_state_pending` (`DAT_00487274`) = `7`
+- Quest mode: `game_state_pending` (`DAT_00487274`) = `0xc`
 
 The transition is finalized by `ui_elements_update_and_render` when the
 transition timeline completes.

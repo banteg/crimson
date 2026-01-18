@@ -8,10 +8,10 @@ This page groups UI element logic, menu loops, and transition helpers.
 
 Responsibilities:
 
-- Updates the global transition timeline `DAT_00487248` using `DAT_00480844`.
-  Direction is controlled by `DAT_0048724c` (0 = countdown, nonzero = count up).
-- When the timeline goes below zero, it calls `FUN_004461c0(DAT_00487274)` to
-  switch state and then sets `DAT_00487274 = 0x19` (idle).
+- Updates the global transition timeline `ui_elements_timeline` (`DAT_00487248`) using `DAT_00480844`.
+  Direction is controlled by `ui_transition_direction` (`DAT_0048724c`) (0 = countdown, nonzero = count up).
+- When the timeline goes below zero, it calls `FUN_004461c0` with `game_state_pending` (`DAT_00487274`) to
+  switch state and then sets `game_state_pending` (`DAT_00487274`) = `0x19` (idle).
 - Clamps the timeline to the maximum active element value
   (`ui_elements_max_timeline`).
 - Iterates the UI element table `DAT_0048f208`..`DAT_0048f168`, calling

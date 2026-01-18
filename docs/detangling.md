@@ -79,7 +79,7 @@ You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps
 ### UI element timeline + transitions (high confidence)
 
 - `FUN_0041a530` -> `ui_elements_update_and_render`
-  - Evidence: advances a global timeline (`DAT_00487248`) based on `DAT_00480844`, clamps to
+  - Evidence: advances a global timeline (`ui_elements_timeline` (`DAT_00487248`)) based on `DAT_00480844`, clamps to
     `ui_elements_max_timeline`, triggers screen transitions via `FUN_004461c0`, and iterates
     `DAT_0048f208`..`DAT_0048f168` calling `FUN_00446900` + `ui_element_render`.
 - `FUN_00446170` -> `ui_elements_reset_state`
@@ -142,7 +142,7 @@ You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps
 ### Gameplay render pass (high confidence)
 
 - `FUN_00405960` -> `gameplay_render_world`
-  - Evidence: updates `DAT_00487278` (fade), renders the FX queue, creatures,
+  - Evidence: updates `ui_transition_alpha` (`DAT_00487278`) (fade), renders the FX queue, creatures,
     player overlays (dead/alive ordering), projectiles, and bonuses.
 
 ### Key binding block (`DAT_00490bdc`..`DAT_00490f5c`) (medium confidence)
@@ -595,7 +595,7 @@ tail bytes are validated against the current date and the full‑version flag.
 - `FUN_00408530` -> `tutorial_prompt_dialog`
   - Evidence: renders the tutorial message panel and uses button UI for "Repeat tutorial",
     "Play a game", and "Skip tutorial"; click handlers restart the tutorial (clears perk count
-    table `player_perk_counts` (`DAT_00490968`) and resets timers) or exit to game (sets `DAT_00487274`, flushes input,
+    table `player_perk_counts` (`DAT_00490968`) and resets timers) or exit to game (sets `game_state_pending` (`DAT_00487274`), flushes input,
     and resets `DAT_00486fe0`).
   - Signature (inferred): `void tutorial_prompt_dialog(char *text, float alpha)`
   - `alpha` comes from `tutorial_timeline_update` (0..1), controls the prompt fade, and is used

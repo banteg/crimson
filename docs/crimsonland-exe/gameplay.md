@@ -8,7 +8,7 @@ standalone data tables.
 ## Player update (player_update / FUN_004136b0)
 
 `player_update` runs once per player during the main gameplay loop when
-`DAT_00487270 == 9`. It handles:
+`game_state_id` (`DAT_00487270`) == `9`. It handles:
 
 - Per-player movement and aim updates.
 - Weapon firing and reload timers.
