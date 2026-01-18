@@ -51,12 +51,12 @@ These are mirrored into `analysis/ghidra/maps/data_map.json` and applied with
 | DAT_004c3fa8 | pulse_fire.ogg | sfx_pulse_fire |
 | DAT_004c3fac | flamer_fire_01.ogg | sfx_flamer_fire_01 |
 | DAT_004c3fb0 | flamer_fire_02.ogg | sfx_flamer_fire_02 |
-| DAT_004c3fb4 | shock_fire.ogg | sfx_shock_fire |
+| DAT_004c3fb4 | shock_fire.ogg | sfx_shock_fire_alt |
 | DAT_004c3fb8 | shockMinigun_fire.ogg | sfx_shockminigun_fire |
 | DAT_004c3fbc | shock_reload.ogg | sfx_shock_reload |
 | DAT_004c3fc0 | rocket_fire.ogg | sfx_rocket_fire |
 | DAT_004c3fc4 | rocketmini_fire.ogg | sfx_rocketmini_fire |
-| DAT_004c3fc8 | autorifle_reload.ogg | sfx_autorifle_reload |
+| DAT_004c3fc8 | autorifle_reload.ogg | sfx_autorifle_reload_alt |
 | DAT_004c3fcc | bullet_hit_01.ogg | sfx_bullet_hit_01 |
 | DAT_004c3fe4 | shock_hit_01.ogg | sfx_shock_hit_01 |
 | DAT_004c3fe8 | explosion_small.ogg | sfx_explosion_small |
