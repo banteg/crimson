@@ -1,1 +1,30 @@
-[]
+[
+  {
+    "callsite": "0xbfc1b0f",
+    "count": 1
+  },
+  {
+    "callsite": "0xbfc390f",
+    "count": 1
+  },
+  {
+    "callsite": "0xbfc360f",
+    "count": 1
+  },
+  {
+    "callsite": "0xbfc1d0f",
+    "count": 1
+  },
+  {
+    "callsite": "0xbfc3a0f",
+    "count": 1
+  },
+  {
+    "callsite": "0xbfc3c0f",
+    "count": 1
+  },
+  {
+    "callsite": "0xbfc380f",
+    "count": 1
+  }
+]

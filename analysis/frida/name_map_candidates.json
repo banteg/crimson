@@ -1,1 +1,8 @@
-[]
+[
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040d090",
+    "name": "play_sfx_62",
+    "comment": "Frida evidence: sfx: 62 x41; grim: grim_was_key_pressed x2480"
+  }
+]
