@@ -1,15 +1,17 @@
 # CRT Checklist
 
-- Mapped CRT entries (name_map): 96
-- Unmapped candidates (upper bound in 0x00460000–0x0046ffff): 209 FUN_ functions
+- Mapped CRT entries (name_map): 101
+- Unmapped candidates (upper bound in 0x00460000–0x0046ffff): 204 FUN_ functions
 
 ## Mapped
 - [x] crt_atexit
 - [x] crt_atof_l
+- [x] crt_beginthread
 - [x] crt_bufcpy
 - [x] crt_build_argv
 - [x] crt_build_environ
 - [x] crt_call_fn_range
+- [x] crt_calloc
 - [x] crt_chkstk
 - [x] crt_chsize
 - [x] crt_close
@@ -18,6 +20,7 @@
 - [x] crt_doexit
 - [x] crt_doserrno_ptr
 - [x] crt_dosmaperr
+- [x] crt_endthread
 - [x] crt_errno_ptr
 - [x] crt_exception_filter
 - [x] crt_exit
@@ -55,6 +58,7 @@
 - [x] crt_isalpha
 - [x] crt_isctype
 - [x] crt_isspace
+- [x] crt_lcmap_string
 - [x] crt_lock
 - [x] crt_lock_fh
 - [x] crt_lock_file
@@ -90,6 +94,7 @@
 - [x] crt_strtol_l
 - [x] crt_strtoxl
 - [x] crt_swap
+- [x] crt_thread_entry
 - [x] crt_tolower
 - [x] crt_tolower_l
 - [x] crt_toupper
@@ -103,12 +108,10 @@
 
 ## Remaining (Estimate)
 
-- [ ] Review 209 FUN_ functions in 0x00460000–0x0046ffff for CRT matches (upper bound)
+- [ ] Review 204 FUN_ functions in 0x00460000–0x0046ffff for CRT matches (upper bound)
 - [ ] FUN_00461140 @ 00461140 (uses: 5)
 - [ ] FUN_00465fa9 @ 00465fa9 (uses: 5)
-- [x] crt_chkstk @ 0046cda0 (uses: 5)
 - [ ] FUN_004607a0 @ 004607a0 (uses: 4)
-- [x] crt_get_osfhandle @ 0046acb6 (uses: 4)
 - [ ] FUN_004601c0 @ 004601c0 (uses: 3)
 - [ ] FUN_004608c0 @ 004608c0 (uses: 3)
 - [ ] FUN_00461981 @ 00461981 (uses: 3)
@@ -116,8 +119,8 @@
 - [ ] FUN_00463e26 @ 00463e26 (uses: 3)
 - [ ] FUN_004654a5 @ 004654a5 (uses: 3)
 - [ ] FUN_00465f48 @ 00465f48 (uses: 3)
-- [ ] FUN_004664d1 @ 004664d1 (uses: 3)
-- [ ] FUN_004667ac @ 004667ac (uses: 3)
+- [x] crt_lcmap_string @ 004664d1 (uses: 3)
+- [x] crt_calloc @ 004667ac (uses: 3)
 - [ ] FUN_00466c7b @ 00466c7b (uses: 3)
 - [ ] FUN_00466fcf @ 00466fcf (uses: 3)
 - [ ] FUN_004679d6 @ 004679d6 (uses: 3)
@@ -174,7 +177,7 @@
 - [ ] FUN_004619eb @ 004619eb (uses: 1)
 - [ ] FUN_00461a6b @ 00461a6b (uses: 1)
 - [ ] FUN_00461fd5 @ 00461fd5 (uses: 1)
-- [ ] FUN_00462373 @ 00462373 (uses: 1)
+- [x] crt_endthread @ 00462373 (uses: 1)
 - [ ] FUN_004623b2 @ 004623b2 (uses: 1)
 - [ ] FUN_004624b5 @ 004624b5 (uses: 1)
 - [ ] FUN_0046258a @ 0046258a (uses: 1)
@@ -301,8 +304,8 @@
 - [ ] FUN_0046e85d @ 0046e85d (uses: 1)
 - [ ] FUN_00460fac @ 00460fac (uses: 0)
 - [ ] FUN_00461a03 @ 00461a03 (uses: 0)
-- [ ] FUN_0046223f @ 0046223f (uses: 0)
-- [ ] FUN_004622b6 @ 004622b6 (uses: 0)
+- [x] crt_beginthread @ 0046223f (uses: 0)
+- [x] crt_thread_entry @ 004622b6 (uses: 0)
 - [ ] FUN_00462ba0 @ 00462ba0 (uses: 0)
 - [ ] FUN_00463180 @ 00463180 (uses: 0)
 - [ ] FUN_0046324b @ 0046324b (uses: 0)

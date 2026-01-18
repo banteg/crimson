@@ -2766,5 +2766,40 @@
     "name": "crt_chkstk",
     "signature": "void crt_chkstk(void)",
     "comment": "CRT: stack probing helper for large alloca (size in EAX)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004667ac",
+    "name": "crt_calloc",
+    "signature": "void * crt_calloc(unsigned int count, unsigned int size)",
+    "comment": "CRT: allocate zeroed block (count*size)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004664d1",
+    "name": "crt_lcmap_string",
+    "signature": "int crt_lcmap_string(unsigned int locale, unsigned int flags, char *src, int srclen, unsigned short *dst, int dstlen, unsigned int codepage, int use_cp)",
+    "comment": "CRT: LCMapString wrapper with multibyte/Unicode handling"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046223f",
+    "name": "crt_beginthread",
+    "signature": "void * crt_beginthread(void *start, unsigned int stack_size, void *arg)",
+    "comment": "CRT: beginthread (CreateThread wrapper)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004622b6",
+    "name": "crt_thread_entry",
+    "signature": "unsigned int crt_thread_entry(void *thread_data)",
+    "comment": "CRT: thread start trampoline"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462373",
+    "name": "crt_endthread",
+    "signature": "void crt_endthread(void)",
+    "comment": "CRT: thread cleanup and exit"
   }
 ]
