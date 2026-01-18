@@ -32,10 +32,10 @@ Notes:
 - `DAT_004aaf0c` is used as the player index during the two overlay passes.
 - `ui_transition_alpha` (`DAT_00487278`) is the frame alpha used by multiple render paths.
 
-## HUD render (FUN_0041ca90 / FUN_0041aed0)
+## HUD render (hud_update_and_render / FUN_0041aed0)
 
 The in-game HUD render is gated by `demo_mode_active` (`DAT_0048700d`) and is called from the main
-UI pass (`FUN_0041ca90`). It binds `ui_wicons` and uses `grim_set_sub_rect` for
+UI pass (`hud_update_and_render`). It binds `ui_wicons` and uses `grim_set_sub_rect` for
 weapon icons, along with health/score overlays.
 
 ## Terrain generation (FUN_00417b80)

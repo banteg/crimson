@@ -10,6 +10,8 @@ Interesting Functions and Patterns
   crt_flushall @ 0046150a
 
 [KEY related]
+  input_key_name @ 004036d0
+  ui_render_keybind_help @ 00405160
   input_any_key_pressed @ 00446000
 
 [TOKEN related]

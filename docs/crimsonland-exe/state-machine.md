@@ -28,7 +28,7 @@ known state ids. Names are inferred from call sites and screen behavior.
 | `6` | perk selection | direct `FUN_004461c0(6)` when perk prompt is accepted |
 | `7` | game over / high score entry | `FUN_0040ffc0` checks `game_state_id` (`DAT_00487270`) == `7` |
 | `8` | quest results | `quest_results_screen_update` checks `game_state_id` (`DAT_00487270`) == `8` |
-| `9` | gameplay | `FUN_0040aab0` runs creature/projectile/player updates only when 9 |
+| `9` | gameplay | `gameplay_update_and_render` runs creature/projectile/player updates only when 9 |
 | `0xc` | quest failed | `FUN_004107e0` checks `game_state_id` (`DAT_00487270`) == `0xc` |
 | `0x12` | Typ-o-Shooter gameplay | `FUN_004457c0` updates when `game_state_id` (`DAT_00487270`) == `0x12` |
 | `0x16` | modal/plugin flow | `FUN_0040b630` drives a DLL-backed interface (`plugin_interface_ptr` (`DAT_004824d4`)) when `0x16` |

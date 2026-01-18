@@ -52,7 +52,7 @@ Global bonus timers used by `player_update` and the main loop:
 ### Bonus HUD slots (active bonus list)
 
 `bonus_apply` registers timed bonuses in the HUD list via `FUN_0041a810`, and
-`FUN_0041a8b0` renders up to 16 active slots using the following fields:
+`bonus_hud_slot_update_and_render` renders up to 16 active slots using the following fields:
 
 - `bonus_hud_slot_active` — per-slot active flag (stride `0x20` bytes).
 - `bonus_hud_slot_y` — slide/position accumulator for the slot.
@@ -87,13 +87,13 @@ timer crosses its threshold:
 - **Tough Reloader** (`DAT_004c2c30`) halves incoming damage while
   `player_reload_active` (`DAT_00490b78`) is set.
 
-### Regeneration tick (FUN_00406b40)
+### Regeneration tick (perks_update_effects)
 
-When the Regeneration perk (`DAT_004c2bb0`) is active, `FUN_00406b40` slowly
+When the Regeneration perk (`DAT_004c2bb0`) is active, `perks_update_effects` slowly
 increments player health while in the main loop. This is decoupled from
 `player_update` and is skipped in some demo-gated paths.
 
-While Evil Eyes (`DAT_004c2b88`) is active, `FUN_00406b40` picks the nearest
+While Evil Eyes (`DAT_004c2b88`) is active, `perks_update_effects` picks the nearest
 creature within `12.0` units of `player_aim_x` and stores the index in
 `evil_eyes_target_creature` (`DAT_00490bbc`); `creature_update_all` uses this
 index to special-case the target.
@@ -124,8 +124,8 @@ See the data tables for concrete values:
 Mode-specific updates are dispatched from the main frame loop:
 
 - Survival: `survival_update` (`FUN_00407cd0`)
-- Rush: `FUN_004072b0`
-- Quests: `FUN_004070e0`
+- Rush: `rush_mode_update`
+- Quests: `quest_mode_update`
 - Typ-o-Shooter: separate loop (`FUN_004457c0`, state `0x12`)
 
 See [Game mode map](../game-mode-map.md) for mode ids.

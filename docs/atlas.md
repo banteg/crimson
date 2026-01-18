@@ -7,7 +7,7 @@ The engine does **not** load atlas metadata from disk; all slicing is hard‑cod
 
 ## UV grid tables
 
-`FUN_0041fed0` precomputes UV grids for **2×2, 4×4, 8×8, 16×16**.
+`effect_uv_tables_init` precomputes UV grids for **2×2, 4×4, 8×8, 16×16**.
 It fills tables with `(u, v)` pairs for each cell in row‑major order.
 Step sizes:
 

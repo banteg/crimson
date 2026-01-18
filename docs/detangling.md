@@ -28,23 +28,25 @@ You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps
 ### `crimsonland.exe`
 
 ```
-   8    7 00405960 FUN_00405960 undefined FUN_00405960(void)
-   8    5 00430af0 FUN_00430af0 undefined1 * FUN_00430af0(int param_1, float * param_2, float param_3)
-   8    0 0041df40 FUN_0041df40 undefined1 FUN_0041df40(void)
-   6    3 00403550 FUN_00403550 undefined FUN_00403550(void)
-   6    1 00402bd0 FUN_00402bd0 undefined * FUN_00402bd0(void)
-   6    0 0043d7e0 FUN_0043d7e0 undefined FUN_0043d7e0(int param_1, char param_2)
-   6    0 00452ef0 FUN_00452ef0 undefined4 FUN_00452ef0(float param_1, float param_2)
+crimsonland.exe_functions.json
    5    1 00461140 FUN_00461140 undefined FUN_00461140(void)
-   5    1 004614a5 FUN_004614a5 undefined4 FUN_004614a5(int * param_1)
    5    1 00465fa9 FUN_00465fa9 undefined FUN_00465fa9(void)
    5    0 00417ae0 FUN_00417ae0 undefined FUN_00417ae0(void)
-   5    0 0046cda0 FUN_0046cda0 undefined FUN_0046cda0(void)
+   4    0 004607a0 FUN_004607a0 ulonglong FUN_004607a0(void)
+   3    4 00467a72 FUN_00467a72 int * FUN_00467a72(uint param_1)
+   3    3 004695fb FUN_004695fb undefined4 FUN_004695fb(PEXCEPTION_RECORD param_1, PVOID param_2, DWORD param_3, undefined4 param_4, int * param_5, int param_6, PVOID param_7, char param_8)
+   3    3 0046a415 FUN_0046a415 int * FUN_0046a415(undefined4 param_1, undefined4 param_2, int * param_3, uint * param_4)
+   3    3 0046b265 FUN_0046b265 undefined4 FUN_0046b265(void * this, ushort * param_1, int * param_2, byte * param_3, int param_4, int param_5, int param_6, int param_7)
+   3    2 004011f0 FUN_004011f0 undefined4 * FUN_004011f0(void * this, byte param_1)
+   3    2 0042eb10 FUN_0042eb10 undefined FUN_0042eb10(undefined4 * param_1, float param_2, float param_3)
+   3    2 0042f6c0 FUN_0042f6c0 undefined FUN_0042f6c0(undefined4 * param_1, float param_2)
+   3    2 00465f48 FUN_00465f48 undefined FUN_00465f48(void)
 ```
 
 ### `grim.dll`
 
 ```
+grim.dll_functions.json
   30    0 100170d6 FUN_100170d6 undefined FUN_100170d6(undefined4 param_1)
   20    0 1004b5b0 FUN_1004b5b0 undefined FUN_1004b5b0(void)
   10    0 10001160 FUN_10001160 undefined FUN_10001160(void)
@@ -124,7 +126,7 @@ You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps
 
 - `FUN_004461c0` -> `game_state_set`
   - Evidence: clears UI element state (`ui_elements_reset_state`), updates `game_state_prev`/`game_state_id`,
-    resets transition globals, and seeds UI elements; invoked on startup (`FUN_00403500`), when perk selection
+    resets transition globals, and seeds UI elements; invoked on startup (`game_core_init`), when perk selection
     is requested (`FUN_0040af70`), and when UI transitions complete (`ui_elements_update_and_render`).
 
 ### Gameplay session reset (high confidence)
@@ -295,7 +297,7 @@ Defaults are set in `config_load_presets`.
 | `DAT_00490f58` | `0xd3` (Delete) | unused/reserved | defaults set; no callsites yet |
 | `DAT_00490f5c` | `0xc9` (PageUp) | unused/reserved | defaults set; no callsites yet |
 
-Key info overlay (`FUN_00405160`) shows the first five entries per player from the config
+Key info overlay (`ui_render_keybind_help`) shows the first five entries per player from the config
 blob at `DAT_00480510` (stride 5: Forward/Back/TurnLeft/TurnRight/Fire), which matches the active runtime
 binds copied from `DAT_00480540` into `DAT_00490bdc..DAT_00490bec`.
 
@@ -582,7 +584,7 @@ Record match + display selection:
 
 Init timing note:
 - `qpc_timestamp_scratch` (`DAT_00495ad6`) is only used as a temporary QPC storage during
-  early init (`QueryPerformanceCounter` in `FUN_0042b090`); it sits near the date scratch
+  early init (`QueryPerformanceCounter` in `game_startup_init`); it sits near the date scratch
   globals but is not part of the high‑score checksum path.
 
 ### Renderer backend selection (medium confidence)

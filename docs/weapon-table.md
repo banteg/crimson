@@ -28,11 +28,11 @@ All offsets below are in **bytes**, relative to the pointer returned by
 | `0x00` | char[0x40] | Weapon name | String is copied inline during `weapon_table_init` and rendered in the HUD weapon list via `FUN_0041c4b0`. |
 | `0x40` | byte | Unlocked/available flag | `FUN_00452e40` clears the table then marks unlocked weapons; `FUN_00452cd0` skips entries with `0`. |
 | `0x44` | int | Clip size | Copied into `player_clip_size` (`DAT_00490b74`) on weapon swap and used to reset `player_ammo` (`DAT_00490b7c`). |
-| `0x48` | float | Shot cooldown | Copied into `player_shot_cooldown` (`DAT_00490b84`) after firing in `FUN_00444980`. |
-| `0x4c` | float | Reload time | Loaded into `player_reload_timer` (`DAT_00490b80`) in `FUN_00413430` (scaled by perks). |
+| `0x48` | float | Shot cooldown | Copied into `player_shot_cooldown` (`DAT_00490b84`) after firing in `player_fire_weapon`. |
+| `0x4c` | float | Reload time | Loaded into `player_reload_timer` (`DAT_00490b80`) in `player_start_reload` (scaled by perks). |
 | `0x50` | float | Spread / heat increment | Added to `player_spread_heat` (`DAT_00490b68`) after each shot (scaled by perks). |
 | `0x58` | int | Shot SFX base id | Used with `0x5c` to pick a random fire SFX. |
-| `0x5c` | int | Shot SFX variant count | `rand % count + base` in `FUN_00444980`. |
+| `0x5c` | int | Shot SFX variant count | `rand % count + base` in `player_fire_weapon`. |
 | `0x60` | int | Reload / equip SFX id | Played when a reload starts and when swapping to the weapon. |
 | `0x64` | int | HUD icon id | Passed into the HUD sprite selection (shifted by `<< 1`). |
 | `0x68` | byte | Flags | Bit `0x1` triggers a muzzle flash / effect burst; bits `0x4/0x8` affect crosshair rendering. |

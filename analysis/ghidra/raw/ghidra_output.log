@@ -5,12 +5,12 @@ INFO  Using log config file: jar:file:/opt/ghidra_12.0.1_PUBLIC/Ghidra/Framework
 INFO  Using log file: analysis/ghidra/raw/ghidra_analysis.log (LoggingInitialization)  
 INFO  Loading user preferences: /home/node/.config/ghidra/ghidra_12.0.1_PUBLIC/preferences (Preferences)  
 INFO  Searching for classes... (ClassSearcher)  
-INFO  Class search complete (736 ms) (ClassSearcher)  
+INFO  Class search complete (724 ms) (ClassSearcher)  
 INFO  Initializing SSL Context (DefaultSSLContextInitializer)  
 INFO  Initializing Random Number Generator... (SecureRandomFactory)  
 INFO  Random Number Generator initialization complete: NativePRNGNonBlocking (SecureRandomFactory)  
 INFO  Trust manager disabled, cacerts have not been set (DefaultTrustManagerFactory)  
-INFO  Headless startup complete (1541 ms) (AnalyzeHeadless)  
+INFO  Headless startup complete (1444 ms) (AnalyzeHeadless)  
 INFO  Class searcher loaded 58 extension points (18 false positives) (ClassSearcher)  
 INFO  HEADLESS Script Paths:
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger/ghidra_scripts
@@ -39,10 +39,10 @@ INFO  HEADLESS Script Paths:
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/FunctionID/ghidra_scripts
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/Atmel/ghidra_scripts (HeadlessAnalyzer)  
 INFO  HEADLESS: execution starts (HeadlessAnalyzer)  
-INFO  Creating temporary project: /tmp/ghidra_crimsonland_exe_343917 (HeadlessAnalyzer)  
-INFO  Creating project: /tmp/ghidra_crimsonland_exe_343917 (DefaultProject)  
+INFO  Creating temporary project: /tmp/ghidra_crimsonland_exe_347064 (HeadlessAnalyzer)  
+INFO  Creating project: /tmp/ghidra_crimsonland_exe_347064 (DefaultProject)  
 INFO  REPORT: Processing input files:  (HeadlessAnalyzer)  
-INFO       project: /tmp/ghidra_crimsonland_exe_343917 (HeadlessAnalyzer)  
+INFO       project: /tmp/ghidra_crimsonland_exe_347064 (HeadlessAnalyzer)  
 INFO  IMPORTING: file:///workspace/game_bins/crimsonland/1.9.93-gog/crimsonland.exe (HeadlessAnalyzer)  
 INFO  Using Loader: Portable Executable (PE) (ProgramLoader)  
 INFO  Using Language/Compiler: x86:LE:32:default:windows (ProgramLoader)  
@@ -143,42 +143,42 @@ INFO  Packed database cache: /var/tmp/node-ghidra/packed-db-cache (PackedDatabas
 INFO  Applied data type archive: windows_vs12_32 (ApplyDataArchiveAnalyzer)  
 INFO  Applied data type archive: windows_vs12_32 (ApplyDataArchiveAnalyzer)  
 INFO  -----------------------------------------------------
-    ASCII Strings                              0.243 secs
-    Apply Data Archives                        0.130 secs
-    Call Convention ID                         0.007 secs
-    Call-Fixup Installer                       0.021 secs
-    Create Address Tables                      0.113 secs
-    Create Address Tables - One Time           0.078 secs
-    Create Function                            0.281 secs
-    Data Reference                             0.087 secs
-    Decompiler Parameter ID                    9.851 secs
-    Decompiler Switch Analysis                22.867 secs
+    ASCII Strings                              0.244 secs
+    Apply Data Archives                        0.132 secs
+    Call Convention ID                         0.002 secs
+    Call-Fixup Installer                       0.022 secs
+    Create Address Tables                      0.053 secs
+    Create Address Tables - One Time           0.093 secs
+    Create Function                            0.241 secs
+    Data Reference                             0.076 secs
+    Decompiler Parameter ID                    9.739 secs
+    Decompiler Switch Analysis                22.564 secs
     Demangler Microsoft                        0.006 secs
-    Disassemble                                0.235 secs
-    Disassemble Entry Points                   0.350 secs
-    Embedded Media                             0.013 secs
+    Disassemble                                0.184 secs
+    Disassemble Entry Points                   0.511 secs
+    Embedded Media                             0.012 secs
     External Entry References                  0.000 secs
-    Function ID                                0.491 secs
-    Function Start Pre Search                  0.012 secs
-    Function Start Search                      0.068 secs
-    Function Start Search After Code           0.029 secs
-    Function Start Search After Data           0.019 secs
-    Function Start Search delayed - One Time   0.002 secs
-    Non-Returning Functions - Discovered       0.112 secs
+    Function ID                                0.554 secs
+    Function Start Pre Search                  0.013 secs
+    Function Start Search                      0.048 secs
+    Function Start Search After Code           0.030 secs
+    Function Start Search After Data           0.018 secs
+    Function Start Search delayed - One Time   0.001 secs
+    Non-Returning Functions - Discovered       0.109 secs
     Non-Returning Functions - Known            0.002 secs
     PDB Universal                              0.001 secs
-    Reference                                  0.308 secs
-    Scalar Operand References                  0.402 secs
-    Shared Return Calls                        0.111 secs
-    Stack                                      1.523 secs
-    Subroutine References                      1.016 secs
+    Reference                                  0.298 secs
+    Scalar Operand References                  0.356 secs
+    Shared Return Calls                        0.108 secs
+    Stack                                      1.660 secs
+    Subroutine References                      0.872 secs
     Subroutine References - One Time           0.004 secs
-    Windows x86 PE Exception Handling          1.160 secs
+    Windows x86 PE Exception Handling          1.257 secs
     Windows x86 PE RTTI Analyzer               0.000 secs
-    Windows x86 Thread Environment Block (TEB) Analyzer     0.009 secs
-    WindowsResourceReference                   0.271 secs
-    X86 Function Callee Purge                  0.054 secs
-    x86 Constant Reference Analyzer            2.346 secs
+    Windows x86 Thread Environment Block (TEB) Analyzer     0.015 secs
+    WindowsResourceReference                   0.274 secs
+    X86 Function Callee Purge                  0.057 secs
+    x86 Constant Reference Analyzer            2.495 secs
 -----------------------------------------------------
      Total Time   42 secs
 -----------------------------------------------------
@@ -207,8 +207,8 @@ INFO  REPORT: Execute script: ApplyNameMap.java 'analysis/ghidra/maps/name_map.j
 INFO  SCRIPT: /workspace/analysis/ghidra/scripts/ApplyNameMap.java (HeadlessAnalyzer)  
 INFO  ApplyNameMap.java> Applied name map: /workspace/analysis/ghidra/maps/name_map.json (GhidraScript)  
 INFO  ApplyNameMap.java> Program: crimsonland.exe (GhidraScript)  
-INFO  ApplyNameMap.java> Updated entries: 292 (GhidraScript)  
-INFO  ApplyNameMap.java> Renamed: 286, Signatures: 263, Comments: 292 (GhidraScript)  
+INFO  ApplyNameMap.java> Updated entries: 318 (GhidraScript)  
+INFO  ApplyNameMap.java> Renamed: 312, Signatures: 289, Comments: 318 (GhidraScript)  
 INFO  ApplyNameMap.java> Missing: 0, Skipped: 173 (GhidraScript)  
 INFO  REPORT: Execute script: ApplyDataMap.java 'analysis/ghidra/maps/data_map.json'  (HeadlessAnalyzer)  
 INFO  SCRIPT: /workspace/analysis/ghidra/scripts/ApplyDataMap.java (HeadlessAnalyzer)  
@@ -237,5 +237,5 @@ INFO  ExportAll.java> === Export complete === (GhidraScript)
 INFO  ANALYZING changes made by post scripts: file:///workspace/game_bins/crimsonland/1.9.93-gog/crimsonland.exe (HeadlessAnalyzer)  
 INFO  REPORT: Post-analysis succeeded for file: file:///workspace/game_bins/crimsonland/1.9.93-gog/crimsonland.exe (HeadlessAnalyzer)  
 INFO  /crimsonland.exe: file created (node) (LocalFileSystem)  
-INFO  REPORT: Save succeeded for: /crimsonland.exe (ghidra_crimsonland_exe_343917:/crimsonland.exe) (HeadlessAnalyzer)  
+INFO  REPORT: Save succeeded for: /crimsonland.exe (ghidra_crimsonland_exe_347064:/crimsonland.exe) (HeadlessAnalyzer)  
 INFO  REPORT: Import succeeded (HeadlessAnalyzer)  

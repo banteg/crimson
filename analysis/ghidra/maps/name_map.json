@@ -137,10 +137,24 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00403500",
+    "name": "game_core_init",
+    "signature": "int game_core_init(void)",
+    "comment": "initializes core game systems (quests, effects, UI assets) and sets initial state"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00403550",
     "name": "perk_prompt_update_and_render",
     "signature": "void perk_prompt_update_and_render(void)",
     "comment": "updates perk prompt timer, animates transforms, and renders the prompt text"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004036d0",
+    "name": "input_key_name",
+    "signature": "char * input_key_name(int key_code)",
+    "comment": "maps key codes (DIK/virtual) to display labels"
   },
   {
     "program": "crimsonland.exe",
@@ -158,6 +172,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00405160",
+    "name": "ui_render_keybind_help",
+    "signature": "void ui_render_keybind_help(float *xy, float alpha)",
+    "comment": "renders the in-game key bindings help overlay"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004055e0",
     "name": "perk_apply",
     "signature": "void perk_apply(int perk_id)",
@@ -169,6 +190,34 @@
     "name": "gameplay_render_world",
     "signature": "void gameplay_render_world(void)",
     "comment": "world render pass: updates gameplay fade and draws fx queue, creatures, players, projectiles, bonuses"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004061e0",
+    "name": "ui_draw_clock_gauge",
+    "signature": "void ui_draw_clock_gauge(void)",
+    "comment": "draws the 32x32 clock gauge at the current transform"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00406b40",
+    "name": "perks_update_effects",
+    "signature": "void perks_update_effects(void)",
+    "comment": "updates perk timers/effects (regen, shields, evil eyes, jinxed, bonus timers)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004070e0",
+    "name": "quest_mode_update",
+    "signature": "void quest_mode_update(void)",
+    "comment": "quest mode update: spawn timeline, stage completion, and transitions"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004072b0",
+    "name": "rush_mode_update",
+    "signature": "void rush_mode_update(void)",
+    "comment": "rush mode update: spawns edge waves and handles demo exit"
   },
   {
     "program": "crimsonland.exe",
@@ -199,6 +248,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00409500",
+    "name": "camera_update",
+    "signature": "void camera_update(void)",
+    "comment": "updates camera offsets and screen shake"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00409890",
     "name": "bonus_apply",
     "signature": "void bonus_apply(int player_index, int *bonus_entry)",
@@ -213,6 +269,27 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0040a4c0",
+    "name": "ui_draw_clock_gauge_at",
+    "signature": "void ui_draw_clock_gauge_at(float *xy, float radius, float progress)",
+    "comment": "draws the clock gauge at a position when progress > 0"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040a510",
+    "name": "ui_render_aim_indicators",
+    "signature": "void ui_render_aim_indicators(void)",
+    "comment": "renders aim reticles, reload gauges, and player HUD indicators"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040aab0",
+    "name": "gameplay_update_and_render",
+    "signature": "void gameplay_update_and_render(void)",
+    "comment": "main gameplay frame loop for state 9 (timers, updates, renders, UI)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0040b740",
     "name": "demo_purchase_screen_update",
     "signature": "void demo_purchase_screen_update(void)",
@@ -224,6 +301,13 @@
     "name": "quest_results_screen_update",
     "signature": "void quest_results_screen_update(void)",
     "comment": "quest/campaign results screen: final time, perk bonus, high score entry, and buttons"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412660",
+    "name": "bonus_metadata_init",
+    "signature": "void bonus_metadata_init(void)",
+    "comment": "builds bonus metadata table (labels, descriptions, durations)"
   },
   {
     "program": "crimsonland.exe",
@@ -262,6 +346,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00413430",
+    "name": "player_start_reload",
+    "signature": "void player_start_reload(void)",
+    "comment": "starts reload for the active player, sets timers, and plays SFX"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004136b0",
     "name": "player_update",
     "signature": "void player_update(void)",
@@ -273,6 +364,13 @@
     "name": "terrain_generate",
     "signature": "void terrain_generate(void *desc)",
     "comment": "generates terrain texture into a render target using a level descriptor"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004181b0",
+    "name": "terrain_generate_random",
+    "signature": "void terrain_generate_random(void)",
+    "comment": "selects a terrain variant and generates the terrain texture"
   },
   {
     "program": "crimsonland.exe",
@@ -290,6 +388,27 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00419ba0",
+    "name": "ui_element_set_rect",
+    "signature": "void ui_element_set_rect(void *element, float width, float height, float *offset)",
+    "comment": "sets element quad vertices/UVs for a size and offset"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00419d00",
+    "name": "ui_element_load",
+    "signature": "void ui_element_load(void *element, char *jaz_path)",
+    "comment": "loads a UI element JAZ asset and logs failures"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00419dd0",
+    "name": "ui_menu_assets_init",
+    "signature": "void ui_menu_assets_init(void)",
+    "comment": "loads menu UI elements and seeds layout copies"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041a040",
     "name": "ui_cursor_render",
     "signature": "void ui_cursor_render(void)",
@@ -304,10 +423,31 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041a6d0",
+    "name": "ui_draw_progress_bar",
+    "signature": "void ui_draw_progress_bar(float *xy, float width, float ratio, float *rgba)",
+    "comment": "draws a filled progress bar with a tinted background"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041a8b0",
+    "name": "bonus_hud_slot_update_and_render",
+    "signature": "void bonus_hud_slot_update_and_render(float *xy, int slot)",
+    "comment": "updates bonus HUD slot animation and renders icon/timers"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041aed0",
     "name": "ui_render_hud",
     "signature": "void ui_render_hud(void)",
     "comment": "renders the in-game HUD (health, weapon icons, player UI)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041ca90",
+    "name": "hud_update_and_render",
+    "signature": "void hud_update_and_render(void)",
+    "comment": "updates HUD flags/targets and renders the HUD"
   },
   {
     "program": "crimsonland.exe",
@@ -322,6 +462,20 @@
     "name": "grim_load_interface",
     "signature": "int grim_load_interface(char *dll_name)",
     "comment": "load grim DLL and fetch GRIM_GetInterface"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041df40",
+    "name": "game_is_full_version",
+    "signature": "int game_is_full_version(void)",
+    "comment": "returns non-zero when full version/unlimited mode is enabled"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041df60",
+    "name": "game_sequence_get",
+    "signature": "int game_sequence_get(void)",
+    "comment": "returns the saved game_sequence_id"
   },
   {
     "program": "crimsonland.exe",
@@ -397,6 +551,13 @@
     "name": "weapon_table_entry",
     "signature": "char * weapon_table_entry(int weapon_id)",
     "comment": "returns the entry base (&DAT_004d7a2c + weapon_id * 0x1f)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041fed0",
+    "name": "effect_uv_tables_init",
+    "signature": "void effect_uv_tables_init(void)",
+    "comment": "precomputes UV grids for 2x2, 4x4, 8x8, 16x16 effect atlases"
   },
   {
     "program": "crimsonland.exe",
@@ -605,6 +766,13 @@
     "name": "load_textures_step",
     "signature": "int load_textures_step(void)",
     "comment": "stage-based texture loading (advances DAT_004aaf88)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042b090",
+    "name": "game_startup_init",
+    "signature": "void game_startup_init(void)",
+    "comment": "startup init: logs, builds perks/weapons, seeds UI/effects, and loads registry time"
   },
   {
     "program": "crimsonland.exe",
@@ -1144,6 +1312,20 @@
     "name": "ui_text_input_render",
     "signature": "void ui_text_input_render(void *input_state, float y, float alpha)",
     "comment": "renders a text input field (focus, text, and caret)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00444810",
+    "name": "creature_spawn_tinted",
+    "signature": "int creature_spawn_tinted(float *pos, float *rgba, int type_id)",
+    "comment": "spawns a creature with tint and default stats"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00444980",
+    "name": "player_fire_weapon",
+    "signature": "void player_fire_weapon(char param_1, char param_2)",
+    "comment": "handles player firing: cooldowns, ammo, projectiles, and muzzle effects"
   },
   {
     "program": "crimsonland.exe",

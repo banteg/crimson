@@ -2,7 +2,7 @@
 
 **Status:** Draft
 
-This page summarizes the main gameplay frame loop in `FUN_0040aab0` (state `9`).
+This page summarizes the main gameplay frame loop in `gameplay_update_and_render` (state `9`).
 Other states have their own loops but reuse the same render pass (`FUN_00405960`).
 
 ## Gating flags
@@ -11,13 +11,13 @@ Other states have their own loops but reuse the same render pass (`FUN_00405960`
   timers are adjusted.
 - `demo_mode_active` (`DAT_0048700d`): demo/attract gating. Disables HUD and alters update behavior.
 - `game_state_id` (`DAT_00487270`): must be `9` for creature/projectile/player updates.
-- `FUN_0041df40()`: used in multiple places to gate demo/trial timing behavior.
+- `game_is_full_version()`: used in multiple places to gate demo/trial timing behavior.
 
 ## Update order (simplified)
 
 1) Time scaling: if Reflex Boost is active (`time_scale_active`), scale `DAT_00480840`
    and recompute `DAT_00480844`.
-2) Perk tick helpers (`FUN_00406b40`) when not gated by demo logic.
+2) Perk tick helpers (`perks_update_effects`) when not gated by demo logic.
 3) `effects_update`.
 4) If not paused and state is `9`:
    - `creature_update_all`
@@ -26,10 +26,10 @@ Other states have their own loops but reuse the same render pass (`FUN_00405960`
    - for each player: `player_update`
 6) Mode-specific updates:
    - Survival: `survival_update`
-   - Rush: `FUN_004072b0`
-   - Quests: `FUN_004070e0`
+   - Rush: `rush_mode_update`
+   - Quests: `quest_mode_update`
 7) Powerup timers and global time (`DAT_00487060`) advance when not paused.
-8) Camera + shake update (`FUN_00409500`).
+8) Camera + shake update (`camera_update`).
 9) Gameplay render pass (`FUN_00405960`).
 10) Tutorial timeline if `_DAT_00480360 == 8` (`tutorial_timeline_update`).
 11) Perk prompt handling (`FUN_00403550`) and perk selection transition.
@@ -44,12 +44,12 @@ Other states have their own loops but reuse the same render pass (`FUN_00405960`
       switching to state `6`.
 12) `bonus_update`.
 13) HUD/UI passes:
-    - `FUN_0040a510` (player indicators)
-    - `FUN_0041ca90` (HUD)
+    - `ui_render_aim_indicators` (player indicators)
+    - `hud_update_and_render` (HUD)
     - `ui_elements_update_and_render`
 14) Demo overlay and cursor handling.
 
-Camera shake state (used by `FUN_00409500`):
+Camera shake state (used by `camera_update`):
 
 - `camera_shake_offset_x` / `camera_shake_offset_y` are added to the camera center each frame.
 - `camera_shake_timer` counts down between shake pulses.
