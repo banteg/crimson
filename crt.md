@@ -1,7 +1,7 @@
 # CRT Checklist
 
-- Mapped CRT entries (name_map): 103
-- Unmapped candidates (upper bound in 0x00460000–0x0046ffff): 202 FUN_ functions
+- Mapped CRT entries (name_map): 107
+- Unmapped candidates (upper bound in 0x00460000–0x0046ffff): 198 FUN_ functions
 
 ## Mapped
 - [x] crt_atexit
@@ -11,6 +11,7 @@
 - [x] crt_build_argv
 - [x] crt_build_environ
 - [x] crt_call_fn_range
+- [x] crt_call_new_handler
 - [x] crt_calloc
 - [x] crt_chkstk
 - [x] crt_chsize
@@ -64,6 +65,7 @@
 - [x] crt_lock
 - [x] crt_lock_fh
 - [x] crt_lock_file
+- [x] crt_lock_file2
 - [x] crt_lseek
 - [x] crt_lseek_nolock
 - [x] crt_memmove
@@ -80,6 +82,7 @@
 - [x] crt_qsort
 - [x] crt_read
 - [x] crt_read_nolock
+- [x] crt_realloc
 - [x] crt_report_runtime_error
 - [x] crt_run_initializers
 - [x] crt_runtime_error_banner
@@ -104,21 +107,22 @@
 - [x] crt_unlock
 - [x] crt_unlock_fh
 - [x] crt_unlock_file
+- [x] crt_unlock_file2
 - [x] crt_vsprintf
 - [x] crt_write
 - [x] crt_write_nolock
 
 ## Remaining (Estimate)
 
-- [ ] Review 202 FUN_ functions in 0x00460000–0x0046ffff for CRT matches (upper bound)
+- [ ] Review 198 FUN_ functions in 0x00460000–0x0046ffff for CRT matches (upper bound)
 - [ ] FUN_00461140 @ 00461140 (uses: 5)
 - [ ] FUN_00465fa9 @ 00465fa9 (uses: 5)
 - [ ] FUN_004607a0 @ 004607a0 (uses: 4)
 - [ ] FUN_004601c0 @ 004601c0 (uses: 3)
 - [ ] FUN_004608c0 @ 004608c0 (uses: 3)
 - [ ] FUN_00461981 @ 00461981 (uses: 3)
-- [ ] FUN_00463dd4 @ 00463dd4 (uses: 3)
-- [ ] FUN_00463e26 @ 00463e26 (uses: 3)
+- [x] crt_lock_file2 @ 00463dd4 (uses: 3)
+- [x] crt_unlock_file2 @ 00463e26 (uses: 3)
 - [ ] FUN_004654a5 @ 004654a5 (uses: 3)
 - [ ] FUN_00465f48 @ 00465f48 (uses: 3)
 - [x] crt_lcmap_string @ 004664d1 (uses: 3)
@@ -127,7 +131,7 @@
 - [ ] FUN_00466fcf @ 00466fcf (uses: 3)
 - [ ] FUN_004679d6 @ 004679d6 (uses: 3)
 - [ ] FUN_00467a72 @ 00467a72 (uses: 3)
-- [ ] FUN_00467e47 @ 00467e47 (uses: 3)
+- [x] crt_call_new_handler @ 00467e47 (uses: 3)
 - [ ] FUN_004695fb @ 004695fb (uses: 3)
 - [ ] FUN_0046a39e @ 0046a39e (uses: 3)
 - [ ] FUN_0046a415 @ 0046a415 (uses: 3)
@@ -140,7 +144,7 @@
 - [ ] FUN_00461739 @ 00461739 (uses: 2)
 - [ ] FUN_00461a83 @ 00461a83 (uses: 2)
 - [x] crt_getcwd @ 0046248e (uses: 2)
-- [ ] FUN_004626aa @ 004626aa (uses: 2)
+- [x] crt_realloc @ 004626aa (uses: 2)
 - [ ] FUN_00463325 @ 00463325 (uses: 2)
 - [ ] FUN_00463333 @ 00463333 (uses: 2)
 - [ ] FUN_0046355c @ 0046355c (uses: 2)

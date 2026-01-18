@@ -1044,10 +1044,24 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00463dd4",
+    "name": "crt_lock_file2",
+    "signature": "void crt_lock_file2(int stream_index, FILE *fp)",
+    "comment": "CRT: lock FILE by index or per-stream critical section"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00463df7",
     "name": "crt_unlock_file",
     "signature": "void crt_unlock_file(FILE *fp)",
     "comment": "unlock a FILE stream (CRT lock or critical section)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463e26",
+    "name": "crt_unlock_file2",
+    "signature": "void crt_unlock_file2(int stream_index, FILE *fp)",
+    "comment": "CRT: unlock FILE by index or per-stream critical section"
   },
   {
     "program": "crimsonland.exe",
@@ -2773,6 +2787,20 @@
     "name": "crt_calloc",
     "signature": "void * crt_calloc(unsigned int count, unsigned int size)",
     "comment": "CRT: allocate zeroed block (count*size)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004626aa",
+    "name": "crt_realloc",
+    "signature": "void * crt_realloc(void *ptr, size_t size)",
+    "comment": "CRT: realloc with heap mode handling and new-handler retry"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00467e47",
+    "name": "crt_call_new_handler",
+    "signature": "int crt_call_new_handler(size_t size)",
+    "comment": "CRT: call new-handler; returns nonzero to retry allocation"
   },
   {
     "program": "crimsonland.exe",
