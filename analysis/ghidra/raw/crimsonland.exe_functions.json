@@ -3084,7 +3084,7 @@
     "address": "00459536",
     "signature": "undefined FUN_00459536(undefined8 * param_1, undefined8 * param_2, undefined4 * param_3)",
     "external": false,
-    "calls": ["FUN_004601c0"]
+    "calls": ["math_acos_packed"]
   },
   {
     "name": "FUN_00459adf",
@@ -3098,7 +3098,7 @@
     "address": "00459b4b",
     "signature": "undefined FUN_00459b4b(undefined8 * param_1, undefined8 * param_2, undefined8 * param_3, uint param_4)",
     "external": false,
-    "calls": ["FUN_004600c0", "FUN_004608c0"]
+    "calls": ["math_atan2_packed", "math_sin_packed"]
   },
   {
     "name": "FUN_00459c82",
@@ -3119,14 +3119,14 @@
     "address": "00459e05",
     "signature": "undefined FUN_00459e05(undefined8 * param_1, undefined8 * param_2)",
     "external": false,
-    "calls": ["FUN_004601c0", "FUN_004608c0"]
+    "calls": ["math_acos_packed", "math_sin_packed"]
   },
   {
     "name": "FUN_00459f51",
     "address": "00459f51",
     "signature": "undefined FUN_00459f51(undefined8 * param_1, undefined8 * param_2, ulonglong * param_3, ulonglong * param_4, ulonglong * param_5, ulonglong * param_6, ulonglong * param_7)",
     "external": false,
-    "calls": ["FUN_004601c0", "FUN_004608c0", "math_sincos_packed"]
+    "calls": ["math_acos_packed", "math_sin_packed", "math_sincos_packed"]
   },
   {
     "name": "FUN_0045b092",
@@ -3171,9 +3171,9 @@
     "calls": []
   },
   {
-    "name": "FUN_0045e40a",
+    "name": "mat4_invert",
     "address": "0045e40a",
-    "signature": "undefined8 * FUN_0045e40a(undefined8 * param_1, undefined4 * param_2, undefined8 * param_3)",
+    "signature": "float * mat4_invert(float * out, float * det_out, float * mat)",
     "external": false,
     "calls": []
   },
@@ -3185,39 +3185,39 @@
     "calls": []
   },
   {
-    "name": "FUN_0045eac0",
+    "name": "vec3_transform_coord",
     "address": "0045eac0",
-    "signature": "undefined8 * FUN_0045eac0(undefined8 * param_1, undefined8 * param_2, undefined8 * param_3)",
+    "signature": "float * vec3_transform_coord(float * out, float * vec, float * mat)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_0045eb4b",
+    "name": "mat4_mul",
     "address": "0045eb4b",
-    "signature": "undefined8 * FUN_0045eb4b(undefined8 * param_1, undefined8 * param_2, undefined8 * param_3)",
+    "signature": "float * mat4_mul(float * out, float * lhs, float * rhs)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_0045ed17",
+    "name": "vec3_project",
     "address": "0045ed17",
-    "signature": "ulonglong * FUN_0045ed17(ulonglong * param_1, undefined8 * param_2, undefined8 * param_3, undefined8 * param_4, undefined8 * param_5, undefined8 * param_6)",
+    "signature": "float * vec3_project(float * out, float * vec, float * viewport, float * world, float * view, float * proj)",
     "external": false,
-    "calls": ["FUN_0045eac0", "FUN_0045eb4b"]
+    "calls": ["mat4_mul", "vec3_transform_coord"]
   },
   {
-    "name": "FUN_0045ee9f",
+    "name": "vec3_unproject",
     "address": "0045ee9f",
-    "signature": "ulonglong * FUN_0045ee9f(ulonglong * param_1, ulonglong * param_2, undefined8 * param_3, undefined8 * param_4, undefined8 * param_5, undefined8 * param_6)",
+    "signature": "float * vec3_unproject(float * out, float * vec, float * viewport, float * world, float * view, float * proj)",
     "external": false,
-    "calls": ["FUN_0045e40a", "FUN_0045eac0", "FUN_0045eb4b"]
+    "calls": ["mat4_invert", "mat4_mul", "vec3_transform_coord"]
   },
   {
     "name": "FUN_0045f0c5",
     "address": "0045f0c5",
     "signature": "ulonglong * FUN_0045f0c5(ulonglong * param_1, ulonglong * param_2, undefined8 * param_3, undefined8 * param_4, undefined8 * param_5, undefined8 * param_6)",
     "external": false,
-    "calls": ["FUN_0045b092", "FUN_0045dd30", "FUN_0045eac0", "FUN_0045eb4b"]
+    "calls": ["FUN_0045b092", "FUN_0045dd30", "mat4_mul", "vec3_transform_coord"]
   },
   {
     "name": "FUN_0045fae8",
@@ -3248,16 +3248,16 @@
     "calls": []
   },
   {
-    "name": "FUN_004600c0",
+    "name": "math_atan2_packed",
     "address": "004600c0",
-    "signature": "ulonglong FUN_004600c0(void)",
+    "signature": "ulonglong math_atan2_packed(void)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_004601c0",
+    "name": "math_acos_packed",
     "address": "004601c0",
-    "signature": "ulonglong FUN_004601c0(void)",
+    "signature": "ulonglong math_acos_packed(void)",
     "external": false,
     "calls": []
   },
@@ -3269,9 +3269,9 @@
     "calls": []
   },
   {
-    "name": "FUN_004608c0",
+    "name": "math_sin_packed",
     "address": "004608c0",
-    "signature": "undefined FUN_004608c0(void)",
+    "signature": "ulonglong math_sin_packed(void)",
     "external": false,
     "calls": []
   },

@@ -1630,10 +1630,66 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0045e40a",
+    "name": "mat4_invert",
+    "signature": "float * mat4_invert(float *out, float *det_out, float *mat)",
+    "comment": "inverts a 4x4 matrix; optionally writes determinant"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045eac0",
+    "name": "vec3_transform_coord",
+    "signature": "float * vec3_transform_coord(float *out, float *vec, float *mat)",
+    "comment": "transforms a vec3 by a matrix and divides by W (perspective)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045eb4b",
+    "name": "mat4_mul",
+    "signature": "float * mat4_mul(float *out, float *lhs, float *rhs)",
+    "comment": "multiplies two 4x4 matrices (SSE)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045ed17",
+    "name": "vec3_project",
+    "signature": "float * vec3_project(float *out, float *vec, float *viewport, float *world, float *view, float *proj)",
+    "comment": "projects a vec3 through optional matrices and viewport scale/bias"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045ee9f",
+    "name": "vec3_unproject",
+    "signature": "float * vec3_unproject(float *out, float *vec, float *viewport, float *world, float *view, float *proj)",
+    "comment": "unprojects a screen-space vec3 using inverse matrices and viewport"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004600c0",
+    "name": "math_atan2_packed",
+    "signature": "ulonglong math_atan2_packed(void)",
+    "comment": "packed atan2 approximation; inputs in MM0/MM1"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004601c0",
+    "name": "math_acos_packed",
+    "signature": "ulonglong math_acos_packed(void)",
+    "comment": "packed acos approximation; input in MM0"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004607a0",
     "name": "math_sincos_packed",
     "signature": "ulonglong math_sincos_packed(void)",
     "comment": "packed sin/cos approximation for the angle in MM0"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004608c0",
+    "name": "math_sin_packed",
+    "signature": "ulonglong math_sin_packed(void)",
+    "comment": "packed sin approximation; input in MM0"
   },
   {
     "program": "crimsonland.exe",

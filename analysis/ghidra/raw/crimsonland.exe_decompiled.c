@@ -37570,8 +37570,8 @@ void __cdecl FUN_00456aa5(undefined4 *param_1)
     param_1[0xb] = &LAB_0045abdc;
     param_1[0xc] = &LAB_0045f903;
     param_1[0xd] = &LAB_0045f946;
-    param_1[0xe] = FUN_0045ed17;
-    param_1[0xf] = FUN_0045ee9f;
+    param_1[0xe] = vec3_project;
+    param_1[0xf] = vec3_unproject;
     param_1[0x10] = &LAB_0045f5ba;
     param_1[0x11] = &LAB_0045f30a;
     param_1[0x12] = &LAB_0045e73e;
@@ -37886,15 +37886,17 @@ undefined8 * FUN_004571b0(undefined8 *param_1,float *param_2,float *param_3)
 
 /* FUN_00459536 @ 00459536 */
 
-void FUN_00459536(undefined8 *param_1,undefined8 *param_2,undefined4 *param_3)
+ulonglong FUN_00459536(undefined8 *param_1,undefined8 *param_2,undefined4 *param_3)
 
 {
   undefined8 uVar1;
-  ulonglong uVar2;
+  int iVar2;
+  undefined8 extraout_MM0;
   undefined8 uVar3;
   undefined8 uVar4;
   undefined8 uVar5;
   undefined8 uVar6;
+  ulonglong uVar7;
   
   uVar4 = *param_1;
   uVar1 = param_1[1];
@@ -37904,7 +37906,8 @@ void FUN_00459536(undefined8 *param_1,undefined8 *param_2,undefined4 *param_3)
   uVar5 = PackedFloatingAccumulate(uVar5,uVar5);
   uVar6 = PackedFloatingCompareGE(0x80000000800000,uVar5);
   uVar3 = PackedFloatingReciprocalSQRAprox(uVar3,uVar5);
-  if ((int)uVar6 == 0) {
+  iVar2 = (int)uVar6;
+  if (iVar2 == 0) {
     uVar6 = PackedFloatingMUL(uVar3,uVar3);
     if (param_2 != (undefined8 *)0x0) {
       uVar5 = PackedFloatingReciprocalSQRIter1(uVar6,uVar5);
@@ -37914,9 +37917,10 @@ void FUN_00459536(undefined8 *param_1,undefined8 *param_2,undefined4 *param_3)
       *param_2 = uVar5;
       *(int *)(param_2 + 1) = (int)uVar4;
     }
+    uVar7 = CONCAT44(param_2,iVar2);
     if (param_3 != (undefined4 *)0x0) {
-      uVar2 = FUN_004601c0();
-      uVar4 = PackedFloatingMUL(uVar2,0x4000000040000000);
+      uVar7 = math_acos_packed();
+      uVar4 = PackedFloatingMUL(extraout_MM0,0x4000000040000000);
       *param_3 = (int)uVar4;
     }
   }
@@ -37925,12 +37929,14 @@ void FUN_00459536(undefined8 *param_1,undefined8 *param_2,undefined4 *param_3)
       *(undefined8 *)((int)param_2 + 4) = 0;
       *(undefined4 *)param_2 = 0x3f800000;
     }
+    uVar7 = CONCAT44(param_2,iVar2);
     if (param_3 != (undefined4 *)0x0) {
       *param_3 = 0;
+      uVar7 = CONCAT44(param_2,iVar2);
     }
   }
   FastExitMediaState();
-  return;
+  return uVar7;
 }
 
 
@@ -37969,59 +37975,61 @@ void FUN_00459b4b(undefined8 *param_1,undefined8 *param_2,undefined8 *param_3,ui
 
 {
   undefined4 uVar1;
-  uint uVar2;
-  undefined8 uVar4;
-  ulonglong uVar5;
-  undefined8 uVar6;
-  ulonglong uVar7;
+  uint extraout_MM0_Da;
+  ulonglong extraout_MM0;
+  undefined8 extraout_MM0_00;
+  undefined8 uVar3;
+  ulonglong uVar4;
+  undefined8 uVar5;
+  uint uVar6;
+  undefined8 uVar7;
   undefined8 uVar8;
-  undefined8 uVar9;
+  ulonglong uVar9;
   ulonglong uVar10;
-  ulonglong uVar11;
-  ulonglong uVar3;
+  ulonglong uVar2;
   
   FastExitMediaState();
-  uVar4 = PackedFloatingMUL(*param_2,*param_3);
-  uVar6 = PackedFloatingMUL(param_2[1],param_3[1]);
-  uVar4 = PackedFloatingADD(uVar4,uVar6);
-  uVar3 = PackedFloatingSUB(0x3f800000,(ulonglong)param_4);
-  uVar1 = (undefined4)uVar3;
-  uVar5 = PackedFloatingAccumulate(uVar4,uVar4);
-  uVar10 = PackedFloatingCompareGE(0,uVar5);
-  uVar11 = uVar10 & 0x8000000080000000;
-  uVar5 = uVar5 ^ uVar11;
-  uVar6 = PackedFloatingCompareGE(0x3f7fff583f7fff58,uVar5);
-  uVar4 = PackedFloatingMUL(uVar5,uVar5);
-  uVar4 = PackedFloatingSUBR(uVar4,0x3f8000003f800000);
-  if ((int)uVar6 != 0) {
-    uVar8 = PackedFloatingReciprocalSQRAprox((ulonglong)param_4,uVar4);
-    uVar6 = PackedFloatingMUL(uVar8,uVar8);
-    uVar4 = PackedFloatingReciprocalSQRIter1(uVar4,uVar6);
-    uVar7 = PackedFloatingReciprocalIter2(uVar4,uVar8);
-    uVar4 = FloatingReciprocalAprox(uVar6,uVar7);
-    uVar6 = PackedFloatingReciprocalIter1(uVar7,uVar4);
-    PackedFloatingReciprocalIter2(uVar6,uVar4);
-    uVar5 = FUN_004600c0();
-    PackedFloatingMUL(uVar5,(ulonglong)param_4);
-    uVar2 = FUN_004608c0();
-    PackedFloatingMUL(uVar5 & 0xffffffff,uVar3 & 0xffffffff);
-    uVar4 = FUN_004608c0();
-    uVar11 = uVar10 & 0x80000000;
-    uVar4 = PackedFloatingMUL(uVar4,uVar7 & 0xffffffff);
-    uVar1 = (undefined4)uVar4;
-    uVar4 = PackedFloatingMUL((ulonglong)uVar2,uVar7 & 0xffffffff);
-    param_4 = (uint)uVar4;
+  uVar3 = PackedFloatingMUL(*param_2,*param_3);
+  uVar5 = PackedFloatingMUL(param_2[1],param_3[1]);
+  uVar3 = PackedFloatingADD(uVar3,uVar5);
+  uVar2 = PackedFloatingSUB(0x3f800000,(ulonglong)param_4);
+  uVar1 = (undefined4)uVar2;
+  uVar4 = PackedFloatingAccumulate(uVar3,uVar3);
+  uVar9 = PackedFloatingCompareGE(0,uVar4);
+  uVar10 = uVar9 & 0x8000000080000000;
+  uVar4 = uVar4 ^ uVar10;
+  uVar5 = PackedFloatingCompareGE(0x3f7fff583f7fff58,uVar4);
+  uVar3 = PackedFloatingMUL(uVar4,uVar4);
+  uVar3 = PackedFloatingSUBR(uVar3,0x3f8000003f800000);
+  if ((int)uVar5 != 0) {
+    uVar7 = PackedFloatingReciprocalSQRAprox((ulonglong)param_4,uVar3);
+    uVar5 = PackedFloatingMUL(uVar7,uVar7);
+    uVar3 = PackedFloatingReciprocalSQRIter1(uVar3,uVar5);
+    uVar4 = PackedFloatingReciprocalIter2(uVar3,uVar7);
+    uVar3 = FloatingReciprocalAprox(uVar5,uVar4);
+    uVar5 = PackedFloatingReciprocalIter1(uVar4,uVar3);
+    PackedFloatingReciprocalIter2(uVar5,uVar3);
+    math_atan2_packed();
+    PackedFloatingMUL(extraout_MM0,(ulonglong)param_4);
+    math_sin_packed();
+    PackedFloatingMUL(extraout_MM0 & 0xffffffff,uVar2 & 0xffffffff);
+    math_sin_packed();
+    uVar10 = uVar9 & 0x80000000;
+    uVar3 = PackedFloatingMUL(extraout_MM0_00,uVar4 & 0xffffffff);
+    uVar1 = (undefined4)uVar3;
+    uVar3 = PackedFloatingMUL((ulonglong)extraout_MM0_Da,uVar4 & 0xffffffff);
+    param_4 = (uint)uVar3;
   }
-  uVar2 = param_4 ^ (uint)uVar11;
-  uVar6 = CONCAT44(uVar2,uVar2);
-  uVar4 = PackedFloatingMUL(CONCAT44(uVar1,uVar1),*param_2);
-  uVar8 = PackedFloatingMUL(uVar6,*param_3);
-  uVar9 = PackedFloatingMUL(CONCAT44(uVar1,uVar1),param_2[1]);
-  uVar6 = PackedFloatingMUL(uVar6,param_3[1]);
-  uVar4 = PackedFloatingADD(uVar4,uVar8);
-  uVar6 = PackedFloatingADD(uVar9,uVar6);
-  *param_1 = uVar4;
-  param_1[1] = uVar6;
+  uVar6 = param_4 ^ (uint)uVar10;
+  uVar5 = CONCAT44(uVar6,uVar6);
+  uVar3 = PackedFloatingMUL(CONCAT44(uVar1,uVar1),*param_2);
+  uVar7 = PackedFloatingMUL(uVar5,*param_3);
+  uVar8 = PackedFloatingMUL(CONCAT44(uVar1,uVar1),param_2[1]);
+  uVar5 = PackedFloatingMUL(uVar5,param_3[1]);
+  uVar3 = PackedFloatingADD(uVar3,uVar7);
+  uVar5 = PackedFloatingADD(uVar8,uVar5);
+  *param_1 = uVar3;
+  param_1[1] = uVar5;
   FastExitMediaState();
   return;
 }
@@ -38086,37 +38094,37 @@ void FUN_00459d0f(undefined8 *param_1,undefined8 *param_2,undefined8 *param_3,un
 void FUN_00459e05(undefined8 *param_1,undefined8 *param_2)
 
 {
-  ulonglong uVar1;
+  undefined4 extraout_MM0_Da;
+  ulonglong extraout_MM0;
+  undefined8 uVar1;
   ulonglong uVar2;
+  undefined4 uVar4;
   undefined8 uVar3;
-  ulonglong uVar4;
-  undefined4 uVar6;
-  undefined8 uVar5;
   undefined8 in_MM4;
-  undefined8 uVar7;
+  undefined8 uVar5;
   
   FastExitMediaState();
-  uVar3 = *param_2;
-  uVar4 = param_2[1];
-  uVar6 = (undefined4)(uVar4 >> 0x20);
-  uVar5 = PackedFloatingCompareGE(CONCAT44(uVar6,uVar6),0x3f8000003f800000);
-  if ((int)uVar5 == 0) {
-    uVar1 = FUN_004601c0();
-    uVar2 = FUN_004608c0();
-    uVar5 = PackedFloatingCompareGE(uVar2 & 0x7fffffff7fffffff,0x3400000034000000);
-    uVar3 = *param_2;
-    uVar4 = param_2[1];
-    if ((int)uVar5 != 0) {
-      uVar7 = FloatingReciprocalAprox(in_MM4,uVar2);
-      uVar5 = PackedFloatingReciprocalIter1(uVar2,uVar7);
-      uVar5 = PackedFloatingReciprocalIter2(uVar5,uVar7);
-      uVar5 = PackedFloatingMUL(CONCAT44((int)uVar1,(int)uVar1),uVar5);
-      uVar3 = PackedFloatingMUL(uVar3,uVar5);
-      uVar4 = PackedFloatingMUL(uVar4,uVar5);
+  uVar1 = *param_2;
+  uVar2 = param_2[1];
+  uVar4 = (undefined4)(uVar2 >> 0x20);
+  uVar3 = PackedFloatingCompareGE(CONCAT44(uVar4,uVar4),0x3f8000003f800000);
+  if ((int)uVar3 == 0) {
+    math_acos_packed();
+    math_sin_packed();
+    uVar3 = PackedFloatingCompareGE(extraout_MM0 & 0x7fffffff7fffffff,0x3400000034000000);
+    uVar1 = *param_2;
+    uVar2 = param_2[1];
+    if ((int)uVar3 != 0) {
+      uVar5 = FloatingReciprocalAprox(in_MM4,extraout_MM0);
+      uVar3 = PackedFloatingReciprocalIter1(extraout_MM0,uVar5);
+      uVar3 = PackedFloatingReciprocalIter2(uVar3,uVar5);
+      uVar3 = PackedFloatingMUL(CONCAT44(extraout_MM0_Da,extraout_MM0_Da),uVar3);
+      uVar1 = PackedFloatingMUL(uVar1,uVar3);
+      uVar2 = PackedFloatingMUL(uVar2,uVar3);
     }
   }
-  *param_1 = uVar3;
-  param_1[1] = uVar4 & 0xffffffff;
+  *param_1 = uVar1;
+  param_1[1] = uVar2 & 0xffffffff;
   FastExitMediaState();
   return;
 }
@@ -38130,20 +38138,28 @@ void FUN_00459f51(undefined8 *param_1,undefined8 *param_2,ulonglong *param_3,ulo
 
 {
   undefined4 unaff_ESI;
+  undefined4 extraout_MM0_Da;
+  undefined4 extraout_MM0_Da_00;
+  undefined4 extraout_MM0_Da_01;
+  undefined4 extraout_MM0_Da_02;
   undefined8 uVar1;
-  ulonglong uVar2;
-  ulonglong uVar3;
   ulonglong extraout_MM0;
   ulonglong extraout_MM0_00;
+  ulonglong extraout_MM0_01;
+  ulonglong extraout_MM0_02;
+  ulonglong extraout_MM0_03;
+  ulonglong extraout_MM0_04;
+  undefined8 uVar2;
+  undefined4 uVar3;
   undefined8 uVar4;
-  undefined4 uVar5;
-  undefined8 uVar6;
-  ulonglong uVar7;
+  ulonglong uVar5;
+  ulonglong uVar6;
+  undefined8 uVar7;
   ulonglong uVar8;
   undefined8 uVar9;
   ulonglong uVar10;
   undefined8 uVar11;
-  undefined8 uVar12;
+  ulonglong uVar12;
   ulonglong uVar13;
   undefined8 uVar14;
   ulonglong local_a8;
@@ -38156,293 +38172,293 @@ void FUN_00459f51(undefined8 *param_1,undefined8 *param_2,ulonglong *param_3,ulo
   
   local_a8 = *param_4;
   local_a0 = param_4[1];
-  uVar8 = *param_5;
+  uVar6 = *param_5;
   uVar13 = param_5[1];
-  uVar1 = PackedFloatingADD(local_a8,uVar8);
-  uVar4 = PackedFloatingADD(local_a0,uVar13);
-  uVar6 = PackedFloatingSUB(local_a8,uVar8);
+  uVar1 = PackedFloatingADD(local_a8,uVar6);
+  uVar2 = PackedFloatingADD(local_a0,uVar13);
+  uVar4 = PackedFloatingSUB(local_a8,uVar6);
   uVar1 = PackedFloatingMUL(uVar1,uVar1);
-  uVar9 = PackedFloatingSUB(local_a0,uVar13);
+  uVar7 = PackedFloatingSUB(local_a0,uVar13);
+  uVar2 = PackedFloatingMUL(uVar2,uVar2);
   uVar4 = PackedFloatingMUL(uVar4,uVar4);
-  uVar6 = PackedFloatingMUL(uVar6,uVar6);
-  uVar9 = PackedFloatingMUL(uVar9,uVar9);
-  uVar1 = PackedFloatingADD(uVar1,uVar4);
-  uVar6 = PackedFloatingADD(uVar6,uVar9);
+  uVar7 = PackedFloatingMUL(uVar7,uVar7);
+  uVar1 = PackedFloatingADD(uVar1,uVar2);
+  uVar4 = PackedFloatingADD(uVar4,uVar7);
   local_88 = *param_6;
   local_80 = param_6[1];
-  uVar11 = PackedFloatingADD(uVar8,local_88);
-  uVar12 = PackedFloatingADD(uVar13,local_80);
-  uVar4 = PackedFloatingSUB(uVar8,local_88);
-  uVar9 = PackedFloatingSUB(uVar13,local_80);
-  uVar11 = PackedFloatingMUL(uVar11,uVar11);
-  uVar12 = PackedFloatingMUL(uVar12,uVar12);
-  uVar4 = PackedFloatingMUL(uVar4,uVar4);
+  uVar9 = PackedFloatingADD(uVar6,local_88);
+  uVar11 = PackedFloatingADD(uVar13,local_80);
+  uVar2 = PackedFloatingSUB(uVar6,local_88);
+  uVar7 = PackedFloatingSUB(uVar13,local_80);
   uVar9 = PackedFloatingMUL(uVar9,uVar9);
-  uVar11 = PackedFloatingADD(uVar11,uVar12);
-  uVar4 = PackedFloatingADD(uVar4,uVar9);
-  uVar1 = PackedFloatingAccumulate(uVar1,uVar11);
-  uVar4 = PackedFloatingAccumulate(uVar6,uVar4);
-  uVar1 = PackedFloatingCompareGT(uVar4,uVar1);
-  uVar7 = packsswb(uVar1,uVar1);
-  if ((uVar7 & 1) != 0) {
+  uVar11 = PackedFloatingMUL(uVar11,uVar11);
+  uVar2 = PackedFloatingMUL(uVar2,uVar2);
+  uVar7 = PackedFloatingMUL(uVar7,uVar7);
+  uVar9 = PackedFloatingADD(uVar9,uVar11);
+  uVar2 = PackedFloatingADD(uVar2,uVar7);
+  uVar1 = PackedFloatingAccumulate(uVar1,uVar9);
+  uVar2 = PackedFloatingAccumulate(uVar4,uVar2);
+  uVar1 = PackedFloatingCompareGT(uVar2,uVar1);
+  uVar5 = packsswb(uVar1,uVar1);
+  if ((uVar5 & 1) != 0) {
     local_a8 = *param_4 ^ 0x8000000080000000;
     local_a0 = param_4[1] ^ 0x8000000080000000;
   }
-  if ((uVar7 & 0x10000) != 0) {
+  if ((uVar5 & 0x10000) != 0) {
     local_88 = *param_6 ^ 0x8000000080000000;
     local_80 = param_6[1] ^ 0x8000000080000000;
   }
   local_78 = *param_7;
-  uVar7 = param_7[1];
-  uVar6 = PackedFloatingADD(local_88,local_78);
-  uVar9 = PackedFloatingADD(local_80,uVar7);
+  uVar5 = param_7[1];
+  uVar4 = PackedFloatingADD(local_88,local_78);
+  uVar7 = PackedFloatingADD(local_80,uVar5);
   uVar1 = PackedFloatingSUB(local_88,local_78);
-  uVar4 = PackedFloatingSUB(local_80,uVar7);
-  uVar6 = PackedFloatingMUL(uVar6,uVar6);
-  uVar9 = PackedFloatingMUL(uVar9,uVar9);
-  uVar1 = PackedFloatingMUL(uVar1,uVar1);
+  uVar2 = PackedFloatingSUB(local_80,uVar5);
   uVar4 = PackedFloatingMUL(uVar4,uVar4);
-  uVar6 = PackedFloatingADD(uVar6,uVar9);
-  uVar1 = PackedFloatingADD(uVar1,uVar4);
-  uVar4 = PackedFloatingAccumulate(uVar6,uVar6);
+  uVar7 = PackedFloatingMUL(uVar7,uVar7);
+  uVar1 = PackedFloatingMUL(uVar1,uVar1);
+  uVar2 = PackedFloatingMUL(uVar2,uVar2);
+  uVar4 = PackedFloatingADD(uVar4,uVar7);
+  uVar1 = PackedFloatingADD(uVar1,uVar2);
+  uVar2 = PackedFloatingAccumulate(uVar4,uVar4);
   uVar1 = PackedFloatingAccumulate(uVar1,uVar1);
-  uVar10 = PackedFloatingCompareGT(uVar1,uVar4);
-  local_70 = uVar7;
-  if ((uVar10 & 1) != 0) {
+  uVar8 = PackedFloatingCompareGT(uVar1,uVar2);
+  local_70 = uVar5;
+  if ((uVar8 & 1) != 0) {
     local_78 = *param_7 ^ 0x8000000080000000;
     local_70 = param_7[1] ^ 0x8000000080000000;
   }
-  uVar1 = PackedFloatingMUL(uVar8,uVar8);
-  uVar4 = PackedFloatingMUL(uVar13,uVar13);
-  uVar1 = PackedFloatingADD(uVar1,uVar4);
+  uVar1 = PackedFloatingMUL(uVar6,uVar6);
+  uVar2 = PackedFloatingMUL(uVar13,uVar13);
+  uVar1 = PackedFloatingADD(uVar1,uVar2);
   uVar1 = PackedFloatingAccumulate(uVar1,uVar1);
-  uVar4 = FloatingReciprocalAprox(uVar7,uVar1);
-  uVar7 = PackedFloatingCompareGT(uVar1,0x80000000800000);
-  uVar1 = PackedFloatingReciprocalIter1(uVar1,uVar4);
-  uVar1 = PackedFloatingReciprocalIter2(uVar1,uVar4);
-  uVar4 = PackedFloatingMUL((uVar8 ^ 0x8000000080000000) & uVar7,uVar1);
-  uVar11 = PackedFloatingMUL((uVar13 ^ 0x80000000) & uVar7,uVar1);
-  uVar10 = CONCAT44((int)local_a8,(int)(local_a8 >> 0x20));
-  uVar2 = CONCAT44((int)local_a0,(int)(local_a0 >> 0x20));
-  uVar7 = PackedFloatingMUL(local_a8,uVar11);
-  uVar1 = PackedFloatingMUL(local_a0,uVar4);
-  uVar9 = PackedFloatingMUL(uVar2 ^ 0x80000000,uVar4);
-  uVar6 = PackedFloatingMUL(uVar10,uVar11);
-  uVar1 = PackedFloatingADD(uVar7 ^ 0x80000000,uVar1);
-  uVar6 = PackedFloatingSUB(uVar6,uVar9);
-  uVar14 = PackedFloatingMUL(uVar2,uVar11);
-  uVar6 = PackedFloatingAccumulate(uVar6,uVar1);
-  uVar12 = PackedFloatingMUL(uVar10 ^ 0x80000000,uVar4);
-  uVar1 = PackedFloatingMUL(local_a8,uVar4);
-  uVar9 = PackedFloatingMUL(local_a0 ^ 0x80000000,uVar11);
-  uVar12 = PackedFloatingADD(uVar12,uVar14);
-  uVar1 = PackedFloatingSUB(uVar9,uVar1);
-  uVar10 = PackedFloatingAccumulate(uVar12,uVar1);
-  uVar2 = CONCAT44((int)local_88,(int)(local_88 >> 0x20));
-  uVar3 = CONCAT44((int)local_80,(int)(local_80 >> 0x20));
-  uVar7 = PackedFloatingMUL(local_88,uVar11);
-  uVar1 = PackedFloatingMUL(local_80,uVar4);
-  uVar12 = PackedFloatingMUL(uVar3 ^ 0x80000000,uVar4);
-  uVar9 = PackedFloatingMUL(uVar2,uVar11);
-  uVar1 = PackedFloatingADD(uVar7 ^ 0x80000000,uVar1);
-  uVar9 = PackedFloatingSUB(uVar9,uVar12);
-  uVar14 = PackedFloatingMUL(uVar3,uVar11);
-  uVar9 = PackedFloatingAccumulate(uVar9,uVar1);
-  uVar12 = PackedFloatingMUL(uVar2 ^ 0x80000000,uVar4);
-  uVar1 = PackedFloatingMUL(local_88,uVar4);
-  uVar4 = PackedFloatingMUL(local_80 ^ 0x80000000,uVar11);
-  uVar11 = PackedFloatingADD(uVar12,uVar14);
-  uVar1 = PackedFloatingSUB(uVar4,uVar1);
-  uVar7 = PackedFloatingAccumulate(uVar11,uVar1);
-  uVar5 = (undefined4)(uVar10 >> 0x20);
-  uVar4 = PackedFloatingCompareGE(CONCAT44(uVar5,uVar5),0x3f8000003f800000);
-  uVar1 = uVar9;
-  if ((int)uVar4 == 0) {
-    uVar2 = FUN_004601c0();
-    uVar3 = FUN_004608c0();
-    uVar4 = PackedFloatingCompareGE(uVar3 & 0x7fffffff7fffffff,0x3400000034000000);
-    if ((int)uVar4 != 0) {
-      uVar1 = FloatingReciprocalAprox(uVar1,uVar3);
-      uVar4 = PackedFloatingReciprocalIter1(uVar3,uVar1);
-      uVar4 = PackedFloatingReciprocalIter2(uVar4,uVar1);
-      uVar4 = PackedFloatingMUL(CONCAT44((int)uVar2,(int)uVar2),uVar4);
-      uVar6 = PackedFloatingMUL(uVar6,uVar4);
-      uVar10 = PackedFloatingMUL(uVar10,uVar4);
+  uVar2 = FloatingReciprocalAprox(uVar5,uVar1);
+  uVar5 = PackedFloatingCompareGT(uVar1,0x80000000800000);
+  uVar1 = PackedFloatingReciprocalIter1(uVar1,uVar2);
+  uVar1 = PackedFloatingReciprocalIter2(uVar1,uVar2);
+  uVar2 = PackedFloatingMUL((uVar6 ^ 0x8000000080000000) & uVar5,uVar1);
+  uVar9 = PackedFloatingMUL((uVar13 ^ 0x80000000) & uVar5,uVar1);
+  uVar8 = CONCAT44((int)local_a8,(int)(local_a8 >> 0x20));
+  uVar10 = CONCAT44((int)local_a0,(int)(local_a0 >> 0x20));
+  uVar5 = PackedFloatingMUL(local_a8,uVar9);
+  uVar1 = PackedFloatingMUL(local_a0,uVar2);
+  uVar7 = PackedFloatingMUL(uVar10 ^ 0x80000000,uVar2);
+  uVar4 = PackedFloatingMUL(uVar8,uVar9);
+  uVar1 = PackedFloatingADD(uVar5 ^ 0x80000000,uVar1);
+  uVar4 = PackedFloatingSUB(uVar4,uVar7);
+  uVar14 = PackedFloatingMUL(uVar10,uVar9);
+  uVar4 = PackedFloatingAccumulate(uVar4,uVar1);
+  uVar11 = PackedFloatingMUL(uVar8 ^ 0x80000000,uVar2);
+  uVar1 = PackedFloatingMUL(local_a8,uVar2);
+  uVar7 = PackedFloatingMUL(local_a0 ^ 0x80000000,uVar9);
+  uVar11 = PackedFloatingADD(uVar11,uVar14);
+  uVar1 = PackedFloatingSUB(uVar7,uVar1);
+  uVar8 = PackedFloatingAccumulate(uVar11,uVar1);
+  uVar10 = CONCAT44((int)local_88,(int)(local_88 >> 0x20));
+  uVar12 = CONCAT44((int)local_80,(int)(local_80 >> 0x20));
+  uVar5 = PackedFloatingMUL(local_88,uVar9);
+  uVar1 = PackedFloatingMUL(local_80,uVar2);
+  uVar11 = PackedFloatingMUL(uVar12 ^ 0x80000000,uVar2);
+  uVar7 = PackedFloatingMUL(uVar10,uVar9);
+  uVar1 = PackedFloatingADD(uVar5 ^ 0x80000000,uVar1);
+  uVar7 = PackedFloatingSUB(uVar7,uVar11);
+  uVar14 = PackedFloatingMUL(uVar12,uVar9);
+  uVar7 = PackedFloatingAccumulate(uVar7,uVar1);
+  uVar11 = PackedFloatingMUL(uVar10 ^ 0x80000000,uVar2);
+  uVar1 = PackedFloatingMUL(local_88,uVar2);
+  uVar2 = PackedFloatingMUL(local_80 ^ 0x80000000,uVar9);
+  uVar9 = PackedFloatingADD(uVar11,uVar14);
+  uVar1 = PackedFloatingSUB(uVar2,uVar1);
+  uVar5 = PackedFloatingAccumulate(uVar9,uVar1);
+  uVar3 = (undefined4)(uVar8 >> 0x20);
+  uVar2 = PackedFloatingCompareGE(CONCAT44(uVar3,uVar3),0x3f8000003f800000);
+  uVar1 = uVar7;
+  if ((int)uVar2 == 0) {
+    math_acos_packed();
+    math_sin_packed();
+    uVar2 = PackedFloatingCompareGE(extraout_MM0 & 0x7fffffff7fffffff,0x3400000034000000);
+    if ((int)uVar2 != 0) {
+      uVar1 = FloatingReciprocalAprox(uVar1,extraout_MM0);
+      uVar2 = PackedFloatingReciprocalIter1(extraout_MM0,uVar1);
+      uVar2 = PackedFloatingReciprocalIter2(uVar2,uVar1);
+      uVar2 = PackedFloatingMUL(CONCAT44(extraout_MM0_Da,extraout_MM0_Da),uVar2);
+      uVar4 = PackedFloatingMUL(uVar4,uVar2);
+      uVar8 = PackedFloatingMUL(uVar8,uVar2);
     }
   }
-  uVar5 = (undefined4)(uVar7 >> 0x20);
-  uVar4 = PackedFloatingCompareGE(CONCAT44(uVar5,uVar5),0x3f8000003f800000);
-  if ((int)uVar4 == 0) {
-    uVar2 = FUN_004601c0();
-    uVar3 = FUN_004608c0();
-    uVar4 = PackedFloatingCompareGE(uVar3 & 0x7fffffff7fffffff,0x3400000034000000);
-    if ((int)uVar4 != 0) {
-      uVar4 = FloatingReciprocalAprox(uVar1,uVar3);
-      uVar1 = PackedFloatingReciprocalIter1(uVar3,uVar4);
-      uVar1 = PackedFloatingReciprocalIter2(uVar1,uVar4);
-      uVar1 = PackedFloatingMUL(CONCAT44((int)uVar2,(int)uVar2),uVar1);
-      uVar9 = PackedFloatingMUL(uVar9,uVar1);
+  uVar3 = (undefined4)(uVar5 >> 0x20);
+  uVar2 = PackedFloatingCompareGE(CONCAT44(uVar3,uVar3),0x3f8000003f800000);
+  if ((int)uVar2 == 0) {
+    math_acos_packed();
+    math_sin_packed();
+    uVar2 = PackedFloatingCompareGE(extraout_MM0_00 & 0x7fffffff7fffffff,0x3400000034000000);
+    if ((int)uVar2 != 0) {
+      uVar2 = FloatingReciprocalAprox(uVar1,extraout_MM0_00);
+      uVar1 = PackedFloatingReciprocalIter1(extraout_MM0_00,uVar2);
+      uVar1 = PackedFloatingReciprocalIter2(uVar1,uVar2);
+      uVar1 = PackedFloatingMUL(CONCAT44(extraout_MM0_Da_00,extraout_MM0_Da_00),uVar1);
       uVar7 = PackedFloatingMUL(uVar7,uVar1);
+      uVar5 = PackedFloatingMUL(uVar5,uVar1);
     }
   }
-  uVar1 = PackedFloatingADD(uVar6,uVar9);
-  uVar4 = PackedFloatingADD(uVar10 & 0xffffffff,uVar7 & 0xffffffff);
+  uVar1 = PackedFloatingADD(uVar4,uVar7);
+  uVar2 = PackedFloatingADD(uVar8 & 0xffffffff,uVar5 & 0xffffffff);
   uVar1 = PackedFloatingMUL(uVar1,0xbe800000be800000);
-  uVar10 = PackedFloatingMUL(uVar4,0xbe800000be800000);
-  uVar4 = PackedFloatingMUL(uVar1,uVar1);
-  uVar6 = PackedFloatingMUL(uVar10 & 0xffffffff,uVar10 & 0xffffffff);
-  uVar4 = PackedFloatingADD(uVar4,uVar6);
-  uVar4 = PackedFloatingAccumulate(uVar4,uVar4);
-  uVar6 = PackedFloatingReciprocalSQRAprox(uVar6,uVar4);
-  uVar9 = PackedFloatingMUL(uVar6,uVar6);
-  uVar9 = PackedFloatingReciprocalSQRIter1(uVar9,uVar4);
-  uVar6 = PackedFloatingReciprocalIter2(uVar9,uVar6);
-  PackedFloatingMUL(uVar4,uVar6);
+  uVar8 = PackedFloatingMUL(uVar2,0xbe800000be800000);
+  uVar2 = PackedFloatingMUL(uVar1,uVar1);
+  uVar4 = PackedFloatingMUL(uVar8 & 0xffffffff,uVar8 & 0xffffffff);
+  uVar2 = PackedFloatingADD(uVar2,uVar4);
+  uVar2 = PackedFloatingAccumulate(uVar2,uVar2);
+  uVar4 = PackedFloatingReciprocalSQRAprox(uVar4,uVar2);
+  uVar7 = PackedFloatingMUL(uVar4,uVar4);
+  uVar7 = PackedFloatingReciprocalSQRIter1(uVar7,uVar2);
+  uVar4 = PackedFloatingReciprocalIter2(uVar7,uVar4);
+  PackedFloatingMUL(uVar2,uVar4);
   math_sincos_packed();
-  uVar7 = PackedFloatingCompareGE(extraout_MM0 & 0x7fffffffffffffff,0x3400000034000000);
-  uVar5 = (undefined4)(extraout_MM0 >> 0x20);
-  uVar4 = PackedFloatingMUL(CONCAT44(uVar5,uVar5),CONCAT44(unaff_ESI,(int)uVar6));
-  local_20 = (undefined4)uVar10;
-  if ((uVar7 & 0x100000000) != 0) {
-    uVar4 = CONCAT44((int)uVar4,(int)uVar4);
-    uVar6 = PackedFloatingMUL(uVar10 & 0xffffffff,uVar4);
-    local_20 = (undefined4)uVar6;
-    uVar1 = PackedFloatingMUL(uVar1,uVar4);
+  uVar5 = PackedFloatingCompareGE(extraout_MM0_01 & 0x7fffffffffffffff,0x3400000034000000);
+  uVar3 = (undefined4)(extraout_MM0_01 >> 0x20);
+  uVar2 = PackedFloatingMUL(CONCAT44(uVar3,uVar3),CONCAT44(unaff_ESI,(int)uVar4));
+  local_20 = (undefined4)uVar8;
+  if ((uVar5 & 0x100000000) != 0) {
+    uVar2 = CONCAT44((int)uVar2,(int)uVar2);
+    uVar4 = PackedFloatingMUL(uVar8 & 0xffffffff,uVar2);
+    local_20 = (undefined4)uVar4;
+    uVar1 = PackedFloatingMUL(uVar1,uVar2);
   }
-  uVar10 = CONCAT44((int)extraout_MM0,local_20);
-  uVar2 = CONCAT44((int)uVar1,(int)((ulonglong)uVar1 >> 0x20));
-  uVar3 = CONCAT44(local_20,(int)extraout_MM0);
-  uVar7 = PackedFloatingMUL(uVar1,uVar13);
-  uVar4 = PackedFloatingMUL(uVar10,uVar8);
-  uVar9 = PackedFloatingMUL(uVar3 ^ 0x80000000,uVar8);
-  uVar6 = PackedFloatingMUL(uVar2,uVar13);
-  uVar4 = PackedFloatingADD(uVar7 ^ 0x80000000,uVar4);
-  uVar6 = PackedFloatingSUB(uVar6,uVar9);
-  uVar11 = PackedFloatingMUL(uVar3,uVar13);
-  uVar6 = PackedFloatingAccumulate(uVar6,uVar4);
-  uVar9 = PackedFloatingMUL(uVar2 ^ 0x80000000,uVar8);
-  uVar1 = PackedFloatingMUL(uVar1,uVar8);
-  *param_1 = uVar6;
-  uVar4 = PackedFloatingMUL(uVar10 ^ 0x80000000,uVar13);
-  uVar9 = PackedFloatingADD(uVar9,uVar11);
-  uVar1 = PackedFloatingSUB(uVar4,uVar1);
-  uVar1 = PackedFloatingAccumulate(uVar9,uVar1);
+  uVar8 = CONCAT44((int)extraout_MM0_01,local_20);
+  uVar10 = CONCAT44((int)uVar1,(int)((ulonglong)uVar1 >> 0x20));
+  uVar12 = CONCAT44(local_20,(int)extraout_MM0_01);
+  uVar5 = PackedFloatingMUL(uVar1,uVar13);
+  uVar2 = PackedFloatingMUL(uVar8,uVar6);
+  uVar7 = PackedFloatingMUL(uVar12 ^ 0x80000000,uVar6);
+  uVar4 = PackedFloatingMUL(uVar10,uVar13);
+  uVar2 = PackedFloatingADD(uVar5 ^ 0x80000000,uVar2);
+  uVar4 = PackedFloatingSUB(uVar4,uVar7);
+  uVar9 = PackedFloatingMUL(uVar12,uVar13);
+  uVar4 = PackedFloatingAccumulate(uVar4,uVar2);
+  uVar7 = PackedFloatingMUL(uVar10 ^ 0x80000000,uVar6);
+  uVar1 = PackedFloatingMUL(uVar1,uVar6);
+  *param_1 = uVar4;
+  uVar2 = PackedFloatingMUL(uVar8 ^ 0x80000000,uVar13);
+  uVar7 = PackedFloatingADD(uVar7,uVar9);
+  uVar1 = PackedFloatingSUB(uVar2,uVar1);
+  uVar1 = PackedFloatingAccumulate(uVar7,uVar1);
   param_1[1] = uVar1;
   uVar1 = PackedFloatingMUL(local_88,local_88);
-  uVar4 = PackedFloatingMUL(local_80,local_80);
-  uVar1 = PackedFloatingADD(uVar1,uVar4);
+  uVar2 = PackedFloatingMUL(local_80,local_80);
+  uVar1 = PackedFloatingADD(uVar1,uVar2);
   uVar1 = PackedFloatingAccumulate(uVar1,uVar1);
-  uVar4 = FloatingReciprocalAprox(uVar6,uVar1);
-  uVar7 = PackedFloatingCompareGT(uVar1,0x80000000800000);
-  uVar1 = PackedFloatingReciprocalIter1(uVar1,uVar4);
-  uVar1 = PackedFloatingReciprocalIter2(uVar1,uVar4);
-  uVar4 = PackedFloatingMUL((local_88 ^ 0x8000000080000000) & uVar7,uVar1);
-  uVar11 = PackedFloatingMUL((local_80 ^ 0x80000000) & uVar7,uVar1);
-  uVar10 = CONCAT44((int)uVar8,(int)(uVar8 >> 0x20));
-  uVar2 = CONCAT44((int)uVar13,(int)(uVar13 >> 0x20));
-  uVar7 = PackedFloatingMUL(uVar8,uVar11);
-  uVar1 = PackedFloatingMUL(uVar13,uVar4);
-  uVar9 = PackedFloatingMUL(uVar2 ^ 0x80000000,uVar4);
-  uVar6 = PackedFloatingMUL(uVar10,uVar11);
-  uVar1 = PackedFloatingADD(uVar7 ^ 0x80000000,uVar1);
-  uVar6 = PackedFloatingSUB(uVar6,uVar9);
-  uVar14 = PackedFloatingMUL(uVar2,uVar11);
-  uVar6 = PackedFloatingAccumulate(uVar6,uVar1);
-  uVar12 = PackedFloatingMUL(uVar10 ^ 0x80000000,uVar4);
-  uVar1 = PackedFloatingMUL(uVar8,uVar4);
-  uVar9 = PackedFloatingMUL(uVar13 ^ 0x80000000,uVar11);
-  uVar12 = PackedFloatingADD(uVar12,uVar14);
-  uVar1 = PackedFloatingSUB(uVar9,uVar1);
-  uVar13 = PackedFloatingAccumulate(uVar12,uVar1);
-  uVar7 = CONCAT44((int)local_78,(int)(local_78 >> 0x20));
-  uVar10 = CONCAT44((int)local_70,(int)(local_70 >> 0x20));
-  uVar8 = PackedFloatingMUL(local_78,uVar11);
-  uVar1 = PackedFloatingMUL(local_70,uVar4);
-  uVar12 = PackedFloatingMUL(uVar10 ^ 0x80000000,uVar4);
-  uVar9 = PackedFloatingMUL(uVar7,uVar11);
-  uVar1 = PackedFloatingADD(uVar8 ^ 0x80000000,uVar1);
-  uVar9 = PackedFloatingSUB(uVar9,uVar12);
-  uVar14 = PackedFloatingMUL(uVar10,uVar11);
-  uVar9 = PackedFloatingAccumulate(uVar9,uVar1);
-  uVar12 = PackedFloatingMUL(uVar7 ^ 0x80000000,uVar4);
-  uVar1 = PackedFloatingMUL(local_78,uVar4);
-  uVar4 = PackedFloatingMUL(local_70 ^ 0x80000000,uVar11);
-  uVar11 = PackedFloatingADD(uVar12,uVar14);
-  uVar1 = PackedFloatingSUB(uVar4,uVar1);
-  uVar8 = PackedFloatingAccumulate(uVar11,uVar1);
-  uVar5 = (undefined4)(uVar13 >> 0x20);
-  uVar4 = PackedFloatingCompareGE(CONCAT44(uVar5,uVar5),0x3f8000003f800000);
-  uVar1 = uVar9;
-  if ((int)uVar4 == 0) {
-    uVar7 = FUN_004601c0();
-    uVar10 = FUN_004608c0();
-    uVar4 = PackedFloatingCompareGE(uVar10 & 0x7fffffff7fffffff,0x3400000034000000);
-    if ((int)uVar4 != 0) {
-      uVar1 = FloatingReciprocalAprox(uVar1,uVar10);
-      uVar4 = PackedFloatingReciprocalIter1(uVar10,uVar1);
-      uVar4 = PackedFloatingReciprocalIter2(uVar4,uVar1);
-      uVar4 = PackedFloatingMUL(CONCAT44((int)uVar7,(int)uVar7),uVar4);
-      uVar6 = PackedFloatingMUL(uVar6,uVar4);
-      uVar13 = PackedFloatingMUL(uVar13,uVar4);
+  uVar2 = FloatingReciprocalAprox(uVar4,uVar1);
+  uVar5 = PackedFloatingCompareGT(uVar1,0x80000000800000);
+  uVar1 = PackedFloatingReciprocalIter1(uVar1,uVar2);
+  uVar1 = PackedFloatingReciprocalIter2(uVar1,uVar2);
+  uVar2 = PackedFloatingMUL((local_88 ^ 0x8000000080000000) & uVar5,uVar1);
+  uVar9 = PackedFloatingMUL((local_80 ^ 0x80000000) & uVar5,uVar1);
+  uVar8 = CONCAT44((int)uVar6,(int)(uVar6 >> 0x20));
+  uVar10 = CONCAT44((int)uVar13,(int)(uVar13 >> 0x20));
+  uVar5 = PackedFloatingMUL(uVar6,uVar9);
+  uVar1 = PackedFloatingMUL(uVar13,uVar2);
+  uVar7 = PackedFloatingMUL(uVar10 ^ 0x80000000,uVar2);
+  uVar4 = PackedFloatingMUL(uVar8,uVar9);
+  uVar1 = PackedFloatingADD(uVar5 ^ 0x80000000,uVar1);
+  uVar4 = PackedFloatingSUB(uVar4,uVar7);
+  uVar14 = PackedFloatingMUL(uVar10,uVar9);
+  uVar4 = PackedFloatingAccumulate(uVar4,uVar1);
+  uVar11 = PackedFloatingMUL(uVar8 ^ 0x80000000,uVar2);
+  uVar1 = PackedFloatingMUL(uVar6,uVar2);
+  uVar7 = PackedFloatingMUL(uVar13 ^ 0x80000000,uVar9);
+  uVar11 = PackedFloatingADD(uVar11,uVar14);
+  uVar1 = PackedFloatingSUB(uVar7,uVar1);
+  uVar13 = PackedFloatingAccumulate(uVar11,uVar1);
+  uVar5 = CONCAT44((int)local_78,(int)(local_78 >> 0x20));
+  uVar8 = CONCAT44((int)local_70,(int)(local_70 >> 0x20));
+  uVar6 = PackedFloatingMUL(local_78,uVar9);
+  uVar1 = PackedFloatingMUL(local_70,uVar2);
+  uVar11 = PackedFloatingMUL(uVar8 ^ 0x80000000,uVar2);
+  uVar7 = PackedFloatingMUL(uVar5,uVar9);
+  uVar1 = PackedFloatingADD(uVar6 ^ 0x80000000,uVar1);
+  uVar7 = PackedFloatingSUB(uVar7,uVar11);
+  uVar14 = PackedFloatingMUL(uVar8,uVar9);
+  uVar7 = PackedFloatingAccumulate(uVar7,uVar1);
+  uVar11 = PackedFloatingMUL(uVar5 ^ 0x80000000,uVar2);
+  uVar1 = PackedFloatingMUL(local_78,uVar2);
+  uVar2 = PackedFloatingMUL(local_70 ^ 0x80000000,uVar9);
+  uVar9 = PackedFloatingADD(uVar11,uVar14);
+  uVar1 = PackedFloatingSUB(uVar2,uVar1);
+  uVar6 = PackedFloatingAccumulate(uVar9,uVar1);
+  uVar3 = (undefined4)(uVar13 >> 0x20);
+  uVar2 = PackedFloatingCompareGE(CONCAT44(uVar3,uVar3),0x3f8000003f800000);
+  uVar1 = uVar7;
+  if ((int)uVar2 == 0) {
+    math_acos_packed();
+    math_sin_packed();
+    uVar2 = PackedFloatingCompareGE(extraout_MM0_02 & 0x7fffffff7fffffff,0x3400000034000000);
+    if ((int)uVar2 != 0) {
+      uVar1 = FloatingReciprocalAprox(uVar1,extraout_MM0_02);
+      uVar2 = PackedFloatingReciprocalIter1(extraout_MM0_02,uVar1);
+      uVar2 = PackedFloatingReciprocalIter2(uVar2,uVar1);
+      uVar2 = PackedFloatingMUL(CONCAT44(extraout_MM0_Da_01,extraout_MM0_Da_01),uVar2);
+      uVar4 = PackedFloatingMUL(uVar4,uVar2);
+      uVar13 = PackedFloatingMUL(uVar13,uVar2);
     }
   }
-  uVar5 = (undefined4)(uVar8 >> 0x20);
-  uVar4 = PackedFloatingCompareGE(CONCAT44(uVar5,uVar5),0x3f8000003f800000);
-  if ((int)uVar4 == 0) {
-    uVar7 = FUN_004601c0();
-    uVar10 = FUN_004608c0();
-    uVar4 = PackedFloatingCompareGE(uVar10 & 0x7fffffff7fffffff,0x3400000034000000);
-    if ((int)uVar4 != 0) {
-      uVar4 = FloatingReciprocalAprox(uVar1,uVar10);
-      uVar1 = PackedFloatingReciprocalIter1(uVar10,uVar4);
-      uVar1 = PackedFloatingReciprocalIter2(uVar1,uVar4);
-      uVar1 = PackedFloatingMUL(CONCAT44((int)uVar7,(int)uVar7),uVar1);
-      uVar9 = PackedFloatingMUL(uVar9,uVar1);
-      uVar8 = PackedFloatingMUL(uVar8,uVar1);
+  uVar3 = (undefined4)(uVar6 >> 0x20);
+  uVar2 = PackedFloatingCompareGE(CONCAT44(uVar3,uVar3),0x3f8000003f800000);
+  if ((int)uVar2 == 0) {
+    math_acos_packed();
+    math_sin_packed();
+    uVar2 = PackedFloatingCompareGE(extraout_MM0_03 & 0x7fffffff7fffffff,0x3400000034000000);
+    if ((int)uVar2 != 0) {
+      uVar2 = FloatingReciprocalAprox(uVar1,extraout_MM0_03);
+      uVar1 = PackedFloatingReciprocalIter1(extraout_MM0_03,uVar2);
+      uVar1 = PackedFloatingReciprocalIter2(uVar1,uVar2);
+      uVar1 = PackedFloatingMUL(CONCAT44(extraout_MM0_Da_02,extraout_MM0_Da_02),uVar1);
+      uVar7 = PackedFloatingMUL(uVar7,uVar1);
+      uVar6 = PackedFloatingMUL(uVar6,uVar1);
     }
   }
-  uVar1 = PackedFloatingADD(uVar6,uVar9);
-  uVar4 = PackedFloatingADD(uVar13 & 0xffffffff,uVar8 & 0xffffffff);
+  uVar1 = PackedFloatingADD(uVar4,uVar7);
+  uVar2 = PackedFloatingADD(uVar13 & 0xffffffff,uVar6 & 0xffffffff);
   uVar1 = PackedFloatingMUL(uVar1,0xbe800000be800000);
-  uVar13 = PackedFloatingMUL(uVar4,0xbe800000be800000);
-  uVar4 = PackedFloatingMUL(uVar1,uVar1);
-  uVar6 = PackedFloatingMUL(uVar13 & 0xffffffff,uVar13 & 0xffffffff);
-  uVar4 = PackedFloatingADD(uVar4,uVar6);
-  uVar4 = PackedFloatingAccumulate(uVar4,uVar4);
-  uVar6 = PackedFloatingReciprocalSQRAprox(uVar6,uVar4);
-  uVar9 = PackedFloatingMUL(uVar6,uVar6);
-  uVar9 = PackedFloatingReciprocalSQRIter1(uVar9,uVar4);
-  uVar6 = PackedFloatingReciprocalIter2(uVar9,uVar6);
-  PackedFloatingMUL(uVar4,uVar6);
+  uVar13 = PackedFloatingMUL(uVar2,0xbe800000be800000);
+  uVar2 = PackedFloatingMUL(uVar1,uVar1);
+  uVar4 = PackedFloatingMUL(uVar13 & 0xffffffff,uVar13 & 0xffffffff);
+  uVar2 = PackedFloatingADD(uVar2,uVar4);
+  uVar2 = PackedFloatingAccumulate(uVar2,uVar2);
+  uVar4 = PackedFloatingReciprocalSQRAprox(uVar4,uVar2);
+  uVar7 = PackedFloatingMUL(uVar4,uVar4);
+  uVar7 = PackedFloatingReciprocalSQRIter1(uVar7,uVar2);
+  uVar4 = PackedFloatingReciprocalIter2(uVar7,uVar4);
+  PackedFloatingMUL(uVar2,uVar4);
   math_sincos_packed();
-  uVar8 = PackedFloatingCompareGE(extraout_MM0_00 & 0x7fffffffffffffff,0x3400000034000000);
-  uVar5 = (undefined4)(extraout_MM0_00 >> 0x20);
-  uVar4 = PackedFloatingMUL(CONCAT44(uVar5,uVar5),CONCAT44(unaff_ESI,(int)uVar6));
+  uVar6 = PackedFloatingCompareGE(extraout_MM0_04 & 0x7fffffffffffffff,0x3400000034000000);
+  uVar3 = (undefined4)(extraout_MM0_04 >> 0x20);
+  uVar2 = PackedFloatingMUL(CONCAT44(uVar3,uVar3),CONCAT44(unaff_ESI,(int)uVar4));
   local_20 = (undefined4)uVar13;
-  if ((uVar8 & 0x100000000) != 0) {
-    uVar4 = CONCAT44((int)uVar4,(int)uVar4);
-    uVar6 = PackedFloatingMUL(uVar13 & 0xffffffff,uVar4);
-    local_20 = (undefined4)uVar6;
-    uVar1 = PackedFloatingMUL(uVar1,uVar4);
+  if ((uVar6 & 0x100000000) != 0) {
+    uVar2 = CONCAT44((int)uVar2,(int)uVar2);
+    uVar4 = PackedFloatingMUL(uVar13 & 0xffffffff,uVar2);
+    local_20 = (undefined4)uVar4;
+    uVar1 = PackedFloatingMUL(uVar1,uVar2);
   }
-  uVar13 = CONCAT44((int)extraout_MM0_00,local_20);
-  uVar7 = CONCAT44((int)uVar1,(int)((ulonglong)uVar1 >> 0x20));
-  uVar10 = CONCAT44(local_20,(int)extraout_MM0_00);
-  uVar8 = PackedFloatingMUL(uVar1,local_80);
-  uVar4 = PackedFloatingMUL(uVar13,local_88);
-  uVar9 = PackedFloatingMUL(uVar10 ^ 0x80000000,local_88);
-  uVar6 = PackedFloatingMUL(uVar7,local_80);
-  uVar4 = PackedFloatingADD(uVar8 ^ 0x80000000,uVar4);
-  uVar6 = PackedFloatingSUB(uVar6,uVar9);
-  uVar9 = PackedFloatingMUL(uVar10,local_80);
-  uVar4 = PackedFloatingAccumulate(uVar6,uVar4);
-  uVar6 = PackedFloatingMUL(uVar7 ^ 0x80000000,local_88);
+  uVar13 = CONCAT44((int)extraout_MM0_04,local_20);
+  uVar5 = CONCAT44((int)uVar1,(int)((ulonglong)uVar1 >> 0x20));
+  uVar8 = CONCAT44(local_20,(int)extraout_MM0_04);
+  uVar6 = PackedFloatingMUL(uVar1,local_80);
+  uVar2 = PackedFloatingMUL(uVar13,local_88);
+  uVar7 = PackedFloatingMUL(uVar8 ^ 0x80000000,local_88);
+  uVar4 = PackedFloatingMUL(uVar5,local_80);
+  uVar2 = PackedFloatingADD(uVar6 ^ 0x80000000,uVar2);
+  uVar4 = PackedFloatingSUB(uVar4,uVar7);
+  uVar7 = PackedFloatingMUL(uVar8,local_80);
+  uVar2 = PackedFloatingAccumulate(uVar4,uVar2);
+  uVar4 = PackedFloatingMUL(uVar5 ^ 0x80000000,local_88);
   uVar1 = PackedFloatingMUL(uVar1,local_88);
-  *param_2 = uVar4;
-  uVar4 = PackedFloatingMUL(uVar13 ^ 0x80000000,local_80);
-  uVar6 = PackedFloatingADD(uVar6,uVar9);
-  uVar1 = PackedFloatingSUB(uVar4,uVar1);
-  uVar1 = PackedFloatingAccumulate(uVar6,uVar1);
+  *param_2 = uVar2;
+  uVar2 = PackedFloatingMUL(uVar13 ^ 0x80000000,local_80);
+  uVar4 = PackedFloatingADD(uVar4,uVar7);
+  uVar1 = PackedFloatingSUB(uVar2,uVar1);
+  uVar1 = PackedFloatingAccumulate(uVar4,uVar1);
   param_2[1] = uVar1;
   *param_3 = local_88;
   param_3[1] = local_80;
@@ -40487,165 +40503,170 @@ void FUN_0045dd30(undefined8 *param_1,undefined4 *param_2,undefined8 *param_3)
 
 
 
-/* FUN_0045e40a @ 0045e40a */
+/* mat4_invert @ 0045e40a */
 
-undefined8 * FUN_0045e40a(undefined8 *param_1,undefined4 *param_2,undefined8 *param_3)
+/* inverts a 4x4 matrix; optionally writes determinant */
+
+float * mat4_invert(float *out,float *det_out,float *mat)
 
 {
-  undefined8 *puVar1;
-  undefined4 uVar2;
-  undefined4 uVar4;
-  undefined8 uVar3;
+  float fVar1;
+  float *pfVar2;
+  undefined4 uVar3;
   undefined4 uVar5;
-  undefined8 uVar6;
+  undefined8 uVar4;
+  undefined4 uVar6;
   undefined8 uVar7;
-  undefined4 uVar8;
-  undefined4 uVar11;
-  undefined8 uVar9;
-  undefined8 uVar10;
+  undefined8 uVar8;
+  undefined4 uVar9;
   undefined4 uVar12;
-  undefined8 uVar13;
+  undefined8 uVar10;
+  undefined8 uVar11;
+  undefined4 uVar13;
   undefined8 uVar14;
   undefined8 uVar15;
-  undefined4 uVar16;
-  undefined8 uVar17;
+  undefined8 uVar16;
+  undefined4 uVar17;
   undefined8 uVar18;
   undefined8 uVar19;
-  undefined4 uVar21;
   undefined8 uVar20;
+  undefined4 uVar22;
+  undefined8 uVar21;
   undefined4 uStack_34;
   
-  uVar11 = (undefined4)((ulonglong)*param_3 >> 0x20);
-  uVar2 = (undefined4)param_3[4];
-  uVar16 = (undefined4)param_3[2];
-  uVar12 = (undefined4)*param_3;
-  uVar21 = (undefined4)((ulonglong)param_3[2] >> 0x20);
-  uVar4 = (undefined4)((ulonglong)param_3[4] >> 0x20);
-  uVar9 = PackedFloatingMUL(CONCAT44(uVar11,uVar11),CONCAT44(uVar2,uVar16));
-  uVar13 = PackedFloatingMUL(CONCAT44(uVar12,uVar12),CONCAT44(uVar4,uVar21));
-  uVar14 = PackedFloatingSUB(uVar13,uVar9);
-  uVar5 = (undefined4)((ulonglong)param_3[6] >> 0x20);
-  uVar8 = (undefined4)param_3[6];
-  uVar17 = PackedFloatingMUL(CONCAT44(uVar4,uVar5),CONCAT44(uVar16,uVar12));
-  uVar20 = PackedFloatingMUL(CONCAT44(uVar21,uVar11),CONCAT44(uVar2,uVar8));
-  uVar9 = PackedFloatingMUL(CONCAT44(uVar2,uVar16),CONCAT44(uVar5,uVar5));
-  uVar13 = PackedFloatingMUL(CONCAT44(uVar4,uVar21),CONCAT44(uVar8,uVar8));
-  uVar18 = PackedFloatingSUB(uVar17,uVar20);
-  uVar17 = PackedFloatingSUBR(uVar13,uVar9);
-  uVar9 = param_3[7];
-  uVar13 = param_3[5];
-  uVar2 = (undefined4)((ulonglong)uVar18 >> 0x20);
-  uVar11 = (undefined4)((ulonglong)uVar17 >> 0x20);
-  uVar20 = PackedFloatingMUL(CONCAT44(uVar2,uVar2),uVar9);
-  uVar5 = (undefined4)uVar17;
-  uVar17 = PackedFloatingMUL(CONCAT44(uVar11,uVar11),param_3[3]);
-  uVar6 = PackedFloatingMUL(CONCAT44(uVar5,uVar5),uVar13);
-  uVar17 = PackedFloatingADD(uVar20,uVar17);
-  uVar3 = PackedFloatingSUB(uVar17,uVar6);
-  uVar8 = (undefined4)uVar18;
-  uVar4 = (undefined4)((ulonglong)uVar14 >> 0x20);
-  uVar20 = PackedFloatingMUL(CONCAT44(uVar11,uVar11),param_3[1]);
-  uVar17 = PackedFloatingMUL(CONCAT44(uVar4,uVar4),uVar9);
-  uVar6 = PackedFloatingMUL(CONCAT44(uVar8,uVar8),uVar13);
-  uVar17 = PackedFloatingSUB(uVar17,uVar6);
-  uVar18 = PackedFloatingADD(uVar17,uVar20);
-  uVar20 = CONCAT44((int)uVar14,(int)uVar14);
-  uVar17 = PackedFloatingMUL(CONCAT44(uVar5,uVar5),param_3[1]);
-  uVar9 = PackedFloatingMUL(uVar9,uVar20);
-  uVar6 = PackedFloatingMUL(CONCAT44(uVar8,uVar8),param_3[3]);
-  uVar9 = PackedFloatingADD(uVar9,uVar17);
-  uVar17 = PackedFloatingSUB(uVar9,uVar6);
-  uVar9 = PackedFloatingMUL(uVar20,uVar13);
-  uVar13 = PackedFloatingMUL(CONCAT44(uVar4,uVar4),param_3[3]);
-  uVar20 = PackedFloatingMUL(CONCAT44(uVar2,uVar2),param_3[1]);
-  uVar9 = PackedFloatingSUB(uVar9,uVar13);
-  uVar14 = PackedFloatingADD(uVar9,uVar20);
-  uVar11 = (undefined4)((ulonglong)param_3[1] >> 0x20);
-  uVar2 = (undefined4)param_3[5];
-  uVar16 = (undefined4)param_3[3];
-  uVar12 = (undefined4)param_3[1];
-  uVar21 = (undefined4)((ulonglong)param_3[3] >> 0x20);
-  uVar4 = (undefined4)((ulonglong)param_3[5] >> 0x20);
-  uVar9 = PackedFloatingMUL(CONCAT44(uVar11,uVar11),CONCAT44(uVar2,uVar16));
-  uVar13 = PackedFloatingMUL(CONCAT44(uVar12,uVar12),CONCAT44(uVar4,uVar21));
-  uVar15 = PackedFloatingSUB(uVar13,uVar9);
-  uVar5 = (undefined4)((ulonglong)param_3[7] >> 0x20);
-  uVar8 = (undefined4)param_3[7];
-  uVar20 = PackedFloatingMUL(CONCAT44(uVar4,uVar5),CONCAT44(uVar16,uVar12));
-  uVar6 = PackedFloatingMUL(CONCAT44(uVar21,uVar11),CONCAT44(uVar2,uVar8));
-  uVar9 = PackedFloatingMUL(CONCAT44(uVar2,uVar16),CONCAT44(uVar5,uVar5));
-  uVar13 = PackedFloatingMUL(CONCAT44(uVar4,uVar21),CONCAT44(uVar8,uVar8));
-  uVar19 = PackedFloatingSUB(uVar20,uVar6);
-  uVar20 = PackedFloatingSUBR(uVar13,uVar9);
-  uVar9 = param_3[6];
-  uVar13 = param_3[4];
-  uVar11 = (undefined4)((ulonglong)uVar20 >> 0x20);
-  uVar5 = (undefined4)uVar20;
-  uVar2 = (undefined4)((ulonglong)uVar19 >> 0x20);
-  uVar10 = PackedFloatingMUL(CONCAT44(uVar11,uVar11),param_3[2]);
-  uVar20 = PackedFloatingMUL(CONCAT44(uVar2,uVar2),uVar9);
-  uVar6 = PackedFloatingMUL(CONCAT44(uVar5,uVar5),uVar13);
-  uVar20 = PackedFloatingADD(uVar20,uVar10);
-  uVar10 = PackedFloatingSUB(uVar20,uVar6);
-  uVar8 = (undefined4)uVar19;
-  uVar4 = (undefined4)((ulonglong)uVar15 >> 0x20);
-  uVar6 = PackedFloatingMUL(CONCAT44(uVar11,uVar11),*param_3);
-  uVar20 = PackedFloatingMUL(CONCAT44(uVar4,uVar4),uVar9);
-  uVar19 = PackedFloatingMUL(CONCAT44(uVar8,uVar8),uVar13);
-  uVar20 = PackedFloatingSUB(uVar20,uVar19);
-  uVar19 = PackedFloatingADD(uVar20,uVar6);
-  uVar15 = CONCAT44((int)uVar15,(int)uVar15);
-  uVar6 = PackedFloatingMUL(CONCAT44(uVar5,uVar5),*param_3);
-  uVar20 = PackedFloatingMUL(uVar9,uVar15);
-  uVar7 = PackedFloatingMUL(CONCAT44(uVar8,uVar8),param_3[2]);
-  uVar20 = PackedFloatingADD(uVar20,uVar6);
-  uVar20 = PackedFloatingSUB(uVar20,uVar7);
-  uVar6 = PackedFloatingMUL(uVar15,uVar13);
-  uVar15 = PackedFloatingMUL(CONCAT44(uVar4,uVar4),param_3[2]);
-  uVar7 = PackedFloatingMUL(CONCAT44(uVar2,uVar2),*param_3);
-  uVar6 = PackedFloatingSUB(uVar6,uVar15);
-  uVar6 = PackedFloatingADD(uVar6,uVar7);
-  uVar9 = PackedFloatingMUL(CONCAT44((int)uVar9,(int)uVar13),0xbf8000003f800000);
-  uStack_34 = (undefined4)((ulonglong)uVar19 >> 0x20);
-  uVar13 = CONCAT44(uStack_34,(int)((ulonglong)uVar10 >> 0x20));
-  uVar15 = PackedFloatingMUL(CONCAT44(*(undefined4 *)(param_3 + 2),(int)*param_3),0xbf8000003f800000
-                            );
-  uVar9 = PackedFloatingMUL(CONCAT44((int)((ulonglong)uVar6 >> 0x20),
-                                     (int)((ulonglong)uVar20 >> 0x20)),uVar9);
-  uVar15 = PackedFloatingMUL(uVar15,uVar13);
-  uVar9 = PackedFloatingADD(uVar9,uVar15);
-  uVar9 = PackedFloatingAccumulate(uVar9,uVar9);
-  uVar2 = (undefined4)uVar9;
-  if (param_2 != (undefined4 *)0x0) {
-    *param_2 = uVar2;
+  uVar12 = (undefined4)((ulonglong)*(undefined8 *)mat >> 0x20);
+  uVar3 = (undefined4)*(undefined8 *)(mat + 8);
+  uVar17 = (undefined4)*(undefined8 *)(mat + 4);
+  uVar13 = (undefined4)*(undefined8 *)mat;
+  uVar22 = (undefined4)((ulonglong)*(undefined8 *)(mat + 4) >> 0x20);
+  uVar5 = (undefined4)((ulonglong)*(undefined8 *)(mat + 8) >> 0x20);
+  uVar10 = PackedFloatingMUL(CONCAT44(uVar12,uVar12),CONCAT44(uVar3,uVar17));
+  uVar14 = PackedFloatingMUL(CONCAT44(uVar13,uVar13),CONCAT44(uVar5,uVar22));
+  uVar15 = PackedFloatingSUB(uVar14,uVar10);
+  uVar6 = (undefined4)((ulonglong)*(undefined8 *)(mat + 0xc) >> 0x20);
+  uVar9 = (undefined4)*(undefined8 *)(mat + 0xc);
+  uVar18 = PackedFloatingMUL(CONCAT44(uVar5,uVar6),CONCAT44(uVar17,uVar13));
+  uVar21 = PackedFloatingMUL(CONCAT44(uVar22,uVar12),CONCAT44(uVar3,uVar9));
+  uVar10 = PackedFloatingMUL(CONCAT44(uVar3,uVar17),CONCAT44(uVar6,uVar6));
+  uVar14 = PackedFloatingMUL(CONCAT44(uVar5,uVar22),CONCAT44(uVar9,uVar9));
+  uVar19 = PackedFloatingSUB(uVar18,uVar21);
+  uVar18 = PackedFloatingSUBR(uVar14,uVar10);
+  uVar10 = *(undefined8 *)(mat + 0xe);
+  uVar14 = *(undefined8 *)(mat + 10);
+  uVar3 = (undefined4)((ulonglong)uVar19 >> 0x20);
+  uVar12 = (undefined4)((ulonglong)uVar18 >> 0x20);
+  uVar21 = PackedFloatingMUL(CONCAT44(uVar3,uVar3),uVar10);
+  uVar6 = (undefined4)uVar18;
+  uVar18 = PackedFloatingMUL(CONCAT44(uVar12,uVar12),*(undefined8 *)(mat + 6));
+  uVar7 = PackedFloatingMUL(CONCAT44(uVar6,uVar6),uVar14);
+  uVar18 = PackedFloatingADD(uVar21,uVar18);
+  uVar4 = PackedFloatingSUB(uVar18,uVar7);
+  uVar9 = (undefined4)uVar19;
+  uVar5 = (undefined4)((ulonglong)uVar15 >> 0x20);
+  uVar21 = PackedFloatingMUL(CONCAT44(uVar12,uVar12),*(undefined8 *)(mat + 2));
+  uVar18 = PackedFloatingMUL(CONCAT44(uVar5,uVar5),uVar10);
+  uVar7 = PackedFloatingMUL(CONCAT44(uVar9,uVar9),uVar14);
+  uVar18 = PackedFloatingSUB(uVar18,uVar7);
+  uVar19 = PackedFloatingADD(uVar18,uVar21);
+  uVar21 = CONCAT44((int)uVar15,(int)uVar15);
+  uVar18 = PackedFloatingMUL(CONCAT44(uVar6,uVar6),*(undefined8 *)(mat + 2));
+  uVar10 = PackedFloatingMUL(uVar10,uVar21);
+  uVar7 = PackedFloatingMUL(CONCAT44(uVar9,uVar9),*(undefined8 *)(mat + 6));
+  uVar10 = PackedFloatingADD(uVar10,uVar18);
+  uVar18 = PackedFloatingSUB(uVar10,uVar7);
+  uVar10 = PackedFloatingMUL(uVar21,uVar14);
+  uVar14 = PackedFloatingMUL(CONCAT44(uVar5,uVar5),*(undefined8 *)(mat + 6));
+  uVar21 = PackedFloatingMUL(CONCAT44(uVar3,uVar3),*(undefined8 *)(mat + 2));
+  uVar10 = PackedFloatingSUB(uVar10,uVar14);
+  uVar15 = PackedFloatingADD(uVar10,uVar21);
+  uVar12 = (undefined4)((ulonglong)*(undefined8 *)(mat + 2) >> 0x20);
+  uVar3 = (undefined4)*(undefined8 *)(mat + 10);
+  uVar17 = (undefined4)*(undefined8 *)(mat + 6);
+  uVar13 = (undefined4)*(undefined8 *)(mat + 2);
+  uVar22 = (undefined4)((ulonglong)*(undefined8 *)(mat + 6) >> 0x20);
+  uVar5 = (undefined4)((ulonglong)*(undefined8 *)(mat + 10) >> 0x20);
+  uVar10 = PackedFloatingMUL(CONCAT44(uVar12,uVar12),CONCAT44(uVar3,uVar17));
+  uVar14 = PackedFloatingMUL(CONCAT44(uVar13,uVar13),CONCAT44(uVar5,uVar22));
+  uVar16 = PackedFloatingSUB(uVar14,uVar10);
+  uVar6 = (undefined4)((ulonglong)*(undefined8 *)(mat + 0xe) >> 0x20);
+  uVar9 = (undefined4)*(undefined8 *)(mat + 0xe);
+  uVar21 = PackedFloatingMUL(CONCAT44(uVar5,uVar6),CONCAT44(uVar17,uVar13));
+  uVar7 = PackedFloatingMUL(CONCAT44(uVar22,uVar12),CONCAT44(uVar3,uVar9));
+  uVar10 = PackedFloatingMUL(CONCAT44(uVar3,uVar17),CONCAT44(uVar6,uVar6));
+  uVar14 = PackedFloatingMUL(CONCAT44(uVar5,uVar22),CONCAT44(uVar9,uVar9));
+  uVar20 = PackedFloatingSUB(uVar21,uVar7);
+  uVar21 = PackedFloatingSUBR(uVar14,uVar10);
+  uVar10 = *(undefined8 *)(mat + 0xc);
+  uVar14 = *(undefined8 *)(mat + 8);
+  uVar12 = (undefined4)((ulonglong)uVar21 >> 0x20);
+  uVar6 = (undefined4)uVar21;
+  uVar3 = (undefined4)((ulonglong)uVar20 >> 0x20);
+  uVar11 = PackedFloatingMUL(CONCAT44(uVar12,uVar12),*(undefined8 *)(mat + 4));
+  uVar21 = PackedFloatingMUL(CONCAT44(uVar3,uVar3),uVar10);
+  uVar7 = PackedFloatingMUL(CONCAT44(uVar6,uVar6),uVar14);
+  uVar21 = PackedFloatingADD(uVar21,uVar11);
+  uVar11 = PackedFloatingSUB(uVar21,uVar7);
+  uVar9 = (undefined4)uVar20;
+  uVar5 = (undefined4)((ulonglong)uVar16 >> 0x20);
+  uVar7 = PackedFloatingMUL(CONCAT44(uVar12,uVar12),*(undefined8 *)mat);
+  uVar21 = PackedFloatingMUL(CONCAT44(uVar5,uVar5),uVar10);
+  uVar20 = PackedFloatingMUL(CONCAT44(uVar9,uVar9),uVar14);
+  uVar21 = PackedFloatingSUB(uVar21,uVar20);
+  uVar20 = PackedFloatingADD(uVar21,uVar7);
+  uVar16 = CONCAT44((int)uVar16,(int)uVar16);
+  uVar7 = PackedFloatingMUL(CONCAT44(uVar6,uVar6),*(undefined8 *)mat);
+  uVar21 = PackedFloatingMUL(uVar10,uVar16);
+  uVar8 = PackedFloatingMUL(CONCAT44(uVar9,uVar9),*(undefined8 *)(mat + 4));
+  uVar21 = PackedFloatingADD(uVar21,uVar7);
+  uVar21 = PackedFloatingSUB(uVar21,uVar8);
+  uVar7 = PackedFloatingMUL(uVar16,uVar14);
+  uVar16 = PackedFloatingMUL(CONCAT44(uVar5,uVar5),*(undefined8 *)(mat + 4));
+  uVar8 = PackedFloatingMUL(CONCAT44(uVar3,uVar3),*(undefined8 *)mat);
+  uVar7 = PackedFloatingSUB(uVar7,uVar16);
+  uVar7 = PackedFloatingADD(uVar7,uVar8);
+  uVar10 = PackedFloatingMUL(CONCAT44((int)uVar10,(int)uVar14),0xbf8000003f800000);
+  uStack_34 = (undefined4)((ulonglong)uVar20 >> 0x20);
+  uVar14 = CONCAT44(uStack_34,(int)((ulonglong)uVar11 >> 0x20));
+  uVar16 = PackedFloatingMUL(CONCAT44(mat[4],(int)*(undefined8 *)mat),0xbf8000003f800000);
+  uVar10 = PackedFloatingMUL(CONCAT44((int)((ulonglong)uVar7 >> 0x20),
+                                      (int)((ulonglong)uVar21 >> 0x20)),uVar10);
+  uVar16 = PackedFloatingMUL(uVar16,uVar14);
+  uVar10 = PackedFloatingADD(uVar10,uVar16);
+  uVar10 = PackedFloatingAccumulate(uVar10,uVar10);
+  fVar1 = (float)uVar10;
+  if (det_out != (float *)0x0) {
+    *det_out = fVar1;
   }
-  uVar13 = FloatingReciprocalAprox(uVar13,uVar9);
-  uVar15 = PackedFloatingCompareEQ(0,uVar9);
-  uVar9 = PackedFloatingReciprocalIter1(CONCAT44(uVar2,uVar2),uVar13);
-  uVar9 = PackedFloatingReciprocalIter2(uVar9,uVar13);
-  uVar13 = PackedFloatingMUL(uVar9,0xbf8000003f800000);
-  uVar9 = CONCAT44((int)uVar13,(int)((ulonglong)uVar13 >> 0x20));
-  puVar1 = (undefined8 *)uVar15;
-  if ((undefined8 *)uVar15 == (undefined8 *)0x0) {
-    uVar10 = PackedFloatingMUL(uVar10,uVar9);
-    uVar19 = PackedFloatingMUL(uVar19,uVar13);
-    uVar3 = PackedFloatingMUL(uVar3,uVar9);
-    uVar18 = PackedFloatingMUL(uVar18,uVar13);
-    *param_1 = CONCAT44((int)((ulonglong)uVar19 >> 0x20),(int)((ulonglong)uVar10 >> 0x20));
-    param_1[2] = CONCAT44((int)uVar19,(int)uVar10);
-    param_1[4] = CONCAT44((int)((ulonglong)uVar18 >> 0x20),(int)((ulonglong)uVar3 >> 0x20));
-    param_1[6] = CONCAT44((int)uVar18,(int)uVar3);
-    uVar20 = PackedFloatingMUL(uVar20,uVar9);
-    uVar6 = PackedFloatingMUL(uVar6,uVar13);
-    uVar9 = PackedFloatingMUL(uVar17,uVar9);
-    uVar13 = PackedFloatingMUL(uVar14,uVar13);
-    param_1[1] = CONCAT44((int)((ulonglong)uVar6 >> 0x20),(int)((ulonglong)uVar20 >> 0x20));
-    param_1[3] = CONCAT44((int)uVar6,(int)uVar20);
-    param_1[5] = CONCAT44((int)((ulonglong)uVar13 >> 0x20),(int)((ulonglong)uVar9 >> 0x20));
-    param_1[7] = CONCAT44((int)uVar13,(int)uVar9);
-    puVar1 = param_1;
+  uVar14 = FloatingReciprocalAprox(uVar14,uVar10);
+  uVar16 = PackedFloatingCompareEQ(0,uVar10);
+  uVar10 = PackedFloatingReciprocalIter1(CONCAT44(fVar1,fVar1),uVar14);
+  uVar10 = PackedFloatingReciprocalIter2(uVar10,uVar14);
+  uVar14 = PackedFloatingMUL(uVar10,0xbf8000003f800000);
+  uVar10 = CONCAT44((int)uVar14,(int)((ulonglong)uVar14 >> 0x20));
+  pfVar2 = (float *)uVar16;
+  if ((float *)uVar16 == (float *)0x0) {
+    uVar11 = PackedFloatingMUL(uVar11,uVar10);
+    uVar20 = PackedFloatingMUL(uVar20,uVar14);
+    uVar4 = PackedFloatingMUL(uVar4,uVar10);
+    uVar19 = PackedFloatingMUL(uVar19,uVar14);
+    *(ulonglong *)out = CONCAT44((int)((ulonglong)uVar20 >> 0x20),(int)((ulonglong)uVar11 >> 0x20));
+    *(ulonglong *)(out + 4) = CONCAT44((int)uVar20,(int)uVar11);
+    *(ulonglong *)(out + 8) =
+         CONCAT44((int)((ulonglong)uVar19 >> 0x20),(int)((ulonglong)uVar4 >> 0x20));
+    *(ulonglong *)(out + 0xc) = CONCAT44((int)uVar19,(int)uVar4);
+    uVar21 = PackedFloatingMUL(uVar21,uVar10);
+    uVar7 = PackedFloatingMUL(uVar7,uVar14);
+    uVar10 = PackedFloatingMUL(uVar18,uVar10);
+    uVar14 = PackedFloatingMUL(uVar15,uVar14);
+    *(ulonglong *)(out + 2) =
+         CONCAT44((int)((ulonglong)uVar7 >> 0x20),(int)((ulonglong)uVar21 >> 0x20));
+    *(ulonglong *)(out + 6) = CONCAT44((int)uVar7,(int)uVar21);
+    *(ulonglong *)(out + 10) =
+         CONCAT44((int)((ulonglong)uVar14 >> 0x20),(int)((ulonglong)uVar10 >> 0x20));
+    *(ulonglong *)(out + 0xe) = CONCAT44((int)uVar14,(int)uVar10);
+    pfVar2 = out;
   }
-  return puVar1;
+  return pfVar2;
 }
 
 
@@ -40685,9 +40706,11 @@ void FUN_0045e832(undefined8 *param_1,ulonglong *param_2)
 
 
 
-/* FUN_0045eac0 @ 0045eac0 */
+/* vec3_transform_coord @ 0045eac0 */
 
-undefined8 * FUN_0045eac0(undefined8 *param_1,undefined8 *param_2,undefined8 *param_3)
+/* transforms a vec3 by a matrix and divides by W (perspective) */
+
+float * vec3_transform_coord(float *out,float *vec,float *mat)
 
 {
   undefined4 uVar1;
@@ -40700,20 +40723,20 @@ undefined8 * FUN_0045eac0(undefined8 *param_1,undefined8 *param_2,undefined8 *pa
   undefined8 uVar8;
   
   FastExitMediaState();
-  uVar1 = (undefined4)*param_2;
+  uVar1 = (undefined4)*(undefined8 *)vec;
   uVar4 = CONCAT44(uVar1,uVar1);
-  uVar1 = (undefined4)((ulonglong)*param_2 >> 0x20);
+  uVar1 = (undefined4)((ulonglong)*(undefined8 *)vec >> 0x20);
   uVar7 = CONCAT44(uVar1,uVar1);
-  uVar8 = CONCAT44(*(undefined4 *)(param_2 + 1),*(undefined4 *)(param_2 + 1));
-  uVar2 = PackedFloatingMUL(uVar4,*param_3);
-  uVar3 = PackedFloatingMUL(uVar7,param_3[2]);
-  uVar5 = PackedFloatingMUL(uVar8,param_3[4]);
-  uVar2 = PackedFloatingADD(uVar2,param_3[6]);
-  uVar6 = PackedFloatingMUL(uVar4,param_3[1]);
+  uVar8 = CONCAT44(vec[2],vec[2]);
+  uVar2 = PackedFloatingMUL(uVar4,*(undefined8 *)mat);
+  uVar3 = PackedFloatingMUL(uVar7,*(undefined8 *)(mat + 4));
+  uVar5 = PackedFloatingMUL(uVar8,*(undefined8 *)(mat + 8));
+  uVar2 = PackedFloatingADD(uVar2,*(undefined8 *)(mat + 0xc));
+  uVar6 = PackedFloatingMUL(uVar4,*(undefined8 *)(mat + 2));
   uVar4 = PackedFloatingADD(uVar3,uVar5);
-  uVar3 = PackedFloatingMUL(uVar7,param_3[3]);
-  uVar8 = PackedFloatingMUL(uVar8,param_3[5]);
-  uVar7 = PackedFloatingADD(uVar6,param_3[7]);
+  uVar3 = PackedFloatingMUL(uVar7,*(undefined8 *)(mat + 6));
+  uVar8 = PackedFloatingMUL(uVar8,*(undefined8 *)(mat + 10));
+  uVar7 = PackedFloatingADD(uVar6,*(undefined8 *)(mat + 0xe));
   uVar4 = PackedFloatingADD(uVar2,uVar4);
   uVar3 = PackedFloatingADD(uVar3,uVar8);
   uVar2 = PackedFloatingADD(uVar7,uVar3);
@@ -40724,17 +40747,19 @@ undefined8 * FUN_0045eac0(undefined8 *param_1,undefined8 *param_2,undefined8 *pa
   uVar7 = PackedFloatingReciprocalIter2(uVar3,uVar7);
   uVar4 = PackedFloatingMUL(uVar4,uVar7);
   uVar2 = PackedFloatingMUL(uVar2,uVar7);
-  *param_1 = uVar4;
-  *(int *)(param_1 + 1) = (int)uVar2;
+  *(undefined8 *)out = uVar4;
+  out[2] = (float)uVar2;
   FastExitMediaState();
-  return param_1;
+  return out;
 }
 
 
 
-/* FUN_0045eb4b @ 0045eb4b */
+/* mat4_mul @ 0045eb4b */
 
-undefined8 * FUN_0045eb4b(undefined8 *param_1,undefined8 *param_2,undefined8 *param_3)
+/* multiplies two 4x4 matrices (SSE) */
+
+float * mat4_mul(float *out,float *lhs,float *rhs)
 
 {
   undefined4 uVar1;
@@ -40747,33 +40772,33 @@ undefined8 * FUN_0045eb4b(undefined8 *param_1,undefined8 *param_2,undefined8 *pa
   undefined8 uVar8;
   undefined8 uVar9;
   
-  uVar1 = (undefined4)((ulonglong)*param_2 >> 0x20);
-  uVar2 = (undefined4)((ulonglong)param_2[1] >> 0x20);
-  uVar3 = (undefined4)*param_2;
+  uVar1 = (undefined4)((ulonglong)*(undefined8 *)lhs >> 0x20);
+  uVar2 = (undefined4)((ulonglong)*(undefined8 *)(lhs + 2) >> 0x20);
+  uVar3 = (undefined4)*(undefined8 *)lhs;
   uVar6 = CONCAT44(uVar3,uVar3);
-  uVar3 = (undefined4)param_2[1];
+  uVar3 = (undefined4)*(undefined8 *)(lhs + 2);
   uVar9 = CONCAT44(uVar3,uVar3);
-  uVar7 = PackedFloatingMUL(*param_3,uVar6);
+  uVar7 = PackedFloatingMUL(*(undefined8 *)rhs,uVar6);
   uVar5 = CONCAT44(uVar1,uVar1);
-  uVar4 = PackedFloatingMUL(uVar6,param_3[1]);
-  uVar8 = PackedFloatingMUL(param_3[2],uVar5);
+  uVar4 = PackedFloatingMUL(uVar6,*(undefined8 *)(rhs + 2));
+  uVar8 = PackedFloatingMUL(*(undefined8 *)(rhs + 4),uVar5);
   uVar6 = CONCAT44(uVar2,uVar2);
-  uVar5 = PackedFloatingMUL(uVar5,param_3[3]);
+  uVar5 = PackedFloatingMUL(uVar5,*(undefined8 *)(rhs + 6));
   uVar7 = PackedFloatingADD(uVar8,uVar7);
-  uVar8 = PackedFloatingMUL(param_3[4],uVar9);
+  uVar8 = PackedFloatingMUL(*(undefined8 *)(rhs + 8),uVar9);
   uVar4 = PackedFloatingADD(uVar5,uVar4);
-  uVar5 = PackedFloatingMUL(uVar9,param_3[5]);
+  uVar5 = PackedFloatingMUL(uVar9,*(undefined8 *)(rhs + 10));
   uVar9 = PackedFloatingADD(uVar8,uVar7);
-  uVar7 = PackedFloatingMUL(param_3[6],uVar6);
+  uVar7 = PackedFloatingMUL(*(undefined8 *)(rhs + 0xc),uVar6);
   uVar4 = PackedFloatingADD(uVar4,uVar5);
-  uVar6 = PackedFloatingMUL(uVar6,param_3[7]);
+  uVar6 = PackedFloatingMUL(uVar6,*(undefined8 *)(rhs + 0xe));
   uVar7 = PackedFloatingADD(uVar7,uVar9);
-  uVar5 = param_2[2];
+  uVar5 = *(undefined8 *)(lhs + 4);
   uVar9 = PackedFloatingADD(uVar6,uVar4);
-  uVar6 = param_2[3];
-  *param_1 = uVar7;
-  uVar4 = *param_3;
-  param_1[1] = uVar9;
+  uVar6 = *(undefined8 *)(lhs + 6);
+  *(undefined8 *)out = uVar7;
+  uVar4 = *(undefined8 *)rhs;
+  *(undefined8 *)(out + 2) = uVar9;
   uVar1 = (undefined4)((ulonglong)uVar5 >> 0x20);
   uVar2 = (undefined4)((ulonglong)uVar6 >> 0x20);
   uVar3 = (undefined4)uVar5;
@@ -40782,25 +40807,25 @@ undefined8 * FUN_0045eb4b(undefined8 *param_1,undefined8 *param_2,undefined8 *pa
   uVar7 = CONCAT44(uVar3,uVar3);
   uVar8 = PackedFloatingMUL(uVar4,uVar9);
   uVar5 = CONCAT44(uVar1,uVar1);
-  uVar4 = PackedFloatingMUL(uVar9,param_3[1]);
-  uVar9 = PackedFloatingMUL(param_3[2],uVar5);
+  uVar4 = PackedFloatingMUL(uVar9,*(undefined8 *)(rhs + 2));
+  uVar9 = PackedFloatingMUL(*(undefined8 *)(rhs + 4),uVar5);
   uVar6 = CONCAT44(uVar2,uVar2);
-  uVar5 = PackedFloatingMUL(uVar5,param_3[3]);
+  uVar5 = PackedFloatingMUL(uVar5,*(undefined8 *)(rhs + 6));
   uVar9 = PackedFloatingADD(uVar9,uVar8);
-  uVar8 = PackedFloatingMUL(param_3[4],uVar7);
+  uVar8 = PackedFloatingMUL(*(undefined8 *)(rhs + 8),uVar7);
   uVar4 = PackedFloatingADD(uVar5,uVar4);
-  uVar5 = PackedFloatingMUL(uVar7,param_3[5]);
+  uVar5 = PackedFloatingMUL(uVar7,*(undefined8 *)(rhs + 10));
   uVar9 = PackedFloatingADD(uVar8,uVar9);
-  uVar7 = PackedFloatingMUL(param_3[6],uVar6);
+  uVar7 = PackedFloatingMUL(*(undefined8 *)(rhs + 0xc),uVar6);
   uVar4 = PackedFloatingADD(uVar4,uVar5);
-  uVar6 = PackedFloatingMUL(uVar6,param_3[7]);
+  uVar6 = PackedFloatingMUL(uVar6,*(undefined8 *)(rhs + 0xe));
   uVar7 = PackedFloatingADD(uVar7,uVar9);
-  uVar5 = param_2[4];
+  uVar5 = *(undefined8 *)(lhs + 8);
   uVar9 = PackedFloatingADD(uVar6,uVar4);
-  uVar6 = param_2[5];
-  param_1[2] = uVar7;
-  uVar4 = *param_3;
-  param_1[3] = uVar9;
+  uVar6 = *(undefined8 *)(lhs + 10);
+  *(undefined8 *)(out + 4) = uVar7;
+  uVar4 = *(undefined8 *)rhs;
+  *(undefined8 *)(out + 6) = uVar9;
   uVar1 = (undefined4)((ulonglong)uVar5 >> 0x20);
   uVar2 = (undefined4)((ulonglong)uVar6 >> 0x20);
   uVar3 = (undefined4)uVar5;
@@ -40809,25 +40834,25 @@ undefined8 * FUN_0045eb4b(undefined8 *param_1,undefined8 *param_2,undefined8 *pa
   uVar7 = CONCAT44(uVar3,uVar3);
   uVar8 = PackedFloatingMUL(uVar4,uVar9);
   uVar5 = CONCAT44(uVar1,uVar1);
-  uVar4 = PackedFloatingMUL(uVar9,param_3[1]);
-  uVar9 = PackedFloatingMUL(param_3[2],uVar5);
+  uVar4 = PackedFloatingMUL(uVar9,*(undefined8 *)(rhs + 2));
+  uVar9 = PackedFloatingMUL(*(undefined8 *)(rhs + 4),uVar5);
   uVar6 = CONCAT44(uVar2,uVar2);
-  uVar5 = PackedFloatingMUL(uVar5,param_3[3]);
+  uVar5 = PackedFloatingMUL(uVar5,*(undefined8 *)(rhs + 6));
   uVar9 = PackedFloatingADD(uVar9,uVar8);
-  uVar8 = PackedFloatingMUL(param_3[4],uVar7);
+  uVar8 = PackedFloatingMUL(*(undefined8 *)(rhs + 8),uVar7);
   uVar4 = PackedFloatingADD(uVar5,uVar4);
-  uVar5 = PackedFloatingMUL(uVar7,param_3[5]);
+  uVar5 = PackedFloatingMUL(uVar7,*(undefined8 *)(rhs + 10));
   uVar9 = PackedFloatingADD(uVar8,uVar9);
-  uVar7 = PackedFloatingMUL(param_3[6],uVar6);
+  uVar7 = PackedFloatingMUL(*(undefined8 *)(rhs + 0xc),uVar6);
   uVar4 = PackedFloatingADD(uVar4,uVar5);
-  uVar6 = PackedFloatingMUL(uVar6,param_3[7]);
+  uVar6 = PackedFloatingMUL(uVar6,*(undefined8 *)(rhs + 0xe));
   uVar7 = PackedFloatingADD(uVar7,uVar9);
-  uVar5 = param_2[6];
+  uVar5 = *(undefined8 *)(lhs + 0xc);
   uVar9 = PackedFloatingADD(uVar6,uVar4);
-  uVar6 = param_2[7];
-  param_1[4] = uVar7;
-  uVar4 = *param_3;
-  param_1[5] = uVar9;
+  uVar6 = *(undefined8 *)(lhs + 0xe);
+  *(undefined8 *)(out + 8) = uVar7;
+  uVar4 = *(undefined8 *)rhs;
+  *(undefined8 *)(out + 10) = uVar9;
   uVar1 = (undefined4)((ulonglong)uVar5 >> 0x20);
   uVar2 = (undefined4)((ulonglong)uVar6 >> 0x20);
   uVar3 = (undefined4)uVar5;
@@ -40836,139 +40861,123 @@ undefined8 * FUN_0045eb4b(undefined8 *param_1,undefined8 *param_2,undefined8 *pa
   uVar7 = CONCAT44(uVar3,uVar3);
   uVar8 = PackedFloatingMUL(uVar4,uVar9);
   uVar5 = CONCAT44(uVar1,uVar1);
-  uVar4 = PackedFloatingMUL(uVar9,param_3[1]);
-  uVar9 = PackedFloatingMUL(param_3[2],uVar5);
+  uVar4 = PackedFloatingMUL(uVar9,*(undefined8 *)(rhs + 2));
+  uVar9 = PackedFloatingMUL(*(undefined8 *)(rhs + 4),uVar5);
   uVar6 = CONCAT44(uVar2,uVar2);
-  uVar5 = PackedFloatingMUL(uVar5,param_3[3]);
+  uVar5 = PackedFloatingMUL(uVar5,*(undefined8 *)(rhs + 6));
   uVar9 = PackedFloatingADD(uVar9,uVar8);
-  uVar8 = PackedFloatingMUL(param_3[4],uVar7);
+  uVar8 = PackedFloatingMUL(*(undefined8 *)(rhs + 8),uVar7);
   uVar4 = PackedFloatingADD(uVar5,uVar4);
-  uVar5 = PackedFloatingMUL(uVar7,param_3[5]);
+  uVar5 = PackedFloatingMUL(uVar7,*(undefined8 *)(rhs + 10));
   uVar9 = PackedFloatingADD(uVar8,uVar9);
-  uVar7 = PackedFloatingMUL(param_3[6],uVar6);
+  uVar7 = PackedFloatingMUL(*(undefined8 *)(rhs + 0xc),uVar6);
   uVar5 = PackedFloatingADD(uVar4,uVar5);
-  uVar6 = PackedFloatingMUL(uVar6,param_3[7]);
+  uVar6 = PackedFloatingMUL(uVar6,*(undefined8 *)(rhs + 0xe));
   uVar4 = PackedFloatingADD(uVar7,uVar9);
   uVar5 = PackedFloatingADD(uVar6,uVar5);
-  param_1[6] = uVar4;
-  param_1[7] = uVar5;
+  *(undefined8 *)(out + 0xc) = uVar4;
+  *(undefined8 *)(out + 0xe) = uVar5;
   FastExitMediaState();
-  return param_1;
+  return out;
 }
 
 
 
-/* FUN_0045ed17 @ 0045ed17 */
+/* vec3_project @ 0045ed17 */
 
-ulonglong *
-FUN_0045ed17(ulonglong *param_1,undefined8 *param_2,undefined8 *param_3,undefined8 *param_4,
-            undefined8 *param_5,undefined8 *param_6)
+/* projects a vec3 through optional matrices and viewport scale/bias */
+
+float * vec3_project(float *out,float *vec,float *viewport,float *world,float *view,float *proj)
 
 {
-  undefined8 *puVar1;
+  float *mat;
+  undefined8 uVar1;
   undefined8 uVar2;
-  ulonglong uVar3;
+  undefined8 uVar3;
   undefined8 uVar4;
+  undefined4 uVar6;
   undefined8 uVar5;
-  undefined8 uVar6;
-  undefined4 uVar8;
-  undefined8 uVar7;
-  undefined4 local_44;
-  undefined4 local_40;
-  undefined4 local_3c;
-  undefined4 local_38;
-  undefined4 local_34;
-  undefined4 local_30;
-  undefined4 local_2c;
-  undefined4 local_28;
-  undefined4 local_24;
-  undefined4 local_20;
-  undefined4 local_1c;
-  undefined4 local_18;
-  undefined4 local_14;
-  undefined4 local_10;
-  undefined4 local_c;
-  undefined4 local_8;
+  float local_44 [16];
   
-  puVar1 = (undefined8 *)&local_44;
-  switch(((param_6 != (undefined8 *)0x0) << 1 | param_5 != (undefined8 *)0x0) << 1 |
-         param_4 != (undefined8 *)0x0) {
+  mat = local_44;
+  switch(((proj != (float *)0x0) << 1 | view != (float *)0x0) << 1 | world != (float *)0x0) {
   case '\0':
-    local_c = 0;
-    local_10 = 0;
-    local_14 = 0;
-    local_18 = 0;
-    local_20 = 0;
-    local_24 = 0;
-    local_28 = 0;
-    local_2c = 0;
-    local_34 = 0;
-    local_38 = 0;
-    local_3c = 0;
-    local_40 = 0;
-    local_8 = 0x3f800000;
-    local_1c = 0x3f800000;
-    local_30 = 0x3f800000;
-    local_44 = 0x3f800000;
+    local_44[0xe] = 0.0;
+    local_44[0xd] = 0.0;
+    local_44[0xc] = 0.0;
+    local_44[0xb] = 0.0;
+    local_44[9] = 0.0;
+    local_44[8] = 0.0;
+    local_44[7] = 0.0;
+    local_44[6] = 0.0;
+    local_44[4] = 0.0;
+    local_44[3] = 0.0;
+    local_44[2] = 0.0;
+    local_44[1] = 0.0;
+    local_44[0xf] = 1.0;
+    local_44[10] = 1.0;
+    local_44[5] = 1.0;
+    local_44[0] = 1.0;
     break;
   case '\x01':
-    puVar1 = param_4;
+    mat = world;
     break;
   case '\x02':
-    puVar1 = param_5;
+    mat = view;
     break;
   case '\x03':
     FastExitMediaState();
-    FUN_0045eb4b((undefined8 *)&local_44,param_5,param_4);
+    mat4_mul(local_44,view,world);
     FastExitMediaState();
     break;
   case '\x04':
-    puVar1 = param_6;
+    mat = proj;
     break;
   case '\x05':
     FastExitMediaState();
-    FUN_0045eb4b((undefined8 *)&local_44,param_6,param_4);
+    mat4_mul(local_44,proj,world);
     FastExitMediaState();
     break;
   case '\x06':
     FastExitMediaState();
-    FUN_0045eb4b((undefined8 *)&local_44,param_6,param_5);
+    mat4_mul(local_44,proj,view);
     FastExitMediaState();
     break;
   case '\a':
     FastExitMediaState();
-    FUN_0045eb4b((undefined8 *)&local_44,param_6,param_5);
-    FUN_0045eb4b((undefined8 *)&local_44,(undefined8 *)&local_44,param_4);
+    mat4_mul(local_44,proj,view);
+    mat4_mul(local_44,local_44,world);
     FastExitMediaState();
   }
-  FUN_0045eac0(param_1,param_2,puVar1);
-  if (param_3 != (undefined8 *)0x0) {
+  vec3_transform_coord(out,vec,mat);
+  if (viewport != (float *)0x0) {
     FastExitMediaState();
-    uVar4 = param_3[2];
-    uVar5 = PackedIntToFloatingDwordConv(*param_3,*param_3);
-    uVar6 = PackedIntToFloatingDwordConv(param_3[1],param_3[1]);
-    uVar2 = PackedFloatingADD(*param_1 ^ 0x8000000000000000,0x3f8000003f800000);
-    uVar6 = PackedFloatingMUL(uVar6,0x3f0000003f000000);
-    uVar8 = (undefined4)((ulonglong)uVar4 >> 0x20);
-    uVar7 = PackedFloatingSUB(CONCAT44(uVar8,uVar8),uVar4);
-    uVar2 = PackedFloatingMUL(uVar2,uVar6);
-    uVar6 = PackedFloatingMUL((ulonglong)(uint)param_1[1],uVar7);
-    uVar4 = PackedFloatingADD(uVar6,uVar4);
-    uVar3 = PackedFloatingADD(uVar2,uVar5);
-    *param_1 = uVar3;
-    *(int *)(param_1 + 1) = (int)uVar4;
+    uVar2 = *(undefined8 *)(viewport + 4);
+    uVar3 = PackedIntToFloatingDwordConv(*(undefined8 *)viewport,*(undefined8 *)viewport);
+    uVar4 = PackedIntToFloatingDwordConv
+                      (*(undefined8 *)(viewport + 2),*(undefined8 *)(viewport + 2));
+    uVar1 = PackedFloatingADD(*(ulonglong *)out ^ 0x8000000000000000,0x3f8000003f800000);
+    uVar4 = PackedFloatingMUL(uVar4,0x3f0000003f000000);
+    uVar6 = (undefined4)((ulonglong)uVar2 >> 0x20);
+    uVar5 = PackedFloatingSUB(CONCAT44(uVar6,uVar6),uVar2);
+    uVar1 = PackedFloatingMUL(uVar1,uVar4);
+    uVar4 = PackedFloatingMUL((ulonglong)(uint)out[2],uVar5);
+    uVar4 = PackedFloatingADD(uVar4,uVar2);
+    uVar2 = PackedFloatingADD(uVar1,uVar3);
+    *(undefined8 *)out = uVar2;
+    out[2] = (float)uVar4;
     FastExitMediaState();
   }
-  return param_1;
+  return out;
 }
 
 
 
-/* FUN_0045ee9f @ 0045ee9f */
+/* vec3_unproject @ 0045ee9f */
 
-ulonglong *
-FUN_0045ee9f(ulonglong *param_1,ulonglong *param_2,undefined8 *param_3,undefined8 *param_4,
-            undefined8 *param_5,undefined8 *param_6)
+/* unprojects a screen-space vec3 using inverse matrices and viewport */
+
+float * vec3_unproject(float *out,float *vec,float *viewport,float *world,float *view,float *proj)
 
 {
   undefined8 uVar1;
@@ -40982,109 +40991,94 @@ FUN_0045ee9f(ulonglong *param_1,ulonglong *param_2,undefined8 *param_3,undefined
   unkbyte10 in_ST5;
   undefined8 uVar9;
   unkbyte10 in_ST6;
-  undefined4 local_44;
-  undefined4 local_40;
-  undefined4 local_3c;
-  undefined4 local_38;
-  undefined4 local_34;
-  undefined4 local_30;
-  undefined4 local_2c;
-  undefined4 local_28;
-  undefined4 local_24;
-  undefined4 local_20;
-  undefined4 local_1c;
-  undefined4 local_18;
-  undefined4 local_14;
-  undefined4 local_10;
-  undefined4 local_c;
-  undefined4 local_8;
+  float local_44 [16];
   
   uVar2 = (undefined8)in_ST5;
   uVar9 = (undefined8)in_ST6;
-  switch(((param_6 != (undefined8 *)0x0) << 1 | param_5 != (undefined8 *)0x0) << 1 |
-         param_4 != (undefined8 *)0x0) {
+  switch(((proj != (float *)0x0) << 1 | view != (float *)0x0) << 1 | world != (float *)0x0) {
   case '\0':
-    local_c = 0;
-    local_10 = 0;
-    local_14 = 0;
-    local_18 = 0;
-    local_20 = 0;
-    local_24 = 0;
-    local_28 = 0;
-    local_2c = 0;
-    local_34 = 0;
-    local_38 = 0;
-    local_3c = 0;
-    local_40 = 0;
-    local_8 = 0x3f800000;
-    local_1c = 0x3f800000;
-    local_30 = 0x3f800000;
-    local_44 = 0x3f800000;
+    local_44[0xe] = 0.0;
+    local_44[0xd] = 0.0;
+    local_44[0xc] = 0.0;
+    local_44[0xb] = 0.0;
+    local_44[9] = 0.0;
+    local_44[8] = 0.0;
+    local_44[7] = 0.0;
+    local_44[6] = 0.0;
+    local_44[4] = 0.0;
+    local_44[3] = 0.0;
+    local_44[2] = 0.0;
+    local_44[1] = 0.0;
+    local_44[0xf] = 1.0;
+    local_44[10] = 1.0;
+    local_44[5] = 1.0;
+    local_44[0] = 1.0;
     break;
   case '\x01':
     FastExitMediaState();
-    FUN_0045e40a((undefined8 *)&local_44,(undefined4 *)0x0,param_4);
+    mat4_invert(local_44,(float *)0x0,world);
     uVar2 = (undefined8)in_ST5;
     uVar9 = (undefined8)in_ST6;
     FastExitMediaState();
     break;
   case '\x02':
     FastExitMediaState();
-    FUN_0045e40a((undefined8 *)&local_44,(undefined4 *)0x0,param_5);
+    mat4_invert(local_44,(float *)0x0,view);
     uVar2 = (undefined8)in_ST5;
     uVar9 = (undefined8)in_ST6;
     FastExitMediaState();
     break;
   case '\x03':
     FastExitMediaState();
-    FUN_0045eb4b((undefined8 *)&local_44,param_5,param_4);
-    FUN_0045e40a((undefined8 *)&local_44,(undefined4 *)0x0,(undefined8 *)&local_44);
+    mat4_mul(local_44,view,world);
+    mat4_invert(local_44,(float *)0x0,local_44);
     uVar2 = (undefined8)in_ST5;
     uVar9 = (undefined8)in_ST6;
     FastExitMediaState();
     break;
   case '\x04':
     FastExitMediaState();
-    FUN_0045e40a((undefined8 *)&local_44,(undefined4 *)0x0,param_6);
+    mat4_invert(local_44,(float *)0x0,proj);
     uVar2 = (undefined8)in_ST5;
     uVar9 = (undefined8)in_ST6;
     FastExitMediaState();
     break;
   case '\x05':
     FastExitMediaState();
-    FUN_0045eb4b((undefined8 *)&local_44,param_6,param_4);
-    FUN_0045e40a((undefined8 *)&local_44,(undefined4 *)0x0,(undefined8 *)&local_44);
+    mat4_mul(local_44,proj,world);
+    mat4_invert(local_44,(float *)0x0,local_44);
     uVar2 = (undefined8)in_ST5;
     uVar9 = (undefined8)in_ST6;
     FastExitMediaState();
     break;
   case '\x06':
     FastExitMediaState();
-    FUN_0045eb4b((undefined8 *)&local_44,param_6,param_5);
-    FUN_0045e40a((undefined8 *)&local_44,(undefined4 *)0x0,(undefined8 *)&local_44);
+    mat4_mul(local_44,proj,view);
+    mat4_invert(local_44,(float *)0x0,local_44);
     uVar2 = (undefined8)in_ST5;
     uVar9 = (undefined8)in_ST6;
     FastExitMediaState();
     break;
   case '\a':
     FastExitMediaState();
-    FUN_0045eb4b((undefined8 *)&local_44,param_6,param_5);
-    FUN_0045eb4b((undefined8 *)&local_44,(undefined8 *)&local_44,param_4);
-    FUN_0045e40a((undefined8 *)&local_44,(undefined4 *)0x0,(undefined8 *)&local_44);
+    mat4_mul(local_44,proj,view);
+    mat4_mul(local_44,local_44,world);
+    mat4_invert(local_44,(float *)0x0,local_44);
     uVar2 = (undefined8)in_ST5;
     uVar9 = (undefined8)in_ST6;
     FastExitMediaState();
   }
-  if (param_3 != (undefined8 *)0x0) {
+  if (viewport != (float *)0x0) {
     FastExitMediaState();
-    uVar4 = PackedIntToFloatingDwordConv(*param_3,*param_3);
-    uVar1 = param_3[2];
-    uVar5 = PackedIntToFloatingDwordConv(param_3[1],param_3[1]);
+    uVar4 = PackedIntToFloatingDwordConv(*(undefined8 *)viewport,*(undefined8 *)viewport);
+    uVar1 = *(undefined8 *)(viewport + 4);
+    uVar5 = PackedIntToFloatingDwordConv
+                      (*(undefined8 *)(viewport + 2),*(undefined8 *)(viewport + 2));
     uVar7 = (undefined4)((ulonglong)uVar5 >> 0x20);
     uVar6 = CONCAT44(uVar7,uVar7);
     uVar8 = FloatingReciprocalAprox(uVar2,uVar5);
     uVar6 = FloatingReciprocalAprox(uVar6,uVar6);
-    uVar2 = PackedFloatingSUB(*param_2,uVar4);
+    uVar2 = PackedFloatingSUB(*(undefined8 *)vec,uVar4);
     uVar6 = CONCAT44((int)uVar6,(int)uVar8);
     uVar4 = PackedFloatingReciprocalIter1(uVar5,uVar6);
     uVar4 = PackedFloatingReciprocalIter2(uVar4,uVar6);
@@ -41096,15 +41090,15 @@ FUN_0045ee9f(ulonglong *param_1,ulonglong *param_2,undefined8 *param_3,undefined
     uVar9 = FloatingReciprocalAprox(uVar9,uVar2);
     uVar2 = PackedFloatingReciprocalIter1(uVar2,uVar9);
     uVar9 = PackedFloatingReciprocalIter2(uVar2,uVar9);
-    uVar2 = PackedFloatingSUB((ulonglong)(uint)param_2[1],uVar1);
+    uVar2 = PackedFloatingSUB((ulonglong)(uint)vec[2],uVar1);
     uVar2 = PackedFloatingMUL(uVar2,uVar9);
-    *param_1 = uVar3 ^ 0x8000000000000000;
-    *(int *)(param_1 + 1) = (int)uVar2;
+    *(ulonglong *)out = uVar3 ^ 0x8000000000000000;
+    out[2] = (float)uVar2;
     FastExitMediaState();
-    param_2 = param_1;
+    vec = out;
   }
-  FUN_0045eac0(param_1,param_2,(undefined8 *)&local_44);
-  return param_1;
+  vec3_transform_coord(out,vec,local_44);
+  return out;
 }
 
 
@@ -41125,12 +41119,12 @@ FUN_0045f0c5(ulonglong *param_1,ulonglong *param_2,undefined8 *param_3,undefined
   undefined8 in_MM5;
   undefined8 uVar7;
   undefined8 in_MM6;
-  undefined8 local_44 [8];
+  float local_44 [16];
   
   switch(((param_6 != (undefined8 *)0x0) << 1 | param_5 != (undefined8 *)0x0) << 1 |
          param_4 != (undefined8 *)0x0) {
   case '\0':
-    FUN_0045b092(local_44);
+    FUN_0045b092((undefined8 *)local_44);
     goto switchD_0045f0fb_default;
   case '\x01':
     param_6 = param_4;
@@ -41149,16 +41143,16 @@ FUN_0045f0c5(ulonglong *param_1,ulonglong *param_2,undefined8 *param_3,undefined
     param_4 = param_5;
     break;
   case '\a':
-    FUN_0045eb4b(local_44,param_6,param_5);
-    param_6 = local_44;
+    mat4_mul(local_44,(float *)param_6,(float *)param_5);
+    param_6 = (undefined8 *)local_44;
     break;
   default:
     goto switchD_0045f0fb_default;
   }
-  FUN_0045eb4b(local_44,param_6,param_4);
-  param_6 = local_44;
+  mat4_mul(local_44,(float *)param_6,(float *)param_4);
+  param_6 = (undefined8 *)local_44;
 LAB_0045f13f:
-  FUN_0045dd30(local_44,(undefined4 *)0x0,param_6);
+  FUN_0045dd30((undefined8 *)local_44,(undefined4 *)0x0,param_6);
 switchD_0045f0fb_default:
   if (param_3 != (undefined8 *)0x0) {
     FastExitMediaState();
@@ -41188,7 +41182,7 @@ switchD_0045f0fb_default:
     FastExitMediaState();
     param_2 = param_1;
   }
-  FUN_0045eac0(param_1,param_2,local_44);
+  vec3_transform_coord((float *)param_1,(float *)param_2,local_44);
   return param_1;
 }
 
@@ -41461,11 +41455,15 @@ void __cdecl FUN_0045feb0(uint *param_1,uint *param_2,uint *param_3)
 
 
 
-/* FUN_004600c0 @ 004600c0 */
+/* math_atan2_packed @ 004600c0 */
 
-ulonglong FUN_004600c0(void)
+/* packed atan2 approximation; inputs in MM0/MM1 */
+
+ulonglong math_atan2_packed(void)
 
 {
+  undefined4 in_EAX;
+  undefined4 in_EDX;
   ulonglong in_MM0;
   ulonglong uVar1;
   undefined8 uVar2;
@@ -41476,9 +41474,7 @@ ulonglong FUN_004600c0(void)
   undefined8 uVar6;
   uint uVar7;
   uint uVar8;
-  ulonglong uVar9;
   
-  uVar9 = (DAT_0047b098 & in_MM0) >> 1 | DAT_0047b098 & in_MM1;
   uVar3 = in_MM1 & DAT_0047b09c;
   uVar1 = in_MM0 & DAT_0047b09c;
   uVar2 = PackedFloatingMAX(uVar1,uVar3);
@@ -41501,66 +41497,68 @@ ulonglong FUN_004600c0(void)
   uVar4 = PackedFloatingMUL(uVar4,uVar6);
   uVar4 = PackedFloatingMUL(uVar4,uVar2);
   uVar6 = FloatingReciprocalAprox((ulonglong)DAT_0047b0d4,uVar5);
-  uVar8 = (int)uVar9 << 1;
+  uVar8 = ((uint)((DAT_0047b098 & in_MM0) >> 1) | DAT_0047b098 & (uint)in_MM1) << 1;
   uVar5 = PackedFloatingReciprocalIter1(uVar5,uVar6);
   uVar5 = PackedFloatingReciprocalIter2(uVar5,uVar6);
   uVar4 = PackedFloatingMUL(uVar4,uVar5);
   uVar1 = PackedFloatingADD(uVar4,uVar2);
   uVar2 = PackedFloatingSUB(~(ulonglong)(uint)((int)uVar7 >> 0x1f) &
                             (ulonglong)(uVar8 ^ DAT_0047b0f8),(ulonglong)DAT_0047b0f8);
-  uVar1 = PackedFloatingADD(uVar1 | uVar8 ^ uVar7,uVar2);
-  return uVar1 | DAT_0047b098 & uVar9;
+  PackedFloatingADD(uVar1 | uVar8 ^ uVar7,uVar2);
+  return CONCAT44(in_EDX,in_EAX);
 }
 
 
 
-/* FUN_004601c0 @ 004601c0 */
+/* math_acos_packed @ 004601c0 */
 
-ulonglong FUN_004601c0(void)
+/* packed acos approximation; input in MM0 */
+
+ulonglong math_acos_packed(void)
 
 {
   uint uVar1;
+  undefined4 in_EAX;
+  undefined4 in_EDX;
   ulonglong in_MM0;
   ulonglong uVar2;
   undefined8 uVar3;
   uint uVar4;
-  uint uVar6;
+  undefined8 uVar6;
   undefined8 uVar7;
-  undefined8 uVar8;
-  ulonglong uVar9;
+  ulonglong uVar8;
   ulonglong uVar5;
   
   uVar2 = in_MM0 & DAT_0047b09c;
-  uVar6 = -(uint)(DAT_0047b0a8 < (int)uVar2);
   uVar3 = PackedFloatingMUL(uVar2,(ulonglong)DAT_0047b0ac);
   uVar3 = PackedFloatingSUBR(uVar3,(ulonglong)DAT_0047b0ac);
-  uVar7 = PackedFloatingReciprocalSQRAprox((ulonglong)DAT_0047b09c,uVar3);
-  uVar8 = PackedFloatingMUL(uVar7,uVar7);
+  uVar6 = PackedFloatingReciprocalSQRAprox((ulonglong)DAT_0047b09c,uVar3);
+  uVar7 = PackedFloatingMUL(uVar6,uVar6);
   uVar1 = (uint)((int)uVar2 < DAT_0047b0e0);
   uVar4 = -uVar1;
   uVar5 = (ulonglong)uVar4;
-  uVar8 = PackedFloatingReciprocalSQRIter1(uVar8,uVar3);
-  uVar7 = PackedFloatingReciprocalIter2(uVar8,uVar7);
-  uVar9 = PackedFloatingMUL(uVar7,uVar3);
-  uVar2 = ~uVar5 & uVar9 | uVar2 & uVar4;
+  uVar7 = PackedFloatingReciprocalSQRIter1(uVar7,uVar3);
+  uVar6 = PackedFloatingReciprocalIter2(uVar7,uVar6);
+  uVar8 = PackedFloatingMUL(uVar6,uVar3);
+  uVar2 = ~uVar5 & uVar8 | uVar2 & uVar4;
   uVar3 = PackedFloatingMUL(uVar2,uVar2);
-  uVar8 = PackedFloatingMUL((ulonglong)DAT_0047b0e8,uVar3);
-  uVar7 = PackedFloatingADD((ulonglong)DAT_0047b0f0,uVar3);
-  uVar8 = PackedFloatingADD(uVar8,(ulonglong)DAT_0047b0e4);
-  uVar8 = PackedFloatingMUL(uVar8,uVar3);
-  uVar3 = PackedFloatingMUL(uVar3,uVar7);
+  uVar7 = PackedFloatingMUL((ulonglong)DAT_0047b0e8,uVar3);
+  uVar6 = PackedFloatingADD((ulonglong)DAT_0047b0f0,uVar3);
+  uVar7 = PackedFloatingADD(uVar7,(ulonglong)DAT_0047b0e4);
+  uVar7 = PackedFloatingMUL(uVar7,uVar3);
+  uVar3 = PackedFloatingMUL(uVar3,uVar6);
   uVar3 = PackedFloatingADD(uVar3,(ulonglong)DAT_0047b0ec);
-  uVar8 = PackedFloatingMUL(uVar8,uVar2);
-  uVar7 = FloatingReciprocalAprox(uVar7,uVar3);
-  uVar3 = PackedFloatingReciprocalIter1(uVar3,uVar7);
-  uVar3 = PackedFloatingReciprocalIter2(uVar3,uVar7);
-  uVar3 = PackedFloatingMUL(uVar3,uVar8);
+  uVar7 = PackedFloatingMUL(uVar7,uVar2);
+  uVar6 = FloatingReciprocalAprox(uVar6,uVar3);
+  uVar3 = PackedFloatingReciprocalIter1(uVar3,uVar6);
+  uVar3 = PackedFloatingReciprocalIter2(uVar3,uVar6);
+  uVar3 = PackedFloatingMUL(uVar3,uVar7);
   uVar2 = PackedFloatingADD(uVar2,uVar3);
   uVar3 = PackedFloatingADD(~uVar5 & (ulonglong)DAT_0047b0f8 ^ DAT_0047b098 & in_MM0,
                             (ulonglong)DAT_0047b0f4);
   uVar2 = PackedFloatingADD(uVar2,~uVar5 & uVar2);
-  uVar2 = PackedFloatingADD(uVar3,uVar2 | (ulonglong)(uVar1 * -0x80000000) ^ DAT_0047b098 & in_MM0);
-  return (ulonglong)(DAT_0047b0b4 & uVar6) | ~(ulonglong)uVar6 & uVar2;
+  PackedFloatingADD(uVar3,uVar2 | (ulonglong)(uVar1 * -0x80000000) ^ DAT_0047b098 & in_MM0);
+  return CONCAT44(in_EDX,in_EAX);
 }
 
 
@@ -41618,47 +41616,55 @@ ulonglong math_sincos_packed(void)
 
 
 
-/* FUN_004608c0 @ 004608c0 */
+/* math_sin_packed @ 004608c0 */
 
-void FUN_004608c0(void)
+/* packed sin approximation; input in MM0 */
+
+ulonglong math_sin_packed(void)
 
 {
+  uint uVar1;
+  uint uVar2;
   ulonglong in_MM0;
-  undefined8 uVar1;
-  ulonglong uVar2;
-  undefined4 uVar3;
-  undefined8 uVar4;
-  undefined8 uVar5;
+  undefined8 uVar3;
+  ulonglong uVar4;
+  undefined4 uVar5;
   undefined8 uVar6;
   undefined8 uVar7;
+  undefined8 uVar8;
+  undefined8 uVar9;
   
-  if ((int)((uint)in_MM0 ^ (uint)in_MM0 & 0x80000000) < DAT_0047b154) {
-    uVar1 = PackedFloatingMUL(in_MM0 & DAT_0047b09c,(ulonglong)DAT_0047b150);
-    uVar2 = PackedFloatingToIntDwordConv(uVar1,uVar1);
-    uVar1 = PackedIntToFloatingDwordConv(uVar2,uVar2);
-    uVar1 = PackedFloatingMUL(CONCAT44((int)uVar1,(int)uVar1),DAT_0047b060);
-    uVar4 = PackedFloatingADD(in_MM0 & DAT_0047b09c,uVar1);
-    uVar3 = (undefined4)((ulonglong)uVar1 >> 0x20);
-    uVar1 = PackedFloatingADD(uVar4,CONCAT44(uVar3,uVar3));
-    uVar1 = CONCAT44((int)uVar1,(int)uVar1);
-    if ((uVar2 & 1) != 0) {
-      uVar1 = PackedFloatingSUBR(uVar1,DAT_0047b070);
+  uVar1 = (uint)in_MM0;
+  uVar2 = uVar1 >> 0x1f;
+  uVar1 = uVar1 ^ uVar1 & 0x80000000;
+  if ((int)uVar1 < DAT_0047b154) {
+    uVar3 = PackedFloatingMUL(in_MM0 & DAT_0047b09c,(ulonglong)DAT_0047b150);
+    uVar4 = PackedFloatingToIntDwordConv(uVar3,uVar3);
+    uVar3 = PackedIntToFloatingDwordConv(uVar4,uVar4);
+    uVar3 = PackedFloatingMUL(CONCAT44((int)uVar3,(int)uVar3),DAT_0047b060);
+    uVar6 = PackedFloatingADD(in_MM0 & DAT_0047b09c,uVar3);
+    uVar5 = (undefined4)((ulonglong)uVar3 >> 0x20);
+    uVar3 = PackedFloatingADD(uVar6,CONCAT44(uVar5,uVar5));
+    uVar3 = CONCAT44((int)uVar3,(int)uVar3);
+    if ((uVar4 & 1) != 0) {
+      uVar3 = PackedFloatingSUBR(uVar3,DAT_0047b070);
     }
-    uVar4 = PackedFloatingMUL(uVar1,uVar1);
-    uVar6 = PackedFloatingMUL(DAT_0047b068,uVar4);
-    uVar5 = PackedFloatingMUL(DAT_0047b078,uVar4);
-    uVar7 = PackedFloatingADD(uVar6,DAT_0047b018);
-    uVar6 = PackedFloatingMUL(DAT_0047b080,uVar4);
-    uVar5 = PackedFloatingMUL(uVar7,uVar5);
-    uVar7 = PackedFloatingADD(uVar5,DAT_0047b018);
-    uVar5 = PackedFloatingMUL(DAT_0047b088,uVar4);
-    uVar4 = PackedFloatingMUL(uVar6,uVar7);
-    uVar4 = PackedFloatingADD(uVar4,DAT_0047b018);
-    uVar4 = PackedFloatingMUL(uVar4,CONCAT44((int)DAT_0047b018,(int)uVar5));
-    uVar4 = PackedFloatingADD(uVar4,DAT_0047b018 >> 0x20);
-    PackedFloatingMUL(uVar4,CONCAT44((int)uVar1,(int)DAT_0047b018));
+    uVar2 = (uVar2 ^ (uint)uVar4 >> 2) << 0x1f;
+    uVar6 = PackedFloatingMUL(uVar3,uVar3);
+    uVar8 = PackedFloatingMUL(DAT_0047b068,uVar6);
+    uVar7 = PackedFloatingMUL(DAT_0047b078,uVar6);
+    uVar9 = PackedFloatingADD(uVar8,DAT_0047b018);
+    uVar8 = PackedFloatingMUL(DAT_0047b080,uVar6);
+    uVar7 = PackedFloatingMUL(uVar9,uVar7);
+    uVar9 = PackedFloatingADD(uVar7,DAT_0047b018);
+    uVar7 = PackedFloatingMUL(DAT_0047b088,uVar6);
+    uVar6 = PackedFloatingMUL(uVar8,uVar9);
+    uVar6 = PackedFloatingADD(uVar6,DAT_0047b018);
+    uVar6 = PackedFloatingMUL(uVar6,CONCAT44((int)DAT_0047b018,(int)uVar7));
+    uVar6 = PackedFloatingADD(uVar6,DAT_0047b018 >> 0x20);
+    PackedFloatingMUL(uVar6,CONCAT44((int)uVar3,(int)DAT_0047b018));
   }
-  return;
+  return CONCAT44(uVar2,uVar1);
 }
 
 
