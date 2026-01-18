@@ -19066,12 +19066,14 @@ void __thiscall FUN_1001a348(void *this,int param_1,int param_2,float *param_3)
 
 
 
-/* FUN_1001a428 @ 1001a428 */
+/* grim_pixel_format_ctor_r8g8b8 @ 1001a428 */
 
-undefined4 * __thiscall FUN_1001a428(void *this,undefined4 *param_1)
+/* pixel format ctor for D3DFMT_R8G8B8 */
+
+void * __thiscall grim_pixel_format_ctor_r8g8b8(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,0x18,1);
+  grim_pixel_format_init(this,desc,0x18,1);
   *(undefined ***)this = &PTR_FUN_1004cb6c;
   return this;
 }
@@ -19135,36 +19137,42 @@ undefined4 * FUN_1001a444(void)
 
 
 
-/* FUN_1001a53c @ 1001a53c */
+/* grim_pixel_format_ctor_a8r8g8b8 @ 1001a53c */
 
-undefined4 * __thiscall FUN_1001a53c(void *this,undefined4 *param_1)
+/* pixel format ctor for D3DFMT_A8R8G8B8 */
+
+void * __thiscall grim_pixel_format_ctor_a8r8g8b8(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,0x20,1);
+  grim_pixel_format_init(this,desc,0x20,1);
   *(undefined ***)this = &PTR_FUN_1004cb8c;
   return this;
 }
 
 
 
-/* FUN_1001a558 @ 1001a558 */
+/* grim_pixel_format_ctor_x8r8g8b8 @ 1001a558 */
 
-undefined4 * __thiscall FUN_1001a558(void *this,undefined4 *param_1)
+/* pixel format ctor for D3DFMT_X8R8G8B8 */
+
+void * __thiscall grim_pixel_format_ctor_x8r8g8b8(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,0x20,1);
+  grim_pixel_format_init(this,desc,0x20,1);
   *(undefined ***)this = &PTR_FUN_1004cb9c;
   return this;
 }
 
 
 
-/* FUN_1001a579 @ 1001a579 */
+/* grim_pixel_format_ctor_r5g6b5 @ 1001a579 */
 
-undefined4 * __thiscall FUN_1001a579(void *this,undefined4 *param_1)
+/* pixel format ctor for D3DFMT_R5G6B5 */
+
+void * __thiscall grim_pixel_format_ctor_r5g6b5(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,0x10,1);
+  grim_pixel_format_init(this,desc,0x10,1);
   *(undefined ***)this = &PTR_FUN_1004cbac;
   return this;
 }
@@ -19241,24 +19249,28 @@ undefined4 __fastcall FUN_1001a595(int param_1)
 
 
 
-/* FUN_1001a781 @ 1001a781 */
+/* grim_pixel_format_ctor_x1r5g5b5 @ 1001a781 */
 
-undefined4 * __thiscall FUN_1001a781(void *this,undefined4 *param_1)
+/* pixel format ctor for D3DFMT_X1R5G5B5 */
+
+void * __thiscall grim_pixel_format_ctor_x1r5g5b5(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,0x10,1);
+  grim_pixel_format_init(this,desc,0x10,1);
   *(undefined ***)this = &PTR_FUN_1004cbdc;
   return this;
 }
 
 
 
-/* FUN_1001a79d @ 1001a79d */
+/* grim_pixel_format_ctor_a1r5g5b5 @ 1001a79d */
 
-undefined4 * __thiscall FUN_1001a79d(void *this,undefined4 *param_1)
+/* pixel format ctor for D3DFMT_A1R5G5B5 */
+
+void * __thiscall grim_pixel_format_ctor_a1r5g5b5(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,0x10,1);
+  grim_pixel_format_init(this,desc,0x10,1);
   *(undefined ***)this = &PTR_FUN_1004cbec;
   return this;
 }
@@ -19401,60 +19413,70 @@ int __thiscall FUN_1001a7b9(void *this,uint param_1,uint param_2,uint param_3)
 
 
 
-/* FUN_1001aa8a @ 1001aa8a */
+/* grim_pixel_format_ctor_a4r4g4b4 @ 1001aa8a */
 
-undefined4 * __thiscall FUN_1001aa8a(void *this,undefined4 *param_1)
+/* pixel format ctor for D3DFMT_A4R4G4B4 */
+
+void * __thiscall grim_pixel_format_ctor_a4r4g4b4(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,0x10,1);
+  grim_pixel_format_init(this,desc,0x10,1);
   *(undefined ***)this = &PTR_FUN_1004cc10;
   return this;
 }
 
 
 
-/* FUN_1001aaa6 @ 1001aaa6 */
+/* grim_pixel_format_ctor_r3g3b2 @ 1001aaa6 */
 
-undefined4 * __thiscall FUN_1001aaa6(void *this,undefined4 *param_1)
+/* pixel format ctor for D3DFMT_R3G3B2 */
+
+void * __thiscall grim_pixel_format_ctor_r3g3b2(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,8,1);
+  grim_pixel_format_init(this,desc,8,1);
   *(undefined ***)this = &PTR_FUN_1004cc20;
   return this;
 }
 
 
 
-/* FUN_1001aac2 @ 1001aac2 */
+/* grim_pixel_format_ctor_a8 @ 1001aac2 */
 
-undefined4 * __thiscall FUN_1001aac2(void *this,undefined4 *param_1)
+/* pixel format ctor for D3DFMT_A8 */
+
+void * __thiscall grim_pixel_format_ctor_a8(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,8,1);
+  grim_pixel_format_init(this,desc,8,1);
   *(undefined ***)this = &PTR_FUN_1004cc30;
   return this;
 }
 
 
 
-/* FUN_1001aade @ 1001aade */
+/* grim_pixel_format_ctor_a8r3g3b2 @ 1001aade */
 
-undefined4 * __thiscall FUN_1001aade(void *this,undefined4 *param_1)
+/* pixel format ctor for D3DFMT_A8R3G3B2 */
+
+void * __thiscall grim_pixel_format_ctor_a8r3g3b2(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,0x10,1);
+  grim_pixel_format_init(this,desc,0x10,1);
   *(undefined ***)this = &PTR_FUN_1004cc40;
   return this;
 }
 
 
 
-/* FUN_1001aafa @ 1001aafa */
+/* grim_pixel_format_ctor_x4r4g4b4 @ 1001aafa */
 
-undefined4 * __thiscall FUN_1001aafa(void *this,undefined4 *param_1)
+/* pixel format ctor for D3DFMT_X4R4G4B4 */
+
+void * __thiscall grim_pixel_format_ctor_x4r4g4b4(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,0x10,1);
+  grim_pixel_format_init(this,desc,0x10,1);
   *(undefined ***)this = &PTR_FUN_1004cc50;
   return this;
 }
@@ -19497,24 +19519,28 @@ void __thiscall FUN_1001ab16(void *this,int param_1,int param_2,undefined4 *para
 
 
 
-/* FUN_1001aba3 @ 1001aba3 */
+/* grim_pixel_format_ctor_a2b10g10r10 @ 1001aba3 */
 
-undefined4 * __thiscall FUN_1001aba3(void *this,undefined4 *param_1)
+/* pixel format ctor for D3DFMT_A2B10G10R10 */
+
+void * __thiscall grim_pixel_format_ctor_a2b10g10r10(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,0x20,1);
+  grim_pixel_format_init(this,desc,0x20,1);
   *(undefined ***)this = &PTR_FUN_1004cc60;
   return this;
 }
 
 
 
-/* FUN_1001ac2e @ 1001ac2e */
+/* grim_pixel_format_ctor_g16r16 @ 1001ac2e */
 
-undefined4 * __thiscall FUN_1001ac2e(void *this,undefined4 *param_1)
+/* pixel format ctor for D3DFMT_G16R16 */
+
+void * __thiscall grim_pixel_format_ctor_g16r16(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,0x20,1);
+  grim_pixel_format_init(this,desc,0x20,1);
   *(undefined ***)this = &PTR_FUN_1004cc70;
   return this;
 }
@@ -19609,12 +19635,14 @@ void * __thiscall grim_pixel_format_init_dxt(void *this,uint *desc)
 
 
 
-/* FUN_1001ae3c @ 1001ae3c */
+/* grim_pixel_format_ctor_a8p8 @ 1001ae3c */
 
-undefined4 * __thiscall FUN_1001ae3c(void *this,undefined4 *param_1)
+/* pixel format ctor for D3DFMT_A8P8 */
+
+void * __thiscall grim_pixel_format_ctor_a8p8(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,0x10,1);
+  grim_pixel_format_init(this,desc,0x10,1);
   *(undefined ***)this = &PTR_FUN_1004cc80;
   return this;
 }
@@ -19635,36 +19663,42 @@ undefined4 * __thiscall FUN_1001ae58(void *this,byte param_1)
 
 
 
-/* FUN_1001ae74 @ 1001ae74 */
+/* grim_pixel_format_ctor_p8 @ 1001ae74 */
 
-undefined4 * __thiscall FUN_1001ae74(void *this,undefined4 *param_1)
+/* pixel format ctor for D3DFMT_P8 */
+
+void * __thiscall grim_pixel_format_ctor_p8(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,8,1);
+  grim_pixel_format_init(this,desc,8,1);
   *(undefined ***)this = &PTR_FUN_1004cc90;
   return this;
 }
 
 
 
-/* FUN_1001ae90 @ 1001ae90 */
+/* grim_pixel_format_ctor_l8 @ 1001ae90 */
 
-undefined4 * __thiscall FUN_1001ae90(void *this,undefined4 *param_1)
+/* pixel format ctor for D3DFMT_L8 */
+
+void * __thiscall grim_pixel_format_ctor_l8(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,8,1);
+  grim_pixel_format_init(this,desc,8,1);
   *(undefined ***)this = &PTR_FUN_1004cca0;
   return this;
 }
 
 
 
-/* FUN_1001aeac @ 1001aeac */
+/* grim_pixel_format_ctor_a8l8 @ 1001aeac */
 
-undefined4 * __thiscall FUN_1001aeac(void *this,undefined4 *param_1)
+/* pixel format ctor for D3DFMT_A8L8 */
+
+void * __thiscall grim_pixel_format_ctor_a8l8(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,0x10,1);
+  grim_pixel_format_init(this,desc,0x10,1);
   *(undefined ***)this = &PTR_FUN_1004ccb0;
   return this;
 }
@@ -19685,12 +19719,14 @@ void * __thiscall FUN_1001aec8(void *this,byte param_1)
 
 
 
-/* FUN_1001aee4 @ 1001aee4 */
+/* grim_pixel_format_ctor_a4l4 @ 1001aee4 */
 
-undefined4 * __thiscall FUN_1001aee4(void *this,undefined4 *param_1)
+/* pixel format ctor for D3DFMT_A4L4 */
+
+void * __thiscall grim_pixel_format_ctor_a4l4(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,8,1);
+  grim_pixel_format_init(this,desc,8,1);
   *(undefined ***)this = &PTR_FUN_1004ccc0;
   return this;
 }
@@ -19726,96 +19762,112 @@ void __fastcall FUN_1001af00(int param_1)
 
 
 
-/* FUN_1001b001 @ 1001b001 */
+/* grim_pixel_format_ctor_v8u8 @ 1001b001 */
 
-undefined4 * __thiscall FUN_1001b001(void *this,undefined4 *param_1)
+/* pixel format ctor for D3DFMT_V8U8 */
+
+void * __thiscall grim_pixel_format_ctor_v8u8(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,0x10,2);
+  grim_pixel_format_init(this,desc,0x10,2);
   *(undefined ***)this = &PTR_FUN_1004ccd0;
   return this;
 }
 
 
 
-/* FUN_1001b01d @ 1001b01d */
+/* grim_pixel_format_ctor_l6v5u5 @ 1001b01d */
 
-undefined4 * __thiscall FUN_1001b01d(void *this,undefined4 *param_1)
+/* pixel format ctor for D3DFMT_L6V5U5 */
+
+void * __thiscall grim_pixel_format_ctor_l6v5u5(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,0x10,2);
+  grim_pixel_format_init(this,desc,0x10,2);
   *(undefined ***)this = &PTR_FUN_1004cce0;
   return this;
 }
 
 
 
-/* FUN_1001b039 @ 1001b039 */
+/* grim_pixel_format_ctor_x8l8v8u8 @ 1001b039 */
 
-undefined4 * __thiscall FUN_1001b039(void *this,undefined4 *param_1)
+/* pixel format ctor for D3DFMT_X8L8V8U8 */
+
+void * __thiscall grim_pixel_format_ctor_x8l8v8u8(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,0x20,2);
+  grim_pixel_format_init(this,desc,0x20,2);
   *(undefined ***)this = &PTR_FUN_1004ccf0;
   return this;
 }
 
 
 
-/* FUN_1001b055 @ 1001b055 */
+/* grim_pixel_format_ctor_q8w8v8u8 @ 1001b055 */
 
-undefined4 * __thiscall FUN_1001b055(void *this,undefined4 *param_1)
+/* pixel format ctor for D3DFMT_Q8W8V8U8 */
+
+void * __thiscall grim_pixel_format_ctor_q8w8v8u8(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,0x20,3);
+  grim_pixel_format_init(this,desc,0x20,3);
   *(undefined ***)this = &PTR_FUN_1004cd00;
   return this;
 }
 
 
 
-/* FUN_1001b071 @ 1001b071 */
+/* grim_pixel_format_ctor_v16u16 @ 1001b071 */
 
-undefined4 * __thiscall FUN_1001b071(void *this,undefined4 *param_1)
+/* pixel format ctor for D3DFMT_V16U16 */
+
+void * __thiscall grim_pixel_format_ctor_v16u16(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,0x20,2);
+  grim_pixel_format_init(this,desc,0x20,2);
   *(undefined ***)this = &PTR_FUN_1004cd10;
   return this;
 }
 
 
 
-/* FUN_1001b08d @ 1001b08d */
+/* grim_pixel_format_ctor_w11v11u10 @ 1001b08d */
 
-undefined4 * __thiscall FUN_1001b08d(void *this,undefined4 *param_1)
+/* pixel format ctor for D3DFMT_W11V11U10 */
+
+void * __thiscall grim_pixel_format_ctor_w11v11u10(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,0x20,2);
+  grim_pixel_format_init(this,desc,0x20,2);
   *(undefined ***)this = &PTR_FUN_1004cd20;
   return this;
 }
 
 
 
-/* FUN_1001b0a9 @ 1001b0a9 */
+/* grim_pixel_format_ctor_a2w10v10u10 @ 1001b0a9 */
 
-undefined4 * __thiscall FUN_1001b0a9(void *this,undefined4 *param_1)
+/* pixel format ctor for D3DFMT_A2W10V10U10 */
+
+void * __thiscall grim_pixel_format_ctor_a2w10v10u10(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,0x20,2);
+  grim_pixel_format_init(this,desc,0x20,2);
   *(undefined ***)this = &PTR_FUN_1004cd30;
   return this;
 }
 
 
 
-/* FUN_1001b0c5 @ 1001b0c5 */
+/* grim_pixel_format_ctor_d16_lockable @ 1001b0c5 */
 
-undefined4 * __thiscall FUN_1001b0c5(void *this,undefined4 *param_1)
+/* pixel format ctor for D3DFMT_D16_LOCKABLE */
+
+void * __thiscall grim_pixel_format_ctor_d16_lockable(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,0x10,1);
+  grim_pixel_format_init(this,desc,0x10,1);
   *(undefined ***)this = &PTR_FUN_1004cd40;
   return this;
 }
@@ -20166,7 +20218,7 @@ void * grim_pixel_format_create(uint *desc)
         *(void **)(unaff_EBP + 8) = pvVar2;
         *(undefined4 *)(unaff_EBP + -4) = 0xd;
         if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-        piVar3 = FUN_1001ae3c(pvVar2,desc_00);
+        piVar3 = grim_pixel_format_ctor_a8p8(pvVar2,desc_00);
       }
       else {
         switch(uVar1) {
@@ -20179,7 +20231,7 @@ LAB_1001bc03:
             piVar3 = (int *)0x0;
           }
           else {
-            piVar3 = FUN_1001a428(pvVar2,desc_00);
+            piVar3 = grim_pixel_format_ctor_r8g8b8(pvVar2,desc_00);
           }
           break;
         case 0x15:
@@ -20187,77 +20239,77 @@ LAB_1001bc03:
           *(void **)(unaff_EBP + 8) = pvVar2;
           *(undefined4 *)(unaff_EBP + -4) = 1;
           if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar3 = FUN_1001a53c(pvVar2,desc_00);
+          piVar3 = grim_pixel_format_ctor_a8r8g8b8(pvVar2,desc_00);
           break;
         case 0x16:
           pvVar2 = operator_new(0x106c);
           *(void **)(unaff_EBP + 8) = pvVar2;
           *(undefined4 *)(unaff_EBP + -4) = 2;
           if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar3 = FUN_1001a558(pvVar2,desc_00);
+          piVar3 = grim_pixel_format_ctor_x8r8g8b8(pvVar2,desc_00);
           break;
         case 0x17:
           pvVar2 = operator_new(0x106c);
           *(void **)(unaff_EBP + 8) = pvVar2;
           *(undefined4 *)(unaff_EBP + -4) = 3;
           if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar3 = FUN_1001a579(pvVar2,desc_00);
+          piVar3 = grim_pixel_format_ctor_r5g6b5(pvVar2,desc_00);
           break;
         case 0x18:
           pvVar2 = operator_new(0x106c);
           *(void **)(unaff_EBP + 8) = pvVar2;
           *(undefined4 *)(unaff_EBP + -4) = 4;
           if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar3 = FUN_1001a781(pvVar2,desc_00);
+          piVar3 = grim_pixel_format_ctor_x1r5g5b5(pvVar2,desc_00);
           break;
         case 0x19:
           pvVar2 = operator_new(0x106c);
           *(void **)(unaff_EBP + 8) = pvVar2;
           *(undefined4 *)(unaff_EBP + -4) = 5;
           if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar3 = FUN_1001a79d(pvVar2,desc_00);
+          piVar3 = grim_pixel_format_ctor_a1r5g5b5(pvVar2,desc_00);
           break;
         case 0x1a:
           pvVar2 = operator_new(0x106c);
           *(void **)(unaff_EBP + 8) = pvVar2;
           *(undefined4 *)(unaff_EBP + -4) = 6;
           if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar3 = FUN_1001aa8a(pvVar2,desc_00);
+          piVar3 = grim_pixel_format_ctor_a4r4g4b4(pvVar2,desc_00);
           break;
         case 0x1b:
           pvVar2 = operator_new(0x106c);
           *(void **)(unaff_EBP + 8) = pvVar2;
           *(undefined4 *)(unaff_EBP + -4) = 7;
           if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar3 = FUN_1001aaa6(pvVar2,desc_00);
+          piVar3 = grim_pixel_format_ctor_r3g3b2(pvVar2,desc_00);
           break;
         case 0x1c:
           pvVar2 = operator_new(0x106c);
           *(void **)(unaff_EBP + 8) = pvVar2;
           *(undefined4 *)(unaff_EBP + -4) = 8;
           if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar3 = FUN_1001aac2(pvVar2,desc_00);
+          piVar3 = grim_pixel_format_ctor_a8(pvVar2,desc_00);
           break;
         case 0x1d:
           pvVar2 = operator_new(0x106c);
           *(void **)(unaff_EBP + 8) = pvVar2;
           *(undefined4 *)(unaff_EBP + -4) = 9;
           if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar3 = FUN_1001aade(pvVar2,desc_00);
+          piVar3 = grim_pixel_format_ctor_a8r3g3b2(pvVar2,desc_00);
           break;
         case 0x1e:
           pvVar2 = operator_new(0x106c);
           *(void **)(unaff_EBP + 8) = pvVar2;
           *(undefined4 *)(unaff_EBP + -4) = 10;
           if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar3 = FUN_1001aafa(pvVar2,desc_00);
+          piVar3 = grim_pixel_format_ctor_x4r4g4b4(pvVar2,desc_00);
           break;
         case 0x1f:
           pvVar2 = operator_new(0x106c);
           *(void **)(unaff_EBP + 8) = pvVar2;
           *(undefined4 *)(unaff_EBP + -4) = 0xb;
           if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar3 = FUN_1001aba3(pvVar2,desc_00);
+          piVar3 = grim_pixel_format_ctor_a2b10g10r10(pvVar2,desc_00);
           break;
         default:
           goto switchD_1001b54e_caseD_20;
@@ -20266,7 +20318,7 @@ LAB_1001bc03:
           *(void **)(unaff_EBP + 8) = pvVar2;
           *(undefined4 *)(unaff_EBP + -4) = 0xc;
           if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar3 = FUN_1001ac2e(pvVar2,desc_00);
+          piVar3 = grim_pixel_format_ctor_g16r16(pvVar2,desc_00);
         }
       }
     }
@@ -20276,42 +20328,42 @@ LAB_1001bc03:
         *(void **)(unaff_EBP + 8) = pvVar2;
         *(undefined4 *)(unaff_EBP + -4) = 0x14;
         if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-        piVar3 = FUN_1001b039(pvVar2,desc_00);
+        piVar3 = grim_pixel_format_ctor_x8l8v8u8(pvVar2,desc_00);
       }
       else if (uVar1 == 0x29) {
         pvVar2 = operator_new(0x106c);
         *(void **)(unaff_EBP + 8) = pvVar2;
         *(undefined4 *)(unaff_EBP + -4) = 0xe;
         if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-        piVar3 = FUN_1001ae74(pvVar2,desc_00);
+        piVar3 = grim_pixel_format_ctor_p8(pvVar2,desc_00);
       }
       else if (uVar1 == 0x32) {
         pvVar2 = operator_new(0x106c);
         *(void **)(unaff_EBP + 8) = pvVar2;
         *(undefined4 *)(unaff_EBP + -4) = 0xf;
         if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-        piVar3 = FUN_1001ae90(pvVar2,desc_00);
+        piVar3 = grim_pixel_format_ctor_l8(pvVar2,desc_00);
       }
       else if (uVar1 == 0x33) {
         pvVar2 = operator_new(0x106c);
         *(void **)(unaff_EBP + 8) = pvVar2;
         *(undefined4 *)(unaff_EBP + -4) = 0x10;
         if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-        piVar3 = FUN_1001aeac(pvVar2,desc_00);
+        piVar3 = grim_pixel_format_ctor_a8l8(pvVar2,desc_00);
       }
       else if (uVar1 == 0x34) {
         pvVar2 = operator_new(0x106c);
         *(void **)(unaff_EBP + 8) = pvVar2;
         *(undefined4 *)(unaff_EBP + -4) = 0x11;
         if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-        piVar3 = FUN_1001aee4(pvVar2,desc_00);
+        piVar3 = grim_pixel_format_ctor_a4l4(pvVar2,desc_00);
       }
       else if (uVar1 == 0x3c) {
         pvVar2 = operator_new(0x106c);
         *(void **)(unaff_EBP + 8) = pvVar2;
         *(undefined4 *)(unaff_EBP + -4) = 0x12;
         if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-        piVar3 = FUN_1001b001(pvVar2,desc_00);
+        piVar3 = grim_pixel_format_ctor_v8u8(pvVar2,desc_00);
       }
       else {
         if (uVar1 != 0x3d) goto switchD_1001b54e_caseD_20;
@@ -20319,7 +20371,7 @@ LAB_1001bc03:
         *(void **)(unaff_EBP + 8) = pvVar2;
         *(undefined4 *)(unaff_EBP + -4) = 0x13;
         if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-        piVar3 = FUN_1001b01d(pvVar2,desc_00);
+        piVar3 = grim_pixel_format_ctor_l6v5u5(pvVar2,desc_00);
       }
     }
     else if (uVar1 == 0x3f) {
@@ -20327,28 +20379,28 @@ LAB_1001bc03:
       *(void **)(unaff_EBP + 8) = pvVar2;
       *(undefined4 *)(unaff_EBP + -4) = 0x15;
       if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar3 = FUN_1001b055(pvVar2,desc_00);
+      piVar3 = grim_pixel_format_ctor_q8w8v8u8(pvVar2,desc_00);
     }
     else if (uVar1 == 0x40) {
       pvVar2 = operator_new(0x106c);
       *(void **)(unaff_EBP + 8) = pvVar2;
       *(undefined4 *)(unaff_EBP + -4) = 0x16;
       if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar3 = FUN_1001b071(pvVar2,desc_00);
+      piVar3 = grim_pixel_format_ctor_v16u16(pvVar2,desc_00);
     }
     else if (uVar1 == 0x41) {
       pvVar2 = operator_new(0x106c);
       *(void **)(unaff_EBP + 8) = pvVar2;
       *(undefined4 *)(unaff_EBP + -4) = 0x17;
       if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar3 = FUN_1001b08d(pvVar2,desc_00);
+      piVar3 = grim_pixel_format_ctor_w11v11u10(pvVar2,desc_00);
     }
     else if (uVar1 == 0x43) {
       pvVar2 = operator_new(0x106c);
       *(void **)(unaff_EBP + 8) = pvVar2;
       *(undefined4 *)(unaff_EBP + -4) = 0x18;
       if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar3 = FUN_1001b0a9(pvVar2,desc_00);
+      piVar3 = grim_pixel_format_ctor_a2w10v10u10(pvVar2,desc_00);
     }
     else {
       if (uVar1 != 0x46) goto switchD_1001b54e_caseD_20;
@@ -20356,7 +20408,7 @@ LAB_1001bc03:
       *(void **)(unaff_EBP + 8) = pvVar2;
       *(undefined4 *)(unaff_EBP + -4) = 0x19;
       if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar3 = FUN_1001b0c5(pvVar2,desc_00);
+      piVar3 = grim_pixel_format_ctor_d16_lockable(pvVar2,desc_00);
     }
   }
   else if ((int)uVar1 < 0x36314c21) {

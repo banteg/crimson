@@ -3561,6 +3561,188 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1001a428",
+    "name": "grim_pixel_format_ctor_r8g8b8",
+    "signature": "void * grim_pixel_format_ctor_r8g8b8(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_R8G8B8"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001a53c",
+    "name": "grim_pixel_format_ctor_a8r8g8b8",
+    "signature": "void * grim_pixel_format_ctor_a8r8g8b8(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_A8R8G8B8"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001a558",
+    "name": "grim_pixel_format_ctor_x8r8g8b8",
+    "signature": "void * grim_pixel_format_ctor_x8r8g8b8(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_X8R8G8B8"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001a579",
+    "name": "grim_pixel_format_ctor_r5g6b5",
+    "signature": "void * grim_pixel_format_ctor_r5g6b5(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_R5G6B5"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001a781",
+    "name": "grim_pixel_format_ctor_x1r5g5b5",
+    "signature": "void * grim_pixel_format_ctor_x1r5g5b5(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_X1R5G5B5"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001a79d",
+    "name": "grim_pixel_format_ctor_a1r5g5b5",
+    "signature": "void * grim_pixel_format_ctor_a1r5g5b5(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_A1R5G5B5"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001aa8a",
+    "name": "grim_pixel_format_ctor_a4r4g4b4",
+    "signature": "void * grim_pixel_format_ctor_a4r4g4b4(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_A4R4G4B4"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001aaa6",
+    "name": "grim_pixel_format_ctor_r3g3b2",
+    "signature": "void * grim_pixel_format_ctor_r3g3b2(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_R3G3B2"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001aac2",
+    "name": "grim_pixel_format_ctor_a8",
+    "signature": "void * grim_pixel_format_ctor_a8(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_A8"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001aade",
+    "name": "grim_pixel_format_ctor_a8r3g3b2",
+    "signature": "void * grim_pixel_format_ctor_a8r3g3b2(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_A8R3G3B2"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001aafa",
+    "name": "grim_pixel_format_ctor_x4r4g4b4",
+    "signature": "void * grim_pixel_format_ctor_x4r4g4b4(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_X4R4G4B4"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001aba3",
+    "name": "grim_pixel_format_ctor_a2b10g10r10",
+    "signature": "void * grim_pixel_format_ctor_a2b10g10r10(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_A2B10G10R10"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001ac2e",
+    "name": "grim_pixel_format_ctor_g16r16",
+    "signature": "void * grim_pixel_format_ctor_g16r16(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_G16R16"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001ae3c",
+    "name": "grim_pixel_format_ctor_a8p8",
+    "signature": "void * grim_pixel_format_ctor_a8p8(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_A8P8"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001ae74",
+    "name": "grim_pixel_format_ctor_p8",
+    "signature": "void * grim_pixel_format_ctor_p8(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_P8"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001ae90",
+    "name": "grim_pixel_format_ctor_l8",
+    "signature": "void * grim_pixel_format_ctor_l8(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_L8"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001aeac",
+    "name": "grim_pixel_format_ctor_a8l8",
+    "signature": "void * grim_pixel_format_ctor_a8l8(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_A8L8"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001aee4",
+    "name": "grim_pixel_format_ctor_a4l4",
+    "signature": "void * grim_pixel_format_ctor_a4l4(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_A4L4"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b001",
+    "name": "grim_pixel_format_ctor_v8u8",
+    "signature": "void * grim_pixel_format_ctor_v8u8(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_V8U8"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b01d",
+    "name": "grim_pixel_format_ctor_l6v5u5",
+    "signature": "void * grim_pixel_format_ctor_l6v5u5(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_L6V5U5"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b039",
+    "name": "grim_pixel_format_ctor_x8l8v8u8",
+    "signature": "void * grim_pixel_format_ctor_x8l8v8u8(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_X8L8V8U8"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b055",
+    "name": "grim_pixel_format_ctor_q8w8v8u8",
+    "signature": "void * grim_pixel_format_ctor_q8w8v8u8(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_Q8W8V8U8"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b071",
+    "name": "grim_pixel_format_ctor_v16u16",
+    "signature": "void * grim_pixel_format_ctor_v16u16(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_V16U16"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b08d",
+    "name": "grim_pixel_format_ctor_w11v11u10",
+    "signature": "void * grim_pixel_format_ctor_w11v11u10(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_W11V11U10"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b0a9",
+    "name": "grim_pixel_format_ctor_a2w10v10u10",
+    "signature": "void * grim_pixel_format_ctor_a2w10v10u10(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_A2W10V10U10"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b0c5",
+    "name": "grim_pixel_format_ctor_d16_lockable",
+    "signature": "void * grim_pixel_format_ctor_d16_lockable(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_D16_LOCKABLE"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1001b0e1",
     "name": "grim_pixel_format_ctor_l16",
     "signature": "void * grim_pixel_format_ctor_l16(void *this, uint *desc)",
