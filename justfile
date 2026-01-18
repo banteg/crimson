@@ -60,6 +60,7 @@ ghidra-exe:
       -s ImportThirdPartyHeaders.java -a third_party/headers \
       -s ApplyWinapiGDT.java -a analysis/ghidra/maps/winapi_32.gdt \
       -s CreateCreditsScreenUpdate.java \
+      -s CreateCreditsSecretUpdate.java \
       -s ApplyNameMap.java -a analysis/ghidra/maps/name_map.json \
       -s ApplyDataMap.java -a analysis/ghidra/maps/data_map.json \
       -s ExportAll.java \

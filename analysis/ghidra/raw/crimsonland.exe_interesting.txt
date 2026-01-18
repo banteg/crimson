@@ -9,6 +9,10 @@ Interesting Functions and Patterns
   effect_spawn_freeze_shatter @ 0042ee00
   crt_flushall @ 0046150a
 
+[SECRET related]
+  credits_secret_match3_find @ 0040f400
+  credits_secret_alien_zookeeper_update @ 0040f4f0
+
 [KEY related]
   input_key_name @ 004036d0
   ui_render_keybind_help @ 00405160

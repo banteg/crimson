@@ -553,11 +553,18 @@
     "calls": ["crt_findclose", "crt_findfirst", "crt_findnext"]
   },
   {
-    "name": "FUN_0040f400",
+    "name": "credits_secret_match3_find",
     "address": "0040f400",
-    "signature": "undefined4 FUN_0040f400(int * param_1, int * param_2, undefined1 * param_3)",
+    "signature": "uint credits_secret_match3_find(int * board, int * out_idx, uchar * out_dir)",
     "external": false,
     "calls": []
+  },
+  {
+    "name": "credits_secret_alien_zookeeper_update",
+    "address": "0040f4f0",
+    "signature": "void credits_secret_alien_zookeeper_update(void)",
+    "external": false,
+    "calls": ["credits_secret_match3_find", "crt_atexit", "crt_rand", "input_primary_just_pressed", "sfx_play", "ui_button_update", "ui_mouse_inside_rect"]
   },
   {
     "name": "FUN_0040ff50",

@@ -367,6 +367,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0040f400",
+    "name": "credits_secret_match3_find",
+    "signature": "uint credits_secret_match3_find(int *board, int *out_idx, unsigned char *out_dir)",
+    "comment": "scans a 6x6 board for a 3-in-a-row match; writes start index + orientation (0=vertical, 1=horizontal)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040f4f0",
+    "name": "credits_secret_alien_zookeeper_update",
+    "signature": "void credits_secret_alien_zookeeper_update(void)",
+    "comment": "updates and renders the AlienZooKeeper credits secret; drives match-3 board state and UI"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0040ffc0",
     "name": "game_over_screen_update",
     "signature": "void game_over_screen_update(void)",
