@@ -11,7 +11,7 @@
 # The site_name is shown in the page header and the browser window title
 #
 # Read more: https://zensical.org/docs/setup/basics/#site_name
-site_name = "Crimsonland decompile notes"
+site_name = "Crimsonland decompiled"
 site_dir = "_site"
 
 # The site_description is included in the HTML head and should contain a
@@ -210,8 +210,8 @@ toggle.name = "Switch to light mode"
 # - https://zensical.org/docs/setup/logo-and-icons
 # - https://zensical.org/docs/authoring/icons-emojis/#search
 # ----------------------------------------------------------------------------
-#[project.theme.icon]
-#logo = "lucide/smile"
+[project.theme.icon]
+logo = "lucide/flask-conical"
 #repo = "lucide/smile"
 
 # ----------------------------------------------------------------------------
