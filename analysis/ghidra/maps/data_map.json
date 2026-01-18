@@ -4393,6 +4393,18 @@
       "address": "0x1004e65c",
       "name": "grim_dxt5_alpha_index_map_6",
       "comment": "DXT5 alpha index mapping table for 6-alpha mode."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10022114",
+      "name": "grim_dxt2_decode_block",
+      "comment": "DXT2 decode wrapper (premultiplied alpha); paired with grim_dxt2_encode_block."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10022137",
+      "name": "grim_dxt4_decode_block",
+      "comment": "DXT4 decode wrapper (premultiplied alpha); paired with grim_dxt4_encode_block."
     }
   ]
 }

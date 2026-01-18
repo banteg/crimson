@@ -19605,7 +19605,7 @@ void * __thiscall grim_pixel_format_init_dxt(void *this,uint *desc)
   else if (iVar1 == 0x32545844) {
     *(undefined4 *)((int)this + 0x1080) = 0x10;
     *(code **)((int)this + 0x1088) = grim_dxt2_encode_block;
-    *(undefined1 **)((int)this + 0x1084) = &LAB_10022114;
+    *(undefined1 **)((int)this + 0x1084) = &grim_dxt2_decode_block;
   }
   else if (iVar1 == 0x33545844) {
     *(undefined4 *)((int)this + 0x1080) = 0x10;
@@ -19615,7 +19615,7 @@ void * __thiscall grim_pixel_format_init_dxt(void *this,uint *desc)
   else if (iVar1 == 0x34545844) {
     *(undefined4 *)((int)this + 0x1080) = 0x10;
     *(code **)((int)this + 0x1088) = grim_dxt4_encode_block;
-    *(undefined1 **)((int)this + 0x1084) = &LAB_10022137;
+    *(undefined1 **)((int)this + 0x1084) = &grim_dxt4_decode_block;
   }
   else if (iVar1 == 0x35545844) {
     *(undefined4 *)((int)this + 0x1080) = 0x10;
