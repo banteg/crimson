@@ -5,7 +5,7 @@
   - [x] config_highscore_date_mode (DAT_0048034a)
   - [x] config_highscore_duplicate_mode (DAT_0048034b)
   - [x] config_hud_indicator_toggle (DAT_0048034c)
-  - [x] config_grim_query_param (DAT_00480350)
+  - [ ] DAT_00480350
   - [x] config_fx_detail_flag0 (DAT_00480356)
   - [x] config_fx_detail_flag1 (DAT_00480358)
   - [x] config_fx_detail_flag2 (DAT_00480359)
@@ -13,8 +13,8 @@
   - [x] config_game_mode (DAT_00480360)
   - [x] config_player_mode_flags (DAT_00480364)
   - [x] config_aim_scheme (DAT_0048038c)
-  - [x] config_unknown_0x48 (DAT_00480390)
-  - [x] config_unknown_0x6c (DAT_004803b4)
+  - [ ] DAT_00480390
+  - [ ] DAT_004803b4
   - [x] config_texture_scale (DAT_004803b8)
   - [x] config_player_name_buf (DAT_004803bc)
   - [x] config_name_slot_selected (DAT_004803c8)
@@ -24,29 +24,29 @@
   - [x] config_saved_name_2 (DAT_0048040b)
   - [x] config_player_name (DAT_004804c8)
   - [x] config_player_name_length (DAT_004804e8)
-  - [x] config_unknown_0x1a4 (DAT_004804ec)
-  - [x] config_unknown_0x1a8 (DAT_004804f0)
-  - [x] config_unknown_0x1ac (DAT_004804f4)
-  - [x] config_grim_misc_threshold0 (DAT_004804f8)
-  - [x] config_grim_misc_threshold1 (DAT_004804fc)
+  - [ ] DAT_004804ec
+  - [ ] DAT_004804f0
+  - [ ] DAT_004804f4
+  - [ ] DAT_004804f8
+  - [ ] DAT_004804fc
   - [x] config_display_bpp (DAT_00480500)
   - [x] config_screen_width (DAT_00480504)
   - [x] config_screen_height (DAT_00480508)
   - [x] config_windowed (DAT_0048050c)
   - [x] config_keybind_table (DAT_00480510)
   - [x] config_keybind_table_p2 (DAT_00480540)
-  - [x] config_unknown_0x440 (DAT_00480788)
-  - [x] config_unknown_0x444 (DAT_0048078c)
+  - [ ] DAT_00480788
+  - [ ] DAT_0048078c
   - [x] config_full_version (DAT_00480790)
   - [x] config_perk_prompt_state (DAT_00480791)
   - [x] config_perk_prompt_counter (DAT_00480794)
-  - [x] config_unknown_0x450 (DAT_00480798)
-  - [x] config_unknown_0x460 (DAT_004807a8)
+  - [ ] DAT_00480798
+  - [ ] DAT_004807a8
   - [x] config_sfx_volume (DAT_004807ac)
   - [x] config_music_volume (DAT_004807b0)
   - [x] config_fx_toggle (DAT_004807b4)
   - [x] config_score_load_gate (DAT_004807b5)
-  - [x] config_unknown_0x46e (DAT_004807b6)
+  - [ ] DAT_004807b6
   - [x] config_detail_preset (DAT_004807b8)
   - [x] config_key_pick_perk (DAT_004807c0)
   - [x] config_key_reload (DAT_004807c4)

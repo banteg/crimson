@@ -15417,7 +15417,7 @@ bool FUN_0041e8d0(void)
   int iVar1;
   
   iVar1 = (**(code **)(*DAT_0048083c + 0xa4))(0);
-  return iVar1 == config_grim_misc_threshold1;
+  return iVar1 == DAT_004804fc;
 }
 
 
@@ -15430,7 +15430,7 @@ bool FUN_0041e8f0(void)
   int iVar1;
   
   iVar1 = (**(code **)(*DAT_0048083c + 0xa4))(0);
-  return iVar1 == config_grim_misc_threshold0;
+  return iVar1 == DAT_004804f8;
 }
 
 
@@ -15676,7 +15676,7 @@ undefined4 FUN_0041ec60(void)
   config_texture_scale = *puVar3;
   puVar2 = (undefined1 *)(**(code **)(*DAT_0048083c + 0x24))(&uStack_4b8,0x54);
   config_player_name_length = DAT_004871e8;
-  config_unknown_0x46e = *puVar2;
+  DAT_004807b6 = *puVar2;
   uVar5 = 0xffffffff;
   pcVar7 = (char *)&DAT_00487040;
   do {
@@ -15991,7 +15991,7 @@ uint config_load_presets(void)
   } while ((int)puVar5 < 0x4805c0);
   (**(code **)(*DAT_0048083c + 0x20))(0x59,config_texture_scale);
   if (cVar8 == '\0') {
-    (**(code **)(*DAT_0048083c + 0x20))(0x54,config_unknown_0x46e);
+    (**(code **)(*DAT_0048083c + 0x20))(0x54,DAT_004807b6);
     (**(code **)(*DAT_0048083c + 0x20))(8,config_windowed);
     (**(code **)(*DAT_0048083c + 0x20))(0x2b,config_display_bpp);
     (**(code **)(*DAT_0048083c + 0x20))(0x29,config_screen_width);
@@ -42312,8 +42312,8 @@ int __cdecl ___timet_from_ft(FILETIME *param_1)
     if (WVar1 != 0) {
       WVar1 = FileTimeToSystemTime(&local_c,&local_1c);
       if (WVar1 != 0) {
-        iVar2 = crt_mktime64((uint)local_1c.wYear,(uint)local_1c.wMonth,(uint)local_1c.wDay,
-                             (uint)local_1c.wHour,(uint)local_1c.wMinute,(uint)local_1c.wSecond,-1);
+        iVar2 = crt_mktime((uint)local_1c.wYear,(uint)local_1c.wMonth,(uint)local_1c.wDay,
+                           (uint)local_1c.wHour,(uint)local_1c.wMinute,(uint)local_1c.wSecond,-1);
         return iVar2;
       }
     }
@@ -43162,9 +43162,9 @@ void __cdecl FUN_004623b2(int *param_1)
   DAT_004d997c._0_2_ = local_24.wSecond;
   DAT_004d997c._2_2_ = local_24.wMilliseconds;
 LAB_0046245c:
-  iVar2 = crt_mktime64((uint)local_14.wYear,(uint)local_14.wMonth,(uint)local_14.wDay,
-                       (uint)local_14.wHour,(uint)local_14.wMinute,(uint)local_14.wSecond,
-                       DAT_004d9968);
+  iVar2 = crt_mktime((uint)local_14.wYear,(uint)local_14.wMonth,(uint)local_14.wDay,
+                     (uint)local_14.wHour,(uint)local_14.wMinute,(uint)local_14.wSecond,DAT_004d9968
+                    );
   if (param_1 != (int *)0x0) {
     *param_1 = iVar2;
   }
@@ -47514,13 +47514,13 @@ uint * crt_doserrno_ptr(void)
 
 
 
-/* crt_mktime64 @ 00465da5 */
+/* crt_mktime @ 00465da5 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* CRT: convert date/time to timestamp */
+/* CRT: convert date/time to timestamp (mktime) */
 
 int __cdecl
-crt_mktime64(int param_1,int param_2,int param_3,int param_4,int param_5,int param_6,int param_7)
+crt_mktime(int param_1,int param_2,int param_3,int param_4,int param_5,int param_6,int param_7)
 
 {
   bool bVar1;
