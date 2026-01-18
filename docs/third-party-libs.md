@@ -87,6 +87,6 @@ and vtable shapes. Evidence comes from Ghidra import discovery.
 - Evidence: `analysis/ghidra/raw/ghidra_analysis.log:28923` through `:28973`.
 
 ## Next evidence to capture
-- Identify DirectX 8 SDK build by matching interface GUIDs and vtable sizes
-  (D3D8/DInput8/DSound).
+- Optional: verify the exact DirectX 8.1 SDK build by matching interface GUIDs
+  and vtable sizes (D3D8/DInput8/DSound).
 - Identify MSVCRT version by import names and CRT string signatures.
