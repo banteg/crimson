@@ -50,58 +50,58 @@
   - [x] config_detail_preset (DAT_004807b8)
   - [x] config_key_pick_perk (DAT_004807c0)
   - [x] config_key_reload (DAT_004807c4)
-  - [ ] DAT_004712fc
-  - [ ] DAT_00471314
-  - [ ] DAT_00472718
-  - [ ] DAT_00472998
-  - [ ] DAT_00473668
+  - [x] tutorial_hint_index (DAT_004712fc)
+  - [x] default_player_name (DAT_00471314)
+  - [x] tutorial_empty_string (DAT_00472718)
+  - [x] file_mode_read_binary (DAT_00472998)
+  - [x] file_mode_write_binary (DAT_00473668)
   - [ ] DAT_00477d28
-  - [ ] DAT_00478e50
-  - [ ] DAT_0047b1c0
-  - [ ] DAT_0047b7c0
-  - [ ] DAT_0047f5f8
-  - [ ] DAT_00480250
-  - [ ] DAT_004807d0
-  - [ ] DAT_004807e8
-  - [ ] DAT_0048083c
-  - [ ] DAT_00480840
-  - [ ] DAT_00480844
-  - [ ] DAT_004808a8
-  - [ ] DAT_004808ac
-  - [ ] DAT_004808b4
-  - [ ] DAT_00482b08
-  - [ ] DAT_00482b10
-  - [ ] DAT_00484730
-  - [ ] DAT_0048474c
-  - [ ] DAT_00485794
-  - [ ] DAT_004857a8
+  - [x] input_primary_latch (DAT_00478e50)
+  - [x] crt_ctype_table (DAT_0047b1c0)
+  - [x] crt_dosmaperr_table (DAT_0047b7c0)
+  - [x] ui_button_table_a (DAT_0047f5f8)
+  - [x] ui_button_table_b (DAT_00480250)
+  - [x] ui_button_table_c (DAT_004807d0)
+  - [x] perk_choice_ids (DAT_004807e8)
+  - [x] grim_interface_ptr (DAT_0048083c)
+  - [x] frame_dt (DAT_00480840)
+  - [x] frame_dt_ms (DAT_00480844)
+  - [x] tutorial_repeat_spawn_count (DAT_004808a8)
+  - [x] tutorial_hint_bonus_ptr (DAT_004808ac)
+  - [x] tutorial_hint_alpha (DAT_004808b4)
+  - [x] quest_spawn_count (DAT_00482b08)
+  - [x] highscore_table (DAT_00482b10)
+  - [x] quest_selected_meta (DAT_00484730)
+  - [x] quest_selected_builder (DAT_0048474c)
+  - [x] game_sequence_id (DAT_00485794)
+  - [x] quest_spawn_table (DAT_004857a8)
   - [ ] DAT_00486fac
-  - [ ] DAT_00486fc4
-  - [ ] DAT_00486fd0
-  - [ ] DAT_00486fd8
-  - [ ] DAT_00486fdc
-  - [ ] DAT_00486fe0
-  - [ ] DAT_0048700c
-  - [ ] DAT_00487040
-  - [ ] DAT_00487060
-  - [ ] DAT_00487080
-  - [ ] DAT_00487081
-  - [ ] DAT_00487082
-  - [ ] DAT_00487083
-  - [ ] DAT_00487084
-  - [ ] DAT_00487085
-  - [ ] DAT_00487190
-  - [ ] DAT_004871cc
-  - [ ] DAT_004871e8
-  - [ ] DAT_004871ec
-  - [ ] DAT_004871f0
-  - [ ] DAT_00487248
+  - [x] survival_spawn_cooldown (DAT_00486fc4)
+  - [x] quest_spawn_timeline (DAT_00486fd0)
+  - [x] tutorial_stage_index (DAT_00486fd8)
+  - [x] tutorial_stage_timer (DAT_00486fdc)
+  - [x] tutorial_stage_transition_timer (DAT_00486fe0)
+  - [x] creatures_any_active_flag (DAT_0048700c)
+  - [x] highscore_active_record (DAT_00487040)
+  - [x] survival_elapsed_ms (DAT_00487060)
+  - [x] highscore_day (DAT_00487080)
+  - [x] highscore_date_checksum (DAT_00487081)
+  - [x] highscore_month (DAT_00487082)
+  - [x] highscore_year_offset (DAT_00487083)
+  - [x] highscore_flags (DAT_00487084)
+  - [x] highscore_full_version_marker (DAT_00487085)
+  - [x] survival_spawn_stage (DAT_00487190)
+  - [x] ui_mouse_blocked (DAT_004871cc)
+  - [x] player_name_length (DAT_004871e8)
+  - [x] ui_mouse_x (DAT_004871ec)
+  - [x] ui_mouse_y (DAT_004871f0)
+  - [x] ui_elements_timeline (DAT_00487248)
   - [ ] DAT_00487274
   - [ ] DAT_00487278
-  - [ ] DAT_0048f168
-  - [ ] DAT_0048f208
+  - [x] ui_element_table_end (DAT_0048f168)
+  - [x] ui_element_table_start (DAT_0048f208)
   - [ ] DAT_0048f7f0
-  - [ ] DAT_00490300
+  - [x] survival_xp_smoothed (DAT_00490300)
   - [ ] DAT_00495ac8
   - [ ] DAT_00495ace
   - [ ] DAT_004c2c40
@@ -109,7 +109,7 @@
   - [ ] DAT_004c2c48
   - [ ] DAT_004c2c4c
   - [ ] DAT_004c2c50
-  - [ ] DAT_004c3c80
+  - [x] sfx_cooldown_table (DAT_004c3c80)
 - [ ] Grim2D evidence globals referenced in `docs/grim2d-api-evidence.md` (≈87 unlabeled DAT_ addresses)
 - [ ] Perk metadata tables referenced in `docs/perk-id-map.md` (≈63 unlabeled DAT_ addresses)
 - [ ] State/UI/frame/render globals in `docs/crimsonland-exe/*` (≈30–40 unlabeled DAT_ addresses)

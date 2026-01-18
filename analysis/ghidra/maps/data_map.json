@@ -3,6 +3,36 @@
   "entries": [
     {
       "program": "crimsonland.exe",
+      "address": "0x004712fc",
+      "name": "tutorial_hint_index",
+      "comment": "Tutorial hint index used for secondary prompt overlay (increments when bonus object deactivates)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00471314",
+      "name": "default_player_name",
+      "comment": "Default player name string copied into config on load."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00472718",
+      "name": "tutorial_empty_string",
+      "comment": "Tutorial string sentinel (empty/guard string used for skipped entries)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00472998",
+      "name": "file_mode_read_binary",
+      "comment": "CString \"rb\" used for config/status file reads."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00473668",
+      "name": "file_mode_write_binary",
+      "comment": "CString \"wb\" used for config/status file writes."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004755e0",
       "name": "effect_uv_step_2",
       "comment": "Effect UV step for 2x2 atlas (size code 0x80)"
@@ -36,6 +66,36 @@
       "address": "0x004755f4",
       "name": "effect_id_frame",
       "comment": "Effect id table frame index (effect_id_size_code + 0x04)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00478e50",
+      "name": "input_primary_latch",
+      "comment": "Primary input edge latch used by input_primary_just_pressed."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0047b1c0",
+      "name": "crt_ctype_table",
+      "comment": "CRT ctype lookup table pointer (used by crt_isctype)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0047b7c0",
+      "name": "crt_dosmaperr_table",
+      "comment": "CRT dosmaperr table (Win32 error -> errno mapping)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0047f5f8",
+      "name": "ui_button_table_a",
+      "comment": "UI button struct array (stride 0x18) used by ui_button_update."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00480250",
+      "name": "ui_button_table_b",
+      "comment": "UI button struct array (stride 0x18) used by ui_button_update."
     },
     {
       "program": "crimsonland.exe",
@@ -261,6 +321,54 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x004807d0",
+      "name": "ui_button_table_c",
+      "comment": "UI button struct array (stride 0x18) used by ui_button_update."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004807e8",
+      "name": "perk_choice_ids",
+      "comment": "Perk choice table filled by perks_generate_choices."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048083c",
+      "name": "grim_interface_ptr",
+      "comment": "Grim interface pointer used for input queries (vtable +0x58/+0x80)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00480840",
+      "name": "frame_dt",
+      "comment": "Frame delta time (seconds) used for effect timers and movement updates."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00480844",
+      "name": "frame_dt_ms",
+      "comment": "Frame delta time (ms) used for UI/timeline accumulation."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004808a8",
+      "name": "tutorial_repeat_spawn_count",
+      "comment": "Tutorial repeat spawn counter (stage 5 creature/bonus loop)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004808ac",
+      "name": "tutorial_hint_bonus_ptr",
+      "comment": "Current tutorial bonus object pointer used for hint overlay checks."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004808b4",
+      "name": "tutorial_hint_alpha",
+      "comment": "Tutorial hint alpha timer (0..1000) for secondary overlay."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00482728",
       "name": "creature_type_texture",
       "comment": "Creature type table: texture handle (stride 0x44 bytes)."
@@ -369,6 +477,30 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00482b08",
+      "name": "quest_spawn_count",
+      "comment": "Quest spawn table entry count (used by quest_spawn_timeline_update)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00482b10",
+      "name": "highscore_table",
+      "comment": "High score table entries (0x48-byte records)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00484730",
+      "name": "quest_selected_meta",
+      "comment": "Current quest metadata pointer (selected quest)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048474c",
+      "name": "quest_selected_builder",
+      "comment": "Current quest builder function pointer (runs quest script)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00484fd0",
       "name": "creature_spawn_slot_owner",
       "comment": "Spawn slot owner creature pointer (stride 0x18 bytes; indexed by creature_link_index)."
@@ -435,6 +567,18 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00485794",
+      "name": "game_sequence_id",
+      "comment": "Saved game sequence id loaded from registry."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004857a8",
+      "name": "quest_spawn_table",
+      "comment": "Quest spawn table base (entries used by quest_spawn_timeline_update)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00486fa8",
       "name": "survival_reward_handout_enabled",
       "comment": "Survival handout gate (set on reset; cleared after reward or after 3 death samples)."
@@ -459,6 +603,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00486fc4",
+      "name": "survival_spawn_cooldown",
+      "comment": "Survival spawn cooldown accumulator (counts down to next burst)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00486fc8",
       "name": "plaguebearer_infection_count",
       "comment": "Plaguebearer infection kill counter (used to cap contagion spread)."
@@ -468,6 +618,30 @@
       "address": "0x00486fcc",
       "name": "creature_active_count",
       "comment": "Active creature count (set each creature_update_all pass)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00486fd0",
+      "name": "quest_spawn_timeline",
+      "comment": "Quest spawn timeline (elapsed ms for quest triggers)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00486fd8",
+      "name": "tutorial_stage_index",
+      "comment": "Tutorial stage index (0..8)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00486fdc",
+      "name": "tutorial_stage_timer",
+      "comment": "Tutorial stage timer (ms) used for fade/auto-advance."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00486fe0",
+      "name": "tutorial_stage_transition_timer",
+      "comment": "Tutorial stage transition timer (counts -1000..1000)."
     },
     {
       "program": "crimsonland.exe",
@@ -498,6 +672,12 @@
       "address": "0x00487000",
       "name": "survival_recent_death_count",
       "comment": "Survival reward tracking: recent creature death counter (counts to 6, stores 3 positions)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048700c",
+      "name": "creatures_any_active_flag",
+      "comment": "Creature pool active flag cached by creatures_none_active()."
     },
     {
       "program": "crimsonland.exe",
@@ -549,9 +729,69 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00487040",
+      "name": "highscore_active_record",
+      "comment": "Active high score record buffer (0x48 bytes)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00487060",
+      "name": "survival_elapsed_ms",
+      "comment": "Survival elapsed time (ms)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00487074",
       "name": "creature_kill_count",
       "comment": "Total creature kills (incremented on creature death paths)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00487080",
+      "name": "highscore_day",
+      "comment": "High score record day-of-month field (offset 0x40)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00487081",
+      "name": "highscore_date_checksum",
+      "comment": "High score record date checksum (offset 0x41)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00487082",
+      "name": "highscore_month",
+      "comment": "High score record month field (offset 0x42)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00487083",
+      "name": "highscore_year_offset",
+      "comment": "High score record year-2000 field (offset 0x43)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00487084",
+      "name": "highscore_flags",
+      "comment": "High score record flags field (offset 0x44)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00487085",
+      "name": "highscore_full_version_marker",
+      "comment": "High score record full-version marker (offset 0x45)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00487190",
+      "name": "survival_spawn_stage",
+      "comment": "Survival scripted spawn stage index."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004871cc",
+      "name": "ui_mouse_blocked",
+      "comment": "UI mouse blocking flag checked by ui_mouse_inside_rect."
     },
     {
       "program": "crimsonland.exe",
@@ -576,6 +816,42 @@
       "address": "0x004871e4",
       "name": "camera_shake_pulses",
       "comment": "Camera shake pulse counter; decremented as shake pulses complete."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004871e8",
+      "name": "player_name_length",
+      "comment": "Player name length (runtime, copied from config)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004871ec",
+      "name": "ui_mouse_x",
+      "comment": "UI mouse X position."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004871f0",
+      "name": "ui_mouse_y",
+      "comment": "UI mouse Y position."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00487248",
+      "name": "ui_elements_timeline",
+      "comment": "UI elements timeline accumulator."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f168",
+      "name": "ui_element_table_end",
+      "comment": "UI element table end pointer (iterated by ui_elements_update_and_render)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f208",
+      "name": "ui_element_table_start",
+      "comment": "UI element table start pointer (iterated by ui_elements_update_and_render)."
     },
     {
       "program": "crimsonland.exe",
@@ -612,6 +888,12 @@
       "address": "0x0048f5a0",
       "name": "bonus_hud_slot_icon_id",
       "comment": "Bonus HUD slot icon id (bonus_hud_slot_active + 0x18)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00490300",
+      "name": "survival_xp_smoothed",
+      "comment": "Smoothed survival XP value used by HUD progress display."
     },
     {
       "program": "crimsonland.exe",
@@ -2040,6 +2322,12 @@
       "address": "0x004c2b30",
       "name": "effect_free_list_head",
       "comment": "Effect pool free list head pointer"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3c80",
+      "name": "sfx_cooldown_table",
+      "comment": "SFX cooldown table (per-id throttle used by sfx_play)."
     },
     {
       "program": "crimsonland.exe",
