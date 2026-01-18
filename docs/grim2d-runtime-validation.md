@@ -21,11 +21,10 @@ How to run (Frida hook script):
 2) Copy `scripts/frida/grim_hooks.js` and `scripts/frida/grim_hooks_targets.json`
    into the VM shared drive (example uses `Z:\`).
 3) Optionally edit `grim_hooks_targets.json` to swap the target list.
-4) Launch the game, find its PID, and attach (recommended):
+4) Launch the game, then attach by process name (recommended):
 
    ```text
-   frida-ps | findstr /i crimsonland
-   frida -p <pid> -l Z:\grim_hooks.js
+   frida -n crimsonland.exe -l Z:\grim_hooks.js
    ```
 
    Spawned runs on Win11 ARM64 caused empty textures and a crash before the main menu
