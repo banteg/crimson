@@ -3561,6 +3561,34 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10016cdc",
+    "name": "grim_pixel_format_write_dxt_cache",
+    "signature": "void grim_pixel_format_write_dxt_cache(void *this, uint x, uint y, float *pixels)",
+    "comment": "writes RGBA floats into the DXT block cache and encodes when block data is complete"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b0fd",
+    "name": "grim_pixel_format_read_dxt_cache",
+    "signature": "void grim_pixel_format_read_dxt_cache(void *this, uint x, uint y, float *out)",
+    "comment": "decodes DXT blocks into cache on demand and copies RGBA floats to output (color key aware)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001a444",
+    "name": "grim_pixel_format_init_yuv",
+    "signature": "void * grim_pixel_format_init_yuv(void *this, uint *desc)",
+    "comment": "initializes packed YUV (UYVY/YUY2) cache state and allocates RGB float cache"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001ab16",
+    "name": "grim_pixel_format_write_yuv_cache",
+    "signature": "void grim_pixel_format_write_yuv_cache(void *this, int x, int y, float *pixels)",
+    "comment": "loads YUV cache for coords, copies RGBA floats into cache, marks dirty for flush"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1001a428",
     "name": "grim_pixel_format_ctor_r8g8b8",
     "signature": "void * grim_pixel_format_ctor_r8g8b8(void *this, uint *desc)",

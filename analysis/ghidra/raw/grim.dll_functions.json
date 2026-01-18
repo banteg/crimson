@@ -2338,9 +2338,9 @@
     "calls": ["FUN_1001692e", "operator_delete", "seh_prolog"]
   },
   {
-    "name": "FUN_10016cdc",
+    "name": "grim_pixel_format_write_dxt_cache",
     "address": "10016cdc",
-    "signature": "undefined FUN_10016cdc(void)",
+    "signature": "void grim_pixel_format_write_dxt_cache(void * this, uint x, uint y, float * pixels)",
     "external": false,
     "calls": ["`vector_constructor_iterator'", "grim_convert_vertex_space", "operator_delete", "operator_new", "seh_prolog"]
   },
@@ -2800,9 +2800,9 @@
     "calls": ["grim_pixel_format_init"]
   },
   {
-    "name": "FUN_1001a444",
+    "name": "grim_pixel_format_init_yuv",
     "address": "1001a444",
-    "signature": "undefined4 * FUN_1001a444(void)",
+    "signature": "void * grim_pixel_format_init_yuv(void * this, uint * desc)",
     "external": false,
     "calls": ["`vector_constructor_iterator'", "grim_pixel_format_init", "operator_new", "seh_prolog"]
   },
@@ -2898,9 +2898,9 @@
     "calls": ["grim_pixel_format_init"]
   },
   {
-    "name": "FUN_1001ab16",
+    "name": "grim_pixel_format_write_yuv_cache",
     "address": "1001ab16",
-    "signature": "undefined FUN_1001ab16(void * this, int param_1, int param_2, undefined4 * param_3)",
+    "signature": "void grim_pixel_format_write_yuv_cache(void * this, int x, int y, float * pixels)",
     "external": false,
     "calls": ["grim_convert_vertex_space", "grim_pixel_format_load_yuv_cache"]
   },
@@ -3045,9 +3045,9 @@
     "calls": ["grim_pixel_format_init"]
   },
   {
-    "name": "FUN_1001b0fd",
+    "name": "grim_pixel_format_read_dxt_cache",
     "address": "1001b0fd",
-    "signature": "undefined FUN_1001b0fd(void)",
+    "signature": "void grim_pixel_format_read_dxt_cache(void * this, uint x, uint y, float * out)",
     "external": false,
     "calls": ["`vector_constructor_iterator'", "fpu_set_round_trunc", "operator_new", "seh_prolog"]
   },
@@ -3133,14 +3133,14 @@
     "address": "1001b4dc",
     "signature": "void * grim_pixel_format_ctor_uyvy(void * this)",
     "external": false,
-    "calls": ["FUN_1001a444"]
+    "calls": ["grim_pixel_format_init_yuv"]
   },
   {
     "name": "grim_pixel_format_ctor_yuy2",
     "address": "1001b4f4",
     "signature": "void * grim_pixel_format_ctor_yuy2(void * this)",
     "external": false,
-    "calls": ["FUN_1001a444"]
+    "calls": ["grim_pixel_format_init_yuv"]
   },
   {
     "name": "grim_pixel_format_create",
