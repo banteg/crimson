@@ -2654,5 +2654,103 @@
     "name": "crt_strtoxl",
     "signature": "unsigned long crt_strtoxl(void *locale, char *str, char **endptr, int base, unsigned int flags)",
     "comment": "CRT: shared strto* core (base/sign/overflow)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462da2",
+    "name": "crt_getc",
+    "signature": "int crt_getc(FILE *fp)",
+    "comment": "CRT: get character with stream lock"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463f54",
+    "name": "crt_filbuf",
+    "signature": "int crt_filbuf(FILE *fp)",
+    "comment": "CRT: fill read buffer"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463e49",
+    "name": "crt_close",
+    "signature": "int crt_close(int fd)",
+    "comment": "CRT: close file handle with lock"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463ea6",
+    "name": "crt_close_nolock",
+    "signature": "int crt_close_nolock(int fd)",
+    "comment": "CRT: close file handle without lock"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00461e9b",
+    "name": "crt_tolower",
+    "signature": "int crt_tolower(int c)",
+    "comment": "CRT: tolower (current locale)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00461f0a",
+    "name": "crt_tolower_l",
+    "signature": "int crt_tolower_l(void *locale, int c)",
+    "comment": "CRT: tolower with locale"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462104",
+    "name": "crt_toupper",
+    "signature": "int crt_toupper(int c)",
+    "comment": "CRT: toupper (current locale)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462173",
+    "name": "crt_toupper_l",
+    "signature": "int crt_toupper_l(void *locale, int c)",
+    "comment": "CRT: toupper with locale"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463b86",
+    "name": "crt_msize",
+    "signature": "size_t crt_msize(void *ptr)",
+    "comment": "CRT: allocation size"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00461448",
+    "name": "crt_fflush",
+    "signature": "int crt_fflush(FILE *fp)",
+    "comment": "CRT: fflush wrapper (NULL flushes all)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00461477",
+    "name": "crt_fflush_nolock",
+    "signature": "int crt_fflush_nolock(FILE *fp)",
+    "comment": "CRT: fflush without lock"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004614a5",
+    "name": "crt_flushbuf",
+    "signature": "int crt_flushbuf(FILE *fp)",
+    "comment": "CRT: flush write buffer"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046150a",
+    "name": "crt_flushall",
+    "signature": "int crt_flushall(int mode)",
+    "comment": "CRT: flush all streams (mode 0/1)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004655bf",
+    "name": "crt_commit",
+    "signature": "int crt_commit(int fd)",
+    "comment": "CRT: commit file buffers to disk"
   }
 ]

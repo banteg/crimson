@@ -1,7 +1,7 @@
 # CRT Checklist
 
-- Mapped CRT entries (name_map): 80
-- Unmapped candidates (upper bound in 0x00460000–0x0046ffff): 236 FUN_ functions
+- Mapped CRT entries (name_map): 94
+- Unmapped candidates (upper bound in 0x00460000–0x0046ffff): 211 FUN_ functions
 
 ## Mapped
 - [x] crt_atexit
@@ -11,6 +11,9 @@
 - [x] crt_build_environ
 - [x] crt_call_fn_range
 - [x] crt_chsize
+- [x] crt_close
+- [x] crt_close_nolock
+- [x] crt_commit
 - [x] crt_doexit
 - [x] crt_doserrno_ptr
 - [x] crt_dosmaperr
@@ -20,7 +23,12 @@
 - [x] crt_exit_lock
 - [x] crt_exit_unlock
 - [x] crt_fclose
+- [x] crt_fflush
+- [x] crt_fflush_nolock
+- [x] crt_filbuf
 - [x] crt_flsbuf
+- [x] crt_flushall
+- [x] crt_flushbuf
 - [x] crt_fopen
 - [x] crt_fread
 - [x] crt_fread_nolock
@@ -36,6 +44,7 @@
 - [x] crt_fwrite_nolock
 - [x] crt_get_environment_strings
 - [x] crt_get_thread_data
+- [x] crt_getc
 - [x] crt_getstream
 - [x] crt_heap_init
 - [x] crt_heap_select
@@ -51,6 +60,7 @@
 - [x] crt_lseek_nolock
 - [x] crt_memmove
 - [x] crt_mktime
+- [x] crt_msize
 - [x] crt_mt_init
 - [x] crt_onexit
 - [x] crt_openfile
@@ -78,6 +88,10 @@
 - [x] crt_strtol_l
 - [x] crt_strtoxl
 - [x] crt_swap
+- [x] crt_tolower
+- [x] crt_tolower_l
+- [x] crt_toupper
+- [x] crt_toupper_l
 - [x] crt_unlock
 - [x] crt_unlock_fh
 - [x] crt_unlock_file
@@ -87,7 +101,7 @@
 
 ## Remaining (Estimate)
 
-- [ ] Review 236 FUN_ functions in 0x00460000–0x0046ffff for CRT matches (upper bound)
+- [ ] Review 211 FUN_ functions in 0x00460000–0x0046ffff for CRT matches (upper bound)
 - [ ] FUN_004600c0 @ 004600c0
 - [ ] FUN_004601c0 @ 004601c0
 - [ ] FUN_004607a0 @ 004607a0
@@ -97,14 +111,14 @@
 - [ ] FUN_00460cd0 @ 00460cd0
 - [ ] FUN_00460dd2 @ 00460dd2
 - [ ] FUN_00460fac @ 00460fac
-- [ ] FUN_004610da @ 004610da
+- [x] crt_atof_l @ 004610da
 - [ ] FUN_00461140 @ 00461140
 - [ ] FUN_00461162 @ 00461162
 - [ ] FUN_00461335 @ 00461335
-- [ ] FUN_00461448 @ 00461448
-- [ ] FUN_00461477 @ 00461477
-- [ ] FUN_004614a5 @ 004614a5
-- [ ] FUN_0046150a @ 0046150a
+- [x] crt_fflush @ 00461448
+- [x] crt_fflush_nolock @ 00461477
+- [x] crt_flushbuf @ 004614a5
+- [x] crt_flushall @ 0046150a
 - [ ] FUN_00461739 @ 00461739
 - [ ] FUN_00461768 @ 00461768
 - [ ] FUN_00461835 @ 00461835
@@ -114,14 +128,14 @@
 - [ ] FUN_00461a03 @ 00461a03
 - [ ] FUN_00461a6b @ 00461a6b
 - [ ] FUN_00461a83 @ 00461a83
-- [ ] FUN_00461c0e @ 00461c0e
-- [ ] FUN_00461c30 @ 00461c30
-- [ ] FUN_00461e4a @ 00461e4a
-- [ ] FUN_00461e9b @ 00461e9b
-- [ ] FUN_00461f0a @ 00461f0a
+- [x] crt_ftell @ 00461c0e
+- [x] crt_ftell_nolock @ 00461c30
+- [x] crt_snprintf @ 00461e4a
+- [x] crt_tolower @ 00461e9b
+- [x] crt_tolower_l @ 00461f0a
 - [ ] FUN_00461fd5 @ 00461fd5
-- [ ] FUN_00462104 @ 00462104
-- [ ] FUN_00462173 @ 00462173
+- [x] crt_toupper @ 00462104
+- [x] crt_toupper_l @ 00462173
 - [ ] FUN_0046223f @ 0046223f
 - [ ] FUN_004622b6 @ 004622b6
 - [ ] FUN_00462373 @ 00462373
@@ -138,7 +152,7 @@
 - [ ] FUN_00462a7e @ 00462a7e
 - [ ] FUN_00462add @ 00462add
 - [ ] FUN_00462ba0 @ 00462ba0
-- [ ] FUN_00462da2 @ 00462da2
+- [x] crt_getc @ 00462da2
 - [ ] FUN_00462de0 @ 00462de0
 - [ ] FUN_00463153 @ 00463153
 - [ ] FUN_00463180 @ 00463180
@@ -167,14 +181,14 @@
 - [ ] FUN_004639d6 @ 004639d6
 - [ ] FUN_00463a7d @ 00463a7d
 - [ ] FUN_00463b61 @ 00463b61
-- [ ] FUN_00463b86 @ 00463b86
+- [x] crt_msize @ 00463b86
 - [ ] FUN_00463bf0 @ 00463bf0
 - [ ] FUN_00463c6b @ 00463c6b
 - [ ] FUN_00463dd4 @ 00463dd4
 - [ ] FUN_00463e26 @ 00463e26
-- [ ] FUN_00463e49 @ 00463e49
-- [ ] FUN_00463ea6 @ 00463ea6
-- [ ] FUN_00463f54 @ 00463f54
+- [x] crt_close @ 00463e49
+- [x] crt_close_nolock @ 00463ea6
+- [x] crt_filbuf @ 00463f54
 - [ ] FUN_00464bbc @ 00464bbc
 - [ ] FUN_00464bc9 @ 00464bc9
 - [ ] FUN_00464bd9 @ 00464bd9
@@ -189,15 +203,15 @@
 - [ ] FUN_004652bc @ 004652bc
 - [ ] FUN_004653ec @ 004653ec
 - [ ] FUN_004654a5 @ 004654a5
-- [ ] FUN_004655bf @ 004655bf
-- [ ] FUN_00465652 @ 00465652
-- [ ] FUN_004656b7 @ 004656b7
-- [ ] FUN_004658f0 @ 004658f0
+- [x] crt_commit @ 004655bf
+- [x] crt_write @ 00465652
+- [x] crt_write_nolock @ 004656b7
+- [x] crt_bufcpy @ 004658f0
 - [ ] FUN_00465f2d @ 00465f2d
 - [ ] FUN_00465f48 @ 00465f48
 - [ ] FUN_00465fa9 @ 00465fa9
-- [ ] FUN_00465fff @ 00465fff
-- [ ] FUN_00466064 @ 00466064
+- [x] crt_read @ 00465fff
+- [x] crt_read_nolock @ 00466064
 - [ ] FUN_004664d1 @ 004664d1
 - [ ] FUN_004666f5 @ 004666f5
 - [ ] FUN_00466782 @ 00466782
@@ -286,8 +300,8 @@
 - [ ] FUN_0046cd20 @ 0046cd20
 - [ ] FUN_0046cd60 @ 0046cd60
 - [ ] FUN_0046cda0 @ 0046cda0
-- [ ] FUN_0046cdcf @ 0046cdcf
-- [ ] FUN_0046cde6 @ 0046cde6
+- [x] crt_strtol_l @ 0046cdcf
+- [x] crt_strtoxl @ 0046cde6
 - [ ] FUN_0046cfeb @ 0046cfeb
 - [ ] FUN_0046d048 @ 0046d048
 - [ ] FUN_0046d13f @ 0046d13f
@@ -324,4 +338,3 @@
 - [ ] FUN_0046e79e @ 0046e79e
 - [ ] FUN_0046e7f6 @ 0046e7f6
 - [ ] FUN_0046e85d @ 0046e85d
-
