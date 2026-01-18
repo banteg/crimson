@@ -15,6 +15,18 @@ This doc tracks runtime validation sessions for the Grim2D vtable.
 
 Goal: validate a small backlog subset using Frida hooks without pausing.
 
+How to run (Frida hook script):
+
+1) Copy `scripts/frida/grim_hooks.js` and `scripts/frida/grim_hooks_targets.json`
+   into the VM shared drive (example uses `Z:\`).
+2) Optionally edit `grim_hooks_targets.json` to swap the target list.
+3) Launch the game, find its PID, and attach:
+
+   ```text
+   frida -p <pid> -l Z:\grim_hooks.js
+   ```
+4) Logs are written to `Z:\grim_hits.log` by default.
+
 Artifacts:
 
 - Hook script: `scripts/frida/grim_hooks.js`
