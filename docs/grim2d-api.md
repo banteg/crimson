@@ -134,6 +134,8 @@ Offsets below have no callsites in `crimsonland.exe` or only a handful (1–3).
 They are still part of the vtable, but most evidence is from `grim.dll` bodies.
 Good targets for runtime validation or further callsite hunting.
 
+Runtime validation notes live in `docs/grim2d-runtime-validation.md`.
+
 ### Zero callsites in `crimsonland.exe` (grim.dll-only evidence)
 
 | Offset | Name | Signature |
