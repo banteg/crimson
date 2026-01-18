@@ -7507,8 +7507,8 @@ undefined * __cdecl FUN_0040ff50(int param_1)
 void FUN_0040ffc0(void)
 
 {
-  float fVar1;
-  char cVar2;
+  char cVar1;
+  float fVar2;
   int iVar3;
   uint uVar4;
   uint uVar5;
@@ -7560,10 +7560,10 @@ void FUN_0040ffc0(void)
   perk_prompt_update_and_render();
   local_4 = _DAT_0048cc64 + DAT_0048cc88;
   local_10 = DAT_0048cc84 + _DAT_0048cc60 + 180.0;
-  fVar1 = local_4 + 40.0;
+  fVar2 = local_4 + 40.0;
   local_18 = (_DAT_0048cc50 + local_10 + 44.0) - 10.0;
-  local_14 = fVar1;
-  local_c = fVar1;
+  local_14 = fVar2;
+  local_c = fVar2;
   local_8 = local_18;
   __ftol();
   __ftol();
@@ -7584,9 +7584,9 @@ void FUN_0040ffc0(void)
         if (uVar4 == 0) break;
         uVar4 = uVar4 - 1;
         pcVar9 = pcVar7 + 1;
-        cVar2 = *pcVar7;
+        cVar1 = *pcVar7;
         pcVar7 = pcVar9;
-      } while (cVar2 != '\0');
+      } while (cVar1 != '\0');
       uVar4 = ~uVar4;
       _DAT_00482598 = 0x14;
       _DAT_00482590 = &DAT_0048256c;
@@ -7607,9 +7607,9 @@ void FUN_0040ffc0(void)
       do {
         if (uVar4 == 0) break;
         uVar4 = uVar4 - 1;
-        cVar2 = *pcVar7;
+        cVar1 = *pcVar7;
         pcVar7 = pcVar7 + 1;
-      } while (cVar2 != '\0');
+      } while (cVar1 != '\0');
       DAT_00482594 = ~uVar4 - 1;
 LAB_00410232:
       local_18 = local_18 + 8.0;
@@ -7625,17 +7625,17 @@ LAB_00410232:
       local_10 = local_18 - 8.0;
       ui_button_update(&local_14,(int *)&DAT_004825a8);
       _DAT_0048259c = 0xa6;
-      cVar2 = FUN_0043ecf0((float *)&stack0xffffffe4,(int *)&DAT_00482590);
-      if ((cVar2 != '\0') || (DAT_004825ad != '\0')) {
+      iVar3 = ui_text_input_update((float *)&stack0xffffffe4,(int *)&DAT_00482590);
+      if (((char)iVar3 != '\0') || (DAT_004825ad != '\0')) {
         uVar4 = 0xffffffff;
         iVar3 = 0;
         pcVar7 = (char *)&DAT_0048256c;
         do {
           if (uVar4 == 0) break;
           uVar4 = uVar4 - 1;
-          cVar2 = *pcVar7;
+          cVar1 = *pcVar7;
           pcVar7 = pcVar7 + 1;
-        } while (cVar2 != '\0');
+        } while (cVar1 != '\0');
         iVar6 = ~uVar4 - 1;
         if (0 < iVar6) {
           if (0 < iVar6) {
@@ -7659,9 +7659,9 @@ LAB_00410232:
               if (uVar4 == 0) break;
               uVar4 = uVar4 - 1;
               pcVar9 = pcVar7 + 1;
-              cVar2 = *pcVar7;
+              cVar1 = *pcVar7;
               pcVar7 = pcVar9;
-            } while (cVar2 != '\0');
+            } while (cVar1 != '\0');
             uVar4 = ~uVar4;
             _DAT_00482590 = &DAT_0048256c;
             pcVar7 = pcVar9 + -uVar4;
@@ -7707,10 +7707,10 @@ LAB_004103c2:
   local_18 = local_8 + 30.0;
   _DAT_00482590 = &DAT_0048256c;
   if (DAT_004825a4 < 100) {
-    local_14 = fVar1 + 64.0;
+    local_14 = fVar2 + 64.0;
   }
   else {
-    local_14 = fVar1 + 62.0;
+    local_14 = fVar2 + 62.0;
     (**(code **)(*grim_interface_ptr + 0x148))
               (grim_interface_ptr,local_18 + 8.0,local_14,s_Score_too_low_for_top_d__00473170,100);
     local_14 = local_14 + 6.0;
@@ -8310,8 +8310,8 @@ void quest_results_screen_update(void)
       local_18 = (unaff_EBP + 32.0) - 8.0;
       _DAT_004826f8 = _DAT_00482530;
       ui_button_update((float *)&stack0xffffffe4,(int *)&DAT_00482520);
-      cVar1 = FUN_0043ecf0((float *)&stack0xffffffdc,(int *)&DAT_004826e8);
-      if ((cVar1 != '\0') || (DAT_00482525 != '\0')) {
+      iVar2 = ui_text_input_update((float *)&stack0xffffffdc,(int *)&DAT_004826e8);
+      if (((char)iVar2 != '\0') || (DAT_00482525 != '\0')) {
         uVar4 = 0xffffffff;
         iVar2 = 0;
         pcVar7 = &DAT_004825dc;
@@ -29998,19 +29998,21 @@ int __cdecl ui_button_update(float *xy,int *button)
 
 
 
-/* FUN_0043ecf0 @ 0043ecf0 */
+/* ui_text_input_update @ 0043ecf0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* updates a text input field: focus, input polling, sfx, and rendering */
 
-undefined1 __cdecl FUN_0043ecf0(float *param_1,int *param_2)
+int __cdecl ui_text_input_update(float *xy,int *input_state)
 
 {
   int iVar1;
   int iVar2;
   uint uVar3;
-  float10 fVar4;
-  longlong lVar5;
-  undefined1 uVar6;
+  undefined4 uVar4;
+  float10 fVar5;
+  longlong lVar6;
+  undefined1 uVar7;
   float fStack_80;
   float fStack_7c;
   int iStack_78;
@@ -30032,19 +30034,19 @@ undefined1 __cdecl FUN_0043ecf0(float *param_1,int *param_2)
   undefined4 uStack_10;
   
   fStack_1c = (float)(uint)fStack_1c._0_3_;
-  iVar1 = ui_focus_update((int)param_2);
-  lVar5 = __ftol();
+  iVar1 = ui_focus_update((int)input_state);
+  lVar6 = __ftol();
   fStack_40 = 6.238044e-39;
-  iVar2 = ui_mouse_inside_rect(param_1,0x12,(int)lVar5);
+  iVar2 = ui_mouse_inside_rect(xy,0x12,(int)lVar6);
   if ((char)iVar2 != '\0') {
-    ui_focus_set((int)param_2,'\0');
+    ui_focus_set((int)input_state,'\0');
   }
   if ((char)iVar1 != '\0') {
-    local_18 = *param_1 - 16.0;
-    local_14 = param_1[1];
+    local_18 = *xy - 16.0;
+    local_14 = xy[1];
     ui_focus_draw(&local_18);
   }
-  *(undefined1 *)(*param_2 + 1 + param_2[1]) = 0;
+  *(undefined1 *)(*input_state + 1 + input_state[1]) = 0;
   iVar1 = console_input_poll();
   if (iVar1 == 0xd) {
     (**(code **)(*grim_interface_ptr + 0x48))();
@@ -30070,7 +30072,7 @@ undefined1 __cdecl FUN_0043ecf0(float *param_1,int *param_2)
   (**(code **)(*grim_interface_ptr + 0x114))();
   uStack_48 = 0x41900000;
   uStack_4c = uStack_10;
-  pfStack_50 = param_1;
+  pfStack_50 = xy;
   puStack_54 = (undefined1 *)0x43ee18;
   (**(code **)(*grim_interface_ptr + 0xd4))();
   puStack_54 = &stack0xffffffcc;
@@ -30086,7 +30088,7 @@ undefined1 __cdecl FUN_0043ecf0(float *param_1,int *param_2)
   iVar1 = 0;
   fStack_40 = (fStack_40 - 8.0) - 2.0;
   while( true ) {
-    iStack_78 = *param_2 + iVar1;
+    iStack_78 = *input_state + iVar1;
     fStack_7c = 6.238621e-39;
     iStack_44 = (**(code **)(*grim_interface_ptr + 0x14c))();
     if ((float)iStack_44 <= fStack_40) break;
@@ -30097,18 +30099,18 @@ undefined1 __cdecl FUN_0043ecf0(float *param_1,int *param_2)
   fStack_80 = 1.0;
   (**(code **)(*grim_interface_ptr + 0x114))(0x3f800000);
   (**(code **)(*grim_interface_ptr + 0x148))
-            (grim_interface_ptr,*param_1 + 4.0,param_1[1] + 2.0,&DAT_00471fc4,*param_2 + iVar1);
+            (grim_interface_ptr,*xy + 4.0,xy[1] + 2.0,&DAT_00471fc4,*input_state + iVar1);
   pfStack_50 = (float *)0x3f800000;
-  fVar4 = (float10)fsin((float10)_DAT_0047ea4c * (float10)4.0);
-  if ((float10)0.0 < fVar4) {
+  fVar5 = (float10)fsin((float10)_DAT_0047ea4c * (float10)4.0);
+  if ((float10)0.0 < fVar5) {
     pfStack_50 = (float *)0x3ecccccd;
   }
-  uVar6 = 0x3f;
+  uVar7 = 0x3f;
   (**(code **)(*grim_interface_ptr + 0x114))(0x3f800000,0x3f800000,0x3f800000,pfStack_50);
-  fStack_80 = (float)iStack_64 + *param_1 + 4.0;
-  fStack_7c = param_1[1] + 2.0;
-  (**(code **)(*grim_interface_ptr + 0xd4))(&fStack_80,0x3f800000,0x41600000);
-  return uVar6;
+  fStack_80 = (float)iStack_64 + *xy + 4.0;
+  fStack_7c = xy[1] + 2.0;
+  uVar4 = (**(code **)(*grim_interface_ptr + 0xd4))(&fStack_80,0x3f800000,0x41600000);
+  return CONCAT31((int3)((uint)uVar4 >> 8),uVar7);
 }
 
 
@@ -30836,8 +30838,8 @@ uint __cdecl FUN_004443c0(float *param_1,undefined1 param_2)
   else {
     local_8 = *param_1;
     local_4 = param_1[1] + 29.0;
-    cVar1 = FUN_0043ecf0(&local_8,(int *)&DAT_004d0f28);
-    if (cVar1 == '\0') {
+    iVar8 = ui_text_input_update(&local_8,(int *)&DAT_004d0f28);
+    if ((char)iVar8 == '\0') {
       local_8 = *param_1 + 180.0;
       local_4 = param_1[1] + 22.0;
       iVar8 = ui_button_update(&local_8,(int *)&DAT_004ccc90);

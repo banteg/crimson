@@ -100,6 +100,12 @@ You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps
     weapon/perk availability, and zeroes run/high-score counters; invoked when demo mode starts and on state
     transitions that require a fresh session.
 
+### UI text input (high confidence)
+
+- `FUN_0043ecf0` -> `ui_text_input_update`
+  - Evidence: handles focus/hover, polls text input via `console_input_poll`, plays typing SFX, and renders
+    the input box plus caret.
+
 
 ### Input primary action (high confidence)
 

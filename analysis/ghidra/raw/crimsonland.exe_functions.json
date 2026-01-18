@@ -564,7 +564,7 @@
     "address": "0040ffc0",
     "signature": "undefined FUN_0040ffc0(void)",
     "external": false,
-    "calls": ["FUN_00417ae0", "FUN_0043b510", "FUN_0043b520", "FUN_0043ecf0", "FUN_004413a0", "__ftol", "console_input_poll", "crt_atexit", "gameplay_render_world", "perk_prompt_update_and_render", "sfx_is_unmuted", "sfx_mute_all", "sfx_play", "sfx_play_exclusive", "thunk_FUN_0043afa0", "ui_button_update", "ui_cursor_render", "ui_elements_update_and_render"]
+    "calls": ["FUN_00417ae0", "FUN_0043b510", "FUN_0043b520", "FUN_004413a0", "__ftol", "console_input_poll", "crt_atexit", "gameplay_render_world", "perk_prompt_update_and_render", "sfx_is_unmuted", "sfx_mute_all", "sfx_play", "sfx_play_exclusive", "thunk_FUN_0043afa0", "ui_button_update", "ui_cursor_render", "ui_elements_update_and_render", "ui_text_input_update"]
   },
   {
     "name": "FUN_004107e0",
@@ -578,7 +578,7 @@
     "address": "00410d20",
     "signature": "void quest_results_screen_update(void)",
     "external": false,
-    "calls": ["FUN_0040ff50", "FUN_00417ae0", "FUN_0043b510", "FUN_0043b520", "FUN_0043b750", "FUN_0043ecf0", "FUN_004413a0", "__ftol", "crt_atexit", "gameplay_render_world", "input_primary_just_pressed", "perk_prompt_update_and_render", "sfx_is_unmuted", "sfx_mute_all", "sfx_play", "sfx_play_exclusive", "thunk_FUN_0043afa0", "ui_button_update", "ui_cursor_render", "ui_elements_update_and_render"]
+    "calls": ["FUN_0040ff50", "FUN_00417ae0", "FUN_0043b510", "FUN_0043b520", "FUN_0043b750", "FUN_004413a0", "__ftol", "crt_atexit", "gameplay_render_world", "input_primary_just_pressed", "perk_prompt_update_and_render", "sfx_is_unmuted", "sfx_mute_all", "sfx_play", "sfx_play_exclusive", "thunk_FUN_0043afa0", "ui_button_update", "ui_cursor_render", "ui_elements_update_and_render", "ui_text_input_update"]
   },
   {
     "name": "FUN_004120b0",
@@ -2135,9 +2135,9 @@
     "calls": ["__ftol", "input_primary_just_pressed", "sfx_play", "ui_focus_draw", "ui_focus_set", "ui_focus_update", "ui_mouse_inside_rect"]
   },
   {
-    "name": "FUN_0043ecf0",
+    "name": "ui_text_input_update",
     "address": "0043ecf0",
-    "signature": "undefined1 FUN_0043ecf0(float * param_1, int * param_2)",
+    "signature": "int ui_text_input_update(float * xy, int * input_state)",
     "external": false,
     "calls": ["__ftol", "_rand", "console_input_poll", "sfx_play", "ui_focus_draw", "ui_focus_set", "ui_focus_update", "ui_mouse_inside_rect"]
   },
@@ -2188,7 +2188,7 @@
     "address": "004443c0",
     "signature": "uint FUN_004443c0(float * param_1, undefined1 param_2)",
     "external": false,
-    "calls": ["FUN_0043ecf0", "FUN_0043efc0", "crt_atexit", "crt_free", "input_primary_just_pressed", "strdup_malloc", "thunk_FUN_0043afa0", "ui_button_update"]
+    "calls": ["FUN_0043efc0", "crt_atexit", "crt_free", "input_primary_just_pressed", "strdup_malloc", "thunk_FUN_0043afa0", "ui_button_update", "ui_text_input_update"]
   },
   {
     "name": "FUN_00444810",

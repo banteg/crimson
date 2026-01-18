@@ -831,6 +831,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0043ecf0",
+    "name": "ui_text_input_update",
+    "signature": "int ui_text_input_update(float *xy, int *input_state)",
+    "comment": "updates a text input field: focus, input polling, sfx, and rendering"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00446000",
     "name": "input_any_key_pressed",
     "signature": "int input_any_key_pressed(void)",
