@@ -3498,7 +3498,7 @@ void __cdecl perk_apply(int perk_id)
   bool bVar8;
   longlong lVar9;
   
-  sfx_play(DAT_004c3ffc);
+  sfx_play(sfx_ui_bonus);
   bVar8 = perk_id == DAT_004c2b4c;
   (&player_perk_counts)[perk_id] = (&player_perk_counts)[perk_id] + 1;
   iVar3 = _DAT_0048035c;
@@ -3885,7 +3885,7 @@ void FUN_00405be0(void)
   FUN_00403550();
   ui_cursor_render();
   if ((-1 < DAT_0048089c) && ((&DAT_004800ad)[DAT_0048089c * 0x10] != '\0')) {
-    sfx_play(DAT_004c400c);
+    sfx_play(sfx_ui_buttonclick);
     perk_apply((&DAT_004807e8)[DAT_0048089c]);
     DAT_00486fac = DAT_00486fac + -1;
     DAT_0048724c = 0;
@@ -4326,7 +4326,7 @@ void FUN_00406b40(void)
         ;
         lVar5 = __ftol();
         player_experience = (int)lVar5;
-        sfx_play_panned(DAT_004c4004);
+        sfx_play_panned(sfx_trooper_inpain_01_alias_1);
       }
     }
   }
@@ -4372,7 +4372,7 @@ LAB_00407129:
           return;
         }
         if ((800 < DAT_00487088) && (DAT_00487088 < 0x353)) {
-          sfx_play(DAT_004c3ff8);
+          sfx_play(sfx_questhit);
           DAT_00487088 = DAT_00480844 + 0x353;
           return;
         }
@@ -5332,7 +5332,7 @@ LAB_00408be2:
         }
       }
       DAT_00486fe0 = 0xfffffc18;
-      sfx_play(DAT_004c4014);
+      sfx_play(sfx_ui_levelup);
       fStack_6c = 260.0;
       bonus_pool = 1;
       bonus_time_left = 0x42c80000;
@@ -5372,7 +5372,7 @@ LAB_00408be2:
       } while ((int)piVar3 < 0x482b08);
       if ((iVar5 == 0x10) && (DAT_00486fe0 == -1)) {
         DAT_00486fe0 = 0xfffffc18;
-        sfx_play(DAT_004c4014);
+        sfx_play(sfx_ui_levelup);
         return;
       }
     }
@@ -5383,7 +5383,7 @@ LAB_00408be2:
           cVar2 = (**(code **)(*DAT_0048083c + 0x80))(*puVar6);
           if ((cVar2 != '\0') && (DAT_00486fe0 == -1)) {
             DAT_00486fe0 = -1000;
-            sfx_play(DAT_004c4014);
+            sfx_play(sfx_ui_levelup);
             fStack_6c = -164.0;
             creature_spawn_template(0x24,&fStack_6c,3.1415927);
             creature_spawn_template(0x26,(float *)&stack0xffffff9c,3.1415927);
@@ -5400,7 +5400,7 @@ LAB_00408be2:
         if (((char)uVar4 != '\0') && (DAT_00486fe0 == -1)) {
           DAT_00486fdc = 1000;
           DAT_00486fe0 = 0xfffffc18;
-          sfx_play(DAT_004c4014);
+          sfx_play(sfx_ui_levelup);
           DAT_004808a8 = 0;
           afStack_5c[0] = 1188.0;
           afStack_5c[1] = 412.0;
@@ -5504,7 +5504,7 @@ LAB_00408be2:
           }
           else if (DAT_00486fe0 == -1) {
             DAT_00486fe0 = 0xfffffc18;
-            sfx_play(DAT_004c4014);
+            sfx_play(sfx_ui_levelup);
             player_experience = 3000;
             return;
           }
@@ -5677,7 +5677,7 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
   int owner_id;
   float local_10 [4];
   
-  sfx_play(DAT_004c3ffc);
+  sfx_play(sfx_ui_bonus);
   local_10[0] = 1.0;
   iVar3 = perk_count_get(DAT_004c2bf0);
   if (iVar3 != 0) {
@@ -5787,7 +5787,7 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
     effect_template_vel_y = 0.0;
     _effect_template_scale_step = 0x42480000;
     effect_spawn(1,(float *)(bonus_entry + 4));
-    sfx_play_panned(DAT_004c3ff4);
+    sfx_play_panned(sfx_shockwave);
     _effect_template_rotation = 0.0;
     effect_template_vel_x = 0.0;
     effect_template_vel_y = 0.0;
@@ -5817,7 +5817,7 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
          projectile_spawn(pfVar1,(float)((fVar8 - (float10)1.5707964) - (float10)3.1415927),0x15,
                           iVar3);
     bonus_spawn_guard = 0;
-    sfx_play_panned(DAT_004c3fe4);
+    sfx_play_panned(sfx_shock_hit_01);
   }
   else if (iVar3 == 8) {
     bonus_spawn_guard = 1;
@@ -5833,7 +5833,7 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
       player_index = player_index + 1;
     } while (player_index < 0x10);
     bonus_spawn_guard = 0;
-    sfx_play_panned(DAT_004c3fec);
+    sfx_play_panned(sfx_explosion_medium);
   }
   else if (iVar3 == 0xe) {
     if ((player_fire_bullets_timer <= 0.0) && (player2_fire_bullets_timer <= 0.0)) {
@@ -5908,8 +5908,8 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
       iVar3 = iVar3 + 1;
     } while ((int)pcVar7 < 0x4aa338);
     bonus_spawn_guard = 0;
-    sfx_play_panned(DAT_004c3ff0);
-    sfx_play_panned(DAT_004c3ff4);
+    sfx_play_panned(sfx_explosion_large);
+    sfx_play_panned(sfx_shockwave);
   }
   else if (iVar3 == 1) {
     player_experience = player_experience + bonus_entry[6];
@@ -6343,7 +6343,7 @@ LAB_0040ad8e:
         DAT_00480794 = 0;
         DAT_00480791 = 0;
       }
-      sfx_play(DAT_004c4014);
+      sfx_play(sfx_ui_levelup);
       player_level = player_level + 1;
     }
   }
@@ -6975,7 +6975,7 @@ void __cdecl FUN_0040d040(int param_1)
       }
     }
     (&DAT_00480984)[param_1 * 2] = (&DAT_00480984)[param_1 * 2] & 0xfffffffb;
-    sfx_play(DAT_004c3f00);
+    sfx_play(sfx_trooper_inpain_01);
   }
   return;
 }
@@ -7572,7 +7572,7 @@ LAB_00410232:
           }
           if (*(char *)((int)&DAT_0048256c + iVar3) != '\0') {
             DAT_00487234 = 1;
-            sfx_play(DAT_004c4020);
+            sfx_play(sfx_ui_typeenter);
             puVar8 = &DAT_00487040;
             for (iVar3 = 7; iVar3 != 0; iVar3 = iVar3 + -1) {
               *puVar8 = 0;
@@ -7610,7 +7610,7 @@ LAB_00410232:
           }
         }
         DAT_004825ad = '\0';
-        sfx_play(DAT_004c3fe4);
+        sfx_play(sfx_shock_hit_01);
       }
 LAB_004103c2:
       local_18 = local_18 + 60.0;
@@ -8015,7 +8015,7 @@ void quest_results_screen_update(void)
           if (DAT_0048271c == 0) {
             DAT_00482710 = DAT_00482710 + 2000;
             DAT_00482724 = 0x28;
-            sfx_play(DAT_004c4024);
+            sfx_play(sfx_ui_clink_01);
             DAT_00482720 = DAT_00482710;
             if (DAT_00486fd0 <= DAT_00482710) {
               DAT_0048271c = DAT_0048271c + 1;
@@ -8026,7 +8026,7 @@ void quest_results_screen_update(void)
           else if (DAT_0048271c == 1) {
             DAT_00482714 = DAT_00482714 + 1000;
             DAT_00482724 = 0x96;
-            sfx_play(DAT_004c4024);
+            sfx_play(sfx_ui_clink_01);
             DAT_00482720 = DAT_00482720 + -1000;
             if (DAT_00482600 <= DAT_00482714) {
               DAT_00482714 = DAT_00482600;
@@ -8036,7 +8036,7 @@ void quest_results_screen_update(void)
           else if (DAT_0048271c == 2) {
             DAT_00482718 = DAT_00482718 + 1;
             DAT_00482724 = 300;
-            sfx_play(DAT_004c4024);
+            sfx_play(sfx_ui_clink_01);
             DAT_00482720 = DAT_00482720 + -1000;
             if (DAT_00486fac <= DAT_00482718) {
               DAT_00482718 = DAT_00486fac;
@@ -8254,7 +8254,7 @@ void quest_results_screen_update(void)
           }
           if ((&DAT_004825dc)[iVar2] != '\0') {
             DAT_00487234 = 2;
-            sfx_play(DAT_004c4020);
+            sfx_play(sfx_ui_typeenter);
             iVar2 = DAT_004826ec;
             uVar4 = 0xffffffff;
             pcVar7 = &DAT_004825dc;
@@ -8290,7 +8290,7 @@ void quest_results_screen_update(void)
           }
         }
         DAT_00482525 = '\0';
-        sfx_play(DAT_004c3fe4);
+        sfx_play(sfx_shock_hit_01);
       }
 LAB_00411906:
       (**(code **)(*DAT_0048083c + 0x110))();
@@ -9138,67 +9138,67 @@ void FUN_00412dc0(void)
   FUN_00412940();
   _DAT_00482940 = 6;
   _creature_type_texture = (**(code **)(*DAT_0048083c + 0xc0))(s_zombie_0047375c);
-  _creature_type_sfx_b0 = DAT_004c3f28;
-  _creature_type_sfx_b1 = DAT_004c3f2c;
-  _creature_type_sfx_a0 = DAT_004c3f18;
-  _creature_type_sfx_a1 = DAT_004c3f1c;
+  _creature_type_sfx_b0 = sfx_zombie_attack_01;
+  _creature_type_sfx_b1 = sfx_zombie_attack_02;
+  _creature_type_sfx_a0 = sfx_zombie_die_01;
+  _creature_type_sfx_a1 = sfx_zombie_die_02;
   _DAT_00482748 = 0x3f800000;
   _creature_type_anim_rate = 0x3f99999a;
-  _creature_type_sfx_a2 = DAT_004c3f20;
-  _creature_type_sfx_a3 = DAT_004c3f24;
+  _creature_type_sfx_a2 = sfx_zombie_die_03;
+  _creature_type_sfx_a3 = sfx_zombie_die_04;
   _creature_type_base_frame = 0x20;
   _creature_type_corpse_frame = 0;
   _DAT_0048276c = (**(code **)(*DAT_0048083c + 0xc0))(s_lizard_00473754);
-  _DAT_00482784 = DAT_004c3f5c;
-  _DAT_00482780 = DAT_004c3f58;
-  _DAT_00482770 = DAT_004c3f48;
-  _DAT_00482778 = DAT_004c3f50;
+  _DAT_00482784 = sfx_lizard_attack_02;
+  _DAT_00482780 = sfx_lizard_attack_01;
+  _DAT_00482770 = sfx_lizard_die_01;
+  _DAT_00482778 = sfx_lizard_die_03;
   _DAT_0048278c = 0x3f800000;
   _DAT_004827a0 = 0x3fcccccd;
-  _DAT_00482774 = DAT_004c3f4c;
-  _DAT_0048277c = DAT_004c3f54;
+  _DAT_00482774 = sfx_lizard_die_02;
+  _DAT_0048277c = sfx_lizard_die_04;
   _DAT_004827ac = 1;
   _DAT_004827a4 = 0x10;
   _DAT_004827a8 = 3;
   _DAT_004827f4 = (**(code **)(*DAT_0048083c + 0xc0))(s_spider_sp1_00473748);
-  _DAT_00482808 = DAT_004c3f70;
-  _DAT_0048280c = DAT_004c3f74;
+  _DAT_00482808 = sfx_spider_attack_01;
+  _DAT_0048280c = sfx_spider_attack_02;
   _DAT_00482814 = 0x3f800000;
   _DAT_00482828 = 0x3fc00000;
-  _DAT_004827f8 = DAT_004c3f60;
-  _DAT_004827fc = DAT_004c3f64;
-  _DAT_00482800 = DAT_004c3f68;
-  _DAT_00482804 = DAT_004c3f6c;
+  _DAT_004827f8 = sfx_spider_die_01;
+  _DAT_004827fc = sfx_spider_die_02;
+  _DAT_00482800 = sfx_spider_die_03;
+  _DAT_00482804 = sfx_spider_die_04;
   _DAT_00482834 = 1;
   _DAT_0048282c = 0x10;
   _DAT_00482830 = 1;
   _DAT_00482838 = (**(code **)(*DAT_0048083c + 0xc0))(s_spider_sp2_0047373c);
-  _DAT_00482850 = DAT_004c3f74;
-  _DAT_0048284c = DAT_004c3f70;
-  _DAT_0048283c = DAT_004c3f60;
-  _DAT_00482844 = DAT_004c3f68;
+  _DAT_00482850 = sfx_spider_attack_02;
+  _DAT_0048284c = sfx_spider_attack_01;
+  _DAT_0048283c = sfx_spider_die_01;
+  _DAT_00482844 = sfx_spider_die_03;
   _DAT_00482858 = 0x3f800000;
   _DAT_0048286c = 0x3fc00000;
-  _DAT_00482840 = DAT_004c3f64;
-  _DAT_00482848 = DAT_004c3f6c;
+  _DAT_00482840 = sfx_spider_die_02;
+  _DAT_00482848 = sfx_spider_die_04;
   _DAT_00482878 = 1;
   _DAT_00482870 = 0x10;
   _DAT_00482874 = 2;
   DAT_004827b0 = (**(code **)(*DAT_0048083c + 0xc0))(s_alien_00473734);
-  _DAT_004827c4 = DAT_004c3f40;
-  _DAT_004827c8 = DAT_004c3f44;
-  _DAT_004827b4 = DAT_004c3f30;
-  _DAT_004827b8 = DAT_004c3f34;
-  _DAT_004827bc = DAT_004c3f38;
-  _DAT_004827c0 = DAT_004c3f3c;
-  _DAT_00482880 = DAT_004c3f0c;
+  _DAT_004827c4 = sfx_alien_attack_01;
+  _DAT_004827c8 = sfx_alien_attack_02;
+  _DAT_004827b4 = sfx_alien_die_01;
+  _DAT_004827b8 = sfx_alien_die_02;
+  _DAT_004827bc = sfx_alien_die_03;
+  _DAT_004827c0 = sfx_alien_die_04;
+  _DAT_00482880 = sfx_trooper_die_01;
   _DAT_004827d0 = 0x3f800000;
   _DAT_004827e4 = 0x3faccccd;
   _DAT_004827f0 = 0;
   _DAT_004827e8 = 0x20;
   _DAT_004827ec = 4;
-  _DAT_00482884 = DAT_004c3f10;
-  _DAT_00482888 = DAT_004c3f14;
+  _DAT_00482884 = sfx_trooper_die_02;
+  _DAT_00482888 = sfx_trooper_die_03;
   _DAT_004828b8 = 7;
   DAT_0048287c = (**(code **)(*DAT_0048083c + 0xc0))(s_trooper_0047372c);
   _DAT_00484fc8 = (float)DAT_0048f534 * 0.5;
@@ -9503,7 +9503,7 @@ void player_update(void)
     FUN_0042eb10(&local_18,fVar16,0.0);
     FUN_0042eb10(&local_18,fVar16,0.0);
     uVar10 = _rand();
-    sfx_play_panned((float)((uVar10 & 1) + DAT_004c4028));
+    sfx_play_panned((float)((uVar10 & 1) + sfx_bloodspill_01));
     (&player_low_health_timer)[iVar7 * 0xd8] = 0x3f800000;
   }
   pfVar1 = (float *)(&player_muzzle_flash_alpha + iVar7 * 0xd8);
@@ -9551,7 +9551,7 @@ void player_update(void)
                                  - 0.25,type_id,iVar22);
         local_38 = (float)((int)local_38 + 1);
       } while ((int)local_38 < 8);
-      sfx_play_panned(DAT_004c3fe8);
+      sfx_play_panned(sfx_explosion_small);
       (&player_man_bomb_timer)[iVar7 * 0xd8] =
            (float)(&player_man_bomb_timer)[iVar7 * 0xd8] - _DAT_00473310;
       _DAT_00473310 = 4.0;
@@ -9660,7 +9660,7 @@ void player_update(void)
         projectile_spawn(pfVar18,(float)(int)local_38 * 0.7853982,iVar22,iVar11);
         local_38 = (float)((int)local_38 + 1);
       } while ((int)local_38 < 8);
-      sfx_play_panned(DAT_004c3fe8);
+      sfx_play_panned(sfx_explosion_small);
       (&player_hot_tempered_timer)[iVar7 * 0xd8] =
            (float)(&player_hot_tempered_timer)[iVar7 * 0xd8] - _DAT_00473318;
       uVar10 = _rand();
@@ -10300,7 +10300,7 @@ LAB_00414f2d:
         } while ((int)local_3c < (int)fVar16);
       }
       bonus_spawn_guard = 0;
-      sfx_play_panned(DAT_004c3fe8);
+      sfx_play_panned(sfx_explosion_small);
     }
   }
   if ((float)(&player_reload_timer)[iVar7 * 0xd8] < 0.0) {
@@ -17406,7 +17406,7 @@ LAB_004219f8:
                   else if (iVar7 == 0x17) {
                     FUN_0042f270(pfVar11,1.0,1.0);
                     FUN_0042f540(pfVar11,2.2);
-                    sfx_play_panned(DAT_004c3ff4);
+                    sfx_play_panned(sfx_shockwave);
                   }
                   else if (iVar7 == 0x1c) {
                     bonus_spawn_guard = 1;
@@ -17423,8 +17423,8 @@ LAB_004219f8:
                       local_e4 = local_e4 + 1;
                     } while (local_e4 < 0xc);
                     bonus_spawn_guard = 0;
-                    sfx_play_panned(DAT_004c3fec);
-                    sfx_play_panned(DAT_004c3ff4);
+                    sfx_play_panned(sfx_explosion_medium);
+                    sfx_play_panned(sfx_shockwave);
                     FUN_0042f330(pfVar11,1.5,0x3f800000);
                     FUN_0042f330(pfVar11,1.0,0x3f800000);
                   }
@@ -17558,10 +17558,10 @@ LAB_004219f8:
                     sfx_play_exclusive(DAT_004c403c);
                   }
                   else {
-                    fVar9 = DAT_004c3fe4;
+                    fVar9 = sfx_shock_hit_01;
                     if ((&DAT_004d7a28)[(&projectile_type_id)[local_e8 * 0x10] * 0x1f] != 4) {
                       iVar10 = _rand();
-                      fVar9 = (float)(iVar10 % 6 + DAT_004c3fcc);
+                      fVar9 = (float)(iVar10 % 6 + sfx_bullet_hit_01);
                     }
                     sfx_play_panned(fVar9);
                   }
@@ -17775,7 +17775,7 @@ LAB_00421d65:
             sfx_play_exclusive(DAT_004c403c);
           }
           else {
-            sfx_play_panned(DAT_004c3fec);
+            sfx_play_panned(sfx_explosion_medium);
           }
           local_94 = 1.0 / DAT_00480840;
           (&creature_state_flag)[iVar4 * 0x98] = 1;
@@ -19426,7 +19426,7 @@ void __cdecl player_take_damage(int player_index,float damage)
 LAB_00425fa1:
   if (0.0 <= (&player_health)[player_index * 0xd8]) {
     iVar4 = _rand();
-    sfx_play_panned((float)(iVar4 % 3 + DAT_004c3f00));
+    sfx_play_panned((float)(iVar4 % 3 + sfx_trooper_inpain_01));
     if (bVar7) {
       return;
     }
@@ -19444,7 +19444,7 @@ LAB_00425fa1:
       if ((int)uVar5 < 0) {
         uVar5 = (uVar5 - 1 | 0xfffffffe) + 1;
       }
-      sfx_play_panned((float)(uVar5 + DAT_004c3f0c));
+      sfx_play_panned((float)(uVar5 + sfx_trooper_die_01));
     }
     else {
       pfVar1 = (float *)(&player_pos_x + player_index * 0xd8);
@@ -19469,8 +19469,8 @@ LAB_00425fa1:
         iVar4 = iVar4 + 1;
       } while ((int)pcVar6 < 0x4aa338);
       bonus_spawn_guard = 0;
-      sfx_play_panned(DAT_004c3ff0);
-      sfx_play_panned(DAT_004c3ff4);
+      sfx_play_panned(sfx_explosion_large);
+      sfx_play_panned(sfx_shockwave);
     }
   }
   if (!bVar3) {
@@ -19990,7 +19990,7 @@ LAB_00426ac8:
             if (64.0 < fVar16) {
               if ((((&creature_flags)[local_7c * 0x98] & 0x10) != 0) && (*pfVar3 <= 0.0)) {
                 projectile_spawn(pfVar15,(float)(&creature_heading)[local_7c * 0x26],9,local_7c);
-                fVar14 = DAT_004c3f9c;
+                fVar14 = sfx_shock_fire;
                 *pfVar3 = *pfVar3 + 1.0;
                 sfx_play_panned(fVar14);
               }
@@ -19999,7 +19999,7 @@ LAB_00426ac8:
                 projectile_spawn(pfVar15,(float)(&creature_heading)[local_7c * 0x26],
                                  (&creature_orbit_radius)[local_7c * 0x26],local_7c);
                 uVar7 = _rand();
-                fVar14 = DAT_004c3fa0;
+                fVar14 = sfx_plasmaminigun_fire;
                 local_60 = (float)(uVar7 & 3);
                 *pfVar3 = (float)(int)local_60 * 0.1 +
                           (float)(&creature_orbit_angle)[local_7c * 0x26] + *pfVar3;
@@ -20016,7 +20016,7 @@ LAB_00426ac8:
                 lVar12 = __ftol();
                 player_experience = (undefined4)lVar12;
                 effect_spawn_burst(pfVar15,6);
-                sfx_play_panned(DAT_004c3ffc);
+                sfx_play_panned(sfx_ui_bonus);
                 bonus_spawn_guard = 1;
                 creature_handle_death(local_7c,false);
                 bonus_spawn_guard = 0;
@@ -28514,81 +28514,81 @@ void audio_init_sfx(void)
     }
     console_printf(&DAT_0047eea0,(byte *)pcVar3);
     timeGetTime();
-    DAT_004c3f00 = sfx_load_sample(s_trooper_inPain_01_ogg_00477d98);
-    DAT_004c3f04 = sfx_load_sample(s_trooper_inPain_02_ogg_00478484);
-    _DAT_004c3f08 = sfx_load_sample(s_trooper_inPain_03_ogg_0047846c);
-    DAT_004c3f0c = sfx_load_sample(s_trooper_die_01_ogg_00478458);
-    DAT_004c3f10 = sfx_load_sample(s_trooper_die_02_ogg_00478444);
-    DAT_004c3f14 = sfx_load_sample(s_trooper_die_03_ogg_00478430);
-    DAT_004c3f18 = sfx_load_sample(s_zombie_die_01_ogg_0047841c);
-    DAT_004c3f1c = sfx_load_sample(s_zombie_die_02_ogg_00478408);
-    DAT_004c3f20 = sfx_load_sample(s_zombie_die_03_ogg_004783f4);
-    DAT_004c3f24 = sfx_load_sample(s_zombie_die_04_ogg_004783e0);
-    DAT_004c3f28 = sfx_load_sample(s_zombie_attack_01_ogg_004783c8);
-    DAT_004c3f2c = sfx_load_sample(s_zombie_attack_02_ogg_004783b0);
-    DAT_004c3f30 = sfx_load_sample(s_alien_die_01_ogg_0047839c);
-    DAT_004c3f34 = sfx_load_sample(s_alien_die_02_ogg_00478388);
-    DAT_004c3f38 = sfx_load_sample(s_alien_die_03_ogg_00478374);
-    DAT_004c3f3c = sfx_load_sample(s_alien_die_04_ogg_00478360);
-    DAT_004c3f40 = sfx_load_sample(s_alien_attack_01_ogg_0047834c);
-    DAT_004c3f44 = sfx_load_sample(s_alien_attack_02_ogg_00478338);
-    DAT_004c3f48 = sfx_load_sample(s_lizard_die_01_ogg_00478324);
-    DAT_004c3f4c = sfx_load_sample(s_lizard_die_02_ogg_00478310);
-    DAT_004c3f50 = sfx_load_sample(s_lizard_die_03_ogg_004782fc);
-    DAT_004c3f54 = sfx_load_sample(s_lizard_die_04_ogg_004782e8);
-    DAT_004c3f58 = sfx_load_sample(s_lizard_attack_01_ogg_004782d0);
-    DAT_004c3f5c = sfx_load_sample(s_lizard_attack_02_ogg_004782b8);
-    DAT_004c3f60 = sfx_load_sample(s_spider_die_01_ogg_004782a4);
-    DAT_004c3f64 = sfx_load_sample(s_spider_die_02_ogg_00478290);
-    DAT_004c3f68 = sfx_load_sample(s_spider_die_03_ogg_0047827c);
-    DAT_004c3f6c = sfx_load_sample(s_spider_die_04_ogg_00478268);
-    DAT_004c3f70 = sfx_load_sample(s_spider_attack_01_ogg_00478250);
-    DAT_004c3f74 = sfx_load_sample(s_spider_attack_02_ogg_00478238);
-    DAT_004c3f78 = sfx_load_sample(s_pistol_fire_ogg_00478228);
-    DAT_004c3f7c = sfx_load_sample(s_pistol_reload_ogg_00478214);
-    DAT_004c3f80 = sfx_load_sample(s_shotgun_fire_ogg_00478200);
-    DAT_004c3f84 = sfx_load_sample(s_shotgun_reload_ogg_004781ec);
-    DAT_004c3f88 = sfx_load_sample(s_autorifle_fire_ogg_004781d8);
-    DAT_004c3f8c = sfx_load_sample(s_autorifle_reload_ogg_004781c0);
-    DAT_004c3f90 = sfx_load_sample(s_gauss_fire_ogg_004781b0);
-    DAT_004c3f98 = sfx_load_sample(s_hrpm_fire_ogg_004781a0);
-    DAT_004c3f9c = sfx_load_sample(s_shock_fire_ogg_00478190);
-    DAT_004c3fa0 = sfx_load_sample(s_plasmaMinigun_fire_ogg_00478178);
-    DAT_004c3fa4 = sfx_load_sample(s_plasmaShotgun_fire_ogg_00478160);
-    DAT_004c3fa8 = sfx_load_sample(s_pulse_fire_ogg_00478150);
-    DAT_004c3fac = sfx_load_sample(s_flamer_fire_01_ogg_0047813c);
-    DAT_004c3fb0 = sfx_load_sample(s_flamer_fire_02_ogg_00478128);
-    DAT_004c3fbc = sfx_load_sample(s_shock_reload_ogg_00478114);
-    DAT_004c3fb4 = sfx_load_sample(s_shock_fire_ogg_00478190);
-    DAT_004c3fb8 = sfx_load_sample(s_shockMinigun_fire_ogg_004780fc);
-    DAT_004c3fc0 = sfx_load_sample(s_rocket_fire_ogg_004780ec);
-    DAT_004c3fc4 = sfx_load_sample(s_rocketmini_fire_ogg_004780d8);
-    DAT_004c3fc8 = sfx_load_sample(s_autorifle_reload_ogg_004781c0);
-    DAT_004c3fcc = sfx_load_sample(s_bullet_hit_01_ogg_004780c4);
-    _DAT_004c3fd0 = sfx_load_sample(s_bullet_hit_02_ogg_004780b0);
-    _DAT_004c3fd4 = sfx_load_sample(s_bullet_hit_03_ogg_0047809c);
-    _DAT_004c3fd8 = sfx_load_sample(s_bullet_hit_04_ogg_00478088);
-    _DAT_004c3fdc = sfx_load_sample(s_bullet_hit_05_ogg_00478074);
-    _DAT_004c3fe0 = sfx_load_sample(s_bullet_hit_06_ogg_00478060);
-    DAT_004c3fe4 = sfx_load_sample(s_shock_hit_01_ogg_0047804c);
-    DAT_004c3fe8 = sfx_load_sample(s_explosion_small_ogg_00478038);
-    DAT_004c3fec = sfx_load_sample(s_explosion_medium_ogg_00478020);
-    DAT_004c3ff0 = sfx_load_sample(s_explosion_large_ogg_0047800c);
-    DAT_004c3ff4 = sfx_load_sample(s_shockwave_ogg_00477ffc);
-    DAT_004c3ff8 = sfx_load_sample(s_questHit_ogg_00477fec);
-    DAT_004c3ffc = sfx_load_sample(s_ui_bonus_ogg_00477fdc);
-    _DAT_004c4000 = DAT_004c3f00;
-    DAT_004c4004 = DAT_004c3f00;
-    _DAT_004c4008 = DAT_004c3f00;
-    DAT_004c400c = sfx_load_sample(s_ui_buttonClick_ogg_00477fc8);
-    DAT_004c4010 = sfx_load_sample(s_ui_panelClick_ogg_00477fb4);
-    DAT_004c4014 = sfx_load_sample(s_ui_levelUp_ogg_00477fa4);
-    _DAT_004c4018 = sfx_load_sample(s_ui_typeClick_01_ogg_00477f90);
-    _DAT_004c401c = sfx_load_sample(s_ui_typeClick_02_ogg_00477f7c);
-    DAT_004c4020 = sfx_load_sample(s_ui_typeEnter_ogg_00477f68);
-    DAT_004c4024 = sfx_load_sample(s_ui_clink_01_ogg_00477f58);
-    DAT_004c4028 = sfx_load_sample(s_bloodSpill_01_ogg_00477f44);
-    _DAT_004c402c = sfx_load_sample(s_bloodSpill_02_ogg_00477f30);
+    sfx_trooper_inpain_01 = sfx_load_sample(s_trooper_inPain_01_ogg_00477d98);
+    sfx_trooper_inpain_02 = sfx_load_sample(s_trooper_inPain_02_ogg_00478484);
+    _sfx_trooper_inpain_03 = sfx_load_sample(s_trooper_inPain_03_ogg_0047846c);
+    sfx_trooper_die_01 = sfx_load_sample(s_trooper_die_01_ogg_00478458);
+    sfx_trooper_die_02 = sfx_load_sample(s_trooper_die_02_ogg_00478444);
+    sfx_trooper_die_03 = sfx_load_sample(s_trooper_die_03_ogg_00478430);
+    sfx_zombie_die_01 = sfx_load_sample(s_zombie_die_01_ogg_0047841c);
+    sfx_zombie_die_02 = sfx_load_sample(s_zombie_die_02_ogg_00478408);
+    sfx_zombie_die_03 = sfx_load_sample(s_zombie_die_03_ogg_004783f4);
+    sfx_zombie_die_04 = sfx_load_sample(s_zombie_die_04_ogg_004783e0);
+    sfx_zombie_attack_01 = sfx_load_sample(s_zombie_attack_01_ogg_004783c8);
+    sfx_zombie_attack_02 = sfx_load_sample(s_zombie_attack_02_ogg_004783b0);
+    sfx_alien_die_01 = sfx_load_sample(s_alien_die_01_ogg_0047839c);
+    sfx_alien_die_02 = sfx_load_sample(s_alien_die_02_ogg_00478388);
+    sfx_alien_die_03 = sfx_load_sample(s_alien_die_03_ogg_00478374);
+    sfx_alien_die_04 = sfx_load_sample(s_alien_die_04_ogg_00478360);
+    sfx_alien_attack_01 = sfx_load_sample(s_alien_attack_01_ogg_0047834c);
+    sfx_alien_attack_02 = sfx_load_sample(s_alien_attack_02_ogg_00478338);
+    sfx_lizard_die_01 = sfx_load_sample(s_lizard_die_01_ogg_00478324);
+    sfx_lizard_die_02 = sfx_load_sample(s_lizard_die_02_ogg_00478310);
+    sfx_lizard_die_03 = sfx_load_sample(s_lizard_die_03_ogg_004782fc);
+    sfx_lizard_die_04 = sfx_load_sample(s_lizard_die_04_ogg_004782e8);
+    sfx_lizard_attack_01 = sfx_load_sample(s_lizard_attack_01_ogg_004782d0);
+    sfx_lizard_attack_02 = sfx_load_sample(s_lizard_attack_02_ogg_004782b8);
+    sfx_spider_die_01 = sfx_load_sample(s_spider_die_01_ogg_004782a4);
+    sfx_spider_die_02 = sfx_load_sample(s_spider_die_02_ogg_00478290);
+    sfx_spider_die_03 = sfx_load_sample(s_spider_die_03_ogg_0047827c);
+    sfx_spider_die_04 = sfx_load_sample(s_spider_die_04_ogg_00478268);
+    sfx_spider_attack_01 = sfx_load_sample(s_spider_attack_01_ogg_00478250);
+    sfx_spider_attack_02 = sfx_load_sample(s_spider_attack_02_ogg_00478238);
+    sfx_pistol_fire = sfx_load_sample(s_pistol_fire_ogg_00478228);
+    sfx_pistol_reload = sfx_load_sample(s_pistol_reload_ogg_00478214);
+    sfx_shotgun_fire = sfx_load_sample(s_shotgun_fire_ogg_00478200);
+    sfx_shotgun_reload = sfx_load_sample(s_shotgun_reload_ogg_004781ec);
+    sfx_autorifle_fire = sfx_load_sample(s_autorifle_fire_ogg_004781d8);
+    sfx_autorifle_reload = sfx_load_sample(s_autorifle_reload_ogg_004781c0);
+    sfx_gauss_fire = sfx_load_sample(s_gauss_fire_ogg_004781b0);
+    sfx_hrpm_fire = sfx_load_sample(s_hrpm_fire_ogg_004781a0);
+    sfx_shock_fire = sfx_load_sample(s_shock_fire_ogg_00478190);
+    sfx_plasmaminigun_fire = sfx_load_sample(s_plasmaMinigun_fire_ogg_00478178);
+    sfx_plasmashotgun_fire = sfx_load_sample(s_plasmaShotgun_fire_ogg_00478160);
+    sfx_pulse_fire = sfx_load_sample(s_pulse_fire_ogg_00478150);
+    sfx_flamer_fire_01 = sfx_load_sample(s_flamer_fire_01_ogg_0047813c);
+    sfx_flamer_fire_02 = sfx_load_sample(s_flamer_fire_02_ogg_00478128);
+    sfx_shock_reload = sfx_load_sample(s_shock_reload_ogg_00478114);
+    sfx_shock_fire_alt = sfx_load_sample(s_shock_fire_ogg_00478190);
+    sfx_shockminigun_fire = sfx_load_sample(s_shockMinigun_fire_ogg_004780fc);
+    sfx_rocket_fire = sfx_load_sample(s_rocket_fire_ogg_004780ec);
+    sfx_rocketmini_fire = sfx_load_sample(s_rocketmini_fire_ogg_004780d8);
+    sfx_autorifle_reload_alt = sfx_load_sample(s_autorifle_reload_ogg_004781c0);
+    sfx_bullet_hit_01 = sfx_load_sample(s_bullet_hit_01_ogg_004780c4);
+    _sfx_bullet_hit_02 = sfx_load_sample(s_bullet_hit_02_ogg_004780b0);
+    _sfx_bullet_hit_03 = sfx_load_sample(s_bullet_hit_03_ogg_0047809c);
+    _sfx_bullet_hit_04 = sfx_load_sample(s_bullet_hit_04_ogg_00478088);
+    _sfx_bullet_hit_05 = sfx_load_sample(s_bullet_hit_05_ogg_00478074);
+    _sfx_bullet_hit_06 = sfx_load_sample(s_bullet_hit_06_ogg_00478060);
+    sfx_shock_hit_01 = sfx_load_sample(s_shock_hit_01_ogg_0047804c);
+    sfx_explosion_small = sfx_load_sample(s_explosion_small_ogg_00478038);
+    sfx_explosion_medium = sfx_load_sample(s_explosion_medium_ogg_00478020);
+    sfx_explosion_large = sfx_load_sample(s_explosion_large_ogg_0047800c);
+    sfx_shockwave = sfx_load_sample(s_shockwave_ogg_00477ffc);
+    sfx_questhit = sfx_load_sample(s_questHit_ogg_00477fec);
+    sfx_ui_bonus = sfx_load_sample(s_ui_bonus_ogg_00477fdc);
+    _sfx_trooper_inpain_01_alias_0 = sfx_trooper_inpain_01;
+    sfx_trooper_inpain_01_alias_1 = sfx_trooper_inpain_01;
+    _sfx_trooper_inpain_01_alias_2 = sfx_trooper_inpain_01;
+    sfx_ui_buttonclick = sfx_load_sample(s_ui_buttonClick_ogg_00477fc8);
+    sfx_ui_panelclick = sfx_load_sample(s_ui_panelClick_ogg_00477fb4);
+    sfx_ui_levelup = sfx_load_sample(s_ui_levelUp_ogg_00477fa4);
+    _sfx_ui_typeclick_01 = sfx_load_sample(s_ui_typeClick_01_ogg_00477f90);
+    _sfx_ui_typeclick_02 = sfx_load_sample(s_ui_typeClick_02_ogg_00477f7c);
+    sfx_ui_typeenter = sfx_load_sample(s_ui_typeEnter_ogg_00477f68);
+    sfx_ui_clink_01 = sfx_load_sample(s_ui_clink_01_ogg_00477f58);
+    sfx_bloodspill_01 = sfx_load_sample(s_bloodSpill_01_ogg_00477f44);
+    _sfx_bloodspill_02 = sfx_load_sample(s_bloodSpill_02_ogg_00477f30);
     timeGetTime();
     piVar2 = &DAT_004c84e4;
     do {
@@ -28743,7 +28743,7 @@ int __cdecl sfx_play(int sfx_id)
   else {
     DAT_00477d28 = 0x5622;
   }
-  if ((sfx_id == DAT_004c3fac) || (sfx_id == DAT_004c3fb0)) {
+  if ((sfx_id == sfx_flamer_fire_01) || (sfx_id == sfx_flamer_fire_02)) {
     (&DAT_004c3c80)[sfx_id] = 0x3ee147ae;
   }
   else {
@@ -28793,7 +28793,7 @@ float __cdecl sfx_play_panned(float sfx_id)
   else {
     DAT_00477d28 = 0x5622;
   }
-  if ((sfx_id == DAT_004c3fac) || (sfx_id == DAT_004c3fb0)) {
+  if ((sfx_id == sfx_flamer_fire_01) || (sfx_id == sfx_flamer_fire_02)) {
     (&DAT_004c3c80)[(int)sfx_id] = 0x3ee147ae;
   }
   else {
@@ -29676,7 +29676,7 @@ undefined1 __cdecl FUN_0043e5e0(float *param_1,undefined4 *param_2)
     *(undefined1 *)((int)param_2 + 5) = 1;
   }
   if (*(char *)((int)param_2 + 5) != '\0') {
-    sfx_play(DAT_004c400c);
+    sfx_play(sfx_ui_buttonclick);
   }
   return *(undefined1 *)((int)param_2 + 5);
 }
@@ -29824,7 +29824,7 @@ int __cdecl ui_button_update(float *xy,int *button)
   iVar3 = CONCAT31(uVar5,*(char *)((int)button + 5));
   if (*(char *)((int)button + 5) != '\0') {
     button[3] = 1000;
-    iVar3 = sfx_play(DAT_004c400c);
+    iVar3 = sfx_play(sfx_ui_buttonclick);
   }
   return CONCAT31((int3)((uint)iVar3 >> 8),*(undefined1 *)((int)button + 5));
 }
@@ -29883,7 +29883,7 @@ undefined1 __cdecl FUN_0043ecf0(float *param_1,int *param_2)
     (**(code **)(*DAT_0048083c + 0x48))();
     (**(code **)(*DAT_0048083c + 0x48))();
     fStack_40 = 6.238218e-39;
-    sfx_play(DAT_004c4020);
+    sfx_play(sfx_ui_typeenter);
   }
   else {
     (**(code **)(*DAT_0048083c + 0x54))();
@@ -29894,7 +29894,7 @@ undefined1 __cdecl FUN_0043ecf0(float *param_1,int *param_2)
         uVar3 = (uVar3 - 1 | 0xfffffffe) + 1;
       }
       fStack_40 = 6.238303e-39;
-      sfx_play(uVar3 + _DAT_004c4018);
+      sfx_play(uVar3 + _sfx_ui_typeclick_01);
     }
   }
   fStack_40 = 1.0;
@@ -31548,7 +31548,7 @@ void FUN_004457c0(void)
   (&DAT_004d14a9)[DAT_004d7588] = 0;
   cVar4 = (**(code **)(*piVar3 + 0x44))(0x1c);
   if ((cVar4 != '\0') && (0 < DAT_004d7588)) {
-    sfx_play(DAT_004c4020);
+    sfx_play(sfx_ui_typeenter);
     DAT_004d7578 = DAT_004d7578 + 1;
     (&DAT_004d14a8)[DAT_004d7588] = 0;
     iVar5 = FUN_00445590(&DAT_004d14a8);
@@ -31579,7 +31579,7 @@ void FUN_004457c0(void)
       if ((int)uVar7 < 0) {
         uVar7 = (uVar7 - 1 | 0xfffffffe) + 1;
       }
-      sfx_play(uVar7 + _DAT_004c4018);
+      sfx_play(uVar7 + _sfx_ui_typeclick_01);
       if (DAT_004d7588 < 1) {
         DAT_004d14a8 = 0;
       }
@@ -31600,7 +31600,7 @@ void FUN_004457c0(void)
       if ((int)uVar7 < 0) {
         uVar7 = (uVar7 - 1 | 0xfffffffe) + 1;
       }
-      sfx_play(uVar7 + _DAT_004c4018);
+      sfx_play(uVar7 + _sfx_ui_typeclick_01);
     }
   }
   FUN_00406b40();
@@ -32273,7 +32273,7 @@ void __cdecl FUN_00446900(char *param_1)
     }
     if ((((*(int *)(param_1 + 0x34) != 0) && (0xfe < *(int *)(param_1 + 0x2fc))) && (cVar1 != '\0'))
        && (iVar6 = input_primary_just_pressed(), (char)iVar6 != '\0')) {
-      sfx_play(DAT_004c400c);
+      sfx_play(sfx_ui_buttonclick);
       (**(code **)(param_1 + 0x34))();
     }
     iVar6 = *(int *)(param_1 + 0x10);
@@ -32317,7 +32317,7 @@ void __cdecl FUN_00446900(char *param_1)
     }
     else {
       if (param_1[1] == '\0') {
-        sfx_play(DAT_004c4010);
+        sfx_play(sfx_ui_panelclick);
         param_1[1] = '\x01';
       }
       if (*(int *)(param_1 + 0x2fc) < 0x100) {
@@ -33831,12 +33831,12 @@ void weapon_table_init(void)
   _DAT_004d863c = 0;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d8ff8;
-  for (uVar6 = uVar5 >> 2; _DAT_004d7b7c = DAT_004c3f88, uVar6 != 0; uVar6 = uVar6 - 1) {
+  for (uVar6 = uVar5 >> 2; _DAT_004d7b7c = sfx_autorifle_fire, uVar6 != 0; uVar6 = uVar6 - 1) {
     *(undefined4 *)pcVar8 = *(undefined4 *)pcVar7;
     pcVar7 = pcVar7 + 4;
     pcVar8 = pcVar8 + 4;
   }
-  for (uVar5 = uVar5 & 3; _DAT_004d7b08 = DAT_004c3f7c, uVar5 != 0; uVar5 = uVar5 - 1) {
+  for (uVar5 = uVar5 & 3; _DAT_004d7b08 = sfx_pistol_reload, uVar5 != 0; uVar5 = uVar5 - 1) {
     *pcVar8 = *pcVar7;
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
@@ -33858,7 +33858,7 @@ void weapon_table_init(void)
   _DAT_004d9044 = 0x3f99999a;
   _DAT_004d9048 = 0x3e6147ae;
   DAT_004d9050 = _DAT_004d7b7c;
-  _DAT_004d9058 = DAT_004c3f7c;
+  _DAT_004d9058 = sfx_pistol_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d7aa8;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -33876,7 +33876,7 @@ void weapon_table_init(void)
   _DAT_004d7af0 = 0x3f3631f9;
   DAT_004d7af4 = 0x3f99999a;
   _DAT_004d7af8 = 0x3e6147ae;
-  _DAT_004d7b00 = DAT_004c3f78;
+  _DAT_004d7b00 = sfx_pistol_fire;
   uVar5 = 0xffffffff;
   pcVar7 = s_Assault_Rifle_00479574;
   do {
@@ -33890,12 +33890,12 @@ void weapon_table_init(void)
   uVar5 = ~uVar5;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d7b24;
-  for (uVar6 = uVar5 >> 2; _DAT_004d93bc = DAT_004c3f84, uVar6 != 0; uVar6 = uVar6 - 1) {
+  for (uVar6 = uVar5 >> 2; _DAT_004d93bc = sfx_shotgun_reload, uVar6 != 0; uVar6 = uVar6 - 1) {
     *(undefined4 *)pcVar8 = *(undefined4 *)pcVar7;
     pcVar7 = pcVar7 + 4;
     pcVar8 = pcVar8 + 4;
   }
-  for (uVar5 = uVar5 & 3; _DAT_004d83c0 = DAT_004c3f8c, uVar5 != 0; uVar5 = uVar5 - 1) {
+  for (uVar5 = uVar5 & 3; _DAT_004d83c0 = sfx_autorifle_reload, uVar5 != 0; uVar5 = uVar5 - 1) {
     *pcVar8 = *pcVar7;
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
@@ -33916,7 +33916,7 @@ void weapon_table_init(void)
   _DAT_004d7b6c = 0x3def9db2;
   _DAT_004d7b70 = 0x3f99999a;
   _DAT_004d7b74 = 0x3db851ec;
-  _DAT_004d7b84 = DAT_004c3f8c;
+  _DAT_004d7b84 = sfx_autorifle_reload;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d7ba0;
   for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
@@ -33924,7 +33924,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 4;
     pcVar8 = pcVar8 + 4;
   }
-  for (uVar5 = uVar5 & 3; _DAT_004d8434 = DAT_004c3f80, uVar5 != 0; uVar5 = uVar5 - 1) {
+  for (uVar5 = uVar5 & 3; _DAT_004d8434 = sfx_shotgun_fire, uVar5 != 0; uVar5 = uVar5 - 1) {
     *pcVar8 = *pcVar7;
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
@@ -33946,7 +33946,7 @@ void weapon_table_init(void)
   uVar5 = ~uVar5;
   _DAT_004d7bec = 0x3ff33333;
   _DAT_004d7bf0 = 0x3e8a3d71;
-  _DAT_004d7bf8 = DAT_004c3f80;
+  _DAT_004d7bf8 = sfx_shotgun_fire;
   _DAT_004d7c00 = _DAT_004d93bc;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d7c1c;
@@ -34021,7 +34021,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  _DAT_004d7cf0 = DAT_004c3f98;
+  _DAT_004d7cf0 = sfx_hrpm_fire;
   uVar5 = 0xffffffff;
   pcVar7 = s_Flamethrower_0047952c;
   do {
@@ -34051,7 +34051,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  _DAT_004d7e64 = DAT_004c3fac;
+  _DAT_004d7e64 = sfx_flamer_fire_01;
   uVar5 = 0xffffffff;
   pcVar7 = s_Plasma_Rifle_0047951c;
   do {
@@ -34084,7 +34084,7 @@ void weapon_table_init(void)
     pcVar8 = pcVar8 + 1;
   }
   _DAT_004d7ecc = 0x14;
-  _DAT_004d7ee0 = DAT_004c3f9c;
+  _DAT_004d7ee0 = sfx_shock_fire;
   uVar5 = 0xffffffff;
   _DAT_004d7ed0 = 0x3e94e545;
   _DAT_004d7ed4 = 0x3f99999a;
@@ -34112,7 +34112,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  _DAT_004d7f5c = DAT_004c3f9c;
+  _DAT_004d7f5c = sfx_shock_fire;
   uVar5 = 0xffffffff;
   pcVar7 = s_Plasma_Minigun_004794fc;
   do {
@@ -34142,7 +34142,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  DAT_004d7fd8 = DAT_004c3fa0;
+  DAT_004d7fd8 = sfx_plasmaminigun_fire;
   uVar5 = 0xffffffff;
   pcVar7 = s_Gauss_Gun_004794f0;
   do {
@@ -34171,7 +34171,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  _DAT_004d7d6c = DAT_004c3f90;
+  _DAT_004d7d6c = sfx_gauss_fire;
   uVar5 = 0xffffffff;
   pcVar7 = s_Rocket_Launcher_004794e0;
   do {
@@ -34206,8 +34206,8 @@ void weapon_table_init(void)
   _DAT_004d8044 = 0x3f3da5d6;
   _DAT_004d8048 = 0x3f99999a;
   _DAT_004d804c = 0x3ed70a3d;
-  _DAT_004d8054 = DAT_004c3fc0;
-  _DAT_004d805c = DAT_004c3fc8;
+  _DAT_004d8054 = sfx_rocket_fire;
+  _DAT_004d805c = sfx_autorifle_reload_alt;
   uVar5 = 0xffffffff;
   _DAT_004d7ff8 = 2;
   pcVar7 = s_Seeker_Rockets_004794d0;
@@ -34222,7 +34222,8 @@ void weapon_table_init(void)
   uVar5 = ~uVar5;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d8078;
-  for (uVar6 = uVar5 >> 2; _DAT_004d80d8 = DAT_004c3fc8, uVar6 != 0; uVar6 = uVar6 - 1) {
+  for (uVar6 = uVar5 >> 2; _DAT_004d80d8 = sfx_autorifle_reload_alt, uVar6 != 0; uVar6 = uVar6 - 1)
+  {
     *(undefined4 *)pcVar8 = *(undefined4 *)pcVar7;
     pcVar7 = pcVar7 + 4;
     pcVar8 = pcVar8 + 4;
@@ -34232,7 +34233,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  _DAT_004d80d0 = DAT_004c3fc0;
+  _DAT_004d80d0 = sfx_rocket_fire;
   uVar5 = 0xffffffff;
   pcVar7 = s_Mean_Minigun_004794c0;
   do {
@@ -34262,7 +34263,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  _DAT_004d7de8 = DAT_004c3f88;
+  _DAT_004d7de8 = sfx_autorifle_fire;
   uVar5 = 0xffffffff;
   pcVar7 = s_Plasma_Shotgun_004794b0;
   do {
@@ -34292,7 +34293,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  _DAT_004d814c = DAT_004c3fa4;
+  _DAT_004d814c = sfx_plasmashotgun_fire;
   uVar5 = 0xffffffff;
   pcVar7 = s_Blow_Torch_004794a4;
   do {
@@ -34322,7 +34323,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  _DAT_004d81c8 = DAT_004c3fac;
+  _DAT_004d81c8 = sfx_flamer_fire_01;
   uVar5 = 0xffffffff;
   pcVar7 = s_HR_Flamer_00479498;
   do {
@@ -34354,7 +34355,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  _DAT_004d8244 = DAT_004c3fac;
+  _DAT_004d8244 = sfx_flamer_fire_01;
   uVar5 = 0xffffffff;
   pcVar7 = s_Mini_Rocket_Swarmers_00479480;
   do {
@@ -34376,7 +34377,8 @@ void weapon_table_init(void)
   _DAT_004d824c = _DAT_004d83c0;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d8268;
-  for (uVar6 = uVar5 >> 2; _DAT_004d82c8 = DAT_004c3fc8, uVar6 != 0; uVar6 = uVar6 - 1) {
+  for (uVar6 = uVar5 >> 2; _DAT_004d82c8 = sfx_autorifle_reload_alt, uVar6 != 0; uVar6 = uVar6 - 1)
+  {
     *(undefined4 *)pcVar8 = *(undefined4 *)pcVar7;
     pcVar7 = pcVar7 + 4;
     pcVar8 = pcVar8 + 4;
@@ -34386,7 +34388,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  _DAT_004d82c0 = DAT_004c3fc0;
+  _DAT_004d82c0 = sfx_rocket_fire;
   uVar5 = 0xffffffff;
   pcVar7 = s_Rocket_Minigun_00479470;
   do {
@@ -34419,8 +34421,8 @@ void weapon_table_init(void)
   _DAT_004d834c = 8;
   _DAT_004d8328 = 0x10;
   _DAT_004d832c = 0x3df5c28f;
-  _DAT_004d833c = DAT_004c3fc4;
-  _DAT_004d8344 = DAT_004c3fc8;
+  _DAT_004d833c = sfx_rocketmini_fire;
+  _DAT_004d8344 = sfx_autorifle_reload_alt;
   uVar5 = 0xffffffff;
   _DAT_004d8330 = 0x3fe66666;
   pcVar7 = s_Pulse_Gun_00479464;
@@ -34442,12 +34444,12 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 4;
     pcVar8 = pcVar8 + 4;
   }
-  for (uVar5 = uVar5 & 3; _DAT_004d86a8 = DAT_004c3fbc, uVar5 != 0; uVar5 = uVar5 - 1) {
+  for (uVar5 = uVar5 & 3; _DAT_004d86a8 = sfx_shock_reload, uVar5 != 0; uVar5 = uVar5 - 1) {
     *pcVar8 = *pcVar7;
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  _DAT_004d83b8 = DAT_004c3fa8;
+  _DAT_004d83b8 = sfx_pulse_fire;
   uVar5 = 0xffffffff;
   pcVar7 = s_Ion_Rifle_00479458;
   do {
@@ -34477,7 +34479,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  _DAT_004d84b0 = DAT_004c3fb4;
+  _DAT_004d84b0 = sfx_shock_fire_alt;
   uVar5 = 0xffffffff;
   pcVar7 = s_Ion_Minigun_0047944c;
   do {
@@ -34508,7 +34510,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  _DAT_004d852c = DAT_004c3fb8;
+  _DAT_004d852c = sfx_shockminigun_fire;
   uVar5 = 0xffffffff;
   _DAT_004d853c = 8;
   _DAT_004d8518 = 0x14;
@@ -34539,7 +34541,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  _DAT_004d85a8 = DAT_004c3fb4;
+  _DAT_004d85a8 = sfx_shock_fire_alt;
   uVar5 = 0xffffffff;
   pcVar7 = s_Ion_Shotgun_00479434;
   do {
@@ -34569,7 +34571,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  _DAT_004d8988 = DAT_004c3fb4;
+  _DAT_004d8988 = sfx_shock_fire_alt;
   uVar5 = 0xffffffff;
   pcVar7 = s_Gauss_Shotgun_00479424;
   do {
@@ -34602,7 +34604,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  _DAT_004d890c = DAT_004c3f90;
+  _DAT_004d890c = sfx_gauss_fire;
   uVar5 = 0xffffffff;
   pcVar7 = s_Plasma_Cannon_00479414;
   do {
@@ -34634,7 +34636,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  _DAT_004d8814 = DAT_004c3f9c;
+  _DAT_004d8814 = sfx_shock_fire;
   uVar5 = 0xffffffff;
   _DAT_004d8800 = 3;
   pcVar7 = s_Evil_Scythe_00479408;
@@ -34664,7 +34666,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  _DAT_004d8798 = DAT_004c3fb4;
+  _DAT_004d8798 = sfx_shock_fire_alt;
   uVar5 = 0xffffffff;
   pcVar7 = s_Flameburst_004793fc;
   do {
@@ -34695,7 +34697,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  _DAT_004d8a04 = DAT_004c3fac;
+  _DAT_004d8a04 = sfx_flamer_fire_01;
   uVar5 = 0xffffffff;
   pcVar7 = &DAT_004793f4;
   do {
@@ -34726,7 +34728,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  _DAT_004d8a80 = DAT_004c3fb4;
+  _DAT_004d8a80 = sfx_shock_fire_alt;
   uVar5 = 0xffffffff;
   _DAT_004d8a6c = 0xc;
   _DAT_004d8a70 = 0x3f333333;
@@ -34757,7 +34759,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  _DAT_004d8890 = DAT_004c3fb4;
+  _DAT_004d8890 = sfx_shock_fire_alt;
   uVar5 = 0xffffffff;
   pcVar7 = s_Shrinkifier_5k_004793d4;
   do {
@@ -34789,7 +34791,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  _DAT_004d8624 = DAT_004c3fb4;
+  _DAT_004d8624 = sfx_shock_fire_alt;
   uVar5 = 0xffffffff;
   pcVar7 = s_Blade_Gun_004793c8;
   do {
@@ -34820,7 +34822,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  _DAT_004d86a0 = DAT_004c3fb4;
+  _DAT_004d86a0 = sfx_shock_fire_alt;
   uVar5 = 0xffffffff;
   pcVar7 = s_Plague_Sphreader_Gun_004793b0;
   do {
@@ -34845,7 +34847,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 4;
     pcVar8 = pcVar8 + 4;
   }
-  for (uVar5 = uVar5 & 3; _DAT_004d92bc = DAT_004c4028, uVar5 != 0; uVar5 = uVar5 - 1) {
+  for (uVar5 = uVar5 & 3; _DAT_004d92bc = sfx_bloodspill_01, uVar5 != 0; uVar5 = uVar5 - 1) {
     *pcVar8 = *pcVar7;
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
@@ -34866,7 +34868,7 @@ void weapon_table_init(void)
   _DAT_004d8e50 = 0x3e4ccccd;
   _DAT_004d8e54 = 0x3f99999a;
   _DAT_004d8e58 = 0x3d23d70a;
-  _DAT_004d8e60 = DAT_004c4028;
+  _DAT_004d8e60 = sfx_bloodspill_01;
   _DAT_004d8e68 = _DAT_004d93bc;
   pcVar7 = pcVar8 + -uVar5;
   pcVar8 = (char *)&DAT_004d8f00;
@@ -34994,7 +34996,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 4;
     pcVar8 = pcVar8 + 4;
   }
-  for (uVar5 = uVar5 & 3; _DAT_004d93b4 = DAT_004c3ff0, uVar5 != 0; uVar5 = uVar5 - 1) {
+  for (uVar5 = uVar5 & 3; _DAT_004d93b4 = sfx_explosion_large, uVar5 != 0; uVar5 = uVar5 - 1) {
     *pcVar8 = *pcVar7;
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
@@ -35028,7 +35030,7 @@ void weapon_table_init(void)
     pcVar7 = pcVar7 + 1;
     pcVar8 = pcVar8 + 1;
   }
-  _DAT_004d9338 = DAT_004c3f9c;
+  _DAT_004d9338 = sfx_shock_fire;
   uVar5 = 0xffffffff;
   pcVar7 = s_Nuke_Launcher_0047934c;
   do {

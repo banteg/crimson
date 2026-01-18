@@ -51,12 +51,6 @@
     },
     {
       "program": "crimsonland.exe",
-      "address": "0x00482948",
-      "name": "bonus_pool",
-      "comment": "Bonus/pickup pool base (16 entries, stride 0x1c)"
-    },
-    {
-      "program": "crimsonland.exe",
       "address": "0x00482728",
       "name": "creature_type_texture",
       "comment": "Creature type table: texture handle (stride 0x44 bytes)."
@@ -123,6 +117,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00482948",
+      "name": "bonus_pool",
+      "comment": "Bonus/pickup pool base (16 entries, stride 0x1c)"
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x0048294c",
       "name": "bonus_state",
       "comment": "Bonus state flag (bonus_pool + 0x04)"
@@ -156,36 +156,6 @@
       "address": "0x00482960",
       "name": "bonus_amount",
       "comment": "Bonus amount/duration (bonus_pool + 0x18)"
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x004853d0",
-      "name": "bonus_meta_label",
-      "comment": "Bonus metadata label pointer (stride 0x14 bytes)"
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x004853d4",
-      "name": "bonus_meta_description",
-      "comment": "Bonus metadata description pointer (bonus_meta_label + 0x04)"
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x004853d8",
-      "name": "bonus_meta_icon_id",
-      "comment": "Bonus metadata icon id (bonus_meta_label + 0x08)"
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x004853dc",
-      "name": "bonus_meta_enabled",
-      "comment": "Bonus metadata enabled flag (bonus_meta_label + 0x0c); id 0 is disabled."
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x004853e0",
-      "name": "bonus_meta_default_amount",
-      "comment": "Bonus metadata default amount (bonus_meta_label + 0x10)"
     },
     {
       "program": "crimsonland.exe",
@@ -225,6 +195,36 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x004853d0",
+      "name": "bonus_meta_label",
+      "comment": "Bonus metadata label pointer (stride 0x14 bytes)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004853d4",
+      "name": "bonus_meta_description",
+      "comment": "Bonus metadata description pointer (bonus_meta_label + 0x04)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004853d8",
+      "name": "bonus_meta_icon_id",
+      "comment": "Bonus metadata icon id (bonus_meta_label + 0x08)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004853dc",
+      "name": "bonus_meta_enabled",
+      "comment": "Bonus metadata enabled flag (bonus_meta_label + 0x0c); id 0 is disabled."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004853e0",
+      "name": "bonus_meta_default_amount",
+      "comment": "Bonus metadata default amount (bonus_meta_label + 0x10)"
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00486fa8",
       "name": "survival_reward_handout_enabled",
       "comment": "Survival handout gate (set on reset; cleared after reward or after 3 death samples)."
@@ -234,6 +234,18 @@
       "address": "0x00486fb4",
       "name": "creature_spawned_count",
       "comment": "Total creatures spawned (incremented in creature_alloc_slot)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00486fbc",
+      "name": "shock_chain_links_left",
+      "comment": "Shock Chain link counter; decremented on each chained hit."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00486fc0",
+      "name": "shock_chain_projectile_id",
+      "comment": "Projectile index for the active Shock Chain segment."
     },
     {
       "program": "crimsonland.exe",
@@ -276,42 +288,6 @@
       "address": "0x00487000",
       "name": "survival_recent_death_count",
       "comment": "Survival reward tracking: recent creature death counter (counts to 6, stores 3 positions)."
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x00486fbc",
-      "name": "shock_chain_links_left",
-      "comment": "Shock Chain link counter; decremented on each chained hit."
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x00486fc0",
-      "name": "shock_chain_projectile_id",
-      "comment": "Projectile index for the active Shock Chain segment."
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x004871d8",
-      "name": "camera_shake_offset_x",
-      "comment": "Camera shake offset X (applied to camera center)."
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x004871dc",
-      "name": "camera_shake_offset_y",
-      "comment": "Camera shake offset Y (applied to camera center)."
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x004871e0",
-      "name": "camera_shake_timer",
-      "comment": "Camera shake timer; counts down between shake pulses."
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x004871e4",
-      "name": "camera_shake_pulses",
-      "comment": "Camera shake pulse counter; decremented as shake pulses complete."
     },
     {
       "program": "crimsonland.exe",
@@ -369,9 +345,27 @@
     },
     {
       "program": "crimsonland.exe",
-      "address": "0x004aaf58",
-      "name": "creature_update_tick",
-      "comment": "Creature update tick counter used to throttle target recalculation."
+      "address": "0x004871d8",
+      "name": "camera_shake_offset_x",
+      "comment": "Camera shake offset X (applied to camera center)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004871dc",
+      "name": "camera_shake_offset_y",
+      "comment": "Camera shake offset Y (applied to camera center)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004871e0",
+      "name": "camera_shake_timer",
+      "comment": "Camera shake timer; counts down between shake pulses."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004871e4",
+      "name": "camera_shake_pulses",
+      "comment": "Camera shake pulse counter; decremented as shake pulses complete."
     },
     {
       "program": "crimsonland.exe",
@@ -1623,6 +1617,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x004aaf58",
+      "name": "creature_update_tick",
+      "comment": "Creature update tick counter used to throttle target recalculation."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004ab1bc",
       "name": "effect_template_vel_x",
       "comment": "Effect template vel_x (effect template block base)"
@@ -1833,6 +1833,456 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x004c3f00",
+      "name": "sfx_trooper_inpain_01",
+      "comment": "SFX id for trooper_inPain_01.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f04",
+      "name": "sfx_trooper_inpain_02",
+      "comment": "SFX id for trooper_inPain_02.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f08",
+      "name": "sfx_trooper_inpain_03",
+      "comment": "SFX id for trooper_inPain_03.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f0c",
+      "name": "sfx_trooper_die_01",
+      "comment": "SFX id for trooper_die_01.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f10",
+      "name": "sfx_trooper_die_02",
+      "comment": "SFX id for trooper_die_02.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f14",
+      "name": "sfx_trooper_die_03",
+      "comment": "SFX id for trooper_die_03.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f18",
+      "name": "sfx_zombie_die_01",
+      "comment": "SFX id for zombie_die_01.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f1c",
+      "name": "sfx_zombie_die_02",
+      "comment": "SFX id for zombie_die_02.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f20",
+      "name": "sfx_zombie_die_03",
+      "comment": "SFX id for zombie_die_03.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f24",
+      "name": "sfx_zombie_die_04",
+      "comment": "SFX id for zombie_die_04.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f28",
+      "name": "sfx_zombie_attack_01",
+      "comment": "SFX id for zombie_attack_01.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f2c",
+      "name": "sfx_zombie_attack_02",
+      "comment": "SFX id for zombie_attack_02.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f30",
+      "name": "sfx_alien_die_01",
+      "comment": "SFX id for alien_die_01.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f34",
+      "name": "sfx_alien_die_02",
+      "comment": "SFX id for alien_die_02.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f38",
+      "name": "sfx_alien_die_03",
+      "comment": "SFX id for alien_die_03.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f3c",
+      "name": "sfx_alien_die_04",
+      "comment": "SFX id for alien_die_04.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f40",
+      "name": "sfx_alien_attack_01",
+      "comment": "SFX id for alien_attack_01.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f44",
+      "name": "sfx_alien_attack_02",
+      "comment": "SFX id for alien_attack_02.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f48",
+      "name": "sfx_lizard_die_01",
+      "comment": "SFX id for lizard_die_01.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f4c",
+      "name": "sfx_lizard_die_02",
+      "comment": "SFX id for lizard_die_02.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f50",
+      "name": "sfx_lizard_die_03",
+      "comment": "SFX id for lizard_die_03.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f54",
+      "name": "sfx_lizard_die_04",
+      "comment": "SFX id for lizard_die_04.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f58",
+      "name": "sfx_lizard_attack_01",
+      "comment": "SFX id for lizard_attack_01.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f5c",
+      "name": "sfx_lizard_attack_02",
+      "comment": "SFX id for lizard_attack_02.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f60",
+      "name": "sfx_spider_die_01",
+      "comment": "SFX id for spider_die_01.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f64",
+      "name": "sfx_spider_die_02",
+      "comment": "SFX id for spider_die_02.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f68",
+      "name": "sfx_spider_die_03",
+      "comment": "SFX id for spider_die_03.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f6c",
+      "name": "sfx_spider_die_04",
+      "comment": "SFX id for spider_die_04.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f70",
+      "name": "sfx_spider_attack_01",
+      "comment": "SFX id for spider_attack_01.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f74",
+      "name": "sfx_spider_attack_02",
+      "comment": "SFX id for spider_attack_02.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f78",
+      "name": "sfx_pistol_fire",
+      "comment": "SFX id for pistol_fire.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f7c",
+      "name": "sfx_pistol_reload",
+      "comment": "SFX id for pistol_reload.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f80",
+      "name": "sfx_shotgun_fire",
+      "comment": "SFX id for shotgun_fire.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f84",
+      "name": "sfx_shotgun_reload",
+      "comment": "SFX id for shotgun_reload.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f88",
+      "name": "sfx_autorifle_fire",
+      "comment": "SFX id for autorifle_fire.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f8c",
+      "name": "sfx_autorifle_reload",
+      "comment": "SFX id for autorifle_reload.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f90",
+      "name": "sfx_gauss_fire",
+      "comment": "SFX id for gauss_fire.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f98",
+      "name": "sfx_hrpm_fire",
+      "comment": "SFX id for hrpm_fire.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3f9c",
+      "name": "sfx_shock_fire",
+      "comment": "SFX id for shock_fire.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3fa0",
+      "name": "sfx_plasmaminigun_fire",
+      "comment": "SFX id for plasmaMinigun_fire.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3fa4",
+      "name": "sfx_plasmashotgun_fire",
+      "comment": "SFX id for plasmaShotgun_fire.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3fa8",
+      "name": "sfx_pulse_fire",
+      "comment": "SFX id for pulse_fire.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3fac",
+      "name": "sfx_flamer_fire_01",
+      "comment": "SFX id for flamer_fire_01.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3fb0",
+      "name": "sfx_flamer_fire_02",
+      "comment": "SFX id for flamer_fire_02.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3fb4",
+      "name": "sfx_shock_fire_alt",
+      "comment": "Duplicate SFX id for shock_fire.ogg (secondary slot)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3fb8",
+      "name": "sfx_shockminigun_fire",
+      "comment": "SFX id for shockMinigun_fire.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3fbc",
+      "name": "sfx_shock_reload",
+      "comment": "SFX id for shock_reload.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3fc0",
+      "name": "sfx_rocket_fire",
+      "comment": "SFX id for rocket_fire.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3fc4",
+      "name": "sfx_rocketmini_fire",
+      "comment": "SFX id for rocketmini_fire.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3fc8",
+      "name": "sfx_autorifle_reload_alt",
+      "comment": "Duplicate SFX id for autorifle_reload.ogg (secondary slot)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3fcc",
+      "name": "sfx_bullet_hit_01",
+      "comment": "SFX id for bullet_hit_01.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3fd0",
+      "name": "sfx_bullet_hit_02",
+      "comment": "SFX id for bullet_hit_02.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3fd4",
+      "name": "sfx_bullet_hit_03",
+      "comment": "SFX id for bullet_hit_03.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3fd8",
+      "name": "sfx_bullet_hit_04",
+      "comment": "SFX id for bullet_hit_04.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3fdc",
+      "name": "sfx_bullet_hit_05",
+      "comment": "SFX id for bullet_hit_05.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3fe0",
+      "name": "sfx_bullet_hit_06",
+      "comment": "SFX id for bullet_hit_06.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3fe4",
+      "name": "sfx_shock_hit_01",
+      "comment": "SFX id for shock_hit_01.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3fe8",
+      "name": "sfx_explosion_small",
+      "comment": "SFX id for explosion_small.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3fec",
+      "name": "sfx_explosion_medium",
+      "comment": "SFX id for explosion_medium.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3ff0",
+      "name": "sfx_explosion_large",
+      "comment": "SFX id for explosion_large.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3ff4",
+      "name": "sfx_shockwave",
+      "comment": "SFX id for shockwave.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3ff8",
+      "name": "sfx_questhit",
+      "comment": "SFX id for questHit.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c3ffc",
+      "name": "sfx_ui_bonus",
+      "comment": "SFX id for ui_bonus.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c4000",
+      "name": "sfx_trooper_inpain_01_alias_0",
+      "comment": "Alias of DAT_004c3f00 (sfx_trooper_inpain_01)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c4004",
+      "name": "sfx_trooper_inpain_01_alias_1",
+      "comment": "Alias of DAT_004c3f00 (sfx_trooper_inpain_01)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c4008",
+      "name": "sfx_trooper_inpain_01_alias_2",
+      "comment": "Alias of DAT_004c3f00 (sfx_trooper_inpain_01)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c400c",
+      "name": "sfx_ui_buttonclick",
+      "comment": "SFX id for ui_buttonClick.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c4010",
+      "name": "sfx_ui_panelclick",
+      "comment": "SFX id for ui_panelClick.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c4014",
+      "name": "sfx_ui_levelup",
+      "comment": "SFX id for ui_levelUp.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c4018",
+      "name": "sfx_ui_typeclick_01",
+      "comment": "SFX id for ui_typeClick_01.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c401c",
+      "name": "sfx_ui_typeclick_02",
+      "comment": "SFX id for ui_typeClick_02.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c4020",
+      "name": "sfx_ui_typeenter",
+      "comment": "SFX id for ui_typeEnter.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c4024",
+      "name": "sfx_ui_clink_01",
+      "comment": "SFX id for ui_clink_01.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c4028",
+      "name": "sfx_bloodspill_01",
+      "comment": "SFX id for bloodSpill_01.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c402c",
+      "name": "sfx_bloodspill_02",
+      "comment": "SFX id for bloodSpill_02.ogg"
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004d7a2c",
       "name": "weapon_table",
       "comment": "Weapon table base (stride 0x7c bytes)"
@@ -1863,23 +2313,9 @@
     },
     {
       "program": "grim.dll",
-      "address": "0x1005d81c",
-      "name": "grim_interface_instance",
-      "comment": "Singleton Grim2D interface instance (vtable pointer stored at grim_interface_vtable)."
-    },
-    {
-      "program": "grim.dll",
-      "address": "0x1005b2c4",
-      "name": "grim_d3d8_probe",
-      "comment": "Temporary IDirect3D8 pointer used to sanity-check Direct3DCreate8.",
-      "type": "LPDIRECT3D8"
-    },
-    {
-      "program": "grim.dll",
-      "address": "0x1005c8fc",
-      "name": "grim_d3d8",
-      "comment": "Primary IDirect3D8 interface.",
-      "type": "LPDIRECT3D8"
+      "address": "0x10053070",
+      "name": "grim_font2_texture_handle",
+      "comment": "Texture handle for GRIM_Font2 (small font atlas)."
     },
     {
       "program": "grim.dll",
@@ -1890,13 +2326,6 @@
     },
     {
       "program": "grim.dll",
-      "address": "0x1005c900",
-      "name": "grim_backbuffer_surface",
-      "comment": "Cached backbuffer render target (IDirect3DSurface8).",
-      "type": "LPDIRECT3DSURFACE8"
-    },
-    {
-      "program": "grim.dll",
       "address": "0x1005a48c",
       "name": "grim_render_target_surface",
       "comment": "Current offscreen render target surface (IDirect3DSurface8).",
@@ -1904,15 +2333,54 @@
     },
     {
       "program": "grim.dll",
-      "address": "0x1005d404",
-      "name": "grim_texture_slots",
-      "comment": "Texture slot table (array of Grim2D texture pointers; indexed by handle)."
+      "address": "0x1005a570",
+      "name": "grim_font2_char_map",
+      "comment": "Small-font character map (char -> glyph index)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005b2c4",
+      "name": "grim_d3d8_probe",
+      "comment": "Temporary IDirect3D8 pointer used to sanity-check Direct3DCreate8.",
+      "type": "LPDIRECT3D8"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005b2c8",
+      "name": "grim_font2_uv_u",
+      "comment": "Small-font glyph U coordinates (float, indexed by glyph * 2)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005b2cc",
+      "name": "grim_font2_uv_v",
+      "comment": "Small-font glyph V coordinates (float, indexed by glyph * 2)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005bad8",
+      "name": "grim_font2_glyph_widths",
+      "comment": "Small-font glyph widths (byte per glyph)."
     },
     {
       "program": "grim.dll",
       "address": "0x1005c418",
       "name": "grim_config_blob",
       "comment": "Raw crimson_cfg config blob (0x480 bytes read/write)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005c8fc",
+      "name": "grim_d3d8",
+      "comment": "Primary IDirect3D8 interface.",
+      "type": "LPDIRECT3D8"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005c900",
+      "name": "grim_backbuffer_surface",
+      "comment": "Cached backbuffer render target (IDirect3DSurface8).",
+      "type": "LPDIRECT3DSURFACE8"
     },
     {
       "program": "grim.dll",
@@ -1940,33 +2408,48 @@
     },
     {
       "program": "grim.dll",
-      "address": "0x10053070",
-      "name": "grim_font2_texture_handle",
-      "comment": "Texture handle for GRIM_Font2 (small font atlas)."
+      "address": "0x1005d404",
+      "name": "grim_texture_slots",
+      "comment": "Texture slot table (array of Grim2D texture pointers; indexed by handle)."
     },
     {
       "program": "grim.dll",
-      "address": "0x1005a570",
-      "name": "grim_font2_char_map",
-      "comment": "Small-font character map (char -> glyph index)."
+      "address": "0x1005d81c",
+      "name": "grim_interface_instance",
+      "comment": "Singleton Grim2D interface instance (vtable pointer stored at grim_interface_vtable)."
     },
     {
       "program": "grim.dll",
-      "address": "0x1005bad8",
-      "name": "grim_font2_glyph_widths",
-      "comment": "Small-font glyph widths (byte per glyph)."
+      "address": "0x1005d830",
+      "name": "grim_joystick_state",
+      "comment": "Joystick state buffer (DIJOYSTATE2).",
+      "type": "DIJOYSTATE2"
     },
     {
       "program": "grim.dll",
-      "address": "0x1005b2c8",
-      "name": "grim_font2_uv_u",
-      "comment": "Small-font glyph U coordinates (float, indexed by glyph * 2)."
+      "address": "0x1005d860",
+      "name": "grim_joystick_buttons",
+      "comment": "Joystick button byte array (DIJOYSTATE2.rgbButtons, offset +0x30)."
     },
     {
       "program": "grim.dll",
-      "address": "0x1005b2cc",
-      "name": "grim_font2_uv_v",
-      "comment": "Small-font glyph V coordinates (float, indexed by glyph * 2)."
+      "address": "0x1005d940",
+      "name": "grim_dinput_joystick",
+      "comment": "DirectInput8 interface for joystick input.",
+      "type": "LPDIRECTINPUT8A"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005d944",
+      "name": "grim_joystick_device",
+      "comment": "DirectInput joystick device (IDirectInputDevice8).",
+      "type": "LPDIRECTINPUTDEVICE8A"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005d958",
+      "name": "grim_keyboard_event_buffer",
+      "comment": "Keyboard event buffer (DIDEVICEOBJECTDATA[10])."
     },
     {
       "program": "grim.dll",
@@ -1987,12 +2470,6 @@
       "address": "0x1005da28",
       "name": "grim_keyboard_state",
       "comment": "Keyboard state buffer (256-byte key array)."
-    },
-    {
-      "program": "grim.dll",
-      "address": "0x1005d958",
-      "name": "grim_keyboard_event_buffer",
-      "comment": "Keyboard event buffer (DIDEVICEOBJECTDATA[10])."
     },
     {
       "program": "grim.dll",
@@ -2020,33 +2497,6 @@
       "address": "0x1005db3c",
       "name": "grim_mouse_buttons",
       "comment": "Mouse button byte array (DIMOUSESTATE2.rgbButtons, offset +0x0c)."
-    },
-    {
-      "program": "grim.dll",
-      "address": "0x1005d940",
-      "name": "grim_dinput_joystick",
-      "comment": "DirectInput8 interface for joystick input.",
-      "type": "LPDIRECTINPUT8A"
-    },
-    {
-      "program": "grim.dll",
-      "address": "0x1005d944",
-      "name": "grim_joystick_device",
-      "comment": "DirectInput joystick device (IDirectInputDevice8).",
-      "type": "LPDIRECTINPUTDEVICE8A"
-    },
-    {
-      "program": "grim.dll",
-      "address": "0x1005d830",
-      "name": "grim_joystick_state",
-      "comment": "Joystick state buffer (DIJOYSTATE2).",
-      "type": "DIJOYSTATE2"
-    },
-    {
-      "program": "grim.dll",
-      "address": "0x1005d860",
-      "name": "grim_joystick_buttons",
-      "comment": "Joystick button byte array (DIJOYSTATE2.rgbButtons, offset +0x30)."
     }
   ]
 }

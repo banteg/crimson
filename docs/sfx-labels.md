@@ -1,8 +1,10 @@
 # SFX label suggestions
 
 Suggested data label names derived from [SFX ID map](sfx-id-map.md).
-These can be copied into `analysis/ghidra/maps/data_map.json` and applied with
-`ApplyDataMap.java` during headless analysis.
+These are mirrored into `analysis/ghidra/maps/data_map.json` and applied with
+`ApplyDataMap.java` during headless analysis. Alias entries use the
+`_alias_N` suffix and duplicate IDs that point at the same `.ogg` file use
+`_alt` suffixes to keep names unique.
 
 | Var | File | Suggested label |
 | --- | --- | --- |
@@ -83,6 +85,6 @@ These can be copied into `analysis/ghidra/maps/data_map.json` and applied with
 
 | Var | Aliases | Suggested label |
 | --- | --- | --- |
-| _DAT_004c4000 | DAT_004c3f00 | sfx_trooper_inpain_01 |
-| DAT_004c4004 | DAT_004c3f00 | sfx_trooper_inpain_01 |
-| _DAT_004c4008 | DAT_004c3f00 | sfx_trooper_inpain_01 |
+| _DAT_004c4000 | DAT_004c3f00 | sfx_trooper_inpain_01_alias_0 |
+| DAT_004c4004 | DAT_004c3f00 | sfx_trooper_inpain_01_alias_1 |
+| _DAT_004c4008 | DAT_004c3f00 | sfx_trooper_inpain_01_alias_2 |
