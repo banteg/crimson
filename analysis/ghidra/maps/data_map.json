@@ -563,7 +563,31 @@
       "program": "crimsonland.exe",
       "address": "0x00484730",
       "name": "quest_selected_meta",
-      "comment": "Current quest metadata pointer (selected quest)."
+      "comment": "Quest metadata table base (0x2c-byte entries, 0x32 total)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00484734",
+      "name": "quest_meta_index",
+      "comment": "Quest metadata entry index/number (quest_selected_meta + 0x04, stride 0x2c)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00484738",
+      "name": "quest_meta_time_limit_ms",
+      "comment": "Quest time limit in ms (quest_selected_meta + 0x08, stride 0x2c)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048473c",
+      "name": "quest_meta_name",
+      "comment": "Quest display name pointer (quest_selected_meta + 0x0c, stride 0x2c)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00484740",
+      "name": "quest_meta_terrain_id",
+      "comment": "Terrain descriptor id used by terrain_generate (quest_selected_meta + 0x10, stride 0x2c)."
     },
     {
       "program": "crimsonland.exe",
@@ -576,6 +600,12 @@
       "address": "0x00484754",
       "name": "quest_unlock_weapon_id",
       "comment": "Quest unlock weapon id field (quest_selected_meta + 0x24, stride 0x2c). Used by weapon_refresh_available."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00484758",
+      "name": "quest_start_weapon_id",
+      "comment": "Quest starting weapon id (quest_selected_meta + 0x28, stride 0x2c). Applied in quest_start_selected."
     },
     {
       "program": "crimsonland.exe",

@@ -433,6 +433,23 @@ Tier 5
 - Quest 9: perk Stationary Reloader (perk_id_stationary_reloader, id 0x34)
 - Quest 10: weapon Plasma Cannon (id 0x1c)
 
+### Quest metadata struct (0x2c bytes)
+
+Quest metadata entries live at `quest_selected_meta` (`DAT_00484730`) with a stride of `0x2c`.
+Fields below are high‑confidence; unknown offsets are omitted.
+
+| Offset | Field | Meaning | Evidence |
+| --- | --- | --- | --- |
+| `0x00` | `quest_meta_tier` | Tier/episode number | Set to `param_2` in `FUN_00430a20` (called by `quest_database_init`). |
+| `0x04` | `quest_meta_index` | Quest number within tier | Set to `param_3` in `FUN_00430a20`. |
+| `0x08` | `quest_meta_time_limit_ms` | Quest time limit in ms | Written per quest in `quest_database_init` (values like 120000, 300000, 480000). |
+| `0x0c` | `quest_meta_name` | Quest display name pointer | Set to `strdup` of the quest title in `FUN_00430a20`. |
+| `0x10` | `quest_meta_terrain_id` | Terrain descriptor id | Used by `terrain_generate(desc)` via `*(int *)(desc + 0x10)`. |
+| `0x1c` | `quest_selected_builder` | Quest builder function pointer | Assigned after each `FUN_00430a20` call in `quest_database_init`. |
+| `0x20` | `quest_unlock_perk_id` | Perk unlock id | Used by `perks_rebuild_available`. |
+| `0x24` | `quest_unlock_weapon_id` | Weapon unlock id | Used by `weapon_refresh_available`. |
+| `0x28` | `quest_start_weapon_id` | Starting weapon id | Used by `quest_start_selected` to equip both players. |
+
 Record match + display selection:
 - `FUN_0043abd0` is the equality predicate used during save‑file replacement; it compares the
   player name plus metadata fields at offsets `0x20..0x34` (ints + a byte) and does not look
