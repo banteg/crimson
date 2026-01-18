@@ -31,9 +31,15 @@ Timeline of what happened and when (relative timestamps are fine).
 
 ---
 
-# session 1
+# Session 1
 
-## session wants
+- **Date:** 2026-01-18
+- **Build / platform:** Win11 ARM64 (UTM), Crimsonland v1.9.93
+- **Scripts:** `grim_hooks.js`, `crimsonland_probe.js`
+- **Attach method:** `frida -n crimsonland.exe -l Z:\...`
+- **Artifacts:** `analysis/frida/raw/*.jsonl`, `analysis/frida/*summary*.json`
+
+### Wants (pre-run)
 
 Here’s a short session I’d love recorded to nail down unknown player‑struct offsets + HUD/bonus timers (the stuff the unknown‑field tracker will surface):
 
@@ -55,7 +61,7 @@ Here’s a short session I’d love recorded to nail down unknown player‑struc
 
   This should give me enough runtime evidence to map timers/flags that still aren’t labeled and to confirm which HUD/UI elements flip which fields.
 
-## rough session description
+### Run summary (actual)
 
 Based on the video provided, here is the timeline of events.
 
@@ -97,7 +103,7 @@ Based on the video provided, here is the timeline of events.
 *   **02:40** – User quits the game.
 *   **02:42** – **Frida Command:** `exit`.
 
-## findings
+### Findings
 
 - Auto-record triggers fired; counts: startup (1), low_health (1), bonus_apply (4), perk_apply (1),
   perk_selection_screen (6), game_over_screen (10). Low-health dump shows HP crossing ~24.19 → 18.67.
@@ -112,7 +118,7 @@ Based on the video provided, here is the timeline of events.
 - SFX evidence is still sparse; sfx 63 appears in `ui_button_update`/`ui_menu_item_update` and perk UI, likely
   a UI click/confirm.
 
-## actionable insights
+### Actionable insights
 
 - Raise `autoRecord.dumpCooldownMs` / `hotWindowCooldownMs` (or add “once per screen” gating) to avoid repeated
   dumps during `perk_selection_screen_update` and `game_over_screen_update`.
@@ -123,9 +129,15 @@ Based on the video provided, here is the timeline of events.
 - Extend the reducer to resolve `unmapped_calls.json` entries by module base (grim.dll) so raw addresses
   aren’t lumped together as unknown.
 
-# session 2
+# Session 2
 
-## session wants
+- **Date:** TBD
+- **Build / platform:** Win11 ARM64 (UTM), Crimsonland v1.9.93
+- **Scripts:** `grim_hooks.js`, `crimsonland_probe.js`
+- **Attach method:** `frida -n crimsonland.exe -l Z:\...`
+- **Artifacts:** TBD
+
+### Wants (pre-run)
 
 Goal: isolate player-struct unknown offsets using targeted bonus pickups with MemoryAccessMonitor.
 
@@ -139,3 +151,15 @@ Steps:
    - `watchPlayerOffset(0, 0x34C, 4)` → pick up **Freeze** → `stopWatchPlayerOffset()`
    - `watchPlayerOffset(0, 0x350, 4)` → pick up **Speed** → `stopWatchPlayerOffset()`
    - `watchPlayerOffset(0, 0x354, 4)` → pick up **Fire Bullets** → `stopWatchPlayerOffset()`
+
+### Run summary (actual)
+
+_TBD_
+
+### Findings
+
+_TBD_
+
+### Actionable insights
+
+_TBD_
