@@ -9,6 +9,9 @@ Notes:
 - A few strings in `crimsonland.exe_strings.txt` lose their leading character; those
   entries are corrected below based on context (e.g., `hotgun` → **Shotgun**,
   `ayGun` → **RayGun**, ``=Lighting Rifle`` → **Lightning Rifle**).
+- IDs 34–40 and 46–49 are left **Unknown / unlabelled** because `weapon_table_init`
+  never copies a name into those entries and there are no direct callsite references
+  to those ids. They are likely unused/reserved.
 
 ## IDs
 
