@@ -18,7 +18,7 @@ and data labels in `analysis/ghidra/maps/data_map.json`, applying both during he
 analysis:
 
 ```
-./.codex/skills/ghidra/scripts/ghidra-analyze.sh \
+./analysis/ghidra/tooling/ghidra-analyze.sh \
   --script-path analysis/ghidra/scripts \
   -s ApplyNameMap.java -a analysis/ghidra/maps/name_map.json \
   -s ApplyDataMap.java -a analysis/ghidra/maps/data_map.json \

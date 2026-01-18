@@ -22,7 +22,7 @@ External inputs:
    to parse codec headers before exporting:
 
    ```bash
-   ./.codex/skills/ghidra/scripts/ghidra-analyze.sh \
+   ./analysis/ghidra/tooling/ghidra-analyze.sh \
      --script-path analysis/ghidra/scripts \
      -s ImportThirdPartyHeaders.java -a third_party/headers \
      -s ApplyWinapiGDT.java -a analysis/ghidra/maps/winapi_32.gdt \
@@ -49,7 +49,7 @@ parsing due to Ghidra C parser limitations with unnamed callback parameters.
    same project name. We store these under `analysis/ghidra/projects/`:
 
    ```bash
-   ./.codex/skills/ghidra/scripts/ghidra-analyze.sh \
+   ./analysis/ghidra/tooling/ghidra-analyze.sh \
      --keep-project \
      --project-dir analysis/ghidra/projects \
      --project-name crimsonland_exe \
@@ -67,7 +67,7 @@ parsing due to Ghidra C parser limitations with unnamed callback parameters.
    as functions:
 
    ```bash
-   ./.codex/skills/ghidra/scripts/ghidra-analyze.sh \
+   ./analysis/ghidra/tooling/ghidra-analyze.sh \
      --keep-project \
      --project-dir analysis/ghidra/projects \
      --project-name grim_dll \
@@ -89,7 +89,7 @@ parsing due to Ghidra C parser limitations with unnamed callback parameters.
      /opt/ghidra/support/analyzeHeadless \
      analysis/ghidra/projects grim_dll \
      -process grim.dll \
-     -scriptPath "/workspace/analysis/ghidra/scripts;/workspace/.codex/skills/ghidra/scripts/ghidra_scripts" \
+     -scriptPath "/workspace/analysis/ghidra/scripts;/workspace/analysis/ghidra/tooling/ghidra_scripts" \
      -postScript CreateGrim2DVtableFunctions.java \
      -postScript ApplyNameMap.java analysis/ghidra/maps/name_map.json \
      -postScript ApplyDataMap.java analysis/ghidra/maps/data_map.json \
