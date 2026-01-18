@@ -163,7 +163,6 @@ features = [
     "navigation.footer",
     "navigation.instant",
     "navigation.sections",
-    "search.highlight",
 ]
 
 # ----------------------------------------------------------------------------
