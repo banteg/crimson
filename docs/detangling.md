@@ -364,6 +364,75 @@ High score validation (`FUN_0043afa0`):
 - `quest_monster_vision_meta` (`DAT_004c3658`) points to a specific quest metadata entry
   used to force the Monster Vision perk in `perks_generate_choices`.
 
+### Quest unlock table (perk/weapon rewards)
+
+Quest metadata includes two reward fields:
+- `quest_unlock_perk_id` (`DAT_00484750`, offset `+0x20`) — perk unlock for a quest (stride `0x2c`).
+- `quest_unlock_weapon_id` (`DAT_00484754`, offset `+0x24`) — weapon unlock for a quest (stride `0x2c`).
+
+Indexing: `quest_index = (quest_stage_major - 1) * 10 + (quest_stage_minor - 1)`.
+Values below are initialized in `quest_database_init` (`FUN_00439230`).
+
+Tier 1
+- Quest 1: weapon Assault Rifle (id 0x02)
+- Quest 2: weapon Shotgun (id 0x03)
+- Quest 3: perk Uranium Filled Bullets (perk_id_uranium_filled_bullets, id 0x1c)
+- Quest 4: weapon Flamethrower (id 0x08)
+- Quest 5: perk Doctor (perk_id_doctor, id 0x1d)
+- Quest 6: weapon Submachine Gun (id 0x05)
+- Quest 7: perk Monster Vision (perk_id_monster_vision, id 0x1e)
+- Quest 8: weapon Gauss Gun (id 0x06)
+- Quest 9: perk Hot Tempered (perk_id_hot_tempered, id 0x1f)
+- Quest 10: weapon Rocket Launcher (id 0x0c)
+
+Tier 2
+- Quest 1: perk Bonus Economist (perk_id_bonus_economist, id 0x20)
+- Quest 2: weapon Plasma Rifle (id 0x09)
+- Quest 3: perk Thick Skinned (perk_id_thick_skinned, id 0x21)
+- Quest 4: weapon Ion Rifle (id 0x15)
+- Quest 5: perk Barrel Greaser (perk_id_barrel_greaser, id 0x22)
+- Quest 6: weapon Mean Minigun (id 0x07)
+- Quest 7: perk Ammunition Within (perk_id_ammunition_within, id 0x23)
+- Quest 8: weapon Sawed-off Shotgun (id 0x04)
+- Quest 9: perk Veins Of Poison (perk_id_veins_of_poison, id 0x24)
+- Quest 10: weapon Plasma Minigun (id 0x0b)
+
+Tier 3
+- Quest 1: perk Toxic Avenger (perk_id_toxic_avenger, id 0x25)
+- Quest 2: weapon Multi-Plasma (id 0x0a)
+- Quest 3: perk Regeneration (perk_id_regeneration, id 0x26)
+- Quest 4: weapon Seeker Rockets (id 0x0d)
+- Quest 5: perk Pyromaniac (perk_id_pyromaniac, id 0x27)
+- Quest 6: weapon Blow Torch (id 0x0f)
+- Quest 7: perk Ninja (perk_id_ninja, id 0x28)
+- Quest 8: weapon Rocket Minigun (id 0x12)
+- Quest 9: perk Highlander (perk_id_highlander, id 0x29)
+- Quest 10: weapon Jackhammer (id 0x14)
+
+Tier 4
+- Quest 1: perk Jinxed (perk_id_jinxed, id 0x2a)
+- Quest 2: weapon Pulse Gun (id 0x13)
+- Quest 3: perk Perk Master (perk_id_perk_master, id 0x2b)
+- Quest 4: weapon Plasma Shotgun (id 0x0e)
+- Quest 5: perk Reflex Boosted (perk_id_reflex_boosted, id 0x2c)
+- Quest 6: weapon Mini-Rocket Swarmers (id 0x11)
+- Quest 7: perk Greater Regeneration (perk_id_greater_regeneration, id 0x2d)
+- Quest 8: weapon Ion Minigun (id 0x16)
+- Quest 9: perk Breathing Room (perk_id_breathing_room, id 0x2e)
+- Quest 10: weapon Ion Cannon (id 0x17)
+
+Tier 5
+- Quest 1: weapon Ion Shotgun (id 0x1f)
+- Quest 2: perk Death Clock (perk_id_death_clock, id 0x2f)
+- Quest 3: perk My Favourite Weapon (perk_id_my_favourite_weapon, id 0x30)
+- Quest 4: weapon Gauss Shotgun (id 0x1e)
+- Quest 5: perk Bandage (perk_id_bandage, id 0x31)
+- Quest 6: perk Angry Reloader (perk_id_angry_reloader, id 0x32)
+- Quest 7: no unlock
+- Quest 8: perk Ion Gun Master (perk_id_ion_gun_master, id 0x33)
+- Quest 9: perk Stationary Reloader (perk_id_stationary_reloader, id 0x34)
+- Quest 10: weapon Plasma Cannon (id 0x1c)
+
 Record match + display selection:
 - `FUN_0043abd0` is the equality predicate used during save‑file replacement; it compares the
   player name plus metadata fields at offsets `0x20..0x34` (ints + a byte) and does not look

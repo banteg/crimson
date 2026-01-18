@@ -8035,8 +8035,8 @@ void quest_results_screen_update(void)
   else {
     if (DAT_00487234 == -2) {
       iVar2 = _quest_stage_minor + -0xb + _quest_stage_major * 10;
-      DAT_00482700 = (&DAT_00484754)[iVar2 * 0xb];
-      DAT_00482704 = (&DAT_00484750)[iVar2 * 0xb];
+      DAT_00482700 = (&quest_unlock_weapon_id)[iVar2 * 0xb];
+      DAT_00482704 = (&quest_unlock_perk_id)[iVar2 * 0xb];
       lVar9 = __ftol();
       player_health = (float)(int)lVar9;
       lVar9 = __ftol();
@@ -8381,8 +8381,8 @@ LAB_00411906:
     (**(code **)(*grim_interface_ptr + 0x148))();
     (**(code **)(*grim_interface_ptr + 0x114))();
     iVar2 = *grim_interface_ptr;
-    weapon_table_entry((&DAT_00484754)[(_quest_stage_minor + -0xb + _quest_stage_major * 10) * 0xb])
-    ;
+    weapon_table_entry((&quest_unlock_weapon_id)
+                       [(_quest_stage_minor + -0xb + _quest_stage_major * 10) * 0xb]);
     puStack_70 = (undefined *)0x411b4e;
     (**(code **)(iVar2 + 0x148))();
   }
@@ -23181,7 +23181,7 @@ void perks_rebuild_available(void)
   (&perk_available_table)[perk_id_tough_reloader * 0x14] = 1;
   iVar5 = 0;
   if (0 < iVar2) {
-    piVar6 = &DAT_00484750;
+    piVar6 = &quest_unlock_perk_id;
     do {
       if (0x484fe7 < (int)piVar6) break;
       iVar1 = *piVar6;
@@ -26261,7 +26261,7 @@ void quest_database_init(void)
   *(undefined4 *)(quest_meta_cursor + 8) = 480000;
   *(undefined1 **)(quest_meta_cursor + 0x1c) = &LAB_004349c0;
   quest_database_advance_slot(&local_4,&local_8);
-  DAT_00484754 = 2;
+  quest_unlock_weapon_id = 2;
   DAT_00484780 = 3;
   _DAT_004847ac = 0;
   _DAT_004847d8 = 8;
@@ -26301,7 +26301,7 @@ void quest_database_init(void)
   _DAT_00484db0 = 0x16;
   _DAT_00484ddc = 0;
   _DAT_00484e08 = 0x17;
-  DAT_00484750 = perk_id_antiperk;
+  quest_unlock_perk_id = perk_id_antiperk;
   DAT_0048477c = perk_id_antiperk;
   _DAT_004847a8 = 0x1c;
   _DAT_004847d4 = perk_id_antiperk;
@@ -35355,7 +35355,7 @@ void weapon_refresh_available(void)
   iVar5 = 0;
   DAT_004d7ae8 = 1;
   if (0 < quest_unlock_index) {
-    piVar4 = &DAT_00484754;
+    piVar4 = &quest_unlock_weapon_id;
     do {
       if (0x484feb < (int)piVar4) break;
       iVar1 = *piVar4;

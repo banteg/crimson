@@ -567,6 +567,18 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00484750",
+      "name": "quest_unlock_perk_id",
+      "comment": "Quest unlock perk id field (quest_selected_meta + 0x20, stride 0x2c). Used by perks_rebuild_available."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00484754",
+      "name": "quest_unlock_weapon_id",
+      "comment": "Quest unlock weapon id field (quest_selected_meta + 0x24, stride 0x2c). Used by weapon_refresh_available."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x0048474c",
       "name": "quest_selected_builder",
       "comment": "Current quest builder function pointer (runs quest script)."
