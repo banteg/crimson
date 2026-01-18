@@ -19,6 +19,7 @@
 const CONFIG = {
   // Where to write JSONL logs. If opening fails, we fall back to console-only.
   logPath: 'Z:\\crimsonland_frida_hits.jsonl',
+  logMode: 'truncate', // truncate | append
 
   // If true, also send() every event to the host.
   sendToHost: false,
@@ -474,7 +475,8 @@ let LOG = {
 
 function initLogFile() {
   try {
-    LOG.file = new File(CONFIG.logPath, 'a');
+    const mode = CONFIG.logMode === 'append' ? 'a' : 'w';
+    LOG.file = new File(CONFIG.logPath, mode);
     LOG.ok = true;
     writeLine({ event: 'log_open', ts: nowIso(), path: CONFIG.logPath });
   } catch (e) {

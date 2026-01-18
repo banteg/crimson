@@ -9,6 +9,7 @@ const DEFAULT_CONFIG = {
     json_path: "Z:\\grim_hits.jsonl",
     log_json: true,
     console_log: false,
+    log_mode: "truncate",
     log_interval_ms: 5000,
     trace: {
       mode: "callsite", // off | first | callsite | all
@@ -545,9 +546,10 @@ const playerTracker = normalizePlayerTracker(options.player_unknown_tracker);
 
 let outText = null;
 let outJson = null;
-try { outText = new File(options.out_path, "a"); } catch (e) {}
+const logMode = options.log_mode === "append" ? "a" : "w";
+try { outText = new File(options.out_path, logMode); } catch (e) {}
 if (options.log_json) {
-  try { outJson = new File(options.json_path, "a"); } catch (e) {}
+  try { outJson = new File(options.json_path, logMode); } catch (e) {}
 }
 
 function log(line) {

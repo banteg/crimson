@@ -5,6 +5,7 @@
     "json_path": "Z:\\grim_hits.jsonl",
     "log_json": true,
     "console_log": false,
+    "log_mode": "truncate",
     "log_interval_ms": 5000,
     "trace": {
       "mode": "callsite",
