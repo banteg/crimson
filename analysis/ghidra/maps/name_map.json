@@ -2577,5 +2577,82 @@
     "name": "crt_sopen",
     "signature": "int crt_sopen(char *filename, int oflag, int shflag, int pmode)",
     "comment": "CRT: open file with share mode, wraps CreateFile"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004610da",
+    "name": "crt_atof_l",
+    "signature": "double crt_atof_l(void *locale, char *str)",
+    "comment": "CRT: parse string to double (atof-style, locale)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00461c0e",
+    "name": "crt_ftell",
+    "signature": "long crt_ftell(FILE *fp)",
+    "comment": "CRT: ftell with file lock"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00461c30",
+    "name": "crt_ftell_nolock",
+    "signature": "long crt_ftell_nolock(FILE *fp)",
+    "comment": "CRT: ftell without lock"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00461e4a",
+    "name": "crt_snprintf",
+    "signature": "int crt_snprintf(char *dst, int size, char *fmt, ...)",
+    "comment": "CRT: size-limited sprintf"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00465652",
+    "name": "crt_write",
+    "signature": "int crt_write(int fd, char *buf, unsigned int count)",
+    "comment": "CRT: write handle with lock"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004656b7",
+    "name": "crt_write_nolock",
+    "signature": "int crt_write_nolock(int fd, char *buf, unsigned int count)",
+    "comment": "CRT: write handle (no lock), text-mode CRLF translation"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004658f0",
+    "name": "crt_bufcpy",
+    "signature": "void * crt_bufcpy(void *dst, void *src, size_t size)",
+    "comment": "CRT: buffer copy helper (overlap-safe)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00465fff",
+    "name": "crt_read",
+    "signature": "int crt_read(int fd, char *buf, unsigned int count)",
+    "comment": "CRT: read handle with lock"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00466064",
+    "name": "crt_read_nolock",
+    "signature": "int crt_read_nolock(int fd, char *buf, unsigned int count)",
+    "comment": "CRT: read handle (no lock), CRLF translation"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046cdcf",
+    "name": "crt_strtol_l",
+    "signature": "long crt_strtol_l(void *locale, char *str, char **endptr, int base)",
+    "comment": "CRT: parse integer with base (locale)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046cde6",
+    "name": "crt_strtoxl",
+    "signature": "unsigned long crt_strtoxl(void *locale, char *str, char **endptr, int base, unsigned int flags)",
+    "comment": "CRT: shared strto* core (base/sign/overflow)"
   }
 ]
