@@ -31,6 +31,7 @@ Data map coverage: 19.17% (626 / 3266 symbols)
 - [SFX labels](sfx-labels.md) — Tracking
 - [Game mode map](game-mode-map.md) — Tracking
 - [Detangling notes](detangling.md) — In progress
+- [Frida workflow](frida-workflow.md) — In progress
 - [Entrypoint trace](entrypoint.md) — In progress
 - [Crimsonland.exe overview](crimsonland-exe/index.md) — Draft
 - [Build provenance and hashes](provenance.md) — Tracking
