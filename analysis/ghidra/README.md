@@ -73,6 +73,7 @@ with unnamed callback parameters.
      --project-name grim_dll \
      --script-path analysis/ghidra/scripts \
      -s CreateGrim2DVtableFunctions.java \
+     -s CreateConfigDialogProc.java \
      -s ApplyNameMap.java -a analysis/ghidra/maps/name_map.json \
      -s ApplyDataMap.java -a analysis/ghidra/maps/data_map.json \
      -s ExportAll.java \
@@ -91,6 +92,7 @@ with unnamed callback parameters.
      -process grim.dll \
      -scriptPath "/workspace/analysis/ghidra/scripts;/workspace/analysis/ghidra/tooling/ghidra_scripts" \
      -postScript CreateGrim2DVtableFunctions.java \
+     -postScript CreateConfigDialogProc.java \
      -postScript ApplyNameMap.java analysis/ghidra/maps/name_map.json \
      -postScript ApplyDataMap.java analysis/ghidra/maps/data_map.json \
      -postScript ExportAll.java

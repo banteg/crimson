@@ -2155,6 +2155,48 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10033f0b",
+    "name": "inflate_blocks_reset",
+    "signature": "void inflate_blocks_reset(void *s, z_streamp z, uLongf *c)",
+    "comment": "zlib (internal): reset inflate blocks state"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10033f76",
+    "name": "inflate_blocks_new",
+    "signature": "void * inflate_blocks_new(z_streamp z, void *check_func, uInt w)",
+    "comment": "zlib (internal): allocate inflate blocks state"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003479e",
+    "name": "inflate_blocks_free",
+    "signature": "void inflate_blocks_free(void *s, z_streamp z)",
+    "comment": "zlib (internal): free inflate blocks state"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100347d2",
+    "name": "adler32",
+    "signature": "uLong adler32(uLong adler, Bytef *buf, uInt len)",
+    "comment": "zlib: adler32 checksum"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100348eb",
+    "name": "zcalloc",
+    "signature": "voidpf zcalloc(voidpf opaque, uInt items, uInt size)",
+    "comment": "zlib (internal): default alloc wrapper (calloc)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002e665",
+    "name": "zcfree",
+    "signature": "void zcfree(voidpf opaque, voidpf ptr)",
+    "comment": "zlib (internal): default free wrapper"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10024734",
     "name": "png_free_ptr",
     "signature": "void png_free_ptr(void * ptr)",
@@ -2212,9 +2254,9 @@
   {
     "program": "grim.dll",
     "address": "0x1002057e",
-    "name": "png_free",
+    "name": "png_free_thunk",
     "signature": "void png_free(png_structp png_ptr, void * ptr)",
-    "comment": "libpng 1.0.x internal helper"
+    "comment": "thunk to png_free (jmp 0x10024777)"
   },
   {
     "program": "grim.dll",

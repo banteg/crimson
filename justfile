@@ -68,6 +68,7 @@ ghidra-grim:
       -s ImportThirdPartyHeaders.java -a third_party/headers \
       -s ApplyWinapiGDT.java -a analysis/ghidra/maps/winapi_32.gdt \
       -s CreateGrim2DVtableFunctions.java \
+      -s CreateConfigDialogProc.java \
       -s ApplyNameMap.java -a analysis/ghidra/maps/name_map.json \
       -s ApplyDataMap.java -a analysis/ghidra/maps/data_map.json \
       -s ExportAll.java \
