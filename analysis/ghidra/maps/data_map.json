@@ -39,9 +39,27 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x0047365c",
+      "name": "game_status_filename",
+      "comment": "Filename for the status blob (game.cfg)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00473668",
       "name": "file_mode_write_binary",
       "comment": "CString \"wb\" used for config/status file writes."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00473e48",
+      "name": "config_filename",
+      "comment": "Filename for the config blob (crimson.cfg)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00474028",
+      "name": "console_log_filename",
+      "comment": "Filename for console log output (console.log)."
     },
     {
       "program": "crimsonland.exe",

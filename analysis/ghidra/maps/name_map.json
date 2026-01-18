@@ -346,6 +346,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041ec60",
+    "name": "config_sync_from_grim",
+    "signature": "int config_sync_from_grim(void)",
+    "comment": "syncs Grim config values into config blob and writes crimson.cfg"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041f130",
+    "name": "config_ensure_file",
+    "signature": "void config_ensure_file(void)",
+    "comment": "creates crimson.cfg when missing (writes default config blob)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041f1a0",
     "name": "config_load_presets",
     "comment": "loads config presets into globals"

@@ -9094,7 +9094,7 @@ void game_save_status(void)
     RegCloseKey((HKEY)local_8);
   }
   mode = &file_mode_write_binary;
-  path = game_build_path(s_game_cfg_0047365c);
+  path = game_build_path(game_status_filename);
   fp = crt_fopen(path,mode);
   if (fp != (FILE *)0x0) {
     game_status_blob._0_2_ = (undefined2)quest_unlock_index;
@@ -9149,7 +9149,7 @@ void game_load_status(void)
   int local_4;
   
   mode = &file_mode_read_binary;
-  path = game_build_path(s_game_cfg_0047365c);
+  path = game_build_path(game_status_filename);
   fp = crt_fopen(path,mode);
   uVar5 = 0;
   if (fp == (FILE *)0x0) {
@@ -15702,9 +15702,11 @@ void __cdecl creature_handle_death(int creature_id,bool keep_corpse)
 
 
 
-/* FUN_0041ec60 @ 0041ec60 */
+/* config_sync_from_grim @ 0041ec60 */
 
-undefined4 FUN_0041ec60(void)
+/* syncs Grim config values into config blob and writes crimson.cfg */
+
+int config_sync_from_grim(void)
 
 {
   char cVar1;
@@ -15972,7 +15974,7 @@ undefined4 FUN_0041ec60(void)
     uStack_270 = 0x17e;
     uStack_26c = 0x17e;
     puStack_4ac = (undefined4 *)CONCAT22(puStack_4ac._2_2_,0x101);
-    pcVar8 = game_build_path(s_crimson_cfg_00473e48);
+    pcVar8 = game_build_path(config_filename);
     pFVar4 = crt_fopen(pcVar8,pcVar12);
     if (pFVar4 != (FILE *)0x0) {
       crt_fseek(pFVar4,0,2);
@@ -16009,7 +16011,7 @@ undefined4 FUN_0041ec60(void)
     }
   }
   pcVar12 = &file_mode_write_binary;
-  pcVar8 = game_build_path(s_crimson_cfg_00473e48);
+  pcVar8 = game_build_path(config_filename);
   pFVar4 = crt_fopen(pcVar8,pcVar12);
   iVar9 = 0;
   if (pFVar4 != (FILE *)0x0) {
@@ -16021,9 +16023,11 @@ undefined4 FUN_0041ec60(void)
 
 
 
-/* FUN_0041f130 @ 0041f130 */
+/* config_ensure_file @ 0041f130 */
 
-void FUN_0041f130(void)
+/* creates crimson.cfg when missing (writes default config blob) */
+
+void config_ensure_file(void)
 
 {
   char *pcVar1;
@@ -16031,7 +16035,7 @@ void FUN_0041f130(void)
   char *pcVar3;
   
   pcVar3 = &file_mode_read_binary;
-  pcVar1 = game_build_path(s_crimson_cfg_00473e48);
+  pcVar1 = game_build_path(config_filename);
   pFVar2 = crt_fopen(pcVar1,pcVar3);
   if (pFVar2 != (FILE *)0x0) {
     crt_fclose(pFVar2);
@@ -16039,7 +16043,7 @@ void FUN_0041f130(void)
   }
   pcVar3 = &file_mode_write_binary;
   config_fx_toggle = 1;
-  pcVar1 = game_build_path(s_crimson_cfg_00473e48);
+  pcVar1 = game_build_path(config_filename);
   pFVar2 = crt_fopen(pcVar1,pcVar3);
   if (pFVar2 != (FILE *)0x0) {
     crt_fwrite(&config_blob,0x480,1,pFVar2);
@@ -16087,7 +16091,7 @@ uint config_load_presets(void)
   player_alt_key_reserved_1 = 0x1f;
   player_alt_key_reserved_2 = 0xd3;
   player_alt_key_reserved_3 = 0xc9;
-  pcVar1 = game_build_path(s_crimson_cfg_00473e48);
+  pcVar1 = game_build_path(config_filename);
   fp = crt_fopen(pcVar1,pcVar9);
   if (fp == (FILE *)0x0) {
     return 0;
@@ -16096,7 +16100,7 @@ uint config_load_presets(void)
   lVar2 = crt_ftell(fp);
   if (lVar2 != 0x480) {
     crt_fclose(fp);
-    uVar3 = FUN_0041ec60();
+    uVar3 = config_sync_from_grim();
     return uVar3 & 0xffffff00;
   }
   cVar8 = '\0';
@@ -21951,7 +21955,7 @@ int crimsonland_main(void)
   (*This->lpVtbl->Release)(This);
   console_printf(&console_log_queue,(byte *)s_Game_base_path____s__00474ca0);
   console_flush_log(&console_log_queue,filename_00);
-  FUN_0041f130();
+  config_ensure_file();
   console_register_command(&console_log_queue,(uint *)s_setGammaRamp_00474c90,&LAB_0042c3d0);
   console_register_command(&console_log_queue,(uint *)s_snd_addGameTune_00474c80,&LAB_0042c360);
   console_register_command(&console_log_queue,(uint *)s_generateterrain_00474c70,&LAB_0042a970);
@@ -22043,12 +22047,12 @@ int crimsonland_main(void)
   cVar1 = (**(code **)(*grim_interface_ptr + 0x10))();
   grim_config_invoked = 1;
   if (cVar1 == '\0') {
-    FUN_0041ec60();
+    config_sync_from_grim();
     grim_config_invoked = 0;
     (**(code **)*grim_interface_ptr)();
     return 0;
   }
-  FUN_0041ec60();
+  config_sync_from_grim();
   grim_config_invoked = 0;
   config_load_presets();
   console_printf(&console_log_queue,(byte *)s____setting_system_states_00474a84);
@@ -22161,7 +22165,7 @@ int crimsonland_main(void)
     puVar10 = (undefined4 *)((int)puVar10 + 1);
   }
   (**(code **)(*grim_interface_ptr + 0x54))(&key_char_buffer,&key_char_count,uVar15);
-  FUN_0041ec60();
+  config_sync_from_grim();
   puVar14 = &player_move_key_backward;
   puVar10 = &config_keybind_table_p2;
   do {

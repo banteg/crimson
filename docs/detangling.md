@@ -80,6 +80,12 @@ You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps
 - `FUN_00402bd0` -> `game_build_path`
   - Evidence: formats `"%s\\%s"` with `game_base_path` and a filename argument; used with
     `console.log`, `game.cfg` (save/status blob), and `crimson.cfg` (config blob).
+- `FUN_0041ec60` -> `config_sync_from_grim`
+  - Evidence: pulls Grim config values (`+0x24` accessor), seeds default config blob when the
+    Grim config dialog was invoked, loads `crimson.cfg` overrides, and writes the 0x480‑byte
+    blob back out.
+- `FUN_0041f130` -> `config_ensure_file`
+  - Evidence: ensures `crimson.cfg` exists by writing the current config blob when missing.
 
 ### Console command/cvar helpers (high confidence)
 

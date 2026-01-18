@@ -1029,16 +1029,16 @@
     "calls": ["FUN_0041f8d0", "FUN_00427700", "FUN_0042ec80", "FUN_0042ee00", "__ftol", "_rand", "bonus_spawn_at", "creature_alloc_slot", "effect_spawn_burst"]
   },
   {
-    "name": "FUN_0041ec60",
+    "name": "config_sync_from_grim",
     "address": "0041ec60",
-    "signature": "undefined4 FUN_0041ec60(void)",
+    "signature": "int config_sync_from_grim(void)",
     "external": false,
     "calls": ["crt_fclose", "crt_fopen", "crt_fread", "crt_fseek", "crt_ftell", "crt_fwrite", "game_build_path"]
   },
   {
-    "name": "FUN_0041f130",
+    "name": "config_ensure_file",
     "address": "0041f130",
-    "signature": "undefined FUN_0041f130(void)",
+    "signature": "void config_ensure_file(void)",
     "external": false,
     "calls": ["crt_fclose", "crt_fopen", "crt_fwrite", "game_build_path"]
   },
@@ -1047,7 +1047,7 @@
     "address": "0041f1a0",
     "signature": "uint config_load_presets(void)",
     "external": false,
-    "calls": ["FUN_0041ec60", "crt_fclose", "crt_fopen", "crt_fread", "crt_fseek", "crt_ftell", "game_build_path"]
+    "calls": ["config_sync_from_grim", "crt_fclose", "crt_fopen", "crt_fread", "crt_fseek", "crt_ftell", "game_build_path"]
   },
   {
     "name": "angle_approach",
@@ -1355,7 +1355,7 @@
     "address": "0042c450",
     "signature": "int crimsonland_main(void)",
     "external": false,
-    "calls": ["Direct3DCreate8", "FUN_0041ec60", "FUN_0041f130", "FUN_00461739", "FUN_004623b2", "GetCommandLineA", "HlinkNavigateString", "MessageBoxA", "MultiByteToWideChar", "RegCloseKey", "RegCreateKeyExA", "Sleep", "audio_shutdown_all", "config_load_presets", "console_exec_line", "console_flush_log", "console_printf", "console_register_command", "console_register_cvar", "crt_free"]
+    "calls": ["Direct3DCreate8", "FUN_00461739", "FUN_004623b2", "GetCommandLineA", "HlinkNavigateString", "MessageBoxA", "MultiByteToWideChar", "RegCloseKey", "RegCreateKeyExA", "Sleep", "audio_shutdown_all", "config_ensure_file", "config_load_presets", "config_sync_from_grim", "console_exec_line", "console_flush_log", "console_printf", "console_register_command", "console_register_cvar", "crt_free"]
   },
   {
     "name": "effect_init_entry",

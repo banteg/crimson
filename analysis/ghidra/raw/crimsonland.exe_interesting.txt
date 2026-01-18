@@ -14,6 +14,7 @@ Interesting Functions and Patterns
   console_tokenize_line @ 00402580
 
 [FILE related]
+  config_ensure_file @ 0041f130
   crt_lock_file @ 00463da5
   crt_lock_file2 @ 00463dd4
   crt_unlock_file @ 00463df7
