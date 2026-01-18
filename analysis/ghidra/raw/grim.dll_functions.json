@@ -4169,14 +4169,14 @@
     "address": "100239de",
     "signature": "undefined FUN_100239de(int * param_1, int param_2)",
     "external": false,
-    "calls": ["FUN_1002e665"]
+    "calls": ["zcfree"]
   },
   {
     "name": "FUN_10023abf",
     "address": "10023abf",
     "signature": "undefined FUN_10023abf(int * param_1)",
     "external": false,
-    "calls": ["FUN_10016c3b", "FUN_100239de", "FUN_1002e665"]
+    "calls": ["FUN_10016c3b", "FUN_100239de", "zcfree"]
   },
   {
     "name": "FUN_10023aef",
@@ -4253,21 +4253,21 @@
     "address": "10024212",
     "signature": "int inflateReset(z_streamp strm)",
     "external": false,
-    "calls": ["FUN_10033f0b"]
+    "calls": ["inflate_blocks_reset"]
   },
   {
     "name": "inflateEnd",
     "address": "10024251",
     "signature": "int inflateEnd(z_streamp strm)",
     "external": false,
-    "calls": ["FUN_1003479e"]
+    "calls": ["inflate_blocks_free"]
   },
   {
     "name": "inflateInit2_",
     "address": "1002428f",
     "signature": "int inflateInit2_(z_streamp strm, int windowBits, char * version, int stream_size)",
     "external": false,
-    "calls": ["FUN_10033f76", "FUN_100348eb", "inflateEnd", "inflateReset"]
+    "calls": ["inflateEnd", "inflateReset", "inflate_blocks_new", "zcalloc"]
   },
   {
     "name": "inflateInit_",
@@ -4281,7 +4281,7 @@
     "address": "1002438b",
     "signature": "int inflate(z_streamp strm, int flush)",
     "external": false,
-    "calls": ["FUN_10033f0b", "FUN_10034003"]
+    "calls": ["FUN_10034003", "inflate_blocks_reset"]
   },
   {
     "name": "FUN_100246f2",
@@ -4613,9 +4613,9 @@
     "calls": ["malloc"]
   },
   {
-    "name": "FUN_1002e665",
+    "name": "zcfree",
     "address": "1002e665",
-    "signature": "undefined FUN_1002e665(undefined4 param_1, void * param_2)",
+    "signature": "void zcfree(voidpf opaque, voidpf ptr)",
     "external": false,
     "calls": ["free"]
   },
@@ -5194,18 +5194,18 @@
     "calls": ["FUN_100335d0", "FUN_100336fd", "FUN_10033d70"]
   },
   {
-    "name": "FUN_10033f0b",
+    "name": "inflate_blocks_reset",
     "address": "10033f0b",
-    "signature": "undefined FUN_10033f0b(int * param_1, int param_2, int * param_3)",
+    "signature": "void inflate_blocks_reset(void * s, z_streamp z, uLongf * c)",
     "external": false,
     "calls": ["FUN_10036919"]
   },
   {
-    "name": "FUN_10033f76",
+    "name": "inflate_blocks_new",
     "address": "10033f76",
-    "signature": "int * FUN_10033f76(int param_1, int param_2, int param_3)",
+    "signature": "void * inflate_blocks_new(z_streamp z, void * check_func, uInt w)",
     "external": false,
-    "calls": ["FUN_10033f0b"]
+    "calls": ["inflate_blocks_reset"]
   },
   {
     "name": "FUN_10034003",
@@ -5215,23 +5215,23 @@
     "calls": ["FUN_10036e60"]
   },
   {
-    "name": "FUN_1003479e",
+    "name": "inflate_blocks_free",
     "address": "1003479e",
-    "signature": "undefined4 FUN_1003479e(int * param_1, int param_2)",
+    "signature": "void inflate_blocks_free(void * s, z_streamp z)",
     "external": false,
-    "calls": ["FUN_10033f0b"]
+    "calls": ["inflate_blocks_reset"]
   },
   {
-    "name": "FUN_100347d2",
+    "name": "adler32",
     "address": "100347d2",
-    "signature": "uint FUN_100347d2(uint param_1, byte * param_2, uint param_3)",
+    "signature": "uLong adler32(uLong adler, Bytef * buf, uInt len)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_100348eb",
+    "name": "zcalloc",
     "address": "100348eb",
-    "signature": "undefined FUN_100348eb(undefined4 param_1, size_t param_2, size_t param_3)",
+    "signature": "voidpf zcalloc(voidpf opaque, uInt items, uInt size)",
     "external": false,
     "calls": ["calloc"]
   },

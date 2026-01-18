@@ -27851,7 +27851,7 @@ void __cdecl FUN_100239de(int *param_1,int param_2)
     iVar5 = puVar2[2];
     iVar3 = puVar2[1];
     puVar4 = (undefined4 *)*puVar2;
-    FUN_1002e665(param_1,puVar2);
+    zcfree(param_1,puVar2);
     *(int *)(iVar1 + 0x48) = *(int *)(iVar1 + 0x48) - (iVar5 + 0x10 + iVar3);
     puVar2 = puVar4;
   }
@@ -27862,7 +27862,7 @@ void __cdecl FUN_100239de(int *param_1,int param_2)
     iVar5 = puVar4[2];
     iVar3 = puVar4[1];
     puVar2 = (undefined4 *)*puVar4;
-    FUN_1002e665(param_1,puVar4);
+    zcfree(param_1,puVar4);
     *(int *)(iVar1 + 0x48) = *(int *)(iVar1 + 0x48) - (iVar5 + 0x10 + iVar3);
     puVar4 = puVar2;
   }
@@ -27883,7 +27883,7 @@ void __cdecl FUN_10023abf(int *param_1)
     FUN_100239de(param_1,iVar1);
     iVar1 = iVar1 + -1;
   } while (-1 < iVar1);
-  FUN_1002e665(param_1,(void *)param_1[1]);
+  zcfree(param_1,(voidpf)param_1[1]);
   param_1[1] = 0;
   FUN_10016c3b();
   return;
@@ -28325,7 +28325,7 @@ int __cdecl inflateReset(z_streamp strm)
     strm->total_in = 0;
     strm->msg = (char *)0x0;
     piVar1->dummy = -(uint)(piVar1[3].dummy != 0) & 7;
-    FUN_10033f0b((int *)strm->state[5].dummy,(int)strm,(int *)0x0);
+    inflate_blocks_reset((void *)strm->state[5].dummy,strm,(uLongf *)0x0);
     return 0;
   }
   return -2;
@@ -28340,13 +28340,13 @@ int __cdecl inflateReset(z_streamp strm)
 int __cdecl inflateEnd(z_streamp strm)
 
 {
-  int *piVar1;
+  void *s;
   
   if (((strm != (z_streamp)0x0) && (strm->state != (internal_state *)0x0)) &&
      (strm->zfree != (free_func)0x0)) {
-    piVar1 = (int *)strm->state[5].dummy;
-    if (piVar1 != (int *)0x0) {
-      FUN_1003479e(piVar1,(int)strm);
+    s = (void *)strm->state[5].dummy;
+    if (s != (void *)0x0) {
+      inflate_blocks_free(s,strm);
     }
     (*strm->zfree)(strm->opaque,strm->state);
     strm->state = (internal_state *)0x0;
@@ -28365,7 +28365,7 @@ int __cdecl inflateInit2_(z_streamp strm,int windowBits,char *version,int stream
 
 {
   internal_state *piVar1;
-  int *piVar2;
+  void *pvVar2;
   int iVar3;
   
   if (((version == (char *)0x0) || (*version != '1')) || (stream_size != 0x38)) {
@@ -28377,11 +28377,11 @@ int __cdecl inflateInit2_(z_streamp strm,int windowBits,char *version,int stream
   else {
     strm->msg = (char *)0x0;
     if (strm->zalloc == (alloc_func)0x0) {
-      strm->zalloc = FUN_100348eb;
+      strm->zalloc = zcalloc;
       strm->opaque = (voidpf)0x0;
     }
     if (strm->zfree == (free_func)0x0) {
-      strm->zfree = FUN_1002e665;
+      strm->zfree = zcfree;
     }
     piVar1 = (*strm->zalloc)(strm->opaque,1,0x18);
     strm->state = piVar1;
@@ -28400,9 +28400,9 @@ int __cdecl inflateInit2_(z_streamp strm,int windowBits,char *version,int stream
       }
       else {
         strm->state[4].dummy = windowBits;
-        piVar2 = FUN_10033f76((int)strm,~-(uint)(strm->state[3].dummy != 0) & 0x100347d2,
-                              1 << ((byte)windowBits & 0x1f));
-        strm->state[5].dummy = (int)piVar2;
+        pvVar2 = inflate_blocks_new(strm,(void *)(~-(uint)(strm->state[3].dummy != 0) & 0x100347d2),
+                                    1 << ((byte)windowBits & 0x1f));
+        strm->state[5].dummy = (int)pvVar2;
         if (strm->state[5].dummy != 0) {
           inflateReset(strm);
           return 0;
@@ -28540,7 +28540,7 @@ switchD_100243c8_caseD_2:
       if (pbVar3 != (byte *)0x1) {
         return (int)pbVar3;
       }
-      FUN_10033f0b((int *)strm->state[5].dummy,(int)strm,&strm->state[1].dummy);
+      inflate_blocks_reset((void *)strm->state[5].dummy,strm,(uLongf *)(strm->state + 1));
       piVar4 = strm->state;
       if (piVar4[3].dummy == 0) {
         piVar4->dummy = 8;
@@ -33259,12 +33259,14 @@ void __cdecl FUN_1002e65a(undefined4 param_1,size_t param_2)
 
 
 
-/* FUN_1002e665 @ 1002e665 */
+/* zcfree @ 1002e665 */
 
-void __cdecl FUN_1002e665(undefined4 param_1,void *param_2)
+/* zlib (internal): default free wrapper */
+
+void __cdecl zcfree(voidpf opaque,voidpf ptr)
 
 {
-  free(param_2);
+  free(ptr);
   return;
 }
 
@@ -38735,66 +38737,70 @@ void __cdecl FUN_10033e84(int *param_1)
 
 
 
-/* FUN_10033f0b @ 10033f0b */
+/* inflate_blocks_reset @ 10033f0b */
 
-void __cdecl FUN_10033f0b(int *param_1,int param_2,int *param_3)
+/* zlib (internal): reset inflate blocks state */
+
+void __cdecl inflate_blocks_reset(void *s,z_streamp z,uLongf *c)
 
 {
-  int iVar1;
+  uLong uVar1;
   
-  if (param_3 != (int *)0x0) {
-    *param_3 = param_1[0xf];
+  if (c != (uLongf *)0x0) {
+    *c = *(uLongf *)((int)s + 0x3c);
   }
-  if ((*param_1 == 4) || (*param_1 == 5)) {
-    (**(code **)(param_2 + 0x24))(*(undefined4 *)(param_2 + 0x28),param_1[3]);
+  if ((*(int *)s == 4) || (*(int *)s == 5)) {
+    (*z->zfree)(z->opaque,*(voidpf *)((int)s + 0xc));
   }
-  if (*param_1 == 6) {
-    FUN_10036919(param_1[1],param_2);
+  if (*(int *)s == 6) {
+    FUN_10036919(*(undefined4 *)((int)s + 4),(int)z);
   }
-  param_1[0xd] = param_1[10];
-  param_1[0xc] = param_1[10];
-  *param_1 = 0;
-  param_1[7] = 0;
-  param_1[8] = 0;
-  if ((code *)param_1[0xe] != (code *)0x0) {
-    iVar1 = (*(code *)param_1[0xe])(0,0,0);
-    param_1[0xf] = iVar1;
-    *(int *)(param_2 + 0x30) = iVar1;
+  *(undefined4 *)((int)s + 0x34) = *(undefined4 *)((int)s + 0x28);
+  *(undefined4 *)((int)s + 0x30) = *(undefined4 *)((int)s + 0x28);
+  *(undefined4 *)s = 0;
+  *(undefined4 *)((int)s + 0x1c) = 0;
+  *(undefined4 *)((int)s + 0x20) = 0;
+  if (*(code **)((int)s + 0x38) != (code *)0x0) {
+    uVar1 = (**(code **)((int)s + 0x38))(0,0,0);
+    *(uLong *)((int)s + 0x3c) = uVar1;
+    z->adler = uVar1;
   }
   return;
 }
 
 
 
-/* FUN_10033f76 @ 10033f76 */
+/* inflate_blocks_new @ 10033f76 */
 
-int * __cdecl FUN_10033f76(int param_1,int param_2,int param_3)
+/* zlib (internal): allocate inflate blocks state */
+
+void * __cdecl inflate_blocks_new(z_streamp z,void *check_func,uInt w)
 
 {
-  int *piVar1;
-  int iVar2;
+  undefined4 *s;
+  voidpf pvVar1;
   
-  piVar1 = (int *)(**(code **)(param_1 + 0x20))(*(undefined4 *)(param_1 + 0x28),1,0x40);
-  if (piVar1 != (int *)0x0) {
-    iVar2 = (**(code **)(param_1 + 0x20))(*(undefined4 *)(param_1 + 0x28),8,0x5a0);
-    piVar1[9] = iVar2;
-    if (iVar2 != 0) {
-      iVar2 = (**(code **)(param_1 + 0x20))(*(undefined4 *)(param_1 + 0x28),1,param_3);
-      piVar1[10] = iVar2;
-      if (iVar2 == 0) {
-        (**(code **)(param_1 + 0x24))(*(undefined4 *)(param_1 + 0x28),piVar1[9]);
-        (**(code **)(param_1 + 0x24))(*(undefined4 *)(param_1 + 0x28),piVar1);
-        return (int *)0x0;
+  s = (*z->zalloc)(z->opaque,1,0x40);
+  if (s != (undefined4 *)0x0) {
+    pvVar1 = (*z->zalloc)(z->opaque,8,0x5a0);
+    s[9] = pvVar1;
+    if (pvVar1 != (voidpf)0x0) {
+      pvVar1 = (*z->zalloc)(z->opaque,1,w);
+      s[10] = pvVar1;
+      if (pvVar1 == (voidpf)0x0) {
+        (*z->zfree)(z->opaque,(voidpf)s[9]);
+        (*z->zfree)(z->opaque,s);
+        return (void *)0x0;
       }
-      *piVar1 = 0;
-      piVar1[0xb] = iVar2 + param_3;
-      piVar1[0xe] = param_2;
-      FUN_10033f0b(piVar1,param_1,(int *)0x0);
-      return piVar1;
+      *s = 0;
+      s[0xb] = (int)pvVar1 + w;
+      s[0xe] = check_func;
+      inflate_blocks_reset(s,z,(uLongf *)0x0);
+      return s;
     }
-    (**(code **)(param_1 + 0x24))(*(undefined4 *)(param_1 + 0x28),piVar1);
+    (*z->zfree)(z->opaque,s);
   }
-  return (int *)0x0;
+  return (void *)0x0;
 }
 
 
@@ -39215,29 +39221,33 @@ code_r0x1003406d:
 
 
 
-/* FUN_1003479e @ 1003479e */
+/* inflate_blocks_free @ 1003479e */
 
-undefined4 __cdecl FUN_1003479e(int *param_1,int param_2)
+/* zlib (internal): free inflate blocks state */
+
+void __cdecl inflate_blocks_free(void *s,z_streamp z)
 
 {
-  FUN_10033f0b(param_1,param_2,(int *)0x0);
-  (**(code **)(param_2 + 0x24))(*(undefined4 *)(param_2 + 0x28),param_1[10]);
-  (**(code **)(param_2 + 0x24))(*(undefined4 *)(param_2 + 0x28),param_1[9]);
-  (**(code **)(param_2 + 0x24))(*(undefined4 *)(param_2 + 0x28),param_1);
-  return 0;
+  inflate_blocks_reset(s,z,(uLongf *)0x0);
+  (*z->zfree)(z->opaque,*(voidpf *)((int)s + 0x28));
+  (*z->zfree)(z->opaque,*(voidpf *)((int)s + 0x24));
+  (*z->zfree)(z->opaque,s);
+  return;
 }
 
 
 
-/* FUN_100347d2 @ 100347d2 */
+/* adler32 @ 100347d2 */
 
-uint __cdecl FUN_100347d2(uint param_1,byte *param_2,uint param_3)
+/* zlib: adler32 checksum */
+
+uLong __cdecl adler32(uLong adler,Bytef *buf,uInt len)
 
 {
-  uint uVar1;
+  uLong uVar1;
   uint uVar2;
   uint uVar3;
-  int iVar4;
+  uint uVar4;
   int iVar5;
   int iVar6;
   int iVar7;
@@ -39252,68 +39262,73 @@ uint __cdecl FUN_100347d2(uint param_1,byte *param_2,uint param_3)
   int iVar16;
   int iVar17;
   int iVar18;
-  uint uVar19;
+  int iVar19;
+  uint uVar20;
   
-  uVar3 = param_1 & 0xffff;
-  uVar19 = param_1 >> 0x10;
-  if (param_2 == (byte *)0x0) {
-    uVar3 = 1;
+  uVar4 = adler & 0xffff;
+  uVar20 = adler >> 0x10;
+  if (buf == (Bytef *)0x0) {
+    uVar1 = 1;
   }
   else {
-    while (param_3 != 0) {
-      uVar2 = 0x15b0;
-      if (param_3 < 0x15b0) {
-        uVar2 = param_3;
+    while (len != 0) {
+      uVar3 = 0x15b0;
+      if (len < 0x15b0) {
+        uVar3 = len;
       }
-      param_3 = param_3 - uVar2;
-      if (0xf < (int)uVar2) {
-        uVar1 = uVar2 >> 4;
-        uVar2 = uVar2 + uVar1 * -0x10;
+      len = len - uVar3;
+      if (0xf < (int)uVar3) {
+        uVar2 = uVar3 >> 4;
+        uVar3 = uVar3 + uVar2 * -0x10;
         do {
-          iVar4 = uVar3 + *param_2;
-          iVar5 = iVar4 + (uint)param_2[1];
-          iVar6 = iVar5 + (uint)param_2[2];
-          iVar7 = iVar6 + (uint)param_2[3];
-          iVar8 = iVar7 + (uint)param_2[4];
-          iVar9 = iVar8 + (uint)param_2[5];
-          iVar10 = iVar9 + (uint)param_2[6];
-          iVar11 = iVar10 + (uint)param_2[7];
-          iVar12 = iVar11 + (uint)param_2[8];
-          iVar13 = iVar12 + (uint)param_2[9];
-          iVar14 = iVar13 + (uint)param_2[10];
-          iVar15 = iVar14 + (uint)param_2[0xb];
-          iVar16 = iVar15 + (uint)param_2[0xc];
-          iVar17 = iVar16 + (uint)param_2[0xd];
-          iVar18 = iVar17 + (uint)param_2[0xe];
-          uVar3 = iVar18 + (uint)param_2[0xf];
-          uVar19 = uVar19 + iVar4 + iVar5 + iVar6 + iVar7 + iVar8 + iVar9 + iVar10 + iVar11 + iVar12
-                   + iVar13 + iVar14 + iVar15 + iVar16 + iVar17 + iVar18 + uVar3;
-          param_2 = param_2 + 0x10;
-          uVar1 = uVar1 - 1;
-        } while (uVar1 != 0);
+          iVar5 = uVar4 + *buf;
+          iVar6 = iVar5 + (uint)buf[1];
+          iVar7 = iVar6 + (uint)buf[2];
+          iVar8 = iVar7 + (uint)buf[3];
+          iVar9 = iVar8 + (uint)buf[4];
+          iVar10 = iVar9 + (uint)buf[5];
+          iVar11 = iVar10 + (uint)buf[6];
+          iVar12 = iVar11 + (uint)buf[7];
+          iVar13 = iVar12 + (uint)buf[8];
+          iVar14 = iVar13 + (uint)buf[9];
+          iVar15 = iVar14 + (uint)buf[10];
+          iVar16 = iVar15 + (uint)buf[0xb];
+          iVar17 = iVar16 + (uint)buf[0xc];
+          iVar18 = iVar17 + (uint)buf[0xd];
+          iVar19 = iVar18 + (uint)buf[0xe];
+          uVar4 = iVar19 + (uint)buf[0xf];
+          uVar20 = uVar20 + iVar5 + iVar6 + iVar7 + iVar8 + iVar9 + iVar10 + iVar11 + iVar12 +
+                   iVar13 + iVar14 + iVar15 + iVar16 + iVar17 + iVar18 + iVar19 + uVar4;
+          buf = buf + 0x10;
+          uVar2 = uVar2 - 1;
+        } while (uVar2 != 0);
       }
-      for (; uVar2 != 0; uVar2 = uVar2 - 1) {
-        uVar3 = uVar3 + *param_2;
-        param_2 = param_2 + 1;
-        uVar19 = uVar19 + uVar3;
+      for (; uVar3 != 0; uVar3 = uVar3 - 1) {
+        uVar4 = uVar4 + *buf;
+        buf = buf + 1;
+        uVar20 = uVar20 + uVar4;
       }
-      uVar3 = uVar3 % 0xfff1;
-      uVar19 = uVar19 % 0xfff1;
+      uVar4 = uVar4 % 0xfff1;
+      uVar20 = uVar20 % 0xfff1;
     }
-    uVar3 = uVar19 << 0x10 | uVar3;
+    uVar1 = uVar20 << 0x10 | uVar4;
   }
-  return uVar3;
+  return uVar1;
 }
 
 
 
-/* FUN_100348eb @ 100348eb */
+/* zcalloc @ 100348eb */
 
-void __cdecl FUN_100348eb(undefined4 param_1,size_t param_2,size_t param_3)
+/* zlib (internal): default alloc wrapper (calloc) */
+
+voidpf __cdecl zcalloc(voidpf opaque,uInt items,uInt size)
 
 {
-  calloc(param_2,param_3);
-  return;
+  void *pvVar1;
+  
+  pvVar1 = calloc(items,size);
+  return pvVar1;
 }
 
 

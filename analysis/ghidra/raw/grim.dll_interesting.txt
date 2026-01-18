@@ -40,10 +40,13 @@ Interesting Functions and Patterns
   png_free @ 1002057e
   png_free_ptr @ 10024734
   png_free @ 10024777
+  zcfree @ 1002e665
+  inflate_blocks_free @ 1003479e
 
 [ALLOC related]
   malloc @ 1000aa98
   png_malloc @ 10024741
+  zcalloc @ 100348eb
   calloc @ 1004b7c6
 
 [SPRINTF related]
