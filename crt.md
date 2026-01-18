@@ -1,0 +1,327 @@
+# CRT Checklist
+
+- Mapped CRT entries (name_map): 80
+- Unmapped candidates (upper bound in 0x00460000–0x0046ffff): 236 FUN_ functions
+
+## Mapped
+- [x] crt_atexit
+- [x] crt_atof_l
+- [x] crt_bufcpy
+- [x] crt_build_argv
+- [x] crt_build_environ
+- [x] crt_call_fn_range
+- [x] crt_chsize
+- [x] crt_doexit
+- [x] crt_doserrno_ptr
+- [x] crt_dosmaperr
+- [x] crt_errno_ptr
+- [x] crt_exception_filter
+- [x] crt_exit
+- [x] crt_exit_lock
+- [x] crt_exit_unlock
+- [x] crt_fclose
+- [x] crt_flsbuf
+- [x] crt_fopen
+- [x] crt_fread
+- [x] crt_fread_nolock
+- [x] crt_free
+- [x] crt_free_base
+- [x] crt_free_thread_data
+- [x] crt_fseek
+- [x] crt_fseek_nolock
+- [x] crt_fsopen
+- [x] crt_ftell
+- [x] crt_ftell_nolock
+- [x] crt_fwrite
+- [x] crt_fwrite_nolock
+- [x] crt_get_environment_strings
+- [x] crt_get_thread_data
+- [x] crt_getstream
+- [x] crt_heap_init
+- [x] crt_heap_select
+- [x] crt_init_locks
+- [x] crt_io_init
+- [x] crt_isalpha
+- [x] crt_isctype
+- [x] crt_isspace
+- [x] crt_lock
+- [x] crt_lock_fh
+- [x] crt_lock_file
+- [x] crt_lseek
+- [x] crt_lseek_nolock
+- [x] crt_memmove
+- [x] crt_mktime
+- [x] crt_mt_init
+- [x] crt_onexit
+- [x] crt_openfile
+- [x] crt_output
+- [x] crt_parse_cmdline
+- [x] crt_putc_buffer_nolock
+- [x] crt_putc_nolock
+- [x] crt_putc_repeat_nolock
+- [x] crt_qsort
+- [x] crt_read
+- [x] crt_read_nolock
+- [x] crt_report_runtime_error
+- [x] crt_run_initializers
+- [x] crt_runtime_error_banner
+- [x] crt_sbh_create_region
+- [x] crt_sbh_init
+- [x] crt_shortsort
+- [x] crt_skip_program_name
+- [x] crt_snprintf
+- [x] crt_sopen
+- [x] crt_sprintf
+- [x] crt_strcat
+- [x] crt_strcpy
+- [x] crt_strtok
+- [x] crt_strtol_l
+- [x] crt_strtoxl
+- [x] crt_swap
+- [x] crt_unlock
+- [x] crt_unlock_fh
+- [x] crt_unlock_file
+- [x] crt_vsprintf
+- [x] crt_write
+- [x] crt_write_nolock
+
+## Remaining (Estimate)
+
+- [ ] Review 236 FUN_ functions in 0x00460000–0x0046ffff for CRT matches (upper bound)
+- [ ] FUN_004600c0 @ 004600c0
+- [ ] FUN_004601c0 @ 004601c0
+- [ ] FUN_004607a0 @ 004607a0
+- [ ] FUN_004608c0 @ 004608c0
+- [ ] FUN_00460cb8 @ 00460cb8
+- [ ] FUN_00460ccf @ 00460ccf
+- [ ] FUN_00460cd0 @ 00460cd0
+- [ ] FUN_00460dd2 @ 00460dd2
+- [ ] FUN_00460fac @ 00460fac
+- [ ] FUN_004610da @ 004610da
+- [ ] FUN_00461140 @ 00461140
+- [ ] FUN_00461162 @ 00461162
+- [ ] FUN_00461335 @ 00461335
+- [ ] FUN_00461448 @ 00461448
+- [ ] FUN_00461477 @ 00461477
+- [ ] FUN_004614a5 @ 004614a5
+- [ ] FUN_0046150a @ 0046150a
+- [ ] FUN_00461739 @ 00461739
+- [ ] FUN_00461768 @ 00461768
+- [ ] FUN_00461835 @ 00461835
+- [ ] FUN_004618fd @ 004618fd
+- [ ] FUN_00461981 @ 00461981
+- [ ] FUN_004619eb @ 004619eb
+- [ ] FUN_00461a03 @ 00461a03
+- [ ] FUN_00461a6b @ 00461a6b
+- [ ] FUN_00461a83 @ 00461a83
+- [ ] FUN_00461c0e @ 00461c0e
+- [ ] FUN_00461c30 @ 00461c30
+- [ ] FUN_00461e4a @ 00461e4a
+- [ ] FUN_00461e9b @ 00461e9b
+- [ ] FUN_00461f0a @ 00461f0a
+- [ ] FUN_00461fd5 @ 00461fd5
+- [ ] FUN_00462104 @ 00462104
+- [ ] FUN_00462173 @ 00462173
+- [ ] FUN_0046223f @ 0046223f
+- [ ] FUN_004622b6 @ 004622b6
+- [ ] FUN_00462373 @ 00462373
+- [ ] FUN_004623b2 @ 004623b2
+- [ ] FUN_0046248e @ 0046248e
+- [ ] FUN_004624b5 @ 004624b5
+- [ ] FUN_0046258a @ 0046258a
+- [ ] FUN_0046262b @ 0046262b
+- [ ] FUN_00462683 @ 00462683
+- [ ] FUN_004626aa @ 004626aa
+- [ ] FUN_00462835 @ 00462835
+- [ ] FUN_00462983 @ 00462983
+- [ ] FUN_00462a17 @ 00462a17
+- [ ] FUN_00462a7e @ 00462a7e
+- [ ] FUN_00462add @ 00462add
+- [ ] FUN_00462ba0 @ 00462ba0
+- [ ] FUN_00462da2 @ 00462da2
+- [ ] FUN_00462de0 @ 00462de0
+- [ ] FUN_00463153 @ 00463153
+- [ ] FUN_00463180 @ 00463180
+- [ ] FUN_0046319d @ 0046319d
+- [ ] FUN_0046324b @ 0046324b
+- [ ] FUN_0046325f @ 0046325f
+- [ ] FUN_004632f1 @ 004632f1
+- [ ] FUN_00463325 @ 00463325
+- [ ] FUN_0046332c @ 0046332c
+- [ ] FUN_00463333 @ 00463333
+- [ ] FUN_00463382 @ 00463382
+- [ ] FUN_004633b8 @ 004633b8
+- [ ] FUN_0046340c @ 0046340c
+- [ ] FUN_00463431 @ 00463431
+- [ ] FUN_004634e7 @ 004634e7
+- [ ] FUN_0046355c @ 0046355c
+- [ ] FUN_004636ae @ 004636ae
+- [ ] FUN_004636c8 @ 004636c8
+- [ ] FUN_004636e7 @ 004636e7
+- [ ] FUN_004636f9 @ 004636f9
+- [ ] FUN_00463737 @ 00463737
+- [ ] FUN_00463760 @ 00463760
+- [ ] FUN_0046385e @ 0046385e
+- [ ] FUN_004638bf @ 004638bf
+- [ ] FUN_00463981 @ 00463981
+- [ ] FUN_004639d6 @ 004639d6
+- [ ] FUN_00463a7d @ 00463a7d
+- [ ] FUN_00463b61 @ 00463b61
+- [ ] FUN_00463b86 @ 00463b86
+- [ ] FUN_00463bf0 @ 00463bf0
+- [ ] FUN_00463c6b @ 00463c6b
+- [ ] FUN_00463dd4 @ 00463dd4
+- [ ] FUN_00463e26 @ 00463e26
+- [ ] FUN_00463e49 @ 00463e49
+- [ ] FUN_00463ea6 @ 00463ea6
+- [ ] FUN_00463f54 @ 00463f54
+- [ ] FUN_00464bbc @ 00464bbc
+- [ ] FUN_00464bc9 @ 00464bc9
+- [ ] FUN_00464bd9 @ 00464bd9
+- [ ] FUN_00464be7 @ 00464be7
+- [ ] FUN_004650d0 @ 004650d0
+- [ ] FUN_00465130 @ 00465130
+- [ ] FUN_00465145 @ 00465145
+- [ ] FUN_0046515c @ 0046515c
+- [ ] FUN_004651b8 @ 004651b8
+- [ ] FUN_004651ce @ 004651ce
+- [ ] FUN_00465219 @ 00465219
+- [ ] FUN_004652bc @ 004652bc
+- [ ] FUN_004653ec @ 004653ec
+- [ ] FUN_004654a5 @ 004654a5
+- [ ] FUN_004655bf @ 004655bf
+- [ ] FUN_00465652 @ 00465652
+- [ ] FUN_004656b7 @ 004656b7
+- [ ] FUN_004658f0 @ 004658f0
+- [ ] FUN_00465f2d @ 00465f2d
+- [ ] FUN_00465f48 @ 00465f48
+- [ ] FUN_00465fa9 @ 00465fa9
+- [ ] FUN_00465fff @ 00465fff
+- [ ] FUN_00466064 @ 00466064
+- [ ] FUN_004664d1 @ 004664d1
+- [ ] FUN_004666f5 @ 004666f5
+- [ ] FUN_00466782 @ 00466782
+- [ ] FUN_004667ac @ 004667ac
+- [ ] FUN_00466845 @ 00466845
+- [ ] FUN_004668ce @ 004668ce
+- [ ] FUN_00466a27 @ 00466a27
+- [ ] FUN_00466a61 @ 00466a61
+- [ ] FUN_00466c7b @ 00466c7b
+- [ ] FUN_00466ca6 @ 00466ca6
+- [ ] FUN_00466fcf @ 00466fcf
+- [ ] FUN_004672d8 @ 004672d8
+- [ ] FUN_00467389 @ 00467389
+- [ ] FUN_00467484 @ 00467484
+- [ ] FUN_004678be @ 004678be
+- [ ] FUN_00467914 @ 00467914
+- [ ] FUN_004679d6 @ 004679d6
+- [ ] FUN_00467a2d @ 00467a2d
+- [ ] FUN_00467a72 @ 00467a72
+- [ ] FUN_00467c7a @ 00467c7a
+- [ ] FUN_00467d9e @ 00467d9e
+- [ ] FUN_00467e47 @ 00467e47
+- [ ] FUN_00467e62 @ 00467e62
+- [ ] FUN_00468887 @ 00468887
+- [ ] FUN_004688be @ 004688be
+- [ ] FUN_004688d8 @ 004688d8
+- [ ] FUN_004688ef @ 004688ef
+- [ ] FUN_00468f2f @ 00468f2f
+- [ ] FUN_00468f58 @ 00468f58
+- [ ] FUN_00468fb2 @ 00468fb2
+- [ ] FUN_00469073 @ 00469073
+- [ ] FUN_00469326 @ 00469326
+- [ ] FUN_0046953d @ 0046953d
+- [ ] FUN_00469565 @ 00469565
+- [ ] FUN_00469573 @ 00469573
+- [ ] FUN_00469582 @ 00469582
+- [ ] FUN_004695a5 @ 004695a5
+- [ ] FUN_004695fb @ 004695fb
+- [ ] FUN_00469696 @ 00469696
+- [ ] FUN_00469849 @ 00469849
+- [ ] FUN_004698f3 @ 004698f3
+- [ ] FUN_00469950 @ 00469950
+- [ ] FUN_004699ee @ 004699ee
+- [ ] FUN_00469a69 @ 00469a69
+- [ ] FUN_00469b36 @ 00469b36
+- [ ] FUN_00469bae @ 00469bae
+- [ ] FUN_00469d72 @ 00469d72
+- [ ] FUN_00469dd9 @ 00469dd9
+- [ ] FUN_00469e4c @ 00469e4c
+- [ ] FUN_00469e81 @ 00469e81
+- [ ] FUN_00469e97 @ 00469e97
+- [ ] FUN_00469f29 @ 00469f29
+- [ ] FUN_00469fb2 @ 00469fb2
+- [ ] FUN_00469ffb @ 00469ffb
+- [ ] FUN_0046a051 @ 0046a051
+- [ ] FUN_0046a0dd @ 0046a0dd
+- [ ] FUN_0046a0f8 @ 0046a0f8
+- [ ] FUN_0046a104 @ 0046a104
+- [ ] FUN_0046a11f @ 0046a11f
+- [ ] FUN_0046a1ac @ 0046a1ac
+- [ ] FUN_0046a318 @ 0046a318
+- [ ] FUN_0046a32e @ 0046a32e
+- [ ] FUN_0046a344 @ 0046a344
+- [ ] FUN_0046a371 @ 0046a371
+- [ ] FUN_0046a39e @ 0046a39e
+- [ ] FUN_0046a415 @ 0046a415
+- [ ] FUN_0046a471 @ 0046a471
+- [ ] FUN_0046a8c5 @ 0046a8c5
+- [ ] FUN_0046a8ce @ 0046a8ce
+- [ ] FUN_0046aa98 @ 0046aa98
+- [ ] FUN_0046abbb @ 0046abbb
+- [ ] FUN_0046ac37 @ 0046ac37
+- [ ] FUN_0046acb6 @ 0046acb6
+- [ ] FUN_0046ad79 @ 0046ad79
+- [ ] FUN_0046b08c @ 0046b08c
+- [ ] FUN_0046b0b5 @ 0046b0b5
+- [ ] FUN_0046b10e @ 0046b10e
+- [ ] FUN_0046b265 @ 0046b265
+- [ ] FUN_0046c4cb @ 0046c4cb
+- [ ] FUN_0046c5ad @ 0046c5ad
+- [ ] FUN_0046c5db @ 0046c5db
+- [ ] FUN_0046c862 @ 0046c862
+- [ ] FUN_0046c883 @ 0046c883
+- [ ] FUN_0046ca2f @ 0046ca2f
+- [ ] FUN_0046cb6f @ 0046cb6f
+- [ ] FUN_0046cd20 @ 0046cd20
+- [ ] FUN_0046cd60 @ 0046cd60
+- [ ] FUN_0046cda0 @ 0046cda0
+- [ ] FUN_0046cdcf @ 0046cdcf
+- [ ] FUN_0046cde6 @ 0046cde6
+- [ ] FUN_0046cfeb @ 0046cfeb
+- [ ] FUN_0046d048 @ 0046d048
+- [ ] FUN_0046d13f @ 0046d13f
+- [ ] FUN_0046d1ad @ 0046d1ad
+- [ ] FUN_0046d1be @ 0046d1be
+- [ ] FUN_0046d1ef @ 0046d1ef
+- [ ] FUN_0046d39c @ 0046d39c
+- [ ] FUN_0046d3e6 @ 0046d3e6
+- [ ] FUN_0046d419 @ 0046d419
+- [ ] FUN_0046d442 @ 0046d442
+- [ ] FUN_0046d5c7 @ 0046d5c7
+- [ ] FUN_0046d5e3 @ 0046d5e3
+- [ ] FUN_0046d66c @ 0046d66c
+- [ ] FUN_0046d66f @ 0046d66f
+- [ ] FUN_0046d6d3 @ 0046d6d3
+- [ ] FUN_0046d6ef @ 0046d6ef
+- [ ] FUN_0046d70b @ 0046d70b
+- [ ] FUN_0046d723 @ 0046d723
+- [ ] FUN_0046d8a5 @ 0046d8a5
+- [ ] FUN_0046d8e2 @ 0046d8e2
+- [ ] FUN_0046d961 @ 0046d961
+- [ ] FUN_0046d98f @ 0046d98f
+- [ ] FUN_0046d9bc @ 0046d9bc
+- [ ] FUN_0046da83 @ 0046da83
+- [ ] FUN_0046de3b @ 0046de3b
+- [ ] FUN_0046e05b @ 0046e05b
+- [ ] FUN_0046e0d7 @ 0046e0d7
+- [ ] FUN_0046e160 @ 0046e160
+- [ ] FUN_0046e261 @ 0046e261
+- [ ] FUN_0046e301 @ 0046e301
+- [ ] FUN_0046e36f @ 0046e36f
+- [ ] FUN_0046e5ec @ 0046e5ec
+- [ ] FUN_0046e617 @ 0046e617
+- [ ] FUN_0046e79e @ 0046e79e
+- [ ] FUN_0046e7f6 @ 0046e7f6
+- [ ] FUN_0046e85d @ 0046e85d
+
