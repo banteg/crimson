@@ -13,6 +13,8 @@ outputs.
 - Evidence: grim.dll calls png_create_read_struct("1.0.5", ...) at
   `analysis/ghidra/raw/grim.dll_decompiled.c:11549`.
 - Status: headers imported (`third_party/headers/png_struct_stub.h`).
+- Status: public headers synced from libpng v1.0.5 (`third_party/headers/png.h`,
+  `third_party/headers/pngconf.h`, `third_party/headers/pngasmrd.h`) for reference.
 - Status: png_* signatures mapped (name map).
 
 ### zlib (version 1.1.3)
@@ -32,11 +34,13 @@ outputs.
 - Status: headers imported (`third_party/headers/jpeg_all.h`).
 - Status: no signature mapping yet.
 
-### libvorbisfile / libvorbis / libogg (binary versions unknown; headers match vorbis v1.0.0 tag)
+### libvorbisfile / libvorbis / libogg (version 1.0; headers match vorbis v1.0.0 tag)
 - Evidence: `vorbisfile.dll` string in `analysis/ghidra/raw/crimsonland.exe_strings.txt:130`.
 - Evidence: .ogg asset paths and errors in `analysis/ghidra/raw/crimsonland.exe_strings.txt:884` and later.
 - Evidence: bundled DLL hash (sha256) for `game_bins/crimsonland/1.9.93-gog/VORBISFILE.DLL`:
   `f44472c6d9a64045c14583d12c0cfab5b4aa268aceb8bc9e3e1236b3008306f2`.
+- Evidence (binary string): `Xiph.Org libVorbis I 20020717` found in
+  `game_bins/crimsonland/1.9.93-gog/VORBIS.DLL` (strings offset `0x14460`).
 - Evidence (headers): ogg.h `last mod` $Id: ogg.h,v 1.18 2002/07/13$ at
   `third_party/headers/ogg/ogg.h:12`; vorbisfile.h $Id: vorbisfile.h,v 1.17 2002/03/07$
   at `third_party/headers/vorbis/vorbisfile.h:12`; codec.h $Id: codec.h,v 1.40 2002/02/28$
@@ -86,5 +90,3 @@ and vtable shapes. Evidence comes from Ghidra import discovery.
 - Identify DirectX 8 SDK build by matching interface GUIDs and vtable sizes
   (D3D8/DInput8/DSound).
 - Identify MSVCRT version by import names and CRT string signatures.
-- If we ship or bundle `vorbisfile.dll`, compute its hash and extract its
-  internal version string.
