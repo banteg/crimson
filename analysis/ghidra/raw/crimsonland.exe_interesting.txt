@@ -10,6 +10,9 @@ Interesting Functions and Patterns
 [KEY related]
   input_any_key_pressed @ 00446000
 
+[TOKEN related]
+  console_tokenize_line @ 00402580
+
 [FILE related]
   crt_lock_file @ 00463da5
   crt_lock_file2 @ 00463dd4

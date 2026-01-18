@@ -75,6 +75,25 @@ You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps
   - Evidence: parses a line into command/cvar targets, executes command callbacks, updates cvar values, and logs
     status/errors; called with `exec_autoexec.txt` and `exec_music_game_tunes.txt`.
 
+### Console command/cvar helpers (high confidence)
+
+- `FUN_00402580` -> `console_tokenize_line`
+  - Evidence: copies the input into `DAT_0047eaa0`, splits with `crt_strtok`, stores the command in
+    `DAT_0047ea60` and arguments in `DAT_0047ea64..`, and updates `DAT_0047f4cc` (token count).
+- `FUN_00402480` -> `console_cvar_find`
+  - Evidence: walks the cvar list at `*this` and string-compares entry names against the target.
+- `FUN_004024e0` -> `console_cvar_unregister`
+  - Evidence: calls `console_cvar_find`, unlinks the node from the list, and returns success.
+- `FUN_00402750` -> `console_command_find`
+  - Evidence: same search as `console_cvar_find`, but over the command list at `this+4`.
+- `FUN_00402530` -> `console_command_unregister`
+  - Evidence: calls `console_command_find` and unlinks the node from the command list.
+- `FUN_00402630` -> `console_cvar_autocomplete`
+  - Evidence: returns an exact match or `_strncmp` prefix match; used to fill the input buffer during tab
+    completion.
+- `FUN_004027b0` -> `console_command_autocomplete`
+  - Evidence: same as `console_cvar_autocomplete`, but over the command list.
+
 
 ### UI element timeline + transitions (high confidence)
 

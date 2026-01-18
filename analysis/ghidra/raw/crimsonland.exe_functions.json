@@ -109,14 +109,14 @@
     "address": "00401940",
     "signature": "void console_exec_line(void * this, void * console_state, char * line)",
     "external": false,
-    "calls": ["FUN_00402480", "FUN_00402580", "FUN_00402750", "console_printf", "crt_atof_l", "crt_free", "strdup_malloc"]
+    "calls": ["console_command_find", "console_cvar_find", "console_printf", "console_tokenize_line", "crt_atof_l", "crt_free", "strdup_malloc"]
   },
   {
     "name": "FUN_00401a40",
     "address": "00401a40",
     "signature": "undefined FUN_00401a40(void * param_1)",
     "external": false,
-    "calls": ["FUN_004018d0", "FUN_00402580", "FUN_00402630", "FUN_004027b0", "console_exec_line", "console_input_buffer", "console_input_clear", "console_input_poll", "console_printf", "operator_new", "strdup_malloc"]
+    "calls": ["FUN_004018d0", "console_command_autocomplete", "console_cvar_autocomplete", "console_exec_line", "console_input_buffer", "console_input_clear", "console_input_poll", "console_printf", "console_tokenize_line", "operator_new", "strdup_malloc"]
   },
   {
     "name": "FUN_00401dd0",
@@ -130,40 +130,40 @@
     "address": "00402350",
     "signature": "void * console_register_cvar(void * this, void * console_state, char * name, char * value)",
     "external": false,
-    "calls": ["FUN_00402480", "crt_atof_l", "crt_free", "operator_new", "strdup_malloc"]
+    "calls": ["console_cvar_find", "crt_atof_l", "crt_free", "operator_new", "strdup_malloc"]
   },
   {
-    "name": "FUN_00402480",
+    "name": "console_cvar_find",
     "address": "00402480",
-    "signature": "undefined4 * FUN_00402480(void * this, byte * param_1)",
+    "signature": "void * console_cvar_find(void * this, void * console_state, char * name)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_004024e0",
+    "name": "console_cvar_unregister",
     "address": "004024e0",
-    "signature": "undefined4 FUN_004024e0(void * this, byte * param_1)",
+    "signature": "int console_cvar_unregister(void * this, void * console_state, char * name)",
     "external": false,
-    "calls": ["FUN_00402480"]
+    "calls": ["console_cvar_find"]
   },
   {
-    "name": "FUN_00402530",
+    "name": "console_command_unregister",
     "address": "00402530",
-    "signature": "undefined4 FUN_00402530(void * this, byte * param_1)",
+    "signature": "int console_command_unregister(void * this, void * console_state, char * name)",
     "external": false,
-    "calls": ["FUN_00402750"]
+    "calls": ["console_command_find"]
   },
   {
-    "name": "FUN_00402580",
+    "name": "console_tokenize_line",
     "address": "00402580",
-    "signature": "undefined FUN_00402580(char * param_1)",
+    "signature": "void console_tokenize_line(char * line)",
     "external": false,
     "calls": ["crt_strtok"]
   },
   {
-    "name": "FUN_00402630",
+    "name": "console_cvar_autocomplete",
     "address": "00402630",
-    "signature": "undefined4 FUN_00402630(void * this, byte * param_1)",
+    "signature": "char * console_cvar_autocomplete(void * this, void * console_state, char * prefix)",
     "external": false,
     "calls": ["_strncmp"]
   },
@@ -175,16 +175,16 @@
     "calls": ["operator_new", "strdup_malloc"]
   },
   {
-    "name": "FUN_00402750",
+    "name": "console_command_find",
     "address": "00402750",
-    "signature": "undefined4 * FUN_00402750(void * this, byte * param_1)",
+    "signature": "void * console_command_find(void * this, void * console_state, char * name)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_004027b0",
+    "name": "console_command_autocomplete",
     "address": "004027b0",
-    "signature": "undefined4 FUN_004027b0(void * this, byte * param_1)",
+    "signature": "char * console_command_autocomplete(void * this, void * console_state, char * prefix)",
     "external": false,
     "calls": ["_strncmp"]
   },
@@ -508,7 +508,7 @@
     "address": "0040e040",
     "signature": "undefined4 * FUN_0040e040(uint * param_1)",
     "external": false,
-    "calls": ["FUN_00402480", "console_register_cvar"]
+    "calls": ["console_cvar_find", "console_register_cvar"]
   },
   {
     "name": "FUN_0040e570",

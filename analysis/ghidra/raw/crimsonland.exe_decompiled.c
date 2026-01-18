@@ -436,34 +436,35 @@ void __fastcall FUN_004018d0(int param_1)
 void __thiscall console_exec_line(void *this,void *console_state,char *line)
 
 {
-  undefined4 *puVar1;
-  undefined4 *puVar2;
+  void *pvVar1;
+  void *pvVar2;
   char *pcVar3;
+  char *unaff_EDI;
   double dVar4;
   char *str;
   
-  FUN_00402580(console_state);
+  console_tokenize_line(console_state);
   if (DAT_0047f4cc != 0) {
-    puVar1 = FUN_00402480(this,DAT_0047ea60);
-    puVar2 = FUN_00402750(this,DAT_0047ea60);
-    if (puVar1 == (undefined4 *)0x0) {
-      if (puVar2 == (undefined4 *)0x0) {
+    pvVar1 = console_cvar_find(this,DAT_0047ea60,unaff_EDI);
+    pvVar2 = console_command_find(this,DAT_0047ea60,unaff_EDI);
+    if (pvVar1 == (void *)0x0) {
+      if (pvVar2 == (void *)0x0) {
         console_printf(this,(byte *)s_Unknown_command___s__0047126c);
         return;
       }
-      (*(code *)puVar2[2])();
+      (**(code **)((int)pvVar2 + 8))();
       return;
     }
     if (DAT_0047f4cc == 2) {
-      if ((void *)puVar1[4] != (void *)0x0) {
-        crt_free((void *)puVar1[4]);
+      if (*(void **)((int)pvVar1 + 0x10) != (void *)0x0) {
+        crt_free(*(void **)((int)pvVar1 + 0x10));
       }
-      puVar1[4] = 0;
+      *(undefined4 *)((int)pvVar1 + 0x10) = 0;
       str = DAT_0047ea64;
       pcVar3 = strdup_malloc(DAT_0047ea64);
-      puVar1[4] = pcVar3;
+      *(char **)((int)pvVar1 + 0x10) = pcVar3;
       dVar4 = crt_atof_l(DAT_0047ea64,DAT_0047ea64,str);
-      puVar1[3] = (float)dVar4;
+      *(float *)((int)pvVar1 + 0xc) = (float)dVar4;
       if (*(char *)((int)this + 0xc) != '\0') {
         console_printf(this,(byte *)s___s__set_to___s____ff__00471298);
         return;
@@ -491,10 +492,10 @@ void __fastcall FUN_00401a40(void *param_1)
   int iVar3;
   char *pcVar4;
   byte *pbVar5;
-  byte *pbVar6;
-  undefined4 *puVar7;
+  undefined4 *puVar6;
+  uint uVar7;
   uint uVar8;
-  uint uVar9;
+  byte *pbVar9;
   char *pcVar10;
   char *pcVar11;
   bool bVar12;
@@ -565,25 +566,25 @@ LAB_00401b24:
   }
   cVar2 = (**(code **)(*grim_interface_ptr + 0x48))(0xcd);
   if (cVar2 != '\0') {
-    uVar8 = 0xffffffff;
+    uVar7 = 0xffffffff;
     DAT_0047ea54 = DAT_0047ea54 + 1;
     pcVar14 = (char *)&DAT_0047e448;
     do {
-      if (uVar8 == 0) break;
-      uVar8 = uVar8 - 1;
+      if (uVar7 == 0) break;
+      uVar7 = uVar7 - 1;
       cVar2 = *pcVar14;
       pcVar14 = pcVar14 + 1;
     } while (cVar2 != '\0');
-    if ((int)(~uVar8 - 1) < DAT_0047ea54) {
-      uVar8 = 0xffffffff;
+    if ((int)(~uVar7 - 1) < DAT_0047ea54) {
+      uVar7 = 0xffffffff;
       pcVar14 = (char *)&DAT_0047e448;
       do {
-        if (uVar8 == 0) break;
-        uVar8 = uVar8 - 1;
+        if (uVar7 == 0) break;
+        uVar7 = uVar7 - 1;
         cVar2 = *pcVar14;
         pcVar14 = pcVar14 + 1;
       } while (cVar2 != '\0');
-      DAT_0047ea54 = ~uVar8 - 1;
+      DAT_0047ea54 = ~uVar7 - 1;
     }
   }
   cVar2 = (**(code **)(*grim_interface_ptr + 0x48))(0xc9);
@@ -608,45 +609,45 @@ LAB_00401b24:
   cVar2 = (**(code **)(*grim_interface_ptr + 0x48))();
   if (cVar2 != '\0') {
     pcVar4 = console_input_buffer();
-    FUN_00402580(pcVar4);
-    pbVar5 = (byte *)console_input_buffer();
-    pcVar4 = (char *)FUN_00402630(param_1,pbVar5);
+    console_tokenize_line(pcVar4);
+    pcVar4 = console_input_buffer();
+    pcVar4 = console_cvar_autocomplete(param_1,pcVar4,pcVar14);
     if (pcVar4 == (char *)0x0) {
-      pbVar5 = (byte *)console_input_buffer();
-      pcVar4 = (char *)FUN_004027b0(param_1,pbVar5);
+      pcVar4 = console_input_buffer();
+      pcVar4 = console_command_autocomplete(param_1,pcVar4,pcVar14);
       if (pcVar4 == (char *)0x0) goto LAB_00401cb5;
     }
-    uVar8 = 0xffffffff;
+    uVar7 = 0xffffffff;
     pcVar10 = pcVar4;
     do {
       pcVar11 = pcVar10;
-      if (uVar8 == 0) break;
-      uVar8 = uVar8 - 1;
+      if (uVar7 == 0) break;
+      uVar7 = uVar7 - 1;
       pcVar11 = pcVar10 + 1;
       cVar2 = *pcVar10;
       pcVar10 = pcVar11;
     } while (cVar2 != '\0');
-    uVar8 = ~uVar8;
-    pcVar10 = pcVar11 + -uVar8;
+    uVar7 = ~uVar7;
+    pcVar10 = pcVar11 + -uVar7;
     pcVar11 = (char *)&DAT_0047e448;
-    for (uVar9 = uVar8 >> 2; uVar9 != 0; uVar9 = uVar9 - 1) {
+    for (uVar8 = uVar7 >> 2; uVar8 != 0; uVar8 = uVar8 - 1) {
       *(undefined4 *)pcVar11 = *(undefined4 *)pcVar10;
       pcVar10 = pcVar10 + 4;
       pcVar11 = pcVar11 + 4;
     }
-    for (uVar8 = uVar8 & 3; uVar8 != 0; uVar8 = uVar8 - 1) {
+    for (uVar7 = uVar7 & 3; uVar7 != 0; uVar7 = uVar7 - 1) {
       *pcVar11 = *pcVar10;
       pcVar10 = pcVar10 + 1;
       pcVar11 = pcVar11 + 1;
     }
-    uVar8 = 0xffffffff;
+    uVar7 = 0xffffffff;
     do {
-      if (uVar8 == 0) break;
-      uVar8 = uVar8 - 1;
+      if (uVar7 == 0) break;
+      uVar7 = uVar7 - 1;
       cVar2 = *pcVar4;
       pcVar4 = pcVar4 + 1;
     } while (cVar2 != '\0');
-    DAT_0047ea54 = ~uVar8 - 1;
+    DAT_0047ea54 = ~uVar7 - 1;
   }
 LAB_00401cb5:
   if (console_input_ready == '\0') {
@@ -654,39 +655,39 @@ LAB_00401cb5:
     (**(code **)(*grim_interface_ptr + 0x48))(0x1c);
     return;
   }
-  pbVar6 = (byte *)console_input_buffer();
-  pbVar5 = (byte *)**(undefined4 **)((int)param_1 + 0x10);
+  pbVar5 = (byte *)console_input_buffer();
+  pbVar9 = (byte *)**(undefined4 **)((int)param_1 + 0x10);
   do {
-    bVar1 = *pbVar5;
-    bVar12 = bVar1 < *pbVar6;
-    if (bVar1 != *pbVar6) {
+    bVar1 = *pbVar9;
+    bVar12 = bVar1 < *pbVar5;
+    if (bVar1 != *pbVar5) {
 LAB_00401cf1:
       iVar3 = (1 - (uint)bVar12) - (uint)(bVar12 != 0);
       goto LAB_00401cf6;
     }
     if (bVar1 == 0) break;
-    bVar1 = pbVar5[1];
-    bVar12 = bVar1 < pbVar6[1];
-    if (bVar1 != pbVar6[1]) goto LAB_00401cf1;
+    bVar1 = pbVar9[1];
+    bVar12 = bVar1 < pbVar5[1];
+    if (bVar1 != pbVar5[1]) goto LAB_00401cf1;
+    pbVar9 = pbVar9 + 2;
     pbVar5 = pbVar5 + 2;
-    pbVar6 = pbVar6 + 2;
   } while (bVar1 != 0);
   iVar3 = 0;
 LAB_00401cf6:
   if (iVar3 != 0) {
-    puVar7 = operator_new(8);
-    if (puVar7 == (undefined4 *)0x0) {
-      puVar7 = (undefined4 *)0x0;
+    puVar6 = operator_new(8);
+    if (puVar6 == (undefined4 *)0x0) {
+      puVar6 = (undefined4 *)0x0;
     }
     else {
-      puVar7[1] = 0;
-      *puVar7 = 0;
+      puVar6[1] = 0;
+      *puVar6 = 0;
     }
     pcVar4 = console_input_buffer();
     pcVar4 = strdup_malloc(pcVar4);
-    *puVar7 = pcVar4;
-    puVar7[1] = *(undefined4 *)((int)param_1 + 0x10);
-    *(undefined4 **)((int)param_1 + 0x10) = puVar7;
+    *puVar6 = pcVar4;
+    puVar6[1] = *(undefined4 *)((int)param_1 + 0x10);
+    *(undefined4 **)((int)param_1 + 0x10) = puVar6;
   }
   *(undefined4 *)((int)param_1 + 0x14) = 0;
   console_input_buffer();
@@ -876,88 +877,91 @@ void * __thiscall console_register_cvar(void *this,void *console_state,char *nam
 
 {
   int iVar1;
-  void *pvVar2;
-  int iVar3;
-  undefined4 *puVar4;
-  char *pcVar5;
+  int iVar2;
+  void *pvVar3;
+  char *pcVar4;
+  undefined4 *puVar5;
   char *pcVar6;
   void *this_00;
+  char *unaff_EDI;
   double dVar7;
   
-  puVar4 = FUN_00402480(this,console_state);
-  if (puVar4 != (undefined4 *)0x0) {
-    if ((void *)puVar4[4] != (void *)0x0) {
-      crt_free((void *)puVar4[4]);
+  pvVar3 = console_cvar_find(this,console_state,unaff_EDI);
+  if (pvVar3 != (void *)0x0) {
+    if (*(void **)((int)pvVar3 + 0x10) != (void *)0x0) {
+      crt_free(*(void **)((int)pvVar3 + 0x10));
     }
-    puVar4[4] = 0;
+    *(undefined4 *)((int)pvVar3 + 0x10) = 0;
     pcVar6 = name;
-    pcVar5 = strdup_malloc(name);
-    puVar4[4] = pcVar5;
+    pcVar4 = strdup_malloc(name);
+    *(char **)((int)pvVar3 + 0x10) = pcVar4;
     dVar7 = crt_atof_l(this_00,name,pcVar6);
-    puVar4[3] = (float)dVar7;
-    return puVar4;
+    *(float *)((int)pvVar3 + 0xc) = (float)dVar7;
+    return pvVar3;
   }
   iVar1 = *(int *)this;
   if (iVar1 == 0) {
-    puVar4 = operator_new(0x24);
-    if (puVar4 == (undefined4 *)0x0) {
-      puVar4 = (undefined4 *)0x0;
+    puVar5 = operator_new(0x24);
+    if (puVar5 == (undefined4 *)0x0) {
+      puVar5 = (undefined4 *)0x0;
     }
     else {
-      puVar4[6] = 0;
-      puVar4[7] = 0;
-      puVar4[8] = 0;
+      puVar5[6] = 0;
+      puVar5[7] = 0;
+      puVar5[8] = 0;
       pcVar6 = strdup_malloc(console_state);
-      *puVar4 = pcVar6;
-      puVar4[1] = 0;
-      puVar4[2] = 0;
-      puVar4[3] = 0;
-      puVar4[4] = 0;
-      puVar4[5] = 0;
+      *puVar5 = pcVar6;
+      puVar5[1] = 0;
+      puVar5[2] = 0;
+      puVar5[3] = 0;
+      puVar5[4] = 0;
+      puVar5[5] = 0;
     }
-    *(undefined4 **)this = puVar4;
+    *(undefined4 **)this = puVar5;
     pcVar6 = name;
-    pcVar5 = strdup_malloc(name);
-    pvVar2 = *(void **)this;
-    *(char **)((int)pvVar2 + 0x10) = pcVar5;
-    dVar7 = crt_atof_l(pvVar2,name,pcVar6);
+    pcVar4 = strdup_malloc(name);
+    pvVar3 = *(void **)this;
+    *(char **)((int)pvVar3 + 0x10) = pcVar4;
+    dVar7 = crt_atof_l(pvVar3,name,pcVar6);
     *(float *)(*(int *)this + 0xc) = (float)dVar7;
     return *(void **)this;
   }
-  for (iVar3 = *(int *)(iVar1 + 4); iVar3 != 0; iVar3 = *(int *)(iVar3 + 4)) {
-    iVar1 = iVar3;
+  for (iVar2 = *(int *)(iVar1 + 4); iVar2 != 0; iVar2 = *(int *)(iVar2 + 4)) {
+    iVar1 = iVar2;
   }
-  puVar4 = operator_new(0x24);
-  if (puVar4 == (undefined4 *)0x0) {
-    puVar4 = (undefined4 *)0x0;
+  puVar5 = operator_new(0x24);
+  if (puVar5 == (undefined4 *)0x0) {
+    puVar5 = (undefined4 *)0x0;
   }
   else {
-    puVar4[6] = 0;
-    puVar4[7] = 0;
-    puVar4[8] = 0;
+    puVar5[6] = 0;
+    puVar5[7] = 0;
+    puVar5[8] = 0;
     pcVar6 = strdup_malloc(console_state);
-    *puVar4 = pcVar6;
-    puVar4[1] = 0;
-    puVar4[2] = 0;
-    puVar4[3] = 0;
-    puVar4[4] = 0;
-    puVar4[5] = 0;
+    *puVar5 = pcVar6;
+    puVar5[1] = 0;
+    puVar5[2] = 0;
+    puVar5[3] = 0;
+    puVar5[4] = 0;
+    puVar5[5] = 0;
   }
-  *(undefined4 **)(iVar1 + 4) = puVar4;
+  *(undefined4 **)(iVar1 + 4) = puVar5;
   pcVar6 = name;
-  pcVar5 = strdup_malloc(name);
-  pvVar2 = *(void **)(iVar1 + 4);
-  *(char **)((int)pvVar2 + 0x10) = pcVar5;
-  dVar7 = crt_atof_l(pvVar2,name,pcVar6);
+  pcVar4 = strdup_malloc(name);
+  pvVar3 = *(void **)(iVar1 + 4);
+  *(char **)((int)pvVar3 + 0x10) = pcVar4;
+  dVar7 = crt_atof_l(pvVar3,name,pcVar6);
   *(float *)(*(int *)(iVar1 + 4) + 0xc) = (float)dVar7;
   return *(void **)(iVar1 + 4);
 }
 
 
 
-/* FUN_00402480 @ 00402480 */
+/* console_cvar_find @ 00402480 */
 
-undefined4 * __thiscall FUN_00402480(void *this,byte *param_1)
+/* finds a cvar entry by name */
+
+void * __thiscall console_cvar_find(void *this,void *console_state,char *name)
 
 {
   byte bVar1;
@@ -970,10 +974,10 @@ undefined4 * __thiscall FUN_00402480(void *this,byte *param_1)
   puVar2 = *(undefined4 **)this;
   do {
     if (puVar2 == (undefined4 *)0x0) {
-      return (undefined4 *)0x0;
+      return (void *)0x0;
     }
     pbVar5 = (byte *)*puVar2;
-    pbVar3 = param_1;
+    pbVar3 = console_state;
     do {
       bVar1 = *pbVar3;
       bVar6 = bVar1 < *pbVar5;
@@ -1000,30 +1004,33 @@ LAB_004024bf:
 
 
 
-/* FUN_004024e0 @ 004024e0 */
+/* console_cvar_unregister @ 004024e0 */
 
-undefined4 __thiscall FUN_004024e0(void *this,byte *param_1)
+/* removes a cvar entry by name */
+
+int __thiscall console_cvar_unregister(void *this,void *console_state,char *name)
 
 {
-  undefined4 *puVar1;
+  void *pvVar1;
   undefined4 uVar2;
-  undefined4 *puVar3;
-  undefined4 *puVar4;
+  void *pvVar3;
+  void *pvVar4;
   uint3 uVar5;
+  char *unaff_ESI;
   
-  puVar4 = FUN_00402480(this,param_1);
-  uVar5 = (uint3)((uint)puVar4 >> 8);
-  if (puVar4 != (undefined4 *)0x0) {
-    puVar1 = *(undefined4 **)this;
-    if (puVar4 == puVar1) {
-      *(undefined4 *)this = puVar1[1];
+  pvVar4 = console_cvar_find(this,console_state,unaff_ESI);
+  uVar5 = (uint3)((uint)pvVar4 >> 8);
+  if (pvVar4 != (void *)0x0) {
+    pvVar1 = *(void **)this;
+    if (pvVar4 == pvVar1) {
+      *(undefined4 *)this = *(undefined4 *)((int)pvVar1 + 4);
       return CONCAT31(uVar5,1);
     }
-    while (puVar3 = puVar1, puVar3 != (undefined4 *)0x0) {
-      puVar1 = (undefined4 *)puVar3[1];
-      if ((undefined4 *)puVar3[1] == puVar4) {
-        uVar2 = *(undefined4 *)(puVar3[1] + 4);
-        puVar3[1] = uVar2;
+    while (pvVar3 = pvVar1, pvVar3 != (void *)0x0) {
+      pvVar1 = *(void **)((int)pvVar3 + 4);
+      if (*(void **)((int)pvVar3 + 4) == pvVar4) {
+        uVar2 = *(undefined4 *)(*(int *)((int)pvVar3 + 4) + 4);
+        *(undefined4 *)((int)pvVar3 + 4) = uVar2;
         return CONCAT31((int3)((uint)uVar2 >> 8),1);
       }
     }
@@ -1033,30 +1040,33 @@ undefined4 __thiscall FUN_004024e0(void *this,byte *param_1)
 
 
 
-/* FUN_00402530 @ 00402530 */
+/* console_command_unregister @ 00402530 */
 
-undefined4 __thiscall FUN_00402530(void *this,byte *param_1)
+/* removes a console command entry by name */
+
+int __thiscall console_command_unregister(void *this,void *console_state,char *name)
 
 {
-  undefined4 *puVar1;
+  void *pvVar1;
   undefined4 uVar2;
-  undefined4 *puVar3;
-  undefined4 *puVar4;
+  void *pvVar3;
+  void *pvVar4;
   uint3 uVar5;
+  char *unaff_ESI;
   
-  puVar4 = FUN_00402750(this,param_1);
-  uVar5 = (uint3)((uint)puVar4 >> 8);
-  if (puVar4 != (undefined4 *)0x0) {
-    puVar1 = *(undefined4 **)((int)this + 4);
-    if (puVar4 == puVar1) {
-      *(undefined4 *)((int)this + 4) = puVar1[1];
+  pvVar4 = console_command_find(this,console_state,unaff_ESI);
+  uVar5 = (uint3)((uint)pvVar4 >> 8);
+  if (pvVar4 != (void *)0x0) {
+    pvVar1 = *(void **)((int)this + 4);
+    if (pvVar4 == pvVar1) {
+      *(undefined4 *)((int)this + 4) = *(undefined4 *)((int)pvVar1 + 4);
       return CONCAT31(uVar5,1);
     }
-    while (puVar3 = puVar1, puVar3 != (undefined4 *)0x0) {
-      puVar1 = (undefined4 *)puVar3[1];
-      if ((undefined4 *)puVar3[1] == puVar4) {
-        uVar2 = *(undefined4 *)(puVar3[1] + 4);
-        puVar3[1] = uVar2;
+    while (pvVar3 = pvVar1, pvVar3 != (void *)0x0) {
+      pvVar1 = *(void **)((int)pvVar3 + 4);
+      if (*(void **)((int)pvVar3 + 4) == pvVar4) {
+        uVar2 = *(undefined4 *)(*(int *)((int)pvVar3 + 4) + 4);
+        *(undefined4 *)((int)pvVar3 + 4) = uVar2;
         return CONCAT31((int3)((uint)uVar2 >> 8),1);
       }
     }
@@ -1066,9 +1076,11 @@ undefined4 __thiscall FUN_00402530(void *this,byte *param_1)
 
 
 
-/* FUN_00402580 @ 00402580 */
+/* console_tokenize_line @ 00402580 */
 
-void FUN_00402580(char *param_1)
+/* splits a console line into tokens */
+
+void console_tokenize_line(char *line)
 
 {
   char cVar1;
@@ -1081,24 +1093,24 @@ void FUN_00402580(char *param_1)
   
   DAT_0047f4cc = 0;
   iVar7 = DAT_0047f4cc;
-  if (param_1 != (char *)0x0) {
+  if (line != (char *)0x0) {
     uVar3 = 0xffffffff;
-    pcVar2 = param_1;
+    pcVar2 = line;
     do {
       if (uVar3 == 0) break;
       uVar3 = uVar3 - 1;
       cVar1 = *pcVar2;
       pcVar2 = pcVar2 + 1;
     } while (cVar1 != '\0');
-    if (((~uVar3 - 1 < 2) || (*param_1 != '/')) || (param_1[1] != '/')) {
+    if (((~uVar3 - 1 < 2) || (*line != '/')) || (line[1] != '/')) {
       uVar3 = 0xffffffff;
       do {
-        pcVar2 = param_1;
+        pcVar2 = line;
         if (uVar3 == 0) break;
         uVar3 = uVar3 - 1;
-        pcVar2 = param_1 + 1;
-        cVar1 = *param_1;
-        param_1 = pcVar2;
+        pcVar2 = line + 1;
+        cVar1 = *line;
+        line = pcVar2;
       } while (cVar1 != '\0');
       uVar3 = ~uVar3;
       pcVar2 = pcVar2 + -uVar3;
@@ -1133,66 +1145,70 @@ void FUN_00402580(char *param_1)
 
 
 
-/* FUN_00402630 @ 00402630 */
+/* console_cvar_autocomplete @ 00402630 */
 
-undefined4 __thiscall FUN_00402630(void *this,byte *param_1)
+/* returns exact or prefix-matched cvar name */
+
+char * __thiscall console_cvar_autocomplete(void *this,void *console_state,char *prefix)
 
 {
-  byte bVar1;
-  undefined4 *puVar2;
-  byte *pbVar3;
-  int iVar4;
-  uint uVar5;
-  byte *pbVar6;
-  undefined4 *puVar7;
-  bool bVar8;
+  char cVar1;
+  byte bVar2;
+  undefined4 *puVar3;
+  byte *pbVar4;
+  int iVar5;
+  uint uVar6;
+  byte *pbVar7;
+  undefined4 *puVar8;
+  char *pcVar9;
+  bool bVar10;
   
-  uVar5 = 0xffffffff;
-  pbVar6 = param_1;
+  uVar6 = 0xffffffff;
+  pcVar9 = console_state;
   do {
-    if (uVar5 == 0) break;
-    uVar5 = uVar5 - 1;
-    bVar1 = *pbVar6;
-    pbVar6 = pbVar6 + 1;
-  } while (bVar1 != 0);
-  if (~uVar5 - 1 != 0) {
-    puVar7 = *(undefined4 **)this;
-    for (puVar2 = puVar7; puVar2 != (undefined4 *)0x0; puVar2 = (undefined4 *)puVar2[1]) {
-      pbVar6 = (byte *)*puVar2;
-      pbVar3 = param_1;
+    if (uVar6 == 0) break;
+    uVar6 = uVar6 - 1;
+    cVar1 = *pcVar9;
+    pcVar9 = pcVar9 + 1;
+  } while (cVar1 != '\0');
+  if (~uVar6 - 1 != 0) {
+    puVar8 = *(undefined4 **)this;
+    for (puVar3 = puVar8; puVar3 != (undefined4 *)0x0; puVar3 = (undefined4 *)puVar3[1]) {
+      pbVar7 = (byte *)*puVar3;
+      pbVar4 = console_state;
       do {
-        bVar1 = *pbVar3;
-        bVar8 = bVar1 < *pbVar6;
-        if (bVar1 != *pbVar6) {
+        bVar2 = *pbVar4;
+        bVar10 = bVar2 < *pbVar7;
+        if (bVar2 != *pbVar7) {
 LAB_0040267e:
-          iVar4 = (1 - (uint)bVar8) - (uint)(bVar8 != 0);
+          iVar5 = (1 - (uint)bVar10) - (uint)(bVar10 != 0);
           goto LAB_00402683;
         }
-        if (bVar1 == 0) break;
-        bVar1 = pbVar3[1];
-        bVar8 = bVar1 < pbVar6[1];
-        if (bVar1 != pbVar6[1]) goto LAB_0040267e;
-        pbVar3 = pbVar3 + 2;
-        pbVar6 = pbVar6 + 2;
-      } while (bVar1 != 0);
-      iVar4 = 0;
+        if (bVar2 == 0) break;
+        bVar2 = pbVar4[1];
+        bVar10 = bVar2 < pbVar7[1];
+        if (bVar2 != pbVar7[1]) goto LAB_0040267e;
+        pbVar4 = pbVar4 + 2;
+        pbVar7 = pbVar7 + 2;
+      } while (bVar2 != 0);
+      iVar5 = 0;
 LAB_00402683:
-      if (iVar4 == 0) {
-        return *puVar2;
+      if (iVar5 == 0) {
+        return (char *)*puVar3;
       }
     }
-    if (puVar7 != (undefined4 *)0x0) {
+    if (puVar8 != (undefined4 *)0x0) {
       do {
-        iVar4 = _strncmp((char *)param_1,(char *)*puVar7,~uVar5 - 1);
-        if (iVar4 == 0) {
-          return *puVar7;
+        iVar5 = _strncmp(console_state,(char *)*puVar8,~uVar6 - 1);
+        if (iVar5 == 0) {
+          return (char *)*puVar8;
         }
-        puVar7 = (undefined4 *)puVar7[1];
-      } while (puVar7 != (undefined4 *)0x0);
-      return 0;
+        puVar8 = (undefined4 *)puVar8[1];
+      } while (puVar8 != (undefined4 *)0x0);
+      return (char *)0x0;
     }
   }
-  return 0;
+  return (char *)0x0;
 }
 
 
@@ -1234,9 +1250,11 @@ void __thiscall console_register_command(void *this,uint *param_1,undefined4 par
 
 
 
-/* FUN_00402750 @ 00402750 */
+/* console_command_find @ 00402750 */
 
-undefined4 * __thiscall FUN_00402750(void *this,byte *param_1)
+/* finds a console command entry by name */
+
+void * __thiscall console_command_find(void *this,void *console_state,char *name)
 
 {
   byte bVar1;
@@ -1249,10 +1267,10 @@ undefined4 * __thiscall FUN_00402750(void *this,byte *param_1)
   puVar2 = *(undefined4 **)((int)this + 4);
   do {
     if (puVar2 == (undefined4 *)0x0) {
-      return (undefined4 *)0x0;
+      return (void *)0x0;
     }
     pbVar5 = (byte *)*puVar2;
-    pbVar3 = param_1;
+    pbVar3 = console_state;
     do {
       bVar1 = *pbVar3;
       bVar6 = bVar1 < *pbVar5;
@@ -1279,66 +1297,70 @@ LAB_00402790:
 
 
 
-/* FUN_004027b0 @ 004027b0 */
+/* console_command_autocomplete @ 004027b0 */
 
-undefined4 __thiscall FUN_004027b0(void *this,byte *param_1)
+/* returns exact or prefix-matched command name */
+
+char * __thiscall console_command_autocomplete(void *this,void *console_state,char *prefix)
 
 {
-  byte bVar1;
-  undefined4 *puVar2;
-  byte *pbVar3;
-  int iVar4;
-  uint uVar5;
-  byte *pbVar6;
-  undefined4 *puVar7;
-  bool bVar8;
+  char cVar1;
+  byte bVar2;
+  undefined4 *puVar3;
+  byte *pbVar4;
+  int iVar5;
+  uint uVar6;
+  byte *pbVar7;
+  undefined4 *puVar8;
+  char *pcVar9;
+  bool bVar10;
   
-  uVar5 = 0xffffffff;
-  pbVar6 = param_1;
+  uVar6 = 0xffffffff;
+  pcVar9 = console_state;
   do {
-    if (uVar5 == 0) break;
-    uVar5 = uVar5 - 1;
-    bVar1 = *pbVar6;
-    pbVar6 = pbVar6 + 1;
-  } while (bVar1 != 0);
-  if (~uVar5 - 1 != 0) {
-    puVar7 = *(undefined4 **)((int)this + 4);
-    for (puVar2 = puVar7; puVar2 != (undefined4 *)0x0; puVar2 = (undefined4 *)puVar2[1]) {
-      pbVar6 = (byte *)*puVar2;
-      pbVar3 = param_1;
+    if (uVar6 == 0) break;
+    uVar6 = uVar6 - 1;
+    cVar1 = *pcVar9;
+    pcVar9 = pcVar9 + 1;
+  } while (cVar1 != '\0');
+  if (~uVar6 - 1 != 0) {
+    puVar8 = *(undefined4 **)((int)this + 4);
+    for (puVar3 = puVar8; puVar3 != (undefined4 *)0x0; puVar3 = (undefined4 *)puVar3[1]) {
+      pbVar7 = (byte *)*puVar3;
+      pbVar4 = console_state;
       do {
-        bVar1 = *pbVar3;
-        bVar8 = bVar1 < *pbVar6;
-        if (bVar1 != *pbVar6) {
+        bVar2 = *pbVar4;
+        bVar10 = bVar2 < *pbVar7;
+        if (bVar2 != *pbVar7) {
 LAB_004027ff:
-          iVar4 = (1 - (uint)bVar8) - (uint)(bVar8 != 0);
+          iVar5 = (1 - (uint)bVar10) - (uint)(bVar10 != 0);
           goto LAB_00402804;
         }
-        if (bVar1 == 0) break;
-        bVar1 = pbVar3[1];
-        bVar8 = bVar1 < pbVar6[1];
-        if (bVar1 != pbVar6[1]) goto LAB_004027ff;
-        pbVar3 = pbVar3 + 2;
-        pbVar6 = pbVar6 + 2;
-      } while (bVar1 != 0);
-      iVar4 = 0;
+        if (bVar2 == 0) break;
+        bVar2 = pbVar4[1];
+        bVar10 = bVar2 < pbVar7[1];
+        if (bVar2 != pbVar7[1]) goto LAB_004027ff;
+        pbVar4 = pbVar4 + 2;
+        pbVar7 = pbVar7 + 2;
+      } while (bVar2 != 0);
+      iVar5 = 0;
 LAB_00402804:
-      if (iVar4 == 0) {
-        return *puVar2;
+      if (iVar5 == 0) {
+        return (char *)*puVar3;
       }
     }
-    if (puVar7 != (undefined4 *)0x0) {
+    if (puVar8 != (undefined4 *)0x0) {
       do {
-        iVar4 = _strncmp((char *)param_1,(char *)*puVar7,~uVar5 - 1);
-        if (iVar4 == 0) {
-          return *puVar7;
+        iVar5 = _strncmp(console_state,(char *)*puVar8,~uVar6 - 1);
+        if (iVar5 == 0) {
+          return (char *)*puVar8;
         }
-        puVar7 = (undefined4 *)puVar7[1];
-      } while (puVar7 != (undefined4 *)0x0);
-      return 0;
+        puVar8 = (undefined4 *)puVar8[1];
+      } while (puVar8 != (undefined4 *)0x0);
+      return (char *)0x0;
     }
   }
-  return 0;
+  return (char *)0x0;
 }
 
 
@@ -7223,7 +7245,7 @@ undefined4 * FUN_0040e040(uint *param_1)
   undefined4 *puVar1;
   char *unaff_ESI;
   
-  puVar1 = FUN_00402480(&console_log_queue,(byte *)param_1);
+  puVar1 = console_cvar_find(&console_log_queue,param_1,unaff_ESI);
   if (puVar1 == (undefined4 *)0x0) {
     puVar1 = console_register_cvar(&console_log_queue,param_1,&DAT_0047125c,unaff_ESI);
   }

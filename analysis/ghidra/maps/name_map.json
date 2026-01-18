@@ -48,9 +48,58 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00402480",
+    "name": "console_cvar_find",
+    "signature": "void * console_cvar_find(void *console_state, char *name)",
+    "comment": "finds a cvar entry by name"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004024e0",
+    "name": "console_cvar_unregister",
+    "signature": "int console_cvar_unregister(void *console_state, char *name)",
+    "comment": "removes a cvar entry by name"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00402530",
+    "name": "console_command_unregister",
+    "signature": "int console_command_unregister(void *console_state, char *name)",
+    "comment": "removes a console command entry by name"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00402580",
+    "name": "console_tokenize_line",
+    "signature": "void console_tokenize_line(char *line)",
+    "comment": "splits a console line into tokens"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00402630",
+    "name": "console_cvar_autocomplete",
+    "signature": "char * console_cvar_autocomplete(void *console_state, char *prefix)",
+    "comment": "returns exact or prefix-matched cvar name"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004026e0",
     "name": "console_register_command",
     "comment": "registers a console command and handler"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00402750",
+    "name": "console_command_find",
+    "signature": "void * console_command_find(void *console_state, char *name)",
+    "comment": "finds a console command entry by name"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004027b0",
+    "name": "console_command_autocomplete",
+    "signature": "char * console_command_autocomplete(void *console_state, char *prefix)",
+    "comment": "returns exact or prefix-matched command name"
   },
   {
     "program": "crimsonland.exe",
