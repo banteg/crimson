@@ -274,3 +274,27 @@ Short gameplay segment with one bonus pickup and a low-health event.
 - If `unmapped_calls.json` should only track `crimsonland.exe` callsites, consider filtering out
   `grim.dll` entries now that callsites are module-qualified.
 - A slightly longer quest-fail capture should stabilize the sfx ID **1** mapping and confirm **4**.
+
+## Session 6
+
+- **Date:** 2026-01-18
+- **Build / platform:** Win11 ARM64 (UTM), Crimsonland v1.9.93
+- **Scripts:** `grim_hooks.js`, `crimsonland_probe.js`
+- **Attach method:** `frida -n crimsonland.exe -l Z:\grim_hooks.js` + `frida -n crimsonland.exe -l Z:\crimsonland_probe.js`
+- **Artifacts:** `analysis/frida/raw/*.jsonl`, `analysis/frida/*summary*.json`
+
+### Wants (pre-run)
+
+Goal: capture credits click logic to find the Secret Path branch.
+
+Steps:
+
+1. Launch the game; go to the credits screen.
+2. In the Frida REPL: `watchCreditsFlags(0, 0x80)`.
+3. Click every credits line that contains the letter `o` (as per the Secret Path hint).
+4. Click a non-`o` line once (to capture the failure path).
+5. Stop watching: `stopWatchCreditsFlags()`.
+6. Exit.
+
+We want the `mem_access` events with `kind=credits_flags`, especially the `from` address and
+`line_text` for each flag write.

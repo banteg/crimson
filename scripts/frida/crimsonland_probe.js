@@ -189,6 +189,13 @@ const ADDR = {
   sfx_play: 0x0043d120,
   sfx_play_panned: 0x0043d260,
   sfx_play_exclusive: 0x0043d460,
+
+  // Credits screen tables (see credits_screen_update).
+  credits_line_text_base: 0x00480980,
+  credits_line_flags_base: 0x00480984,
+  credits_line_aux_base: 0x0048098c,
+  credits_line_last_index: 0x004811b8,
+  credits_line_secret_start: 0x004811bc,
 };
 
 // Struct sizing facts from docs.
@@ -1698,6 +1705,18 @@ function hookGrimNow() {
 //  3) Do the in-game action that triggers it; watch the 'mem_access' events.
 //  4) stopWatchPlayerOffset()
 let gMemWatchEnabled = false;
+let gMemWatchKind = null;
+
+function stopMemWatch(kind) {
+  if (typeof MemoryAccessMonitor === 'undefined') return;
+  if (!gMemWatchEnabled) return;
+  try {
+    MemoryAccessMonitor.disable();
+  } catch (_) {}
+  gMemWatchEnabled = false;
+  gMemWatchKind = null;
+  writeLine({ event: 'mem_watch_stop', ts: nowIso(), kind });
+}
 
 function watchPlayerOffset(playerIndex, offset, size) {
   if (typeof MemoryAccessMonitor === 'undefined') {
@@ -1732,6 +1751,7 @@ function watchPlayerOffset(playerIndex, offset, size) {
       },
     });
     gMemWatchEnabled = true;
+    gMemWatchKind = 'player_offset';
     writeLine({ event: 'mem_watch_start', ts: nowIso(), kind: 'player_offset', playerIndex, offset, size, addr: addr.toString() });
   } catch (e) {
     writeLine({ event: 'mem_watch_error', ts: nowIso(), error: '' + e, playerIndex, offset, size });
@@ -1739,13 +1759,79 @@ function watchPlayerOffset(playerIndex, offset, size) {
 }
 
 function stopWatchPlayerOffset() {
-  if (typeof MemoryAccessMonitor === 'undefined') return;
-  if (!gMemWatchEnabled) return;
+  stopMemWatch('player_offset');
+}
+
+// Watch credits line flags (0x00480984 + index * 8) to capture click logic.
+// Usage: watchCreditsFlags(0, 0x80) then click credits lines; stopWatchCreditsFlags().
+function watchCreditsFlags(startIndex, count) {
+  if (typeof MemoryAccessMonitor === 'undefined') {
+    writeLine({ event: 'mem_watch_error', ts: nowIso(), error: 'MemoryAccessMonitor is not available in this Frida build' });
+    return;
+  }
+  const flagsBase = exePtr(ADDR.credits_line_flags_base);
+  const textBase = exePtr(ADDR.credits_line_text_base);
+  if (!flagsBase || !textBase) {
+    writeLine({ event: 'mem_watch_error', ts: nowIso(), error: 'credits table base unavailable', startIndex, count });
+    return;
+  }
+  const stride = 8;
+  const index0 = (startIndex === undefined || startIndex === null) ? 0 : startIndex;
+  const lines = (count === undefined || count === null) ? 0x80 : count;
+  const range = { base: flagsBase.add(index0 * stride), size: lines * stride };
   try {
-    MemoryAccessMonitor.disable();
-  } catch (_) {}
-  gMemWatchEnabled = false;
-  writeLine({ event: 'mem_watch_stop', ts: nowIso(), kind: 'player_offset' });
+    MemoryAccessMonitor.enable([range], {
+      onAccess(details) {
+        let entryIndex = null;
+        let flagValue = null;
+        let linePtr = null;
+        let lineText = null;
+        if (details.address) {
+          try {
+            const delta = details.address.sub(flagsBase);
+            entryIndex = Math.floor(delta.toInt32() / stride);
+            const flagPtr = flagsBase.add(entryIndex * stride);
+            flagValue = tryReadU32(flagPtr);
+            const textPtr = tryReadPtr(textBase.add(entryIndex * stride));
+            if (textPtr) {
+              linePtr = textPtr.toString();
+              lineText = tryReadAnsi(textPtr, 120);
+            }
+          } catch (_) {}
+        }
+        writeLine({
+          event: 'mem_access',
+          ts: nowIso(),
+          kind: 'credits_flags',
+          index: entryIndex,
+          flag_u32: flagValue,
+          line_ptr: linePtr,
+          line_text: lineText,
+          operation: details.operation,
+          address: details.address ? details.address.toString() : null,
+          from: details.from ? formatCaller(details.from) : null,
+          threadId: details.threadId,
+        });
+      },
+    });
+    gMemWatchEnabled = true;
+    gMemWatchKind = 'credits_flags';
+    writeLine({
+      event: 'mem_watch_start',
+      ts: nowIso(),
+      kind: 'credits_flags',
+      startIndex: index0,
+      count: lines,
+      base: flagsBase.toString(),
+      size: range.size,
+    });
+  } catch (e) {
+    writeLine({ event: 'mem_watch_error', ts: nowIso(), error: '' + e, startIndex: index0, count: lines });
+  }
+}
+
+function stopWatchCreditsFlags() {
+  stopMemWatch('credits_flags');
 }
 
 function help() {
@@ -1757,6 +1843,8 @@ function help() {
     '\n  dumpGrimInterface()' +
     '\n  hookGrimNow()' +
     '\n  startHotWindow(2000)          // log hot grim calls for N ms' +
+    '\n  watchCreditsFlags(0, 0x80)    // monitor credits line flag writes' +
+    '\n  stopWatchCreditsFlags()' +
     '\n  watchPlayerOffset(0, 0x1a4, 4)    // monitor read/write accesses to player0+0x1a4' +
     '\n  stopWatchPlayerOffset()' +
     '\n');
@@ -1771,6 +1859,8 @@ globalThis.dumpWeapon = dumpWeapon;
 globalThis.dumpGrimInterface = dumpGrimInterface;
 globalThis.hookGrimNow = hookGrimNow;
 globalThis.startHotWindow = startHotWindow;
+globalThis.watchCreditsFlags = watchCreditsFlags;
+globalThis.stopWatchCreditsFlags = stopWatchCreditsFlags;
 globalThis.watchPlayerOffset = watchPlayerOffset;
 globalThis.stopWatchPlayerOffset = stopWatchPlayerOffset;
 globalThis.help = help;
