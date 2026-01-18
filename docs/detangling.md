@@ -18,7 +18,7 @@ and data labels in `analysis/ghidra/maps/data_map.json`, applying both during he
 analysis:
 
 ```
-just game_dir=game_bins/crimsonland/1.9.93-gog ghidra-exe
+just ghidra-exe
 ```
 
 You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps.
