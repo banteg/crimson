@@ -23,6 +23,9 @@ const CONFIG = {
   // If true, also send() every event to the host.
   sendToHost: false,
 
+  // If true, also print JSONL to the Frida console.
+  logToConsole: false,
+
   // Light caller info: include the immediate return address symbol.
   includeCaller: true,
 
@@ -430,7 +433,9 @@ function writeLine(obj) {
       LOG.ok = false;
     }
   }
-  console.log(line);
+  if (CONFIG.logToConsole) {
+    console.log(line);
+  }
   if (CONFIG.sendToHost) {
     try { send(obj); } catch (_) {}
   }

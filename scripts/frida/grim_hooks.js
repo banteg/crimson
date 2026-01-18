@@ -8,6 +8,7 @@ const DEFAULT_CONFIG = {
     out_path: "Z:\\grim_hits.log",
     json_path: "Z:\\grim_hits.jsonl",
     log_json: true,
+    console_log: false,
     log_interval_ms: 5000,
     trace: {
       mode: "callsite", // off | first | callsite | all
@@ -551,7 +552,9 @@ if (options.log_json) {
 
 function log(line) {
   const msg = new Date().toISOString() + " " + line;
-  console.log(msg);
+  if (options.console_log) {
+    console.log(msg);
+  }
   if (outText) { outText.write(msg + "\n"); outText.flush(); }
 }
 
