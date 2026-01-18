@@ -31,7 +31,7 @@ Timeline of what happened and when (relative timestamps are fine).
 
 ---
 
-# Session 1
+## Session 1
 
 - **Date:** 2026-01-18
 - **Build / platform:** Win11 ARM64 (UTM), Crimsonland v1.9.93
@@ -129,7 +129,7 @@ Based on the video provided, here is the timeline of events.
 - Extend the reducer to resolve `unmapped_calls.json` entries by module base (grim.dll) so raw addresses
   aren’t lumped together as unknown.
 
-# Session 2
+## Session 2
 
 - **Date:** TBD
 - **Build / platform:** Win11 ARM64 (UTM), Crimsonland v1.9.93
