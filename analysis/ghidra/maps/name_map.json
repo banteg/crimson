@@ -2500,5 +2500,82 @@
     "name": "ov_read",
     "signature": "long ov_read(OggVorbis_File * vf, char * buffer, int length, int bigendianp, int word, int sgned, int * bitstream)",
     "comment": "libvorbisfile: decode PCM"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00461089",
+    "name": "crt_vsprintf",
+    "signature": "int crt_vsprintf(char *dst, char *fmt, va_list args)",
+    "comment": "CRT: format string to buffer"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046135d",
+    "name": "crt_strtok",
+    "signature": "char * crt_strtok(char *str, char *delim)",
+    "comment": "CRT: tokenize string, uses TLS for state"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462bd4",
+    "name": "crt_qsort",
+    "signature": "void crt_qsort(void *base, size_t num, size_t size, int (*cmp)(void *, void *))",
+    "comment": "CRT: quicksort with callback"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462d28",
+    "name": "crt_shortsort",
+    "signature": "void crt_shortsort(char *lo, char *hi, size_t width, int (*cmp)(void *, void *))",
+    "comment": "CRT: insertion sort for small arrays"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462d76",
+    "name": "crt_swap",
+    "signature": "void crt_swap(char *a, char *b, size_t width)",
+    "comment": "CRT: swap elements for qsort"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00464030",
+    "name": "crt_openfile",
+    "signature": "FILE * crt_openfile(char *filename, char *mode, int shflag, FILE *stream)",
+    "comment": "CRT: open file with mode string parsing"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004641a0",
+    "name": "crt_getstream",
+    "signature": "FILE * crt_getstream(void)",
+    "comment": "CRT: allocate FILE struct from pool"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00464380",
+    "name": "crt_output",
+    "signature": "int crt_output(FILE *stream, char *format, va_list args)",
+    "comment": "CRT: core printf formatter"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00465da5",
+    "name": "crt_mktime64",
+    "signature": "time_t crt_mktime64(int year, int month, int day, int hour, int min, int sec, int dst)",
+    "comment": "CRT: convert date/time to timestamp"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046a590",
+    "name": "crt_memmove",
+    "signature": "void * crt_memmove(void *dst, void *src, size_t size)",
+    "comment": "CRT: copy memory with overlap handling"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046adbd",
+    "name": "crt_sopen",
+    "signature": "int crt_sopen(char *filename, int oflag, int shflag, int pmode)",
+    "comment": "CRT: open file with share mode, wraps CreateFile"
   }
 ]
