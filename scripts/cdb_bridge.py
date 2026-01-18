@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import csv
 import io
+import re
 import signal
 import socket
 import subprocess
@@ -17,6 +18,7 @@ from typing import Deque, List
 
 DEFAULT_CDB = r"C:\Program Files (x86)\Windows Kits\10\Debuggers\x86\cdb.exe"
 DEFAULT_IMAGE = "crimsonland.exe"
+PROMPT_RE = re.compile(r"^\s*\d+:\d+>")
 
 
 @dataclass
@@ -44,6 +46,8 @@ class CdbBridge:
         self.proc: subprocess.Popen[str] | None = None
         self.log_handle = log_path.open("a", encoding="utf-8")
         self.auto_break = auto_break
+        self.prompt_event = threading.Event()
+        self.is_broken = False
 
     def start(self) -> None:
         self.proc = subprocess.Popen(
@@ -68,6 +72,9 @@ class CdbBridge:
         self.log_handle.write(line)
         self.log_handle.flush()
         self.tail.append(line.rstrip("\n"))
+        if PROMPT_RE.match(line):
+            self.is_broken = True
+            self.prompt_event.set()
         with self.lock:
             if self.capture.active_id is not None:
                 marker = f"__CDB_BRIDGE_DONE__{self.capture.active_id}"
@@ -86,13 +93,18 @@ class CdbBridge:
             return ["[cdb] stdin unavailable"]
         stripped = command.strip()
         if self.auto_break and not _is_continue_command(stripped):
-            self._break_in()
+            if not self.is_broken:
+                self.prompt_event.clear()
+                self._break_in()
+                self.prompt_event.wait(timeout=timeout)
         cmd_id = uuid.uuid4().hex[:8]
         marker = f".echo __CDB_BRIDGE_DONE__{cmd_id}"
         with self.lock:
             self.capture.active_id = cmd_id
             self.capture.lines = []
             self.capture.event.clear()
+        if _is_continue_command(stripped):
+            self.is_broken = False
         try:
             self.proc.stdin.write(command.rstrip() + "\n")
             self.proc.stdin.write(marker + "\n")
