@@ -2835,9 +2835,9 @@
     "calls": ["grim_pixel_format_init"]
   },
   {
-    "name": "FUN_1001a595",
+    "name": "grim_pixel_format_flush_yuv_cache",
     "address": "1001a595",
-    "signature": "undefined4 FUN_1001a595(int param_1)",
+    "signature": "int grim_pixel_format_flush_yuv_cache(void * this)",
     "external": false,
     "calls": []
   },
@@ -2856,11 +2856,11 @@
     "calls": ["grim_pixel_format_init"]
   },
   {
-    "name": "FUN_1001a7b9",
+    "name": "grim_pixel_format_load_yuv_cache",
     "address": "1001a7b9",
-    "signature": "int FUN_1001a7b9(void * this, uint param_1, uint param_2, uint param_3)",
+    "signature": "int grim_pixel_format_load_yuv_cache(void * this, uint x, uint y, int load_from_surface)",
     "external": false,
-    "calls": ["FUN_1001a595"]
+    "calls": ["grim_pixel_format_flush_yuv_cache"]
   },
   {
     "name": "grim_pixel_format_ctor_a4r4g4b4",
@@ -2902,7 +2902,7 @@
     "address": "1001ab16",
     "signature": "undefined FUN_1001ab16(void * this, int param_1, int param_2, undefined4 * param_3)",
     "external": false,
-    "calls": ["FUN_1001a7b9", "grim_convert_vertex_space"]
+    "calls": ["grim_convert_vertex_space", "grim_pixel_format_load_yuv_cache"]
   },
   {
     "name": "grim_pixel_format_ctor_a2b10g10r10",
@@ -3126,7 +3126,7 @@
     "address": "1001b493",
     "signature": "undefined FUN_1001b493(void)",
     "external": false,
-    "calls": ["FUN_1001692e", "FUN_1001a595", "operator_delete", "seh_prolog"]
+    "calls": ["FUN_1001692e", "grim_pixel_format_flush_yuv_cache", "operator_delete", "seh_prolog"]
   },
   {
     "name": "grim_pixel_format_ctor_uyvy",

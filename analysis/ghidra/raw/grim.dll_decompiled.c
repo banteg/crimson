@@ -19179,9 +19179,11 @@ void * __thiscall grim_pixel_format_ctor_r5g6b5(void *this,uint *desc)
 
 
 
-/* FUN_1001a595 @ 1001a595 */
+/* grim_pixel_format_flush_yuv_cache @ 1001a595 */
 
-undefined4 __fastcall FUN_1001a595(int param_1)
+/* flushes cached YUV<->RGB conversions back into packed 16-bit storage */
+
+int __fastcall grim_pixel_format_flush_yuv_cache(void *this)
 
 {
   float *pfVar1;
@@ -19192,14 +19194,14 @@ undefined4 __fastcall FUN_1001a595(int param_1)
   ushort *local_10;
   uint local_c;
   
-  if ((*(int *)(param_1 + 0x108c) != 0) && (*(int *)(param_1 + 0x1090) != 0)) {
-    local_c = *(uint *)(param_1 + 0x1070);
+  if ((*(int *)((int)this + 0x108c) != 0) && (*(int *)((int)this + 0x1090) != 0)) {
+    local_c = *(uint *)((int)this + 0x1070);
     local_10 = (ushort *)
-               (*(int *)(param_1 + 0x1080) * *(int *)(param_1 + 0x1054) +
-                *(int *)(param_1 + 0x1074) * *(int *)(param_1 + 0x1050) + local_c * 2 +
-               *(int *)(param_1 + 0x18));
-    pfVar1 = *(float **)(param_1 + 0x106c);
-    if (local_c < *(uint *)(param_1 + 0x1078)) {
+               (*(int *)((int)this + 0x1080) * *(int *)((int)this + 0x1054) +
+                *(int *)((int)this + 0x1074) * *(int *)((int)this + 0x1050) + local_c * 2 +
+               *(int *)((int)this + 0x18));
+    pfVar1 = *(float **)((int)this + 0x106c);
+    if (local_c < *(uint *)((int)this + 0x1078)) {
       do {
         iVar2 = (int)ROUND(pfVar1[2] * 24.966 + pfVar1[1] * 128.553 + *pfVar1 * 65.481 + 0.5) + 0x10
         ;
@@ -19235,14 +19237,14 @@ undefined4 __fastcall FUN_1001a595(int param_1)
         }
         local_c = local_c + 2;
         pfVar1 = pfVar1 + 8;
-        *local_10 = (ushort)(iVar2 << ((byte)*(undefined4 *)(param_1 + 0x1094) & 0x1f)) |
-                    (ushort)(iVar3 << ((byte)*(undefined4 *)(param_1 + 0x1098) & 0x1f));
-        local_10[1] = (ushort)(iVar4 << ((byte)*(undefined4 *)(param_1 + 0x1094) & 0x1f)) |
-                      (ushort)(iVar5 << ((byte)*(undefined4 *)(param_1 + 0x1098) & 0x1f));
+        *local_10 = (ushort)(iVar2 << ((byte)*(undefined4 *)((int)this + 0x1094) & 0x1f)) |
+                    (ushort)(iVar3 << ((byte)*(undefined4 *)((int)this + 0x1098) & 0x1f));
+        local_10[1] = (ushort)(iVar4 << ((byte)*(undefined4 *)((int)this + 0x1094) & 0x1f)) |
+                      (ushort)(iVar5 << ((byte)*(undefined4 *)((int)this + 0x1098) & 0x1f));
         local_10 = local_10 + 2;
-      } while (local_c < *(uint *)(param_1 + 0x1078));
+      } while (local_c < *(uint *)((int)this + 0x1078));
     }
-    *(undefined4 *)(param_1 + 0x108c) = 0;
+    *(undefined4 *)((int)this + 0x108c) = 0;
   }
   return 0;
 }
@@ -19277,9 +19279,11 @@ void * __thiscall grim_pixel_format_ctor_a1r5g5b5(void *this,uint *desc)
 
 
 
-/* FUN_1001a7b9 @ 1001a7b9 */
+/* grim_pixel_format_load_yuv_cache @ 1001a7b9 */
 
-int __thiscall FUN_1001a7b9(void *this,uint param_1,uint param_2,uint param_3)
+/* loads packed YUV pixels into float cache and converts to RGB */
+
+int __thiscall grim_pixel_format_load_yuv_cache(void *this,uint x,uint y,int load_from_surface)
 
 {
   undefined2 uVar1;
@@ -19299,24 +19303,23 @@ int __thiscall FUN_1001a7b9(void *this,uint param_1,uint param_2,uint param_3)
     iVar10 = -0x7ff8fff2;
   }
   else {
-    if ((((param_1 < *(uint *)((int)this + 0x1074)) || (*(uint *)((int)this + 0x107c) <= param_1))
-        || (param_2 < *(uint *)((int)this + 0x1080))) || (*(uint *)((int)this + 0x1084) <= param_2))
-    {
-      iVar10 = FUN_1001a595((int)this);
+    if ((((x < *(uint *)((int)this + 0x1074)) || (*(uint *)((int)this + 0x107c) <= x)) ||
+        (y < *(uint *)((int)this + 0x1080))) || (*(uint *)((int)this + 0x1084) <= y)) {
+      iVar10 = grim_pixel_format_flush_yuv_cache(this);
       if (iVar10 < 0) {
         return iVar10;
       }
-      *(uint *)((int)this + 0x107c) = param_1 + 1;
-      *(uint *)((int)this + 0x1074) = param_1;
-      *(uint *)((int)this + 0x1080) = param_2;
-      *(uint *)((int)this + 0x1084) = param_2 + 1;
-      if (param_3 != 0) {
-        param_3 = *(uint *)((int)this + 0x1070);
+      *(uint *)((int)this + 0x107c) = x + 1;
+      *(uint *)((int)this + 0x1074) = x;
+      *(uint *)((int)this + 0x1080) = y;
+      *(uint *)((int)this + 0x1084) = y + 1;
+      if (load_from_surface != 0) {
+        load_from_surface = *(uint *)((int)this + 0x1070);
         pfVar11 = *(float **)((int)this + 0x106c);
         puVar12 = (ushort *)
-                  (*(int *)((int)this + 0x1050) * param_1 + *(int *)((int)this + 0x1054) * param_2 +
-                   param_3 * 2 + *(int *)((int)this + 0x18));
-        if (param_3 < *(uint *)((int)this + 0x1078)) {
+                  (*(int *)((int)this + 0x1050) * x + *(int *)((int)this + 0x1054) * y +
+                   load_from_surface * 2 + *(int *)((int)this + 0x18));
+        if ((uint)load_from_surface < *(uint *)((int)this + 0x1078)) {
           do {
             uVar1 = *(undefined2 *)((int)this + 0x1094);
             uVar2 = puVar12[1];
@@ -19398,11 +19401,11 @@ int __thiscall FUN_1001a7b9(void *this,uint param_1,uint param_2,uint param_3)
             else {
               fVar4 = 0.0;
             }
-            param_3 = param_3 + 2;
+            load_from_surface = load_from_surface + 2;
             pfVar11[6] = fVar4;
             puVar12 = puVar12 + 2;
             pfVar11 = pfVar11 + 8;
-          } while (param_3 < *(uint *)((int)this + 0x1078));
+          } while ((uint)load_from_surface < *(uint *)((int)this + 0x1078));
         }
       }
     }
@@ -19495,9 +19498,10 @@ void __thiscall FUN_1001ab16(void *this,int param_1,int param_2,undefined4 *para
   if (*(int *)((int)this + 0x1048) != 0) {
     param_3 = grim_convert_vertex_space(this,(float *)param_3);
   }
-  iVar1 = FUN_1001a7b9(this,param_1 + *(int *)((int)this + 0x1034),
-                       param_2 + *(int *)((int)this + 0x1040),
-                       (uint)(*(int *)((int)this + 0x1088) != *(int *)((int)this + 0x1058)));
+  iVar1 = grim_pixel_format_load_yuv_cache
+                    (this,param_1 + *(int *)((int)this + 0x1034),
+                     param_2 + *(int *)((int)this + 0x1040),
+                     (uint)(*(int *)((int)this + 0x1088) != *(int *)((int)this + 0x1058)));
   if (-1 < iVar1) {
     puVar3 = (undefined4 *)
              ((*(int *)((int)this + 0x1030) - *(int *)((int)this + 0x1070)) * 0x10 +
@@ -20139,19 +20143,19 @@ void * __thiscall FUN_1001b472(void *this,byte param_1)
 void FUN_1001b493(void)
 
 {
-  undefined4 *extraout_ECX;
+  undefined4 *this;
   int unaff_EBP;
   
   seh_prolog();
-  *(undefined4 **)(unaff_EBP + -0x10) = extraout_ECX;
-  *extraout_ECX = &PTR_LAB_1004cb7c;
+  *(undefined4 **)(unaff_EBP + -0x10) = this;
+  *this = &PTR_LAB_1004cb7c;
   *(undefined4 *)(unaff_EBP + -4) = 0;
-  FUN_1001a595((int)extraout_ECX);
-  if ((void *)extraout_ECX[0x41b] != (void *)0x0) {
-    operator_delete((void *)extraout_ECX[0x41b]);
+  grim_pixel_format_flush_yuv_cache(this);
+  if ((void *)this[0x41b] != (void *)0x0) {
+    operator_delete((void *)this[0x41b]);
   }
   *(undefined4 *)(unaff_EBP + -4) = 0xffffffff;
-  FUN_1001692e(extraout_ECX);
+  FUN_1001692e(this);
   ExceptionList = *(void **)(unaff_EBP + -0xc);
   return;
 }

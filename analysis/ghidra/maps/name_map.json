@@ -3603,6 +3603,20 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1001a595",
+    "name": "grim_pixel_format_flush_yuv_cache",
+    "signature": "int grim_pixel_format_flush_yuv_cache(void *this)",
+    "comment": "flushes cached YUV<->RGB conversions back into packed 16-bit storage"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001a7b9",
+    "name": "grim_pixel_format_load_yuv_cache",
+    "signature": "int grim_pixel_format_load_yuv_cache(void *this, uint x, uint y, int load_from_surface)",
+    "comment": "loads packed YUV pixels into float cache and converts to RGB"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1001aa8a",
     "name": "grim_pixel_format_ctor_a4r4g4b4",
     "signature": "void * grim_pixel_format_ctor_a4r4g4b4(void *this, uint *desc)",
