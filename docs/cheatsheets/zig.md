@@ -1,8 +1,3 @@
----
-name: zig
-description: "Zig 0.15.x migration notes for I/O, ArrayList, JSON, and formatting changes."
----
-
 ## Zig “15” = Zig 0.15.x (baseline: 0.15.2)
 
 Zig uses **0.x** versioning (pre-1.0). What people call “Zig 15” is almost always **Zig 0.15.x**. As of **Oct 11, 2025**, the latest stable is **0.15.2**; **0.15.1** (Aug 19, 2025) is the one with the big release notes that describe most of the breaking changes you’ll hit when moving to 0.15. ([Zig Programming Language][1])
