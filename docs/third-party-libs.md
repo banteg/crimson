@@ -30,6 +30,8 @@ outputs.
 ### libvorbisfile / libvorbis / libogg (versions unknown)
 - Evidence: `vorbisfile.dll` string in `analysis/ghidra/raw/crimsonland.exe_strings.txt:130`.
 - Evidence: .ogg asset paths and errors in `analysis/ghidra/raw/crimsonland.exe_strings.txt:884` and later.
+- Evidence: bundled DLL hash (sha256) for `game_bins/crimsonland/1.9.93-gog/VORBISFILE.DLL`:
+  `f44472c6d9a64045c14583d12c0cfab5b4aa268aceb8bc9e3e1236b3008306f2`.
 - Status: headers imported (`third_party/headers/ogg/ogg.h`,
   `third_party/headers/vorbis/codec.h`, `third_party/headers/vorbis/vorbisfile.h`).
 - Status: no signature mapping yet.
