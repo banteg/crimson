@@ -37,6 +37,9 @@ Other states have their own loops but reuse the same render pass (`FUN_00405960`
       alpha and transform matrix (`perk_prompt_transform_*` at `DAT_0048f510..DAT_0048f51c`).
     - `perk_prompt_hover_active` (`DAT_0048f500`) + `perk_prompt_pulse` (`DAT_0048f504`) drive the
       hover/pulse feedback and click gating.
+    - `perk_prompt_origin_x/y` (`DAT_0048f224`/`DAT_0048f228`) with bounds
+      (`perk_prompt_bounds_min_*` at `DAT_0048f248/0048f24c`, `perk_prompt_bounds_max_*` at
+      `DAT_0048f280/0048f284`) define the perk prompt hover rectangle.
     - `perk_choices_dirty` (`DAT_00486fb0`) forces a one-shot `perks_generate_choices()` before
       switching to state `6`.
 12) `bonus_update`.

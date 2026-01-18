@@ -1005,6 +1005,42 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x0048f224",
+      "name": "perk_prompt_origin_x",
+      "comment": "Perk prompt origin X used to compute hover/click bounds (ui_mouse_x - origin_x)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f228",
+      "name": "perk_prompt_origin_y",
+      "comment": "Perk prompt origin Y used to compute hover/click bounds (ui_mouse_y - origin_y)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f248",
+      "name": "perk_prompt_bounds_min_x",
+      "comment": "Perk prompt bounds min X (relative to perk_prompt_origin_x)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f24c",
+      "name": "perk_prompt_bounds_min_y",
+      "comment": "Perk prompt bounds min Y (relative to perk_prompt_origin_y)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f280",
+      "name": "perk_prompt_bounds_max_x",
+      "comment": "Perk prompt bounds max X (relative to perk_prompt_origin_x)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f284",
+      "name": "perk_prompt_bounds_max_y",
+      "comment": "Perk prompt bounds max Y (relative to perk_prompt_origin_y)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x0048f500",
       "name": "perk_prompt_hover_active",
       "comment": "Perk prompt hover flag; toggles pulse animation and click gating when cursor is inside the perk prompt."

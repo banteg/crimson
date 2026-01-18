@@ -591,6 +591,9 @@ tail bytes are validated against the current date and the full‑version flag.
 - Perk prompt UI gates (high confidence):
   - `perk_prompt_timer` (`DAT_0048f524`) ramps 0..200 while perks are pending and feeds the
     prompt alpha plus the transform matrix (`perk_prompt_transform_*` at `DAT_0048f510..DAT_0048f51c`).
+  - `perk_prompt_origin_x/y` (`DAT_0048f224`/`DAT_0048f228`) anchor the prompt bounds for hover/click
+    tests; `perk_prompt_bounds_min_*` (`DAT_0048f248`/`DAT_0048f24c`) and
+    `perk_prompt_bounds_max_*` (`DAT_0048f280`/`DAT_0048f284`) define the relative rectangle.
   - `perk_prompt_hover_active` (`DAT_0048f500`) flips when the cursor enters/leaves the perk prompt
     bounds and gates whether the click target is active.
   - `perk_prompt_pulse` (`DAT_0048f504`) ramps `0..1000` (decays when not hovered, accelerates when

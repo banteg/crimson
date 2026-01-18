@@ -1812,7 +1812,7 @@ void FUN_00403550(void)
       pcVar2 = FUN_004036d0(config_key_pick_perk);
       crt_sprintf(acStack_90,s_Press__s_to_pick_a_perk_00471488,pcVar2);
       iVar1 = *grim_interface_ptr;
-      iVar3 = (**(code **)(iVar1 + 0x14c))(acStack_90,_DAT_0048f228 + 8.0,acStack_90);
+      iVar3 = (**(code **)(iVar1 + 0x14c))(acStack_90,_perk_prompt_origin_y + 8.0,acStack_90);
       (**(code **)(iVar1 + 0x144))((float)((config_screen_width - iVar3) + -0x10));
     }
     DAT_0048f20c = 1;
@@ -6411,15 +6411,15 @@ LAB_0040ad8e:
   if (((((demo_mode_active == '\0') && (game_paused_flag == '\0')) && (mouse_button_down == '\0'))
       && ((_config_game_mode != 2 && (0 < perk_pending_count)))) &&
      ((0.0 < player_health || ((_config_player_count == 2 && (0.0 < player2_health)))))) {
-    fVar1 = ui_mouse_x - _DAT_0048f224;
-    fVar2 = ui_mouse_y - _DAT_0048f228;
+    fVar1 = ui_mouse_x - _perk_prompt_origin_x;
+    fVar2 = ui_mouse_y - _perk_prompt_origin_y;
     if (game_state_pending != 6) {
       cVar3 = (**(code **)(*grim_interface_ptr + 0x80))(config_key_pick_perk);
       if (((cVar3 == '\0') &&
           (cVar3 = (**(code **)(*grim_interface_ptr + 0x48))(0x39), cVar3 == '\0')) &&
          (cVar3 = (**(code **)(*grim_interface_ptr + 0x48))(0x4e), cVar3 == '\0')) {
-        if (((fVar1 <= DAT_0048f248) || (fVar2 <= DAT_0048f24c)) ||
-           ((_DAT_0048f280 <= fVar1 || (_DAT_0048f284 <= fVar2)))) {
+        if (((fVar1 <= perk_prompt_bounds_min_x) || (fVar2 <= perk_prompt_bounds_min_y)) ||
+           ((_perk_prompt_bounds_max_x <= fVar1 || (_perk_prompt_bounds_max_y <= fVar2)))) {
           perk_prompt_hover_active = '\0';
         }
         else {
@@ -33841,7 +33841,7 @@ void FUN_0044fcb0(void)
   FUN_0044faa0(&DAT_0048f20c);
   _DAT_0048f240 = FUN_00446140;
   puVar10 = &DAT_0048fba8;
-  puVar11 = &DAT_0048f248;
+  puVar11 = &perk_prompt_bounds_min_x;
   for (iVar6 = 0x3a; iVar6 != 0; iVar6 = iVar6 + -1) {
     *puVar11 = *puVar10;
     puVar10 = puVar10 + 1;
@@ -33870,15 +33870,15 @@ void FUN_0044fcb0(void)
   if (config_screen_width == 0x280) {
     fStack_30 = 690.0;
     fStack_2c = 80.0;
-    _DAT_0048f228 = 0x42a00000;
+    _perk_prompt_origin_y = 0x42a00000;
   }
   else {
     fStack_2c = 40.0;
     fStack_30 = (float)(config_screen_width + 0x32);
-    _DAT_0048f228 = 0x42200000;
+    _perk_prompt_origin_y = 0x42200000;
   }
   piVar3 = (int *)&DAT_0048f16c;
-  _DAT_0048f224 = fStack_30;
+  _perk_prompt_origin_x = fStack_30;
   do {
     iVar6 = *piVar3;
     piVar3 = piVar3 + 1;
