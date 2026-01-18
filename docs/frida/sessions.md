@@ -99,8 +99,24 @@ Based on the video provided, here is the timeline of events.
 
 ## findings
 
-- _TBD after analysis._
+- Auto-record triggers fired; counts: startup (1), low_health (1), bonus_apply (4), perk_apply (1),
+  perk_selection_screen (6), game_over_screen (10). Low-health dump shows HP crossing ~24.19 → 18.67.
+- Unknown-field tracker still only reported offsets `0x2BC`, `0x2C4`, `0x2D0`, `0x34C`, `0x350`, `0x354`
+  with count=1 each, so no clear “hot” offset yet.
+- Texture name decoding remains unreliable: `texture_get_or_load` names are mostly null or long garbage blobs
+  (string-table dumps), implying the arg is not a direct `char *` for these callsites.
+- Grim vtable evidence aligns with render-heavy paths (`ui_element_render`, `ui_render_hud`, `projectile_render`,
+  `creature_render_type`, `bonus_render`), confirming coverage but not yielding new renames.
+- SFX evidence is still sparse; sfx 63 appears in `ui_button_update`/`ui_menu_item_update` and perk UI, likely
+  a UI click/confirm.
 
 ## actionable insights
 
-- _TBD after analysis._
+- Raise `autoRecord.dumpCooldownMs` / `hotWindowCooldownMs` (or add “once per screen” gating) to avoid repeated
+  dumps during `perk_selection_screen_update` and `game_over_screen_update`.
+- Add a reducer step to diff `auto_dump_player` snapshots per reason (bonus/perk/low health) and emit changed
+  offsets to focus MemoryAccessMonitor drills.
+- Improve texture name decoding by treating the arg as a struct pointer (probe `*(arg+0x??)` for cstr) or
+  hook upstream callsites where the string is still intact.
+- Extend the reducer to resolve `unmapped_calls.json` entries by module base (grim.dll) so raw addresses
+  aren’t lumped together as unknown.
