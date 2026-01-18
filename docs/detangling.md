@@ -114,6 +114,9 @@ You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps
 - `FUN_0043ecf0` -> `ui_text_input_update`
   - Evidence: handles focus/hover, polls text input via `console_input_poll`, plays typing SFX, and renders
     the input box plus caret.
+- `FUN_004413a0` -> `ui_text_input_render`
+  - Evidence: renders the text input field with caret blink and state‑dependent colors; used by high‑score
+    entry paths and other text input flows.
 
 ### Audio resource packs (high confidence)
 

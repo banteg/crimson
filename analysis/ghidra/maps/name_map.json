@@ -859,6 +859,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004413a0",
+    "name": "ui_text_input_render",
+    "signature": "void ui_text_input_render(void *input_state, float y, float alpha)",
+    "comment": "renders a text input field (focus, text, and caret)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00446000",
     "name": "input_any_key_pressed",
     "signature": "int input_any_key_pressed(void)",

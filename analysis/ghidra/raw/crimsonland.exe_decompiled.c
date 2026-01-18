@@ -7697,7 +7697,7 @@ LAB_004103c2:
       if (DAT_004825a4 < 100) {
         local_10 = local_18 + 16.0;
         local_c = local_14 + 16.0;
-        FUN_004413a0(&local_10,6.652423e-39,1.0);
+        ui_text_input_render(&local_10,6.652423e-39,1.0);
         ui_cursor_render();
         return;
       }
@@ -7722,7 +7722,7 @@ LAB_004103c2:
   }
   local_10 = local_18;
   local_c = local_14 + 16.0;
-  FUN_004413a0(&local_10,6.652423e-39,1.0);
+  ui_text_input_render(&local_10,6.652423e-39,1.0);
   local_14 = local_14 + 146.0;
   if ((DAT_004825fc & 4) == 0) {
     DAT_004825fc = DAT_004825fc | 4;
@@ -7885,7 +7885,7 @@ void FUN_004107e0(void)
   local_18 = local_18 + 6.0;
   local_10 = local_18 + 4.0;
   local_c = local_14 + 10.0;
-  FUN_004413a0(&local_10,6.652423e-39,1.0);
+  ui_text_input_render(&local_10,6.652423e-39,1.0);
   local_14 = local_14 + 98.0;
   local_18 = local_18 + 16.0;
   if ((DAT_004825d8 & 1) == 0) {
@@ -8376,7 +8376,7 @@ void quest_results_screen_update(void)
       }
 LAB_00411906:
       (**(code **)(*grim_interface_ptr + 0x110))();
-      FUN_004413a0(&stack0xffffffe0,6.652423e-39,1.0);
+      ui_text_input_render(&stack0xffffffe0,6.652423e-39,1.0);
       perk_prompt_update_and_render();
       ui_cursor_render();
       return;
@@ -8398,7 +8398,7 @@ LAB_00411906:
   }
   local_14 = fVar13 + 16.0;
   local_18 = fVar12;
-  FUN_004413a0(&local_18,6.652423e-39,fVar10);
+  ui_text_input_render(&local_18,6.652423e-39,fVar10);
   if (DAT_00482700 != 0) {
     (**(code **)(*grim_interface_ptr + 0x114))();
     (**(code **)(*grim_interface_ptr + 0x148))();
@@ -30387,11 +30387,12 @@ undefined * __cdecl FUN_00441270(undefined4 param_1,undefined4 param_2)
 
 
 
-/* FUN_004413a0 @ 004413a0 */
+/* ui_text_input_render @ 004413a0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* renders a text input field (focus, text, and caret) */
 
-void __cdecl FUN_004413a0(undefined4 param_1,float param_2,float param_3)
+void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
 
 {
   float *pfVar1;
@@ -30416,7 +30417,7 @@ void __cdecl FUN_004413a0(undefined4 param_1,float param_2,float param_3)
   float fVar16;
   float local_14;
   
-  _DAT_004cccb4 = param_3 * 0.7;
+  _DAT_004cccb4 = alpha * 0.7;
   DAT_00496604 = 0x3f333333;
   _DAT_004ccca8 = DAT_004965f8;
   _DAT_004cccac = DAT_004965fc;
@@ -30429,8 +30430,8 @@ void __cdecl FUN_004413a0(undefined4 param_1,float param_2,float param_3)
     (**(code **)((int)*grim_interface_ptr + 0x110))();
     fVar16 = (float)unaff_EBP;
     (**(code **)((int)*grim_interface_ptr + 0xd4))();
-    if ((*(byte *)((int)param_2 + 0x44) & 2) == 0) {
-      if ((*(byte *)((int)param_2 + 0x44) & 1) == 0) {
+    if ((*(byte *)((int)y + 0x44) & 2) == 0) {
+      if ((*(byte *)((int)y + 0x44) & 1) == 0) {
         (**(code **)((int)*grim_interface_ptr + 0x114))();
         fVar15 = *grim_interface_ptr;
       }
@@ -30452,26 +30453,24 @@ void __cdecl FUN_004413a0(undefined4 param_1,float param_2,float param_3)
     (**(code **)((int)*grim_interface_ptr + 0x114))
               (0x3f666666,0x3f666666,0x3f666666,unaff_EDI * 0.8);
     fVar15 = *grim_interface_ptr;
-    puVar2 = FUN_00441270((uint)*(byte *)((int)param_2 + 0x40),(uint)*(byte *)((int)param_2 + 0x42))
-    ;
+    puVar2 = FUN_00441270((uint)*(byte *)((int)y + 0x40),(uint)*(byte *)((int)y + 0x42));
     fVar6 = fStack_7c + 13.0;
     fVar10 = *grim_interface_ptr;
-    puVar3 = FUN_00441270((uint)*(byte *)((int)param_2 + 0x40),(uint)*(byte *)((int)param_2 + 0x42))
-    ;
+    puVar3 = FUN_00441270((uint)*(byte *)((int)y + 0x40),(uint)*(byte *)((int)y + 0x42));
     iVar4 = (**(code **)((int)fVar10 + 0x14c))(puVar3,fVar6,puVar2);
     (**(code **)((int)fVar15 + 0x144))(fVar16 - (float)(iVar4 / 2));
     local_14 = *unaff_retaddr + 16.0;
     FUN_004411c0();
   }
-  fVar15 = param_2 * 0.8;
+  fVar15 = y * 0.8;
   (**(code **)((int)*grim_interface_ptr + 0x114))();
   fVar16 = *grim_interface_ptr;
   iVar4 = (**(code **)((int)fVar16 + 0x14c))();
   (**(code **)((int)fVar16 + 0x144))();
-  if (*(char *)((int)param_2 + 0x28) == '\x02') {
+  if (*(char *)((int)y + 0x28) == '\x02') {
     crt_sprintf(&DAT_004d0da0,s___2f_secs_00478960);
   }
-  else if (*(char *)((int)param_2 + 0x28) == '\x03') {
+  else if (*(char *)((int)y + 0x28) == '\x03') {
     crt_sprintf(&DAT_004d0da0,s___2f_secs_00478960);
   }
   else {
@@ -30494,7 +30493,7 @@ void __cdecl FUN_004413a0(undefined4 param_1,float param_2,float param_3)
   }
   fVar16 = fVar16 + 96.0;
   FUN_00441220();
-  if (*(char *)((int)param_2 + 0x28) == '\x03') {
+  if (*(char *)((int)y + 0x28) == '\x03') {
     (**(code **)((int)*grim_interface_ptr + 0x148))();
     crt_sprintf(&DAT_004d0da0,&DAT_00471f40);
     iVar4 = (**(code **)((int)*grim_interface_ptr + 0x14c))();
@@ -30534,9 +30533,8 @@ void __cdecl FUN_004413a0(undefined4 param_1,float param_2,float param_3)
     (**(code **)((int)*grim_interface_ptr + 0xc4))(ui_weapon_icons_texture,0);
     (**(code **)((int)*grim_interface_ptr + 0x20))(0x15,1);
     (**(code **)((int)*grim_interface_ptr + 0x108))
-              (8,2,1,(&effect_subrect_frame_table)[(uint)*(byte *)((int)param_2 + 0x2b) * 0x1f] << 1
-              );
-    (**(code **)((int)*grim_interface_ptr + 0x114))(0x3f800000,0x3f800000,0x3f800000,param_2);
+              (8,2,1,(&effect_subrect_frame_table)[(uint)*(byte *)((int)y + 0x2b) * 0x1f] << 1);
+    (**(code **)((int)*grim_interface_ptr + 0x114))(0x3f800000,0x3f800000,0x3f800000,y);
     uVar14 = 0x42000000;
     fVar10 = *grim_interface_ptr;
     uVar13 = 0x42800000;
@@ -30560,17 +30558,16 @@ void __cdecl FUN_004413a0(undefined4 param_1,float param_2,float param_3)
     fVar8 = 0.9;
     (**(code **)((int)*grim_interface_ptr + 0x114))(0x3f666666,0x3f666666,0x3f666666,0x441c99);
     iVar4 = (**(code **)((int)*grim_interface_ptr + 0x14c))
-                      (&weapon_table + (uint)*(byte *)((int)param_2 + 0x2b) * 0x1f);
+                      (&weapon_table + (uint)*(byte *)((int)y + 0x2b) * 0x1f);
     fVar12 = (float)(0x20 - iVar4 / 2);
     if (fVar12 < 0.0) {
       fVar12 = 0.0;
     }
     (**(code **)((int)*grim_interface_ptr + 0x144))
-              (fVar12 + fVar10,fVar11 + 32.0,
-               &weapon_table + (uint)*(byte *)((int)param_2 + 0x2b) * 0x1f);
+              (fVar12 + fVar10,fVar11 + 32.0,&weapon_table + (uint)*(byte *)((int)y + 0x2b) * 0x1f);
     (**(code **)((int)*grim_interface_ptr + 0x148))
               (grim_interface_ptr,fVar8 + 110.0,fVar9 + 1.0,s_Frags___d_00478930,
-               *(undefined4 *)((int)param_2 + 0x34));
+               *(undefined4 *)((int)y + 0x34));
     pfVar1 = grim_interface_ptr;
     fVar10 = *grim_interface_ptr;
     lVar7 = __ftol();
@@ -30584,7 +30581,7 @@ void __cdecl FUN_004413a0(undefined4 param_1,float param_2,float param_3)
       _DAT_004d1210 = frame_dt + frame_dt + _DAT_004d1210;
     }
   }
-  (**(code **)((int)*grim_interface_ptr + 0x114))(0x3f800000,0x3f800000,0x3f800000,param_2);
+  (**(code **)((int)*grim_interface_ptr + 0x114))(0x3f800000,0x3f800000,0x3f800000,y);
   FUN_004411c0();
   if (_DAT_004d1208 <= 1.0) {
     if (_DAT_004d1208 < 0.0) {
