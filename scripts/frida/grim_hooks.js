@@ -18,6 +18,18 @@ const DEFAULT_CONFIG = {
     include_state_in_text: false,
     frame_boundary: ["grim_flush_batch"],
     frame_summary_top: 12,
+    player_unknown_tracker: {
+      enabled: false,
+      exe_module: "crimsonland.exe",
+      exe_link_base: "0x00400000",
+      player_health_base: "0x004908d4",
+      player_stride: 0x360,
+      prepad: 0x20,
+      interval_ms: 250,
+      report_every_ms: 5000,
+      top_n: 15,
+      player_index: 0,
+    },
   },
   targets: {
     grim_apply_config: { rva: "0x05D40" },
@@ -217,6 +229,44 @@ function findBase(moduleName) {
     try { return Module.getBaseAddress(moduleName); } catch (e) { return null; }
   }
   return null;
+}
+
+function safeGetModule(name) {
+  if (Process.findModuleByName) {
+    const mod = Process.findModuleByName(name);
+    if (mod) return mod;
+  }
+  try {
+    const mods = Process.enumerateModules();
+    for (let i = 0; i < mods.length; i++) {
+      if (mods[i].name === name) return mods[i];
+    }
+  } catch (e) {}
+  return null;
+}
+
+function toRuntimePtr(moduleName, staticVa, linkBase) {
+  const mod = safeGetModule(moduleName);
+  if (!mod) return null;
+  if (staticVa === null || staticVa === undefined) return null;
+  const link = ptr(linkBase);
+  return mod.base.add(ptr(staticVa).sub(link));
+}
+
+function normalizePlayerTracker(raw) {
+  const defaults = DEFAULT_CONFIG.options.player_unknown_tracker || {};
+  const cfg = mergeShallow(defaults, raw || {});
+  cfg.enabled = !!cfg.enabled;
+  cfg.exe_module = cfg.exe_module || "crimsonland.exe";
+  cfg.exe_link_base = parseRva(cfg.exe_link_base) || 0x00400000;
+  cfg.player_health_base = parseRva(cfg.player_health_base) || 0x004908d4;
+  cfg.player_stride = parseRva(cfg.player_stride) || 0x360;
+  cfg.prepad = parseRva(cfg.prepad) || 0x20;
+  cfg.interval_ms = parseRva(cfg.interval_ms) || 250;
+  cfg.report_every_ms = parseRva(cfg.report_every_ms) || 5000;
+  cfg.top_n = parseRva(cfg.top_n) || 15;
+  cfg.player_index = parseRva(cfg.player_index) || 0;
+  return cfg;
 }
 
 function formatAddress(addr) {
@@ -483,6 +533,7 @@ const traceDefaults = options.trace || { mode: "callsite", first: 1, callsite_li
 const frameBoundaryNames = Array.isArray(options.frame_boundary)
   ? options.frame_boundary
   : [options.frame_boundary];
+const playerTracker = normalizePlayerTracker(options.player_unknown_tracker);
 
 let outText = null;
 let outJson = null;
@@ -503,6 +554,150 @@ function emit(event) {
     outJson.write(JSON.stringify(normalizeJson(event)) + "\n");
     outJson.flush();
   } catch (e) {}
+}
+
+function makeKnownPlayerOffsetPredicate() {
+  const knownSingles = new Set([
+    -0x1b,
+    -0x14, -0x10, -0x0c, -0x08, -0x04,
+    0x00, 0x08, 0x10,
+    0x2c, 0x30,
+    0x38, 0x3c,
+    0x44,
+    0x70,
+    0x78, 0x7c, 0x80, 0x84,
+    0x88, 0x90,
+    0x294,
+    0x29c, 0x2a0, 0x2a4, 0x2a8,
+    0x2ac, 0x2b0, 0x2b4,
+    0x2b8,
+    0x2d8, 0x2dc, 0x2e0, 0x2e4,
+    0x2ec,
+    0x2f0, 0x2f4, 0x2f8,
+    0x2fc,
+    0x300, 0x304,
+    0x32c, 0x330, 0x334, 0x338,
+  ]);
+
+  const knownRanges = [
+    { start: 0x94, end: 0x293 },
+  ];
+
+  return function isKnown(off) {
+    if (knownSingles.has(off)) return true;
+    for (let i = 0; i < knownRanges.length; i++) {
+      const r = knownRanges[i];
+      if (off >= r.start && off <= r.end) return true;
+    }
+    return false;
+  };
+}
+
+class UnknownFieldTracker {
+  constructor(opts) {
+    this.base = opts.base;
+    this.prepad = opts.prepad;
+    this.size = opts.size;
+    this.isKnownOffset = opts.isKnownOffset;
+    this.prev = null;
+    this.counts = new Map();
+    this.last = new Map();
+  }
+
+  _bump(off, u32) {
+    const cur = this.counts.get(off) || 0;
+    this.counts.set(off, cur + 1);
+    this.last.set(off, { u32: u32 >>> 0, f32: u32ToF32(u32 >>> 0) });
+  }
+
+  snapshot() {
+    const start = this.base.sub(this.prepad);
+    const total = this.prepad + this.size;
+    let bytes;
+    try {
+      bytes = Memory.readByteArray(start, total);
+    } catch (e) {
+      return;
+    }
+
+    const cur = new Uint8Array(bytes);
+    if (this.prev === null) {
+      this.prev = cur;
+      return;
+    }
+
+    for (let i = 0; i + 4 <= cur.length; i += 4) {
+      let diff = false;
+      for (let j = 0; j < 4; j++) {
+        if (cur[i + j] !== this.prev[i + j]) { diff = true; break; }
+      }
+      if (!diff) continue;
+      const off = i - this.prepad;
+      if (this.isKnownOffset(off)) continue;
+      const u32 = (cur[i] | (cur[i + 1] << 8) | (cur[i + 2] << 16) | (cur[i + 3] << 24)) >>> 0;
+      this._bump(off, u32);
+    }
+
+    this.prev = cur;
+  }
+
+  reportTop(n) {
+    const arr = [];
+    for (const [off, cnt] of this.counts.entries()) {
+      const last = this.last.get(off);
+      arr.push({ off, cnt, last });
+    }
+    arr.sort((a, b) => b.cnt - a.cnt);
+    return arr.slice(0, n);
+  }
+}
+
+let playerTrackerState = null;
+
+function startPlayerUnknownTracker() {
+  if (!playerTracker.enabled) return;
+  const basePtr = toRuntimePtr(playerTracker.exe_module, playerTracker.player_health_base, playerTracker.exe_link_base);
+  if (!basePtr) {
+    log("player_unknown_tracker_error: player base unavailable");
+    emit({ type: "player_unknown_tracker_error", ts: new Date().toISOString(), reason: "player base unavailable" });
+    return;
+  }
+
+  const playerBase = basePtr.add(playerTracker.player_index * playerTracker.player_stride);
+  const isKnown = makeKnownPlayerOffsetPredicate();
+  playerTrackerState = new UnknownFieldTracker({
+    base: playerBase,
+    prepad: playerTracker.prepad,
+    size: playerTracker.player_stride,
+    isKnownOffset: isKnown,
+  });
+
+  log("player_unknown_tracker_start base=" + playerBase);
+  emit({
+    type: "player_unknown_tracker_start",
+    ts: new Date().toISOString(),
+    player_index: playerTracker.player_index,
+    base: playerBase.toString(),
+    interval_ms: playerTracker.interval_ms,
+    report_every_ms: playerTracker.report_every_ms,
+  });
+
+  let lastReport = Date.now();
+  setInterval(() => {
+    if (!playerTrackerState) return;
+    playerTrackerState.snapshot();
+    const now = Date.now();
+    if (now - lastReport >= playerTracker.report_every_ms) {
+      lastReport = now;
+      const top = playerTrackerState.reportTop(playerTracker.top_n);
+      emit({
+        type: "player_unknown_tracker_report",
+        ts: new Date().toISOString(),
+        player_index: playerTracker.player_index,
+        top: top,
+      });
+    }
+  }, playerTracker.interval_ms);
 }
 
 const state = {};
@@ -671,6 +866,8 @@ function tryHook() {
 
   log("hooks installed: " + Object.keys(targets).length);
 }
+
+startPlayerUnknownTracker();
 
 const waiter = setInterval(() => { if (!hooked) tryHook(); }, 200);
 setInterval(() => {

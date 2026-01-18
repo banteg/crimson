@@ -13,7 +13,19 @@
     "draw_state": true,
     "include_state_in_text": false,
     "frame_boundary": ["grim_flush_batch"],
-    "frame_summary_top": 12
+    "frame_summary_top": 12,
+    "player_unknown_tracker": {
+      "enabled": false,
+      "exe_module": "crimsonland.exe",
+      "exe_link_base": "0x00400000",
+      "player_health_base": "0x004908d4",
+      "player_stride": 864,
+      "prepad": 32,
+      "interval_ms": 250,
+      "report_every_ms": 5000,
+      "top_n": 15,
+      "player_index": 0
+    }
   },
   "targets": {
     "grim_apply_config": { "rva": "0x05D40" },
