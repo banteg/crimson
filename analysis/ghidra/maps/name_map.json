@@ -2311,5 +2311,47 @@
     "address": "0x1001e7ce",
     "name": "FUN_1001e7ce",
     "signature": "void FUN_1001e7ce(png_structp png_ptr, undefined4 *param_2)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046e920",
+    "name": "ov_pcm_seek",
+    "signature": "int ov_pcm_seek(OggVorbis_File * vf, ogg_int64_t pos)",
+    "comment": "libvorbisfile: seek to PCM sample"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046e926",
+    "name": "ov_pcm_total",
+    "signature": "ogg_int64_t ov_pcm_total(OggVorbis_File * vf, int i)",
+    "comment": "libvorbisfile: total PCM samples"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046e92c",
+    "name": "ov_info",
+    "signature": "vorbis_info * ov_info(OggVorbis_File * vf, int link)",
+    "comment": "libvorbisfile: query stream info"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046e932",
+    "name": "ov_open_callbacks",
+    "signature": "int ov_open_callbacks(void * datasource, OggVorbis_File * vf, char * initial, long ibytes, ov_callbacks callbacks)",
+    "comment": "libvorbisfile: open with callbacks"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046e938",
+    "name": "ov_clear",
+    "signature": "int ov_clear(OggVorbis_File * vf)",
+    "comment": "libvorbisfile: close and free"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046e93e",
+    "name": "ov_read",
+    "signature": "long ov_read(OggVorbis_File * vf, char * buffer, int length, int bigendianp, int word, int sgned, int * bitstream)",
+    "comment": "libvorbisfile: decode PCM"
   }
 ]
