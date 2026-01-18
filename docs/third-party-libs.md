@@ -39,6 +39,16 @@ outputs.
 Versions are not pinned yet; we need to match SDKs/headers by interface GUIDs
 and vtable shapes. Evidence comes from Ghidra import discovery.
 
+### DirectX SDK version (likely 8.1)
+- Evidence: grim.dll calls Direct3DCreate8(0xDC) (D3D_SDK_VERSION = 220) at
+  `analysis/ghidra/raw/grim.dll_decompiled.c:993` (also at `:2562`, `:5483`).
+- Evidence: crimsonland.exe also calls Direct3DCreate8(0xDC) at
+  `analysis/ghidra/raw/crimsonland.exe_decompiled.c:21721`.
+- Evidence: error string explicitly references DirectX 8.1 at
+  `analysis/ghidra/raw/grim.dll_strings.txt:435`.
+- Evidence: DirectInput8Create uses version 0x0800 (DIRECTINPUT_VERSION) at
+  `analysis/ghidra/raw/grim.dll_decompiled.c:5950` (also at `:6081`, `:6226`).
+
 ### grim.dll imports
 - ADVAPI32.DLL, D3D8.DLL, DINPUT8.DLL, GDI32.DLL, KERNEL32.DLL, MSVCRT.DLL,
   URLMON.DLL, USER32.DLL, WINMM.DLL.
