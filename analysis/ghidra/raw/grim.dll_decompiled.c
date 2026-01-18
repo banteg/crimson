@@ -6994,7 +6994,7 @@ int __cdecl FUN_1000abad(int *param_1,undefined4 param_2,undefined4 param_3,int 
   int *local_8;
   
   local_8 = (int *)0x0;
-  FUN_100101f5(1);
+  grim_d3d_debug_set_mute(1);
   if (param_1 != (int *)0x0) {
     (**(code **)(*param_1 + 0x18))(param_1,&local_8);
     (**(code **)(*param_1 + 0x1c))(param_1,&local_ec);
@@ -7030,7 +7030,7 @@ int __cdecl FUN_1000abad(int *param_1,undefined4 param_2,undefined4 param_3,int 
     (**(code **)(*local_8 + 8))(local_8);
     local_8 = (int *)0x0;
   }
-  FUN_100101f5(0);
+  grim_d3d_debug_set_mute(0);
   return *piVar6;
 }
 
@@ -8121,9 +8121,9 @@ LAB_1000bc77:
     if ((local_c - local_14 != local_1c - local_24) || (local_8 - local_10 != local_18 - local_20))
     goto LAB_1000bd39;
     (**(code **)(*piVar1 + 0xc))(piVar1,&param_4);
-    FUN_100101f5(1);
+    grim_d3d_debug_set_mute(1);
     iVar3 = (**(code **)(*param_4 + 0x70))(param_4,piVar1,&local_24,1,param_1,&local_14);
-    FUN_100101f5(0);
+    grim_d3d_debug_set_mute(0);
     (**(code **)(*param_4 + 8))(param_4);
     if (iVar3 < 0) goto LAB_1000bd39;
   }
@@ -9029,14 +9029,16 @@ int FUN_1000cb9c(undefined4 param_1,LPCWSTR param_2)
 
 
 
-/* FUN_1000cbff @ 1000cbff */
+/* float_near_equal @ 1000cbff */
 
-undefined4 __cdecl FUN_1000cbff(float param_1,float param_2)
+/* returns 1 when |a-b| < 1.1920929e-07 (FLT_EPSILON) */
+
+int __cdecl float_near_equal(float a,float b)
 
 {
   float fVar1;
   
-  fVar1 = param_1 - param_2;
+  fVar1 = a - b;
   if ((!NAN(fVar1) && -1.1920929e-07 < fVar1 != (fVar1 == -1.1920929e-07)) &&
      (fVar1 < 1.1920929e-07 != (fVar1 == 1.1920929e-07))) {
     return 1;
@@ -9947,17 +9949,17 @@ FUN_1000ef05(undefined4 *param_1,undefined4 *param_2,undefined4 param_3,undefine
             float param_5,float param_6)
 
 {
-  float fVar1;
-  int iVar2;
+  float a;
+  int iVar1;
   undefined1 local_24 [16];
   undefined1 local_14 [16];
   
-  fVar1 = param_5 + param_6;
-  iVar2 = FUN_1000cbff(fVar1,0.0);
-  if (iVar2 == 0) {
-    thunk_FUN_1000ed37(local_24,param_2,param_3,fVar1);
-    thunk_FUN_1000ed37(local_14,param_2,param_4,fVar1);
-    thunk_FUN_1000ed37(param_1,local_24,local_14,param_6 / fVar1);
+  a = param_5 + param_6;
+  iVar1 = float_near_equal(a,0.0);
+  if (iVar1 == 0) {
+    thunk_FUN_1000ed37(local_24,param_2,param_3,a);
+    thunk_FUN_1000ed37(local_14,param_2,param_4,a);
+    thunk_FUN_1000ed37(param_1,local_24,local_14,param_6 / a);
   }
   else if (param_1 != param_2) {
     *param_1 = *param_2;
@@ -9989,30 +9991,30 @@ void FUN_1000ef90(void)
 void FUN_1000f296(float *param_1,float *param_2)
 
 {
-  float fVar1;
-  int iVar2;
+  float a;
+  int iVar1;
   float *extraout_ECX;
-  float fVar3;
+  float fVar2;
   
-  fVar1 = param_2[1] * param_2[1] + *param_2 * *param_2;
-  iVar2 = FUN_1000cbff(fVar1,1.0);
-  if (iVar2 == 0) {
-    if (fVar1 <= 1.1754944e-38) {
+  a = param_2[1] * param_2[1] + *param_2 * *param_2;
+  iVar1 = float_near_equal(a,1.0);
+  if (iVar1 == 0) {
+    if (a <= 1.1754944e-38) {
       *param_1 = 0.0;
       param_1[1] = 0.0;
       return;
     }
-    fVar3 = (1.0 / SQRT(fVar1)) * extraout_ECX[1];
-    *param_1 = (1.0 / SQRT(fVar1)) * *extraout_ECX;
+    fVar2 = (1.0 / SQRT(a)) * extraout_ECX[1];
+    *param_1 = (1.0 / SQRT(a)) * *extraout_ECX;
   }
   else {
     if (param_1 == extraout_ECX) {
       return;
     }
     *param_1 = *extraout_ECX;
-    fVar3 = extraout_ECX[1];
+    fVar2 = extraout_ECX[1];
   }
-  param_1[1] = fVar3;
+  param_1[1] = fVar2;
   return;
 }
 
@@ -10084,7 +10086,7 @@ void FUN_1000f38e(float *param_1,float *param_2,float *param_3)
   fVar6 = param_3[0xf] + param_2[1] * param_3[7] + *param_2 * param_3[3];
   *param_1 = param_3[0xc] + param_2[1] * param_3[4] + *param_2 * *param_3;
   param_1[1] = fVar5 + fVar3 * fVar4 + fVar1 * fVar2;
-  iVar7 = FUN_1000cbff(fVar6,1.0);
+  iVar7 = float_near_equal(fVar6,1.0);
   if (iVar7 == 0) {
     fVar6 = 1.0 / fVar6;
     *param_1 = fVar6 * *param_1;
@@ -10129,7 +10131,7 @@ void FUN_1000f44a(float *param_1,float *param_2)
   float local_8;
   
   fVar2 = param_2[2] * param_2[2] + param_2[1] * param_2[1] + *param_2 * *param_2;
-  iVar3 = FUN_1000cbff(fVar2,1.0);
+  iVar3 = float_near_equal(fVar2,1.0);
   if (iVar3 == 0) {
     if (fVar2 <= 1.1754944e-38) {
       *param_1 = 0.0;
@@ -10196,7 +10198,7 @@ void FUN_1000f4ea(float *param_1,float *param_2,float *param_3)
   *param_1 = param_3[0xc] + param_2[2] * param_3[8] + param_2[1] * param_3[4] + *param_2 * *param_3;
   param_1[1] = fVar13 + fVar11 * fVar12 + fVar7 * fVar8 + fVar3 * fVar4;
   param_1[2] = fVar14 + fVar9 * fVar10 + fVar5 * fVar6 + fVar1 * fVar2;
-  iVar16 = FUN_1000cbff(fVar15,1.0);
+  iVar16 = float_near_equal(fVar15,1.0);
   if (iVar16 == 0) {
     fVar15 = 1.0 / fVar15;
     *param_1 = fVar15 * *param_1;
@@ -10279,7 +10281,7 @@ void FUN_1000f8dc(float *param_1,float *param_2)
   
   fVar2 = param_2[3] * param_2[3] +
           param_2[2] * param_2[2] + param_2[1] * param_2[1] + *param_2 * *param_2;
-  iVar3 = FUN_1000cbff(fVar2,1.0);
+  iVar3 = float_near_equal(fVar2,1.0);
   if (iVar3 == 0) {
     if (fVar2 <= 1.1754944e-38) {
       *param_1 = 0.0;
@@ -10509,9 +10511,11 @@ void FUN_1000fd5c(float *param_1)
 
 
 
-/* FUN_100101f5 @ 100101f5 */
+/* grim_d3d_debug_set_mute @ 100101f5 */
 
-void __cdecl FUN_100101f5(undefined4 param_1)
+/* loads DebugSetMute from d3d8/d3d8d and toggles D3D debug output */
+
+void __cdecl grim_d3d_debug_set_mute(int mute)
 
 {
   HMODULE pHVar1;
@@ -10536,7 +10540,7 @@ void __cdecl FUN_100101f5(undefined4 param_1)
   }
   else {
 LAB_1001026a:
-    (*DAT_1005db64)(param_1);
+    (*DAT_1005db64)(mute);
   }
   if (DAT_1005db60 == (FARPROC)0x0) {
     return;
@@ -16064,7 +16068,7 @@ FUN_100161bb(void *this,undefined4 *param_1,int *param_2,undefined4 param_3,uint
   local_8 = param_6 & 0x10000;
   if (local_8 == 0) {
     if ((local_58 == 0) && ((local_5c & 0x200) == 0)) {
-      FUN_100101f5(1);
+      grim_d3d_debug_set_mute(1);
       iVar5 = (**(code **)(*param_2 + 0x1c))(param_2,&DAT_1004e544,&local_18);
       if (iVar5 < 0) {
         local_5c = param_2[4];
@@ -16077,7 +16081,7 @@ FUN_100161bb(void *this,undefined4 *param_1,int *param_2,undefined4 param_3,uint
           local_18 = (int *)0x0;
         }
       }
-      FUN_100101f5(0);
+      grim_d3d_debug_set_mute(0);
       if (local_8 != 0) goto LAB_100162e3;
     }
     local_14 = param_2;
@@ -16171,7 +16175,7 @@ LAB_1001644c:
   }
   else {
     if ((param_6 & 0x20000) == 0) {
-      FUN_100101f5(1);
+      grim_d3d_debug_set_mute(1);
       iVar5 = (**(code **)(*param_2 + 0x1c))(param_2,&DAT_1004e534,&local_10);
       if (-1 < iVar5) {
         iVar5 = (**(code **)(*local_10 + 0x34))(local_10);
@@ -16184,7 +16188,7 @@ LAB_1001644c:
           local_10 = (int *)0x0;
         }
       }
-      FUN_100101f5(0);
+      grim_d3d_debug_set_mute(0);
       goto LAB_10016400;
     }
     uVar6 = uVar6 | 0x2000;
@@ -16385,7 +16389,7 @@ LAB_1001679c:
   }
   else {
     if ((param_6 & 0x20000) == 0) {
-      FUN_100101f5(1);
+      grim_d3d_debug_set_mute(1);
       iVar5 = (**(code **)(*param_2 + 0x1c))(param_2,&DAT_1004e524,&local_8);
       if (-1 < iVar5) {
         iVar5 = (**(code **)(*local_8 + 0x34))(local_8);
@@ -16399,7 +16403,7 @@ LAB_1001679c:
           local_8 = (int *)0x0;
         }
       }
-      FUN_100101f5(0);
+      grim_d3d_debug_set_mute(0);
       goto LAB_1001673b;
     }
     uVar6 = uVar6 | 0x2000;
@@ -16436,13 +16440,15 @@ LAB_100168c8:
 
 
 
-/* FUN_1001692e @ 1001692e */
+/* grim_vertex_space_converter_destroy @ 1001692e */
 
-void __fastcall FUN_1001692e(undefined4 *param_1)
+/* frees the converted vertex buffer at this+0x104c */
+
+void __fastcall grim_vertex_space_converter_destroy(void *this)
 
 {
-  *param_1 = &PTR_FUN_1004cae4;
-  operator_delete((void *)param_1[0x413]);
+  *(undefined ***)this = &PTR_FUN_1004cae4;
+  operator_delete(*(void **)((int)this + 0x104c));
   return;
 }
 
@@ -16580,33 +16586,33 @@ void FUN_10016c3b(void)
 void FUN_10016c3c(void)
 
 {
-  undefined4 *extraout_ECX;
+  undefined4 *this;
   uint uVar1;
   int unaff_EBP;
   uint uVar2;
   
   seh_prolog();
-  *(undefined4 **)(unaff_EBP + -0x14) = extraout_ECX;
-  *extraout_ECX = &PTR_FUN_1004caf8;
+  *(undefined4 **)(unaff_EBP + -0x14) = this;
+  *this = &PTR_FUN_1004caf8;
   *(undefined4 *)(unaff_EBP + -4) = 0;
-  if ((extraout_ECX[0x42f] != 0) && (extraout_ECX[0x430] != 0)) {
-    uVar1 = extraout_ECX[0x427];
-    uVar2 = extraout_ECX[0x428];
-    *(undefined4 *)(unaff_EBP + -0x10) = extraout_ECX[0x430];
+  if ((this[0x42f] != 0) && (this[0x430] != 0)) {
+    uVar1 = this[0x427];
+    uVar2 = this[0x428];
+    *(undefined4 *)(unaff_EBP + -0x10) = this[0x430];
     if (uVar1 < uVar2) {
       do {
-        for (uVar2 = extraout_ECX[0x424]; uVar2 < (uint)extraout_ECX[0x426]; uVar2 = uVar2 + 4) {
+        for (uVar2 = this[0x424]; uVar2 < (uint)this[0x426]; uVar2 = uVar2 + 4) {
           operator_delete(*(void **)(*(int *)(unaff_EBP + -0x10) + 4));
           *(int *)(unaff_EBP + -0x10) = *(int *)(unaff_EBP + -0x10) + 8;
         }
         uVar1 = uVar1 + 1;
-      } while (uVar1 < (uint)extraout_ECX[0x428]);
+      } while (uVar1 < (uint)this[0x428]);
     }
   }
-  operator_delete((void *)extraout_ECX[0x42e]);
-  operator_delete((void *)extraout_ECX[0x430]);
+  operator_delete((void *)this[0x42e]);
+  operator_delete((void *)this[0x430]);
   *(undefined4 *)(unaff_EBP + -4) = 0xffffffff;
-  FUN_1001692e(extraout_ECX);
+  grim_vertex_space_converter_destroy(this);
   ExceptionList = *(void **)(unaff_EBP + -0xc);
   return;
 }
@@ -16953,7 +16959,7 @@ void * __thiscall grim_pixel_format_init(void *this,uint *desc,uint bits_per_pix
 undefined4 * __thiscall FUN_10017345(void *this,byte param_1)
 
 {
-  FUN_1001692e(this);
+  grim_vertex_space_converter_destroy(this);
   if ((param_1 & 1) != 0) {
     operator_delete(this);
   }
@@ -19664,7 +19670,7 @@ void * __thiscall grim_pixel_format_ctor_a8p8(void *this,uint *desc)
 undefined4 * __thiscall FUN_1001ae58(void *this,byte param_1)
 
 {
-  thunk_FUN_1001692e(this);
+  grim_vertex_space_converter_destroy(this);
   if ((param_1 & 1) != 0) {
     operator_delete(this);
   }
@@ -20163,7 +20169,7 @@ void FUN_1001b493(void)
     operator_delete((void *)this[0x41b]);
   }
   *(undefined4 *)(unaff_EBP + -4) = 0xffffffff;
-  FUN_1001692e(this);
+  grim_vertex_space_converter_destroy(this);
   ExceptionList = *(void **)(unaff_EBP + -0xc);
   return;
 }
@@ -49994,7 +50000,7 @@ void Unwind_1004b9e7(void)
 {
   int unaff_EBP;
   
-  FUN_1001692e(*(undefined4 **)(unaff_EBP + -0x14));
+  grim_vertex_space_converter_destroy(*(void **)(unaff_EBP + -0x14));
   return;
 }
 
@@ -50033,7 +50039,7 @@ void Unwind_1004ba21(void)
 {
   int unaff_EBP;
   
-  FUN_1001692e(*(undefined4 **)(unaff_EBP + -0x14));
+  grim_vertex_space_converter_destroy(*(void **)(unaff_EBP + -0x14));
   return;
 }
 
@@ -50072,7 +50078,7 @@ void Unwind_1004ba51(void)
 {
   int unaff_EBP;
   
-  FUN_1001692e(*(undefined4 **)(unaff_EBP + -0x10));
+  grim_vertex_space_converter_destroy(*(void **)(unaff_EBP + -0x10));
   return;
 }
 

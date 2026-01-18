@@ -476,25 +476,25 @@
     "calls": ["ShellExecuteA", "__ftol", "config_load_presets", "crt_atexit", "demo_mode_start", "game_is_full_version", "input_primary_just_pressed", "sfx_mute_all", "sfx_play_exclusive", "ui_button_update", "ui_cursor_render", "ui_draw_textured_quad", "ui_elements_update_and_render"]
   },
   {
-    "name": "FUN_0040d000",
+    "name": "credits_line_set",
     "address": "0040d000",
-    "signature": "undefined FUN_0040d000(int param_1, uint * param_2, undefined4 param_3)",
+    "signature": "void credits_line_set(int index, char * text, int flags)",
     "external": false,
     "calls": ["crt_free", "strdup_malloc"]
   },
   {
-    "name": "FUN_0040d040",
+    "name": "credits_line_clear_flag",
     "address": "0040d040",
-    "signature": "undefined FUN_0040d040(int param_1)",
+    "signature": "void credits_line_clear_flag(int index)",
     "external": false,
     "calls": ["sfx_play"]
   },
   {
-    "name": "FUN_0040d090",
+    "name": "credits_build_lines",
     "address": "0040d090",
-    "signature": "undefined FUN_0040d090(void)",
+    "signature": "void credits_build_lines(void)",
     "external": false,
-    "calls": ["FUN_0040d000"]
+    "calls": ["credits_line_set"]
   },
   {
     "name": "FUN_0040e000",
@@ -4092,35 +4092,35 @@
     "address": "0046385e",
     "signature": "undefined1 * FUN_0046385e(undefined8 * param_1, undefined1 * param_2, int param_3, int param_4)",
     "external": false,
-    "calls": ["FUN_004638bf", "crt_fp_round_digits", "crt_fp_to_string"]
+    "calls": ["crt_fp_format_exp", "crt_fp_round_digits", "crt_fp_to_string"]
   },
   {
-    "name": "FUN_004638bf",
+    "name": "crt_fp_format_exp",
     "address": "004638bf",
-    "signature": "undefined1 * FUN_004638bf(undefined1 * param_1, int param_2, int param_3, int * param_4, char param_5)",
+    "signature": "char * crt_fp_format_exp(char * dst, int precision, int caps, int * fp_info, int force_decimal)",
     "external": false,
-    "calls": ["FUN_00463b61", "crt_strcpy"]
+    "calls": ["crt_str_shift_right", "crt_strcpy"]
   },
   {
     "name": "FUN_00463981",
     "address": "00463981",
     "signature": "char * FUN_00463981(undefined8 * param_1, char * param_2, size_t param_3)",
     "external": false,
-    "calls": ["FUN_004639d6", "crt_fp_round_digits", "crt_fp_to_string"]
+    "calls": ["crt_fp_format_fixed", "crt_fp_round_digits", "crt_fp_to_string"]
   },
   {
-    "name": "FUN_004639d6",
+    "name": "crt_fp_format_fixed",
     "address": "004639d6",
-    "signature": "char * FUN_004639d6(char * param_1, size_t param_2, int * param_3, char param_4)",
+    "signature": "char * crt_fp_format_fixed(char * dst, size_t precision, int * fp_info, int force_decimal)",
     "external": false,
-    "calls": ["FUN_00463b61", "_memset"]
+    "calls": ["_memset", "crt_str_shift_right"]
   },
   {
     "name": "FUN_00463a7d",
     "address": "00463a7d",
     "signature": "undefined FUN_00463a7d(undefined8 * param_1, char * param_2, size_t param_3, int param_4)",
     "external": false,
-    "calls": ["FUN_004638bf", "FUN_004639d6", "crt_fp_round_digits", "crt_fp_to_string"]
+    "calls": ["crt_fp_format_exp", "crt_fp_format_fixed", "crt_fp_round_digits", "crt_fp_to_string"]
   },
   {
     "name": "__cfltcvt",
@@ -4130,9 +4130,9 @@
     "calls": ["FUN_0046385e", "FUN_00463981", "FUN_00463a7d"]
   },
   {
-    "name": "FUN_00463b61",
+    "name": "crt_str_shift_right",
     "address": "00463b61",
-    "signature": "undefined FUN_00463b61(char * param_1, int param_2)",
+    "signature": "void crt_str_shift_right(char * str, int count)",
     "external": false,
     "calls": ["_strlen", "crt_memmove"]
   },
@@ -5030,7 +5030,7 @@
     "address": "00469ffb",
     "signature": "undefined FUN_00469ffb(int param_1, int param_2)",
     "external": false,
-    "calls": ["FUN_0046d8e2"]
+    "calls": ["crt_add_u32_carry"]
   },
   {
     "name": "FUN_0046a051",
@@ -5495,9 +5495,9 @@
     "calls": []
   },
   {
-    "name": "FUN_0046d8e2",
+    "name": "crt_add_u32_carry",
     "address": "0046d8e2",
-    "signature": "undefined4 FUN_0046d8e2(uint param_1, uint param_2, uint * param_3)",
+    "signature": "int crt_add_u32_carry(uint a, uint b, uint * out)",
     "external": false,
     "calls": []
   },
@@ -5506,19 +5506,19 @@
     "address": "0046d903",
     "signature": "undefined ___add_12(uint * param_1, uint * param_2)",
     "external": false,
-    "calls": ["FUN_0046d8e2"]
+    "calls": ["crt_add_u32_carry"]
   },
   {
-    "name": "FUN_0046d961",
+    "name": "crt_u96_shl1",
     "address": "0046d961",
-    "signature": "undefined FUN_0046d961(uint * param_1)",
+    "signature": "void crt_u96_shl1(uint * value)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_0046d98f",
+    "name": "crt_u96_shr1",
     "address": "0046d98f",
-    "signature": "undefined FUN_0046d98f(uint * param_1)",
+    "signature": "void crt_u96_shr1(uint * value)",
     "external": false,
     "calls": []
   },
@@ -5527,14 +5527,14 @@
     "address": "0046d9bc",
     "signature": "undefined FUN_0046d9bc(char * param_1, int param_2, uint * param_3)",
     "external": false,
-    "calls": ["FUN_0046d961", "___add_12"]
+    "calls": ["___add_12", "crt_u96_shl1"]
   },
   {
     "name": "FUN_0046da83",
     "address": "0046da83",
     "signature": "undefined4 FUN_0046da83(uint param_1, uint param_2, uint param_3, int param_4, byte param_5, short * param_6)",
     "external": false,
-    "calls": ["FUN_0046d961", "FUN_0046d98f", "FUN_0046de3b", "FUN_0046e05b", "___add_12", "crt_strcpy"]
+    "calls": ["FUN_0046de3b", "FUN_0046e05b", "___add_12", "crt_strcpy", "crt_u96_shl1", "crt_u96_shr1"]
   },
   {
     "name": "crt_chsize",
@@ -5548,7 +5548,7 @@
     "address": "0046de3b",
     "signature": "undefined FUN_0046de3b(int * param_1, int * param_2)",
     "external": false,
-    "calls": ["FUN_0046d8e2", "FUN_0046d961", "FUN_0046d98f"]
+    "calls": ["crt_add_u32_carry", "crt_u96_shl1", "crt_u96_shr1"]
   },
   {
     "name": "FUN_0046e05b",

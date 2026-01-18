@@ -1215,7 +1215,7 @@
     "address": "1000abad",
     "signature": "int FUN_1000abad(int * param_1, undefined4 param_2, undefined4 param_3, int * param_4)",
     "external": false,
-    "calls": ["FUN_1000aaca", "FUN_100101f5"]
+    "calls": ["FUN_1000aaca", "grim_d3d_debug_set_mute"]
   },
   {
     "name": "FUN_1000ac8f",
@@ -1313,7 +1313,7 @@
     "address": "1000bbfc",
     "signature": "int FUN_1000bbfc(int * param_1, int * param_2, uint * param_3, int * param_4, int * param_5, uint * param_6, uint param_7, int param_8)",
     "external": false,
-    "calls": ["FUN_1000acc0", "FUN_100101f5", "FUN_10016121", "FUN_100161b6", "FUN_100161bb"]
+    "calls": ["FUN_1000acc0", "FUN_10016121", "FUN_100161b6", "FUN_100161bb", "grim_d3d_debug_set_mute"]
   },
   {
     "name": "FUN_1000bda2",
@@ -1365,9 +1365,9 @@
     "calls": ["FUN_1000cb5c", "FUN_1001bca5", "FUN_1001bcb7", "FUN_1001bed2"]
   },
   {
-    "name": "FUN_1000cbff",
+    "name": "float_near_equal",
     "address": "1000cbff",
-    "signature": "undefined4 FUN_1000cbff(float param_1, float param_2)",
+    "signature": "int float_near_equal(float a, float b)",
     "external": false,
     "calls": []
   },
@@ -1796,7 +1796,7 @@
     "address": "1000ef05",
     "signature": "undefined4 * FUN_1000ef05(undefined4 * param_1, undefined4 * param_2, undefined4 param_3, undefined4 param_4, float param_5, float param_6)",
     "external": false,
-    "calls": ["FUN_1000cbff", "thunk_FUN_1000ed37"]
+    "calls": ["float_near_equal", "thunk_FUN_1000ed37"]
   },
   {
     "name": "FUN_1000ef90",
@@ -1817,7 +1817,7 @@
     "address": "1000f296",
     "signature": "undefined FUN_1000f296(float * param_1, float * param_2)",
     "external": false,
-    "calls": ["FUN_1000cbff"]
+    "calls": ["float_near_equal"]
   },
   {
     "name": "FUN_1000f323",
@@ -1831,7 +1831,7 @@
     "address": "1000f38e",
     "signature": "undefined FUN_1000f38e(float * param_1, float * param_2, float * param_3)",
     "external": false,
-    "calls": ["FUN_1000cbff"]
+    "calls": ["float_near_equal"]
   },
   {
     "name": "FUN_1000f40e",
@@ -1845,14 +1845,14 @@
     "address": "1000f44a",
     "signature": "undefined FUN_1000f44a(float * param_1, float * param_2)",
     "external": false,
-    "calls": ["FUN_1000cbff"]
+    "calls": ["float_near_equal"]
   },
   {
     "name": "FUN_1000f4ea",
     "address": "1000f4ea",
     "signature": "undefined FUN_1000f4ea(float * param_1, float * param_2, float * param_3)",
     "external": false,
-    "calls": ["FUN_1000cbff"]
+    "calls": ["float_near_equal"]
   },
   {
     "name": "FUN_1000f5a9",
@@ -1866,7 +1866,7 @@
     "address": "1000f8dc",
     "signature": "undefined FUN_1000f8dc(float * param_1, float * param_2)",
     "external": false,
-    "calls": ["FUN_1000cbff"]
+    "calls": ["float_near_equal"]
   },
   {
     "name": "FUN_1000f995",
@@ -1897,9 +1897,9 @@
     "calls": ["thunk_FUN_1000ef90"]
   },
   {
-    "name": "FUN_100101f5",
+    "name": "grim_d3d_debug_set_mute",
     "address": "100101f5",
-    "signature": "undefined FUN_100101f5(undefined4 param_1)",
+    "signature": "void grim_d3d_debug_set_mute(int mute)",
     "external": false,
     "calls": ["GetModuleHandleA", "GetProcAddress", "LoadLibraryA"]
   },
@@ -2293,7 +2293,7 @@
     "address": "100161bb",
     "signature": "int FUN_100161bb(void * this, undefined4 * param_1, int * param_2, undefined4 param_3, uint * param_4, undefined4 param_5, uint param_6)",
     "external": false,
-    "calls": ["FUN_100101f5", "FUN_10016131"]
+    "calls": ["FUN_10016131", "grim_d3d_debug_set_mute"]
   },
   {
     "name": "thunk_FUN_100161a0",
@@ -2307,12 +2307,12 @@
     "address": "100165d3",
     "signature": "int FUN_100165d3(void * this, undefined4 * param_1, int * param_2, undefined4 param_3, uint * param_4, undefined4 param_5, uint param_6)",
     "external": false,
-    "calls": ["FUN_100101f5", "FUN_100161a0"]
+    "calls": ["FUN_100161a0", "grim_d3d_debug_set_mute"]
   },
   {
-    "name": "FUN_1001692e",
+    "name": "grim_vertex_space_converter_destroy",
     "address": "1001692e",
-    "signature": "undefined FUN_1001692e(undefined4 * param_1)",
+    "signature": "void grim_vertex_space_converter_destroy(void * this)",
     "external": false,
     "calls": ["operator_delete"]
   },
@@ -2335,7 +2335,7 @@
     "address": "10016c3c",
     "signature": "undefined FUN_10016c3c(void)",
     "external": false,
-    "calls": ["FUN_1001692e", "operator_delete", "seh_prolog"]
+    "calls": ["grim_vertex_space_converter_destroy", "operator_delete", "seh_prolog"]
   },
   {
     "name": "grim_pixel_format_write_dxt_cache",
@@ -2363,7 +2363,7 @@
     "address": "10017345",
     "signature": "undefined4 * FUN_10017345(void * this, byte param_1)",
     "external": false,
-    "calls": ["FUN_1001692e", "operator_delete"]
+    "calls": ["grim_vertex_space_converter_destroy", "operator_delete"]
   },
   {
     "name": "FUN_10017361",
@@ -2821,9 +2821,9 @@
     "calls": ["grim_pixel_format_init"]
   },
   {
-    "name": "thunk_FUN_1001692e",
+    "name": "grim_vertex_space_converter_destroy",
     "address": "1001a574",
-    "signature": "undefined thunk_FUN_1001692e(undefined4 * param_1)",
+    "signature": "void grim_vertex_space_converter_destroy(void * this)",
     "external": false,
     "calls": []
   },
@@ -2937,7 +2937,7 @@
     "address": "1001ae58",
     "signature": "undefined4 * FUN_1001ae58(void * this, byte param_1)",
     "external": false,
-    "calls": ["operator_delete", "thunk_FUN_1001692e"]
+    "calls": ["grim_vertex_space_converter_destroy", "operator_delete"]
   },
   {
     "name": "grim_pixel_format_ctor_p8",
@@ -3126,7 +3126,7 @@
     "address": "1001b493",
     "signature": "undefined FUN_1001b493(void)",
     "external": false,
-    "calls": ["FUN_1001692e", "grim_pixel_format_flush_yuv_cache", "operator_delete", "seh_prolog"]
+    "calls": ["grim_pixel_format_flush_yuv_cache", "grim_vertex_space_converter_destroy", "operator_delete", "seh_prolog"]
   },
   {
     "name": "grim_pixel_format_ctor_uyvy",
@@ -6416,7 +6416,7 @@
     "address": "1004b9e7",
     "signature": "undefined Unwind@1004b9e7(void)",
     "external": false,
-    "calls": ["FUN_1001692e"]
+    "calls": ["grim_vertex_space_converter_destroy"]
   },
   {
     "name": "Unwind@1004b9f9",
@@ -6437,7 +6437,7 @@
     "address": "1004ba21",
     "signature": "undefined Unwind@1004ba21(void)",
     "external": false,
-    "calls": ["FUN_1001692e"]
+    "calls": ["grim_vertex_space_converter_destroy"]
   },
   {
     "name": "Unwind@1004ba29",
@@ -6458,7 +6458,7 @@
     "address": "1004ba51",
     "signature": "undefined Unwind@1004ba51(void)",
     "external": false,
-    "calls": ["FUN_1001692e"]
+    "calls": ["grim_vertex_space_converter_destroy"]
   },
   {
     "name": "Unwind@1004ba63",

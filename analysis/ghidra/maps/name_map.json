@@ -2275,6 +2275,27 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004638bf",
+    "name": "crt_fp_format_exp",
+    "signature": "char * crt_fp_format_exp(char *dst, int precision, int caps, int *fp_info, int force_decimal)",
+    "comment": "CRT: formats floating output in scientific notation (adds decimal/exponent)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004639d6",
+    "name": "crt_fp_format_fixed",
+    "signature": "char * crt_fp_format_fixed(char *dst, size_t precision, int *fp_info, int force_decimal)",
+    "comment": "CRT: formats floating output in fixed notation (adds decimal/zeros)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463b61",
+    "name": "crt_str_shift_right",
+    "signature": "void crt_str_shift_right(char *str, int count)",
+    "comment": "CRT: shift string right by count (memmove)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0046acf8",
     "name": "crt_lock_fh",
     "signature": "void crt_lock_fh(uint fd)",
@@ -2370,6 +2391,13 @@
     "name": "grim_d3d_init",
     "signature": "int grim_d3d_init(void)",
     "comment": "creates the Direct3D8 interface, configures display mode, and opens the window"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100101f5",
+    "name": "grim_d3d_debug_set_mute",
+    "signature": "void grim_d3d_debug_set_mute(int mute)",
+    "comment": "loads DebugSetMute from d3d8/d3d8d and toggles D3D debug output"
   },
   {
     "program": "grim.dll",
@@ -3098,6 +3126,13 @@
     "name": "grim_format_info_lookup",
     "signature": "int * grim_format_info_lookup(int format)",
     "comment": "returns pointer to the D3D format descriptor entry (fallbacks to default)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001692e",
+    "name": "grim_vertex_space_converter_destroy",
+    "signature": "void grim_vertex_space_converter_destroy(void *this)",
+    "comment": "frees the converted vertex buffer at this+0x104c"
   },
   {
     "program": "grim.dll",
@@ -3994,6 +4029,13 @@
     "comment": "factory: picks pixel format implementation from FourCC/D3DFORMAT"
   },
   {
+    "program": "grim.dll",
+    "address": "0x1000cbff",
+    "name": "float_near_equal",
+    "signature": "int float_near_equal(float a, float b)",
+    "comment": "returns 1 when |a-b| < 1.1920929e-07 (FLT_EPSILON)"
+  },
+  {
     "program": "crimsonland.exe",
     "address": "0x00461089",
     "name": "crt_vsprintf",
@@ -4321,5 +4363,26 @@
     "name": "crt_getdcwd",
     "signature": "char * crt_getdcwd(int drive, char *buf, unsigned int size)",
     "comment": "CRT: get current working directory for drive"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046d8e2",
+    "name": "crt_add_u32_carry",
+    "signature": "int crt_add_u32_carry(uint a, uint b, uint *out)",
+    "comment": "CRT: add two u32 values and return carry"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046d961",
+    "name": "crt_u96_shl1",
+    "signature": "void crt_u96_shl1(uint *value)",
+    "comment": "CRT: shift 96-bit value left by 1 (in-place)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046d98f",
+    "name": "crt_u96_shr1",
+    "signature": "void crt_u96_shr1(uint *value)",
+    "comment": "CRT: shift 96-bit value right by 1 (in-place)"
   }
 ]

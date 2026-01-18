@@ -6,6 +6,8 @@ Interesting Functions and Patterns
   grim_destroy_texture @ 10007700
   `vector_deleting_destructor' @ 1000b2fd
   FID_conflict:`vector_deleting_destructor' @ 1000b348
+  grim_vertex_space_converter_destroy @ 1001692e
+  grim_vertex_space_converter_destroy @ 1001a574
   inflate_codes_new @ 10036381
   inflate_codes @ 100363b5
   inflate_codes_free @ 10036919
@@ -60,6 +62,9 @@ Interesting Functions and Patterns
 
 [SPRINTF related]
   sprintf @ 1000a8d0
+
+[DEBUG related]
+  grim_d3d_debug_set_mute @ 100101f5
 
 [LOG related]
   grim_config_dialog_proc @ 10002120
