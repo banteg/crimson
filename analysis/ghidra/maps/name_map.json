@@ -859,6 +859,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004461c0",
+    "name": "game_state_set",
+    "signature": "void game_state_set(int state_id)",
+    "comment": "resets UI state, updates game_state_prev/id, and seeds UI elements for the new state"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00446c40",
     "name": "ui_element_render",
     "signature": "void ui_element_render(void *element)",

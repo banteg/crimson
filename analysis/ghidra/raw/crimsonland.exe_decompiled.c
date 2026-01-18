@@ -1708,7 +1708,7 @@ int FUN_00403390(void)
   int iVar1;
   
   if (game_state_id != 9) {
-    FUN_004461c0(9);
+    game_state_set(9);
   }
   DAT_00480890 = 0;
   demo_mode_active = 1;
@@ -1783,7 +1783,7 @@ undefined1 FUN_00403500(void)
   FUN_00419dd0();
   FUN_00412660();
   render_pass_mode = 0;
-  FUN_004461c0(0);
+  game_state_set(0);
   console_printf(&console_log_queue,(byte *)s_Core_Init_done__00471454);
   return 1;
 }
@@ -6455,7 +6455,7 @@ joined_r0x0040b1bc:
           perks_generate_choices();
           perk_choices_dirty = '\0';
         }
-        FUN_004461c0(6);
+        game_state_set(6);
       }
     }
   }
@@ -12708,7 +12708,7 @@ void ui_elements_update_and_render(void)
     if ((demo_mode_active != '\0') && (game_state_pending == 0)) {
       FUN_004181b0();
     }
-    FUN_004461c0(game_state_pending);
+    game_state_set(game_state_pending);
     game_state_pending = 0x19;
   }
   iVar1 = ui_elements_max_timeline();
@@ -32093,11 +32093,12 @@ int ui_elements_max_timeline(void)
 
 
 
-/* FUN_004461c0 @ 004461c0 */
+/* game_state_set @ 004461c0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* resets UI state, updates game_state_prev/id, and seeds UI elements for the new state */
 
-void __cdecl FUN_004461c0(int param_1)
+void __cdecl game_state_set(int state_id)
 
 {
   int iVar1;
@@ -32109,16 +32110,16 @@ void __cdecl FUN_004461c0(int param_1)
   int iVar7;
   undefined1 auStack_10 [16];
   
-  iVar1 = param_1;
+  iVar1 = state_id;
   ui_elements_reset_state();
   game_paused_flag = 0;
   game_state_prev = game_state_id;
-  game_state_id = param_1;
+  game_state_id = state_id;
   _DAT_00487238 = 0;
   DAT_00487241 = 0;
   (**(code **)(*grim_interface_ptr + 0x4c))();
   console_input_poll();
-  if (param_1 == 0) {
+  if (state_id == 0) {
     DAT_0048724d = '\0';
     render_pass_mode = '\0';
     DAT_00487290 = 1;
@@ -32136,30 +32137,30 @@ void __cdecl FUN_004461c0(int param_1)
     else {
       _DAT_0048823c = &LAB_00447350;
     }
-    param_1 = 0;
+    state_id = 0;
     iVar6 = 2;
     do {
       if (iVar6 == 2) {
         cVar2 = FUN_0041df40();
         if (cVar2 != '\0') {
-          param_1 = 4;
+          state_id = 4;
         }
       }
       pcVar4 = (char *)(**(code **)(*grim_interface_ptr + 0x24))(auStack_10,100);
       if (*pcVar4 == '\0') {
         if (iVar6 == 6) {
-          param_1 = 6;
+          state_id = 6;
         }
         *(undefined4 *)((&ui_element_table_end)[iVar6] + 0x204) = DAT_0048f7f4;
         iVar7 = (&ui_element_table_end)[iVar6];
         *(undefined4 *)(iVar7 + 0x138) = 0;
-        *(float *)(iVar7 + 0x13c) = (float)param_1 * 0.125;
+        *(float *)(iVar7 + 0x13c) = (float)state_id * 0.125;
         iVar7 = (&ui_element_table_end)[iVar6];
         *(undefined4 *)(iVar7 + 0x154) = 0x3f800000;
-        *(float *)(iVar7 + 0x158) = (float)param_1 * 0.125;
+        *(float *)(iVar7 + 0x158) = (float)state_id * 0.125;
         iVar7 = (&ui_element_table_end)[iVar6];
         *(undefined4 *)(iVar7 + 0x170) = 0x3f800000;
-        fVar5 = (float)(param_1 + 1) * 0.125;
+        fVar5 = (float)(state_id + 1) * 0.125;
         *(float *)(iVar7 + 0x174) = fVar5;
         iVar7 = (&ui_element_table_end)[iVar6];
         *(undefined4 *)(iVar7 + 0x18c) = 0;
@@ -32168,13 +32169,13 @@ void __cdecl FUN_004461c0(int param_1)
         *(undefined4 *)((&ui_element_table_end)[iVar6] + 0x204) = DAT_0048f7f4;
         iVar7 = (&ui_element_table_end)[iVar6];
         *(undefined4 *)(iVar7 + 0x138) = 0;
-        *(float *)(iVar7 + 0x13c) = (float)param_1 * 0.125;
+        *(float *)(iVar7 + 0x13c) = (float)state_id * 0.125;
         iVar7 = (&ui_element_table_end)[iVar6];
         *(undefined4 *)(iVar7 + 0x154) = 0x3f800000;
-        *(float *)(iVar7 + 0x158) = (float)param_1 * 0.125;
+        *(float *)(iVar7 + 0x158) = (float)state_id * 0.125;
         iVar7 = (&ui_element_table_end)[iVar6];
         *(undefined4 *)(iVar7 + 0x170) = 0x3f800000;
-        fVar5 = (float)(param_1 + 1) * 0.125;
+        fVar5 = (float)(state_id + 1) * 0.125;
         *(float *)(iVar7 + 0x174) = fVar5;
         iVar7 = (&ui_element_table_end)[iVar6];
         *(undefined4 *)(iVar7 + 0x18c) = 0;
@@ -32183,15 +32184,15 @@ void __cdecl FUN_004461c0(int param_1)
       if (iVar6 == 2) {
         cVar2 = FUN_0041df40();
         if (cVar2 != '\0') {
-          param_1 = 0;
+          state_id = 0;
         }
       }
-      iVar7 = param_1 + 1;
+      iVar7 = state_id + 1;
       if (iVar7 == 4) {
-        iVar7 = param_1 + 2;
+        iVar7 = state_id + 2;
       }
       iVar6 = iVar6 + 1;
-      param_1 = iVar7;
+      state_id = iVar7;
     } while (iVar6 < 8);
     cVar2 = FUN_0041df40();
     if (cVar2 == '\0') {
@@ -32207,11 +32208,11 @@ void __cdecl FUN_004461c0(int param_1)
     }
     DAT_00488838 = 1;
   }
-  else if (param_1 == 0x16) {
+  else if (state_id == 0x16) {
     render_pass_mode = '\0';
     DAT_00487292 = 0;
   }
-  else if (param_1 == 9) {
+  else if (state_id == 9) {
     DAT_0048eb38 = 1;
     DAT_0048702c = 0;
     if (render_pass_mode == '\0') {
@@ -32248,7 +32249,7 @@ void __cdecl FUN_004461c0(int param_1)
       }
     }
   }
-  else if (param_1 == 0x12) {
+  else if (state_id == 0x12) {
     _config_player_count = 1;
     DAT_00478c94 = 1;
     DAT_0048eb38 = 1;
@@ -32260,12 +32261,12 @@ void __cdecl FUN_004461c0(int param_1)
       DAT_00487241 = 1;
     }
   }
-  else if (param_1 == 1) {
+  else if (state_id == 1) {
     DAT_00487290 = 1;
     DAT_00489498 = 1;
     DAT_004897b0 = 1;
   }
-  else if (param_1 == 2) {
+  else if (state_id == 2) {
     if (DAT_004824d1 == '\0') {
       DAT_00487290 = 1;
     }
@@ -32275,20 +32276,20 @@ void __cdecl FUN_004461c0(int param_1)
     DAT_00487234 = 0;
     _DAT_0048cf7c = (((float)config_screen_width * 0.0015625 * 150.0 + 10.0) - 150.0) + 135.0;
   }
-  else if (param_1 == 4) {
+  else if (state_id == 4) {
     DAT_0048724d = '\0';
     DAT_00487290 = 1;
     DAT_0048e820 = 1;
     _DAT_0048e858 = &LAB_0043f550;
   }
-  else if (param_1 == 0xd) {
+  else if (state_id == 0xd) {
     _DAT_00489e18 = FUN_00446140;
 LAB_00446764:
     DAT_00489de0._0_1_ = 1;
     DAT_00487290 = 1;
     thunk_FUN_0043afa0();
   }
-  else if (param_1 == 3) {
+  else if (state_id == 3) {
     DAT_00487290 = 1;
     _DAT_0048cf78 = 0xc3340000;
     DAT_0048d278 = 1;
@@ -32296,7 +32297,7 @@ LAB_00446764:
     DAT_0048ee50._0_1_ = 1;
     _DAT_0048cf7c = ((float)config_screen_width * 0.0015625 * 150.0 - 150.0) + 139.0;
   }
-  else if (param_1 == 0xe) {
+  else if (state_id == 0xe) {
     DAT_0048a0f8 = 1;
     _DAT_00489e18 = (code *)&LAB_004423d0;
     goto LAB_00446764;

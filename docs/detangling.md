@@ -86,6 +86,13 @@ You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps
   - Evidence: returns the max `element+0x10` value among active elements (used to clamp the
     UI transition timeline).
 
+### Game state transitions (high confidence)
+
+- `FUN_004461c0` -> `game_state_set`
+  - Evidence: clears UI element state (`ui_elements_reset_state`), updates `game_state_prev`/`game_state_id`,
+    resets transition globals, and seeds UI elements; invoked on startup (`FUN_00403500`), when perk selection
+    is requested (`FUN_0040af70`), and when UI transitions complete (`ui_elements_update_and_render`).
+
 
 ### Input primary action (high confidence)
 

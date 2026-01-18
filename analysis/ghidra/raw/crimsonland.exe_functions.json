@@ -256,7 +256,7 @@
     "address": "00403390",
     "signature": "int FUN_00403390(void)",
     "external": false,
-    "calls": ["FUN_00402ed0", "FUN_00402fe0", "FUN_004030f0", "FUN_00403250", "FUN_00403370", "FUN_00412dc0", "FUN_004461c0"]
+    "calls": ["FUN_00402ed0", "FUN_00402fe0", "FUN_004030f0", "FUN_00403250", "FUN_00403370", "FUN_00412dc0", "game_state_set"]
   },
   {
     "name": "FUN_00403430",
@@ -277,7 +277,7 @@
     "address": "00403500",
     "signature": "undefined1 FUN_00403500(void)",
     "external": false,
-    "calls": ["FUN_00412660", "FUN_00419dd0", "FUN_004461c0", "console_printf", "effect_defaults_reset", "quest_database_init"]
+    "calls": ["FUN_00412660", "FUN_00419dd0", "console_printf", "effect_defaults_reset", "game_state_set", "quest_database_init"]
   },
   {
     "name": "perk_prompt_update_and_render",
@@ -452,7 +452,7 @@
     "address": "0040aab0",
     "signature": "undefined FUN_0040aab0(void)",
     "external": false,
-    "calls": ["FUN_00405160", "FUN_00406b40", "FUN_004070e0", "FUN_004072b0", "FUN_00409500", "FUN_0040a510", "FUN_0041ca90", "FUN_0041df40", "FUN_0041df60", "FUN_004461c0", "FUN_00461140", "__ftol", "bonus_update", "console_input_poll", "creature_update_all", "demo_trial_overlay_render", "effects_update", "gameplay_render_world", "input_primary_just_pressed", "perk_prompt_update_and_render"]
+    "calls": ["FUN_00405160", "FUN_00406b40", "FUN_004070e0", "FUN_004072b0", "FUN_00409500", "FUN_0040a510", "FUN_0041ca90", "FUN_0041df40", "FUN_0041df60", "FUN_00461140", "__ftol", "bonus_update", "console_input_poll", "creature_update_all", "demo_trial_overlay_render", "effects_update", "game_state_set", "gameplay_render_world", "input_primary_just_pressed", "perk_prompt_update_and_render"]
   },
   {
     "name": "FUN_0040b5d0",
@@ -830,7 +830,7 @@
     "address": "0041a530",
     "signature": "void ui_elements_update_and_render(void)",
     "external": false,
-    "calls": ["FUN_004181b0", "FUN_004461c0", "FUN_00446900", "config_load_presets", "ui_element_render", "ui_elements_max_timeline"]
+    "calls": ["FUN_004181b0", "FUN_00446900", "config_load_presets", "game_state_set", "ui_element_render", "ui_elements_max_timeline"]
   },
   {
     "name": "FUN_0041a6d0",
@@ -2303,9 +2303,9 @@
     "calls": []
   },
   {
-    "name": "FUN_004461c0",
+    "name": "game_state_set",
     "address": "004461c0",
-    "signature": "undefined FUN_004461c0(int param_1)",
+    "signature": "void game_state_set(int state_id)",
     "external": false,
     "calls": ["FUN_0040e940", "FUN_00412dc0", "FUN_0041df40", "console_input_poll", "game_save_status", "quest_start_selected", "thunk_FUN_0043afa0", "ui_elements_reset_state"]
   },
