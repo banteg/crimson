@@ -538,6 +538,18 @@ function symbolicate(addr) {
   }
 }
 
+function formatCaller(addr) {
+  if (!addr) return null;
+  try {
+    const mod = Process.findModuleByAddress(addr);
+    if (mod) {
+      const off = addr.sub(mod.base);
+      return mod.name + "+0x" + off.toString(16);
+    }
+  } catch (_) {}
+  return addr.toString();
+}
+
 function captureBacktrace(context) {
   try {
     const frames = Thread.backtrace(context, Backtracer.ACCURATE)
@@ -1089,7 +1101,7 @@ function installGrimVtableHooks() {
         };
 
         if (CONFIG.includeCaller) {
-          this._evt.caller = symbolicate(this.returnAddress);
+          this._evt.caller = formatCaller(this.returnAddress);
         }
         if (CONFIG.includeBacktrace) {
           this._evt.backtrace = captureBacktrace(this.context);
@@ -1163,7 +1175,7 @@ function hookGameplay() {
         before,
       };
 
-      if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
+      if (CONFIG.includeCaller) this._evt.caller = formatCaller(this.returnAddress);
       if (CONFIG.includeBacktrace) this._evt.backtrace = captureBacktrace(this.context);
     },
     onLeave(retval) {
@@ -1216,7 +1228,7 @@ function hookGameplay() {
         owner_fire_bullets_timer: ownerFireTimer,
       };
 
-      if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
+      if (CONFIG.includeCaller) this._evt.caller = formatCaller(this.returnAddress);
       if (CONFIG.includeBacktrace) this._evt.backtrace = captureBacktrace(this.context);
     },
     onLeave(retval) {
@@ -1251,7 +1263,7 @@ function hookGameplay() {
         tint,
       };
 
-      if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
+      if (CONFIG.includeCaller) this._evt.caller = formatCaller(this.returnAddress);
       if (CONFIG.includeBacktrace) this._evt.backtrace = captureBacktrace(this.context);
     },
     onLeave(retval) {
@@ -1275,7 +1287,7 @@ function hookGameplay() {
         weapon_entry: dumpWeapon(weaponId),
       };
 
-      if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
+      if (CONFIG.includeCaller) this._evt.caller = formatCaller(this.returnAddress);
     },
     onLeave(retval) {
       const playerIdx = this._evt.player_index;
@@ -1290,7 +1302,7 @@ function hookGameplay() {
   attachAtVa('crimsonland.exe', ADDR.weapon_table_init, 'weapon_table_init', {
     onEnter(args) {
       this._evt = { event: 'weapon_table_init', ts: nowIso() };
-      if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
+      if (CONFIG.includeCaller) this._evt.caller = formatCaller(this.returnAddress);
     },
     onLeave(retval) {
       // Dump a handful of entries to validate the indexing scheme.
@@ -1327,7 +1339,7 @@ function hookGameplay() {
         player_before: readPlayer(playerIdx),
       };
 
-      if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
+      if (CONFIG.includeCaller) this._evt.caller = formatCaller(this.returnAddress);
       if (CONFIG.includeBacktrace) this._evt.backtrace = captureBacktrace(this.context);
     },
     onLeave(retval) {
@@ -1344,7 +1356,7 @@ function hookGameplay() {
     onEnter(args) {
       const perkId = argAsI32(args[0]);
       this._evt = { event: 'perk_apply', ts: nowIso(), perk_id: perkId };
-      if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
+      if (CONFIG.includeCaller) this._evt.caller = formatCaller(this.returnAddress);
     },
     onLeave(retval) {
       writeLine(this._evt);
@@ -1361,7 +1373,7 @@ function hookGameplay() {
     {
       onEnter(args) {
         this._evt = { event: 'perk_selection_screen_update', ts: nowIso() };
-        if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
+        if (CONFIG.includeCaller) this._evt.caller = formatCaller(this.returnAddress);
         if (CONFIG.autoRecord && CONFIG.autoRecord.dumpOnPerkSelectionScreen) {
           autoDumpPlayer(CONFIG.autoRecord.playerIndex || 0, 'perk_selection_screen', null);
         }
@@ -1376,7 +1388,7 @@ function hookGameplay() {
   attachAtVa('crimsonland.exe', ADDR.game_over_screen_update, 'game_over_screen_update', {
     onEnter(args) {
       this._evt = { event: 'game_over_screen_update', ts: nowIso() };
-      if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
+      if (CONFIG.includeCaller) this._evt.caller = formatCaller(this.returnAddress);
       if (CONFIG.autoRecord && CONFIG.autoRecord.dumpOnGameOverScreen) {
         autoDumpPlayer(CONFIG.autoRecord.playerIndex || 0, 'game_over_screen', null);
       }
@@ -1394,7 +1406,7 @@ function hookGameplay() {
     {
       onEnter(args) {
         this._evt = { event: 'quest_results_screen_update', ts: nowIso() };
-        if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
+        if (CONFIG.includeCaller) this._evt.caller = formatCaller(this.returnAddress);
         if (CONFIG.autoRecord && CONFIG.autoRecord.dumpOnQuestResultsScreen) {
           autoDumpPlayer(CONFIG.autoRecord.playerIndex || 0, 'quest_results_screen', null);
         }
@@ -1411,7 +1423,7 @@ function hookGameplay() {
     onEnter(args) {
       const guess = formatArgGuess(args[0]);
       this._evt = { event: 'sfx_play', ts: nowIso(), sfx_id_guess: guess };
-      if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
+      if (CONFIG.includeCaller) this._evt.caller = formatCaller(this.returnAddress);
     },
     onLeave(retval) {
       this._evt.ret = formatArgGuess(retval);
@@ -1424,7 +1436,7 @@ function hookGameplay() {
       // signature is uncertain in the map; print both int/float interpretations.
       const guess = formatArgGuess(args[0]);
       this._evt = { event: 'sfx_play_panned', ts: nowIso(), arg0: guess };
-      if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
+      if (CONFIG.includeCaller) this._evt.caller = formatCaller(this.returnAddress);
     },
     onLeave(retval) {
       this._evt.ret = formatArgGuess(retval);
@@ -1436,7 +1448,7 @@ function hookGameplay() {
     onEnter(args) {
       const guess = formatArgGuess(args[0]);
       this._evt = { event: 'sfx_play_exclusive', ts: nowIso(), sfx_id_guess: guess };
-      if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
+      if (CONFIG.includeCaller) this._evt.caller = formatCaller(this.returnAddress);
     },
     onLeave(retval) {
       writeLine(this._evt);
@@ -1448,7 +1460,7 @@ function hookGameplay() {
     onEnter(args) {
       const dllName = tryReadAnsi(args[0], 256);
       this._evt = { event: 'grim_load_interface', ts: nowIso(), dll_name: dllName, dll_name_ptr: args[0].toString() };
-      if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
+      if (CONFIG.includeCaller) this._evt.caller = formatCaller(this.returnAddress);
     },
     onLeave(retval) {
       this._evt.ret = formatArgGuess(retval);
@@ -1489,7 +1501,7 @@ function hookResources() {
           this._evt.path_bytes_hex = null;
         }
       }
-      if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
+      if (CONFIG.includeCaller) this._evt.caller = formatCaller(this.returnAddress);
     },
     onLeave(retval) {
       this._evt.ret = formatArgGuess(retval);
@@ -1520,7 +1532,7 @@ function hookResources() {
           this._evt.path_bytes_hex = null;
         }
       }
-      if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
+      if (CONFIG.includeCaller) this._evt.caller = formatCaller(this.returnAddress);
     },
     onLeave(retval) {
       this._evt.ret = formatArgGuess(retval);
@@ -1531,7 +1543,7 @@ function hookResources() {
   attachAtVa('crimsonland.exe', ADDR.crimsonland_main, 'crimsonland_main', {
     onEnter(args) {
       this._evt = { event: 'crimsonland_main_enter', ts: nowIso() };
-      if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
+      if (CONFIG.includeCaller) this._evt.caller = formatCaller(this.returnAddress);
       writeLine(this._evt);
     },
     onLeave(retval) {
@@ -1582,7 +1594,7 @@ function hookWin32FileIO() {
           creation_disposition: args[4].toUInt32(),
           flags: args[5].toUInt32(),
         };
-        if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
+        if (CONFIG.includeCaller) this._evt.caller = formatCaller(this.returnAddress);
       },
       onLeave(retval) {
         if (this._skip) return;
@@ -1611,7 +1623,7 @@ function hookWin32FileIO() {
           creation_disposition: args[4].toUInt32(),
           flags: args[5].toUInt32(),
         };
-        if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
+        if (CONFIG.includeCaller) this._evt.caller = formatCaller(this.returnAddress);
       },
       onLeave(retval) {
         if (this._skip) return;
@@ -1714,7 +1726,7 @@ function watchPlayerOffset(playerIndex, offset, size) {
           size,
           operation: details.operation,
           address: details.address ? details.address.toString() : null,
-          from: details.from ? symbolicate(details.from) : null,
+          from: details.from ? formatCaller(details.from) : null,
           threadId: details.threadId,
         });
       },
