@@ -1,79 +1,71 @@
 [
   {
-    "callsite": "0x1381100f",
-    "count": 30267
+    "callsite": "grim.dll+0x9804",
+    "count": 2190
   },
   {
-    "callsite": "0xd2e9804",
-    "count": 3765
+    "callsite": "grim.dll+0x9915",
+    "count": 2190
   },
   {
-    "callsite": "0xd2e9915",
-    "count": 3765
+    "callsite": "grim.dll+0x7957",
+    "count": 1008
   },
   {
-    "callsite": "0x13811a0f",
-    "count": 3099
+    "callsite": "grim.dll+0x7980",
+    "count": 1008
   },
   {
-    "callsite": "0x13810f0f",
-    "count": 2132
+    "callsite": "grim.dll+0x8f63",
+    "count": 594
   },
   {
-    "callsite": "0xd2e7957",
-    "count": 1992
+    "callsite": "grim.dll+0x9048",
+    "count": 594
   },
   {
-    "callsite": "0xd2e7980",
-    "count": 1992
+    "callsite": "grim.dll+0x788a",
+    "count": 534
   },
   {
-    "callsite": "0xd2e788a",
-    "count": 882
+    "callsite": "grim.dll+0x78d6",
+    "count": 534
   },
   {
-    "callsite": "0xd2e78d6",
-    "count": 882
+    "callsite": "grim.dll+0x932d",
+    "count": 460
   },
   {
-    "callsite": "0xd2e932d",
-    "count": 774
+    "callsite": "grim.dll+0x96b0",
+    "count": 460
   },
   {
-    "callsite": "0xd2e96b0",
-    "count": 774
+    "callsite": "grim.dll+0x90b1",
+    "count": 123
   },
   {
-    "callsite": "0xd2e8f63",
-    "count": 703
+    "callsite": "grim.dll+0x8b41",
+    "count": 58
   },
   {
-    "callsite": "0xd2e9048",
-    "count": 703
+    "callsite": "grim.dll+0x7a39",
+    "count": 35
   },
   {
-    "callsite": "0xd2e8b41",
-    "count": 321
+    "callsite": "grim.dll+0x7a84",
+    "count": 35
   },
   {
-    "callsite": "0xd2e90b1",
-    "count": 160
+    "callsite": "grim.dll+0x5dee",
+    "count": 1
   },
   {
-    "callsite": "0xd2e7a39",
-    "count": 39
+    "callsite": "grim.dll+0x5e21",
+    "count": 1
   },
   {
-    "callsite": "0xd2e7a84",
-    "count": 39
-  },
-  {
-    "callsite": "0x13810b0f",
-    "count": 34
-  },
-  {
-    "callsite": "0x13810d0f",
-    "count": 4
+    "callsite": "grim.dll+0x5e37",
+    "count": 1
   },
   {
     "callsite": "grim.dll+0x8e29",
@@ -81,10 +73,6 @@
   },
   {
     "callsite": "grim.dll+0x7941",
-    "count": 1
-  },
-  {
-    "callsite": "grim.dll+0x92a3",
     "count": 1
   }
 ]

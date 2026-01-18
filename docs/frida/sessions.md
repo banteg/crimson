@@ -209,3 +209,36 @@ Single Quest run (one level), then quest results screen. Both hooks attached for
   tracker, so we need targeted watchpoints to identify their owners.
 - If we want to name SFX IDs, a short capture around quest results and reload events should be enough to
   label **5/69/68/4**, **46**, **56**, and the damage set (**0/1/2/12/13/14/15**).
+
+## Session 4
+
+- **Date:** 2026-01-18
+- **Build / platform:** Win11 ARM64 (UTM), Crimsonland v1.9.93
+- **Scripts:** `grim_hooks.js`, `crimsonland_probe.js`
+- **Attach method:** `frida -n crimsonland.exe -l Z:\grim_hooks.js` + `frida -n crimsonland.exe -l Z:\crimsonland_probe.js`
+- **Artifacts:** `analysis/frida/raw/*.jsonl`, `analysis/frida/*summary*.json`
+
+### Wants (pre-run)
+
+Goal: short run to confirm texture decoding after the NUL-scan fix, plus capture a low-health trigger.
+
+### Run summary (actual)
+
+Short session with a small amount of gameplay. One bonus pickup, then low-health trigger.
+
+### Findings
+
+- **Texture decoding confirmed:** request names are clean (`load\\*`, `ui\\*`, `ter\\*`).
+- **Auto-dump triggers:** `startup` (1), `bonus_apply` (1), `low_health` (1).
+- **Low-health snapshot:** health dropped to `-13.86` while `low_health_timer_f32` stayed at `100`.
+  Timers for `shield`/`fire_bullets` were still `0` in this run.
+- **SFX evidence:** small run, but `quest_failed_screen_update` shows sfx **1** (x17) and **4** (x1).
+  `player_update` continues to emit **30/42/43**; `creature_update_all` emits **38**.
+- **Unknown-field tracker:** still only offsets `0x2BC/0x2C4/0x2D0/0x34C/0x350/0x354` (count=1 each).
+
+### Actionable insights
+
+- If we want to label low-health behavior, a targeted MemoryAccessMonitor on the unknown offsets during
+  a low-health event should confirm which field drives the effect.
+- The small SFX set here may help label `quest_failed`/gameplay fail sounds; a slightly longer quest run
+  would likely stabilize these IDs.
