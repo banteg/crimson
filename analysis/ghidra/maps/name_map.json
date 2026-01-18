@@ -2505,7 +2505,7 @@
     "program": "crimsonland.exe",
     "address": "0x00461089",
     "name": "crt_vsprintf",
-    "signature": "int crt_vsprintf(char *dst, char *fmt, va_list args)",
+    "signature": "int crt_vsprintf(char *dst, char *fmt, void *args)",
     "comment": "CRT: format string to buffer"
   },
   {
@@ -2519,15 +2519,15 @@
     "program": "crimsonland.exe",
     "address": "0x00462bd4",
     "name": "crt_qsort",
-    "signature": "void crt_qsort(void *base, size_t num, size_t size, int (*cmp)(void *, void *))",
-    "comment": "CRT: quicksort with callback"
+    "signature": "void crt_qsort(void *base, size_t num, size_t size, void *cmp)",
+    "comment": "CRT: quicksort with callback (cmp)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00462d28",
     "name": "crt_shortsort",
-    "signature": "void crt_shortsort(char *lo, char *hi, size_t width, int (*cmp)(void *, void *))",
-    "comment": "CRT: insertion sort for small arrays"
+    "signature": "void crt_shortsort(char *lo, char *hi, size_t width, void *cmp)",
+    "comment": "CRT: insertion sort for small arrays (cmp)"
   },
   {
     "program": "crimsonland.exe",
@@ -2554,14 +2554,14 @@
     "program": "crimsonland.exe",
     "address": "0x00464380",
     "name": "crt_output",
-    "signature": "int crt_output(FILE *stream, char *format, va_list args)",
+    "signature": "int crt_output(FILE *stream, char *format, void *args)",
     "comment": "CRT: core printf formatter"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00465da5",
     "name": "crt_mktime",
-    "signature": "time_t crt_mktime(int year, int month, int day, int hour, int min, int sec, int dst)",
+    "signature": "long crt_mktime(int year, int month, int day, int hour, int min, int sec, int dst)",
     "comment": "CRT: convert date/time to timestamp (mktime)"
   },
   {
