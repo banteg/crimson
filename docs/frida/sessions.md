@@ -122,3 +122,20 @@ Based on the video provided, here is the timeline of events.
   hook upstream callsites where the string is still intact. (Now logging both name + path.)
 - Extend the reducer to resolve `unmapped_calls.json` entries by module base (grim.dll) so raw addresses
   aren’t lumped together as unknown.
+
+# session 2
+
+## session wants
+
+Goal: isolate player-struct unknown offsets using targeted bonus pickups with MemoryAccessMonitor.
+
+Steps:
+
+1. Start Survival and enter gameplay.
+2. For each offset, run `watchPlayerOffset(0, <offset>, 4)`, then pick up the bonus, then stop:
+   - `watchPlayerOffset(0, 0x2BC, 4)` → pick up **Freeze** → `stopWatchPlayerOffset()`
+   - `watchPlayerOffset(0, 0x2C4, 4)` → pick up **Speed** → `stopWatchPlayerOffset()`
+   - `watchPlayerOffset(0, 0x2D0, 4)` → pick up **Fire Bullets** → `stopWatchPlayerOffset()`
+   - `watchPlayerOffset(0, 0x34C, 4)` → pick up **Freeze** → `stopWatchPlayerOffset()`
+   - `watchPlayerOffset(0, 0x350, 4)` → pick up **Speed** → `stopWatchPlayerOffset()`
+   - `watchPlayerOffset(0, 0x354, 4)` → pick up **Fire Bullets** → `stopWatchPlayerOffset()`
