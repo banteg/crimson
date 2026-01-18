@@ -381,7 +381,7 @@ LAB_10002631:
     case 0x3fb:
       uVar1 = FUN_10001a30();
       if ((char)uVar1 != '\0') {
-        DialogBoxParamA(DAT_1005bacc,(LPCSTR)0x89,(HWND)hwnd,(DLGPROC)&LAB_10001ad0,0);
+        DialogBoxParamA(grim_module_handle,(LPCSTR)0x89,(HWND)hwnd,(DLGPROC)&LAB_10001ad0,0);
         return 0;
       }
       MessageBoxA((HWND)hwnd,s_Unable_to_load_configuration_fil_1005355c,
@@ -393,7 +393,7 @@ LAB_10002631:
       UVar10 = 0x147;
       pHVar5 = GetDlgItem((HWND)hwnd,0x3f1);
       DAT_1005d3e8 = SendMessageA(pHVar5,UVar10,WVar12,LVar14);
-      DialogBoxParamA(DAT_1005bacc,(LPCSTR)0x8a,(HWND)hwnd,(DLGPROC)&LAB_10001170,0);
+      DialogBoxParamA(grim_module_handle,(LPCSTR)0x8a,(HWND)hwnd,(DLGPROC)&LAB_10001170,0);
       return 0;
     }
   }
@@ -455,10 +455,10 @@ int grim_window_create(void)
   else {
     iVar1 = GetSystemMetrics(0);
     iVar2 = GetSystemMetrics(1);
-    local_10.left = iVar1 / 2 - (DAT_1005c400 >> 1);
-    local_10.right = (DAT_1005c400 >> 1) + iVar1 / 2;
-    local_10.top = iVar2 / 2 - (DAT_10059dc0 >> 1);
-    local_10.bottom = (DAT_10059dc0 >> 1) + iVar2 / 2;
+    local_10.left = iVar1 / 2 - (grim_backbuffer_width >> 1);
+    local_10.right = (grim_backbuffer_width >> 1) + iVar1 / 2;
+    local_10.top = iVar2 / 2 - (grim_backbuffer_height >> 1);
+    local_10.bottom = (grim_backbuffer_height >> 1) + iVar2 / 2;
     AdjustWindowRectEx(&local_10,0xcb0000,0,0x40000);
     lpParam = (LPVOID)0x0;
     hMenu = (HMENU)0x0;
@@ -547,7 +547,7 @@ int grim_backup_textures(void)
         iVar3 = *piVar6;
         HVar2 = (*grim_d3d_device->lpVtbl->CreateImageSurface)
                           (grim_d3d_device,*(UINT *)(iVar3 + 0xc),*(UINT *)(iVar3 + 0x10),
-                           DAT_1005a488,(IDirect3DSurface8 **)(iVar3 + 0x14));
+                           grim_texture_format,(IDirect3DSurface8 **)(iVar3 + 0x14));
         if (HVar2 < 0) {
           DAT_1005c8f8 = s_D3D__Unable_to_backup_texture____10053678;
           FUN_10001160();
@@ -764,7 +764,8 @@ undefined4 FUN_10002cf0(void)
       piVar5 = piVar5 + 1;
     } while (iVar6 <= DAT_1005305c);
   }
-  iVar6 = (*grim_d3d_device->lpVtbl->Reset)(grim_d3d_device,(D3DPRESENT_PARAMETERS *)&DAT_10059df8);
+  iVar6 = (*grim_d3d_device->lpVtbl->Reset)
+                    (grim_d3d_device,(D3DPRESENT_PARAMETERS *)&grim_present_width);
   do {
     if (iVar6 == 0) {
       FUN_10004520();
@@ -776,8 +777,8 @@ undefined4 FUN_10002cf0(void)
           if (((iVar3 != 0) && (*(char *)(iVar3 + 8) != '\0')) &&
              (HVar4 = (*grim_d3d_device->lpVtbl->CreateTexture)
                                 (grim_d3d_device,*(UINT *)(iVar3 + 0xc),*(UINT *)(iVar3 + 0x10),1,1,
-                                 DAT_1005a488,D3DPOOL_DEFAULT,(IDirect3DTexture8 **)(iVar3 + 4)),
-             HVar4 < 0)) {
+                                 grim_texture_format,D3DPOOL_DEFAULT,
+                                 (IDirect3DTexture8 **)(iVar3 + 4)), HVar4 < 0)) {
             DAT_1005c8f8 = s_D3D__Unable_to_recreate_a_textur_100537e0;
             FUN_10001160();
             *(undefined4 *)(*piVar5 + 4) = 0;
@@ -832,7 +833,7 @@ undefined4 FUN_10002cf0(void)
       }
     }
     iVar6 = (*grim_d3d_device->lpVtbl->Reset)
-                      (grim_d3d_device,(D3DPRESENT_PARAMETERS *)&DAT_10059df8);
+                      (grim_d3d_device,(D3DPRESENT_PARAMETERS *)&grim_present_width);
   } while( true );
 }
 
@@ -902,8 +903,8 @@ undefined4 __fastcall FUN_10002fc0(undefined1 *param_1)
   GetClientRect(DAT_1005d3f8,&local_10);
   *(LONG *)(param_1 + 0x10) = local_10.right;
   *(LONG *)(param_1 + 0xc) = local_10.bottom;
-  *(undefined4 *)(param_1 + 0x10) = DAT_1005c400;
-  *(undefined4 *)(param_1 + 0xc) = DAT_10059dc0;
+  *(undefined4 *)(param_1 + 0x10) = grim_backbuffer_width;
+  *(undefined4 *)(param_1 + 0xc) = grim_backbuffer_height;
   puVar2 = &DAT_10059e3c;
   for (iVar1 = 0x41; iVar1 != 0; iVar1 = iVar1 + -1) {
     *puVar2 = 0;
@@ -991,7 +992,7 @@ LAB_100033a0:
       } while (iVar7 <= DAT_1005305c);
     }
     HVar2 = (*grim_d3d_device->lpVtbl->Reset)
-                      (grim_d3d_device,(D3DPRESENT_PARAMETERS *)&DAT_10059df8);
+                      (grim_d3d_device,(D3DPRESENT_PARAMETERS *)&grim_present_width);
     if (HVar2 == 0) {
       FUN_10004520();
       iVar7 = 0;
@@ -1002,8 +1003,8 @@ LAB_100033a0:
           if (((iVar4 != 0) && (*(char *)(iVar4 + 8) != '\0')) &&
              (HVar2 = (*grim_d3d_device->lpVtbl->CreateTexture)
                                 (grim_d3d_device,*(UINT *)(iVar4 + 0xc),*(UINT *)(iVar4 + 0x10),1,1,
-                                 DAT_1005a488,D3DPOOL_DEFAULT,(IDirect3DTexture8 **)(iVar4 + 4)),
-             HVar2 < 0)) {
+                                 grim_texture_format,D3DPOOL_DEFAULT,
+                                 (IDirect3DTexture8 **)(iVar4 + 4)), HVar2 < 0)) {
             DAT_1005c8f8 = s_D3D__Unable_to_recreate_a_textur_100537e0;
             *(undefined4 *)(*piVar6 + 4) = 0;
             FUN_10001160();
@@ -1139,7 +1140,7 @@ undefined4 FUN_10003c00(void)
                 grim_keyboard_poll();
                 pfVar6 = (float *)&DAT_1005a058;
                 do {
-                  fVar1 = *pfVar6 - _DAT_10059768;
+                  fVar1 = *pfVar6 - _grim_frame_dt;
                   *pfVar6 = fVar1;
                   if (fVar1 < 0.0) {
                     *pfVar6 = 0.0;
@@ -1150,8 +1151,8 @@ undefined4 FUN_10003c00(void)
               grim_joystick_poll();
               _DAT_1005cf14 = &grim_joystick_state;
               if (DAT_1005cc58 == '\0') {
-                _DAT_1005b278 = DAT_1005db44;
-                _DAT_1005b27c = DAT_1005db48;
+                _grim_mouse_x_cached = DAT_1005db44;
+                _grim_mouse_y_cached = DAT_1005db48;
                 grim_mouse_poll();
               }
             }
@@ -1259,7 +1260,7 @@ int grim_d3d_init(void)
   if ((char)iVar5 == '\0') {
     return iVar5;
   }
-  puVar9 = &DAT_10059df8;
+  puVar9 = &grim_present_width;
   for (iVar5 = 0xd; iVar5 != 0; iVar5 = iVar5 + -1) {
     *puVar9 = 0;
     puVar9 = puVar9 + 1;
@@ -1272,12 +1273,12 @@ int grim_d3d_init(void)
   }
   else {
     _DAT_10059e0c = 1;
-    DAT_1005a488 = (IDirect3D8 *)DStack_43c.Format;
+    grim_texture_format = (IDirect3D8 *)DStack_43c.Format;
   }
   _DAT_10059e14 = (uint)(DAT_1005cc08 == '\x01');
-  DAT_10059dfc = DAT_10059dc0;
-  DAT_10059df8 = DAT_1005c400;
-  _DAT_10059e00 = DAT_1005a488;
+  grim_present_height = grim_backbuffer_height;
+  grim_present_width = grim_backbuffer_width;
+  _DAT_10059e00 = grim_texture_format;
   _DAT_10059e08 = 0;
   _DAT_10059e20 = 1;
   _DAT_10059e18 = (uint)(DAT_1005ced8 != '\0');
@@ -1288,7 +1289,7 @@ int grim_d3d_init(void)
   }
   HVar3 = (*grim_d3d8->lpVtbl->CreateDevice)
                     (grim_d3d8,DAT_1005d3e8,DAT_1005b2b4,DAT_1005d3f8,0x20,
-                     (D3DPRESENT_PARAMETERS *)&DAT_10059df8,&grim_d3d_device);
+                     (D3DPRESENT_PARAMETERS *)&grim_present_width,&grim_d3d_device);
   if (HVar3 < 0) {
     DAT_1005c8f8 = s_D3D__Could_not_set_the_requested_10053a04;
     MessageBoxA((HWND)0x0,s_D3D__Could_not_set_the_requested_10053a04,&DAT_10053824,0);
@@ -1309,12 +1310,12 @@ int grim_d3d_init(void)
     *puVar9 = 0;
     puVar9 = puVar9 + 1;
   }
-  if (DAT_1005a56c != 0) {
-    iVar5 = grim_is_texture_format_supported(DAT_1005a56c);
+  if (grim_preferred_texture_format != 0) {
+    iVar5 = grim_is_texture_format_supported(grim_preferred_texture_format);
     if ((char)iVar5 == '\0') {
-      DAT_1005a56c = 0;
+      grim_preferred_texture_format = 0;
     }
-    else if (DAT_1005a56c != 0) goto LAB_10004142;
+    else if (grim_preferred_texture_format != 0) goto LAB_10004142;
   }
   iVar5 = grim_select_texture_format();
   if ((char)iVar5 == '\0') {
@@ -1324,19 +1325,19 @@ int grim_d3d_init(void)
   }
 LAB_10004142:
   FUN_10004520();
-  pHVar7 = FindResourceA(DAT_1005bacc,(LPCSTR)0x6f,(LPCSTR)0xa);
-  pvVar8 = LoadResource(DAT_1005bacc,pHVar7);
+  pHVar7 = FindResourceA(grim_module_handle,(LPCSTR)0x6f,(LPCSTR)0xa);
+  pvVar8 = LoadResource(grim_module_handle,pHVar7);
   LockResource(pvVar8);
-  SizeofResource(DAT_1005bacc,pHVar7);
+  SizeofResource(grim_module_handle,pHVar7);
   uVar4 = FUN_1000cb5c();
   if ((int)uVar4 < 0) {
     DAT_1005c8f8 = s_D3D__Unable_to_load_default_font_100539a4;
     return uVar4 & 0xffffff00;
   }
-  pHVar7 = FindResourceA(DAT_1005bacc,(LPCSTR)0x71,(LPCSTR)0xa);
-  pvVar8 = LoadResource(DAT_1005bacc,pHVar7);
+  pHVar7 = FindResourceA(grim_module_handle,(LPCSTR)0x71,(LPCSTR)0xa);
+  pvVar8 = LoadResource(grim_module_handle,pHVar7);
   LockResource(pvVar8);
-  SizeofResource(DAT_1005bacc,pHVar7);
+  SizeofResource(grim_module_handle,pHVar7);
   uVar4 = FUN_1000cb5c();
   if ((int)uVar4 < 0) {
     DAT_1005c8f8 = s_D3D__Unable_to_load_grim_splash_t_10053978;
@@ -1424,20 +1425,20 @@ uint FUN_10004350(void)
   uint uVar3;
   HRESULT HVar4;
   
-  DAT_1005976c = 0x100;
+  grim_vertex_capacity = 0x100;
   uVar3 = (*grim_d3d_device->lpVtbl->CreateVertexBuffer)
-                    (grim_d3d_device,0x1c00,0x218,0,D3DPOOL_SYSTEMMEM,&DAT_10059e2c);
+                    (grim_d3d_device,0x1c00,0x218,0,D3DPOOL_SYSTEMMEM,&grim_vertex_buffer);
   if ((int)uVar3 < 0) {
     DAT_1005c8f8 = s_D3D__Internal__Could_not_create_v_10053ac4;
     return uVar3 & 0xffffff00;
   }
   HVar4 = (*grim_d3d_device->lpVtbl->CreateIndexBuffer)
-                    (grim_d3d_device,DAT_1005976c * 0xc,0x218,D3DFMT_INDEX16,D3DPOOL_SYSTEMMEM,
-                     &DAT_10059bb8);
+                    (grim_d3d_device,grim_vertex_capacity * 0xc,0x218,D3DFMT_INDEX16,
+                     D3DPOOL_SYSTEMMEM,&DAT_10059bb8);
   if (-1 < HVar4) {
     uVar3 = (*DAT_10059bb8->lpVtbl->Lock)(DAT_10059bb8,0,0,(BYTE **)&DAT_1005b2c0,0x2000);
     if (-1 < (int)uVar3) {
-      if (DAT_1005976c != 0) {
+      if (grim_vertex_capacity != 0) {
         sVar2 = 2;
         do {
           *DAT_1005b2c0 = sVar2 + -2;
@@ -1454,10 +1455,10 @@ uint FUN_10004350(void)
           DAT_1005b2c0 = DAT_1005b2c0 + 1;
           uVar1 = sVar2 + 2;
           sVar2 = sVar2 + 4;
-        } while (uVar1 < DAT_1005976c);
+        } while (uVar1 < grim_vertex_capacity);
       }
       (*DAT_10059bb8->lpVtbl->Unlock)(DAT_10059bb8);
-      (*grim_d3d_device->lpVtbl->SetStreamSource)(grim_d3d_device,0,DAT_10059e2c,0x1c);
+      (*grim_d3d_device->lpVtbl->SetStreamSource)(grim_d3d_device,0,grim_vertex_buffer,0x1c);
       HVar4 = (*grim_d3d_device->lpVtbl->SetIndices)(grim_d3d_device,DAT_10059bb8,0);
       return CONCAT31((int3)((uint)HVar4 >> 8),1);
     }
@@ -1476,10 +1477,10 @@ uint FUN_10004350(void)
 void FUN_100044e0(void)
 
 {
-  if (DAT_10059e2c != (int *)0x0) {
-    (**(code **)(*DAT_10059e2c + 8))(DAT_10059e2c);
+  if (grim_vertex_buffer != (int *)0x0) {
+    (**(code **)(*grim_vertex_buffer + 8))(grim_vertex_buffer);
   }
-  DAT_10059e2c = (int *)0x0;
+  grim_vertex_buffer = (int *)0x0;
   if (DAT_10059bb8 != (int *)0x0) {
     (**(code **)(*DAT_10059bb8 + 8))(DAT_10059bb8);
   }
@@ -1527,7 +1528,7 @@ void FUN_10004520(void)
   (*grim_d3d_device->lpVtbl->SetRenderState)(grim_d3d_device,D3DRS_WRAP1,0);
   (*grim_d3d_device->lpVtbl->SetRenderState)(grim_d3d_device,D3DRS_WRAP2,0);
   (*grim_d3d_device->lpVtbl->SetRenderState)(grim_d3d_device,D3DRS_WRAP3,0);
-  (*grim_d3d_device->lpVtbl->SetStreamSource)(grim_d3d_device,0,DAT_10059e2c,0x1c);
+  (*grim_d3d_device->lpVtbl->SetStreamSource)(grim_d3d_device,0,grim_vertex_buffer,0x1c);
   (*grim_d3d_device->lpVtbl->SetIndices)(grim_d3d_device,DAT_10059bb8,0);
   (*grim_d3d_device->lpVtbl->SetVertexShader)(grim_d3d_device,0x144);
   (*grim_d3d_device->lpVtbl->SetRenderState)
@@ -1550,7 +1551,8 @@ int __cdecl grim_is_texture_format_supported(uint format)
   HRESULT HVar1;
   
   HVar1 = (*grim_d3d8->lpVtbl->CheckDeviceFormat)
-                    (grim_d3d8,DAT_1005d3e8,DAT_1005b2b4,DAT_1005a488,0,D3DRTYPE_TEXTURE,format);
+                    (grim_d3d8,DAT_1005d3e8,DAT_1005b2b4,grim_texture_format,0,D3DRTYPE_TEXTURE,
+                     format);
   return CONCAT31((int3)((uint)HVar1 >> 8),-1 < HVar1);
 }
 
@@ -1568,43 +1570,43 @@ int grim_select_texture_format(void)
   
   iVar1 = grim_is_texture_format_supported(0x15);
   if ((char)iVar1 != '\0') {
-    DAT_1005a56c = 0x15;
+    grim_preferred_texture_format = 0x15;
     return CONCAT31((int3)((uint)iVar1 >> 8),1);
   }
   iVar1 = grim_is_texture_format_supported(0x33545844);
   if ((char)iVar1 != '\0') {
-    DAT_1005a56c = 0x33545844;
+    grim_preferred_texture_format = 0x33545844;
     return CONCAT31((int3)((uint)iVar1 >> 8),1);
   }
   iVar1 = grim_is_texture_format_supported(0x1a);
   if ((char)iVar1 != '\0') {
-    DAT_1005a56c = 0x1a;
+    grim_preferred_texture_format = 0x1a;
     return CONCAT31((int3)((uint)iVar1 >> 8),1);
   }
   iVar1 = grim_is_texture_format_supported(0x19);
   if ((char)iVar1 != '\0') {
-    DAT_1005a56c = 0x19;
+    grim_preferred_texture_format = 0x19;
     return CONCAT31((int3)((uint)iVar1 >> 8),1);
   }
   iVar1 = grim_is_texture_format_supported(0x14);
   if ((char)iVar1 != '\0') {
-    DAT_1005a56c = 0x14;
+    grim_preferred_texture_format = 0x14;
     return CONCAT31((int3)((uint)iVar1 >> 8),1);
   }
   iVar1 = grim_is_texture_format_supported(0x16);
   if ((char)iVar1 != '\0') {
-    DAT_1005a56c = 0x16;
+    grim_preferred_texture_format = 0x16;
     return CONCAT31((int3)((uint)iVar1 >> 8),1);
   }
   iVar1 = grim_is_texture_format_supported(0x14);
   if ((char)iVar1 != '\0') {
-    DAT_1005a56c = 0x14;
+    grim_preferred_texture_format = 0x14;
     return CONCAT31((int3)((uint)iVar1 >> 8),1);
   }
   iVar1 = grim_is_texture_format_supported(0x17);
   uVar2 = (uint3)((uint)iVar1 >> 8);
   if ((char)iVar1 != '\0') {
-    DAT_1005a56c = 0x17;
+    grim_preferred_texture_format = 0x17;
     return CONCAT31(uVar2,1);
   }
   DAT_1005c8f8 = s_D3D__No_supported_texture_format_10053af4;
@@ -1622,9 +1624,9 @@ void FUN_10004920(void)
 {
   _DAT_1005d3b0 = 0x3a83126f;
   DAT_10059dc4 = timeGetTime();
-  _DAT_1005b2bc = 0;
-  _DAT_10059768 = 0;
-  DAT_1005a054 = 0;
+  _grim_fps = 0;
+  _grim_frame_dt = 0;
+  grim_time_ms = 0;
   DAT_1005a470 = 0;
   DAT_1005bad0 = DAT_10059dc4;
   DAT_1005bad4 = DAT_10059dc4;
@@ -1650,13 +1652,13 @@ void FUN_10004970(void)
     uVar2 = DAT_1005bad0 - DAT_10059dc4;
   } while (uVar2 < 2);
   if (DAT_1005a470 == '\0') {
-    DAT_1005a054 = DAT_1005a054 + uVar2;
+    grim_time_ms = grim_time_ms + uVar2;
     DAT_1005d814 = DAT_1005d814 + 1;
-    _DAT_10059768 = (float)uVar2 * _DAT_1005d3b0;
+    _grim_frame_dt = (float)uVar2 * _DAT_1005d3b0;
     DAT_1005d818 = DAT_1005d818 + uVar2;
   }
   else {
-    _DAT_10059768 = 0.0;
+    _grim_frame_dt = 0.0;
     DAT_1005bad4 = DAT_1005bad4 + uVar2;
   }
   uVar2 = DAT_1005d814;
@@ -1664,7 +1666,7 @@ void FUN_10004970(void)
     DAT_1005d814 = 0;
     uVar1 = (ulonglong)DAT_1005d818;
     DAT_1005d818 = DAT_1005d818 - 500;
-    _DAT_1005b2bc = (float)uVar2 / ((float)uVar1 * _DAT_1005d3b0);
+    _grim_fps = (float)uVar2 / ((float)uVar1 * _DAT_1005d3b0);
   }
   return;
 }
@@ -2328,8 +2330,8 @@ void FUN_100052f0(void)
   DAT_1005b288 = 0x3f000000;
   DAT_1005b28c = 0x3f800000;
   _DAT_1005ccd4 = local_4;
-  DAT_1005b294 = 0;
-  DAT_1005b298 = 0x3f800000;
+  grim_uv_v0 = 0;
+  grim_uv_u1 = 0x3f800000;
   DAT_1005d138 = 0x42c80000;
   DAT_1005d148 = 0;
   DAT_1005d158 = 0;
@@ -2338,17 +2340,17 @@ void FUN_100052f0(void)
   DAT_1005bc14 = 0;
   DAT_1005a670 = 0;
   DAT_1005a458 = 0;
-  DAT_1005c400 = 0x280;
-  DAT_10059dc0 = 0x1e0;
-  DAT_1005a488 = 0x17;
-  DAT_1005a56c = 0;
+  grim_backbuffer_width = 0x280;
+  grim_backbuffer_height = 0x1e0;
+  grim_texture_format = 0x17;
+  grim_preferred_texture_format = 0;
   DAT_1005d3f8 = 0;
-  DAT_1005bc04 = 0xffffffff;
-  DAT_1005bc10 = 0xffffffff;
+  grim_color_slot0 = 0xffffffff;
+  grim_color_slot3 = 0xffffffff;
   DAT_1005bc0c = 0xffffffff;
   DAT_1005bc08 = 0xffffffff;
-  DAT_1005b290 = 0;
-  DAT_1005b29c = 0;
+  grim_uv_u0 = 0;
+  grim_uv_v1 = 0;
   DAT_1005b2a0 = 0x3f800000;
   DAT_1005b2a4 = 0x3f800000;
   DAT_1005b2a8 = 0;
@@ -2417,7 +2419,7 @@ void FUN_100052f0(void)
     pfVar8 = pfVar8 + 0x20;
   } while (local_14 < 0x10);
   iVar4 = 0;
-  puVar9 = &DAT_1005bc78;
+  puVar9 = &grim_subrect_ptr_table;
   for (iVar7 = 0x10; iVar7 != 0; iVar7 = iVar7 + -1) {
     *puVar9 = 0;
     puVar9 = puVar9 + 1;
@@ -2432,10 +2434,10 @@ void FUN_100052f0(void)
   DAT_1005a646 = 0xd6;
   DAT_1005a635 = 0xc5;
   DAT_1005a655 = 0xe5;
-  _DAT_1005bc80 = &DAT_1005d388;
-  _DAT_1005bc88 = &DAT_1005cb08;
-  _DAT_1005bc98 = &DAT_1005c908;
-  _DAT_1005bcb8 = &DAT_1005a678;
+  _grim_subrect_ptr0 = &DAT_1005d388;
+  _grim_subrect_ptr1 = &DAT_1005cb08;
+  _grim_subrect_ptr2 = &DAT_1005c908;
+  _grim_subrect_ptr3 = &grim_subrect_table;
   local_14 = 0;
   pfVar8 = (float *)&DAT_1005d38c;
   do {
@@ -2775,7 +2777,8 @@ int grim_check_device(void)
   pIStack_4 = (IDirect3DSurface8 *)0x0;
   pDestSurface = grim_d3d_device;
   uVar1 = (*grim_d3d_device->lpVtbl->CreateImageSurface)
-                    (grim_d3d_device,DAT_10059df8,DAT_10059dfc,D3DFMT_A8R8G8B8,&pIStack_4);
+                    (grim_d3d_device,grim_present_width,grim_present_height,D3DFMT_A8R8G8B8,
+                     &pIStack_4);
   if ((int)uVar1 < 0) {
     return uVar1 & 0xffffff00;
   }
@@ -2810,7 +2813,7 @@ int grim_apply_config(void)
   int *in_ECX;
   
   if (DAT_10059778 == (HICON)0x0) {
-    DAT_10059778 = LoadIconA(DAT_1005bacc,(LPCSTR)0x72);
+    DAT_10059778 = LoadIconA(grim_module_handle,(LPCSTR)0x72);
   }
   DAT_1005d3bc = '\0';
   grim_d3d8_probe = Direct3DCreate8(0xdc);
@@ -2821,7 +2824,7 @@ int grim_apply_config(void)
   }
   (*grim_d3d8_probe->lpVtbl->GetDeviceCaps)
             (grim_d3d8_probe,0,D3DDEVTYPE_HAL,(D3DCAPS8 *)&DAT_1005a498);
-  DialogBoxParamA(DAT_1005bacc,(LPCSTR)0x74,(HWND)0x0,grim_config_dialog_proc,0);
+  DialogBoxParamA(grim_module_handle,(LPCSTR)0x74,(HWND)0x0,grim_config_dialog_proc,0);
   (*grim_d3d8_probe->lpVtbl->Release)(grim_d3d8_probe);
   if (DAT_1005d3bc == '\0') {
     (**(code **)(*in_ECX + 0x20))(0x54,DAT_1005d400);
@@ -3265,16 +3268,16 @@ LAB_10006b54:
     *(byte **)(&grim_config_var3_table + state * 0x10) = in_stack_00000014;
     return;
   case 0x29:
-    DAT_1005c400 = value;
+    grim_backbuffer_width = value;
     (&grim_config_var0_table)[state * 4] = value;
     return;
   case 0x2a:
-    DAT_10059dc0 = value;
+    grim_backbuffer_height = value;
     (&grim_config_var0_table)[state * 4] = value;
     return;
   case 0x2b:
     (&grim_config_var0_table)[state * 4] = value;
-    DAT_1005a488 = (value != 0x20) + 0x16;
+    grim_texture_format = (value != 0x20) + 0x16;
     return;
   case 0x2d:
     DAT_1005977c = in_stack_00000014;
@@ -3447,7 +3450,7 @@ int grim_set_render_target(int target_index)
 int grim_get_time_ms(void)
 
 {
-  return DAT_1005a054;
+  return grim_time_ms;
 }
 
 
@@ -3460,7 +3463,7 @@ int grim_get_time_ms(void)
 void grim_set_time_ms(int ms)
 
 {
-  DAT_1005a054 = ms;
+  grim_time_ms = ms;
   return;
 }
 
@@ -3475,10 +3478,10 @@ void grim_set_time_ms(int ms)
 float grim_get_frame_dt(void)
 
 {
-  if (0.1 < _DAT_10059768) {
+  if (0.1 < _grim_frame_dt) {
     return 0.1;
   }
-  return _DAT_10059768;
+  return _grim_frame_dt;
 }
 
 
@@ -3492,7 +3495,7 @@ float grim_get_frame_dt(void)
 float grim_get_fps(void)
 
 {
-  return _DAT_1005b2bc;
+  return _grim_fps;
 }
 
 
@@ -3754,7 +3757,7 @@ float grim_get_config_float(int id)
 float grim_get_slot_float(int index)
 
 {
-  return *(float *)(&DAT_1005c100 + index * 4);
+  return *(float *)(&grim_slot_floats + index * 4);
 }
 
 
@@ -3767,7 +3770,7 @@ float grim_get_slot_float(int index)
 int grim_get_slot_int(int index)
 
 {
-  return *(int *)(&DAT_1005bf00 + index * 4);
+  return *(int *)(&grim_slot_ints + index * 4);
 }
 
 
@@ -3780,7 +3783,7 @@ int grim_get_slot_int(int index)
 void grim_set_slot_float(int index,float value)
 
 {
-  *(float *)(&DAT_1005c100 + index * 4) = value;
+  *(float *)(&grim_slot_floats + index * 4) = value;
   return;
 }
 
@@ -3794,7 +3797,7 @@ void grim_set_slot_float(int index,float value)
 void grim_set_slot_int(int index,int value)
 
 {
-  *(int *)(&DAT_1005bf00 + index * 4) = value;
+  *(int *)(&grim_slot_ints + index * 4) = value;
   return;
 }
 
@@ -3904,7 +3907,7 @@ int grim_is_mouse_button_down(int button)
   int iVar1;
   
   if (DAT_1005cc58 != '\0') {
-    return CONCAT31((int3)((uint)button >> 8),(&DAT_1005a044)[button]);
+    return CONCAT31((int3)((uint)button >> 8),(&grim_mouse_button_cache)[button]);
   }
   iVar1 = grim_mouse_button_down(button);
   return iVar1;
@@ -3940,7 +3943,7 @@ int grim_was_mouse_button_pressed(int button)
     (&DAT_1005c8e8)[button] = (char)uVar2 == '\0';
     return CONCAT31((int3)((uint)uVar2 >> 8),uVar4);
   }
-  cVar1 = (&DAT_1005a044)[button];
+  cVar1 = (&grim_mouse_button_cache)[button];
   if ((cVar1 != '\0') && ((&DAT_1005c8e8)[button] != '\0')) {
     (&DAT_1005c8e8)[button] = cVar1 == '\0';
     return CONCAT31(uVar3,1);
@@ -4022,7 +4025,7 @@ float grim_get_mouse_dy_indexed(int index)
 float grim_get_mouse_x(void)
 
 {
-  return _DAT_1005b278;
+  return _grim_mouse_x_cached;
 }
 
 
@@ -4036,7 +4039,7 @@ float grim_get_mouse_x(void)
 float grim_get_mouse_y(void)
 
 {
-  return _DAT_1005b27c;
+  return _grim_mouse_y_cached;
 }
 
 
@@ -4052,8 +4055,8 @@ void grim_set_mouse_pos(float x,float y)
 {
   DAT_1005db44 = x;
   DAT_1005db48 = y;
-  _DAT_1005b278 = x;
-  _DAT_1005b27c = y;
+  _grim_mouse_x_cached = x;
+  _grim_mouse_y_cached = y;
   return;
 }
 
@@ -4178,7 +4181,8 @@ int grim_create_texture(char *name,int width,int height)
   uVar4 = 1;
   name_00 = grim_d3d_device;
   uVar2 = (*grim_d3d_device->lpVtbl->CreateTexture)
-                    (grim_d3d_device,width,height,1,1,DAT_1005a488,D3DPOOL_DEFAULT,&local_10);
+                    (grim_d3d_device,width,height,1,1,grim_texture_format,D3DPOOL_DEFAULT,&local_10)
+  ;
   if ((int)uVar2 < 0) {
     DAT_1005c8f8 = s_D3D__Could_not_create_a_texture__10053c18;
     ExceptionList = pvVar5;
@@ -4304,7 +4308,8 @@ int grim_recreate_texture(int handle)
     return 0;
   }
   uVar2 = FUN_1000b297(*(void **)(iVar3 + 0x10),(int *)grim_d3d_device,*(uint *)(iVar3 + 0xc),
-                       (uint)*(void **)(iVar3 + 0x10),1,0,DAT_1005a56c,1,(int)&handle);
+                       (uint)*(void **)(iVar3 + 0x10),1,0,grim_preferred_texture_format,1,
+                       (int)&handle);
   if ((int)uVar2 < 0) {
     return uVar2 & 0xffffff00;
   }
@@ -4336,7 +4341,7 @@ void grim_bind_texture(int handle,int stage)
      (pTexture = *(IDirect3DBaseTexture8 **)((&grim_texture_slots)[handle] + 4),
      pTexture != (IDirect3DBaseTexture8 *)0x0)) {
     (*grim_d3d_device->lpVtbl->SetTexture)(grim_d3d_device,stage,pTexture);
-    _DAT_10053060 = handle;
+    _grim_bound_texture_handle = handle;
   }
   return;
 }
@@ -4355,7 +4360,7 @@ void grim_draw_fullscreen_quad(void)
   
   (**(code **)(*in_ECX + 0xfc))(0);
   (**(code **)(*in_ECX + 0xe8))();
-  (**(code **)(*in_ECX + 0x11c))(0,0,(float)DAT_1005c400,(float)DAT_10059dc0);
+  (**(code **)(*in_ECX + 0x11c))(0,0,(float)grim_backbuffer_width,(float)grim_backbuffer_height);
   (**(code **)(*in_ECX + 0xf0))();
   return;
 }
@@ -4423,7 +4428,7 @@ void grim_draw_fullscreen_color(float r,float g,float b,float a)
     (**(code **)(*in_ECX + 0x114))(pIVar1,uVar2,uVar3,uVar4);
     (**(code **)(*in_ECX + 0xfc))(0);
     (**(code **)(*in_ECX + 0xe8))();
-    (**(code **)(*in_ECX + 0x11c))(0,0,(float)DAT_1005c400,(float)DAT_10059dc0);
+    (**(code **)(*in_ECX + 0x11c))(0,0,(float)grim_backbuffer_width,(float)grim_backbuffer_height);
     (**(code **)(*in_ECX + 0xf0))();
     (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLOROP,4);
     (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_ALPHAOP,4);
@@ -4447,7 +4452,8 @@ void grim_begin_batch(void)
   if (((DAT_1005d3bd == '\0') && (DAT_1005d3f4 == '\0')) &&
      (DAT_1005d3f4 = '\x01', DAT_1005c898 != '\0')) {
     (*grim_d3d_device->lpVtbl->BeginScene)(grim_d3d_device);
-    iVar1 = (**(code **)(*DAT_10059e2c + 0x2c))(DAT_10059e2c,0,0,&DAT_10059e34,0x2800);
+    iVar1 = (**(code **)(*grim_vertex_buffer + 0x2c))
+                      (grim_vertex_buffer,0,0,&grim_vertex_write_ptr,0x2800);
     if (iVar1 < 0) {
       DAT_1005c898 = '\0';
     }
@@ -4468,7 +4474,7 @@ void grim_end_batch(void)
 
 {
   if ((DAT_1005d3bd == '\0') && (DAT_1005d3f4 != '\0')) {
-    (**(code **)(*DAT_10059e2c + 0x30))(DAT_10059e2c);
+    (**(code **)(*grim_vertex_buffer + 0x30))(grim_vertex_buffer);
     if (DAT_1005c898 != '\0') {
       if ((short)DAT_1005c8dc != 0) {
         (*grim_d3d_device->lpVtbl->DrawIndexedPrimitive)
@@ -4509,9 +4515,9 @@ void grim_draw_circle_filled(float x,float y,float radius)
   if ((DAT_1005d3f4 == '\0') && (DAT_1005d3f4 = '\x01', DAT_1005c898 != '\0')) {
     ppuStack_2c = (undefined4 **)0x10007bc2;
     (*grim_d3d_device->lpVtbl->BeginScene)(grim_d3d_device);
-    ppuStack_2c = &DAT_10059e34;
+    ppuStack_2c = &grim_vertex_write_ptr;
     fStack_30 = 0.0;
-    iVar1 = (**(code **)(*DAT_10059e2c + 0x2c))(DAT_10059e2c,0);
+    iVar1 = (**(code **)(*grim_vertex_buffer + 0x2c))(grim_vertex_buffer,0);
     if (iVar1 < 0) {
       DAT_1005c898 = '\0';
     }
@@ -4520,13 +4526,13 @@ void grim_draw_circle_filled(float x,float y,float radius)
     ppuStack_2c = (undefined4 **)fStack_c;
     fStack_30 = fStack_10;
     pfVar3 = &fStack_30;
-    pfVar4 = (float *)DAT_10059e34;
+    pfVar4 = (float *)grim_vertex_write_ptr;
     for (iVar1 = 7; iVar1 != 0; iVar1 = iVar1 + -1) {
       *pfVar4 = *pfVar3;
       pfVar3 = pfVar3 + 1;
       pfVar4 = pfVar4 + 1;
     }
-    DAT_10059e34 = DAT_10059e34 + 7;
+    grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
     DAT_1005c8dc._0_2_ = (short)DAT_1005c8dc + 1;
     iVar1 = ftol();
     iVar7 = 0;
@@ -4539,18 +4545,18 @@ void grim_draw_circle_filled(float x,float y,float radius)
         fVar5 = (float10)fsin(fVar5);
         ppuStack_2c = (undefined4 **)(float)(fVar5 * (float10)fStack_8 + (float10)fStack_c);
         pfVar3 = &fStack_30;
-        pfVar4 = (float *)DAT_10059e34;
+        pfVar4 = (float *)grim_vertex_write_ptr;
         for (; iVar2 != 0; iVar2 = iVar2 + -1) {
           *pfVar4 = *pfVar3;
           pfVar3 = pfVar3 + 1;
           pfVar4 = pfVar4 + 1;
         }
-        DAT_10059e34 = DAT_10059e34 + 7;
+        grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
         DAT_1005c8dc._0_2_ = (short)DAT_1005c8dc + 1;
         iVar7 = iVar7 + 1;
       } while (iVar7 <= iVar1);
     }
-    (**(code **)(*DAT_10059e2c + 0x30))(DAT_10059e2c);
+    (**(code **)(*grim_vertex_buffer + 0x30))(grim_vertex_buffer);
     if (DAT_1005c898 != '\0') {
       (*grim_d3d_device->lpVtbl->DrawPrimitive)
                 (grim_d3d_device,D3DPT_TRIANGLEFAN,0,(DAT_1005c8dc & 0xffff) - 2);
@@ -4588,9 +4594,9 @@ void grim_draw_circle_outline(float x,float y,float radius)
   if ((DAT_1005d3f4 == '\0') && (DAT_1005d3f4 = '\x01', DAT_1005c898 != '\0')) {
     ppfStack_2c = (float **)0x10007d72;
     (*grim_d3d_device->lpVtbl->BeginScene)(grim_d3d_device);
-    ppfStack_2c = &DAT_10059e34;
+    ppfStack_2c = &grim_vertex_write_ptr;
     fStack_30 = 0.0;
-    iVar1 = (**(code **)(*DAT_10059e2c + 0x2c))(DAT_10059e2c,0);
+    iVar1 = (**(code **)(*grim_vertex_buffer + 0x2c))(grim_vertex_buffer,0);
     if (iVar1 < 0) {
       DAT_1005c898 = '\0';
     }
@@ -4606,7 +4612,7 @@ void grim_draw_circle_outline(float x,float y,float radius)
         fVar5 = (float10)fsin(fVar5);
         ppfStack_2c = (float **)(float)(fVar5 * (float10)fStack_8 + (float10)fStack_c);
         pfVar3 = &fStack_30;
-        pfVar4 = DAT_10059e34;
+        pfVar4 = grim_vertex_write_ptr;
         for (; iVar2 != 0; iVar2 = iVar2 + -1) {
           *pfVar4 = *pfVar3;
           pfVar3 = pfVar3 + 1;
@@ -4614,23 +4620,23 @@ void grim_draw_circle_outline(float x,float y,float radius)
         }
         fStack_30 = (float)(((float10)fStack_8 + (float10)2.0) * (float10)(float)fVar6 +
                            (float10)fStack_10);
-        DAT_10059e34 = DAT_10059e34 + 7;
+        grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
         DAT_1005c8dc._0_2_ = (short)DAT_1005c8dc + 1;
         ppfStack_2c = (float **)
                       (float)(((float10)fStack_8 + (float10)2.0) * fVar5 + (float10)fStack_c);
         pfVar3 = &fStack_30;
-        pfVar4 = DAT_10059e34;
+        pfVar4 = grim_vertex_write_ptr;
         for (iVar2 = 7; iVar2 != 0; iVar2 = iVar2 + -1) {
           *pfVar4 = *pfVar3;
           pfVar3 = pfVar3 + 1;
           pfVar4 = pfVar4 + 1;
         }
-        DAT_10059e34 = DAT_10059e34 + 7;
+        grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
         DAT_1005c8dc._0_2_ = (short)DAT_1005c8dc + 1;
         iVar7 = iVar7 + 1;
       } while (iVar7 <= iVar1);
     }
-    (**(code **)(*DAT_10059e2c + 0x30))(DAT_10059e2c);
+    (**(code **)(*grim_vertex_buffer + 0x30))(grim_vertex_buffer);
     if (DAT_1005c898 != '\0') {
       (*grim_d3d_device->lpVtbl->DrawPrimitive)
                 (grim_d3d_device,D3DPT_TRIANGLESTRIP,0,(DAT_1005c8dc & 0xffff) - 2);
@@ -4654,7 +4660,7 @@ void grim_set_rotation(float radians)
 {
   float10 fVar1;
   
-  _DAT_10059e30 = radians;
+  _grim_rotation_radians = radians;
   fVar1 = (float10)fcos((float10)radians + (float10)0.7853982);
   DAT_1005c8e4 = (float)fVar1;
   fVar1 = (float10)fsin((float10)radians + (float10)0.7853982);
@@ -4685,10 +4691,10 @@ void grim_set_color(float r,float g,float b,float a)
   iVar2 = ftol();
   uVar3 = ftol();
   uVar4 = ftol();
-  DAT_1005bc04 = ((uVar1 & 0xff | iVar2 << 8) << 8 | uVar3 & 0xff) << 8 | uVar4 & 0xff;
-  DAT_1005bc10 = DAT_1005bc04;
-  DAT_1005bc0c = DAT_1005bc04;
-  DAT_1005bc08 = DAT_1005bc04;
+  grim_color_slot0 = ((uVar1 & 0xff | iVar2 << 8) << 8 | uVar3 & 0xff) << 8 | uVar4 & 0xff;
+  grim_color_slot3 = grim_color_slot0;
+  DAT_1005bc0c = grim_color_slot0;
+  DAT_1005bc08 = grim_color_slot0;
   return;
 }
 
@@ -4711,8 +4717,8 @@ void grim_set_color_ptr(float *rgba)
   uVar3 = ftol();
   uVar4 = ftol();
   rgba = (float *)CONCAT31(CONCAT21(CONCAT11(uVar1,uVar2),uVar3),uVar4);
-  DAT_1005bc04 = rgba;
-  DAT_1005bc10 = rgba;
+  grim_color_slot0 = rgba;
+  grim_color_slot3 = rgba;
   DAT_1005bc0c = rgba;
   DAT_1005bc08 = rgba;
   return;
@@ -4737,14 +4743,14 @@ void grim_draw_line(float *p0,float *p1,float thickness)
     DAT_10059bb4 = DAT_10059bb4 | 1;
     FUN_1000a92c((_onexit_t)&DAT_10008140);
   }
-  puVar2 = &DAT_1005a490;
-  puVar1 = &DAT_1005a490;
-  _DAT_1005a490 = *p1 - *p0;
-  _DAT_1005a494 = p1[1] - p0[1];
+  puVar2 = &grim_line_dx;
+  puVar1 = &grim_line_dx;
+  _grim_line_dx = *p1 - *p0;
+  _grim_line_dy = p1[1] - p0[1];
   thunk_FUN_1000cc2c();
-  _DAT_1005a490 = _DAT_1005a494 * (float)p0;
-  _DAT_1005a494 = _DAT_1005a490 * (float)p0;
-  (**(code **)(*in_ECX + 0xe4))(p0,p1,&DAT_1005a490,puVar1,puVar2);
+  _grim_line_dx = _grim_line_dy * (float)p0;
+  _grim_line_dy = _grim_line_dx * (float)p0;
+  (**(code **)(*in_ECX + 0xe4))(p0,p1,&grim_line_dx,puVar1,puVar2);
   return;
 }
 
@@ -4785,7 +4791,8 @@ void grim_set_color_slot(int index,float r,float g,float b,float a)
   iVar2 = ftol();
   uVar3 = ftol();
   uVar4 = ftol();
-  (&DAT_1005bc04)[index] = ((uVar1 & 0xff | iVar2 << 8) << 8 | uVar3 & 0xff) << 8 | uVar4 & 0xff;
+  (&grim_color_slot0)[index] = ((uVar1 & 0xff | iVar2 << 8) << 8 | uVar3 & 0xff) << 8 | uVar4 & 0xff
+  ;
   return;
 }
 
@@ -4802,14 +4809,14 @@ void grim_set_atlas_frame(int atlas_size,int frame)
   float fVar1;
   
   fVar1 = 1.0 / (float)atlas_size;
-  DAT_1005b2a8 = *(float *)((&DAT_1005bc78)[atlas_size] + frame * 8);
-  DAT_1005b29c = *(float *)((&DAT_1005bc78)[atlas_size] + 4 + frame * 8);
-  DAT_1005b290 = DAT_1005b2a8;
-  DAT_1005b294 = DAT_1005b29c;
-  DAT_1005b298 = DAT_1005b2a8 + fVar1;
+  DAT_1005b2a8 = *(float *)((&grim_subrect_ptr_table)[atlas_size] + frame * 8);
+  grim_uv_v1 = *(float *)((&grim_subrect_ptr_table)[atlas_size] + 4 + frame * 8);
+  grim_uv_u0 = DAT_1005b2a8;
+  grim_uv_v0 = grim_uv_v1;
+  grim_uv_u1 = DAT_1005b2a8 + fVar1;
   DAT_1005b2a0 = DAT_1005b2a8 + fVar1;
-  DAT_1005b2a4 = DAT_1005b29c + fVar1;
-  DAT_1005b2ac = DAT_1005b29c + fVar1;
+  DAT_1005b2a4 = grim_uv_v1 + fVar1;
+  DAT_1005b2ac = grim_uv_v1 + fVar1;
   return;
 }
 
@@ -4825,15 +4832,15 @@ void grim_set_sub_rect(int atlas_size,int width,int height,int frame)
 {
   float fVar1;
   
-  DAT_1005b2a8 = *(float *)((&DAT_1005bc78)[atlas_size] + frame * 8);
-  DAT_1005b29c = *(float *)((&DAT_1005bc78)[atlas_size] + 4 + frame * 8);
-  DAT_1005b290 = DAT_1005b2a8;
-  DAT_1005b294 = DAT_1005b29c;
-  DAT_1005b298 = (float)width * (1.0 / (float)atlas_size) + DAT_1005b2a8;
-  DAT_1005b2a0 = DAT_1005b298;
+  DAT_1005b2a8 = *(float *)((&grim_subrect_ptr_table)[atlas_size] + frame * 8);
+  grim_uv_v1 = *(float *)((&grim_subrect_ptr_table)[atlas_size] + 4 + frame * 8);
+  grim_uv_u0 = DAT_1005b2a8;
+  grim_uv_v0 = grim_uv_v1;
+  grim_uv_u1 = (float)width * (1.0 / (float)atlas_size) + DAT_1005b2a8;
+  DAT_1005b2a0 = grim_uv_u1;
   fVar1 = (1.0 / (float)atlas_size) * (float)height;
-  DAT_1005b2a4 = fVar1 + DAT_1005b29c;
-  DAT_1005b2ac = fVar1 + DAT_1005b29c;
+  DAT_1005b2a4 = fVar1 + grim_uv_v1;
+  DAT_1005b2ac = fVar1 + grim_uv_v1;
   return;
 }
 
@@ -4847,10 +4854,10 @@ void grim_set_sub_rect(int atlas_size,int width,int height,int frame)
 void grim_set_uv(float u0,float v0,float u1,float v1)
 
 {
-  DAT_1005b290 = u0;
-  DAT_1005b294 = v0;
-  DAT_1005b298 = u1;
-  DAT_1005b29c = v0;
+  grim_uv_u0 = u0;
+  grim_uv_v0 = v0;
+  grim_uv_u1 = u1;
+  grim_uv_v1 = v0;
   DAT_1005b2a0 = u1;
   DAT_1005b2a4 = v1;
   DAT_1005b2a8 = u0;
@@ -4868,8 +4875,8 @@ void grim_set_uv(float u0,float v0,float u1,float v1)
 void grim_set_uv_point(int index,float u,float v)
 
 {
-  (&DAT_1005b290)[index * 2] = u;
-  (&DAT_1005b294)[index * 2] = v;
+  (&grim_uv_u0)[index * 2] = u;
+  (&grim_uv_v0)[index * 2] = v;
   return;
 }
 
@@ -4887,11 +4894,12 @@ void grim_flush_batch(void)
   int iVar1;
   
   if ((DAT_1005d3bd == '\0') && (DAT_1005d3f4 != '\0')) {
-    (**(code **)(*DAT_10059e2c + 0x30))(DAT_10059e2c);
+    (**(code **)(*grim_vertex_buffer + 0x30))(grim_vertex_buffer);
     (*grim_d3d_device->lpVtbl->DrawIndexedPrimitive)
               (grim_d3d_device,D3DPT_TRIANGLELIST,0,DAT_1005c8dc & 0xffff,0,
                (DAT_1005c8dc & 0xffff) >> 1);
-    iVar1 = (**(code **)(*DAT_10059e2c + 0x2c))(DAT_10059e2c,0,0,&DAT_10059e34,0x2800);
+    iVar1 = (**(code **)(*grim_vertex_buffer + 0x2c))
+                      (grim_vertex_buffer,0,0,&grim_vertex_write_ptr,0x2800);
     if (-1 < iVar1) {
       DAT_1005c8dc = DAT_1005c8dc & 0xffff0000;
     }
@@ -4915,7 +4923,7 @@ void grim_submit_vertices_offset_color(float *verts,int count,float *offset,floa
   float *pfVar3;
   
   if (DAT_1005d3bd == '\0') {
-    pfVar3 = DAT_10059e34;
+    pfVar3 = grim_vertex_write_ptr;
     for (uVar1 = (uint)(count * 0x1c) >> 2; uVar1 != 0; uVar1 = uVar1 - 1) {
       *pfVar3 = *verts;
       verts = verts + 1;
@@ -4929,16 +4937,16 @@ void grim_submit_vertices_offset_color(float *verts,int count,float *offset,floa
     iVar2 = count;
     if (0 < count) {
       do {
-        pfVar3 = DAT_10059e34;
-        *DAT_10059e34 = *offset + *DAT_10059e34;
+        pfVar3 = grim_vertex_write_ptr;
+        *grim_vertex_write_ptr = *offset + *grim_vertex_write_ptr;
         pfVar3[1] = offset[1] + pfVar3[1];
-        DAT_10059e34[4] = *color;
-        DAT_10059e34 = DAT_10059e34 + 7;
+        grim_vertex_write_ptr[4] = *color;
+        grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
         iVar2 = iVar2 + -1;
       } while (iVar2 != 0);
     }
     DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + (short)count;
-    if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
+    if (grim_vertex_capacity <= (ushort)DAT_1005c8dc) {
       (**(code **)(*in_ECX + 0xec))();
     }
   }
@@ -4966,7 +4974,7 @@ void grim_submit_vertices_transform_color
   float *pfVar7;
   
   if (DAT_1005d3bd == '\0') {
-    pfVar7 = DAT_10059e34;
+    pfVar7 = grim_vertex_write_ptr;
     for (uVar5 = (uint)(count * 0x1c) >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
       *pfVar7 = *verts;
       verts = verts + 1;
@@ -4980,23 +4988,24 @@ void grim_submit_vertices_transform_color
     iVar6 = count;
     if (0 < count) {
       do {
-        pfVar7 = DAT_10059e34;
-        fVar1 = DAT_10059e34[1];
+        pfVar7 = grim_vertex_write_ptr;
+        fVar1 = grim_vertex_write_ptr[1];
         fVar2 = matrix[1];
-        fVar3 = *DAT_10059e34;
+        fVar3 = *grim_vertex_write_ptr;
         fVar4 = *matrix;
-        DAT_10059e34[1] = *DAT_10059e34 * matrix[2] + DAT_10059e34[1] * matrix[3];
+        grim_vertex_write_ptr[1] =
+             *grim_vertex_write_ptr * matrix[2] + grim_vertex_write_ptr[1] * matrix[3];
         *pfVar7 = fVar3 * fVar4 + fVar1 * fVar2;
-        pfVar7 = DAT_10059e34;
-        *DAT_10059e34 = *offset + *DAT_10059e34;
+        pfVar7 = grim_vertex_write_ptr;
+        *grim_vertex_write_ptr = *offset + *grim_vertex_write_ptr;
         pfVar7[1] = offset[1] + pfVar7[1];
-        DAT_10059e34[4] = *color;
-        DAT_10059e34 = DAT_10059e34 + 7;
+        grim_vertex_write_ptr[4] = *color;
+        grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
         iVar6 = iVar6 + -1;
       } while (iVar6 != 0);
     }
     DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + (short)count;
-    if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
+    if (grim_vertex_capacity <= (ushort)DAT_1005c8dc) {
       (**(code **)(*in_ECX + 0xec))();
     }
   }
@@ -5023,7 +5032,7 @@ void grim_submit_vertices_transform(float *verts,int count,float *offset,float *
   float *pfVar7;
   
   if (DAT_1005d3bd == '\0') {
-    pfVar7 = DAT_10059e34;
+    pfVar7 = grim_vertex_write_ptr;
     for (uVar5 = (uint)(count * 0x1c) >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
       *pfVar7 = *verts;
       verts = verts + 1;
@@ -5037,22 +5046,23 @@ void grim_submit_vertices_transform(float *verts,int count,float *offset,float *
     iVar6 = count;
     if (0 < count) {
       do {
-        pfVar7 = DAT_10059e34;
-        fVar1 = DAT_10059e34[1];
+        pfVar7 = grim_vertex_write_ptr;
+        fVar1 = grim_vertex_write_ptr[1];
         fVar2 = matrix[1];
         fVar3 = *matrix;
-        fVar4 = *DAT_10059e34;
-        DAT_10059e34[1] = *DAT_10059e34 * matrix[2] + DAT_10059e34[1] * matrix[3];
+        fVar4 = *grim_vertex_write_ptr;
+        grim_vertex_write_ptr[1] =
+             *grim_vertex_write_ptr * matrix[2] + grim_vertex_write_ptr[1] * matrix[3];
         *pfVar7 = fVar3 * fVar4 + fVar1 * fVar2;
-        pfVar7 = DAT_10059e34;
-        *DAT_10059e34 = *offset + *DAT_10059e34;
+        pfVar7 = grim_vertex_write_ptr;
+        *grim_vertex_write_ptr = *offset + *grim_vertex_write_ptr;
         pfVar7[1] = offset[1] + pfVar7[1];
-        DAT_10059e34 = DAT_10059e34 + 7;
+        grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
         iVar6 = iVar6 + -1;
       } while (iVar6 != 0);
     }
     DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + (short)count;
-    if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
+    if (grim_vertex_capacity <= (ushort)DAT_1005c8dc) {
       (**(code **)(*in_ECX + 0xec))();
     }
   }
@@ -5075,7 +5085,7 @@ void grim_submit_vertices_offset(float *verts,int count,float *offset)
   float *pfVar3;
   
   if (DAT_1005d3bd == '\0') {
-    pfVar3 = DAT_10059e34;
+    pfVar3 = grim_vertex_write_ptr;
     for (uVar1 = (uint)(count * 0x1c) >> 2; uVar1 != 0; uVar1 = uVar1 - 1) {
       *pfVar3 = *verts;
       verts = verts + 1;
@@ -5089,15 +5099,15 @@ void grim_submit_vertices_offset(float *verts,int count,float *offset)
     iVar2 = count;
     if (0 < count) {
       do {
-        pfVar3 = DAT_10059e34;
-        *DAT_10059e34 = *DAT_10059e34 + *offset;
+        pfVar3 = grim_vertex_write_ptr;
+        *grim_vertex_write_ptr = *grim_vertex_write_ptr + *offset;
         pfVar3[1] = offset[1] + pfVar3[1];
-        DAT_10059e34 = DAT_10059e34 + 7;
+        grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
         iVar2 = iVar2 + -1;
       } while (iVar2 != 0);
     }
     DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + (short)count;
-    if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
+    if (grim_vertex_capacity <= (ushort)DAT_1005c8dc) {
       (**(code **)(*in_ECX + 0xec))();
     }
   }
@@ -5149,7 +5159,7 @@ void grim_draw_quad_rotated_matrix(float x,float y,float w,float h)
     if (DAT_1005d3f4 == '\0') {
       (**(code **)(*in_ECX + 0xe8))();
     }
-    if (_DAT_10059e30 == 0.0) {
+    if (_grim_rotation_radians == 0.0) {
       fStack_18 = x + w;
       fStack_20 = x;
       fStack_1c = y;
@@ -5175,40 +5185,40 @@ void grim_draw_quad_rotated_matrix(float x,float y,float w,float h)
       fStack_8 = _DAT_1005a460 * fVar2 + _DAT_1005a464 * fVar1 + fStack_8;
       fStack_4 = fStack_4 + _DAT_1005a468 * fVar2 + _DAT_1005a46c * fVar1;
     }
-    *DAT_10059e34 = fStack_20;
-    DAT_10059e34[1] = fStack_1c;
-    DAT_10059e34[2] = DAT_1005b288;
-    DAT_10059e34[3] = DAT_1005b28c;
-    DAT_10059e34[4] = DAT_1005bc04;
-    DAT_10059e34[5] = DAT_1005b290;
-    DAT_10059e34[6] = DAT_1005b294;
-    DAT_10059e34 = DAT_10059e34 + 7;
-    *DAT_10059e34 = fStack_18;
-    DAT_10059e34[1] = fStack_14;
-    DAT_10059e34[2] = DAT_1005b288;
-    DAT_10059e34[3] = DAT_1005b28c;
-    DAT_10059e34[4] = DAT_1005bc08;
-    DAT_10059e34[5] = DAT_1005b298;
-    DAT_10059e34[6] = DAT_1005b29c;
-    DAT_10059e34 = DAT_10059e34 + 7;
-    *DAT_10059e34 = fStack_10;
-    DAT_10059e34[1] = fStack_c;
-    DAT_10059e34[2] = DAT_1005b288;
-    DAT_10059e34[3] = DAT_1005b28c;
-    DAT_10059e34[4] = DAT_1005bc0c;
-    DAT_10059e34[5] = DAT_1005b2a0;
-    DAT_10059e34[6] = DAT_1005b2a4;
-    DAT_10059e34 = DAT_10059e34 + 7;
-    *DAT_10059e34 = fStack_8;
-    DAT_10059e34[1] = fStack_4;
-    DAT_10059e34[2] = DAT_1005b288;
-    DAT_10059e34[3] = DAT_1005b28c;
-    DAT_10059e34[4] = DAT_1005bc10;
-    DAT_10059e34[5] = DAT_1005b2a8;
-    DAT_10059e34[6] = DAT_1005b2ac;
+    *grim_vertex_write_ptr = fStack_20;
+    grim_vertex_write_ptr[1] = fStack_1c;
+    grim_vertex_write_ptr[2] = DAT_1005b288;
+    grim_vertex_write_ptr[3] = DAT_1005b28c;
+    grim_vertex_write_ptr[4] = grim_color_slot0;
+    grim_vertex_write_ptr[5] = grim_uv_u0;
+    grim_vertex_write_ptr[6] = grim_uv_v0;
+    grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
+    *grim_vertex_write_ptr = fStack_18;
+    grim_vertex_write_ptr[1] = fStack_14;
+    grim_vertex_write_ptr[2] = DAT_1005b288;
+    grim_vertex_write_ptr[3] = DAT_1005b28c;
+    grim_vertex_write_ptr[4] = DAT_1005bc08;
+    grim_vertex_write_ptr[5] = grim_uv_u1;
+    grim_vertex_write_ptr[6] = grim_uv_v1;
+    grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
+    *grim_vertex_write_ptr = fStack_10;
+    grim_vertex_write_ptr[1] = fStack_c;
+    grim_vertex_write_ptr[2] = DAT_1005b288;
+    grim_vertex_write_ptr[3] = DAT_1005b28c;
+    grim_vertex_write_ptr[4] = DAT_1005bc0c;
+    grim_vertex_write_ptr[5] = DAT_1005b2a0;
+    grim_vertex_write_ptr[6] = DAT_1005b2a4;
+    grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
+    *grim_vertex_write_ptr = fStack_8;
+    grim_vertex_write_ptr[1] = fStack_4;
+    grim_vertex_write_ptr[2] = DAT_1005b288;
+    grim_vertex_write_ptr[3] = DAT_1005b28c;
+    grim_vertex_write_ptr[4] = grim_color_slot3;
+    grim_vertex_write_ptr[5] = DAT_1005b2a8;
+    grim_vertex_write_ptr[6] = DAT_1005b2ac;
     DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + 4;
-    DAT_10059e34 = DAT_10059e34 + 7;
-    if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
+    grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
+    if (grim_vertex_capacity <= (ushort)DAT_1005c8dc) {
       (**(code **)(*in_ECX + 0xec))();
     }
   }
@@ -5242,7 +5252,7 @@ void grim_draw_quad(float x,float y,float w,float h)
     if (DAT_1005d3f4 == '\0') {
       (**(code **)(*in_ECX + 0xe8))();
     }
-    if (_DAT_10059e30 == 0.0) {
+    if (_grim_rotation_radians == 0.0) {
       fStack_20 = x + w;
       fStack_28 = x;
       fStack_24 = y;
@@ -5269,40 +5279,40 @@ void grim_draw_quad(float x,float y,float w,float h)
       fStack_10 = -fVar2 + fStack_10;
       fVar1 = fVar1 + fVar3;
     }
-    *DAT_10059e34 = fStack_28;
-    DAT_10059e34[1] = fStack_24;
-    DAT_10059e34[2] = DAT_1005b288;
-    DAT_10059e34[3] = DAT_1005b28c;
-    DAT_10059e34[4] = DAT_1005bc04;
-    DAT_10059e34[5] = DAT_1005b290;
-    DAT_10059e34[6] = DAT_1005b294;
-    DAT_10059e34 = DAT_10059e34 + 7;
-    *DAT_10059e34 = fStack_20;
-    DAT_10059e34[1] = fStack_1c;
-    DAT_10059e34[2] = DAT_1005b288;
-    DAT_10059e34[3] = DAT_1005b28c;
-    DAT_10059e34[4] = DAT_1005bc08;
-    DAT_10059e34[5] = DAT_1005b298;
-    DAT_10059e34[6] = DAT_1005b29c;
-    DAT_10059e34 = DAT_10059e34 + 7;
-    *DAT_10059e34 = fStack_18;
-    DAT_10059e34[1] = fStack_14;
-    DAT_10059e34[2] = DAT_1005b288;
-    DAT_10059e34[3] = DAT_1005b28c;
-    DAT_10059e34[4] = DAT_1005bc0c;
-    DAT_10059e34[5] = DAT_1005b2a0;
-    DAT_10059e34[6] = DAT_1005b2a4;
-    DAT_10059e34 = DAT_10059e34 + 7;
-    *DAT_10059e34 = fStack_10;
-    DAT_10059e34[1] = fVar1;
-    DAT_10059e34[2] = DAT_1005b288;
-    DAT_10059e34[3] = DAT_1005b28c;
-    DAT_10059e34[4] = DAT_1005bc10;
-    DAT_10059e34[5] = DAT_1005b2a8;
-    DAT_10059e34[6] = DAT_1005b2ac;
+    *grim_vertex_write_ptr = fStack_28;
+    grim_vertex_write_ptr[1] = fStack_24;
+    grim_vertex_write_ptr[2] = DAT_1005b288;
+    grim_vertex_write_ptr[3] = DAT_1005b28c;
+    grim_vertex_write_ptr[4] = grim_color_slot0;
+    grim_vertex_write_ptr[5] = grim_uv_u0;
+    grim_vertex_write_ptr[6] = grim_uv_v0;
+    grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
+    *grim_vertex_write_ptr = fStack_20;
+    grim_vertex_write_ptr[1] = fStack_1c;
+    grim_vertex_write_ptr[2] = DAT_1005b288;
+    grim_vertex_write_ptr[3] = DAT_1005b28c;
+    grim_vertex_write_ptr[4] = DAT_1005bc08;
+    grim_vertex_write_ptr[5] = grim_uv_u1;
+    grim_vertex_write_ptr[6] = grim_uv_v1;
+    grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
+    *grim_vertex_write_ptr = fStack_18;
+    grim_vertex_write_ptr[1] = fStack_14;
+    grim_vertex_write_ptr[2] = DAT_1005b288;
+    grim_vertex_write_ptr[3] = DAT_1005b28c;
+    grim_vertex_write_ptr[4] = DAT_1005bc0c;
+    grim_vertex_write_ptr[5] = DAT_1005b2a0;
+    grim_vertex_write_ptr[6] = DAT_1005b2a4;
+    grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
+    *grim_vertex_write_ptr = fStack_10;
+    grim_vertex_write_ptr[1] = fVar1;
+    grim_vertex_write_ptr[2] = DAT_1005b288;
+    grim_vertex_write_ptr[3] = DAT_1005b28c;
+    grim_vertex_write_ptr[4] = grim_color_slot3;
+    grim_vertex_write_ptr[5] = DAT_1005b2a8;
+    grim_vertex_write_ptr[6] = DAT_1005b2ac;
     DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + 4;
-    DAT_10059e34 = DAT_10059e34 + 7;
-    if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
+    grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
+    if (grim_vertex_capacity <= (ushort)DAT_1005c8dc) {
       (**(code **)(*in_ECX + 0xec))();
     }
   }
@@ -5327,15 +5337,15 @@ void grim_submit_vertex_raw(float *vertex)
     if (DAT_1005d3f4 == '\0') {
       (**(code **)(*in_ECX + 0xe8))();
     }
-    pfVar2 = DAT_10059e34;
+    pfVar2 = grim_vertex_write_ptr;
     for (iVar1 = 7; iVar1 != 0; iVar1 = iVar1 + -1) {
       *pfVar2 = *vertex;
       vertex = vertex + 1;
       pfVar2 = pfVar2 + 1;
     }
-    DAT_10059e34 = DAT_10059e34 + 7;
+    grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
     DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + 1;
-    if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
+    if (grim_vertex_capacity <= (ushort)DAT_1005c8dc) {
       (**(code **)(*in_ECX + 0xec))();
     }
   }
@@ -5357,15 +5367,15 @@ void grim_submit_quad_raw(float *verts)
   float *pfVar2;
   
   if (DAT_1005d3bd == '\0') {
-    pfVar2 = DAT_10059e34;
+    pfVar2 = grim_vertex_write_ptr;
     for (iVar1 = 0x1c; iVar1 != 0; iVar1 = iVar1 + -1) {
       *pfVar2 = *verts;
       verts = verts + 1;
       pfVar2 = pfVar2 + 1;
     }
     DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + 4;
-    DAT_10059e34 = DAT_10059e34 + 0x1c;
-    if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
+    grim_vertex_write_ptr = grim_vertex_write_ptr + 0x1c;
+    if (grim_vertex_capacity <= (ushort)DAT_1005c8dc) {
       (**(code **)(*in_ECX + 0xec))();
     }
   }
@@ -5438,40 +5448,40 @@ void grim_draw_quad_points(float x0,float y0,float x1,float y1,float x2,float y2
     if (DAT_1005d3f4 == '\0') {
       (**(code **)(*in_ECX + 0xe8))();
     }
-    *DAT_10059e34 = x0;
-    DAT_10059e34[1] = y0;
-    DAT_10059e34[2] = DAT_1005b288;
-    DAT_10059e34[3] = DAT_1005b28c;
-    DAT_10059e34[4] = DAT_1005bc04;
-    DAT_10059e34[5] = DAT_1005b290;
-    DAT_10059e34[6] = DAT_1005b294;
-    DAT_10059e34 = DAT_10059e34 + 7;
-    *DAT_10059e34 = x1;
-    DAT_10059e34[1] = y1;
-    DAT_10059e34[2] = DAT_1005b288;
-    DAT_10059e34[3] = DAT_1005b28c;
-    DAT_10059e34[4] = DAT_1005bc08;
-    DAT_10059e34[5] = DAT_1005b298;
-    DAT_10059e34[6] = DAT_1005b29c;
-    DAT_10059e34 = DAT_10059e34 + 7;
-    *DAT_10059e34 = x2;
-    DAT_10059e34[1] = y2;
-    DAT_10059e34[2] = DAT_1005b288;
-    DAT_10059e34[3] = DAT_1005b28c;
-    DAT_10059e34[4] = DAT_1005bc0c;
-    DAT_10059e34[5] = DAT_1005b2a0;
-    DAT_10059e34[6] = DAT_1005b2a4;
-    DAT_10059e34 = DAT_10059e34 + 7;
-    *DAT_10059e34 = x3;
-    DAT_10059e34[1] = y3;
-    DAT_10059e34[2] = DAT_1005b288;
-    DAT_10059e34[3] = DAT_1005b28c;
-    DAT_10059e34[4] = DAT_1005bc10;
-    DAT_10059e34[5] = DAT_1005b2a8;
-    DAT_10059e34[6] = DAT_1005b2ac;
+    *grim_vertex_write_ptr = x0;
+    grim_vertex_write_ptr[1] = y0;
+    grim_vertex_write_ptr[2] = DAT_1005b288;
+    grim_vertex_write_ptr[3] = DAT_1005b28c;
+    grim_vertex_write_ptr[4] = grim_color_slot0;
+    grim_vertex_write_ptr[5] = grim_uv_u0;
+    grim_vertex_write_ptr[6] = grim_uv_v0;
+    grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
+    *grim_vertex_write_ptr = x1;
+    grim_vertex_write_ptr[1] = y1;
+    grim_vertex_write_ptr[2] = DAT_1005b288;
+    grim_vertex_write_ptr[3] = DAT_1005b28c;
+    grim_vertex_write_ptr[4] = DAT_1005bc08;
+    grim_vertex_write_ptr[5] = grim_uv_u1;
+    grim_vertex_write_ptr[6] = grim_uv_v1;
+    grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
+    *grim_vertex_write_ptr = x2;
+    grim_vertex_write_ptr[1] = y2;
+    grim_vertex_write_ptr[2] = DAT_1005b288;
+    grim_vertex_write_ptr[3] = DAT_1005b28c;
+    grim_vertex_write_ptr[4] = DAT_1005bc0c;
+    grim_vertex_write_ptr[5] = DAT_1005b2a0;
+    grim_vertex_write_ptr[6] = DAT_1005b2a4;
+    grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
+    *grim_vertex_write_ptr = x3;
+    grim_vertex_write_ptr[1] = y3;
+    grim_vertex_write_ptr[2] = DAT_1005b288;
+    grim_vertex_write_ptr[3] = DAT_1005b28c;
+    grim_vertex_write_ptr[4] = grim_color_slot3;
+    grim_vertex_write_ptr[5] = DAT_1005b2a8;
+    grim_vertex_write_ptr[6] = DAT_1005b2ac;
     DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + 4;
-    DAT_10059e34 = DAT_10059e34 + 7;
-    if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
+    grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
+    if (grim_vertex_capacity <= (ushort)DAT_1005c8dc) {
       (**(code **)(*in_ECX + 0xec))();
     }
   }
@@ -5739,8 +5749,8 @@ void grim_draw_text_small(float x,float y,char *text)
 void grim_draw_text_mono_fmt(int *self,float x,float y,char *fmt)
 
 {
-  vsprintf(&DAT_1005ae78,fmt,&stack0x00000014);
-  (**(code **)(*self + 0x13c))(x,y,&DAT_1005ae78);
+  vsprintf(&grim_printf_buffer,fmt,&stack0x00000014);
+  (**(code **)(*self + 0x13c))(x,y,&grim_printf_buffer);
   return;
 }
 
@@ -5756,8 +5766,8 @@ void grim_draw_text_small_fmt(float x,float y,char *fmt)
 {
   char *in_stack_00000010;
   
-  vsprintf(&DAT_1005b078,in_stack_00000010,&stack0x00000014);
-  (**(code **)(*(int *)x + 0x144))(y,fmt,&DAT_1005b078);
+  vsprintf(&grim_printf_buffer_alt,in_stack_00000010,&stack0x00000014);
+  (**(code **)(*(int *)x + 0x144))(y,fmt,&grim_printf_buffer_alt);
   return;
 }
 
@@ -5796,7 +5806,7 @@ undefined4 FUN_10009a20(HINSTANCE param_1,int param_2)
 
 {
   if (param_2 == 1) {
-    DAT_1005bacc = param_1;
+    grim_module_handle = param_1;
     DAT_10059778 = LoadIconA((HINSTANCE)param_1,(LPCSTR)0x72);
   }
   return 1;

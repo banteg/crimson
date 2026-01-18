@@ -3,6 +3,18 @@
   "entries": [
     {
       "program": "crimsonland.exe",
+      "address": "0x00471140",
+      "name": "screen_width_f",
+      "comment": "Float screen width used for UI/layout (set from config_screen_width)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004712c0",
+      "name": "console_prompt_string",
+      "comment": "Console prompt string used for input rendering."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004712fc",
       "name": "tutorial_hint_index",
       "comment": "Tutorial hint index used for secondary prompt overlay (increments when bonus object deactivates)."
@@ -93,6 +105,24 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x0047ea58",
+      "name": "console_input_ready",
+      "comment": "Console input ready flag (set when Enter pressed)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0047eea0",
+      "name": "console_log_queue",
+      "comment": "Console log/list head used by console_printf."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0047f4d4",
+      "name": "console_input_enabled",
+      "comment": "Console input enable flag (gates grim_get_key_char)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x0047f5f8",
       "name": "ui_button_table_a",
       "comment": "UI button struct array (stride 0x18) used by ui_button_update."
@@ -102,6 +132,18 @@
       "address": "0x00480250",
       "name": "ui_button_table_b",
       "comment": "UI button struct array (stride 0x18) used by ui_button_update."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004802a8",
+      "name": "aim_screen_x",
+      "comment": "Aim/cursor screen X (camera_offset_x + player_aim_x)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004802ac",
+      "name": "aim_screen_y",
+      "comment": "Aim/cursor screen Y (camera_offset_y + player_aim_y)."
     },
     {
       "program": "crimsonland.exe",
@@ -375,6 +417,18 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x004808b9",
+      "name": "mouse_button_down",
+      "comment": "Cached mouse button 0 state (from grim_is_mouse_button_down)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004808c0",
+      "name": "ui_pulse_timer_ms",
+      "comment": "UI pulse timer in ms (used for sine-based effects)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00482728",
       "name": "creature_type_texture",
       "comment": "Creature type table: texture handle (stride 0x44 bytes)."
@@ -504,6 +558,18 @@
       "address": "0x0048474c",
       "name": "quest_selected_builder",
       "comment": "Current quest builder function pointer (runs quest script)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00484fc8",
+      "name": "camera_offset_x",
+      "comment": "Camera offset X applied to world positions for rendering."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00484fcc",
+      "name": "camera_offset_y",
+      "comment": "Camera offset Y applied to world positions for rendering."
     },
     {
       "program": "crimsonland.exe",
@@ -795,6 +861,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x004871c8",
+      "name": "terrain_texture_failed",
+      "comment": "Terrain texture creation failure flag (safe mode)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004871cc",
       "name": "ui_mouse_blocked",
       "comment": "UI mouse blocking flag checked by ui_mouse_inside_rect."
@@ -849,6 +921,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00487264",
+      "name": "screen_fade_alpha",
+      "comment": "Fullscreen fade alpha used by grim_draw_fullscreen_color."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x0048f168",
       "name": "ui_element_table_end",
       "comment": "UI element table end pointer (iterated by ui_elements_update_and_render)."
@@ -858,6 +936,24 @@
       "address": "0x0048f208",
       "name": "ui_element_table_start",
       "comment": "UI element table start pointer (iterated by ui_elements_update_and_render)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f530",
+      "name": "terrain_render_target",
+      "comment": "Terrain render target index/handle used by grim_set_render_target."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f534",
+      "name": "terrain_texture_width",
+      "comment": "Terrain texture width (default 1024)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f538",
+      "name": "terrain_texture_height",
+      "comment": "Terrain texture height (default 1024)."
     },
     {
       "program": "crimsonland.exe",
@@ -894,6 +990,24 @@
       "address": "0x0048f5a0",
       "name": "bonus_hud_slot_icon_id",
       "comment": "Bonus HUD slot icon id (bonus_hud_slot_active + 0x18)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f7c8",
+      "name": "ui_clock_table_texture",
+      "comment": "Texture handle for ui_clockTable.jaz."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f7e8",
+      "name": "bullet_trail_texture",
+      "comment": "Texture handle for bulletTrail."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f7f0",
+      "name": "bonus_texture",
+      "comment": "Texture handle for bonuses atlas."
     },
     {
       "program": "crimsonland.exe",
@@ -2103,6 +2217,24 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x004aacd8",
+      "name": "key_char_buffer",
+      "comment": "Key char ring buffer for grim_set_key_char_buffer."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004aaedc",
+      "name": "key_char_count",
+      "comment": "Key char count for grim_set_key_char_buffer."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004aaf0c",
+      "name": "render_overlay_player_index",
+      "comment": "Player index used for overlay rendering passes."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004aaf18",
       "name": "fx_queue_count",
       "comment": "FX queue length (fx_queue entry count, capped at 0x7f)."
@@ -2112,6 +2244,12 @@
       "address": "0x004aaf3c",
       "name": "fx_queue_rotated",
       "comment": "Rotated FX queue base (0x40 entries)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004aaf45",
+      "name": "grim_config_invoked",
+      "comment": "Flag set after grim_apply_config invocation."
     },
     {
       "program": "crimsonland.exe",
@@ -2883,6 +3021,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x004d7a90",
+      "name": "effect_subrect_frame_table",
+      "comment": "Effect frame table used for grim_set_sub_rect selection."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004d7a98",
       "name": "weapon_projectile_meta",
       "comment": "Weapon table projectile meta value (weapon_table + 0x6c, stride 0x7c)"
@@ -2925,9 +3069,27 @@
     },
     {
       "program": "grim.dll",
+      "address": "0x10053060",
+      "name": "grim_bound_texture_handle",
+      "comment": "Currently bound texture handle (set by grim_bind_texture)."
+    },
+    {
+      "program": "grim.dll",
       "address": "0x10053070",
       "name": "grim_font2_texture_handle",
       "comment": "Texture handle for GRIM_Font2 (small font atlas)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10059768",
+      "name": "grim_frame_dt",
+      "comment": "Frame delta time (seconds) used for input decay."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005976c",
+      "name": "grim_vertex_capacity",
+      "comment": "Vertex/index capacity used for dynamic buffers."
     },
     {
       "program": "grim.dll",
@@ -2938,6 +3100,60 @@
     },
     {
       "program": "grim.dll",
+      "address": "0x10059dc0",
+      "name": "grim_backbuffer_height",
+      "comment": "Backbuffer/viewport height."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10059df8",
+      "name": "grim_present_width",
+      "comment": "D3D present parameters width."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10059dfc",
+      "name": "grim_present_height",
+      "comment": "D3D present parameters height."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10059e2c",
+      "name": "grim_vertex_buffer",
+      "comment": "Dynamic vertex buffer object (IDirect3DVertexBuffer8)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10059e30",
+      "name": "grim_rotation_radians",
+      "comment": "Current rotation radians for draw helpers."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10059e34",
+      "name": "grim_vertex_write_ptr",
+      "comment": "Vertex write pointer used after Lock()."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005a044",
+      "name": "grim_mouse_button_cache",
+      "comment": "Cached mouse button state array."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005a054",
+      "name": "grim_time_ms",
+      "comment": "Grim2D millisecond counter."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005a488",
+      "name": "grim_texture_format",
+      "comment": "D3D texture format used for CreateTexture."
+    },
+    {
+      "program": "grim.dll",
       "address": "0x1005a48c",
       "name": "grim_render_target_surface",
       "comment": "Current offscreen render target surface (IDirect3DSurface8).",
@@ -2945,9 +3161,87 @@
     },
     {
       "program": "grim.dll",
+      "address": "0x1005a490",
+      "name": "grim_line_dx",
+      "comment": "Line delta X used by draw helpers."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005a494",
+      "name": "grim_line_dy",
+      "comment": "Line delta Y used by draw helpers."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005a56c",
+      "name": "grim_preferred_texture_format",
+      "comment": "Preferred texture format if supported."
+    },
+    {
+      "program": "grim.dll",
       "address": "0x1005a570",
       "name": "grim_font2_char_map",
       "comment": "Small-font character map (char -> glyph index)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005a678",
+      "name": "grim_subrect_table",
+      "comment": "Atlas sub-rect table referenced by pointer table."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005ae78",
+      "name": "grim_printf_buffer",
+      "comment": "Formatted text buffer used by draw_text (vsprintf)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005b078",
+      "name": "grim_printf_buffer_alt",
+      "comment": "Alternate formatted text buffer for draw_text."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005b278",
+      "name": "grim_mouse_x_cached",
+      "comment": "Cached mouse X position."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005b27c",
+      "name": "grim_mouse_y_cached",
+      "comment": "Cached mouse Y position."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005b290",
+      "name": "grim_uv_u0",
+      "comment": "Current UV u0 for quad draws."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005b294",
+      "name": "grim_uv_v0",
+      "comment": "Current UV v0 for quad draws."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005b298",
+      "name": "grim_uv_u1",
+      "comment": "Current UV u1 for quad draws."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005b29c",
+      "name": "grim_uv_v1",
+      "comment": "Current UV v1 for quad draws."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005b2bc",
+      "name": "grim_fps",
+      "comment": "Computed frames-per-second value."
     },
     {
       "program": "grim.dll",
@@ -2970,9 +3264,75 @@
     },
     {
       "program": "grim.dll",
+      "address": "0x1005bacc",
+      "name": "grim_module_handle",
+      "comment": "Grim2D module handle (HINSTANCE)."
+    },
+    {
+      "program": "grim.dll",
       "address": "0x1005bad8",
       "name": "grim_font2_glyph_widths",
       "comment": "Small-font glyph widths (byte per glyph)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005bc04",
+      "name": "grim_color_slot0",
+      "comment": "Packed RGBA color slot 0."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005bc10",
+      "name": "grim_color_slot3",
+      "comment": "Packed RGBA color slot 3."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005bc78",
+      "name": "grim_subrect_ptr_table",
+      "comment": "Pointer table base for atlas sub-rects."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005bc80",
+      "name": "grim_subrect_ptr0",
+      "comment": "Atlas sub-rect table pointer 0."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005bc88",
+      "name": "grim_subrect_ptr1",
+      "comment": "Atlas sub-rect table pointer 1."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005bc98",
+      "name": "grim_subrect_ptr2",
+      "comment": "Atlas sub-rect table pointer 2."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005bcb8",
+      "name": "grim_subrect_ptr3",
+      "comment": "Atlas sub-rect table pointer 3."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005bf00",
+      "name": "grim_slot_ints",
+      "comment": "Grim2D scratch int slot table."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005c100",
+      "name": "grim_slot_floats",
+      "comment": "Grim2D scratch float slot table."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005c400",
+      "name": "grim_backbuffer_width",
+      "comment": "Backbuffer/viewport width."
     },
     {
       "program": "grim.dll",

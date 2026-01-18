@@ -4,6 +4,9 @@ Interesting Functions and Patterns
 [DES related]
   sfx_update_mute_fades @ 0043d5b0
 
+[SHA related]
+  crt_flushall @ 0046150a
+
 [KEY related]
   input_any_key_pressed @ 00446000
 
@@ -27,12 +30,16 @@ Interesting Functions and Patterns
   crt_fread_nolock @ 00461b26
   crt_get_thread_data @ 004654b8
   crt_free_thread_data @ 0046551f
+  crt_read @ 00465fff
+  crt_read_nolock @ 00466064
   ov_read @ 0046e93e
 
 [WRITE related]
   reg_write_dword @ 0042a9c0
   crt_fwrite @ 004615ae
   crt_fwrite_nolock @ 004615dd
+  crt_write @ 00465652
+  crt_write_nolock @ 004656b7
 
 [SYSTEM related]
   sfx_system_init @ 0043cf90
@@ -74,6 +81,7 @@ Interesting Functions and Patterns
   console_printf @ 00401870
   crt_vsprintf @ 00461089
   crt_sprintf @ 004616e7
+  crt_snprintf @ 00461e4a
 
 [ERROR related]
   __startOneArgErrorHandling @ 004650e7

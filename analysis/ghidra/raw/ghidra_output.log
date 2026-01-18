@@ -5,12 +5,12 @@ INFO  Using log config file: jar:file:/opt/ghidra_12.0.1_PUBLIC/Ghidra/Framework
 INFO  Using log file: analysis/ghidra/raw/ghidra_analysis.log (LoggingInitialization)  
 INFO  Loading user preferences: /home/node/.config/ghidra/ghidra_12.0.1_PUBLIC/preferences (Preferences)  
 INFO  Searching for classes... (ClassSearcher)  
-INFO  Class search complete (725 ms) (ClassSearcher)  
+INFO  Class search complete (831 ms) (ClassSearcher)  
 INFO  Initializing SSL Context (DefaultSSLContextInitializer)  
 INFO  Initializing Random Number Generator... (SecureRandomFactory)  
 INFO  Random Number Generator initialization complete: NativePRNGNonBlocking (SecureRandomFactory)  
 INFO  Trust manager disabled, cacerts have not been set (DefaultTrustManagerFactory)  
-INFO  Headless startup complete (1428 ms) (AnalyzeHeadless)  
+INFO  Headless startup complete (1537 ms) (AnalyzeHeadless)  
 INFO  Class searcher loaded 58 extension points (18 false positives) (ClassSearcher)  
 INFO  HEADLESS Script Paths:
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger/ghidra_scripts
@@ -39,10 +39,10 @@ INFO  HEADLESS Script Paths:
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/FunctionID/ghidra_scripts
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/Atmel/ghidra_scripts (HeadlessAnalyzer)  
 INFO  HEADLESS: execution starts (HeadlessAnalyzer)  
-INFO  Creating temporary project: /tmp/ghidra_crimsonland_exe_273616 (HeadlessAnalyzer)  
-INFO  Creating project: /tmp/ghidra_crimsonland_exe_273616 (DefaultProject)  
+INFO  Creating temporary project: /tmp/ghidra_crimsonland_exe_276011 (HeadlessAnalyzer)  
+INFO  Creating project: /tmp/ghidra_crimsonland_exe_276011 (DefaultProject)  
 INFO  REPORT: Processing input files:  (HeadlessAnalyzer)  
-INFO       project: /tmp/ghidra_crimsonland_exe_273616 (HeadlessAnalyzer)  
+INFO       project: /tmp/ghidra_crimsonland_exe_276011 (HeadlessAnalyzer)  
 INFO  IMPORTING: file:///workspace/game_bins/crimsonland/1.9.93-gog/crimsonland.exe (HeadlessAnalyzer)  
 INFO  Using Loader: Portable Executable (PE) (ProgramLoader)  
 INFO  Using Language/Compiler: x86:LE:32:default:windows (ProgramLoader)  
@@ -143,44 +143,44 @@ INFO  Packed database cache: /var/tmp/node-ghidra/packed-db-cache (PackedDatabas
 INFO  Applied data type archive: windows_vs12_32 (ApplyDataArchiveAnalyzer)  
 INFO  Applied data type archive: windows_vs12_32 (ApplyDataArchiveAnalyzer)  
 INFO  -----------------------------------------------------
-    ASCII Strings                              0.268 secs
-    Apply Data Archives                        0.140 secs
-    Call Convention ID                         0.004 secs
-    Call-Fixup Installer                       0.017 secs
-    Create Address Tables                      0.048 secs
-    Create Address Tables - One Time           0.070 secs
-    Create Function                            0.184 secs
-    Data Reference                             0.098 secs
-    Decompiler Parameter ID                    9.567 secs
-    Decompiler Switch Analysis                22.541 secs
+    ASCII Strings                              0.236 secs
+    Apply Data Archives                        0.129 secs
+    Call Convention ID                         0.003 secs
+    Call-Fixup Installer                       0.023 secs
+    Create Address Tables                      0.093 secs
+    Create Address Tables - One Time           0.068 secs
+    Create Function                            0.226 secs
+    Data Reference                             0.135 secs
+    Decompiler Parameter ID                    9.463 secs
+    Decompiler Switch Analysis                22.247 secs
     Demangler Microsoft                        0.006 secs
-    Disassemble                                0.202 secs
-    Disassemble Entry Points                   0.334 secs
-    Embedded Media                             0.012 secs
+    Disassemble                                0.200 secs
+    Disassemble Entry Points                   0.370 secs
+    Embedded Media                             0.013 secs
     External Entry References                  0.000 secs
-    Function ID                                0.409 secs
-    Function Start Pre Search                  0.011 secs
-    Function Start Search                      0.109 secs
-    Function Start Search After Code           0.027 secs
-    Function Start Search After Data           0.016 secs
-    Function Start Search delayed - One Time   0.003 secs
-    Non-Returning Functions - Discovered       0.095 secs
+    Function ID                                0.407 secs
+    Function Start Pre Search                  0.015 secs
+    Function Start Search                      0.071 secs
+    Function Start Search After Code           0.029 secs
+    Function Start Search After Data           0.017 secs
+    Function Start Search delayed - One Time   0.002 secs
+    Non-Returning Functions - Discovered       0.148 secs
     Non-Returning Functions - Known            0.002 secs
     PDB Universal                              0.001 secs
-    Reference                                  0.305 secs
-    Scalar Operand References                  0.386 secs
-    Shared Return Calls                        0.107 secs
-    Stack                                      1.475 secs
-    Subroutine References                      0.865 secs
-    Subroutine References - One Time           0.004 secs
-    Windows x86 PE Exception Handling          1.010 secs
+    Reference                                  0.291 secs
+    Scalar Operand References                  0.398 secs
+    Shared Return Calls                        0.084 secs
+    Stack                                      1.522 secs
+    Subroutine References                      0.868 secs
+    Subroutine References - One Time           0.003 secs
+    Windows x86 PE Exception Handling          1.103 secs
     Windows x86 PE RTTI Analyzer               0.001 secs
     Windows x86 Thread Environment Block (TEB) Analyzer     0.010 secs
-    WindowsResourceReference                   0.266 secs
-    X86 Function Callee Purge                  0.087 secs
-    x86 Constant Reference Analyzer            2.489 secs
+    WindowsResourceReference                   0.265 secs
+    X86 Function Callee Purge                  0.065 secs
+    x86 Constant Reference Analyzer            2.395 secs
 -----------------------------------------------------
-     Total Time   41 secs
+     Total Time   40 secs
 -----------------------------------------------------
  (AutoAnalysisManager)  
 INFO  REPORT: Analysis succeeded for file: file:///workspace/game_bins/crimsonland/1.9.93-gog/crimsonland.exe (HeadlessAnalyzer)  
@@ -212,16 +212,16 @@ ERROR ApplyNameMap.java> Signature parse failed for crt_output: Can't resolve da
 ERROR ApplyNameMap.java> Signature parse failed for crt_mktime: Can't resolve return type: time_t (GhidraScript)  
 INFO  ApplyNameMap.java> Applied name map: /workspace/analysis/ghidra/maps/name_map.json (GhidraScript)  
 INFO  ApplyNameMap.java> Program: crimsonland.exe (GhidraScript)  
-INFO  ApplyNameMap.java> Updated entries: 203 (GhidraScript)  
-INFO  ApplyNameMap.java> Renamed: 197, Signatures: 168, Comments: 203 (GhidraScript)  
+INFO  ApplyNameMap.java> Updated entries: 228 (GhidraScript)  
+INFO  ApplyNameMap.java> Renamed: 222, Signatures: 193, Comments: 228 (GhidraScript)  
 INFO  ApplyNameMap.java> Missing: 0, Skipped: 173 (GhidraScript)  
 INFO  REPORT: Execute script: ApplyDataMap.java 'analysis/ghidra/maps/data_map.json'  (HeadlessAnalyzer)  
 INFO  SCRIPT: /workspace/analysis/ghidra/scripts/ApplyDataMap.java (HeadlessAnalyzer)  
 INFO  ApplyDataMap.java> Applied data map: /workspace/analysis/ghidra/maps/data_map.json (GhidraScript)  
 INFO  ApplyDataMap.java> Program: crimsonland.exe (GhidraScript)  
-INFO  ApplyDataMap.java> Updated entries: 486 (GhidraScript)  
-INFO  ApplyDataMap.java> Created: 7, Renamed: 479, Comments: 486, Types: 0 (GhidraScript)  
-INFO  ApplyDataMap.java> Missing: 0, Skipped: 30 (GhidraScript)  
+INFO  ApplyDataMap.java> Updated entries: 510 (GhidraScript)  
+INFO  ApplyDataMap.java> Created: 7, Renamed: 503, Comments: 510, Types: 0 (GhidraScript)  
+INFO  ApplyDataMap.java> Missing: 0, Skipped: 66 (GhidraScript)  
 INFO  REPORT: Execute script: ExportAll.java  (HeadlessAnalyzer)  
 INFO  SCRIPT: /workspace/analysis/ghidra/tooling/ghidra_scripts/ExportAll.java (HeadlessAnalyzer)  
 INFO  ExportAll.java> === Starting comprehensive export === (GhidraScript)  
@@ -242,5 +242,5 @@ INFO  ExportAll.java> === Export complete === (GhidraScript)
 INFO  ANALYZING changes made by post scripts: file:///workspace/game_bins/crimsonland/1.9.93-gog/crimsonland.exe (HeadlessAnalyzer)  
 INFO  REPORT: Post-analysis succeeded for file: file:///workspace/game_bins/crimsonland/1.9.93-gog/crimsonland.exe (HeadlessAnalyzer)  
 INFO  /crimsonland.exe: file created (node) (LocalFileSystem)  
-INFO  REPORT: Save succeeded for: /crimsonland.exe (ghidra_crimsonland_exe_273616:/crimsonland.exe) (HeadlessAnalyzer)  
+INFO  REPORT: Save succeeded for: /crimsonland.exe (ghidra_crimsonland_exe_276011:/crimsonland.exe) (HeadlessAnalyzer)  
 INFO  REPORT: Import succeeded (HeadlessAnalyzer)  
