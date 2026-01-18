@@ -69,6 +69,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00477d28",
+      "name": "sfx_rate_scale",
+      "comment": "SFX playback rate scale (set during sfx_play; affected by Reflex Boost)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00478e50",
       "name": "input_primary_latch",
       "comment": "Primary input edge latch used by input_primary_just_pressed."
@@ -2331,6 +2337,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x004c3e80",
+      "name": "sfx_voice_table",
+      "comment": "SFX voice/handle table cleared during sfx_system_init."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004c3f00",
       "name": "sfx_trooper_inpain_01",
       "comment": "SFX id for trooper_inPain_01.ogg"
@@ -2781,6 +2793,90 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x004c4030",
+      "name": "music_track_intro_id",
+      "comment": "Music track id for music_intro.ogg."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c4034",
+      "name": "music_track_shortie_monk_id",
+      "comment": "Music track id for music_shortie_monk.ogg."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c4038",
+      "name": "music_track_crimson_theme_id",
+      "comment": "Music track id for music_crimson_theme.ogg."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c403c",
+      "name": "music_track_extra_0",
+      "comment": "Music track id for extra track (+1 from intro)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c4040",
+      "name": "music_track_extra_1",
+      "comment": "Music track id for extra track (+2 from intro)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c4044",
+      "name": "music_track_crimsonquest_id",
+      "comment": "Music track id for music_crimsonquest.ogg."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c404c",
+      "name": "sfx_volume_table",
+      "comment": "Per-SFX volume table updated by sfx_play_exclusive and sfx_update_mute_fades."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c4250",
+      "name": "music_entry_table",
+      "comment": "Music entry table (track slots)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c8450",
+      "name": "sfx_mute_flags",
+      "comment": "Per-SFX mute flag table (set by sfx_mute_all)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c84d0",
+      "name": "sfx_entry_table",
+      "comment": "SFX entry table base (iterated by sfx_release_all)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c84e4",
+      "name": "sfx_entry_table_state",
+      "comment": "SFX entry table state/slot base used by sfx_play and sfx_load_sample."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004cc6d0",
+      "name": "music_playlist",
+      "comment": "Music playlist queue (track id array)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004cc8d6",
+      "name": "sfx_unmuted_flag",
+      "comment": "Global SFX unmuted flag checked by sfx_is_unmuted."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004ccbd0",
+      "name": "ui_focus_candidates",
+      "comment": "UI focus candidate list used by ui_focus_update."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004d7a2c",
       "name": "weapon_table",
       "comment": "Weapon table base (stride 0x7c bytes)"
@@ -2802,6 +2898,24 @@
       "address": "0x004d7aa0",
       "name": "weapon_projectile_pellet_count",
       "comment": "Weapon table projectile pellet count (weapon_table + 0x74, stride 0x7c)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004da3a8",
+      "name": "crt_heap_mode",
+      "comment": "CRT heap mode flag used by crt_free paths."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004db4f0",
+      "name": "crt_onexit_table_begin",
+      "comment": "CRT onexit table begin pointer."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004db4f4",
+      "name": "crt_onexit_table_end",
+      "comment": "CRT onexit table end pointer."
     },
     {
       "program": "grim.dll",
