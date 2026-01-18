@@ -169,3 +169,43 @@ Short run to main menu only (no gameplay). Both hooks attached; the game stayed 
 - Re-run with gameplay + MemoryAccessMonitor drills to map the unknown offsets.
 - After fixing the NUL-terminated string decoder, re-run to get clean texture names in evidence.
 - If we want to label UI SFX, capture a small UI-only run with a stack trace to map sfx IDs 63/64.
+
+## Session 3
+
+- **Date:** 2026-01-18
+- **Build / platform:** Win11 ARM64 (UTM), Crimsonland v1.9.93
+- **Scripts:** `grim_hooks.js`, `crimsonland_probe.js`
+- **Attach method:** `frida -n crimsonland.exe -l Z:\grim_hooks.js` + `frida -n crimsonland.exe -l Z:\crimsonland_probe.js`
+- **Artifacts:** `analysis/frida/raw/*.jsonl`, `analysis/frida/*summary*.json`
+
+### Wants (pre-run)
+
+Goal: run a single Quest level to capture gameplay SFX, bonus/perk flow, and quest results UI evidence.
+
+### Run summary (actual)
+
+Single Quest run (one level), then quest results screen. Both hooks attached for the whole session.
+
+### Findings
+
+- **Texture decoding fixed:** `texture_get_or_load` now yields clean names like `load\\backplasma.jaz`,
+  `ui\\ui_indBullet.jaz`, `ter\\ter_q1_base.jaz` (no more string-table garbage).
+- **Quest results UI evidence:** `quest_results_screen_update` fired 69 times and carries SFX IDs
+  **5** (x64) plus **69**/**68**/**4** (single-digit counts).
+- **Gameplay SFX clusters:**
+  - `player_update`: sfx **46** (x120), **34**/**39** (x23 each), **30** (x1).
+  - `projectile_update`: sfx **56** (x39), **50/51/52/53** (low counts).
+  - `creature_apply_damage`: sfx **15/13/12/14** (damage variants).
+  - `player_take_damage`: sfx **0/2/1** (damage/pain set).
+- **Auto-dump triggers:** `bonus_apply` (5), `perk_selection_screen` (5), `quest_results_screen` (6),
+  `perk_apply` (1), `startup` (1). Unknown-field tracker still only reported offsets
+  `0x2BC`, `0x2C4`, `0x2D0`, `0x34C`, `0x350`, `0x354` (count=1 each).
+- **Timer fields observed:** `shield_timer_f32` and `fire_bullets_timer_f32` were non-zero after bonus
+  pickups; `speed_bonus_timer_f32` stayed 0 in this run.
+
+### Actionable insights
+
+- Use MemoryAccessMonitor on the unknown offsets during the next run; they still aren’t surfacing in the
+  tracker, so we need targeted watchpoints to identify their owners.
+- If we want to name SFX IDs, a short capture around quest results and reload events should be enough to
+  label **5/69/68/4**, **46**, **56**, and the damage set (**0/1/2/12/13/14/15**).
