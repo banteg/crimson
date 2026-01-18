@@ -119,6 +119,26 @@ const CONFIG = {
   // String decode heuristics (texture names, etc).
   stringMaxLen: 260,
   stringQualityMin: 0.85,
+
+  // Auto-record player snapshots + hot-window triggers for common gameplay events.
+  autoRecord: {
+    enabled: true,
+    playerIndex: 0,
+    dumpOnStartup: true,
+    startupDumpIntervalMs: 500,
+    startupDumpMaxAttempts: 40,
+    dumpCooldownMs: 1200,
+    dumpOnBonusApply: true,
+    dumpOnPerkApply: true,
+    dumpOnWeaponAssign: false,
+    dumpOnLowHealth: true,
+    lowHealthThreshold: 20,
+    dumpOnPerkSelectionScreen: true,
+    dumpOnGameOverScreen: true,
+    dumpOnQuestResultsScreen: true,
+    hotWindowMs: 2000,
+    hotWindowCooldownMs: 8000,
+  },
 };
 
 const SESSION_ID = Date.now().toString(16) + '-' + Math.floor(Math.random() * 0xfffff).toString(16);
@@ -147,6 +167,10 @@ const ADDR = {
   texture_get_or_load_alt: 0x0042a700,
 
   bonus_apply: 0x00409890,
+  perk_apply: 0x004055e0,
+  perk_selection_screen_update: 0x00405be0,
+  game_over_screen_update: 0x0040ffc0,
+  quest_results_screen_update: 0x00410d20,
   weapon_table_init: 0x004519b0,
   weapon_assign_player: 0x00452d40,
   player_take_damage: 0x00425e50,
@@ -342,6 +366,42 @@ function readBestString(ptrArg, maxLen) {
     name_len: best.value.length,
     name_raw: ok ? null : best.value,
   };
+}
+
+const AUTO_STATE = {
+  lastByKey: new Map(),
+};
+
+function autoShouldFire(key, cooldownMs) {
+  if (!CONFIG.autoRecord || !CONFIG.autoRecord.enabled) return false;
+  const now = Date.now();
+  const last = AUTO_STATE.lastByKey.get(key) || 0;
+  if (now - last < cooldownMs) return false;
+  AUTO_STATE.lastByKey.set(key, now);
+  return true;
+}
+
+function autoDumpPlayer(playerIdx, reason, extra) {
+  if (!CONFIG.autoRecord || !CONFIG.autoRecord.enabled) return;
+  const cooldown = CONFIG.autoRecord.dumpCooldownMs || 0;
+  if (!autoShouldFire(`dump:${reason}`, cooldown)) return;
+  const snapshot = readPlayer(playerIdx);
+  if (!snapshot) return;
+  writeLine({
+    event: 'auto_dump_player',
+    ts: nowIso(),
+    reason,
+    player_index: playerIdx,
+    player: snapshot,
+    extra: extra || null,
+  });
+}
+
+function autoStartHotWindow(reason) {
+  if (!CONFIG.autoRecord || !CONFIG.autoRecord.enabled) return;
+  const cooldown = CONFIG.autoRecord.hotWindowCooldownMs || 0;
+  if (!autoShouldFire(`hot:${reason}`, cooldown)) return;
+  startHotWindow(CONFIG.autoRecord.hotWindowMs || 2000);
 }
 
 function u32ToF32(u) {
@@ -897,6 +957,25 @@ function attachAtPtr(fnPtr, name, handlers) {
   }
 }
 
+function scheduleStartupDump() {
+  const cfg = CONFIG.autoRecord;
+  if (!cfg || !cfg.enabled || !cfg.dumpOnStartup) return;
+
+  let attempts = 0;
+  const timer = setInterval(function () {
+    attempts += 1;
+    const snapshot = readPlayer(cfg.playerIndex);
+    if (snapshot) {
+      autoDumpPlayer(cfg.playerIndex, 'startup', { attempts });
+      clearInterval(timer);
+      return;
+    }
+    if (attempts >= (cfg.startupDumpMaxAttempts || 1)) {
+      clearInterval(timer);
+    }
+  }, cfg.startupDumpIntervalMs || 500);
+}
+
 // ---------------------------
 // Grim2D vtable hooking
 // ---------------------------
@@ -1067,6 +1146,14 @@ function hookGameplay() {
       const ha = after ? after.health_f32 : null;
       if (hb !== null && ha !== null) {
         this._evt.health_delta = ha - hb;
+        if (
+          CONFIG.autoRecord &&
+          CONFIG.autoRecord.dumpOnLowHealth &&
+          hb > CONFIG.autoRecord.lowHealthThreshold &&
+          ha <= CONFIG.autoRecord.lowHealthThreshold
+        ) {
+          autoDumpPlayer(playerIdx, 'low_health', { before: hb, after: ha });
+        }
       }
 
       writeLine(this._evt);
@@ -1164,6 +1251,9 @@ function hookGameplay() {
       const playerIdx = this._evt.player_index;
       this._evt.player_after = readPlayer(playerIdx);
       writeLine(this._evt);
+      if (CONFIG.autoRecord && CONFIG.autoRecord.dumpOnWeaponAssign) {
+        autoDumpPlayer(playerIdx, 'weapon_assign', { weapon_id: this._evt.weapon_id });
+      }
     },
   });
 
@@ -1214,8 +1304,77 @@ function hookGameplay() {
       const playerIdx = this._evt.player_index;
       this._evt.player_after = readPlayer(playerIdx);
       writeLine(this._evt);
+      if (CONFIG.autoRecord && CONFIG.autoRecord.dumpOnBonusApply) {
+        autoDumpPlayer(playerIdx, 'bonus_apply', { bonus_ptr: this._evt.bonus_ptr });
+      }
     },
   });
+
+  attachAtVa('crimsonland.exe', ADDR.perk_apply, 'perk_apply', {
+    onEnter(args) {
+      const perkId = argAsI32(args[0]);
+      this._evt = { event: 'perk_apply', ts: nowIso(), perk_id: perkId };
+      if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
+    },
+    onLeave(retval) {
+      writeLine(this._evt);
+      if (CONFIG.autoRecord && CONFIG.autoRecord.dumpOnPerkApply) {
+        autoDumpPlayer(CONFIG.autoRecord.playerIndex || 0, 'perk_apply', { perk_id: this._evt.perk_id });
+      }
+    },
+  });
+
+  attachAtVa(
+    'crimsonland.exe',
+    ADDR.perk_selection_screen_update,
+    'perk_selection_screen_update',
+    {
+      onEnter(args) {
+        this._evt = { event: 'perk_selection_screen_update', ts: nowIso() };
+        if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
+        if (CONFIG.autoRecord && CONFIG.autoRecord.dumpOnPerkSelectionScreen) {
+          autoDumpPlayer(CONFIG.autoRecord.playerIndex || 0, 'perk_selection_screen', null);
+        }
+        autoStartHotWindow('perk_selection');
+      },
+      onLeave(retval) {
+        writeLine(this._evt);
+      },
+    },
+  );
+
+  attachAtVa('crimsonland.exe', ADDR.game_over_screen_update, 'game_over_screen_update', {
+    onEnter(args) {
+      this._evt = { event: 'game_over_screen_update', ts: nowIso() };
+      if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
+      if (CONFIG.autoRecord && CONFIG.autoRecord.dumpOnGameOverScreen) {
+        autoDumpPlayer(CONFIG.autoRecord.playerIndex || 0, 'game_over_screen', null);
+      }
+      autoStartHotWindow('game_over');
+    },
+    onLeave(retval) {
+      writeLine(this._evt);
+    },
+  });
+
+  attachAtVa(
+    'crimsonland.exe',
+    ADDR.quest_results_screen_update,
+    'quest_results_screen_update',
+    {
+      onEnter(args) {
+        this._evt = { event: 'quest_results_screen_update', ts: nowIso() };
+        if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
+        if (CONFIG.autoRecord && CONFIG.autoRecord.dumpOnQuestResultsScreen) {
+          autoDumpPlayer(CONFIG.autoRecord.playerIndex || 0, 'quest_results_screen', null);
+        }
+        autoStartHotWindow('quest_results');
+      },
+      onLeave(retval) {
+        writeLine(this._evt);
+      },
+    },
+  );
 
   // Audio / SFX hooks (useful for sfx-id-map / sfx-usage)
   attachAtVa('crimsonland.exe', ADDR.sfx_play, 'sfx_play', {
@@ -1554,6 +1713,7 @@ function main() {
 
   // Unknown-field tracker
   startPlayerUnknownTracker();
+  scheduleStartupDump();
 
   writeLine({ event: 'probe_ready', ts: nowIso() });
   help();
