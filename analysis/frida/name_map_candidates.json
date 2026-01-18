@@ -3,6 +3,6 @@
     "program": "crimsonland.exe",
     "address": "0x00447cf0",
     "name": "play_sfx_63",
-    "comment": "Frida evidence: sfx: 63 x2; grim: grim_was_key_pressed x252, grim_bind_texture x126, grim_begin_batch x126, grim_end_batch x126, grim_set_color_ptr x5"
+    "comment": "Frida evidence: sfx: 63 x3; grim: grim_was_key_pressed x480, grim_begin_batch x240, grim_end_batch x240, grim_bind_texture x126, grim_set_color_ptr x6"
   }
 ]
