@@ -191,14 +191,14 @@
   {
     "name": "console_flush_log",
     "address": "00402860",
-    "signature": "undefined4 console_flush_log(int param_1)",
+    "signature": "int console_flush_log(void * console_state, char * filename)",
     "external": false,
-    "calls": ["FUN_00402bd0", "crt_fclose", "crt_fflush", "crt_fopen", "crt_fwrite"]
+    "calls": ["crt_fclose", "crt_fflush", "crt_fopen", "crt_fwrite", "game_build_path"]
   },
   {
-    "name": "FUN_00402bd0",
+    "name": "game_build_path",
     "address": "00402bd0",
-    "signature": "undefined * FUN_00402bd0(void)",
+    "signature": "char * game_build_path(char * filename)",
     "external": false,
     "calls": ["crt_sprintf"]
   },
@@ -669,14 +669,14 @@
     "address": "00412a80",
     "signature": "void game_save_status(void)",
     "external": false,
-    "calls": ["FUN_00402bd0", "RegCloseKey", "RegCreateKeyExA", "console_printf", "crt_fclose", "crt_fopen", "crt_fwrite", "game_load_status", "game_sequence_load", "reg_write_dword"]
+    "calls": ["RegCloseKey", "RegCreateKeyExA", "console_printf", "crt_fclose", "crt_fopen", "crt_fwrite", "game_build_path", "game_load_status", "game_sequence_load", "reg_write_dword"]
   },
   {
     "name": "game_load_status",
     "address": "00412c10",
     "signature": "void game_load_status(void)",
     "external": false,
-    "calls": ["FUN_00402bd0", "console_printf", "crt_fclose", "crt_fopen", "crt_fread", "crt_fseek", "crt_ftell", "game_save_status", "game_sequence_load"]
+    "calls": ["console_printf", "crt_fclose", "crt_fopen", "crt_fread", "crt_fseek", "crt_ftell", "game_build_path", "game_save_status", "game_sequence_load"]
   },
   {
     "name": "gameplay_reset_state",
@@ -1033,21 +1033,21 @@
     "address": "0041ec60",
     "signature": "undefined4 FUN_0041ec60(void)",
     "external": false,
-    "calls": ["FUN_00402bd0", "crt_fclose", "crt_fopen", "crt_fread", "crt_fseek", "crt_ftell", "crt_fwrite"]
+    "calls": ["crt_fclose", "crt_fopen", "crt_fread", "crt_fseek", "crt_ftell", "crt_fwrite", "game_build_path"]
   },
   {
     "name": "FUN_0041f130",
     "address": "0041f130",
     "signature": "undefined FUN_0041f130(void)",
     "external": false,
-    "calls": ["FUN_00402bd0", "crt_fclose", "crt_fopen", "crt_fwrite"]
+    "calls": ["crt_fclose", "crt_fopen", "crt_fwrite", "game_build_path"]
   },
   {
     "name": "config_load_presets",
     "address": "0041f1a0",
     "signature": "uint config_load_presets(void)",
     "external": false,
-    "calls": ["FUN_00402bd0", "FUN_0041ec60", "crt_fclose", "crt_fopen", "crt_fread", "crt_fseek", "crt_ftell"]
+    "calls": ["FUN_0041ec60", "crt_fclose", "crt_fopen", "crt_fread", "crt_fseek", "crt_ftell", "game_build_path"]
   },
   {
     "name": "angle_approach",

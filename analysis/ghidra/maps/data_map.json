@@ -129,6 +129,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x0048014c",
+      "name": "game_path_buf",
+      "comment": "Scratch buffer used by game_build_path (base path + filename)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00480250",
       "name": "ui_button_table_b",
       "comment": "UI button struct array (stride 0x18) used by ui_button_update."
@@ -1350,6 +1356,12 @@
       "address": "0x004906a8",
       "name": "fx_rotated_scale",
       "comment": "Rotated FX queue scale array"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004907a8",
+      "name": "game_base_path",
+      "comment": "Current working directory captured on startup; base for game_build_path."
     },
     {
       "program": "crimsonland.exe",

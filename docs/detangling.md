@@ -75,6 +75,12 @@ You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps
   - Evidence: parses a line into command/cvar targets, executes command callbacks, updates cvar values, and logs
     status/errors; called with `exec_autoexec.txt` and `exec_music_game_tunes.txt`.
 
+### Status/config paths (high confidence)
+
+- `FUN_00402bd0` -> `game_build_path`
+  - Evidence: formats `"%s\\%s"` with `game_base_path` and a filename argument; used with
+    `console.log`, `game.cfg` (save/status blob), and `crimson.cfg` (config blob).
+
 ### Console command/cvar helpers (high confidence)
 
 - `FUN_00402580` -> `console_tokenize_line`

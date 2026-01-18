@@ -105,7 +105,15 @@
     "program": "crimsonland.exe",
     "address": "0x00402860",
     "name": "console_flush_log",
+    "signature": "int console_flush_log(void *console_state, char *filename)",
     "comment": "flushes console lines to the log file"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00402bd0",
+    "name": "game_build_path",
+    "signature": "char * game_build_path(char *filename)",
+    "comment": "builds a game path by combining game_base_path with filename"
   },
   {
     "program": "crimsonland.exe",
