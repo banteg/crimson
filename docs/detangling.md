@@ -591,6 +591,11 @@ Init timing note:
   - Evidence: copies a function table, reads config `DisableD3DXPSGP`,
     and switches between multiple vtable variants (`FUN_004567b0`, `FUN_004568c0`, `FUN_00456aa5`).
 
+### Math helpers (high confidence)
+
+- `FUN_00452ef0` -> `float_near_equal`
+  - Evidence: returns 1 when `|a-b| < 1.1920929e-07` (FLT_EPSILON) and guards against NaNs.
+
 
 ### Texture loading helpers (high confidence)
 

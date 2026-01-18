@@ -1224,6 +1224,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00452ef0",
+    "name": "float_near_equal",
+    "signature": "int float_near_equal(float a, float b)",
+    "comment": "returns 1 when |a-b| < 1.1920929e-07 (FLT_EPSILON)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004566d3",
     "name": "renderer_select_backend",
     "signature": "int renderer_select_backend(int reset)",

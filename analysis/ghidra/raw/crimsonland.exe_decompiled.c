@@ -35560,14 +35560,16 @@ void weapon_refresh_available(void)
 
 
 
-/* FUN_00452ef0 @ 00452ef0 */
+/* float_near_equal @ 00452ef0 */
 
-undefined4 __cdecl FUN_00452ef0(float param_1,float param_2)
+/* returns 1 when |a-b| < 1.1920929e-07 (FLT_EPSILON) */
+
+int __cdecl float_near_equal(float a,float b)
 
 {
   float fVar1;
   
-  fVar1 = param_1 - param_2;
+  fVar1 = a - b;
   if ((!NAN(fVar1) && -1.1920929e-07 < fVar1 != (fVar1 == -1.1920929e-07)) &&
      (fVar1 < 1.1920929e-07 != (fVar1 == 1.1920929e-07))) {
     return 1;
@@ -36478,17 +36480,17 @@ FUN_004551f6(undefined4 *param_1,undefined4 *param_2,undefined4 param_3,undefine
             float param_5,float param_6)
 
 {
-  float fVar1;
-  int iVar2;
+  float a;
+  int iVar1;
   undefined1 local_24 [16];
   undefined1 local_14 [16];
   
-  fVar1 = param_5 + param_6;
-  iVar2 = FUN_00452ef0(fVar1,0.0);
-  if (iVar2 == 0) {
-    thunk_FUN_00455028(local_24,param_2,param_3,fVar1);
-    thunk_FUN_00455028(local_14,param_2,param_4,fVar1);
-    thunk_FUN_00455028(param_1,local_24,local_14,param_6 / fVar1);
+  a = param_5 + param_6;
+  iVar1 = float_near_equal(a,0.0);
+  if (iVar1 == 0) {
+    thunk_FUN_00455028(local_24,param_2,param_3,a);
+    thunk_FUN_00455028(local_14,param_2,param_4,a);
+    thunk_FUN_00455028(param_1,local_24,local_14,param_6 / a);
   }
   else if (param_1 != param_2) {
     *param_1 = *param_2;
@@ -36520,30 +36522,30 @@ void FUN_00455281(void)
 void FUN_00455587(float *param_1,float *param_2)
 
 {
-  float fVar1;
-  int iVar2;
+  float a;
+  int iVar1;
   float *extraout_ECX;
-  float fVar3;
+  float fVar2;
   
-  fVar1 = param_2[1] * param_2[1] + *param_2 * *param_2;
-  iVar2 = FUN_00452ef0(fVar1,1.0);
-  if (iVar2 == 0) {
-    if (fVar1 <= 1.1754944e-38) {
+  a = param_2[1] * param_2[1] + *param_2 * *param_2;
+  iVar1 = float_near_equal(a,1.0);
+  if (iVar1 == 0) {
+    if (a <= 1.1754944e-38) {
       *param_1 = 0.0;
       param_1[1] = 0.0;
       return;
     }
-    fVar3 = (1.0 / SQRT(fVar1)) * extraout_ECX[1];
-    *param_1 = (1.0 / SQRT(fVar1)) * *extraout_ECX;
+    fVar2 = (1.0 / SQRT(a)) * extraout_ECX[1];
+    *param_1 = (1.0 / SQRT(a)) * *extraout_ECX;
   }
   else {
     if (param_1 == extraout_ECX) {
       return;
     }
     *param_1 = *extraout_ECX;
-    fVar3 = extraout_ECX[1];
+    fVar2 = extraout_ECX[1];
   }
-  param_1[1] = fVar3;
+  param_1[1] = fVar2;
   return;
 }
 
@@ -36615,7 +36617,7 @@ void FUN_0045567f(float *param_1,float *param_2,float *param_3)
   fVar6 = param_3[0xf] + param_2[1] * param_3[7] + *param_2 * param_3[3];
   *param_1 = param_3[0xc] + param_2[1] * param_3[4] + *param_2 * *param_3;
   param_1[1] = fVar5 + fVar3 * fVar4 + fVar1 * fVar2;
-  iVar7 = FUN_00452ef0(fVar6,1.0);
+  iVar7 = float_near_equal(fVar6,1.0);
   if (iVar7 == 0) {
     fVar6 = 1.0 / fVar6;
     *param_1 = fVar6 * *param_1;
@@ -36660,7 +36662,7 @@ void FUN_0045573b(float *param_1,float *param_2)
   float local_8;
   
   fVar2 = param_2[2] * param_2[2] + param_2[1] * param_2[1] + *param_2 * *param_2;
-  iVar3 = FUN_00452ef0(fVar2,1.0);
+  iVar3 = float_near_equal(fVar2,1.0);
   if (iVar3 == 0) {
     if (fVar2 <= 1.1754944e-38) {
       *param_1 = 0.0;
@@ -36727,7 +36729,7 @@ void FUN_004557db(float *param_1,float *param_2,float *param_3)
   *param_1 = param_3[0xc] + param_2[2] * param_3[8] + param_2[1] * param_3[4] + *param_2 * *param_3;
   param_1[1] = fVar13 + fVar11 * fVar12 + fVar7 * fVar8 + fVar3 * fVar4;
   param_1[2] = fVar14 + fVar9 * fVar10 + fVar5 * fVar6 + fVar1 * fVar2;
-  iVar16 = FUN_00452ef0(fVar15,1.0);
+  iVar16 = float_near_equal(fVar15,1.0);
   if (iVar16 == 0) {
     fVar15 = 1.0 / fVar15;
     *param_1 = fVar15 * *param_1;
@@ -36872,7 +36874,7 @@ void FUN_00455bcd(float *param_1,float *param_2)
   
   fVar2 = param_2[3] * param_2[3] +
           param_2[2] * param_2[2] + param_2[1] * param_2[1] + *param_2 * *param_2;
-  iVar3 = FUN_00452ef0(fVar2,1.0);
+  iVar3 = float_near_equal(fVar2,1.0);
   if (iVar3 == 0) {
     if (fVar2 <= 1.1754944e-38) {
       *param_1 = 0.0;

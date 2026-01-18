@@ -2422,9 +2422,9 @@
     "calls": ["FUN_0041df40"]
   },
   {
-    "name": "FUN_00452ef0",
+    "name": "float_near_equal",
     "address": "00452ef0",
-    "signature": "undefined4 FUN_00452ef0(float param_1, float param_2)",
+    "signature": "int float_near_equal(float a, float b)",
     "external": false,
     "calls": []
   },
@@ -2853,7 +2853,7 @@
     "address": "004551f6",
     "signature": "undefined4 * FUN_004551f6(undefined4 * param_1, undefined4 * param_2, undefined4 param_3, undefined4 param_4, float param_5, float param_6)",
     "external": false,
-    "calls": ["FUN_00452ef0", "thunk_FUN_00455028"]
+    "calls": ["float_near_equal", "thunk_FUN_00455028"]
   },
   {
     "name": "FUN_00455281",
@@ -2874,7 +2874,7 @@
     "address": "00455587",
     "signature": "undefined FUN_00455587(float * param_1, float * param_2)",
     "external": false,
-    "calls": ["FUN_00452ef0"]
+    "calls": ["float_near_equal"]
   },
   {
     "name": "FUN_00455614",
@@ -2888,7 +2888,7 @@
     "address": "0045567f",
     "signature": "undefined FUN_0045567f(float * param_1, float * param_2, float * param_3)",
     "external": false,
-    "calls": ["FUN_00452ef0"]
+    "calls": ["float_near_equal"]
   },
   {
     "name": "FUN_004556ff",
@@ -2902,14 +2902,14 @@
     "address": "0045573b",
     "signature": "undefined FUN_0045573b(float * param_1, float * param_2)",
     "external": false,
-    "calls": ["FUN_00452ef0"]
+    "calls": ["float_near_equal"]
   },
   {
     "name": "FUN_004557db",
     "address": "004557db",
     "signature": "undefined FUN_004557db(float * param_1, float * param_2, float * param_3)",
     "external": false,
-    "calls": ["FUN_00452ef0"]
+    "calls": ["float_near_equal"]
   },
   {
     "name": "FUN_0045589a",
@@ -2930,7 +2930,7 @@
     "address": "00455bcd",
     "signature": "undefined FUN_00455bcd(float * param_1, float * param_2)",
     "external": false,
-    "calls": ["FUN_00452ef0"]
+    "calls": ["float_near_equal"]
   },
   {
     "name": "FUN_00455c86",
