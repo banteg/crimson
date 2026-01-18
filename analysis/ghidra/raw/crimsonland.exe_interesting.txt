@@ -5,6 +5,8 @@ Interesting Functions and Patterns
   sfx_update_mute_fades @ 0043d5b0
 
 [SHA related]
+  effect_spawn_freeze_shard @ 0042ec80
+  effect_spawn_freeze_shatter @ 0042ee00
   crt_flushall @ 0046150a
 
 [KEY related]
@@ -76,6 +78,8 @@ Interesting Functions and Patterns
 
 [FREE related]
   effect_free @ 0042e080
+  effect_spawn_freeze_shard @ 0042ec80
+  effect_spawn_freeze_shatter @ 0042ee00
   crt_free @ 00460dc7
   crt_free_base @ 004625c1
   __freebuf @ 00463f29

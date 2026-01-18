@@ -115,7 +115,7 @@ Notes:
 
 - `effect_select_texture` resolves `effect_id` through `effect_id_size_code` / `effect_id_frame` and sets
   atlas size/frame (`0x10/0x20/0x40/0x80` -> `16/8/4/2` cells).
-- `FUN_00427700` is a small helper that spawns a random `fx_queue_add` entry
+- `fx_queue_add_random` is a small helper that spawns a random `fx_queue_add` entry
   (effect ids `3..7`) with randomized grayscale color and size; it uses the
   `fx_queue_random_color_*` scratch RGBA globals.
 - `fx_queue_add` clamps the queue length to `0x7f` if the caller overflows it.
@@ -295,9 +295,9 @@ Known entries (extracted from `crimsonland.exe` at `effect_id_size_code`):
 | `0` | `bonus_spawn_at`, `FUN_0042ef60`, `FUN_0042f080`, `FUN_0042f3f0`, `FUN_0042f540`, `FUN_0042f6c0`, `FUN_004207c0` | Generic burst/spark effects (used for bonus pickup and explosions). |
 | `1` | `bonus_apply` (Reflex Boost/Freeze), `FUN_0042f080`, `FUN_0042f270`, `FUN_0042f330`, `FUN_0042f6c0` | Power-up ring/halo style effects. |
 | `7` | `FUN_0042eb10` | Shock/impact burst used by chain-style effects. |
-| `8..10` | `FUN_0042ec80` | Randomized variant picks (`iVar3 % 3 + 8`). |
+| `8..10` | `effect_spawn_freeze_shard` | Randomized variant picks (`iVar3 % 3 + 8`). |
 | `0xc` | `FUN_0042f6c0` | Used during large explosion sequences. |
-| `0xe` | `FUN_0042ee00` | Four-way burst helper. |
+| `0xe` | `effect_spawn_freeze_shatter` | Four-way burst helper. |
 | `0x11` | `FUN_0042f6c0` | Extra burst when difficulty is high. |
 | `0x12` | `player_update` (`FUN_004136b0`) | Muzzle flash path when weapon flag `0x1` is set (grid 16, frame `0x26` in `particles.png`; sprite resembles a shell casing). |
 
@@ -308,8 +308,8 @@ These helpers primarily configure `effect_template_vel_x` and then call `effect_
 | Function | Effect ids | Notes |
 | --- | --- | --- |
 | `FUN_0042eb10` | `7` | Spawns two bursts with randomized direction/size; used in projectile/chain effects. |
-| `FUN_0042ec80` | `8..10` | Picks a random variant (`iVar3 % 3 + 8`); used by freeze/shatter logic. |
-| `FUN_0042ee00` | `0xe`, `8..10` | Four-way burst (`0xe`) plus additional `FUN_0042ec80` calls. |
+| `effect_spawn_freeze_shard` | `8..10` | Picks a random variant (`iVar3 % 3 + 8`); used by freeze/shatter logic. |
+| `effect_spawn_freeze_shatter` | `0xe`, `8..10` | Four-way burst (`0xe`) plus additional `effect_spawn_freeze_shard` calls. |
 | `FUN_0042ef60` | `0` | Generic burst loop with randomized velocity. |
 | `FUN_0042f080` | `1`, `0` | Ring + burst combo used for power-up visuals. |
 | `FUN_0042f270` | `1` | Single ring burst. |

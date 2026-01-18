@@ -835,6 +835,15 @@ Init timing note:
 - `FUN_0042e820` -> `effects_render`
   - Evidence: sets render state, iterates effects, computes rotated quad vertices, and submits
     via Grim vtable +0x134.
+- `FUN_00427700` -> `fx_queue_add_random`
+  - Evidence: chooses a random effect id `3..7`, random grayscale color/size, and pushes an entry
+    via `fx_queue_add`; uses `fx_queue_random_color_*` scratch globals.
+- `FUN_0042ec80` -> `effect_spawn_freeze_shard`
+  - Evidence: configures the effect template and spawns a random `8..10` variant with velocity
+    based on `(angle + pi)`; used by freeze/shatter logic.
+- `FUN_0042ee00` -> `effect_spawn_freeze_shatter`
+  - Evidence: spawns four `effect_id 0xe` bursts at 90° offsets plus extra `effect_spawn_freeze_shard`
+    calls.
 
 
 ### Perk database + selection (medium confidence)

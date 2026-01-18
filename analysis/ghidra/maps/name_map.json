@@ -491,6 +491,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00427700",
+    "name": "fx_queue_add_random",
+    "signature": "void fx_queue_add_random(float *pos)",
+    "comment": "spawns a random fx_queue_add entry (effect ids 3..7) with grayscale color/size"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00427840",
     "name": "fx_queue_add_rotated",
     "signature": "int fx_queue_add_rotated(float *pos, float *rgba, float rotation, float scale, int effect_id)",
@@ -654,6 +661,20 @@
     "name": "effects_render",
     "signature": "void effects_render(void)",
     "comment": "renders active effects (rotated quads)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042ec80",
+    "name": "effect_spawn_freeze_shard",
+    "signature": "void effect_spawn_freeze_shard(float *pos, float angle)",
+    "comment": "spawns a random freeze shard effect (ids 8..10) around the given angle"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042ee00",
+    "name": "effect_spawn_freeze_shatter",
+    "signature": "void effect_spawn_freeze_shatter(float *pos, float angle)",
+    "comment": "four-way shatter burst (id 0xe) plus extra freeze shards"
   },
   {
     "program": "crimsonland.exe",

@@ -368,7 +368,7 @@
     "address": "00406b40",
     "signature": "undefined FUN_00406b40(void)",
     "external": false,
-    "calls": ["FUN_00427700", "__ftol", "_rand", "creature_find_in_radius", "fx_spawn_particle", "perk_count_get", "sfx_play_panned"]
+    "calls": ["__ftol", "_rand", "creature_find_in_radius", "fx_queue_add_random", "fx_spawn_particle", "perk_count_get", "sfx_play_panned"]
   },
   {
     "name": "FUN_004070e0",
@@ -424,7 +424,7 @@
     "address": "00409890",
     "signature": "void bonus_apply(int player_index, int * bonus_entry)",
     "external": false,
-    "calls": ["FUN_0041a810", "FUN_00420040", "FUN_0042ec80", "FUN_0042ee00", "FUN_0042f6c0", "_rand", "creature_apply_damage", "effect_spawn", "perk_count_get", "projectile_spawn", "sfx_play", "sfx_play_panned", "weapon_assign_player"]
+    "calls": ["FUN_0041a810", "FUN_00420040", "FUN_0042f6c0", "_rand", "creature_apply_damage", "effect_spawn", "effect_spawn_freeze_shard", "effect_spawn_freeze_shatter", "perk_count_get", "projectile_spawn", "sfx_play", "sfx_play_panned", "weapon_assign_player"]
   },
   {
     "name": "bonus_update",
@@ -1026,7 +1026,7 @@
     "address": "0041e910",
     "signature": "void creature_handle_death(int creature_id, bool keep_corpse)",
     "external": false,
-    "calls": ["FUN_0041f8d0", "FUN_00427700", "FUN_0042ec80", "FUN_0042ee00", "__ftol", "_rand", "bonus_spawn_at", "creature_alloc_slot", "effect_spawn_burst"]
+    "calls": ["FUN_0041f8d0", "__ftol", "_rand", "bonus_spawn_at", "creature_alloc_slot", "effect_spawn_burst", "effect_spawn_freeze_shard", "effect_spawn_freeze_shatter", "fx_queue_add_random"]
   },
   {
     "name": "config_sync_from_grim",
@@ -1187,7 +1187,7 @@
     "address": "00420b90",
     "signature": "void projectile_update(void)",
     "external": false,
-    "calls": ["FUN_0041e270", "FUN_00420040", "FUN_00427700", "FUN_0042eb10", "FUN_0042ec80", "FUN_0042f080", "FUN_0042f270", "FUN_0042f330", "FUN_0042f3f0", "FUN_0042f540", "FUN_0042f6c0", "__ftol", "_rand", "creature_apply_damage", "creature_find_in_radius", "creature_handle_death", "creatures_apply_radius_damage", "fx_queue_add", "fx_spawn_sprite", "perk_count_get"]
+    "calls": ["FUN_0041e270", "FUN_00420040", "FUN_0042eb10", "FUN_0042f080", "FUN_0042f270", "FUN_0042f330", "FUN_0042f3f0", "FUN_0042f540", "FUN_0042f6c0", "__ftol", "_rand", "creature_apply_damage", "creature_find_in_radius", "creature_handle_death", "creatures_apply_radius_damage", "effect_spawn_freeze_shard", "fx_queue_add", "fx_queue_add_random", "fx_spawn_sprite", "perk_count_get"]
   },
   {
     "name": "projectile_render",
@@ -1215,12 +1215,12 @@
     "address": "00426220",
     "signature": "void creature_update_all(void)",
     "external": false,
-    "calls": ["FUN_00425d80", "FUN_00427700", "FUN_0042eb10", "__ftol", "_rand", "angle_approach", "creature_apply_damage", "creature_handle_death", "creature_spawn_template", "effect_spawn_burst", "fx_queue_add_rotated", "perk_count_get", "player_take_damage", "projectile_spawn", "sfx_play_panned", "thunk_FUN_00452f1d", "vec2_add_inplace"]
+    "calls": ["FUN_00425d80", "FUN_0042eb10", "__ftol", "_rand", "angle_approach", "creature_apply_damage", "creature_handle_death", "creature_spawn_template", "effect_spawn_burst", "fx_queue_add_random", "fx_queue_add_rotated", "perk_count_get", "player_take_damage", "projectile_spawn", "sfx_play_panned", "thunk_FUN_00452f1d", "vec2_add_inplace"]
   },
   {
-    "name": "FUN_00427700",
+    "name": "fx_queue_add_random",
     "address": "00427700",
-    "signature": "undefined FUN_00427700(float * param_1)",
+    "signature": "void fx_queue_add_random(float * pos)",
     "external": false,
     "calls": ["_rand", "crt_atexit", "fx_queue_add"]
   },
@@ -1414,18 +1414,18 @@
     "calls": ["_rand", "effect_spawn"]
   },
   {
-    "name": "FUN_0042ec80",
+    "name": "effect_spawn_freeze_shard",
     "address": "0042ec80",
-    "signature": "undefined FUN_0042ec80(undefined4 * param_1, float param_2)",
+    "signature": "void effect_spawn_freeze_shard(float * pos, float angle)",
     "external": false,
     "calls": ["_rand", "effect_spawn"]
   },
   {
-    "name": "FUN_0042ee00",
+    "name": "effect_spawn_freeze_shatter",
     "address": "0042ee00",
-    "signature": "undefined FUN_0042ee00(undefined4 * param_1, float param_2)",
+    "signature": "void effect_spawn_freeze_shatter(float * pos, float angle)",
     "external": false,
-    "calls": ["FUN_0042ec80", "_rand", "effect_spawn"]
+    "calls": ["_rand", "effect_spawn", "effect_spawn_freeze_shard"]
   },
   {
     "name": "effect_spawn_burst",
