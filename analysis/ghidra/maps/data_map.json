@@ -2001,6 +2001,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00495ad6",
+      "name": "qpc_timestamp_scratch",
+      "comment": "Scratch storage for QueryPerformanceCounter in early init (FUN_0042b090)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00495ad8",
       "name": "secondary_projectile_pool",
       "comment": "Secondary projectile pool base (0x40 entries, stride 0x2c)"

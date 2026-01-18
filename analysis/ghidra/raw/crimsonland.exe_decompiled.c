@@ -21742,7 +21742,7 @@ LAB_0042b17a:
   console_printf(&console_log_queue,(byte *)s_Unloaded_resource_paq_00474630);
   pHStack_60 = (HKEY)0x10;
   (**(code **)(*grim_interface_ptr + 0x20))();
-  uStack_58 = (uint)DAT_00495ad6;
+  uStack_58 = (uint)qpc_timestamp_scratch;
   QueryPerformanceCounter((LARGE_INTEGER *)&uStack_58);
   FUN_00461739(uStack_58);
   FUN_00412dc0();

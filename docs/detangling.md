@@ -308,6 +308,16 @@ tail bytes are validated against the current date and the full‑version flag.
 | `0x46` | `DAT_00487040 + 0x46` | Sentinel `0x7c` (`'|'`) | Initialized in `FUN_0043afa0` default‑record loop. |
 | `0x47` | `DAT_00487040 + 0x47` | Sentinel `0xff` | Initialized in `FUN_0043afa0` default‑record loop. |
 
+Checksum helper (`FUN_0043a950`):
+- Inputs: year, month, day (from `local_system_time` + `local_system_day`).
+- Returns a week‑of‑year style checksum (1..53) used when `config_highscore_date_mode == 2`.
+- Used during both record write (`FUN_0043ad70`) and validation (`FUN_0043afa0`).
+
+Init timing note:
+- `qpc_timestamp_scratch` (`DAT_00495ad6`) is only used as a temporary QPC storage during
+  early init (`QueryPerformanceCounter` in `FUN_0042b090`); it sits near the date scratch
+  globals but is not part of the high‑score checksum path.
+
 ### Renderer backend selection (medium confidence)
 
 - `FUN_004566d3` -> `renderer_select_backend`

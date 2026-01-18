@@ -121,6 +121,7 @@
   - [x] perk_prompt_bounds_min_y (DAT_0048f24c)
   - [x] perk_prompt_bounds_max_x (DAT_0048f280)
   - [x] perk_prompt_bounds_max_y (DAT_0048f284)
+  - [x] qpc_timestamp_scratch (DAT_00495ad6)
   - [x] projectile_texture (DAT_0048f7d4)
   - [x] ui_weapon_icons_texture (DAT_0048f7e4)
   - [x] bonus_texture (DAT_0048f7f0)
