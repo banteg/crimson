@@ -675,6 +675,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00486fb0",
+      "name": "perk_choices_dirty",
+      "comment": "Perk choice refresh flag; set when perks change and cleared after perks_generate_choices runs."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00486fb4",
       "name": "creature_spawned_count",
       "comment": "Total creatures spawned (incremented in creature_alloc_slot)."
@@ -996,6 +1002,18 @@
       "address": "0x0048f208",
       "name": "ui_element_table_start",
       "comment": "UI element table start pointer (iterated by ui_elements_update_and_render)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f500",
+      "name": "perk_prompt_hover_active",
+      "comment": "Perk prompt hover flag; toggles pulse animation and click gating when cursor is inside the perk prompt."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f504",
+      "name": "perk_prompt_pulse",
+      "comment": "Perk prompt pulse accumulator (0..1000) eased by frame_dt_ms; boosted when perk pick key is pressed."
     },
     {
       "program": "crimsonland.exe",

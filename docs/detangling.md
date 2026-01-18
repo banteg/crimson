@@ -588,6 +588,13 @@ tail bytes are validated against the current date and the full‑version flag.
 - `FUN_004045a0` -> `perks_generate_choices`
   - Evidence: fills `DAT_004807e8` with randomly selected perks using `perk_select_random`,
     enforces uniqueness, and applies special-case handling for mode `8` (fixed perk list).
+- Perk prompt UI gates (high confidence):
+  - `perk_prompt_hover_active` (`DAT_0048f500`) flips when the cursor enters/leaves the perk prompt
+    bounds and gates whether the click target is active.
+  - `perk_prompt_pulse` (`DAT_0048f504`) ramps `0..1000` (decays when not hovered, accelerates when
+    hovered) and is forced to `1000` when the perk pick key is pressed.
+  - `perk_choices_dirty` (`DAT_00486fb0`) is set after perk selection and on reset, then cleared the
+    first time `perks_generate_choices` runs before switching to state `6`.
 
 
 ### Tutorial prompt (medium confidence)

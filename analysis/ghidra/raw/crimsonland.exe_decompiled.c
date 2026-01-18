@@ -3913,7 +3913,7 @@ void FUN_00405be0(void)
     perk_pending_count = perk_pending_count + -1;
     ui_transition_direction = 0;
     game_state_pending = 9;
-    DAT_00486fb0 = 1;
+    perk_choices_dirty = 1;
   }
   return;
 }
@@ -6394,18 +6394,18 @@ LAB_0040ad8e:
     }
   }
   if ((DAT_0047eec8 == '\0') && (game_paused_flag == '\0')) {
-    if (DAT_0048f500 == '\0') {
+    if (perk_prompt_hover_active == '\0') {
       iVar5 = -frame_dt_ms;
     }
     else {
       iVar5 = frame_dt_ms * 3;
     }
-    DAT_0048f504 = DAT_0048f504 + iVar5 * 2;
-    if (DAT_0048f504 < 0) {
-      DAT_0048f504 = 0;
+    perk_prompt_pulse = perk_prompt_pulse + iVar5 * 2;
+    if (perk_prompt_pulse < 0) {
+      perk_prompt_pulse = 0;
     }
-    else if (1000 < DAT_0048f504) {
-      DAT_0048f504 = 1000;
+    else if (1000 < perk_prompt_pulse) {
+      perk_prompt_pulse = 1000;
     }
   }
   if (((((demo_mode_active == '\0') && (game_paused_flag == '\0')) && (mouse_button_down == '\0'))
@@ -6420,20 +6420,20 @@ LAB_0040ad8e:
          (cVar3 = (**(code **)(*grim_interface_ptr + 0x48))(0x4e), cVar3 == '\0')) {
         if (((fVar1 <= DAT_0048f248) || (fVar2 <= DAT_0048f24c)) ||
            ((_DAT_0048f280 <= fVar1 || (_DAT_0048f284 <= fVar2)))) {
-          DAT_0048f500 = '\0';
+          perk_prompt_hover_active = '\0';
         }
         else {
-          DAT_0048f500 = '\x01';
+          perk_prompt_hover_active = '\x01';
           iVar5 = input_primary_just_pressed();
           if ((char)iVar5 != '\0') goto joined_r0x0040b1bc;
         }
       }
       else {
-        DAT_0048f504 = 1000;
+        perk_prompt_pulse = 1000;
 joined_r0x0040b1bc:
-        if (DAT_00486fb0 != '\0') {
+        if (perk_choices_dirty != '\0') {
           perks_generate_choices();
-          DAT_00486fb0 = '\0';
+          perk_choices_dirty = '\0';
         }
         FUN_004461c0(6);
       }
@@ -9257,7 +9257,7 @@ void FUN_00412dc0(void)
   _DAT_004828b8 = 7;
   DAT_0048287c = (**(code **)(*grim_interface_ptr + 0xc0))(s_trooper_0047372c);
   _camera_offset_x = (float)terrain_texture_width * 0.5;
-  DAT_00486fb0 = 1;
+  perk_choices_dirty = 1;
   bonus_spawn_guard = 0;
   puVar1 = &DAT_0048708c;
   for (iVar4 = 0x40; iVar4 != 0; iVar4 = iVar4 + -1) {
