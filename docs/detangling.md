@@ -166,6 +166,21 @@ You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps
 - `FUN_0043c590` -> `music_stream_fill`
   - Evidence: decodes Ogg data and writes the next streaming chunk.
 
+### Audio playback + streaming (high confidence)
+
+- `FUN_0043d3f0` -> `audio_update`
+  - Evidence: ticks sfx cooldowns, updates music stream buffers, and applies mute fades.
+- `FUN_0043be60` -> `sfx_entry_start_playback`
+  - Evidence: selects a free voice/buffer (or streaming buffer) and starts playback.
+- `FUN_0043be20` -> `sfx_entry_seek`
+  - Evidence: resets the DirectSound cursor and seeks the Ogg decoder to a sample offset.
+- `FUN_0043bf40` -> `sfx_entry_resume`
+  - Evidence: restarts streaming playback (used on resume/unmute).
+- `FUN_0043bf60` -> `sfx_entry_stop`
+  - Evidence: stops playback for all voices in the entry (used on suspend/mute).
+- `FUN_0043bfa0` -> `sfx_entry_set_volume`
+  - Evidence: applies volume changes across active voices.
+
 
 ### Input primary action (high confidence)
 

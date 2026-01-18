@@ -789,6 +789,41 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0043be20",
+    "name": "sfx_entry_seek",
+    "signature": "void sfx_entry_seek(int entry, int sample_offset)",
+    "comment": "seeks streaming sfx data and resets playback cursors"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043be60",
+    "name": "sfx_entry_start_playback",
+    "signature": "int sfx_entry_start_playback(int entry)",
+    "comment": "selects a voice/buffer and starts playback"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043bf40",
+    "name": "sfx_entry_resume",
+    "signature": "void sfx_entry_resume(int entry)",
+    "comment": "restarts playback for a streaming entry"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043bf60",
+    "name": "sfx_entry_stop",
+    "signature": "void sfx_entry_stop(int entry)",
+    "comment": "stops playback for all voices"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043bfa0",
+    "name": "sfx_entry_set_volume",
+    "signature": "void sfx_entry_set_volume(int entry, float volume)",
+    "comment": "sets the volume for active voices"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0043c090",
     "name": "sfx_release_entry",
     "signature": "void sfx_release_entry(int entry)",
@@ -926,6 +961,13 @@
     "name": "sfx_play_panned",
     "signature": "float sfx_play_panned(float sfx_id)",
     "comment": "plays a sound effect with computed pan"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043d3f0",
+    "name": "audio_update",
+    "signature": "void audio_update(void)",
+    "comment": "updates sfx cooldowns, music streams, and mute fades"
   },
   {
     "program": "crimsonland.exe",

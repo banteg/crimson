@@ -19,18 +19,23 @@ External inputs:
 
 1. Re-run Ghidra analysis with headers in `third_party/headers/` added to the
    C parser include paths. We use `analysis/ghidra/scripts/ImportThirdPartyHeaders.java`
-   to parse codec headers before exporting:
+   to parse codec headers before exporting. The default flow is wrapped by the
+   justfile shortcuts:
 
    ```bash
-   ./analysis/ghidra/tooling/ghidra-analyze.sh \
-     --script-path analysis/ghidra/scripts \
-     -s ImportThirdPartyHeaders.java -a third_party/headers \
-     -s ApplyWinapiGDT.java -a analysis/ghidra/maps/winapi_32.gdt \
-     -s ApplyNameMap.java -a analysis/ghidra/maps/name_map.json \
-     -s ApplyDataMap.java -a analysis/ghidra/maps/data_map.json \
-     -s ExportAll.java \
-     -o analysis/ghidra/raw \
-     game_bins/crimsonland/1.9.93-gog/crimsonland.exe
+   just ghidra-exe
+   ```
+
+   For Grim2D exports:
+
+   ```bash
+   just ghidra-grim
+   ```
+
+   Override the game directory when needed:
+
+   ```bash
+   just ghidra-exe game_dir=game_bins/crimsonland/1.9.93-gog
    ```
 
 The header pack includes DirectX/DirectSound headers as references, and the
@@ -46,7 +51,8 @@ with unnamed callback parameters.
    `CRIMSON_DATA_MAP`.
 
 2. For faster iterations, keep the headless project around and re-run with the
-   same project name. We store these under `analysis/ghidra/projects/`:
+   same project name. We store these under `analysis/ghidra/projects/` (manual
+   invocation for now):
 
    ```bash
    ./analysis/ghidra/tooling/ghidra-analyze.sh \

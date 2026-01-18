@@ -1848,37 +1848,37 @@
     "calls": ["FUN_0041ddd0", "FUN_0041dee0", "FUN_0041df00", "crt_fread", "operator_new", "resource_close", "resource_open_read", "sfx_entry_create_buffers"]
   },
   {
-    "name": "FUN_0043be20",
+    "name": "sfx_entry_seek",
     "address": "0043be20",
-    "signature": "undefined FUN_0043be20(int param_1, undefined4 param_2)",
+    "signature": "void sfx_entry_seek(int entry, int sample_offset)",
     "external": false,
     "calls": ["FUN_0041ddb0"]
   },
   {
-    "name": "FUN_0043be60",
+    "name": "sfx_entry_start_playback",
     "address": "0043be60",
-    "signature": "uint FUN_0043be60(uint param_1)",
+    "signature": "int sfx_entry_start_playback(int entry)",
     "external": false,
-    "calls": ["FUN_0043be20", "_rand", "dsound_restore_buffer", "music_stream_fill", "sfx_entry_upload_buffer"]
+    "calls": ["_rand", "dsound_restore_buffer", "music_stream_fill", "sfx_entry_seek", "sfx_entry_upload_buffer"]
   },
   {
-    "name": "FUN_0043bf40",
+    "name": "sfx_entry_resume",
     "address": "0043bf40",
-    "signature": "undefined FUN_0043bf40(int param_1)",
+    "signature": "void sfx_entry_resume(int entry)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_0043bf60",
+    "name": "sfx_entry_stop",
     "address": "0043bf60",
-    "signature": "undefined FUN_0043bf60(int param_1)",
+    "signature": "void sfx_entry_stop(int entry)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_0043bfa0",
+    "name": "sfx_entry_set_volume",
     "address": "0043bfa0",
-    "signature": "undefined FUN_0043bfa0(int param_1, float param_2)",
+    "signature": "void sfx_entry_set_volume(int entry, float volume)",
     "external": false,
     "calls": ["__ftol"]
   },
@@ -2020,19 +2020,19 @@
     "address": "0043d120",
     "signature": "int sfx_play(int sfx_id)",
     "external": false,
-    "calls": ["FUN_0043be60", "FUN_0043bfa0", "__ftol"]
+    "calls": ["__ftol", "sfx_entry_set_volume", "sfx_entry_start_playback"]
   },
   {
     "name": "sfx_play_panned",
     "address": "0043d260",
     "signature": "float sfx_play_panned(float sfx_id)",
     "external": false,
-    "calls": ["FUN_0043be60", "FUN_0043bfa0", "__ftol"]
+    "calls": ["__ftol", "sfx_entry_set_volume", "sfx_entry_start_playback"]
   },
   {
-    "name": "FUN_0043d3f0",
+    "name": "audio_update",
     "address": "0043d3f0",
-    "signature": "undefined FUN_0043d3f0(void)",
+    "signature": "void audio_update(void)",
     "external": false,
     "calls": ["music_stream_update", "sfx_update_mute_fades"]
   },
@@ -2041,7 +2041,7 @@
     "address": "0043d460",
     "signature": "void sfx_play_exclusive(int sfx_id)",
     "external": false,
-    "calls": ["FUN_0043be60", "FUN_0043bfa0", "_rand", "sfx_is_unmuted", "sfx_mute_all"]
+    "calls": ["_rand", "sfx_entry_set_volume", "sfx_entry_start_playback", "sfx_is_unmuted", "sfx_mute_all"]
   },
   {
     "name": "sfx_mute_all",
@@ -2055,21 +2055,21 @@
     "address": "0043d5b0",
     "signature": "void sfx_update_mute_fades(void)",
     "external": false,
-    "calls": ["FUN_0043bf40", "FUN_0043bf60", "FUN_0043bfa0", "console_printf"]
+    "calls": ["console_printf", "sfx_entry_resume", "sfx_entry_set_volume", "sfx_entry_stop"]
   },
   {
     "name": "audio_suspend_channels",
     "address": "0043d730",
     "signature": "void audio_suspend_channels(void)",
     "external": false,
-    "calls": ["FUN_0043bf60"]
+    "calls": ["sfx_entry_stop"]
   },
   {
     "name": "audio_resume_channels",
     "address": "0043d770",
     "signature": "void audio_resume_channels(void)",
     "external": false,
-    "calls": ["FUN_0043bf40"]
+    "calls": ["sfx_entry_resume"]
   },
   {
     "name": "sfx_is_unmuted",

@@ -27900,52 +27900,56 @@ int __cdecl sfx_entry_load_ogg(void *entry,byte *path)
 
 
 
-/* FUN_0043be20 @ 0043be20 */
+/* sfx_entry_seek @ 0043be20 */
 
-void __cdecl FUN_0043be20(int param_1,undefined4 param_2)
+/* seeks streaming sfx data and resets playback cursors */
+
+void __cdecl sfx_entry_seek(int entry,int sample_offset)
 
 {
-  if (*(int *)(param_1 + 0x74) != 0) {
-    (**(code **)(**(int **)(param_1 + 0x24) + 0x34))(*(int **)(param_1 + 0x24),param_2);
-    FUN_0041ddb0(*(void **)(param_1 + 0x74),param_2);
-    *(undefined4 *)(param_1 + 0x1c) = 0;
-    *(undefined4 *)(param_1 + 0x78) = 0;
-    *(undefined4 *)(param_1 + 0x7c) = 0;
-    *(undefined4 *)(param_1 + 0x80) = 0;
+  if (*(int *)(entry + 0x74) != 0) {
+    (**(code **)(**(int **)(entry + 0x24) + 0x34))(*(int **)(entry + 0x24),sample_offset);
+    FUN_0041ddb0(*(void **)(entry + 0x74),sample_offset);
+    *(undefined4 *)(entry + 0x1c) = 0;
+    *(undefined4 *)(entry + 0x78) = 0;
+    *(undefined4 *)(entry + 0x7c) = 0;
+    *(undefined4 *)(entry + 0x80) = 0;
   }
   return;
 }
 
 
 
-/* FUN_0043be60 @ 0043be60 */
+/* sfx_entry_start_playback @ 0043be60 */
 
-uint __cdecl FUN_0043be60(uint param_1)
+/* selects a voice/buffer and starts playback */
+
+int __cdecl sfx_entry_start_playback(int entry)
 
 {
   int *piVar1;
-  uint entry;
+  int entry_00;
   int iVar2;
   int *piVar3;
   uint uVar4;
   
-  entry = param_1;
-  if (param_1 == 0) {
-    return 0xffffffff;
+  entry_00 = entry;
+  if (entry == 0) {
+    return -1;
   }
-  piVar3 = (int *)(param_1 + 0x24);
-  iVar2 = dsound_restore_buffer(*(void **)(param_1 + 0x24));
+  piVar3 = (int *)(entry + 0x24);
+  iVar2 = dsound_restore_buffer(*(void **)(entry + 0x24));
   if ((char)iVar2 != '\0') {
-    if (*(int *)(entry + 0x74) != 0) goto LAB_0043be9c;
-    sfx_entry_upload_buffer(entry);
+    if (*(int *)(entry_00 + 0x74) != 0) goto LAB_0043be9c;
+    sfx_entry_upload_buffer(entry_00);
   }
-  if (*(int *)(entry + 0x74) == 0) {
+  if (*(int *)(entry_00 + 0x74) == 0) {
     uVar4 = 0;
     do {
       piVar1 = (int *)*piVar3;
       if (piVar1 != (int *)0x0) {
-        (**(code **)(*piVar1 + 0x24))(piVar1,&param_1);
-        if ((param_1 & 1) == 0) goto LAB_0043bf10;
+        (**(code **)(*piVar1 + 0x24))(piVar1,&entry);
+        if ((entry & 1U) == 0) goto LAB_0043bf10;
       }
       uVar4 = uVar4 + 1;
       piVar3 = piVar3 + 1;
@@ -27955,51 +27959,55 @@ uint __cdecl FUN_0043be60(uint param_1)
     if ((int)uVar4 < 0) {
       uVar4 = (uVar4 - 1 | 0xfffffff0) + 1;
     }
-    piVar3 = *(int **)(entry + 0x24 + uVar4 * 4);
+    piVar3 = *(int **)(entry_00 + 0x24 + uVar4 * 4);
     (**(code **)(*piVar3 + 0x48))(piVar3);
 LAB_0043bf10:
-    piVar3 = *(int **)(entry + 0x24 + uVar4 * 4);
+    piVar3 = *(int **)(entry_00 + 0x24 + uVar4 * 4);
     (**(code **)(*piVar3 + 0x44))(piVar3,sfx_rate_scale);
-    piVar3 = *(int **)(entry + 0x24 + uVar4 * 4);
+    piVar3 = *(int **)(entry_00 + 0x24 + uVar4 * 4);
     (**(code **)(*piVar3 + 0x30))(piVar3,0,0,0);
     return uVar4;
   }
 LAB_0043be9c:
-  FUN_0043be20(entry,0);
-  music_stream_fill(entry);
-  music_stream_fill(entry);
-  music_stream_fill(entry);
+  sfx_entry_seek(entry_00,0);
+  music_stream_fill(entry_00);
+  music_stream_fill(entry_00);
+  music_stream_fill(entry_00);
   (**(code **)(*(int *)*piVar3 + 0x30))((int *)*piVar3,0,0,1);
   return 0;
 }
 
 
 
-/* FUN_0043bf40 @ 0043bf40 */
+/* sfx_entry_resume @ 0043bf40 */
 
-void __cdecl FUN_0043bf40(int param_1)
+/* restarts playback for a streaming entry */
+
+void __cdecl sfx_entry_resume(int entry)
 
 {
-  if (*(int *)(param_1 + 0x74) != 0) {
-    (**(code **)(**(int **)(param_1 + 0x24) + 0x30))(*(int **)(param_1 + 0x24),0,0,1);
+  if (*(int *)(entry + 0x74) != 0) {
+    (**(code **)(**(int **)(entry + 0x24) + 0x30))(*(int **)(entry + 0x24),0,0,1);
   }
   return;
 }
 
 
 
-/* FUN_0043bf60 @ 0043bf60 */
+/* sfx_entry_stop @ 0043bf60 */
 
-void __cdecl FUN_0043bf60(int param_1)
+/* stops playback for all voices */
+
+void __cdecl sfx_entry_stop(int entry)
 
 {
   int *piVar1;
   int *piVar2;
   int iVar3;
   
-  if (param_1 != 0) {
-    if (*(int *)(param_1 + 0x74) == 0) {
-      piVar2 = (int *)(param_1 + 0x24);
+  if (entry != 0) {
+    if (*(int *)(entry + 0x74) == 0) {
+      piVar2 = (int *)(entry + 0x24);
       iVar3 = 0x10;
       do {
         piVar1 = (int *)*piVar2;
@@ -28011,7 +28019,7 @@ void __cdecl FUN_0043bf60(int param_1)
       } while (iVar3 != 0);
     }
     else {
-      piVar2 = *(int **)(param_1 + 0x24);
+      piVar2 = *(int **)(entry + 0x24);
       if (piVar2 != (int *)0x0) {
         (**(code **)(*piVar2 + 0x48))(piVar2);
         return;
@@ -28023,9 +28031,11 @@ void __cdecl FUN_0043bf60(int param_1)
 
 
 
-/* FUN_0043bfa0 @ 0043bfa0 */
+/* sfx_entry_set_volume @ 0043bfa0 */
 
-void __cdecl FUN_0043bfa0(int param_1,float param_2)
+/* sets the volume for active voices */
+
+void __cdecl sfx_entry_set_volume(int entry,float volume)
 
 {
   int *piVar1;
@@ -28035,18 +28045,18 @@ void __cdecl FUN_0043bfa0(int param_1,float param_2)
   int *piVar5;
   longlong lVar6;
   
-  fVar3 = (param_2 + 2.0) * 0.33333334;
-  if ((*(int *)(param_1 + 0x74) == 0) || (*(float *)(param_1 + 0x20) != fVar3)) {
+  fVar3 = (volume + 2.0) * 0.33333334;
+  if ((*(int *)(entry + 0x74) == 0) || (*(float *)(entry + 0x20) != fVar3)) {
     iVar4 = 0;
-    *(float *)(param_1 + 0x20) = fVar3;
-    piVar5 = (int *)(param_1 + 0x24);
+    *(float *)(entry + 0x20) = fVar3;
+    piVar5 = (int *)(entry + 0x24);
     do {
       piVar1 = (int *)*piVar5;
       if (piVar1 != (int *)0x0) {
         iVar2 = *piVar1;
         lVar6 = __ftol();
         (**(code **)(iVar2 + 0x3c))(piVar1,(int)lVar6);
-        if (*(int *)(param_1 + 0x74) != 0) {
+        if (*(int *)(entry + 0x74) != 0) {
           return;
         }
       }
@@ -28919,7 +28929,7 @@ void audio_shutdown_all(void)
 int __cdecl sfx_play(int sfx_id)
 
 {
-  uint uVar1;
+  int iVar1;
   longlong lVar2;
   float unaff_retaddr;
   
@@ -28950,10 +28960,10 @@ int __cdecl sfx_play(int sfx_id)
   else {
     (&sfx_cooldown_table)[sfx_id] = 0x3d4ccccd;
   }
-  uVar1 = FUN_0043be60((uint)(&sfx_entry_table + sfx_id * 0x84));
-  (**(code **)(**(int **)(&DAT_004c84f4 + (uVar1 + sfx_id * 0x21) * 4) + 0x40))
-            (*(int **)(&DAT_004c84f4 + (uVar1 + sfx_id * 0x21) * 4),0);
-  FUN_0043bfa0((int)(&sfx_entry_table + sfx_id * 0x84),_config_sfx_volume * unaff_retaddr);
+  iVar1 = sfx_entry_start_playback((int)(&sfx_entry_table + sfx_id * 0x84));
+  (**(code **)(**(int **)(&DAT_004c84f4 + (iVar1 + sfx_id * 0x21) * 4) + 0x40))
+            (*(int **)(&DAT_004c84f4 + (iVar1 + sfx_id * 0x21) * 4),0);
+  sfx_entry_set_volume((int)(&sfx_entry_table + sfx_id * 0x84),_config_sfx_volume * unaff_retaddr);
   return sfx_id;
 }
 
@@ -28967,11 +28977,11 @@ int __cdecl sfx_play(int sfx_id)
 float __cdecl sfx_play_panned(float sfx_id)
 
 {
-  uint uVar1;
+  int iVar1;
   int iVar2;
   float10 in_ST0;
-  float10 fVar3;
-  longlong lVar4;
+  float10 extraout_ST0;
+  longlong lVar3;
   
   if ((&sfx_entry_table_state)[(int)sfx_id * 0x21] == 0) {
     return (float)in_ST0;
@@ -28987,8 +28997,8 @@ float __cdecl sfx_play_panned(float sfx_id)
   }
   else if (_bonus_reflex_boost_timer <= 1.0) {
     if (_bonus_reflex_boost_timer < 1.0) {
-      lVar4 = __ftol();
-      sfx_rate_scale = (undefined4)lVar4;
+      lVar3 = __ftol();
+      sfx_rate_scale = (undefined4)lVar3;
     }
   }
   else {
@@ -29000,29 +29010,29 @@ float __cdecl sfx_play_panned(float sfx_id)
   else {
     (&sfx_cooldown_table)[(int)sfx_id] = 0x3d4ccccd;
   }
-  lVar4 = __ftol();
-  iVar2 = (int)lVar4;
+  lVar3 = __ftol();
+  iVar2 = (int)lVar3;
   if (iVar2 < -10000) {
     iVar2 = -10000;
   }
   else if (10000 < iVar2) {
     iVar2 = 10000;
   }
-  uVar1 = FUN_0043be60((uint)(&sfx_entry_table + (int)sfx_id * 0x84));
-  (**(code **)(**(int **)(&DAT_004c84f4 + (uVar1 + (int)sfx_id * 0x21) * 4) + 0x40))
-            (*(int **)(&DAT_004c84f4 + (uVar1 + (int)sfx_id * 0x21) * 4),iVar2);
-  fVar3 = (float10)FUN_0043bfa0((int)(&sfx_entry_table + (int)sfx_id * 0x84),
-                                _config_sfx_volume * sfx_id);
-  return (float)fVar3;
+  iVar1 = sfx_entry_start_playback((int)(&sfx_entry_table + (int)sfx_id * 0x84));
+  (**(code **)(**(int **)(&DAT_004c84f4 + (iVar1 + (int)sfx_id * 0x21) * 4) + 0x40))
+            (*(int **)(&DAT_004c84f4 + (iVar1 + (int)sfx_id * 0x21) * 4),iVar2);
+  sfx_entry_set_volume((int)(&sfx_entry_table + (int)sfx_id * 0x84),_config_sfx_volume * sfx_id);
+  return (float)extraout_ST0;
 }
 
 
 
-/* FUN_0043d3f0 @ 0043d3f0 */
+/* audio_update @ 0043d3f0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* updates sfx cooldowns, music streams, and mute fades */
 
-void FUN_0043d3f0(void)
+void audio_update(void)
 
 {
   float *pfVar1;
@@ -29088,8 +29098,8 @@ void __cdecl sfx_play_exclusive(int sfx_id)
       iVar2 = iVar2 + 1;
     } while (iVar2 < 0x80);
     if ((float)(&sfx_volume_table)[sfx_id] <= 0.0) {
-      FUN_0043be60((uint)(&music_entry_table + sfx_id * 0x84));
-      FUN_0043bfa0((int)(&music_entry_table + sfx_id * 0x84),config_music_volume);
+      sfx_entry_start_playback((int)(&music_entry_table + sfx_id * 0x84));
+      sfx_entry_set_volume((int)(&music_entry_table + sfx_id * 0x84),config_music_volume);
       fVar1 = config_music_volume;
       *(undefined1 *)((int)&sfx_mute_flags + sfx_id) = 0;
       (&sfx_volume_table)[sfx_id] = fVar1;
@@ -29138,68 +29148,68 @@ void sfx_update_mute_fades(void)
 {
   float fVar1;
   int iVar2;
-  undefined *puVar3;
-  float *pfVar4;
-  float fVar5;
+  undefined *entry;
+  float *pfVar3;
+  float volume;
   byte abStack_4 [4];
   
   if ((DAT_004aaf84 == '\0') && (sfx_unmuted_flag != '\0')) {
     iVar2 = 0;
-    pfVar4 = (float *)&sfx_volume_table;
-    puVar3 = &music_entry_table;
+    pfVar3 = (float *)&sfx_volume_table;
+    entry = &music_entry_table;
     do {
-      if (*(int *)(puVar3 + 0x74) != 0) {
+      if (*(int *)(entry + 0x74) != 0) {
         if (0.0 < config_music_volume) {
           if (*(char *)((int)&sfx_mute_flags + iVar2) == '\0') {
-            (**(code **)(**(int **)(puVar3 + 0x24) + 0x24))(*(int **)(puVar3 + 0x24),abStack_4);
+            (**(code **)(**(int **)(entry + 0x24) + 0x24))(*(int **)(entry + 0x24),abStack_4);
             if ((abStack_4[0] & 1) == 0) {
               console_printf(&console_log_queue,(byte *)s_SND__detected_unsilenced_hearabl_00478610)
               ;
-              FUN_0043bf40((int)puVar3);
+              sfx_entry_resume((int)entry);
             }
             goto LAB_0043d63c;
           }
         }
         else {
-          (**(code **)(**(int **)(puVar3 + 0x24) + 0x48))(*(int **)(puVar3 + 0x24));
+          (**(code **)(**(int **)(entry + 0x24) + 0x48))(*(int **)(entry + 0x24));
 LAB_0043d63c:
           fVar1 = config_music_volume;
           if (*(char *)((int)&sfx_mute_flags + iVar2) == '\0') {
-            if (config_music_volume <= *pfVar4) {
-              if (*pfVar4 <= config_music_volume) goto LAB_0043d709;
-              *pfVar4 = config_music_volume;
+            if (config_music_volume <= *pfVar3) {
+              if (*pfVar3 <= config_music_volume) goto LAB_0043d709;
+              *pfVar3 = config_music_volume;
 LAB_0043d6ff:
-              fVar5 = fVar1;
+              volume = fVar1;
             }
             else {
-              fVar5 = frame_dt + *pfVar4;
-              *pfVar4 = fVar5;
+              volume = frame_dt + *pfVar3;
+              *pfVar3 = volume;
               fVar1 = config_music_volume;
-              if (config_music_volume <= fVar5) goto LAB_0043d6ff;
+              if (config_music_volume <= volume) goto LAB_0043d6ff;
             }
-            FUN_0043bfa0((int)puVar3,fVar5);
+            sfx_entry_set_volume((int)entry,volume);
             goto LAB_0043d709;
           }
         }
-        if (0.0 < *pfVar4) {
-          fVar1 = *pfVar4 - frame_dt * 0.5;
-          *pfVar4 = fVar1;
+        if (0.0 < *pfVar3) {
+          fVar1 = *pfVar3 - frame_dt * 0.5;
+          *pfVar3 = fVar1;
           if (0.0 < fVar1) {
-            FUN_0043bfa0((int)puVar3,fVar1);
+            sfx_entry_set_volume((int)entry,fVar1);
           }
           else {
-            FUN_0043bf60((int)puVar3);
+            sfx_entry_stop((int)entry);
           }
         }
-        if (*pfVar4 < 0.0) {
-          *pfVar4 = 0.0;
+        if (*pfVar3 < 0.0) {
+          *pfVar3 = 0.0;
         }
       }
 LAB_0043d709:
-      puVar3 = puVar3 + 0x84;
+      entry = entry + 0x84;
       iVar2 = iVar2 + 1;
-      pfVar4 = pfVar4 + 1;
-    } while ((int)puVar3 < 0x4c8450);
+      pfVar3 = pfVar3 + 1;
+    } while ((int)entry < 0x4c8450);
   }
   return;
 }
@@ -29213,14 +29223,14 @@ LAB_0043d709:
 void audio_suspend_channels(void)
 
 {
-  undefined *puVar1;
+  undefined *entry;
   
   if (((sfx_unmuted_flag != '\0') && (config_music_disabled == '\0')) && (config_blob == '\0')) {
-    puVar1 = &music_entry_table;
+    entry = &music_entry_table;
     do {
-      FUN_0043bf60((int)puVar1);
-      puVar1 = puVar1 + 0x84;
-    } while ((int)puVar1 < 0x4c8450);
+      sfx_entry_stop((int)entry);
+      entry = entry + 0x84;
+    } while ((int)entry < 0x4c8450);
   }
   return;
 }
@@ -29234,19 +29244,19 @@ void audio_suspend_channels(void)
 void audio_resume_channels(void)
 
 {
-  undefined *puVar1;
-  int iVar2;
+  undefined *entry;
+  int iVar1;
   
   if (((sfx_unmuted_flag != '\0') && (config_music_disabled == '\0')) && (config_blob == '\0')) {
-    iVar2 = 0;
-    puVar1 = &music_entry_table;
+    iVar1 = 0;
+    entry = &music_entry_table;
     do {
-      if (*(char *)((int)&sfx_mute_flags + iVar2) == '\0') {
-        FUN_0043bf40((int)puVar1);
+      if (*(char *)((int)&sfx_mute_flags + iVar1) == '\0') {
+        sfx_entry_resume((int)entry);
       }
-      puVar1 = puVar1 + 0x84;
-      iVar2 = iVar2 + 1;
-    } while ((int)puVar1 < 0x4c8450);
+      entry = entry + 0x84;
+      iVar1 = iVar1 + 1;
+    } while ((int)entry < 0x4c8450);
   }
   return;
 }
