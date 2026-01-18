@@ -1212,7 +1212,7 @@ function hookWin32FileIO() {
     return false;
   }
 
-  const createFileW = Module.findExportByName('kernel32.dll', 'CreateFileW');
+  const createFileW = k32.findExportByName('CreateFileW');
   if (createFileW) {
     attachAtPtr(createFileW, 'CreateFileW', {
       onEnter(args) {
@@ -1241,7 +1241,7 @@ function hookWin32FileIO() {
     });
   }
 
-  const createFileA = Module.findExportByName('kernel32.dll', 'CreateFileA');
+  const createFileA = k32.findExportByName('CreateFileA');
   if (createFileA) {
     attachAtPtr(createFileA, 'CreateFileA', {
       onEnter(args) {
