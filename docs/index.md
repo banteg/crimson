@@ -25,6 +25,7 @@ Data map coverage: 17.71% (579 / 3269 symbols)
 - [Perk ID map](perk-id-map.md) — Tracking
 - [Bonus ID map](bonus-id-map.md) — Tracking
 - [Weapon ID map](weapon-id-map.md) — Tracking
+- [Weapon icon atlas](ui-wicons-map.md) — Tracking
 - [SFX ID map](sfx-id-map.md) — Tracking
 - [SFX usage](sfx-usage.md) — Tracking
 - [SFX labels](sfx-labels.md) — Tracking
