@@ -64,11 +64,13 @@ undefined4 FUN_10001a30(void)
 
 /* FUN_10001e90 @ 10001e90 */
 
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
+
 void FUN_10001e90(void)
 
 {
   HWND pHVar1;
-  int iVar2;
+  HRESULT HVar2;
   uint wParam;
   WPARAM WVar3;
   char *pcVar4;
@@ -82,10 +84,11 @@ void FUN_10001e90(void)
   pHVar1 = GetDlgItem(DAT_1005b2b0,0x3ed);
   SendMessageA(pHVar1,UVar5,wParam,LVar6);
   DAT_1005d400 = DAT_1005d0c8;
-  iVar2 = (**(code **)(*grim_d3d8_probe + 0x24))(grim_d3d8_probe,0,1,0x16,0x16,0);
+  HVar2 = (*grim_d3d8_probe->lpVtbl->CheckDeviceType)
+                    (grim_d3d8_probe,0,D3DDEVTYPE_HAL,D3DFMT_X8R8G8B8,D3DFMT_X8R8G8B8,0);
   LVar6 = 0;
   WVar3 = 0;
-  DAT_10053065 = -1 < iVar2;
+  DAT_10053065 = -1 < HVar2;
   UVar5 = 0x14b;
   pHVar1 = GetDlgItem(DAT_1005b2b0,0x3f9);
   SendMessageA(pHVar1,UVar5,WVar3,LVar6);
@@ -192,6 +195,7 @@ void FUN_10001e90(void)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 /* dialog procedure for the Grim2D config UI */
 
 int grim_config_dialog_proc(int hwnd,uint msg,uint wparam,int lparam)
@@ -202,21 +206,20 @@ int grim_config_dialog_proc(int hwnd,uint msg,uint wparam,int lparam)
   LRESULT LVar3;
   char *pcVar4;
   HWND pHVar5;
-  int iVar6;
-  undefined4 *puVar7;
-  int iVar8;
+  UINT UVar6;
+  HRESULT HVar7;
+  undefined4 *puVar8;
+  UINT Adapter;
   bool bVar9;
-  char *pcVar10;
-  UINT UVar11;
+  UINT UVar10;
+  char *pcVar11;
   WPARAM WVar12;
-  undefined1 *lParam;
-  LPARAM LVar13;
-  int iVar14;
+  int iVar13;
+  LPARAM LVar14;
   char *pcStack_404;
   char cStack_400;
   undefined4 uStack_3ff;
-  char acStack_214 [16];
-  undefined1 auStack_204 [516];
+  char acStack_200 [512];
   
   if (msg == 0x10) {
 LAB_10002629:
@@ -226,65 +229,68 @@ LAB_10002631:
   }
   else {
     if (msg == 0x110) {
-      iVar14 = 5;
+      iVar13 = 5;
       DAT_1005b2b0 = hwnd;
       pHVar5 = GetDlgItem((HWND)hwnd,0x3f2);
-      ShowWindow(pHVar5,iVar14);
-      iVar14 = 0;
+      ShowWindow(pHVar5,iVar13);
+      iVar13 = 0;
       pHVar5 = GetDlgItem((HWND)hwnd,0x40b);
-      ShowWindow(pHVar5,iVar14);
+      ShowWindow(pHVar5,iVar13);
       SendMessageA((HWND)hwnd,0x80,1,DAT_10059778);
       SendMessageA((HWND)hwnd,0x80,0,DAT_10059778);
       GetLocalTime((LPSYSTEMTIME)&DAT_1005c408);
-      iVar14 = (**(code **)(*grim_d3d8_probe + 0x10))(grim_d3d8_probe);
-      iVar8 = 0;
+      UVar6 = (*grim_d3d8_probe->lpVtbl->GetAdapterCount)(grim_d3d8_probe);
+      Adapter = 0;
       DAT_1005befc = '\0';
-      if (0 < iVar14) {
+      if (0 < (int)UVar6) {
         do {
-          (**(code **)(*grim_d3d8_probe + 0x14))(grim_d3d8_probe,iVar8,2,&DAT_10059788);
-          if (iVar8 == 0) {
-            pcVar10 = s__s__default__1005330c;
+          (*grim_d3d8_probe->lpVtbl->GetAdapterIdentifier)
+                    (grim_d3d8_probe,Adapter,2,(D3DADAPTER_IDENTIFIER8 *)&DAT_10059788);
+          if (Adapter == 0) {
+            pcVar11 = s__s__default__1005330c;
           }
           else {
-            pcVar10 = &DAT_10053308;
+            pcVar11 = &DAT_10053308;
           }
-          sprintf(acStack_214,pcVar10,&DAT_10059988);
-          iVar6 = (**(code **)(*grim_d3d8_probe + 0x24))(grim_d3d8_probe,iVar8,1,0x17,0x17,0);
-          if ((-1 < iVar6) ||
-             (iVar6 = (**(code **)(*grim_d3d8_probe + 0x24))(grim_d3d8_probe,iVar8,1,0x16,0x16,0),
-             -1 < iVar6)) {
-            lParam = auStack_204;
+          sprintf(acStack_200,pcVar11,&DAT_10059988);
+          HVar7 = (*grim_d3d8_probe->lpVtbl->CheckDeviceType)
+                            (grim_d3d8_probe,Adapter,D3DDEVTYPE_HAL,D3DFMT_R5G6B5,D3DFMT_R5G6B5,0);
+          if ((-1 < HVar7) ||
+             (HVar7 = (*grim_d3d8_probe->lpVtbl->CheckDeviceType)
+                                (grim_d3d8_probe,Adapter,D3DDEVTYPE_HAL,D3DFMT_X8R8G8B8,
+                                 D3DFMT_X8R8G8B8,0), -1 < HVar7)) {
+            pcVar11 = acStack_200;
             WVar12 = 0;
-            UVar11 = 0x143;
+            UVar10 = 0x143;
             pHVar5 = GetDlgItem((HWND)hwnd,0x3f1);
-            SendMessageA(pHVar5,UVar11,WVar12,(LPARAM)lParam);
+            SendMessageA(pHVar5,UVar10,WVar12,(LPARAM)pcVar11);
             DAT_1005befc = '\x01';
           }
-          iVar8 = iVar8 + 1;
-        } while (iVar8 < iVar14);
+          Adapter = Adapter + 1;
+        } while ((int)Adapter < (int)UVar6);
       }
-      LVar13 = 0;
-      UVar11 = 0x14e;
+      LVar14 = 0;
+      UVar10 = 0x14e;
       WVar12 = DAT_1005d3e8;
       pHVar5 = GetDlgItem((HWND)hwnd,0x3f1);
-      SendMessageA(pHVar5,UVar11,WVar12,LVar13);
-      LVar13 = 0;
+      SendMessageA(pHVar5,UVar10,WVar12,LVar14);
+      LVar14 = 0;
       WVar12 = 0;
-      UVar11 = 0x147;
+      UVar10 = 0x147;
       pHVar5 = GetDlgItem((HWND)hwnd,0x3f1);
-      DAT_1005d3e8 = SendMessageA(pHVar5,UVar11,WVar12,LVar13);
+      DAT_1005d3e8 = SendMessageA(pHVar5,UVar10,WVar12,LVar14);
       FUN_10001e90();
       if (DAT_1005befc == '\0') {
-        pcVar10 = s_No_supported_display_adapters_de_10053454;
+        pcVar11 = s_No_supported_display_adapters_de_10053454;
         WVar12 = 0;
-        UVar11 = 0x143;
+        UVar10 = 0x143;
         pHVar5 = GetDlgItem((HWND)hwnd,0x3f1);
-        SendMessageA(pHVar5,UVar11,WVar12,(LPARAM)pcVar10);
-        iVar14 = MessageBoxA((HWND)hwnd,s_No_supported_display_adapters_we_10053248,
+        SendMessageA(pHVar5,UVar10,WVar12,(LPARAM)pcVar11);
+        iVar13 = MessageBoxA((HWND)hwnd,s_No_supported_display_adapters_we_10053248,
                              s_Crimsonland_100532fc,0x33);
-        if (iVar14 != 6) {
+        if (iVar13 != 6) {
           DAT_1005d3bc = 1;
-          EndDialog((HWND)hwnd,0x110);
+          EndDialog((HWND)hwnd,wparam & 0xffff);
         }
       }
       return 1;
@@ -294,34 +300,34 @@ LAB_10002631:
     }
     switch(wparam & 0xffff) {
     case 1000:
-      LVar13 = 0;
+      LVar14 = 0;
       WVar12 = 0;
-      UVar11 = 0xf0;
+      UVar10 = 0xf0;
       pHVar5 = GetDlgItem((HWND)hwnd,0x3ef);
-      LVar3 = SendMessageA(pHVar5,UVar11,WVar12,LVar13);
-      LVar13 = 0;
+      LVar3 = SendMessageA(pHVar5,UVar10,WVar12,LVar14);
+      LVar14 = 0;
       WVar12 = 0;
       DAT_1005d0c8 = LVar3 != 0;
-      UVar11 = 0x147;
+      UVar10 = 0x147;
       pHVar5 = GetDlgItem((HWND)hwnd,0x3f9);
-      WVar12 = SendMessageA(pHVar5,UVar11,WVar12,LVar13);
+      WVar12 = SendMessageA(pHVar5,UVar10,WVar12,LVar14);
       cStack_400 = '\0';
-      puVar7 = &uStack_3ff;
-      for (iVar14 = 0x7f; iVar14 != 0; iVar14 = iVar14 + -1) {
-        *puVar7 = 0;
-        puVar7 = puVar7 + 1;
+      puVar8 = &uStack_3ff;
+      for (iVar13 = 0x7f; iVar13 != 0; iVar13 = iVar13 + -1) {
+        *puVar8 = 0;
+        puVar8 = puVar8 + 1;
       }
-      *(undefined2 *)puVar7 = 0;
-      *(undefined1 *)((int)puVar7 + 2) = 0;
-      pcVar10 = &cStack_400;
-      UVar11 = 0x148;
+      *(undefined2 *)puVar8 = 0;
+      *(undefined1 *)((int)puVar8 + 2) = 0;
+      pcVar11 = &cStack_400;
+      UVar10 = 0x148;
       pHVar5 = GetDlgItem((HWND)hwnd,0x3f9);
-      SendMessageA(pHVar5,UVar11,WVar12,(LPARAM)pcVar10);
-      pcVar10 = strstr(&cStack_400,s_window_10053494);
-      DAT_1005b280 = pcVar10 != (char *)0x0;
-      pcVar10 = strchr(&cStack_400,0x78);
-      *pcVar10 = '\0';
-      pcVar4 = strchr(pcVar10 + 1,0x78);
+      SendMessageA(pHVar5,UVar10,WVar12,(LPARAM)pcVar11);
+      pcVar11 = strstr(&cStack_400,s_window_10053494);
+      DAT_1005b280 = pcVar11 != (char *)0x0;
+      pcVar11 = strchr(&cStack_400,0x78);
+      *pcVar11 = '\0';
+      pcVar4 = strchr(pcVar11 + 1,0x78);
       if (pcVar4 == (char *)0x0) {
         pcStack_404 = &DAT_10053490;
       }
@@ -331,29 +337,29 @@ LAB_10002631:
         pcVar4[4] = '\0';
       }
       DAT_10053054 = atoi(&cStack_400);
-      DAT_10053058 = atoi(pcVar10 + 1);
+      DAT_10053058 = atoi(pcVar11 + 1);
       DAT_1005ce18 = DAT_10053054;
       _DAT_1005ce28 = DAT_10053058;
-      iVar14 = atoi(pcStack_404);
-      bVar9 = iVar14 == 0x10;
+      iVar13 = atoi(pcStack_404);
+      bVar9 = iVar13 == 0x10;
       DAT_1005b2b8 = CONCAT31(DAT_1005b2b8._1_3_,bVar9);
       DAT_1005ce38 = (-(uint)bVar9 & 0xfffffff0) + 0x20;
       sprintf(&cStack_400,s_w___d_h__d_bpp__d_1005347c,DAT_10053054,DAT_10053058,bVar9);
       DAT_1005d3bc = 0;
-      LVar13 = 0;
+      LVar14 = 0;
       WVar12 = 0;
-      UVar11 = 0x147;
+      UVar10 = 0x147;
       pHVar5 = GetDlgItem((HWND)hwnd,0x3f1);
-      DAT_1005d3e8 = SendMessageA(pHVar5,UVar11,WVar12,LVar13);
+      DAT_1005d3e8 = SendMessageA(pHVar5,UVar10,WVar12,LVar14);
       goto LAB_10002631;
     case 0x3e9:
       goto LAB_10002629;
     case 0x3f1:
-      LVar13 = 0;
+      LVar14 = 0;
       WVar12 = 0;
-      UVar11 = 0x147;
+      UVar10 = 0x147;
       pHVar5 = GetDlgItem((HWND)hwnd,0x3f1);
-      DAT_1005d3e8 = SendMessageA(pHVar5,UVar11,WVar12,LVar13);
+      DAT_1005d3e8 = SendMessageA(pHVar5,UVar10,WVar12,LVar14);
       FUN_10001e90();
       return 0;
     case 0x3f2:
@@ -365,8 +371,8 @@ LAB_10002631:
       }
       break;
     case 0x3f5:
-      UVar11 = WinExec(s_explorer_exe_manual_html_100534d0,3);
-      if (UVar11 < 0x20) {
+      UVar10 = WinExec(s_explorer_exe_manual_html_100534d0,3);
+      if (UVar10 < 0x20) {
         MessageBoxA((HWND)0x0,s_Failed_to_open_the_Crimsonland_M_1005349c,s_Crimsonland_100532fc,
                     0x30);
         return 0;
@@ -382,11 +388,11 @@ LAB_10002631:
                   s_Parental_lock_problem_1005359c,0x40);
       return 0;
     case 0x3fc:
-      LVar13 = 0;
+      LVar14 = 0;
       WVar12 = 0;
-      UVar11 = 0x147;
+      UVar10 = 0x147;
       pHVar5 = GetDlgItem((HWND)hwnd,0x3f1);
-      DAT_1005d3e8 = SendMessageA(pHVar5,UVar11,WVar12,LVar13);
+      DAT_1005d3e8 = SendMessageA(pHVar5,UVar10,WVar12,LVar14);
       DialogBoxParamA(DAT_1005bacc,(LPCSTR)0x8a,(HWND)hwnd,(DLGPROC)&LAB_10001170,0);
       return 0;
     }
@@ -504,100 +510,111 @@ void grim_window_destroy(void)
 
 /* grim_backup_textures @ 100028d0 */
 
-/* WARNING: Removing unreachable block (ram,0x100029b1) */
-/* WARNING: Removing unreachable block (ram,0x100029bb) */
-/* WARNING: Removing unreachable block (ram,0x10002a88) */
-/* WARNING: Removing unreachable block (ram,0x10002a92) */
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 /* backup texture surfaces before device reset */
 
 int grim_backup_textures(void)
 
 {
   undefined4 uVar1;
-  int iVar2;
-  int *piVar3;
-  uint uVar4;
-  int *piVar5;
+  HRESULT HVar2;
+  int iVar3;
+  ULONG UVar4;
+  uint uVar5;
   int *piVar6;
-  int *piStack_28;
+  int iVar7;
+  IDirect3DSurface8 *local_14;
   undefined4 uStack_10;
   undefined4 uStack_c;
   undefined4 uStack_8;
   undefined4 uStack_4;
   
-  piStack_28 = (int *)0x0;
   FUN_10001160();
   if (DAT_1005d810 != '\0') {
-    piStack_28 = (int *)0x0;
     uVar1 = FUN_10001160();
     if (DAT_1005d810 != '\0') {
       return CONCAT31((int3)((uint)uVar1 >> 8),1);
     }
   }
-  piVar6 = (int *)0x0;
+  iVar7 = 0;
+  local_14 = (IDirect3DSurface8 *)0x0;
   if (-1 < DAT_1005305c) {
-    piVar5 = &grim_texture_slots;
+    piVar6 = &grim_texture_slots;
     do {
-      if ((*piVar5 != 0) && (*(char *)(*piVar5 + 8) != '\0')) {
-        piStack_28 = piVar6;
+      if ((*piVar6 != 0) && (*(char *)(*piVar6 + 8) != '\0')) {
         FUN_10001160();
-        iVar2 = *piVar5;
-        piStack_28 = (int *)(iVar2 + 0x14);
-        uVar1 = *(undefined4 *)(iVar2 + 0xc);
-        iVar2 = (**(code **)(*grim_d3d_device + 0x6c))
-                          (grim_d3d_device,uVar1,*(undefined4 *)(iVar2 + 0x10),DAT_1005a488);
-        if (iVar2 < 0) {
+        iVar3 = *piVar6;
+        HVar2 = (*grim_d3d_device->lpVtbl->CreateImageSurface)
+                          (grim_d3d_device,*(UINT *)(iVar3 + 0xc),*(UINT *)(iVar3 + 0x10),
+                           DAT_1005a488,(IDirect3DSurface8 **)(iVar3 + 0x14));
+        if (HVar2 < 0) {
           DAT_1005c8f8 = s_D3D__Unable_to_backup_texture____10053678;
           FUN_10001160();
-          uVar4 = FUN_10001160();
-          return uVar4 & 0xffffff00;
+          uVar5 = FUN_10001160();
+          return uVar5 & 0xffffff00;
         }
-        iVar2 = (**(code **)(**(int **)(*piVar5 + 4) + 0x3c))(*(int **)(*piVar5 + 4),0,&piStack_28);
-        if (iVar2 < 0) {
-          piVar5 = *(int **)((&grim_texture_slots)[(int)piVar6] + 0x14);
-          if ((piVar5 != (int *)0x0) && (iVar2 = (**(code **)(*piVar5 + 8))(piVar5), iVar2 == 0)) {
-            *(undefined4 *)((&grim_texture_slots)[(int)piVar6] + 0x14) = 0;
+        iVar3 = (**(code **)(**(int **)(*piVar6 + 4) + 0x3c))(*(int **)(*piVar6 + 4),0,&local_14);
+        if (iVar3 < 0) {
+          piVar6 = *(int **)((&grim_texture_slots)[iVar7] + 0x14);
+          if (piVar6 != (int *)0x0) {
+            iVar3 = (**(code **)(*piVar6 + 8))(piVar6);
+            if (iVar3 == 0) {
+              *(undefined4 *)((&grim_texture_slots)[iVar7] + 0x14) = 0;
+            }
           }
           DAT_1005c8f8 = s_D3D__Unable_to_backup_texture____10053644;
           FUN_10001160();
-          uVar4 = FUN_10001160();
-          return uVar4 & 0xffffff00;
+          uVar5 = FUN_10001160();
+          return uVar5 & 0xffffff00;
         }
-        piVar3 = (int *)(**(code **)(*grim_d3d_device + 0x70))
-                                  (grim_d3d_device,uVar1,0,0,*(undefined4 *)(*piVar5 + 0x14),0);
-        if ((int)piVar3 < 0) {
-          piStack_28 = *(int **)((&grim_texture_slots)[(int)piVar6] + 0x14);
-          if ((piStack_28 != (int *)0x0) && (iVar2 = (**(code **)(*piStack_28 + 8))(), iVar2 == 0))
-          {
-            *(undefined4 *)((&grim_texture_slots)[(int)piVar6] + 0x14) = 0;
+        HVar2 = (*grim_d3d_device->lpVtbl->CopyRects)
+                          (grim_d3d_device,local_14,(RECT *)0x0,0,
+                           *(IDirect3DSurface8 **)(*piVar6 + 0x14),(POINT *)0x0);
+        if (HVar2 < 0) {
+          piVar6 = *(int **)((&grim_texture_slots)[iVar7] + 0x14);
+          if (piVar6 != (int *)0x0) {
+            iVar3 = (**(code **)(*piVar6 + 8))(piVar6);
+            if (iVar3 == 0) {
+              *(undefined4 *)((&grim_texture_slots)[iVar7] + 0x14) = 0;
+            }
+          }
+          if (local_14 != (IDirect3DSurface8 *)0x0) {
+            UVar4 = (*local_14->lpVtbl->Release)(local_14);
+            if (UVar4 == 0) {
+              local_14 = (IDirect3DSurface8 *)0x0;
+            }
           }
           DAT_1005c8f8 = s_D3D__Unable_to_backup_texture____10053618;
-          piStack_28 = piVar6;
           FUN_10001160();
           uStack_10 = CONCAT31(uStack_10._1_3_,1);
           _DAT_1005d0f8 = uStack_10;
           _DAT_1005d0fc = uStack_c;
           _DAT_1005d100 = uStack_8;
           _DAT_1005d104 = uStack_4;
-          piStack_28 = piVar3;
-          if (piVar3 == (int *)0x88760868) {
-            uVar4 = FUN_10001160();
-            return uVar4 & 0xffffff00;
+          if (HVar2 == -0x7789f798) {
+            uVar5 = FUN_10001160();
+            return uVar5 & 0xffffff00;
           }
-          if (piVar3 == (int *)0x8876086c) {
-            uVar4 = FUN_10001160();
-            return uVar4 & 0xffffff00;
+          if (HVar2 == -0x7789f794) {
+            uVar5 = FUN_10001160();
+            return uVar5 & 0xffffff00;
           }
-          uVar4 = FUN_10001160();
-          return uVar4 & 0xffffff00;
+          uVar5 = FUN_10001160();
+          return uVar5 & 0xffffff00;
+        }
+        if (local_14 != (IDirect3DSurface8 *)0x0) {
+          UVar4 = (*local_14->lpVtbl->Release)(local_14);
+          if (UVar4 == 0) {
+            local_14 = (IDirect3DSurface8 *)0x0;
+          }
         }
       }
-      piVar6 = (int *)((int)piVar6 + 1);
-      piVar5 = piVar5 + 1;
-    } while ((int)piVar6 <= DAT_1005305c);
+      iVar7 = iVar7 + 1;
+      piVar6 = piVar6 + 1;
+    } while (iVar7 <= DAT_1005305c);
   }
-  DAT_1005d810 = 1;
+  DAT_1005d810 = '\x01';
   return CONCAT31((int3)((uint)DAT_1005305c >> 8),1);
 }
 
@@ -606,6 +623,7 @@ int grim_backup_textures(void)
 /* grim_restore_textures @ 10002b40 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 /* restore texture surfaces after device reset */
 
 int grim_restore_textures(void)
@@ -615,9 +633,11 @@ int grim_restore_textures(void)
   uint in_EAX;
   uint uVar2;
   int iVar3;
-  int *piVar4;
-  int iVar5;
-  int *local_14;
+  HRESULT HVar4;
+  ULONG UVar5;
+  int *piVar6;
+  int iVar7;
+  IDirect3DSurface8 *local_14;
   undefined4 uStack_10;
   undefined4 uStack_c;
   undefined4 uStack_8;
@@ -633,15 +653,15 @@ int grim_restore_textures(void)
       return uVar2 & 0xffffff00;
     }
   }
-  iVar5 = 0;
-  local_14 = (int *)0x0;
+  iVar7 = 0;
+  local_14 = (IDirect3DSurface8 *)0x0;
   if (-1 < DAT_1005305c) {
-    piVar4 = &grim_texture_slots;
+    piVar6 = &grim_texture_slots;
     do {
-      iVar3 = *piVar4;
+      iVar3 = *piVar6;
       if (((iVar3 != 0) && (*(char *)(iVar3 + 8) != '\0')) && (*(int *)(iVar3 + 0x14) != 0)) {
         FUN_10001160();
-        piVar1 = *(int **)(*piVar4 + 4);
+        piVar1 = *(int **)(*piVar6 + 4);
         if (piVar1 != (int *)0x0) {
           iVar3 = (**(code **)(*piVar1 + 0x3c))(piVar1,0,&local_14);
           if (iVar3 < 0) {
@@ -650,20 +670,21 @@ int grim_restore_textures(void)
             return uVar2 & 0xffffff00;
           }
         }
-        iVar3 = (**(code **)(*grim_d3d_device + 0x70))
-                          (grim_d3d_device,*(undefined4 *)(*piVar4 + 0x14),0,0,local_14,0);
-        if (iVar3 < 0) {
-          if (local_14 != (int *)0x0) {
-            iVar3 = (**(code **)(*local_14 + 8))(local_14);
-            if (iVar3 == 0) {
-              local_14 = (int *)0x0;
+        HVar4 = (*grim_d3d_device->lpVtbl->CopyRects)
+                          (grim_d3d_device,*(IDirect3DSurface8 **)(*piVar6 + 0x14),(RECT *)0x0,0,
+                           local_14,(POINT *)0x0);
+        if (HVar4 < 0) {
+          if (local_14 != (IDirect3DSurface8 *)0x0) {
+            UVar5 = (*local_14->lpVtbl->Release)(local_14);
+            if (UVar5 == 0) {
+              local_14 = (IDirect3DSurface8 *)0x0;
             }
           }
-          piVar4 = *(int **)((&grim_texture_slots)[iVar5] + 0x14);
-          if (piVar4 != (int *)0x0) {
-            iVar3 = (**(code **)(*piVar4 + 8))(piVar4);
+          piVar6 = *(int **)((&grim_texture_slots)[iVar7] + 0x14);
+          if (piVar6 != (int *)0x0) {
+            iVar3 = (**(code **)(*piVar6 + 8))(piVar6);
             if (iVar3 == 0) {
-              *(undefined4 *)((&grim_texture_slots)[iVar5] + 0x14) = 0;
+              *(undefined4 *)((&grim_texture_slots)[iVar7] + 0x14) = 0;
             }
           }
           uStack_10 = CONCAT31(uStack_10._1_3_,1);
@@ -676,23 +697,23 @@ int grim_restore_textures(void)
           uVar2 = FUN_10001160();
           return uVar2 & 0xffffff00;
         }
-        if (local_14 != (int *)0x0) {
-          iVar3 = (**(code **)(*local_14 + 8))(local_14);
-          if (iVar3 == 0) {
-            local_14 = (int *)0x0;
+        if (local_14 != (IDirect3DSurface8 *)0x0) {
+          UVar5 = (*local_14->lpVtbl->Release)(local_14);
+          if (UVar5 == 0) {
+            local_14 = (IDirect3DSurface8 *)0x0;
           }
         }
-        piVar1 = *(int **)(*piVar4 + 0x14);
+        piVar1 = *(int **)(*piVar6 + 0x14);
         if (piVar1 != (int *)0x0) {
           iVar3 = (**(code **)(*piVar1 + 8))(piVar1);
           if (iVar3 == 0) {
-            *(undefined4 *)(*piVar4 + 0x14) = 0;
+            *(undefined4 *)(*piVar6 + 0x14) = 0;
           }
         }
       }
-      iVar5 = iVar5 + 1;
-      piVar4 = piVar4 + 1;
-    } while (iVar5 <= DAT_1005305c);
+      iVar7 = iVar7 + 1;
+      piVar6 = piVar6 + 1;
+    } while (iVar7 <= DAT_1005305c);
   }
   DAT_1005d810 = 0;
   return CONCAT31((int3)((uint)DAT_1005305c >> 8),1);
@@ -703,68 +724,71 @@ int grim_restore_textures(void)
 /* FUN_10002cf0 @ 10002cf0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 
 undefined4 FUN_10002cf0(void)
 
 {
   int *piVar1;
-  int iVar2;
+  ULONG UVar2;
   int iVar3;
+  HRESULT HVar4;
   undefined4 unaff_EBX;
   undefined4 unaff_EBP;
-  int *piVar4;
+  int *piVar5;
+  int iVar6;
   undefined4 uStack_10;
   undefined4 uStack_c;
   
   FUN_10001160();
-  if ((grim_render_target_surface != (int *)0x0) &&
-     (iVar2 = (**(code **)(*grim_render_target_surface + 8))(grim_render_target_surface), iVar2 == 0
+  if ((grim_render_target_surface != (LPDIRECT3DSURFACE8)0x0) &&
+     (UVar2 = (*grim_render_target_surface->lpVtbl->Release)(grim_render_target_surface), UVar2 == 0
      )) {
-    grim_render_target_surface = (int *)0x0;
+    grim_render_target_surface = (LPDIRECT3DSURFACE8)0x0;
   }
-  if ((grim_backbuffer_surface != (int *)0x0) &&
-     (iVar2 = (**(code **)(*grim_backbuffer_surface + 8))(grim_backbuffer_surface), iVar2 == 0)) {
-    grim_backbuffer_surface = (int *)0x0;
+  if ((grim_backbuffer_surface != (LPDIRECT3DSURFACE8)0x0) &&
+     (UVar2 = (*grim_backbuffer_surface->lpVtbl->Release)(grim_backbuffer_surface), UVar2 == 0)) {
+    grim_backbuffer_surface = (LPDIRECT3DSURFACE8)0x0;
   }
-  iVar2 = 0;
+  iVar6 = 0;
   if (-1 < DAT_1005305c) {
-    piVar4 = &grim_texture_slots;
+    piVar5 = &grim_texture_slots;
     do {
-      iVar3 = *piVar4;
+      iVar3 = *piVar5;
       if ((((iVar3 != 0) && (*(char *)(iVar3 + 8) != '\0')) &&
           (piVar1 = *(int **)(iVar3 + 4), piVar1 != (int *)0x0)) &&
          (iVar3 = (**(code **)(*piVar1 + 8))(piVar1), iVar3 == 0)) {
-        *(undefined4 *)(*piVar4 + 4) = 0;
+        *(undefined4 *)(*piVar5 + 4) = 0;
       }
-      iVar2 = iVar2 + 1;
-      piVar4 = piVar4 + 1;
-    } while (iVar2 <= DAT_1005305c);
+      iVar6 = iVar6 + 1;
+      piVar5 = piVar5 + 1;
+    } while (iVar6 <= DAT_1005305c);
   }
-  iVar2 = (**(code **)(*grim_d3d_device + 0x38))(grim_d3d_device,&DAT_10059df8);
+  iVar6 = (*grim_d3d_device->lpVtbl->Reset)(grim_d3d_device,(D3DPRESENT_PARAMETERS *)&DAT_10059df8);
   do {
-    if (iVar2 == 0) {
+    if (iVar6 == 0) {
       FUN_10004520();
-      iVar2 = 0;
+      iVar6 = 0;
       if (-1 < DAT_1005305c) {
-        piVar4 = &grim_texture_slots;
+        piVar5 = &grim_texture_slots;
         do {
-          iVar3 = *piVar4;
+          iVar3 = *piVar5;
           if (((iVar3 != 0) && (*(char *)(iVar3 + 8) != '\0')) &&
-             (iVar3 = (**(code **)(*grim_d3d_device + 0x50))
-                                (grim_d3d_device,*(undefined4 *)(iVar3 + 0xc),
-                                 *(undefined4 *)(iVar3 + 0x10),1,1,DAT_1005a488,0,iVar3 + 4),
-             iVar3 < 0)) {
+             (HVar4 = (*grim_d3d_device->lpVtbl->CreateTexture)
+                                (grim_d3d_device,*(UINT *)(iVar3 + 0xc),*(UINT *)(iVar3 + 0x10),1,1,
+                                 DAT_1005a488,D3DPOOL_DEFAULT,(IDirect3DTexture8 **)(iVar3 + 4)),
+             HVar4 < 0)) {
             DAT_1005c8f8 = s_D3D__Unable_to_recreate_a_textur_100537e0;
             FUN_10001160();
-            *(undefined4 *)(*piVar4 + 4) = 0;
+            *(undefined4 *)(*piVar5 + 4) = 0;
             Sleep(200);
           }
-          iVar2 = iVar2 + 1;
-          piVar4 = piVar4 + 1;
-        } while (iVar2 <= DAT_1005305c);
+          iVar6 = iVar6 + 1;
+          piVar5 = piVar5 + 1;
+        } while (iVar6 <= DAT_1005305c);
       }
-      iVar2 = grim_restore_textures();
-      if ((char)iVar2 == '\0') {
+      iVar6 = grim_restore_textures();
+      if ((char)iVar6 == '\0') {
         FUN_10001160();
       }
       FUN_10001160();
@@ -775,26 +799,26 @@ undefined4 FUN_10002cf0(void)
     Sleep(500);
     if (3 < DAT_1005d808) {
       DAT_1005c8f8 = s_D3D__Unable_to_restore_device__10053804;
-      iVar2 = MessageBoxA(DAT_1005d3f8,s_D3D__Unable_to_restore_device__10053804,&DAT_10053824,5);
-      if (iVar2 == 2) {
+      iVar6 = MessageBoxA(DAT_1005d3f8,s_D3D__Unable_to_restore_device__10053804,&DAT_10053824,5);
+      if (iVar6 == 2) {
         FUN_10001160();
         return 0x88760869;
       }
-      iVar2 = 0;
+      iVar6 = 0;
       if (-1 < DAT_1005305c) {
-        piVar4 = &grim_texture_slots;
+        piVar5 = &grim_texture_slots;
         do {
-          iVar3 = *piVar4;
+          iVar3 = *piVar5;
           if ((iVar3 != 0) && (*(char *)(iVar3 + 8) != '\0')) {
             piVar1 = *(int **)(iVar3 + 0x14);
             if ((piVar1 != (int *)0x0) && (iVar3 = (**(code **)(*piVar1 + 8))(piVar1), iVar3 == 0))
             {
-              *(undefined4 *)(*piVar4 + 0x14) = 0;
+              *(undefined4 *)(*piVar5 + 0x14) = 0;
             }
-            piVar1 = *(int **)(*piVar4 + 4);
+            piVar1 = *(int **)(*piVar5 + 4);
             if ((piVar1 != (int *)0x0) && (iVar3 = (**(code **)(*piVar1 + 8))(piVar1), iVar3 == 0))
             {
-              *(undefined4 *)(*piVar4 + 4) = 0;
+              *(undefined4 *)(*piVar5 + 4) = 0;
             }
             _DAT_1005d0f8 = CONCAT31((int3)((uint)unaff_EBP >> 8),1);
             _DAT_1005d100 = uStack_10;
@@ -802,12 +826,13 @@ undefined4 FUN_10002cf0(void)
             _DAT_1005d0fc = unaff_EBX;
             unaff_EBP = _DAT_1005d0f8;
           }
-          iVar2 = iVar2 + 1;
-          piVar4 = piVar4 + 1;
-        } while (iVar2 <= DAT_1005305c);
+          iVar6 = iVar6 + 1;
+          piVar5 = piVar5 + 1;
+        } while (iVar6 <= DAT_1005305c);
       }
     }
-    iVar2 = (**(code **)(*grim_d3d_device + 0x38))(grim_d3d_device,&DAT_10059df8);
+    iVar6 = (*grim_d3d_device->lpVtbl->Reset)
+                      (grim_d3d_device,(D3DPRESENT_PARAMETERS *)&DAT_10059df8);
   } while( true );
 }
 
@@ -915,97 +940,101 @@ void __fastcall FUN_10003090(int param_1)
 /* FUN_100030b0 @ 100030b0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 
 undefined4 FUN_100030b0(void)
 
 {
   int *piVar1;
-  int iVar2;
-  int iVar3;
+  HRESULT HVar2;
+  ULONG UVar3;
+  int iVar4;
   int extraout_EAX;
-  uint uVar4;
+  uint uVar5;
   undefined4 unaff_EBX;
   undefined4 unaff_EBP;
   undefined4 unaff_ESI;
-  int *piVar5;
+  int *piVar6;
+  int iVar7;
   undefined4 uStack_10;
   
-  uVar4 = 0;
-  if (grim_d3d_device == (int *)0x0) {
+  uVar5 = 0;
+  if (grim_d3d_device == (LPDIRECT3DDEVICE8)0x0) {
 LAB_100033a0:
-    return uVar4 & 0xffffff00;
+    return uVar5 & 0xffffff00;
   }
-  iVar2 = (**(code **)(*grim_d3d_device + 0xc))(grim_d3d_device);
-  DAT_1005c898 = iVar2 == 0;
-  if ((!(bool)DAT_1005c898) && (iVar2 == -0x7789f797)) {
+  HVar2 = (*grim_d3d_device->lpVtbl->TestCooperativeLevel)(grim_d3d_device);
+  DAT_1005c898 = HVar2 == 0;
+  if ((!(bool)DAT_1005c898) && (HVar2 == -0x7789f797)) {
     Sleep(100);
-    if ((grim_render_target_surface != (int *)0x0) &&
-       (iVar2 = (**(code **)(*grim_render_target_surface + 8))(grim_render_target_surface),
-       iVar2 == 0)) {
-      grim_render_target_surface = (int *)0x0;
+    if ((grim_render_target_surface != (LPDIRECT3DSURFACE8)0x0) &&
+       (UVar3 = (*grim_render_target_surface->lpVtbl->Release)(grim_render_target_surface),
+       UVar3 == 0)) {
+      grim_render_target_surface = (LPDIRECT3DSURFACE8)0x0;
     }
-    if ((grim_backbuffer_surface != (int *)0x0) &&
-       (iVar2 = (**(code **)(*grim_backbuffer_surface + 8))(grim_backbuffer_surface), iVar2 == 0)) {
-      grim_backbuffer_surface = (int *)0x0;
+    if ((grim_backbuffer_surface != (LPDIRECT3DSURFACE8)0x0) &&
+       (UVar3 = (*grim_backbuffer_surface->lpVtbl->Release)(grim_backbuffer_surface), UVar3 == 0)) {
+      grim_backbuffer_surface = (LPDIRECT3DSURFACE8)0x0;
     }
-    iVar2 = 0;
+    iVar7 = 0;
     if (-1 < DAT_1005305c) {
-      piVar5 = &grim_texture_slots;
+      piVar6 = &grim_texture_slots;
       do {
-        iVar3 = *piVar5;
-        if ((((iVar3 != 0) && (*(char *)(iVar3 + 8) != '\0')) &&
-            (piVar1 = *(int **)(iVar3 + 4), piVar1 != (int *)0x0)) &&
-           (iVar3 = (**(code **)(*piVar1 + 8))(piVar1), iVar3 == 0)) {
-          *(undefined4 *)(*piVar5 + 4) = 0;
+        iVar4 = *piVar6;
+        if ((((iVar4 != 0) && (*(char *)(iVar4 + 8) != '\0')) &&
+            (piVar1 = *(int **)(iVar4 + 4), piVar1 != (int *)0x0)) &&
+           (iVar4 = (**(code **)(*piVar1 + 8))(piVar1), iVar4 == 0)) {
+          *(undefined4 *)(*piVar6 + 4) = 0;
         }
-        iVar2 = iVar2 + 1;
-        piVar5 = piVar5 + 1;
-      } while (iVar2 <= DAT_1005305c);
+        iVar7 = iVar7 + 1;
+        piVar6 = piVar6 + 1;
+      } while (iVar7 <= DAT_1005305c);
     }
-    iVar2 = (**(code **)(*grim_d3d_device + 0x38))(grim_d3d_device,&DAT_10059df8);
-    if (iVar2 == 0) {
+    HVar2 = (*grim_d3d_device->lpVtbl->Reset)
+                      (grim_d3d_device,(D3DPRESENT_PARAMETERS *)&DAT_10059df8);
+    if (HVar2 == 0) {
       FUN_10004520();
-      iVar2 = 0;
+      iVar7 = 0;
       if (-1 < DAT_1005305c) {
-        piVar5 = &grim_texture_slots;
+        piVar6 = &grim_texture_slots;
         do {
-          iVar3 = *piVar5;
-          if (((iVar3 != 0) && (*(char *)(iVar3 + 8) != '\0')) &&
-             (iVar3 = (**(code **)(*grim_d3d_device + 0x50))
-                                (grim_d3d_device,*(undefined4 *)(iVar3 + 0xc),
-                                 *(undefined4 *)(iVar3 + 0x10),1,1,DAT_1005a488,0,iVar3 + 4),
-             iVar3 < 0)) {
+          iVar4 = *piVar6;
+          if (((iVar4 != 0) && (*(char *)(iVar4 + 8) != '\0')) &&
+             (HVar2 = (*grim_d3d_device->lpVtbl->CreateTexture)
+                                (grim_d3d_device,*(UINT *)(iVar4 + 0xc),*(UINT *)(iVar4 + 0x10),1,1,
+                                 DAT_1005a488,D3DPOOL_DEFAULT,(IDirect3DTexture8 **)(iVar4 + 4)),
+             HVar2 < 0)) {
             DAT_1005c8f8 = s_D3D__Unable_to_recreate_a_textur_100537e0;
-            *(undefined4 *)(*piVar5 + 4) = 0;
+            *(undefined4 *)(*piVar6 + 4) = 0;
             FUN_10001160();
             FUN_10001160();
           }
-          iVar2 = iVar2 + 1;
-          piVar5 = piVar5 + 1;
-        } while (iVar2 <= DAT_1005305c);
+          iVar7 = iVar7 + 1;
+          piVar6 = piVar6 + 1;
+        } while (iVar7 <= DAT_1005305c);
       }
-      iVar2 = grim_restore_textures();
+      iVar7 = grim_restore_textures();
       DAT_1005d808 = 0;
-      return CONCAT31((int3)((uint)iVar2 >> 8),1);
+      return CONCAT31((int3)((uint)iVar7 >> 8),1);
     }
     DAT_1005d808 = DAT_1005d808 + 1;
     Sleep(500);
-    iVar2 = extraout_EAX;
+    HVar2 = extraout_EAX;
     if (DAT_1005d808 == 5) {
-      iVar3 = 0;
-      iVar2 = DAT_1005305c;
+      iVar7 = 0;
+      HVar2 = DAT_1005305c;
       if (DAT_1005305c < 0) goto LAB_10003396;
-      piVar5 = &grim_texture_slots;
+      piVar6 = &grim_texture_slots;
       do {
-        iVar2 = *piVar5;
-        if ((iVar2 != 0) && (*(char *)(iVar2 + 8) != '\0')) {
-          piVar1 = *(int **)(iVar2 + 0x14);
-          if ((piVar1 != (int *)0x0) && (iVar2 = (**(code **)(*piVar1 + 8))(piVar1), iVar2 == 0)) {
-            *(undefined4 *)(*piVar5 + 0x14) = 0;
+        iVar4 = *piVar6;
+        if ((iVar4 != 0) && (*(char *)(iVar4 + 8) != '\0')) {
+          piVar1 = *(int **)(iVar4 + 0x14);
+          if ((piVar1 != (int *)0x0) && (iVar4 = (**(code **)(*piVar1 + 8))(piVar1), iVar4 == 0)) {
+            *(undefined4 *)(*piVar6 + 0x14) = 0;
           }
-          piVar1 = *(int **)(*piVar5 + 4);
-          if ((piVar1 != (int *)0x0) && (iVar2 = (**(code **)(*piVar1 + 8))(piVar1), iVar2 == 0)) {
-            *(undefined4 *)(*piVar5 + 4) = 0;
+          piVar1 = *(int **)(*piVar6 + 4);
+          if ((piVar1 != (int *)0x0) && (iVar4 = (**(code **)(*piVar1 + 8))(piVar1), iVar4 == 0)) {
+            *(undefined4 *)(*piVar6 + 4) = 0;
           }
           _DAT_1005d0f8 = CONCAT31((int3)((uint)unaff_ESI >> 8),1);
           _DAT_1005d104 = uStack_10;
@@ -1013,31 +1042,31 @@ LAB_100033a0:
           _DAT_1005d100 = unaff_EBX;
           unaff_ESI = _DAT_1005d0f8;
         }
-        iVar3 = iVar3 + 1;
-        piVar5 = piVar5 + 1;
-        iVar2 = DAT_1005305c;
-      } while (iVar3 <= DAT_1005305c);
+        iVar7 = iVar7 + 1;
+        piVar6 = piVar6 + 1;
+        HVar2 = DAT_1005305c;
+      } while (iVar7 <= DAT_1005305c);
     }
     if (6 < DAT_1005d808) {
       DAT_1005c8f8 = s_D3D__Unable_to_restore_device__10053804;
-      uVar4 = MessageBoxA(DAT_1005d3f8,s_D3D__Unable_to_restore_device__10053804,&DAT_10053824,5);
-      if (uVar4 == 2) goto LAB_100033a0;
-      iVar3 = 0;
-      iVar2 = DAT_1005305c;
+      uVar5 = MessageBoxA(DAT_1005d3f8,s_D3D__Unable_to_restore_device__10053804,&DAT_10053824,5);
+      if (uVar5 == 2) goto LAB_100033a0;
+      iVar7 = 0;
+      HVar2 = DAT_1005305c;
       if (-1 < DAT_1005305c) {
-        piVar5 = &grim_texture_slots;
+        piVar6 = &grim_texture_slots;
         do {
-          iVar2 = *piVar5;
-          if ((iVar2 != 0) && (*(char *)(iVar2 + 8) != '\0')) {
-            piVar1 = *(int **)(iVar2 + 0x14);
-            if ((piVar1 != (int *)0x0) && (iVar2 = (**(code **)(*piVar1 + 8))(piVar1), iVar2 == 0))
+          iVar4 = *piVar6;
+          if ((iVar4 != 0) && (*(char *)(iVar4 + 8) != '\0')) {
+            piVar1 = *(int **)(iVar4 + 0x14);
+            if ((piVar1 != (int *)0x0) && (iVar4 = (**(code **)(*piVar1 + 8))(piVar1), iVar4 == 0))
             {
-              *(undefined4 *)(*piVar5 + 0x14) = 0;
+              *(undefined4 *)(*piVar6 + 0x14) = 0;
             }
-            piVar1 = *(int **)(*piVar5 + 4);
-            if ((piVar1 != (int *)0x0) && (iVar2 = (**(code **)(*piVar1 + 8))(piVar1), iVar2 == 0))
+            piVar1 = *(int **)(*piVar6 + 4);
+            if ((piVar1 != (int *)0x0) && (iVar4 = (**(code **)(*piVar1 + 8))(piVar1), iVar4 == 0))
             {
-              *(undefined4 *)(*piVar5 + 4) = 0;
+              *(undefined4 *)(*piVar6 + 4) = 0;
             }
             _DAT_1005d0f8 = CONCAT31((int3)((uint)unaff_ESI >> 8),1);
             _DAT_1005d104 = uStack_10;
@@ -1045,15 +1074,15 @@ LAB_100033a0:
             _DAT_1005d100 = unaff_EBX;
             unaff_ESI = _DAT_1005d0f8;
           }
-          iVar3 = iVar3 + 1;
-          piVar5 = piVar5 + 1;
-          iVar2 = DAT_1005305c;
-        } while (iVar3 <= DAT_1005305c);
+          iVar7 = iVar7 + 1;
+          piVar6 = piVar6 + 1;
+          HVar2 = DAT_1005305c;
+        } while (iVar7 <= DAT_1005305c);
       }
     }
   }
 LAB_10003396:
-  return CONCAT31((int3)((uint)iVar2 >> 8),1);
+  return CONCAT31((int3)((uint)HVar2 >> 8),1);
 }
 
 
@@ -1061,6 +1090,7 @@ LAB_10003396:
 /* FUN_10003c00 @ 10003c00 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 
 undefined4 FUN_10003c00(void)
 
@@ -1068,15 +1098,16 @@ undefined4 FUN_10003c00(void)
   float fVar1;
   char cVar2;
   WINBOOL WVar3;
-  int iVar4;
-  float *pfVar5;
-  tagMSG *ptVar6;
+  HRESULT HVar4;
+  int iVar5;
+  float *pfVar6;
+  tagMSG *ptVar7;
   tagMSG local_1c;
   
-  ptVar6 = &local_1c;
-  for (iVar4 = 7; iVar4 != 0; iVar4 = iVar4 + -1) {
-    ptVar6->hwnd = (HWND)0x0;
-    ptVar6 = (tagMSG *)&ptVar6->message;
+  ptVar7 = &local_1c;
+  for (iVar5 = 7; iVar5 != 0; iVar5 = iVar5 + -1) {
+    ptVar7->hwnd = (HWND)0x0;
+    ptVar7 = (tagMSG *)&ptVar7->message;
   }
   PeekMessageA(&local_1c,(HWND)0x0,0,0,0);
   FUN_10004920();
@@ -1106,15 +1137,15 @@ undefined4 FUN_10003c00(void)
                (DAT_1005a470 == '\0')) {
               if (DAT_1005cc38 != '\0') {
                 grim_keyboard_poll();
-                pfVar5 = (float *)&DAT_1005a058;
+                pfVar6 = (float *)&DAT_1005a058;
                 do {
-                  fVar1 = *pfVar5 - _DAT_10059768;
-                  *pfVar5 = fVar1;
+                  fVar1 = *pfVar6 - _DAT_10059768;
+                  *pfVar6 = fVar1;
                   if (fVar1 < 0.0) {
-                    *pfVar5 = 0.0;
+                    *pfVar6 = 0.0;
                   }
-                  pfVar5 = pfVar5 + 1;
-                } while ((int)pfVar5 < 0x1005a458);
+                  pfVar6 = pfVar6 + 1;
+                } while ((int)pfVar6 < 0x1005a458);
               }
               grim_joystick_poll();
               _DAT_1005cf14 = &grim_joystick_state;
@@ -1134,9 +1165,9 @@ undefined4 FUN_10003c00(void)
               Sleep(0x32);
             }
           }
-        } while ((DAT_1005d804 != '\0') || (grim_d3d_device == (int *)0x0));
-        iVar4 = (**(code **)(*grim_d3d_device + 0xc))(grim_d3d_device);
-        DAT_1005c898 = iVar4 == 0;
+        } while ((DAT_1005d804 != '\0') || (grim_d3d_device == (LPDIRECT3DDEVICE8)0x0));
+        HVar4 = (*grim_d3d_device->lpVtbl->TestCooperativeLevel)(grim_d3d_device);
+        DAT_1005c898 = HVar4 == 0;
         if (!(bool)DAT_1005c898) break;
         if (DAT_1005d811 != '\0') {
           (*DAT_10059770)();
@@ -1148,13 +1179,14 @@ undefined4 FUN_10003c00(void)
           (**(code **)(*DAT_1005d3b4 + 0x14))();
         }
         if (DAT_1005d3bd == '\0') {
-          (**(code **)(*grim_d3d_device + 0x3c))(grim_d3d_device,0,0,0,0);
+          (*grim_d3d_device->lpVtbl->Present)
+                    (grim_d3d_device,(RECT *)0x0,(RECT *)0x0,(HWND)0x0,(RGNDATA *)0x0);
         }
       }
       Sleep(500);
-      iVar4 = (**(code **)(*grim_d3d_device + 0xc))(grim_d3d_device);
-      DAT_1005c898 = iVar4 == 0;
-    } while ((iVar4 != -0x7789f797) || (iVar4 = FUN_10002cf0(), iVar4 != -0x7789f797));
+      HVar4 = (*grim_d3d_device->lpVtbl->TestCooperativeLevel)(grim_d3d_device);
+      DAT_1005c898 = HVar4 == 0;
+    } while ((HVar4 != -0x7789f797) || (iVar5 = FUN_10002cf0(), iVar5 != -0x7789f797));
   }
 LAB_10003e30:
   timeEndPeriod(1);
@@ -1192,8 +1224,8 @@ int grim_d3d_init(void)
   D3DADAPTER_IDENTIFIER8 DStack_42c;
   
   DAT_1005c898 = 0;
-  grim_d3d8 = (IDirect3D8 *)0x0;
-  grim_d3d_device = 0;
+  grim_d3d8 = (LPDIRECT3D8)0x0;
+  grim_d3d_device = (LPDIRECT3DDEVICE8)0x0;
   DAT_1005b2b4 = D3DDEVTYPE_HAL;
   if ((char)DAT_1005cec8 == '\x01') {
     DAT_1005b2b4 = D3DDEVTYPE_REF;
@@ -1216,9 +1248,9 @@ int grim_d3d_init(void)
   if (HVar3 < 0) {
     DAT_1005c8f8 = s_D3D__Error_getting_adapter_displ_10053a34;
     uVar4 = 0;
-    if ((grim_d3d8 != (IDirect3D8 *)0x0) &&
+    if ((grim_d3d8 != (LPDIRECT3D8)0x0) &&
        (uVar4 = (*grim_d3d8->lpVtbl->Release)(grim_d3d8), uVar4 == 0)) {
-      grim_d3d8 = (IDirect3D8 *)0x0;
+      grim_d3d8 = (LPDIRECT3D8)0x0;
     }
     return uVar4 & 0xffffff00;
   }
@@ -1256,7 +1288,7 @@ int grim_d3d_init(void)
   }
   HVar3 = (*grim_d3d8->lpVtbl->CreateDevice)
                     (grim_d3d8,DAT_1005d3e8,DAT_1005b2b4,DAT_1005d3f8,0x20,
-                     (D3DPRESENT_PARAMETERS *)&DAT_10059df8,(IDirect3DDevice8 **)&grim_d3d_device);
+                     (D3DPRESENT_PARAMETERS *)&DAT_10059df8,&grim_d3d_device);
   if (HVar3 < 0) {
     DAT_1005c8f8 = s_D3D__Could_not_set_the_requested_10053a04;
     MessageBoxA((HWND)0x0,s_D3D__Could_not_set_the_requested_10053a04,&DAT_10053824,0);
@@ -1310,8 +1342,8 @@ LAB_10004142:
     DAT_1005c8f8 = s_D3D__Unable_to_load_grim_splash_t_10053978;
     return uVar4 & 0xffffff00;
   }
-  grim_backbuffer_surface = 0;
-  grim_render_target_surface = 0;
+  grim_backbuffer_surface = (LPDIRECT3DSURFACE8)0x0;
+  grim_render_target_surface = (LPDIRECT3DSURFACE8)0x0;
   _DAT_1005d094 = grim_d3d8;
   _DAT_1005d0a4 = grim_d3d_device;
   DAT_1005c898 = 1;
@@ -1322,56 +1354,59 @@ LAB_10004142:
 
 /* FUN_10004280 @ 10004280 */
 
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
+
 void FUN_10004280(void)
 
 {
   void *texture;
-  int iVar1;
-  undefined4 *puVar2;
+  ULONG UVar1;
+  int iVar2;
+  undefined4 *puVar3;
   
-  if (grim_backbuffer_surface != (int *)0x0) {
-    iVar1 = (**(code **)(*grim_backbuffer_surface + 8))(grim_backbuffer_surface);
-    if (iVar1 == 0) {
-      grim_backbuffer_surface = (int *)0x0;
+  if (grim_backbuffer_surface != (LPDIRECT3DSURFACE8)0x0) {
+    UVar1 = (*grim_backbuffer_surface->lpVtbl->Release)(grim_backbuffer_surface);
+    if (UVar1 == 0) {
+      grim_backbuffer_surface = (LPDIRECT3DSURFACE8)0x0;
     }
   }
-  if (grim_render_target_surface != (int *)0x0) {
-    iVar1 = (**(code **)(*grim_render_target_surface + 8))(grim_render_target_surface);
-    if (iVar1 == 0) {
-      grim_render_target_surface = (int *)0x0;
+  if (grim_render_target_surface != (LPDIRECT3DSURFACE8)0x0) {
+    UVar1 = (*grim_render_target_surface->lpVtbl->Release)(grim_render_target_surface);
+    if (UVar1 == 0) {
+      grim_render_target_surface = (LPDIRECT3DSURFACE8)0x0;
     }
   }
   if (DAT_1005d3ec != (int *)0x0) {
-    iVar1 = (**(code **)(*DAT_1005d3ec + 8))(DAT_1005d3ec);
-    if (iVar1 == 0) {
+    iVar2 = (**(code **)(*DAT_1005d3ec + 8))(DAT_1005d3ec);
+    if (iVar2 == 0) {
       DAT_1005d3ec = (int *)0x0;
     }
   }
   if (DAT_1005d3f0 != (int *)0x0) {
-    iVar1 = (**(code **)(*DAT_1005d3f0 + 8))(DAT_1005d3f0);
-    if (iVar1 == 0) {
+    iVar2 = (**(code **)(*DAT_1005d3f0 + 8))(DAT_1005d3f0);
+    if (iVar2 == 0) {
       DAT_1005d3f0 = (int *)0x0;
     }
   }
-  puVar2 = &grim_texture_slots;
+  puVar3 = &grim_texture_slots;
   do {
-    texture = (void *)*puVar2;
+    texture = (void *)*puVar3;
     if (texture != (void *)0x0) {
       grim_texture_release(texture);
       operator_delete(texture);
-      *puVar2 = 0;
+      *puVar3 = 0;
     }
-    puVar2 = puVar2 + 1;
-  } while ((int)puVar2 < 0x1005d804);
+    puVar3 = puVar3 + 1;
+  } while ((int)puVar3 < 0x1005d804);
   FUN_100044e0();
-  if (grim_d3d_device != (int *)0x0) {
-    (**(code **)(*grim_d3d_device + 8))(grim_d3d_device);
+  if (grim_d3d_device != (LPDIRECT3DDEVICE8)0x0) {
+    (*grim_d3d_device->lpVtbl->Release)(grim_d3d_device);
   }
-  grim_d3d_device = (int *)0x0;
-  if (grim_d3d8 != (int *)0x0) {
-    (**(code **)(*grim_d3d8 + 8))(grim_d3d8);
+  grim_d3d_device = (LPDIRECT3DDEVICE8)0x0;
+  if (grim_d3d8 != (LPDIRECT3D8)0x0) {
+    (*grim_d3d8->lpVtbl->Release)(grim_d3d8);
   }
-  grim_d3d8 = (int *)0x0;
+  grim_d3d8 = (LPDIRECT3D8)0x0;
   return;
 }
 
@@ -1379,25 +1414,28 @@ void FUN_10004280(void)
 
 /* FUN_10004350 @ 10004350 */
 
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
+
 uint FUN_10004350(void)
 
 {
   ushort uVar1;
   short sVar2;
   uint uVar3;
-  int iVar4;
-  undefined4 uVar5;
+  HRESULT HVar4;
   
   DAT_1005976c = 0x100;
-  uVar3 = (**(code **)(*grim_d3d_device + 0x5c))(grim_d3d_device,0x1c00,0x218,0,2,&DAT_10059e2c);
+  uVar3 = (*grim_d3d_device->lpVtbl->CreateVertexBuffer)
+                    (grim_d3d_device,0x1c00,0x218,0,D3DPOOL_SYSTEMMEM,&DAT_10059e2c);
   if ((int)uVar3 < 0) {
     DAT_1005c8f8 = s_D3D__Internal__Could_not_create_v_10053ac4;
     return uVar3 & 0xffffff00;
   }
-  iVar4 = (**(code **)(*grim_d3d_device + 0x60))
-                    (grim_d3d_device,DAT_1005976c * 0xc,0x218,0x65,2,&DAT_10059bb8);
-  if (-1 < iVar4) {
-    uVar3 = (**(code **)(*DAT_10059bb8 + 0x2c))(DAT_10059bb8,0,0,&DAT_1005b2c0,0x2000);
+  HVar4 = (*grim_d3d_device->lpVtbl->CreateIndexBuffer)
+                    (grim_d3d_device,DAT_1005976c * 0xc,0x218,D3DFMT_INDEX16,D3DPOOL_SYSTEMMEM,
+                     &DAT_10059bb8);
+  if (-1 < HVar4) {
+    uVar3 = (*DAT_10059bb8->lpVtbl->Lock)(DAT_10059bb8,0,0,(BYTE **)&DAT_1005b2c0,0x2000);
     if (-1 < (int)uVar3) {
       if (DAT_1005976c != 0) {
         sVar2 = 2;
@@ -1418,10 +1456,10 @@ uint FUN_10004350(void)
           sVar2 = sVar2 + 4;
         } while (uVar1 < DAT_1005976c);
       }
-      (**(code **)(*DAT_10059bb8 + 0x30))(DAT_10059bb8);
-      (**(code **)(*grim_d3d_device + 0x14c))(grim_d3d_device,0,DAT_10059e2c,0x1c);
-      uVar5 = (**(code **)(*grim_d3d_device + 0x154))(grim_d3d_device,DAT_10059bb8,0);
-      return CONCAT31((int3)((uint)uVar5 >> 8),1);
+      (*DAT_10059bb8->lpVtbl->Unlock)(DAT_10059bb8);
+      (*grim_d3d_device->lpVtbl->SetStreamSource)(grim_d3d_device,0,DAT_10059e2c,0x1c);
+      HVar4 = (*grim_d3d_device->lpVtbl->SetIndices)(grim_d3d_device,DAT_10059bb8,0);
+      return CONCAT31((int3)((uint)HVar4 >> 8),1);
     }
     DAT_1005c898 = 0;
     return uVar3 & 0xffffff00;
@@ -1454,45 +1492,48 @@ void FUN_100044e0(void)
 /* FUN_10004520 @ 10004520 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 
 void FUN_10004520(void)
 
 {
-  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x89,0);
-  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x1d,0);
-  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,7,0);
-  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0xe,0);
-  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x1c,0);
-  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x8f,0);
-  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x16,1);
-  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,9,2);
-  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x1a,_DAT_1005d108 & 0xff);
-  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0xf,1);
-  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x19,7);
-  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x18,4);
-  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,0x11,2);
-  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,0x10,2);
-  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,0x12,0);
-  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,4);
-  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,2,2);
-  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,3,0);
-  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,4,4);
-  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,5,2);
-  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,6,0);
-  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,1,1);
-  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,4,1);
-  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,0xb,0);
-  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,0xb,0);
-  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x80,0);
-  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x81,0);
-  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x82,0);
-  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x83,0);
-  (**(code **)(*grim_d3d_device + 0x14c))(grim_d3d_device,0,DAT_10059e2c,0x1c);
-  (**(code **)(*grim_d3d_device + 0x154))(grim_d3d_device,DAT_10059bb8,0);
-  (**(code **)(*grim_d3d_device + 0x130))(grim_d3d_device,0x144);
-  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x1b,DAT_1005cca8 & 0xff);
-  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x13,DAT_1005ccb8);
-  (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x14,DAT_1005ccc8);
+  (*grim_d3d_device->lpVtbl->SetRenderState)(grim_d3d_device,D3DRS_LIGHTING,0);
+  (*grim_d3d_device->lpVtbl->SetRenderState)(grim_d3d_device,D3DRS_SPECULARENABLE,0);
+  (*grim_d3d_device->lpVtbl->SetRenderState)(grim_d3d_device,D3DRS_ZENABLE,0);
+  (*grim_d3d_device->lpVtbl->SetRenderState)(grim_d3d_device,D3DRS_ZWRITEENABLE,0);
+  (*grim_d3d_device->lpVtbl->SetRenderState)(grim_d3d_device,D3DRS_FOGENABLE,0);
+  (*grim_d3d_device->lpVtbl->SetRenderState)(grim_d3d_device,D3DRS_NORMALIZENORMALS,0);
+  (*grim_d3d_device->lpVtbl->SetRenderState)(grim_d3d_device,D3DRS_CULLMODE,1);
+  (*grim_d3d_device->lpVtbl->SetRenderState)(grim_d3d_device,D3DRS_SHADEMODE,2);
+  (*grim_d3d_device->lpVtbl->SetRenderState)
+            (grim_d3d_device,D3DRS_DITHERENABLE,_DAT_1005d108 & 0xff);
+  (*grim_d3d_device->lpVtbl->SetRenderState)(grim_d3d_device,D3DRS_ALPHATESTENABLE,1);
+  (*grim_d3d_device->lpVtbl->SetRenderState)(grim_d3d_device,D3DRS_ALPHAFUNC,7);
+  (*grim_d3d_device->lpVtbl->SetRenderState)(grim_d3d_device,D3DRS_ALPHAREF,4);
+  (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_MINFILTER,2);
+  (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_MAGFILTER,2);
+  (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_MIPFILTER,0);
+  (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLOROP,4);
+  (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLORARG1,2);
+  (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLORARG2,0);
+  (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_ALPHAOP,4);
+  (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_ALPHAARG1,2);
+  (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_ALPHAARG2,0);
+  (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_COLOROP,1);
+  (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_ALPHAOP,1);
+  (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_TEXCOORDINDEX,0);
+  (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_TEXCOORDINDEX,0);
+  (*grim_d3d_device->lpVtbl->SetRenderState)(grim_d3d_device,D3DRS_WRAP0,0);
+  (*grim_d3d_device->lpVtbl->SetRenderState)(grim_d3d_device,D3DRS_WRAP1,0);
+  (*grim_d3d_device->lpVtbl->SetRenderState)(grim_d3d_device,D3DRS_WRAP2,0);
+  (*grim_d3d_device->lpVtbl->SetRenderState)(grim_d3d_device,D3DRS_WRAP3,0);
+  (*grim_d3d_device->lpVtbl->SetStreamSource)(grim_d3d_device,0,DAT_10059e2c,0x1c);
+  (*grim_d3d_device->lpVtbl->SetIndices)(grim_d3d_device,DAT_10059bb8,0);
+  (*grim_d3d_device->lpVtbl->SetVertexShader)(grim_d3d_device,0x144);
+  (*grim_d3d_device->lpVtbl->SetRenderState)
+            (grim_d3d_device,D3DRS_ALPHABLENDENABLE,DAT_1005cca8 & 0xff);
+  (*grim_d3d_device->lpVtbl->SetRenderState)(grim_d3d_device,D3DRS_SRCBLEND,DAT_1005ccb8);
+  (*grim_d3d_device->lpVtbl->SetRenderState)(grim_d3d_device,D3DRS_DESTBLEND,DAT_1005ccc8);
   return;
 }
 
@@ -1500,16 +1541,17 @@ void FUN_10004520(void)
 
 /* grim_is_texture_format_supported @ 100047f0 */
 
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 /* checks device support for a texture format */
 
 int __cdecl grim_is_texture_format_supported(uint format)
 
 {
-  int iVar1;
+  HRESULT HVar1;
   
-  iVar1 = (**(code **)(*grim_d3d8 + 0x28))
-                    (grim_d3d8,DAT_1005d3e8,DAT_1005b2b4,DAT_1005a488,0,3,format);
-  return CONCAT31((int3)((uint)iVar1 >> 8),-1 < iVar1);
+  HVar1 = (*grim_d3d8->lpVtbl->CheckDeviceFormat)
+                    (grim_d3d8,DAT_1005d3e8,DAT_1005b2b4,DAT_1005a488,0,D3DRTYPE_TEXTURE,format);
+  return CONCAT31((int3)((uint)HVar1 >> 8),-1 < HVar1);
 }
 
 
@@ -1900,6 +1942,7 @@ FUN_10004b70(char *param_1,undefined4 param_2,uint *param_3,uint *param_4,uint *
 
 /* grim_texture_load_file @ 10004ec0 */
 
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 /* loads texture data from file path */
 
 int __thiscall grim_texture_load_file(void *this,void *texture,ushort *path)
@@ -2715,38 +2758,41 @@ float grim_get_version(void)
 /* grim_check_device @ 10005cb0 */
 
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 /* Grim2D vtable 0xc: device creation test */
 
 int grim_check_device(void)
 
 {
   uint uVar1;
-  int iVar2;
-  undefined4 uVar3;
-  int *piVar4;
-  int *piVar5;
-  undefined4 uStack_4;
+  HRESULT HVar2;
+  ULONG UVar3;
+  int iVar4;
+  LPDIRECT3DDEVICE8 This;
+  LPDIRECT3DDEVICE8 pDestSurface;
+  IDirect3DSurface8 *pIStack_4;
   
-  uStack_4 = 0;
-  piVar5 = grim_d3d_device;
-  uVar1 = (**(code **)(*grim_d3d_device + 0x6c))
-                    (grim_d3d_device,DAT_10059df8,DAT_10059dfc,0x15,&uStack_4);
+  pIStack_4 = (IDirect3DSurface8 *)0x0;
+  pDestSurface = grim_d3d_device;
+  uVar1 = (*grim_d3d_device->lpVtbl->CreateImageSurface)
+                    (grim_d3d_device,DAT_10059df8,DAT_10059dfc,D3DFMT_A8R8G8B8,&pIStack_4);
   if ((int)uVar1 < 0) {
     return uVar1 & 0xffffff00;
   }
-  piVar4 = grim_d3d_device;
-  iVar2 = (**(code **)(*grim_d3d_device + 0x78))(grim_d3d_device,piVar5);
-  if (iVar2 < 0) {
-    uVar1 = (**(code **)(*piVar4 + 8))(piVar4);
-    return uVar1 & 0xffffff00;
+  This = grim_d3d_device;
+  HVar2 = (*grim_d3d_device->lpVtbl->GetFrontBuffer)
+                    (grim_d3d_device,(IDirect3DSurface8 *)pDestSurface);
+  if (HVar2 < 0) {
+    UVar3 = (*This->lpVtbl->Release)(This);
+    return UVar3 & 0xffffff00;
   }
-  iVar2 = FUN_1000ae52();
-  if (iVar2 < 0) {
-    uVar1 = (**(code **)(*piVar4 + 8))(piVar4);
-    return uVar1 & 0xffffff00;
+  iVar4 = FUN_1000ae52();
+  if (iVar4 < 0) {
+    UVar3 = (*This->lpVtbl->Release)(This);
+    return UVar3 & 0xffffff00;
   }
-  uVar3 = (**(code **)(*piVar4 + 8))(piVar4);
-  return CONCAT31((int3)((uint)uVar3 >> 8),1);
+  UVar3 = (*This->lpVtbl->Release)(This);
+  return CONCAT31((int3)(UVar3 >> 8),1);
 }
 
 
@@ -2906,90 +2952,92 @@ void grim_apply_settings(void)
 
 /* FUN_10006030 @ 10006030 */
 
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
+
 uint __cdecl FUN_10006030(uint param_1)
 
 {
-  undefined4 uVar1;
+  HRESULT HVar1;
   
   switch(param_1) {
   case 0:
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,3);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,3,0);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,4,3);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,6,0);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,1,1);
-    uVar1 = (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,4,1);
-    return CONCAT31((int3)((uint)uVar1 >> 8),1);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLOROP,3);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLORARG2,0);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_ALPHAOP,3);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_ALPHAARG2,0);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_COLOROP,1);
+    HVar1 = (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_ALPHAOP,1);
+    return CONCAT31((int3)((uint)HVar1 >> 8),1);
   case 1:
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,4);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,2,2);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,3,0);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,4,4);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,5,2);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,6,0);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,1,1);
-    uVar1 = (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,4,1);
-    return CONCAT31((int3)((uint)uVar1 >> 8),1);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLOROP,4);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLORARG1,2);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLORARG2,0);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_ALPHAOP,4);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_ALPHAARG1,2);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_ALPHAARG2,0);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_COLOROP,1);
+    HVar1 = (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_ALPHAOP,1);
+    return CONCAT31((int3)((uint)HVar1 >> 8),1);
   case 2:
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,4);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,2,2);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,3,0);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,4,4);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,5,2);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,6,0);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,1,4);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,2,2);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,3,1);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,4,4);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,5,2);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,6,1);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,2,1,1);
-    uVar1 = (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,2,4,1);
-    return CONCAT31((int3)((uint)uVar1 >> 8),1);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLOROP,4);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLORARG1,2);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLORARG2,0);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_ALPHAOP,4);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_ALPHAARG1,2);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_ALPHAARG2,0);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_COLOROP,4);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_COLORARG1,2);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_COLORARG2,1);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_ALPHAOP,4);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_ALPHAARG1,2);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_ALPHAARG2,1);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,2,D3DTSS_COLOROP,1);
+    HVar1 = (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,2,D3DTSS_ALPHAOP,1);
+    return CONCAT31((int3)((uint)HVar1 >> 8),1);
   case 3:
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,7);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,2,2);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,3,0);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,4,7);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,5,2);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,6,0);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,1,4);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,2,2);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,3,1);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,4,4);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,5,2);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,6,1);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,2,1,1);
-    uVar1 = (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,2,4,1);
-    return CONCAT31((int3)((uint)uVar1 >> 8),1);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLOROP,7);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLORARG1,2);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLORARG2,0);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_ALPHAOP,7);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_ALPHAARG1,2);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_ALPHAARG2,0);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_COLOROP,4);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_COLORARG1,2);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_COLORARG2,1);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_ALPHAOP,4);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_ALPHAARG1,2);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_ALPHAARG2,1);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,2,D3DTSS_COLOROP,1);
+    HVar1 = (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,2,D3DTSS_ALPHAOP,1);
+    return CONCAT31((int3)((uint)HVar1 >> 8),1);
   case 4:
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,0x18);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,2,2);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,3,3);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,5,2);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,4,2);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,1,1);
-    uVar1 = (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,4,1);
-    return CONCAT31((int3)((uint)uVar1 >> 8),1);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLOROP,0x18);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLORARG1,2);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLORARG2,3);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_ALPHAARG1,2);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_ALPHAOP,2);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_COLOROP,1);
+    HVar1 = (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_ALPHAOP,1);
+    return CONCAT31((int3)((uint)HVar1 >> 8),1);
   case 5:
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,0x18);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,2,2);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,3,0);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,4,2);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,1,1);
-    uVar1 = (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,4,1);
-    return CONCAT31((int3)((uint)uVar1 >> 8),1);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLOROP,0x18);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLORARG1,2);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLORARG2,0);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_ALPHAOP,2);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_COLOROP,1);
+    HVar1 = (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_ALPHAOP,1);
+    return CONCAT31((int3)((uint)HVar1 >> 8),1);
   case 6:
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,2);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,2,2);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,4,1);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,1,0x18);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,2,2);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,3,1);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,1,4,1);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,2,1,1);
-    uVar1 = (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,2,4,1);
-    return CONCAT31((int3)((uint)uVar1 >> 8),1);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLOROP,2);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLORARG1,2);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_ALPHAOP,1);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_COLOROP,0x18);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_COLORARG1,2);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_COLORARG2,1);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,1,D3DTSS_ALPHAOP,1);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,2,D3DTSS_COLOROP,1);
+    HVar1 = (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,2,D3DTSS_ALPHAOP,1);
+    return CONCAT31((int3)((uint)HVar1 >> 8),1);
   default:
     return param_1 & 0xffffff00;
   }
@@ -3001,6 +3049,7 @@ uint __cdecl FUN_10006030(uint param_1)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 /* Grim2D vtable 0x20 (provisional) */
 
 void grim_set_render_state(uint state,uint value)
@@ -3010,26 +3059,22 @@ void grim_set_render_state(uint state,uint value)
   undefined1 uVar2;
   undefined1 uVar3;
   undefined1 uVar4;
-  undefined2 uVar5;
+  WORD WVar5;
   undefined4 uVar6;
   int iVar7;
   char *pcVar8;
   uint uVar9;
   uint uVar10;
   uint *puVar11;
-  undefined2 *puVar12;
+  WORD *pWVar12;
   byte *pbVar13;
   int iVar14;
   byte *pbVar15;
   bool bVar16;
-  undefined4 unaff_retaddr;
   uint in_stack_0000000c;
   uint in_stack_00000010;
   byte *in_stack_00000014;
-  undefined2 auStack_600 [256];
-  undefined2 auStack_400 [256];
-  undefined2 auStack_200 [254];
-  undefined4 uStack_4;
+  D3DGAMMARAMP DStack_600;
   
   switch(state) {
   case 5:
@@ -3130,21 +3175,22 @@ LAB_10006887:
     return;
   case 0x12:
     if (*(char *)(&grim_config_var0_table + state * 4) != (char)value) {
-      (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x1b,value & 0xff);
+      (*grim_d3d_device->lpVtbl->SetRenderState)
+                (grim_d3d_device,D3DRS_ALPHABLENDENABLE,value & 0xff);
       *(char *)(&grim_config_var0_table + state * 4) = (char)value;
       return;
     }
     break;
   case 0x13:
     if ((&grim_config_var0_table)[state * 4] != value) {
-      (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x13,value);
+      (*grim_d3d_device->lpVtbl->SetRenderState)(grim_d3d_device,D3DRS_SRCBLEND,value);
       (&grim_config_var0_table)[state * 4] = value;
       return;
     }
     break;
   case 0x14:
     if ((&grim_config_var0_table)[state * 4] != value) {
-      (**(code **)(*grim_d3d_device + 200))(grim_d3d_device,0x14,value);
+      (*grim_d3d_device->lpVtbl->SetRenderState)(grim_d3d_device,D3DRS_DESTBLEND,value);
       (&grim_config_var0_table)[state * 4] = value;
       return;
     }
@@ -3156,14 +3202,15 @@ LAB_10006887:
           return;
         }
         if ((&grim_config_var0_table)[state * 4] != 3) {
-          (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,0x15,3);
+          (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_MAXANISOTROPY,3)
+          ;
         }
       }
       if ((&grim_config_var0_table)[state * 4] == 3) {
-        (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,0x15,1);
+        (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_MAXANISOTROPY,1);
       }
-      (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,0x11,value);
-      (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,0x10,value);
+      (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_MINFILTER,value);
+      (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_MAGFILTER,value);
       (&grim_config_var0_table)[state * 4] = value;
       return;
     }
@@ -3188,12 +3235,12 @@ LAB_10006b54:
     uVar2 = ftol();
     uVar3 = ftol();
     uVar4 = ftol();
-    (**(code **)(*grim_d3d_device + 200))
-              (grim_d3d_device,0x3c,(uint)CONCAT21(CONCAT11(uVar2,uVar3),uVar4));
+    (*grim_d3d_device->lpVtbl->SetRenderState)
+              (grim_d3d_device,D3DRS_TEXTUREFACTOR,(uint)CONCAT21(CONCAT11(uVar2,uVar3),uVar4));
     return;
   case 0x1c:
     iVar14 = 0;
-    puVar12 = auStack_400;
+    pWVar12 = DStack_600.green;
     do {
       iVar7 = ftol();
       if (iVar7 < 0x10000) {
@@ -3204,18 +3251,18 @@ LAB_10006b54:
       else {
         iVar7 = 0xffff;
       }
-      uVar5 = (undefined2)iVar7;
-      puVar12[-0x100] = uVar5;
-      *puVar12 = uVar5;
-      puVar12[0x100] = uVar5;
+      WVar5 = (WORD)iVar7;
+      ((D3DGAMMARAMP *)(pWVar12 + -0x100))->red[0] = WVar5;
+      *pWVar12 = WVar5;
+      pWVar12[0x100] = WVar5;
       iVar14 = iVar14 + 1;
-      puVar12 = puVar12 + 1;
+      pWVar12 = pWVar12 + 1;
     } while (iVar14 < 0x100);
-    (**(code **)(*grim_d3d_device + 0x48))(grim_d3d_device,1,auStack_600);
-    (&grim_config_var0_table)[state * 4] = uStack_4;
-    (&grim_config_var1_table)[state * 4] = unaff_retaddr;
-    *(uint *)(&grim_config_var2_table + state * 0x10) = state;
-    *(uint *)(&grim_config_var3_table + state * 0x10) = value;
+    (*grim_d3d_device->lpVtbl->SetGammaRamp)(grim_d3d_device,1,&DStack_600);
+    (&grim_config_var0_table)[state * 4] = value;
+    (&grim_config_var1_table)[state * 4] = in_stack_0000000c;
+    *(uint *)(&grim_config_var2_table + state * 0x10) = in_stack_00000010;
+    *(byte **)(&grim_config_var3_table + state * 0x10) = in_stack_00000014;
     return;
   case 0x29:
     DAT_1005c400 = value;
@@ -3236,7 +3283,8 @@ LAB_10006b54:
     *(char *)(&grim_config_var0_table + state * 4) = (char)value;
     return;
   case 0x36:
-    (**(code **)(*grim_d3d_device + 0x3c))(grim_d3d_device,0,0,0,0);
+    (*grim_d3d_device->lpVtbl->Present)
+              (grim_d3d_device,(RECT *)0x0,(RECT *)0x0,(HWND)0x0,(RGNDATA *)0x0);
     return;
   case 0x52:
     (&grim_config_var0_table)[state * 4] = value;
@@ -3294,27 +3342,33 @@ char * grim_get_error_text(void)
 /* grim_clear_color @ 10006cb0 */
 
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 /* Grim2D vtable 0x2c: packs RGBA into device clear color */
 
 void grim_clear_color(float r,float g,float b,float a)
 
 {
-  int iVar1;
-  int *piVar2;
-  uint uVar3;
-  int iVar4;
+  IDirect3DDevice8Vtbl *pIVar1;
+  LPDIRECT3DDEVICE8 This;
+  uint uVar2;
+  int iVar3;
+  uint uVar4;
   uint uVar5;
-  uint uVar6;
+  float z;
+  DWORD stencil;
   
-  piVar2 = grim_d3d_device;
+  This = grim_d3d_device;
   if ((DAT_1005d3bd == '\0') && (DAT_1005c898 != '\0')) {
-    iVar1 = *grim_d3d_device;
-    uVar3 = ftol(0,0);
-    iVar4 = ftol();
+    stencil = 0;
+    z = 0.0;
+    pIVar1 = grim_d3d_device->lpVtbl;
+    uVar2 = ftol();
+    iVar3 = ftol();
+    uVar4 = ftol();
     uVar5 = ftol();
-    uVar6 = ftol();
-    (**(code **)(iVar1 + 0x90))
-              (piVar2,0,0,1,((uVar3 & 0xff | iVar4 << 8) << 8 | uVar5 & 0xff) << 8 | uVar6 & 0xff);
+    (*pIVar1->Clear)(This,0,(D3DRECT *)0x0,1,
+                     ((uVar2 & 0xff | iVar3 << 8) << 8 | uVar4 & 0xff) << 8 | uVar5 & 0xff,z,stencil
+                    );
   }
   return;
 }
@@ -3324,6 +3378,7 @@ void grim_clear_color(float r,float g,float b,float a)
 /* grim_set_render_target @ 10006d50 */
 
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 /* Grim2D vtable 0x30 (provisional): set render target; -1 resets */
 
 int grim_set_render_target(int target_index)
@@ -3331,34 +3386,35 @@ int grim_set_render_target(int target_index)
 {
   undefined4 in_EAX;
   uint uVar1;
-  int iVar2;
+  ULONG UVar2;
   
-  iVar2 = CONCAT31((int3)((uint)in_EAX >> 8),DAT_1005d3bd);
+  UVar2 = CONCAT31((int3)((uint)in_EAX >> 8),DAT_1005d3bd);
   if (DAT_1005d3bd == '\0') {
     if (target_index < 0) {
-      if (grim_backbuffer_surface != (int *)0x0) {
-        if (grim_render_target_surface != (int *)0x0) {
-          (**(code **)(*grim_render_target_surface + 8))(grim_render_target_surface);
+      if (grim_backbuffer_surface != (LPDIRECT3DSURFACE8)0x0) {
+        if (grim_render_target_surface != (LPDIRECT3DSURFACE8)0x0) {
+          (*grim_render_target_surface->lpVtbl->Release)(grim_render_target_surface);
         }
-        grim_render_target_surface = (int *)0x0;
-        uVar1 = (**(code **)(*grim_d3d_device + 0x7c))(grim_d3d_device,grim_backbuffer_surface,0);
+        grim_render_target_surface = (LPDIRECT3DSURFACE8)0x0;
+        uVar1 = (*grim_d3d_device->lpVtbl->SetRenderTarget)
+                          (grim_d3d_device,grim_backbuffer_surface,(IDirect3DSurface8 *)0x0);
         if ((int)uVar1 < 0) {
           return uVar1 & 0xffffff00;
         }
-        iVar2 = 0;
-        if (grim_backbuffer_surface != (int *)0x0) {
-          iVar2 = (**(code **)(*grim_backbuffer_surface + 8))(grim_backbuffer_surface);
+        UVar2 = 0;
+        if (grim_backbuffer_surface != (LPDIRECT3DSURFACE8)0x0) {
+          UVar2 = (*grim_backbuffer_surface->lpVtbl->Release)(grim_backbuffer_surface);
         }
-        grim_backbuffer_surface = (int *)0x0;
+        grim_backbuffer_surface = (LPDIRECT3DSURFACE8)0x0;
       }
     }
     else {
-      if (grim_render_target_surface != (int *)0x0) {
-        (**(code **)(*grim_render_target_surface + 8))(grim_render_target_surface);
-        grim_render_target_surface = (int *)0x0;
+      if (grim_render_target_surface != (LPDIRECT3DSURFACE8)0x0) {
+        (*grim_render_target_surface->lpVtbl->Release)(grim_render_target_surface);
+        grim_render_target_surface = (LPDIRECT3DSURFACE8)0x0;
       }
-      if (grim_backbuffer_surface == (int *)0x0) {
-        (**(code **)(*grim_d3d_device + 0x80))(grim_d3d_device,&grim_backbuffer_surface);
+      if (grim_backbuffer_surface == (LPDIRECT3DSURFACE8)0x0) {
+        (*grim_d3d_device->lpVtbl->GetRenderTarget)(grim_d3d_device,&grim_backbuffer_surface);
       }
       uVar1 = (**(code **)(**(int **)((&grim_texture_slots)[target_index] + 4) + 0x3c))
                         (*(int **)((&grim_texture_slots)[target_index] + 4),0,
@@ -3366,18 +3422,19 @@ int grim_set_render_target(int target_index)
       if ((int)uVar1 < 0) {
         return uVar1 & 0xffffff00;
       }
-      iVar2 = (**(code **)(*grim_d3d_device + 0x7c))(grim_d3d_device,grim_render_target_surface,0);
-      if (iVar2 < 0) {
+      UVar2 = (*grim_d3d_device->lpVtbl->SetRenderTarget)
+                        (grim_d3d_device,grim_render_target_surface,(IDirect3DSurface8 *)0x0);
+      if ((int)UVar2 < 0) {
         uVar1 = 0;
-        if (grim_render_target_surface != (int *)0x0) {
-          uVar1 = (**(code **)(*grim_render_target_surface + 8))(grim_render_target_surface);
+        if (grim_render_target_surface != (LPDIRECT3DSURFACE8)0x0) {
+          uVar1 = (*grim_render_target_surface->lpVtbl->Release)(grim_render_target_surface);
         }
-        grim_render_target_surface = (int *)0x0;
+        grim_render_target_surface = (LPDIRECT3DSURFACE8)0x0;
         return uVar1 & 0xffffff00;
       }
     }
   }
-  return CONCAT31((int3)((uint)iVar2 >> 8),1);
+  return CONCAT31((int3)(UVar2 >> 8),1);
 }
 
 
@@ -3522,7 +3579,6 @@ undefined4 FUN_10006f90(void)
 
 /* grim_is_key_active @ 10006fe0 */
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* Grim2D vtable 0x80: routes key/mouse/joystick IDs */
 
 int __thiscall grim_is_key_active(void *this,int key)
@@ -3583,19 +3639,19 @@ int __thiscall grim_is_key_active(void *this,int key)
     return iVar2;
   }
   if (key == 0x13f) {
-    fVar1 = (float)grim_joystick_state;
+    fVar1 = (float)grim_joystick_state.lX;
   }
   else if (key == 0x140) {
-    fVar1 = (float)DAT_1005d834;
+    fVar1 = (float)grim_joystick_state.lY;
   }
   else if (key == 0x141) {
-    fVar1 = (float)DAT_1005d838;
+    fVar1 = (float)grim_joystick_state.lZ;
   }
   else if (key == 0x153) {
-    fVar1 = (float)_DAT_1005d83c;
+    fVar1 = (float)grim_joystick_state.lRx;
   }
   else if (key == 0x154) {
-    fVar1 = (float)_DAT_1005d840;
+    fVar1 = (float)grim_joystick_state.lRy;
   }
   else {
     if (key != 0x155) {
@@ -3620,7 +3676,7 @@ int __thiscall grim_is_key_active(void *this,int key)
       } while (iVar5 < 0x17c);
       return uVar3 & 0xffffff00;
     }
-    fVar1 = (float)_DAT_1005d844;
+    fVar1 = (float)grim_joystick_state.lRz;
   }
   if (0.5 < ABS(fVar1 * 0.001)) {
     return 1;
@@ -3632,7 +3688,6 @@ int __thiscall grim_is_key_active(void *this,int key)
 
 /* grim_get_config_float @ 100071b0 */
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* Grim2D vtable 0x84: config float lookup (scaled) */
 
@@ -3646,22 +3701,22 @@ float grim_get_config_float(int id)
   
   if (0xff < id) {
     if (id == 0x13f) {
-      return (float)grim_joystick_state * 0.001;
+      return (float)grim_joystick_state.lX * 0.001;
     }
     if (id == 0x140) {
-      return (float)DAT_1005d834 * 0.001;
+      return (float)grim_joystick_state.lY * 0.001;
     }
     if (id == 0x141) {
-      return (float)DAT_1005d838 * 0.001;
+      return (float)grim_joystick_state.lZ * 0.001;
     }
     if (id == 0x153) {
-      return (float)_DAT_1005d83c * 0.001;
+      return (float)grim_joystick_state.lRx * 0.001;
     }
     if (id == 0x154) {
-      return (float)_DAT_1005d840 * 0.001;
+      return (float)grim_joystick_state.lRy * 0.001;
     }
     if (id == 0x155) {
-      return (float)_DAT_1005d844 * 0.001;
+      return (float)grim_joystick_state.lRz * 0.001;
     }
     if (id == 0x15f) {
       fVar3 = (float10)(**(code **)(*in_ECX + 0x70))();
@@ -3771,9 +3826,9 @@ void grim_flush_input(void)
 {
   int iVar1;
   undefined4 *puVar2;
-  int iStack_4;
+  DWORD DStack_4;
   
-  iStack_4 = 10;
+  DStack_4 = 10;
   puVar2 = &grim_keyboard_state;
   for (iVar1 = 0x40; iVar1 != 0; iVar1 = iVar1 + -1) {
     *puVar2 = 0;
@@ -3781,11 +3836,12 @@ void grim_flush_input(void)
   }
   iVar1 = 0;
   do {
-    (**(code **)(*grim_keyboard_device + 0x28))
-              (grim_keyboard_device,0x14,&grim_keyboard_event_buffer,&iStack_4,0);
+    (*grim_keyboard_device->lpVtbl->GetDeviceData)
+              (grim_keyboard_device,0x14,(LPDIDEVICEOBJECTDATA)&grim_keyboard_event_buffer,&DStack_4
+               ,0);
     if (99 < iVar1) break;
     iVar1 = iVar1 + 1;
-  } while (iStack_4 != 0);
+  } while (DStack_4 != 0);
   DAT_1005d3e4 = 0;
   puVar2 = &grim_keyboard_state;
   for (iVar1 = 0x40; iVar1 != 0; iVar1 = iVar1 + -1) {
@@ -4028,7 +4084,7 @@ float grim_get_mouse_wheel_delta(void)
 int grim_get_joystick_x(void)
 
 {
-  return grim_joystick_state;
+  return grim_joystick_state.lX;
 }
 
 
@@ -4041,7 +4097,7 @@ int grim_get_joystick_x(void)
 int grim_get_joystick_y(void)
 
 {
-  return DAT_1005d834;
+  return grim_joystick_state.lY;
 }
 
 
@@ -4054,7 +4110,7 @@ int grim_get_joystick_y(void)
 int grim_get_joystick_z(void)
 
 {
-  return DAT_1005d838;
+  return grim_joystick_state.lZ;
 }
 
 
@@ -4067,7 +4123,7 @@ int grim_get_joystick_z(void)
 int grim_get_joystick_pov(int index)
 
 {
-  return *(int *)(&DAT_1005d850 + index * 4);
+  return grim_joystick_state.rgdwPOV[index];
 }
 
 
@@ -4091,6 +4147,7 @@ int grim_is_joystick_button_down(int button)
 
 /* grim_create_texture @ 100075d0 */
 
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 /* Grim2D vtable 0xac: create blank texture in a free slot */
 
 int grim_create_texture(char *name,int width,int height)
@@ -4100,10 +4157,10 @@ int grim_create_texture(char *name,int width,int height)
   uint uVar2;
   void *pvVar3;
   void *unaff_EDI;
-  int *name_00;
+  LPDIRECT3DDEVICE8 name_00;
   undefined4 uVar4;
   void *pvVar5;
-  undefined1 local_10 [4];
+  IDirect3DTexture8 *local_10;
   void *local_c;
   undefined1 *puStack_8;
   undefined4 uStack_4;
@@ -4120,8 +4177,8 @@ int grim_create_texture(char *name,int width,int height)
   pvVar5 = (void *)0x1;
   uVar4 = 1;
   name_00 = grim_d3d_device;
-  uVar2 = (**(code **)(*grim_d3d_device + 0x50))
-                    (grim_d3d_device,width,height,1,1,DAT_1005a488,0,local_10);
+  uVar2 = (*grim_d3d_device->lpVtbl->CreateTexture)
+                    (grim_d3d_device,width,height,1,1,DAT_1005a488,D3DPOOL_DEFAULT,&local_10);
   if ((int)uVar2 < 0) {
     DAT_1005c8f8 = s_D3D__Could_not_create_a_texture__10053c18;
     ExceptionList = pvVar5;
@@ -4230,6 +4287,7 @@ int grim_validate_texture(int handle)
 
 /* grim_recreate_texture @ 10007790 */
 
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 /* Grim2D vtable 0xb0: recreate D3D texture surface */
 
 int grim_recreate_texture(int handle)
@@ -4245,7 +4303,7 @@ int grim_recreate_texture(int handle)
   if (iVar3 == 0) {
     return 0;
   }
-  uVar2 = FUN_1000b297(*(void **)(iVar3 + 0x10),grim_d3d_device,*(uint *)(iVar3 + 0xc),
+  uVar2 = FUN_1000b297(*(void **)(iVar3 + 0x10),(int *)grim_d3d_device,*(uint *)(iVar3 + 0xc),
                        (uint)*(void **)(iVar3 + 0x10),1,0,DAT_1005a56c,1,(int)&handle);
   if ((int)uVar2 < 0) {
     return uVar2 & 0xffffff00;
@@ -4266,16 +4324,18 @@ int grim_recreate_texture(int handle)
 /* grim_bind_texture @ 10007830 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 /* Grim2D vtable 0xc4: bind texture handle to stage */
 
 void grim_bind_texture(int handle,int stage)
 
 {
-  int iVar1;
+  IDirect3DBaseTexture8 *pTexture;
   
   if (((-1 < handle) && ((&grim_texture_slots)[handle] != 0)) &&
-     (iVar1 = *(int *)((&grim_texture_slots)[handle] + 4), iVar1 != 0)) {
-    (**(code **)(*grim_d3d_device + 0xf4))(grim_d3d_device,stage,iVar1);
+     (pTexture = *(IDirect3DBaseTexture8 **)((&grim_texture_slots)[handle] + 4),
+     pTexture != (IDirect3DBaseTexture8 *)0x0)) {
+    (*grim_d3d_device->lpVtbl->SetTexture)(grim_d3d_device,stage,pTexture);
     _DAT_10053060 = handle;
   }
   return;
@@ -4305,6 +4365,7 @@ void grim_draw_fullscreen_quad(void)
 /* grim_draw_rect_filled @ 100078e0 */
 
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 /* Grim2D vtable 0xd0: UI panel fill/quad */
 
 void grim_draw_rect_filled(float *xy,float w,float h)
@@ -4317,19 +4378,19 @@ void grim_draw_rect_filled(float *xy,float w,float h)
   undefined4 uVar3;
   
   if (0.0 < *(float *)(in_stack_00000010 + 0xc)) {
-    (**(code **)(*grim_d3d_device + 0xf4))(grim_d3d_device,0,0);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,3);
+    (*grim_d3d_device->lpVtbl->SetTexture)(grim_d3d_device,0,(IDirect3DBaseTexture8 *)0x0);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLOROP,3);
     uVar3 = 3;
     uVar2 = 4;
     puVar1 = (undefined4 *)0x0;
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,4,3);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_ALPHAOP,3);
     (**(code **)(*in_ECX + 0x110))();
     (**(code **)(*in_ECX + 0xfc))(0);
     (**(code **)(*in_ECX + 0xe8))();
     (**(code **)(*in_ECX + 0x11c))(*puVar1,puVar1[1],uVar2,uVar3);
     (**(code **)(*in_ECX + 0xf0))();
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,4);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,4,4);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLOROP,4);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_ALPHAOP,4);
   }
   return;
 }
@@ -4339,32 +4400,33 @@ void grim_draw_rect_filled(float *xy,float w,float h)
 /* grim_draw_fullscreen_color @ 100079b0 */
 
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 /* Grim2D vtable 0xcc: fullscreen color/fade overlay */
 
 void grim_draw_fullscreen_color(float r,float g,float b,float a)
 
 {
   int *in_ECX;
-  int *piVar1;
+  LPDIRECT3DDEVICE8 pIVar1;
   undefined4 uVar2;
   undefined4 uVar3;
   undefined4 uVar4;
   
   if (0.0 < a) {
-    (**(code **)(*grim_d3d_device + 0xf4))(grim_d3d_device,0,0);
+    (*grim_d3d_device->lpVtbl->SetTexture)(grim_d3d_device,0,(IDirect3DBaseTexture8 *)0x0);
     uVar4 = 3;
     uVar3 = 1;
     uVar2 = 0;
-    piVar1 = grim_d3d_device;
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,3);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,4,3);
-    (**(code **)(*in_ECX + 0x114))(piVar1,uVar2,uVar3,uVar4);
+    pIVar1 = grim_d3d_device;
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLOROP,3);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_ALPHAOP,3);
+    (**(code **)(*in_ECX + 0x114))(pIVar1,uVar2,uVar3,uVar4);
     (**(code **)(*in_ECX + 0xfc))(0);
     (**(code **)(*in_ECX + 0xe8))();
     (**(code **)(*in_ECX + 0x11c))(0,0,(float)DAT_1005c400,(float)DAT_10059dc0);
     (**(code **)(*in_ECX + 0xf0))();
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,4);
-    (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,4,4);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLOROP,4);
+    (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_ALPHAOP,4);
   }
   return;
 }
@@ -4374,6 +4436,7 @@ void grim_draw_fullscreen_color(float r,float g,float b,float a)
 /* grim_begin_batch @ 10007ac0 */
 
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 /* Grim2D vtable 0xe8 (provisional): begin draw batch */
 
 void grim_begin_batch(void)
@@ -4383,7 +4446,7 @@ void grim_begin_batch(void)
   
   if (((DAT_1005d3bd == '\0') && (DAT_1005d3f4 == '\0')) &&
      (DAT_1005d3f4 = '\x01', DAT_1005c898 != '\0')) {
-    (**(code **)(*grim_d3d_device + 0x88))(grim_d3d_device);
+    (*grim_d3d_device->lpVtbl->BeginScene)(grim_d3d_device);
     iVar1 = (**(code **)(*DAT_10059e2c + 0x2c))(DAT_10059e2c,0,0,&DAT_10059e34,0x2800);
     if (iVar1 < 0) {
       DAT_1005c898 = '\0';
@@ -4398,6 +4461,7 @@ void grim_begin_batch(void)
 /* grim_end_batch @ 10007b20 */
 
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 /* Grim2D vtable 0xf0 (provisional): end draw batch/flush */
 
 void grim_end_batch(void)
@@ -4407,10 +4471,11 @@ void grim_end_batch(void)
     (**(code **)(*DAT_10059e2c + 0x30))(DAT_10059e2c);
     if (DAT_1005c898 != '\0') {
       if ((short)DAT_1005c8dc != 0) {
-        (**(code **)(*grim_d3d_device + 0x11c))
-                  (grim_d3d_device,4,0,DAT_1005c8dc & 0xffff,0,(DAT_1005c8dc & 0xffff) >> 1);
+        (*grim_d3d_device->lpVtbl->DrawIndexedPrimitive)
+                  (grim_d3d_device,D3DPT_TRIANGLELIST,0,DAT_1005c8dc & 0xffff,0,
+                   (DAT_1005c8dc & 0xffff) >> 1);
       }
-      (**(code **)(*grim_d3d_device + 0x8c))(grim_d3d_device);
+      (*grim_d3d_device->lpVtbl->EndScene)(grim_d3d_device);
       DAT_1005d3f4 = '\0';
     }
   }
@@ -4422,6 +4487,7 @@ void grim_end_batch(void)
 /* grim_draw_circle_filled @ 10007b90 */
 
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 /* Grim2D vtable 0xd8 (provisional): triangle fan circle fill */
 
 void grim_draw_circle_filled(float x,float y,float radius)
@@ -4429,52 +4495,66 @@ void grim_draw_circle_filled(float x,float y,float radius)
 {
   int iVar1;
   int iVar2;
-  undefined4 *puVar3;
-  undefined4 *puVar4;
+  float *pfVar3;
+  float *pfVar4;
   float10 fVar5;
-  int iVar6;
+  float10 fVar6;
+  int iVar7;
+  float fStack_30;
+  undefined4 **ppuStack_2c;
+  float fStack_10;
+  float fStack_c;
+  float fStack_8;
   
   if ((DAT_1005d3f4 == '\0') && (DAT_1005d3f4 = '\x01', DAT_1005c898 != '\0')) {
-    (**(code **)(*grim_d3d_device + 0x88))();
-    iVar1 = (**(code **)(*DAT_10059e2c + 0x2c))();
+    ppuStack_2c = (undefined4 **)0x10007bc2;
+    (*grim_d3d_device->lpVtbl->BeginScene)(grim_d3d_device);
+    ppuStack_2c = &DAT_10059e34;
+    fStack_30 = 0.0;
+    iVar1 = (**(code **)(*DAT_10059e2c + 0x2c))(DAT_10059e2c,0);
     if (iVar1 < 0) {
       DAT_1005c898 = '\0';
     }
     DAT_1005c8dc = DAT_1005c8dc & 0xffff0000;
-    (**(code **)(*grim_d3d_device + 0xf4))(grim_d3d_device,0,0);
-    puVar3 = (undefined4 *)&stack0xffffffc0;
-    puVar4 = DAT_10059e34;
+    (*grim_d3d_device->lpVtbl->SetTexture)(grim_d3d_device,0,(IDirect3DBaseTexture8 *)0x0);
+    ppuStack_2c = (undefined4 **)fStack_c;
+    fStack_30 = fStack_10;
+    pfVar3 = &fStack_30;
+    pfVar4 = (float *)DAT_10059e34;
     for (iVar1 = 7; iVar1 != 0; iVar1 = iVar1 + -1) {
-      *puVar4 = *puVar3;
-      puVar3 = puVar3 + 1;
-      puVar4 = puVar4 + 1;
+      *pfVar4 = *pfVar3;
+      pfVar3 = pfVar3 + 1;
+      pfVar4 = pfVar4 + 1;
     }
     DAT_10059e34 = DAT_10059e34 + 7;
     DAT_1005c8dc._0_2_ = (short)DAT_1005c8dc + 1;
     iVar1 = ftol();
-    iVar6 = 0;
+    iVar7 = 0;
     if (-1 < iVar1) {
       do {
         iVar2 = 7;
-        fVar5 = ((float10)iVar6 * (float10)6.2831855) / (float10)iVar1;
-        fcos(fVar5);
-        fsin(fVar5);
-        puVar3 = (undefined4 *)&stack0xffffffc0;
-        puVar4 = DAT_10059e34;
+        fVar5 = ((float10)iVar7 * (float10)6.2831855) / (float10)iVar1;
+        fVar6 = (float10)fcos(fVar5);
+        fStack_30 = (float)(fVar6 * (float10)fStack_8 + (float10)fStack_10);
+        fVar5 = (float10)fsin(fVar5);
+        ppuStack_2c = (undefined4 **)(float)(fVar5 * (float10)fStack_8 + (float10)fStack_c);
+        pfVar3 = &fStack_30;
+        pfVar4 = (float *)DAT_10059e34;
         for (; iVar2 != 0; iVar2 = iVar2 + -1) {
-          *puVar4 = *puVar3;
-          puVar3 = puVar3 + 1;
-          puVar4 = puVar4 + 1;
+          *pfVar4 = *pfVar3;
+          pfVar3 = pfVar3 + 1;
+          pfVar4 = pfVar4 + 1;
         }
         DAT_10059e34 = DAT_10059e34 + 7;
         DAT_1005c8dc._0_2_ = (short)DAT_1005c8dc + 1;
-        iVar6 = iVar6 + 1;
-      } while (iVar6 <= iVar1);
+        iVar7 = iVar7 + 1;
+      } while (iVar7 <= iVar1);
     }
     (**(code **)(*DAT_10059e2c + 0x30))(DAT_10059e2c);
     if (DAT_1005c898 != '\0') {
-      (**(code **)(*grim_d3d_device + 0x118))(grim_d3d_device,6,0,(DAT_1005c8dc & 0xffff) - 2);
-      (**(code **)(*grim_d3d_device + 0x8c))(grim_d3d_device);
+      (*grim_d3d_device->lpVtbl->DrawPrimitive)
+                (grim_d3d_device,D3DPT_TRIANGLEFAN,0,(DAT_1005c8dc & 0xffff) - 2);
+      (*grim_d3d_device->lpVtbl->EndScene)(grim_d3d_device);
       DAT_1005d3f4 = '\0';
     }
   }
@@ -4486,6 +4566,7 @@ void grim_draw_circle_filled(float x,float y,float radius)
 /* grim_draw_circle_outline @ 10007d40 */
 
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 /* Grim2D vtable 0xdc (provisional): triangle strip ring/outline */
 
 void grim_draw_circle_outline(float x,float y,float radius)
@@ -4498,60 +4579,46 @@ void grim_draw_circle_outline(float x,float y,float radius)
   float10 fVar5;
   float10 fVar6;
   int iVar7;
-  float fStack_34;
-  undefined4 *puStack_30;
-  undefined4 uStack_2c;
-  int *piStack_28;
-  undefined4 uStack_24;
-  undefined4 uStack_20;
-  undefined4 uStack_1c;
-  float fStack_14;
+  float fStack_30;
+  float **ppfStack_2c;
   float fStack_10;
   float fStack_c;
+  float fStack_8;
   
   if ((DAT_1005d3f4 == '\0') && (DAT_1005d3f4 = '\x01', DAT_1005c898 != '\0')) {
-    piStack_28 = grim_d3d_device;
-    uStack_2c = 0x10007d72;
-    (**(code **)(*grim_d3d_device + 0x88))();
-    uStack_2c = 0x2800;
-    puStack_30 = &DAT_10059e34;
-    fStack_34 = 0.0;
+    ppfStack_2c = (float **)0x10007d72;
+    (*grim_d3d_device->lpVtbl->BeginScene)(grim_d3d_device);
+    ppfStack_2c = &DAT_10059e34;
+    fStack_30 = 0.0;
     iVar1 = (**(code **)(*DAT_10059e2c + 0x2c))(DAT_10059e2c,0);
     if (iVar1 < 0) {
       DAT_1005c898 = '\0';
     }
-    uStack_2c = DAT_1005b288;
-    piStack_28 = (int *)DAT_1005b28c;
     DAT_1005c8dc = DAT_1005c8dc & 0xffff0000;
-    uStack_24 = DAT_1005bc04;
-    uStack_20 = DAT_1005b290;
-    uStack_1c = DAT_1005b294;
     iVar1 = ftol();
     iVar7 = 0;
     if (-1 < iVar1) {
       do {
         iVar2 = 7;
-        uStack_1c = 0;
         fVar5 = ((float10)iVar7 * (float10)6.2831855) / (float10)iVar1;
         fVar6 = (float10)fcos(fVar5);
-        fStack_34 = (float)(fVar6 * (float10)fStack_c + (float10)fStack_14);
+        fStack_30 = (float)(fVar6 * (float10)fStack_8 + (float10)fStack_10);
         fVar5 = (float10)fsin(fVar5);
-        puStack_30 = (undefined4 *)(float)(fVar5 * (float10)fStack_c + (float10)fStack_10);
-        pfVar3 = &fStack_34;
+        ppfStack_2c = (float **)(float)(fVar5 * (float10)fStack_8 + (float10)fStack_c);
+        pfVar3 = &fStack_30;
         pfVar4 = DAT_10059e34;
         for (; iVar2 != 0; iVar2 = iVar2 + -1) {
           *pfVar4 = *pfVar3;
           pfVar3 = pfVar3 + 1;
           pfVar4 = pfVar4 + 1;
         }
-        fStack_34 = (float)(((float10)fStack_c + (float10)2.0) * (float10)(float)fVar6 +
-                           (float10)fStack_14);
+        fStack_30 = (float)(((float10)fStack_8 + (float10)2.0) * (float10)(float)fVar6 +
+                           (float10)fStack_10);
         DAT_10059e34 = DAT_10059e34 + 7;
         DAT_1005c8dc._0_2_ = (short)DAT_1005c8dc + 1;
-        puStack_30 = (undefined4 *)
-                     (float)(((float10)fStack_c + (float10)2.0) * fVar5 + (float10)fStack_10);
-        uStack_1c = 0x3f800000;
-        pfVar3 = &fStack_34;
+        ppfStack_2c = (float **)
+                      (float)(((float10)fStack_8 + (float10)2.0) * fVar5 + (float10)fStack_c);
+        pfVar3 = &fStack_30;
         pfVar4 = DAT_10059e34;
         for (iVar2 = 7; iVar2 != 0; iVar2 = iVar2 + -1) {
           *pfVar4 = *pfVar3;
@@ -4565,8 +4632,9 @@ void grim_draw_circle_outline(float x,float y,float radius)
     }
     (**(code **)(*DAT_10059e2c + 0x30))(DAT_10059e2c);
     if (DAT_1005c898 != '\0') {
-      (**(code **)(*grim_d3d_device + 0x118))(grim_d3d_device,5,0,(DAT_1005c8dc & 0xffff) - 2);
-      (**(code **)(*grim_d3d_device + 0x8c))(grim_d3d_device);
+      (*grim_d3d_device->lpVtbl->DrawPrimitive)
+                (grim_d3d_device,D3DPT_TRIANGLESTRIP,0,(DAT_1005c8dc & 0xffff) - 2);
+      (*grim_d3d_device->lpVtbl->EndScene)(grim_d3d_device);
       DAT_1005d3f4 = '\0';
     }
   }
@@ -4810,6 +4878,7 @@ void grim_set_uv_point(int index,float u,float v)
 /* grim_flush_batch @ 100083c0 */
 
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 /* Grim2D vtable 0xec: flush batch when vertex buffer fills */
 
 void grim_flush_batch(void)
@@ -4819,8 +4888,9 @@ void grim_flush_batch(void)
   
   if ((DAT_1005d3bd == '\0') && (DAT_1005d3f4 != '\0')) {
     (**(code **)(*DAT_10059e2c + 0x30))(DAT_10059e2c);
-    (**(code **)(*grim_d3d_device + 0x11c))
-              (grim_d3d_device,4,0,DAT_1005c8dc & 0xffff,0,(DAT_1005c8dc & 0xffff) >> 1);
+    (*grim_d3d_device->lpVtbl->DrawIndexedPrimitive)
+              (grim_d3d_device,D3DPT_TRIANGLELIST,0,DAT_1005c8dc & 0xffff,0,
+               (DAT_1005c8dc & 0xffff) >> 1);
     iVar1 = (**(code **)(*DAT_10059e2c + 0x2c))(DAT_10059e2c,0,0,&DAT_10059e34,0x2800);
     if (-1 < iVar1) {
       DAT_1005c8dc = DAT_1005c8dc & 0xffff0000;
@@ -5306,37 +5376,49 @@ void grim_submit_quad_raw(float *verts)
 
 /* grim_draw_rect_outline @ 10008f10 */
 
-/* WARNING: Removing unreachable block (ram,0x10008fa9) */
-/* WARNING: Removing unreachable block (ram,0x10008f74) */
-/* WARNING: Removing unreachable block (ram,0x10008f80) */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 /* Grim2D vtable 0xd4: UI panel outline/frame (4 edge quads) */
 
 void grim_draw_rect_outline(float *xy,float w,float h)
 
 {
   int *in_ECX;
-  float fVar1;
+  int iVar1;
+  float *unaff_retaddr;
   float fVar2;
   float fVar3;
   undefined4 uVar4;
   
-  (**(code **)(*grim_d3d_device + 0xf4))(grim_d3d_device,0,0);
-  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,3);
-  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device);
+  (*grim_d3d_device->lpVtbl->SetTexture)(grim_d3d_device,0,(IDirect3DBaseTexture8 *)0x0);
+  (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLOROP,3);
+  (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_ALPHAOP,3);
   uVar4 = 0;
   (**(code **)(*in_ECX + 0xfc))(0);
   (**(code **)(*in_ECX + 0xe8))();
-  fVar3 = 5.60519e-45;
-  fVar2 = fRam00000004;
-  (**(code **)(*in_ECX + 0x11c))(fRam00000000,fRam00000004,4,0x3f800000);
-  fVar1 = fRam00000004;
-  (**(code **)(*in_ECX + 0x11c))(fRam00000000,fRam00000004,0x3f800000,uVar4);
-  (**(code **)(*in_ECX + 0x11c))(fRam00000000,fVar3 + fRam00000004,fVar2 + 1.0,0x3f800000);
-  (**(code **)(*in_ECX + 0x11c))(fVar1 + fRam00000000,fRam00000004,0x3f800000,uVar4);
+  if (w == 1.0) {
+    iVar1 = *in_ECX;
+    w = 1.0;
+  }
+  else {
+    if ((float)xy != 1.0) {
+      fVar3 = unaff_retaddr[1];
+      (**(code **)(*in_ECX + 0x11c))(*unaff_retaddr,fVar3,xy,0x3f800000);
+      fVar2 = unaff_retaddr[1];
+      (**(code **)(*in_ECX + 0x11c))(*unaff_retaddr,fVar2,0x3f800000,uVar4);
+      (**(code **)(*in_ECX + 0x11c))
+                (*unaff_retaddr,(float)xy + unaff_retaddr[1],fVar3 + 1.0,0x3f800000);
+      (**(code **)(*in_ECX + 0x11c))(fVar2 + *unaff_retaddr,unaff_retaddr[1],0x3f800000,uVar4);
+      goto LAB_1000903e;
+    }
+    iVar1 = *in_ECX;
+    xy = (float *)0x3f800000;
+  }
+  (**(code **)(iVar1 + 0x11c))(*unaff_retaddr,unaff_retaddr[1],xy,w);
+LAB_1000903e:
   (**(code **)(*in_ECX + 0xf0))();
-  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,1,4);
-  (**(code **)(*grim_d3d_device + 0xfc))(grim_d3d_device,0,4,4);
+  (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_COLOROP,4);
+  (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_ALPHAOP,4);
   return;
 }
 
@@ -5401,6 +5483,7 @@ void grim_draw_quad_points(float x0,float y0,float x1,float y1,float x2,float y2
 /* grim_draw_text_mono @ 100092b0 */
 
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
 /* Grim2D vtable 0x13c: fixed 16px mono text */
 
 void grim_draw_text_mono(float x,float y,char *text)
@@ -5428,7 +5511,7 @@ void grim_draw_text_mono(float x,float y,char *text)
   
   if ((DAT_1005d3bd == '\0') && (text != (char *)0x0)) {
     if (DAT_1005ccf8 == '\0') {
-      (**(code **)(*grim_d3d_device + 0xf4))(grim_d3d_device,0,DAT_1005d3ec);
+      (*grim_d3d_device->lpVtbl->SetTexture)(grim_d3d_device,0,DAT_1005d3ec);
     }
     fStack_44 = y;
     fVar14 = 0.0;
@@ -6141,52 +6224,57 @@ int __cdecl grim_joystick_init(int hwnd)
   HWND pHVar1;
   HMODULE pHVar2;
   uint uVar3;
-  ULONG UVar4;
+  HRESULT HVar4;
   uint3 uVar6;
   int iVar5;
   DWORD DVar7;
   REFIID pIVar8;
-  LPVOID *ppvVar9;
-  LPUNKNOWN pIVar10;
+  LPDIRECTINPUT8A *ppIVar9;
+  LPDIRECTINPUT8A pIVar10;
   
   if ((hwnd == 0) && (pHVar1 = GetForegroundWindow(), pHVar1 == (HWND)0x0)) {
     GetDesktopWindow();
   }
-  if (grim_dinput_joystick == (LPUNKNOWN)0x0) {
-    ppvVar9 = &grim_dinput_joystick;
+  if (grim_dinput_joystick == (LPDIRECTINPUT8A)0x0) {
+    ppIVar9 = &grim_dinput_joystick;
     pIVar8 = (REFIID)&DAT_1005034c;
     DVar7 = 0x800;
     pIVar10 = grim_dinput_joystick;
     pHVar2 = GetModuleHandleA((LPCSTR)0x0);
-    uVar3 = DirectInput8Create(pHVar2,DVar7,pIVar8,ppvVar9,pIVar10);
+    uVar3 = DirectInput8Create(pHVar2,DVar7,pIVar8,ppIVar9,(LPUNKNOWN)pIVar10);
     if ((int)uVar3 < 0) {
-      grim_dinput_joystick = (LPUNKNOWN)0x0;
+      grim_dinput_joystick = (LPDIRECTINPUT8A)0x0;
       return uVar3 & 0xffffff00;
     }
   }
-  if (grim_joystick_device == (int *)0x0) {
-    UVar4 = (*grim_dinput_joystick->lpVtbl[1].AddRef)(grim_dinput_joystick);
-    uVar6 = (uint3)(UVar4 >> 8);
-    if ((int)UVar4 < 0) {
+  if (grim_joystick_device == (LPDIRECTINPUTDEVICE8A)0x0) {
+    HVar4 = (*grim_dinput_joystick->lpVtbl->EnumDevices)
+                      (grim_dinput_joystick,4,(LPDIENUMDEVICESCALLBACKA)&LAB_1000a110,(LPVOID)0x0,1)
+    ;
+    uVar6 = (uint3)((uint)HVar4 >> 8);
+    if (HVar4 < 0) {
       return (uint)uVar6 << 8;
     }
     if (DAT_1005d948 == '\0') {
       return (uint)uVar6 << 8;
     }
-    uVar3 = (**(code **)(*grim_joystick_device + 0x2c))(grim_joystick_device,&DAT_1004fe74);
+    uVar3 = (*grim_joystick_device->lpVtbl->SetDataFormat)
+                      (grim_joystick_device,(LPCDIDATAFORMAT)&DAT_1004fe74);
     if ((int)uVar3 < 0) {
       return uVar3 & 0xffffff00;
     }
-    uVar3 = (**(code **)(*grim_joystick_device + 0x34))(grim_joystick_device,hwnd,5);
+    uVar3 = (*grim_joystick_device->lpVtbl->SetCooperativeLevel)(grim_joystick_device,(HWND)hwnd,5);
     if ((int)uVar3 < 0) {
       return uVar3 & 0xffffff00;
     }
-    uVar3 = (**(code **)(*grim_joystick_device + 0x10))(grim_joystick_device,&LAB_1000a150,hwnd,0);
+    uVar3 = (*grim_joystick_device->lpVtbl->EnumObjects)
+                      (grim_joystick_device,(LPDIENUMDEVICEOBJECTSCALLBACKA)&LAB_1000a150,
+                       (LPVOID)hwnd,0);
     if ((int)uVar3 < 0) {
       return uVar3 & 0xffffff00;
     }
-    if (grim_joystick_device != (int *)0x0) {
-      (**(code **)(*grim_joystick_device + 0x1c))(grim_joystick_device);
+    if (grim_joystick_device != (LPDIRECTINPUTDEVICE8A)0x0) {
+      (*grim_joystick_device->lpVtbl->Acquire)(grim_joystick_device);
     }
   }
   iVar5 = grim_joystick_poll();
@@ -6202,20 +6290,21 @@ int __cdecl grim_joystick_init(int hwnd)
 int grim_joystick_poll(void)
 
 {
-  int iVar1;
+  HRESULT HVar1;
   uint uVar2;
   
   uVar2 = 0;
-  if ((grim_dinput_joystick != 0) && (uVar2 = 0, grim_joystick_device != (int *)0x0)) {
-    iVar1 = (**(code **)(*grim_joystick_device + 100))(grim_joystick_device);
-    if (-1 < iVar1) {
-      iVar1 = (**(code **)(*grim_joystick_device + 0x24))
+  if ((grim_dinput_joystick != (LPDIRECTINPUT8A)0x0) &&
+     (uVar2 = 0, grim_joystick_device != (LPDIRECTINPUTDEVICE8A)0x0)) {
+    HVar1 = (*grim_joystick_device->lpVtbl->Poll)(grim_joystick_device);
+    if (-1 < HVar1) {
+      HVar1 = (*grim_joystick_device->lpVtbl->GetDeviceState)
                         (grim_joystick_device,0x110,&grim_joystick_state);
-      return CONCAT31((int3)((uint)iVar1 >> 8),-1 < iVar1);
+      return CONCAT31((int3)((uint)HVar1 >> 8),-1 < HVar1);
     }
-    uVar2 = (**(code **)(*grim_joystick_device + 0x1c))(grim_joystick_device);
+    uVar2 = (*grim_joystick_device->lpVtbl->Acquire)(grim_joystick_device);
     while (uVar2 == 0x8007001e) {
-      uVar2 = (**(code **)(*grim_joystick_device + 0x1c))(grim_joystick_device);
+      uVar2 = (*grim_joystick_device->lpVtbl->Acquire)(grim_joystick_device);
     }
   }
   return uVar2 & 0xffffff00;
@@ -6228,7 +6317,7 @@ int grim_joystick_poll(void)
 byte __cdecl FUN_1000a310(uint param_1)
 
 {
-  return (byte)(&grim_joystick_buttons)[param_1 & 0xff] >> 7;
+  return grim_joystick_state.rgbButtons[param_1 & 0xff] >> 7;
 }
 
 
@@ -6238,14 +6327,14 @@ byte __cdecl FUN_1000a310(uint param_1)
 void FUN_1000a330(void)
 
 {
-  if (grim_joystick_device != (int *)0x0) {
-    (**(code **)(*grim_joystick_device + 0x20))(grim_joystick_device);
-    (**(code **)(*grim_joystick_device + 8))(grim_joystick_device);
-    grim_joystick_device = (int *)0x0;
+  if (grim_joystick_device != (LPDIRECTINPUTDEVICE8A)0x0) {
+    (*grim_joystick_device->lpVtbl->Unacquire)(grim_joystick_device);
+    (*grim_joystick_device->lpVtbl->Release)(grim_joystick_device);
+    grim_joystick_device = (LPDIRECTINPUTDEVICE8A)0x0;
   }
-  if (grim_dinput_joystick != (int *)0x0) {
-    (**(code **)(*grim_dinput_joystick + 8))(grim_dinput_joystick);
-    grim_dinput_joystick = (int *)0x0;
+  if (grim_dinput_joystick != (LPDIRECTINPUT8A)0x0) {
+    (*grim_dinput_joystick->lpVtbl->Release)(grim_dinput_joystick);
+    grim_dinput_joystick = (LPDIRECTINPUT8A)0x0;
   }
   return;
 }
@@ -6277,41 +6366,51 @@ int __cdecl grim_keyboard_init(int hwnd)
   int iVar4;
   DWORD DVar5;
   REFIID pIVar6;
-  LPUNKNOWN *ppIVar7;
-  LPUNKNOWN pIVar8;
+  LPDIRECTINPUT8A *ppIVar7;
+  LPDIRECTINPUT8A pIVar8;
+  DIPROPHEADER DStack_14;
+  undefined4 uStack_4;
   
   if ((hwnd == 0) && (pHVar1 = GetForegroundWindow(), pHVar1 == (HWND)0x0)) {
     GetDesktopWindow();
   }
-  if (grim_dinput_keyboard == (LPUNKNOWN)0x0) {
+  if (grim_dinput_keyboard == (LPDIRECTINPUT8A)0x0) {
     ppIVar7 = &grim_dinput_keyboard;
     pIVar6 = (REFIID)&DAT_1005034c;
     DVar5 = 0x800;
     pIVar8 = grim_dinput_keyboard;
     pHVar2 = GetModuleHandleA((LPCSTR)0x0);
-    uVar3 = DirectInput8Create(pHVar2,DVar5,pIVar6,ppIVar7,pIVar8);
+    uVar3 = DirectInput8Create(pHVar2,DVar5,pIVar6,ppIVar7,(LPUNKNOWN)pIVar8);
     if ((int)uVar3 < 0) {
-      grim_dinput_keyboard = (LPUNKNOWN)0x0;
+      grim_dinput_keyboard = (LPDIRECTINPUT8A)0x0;
       return uVar3 & 0xffffff00;
     }
   }
-  if (grim_keyboard_device == (int *)0x0) {
-    uVar3 = (*grim_dinput_keyboard->lpVtbl[1].QueryInterface)
-                      (grim_dinput_keyboard,(REFIID)&DAT_1005029c,&grim_keyboard_device);
+  if (grim_keyboard_device == (LPDIRECTINPUTDEVICE8A)0x0) {
+    uVar3 = (*grim_dinput_keyboard->lpVtbl->CreateDevice)
+                      (grim_dinput_keyboard,(REFGUID)&DAT_1005029c,&grim_keyboard_device,
+                       (LPUNKNOWN)0x0);
     if ((int)uVar3 < 0) {
       return uVar3 & 0xffffff00;
     }
-    uVar3 = (**(code **)(*grim_keyboard_device + 0x2c))();
+    uVar3 = (*grim_keyboard_device->lpVtbl->SetDataFormat)
+                      (grim_keyboard_device,(LPCDIDATAFORMAT)&DAT_1005007c);
     if ((int)uVar3 < 0) {
       return uVar3 & 0xffffff00;
     }
-    uVar3 = (**(code **)(*grim_keyboard_device + 0x34))(grim_keyboard_device);
+    uVar3 = (*grim_keyboard_device->lpVtbl->SetCooperativeLevel)
+                      (grim_keyboard_device,(HWND)hwnd,0x16);
     if ((int)uVar3 < 0) {
       return uVar3 & 0xffffff00;
     }
-    (**(code **)(*grim_keyboard_device + 0x18))(grim_keyboard_device,1,&stack0xffffffd4);
-    if (grim_keyboard_device != (int *)0x0) {
-      (**(code **)(*grim_keyboard_device + 0x1c))();
+    DStack_14.dwSize = 0x14;
+    DStack_14.dwHeaderSize = 0x10;
+    DStack_14.dwObj = 0;
+    DStack_14.dwHow = 0;
+    uStack_4 = 10;
+    (*grim_keyboard_device->lpVtbl->SetProperty)(grim_keyboard_device,(REFGUID)0x1,&DStack_14);
+    if (grim_keyboard_device != (LPDIRECTINPUTDEVICE8A)0x0) {
+      (*grim_keyboard_device->lpVtbl->Acquire)(grim_keyboard_device);
     }
   }
   iVar4 = grim_keyboard_poll();
@@ -6328,49 +6427,44 @@ int grim_keyboard_poll(void)
 
 {
   int *piVar1;
-  int iVar2;
-  uint uVar3;
-  int *piVar4;
-  int iVar5;
-  undefined4 *puVar6;
-  undefined4 uStack_14;
-  undefined4 *puStack_10;
+  uint uVar2;
+  int *piVar3;
+  int iVar4;
+  undefined4 *puVar5;
+  DWORD DStack_4;
   
-  uVar3 = 0;
-  if (grim_keyboard_device != (int *)0x0) {
-    uVar3 = (**(code **)(*grim_keyboard_device + 0x1c))();
-    while ((uVar3 == 0x8007001e || (uVar3 == 0x80070005))) {
-      puStack_10 = (undefined4 *)0x1000a4cd;
-      uVar3 = (**(code **)(*grim_keyboard_device + 0x1c))();
+  uVar2 = 0;
+  if (grim_keyboard_device != (LPDIRECTINPUTDEVICE8A)0x0) {
+    uVar2 = (*grim_keyboard_device->lpVtbl->Acquire)(grim_keyboard_device);
+    while ((uVar2 == 0x8007001e || (uVar2 == 0x80070005))) {
+      uVar2 = (*grim_keyboard_device->lpVtbl->Acquire)(grim_keyboard_device);
     }
-    if (-1 < (int)uVar3) {
-      puVar6 = &grim_keyboard_state;
-      for (iVar5 = 0x40; iVar5 != 0; iVar5 = iVar5 + -1) {
-        *puVar6 = 0;
-        puVar6 = puVar6 + 1;
+    if (-1 < (int)uVar2) {
+      puVar5 = &grim_keyboard_state;
+      for (iVar4 = 0x40; iVar4 != 0; iVar4 = iVar4 + -1) {
+        *puVar5 = 0;
+        puVar5 = puVar5 + 1;
       }
-      puStack_10 = &grim_keyboard_state;
-      uStack_14 = 0x100;
-      (**(code **)(*grim_keyboard_device + 0x24))(grim_keyboard_device);
-      uStack_14 = 10;
-      iVar5 = 0x14;
-      piVar4 = (int *)(**(code **)(*grim_keyboard_device + 0x28))
-                                (grim_keyboard_device,0x14,&grim_keyboard_event_buffer,&uStack_14,0)
-      ;
-      if ((-1 < (int)piVar4) && (0 < iVar5)) {
-        piVar4 = &grim_keyboard_event_buffer;
+      (*grim_keyboard_device->lpVtbl->GetDeviceState)
+                (grim_keyboard_device,0x100,&grim_keyboard_state);
+      DStack_4 = 10;
+      piVar3 = (int *)(*grim_keyboard_device->lpVtbl->GetDeviceData)
+                                (grim_keyboard_device,0x14,
+                                 (LPDIDEVICEOBJECTDATA)&grim_keyboard_event_buffer,&DStack_4,0);
+      if ((-1 < (int)piVar3) && (0 < (int)DStack_4)) {
+        piVar3 = &grim_keyboard_event_buffer;
         do {
-          iVar2 = *piVar4;
-          piVar1 = piVar4 + 1;
-          piVar4 = piVar4 + 5;
-          iVar5 = iVar5 + -1;
-          *(char *)((int)&grim_keyboard_state + iVar2) = (char)*piVar1;
-        } while (iVar5 != 0);
+          iVar4 = *piVar3;
+          piVar1 = piVar3 + 1;
+          piVar3 = piVar3 + 5;
+          DStack_4 = DStack_4 - 1;
+          *(char *)((int)&grim_keyboard_state + iVar4) = (char)*piVar1;
+        } while (DStack_4 != 0);
       }
-      return CONCAT31((int3)((uint)piVar4 >> 8),1);
+      return CONCAT31((int3)((uint)piVar3 >> 8),1);
     }
   }
-  return uVar3 & 0xffffff00;
+  return uVar2 & 0xffffff00;
 }
 
 
@@ -6382,14 +6476,14 @@ int grim_keyboard_poll(void)
 void grim_keyboard_shutdown(void)
 
 {
-  if (grim_keyboard_device != (int *)0x0) {
-    (**(code **)(*grim_keyboard_device + 0x20))(grim_keyboard_device);
-    (**(code **)(*grim_keyboard_device + 8))(grim_keyboard_device);
-    grim_keyboard_device = (int *)0x0;
+  if (grim_keyboard_device != (LPDIRECTINPUTDEVICE8A)0x0) {
+    (*grim_keyboard_device->lpVtbl->Unacquire)(grim_keyboard_device);
+    (*grim_keyboard_device->lpVtbl->Release)(grim_keyboard_device);
+    grim_keyboard_device = (LPDIRECTINPUTDEVICE8A)0x0;
   }
-  if (grim_dinput_keyboard != (int *)0x0) {
-    (**(code **)(*grim_dinput_keyboard + 8))(grim_dinput_keyboard);
-    grim_dinput_keyboard = (int *)0x0;
+  if (grim_dinput_keyboard != (LPDIRECTINPUT8A)0x0) {
+    (*grim_dinput_keyboard->lpVtbl->Release)(grim_dinput_keyboard);
+    grim_dinput_keyboard = (LPDIRECTINPUT8A)0x0;
   }
   return;
 }
@@ -6403,7 +6497,7 @@ void grim_keyboard_shutdown(void)
 int __cdecl grim_mouse_button_down(int button)
 
 {
-  return CONCAT31((int3)((uint)button >> 8),(byte)(&grim_mouse_buttons)[button] >> 7);
+  return CONCAT31((int3)((uint)button >> 8),grim_mouse_state.rgbButtons[button] >> 7);
 }
 
 
@@ -6415,47 +6509,49 @@ int __cdecl grim_mouse_button_down(int button)
 int grim_mouse_init(void)
 
 {
+  HWND hwnd;
   HWND pHVar1;
   HMODULE pHVar2;
   uint uVar3;
   int iVar4;
   DWORD DVar5;
   REFIID pIVar6;
-  LPVOID *ppvVar7;
-  LPUNKNOWN pIVar8;
+  LPDIRECTINPUT8A *ppIVar7;
+  LPDIRECTINPUT8A pIVar8;
   
-  iVar4 = DAT_1005d3f8;
-  if ((DAT_1005d3f8 == 0) && (pHVar1 = GetForegroundWindow(), pHVar1 == (HWND)0x0)) {
+  hwnd = DAT_1005d3f8;
+  if ((DAT_1005d3f8 == (HWND)0x0) && (pHVar1 = GetForegroundWindow(), pHVar1 == (HWND)0x0)) {
     GetDesktopWindow();
   }
-  if (grim_dinput_mouse == (LPUNKNOWN)0x0) {
-    ppvVar7 = &grim_dinput_mouse;
+  if (grim_dinput_mouse == (LPDIRECTINPUT8A)0x0) {
+    ppIVar7 = &grim_dinput_mouse;
     pIVar6 = (REFIID)&DAT_1005034c;
     DVar5 = 0x800;
     pIVar8 = grim_dinput_mouse;
     pHVar2 = GetModuleHandleA((LPCSTR)0x0);
-    uVar3 = DirectInput8Create(pHVar2,DVar5,pIVar6,ppvVar7,pIVar8);
+    uVar3 = DirectInput8Create(pHVar2,DVar5,pIVar6,ppIVar7,(LPUNKNOWN)pIVar8);
     if ((int)uVar3 < 0) {
-      grim_dinput_mouse = (LPUNKNOWN)0x0;
+      grim_dinput_mouse = (LPDIRECTINPUT8A)0x0;
       return uVar3 & 0xffffff00;
     }
   }
-  if (grim_mouse_device == (int *)0x0) {
-    uVar3 = (*grim_dinput_mouse->lpVtbl[1].QueryInterface)
-                      (grim_dinput_mouse,(REFIID)&DAT_100502ac,&grim_mouse_device);
+  if (grim_mouse_device == (LPDIRECTINPUTDEVICE8A)0x0) {
+    uVar3 = (*grim_dinput_mouse->lpVtbl->CreateDevice)
+                      (grim_dinput_mouse,(REFGUID)&DAT_100502ac,&grim_mouse_device,(LPUNKNOWN)0x0);
     if ((int)uVar3 < 0) {
       return uVar3 & 0xffffff00;
     }
-    uVar3 = (**(code **)(*grim_mouse_device + 0x2c))(grim_mouse_device,&DAT_10050284);
+    uVar3 = (*grim_mouse_device->lpVtbl->SetDataFormat)
+                      (grim_mouse_device,(LPCDIDATAFORMAT)&DAT_10050284);
     if ((int)uVar3 < 0) {
       return uVar3 & 0xffffff00;
     }
-    uVar3 = (**(code **)(*grim_mouse_device + 0x34))(grim_mouse_device,iVar4,5);
+    uVar3 = (*grim_mouse_device->lpVtbl->SetCooperativeLevel)(grim_mouse_device,hwnd,5);
     if ((int)uVar3 < 0) {
       return uVar3 & 0xffffff00;
     }
-    if (grim_mouse_device != (int *)0x0) {
-      (**(code **)(*grim_mouse_device + 0x1c))(grim_mouse_device);
+    if (grim_mouse_device != (LPDIRECTINPUTDEVICE8A)0x0) {
+      (*grim_mouse_device->lpVtbl->Acquire)(grim_mouse_device);
     }
   }
   iVar4 = grim_mouse_poll();
@@ -6474,28 +6570,36 @@ int grim_mouse_poll(void)
 {
   int iVar1;
   int iVar2;
-  int iVar3;
+  HRESULT HVar3;
+  int iVar4;
   
   iVar2 = 0;
-  if (grim_mouse_device != (int *)0x0) {
-    grim_mouse_state = 0;
+  if (grim_mouse_device != (LPDIRECTINPUTDEVICE8A)0x0) {
+    grim_mouse_state.lX = 0;
     _DAT_1005db58 = 0.0;
-    DAT_1005db34 = 0;
+    grim_mouse_state.lY = 0;
     _DAT_1005db54 = 0.0;
-    DAT_1005db38 = 0;
+    grim_mouse_state.lZ = 0;
     _DAT_1005db50 = 0.0;
-    _grim_mouse_buttons = 0;
-    _DAT_1005db40 = 0;
-    iVar1 = (**(code **)(*grim_mouse_device + 0x24))(grim_mouse_device,0x14,&grim_mouse_state);
+    grim_mouse_state.rgbButtons[0] = '\0';
+    grim_mouse_state.rgbButtons[1] = '\0';
+    grim_mouse_state.rgbButtons[2] = '\0';
+    grim_mouse_state.rgbButtons[3] = '\0';
+    grim_mouse_state.rgbButtons[4] = '\0';
+    grim_mouse_state.rgbButtons[5] = '\0';
+    grim_mouse_state.rgbButtons[6] = '\0';
+    grim_mouse_state.rgbButtons[7] = '\0';
+    iVar1 = (*grim_mouse_device->lpVtbl->GetDeviceState)(grim_mouse_device,0x14,&grim_mouse_state);
     iVar2 = 0;
     while (-1 < iVar1) {
-      iVar3 = iVar2 + 1;
-      _DAT_1005db50 = (float)grim_mouse_state + _DAT_1005db50;
-      _DAT_1005db54 = (float)DAT_1005db34 + _DAT_1005db54;
-      _DAT_1005db58 = (float)DAT_1005db38 + _DAT_1005db58;
+      iVar4 = iVar2 + 1;
+      _DAT_1005db50 = (float)grim_mouse_state.lX + _DAT_1005db50;
+      _DAT_1005db54 = (float)grim_mouse_state.lY + _DAT_1005db54;
+      _DAT_1005db58 = (float)grim_mouse_state.lZ + _DAT_1005db58;
       if ((99 < iVar2) ||
-         (((grim_mouse_state == 0 && (DAT_1005db34 == 0)) && (iVar2 = 0, DAT_1005db38 == 0)))) {
-        if (2 < iVar3) {
+         (((grim_mouse_state.lX == 0 && (grim_mouse_state.lY == 0)) &&
+          (iVar2 = 0, grim_mouse_state.lZ == 0)))) {
+        if (2 < iVar4) {
           iVar2 = FUN_10001160();
         }
         DAT_1005db44 = DAT_1005db44 + _DAT_1005db50;
@@ -6503,20 +6607,27 @@ int grim_mouse_poll(void)
         _DAT_1005db4c = _DAT_1005db4c + _DAT_1005db58;
         goto LAB_1000a7cb;
       }
-      grim_mouse_state = 0;
-      DAT_1005db34 = 0;
-      DAT_1005db38 = 0;
-      _grim_mouse_buttons = 0;
-      _DAT_1005db40 = 0;
-      iVar1 = (**(code **)(*grim_mouse_device + 0x24))(grim_mouse_device,0x14,&grim_mouse_state);
-      iVar2 = iVar3;
+      grim_mouse_state.lX = 0;
+      grim_mouse_state.lY = 0;
+      grim_mouse_state.lZ = 0;
+      grim_mouse_state.rgbButtons[0] = '\0';
+      grim_mouse_state.rgbButtons[1] = '\0';
+      grim_mouse_state.rgbButtons[2] = '\0';
+      grim_mouse_state.rgbButtons[3] = '\0';
+      grim_mouse_state.rgbButtons[4] = '\0';
+      grim_mouse_state.rgbButtons[5] = '\0';
+      grim_mouse_state.rgbButtons[6] = '\0';
+      grim_mouse_state.rgbButtons[7] = '\0';
+      iVar1 = (*grim_mouse_device->lpVtbl->GetDeviceState)(grim_mouse_device,0x14,&grim_mouse_state)
+      ;
+      iVar2 = iVar4;
     }
-    iVar2 = (**(code **)(*grim_mouse_device + 0x1c))(grim_mouse_device);
+    iVar2 = (*grim_mouse_device->lpVtbl->Acquire)(grim_mouse_device);
     if (iVar2 == -0x7ff8ffe2) {
       do {
-        iVar2 = (**(code **)(*grim_mouse_device + 0x1c))(grim_mouse_device);
-      } while (iVar2 == -0x7ff8ffe2);
-      return CONCAT31((int3)((uint)iVar2 >> 8),1);
+        HVar3 = (*grim_mouse_device->lpVtbl->Acquire)(grim_mouse_device);
+      } while (HVar3 == -0x7ff8ffe2);
+      return CONCAT31((int3)((uint)HVar3 >> 8),1);
     }
   }
 LAB_1000a7cb:
@@ -6532,14 +6643,14 @@ LAB_1000a7cb:
 void grim_mouse_shutdown(void)
 
 {
-  if (grim_mouse_device != (int *)0x0) {
-    (**(code **)(*grim_mouse_device + 0x20))(grim_mouse_device);
-    (**(code **)(*grim_mouse_device + 8))(grim_mouse_device);
-    grim_mouse_device = (int *)0x0;
+  if (grim_mouse_device != (LPDIRECTINPUTDEVICE8A)0x0) {
+    (*grim_mouse_device->lpVtbl->Unacquire)(grim_mouse_device);
+    (*grim_mouse_device->lpVtbl->Release)(grim_mouse_device);
+    grim_mouse_device = (LPDIRECTINPUTDEVICE8A)0x0;
   }
-  if (grim_dinput_mouse != (int *)0x0) {
-    (**(code **)(*grim_dinput_mouse + 8))(grim_dinput_mouse);
-    grim_dinput_mouse = (int *)0x0;
+  if (grim_dinput_mouse != (LPDIRECTINPUT8A)0x0) {
+    (*grim_dinput_mouse->lpVtbl->Release)(grim_dinput_mouse);
+    grim_dinput_mouse = (LPDIRECTINPUT8A)0x0;
   }
   return;
 }

@@ -11,6 +11,9 @@ import com.google.gson.JsonParser;
 
 import ghidra.app.script.GhidraScript;
 import ghidra.program.model.address.Address;
+import ghidra.program.model.data.DataType;
+import ghidra.program.model.data.DataTypeManager;
+import ghidra.program.model.data.PointerDataType;
 import ghidra.program.model.mem.Memory;
 import ghidra.program.model.symbol.SourceType;
 import ghidra.program.model.symbol.Symbol;
@@ -33,6 +36,7 @@ public class ApplyDataMap extends GhidraScript {
         String address;
         String name;
         String comment;
+        String type;
     }
 
     private static String defaultMapPath() {
@@ -109,6 +113,7 @@ public class ApplyDataMap extends GhidraScript {
         row.address = getField(fields, headerMap, "address");
         row.name = getField(fields, headerMap, "name");
         row.comment = getField(fields, headerMap, "comment");
+        row.type = getField(fields, headerMap, "type");
         return row;
     }
 
@@ -234,6 +239,7 @@ public class ApplyDataMap extends GhidraScript {
         int created = 0;
         int renamed = 0;
         int comments = 0;
+        int typed = 0;
         int missing = 0;
         int skipped = 0;
 
@@ -292,6 +298,26 @@ public class ApplyDataMap extends GhidraScript {
                 }
             }
 
+            if (row.type != null && !row.type.isBlank()) {
+                DataType dataType = resolveDataType(row.type);
+                if (dataType != null) {
+                    try {
+                        int length = dataType.getLength();
+                        if (length <= 0) {
+                            length = currentProgram.getDefaultPointerSize();
+                        }
+                        clearListing(addr, addr.add(length - 1));
+                        createData(addr, dataType);
+                        typed++;
+                        changed = true;
+                    } catch (Exception e) {
+                        printerr("Create data failed for " + row.name + " (" + row.type + "): " + e.getMessage());
+                    }
+                } else {
+                    printerr("Data type not found for " + row.name + ": " + row.type);
+                }
+            }
+
             if (changed) {
                 applied++;
             }
@@ -300,7 +326,51 @@ public class ApplyDataMap extends GhidraScript {
         println("Applied data map: " + mapFile.getAbsolutePath());
         println("Program: " + programName);
         println("Updated entries: " + applied);
-        println("Created: " + created + ", Renamed: " + renamed + ", Comments: " + comments);
+        println("Created: " + created + ", Renamed: " + renamed + ", Comments: " + comments + ", Types: " + typed);
         println("Missing: " + missing + ", Skipped: " + skipped);
+    }
+
+    private DataType resolveDataType(String typeName) {
+        String name = typeName.trim();
+        if (name.isEmpty()) {
+            return null;
+        }
+        int pointerDepth = 0;
+        while (name.endsWith("*")) {
+            pointerDepth++;
+            name = name.substring(0, name.length() - 1).trim();
+        }
+        DataTypeManager dtm = currentProgram.getDataTypeManager();
+        DataType base = findDataTypeByName(dtm, name);
+        if (base == null) {
+            return null;
+        }
+        DataType resolved = base;
+        int ptrSize = currentProgram.getDefaultPointerSize();
+        for (int i = 0; i < pointerDepth; i++) {
+            resolved = new PointerDataType(resolved, ptrSize, dtm);
+        }
+        return resolved;
+    }
+
+    private DataType findDataTypeByName(DataTypeManager dtm, String name) {
+        DataType exact = null;
+        for (java.util.Iterator<DataType> it = dtm.getAllDataTypes(); it.hasNext();) {
+            DataType dt = it.next();
+            if (dt.getName().equals(name)) {
+                exact = dt;
+                break;
+            }
+        }
+        if (exact != null) {
+            return exact;
+        }
+        for (java.util.Iterator<DataType> it = dtm.getAllDataTypes(); it.hasNext();) {
+            DataType dt = it.next();
+            if (dt.getName().equalsIgnoreCase(name)) {
+                return dt;
+            }
+        }
+        return null;
     }
 }
