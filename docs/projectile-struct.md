@@ -31,7 +31,7 @@ Notes:
 
 Related tables:
 
-- `DAT_004d7a28` is consulted during `projectile_update` to gate one of the hit
+- `weapon_ammo_class` (`DAT_004d7a28`) is consulted during `projectile_update` to gate one of the hit
   effect paths (value `4` skips it).
 - `weapon_projectile_damage_scale` is used as the damage scale for each `type_id`.
 - `weapon_projectile_meta` is copied into the projectile entry on spawn and shares the

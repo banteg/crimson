@@ -144,7 +144,7 @@ Layout (structure-of-arrays):
 
 Notes:
 
-- `fx_queue_render` binds `DAT_0048f7dc` (bodyset atlas) and maps `effect_id`
+- `fx_queue_render` binds `bodyset_texture` (`DAT_0048f7dc`) and maps `effect_id`
   through the creature type table: `frame = *(int *)(&DAT_00482764 + effect_id * 0x44)`.
   That offset is the per‑type `corpse frame` (see `docs/creature-struct.md`),
   and the frame is converted to UVs via the 4x atlas tables (`effect_uv4_u` / `effect_uv4_v`).
@@ -348,8 +348,8 @@ Layout (partial):
 
 Notes:
 
-- Render is gated by `DAT_00480359` and binds `DAT_0048f7ec` (`particles.png`)
-  with a fixed 4x atlas UV (`DAT_00491248/4c`), then draws each active entry
+- Render is gated by `DAT_00480359` and binds `particles_texture` (`DAT_0048f7ec`)
+  with a fixed 4x atlas UV (`effect_uv4_u`/`effect_uv4_v` + `0x38`), then draws each active entry
   with the per-entry rotation and RGBA.
 
 Common color overrides (callers mutate the RGBA fields after spawning):

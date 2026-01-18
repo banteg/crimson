@@ -999,9 +999,21 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x0048f7dc",
+      "name": "bodyset_texture",
+      "comment": "Texture handle for bodyset atlas (fx_queue_render / corpse frame atlas)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x0048f7e8",
       "name": "bullet_trail_texture",
       "comment": "Texture handle for bulletTrail."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f7ec",
+      "name": "particles_texture",
+      "comment": "Texture handle for particles atlas (game_particles.jaz / particles.png)."
     },
     {
       "program": "crimsonland.exe",
@@ -3390,6 +3402,12 @@
       "address": "0x004ccbd0",
       "name": "ui_focus_candidates",
       "comment": "UI focus candidate list used by ui_focus_update."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004d7a28",
+      "name": "weapon_ammo_class",
+      "comment": "Weapon table ammo class/HUD indicator (weapon_table - 0x04, stride 0x7c)."
     },
     {
       "program": "crimsonland.exe",

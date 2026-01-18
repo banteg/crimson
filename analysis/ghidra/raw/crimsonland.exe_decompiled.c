@@ -10570,7 +10570,7 @@ LAB_0041572e:
     if (iVar11 == 0) {
       iVar11 = perk_count_get(perk_id_ammunition_within);
       if (iVar11 != 0) {
-        if ((&DAT_004d7a28)[(&player_weapon_id)[iVar7 * 0xd8] * 0x1f] == 1) {
+        if ((&weapon_ammo_class)[(&player_weapon_id)[iVar7 * 0xd8] * 0x1f] == 1) {
           fVar15 = 0.15;
         }
         else {
@@ -10579,7 +10579,7 @@ LAB_0041572e:
         player_take_damage(render_overlay_player_index,fVar15);
       }
     }
-    else if ((&DAT_004d7a28)[(&player_weapon_id)[iVar7 * 0xd8] * 0x1f] == 1) {
+    else if ((&weapon_ammo_class)[(&player_weapon_id)[iVar7 * 0xd8] * 0x1f] == 1) {
       lVar21 = __ftol();
       (&player_experience)[iVar7 * 0xd8] = (int)lVar21;
     }
@@ -12253,7 +12253,7 @@ void creature_render_all(void)
      ((DAT_0048726c != 0x14 && (DAT_0048726c != 0x16)))) {
     (**(code **)(*grim_interface_ptr + 0x20))(0x13,5);
     (**(code **)(*grim_interface_ptr + 0x20))(0x14,6);
-    (**(code **)(*grim_interface_ptr + 0xc4))(DAT_0048f7ec,0);
+    (**(code **)(*grim_interface_ptr + 0xc4))(particles_texture,0);
     effect_select_texture(0x10);
     fVar7 = 0.0;
     (**(code **)(*grim_interface_ptr + 0x114))(0,0,0,0x3f800000);
@@ -12313,7 +12313,7 @@ void creature_render_all(void)
     if (0.0 < _bonus_freeze_timer) {
       (**(code **)(*grim_interface_ptr + 0x20))(0x13,5,fVar5);
       (**(code **)(*grim_interface_ptr + 0x20))(0x14,6,uVar6,fVar7);
-      (**(code **)(*grim_interface_ptr + 0xc4))(DAT_0048f7ec,0);
+      (**(code **)(*grim_interface_ptr + 0xc4))(particles_texture,0);
       effect_select_texture(0xe);
       fVar5 = 0.0;
       uVar4 = 0;
@@ -12580,7 +12580,7 @@ void ui_cursor_render(void)
   _DAT_004902ec = frame_dt * 1.1 + _DAT_004902ec;
   (**(code **)(*grim_interface_ptr + 0x20))(0x13,5);
   (**(code **)(*grim_interface_ptr + 0x20))(0x14,2);
-  (**(code **)(*grim_interface_ptr + 0xc4))(DAT_0048f7ec,0);
+  (**(code **)(*grim_interface_ptr + 0xc4))(particles_texture,0);
   effect_select_texture(0xd);
   uVar4 = 0x3f800000;
   uVar3 = 0x3f800000;
@@ -12630,7 +12630,7 @@ void FUN_0041a320(void)
   _DAT_004902f4 = frame_dt * 0.6 + _DAT_004902f4;
   (**(code **)(*grim_interface_ptr + 0x20))(0x13,5);
   (**(code **)(*grim_interface_ptr + 0x20))(0x14,2);
-  (**(code **)(*grim_interface_ptr + 0xc4))(DAT_0048f7ec,0);
+  (**(code **)(*grim_interface_ptr + 0xc4))(particles_texture,0);
   effect_select_texture(0xd);
   if (1.0 < *(float *)(DAT_0048087c + 0xc)) {
     *(undefined4 *)(DAT_0048087c + 0xc) = 0x3f800000;
@@ -13371,7 +13371,8 @@ void ui_render_hud(void)
     render_overlay_player_index = 0;
     if (0 < _config_player_count) {
       do {
-        iVar7 = (&DAT_004d7a28)[(&player_weapon_id)[render_overlay_player_index * 0xd8] * 0x1f];
+        iVar7 = (&weapon_ammo_class)[(&player_weapon_id)[render_overlay_player_index * 0xd8] * 0x1f]
+        ;
         if (iVar7 == 1) {
           pcStack_ec = s_ui_ui_indFire_jaz_00473878;
           iVar7 = *grim_interface_ptr;
@@ -17642,7 +17643,7 @@ LAB_004219f8:
                   }
                   else {
                     fVar9 = sfx_shock_hit_01;
-                    if ((&DAT_004d7a28)[(&projectile_type_id)[local_e8 * 0x10] * 0x1f] != 4) {
+                    if ((&weapon_ammo_class)[(&projectile_type_id)[local_e8 * 0x10] * 0x1f] != 4) {
                       iVar10 = _rand();
                       fVar9 = (float)(iVar10 % 6 + sfx_bullet_hit_01);
                     }
@@ -18592,7 +18593,7 @@ void projectile_render(void)
   fVar31 = 2.8026e-45;
   (**(code **)(*grim_interface_ptr + 0x20))(0x14,2);
   pfVar2 = (float *)0x0;
-  (**(code **)(*grim_interface_ptr + 0xc4))(DAT_0048f7ec);
+  (**(code **)(*grim_interface_ptr + 0xc4))(particles_texture);
   effect_select_texture(0xd);
   fVar29 = 0.0;
   (**(code **)(*grim_interface_ptr + 0xfc))();
@@ -19240,7 +19241,7 @@ LAB_00424475:
   (**(code **)(*grim_interface_ptr + 0x100))(0,0,0x3f800000,0x3f800000);
   (**(code **)(*grim_interface_ptr + 0x20))(0x13,5);
   (**(code **)(*grim_interface_ptr + 0x20))(0x14,2);
-  (**(code **)(*grim_interface_ptr + 0xc4))(DAT_0048f7ec,0);
+  (**(code **)(*grim_interface_ptr + 0xc4))(particles_texture,0);
   effect_select_texture(0xd);
   (**(code **)(*grim_interface_ptr + 0x114))(0x3f800000,0x3f800000,0x3f800000,uVar17);
   (**(code **)(*grim_interface_ptr + 0xe8))();
@@ -19303,7 +19304,7 @@ LAB_00424475:
   if (config_fx_detail_flag1 != '\0') {
     (**(code **)(*grim_interface_ptr + 0x20))(0x13,5);
     (**(code **)(*grim_interface_ptr + 0x20))(0x14,2);
-    (**(code **)(*grim_interface_ptr + 0xc4))(DAT_0048f7ec,0);
+    (**(code **)(*grim_interface_ptr + 0xc4))(particles_texture,0);
     effect_select_texture(0xd);
     (**(code **)(*grim_interface_ptr + 0xe8))();
     pfVar2 = (float *)&secondary_proj_angle;
@@ -19368,7 +19369,7 @@ LAB_00425a07:
   if (config_fx_detail_flag1 != '\0') {
     (**(code **)(*grim_interface_ptr + 0x20))(0x13,5);
     (**(code **)(*grim_interface_ptr + 0x20))(0x14,2);
-    (**(code **)(*grim_interface_ptr + 0xc4))(DAT_0048f7ec,0);
+    (**(code **)(*grim_interface_ptr + 0xc4))(particles_texture,0);
     effect_select_texture(0xd);
     (**(code **)(*grim_interface_ptr + 0xe8))();
     pfVar2 = (float *)&secondary_proj_pos_y;
@@ -20378,7 +20379,7 @@ void fx_queue_render(void)
   if (terrain_texture_failed == '\0') {
     if ((fx_queue_rotated != 0) || (fx_queue_count != 0)) {
       (**(code **)(*grim_interface_ptr + 0x30))(terrain_render_target);
-      (**(code **)(*grim_interface_ptr + 0xc4))(DAT_0048f7ec,0);
+      (**(code **)(*grim_interface_ptr + 0xc4))(particles_texture,0);
       if (0 < fx_queue_count) {
         (**(code **)(*grim_interface_ptr + 0xe8))();
         fVar7 = 1.0;
@@ -20401,7 +20402,7 @@ void fx_queue_render(void)
         (**(code **)(*grim_interface_ptr + 0xf0))();
       }
       if (0 < fx_queue_rotated) {
-        (**(code **)(*grim_interface_ptr + 0xc4))(DAT_0048f7dc,0);
+        (**(code **)(*grim_interface_ptr + 0xc4))(bodyset_texture,0);
         (**(code **)(*grim_interface_ptr + 0x20))(0x13,1);
         (**(code **)(*grim_interface_ptr + 0x20))(0x14,6);
         (**(code **)(*grim_interface_ptr + 0xe8))();
@@ -20470,7 +20471,7 @@ void fx_queue_render(void)
     }
   }
   else if (0 < fx_queue_rotated) {
-    (**(code **)(*grim_interface_ptr + 0xc4))(DAT_0048f7dc,0);
+    (**(code **)(*grim_interface_ptr + 0xc4))(bodyset_texture,0);
     (**(code **)(*grim_interface_ptr + 0x20))(0x13,1);
     (**(code **)(*grim_interface_ptr + 0x20))(0x14,6);
     (**(code **)(*grim_interface_ptr + 0xe8))();
@@ -20819,8 +20820,8 @@ void player_render_overlays(void)
       (**(code **)(*grim_interface_ptr + 0x20))(0x13,5);
       in_stack_fffffe80 = 2.8026e-45;
       (**(code **)(*grim_interface_ptr + 0x20))(0x14);
-      fVar11 = DAT_0048f7ec;
-      (**(code **)(*grim_interface_ptr + 0xc4))(DAT_0048f7ec,0);
+      fVar11 = particles_texture;
+      (**(code **)(*grim_interface_ptr + 0xc4))(particles_texture,0);
       effect_select_texture(2);
       fVar6 = (float10)fsin((float10)_DAT_0047ea4c);
       pfVar1 = (float *)(&player_shield_timer + render_overlay_player_index * 0xd8);
@@ -21255,7 +21256,7 @@ LAB_00429df8:
     if (config_fx_detail_flag1 != '\0') {
       (**(code **)(*grim_interface_ptr + 0x20))(0x13,5);
       (**(code **)(*grim_interface_ptr + 0x20))(0x14,2);
-      (**(code **)(*grim_interface_ptr + 0xc4))(DAT_0048f7ec,0);
+      (**(code **)(*grim_interface_ptr + 0xc4))(particles_texture,0);
       effect_select_texture(0xd);
       (**(code **)(*grim_interface_ptr + 0xfc))(0);
       (**(code **)(*grim_interface_ptr + 0x114))(0x3f800000,0x3f800000,0x3f800000,0x3d851eb8);
@@ -21291,7 +21292,7 @@ LAB_00429df8:
     }
     (**(code **)(*grim_interface_ptr + 0x20))(0x13,5);
     (**(code **)(*grim_interface_ptr + 0x20))(0x14,2);
-    (**(code **)(*grim_interface_ptr + 0xc4))(DAT_0048f7ec,0);
+    (**(code **)(*grim_interface_ptr + 0xc4))(particles_texture,0);
     effect_select_texture(0xc);
     (**(code **)(*grim_interface_ptr + 0xfc))(0);
     (**(code **)(*grim_interface_ptr + 0xe8))();
@@ -21364,7 +21365,7 @@ LAB_00429df8:
     if (config_fx_detail_flag2 != '\0') {
       (**(code **)(*grim_interface_ptr + 0x20))(0x13,5);
       (**(code **)(*grim_interface_ptr + 0x20))(0x14,6);
-      (**(code **)(*grim_interface_ptr + 0xc4))(DAT_0048f7ec,0);
+      (**(code **)(*grim_interface_ptr + 0xc4))(particles_texture,0);
       fVar18 = DAT_00491248 + 0.25;
       (**(code **)(*grim_interface_ptr + 0x100))
                 (DAT_00491248,DAT_0049124c,fVar18,DAT_0049124c + 0.25);
@@ -21616,7 +21617,7 @@ int load_textures_step(void)
     texture_get_or_load(s_bullet_i_00474534);
     bullet_trail_texture = texture_get_or_load(s_bulletTrail_00474510);
     texture_get_or_load(s_bodyset_004744f4);
-    DAT_0048f7dc = (**(code **)(*grim_interface_ptr + 0xc0))(s_bodyset_004744f4);
+    bodyset_texture = (**(code **)(*grim_interface_ptr + 0xc0))(s_bodyset_004744f4);
     DAT_0048f7d4 = texture_get_or_load(s_projs_004744dc);
   }
   if (DAT_004aaf88 == 2) {
@@ -21635,7 +21636,7 @@ int load_textures_step(void)
     texture_get_or_load_alt(s_ui_ui_indElectric_jaz_00473838);
     texture_get_or_load_alt(s_ui_ui_indFire_jaz_00473878);
     bonus_texture = (**(code **)(*grim_interface_ptr + 0xc0))(s_bonuses_004743d8);
-    DAT_0048f7ec = texture_get_or_load_alt(s_game_particles_jaz_004743c4);
+    particles_texture = texture_get_or_load_alt(s_game_particles_jaz_004743c4);
   }
   if (DAT_004aaf88 == 4) {
     DAT_0048f7c0 = texture_get_or_load_alt(s_ui_ui_indLife_jaz_004743b0);
@@ -21824,7 +21825,7 @@ int crimsonland_main(void)
     MessageBoxA((HWND)0x0,s_Failed_to_launch_web_browser__00474e08,s_Crimsonland_00472d5c,0);
     return 0;
   }
-  FUN_0046248e((uint *)&DAT_004907a8,0x103);
+  crt_getcwd(&DAT_004907a8,0x103);
   GetCommandLineA();
   DAT_00473a64 = 0x7b;
   This = Direct3DCreate8(0xdc);
@@ -22485,7 +22486,7 @@ void effects_render(void)
   uStack_54 = 6.144486e-39;
   (**(code **)(*grim_interface_ptr + 0x20))();
   uStack_54 = 0.0;
-  fStack_58 = DAT_0048f7ec;
+  fStack_58 = particles_texture;
   pfStack_5c = (float *)0x42e86b;
   (**(code **)(*grim_interface_ptr + 0xc4))();
   pfStack_5c = (float *)0x42e879;
@@ -27297,7 +27298,7 @@ undefined * FUN_0043b5b0(void)
   undefined *puVar4;
   
   if (DAT_004c3960 == '\0') {
-    FUN_0046248e((uint *)&DAT_004c375c,0x1ff);
+    crt_getcwd(&DAT_004c375c,0x1ff);
     DAT_004c395b = 0;
     DAT_004c3960 = '\x01';
   }
@@ -41494,24 +41495,25 @@ void FUN_00460cd0(void)
 void * __cdecl crt_onexit(void *func)
 
 {
-  byte *pbVar1;
-  size_t sVar2;
+  size_t sVar1;
+  void *pvVar2;
   
   crt_exit_lock();
-  pbVar1 = (byte *)crt_msize(crt_onexit_table_end);
-  if (pbVar1 < crt_onexit_table_begin + (4 - (int)crt_onexit_table_end)) {
-    sVar2 = crt_msize(crt_onexit_table_end);
-    pbVar1 = FUN_004626aa(crt_onexit_table_end,(uint *)(sVar2 + 0x10));
-    if (pbVar1 == (byte *)0x0) {
+  sVar1 = crt_msize(crt_onexit_table_end);
+  if (sVar1 < (uint)((int)crt_onexit_table_begin + (4 - (int)crt_onexit_table_end))) {
+    sVar1 = crt_msize(crt_onexit_table_end);
+    pvVar2 = crt_realloc(crt_onexit_table_end,sVar1 + 0x10);
+    if (pvVar2 == (void *)0x0) {
       func = (void *)0x0;
       goto LAB_00460d7d;
     }
     crt_onexit_table_begin =
-         pbVar1 + ((int)crt_onexit_table_begin - (int)crt_onexit_table_end >> 2) * 4;
-    crt_onexit_table_end = pbVar1;
+         (undefined4 *)
+         ((int)pvVar2 + ((int)crt_onexit_table_begin - (int)crt_onexit_table_end >> 2) * 4);
+    crt_onexit_table_end = pvVar2;
   }
-  *(void **)crt_onexit_table_begin = func;
-  crt_onexit_table_begin = crt_onexit_table_begin + 4;
+  *crt_onexit_table_begin = func;
+  crt_onexit_table_begin = crt_onexit_table_begin + 1;
 LAB_00460d7d:
   crt_exit_unlock();
   return func;
@@ -42132,46 +42134,46 @@ int __cdecl crt_flushbuf(FILE *fp)
 int __cdecl crt_flushall(int mode)
 
 {
-  FILE *fp;
-  int iVar1;
+  FILE *pFVar1;
   int iVar2;
   int iVar3;
+  int stream_index;
   int iVar4;
   
-  iVar2 = 0;
+  iVar3 = 0;
   iVar4 = 0;
   crt_lock(2);
-  iVar3 = 0;
+  stream_index = 0;
   if (0 < DAT_004db4e0) {
     do {
-      iVar1 = *(int *)(DAT_004da4c4 + iVar3 * 4);
-      if ((iVar1 != 0) && ((*(byte *)(iVar1 + 0xc) & 0x83) != 0)) {
-        FUN_00463dd4(iVar3,iVar1);
-        fp = *(FILE **)(DAT_004da4c4 + iVar3 * 4);
-        if ((fp->_flag & 0x83U) != 0) {
+      pFVar1 = *(FILE **)(DAT_004da4c4 + stream_index * 4);
+      if ((pFVar1 != (FILE *)0x0) && ((pFVar1->_flag & 0x83) != 0)) {
+        crt_lock_file2(stream_index,pFVar1);
+        pFVar1 = *(FILE **)(DAT_004da4c4 + stream_index * 4);
+        if ((pFVar1->_flag & 0x83U) != 0) {
           if (mode == 1) {
-            iVar1 = crt_fflush_nolock(fp);
-            if (iVar1 != -1) {
-              iVar2 = iVar2 + 1;
+            iVar2 = crt_fflush_nolock(pFVar1);
+            if (iVar2 != -1) {
+              iVar3 = iVar3 + 1;
             }
           }
-          else if ((mode == 0) && ((fp->_flag & 2U) != 0)) {
-            iVar1 = crt_fflush_nolock(fp);
-            if (iVar1 == -1) {
+          else if ((mode == 0) && ((pFVar1->_flag & 2U) != 0)) {
+            iVar2 = crt_fflush_nolock(pFVar1);
+            if (iVar2 == -1) {
               iVar4 = -1;
             }
           }
         }
-        FUN_00463e26(iVar3,*(int *)(DAT_004da4c4 + iVar3 * 4));
+        crt_unlock_file2(stream_index,*(FILE **)(DAT_004da4c4 + stream_index * 4));
       }
-      iVar3 = iVar3 + 1;
-    } while (iVar3 < DAT_004db4e0);
+      stream_index = stream_index + 1;
+    } while (stream_index < DAT_004db4e0);
   }
   crt_unlock(2);
   if (mode != 1) {
-    iVar2 = iVar4;
+    iVar3 = iVar4;
   }
-  return iVar2;
+  return iVar3;
 }
 
 
@@ -42967,7 +42969,7 @@ int __thiscall crt_tolower_l(void *this,void *locale,int c)
       locale = (void *)(CONCAT22((short)uVar2,locale._0_2_) & 0xff00ffff);
       iVar3 = 2;
     }
-    iVar3 = FUN_004664d1(DAT_004d9a4c,0x100,(char *)&locale,iVar3,(LPWSTR)&local_8,3,0,1);
+    iVar3 = crt_lcmap_string(DAT_004d9a4c,0x100,(char *)&locale,iVar3,(ushort *)&local_8,3,0,1);
     if (iVar3 != 0) {
       if (iVar3 == 1) {
         pvVar1 = (void *)((uint)local_8 & 0xff);
@@ -42990,11 +42992,11 @@ int __cdecl FUN_00461fd5(byte *param_1)
   int iVar1;
   int iVar2;
   
-  FUN_00463dd4(1,0x47b3f8);
+  crt_lock_file2(1,(FILE *)&DAT_0047b3f8);
   iVar1 = FUN_004666f5((undefined4 *)&DAT_0047b3f8);
   iVar2 = crt_output((FILE *)&DAT_0047b3f8,(char *)param_1,&stack0x00000008);
   FUN_00466782(iVar1,(int *)&DAT_0047b3f8);
-  FUN_00463e26(1,0x47b3f8);
+  crt_unlock_file2(1,(FILE *)&DAT_0047b3f8);
   return iVar2;
 }
 
@@ -43173,7 +43175,7 @@ int __thiscall crt_toupper_l(void *this,void *locale,int c)
       locale = (void *)(CONCAT22((short)uVar2,locale._0_2_) & 0xff00ffff);
       iVar3 = 2;
     }
-    iVar3 = FUN_004664d1(DAT_004d9a4c,0x200,(char *)&locale,iVar3,(LPWSTR)&local_8,3,0,1);
+    iVar3 = crt_lcmap_string(DAT_004d9a4c,0x200,(char *)&locale,iVar3,(ushort *)&local_8,3,0,1);
     if (iVar3 != 0) {
       if (iVar3 == 1) {
         pvVar1 = (void *)((uint)local_8 & 0xff);
@@ -43188,24 +43190,26 @@ int __thiscall crt_toupper_l(void *this,void *locale,int c)
 
 
 
-/* FUN_0046223f @ 0046223f */
+/* crt_beginthread @ 0046223f */
 
-HANDLE __cdecl FUN_0046223f(int param_1,SIZE_T param_2,int param_3)
+/* CRT: beginthread (CreateThread wrapper) */
+
+void * __cdecl crt_beginthread(void *start,uint stack_size,void *arg)
 
 {
-  int *lpThreadId;
+  void *lpThreadId;
   HANDLE hThread;
   DWORD DVar1;
   
   DVar1 = 0;
-  lpThreadId = FUN_004667ac(1,0x74);
-  if (lpThreadId != (int *)0x0) {
+  lpThreadId = crt_calloc(1,0x74);
+  if (lpThreadId != (void *)0x0) {
     FUN_004654a5((int)lpThreadId);
-    lpThreadId[0x12] = param_1;
-    lpThreadId[0x13] = param_3;
-    hThread = CreateThread((LPSECURITY_ATTRIBUTES)0x0,param_2,FUN_004622b6,lpThreadId,4,
-                           (LPDWORD)lpThreadId);
-    lpThreadId[1] = (int)hThread;
+    *(void **)((int)lpThreadId + 0x48) = start;
+    *(void **)((int)lpThreadId + 0x4c) = arg;
+    hThread = CreateThread((LPSECURITY_ATTRIBUTES)0x0,stack_size,crt_thread_entry,lpThreadId,4,
+                           lpThreadId);
+    *(HANDLE *)((int)lpThreadId + 4) = hThread;
     if ((hThread != (HANDLE)0x0) && (DVar1 = ResumeThread(hThread), DVar1 != 0xffffffff)) {
       return hThread;
     }
@@ -43215,17 +43219,19 @@ HANDLE __cdecl FUN_0046223f(int param_1,SIZE_T param_2,int param_3)
   if (DVar1 != 0) {
     crt_dosmaperr(DVar1);
   }
-  return (HANDLE)0xffffffff;
+  return (void *)0xffffffff;
 }
 
 
 
-/* FUN_004622b6 @ 004622b6 */
+/* crt_thread_entry @ 004622b6 */
 
-undefined4 FUN_004622b6(undefined *param_1)
+/* CRT: thread start trampoline */
+
+uint crt_thread_entry(void *thread_data)
 
 {
-  undefined *puVar1;
+  LPVOID pvVar1;
   WINBOOL WVar2;
   void *local_14;
   undefined1 *puStack_10;
@@ -43237,14 +43243,14 @@ undefined4 FUN_004622b6(undefined *param_1)
   puStack_10 = &LAB_00465e70;
   local_14 = ExceptionList;
   ExceptionList = &local_14;
-  puVar1 = TlsGetValue(DAT_0047b6f0);
-  if (puVar1 != (undefined *)0x0) {
-    *(undefined4 *)(puVar1 + 0x48) = *(undefined4 *)(param_1 + 0x48);
-    *(undefined4 *)(puVar1 + 0x4c) = *(undefined4 *)(param_1 + 0x4c);
-    crt_free_thread_data(param_1);
-    param_1 = puVar1;
+  pvVar1 = TlsGetValue(DAT_0047b6f0);
+  if (pvVar1 != (LPVOID)0x0) {
+    *(undefined4 *)((int)pvVar1 + 0x48) = *(undefined4 *)((int)thread_data + 0x48);
+    *(undefined4 *)((int)pvVar1 + 0x4c) = *(undefined4 *)((int)thread_data + 0x4c);
+    crt_free_thread_data(thread_data);
+    thread_data = pvVar1;
   }
-  WVar2 = TlsSetValue(DAT_0047b6f0,param_1);
+  WVar2 = TlsSetValue(DAT_0047b6f0,thread_data);
   if (WVar2 == 0) {
     __amsg_exit(0x10);
   }
@@ -43252,17 +43258,19 @@ undefined4 FUN_004622b6(undefined *param_1)
     (*(code *)PTR_FUN_0047b164)();
   }
   local_8 = 0;
-  (**(code **)(param_1 + 0x48))(*(undefined4 *)(param_1 + 0x4c));
-  FUN_00462373();
+  (**(code **)((int)thread_data + 0x48))(*(undefined4 *)((int)thread_data + 0x4c));
+  crt_endthread();
   ExceptionList = local_14;
   return 0;
 }
 
 
 
-/* FUN_00462373 @ 00462373 */
+/* crt_endthread @ 00462373 */
 
-void FUN_00462373(void)
+/* CRT: thread cleanup and exit */
+
+void crt_endthread(void)
 
 {
   DWORD *pDVar1;
@@ -43336,72 +43344,78 @@ LAB_0046245c:
 
 
 
-/* FUN_0046248e @ 0046248e */
+/* crt_getcwd @ 0046248e */
 
-uint * __cdecl FUN_0046248e(uint *param_1,size_t param_2)
+/* CRT: get current working directory */
+
+char * __cdecl crt_getcwd(char *buf,uint size)
 
 {
-  uint *puVar1;
+  char *pcVar1;
   
   crt_lock(0xc);
-  puVar1 = FUN_004624b5(0,param_1,param_2);
+  pcVar1 = crt_getdcwd(0,buf,size);
   crt_unlock(0xc);
-  return puVar1;
+  return pcVar1;
 }
 
 
 
-/* FUN_004624b5 @ 004624b5 */
+/* crt_getdcwd @ 004624b5 */
 
-uint * __cdecl FUN_004624b5(uint param_1,uint *param_2,size_t param_3)
+/* CRT: get current working directory for drive */
+
+char * __cdecl crt_getdcwd(int drive,char *buf,uint size)
 
 {
   int iVar1;
-  uint *puVar2;
-  int *piVar3;
-  DWORD DVar4;
-  uint uVar5;
+  int iVar2;
+  uint *puVar3;
+  int *piVar4;
+  DWORD DVar5;
+  uint _Size;
+  char *pcVar6;
   CHAR local_10c [260];
   LPSTR local_8;
   
-  uVar5 = param_1;
-  if (param_1 == 0) {
-    DVar4 = GetCurrentDirectoryA(0x104,local_10c);
+  iVar1 = drive;
+  if (drive == 0) {
+    DVar5 = GetCurrentDirectoryA(0x104,local_10c);
   }
   else {
-    iVar1 = FUN_0046258a(param_1);
-    if (iVar1 == 0) {
-      puVar2 = crt_doserrno_ptr();
-      *puVar2 = 0xf;
-      piVar3 = crt_errno_ptr();
-      *piVar3 = 0xd;
-      return (uint *)0x0;
+    iVar2 = FUN_0046258a(drive);
+    if (iVar2 == 0) {
+      puVar3 = crt_doserrno_ptr();
+      *puVar3 = 0xf;
+      piVar4 = crt_errno_ptr();
+      *piVar4 = 0xd;
+      return (char *)0x0;
     }
-    param_1 = (uint)CONCAT12(0x2e,CONCAT11(0x3a,(char)uVar5 + '@'));
-    DVar4 = GetFullPathNameA((LPCSTR)&param_1,0x104,local_10c,&local_8);
+    drive = (int)CONCAT12(0x2e,CONCAT11(0x3a,(char)iVar1 + '@'));
+    DVar5 = GetFullPathNameA((LPCSTR)&drive,0x104,local_10c,&local_8);
   }
-  if ((DVar4 != 0) && (uVar5 = DVar4 + 1, uVar5 < 0x105)) {
-    if (param_2 == (uint *)0x0) {
-      if ((int)uVar5 <= (int)param_3) {
-        uVar5 = param_3;
+  if ((DVar5 != 0) && (_Size = DVar5 + 1, _Size < 0x105)) {
+    if (buf == (char *)0x0) {
+      if ((int)_Size <= (int)size) {
+        _Size = size;
       }
-      puVar2 = _malloc(uVar5);
-      if (puVar2 != (uint *)0x0) {
+      pcVar6 = _malloc(_Size);
+      if (pcVar6 != (char *)0x0) {
 LAB_00462576:
-        puVar2 = (uint *)crt_strcpy((char *)puVar2,local_10c);
-        return puVar2;
+        pcVar6 = crt_strcpy(pcVar6,local_10c);
+        return pcVar6;
       }
-      piVar3 = crt_errno_ptr();
-      *piVar3 = 0xc;
+      piVar4 = crt_errno_ptr();
+      *piVar4 = 0xc;
     }
     else {
-      puVar2 = param_2;
-      if ((int)uVar5 <= (int)param_3) goto LAB_00462576;
-      piVar3 = crt_errno_ptr();
-      *piVar3 = 0x22;
+      pcVar6 = buf;
+      if ((int)_Size <= (int)size) goto LAB_00462576;
+      piVar4 = crt_errno_ptr();
+      *piVar4 = 0x22;
     }
   }
-  return (uint *)0x0;
+  return (char *)0x0;
 }
 
 
@@ -43511,16 +43525,21 @@ void FUN_00462683(void)
 
 
 
-/* FUN_004626aa @ 004626aa */
+/* crt_realloc @ 004626aa */
 
-byte * __cdecl FUN_004626aa(byte *param_1,uint *param_2)
+/* CRT: realloc with heap mode handling and new-handler retry */
+
+void * __cdecl crt_realloc(void *ptr,size_t size)
 
 {
-  int iVar1;
-  uint *puVar2;
-  byte *pbVar3;
+  void *pvVar1;
+  int iVar2;
+  uint *puVar3;
+  uint uVar4;
+  LPVOID pvVar5;
+  byte *pbVar6;
   int local_3c;
-  uint *local_38;
+  uint local_38;
   byte *local_34;
   int *local_30;
   uint *local_2c;
@@ -43535,179 +43554,178 @@ byte * __cdecl FUN_004626aa(byte *param_1,uint *param_2)
   puStack_c = &DAT_0046fa38;
   puStack_10 = &LAB_00465e70;
   local_14 = ExceptionList;
-  pbVar3 = (byte *)0x0;
-  if (param_1 == (byte *)0x0) {
+  pbVar6 = (byte *)0x0;
+  if (ptr == (void *)0x0) {
     ExceptionList = &local_14;
-    pbVar3 = _malloc((size_t)param_2);
+    pvVar1 = _malloc(size);
   }
   else {
-    if (param_2 == (uint *)0x0) {
+    if (size == 0) {
       ExceptionList = &local_14;
-      crt_free_base(param_1);
+      crt_free_base(ptr);
     }
     else {
       ExceptionList = &local_14;
       if (crt_heap_mode == 3) {
         do {
           local_28 = (byte *)0x0;
-          if (param_2 < (uint *)0xffffffe1) {
+          if (size < (uint *)0xffffffe1) {
             crt_lock(9);
             local_8 = 0;
-            local_2c = (uint *)FUN_00466c7b((int)param_1);
+            local_2c = (uint *)FUN_00466c7b((int)ptr);
             if (local_2c != (uint *)0x0) {
-              if (param_2 <= DAT_004da3a0) {
-                iVar1 = FUN_00467484(local_2c,(int)param_1,(int)param_2);
-                if (iVar1 == 0) {
-                  local_28 = (byte *)FUN_00466fcf(param_2);
+              if (size <= DAT_004da3a0) {
+                iVar2 = FUN_00467484(local_2c,(int)ptr,size);
+                if (iVar2 == 0) {
+                  local_28 = (byte *)FUN_00466fcf((uint *)size);
                   if (local_28 != (byte *)0x0) {
-                    local_24 = (uint *)(*(int *)(param_1 + -4) - 1);
-                    puVar2 = local_24;
-                    if (param_2 <= local_24) {
-                      puVar2 = param_2;
+                    local_24 = (uint *)(*(int *)((int)ptr + -4) - 1);
+                    puVar3 = local_24;
+                    if (size <= local_24) {
+                      puVar3 = (uint *)size;
                     }
-                    crt_bufcpy(local_28,param_1,(size_t)puVar2);
-                    local_2c = (uint *)FUN_00466c7b((int)param_1);
-                    FUN_00466ca6(local_2c,(int)param_1);
+                    crt_bufcpy(local_28,ptr,(size_t)puVar3);
+                    local_2c = (uint *)FUN_00466c7b((int)ptr);
+                    FUN_00466ca6(local_2c,(int)ptr);
                   }
                 }
                 else {
-                  local_28 = param_1;
+                  local_28 = ptr;
                 }
               }
               if (local_28 == (byte *)0x0) {
-                if (param_2 == (uint *)0x0) {
-                  param_2 = (uint *)0x1;
+                if ((uint *)size == (uint *)0x0) {
+                  size = 1;
                 }
-                param_2 = (uint *)((int)param_2 + 0xfU & 0xfffffff0);
-                local_28 = HeapAlloc(DAT_004da3a4,0,(SIZE_T)param_2);
+                size = size + 0xf & 0xfffffff0;
+                local_28 = HeapAlloc(DAT_004da3a4,0,size);
                 if (local_28 != (byte *)0x0) {
-                  local_24 = (uint *)(*(int *)(param_1 + -4) - 1);
-                  puVar2 = local_24;
-                  if (param_2 <= local_24) {
-                    puVar2 = param_2;
+                  local_24 = (uint *)(*(int *)((int)ptr + -4) - 1);
+                  puVar3 = local_24;
+                  if (size <= local_24) {
+                    puVar3 = (uint *)size;
                   }
-                  crt_bufcpy(local_28,param_1,(size_t)puVar2);
-                  FUN_00466ca6(local_2c,(int)param_1);
+                  crt_bufcpy(local_28,ptr,(size_t)puVar3);
+                  FUN_00466ca6(local_2c,(int)ptr);
                 }
               }
             }
             local_8 = 0xffffffff;
             FUN_00462835();
             if (local_2c == (uint *)0x0) {
-              if (param_2 == (uint *)0x0) {
-                param_2 = (uint *)0x1;
+              if ((uint *)size == (uint *)0x0) {
+                size = 1;
               }
-              param_2 = (uint *)((int)param_2 + 0xfU & 0xfffffff0);
-              local_28 = HeapReAlloc(DAT_004da3a4,0,param_1,(SIZE_T)param_2);
+              size = size + 0xf & 0xfffffff0;
+              local_28 = HeapReAlloc(DAT_004da3a4,0,ptr,size);
             }
           }
           if (local_28 != (byte *)0x0) {
             ExceptionList = local_14;
-            return local_28;
+            return (int *)local_28;
           }
           if (DAT_004d9a78 == (byte *)0x0) {
             ExceptionList = local_14;
-            return (byte *)0x0;
+            return (void *)0x0;
           }
-          iVar1 = FUN_00467e47(param_2);
-        } while (iVar1 != 0);
+          iVar2 = crt_call_new_handler(size);
+        } while (iVar2 != 0);
       }
       else {
         ExceptionList = &local_14;
         if (crt_heap_mode == 2) {
           ExceptionList = &local_14;
-          if (param_2 < (uint *)0xffffffe1) {
-            if (param_2 == (uint *)0x0) {
-              param_2 = (uint *)0x10;
+          if (size < 0xffffffe1) {
+            if (size == 0) {
+              size = 0x10;
               ExceptionList = &local_14;
             }
             else {
-              param_2 = (uint *)((int)param_2 + 0xfU & 0xfffffff0);
+              size = size + 0xf & 0xfffffff0;
               ExceptionList = &local_14;
             }
           }
           do {
-            local_28 = pbVar3;
-            if (param_2 < (uint *)0xffffffe1) {
+            local_28 = pbVar6;
+            if (size < 0xffffffe1) {
               crt_lock(9);
               local_8 = 1;
-              pbVar3 = (byte *)FUN_004679d6(param_1,&local_3c,(uint *)&local_30);
-              local_34 = pbVar3;
-              if (pbVar3 == (byte *)0x0) {
-                local_28 = HeapReAlloc(DAT_004da3a4,0,param_1,(SIZE_T)param_2);
+              pbVar6 = (byte *)FUN_004679d6(ptr,&local_3c,(uint *)&local_30);
+              local_34 = pbVar6;
+              if (pbVar6 == (byte *)0x0) {
+                local_28 = HeapReAlloc(DAT_004da3a4,0,ptr,size);
               }
               else {
-                if (param_2 < DAT_0047db14) {
-                  iVar1 = FUN_00467d9e(local_3c,local_30,pbVar3,(uint)param_2 >> 4);
-                  if (iVar1 == 0) {
-                    local_28 = (byte *)FUN_00467a72((uint)param_2 >> 4);
+                if (size < DAT_0047db14) {
+                  iVar2 = FUN_00467d9e(local_3c,local_30,pbVar6,size >> 4);
+                  if (iVar2 == 0) {
+                    local_28 = (byte *)FUN_00467a72(size >> 4);
                     if (local_28 != (byte *)0x0) {
-                      local_38 = (uint *)((uint)*pbVar3 << 4);
-                      puVar2 = local_38;
-                      if (param_2 <= local_38) {
-                        puVar2 = param_2;
+                      local_38 = (uint)*pbVar6 << 4;
+                      uVar4 = local_38;
+                      if (size <= local_38) {
+                        uVar4 = size;
                       }
-                      crt_bufcpy(local_28,param_1,(size_t)puVar2);
-                      FUN_00467a2d(local_3c,(int)local_30,pbVar3);
+                      crt_bufcpy(local_28,ptr,uVar4);
+                      FUN_00467a2d(local_3c,(int)local_30,pbVar6);
                     }
                   }
                   else {
-                    local_28 = param_1;
+                    local_28 = ptr;
                   }
                 }
                 if ((local_28 == (byte *)0x0) &&
-                   (local_28 = HeapAlloc(DAT_004da3a4,0,(SIZE_T)param_2), local_28 != (byte *)0x0))
-                {
-                  local_38 = (uint *)((uint)*pbVar3 << 4);
-                  puVar2 = local_38;
-                  if (param_2 <= local_38) {
-                    puVar2 = param_2;
+                   (local_28 = HeapAlloc(DAT_004da3a4,0,size), local_28 != (byte *)0x0)) {
+                  local_38 = (uint)*pbVar6 << 4;
+                  uVar4 = local_38;
+                  if (size <= local_38) {
+                    uVar4 = size;
                   }
-                  crt_bufcpy(local_28,param_1,(size_t)puVar2);
-                  FUN_00467a2d(local_3c,(int)local_30,pbVar3);
+                  crt_bufcpy(local_28,ptr,uVar4);
+                  FUN_00467a2d(local_3c,(int)local_30,pbVar6);
                 }
               }
               local_8 = 0xffffffff;
               FUN_00462983();
             }
-            if (local_28 != pbVar3) {
+            if (local_28 != pbVar6) {
               ExceptionList = local_14;
               return local_28;
             }
-            if (DAT_004d9a78 == pbVar3) {
+            if (DAT_004d9a78 == pbVar6) {
               ExceptionList = local_14;
               return local_28;
             }
-            iVar1 = FUN_00467e47(param_2);
-          } while (iVar1 != 0);
+            iVar2 = crt_call_new_handler(size);
+          } while (iVar2 != 0);
         }
         else {
           do {
-            pbVar3 = (byte *)0x0;
-            if (param_2 < (uint *)0xffffffe1) {
-              if (param_2 == (uint *)0x0) {
-                param_2 = (uint *)0x1;
+            pvVar5 = (LPVOID)0x0;
+            if (size < 0xffffffe1) {
+              if (size == 0) {
+                size = 1;
               }
-              param_2 = (uint *)((int)param_2 + 0xfU & 0xfffffff0);
-              pbVar3 = HeapReAlloc(DAT_004da3a4,0,param_1,(SIZE_T)param_2);
+              size = size + 0xf & 0xfffffff0;
+              pvVar5 = HeapReAlloc(DAT_004da3a4,0,ptr,size);
             }
-            if (pbVar3 != (byte *)0x0) {
+            if (pvVar5 != (LPVOID)0x0) {
               ExceptionList = local_14;
-              return pbVar3;
+              return pvVar5;
             }
             if (DAT_004d9a78 == (byte *)0x0) {
               ExceptionList = local_14;
-              return (byte *)0x0;
+              return (void *)0x0;
             }
-            iVar1 = FUN_00467e47(param_2);
-          } while (iVar1 != 0);
+            iVar2 = crt_call_new_handler(size);
+          } while (iVar2 != 0);
         }
       }
     }
-    pbVar3 = (byte *)0x0;
+    pvVar1 = (void *)0x0;
   }
   ExceptionList = local_14;
-  return pbVar3;
+  return pvVar1;
 }
 
 
@@ -43774,7 +43792,7 @@ void * __cdecl __nh_malloc(size_t _Size,int _NhFlag)
       if (_NhFlag == 0) {
         return (void *)0x0;
       }
-      iVar2 = FUN_00467e47(_Size);
+      iVar2 = crt_call_new_handler(_Size);
     } while (iVar2 != 0);
   }
   return (void *)0x0;
@@ -45436,16 +45454,18 @@ void __cdecl crt_lock_file(FILE *fp)
 
 
 
-/* FUN_00463dd4 @ 00463dd4 */
+/* crt_lock_file2 @ 00463dd4 */
 
-void __cdecl FUN_00463dd4(int param_1,int param_2)
+/* CRT: lock FILE by index or per-stream critical section */
+
+void __cdecl crt_lock_file2(int stream_index,FILE *fp)
 
 {
-  if (param_1 < 0x14) {
-    crt_lock(param_1 + 0x1c);
+  if (stream_index < 0x14) {
+    crt_lock(stream_index + 0x1c);
     return;
   }
-  EnterCriticalSection((LPCRITICAL_SECTION)(param_2 + 0x20));
+  EnterCriticalSection((LPCRITICAL_SECTION)(fp + 1));
   return;
 }
 
@@ -45468,16 +45488,18 @@ void __cdecl crt_unlock_file(FILE *fp)
 
 
 
-/* FUN_00463e26 @ 00463e26 */
+/* crt_unlock_file2 @ 00463e26 */
 
-void __cdecl FUN_00463e26(int param_1,int param_2)
+/* CRT: unlock FILE by index or per-stream critical section */
+
+void __cdecl crt_unlock_file2(int stream_index,FILE *fp)
 
 {
-  if (param_1 < 0x14) {
-    crt_unlock(param_1 + 0x1c);
+  if (stream_index < 0x14) {
+    crt_unlock(stream_index + 0x1c);
     return;
   }
-  LeaveCriticalSection((LPCRITICAL_SECTION)(param_2 + 0x20));
+  LeaveCriticalSection((LPCRITICAL_SECTION)(fp + 1));
   return;
 }
 
@@ -45759,7 +45781,7 @@ LAB_00464154:
 FILE * crt_getstream(void)
 
 {
-  int iVar1;
+  FILE *pFVar1;
   void *pvVar2;
   int iVar3;
   FILE *pFVar4;
@@ -45769,8 +45791,8 @@ FILE * crt_getstream(void)
   iVar3 = 0;
   if (0 < DAT_004db4e0) {
     do {
-      iVar1 = *(int *)(DAT_004da4c4 + iVar3 * 4);
-      if (iVar1 == 0) {
+      pFVar1 = *(FILE **)(DAT_004da4c4 + iVar3 * 4);
+      if (pFVar1 == (FILE *)0x0) {
         iVar3 = iVar3 * 4;
         pvVar2 = _malloc(0x38);
         *(void **)(iVar3 + DAT_004da4c4) = pvVar2;
@@ -45790,14 +45812,14 @@ LAB_00464244:
         }
         break;
       }
-      if ((*(byte *)(iVar1 + 0xc) & 0x83) == 0) {
-        FUN_00463dd4(iVar3,iVar1);
-        iVar1 = *(int *)(DAT_004da4c4 + iVar3 * 4);
-        if ((*(byte *)(iVar1 + 0xc) & 0x83) == 0) {
+      if ((pFVar1->_flag & 0x83) == 0) {
+        crt_lock_file2(iVar3,pFVar1);
+        pFVar1 = *(FILE **)(DAT_004da4c4 + iVar3 * 4);
+        if ((pFVar1->_flag & 0x83) == 0) {
           pFVar4 = *(FILE **)(DAT_004da4c4 + iVar3 * 4);
           goto LAB_00464244;
         }
-        FUN_00463e26(iVar3,iVar1);
+        crt_unlock_file2(iVar3,pFVar1);
       }
       iVar3 = iVar3 + 1;
     } while (iVar3 < DAT_004db4e0);
@@ -46839,7 +46861,7 @@ undefined4 crt_mt_init(void)
   crt_init_locks();
   DAT_0047b6f0 = TlsAlloc();
   if (DAT_0047b6f0 != 0xffffffff) {
-    lpTlsValue = (DWORD *)FUN_004667ac(1,0x74);
+    lpTlsValue = crt_calloc(1,0x74);
     if (lpTlsValue != (DWORD *)0x0) {
       WVar1 = TlsSetValue(DAT_0047b6f0,lpTlsValue);
       if (WVar1 != 0) {
@@ -46883,7 +46905,7 @@ DWORD * crt_get_thread_data(void)
   dwErrCode = GetLastError();
   lpTlsValue = TlsGetValue(DAT_0047b6f0);
   if (lpTlsValue == (DWORD *)0x0) {
-    lpTlsValue = (DWORD *)FUN_004667ac(1,0x74);
+    lpTlsValue = crt_calloc(1,0x74);
     if (lpTlsValue != (DWORD *)0x0) {
       WVar1 = TlsSetValue(DAT_0047b6f0,lpTlsValue);
       if (WVar1 != 0) {
@@ -48138,11 +48160,13 @@ long __cdecl crt_lseek_nolock(int fd,long offset,int origin)
 
 
 
-/* FUN_004664d1 @ 004664d1 */
+/* crt_lcmap_string @ 004664d1 */
+
+/* CRT: LCMapString wrapper with multibyte/Unicode handling */
 
 int __cdecl
-FUN_004664d1(LCID param_1,uint param_2,char *param_3,int param_4,LPWSTR param_5,int param_6,
-            UINT param_7,int param_8)
+crt_lcmap_string(uint locale,uint flags,char *src,int srclen,ushort *dst,int dstlen,uint codepage,
+                int use_cp)
 
 {
   int iVar1;
@@ -48172,30 +48196,29 @@ FUN_004664d1(LCID param_1,uint param_2,char *param_3,int param_4,LPWSTR param_5,
       DAT_004d9a64 = 1;
     }
   }
-  if (0 < param_4) {
-    param_4 = FUN_0046e5ec(param_3,param_4);
+  if (0 < srclen) {
+    srclen = FUN_0046e5ec(src,srclen);
   }
   if (DAT_004d9a64 == 2) {
-    iVar1 = LCMapStringA(param_1,param_2,param_3,param_4,(LPSTR)param_5,param_6);
+    iVar1 = LCMapStringA(locale,flags,src,srclen,(LPSTR)dst,dstlen);
     ExceptionList = local_14;
     return iVar1;
   }
   if (DAT_004d9a64 == 1) {
-    if (param_7 == 0) {
-      param_7 = DAT_004d9a5c;
+    if (codepage == 0) {
+      codepage = DAT_004d9a5c;
     }
-    iVar1 = MultiByteToWideChar(param_7,(-(uint)(param_8 != 0) & 8) + 1,param_3,param_4,(LPWSTR)0x0,
-                                0);
+    iVar1 = MultiByteToWideChar(codepage,(-(uint)(use_cp != 0) & 8) + 1,src,srclen,(LPWSTR)0x0,0);
     if (iVar1 != 0) {
       local_8 = 0;
       crt_chkstk();
       local_8 = 0xffffffff;
       if ((&stack0x00000000 != (undefined1 *)0x3c) &&
-         (iVar2 = MultiByteToWideChar(param_7,1,param_3,param_4,(LPWSTR)&stack0xffffffc4,iVar1),
+         (iVar2 = MultiByteToWideChar(codepage,1,src,srclen,(LPWSTR)&stack0xffffffc4,iVar1),
          iVar2 != 0)) {
-        iVar2 = LCMapStringW(param_1,param_2,(LPCWSTR)&stack0xffffffc4,iVar1,(LPWSTR)0x0,0);
+        iVar2 = LCMapStringW(locale,flags,(LPCWSTR)&stack0xffffffc4,iVar1,(LPWSTR)0x0,0);
         if (iVar2 != 0) {
-          if ((param_2 & 0x400) == 0) {
+          if ((flags & 0x400) == 0) {
             local_8 = 1;
             crt_chkstk();
             local_8 = 0xffffffff;
@@ -48203,30 +48226,30 @@ FUN_004664d1(LCID param_1,uint param_2,char *param_3,int param_4,LPWSTR param_5,
               ExceptionList = local_14;
               return 0;
             }
-            iVar1 = LCMapStringW(param_1,param_2,(LPCWSTR)&stack0xffffffc4,iVar1,
+            iVar1 = LCMapStringW(locale,flags,(LPCWSTR)&stack0xffffffc4,iVar1,
                                  (LPWSTR)&stack0xffffffc4,iVar2);
             if (iVar1 == 0) {
               ExceptionList = local_14;
               return 0;
             }
-            if (param_6 == 0) {
-              param_6 = 0;
-              param_5 = (LPWSTR)0x0;
+            if (dstlen == 0) {
+              dstlen = 0;
+              dst = (ushort *)0x0;
             }
-            iVar2 = WideCharToMultiByte(param_7,0x220,(LPCWCH)&stack0xffffffc4,iVar2,(LPSTR)param_5,
-                                        param_6,(LPCCH)0x0,(LPBOOL)0x0);
+            iVar2 = WideCharToMultiByte(codepage,0x220,(LPCWCH)&stack0xffffffc4,iVar2,(LPSTR)dst,
+                                        dstlen,(LPCCH)0x0,(LPBOOL)0x0);
             iVar1 = iVar2;
           }
           else {
-            if (param_6 == 0) {
+            if (dstlen == 0) {
               ExceptionList = local_14;
               return iVar2;
             }
-            if (param_6 < iVar2) {
+            if (dstlen < iVar2) {
               ExceptionList = local_14;
               return 0;
             }
-            iVar1 = LCMapStringW(param_1,param_2,(LPCWSTR)&stack0xffffffc4,iVar1,param_5,param_6);
+            iVar1 = LCMapStringW(locale,flags,(LPCWSTR)&stack0xffffffc4,iVar1,(LPWSTR)dst,dstlen);
           }
           if (iVar1 != 0) {
             ExceptionList = local_14;
@@ -48312,9 +48335,11 @@ void __cdecl FUN_00466782(int param_1,int *param_2)
 
 
 
-/* FUN_004667ac @ 004667ac */
+/* crt_calloc @ 004667ac */
 
-int * __cdecl FUN_004667ac(int param_1,int param_2)
+/* CRT: allocate zeroed block (count*size) */
+
+void * __cdecl crt_calloc(uint count,uint size)
 
 {
   int iVar1;
@@ -48331,7 +48356,7 @@ int * __cdecl FUN_004667ac(int param_1,int param_2)
   puStack_c = &DAT_0046fbe8;
   puStack_10 = &LAB_00465e70;
   local_14 = ExceptionList;
-  puVar2 = (uint *)(param_1 * param_2);
+  puVar2 = (uint *)(count * size);
   puVar3 = puVar2;
   ExceptionList = &local_14;
   if (puVar2 < (uint *)0xffffffe1) {
@@ -48381,12 +48406,12 @@ LAB_00466899:
     }
     if (DAT_004d9a78 == 0) {
       ExceptionList = local_14;
-      return (int *)0x0;
+      return (void *)0x0;
     }
-    iVar1 = FUN_00467e47(puVar3);
+    iVar1 = crt_call_new_handler((size_t)puVar3);
     if (iVar1 == 0) {
       ExceptionList = local_14;
-      return (int *)0x0;
+      return (void *)0x0;
     }
   } while( true );
 }
@@ -49791,15 +49816,17 @@ undefined4 __cdecl FUN_00467d9e(int param_1,int *param_2,byte *param_3,uint para
 
 
 
-/* FUN_00467e47 @ 00467e47 */
+/* crt_call_new_handler @ 00467e47 */
 
-undefined4 __cdecl FUN_00467e47(undefined4 param_1)
+/* CRT: call new-handler; returns nonzero to retry allocation */
+
+int __cdecl crt_call_new_handler(size_t size)
 
 {
   int iVar1;
   
   if (DAT_004d9a74 != (code *)0x0) {
-    iVar1 = (*DAT_004d9a74)(param_1);
+    iVar1 = (*DAT_004d9a74)(size);
     if (iVar1 != 0) {
       return 1;
     }
@@ -55280,8 +55307,8 @@ void FUN_0046d442(void)
   BYTE *pBVar9;
   CHAR *pCVar10;
   WORD local_518 [256];
-  WCHAR local_318 [128];
-  WCHAR local_218 [128];
+  ushort local_318 [128];
+  ushort local_218 [128];
   CHAR local_118 [256];
   _cpinfo local_18;
   
@@ -55316,8 +55343,8 @@ void FUN_0046d442(void)
       } while (local_18.LeadByte[0] != 0);
     }
     FUN_0046a8ce(1,local_118,0x100,local_518,DAT_004da164,DAT_004da384,0);
-    FUN_004664d1(DAT_004da384,0x100,local_118,0x100,local_218,0x100,DAT_004da164,0);
-    FUN_004664d1(DAT_004da384,0x200,local_118,0x100,local_318,0x100,DAT_004da164,0);
+    crt_lcmap_string(DAT_004da384,0x100,local_118,0x100,local_218,0x100,DAT_004da164,0);
+    crt_lcmap_string(DAT_004da384,0x200,local_118,0x100,local_318,0x100,DAT_004da164,0);
     uVar3 = 0;
     puVar7 = local_518;
     do {
@@ -56638,45 +56665,39 @@ int __cdecl FUN_0046e5ec(char *param_1,int param_2)
 undefined4 __cdecl FUN_0046e617(uint *param_1,int param_2)
 
 {
-  byte *pbVar1;
-  uint *puVar2;
-  int iVar3;
-  byte *pbVar4;
-  size_t sVar5;
+  uint *puVar1;
+  int iVar2;
+  int *piVar3;
+  size_t sVar4;
   char *dst;
-  byte *pbVar6;
+  byte *pbVar5;
+  int *piVar6;
   bool bVar7;
   
   if (param_1 == (uint *)0x0) {
     return 0xffffffff;
   }
-  puVar2 = (uint *)FUN_0046e85d((byte *)param_1,0x3d);
-  if (puVar2 == (uint *)0x0) {
+  puVar1 = (uint *)FUN_0046e85d((byte *)param_1,0x3d);
+  if (puVar1 == (uint *)0x0) {
     return 0xffffffff;
   }
-  if (param_1 == puVar2) {
+  if (param_1 == puVar1) {
     return 0xffffffff;
   }
-  bVar7 = *(byte *)((int)puVar2 + 1) == 0;
+  bVar7 = *(byte *)((int)puVar1 + 1) == 0;
   if (DAT_004d99a0 == DAT_004d99a4) {
-    DAT_004d99a0 = (byte *)FUN_0046e7f6((int *)DAT_004d99a0);
+    DAT_004d99a0 = FUN_0046e7f6(DAT_004d99a0);
   }
-  if (DAT_004d99a0 == (byte *)0x0) {
+  if (DAT_004d99a0 == (int *)0x0) {
     if ((param_2 == 0) || (DAT_004d99a8 == (undefined4 *)0x0)) {
       if (bVar7) {
         return 0;
       }
       DAT_004d99a0 = _malloc(4);
-      if (DAT_004d99a0 == (byte *)0x0) {
+      if (DAT_004d99a0 == (int *)0x0) {
         return 0xffffffff;
       }
-      pbVar4 = DAT_004d99a0 + 1;
-      pbVar6 = DAT_004d99a0 + 2;
-      pbVar1 = DAT_004d99a0 + 3;
-      DAT_004d99a0[0] = 0;
-      *pbVar4 = 0;
-      *pbVar6 = 0;
-      *pbVar1 = 0;
+      *DAT_004d99a0 = 0;
       if (DAT_004d99a8 == (undefined4 *)0x0) {
         DAT_004d99a8 = _malloc(4);
         if (DAT_004d99a8 == (undefined4 *)0x0) {
@@ -56686,56 +56707,52 @@ undefined4 __cdecl FUN_0046e617(uint *param_1,int param_2)
       }
     }
     else {
-      iVar3 = FUN_0046e301();
-      if (iVar3 != 0) {
+      iVar2 = FUN_0046e301();
+      if (iVar2 != 0) {
         return 0xffffffff;
       }
     }
   }
-  pbVar4 = DAT_004d99a0;
-  iVar3 = FUN_0046e79e((uchar *)param_1,(int)puVar2 - (int)param_1);
-  if ((iVar3 < 0) || (*(int *)pbVar4 == 0)) {
+  piVar3 = DAT_004d99a0;
+  iVar2 = FUN_0046e79e((uchar *)param_1,(int)puVar1 - (int)param_1);
+  if ((iVar2 < 0) || (*piVar3 == 0)) {
     if (bVar7) {
       return 0;
     }
-    if (iVar3 < 0) {
-      iVar3 = -iVar3;
+    if (iVar2 < 0) {
+      iVar2 = -iVar2;
     }
-    pbVar4 = FUN_004626aa(pbVar4,(uint *)(iVar3 * 4 + 8));
-    if (pbVar4 == (byte *)0x0) {
+    piVar3 = crt_realloc(piVar3,iVar2 * 4 + 8);
+    if (piVar3 == (int *)0x0) {
       return 0xffffffff;
     }
-    *(uint **)(pbVar4 + iVar3 * 4) = param_1;
-    pbVar6 = pbVar4 + iVar3 * 4 + 4;
-    pbVar6[0] = 0;
-    pbVar6[1] = 0;
-    pbVar6[2] = 0;
-    pbVar6[3] = 0;
+    piVar3[iVar2] = (int)param_1;
+    piVar3[iVar2 + 1] = 0;
   }
   else {
     if (!bVar7) {
-      *(uint **)(pbVar4 + iVar3 * 4) = param_1;
+      piVar3[iVar2] = (int)param_1;
       goto LAB_0046e74b;
     }
-    pbVar6 = pbVar4 + iVar3 * 4;
-    crt_free_base(*(void **)(pbVar4 + iVar3 * 4));
-    for (; *(int *)pbVar6 != 0; pbVar6 = pbVar6 + 4) {
-      iVar3 = iVar3 + 1;
-      *(int *)pbVar6 = *(int *)(pbVar6 + 4);
+    piVar6 = piVar3 + iVar2;
+    crt_free_base((void *)piVar3[iVar2]);
+    for (; *piVar6 != 0; piVar6 = piVar6 + 1) {
+      iVar2 = iVar2 + 1;
+      *piVar6 = piVar6[1];
     }
-    pbVar4 = FUN_004626aa(pbVar4,(uint *)(iVar3 << 2));
-    if (pbVar4 == (byte *)0x0) goto LAB_0046e74b;
+    piVar3 = crt_realloc(piVar3,iVar2 << 2);
+    if (piVar3 == (int *)0x0) goto LAB_0046e74b;
   }
-  DAT_004d99a0 = pbVar4;
+  DAT_004d99a0 = piVar3;
 LAB_0046e74b:
   if (param_2 != 0) {
-    sVar5 = _strlen((char *)param_1);
-    dst = _malloc(sVar5 + 2);
+    sVar4 = _strlen((char *)param_1);
+    dst = _malloc(sVar4 + 2);
     if (dst != (char *)0x0) {
       crt_strcpy(dst,(char *)param_1);
-      pbVar4 = (byte *)(((int)dst - (int)param_1) + (int)puVar2);
-      *pbVar4 = 0;
-      SetEnvironmentVariableA(dst,(LPCSTR)(~-(uint)bVar7 & (uint)(pbVar4 + 1)));
+      pbVar5 = (byte *)(((int)dst - (int)param_1) + (int)puVar1);
+      *pbVar5 = 0;
+      SetEnvironmentVariableA(dst,(LPCSTR)(~-(uint)bVar7 & (uint)(pbVar5 + 1)));
       crt_free_base(dst);
     }
   }

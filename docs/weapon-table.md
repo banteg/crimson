@@ -14,7 +14,8 @@ weapon_table (`DAT_004d7a2c`) + weapon_id * 0x1f
 Entry `0` is a dummy (id = -1); weapon id `0` (Pistol) starts at entry `1`.
 
 Note: the returned pointer is **not** the first field of the entry.
-There is a 4‑byte field at offset `-0x04` that is indexed with the same stride.
+There is a 4‑byte field at offset `-0x04` (`weapon_ammo_class` / `DAT_004d7a28`)
+that is indexed with the same stride.
 
 ## Offsets (relative to entry base)
 

@@ -12,7 +12,9 @@ Interesting Functions and Patterns
 
 [FILE related]
   crt_lock_file @ 00463da5
+  crt_lock_file2 @ 00463dd4
   crt_unlock_file @ 00463df7
+  crt_unlock_file2 @ 00463e26
   crt_openfile @ 00464030
   GetFileVersionInfoA @ 0046e956
   GetFileVersionInfoSizeA @ 0046e95c
@@ -28,6 +30,9 @@ Interesting Functions and Patterns
   reg_read_dword_default @ 0042a980
   crt_fread @ 00461af7
   crt_fread_nolock @ 00461b26
+  crt_beginthread @ 0046223f
+  crt_thread_entry @ 004622b6
+  crt_endthread @ 00462373
   crt_get_thread_data @ 004654b8
   crt_free_thread_data @ 0046551f
   crt_read @ 00465fff
@@ -62,8 +67,10 @@ Interesting Functions and Patterns
 [ALLOC related]
   bonus_alloc_slot @ 0041f580
   creature_alloc_slot @ 00428140
+  crt_realloc @ 004626aa
   _malloc @ 004629d9
   __nh_malloc @ 004629eb
+  crt_calloc @ 004667ac
   strdup_malloc @ 0046e8f4
 
 [STRCPY related]
