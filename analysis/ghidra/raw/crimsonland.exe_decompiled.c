@@ -429,9 +429,11 @@ void __fastcall FUN_004018d0(int param_1)
 
 
 
-/* FUN_00401940 @ 00401940 */
+/* console_exec_line @ 00401940 */
 
-void __thiscall FUN_00401940(void *this,char *param_1)
+/* executes a console command or cvar assignment from a line */
+
+void __thiscall console_exec_line(void *this,void *console_state,char *line)
 
 {
   undefined4 *puVar1;
@@ -440,7 +442,7 @@ void __thiscall FUN_00401940(void *this,char *param_1)
   double dVar4;
   char *str;
   
-  FUN_00402580(param_1);
+  FUN_00402580(console_state);
   if (DAT_0047f4cc != 0) {
     puVar1 = FUN_00402480(this,DAT_0047ea60);
     puVar2 = FUN_00402750(this,DAT_0047ea60);
@@ -497,6 +499,7 @@ void __fastcall FUN_00401a40(void *param_1)
   char *pcVar11;
   bool bVar12;
   float10 fVar13;
+  char *pcVar14;
   
   if (*(char *)((int)param_1 + 0x28) == '\0') {
     _DAT_0047115c = _DAT_0047ea48 * 3.5 + _DAT_0047115c;
@@ -564,21 +567,21 @@ LAB_00401b24:
   if (cVar2 != '\0') {
     uVar8 = 0xffffffff;
     DAT_0047ea54 = DAT_0047ea54 + 1;
-    pcVar4 = (char *)&DAT_0047e448;
+    pcVar14 = (char *)&DAT_0047e448;
     do {
       if (uVar8 == 0) break;
       uVar8 = uVar8 - 1;
-      cVar2 = *pcVar4;
-      pcVar4 = pcVar4 + 1;
+      cVar2 = *pcVar14;
+      pcVar14 = pcVar14 + 1;
     } while (cVar2 != '\0');
     if ((int)(~uVar8 - 1) < DAT_0047ea54) {
       uVar8 = 0xffffffff;
-      pcVar4 = (char *)&DAT_0047e448;
+      pcVar14 = (char *)&DAT_0047e448;
       do {
         if (uVar8 == 0) break;
         uVar8 = uVar8 - 1;
-        cVar2 = *pcVar4;
-        pcVar4 = pcVar4 + 1;
+        cVar2 = *pcVar14;
+        pcVar14 = pcVar14 + 1;
       } while (cVar2 != '\0');
       DAT_0047ea54 = ~uVar8 - 1;
     }
@@ -601,7 +604,8 @@ LAB_00401b24:
   if (cVar2 != '\0') {
     *(undefined4 *)((int)param_1 + 0x24) = 0;
   }
-  cVar2 = (**(code **)(*grim_interface_ptr + 0x48))(0xf);
+  pcVar14 = (char *)0xf;
+  cVar2 = (**(code **)(*grim_interface_ptr + 0x48))();
   if (cVar2 != '\0') {
     pcVar4 = console_input_buffer();
     FUN_00402580(pcVar4);
@@ -688,7 +692,7 @@ LAB_00401cf6:
   console_input_buffer();
   console_printf(&console_log_queue,(byte *)s_>__s_004712b0);
   pcVar4 = console_input_buffer();
-  FUN_00401940(param_1,pcVar4);
+  console_exec_line(param_1,pcVar4,pcVar14);
   console_input_clear();
   (**(code **)(*grim_interface_ptr + 0x48))(0x1c);
   return;
@@ -22012,6 +22016,7 @@ int crimsonland_main(void)
   console_printf(&console_log_queue,(byte *)s____using_keyboard_004749bc);
   (**(code **)(*grim_interface_ptr + 0x20))();
   console_printf(&console_log_queue,(byte *)s____using_mouse_004749ac);
+  pcVar5 = (char *)0xe;
   (**(code **)(*grim_interface_ptr + 0x20))();
   console_printf(&console_log_queue,(byte *)s____using_joystick_00474998);
   console_printf(&console_log_queue,(byte *)s____initiating_Grim_system_0047497c);
@@ -22025,7 +22030,7 @@ int crimsonland_main(void)
     (**(code **)*grim_interface_ptr)();
     return 0;
   }
-  FUN_00401940(&console_log_queue,s_exec_autoexec_txt_00474944);
+  console_exec_line(&console_log_queue,s_exec_autoexec_txt_00474944,pcVar5);
   (**(code **)(*grim_interface_ptr + 0x20))();
   (**(code **)(*grim_interface_ptr + 0x20))();
   (**(code **)(*grim_interface_ptr + 0x20))();
@@ -28612,6 +28617,7 @@ void audio_init_music(void)
   undefined4 uVar1;
   int iVar2;
   undefined4 *puVar3;
+  char *unaff_retaddr;
   char *pcVar4;
   
   if ((config_blob == '\0') && (config_music_disabled == '\0')) {
@@ -28636,7 +28642,7 @@ void audio_init_music(void)
     console_printf(&console_log_queue,(byte *)pcVar4);
     music_track_intro_id = music_load_track(s_music_intro_ogg_00477e74);
     music_track_shortie_monk_id = music_load_track(s_music_shortie_monk_ogg_00477e5c);
-    FUN_00401940(&console_log_queue,s_exec_music_game_tunes_txt_00477e40);
+    console_exec_line(&console_log_queue,s_exec_music_game_tunes_txt_00477e40,unaff_retaddr);
     music_track_crimson_theme_id = music_load_track(s_music_crimson_theme_ogg_00477e28);
     music_track_crimsonquest_id = music_load_track(s_music_crimsonquest_ogg_00477e10);
     music_track_extra_0 = music_track_crimsonquest_id + 1;

@@ -105,9 +105,9 @@
     "calls": []
   },
   {
-    "name": "FUN_00401940",
+    "name": "console_exec_line",
     "address": "00401940",
-    "signature": "undefined FUN_00401940(void * this, char * param_1)",
+    "signature": "void console_exec_line(void * this, void * console_state, char * line)",
     "external": false,
     "calls": ["FUN_00402480", "FUN_00402580", "FUN_00402750", "console_printf", "crt_atof_l", "crt_free", "strdup_malloc"]
   },
@@ -116,7 +116,7 @@
     "address": "00401a40",
     "signature": "undefined FUN_00401a40(void * param_1)",
     "external": false,
-    "calls": ["FUN_004018d0", "FUN_00401940", "FUN_00402580", "FUN_00402630", "FUN_004027b0", "console_input_buffer", "console_input_clear", "console_input_poll", "console_printf", "operator_new", "strdup_malloc"]
+    "calls": ["FUN_004018d0", "FUN_00402580", "FUN_00402630", "FUN_004027b0", "console_exec_line", "console_input_buffer", "console_input_clear", "console_input_poll", "console_printf", "operator_new", "strdup_malloc"]
   },
   {
     "name": "FUN_00401dd0",
@@ -1355,7 +1355,7 @@
     "address": "0042c450",
     "signature": "int crimsonland_main(void)",
     "external": false,
-    "calls": ["Direct3DCreate8", "FUN_00401940", "FUN_0041ec60", "FUN_0041f130", "FUN_00461739", "FUN_004623b2", "GetCommandLineA", "HlinkNavigateString", "MessageBoxA", "MultiByteToWideChar", "RegCloseKey", "RegCreateKeyExA", "Sleep", "audio_shutdown_all", "config_load_presets", "console_flush_log", "console_printf", "console_register_command", "console_register_cvar", "crt_free"]
+    "calls": ["Direct3DCreate8", "FUN_0041ec60", "FUN_0041f130", "FUN_00461739", "FUN_004623b2", "GetCommandLineA", "HlinkNavigateString", "MessageBoxA", "MultiByteToWideChar", "RegCloseKey", "RegCreateKeyExA", "Sleep", "audio_shutdown_all", "config_load_presets", "console_exec_line", "console_flush_log", "console_printf", "console_register_command", "console_register_cvar", "crt_free"]
   },
   {
     "name": "effect_init_entry",
@@ -1978,7 +1978,7 @@
     "address": "0043c9c0",
     "signature": "void audio_init_music(void)",
     "external": false,
-    "calls": ["FUN_00401940", "FUN_0043b980", "console_printf", "music_load_track"]
+    "calls": ["FUN_0043b980", "console_exec_line", "console_printf", "music_load_track"]
   },
   {
     "name": "audio_init_sfx",

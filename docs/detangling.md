@@ -71,6 +71,9 @@ You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps
   - Evidence: formats strings (uses `FUN_00461089`) then pushes into the console queue; callsites include `Unknown command`/CMOD logs.
 - `FUN_00402350` -> `console_register_cvar`
   - Evidence: searches existing entry by name, allocates a 0x24 entry when missing, strdup’s name/value, parses float via `crt_atof_l`, and is used by `register_core_cvars` with `cv_*` strings.
+- `FUN_00401940` -> `console_exec_line`
+  - Evidence: parses a line into command/cvar targets, executes command callbacks, updates cvar values, and logs
+    status/errors; called with `exec_autoexec.txt` and `exec_music_game_tunes.txt`.
 
 
 ### UI element timeline + transitions (high confidence)

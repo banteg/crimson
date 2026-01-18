@@ -46,6 +46,9 @@ Interesting Functions and Patterns
   crt_write @ 00465652
   crt_write_nolock @ 004656b7
 
+[EXEC related]
+  console_exec_line @ 00401940
+
 [SYSTEM related]
   sfx_system_init @ 0043cf90
 

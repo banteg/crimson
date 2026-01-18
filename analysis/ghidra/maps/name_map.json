@@ -34,6 +34,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00401940",
+    "name": "console_exec_line",
+    "signature": "void console_exec_line(void *console_state, char *line)",
+    "comment": "executes a console command or cvar assignment from a line"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00402350",
     "name": "console_register_cvar",
     "signature": "void * console_register_cvar(void *console_state, char *name, char *value)",
