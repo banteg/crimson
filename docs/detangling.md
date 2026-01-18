@@ -18,12 +18,7 @@ and data labels in `analysis/ghidra/maps/data_map.json`, applying both during he
 analysis:
 
 ```
-./analysis/ghidra/tooling/ghidra-analyze.sh \
-  --script-path analysis/ghidra/scripts \
-  -s ApplyNameMap.java -a analysis/ghidra/maps/name_map.json \
-  -s ApplyDataMap.java -a analysis/ghidra/maps/data_map.json \
-  -s ExportAll.java -o analysis/ghidra/raw \
-  game_bins/crimsonland/1.9.93-gog/crimsonland.exe
+just ghidra-exe game_dir=game_bins/crimsonland/1.9.93-gog
 ```
 
 You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps.
@@ -74,6 +69,8 @@ You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps
   - Evidence: pushes strdup’d strings into a list, caps at 0x1000 entries.
 - `FUN_00401870` -> `console_printf`
   - Evidence: formats strings (uses `FUN_00461089`) then pushes into the console queue; callsites include `Unknown command`/CMOD logs.
+- `FUN_00402350` -> `console_register_cvar`
+  - Evidence: searches existing entry by name, allocates a 0x24 entry when missing, strdup’s name/value, parses float via `crt_atof_l`, and is used by `register_core_cvars` with `cv_*` strings.
 
 
 ### UI element timeline + transitions (high confidence)

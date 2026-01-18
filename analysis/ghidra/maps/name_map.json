@@ -34,6 +34,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00402350",
+    "name": "console_register_cvar",
+    "signature": "void * console_register_cvar(void *console_state, char *name, char *value)",
+    "comment": "registers or updates a console cvar entry (stores string + float value)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004026e0",
     "name": "console_register_command",
     "comment": "registers a console command and handler"
@@ -56,6 +63,13 @@
     "name": "ui_mouse_inside_rect",
     "signature": "int ui_mouse_inside_rect(float *xy, int h, int w)",
     "comment": "returns 1 when the mouse is inside the rect and mouse capture is clear"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00403550",
+    "name": "perk_prompt_update_and_render",
+    "signature": "void perk_prompt_update_and_render(void)",
+    "comment": "updates perk prompt timer, animates transforms, and renders the prompt text"
   },
   {
     "program": "crimsonland.exe",
@@ -779,6 +793,13 @@
     "name": "sfx_is_unmuted",
     "signature": "int sfx_is_unmuted(int sfx_id)",
     "comment": "returns nonzero when sfx id is not muted"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043d7e0",
+    "name": "ui_focus_set",
+    "signature": "void ui_focus_set(int id, char reset_timer)",
+    "comment": "sets the active focus candidate; optionally resets the focus timer"
   },
   {
     "program": "crimsonland.exe",
