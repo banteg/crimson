@@ -10,7 +10,7 @@ MAIN_MODEL = "gpt-5.2-codex"
 MAIN_REASONING = "xhigh"
 HELPER_MODEL = "gpt-5.2-codex"
 HELPER_REASONING = "medium"
-MAX_ITERATIONS = 50
+MAX_ITERATIONS = 20
 DEFAULT_SESSION = "last"
 COLOR_MODE = "always"
 
