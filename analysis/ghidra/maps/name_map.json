@@ -610,6 +610,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00420040",
+    "name": "creature_find_nearest",
+    "signature": "int creature_find_nearest(float *pos, int exclude_id, float min_dist)",
+    "comment": "returns nearest creature index; uses hitbox-size sentinel when exclude_id == -1"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00420130",
     "name": "fx_spawn_particle",
     "signature": "int fx_spawn_particle(float *pos, float angle, void *unused, float intensity)",
@@ -1856,6 +1863,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004654a5",
+    "name": "crt_init_thread_data",
+    "signature": "void crt_init_thread_data(void *ptd)",
+    "comment": "CRT: initialize per-thread data defaults"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004654b8",
     "name": "crt_get_thread_data",
     "comment": "CRT per-thread data accessor"
@@ -1980,6 +1994,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00466c7b",
+    "name": "crt_sbh_find_region",
+    "signature": "void * crt_sbh_find_region(void *ptr)",
+    "comment": "CRT: find small-block heap region for a pointer"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00466fcf",
     "name": "crt_sbh_alloc",
     "signature": "void * crt_sbh_alloc(uint size)",
@@ -1990,6 +2011,13 @@
     "address": "0x0046777a",
     "name": "crt_sbh_create_region",
     "comment": "CRT small-block heap region init"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004679d6",
+    "name": "crt_sbh_find_block",
+    "signature": "void * crt_sbh_find_block(void *ptr, void **region_out, unsigned int *page_base)",
+    "comment": "CRT: map a pointer to its small-block heap block header"
   },
   {
     "program": "crimsonland.exe",
@@ -2051,6 +2079,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0046a39e",
+    "name": "crt_fp_round_digits",
+    "signature": "void crt_fp_round_digits(char *dst, int precision, int *fp_info)",
+    "comment": "CRT: round float digits and adjust exponent for printf formatting"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0046a415",
     "name": "crt_fp_to_string",
     "signature": "int * crt_fp_to_string(double value, int *out, uint *digits)",
@@ -2072,10 +2107,31 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0046ad79",
+    "name": "crt_file_buffer_init",
+    "signature": "void crt_file_buffer_init(FILE *fp)",
+    "comment": "CRT: allocate/init FILE buffer (4KB or fallback small buffer)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0046b265",
     "name": "crt_fp_parse",
     "signature": "int crt_fp_parse(void *ctx, ushort *out, int *cursor, byte *str, int flags, int width, int prec, int mode)",
     "comment": "parses a floating-point string into an 80-bit buffer (CRT scanf helper)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046d1ef",
+    "name": "crt_setmbcp",
+    "signature": "int crt_setmbcp(int codepage)",
+    "comment": "CRT: set multibyte code page and rebuild ctype tables"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046d5c7",
+    "name": "crt_mbcs_init",
+    "signature": "void crt_mbcs_init(void)",
+    "comment": "CRT: one-time init of multibyte/ctype tables (GetACP)"
   },
   {
     "program": "crimsonland.exe",

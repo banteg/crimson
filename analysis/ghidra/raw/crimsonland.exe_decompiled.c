@@ -5928,7 +5928,7 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
     }
     pfVar6 = (float *)(bonus_entry + 4);
     shock_chain_links_left = 0x20;
-    iVar4 = FUN_00420040(pfVar6,-1,0.0);
+    iVar4 = creature_find_nearest(pfVar6,-1,0.0);
     fVar8 = (float10)fpatan((float10)(float)(&creature_pos_y)[iVar4 * 0x26] -
                             (float10)(float)bonus_entry[5],
                             (float10)(float)(&creature_pos_x)[iVar4 * 0x26] - (float10)*pfVar6);
@@ -16727,9 +16727,11 @@ void effect_uv_tables_init(void)
 
 
 
-/* FUN_00420040 @ 00420040 */
+/* creature_find_nearest @ 00420040 */
 
-int __cdecl FUN_00420040(float *param_1,int param_2,float param_3)
+/* returns nearest creature index; uses hitbox-size sentinel when exclude_id == -1 */
+
+int __cdecl creature_find_nearest(float *pos,int exclude_id,float min_dist)
 
 {
   float fVar1;
@@ -16740,15 +16742,14 @@ int __cdecl FUN_00420040(float *param_1,int param_2,float param_3)
   
   fVar1 = 1e+06;
   iVar5 = 0;
-  if (param_2 == -1) {
+  if (exclude_id == -1) {
     iVar4 = 0;
     pcVar3 = &creature_pool;
     do {
       if (((*pcVar3 != '\0') && (*(int *)(pcVar3 + 0x10) == 0x41800000)) &&
-         (fVar2 = SQRT((param_1[1] - *(float *)(pcVar3 + 0x18)) *
-                       (param_1[1] - *(float *)(pcVar3 + 0x18)) +
-                       (*param_1 - *(float *)(pcVar3 + 0x14)) *
-                       (*param_1 - *(float *)(pcVar3 + 0x14))), fVar2 < fVar1)) {
+         (fVar2 = SQRT((pos[1] - *(float *)(pcVar3 + 0x18)) * (pos[1] - *(float *)(pcVar3 + 0x18)) +
+                       (*pos - *(float *)(pcVar3 + 0x14)) * (*pos - *(float *)(pcVar3 + 0x14))),
+         fVar2 < fVar1)) {
         iVar5 = iVar4;
         fVar1 = fVar2;
       }
@@ -16760,12 +16761,10 @@ int __cdecl FUN_00420040(float *param_1,int param_2,float param_3)
   iVar4 = 0;
   pcVar3 = &creature_pool;
   do {
-    if ((((*pcVar3 != '\0') && (iVar4 != param_2)) &&
-        (fVar2 = SQRT((*param_1 - *(float *)(pcVar3 + 0x14)) *
-                      (*param_1 - *(float *)(pcVar3 + 0x14)) +
-                      (param_1[1] - *(float *)(pcVar3 + 0x18)) *
-                      (param_1[1] - *(float *)(pcVar3 + 0x18))), param_3 < fVar2)) &&
-       (fVar2 < fVar1)) {
+    if ((((*pcVar3 != '\0') && (iVar4 != exclude_id)) &&
+        (fVar2 = SQRT((*pos - *(float *)(pcVar3 + 0x14)) * (*pos - *(float *)(pcVar3 + 0x14)) +
+                      (pos[1] - *(float *)(pcVar3 + 0x18)) * (pos[1] - *(float *)(pcVar3 + 0x18))),
+        min_dist < fVar2)) && (fVar2 < fVar1)) {
       iVar5 = iVar4;
       fVar1 = fVar2;
     }
@@ -16911,7 +16910,8 @@ LAB_0042037f:
   fVar5 = (float10)fsin((float10)angle - (float10)1.5707964);
   (&secondary_proj_vel_y)[iVar3 * 0xb] = (float)(fVar5 * (float10)90.0);
   if (type_id == 2) {
-    iVar2 = FUN_00420040((float *)(&player_aim_x + render_overlay_player_index * 0xd8),-1,0.0);
+    iVar2 = creature_find_nearest
+                      ((float *)(&player_aim_x + render_overlay_player_index * 0xd8),-1,0.0);
     *(int *)(&secondary_proj_target_id + iVar3 * 0x2c) = iVar2;
     (&secondary_proj_vel_x)[iVar3 * 0xb] = (float)fVar4 * 190.0;
     (&secondary_proj_vel_y)[iVar3 * 0xb] = (float)fVar5 * 190.0;
@@ -17513,7 +17513,7 @@ LAB_004219f8:
                   else if (iVar7 == 0x15) {
                     if ((0 < shock_chain_links_left) && (local_e8 == shock_chain_projectile_id)) {
                       shock_chain_links_left = shock_chain_links_left + -1;
-                      iVar7 = FUN_00420040(pfVar11,iVar10,100.0);
+                      iVar7 = creature_find_nearest(pfVar11,iVar10,100.0);
                       bonus_spawn_guard = 1;
                       fVar15 = (float10)fpatan((float10)(float)(&creature_pos_y)[iVar7 * 0x26] -
                                                (float10)(float)(&creature_pos_y)[iVar10 * 0x26],
@@ -17808,7 +17808,7 @@ LAB_00421d65:
           }
           if (fVar9 == 2.8026e-45) {
             if ((&creature_pool)[(int)pfVar11[3] * 0x98] == '\0') {
-              fVar9 = (float)FUN_00420040(pfVar12,-1,0.0);
+              fVar9 = (float)creature_find_nearest(pfVar12,-1,0.0);
               pfVar11[3] = fVar9;
             }
             fVar17 = (float10)fpatan((float10)pfVar11[-2] -
@@ -43424,7 +43424,7 @@ void * __cdecl crt_beginthread(void *start,uint stack_size,void *arg)
   DVar1 = 0;
   lpThreadId = crt_calloc(1,0x74);
   if (lpThreadId != (void *)0x0) {
-    FUN_004654a5((int)lpThreadId);
+    crt_init_thread_data(lpThreadId);
     *(void **)((int)lpThreadId + 0x48) = start;
     *(void **)((int)lpThreadId + 0x4c) = arg;
     hThread = CreateThread((LPSECURITY_ATTRIBUTES)0x0,stack_size,crt_thread_entry,lpThreadId,4,
@@ -43669,7 +43669,7 @@ void __cdecl crt_free_base(void *ptr)
 
 {
   uint *puVar1;
-  int local_2c;
+  void *local_2c;
   uint *local_28;
   uint local_24;
   uint *local_20;
@@ -43689,7 +43689,7 @@ void __cdecl crt_free_base(void *ptr)
     ExceptionList = &local_14;
     crt_lock(9);
     local_8 = 0;
-    local_20 = (uint *)FUN_00466c7b((int)ptr);
+    local_20 = crt_sbh_find_region(ptr);
     if (local_20 != (uint *)0x0) {
       FUN_00466ca6(local_20,(int)ptr);
     }
@@ -43703,9 +43703,9 @@ void __cdecl crt_free_base(void *ptr)
     ExceptionList = &local_14;
     crt_lock(9);
     local_8 = 1;
-    local_28 = (uint *)FUN_004679d6(ptr,&local_2c,&local_24);
+    local_28 = crt_sbh_find_block(ptr,&local_2c,&local_24);
     if (local_28 != (uint *)0x0) {
-      FUN_00467a2d(local_2c,local_24,(byte *)local_28);
+      FUN_00467a2d((int)local_2c,local_24,(byte *)local_28);
     }
     local_8 = 0xffffffff;
     FUN_00462683();
@@ -43757,7 +43757,7 @@ void * __cdecl crt_realloc(void *ptr,size_t size)
   uint uVar3;
   LPVOID pvVar4;
   byte *pbVar5;
-  int local_3c;
+  void *local_3c;
   uint local_38;
   byte *local_34;
   int *local_30;
@@ -43791,7 +43791,7 @@ void * __cdecl crt_realloc(void *ptr,size_t size)
           if (size < 0xffffffe1) {
             crt_lock(9);
             local_8 = 0;
-            local_2c = (uint *)FUN_00466c7b((int)ptr);
+            local_2c = crt_sbh_find_region(ptr);
             if (local_2c != (uint *)0x0) {
               if (size <= DAT_004da3a0) {
                 iVar2 = FUN_00467484(local_2c,(int)ptr,size);
@@ -43804,7 +43804,7 @@ void * __cdecl crt_realloc(void *ptr,size_t size)
                       uVar3 = size;
                     }
                     crt_bufcpy(local_28,ptr,uVar3);
-                    local_2c = (uint *)FUN_00466c7b((int)ptr);
+                    local_2c = crt_sbh_find_region(ptr);
                     FUN_00466ca6(local_2c,(int)ptr);
                   }
                 }
@@ -43869,14 +43869,14 @@ void * __cdecl crt_realloc(void *ptr,size_t size)
             if (size < 0xffffffe1) {
               crt_lock(9);
               local_8 = 1;
-              pbVar5 = (byte *)FUN_004679d6(ptr,&local_3c,(uint *)&local_30);
+              pbVar5 = crt_sbh_find_block(ptr,&local_3c,(uint *)&local_30);
               local_34 = pbVar5;
               if (pbVar5 == (byte *)0x0) {
                 local_28 = HeapReAlloc(DAT_004da3a4,0,ptr,size);
               }
               else {
                 if (size < DAT_0047db14) {
-                  iVar2 = FUN_00467d9e(local_3c,local_30,pbVar5,size >> 4);
+                  iVar2 = FUN_00467d9e((int)local_3c,local_30,pbVar5,size >> 4);
                   if (iVar2 == 0) {
                     local_28 = crt_sbh_alloc_units(size >> 4);
                     if (local_28 != (byte *)0x0) {
@@ -43886,7 +43886,7 @@ void * __cdecl crt_realloc(void *ptr,size_t size)
                         uVar3 = size;
                       }
                       crt_bufcpy(local_28,ptr,uVar3);
-                      FUN_00467a2d(local_3c,(int)local_30,pbVar5);
+                      FUN_00467a2d((int)local_3c,(int)local_30,pbVar5);
                     }
                   }
                   else {
@@ -43901,7 +43901,7 @@ void * __cdecl crt_realloc(void *ptr,size_t size)
                     uVar3 = size;
                   }
                   crt_bufcpy(local_28,ptr,uVar3);
-                  FUN_00467a2d(local_3c,(int)local_30,pbVar5);
+                  FUN_00467a2d((int)local_3c,(int)local_30,pbVar5);
                 }
               }
               local_8 = 0xffffffff;
@@ -45337,8 +45337,8 @@ undefined1 * __cdecl FUN_0046385e(undefined8 *param_1,undefined1 *param_2,int pa
   int local_14 [4];
   
   crt_fp_to_string((double)*param_1,local_14,local_2c);
-  FUN_0046a39e(param_2 + (uint)(0 < param_3) + (uint)(local_14[0] == 0x2d),param_3 + 1,(int)local_14
-              );
+  crt_fp_round_digits(param_2 + (uint)(0 < param_3) + (uint)(local_14[0] == 0x2d),param_3 + 1,
+                      local_14);
   FUN_004638bf(param_2,param_3,param_4,local_14,'\0');
   return param_2;
 }
@@ -45405,7 +45405,7 @@ char * __cdecl FUN_00463981(undefined8 *param_1,char *param_2,size_t param_3)
   int local_10;
   
   crt_fp_to_string((double)*param_1,&local_14,local_2c);
-  FUN_0046a39e(param_2 + (local_14 == 0x2d),local_10 + param_3,(int)&local_14);
+  crt_fp_round_digits(param_2 + (local_14 == 0x2d),local_10 + param_3,&local_14);
   FUN_004639d6(param_2,param_3,&local_14,'\0');
   return param_2;
 }
@@ -45471,7 +45471,7 @@ void __cdecl FUN_00463a7d(undefined8 *param_1,char *param_2,size_t param_3,int p
   
   crt_fp_to_string((double)*param_1,&local_14,local_2c);
   iVar1 = local_10 + -1;
-  FUN_0046a39e(param_2 + (local_14 == 0x2d),param_3,(int)&local_14);
+  crt_fp_round_digits(param_2 + (local_14 == 0x2d),param_3,&local_14);
   local_10 = local_10 + -1;
   if ((local_10 < -4) || ((int)param_3 <= local_10)) {
     FUN_004638bf(param_2,param_3,param_4,&local_14,'\x01');
@@ -45547,7 +45547,7 @@ size_t __cdecl crt_msize(void *ptr)
   byte *pbVar1;
   SIZE_T SVar2;
   size_t sVar3;
-  undefined4 local_30;
+  void *local_30;
   byte *local_2c;
   uint local_28;
   size_t local_24;
@@ -45565,7 +45565,7 @@ size_t __cdecl crt_msize(void *ptr)
     ExceptionList = &local_14;
     crt_lock(9);
     local_8 = 0;
-    local_20 = (byte *)FUN_00466c7b((int)ptr);
+    local_20 = crt_sbh_find_region(ptr);
     if (local_20 != (byte *)0x0) {
       local_24 = *(int *)((int)ptr + -4) - 9;
     }
@@ -45580,7 +45580,7 @@ size_t __cdecl crt_msize(void *ptr)
     ExceptionList = &local_14;
     crt_lock(9);
     local_8 = 1;
-    local_2c = (byte *)FUN_004679d6(ptr,&local_30,&local_28);
+    local_2c = crt_sbh_find_block(ptr,&local_30,&local_28);
     if (local_2c != (byte *)0x0) {
       local_24 = (uint)*local_2c << 4;
     }
@@ -45835,7 +45835,7 @@ int __cdecl crt_filbuf(FILE *fp)
     if ((uVar2 & 2) == 0) {
       fp->_flag = uVar2 | 1;
       if ((uVar2 & 0x10c) == 0) {
-        FUN_0046ad79(&fp->_ptr);
+        crt_file_buffer_init(fp);
       }
       else {
         fp->_ptr = fp->_base;
@@ -46060,13 +46060,13 @@ int __cdecl crt_flsbuf(int ch,FILE *fp)
   uint uVar1;
   uint fd;
   char *buf;
-  FILE *pFVar2;
-  byte bVar3;
+  FILE *fp_00;
+  byte bVar2;
   undefined3 extraout_var;
-  undefined *puVar4;
+  undefined *puVar3;
   FILE *count;
   
-  pFVar2 = fp;
+  fp_00 = fp;
   uVar1 = fp->_flag;
   fd = fp->_file;
   if (((uVar1 & 0x82) == 0) || ((uVar1 & 0x40) != 0)) {
@@ -46083,41 +46083,41 @@ LAB_00464374:
     uVar1 = fp->_flag;
     fp->_cnt = 0;
     fp = (FILE *)0x0;
-    pFVar2->_flag = uVar1 & 0xffffffef | 2;
+    fp_00->_flag = uVar1 & 0xffffffef | 2;
     if (((uVar1 & 0x10c) == 0) &&
-       (((pFVar2 != (FILE *)&DAT_0047b3f8 && (pFVar2 != (FILE *)&DAT_0047b418)) ||
-        (bVar3 = FUN_0046b08c(fd), CONCAT31(extraout_var,bVar3) == 0)))) {
-      FUN_0046ad79(&pFVar2->_ptr);
+       (((fp_00 != (FILE *)&DAT_0047b3f8 && (fp_00 != (FILE *)&DAT_0047b418)) ||
+        (bVar2 = FUN_0046b08c(fd), CONCAT31(extraout_var,bVar2) == 0)))) {
+      crt_file_buffer_init(fp_00);
     }
-    if ((pFVar2->_flag & 0x108) == 0) {
+    if ((fp_00->_flag & 0x108) == 0) {
       count = (FILE *)0x1;
       fp = (FILE *)crt_write(fd,(char *)&ch,1);
     }
     else {
-      buf = pFVar2->_base;
-      count = (FILE *)(pFVar2->_ptr + -(int)buf);
-      pFVar2->_ptr = buf + 1;
-      pFVar2->_cnt = pFVar2->_bufsiz + -1;
+      buf = fp_00->_base;
+      count = (FILE *)(fp_00->_ptr + -(int)buf);
+      fp_00->_ptr = buf + 1;
+      fp_00->_cnt = fp_00->_bufsiz + -1;
       if ((int)count < 1) {
         if (fd == 0xffffffff) {
-          puVar4 = &DAT_0047b930;
+          puVar3 = &DAT_0047b930;
         }
         else {
-          puVar4 = (undefined *)((&DAT_004da3c0)[(int)fd >> 5] + (fd & 0x1f) * 0x24);
+          puVar3 = (undefined *)((&DAT_004da3c0)[(int)fd >> 5] + (fd & 0x1f) * 0x24);
         }
-        if ((puVar4[4] & 0x20) != 0) {
+        if ((puVar3[4] & 0x20) != 0) {
           crt_lseek(fd,0,2);
         }
       }
       else {
         fp = (FILE *)crt_write(fd,buf,(uint)count);
       }
-      *pFVar2->_base = (char)ch;
+      *fp_00->_base = (char)ch;
     }
     if (fp == count) {
       return ch & 0xff;
     }
-    pFVar2->_flag = pFVar2->_flag | 0x20;
+    fp_00->_flag = fp_00->_flag | 0x20;
   }
   return -1;
 }
@@ -47086,7 +47086,7 @@ undefined4 crt_mt_init(void)
     if (lpTlsValue != (DWORD *)0x0) {
       WVar1 = TlsSetValue(DAT_0047b6f0,lpTlsValue);
       if (WVar1 != 0) {
-        FUN_004654a5((int)lpTlsValue);
+        crt_init_thread_data(lpTlsValue);
         DVar2 = GetCurrentThreadId();
         lpTlsValue[1] = 0xffffffff;
         *lpTlsValue = DVar2;
@@ -47099,13 +47099,15 @@ undefined4 crt_mt_init(void)
 
 
 
-/* FUN_004654a5 @ 004654a5 */
+/* crt_init_thread_data @ 004654a5 */
 
-void __cdecl FUN_004654a5(int param_1)
+/* CRT: initialize per-thread data defaults */
+
+void __cdecl crt_init_thread_data(void *ptd)
 
 {
-  *(undefined **)(param_1 + 0x50) = &DAT_0047ba60;
-  *(undefined4 *)(param_1 + 0x14) = 1;
+  *(undefined **)((int)ptd + 0x50) = &DAT_0047ba60;
+  *(undefined4 *)((int)ptd + 0x14) = 1;
   return;
 }
 
@@ -47130,7 +47132,7 @@ DWORD * crt_get_thread_data(void)
     if (lpTlsValue != (DWORD *)0x0) {
       WVar1 = TlsSetValue(DAT_0047b6f0,lpTlsValue);
       if (WVar1 != 0) {
-        FUN_004654a5((int)lpTlsValue);
+        crt_init_thread_data(lpTlsValue);
         DVar2 = GetCurrentThreadId();
         lpTlsValue[1] = 0xffffffff;
         *lpTlsValue = DVar2;
@@ -48938,22 +48940,24 @@ undefined4 __cdecl crt_sbh_init(undefined4 param_1)
 
 
 
-/* FUN_00466c7b @ 00466c7b */
+/* crt_sbh_find_region @ 00466c7b */
 
-uint __cdecl FUN_00466c7b(int param_1)
+/* CRT: find small-block heap region for a pointer */
+
+void * __cdecl crt_sbh_find_region(void *ptr)
 
 {
-  uint uVar1;
+  void *pvVar1;
   
-  uVar1 = DAT_004da39c;
+  pvVar1 = DAT_004da39c;
   while( true ) {
-    if (DAT_004da39c + DAT_004da398 * 0x14 <= uVar1) {
-      return 0;
+    if ((void *)((int)DAT_004da39c + DAT_004da398 * 0x14) <= pvVar1) {
+      return (void *)0x0;
     }
-    if ((uint)(param_1 - *(int *)(uVar1 + 0xc)) < 0x100000) break;
-    uVar1 = uVar1 + 0x14;
+    if ((uint)((int)ptr - *(int *)((int)pvVar1 + 0xc)) < 0x100000) break;
+    pvVar1 = (void *)((int)pvVar1 + 0x14);
   }
-  return uVar1;
+  return pvVar1;
 }
 
 
@@ -49716,31 +49720,33 @@ void __cdecl FUN_00467914(int param_1)
 
 
 
-/* FUN_004679d6 @ 004679d6 */
+/* crt_sbh_find_block @ 004679d6 */
 
-int __cdecl FUN_004679d6(undefined *param_1,undefined4 *param_2,uint *param_3)
+/* CRT: map a pointer to its small-block heap block header */
+
+void * __cdecl crt_sbh_find_block(void *ptr,void **region_out,uint *page_base)
 
 {
   undefined **ppuVar1;
   uint uVar2;
   
   ppuVar1 = &PTR_LOOP_0047baf0;
-  while ((param_1 <= ppuVar1[4] || (ppuVar1[5] <= param_1))) {
+  while ((ptr <= ppuVar1[4] || (ppuVar1[5] <= ptr))) {
     ppuVar1 = (undefined **)*ppuVar1;
     if (ppuVar1 == &PTR_LOOP_0047baf0) {
-      return 0;
+      return (void *)0x0;
     }
   }
-  if (((uint)param_1 & 0xf) != 0) {
-    return 0;
+  if (((uint)ptr & 0xf) != 0) {
+    return (void *)0x0;
   }
-  if (((uint)param_1 & 0xfff) < 0x100) {
-    return 0;
+  if (((uint)ptr & 0xfff) < 0x100) {
+    return (void *)0x0;
   }
-  *param_2 = ppuVar1;
-  uVar2 = (uint)param_1 & 0xfffff000;
-  *param_3 = uVar2;
-  return ((int)(param_1 + (-0x100 - uVar2)) >> 4) + 8 + uVar2;
+  *region_out = ppuVar1;
+  uVar2 = (uint)ptr & 0xfffff000;
+  *page_base = uVar2;
+  return (void *)(((int)((int)ptr + (-0x100 - uVar2)) >> 4) + 8 + uVar2);
 }
 
 
@@ -50833,7 +50839,7 @@ uchar * crt_skip_program_name(void)
   byte *pbVar4;
   
   if (DAT_004db4ec == 0) {
-    FUN_0046d5c7();
+    crt_mbcs_init();
   }
   bVar1 = *DAT_004db4e4;
   pbVar4 = DAT_004db4e4;
@@ -50879,7 +50885,7 @@ void crt_build_environ(void)
   char *pcVar6;
   
   if (DAT_004db4ec == 0) {
-    FUN_0046d5c7();
+    crt_mbcs_init();
   }
   iVar5 = 0;
   for (pcVar6 = DAT_004d99c4; *pcVar6 != '\0'; pcVar6 = pcVar6 + sVar2 + 1) {
@@ -50932,7 +50938,7 @@ void crt_build_argv(void)
   int local_8;
   
   if (DAT_004db4ec == 0) {
-    FUN_0046d5c7();
+    crt_mbcs_init();
   }
   GetModuleFileNameA((HMODULE)0x0,&DAT_004d9a7c,0x104);
   _DAT_004d99b0 = &DAT_004d9a7c;
@@ -52678,26 +52684,28 @@ void __thiscall FUN_0046a371(void *this,uint *param_1,byte *param_2)
 
 
 
-/* FUN_0046a39e @ 0046a39e */
+/* crt_fp_round_digits @ 0046a39e */
 
-void __cdecl FUN_0046a39e(char *param_1,int param_2,int param_3)
+/* CRT: round float digits and adjust exponent for printf formatting */
+
+void __cdecl crt_fp_round_digits(char *dst,int precision,int *fp_info)
 
 {
   char *_Str;
-  char *dst;
+  char *dst_00;
   char *pcVar1;
   size_t sVar2;
   char *pcVar3;
   char cVar4;
   
-  dst = param_1;
-  pcVar3 = *(char **)(param_3 + 0xc);
-  _Str = param_1 + 1;
-  *param_1 = '0';
+  dst_00 = dst;
+  pcVar3 = (char *)fp_info[3];
+  _Str = dst + 1;
+  *dst = '0';
   pcVar1 = _Str;
-  if (0 < param_2) {
-    param_1 = (char *)param_2;
-    param_2 = 0;
+  if (0 < precision) {
+    dst = (char *)precision;
+    precision = 0;
     do {
       cVar4 = *pcVar3;
       if (cVar4 == '\0') {
@@ -52708,22 +52716,22 @@ void __cdecl FUN_0046a39e(char *param_1,int param_2,int param_3)
       }
       *pcVar1 = cVar4;
       pcVar1 = pcVar1 + 1;
-      param_1 = param_1 + -1;
-    } while (param_1 != (char *)0x0);
+      dst = dst + -1;
+    } while (dst != (char *)0x0);
   }
   *pcVar1 = '\0';
-  if ((-1 < param_2) && ('4' < *pcVar3)) {
+  if ((-1 < precision) && ('4' < *pcVar3)) {
     while (pcVar1 = pcVar1 + -1, *pcVar1 == '9') {
       *pcVar1 = '0';
     }
     *pcVar1 = *pcVar1 + '\x01';
   }
-  if (*dst == '1') {
-    *(int *)(param_3 + 4) = *(int *)(param_3 + 4) + 1;
+  if (*dst_00 == '1') {
+    fp_info[1] = fp_info[1] + 1;
   }
   else {
     sVar2 = _strlen(_Str);
-    crt_memmove(dst,_Str,sVar2 + 1);
+    crt_memmove(dst_00,_Str,sVar2 + 1);
   }
   return;
 }
@@ -53471,29 +53479,30 @@ void __cdecl crt_unlock_fh(uint fd)
 
 
 
-/* FUN_0046ad79 @ 0046ad79 */
+/* crt_file_buffer_init @ 0046ad79 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* CRT: allocate/init FILE buffer (4KB or fallback small buffer) */
 
-void __cdecl FUN_0046ad79(undefined4 *param_1)
+void __cdecl crt_file_buffer_init(FILE *fp)
 
 {
-  void *pvVar1;
+  char *pcVar1;
   
   _DAT_004d99d0 = _DAT_004d99d0 + 1;
-  pvVar1 = _malloc(0x1000);
-  param_1[2] = pvVar1;
-  if (pvVar1 == (void *)0x0) {
-    param_1[3] = param_1[3] | 4;
-    param_1[2] = param_1 + 5;
-    param_1[6] = 2;
+  pcVar1 = _malloc(0x1000);
+  fp->_base = pcVar1;
+  if (pcVar1 == (char *)0x0) {
+    fp->_flag = fp->_flag | 4;
+    fp->_base = (char *)&fp->_charbuf;
+    fp->_bufsiz = 2;
   }
   else {
-    param_1[3] = param_1[3] | 8;
-    param_1[6] = 0x1000;
+    fp->_flag = fp->_flag | 8;
+    fp->_bufsiz = 0x1000;
   }
-  param_1[1] = 0;
-  *param_1 = param_1[2];
+  fp->_cnt = 0;
+  fp->_ptr = fp->_base;
   return;
 }
 
@@ -55253,7 +55262,7 @@ uint __cdecl FUN_0046d13f(uint param_1,int *param_2)
   if ((param_1 != 0xffffffff) &&
      ((uVar1 = param_2[3], (uVar1 & 1) != 0 || (((uVar1 & 0x80) != 0 && ((uVar1 & 2) == 0)))))) {
     if (param_2[2] == 0) {
-      FUN_0046ad79(param_2);
+      crt_file_buffer_init((FILE *)param_2);
     }
     if (*param_2 == param_2[2]) {
       if (param_2[1] != 0) {
@@ -55315,9 +55324,11 @@ undefined4 __cdecl FUN_0046d1be(byte param_1,uint param_2,byte param_3)
 
 
 
-/* FUN_0046d1ef @ 0046d1ef */
+/* crt_setmbcp @ 0046d1ef */
 
-undefined4 __cdecl FUN_0046d1ef(int param_1)
+/* CRT: set multibyte code page and rebuild ctype tables */
+
+int __cdecl crt_setmbcp(int codepage)
 
 {
   BYTE *pBVar1;
@@ -55332,33 +55343,32 @@ undefined4 __cdecl FUN_0046d1ef(int param_1)
   BYTE *pBVar9;
   int iVar10;
   byte *pbVar11;
-  int iVar12;
-  byte *pbVar13;
-  undefined4 uVar14;
-  undefined4 *puVar15;
+  byte *pbVar12;
+  int iVar13;
+  undefined4 *puVar14;
   _cpinfo local_1c;
   uint local_8;
   
   crt_lock(0x19);
-  CodePage = FUN_0046d39c(param_1);
+  CodePage = FUN_0046d39c(codepage);
   if (CodePage != DAT_004da164) {
     if (CodePage != 0) {
-      iVar12 = 0;
+      iVar13 = 0;
       pUVar5 = &DAT_0047df98;
 LAB_0046d22c:
       if (*pUVar5 != CodePage) goto code_r0x0046d230;
       local_8 = 0;
-      puVar15 = &DAT_004da280;
+      puVar14 = &DAT_004da280;
       for (iVar10 = 0x40; iVar10 != 0; iVar10 = iVar10 + -1) {
-        *puVar15 = 0;
-        puVar15 = puVar15 + 1;
+        *puVar14 = 0;
+        puVar14 = puVar14 + 1;
       }
-      iVar12 = iVar12 * 0x30;
-      *(undefined1 *)puVar15 = 0;
-      pbVar13 = (byte *)(iVar12 + 0x47dfa8);
+      iVar13 = iVar13 * 0x30;
+      *(undefined1 *)puVar14 = 0;
+      pbVar12 = (byte *)(iVar13 + 0x47dfa8);
       do {
-        bVar3 = *pbVar13;
-        pbVar11 = pbVar13;
+        bVar3 = *pbVar12;
+        pbVar11 = pbVar12;
         while ((bVar3 != 0 && (bVar3 = pbVar11[1], bVar3 != 0))) {
           uVar8 = (uint)*pbVar11;
           if (uVar8 <= bVar3) {
@@ -55373,14 +55383,14 @@ LAB_0046d22c:
           bVar3 = *pbVar11;
         }
         local_8 = local_8 + 1;
-        pbVar13 = pbVar13 + 8;
+        pbVar12 = pbVar12 + 8;
       } while (local_8 < 4);
       DAT_004da17c = 1;
       DAT_004da164 = CodePage;
       DAT_004da384 = FUN_0046d3e6(CodePage);
-      DAT_004da170 = *(undefined4 *)(iVar12 + 0x47df9c);
-      DAT_004da174 = *(undefined4 *)(iVar12 + 0x47dfa0);
-      DAT_004da178 = *(undefined4 *)(iVar12 + 0x47dfa4);
+      DAT_004da170 = *(undefined4 *)(iVar13 + 0x47df9c);
+      DAT_004da174 = *(undefined4 *)(iVar13 + 0x47dfa0);
+      DAT_004da178 = *(undefined4 *)(iVar13 + 0x47dfa4);
       goto LAB_0046d380;
     }
     goto LAB_0046d37b;
@@ -55388,7 +55398,7 @@ LAB_0046d22c:
   goto LAB_0046d216;
 code_r0x0046d230:
   pUVar5 = pUVar5 + 0xc;
-  iVar12 = iVar12 + 1;
+  iVar13 = iVar13 + 1;
   if ((UINT *)0x47e087 < pUVar5) goto code_r0x0046d23b;
   goto LAB_0046d22c;
 code_r0x0046d23b:
@@ -55396,12 +55406,12 @@ code_r0x0046d23b:
   uVar8 = 1;
   if (WVar6 == 1) {
     DAT_004da384 = 0;
-    puVar15 = &DAT_004da280;
-    for (iVar12 = 0x40; iVar12 != 0; iVar12 = iVar12 + -1) {
-      *puVar15 = 0;
-      puVar15 = puVar15 + 1;
+    puVar14 = &DAT_004da280;
+    for (iVar13 = 0x40; iVar13 != 0; iVar13 = iVar13 + -1) {
+      *puVar14 = 0;
+      puVar14 = puVar14 + 1;
     }
-    *(undefined1 *)puVar15 = 0;
+    *(undefined1 *)puVar14 = 0;
     if (local_1c.MaxCharSize < 2) {
       DAT_004da17c = 0;
       DAT_004da164 = CodePage;
@@ -55414,16 +55424,16 @@ code_r0x0046d23b:
           bVar3 = *pBVar9;
           if (bVar3 == 0) break;
           for (uVar7 = (uint)pBVar9[-1]; uVar7 <= bVar3; uVar7 = uVar7 + 1) {
-            pbVar13 = (byte *)((int)&DAT_004da280 + uVar7 + 1);
-            *pbVar13 = *pbVar13 | 4;
+            pbVar12 = (byte *)((int)&DAT_004da280 + uVar7 + 1);
+            *pbVar12 = *pbVar12 | 4;
           }
           pBVar1 = pBVar9 + 1;
           pBVar9 = pBVar9 + 2;
         } while (*pBVar1 != 0);
       }
       do {
-        pbVar13 = (byte *)((int)&DAT_004da280 + uVar8 + 1);
-        *pbVar13 = *pbVar13 | 8;
+        pbVar12 = (byte *)((int)&DAT_004da280 + uVar8 + 1);
+        *pbVar12 = *pbVar12 | 8;
         uVar8 = uVar8 + 1;
       } while (uVar8 < 0xff);
       DAT_004da384 = FUN_0046d3e6(CodePage);
@@ -55435,7 +55445,7 @@ code_r0x0046d23b:
   }
   else {
     if (DAT_004d9cb0 == 0) {
-      uVar14 = 0xffffffff;
+      iVar13 = -1;
       goto LAB_0046d38d;
     }
 LAB_0046d37b:
@@ -55444,10 +55454,10 @@ LAB_0046d37b:
 LAB_0046d380:
   FUN_0046d442();
 LAB_0046d216:
-  uVar14 = 0;
+  iVar13 = 0;
 LAB_0046d38d:
   crt_unlock(0x19);
-  return uVar14;
+  return iVar13;
 }
 
 
@@ -55635,13 +55645,15 @@ LAB_0046d598:
 
 
 
-/* FUN_0046d5c7 @ 0046d5c7 */
+/* crt_mbcs_init @ 0046d5c7 */
 
-void FUN_0046d5c7(void)
+/* CRT: one-time init of multibyte/ctype tables (GetACP) */
+
+void crt_mbcs_init(void)
 
 {
   if (DAT_004db4ec == 0) {
-    FUN_0046d1ef(-3);
+    crt_setmbcp(-3);
     DAT_004db4ec = 1;
   }
   return;

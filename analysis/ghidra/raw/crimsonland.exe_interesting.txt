@@ -24,6 +24,7 @@ Interesting Functions and Patterns
   crt_unlock_file @ 00463df7
   crt_unlock_file2 @ 00463e26
   crt_openfile @ 00464030
+  crt_file_buffer_init @ 0046ad79
   GetFileVersionInfoA @ 0046e956
   GetFileVersionInfoSizeA @ 0046e95c
 
@@ -52,6 +53,7 @@ Interesting Functions and Patterns
   crt_beginthread @ 0046223f
   crt_thread_entry @ 004622b6
   crt_endthread @ 00462373
+  crt_init_thread_data @ 004654a5
   crt_get_thread_data @ 004654b8
   crt_free_thread_data @ 0046551f
   crt_read @ 00465fff
