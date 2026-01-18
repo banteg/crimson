@@ -344,8 +344,10 @@ High score validation (`FUN_0043afa0`):
 - `quest_stage_major` (`DAT_00487004`) tracks the current quest episode/tier.
   - Evidence: increments after every 10 minor stages (`if 10 < quest_stage_minor` then
     `quest_stage_major++`, `quest_stage_minor -= 10`) during quest summary flow.
+- Initialized to `1` in `FUN_004120b0` alongside high‑score state reset.
 - `quest_stage_minor` (`DAT_00487008`) tracks the quest mission within the episode.
   - Evidence: used in quest string lookups and final‑mission checks (`major == 5 && minor == 10`).
+- Incremented on quest results screen when the player chooses “Play Next”.
 
 Record match + display selection:
 - `FUN_0043abd0` is the equality predicate used during save‑file replacement; it compares the

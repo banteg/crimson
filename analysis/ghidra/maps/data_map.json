@@ -773,13 +773,13 @@
       "program": "crimsonland.exe",
       "address": "0x00487004",
       "name": "quest_stage_major",
-      "comment": "Quest stage major index (episode/tier). Advances after every 10 minor stages."
+      "comment": "Quest stage major index (episode/tier). Initialized to 1 in FUN_004120b0; advances after every 10 minor stages."
     },
     {
       "program": "crimsonland.exe",
       "address": "0x00487008",
       "name": "quest_stage_minor",
-      "comment": "Quest stage minor index (mission within major tier)."
+      "comment": "Quest stage minor index (mission within major tier). Initialized to 1 in FUN_004120b0; incremented on quest results \"Play Next\"."
     },
     {
       "program": "crimsonland.exe",
