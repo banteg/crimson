@@ -5644,42 +5644,42 @@
   {
     "name": "ov_pcm_seek",
     "address": "0046e920",
-    "signature": "undefined ov_pcm_seek()",
+    "signature": "int ov_pcm_seek(OggVorbis_File * vf, ogg_int64_t pos)",
     "external": false,
     "calls": []
   },
   {
     "name": "ov_pcm_total",
     "address": "0046e926",
-    "signature": "undefined ov_pcm_total()",
+    "signature": "ogg_int64_t ov_pcm_total(OggVorbis_File * vf, int i)",
     "external": false,
     "calls": []
   },
   {
     "name": "ov_info",
     "address": "0046e92c",
-    "signature": "undefined ov_info()",
+    "signature": "vorbis_info * ov_info(OggVorbis_File * vf, int link)",
     "external": false,
     "calls": []
   },
   {
     "name": "ov_open_callbacks",
     "address": "0046e932",
-    "signature": "undefined ov_open_callbacks()",
+    "signature": "int ov_open_callbacks(void * datasource, OggVorbis_File * vf, char * initial, long ibytes, ov_callbacks callbacks)",
     "external": false,
     "calls": []
   },
   {
     "name": "ov_clear",
     "address": "0046e938",
-    "signature": "undefined ov_clear()",
+    "signature": "int ov_clear(OggVorbis_File * vf)",
     "external": false,
     "calls": []
   },
   {
     "name": "ov_read",
     "address": "0046e93e",
-    "signature": "undefined ov_read()",
+    "signature": "long ov_read(OggVorbis_File * vf, char * buffer, int length, int bigendianp, int word, int sgned, int * bitstream)",
     "external": false,
     "calls": []
   },
@@ -5693,21 +5693,21 @@
   {
     "name": "Direct3DCreate8",
     "address": "0046e94a",
-    "signature": "undefined Direct3DCreate8()",
+    "signature": "IDirect3D8 * Direct3DCreate8(UINT SDKVersion)",
     "external": false,
     "calls": []
   },
   {
     "name": "VerQueryValueA",
     "address": "0046e950",
-    "signature": "BOOL VerQueryValueA(LPCVOID pBlock, LPCSTR lpSubBlock, LPVOID * lplpBuffer, PUINT puLen)",
+    "signature": "WINBOOL VerQueryValueA(LPVOID pBlock, LPCSTR lpSubBlock, LPVOID * lplpBuffer, PUINT puLen)",
     "external": false,
     "calls": []
   },
   {
     "name": "GetFileVersionInfoA",
     "address": "0046e956",
-    "signature": "BOOL GetFileVersionInfoA(LPCSTR lptstrFilename, DWORD dwHandle, DWORD dwLen, LPVOID lpData)",
+    "signature": "WINBOOL GetFileVersionInfoA(LPCSTR lptstrFilename, DWORD dwHandle, DWORD dwLen, LPVOID lpData)",
     "external": false,
     "calls": []
   },
@@ -5721,7 +5721,7 @@
   {
     "name": "DirectSoundCreate8",
     "address": "0046e962",
-    "signature": "undefined DirectSoundCreate8()",
+    "signature": "HRESULT DirectSoundCreate8(LPCGUID lpGUID, LPDIRECTSOUND8 * ppDS8, LPUNKNOWN pUnkOuter)",
     "external": false,
     "calls": []
   },
