@@ -11,6 +11,7 @@ from typing import Iterable, Iterator
 
 
 LINK_BASE_EXE = 0x00400000
+LINK_BASE_GRIM = 0x10000000
 
 MODULE_OFF_RE = re.compile(r"(?P<module>[A-Za-z0-9_.-]+)\s*[!+]\s*(?P<addr>0x[0-9A-Fa-f]+)")
 HEX_RE = re.compile(r"0x[0-9A-Fa-f]+")
@@ -140,6 +141,10 @@ def parse_callsite(text: str | None, session: SessionInfo | None) -> Callsite | 
                 static_addr = value
                 offset = value - LINK_BASE_EXE
             return Callsite(module="crimsonland.exe", static_addr=static_addr, offset=offset, raw=text)
+        if module_lower == "grim.dll":
+            offset = value
+            static_addr = LINK_BASE_GRIM + offset
+            return Callsite(module="grim.dll", static_addr=static_addr, offset=offset, raw=text)
         return Callsite(module=module_lower, static_addr=value, offset=value, raw=text)
 
     match = HEX_RE.search(text)
@@ -154,6 +159,12 @@ def parse_callsite(text: str | None, session: SessionInfo | None) -> Callsite | 
             offset = value - session.exe_base
             static_addr = LINK_BASE_EXE + offset
             return Callsite(module="crimsonland.exe", static_addr=static_addr, offset=offset, raw=text)
+
+    if session and session.grim_base is not None and session.grim_size is not None:
+        if session.grim_base <= value < session.grim_base + session.grim_size:
+            offset = value - session.grim_base
+            static_addr = LINK_BASE_GRIM + offset
+            return Callsite(module="grim.dll", static_addr=static_addr, offset=offset, raw=text)
 
     if LINK_BASE_EXE <= value < LINK_BASE_EXE + 0x2000000:
         return Callsite(module="crimsonland.exe", static_addr=value, offset=value - LINK_BASE_EXE, raw=text)
@@ -311,6 +322,9 @@ def main() -> int:
         raise SystemExit("No logs provided (use --log PATH).")
 
     functions = load_functions(args.function_map)
+    grim_map = Path("analysis/ghidra/raw/grim.dll_functions.json")
+    if grim_map.exists() and grim_map != args.function_map:
+        functions.extend(load_functions(grim_map))
     index = FunctionIndex(functions)
 
     out_dir = args.out_dir
@@ -360,10 +374,12 @@ def main() -> int:
                     callsite = parse_callsite(obj.get("caller"), session)
                     entry = None
                     name = obj.get("name")
-                    if callsite and callsite.module == "crimsonland.exe":
+                    if callsite and callsite.module in ("crimsonland.exe", "grim.dll"):
                         entry = index.lookup(callsite.static_addr)
-                        if isinstance(name, str) and name:
+                        if entry and isinstance(name, str) and name:
                             record_evidence(evidence, entry, "texture", name)
+                        if entry is None:
+                            unmapped[str(obj.get("caller") or "unknown")] += 1
                     else:
                         unmapped[str(obj.get("caller") or "unknown")] += 1
                     fact = {
@@ -385,9 +401,12 @@ def main() -> int:
                     callsite = parse_callsite(obj.get("caller"), session)
                     sfx_id = extract_sfx_id(obj)
                     entry = None
-                    if callsite and callsite.module == "crimsonland.exe":
+                    if callsite and callsite.module in ("crimsonland.exe", "grim.dll"):
                         entry = index.lookup(callsite.static_addr)
-                        record_evidence(evidence, entry, "sfx", sfx_id)
+                        if entry:
+                            record_evidence(evidence, entry, "sfx", sfx_id)
+                        if entry is None:
+                            unmapped[str(obj.get("caller") or "unknown")] += 1
                     else:
                         unmapped[str(obj.get("caller") or "unknown")] += 1
                     fact = {
@@ -408,9 +427,12 @@ def main() -> int:
                 if event == "grim_vtbl_call":
                     callsite = parse_callsite(obj.get("caller"), session)
                     entry = None
-                    if callsite and callsite.module == "crimsonland.exe":
+                    if callsite and callsite.module in ("crimsonland.exe", "grim.dll"):
                         entry = index.lookup(callsite.static_addr)
-                        record_evidence(evidence, entry, "grim", obj.get("name") or "")
+                        if entry:
+                            record_evidence(evidence, entry, "grim", obj.get("name") or "")
+                        if entry is None:
+                            unmapped[str(obj.get("caller") or "unknown")] += 1
                     else:
                         unmapped[str(obj.get("caller") or "unknown")] += 1
                     fact = {
@@ -432,9 +454,12 @@ def main() -> int:
                 if obj.get("type") == "call":
                     callsite = parse_callsite(obj.get("callsite"), session)
                     entry = None
-                    if callsite and callsite.module == "crimsonland.exe":
+                    if callsite and callsite.module in ("crimsonland.exe", "grim.dll"):
                         entry = index.lookup(callsite.static_addr)
-                        record_evidence(evidence, entry, "grim", obj.get("name") or "")
+                        if entry:
+                            record_evidence(evidence, entry, "grim", obj.get("name") or "")
+                        if entry is None:
+                            unmapped[str(obj.get("callsite") or "unknown")] += 1
                     else:
                         unmapped[str(obj.get("callsite") or "unknown")] += 1
                     fact = {
@@ -512,9 +537,8 @@ def main() -> int:
         ]
         offsets_path.write_text(json.dumps(offsets, indent=2) + "\n", encoding="utf-8")
 
-    if unmapped:
-        unmapped_payload = [{"callsite": key, "count": count} for key, count in unmapped.most_common()]
-        unmapped_path.write_text(json.dumps(unmapped_payload, indent=2) + "\n", encoding="utf-8")
+    unmapped_payload = [{"callsite": key, "count": count} for key, count in unmapped.most_common()]
+    unmapped_path.write_text(json.dumps(unmapped_payload, indent=2) + "\n", encoding="utf-8")
 
     return 0
 
