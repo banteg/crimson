@@ -3007,37 +3007,43 @@ void perks_generate_choices(void)
   }
 LAB_004045be:
   if ((((iVar5 == 0) && (_DAT_00487004 == *DAT_004c3658)) && (_DAT_00487008 == DAT_004c3658[1])) &&
-     (iVar3 = perk_count_get(DAT_004c2be8), iVar3 == 0)) {
+     (iVar3 = perk_count_get(perk_id_monster_vision), iVar3 == 0)) {
     iVar5 = 1;
-    perk_choice_ids = DAT_004c2be8;
+    perk_choice_ids = perk_id_monster_vision;
   }
   iVar3 = 0;
 LAB_00404603:
   do {
     iVar3 = iVar3 + 1;
     iVar1 = perk_select_random();
-    iVar2 = DAT_004c2bd4;
+    iVar2 = perk_id_pyromaniac;
     (&perk_choice_ids)[iVar5] = iVar1;
     if (iVar1 == iVar2) {
       if (player_weapon_id != 8) goto LAB_00404603;
     }
-    iVar2 = perk_count_get(DAT_004c2c14);
+    iVar2 = perk_count_get(perk_id_death_clock);
     if (((iVar2 == 0) ||
-        ((((((iVar2 = (&perk_choice_ids)[iVar5], iVar2 != DAT_004c2b68 && (iVar2 != DAT_004c2bc4))
-            && ((iVar2 != DAT_004c2b70 && ((iVar2 != DAT_004c2bd8 && (iVar2 != DAT_004c2c08)))))) &&
+        ((((((iVar2 = (&perk_choice_ids)[iVar5], iVar2 != perk_id_jinxed &&
+             (iVar2 != perk_id_breathing_room)) &&
+            ((iVar2 != perk_id_grim_deal &&
+             ((iVar2 != perk_id_highlander && (iVar2 != perk_id_fatal_lottery)))))) &&
            (iVar2 != DAT_004c2b8c)) &&
-          (((iVar2 != DAT_004c2bc8 && (iVar2 != DAT_004c2b9c)) && (iVar2 != DAT_004c2bb0)))) &&
-         (((iVar2 != DAT_004c2bb4 && (iVar2 != DAT_004c2bc0)) && (iVar2 != DAT_004c2c1c)))))) &&
-       ((((iVar2 = (&perk_choice_ids)[iVar5], iVar2 != DAT_004c2b68 && (iVar2 != DAT_004c2bc8)) &&
-         ((iVar2 != DAT_004c2b90 && (iVar2 != DAT_004c2be8)))) ||
+          (((iVar2 != perk_id_ammunition_within && (iVar2 != perk_id_infernal_contract)) &&
+           (iVar2 != perk_id_regeneration)))) &&
+         (((iVar2 != perk_id_greater_regeneration && (iVar2 != perk_id_thick_skinned)) &&
+          (iVar2 != perk_id_bandage)))))) &&
+       ((((iVar2 = (&perk_choice_ids)[iVar5], iVar2 != perk_id_jinxed &&
+          (iVar2 != perk_id_ammunition_within)) &&
+         ((iVar2 != perk_id_anxious_loader && (iVar2 != perk_id_monster_vision)))) ||
         (iVar2 = _rand(), ((byte)iVar2 & 3) != 1)))) {
-      if ((10000 < iVar3) && (((&DAT_004c2c48)[(&perk_choice_ids)[iVar5] * 0x14] & 4) != 0)) break;
+      if ((10000 < iVar3) && (((&perk_flags_table)[(&perk_choice_ids)[iVar5] * 0x14] & 4) != 0))
+      break;
       piVar4 = &perk_choice_ids;
       for (iVar2 = 0; iVar2 < iVar5; iVar2 = iVar2 + 1) {
         if (*piVar4 == (&perk_choice_ids)[iVar5]) goto LAB_00404603;
         piVar4 = piVar4 + 1;
       }
-      if (((((&DAT_004c2c48)[(&perk_choice_ids)[iVar5] * 0x14] & 4) != 0) ||
+      if (((((&perk_flags_table)[(&perk_choice_ids)[iVar5] * 0x14] & 4) != 0) ||
           ((int)(&player_perk_counts)[(&perk_choice_ids)[iVar5]] < 1)) || (29999 < iVar3)) break;
     }
   } while( true );
@@ -3047,13 +3053,13 @@ LAB_00404603:
   iVar5 = iVar5 + 1;
   if (6 < iVar5) {
     if (_config_game_mode == 8) {
-      perk_choice_ids = DAT_004c2b48;
-      DAT_004807ec = DAT_004c2b54;
-      _DAT_004807f0 = DAT_004c2b88;
-      _DAT_004807f4 = DAT_004c2b7c;
-      _DAT_004807f8 = DAT_004c2b50;
-      _DAT_004807fc = DAT_004c2b50;
-      _DAT_00480800 = DAT_004c2b50;
+      perk_choice_ids = perk_id_sharpshooter;
+      DAT_004807ec = perk_id_long_distance_runner;
+      _DAT_004807f0 = perk_id_evil_eyes;
+      _DAT_004807f4 = perk_id_radioactive;
+      _DAT_004807f8 = perk_id_fastshot;
+      _DAT_004807fc = perk_id_fastshot;
+      _DAT_00480800 = perk_id_fastshot;
     }
     return;
   }
@@ -3516,13 +3522,13 @@ void __cdecl perk_apply(int perk_id)
   longlong lVar9;
   
   sfx_play(sfx_ui_bonus);
-  bVar8 = perk_id == DAT_004c2b4c;
+  bVar8 = perk_id == perk_id_instant_winner;
   (&player_perk_counts)[perk_id] = (&player_perk_counts)[perk_id] + 1;
   iVar3 = _config_player_count;
   if (bVar8) {
     player_experience = player_experience + 0x9c4;
   }
-  else if (perk_id == DAT_004c2c08) {
+  else if (perk_id == perk_id_fatal_lottery) {
     uVar2 = _rand();
     iVar3 = _config_player_count;
     if ((uVar2 & 1) == 0) {
@@ -3532,7 +3538,7 @@ void __cdecl perk_apply(int perk_id)
       player_health = -1.0;
     }
   }
-  else if (perk_id == DAT_004c2be4) {
+  else if (perk_id == perk_id_lifeline_50_50) {
     bVar8 = false;
     pcVar5 = &creature_pool;
     do {
@@ -3546,7 +3552,7 @@ void __cdecl perk_apply(int perk_id)
       iVar3 = _config_player_count;
     } while ((int)pcVar5 < 0x4aa338);
   }
-  else if (perk_id == DAT_004c2bc0) {
+  else if (perk_id == perk_id_thick_skinned) {
     if (0 < _config_player_count) {
       pfVar4 = &player_health;
       iVar6 = _config_player_count;
@@ -3560,7 +3566,7 @@ void __cdecl perk_apply(int perk_id)
       } while (iVar6 != 0);
     }
   }
-  else if (perk_id == DAT_004c2bc4) {
+  else if (perk_id == perk_id_breathing_room) {
     if (0 < _config_player_count) {
       pfVar4 = &player_health;
       iVar6 = _config_player_count;
@@ -3579,7 +3585,7 @@ void __cdecl perk_apply(int perk_id)
     } while ((int)pfVar4 < 0x4aa348);
     bonus_spawn_guard = 0;
   }
-  else if (perk_id == DAT_004c2c04) {
+  else if (perk_id == perk_id_random_weapon) {
     iVar3 = 0;
     do {
       iVar6 = weapon_pick_random_available();
@@ -3589,7 +3595,7 @@ void __cdecl perk_apply(int perk_id)
     weapon_assign_player(0,iVar6);
     iVar3 = _config_player_count;
   }
-  if (perk_id == DAT_004c2b9c) {
+  if (perk_id == perk_id_infernal_contract) {
     player_level = player_level + 3;
     DAT_00486fac = DAT_00486fac + 3;
     if (0.0 < player_health) {
@@ -3599,12 +3605,12 @@ void __cdecl perk_apply(int perk_id)
       player2_health = 0.1;
     }
   }
-  if (perk_id == DAT_004c2b70) {
+  if (perk_id == perk_id_grim_deal) {
     lVar9 = __ftol();
     player_health = -1.0;
     player_experience = player_experience + (int)lVar9;
   }
-  if ((perk_id == DAT_004c2b80) && (iVar6 = 0, 0 < iVar3)) {
+  if ((perk_id == perk_id_ammo_maniac) && (iVar6 = 0, 0 < iVar3)) {
     piVar7 = &player_weapon_id;
     do {
       weapon_assign_player(iVar6,*piVar7);
@@ -3613,9 +3619,9 @@ void __cdecl perk_apply(int perk_id)
       iVar3 = _config_player_count;
     } while (iVar6 < _config_player_count);
   }
-  iVar6 = DAT_004c2bb0;
-  if (perk_id == DAT_004c2c14) {
-    (&player_perk_counts)[DAT_004c2bb4] = 0;
+  iVar6 = perk_id_regeneration;
+  if (perk_id == perk_id_death_clock) {
+    (&player_perk_counts)[perk_id_greater_regeneration] = 0;
     (&player_perk_counts)[iVar6] = 0;
     if (0 < iVar3) {
       pfVar4 = &player_health;
@@ -3629,7 +3635,7 @@ void __cdecl perk_apply(int perk_id)
       } while (iVar6 != 0);
     }
   }
-  if ((perk_id == DAT_004c2c1c) && (iVar6 = 0, 0 < iVar3)) {
+  if ((perk_id == perk_id_bandage) && (iVar6 = 0, 0 < iVar3)) {
     pfVar4 = &player_health;
     do {
       iVar3 = _rand();
@@ -3644,7 +3650,7 @@ void __cdecl perk_apply(int perk_id)
       iVar3 = _config_player_count;
     } while (iVar6 < _config_player_count);
   }
-  if ((perk_id == DAT_004c2c18) && (0 < iVar3)) {
+  if ((perk_id == perk_id_my_favourite_weapon) && (0 < iVar3)) {
     pfVar4 = (float *)&player_clip_size;
     do {
       iVar3 = iVar3 + -1;
@@ -3652,7 +3658,7 @@ void __cdecl perk_apply(int perk_id)
       pfVar4 = pfVar4 + 0xd8;
     } while (iVar3 != 0);
   }
-  if (perk_id == DAT_004c2b78) {
+  if (perk_id == perk_id_plaguebearer) {
     player_plaguebearer_active = 1;
   }
   return;
@@ -3791,8 +3797,8 @@ void FUN_00405be0(void)
   __ftol();
   FUN_00417ae0();
   (**(code **)(*grim_interface_ptr + 0x114))();
-  if ((int)(&player_perk_counts)[DAT_004c2ba4] < 1) {
-    if (0 < (int)(&player_perk_counts)[DAT_004c2ba0]) {
+  if ((int)(&player_perk_counts)[perk_id_perk_master] < 1) {
+    if (0 < (int)(&player_perk_counts)[perk_id_perk_expert]) {
       (**(code **)(*grim_interface_ptr + 0x148))();
       fStack_44 = 8.40779e-45;
     }
@@ -3801,7 +3807,7 @@ void FUN_00405be0(void)
     (**(code **)(*grim_interface_ptr + 0x148))();
     fStack_44 = 9.80909e-45;
   }
-  if (0 < (int)(&player_perk_counts)[DAT_004c2ba0]) {
+  if (0 < (int)(&player_perk_counts)[perk_id_perk_expert]) {
     uStack_40 = 0x41900000;
   }
   if ((DAT_004807c8 & 1) == 0) {
@@ -3841,7 +3847,7 @@ void FUN_00405be0(void)
   puVar1 = &DAT_004800a8;
   piVar3 = &perk_choice_ids;
   do {
-    *puVar1 = (&DAT_004c2c40)[*piVar3 * 5];
+    *puVar1 = (&perk_name_table)[*piVar3 * 5];
     uStack_74 = 0x405ecf;
     FUN_0043e5e0(&fStack_48,puVar1);
     if (*(char *)(puVar1 + 1) != '\0') {
@@ -3863,7 +3869,7 @@ void FUN_00405be0(void)
   (**(code **)(*grim_interface_ptr + 0x20))(0x18);
   (**(code **)(*grim_interface_ptr + 0x144))
             (fVar5 + 16.0,0x3f800000,
-             *(undefined4 *)(&DAT_004c2c44 + (&perk_choice_ids)[DAT_0048089c] * 0x14));
+             *(undefined4 *)(&perk_desc_table + (&perk_choice_ids)[DAT_0048089c] * 0x14));
   if ((DAT_004807c8 & 8) == 0) {
     DAT_004807c8 = DAT_004807c8 | 8;
     DAT_00480096 = 1;
@@ -4203,7 +4209,7 @@ void FUN_00406b40(void)
   undefined4 local_8;
   undefined4 local_4;
   
-  iVar2 = perk_count_get(DAT_004c2bb0);
+  iVar2 = perk_count_get(perk_id_regeneration);
   if (((iVar2 != 0) && (uVar3 = _rand(), (uVar3 & 1) != 0)) &&
      (iVar2 = _config_player_count, 0 < _config_player_count)) {
     do {
@@ -4217,14 +4223,15 @@ void FUN_00406b40(void)
   _DAT_004808a4 = _DAT_004808a4 - frame_dt;
   if (_DAT_004808a4 < 0.0) {
     _DAT_004808a4 = 0.25;
-    if (0 < (int)(&player_perk_counts)[DAT_004c2b84]) {
-      player_experience = player_experience + (&player_perk_counts)[DAT_004c2b84] * 10;
+    if (0 < (int)(&player_perk_counts)[perk_id_lean_mean_exp_machine]) {
+      player_experience =
+           player_experience + (&player_perk_counts)[perk_id_lean_mean_exp_machine] * 10;
     }
   }
   render_overlay_player_index = 0;
   if (0 < _config_player_count) {
     do {
-      iVar2 = perk_count_get(DAT_004c2c14);
+      iVar2 = perk_count_get(perk_id_death_clock);
       if (iVar2 != 0) {
         pfVar1 = &player_health + render_overlay_player_index * 0xd8;
         if ((&player_health)[render_overlay_player_index * 0xd8] <= 0.0) {
@@ -4259,17 +4266,17 @@ void FUN_00406b40(void)
     } while (render_overlay_player_index < _config_player_count);
   }
   DAT_00487268 = -1;
-  if (((0 < (int)(&player_perk_counts)[DAT_004c2b60]) ||
-      (0 < (int)(&player_perk_counts)[DAT_004c2b64])) ||
-     (0 < (int)(&player_perk_counts)[DAT_004c2b88])) {
+  if (((0 < (int)(&player_perk_counts)[perk_id_doctor]) ||
+      (0 < (int)(&player_perk_counts)[perk_id_pyrokinetic])) ||
+     (0 < (int)(&player_perk_counts)[perk_id_evil_eyes])) {
     evil_eyes_target_creature = -1;
     iVar2 = creature_find_in_radius((float *)&player_aim_x,12.0,0);
     if (iVar2 != -1) {
-      iVar4 = perk_count_get(DAT_004c2b60);
+      iVar4 = perk_count_get(perk_id_doctor);
       if (iVar4 != 0) {
         DAT_00487268 = iVar2;
       }
-      iVar4 = perk_count_get(DAT_004c2b64);
+      iVar4 = perk_count_get(perk_id_pyrokinetic);
       if (iVar4 != 0) {
         fVar7 = (float)(&creature_collision_timer)[iVar2 * 0x26] - frame_dt;
         (&creature_collision_timer)[iVar2 * 0x26] = fVar7;
@@ -4309,18 +4316,18 @@ void FUN_00406b40(void)
           FUN_00427700(pfVar1);
         }
       }
-      iVar4 = perk_count_get(DAT_004c2b88);
+      iVar4 = perk_count_get(perk_id_evil_eyes);
       if (iVar4 != 0) {
         evil_eyes_target_creature = iVar2;
       }
     }
   }
-  iVar2 = perk_count_get(DAT_004c2b88);
+  iVar2 = perk_count_get(perk_id_evil_eyes);
   if (iVar2 == 0) {
     evil_eyes_target_creature = -1;
   }
   if (((_DAT_004aaf1c < 0.0) || (_DAT_004aaf1c = _DAT_004aaf1c - frame_dt, _DAT_004aaf1c < 0.0)) &&
-     (0 < (int)(&player_perk_counts)[DAT_004c2b68])) {
+     (0 < (int)(&player_perk_counts)[perk_id_jinxed])) {
     iVar2 = _rand();
     if (iVar2 % 10 == 3) {
       player_health = player_health - 5.0;
@@ -5705,7 +5712,7 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
   
   sfx_play(sfx_ui_bonus);
   local_10[0] = 1.0;
-  iVar3 = perk_count_get(DAT_004c2bf0);
+  iVar3 = perk_count_get(perk_id_bonus_economist);
   if (iVar3 != 0) {
     local_10[0] = 1.5;
   }
@@ -8373,7 +8380,7 @@ LAB_00411906:
     puStack_70 = (undefined *)0x411b4e;
     (**(code **)(iVar2 + 0x148))();
   }
-  if (DAT_00482704 != DAT_004c2b40) {
+  if (DAT_00482704 != perk_id_antiperk) {
     (**(code **)(*grim_interface_ptr + 0x114))();
     (**(code **)(*grim_interface_ptr + 0x148))();
     (**(code **)(*grim_interface_ptr + 0x114))();
@@ -8758,9 +8765,9 @@ joined_r0x00412584:
 LAB_0041258a:
         if ((((_bonus_freeze_timer <= 0.0) || (uVar7 != 0xb)) &&
             ((((player_shield_timer <= 0.0 && (player2_shield_timer <= 0.0)) || (uVar7 != 10)) &&
-             ((iVar4 = perk_count_get(DAT_004c2c18), iVar4 == 0 || (uVar7 != 3)))))) &&
-           (((iVar4 = perk_count_get(DAT_004c2c14), iVar4 == 0 || (uVar7 != 0xc)) &&
-            (((uVar7 != 3 || (!bVar2)) && ((&bonus_meta_enabled)[uVar7 * 0x14] != '\0')))))) {
+             ((iVar4 = perk_count_get(perk_id_my_favourite_weapon), iVar4 == 0 || (uVar7 != 3))))))
+           && (((iVar4 = perk_count_get(perk_id_death_clock), iVar4 == 0 || (uVar7 != 0xc)) &&
+               (((uVar7 != 3 || (!bVar2)) && ((&bonus_meta_enabled)[uVar7 * 0x14] != '\0')))))) {
           return uVar7;
         }
       }
@@ -9388,8 +9395,8 @@ void FUN_00413430(void)
   int iVar3;
   
   if (((&player_reload_active)[render_overlay_player_index * 0x360] == '\0') ||
-     ((iVar3 = perk_count_get(DAT_004c2bc8), iVar3 == 0 &&
-      (iVar3 = perk_count_get(DAT_004c2bd0), iVar3 == 0)))) {
+     ((iVar3 = perk_count_get(perk_id_ammunition_within), iVar3 == 0 &&
+      (iVar3 = perk_count_get(perk_id_regression_bullets), iVar3 == 0)))) {
     iVar3 = render_overlay_player_index * 0x360;
     if ((&player_reload_active)[iVar3] == '\0') {
       sfx_play_panned(*(float *)(&DAT_004d7a8c +
@@ -9397,7 +9404,7 @@ void FUN_00413430(void)
       iVar3 = render_overlay_player_index * 0x360;
       (&player_reload_active)[iVar3] = 1;
     }
-    iVar2 = DAT_004c2b5c;
+    iVar2 = perk_id_fastloader;
     fVar1 = (float)(&DAT_004d7a78)[*(int *)((int)&player_weapon_id + iVar3) * 0x1f];
     *(float *)((int)&player_reload_timer + iVar3) = fVar1;
     if (0 < (int)(&player_perk_counts)[iVar2]) {
@@ -9571,7 +9578,7 @@ void player_update(void)
   if ((float)(&player_shot_cooldown)[iVar7 * 0xd8] < 0.0) {
     (&player_shot_cooldown)[iVar7 * 0xd8] = 0;
   }
-  iVar11 = perk_count_get(DAT_004c2c24);
+  iVar11 = perk_count_get(perk_id_man_bomb);
   if (iVar11 == 0) {
     (&player_man_bomb_timer)[iVar7 * 0xd8] = 0;
   }
@@ -9606,7 +9613,7 @@ void player_update(void)
       _DAT_00473310 = 4.0;
     }
   }
-  iVar11 = perk_count_get(DAT_004c2c28);
+  iVar11 = perk_count_get(perk_id_living_fortress);
   if (iVar11 == 0) {
     (&player_living_fortress_timer)[iVar7 * 0xd8] = 0;
   }
@@ -9617,7 +9624,7 @@ void player_update(void)
       (&player_living_fortress_timer)[iVar7 * 0xd8] = 0x41f00000;
     }
   }
-  iVar11 = perk_count_get(DAT_004c2c2c);
+  iVar11 = perk_count_get(perk_id_fire_caugh);
   if (iVar11 == 0) {
     (&player_fire_cough_timer)[iVar7 * 0xd8] = 0;
   }
@@ -9684,7 +9691,7 @@ void player_update(void)
       _DAT_00473314 = (float)(int)local_30[0] + 2.0;
     }
   }
-  iVar11 = perk_count_get(DAT_004c2bfc);
+  iVar11 = perk_count_get(perk_id_hot_tempered);
   if (iVar11 == 0) {
     (&player_hot_tempered_timer)[iVar7 * 0xd8] = 0;
   }
@@ -9790,7 +9797,7 @@ LAB_0041412c:
       local_38 = (float)fVar19;
       if (fVar19 == (float10)-1.0) goto LAB_0041412c;
       fVar19 = (float10)FUN_00413540(local_38);
-      if ((int)(&player_perk_counts)[DAT_004c2b54] < 1) {
+      if ((int)(&player_perk_counts)[perk_id_long_distance_runner] < 1) {
         fVar15 = frame_dt * 5.0 + (float)(&player_move_speed)[iVar7 * 0xd8];
         (&player_move_speed)[iVar7 * 0xd8] = fVar15;
         if (2.0 < fVar15) {
@@ -9868,7 +9875,7 @@ LAB_00414390:
         local_40 = (float)fVar20;
         if (fVar20 == (float10)-1.0) goto LAB_00414390;
         fVar19 = (float10)FUN_00413540(local_40);
-        if ((int)(&player_perk_counts)[DAT_004c2b54] < 1) {
+        if ((int)(&player_perk_counts)[perk_id_long_distance_runner] < 1) {
           fVar16 = frame_dt * 5.0 + (float)(&player_move_speed)[iVar7 * 0xd8];
           (&player_move_speed)[iVar7 * 0xd8] = fVar16;
           if (2.0 < fVar16) {
@@ -9977,7 +9984,7 @@ LAB_00414562:
           local_10 = frame_dt * *(float *)(&player_move_dx + iVar17);
         }
         else {
-          if ((int)(&player_perk_counts)[DAT_004c2b54] < 1) {
+          if ((int)(&player_perk_counts)[perk_id_long_distance_runner] < 1) {
             fVar16 = frame_dt * 5.0 + (float)(&player_move_speed)[iVar7 * 0xd8];
             (&player_move_speed)[iVar7 * 0xd8] = fVar16;
             if (2.0 < fVar16) {
@@ -10011,7 +10018,7 @@ LAB_00414562:
         }
       }
       else {
-        if ((int)(&player_perk_counts)[DAT_004c2b54] < 1) {
+        if ((int)(&player_perk_counts)[perk_id_long_distance_runner] < 1) {
           fVar16 = frame_dt * 5.0 + (float)(&player_move_speed)[iVar7 * 0xd8];
           (&player_move_speed)[iVar7 * 0xd8] = fVar16;
           if (2.0 < fVar16) {
@@ -10121,7 +10128,7 @@ LAB_00414562:
         fVar19 = (float10)FUN_00413540(local_40);
         (&player_aim_heading)[iVar7 * 0xd8] =
              _DAT_00487198 + (float)(&player_aim_heading)[iVar7 * 0xd8];
-        if ((int)(&player_perk_counts)[DAT_004c2b54] < 1) {
+        if ((int)(&player_perk_counts)[perk_id_long_distance_runner] < 1) {
           fVar15 = frame_dt * 5.0 + (float)(&player_move_speed)[iVar7 * 0xd8];
           (&player_move_speed)[iVar7 * 0xd8] = fVar15;
           if (2.0 < fVar15) {
@@ -10241,7 +10248,7 @@ LAB_00414f13:
     }
     else {
       fVar19 = (float10)FUN_00413540((float)fVar19);
-      if ((int)(&player_perk_counts)[DAT_004c2b54] < 1) {
+      if ((int)(&player_perk_counts)[perk_id_long_distance_runner] < 1) {
         fVar15 = frame_dt * 5.0 + (float)(&player_move_speed)[iVar7 * 0xd8];
         (&player_move_speed)[iVar7 * 0xd8] = fVar15;
         if (2.0 < fVar15) {
@@ -10286,7 +10293,7 @@ LAB_00414f2d:
   if (time_scale_active != '\0') {
     frame_dt = _time_scale_factor * frame_dt * 1.6666666;
   }
-  iVar11 = perk_count_get(DAT_004c2b48);
+  iVar11 = perk_count_get(perk_id_sharpshooter);
   if (iVar11 == 0) {
     fVar16 = (float)(&player_spread_heat)[iVar7 * 0xd8] - frame_dt * 0.4;
     (&player_spread_heat)[iVar7 * 0xd8] = fVar16;
@@ -10302,7 +10309,7 @@ LAB_00414f2d:
     }
     (&player_spread_heat)[iVar7 * 0xd8] = 0x3ca3d70a;
   }
-  iVar11 = perk_count_get(DAT_004c2b90);
+  iVar11 = perk_count_get(perk_id_anxious_loader);
   if ((((iVar11 != 0) && (iVar11 = input_primary_just_pressed(), (char)iVar11 != '\0')) &&
       (0.0 < (float)(&player_reload_timer)[iVar7 * 0xd8])) &&
      (fVar16 = (float)(&player_reload_timer)[iVar7 * 0xd8],
@@ -10315,7 +10322,7 @@ LAB_00414f2d:
   }
   local_38 = 1.0;
   if ((*pfVar18 == local_28) && ((float)(&player_pos_y)[iVar7 * 0xd8] == local_24)) {
-    iVar11 = perk_count_get(DAT_004c2c10);
+    iVar11 = perk_count_get(perk_id_stationary_reloader);
     if (iVar11 != 0) {
       local_38 = 3.0;
     }
@@ -10324,7 +10331,7 @@ LAB_00414f2d:
     (&player_man_bomb_timer)[iVar7 * 0xd8] = 0;
     (&player_living_fortress_timer)[iVar7 * 0xd8] = 0;
   }
-  iVar11 = perk_count_get(DAT_004c2c20);
+  iVar11 = perk_count_get(perk_id_angry_reloader);
   if (((iVar11 == 0) || ((float)(&player_reload_timer_max)[iVar7 * 0xd8] <= 0.5)) ||
      ((float)(&player_reload_timer)[iVar7 * 0xd8] <=
       (float)(&player_reload_timer_max)[iVar7 * 0xd8] * 0.5)) {
@@ -10360,10 +10367,11 @@ LAB_00414f2d:
   if ((float)(&player_reload_timer)[iVar7 * 0xd8] < 0.0) {
     (&player_reload_timer)[iVar7 * 0xd8] = 0;
   }
-  if ((((DAT_0048700d == '\0') && (iVar11 = perk_count_get(DAT_004c2b74), iVar11 == 0)) &&
-      (((&config_player_mode_flags)[render_overlay_player_index] != 4 &&
-       ((cVar8 = (**(code **)(*grim_interface_ptr + 0x80))(config_key_reload), cVar8 != '\0' &&
-        ((float)(&player_reload_timer)[iVar7 * 0xd8] == 0.0)))))) && (_config_player_count == 1)) {
+  if ((((DAT_0048700d == '\0') && (iVar11 = perk_count_get(perk_id_alternate_weapon), iVar11 == 0))
+      && (((&config_player_mode_flags)[render_overlay_player_index] != 4 &&
+          ((cVar8 = (**(code **)(*grim_interface_ptr + 0x80))(config_key_reload), cVar8 != '\0' &&
+           ((float)(&player_reload_timer)[iVar7 * 0xd8] == 0.0)))))) && (_config_player_count == 1))
+  {
     FUN_00413430();
   }
   bVar5 = false;
@@ -10512,11 +10520,11 @@ LAB_0041572e:
     (&player_reload_active)[iVar17] = 0;
   }
   if (((*pfVar13 <= 0.0) && (0 < (int)(&player_experience)[iVar7 * 0xd8])) &&
-     ((iVar11 = perk_count_get(DAT_004c2bd0), iVar11 != 0 ||
-      (iVar11 = perk_count_get(DAT_004c2bc8), iVar11 != 0)))) {
+     ((iVar11 = perk_count_get(perk_id_regression_bullets), iVar11 != 0 ||
+      (iVar11 = perk_count_get(perk_id_ammunition_within), iVar11 != 0)))) {
     bVar6 = true;
   }
-  iVar11 = perk_count_get(DAT_004c2b74);
+  iVar11 = perk_count_get(perk_id_alternate_weapon);
   if (iVar11 != 0) {
     if (((DAT_0048719c < 1) || (DAT_0048719c = DAT_0048719c - frame_dt_ms, DAT_0048719c < 1)) &&
        (cVar8 = (**(code **)(*grim_interface_ptr + 0x80))(config_key_reload), cVar8 != '\0')) {
@@ -10558,9 +10566,9 @@ LAB_0041572e:
   if ((cVar8 == '\0') && (!bVar5)) goto LAB_0041753e;
   survival_reward_fire_seen = 1;
   if (!bVar9) {
-    iVar11 = perk_count_get(DAT_004c2bd0);
+    iVar11 = perk_count_get(perk_id_regression_bullets);
     if (iVar11 == 0) {
-      iVar11 = perk_count_get(DAT_004c2bc8);
+      iVar11 = perk_count_get(perk_id_ammunition_within);
       if (iVar11 != 0) {
         if ((&DAT_004d7a28)[(&player_weapon_id)[iVar7 * 0xd8] * 0x1f] == 1) {
           fVar15 = 0.15;
@@ -11171,7 +11179,7 @@ LAB_0041600e:
         local_38 = 0.15;
       }
     }
-    iVar17 = perk_count_get(DAT_004c2b48);
+    iVar17 = perk_count_get(perk_id_sharpshooter);
     if (iVar17 == 0) {
       (&player_spread_heat)[iVar7 * 0xd8] =
            (float)(&DAT_004d7a7c)[(&player_weapon_id)[iVar7 * 0xd8] * 0x1f] * 1.3 +
@@ -11213,7 +11221,7 @@ LAB_0041600e:
     local_14 = local_1c + (float)(&player_pos_y)[iVar7 * 0xd8];
     local_18 = local_20 + *pfVar18;
     iVar11 = fx_spawn_sprite(&local_18,&local_10,1.0);
-    iVar17 = DAT_004c2b48;
+    iVar17 = perk_id_sharpshooter;
     (&sprite_effect_color_r)[iVar11 * 0xb] = 0x3f000000;
     (&sprite_effect_color_g)[iVar11 * 0xb] = 0x3f000000;
     (&sprite_effect_color_b)[iVar11 * 0xb] = 0x3f000000;
@@ -11227,10 +11235,10 @@ LAB_0041600e:
   if (0.48 < (float)(&player_spread_heat)[iVar7 * 0xd8]) {
     (&player_spread_heat)[iVar7 * 0xd8] = 0x3ef5c28f;
   }
-  if (0 < (int)(&player_perk_counts)[DAT_004c2b50]) {
+  if (0 < (int)(&player_perk_counts)[perk_id_fastshot]) {
     (&player_shot_cooldown)[iVar7 * 0xd8] = (float)(&player_shot_cooldown)[iVar7 * 0xd8] * 0.88;
   }
-  if (0 < (int)(&player_perk_counts)[DAT_004c2b48]) {
+  if (0 < (int)(&player_perk_counts)[perk_id_sharpshooter]) {
     (&player_shot_cooldown)[iVar7 * 0xd8] = (float)(&player_shot_cooldown)[iVar7 * 0xd8] * 1.05;
   }
   if ((float)(&player_ammo)[iVar7 * 0xd8] <= 0.0) {
@@ -11986,7 +11994,7 @@ void __cdecl creature_render_type(int type_id)
   (**(code **)(*grim_interface_ptr + 0x100))();
   if (config_fx_detail_flag0 != '\0') {
     fStack_6c = 6.019442e-39;
-    iVar2 = perk_count_get(DAT_004c2be8);
+    iVar2 = perk_count_get(perk_id_monster_vision);
     if (iVar2 == 0) {
       (**(code **)(*grim_interface_ptr + 0x20))(0x13,1);
       (**(code **)(*grim_interface_ptr + 0x20))(0x14,6);
@@ -12254,7 +12262,7 @@ void creature_render_all(void)
     pfVar2 = (float *)&creature_hitbox_size;
     do {
       if (*(char *)(pfVar2 + -4) != '\0') {
-        iVar1 = perk_count_get(DAT_004c2be8);
+        iVar1 = perk_count_get(perk_id_monster_vision);
         if (iVar1 != 0) {
           if ((0.0 <= *pfVar2) || (fVar5 = (*pfVar2 + 10.0) * 0.1, 1.0 < fVar5)) {
             fVar5 = 1.0;
@@ -15377,7 +15385,7 @@ undefined4 __cdecl FUN_0041e290(int param_1,float *param_2,float *param_3)
   int iVar5;
   int *piVar6;
   
-  iVar5 = perk_count_get(DAT_004c2b74);
+  iVar5 = perk_count_get(perk_id_alternate_weapon);
   if (iVar5 != 0) {
     *param_3 = *param_3 * 0.8;
     param_3[1] = param_3[1] * 0.8;
@@ -15595,8 +15603,8 @@ void __cdecl creature_handle_death(int creature_id,bool keep_corpse)
     else {
       *pcVar2 = '\0';
     }
-    iVar3 = DAT_004c2b44;
-    if ((int)(&player_perk_counts)[DAT_004c2b44] < 1) {
+    iVar3 = perk_id_bloody_mess_quick_learner;
+    if ((int)(&player_perk_counts)[perk_id_bloody_mess_quick_learner] < 1) {
       lVar8 = __ftol();
       player_experience = (int)lVar8;
     }
@@ -16363,7 +16371,7 @@ LAB_0041f998:
       *puVar2 = 0;
       return puVar3;
     }
-    puVar3 = (uint *)perk_count_get(DAT_004c2c18);
+    puVar3 = (uint *)perk_count_get(perk_id_my_favourite_weapon);
     puVar6 = (uint *)0x0;
     if (puVar3 != (uint *)0x0) goto LAB_0041f998;
   }
@@ -16371,7 +16379,7 @@ LAB_0041f998:
     iVar1 = _rand();
     if ((iVar1 % 9 != 1) && ((player_weapon_id != (uint *)0x1 || (iVar1 = _rand(), iVar1 % 5 != 1)))
        ) {
-      iVar1 = perk_count_get(DAT_004c2ba8);
+      iVar1 = perk_count_get(perk_id_bonus_magnet);
       if (iVar1 == 0) {
         return (uint *)0x0;
       }
@@ -17088,11 +17096,11 @@ int __cdecl creature_apply_damage(int creature_id,float damage,int damage_type,f
   
   (&creature_hit_flash_timer)[creature_id * 0x26] = 0x3e4ccccd;
   if (damage_type == 1) {
-    iVar2 = perk_count_get(DAT_004c2c00);
+    iVar2 = perk_count_get(perk_id_uranium_filled_bullets);
     if (iVar2 != 0) {
       damage = damage + damage;
     }
-    iVar2 = perk_count_get(DAT_004c2c28);
+    iVar2 = perk_count_get(perk_id_living_fortress);
     if ((iVar2 != 0) && (0 < _config_player_count)) {
       pfVar5 = (float *)&player_living_fortress_timer;
       iVar2 = _config_player_count;
@@ -17104,11 +17112,11 @@ int __cdecl creature_apply_damage(int creature_id,float damage,int damage_type,f
         iVar2 = iVar2 + -1;
       } while (iVar2 != 0);
     }
-    iVar2 = perk_count_get(DAT_004c2bec);
+    iVar2 = perk_count_get(perk_id_barrel_greaser);
     if (iVar2 != 0) {
       damage = damage * 1.4;
     }
-    iVar2 = perk_count_get(DAT_004c2b60);
+    iVar2 = perk_count_get(perk_id_doctor);
     if (iVar2 != 0) {
       damage = damage * 1.2;
     }
@@ -17123,7 +17131,7 @@ int __cdecl creature_apply_damage(int creature_id,float damage,int damage_type,f
            fVar1 + (float)(&creature_heading)[creature_id * 0x26];
     }
   }
-  else if ((damage_type == 7) && (iVar2 = perk_count_get(DAT_004c2c0c), iVar2 != 0)) {
+  else if ((damage_type == 7) && (iVar2 = perk_count_get(perk_id_ion_gun_master), iVar2 != 0)) {
     damage = damage * 1.2;
   }
   if ((float)(&creature_health)[creature_id * 0x26] <= 0.0) {
@@ -17131,7 +17139,7 @@ int __cdecl creature_apply_damage(int creature_id,float damage,int damage_type,f
          (float)(&creature_hitbox_size)[creature_id * 0x26] - frame_dt * 15.0;
   }
   else {
-    if ((damage_type == 4) && (iVar2 = perk_count_get(DAT_004c2bd4), iVar2 != 0)) {
+    if ((damage_type == 4) && (iVar2 = perk_count_get(perk_id_pyromaniac), iVar2 != 0)) {
       damage = damage * 1.5;
       _rand();
     }
@@ -17272,7 +17280,7 @@ void projectile_update(void)
   
   DAT_004aaf54 = DAT_004aaf54 + 1;
   local_c0 = 1.0;
-  iVar4 = perk_count_get(DAT_004c2c0c);
+  iVar4 = perk_count_get(perk_id_ion_gun_master);
   if (iVar4 != 0) {
     local_c0 = 1.2;
   }
@@ -17303,7 +17311,7 @@ LAB_004219f8:
           fVar14 = (float10)fsin((float10)(float)(&projectile_angle)[local_e8 * 0x10] -
                                  (float10)1.5707964);
           fVar16 = (float10)frame_dt;
-          iVar10 = perk_count_get(DAT_004c2bec);
+          iVar10 = perk_count_get(perk_id_barrel_greaser);
           if ((iVar10 != 0) && ((int)(&projectile_owner_id)[local_e8 * 0x10] < 0)) {
             lVar19 = __ftol();
             local_dc = (float)lVar19;
@@ -17340,7 +17348,7 @@ LAB_004219f8:
                   }
                 }
                 else {
-                  iVar7 = perk_count_get(DAT_004c2bf4);
+                  iVar7 = perk_count_get(perk_id_poison_bullets);
                   if ((iVar7 != 0) && (iVar7 = _rand(), ((byte)iVar7 & 7) == 1)) {
                     *(uint *)(&creature_flags + iVar10 * 0x98) =
                          *(uint *)(&creature_flags + iVar10 * 0x98) | 1;
@@ -17375,7 +17383,7 @@ LAB_004219f8:
                   _effect_template_half_width = 0x40800000;
                   _effect_template_half_height = 0x40800000;
                   if (config_fx_toggle == '\0') {
-                    iVar7 = perk_count_get(DAT_004c2b44);
+                    iVar7 = perk_count_get(perk_id_bloody_mess_quick_learner);
                     if (iVar7 == 0) {
                       if (_bonus_freeze_timer <= 0.0) {
                         iVar7 = 2;
@@ -17408,7 +17416,7 @@ LAB_004219f8:
                   if ((&creature_hitbox_size)[iVar10 * 0x26] == 0x41800000) {
                     DAT_00487070 = DAT_00487070 + 1;
                   }
-                  iVar7 = perk_count_get(DAT_004c2b44);
+                  iVar7 = perk_count_get(perk_id_bloody_mess_quick_learner);
                   if (iVar7 != 0) {
                     local_d8 = 0x1e;
                     iVar7 = -0x1e;
@@ -17557,7 +17565,7 @@ LAB_004219f8:
                   _rand();
                   if (((&projectile_type_id)[local_e8 * 0x10] == 6) ||
                      ((&projectile_type_id)[local_e8 * 0x10] == 0x2d)) {
-                    perk_count_get(DAT_004c2b44);
+                    perk_count_get(perk_id_bloody_mess_quick_learner);
                     local_ec = 6;
                     do {
                       iVar7 = _rand();
@@ -18399,7 +18407,7 @@ void projectile_render(void)
         fVar8 = (float10)_camera_offset_x;
         fStack_1f8 = fVar29 + pfVar2[-0xba] + _camera_offset_y;
         fStack_1cc = fStack_1f8;
-        if (0 < (int)(&player_perk_counts)[DAT_004c2b48]) {
+        if (0 < (int)(&player_perk_counts)[perk_id_sharpshooter]) {
           fStack_220 = 2.8026e-44;
           fStack_21c = 2.8026e-45;
           fStack_224 = 6.07801e-39;
@@ -18833,7 +18841,7 @@ LAB_00424111:
   } while ((int)pfVar3 < 0x493ec4);
   (**(code **)(*grim_interface_ptr + 0xf0))();
   fVar32 = 1.0;
-  iVar6 = perk_count_get(DAT_004c2c0c);
+  iVar6 = perk_count_get(perk_id_ion_gun_master);
   if (iVar6 != 0) {
     fVar32 = 1.2;
   }
@@ -19465,11 +19473,11 @@ void __cdecl player_take_damage(int player_index,float damage)
   float local_c;
   float local_8 [2];
   
-  iVar4 = perk_count_get(DAT_004c2c14);
+  iVar4 = perk_count_get(perk_id_death_clock);
   if (iVar4 != 0) {
     return;
   }
-  iVar4 = perk_count_get(DAT_004c2c30);
+  iVar4 = perk_count_get(perk_id_tough_reloader);
   if ((iVar4 != 0) && ((&player_reload_active)[player_index * 0x360] != '\0')) {
     damage = damage * 0.5;
   }
@@ -19480,14 +19488,14 @@ void __cdecl player_take_damage(int player_index,float damage)
     return;
   }
   bVar7 = player_health <= 0.0;
-  iVar4 = perk_count_get(DAT_004c2bc0);
+  iVar4 = perk_count_get(perk_id_thick_skinned);
   if (iVar4 != 0) {
     local_c = 0.666;
   }
   bVar3 = false;
-  iVar4 = perk_count_get(DAT_004c2be0);
+  iVar4 = perk_count_get(perk_id_ninja);
   if (iVar4 == 0) {
-    iVar4 = perk_count_get(DAT_004c2bdc);
+    iVar4 = perk_count_get(perk_id_dodger);
     if ((iVar4 != 0) && (iVar4 = _rand(), iVar4 % 5 == 0)) {
       bVar3 = true;
       goto LAB_00425fa1;
@@ -19500,7 +19508,7 @@ void __cdecl player_take_damage(int player_index,float damage)
       goto LAB_00425fa1;
     }
   }
-  iVar4 = perk_count_get(DAT_004c2bd8);
+  iVar4 = perk_count_get(perk_id_highlander);
   if (iVar4 == 0) {
     (&player_health)[player_index * 0xd8] = (&player_health)[player_index * 0xd8] - local_c * damage
     ;
@@ -19525,7 +19533,7 @@ LAB_00425fa1:
     if (bVar7) {
       return;
     }
-    iVar4 = perk_count_get(DAT_004c2b94);
+    iVar4 = perk_count_get(perk_id_final_revenge);
     if (iVar4 == 0) {
       uVar5 = _rand();
       uVar5 = uVar5 & 0x80000001;
@@ -19562,7 +19570,7 @@ LAB_00425fa1:
     }
   }
   if (!bVar3) {
-    iVar4 = perk_count_get(DAT_004c2b98);
+    iVar4 = perk_count_get(perk_id_unstoppable);
     if (iVar4 == 0) {
       iVar4 = _rand();
       (&player_heading)[player_index * 0xd8] =
@@ -20003,7 +20011,7 @@ LAB_00426ac8:
                 }
               }
             }
-            iVar6 = perk_count_get(DAT_004c2b78);
+            iVar6 = perk_count_get(perk_id_plaguebearer);
             if ((iVar6 != 0) && (plaguebearer_infection_count < 0x3c)) {
               FUN_00425d80(local_7c);
             }
@@ -20055,7 +20063,7 @@ LAB_00426ac8:
                                 ((float)(&creature_pos_y)[local_7c * 0x26] -
                                 (&player_pos_y)
                                 [(char)(&creature_target_player)[local_7c * 0x98] * 0xd8]));
-            if ((((fVar16 < 100.0) && (iVar6 = perk_count_get(DAT_004c2b7c), iVar6 != 0)) &&
+            if ((((fVar16 < 100.0) && (iVar6 = perk_count_get(perk_id_radioactive), iVar6 != 0)) &&
                 (fVar14 = (float)(&creature_collision_timer)[local_7c * 0x26] - frame_dt * 1.5,
                 (&creature_collision_timer)[local_7c * 0x26] = fVar14, fVar14 < 0.0)) &&
                (0.0 < *pfVar13)) {
@@ -20123,16 +20131,16 @@ LAB_00426ac8:
                   sfx_play_panned(*(float *)(&creature_type_sfx_b0 +
                                             (uVar7 + (&creature_type_id)[local_7c * 0x26] * 0x11) *
                                             4));
-                  iVar6 = perk_count_get(DAT_004c2bac);
+                  iVar6 = perk_count_get(perk_id_mr_melee);
                   if (iVar6 != 0) {
                     local_50[8] = 0.0;
                     local_50[9] = 0.0;
                     creature_apply_damage(local_7c,25.0,2,local_50 + 8);
                   }
                   if ((float)(&player_shield_timer)[*pcVar4 * 0xd8] <= 0.0) {
-                    iVar6 = perk_count_get(DAT_004c2bbc);
+                    iVar6 = perk_count_get(perk_id_toxic_avenger);
                     if (iVar6 == 0) {
-                      iVar6 = perk_count_get(DAT_004c2bb8);
+                      iVar6 = perk_count_get(perk_id_veins_of_poison);
                       if (iVar6 == 0) goto LAB_0042733a;
                       uVar7 = *(uint *)(&creature_flags + local_7c * 0x98) | 1;
                     }
@@ -20678,7 +20686,7 @@ void player_render_overlays(void)
   
   if (((((DAT_0048727c == '\0') && (0.0 < DAT_00487278)) && (DAT_00487270 != 0x14)) &&
       ((DAT_00487270 != 0x16 && (DAT_0048726c != 0x14)))) && (DAT_0048726c != 0x16)) {
-    iVar3 = perk_count_get(DAT_004c2b7c);
+    iVar3 = perk_count_get(perk_id_radioactive);
     if (iVar3 != 0) {
       (**(code **)(*grim_interface_ptr + 0x20))();
       (**(code **)(*grim_interface_ptr + 0x20))();
@@ -21230,7 +21238,7 @@ void bonus_render(void)
           } while ((int)piVar4 < 0x482b08);
           *piVar15 = 0;
 LAB_00429df8:
-          if (((0x28a < *piVar15) && (iVar2 = perk_count_get(DAT_004c2bf8), iVar2 != 0)) &&
+          if (((0x28a < *piVar15) && (iVar2 = perk_count_get(perk_id_telekinetic), iVar2 != 0)) &&
              ((&bonus_state)[iVar16 * 0x1c] == '\0')) {
             bonus_apply(iVar5,&bonus_pool + iVar16 * 7);
             (&bonus_state)[iVar16 * 0x1c] = 1;
@@ -23040,7 +23048,7 @@ void __cdecl FUN_0042f6c0(undefined4 *param_1,float param_2)
 void FUN_0042faa0(void)
 
 {
-  FUN_00461981(&DAT_004c2c40,0x14,0x80,&LAB_0042fac0);
+  FUN_00461981(&perk_name_table,0x14,0x80,&LAB_0042fac0);
   return;
 }
 
@@ -23073,12 +23081,12 @@ int __cdecl perk_can_offer(int perk_index)
   uVar3 = _config_game_mode;
   if (((((_config_game_mode != 3) || (config_full_version == '\0')) || (_DAT_00487008 != 10)) ||
       ((_DAT_00487004 != 2 ||
-       (((perk_index != DAT_004c2bf4 && (perk_index != DAT_004c2bb8)) &&
-        (perk_index != DAT_004c2b78)))))) &&
-     (((_config_player_count != 2 || (((&DAT_004c2c48)[perk_index * 0x14] & 2) != 0)) &&
+       (((perk_index != perk_id_poison_bullets && (perk_index != perk_id_veins_of_poison)) &&
+        (perk_index != perk_id_plaguebearer)))))) &&
+     (((_config_player_count != 2 || (((&perk_flags_table)[perk_index * 0x14] & 2) != 0)) &&
       ((_config_game_mode != 3 ||
-       (uVar3 = perk_index * 5, ((&DAT_004c2c48)[perk_index * 0x14] & 1) != 0)))))) {
-    iVar1 = *(int *)(&DAT_004c2c50 + perk_index * 0x14);
+       (uVar3 = perk_index * 5, ((&perk_flags_table)[perk_index * 0x14] & 1) != 0)))))) {
+    iVar1 = *(int *)(&perk_prereq_table + perk_index * 0x14);
     if (iVar1 == -1) {
       return -0xff;
     }
@@ -23087,9 +23095,9 @@ int __cdecl perk_can_offer(int perk_index)
     }
     cVar2 = FUN_0041df40();
     uVar3 = CONCAT31(extraout_var,cVar2);
-    if ((((cVar2 == '\0') && (perk_index != DAT_004c2c28)) && (perk_index != DAT_004c2c24)) &&
-       (perk_index != DAT_004c2c2c)) {
-      uVar3 = DAT_004c2c30;
+    if ((((cVar2 == '\0') && (perk_index != perk_id_living_fortress)) &&
+        (perk_index != perk_id_man_bomb)) && (perk_index != perk_id_fire_caugh)) {
+      uVar3 = perk_id_tough_reloader;
     }
   }
   return uVar3 & 0xffffff00;
@@ -23112,7 +23120,7 @@ int perk_select_random(void)
   do {
     iVar1 = _rand();
     iVar1 = iVar1 % DAT_004c2c38 + 1;
-    if ((&DAT_004c2c4c)[iVar1 * 0x14] != '\0') {
+    if ((&perk_available_table)[iVar1 * 0x14] != '\0') {
       iVar2 = perk_can_offer(iVar1);
       if ((char)iVar2 != '\0') {
         return iVar1;
@@ -23121,7 +23129,7 @@ int perk_select_random(void)
     iVar3 = iVar3 + 1;
   } while (iVar3 < 0x3e9);
   console_printf(&console_log_queue,(byte *)(s___Perk_Randomizer_failed_to_gene_00475696 + 2));
-  return DAT_004c2b4c;
+  return perk_id_instant_winner;
 }
 
 
@@ -23142,27 +23150,27 @@ void perks_rebuild_available(void)
   
   iVar4 = DAT_004c2c38 + 1;
   if (0 < iVar4) {
-    puVar3 = &DAT_004c2c4c;
+    puVar3 = &perk_available_table;
     do {
       *puVar3 = 0;
       puVar3 = puVar3 + 0x14;
       iVar4 = iVar4 + -1;
     } while (iVar4 != 0);
   }
-  iVar4 = DAT_004c2b40;
+  iVar4 = perk_id_antiperk;
   puVar3 = &DAT_004c2c60;
-  (&DAT_004c2c4c)[DAT_004c2b40 * 0x14] = 0;
+  (&perk_available_table)[perk_id_antiperk * 0x14] = 0;
   do {
     *puVar3 = 1;
-    iVar1 = DAT_004c2c2c;
-    iVar5 = DAT_004c2c28;
+    iVar1 = perk_id_fire_caugh;
+    iVar5 = perk_id_living_fortress;
     iVar2 = DAT_00487034;
     puVar3 = puVar3 + 0x14;
   } while ((int)puVar3 < 0x4c2e7c);
-  (&DAT_004c2c4c)[DAT_004c2c24 * 0x14] = 1;
-  (&DAT_004c2c4c)[iVar5 * 0x14] = 1;
-  (&DAT_004c2c4c)[iVar1 * 0x14] = 1;
-  (&DAT_004c2c4c)[DAT_004c2c30 * 0x14] = 1;
+  (&perk_available_table)[perk_id_man_bomb * 0x14] = 1;
+  (&perk_available_table)[iVar5 * 0x14] = 1;
+  (&perk_available_table)[iVar1 * 0x14] = 1;
+  (&perk_available_table)[perk_id_tough_reloader * 0x14] = 1;
   iVar5 = 0;
   if (0 < iVar2) {
     piVar6 = &DAT_00484750;
@@ -23171,10 +23179,10 @@ void perks_rebuild_available(void)
       iVar1 = *piVar6;
       iVar5 = iVar5 + 1;
       piVar6 = piVar6 + 0xb;
-      (&DAT_004c2c4c)[iVar1 * 0x14] = 1;
+      (&perk_available_table)[iVar1 * 0x14] = 1;
     } while (iVar5 < iVar2);
   }
-  (&DAT_004c2c4c)[iVar4 * 0x14] = 0;
+  (&perk_available_table)[iVar4 * 0x14] = 0;
   return;
 }
 
@@ -23393,10 +23401,11 @@ void __fastcall perks_init_database(void)
   undefined4 extraout_ECX_x00111;
   undefined4 extraout_ECX_x00112;
   
-  DAT_004c2b40 = 0;
-  DAT_004c2c40 = FUN_0042fd00(in_ECX,s_AntiPerk_00477728,0x100);
-  _DAT_004c2c44 = FUN_0042fd00((uint3)extraout_ECX,s_You_shouldn_t_be_seeing_this___00477708,0x100);
-  DAT_004c2b44 = 1;
+  perk_id_antiperk = 0;
+  perk_name_table = FUN_0042fd00(in_ECX,s_AntiPerk_00477728,0x100);
+  _perk_desc_table =
+       FUN_0042fd00((uint3)extraout_ECX,s_You_shouldn_t_be_seeing_this___00477708,0x100);
+  perk_id_bloody_mess_quick_learner = 1;
   DAT_004c3640 = FUN_0042fd00((uint3)extraout_ECX_00,s_Bloody_Mess_004776fc,0x100);
   DAT_004c3648 = FUN_0042fd00((uint3)extraout_ECX_01,s_More_the_merrier__More_blood_gua_00477684,
                               0x100);
@@ -23406,249 +23415,249 @@ void __fastcall perks_init_database(void)
   pcVar4 = DAT_004c3640;
   DAT_004c364c = pcVar2;
   if (config_fx_toggle == '\0') {
-    iVar3 = DAT_004c2b44 * 0x14;
-    (&DAT_004c2c40)[DAT_004c2b44 * 5] = DAT_004c3640;
-    *(char **)(&DAT_004c2c44 + iVar3) = pcVar1;
+    iVar3 = perk_id_bloody_mess_quick_learner * 0x14;
+    (&perk_name_table)[perk_id_bloody_mess_quick_learner * 5] = DAT_004c3640;
+    *(char **)(&perk_desc_table + iVar3) = pcVar1;
   }
   else {
-    pcVar4 = (char *)(DAT_004c2b44 * 0x14);
+    pcVar4 = (char *)(perk_id_bloody_mess_quick_learner * 0x14);
     *(char **)(pcVar4 + 0x4c2c40) = DAT_004c3644;
     *(char **)(pcVar4 + 0x4c2c44) = pcVar2;
   }
-  DAT_004c2b48 = 2;
+  perk_id_sharpshooter = 2;
   _DAT_004c2c68 = FUN_0042fd00((uint3)pcVar4,s_Sharpshooter_004775f0,0x100);
   _DAT_004c2c6c =
        FUN_0042fd00((uint3)extraout_ECX_04,s_Miraculously_your_aiming_improve_00477538,0x100);
-  DAT_004c2b5c = 3;
+  perk_id_fastloader = 3;
   _DAT_004c2c7c = FUN_0042fd00((uint3)extraout_ECX_05,s_Fastloader_0047752c,0x100);
   _DAT_004c2c80 =
        FUN_0042fd00((uint3)extraout_ECX_06,s_Man__you_sure_know_how_to_load_a_00477504,0x100);
-  DAT_004c2b84 = 4;
+  perk_id_lean_mean_exp_machine = 4;
   _DAT_004c2c90 = FUN_0042fd00((uint3)extraout_ECX_07,s_Lean_Mean_Exp_Machine_004774ec,0x100);
   _DAT_004c2c94 =
        FUN_0042fd00((uint3)extraout_ECX_08,s_Why_kill_for_experience_when_you_0047745c,0x100);
-  DAT_004c2b54 = 5;
+  perk_id_long_distance_runner = 5;
   _DAT_004c2ca4 = FUN_0042fd00((uint3)extraout_ECX_09,s_Long_Distance_Runner_00477444,0x100);
   _DAT_004c2ca8 =
        FUN_0042fd00((uint3)extraout_ECX_10,s_You_move_like_a_train_that_has_f_004773a4,0x100);
-  DAT_004c2b64 = 6;
+  perk_id_pyrokinetic = 6;
   _DAT_004c2cb8 = FUN_0042fd00((uint3)extraout_ECX_11,s_Pyrokinetic_00477398,0x100);
   _DAT_004c2cbc =
        FUN_0042fd00((uint3)extraout_ECX_12,s_You_see_flames_everywhere__Bare_a_0047734c,0x100);
-  DAT_004c2b4c = 7;
+  perk_id_instant_winner = 7;
   _DAT_004c2ccc = FUN_0042fd00((uint3)extraout_ECX_13,s_Instant_Winner_0047733c,0x100);
   _DAT_004c2cd0 =
        FUN_0042fd00((uint3)extraout_ECX_14,s_2500_experience_points__Right_aw_00477300,0x100);
   DAT_004c2cd4 = DAT_004c2cd4 | 4;
-  DAT_004c2b70 = 8;
+  perk_id_grim_deal = 8;
   _DAT_004c2ce8 = 0;
   _DAT_004c2ce0 = FUN_0042fd00((uint3)DAT_004c2cd4,s_Grim_Deal_004772f4,0x100);
   _DAT_004c2ce4 =
        FUN_0042fd00((uint3)extraout_ECX_15,s_I_ll_make_you_a_deal__I_ll_give_y_00477258,0x100);
-  DAT_004c2b74 = 9;
+  perk_id_alternate_weapon = 9;
   _DAT_004c2cfc = 1;
   _DAT_004c2cf4 = FUN_0042fd00((uint3)extraout_ECX_16,s_Alternate_Weapon_00477244,0x100);
   _DAT_004c2cf8 =
        FUN_0042fd00((uint3)extraout_ECX_17,s_Ever_fancied_about_having_two_we_00477140,0x100);
-  DAT_004c2b78 = 10;
+  perk_id_plaguebearer = 10;
   _DAT_004c2d08 = FUN_0042fd00((uint3)extraout_ECX_18,s_Plaguebearer_00477130,0x100);
   _DAT_004c2d0c =
        FUN_0042fd00((uint3)extraout_ECX_19,s_You_carry_a_horrible_disease__Go_004770a4,0x100);
-  DAT_004c2b88 = 0xb;
+  perk_id_evil_eyes = 0xb;
   _DAT_004c2d1c = FUN_0042fd00((uint3)extraout_ECX_20,s_Evil_Eyes_00477098,0x100);
   _DAT_004c2d20 =
        FUN_0042fd00((uint3)extraout_ECX_21,s_No_living__nor_dead__can_resist_t_0047702c,0x100);
-  DAT_004c2b80 = 0xc;
+  perk_id_ammo_maniac = 0xc;
   _DAT_004c2d30 = FUN_0042fd00((uint3)extraout_ECX_22,s_Ammo_Maniac_00477020,0x100);
   _DAT_004c2d34 =
        FUN_0042fd00((uint3)extraout_ECX_23,s_You_squeeze_and_you_push_and_you_00476f80,0x100);
-  DAT_004c2b7c = 0xd;
+  perk_id_radioactive = 0xd;
   _DAT_004c2d44 = FUN_0042fd00((uint3)extraout_ECX_24,s_Radioactive_00476f74,0x100);
   _DAT_004c2d48 =
        FUN_0042fd00((uint3)extraout_ECX_25,s_You_are_the_Radioactive_man__you_00476eb0,0x100);
-  DAT_004c2b50 = 0xe;
+  perk_id_fastshot = 0xe;
   _DAT_004c2d58 = FUN_0042fd00((uint3)extraout_ECX_26,s_Fastshot_00476ea4,0x100);
   _DAT_004c2d5c =
        FUN_0042fd00((uint3)extraout_ECX_27,s_Funny_how_you_make_your_gun_spit_00476e28,0x100);
-  DAT_004c2c08 = 0xf;
+  perk_id_fatal_lottery = 0xf;
   _DAT_004c2d74 = 4;
   _DAT_004c2d6c = FUN_0042fd00((uint3)extraout_ECX_28,s_Fatal_Lottery_00476e18,0x100);
   _DAT_004c2d70 =
        FUN_0042fd00((uint3)extraout_ECX_29,s_Fifty_fifty_chance_of_dying_OR_g_00476db4,0x100);
-  DAT_004c2c04 = 0x10;
+  perk_id_random_weapon = 0x10;
   _DAT_004c2d88 = 5;
   _DAT_004c2d80 = FUN_0042fd00((uint3)extraout_ECX_30,s_Random_Weapon_00476da4,0x100);
   _DAT_004c2d84 =
        FUN_0042fd00((uint3)extraout_ECX_31,s_Here__have_this_weapon__No_quest_00476d78,0x100);
-  DAT_004c2bac = 0x11;
+  perk_id_mr_melee = 0x11;
   _DAT_004c2d94 = FUN_0042fd00((uint3)extraout_ECX_32,s_Mr__Melee_00476d6c,0x100);
   _DAT_004c2d98 =
        FUN_0042fd00((uint3)extraout_ECX_33,s_You_master_the_art_of_melee_figh_00476cfc,0x100);
-  DAT_004c2b90 = 0x12;
+  perk_id_anxious_loader = 0x12;
   _DAT_004c2da8 = FUN_0042fd00((uint3)extraout_ECX_34,s_Anxious_Loader_00476cec,0x100);
   _DAT_004c2dac =
        FUN_0042fd00((uint3)extraout_ECX_35,s_When_you_can_t_stand_waiting_you_00476c5c,0x100);
-  DAT_004c2b94 = 0x13;
+  perk_id_final_revenge = 0x13;
   _DAT_004c2dc4 = 0;
   _DAT_004c2dbc = FUN_0042fd00((uint3)extraout_ECX_36,s_Final_Revenge_00476c4c,0x100);
   _DAT_004c2dc0 =
        FUN_0042fd00((uint3)extraout_ECX_37,s_Pick_this_and_you_ll_get_your_re_00476c14,0x100);
-  DAT_004c2bf8 = 0x14;
+  perk_id_telekinetic = 0x14;
   _DAT_004c2dd0 = FUN_0042fd00((uint3)extraout_ECX_38,s_Telekinetic_00476c08,0x100);
   _DAT_004c2dd4 =
        FUN_0042fd00((uint3)extraout_ECX_39,s_Picking_up_bonuses_has_never_bee_00476b8c,0x100);
-  DAT_004c2ba0 = 0x15;
+  perk_id_perk_expert = 0x15;
   _DAT_004c2de4 = FUN_0042fd00((uint3)extraout_ECX_40,s_Perk_Expert_00476b80,0x100);
   _DAT_004c2de8 =
        FUN_0042fd00((uint3)extraout_ECX_41,s_You_sure_know_how_to_pick_a_perk_00476acc,0x100);
-  DAT_004c2b98 = 0x16;
+  perk_id_unstoppable = 0x16;
   _DAT_004c2df8 = FUN_0042fd00((uint3)extraout_ECX_42,s_Unstoppable_00476ac0,0x100);
   _DAT_004c2dfc =
        FUN_0042fd00((uint3)extraout_ECX_43,s_Monsters_can_t_slow_you_down_wit_00476a4c,0x100);
-  DAT_004c2bd0 = 0x17;
+  perk_id_regression_bullets = 0x17;
   _DAT_004c2e0c = FUN_0042fd00((uint3)extraout_ECX_44,s_Regression_Bullets_00476a38,0x100);
   _DAT_004c2e10 =
        FUN_0042fd00((uint3)extraout_ECX_45,s_Attempt_to_shoot_with_an_empty_c_004769c0,0x100);
-  DAT_004c2b9c = 0x18;
+  perk_id_infernal_contract = 0x18;
   _DAT_004c2e20 = FUN_0042fd00((uint3)extraout_ECX_46,s_Infernal_Contract_004769ac,0x100);
   _DAT_004c2e24 =
        FUN_0042fd00((uint3)extraout_ECX_47,s_In_exchange_for_your_soul__a_dar_004768d0,0x100);
-  DAT_004c2bf4 = 0x19;
+  perk_id_poison_bullets = 0x19;
   _DAT_004c2e34 = FUN_0042fd00((uint3)extraout_ECX_48,s_Poison_Bullets_004768c0,0x100);
   _DAT_004c2e38 =
        FUN_0042fd00((uint3)extraout_ECX_49,s_You_tend_to_explicitly_treat_eac_00476834,0x100);
-  DAT_004c2bdc = 0x1a;
+  perk_id_dodger = 0x1a;
   _DAT_004c2e48 = FUN_0042fd00((uint3)extraout_ECX_50,s_Dodger_0047682c,0x100);
   _DAT_004c2e4c =
        FUN_0042fd00((uint3)extraout_ECX_51,s_It_seems_so_stupid_just_to_take_t_004767b8,0x100);
-  DAT_004c2ba8 = 0x1b;
+  perk_id_bonus_magnet = 0x1b;
   _DAT_004c2e5c = FUN_0042fd00((uint3)extraout_ECX_52,s_Bonus_Magnet_004767a8,0x100);
   _DAT_004c2e60 =
        FUN_0042fd00((uint3)extraout_ECX_53,s_You_somehow_seem_to_lure_all_kin_00476758,0x100);
-  DAT_004c2c00 = 0x1c;
+  perk_id_uranium_filled_bullets = 0x1c;
   _DAT_004c2e70 = FUN_0042fd00((uint3)extraout_ECX_54,s_Uranium_Filled_Bullets_00476740,0x100);
   _DAT_004c2e74 =
        FUN_0042fd00((uint3)extraout_ECX_55,s_Your_bullets_have_a_nice_creamy_u_004766d8,0x100);
-  DAT_004c2b60 = 0x1d;
+  perk_id_doctor = 0x1d;
   _DAT_004c2e84 = FUN_0042fd00((uint3)extraout_ECX_56,s_Doctor_004766d0,0x100);
   _DAT_004c2e88 =
        FUN_0042fd00((uint3)extraout_ECX_57,s_With_a_single_glance_you_can_tel_0047660c,0x100);
-  DAT_004c2be8 = 0x1e;
+  perk_id_monster_vision = 0x1e;
   _DAT_004c2e98 = FUN_0042fd00((uint3)extraout_ECX_58,s_Monster_Vision_004765fc,0x100);
   _DAT_004c2e9c =
        FUN_0042fd00((uint3)extraout_ECX_59,s_With_your_newly_enhanced_senses_y_00476598,0x100);
-  DAT_004c2bfc = 0x1f;
+  perk_id_hot_tempered = 0x1f;
   _DAT_004c2eac = FUN_0042fd00((uint3)extraout_ECX_60,s_Hot_Tempered_00476588,0x100);
   _DAT_004c2eb0 =
        FUN_0042fd00((uint3)extraout_ECX_61,s_It_literally_boils_inside_you__T_0047650c,0x100);
-  DAT_004c2bf0 = 0x20;
+  perk_id_bonus_economist = 0x20;
   _DAT_004c2ec0 = FUN_0042fd00((uint3)extraout_ECX_62,s_Bonus_Economist_004764fc,0x100);
   _DAT_004c2ec4 =
        FUN_0042fd00((uint3)extraout_ECX_63,s_Your_bonus_power_ups_last_50__lo_004764bc,0x100);
   DAT_004c2bcc = 0;
-  DAT_004c2bc0 = 0x21;
+  perk_id_thick_skinned = 0x21;
   _DAT_004c2ed4 = FUN_0042fd00((uint3)extraout_ECX_64,s_Thick_Skinned_004764ac,0x100);
   _DAT_004c2ed8 =
        FUN_0042fd00((uint3)extraout_ECX_65,s_Trade_1_3_of_your_health_for_onl_00476464,0x100);
-  DAT_004c2bec = 0x22;
+  perk_id_barrel_greaser = 0x22;
   _DAT_004c2ee8 = FUN_0042fd00((uint3)extraout_ECX_66,s_Barrel_Greaser_00476454,0x100);
   _DAT_004c2eec =
        FUN_0042fd00((uint3)extraout_ECX_67,s_After_studying_a_lot_of_physics_a_004763d0,0x100);
-  DAT_004c2bc8 = 0x23;
+  perk_id_ammunition_within = 0x23;
   _DAT_004c2efc = FUN_0042fd00((uint3)extraout_ECX_68,s_Ammunition_Within_004763bc,0x100);
   _DAT_004c2f00 =
        FUN_0042fd00((uint3)extraout_ECX_69,s_Empty_clip_doesn_t_prevent_you_f_00476334,0x100);
-  DAT_004c2bb8 = 0x24;
+  perk_id_veins_of_poison = 0x24;
   _DAT_004c2f10 = FUN_0042fd00((uint3)extraout_ECX_70,s_Veins_of_Poison_00476324,0x100);
   _DAT_004c2f14 =
        FUN_0042fd00((uint3)extraout_ECX_71,s_A_strong_poison_runs_through_you_004762ac,0x100);
-  DAT_004c2bbc = 0x25;
+  perk_id_toxic_avenger = 0x25;
   _DAT_004c2f24 = FUN_0042fd00((uint3)extraout_ECX_72,s_Toxic_Avenger_0047629c,0x100);
   _DAT_004c2f28 =
        FUN_0042fd00((uint3)extraout_ECX_73,s_You_started_out_just_by_being_po_004761dc,0x100);
-  DAT_004c2bb0 = 0x26;
-  _DAT_004c2f34 = DAT_004c2bb8;
+  perk_id_regeneration = 0x26;
+  _DAT_004c2f34 = perk_id_veins_of_poison;
   _DAT_004c2f38 = FUN_0042fd00((uint3)extraout_ECX_74,s_Regeneration_004761cc,0x100);
   _DAT_004c2f3c =
        FUN_0042fd00((uint3)extraout_ECX_75,s_Your_health_replenishes_but_very_00476188,0x100);
-  DAT_004c2bd4 = 0x27;
+  perk_id_pyromaniac = 0x27;
   _DAT_004c2f4c = FUN_0042fd00((uint3)extraout_ECX_76,s_Pyromaniac_0047617c,0x100);
   _DAT_004c2f50 =
        FUN_0042fd00((uint3)extraout_ECX_77,s_You_just_enjoy_using_fire_as_you_004760fc,0x100);
-  DAT_004c2be0 = 0x28;
+  perk_id_ninja = 0x28;
   _DAT_004c2f60 = FUN_0042fd00((uint3)extraout_ECX_78,s_Ninja_004760f4,0x100);
   _DAT_004c2f64 =
        FUN_0042fd00((uint3)extraout_ECX_79,s_You_ve_taken_your_dodging_abilit_00476090,0x100);
-  _DAT_004c2f70 = DAT_004c2bdc;
-  DAT_004c2bd8 = 0x29;
+  _DAT_004c2f70 = perk_id_dodger;
+  perk_id_highlander = 0x29;
   _DAT_004c2f7c = 0;
-  _DAT_004c2f74 = FUN_0042fd00((uint3)DAT_004c2bdc,s_Highlander_00476084,0x100);
+  _DAT_004c2f74 = FUN_0042fd00((uint3)perk_id_dodger,s_Highlander_00476084,0x100);
   _DAT_004c2f78 =
        FUN_0042fd00((uint3)extraout_ECX_80,s_You_are_immortal__Well__almost_i_00475fb8,0x100);
-  DAT_004c2b68 = 0x2a;
+  perk_id_jinxed = 0x2a;
   _DAT_004c2f88 = FUN_0042fd00((uint3)extraout_ECX_81,s_Jinxed_00475fb0,0x100);
   _DAT_004c2f8c =
        FUN_0042fd00((uint3)extraout_ECX_82,s_Things_happen_near_you__Stranges_00475f4c,0x100);
-  DAT_004c2ba4 = 0x2b;
+  perk_id_perk_master = 0x2b;
   _DAT_004c2f9c = FUN_0042fd00((uint3)extraout_ECX_83,s_Perk_Master_00475f40,0x100);
   _DAT_004c2fa0 =
        FUN_0042fd00((uint3)extraout_ECX_84,s_Being_the_Perk_Expert_taught_you_00475eb4,0x100);
-  _DAT_004c2fac = DAT_004c2ba0;
-  DAT_004c2b58 = 0x2c;
+  _DAT_004c2fac = perk_id_perk_expert;
+  perk_id_reflex_boosted = 0x2c;
   _DAT_004c2fb0 = FUN_0042fd00((uint3)extraout_ECX_85,s_Reflex_Boosted_00475ea4,0x100);
   _DAT_004c2fb4 =
        FUN_0042fd00((uint3)extraout_ECX_86,s_To_you_the_world_seems_to_go_on_a_00475e00,0x100);
-  DAT_004c2bb4 = 0x2d;
+  perk_id_greater_regeneration = 0x2d;
   _DAT_004c2fc4 = FUN_0042fd00((uint3)extraout_ECX_87,s_Greater_Regeneration_00475de8,0x100);
   _DAT_004c2fc8 =
        FUN_0042fd00((uint3)extraout_ECX_88,s_Your_health_replenishes_faster_t_00475dbc,0x100);
-  DAT_004c2bc4 = 0x2e;
-  _DAT_004c2fd4 = DAT_004c2bb0;
+  perk_id_breathing_room = 0x2e;
+  _DAT_004c2fd4 = perk_id_regeneration;
   _DAT_004c2fe0 = 2;
   _DAT_004c2fd8 = FUN_0042fd00((uint3)extraout_ECX_89,s_Breathing_Room_00475dac,0x100);
   _DAT_004c2fdc =
        FUN_0042fd00((uint3)extraout_ECX_90,s_Trade_2_3rds_of_your_health_for_t_00475d34,0x100);
-  DAT_004c2c14 = 0x2f;
+  perk_id_death_clock = 0x2f;
   _DAT_004c2fec = FUN_0042fd00((uint3)extraout_ECX_91,s_Death_Clock_00475d28,0x100);
   _DAT_004c2ff0 =
        FUN_0042fd00((uint3)extraout_ECX_92,s_You_die_exactly_in_30_seconds__Y_00475cbc,0x100);
-  DAT_004c2c18 = 0x30;
+  perk_id_my_favourite_weapon = 0x30;
   _DAT_004c3000 = FUN_0042fd00((uint3)extraout_ECX_93,s_My_Favourite_Weapon_00475ca8,0x100);
   _DAT_004c3004 =
        FUN_0042fd00((uint3)extraout_ECX_94,s_You_ve_grown_very_fond_of_your_p_00475c14,0x100);
-  DAT_004c2c1c = 0x31;
+  perk_id_bandage = 0x31;
   _DAT_004c3014 = FUN_0042fd00((uint3)extraout_ECX_95,s_Bandage_00475c0c,0x100);
   _DAT_004c3018 =
        FUN_0042fd00((uint3)extraout_ECX_96,s_Here__eat_this_bandage_and_you_l_00475bb0,0x100);
-  DAT_004c2c20 = 0x32;
+  perk_id_angry_reloader = 0x32;
   _DAT_004c3028 = FUN_0042fd00((uint3)extraout_ECX_97,s_Angry_Reloader_00475ba0,0x100);
   _DAT_004c302c =
        FUN_0042fd00((uint3)extraout_ECX_98,s_You_hate_it_when_you_run_out_of_s_00475ab4,0x100);
-  DAT_004c2c0c = 0x33;
+  perk_id_ion_gun_master = 0x33;
   _DAT_004c303c = FUN_0042fd00((uint3)extraout_ECX_99,s_Ion_Gun_Master_00475aa4,0x100);
   _DAT_004c3040 =
        FUN_0042fd00((uint3)extraout_ECX_x00100,s_You_re_good_with_ion_weapons__Yo_00475a18,0x100);
-  DAT_004c2c10 = 0x34;
+  perk_id_stationary_reloader = 0x34;
   _DAT_004c3050 = FUN_0042fd00((uint3)extraout_ECX_x00101,s_Stationary_Reloader_00475a04,0x100);
   _DAT_004c3054 =
        FUN_0042fd00((uint3)extraout_ECX_x00102,s_It_s_incredibly_hard_to_reload_y_0047594c,0x100);
-  DAT_004c2c24 = 0x35;
+  perk_id_man_bomb = 0x35;
   _DAT_004c3064 = FUN_0042fd00((uint3)extraout_ECX_x00103,s_Man_Bomb_00475940,0x100);
   _DAT_004c3068 =
        FUN_0042fd00((uint3)extraout_ECX_x00104,s_You_have_the_ability_to_go_boom_f_004758a8,0x100);
-  DAT_004c2c2c = 0x36;
+  perk_id_fire_caugh = 0x36;
   _DAT_004c3078 = FUN_0042fd00((uint3)extraout_ECX_x00105,s_Fire_Caugh_0047589c,0x100);
   _DAT_004c307c =
        FUN_0042fd00((uint3)extraout_ECX_x00106,s_You_have_a_fireball_stuck_in_you_00475850,0x100);
-  DAT_004c2c28 = 0x37;
+  perk_id_living_fortress = 0x37;
   _DAT_004c308c = FUN_0042fd00((uint3)extraout_ECX_x00107,s_Living_Fortress_00475840,0x100);
   _DAT_004c3090 =
        FUN_0042fd00((uint3)extraout_ECX_x00108,s_It_comes_a_time_in_each_man_s_li_0047577c,0x100);
-  DAT_004c2c30 = 0x38;
+  perk_id_tough_reloader = 0x38;
   _DAT_004c30a0 = FUN_0042fd00((uint3)extraout_ECX_x00109,s_Tough_Reloader_0047576c,0x100);
   _DAT_004c30a4 =
        FUN_0042fd00((uint3)extraout_ECX_x00110,s_Damage_received_during_reloading_00475734,0x100);
-  DAT_004c2be4 = 0x39;
+  perk_id_lifeline_50_50 = 0x39;
   _DAT_004c30b4 = FUN_0042fd00((uint3)extraout_ECX_x00111,s_Lifeline_50_50_00475724,0x100);
   _DAT_004c30b8 =
        FUN_0042fd00((uint3)extraout_ECX_x00112,s_The_computer_removes_half_of_the_004756cc,0x100);
@@ -23675,7 +23684,7 @@ void __cdecl FUN_00430a20(int *param_1,int param_2,uint param_3,uint *param_4)
   }
   pcVar2 = strdup_malloc((char *)param_4);
   param_1[3] = (int)pcVar2;
-  param_1[8] = DAT_004c2b40;
+  param_1[8] = perk_id_antiperk;
   iVar1 = param_2 * 2 + -2;
   param_1[9] = 0;
   *param_1 = param_2;
@@ -26284,66 +26293,66 @@ void quest_database_init(void)
   _DAT_00484db0 = 0x16;
   _DAT_00484ddc = 0;
   _DAT_00484e08 = 0x17;
-  DAT_00484750 = DAT_004c2b40;
-  DAT_0048477c = DAT_004c2b40;
+  DAT_00484750 = perk_id_antiperk;
+  DAT_0048477c = perk_id_antiperk;
   _DAT_004847a8 = 0x1c;
-  _DAT_004847d4 = DAT_004c2b40;
+  _DAT_004847d4 = perk_id_antiperk;
   _DAT_00484800 = 0x1d;
-  _DAT_0048482c = DAT_004c2b40;
+  _DAT_0048482c = perk_id_antiperk;
   _DAT_00484858 = 0x1e;
-  _DAT_00484884 = DAT_004c2b40;
+  _DAT_00484884 = perk_id_antiperk;
   _DAT_004848b0 = 0x1f;
-  _DAT_004848dc = DAT_004c2b40;
+  _DAT_004848dc = perk_id_antiperk;
   _DAT_00484908 = 0x20;
-  _DAT_00484934 = DAT_004c2b40;
+  _DAT_00484934 = perk_id_antiperk;
   _DAT_00484960 = 0x21;
-  _DAT_0048498c = DAT_004c2b40;
+  _DAT_0048498c = perk_id_antiperk;
   _DAT_004849b8 = 0x22;
-  _DAT_004849e4 = DAT_004c2b40;
+  _DAT_004849e4 = perk_id_antiperk;
   _DAT_00484a10 = 0x23;
-  _DAT_00484a3c = DAT_004c2b40;
+  _DAT_00484a3c = perk_id_antiperk;
   _DAT_00484a68 = 0x24;
-  _DAT_00484a94 = DAT_004c2b40;
+  _DAT_00484a94 = perk_id_antiperk;
   _DAT_00484ac0 = 0x25;
-  _DAT_00484aec = DAT_004c2b40;
+  _DAT_00484aec = perk_id_antiperk;
   _DAT_00484b18 = 0x26;
-  _DAT_00484b44 = DAT_004c2b40;
+  _DAT_00484b44 = perk_id_antiperk;
   _DAT_00484b70 = 0x27;
-  _DAT_00484b9c = DAT_004c2b40;
+  _DAT_00484b9c = perk_id_antiperk;
   _DAT_00484bc8 = 0x28;
-  _DAT_00484bf4 = DAT_004c2b40;
+  _DAT_00484bf4 = perk_id_antiperk;
   _DAT_00484c20 = 0x29;
-  _DAT_00484c4c = DAT_004c2b40;
+  _DAT_00484c4c = perk_id_antiperk;
   _DAT_00484c78 = 0x2a;
-  _DAT_00484ca4 = DAT_004c2b40;
+  _DAT_00484ca4 = perk_id_antiperk;
   _DAT_00484cd0 = 0x2b;
-  _DAT_00484cfc = DAT_004c2b40;
+  _DAT_00484cfc = perk_id_antiperk;
   _DAT_00484d28 = 0x2c;
-  _DAT_00484d54 = DAT_004c2b40;
+  _DAT_00484d54 = perk_id_antiperk;
   _DAT_00484d80 = 0x2d;
-  _DAT_00484dac = DAT_004c2b40;
+  _DAT_00484dac = perk_id_antiperk;
   _DAT_00484dd8 = 0x2e;
-  _DAT_00484e04 = DAT_004c2b40;
+  _DAT_00484e04 = perk_id_antiperk;
   _DAT_00484e34 = 0x1f;
-  _DAT_00484e30 = DAT_004c2b40;
+  _DAT_00484e30 = perk_id_antiperk;
   _DAT_00484e60 = 0;
   _DAT_00484e5c = 0x2f;
   _DAT_00484e8c = 0;
   _DAT_00484e88 = 0x30;
   _DAT_00484eb8 = 0x1e;
-  _DAT_00484eb4 = DAT_004c2b40;
+  _DAT_00484eb4 = perk_id_antiperk;
   _DAT_00484ee4 = 0;
   _DAT_00484ee0 = 0x31;
   _DAT_00484f10 = 0;
   _DAT_00484f0c = 0x32;
   _DAT_00484f3c = 0;
-  _DAT_00484f38 = DAT_004c2b40;
+  _DAT_00484f38 = perk_id_antiperk;
   _DAT_00484f68 = 0;
   _DAT_00484f64 = 0x33;
   _DAT_00484f94 = 0;
   _DAT_00484f90 = 0x34;
   _DAT_00484fc0 = 0x1c;
-  _DAT_00484fbc = DAT_004c2b40;
+  _DAT_00484fbc = perk_id_antiperk;
   return;
 }
 
@@ -31017,9 +31026,9 @@ void __cdecl FUN_00444980(char param_1,char param_2)
     bVar4 = false;
     if ((((float)(&player_shot_cooldown)[iVar6 * 0xd8] <= 0.0) &&
         (0 < (int)(&player_experience)[iVar6 * 0xd8])) &&
-       ((iVar6 = perk_count_get(DAT_004c2bd0), iVar6 != 0 ||
-        (iVar7 = perk_count_get(DAT_004c2bc8), iVar6 = render_overlay_player_index, bVar4 = false,
-        iVar7 != 0)))) {
+       ((iVar6 = perk_count_get(perk_id_regression_bullets), iVar6 != 0 ||
+        (iVar7 = perk_count_get(perk_id_ammunition_within), iVar6 = render_overlay_player_index,
+        bVar4 = false, iVar7 != 0)))) {
       bVar4 = true;
       iVar6 = render_overlay_player_index;
     }
@@ -31078,9 +31087,9 @@ void __cdecl FUN_00444980(char param_1,char param_2)
             (&projectile_speed_scale)[iVar6 * 0x10] = (float)(iVar10 % 100) * 0.01 + 1.0;
           } while (iVar7 != 0);
         }
-        iVar7 = DAT_004c2b48;
+        iVar7 = perk_id_sharpshooter;
         iVar6 = render_overlay_player_index;
-        if ((int)(&player_perk_counts)[DAT_004c2b48] < 1) {
+        if ((int)(&player_perk_counts)[perk_id_sharpshooter] < 1) {
           (&player_spread_heat)[render_overlay_player_index * 0xd8] =
                _DAT_00473a40 * frame_dt * 150.0 +
                (float)(&player_spread_heat)[render_overlay_player_index * 0xd8];
@@ -31088,7 +31097,7 @@ void __cdecl FUN_00444980(char param_1,char param_2)
         if (_DAT_00473a40 + _DAT_00473a40 < (float)(&player_spread_heat)[iVar6 * 0xd8]) {
           (&player_spread_heat)[iVar6 * 0xd8] = _DAT_00473a40 + _DAT_00473a40;
         }
-        iVar10 = DAT_004c2b50;
+        iVar10 = perk_id_fastshot;
         (&player_spread_heat)[iVar6 * 0xd8] =
              _DAT_00473a40 * (float)(&player_spread_heat)[iVar6 * 0xd8];
         if (0 < (int)(&player_perk_counts)[iVar10]) {
@@ -35284,7 +35293,7 @@ void __cdecl weapon_assign_player(int player_index,int weapon_id)
   }
   iVar2 = weapon_id * 0x7c;
   (&player_weapon_id)[player_index * 0xd8] = weapon_id;
-  iVar1 = DAT_004c2b80;
+  iVar1 = perk_id_ammo_maniac;
   (&player_clip_size)[player_index * 0xd8] = (float)(int)(&DAT_004d7a70)[weapon_id * 0x1f];
   iVar1 = perk_count_get(iVar1);
   if (iVar1 != 0) {
@@ -35296,7 +35305,7 @@ void __cdecl weapon_assign_player(int player_index,int weapon_id)
     (&player_clip_size)[player_index * 0xd8] =
          (float)weapon_id + (float)(&player_clip_size)[player_index * 0xd8];
   }
-  iVar1 = perk_count_get(DAT_004c2c18);
+  iVar1 = perk_count_get(perk_id_my_favourite_weapon);
   if (iVar1 != 0) {
     (&player_clip_size)[player_index * 0xd8] = (float)(&player_clip_size)[player_index * 0xd8] + 2.0
     ;
@@ -45508,21 +45517,21 @@ int __cdecl crt_close(int fd)
 int __cdecl crt_close_nolock(int fd)
 
 {
-  int iVar1;
-  int iVar2;
-  HANDLE hObject;
+  void *pvVar1;
+  void *pvVar2;
   WINBOOL WVar3;
   DWORD os_error;
+  int iVar4;
   
-  iVar1 = FUN_0046acb6(fd);
-  if (iVar1 != -1) {
+  pvVar1 = crt_get_osfhandle(fd);
+  if (pvVar1 != (void *)0xffffffff) {
     if ((fd == 1) || (fd == 2)) {
-      iVar1 = FUN_0046acb6(2);
-      iVar2 = FUN_0046acb6(1);
-      if (iVar2 == iVar1) goto LAB_00463ef4;
+      pvVar1 = crt_get_osfhandle(2);
+      pvVar2 = crt_get_osfhandle(1);
+      if (pvVar2 == pvVar1) goto LAB_00463ef4;
     }
-    hObject = (HANDLE)FUN_0046acb6(fd);
-    WVar3 = CloseHandle(hObject);
+    pvVar1 = crt_get_osfhandle(fd);
+    WVar3 = CloseHandle(pvVar1);
     if (WVar3 == 0) {
       os_error = GetLastError();
       goto LAB_00463ef6;
@@ -45534,13 +45543,13 @@ LAB_00463ef6:
   FUN_0046ac37(fd);
   *(undefined1 *)((&DAT_004da3c0)[fd >> 5] + 4 + (fd & 0x1fU) * 0x24) = 0;
   if (os_error == 0) {
-    iVar1 = 0;
+    iVar4 = 0;
   }
   else {
     crt_dosmaperr(os_error);
-    iVar1 = -1;
+    iVar4 = -1;
   }
-  return iVar1;
+  return iVar4;
 }
 
 
@@ -46942,7 +46951,7 @@ void __cdecl crt_free_thread_data(undefined *param_1)
 int __cdecl crt_commit(int fd)
 
 {
-  HANDLE hFile;
+  void *hFile;
   WINBOOL WVar1;
   DWORD DVar2;
   uint *puVar3;
@@ -46959,7 +46968,7 @@ LAB_00465640:
   if ((*(byte *)((&DAT_004da3c0)[fd >> 5] + 4 + iVar5) & 1) == 0) goto LAB_00465640;
   crt_lock_fh(fd);
   if ((*(byte *)((&DAT_004da3c0)[fd >> 5] + 4 + iVar5) & 1) != 0) {
-    hFile = (HANDLE)FUN_0046acb6(fd);
+    hFile = crt_get_osfhandle(fd);
     WVar1 = FlushFileBuffers(hFile);
     if (WVar1 == 0) {
       DVar2 = GetLastError();
@@ -48099,13 +48108,13 @@ long __cdecl crt_lseek_nolock(int fd,long offset,int origin)
 
 {
   byte *pbVar1;
-  HANDLE hFile;
+  void *hFile;
   int *piVar2;
   DWORD DVar3;
   uint os_error;
   
-  hFile = (HANDLE)FUN_0046acb6(fd);
-  if (hFile == (HANDLE)0xffffffff) {
+  hFile = crt_get_osfhandle(fd);
+  if (hFile == (void *)0xffffffff) {
     piVar2 = crt_errno_ptr();
     *piVar2 = 9;
   }
@@ -48179,7 +48188,7 @@ FUN_004664d1(LCID param_1,uint param_2,char *param_3,int param_4,LPWSTR param_5,
                                 0);
     if (iVar1 != 0) {
       local_8 = 0;
-      FUN_0046cda0();
+      crt_chkstk();
       local_8 = 0xffffffff;
       if ((&stack0x00000000 != (undefined1 *)0x3c) &&
          (iVar2 = MultiByteToWideChar(param_7,1,param_3,param_4,(LPWSTR)&stack0xffffffc4,iVar1),
@@ -48188,7 +48197,7 @@ FUN_004664d1(LCID param_1,uint param_2,char *param_3,int param_4,LPWSTR param_5,
         if (iVar2 != 0) {
           if ((param_2 & 0x400) == 0) {
             local_8 = 1;
-            FUN_0046cda0();
+            crt_chkstk();
             local_8 = 0xffffffff;
             if (&stack0x00000000 == (undefined1 *)0x3c) {
               ExceptionList = local_14;
@@ -48548,7 +48557,7 @@ int crt_heap_select(void)
   CHAR aCStackY_18 [4];
   byte bVar7;
   
-  FUN_0046cda0();
+  crt_chkstk();
   local_9c = 0x94;
   WVar2 = GetVersionExA((LPOSVERSIONINFOA)&local_9c);
   if (((WVar2 == 0) || (local_8c != 2)) || (local_98 < 5)) {
@@ -52961,7 +52970,7 @@ FUN_0046a8ce(DWORD param_1,LPCSTR param_2,int param_3,LPWORD param_4,UINT param_
                                   (LPWSTR)0x0,0);
       if (iVar3 != 0) {
         local_8 = 0;
-        FUN_0046cda0();
+        crt_chkstk();
         local_1c = &stack0xffffffc8;
         _memset(&stack0xffffffc8,0,iVar3 * 2);
         local_8 = 0xffffffff;
@@ -53134,23 +53143,25 @@ LAB_0046ac93:
 
 
 
-/* FUN_0046acb6 @ 0046acb6 */
+/* crt_get_osfhandle @ 0046acb6 */
 
-undefined4 __cdecl FUN_0046acb6(uint param_1)
+/* CRT: map file descriptor to OS handle */
+
+void * __cdecl crt_get_osfhandle(int fd)
 
 {
   int *piVar1;
   uint *puVar2;
   
-  if ((param_1 < DAT_004da4c0) &&
-     ((*(byte *)((&DAT_004da3c0)[(int)param_1 >> 5] + 4 + (param_1 & 0x1f) * 0x24) & 1) != 0)) {
-    return *(undefined4 *)((&DAT_004da3c0)[(int)param_1 >> 5] + (param_1 & 0x1f) * 0x24);
+  if (((uint)fd < DAT_004da4c0) &&
+     ((*(byte *)((&DAT_004da3c0)[fd >> 5] + 4 + (fd & 0x1fU) * 0x24) & 1) != 0)) {
+    return *(void **)((&DAT_004da3c0)[fd >> 5] + (fd & 0x1fU) * 0x24);
   }
   piVar1 = crt_errno_ptr();
   *piVar1 = 9;
   puVar2 = crt_doserrno_ptr();
   *puVar2 = 0;
-  return 0xffffffff;
+  return (void *)0xffffffff;
 }
 
 
@@ -54686,11 +54697,12 @@ byte * __cdecl FUN_0046cd60(byte *param_1,byte *param_2)
 
 
 
-/* FUN_0046cda0 @ 0046cda0 */
+/* crt_chkstk @ 0046cda0 */
 
 /* WARNING: Unable to track spacebase fully for stack */
+/* CRT: stack probing helper for large alloca (size in EAX) */
 
-void FUN_0046cda0(void)
+void crt_chkstk(void)
 
 {
   uint in_EAX;
@@ -55952,7 +55964,7 @@ int __cdecl crt_chsize(int fd,int size)
   int iVar3;
   uint *puVar4;
   int *piVar5;
-  HANDLE hFile;
+  void *hFile;
   WINBOOL WVar6;
   DWORD DVar7;
   int iVar8;
@@ -55960,7 +55972,7 @@ int __cdecl crt_chsize(int fd,int size)
   char local_1008 [4064];
   undefined4 uStackY_28;
   
-  FUN_0046cda0();
+  crt_chkstk();
   iVar8 = 0;
   offset = crt_lseek_nolock(fd,0,1);
   if ((offset == -1) || (lVar1 = crt_lseek_nolock(fd,0,2), lVar1 == -1)) {
@@ -55971,7 +55983,7 @@ int __cdecl crt_chsize(int fd,int size)
     if ((int)uVar9 < 1) {
       if ((int)uVar9 < 0) {
         crt_lseek_nolock(fd,size,0);
-        hFile = (HANDLE)FUN_0046acb6(fd);
+        hFile = crt_get_osfhandle(fd);
         WVar6 = SetEndOfFile(hFile);
         iVar8 = (WVar6 != 0) - 1;
         if (iVar8 == -1) {
@@ -56570,7 +56582,7 @@ FUN_0046e36f(LCID param_1,DWORD param_2,byte *param_3,int param_4,byte *param_5,
     local_20 = MultiByteToWideChar(param_7,9,(LPCCH)param_3,param_4,(LPWSTR)0x0,0);
     if (local_20 != 0) {
       local_8 = 0;
-      FUN_0046cda0();
+      crt_chkstk();
       local_8 = 0xffffffff;
       if ((&stack0x00000000 != (undefined1 *)0x50) &&
          (local_28 = (PCNZWCH)&stack0xffffffb0, local_1c = &stack0xffffffb0,
@@ -56580,7 +56592,7 @@ FUN_0046e36f(LCID param_1,DWORD param_2,byte *param_3,int param_4,byte *param_5,
         if (iVar2 != 0) {
           local_8 = 1;
           local_24 = iVar2;
-          FUN_0046cda0();
+          crt_chkstk();
           local_8 = 0xffffffff;
           if ((&stack0x00000000 != (undefined1 *)0x50) &&
              (local_2c = &stack0xffffffb0, local_1c = &stack0xffffffb0,

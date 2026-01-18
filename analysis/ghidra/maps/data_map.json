@@ -2469,6 +2469,384 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x004c2b40",
+      "name": "perk_id_antiperk",
+      "comment": "Perk ID constant for AntiPerk."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2b44",
+      "name": "perk_id_bloody_mess_quick_learner",
+      "comment": "Perk ID constant for Bloody Mess / Quick Learner."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2b48",
+      "name": "perk_id_sharpshooter",
+      "comment": "Perk ID constant for Sharpshooter."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2b4c",
+      "name": "perk_id_instant_winner",
+      "comment": "Perk ID constant for Instant Winner."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2b50",
+      "name": "perk_id_fastshot",
+      "comment": "Perk ID constant for Fastshot."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2b54",
+      "name": "perk_id_long_distance_runner",
+      "comment": "Perk ID constant for Long Distance Runner."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2b58",
+      "name": "perk_id_reflex_boosted",
+      "comment": "Perk ID constant for Reflex Boosted."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2b5c",
+      "name": "perk_id_fastloader",
+      "comment": "Perk ID constant for Fastloader."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2b60",
+      "name": "perk_id_doctor",
+      "comment": "Perk ID constant for Doctor."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2b64",
+      "name": "perk_id_pyrokinetic",
+      "comment": "Perk ID constant for Pyrokinetic."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2b68",
+      "name": "perk_id_jinxed",
+      "comment": "Perk ID constant for Jinxed."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2b70",
+      "name": "perk_id_grim_deal",
+      "comment": "Perk ID constant for Grim Deal."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2b74",
+      "name": "perk_id_alternate_weapon",
+      "comment": "Perk ID constant for Alternate Weapon."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2b78",
+      "name": "perk_id_plaguebearer",
+      "comment": "Perk ID constant for Plaguebearer."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2b7c",
+      "name": "perk_id_radioactive",
+      "comment": "Perk ID constant for Radioactive."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2b80",
+      "name": "perk_id_ammo_maniac",
+      "comment": "Perk ID constant for Ammo Maniac."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2b84",
+      "name": "perk_id_lean_mean_exp_machine",
+      "comment": "Perk ID constant for Lean Mean Exp Machine."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2b88",
+      "name": "perk_id_evil_eyes",
+      "comment": "Perk ID constant for Evil Eyes."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2b90",
+      "name": "perk_id_anxious_loader",
+      "comment": "Perk ID constant for Anxious Loader."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2b94",
+      "name": "perk_id_final_revenge",
+      "comment": "Perk ID constant for Final Revenge."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2b98",
+      "name": "perk_id_unstoppable",
+      "comment": "Perk ID constant for Unstoppable."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2b9c",
+      "name": "perk_id_infernal_contract",
+      "comment": "Perk ID constant for Infernal Contract."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2ba0",
+      "name": "perk_id_perk_expert",
+      "comment": "Perk ID constant for Perk Expert."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2ba4",
+      "name": "perk_id_perk_master",
+      "comment": "Perk ID constant for Perk Master."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2ba8",
+      "name": "perk_id_bonus_magnet",
+      "comment": "Perk ID constant for Bonus Magnet."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2bac",
+      "name": "perk_id_mr_melee",
+      "comment": "Perk ID constant for Mr. Melee."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2bb0",
+      "name": "perk_id_regeneration",
+      "comment": "Perk ID constant for Regeneration."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2bb4",
+      "name": "perk_id_greater_regeneration",
+      "comment": "Perk ID constant for Greater Regeneration."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2bb8",
+      "name": "perk_id_veins_of_poison",
+      "comment": "Perk ID constant for Veins of Poison."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2bbc",
+      "name": "perk_id_toxic_avenger",
+      "comment": "Perk ID constant for Toxic Avenger."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2bc0",
+      "name": "perk_id_thick_skinned",
+      "comment": "Perk ID constant for Thick Skinned."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2bc4",
+      "name": "perk_id_breathing_room",
+      "comment": "Perk ID constant for Breathing Room."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2bc8",
+      "name": "perk_id_ammunition_within",
+      "comment": "Perk ID constant for Ammunition Within."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2bd0",
+      "name": "perk_id_regression_bullets",
+      "comment": "Perk ID constant for Regression Bullets."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2bd4",
+      "name": "perk_id_pyromaniac",
+      "comment": "Perk ID constant for Pyromaniac."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2bd8",
+      "name": "perk_id_highlander",
+      "comment": "Perk ID constant for Highlander."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2bdc",
+      "name": "perk_id_dodger",
+      "comment": "Perk ID constant for Dodger."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2be0",
+      "name": "perk_id_ninja",
+      "comment": "Perk ID constant for Ninja."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2be4",
+      "name": "perk_id_lifeline_50_50",
+      "comment": "Perk ID constant for Lifeline 50-50."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2be8",
+      "name": "perk_id_monster_vision",
+      "comment": "Perk ID constant for Monster Vision."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2bec",
+      "name": "perk_id_barrel_greaser",
+      "comment": "Perk ID constant for Barrel Greaser."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2bf0",
+      "name": "perk_id_bonus_economist",
+      "comment": "Perk ID constant for Bonus Economist."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2bf4",
+      "name": "perk_id_poison_bullets",
+      "comment": "Perk ID constant for Poison Bullets."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2bf8",
+      "name": "perk_id_telekinetic",
+      "comment": "Perk ID constant for Telekinetic."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2bfc",
+      "name": "perk_id_hot_tempered",
+      "comment": "Perk ID constant for Hot Tempered."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2c00",
+      "name": "perk_id_uranium_filled_bullets",
+      "comment": "Perk ID constant for Uranium Filled Bullets."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2c04",
+      "name": "perk_id_random_weapon",
+      "comment": "Perk ID constant for Random Weapon."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2c08",
+      "name": "perk_id_fatal_lottery",
+      "comment": "Perk ID constant for Fatal Lottery."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2c0c",
+      "name": "perk_id_ion_gun_master",
+      "comment": "Perk ID constant for Ion Gun Master."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2c10",
+      "name": "perk_id_stationary_reloader",
+      "comment": "Perk ID constant for Stationary Reloader."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2c14",
+      "name": "perk_id_death_clock",
+      "comment": "Perk ID constant for Death Clock."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2c18",
+      "name": "perk_id_my_favourite_weapon",
+      "comment": "Perk ID constant for My Favourite Weapon."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2c1c",
+      "name": "perk_id_bandage",
+      "comment": "Perk ID constant for Bandage."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2c20",
+      "name": "perk_id_angry_reloader",
+      "comment": "Perk ID constant for Angry Reloader."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2c24",
+      "name": "perk_id_man_bomb",
+      "comment": "Perk ID constant for Man Bomb."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2c28",
+      "name": "perk_id_living_fortress",
+      "comment": "Perk ID constant for Living Fortress."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2c2c",
+      "name": "perk_id_fire_caugh",
+      "comment": "Perk ID constant for Fire Caugh."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2c30",
+      "name": "perk_id_tough_reloader",
+      "comment": "Perk ID constant for Tough Reloader."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2c40",
+      "name": "perk_name_table",
+      "comment": "Perk name pointer table (stride 0x14 bytes per perk)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2c44",
+      "name": "perk_desc_table",
+      "comment": "Perk description pointer table (perk_name_table + 0x04)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2c48",
+      "name": "perk_flags_table",
+      "comment": "Perk flags table (perk_name_table + 0x08)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2c4c",
+      "name": "perk_available_table",
+      "comment": "Perk availability table (perk_name_table + 0x0c)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004c2c50",
+      "name": "perk_prereq_table",
+      "comment": "Perk prerequisite table (perk_name_table + 0x10)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004c3c80",
       "name": "sfx_cooldown_table",
       "comment": "SFX cooldown table (per-id throttle used by sfx_play)."

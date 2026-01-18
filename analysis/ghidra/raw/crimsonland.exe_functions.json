@@ -4204,7 +4204,7 @@
     "address": "00463ea6",
     "signature": "int crt_close_nolock(int fd)",
     "external": false,
-    "calls": ["CloseHandle", "FUN_0046ac37", "FUN_0046acb6", "GetLastError", "crt_dosmaperr"]
+    "calls": ["CloseHandle", "FUN_0046ac37", "GetLastError", "crt_dosmaperr", "crt_get_osfhandle"]
   },
   {
     "name": "__freebuf",
@@ -4421,7 +4421,7 @@
     "address": "004655bf",
     "signature": "int crt_commit(int fd)",
     "external": false,
-    "calls": ["FUN_0046acb6", "FlushFileBuffers", "GetLastError", "crt_doserrno_ptr", "crt_errno_ptr", "crt_lock_fh", "crt_unlock_fh"]
+    "calls": ["FlushFileBuffers", "GetLastError", "crt_doserrno_ptr", "crt_errno_ptr", "crt_get_osfhandle", "crt_lock_fh", "crt_unlock_fh"]
   },
   {
     "name": "crt_write",
@@ -4561,14 +4561,14 @@
     "address": "0046645e",
     "signature": "long crt_lseek_nolock(int fd, long offset, int origin)",
     "external": false,
-    "calls": ["FUN_0046acb6", "GetLastError", "SetFilePointer", "crt_dosmaperr", "crt_errno_ptr"]
+    "calls": ["GetLastError", "SetFilePointer", "crt_dosmaperr", "crt_errno_ptr", "crt_get_osfhandle"]
   },
   {
     "name": "FUN_004664d1",
     "address": "004664d1",
     "signature": "int FUN_004664d1(LCID param_1, uint param_2, char * param_3, int param_4, LPWSTR param_5, int param_6, UINT param_7, int param_8)",
     "external": false,
-    "calls": ["FUN_0046cda0", "FUN_0046e5ec", "LCMapStringA", "LCMapStringW", "MultiByteToWideChar", "WideCharToMultiByte"]
+    "calls": ["FUN_0046e5ec", "LCMapStringA", "LCMapStringW", "MultiByteToWideChar", "WideCharToMultiByte", "crt_chkstk"]
   },
   {
     "name": "FUN_004666f5",
@@ -4631,7 +4631,7 @@
     "address": "00466a8e",
     "signature": "int crt_heap_select(void)",
     "external": false,
-    "calls": ["FUN_00466a61", "FUN_0046cda0", "GetEnvironmentVariableA", "GetModuleFileNameA", "GetVersionExA", "_strchr", "_strncmp", "_strstr", "crt_strtol_l"]
+    "calls": ["FUN_00466a61", "GetEnvironmentVariableA", "GetModuleFileNameA", "GetVersionExA", "_strchr", "_strncmp", "_strstr", "crt_chkstk", "crt_strtol_l"]
   },
   {
     "name": "crt_heap_init",
@@ -5149,7 +5149,7 @@
     "address": "0046a8ce",
     "signature": "BOOL FUN_0046a8ce(DWORD param_1, LPCSTR param_2, int param_3, LPWORD param_4, UINT param_5, LCID param_6, int param_7)",
     "external": false,
-    "calls": ["FUN_0046cda0", "GetStringTypeA", "GetStringTypeW", "MultiByteToWideChar", "_memset"]
+    "calls": ["GetStringTypeA", "GetStringTypeW", "MultiByteToWideChar", "_memset", "crt_chkstk"]
   },
   {
     "name": "FUN_0046aa98",
@@ -5173,9 +5173,9 @@
     "calls": ["SetStdHandle", "crt_doserrno_ptr", "crt_errno_ptr"]
   },
   {
-    "name": "FUN_0046acb6",
+    "name": "crt_get_osfhandle",
     "address": "0046acb6",
-    "signature": "undefined4 FUN_0046acb6(uint param_1)",
+    "signature": "void * crt_get_osfhandle(int fd)",
     "external": false,
     "calls": ["crt_doserrno_ptr", "crt_errno_ptr"]
   },
@@ -5334,9 +5334,9 @@
     "calls": []
   },
   {
-    "name": "FUN_0046cda0",
+    "name": "crt_chkstk",
     "address": "0046cda0",
-    "signature": "undefined FUN_0046cda0(void)",
+    "signature": "void crt_chkstk(void)",
     "external": false,
     "calls": []
   },
@@ -5541,7 +5541,7 @@
     "address": "0046dd16",
     "signature": "int crt_chsize(int fd, int size)",
     "external": false,
-    "calls": ["FUN_0046acb6", "FUN_0046cda0", "FUN_0046e261", "GetLastError", "SetEndOfFile", "_memset", "crt_doserrno_ptr", "crt_errno_ptr", "crt_lseek_nolock", "crt_write_nolock"]
+    "calls": ["FUN_0046e261", "GetLastError", "SetEndOfFile", "_memset", "crt_chkstk", "crt_doserrno_ptr", "crt_errno_ptr", "crt_get_osfhandle", "crt_lseek_nolock", "crt_write_nolock"]
   },
   {
     "name": "FUN_0046de3b",
@@ -5597,7 +5597,7 @@
     "address": "0046e36f",
     "signature": "int FUN_0046e36f(LCID param_1, DWORD param_2, byte * param_3, int param_4, byte * param_5, int param_6, UINT param_7)",
     "external": false,
-    "calls": ["CompareStringA", "CompareStringW", "FUN_0046cda0", "FUN_0046e5ec", "GetCPInfo", "MultiByteToWideChar"]
+    "calls": ["CompareStringA", "CompareStringW", "FUN_0046e5ec", "GetCPInfo", "MultiByteToWideChar", "crt_chkstk"]
   },
   {
     "name": "FUN_0046e5ec",
