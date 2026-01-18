@@ -56,11 +56,11 @@
     "calls": ["crt_atexit"]
   },
   {
-    "name": "FUN_004011f0",
+    "name": "console_log_node_free",
     "address": "004011f0",
-    "signature": "undefined4 * FUN_004011f0(void * this, byte param_1)",
+    "signature": "void * console_log_node_free(void * this, void * node, char free_self)",
     "external": false,
-    "calls": ["FUN_004011f0", "crt_free"]
+    "calls": ["console_log_node_free", "crt_free"]
   },
   {
     "name": "FUN_00401560",
@@ -74,14 +74,14 @@
     "address": "004016e0",
     "signature": "undefined FUN_004016e0(undefined4 * param_1)",
     "external": false,
-    "calls": ["FUN_004011f0", "crt_free"]
+    "calls": ["console_log_node_free", "crt_free"]
   },
   {
     "name": "console_push_line",
     "address": "004017a0",
     "signature": "undefined console_push_line(void * this, uint * param_1)",
     "external": false,
-    "calls": ["FUN_004011f0", "crt_free", "operator_new", "strdup_malloc"]
+    "calls": ["console_log_node_free", "crt_free", "operator_new", "strdup_malloc"]
   },
   {
     "name": "console_printf",
@@ -123,7 +123,7 @@
     "address": "00401dd0",
     "signature": "undefined FUN_00401dd0(int param_1)",
     "external": false,
-    "calls": ["FUN_00461140", "console_input_buffer"]
+    "calls": ["console_input_buffer", "crt_ci_pow"]
   },
   {
     "name": "console_register_cvar",
@@ -424,7 +424,7 @@
     "address": "00409890",
     "signature": "void bonus_apply(int player_index, int * bonus_entry)",
     "external": false,
-    "calls": ["FUN_0041a810", "FUN_00420040", "FUN_0042f6c0", "_rand", "creature_apply_damage", "effect_spawn", "effect_spawn_freeze_shard", "effect_spawn_freeze_shatter", "perk_count_get", "projectile_spawn", "sfx_play", "sfx_play_panned", "weapon_assign_player"]
+    "calls": ["FUN_0041a810", "FUN_00420040", "_rand", "creature_apply_damage", "effect_spawn", "effect_spawn_explosion_burst", "effect_spawn_freeze_shard", "effect_spawn_freeze_shatter", "perk_count_get", "projectile_spawn", "sfx_play", "sfx_play_panned", "weapon_assign_player"]
   },
   {
     "name": "bonus_update",
@@ -452,7 +452,7 @@
     "address": "0040aab0",
     "signature": "void gameplay_update_and_render(void)",
     "external": false,
-    "calls": ["FUN_00461140", "__ftol", "bonus_update", "camera_update", "console_input_poll", "creature_update_all", "demo_trial_overlay_render", "effects_update", "game_is_full_version", "game_sequence_get", "game_state_set", "gameplay_render_world", "hud_update_and_render", "input_primary_just_pressed", "perk_prompt_update_and_render", "perks_generate_choices", "perks_update_effects", "player_update", "projectile_update", "quest_mode_update"]
+    "calls": ["__ftol", "bonus_update", "camera_update", "console_input_poll", "creature_update_all", "crt_ci_pow", "demo_trial_overlay_render", "effects_update", "game_is_full_version", "game_sequence_get", "game_state_set", "gameplay_render_world", "hud_update_and_render", "input_primary_just_pressed", "perk_prompt_update_and_render", "perks_generate_choices", "perks_update_effects", "player_update", "projectile_update", "quest_mode_update"]
   },
   {
     "name": "FUN_0040b5d0",
@@ -704,7 +704,7 @@
     "address": "004136b0",
     "signature": "void player_update(void)",
     "external": false,
-    "calls": ["FUN_00413540", "FUN_00417640", "FUN_00417660", "FUN_0041e290", "FUN_0041e8d0", "FUN_0041e8f0", "FUN_0042eb10", "__ftol", "_rand", "effect_spawn", "fx_spawn_particle", "fx_spawn_particle_slow", "fx_spawn_secondary_projectile", "fx_spawn_sprite", "input_primary_just_pressed", "perk_count_get", "player_start_reload", "player_take_damage", "projectile_spawn", "sfx_play_panned"]
+    "calls": ["FUN_00413540", "FUN_00417640", "FUN_00417660", "FUN_0041e290", "FUN_0041e8d0", "FUN_0041e8f0", "__ftol", "_rand", "effect_spawn", "effect_spawn_blood_splatter", "fx_spawn_particle", "fx_spawn_particle_slow", "fx_spawn_secondary_projectile", "fx_spawn_sprite", "input_primary_just_pressed", "perk_count_get", "player_start_reload", "player_take_damage", "projectile_spawn", "sfx_play_panned"]
   },
   {
     "name": "FUN_00417640",
@@ -816,7 +816,7 @@
     "address": "0041a040",
     "signature": "void ui_cursor_render(void)",
     "external": false,
-    "calls": ["FUN_00461140", "effect_select_texture"]
+    "calls": ["crt_ci_pow", "effect_select_texture"]
   },
   {
     "name": "FUN_0041a320",
@@ -858,7 +858,7 @@
     "address": "0041aed0",
     "signature": "void ui_render_hud(void)",
     "external": false,
-    "calls": ["FUN_00461140", "__ftol", "bonus_hud_slot_update_and_render", "crt_atexit", "crt_sprintf", "ui_draw_progress_bar"]
+    "calls": ["__ftol", "bonus_hud_slot_update_and_render", "crt_atexit", "crt_ci_pow", "crt_sprintf", "ui_draw_progress_bar"]
   },
   {
     "name": "hud_update_and_render",
@@ -1187,7 +1187,7 @@
     "address": "00420b90",
     "signature": "void projectile_update(void)",
     "external": false,
-    "calls": ["FUN_0041e270", "FUN_00420040", "FUN_0042eb10", "FUN_0042f080", "FUN_0042f270", "FUN_0042f330", "FUN_0042f3f0", "FUN_0042f540", "FUN_0042f6c0", "__ftol", "_rand", "creature_apply_damage", "creature_find_in_radius", "creature_handle_death", "creatures_apply_radius_damage", "effect_spawn_freeze_shard", "fx_queue_add", "fx_queue_add_random", "fx_spawn_sprite", "perk_count_get"]
+    "calls": ["FUN_0041e270", "FUN_00420040", "FUN_0042f080", "FUN_0042f270", "FUN_0042f330", "FUN_0042f3f0", "FUN_0042f540", "__ftol", "_rand", "creature_apply_damage", "creature_find_in_radius", "creature_handle_death", "creatures_apply_radius_damage", "effect_spawn_blood_splatter", "effect_spawn_explosion_burst", "effect_spawn_freeze_shard", "fx_queue_add", "fx_queue_add_random", "fx_spawn_sprite", "perk_count_get"]
   },
   {
     "name": "projectile_render",
@@ -1208,14 +1208,14 @@
     "address": "00425e50",
     "signature": "void player_take_damage(int player_index, float damage)",
     "external": false,
-    "calls": ["FUN_0042f6c0", "_rand", "creature_apply_damage", "perk_count_get", "sfx_play_panned"]
+    "calls": ["_rand", "creature_apply_damage", "effect_spawn_explosion_burst", "perk_count_get", "sfx_play_panned"]
   },
   {
     "name": "creature_update_all",
     "address": "00426220",
     "signature": "void creature_update_all(void)",
     "external": false,
-    "calls": ["FUN_00425d80", "FUN_0042eb10", "__ftol", "_rand", "angle_approach", "creature_apply_damage", "creature_handle_death", "creature_spawn_template", "effect_spawn_burst", "fx_queue_add_random", "fx_queue_add_rotated", "perk_count_get", "player_take_damage", "projectile_spawn", "sfx_play_panned", "thunk_FUN_00452f1d", "vec2_add_inplace"]
+    "calls": ["FUN_00425d80", "__ftol", "_rand", "angle_approach", "creature_apply_damage", "creature_handle_death", "creature_spawn_template", "effect_spawn_blood_splatter", "effect_spawn_burst", "fx_queue_add_random", "fx_queue_add_rotated", "perk_count_get", "player_take_damage", "projectile_spawn", "sfx_play_panned", "thunk_FUN_00452f1d", "vec2_add_inplace"]
   },
   {
     "name": "fx_queue_add_random",
@@ -1285,7 +1285,7 @@
     "address": "004295f0",
     "signature": "void bonus_render(void)",
     "external": false,
-    "calls": ["FUN_00461140", "bonus_apply", "bonus_label_for_entry", "effect_select_texture", "effects_render", "perk_count_get"]
+    "calls": ["bonus_apply", "bonus_label_for_entry", "crt_ci_pow", "effect_select_texture", "effects_render", "perk_count_get"]
   },
   {
     "name": "audio_resume_all",
@@ -1407,9 +1407,9 @@
     "calls": ["__ftol"]
   },
   {
-    "name": "FUN_0042eb10",
+    "name": "effect_spawn_blood_splatter",
     "address": "0042eb10",
-    "signature": "undefined FUN_0042eb10(undefined4 * param_1, float param_2, float param_3)",
+    "signature": "void effect_spawn_blood_splatter(float * pos, float angle, float age)",
     "external": false,
     "calls": ["_rand", "effect_spawn"]
   },
@@ -1470,9 +1470,9 @@
     "calls": ["__ftol", "_rand", "effect_spawn"]
   },
   {
-    "name": "FUN_0042f6c0",
+    "name": "effect_spawn_explosion_burst",
     "address": "0042f6c0",
-    "signature": "undefined FUN_0042f6c0(undefined4 * param_1, float param_2)",
+    "signature": "void effect_spawn_explosion_burst(float * pos, float scale)",
     "external": false,
     "calls": ["_rand", "effect_spawn"]
   },
@@ -3091,7 +3091,7 @@
     "address": "00459adf",
     "signature": "undefined FUN_00459adf(undefined8 * param_1, ulonglong * param_2, uint param_3)",
     "external": false,
-    "calls": ["FUN_0045e832", "FUN_004607a0"]
+    "calls": ["FUN_0045e832", "math_sincos_packed"]
   },
   {
     "name": "FUN_00459b4b",
@@ -3126,7 +3126,7 @@
     "address": "00459f51",
     "signature": "undefined FUN_00459f51(undefined8 * param_1, undefined8 * param_2, ulonglong * param_3, ulonglong * param_4, ulonglong * param_5, ulonglong * param_6, ulonglong * param_7)",
     "external": false,
-    "calls": ["FUN_004601c0", "FUN_004607a0", "FUN_004608c0"]
+    "calls": ["FUN_004601c0", "FUN_004608c0", "math_sincos_packed"]
   },
   {
     "name": "FUN_0045b092",
@@ -3147,14 +3147,14 @@
     "address": "0045c3ea",
     "signature": "undefined FUN_0045c3ea(undefined8 * param_1, undefined8 param_2, undefined8 param_3)",
     "external": false,
-    "calls": ["FUN_004607a0"]
+    "calls": ["math_sincos_packed"]
   },
   {
     "name": "FUN_0045cac3",
     "address": "0045cac3",
     "signature": "undefined FUN_0045cac3(undefined8 * param_1, ulonglong * param_2)",
     "external": false,
-    "calls": ["FUN_0045e832", "FUN_004607a0"]
+    "calls": ["FUN_0045e832", "math_sincos_packed"]
   },
   {
     "name": "FUN_0045cbdc",
@@ -3262,9 +3262,9 @@
     "calls": []
   },
   {
-    "name": "FUN_004607a0",
+    "name": "math_sincos_packed",
     "address": "004607a0",
-    "signature": "ulonglong FUN_004607a0(void)",
+    "signature": "ulonglong math_sincos_packed(void)",
     "external": false,
     "calls": []
   },
@@ -3395,9 +3395,9 @@
     "calls": ["FUN_00464be7", "_strlen", "crt_isctype"]
   },
   {
-    "name": "FUN_00461140",
+    "name": "crt_ci_pow",
     "address": "00461140",
-    "signature": "undefined FUN_00461140(void)",
+    "signature": "void crt_ci_pow(void)",
     "external": false,
     "calls": ["FUN_00461162"]
   },
@@ -3728,7 +3728,7 @@
     "address": "004626aa",
     "signature": "void * crt_realloc(void * ptr, size_t size)",
     "external": false,
-    "calls": ["FUN_00462835", "FUN_00462983", "FUN_00466c7b", "FUN_00466ca6", "FUN_00466fcf", "FUN_00467484", "FUN_004679d6", "FUN_00467a2d", "FUN_00467a72", "FUN_00467d9e", "HeapAlloc", "HeapReAlloc", "_malloc", "crt_bufcpy", "crt_call_new_handler", "crt_free_base", "crt_lock"]
+    "calls": ["FUN_00462835", "FUN_00462983", "FUN_00466c7b", "FUN_00466ca6", "FUN_00467484", "FUN_004679d6", "FUN_00467a2d", "FUN_00467d9e", "HeapAlloc", "HeapReAlloc", "_malloc", "crt_bufcpy", "crt_call_new_handler", "crt_free_base", "crt_lock", "crt_sbh_alloc", "crt_sbh_alloc_units"]
   },
   {
     "name": "FUN_00462835",
@@ -3763,7 +3763,7 @@
     "address": "00462a17",
     "signature": "undefined FUN_00462a17(uint * param_1)",
     "external": false,
-    "calls": ["FUN_00462a7e", "FUN_00462add", "FUN_00466fcf", "FUN_00467a72", "HeapAlloc", "crt_lock"]
+    "calls": ["FUN_00462a7e", "FUN_00462add", "HeapAlloc", "crt_lock", "crt_sbh_alloc", "crt_sbh_alloc_units"]
   },
   {
     "name": "FUN_00462a7e",
@@ -3973,7 +3973,7 @@
     "address": "00463382",
     "signature": "undefined4 FUN_00463382(PEXCEPTION_RECORD param_1, PVOID param_2, DWORD param_3, undefined4 param_4)",
     "external": false,
-    "calls": ["FUN_004695fb"]
+    "calls": ["crt_cxx_frame_handler"]
   },
   {
     "name": "FUN_004633b8",
@@ -3987,7 +3987,7 @@
     "address": "0046340c",
     "signature": "undefined FUN_0046340c(PEXCEPTION_RECORD param_1, PVOID param_2, DWORD param_3)",
     "external": false,
-    "calls": ["FUN_004695fb"]
+    "calls": ["crt_cxx_frame_handler"]
   },
   {
     "name": "FUN_00463431",
@@ -4001,14 +4001,14 @@
     "address": "004634e7",
     "signature": "undefined4 FUN_004634e7(PEXCEPTION_RECORD param_1, PVOID param_2, DWORD param_3)",
     "external": false,
-    "calls": ["FUN_00463333", "FUN_004695fb"]
+    "calls": ["FUN_00463333", "crt_cxx_frame_handler"]
   },
   {
     "name": "FUN_0046355c",
     "address": "0046355c",
     "signature": "int FUN_0046355c(int param_1, int param_2, int param_3, uint * param_4, uint * param_5)",
     "external": false,
-    "calls": ["FUN_00465fa9"]
+    "calls": ["crt_invalid_parameter_noinfo_noreturn"]
   },
   {
     "name": "__global_unwind2",
@@ -4092,7 +4092,7 @@
     "address": "0046385e",
     "signature": "undefined1 * FUN_0046385e(undefined8 * param_1, undefined1 * param_2, int param_3, int param_4)",
     "external": false,
-    "calls": ["FUN_004638bf", "FUN_0046a39e", "FUN_0046a415"]
+    "calls": ["FUN_004638bf", "FUN_0046a39e", "crt_fp_to_string"]
   },
   {
     "name": "FUN_004638bf",
@@ -4106,7 +4106,7 @@
     "address": "00463981",
     "signature": "char * FUN_00463981(undefined8 * param_1, char * param_2, size_t param_3)",
     "external": false,
-    "calls": ["FUN_004639d6", "FUN_0046a39e", "FUN_0046a415"]
+    "calls": ["FUN_004639d6", "FUN_0046a39e", "crt_fp_to_string"]
   },
   {
     "name": "FUN_004639d6",
@@ -4120,7 +4120,7 @@
     "address": "00463a7d",
     "signature": "undefined FUN_00463a7d(undefined8 * param_1, char * param_2, size_t param_3, int param_4)",
     "external": false,
-    "calls": ["FUN_004638bf", "FUN_004639d6", "FUN_0046a39e", "FUN_0046a415"]
+    "calls": ["FUN_004638bf", "FUN_004639d6", "FUN_0046a39e", "crt_fp_to_string"]
   },
   {
     "name": "__cfltcvt",
@@ -4295,7 +4295,7 @@
     "address": "00464be7",
     "signature": "undefined FUN_00464be7(void * this, uint * param_1, byte * param_2)",
     "external": false,
-    "calls": ["FUN_0046a318", "FUN_0046b265"]
+    "calls": ["FUN_0046a318", "crt_fp_parse"]
   },
   {
     "name": "_strlen",
@@ -4515,18 +4515,18 @@
     "calls": ["__local_unwind2"]
   },
   {
-    "name": "FUN_00465f48",
+    "name": "crt_terminate",
     "address": "00465f48",
-    "signature": "undefined FUN_00465f48(void)",
+    "signature": "void crt_terminate(void)",
     "external": false,
     "calls": ["FUN_0046cb6f", "crt_get_thread_data"]
   },
   {
-    "name": "FUN_00465fa9",
+    "name": "crt_invalid_parameter_noinfo_noreturn",
     "address": "00465fa9",
-    "signature": "undefined FUN_00465fa9(void)",
+    "signature": "void crt_invalid_parameter_noinfo_noreturn(void)",
     "external": false,
-    "calls": ["FUN_00465f48"]
+    "calls": ["crt_terminate"]
   },
   {
     "name": "crt_read",
@@ -4589,7 +4589,7 @@
     "address": "004667ac",
     "signature": "void * crt_calloc(uint count, uint size)",
     "external": false,
-    "calls": ["FUN_00466845", "FUN_004668ce", "FUN_00466fcf", "FUN_00467a72", "HeapAlloc", "_memset", "crt_call_new_handler", "crt_lock"]
+    "calls": ["FUN_00466845", "FUN_004668ce", "HeapAlloc", "_memset", "crt_call_new_handler", "crt_lock", "crt_sbh_alloc", "crt_sbh_alloc_units"]
   },
   {
     "name": "FUN_00466845",
@@ -4662,9 +4662,9 @@
     "calls": ["HeapFree", "VirtualFree", "crt_memmove"]
   },
   {
-    "name": "FUN_00466fcf",
+    "name": "crt_sbh_alloc",
     "address": "00466fcf",
-    "signature": "int * FUN_00466fcf(uint * param_1)",
+    "signature": "void * crt_sbh_alloc(uint size)",
     "external": false,
     "calls": ["FUN_004672d8", "FUN_00467389"]
   },
@@ -4725,9 +4725,9 @@
     "calls": ["FUN_00467914"]
   },
   {
-    "name": "FUN_00467a72",
+    "name": "crt_sbh_alloc_units",
     "address": "00467a72",
-    "signature": "int * FUN_00467a72(uint param_1)",
+    "signature": "void * crt_sbh_alloc_units(uint blocks)",
     "external": false,
     "calls": ["FUN_00467c7a", "VirtualAlloc", "_memset", "crt_sbh_create_region"]
   },
@@ -4907,18 +4907,18 @@
     "calls": []
   },
   {
-    "name": "FUN_004695fb",
+    "name": "crt_cxx_frame_handler",
     "address": "004695fb",
-    "signature": "undefined4 FUN_004695fb(PEXCEPTION_RECORD param_1, PVOID param_2, DWORD param_3, undefined4 param_4, int * param_5, int param_6, PVOID param_7, char param_8)",
+    "signature": "int crt_cxx_frame_handler(PEXCEPTION_RECORD record, PVOID frame, DWORD context, void * dispatcher, int * func_info, int try_level, PVOID handler_data, char is_rethrow)",
     "external": false,
-    "calls": ["FUN_00465fa9", "FUN_00469696", "FUN_00469950"]
+    "calls": ["FUN_00469696", "FUN_00469950", "crt_invalid_parameter_noinfo_noreturn"]
   },
   {
     "name": "FUN_00469696",
     "address": "00469696",
     "signature": "undefined FUN_00469696(PEXCEPTION_RECORD param_1, PVOID param_2, DWORD param_3, undefined4 param_4, int param_5, char param_6, int param_7, PVOID param_8)",
     "external": false,
-    "calls": ["FUN_0046355c", "FUN_00465f48", "FUN_00465fa9", "FUN_00469849", "FUN_004698f3", "FUN_004699ee", "FUN_00469d72", "FUN_0046d6d3", "crt_get_thread_data"]
+    "calls": ["FUN_0046355c", "FUN_00469849", "FUN_004698f3", "FUN_004699ee", "FUN_00469d72", "FUN_0046d6d3", "crt_get_thread_data", "crt_invalid_parameter_noinfo_noreturn", "crt_terminate"]
   },
   {
     "name": "FUN_00469849",
@@ -4939,7 +4939,7 @@
     "address": "00469950",
     "signature": "undefined FUN_00469950(int param_1, undefined4 param_2, int param_3, int param_4)",
     "external": false,
-    "calls": ["FUN_00465fa9", "__CallSettingFrame@12"]
+    "calls": ["__CallSettingFrame@12", "crt_invalid_parameter_noinfo_noreturn"]
   },
   {
     "name": "FUN_004699ee",
@@ -4967,7 +4967,7 @@
     "address": "00469bae",
     "signature": "undefined FUN_00469bae(int param_1, int param_2, byte * param_3, byte * param_4)",
     "external": false,
-    "calls": ["FUN_00463325", "FUN_0046332c", "FUN_00465fa9", "FUN_00469dd9", "FUN_0046d6d3", "FUN_0046d6ef", "FUN_0046d70b", "crt_memmove"]
+    "calls": ["FUN_00463325", "FUN_0046332c", "FUN_00469dd9", "FUN_0046d6d3", "FUN_0046d6ef", "FUN_0046d70b", "crt_invalid_parameter_noinfo_noreturn", "crt_memmove"]
   },
   {
     "name": "FUN_00469d72",
@@ -5093,14 +5093,14 @@
     "address": "0046a344",
     "signature": "undefined FUN_0046a344(void * this, uint * param_1, byte * param_2)",
     "external": false,
-    "calls": ["FUN_0046a318", "FUN_0046b265"]
+    "calls": ["FUN_0046a318", "crt_fp_parse"]
   },
   {
     "name": "FUN_0046a371",
     "address": "0046a371",
     "signature": "undefined FUN_0046a371(void * this, uint * param_1, byte * param_2)",
     "external": false,
-    "calls": ["FUN_0046a32e", "FUN_0046b265"]
+    "calls": ["FUN_0046a32e", "crt_fp_parse"]
   },
   {
     "name": "FUN_0046a39e",
@@ -5110,9 +5110,9 @@
     "calls": ["_strlen", "crt_memmove"]
   },
   {
-    "name": "FUN_0046a415",
+    "name": "crt_fp_to_string",
     "address": "0046a415",
-    "signature": "int * FUN_0046a415(undefined4 param_1, undefined4 param_2, int * param_3, uint * param_4)",
+    "signature": "int * crt_fp_to_string(double value, int * out, uint * digits)",
     "external": false,
     "calls": ["FUN_0046a471", "FUN_0046da83", "crt_strcpy"]
   },
@@ -5243,9 +5243,9 @@
     "calls": []
   },
   {
-    "name": "FUN_0046b265",
+    "name": "crt_fp_parse",
     "address": "0046b265",
-    "signature": "undefined4 FUN_0046b265(void * this, ushort * param_1, int * param_2, byte * param_3, int param_4, int param_5, int param_6, int param_7)",
+    "signature": "int crt_fp_parse(void * this, void * ctx, ushort * out, int * cursor, byte * str, int flags, int width, int prec, int mode)",
     "external": false,
     "calls": ["FUN_0046d9bc", "FUN_0046e05b", "crt_isctype"]
   },
@@ -5457,7 +5457,7 @@
     "address": "0046d66f",
     "signature": "int FUN_0046d66f(int * param_1)",
     "external": false,
-    "calls": ["FUN_00465f48", "FUN_0046d70b"]
+    "calls": ["FUN_0046d70b", "crt_terminate"]
   },
   {
     "name": "FUN_0046d6d3",

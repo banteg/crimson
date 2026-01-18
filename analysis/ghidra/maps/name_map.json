@@ -22,6 +22,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004011f0",
+    "name": "console_log_node_free",
+    "signature": "void * console_log_node_free(void *node, char free_self)",
+    "comment": "frees a console log node (text + next chain) and optionally frees the node"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004017a0",
     "name": "console_push_line",
     "comment": "pushes line into console queue"
@@ -860,6 +867,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0042eb10",
+    "name": "effect_spawn_blood_splatter",
+    "signature": "void effect_spawn_blood_splatter(float *pos, float angle, float age)",
+    "comment": "spawns blood splatter particles (effect id 7)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0042ec80",
     "name": "effect_spawn_freeze_shard",
     "signature": "void effect_spawn_freeze_shard(float *pos, float angle)",
@@ -878,6 +892,13 @@
     "name": "effect_spawn_burst",
     "signature": "void effect_spawn_burst(float *pos, int count)",
     "comment": "generic burst loop for effect id 0"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042f6c0",
+    "name": "effect_spawn_explosion_burst",
+    "signature": "void effect_spawn_explosion_burst(float *pos, float scale)",
+    "comment": "spawns explosion burst and shockwave particles"
   },
   {
     "program": "crimsonland.exe",
@@ -1539,6 +1560,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004607a0",
+    "name": "math_sincos_packed",
+    "signature": "ulonglong math_sincos_packed(void)",
+    "comment": "packed sin/cos approximation for the angle in MM0"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00460d08",
     "name": "crt_onexit",
     "signature": "void * crt_onexit(void *func)",
@@ -1578,6 +1606,13 @@
     "name": "crt_fopen",
     "signature": "FILE * crt_fopen(char *path, char *mode)",
     "comment": "fopen wrapper (calls crt_fsopen with share=0x40)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00461140",
+    "name": "crt_ci_pow",
+    "signature": "void crt_ci_pow(void)",
+    "comment": "x87 helper for pow(base, exp) using ST0/ST1"
   },
   {
     "program": "crimsonland.exe",
@@ -1823,6 +1858,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00465f48",
+    "name": "crt_terminate",
+    "signature": "void crt_terminate(void)",
+    "comment": "invokes the per-thread terminate handler then aborts"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00465fa9",
+    "name": "crt_invalid_parameter_noinfo_noreturn",
+    "signature": "void crt_invalid_parameter_noinfo_noreturn(void)",
+    "comment": "invokes invalid-parameter handler (if set) then terminates"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0046623d",
     "name": "crt_io_init",
     "comment": "CRT file handle table init"
@@ -1868,9 +1917,23 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00466fcf",
+    "name": "crt_sbh_alloc",
+    "signature": "void * crt_sbh_alloc(uint size)",
+    "comment": "allocates a small-block heap chunk (size rounded to 16 bytes)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0046777a",
     "name": "crt_sbh_create_region",
     "comment": "CRT small-block heap region init"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00467a72",
+    "name": "crt_sbh_alloc_units",
+    "signature": "void * crt_sbh_alloc_units(uint blocks)",
+    "comment": "allocates small-block heap blocks in 16-byte units"
   },
   {
     "program": "crimsonland.exe",
@@ -1918,6 +1981,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004695fb",
+    "name": "crt_cxx_frame_handler",
+    "signature": "int crt_cxx_frame_handler(PEXCEPTION_RECORD record, PVOID frame, DWORD context, void *dispatcher, int *func_info, int try_level, PVOID handler_data, char is_rethrow)",
+    "comment": "MSVC C++ exception frame handler"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046a415",
+    "name": "crt_fp_to_string",
+    "signature": "int * crt_fp_to_string(double value, int *out, uint *digits)",
+    "comment": "formats a floating-point value for printf-style conversion"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0046acf8",
     "name": "crt_lock_fh",
     "signature": "void crt_lock_fh(uint fd)",
@@ -1929,6 +2006,13 @@
     "name": "crt_unlock_fh",
     "signature": "void crt_unlock_fh(uint fd)",
     "comment": "unlock CRT file handle entry"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046b265",
+    "name": "crt_fp_parse",
+    "signature": "int crt_fp_parse(void *ctx, ushort *out, int *cursor, byte *str, int flags, int width, int prec, int mode)",
+    "comment": "parses a floating-point string into an 80-bit buffer (CRT scanf helper)"
   },
   {
     "program": "crimsonland.exe",

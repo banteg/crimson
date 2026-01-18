@@ -29,18 +29,18 @@ You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps
 
 ```
 crimsonland.exe_functions.json
-   5    1 00461140 FUN_00461140 undefined FUN_00461140(void)
-   5    1 00465fa9 FUN_00465fa9 undefined FUN_00465fa9(void)
-   4    0 004607a0 FUN_004607a0 ulonglong FUN_004607a0(void)
-   3    4 00467a72 FUN_00467a72 int * FUN_00467a72(uint param_1)
-   3    3 004695fb FUN_004695fb undefined4 FUN_004695fb(PEXCEPTION_RECORD param_1, PVOID param_2, DWORD param_3, undefined4 param_4, int * param_5, int param_6, PVOID param_7, char param_8)
-   3    3 0046a415 FUN_0046a415 int * FUN_0046a415(undefined4 param_1, undefined4 param_2, int * param_3, uint * param_4)
-   3    3 0046b265 FUN_0046b265 undefined4 FUN_0046b265(void * this, ushort * param_1, int * param_2, byte * param_3, int param_4, int param_5, int param_6, int param_7)
-   3    2 004011f0 FUN_004011f0 undefined4 * FUN_004011f0(void * this, byte param_1)
-   3    2 0042eb10 FUN_0042eb10 undefined FUN_0042eb10(undefined4 * param_1, float param_2, float param_3)
-   3    2 0042f6c0 FUN_0042f6c0 undefined FUN_0042f6c0(undefined4 * param_1, float param_2)
-   3    2 00465f48 FUN_00465f48 undefined FUN_00465f48(void)
-   3    2 00466fcf FUN_00466fcf int * FUN_00466fcf(uint * param_1)
+   3    2 0046a39e FUN_0046a39e undefined FUN_0046a39e(char * param_1, int param_2, int param_3)
+   3    1 00461981 FUN_00461981 undefined FUN_00461981(undefined4 param_1, undefined4 param_2, int param_3, undefined * param_4)
+   3    1 0046ad79 FUN_0046ad79 undefined FUN_0046ad79(undefined4 * param_1)
+   3    1 0046d5c7 FUN_0046d5c7 undefined FUN_0046d5c7(void)
+   3    0 00420040 FUN_00420040 int FUN_00420040(float * param_1, int param_2, float param_3)
+   3    0 0045eac0 FUN_0045eac0 undefined8 * FUN_0045eac0(undefined8 * param_1, undefined8 * param_2, undefined8 * param_3)
+   3    0 0045eb4b FUN_0045eb4b undefined8 * FUN_0045eb4b(undefined8 * param_1, undefined8 * param_2, undefined8 * param_3)
+   3    0 004601c0 FUN_004601c0 ulonglong FUN_004601c0(void)
+   3    0 004608c0 FUN_004608c0 undefined FUN_004608c0(void)
+   3    0 004654a5 FUN_004654a5 undefined FUN_004654a5(int param_1)
+   3    0 00466c7b FUN_00466c7b uint FUN_00466c7b(int param_1)
+   3    0 004679d6 FUN_004679d6 int FUN_004679d6(undefined * param_1, undefined4 * param_2, uint * param_3)
 ```
 
 ### `grim.dll`
@@ -1155,4 +1155,4 @@ See [Projectile struct](projectile-struct.md) for the expanded field map and not
     scripted spawns in `survival_update`; it increments when `player_experience` surpasses a periodic
     threshold.
   - The HUD shows `Xp`, the smoothed XP value, and a `Progress` label with a bar fed by
-    `player_experience`/`player_level` (`DAT_0049095c`/`DAT_00490964`) and a 1-second timer derived from `FUN_00461140()`.
+    `player_experience`/`player_level` (`DAT_0049095c`/`DAT_00490964`) and a 1-second timer derived from `crt_ci_pow()`.

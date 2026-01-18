@@ -81,6 +81,7 @@ Interesting Functions and Patterns
   strdup_malloc @ 0046e8f4
 
 [FREE related]
+  console_log_node_free @ 004011f0
   effect_free @ 0042e080
   effect_spawn_freeze_shard @ 0042ec80
   effect_spawn_freeze_shatter @ 0042ee00
@@ -97,6 +98,8 @@ Interesting Functions and Patterns
   _malloc @ 004629d9
   __nh_malloc @ 004629eb
   crt_calloc @ 004667ac
+  crt_sbh_alloc @ 00466fcf
+  crt_sbh_alloc_units @ 00467a72
   strdup_malloc @ 0046e8f4
 
 [STRCPY related]
@@ -107,6 +110,7 @@ Interesting Functions and Patterns
   crt_sprintf @ 004616e7
 
 [LOG related]
+  console_log_node_free @ 004011f0
   console_flush_log @ 00402860
   tutorial_prompt_dialog @ 00408530
 

@@ -20,8 +20,8 @@ regen (from git history).
 - Thunks: 26
 - User-defined: 793
 - Decompiled: 792 (99.9% coverage)
-- Named/inferred: 380 (46.4%)
-- Typed signatures: 438 (53.5%)
+- Named/inferred: 392 (47.9%)
+- Typed signatures: 446 (54.5%)
 - External typed: 0 / 0
 - GDT hits (since previous regen): 1
 - Last regen: 2026-01-18
@@ -46,8 +46,8 @@ regen (from git history).
 - Thunks: 66
 - User-defined: 1713
 - Decompiled: 1712 (99.9% coverage)
-- Named/inferred: 636 (35.8%)
-- Typed signatures: 736 (41.4%)
+- Named/inferred: 648 (36.4%)
+- Typed signatures: 744 (41.8%)
 - External typed: 0 / 0
 - GDT hits (since previous regen): 1
 - Last regen: 2026-01-18
@@ -62,7 +62,7 @@ Counts come from `analysis/ghidra/maps/name_map.json` and
 <!-- map-progress:start -->
 | Map | Total entries | crimsonland.exe | grim.dll | With signatures | With comments | Duplicate names |
 | --- | --- | --- | --- | --- | --- | --- |
-| Name map | 508 | 335 | 173 | 479 | 485 | 0 |
+| Name map | 520 | 347 | 173 | 491 | 497 | 0 |
 | Data map | 718 | 632 | 86 | n/a | 718 | 0 |
 <!-- map-progress:end -->
 

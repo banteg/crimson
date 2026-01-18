@@ -35,7 +35,7 @@ uv run python scripts/entrypoint_trace.py --depth 2 --skip-external
   - crt_run_initializers -> FUN_00460cb8, crt_call_fn_range
     - crt_init_locks
     - FUN_004654a5
-    - FUN_004667ac -> FUN_00467a72, FUN_00466845, FUN_004668ce, FUN_00467e47, crt_lock, FUN_00466fcf, _memset
+    - FUN_004667ac -> crt_sbh_alloc_units, FUN_00466845, FUN_004668ce, FUN_00467e47, crt_lock, crt_sbh_alloc, _memset
     - __amsg_exit -> crt_runtime_error_banner, __exit, crt_report_runtime_error
     - _malloc -> __nh_malloc
     - FUN_0046d5c7 -> FUN_0046d1ef
@@ -101,4 +101,3 @@ Notes:
   load/apply, input/audio/renderer setup, and the game loop + shutdown.
 - The early CRT cluster is now tagged as `crt_*` (heap/TLS/IO); confirm exact
   MSVCRT symbol names later.
-
