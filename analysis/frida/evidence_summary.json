@@ -56,7 +56,7 @@
     "name": "projectile_render",
     "signature": "void projectile_render(void)",
     "events": {
-      "grim": 41798
+      "grim": 41804
     },
     "textures": [],
     "sfx_ids": [],
@@ -75,7 +75,11 @@
       ],
       [
         "grim_set_color_slot",
-        21
+        24
+      ],
+      [
+        "grim_set_uv_point",
+        3
       ]
     ]
   },
@@ -84,7 +88,7 @@
     "name": "ui_render_hud",
     "signature": "void ui_render_hud(void)",
     "events": {
-      "grim": 34343
+      "grim": 34344
     },
     "textures": [],
     "sfx_ids": [],
@@ -107,7 +111,7 @@
       ],
       [
         "grim_set_color_ptr",
-        1
+        2
       ]
     ]
   },
@@ -172,9 +176,9 @@
     "name": "game_startup_init",
     "signature": "void game_startup_init(void)",
     "events": {
-      "grim": 15823,
-      "texture": 8,
-      "sfx": 8
+      "grim": 15838,
+      "sfx": 8,
+      "texture": 6
     },
     "textures": [
       [
@@ -184,10 +188,6 @@
       [
         "splash10Tons\ufffd\ufffd\ufffd\ufffdload\\splash10tons.jaz\ufffd\ufffd\ufffdsplashReflexive\ufffdload\\splashReflexive.jpg\ufffd\ufffd\ufffd\ufffdmusic\\%s\ufffd\ufffd\ufffd\ufffdsnd_addGameTune <tuneName.ogg>\n\ufffdGamma ramp regenerated and multiplied with %f\n\ufffd\ufffdCommand adjusts gamma ramp linearly by multiplying with given scalar\n\ufffd\ufffd\ufffdsetGammaRamp",
         3
-      ],
-      [
-        "",
-        2
       ]
     ],
     "sfx_ids": [
@@ -211,11 +211,11 @@
       ],
       [
         "grim_bind_texture",
-        2102
+        2105
       ],
       [
         "grim_get_texture_handle",
-        2101
+        2102
       ],
       [
         "grim_get_frame_dt",
@@ -249,8 +249,8 @@
   },
   {
     "address": "0x0041a320",
-    "name": "FUN_0041a320",
-    "signature": "undefined FUN_0041a320(void)",
+    "name": "ui_render_aim_enhancement",
+    "signature": "void ui_render_aim_enhancement(void)",
     "events": {
       "grim": 8796
     },
@@ -393,8 +393,8 @@
   },
   {
     "address": "0x004188a0",
-    "name": "FUN_004188a0",
-    "signature": "undefined FUN_004188a0(void)",
+    "name": "terrain_render",
+    "signature": "void terrain_render(void)",
     "events": {
       "grim": 1967
     },
@@ -505,8 +505,8 @@
   },
   {
     "address": "0x00447cf0",
-    "name": "FUN_00447cf0",
-    "signature": "char * FUN_00447cf0(undefined4 param_1)",
+    "name": "input_scheme_label",
+    "signature": "char * input_scheme_label(int scheme)",
     "events": {
       "grim": 1092,
       "sfx": 3
@@ -583,8 +583,8 @@
   },
   {
     "address": "0x0043efc0",
-    "name": "FUN_0043efc0",
-    "signature": "undefined4 FUN_0043efc0(float * param_1, char * param_2)",
+    "name": "ui_list_widget_update",
+    "signature": "int ui_list_widget_update(float * xy, char * list)",
     "events": {
       "grim": 674
     },
@@ -744,49 +744,43 @@
     ]
   },
   {
-    "address": "0x0042abd0",
-    "name": "load_textures_step",
-    "signature": "int load_textures_step(void)",
+    "address": "0x004181b0",
+    "name": "terrain_generate_random",
+    "signature": "void terrain_generate_random(void)",
     "events": {
-      "texture": 159,
-      "grim": 5
+      "grim": 123
     },
-    "textures": [
-      [
-        "",
-        65
-      ],
-      [
-        "GRIM_Font2\ufffd\ufffdload\\smallWhite.tga\ufffdtimePlayed\ufffd\ufffdSoftware\\10tons entertainment\\Crimsonland\ufffd\ufffd\ufffdUnloaded resource paq\n\ufffd\ufffdballoon\ufffdballoon.tga\ufffdEntering Crimsonland..\n\ufffdendthread () - (Sound library)\n\ufffdbeginthread () - (Sound library)\n\ufffd\ufffd\ufffdGrim SFX: %d/%d\ufffdGrim GFX %d/%d\ufffd\ufffdlogo",
-        2
-      ],
-      [
-        "arrow\ufffd\ufffd\ufffdload\\arrow.tga\ufffd\ufffdgame\\lizard.jaz\ufffdgame\\alien.jaz\ufffd\ufffdgame\\spider_sp2.jaz\ufffdgame\\spider_sp1.jaz\ufffdgame\\zombie.jaz\ufffdgame\\trooper.jaz\ufffd\ufffd\ufffd\ufffdGRIM_Font2\ufffd\ufffdload\\smallWhite.tga\ufffdtimePlayed\ufffd\ufffdSoftware\\10tons entertainment\\Crimsonland\ufffd\ufffd\ufffdUnloaded resource paq\n\ufffd\ufffdballoon\ufffdballoon.",
-        2
-      ],
-      [
-        "bullet_i\ufffd\ufffd\ufffd\ufffdload\\bullet16.tga\ufffd\ufffd\ufffdarrow\ufffd\ufffd\ufffdload\\arrow.tga\ufffd\ufffdgame\\lizard.jaz\ufffdgame\\alien.jaz\ufffd\ufffdgame\\spider_sp2.jaz\ufffdgame\\spider_sp1.jaz\ufffdgame\\zombie.jaz\ufffdgame\\trooper.jaz\ufffd\ufffd\ufffd\ufffdGRIM_Font2\ufffd\ufffdload\\smallWhite.tga\ufffdtimePlayed\ufffd\ufffdSoftware\\10tons entertainment\\Crimsonland\ufffd\ufffd\ufffdUnloaded",
-        2
-      ],
-      [
-        "bulletTrail\ufffdload\\bulletTrail.tga\ufffd\ufffd\ufffd\ufffdbullet_i\ufffd\ufffd\ufffd\ufffdload\\bullet16.tga\ufffd\ufffd\ufffdarrow\ufffd\ufffd\ufffdload\\arrow.tga\ufffd\ufffdgame\\lizard.jaz\ufffdgame\\alien.jaz\ufffd\ufffdgame\\spider_sp2.jaz\ufffdgame\\spider_sp1.jaz\ufffdgame\\zombie.jaz\ufffdgame\\trooper.jaz\ufffd\ufffd\ufffd\ufffdGRIM_Font2\ufffd\ufffdload\\smallWhite.tga\ufffdtimePlayed\ufffd\ufffdSoftware\\10tons ",
-        2
-      ]
-    ],
+    "textures": [],
     "sfx_ids": [],
     "grim_calls": [
       [
-        "grim_get_texture_handle",
-        5
+        "grim_draw_quad_xy",
+        27
+      ],
+      [
+        "grim_begin_batch",
+        27
+      ],
+      [
+        "grim_end_batch",
+        27
+      ],
+      [
+        "grim_bind_texture",
+        20
+      ],
+      [
+        "grim_set_color",
+        11
       ]
     ]
   },
   {
     "address": "0x0042a700",
     "name": "texture_get_or_load_alt",
-    "signature": "int texture_get_or_load_alt(char * name)",
+    "signature": "int texture_get_or_load_alt(char * name, char * path)",
     "events": {
-      "grim": 120
+      "grim": 121
     },
     "textures": [],
     "sfx_ids": [],
@@ -797,66 +791,34 @@
       ],
       [
         "grim_load_texture",
-        44
-      ]
-    ]
-  },
-  {
-    "address": "0x004181b0",
-    "name": "terrain_generate_random",
-    "signature": "void terrain_generate_random(void)",
-    "events": {
-      "grim": 118
-    },
-    "textures": [],
-    "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_begin_batch",
-        27
-      ],
-      [
-        "grim_end_batch",
-        27
-      ],
-      [
-        "grim_draw_quad_xy",
-        24
-      ],
-      [
-        "grim_bind_texture",
-        20
-      ],
-      [
-        "grim_set_color",
-        10
+        45
       ]
     ]
   },
   {
     "address": "0x0042a670",
     "name": "texture_get_or_load",
-    "signature": "int texture_get_or_load(char * name)",
+    "signature": "int texture_get_or_load(char * name, char * path)",
     "events": {
-      "grim": 117
+      "grim": 120
     },
     "textures": [],
     "sfx_ids": [],
     "grim_calls": [
       [
         "grim_get_texture_handle",
-        78
+        80
       ],
       [
         "grim_load_texture",
-        39
+        40
       ]
     ]
   },
   {
     "address": "0x0043def0",
-    "name": "FUN_0043def0",
-    "signature": "undefined FUN_0043def0(float * param_1, float * param_2)",
+    "name": "ui_scrollbar_update",
+    "signature": "void ui_scrollbar_update(float * xy, float * state)",
     "events": {
       "grim": 116
     },
@@ -875,8 +837,8 @@
   },
   {
     "address": "0x0043dc80",
-    "name": "FUN_0043dc80",
-    "signature": "undefined4 FUN_0043dc80(float * param_1, char * param_2)",
+    "name": "ui_checkbox_update",
+    "signature": "int ui_checkbox_update(float * xy, char * checkbox)",
     "events": {
       "grim": 116
     },
@@ -903,8 +865,8 @@
   },
   {
     "address": "0x00442150",
-    "name": "FUN_00442150",
-    "signature": "undefined FUN_00442150(float * param_1, float param_2)",
+    "name": "ui_update_notice_update",
+    "signature": "void ui_update_notice_update(float * xy, float alpha)",
     "events": {
       "grim": 116
     },
@@ -970,6 +932,44 @@
     "grim_calls": []
   },
   {
+    "address": "0x0042abd0",
+    "name": "load_textures_step",
+    "signature": "int load_textures_step(void)",
+    "events": {
+      "texture": 94,
+      "grim": 5
+    },
+    "textures": [
+      [
+        "GRIM_Font2\ufffd\ufffdload\\smallWhite.tga\ufffdtimePlayed\ufffd\ufffdSoftware\\10tons entertainment\\Crimsonland\ufffd\ufffd\ufffdUnloaded resource paq\n\ufffd\ufffdballoon\ufffdballoon.tga\ufffdEntering Crimsonland..\n\ufffdendthread () - (Sound library)\n\ufffdbeginthread () - (Sound library)\n\ufffd\ufffd\ufffdGrim SFX: %d/%d\ufffdGrim GFX %d/%d\ufffd\ufffdlogo",
+        2
+      ],
+      [
+        "arrow\ufffd\ufffd\ufffdload\\arrow.tga\ufffd\ufffdgame\\lizard.jaz\ufffdgame\\alien.jaz\ufffd\ufffdgame\\spider_sp2.jaz\ufffdgame\\spider_sp1.jaz\ufffdgame\\zombie.jaz\ufffdgame\\trooper.jaz\ufffd\ufffd\ufffd\ufffdGRIM_Font2\ufffd\ufffdload\\smallWhite.tga\ufffdtimePlayed\ufffd\ufffdSoftware\\10tons entertainment\\Crimsonland\ufffd\ufffd\ufffdUnloaded resource paq\n\ufffd\ufffdballoon\ufffdballoon.",
+        2
+      ],
+      [
+        "bullet_i\ufffd\ufffd\ufffd\ufffdload\\bullet16.tga\ufffd\ufffd\ufffdarrow\ufffd\ufffd\ufffdload\\arrow.tga\ufffd\ufffdgame\\lizard.jaz\ufffdgame\\alien.jaz\ufffd\ufffdgame\\spider_sp2.jaz\ufffdgame\\spider_sp1.jaz\ufffdgame\\zombie.jaz\ufffdgame\\trooper.jaz\ufffd\ufffd\ufffd\ufffdGRIM_Font2\ufffd\ufffdload\\smallWhite.tga\ufffdtimePlayed\ufffd\ufffdSoftware\\10tons entertainment\\Crimsonland\ufffd\ufffd\ufffdUnloaded",
+        2
+      ],
+      [
+        "bulletTrail\ufffdload\\bulletTrail.tga\ufffd\ufffd\ufffd\ufffdbullet_i\ufffd\ufffd\ufffd\ufffdload\\bullet16.tga\ufffd\ufffd\ufffdarrow\ufffd\ufffd\ufffdload\\arrow.tga\ufffd\ufffdgame\\lizard.jaz\ufffdgame\\alien.jaz\ufffd\ufffdgame\\spider_sp2.jaz\ufffdgame\\spider_sp1.jaz\ufffdgame\\zombie.jaz\ufffdgame\\trooper.jaz\ufffd\ufffd\ufffd\ufffdGRIM_Font2\ufffd\ufffdload\\smallWhite.tga\ufffdtimePlayed\ufffd\ufffdSoftware\\10tons ",
+        2
+      ],
+      [
+        "bodyset\ufffdgame\\bodyset.jaz\ufffd\ufffd\ufffd\ufffdbulletTrail\ufffdload\\bulletTrail.tga\ufffd\ufffd\ufffd\ufffdbullet_i\ufffd\ufffd\ufffd\ufffdload\\bullet16.tga\ufffd\ufffd\ufffdarrow\ufffd\ufffd\ufffdload\\arrow.tga\ufffd\ufffdgame\\lizard.jaz\ufffdgame\\alien.jaz\ufffd\ufffdgame\\spider_sp2.jaz\ufffdgame\\spider_sp1.jaz\ufffdgame\\zombie.jaz\ufffdgame\\trooper.jaz\ufffd\ufffd\ufffd\ufffdGRIM_Font2\ufffd\ufffdload\\smallWhite.tga\ufffd",
+        2
+      ]
+    ],
+    "sfx_ids": [],
+    "grim_calls": [
+      [
+        "grim_get_texture_handle",
+        5
+      ]
+    ]
+  },
+  {
     "address": "0x004413a0",
     "name": "ui_text_input_render",
     "signature": "void ui_text_input_render(void * input_state, float y, float alpha)",
@@ -991,8 +991,8 @@
   },
   {
     "address": "0x00446900",
-    "name": "FUN_00446900",
-    "signature": "undefined FUN_00446900(char * param_1)",
+    "name": "ui_element_update",
+    "signature": "void ui_element_update(void * element)",
     "events": {
       "sfx": 78
     },
@@ -1084,14 +1084,10 @@
     "name": "crimsonland_main",
     "signature": "int crimsonland_main(void)",
     "events": {
-      "grim": 33,
-      "texture": 15
+      "grim": 35,
+      "texture": 7
     },
     "textures": [
-      [
-        "",
-        8
-      ],
       [
         "logo_esrb\ufffd\ufffd\ufffdloading\ufffdsplash10Tons\ufffd\ufffd\ufffd\ufffdload\\splash10tons.jaz\ufffd\ufffd\ufffdsplashReflexive\ufffdload\\splashReflexive.jpg\ufffd\ufffd\ufffd\ufffdmusic\\%s\ufffd\ufffd\ufffd\ufffdsnd_addGameTune <tuneName.ogg>\n\ufffdGamma ramp regenerated and multiplied with %f\n\ufffd\ufffdCommand adjusts gamma ramp linearly by multiplying with given sc",
         2
@@ -1107,6 +1103,10 @@
       [
         "mockup\ufffd\ufffdbackplasma\ufffd\ufffdOrbes Volantes Exstare\ufffd\ufffd400+\ufffd\ufffd\ufffd\ufffdrb\ufffd\ufffdshot_%d.bmp\ufffdshot_0%d.bmp\ufffd\ufffd\ufffd\ufffdshot_00%d.bmp\ufffd\ufffd\ufffd\ufffd\ufffd\ufffd>\ufffd\ufffdx>\ufffd\ufffd\ufffd=\ufffd\ufffd`=(and be patient!)\ufffd\ufffd\ufffdClick the ones with the round ones!\ufffdYou can stop watching now.\ufffd\ufffd(see vorbis.txt)\ufffd\ufffd\ufffd\ufffd2003 (c) Xiph.Org Foundation\ufffd\ufffd\ufffd\ufffdUses Vor",
         1
+      ],
+      [
+        "cl_logo\ufffdPress F1 to return to game\ufffd\ufffdFire:\ufffd\ufffd\ufffdRight:\ufffd\ufffdLeft:\ufffd\ufffd\ufffdDown:\ufffd\ufffd\ufffdUp:\ufffdPlayer %d\ufffd\ufffd\ufffd%s\ufffd\ufffdReload:\ufffd%s or SPACE BAR or KeyPadAdd\ufffd\ufffd\ufffd\ufffdLevel Up:\ufffd\ufffd\ufffdkey info\ufffd\ufffd\ufffd\ufffdSelect\ufffd\ufffdCancel\ufffd\ufffdextra perk sponsored by the Perk Expert\ufffdextra perks sponsored by the Perk Master\ufffd\ufffd\ufffd\ufffd%d%s\ufffd\ufffd\ufffd\ufffd",
+        1
       ]
     ],
     "sfx_ids": [],
@@ -1117,11 +1117,11 @@
       ],
       [
         "grim_init_system",
-        6
+        7
       ],
       [
         "grim_apply_settings",
-        6
+        7
       ],
       [
         "grim_shutdown",
@@ -1130,44 +1130,6 @@
       [
         "grim_release",
         3
-      ]
-    ]
-  },
-  {
-    "address": "0x0044fcb0",
-    "name": "FUN_0044fcb0",
-    "signature": "undefined FUN_0044fcb0(void)",
-    "events": {
-      "texture": 20,
-      "grim": 24
-    },
-    "textures": [
-      [
-        "",
-        10
-      ],
-      [
-        "ui\\ui_itemTexts.jaz\ufffd\ufffd\ufffd\ufffd>\ufffd\ufffdx>\ufffd\ufffd\ufffd=\ufffd\ufffd`=Lighting Rifle\ufffd\ufffdNuke Launcher\ufffd\ufffd\ufffdBlaster R-300\ufffd\ufffd\ufffdTransmutator\ufffd\ufffd\ufffd\ufffdSpider Plasma\ufffd\ufffd\ufffdBubblegun\ufffd\ufffd\ufffdGrim Weapon\ufffdRainbow Gun\ufffdPlague Sphreader Gun\ufffd\ufffd\ufffd\ufffdBlade Gun\ufffd\ufffd\ufffdShrinkifier 5k\ufffd\ufffdSplitter Gun\ufffd\ufffd\ufffd\ufffdRayGun\ufffd\ufffdFlameburst\ufffd\ufffdEvil Scythe\ufffdPlasma C",
-        2
-      ],
-      [
-        "ui\\ui_textReaper.jaz\ufffd\ufffd\ufffd\ufffdui\\ui_itemTexts.jaz\ufffd\ufffd\ufffd\ufffd>\ufffd\ufffdx>\ufffd\ufffd\ufffd=\ufffd\ufffd`=Lighting Rifle\ufffd\ufffdNuke Launcher\ufffd\ufffd\ufffdBlaster R-300\ufffd\ufffd\ufffdTransmutator\ufffd\ufffd\ufffd\ufffdSpider Plasma\ufffd\ufffd\ufffdBubblegun\ufffd\ufffd\ufffdGrim Weapon\ufffdRainbow Gun\ufffdPlague Sphreader Gun\ufffd\ufffd\ufffd\ufffdBlade Gun\ufffd\ufffd\ufffdShrinkifier 5k\ufffd\ufffdSplitter Gun\ufffd\ufffd\ufffd\ufffdRayGun\ufffd\ufffdFlamebur",
-        2
-      ],
-      [
-        "ui\\ui_textControls.jaz\ufffd\ufffdui\\ui_textReaper.jaz\ufffd\ufffd\ufffd\ufffdui\\ui_itemTexts.jaz\ufffd\ufffd\ufffd\ufffd>\ufffd\ufffdx>\ufffd\ufffd\ufffd=\ufffd\ufffd`=Lighting Rifle\ufffd\ufffdNuke Launcher\ufffd\ufffd\ufffdBlaster R-300\ufffd\ufffd\ufffdTransmutator\ufffd\ufffd\ufffd\ufffdSpider Plasma\ufffd\ufffd\ufffdBubblegun\ufffd\ufffd\ufffdGrim Weapon\ufffdRainbow Gun\ufffdPlague Sphreader Gun\ufffd\ufffd\ufffd\ufffdBlade Gun\ufffd\ufffd\ufffdShrinkifier 5k\ufffd\ufffdSplitter",
-        2
-      ],
-      [
-        "ui\\ui_textPickAPerk.jaz\ufffdui\\ui_textControls.jaz\ufffd\ufffdui\\ui_textReaper.jaz\ufffd\ufffd\ufffd\ufffdui\\ui_itemTexts.jaz\ufffd\ufffd\ufffd\ufffd>\ufffd\ufffdx>\ufffd\ufffd\ufffd=\ufffd\ufffd`=Lighting Rifle\ufffd\ufffdNuke Launcher\ufffd\ufffd\ufffdBlaster R-300\ufffd\ufffd\ufffdTransmutator\ufffd\ufffd\ufffd\ufffdSpider Plasma\ufffd\ufffd\ufffdBubblegun\ufffd\ufffd\ufffdGrim Weapon\ufffdRainbow Gun\ufffdPlague Sphreader Gun\ufffd\ufffd\ufffd\ufffdBlade Gun\ufffd\ufffd\ufffd",
-        2
-      ]
-    ],
-    "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_get_config_var",
-        24
       ]
     ]
   },
@@ -1184,6 +1146,44 @@
       [
         "grim_get_config_var",
         42
+      ]
+    ]
+  },
+  {
+    "address": "0x0044fcb0",
+    "name": "ui_menu_layout_init",
+    "signature": "void ui_menu_layout_init(void)",
+    "events": {
+      "grim": 24,
+      "texture": 10
+    },
+    "textures": [
+      [
+        "ui\\ui_itemTexts.jaz\ufffd\ufffd\ufffd\ufffd>\ufffd\ufffdx>\ufffd\ufffd\ufffd=\ufffd\ufffd`=Lighting Rifle\ufffd\ufffdNuke Launcher\ufffd\ufffd\ufffdBlaster R-300\ufffd\ufffd\ufffdTransmutator\ufffd\ufffd\ufffd\ufffdSpider Plasma\ufffd\ufffd\ufffdBubblegun\ufffd\ufffd\ufffdGrim Weapon\ufffdRainbow Gun\ufffdPlague Sphreader Gun\ufffd\ufffd\ufffd\ufffdBlade Gun\ufffd\ufffd\ufffdShrinkifier 5k\ufffd\ufffdSplitter Gun\ufffd\ufffd\ufffd\ufffdRayGun\ufffd\ufffdFlameburst\ufffd\ufffdEvil Scythe\ufffdPlasma C",
+        2
+      ],
+      [
+        "ui\\ui_textReaper.jaz\ufffd\ufffd\ufffd\ufffdui\\ui_itemTexts.jaz\ufffd\ufffd\ufffd\ufffd>\ufffd\ufffdx>\ufffd\ufffd\ufffd=\ufffd\ufffd`=Lighting Rifle\ufffd\ufffdNuke Launcher\ufffd\ufffd\ufffdBlaster R-300\ufffd\ufffd\ufffdTransmutator\ufffd\ufffd\ufffd\ufffdSpider Plasma\ufffd\ufffd\ufffdBubblegun\ufffd\ufffd\ufffdGrim Weapon\ufffdRainbow Gun\ufffdPlague Sphreader Gun\ufffd\ufffd\ufffd\ufffdBlade Gun\ufffd\ufffd\ufffdShrinkifier 5k\ufffd\ufffdSplitter Gun\ufffd\ufffd\ufffd\ufffdRayGun\ufffd\ufffdFlamebur",
+        2
+      ],
+      [
+        "ui\\ui_textControls.jaz\ufffd\ufffdui\\ui_textReaper.jaz\ufffd\ufffd\ufffd\ufffdui\\ui_itemTexts.jaz\ufffd\ufffd\ufffd\ufffd>\ufffd\ufffdx>\ufffd\ufffd\ufffd=\ufffd\ufffd`=Lighting Rifle\ufffd\ufffdNuke Launcher\ufffd\ufffd\ufffdBlaster R-300\ufffd\ufffd\ufffdTransmutator\ufffd\ufffd\ufffd\ufffdSpider Plasma\ufffd\ufffd\ufffdBubblegun\ufffd\ufffd\ufffdGrim Weapon\ufffdRainbow Gun\ufffdPlague Sphreader Gun\ufffd\ufffd\ufffd\ufffdBlade Gun\ufffd\ufffd\ufffdShrinkifier 5k\ufffd\ufffdSplitter",
+        2
+      ],
+      [
+        "ui\\ui_textPickAPerk.jaz\ufffdui\\ui_textControls.jaz\ufffd\ufffdui\\ui_textReaper.jaz\ufffd\ufffd\ufffd\ufffdui\\ui_itemTexts.jaz\ufffd\ufffd\ufffd\ufffd>\ufffd\ufffdx>\ufffd\ufffd\ufffd=\ufffd\ufffd`=Lighting Rifle\ufffd\ufffdNuke Launcher\ufffd\ufffd\ufffdBlaster R-300\ufffd\ufffd\ufffdTransmutator\ufffd\ufffd\ufffd\ufffdSpider Plasma\ufffd\ufffd\ufffdBubblegun\ufffd\ufffd\ufffdGrim Weapon\ufffdRainbow Gun\ufffdPlague Sphreader Gun\ufffd\ufffd\ufffd\ufffdBlade Gun\ufffd\ufffd\ufffd",
+        2
+      ],
+      [
+        "ui\\ui_textWellDone.jaz\ufffd\ufffdui\\ui_textPickAPerk.jaz\ufffdui\\ui_textControls.jaz\ufffd\ufffdui\\ui_textReaper.jaz\ufffd\ufffd\ufffd\ufffdui\\ui_itemTexts.jaz\ufffd\ufffd\ufffd\ufffd>\ufffd\ufffdx>\ufffd\ufffd\ufffd=\ufffd\ufffd`=Lighting Rifle\ufffd\ufffdNuke Launcher\ufffd\ufffd\ufffdBlaster R-300\ufffd\ufffd\ufffdTransmutator\ufffd\ufffd\ufffd\ufffdSpider Plasma\ufffd\ufffd\ufffdBubblegun\ufffd\ufffd\ufffdGrim Weapon\ufffdRainbow Gun\ufffdPlague Sphre",
+        2
+      ]
+    ],
+    "sfx_ids": [],
+    "grim_calls": [
+      [
+        "grim_get_config_var",
+        24
       ]
     ]
   },
@@ -1264,14 +1264,14 @@
     "name": "ui_element_load",
     "signature": "void ui_element_load(void * element, char * jaz_path)",
     "events": {
-      "grim": 22
+      "grim": 23
     },
     "textures": [],
     "sfx_ids": [],
     "grim_calls": [
       [
         "grim_load_texture",
-        14
+        15
       ],
       [
         "grim_get_texture_handle",
@@ -1414,14 +1414,14 @@
     "name": "init_audio_and_terrain",
     "signature": "void init_audio_and_terrain(void)",
     "events": {
-      "grim": 6
+      "grim": 7
     },
     "textures": [],
     "sfx_ids": [],
     "grim_calls": [
       [
         "grim_create_texture",
-        6
+        7
       ]
     ]
   },
