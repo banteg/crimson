@@ -875,7 +875,7 @@
       "program": "crimsonland.exe",
       "address": "0x00487084",
       "name": "highscore_flags",
-      "comment": "High score record flags (offset 0x44); bit0 gates save/load, bit1 marks replaced entries."
+      "comment": "High score record flags (offset 0x44); bit0 gates save/load, bit1 marks replaced entries, bit2 marks display-selected entries."
     },
     {
       "program": "crimsonland.exe",

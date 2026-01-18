@@ -303,7 +303,7 @@ tail bytes are validated against the current date and the full‑version flag.
 | `0x41` | `DAT_00487081` | Date checksum (week‑of‑year) | `FUN_0043a950` result stored at `param_1 + 0x41`; compared in mode 2. |
 | `0x42` | `DAT_00487082` | Month (1–12) | Stored from `local_system_time._2_1_` (`DAT_00495ac8`); compared to `local_system_time._2_2_`. |
 | `0x43` | `DAT_00487083` | Year‑2000 | Stored as `(char)local_system_time + '0'` (`DAT_00495ac8`, low byte wraps); compared to `year - 2000`. |
-| `0x44` | `DAT_00487084` | Score flags | Bit 0 gates update vs append (and load gating in `FUN_0043afa0`); bit 1 is set to `2` when replacing an existing record and bypasses the load gate. |
+| `0x44` | `DAT_00487084` | Score flags | Bit 0 gates update vs append (and load gating in `FUN_0043afa0`); bit 1 is set to `2` when replacing an existing record and bypasses the load gate; bit 2 marks the entry selected for display after duplicate reduction. |
 | `0x45` | `DAT_00487085` | Full‑version marker | Set to `0x75` (`'u'`) when `DAT_00480790 != 0`; checked in quest‑mode load to accept full/limited records. |
 | `0x46` | `DAT_00487040 + 0x46` | Sentinel `0x7c` (`'|'`) | Initialized in `FUN_0043afa0` default‑record loop. |
 | `0x47` | `DAT_00487040 + 0x47` | Sentinel `0xff` | Initialized in `FUN_0043afa0` default‑record loop. |
@@ -320,6 +320,13 @@ High score validation (`FUN_0043afa0`):
 - Mode 2: checksum from `FUN_0043a950(year, month, day)` must match `highscore_date_checksum`,
   and year must match.
 - Mode 1: month + year must match; other mode values skip the date check.
+
+Record match + display selection:
+- `FUN_0043abd0` is the equality predicate used during save‑file replacement; it compares the
+  player name plus metadata fields at offsets `0x20..0x34` (ints + a byte) and does not look
+  at the flags byte.
+- After loading/sorting, `FUN_0043afa0` sets flag bit 2 on the single best record per name
+  (or all records when a name slot is selected), so the UI can filter displayed entries.
 
 Init timing note:
 - `qpc_timestamp_scratch` (`DAT_00495ad6`) is only used as a temporary QPC storage during
