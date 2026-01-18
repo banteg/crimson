@@ -15218,9 +15218,11 @@ int __cdecl grim_load_interface(char *dll_name)
 
 
 
-/* FUN_0041dce0 @ 0041dce0 */
+/* vorbis_mem_read @ 0041dce0 */
 
-void __cdecl FUN_0041dce0(undefined4 *param_1,int param_2,int param_3,int param_4)
+/* ov_open_callbacks read hook for memory-backed OGG data */
+
+uint __cdecl vorbis_mem_read(void *dst,uint size,uint count,void *datasource)
 
 {
   int iVar1;
@@ -15229,77 +15231,83 @@ void __cdecl FUN_0041dce0(undefined4 *param_1,int param_2,int param_3,int param_
   uint uVar4;
   undefined4 *puVar5;
   
-  if (*(uint *)(param_4 + -8) <= *(uint *)(param_4 + -4)) {
-    *(undefined4 *)(param_4 + -4) = 0;
+  if (*(uint *)((int)datasource + -8) <= *(uint *)((int)datasource + -4)) {
+    *(undefined4 *)((int)datasource + -4) = 0;
   }
-  iVar1 = *(int *)(param_4 + -4);
-  uVar4 = param_2 * param_3;
-  uVar3 = uVar4;
-  if (*(uint *)(param_4 + -8) < uVar4 + iVar1) {
-    uVar3 = *(uint *)(param_4 + -8) - iVar1;
+  iVar1 = *(int *)((int)datasource + -4);
+  uVar4 = size * count;
+  uVar2 = uVar4;
+  if (*(uint *)((int)datasource + -8) < uVar4 + iVar1) {
+    uVar2 = *(uint *)((int)datasource + -8) - iVar1;
   }
-  puVar5 = (undefined4 *)(iVar1 + param_4);
-  for (uVar2 = uVar3 >> 2; uVar2 != 0; uVar2 = uVar2 - 1) {
-    *param_1 = *puVar5;
+  puVar5 = (undefined4 *)(iVar1 + (int)datasource);
+  for (uVar3 = uVar2 >> 2; uVar3 != 0; uVar3 = uVar3 - 1) {
+    *(undefined4 *)dst = *puVar5;
     puVar5 = puVar5 + 1;
-    param_1 = param_1 + 1;
+    dst = (undefined4 *)((int)dst + 4);
   }
-  for (uVar3 = uVar3 & 3; uVar3 != 0; uVar3 = uVar3 - 1) {
-    *(undefined1 *)param_1 = *(undefined1 *)puVar5;
+  for (uVar3 = uVar2 & 3; uVar3 != 0; uVar3 = uVar3 - 1) {
+    *(undefined1 *)dst = *(undefined1 *)puVar5;
     puVar5 = (undefined4 *)((int)puVar5 + 1);
-    param_1 = (undefined4 *)((int)param_1 + 1);
+    dst = (undefined4 *)((int)dst + 1);
   }
-  *(uint *)(param_4 + -4) = *(int *)(param_4 + -4) + uVar4;
-  return;
+  *(uint *)((int)datasource + -4) = *(int *)((int)datasource + -4) + uVar4;
+  return uVar2;
 }
 
 
 
-/* FUN_0041dda0 @ 0041dda0 */
+/* vorbis_mem_tell @ 0041dda0 */
 
-undefined4 __cdecl FUN_0041dda0(int param_1)
+/* ov_open_callbacks tell hook (returns current offset) */
+
+int __cdecl vorbis_mem_tell(void *datasource)
 
 {
-  return *(undefined4 *)(param_1 + -4);
+  return *(int *)((int)datasource + -4);
 }
 
 
 
-/* FUN_0041ddb0 @ 0041ddb0 */
+/* vorbis_pcm_seek @ 0041ddb0 */
 
-void __thiscall FUN_0041ddb0(void *this,undefined4 param_1)
+/* wrapper around ov_pcm_seek for memory stream */
+
+int __thiscall vorbis_pcm_seek(void *this,void *stream,uint sample_offset)
 
 {
+  int iVar1;
   uint unaff_retaddr;
   
-  ov_pcm_seek((OggVorbis_File *)((int)this + 0x10),(ulonglong)unaff_retaddr << 0x20);
-  return;
+  iVar1 = ov_pcm_seek((OggVorbis_File *)((int)this + 0x10),(ulonglong)unaff_retaddr << 0x20);
+  return iVar1;
 }
 
 
 
-/* FUN_0041ddd0 @ 0041ddd0 */
+/* vorbis_mem_open @ 0041ddd0 */
 
-uint __thiscall FUN_0041ddd0(void *this,undefined4 *param_1,undefined4 param_2)
+/* open OGG/Vorbis data from a memory buffer (sets callbacks) */
+
+int __thiscall vorbis_mem_open(void *this,void *stream,void *buffer,uint size)
 
 {
   OggVorbis_File *vf;
   int iVar1;
   uint uVar2;
   vorbis_info *pvVar3;
-  undefined4 uVar4;
-  int *piVar5;
-  ogg_int64_t oVar6;
-  longlong lVar7;
-  undefined8 uVar8;
+  int *piVar4;
+  ogg_int64_t oVar5;
+  longlong lVar6;
+  undefined8 uVar7;
   
-  *(code **)this = FUN_0041dce0;
+  *(code **)this = vorbis_mem_read;
   *(undefined1 **)((int)this + 4) = &LAB_0041dd40;
   *(undefined1 **)((int)this + 8) = &LAB_0041dd90;
-  *(code **)((int)this + 0xc) = FUN_0041dda0;
+  *(code **)((int)this + 0xc) = vorbis_mem_tell;
   *(undefined4 *)((int)this + 0x2e0) = 0;
-  *(undefined4 **)((int)this + 0x2ec) = param_1;
-  *param_1 = param_2;
+  *(void **)((int)this + 0x2ec) = stream;
+  *(void **)stream = buffer;
   *(undefined4 *)(*(int *)((int)this + 0x2ec) + 4) = 0;
   vf = (OggVorbis_File *)((int)this + 0x10);
   iVar1 = ov_open_callbacks((void *)(*(int *)((int)this + 0x2ec) + 8),vf,(char *)0x0,0,
@@ -15309,45 +15317,49 @@ uint __thiscall FUN_0041ddd0(void *this,undefined4 *param_1,undefined4 param_2)
     return uVar2 & 0xffffff00;
   }
   pvVar3 = ov_info(vf,-1);
-  piVar5 = (int *)((int)this + 0x2f0);
+  piVar4 = (int *)((int)this + 0x2f0);
   for (iVar1 = 8; iVar1 != 0; iVar1 = iVar1 + -1) {
-    *piVar5 = pvVar3->version;
+    *piVar4 = pvVar3->version;
     pvVar3 = (vorbis_info *)&pvVar3->channels;
-    piVar5 = piVar5 + 1;
+    piVar4 = piVar4 + 1;
   }
-  oVar6 = ov_pcm_total(vf,-1);
-  lVar7 = __allmul((uint)oVar6,(int)((ulonglong)oVar6 >> 0x20),*(uint *)((int)this + 0x2f4),
+  oVar5 = ov_pcm_total(vf,-1);
+  lVar6 = __allmul((uint)oVar5,(int)((ulonglong)oVar5 >> 0x20),*(uint *)((int)this + 0x2f4),
                    (int)*(uint *)((int)this + 0x2f4) >> 0x1f);
-  lVar7 = __allmul((uint)lVar7,(int)((ulonglong)lVar7 >> 0x20),0x10,0);
-  uVar8 = __alldiv((uint)lVar7,(uint)((ulonglong)lVar7 >> 0x20),8,0);
-  *(int *)((int)this + 0x2e4) = (int)uVar8;
-  uVar4 = FUN_0041dda0(*(int *)((int)this + 0x2ec) + 8);
-  *(undefined4 *)((int)this + 0x2e8) = uVar4;
-  return CONCAT31((int3)((uint)uVar4 >> 8),1);
+  lVar6 = __allmul((uint)lVar6,(int)((ulonglong)lVar6 >> 0x20),0x10,0);
+  uVar7 = __alldiv((uint)lVar6,(uint)((ulonglong)lVar6 >> 0x20),8,0);
+  *(int *)((int)this + 0x2e4) = (int)uVar7;
+  iVar1 = vorbis_mem_tell((void *)(*(int *)((int)this + 0x2ec) + 8));
+  *(int *)((int)this + 0x2e8) = iVar1;
+  return CONCAT31((int3)((uint)iVar1 >> 8),1);
 }
 
 
 
-/* FUN_0041dee0 @ 0041dee0 */
+/* vorbis_mem_close @ 0041dee0 */
 
-void __fastcall FUN_0041dee0(int param_1)
+/* frees memory buffer and ov_clear */
+
+void __fastcall vorbis_mem_close(void *stream)
 
 {
-  crt_free(*(void **)(param_1 + 0x2ec));
-  ov_clear((OggVorbis_File *)(param_1 + 0x10));
+  crt_free(*(void **)((int)stream + 0x2ec));
+  ov_clear((OggVorbis_File *)((int)stream + 0x10));
   return;
 }
 
 
 
-/* FUN_0041df00 @ 0041df00 */
+/* vorbis_read_pcm16 @ 0041df00 */
 
-uint __thiscall FUN_0041df00(void *this,char *param_1,int param_2)
+/* decode PCM16 samples via ov_read */
+
+int __thiscall vorbis_read_pcm16(void *this,void *stream,char *dst,int bytes)
 
 {
   uint uVar1;
   
-  uVar1 = ov_read((OggVorbis_File *)((int)this + 0x10),param_1,param_2,0,2,1,
+  uVar1 = ov_read((OggVorbis_File *)((int)this + 0x10),stream,(int)dst,0,2,1,
                   (int *)((int)this + 0x2e0));
   if (uVar1 == 0) {
     return 0;
@@ -27972,10 +27984,11 @@ int __cdecl sfx_entry_load_ogg(void *entry,byte *path)
 {
   FILE *fp;
   int iVar1;
-  undefined4 *puVar2;
+  void *pvVar2;
   uint uVar3;
-  void *pvVar4;
-  uint local_314;
+  uint unaff_EDI;
+  char *dst;
+  void *local_314;
   undefined1 local_310 [740];
   uint local_2c;
   uint local_1c;
@@ -27986,10 +27999,10 @@ int __cdecl sfx_entry_load_ogg(void *entry,byte *path)
   if ((char)iVar1 == '\0') {
     return iVar1;
   }
-  puVar2 = operator_new(local_314 + 8);
-  crt_fread(puVar2 + 2,local_314,1,fp);
+  pvVar2 = operator_new((int)local_314 + 8);
+  crt_fread((void *)((int)pvVar2 + 8),(uint)local_314,1,fp);
   resource_close();
-  iVar1 = FUN_0041ddd0(local_310,puVar2,local_314);
+  iVar1 = vorbis_mem_open(local_310,pvVar2,local_314,unaff_EDI);
   if ((char)iVar1 != '\0') {
     *(undefined4 *)entry = 0;
     *(undefined4 *)((int)entry + 4) = 0;
@@ -28005,17 +28018,17 @@ int __cdecl sfx_entry_load_ogg(void *entry,byte *path)
     *(undefined2 *)((int)entry + 0xe) = 0x10;
     *(undefined2 *)((int)entry + 0x10) = 0;
     *(uint *)((int)entry + 0x18) = local_2c;
-    pvVar4 = operator_new(local_2c);
-    iVar1 = *(int *)((int)entry + 0x18);
-    *(void **)((int)entry + 0x14) = pvVar4;
-    uVar3 = 1;
-    while ((iVar1 != 0 && (uVar3 != 0))) {
-      uVar3 = FUN_0041df00(local_310,
-                           (*(int *)((int)entry + 0x18) - iVar1) + *(int *)((int)entry + 0x14),iVar1
-                          );
-      iVar1 = iVar1 - uVar3;
+    pvVar2 = operator_new(local_2c);
+    dst = *(char **)((int)entry + 0x18);
+    *(void **)((int)entry + 0x14) = pvVar2;
+    iVar1 = 1;
+    while ((dst != (char *)0x0 && (iVar1 != 0))) {
+      iVar1 = vorbis_read_pcm16(local_310,
+                                (void *)((*(int *)((int)entry + 0x18) - (int)dst) +
+                                        *(int *)((int)entry + 0x14)),dst,unaff_EDI);
+      dst = dst + -iVar1;
     }
-    FUN_0041dee0((int)local_310);
+    vorbis_mem_close(local_310);
     iVar1 = sfx_entry_create_buffers((int)entry);
     return CONCAT31((int3)((uint)iVar1 >> 8),(char)iVar1 != '\0');
   }
@@ -28031,9 +28044,12 @@ int __cdecl sfx_entry_load_ogg(void *entry,byte *path)
 void __cdecl sfx_entry_seek(int entry,int sample_offset)
 
 {
+  int *sample_offset_00;
+  
   if (*(int *)(entry + 0x74) != 0) {
-    (**(code **)(**(int **)(entry + 0x24) + 0x34))(*(int **)(entry + 0x24),sample_offset);
-    FUN_0041ddb0(*(void **)(entry + 0x74),sample_offset);
+    sample_offset_00 = *(int **)(entry + 0x24);
+    (**(code **)(*sample_offset_00 + 0x34))(sample_offset_00,sample_offset);
+    vorbis_pcm_seek(*(void **)(entry + 0x74),(void *)sample_offset,(uint)sample_offset_00);
     *(undefined4 *)(entry + 0x1c) = 0;
     *(undefined4 *)(entry + 0x78) = 0;
     *(undefined4 *)(entry + 0x7c) = 0;
@@ -28231,8 +28247,8 @@ void __cdecl sfx_release_entry(int entry)
   int iVar2;
   int *piVar3;
   
-  if (*(int *)(entry + 0x74) != 0) {
-    FUN_0041dee0(*(int *)(entry + 0x74));
+  if (*(void **)(entry + 0x74) != (void *)0x0) {
+    vorbis_mem_close(*(void **)(entry + 0x74));
     crt_free(*(void **)(entry + 0x74));
     piVar3 = *(int **)(entry + 0x24);
     *(undefined4 *)(entry + 0x74) = 0;
@@ -28450,11 +28466,13 @@ int __cdecl music_entry_load_ogg(void *entry,byte *path)
   ushort uVar1;
   FILE *fp;
   int iVar2;
-  undefined4 *puVar3;
+  void *stream;
   void *this;
-  uint uVar4;
+  uint uVar3;
+  undefined4 *puVar4;
   uint3 uVar5;
   uint uVar6;
+  uint unaff_EDI;
   undefined4 local_24 [4];
   void *local_14;
   undefined4 local_10;
@@ -28467,12 +28485,12 @@ int __cdecl music_entry_load_ogg(void *entry,byte *path)
   if ((char)iVar2 == '\0') {
     return iVar2;
   }
-  puVar3 = operator_new((uint)(path + 8));
-  crt_fread(puVar3 + 2,(uint)path,1,fp);
+  stream = operator_new((uint)(path + 8));
+  crt_fread((void *)((int)stream + 8),(uint)path,1,fp);
   resource_close();
   this = operator_new(0x310);
   *(void **)((int)entry + 0x74) = this;
-  iVar2 = FUN_0041ddd0(this,puVar3,path);
+  iVar2 = vorbis_mem_open(this,stream,path,unaff_EDI);
   if ((char)iVar2 == '\0') {
     return iVar2;
   }
@@ -28487,27 +28505,27 @@ int __cdecl music_entry_load_ogg(void *entry,byte *path)
   *(undefined4 *)((int)entry + 4) = *(undefined4 *)(*(int *)((int)entry + 0x74) + 0x2f8);
   *(undefined2 *)((int)entry + 0xe) = 0x10;
   *(undefined2 *)((int)entry + 0x10) = 0;
-  uVar4 = (int)((uint)uVar1 * 0x10) >> 3;
-  *(short *)((int)entry + 0xc) = (short)uVar4;
-  iVar2 = (uVar4 & 0xffff) * *(int *)((int)entry + 4);
+  uVar3 = (int)((uint)uVar1 * 0x10) >> 3;
+  *(short *)((int)entry + 0xc) = (short)uVar3;
+  iVar2 = (uVar3 & 0xffff) * *(int *)((int)entry + 4);
   *(int *)((int)entry + 8) = iVar2;
-  uVar4 = iVar2 * 2;
-  *(uint *)((int)entry + 0x18) = uVar4;
-  puVar3 = operator_new(uVar4);
-  uVar4 = *(uint *)((int)entry + 0x18);
-  *(undefined4 **)((int)entry + 0x14) = puVar3;
-  for (uVar6 = uVar4 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
-    *puVar3 = 0;
-    puVar3 = puVar3 + 1;
+  uVar3 = iVar2 * 2;
+  *(uint *)((int)entry + 0x18) = uVar3;
+  puVar4 = operator_new(uVar3);
+  uVar3 = *(uint *)((int)entry + 0x18);
+  *(undefined4 **)((int)entry + 0x14) = puVar4;
+  for (uVar6 = uVar3 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
+    *puVar4 = 0;
+    puVar4 = puVar4 + 1;
   }
-  for (uVar4 = uVar4 & 3; uVar4 != 0; uVar4 = uVar4 - 1) {
-    *(undefined1 *)puVar3 = 0;
-    puVar3 = (undefined4 *)((int)puVar3 + 1);
+  for (uVar3 = uVar3 & 3; uVar3 != 0; uVar3 = uVar3 - 1) {
+    *(undefined1 *)puVar4 = 0;
+    puVar4 = (undefined4 *)((int)puVar4 + 1);
   }
-  puVar3 = local_24;
+  puVar4 = local_24;
   for (iVar2 = 9; iVar2 != 0; iVar2 = iVar2 + -1) {
-    *puVar3 = 0;
-    puVar3 = puVar3 + 1;
+    *puVar4 = 0;
+    puVar4 = puVar4 + 1;
   }
   local_24[2] = *(undefined4 *)((int)entry + 0x18);
   local_10 = 0;
@@ -28576,27 +28594,32 @@ int __cdecl music_stream_fill(int entry)
   uint extraout_EAX;
   int iVar3;
   int iVar4;
+  char *dst;
+  int *bytes;
   
+  bytes = *(int **)(entry + 0x24);
   iVar1 = (int)(*(int *)(entry + 0x18) + (*(int *)(entry + 0x18) >> 0x1f & 3U)) >> 2;
-  iVar3 = *(int *)(entry + 0x1c);
-  uVar2 = (**(code **)(**(int **)(entry + 0x24) + 0x2c))(*(int **)(entry + 0x24));
+  iVar4 = *(int *)(entry + 0x1c);
+  uVar2 = (**(code **)(*bytes + 0x2c))();
   if (-1 < (int)uVar2) {
     if (&stack0x00000000 != (undefined1 *)0xc) {
       OutputDebugStringA(s_____SND__Somehow_data_on_the_sec_00477ccc);
       return extraout_EAX & 0xffffff00;
     }
-    iVar4 = 8;
+    dst = (char *)0x8;
     do {
-      uVar2 = FUN_0041df00(*(void **)(entry + 0x74),(8 - iVar4) + iVar1,iVar4);
-      if ((int)uVar2 < 1) {
-        uVar2 = FUN_0041df00(*(void **)(entry + 0x74),(8 - iVar4) + iVar1,iVar4);
+      iVar3 = vorbis_read_pcm16(*(void **)(entry + 0x74),(void *)((8 - (int)dst) + iVar1),dst,
+                                (int)bytes);
+      if (iVar3 < 1) {
+        iVar3 = vorbis_read_pcm16(*(void **)(entry + 0x74),(void *)((8 - (int)dst) + iVar1),dst,
+                                  (int)bytes);
       }
-      iVar4 = iVar4 - uVar2;
-    } while ((0 < iVar4) && (uVar2 != 0));
+      dst = dst + -iVar3;
+    } while ((0 < (int)dst) && (iVar3 != 0));
     (**(code **)(**(int **)(entry + 0x24) + 0x4c))(*(int **)(entry + 0x24),iVar1,8,0,0);
-    iVar3 = iVar3 + *(int *)(entry + 0x1c);
-    uVar2 = iVar3 / *(int *)(entry + 0x18);
-    *(int *)(entry + 0x1c) = iVar3 % *(int *)(entry + 0x18);
+    iVar4 = iVar4 + *(int *)(entry + 0x1c);
+    uVar2 = iVar4 / *(int *)(entry + 0x18);
+    *(int *)(entry + 0x1c) = iVar4 % *(int *)(entry + 0x18);
   }
   return uVar2 & 0xffffff00;
 }

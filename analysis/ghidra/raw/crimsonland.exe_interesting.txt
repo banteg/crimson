@@ -29,6 +29,7 @@ Interesting Functions and Patterns
   GetFileVersionInfoSizeA @ 0046e95c
 
 [OPEN related]
+  vorbis_mem_open @ 0041ddd0
   resource_open_read @ 0043b9e0
   crt_fsopen @ 0046100e
   crt_fopen @ 0046103f
@@ -37,6 +38,8 @@ Interesting Functions and Patterns
   ov_open_callbacks @ 0046e932
 
 [READ related]
+  vorbis_mem_read @ 0041dce0
+  vorbis_read_pcm16 @ 0041df00
   reg_read_dword_default @ 0042a980
   highscore_read_record @ 0043ab10
   buffer_reader_init @ 0043b850

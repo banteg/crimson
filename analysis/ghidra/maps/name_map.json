@@ -514,6 +514,48 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041dce0",
+    "name": "vorbis_mem_read",
+    "signature": "uint vorbis_mem_read(void *dst, uint size, uint count, void *datasource)",
+    "comment": "ov_open_callbacks read hook for memory-backed OGG data"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041dda0",
+    "name": "vorbis_mem_tell",
+    "signature": "int vorbis_mem_tell(void *datasource)",
+    "comment": "ov_open_callbacks tell hook (returns current offset)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041ddb0",
+    "name": "vorbis_pcm_seek",
+    "signature": "int vorbis_pcm_seek(void *stream, uint sample_offset)",
+    "comment": "wrapper around ov_pcm_seek for memory stream"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041ddd0",
+    "name": "vorbis_mem_open",
+    "signature": "int vorbis_mem_open(void *stream, void *buffer, uint size)",
+    "comment": "open OGG/Vorbis data from a memory buffer (sets callbacks)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041dee0",
+    "name": "vorbis_mem_close",
+    "signature": "void vorbis_mem_close(void *stream)",
+    "comment": "frees memory buffer and ov_clear"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041df00",
+    "name": "vorbis_read_pcm16",
+    "signature": "int vorbis_read_pcm16(void *stream, char *dst, int bytes)",
+    "comment": "decode PCM16 samples via ov_read"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041df40",
     "name": "game_is_full_version",
     "signature": "int game_is_full_version(void)",
