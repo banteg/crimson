@@ -1,13 +1,108 @@
 {
-  "grim_apply_config": "0x05D40",
-  "grim_init_system": "0x05EB0",
-  "grim_apply_settings": "0x06020",
-  "grim_check_device": "0x05CB0",
-  "grim_get_error_text": "0x06CA0",
-  "grim_create_texture": "0x075D0",
-  "grim_load_texture": "0x076E0",
-  "grim_validate_texture": "0x07750",
-  "grim_destroy_texture": "0x07700",
-  "grim_recreate_texture": "0x07790",
-  "grim_flush_batch": "0x083C0"
+  "options": {
+    "module": "grim.dll",
+    "out_path": "Z:\\grim_hits.log",
+    "json_path": "Z:\\grim_hits.jsonl",
+    "log_json": true,
+    "log_interval_ms": 5000,
+    "trace": {
+      "mode": "callsite",
+      "first": 1,
+      "callsite_limit": 3
+    },
+    "draw_state": true,
+    "include_state_in_text": false,
+    "frame_boundary": ["grim_flush_batch"],
+    "frame_summary_top": 12
+  },
+  "targets": {
+    "grim_apply_config": { "rva": "0x05D40" },
+    "grim_init_system": { "rva": "0x05EB0" },
+    "grim_apply_settings": { "rva": "0x06020" },
+    "grim_check_device": { "rva": "0x05CB0" },
+    "grim_get_error_text": { "rva": "0x06CA0", "ret": "cstring" },
+
+    "grim_create_texture": {
+      "rva": "0x075D0",
+      "args": ["name:cstring", "width:i32", "height:i32"],
+      "state": { "last_texture_create": ["name", "width", "height"] }
+    },
+    "grim_load_texture": {
+      "rva": "0x076E0",
+      "args": ["name:cstring", "path:cstring"],
+      "state": { "last_texture_load": ["name", "path"] }
+    },
+    "grim_validate_texture": { "rva": "0x07750", "args": ["handle:i32"] },
+    "grim_destroy_texture": {
+      "rva": "0x07700",
+      "args": ["handle:i32"],
+      "resource": { "kind": "texture", "id": "handle", "op": "destroy" }
+    },
+    "grim_recreate_texture": { "rva": "0x07790", "args": ["handle:i32"] },
+    "grim_get_texture_handle": {
+      "rva": "0x07740",
+      "args": ["name:cstring"],
+      "ret": "i32",
+      "resource": { "kind": "texture", "id": "ret", "props": { "name": "name" } }
+    },
+    "grim_bind_texture": {
+      "rva": "0x07830",
+      "args": ["handle:i32", "stage:i32"],
+      "state": {
+        "texture": "handle",
+        "texture_stage": { "index": "stage", "value": "handle" }
+      }
+    },
+
+    "grim_set_render_state": {
+      "rva": "0x06580",
+      "args": ["state:u32", "value:u32"],
+      "state": { "render_state": { "index": "state", "value": "value" } }
+    },
+
+    "grim_set_uv": {
+      "rva": "0x08350",
+      "args": ["u0:f32", "v0:f32", "u1:f32", "v1:f32"],
+      "state": { "uv": ["u0", "v0", "u1", "v1"] }
+    },
+    "grim_set_uv_point": {
+      "rva": "0x083A0",
+      "args": ["index:i32", "u:f32", "v:f32"],
+      "state": { "uv_points": { "index": "index", "value": ["u", "v"] } }
+    },
+
+    "grim_set_color_ptr": {
+      "rva": "0x08040",
+      "args": [{ "name": "rgba", "mem": "f32[4]" }],
+      "state": { "color": "rgba" }
+    },
+    "grim_set_color": {
+      "rva": "0x07F90",
+      "args": ["r:f32", "g:f32", "b:f32", "a:f32"],
+      "state": { "color": ["r", "g", "b", "a"] }
+    },
+    "grim_set_color_slot": {
+      "rva": "0x081C0",
+      "args": ["index:i32", "r:f32", "g:f32", "b:f32", "a:f32"],
+      "state": { "color_slots": { "index": "index", "value": ["r", "g", "b", "a"] } }
+    },
+
+    "grim_draw_quad": {
+      "rva": "0x08B10",
+      "role": "draw",
+      "args": ["x:f32", "y:f32", "w:f32", "h:f32"]
+    },
+    "grim_draw_quad_xy": {
+      "rva": "0x08720",
+      "role": "draw",
+      "args": [{ "name": "xy", "mem": "f32[2]" }, "w:f32", "h:f32"]
+    },
+    "grim_draw_quad_rotated_matrix": {
+      "rva": "0x08750",
+      "role": "draw",
+      "args": ["x:f32", "y:f32", "w:f32", "h:f32"]
+    },
+
+    "grim_flush_batch": { "rva": "0x083C0", "role": "frame_boundary" }
+  }
 }
