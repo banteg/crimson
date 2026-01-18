@@ -879,7 +879,7 @@
     "address": "0041cdb0",
     "signature": "int FUN_0041cdb0(void)",
     "external": false,
-    "calls": ["CoCreateInstance", "CoInitialize", "CoUninitialize", "Ordinal_8", "Ordinal_9", "WideCharToMultiByte"]
+    "calls": ["CoCreateInstance", "CoInitialize", "CoUninitialize", "VariantClear", "VariantInit", "WideCharToMultiByte"]
   },
   {
     "name": "FUN_0041cfe0",
@@ -1815,9 +1815,9 @@
   {
     "name": "FUN_0043baf0",
     "address": "0043baf0",
-    "signature": "undefined4 FUN_0043baf0(void)",
+    "signature": "undefined4 FUN_0043baf0(undefined4 param_1, uint param_2)",
     "external": false,
-    "calls": ["Ordinal_11"]
+    "calls": ["DirectSoundCreate8"]
   },
   {
     "name": "FUN_0043bc20",
@@ -5719,9 +5719,9 @@
     "calls": []
   },
   {
-    "name": "Ordinal_11",
+    "name": "DirectSoundCreate8",
     "address": "0046e962",
-    "signature": "undefined Ordinal_11()",
+    "signature": "HRESULT DirectSoundCreate8(LPCGUID lpGUID, LPDIRECTSOUND8 * ppDS8, LPUNKNOWN pUnkOuter)",
     "external": false,
     "calls": []
   },
