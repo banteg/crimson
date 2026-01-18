@@ -1,0 +1,32 @@
+[
+  {
+    "offset": 700,
+    "offset_hex": "0x2bc",
+    "count": 1
+  },
+  {
+    "offset": 708,
+    "offset_hex": "0x2c4",
+    "count": 1
+  },
+  {
+    "offset": 720,
+    "offset_hex": "0x2d0",
+    "count": 1
+  },
+  {
+    "offset": 844,
+    "offset_hex": "0x34c",
+    "count": 1
+  },
+  {
+    "offset": 848,
+    "offset_hex": "0x350",
+    "count": 1
+  },
+  {
+    "offset": 852,
+    "offset_hex": "0x354",
+    "count": 1
+  }
+]

@@ -1,0 +1,102 @@
+[
+  {
+    "callsite": "0xaac97b0",
+    "count": 1557
+  },
+  {
+    "callsite": "0xaac9804",
+    "count": 1557
+  },
+  {
+    "callsite": "0xaac9915",
+    "count": 1557
+  },
+  {
+    "callsite": "0xaac7957",
+    "count": 801
+  },
+  {
+    "callsite": "0xaac7980",
+    "count": 801
+  },
+  {
+    "callsite": "0xaac8f63",
+    "count": 460
+  },
+  {
+    "callsite": "0xaac9048",
+    "count": 460
+  },
+  {
+    "callsite": "0xaac788a",
+    "count": 442
+  },
+  {
+    "callsite": "0xaac78d6",
+    "count": 442
+  },
+  {
+    "callsite": "0xaac932d",
+    "count": 380
+  },
+  {
+    "callsite": "0xaac96b0",
+    "count": 380
+  },
+  {
+    "callsite": "0xaac8e29",
+    "count": 109
+  },
+  {
+    "callsite": "0xaac90b1",
+    "count": 100
+  },
+  {
+    "callsite": "0xaac7a39",
+    "count": 24
+  },
+  {
+    "callsite": "0xaac7a84",
+    "count": 24
+  },
+  {
+    "callsite": "0xaac8b41",
+    "count": 21
+  },
+  {
+    "callsite": "grim.dll+0x8e29",
+    "count": 6
+  },
+  {
+    "callsite": "grim.dll+0x7941",
+    "count": 5
+  },
+  {
+    "callsite": "grim.dll+0x5dee",
+    "count": 3
+  },
+  {
+    "callsite": "grim.dll+0x5e21",
+    "count": 3
+  },
+  {
+    "callsite": "grim.dll+0x5e37",
+    "count": 3
+  },
+  {
+    "callsite": "0xaac85b6",
+    "count": 3
+  },
+  {
+    "callsite": "grim.dll+0x873e",
+    "count": 1
+  },
+  {
+    "callsite": "grim.dll+0x85b6",
+    "count": 1
+  },
+  {
+    "callsite": "0xaac9795",
+    "count": 1
+  }
+]
