@@ -4424,7 +4424,7 @@ LAB_00407129:
           ui_transition_direction = 0;
           (**(code **)(*grim_interface_ptr + 0x4c))();
           console_input_poll();
-          DAT_00487064 = 0;
+          highscore_score_xp = 0;
         }
         DAT_00487088 = DAT_00487088 + frame_dt_ms;
       }
@@ -6333,7 +6333,7 @@ LAB_0040ad8e:
     fStack_20 = 5.939797e-39;
     FUN_004070e0();
   }
-  DAT_00487064 = player_experience;
+  highscore_score_xp = player_experience;
   if ((DAT_0047eec8 == '\0') && (game_paused_flag == '\0')) {
     if (0.0 < _bonus_weapon_power_up_timer) {
       _bonus_weapon_power_up_timer = _bonus_weapon_power_up_timer - frame_dt;
@@ -7548,7 +7548,7 @@ void FUN_0040ffc0(void)
   if (DAT_00487234 == -1) {
     thunk_FUN_0043afa0();
     DAT_004825a4 = FUN_0043b520();
-    DAT_00487068 = config_game_mode;
+    highscore_record_game_mode = config_game_mode;
     (**(code **)(*grim_interface_ptr + 0x4c))();
     console_input_poll();
     (**(code **)(*grim_interface_ptr + 0x48))(0x1c);
@@ -7818,7 +7818,7 @@ void FUN_004107e0(void)
   if (DAT_00487234 == -1) {
     thunk_FUN_0043afa0();
     DAT_00482604 = FUN_0043b520();
-    DAT_00487068 = config_game_mode;
+    highscore_record_game_mode = config_game_mode;
     (**(code **)(*grim_interface_ptr + 0x4c))();
     console_input_poll();
     (**(code **)(*grim_interface_ptr + 0x48))(0x1c);
@@ -9281,14 +9281,14 @@ void FUN_00412dc0(void)
   DAT_00487268 = 0xffffffff;
   highscore_full_version_marker = 0;
   survival_elapsed_ms = 0;
-  DAT_00487064 = 0;
-  DAT_0048706a = 0;
-  DAT_00487069 = 0;
-  DAT_00487068 = 0;
-  DAT_0048706b = 0;
+  highscore_score_xp = 0;
+  highscore_record_quest_minor = 0;
+  highscore_record_quest_major = 0;
+  highscore_record_game_mode = 0;
+  highscore_record_weapon_id = 0;
   creature_kill_count = 0;
-  DAT_00487070 = 0;
-  DAT_0048706c = 0;
+  highscore_record_shots_hit = 0;
+  highscore_record_shots_fired = 0;
   highscore_date_checksum = 0;
   highscore_year_offset = 0;
   highscore_month = 0;
@@ -9362,14 +9362,14 @@ void FUN_00412dc0(void)
   fx_queue_count = 0;
   highscore_full_version_marker = 0;
   survival_elapsed_ms = 0;
-  DAT_00487064 = 0;
-  DAT_0048706a = 0;
-  DAT_00487069 = 0;
-  DAT_00487068 = 0;
-  DAT_0048706b = 0;
+  highscore_score_xp = 0;
+  highscore_record_quest_minor = 0;
+  highscore_record_quest_major = 0;
+  highscore_record_game_mode = 0;
+  highscore_record_weapon_id = 0;
   creature_kill_count = 0;
-  DAT_00487070 = 0;
-  DAT_0048706c = 0;
+  highscore_record_shots_hit = 0;
+  highscore_record_shots_fired = 0;
   highscore_date_checksum = 0;
   highscore_year_offset = 0;
   highscore_month = 0;
@@ -16861,7 +16861,7 @@ int __cdecl fx_spawn_secondary_projectile(float *pos,float angle,int type_id)
   } while ((int)pcVar1 < 0x4965d8);
   iVar3 = 0x3f;
 LAB_0042037f:
-  DAT_0048706c = DAT_0048706c + 1;
+  highscore_record_shots_fired = highscore_record_shots_fired + 1;
   fVar4 = (float10)fcos((float10)angle - (float10)1.5707964);
   (&secondary_projectile_pool)[iVar3 * 0x2c] = 1;
   (&secondary_proj_pos_x)[iVar3 * 0xb] = *pos;
@@ -16899,7 +16899,7 @@ int __cdecl projectile_spawn(float *pos,float angle,int type_id,int owner_id)
   
   if (bonus_spawn_guard == '\0') {
     while (((((owner_id == -100 || (owner_id == -1)) || (owner_id == -2)) || (owner_id == -3)) &&
-           ((DAT_0048706c = DAT_0048706c + 1, type_id != 0x2d &&
+           ((highscore_record_shots_fired = highscore_record_shots_fired + 1, type_id != 0x2d &&
             ((0.0 < player_fire_bullets_timer || (0.0 < player2_fire_bullets_timer))))))) {
       type_id = 0x2d;
     }
@@ -17415,7 +17415,7 @@ LAB_004219f8:
                     }
                   }
                   if ((&creature_hitbox_size)[iVar10 * 0x26] == 0x41800000) {
-                    DAT_00487070 = DAT_00487070 + 1;
+                    highscore_record_shots_hit = highscore_record_shots_hit + 1;
                   }
                   iVar7 = perk_count_get(perk_id_bloody_mess_quick_learner);
                   if (iVar7 != 0) {
@@ -17810,7 +17810,7 @@ LAB_00421d65:
         iVar4 = creature_find_in_radius(pfVar12,8.0,0);
         if (iVar4 != -1) {
           if ((&creature_hitbox_size)[iVar4 * 0x26] == 0x41800000) {
-            DAT_00487070 = DAT_00487070 + 1;
+            highscore_record_shots_hit = highscore_record_shots_hit + 1;
           }
           if (_bonus_freeze_timer <= 0.0) {
             iVar10 = _rand();
@@ -26381,14 +26381,14 @@ void __cdecl quest_start_selected(int tier,int index)
   fx_queue_count = 0;
   highscore_full_version_marker = 0;
   survival_elapsed_ms = 0;
-  DAT_00487064 = 0;
-  DAT_0048706a = 0;
-  DAT_00487069 = 0;
-  DAT_00487068 = 0;
-  DAT_0048706b = 0;
+  highscore_score_xp = 0;
+  highscore_record_quest_minor = 0;
+  highscore_record_quest_major = 0;
+  highscore_record_game_mode = 0;
+  highscore_record_weapon_id = 0;
   creature_kill_count = 0;
-  DAT_00487070 = 0;
-  DAT_0048706c = 0;
+  highscore_record_shots_hit = 0;
+  highscore_record_shots_fired = 0;
   highscore_date_checksum = 0;
   highscore_year_offset = 0;
   highscore_month = 0;
@@ -27274,7 +27274,7 @@ int FUN_0043b520(void)
     if (0 < DAT_004c395c) {
       piVar3 = &DAT_00482b34;
       do {
-        if (*piVar3 < DAT_00487064) {
+        if (*piVar3 < highscore_score_xp) {
           return iVar1;
         }
         iVar1 = iVar1 + 1;
@@ -27382,13 +27382,13 @@ void FUN_0043b750(void)
     }
     iVar1 = iVar1 + 1;
   } while (iVar1 < 0x40);
-  DAT_0048706b = (undefined1)iVar4;
-  if (DAT_0048706c < DAT_00487070) {
-    DAT_00487070 = DAT_0048706c;
+  highscore_record_weapon_id = (undefined1)iVar4;
+  if (highscore_record_shots_fired < highscore_record_shots_hit) {
+    highscore_record_shots_hit = highscore_record_shots_fired;
   }
-  DAT_00487068 = config_game_mode;
-  DAT_00487069 = DAT_00487004;
-  DAT_0048706a = DAT_00487008;
+  highscore_record_game_mode = config_game_mode;
+  highscore_record_quest_major = DAT_00487004;
+  highscore_record_quest_minor = DAT_00487008;
   highscore_flags = 0;
   uVar2 = _rand();
   uVar2 = uVar2 & 0x8fffffff;
@@ -31466,12 +31466,12 @@ void __cdecl FUN_00445380(int param_1)
   
   local_4 = 0;
   do {
-    if (DAT_00487064 < 0x79) {
+    if (highscore_score_xp < 0x79) {
 LAB_0044544d:
-      if (((DAT_00487064 < 0x51) || (iVar4 = _rand(), 0x4f < iVar4 % 100)) &&
-         ((DAT_00487064 < 0x3d || (iVar4 = _rand(), 0x27 < iVar4 % 100)))) {
-        if (((DAT_00487064 < 0x29) || (iVar4 = _rand(), 0x4f < iVar4 % 100)) &&
-           ((DAT_00487064 < 0x15 || (iVar4 = _rand(), 0x27 < iVar4 % 100)))) {
+      if (((highscore_score_xp < 0x51) || (iVar4 = _rand(), 0x4f < iVar4 % 100)) &&
+         ((highscore_score_xp < 0x3d || (iVar4 = _rand(), 0x27 < iVar4 % 100)))) {
+        if (((highscore_score_xp < 0x29) || (iVar4 = _rand(), 0x4f < iVar4 % 100)) &&
+           ((highscore_score_xp < 0x15 || (iVar4 = _rand(), 0x27 < iVar4 % 100)))) {
           dst = &DAT_004d152c + param_1 * 0x40;
           pcVar5 = FUN_00444f70('\0');
           crt_sprintf((char *)dst,&DAT_00471fc4,pcVar5);
@@ -31520,7 +31520,7 @@ LAB_0044544d:
         }
       }
       else {
-        if ((DAT_00487064 < 0x79) || (iVar4 = _rand(), 0x4f < iVar4 % 100)) goto LAB_0044544d;
+        if ((highscore_score_xp < 0x79) || (iVar4 = _rand(), 0x4f < iVar4 % 100)) goto LAB_0044544d;
         dst = &DAT_004d152c + param_1 * 0x40;
         pcVar5 = FUN_00444f70('\0');
         pcVar6 = FUN_00444f70('\0');
@@ -31815,7 +31815,7 @@ void FUN_004457c0(void)
     iVar5 = FUN_00444810(&uStack_24,&local_14,2);
     FUN_00445380(iVar5);
   }
-  DAT_00487064 = player_experience;
+  highscore_score_xp = player_experience;
   if (DAT_0047eec8 == '\0') {
     _bonus_weapon_power_up_timer = 0;
     survival_elapsed_ms = survival_elapsed_ms + frame_dt_ms;
@@ -31873,8 +31873,8 @@ void FUN_004457c0(void)
   iVar5 = *grim_interface_ptr;
   iVar9 = (**(code **)(iVar5 + 0x14c))(&DAT_004d14a8,fVar14 + 1.0,&DAT_004712b8);
   (**(code **)(iVar5 + 0x148))(grim_interface_ptr,(float)iVar9 + 14.0);
-  DAT_00487070 = DAT_004d757c;
-  DAT_0048706c = DAT_004d7578;
+  highscore_record_shots_hit = DAT_004d757c;
+  highscore_record_shots_fired = DAT_004d7578;
   ui_elements_update_and_render();
   return;
 }

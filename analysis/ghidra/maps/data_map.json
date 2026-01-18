@@ -839,13 +839,55 @@
       "program": "crimsonland.exe",
       "address": "0x00487060",
       "name": "survival_elapsed_ms",
-      "comment": "Survival elapsed time (ms)."
+      "comment": "Survival elapsed time (ms); stored in high score record offset 0x20."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00487064",
+      "name": "highscore_score_xp",
+      "comment": "Score/XP snapshot for high score insertion (record offset 0x24), copied from player_experience."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00487068",
+      "name": "highscore_record_game_mode",
+      "comment": "High score record game mode (offset 0x28), set from config_game_mode."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00487069",
+      "name": "highscore_record_quest_major",
+      "comment": "High score record quest episode/chapter (offset 0x29)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048706a",
+      "name": "highscore_record_quest_minor",
+      "comment": "High score record quest level (offset 0x2a)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048706b",
+      "name": "highscore_record_weapon_id",
+      "comment": "High score record most-used weapon id (offset 0x2b)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048706c",
+      "name": "highscore_record_shots_fired",
+      "comment": "High score record shots fired count (offset 0x2c)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00487070",
+      "name": "highscore_record_shots_hit",
+      "comment": "High score record shots hit count (offset 0x30)."
     },
     {
       "program": "crimsonland.exe",
       "address": "0x00487074",
       "name": "creature_kill_count",
-      "comment": "Total creature kills (incremented on creature death paths)."
+      "comment": "Total creature kills (incremented on creature death paths); stored in high score record offset 0x34."
     },
     {
       "program": "crimsonland.exe",

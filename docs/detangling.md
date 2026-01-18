@@ -292,6 +292,24 @@ Grim misc getter (vtable `+0xa4` → `FUN_100075b0`):
 - Returns `*(DAT_1005d850 + index*4)`; only index 0 observed in `crimsonland.exe` (`FUN_0041e8d0/1e8f0`).
 
 
+### High score record (0x48 bytes) — metadata 0x20..0x37
+
+The high score record embeds run metadata used for duplicate detection and ranking. These
+fields are compared in `FUN_0043abd0` before a score can replace an existing entry.
+
+| Offset | Address | Meaning | Evidence |
+| --- | --- | --- | --- |
+| `0x20` | `DAT_00487060` | Survival/time metric (ms) | `FUN_0043b520` compares `survival_elapsed_ms` to `DAT_00482b30` for mode 2/3 ranking; `FUN_0043abd0` compares this dword. |
+| `0x24` | `DAT_00487064` | Score/XP snapshot | Copied from `player_experience` each frame; `FUN_0043b520` compares against `DAT_00482b34` for non‑survival modes; included in `FUN_0043abd0`. |
+| `0x28` | `DAT_00487068` | Game mode id | Set from `config_game_mode` in high‑score screens; also used to pick which metric to rank in `FUN_0043afa0`. |
+| `0x29` | `DAT_00487069` | Quest stage major | Set from `_DAT_00487004` and used in quest high‑score path naming. |
+| `0x2a` | `DAT_0048706a` | Quest stage minor | Set from `_DAT_00487008` and used in quest high‑score path naming. |
+| `0x2b` | `DAT_0048706b` | Most‑used weapon id | Set to the max‑usage index in `DAT_0048708c` before save. |
+| `0x2c` | `DAT_0048706c` | Shots fired | Incremented on projectile spawns; clamped against hits; compared in `FUN_0043abd0`. |
+| `0x30` | `DAT_00487070` | Shots hit | Incremented on projectile hit paths (creature hitbox size 16.0); clamped to shots fired; compared in `FUN_0043abd0`. |
+| `0x34` | `DAT_00487074` | Creature kill count | Incremented on creature death paths; compared in `FUN_0043abd0`. |
+
+
 ### High score record (0x48 bytes) — tail bytes 0x40..0x47
 
 Score entries are 0x48 bytes (`DAT_00482b10` array, `DAT_00487040` active record). The
