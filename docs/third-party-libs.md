@@ -18,20 +18,28 @@ outputs.
 ### zlib (version 1.1.3)
 - Evidence: grim.dll initializes zlib with "1.1.3" at
   `analysis/ghidra/raw/grim.dll_decompiled.c:22511`.
+- Evidence: zlib strings report "deflate 1.1.3" and "inflate 1.1.3" at
+  `analysis/ghidra/raw/grim.dll_strings.txt:220` and `:221`.
 - Status: headers imported (`third_party/headers/zlib.h`).
 - Status: no signature mapping yet.
 
-### libjpeg (version unknown)
+### libjpeg (binary version unknown; headers are IJG 6b)
 - Evidence: multiple JPEG/JFIF error strings embedded in grim.dll, e.g.
   `analysis/ghidra/raw/grim.dll_strings.txt:11` through `:121`.
+- Evidence (headers): `JPEG_LIB_VERSION 62` (IJG 6b) in
+  `third_party/headers/jpeglib.h:33`.
 - Status: headers imported (`third_party/headers/jpeg_all.h`).
 - Status: no signature mapping yet.
 
-### libvorbisfile / libvorbis / libogg (versions unknown)
+### libvorbisfile / libvorbis / libogg (binary versions unknown; headers are 2002-era)
 - Evidence: `vorbisfile.dll` string in `analysis/ghidra/raw/crimsonland.exe_strings.txt:130`.
 - Evidence: .ogg asset paths and errors in `analysis/ghidra/raw/crimsonland.exe_strings.txt:884` and later.
 - Evidence: bundled DLL hash (sha256) for `game_bins/crimsonland/1.9.93-gog/VORBISFILE.DLL`:
   `f44472c6d9a64045c14583d12c0cfab5b4aa268aceb8bc9e3e1236b3008306f2`.
+- Evidence (headers): ogg.h `last mod` $Id: ogg.h,v 1.18 2002/07/13$ at
+  `third_party/headers/ogg/ogg.h:12`; vorbisfile.h $Id: vorbisfile.h,v 1.17 2002/03/07$
+  at `third_party/headers/vorbis/vorbisfile.h:12`; codec.h $Id: codec.h,v 1.40 2002/02/28$
+  at `third_party/headers/vorbis/codec.h:12`.
 - Status: headers imported (`third_party/headers/ogg/ogg.h`,
   `third_party/headers/vorbis/codec.h`, `third_party/headers/vorbis/vorbisfile.h`).
 - Status: no signature mapping yet.
