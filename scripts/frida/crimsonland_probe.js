@@ -112,6 +112,10 @@ const CONFIG = {
 
   // Print a one-time sanity summary at startup.
   printStartupSummary: true,
+
+  // String decode heuristics (texture names, etc).
+  stringMaxLen: 260,
+  stringQualityMin: 0.85,
 };
 
 const SESSION_ID = Date.now().toString(16) + '-' + Math.floor(Math.random() * 0xfffff).toString(16);
@@ -220,6 +224,121 @@ function tryReadUtf16(p, maxLen) {
   } catch (_) {
     return null;
   }
+}
+
+function stringQuality(str) {
+  if (!str) return 0;
+  let printable = 0;
+  for (let i = 0; i < str.length; i++) {
+    const code = str.charCodeAt(i);
+    if ((code >= 32 && code < 127) || code === 9) printable++;
+  }
+  return printable / str.length;
+}
+
+function scoreString(str, quality) {
+  if (!str) return 0;
+  let score = quality;
+  const lower = str.toLowerCase();
+  if (lower.indexOf("\\") >= 0 || lower.indexOf("/") >= 0) score += 0.2;
+  if (lower.indexOf(".") >= 0) score += 0.1;
+  if (lower.endsWith(".jaz") || lower.endsWith(".jpg") || lower.endsWith(".png") || lower.endsWith(".tga")) {
+    score += 0.4;
+  }
+  if (str.length < 3) score -= 0.2;
+  if (str.length > 260) score -= 0.3;
+  return score;
+}
+
+function pickBestString(candidates) {
+  if (!candidates.length) return null;
+  candidates.sort((a, b) => b.score - a.score);
+  return candidates[0];
+}
+
+function readBestString(ptrArg, maxLen) {
+  const candidates = [];
+  const directAnsi = tryReadAnsi(ptrArg, maxLen);
+  if (directAnsi && directAnsi.length) {
+    const quality = stringQuality(directAnsi);
+    candidates.push({
+      value: directAnsi,
+      via: 'ansi',
+      ptr: ptrArg,
+      ptr2: null,
+      quality,
+      score: scoreString(directAnsi, quality),
+    });
+  }
+
+  const directUtf16 = tryReadUtf16(ptrArg, maxLen);
+  if (directUtf16 && directUtf16.length) {
+    const quality = stringQuality(directUtf16);
+    candidates.push({
+      value: directUtf16,
+      via: 'utf16',
+      ptr: ptrArg,
+      ptr2: null,
+      quality,
+      score: scoreString(directUtf16, quality),
+    });
+  }
+
+  const ptr2 = tryReadPtr(ptrArg);
+  if (ptr2 && !ptr2.isNull()) {
+    const indirectAnsi = tryReadAnsi(ptr2, maxLen);
+    if (indirectAnsi && indirectAnsi.length) {
+      const quality = stringQuality(indirectAnsi);
+      candidates.push({
+        value: indirectAnsi,
+        via: 'ansi*',
+        ptr: ptrArg,
+        ptr2,
+        quality,
+        score: scoreString(indirectAnsi, quality),
+      });
+    }
+    const indirectUtf16 = tryReadUtf16(ptr2, maxLen);
+    if (indirectUtf16 && indirectUtf16.length) {
+      const quality = stringQuality(indirectUtf16);
+      candidates.push({
+        value: indirectUtf16,
+        via: 'utf16*',
+        ptr: ptrArg,
+        ptr2,
+        quality,
+        score: scoreString(indirectUtf16, quality),
+      });
+    }
+  }
+
+  const best = pickBestString(candidates);
+  if (!best) {
+    return {
+      name: null,
+      name_via: null,
+      name_ptr: ptrArg ? ptrArg.toString() : null,
+      name_ptr2: null,
+      name_quality: null,
+      name_score: null,
+      name_len: null,
+    };
+  }
+
+  const ok =
+    best.quality >= CONFIG.stringQualityMin &&
+    best.value.length <= CONFIG.stringMaxLen;
+
+  return {
+    name: ok ? best.value : null,
+    name_via: best.via,
+    name_ptr: best.ptr ? best.ptr.toString() : null,
+    name_ptr2: best.ptr2 ? best.ptr2.toString() : null,
+    name_quality: best.quality,
+    name_score: best.score,
+    name_len: best.value.length,
+    name_raw: ok ? null : best.value,
+  };
 }
 
 function u32ToF32(u) {
@@ -1155,8 +1274,8 @@ function hookResources() {
   // texture_get_or_load(char* name) -> int handle
   attachAtVa('crimsonland.exe', ADDR.texture_get_or_load, 'texture_get_or_load', {
     onEnter(args) {
-      const name = tryReadAnsi(args[0], 260);
-      this._evt = { event: 'texture_get_or_load', ts: nowIso(), name };
+      const decoded = readBestString(args[0], CONFIG.stringMaxLen);
+      this._evt = { event: 'texture_get_or_load', ts: nowIso(), name: decoded.name, ...decoded };
       if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
     },
     onLeave(retval) {
@@ -1167,8 +1286,8 @@ function hookResources() {
 
   attachAtVa('crimsonland.exe', ADDR.texture_get_or_load_alt, 'texture_get_or_load_alt', {
     onEnter(args) {
-      const name = tryReadAnsi(args[0], 260);
-      this._evt = { event: 'texture_get_or_load_alt', ts: nowIso(), name };
+      const decoded = readBestString(args[0], CONFIG.stringMaxLen);
+      this._evt = { event: 'texture_get_or_load_alt', ts: nowIso(), name: decoded.name, ...decoded };
       if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
     },
     onLeave(retval) {
