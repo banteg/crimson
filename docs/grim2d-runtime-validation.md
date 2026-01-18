@@ -21,11 +21,16 @@ How to run (Frida hook script):
 2) Copy `scripts/frida/grim_hooks.js` and `scripts/frida/grim_hooks_targets.json`
    into the VM shared drive (example uses `Z:\`).
 3) Optionally edit `grim_hooks_targets.json` to swap the target list.
-4) Launch the game, find its PID, and attach:
+4) Launch the game, find its PID, and attach (recommended):
 
    ```text
+   frida-ps | findstr /i crimsonland
    frida -p <pid> -l Z:\grim_hooks.js
    ```
+
+   Spawned runs on Win11 ARM64 caused empty textures and a crash before the main menu
+   (observed 2026-01-18), so attach is preferred.
+
 5) To capture the very beginning, spawn instead of attach:
 
    ```text
@@ -33,13 +38,15 @@ How to run (Frida hook script):
    ```
 
    If the process pauses on spawn, type `%resume` in the Frida REPL.
-6) Logs are written to `Z:\grim_hits.log` by default.
+6) Logs are written to `Z:\grim_hits.log` by default. If JSON logging is enabled
+   (default in `grim_hooks_targets.json`), events also stream to `Z:\grim_hits.jsonl`.
 
 Artifacts:
 
 - Hook script: `scripts/frida/grim_hooks.js`
 - Target list: `scripts/frida/grim_hooks_targets.json`
 - Log: `Z:\grim_hits.log`
+- JSONL log: `Z:\grim_hits.jsonl`
 - `grim.dll` base at runtime: `0x0A990000`
 
 Observed hits (counts at end of run):
