@@ -4,170 +4,22 @@
     "name": "ui_element_render",
     "signature": "void ui_element_render(void * element)",
     "events": {
-      "grim": 101764
+      "grim": 5080
     },
     "textures": [],
     "sfx_ids": [],
     "grim_calls": [
       [
         "grim_begin_batch",
-        37074
+        2477
       ],
       [
         "grim_end_batch",
-        37074
-      ],
-      [
-        "grim_bind_texture",
-        26062
+        2477
       ],
       [
         "grim_was_key_pressed",
-        1554
-      ]
-    ]
-  },
-  {
-    "address": "0x00422c70",
-    "name": "projectile_render",
-    "signature": "void projectile_render(void)",
-    "events": {
-      "grim": 38283
-    },
-    "textures": [],
-    "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_end_batch",
-        13976
-      ],
-      [
-        "grim_begin_batch",
-        12501
-      ],
-      [
-        "grim_bind_texture",
-        11800
-      ],
-      [
-        "grim_set_color_slot",
-        3
-      ],
-      [
-        "grim_set_uv_point",
-        3
-      ]
-    ]
-  },
-  {
-    "address": "0x00418b60",
-    "name": "creature_render_type",
-    "signature": "void creature_render_type(int type_id)",
-    "events": {
-      "grim": 36825
-    },
-    "textures": [],
-    "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_begin_batch",
-        14730
-      ],
-      [
-        "grim_end_batch",
-        14730
-      ],
-      [
-        "grim_bind_texture",
-        7365
-      ]
-    ]
-  },
-  {
-    "address": "0x004295f0",
-    "name": "bonus_render",
-    "signature": "void bonus_render(void)",
-    "events": {
-      "grim": 29460
-    },
-    "textures": [],
-    "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_begin_batch",
-        10311
-      ],
-      [
-        "grim_end_batch",
-        10311
-      ],
-      [
-        "grim_bind_texture",
-        8838
-      ]
-    ]
-  },
-  {
-    "address": "0x0041aed0",
-    "name": "ui_render_hud",
-    "signature": "void ui_render_hud(void)",
-    "events": {
-      "grim": 27934
-    },
-    "textures": [],
-    "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_bind_texture",
-        7998
-      ],
-      [
-        "grim_begin_batch",
-        7998
-      ],
-      [
-        "grim_end_batch",
-        7998
-      ],
-      [
-        "grim_get_texture_handle",
-        3939
-      ],
-      [
-        "grim_set_color_ptr",
-        1
-      ]
-    ]
-  },
-  {
-    "address": "0x0040b740",
-    "name": "demo_purchase_screen_update",
-    "signature": "void demo_purchase_screen_update(void)",
-    "events": {
-      "grim": 25245
-    },
-    "textures": [],
-    "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_was_key_pressed",
-        9144
-      ],
-      [
-        "grim_get_mouse_dx",
-        6096
-      ],
-      [
-        "grim_get_mouse_dy",
-        3909
-      ],
-      [
-        "grim_get_frame_dt",
-        3048
-      ],
-      [
-        "grim_get_config_var",
-        3048
+        126
       ]
     ]
   },
@@ -176,7 +28,7 @@
     "name": "game_startup_init",
     "signature": "void game_startup_init(void)",
     "events": {
-      "grim": 17818,
+      "grim": 4103,
       "texture": 2,
       "sfx": 2
     },
@@ -203,47 +55,55 @@
     "grim_calls": [
       [
         "grim_begin_batch",
-        3042
+        1253
       ],
       [
         "grim_end_batch",
-        3042
+        1253
       ],
       [
         "grim_get_frame_dt",
-        2526
+        714
       ],
       [
-        "grim_get_texture_handle",
-        2341
+        "grim_was_mouse_button_pressed",
+        434
       ],
       [
-        "grim_bind_texture",
-        2337
+        "grim_was_key_pressed",
+        434
       ]
     ]
   },
   {
-    "address": "0x00428390",
-    "name": "player_render_overlays",
-    "signature": "void player_render_overlays(void)",
+    "address": "0x0040b740",
+    "name": "demo_purchase_screen_update",
+    "signature": "void demo_purchase_screen_update(void)",
     "events": {
-      "grim": 14098
+      "grim": 1070
     },
     "textures": [],
     "sfx_ids": [],
     "grim_calls": [
       [
-        "grim_begin_batch",
-        4716
+        "grim_was_key_pressed",
+        384
       ],
       [
-        "grim_end_batch",
-        4716
+        "grim_get_mouse_dx",
+        256
       ],
       [
-        "grim_bind_texture",
-        4666
+        "grim_get_mouse_dy",
+        174
+      ],
+      [
+        "grim_get_frame_dt",
+        128
+      ],
+      [
+        "grim_get_config_var",
+        128
       ]
     ]
   },
@@ -252,182 +112,18 @@
     "name": "ui_cursor_render",
     "signature": "void ui_cursor_render(void)",
     "events": {
-      "grim": 10410
-    },
-    "textures": [],
-    "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_bind_texture",
-        3470
-      ],
-      [
-        "grim_begin_batch",
-        3470
-      ],
-      [
-        "grim_end_batch",
-        3470
-      ]
-    ]
-  },
-  {
-    "address": "0x0041a320",
-    "name": "ui_render_aim_enhancement",
-    "signature": "void ui_render_aim_enhancement(void)",
-    "events": {
-      "grim": 7806
-    },
-    "textures": [],
-    "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_bind_texture",
-        2602
-      ],
-      [
-        "grim_begin_batch",
-        2602
-      ],
-      [
-        "grim_end_batch",
-        2602
-      ]
-    ]
-  },
-  {
-    "address": "0x0042e820",
-    "name": "effects_render",
-    "signature": "void effects_render(void)",
-    "events": {
-      "grim": 7365
+      "grim": 512
     },
     "textures": [],
     "sfx_ids": [],
     "grim_calls": [
       [
         "grim_begin_batch",
-        2946
+        256
       ],
       [
         "grim_end_batch",
-        2946
-      ],
-      [
-        "grim_bind_texture",
-        1473
-      ]
-    ]
-  },
-  {
-    "address": "0x0040a510",
-    "name": "ui_render_aim_indicators",
-    "signature": "void ui_render_aim_indicators(void)",
-    "events": {
-      "grim": 5204
-    },
-    "textures": [],
-    "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_bind_texture",
-        2602
-      ],
-      [
-        "grim_begin_batch",
-        1301
-      ],
-      [
-        "grim_end_batch",
-        1301
-      ]
-    ]
-  },
-  {
-    "address": "0x00419680",
-    "name": "creature_render_all",
-    "signature": "void creature_render_all(void)",
-    "events": {
-      "grim": 4419
-    },
-    "textures": [],
-    "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_bind_texture",
-        1473
-      ],
-      [
-        "grim_begin_batch",
-        1473
-      ],
-      [
-        "grim_end_batch",
-        1473
-      ]
-    ]
-  },
-  {
-    "address": "0x0041a8b0",
-    "name": "bonus_hud_slot_update_and_render",
-    "signature": "void bonus_hud_slot_update_and_render(float * xy, int slot)",
-    "events": {
-      "grim": 3340
-    },
-    "textures": [],
-    "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_bind_texture",
-        1336
-      ],
-      [
-        "grim_end_batch",
-        1336
-      ],
-      [
-        "grim_begin_batch",
-        668
-      ]
-    ]
-  },
-  {
-    "address": "0x004188a0",
-    "name": "terrain_render",
-    "signature": "void terrain_render(void)",
-    "events": {
-      "grim": 3048
-    },
-    "textures": [],
-    "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_bind_texture",
-        3048
-      ]
-    ]
-  },
-  {
-    "address": "0x00427920",
-    "name": "fx_queue_render",
-    "signature": "void fx_queue_render(void)",
-    "events": {
-      "grim": 2439
-    },
-    "textures": [],
-    "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_begin_batch",
-        827
-      ],
-      [
-        "grim_end_batch",
-        827
-      ],
-      [
-        "grim_bind_texture",
-        785
+        256
       ]
     ]
   },
@@ -436,340 +132,14 @@
     "name": "ui_focus_update",
     "signature": "int ui_focus_update(int id)",
     "events": {
-      "grim": 1732
+      "grim": 126
     },
     "textures": [],
     "sfx_ids": [],
     "grim_calls": [
       [
         "grim_was_key_pressed",
-        1732
-      ]
-    ]
-  },
-  {
-    "address": "0x004061e0",
-    "name": "ui_draw_clock_gauge",
-    "signature": "void ui_draw_clock_gauge(void)",
-    "events": {
-      "grim": 1410
-    },
-    "textures": [],
-    "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_bind_texture",
-        470
-      ],
-      [
-        "grim_begin_batch",
-        470
-      ],
-      [
-        "grim_end_batch",
-        470
-      ]
-    ]
-  },
-  {
-    "address": "0x0043e5e0",
-    "name": "ui_menu_item_update",
-    "signature": "int ui_menu_item_update(float * xy, int * item)",
-    "events": {
-      "grim": 1347,
-      "sfx": 3
-    },
-    "textures": [],
-    "sfx_ids": [
-      [
-        63,
-        3
-      ]
-    ],
-    "grim_calls": [
-      [
-        "grim_begin_batch",
-        615
-      ],
-      [
-        "grim_end_batch",
-        615
-      ],
-      [
-        "grim_was_key_pressed",
-        117
-      ]
-    ]
-  },
-  {
-    "address": "0x0040aab0",
-    "name": "gameplay_update_and_render",
-    "signature": "void gameplay_update_and_render(void)",
-    "events": {
-      "grim": 1337,
-      "sfx": 9
-    },
-    "textures": [],
-    "sfx_ids": [
-      [
-        1,
-        6
-      ],
-      [
-        65,
-        3
-      ]
-    ],
-    "grim_calls": [
-      [
-        "grim_was_key_pressed",
-        1331
-      ],
-      [
-        "grim_flush_input",
-        6
-      ]
-    ]
-  },
-  {
-    "address": "0x0043e830",
-    "name": "ui_button_update",
-    "signature": "int ui_button_update(float * xy, int * button)",
-    "events": {
-      "grim": 963,
-      "sfx": 3
-    },
-    "textures": [],
-    "sfx_ids": [
-      [
-        63,
-        3
-      ]
-    ],
-    "grim_calls": [
-      [
-        "grim_bind_texture",
-        310
-      ],
-      [
-        "grim_begin_batch",
-        310
-      ],
-      [
-        "grim_end_batch",
-        310
-      ],
-      [
-        "grim_was_key_pressed",
-        31
-      ],
-      [
-        "grim_get_texture_handle",
-        2
-      ]
-    ]
-  },
-  {
-    "address": "0x00420b90",
-    "name": "projectile_update",
-    "signature": "void projectile_update(void)",
-    "events": {
-      "sfx": 636
-    },
-    "textures": [],
-    "sfx_ids": [
-      [
-        53,
-        119
-      ],
-      [
-        55,
-        112
-      ],
-      [
-        54,
-        112
-      ],
-      [
-        50,
-        104
-      ],
-      [
-        51,
-        101
-      ]
-    ],
-    "grim_calls": []
-  },
-  {
-    "address": "0x00417ae0",
-    "name": "ui_draw_textured_quad",
-    "signature": "void ui_draw_textured_quad(int texture_id, int x, int y, int w, int h)",
-    "events": {
-      "grim": 324
-    },
-    "textures": [],
-    "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_bind_texture",
-        162
-      ],
-      [
-        "grim_end_batch",
-        162
-      ]
-    ]
-  },
-  {
-    "address": "0x004136b0",
-    "name": "player_update",
-    "signature": "void player_update(void)",
-    "events": {
-      "sfx": 318
-    },
-    "textures": [],
-    "sfx_ids": [
-      [
-        34,
-        262
-      ],
-      [
-        32,
-        37
-      ],
-      [
-        39,
-        17
-      ],
-      [
-        30,
-        2
-      ]
-    ],
-    "grim_calls": []
-  },
-  {
-    "address": "0x004207c0",
-    "name": "creature_apply_damage",
-    "signature": "int creature_apply_damage(int creature_id, float damage, int damage_type, float * impulse)",
-    "events": {
-      "sfx": 131
-    },
-    "textures": [],
-    "sfx_ids": [
-      [
-        13,
-        29
-      ],
-      [
-        14,
-        29
-      ],
-      [
-        15,
-        28
-      ],
-      [
-        12,
-        26
-      ],
-      [
-        27,
-        8
-      ]
-    ],
-    "grim_calls": []
-  },
-  {
-    "address": "0x0043efc0",
-    "name": "ui_list_widget_update",
-    "signature": "int ui_list_widget_update(float * xy, char * list)",
-    "events": {
-      "grim": 116
-    },
-    "textures": [],
-    "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_get_texture_handle",
-        29
-      ],
-      [
-        "grim_bind_texture",
-        29
-      ],
-      [
-        "grim_begin_batch",
-        29
-      ],
-      [
-        "grim_end_batch",
-        29
-      ]
-    ]
-  },
-  {
-    "address": "0x0042a700",
-    "name": "texture_get_or_load_alt",
-    "signature": "int texture_get_or_load_alt(char * name, char * path)",
-    "events": {
-      "grim": 99
-    },
-    "textures": [],
-    "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_get_texture_handle",
-        66
-      ],
-      [
-        "grim_load_texture",
-        33
-      ]
-    ]
-  },
-  {
-    "address": "0x0042a670",
-    "name": "texture_get_or_load",
-    "signature": "int texture_get_or_load(char * name, char * path)",
-    "events": {
-      "grim": 96
-    },
-    "textures": [],
-    "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_get_texture_handle",
-        64
-      ],
-      [
-        "grim_load_texture",
-        32
-      ]
-    ]
-  },
-  {
-    "address": "0x0044ecf0",
-    "name": "FUN_0044ecf0",
-    "signature": "undefined FUN_0044ecf0(void * this, float * param_1, float * param_2)",
-    "events": {
-      "grim": 87
-    },
-    "textures": [],
-    "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_bind_texture",
-        29
-      ],
-      [
-        "grim_end_batch",
-        29
-      ],
-      [
-        "grim_was_key_pressed",
-        29
+        126
       ]
     ]
   },
@@ -778,8 +148,7 @@
     "name": "load_textures_step",
     "signature": "int load_textures_step(void)",
     "events": {
-      "texture": 49,
-      "grim": 5
+      "texture": 49
     },
     "textures": [
       [
@@ -804,234 +173,7 @@
       ]
     ],
     "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_get_texture_handle",
-        5
-      ]
-    ]
-  },
-  {
-    "address": "0x00401060",
-    "name": "console_input_poll",
-    "signature": "int console_input_poll(void)",
-    "events": {
-      "grim": 42
-    },
-    "textures": [],
-    "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_get_key_char",
-        42
-      ]
-    ]
-  },
-  {
-    "address": "0x00426220",
-    "name": "creature_update_all",
-    "signature": "void creature_update_all(void)",
-    "events": {
-      "sfx": 39
-    },
-    "textures": [],
-    "sfx_ids": [
-      [
-        17,
-        18
-      ],
-      [
-        16,
-        14
-      ],
-      [
-        28,
-        4
-      ],
-      [
-        29,
-        3
-      ]
-    ],
     "grim_calls": []
-  },
-  {
-    "address": "0x004413a0",
-    "name": "ui_text_input_render",
-    "signature": "void ui_text_input_render(void * input_state, float y, float alpha)",
-    "events": {
-      "grim": 34
-    },
-    "textures": [],
-    "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_bind_texture",
-        17
-      ],
-      [
-        "grim_end_batch",
-        17
-      ]
-    ]
-  },
-  {
-    "address": "0x004181b0",
-    "name": "terrain_generate_random",
-    "signature": "void terrain_generate_random(void)",
-    "events": {
-      "grim": 32
-    },
-    "textures": [],
-    "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_bind_texture",
-        9
-      ],
-      [
-        "grim_begin_batch",
-        9
-      ],
-      [
-        "grim_end_batch",
-        9
-      ],
-      [
-        "grim_draw_quad_xy",
-        3
-      ],
-      [
-        "grim_set_uv",
-        1
-      ]
-    ]
-  },
-  {
-    "address": "0x004461c0",
-    "name": "game_state_set",
-    "signature": "void game_state_set(int state_id)",
-    "events": {
-      "grim": 26
-    },
-    "textures": [],
-    "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_get_config_var",
-        14
-      ],
-      [
-        "grim_flush_input",
-        12
-      ]
-    ]
-  },
-  {
-    "address": "0x0043ecf0",
-    "name": "ui_text_input_update",
-    "signature": "int ui_text_input_update(float * xy, int * input_state)",
-    "events": {
-      "grim": 23
-    },
-    "textures": [],
-    "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_set_key_char_buffer",
-        23
-      ]
-    ]
-  },
-  {
-    "address": "0x00409890",
-    "name": "bonus_apply",
-    "signature": "void bonus_apply(int player_index, int * bonus_entry)",
-    "events": {
-      "sfx": 21
-    },
-    "textures": [],
-    "sfx_ids": [
-      [
-        62,
-        18
-      ],
-      [
-        56,
-        1
-      ],
-      [
-        59,
-        1
-      ],
-      [
-        60,
-        1
-      ]
-    ],
-    "grim_calls": []
-  },
-  {
-    "address": "0x00425e50",
-    "name": "player_take_damage",
-    "signature": "void player_take_damage(int player_index, float damage)",
-    "events": {
-      "sfx": 21
-    },
-    "textures": [],
-    "sfx_ids": [
-      [
-        1,
-        8
-      ],
-      [
-        0,
-        6
-      ],
-      [
-        2,
-        6
-      ],
-      [
-        4,
-        1
-      ]
-    ],
-    "grim_calls": []
-  },
-  {
-    "address": "0x0040ffc0",
-    "name": "game_over_screen_update",
-    "signature": "void game_over_screen_update(void)",
-    "events": {
-      "sfx": 19,
-      "grim": 2
-    },
-    "textures": [],
-    "sfx_ids": [
-      [
-        1,
-        17
-      ],
-      [
-        68,
-        1
-      ],
-      [
-        4,
-        1
-      ]
-    ],
-    "grim_calls": [
-      [
-        "grim_flush_input",
-        1
-      ],
-      [
-        "grim_was_key_pressed",
-        1
-      ]
-    ]
   },
   {
     "address": "0x0041ec60",
@@ -1050,24 +192,36 @@
     ]
   },
   {
-    "address": "0x00446900",
-    "name": "ui_element_update",
-    "signature": "void ui_element_update(void * element)",
+    "address": "0x004181b0",
+    "name": "terrain_generate_random",
+    "signature": "void terrain_generate_random(void)",
     "events": {
-      "sfx": 18
+      "grim": 17
     },
     "textures": [],
-    "sfx_ids": [
+    "sfx_ids": [],
+    "grim_calls": [
       [
-        64,
-        16
+        "grim_begin_batch",
+        6
       ],
       [
-        63,
-        2
+        "grim_end_batch",
+        6
+      ],
+      [
+        "grim_draw_quad_xy",
+        3
+      ],
+      [
+        "grim_set_uv",
+        1
+      ],
+      [
+        "grim_set_color",
+        1
       ]
-    ],
-    "grim_calls": []
+    ]
   },
   {
     "address": "0x0042c450",
@@ -1110,11 +264,11 @@
         1
       ],
       [
-        "grim_set_key_char_buffer",
+        "grim_apply_settings",
         1
       ],
       [
-        "grim_apply_settings",
+        "grim_set_key_char_buffer",
         1
       ],
       [
@@ -1124,58 +278,22 @@
     ]
   },
   {
-    "address": "0x00412dc0",
-    "name": "gameplay_reset_state",
-    "signature": "void gameplay_reset_state(void)",
+    "address": "0x004461c0",
+    "name": "game_state_set",
+    "signature": "void game_state_set(int state_id)",
     "events": {
-      "grim": 12
+      "grim": 9
     },
     "textures": [],
     "sfx_ids": [],
     "grim_calls": [
       [
-        "grim_get_texture_handle",
-        12
-      ]
-    ]
-  },
-  {
-    "address": "0x00413430",
-    "name": "player_start_reload",
-    "signature": "void player_start_reload(void)",
-    "events": {
-      "sfx": 12
-    },
-    "textures": [],
-    "sfx_ids": [
-      [
-        35,
-        9
+        "grim_get_config_var",
+        7
       ],
       [
-        33,
-        3
-      ]
-    ],
-    "grim_calls": []
-  },
-  {
-    "address": "0x00419d00",
-    "name": "ui_element_load",
-    "signature": "void ui_element_load(void * element, char * jaz_path)",
-    "events": {
-      "grim": 8
-    },
-    "textures": [],
-    "sfx_ids": [],
-    "grim_calls": [
-      [
-        "grim_load_texture",
-        4
-      ],
-      [
-        "grim_get_texture_handle",
-        4
+        "grim_flush_input",
+        2
       ]
     ]
   },
@@ -1196,56 +314,60 @@
     ]
   },
   {
-    "address": "0x00405be0",
-    "name": "perk_selection_screen_update",
-    "signature": "void perk_selection_screen_update(void)",
+    "address": "0x00446900",
+    "name": "ui_element_update",
+    "signature": "void ui_element_update(void * element)",
     "events": {
-      "sfx": 3
+      "sfx": 6
     },
     "textures": [],
     "sfx_ids": [
       [
-        63,
-        3
-      ]
-    ],
-    "grim_calls": []
-  },
-  {
-    "address": "0x004055e0",
-    "name": "perk_apply",
-    "signature": "void perk_apply(int perk_id)",
-    "events": {
-      "sfx": 3
-    },
-    "textures": [],
-    "sfx_ids": [
-      [
-        62,
-        3
-      ]
-    ],
-    "grim_calls": []
-  },
-  {
-    "address": "0x00452d40",
-    "name": "weapon_assign_player",
-    "signature": "void weapon_assign_player(int player_index, int weapon_id)",
-    "events": {
-      "sfx": 2
-    },
-    "textures": [],
-    "sfx_ids": [
-      [
-        35,
-        1
+        64,
+        5
       ],
       [
-        33,
+        63,
         1
       ]
     ],
     "grim_calls": []
+  },
+  {
+    "address": "0x0042a670",
+    "name": "texture_get_or_load",
+    "signature": "int texture_get_or_load(char * name, char * path)",
+    "events": {
+      "grim": 3
+    },
+    "textures": [],
+    "sfx_ids": [],
+    "grim_calls": [
+      [
+        "grim_get_texture_handle",
+        2
+      ],
+      [
+        "grim_load_texture",
+        1
+      ]
+    ]
+  },
+  {
+    "address": "0x00401060",
+    "name": "console_input_poll",
+    "signature": "int console_input_poll(void)",
+    "events": {
+      "grim": 2
+    },
+    "textures": [],
+    "sfx_ids": [],
+    "grim_calls": [
+      [
+        "grim_get_key_char",
+        2
+      ]
+    ]
   },
   {
     "address": "0x0042a9f0",
@@ -1259,6 +381,38 @@
     "grim_calls": [
       [
         "grim_create_texture",
+        1
+      ]
+    ]
+  },
+  {
+    "address": "0x0042a700",
+    "name": "texture_get_or_load_alt",
+    "signature": "int texture_get_or_load_alt(char * name, char * path)",
+    "events": {
+      "grim": 1
+    },
+    "textures": [],
+    "sfx_ids": [],
+    "grim_calls": [
+      [
+        "grim_load_texture",
+        1
+      ]
+    ]
+  },
+  {
+    "address": "0x00419d00",
+    "name": "ui_element_load",
+    "signature": "void ui_element_load(void * element, char * jaz_path)",
+    "events": {
+      "grim": 1
+    },
+    "textures": [],
+    "sfx_ids": [],
+    "grim_calls": [
+      [
+        "grim_load_texture",
         1
       ]
     ]

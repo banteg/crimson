@@ -1,63 +1,47 @@
 [
   {
-    "callsite": "0xd2b97b0",
-    "count": 6243
+    "callsite": "0xbf5100f",
+    "count": 2924
   },
   {
-    "callsite": "0xd2b9804",
-    "count": 6243
+    "callsite": "0xbf50f0f",
+    "count": 969
   },
   {
-    "callsite": "0xd2b9915",
-    "count": 6243
+    "callsite": "0xd2e8f63",
+    "count": 273
   },
   {
-    "callsite": "0xd2b7957",
-    "count": 4041
+    "callsite": "0xd2e9048",
+    "count": 273
   },
   {
-    "callsite": "0xd2b7980",
-    "count": 4041
+    "callsite": "0xd2e788a",
+    "count": 128
   },
   {
-    "callsite": "0xd2b788a",
-    "count": 3048
+    "callsite": "0xd2e78d6",
+    "count": 128
   },
   {
-    "callsite": "0xd2b78d6",
-    "count": 3048
+    "callsite": "0xbf50b0f",
+    "count": 69
   },
   {
-    "callsite": "0xd2b8e29",
-    "count": 1766
+    "callsite": "0xbf51a0f",
+    "count": 52
   },
   {
-    "callsite": "0xd2b90b1",
-    "count": 1047
+    "callsite": "0xd2e7a39",
+    "count": 30
   },
   {
-    "callsite": "0xd2b8f63",
-    "count": 1019
+    "callsite": "0xd2e7a84",
+    "count": 30
   },
   {
-    "callsite": "0xd2b9048",
-    "count": 1019
-  },
-  {
-    "callsite": "0xd2b8b41",
-    "count": 876
-  },
-  {
-    "callsite": "0xd2b85b6",
-    "count": 173
-  },
-  {
-    "callsite": "0xd2b7a39",
-    "count": 40
-  },
-  {
-    "callsite": "0xd2b7a84",
-    "count": 40
+    "callsite": "0xbf50d0f",
+    "count": 4
   },
   {
     "callsite": "grim.dll+0x5dee",
@@ -72,39 +56,15 @@
     "count": 1
   },
   {
-    "callsite": "0xbf91b0f",
+    "callsite": "grim.dll+0x8e29",
     "count": 1
   },
   {
-    "callsite": "0xbf9390f",
+    "callsite": "0xbf5060f",
     "count": 1
   },
   {
-    "callsite": "0xbf9360f",
-    "count": 1
-  },
-  {
-    "callsite": "0xbf91d0f",
-    "count": 1
-  },
-  {
-    "callsite": "0xbf93a0f",
-    "count": 1
-  },
-  {
-    "callsite": "0xbf93c0f",
-    "count": 1
-  },
-  {
-    "callsite": "0xbf9380f",
-    "count": 1
-  },
-  {
-    "callsite": "grim.dll+0x7941",
-    "count": 1
-  },
-  {
-    "callsite": "0xd2b9795",
+    "callsite": "0xbf5070f",
     "count": 1
   }
 ]

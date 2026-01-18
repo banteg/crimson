@@ -244,8 +244,28 @@ function tryReadPtr(p) {
 function tryReadAnsi(p, maxLen) {
   try {
     if (p.isNull()) return null;
-    if (typeof p.readCString === 'function') return p.readCString(maxLen);
-    if (typeof p.readUtf8String === 'function') return p.readUtf8String(maxLen);
+    const size = maxLen || CONFIG.stringMaxLen;
+    try {
+      // Manual NUL scan avoids occasional readCString overreads on fixed buffers.
+      const bytes = p.readByteArray(size);
+      if (bytes) {
+        const u8 = new Uint8Array(bytes);
+        let end = u8.length;
+        for (let i = 0; i < u8.length; i++) {
+          if (u8[i] === 0) {
+            end = i;
+            break;
+          }
+        }
+        let out = '';
+        for (let i = 0; i < end; i++) out += String.fromCharCode(u8[i]);
+        return out;
+      }
+    } catch (_) {
+      // Fall through to native helpers.
+    }
+    if (typeof p.readCString === 'function') return p.readCString(size);
+    if (typeof p.readUtf8String === 'function') return p.readUtf8String(size);
     return null;
   } catch (_) {
     return null;

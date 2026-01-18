@@ -131,35 +131,41 @@ Based on the video provided, here is the timeline of events.
 
 ## Session 2
 
-- **Date:** TBD
+- **Date:** 2026-01-18
 - **Build / platform:** Win11 ARM64 (UTM), Crimsonland v1.9.93
 - **Scripts:** `grim_hooks.js`, `crimsonland_probe.js`
-- **Attach method:** `frida -n crimsonland.exe -l Z:\...`
-- **Artifacts:** TBD
+- **Attach method:** `frida -n crimsonland.exe -l Z:\grim_hooks.js` + `frida -n crimsonland.exe -l Z:\crimsonland_probe.js`
+- **Artifacts:** `analysis/frida/raw/*.jsonl`, `analysis/frida/*summary*.json`
 
 ### Wants (pre-run)
 
-Goal: isolate player-struct unknown offsets using targeted bonus pickups with MemoryAccessMonitor.
+Goal: quick attach + main-menu smoke test with both hooks enabled.
 
 Steps:
 
-1. Start Survival and enter gameplay.
-2. For each offset, run `watchPlayerOffset(0, <offset>, 4)`, then pick up the bonus, then stop:
-   - `watchPlayerOffset(0, 0x2BC, 4)` → pick up **Freeze** → `stopWatchPlayerOffset()`
-   - `watchPlayerOffset(0, 0x2C4, 4)` → pick up **Speed** → `stopWatchPlayerOffset()`
-   - `watchPlayerOffset(0, 0x2D0, 4)` → pick up **Fire Bullets** → `stopWatchPlayerOffset()`
-   - `watchPlayerOffset(0, 0x34C, 4)` → pick up **Freeze** → `stopWatchPlayerOffset()`
-   - `watchPlayerOffset(0, 0x350, 4)` → pick up **Speed** → `stopWatchPlayerOffset()`
-   - `watchPlayerOffset(0, 0x354, 4)` → pick up **Fire Bullets** → `stopWatchPlayerOffset()`
+1. Launch the game and attach both scripts.
+2. Wait until the main menu renders; idle for a bit to gather UI calls.
+3. Exit.
 
 ### Run summary (actual)
 
-_TBD_
+Short run to main menu only (no gameplay). Both hooks attached; the game stayed in UI/idle render paths.
+`auto_dump_player` fired once on startup; no bonus/perk/gameplay triggers occurred.
 
 ### Findings
 
-_TBD_
+- Auto-record: only `startup` fired (1 dump). Unknown-field tracker still only reported offsets
+  `0x2BC`, `0x2C4`, `0x2D0`, `0x34C`, `0x350`, `0x354` (count=1 each).
+- SFX evidence: `ui_element_update` called `sfx_play` with IDs **64** (x5) and **63** (x1).
+  `game_startup_init` triggered **0** and **4** once each.
+- Texture requests: 65 calls across `texture_get_or_load` / `_alt`, but decoded names are still garbage.
+  `path_bytes_hex` shows NUL-terminated strings (e.g., `load\\mockup.jaz`), so string decoding needs to
+  stop at the first NUL.
+- Grim vtable activity is dominated by UI rendering (`ui_element_render`, `grim_begin_batch`,
+  `grim_end_batch`), as expected for a menu-only run.
 
 ### Actionable insights
 
-_TBD_
+- Re-run with gameplay + MemoryAccessMonitor drills to map the unknown offsets.
+- After fixing the NUL-terminated string decoder, re-run to get clean texture names in evidence.
+- If we want to label UI SFX, capture a small UI-only run with a stack trace to map sfx IDs 63/64.
