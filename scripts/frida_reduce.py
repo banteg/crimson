@@ -359,16 +359,18 @@ def main() -> int:
                 if event in ("texture_get_or_load", "texture_get_or_load_alt"):
                     callsite = parse_callsite(obj.get("caller"), session)
                     entry = None
+                    name = obj.get("name")
                     if callsite and callsite.module == "crimsonland.exe":
                         entry = index.lookup(callsite.static_addr)
-                        record_evidence(evidence, entry, "texture", obj.get("name") or "")
+                        if isinstance(name, str) and name:
+                            record_evidence(evidence, entry, "texture", name)
                     else:
                         unmapped[str(obj.get("caller") or "unknown")] += 1
                     fact = {
                         "kind": "texture_request",
                         "session_id": session_id,
                         "source": "probe",
-                        "name": obj.get("name"),
+                        "name": name,
                         "callsite": obj.get("caller"),
                         "callsite_va": format_hex(callsite.static_addr) if callsite else None,
                         "function": {
