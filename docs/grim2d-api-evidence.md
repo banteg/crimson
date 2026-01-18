@@ -42,7 +42,7 @@ grim.dll body:
 grim.dll body:
 
 ```c
-  DAT_1005d820 = (undefined1)paused;
+  grim_paused_flag = (undefined1)paused;
 ```
 
 
@@ -105,7 +105,7 @@ grim.dll body:
   DAT_1005b2c4 = (int *)Direct3DCreate8(0xdc);
   DialogBoxParamA(DAT_1005bacc,(LPCSTR)0x74,(HWND)0x0,(DLGPROC)&LAB_10002120,0);
   (**(code **)(*DAT_1005b2c4 + 8))(DAT_1005b2c4);
-  if (DAT_1005d3bc == '\0') {
+  if (grim_config_dialog_canceled == '\0') {
     (**(code **)(*in_ECX + 0x20))(0x54,DAT_1005d400);
 ```
 
@@ -235,7 +235,7 @@ grim.dll body:
 grim.dll body:
 
 ```c
-  return DAT_1005c8f8;
+  return grim_error_text;
 ```
 
 
@@ -473,7 +473,7 @@ LAB_00401add:
 grim.dll body:
 
 ```c
-  if (DAT_1005cc58 != '\0') {
+  if (grim_input_cached != '\0') {
     return CONCAT31((int3)((uint)button >> 8),(&DAT_1005a044)[button]);
   }
   bVar1 = FUN_1000a590(button);
@@ -495,14 +495,14 @@ grim.dll body:
 
 ```c
   cVar1 = (**(code **)(*(int *)this + 0x58))(button);
-  if ((cVar1 == '\0') || ((&DAT_1005c8e8)[button] == '\0')) {
+  if ((cVar1 == '\0') || ((&grim_mouse_button_latch)[button] == '\0')) {
     uVar4 = 0;
   }
   else {
     uVar4 = 1;
   }
   uVar2 = (**(code **)(*(int *)this + 0x58))(button);
-  (&DAT_1005c8e8)[button] = (char)uVar2 == '\0';
+  (&grim_mouse_button_latch)[button] = (char)uVar2 == '\0';
   return CONCAT31((int3)((uint)uVar2 >> 8),uVar4);
 ```
 
@@ -540,8 +540,8 @@ grim.dll body:
 grim.dll body:
 
 ```c
-  DAT_1005db44 = x;
-  DAT_1005db48 = y;
+  grim_mouse_x = x;
+  grim_mouse_y = y;
   _DAT_1005b278 = x;
   _DAT_1005b27c = y;
 ```
@@ -594,7 +594,7 @@ grim.dll body:
 grim.dll body:
 
 ```c
-  return _DAT_1005db50;
+  return grim_mouse_dx;
 ```
 
 
@@ -611,7 +611,7 @@ grim.dll body:
 grim.dll body:
 
 ```c
-  return _DAT_1005db54;
+  return grim_mouse_dy;
 ```
 
 
@@ -713,7 +713,7 @@ grim.dll mapping:
     return (float)DAT_1005d830 * 0.001;
   }
   if (id == 0x140) {
-    return (float)DAT_1005d834 * 0.001;
+    return (float)grim_joystick_axis_y * 0.001;
   }
   if (id == 0x15f) {
     fVar3 = (float10)(**(code **)(*in_ECX + 0x70))();
@@ -814,7 +814,7 @@ grim.dll body:
 grim.dll body:
 
 ```c
-  return DAT_1005d834;
+  return grim_joystick_axis_y;
 ```
 
 
@@ -830,7 +830,7 @@ grim.dll body:
 grim.dll body:
 
 ```c
-  return DAT_1005d838;
+  return grim_joystick_axis_z;
 ```
 
 
@@ -1260,13 +1260,13 @@ grim.dll body:
 grim.dll body:
 
 ```c
-  if ((DAT_1005d3bd == '\0') && (DAT_1005d3f4 != '\0')) {
+  if ((grim_render_disabled == '\0') && (grim_batch_active != '\0')) {
     (**(code **)(*DAT_10059e2c + 0x30))(DAT_10059e2c);
     (**(code **)(*DAT_10059dbc + 0x11c))
-              (DAT_10059dbc,4,0,DAT_1005c8dc & 0xffff,0,(DAT_1005c8dc & 0xffff) >> 1);
+              (DAT_10059dbc,4,0,grim_vertex_count & 0xffff,0,(grim_vertex_count & 0xffff) >> 1);
     iVar1 = (**(code **)(*DAT_10059e2c + 0x2c))(DAT_10059e2c,0,0,&DAT_10059e34,0x2800);
     if (-1 < iVar1) {
-      DAT_1005c8dc = DAT_1005c8dc & 0xffff0000;
+      grim_vertex_count = grim_vertex_count & 0xffff0000;
     }
   }
 ```
@@ -1304,7 +1304,7 @@ grim.dll body:
 grim.dll body:
 
 ```c
-  if (DAT_1005d3f4 == '\0') {
+  if (grim_batch_active == '\0') {
     (**(code **)(*in_ECX + 0xe8))();
   }
   for (iVar1 = 7; iVar1 != 0; iVar1 = iVar1 + -1) {
@@ -1312,8 +1312,8 @@ grim.dll body:
     vertex = vertex + 1;
     pfVar2 = pfVar2 + 1;
   }
-  DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + 1;
-  if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
+  grim_vertex_count._0_2_ = (ushort)grim_vertex_count + 1;
+  if (DAT_1005976c <= (ushort)grim_vertex_count) {
     (**(code **)(*in_ECX + 0xec))();
   }
 ```
@@ -1339,8 +1339,8 @@ grim.dll body:
     verts = verts + 1;
     pfVar2 = pfVar2 + 1;
   }
-  DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + 4;
-  if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
+  grim_vertex_count._0_2_ = (ushort)grim_vertex_count + 4;
+  if (DAT_1005976c <= (ushort)grim_vertex_count) {
     (**(code **)(*in_ECX + 0xec))();
   }
 ```
@@ -1370,7 +1370,7 @@ grim.dll precompute:
 ```c
   _DAT_10059e30 = radians;
   fVar1 = (float10)fcos((float10)radians + (float10)0.7853982);
-  DAT_1005c8e4 = (float)fVar1;
+  grim_rotation_cos = (float)fVar1;
 ```
 
 
@@ -1458,9 +1458,9 @@ Atlas pointer table setup (grim.dll init):
     *puVar9 = 0;
     puVar9 = puVar9 + 1;
   }
-  _DAT_1005bc80 = &DAT_1005d388;
-  _DAT_1005bc88 = &DAT_1005cb08;
-  _DAT_1005bc98 = &DAT_1005c908;
+  _DAT_1005bc80 = &grim_subrect_table_0;
+  _DAT_1005bc88 = &grim_subrect_table_1;
+  _DAT_1005bc98 = &grim_subrect_table_2;
   _DAT_1005bcb8 = &DAT_1005a678;
 ```
 
@@ -1710,8 +1710,8 @@ grim.dll body:
 ```c
   *DAT_10059e34 = *DAT_10059e34 + *offset;
   DAT_10059e34[1] = offset[1] + DAT_10059e34[1];
-  DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + (short)count;
-  if (DAT_1005976c <= (ushort)DAT_1005c8dc) {
+  grim_vertex_count._0_2_ = (ushort)grim_vertex_count + (short)count;
+  if (DAT_1005976c <= (ushort)grim_vertex_count) {
     (**(code **)(*in_ECX + 0xec))();
   }
 ```
@@ -1824,8 +1824,8 @@ grim.dll vertex fill (color + UV slots):
 grim.dll body:
 
 ```c
-  if (DAT_1005ccf8 == '\0') {
-    (**(code **)(*DAT_10059dbc + 0xf4))(DAT_10059dbc,0,DAT_1005d3ec);
+  if (grim_font_texture_bound == '\0') {
+    (**(code **)(*DAT_10059dbc + 0xf4))(DAT_10059dbc,0,grim_font_texture);
   }
   (**(code **)(*in_ECX + 0xfc))(0);
   (**(code **)(*in_ECX + 0xe8))();

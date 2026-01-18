@@ -3342,6 +3342,30 @@
     },
     {
       "program": "grim.dll",
+      "address": "0x1005c8dc",
+      "name": "grim_vertex_count",
+      "comment": "Current vertex count in the dynamic batch (16-bit)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005c8e4",
+      "name": "grim_rotation_cos",
+      "comment": "Cosine term for rotation matrix (radians + 45deg)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005c8e8",
+      "name": "grim_mouse_button_latch",
+      "comment": "Mouse button latch array for edge detection."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005c8f8",
+      "name": "grim_error_text",
+      "comment": "Current Grim2D error string (returned by grim_get_error_text)."
+    },
+    {
+      "program": "grim.dll",
       "address": "0x1005c8fc",
       "name": "grim_d3d8",
       "comment": "Primary IDirect3D8 interface.",
@@ -3353,6 +3377,18 @@
       "name": "grim_backbuffer_surface",
       "comment": "Cached backbuffer render target (IDirect3DSurface8).",
       "type": "LPDIRECT3DSURFACE8"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005c908",
+      "name": "grim_subrect_table_2",
+      "comment": "Atlas sub-rect table (pointer table entry 2)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005cb08",
+      "name": "grim_subrect_table_1",
+      "comment": "Atlas sub-rect table (pointer table entry 1)."
     },
     {
       "program": "grim.dll",
@@ -3380,6 +3416,48 @@
     },
     {
       "program": "grim.dll",
+      "address": "0x1005cc58",
+      "name": "grim_input_cached",
+      "comment": "Input cache flag (uses cached mouse state when nonzero)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005ccf8",
+      "name": "grim_font_texture_bound",
+      "comment": "Font texture bound flag (nonzero skips SetTexture in draw_text)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005d388",
+      "name": "grim_subrect_table_0",
+      "comment": "Atlas sub-rect table (pointer table entry 0)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005d3bc",
+      "name": "grim_config_dialog_canceled",
+      "comment": "Config dialog canceled flag (1 when dialog dismissed)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005d3bd",
+      "name": "grim_render_disabled",
+      "comment": "Render-disabled flag (skips Clear/BeginScene paths)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005d3ec",
+      "name": "grim_font_texture",
+      "comment": "Font texture (IDirect3DTexture8) used for text rendering."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005d3f4",
+      "name": "grim_batch_active",
+      "comment": "Batch active/locked flag for vertex buffer usage."
+    },
+    {
+      "program": "grim.dll",
       "address": "0x1005d404",
       "name": "grim_texture_slots",
       "comment": "Texture slot table (array of Grim2D texture pointers; indexed by handle)."
@@ -3392,10 +3470,28 @@
     },
     {
       "program": "grim.dll",
+      "address": "0x1005d820",
+      "name": "grim_paused_flag",
+      "comment": "Pause flag set by grim_set_paused."
+    },
+    {
+      "program": "grim.dll",
       "address": "0x1005d830",
       "name": "grim_joystick_state",
       "comment": "Joystick state buffer (DIJOYSTATE2).",
       "type": "DIJOYSTATE2"
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005d834",
+      "name": "grim_joystick_axis_y",
+      "comment": "Joystick axis Y (DIJOYSTATE2.lY)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005d838",
+      "name": "grim_joystick_axis_z",
+      "comment": "Joystick axis Z (DIJOYSTATE2.lZ)."
     },
     {
       "program": "grim.dll",
@@ -3469,6 +3565,30 @@
       "address": "0x1005db3c",
       "name": "grim_mouse_buttons",
       "comment": "Mouse button byte array (DIMOUSESTATE2.rgbButtons, offset +0x0c)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005db44",
+      "name": "grim_mouse_x",
+      "comment": "Mouse X position (pixels)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005db48",
+      "name": "grim_mouse_y",
+      "comment": "Mouse Y position (pixels)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005db50",
+      "name": "grim_mouse_dx",
+      "comment": "Mouse delta X (pixels) accumulated per poll."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1005db54",
+      "name": "grim_mouse_dy",
+      "comment": "Mouse delta Y (pixels) accumulated per poll."
     }
   ]
 }

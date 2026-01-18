@@ -100,7 +100,7 @@
   - [ ] DAT_00487278
   - [x] ui_element_table_end (DAT_0048f168)
   - [x] ui_element_table_start (DAT_0048f208)
-  - [ ] DAT_0048f7f0
+  - [x] bonus_texture (DAT_0048f7f0)
   - [x] survival_xp_smoothed (DAT_00490300)
   - [ ] DAT_00495ac8
   - [ ] DAT_00495ace
@@ -190,27 +190,27 @@
   - [x] grim_slot_ints (DAT_1005bf00)
   - [x] grim_slot_floats (DAT_1005c100)
   - [ ] DAT_004804fc
-  - [ ] DAT_1005c8dc
-  - [ ] DAT_1005c8e4
-  - [ ] DAT_1005c8e8
-  - [ ] DAT_1005c8f8
-  - [ ] DAT_1005c908
-  - [ ] DAT_1005cb08
-  - [ ] DAT_1005cc58
-  - [ ] DAT_1005ccf8
-  - [ ] DAT_1005d388
-  - [ ] DAT_1005d3bc
-  - [ ] DAT_1005d3bd
-  - [ ] DAT_1005d3ec
-  - [ ] DAT_1005d3f4
+  - [x] grim_vertex_count (DAT_1005c8dc)
+  - [x] grim_rotation_cos (DAT_1005c8e4)
+  - [x] grim_mouse_button_latch (DAT_1005c8e8)
+  - [x] grim_error_text (DAT_1005c8f8)
+  - [x] grim_subrect_table_2 (DAT_1005c908)
+  - [x] grim_subrect_table_1 (DAT_1005cb08)
+  - [x] grim_input_cached (DAT_1005cc58)
+  - [x] grim_font_texture_bound (DAT_1005ccf8)
+  - [x] grim_subrect_table_0 (DAT_1005d388)
+  - [x] grim_config_dialog_canceled (DAT_1005d3bc)
+  - [x] grim_render_disabled (DAT_1005d3bd)
+  - [x] grim_font_texture (DAT_1005d3ec)
+  - [x] grim_batch_active (DAT_1005d3f4)
   - [ ] DAT_1005d400
-  - [ ] DAT_1005d820
-  - [ ] DAT_1005d834
-  - [ ] DAT_1005d838
-  - [ ] DAT_1005db44
-  - [ ] DAT_1005db48
-  - [ ] DAT_1005db50
-  - [ ] DAT_1005db54
+  - [x] grim_paused_flag (DAT_1005d820)
+  - [x] grim_joystick_axis_y (DAT_1005d834)
+  - [x] grim_joystick_axis_z (DAT_1005d838)
+  - [x] grim_mouse_x (DAT_1005db44)
+  - [x] grim_mouse_y (DAT_1005db48)
+  - [x] grim_mouse_dx (DAT_1005db50)
+  - [x] grim_mouse_dy (DAT_1005db54)
 - [ ] Perk metadata tables referenced in `docs/perk-id-map.md` (≈63 unlabeled DAT_ addresses)
 - [ ] State/UI/frame/render globals in `docs/crimsonland-exe/*` (≈30–40 unlabeled DAT_ addresses)
 - [ ] Atlas tables referenced in `docs/atlas.md` (≈8 unlabeled DAT_ addresses)

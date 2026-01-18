@@ -3383,7 +3383,7 @@
   {
     "name": "crt_vsprintf",
     "address": "00461089",
-    "signature": "int crt_vsprintf(undefined1 * param_1, byte * param_2, undefined4 * param_3)",
+    "signature": "int crt_vsprintf(char * dst, char * fmt, void * args)",
     "external": false,
     "calls": ["crt_flsbuf", "crt_output"]
   },
@@ -3796,14 +3796,14 @@
   {
     "name": "crt_qsort",
     "address": "00462bd4",
-    "signature": "undefined crt_qsort(int * param_1, undefined4 * param_2, uint param_3, undefined * param_4)",
+    "signature": "void crt_qsort(void * base, size_t num, size_t size, void * cmp)",
     "external": false,
     "calls": ["crt_shortsort", "crt_swap"]
   },
   {
     "name": "crt_shortsort",
     "address": "00462d28",
-    "signature": "undefined crt_shortsort(undefined1 * param_1, undefined1 * param_2, int param_3, undefined * param_4)",
+    "signature": "void crt_shortsort(char * lo, char * hi, size_t width, void * cmp)",
     "external": false,
     "calls": ["crt_swap"]
   },
@@ -4244,7 +4244,7 @@
   {
     "name": "crt_output",
     "address": "00464380",
-    "signature": "int crt_output(int * param_1, byte * param_2, undefined4 * param_3)",
+    "signature": "int crt_output(FILE * stream, char * format, void * args)",
     "external": false,
     "calls": ["FUN_00464bbc", "FUN_00464bc9", "FUN_00464bd9", "FUN_0046a8c5", "FUN_0046b0b5", "__aulldiv", "__aullrem", "_malloc", "_strlen", "crt_free_base", "crt_putc_buffer_nolock", "crt_putc_nolock", "crt_putc_repeat_nolock"]
   },
@@ -4503,7 +4503,7 @@
   {
     "name": "crt_mktime",
     "address": "00465da5",
-    "signature": "int crt_mktime(int param_1, int param_2, int param_3, int param_4, int param_5, int param_6, int param_7)",
+    "signature": "long crt_mktime(int year, int month, int day, int hour, int min, int sec, int dst)",
     "external": false,
     "calls": ["FUN_0046c5ad", "FUN_0046c862"]
   },

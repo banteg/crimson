@@ -223,7 +223,7 @@ int grim_config_dialog_proc(int hwnd,uint msg,uint wparam,int lparam)
   
   if (msg == 0x10) {
 LAB_10002629:
-    DAT_1005d3bc = 1;
+    grim_config_dialog_canceled = 1;
 LAB_10002631:
     EndDialog((HWND)hwnd,wparam & 0xffff);
   }
@@ -289,7 +289,7 @@ LAB_10002631:
         iVar13 = MessageBoxA((HWND)hwnd,s_No_supported_display_adapters_we_10053248,
                              s_Crimsonland_100532fc,0x33);
         if (iVar13 != 6) {
-          DAT_1005d3bc = 1;
+          grim_config_dialog_canceled = 1;
           EndDialog((HWND)hwnd,wparam & 0xffff);
         }
       }
@@ -345,7 +345,7 @@ LAB_10002631:
       DAT_1005b2b8 = CONCAT31(DAT_1005b2b8._1_3_,bVar9);
       DAT_1005ce38 = (-(uint)bVar9 & 0xfffffff0) + 0x20;
       sprintf(&cStack_400,s_w___d_h__d_bpp__d_1005347c,DAT_10053054,DAT_10053058,bVar9);
-      DAT_1005d3bc = 0;
+      grim_config_dialog_canceled = 0;
       LVar14 = 0;
       WVar12 = 0;
       UVar10 = 0x147;
@@ -474,7 +474,7 @@ int grim_window_create(void)
   DAT_1005d3f8 = CreateWindowExA(dwExStyle,DAT_10059df0,DAT_1005bac8,dwStyle,iVar1,iVar2,nWidth,
                                  nHeight,hWndParent,hMenu,hInstance,lpParam);
   if (DAT_1005d3f8 == (HWND)0x0) {
-    DAT_1005c8f8 = s_WIN__Could_not_create_the_main_w_100535b4;
+    grim_error_text = s_WIN__Could_not_create_the_main_w_100535b4;
     grim_window_destroy();
     return extraout_EAX & 0xffffff00;
   }
@@ -549,7 +549,7 @@ int grim_backup_textures(void)
                           (grim_d3d_device,*(UINT *)(iVar3 + 0xc),*(UINT *)(iVar3 + 0x10),
                            grim_texture_format,(IDirect3DSurface8 **)(iVar3 + 0x14));
         if (HVar2 < 0) {
-          DAT_1005c8f8 = s_D3D__Unable_to_backup_texture____10053678;
+          grim_error_text = s_D3D__Unable_to_backup_texture____10053678;
           FUN_10001160();
           uVar5 = FUN_10001160();
           return uVar5 & 0xffffff00;
@@ -563,7 +563,7 @@ int grim_backup_textures(void)
               *(undefined4 *)((&grim_texture_slots)[iVar7] + 0x14) = 0;
             }
           }
-          DAT_1005c8f8 = s_D3D__Unable_to_backup_texture____10053644;
+          grim_error_text = s_D3D__Unable_to_backup_texture____10053644;
           FUN_10001160();
           uVar5 = FUN_10001160();
           return uVar5 & 0xffffff00;
@@ -585,7 +585,7 @@ int grim_backup_textures(void)
               local_14 = (IDirect3DSurface8 *)0x0;
             }
           }
-          DAT_1005c8f8 = s_D3D__Unable_to_backup_texture____10053618;
+          grim_error_text = s_D3D__Unable_to_backup_texture____10053618;
           FUN_10001160();
           uStack_10 = CONCAT31(uStack_10._1_3_,1);
           _DAT_1005d0f8 = uStack_10;
@@ -665,7 +665,7 @@ int grim_restore_textures(void)
         if (piVar1 != (int *)0x0) {
           iVar3 = (**(code **)(*piVar1 + 0x3c))(piVar1,0,&local_14);
           if (iVar3 < 0) {
-            DAT_1005c8f8 = s_D3D__Unable_to_recreate_texture__10053704;
+            grim_error_text = s_D3D__Unable_to_recreate_texture__10053704;
             uVar2 = FUN_10001160();
             return uVar2 & 0xffffff00;
           }
@@ -690,7 +690,7 @@ int grim_restore_textures(void)
           uStack_10 = CONCAT31(uStack_10._1_3_,1);
           _DAT_1005d0f8 = uStack_10;
           DAT_1005d810 = 0;
-          DAT_1005c8f8 = s_D3D__Unable_to_restore_texture____100536d8;
+          grim_error_text = s_D3D__Unable_to_restore_texture____100536d8;
           _DAT_1005d0fc = uStack_c;
           _DAT_1005d100 = uStack_8;
           _DAT_1005d104 = uStack_4;
@@ -779,7 +779,7 @@ undefined4 FUN_10002cf0(void)
                                 (grim_d3d_device,*(UINT *)(iVar3 + 0xc),*(UINT *)(iVar3 + 0x10),1,1,
                                  grim_texture_format,D3DPOOL_DEFAULT,
                                  (IDirect3DTexture8 **)(iVar3 + 4)), HVar4 < 0)) {
-            DAT_1005c8f8 = s_D3D__Unable_to_recreate_a_textur_100537e0;
+            grim_error_text = s_D3D__Unable_to_recreate_a_textur_100537e0;
             FUN_10001160();
             *(undefined4 *)(*piVar5 + 4) = 0;
             Sleep(200);
@@ -799,7 +799,7 @@ undefined4 FUN_10002cf0(void)
     DAT_1005d808 = DAT_1005d808 + 1;
     Sleep(500);
     if (3 < DAT_1005d808) {
-      DAT_1005c8f8 = s_D3D__Unable_to_restore_device__10053804;
+      grim_error_text = s_D3D__Unable_to_restore_device__10053804;
       iVar6 = MessageBoxA(DAT_1005d3f8,s_D3D__Unable_to_restore_device__10053804,&DAT_10053824,5);
       if (iVar6 == 2) {
         FUN_10001160();
@@ -1005,7 +1005,7 @@ LAB_100033a0:
                                 (grim_d3d_device,*(UINT *)(iVar4 + 0xc),*(UINT *)(iVar4 + 0x10),1,1,
                                  grim_texture_format,D3DPOOL_DEFAULT,
                                  (IDirect3DTexture8 **)(iVar4 + 4)), HVar2 < 0)) {
-            DAT_1005c8f8 = s_D3D__Unable_to_recreate_a_textur_100537e0;
+            grim_error_text = s_D3D__Unable_to_recreate_a_textur_100537e0;
             *(undefined4 *)(*piVar6 + 4) = 0;
             FUN_10001160();
             FUN_10001160();
@@ -1049,7 +1049,7 @@ LAB_100033a0:
       } while (iVar7 <= DAT_1005305c);
     }
     if (6 < DAT_1005d808) {
-      DAT_1005c8f8 = s_D3D__Unable_to_restore_device__10053804;
+      grim_error_text = s_D3D__Unable_to_restore_device__10053804;
       uVar5 = MessageBoxA(DAT_1005d3f8,s_D3D__Unable_to_restore_device__10053804,&DAT_10053824,5);
       if (uVar5 == 2) goto LAB_100033a0;
       iVar7 = 0;
@@ -1134,8 +1134,8 @@ undefined4 FUN_10003c00(void)
             if (DAT_1005d804 == '\0') {
               FUN_10004970();
             }
-            if ((((DAT_1005d820 == '\0') && (DAT_1005d804 == '\0')) && (DAT_1005c898 != '\0')) &&
-               (DAT_1005a470 == '\0')) {
+            if ((((grim_paused_flag == '\0') && (DAT_1005d804 == '\0')) && (DAT_1005c898 != '\0'))
+               && (DAT_1005a470 == '\0')) {
               if (DAT_1005cc38 != '\0') {
                 grim_keyboard_poll();
                 pfVar6 = (float *)&DAT_1005a058;
@@ -1150,9 +1150,9 @@ undefined4 FUN_10003c00(void)
               }
               grim_joystick_poll();
               _DAT_1005cf14 = &grim_joystick_state;
-              if (DAT_1005cc58 == '\0') {
-                _grim_mouse_x_cached = DAT_1005db44;
-                _grim_mouse_y_cached = DAT_1005db48;
+              if (grim_input_cached == '\0') {
+                _grim_mouse_x_cached = grim_mouse_x;
+                _grim_mouse_y_cached = grim_mouse_y;
                 grim_mouse_poll();
               }
             }
@@ -1179,7 +1179,7 @@ undefined4 FUN_10003c00(void)
         if (DAT_1005d3b4 != (int *)0x0) {
           (**(code **)(*DAT_1005d3b4 + 0x14))();
         }
-        if (DAT_1005d3bd == '\0') {
+        if (grim_render_disabled == '\0') {
           (*grim_d3d_device->lpVtbl->Present)
                     (grim_d3d_device,(RECT *)0x0,(RECT *)0x0,(HWND)0x0,(RGNDATA *)0x0);
         }
@@ -1192,7 +1192,7 @@ undefined4 FUN_10003c00(void)
 LAB_10003e30:
   timeEndPeriod(1);
   thunk_FUN_10002f60(0x1005bbd8);
-  if (DAT_1005cc58 != '\0') {
+  if (grim_input_cached != '\0') {
     ShowCursor(1);
   }
   grim_window_destroy();
@@ -1233,7 +1233,7 @@ int grim_d3d_init(void)
   }
   grim_d3d8 = Direct3DCreate8(0xdc);
   if (grim_d3d8 == (IDirect3D8 *)0x0) {
-    DAT_1005c8f8 = s_D3D__Could_not_init_DirectX_8_1__10053a60;
+    grim_error_text = s_D3D__Could_not_init_DirectX_8_1__10053a60;
     return 0;
   }
   (*grim_d3d8->lpVtbl->GetDeviceCaps)(grim_d3d8,DAT_1005d3e8,DAT_1005b2b4,(D3DCAPS8 *)&DAT_1005a498)
@@ -1247,7 +1247,7 @@ int grim_d3d_init(void)
   }
   HVar3 = (*grim_d3d8->lpVtbl->GetAdapterDisplayMode)(grim_d3d8,0,&DStack_43c);
   if (HVar3 < 0) {
-    DAT_1005c8f8 = s_D3D__Error_getting_adapter_displ_10053a34;
+    grim_error_text = s_D3D__Error_getting_adapter_displ_10053a34;
     uVar4 = 0;
     if ((grim_d3d8 != (LPDIRECT3D8)0x0) &&
        (uVar4 = (*grim_d3d8->lpVtbl->Release)(grim_d3d8), uVar4 == 0)) {
@@ -1291,7 +1291,7 @@ int grim_d3d_init(void)
                     (grim_d3d8,DAT_1005d3e8,DAT_1005b2b4,DAT_1005d3f8,0x20,
                      (D3DPRESENT_PARAMETERS *)&grim_present_width,&grim_d3d_device);
   if (HVar3 < 0) {
-    DAT_1005c8f8 = s_D3D__Could_not_set_the_requested_10053a04;
+    grim_error_text = s_D3D__Could_not_set_the_requested_10053a04;
     MessageBoxA((HWND)0x0,s_D3D__Could_not_set_the_requested_10053a04,&DAT_10053824,0);
     FUN_10004280();
     grim_window_destroy();
@@ -1319,7 +1319,7 @@ int grim_d3d_init(void)
   }
   iVar5 = grim_select_texture_format();
   if ((char)iVar5 == '\0') {
-    DAT_1005c8f8 = s_D3D__Could_not_find_any_compatib_100539d0;
+    grim_error_text = s_D3D__Could_not_find_any_compatib_100539d0;
     FUN_10004280();
     grim_window_destroy();
   }
@@ -1331,7 +1331,7 @@ LAB_10004142:
   SizeofResource(grim_module_handle,pHVar7);
   uVar4 = FUN_1000cb5c();
   if ((int)uVar4 < 0) {
-    DAT_1005c8f8 = s_D3D__Unable_to_load_default_font_100539a4;
+    grim_error_text = s_D3D__Unable_to_load_default_font_100539a4;
     return uVar4 & 0xffffff00;
   }
   pHVar7 = FindResourceA(grim_module_handle,(LPCSTR)0x71,(LPCSTR)0xa);
@@ -1340,7 +1340,7 @@ LAB_10004142:
   SizeofResource(grim_module_handle,pHVar7);
   uVar4 = FUN_1000cb5c();
   if ((int)uVar4 < 0) {
-    DAT_1005c8f8 = s_D3D__Unable_to_load_grim_splash_t_10053978;
+    grim_error_text = s_D3D__Unable_to_load_grim_splash_t_10053978;
     return uVar4 & 0xffffff00;
   }
   grim_backbuffer_surface = (LPDIRECT3DSURFACE8)0x0;
@@ -1377,10 +1377,10 @@ void FUN_10004280(void)
       grim_render_target_surface = (LPDIRECT3DSURFACE8)0x0;
     }
   }
-  if (DAT_1005d3ec != (int *)0x0) {
-    iVar2 = (**(code **)(*DAT_1005d3ec + 8))(DAT_1005d3ec);
+  if (grim_font_texture != (int *)0x0) {
+    iVar2 = (**(code **)(*grim_font_texture + 8))(grim_font_texture);
     if (iVar2 == 0) {
-      DAT_1005d3ec = (int *)0x0;
+      grim_font_texture = (int *)0x0;
     }
   }
   if (DAT_1005d3f0 != (int *)0x0) {
@@ -1429,7 +1429,7 @@ uint FUN_10004350(void)
   uVar3 = (*grim_d3d_device->lpVtbl->CreateVertexBuffer)
                     (grim_d3d_device,0x1c00,0x218,0,D3DPOOL_SYSTEMMEM,&grim_vertex_buffer);
   if ((int)uVar3 < 0) {
-    DAT_1005c8f8 = s_D3D__Internal__Could_not_create_v_10053ac4;
+    grim_error_text = s_D3D__Internal__Could_not_create_v_10053ac4;
     return uVar3 & 0xffffff00;
   }
   HVar4 = (*grim_d3d_device->lpVtbl->CreateIndexBuffer)
@@ -1465,7 +1465,7 @@ uint FUN_10004350(void)
     DAT_1005c898 = 0;
     return uVar3 & 0xffffff00;
   }
-  DAT_1005c8f8 = s_D3D__Internal__Could_not_create_i_10053a94;
+  grim_error_text = s_D3D__Internal__Could_not_create_i_10053a94;
   uVar3 = FUN_100044e0();
   return uVar3 & 0xffffff00;
 }
@@ -1609,7 +1609,7 @@ int grim_select_texture_format(void)
     grim_preferred_texture_format = 0x17;
     return CONCAT31(uVar2,1);
   }
-  DAT_1005c8f8 = s_D3D__No_supported_texture_format_10053af4;
+  grim_error_text = s_D3D__No_supported_texture_format_10053af4;
   return (uint)uVar2 << 8;
 }
 
@@ -2155,13 +2155,13 @@ int grim_load_texture_internal(char *name,ushort *path)
   ExceptionList = &local_c;
   iVar2 = grim_find_free_texture_slot();
   if (iVar2 == -1) {
-    DAT_1005c8f8 = s_All_texture_slots_are_used__10053b60;
+    grim_error_text = s_All_texture_slots_are_used__10053b60;
     ExceptionList = local_c;
     return -0x100;
   }
   uVar3 = grim_find_texture_by_name(name);
   if (uVar3 != 0xffffffff) {
-    DAT_1005c8f8 = s_D3D__Texture_slot_not_free__10053b44;
+    grim_error_text = s_D3D__Texture_slot_not_free__10053b44;
     ExceptionList = local_c;
     return uVar3 & 0xffffff00;
   }
@@ -2177,7 +2177,7 @@ int grim_load_texture_internal(char *name,ushort *path)
   uVar3 = grim_texture_load_file(pvVar4,path,unaff_EDI);
   iVar1 = DAT_1005305c;
   if ((char)uVar3 == '\0') {
-    DAT_1005c8f8 = s_D3D__Could_not_load_a_texture__10053b24;
+    grim_error_text = s_D3D__Could_not_load_a_texture__10053b24;
     if (pvVar4 != (void *)0x0) {
       grim_texture_release(pvVar4);
       operator_delete(pvVar4);
@@ -2284,7 +2284,7 @@ void FUN_100052f0(void)
   _DAT_1005cec0 = local_8;
   local_10 = uVar5 << 8;
   _DAT_1005cec4 = local_4;
-  _DAT_1005cc58 = local_10;
+  _grim_input_cached = local_10;
   _DAT_1005cc5c = local_c;
   _DAT_1005cc60 = local_8;
   local_10 = uVar5 << 8;
@@ -2303,7 +2303,7 @@ void FUN_100052f0(void)
   _DAT_1005d11c = local_c;
   _DAT_1005d120 = local_8;
   _DAT_1005d124 = local_4;
-  _DAT_1005ccf8 = 0x3f800000;
+  _grim_font_texture_bound = 0x3f800000;
   _DAT_1005ccfc = local_c;
   _DAT_1005cd00 = local_8;
   _DAT_1005cd04 = local_4;
@@ -2335,7 +2335,7 @@ void FUN_100052f0(void)
   DAT_1005d138 = 0x42c80000;
   DAT_1005d148 = 0;
   DAT_1005d158 = 0;
-  DAT_1005c8f8 = &DAT_1005d828;
+  grim_error_text = &DAT_1005d828;
   DAT_1005d3ac = 0;
   DAT_1005bc14 = 0;
   DAT_1005a670 = 0;
@@ -2354,7 +2354,7 @@ void FUN_100052f0(void)
   DAT_1005b2a0 = 0x3f800000;
   DAT_1005b2a4 = 0x3f800000;
   DAT_1005b2a8 = 0;
-  _DAT_1005c8e8 = 0;
+  _grim_mouse_button_latch = 0;
   DAT_1005b2ac = 0x3f800000;
   _DAT_1005c8ec = 0;
   uVar5 = 0xffffffff;
@@ -2434,9 +2434,9 @@ void FUN_100052f0(void)
   DAT_1005a646 = 0xd6;
   DAT_1005a635 = 0xc5;
   DAT_1005a655 = 0xe5;
-  _grim_subrect_ptr0 = &DAT_1005d388;
-  _grim_subrect_ptr1 = &DAT_1005cb08;
-  _grim_subrect_ptr2 = &DAT_1005c908;
+  _grim_subrect_ptr0 = &grim_subrect_table_0;
+  _grim_subrect_ptr1 = &grim_subrect_table_1;
+  _grim_subrect_ptr2 = &grim_subrect_table_2;
   _grim_subrect_ptr3 = &grim_subrect_table;
   local_14 = 0;
   pfVar8 = (float *)&DAT_1005d38c;
@@ -2738,7 +2738,7 @@ void grim_release(void)
 void grim_set_paused(int paused)
 
 {
-  DAT_1005d820 = (undefined1)paused;
+  grim_paused_flag = (undefined1)paused;
   return;
 }
 
@@ -2815,10 +2815,10 @@ int grim_apply_config(void)
   if (DAT_10059778 == (HICON)0x0) {
     DAT_10059778 = LoadIconA(grim_module_handle,(LPCSTR)0x72);
   }
-  DAT_1005d3bc = '\0';
+  grim_config_dialog_canceled = '\0';
   grim_d3d8_probe = Direct3DCreate8(0xdc);
   if (grim_d3d8_probe == (IDirect3D8 *)0x0) {
-    DAT_1005c8f8 = s_D3D__Could_not_init_DirectX_8_1__10053a60;
+    grim_error_text = s_D3D__Could_not_init_DirectX_8_1__10053a60;
     uVar1 = MessageBoxA((HWND)0x0,s_D3D__Could_not_init_DirectX_8_1__10053a60,&DAT_10053824,0);
     return uVar1 & 0xffffff00;
   }
@@ -2826,7 +2826,7 @@ int grim_apply_config(void)
             (grim_d3d8_probe,0,D3DDEVTYPE_HAL,(D3DCAPS8 *)&DAT_1005a498);
   DialogBoxParamA(grim_module_handle,(LPCSTR)0x74,(HWND)0x0,grim_config_dialog_proc,0);
   (*grim_d3d8_probe->lpVtbl->Release)(grim_d3d8_probe);
-  if (DAT_1005d3bc == '\0') {
+  if (grim_config_dialog_canceled == '\0') {
     (**(code **)(*in_ECX + 0x20))(0x54,DAT_1005d400);
     if ((char)DAT_1005b2b8 == '\0') {
       (**(code **)(*in_ECX + 0x20))(0x2b,0x20);
@@ -2841,7 +2841,7 @@ int grim_apply_config(void)
     (**(code **)(*in_ECX + 0x20))(0x29,DAT_10053054);
     (**(code **)(*in_ECX + 0x20))(0x2a,DAT_10053058);
   }
-  return (uint)(DAT_1005d3bc == '\0');
+  return (uint)(grim_config_dialog_canceled == '\0');
 }
 
 
@@ -2872,10 +2872,10 @@ int __fastcall grim_init_system(void)
   if ((char)iVar2 == '\0') {
     return iVar2;
   }
-  if ((DAT_1005cc48 == '\x01') && (DAT_1005cc58 == '\0')) {
+  if ((DAT_1005cc48 == '\x01') && (grim_input_cached == '\0')) {
     iVar2 = grim_mouse_init();
     if ((char)iVar2 == '\0') {
-      DAT_1005c8f8 = s_DI8__Could_not_initialize_mouse__10053bf4;
+      grim_error_text = s_DI8__Could_not_initialize_mouse__10053bf4;
       grim_mouse_shutdown();
       FUN_10004280();
       grim_window_destroy();
@@ -2885,7 +2885,7 @@ int __fastcall grim_init_system(void)
   if (DAT_1005cc38 == '\x01') {
     iVar2 = grim_keyboard_init(DAT_1005d3f8);
     if ((char)iVar2 == '\0') {
-      DAT_1005c8f8 = s_DI8__Could_not_initialize_keyboa_10053bd0;
+      grim_error_text = s_DI8__Could_not_initialize_keyboa_10053bd0;
       grim_mouse_shutdown();
       grim_keyboard_shutdown();
       FUN_10004280();
@@ -2896,7 +2896,7 @@ int __fastcall grim_init_system(void)
   if (DAT_1005cc68 == '\x01') {
     iVar2 = grim_joystick_init(DAT_1005d3f8);
     if ((char)iVar2 == '\0') {
-      DAT_1005c8f8 = s_DI8__Could_not_initialize_joysti_10053bac;
+      grim_error_text = s_DI8__Could_not_initialize_joysti_10053bac;
       DAT_1005cc68 = '\0';
     }
   }
@@ -3135,7 +3135,7 @@ void grim_set_render_state(uint state,uint value)
     return;
   case 0xd:
     *(char *)(&grim_config_var0_table + state * 4) = (char)value;
-    if (DAT_1005cc58 != '\0') {
+    if (grim_input_cached != '\0') {
       DAT_1005cc48 = 1;
       return;
     }
@@ -3297,7 +3297,7 @@ LAB_10006b54:
     DAT_1005d3fc = *(undefined4 *)in_stack_00000014;
     return;
   case 0x55:
-    DAT_1005d3bd = (char)value;
+    grim_render_disabled = (char)value;
     return;
   }
   return;
@@ -3337,7 +3337,7 @@ void grim_get_config_var(uint *out,int id)
 char * grim_get_error_text(void)
 
 {
-  return DAT_1005c8f8;
+  return grim_error_text;
 }
 
 
@@ -3361,7 +3361,7 @@ void grim_clear_color(float r,float g,float b,float a)
   DWORD stencil;
   
   This = grim_d3d_device;
-  if ((DAT_1005d3bd == '\0') && (DAT_1005c898 != '\0')) {
+  if ((grim_render_disabled == '\0') && (DAT_1005c898 != '\0')) {
     stencil = 0;
     z = 0.0;
     pIVar1 = grim_d3d_device->lpVtbl;
@@ -3391,8 +3391,8 @@ int grim_set_render_target(int target_index)
   uint uVar1;
   ULONG UVar2;
   
-  UVar2 = CONCAT31((int3)((uint)in_EAX >> 8),DAT_1005d3bd);
-  if (DAT_1005d3bd == '\0') {
+  UVar2 = CONCAT31((int3)((uint)in_EAX >> 8),grim_render_disabled);
+  if (grim_render_disabled == '\0') {
     if (target_index < 0) {
       if (grim_backbuffer_surface != (LPDIRECT3DSURFACE8)0x0) {
         if (grim_render_target_surface != (LPDIRECT3DSURFACE8)0x0) {
@@ -3906,7 +3906,7 @@ int grim_is_mouse_button_down(int button)
 {
   int iVar1;
   
-  if (DAT_1005cc58 != '\0') {
+  if (grim_input_cached != '\0') {
     return CONCAT31((int3)((uint)button >> 8),(&grim_mouse_button_cache)[button]);
   }
   iVar1 = grim_mouse_button_down(button);
@@ -3931,24 +3931,24 @@ int grim_was_mouse_button_pressed(int button)
   undefined1 uVar4;
   
   uVar3 = (uint3)((uint)in_EAX >> 8);
-  if (DAT_1005cc58 == '\0') {
+  if (grim_input_cached == '\0') {
     cVar1 = (**(code **)(*in_ECX + 0x58))(button);
-    if ((cVar1 == '\0') || ((&DAT_1005c8e8)[button] == '\0')) {
+    if ((cVar1 == '\0') || ((&grim_mouse_button_latch)[button] == '\0')) {
       uVar4 = 0;
     }
     else {
       uVar4 = 1;
     }
     uVar2 = (**(code **)(*in_ECX + 0x58))(button);
-    (&DAT_1005c8e8)[button] = (char)uVar2 == '\0';
+    (&grim_mouse_button_latch)[button] = (char)uVar2 == '\0';
     return CONCAT31((int3)((uint)uVar2 >> 8),uVar4);
   }
   cVar1 = (&grim_mouse_button_cache)[button];
-  if ((cVar1 != '\0') && ((&DAT_1005c8e8)[button] != '\0')) {
-    (&DAT_1005c8e8)[button] = cVar1 == '\0';
+  if ((cVar1 != '\0') && ((&grim_mouse_button_latch)[button] != '\0')) {
+    (&grim_mouse_button_latch)[button] = cVar1 == '\0';
     return CONCAT31(uVar3,1);
   }
-  (&DAT_1005c8e8)[button] = cVar1 == '\0';
+  (&grim_mouse_button_latch)[button] = cVar1 == '\0';
   return (uint)uVar3 << 8;
 }
 
@@ -3963,7 +3963,7 @@ int grim_was_mouse_button_pressed(int button)
 float grim_get_mouse_dx(void)
 
 {
-  return _DAT_1005db50;
+  return _grim_mouse_dx;
 }
 
 
@@ -3977,7 +3977,7 @@ float grim_get_mouse_dx(void)
 float grim_get_mouse_dy(void)
 
 {
-  return _DAT_1005db54;
+  return _grim_mouse_dy;
 }
 
 
@@ -4053,8 +4053,8 @@ float grim_get_mouse_y(void)
 void grim_set_mouse_pos(float x,float y)
 
 {
-  DAT_1005db44 = x;
-  DAT_1005db48 = y;
+  grim_mouse_x = x;
+  grim_mouse_y = y;
   _grim_mouse_x_cached = x;
   _grim_mouse_y_cached = y;
   return;
@@ -4071,7 +4071,7 @@ void grim_set_mouse_pos(float x,float y)
 float grim_get_mouse_wheel_delta(void)
 
 {
-  if (DAT_1005cc58 != '\0') {
+  if (grim_input_cached != '\0') {
     return _DAT_1005d3b8;
   }
   return _DAT_1005db58;
@@ -4184,7 +4184,7 @@ int grim_create_texture(char *name,int width,int height)
                     (grim_d3d_device,width,height,1,1,grim_texture_format,D3DPOOL_DEFAULT,&local_10)
   ;
   if ((int)uVar2 < 0) {
-    DAT_1005c8f8 = s_D3D__Could_not_create_a_texture__10053c18;
+    grim_error_text = s_D3D__Could_not_create_a_texture__10053c18;
     ExceptionList = pvVar5;
     return uVar2 & 0xffffff00;
   }
@@ -4449,15 +4449,15 @@ void grim_begin_batch(void)
 {
   int iVar1;
   
-  if (((DAT_1005d3bd == '\0') && (DAT_1005d3f4 == '\0')) &&
-     (DAT_1005d3f4 = '\x01', DAT_1005c898 != '\0')) {
+  if (((grim_render_disabled == '\0') && (grim_batch_active == '\0')) &&
+     (grim_batch_active = '\x01', DAT_1005c898 != '\0')) {
     (*grim_d3d_device->lpVtbl->BeginScene)(grim_d3d_device);
     iVar1 = (**(code **)(*grim_vertex_buffer + 0x2c))
                       (grim_vertex_buffer,0,0,&grim_vertex_write_ptr,0x2800);
     if (iVar1 < 0) {
       DAT_1005c898 = '\0';
     }
-    DAT_1005c8dc._0_2_ = 0;
+    grim_vertex_count._0_2_ = 0;
   }
   return;
 }
@@ -4473,16 +4473,16 @@ void grim_begin_batch(void)
 void grim_end_batch(void)
 
 {
-  if ((DAT_1005d3bd == '\0') && (DAT_1005d3f4 != '\0')) {
+  if ((grim_render_disabled == '\0') && (grim_batch_active != '\0')) {
     (**(code **)(*grim_vertex_buffer + 0x30))(grim_vertex_buffer);
     if (DAT_1005c898 != '\0') {
-      if ((short)DAT_1005c8dc != 0) {
+      if ((short)grim_vertex_count != 0) {
         (*grim_d3d_device->lpVtbl->DrawIndexedPrimitive)
-                  (grim_d3d_device,D3DPT_TRIANGLELIST,0,DAT_1005c8dc & 0xffff,0,
-                   (DAT_1005c8dc & 0xffff) >> 1);
+                  (grim_d3d_device,D3DPT_TRIANGLELIST,0,grim_vertex_count & 0xffff,0,
+                   (grim_vertex_count & 0xffff) >> 1);
       }
       (*grim_d3d_device->lpVtbl->EndScene)(grim_d3d_device);
-      DAT_1005d3f4 = '\0';
+      grim_batch_active = '\0';
     }
   }
   return;
@@ -4512,7 +4512,7 @@ void grim_draw_circle_filled(float x,float y,float radius)
   float fStack_c;
   float fStack_8;
   
-  if ((DAT_1005d3f4 == '\0') && (DAT_1005d3f4 = '\x01', DAT_1005c898 != '\0')) {
+  if ((grim_batch_active == '\0') && (grim_batch_active = '\x01', DAT_1005c898 != '\0')) {
     ppuStack_2c = (undefined4 **)0x10007bc2;
     (*grim_d3d_device->lpVtbl->BeginScene)(grim_d3d_device);
     ppuStack_2c = &grim_vertex_write_ptr;
@@ -4521,7 +4521,7 @@ void grim_draw_circle_filled(float x,float y,float radius)
     if (iVar1 < 0) {
       DAT_1005c898 = '\0';
     }
-    DAT_1005c8dc = DAT_1005c8dc & 0xffff0000;
+    grim_vertex_count = grim_vertex_count & 0xffff0000;
     (*grim_d3d_device->lpVtbl->SetTexture)(grim_d3d_device,0,(IDirect3DBaseTexture8 *)0x0);
     ppuStack_2c = (undefined4 **)fStack_c;
     fStack_30 = fStack_10;
@@ -4533,7 +4533,7 @@ void grim_draw_circle_filled(float x,float y,float radius)
       pfVar4 = pfVar4 + 1;
     }
     grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
-    DAT_1005c8dc._0_2_ = (short)DAT_1005c8dc + 1;
+    grim_vertex_count._0_2_ = (short)grim_vertex_count + 1;
     iVar1 = ftol();
     iVar7 = 0;
     if (-1 < iVar1) {
@@ -4552,16 +4552,16 @@ void grim_draw_circle_filled(float x,float y,float radius)
           pfVar4 = pfVar4 + 1;
         }
         grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
-        DAT_1005c8dc._0_2_ = (short)DAT_1005c8dc + 1;
+        grim_vertex_count._0_2_ = (short)grim_vertex_count + 1;
         iVar7 = iVar7 + 1;
       } while (iVar7 <= iVar1);
     }
     (**(code **)(*grim_vertex_buffer + 0x30))(grim_vertex_buffer);
     if (DAT_1005c898 != '\0') {
       (*grim_d3d_device->lpVtbl->DrawPrimitive)
-                (grim_d3d_device,D3DPT_TRIANGLEFAN,0,(DAT_1005c8dc & 0xffff) - 2);
+                (grim_d3d_device,D3DPT_TRIANGLEFAN,0,(grim_vertex_count & 0xffff) - 2);
       (*grim_d3d_device->lpVtbl->EndScene)(grim_d3d_device);
-      DAT_1005d3f4 = '\0';
+      grim_batch_active = '\0';
     }
   }
   return;
@@ -4591,7 +4591,7 @@ void grim_draw_circle_outline(float x,float y,float radius)
   float fStack_c;
   float fStack_8;
   
-  if ((DAT_1005d3f4 == '\0') && (DAT_1005d3f4 = '\x01', DAT_1005c898 != '\0')) {
+  if ((grim_batch_active == '\0') && (grim_batch_active = '\x01', DAT_1005c898 != '\0')) {
     ppfStack_2c = (float **)0x10007d72;
     (*grim_d3d_device->lpVtbl->BeginScene)(grim_d3d_device);
     ppfStack_2c = &grim_vertex_write_ptr;
@@ -4600,7 +4600,7 @@ void grim_draw_circle_outline(float x,float y,float radius)
     if (iVar1 < 0) {
       DAT_1005c898 = '\0';
     }
-    DAT_1005c8dc = DAT_1005c8dc & 0xffff0000;
+    grim_vertex_count = grim_vertex_count & 0xffff0000;
     iVar1 = ftol();
     iVar7 = 0;
     if (-1 < iVar1) {
@@ -4621,7 +4621,7 @@ void grim_draw_circle_outline(float x,float y,float radius)
         fStack_30 = (float)(((float10)fStack_8 + (float10)2.0) * (float10)(float)fVar6 +
                            (float10)fStack_10);
         grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
-        DAT_1005c8dc._0_2_ = (short)DAT_1005c8dc + 1;
+        grim_vertex_count._0_2_ = (short)grim_vertex_count + 1;
         ppfStack_2c = (float **)
                       (float)(((float10)fStack_8 + (float10)2.0) * fVar5 + (float10)fStack_c);
         pfVar3 = &fStack_30;
@@ -4632,16 +4632,16 @@ void grim_draw_circle_outline(float x,float y,float radius)
           pfVar4 = pfVar4 + 1;
         }
         grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
-        DAT_1005c8dc._0_2_ = (short)DAT_1005c8dc + 1;
+        grim_vertex_count._0_2_ = (short)grim_vertex_count + 1;
         iVar7 = iVar7 + 1;
       } while (iVar7 <= iVar1);
     }
     (**(code **)(*grim_vertex_buffer + 0x30))(grim_vertex_buffer);
     if (DAT_1005c898 != '\0') {
       (*grim_d3d_device->lpVtbl->DrawPrimitive)
-                (grim_d3d_device,D3DPT_TRIANGLESTRIP,0,(DAT_1005c8dc & 0xffff) - 2);
+                (grim_d3d_device,D3DPT_TRIANGLESTRIP,0,(grim_vertex_count & 0xffff) - 2);
       (*grim_d3d_device->lpVtbl->EndScene)(grim_d3d_device);
-      DAT_1005d3f4 = '\0';
+      grim_batch_active = '\0';
     }
   }
   return;
@@ -4662,10 +4662,10 @@ void grim_set_rotation(float radians)
   
   _grim_rotation_radians = radians;
   fVar1 = (float10)fcos((float10)radians + (float10)0.7853982);
-  DAT_1005c8e4 = (float)fVar1;
+  grim_rotation_cos = (float)fVar1;
   fVar1 = (float10)fsin((float10)radians + (float10)0.7853982);
-  _DAT_1005a460 = DAT_1005c8e4;
-  _DAT_1005a46c = DAT_1005c8e4;
+  _DAT_1005a460 = grim_rotation_cos;
+  _DAT_1005a46c = grim_rotation_cos;
   DAT_10059f40 = (float)fVar1;
   _DAT_1005a468 = -DAT_10059f40;
   _DAT_1005a464 = DAT_10059f40;
@@ -4893,15 +4893,15 @@ void grim_flush_batch(void)
 {
   int iVar1;
   
-  if ((DAT_1005d3bd == '\0') && (DAT_1005d3f4 != '\0')) {
+  if ((grim_render_disabled == '\0') && (grim_batch_active != '\0')) {
     (**(code **)(*grim_vertex_buffer + 0x30))(grim_vertex_buffer);
     (*grim_d3d_device->lpVtbl->DrawIndexedPrimitive)
-              (grim_d3d_device,D3DPT_TRIANGLELIST,0,DAT_1005c8dc & 0xffff,0,
-               (DAT_1005c8dc & 0xffff) >> 1);
+              (grim_d3d_device,D3DPT_TRIANGLELIST,0,grim_vertex_count & 0xffff,0,
+               (grim_vertex_count & 0xffff) >> 1);
     iVar1 = (**(code **)(*grim_vertex_buffer + 0x2c))
                       (grim_vertex_buffer,0,0,&grim_vertex_write_ptr,0x2800);
     if (-1 < iVar1) {
-      DAT_1005c8dc = DAT_1005c8dc & 0xffff0000;
+      grim_vertex_count = grim_vertex_count & 0xffff0000;
     }
   }
   return;
@@ -4922,7 +4922,7 @@ void grim_submit_vertices_offset_color(float *verts,int count,float *offset,floa
   int iVar2;
   float *pfVar3;
   
-  if (DAT_1005d3bd == '\0') {
+  if (grim_render_disabled == '\0') {
     pfVar3 = grim_vertex_write_ptr;
     for (uVar1 = (uint)(count * 0x1c) >> 2; uVar1 != 0; uVar1 = uVar1 - 1) {
       *pfVar3 = *verts;
@@ -4945,8 +4945,8 @@ void grim_submit_vertices_offset_color(float *verts,int count,float *offset,floa
         iVar2 = iVar2 + -1;
       } while (iVar2 != 0);
     }
-    DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + (short)count;
-    if (grim_vertex_capacity <= (ushort)DAT_1005c8dc) {
+    grim_vertex_count._0_2_ = (ushort)grim_vertex_count + (short)count;
+    if (grim_vertex_capacity <= (ushort)grim_vertex_count) {
       (**(code **)(*in_ECX + 0xec))();
     }
   }
@@ -4973,7 +4973,7 @@ void grim_submit_vertices_transform_color
   int iVar6;
   float *pfVar7;
   
-  if (DAT_1005d3bd == '\0') {
+  if (grim_render_disabled == '\0') {
     pfVar7 = grim_vertex_write_ptr;
     for (uVar5 = (uint)(count * 0x1c) >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
       *pfVar7 = *verts;
@@ -5004,8 +5004,8 @@ void grim_submit_vertices_transform_color
         iVar6 = iVar6 + -1;
       } while (iVar6 != 0);
     }
-    DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + (short)count;
-    if (grim_vertex_capacity <= (ushort)DAT_1005c8dc) {
+    grim_vertex_count._0_2_ = (ushort)grim_vertex_count + (short)count;
+    if (grim_vertex_capacity <= (ushort)grim_vertex_count) {
       (**(code **)(*in_ECX + 0xec))();
     }
   }
@@ -5031,7 +5031,7 @@ void grim_submit_vertices_transform(float *verts,int count,float *offset,float *
   int iVar6;
   float *pfVar7;
   
-  if (DAT_1005d3bd == '\0') {
+  if (grim_render_disabled == '\0') {
     pfVar7 = grim_vertex_write_ptr;
     for (uVar5 = (uint)(count * 0x1c) >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
       *pfVar7 = *verts;
@@ -5061,8 +5061,8 @@ void grim_submit_vertices_transform(float *verts,int count,float *offset,float *
         iVar6 = iVar6 + -1;
       } while (iVar6 != 0);
     }
-    DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + (short)count;
-    if (grim_vertex_capacity <= (ushort)DAT_1005c8dc) {
+    grim_vertex_count._0_2_ = (ushort)grim_vertex_count + (short)count;
+    if (grim_vertex_capacity <= (ushort)grim_vertex_count) {
       (**(code **)(*in_ECX + 0xec))();
     }
   }
@@ -5084,7 +5084,7 @@ void grim_submit_vertices_offset(float *verts,int count,float *offset)
   int iVar2;
   float *pfVar3;
   
-  if (DAT_1005d3bd == '\0') {
+  if (grim_render_disabled == '\0') {
     pfVar3 = grim_vertex_write_ptr;
     for (uVar1 = (uint)(count * 0x1c) >> 2; uVar1 != 0; uVar1 = uVar1 - 1) {
       *pfVar3 = *verts;
@@ -5106,8 +5106,8 @@ void grim_submit_vertices_offset(float *verts,int count,float *offset)
         iVar2 = iVar2 + -1;
       } while (iVar2 != 0);
     }
-    DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + (short)count;
-    if (grim_vertex_capacity <= (ushort)DAT_1005c8dc) {
+    grim_vertex_count._0_2_ = (ushort)grim_vertex_count + (short)count;
+    if (grim_vertex_capacity <= (ushort)grim_vertex_count) {
       (**(code **)(*in_ECX + 0xec))();
     }
   }
@@ -5155,8 +5155,8 @@ void grim_draw_quad_rotated_matrix(float x,float y,float w,float h)
   float fStack_8;
   float fStack_4;
   
-  if ((DAT_1005d3bd == '\0') && (DAT_1005c898 != '\0')) {
-    if (DAT_1005d3f4 == '\0') {
+  if ((grim_render_disabled == '\0') && (DAT_1005c898 != '\0')) {
+    if (grim_batch_active == '\0') {
       (**(code **)(*in_ECX + 0xe8))();
     }
     if (_grim_rotation_radians == 0.0) {
@@ -5216,9 +5216,9 @@ void grim_draw_quad_rotated_matrix(float x,float y,float w,float h)
     grim_vertex_write_ptr[4] = grim_color_slot3;
     grim_vertex_write_ptr[5] = DAT_1005b2a8;
     grim_vertex_write_ptr[6] = DAT_1005b2ac;
-    DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + 4;
+    grim_vertex_count._0_2_ = (ushort)grim_vertex_count + 4;
     grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
-    if (grim_vertex_capacity <= (ushort)DAT_1005c8dc) {
+    if (grim_vertex_capacity <= (ushort)grim_vertex_count) {
       (**(code **)(*in_ECX + 0xec))();
     }
   }
@@ -5248,8 +5248,8 @@ void grim_draw_quad(float x,float y,float w,float h)
   float fStack_14;
   float fStack_10;
   
-  if ((DAT_1005d3bd == '\0') && (DAT_1005c898 != '\0')) {
-    if (DAT_1005d3f4 == '\0') {
+  if ((grim_render_disabled == '\0') && (DAT_1005c898 != '\0')) {
+    if (grim_batch_active == '\0') {
       (**(code **)(*in_ECX + 0xe8))();
     }
     if (_grim_rotation_radians == 0.0) {
@@ -5268,7 +5268,7 @@ void grim_draw_quad(float x,float y,float w,float h)
       fVar2 = h * h + w * w;
       fVar3 = (float)(0x5f3759df - ((int)fVar2 >> 1));
       fVar2 = (1.5 - fVar2 * 0.5 * fVar3 * fVar3) * fVar3 * fVar2 * 0.5;
-      fVar3 = DAT_1005c8e4 * fVar2;
+      fVar3 = grim_rotation_cos * fVar2;
       fVar2 = fVar2 * DAT_10059f40;
       fStack_28 = fStack_10 - fVar3;
       fStack_24 = fVar1 - fVar2;
@@ -5310,9 +5310,9 @@ void grim_draw_quad(float x,float y,float w,float h)
     grim_vertex_write_ptr[4] = grim_color_slot3;
     grim_vertex_write_ptr[5] = DAT_1005b2a8;
     grim_vertex_write_ptr[6] = DAT_1005b2ac;
-    DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + 4;
+    grim_vertex_count._0_2_ = (ushort)grim_vertex_count + 4;
     grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
-    if (grim_vertex_capacity <= (ushort)DAT_1005c8dc) {
+    if (grim_vertex_capacity <= (ushort)grim_vertex_count) {
       (**(code **)(*in_ECX + 0xec))();
     }
   }
@@ -5333,8 +5333,8 @@ void grim_submit_vertex_raw(float *vertex)
   int iVar1;
   float *pfVar2;
   
-  if ((DAT_1005d3bd == '\0') && (DAT_1005c898 != '\0')) {
-    if (DAT_1005d3f4 == '\0') {
+  if ((grim_render_disabled == '\0') && (DAT_1005c898 != '\0')) {
+    if (grim_batch_active == '\0') {
       (**(code **)(*in_ECX + 0xe8))();
     }
     pfVar2 = grim_vertex_write_ptr;
@@ -5344,8 +5344,8 @@ void grim_submit_vertex_raw(float *vertex)
       pfVar2 = pfVar2 + 1;
     }
     grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
-    DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + 1;
-    if (grim_vertex_capacity <= (ushort)DAT_1005c8dc) {
+    grim_vertex_count._0_2_ = (ushort)grim_vertex_count + 1;
+    if (grim_vertex_capacity <= (ushort)grim_vertex_count) {
       (**(code **)(*in_ECX + 0xec))();
     }
   }
@@ -5366,16 +5366,16 @@ void grim_submit_quad_raw(float *verts)
   int iVar1;
   float *pfVar2;
   
-  if (DAT_1005d3bd == '\0') {
+  if (grim_render_disabled == '\0') {
     pfVar2 = grim_vertex_write_ptr;
     for (iVar1 = 0x1c; iVar1 != 0; iVar1 = iVar1 + -1) {
       *pfVar2 = *verts;
       verts = verts + 1;
       pfVar2 = pfVar2 + 1;
     }
-    DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + 4;
+    grim_vertex_count._0_2_ = (ushort)grim_vertex_count + 4;
     grim_vertex_write_ptr = grim_vertex_write_ptr + 0x1c;
-    if (grim_vertex_capacity <= (ushort)DAT_1005c8dc) {
+    if (grim_vertex_capacity <= (ushort)grim_vertex_count) {
       (**(code **)(*in_ECX + 0xec))();
     }
   }
@@ -5444,8 +5444,8 @@ void grim_draw_quad_points(float x0,float y0,float x1,float y1,float x2,float y2
 {
   int *in_ECX;
   
-  if ((DAT_1005d3bd == '\0') && (DAT_1005c898 != '\0')) {
-    if (DAT_1005d3f4 == '\0') {
+  if ((grim_render_disabled == '\0') && (DAT_1005c898 != '\0')) {
+    if (grim_batch_active == '\0') {
       (**(code **)(*in_ECX + 0xe8))();
     }
     *grim_vertex_write_ptr = x0;
@@ -5479,9 +5479,9 @@ void grim_draw_quad_points(float x0,float y0,float x1,float y1,float x2,float y2
     grim_vertex_write_ptr[4] = grim_color_slot3;
     grim_vertex_write_ptr[5] = DAT_1005b2a8;
     grim_vertex_write_ptr[6] = DAT_1005b2ac;
-    DAT_1005c8dc._0_2_ = (ushort)DAT_1005c8dc + 4;
+    grim_vertex_count._0_2_ = (ushort)grim_vertex_count + 4;
     grim_vertex_write_ptr = grim_vertex_write_ptr + 7;
-    if (grim_vertex_capacity <= (ushort)DAT_1005c8dc) {
+    if (grim_vertex_capacity <= (ushort)grim_vertex_count) {
       (**(code **)(*in_ECX + 0xec))();
     }
   }
@@ -5519,9 +5519,9 @@ void grim_draw_text_mono(float x,float y,char *text)
   int iStack_58;
   float fStack_44;
   
-  if ((DAT_1005d3bd == '\0') && (text != (char *)0x0)) {
-    if (DAT_1005ccf8 == '\0') {
-      (*grim_d3d_device->lpVtbl->SetTexture)(grim_d3d_device,0,DAT_1005d3ec);
+  if ((grim_render_disabled == '\0') && (text != (char *)0x0)) {
+    if (grim_font_texture_bound == '\0') {
+      (*grim_d3d_device->lpVtbl->SetTexture)(grim_d3d_device,0,grim_font_texture);
     }
     fStack_44 = y;
     fVar14 = 0.0;
@@ -5694,7 +5694,7 @@ void grim_draw_text_small(float x,float y,char *text)
   int iVar7;
   undefined4 uStack_14;
   
-  if ((DAT_1005d3bd == '\0') && (text != (char *)0x0)) {
+  if ((grim_render_disabled == '\0') && (text != (char *)0x0)) {
     ftol();
     ftol();
     if ((grim_font2_texture_handle != -1) ||
@@ -5783,7 +5783,7 @@ undefined4 * GRIM__GetInterface(void)
                     /* 0x99c0  1  GRIM__GetInterface */
   grim_d3d8_probe = Direct3DCreate8(0xdc);
   if (grim_d3d8_probe == (IDirect3D8 *)0x0) {
-    DAT_1005c8f8 = s_D3D__Could_not_init_DirectX_8_1__10053a60;
+    grim_error_text = s_D3D__Could_not_init_DirectX_8_1__10053a60;
     MessageBoxA((HWND)0x0,s_D3D__Could_not_init_DirectX_8_1__10053a60,&DAT_10053824,0);
     return (undefined4 *)0x0;
   }
@@ -6588,9 +6588,9 @@ int grim_mouse_poll(void)
     grim_mouse_state.lX = 0;
     _DAT_1005db58 = 0.0;
     grim_mouse_state.lY = 0;
-    _DAT_1005db54 = 0.0;
+    _grim_mouse_dy = 0.0;
     grim_mouse_state.lZ = 0;
-    _DAT_1005db50 = 0.0;
+    _grim_mouse_dx = 0.0;
     grim_mouse_state.rgbButtons[0] = '\0';
     grim_mouse_state.rgbButtons[1] = '\0';
     grim_mouse_state.rgbButtons[2] = '\0';
@@ -6603,8 +6603,8 @@ int grim_mouse_poll(void)
     iVar2 = 0;
     while (-1 < iVar1) {
       iVar4 = iVar2 + 1;
-      _DAT_1005db50 = (float)grim_mouse_state.lX + _DAT_1005db50;
-      _DAT_1005db54 = (float)grim_mouse_state.lY + _DAT_1005db54;
+      _grim_mouse_dx = (float)grim_mouse_state.lX + _grim_mouse_dx;
+      _grim_mouse_dy = (float)grim_mouse_state.lY + _grim_mouse_dy;
       _DAT_1005db58 = (float)grim_mouse_state.lZ + _DAT_1005db58;
       if ((99 < iVar2) ||
          (((grim_mouse_state.lX == 0 && (grim_mouse_state.lY == 0)) &&
@@ -6612,8 +6612,8 @@ int grim_mouse_poll(void)
         if (2 < iVar4) {
           iVar2 = FUN_10001160();
         }
-        DAT_1005db44 = DAT_1005db44 + _DAT_1005db50;
-        DAT_1005db48 = DAT_1005db48 + _DAT_1005db54;
+        grim_mouse_x = grim_mouse_x + _grim_mouse_dx;
+        grim_mouse_y = grim_mouse_y + _grim_mouse_dy;
         _DAT_1005db4c = _DAT_1005db4c + _DAT_1005db58;
         goto LAB_1000a7cb;
       }
