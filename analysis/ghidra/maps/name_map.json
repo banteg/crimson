@@ -3532,6 +3532,27 @@
     "comment": "libvorbisfile: decode PCM"
   },
   {
+    "program": "grim.dll",
+    "address": "0x10001160",
+    "name": "grim_noop",
+    "signature": "void grim_noop(void)",
+    "comment": "debug stub (no-op)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100170d6",
+    "name": "fpu_set_round_trunc",
+    "signature": "void fpu_set_round_trunc(void)",
+    "comment": "sets x87 rounding mode to truncate; saves control word in DAT_1005db6c"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004b5b0",
+    "name": "seh_prolog",
+    "signature": "void seh_prolog(void)",
+    "comment": "MSVC SEH prolog helper (sets FS:[0])"
+  },
+  {
     "program": "crimsonland.exe",
     "address": "0x00461089",
     "name": "crt_vsprintf",

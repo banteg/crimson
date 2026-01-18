@@ -1,8 +1,8 @@
 [
   {
-    "name": "FUN_10001160",
+    "name": "grim_noop",
     "address": "10001160",
-    "signature": "undefined FUN_10001160(void)",
+    "signature": "void grim_noop(void)",
     "external": false,
     "calls": []
   },
@@ -53,21 +53,21 @@
     "address": "100028d0",
     "signature": "int grim_backup_textures(void)",
     "external": false,
-    "calls": ["FUN_10001160"]
+    "calls": ["grim_noop"]
   },
   {
     "name": "grim_restore_textures",
     "address": "10002b40",
     "signature": "int grim_restore_textures(void)",
     "external": false,
-    "calls": ["FUN_10001160"]
+    "calls": ["grim_noop"]
   },
   {
     "name": "FUN_10002cf0",
     "address": "10002cf0",
     "signature": "undefined4 FUN_10002cf0(void)",
     "external": false,
-    "calls": ["FUN_10001160", "FUN_10004520", "MessageBoxA", "Sleep", "grim_restore_textures"]
+    "calls": ["FUN_10004520", "MessageBoxA", "Sleep", "grim_noop", "grim_restore_textures"]
   },
   {
     "name": "FUN_10002f60",
@@ -88,7 +88,7 @@
     "address": "10002fc0",
     "signature": "undefined4 FUN_10002fc0(undefined1 * param_1)",
     "external": false,
-    "calls": ["FUN_10001160", "GetClientRect", "_getcwd"]
+    "calls": ["GetClientRect", "_getcwd", "grim_noop"]
   },
   {
     "name": "thunk_FUN_10002f60",
@@ -102,14 +102,14 @@
     "address": "10003090",
     "signature": "undefined FUN_10003090(int param_1)",
     "external": false,
-    "calls": ["FUN_10001160", "FUN_10002f80"]
+    "calls": ["FUN_10002f80", "grim_noop"]
   },
   {
     "name": "FUN_100030b0",
     "address": "100030b0",
     "signature": "undefined4 FUN_100030b0(void)",
     "external": false,
-    "calls": ["FUN_10001160", "FUN_10004520", "MessageBoxA", "Sleep", "grim_restore_textures"]
+    "calls": ["FUN_10004520", "MessageBoxA", "Sleep", "grim_noop", "grim_restore_textures"]
   },
   {
     "name": "FUN_10003c00",
@@ -207,7 +207,7 @@
     "address": "10004b70",
     "signature": "undefined1 * FUN_10004b70(char * param_1, undefined4 param_2, uint * param_3, uint * param_4, uint * param_5)",
     "external": false,
-    "calls": ["FUN_10001160", "FUN_10009a50", "FUN_10009b20", "FUN_10009b30", "FUN_10009e00", "FUN_10009ec0", "FUN_1000a070", "FUN_1000a810", "FUN_1000a880", "FUN_1003a990", "FUN_1003ab10", "operator_delete", "operator_new", "setjmp3"]
+    "calls": ["FUN_10009a50", "FUN_10009b20", "FUN_10009b30", "FUN_10009e00", "FUN_10009ec0", "FUN_1000a070", "FUN_1000a810", "FUN_1000a880", "FUN_1003a990", "FUN_1003ab10", "grim_noop", "operator_delete", "operator_new", "setjmp3"]
   },
   {
     "name": "grim_texture_load_file",
@@ -1047,7 +1047,7 @@
     "address": "1000a670",
     "signature": "int grim_mouse_poll(void)",
     "external": false,
-    "calls": ["FUN_10001160"]
+    "calls": ["grim_noop"]
   },
   {
     "name": "grim_mouse_shutdown",
@@ -1236,7 +1236,7 @@
     "address": "1000ad9f",
     "signature": "int FUN_1000ad9f(void)",
     "external": false,
-    "calls": ["FUN_10010285", "FUN_1001029e", "FUN_10010313", "FUN_1001237e", "FUN_10016121", "FUN_100161b6", "FUN_100161bb", "FUN_1004b5b0"]
+    "calls": ["FUN_10010285", "FUN_1001029e", "FUN_10010313", "FUN_1001237e", "FUN_10016121", "FUN_100161b6", "FUN_100161bb", "seh_prolog"]
   },
   {
     "name": "FUN_1000ae52",
@@ -1327,7 +1327,7 @@
     "address": "1000be28",
     "signature": "undefined4 FUN_1000be28(void)",
     "external": false,
-    "calls": ["FID_conflict:`vector_deleting_destructor'", "FUN_10010285", "FUN_1001029e", "FUN_10010313", "FUN_1001237e", "FUN_100161bb", "FUN_100165d3", "FUN_1004b5b0", "FUN_1004b6c3", "`vector_deleting_destructor'", "operator_delete", "operator_new"]
+    "calls": ["FID_conflict:`vector_deleting_destructor'", "FUN_10010285", "FUN_1001029e", "FUN_10010313", "FUN_1001237e", "FUN_100161bb", "FUN_100165d3", "FUN_1004b6c3", "`vector_deleting_destructor'", "operator_delete", "operator_new", "seh_prolog"]
   },
   {
     "name": "FUN_1000c1e8",
@@ -1348,7 +1348,7 @@
     "address": "1000c4e9",
     "signature": "uint FUN_1000c4e9(void)",
     "external": false,
-    "calls": ["FUN_1000abad", "FUN_1000ac8f", "FUN_1000acc0", "FUN_1000ae72", "FUN_1000af45", "FUN_1000c205", "FUN_10010285", "FUN_1001029e", "FUN_10012677", "FUN_1004b5b0", "grim_format_info_lookup"]
+    "calls": ["FUN_1000abad", "FUN_1000ac8f", "FUN_1000acc0", "FUN_1000ae72", "FUN_1000af45", "FUN_1000c205", "FUN_10010285", "FUN_1001029e", "FUN_10012677", "grim_format_info_lookup", "seh_prolog"]
   },
   {
     "name": "FUN_1000cb5c",
@@ -1999,7 +1999,7 @@
     "address": "1001237e",
     "signature": "int FUN_1001237e(void)",
     "external": false,
-    "calls": ["FUN_1000ab3f", "FUN_10010aec", "FUN_100120d6", "FUN_1001284c", "FUN_10012856", "FUN_10016007", "FUN_1001bca5", "FUN_1001bdc7", "FUN_1001bed2", "FUN_1004b5b0", "grim_format_info_lookup", "operator_delete", "operator_new"]
+    "calls": ["FUN_1000ab3f", "FUN_10010aec", "FUN_100120d6", "FUN_1001284c", "FUN_10012856", "FUN_10016007", "FUN_1001bca5", "FUN_1001bdc7", "FUN_1001bed2", "grim_format_info_lookup", "operator_delete", "operator_new", "seh_prolog"]
   },
   {
     "name": "FUN_10012647",
@@ -2048,7 +2048,7 @@
     "address": "10012b93",
     "signature": "undefined4 FUN_10012b93(void)",
     "external": false,
-    "calls": ["FUN_1001288a", "FUN_10012b47", "FUN_1004b5b0", "FUN_1004b6c3", "`vector_constructor_iterator'", "operator_delete", "operator_new"]
+    "calls": ["FUN_1001288a", "FUN_10012b47", "FUN_1004b6c3", "`vector_constructor_iterator'", "operator_delete", "operator_new", "seh_prolog"]
   },
   {
     "name": "FUN_10013007",
@@ -2188,35 +2188,35 @@
     "address": "100142a2",
     "signature": "undefined4 FUN_100142a2(void)",
     "external": false,
-    "calls": ["FUN_1004b5b0", "`vector_constructor_iterator'", "operator_delete", "operator_new"]
+    "calls": ["`vector_constructor_iterator'", "operator_delete", "operator_new", "seh_prolog"]
   },
   {
     "name": "FUN_10014393",
     "address": "10014393",
     "signature": "undefined4 FUN_10014393(void)",
     "external": false,
-    "calls": ["FUN_1004b5b0", "`vector_constructor_iterator'", "operator_delete", "operator_new"]
+    "calls": ["`vector_constructor_iterator'", "operator_delete", "operator_new", "seh_prolog"]
   },
   {
     "name": "FUN_10014595",
     "address": "10014595",
     "signature": "undefined4 FUN_10014595(void)",
     "external": false,
-    "calls": ["FUN_1004b5b0", "`vector_constructor_iterator'", "operator_delete", "operator_new"]
+    "calls": ["`vector_constructor_iterator'", "operator_delete", "operator_new", "seh_prolog"]
   },
   {
     "name": "FUN_10014799",
     "address": "10014799",
     "signature": "undefined4 FUN_10014799(void)",
     "external": false,
-    "calls": ["FUN_100132bb", "FUN_10013551", "FUN_10013582", "FUN_100136d2", "FUN_100137f6", "FUN_10013945", "FUN_10013a98", "FUN_10013bd7", "FUN_10013c72", "FUN_10013dbe", "FUN_10013edf", "FUN_1001402b", "FUN_1004b5b0", "`vector_constructor_iterator'", "operator_delete", "operator_new"]
+    "calls": ["FUN_100132bb", "FUN_10013551", "FUN_10013582", "FUN_100136d2", "FUN_100137f6", "FUN_10013945", "FUN_10013a98", "FUN_10013bd7", "FUN_10013c72", "FUN_10013dbe", "FUN_10013edf", "FUN_1001402b", "`vector_constructor_iterator'", "operator_delete", "operator_new", "seh_prolog"]
   },
   {
     "name": "FUN_10014bbc",
     "address": "10014bbc",
     "signature": "undefined4 FUN_10014bbc(void)",
     "external": false,
-    "calls": ["FUN_1004b5b0", "`vector_constructor_iterator'", "operator_delete", "operator_new"]
+    "calls": ["`vector_constructor_iterator'", "operator_delete", "operator_new", "seh_prolog"]
   },
   {
     "name": "FUN_1001504e",
@@ -2230,21 +2230,21 @@
     "address": "1001514e",
     "signature": "undefined4 FUN_1001514e(void)",
     "external": false,
-    "calls": ["FUN_1001504e", "FUN_1004b5b0", "`vector_constructor_iterator'", "operator_delete", "operator_new"]
+    "calls": ["FUN_1001504e", "`vector_constructor_iterator'", "operator_delete", "operator_new", "seh_prolog"]
   },
   {
     "name": "FUN_10015534",
     "address": "10015534",
     "signature": "undefined4 FUN_10015534(void)",
     "external": false,
-    "calls": ["FUN_1001504e", "FUN_1004b5b0", "`vector_constructor_iterator'", "operator_delete", "operator_new"]
+    "calls": ["FUN_1001504e", "`vector_constructor_iterator'", "operator_delete", "operator_new", "seh_prolog"]
   },
   {
     "name": "FUN_10015c65",
     "address": "10015c65",
     "signature": "undefined4 FUN_10015c65(void)",
     "external": false,
-    "calls": ["FUN_1001288a", "FUN_10012b47", "FUN_1004b5b0", "FUN_1004b6c3", "`vector_constructor_iterator'", "operator_delete", "operator_new"]
+    "calls": ["FUN_1001288a", "FUN_10012b47", "FUN_1004b6c3", "`vector_constructor_iterator'", "operator_delete", "operator_new", "seh_prolog"]
   },
   {
     "name": "FUN_10016007",
@@ -2335,19 +2335,19 @@
     "address": "10016c3c",
     "signature": "undefined FUN_10016c3c(void)",
     "external": false,
-    "calls": ["FUN_1001692e", "FUN_1004b5b0", "operator_delete"]
+    "calls": ["FUN_1001692e", "operator_delete", "seh_prolog"]
   },
   {
     "name": "FUN_10016cdc",
     "address": "10016cdc",
     "signature": "undefined FUN_10016cdc(void)",
     "external": false,
-    "calls": ["FUN_1004b5b0", "`vector_constructor_iterator'", "grim_convert_vertex_space", "operator_delete", "operator_new"]
+    "calls": ["`vector_constructor_iterator'", "grim_convert_vertex_space", "operator_delete", "operator_new", "seh_prolog"]
   },
   {
-    "name": "FUN_100170d6",
+    "name": "fpu_set_round_trunc",
     "address": "100170d6",
-    "signature": "undefined FUN_100170d6(undefined4 param_1)",
+    "signature": "void fpu_set_round_trunc(void)",
     "external": false,
     "calls": []
   },
@@ -2370,7 +2370,7 @@
     "address": "10017361",
     "signature": "undefined4 FUN_10017361(void)",
     "external": false,
-    "calls": ["FUN_1004b5b0", "`vector_constructor_iterator'", "operator_new"]
+    "calls": ["`vector_constructor_iterator'", "operator_new", "seh_prolog"]
   },
   {
     "name": "FUN_100173dc",
@@ -2391,98 +2391,98 @@
     "address": "10017518",
     "signature": "undefined FUN_10017518(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_10017604",
     "address": "10017604",
     "signature": "undefined FUN_10017604(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_10017727",
     "address": "10017727",
     "signature": "undefined FUN_10017727(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_10017828",
     "address": "10017828",
     "signature": "undefined FUN_10017828(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_10017929",
     "address": "10017929",
     "signature": "undefined FUN_10017929(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_10017a2a",
     "address": "10017a2a",
     "signature": "undefined FUN_10017a2a(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_10017b47",
     "address": "10017b47",
     "signature": "undefined FUN_10017b47(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_10017c6a",
     "address": "10017c6a",
     "signature": "undefined FUN_10017c6a(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_10017d68",
     "address": "10017d68",
     "signature": "undefined FUN_10017d68(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_10017e11",
     "address": "10017e11",
     "signature": "undefined FUN_10017e11(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_10017f34",
     "address": "10017f34",
     "signature": "undefined FUN_10017f34(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_10018035",
     "address": "10018035",
     "signature": "undefined FUN_10018035(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_10018158",
     "address": "10018158",
     "signature": "undefined FUN_10018158(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_10018228",
     "address": "10018228",
     "signature": "undefined FUN_10018228(void * this, uint param_1, uint param_2, float * param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_10018340",
@@ -2496,105 +2496,105 @@
     "address": "10018405",
     "signature": "undefined FUN_10018405(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_100184ca",
     "address": "100184ca",
     "signature": "undefined FUN_100184ca(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_100185c0",
     "address": "100185c0",
     "signature": "undefined FUN_100185c0(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_100186ab",
     "address": "100186ab",
     "signature": "undefined FUN_100186ab(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_10018780",
     "address": "10018780",
     "signature": "undefined FUN_10018780(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_10018885",
     "address": "10018885",
     "signature": "undefined FUN_10018885(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_10018990",
     "address": "10018990",
     "signature": "undefined FUN_10018990(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_10018aca",
     "address": "10018aca",
     "signature": "undefined FUN_10018aca(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_10018ba0",
     "address": "10018ba0",
     "signature": "undefined FUN_10018ba0(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_10018caa",
     "address": "10018caa",
     "signature": "undefined FUN_10018caa(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_10018de0",
     "address": "10018de0",
     "signature": "undefined FUN_10018de0(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_10018ea7",
     "address": "10018ea7",
     "signature": "undefined FUN_10018ea7(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_10018f6e",
     "address": "10018f6e",
     "signature": "undefined FUN_10018f6e(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_1001905c",
     "address": "1001905c",
     "signature": "undefined FUN_1001905c(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_1001914b",
     "address": "1001914b",
     "signature": "undefined FUN_1001914b(void * this, uint param_1, uint param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_100170d6", "grim_convert_vertex_space"]
+    "calls": ["fpu_set_round_trunc", "grim_convert_vertex_space"]
   },
   {
     "name": "FUN_100192a7",
@@ -2804,7 +2804,7 @@
     "address": "1001a444",
     "signature": "undefined4 * FUN_1001a444(void)",
     "external": false,
-    "calls": ["FUN_1004b5b0", "`vector_constructor_iterator'", "grim_pixel_format_init", "operator_new"]
+    "calls": ["`vector_constructor_iterator'", "grim_pixel_format_init", "operator_new", "seh_prolog"]
   },
   {
     "name": "FUN_1001a53c",
@@ -3049,7 +3049,7 @@
     "address": "1001b0fd",
     "signature": "undefined FUN_1001b0fd(void)",
     "external": false,
-    "calls": ["FUN_100170d6", "FUN_1004b5b0", "`vector_constructor_iterator'", "operator_new"]
+    "calls": ["`vector_constructor_iterator'", "fpu_set_round_trunc", "operator_new", "seh_prolog"]
   },
   {
     "name": "FUN_1001b3a6",
@@ -3126,7 +3126,7 @@
     "address": "1001b493",
     "signature": "undefined FUN_1001b493(void)",
     "external": false,
-    "calls": ["FUN_1001692e", "FUN_1001a595", "FUN_1004b5b0", "operator_delete"]
+    "calls": ["FUN_1001692e", "FUN_1001a595", "operator_delete", "seh_prolog"]
   },
   {
     "name": "FUN_1001b4dc",
@@ -3231,7 +3231,7 @@
     "address": "1001c02f",
     "signature": "undefined FUN_1001c02f(void)",
     "external": false,
-    "calls": ["FUN_1001c075", "FUN_1004b5b0"]
+    "calls": ["FUN_1001c075", "seh_prolog"]
   },
   {
     "name": "Catch@1001c069",
@@ -5555,7 +5555,7 @@
     "address": "1003d0d0",
     "signature": "undefined FUN_1003d0d0(int * param_1)",
     "external": false,
-    "calls": ["FUN_10001160", "FUN_1003e560", "getenv", "operator_new", "sscanf"]
+    "calls": ["FUN_1003e560", "getenv", "grim_noop", "operator_new", "sscanf"]
   },
   {
     "name": "FUN_1003d210",
@@ -6062,9 +6062,9 @@
     "calls": []
   },
   {
-    "name": "FUN_1004b5b0",
+    "name": "seh_prolog",
     "address": "1004b5b0",
-    "signature": "undefined FUN_1004b5b0(void)",
+    "signature": "void seh_prolog(void)",
     "external": false,
     "calls": []
   },
@@ -6178,7 +6178,7 @@
     "address": "1004b7e0",
     "signature": "undefined Unwind@1004b7e0(void)",
     "external": false,
-    "calls": ["FUN_10001160"]
+    "calls": ["grim_noop"]
   },
   {
     "name": "Unwind@1004b800",

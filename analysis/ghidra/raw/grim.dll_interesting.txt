@@ -58,6 +58,7 @@ Interesting Functions and Patterns
 
 [LOG related]
   grim_config_dialog_proc @ 10002120
+  seh_prolog @ 1004b5b0
 
 [PRINT related]
   sprintf @ 1000a8d0
