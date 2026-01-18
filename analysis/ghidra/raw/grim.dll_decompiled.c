@@ -7673,8 +7673,8 @@ int FUN_1000b3fe(int *param_1,int *param_2,undefined4 param_3,uint param_4,uint 
   int iVar10;
   int iVar11;
   float10 fVar12;
-  undefined4 local_1a0 [19];
-  undefined4 local_154 [19];
+  uint local_1a0 [19];
+  uint local_154 [19];
   int local_108 [6];
   int local_f0;
   uint local_ec;
@@ -7829,9 +7829,9 @@ LAB_1000bb62:
                         iVar10 < 0)) ||
                        (iVar10 = (**(code **)(*param_2 + 0x38))(param_2,local_10,local_70),
                        iVar10 < 0)) goto LAB_1000bb7b;
-                    piVar5 = FUN_1001b50c();
+                    piVar5 = grim_pixel_format_create(local_154);
                     local_30 = piVar5;
-                    local_38 = FUN_1001b50c();
+                    local_38 = grim_pixel_format_create(local_1a0);
                     if ((piVar5 == (int *)0x0) || (local_38 == (int *)0x0)) {
                       iVar10 = -0x7fffbffb;
                       goto LAB_1000bb62;
@@ -15829,10 +15829,10 @@ LAB_10015ff8:
 
 /* FUN_10016007 @ 10016007 */
 
-int __thiscall FUN_10016007(int *param_1,int param_2,undefined4 param_3,uint param_4)
+int __thiscall FUN_10016007(int *param_1,int param_2,uint *param_3,uint param_4)
 
 {
-  int *piVar1;
+  void *pvVar1;
   int iVar2;
   int unaff_EBX;
   
@@ -15841,12 +15841,12 @@ int __thiscall FUN_10016007(int *param_1,int param_2,undefined4 param_3,uint par
   param_1[2] = param_4;
   if ((((param_4 & 0xffff) != 0) && ((param_4 & 0xffff) < 6)) && ((param_4 & 0xfff00000) == 0)) {
     *(uint *)(param_2 + 0x40) = param_4 & 0x80000;
-    piVar1 = FUN_1001b50c();
-    param_1[1] = (int)piVar1;
-    if (piVar1 != (int *)0x0) {
-      piVar1 = FUN_1001b50c();
-      *param_1 = (int)piVar1;
-      if (((((piVar1 != (int *)0x0) && (iVar2 = FUN_10017361(), -1 < iVar2)) &&
+    pvVar1 = grim_pixel_format_create((uint *)param_2);
+    param_1[1] = (int)pvVar1;
+    if (pvVar1 != (void *)0x0) {
+      pvVar1 = grim_pixel_format_create(param_3);
+      *param_1 = (int)pvVar1;
+      if (((((pvVar1 != (void *)0x0) && (iVar2 = FUN_10017361(), -1 < iVar2)) &&
            ((iVar2 = FUN_1001416a(param_1), iVar2 < 0 &&
             ((iVar2 = FUN_100142a2(), iVar2 < 0 && (iVar2 = FUN_10014393(), iVar2 < 0)))))) &&
           (iVar2 = FUN_10014595(), iVar2 < 0)) &&
@@ -19521,9 +19521,11 @@ undefined4 * __thiscall FUN_1001ac2e(void *this,undefined4 *param_1)
 
 
 
-/* FUN_1001ac4a @ 1001ac4a */
+/* grim_pixel_format_init_dxt @ 1001ac4a */
 
-undefined4 * __thiscall FUN_1001ac4a(void *this,undefined4 *param_1)
+/* initializes DXT block-compressed pixel format (DXT1..DXT5) */
+
+void * __thiscall grim_pixel_format_init_dxt(void *this,uint *desc)
 
 {
   int iVar1;
@@ -19534,21 +19536,21 @@ undefined4 * __thiscall FUN_1001ac4a(void *this,undefined4 *param_1)
   uint uVar6;
   
   uVar4 = 1;
-  grim_pixel_format_init(this,param_1,0,1);
+  grim_pixel_format_init(this,desc,0,1);
   *(undefined ***)this = &PTR_FUN_1004caf8;
-  if (param_1[6] == 1) {
+  if (desc[6] == 1) {
     *(undefined4 *)((int)this + 0x1078) = 0;
   }
-  else if (param_1[6] == 2) {
+  else if (desc[6] == 2) {
     *(undefined4 *)((int)this + 0x1078) = 1;
   }
   else {
     *(undefined4 *)((int)this + 0x1078) = 3;
   }
-  if (param_1[7] == 1) {
+  if (desc[7] == 1) {
     *(undefined4 *)((int)this + 0x107c) = 0;
   }
-  else if (param_1[7] == 2) {
+  else if (desc[7] == 2) {
     *(undefined4 *)((int)this + 0x107c) = 1;
   }
   else {
@@ -19820,12 +19822,14 @@ undefined4 * __thiscall FUN_1001b0c5(void *this,undefined4 *param_1)
 
 
 
-/* FUN_1001b0e1 @ 1001b0e1 */
+/* grim_pixel_format_ctor_l16 @ 1001b0e1 */
 
-undefined4 * __thiscall FUN_1001b0e1(void *this,undefined4 *param_1)
+/* pixel format ctor for FourCC L16 (16-bit luminance) */
+
+void * __thiscall grim_pixel_format_ctor_l16(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,0x10,1);
+  grim_pixel_format_init(this,desc,0x10,1);
   *(undefined ***)this = &PTR_FUN_1004cd50;
   return this;
 }
@@ -19952,96 +19956,112 @@ LAB_1001b396:
 
 
 
-/* FUN_1001b3a6 @ 1001b3a6 */
+/* grim_pixel_format_ctor_al16 @ 1001b3a6 */
 
-undefined4 * __thiscall FUN_1001b3a6(void *this,undefined4 *param_1)
+/* pixel format ctor for FourCC AL16 */
+
+void * __thiscall grim_pixel_format_ctor_al16(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,0x20,1);
+  grim_pixel_format_init(this,desc,0x20,1);
   *(undefined ***)this = &PTR_FUN_1004cd60;
   return this;
 }
 
 
 
-/* FUN_1001b3c2 @ 1001b3c2 */
+/* grim_pixel_format_ctor_r16 @ 1001b3c2 */
 
-undefined4 * __thiscall FUN_1001b3c2(void *this,undefined4 *param_1)
+/* pixel format ctor for FourCC R16 */
+
+void * __thiscall grim_pixel_format_ctor_r16(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,0x30,1);
+  grim_pixel_format_init(this,desc,0x30,1);
   *(undefined ***)this = &PTR_FUN_1004cd70;
   return this;
 }
 
 
 
-/* FUN_1001b3de @ 1001b3de */
+/* grim_pixel_format_ctor_ar16 @ 1001b3de */
 
-undefined4 * __thiscall FUN_1001b3de(void *this,undefined4 *param_1)
+/* pixel format ctor for FourCC AR16 */
+
+void * __thiscall grim_pixel_format_ctor_ar16(void *this,uint *desc)
 
 {
-  grim_pixel_format_init(this,param_1,0x40,1);
+  grim_pixel_format_init(this,desc,0x40,1);
   *(undefined ***)this = &PTR_FUN_1004cd80;
   return this;
 }
 
 
 
-/* FUN_1001b3fa @ 1001b3fa */
+/* grim_pixel_format_ctor_dxt1 @ 1001b3fa */
 
-undefined4 * __thiscall FUN_1001b3fa(void *this,undefined4 *param_1)
+/* pixel format ctor for FourCC DXT1 */
+
+void * __thiscall grim_pixel_format_ctor_dxt1(void *this,uint *desc)
 
 {
-  FUN_1001ac4a(this,param_1);
+  grim_pixel_format_init_dxt(this,desc);
   *(undefined ***)this = &PTR_FUN_1004cd90;
   return this;
 }
 
 
 
-/* FUN_1001b412 @ 1001b412 */
+/* grim_pixel_format_ctor_dxt2 @ 1001b412 */
 
-undefined4 * __thiscall FUN_1001b412(void *this,undefined4 *param_1)
+/* pixel format ctor for FourCC DXT2 */
+
+void * __thiscall grim_pixel_format_ctor_dxt2(void *this,uint *desc)
 
 {
-  FUN_1001ac4a(this,param_1);
+  grim_pixel_format_init_dxt(this,desc);
   *(undefined ***)this = &PTR_FUN_1004cda0;
   return this;
 }
 
 
 
-/* FUN_1001b42a @ 1001b42a */
+/* grim_pixel_format_ctor_dxt3 @ 1001b42a */
 
-undefined4 * __thiscall FUN_1001b42a(void *this,undefined4 *param_1)
+/* pixel format ctor for FourCC DXT3 */
+
+void * __thiscall grim_pixel_format_ctor_dxt3(void *this,uint *desc)
 
 {
-  FUN_1001ac4a(this,param_1);
+  grim_pixel_format_init_dxt(this,desc);
   *(undefined ***)this = &PTR_FUN_1004cdb0;
   return this;
 }
 
 
 
-/* FUN_1001b442 @ 1001b442 */
+/* grim_pixel_format_ctor_dxt4 @ 1001b442 */
 
-undefined4 * __thiscall FUN_1001b442(void *this,undefined4 *param_1)
+/* pixel format ctor for FourCC DXT4 */
+
+void * __thiscall grim_pixel_format_ctor_dxt4(void *this,uint *desc)
 
 {
-  FUN_1001ac4a(this,param_1);
+  grim_pixel_format_init_dxt(this,desc);
   *(undefined ***)this = &PTR_FUN_1004cdc0;
   return this;
 }
 
 
 
-/* FUN_1001b45a @ 1001b45a */
+/* grim_pixel_format_ctor_dxt5 @ 1001b45a */
 
-undefined4 * __thiscall FUN_1001b45a(void *this,undefined4 *param_1)
+/* pixel format ctor for FourCC DXT5 */
+
+void * __thiscall grim_pixel_format_ctor_dxt5(void *this,uint *desc)
 
 {
-  FUN_1001ac4a(this,param_1);
+  grim_pixel_format_init_dxt(this,desc);
   *(undefined ***)this = &PTR_FUN_1004cdd0;
   return this;
 }
@@ -20086,75 +20106,80 @@ void FUN_1001b493(void)
 
 
 
-/* FUN_1001b4dc @ 1001b4dc */
+/* grim_pixel_format_ctor_uyvy @ 1001b4dc */
 
-undefined4 * __fastcall FUN_1001b4dc(undefined4 *param_1)
+/* pixel format ctor for FourCC UYVY */
+
+void * __fastcall grim_pixel_format_ctor_uyvy(void *this)
 
 {
   FUN_1001a444();
-  *param_1 = &PTR_FUN_1004cde0;
-  return param_1;
+  *(undefined ***)this = &PTR_FUN_1004cde0;
+  return this;
 }
 
 
 
-/* FUN_1001b4f4 @ 1001b4f4 */
+/* grim_pixel_format_ctor_yuy2 @ 1001b4f4 */
 
-undefined4 * __fastcall FUN_1001b4f4(undefined4 *param_1)
+/* pixel format ctor for FourCC YUY2 */
+
+void * __fastcall grim_pixel_format_ctor_yuy2(void *this)
 
 {
   FUN_1001a444();
-  *param_1 = &PTR_FUN_1004cdf0;
-  return param_1;
+  *(undefined ***)this = &PTR_FUN_1004cdf0;
+  return this;
 }
 
 
 
-/* FUN_1001b50c @ 1001b50c */
+/* grim_pixel_format_create @ 1001b50c */
 
 /* WARNING (jumptable): Unable to track spacebase fully for stack */
+/* factory: picks pixel format implementation from FourCC/D3DFORMAT */
 
-int * FUN_1001b50c(void)
+void * grim_pixel_format_create(uint *desc)
 
 {
-  int iVar1;
+  uint *desc_00;
+  uint uVar1;
   void *pvVar2;
-  undefined4 *puVar3;
   int unaff_EBP;
-  int *piVar4;
+  int *piVar3;
   
   seh_prolog();
-  puVar3 = *(undefined4 **)(unaff_EBP + 8);
-  iVar1 = puVar3[1];
-  piVar4 = (int *)0x0;
-  if (iVar1 < 0x31545845) {
-    if (iVar1 == 0x31545844) {
+  desc_00 = *(uint **)(unaff_EBP + 8);
+  uVar1 = desc_00[1];
+  piVar3 = (int *)0x0;
+  if ((int)uVar1 < 0x31545845) {
+    if (uVar1 == 0x31545844) {
       pvVar2 = operator_new(0x10c4);
       *(void **)(unaff_EBP + 8) = pvVar2;
       *(undefined4 *)(unaff_EBP + -4) = 0x20;
       if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar4 = FUN_1001b3fa(pvVar2,puVar3);
+      piVar3 = grim_pixel_format_ctor_dxt1(pvVar2,desc_00);
     }
-    else if (iVar1 < 0x29) {
-      if (iVar1 == 0x28) {
+    else if ((int)uVar1 < 0x29) {
+      if (uVar1 == 0x28) {
         pvVar2 = operator_new(0x106c);
         *(void **)(unaff_EBP + 8) = pvVar2;
         *(undefined4 *)(unaff_EBP + -4) = 0xd;
         if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-        piVar4 = FUN_1001ae3c(pvVar2,puVar3);
+        piVar3 = FUN_1001ae3c(pvVar2,desc_00);
       }
       else {
-        switch(iVar1) {
+        switch(uVar1) {
         case 0x14:
           pvVar2 = operator_new(0x106c);
           *(void **)(unaff_EBP + 8) = pvVar2;
           *(undefined4 *)(unaff_EBP + -4) = 0;
           if (pvVar2 == (void *)0x0) {
 LAB_1001bc03:
-            piVar4 = (int *)0x0;
+            piVar3 = (int *)0x0;
           }
           else {
-            piVar4 = FUN_1001a428(pvVar2,puVar3);
+            piVar3 = FUN_1001a428(pvVar2,desc_00);
           }
           break;
         case 0x15:
@@ -20162,77 +20187,77 @@ LAB_1001bc03:
           *(void **)(unaff_EBP + 8) = pvVar2;
           *(undefined4 *)(unaff_EBP + -4) = 1;
           if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar4 = FUN_1001a53c(pvVar2,puVar3);
+          piVar3 = FUN_1001a53c(pvVar2,desc_00);
           break;
         case 0x16:
           pvVar2 = operator_new(0x106c);
           *(void **)(unaff_EBP + 8) = pvVar2;
           *(undefined4 *)(unaff_EBP + -4) = 2;
           if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar4 = FUN_1001a558(pvVar2,puVar3);
+          piVar3 = FUN_1001a558(pvVar2,desc_00);
           break;
         case 0x17:
           pvVar2 = operator_new(0x106c);
           *(void **)(unaff_EBP + 8) = pvVar2;
           *(undefined4 *)(unaff_EBP + -4) = 3;
           if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar4 = FUN_1001a579(pvVar2,puVar3);
+          piVar3 = FUN_1001a579(pvVar2,desc_00);
           break;
         case 0x18:
           pvVar2 = operator_new(0x106c);
           *(void **)(unaff_EBP + 8) = pvVar2;
           *(undefined4 *)(unaff_EBP + -4) = 4;
           if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar4 = FUN_1001a781(pvVar2,puVar3);
+          piVar3 = FUN_1001a781(pvVar2,desc_00);
           break;
         case 0x19:
           pvVar2 = operator_new(0x106c);
           *(void **)(unaff_EBP + 8) = pvVar2;
           *(undefined4 *)(unaff_EBP + -4) = 5;
           if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar4 = FUN_1001a79d(pvVar2,puVar3);
+          piVar3 = FUN_1001a79d(pvVar2,desc_00);
           break;
         case 0x1a:
           pvVar2 = operator_new(0x106c);
           *(void **)(unaff_EBP + 8) = pvVar2;
           *(undefined4 *)(unaff_EBP + -4) = 6;
           if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar4 = FUN_1001aa8a(pvVar2,puVar3);
+          piVar3 = FUN_1001aa8a(pvVar2,desc_00);
           break;
         case 0x1b:
           pvVar2 = operator_new(0x106c);
           *(void **)(unaff_EBP + 8) = pvVar2;
           *(undefined4 *)(unaff_EBP + -4) = 7;
           if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar4 = FUN_1001aaa6(pvVar2,puVar3);
+          piVar3 = FUN_1001aaa6(pvVar2,desc_00);
           break;
         case 0x1c:
           pvVar2 = operator_new(0x106c);
           *(void **)(unaff_EBP + 8) = pvVar2;
           *(undefined4 *)(unaff_EBP + -4) = 8;
           if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar4 = FUN_1001aac2(pvVar2,puVar3);
+          piVar3 = FUN_1001aac2(pvVar2,desc_00);
           break;
         case 0x1d:
           pvVar2 = operator_new(0x106c);
           *(void **)(unaff_EBP + 8) = pvVar2;
           *(undefined4 *)(unaff_EBP + -4) = 9;
           if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar4 = FUN_1001aade(pvVar2,puVar3);
+          piVar3 = FUN_1001aade(pvVar2,desc_00);
           break;
         case 0x1e:
           pvVar2 = operator_new(0x106c);
           *(void **)(unaff_EBP + 8) = pvVar2;
           *(undefined4 *)(unaff_EBP + -4) = 10;
           if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar4 = FUN_1001aafa(pvVar2,puVar3);
+          piVar3 = FUN_1001aafa(pvVar2,desc_00);
           break;
         case 0x1f:
           pvVar2 = operator_new(0x106c);
           *(void **)(unaff_EBP + 8) = pvVar2;
           *(undefined4 *)(unaff_EBP + -4) = 0xb;
           if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar4 = FUN_1001aba3(pvVar2,puVar3);
+          piVar3 = FUN_1001aba3(pvVar2,desc_00);
           break;
         default:
           goto switchD_1001b54e_caseD_20;
@@ -20241,180 +20266,180 @@ LAB_1001bc03:
           *(void **)(unaff_EBP + 8) = pvVar2;
           *(undefined4 *)(unaff_EBP + -4) = 0xc;
           if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-          piVar4 = FUN_1001ac2e(pvVar2,puVar3);
+          piVar3 = FUN_1001ac2e(pvVar2,desc_00);
         }
       }
     }
-    else if (iVar1 < 0x3f) {
-      if (iVar1 == 0x3e) {
+    else if ((int)uVar1 < 0x3f) {
+      if (uVar1 == 0x3e) {
         pvVar2 = operator_new(0x106c);
         *(void **)(unaff_EBP + 8) = pvVar2;
         *(undefined4 *)(unaff_EBP + -4) = 0x14;
         if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-        piVar4 = FUN_1001b039(pvVar2,puVar3);
+        piVar3 = FUN_1001b039(pvVar2,desc_00);
       }
-      else if (iVar1 == 0x29) {
+      else if (uVar1 == 0x29) {
         pvVar2 = operator_new(0x106c);
         *(void **)(unaff_EBP + 8) = pvVar2;
         *(undefined4 *)(unaff_EBP + -4) = 0xe;
         if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-        piVar4 = FUN_1001ae74(pvVar2,puVar3);
+        piVar3 = FUN_1001ae74(pvVar2,desc_00);
       }
-      else if (iVar1 == 0x32) {
+      else if (uVar1 == 0x32) {
         pvVar2 = operator_new(0x106c);
         *(void **)(unaff_EBP + 8) = pvVar2;
         *(undefined4 *)(unaff_EBP + -4) = 0xf;
         if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-        piVar4 = FUN_1001ae90(pvVar2,puVar3);
+        piVar3 = FUN_1001ae90(pvVar2,desc_00);
       }
-      else if (iVar1 == 0x33) {
+      else if (uVar1 == 0x33) {
         pvVar2 = operator_new(0x106c);
         *(void **)(unaff_EBP + 8) = pvVar2;
         *(undefined4 *)(unaff_EBP + -4) = 0x10;
         if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-        piVar4 = FUN_1001aeac(pvVar2,puVar3);
+        piVar3 = FUN_1001aeac(pvVar2,desc_00);
       }
-      else if (iVar1 == 0x34) {
+      else if (uVar1 == 0x34) {
         pvVar2 = operator_new(0x106c);
         *(void **)(unaff_EBP + 8) = pvVar2;
         *(undefined4 *)(unaff_EBP + -4) = 0x11;
         if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-        piVar4 = FUN_1001aee4(pvVar2,puVar3);
+        piVar3 = FUN_1001aee4(pvVar2,desc_00);
       }
-      else if (iVar1 == 0x3c) {
+      else if (uVar1 == 0x3c) {
         pvVar2 = operator_new(0x106c);
         *(void **)(unaff_EBP + 8) = pvVar2;
         *(undefined4 *)(unaff_EBP + -4) = 0x12;
         if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-        piVar4 = FUN_1001b001(pvVar2,puVar3);
+        piVar3 = FUN_1001b001(pvVar2,desc_00);
       }
       else {
-        if (iVar1 != 0x3d) goto switchD_1001b54e_caseD_20;
+        if (uVar1 != 0x3d) goto switchD_1001b54e_caseD_20;
         pvVar2 = operator_new(0x106c);
         *(void **)(unaff_EBP + 8) = pvVar2;
         *(undefined4 *)(unaff_EBP + -4) = 0x13;
         if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-        piVar4 = FUN_1001b01d(pvVar2,puVar3);
+        piVar3 = FUN_1001b01d(pvVar2,desc_00);
       }
     }
-    else if (iVar1 == 0x3f) {
+    else if (uVar1 == 0x3f) {
       pvVar2 = operator_new(0x106c);
       *(void **)(unaff_EBP + 8) = pvVar2;
       *(undefined4 *)(unaff_EBP + -4) = 0x15;
       if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar4 = FUN_1001b055(pvVar2,puVar3);
+      piVar3 = FUN_1001b055(pvVar2,desc_00);
     }
-    else if (iVar1 == 0x40) {
+    else if (uVar1 == 0x40) {
       pvVar2 = operator_new(0x106c);
       *(void **)(unaff_EBP + 8) = pvVar2;
       *(undefined4 *)(unaff_EBP + -4) = 0x16;
       if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar4 = FUN_1001b071(pvVar2,puVar3);
+      piVar3 = FUN_1001b071(pvVar2,desc_00);
     }
-    else if (iVar1 == 0x41) {
+    else if (uVar1 == 0x41) {
       pvVar2 = operator_new(0x106c);
       *(void **)(unaff_EBP + 8) = pvVar2;
       *(undefined4 *)(unaff_EBP + -4) = 0x17;
       if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar4 = FUN_1001b08d(pvVar2,puVar3);
+      piVar3 = FUN_1001b08d(pvVar2,desc_00);
     }
-    else if (iVar1 == 0x43) {
+    else if (uVar1 == 0x43) {
       pvVar2 = operator_new(0x106c);
       *(void **)(unaff_EBP + 8) = pvVar2;
       *(undefined4 *)(unaff_EBP + -4) = 0x18;
       if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar4 = FUN_1001b0a9(pvVar2,puVar3);
+      piVar3 = FUN_1001b0a9(pvVar2,desc_00);
     }
     else {
-      if (iVar1 != 0x46) goto switchD_1001b54e_caseD_20;
+      if (uVar1 != 0x46) goto switchD_1001b54e_caseD_20;
       pvVar2 = operator_new(0x106c);
       *(void **)(unaff_EBP + 8) = pvVar2;
       *(undefined4 *)(unaff_EBP + -4) = 0x19;
       if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar4 = FUN_1001b0c5(pvVar2,puVar3);
+      piVar3 = FUN_1001b0c5(pvVar2,desc_00);
     }
   }
-  else if (iVar1 < 0x36314c21) {
-    if (iVar1 == 0x36314c20) {
+  else if ((int)uVar1 < 0x36314c21) {
+    if (uVar1 == 0x36314c20) {
       pvVar2 = operator_new(0x106c);
       *(void **)(unaff_EBP + 8) = pvVar2;
       *(undefined4 *)(unaff_EBP + -4) = 0x1a;
       if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar4 = FUN_1001b0e1(pvVar2,puVar3);
+      piVar3 = grim_pixel_format_ctor_l16(pvVar2,desc_00);
     }
-    else if (iVar1 == 0x32545844) {
+    else if (uVar1 == 0x32545844) {
       pvVar2 = operator_new(0x10c4);
       *(void **)(unaff_EBP + 8) = pvVar2;
       *(undefined4 *)(unaff_EBP + -4) = 0x21;
       if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar4 = FUN_1001b412(pvVar2,puVar3);
+      piVar3 = grim_pixel_format_ctor_dxt2(pvVar2,desc_00);
     }
-    else if (iVar1 == 0x32595559) {
-      puVar3 = operator_new(0x109c);
-      *(undefined4 **)(unaff_EBP + 8) = puVar3;
+    else if (uVar1 == 0x32595559) {
+      pvVar2 = operator_new(0x109c);
+      *(void **)(unaff_EBP + 8) = pvVar2;
       *(undefined4 *)(unaff_EBP + -4) = 0x1f;
-      if (puVar3 == (undefined4 *)0x0) goto LAB_1001bc03;
-      piVar4 = FUN_1001b4f4(puVar3);
+      if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
+      piVar3 = grim_pixel_format_ctor_yuy2(pvVar2);
     }
-    else if (iVar1 == 0x33545844) {
+    else if (uVar1 == 0x33545844) {
       pvVar2 = operator_new(0x10c4);
       *(void **)(unaff_EBP + 8) = pvVar2;
       *(undefined4 *)(unaff_EBP + -4) = 0x22;
       if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar4 = FUN_1001b42a(pvVar2,puVar3);
+      piVar3 = grim_pixel_format_ctor_dxt3(pvVar2,desc_00);
     }
-    else if (iVar1 == 0x34545844) {
+    else if (uVar1 == 0x34545844) {
       pvVar2 = operator_new(0x10c4);
       *(void **)(unaff_EBP + 8) = pvVar2;
       *(undefined4 *)(unaff_EBP + -4) = 0x23;
       if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar4 = FUN_1001b442(pvVar2,puVar3);
+      piVar3 = grim_pixel_format_ctor_dxt4(pvVar2,desc_00);
     }
     else {
-      if (iVar1 != 0x35545844) goto switchD_1001b54e_caseD_20;
+      if (uVar1 != 0x35545844) goto switchD_1001b54e_caseD_20;
       pvVar2 = operator_new(0x10c4);
       *(void **)(unaff_EBP + 8) = pvVar2;
       *(undefined4 *)(unaff_EBP + -4) = 0x24;
       if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-      piVar4 = FUN_1001b45a(pvVar2,puVar3);
+      piVar3 = grim_pixel_format_ctor_dxt5(pvVar2,desc_00);
     }
   }
-  else if (iVar1 == 0x36314c41) {
+  else if (uVar1 == 0x36314c41) {
     pvVar2 = operator_new(0x106c);
     *(void **)(unaff_EBP + 8) = pvVar2;
     *(undefined4 *)(unaff_EBP + -4) = 0x1b;
     if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-    piVar4 = FUN_1001b3a6(pvVar2,puVar3);
+    piVar3 = grim_pixel_format_ctor_al16(pvVar2,desc_00);
   }
-  else if (iVar1 == 0x36315220) {
+  else if (uVar1 == 0x36315220) {
     pvVar2 = operator_new(0x106c);
     *(void **)(unaff_EBP + 8) = pvVar2;
     *(undefined4 *)(unaff_EBP + -4) = 0x1c;
     if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-    piVar4 = FUN_1001b3c2(pvVar2,puVar3);
+    piVar3 = grim_pixel_format_ctor_r16(pvVar2,desc_00);
   }
-  else if (iVar1 == 0x36315241) {
+  else if (uVar1 == 0x36315241) {
     pvVar2 = operator_new(0x106c);
     *(void **)(unaff_EBP + 8) = pvVar2;
     *(undefined4 *)(unaff_EBP + -4) = 0x1d;
     if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
-    piVar4 = FUN_1001b3de(pvVar2,puVar3);
+    piVar3 = grim_pixel_format_ctor_ar16(pvVar2,desc_00);
   }
   else {
-    if (iVar1 != 0x59565955) goto switchD_1001b54e_caseD_20;
-    puVar3 = operator_new(0x109c);
-    *(undefined4 **)(unaff_EBP + 8) = puVar3;
+    if (uVar1 != 0x59565955) goto switchD_1001b54e_caseD_20;
+    pvVar2 = operator_new(0x109c);
+    *(void **)(unaff_EBP + 8) = pvVar2;
     *(undefined4 *)(unaff_EBP + -4) = 0x1e;
-    if (puVar3 == (undefined4 *)0x0) goto LAB_1001bc03;
-    piVar4 = FUN_1001b4dc(puVar3);
+    if (pvVar2 == (void *)0x0) goto LAB_1001bc03;
+    piVar3 = grim_pixel_format_ctor_uyvy(pvVar2);
   }
   *(undefined4 *)(unaff_EBP + -4) = 0xffffffff;
-  if ((piVar4 != (int *)0x0) && (piVar4[4] != 0)) {
-    (**(code **)(*piVar4 + 0xc))();
+  if ((piVar3 != (int *)0x0) && (piVar3[4] != 0)) {
+    (**(code **)(*piVar3 + 0xc))();
   }
 switchD_1001b54e_caseD_20:
   ExceptionList = *(void **)(unaff_EBP + -0xc);
-  return piVar4;
+  return piVar3;
 }
 
 

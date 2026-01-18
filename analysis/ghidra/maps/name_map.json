@@ -3553,6 +3553,97 @@
     "comment": "MSVC SEH prolog helper (sets FS:[0])"
   },
   {
+    "program": "grim.dll",
+    "address": "0x1001ac4a",
+    "name": "grim_pixel_format_init_dxt",
+    "signature": "void * grim_pixel_format_init_dxt(void *this, uint *desc)",
+    "comment": "initializes DXT block-compressed pixel format (DXT1..DXT5)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b0e1",
+    "name": "grim_pixel_format_ctor_l16",
+    "signature": "void * grim_pixel_format_ctor_l16(void *this, uint *desc)",
+    "comment": "pixel format ctor for FourCC L16 (16-bit luminance)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b3a6",
+    "name": "grim_pixel_format_ctor_al16",
+    "signature": "void * grim_pixel_format_ctor_al16(void *this, uint *desc)",
+    "comment": "pixel format ctor for FourCC AL16"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b3c2",
+    "name": "grim_pixel_format_ctor_r16",
+    "signature": "void * grim_pixel_format_ctor_r16(void *this, uint *desc)",
+    "comment": "pixel format ctor for FourCC R16"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b3de",
+    "name": "grim_pixel_format_ctor_ar16",
+    "signature": "void * grim_pixel_format_ctor_ar16(void *this, uint *desc)",
+    "comment": "pixel format ctor for FourCC AR16"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b3fa",
+    "name": "grim_pixel_format_ctor_dxt1",
+    "signature": "void * grim_pixel_format_ctor_dxt1(void *this, uint *desc)",
+    "comment": "pixel format ctor for FourCC DXT1"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b412",
+    "name": "grim_pixel_format_ctor_dxt2",
+    "signature": "void * grim_pixel_format_ctor_dxt2(void *this, uint *desc)",
+    "comment": "pixel format ctor for FourCC DXT2"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b42a",
+    "name": "grim_pixel_format_ctor_dxt3",
+    "signature": "void * grim_pixel_format_ctor_dxt3(void *this, uint *desc)",
+    "comment": "pixel format ctor for FourCC DXT3"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b442",
+    "name": "grim_pixel_format_ctor_dxt4",
+    "signature": "void * grim_pixel_format_ctor_dxt4(void *this, uint *desc)",
+    "comment": "pixel format ctor for FourCC DXT4"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b45a",
+    "name": "grim_pixel_format_ctor_dxt5",
+    "signature": "void * grim_pixel_format_ctor_dxt5(void *this, uint *desc)",
+    "comment": "pixel format ctor for FourCC DXT5"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b4dc",
+    "name": "grim_pixel_format_ctor_uyvy",
+    "signature": "void * grim_pixel_format_ctor_uyvy(void *this)",
+    "comment": "pixel format ctor for FourCC UYVY"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b4f4",
+    "name": "grim_pixel_format_ctor_yuy2",
+    "signature": "void * grim_pixel_format_ctor_yuy2(void *this)",
+    "comment": "pixel format ctor for FourCC YUY2"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b50c",
+    "name": "grim_pixel_format_create",
+    "signature": "void * grim_pixel_format_create(uint *desc)",
+    "comment": "factory: picks pixel format implementation from FourCC/D3DFORMAT"
+  },
+  {
     "program": "crimsonland.exe",
     "address": "0x00461089",
     "name": "crt_vsprintf",
