@@ -62,8 +62,8 @@ Counts come from `analysis/ghidra/maps/name_map.json` and
 <!-- map-progress:start -->
 | Map | Total entries | crimsonland.exe | grim.dll | With signatures | With comments | Duplicate names |
 | --- | --- | --- | --- | --- | --- | --- |
-| Name map | 410 | 237 | 173 | 380 | 387 | 0 |
-| Data map | 659 | 573 | 86 | n/a | 659 | 0 |
+| Name map | 414 | 241 | 173 | 384 | 391 | 0 |
+| Data map | 713 | 627 | 86 | n/a | 713 | 0 |
 <!-- map-progress:end -->
 
 ### Data map coverage (decompiled symbols)
@@ -75,9 +75,9 @@ symbols plus applied data-map labels. Run
 <!-- data-map-coverage:start -->
 | Program | Labeled symbols | Total data symbols | Coverage |
 | --- | --- | --- | --- |
-| crimsonland.exe | 510 | 2793 | 18.26% |
+| crimsonland.exe | 551 | 2786 | 19.78% |
 | grim.dll | 69 | 476 | 14.50% |
-| Total | 579 | 3269 | 17.71% |
+| Total | 620 | 3262 | 19.01% |
 <!-- data-map-coverage:end -->
 
 

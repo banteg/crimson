@@ -13593,7 +13593,7 @@ LAB_0041bdf8:
     (**(code **)(*grim_interface_ptr + 0x114))
               (0x3f800000,0x3f800000,0x3f800000,fVar11 * afStack_204[3]);
     uVar4 = 0xffffffff;
-    pcVar10 = *(char **)(&DAT_0048473c +
+    pcVar10 = *(char **)(&quest_meta_name +
                         (_quest_stage_minor + -0xb + _quest_stage_major * 10) * 0x2c);
     do {
       if (uVar4 == 0) break;
@@ -26408,8 +26408,8 @@ void __cdecl quest_start_selected(int tier,int index)
   player_pos_y = (float)terrain_texture_height * 0.5;
   iVar3 = (index + -0xb + tier * 10) * 0x2c;
   terrain_generate(&quest_selected_meta + iVar3);
-  weapon_assign_player(0,*(int *)(&DAT_00484758 + iVar3));
-  weapon_assign_player(1,*(int *)(&DAT_00484758 + iVar3));
+  weapon_assign_player(0,*(int *)(&quest_start_weapon_id + iVar3));
+  weapon_assign_player(1,*(int *)(&quest_start_weapon_id + iVar3));
   console_printf(&console_log_queue,(byte *)s_Setup_tier__d_quest__d__00477aec);
   if (*(code **)(&quest_selected_builder + iVar3) == (code *)0x0) {
     quest_build_fallback((float *)&quest_spawn_table,&quest_spawn_count);
