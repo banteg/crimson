@@ -24,7 +24,7 @@ Helpers:
 - `ui_elements_max_timeline` (`FUN_00446190`) returns the max timeline value
   among active elements.
 
-## Menu UI loop (FUN_00405be0)
+## Menu UI loop (perk_selection_screen_update)
 
 A common menu loop that:
 

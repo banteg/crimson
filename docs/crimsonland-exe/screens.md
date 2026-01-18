@@ -4,7 +4,7 @@
 
 This page groups full-screen or modal flows that have their own update loops.
 
-## Game over / high score entry (FUN_0040ffc0)
+## Game over / high score entry (game_over_screen_update)
 
 - Used for non-quest modes (state `game_state_id` (`DAT_00487270`) == `7`).
 - Handles high score entry, shows stats, and routes back to menu.
@@ -20,7 +20,7 @@ Renders the post-mission summary and buttons:
 - Buttons: Play Next / Play Again / High scores / Main Menu.
 - Special case for the final quest: "Show End Note".
 
-## Quest failed screen (FUN_004107e0)
+## Quest failed screen (quest_failed_screen_update)
 
 - Used when the player fails a quest (state `game_state_id` (`DAT_00487270`) == `0xc`).
 - Renders failure text and retry options.

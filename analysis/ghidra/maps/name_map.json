@@ -193,6 +193,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00405be0",
+    "name": "perk_selection_screen_update",
+    "signature": "void perk_selection_screen_update(void)",
+    "comment": "perk selection screen: list choices, preview text, and selection handling"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004061e0",
     "name": "ui_draw_clock_gauge",
     "signature": "void ui_draw_clock_gauge(void)",
@@ -297,6 +304,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0040ffc0",
+    "name": "game_over_screen_update",
+    "signature": "void game_over_screen_update(void)",
+    "comment": "game over flow: high score entry, results text, and navigation buttons"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004107e0",
+    "name": "quest_failed_screen_update",
+    "signature": "void quest_failed_screen_update(void)",
+    "comment": "quest failure screen: retry options and navigation"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00410d20",
     "name": "quest_results_screen_update",
     "signature": "void quest_results_screen_update(void)",
@@ -357,6 +378,13 @@
     "name": "player_update",
     "signature": "void player_update(void)",
     "comment": "per-player gameplay update: movement, firing, status timers, and effects"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00417ae0",
+    "name": "ui_draw_textured_quad",
+    "signature": "void ui_draw_textured_quad(int texture_id, int x, int y, int w, int h)",
+    "comment": "binds a texture and draws a screen-space quad"
   },
   {
     "program": "crimsonland.exe",
@@ -937,6 +965,90 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0043a950",
+    "name": "highscore_date_checksum",
+    "signature": "int highscore_date_checksum(int year, int month, int day)",
+    "comment": "computes a week-of-year style checksum for high score validation"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043ab10",
+    "name": "highscore_read_record",
+    "signature": "char * highscore_read_record(char *buffer, FILE *fp)",
+    "comment": "reads and validates a high score record from a file"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043abd0",
+    "name": "highscore_record_equals",
+    "signature": "int highscore_record_equals(byte *left, byte *right)",
+    "comment": "compares high score record metadata and name for equality"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043ac70",
+    "name": "highscore_update_record",
+    "signature": "int highscore_update_record(char *path, byte *record)",
+    "comment": "updates a matching record in the high score file when allowed"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043ad70",
+    "name": "highscore_write_record",
+    "signature": "void highscore_write_record(byte *record, FILE *fp)",
+    "comment": "writes a high score record with date + checksum"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043af30",
+    "name": "highscore_find_name_entry",
+    "signature": "byte * highscore_find_name_entry(byte *record, int count)",
+    "comment": "finds a matching name entry in the loaded high score table"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043afa0",
+    "name": "highscore_load_table",
+    "signature": "void highscore_load_table(void)",
+    "comment": "loads, filters, and sorts the high score table"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043b450",
+    "name": "highscore_save_record",
+    "signature": "void highscore_save_record(byte *record)",
+    "comment": "saves a high score record (updates or appends)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043b510",
+    "name": "highscore_save_active",
+    "signature": "void highscore_save_active(void)",
+    "comment": "saves the active high score record"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043b520",
+    "name": "highscore_rank_index",
+    "signature": "int highscore_rank_index(void)",
+    "comment": "returns the insert index for the current run in the high score table"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043b5b0",
+    "name": "highscore_build_path",
+    "signature": "char * highscore_build_path(void)",
+    "comment": "builds the high score filename for the current mode"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043b750",
+    "name": "highscore_record_init",
+    "signature": "void highscore_record_init(void)",
+    "comment": "fills the active high score record metadata for the current run"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0043b850",
     "name": "buffer_reader_init",
     "signature": "void buffer_reader_init(void *data, int size)",
@@ -1291,6 +1403,13 @@
     "name": "ui_focus_draw",
     "signature": "void ui_focus_draw(float *xy)",
     "comment": "draws the focus highlight for the active menu item"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043e5e0",
+    "name": "ui_menu_item_update",
+    "signature": "int ui_menu_item_update(float *xy, int *item)",
+    "comment": "draws a text menu item, updates hover/press state, and returns 1 when activated"
   },
   {
     "program": "crimsonland.exe",

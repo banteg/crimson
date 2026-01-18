@@ -35,7 +35,7 @@ External inputs:
    Override the game directory when needed:
 
    ```bash
-   just ghidra-exe game_dir=game_bins/crimsonland/1.9.93-gog
+   just game_dir=game_bins/crimsonland/1.9.93-gog ghidra-exe
    ```
 
 The header pack includes DirectX/DirectSound headers as references, and the

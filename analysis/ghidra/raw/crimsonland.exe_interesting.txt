@@ -37,6 +37,7 @@ Interesting Functions and Patterns
 
 [READ related]
   reg_read_dword_default @ 0042a980
+  highscore_read_record @ 0043ab10
   buffer_reader_init @ 0043b850
   buffer_reader_seek @ 0043b870
   buffer_reader_read_u16 @ 0043b880
@@ -59,6 +60,7 @@ Interesting Functions and Patterns
 
 [WRITE related]
   reg_write_dword @ 0042a9c0
+  highscore_write_record @ 0043ad70
   crt_fwrite @ 004615ae
   crt_fwrite_nolock @ 004615dd
   crt_write @ 00465652
@@ -118,5 +120,8 @@ Interesting Functions and Patterns
   __startOneArgErrorHandling @ 004650e7
   crt_runtime_error_banner @ 00468da3
   crt_report_runtime_error @ 00468ddc
+
+[FAIL related]
+  quest_failed_screen_update @ 004107e0
 
 [POTENTIALLY DANGEROUS FUNCTIONS]

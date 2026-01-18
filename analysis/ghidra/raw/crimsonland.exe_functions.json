@@ -329,11 +329,11 @@
     "calls": ["FUN_004188a0", "bonus_render", "creature_render_all", "fx_queue_render", "player_render_overlays", "projectile_render", "weapon_assign_player"]
   },
   {
-    "name": "FUN_00405be0",
+    "name": "perk_selection_screen_update",
     "address": "00405be0",
-    "signature": "undefined FUN_00405be0(void)",
+    "signature": "void perk_selection_screen_update(void)",
     "external": false,
-    "calls": ["FUN_00417ae0", "FUN_0043e5e0", "__ftol", "crt_atexit", "gameplay_render_world", "perk_apply", "perk_prompt_update_and_render", "sfx_play", "ui_button_update", "ui_cursor_render", "ui_elements_update_and_render"]
+    "calls": ["__ftol", "crt_atexit", "gameplay_render_world", "perk_apply", "perk_prompt_update_and_render", "sfx_play", "ui_button_update", "ui_cursor_render", "ui_draw_textured_quad", "ui_elements_update_and_render", "ui_menu_item_update"]
   },
   {
     "name": "FUN_00406180",
@@ -473,7 +473,7 @@
     "address": "0040b740",
     "signature": "void demo_purchase_screen_update(void)",
     "external": false,
-    "calls": ["FUN_00417ae0", "ShellExecuteA", "__ftol", "config_load_presets", "crt_atexit", "demo_mode_start", "game_is_full_version", "input_primary_just_pressed", "sfx_mute_all", "sfx_play_exclusive", "ui_button_update", "ui_cursor_render", "ui_elements_update_and_render"]
+    "calls": ["ShellExecuteA", "__ftol", "config_load_presets", "crt_atexit", "demo_mode_start", "game_is_full_version", "input_primary_just_pressed", "sfx_mute_all", "sfx_play_exclusive", "ui_button_update", "ui_cursor_render", "ui_draw_textured_quad", "ui_elements_update_and_render"]
   },
   {
     "name": "FUN_0040d000",
@@ -560,25 +560,25 @@
     "calls": ["crt_sprintf"]
   },
   {
-    "name": "FUN_0040ffc0",
+    "name": "game_over_screen_update",
     "address": "0040ffc0",
-    "signature": "undefined FUN_0040ffc0(void)",
+    "signature": "void game_over_screen_update(void)",
     "external": false,
-    "calls": ["FUN_00417ae0", "FUN_0043b510", "FUN_0043b520", "__ftol", "console_input_poll", "crt_atexit", "gameplay_render_world", "perk_prompt_update_and_render", "sfx_is_unmuted", "sfx_mute_all", "sfx_play", "sfx_play_exclusive", "thunk_FUN_0043afa0", "ui_button_update", "ui_cursor_render", "ui_elements_update_and_render", "ui_text_input_render", "ui_text_input_update"]
+    "calls": ["__ftol", "console_input_poll", "crt_atexit", "gameplay_render_world", "highscore_load_table", "highscore_rank_index", "highscore_save_active", "perk_prompt_update_and_render", "sfx_is_unmuted", "sfx_mute_all", "sfx_play", "sfx_play_exclusive", "ui_button_update", "ui_cursor_render", "ui_draw_textured_quad", "ui_elements_update_and_render", "ui_text_input_render", "ui_text_input_update"]
   },
   {
-    "name": "FUN_004107e0",
+    "name": "quest_failed_screen_update",
     "address": "004107e0",
-    "signature": "undefined FUN_004107e0(void)",
+    "signature": "void quest_failed_screen_update(void)",
     "external": false,
-    "calls": ["FUN_00417ae0", "FUN_0043b520", "__ftol", "console_input_poll", "crt_atexit", "gameplay_render_world", "perk_prompt_update_and_render", "sfx_is_unmuted", "sfx_mute_all", "sfx_play_exclusive", "thunk_FUN_0043afa0", "ui_button_update", "ui_cursor_render", "ui_elements_update_and_render", "ui_text_input_render"]
+    "calls": ["__ftol", "console_input_poll", "crt_atexit", "gameplay_render_world", "highscore_load_table", "highscore_rank_index", "perk_prompt_update_and_render", "sfx_is_unmuted", "sfx_mute_all", "sfx_play_exclusive", "ui_button_update", "ui_cursor_render", "ui_draw_textured_quad", "ui_elements_update_and_render", "ui_text_input_render"]
   },
   {
     "name": "quest_results_screen_update",
     "address": "00410d20",
     "signature": "void quest_results_screen_update(void)",
     "external": false,
-    "calls": ["FUN_0040ff50", "FUN_00417ae0", "FUN_0043b510", "FUN_0043b520", "FUN_0043b750", "__ftol", "crt_atexit", "gameplay_render_world", "input_primary_just_pressed", "perk_prompt_update_and_render", "sfx_is_unmuted", "sfx_mute_all", "sfx_play", "sfx_play_exclusive", "thunk_FUN_0043afa0", "ui_button_update", "ui_cursor_render", "ui_elements_update_and_render", "ui_text_input_render", "ui_text_input_update"]
+    "calls": ["FUN_0040ff50", "__ftol", "crt_atexit", "gameplay_render_world", "highscore_load_table", "highscore_rank_index", "highscore_record_init", "highscore_save_active", "input_primary_just_pressed", "perk_prompt_update_and_render", "sfx_is_unmuted", "sfx_mute_all", "sfx_play", "sfx_play_exclusive", "ui_button_update", "ui_cursor_render", "ui_draw_textured_quad", "ui_elements_update_and_render", "ui_text_input_render", "ui_text_input_update"]
   },
   {
     "name": "FUN_004120b0",
@@ -749,9 +749,9 @@
     "calls": []
   },
   {
-    "name": "FUN_00417ae0",
+    "name": "ui_draw_textured_quad",
     "address": "00417ae0",
-    "signature": "undefined FUN_00417ae0(void)",
+    "signature": "void ui_draw_textured_quad(int texture_id, int x, int y, int w, int h)",
     "external": false,
     "calls": []
   },
@@ -1631,9 +1631,9 @@
     "calls": ["FUN_004281e0", "_rand", "console_printf", "projectile_reset_pools", "quest_build_fallback", "terrain_generate", "weapon_assign_player"]
   },
   {
-    "name": "FUN_0043a950",
+    "name": "highscore_date_checksum",
     "address": "0043a950",
-    "signature": "int FUN_0043a950(int param_1, int param_2, int param_3)",
+    "signature": "int highscore_date_checksum(int year, int month, int day)",
     "external": false,
     "calls": []
   },
@@ -1652,86 +1652,86 @@
     "calls": []
   },
   {
-    "name": "FUN_0043ab10",
+    "name": "highscore_read_record",
     "address": "0043ab10",
-    "signature": "char * FUN_0043ab10(char * param_1, int * param_2)",
+    "signature": "char * highscore_read_record(char * buffer, FILE * fp)",
     "external": false,
     "calls": ["console_printf", "crt_fread"]
   },
   {
-    "name": "FUN_0043abd0",
+    "name": "highscore_record_equals",
     "address": "0043abd0",
-    "signature": "int FUN_0043abd0(byte * param_1, byte * param_2)",
+    "signature": "int highscore_record_equals(byte * left, byte * right)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_0043ac70",
+    "name": "highscore_update_record",
     "address": "0043ac70",
-    "signature": "undefined4 FUN_0043ac70(LPCSTR param_1, byte * param_2)",
+    "signature": "int highscore_update_record(char * path, byte * record)",
     "external": false,
-    "calls": ["FUN_0043ab10", "FUN_0043abd0", "FUN_0043ad70", "_rand", "crt_fclose", "crt_fflush", "crt_fopen", "crt_fseek"]
+    "calls": ["_rand", "crt_fclose", "crt_fflush", "crt_fopen", "crt_fseek", "highscore_read_record", "highscore_record_equals", "highscore_write_record"]
   },
   {
-    "name": "FUN_0043ad70",
+    "name": "highscore_write_record",
     "address": "0043ad70",
-    "signature": "undefined FUN_0043ad70(undefined4 * param_1, int * param_2)",
+    "signature": "void highscore_write_record(byte * record, FILE * fp)",
     "external": false,
-    "calls": ["FUN_0043a950", "GetLocalTime", "_rand", "crt_fwrite"]
+    "calls": ["GetLocalTime", "_rand", "crt_fwrite", "highscore_date_checksum"]
   },
   {
-    "name": "FUN_0043af30",
+    "name": "highscore_find_name_entry",
     "address": "0043af30",
-    "signature": "undefined1 * FUN_0043af30(byte * param_1, int param_2)",
+    "signature": "byte * highscore_find_name_entry(byte * record, int count)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_0043afa0",
+    "name": "highscore_load_table",
     "address": "0043afa0",
-    "signature": "undefined FUN_0043afa0(void)",
+    "signature": "void highscore_load_table(void)",
     "external": false,
-    "calls": ["FUN_0043a950", "FUN_0043ab10", "FUN_0043af30", "FUN_0043b5b0", "_rand", "crt_fclose", "crt_fopen", "crt_qsort"]
+    "calls": ["_rand", "crt_fclose", "crt_fopen", "crt_qsort", "highscore_build_path", "highscore_date_checksum", "highscore_find_name_entry", "highscore_read_record"]
   },
   {
-    "name": "FUN_0043b450",
+    "name": "highscore_save_record",
     "address": "0043b450",
-    "signature": "undefined FUN_0043b450(byte * param_1)",
+    "signature": "void highscore_save_record(byte * record)",
     "external": false,
-    "calls": ["CreateDirectoryA", "FUN_0043ac70", "FUN_0043ad70", "FUN_0043b5b0", "FUN_0043b750", "console_printf", "crt_fclose", "crt_fopen"]
+    "calls": ["CreateDirectoryA", "console_printf", "crt_fclose", "crt_fopen", "highscore_build_path", "highscore_record_init", "highscore_update_record", "highscore_write_record"]
   },
   {
-    "name": "FUN_0043b510",
+    "name": "highscore_save_active",
     "address": "0043b510",
-    "signature": "undefined FUN_0043b510(void)",
+    "signature": "void highscore_save_active(void)",
     "external": false,
-    "calls": ["FUN_0043b450"]
+    "calls": ["highscore_save_record"]
   },
   {
-    "name": "FUN_0043b520",
+    "name": "highscore_rank_index",
     "address": "0043b520",
-    "signature": "int FUN_0043b520(void)",
+    "signature": "int highscore_rank_index(void)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_0043b5b0",
+    "name": "highscore_build_path",
     "address": "0043b5b0",
-    "signature": "undefined * FUN_0043b5b0(void)",
+    "signature": "char * highscore_build_path(void)",
     "external": false,
     "calls": ["console_printf", "crt_getcwd", "crt_sprintf"]
   },
   {
-    "name": "FUN_0043b750",
+    "name": "highscore_record_init",
     "address": "0043b750",
-    "signature": "undefined FUN_0043b750(void)",
+    "signature": "void highscore_record_init(void)",
     "external": false,
     "calls": ["_rand"]
   },
   {
-    "name": "thunk_FUN_0043afa0",
+    "name": "highscore_load_table",
     "address": "0043b800",
-    "signature": "undefined thunk_FUN_0043afa0(void)",
+    "signature": "void highscore_load_table(void)",
     "external": false,
     "calls": []
   },
@@ -2121,9 +2121,9 @@
     "calls": ["__ftol", "input_primary_is_down", "input_primary_just_pressed", "ui_focus_draw", "ui_focus_update", "ui_mouse_inside_rect"]
   },
   {
-    "name": "FUN_0043e5e0",
+    "name": "ui_menu_item_update",
     "address": "0043e5e0",
-    "signature": "undefined1 FUN_0043e5e0(float * param_1, undefined4 * param_2)",
+    "signature": "int ui_menu_item_update(float * xy, int * item)",
     "external": false,
     "calls": ["__ftol", "crt_atexit", "input_primary_just_pressed", "sfx_play", "ui_focus_draw", "ui_focus_set", "ui_focus_update", "ui_mouse_inside_rect"]
   },
@@ -2188,7 +2188,7 @@
     "address": "004443c0",
     "signature": "uint FUN_004443c0(float * param_1, undefined1 param_2)",
     "external": false,
-    "calls": ["FUN_0043efc0", "crt_atexit", "crt_free", "input_primary_just_pressed", "strdup_malloc", "thunk_FUN_0043afa0", "ui_button_update", "ui_text_input_update"]
+    "calls": ["FUN_0043efc0", "crt_atexit", "crt_free", "highscore_load_table", "input_primary_just_pressed", "strdup_malloc", "ui_button_update", "ui_text_input_update"]
   },
   {
     "name": "creature_spawn_tinted",
@@ -2216,7 +2216,7 @@
     "address": "004451b0",
     "signature": "undefined1 * FUN_004451b0(void)",
     "external": false,
-    "calls": ["_rand", "console_printf", "crt_isalpha", "crt_sprintf", "thunk_FUN_0043afa0"]
+    "calls": ["_rand", "console_printf", "crt_isalpha", "crt_sprintf", "highscore_load_table"]
   },
   {
     "name": "FUN_00445310",
@@ -2307,7 +2307,7 @@
     "address": "004461c0",
     "signature": "void game_state_set(int state_id)",
     "external": false,
-    "calls": ["FUN_0040e940", "console_input_poll", "game_is_full_version", "game_save_status", "gameplay_reset_state", "quest_start_selected", "thunk_FUN_0043afa0", "ui_elements_reset_state"]
+    "calls": ["FUN_0040e940", "console_input_poll", "game_is_full_version", "game_save_status", "gameplay_reset_state", "highscore_load_table", "quest_start_selected", "ui_elements_reset_state"]
   },
   {
     "name": "FUN_00446900",

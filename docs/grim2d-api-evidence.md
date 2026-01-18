@@ -398,7 +398,7 @@ LAB_00401add:
 
 - Ghidra signature: `void grim_flush_input(void)`
 - Call sites: 12 (unique funcs: 10)
-- Sample calls: FUN_004018b0:L346; quest_mode_update:L4357; FUN_00408530:L5083; FUN_00408530:L5104; gameplay_update_and_render:L5879; FUN_0040ffc0:L7055; FUN_004107e0:L7326; FUN_00410d20:L7702
+- Sample calls: FUN_004018b0:L346; quest_mode_update:L4357; FUN_00408530:L5083; FUN_00408530:L5104; gameplay_update_and_render:L5879; game_over_screen_update:L7055; quest_failed_screen_update:L7326; FUN_00410d20:L7702
 - First callsite: FUN_004018b0 (line 346)
 
 
@@ -1013,7 +1013,7 @@ grim.dll body:
 - Notes: often called with handle,0
 - Ghidra signature: `void grim_bind_texture(int handle, int stage)`
 - Call sites: 66 (unique funcs: 22)
-- Sample calls: ui_draw_clock_gauge:L3882; ui_draw_clock_gauge:L3891; ui_render_aim_indicators:L5641; ui_render_aim_indicators:L5663; FUN_00417ae0:L9120; FUN_00417b80:L9220; FUN_00417b80:L9265; FUN_00417b80:L9296
+- Sample calls: ui_draw_clock_gauge:L3882; ui_draw_clock_gauge:L3891; ui_render_aim_indicators:L5641; ui_render_aim_indicators:L5663; ui_draw_textured_quad:L9120; FUN_00417b80:L9220; FUN_00417b80:L9265; FUN_00417b80:L9296
 - First callsite: ui_draw_clock_gauge (line 3882)
 
 
@@ -1131,7 +1131,7 @@ grim.dll body:
 - Ghidra signature: `void grim_draw_rect_outline(float *xy, float w, float h)`
 - Suggested signature: `void grim_draw_rect_outline(const float *xy, float w, float h)`
 - Call sites: 12 (unique funcs: 11)
-- Sample calls: FUN_00402d50:L1454; FUN_004047c0:L3107; ui_render_keybind_help:L3372; FUN_00408530:L5031; FUN_00410d20:L7694; FUN_0043e5e0:L27177; FUN_0043ecf0:L27413; FUN_0043ecf0:L27448
+- Sample calls: FUN_00402d50:L1454; FUN_004047c0:L3107; ui_render_keybind_help:L3372; FUN_00408530:L5031; FUN_00410d20:L7694; ui_menu_item_update:L27177; FUN_0043ecf0:L27413; FUN_0043ecf0:L27448
 - First callsite: FUN_00402d50 (line 1454)
 
 
@@ -1276,7 +1276,7 @@ grim.dll body:
 
 - Ghidra signature: `void grim_end_batch(void)`
 - Call sites: 86 (unique funcs: 28)
-- Sample calls: FUN_00401dd0:L753; FUN_004047c0:L3134; ui_draw_clock_gauge:L3889; ui_draw_clock_gauge:L3895; ui_render_aim_indicators:L5702; FUN_0040b740:L6346; FUN_00417ae0:L9125; FUN_00417b80:L9261
+- Sample calls: FUN_00401dd0:L753; FUN_004047c0:L3134; ui_draw_clock_gauge:L3889; ui_draw_clock_gauge:L3895; ui_render_aim_indicators:L5702; FUN_0040b740:L6346; ui_draw_textured_quad:L9125; FUN_00417b80:L9261
 - First callsite: FUN_00401dd0 (line 753)
 
 
@@ -1381,7 +1381,7 @@ grim.dll precompute:
 - Notes: sets all 4 UV pairs (u0/v0/u1/v1) used by draw calls
 - Ghidra signature: `void grim_set_uv(float u0, float v0, float u1, float v1)`
 - Call sites: 59 (unique funcs: 23)
-- Sample calls: FUN_004047c0:L3126; ui_draw_clock_gauge:L3884; ui_render_aim_indicators:L5635; ui_render_aim_indicators:L5642; ui_render_aim_indicators:L5664; FUN_0040b740:L6331; FUN_00417ae0:L9121; FUN_00417b80:L9206
+- Sample calls: FUN_004047c0:L3126; ui_draw_clock_gauge:L3884; ui_render_aim_indicators:L5635; ui_render_aim_indicators:L5642; ui_render_aim_indicators:L5664; FUN_0040b740:L6331; ui_draw_textured_quad:L9121; FUN_00417b80:L9206
 - First callsite: FUN_004047c0 (line 3126)
 
 
@@ -1498,8 +1498,8 @@ Atlas pointer table setup (grim.dll init):
 - Ghidra signature: `void grim_set_color_ptr(float *rgba)`
 - Suggested signature: `void grim_set_color_ptr(const float *rgba)`
 - Call sites: 20 (unique funcs: 10)
-- Sample calls: FUN_0040ffc0:L7098; FUN_0040ffc0:L7171; FUN_00410d20:L7782; FUN_00410d20:L7851; FUN_00418b60:L9717; FUN_00418b60:L9772; FUN_00418b60:L9832; FUN_00418b60:L9894
-- First callsite: FUN_0040ffc0 (line 7485)
+- Sample calls: game_over_screen_update:L7098; game_over_screen_update:L7171; FUN_00410d20:L7782; FUN_00410d20:L7851; FUN_00418b60:L9717; FUN_00418b60:L9772; FUN_00418b60:L9832; FUN_00418b60:L9894
+- First callsite: game_over_screen_update (line 7485)
 
 
 ```c
@@ -1593,7 +1593,7 @@ grim.dll slot write:
 - Notes: core draw call; uses per-corner color slots + UV array
 - Ghidra signature: `void grim_draw_quad(float x, float y, float w, float h)`
 - Call sites: 100 (unique funcs: 21)
-- Sample calls: FUN_004047c0:L3132; ui_draw_clock_gauge:L3888; ui_draw_clock_gauge:L3894; ui_render_aim_indicators:L5701; FUN_0040b740:L6344; FUN_00417ae0:L9124; FUN_004188a0:L9613; FUN_00418b60:L9720
+- Sample calls: FUN_004047c0:L3132; ui_draw_clock_gauge:L3888; ui_draw_clock_gauge:L3894; ui_render_aim_indicators:L5701; FUN_0040b740:L6344; ui_draw_textured_quad:L9124; FUN_004188a0:L9613; FUN_00418b60:L9720
 - First callsite: FUN_004047c0 (line 3132)
 
 
@@ -1866,7 +1866,7 @@ grim.dll body:
 - Ghidra signature: `void grim_draw_text_small(float x, float y, char *text)`
 - Suggested signature: `void grim_draw_text_small(float x, float y, const char *text)`
 - Call sites: 20 (unique funcs: 9)
-- Sample calls: FUN_00401dd0:L760; FUN_00401dd0:L800; FUN_00405be0:L3808; FUN_0040b740:L6398; FUN_0040b740:L6401; FUN_0040b740:L6409; FUN_0040b740:L6426; FUN_0040b740:L6428
+- Sample calls: FUN_00401dd0:L760; FUN_00401dd0:L800; perk_selection_screen_update:L3808; FUN_0040b740:L6398; FUN_0040b740:L6401; FUN_0040b740:L6409; FUN_0040b740:L6426; FUN_0040b740:L6428
 - First callsite: FUN_00401dd0 (line 760)
 
 
@@ -1930,7 +1930,7 @@ grim.dll body:
 - Ghidra signature: `int grim_measure_text_width(char *text)`
 - Suggested signature: `int grim_measure_text_width(const char *text)`
 - Call sites: 14 (unique funcs: 10)
-- Sample calls: FUN_00408530:L5007; FUN_004295f0:L18761; FUN_0042fd00:L20753; FUN_0043dc80:L26810; FUN_0043e5e0:L27164; FUN_0043e830:L27225; FUN_0043ecf0:L27429; FUN_0043efc0:L27482
+- Sample calls: FUN_00408530:L5007; FUN_004295f0:L18761; FUN_0042fd00:L20753; FUN_0043dc80:L26810; ui_menu_item_update:L27164; FUN_0043e830:L27225; FUN_0043ecf0:L27429; FUN_0043efc0:L27482
 - First callsite: FUN_00408530 (line 5007)
 
 

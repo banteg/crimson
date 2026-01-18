@@ -18,7 +18,7 @@ and data labels in `analysis/ghidra/maps/data_map.json`, applying both during he
 analysis:
 
 ```
-just ghidra-exe game_dir=game_bins/crimsonland/1.9.93-gog
+just game_dir=game_bins/crimsonland/1.9.93-gog ghidra-exe
 ```
 
 You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps.
@@ -31,7 +31,6 @@ You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps
 crimsonland.exe_functions.json
    5    1 00461140 FUN_00461140 undefined FUN_00461140(void)
    5    1 00465fa9 FUN_00465fa9 undefined FUN_00465fa9(void)
-   5    0 00417ae0 FUN_00417ae0 undefined FUN_00417ae0(void)
    4    0 004607a0 FUN_004607a0 ulonglong FUN_004607a0(void)
    3    4 00467a72 FUN_00467a72 int * FUN_00467a72(uint param_1)
    3    3 004695fb FUN_004695fb undefined4 FUN_004695fb(PEXCEPTION_RECORD param_1, PVOID param_2, DWORD param_3, undefined4 param_4, int * param_5, int param_6, PVOID param_7, char param_8)
@@ -41,6 +40,7 @@ crimsonland.exe_functions.json
    3    2 0042eb10 FUN_0042eb10 undefined FUN_0042eb10(undefined4 * param_1, float param_2, float param_3)
    3    2 0042f6c0 FUN_0042f6c0 undefined FUN_0042f6c0(undefined4 * param_1, float param_2)
    3    2 00465f48 FUN_00465f48 undefined FUN_00465f48(void)
+   3    2 00466fcf FUN_00466fcf int * FUN_00466fcf(uint * param_1)
 ```
 
 ### `grim.dll`
@@ -334,7 +334,7 @@ Config blob layout (partial, 0x480 bytes, base `DAT_00480348`):
 | `0x00` | `DAT_00480348` | `u8` | `0` | Sound disable flag (nonzero skips SFX and music init; applied via config id `0x53`). |
 | `0x01` | `DAT_00480349` | `u8` | `0` | Music disable flag (music init requires `DAT_00480348 == 0` and `DAT_00480349 == 0`). |
 | `0x02` | `DAT_0048034a` | `u8` | `0` | High‑score date validation mode: `1` = year+month, `2` = computed date checksum + year, `3` = day+month+year. |
-| `0x03` | `DAT_0048034b` | `u8` | `0` | High‑score duplicate handling: `1` = replace existing entry with same name (via `FUN_0043af30`). |
+| `0x03` | `DAT_0048034b` | `u8` | `0` | High‑score duplicate handling: `1` = replace existing entry with same name (via `highscore_find_name_entry`). |
 | `0x04` | `DAT_0048034c` | `u8[2]` | `1,1` | Per‑player HUD indicator toggle (gates the second indicator draw pass). |
 | `0x08` | `DAT_00480350` | `u32` | `8` | Unknown; value comes from a stack temp in `FUN_0041ec60` (used to query Grim config), no global xrefs. |
 | `0x0e` | `DAT_00480356` | `u8` | `0/1` | FX detail toggle (set by `DAT_004807b8`). |
@@ -420,19 +420,19 @@ Grim misc getter (vtable `+0xa4` → `FUN_100075b0`):
 ### High score record (0x48 bytes) — metadata 0x20..0x37
 
 The high score record embeds run metadata used for duplicate detection and ranking. These
-fields are compared in `FUN_0043abd0` before a score can replace an existing entry.
+fields are compared in `highscore_record_equals` before a score can replace an existing entry.
 
 | Offset | Address | Meaning | Evidence |
 | --- | --- | --- | --- |
-| `0x20` | `DAT_00487060` | Survival/time metric (ms) | `FUN_0043b520` compares `survival_elapsed_ms` to `DAT_00482b30` for mode 2/3 ranking; `FUN_0043abd0` compares this dword. |
-| `0x24` | `DAT_00487064` | Score/XP snapshot | Copied from `player_experience` each frame; `FUN_0043b520` compares against `DAT_00482b34` for non‑survival modes; included in `FUN_0043abd0`. |
-| `0x28` | `DAT_00487068` | Game mode id | Set from `config_game_mode` in high‑score screens; also used to pick which metric to rank in `FUN_0043afa0`. |
+| `0x20` | `DAT_00487060` | Survival/time metric (ms) | `highscore_rank_index` compares `survival_elapsed_ms` to `DAT_00482b30` for mode 2/3 ranking; `highscore_record_equals` compares this dword. |
+| `0x24` | `DAT_00487064` | Score/XP snapshot | Copied from `player_experience` each frame; `highscore_rank_index` compares against `DAT_00482b34` for non‑survival modes; included in `highscore_record_equals`. |
+| `0x28` | `DAT_00487068` | Game mode id | Set from `config_game_mode` in high‑score screens; also used to pick which metric to rank in `highscore_load_table`. |
 | `0x29` | `DAT_00487069` | Quest stage major | Set from `quest_stage_major` and used in quest high‑score path naming. |
 | `0x2a` | `DAT_0048706a` | Quest stage minor | Set from `quest_stage_minor` and used in quest high‑score path naming. |
 | `0x2b` | `DAT_0048706b` | Most‑used weapon id | Set to the max‑usage index in `DAT_0048708c` before save. |
-| `0x2c` | `DAT_0048706c` | Shots fired | Incremented on projectile spawns; clamped against hits; compared in `FUN_0043abd0`. |
-| `0x30` | `DAT_00487070` | Shots hit | Incremented on projectile hit paths (creature hitbox size 16.0); clamped to shots fired; compared in `FUN_0043abd0`. |
-| `0x34` | `DAT_00487074` | Creature kill count | Incremented on creature death paths; compared in `FUN_0043abd0`. |
+| `0x2c` | `DAT_0048706c` | Shots fired | Incremented on projectile spawns; clamped against hits; compared in `highscore_record_equals`. |
+| `0x30` | `DAT_00487070` | Shots hit | Incremented on projectile hit paths (creature hitbox size 16.0); clamped to shots fired; compared in `highscore_record_equals`. |
+| `0x34` | `DAT_00487074` | Creature kill count | Incremented on creature death paths; compared in `highscore_record_equals`. |
 
 
 ### High score record (0x48 bytes) — tail bytes 0x40..0x47
@@ -442,26 +442,26 @@ tail bytes are validated against the current date and the full‑version flag.
 
 | Offset | Address | Meaning | Evidence |
 | --- | --- | --- | --- |
-| `0x40` | `DAT_00487080` | Day‑of‑month | Written via `param_1 + 0x10` (word index → +0x40) in `FUN_0043ad70`; compared to `local_system_day` (`DAT_00495ace`) in `FUN_0043afa0` mode 3. |
-| `0x41` | `DAT_00487081` | Date checksum (week‑of‑year) | `FUN_0043a950` result stored at `param_1 + 0x41`; compared in mode 2. |
+| `0x40` | `DAT_00487080` | Day‑of‑month | Written via `param_1 + 0x10` (word index → +0x40) in `highscore_write_record`; compared to `local_system_day` (`DAT_00495ace`) in `highscore_load_table` mode 3. |
+| `0x41` | `DAT_00487081` | Date checksum (week‑of‑year) | `highscore_date_checksum` result stored at `param_1 + 0x41`; compared in mode 2. |
 | `0x42` | `DAT_00487082` | Month (1–12) | Stored from `local_system_time._2_1_` (`DAT_00495ac8`); compared to `local_system_time._2_2_`. |
 | `0x43` | `DAT_00487083` | Year‑2000 | Stored as `(char)local_system_time + '0'` (`DAT_00495ac8`, low byte wraps); compared to `year - 2000`. |
-| `0x44` | `DAT_00487084` | Score flags | Bit 0 gates update vs append (and load gating in `FUN_0043afa0`); bit 1 is set to `2` when replacing an existing record and bypasses the load gate; bit 2 marks the entry selected for display after duplicate reduction. |
+| `0x44` | `DAT_00487084` | Score flags | Bit 0 gates update vs append (and load gating in `highscore_load_table`); bit 1 is set to `2` when replacing an existing record and bypasses the load gate; bit 2 marks the entry selected for display after duplicate reduction. |
 | `0x45` | `DAT_00487085` | Full‑version marker | Set to `0x75` (`'u'`) when `DAT_00480790 != 0`; checked in quest‑mode load to accept full/limited records. |
-| `0x46` | `DAT_00487040 + 0x46` | Sentinel `0x7c` (`'|'`) | Initialized in `FUN_0043afa0` default‑record loop. |
-| `0x47` | `DAT_00487040 + 0x47` | Sentinel `0xff` | Initialized in `FUN_0043afa0` default‑record loop. |
+| `0x46` | `DAT_00487040 + 0x46` | Sentinel `0x7c` (`'|'`) | Initialized in `highscore_load_table` default‑record loop. |
+| `0x47` | `DAT_00487040 + 0x47` | Sentinel `0xff` | Initialized in `highscore_load_table` default‑record loop. |
 
-Checksum helper (`FUN_0043a950`):
+Checksum helper (`highscore_date_checksum`):
 - Inputs: year, month, day (from `local_system_time` + `local_system_day`).
 - Returns a week‑of‑year style checksum (1..53) used when `config_highscore_date_mode == 2`.
-- Used during both record write (`FUN_0043ad70`) and validation (`FUN_0043afa0`).
+- Used during both record write (`highscore_write_record`) and validation (`highscore_load_table`).
 
-High score validation (`FUN_0043afa0`):
+High score validation (`highscore_load_table`):
 - Records only proceed to date checks if `config_score_load_gate` is set, or the record flags
   have bit 0 clear, or bit 1 set.
 - Mode 3: day + month + year must match (`local_system_day`, `local_system_time`).
-- Mode 2: checksum from `FUN_0043a950(year, month, day)` must match `highscore_date_checksum`,
-  and year must match.
+- Mode 2: checksum from `highscore_date_checksum(year, month, day)` must match the stored checksum byte
+  (`highscore_date_checksum` at `DAT_00487081`), and year must match.
 - Mode 1: month + year must match; other mode values skip the date check.
 
 ### Quest progression counters (high confidence)
@@ -576,10 +576,10 @@ Fields below are high‑confidence; unknown offsets are omitted.
 | `0x28` | `quest_start_weapon_id` | Starting weapon id | Used by `quest_start_selected` to equip both players. |
 
 Record match + display selection:
-- `FUN_0043abd0` is the equality predicate used during save‑file replacement; it compares the
+- `highscore_record_equals` is the equality predicate used during save‑file replacement; it compares the
   player name plus metadata fields at offsets `0x20..0x34` (ints + a byte) and does not look
   at the flags byte.
-- After loading/sorting, `FUN_0043afa0` sets flag bit 2 on the single best record per name
+- After loading/sorting, `highscore_load_table` sets flag bit 2 on the single best record per name
   (or all records when a name slot is selected), so the UI can filter displayed entries.
 
 Init timing note:
