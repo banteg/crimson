@@ -42,6 +42,15 @@ All offsets below are in **bytes**, relative to the pointer returned by
 
 ## Notes
 
+- UI text for weapons is pulled directly from the `weapon_table` name field (`offset 0x00`).
+  Examples:
+  - **HUD** (`ui_render_hud`): passes `&weapon_table + player_weapon_id * 0x1f` into
+    `grim_text_width`/`grim_text_draw` (`grim_interface_ptr + 0x14c/0x144`), then draws the name.
+  - **End‑of‑game stats**: uses `param_2 + 0x2b` (most‑used weapon id) to index
+    `&weapon_table + id * 0x1f` for the “Most used weapon” label.
+  - **Quest completion**: uses `quest_unlock_weapon_id` via `weapon_table_entry()` to render
+    the unlocked weapon name.
+  This means `ui_itemTexts.jaz` is **not** the weapon list source; it’s used for menu labels.
 - Ammo class values (offset `-0x04`): `0` bullet (`ui_ui_indBullet.jaz`), `1` fire
   (`ui_ui_indFire.jaz`), `2` rocket (`ui_ui_indRocket.jaz`), `>= 3` electric
   (`ui_ui_indElectric.jaz`).
