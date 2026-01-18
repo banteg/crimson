@@ -1790,7 +1790,7 @@ void FUN_00403550(void)
   float local_8c;
   
   if ((demo_mode_active == '\0') && (_config_game_mode != 2)) {
-    if ((DAT_00486fac < 1) || (game_state_id != 9)) {
+    if ((perk_pending_count < 1) || (game_state_id != 9)) {
       DAT_0048f524 = DAT_0048f524 - frame_dt_ms;
       if (DAT_0048f524 < 0) {
         DAT_0048f524 = 0;
@@ -3597,7 +3597,7 @@ void __cdecl perk_apply(int perk_id)
   }
   if (perk_id == perk_id_infernal_contract) {
     player_level = player_level + 3;
-    DAT_00486fac = DAT_00486fac + 3;
+    perk_pending_count = perk_pending_count + 3;
     if (0.0 < player_health) {
       player_health = 0.1;
     }
@@ -3910,7 +3910,7 @@ void FUN_00405be0(void)
   if ((-1 < DAT_0048089c) && ((&DAT_004800ad)[DAT_0048089c * 0x10] != '\0')) {
     sfx_play(sfx_ui_buttonclick);
     perk_apply((&perk_choice_ids)[DAT_0048089c]);
-    DAT_00486fac = DAT_00486fac + -1;
+    perk_pending_count = perk_pending_count + -1;
     ui_transition_direction = 0;
     game_state_pending = 9;
     DAT_00486fb0 = 1;
@@ -5188,7 +5188,7 @@ void __cdecl tutorial_prompt_dialog(char *text,float alpha)
         puVar7 = puVar7 + 1;
       }
       tutorial_stage_transition_timer = 0xfffffc18;
-      DAT_00486fac = 0;
+      perk_pending_count = 0;
       tutorial_stage_timer = 2000;
       return;
     }
@@ -5305,7 +5305,7 @@ LAB_00408b78:
     else {
       fStack_6c = 1.0;
     }
-    if ((tutorial_stage_index < 0) || ((tutorial_stage_index == 6 && (DAT_00486fac < 1))))
+    if ((tutorial_stage_index < 0) || ((tutorial_stage_index == 6 && (perk_pending_count < 1))))
     goto LAB_00408be2;
   }
   tutorial_prompt_dialog(local_38[tutorial_stage_index],fStack_6c);
@@ -5542,7 +5542,7 @@ LAB_00408be2:
         }
       }
       else if (tutorial_stage_index == 6) {
-        if ((DAT_00486fac < 1) && (tutorial_stage_transition_timer == -1)) {
+        if ((perk_pending_count < 1) && (tutorial_stage_transition_timer == -1)) {
           tutorial_stage_transition_timer = 0xfffffc18;
           afStack_5c[0] = -164.0;
           afStack_5c[1] = 412.0;
@@ -6383,7 +6383,7 @@ LAB_0040ad8e:
     FUN_00461140();
     lVar6 = __ftol();
     if (1000 - (int)lVar6 < player_experience) {
-      DAT_00486fac = DAT_00486fac + 1;
+      perk_pending_count = perk_pending_count + 1;
       config_perk_prompt_counter = config_perk_prompt_counter + 1;
       if (0x32 < config_perk_prompt_counter) {
         config_perk_prompt_counter = 0;
@@ -6409,7 +6409,7 @@ LAB_0040ad8e:
     }
   }
   if (((((demo_mode_active == '\0') && (game_paused_flag == '\0')) && (mouse_button_down == '\0'))
-      && ((_config_game_mode != 2 && (0 < DAT_00486fac)))) &&
+      && ((_config_game_mode != 2 && (0 < perk_pending_count)))) &&
      ((0.0 < player_health || ((_config_player_count == 2 && (0.0 < player2_health)))))) {
     fVar1 = ui_mouse_x - _DAT_0048f224;
     fVar2 = ui_mouse_y - _DAT_0048f228;
@@ -8041,7 +8041,7 @@ void quest_results_screen_update(void)
         lVar9 = __ftol();
         iVar2 = iVar2 + (int)lVar9;
       }
-      DAT_0048270c = (quest_spawn_timeline + DAT_00486fac * -1000) - iVar2;
+      DAT_0048270c = (quest_spawn_timeline + perk_pending_count * -1000) - iVar2;
       survival_elapsed_ms = DAT_0048270c;
       if (DAT_0048270c == 0) {
         survival_elapsed_ms = 1;
@@ -8089,8 +8089,8 @@ void quest_results_screen_update(void)
             DAT_00482724 = 300;
             sfx_play(sfx_ui_clink_01);
             DAT_00482720 = DAT_00482720 + -1000;
-            if (DAT_00486fac <= DAT_00482718) {
-              DAT_00482718 = DAT_00486fac;
+            if (perk_pending_count <= DAT_00482718) {
+              DAT_00482718 = perk_pending_count;
               DAT_0048271c = DAT_0048271c + 1;
               DAT_00482724 = 1000;
               survival_elapsed_ms = DAT_0048270c;
@@ -9269,7 +9269,7 @@ void FUN_00412dc0(void)
   weapon_refresh_available();
   perks_rebuild_available();
   effect_defaults_reset();
-  DAT_00486fac = 0;
+  perk_pending_count = 0;
   survival_spawn_cooldown = 0;
   creatures_any_active_flag = 0;
   time_scale_active = 0;
@@ -21725,14 +21725,14 @@ void FUN_0042b090(void)
   perks_init_database();
   weapon_table_init();
   FUN_00403500();
-  GetLocalTime((LPSYSTEMTIME)&DAT_00495ac8);
-  if (DAT_00495ac8._2_2_ == 9) {
-    if (DAT_00495ace != 0xc) goto LAB_0042b17a;
+  GetLocalTime((LPSYSTEMTIME)&local_system_time);
+  if (local_system_time._2_2_ == 9) {
+    if (local_system_day != 0xc) goto LAB_0042b17a;
   }
-  else if (DAT_00495ac8._2_2_ == 0xb) {
-    if (DAT_00495ace != 8) goto LAB_0042b17a;
+  else if (local_system_time._2_2_ == 0xb) {
+    if (local_system_day != 8) goto LAB_0042b17a;
   }
-  else if ((DAT_00495ac8._2_2_ != 0xc) || (DAT_00495ace != 0x12)) goto LAB_0042b17a;
+  else if ((local_system_time._2_2_ != 0xc) || (local_system_day != 0x12)) goto LAB_0042b17a;
   DAT_004aaed8 = 1;
   uStack_58 = 0x42b177;
   texture_get_or_load(s_balloon_00474648);
@@ -26734,7 +26734,7 @@ void __cdecl FUN_0043ad70(undefined4 *param_1,int *param_2)
   undefined1 local_1;
   
   local_4c = 0;
-  GetLocalTime((LPSYSTEMTIME)&DAT_00495ac8);
+  GetLocalTime((LPSYSTEMTIME)&local_system_time);
   pcVar5 = local_48;
   for (iVar2 = 0x12; iVar2 != 0; iVar2 = iVar2 + -1) {
     pcVar5[0] = '\0';
@@ -26772,10 +26772,11 @@ void __cdecl FUN_0043ad70(undefined4 *param_1,int *param_2)
   uVar3 = _rand();
   local_10 = uVar3 & 0xfee050f;
   if (*(char *)(param_1 + 0x10) == '\0') {
-    *(undefined1 *)(param_1 + 0x10) = (undefined1)DAT_00495ace;
-    *(undefined1 *)((int)param_1 + 0x42) = DAT_00495ac8._2_1_;
-    *(char *)((int)param_1 + 0x43) = (char)DAT_00495ac8 + '0';
-    iVar2 = FUN_0043a950(DAT_00495ac8 & 0xffff,DAT_00495ac8 >> 0x10,(uint)DAT_00495ace);
+    *(undefined1 *)(param_1 + 0x10) = (undefined1)local_system_day;
+    *(undefined1 *)((int)param_1 + 0x42) = local_system_time._2_1_;
+    *(char *)((int)param_1 + 0x43) = (char)local_system_time + '0';
+    iVar2 = FUN_0043a950(local_system_time & 0xffff,local_system_time >> 0x10,(uint)local_system_day
+                        );
     *(char *)((int)param_1 + 0x41) = (char)iVar2;
   }
   pcVar5 = local_48;
@@ -26974,7 +26975,8 @@ void FUN_0043afa0(void)
   iVar8 = 0;
   fp = crt_fopen(pcVar3,&file_mode_read_binary);
   if (fp != (FILE *)0x0) {
-    uVar9 = FUN_0043a950(DAT_00495ac8 & 0xffff,DAT_00495ac8 >> 0x10,(uint)DAT_00495ace);
+    uVar9 = FUN_0043a950(local_system_time & 0xffff,local_system_time >> 0x10,(uint)local_system_day
+                        );
     bVar2 = (byte)fp->_flag;
     while ((bVar2 & 0x10) == 0) {
       pcVar3 = FUN_0043ab10((char *)local_48,(int *)fp);
@@ -26989,14 +26991,14 @@ void FUN_0043afa0(void)
 LAB_0043b0ff:
         if (((config_score_load_gate != '\0') || ((bStack_4 & 1) == 0)) || ((bStack_4 & 2) != 0)) {
           if (config_highscore_date_mode == '\x03') {
-            if (((DAT_00495ace == local_8) &&
-                ((DAT_00495ac8 & 0xffff) - 2000 ==
+            if (((local_system_day == local_8) &&
+                ((local_system_time & 0xffff) - 2000 ==
                  (CONCAT12(cStack_3,CONCAT11(bStack_4,uStack_5)) & 0xff))) &&
-               (DAT_00495ac8._2_2_ == bStack_6)) goto LAB_0043b1df;
+               (local_system_time._2_2_ == bStack_6)) goto LAB_0043b1df;
           }
           else if (config_highscore_date_mode == '\x02') {
             if ((uVar9 == (CONCAT12(uStack_5,CONCAT11(bStack_6,local_7)) & 0xff)) &&
-               ((DAT_00495ac8 & 0xffff) ==
+               ((local_system_time & 0xffff) ==
                 (CONCAT12(cStack_3,CONCAT11(bStack_4,uStack_5)) & 0xff) + 2000)) {
 LAB_0043b1df:
               if ((config_highscore_duplicate_mode == '\x01') &&
@@ -27072,8 +27074,8 @@ LAB_0043b1df:
             }
           }
           else if ((config_highscore_date_mode != '\x01') ||
-                  ((DAT_00495ac8._2_2_ == bStack_6 &&
-                   ((DAT_00495ac8 & 0xffff) - 2000 ==
+                  ((local_system_time._2_2_ == bStack_6 &&
+                   ((local_system_time & 0xffff) - 2000 ==
                     (CONCAT12(cStack_3,CONCAT11(bStack_4,uStack_5)) & 0xff))))) goto LAB_0043b1df;
         }
       }

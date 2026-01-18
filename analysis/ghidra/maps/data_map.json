@@ -669,6 +669,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00486fac",
+      "name": "perk_pending_count",
+      "comment": "Pending perk picks; incremented on level-up and decremented on perk selection."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00486fb4",
       "name": "creature_spawned_count",
       "comment": "Total creatures spawned (incremented in creature_alloc_slot)."
@@ -1896,6 +1902,18 @@
       "address": "0x00493eec",
       "name": "particle_target_id",
       "comment": "Particle target id (particle_pool + 0x34)"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00495ac8",
+      "name": "local_system_time",
+      "comment": "SYSTEMTIME scratch written by GetLocalTime; year/month used for high score stamps and seasonal checks."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00495ace",
+      "name": "local_system_day",
+      "comment": "SYSTEMTIME.wDay field (day-of-month) used with local_system_time for date checks."
     },
     {
       "program": "crimsonland.exe",

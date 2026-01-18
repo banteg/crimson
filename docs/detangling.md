@@ -299,10 +299,10 @@ tail bytes are validated against the current date and the full‑version flag.
 
 | Offset | Address | Meaning | Evidence |
 | --- | --- | --- | --- |
-| `0x40` | `DAT_00487080` | Day‑of‑month | Written via `param_1 + 0x10` (word index → +0x40) in `FUN_0043ad70`; compared to `DAT_00495ace` in `FUN_0043afa0` mode 3. |
+| `0x40` | `DAT_00487080` | Day‑of‑month | Written via `param_1 + 0x10` (word index → +0x40) in `FUN_0043ad70`; compared to `local_system_day` (`DAT_00495ace`) in `FUN_0043afa0` mode 3. |
 | `0x41` | `DAT_00487081` | Date checksum (week‑of‑year) | `FUN_0043a950` result stored at `param_1 + 0x41`; compared in mode 2. |
-| `0x42` | `DAT_00487082` | Month (1–12) | Stored from `DAT_00495ac8._2_1_`; compared to `DAT_00495ac8._2_2_`. |
-| `0x43` | `DAT_00487083` | Year‑2000 | Stored as `(char)DAT_00495ac8 + '0'` (wraps low byte); compared to `year - 2000`. |
+| `0x42` | `DAT_00487082` | Month (1–12) | Stored from `local_system_time._2_1_` (`DAT_00495ac8`); compared to `local_system_time._2_2_`. |
+| `0x43` | `DAT_00487083` | Year‑2000 | Stored as `(char)local_system_time + '0'` (`DAT_00495ac8`, low byte wraps); compared to `year - 2000`. |
 | `0x44` | `DAT_00487084` | Score flags | `param_1[0x44] & 1` gates update vs append; set to `2` when replacing an existing record. |
 | `0x45` | `DAT_00487085` | Full‑version marker | Set to `0x75` (`'u'`) when `DAT_00480790 != 0`; checked in quest‑mode load to accept full/limited records. |
 | `0x46` | `DAT_00487040 + 0x46` | Sentinel `0x7c` (`'|'`) | Initialized in `FUN_0043afa0` default‑record loop. |
@@ -627,7 +627,7 @@ tail bytes are validated against the current date and the full‑version flag.
       then sets `DAT_00486fe0 = -1000`.
     - Stage 5: increments `DAT_004808a8` on repeated `creatures_none_active()` events, spawns markers/bonuses,
       and after 8 iterations sets `player_experience` (`DAT_0049095c`) to 3000 and `DAT_00486fe0 = -1000`.
-    - Stage 6: waits for `DAT_00486fac < 1`, spawns markers, then sets `DAT_00486fe0 = -1000`.
+    - Stage 6: waits for `perk_pending_count` (`DAT_00486fac`) < 1, spawns markers, then sets `DAT_00486fe0 = -1000`.
   - Stage 7: waits for `creatures_none_active()` with no active bonus slots, then sets `DAT_00486fe0 = -1000`.
   - Stage text table (array indexed by `DAT_00486fd8`, base is `local_38`):
 

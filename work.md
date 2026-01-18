@@ -77,7 +77,7 @@
   - [x] quest_selected_builder (DAT_0048474c)
   - [x] game_sequence_id (DAT_00485794)
   - [x] quest_spawn_table (DAT_004857a8)
-  - [ ] DAT_00486fac
+  - [x] perk_pending_count (DAT_00486fac)
   - [x] survival_spawn_cooldown (DAT_00486fc4)
   - [x] quest_spawn_timeline (DAT_00486fd0)
   - [x] tutorial_stage_index (DAT_00486fd8)
@@ -111,8 +111,8 @@
   - [x] ui_weapon_icons_texture (DAT_0048f7e4)
   - [x] bonus_texture (DAT_0048f7f0)
   - [x] survival_xp_smoothed (DAT_00490300)
-  - [ ] DAT_00495ac8
-  - [ ] DAT_00495ace
+  - [x] local_system_time (DAT_00495ac8)
+  - [x] local_system_day (DAT_00495ace)
   - [ ] DAT_004c2c40
   - [ ] DAT_004c2c44
   - [ ] DAT_004c2c48
