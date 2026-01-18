@@ -6,6 +6,9 @@ Interesting Functions and Patterns
   grim_destroy_texture @ 10007700
   `vector_deleting_destructor' @ 1000b2fd
   FID_conflict:`vector_deleting_destructor' @ 1000b348
+  inflate_codes_new @ 10036381
+  inflate_codes @ 100363b5
+  inflate_codes_free @ 10036919
 
 [KEY related]
   grim_set_key_char_buffer @ 10005c20
@@ -42,6 +45,7 @@ Interesting Functions and Patterns
   png_free @ 10024777
   zcfree @ 1002e665
   inflate_blocks_free @ 1003479e
+  inflate_codes_free @ 10036919
 
 [ALLOC related]
   malloc @ 1000aa98

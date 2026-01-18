@@ -4288,7 +4288,7 @@
     "address": "1002438b",
     "signature": "int inflate(z_streamp strm, int flush)",
     "external": false,
-    "calls": ["FUN_10034003", "inflate_blocks_reset"]
+    "calls": ["inflate_blocks", "inflate_blocks_reset"]
   },
   {
     "name": "FUN_100246f2",
@@ -5205,7 +5205,7 @@
     "address": "10033f0b",
     "signature": "void inflate_blocks_reset(void * s, z_streamp z, uLongf * c)",
     "external": false,
-    "calls": ["FUN_10036919"]
+    "calls": ["inflate_codes_free"]
   },
   {
     "name": "inflate_blocks_new",
@@ -5215,11 +5215,11 @@
     "calls": ["inflate_blocks_reset"]
   },
   {
-    "name": "FUN_10034003",
+    "name": "inflate_blocks",
     "address": "10034003",
-    "signature": "undefined FUN_10034003(uint * param_1, int * param_2, byte * param_3)",
+    "signature": "int inflate_blocks(void * s, z_streamp z, int r)",
     "external": false,
-    "calls": ["FUN_10036e60"]
+    "calls": ["inflate_flush"]
   },
   {
     "name": "inflate_blocks_free",
@@ -5334,51 +5334,51 @@
     "calls": ["ftol"]
   },
   {
-    "name": "FUN_10036381",
+    "name": "inflate_codes_new",
     "address": "10036381",
-    "signature": "undefined FUN_10036381(undefined1 param_1, undefined1 param_2, undefined4 param_3, undefined4 param_4, int param_5)",
+    "signature": "void * inflate_codes_new(uInt bl, uInt bd, void * tl, void * td, z_streamp z)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_100363b5",
+    "name": "inflate_codes",
     "address": "100363b5",
-    "signature": "undefined FUN_100363b5(undefined1 * param_1, byte * param_2, int param_3)",
+    "signature": "int inflate_codes(void * s, z_streamp z, int r)",
     "external": false,
-    "calls": ["FUN_10036e60"]
+    "calls": ["inflate_flush"]
   },
   {
-    "name": "FUN_10036919",
+    "name": "inflate_codes_free",
     "address": "10036919",
-    "signature": "undefined FUN_10036919(undefined4 param_1, int param_2)",
+    "signature": "void inflate_codes_free(void * c, z_streamp z)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_1003692a",
+    "name": "huft_build",
     "address": "1003692a",
-    "signature": "undefined4 FUN_1003692a(uint * param_1, uint param_2, uint param_3, int param_4, int param_5, int * param_6, int param_7, uint * param_8, uint * param_9)",
+    "signature": "int huft_build(uInt * b, uInt n, uInt s, uInt * d, uInt * e, void * * t, uInt * m, void * hp, uInt * hn)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_10036caf",
+    "name": "inflate_trees_bits",
     "address": "10036caf",
-    "signature": "int FUN_10036caf(uint * param_1, int * param_2, int * param_3, int param_4, int param_5)",
+    "signature": "int inflate_trees_bits(uInt * c, uInt * bb, void * * tb, void * hp, z_streamp z)",
     "external": false,
-    "calls": ["FUN_1003692a"]
+    "calls": ["huft_build"]
   },
   {
-    "name": "FUN_10036d2e",
+    "name": "inflate_trees_dynamic",
     "address": "10036d2e",
-    "signature": "int FUN_10036d2e(uint param_1, uint param_2, uint * param_3, int * param_4, int * param_5, int * param_6, int * param_7, int param_8, int param_9)",
+    "signature": "int inflate_trees_dynamic(uInt nl, uInt nd, uInt * c, uInt * bl, uInt * bd, void * * tl, void * * td, void * hp, z_streamp z)",
     "external": false,
-    "calls": ["FUN_1003692a"]
+    "calls": ["huft_build"]
   },
   {
-    "name": "FUN_10036e60",
+    "name": "inflate_flush",
     "address": "10036e60",
-    "signature": "int FUN_10036e60(undefined1 * param_1, int param_2, int param_3)",
+    "signature": "int inflate_flush(void * s, z_streamp z, int r)",
     "external": false,
     "calls": []
   },
@@ -5989,7 +5989,7 @@
     "address": "10049400",
     "signature": "undefined FUN_10049400(uint * param_1, int * param_2, int param_3)",
     "external": false,
-    "calls": ["FUN_1004a190", "FUN_1004a1d0", "FUN_1004a980", "FUN_1004a9a0", "FUN_1004af20", "FUN_1004b0b0", "FUN_1004b0e0"]
+    "calls": ["FUN_1004a190", "FUN_1004a1d0", "FUN_1004a980", "FUN_1004a9a0", "FUN_1004af20", "FUN_1004b0e0", "inflate_trees_fixed"]
   },
   {
     "name": "FUN_1004a100",
@@ -6041,9 +6041,9 @@
     "calls": ["FUN_1004aa50"]
   },
   {
-    "name": "FUN_1004b0b0",
+    "name": "inflate_trees_fixed",
     "address": "1004b0b0",
-    "signature": "undefined4 FUN_1004b0b0(undefined4 * param_1, undefined4 * param_2, undefined4 * param_3, undefined4 * param_4)",
+    "signature": "int inflate_trees_fixed(uInt * bl, uInt * bd, void * * tl, void * * td, z_streamp z)",
     "external": false,
     "calls": []
   },

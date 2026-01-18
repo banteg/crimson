@@ -2155,6 +2155,69 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10034003",
+    "name": "inflate_blocks",
+    "signature": "int inflate_blocks(void *s, z_streamp z, int r)",
+    "comment": "zlib (internal): process inflate blocks"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10036e60",
+    "name": "inflate_flush",
+    "signature": "int inflate_flush(void *s, z_streamp z, int r)",
+    "comment": "zlib (internal): flush pending output"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10036381",
+    "name": "inflate_codes_new",
+    "signature": "void * inflate_codes_new(uInt bl, uInt bd, void *tl, void *td, z_streamp z)",
+    "comment": "zlib (internal): allocate codes state"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100363b5",
+    "name": "inflate_codes",
+    "signature": "int inflate_codes(void *s, z_streamp z, int r)",
+    "comment": "zlib (internal): decode codes"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10036919",
+    "name": "inflate_codes_free",
+    "signature": "void inflate_codes_free(void *c, z_streamp z)",
+    "comment": "zlib (internal): free codes state"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003692a",
+    "name": "huft_build",
+    "signature": "int huft_build(uInt *b, uInt n, uInt s, uInt *d, uInt *e, void **t, uInt *m, void *hp, uInt *hn)",
+    "comment": "zlib (internal): build Huffman decoding tables"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10036caf",
+    "name": "inflate_trees_bits",
+    "signature": "int inflate_trees_bits(uInt *c, uInt *bb, void **tb, void *hp, z_streamp z)",
+    "comment": "zlib (internal): build bit length Huffman tree"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10036d2e",
+    "name": "inflate_trees_dynamic",
+    "signature": "int inflate_trees_dynamic(uInt nl, uInt nd, uInt *c, uInt *bl, uInt *bd, void **tl, void **td, void *hp, z_streamp z)",
+    "comment": "zlib (internal): build dynamic Huffman trees"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004b0b0",
+    "name": "inflate_trees_fixed",
+    "signature": "int inflate_trees_fixed(uInt *bl, uInt *bd, void **tl, void **td, z_streamp z)",
+    "comment": "zlib (internal): return fixed Huffman trees"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10033f0b",
     "name": "inflate_blocks_reset",
     "signature": "void inflate_blocks_reset(void *s, z_streamp z, uLongf *c)",
