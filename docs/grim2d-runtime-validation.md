@@ -17,7 +17,8 @@ Goal: validate a small backlog subset using Frida hooks without pausing.
 
 Artifacts:
 
-- Hook script: `scripts/grim_hooks.js`
+- Hook script: `scripts/frida/grim_hooks.js`
+- Target list: `scripts/frida/grim_hooks_targets.json`
 - Log: `Z:\grim_hits.log`
 - `grim.dll` base at runtime: `0x0A990000`
 

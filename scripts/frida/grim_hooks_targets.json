@@ -1,0 +1,13 @@
+{
+  "grim_apply_config": "0x05D40",
+  "grim_init_system": "0x05EB0",
+  "grim_apply_settings": "0x06020",
+  "grim_check_device": "0x05CB0",
+  "grim_get_error_text": "0x06CA0",
+  "grim_create_texture": "0x075D0",
+  "grim_load_texture": "0x076E0",
+  "grim_validate_texture": "0x07750",
+  "grim_destroy_texture": "0x07700",
+  "grim_recreate_texture": "0x07790",
+  "grim_flush_batch": "0x083C0"
+}
