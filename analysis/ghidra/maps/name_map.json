@@ -764,14 +764,14 @@
     "program": "crimsonland.exe",
     "address": "0x0042a670",
     "name": "texture_get_or_load",
-    "signature": "int texture_get_or_load(char *name)",
-    "comment": "lookup texture handle; load if missing"
+    "signature": "int texture_get_or_load(char *name, char *path)",
+    "comment": "lookup texture handle; load if missing (name + path)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0042a700",
     "name": "texture_get_or_load_alt",
-    "signature": "int texture_get_or_load_alt(char *name)",
+    "signature": "int texture_get_or_load_alt(char *name, char *path)",
     "comment": "duplicate of texture_get_or_load (callers are mostly .jaz assets)"
   },
   {
