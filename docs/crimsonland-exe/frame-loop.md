@@ -33,6 +33,8 @@ Other states have their own loops but reuse the same render pass (`FUN_00405960`
 9) Gameplay render pass (`FUN_00405960`).
 10) Tutorial timeline if `_DAT_00480360 == 8` (`tutorial_timeline_update`).
 11) Perk prompt handling (`FUN_00403550`) and perk selection transition.
+    - `perk_prompt_timer` (`DAT_0048f524`) ramps 0..200 when perks are pending; it feeds the prompt
+      alpha and transform matrix (`perk_prompt_transform_*` at `DAT_0048f510..DAT_0048f51c`).
     - `perk_prompt_hover_active` (`DAT_0048f500`) + `perk_prompt_pulse` (`DAT_0048f504`) drive the
       hover/pulse feedback and click gating.
     - `perk_choices_dirty` (`DAT_00486fb0`) forces a one-shot `perks_generate_choices()` before

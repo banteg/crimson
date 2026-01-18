@@ -1017,6 +1017,36 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x0048f510",
+      "name": "perk_prompt_transform_cos",
+      "comment": "Perk prompt UI transform cosine (derived from perk_prompt_timer)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f514",
+      "name": "perk_prompt_transform_sin_neg",
+      "comment": "Perk prompt UI transform -sin component (derived from perk_prompt_timer)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f518",
+      "name": "perk_prompt_transform_sin",
+      "comment": "Perk prompt UI transform sin component (derived from perk_prompt_timer)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f51c",
+      "name": "perk_prompt_transform_cos_2",
+      "comment": "Perk prompt UI transform cosine (paired with perk_prompt_transform_sin)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048f524",
+      "name": "perk_prompt_timer",
+      "comment": "Perk prompt timer (0..200); drives prompt alpha and transform in FUN_00403550."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x0048f530",
       "name": "terrain_render_target",
       "comment": "Terrain render target index/handle used by grim_set_render_target."

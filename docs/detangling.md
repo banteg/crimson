@@ -589,6 +589,8 @@ tail bytes are validated against the current date and the full‑version flag.
   - Evidence: fills `DAT_004807e8` with randomly selected perks using `perk_select_random`,
     enforces uniqueness, and applies special-case handling for mode `8` (fixed perk list).
 - Perk prompt UI gates (high confidence):
+  - `perk_prompt_timer` (`DAT_0048f524`) ramps 0..200 while perks are pending and feeds the
+    prompt alpha plus the transform matrix (`perk_prompt_transform_*` at `DAT_0048f510..DAT_0048f51c`).
   - `perk_prompt_hover_active` (`DAT_0048f500`) flips when the cursor enters/leaves the perk prompt
     bounds and gates whether the click target is active.
   - `perk_prompt_pulse` (`DAT_0048f504`) ramps `0..1000` (decays when not hovered, accelerates when

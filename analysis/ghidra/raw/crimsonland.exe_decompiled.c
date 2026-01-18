@@ -1791,19 +1791,19 @@ void FUN_00403550(void)
   
   if ((demo_mode_active == '\0') && (_config_game_mode != 2)) {
     if ((perk_pending_count < 1) || (game_state_id != 9)) {
-      DAT_0048f524 = DAT_0048f524 - frame_dt_ms;
-      if (DAT_0048f524 < 0) {
-        DAT_0048f524 = 0;
+      perk_prompt_timer = perk_prompt_timer - frame_dt_ms;
+      if (perk_prompt_timer < 0) {
+        perk_prompt_timer = 0;
       }
     }
     else {
-      DAT_0048f524 = DAT_0048f524 + frame_dt_ms;
-      if (200 < DAT_0048f524) {
-        DAT_0048f524 = 200;
+      perk_prompt_timer = perk_prompt_timer + frame_dt_ms;
+      if (200 < perk_prompt_timer) {
+        perk_prompt_timer = 200;
       }
     }
-    if ((config_perk_prompt_state != '\0') && (0 < DAT_0048f524)) {
-      local_8c = (float)DAT_0048f524 * 0.005;
+    if ((config_perk_prompt_state != '\0') && (0 < perk_prompt_timer)) {
+      local_8c = (float)perk_prompt_timer * 0.005;
       acStack_90[0] = '\0';
       acStack_90[1] = '\0';
       acStack_90[2] = -0x80;
@@ -1816,13 +1816,13 @@ void FUN_00403550(void)
       (**(code **)(iVar1 + 0x144))((float)((config_screen_width - iVar3) + -0x10));
     }
     DAT_0048f20c = 1;
-    fVar4 = ((float10)1.0 - (float10)DAT_0048f524 * (float10)0.005) * (float10)-1.5707964;
+    fVar4 = ((float10)1.0 - (float10)perk_prompt_timer * (float10)0.005) * (float10)-1.5707964;
     fVar5 = (float10)fcos(fVar4);
-    _DAT_0048f510 = (float)fVar5;
+    _perk_prompt_transform_cos = (float)fVar5;
     fVar4 = (float10)fsin((float10)(float)fVar4);
-    _DAT_0048f514 = (float)-fVar4;
-    _DAT_0048f518 = (float)fVar4;
-    _DAT_0048f51c = (float)fVar5;
+    _perk_prompt_transform_sin_neg = (float)-fVar4;
+    _perk_prompt_transform_sin = (float)fVar4;
+    _perk_prompt_transform_cos_2 = (float)fVar5;
     local_8c = 5.897112e-39;
     ui_element_render(&DAT_0048f20c);
   }
@@ -9300,7 +9300,7 @@ void FUN_00412dc0(void)
   _bonus_freeze_timer = 0;
   _DAT_004aaf1c = 0;
   _DAT_004aaf2c = 0xbf800000;
-  DAT_0048f524 = 0;
+  perk_prompt_timer = 0;
   projectile_reset_pools();
   FUN_0041fc80();
   DAT_004871d0 = 0;
