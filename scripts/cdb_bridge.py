@@ -122,7 +122,7 @@ def serve(
     server.bind((host, port))
     server.listen(5)
     while True:
-    conn, _ = server.accept()
+        conn, _ = server.accept()
         with conn:
             data = b""
             while True:
