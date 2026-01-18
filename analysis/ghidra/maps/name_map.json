@@ -409,6 +409,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004188a0",
+    "name": "terrain_render",
+    "signature": "void terrain_render(void)",
+    "comment": "renders the terrain layer from terrain_render_target; tiles fallback when texture missing"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00418b60",
     "name": "creature_render_type",
     "signature": "void creature_render_type(int type_id)",
@@ -448,6 +455,13 @@
     "name": "ui_cursor_render",
     "signature": "void ui_cursor_render(void)",
     "comment": "renders the in-game cursor/crosshair sprites"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041a320",
+    "name": "ui_render_aim_enhancement",
+    "signature": "void ui_render_aim_enhancement(void)",
+    "comment": "renders the aim enhancement overlay (cv_aimEnhancementFade-driven)"
   },
   {
     "program": "crimsonland.exe",
@@ -1427,6 +1441,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0043dc80",
+    "name": "ui_checkbox_update",
+    "signature": "int ui_checkbox_update(float *xy, char *checkbox)",
+    "comment": "draws a checkbox widget, handles hover/focus, toggles on click"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043def0",
+    "name": "ui_scrollbar_update",
+    "signature": "void ui_scrollbar_update(float *xy, float *state)",
+    "comment": "updates and renders a scroll bar (wheel, drag, key input)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0043e5e0",
     "name": "ui_menu_item_update",
     "signature": "int ui_menu_item_update(float *xy, int *item)",
@@ -1448,10 +1476,24 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0043efc0",
+    "name": "ui_list_widget_update",
+    "signature": "int ui_list_widget_update(float *xy, char *list)",
+    "comment": "draws a list widget and updates selection/hover state"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004413a0",
     "name": "ui_text_input_render",
     "signature": "void ui_text_input_render(void *input_state, float y, float alpha)",
     "comment": "renders a text input field (focus, text, and caret)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00442150",
+    "name": "ui_update_notice_update",
+    "signature": "void ui_update_notice_update(float *xy, float alpha)",
+    "comment": "renders the update-available notice and its button"
   },
   {
     "program": "crimsonland.exe",
@@ -1511,10 +1553,31 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00446900",
+    "name": "ui_element_update",
+    "signature": "void ui_element_update(void *element)",
+    "comment": "updates hover/click/animation for a UI element and fires callbacks"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00446c40",
     "name": "ui_element_render",
     "signature": "void ui_element_render(void *element)",
     "comment": "updates focus/click handling and renders a UI element"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00447cf0",
+    "name": "input_scheme_label",
+    "signature": "char * input_scheme_label(int scheme)",
+    "comment": "maps control scheme ids to labels (Relative/Static/Dual Action Pad/etc)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0044fcb0",
+    "name": "ui_menu_layout_init",
+    "signature": "void ui_menu_layout_init(void)",
+    "comment": "initializes menu UI element layout and text textures"
   },
   {
     "program": "crimsonland.exe",

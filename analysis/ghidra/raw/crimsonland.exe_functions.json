@@ -326,7 +326,7 @@
     "address": "00405960",
     "signature": "void gameplay_render_world(void)",
     "external": false,
-    "calls": ["FUN_004188a0", "bonus_render", "creature_render_all", "fx_queue_render", "player_render_overlays", "projectile_render", "weapon_assign_player"]
+    "calls": ["bonus_render", "creature_render_all", "fx_queue_render", "player_render_overlays", "projectile_render", "terrain_render", "weapon_assign_player"]
   },
   {
     "name": "perk_selection_screen_update",
@@ -361,7 +361,7 @@
     "address": "00406af0",
     "signature": "undefined FUN_00406af0(void)",
     "external": false,
-    "calls": ["FUN_004188a0", "gameplay_render_world", "perk_prompt_update_and_render", "ui_cursor_render", "ui_elements_update_and_render"]
+    "calls": ["gameplay_render_world", "perk_prompt_update_and_render", "terrain_render", "ui_cursor_render", "ui_elements_update_and_render"]
   },
   {
     "name": "perks_update_effects",
@@ -445,7 +445,7 @@
     "address": "0040a510",
     "signature": "void ui_render_aim_indicators(void)",
     "external": false,
-    "calls": ["FUN_0041a320", "crt_atexit", "ui_draw_clock_gauge_at"]
+    "calls": ["crt_atexit", "ui_draw_clock_gauge_at", "ui_render_aim_enhancement"]
   },
   {
     "name": "gameplay_update_and_render",
@@ -770,9 +770,9 @@
     "calls": ["_rand", "console_printf", "terrain_generate"]
   },
   {
-    "name": "FUN_004188a0",
+    "name": "terrain_render",
     "address": "004188a0",
-    "signature": "undefined FUN_004188a0(void)",
+    "signature": "void terrain_render(void)",
     "external": false,
     "calls": []
   },
@@ -809,7 +809,7 @@
     "address": "00419dd0",
     "signature": "void ui_menu_assets_init(void)",
     "external": false,
-    "calls": ["FUN_0044fcb0", "ui_element_load", "ui_element_set_rect"]
+    "calls": ["ui_element_load", "ui_element_set_rect", "ui_menu_layout_init"]
   },
   {
     "name": "ui_cursor_render",
@@ -819,9 +819,9 @@
     "calls": ["crt_ci_pow", "effect_select_texture"]
   },
   {
-    "name": "FUN_0041a320",
+    "name": "ui_render_aim_enhancement",
     "address": "0041a320",
-    "signature": "undefined FUN_0041a320(void)",
+    "signature": "void ui_render_aim_enhancement(void)",
     "external": false,
     "calls": ["effect_select_texture"]
   },
@@ -830,7 +830,7 @@
     "address": "0041a530",
     "signature": "void ui_elements_update_and_render(void)",
     "external": false,
-    "calls": ["FUN_00446900", "config_load_presets", "game_state_set", "terrain_generate_random", "ui_element_render", "ui_elements_max_timeline"]
+    "calls": ["config_load_presets", "game_state_set", "terrain_generate_random", "ui_element_render", "ui_element_update", "ui_elements_max_timeline"]
   },
   {
     "name": "ui_draw_progress_bar",
@@ -1304,14 +1304,14 @@
   {
     "name": "texture_get_or_load",
     "address": "0042a670",
-    "signature": "int texture_get_or_load(char * name)",
+    "signature": "int texture_get_or_load(char * name, char * path)",
     "external": false,
     "calls": ["console_printf"]
   },
   {
     "name": "texture_get_or_load_alt",
     "address": "0042a700",
-    "signature": "int texture_get_or_load_alt(char * name)",
+    "signature": "int texture_get_or_load_alt(char * name, char * path)",
     "external": false,
     "calls": ["console_printf"]
   },
@@ -2107,16 +2107,16 @@
     "calls": ["__ftol", "input_primary_is_down", "ui_focus_draw", "ui_focus_set", "ui_focus_update", "ui_mouse_inside_rect"]
   },
   {
-    "name": "FUN_0043dc80",
+    "name": "ui_checkbox_update",
     "address": "0043dc80",
-    "signature": "undefined4 FUN_0043dc80(float * param_1, char * param_2)",
+    "signature": "int ui_checkbox_update(float * xy, char * checkbox)",
     "external": false,
     "calls": ["input_primary_just_pressed", "ui_focus_draw", "ui_focus_set", "ui_focus_update", "ui_mouse_inside_rect"]
   },
   {
-    "name": "FUN_0043def0",
+    "name": "ui_scrollbar_update",
     "address": "0043def0",
-    "signature": "undefined FUN_0043def0(float * param_1, float * param_2)",
+    "signature": "void ui_scrollbar_update(float * xy, float * state)",
     "external": false,
     "calls": ["__ftol", "input_primary_is_down", "input_primary_just_pressed", "ui_focus_draw", "ui_focus_update", "ui_mouse_inside_rect"]
   },
@@ -2142,9 +2142,9 @@
     "calls": ["__ftol", "_rand", "console_input_poll", "sfx_play", "ui_focus_draw", "ui_focus_set", "ui_focus_update", "ui_mouse_inside_rect"]
   },
   {
-    "name": "FUN_0043efc0",
+    "name": "ui_list_widget_update",
     "address": "0043efc0",
-    "signature": "undefined4 FUN_0043efc0(float * param_1, char * param_2)",
+    "signature": "int ui_list_widget_update(float * xy, char * list)",
     "external": false,
     "calls": ["FUN_00403430", "__ftol", "ui_focus_draw", "ui_focus_set", "ui_focus_update", "ui_mouse_inside_rect"]
   },
@@ -2177,9 +2177,9 @@
     "calls": ["FUN_00406180", "FUN_004411c0", "FUN_00441220", "FUN_00441270", "__ftol", "crt_sprintf", "ui_draw_clock_gauge"]
   },
   {
-    "name": "FUN_00442150",
+    "name": "ui_update_notice_update",
     "address": "00442150",
-    "signature": "undefined FUN_00442150(float * param_1, float param_2)",
+    "signature": "void ui_update_notice_update(float * xy, float alpha)",
     "external": false,
     "calls": ["crt_atexit", "ui_button_update"]
   },
@@ -2188,7 +2188,7 @@
     "address": "004443c0",
     "signature": "uint FUN_004443c0(float * param_1, undefined1 param_2)",
     "external": false,
-    "calls": ["FUN_0043efc0", "crt_atexit", "crt_free", "highscore_load_table", "input_primary_just_pressed", "strdup_malloc", "ui_button_update", "ui_text_input_update"]
+    "calls": ["crt_atexit", "crt_free", "highscore_load_table", "input_primary_just_pressed", "strdup_malloc", "ui_button_update", "ui_list_widget_update", "ui_text_input_update"]
   },
   {
     "name": "creature_spawn_tinted",
@@ -2310,9 +2310,9 @@
     "calls": ["FUN_0040e940", "console_input_poll", "game_is_full_version", "game_save_status", "gameplay_reset_state", "highscore_load_table", "quest_start_selected", "ui_elements_reset_state"]
   },
   {
-    "name": "FUN_00446900",
+    "name": "ui_element_update",
     "address": "00446900",
-    "signature": "undefined FUN_00446900(char * param_1)",
+    "signature": "void ui_element_update(void * element)",
     "external": false,
     "calls": ["FUN_00446150", "input_primary_just_pressed", "sfx_play"]
   },
@@ -2352,9 +2352,9 @@
     "calls": []
   },
   {
-    "name": "FUN_00447cf0",
+    "name": "input_scheme_label",
     "address": "00447cf0",
-    "signature": "char * FUN_00447cf0(undefined4 param_1)",
+    "signature": "char * input_scheme_label(int scheme)",
     "external": false,
     "calls": []
   },
@@ -2387,9 +2387,9 @@
     "calls": []
   },
   {
-    "name": "FUN_0044fcb0",
+    "name": "ui_menu_layout_init",
     "address": "0044fcb0",
-    "signature": "undefined FUN_0044fcb0(void)",
+    "signature": "void ui_menu_layout_init(void)",
     "external": false,
     "calls": ["FUN_0044faa0", "FUN_0044fb50", "game_is_full_version", "texture_get_or_load_alt", "ui_element_load", "ui_element_set_rect"]
   },
