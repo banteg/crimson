@@ -10,12 +10,15 @@ Interesting Functions and Patterns
 [FILE related]
   crt_lock_file @ 00463da5
   crt_unlock_file @ 00463df7
+  crt_openfile @ 00464030
   GetFileVersionInfoA @ 0046e956
   GetFileVersionInfoSizeA @ 0046e95c
 
 [OPEN related]
   crt_fsopen @ 0046100e
   crt_fopen @ 0046103f
+  crt_openfile @ 00464030
+  crt_sopen @ 0046adbd
   ov_open_callbacks @ 0046e932
 
 [READ related]
@@ -60,6 +63,7 @@ Interesting Functions and Patterns
   crt_strcpy @ 00465c30
 
 [SPRINTF related]
+  crt_vsprintf @ 00461089
   crt_sprintf @ 004616e7
 
 [LOG related]
@@ -68,6 +72,7 @@ Interesting Functions and Patterns
 
 [PRINT related]
   console_printf @ 00401870
+  crt_vsprintf @ 00461089
   crt_sprintf @ 004616e7
 
 [ERROR related]

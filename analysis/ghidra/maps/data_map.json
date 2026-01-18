@@ -45,9 +45,297 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00480349",
+      "name": "config_music_disabled",
+      "comment": "Config: music disabled flag (1 disables music init)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048034a",
+      "name": "config_highscore_date_mode",
+      "comment": "Config: high-score date validation mode (1=year+month,2=checksum+year,3=day+month+year)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048034b",
+      "name": "config_highscore_duplicate_mode",
+      "comment": "Config: high-score duplicate handling (1 replaces existing entry)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048034c",
+      "name": "config_hud_indicator_toggle",
+      "comment": "Config: per-player HUD indicator toggle (u8[2], gates extra indicator pass)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00480350",
+      "name": "config_grim_query_param",
+      "comment": "Config: unknown u32 used by FUN_0041ec60 when querying Grim config."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00480356",
+      "name": "config_fx_detail_flag0",
+      "comment": "Config: FX detail flag (set by config_detail_preset)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00480358",
+      "name": "config_fx_detail_flag1",
+      "comment": "Config: FX detail flag (set by config_detail_preset)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00480359",
+      "name": "config_fx_detail_flag2",
+      "comment": "Config: FX detail flag (set by config_detail_preset)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048035c",
+      "name": "config_player_count",
+      "comment": "Config: player count (loop bound in per-player logic)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00480360",
+      "name": "config_game_mode",
+      "comment": "Config: game mode/state selector (values 1/2/3/4/8 observed)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00480364",
+      "name": "config_player_mode_flags",
+      "comment": "Config: per-player mode flags; value 4 triggers alternate HUD draw and movement scheme checks."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048038c",
+      "name": "config_aim_scheme",
+      "comment": "Config: aim scheme selector (value 4 enables analog aim axis)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00480390",
+      "name": "config_unknown_0x48",
+      "comment": "Config: unknown u32 defaulted in FUN_0041ec60; no xrefs yet."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004803b4",
+      "name": "config_unknown_0x6c",
+      "comment": "Config: unknown u32 defaulted in FUN_0041ec60; no xrefs yet."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004803b8",
+      "name": "config_texture_scale",
+      "comment": "Config: texture/terrain scale factor (clamped 0.5..4.0)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004803bc",
+      "name": "config_player_name_buf",
+      "comment": "Config: player name buffer (char[12]) copied on load; limited usage so far."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004803c8",
+      "name": "config_name_slot_selected",
+      "comment": "Config: selected saved-name slot (0..7)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004803cc",
+      "name": "config_name_slot_count",
+      "comment": "Config: saved-name count / insert index."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004803d0",
+      "name": "config_name_slot_order",
+      "comment": "Config: saved-name order table (u32[8])."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004803f0",
+      "name": "config_saved_names",
+      "comment": "Config: saved names table (8 entries \u00d7 0x1b bytes)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048040b",
+      "name": "config_saved_name_2",
+      "comment": "Config: saved name entry 2 (inside config_saved_names)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004804c8",
+      "name": "config_player_name",
+      "comment": "Config: player name (copied to runtime player_name on load)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004804e8",
+      "name": "config_player_name_length",
+      "comment": "Config: player name length (mirrored to runtime on load)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004804ec",
+      "name": "config_unknown_0x1a4",
+      "comment": "Config: unknown u32 defaulted in FUN_0041ec60; no xrefs yet."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004804f0",
+      "name": "config_unknown_0x1a8",
+      "comment": "Config: unknown u32 defaulted in FUN_0041ec60; no xrefs yet."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004804f4",
+      "name": "config_unknown_0x1ac",
+      "comment": "Config: unknown u32 defaulted in FUN_0041ec60; no xrefs yet."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004804f8",
+      "name": "config_grim_misc_threshold0",
+      "comment": "Config: unknown u32 compared to Grim vtable +0xa4 (index 0)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004804fc",
+      "name": "config_grim_misc_threshold1",
+      "comment": "Config: unknown u32 compared to Grim vtable +0xa4 (index 0)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00480500",
+      "name": "config_display_bpp",
+      "comment": "Config: display color depth (bits per pixel)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00480504",
+      "name": "config_screen_width",
+      "comment": "Config: screen width."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00480508",
+      "name": "config_screen_height",
+      "comment": "Config: screen height."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048050c",
+      "name": "config_windowed",
+      "comment": "Config: windowed flag (0=fullscreen)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00480510",
       "name": "config_keybind_table",
       "comment": "keybind table (2x16 dwords) inside config blob"
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00480540",
+      "name": "config_keybind_table_p2",
+      "comment": "Config: points at &config_keybind_table[12] (copy source)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00480788",
+      "name": "config_unknown_0x440",
+      "comment": "Config: unknown u32 defaulted in FUN_0041ec60; no xrefs yet."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048078c",
+      "name": "config_unknown_0x444",
+      "comment": "Config: unknown u32 defaulted in FUN_0041ec60; no xrefs yet."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00480790",
+      "name": "config_full_version",
+      "comment": "Config: full-version/unlimited flag (gates quest logic/UI strings)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00480791",
+      "name": "config_perk_prompt_state",
+      "comment": "Config: perk prompt state (reset when counter rolls)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00480794",
+      "name": "config_perk_prompt_counter",
+      "comment": "Config: perk prompt counter (0..0x32)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00480798",
+      "name": "config_unknown_0x450",
+      "comment": "Config: unknown u32 defaulted in FUN_0041ec60; no xrefs yet."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004807a8",
+      "name": "config_unknown_0x460",
+      "comment": "Config: unknown u32 defaulted in FUN_0041ec60; no xrefs yet."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004807ac",
+      "name": "config_sfx_volume",
+      "comment": "Config: SFX volume multiplier."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004807b0",
+      "name": "config_music_volume",
+      "comment": "Config: music volume multiplier."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004807b4",
+      "name": "config_fx_toggle",
+      "comment": "Config: FX toggle (gore/particle path)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004807b5",
+      "name": "config_score_load_gate",
+      "comment": "Config: score-load gating flag (used with config_highscore_date_mode)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004807b6",
+      "name": "config_unknown_0x46e",
+      "comment": "Config: unknown bool applied via Grim id 0x54."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004807b8",
+      "name": "config_detail_preset",
+      "comment": "Config: detail preset driving FX detail flags."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004807c0",
+      "name": "config_key_pick_perk",
+      "comment": "Config: keybind for perk selection (level-up prompt)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004807c4",
+      "name": "config_key_reload",
+      "comment": "Config: keybind for reload."
     },
     {
       "program": "crimsonland.exe",
