@@ -39,6 +39,18 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00472e88",
+      "name": "menu_label_credits",
+      "comment": "CString \"credits\" used for menu/label text."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00472e90",
+      "name": "menu_label_secret",
+      "comment": "CString \"Secret\" used for menu/label text."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x0047365c",
       "name": "game_status_filename",
       "comment": "Filename for the status blob (game.cfg)."
@@ -48,6 +60,54 @@
       "address": "0x00473668",
       "name": "file_mode_write_binary",
       "comment": "CString \"wb\" used for config/status file writes."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00473a8c",
+      "name": "secret_hint_haxx0r",
+      "comment": "Secret-hint string: \"Brave little haxx0r aren't you?\""
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00473b14",
+      "name": "secret_hint_wonder",
+      "comment": "Secret-hint string: \":D\"Wonder what he's up to now...\""
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00473b38",
+      "name": "secret_hint_magic_paint",
+      "comment": "Secret-hint string: \"Magic Paint\" city walls line."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00473b8c",
+      "name": "secret_hint_secret_path",
+      "comment": "Secret-hint string: credits click pattern for Secret Path."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00473c3c",
+      "name": "secret_hint_alienzookeeper",
+      "comment": "Secret-hint string: AlienZooKeeper combo / orthogonal projection."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00473ce8",
+      "name": "secret_hint_not_meant_to_see",
+      "comment": "Secret-hint string: \"not really meant to see\"."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00473d50",
+      "name": "secret_hint_secret_weapons",
+      "comment": "Secret-hint string: secret weapons exist."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00473e34",
+      "name": "secret_hint_redistr_build",
+      "comment": "Secret-hint string: \"%ReDistrBuildXX%\" build tag."
     },
     {
       "program": "crimsonland.exe",
@@ -615,6 +675,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x0048474c",
+      "name": "quest_selected_builder",
+      "comment": "Current quest builder function pointer (runs quest script)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x00484750",
       "name": "quest_unlock_perk_id",
       "comment": "Quest unlock perk id field (quest_selected_meta + 0x20, stride 0x2c). Used by perks_rebuild_available."
@@ -630,12 +696,6 @@
       "address": "0x00484758",
       "name": "quest_start_weapon_id",
       "comment": "Quest starting weapon id (quest_selected_meta + 0x28, stride 0x2c). Applied in quest_start_selected."
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x0048474c",
-      "name": "quest_selected_builder",
-      "comment": "Current quest builder function pointer (runs quest script)."
     },
     {
       "program": "crimsonland.exe",
@@ -3795,9 +3855,93 @@
     },
     {
       "program": "grim.dll",
+      "address": "0x10022114",
+      "name": "grim_dxt2_decode_block",
+      "comment": "DXT2 decode wrapper (premultiplied alpha); paired with grim_dxt2_encode_block."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x10022137",
+      "name": "grim_dxt4_decode_block",
+      "comment": "DXT4 decode wrapper (premultiplied alpha); paired with grim_dxt4_encode_block."
+    },
+    {
+      "program": "grim.dll",
       "address": "0x1004c238",
       "name": "grim_interface_vtable",
       "comment": "Grim2D interface vtable (used by GRIM__GetInterface)."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1004e55c",
+      "name": "grim_dxt5_alpha_weights_max_8",
+      "comment": "DXT5 alpha optimization: max-endpoint weights for 8-alpha mode."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1004e57c",
+      "name": "grim_dxt5_alpha_weights_min_8",
+      "comment": "DXT5 alpha optimization: min-endpoint weights for 8-alpha mode."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1004e59c",
+      "name": "grim_dxt5_alpha_weights_max_6",
+      "comment": "DXT5 alpha optimization: max-endpoint weights for 6-alpha mode."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1004e5b4",
+      "name": "grim_dxt5_alpha_weights_min_6",
+      "comment": "DXT5 alpha optimization: min-endpoint weights for 6-alpha mode."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1004e5d4",
+      "name": "grim_dxt1_color_weights_max_4",
+      "comment": "DXT1 color optimization: max-endpoint weights for 4-color mode."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1004e5e4",
+      "name": "grim_dxt1_color_weights_min_4",
+      "comment": "DXT1 color optimization: min-endpoint weights for 4-color mode."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1004e5f4",
+      "name": "grim_dxt1_color_weights_max_3",
+      "comment": "DXT1 color optimization: max-endpoint weights for 3-color mode."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1004e600",
+      "name": "grim_dxt1_color_weights_min_3",
+      "comment": "DXT1 color optimization: min-endpoint weights for 3-color mode."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1004e610",
+      "name": "grim_dxt1_index_map_4color",
+      "comment": "DXT1 index mapping table for 4-color mode."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1004e620",
+      "name": "grim_dxt1_index_map_3color",
+      "comment": "DXT1 index mapping table for 3-color mode."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1004e63c",
+      "name": "grim_dxt5_alpha_index_map_8",
+      "comment": "DXT5 alpha index mapping table for 8-alpha mode."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1004e65c",
+      "name": "grim_dxt5_alpha_index_map_6",
+      "comment": "DXT5 alpha index mapping table for 6-alpha mode."
     },
     {
       "program": "grim.dll",
@@ -4321,90 +4465,6 @@
       "address": "0x1005db54",
       "name": "grim_mouse_dy",
       "comment": "Mouse delta Y (pixels) accumulated per poll."
-    },
-    {
-      "program": "grim.dll",
-      "address": "0x1004e55c",
-      "name": "grim_dxt5_alpha_weights_max_8",
-      "comment": "DXT5 alpha optimization: max-endpoint weights for 8-alpha mode."
-    },
-    {
-      "program": "grim.dll",
-      "address": "0x1004e57c",
-      "name": "grim_dxt5_alpha_weights_min_8",
-      "comment": "DXT5 alpha optimization: min-endpoint weights for 8-alpha mode."
-    },
-    {
-      "program": "grim.dll",
-      "address": "0x1004e59c",
-      "name": "grim_dxt5_alpha_weights_max_6",
-      "comment": "DXT5 alpha optimization: max-endpoint weights for 6-alpha mode."
-    },
-    {
-      "program": "grim.dll",
-      "address": "0x1004e5b4",
-      "name": "grim_dxt5_alpha_weights_min_6",
-      "comment": "DXT5 alpha optimization: min-endpoint weights for 6-alpha mode."
-    },
-    {
-      "program": "grim.dll",
-      "address": "0x1004e5d4",
-      "name": "grim_dxt1_color_weights_max_4",
-      "comment": "DXT1 color optimization: max-endpoint weights for 4-color mode."
-    },
-    {
-      "program": "grim.dll",
-      "address": "0x1004e5e4",
-      "name": "grim_dxt1_color_weights_min_4",
-      "comment": "DXT1 color optimization: min-endpoint weights for 4-color mode."
-    },
-    {
-      "program": "grim.dll",
-      "address": "0x1004e5f4",
-      "name": "grim_dxt1_color_weights_max_3",
-      "comment": "DXT1 color optimization: max-endpoint weights for 3-color mode."
-    },
-    {
-      "program": "grim.dll",
-      "address": "0x1004e600",
-      "name": "grim_dxt1_color_weights_min_3",
-      "comment": "DXT1 color optimization: min-endpoint weights for 3-color mode."
-    },
-    {
-      "program": "grim.dll",
-      "address": "0x1004e610",
-      "name": "grim_dxt1_index_map_4color",
-      "comment": "DXT1 index mapping table for 4-color mode."
-    },
-    {
-      "program": "grim.dll",
-      "address": "0x1004e620",
-      "name": "grim_dxt1_index_map_3color",
-      "comment": "DXT1 index mapping table for 3-color mode."
-    },
-    {
-      "program": "grim.dll",
-      "address": "0x1004e63c",
-      "name": "grim_dxt5_alpha_index_map_8",
-      "comment": "DXT5 alpha index mapping table for 8-alpha mode."
-    },
-    {
-      "program": "grim.dll",
-      "address": "0x1004e65c",
-      "name": "grim_dxt5_alpha_index_map_6",
-      "comment": "DXT5 alpha index mapping table for 6-alpha mode."
-    },
-    {
-      "program": "grim.dll",
-      "address": "0x10022114",
-      "name": "grim_dxt2_decode_block",
-      "comment": "DXT2 decode wrapper (premultiplied alpha); paired with grim_dxt2_encode_block."
-    },
-    {
-      "program": "grim.dll",
-      "address": "0x10022137",
-      "name": "grim_dxt4_decode_block",
-      "comment": "DXT4 decode wrapper (premultiplied alpha); paired with grim_dxt4_encode_block."
     }
   ]
 }

@@ -16,6 +16,8 @@ Source: `analysis/ghidra/raw/crimsonland.exe_strings.txt` and the startup log pa
 
 ### Strings (static addresses)
 
+- `0x00472e88` — "credits" (menu/label text; not referenced in decompiled code yet).
+- `0x00472e90` — "Secret" (menu/label text; not referenced in decompiled code yet).
 - `0x00473a8c` — "Brave little haxx0r aren't you?"
 - `0x00473b14` — `:D` line about "Wonder what he's up to now..."
 - `0x00473b38` — "This is all about fixing city walls with Magic Paint. To stop sinking, you know?"
@@ -24,8 +26,6 @@ Source: `analysis/ghidra/raw/crimsonland.exe_strings.txt` and the startup log pa
 - `0x00473ce8` — "Do remember you're probably seeing something that not really meant to see!"
 - `0x00473d50` — "I'll tell you a little secret; there are few secret weapons hidden inside the game!"
 - `0x00473e34` — `%ReDistrBuildXX%` (build tag string)
-- `0x00472e90` — "Secret" (menu/label text; not referenced in decompiled code yet).
-- `0x00472e88` — "credits" (menu/label text; not referenced in decompiled code yet).
 
 ### Verified code path (startup console output)
 
@@ -48,24 +48,44 @@ unmapped.
 
 - **Hinted precondition (string)**: click every credits line containing letter `o` and **avoid clicking**
   other lines; this should start “The Secret Path.”
-- **Verified code**: none yet. The hint is only confirmed as a string in the startup secret block.
+- **Verified code**: the hint string is printed in the startup secret block only. We have not yet located
+  the credits UI click handler or any branching logic that starts the Secret Path.
 
 ### Secret weapons
 
 - **Hinted precondition (string)**: there are “few secret weapons” hidden in the game.
-- **Verified code**: none yet. No weapon table flags or save fields mapped to secret unlocks.
+- **Verified code**: the hint string is printed in the startup secret block only. No weapon table flags
+  or save fields mapped to secret unlocks yet.
 
 ### AlienZooKeeper combination puzzle
 
 - **Hinted precondition (string)**: “Inside AlienZooKeeper” there are combinations; example combo
   “CyanYellowRedYellow” + “orthogonal projection” hint.
-- **Verified code**: none yet. No references mapped.
+- **Verified code**: the hint string is printed in the startup secret block only. No map/mission logic
+  located yet.
 
 ### “Brave little haxx0r” / “not really meant to see”
 
 - **Observed logic**: these lines are printed alongside the hint block under the same guard condition in
   `crimsonland_main`. They likely indicate a debug/redistribution build or an anti-tamper path.
 - **Verified code**: only the startup print path; the guard condition needs disassembly confirmation.
+
+## Verified code per hint (current)
+
+All of the hint strings in the cluster are printed from a single guarded block inside `crimsonland_main`
+(`0x0042c450`). We have **not** found any other decompiled references yet. Use this list as the definitive
+“verified code” map until further xrefs are available:
+
+- `0x00473a8c` — printed in startup secret-hint block.
+- `0x00473b14` — printed in startup secret-hint block.
+- `0x00473b38` — printed in startup secret-hint block.
+- `0x00473b8c` — printed in startup secret-hint block.
+- `0x00473c3c` — printed in startup secret-hint block.
+- `0x00473ce8` — printed in startup secret-hint block.
+- `0x00473d50` — printed in startup secret-hint block.
+- `0x00473e34` — printed in startup secret-hint block.
+- `0x00472e88` — **no decompiled Xrefs yet** (menu label).
+- `0x00472e90` — **no decompiled Xrefs yet** (menu label).
 
 ## Open questions
 
