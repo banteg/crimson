@@ -6,7 +6,7 @@ and `analysis/ghidra/maps/data_map.json` after review.
 
 ## 1) Collect runtime logs
 
-Copy the scripts into the VM share (example uses `Z:\`):
+Copy the scripts into the VM share (host path `~/utm/win11/share/`, mapped as `Z:\`):
 
 - `scripts/frida/grim_hooks.js`
 - `scripts/frida/grim_hooks_targets.json`
@@ -68,7 +68,7 @@ Review the summary + candidates, then manually promote good entries into:
 Rerun headless analysis after updates:
 
 ```bash
-just game_dir=game_bins/crimsonland/1.9.93-gog ghidra-exe
+just ghidra-exe
 ```
 
 ## Tips
