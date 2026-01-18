@@ -1,7 +1,7 @@
 # CRT Checklist
 
-- Mapped CRT entries (name_map): 101
-- Unmapped candidates (upper bound in 0x00460000–0x0046ffff): 204 FUN_ functions
+- Mapped CRT entries (name_map): 103
+- Unmapped candidates (upper bound in 0x00460000–0x0046ffff): 202 FUN_ functions
 
 ## Mapped
 - [x] crt_atexit
@@ -50,6 +50,8 @@
 - [x] crt_get_osfhandle
 - [x] crt_get_thread_data
 - [x] crt_getc
+- [x] crt_getcwd
+- [x] crt_getdcwd
 - [x] crt_getstream
 - [x] crt_heap_init
 - [x] crt_heap_select
@@ -108,7 +110,7 @@
 
 ## Remaining (Estimate)
 
-- [ ] Review 204 FUN_ functions in 0x00460000–0x0046ffff for CRT matches (upper bound)
+- [ ] Review 202 FUN_ functions in 0x00460000–0x0046ffff for CRT matches (upper bound)
 - [ ] FUN_00461140 @ 00461140 (uses: 5)
 - [ ] FUN_00465fa9 @ 00465fa9 (uses: 5)
 - [ ] FUN_004607a0 @ 004607a0 (uses: 4)
@@ -137,7 +139,7 @@
 - [ ] FUN_00460ccf @ 00460ccf (uses: 2)
 - [ ] FUN_00461739 @ 00461739 (uses: 2)
 - [ ] FUN_00461a83 @ 00461a83 (uses: 2)
-- [ ] FUN_0046248e @ 0046248e (uses: 2)
+- [x] crt_getcwd @ 0046248e (uses: 2)
 - [ ] FUN_004626aa @ 004626aa (uses: 2)
 - [ ] FUN_00463325 @ 00463325 (uses: 2)
 - [ ] FUN_00463333 @ 00463333 (uses: 2)
@@ -179,7 +181,7 @@
 - [ ] FUN_00461fd5 @ 00461fd5 (uses: 1)
 - [x] crt_endthread @ 00462373 (uses: 1)
 - [ ] FUN_004623b2 @ 004623b2 (uses: 1)
-- [ ] FUN_004624b5 @ 004624b5 (uses: 1)
+- [x] crt_getdcwd @ 004624b5 (uses: 1)
 - [ ] FUN_0046258a @ 0046258a (uses: 1)
 - [ ] FUN_0046262b @ 0046262b (uses: 1)
 - [ ] FUN_00462683 @ 00462683 (uses: 1)

@@ -2801,5 +2801,19 @@
     "name": "crt_endthread",
     "signature": "void crt_endthread(void)",
     "comment": "CRT: thread cleanup and exit"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046248e",
+    "name": "crt_getcwd",
+    "signature": "char * crt_getcwd(char *buf, unsigned int size)",
+    "comment": "CRT: get current working directory"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004624b5",
+    "name": "crt_getdcwd",
+    "signature": "char * crt_getdcwd(int drive, char *buf, unsigned int size)",
+    "comment": "CRT: get current working directory for drive"
   }
 ]
