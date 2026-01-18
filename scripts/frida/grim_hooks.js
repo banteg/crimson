@@ -266,15 +266,25 @@ const MEM_READERS = {
   ptr: { size: Process.pointerSize, read: Memory.readPointer },
 };
 
-function readMem(memSpec, ptrVal) {
-  const info = { ptr: ptrVal || null, value: null };
-  if (!ptrVal || ptrVal.isNull()) return info;
-  const parsed = /^(\w+)(?:\[(\d+)\])?$/.exec(memSpec);
-  if (!parsed) return info;
-  const type = parsed[1];
-  const count = parsed[2] ? parseInt(parsed[2], 10) : 1;
+function rangeInfo(ptrVal) {
+  try {
+    if (!Process.findRangeByAddress) return null;
+    const range = Process.findRangeByAddress(ptrVal);
+    if (!range) return null;
+    return {
+      base: range.base ? range.base.toString() : null,
+      size: range.size,
+      protection: range.protection || null,
+      file: range.file ? range.file.path : null,
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
+function readMemRaw(type, count, ptrVal) {
   const reader = MEM_READERS[type];
-  if (!reader) return info;
+  if (!reader) return null;
   const out = [];
   let cur = ptrVal;
   for (let i = 0; i < count; i++) {
@@ -285,7 +295,32 @@ function readMem(memSpec, ptrVal) {
     }
     cur = cur.add(reader.size);
   }
-  info.value = count === 1 ? out[0] : out;
+  return count === 1 ? out[0] : out;
+}
+
+function isAllNull(value) {
+  if (value === null || value === undefined) return true;
+  if (!Array.isArray(value)) return value === null;
+  return value.length > 0 && value.every((entry) => entry === null);
+}
+
+function readMem(memSpec, ptrVal) {
+  const info = { ptr: ptrVal || null, value: null, range: null };
+  if (!ptrVal || ptrVal.isNull()) return info;
+  const parsed = /^(\w+)(?:\[(\d+)\])?$/.exec(memSpec);
+  if (!parsed) return info;
+  const type = parsed[1];
+  const count = parsed[2] ? parseInt(parsed[2], 10) : 1;
+  info.range = rangeInfo(ptrVal);
+  info.value = readMemRaw(type, count, ptrVal);
+  if (isAllNull(info.value)) {
+    try {
+      const nextPtr = Memory.readPointer(ptrVal);
+      const derefRange = rangeInfo(nextPtr);
+      const derefValue = readMemRaw(type, count, nextPtr);
+      info.deref = { ptr: nextPtr, value: derefValue, range: derefRange };
+    } catch (e) {}
+  }
   return info;
 }
 
