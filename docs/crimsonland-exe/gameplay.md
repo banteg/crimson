@@ -77,7 +77,7 @@ timer crosses its threshold:
 
 ### Reload + spread interactions
 
-- **Sharpshooter** (`DAT_004c2b48`) modifies how fast `DAT_00490b68` decays and
+- **Sharpshooter** (`DAT_004c2b48`) modifies how fast `player_spread_heat` (`DAT_00490b68`) decays and
   lowers the minimum spread value.
 - **Anxious Loader** (`DAT_004c2b90`) reduces the reload timer by `0.05` on each
   primary press while reloading.
@@ -101,11 +101,11 @@ index to special-case the target.
 ### Weapon Power Up cooldown scaling
 
 While `bonus_weapon_power_up_timer > 0` (Weapon Power Up active), `player_update` decays the
-shot cooldown (`DAT_00490b84`) at 1.5x speed.
+shot cooldown (`player_shot_cooldown` / `DAT_00490b84`) at 1.5x speed.
 
 ### Bonus overrides
 
-- **Fire Bullets** (bonus id 14): while `DAT_00490bcc > 0`, `projectile_spawn`
+- **Fire Bullets** (bonus id 14): while `player_fire_bullets_timer` (`DAT_00490bcc`) > 0, `projectile_spawn`
   forces player-owned projectiles to type `0x2d` and uses the pellet count from
   the weapon table (`weapon_projectile_pellet_count[weapon_id]`).
 - **Spawn guard:** `bonus_spawn_guard` is set while bonus/perk effects spawn

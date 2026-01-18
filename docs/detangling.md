@@ -518,7 +518,7 @@ tail bytes are validated against the current date and the full‑version flag.
 ### Global var access (medium confidence)
 
 - `FUN_0042fcf0` -> `perk_count_get`
-  - Evidence: returns `(&DAT_00490968)[perk_id]` directly; used to track perk picks and gating.
+  - Evidence: returns `(&player_perk_counts)[perk_id]` (`DAT_00490968`) directly; used to track perk picks and gating.
 
 
 ### Save/load helpers (medium confidence)
@@ -595,7 +595,7 @@ tail bytes are validated against the current date and the full‑version flag.
 - `FUN_00408530` -> `tutorial_prompt_dialog`
   - Evidence: renders the tutorial message panel and uses button UI for "Repeat tutorial",
     "Play a game", and "Skip tutorial"; click handlers restart the tutorial (clears perk count
-    table `DAT_00490968` and resets timers) or exit to game (sets `DAT_00487274`, flushes input,
+    table `player_perk_counts` (`DAT_00490968`) and resets timers) or exit to game (sets `DAT_00487274`, flushes input,
     and resets `DAT_00486fe0`).
   - Signature (inferred): `void tutorial_prompt_dialog(char *text, float alpha)`
   - `alpha` comes from `tutorial_timeline_update` (0..1), controls the prompt fade, and is used
@@ -621,12 +621,12 @@ tail bytes are validated against the current date and the full‑version flag.
       then spawns bonus pickups (`FUN_0042ef60`) and sets `DAT_00486fe0 = -1000`.
     - Stage 2: waits until all 16 bonus slots in `bonus_pool` (`DAT_00482948`) clear, then sets
       `DAT_00486fe0 = -1000`.
-    - Stage 3: waits for input in `DAT_00490bec` key slots, spawns arrow markers
+    - Stage 3: waits for input in `player_fire_key` (`DAT_00490bec`) key slots, spawns arrow markers
       (`FUN_00430af0`), then sets `DAT_00486fe0 = -1000`.
     - Stage 4: waits for `creatures_none_active()`, spawns arrow markers, sets `DAT_00486fdc = 1000`,
       then sets `DAT_00486fe0 = -1000`.
     - Stage 5: increments `DAT_004808a8` on repeated `creatures_none_active()` events, spawns markers/bonuses,
-      and after 8 iterations sets `DAT_0049095c = 3000` and `DAT_00486fe0 = -1000`.
+      and after 8 iterations sets `player_experience` (`DAT_0049095c`) to 3000 and `DAT_00486fe0 = -1000`.
     - Stage 6: waits for `DAT_00486fac < 1`, spawns markers, then sets `DAT_00486fe0 = -1000`.
   - Stage 7: waits for `creatures_none_active()` with no active bonus slots, then sets `DAT_00486fe0 = -1000`.
   - Stage text table (array indexed by `DAT_00486fd8`, base is `local_38`):
@@ -844,10 +844,10 @@ See [Projectile struct](projectile-struct.md) for the expanded field map and not
     to scale spawn cadence and HUD timers.
   - `DAT_00487190` is the scripted spawn stage index (0..10) that gates bonus/marker spawns by
     `DAT_00490964` milestones.
-  - `DAT_0049095c` is the survival XP/progression score (HUD label `Xp`, displayed via the
+  - `player_experience` (`DAT_0049095c`) is the survival XP/progression score (HUD label `Xp`, displayed via the
     smoothed `DAT_00490300`) and is used for creature type/health scaling in `survival_spawn_creature`.
-  - `DAT_00490964` is the survival level/milestone counter (drawn as `%d` in the HUD) that gates
-    scripted spawns in `survival_update`; it increments when `DAT_0049095c` surpasses a periodic
+  - `player_level` (`DAT_00490964`) is the survival level/milestone counter (drawn as `%d` in the HUD) that gates
+    scripted spawns in `survival_update`; it increments when `player_experience` surpasses a periodic
     threshold.
   - The HUD shows `Xp`, the smoothed XP value, and a `Progress` label with a bar fed by
-    `DAT_0049095c`/`DAT_00490964` and a 1-second timer derived from `FUN_00461140()`.
+    `player_experience`/`player_level` (`DAT_0049095c`/`DAT_00490964`) and a 1-second timer derived from `FUN_00461140()`.

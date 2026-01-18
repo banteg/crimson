@@ -43,7 +43,7 @@ Related tables:
 Spawn notes:
 
 - When Fire Bullets is active (`player_fire_bullets_timer` / `DAT_00490bcc > 0`
-  or `DAT_00490f2c > 0`) and the owner is a player (`owner_id == -100 / -1 / -2 / -3`), `projectile_spawn`
+  or `player2_fire_bullets_timer` / `DAT_00490f2c > 0`) and the owner is a player (`owner_id == -100 / -1 / -2 / -3`), `projectile_spawn`
   forces `type_id` to `0x2d` regardless of the requested type.
 
 Known type_id sources (partial):

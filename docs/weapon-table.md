@@ -26,10 +26,10 @@ All offsets below are in **bytes**, relative to the pointer returned by
 | `-0x04` | int | Ammo class / HUD indicator | Used to choose `ui_ui_ind*` icons in the HUD: `0=bullet`, `1=fire`, `2=rocket`, else electric. |
 | `0x00` | char[0x40] | Weapon name | String is copied inline during `weapon_table_init` and rendered in the HUD weapon list via `FUN_0041c4b0`. |
 | `0x40` | byte | Unlocked/available flag | `FUN_00452e40` clears the table then marks unlocked weapons; `FUN_00452cd0` skips entries with `0`. |
-| `0x44` | int | Clip size | Copied from `DAT_004d7a70` into `DAT_00490b74` on weapon swap and used to reset `DAT_00490b7c`. |
-| `0x48` | float | Shot cooldown | Copied into `DAT_00490b84` after firing in `FUN_00444980`. |
-| `0x4c` | float | Reload time | Loaded into `DAT_00490b80` in `FUN_00413430` (scaled by perks). |
-| `0x50` | float | Spread / heat increment | Added to `DAT_00490b68` after each shot (scaled by perks). |
+| `0x44` | int | Clip size | Copied into `player_clip_size` (`DAT_00490b74`) on weapon swap and used to reset `player_ammo` (`DAT_00490b7c`). |
+| `0x48` | float | Shot cooldown | Copied into `player_shot_cooldown` (`DAT_00490b84`) after firing in `FUN_00444980`. |
+| `0x4c` | float | Reload time | Loaded into `player_reload_timer` (`DAT_00490b80`) in `FUN_00413430` (scaled by perks). |
+| `0x50` | float | Spread / heat increment | Added to `player_spread_heat` (`DAT_00490b68`) after each shot (scaled by perks). |
 | `0x58` | int | Shot SFX base id | Used with `0x5c` to pick a random fire SFX. |
 | `0x5c` | int | Shot SFX variant count | `rand % count + base` in `FUN_00444980`. |
 | `0x60` | int | Reload / equip SFX id | Played when a reload starts and when swapping to the weapon. |
@@ -56,9 +56,10 @@ All offsets below are in **bytes**, relative to the pointer returned by
 - Secondary projectile type behavior and particle style ids are tracked in
   [Effects pools](effects-struct.md).
 - The alt-weapon swap stores per-player runtime state in parallel arrays:
-  `DAT_00490b8c` (weapon id), `DAT_00490b90` (clip size), `DAT_00490b94` (reload
-  active), `DAT_00490b98` (current ammo), `DAT_00490b9c` (reload timer),
-  `DAT_00490ba0` (shot cooldown), and `DAT_00490ba4` (reload timer max).
+  `player_alt_weapon_id` (`DAT_00490b8c`), `player_alt_clip_size` (`DAT_00490b90`),
+  `player_alt_reload_active` (`DAT_00490b94`), `player_alt_ammo` (`DAT_00490b98`),
+  `player_alt_reload_timer` (`DAT_00490b9c`), `player_alt_shot_cooldown`
+  (`DAT_00490ba0`), and `player_alt_reload_timer_max` (`DAT_00490ba4`).
 - The same stride is used by projectile metadata lookups (`weapon_projectile_meta`,
   `weapon_projectile_damage_scale`) keyed by projectile type ids in `projectile_spawn` and
   `projectile_update`.

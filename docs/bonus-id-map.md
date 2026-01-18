@@ -23,8 +23,8 @@ Table fields:
 | 7 | Shock Chain | Chain of shocks shock the crowd. | 3 | 0 | `bonus_apply` spawns chained lightning via `projectile_spawn` type `0x15`; `shock_chain_links_left` / `shock_chain_projectile_id` track the active chain. |
 | 8 | Fireblast | Fireballs all over the place. | 2 | 0 | `bonus_apply` spawns a radial projectile burst (type `9`). |
 | 9 | Reflex Boost | You get more time to react as the game slows down. | 5 | 3 | `bonus_apply` updates `bonus_reflex_boost_timer`. |
-| 10 | Shield | Force field protects you for a while. | 6 | 7 | `bonus_apply` updates `DAT_00490bc8`. |
+| 10 | Shield | Force field protects you for a while. | 6 | 7 | `bonus_apply` updates `player_shield_timer` (`DAT_00490bc8`). |
 | 11 | Freeze | Monsters are frozen. | 8 | 5 | `bonus_apply` updates `bonus_freeze_timer`. |
 | 12 | MediKit | You regain some of your health. | 14 | 10 | `bonus_apply` restores health in 10-point increments. |
-| 13 | Speed | Your movement speed increases for a while. | 9 | 8 | `bonus_apply` updates `DAT_00490bc4`. |
-| 14 | Fire Bullets | For few seconds -- make them count. | 11 | 4 | `bonus_apply` updates `DAT_00490bcc`. While active, `projectile_spawn` overrides player-owned projectiles to type `0x2d` (pellet count from `weapon_projectile_pellet_count[weapon_id]`). |
+| 13 | Speed | Your movement speed increases for a while. | 9 | 8 | `bonus_apply` updates `player_speed_bonus_timer` (`DAT_00490bc4`). |
+| 14 | Fire Bullets | For few seconds -- make them count. | 11 | 4 | `bonus_apply` updates `player_fire_bullets_timer` (`DAT_00490bcc`). While active, `projectile_spawn` overrides player-owned projectiles to type `0x2d` (pellet count from `weapon_projectile_pellet_count[weapon_id]`). |
