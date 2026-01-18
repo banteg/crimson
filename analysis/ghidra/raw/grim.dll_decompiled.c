@@ -11546,7 +11546,7 @@ undefined4 FUN_100117ff(int param_1,uint param_2)
   if (iVar4 != 0) {
     return unaff_ESI;
   }
-  local_8 = (png_structp)FUN_1001e191("1.0.5",0,&DAT_100117f3,&DAT_10010dec);
+  local_8 = png_create_read_struct("1.0.5",(png_voidp)0x0,&DAT_100117f3,&DAT_10010dec);
   if (((local_8 == (png_structp)0x0) ||
       (local_c = FUN_100205e8((int)local_8), local_c == (uint *)0x0)) ||
      (iVar4 = setjmp3(local_8), iVar4 != 0)) goto LAB_10011d66;
@@ -22478,9 +22478,13 @@ void __cdecl FUN_1001e16c(png_structp png_ptr,undefined4 *param_2)
 
 
 
-/* FUN_1001e191 @ 1001e191 */
+/* png_create_read_struct @ 1001e191 */
 
-int * __cdecl FUN_1001e191(char *param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)
+/* allocates png_struct, initializes zlib stream, checks version; error_fn/warn_fn are png_error_ptr
+   callbacks */
+
+png_structp __cdecl
+png_create_read_struct(char *user_png_ver,png_voidp error_ptr,void *error_fn,void *warn_fn)
 
 {
   png_structp png_ptr;
@@ -22490,16 +22494,16 @@ int * __cdecl FUN_1001e191(char *param_1,undefined4 param_2,undefined4 param_3,u
   
   png_ptr = (png_structp)FUN_100246f2(1);
   if (png_ptr == (png_structp)0x0) {
-    return (int *)0x0;
+    return (png_structp)0x0;
   }
   iVar1 = setjmp3(png_ptr,0);
   if (iVar1 != 0) {
     png_free(png_ptr,png_ptr->zbuf);
     png_free_ptr(png_ptr);
-    return (int *)0x0;
+    return (png_structp)0x0;
   }
-  FUN_1001e0fa((int)png_ptr,param_2,param_3,param_4);
-  if ((param_1 == (char *)0x0) || (*param_1 != '1')) {
+  FUN_1001e0fa((int)png_ptr,error_ptr,error_fn,warn_fn);
+  if ((user_png_ver == (char *)0x0) || (*user_png_ver != '1')) {
     png_error(png_ptr,"Incompatible libpng version in application and library");
   }
   png_ptr->zbuf_size = 0x2000;
@@ -22508,7 +22512,7 @@ int * __cdecl FUN_1001e191(char *param_1,undefined4 param_2,undefined4 param_3,u
   (png_ptr->zstream).words[8] = (png_uint_32)FUN_1002052b;
   (png_ptr->zstream).words[9] = (png_uint_32)png_free;
   (png_ptr->zstream).words[10] = (png_uint_32)png_ptr;
-  iVar1 = FUN_10024374((int)&png_ptr->zstream,"1.1.3",0x38);
+  iVar1 = inflateInit_((z_streamp)&png_ptr->zstream,"1.1.3",0x38);
   if (iVar1 == -6) {
     msg = "zlib version error";
   }
@@ -22524,7 +22528,7 @@ LAB_1001e270:
   (png_ptr->zstream).words[3] = (png_uint_32)png_ptr->zbuf;
   (png_ptr->zstream).words[4] = png_ptr->zbuf_size;
   FUN_100204a4(png_ptr,0,0);
-  return (int *)png_ptr;
+  return png_ptr;
 }
 
 
@@ -22634,7 +22638,7 @@ void __thiscall FUN_1001e427(void *this,png_structp png_ptr,byte *param_2,byte *
   png_bytep buf;
   png_structp png_ptr_00;
   png_uint_32 pVar5;
-  byte *pbVar6;
+  int iVar6;
   char *msg;
   png_structp extraout_ECX;
   uint uVar7;
@@ -22645,6 +22649,7 @@ void __thiscall FUN_1001e427(void *this,png_structp png_ptr,byte *param_2,byte *
   png_structp extraout_ECX_03;
   png_structp extraout_ECX_04;
   bool bVar8;
+  byte *pbVar9;
   
   png_ptr_00 = png_ptr;
   if ((png_ptr->flags & 0x40) == 0) {
@@ -22737,8 +22742,8 @@ LAB_1001e48f:
       png_crc_read(png_ptr_00,buf,(png_ptr_00->zstream).words[1]);
       png_ptr_00->crc = png_ptr_00->crc - (png_ptr_00->zstream).words[1];
     }
-    pbVar6 = FUN_1002438b((int *)&png_ptr_00->zstream,1);
-    if (pbVar6 == (byte *)0x1) {
+    iVar6 = inflate((z_streamp)&png_ptr_00->zstream,1);
+    if (iVar6 == 1) {
       if ((((png_ptr_00->zstream).words[4] != 0) || ((png_ptr_00->zstream).words[1] != 0)) ||
          (png_ptr_00->crc != 0)) {
         png_error(png_ptr_00,"Extra compressed data");
@@ -22747,7 +22752,7 @@ LAB_1001e48f:
       png_ptr_00->flags = png_ptr_00->flags | 0x20;
       break;
     }
-    if (pbVar6 != (byte *)0x0) {
+    if (iVar6 != 0) {
       msg = (char *)(png_ptr_00->zstream).words[6];
       if (msg == (char *)0x0) {
         msg = "Decompression error";
@@ -22764,12 +22769,12 @@ LAB_1001e48f:
   uVar7 = (uint)bVar3 * png_ptr_00->row_number + 7 >> 3;
   ppVar1 = &(png_ptr_00->row_info).rowbytes;
   *ppVar1 = png_ptr_00->row_number;
-  pbVar6 = png_ptr_00->sub_row;
+  pbVar9 = png_ptr_00->sub_row;
   (png_ptr_00->row_info).color_type = (char)uVar7;
   (png_ptr_00->row_info).bit_depth = (char)(uVar7 >> 8);
   (png_ptr_00->row_info).channels = (char)(uVar7 >> 0x10);
   (png_ptr_00->row_info).pixel_depth = (char)(uVar7 >> 0x18);
-  FUN_10024dc0(png_ptr_00,(int)ppVar1,pbVar6 + 1,png_ptr_00->row_buf + 1,(uint)*pbVar6);
+  FUN_10024dc0(png_ptr_00,(int)ppVar1,pbVar9 + 1,png_ptr_00->row_buf + 1,(uint)*pbVar9);
   FUN_10024790(png_ptr_00,(undefined4 *)png_ptr_00->row_buf,(undefined4 *)png_ptr_00->sub_row,
                png_ptr_00->rowbytes + 1);
   this_00 = extraout_ECX_00;
@@ -22784,7 +22789,7 @@ LAB_1001e48f:
     }
     if (param_3 == (byte *)0x0) goto LAB_1001e7a4;
     uVar7 = 0xff;
-    pbVar6 = param_3;
+    pbVar9 = param_3;
   }
   else {
     bVar3 = png_ptr_00->pass;
@@ -22799,9 +22804,9 @@ LAB_1001e48f:
     }
     if (param_2 == (byte *)0x0) goto LAB_1001e7a4;
     uVar7 = *(uint *)(&DAT_1004e1dc + (uint)png_ptr_00->pass * 4);
-    pbVar6 = param_2;
+    pbVar9 = param_2;
   }
-  FUN_100248e1((int)png_ptr_00,pbVar6,uVar7);
+  FUN_100248e1((int)png_ptr_00,pbVar9,uVar7);
   this_00 = extraout_ECX_04;
 LAB_1001e7a4:
   FUN_100258c8(this_00,(int *)png_ptr_00);
@@ -22891,7 +22896,7 @@ void __cdecl FUN_1001e81b(png_structp png_ptr,undefined4 *param_2,undefined4 *pa
     }
     png_free(png_ptr,(void *)png_ptr[1].jmpbuf[9]);
   }
-  FUN_10024251((int)&png_ptr->zstream);
+  inflateEnd((z_streamp)&png_ptr->zstream);
   pvVar1 = png_ptr->error_ptr;
   ppVar2 = png_ptr->error_fn;
   ppVar5 = png_ptr;
@@ -28306,196 +28311,209 @@ void __cdecl FUN_100241e2(int param_1)
 
 
 
-/* FUN_10024212 @ 10024212 */
+/* inflateReset @ 10024212 */
 
-undefined4 __cdecl FUN_10024212(int param_1)
+/* zlib: reset inflate state */
+
+int __cdecl inflateReset(z_streamp strm)
 
 {
-  uint *puVar1;
+  internal_state *piVar1;
   
-  if ((param_1 != 0) && (puVar1 = *(uint **)(param_1 + 0x1c), puVar1 != (uint *)0x0)) {
-    *(undefined4 *)(param_1 + 0x14) = 0;
-    *(undefined4 *)(param_1 + 8) = 0;
-    *(undefined4 *)(param_1 + 0x18) = 0;
-    *puVar1 = -(uint)(puVar1[3] != 0) & 7;
-    FUN_10033f0b(*(int **)(*(int *)(param_1 + 0x1c) + 0x14),param_1,(int *)0x0);
+  if ((strm != (z_streamp)0x0) && (piVar1 = strm->state, piVar1 != (internal_state *)0x0)) {
+    strm->total_out = 0;
+    strm->total_in = 0;
+    strm->msg = (char *)0x0;
+    piVar1->dummy = -(uint)(piVar1[3].dummy != 0) & 7;
+    FUN_10033f0b((int *)strm->state[5].dummy,(int)strm,(int *)0x0);
     return 0;
   }
-  return 0xfffffffe;
+  return -2;
 }
 
 
 
-/* FUN_10024251 @ 10024251 */
+/* inflateEnd @ 10024251 */
 
-undefined4 __cdecl FUN_10024251(int param_1)
+/* zlib: free inflate state */
+
+int __cdecl inflateEnd(z_streamp strm)
 
 {
   int *piVar1;
   
-  if (((param_1 != 0) && (*(int *)(param_1 + 0x1c) != 0)) && (*(int *)(param_1 + 0x24) != 0)) {
-    piVar1 = *(int **)(*(int *)(param_1 + 0x1c) + 0x14);
+  if (((strm != (z_streamp)0x0) && (strm->state != (internal_state *)0x0)) &&
+     (strm->zfree != (free_func)0x0)) {
+    piVar1 = (int *)strm->state[5].dummy;
     if (piVar1 != (int *)0x0) {
-      FUN_1003479e(piVar1,param_1);
+      FUN_1003479e(piVar1,(int)strm);
     }
-    (**(code **)(param_1 + 0x24))(*(undefined4 *)(param_1 + 0x28),*(undefined4 *)(param_1 + 0x1c));
-    *(undefined4 *)(param_1 + 0x1c) = 0;
+    (*strm->zfree)(strm->opaque,strm->state);
+    strm->state = (internal_state *)0x0;
     return 0;
   }
-  return 0xfffffffe;
+  return -2;
 }
 
 
 
-/* FUN_1002428f @ 1002428f */
+/* inflateInit2_ @ 1002428f */
 
-undefined4 __cdecl FUN_1002428f(int param_1,int param_2,char *param_3,int param_4)
+/* zlib: init inflate with window bits */
+
+int __cdecl inflateInit2_(z_streamp strm,int windowBits,char *version,int stream_size)
+
+{
+  internal_state *piVar1;
+  int *piVar2;
+  int iVar3;
+  
+  if (((version == (char *)0x0) || (*version != '1')) || (stream_size != 0x38)) {
+    iVar3 = -6;
+  }
+  else if (strm == (z_streamp)0x0) {
+    iVar3 = -2;
+  }
+  else {
+    strm->msg = (char *)0x0;
+    if (strm->zalloc == (alloc_func)0x0) {
+      strm->zalloc = FUN_100348eb;
+      strm->opaque = (voidpf)0x0;
+    }
+    if (strm->zfree == (free_func)0x0) {
+      strm->zfree = FUN_1002e665;
+    }
+    piVar1 = (*strm->zalloc)(strm->opaque,1,0x18);
+    strm->state = piVar1;
+    if (piVar1 == (internal_state *)0x0) {
+      iVar3 = -4;
+    }
+    else {
+      piVar1[5].dummy = 0;
+      strm->state[3].dummy = 0;
+      if (windowBits < 0) {
+        windowBits = -windowBits;
+        strm->state[3].dummy = 1;
+      }
+      if ((windowBits < 8) || (0xf < windowBits)) {
+        iVar3 = -2;
+      }
+      else {
+        strm->state[4].dummy = windowBits;
+        piVar2 = FUN_10033f76((int)strm,~-(uint)(strm->state[3].dummy != 0) & 0x100347d2,
+                              1 << ((byte)windowBits & 0x1f));
+        strm->state[5].dummy = (int)piVar2;
+        if (strm->state[5].dummy != 0) {
+          inflateReset(strm);
+          return 0;
+        }
+        iVar3 = -4;
+      }
+      inflateEnd(strm);
+    }
+  }
+  return iVar3;
+}
+
+
+
+/* inflateInit_ @ 10024374 */
+
+/* zlib: init inflate (wrapper for inflateInit2_) */
+
+int __cdecl inflateInit_(z_streamp strm,char *version,int stream_size)
 
 {
   int iVar1;
-  int *piVar2;
-  undefined4 uVar3;
   
-  if (((param_3 == (char *)0x0) || (*param_3 != '1')) || (param_4 != 0x38)) {
-    uVar3 = 0xfffffffa;
-  }
-  else if (param_1 == 0) {
-    uVar3 = 0xfffffffe;
-  }
-  else {
-    *(undefined4 *)(param_1 + 0x18) = 0;
-    if (*(int *)(param_1 + 0x20) == 0) {
-      *(code **)(param_1 + 0x20) = FUN_100348eb;
-      *(undefined4 *)(param_1 + 0x28) = 0;
-    }
-    if (*(int *)(param_1 + 0x24) == 0) {
-      *(code **)(param_1 + 0x24) = FUN_1002e665;
-    }
-    iVar1 = (**(code **)(param_1 + 0x20))(*(undefined4 *)(param_1 + 0x28),1,0x18);
-    *(int *)(param_1 + 0x1c) = iVar1;
-    if (iVar1 == 0) {
-      uVar3 = 0xfffffffc;
-    }
-    else {
-      *(undefined4 *)(iVar1 + 0x14) = 0;
-      *(undefined4 *)(*(int *)(param_1 + 0x1c) + 0xc) = 0;
-      if (param_2 < 0) {
-        param_2 = -param_2;
-        *(undefined4 *)(*(int *)(param_1 + 0x1c) + 0xc) = 1;
-      }
-      if ((param_2 < 8) || (0xf < param_2)) {
-        uVar3 = 0xfffffffe;
-      }
-      else {
-        *(int *)(*(int *)(param_1 + 0x1c) + 0x10) = param_2;
-        piVar2 = FUN_10033f76(param_1,~-(uint)(*(int *)(*(int *)(param_1 + 0x1c) + 0xc) != 0) &
-                                      0x100347d2,1 << ((byte)param_2 & 0x1f));
-        *(int **)(*(int *)(param_1 + 0x1c) + 0x14) = piVar2;
-        if (*(int *)(*(int *)(param_1 + 0x1c) + 0x14) != 0) {
-          FUN_10024212(param_1);
-          return 0;
-        }
-        uVar3 = 0xfffffffc;
-      }
-      FUN_10024251(param_1);
-    }
-  }
-  return uVar3;
+  iVar1 = inflateInit2_(strm,0xf,version,stream_size);
+  return iVar1;
 }
 
 
 
-/* FUN_10024374 @ 10024374 */
+/* inflate @ 1002438b */
 
-void __cdecl FUN_10024374(int param_1,char *param_2,int param_3)
+/* zlib: inflate compressed data */
 
-{
-  FUN_1002428f(param_1,0xf,param_2,param_3);
-  return;
-}
-
-
-
-/* FUN_1002438b @ 1002438b */
-
-byte * __cdecl FUN_1002438b(int *param_1,int param_2)
+int __cdecl inflate(z_streamp strm,int flush)
 
 {
   byte bVar1;
-  undefined4 uVar2;
+  int iVar2;
   byte *pbVar3;
-  undefined4 *puVar4;
+  internal_state *piVar4;
   byte *pbVar5;
   
-  if (((param_1 == (int *)0x0) || (puVar4 = (undefined4 *)param_1[7], puVar4 == (undefined4 *)0x0))
-     || (*param_1 == 0)) {
+  if (((strm == (z_streamp)0x0) || (piVar4 = strm->state, piVar4 == (internal_state *)0x0)) ||
+     (strm->next_in == (Bytef *)0x0)) {
 LAB_100245c8:
-    return (byte *)0xfffffffe;
+    return -2;
   }
   pbVar3 = (byte *)0xfffffffb;
   pbVar5 = (byte *)0x0;
-  if (param_2 == 4) {
+  if (flush == 4) {
     pbVar5 = pbVar3;
   }
 LAB_100245bb:
-  switch(*puVar4) {
+  switch(piVar4->dummy) {
   case 0:
-    if (param_1[1] == 0) {
-      return pbVar3;
+    if (strm->avail_in == 0) {
+      return (int)pbVar3;
     }
-    param_1[2] = param_1[2] + 1;
-    param_1[1] = param_1[1] + -1;
-    *(uint *)(param_1[7] + 4) = (uint)*(byte *)*param_1;
-    puVar4 = (undefined4 *)param_1[7];
-    uVar2 = puVar4[1];
-    *param_1 = *param_1 + 1;
-    if (((byte)uVar2 & 0xf) == 8) {
-      if (((uint)puVar4[1] >> 4) + 8 <= (uint)puVar4[4]) {
-        *puVar4 = 1;
+    strm->total_in = strm->total_in + 1;
+    strm->avail_in = strm->avail_in - 1;
+    strm->state[1].dummy = (uint)*strm->next_in;
+    piVar4 = strm->state;
+    iVar2 = piVar4[1].dummy;
+    strm->next_in = strm->next_in + 1;
+    if (((byte)iVar2 & 0xf) == 8) {
+      if (((uint)piVar4[1].dummy >> 4) + 8 <= (uint)piVar4[4].dummy) {
+        piVar4->dummy = 1;
         pbVar3 = pbVar5;
         goto switchD_100243c8_caseD_1;
       }
-      *puVar4 = 0xd;
-      param_1[6] = (int)"invalid window size";
+      piVar4->dummy = 0xd;
+      strm->msg = "invalid window size";
     }
     else {
-      *puVar4 = 0xd;
-      param_1[6] = (int)"unknown compression method";
+      piVar4->dummy = 0xd;
+      strm->msg = "unknown compression method";
     }
     goto LAB_100245ae;
   case 1:
 switchD_100243c8_caseD_1:
-    if (param_1[1] == 0) {
-      return pbVar3;
+    if (strm->avail_in == 0) {
+      return (int)pbVar3;
     }
-    puVar4 = (undefined4 *)param_1[7];
-    param_1[2] = param_1[2] + 1;
-    param_1[1] = param_1[1] + -1;
-    bVar1 = *(byte *)*param_1;
-    *param_1 = (int)((byte *)*param_1 + 1);
-    if ((puVar4[1] * 0x100 + (uint)bVar1) % 0x1f != 0) {
-      *puVar4 = 0xd;
-      param_1[6] = (int)"incorrect header check";
+    piVar4 = strm->state;
+    strm->total_in = strm->total_in + 1;
+    strm->avail_in = strm->avail_in - 1;
+    bVar1 = *strm->next_in;
+    strm->next_in = strm->next_in + 1;
+    if ((piVar4[1].dummy * 0x100 + (uint)bVar1) % 0x1f != 0) {
+      piVar4->dummy = 0xd;
+      strm->msg = "incorrect header check";
       goto LAB_100245ae;
     }
     if ((bVar1 & 0x20) != 0) {
-      *(undefined4 *)param_1[7] = 2;
+      strm->state->dummy = 2;
       pbVar3 = pbVar5;
       goto switchD_100243c8_caseD_2;
     }
-    *puVar4 = 7;
+    piVar4->dummy = 7;
     pbVar3 = pbVar5;
     break;
   case 2:
 switchD_100243c8_caseD_2:
-    if (param_1[1] == 0) {
-      return pbVar3;
+    if (strm->avail_in == 0) {
+      return (int)pbVar3;
     }
-    param_1[2] = param_1[2] + 1;
-    param_1[1] = param_1[1] + -1;
-    *(uint *)(param_1[7] + 8) = (uint)*(byte *)*param_1 << 0x18;
-    *param_1 = *param_1 + 1;
-    *(undefined4 *)param_1[7] = 3;
+    strm->total_in = strm->total_in + 1;
+    strm->avail_in = strm->avail_in - 1;
+    strm->state[2].dummy = (uint)*strm->next_in << 0x18;
+    strm->next_in = strm->next_in + 1;
+    strm->state->dummy = 3;
     pbVar3 = pbVar5;
   case 3:
     goto switchD_100243c8_caseD_3;
@@ -28504,15 +28522,15 @@ switchD_100243c8_caseD_2:
   case 5:
     goto switchD_100243c8_caseD_5;
   case 6:
-    *(undefined4 *)param_1[7] = 0xd;
-    param_1[6] = (int)"need dictionary";
-    *(undefined4 *)(param_1[7] + 4) = 0;
-    return (byte *)0xfffffffe;
+    strm->state->dummy = 0xd;
+    strm->msg = "need dictionary";
+    strm->state[1].dummy = 0;
+    return -2;
   case 7:
-    pbVar3 = (byte *)FUN_10034003(*(uint **)(param_1[7] + 0x14),param_1,pbVar3);
+    pbVar3 = (byte *)FUN_10034003((uint *)strm->state[5].dummy,(int *)strm,pbVar3);
     if (pbVar3 == (byte *)0xfffffffd) {
-      *(undefined4 *)param_1[7] = 0xd;
-      *(undefined4 *)(param_1[7] + 4) = 0;
+      strm->state->dummy = 0xd;
+      strm->state[1].dummy = 0;
       pbVar3 = (byte *)0xfffffffd;
     }
     else {
@@ -28520,39 +28538,39 @@ switchD_100243c8_caseD_2:
         pbVar3 = pbVar5;
       }
       if (pbVar3 != (byte *)0x1) {
-        return pbVar3;
+        return (int)pbVar3;
       }
-      FUN_10033f0b(*(int **)(param_1[7] + 0x14),(int)param_1,(int *)(param_1[7] + 4));
-      puVar4 = (undefined4 *)param_1[7];
-      if (puVar4[3] == 0) {
-        *puVar4 = 8;
+      FUN_10033f0b((int *)strm->state[5].dummy,(int)strm,&strm->state[1].dummy);
+      piVar4 = strm->state;
+      if (piVar4[3].dummy == 0) {
+        piVar4->dummy = 8;
         pbVar3 = pbVar5;
         goto switchD_100243c8_caseD_8;
       }
-      *puVar4 = 0xc;
+      piVar4->dummy = 0xc;
       pbVar3 = pbVar5;
     }
     break;
   case 8:
 switchD_100243c8_caseD_8:
-    if (param_1[1] == 0) {
-      return pbVar3;
+    if (strm->avail_in == 0) {
+      return (int)pbVar3;
     }
-    param_1[2] = param_1[2] + 1;
-    param_1[1] = param_1[1] + -1;
-    *(uint *)(param_1[7] + 8) = (uint)*(byte *)*param_1 << 0x18;
-    *param_1 = *param_1 + 1;
-    *(undefined4 *)param_1[7] = 9;
+    strm->total_in = strm->total_in + 1;
+    strm->avail_in = strm->avail_in - 1;
+    strm->state[2].dummy = (uint)*strm->next_in << 0x18;
+    strm->next_in = strm->next_in + 1;
+    strm->state->dummy = 9;
     pbVar3 = pbVar5;
   case 9:
-    if (param_1[1] == 0) {
-      return pbVar3;
+    if (strm->avail_in == 0) {
+      return (int)pbVar3;
     }
-    param_1[2] = param_1[2] + 1;
-    param_1[1] = param_1[1] + -1;
-    *(int *)(param_1[7] + 8) = *(int *)(param_1[7] + 8) + (uint)*(byte *)*param_1 * 0x10000;
-    *param_1 = *param_1 + 1;
-    *(undefined4 *)param_1[7] = 10;
+    strm->total_in = strm->total_in + 1;
+    strm->avail_in = strm->avail_in - 1;
+    strm->state[2].dummy = strm->state[2].dummy + (uint)*strm->next_in * 0x10000;
+    strm->next_in = strm->next_in + 1;
+    strm->state->dummy = 10;
     pbVar3 = pbVar5;
   case 10:
     goto switchD_100243c8_caseD_a;
@@ -28561,74 +28579,74 @@ switchD_100243c8_caseD_8:
   case 0xc:
     goto LAB_100245c8;
   case 0xd:
-    return (byte *)0xfffffffd;
+    return -3;
   default:
     goto LAB_100245c8;
   }
 LAB_100245b8:
-  puVar4 = (undefined4 *)param_1[7];
+  piVar4 = strm->state;
   goto LAB_100245bb;
 switchD_100243c8_caseD_a:
-  if (param_1[1] == 0) {
-    return pbVar3;
+  if (strm->avail_in == 0) {
+    return (int)pbVar3;
   }
-  param_1[2] = param_1[2] + 1;
-  param_1[1] = param_1[1] + -1;
-  *(int *)(param_1[7] + 8) = *(int *)(param_1[7] + 8) + (uint)*(byte *)*param_1 * 0x100;
-  *param_1 = *param_1 + 1;
-  *(undefined4 *)param_1[7] = 0xb;
+  strm->total_in = strm->total_in + 1;
+  strm->avail_in = strm->avail_in - 1;
+  strm->state[2].dummy = strm->state[2].dummy + (uint)*strm->next_in * 0x100;
+  strm->next_in = strm->next_in + 1;
+  strm->state->dummy = 0xb;
   pbVar3 = pbVar5;
 switchD_100243c8_caseD_b:
-  if (param_1[1] == 0) {
-    return pbVar3;
+  if (strm->avail_in == 0) {
+    return (int)pbVar3;
   }
-  param_1[2] = param_1[2] + 1;
-  param_1[1] = param_1[1] + -1;
-  *(int *)(param_1[7] + 8) = *(int *)(param_1[7] + 8) + (uint)*(byte *)*param_1;
-  puVar4 = (undefined4 *)param_1[7];
-  *param_1 = *param_1 + 1;
-  if (puVar4[1] == puVar4[2]) {
-    *(undefined4 *)param_1[7] = 0xc;
+  strm->total_in = strm->total_in + 1;
+  strm->avail_in = strm->avail_in - 1;
+  strm->state[2].dummy = strm->state[2].dummy + (uint)*strm->next_in;
+  piVar4 = strm->state;
+  strm->next_in = strm->next_in + 1;
+  if (piVar4[1].dummy == piVar4[2].dummy) {
+    strm->state->dummy = 0xc;
 LAB_100245c8:
-    return (byte *)0x1;
+    return 1;
   }
-  *puVar4 = 0xd;
-  param_1[6] = (int)"incorrect data check";
+  piVar4->dummy = 0xd;
+  strm->msg = "incorrect data check";
 LAB_100245ae:
-  *(undefined4 *)(param_1[7] + 4) = 5;
+  strm->state[1].dummy = 5;
   pbVar3 = pbVar5;
   goto LAB_100245b8;
 switchD_100243c8_caseD_3:
-  if (param_1[1] == 0) {
-    return pbVar3;
+  if (strm->avail_in == 0) {
+    return (int)pbVar3;
   }
-  param_1[2] = param_1[2] + 1;
-  param_1[1] = param_1[1] + -1;
-  *(int *)(param_1[7] + 8) = *(int *)(param_1[7] + 8) + (uint)*(byte *)*param_1 * 0x10000;
-  *param_1 = *param_1 + 1;
-  *(undefined4 *)param_1[7] = 4;
+  strm->total_in = strm->total_in + 1;
+  strm->avail_in = strm->avail_in - 1;
+  strm->state[2].dummy = strm->state[2].dummy + (uint)*strm->next_in * 0x10000;
+  strm->next_in = strm->next_in + 1;
+  strm->state->dummy = 4;
   pbVar3 = pbVar5;
 switchD_100243c8_caseD_4:
-  if (param_1[1] == 0) {
-    return pbVar3;
+  if (strm->avail_in == 0) {
+    return (int)pbVar3;
   }
-  param_1[2] = param_1[2] + 1;
-  param_1[1] = param_1[1] + -1;
-  *(int *)(param_1[7] + 8) = *(int *)(param_1[7] + 8) + (uint)*(byte *)*param_1 * 0x100;
-  *param_1 = *param_1 + 1;
-  *(undefined4 *)param_1[7] = 5;
+  strm->total_in = strm->total_in + 1;
+  strm->avail_in = strm->avail_in - 1;
+  strm->state[2].dummy = strm->state[2].dummy + (uint)*strm->next_in * 0x100;
+  strm->next_in = strm->next_in + 1;
+  strm->state->dummy = 5;
   pbVar3 = pbVar5;
 switchD_100243c8_caseD_5:
-  if (param_1[1] != 0) {
-    param_1[2] = param_1[2] + 1;
-    param_1[1] = param_1[1] + -1;
-    *(int *)(param_1[7] + 8) = *(int *)(param_1[7] + 8) + (uint)*(byte *)*param_1;
-    *param_1 = *param_1 + 1;
-    param_1[0xc] = ((undefined4 *)param_1[7])[2];
-    *(undefined4 *)param_1[7] = 6;
-    return (byte *)0x2;
+  if (strm->avail_in != 0) {
+    strm->total_in = strm->total_in + 1;
+    strm->avail_in = strm->avail_in - 1;
+    strm->state[2].dummy = strm->state[2].dummy + (uint)*strm->next_in;
+    strm->next_in = strm->next_in + 1;
+    strm->adler = strm->state[2].dummy;
+    strm->state->dummy = 6;
+    return 2;
   }
-  return pbVar3;
+  return (int)pbVar3;
 }
 
 
@@ -29837,10 +29855,11 @@ void __thiscall FUN_100258c8(void *this,int *param_1)
 {
   uint *puVar1;
   byte bVar2;
-  int *png_ptr;
   uint uVar3;
-  png_uint_32 pVar4;
-  byte *pbVar5;
+  png_bytep buf;
+  int *png_ptr;
+  uint uVar4;
+  png_uint_32 pVar5;
   char *msg;
   int iVar6;
   void *local_4;
@@ -29858,10 +29877,10 @@ void __thiscall FUN_100258c8(void *this,int *param_1)
         bVar2 = *(byte *)(png_ptr + 0x45);
         if (6 < bVar2) goto LAB_10025995;
         iVar6 = (uint)bVar2 * 4;
-        uVar3 = ((png_ptr[0x2e] - *(int *)(&DAT_1004ea90 + iVar6)) + -1 +
+        uVar4 = ((png_ptr[0x2e] - *(int *)(&DAT_1004ea90 + iVar6)) + -1 +
                 *(uint *)(&DAT_1004eaac + iVar6)) / *(uint *)(&DAT_1004eaac + iVar6);
-        png_ptr[0x34] = uVar3;
-        png_ptr[0x33] = (*(byte *)((int)png_ptr + 0x119) * uVar3 + 7 >> 3) + 1;
+        png_ptr[0x34] = uVar4;
+        png_ptr[0x33] = (*(byte *)((int)png_ptr + 0x119) * uVar4 + 7 >> 3) + 1;
       } while (((*(byte *)(png_ptr + 0x18) & 2) == 0) &&
               (png_ptr[0x30] =
                     ((png_ptr[0x2f] - *(int *)(&DAT_1004eac8 + iVar6)) + -1 +
@@ -29881,8 +29900,8 @@ LAB_10025995:
             do {
               png_crc_finish((png_structp)png_ptr,0);
               png_read_data((png_structp)png_ptr,(png_bytep)&local_4,4);
-              pVar4 = png_get_uint_32((png_bytep)&local_4);
-              png_ptr[0x3f] = pVar4;
+              pVar5 = png_get_uint_32((png_bytep)&local_4);
+              png_ptr[0x3f] = pVar5;
               png_reset_crc((png_structp)png_ptr);
               png_crc_read((png_structp)png_ptr,(png_bytep)(png_ptr + 0x43),4);
               if (png_ptr[0x43] != 0x54414449) {
@@ -29890,17 +29909,20 @@ LAB_10025995:
               }
             } while (png_ptr[0x3f] == 0);
           }
-          png_ptr[0x1a] = png_ptr[0x28];
-          png_ptr[0x19] = png_ptr[0x27];
-          if ((uint)png_ptr[0x3f] < (uint)png_ptr[0x28]) {
-            png_ptr[0x1a] = png_ptr[0x3f];
+          uVar4 = png_ptr[0x28];
+          uVar3 = png_ptr[0x3f];
+          buf = (png_bytep)png_ptr[0x27];
+          png_ptr[0x1a] = uVar4;
+          ((z_streamp)(png_ptr + 0x19))->next_in = buf;
+          if (uVar3 < uVar4) {
+            png_ptr[0x1a] = uVar3;
           }
-          png_crc_read((png_structp)png_ptr,(png_bytep)png_ptr[0x27],png_ptr[0x1a]);
+          png_crc_read((png_structp)png_ptr,buf,png_ptr[0x1a]);
           png_ptr[0x3f] = png_ptr[0x3f] - png_ptr[0x1a];
         }
-        pbVar5 = FUN_1002438b(png_ptr + 0x19,1);
-        if (pbVar5 == (byte *)0x1) break;
-        if (pbVar5 != (byte *)0x0) {
+        iVar6 = inflate((z_streamp)(png_ptr + 0x19),1);
+        if (iVar6 == 1) break;
+        if (iVar6 != 0) {
           msg = (char *)png_ptr[0x1f];
           if (msg == (char *)0x0) {
             msg = "Decompression Error";
@@ -29921,7 +29943,7 @@ LAB_10025995:
     if ((png_ptr[0x3f] != 0) || (png_ptr[0x1a] != 0)) {
       png_error((png_structp)png_ptr,"Extra compression data");
     }
-    FUN_10024212((int)(png_ptr + 0x19));
+    inflateReset((z_streamp)(png_ptr + 0x19));
     png_ptr[0x16] = png_ptr[0x16] | 8;
   }
   return;

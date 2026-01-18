@@ -23,7 +23,7 @@ outputs.
 - Evidence: zlib strings report "deflate 1.1.3" and "inflate 1.1.3" at
   `analysis/ghidra/raw/grim.dll_strings.txt:220` and `:221`.
 - Status: headers imported (`third_party/headers/zlib.h`, `third_party/headers/zconf.h`).
-- Status: no signature mapping yet.
+- Status: mapped core inflate entry points (inflateInit_/inflateInit2_/inflate/inflateReset/inflateEnd).
 
 ### libjpeg (binary version unknown; headers are IJG 6b)
 - Evidence: multiple JPEG/JFIF error strings embedded in grim.dll, e.g.

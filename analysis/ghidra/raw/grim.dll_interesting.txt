@@ -23,6 +23,7 @@ Interesting Functions and Patterns
   grim_texture_load_file @ 10004ec0
 
 [READ related]
+  png_create_read_struct @ 1001e191
   png_read_data @ 1002047c
   png_crc_read @ 10024807
 

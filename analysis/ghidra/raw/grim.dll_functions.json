@@ -1971,7 +1971,7 @@
     "address": "100117ff",
     "signature": "undefined4 FUN_100117ff(int param_1, uint param_2)",
     "external": false,
-    "calls": ["FUN_1001e191", "FUN_1001e294", "FUN_1001e407", "FUN_1001e7ce", "FUN_1001e93e", "FUN_1001e9bf", "FUN_1001e9d9", "FUN_1001e9ef", "FUN_1001ea05", "FUN_1001ea2e", "FUN_1001ea59", "FUN_1001eb2a", "FUN_1001eb5d", "FUN_1001ebc4", "FUN_1001ebcd", "FUN_1001ebdf", "FUN_1001ec11", "FUN_1001ed4a", "FUN_1001ed80", "FUN_100203e1"]
+    "calls": ["FUN_1001e294", "FUN_1001e407", "FUN_1001e7ce", "FUN_1001e93e", "FUN_1001e9bf", "FUN_1001e9d9", "FUN_1001e9ef", "FUN_1001ea05", "FUN_1001ea2e", "FUN_1001ea59", "FUN_1001eb2a", "FUN_1001eb5d", "FUN_1001ebc4", "FUN_1001ebcd", "FUN_1001ebdf", "FUN_1001ec11", "FUN_1001ed4a", "FUN_1001ed80", "FUN_100203e1", "FUN_100204a4"]
   },
   {
     "name": "FUN_10011d95",
@@ -3479,11 +3479,11 @@
     "calls": ["FUN_1001e073", "png_warning"]
   },
   {
-    "name": "FUN_1001e191",
+    "name": "png_create_read_struct",
     "address": "1001e191",
-    "signature": "int * FUN_1001e191(char * param_1, undefined4 param_2, undefined4 param_3, undefined4 param_4)",
+    "signature": "png_structp png_create_read_struct(char * user_png_ver, png_voidp error_ptr, void * error_fn, void * warn_fn)",
     "external": false,
-    "calls": ["FUN_1001e0fa", "FUN_100204a4", "FUN_10024374", "FUN_100246f2", "png_error", "png_free", "png_free_ptr", "png_malloc", "setjmp3"]
+    "calls": ["FUN_1001e0fa", "FUN_100204a4", "FUN_100246f2", "inflateInit_", "png_error", "png_free", "png_free_ptr", "png_malloc", "setjmp3"]
   },
   {
     "name": "FUN_1001e294",
@@ -3504,7 +3504,7 @@
     "address": "1001e427",
     "signature": "void FUN_1001e427(void * this, png_structp png_ptr, byte * param_2, byte * param_3)",
     "external": false,
-    "calls": ["FUN_10020149", "FUN_1002438b", "FUN_10024790", "FUN_100248e1", "FUN_10024af7", "FUN_10024dc0", "FUN_10024f3b", "FUN_100258c8", "png_crc_finish", "png_crc_read", "png_error", "png_get_uint_32", "png_read_data", "png_reset_crc"]
+    "calls": ["FUN_10020149", "FUN_10024790", "FUN_100248e1", "FUN_10024af7", "FUN_10024dc0", "FUN_10024f3b", "FUN_100258c8", "inflate", "png_crc_finish", "png_crc_read", "png_error", "png_get_uint_32", "png_read_data", "png_reset_crc"]
   },
   {
     "name": "FUN_1001e7ce",
@@ -3518,7 +3518,7 @@
     "address": "1001e81b",
     "signature": "void FUN_1001e81b(png_structp png_ptr, undefined4 * param_2, undefined4 * param_3)",
     "external": false,
-    "calls": ["FUN_100205da", "FUN_10024251", "png_free", "png_free"]
+    "calls": ["FUN_100205da", "inflateEnd", "png_free", "png_free"]
   },
   {
     "name": "FUN_1001e93e",
@@ -4249,37 +4249,37 @@
     "calls": ["FUN_10023ee7"]
   },
   {
-    "name": "FUN_10024212",
+    "name": "inflateReset",
     "address": "10024212",
-    "signature": "undefined4 FUN_10024212(int param_1)",
+    "signature": "int inflateReset(z_streamp strm)",
     "external": false,
     "calls": ["FUN_10033f0b"]
   },
   {
-    "name": "FUN_10024251",
+    "name": "inflateEnd",
     "address": "10024251",
-    "signature": "undefined4 FUN_10024251(int param_1)",
+    "signature": "int inflateEnd(z_streamp strm)",
     "external": false,
     "calls": ["FUN_1003479e"]
   },
   {
-    "name": "FUN_1002428f",
+    "name": "inflateInit2_",
     "address": "1002428f",
-    "signature": "undefined4 FUN_1002428f(int param_1, int param_2, char * param_3, int param_4)",
+    "signature": "int inflateInit2_(z_streamp strm, int windowBits, char * version, int stream_size)",
     "external": false,
-    "calls": ["FUN_10024212", "FUN_10024251", "FUN_10033f76", "FUN_100348eb"]
+    "calls": ["FUN_10033f76", "FUN_100348eb", "inflateEnd", "inflateReset"]
   },
   {
-    "name": "FUN_10024374",
+    "name": "inflateInit_",
     "address": "10024374",
-    "signature": "undefined FUN_10024374(int param_1, char * param_2, int param_3)",
+    "signature": "int inflateInit_(z_streamp strm, char * version, int stream_size)",
     "external": false,
-    "calls": ["FUN_1002428f"]
+    "calls": ["inflateInit2_"]
   },
   {
-    "name": "FUN_1002438b",
+    "name": "inflate",
     "address": "1002438b",
-    "signature": "byte * FUN_1002438b(int * param_1, int param_2)",
+    "signature": "int inflate(z_streamp strm, int flush)",
     "external": false,
     "calls": ["FUN_10033f0b", "FUN_10034003"]
   },
@@ -4442,7 +4442,7 @@
     "address": "100258c8",
     "signature": "undefined FUN_100258c8(void * this, int * param_1)",
     "external": false,
-    "calls": ["FUN_10024212", "FUN_1002438b", "FUN_100247b3", "png_crc_finish", "png_crc_read", "png_error", "png_get_uint_32", "png_read_data", "png_reset_crc"]
+    "calls": ["FUN_100247b3", "inflate", "inflateReset", "png_crc_finish", "png_crc_read", "png_error", "png_get_uint_32", "png_read_data", "png_reset_crc"]
   },
   {
     "name": "FUN_10025aec",

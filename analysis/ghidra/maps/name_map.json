@@ -2085,6 +2085,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1001e191",
+    "name": "png_create_read_struct",
+    "signature": "png_structp png_create_read_struct(char * user_png_ver, png_voidp error_ptr, void * error_fn, void * warn_fn)",
+    "comment": "allocates png_struct, initializes zlib stream, checks version; error_fn/warn_fn are png_error_ptr callbacks"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1002047c",
     "name": "png_read_data",
     "signature": "void png_read_data(png_structp png_ptr, png_bytep data, png_uint_32 length)",
@@ -2110,6 +2117,41 @@
     "name": "memzero",
     "signature": "void memzero(void *dst, unsigned int size)",
     "comment": "zero-fill helper (memset to 0)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10024212",
+    "name": "inflateReset",
+    "signature": "int inflateReset(z_streamp strm)",
+    "comment": "zlib: reset inflate state"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10024251",
+    "name": "inflateEnd",
+    "signature": "int inflateEnd(z_streamp strm)",
+    "comment": "zlib: free inflate state"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002428f",
+    "name": "inflateInit2_",
+    "signature": "int inflateInit2_(z_streamp strm, int windowBits, char *version, int stream_size)",
+    "comment": "zlib: init inflate with window bits"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10024374",
+    "name": "inflateInit_",
+    "signature": "int inflateInit_(z_streamp strm, char *version, int stream_size)",
+    "comment": "zlib: init inflate (wrapper for inflateInit2_)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002438b",
+    "name": "inflate",
+    "signature": "int inflate(z_streamp strm, int flush)",
+    "comment": "zlib: inflate compressed data"
   },
   {
     "program": "grim.dll",
