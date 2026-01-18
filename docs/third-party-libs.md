@@ -31,7 +31,7 @@ outputs.
 - Status: headers imported (`third_party/headers/jpeg_all.h`).
 - Status: no signature mapping yet.
 
-### libvorbisfile / libvorbis / libogg (binary versions unknown; headers are 2002-era)
+### libvorbisfile / libvorbis / libogg (binary versions unknown; headers match vorbis v1.0.0 tag)
 - Evidence: `vorbisfile.dll` string in `analysis/ghidra/raw/crimsonland.exe_strings.txt:130`.
 - Evidence: .ogg asset paths and errors in `analysis/ghidra/raw/crimsonland.exe_strings.txt:884` and later.
 - Evidence: bundled DLL hash (sha256) for `game_bins/crimsonland/1.9.93-gog/VORBISFILE.DLL`:
@@ -40,6 +40,8 @@ outputs.
   `third_party/headers/ogg/ogg.h:12`; vorbisfile.h $Id: vorbisfile.h,v 1.17 2002/03/07$
   at `third_party/headers/vorbis/vorbisfile.h:12`; codec.h $Id: codec.h,v 1.40 2002/02/28$
   at `third_party/headers/vorbis/codec.h:12`.
+- Evidence (tag match): xiph/vorbis tag v1.0.0 (tagged 2002-07-19) contains identical
+  header $Id lines for `include/vorbis/vorbisfile.h` and `include/vorbis/codec.h`.
 - Status: headers imported (`third_party/headers/ogg/ogg.h`,
   `third_party/headers/vorbis/codec.h`, `third_party/headers/vorbis/vorbisfile.h`).
 - Status: no signature mapping yet.
