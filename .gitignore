@@ -2,6 +2,8 @@
 /artifacts/
 /_site/
 /analysis/ghidra/projects/
+/analysis/frida/raw/
+/analysis/frida/facts.jsonl
 .venv/
 zig-cache/
 zig-out/
