@@ -128,6 +128,72 @@ Validation highlights (see the evidence appendix for snippets):
 - `grim_draw_fullscreen_color` only draws when alpha is positive and forces texture stage 0 to null.
 
 
+## Validation backlog
+
+Offsets below have no callsites in `crimsonland.exe` or only a handful (1–3).
+They are still part of the vtable, but most evidence is from `grim.dll` bodies.
+Good targets for runtime validation or further callsite hunting.
+
+### Zero callsites in `crimsonland.exe` (grim.dll-only evidence)
+
+| Offset | Name | Signature |
+| --- | --- | --- |
+| `0x0` | `grim_release` | `void grim_release(void)` |
+| `0x4` | `grim_set_paused` | `void grim_set_paused(int paused)` |
+| `0x8` | `grim_get_version` | `float grim_get_version(void)` |
+| `0xc` | `grim_check_device` | `int grim_check_device(void)` |
+| `0x34` | `grim_get_time_ms` | `int grim_get_time_ms(void)` |
+| `0x38` | `grim_set_time_ms` | `void grim_set_time_ms(int ms)` |
+| `0x3c` | `grim_get_frame_dt` | `float grim_get_frame_dt(void)` |
+| `0x40` | `grim_get_fps` | `float grim_get_fps(void)` |
+| `0x5c` | `grim_was_mouse_button_pressed` | `int grim_was_mouse_button_pressed(int button)` |
+| `0x64` | `grim_set_mouse_pos` | `void grim_set_mouse_pos(float x, float y)` |
+| `0x68` | `grim_get_mouse_x` | `float grim_get_mouse_x(void)` |
+| `0x6c` | `grim_get_mouse_y` | `float grim_get_mouse_y(void)` |
+| `0x70` | `grim_get_mouse_dx` | `float grim_get_mouse_dx(void)` |
+| `0x74` | `grim_get_mouse_dy` | `float grim_get_mouse_dy(void)` |
+| `0x78` | `grim_get_mouse_dx_indexed` | `float grim_get_mouse_dx_indexed(int index)` |
+| `0x7c` | `grim_get_mouse_dy_indexed` | `float grim_get_mouse_dy_indexed(int index)` |
+| `0x88` | `grim_get_slot_float` | `float grim_get_slot_float(int index)` |
+| `0x8c` | `grim_get_slot_int` | `int grim_get_slot_int(int index)` |
+| `0x90` | `grim_set_slot_float` | `void grim_set_slot_float(int index, float value)` |
+| `0x94` | `grim_set_slot_int` | `void grim_set_slot_int(int index, int value)` |
+| `0x98` | `grim_get_joystick_x` | `int grim_get_joystick_x(void)` |
+| `0x9c` | `grim_get_joystick_y` | `int grim_get_joystick_y(void)` |
+| `0xa0` | `grim_get_joystick_z` | `int grim_get_joystick_z(void)` |
+| `0xa8` | `grim_is_joystick_button_down` | `int grim_is_joystick_button_down(int button)` |
+| `0xb0` | `grim_recreate_texture` | `int grim_recreate_texture(int handle)` |
+| `0xb8` | `grim_validate_texture` | `int grim_validate_texture(int handle)` |
+| `0xbc` | `grim_destroy_texture` | `void grim_destroy_texture(int handle)` |
+| `0xe0` | `grim_draw_line` | `void grim_draw_line(float * p0, float * p1, float thickness)` |
+| `0xe4` | `grim_draw_line_quad` | `void grim_draw_line_quad(float * p0, float * p1, float * half_vec)` |
+| `0xec` | `grim_flush_batch` | `void grim_flush_batch(void)` |
+| `0xf4` | `grim_submit_vertex_raw` | `void grim_submit_vertex_raw(float * vertex)` |
+| `0xf8` | `grim_submit_quad_raw` | `void grim_submit_quad_raw(float * verts)` |
+| `0x124` | `grim_draw_quad_rotated_matrix` | `void grim_draw_quad_rotated_matrix(float x, float y, float w, float h)` |
+
+### Low callsite offsets (1–3)
+
+| Offset | Callsites | Name | Signature |
+| --- | --- | --- | --- |
+| `0x10` | 1 | `grim_apply_config` | `int grim_apply_config(void)` |
+| `0x14` | 1 | `grim_init_system` | `int grim_init_system(void)` |
+| `0x18` | 1 | `grim_shutdown` | `void grim_shutdown(void)` |
+| `0x1c` | 1 | `grim_apply_settings` | `void grim_apply_settings(void)` |
+| `0x28` | 1 | `grim_get_error_text` | `char * grim_get_error_text(void)` |
+| `0x50` | 1 | `grim_get_key_char` | `int grim_get_key_char(void)` |
+| `0xac` | 1 | `grim_create_texture` | `int grim_create_texture(char * name, int width, int height)` |
+| `0xc8` | 1 | `grim_draw_fullscreen_quad` | `void grim_draw_fullscreen_quad(void)` |
+| `0xd8` | 1 | `grim_draw_circle_filled` | `void grim_draw_circle_filled(float x, float y, float radius)` |
+| `0xdc` | 1 | `grim_draw_circle_outline` | `void grim_draw_circle_outline(float x, float y, float radius)` |
+| `0x54` | 2 | `grim_set_key_char_buffer` | `void grim_set_key_char_buffer(uchar * buffer, int * count, int size)` |
+| `0x60` | 2 | `grim_get_mouse_wheel_delta` | `float grim_get_mouse_wheel_delta(void)` |
+| `0xa4` | 2 | `grim_get_joystick_pov` | `int grim_get_joystick_pov(int index)` |
+| `0xcc` | 2 | `grim_draw_fullscreen_color` | `void grim_draw_fullscreen_color(float r, float g, float b, float a)` |
+| `0xb4` | 3 | `grim_load_texture` | `int grim_load_texture(char * name, char * path)` |
+| `0x130` | 3 | `grim_submit_vertices_offset_color` | `void grim_submit_vertices_offset_color(float * verts, int count, float * offset, float * color)` |
+| `0x140` | 3 | `grim_draw_text_mono_fmt` | `void grim_draw_text_mono_fmt(int * self, float x, float y, char * fmt)` |
+
 ## Input-ish offsets (evidence)
 
 These offsets appear with keycodes or input-related values:
