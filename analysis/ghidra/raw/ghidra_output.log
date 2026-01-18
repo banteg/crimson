@@ -5,12 +5,12 @@ INFO  Using log config file: jar:file:/opt/ghidra_12.0.1_PUBLIC/Ghidra/Framework
 INFO  Using log file: analysis/ghidra/raw/ghidra_analysis.log (LoggingInitialization)  
 INFO  Loading user preferences: /home/node/.config/ghidra/ghidra_12.0.1_PUBLIC/preferences (Preferences)  
 INFO  Searching for classes... (ClassSearcher)  
-INFO  Class search complete (716 ms) (ClassSearcher)  
+INFO  Class search complete (730 ms) (ClassSearcher)  
 INFO  Initializing SSL Context (DefaultSSLContextInitializer)  
 INFO  Initializing Random Number Generator... (SecureRandomFactory)  
 INFO  Random Number Generator initialization complete: NativePRNGNonBlocking (SecureRandomFactory)  
 INFO  Trust manager disabled, cacerts have not been set (DefaultTrustManagerFactory)  
-INFO  Headless startup complete (1400 ms) (AnalyzeHeadless)  
+INFO  Headless startup complete (1414 ms) (AnalyzeHeadless)  
 INFO  Class searcher loaded 58 extension points (18 false positives) (ClassSearcher)  
 INFO  HEADLESS Script Paths:
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Debug/Debugger/ghidra_scripts
@@ -39,16 +39,16 @@ INFO  HEADLESS Script Paths:
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/FunctionID/ghidra_scripts
     /opt/ghidra_12.0.1_PUBLIC/Ghidra/Processors/Atmel/ghidra_scripts (HeadlessAnalyzer)  
 INFO  HEADLESS: execution starts (HeadlessAnalyzer)  
-INFO  Creating temporary project: /tmp/ghidra_grim_dll_261007 (HeadlessAnalyzer)  
-INFO  Creating project: /tmp/ghidra_grim_dll_261007 (DefaultProject)  
+INFO  Creating temporary project: /tmp/ghidra_crimsonland_exe_262156 (HeadlessAnalyzer)  
+INFO  Creating project: /tmp/ghidra_crimsonland_exe_262156 (DefaultProject)  
 INFO  REPORT: Processing input files:  (HeadlessAnalyzer)  
-INFO       project: /tmp/ghidra_grim_dll_261007 (HeadlessAnalyzer)  
-INFO  IMPORTING: file:///workspace/game_bins/crimsonland/1.9.93-gog/grim.dll (HeadlessAnalyzer)  
+INFO       project: /tmp/ghidra_crimsonland_exe_262156 (HeadlessAnalyzer)  
+INFO  IMPORTING: file:///workspace/game_bins/crimsonland/1.9.93-gog/crimsonland.exe (HeadlessAnalyzer)  
 INFO  Using Loader: Portable Executable (PE) (ProgramLoader)  
 INFO  Using Language/Compiler: x86:LE:32:default:windows (ProgramLoader)  
 INFO  Using Library Search Path: [., /bin, /lib, /lib64, /lib/x86_64-linux-gnu, /lib/aarch64-linux-gnu, /usr/bin, /usr/lib, /usr/X11R6/bin, /usr/X11R6/lib, /usr/java/packages/lib, /usr/lib/aarch64-linux-gnu/jni, /usr/lib/aarch64-linux-gnu, /usr/lib/jni] (ProgramLoader)  
 INFO  Additional info:
-Loading file:///workspace/game_bins/crimsonland/1.9.93-gog/grim.dll?MD5=88d5f6d66a1389cdeb3c30dc6ee4aa42...
+Loading file:///workspace/game_bins/crimsonland/1.9.93-gog/crimsonland.exe?MD5=b5734f679649e1e61b79b6071f7e0ee5...
 ------------------------------------------------
 
 Searching 8 paths for library ADVAPI32.DLL...
@@ -59,11 +59,7 @@ Searching 8 paths for library D3D8.DLL...
 Library not found.
 ------------------------------------------------
 
-Searching 8 paths for library DINPUT8.DLL...
-Library not found.
-------------------------------------------------
-
-Searching 8 paths for library GDI32.DLL...
+Searching 8 paths for library DSOUND.DLL...
 Library not found.
 ------------------------------------------------
 
@@ -71,7 +67,15 @@ Searching 8 paths for library KERNEL32.DLL...
 Library not found.
 ------------------------------------------------
 
-Searching 8 paths for library MSVCRT.DLL...
+Searching 8 paths for library OLE32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library OLEAUT32.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library SHELL32.DLL...
 Library not found.
 ------------------------------------------------
 
@@ -83,80 +87,95 @@ Searching 8 paths for library USER32.DLL...
 Library not found.
 ------------------------------------------------
 
+Searching 8 paths for library VERSION.DLL...
+Library not found.
+------------------------------------------------
+
+Searching 8 paths for library VORBISFILE.DLL...
+Loading file:///workspace/game_bins/crimsonland/1.9.93-gog/VORBISFILE.DLL?MD5=b226080606e45b6879ea02f1b5f47c5e...
+Created exports file: /home/node/.config/ghidra/ghidra_12.0.1_PUBLIC/symbols/win32/vorbisfile.exports
+Library not saved to project.
+------------------------------------------------
+
+Searching 8 paths for library WININET.DLL...
+Library not found.
+------------------------------------------------
+
 Searching 8 paths for library WINMM.DLL...
 Library not found.
 ------------------------------------------------
 
-Linking the External Programs of 'grim.dll' to imported libraries...
+Applying cached symbols from VORBISFILE.DLL
+Linking the External Programs of 'crimsonland.exe' to imported libraries...
   [KERNEL32.DLL] -> not found in project
   [USER32.DLL] -> not found in project
-  [GDI32.DLL] -> not found in project
-  [MSVCRT.DLL] -> not found in project
-  [D3D8.DLL] -> not found in project
-  [WINMM.DLL] -> not found in project
-  [DINPUT8.DLL] -> not found in project
-  [URLMON.DLL] -> not found in project
   [ADVAPI32.DLL] -> not found in project
+  [SHELL32.DLL] -> not found in project
+  [OLE32.DLL] -> not found in project
+  [OLEAUT32.DLL] -> not found in project
+  [VORBISFILE.DLL] -> not found in project
+  [URLMON.DLL] -> not found in project
+  [WINMM.DLL] -> not found in project
+  [D3D8.DLL] -> not found in project
+  [VERSION.DLL] -> not found in project
+  [WININET.DLL] -> not found in project
+  [DSOUND.DLL] -> not found in project
 ------------------------------------------------
 
  (ProgramLoader)  
 INFO  IMPORTING: Loaded 0 additional files (HeadlessAnalyzer)  
-INFO  ANALYZING all memory and code: file:///workspace/game_bins/crimsonland/1.9.93-gog/grim.dll (HeadlessAnalyzer)  
+INFO  ANALYZING all memory and code: file:///workspace/game_bins/crimsonland/1.9.93-gog/crimsonland.exe (HeadlessAnalyzer)  
 WARN  Ignoring leading '_' chars on no-return name '___raise_securityfailure' specified in file: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn (NoReturnFunctionAnalyzer)  
 WARN  Ignoring leading '_' chars on no-return name '___report_rangecheckfailure' specified in file: /opt/ghidra_12.0.1_PUBLIC/Ghidra/Features/Base/data/PEFunctionsThatDoNotReturn (NoReturnFunctionAnalyzer)  
 INFO  Skipping PDB processing: missing PDB information in program metadata (PdbUniversalAnalyzer)  
 INFO  Packed database cache: /var/tmp/node-ghidra/packed-db-cache (PackedDatabaseCache)  
-ERROR Invalid PNG data at 1004e51c (PngDataType)  
-INFO  hit non-returning function, restarting decompiler switch analyzer later (DecompilerSwitchAnalyzer)  
 INFO  Applied data type archive: windows_vs12_32 (ApplyDataArchiveAnalyzer)  
-INFO  hit non-returning function, restarting decompiler switch analyzer later (DecompilerSwitchAnalyzer)  
 INFO  Applied data type archive: windows_vs12_32 (ApplyDataArchiveAnalyzer)  
 INFO  -----------------------------------------------------
-    ASCII Strings                              0.254 secs
-    Apply Data Archives                        0.093 secs
-    Call Convention ID                         0.004 secs
-    Call-Fixup Installer                       0.019 secs
-    Create Address Tables                      0.051 secs
-    Create Address Tables - One Time           0.045 secs
-    Create Function                            0.212 secs
-    Data Reference                             0.178 secs
-    Decompiler Parameter ID                    4.532 secs
-    Decompiler Switch Analysis                 7.556 secs
-    Decompiler Switch Analysis - One Time      2.467 secs
-    Demangler Microsoft                        0.014 secs
-    Disassemble                                0.928 secs
-    Disassemble Entry Points                   0.029 secs
-    Embedded Media                             0.013 secs
+    ASCII Strings                              0.273 secs
+    Apply Data Archives                        0.107 secs
+    Call Convention ID                         0.005 secs
+    Call-Fixup Installer                       0.026 secs
+    Create Address Tables                      0.054 secs
+    Create Address Tables - One Time           0.093 secs
+    Create Function                            0.195 secs
+    Data Reference                             0.078 secs
+    Decompiler Parameter ID                    9.845 secs
+    Decompiler Switch Analysis                22.735 secs
+    Demangler Microsoft                        0.006 secs
+    Disassemble                                0.197 secs
+    Disassemble Entry Points                   0.365 secs
+    Embedded Media                             0.012 secs
     External Entry References                  0.000 secs
-    Function ID                                0.301 secs
-    Function Start Pre Search                  0.017 secs
-    Function Start Search                      0.055 secs
-    Function Start Search After Code           0.022 secs
-    Function Start Search After Data           0.022 secs
-    Function Start Search delayed - One Time   0.003 secs
-    Non-Returning Functions - Discovered       0.070 secs
-    Non-Returning Functions - Known            0.006 secs
+    Function ID                                0.420 secs
+    Function Start Pre Search                  0.011 secs
+    Function Start Search                      0.097 secs
+    Function Start Search After Code           0.030 secs
+    Function Start Search After Data           0.018 secs
+    Function Start Search delayed - One Time   0.002 secs
+    Non-Returning Functions - Discovered       0.102 secs
+    Non-Returning Functions - Known            0.002 secs
     PDB Universal                              0.002 secs
-    Reference                                  0.229 secs
-    Scalar Operand References                  0.486 secs
-    Shared Return Calls                        0.093 secs
-    Stack                                      1.522 secs
-    Subroutine References                      0.275 secs
-    Subroutine References - One Time           0.003 secs
-    Windows x86 PE Exception Handling          1.164 secs
+    Reference                                  0.302 secs
+    Scalar Operand References                  0.401 secs
+    Shared Return Calls                        0.087 secs
+    Stack                                      1.674 secs
+    Subroutine References                      0.871 secs
+    Subroutine References - One Time           0.005 secs
+    Windows x86 PE Exception Handling          0.998 secs
     Windows x86 PE RTTI Analyzer               0.000 secs
-    Windows x86 Thread Environment Block (TEB) Analyzer     0.011 secs
-    WindowsResourceReference                   0.556 secs
+    Windows x86 Thread Environment Block (TEB) Analyzer     0.009 secs
+    WindowsResourceReference                   0.272 secs
     X86 Function Callee Purge                  0.069 secs
-    x86 Constant Reference Analyzer            1.541 secs
+    x86 Constant Reference Analyzer            2.482 secs
 -----------------------------------------------------
-     Total Time   22 secs
+     Total Time   41 secs
 -----------------------------------------------------
  (AutoAnalysisManager)  
-INFO  REPORT: Analysis succeeded for file: file:///workspace/game_bins/crimsonland/1.9.93-gog/grim.dll (HeadlessAnalyzer)  
+INFO  REPORT: Analysis succeeded for file: file:///workspace/game_bins/crimsonland/1.9.93-gog/crimsonland.exe (HeadlessAnalyzer)  
 INFO  REPORT: Execute script: ImportThirdPartyHeaders.java 'third_party/headers'  (HeadlessAnalyzer)  
 INFO  SCRIPT: /workspace/analysis/ghidra/scripts/ImportThirdPartyHeaders.java (HeadlessAnalyzer)  
-INFO  ImportThirdPartyHeaders.java> Parsing third-party headers into: grim.dll (GhidraScript)  
+INFO  ImportThirdPartyHeaders.java> Parsing third-party headers into: crimsonland.exe (GhidraScript)  
 INFO  ImportThirdPartyHeaders.java> Headers root: /workspace/third_party/headers (GhidraScript)  
 INFO  parse /workspace/third_party/headers/jpeg_all.h (CParserUtils)  
 INFO  parse /workspace/third_party/headers/zlib.h (CParserUtils)  
@@ -173,55 +192,39 @@ INFO  parse /workspace/third_party/headers/dsound.h (CParserUtils)
 INFO  REPORT: Execute script: ApplyWinapiGDT.java 'analysis/ghidra/maps/winapi_32.gdt'  (HeadlessAnalyzer)  
 INFO  SCRIPT: /workspace/analysis/ghidra/scripts/ApplyWinapiGDT.java (HeadlessAnalyzer)  
 INFO  ApplyWinapiGDT.java> Applying WinAPI GDT: /workspace/analysis/ghidra/maps/winapi_32.gdt (GhidraScript)  
-INFO  REPORT: Execute script: CreateGrim2DVtableFunctions.java  (HeadlessAnalyzer)  
-INFO  SCRIPT: /workspace/analysis/ghidra/scripts/CreateGrim2DVtableFunctions.java (HeadlessAnalyzer)  
-INFO  CreateGrim2DVtableFunctions.java> CreateGrim2DVtableFunctions: created=84 skipped=80 (GhidraScript)  
 INFO  REPORT: Execute script: ApplyNameMap.java 'analysis/ghidra/maps/name_map.json'  (HeadlessAnalyzer)  
 INFO  SCRIPT: /workspace/analysis/ghidra/scripts/ApplyNameMap.java (HeadlessAnalyzer)  
-ERROR ApplyNameMap.java> No function at 10002120 for grim_config_dialog_proc (GhidraScript)  
 INFO  ApplyNameMap.java> Applied name map: /workspace/analysis/ghidra/maps/name_map.json (GhidraScript)  
-INFO  ApplyNameMap.java> Program: grim.dll (GhidraScript)  
-INFO  ApplyNameMap.java> Updated entries: 163 (GhidraScript)  
-INFO  ApplyNameMap.java> Renamed: 139, Signatures: 163, Comments: 140 (GhidraScript)  
-INFO  ApplyNameMap.java> Missing: 1, Skipped: 192 (GhidraScript)  
+INFO  ApplyNameMap.java> Program: crimsonland.exe (GhidraScript)  
+INFO  ApplyNameMap.java> Updated entries: 192 (GhidraScript)  
+INFO  ApplyNameMap.java> Renamed: 186, Signatures: 162, Comments: 192 (GhidraScript)  
+INFO  ApplyNameMap.java> Missing: 0, Skipped: 164 (GhidraScript)  
 INFO  REPORT: Execute script: ApplyDataMap.java 'analysis/ghidra/maps/data_map.json'  (HeadlessAnalyzer)  
 INFO  SCRIPT: /workspace/analysis/ghidra/scripts/ApplyDataMap.java (HeadlessAnalyzer)  
 INFO  ApplyDataMap.java> Applied data map: /workspace/analysis/ghidra/maps/data_map.json (GhidraScript)  
-INFO  ApplyDataMap.java> Program: grim.dll (GhidraScript)  
-INFO  ApplyDataMap.java> Updated entries: 30 (GhidraScript)  
-INFO  ApplyDataMap.java> Created: 0, Renamed: 30, Comments: 30 (GhidraScript)  
-INFO  ApplyDataMap.java> Missing: 0, Skipped: 309 (GhidraScript)  
+INFO  ApplyDataMap.java> Program: crimsonland.exe (GhidraScript)  
+INFO  ApplyDataMap.java> Updated entries: 309 (GhidraScript)  
+INFO  ApplyDataMap.java> Created: 7, Renamed: 302, Comments: 309 (GhidraScript)  
+INFO  ApplyDataMap.java> Missing: 0, Skipped: 30 (GhidraScript)  
 INFO  REPORT: Execute script: ExportAll.java  (HeadlessAnalyzer)  
 INFO  SCRIPT: /workspace/analysis/ghidra/tooling/ghidra_scripts/ExportAll.java (HeadlessAnalyzer)  
 INFO  ExportAll.java> === Starting comprehensive export === (GhidraScript)  
 INFO  ExportAll.java> Output directory: analysis/ghidra/raw (GhidraScript)  
-INFO  ExportAll.java> Program: grim.dll (GhidraScript)  
+INFO  ExportAll.java> Program: crimsonland.exe (GhidraScript)  
 INFO  ExportAll.java> Architecture: x86 (GhidraScript)  
 INFO  ExportAll.java>  (GhidraScript)  
-INFO  ExportAll.java> Exporting summary to: grim.dll_summary.txt (GhidraScript)  
-INFO  ExportAll.java> Exporting decompiled code to: grim.dll_decompiled.c (GhidraScript)  
-INFO  ExportAll.java>   Decompiled 919 functions (GhidraScript)  
-INFO  ExportAll.java> Exporting functions to: grim.dll_functions.json (GhidraScript)  
-INFO  ExportAll.java>   Exported 959 functions (GhidraScript)  
-INFO  ExportAll.java> Exporting strings to: grim.dll_strings.txt (GhidraScript)  
-INFO  ExportAll.java>   Exported 583 strings (GhidraScript)  
+INFO  ExportAll.java> Exporting summary to: crimsonland.exe_summary.txt (GhidraScript)  
+INFO  ExportAll.java> Exporting decompiled code to: crimsonland.exe_decompiled.c (GhidraScript)  
+INFO  ExportAll.java>   Decompiled 792 functions (GhidraScript)  
+INFO  ExportAll.java> Exporting functions to: crimsonland.exe_functions.json (GhidraScript)  
+INFO  ExportAll.java>   Exported 819 functions (GhidraScript)  
+INFO  ExportAll.java> Exporting strings to: crimsonland.exe_strings.txt (GhidraScript)  
+INFO  ExportAll.java>   Exported 1374 strings (GhidraScript)  
 INFO  ExportAll.java> Analyzing interesting patterns... (GhidraScript)  
 INFO  ExportAll.java>  (GhidraScript)  
 INFO  ExportAll.java> === Export complete === (GhidraScript)  
-INFO  ANALYZING changes made by post scripts: file:///workspace/game_bins/crimsonland/1.9.93-gog/grim.dll (HeadlessAnalyzer)  
-INFO  -----------------------------------------------------
-    Call Convention ID                         2.412 secs
-    Call-Fixup Installer                       0.000 secs
-    Decompiler Parameter ID                    2.351 secs
-    Function Start Search                      0.001 secs
-    Shared Return Calls                        0.001 secs
-    Stack                                      0.073 secs
-    X86 Function Callee Purge                  0.000 secs
------------------------------------------------------
-     Total Time   4 secs
------------------------------------------------------
- (AutoAnalysisManager)  
-INFO  REPORT: Post-analysis succeeded for file: file:///workspace/game_bins/crimsonland/1.9.93-gog/grim.dll (HeadlessAnalyzer)  
-INFO  /grim.dll: file created (node) (LocalFileSystem)  
-INFO  REPORT: Save succeeded for: /grim.dll (ghidra_grim_dll_261007:/grim.dll) (HeadlessAnalyzer)  
+INFO  ANALYZING changes made by post scripts: file:///workspace/game_bins/crimsonland/1.9.93-gog/crimsonland.exe (HeadlessAnalyzer)  
+INFO  REPORT: Post-analysis succeeded for file: file:///workspace/game_bins/crimsonland/1.9.93-gog/crimsonland.exe (HeadlessAnalyzer)  
+INFO  /crimsonland.exe: file created (node) (LocalFileSystem)  
+INFO  REPORT: Save succeeded for: /crimsonland.exe (ghidra_crimsonland_exe_262156:/crimsonland.exe) (HeadlessAnalyzer)  
 INFO  REPORT: Import succeeded (HeadlessAnalyzer)  

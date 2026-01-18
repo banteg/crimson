@@ -28,6 +28,13 @@
     "calls": ["GetDlgItem", "SendMessageA"]
   },
   {
+    "name": "grim_config_dialog_proc",
+    "address": "10002120",
+    "signature": "int grim_config_dialog_proc(int hwnd, uint msg, uint wparam, int lparam)",
+    "external": false,
+    "calls": ["EndDialog", "FUN_10001a30", "FUN_10001e90", "GetDlgItem", "GetLocalTime", "HlinkNavigateString", "MessageBoxA", "SendMessageA", "ShowWindow", "WinExec", "atoi", "sprintf", "strchr", "strstr"]
+  },
+  {
     "name": "grim_window_create",
     "address": "10002680",
     "signature": "int grim_window_create(void)",
@@ -3518,7 +3525,7 @@
     "address": "1001e81b",
     "signature": "void FUN_1001e81b(png_structp png_ptr, undefined4 * param_2, undefined4 * param_3)",
     "external": false,
-    "calls": ["FUN_100205da", "inflateEnd", "png_free", "png_free"]
+    "calls": ["FUN_100205da", "inflateEnd", "png_free", "png_free_thunk"]
   },
   {
     "name": "FUN_1001e93e",
@@ -3801,9 +3808,9 @@
     "calls": ["png_malloc"]
   },
   {
-    "name": "png_free",
+    "name": "png_free_thunk",
     "address": "1002057e",
-    "signature": "void png_free(png_structp png_ptr, void * ptr)",
+    "signature": "void png_free_thunk(png_structp png_ptr, void * ptr)",
     "external": false,
     "calls": []
   },

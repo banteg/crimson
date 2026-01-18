@@ -37,7 +37,7 @@ Interesting Functions and Patterns
 [FREE related]
   grim_find_free_texture_slot @ 100051c0
   free @ 1000aa8c
-  png_free @ 1002057e
+  png_free_thunk @ 1002057e
   png_free_ptr @ 10024734
   png_free @ 10024777
   zcfree @ 1002e665
@@ -51,6 +51,9 @@ Interesting Functions and Patterns
 
 [SPRINTF related]
   sprintf @ 1000a8d0
+
+[LOG related]
+  grim_config_dialog_proc @ 10002120
 
 [PRINT related]
   sprintf @ 1000a8d0
