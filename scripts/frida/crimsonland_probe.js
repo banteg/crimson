@@ -1706,6 +1706,8 @@ function hookGrimNow() {
 //  4) stopWatchPlayerOffset()
 let gMemWatchEnabled = false;
 let gMemWatchKind = null;
+let gCreditsPollTimer = null;
+let gCreditsPollState = null;
 
 function stopMemWatch(kind) {
   if (typeof MemoryAccessMonitor === 'undefined') return;
@@ -1716,6 +1718,14 @@ function stopMemWatch(kind) {
   gMemWatchEnabled = false;
   gMemWatchKind = null;
   writeLine({ event: 'mem_watch_stop', ts: nowIso(), kind });
+}
+
+function stopCreditsPoll() {
+  if (gCreditsPollTimer) {
+    try { clearInterval(gCreditsPollTimer); } catch (_) {}
+  }
+  gCreditsPollTimer = null;
+  gCreditsPollState = null;
 }
 
 function watchPlayerOffset(playerIndex, offset, size) {
@@ -1762,9 +1772,19 @@ function stopWatchPlayerOffset() {
   stopMemWatch('player_offset');
 }
 
+function readCreditsFlags(flagsBase, textBase, startIndex, count, stride) {
+  const out = [];
+  for (let i = 0; i < count; i++) {
+    const idx = startIndex + i;
+    const flagPtr = flagsBase.add(idx * stride);
+    out.push(tryReadU32(flagPtr));
+  }
+  return out;
+}
+
 // Watch credits line flags (0x00480984 + index * 8) to capture click logic.
-// Usage: watchCreditsFlags(0, 0x80) then click credits lines; stopWatchCreditsFlags().
-function watchCreditsFlags(startIndex, count) {
+// Usage: watchCreditsFlags(0, 0x80, 100) then click credits lines; stopWatchCreditsFlags().
+function watchCreditsFlags(startIndex, count, pollMs) {
   if (typeof MemoryAccessMonitor === 'undefined') {
     writeLine({ event: 'mem_watch_error', ts: nowIso(), error: 'MemoryAccessMonitor is not available in this Frida build' });
     return;
@@ -1778,27 +1798,36 @@ function watchCreditsFlags(startIndex, count) {
   const stride = 8;
   const index0 = (startIndex === undefined || startIndex === null) ? 0 : startIndex;
   const lines = (count === undefined || count === null) ? 0x80 : count;
-  const range = { base: flagsBase.add(index0 * stride), size: lines * stride };
+  const flagsStart = flagsBase.add(index0 * stride);
+  const flagsEnd = flagsStart.add(lines * stride);
+  const pageSize = Process.pageSize || 0x1000;
+  const pageMask = ptr(pageSize - 1);
+  const rangeBase = flagsStart.sub(flagsStart.and(pageMask));
+  const span = flagsEnd.sub(rangeBase).toInt32();
+  const rangeSize = Math.ceil(span / pageSize) * pageSize;
+  const range = { base: rangeBase, size: rangeSize };
   try {
     MemoryAccessMonitor.enable([range], {
       onAccess(details) {
+        if (!details.address) return;
+        if (details.address.compare(flagsStart) < 0 || details.address.compare(flagsEnd) >= 0) {
+          return;
+        }
         let entryIndex = null;
         let flagValue = null;
         let linePtr = null;
         let lineText = null;
-        if (details.address) {
-          try {
-            const delta = details.address.sub(flagsBase);
-            entryIndex = Math.floor(delta.toInt32() / stride);
-            const flagPtr = flagsBase.add(entryIndex * stride);
-            flagValue = tryReadU32(flagPtr);
-            const textPtr = tryReadPtr(textBase.add(entryIndex * stride));
-            if (textPtr) {
-              linePtr = textPtr.toString();
-              lineText = tryReadAnsi(textPtr, 120);
-            }
-          } catch (_) {}
-        }
+        try {
+          const delta = details.address.sub(flagsBase);
+          entryIndex = Math.floor(delta.toInt32() / stride);
+          const flagPtr = flagsBase.add(entryIndex * stride);
+          flagValue = tryReadU32(flagPtr);
+          const textPtr = tryReadPtr(textBase.add(entryIndex * stride));
+          if (textPtr) {
+            linePtr = textPtr.toString();
+            lineText = tryReadAnsi(textPtr, 120);
+          }
+        } catch (_) {}
         writeLine({
           event: 'mem_access',
           ts: nowIso(),
@@ -1822,16 +1851,50 @@ function watchCreditsFlags(startIndex, count) {
       kind: 'credits_flags',
       startIndex: index0,
       count: lines,
-      base: flagsBase.toString(),
+      base: flagsStart.toString(),
       size: range.size,
     });
   } catch (e) {
     writeLine({ event: 'mem_watch_error', ts: nowIso(), error: '' + e, startIndex: index0, count: lines });
   }
+
+  stopCreditsPoll();
+  const interval = (pollMs === undefined || pollMs === null) ? 100 : pollMs;
+  gCreditsPollState = {
+    startIndex: index0,
+    count: lines,
+    flagsBase: flagsBase,
+    textBase: textBase,
+    stride: stride,
+    flags: readCreditsFlags(flagsBase, textBase, index0, lines, stride),
+  };
+  gCreditsPollTimer = setInterval(function () {
+    if (!gCreditsPollState) return;
+    const next = readCreditsFlags(flagsBase, textBase, index0, lines, stride);
+    const prev = gCreditsPollState.flags || [];
+    for (let i = 0; i < next.length; i++) {
+      if (next[i] === prev[i]) continue;
+      const idx = index0 + i;
+      const textPtr = tryReadPtr(textBase.add(idx * stride));
+      const lineText = textPtr ? tryReadAnsi(textPtr, 120) : null;
+      writeLine({
+        event: 'credits_flags_poll',
+        ts: nowIso(),
+        kind: 'credits_flags',
+        index: idx,
+        flag_prev: prev[i],
+        flag_u32: next[i],
+        line_ptr: textPtr ? textPtr.toString() : null,
+        line_text: lineText,
+      });
+    }
+    gCreditsPollState.flags = next;
+  }, interval);
 }
 
 function stopWatchCreditsFlags() {
   stopMemWatch('credits_flags');
+  stopCreditsPoll();
 }
 
 function help() {
