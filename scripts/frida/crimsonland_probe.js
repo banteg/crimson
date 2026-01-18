@@ -1438,8 +1438,16 @@ function hookResources() {
   // texture_get_or_load(char* name) -> int handle
   attachAtVa('crimsonland.exe', ADDR.texture_get_or_load, 'texture_get_or_load', {
     onEnter(args) {
-      const decoded = readBestString(args[0], CONFIG.stringMaxLen);
-      this._evt = { event: 'texture_get_or_load', ts: nowIso(), name: decoded.name, ...decoded };
+      const nameInfo = readBestString(args[0], CONFIG.stringMaxLen);
+      const pathInfo = readBestString(args[1], CONFIG.stringMaxLen);
+      const chosen = pathInfo.name || nameInfo.name;
+      this._evt = {
+        event: 'texture_get_or_load',
+        ts: nowIso(),
+        name: chosen,
+        name_info: nameInfo,
+        path_info: pathInfo,
+      };
       if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
     },
     onLeave(retval) {
@@ -1450,8 +1458,16 @@ function hookResources() {
 
   attachAtVa('crimsonland.exe', ADDR.texture_get_or_load_alt, 'texture_get_or_load_alt', {
     onEnter(args) {
-      const decoded = readBestString(args[0], CONFIG.stringMaxLen);
-      this._evt = { event: 'texture_get_or_load_alt', ts: nowIso(), name: decoded.name, ...decoded };
+      const nameInfo = readBestString(args[0], CONFIG.stringMaxLen);
+      const pathInfo = readBestString(args[1], CONFIG.stringMaxLen);
+      const chosen = pathInfo.name || nameInfo.name;
+      this._evt = {
+        event: 'texture_get_or_load_alt',
+        ts: nowIso(),
+        name: chosen,
+        name_info: nameInfo,
+        path_info: pathInfo,
+      };
       if (CONFIG.includeCaller) this._evt.caller = symbolicate(this.returnAddress);
     },
     onLeave(retval) {
