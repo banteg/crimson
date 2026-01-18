@@ -4,9 +4,10 @@ import argparse
 import socket
 
 
-def send(host: str, port: int, line: str) -> str:
-    sock = socket.create_connection((host, port), timeout=5.0)
+def send(host: str, port: int, line: str, timeout: float) -> str:
+    sock = socket.create_connection((host, port), timeout=timeout)
     with sock:
+        sock.settimeout(timeout)
         sock.sendall((line.rstrip() + "\n").encode("utf-8"))
         chunks = []
         while True:
@@ -26,6 +27,7 @@ def main() -> int:
     parser.add_argument("--port", type=int, default=31337)
     parser.add_argument("--cmd", help="command to send")
     parser.add_argument("--tail", type=int, help="tail lines from log")
+    parser.add_argument("--timeout", type=float, default=10.0)
     args = parser.parse_args()
 
     if args.tail is not None:
@@ -35,7 +37,7 @@ def main() -> int:
     else:
         raise SystemExit("Provide --cmd or --tail")
 
-    output = send(args.host, args.port, line)
+    output = send(args.host, args.port, line, timeout=args.timeout)
     if output:
         print(output)
     return 0

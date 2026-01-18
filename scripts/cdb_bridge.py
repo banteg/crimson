@@ -78,7 +78,12 @@ class CdbBridge:
                     self.capture.lines.append(line.rstrip("\n"))
 
     def send_command(self, command: str, timeout: float) -> list[str]:
-        assert self.proc and self.proc.stdin
+        if not self.proc:
+            return ["[cdb] process not started"]
+        if self.proc.poll() is not None:
+            return ["[cdb] process has exited"]
+        if not self.proc.stdin:
+            return ["[cdb] stdin unavailable"]
         stripped = command.strip()
         if self.auto_break and not _is_continue_command(stripped):
             self._break_in()
@@ -88,9 +93,12 @@ class CdbBridge:
             self.capture.active_id = cmd_id
             self.capture.lines = []
             self.capture.event.clear()
-        self.proc.stdin.write(command.rstrip() + "\n")
-        self.proc.stdin.write(marker + "\n")
-        self.proc.stdin.flush()
+        try:
+            self.proc.stdin.write(command.rstrip() + "\n")
+            self.proc.stdin.write(marker + "\n")
+            self.proc.stdin.flush()
+        except BrokenPipeError:
+            return ["[cdb] stdin broken pipe (process likely exited)"]
         finished = self.capture.event.wait(timeout=timeout)
         with self.lock:
             lines = list(self.capture.lines)
@@ -179,7 +187,10 @@ def serve(
                 bridge.close()
                 conn.sendall(b"OK\n<<<END>>>\n")
                 break
-            lines = bridge.send_command(line, timeout=timeout)
+            try:
+                lines = bridge.send_command(line, timeout=timeout)
+            except Exception as exc:  # noqa: BLE001 - surface errors to caller
+                lines = [f"[cdb] error: {exc}"]
             payload = "\n".join(lines) + "\n<<<END>>>\n"
             conn.sendall(payload.encode("utf-8"))
 
