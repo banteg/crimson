@@ -19600,27 +19600,27 @@ void * __thiscall grim_pixel_format_init_dxt(void *this,uint *desc)
   if (iVar1 == 0x31545844) {
     *(undefined4 *)((int)this + 0x1080) = 8;
     *(undefined1 **)((int)this + 0x1088) = &LAB_10021b96;
-    *(code **)((int)this + 0x1084) = FUN_10021899;
+    *(code **)((int)this + 0x1084) = grim_dxt1_decode_color_block;
   }
   else if (iVar1 == 0x32545844) {
     *(undefined4 *)((int)this + 0x1080) = 0x10;
-    *(code **)((int)this + 0x1088) = FUN_1002215a;
+    *(code **)((int)this + 0x1088) = grim_dxt2_encode_block;
     *(undefined1 **)((int)this + 0x1084) = &LAB_10022114;
   }
   else if (iVar1 == 0x33545844) {
     *(undefined4 *)((int)this + 0x1080) = 0x10;
-    *(code **)((int)this + 0x1088) = FUN_10021bae;
-    *(code **)((int)this + 0x1084) = FUN_100219d7;
+    *(code **)((int)this + 0x1088) = grim_dxt3_encode_block;
+    *(code **)((int)this + 0x1084) = grim_dxt3_decode_block;
   }
   else if (iVar1 == 0x34545844) {
     *(undefined4 *)((int)this + 0x1080) = 0x10;
-    *(code **)((int)this + 0x1088) = FUN_1002218e;
+    *(code **)((int)this + 0x1088) = grim_dxt4_encode_block;
     *(undefined1 **)((int)this + 0x1084) = &LAB_10022137;
   }
   else if (iVar1 == 0x35545844) {
     *(undefined4 *)((int)this + 0x1080) = 0x10;
-    *(code **)((int)this + 0x1088) = FUN_10021cc2;
-    *(code **)((int)this + 0x1084) = FUN_10021a5a;
+    *(code **)((int)this + 0x1088) = grim_dxt5_encode_block;
+    *(code **)((int)this + 0x1084) = grim_dxt5_decode_block;
   }
   *(undefined4 *)((int)this + 0x10b0) = 0xffffffff;
   *(undefined4 *)((int)this + 0x10b4) = 0xffffffff;
@@ -25324,25 +25324,29 @@ undefined4 * __cdecl FUN_100205e8(int param_1)
 
 
 
-/* FUN_1002060e @ 1002060e */
+/* grim_dxt_decode_rgb565 @ 1002060e */
 
-void __fastcall FUN_1002060e(uint param_1)
+/* unpacks RGB565 into RGBA floats (alpha=1) */
+
+void __fastcall grim_dxt_decode_rgb565(float *out_rgba,uint rgb565)
 
 {
   float *in_EAX;
   
-  *in_EAX = (float)(param_1 >> 0xb & 0x1f) * 0.032258064;
-  in_EAX[1] = (float)(param_1 >> 5 & 0x3f) * 0.015873017;
-  in_EAX[2] = (float)(param_1 & 0x1f) * 0.032258064;
+  *in_EAX = (float)((uint)out_rgba >> 0xb & 0x1f) * 0.032258064;
+  in_EAX[1] = (float)((uint)out_rgba >> 5 & 0x3f) * 0.015873017;
+  in_EAX[2] = (float)((uint)out_rgba & 0x1f) * 0.032258064;
   in_EAX[3] = 1.0;
   return;
 }
 
 
 
-/* FUN_1002065a @ 1002065a */
+/* grim_dxt_unpremultiply_rgba_block @ 1002065a */
 
-undefined4 __fastcall FUN_1002065a(float *param_1)
+/* divides rgb by alpha for a 4x4 RGBA block */
+
+int __fastcall grim_dxt_unpremultiply_rgba_block(float *rgba)
 
 {
   float fVar1;
@@ -25351,38 +25355,38 @@ undefined4 __fastcall FUN_1002065a(float *param_1)
   
   iVar3 = 0x10;
   do {
-    if (param_1[3] == 0.0) {
-      *param_1 = 0.0;
-      param_1[1] = 0.0;
+    if (rgba[3] == 0.0) {
+      *rgba = 0.0;
+      rgba[1] = 0.0;
       fVar1 = 0.0;
 LAB_100206cc:
-      param_1[2] = fVar1;
+      rgba[2] = fVar1;
     }
-    else if (param_1[3] < 1.0) {
-      fVar1 = 1.0 / param_1[3];
-      if (param_1[3] <= *param_1) {
+    else if (rgba[3] < 1.0) {
+      fVar1 = 1.0 / rgba[3];
+      if (rgba[3] <= *rgba) {
         fVar2 = 1.0;
       }
       else {
-        fVar2 = fVar1 * *param_1;
+        fVar2 = fVar1 * *rgba;
       }
-      *param_1 = fVar2;
-      if (param_1[3] <= param_1[1]) {
+      *rgba = fVar2;
+      if (rgba[3] <= rgba[1]) {
         fVar2 = 1.0;
       }
       else {
-        fVar2 = fVar1 * param_1[1];
+        fVar2 = fVar1 * rgba[1];
       }
-      param_1[1] = fVar2;
-      if (param_1[3] <= param_1[2]) {
+      rgba[1] = fVar2;
+      if (rgba[3] <= rgba[2]) {
         fVar1 = 1.0;
       }
       else {
-        fVar1 = fVar1 * param_1[2];
+        fVar1 = fVar1 * rgba[2];
       }
       goto LAB_100206cc;
     }
-    param_1 = param_1 + 4;
+    rgba = rgba + 4;
     iVar3 = iVar3 + -1;
     if (iVar3 == 0) {
       return 0;
@@ -25392,9 +25396,11 @@ LAB_100206cc:
 
 
 
-/* FUN_100206d8 @ 100206d8 */
+/* grim_dxt_premultiply_rgba_block @ 100206d8 */
 
-undefined4 __fastcall FUN_100206d8(float *param_1)
+/* multiplies rgb by alpha for a 4x4 RGBA block */
+
+int __fastcall grim_dxt_premultiply_rgba_block(float *out_rgba)
 
 {
   float *in_EAX;
@@ -25402,13 +25408,13 @@ undefined4 __fastcall FUN_100206d8(float *param_1)
   
   iVar1 = 0x10;
   do {
-    *param_1 = in_EAX[3] * *in_EAX;
+    *out_rgba = in_EAX[3] * *in_EAX;
     iVar1 = iVar1 + -1;
-    param_1[1] = in_EAX[1] * in_EAX[3];
-    param_1[2] = in_EAX[2] * in_EAX[3];
-    param_1[3] = in_EAX[3];
+    out_rgba[1] = in_EAX[1] * in_EAX[3];
+    out_rgba[2] = in_EAX[2] * in_EAX[3];
+    out_rgba[3] = in_EAX[3];
     in_EAX = in_EAX + 4;
-    param_1 = param_1 + 4;
+    out_rgba = out_rgba + 4;
   } while (iVar1 != 0);
   return 0;
 }
@@ -25430,40 +25436,42 @@ void __fastcall FUN_10020708(undefined4 param_1)
 
 
 
-/* FUN_1002072b @ 1002072b */
+/* grim_dxt_pack_rgb565 @ 1002072b */
 
-uint __fastcall FUN_1002072b(float *param_1)
+/* clamps rgb floats and packs into RGB565 */
+
+uint __fastcall grim_dxt_pack_rgb565(float *rgb)
 
 {
   float local_1c;
   float local_18;
   float local_14;
   
-  if (0.0 <= *param_1) {
-    if (1.0 < *param_1) {
+  if (0.0 <= *rgb) {
+    if (1.0 < *rgb) {
       local_1c = 1.0;
     }
     else {
-      local_1c = *param_1;
+      local_1c = *rgb;
     }
   }
   else {
     local_1c = 0.0;
   }
-  if (0.0 <= param_1[1]) {
-    if (1.0 < param_1[1]) {
+  if (0.0 <= rgb[1]) {
+    if (1.0 < rgb[1]) {
       local_18 = 1.0;
     }
     else {
-      local_18 = param_1[1];
+      local_18 = rgb[1];
     }
   }
   else {
     local_18 = 0.0;
   }
-  if (0.0 <= param_1[2]) {
-    if (param_1[2] <= 1.0) {
-      local_14 = param_1[2];
+  if (0.0 <= rgb[2]) {
+    if (rgb[2] <= 1.0) {
+      local_14 = rgb[2];
     }
     else {
       local_14 = 1.0;
@@ -25472,16 +25480,19 @@ uint __fastcall FUN_1002072b(float *param_1)
   else {
     local_14 = 0.0;
   }
-  FUN_10020708(param_1);
+  FUN_10020708(rgb);
   return ((int)ROUND(local_1c * 31.0 + 0.5) << 6 | (int)ROUND(local_18 * 63.0 + 0.5)) << 5 |
          (int)ROUND(local_14 * 31.0 + 0.5);
 }
 
 
 
-/* FUN_10020825 @ 10020825 */
+/* grim_dxt5_optimize_alpha_endpoints @ 10020825 */
 
-void __cdecl FUN_10020825(float *param_1,float *param_2,int param_3,uint param_4)
+/* iteratively chooses DXT5 alpha endpoints for 6/8-alpha modes */
+
+void __cdecl
+grim_dxt5_optimize_alpha_endpoints(float *min_out,float *max_out,float *alphas,uint mode)
 
 {
   float fVar1;
@@ -25506,7 +25517,7 @@ void __cdecl FUN_10020825(float *param_1,float *param_2,int param_3,uint param_4
   float local_c;
   float local_8;
   
-  if (param_4 == 6) {
+  if (mode == 6) {
     pfVar5 = (float *)&DAT_1004e5b4;
     local_20 = &DAT_1004e59c;
   }
@@ -25517,9 +25528,9 @@ void __cdecl FUN_10020825(float *param_1,float *param_2,int param_3,uint param_4
   uVar3 = 0;
   local_8 = 1.0;
   local_c = 0.0;
-  if (param_4 == 8) {
+  if (mode == 8) {
     do {
-      pfVar2 = (float *)(param_3 + uVar3 * 4);
+      pfVar2 = alphas + uVar3;
       if (*pfVar2 < local_8) {
         local_8 = *pfVar2;
       }
@@ -25531,7 +25542,7 @@ void __cdecl FUN_10020825(float *param_1,float *param_2,int param_3,uint param_4
   }
   else {
     do {
-      pfVar2 = (float *)(param_3 + uVar3 * 4);
+      pfVar2 = alphas + uVar3;
       if ((*pfVar2 < local_8) && (0.0 < *pfVar2)) {
         local_8 = *pfVar2;
       }
@@ -25541,7 +25552,7 @@ void __cdecl FUN_10020825(float *param_1,float *param_2,int param_3,uint param_4
       uVar3 = uVar3 + 1;
     } while (uVar3 < 0x10);
   }
-  uVar3 = param_4 - 1;
+  uVar3 = mode - 1;
   local_28 = (float)(int)uVar3;
   if ((int)uVar3 < 0) {
     local_28 = local_28 + 4.2949673e+09;
@@ -25551,10 +25562,10 @@ void __cdecl FUN_10020825(float *param_1,float *param_2,int param_3,uint param_4
   local_24 = 0;
   while (0.00390625 <= local_c - local_8) {
     local_2c = local_28 / (local_c - local_8);
-    if (param_4 != 0) {
+    if (mode != 0) {
       iVar4 = (int)local_20 - (int)pfVar5;
       pfVar2 = pfVar5;
-      uVar6 = param_4;
+      uVar6 = mode;
       do {
         *(float *)(((int)local_54 - (int)pfVar5) + (int)pfVar2) =
              local_8 * *pfVar2 + local_c * *(float *)(iVar4 + (int)pfVar2);
@@ -25562,7 +25573,7 @@ void __cdecl FUN_10020825(float *param_1,float *param_2,int param_3,uint param_4
         uVar6 = uVar6 - 1;
       } while (uVar6 != 0);
     }
-    if (param_4 == 6) {
+    if (mode == 6) {
       local_3c = 0;
       local_38 = 0x3f800000;
     }
@@ -25572,7 +25583,7 @@ void __cdecl FUN_10020825(float *param_1,float *param_2,int param_3,uint param_4
     local_18 = 0.0;
     local_1c = 0.0;
     do {
-      pfVar2 = (float *)(param_3 + uVar6 * 4);
+      pfVar2 = alphas + uVar6;
       fVar1 = (*pfVar2 - local_8) * local_2c;
       if (fVar1 < 0.0 == (fVar1 == 0.0)) {
         if (fVar1 < local_28) {
@@ -25581,12 +25592,11 @@ void __cdecl FUN_10020825(float *param_1,float *param_2,int param_3,uint param_4
         }
         else {
           local_34 = uVar3;
-          if ((param_4 == 6) &&
-             (fVar1 = (local_c + 1.0) * 0.5, fVar1 < *pfVar2 != (fVar1 == *pfVar2)))
+          if ((mode == 6) && (fVar1 = (local_c + 1.0) * 0.5, fVar1 < *pfVar2 != (fVar1 == *pfVar2)))
           goto LAB_10020a28;
         }
 LAB_100209e6:
-        if (local_34 < param_4) {
+        if (local_34 < mode) {
           local_10 = (*pfVar2 - local_54[local_34]) * pfVar5[local_34] + local_10;
           local_18 = pfVar5[local_34] * pfVar5[local_34] + local_18;
           local_14 = (*pfVar2 - local_54[local_34]) * (float)local_20[local_34] + local_14;
@@ -25594,7 +25604,7 @@ LAB_100209e6:
           local_1c = fVar1 * fVar1 + local_1c;
         }
       }
-      else if ((param_4 != 6) || (local_8 * 0.5 < *pfVar2)) {
+      else if ((mode != 6) || (local_8 * 0.5 < *pfVar2)) {
         local_34 = 0;
         goto LAB_100209e6;
       }
@@ -25623,7 +25633,7 @@ LAB_10020a28:
   else {
     local_8 = 0.0;
   }
-  *param_1 = local_8;
+  *min_out = local_8;
   if (0.0 <= local_c) {
     if (1.0 < local_c) {
       local_c = 1.0;
@@ -25632,7 +25642,7 @@ LAB_10020a28:
   else {
     local_c = 0.0;
   }
-  *param_2 = local_c;
+  *max_out = local_c;
   return;
 }
 
@@ -25898,11 +25908,12 @@ void __cdecl FUN_10020b2a(float *param_1,float *param_2,int param_3,float param_
 
 
 
-/* FUN_10021095 @ 10021095 */
+/* grim_dxt1_encode_color_block @ 10021095 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* encodes a 4x4 RGBA block into a DXT1 color block (supports 1-bit alpha mode) */
 
-undefined4 __cdecl FUN_10021095(ushort *param_1,float param_2)
+int __cdecl grim_dxt1_encode_color_block(ushort *out_block,float mode)
 
 {
   float fVar1;
@@ -25910,11 +25921,14 @@ undefined4 __cdecl FUN_10021095(ushort *param_1,float param_2)
   float fVar3;
   int in_EAX;
   float *pfVar4;
+  float *out_rgba;
   uint uVar5;
-  uint uVar6;
   float extraout_EDX;
+  uint rgb565;
+  uint rgb565_00;
   float extraout_EDX_00;
-  float fVar7;
+  float fVar6;
+  uint uVar7;
   ushort uVar8;
   int iVar9;
   ushort uVar10;
@@ -25975,8 +25989,8 @@ undefined4 __cdecl FUN_10021095(ushort *param_1,float param_2)
   float local_3c;
   float local_38;
   float local_34;
-  undefined1 *local_2c;
-  undefined1 *local_28;
+  float *local_2c;
+  float *local_28;
   undefined *local_24;
   float local_20;
   float local_1c;
@@ -25986,7 +26000,7 @@ undefined4 __cdecl FUN_10021095(ushort *param_1,float param_2)
   float *local_c;
   float local_8;
   
-  if (param_2 == 0.0) {
+  if (mode == 0.0) {
     local_10 = 5.60519e-45;
   }
   else {
@@ -26001,10 +26015,10 @@ undefined4 __cdecl FUN_10021095(ushort *param_1,float param_2)
       iVar11 = iVar11 + -1;
     } while (iVar11 != 0);
     if (iVar9 == 0x10) {
-      param_1[1] = 0xffff;
-      param_1[2] = 0xffff;
-      param_1[3] = 0xffff;
-      *param_1 = 0;
+      out_block[1] = 0xffff;
+      out_block[2] = 0xffff;
+      out_block[3] = 0xffff;
+      *out_block = 0;
       return 0;
     }
     local_10 = (float)(4 - (uint)(iVar9 != 0));
@@ -26021,66 +26035,68 @@ undefined4 __cdecl FUN_10021095(ushort *param_1,float param_2)
   local_5c = local_1ac + -in_EAX;
   local_b4 = local_1a8 + -in_EAX;
   local_ac = local_1a4 + -in_EAX;
-  local_28 = local_19c + -in_EAX;
+  local_28 = (float *)(local_19c + -in_EAX);
   local_bc = local_198 + -in_EAX;
   local_a4 = local_194 + -in_EAX;
-  local_2c = local_18c + -in_EAX;
+  local_2c = (float *)(local_18c + -in_EAX);
   local_a0 = local_188 + -in_EAX;
   local_b0 = local_184 + -in_EAX;
   pfVar4 = (float *)(in_EAX + 8);
   local_a8 = (int)&local_1d4 - in_EAX;
-  uVar5 = 0;
-  param_2 = extraout_EDX;
+  uVar7 = 0;
+  mode = extraout_EDX;
   do {
-    local_20 = *(float *)((int)&local_1d4 + uVar5) + pfVar4[-2];
-    fVar7 = pfVar4[-1];
-    fVar1 = *(float *)(local_1cc + (uVar5 - 4));
-    local_1c = fVar7 + fVar1;
+    local_20 = *(float *)((int)&local_1d4 + uVar7) + pfVar4[-2];
+    fVar6 = pfVar4[-1];
+    fVar1 = *(float *)(local_1cc + (uVar7 - 4));
+    local_1c = fVar6 + fVar1;
     local_18 = *(float *)(local_a8 + (int)pfVar4) + *pfVar4;
     local_c4 = (int)ROUND(local_20 * 31.0 + 0.5);
     local_24 = (undefined *)((float)local_c4 * 0.032258064);
-    *(undefined **)((int)local_2d4 + uVar5) = local_24;
-    local_50 = (undefined1 *)(int)ROUND((fVar7 + fVar1) * 63.0 + 0.5);
+    *(undefined **)((int)local_2d4 + uVar7) = local_24;
+    local_50 = (undefined1 *)(int)ROUND((fVar6 + fVar1) * 63.0 + 0.5);
     local_8 = (float)(int)local_50 * 0.015873017;
-    *(float *)((int)local_2d4 + uVar5 + 4) = local_8;
+    *(float *)((int)local_2d4 + uVar7 + 4) = local_8;
     local_54 = (undefined1 *)(int)ROUND(local_18 * 31.0 + 0.5);
-    fVar7 = (float)(int)local_54 * 0.032258064;
-    local_c = (float *)((uint)param_2 & 3);
-    *(float *)(((int)local_2d4 - in_EAX) + (int)pfVar4) = fVar7;
+    fVar6 = (float)(int)local_54 * 0.032258064;
+    local_c = (float *)((uint)mode & 3);
+    *(float *)(((int)local_2d4 - in_EAX) + (int)pfVar4) = fVar6;
     *(undefined4 *)((int)local_2d4 + (4 - in_EAX) + (int)pfVar4) = 0x3f800000;
     fVar3 = local_20 - (float)local_24;
     fVar2 = local_1c - local_8;
     local_38 = fVar2;
-    fVar1 = local_18 - fVar7;
+    fVar1 = local_18 - fVar6;
     local_34 = fVar1;
-    if (((uint)param_2 & 3) != 3) {
+    if (((uint)mode & 3) != 3) {
       *(float *)(local_58 + (int)pfVar4) = fVar3 * 0.4375 + *(float *)(local_58 + (int)pfVar4);
       *(float *)(local_b8 + (int)pfVar4) = fVar2 * 0.4375 + *(float *)(local_b8 + (int)pfVar4);
       *(float *)(local_c0 + (int)pfVar4) = fVar1 * 0.4375 + *(float *)(local_c0 + (int)pfVar4);
     }
-    if (uVar5 < 0xc0) {
+    if (uVar7 < 0xc0) {
       if (local_c != (float *)0x0) {
         *(float *)(local_5c + (int)pfVar4) = fVar3 * 0.1875 + *(float *)(local_5c + (int)pfVar4);
         *(float *)(local_b4 + (int)pfVar4) = fVar2 * 0.1875 + *(float *)(local_b4 + (int)pfVar4);
         *(float *)(local_ac + (int)pfVar4) = fVar1 * 0.1875 + *(float *)(local_ac + (int)pfVar4);
       }
-      *(float *)(local_28 + (int)pfVar4) = fVar3 * 0.3125 + *(float *)(local_28 + (int)pfVar4);
+      *(float *)((int)local_28 + (int)pfVar4) =
+           fVar3 * 0.3125 + *(float *)((int)local_28 + (int)pfVar4);
       *(float *)(local_bc + (int)pfVar4) = fVar2 * 0.3125 + *(float *)(local_bc + (int)pfVar4);
       *(float *)(local_a4 + (int)pfVar4) = fVar1 * 0.3125 + *(float *)(local_a4 + (int)pfVar4);
       if (local_c != (float *)0x3) {
-        *(float *)(local_2c + (int)pfVar4) = fVar3 * 0.0625 + *(float *)(local_2c + (int)pfVar4);
+        *(float *)((int)local_2c + (int)pfVar4) =
+             fVar3 * 0.0625 + *(float *)((int)local_2c + (int)pfVar4);
         *(float *)(local_a0 + (int)pfVar4) = fVar2 * 0.0625 + *(float *)(local_a0 + (int)pfVar4);
         *(float *)(local_b0 + (int)pfVar4) = fVar1 * 0.0625 + *(float *)(local_b0 + (int)pfVar4);
       }
     }
-    param_2 = (float)((int)param_2 + 1);
-    uVar6 = uVar5 + 0x10;
-    *(float *)((int)local_2d4 + uVar5) = (float)local_24 * DAT_100544c0;
-    *(float *)((int)local_2d4 + uVar5 + 4) = local_8 * DAT_100544c4;
-    *(float *)(((int)local_2d4 - in_EAX) + (int)pfVar4) = fVar7 * DAT_100544c8;
+    mode = (float)((int)mode + 1);
+    uVar5 = uVar7 + 0x10;
+    *(float *)((int)local_2d4 + uVar7) = (float)local_24 * DAT_100544c0;
+    *(float *)((int)local_2d4 + uVar7 + 4) = local_8 * DAT_100544c4;
+    *(float *)(((int)local_2d4 - in_EAX) + (int)pfVar4) = fVar6 * DAT_100544c8;
     pfVar4 = pfVar4 + 4;
-    uVar5 = uVar6;
-  } while (uVar6 < 0x100);
+    uVar7 = uVar5;
+  } while (uVar5 < 0x100);
   FUN_10020b2a(&local_4c,&local_20,(int)local_2d4,local_10);
   local_d4 = local_4c * _DAT_100544d0;
   local_d0 = local_48 * _DAT_100544d4;
@@ -26088,21 +26104,21 @@ undefined4 __cdecl FUN_10021095(ushort *param_1,float param_2)
   local_3c = local_20 * _DAT_100544d0;
   local_38 = local_1c * _DAT_100544d4;
   local_34 = local_18 * _DAT_100544d8;
-  uVar5 = FUN_1002072b(&local_d4);
-  local_28 = (undefined1 *)uVar5;
-  uVar6 = FUN_1002072b(&local_3c);
-  uVar8 = (ushort)uVar5;
-  uVar10 = (ushort)uVar6;
+  pfVar4 = (float *)grim_dxt_pack_rgb565(&local_d4);
+  local_28 = pfVar4;
+  out_rgba = (float *)grim_dxt_pack_rgb565(&local_3c);
+  uVar8 = (ushort)pfVar4;
+  uVar10 = (ushort)out_rgba;
   if ((local_10 == 5.60519e-45) && (uVar8 == uVar10)) {
-    param_1[2] = 0;
-    param_1[3] = 0;
-    *param_1 = uVar8;
-    param_1[1] = uVar10;
+    out_block[2] = 0;
+    out_block[3] = 0;
+    *out_block = uVar8;
+    out_block[1] = uVar10;
   }
   else {
-    local_2c = (undefined1 *)uVar6;
-    FUN_1002060e(uVar5);
-    FUN_1002060e(uVar6);
+    local_2c = out_rgba;
+    grim_dxt_decode_rgb565(pfVar4,rgb565);
+    grim_dxt_decode_rgb565(out_rgba,rgb565_00);
     local_4c = local_d4 * DAT_100544c0;
     local_48 = local_d0 * DAT_100544c4;
     local_44 = local_cc * DAT_100544c8;
@@ -26110,8 +26126,8 @@ undefined4 __cdecl FUN_10021095(ushort *param_1,float param_2)
     local_1c = local_38 * DAT_100544c4;
     local_18 = local_34 * DAT_100544c8;
     if ((local_10 == 4.2039e-45) == uVar8 <= uVar10) {
-      *param_1 = uVar8;
-      param_1[1] = uVar10;
+      *out_block = uVar8;
+      out_block[1] = uVar10;
       local_9c[0] = local_4c;
       local_9c[1] = local_48;
       local_9c[2] = local_44;
@@ -26119,8 +26135,8 @@ undefined4 __cdecl FUN_10021095(ushort *param_1,float param_2)
       pfVar4 = &local_20;
     }
     else {
-      param_1[1] = uVar8;
-      *param_1 = uVar10;
+      out_block[1] = uVar8;
+      *out_block = uVar10;
       local_9c[0] = local_20;
       local_9c[1] = local_1c;
       local_9c[2] = local_18;
@@ -26154,8 +26170,8 @@ undefined4 __cdecl FUN_10021095(ushort *param_1,float param_2)
     local_74 = local_74 + local_9c[2];
     local_78 = local_78 + local_9c[1];
     local_7c = local_7c + local_9c[0];
-    param_2 = local_84 - local_9c[2];
-    fVar7 = local_88 - local_9c[1];
+    mode = local_84 - local_9c[2];
+    fVar6 = local_88 - local_9c[1];
     local_8 = (float)((int)local_10 + -1);
     if ((int)local_10 + -1 < 0) {
       local_8 = local_8 + 4.2949673e+09;
@@ -26164,7 +26180,7 @@ undefined4 __cdecl FUN_10021095(ushort *param_1,float param_2)
       fVar1 = 0.0;
     }
     else {
-      fVar1 = local_8 / (local_20 * local_20 + fVar7 * fVar7 + param_2 * param_2);
+      fVar1 = local_8 / (local_20 * local_20 + fVar6 * fVar6 + mode * mode);
     }
     local_20 = local_20 * fVar1;
     pfVar4 = &local_1d4;
@@ -26172,28 +26188,28 @@ undefined4 __cdecl FUN_10021095(ushort *param_1,float param_2)
       *pfVar4 = 0.0;
       pfVar4 = pfVar4 + 1;
     }
-    local_1c = fVar1 * fVar7;
-    local_18 = fVar1 * param_2;
+    local_1c = fVar1 * fVar6;
+    local_18 = fVar1 * mode;
     FUN_10020708(0);
     local_c = &local_1d4;
-    local_2c = local_1cc + (-4 - in_EAX);
+    local_2c = (float *)(local_1cc + (-4 - in_EAX));
     local_58 = local_1c0 + -in_EAX;
     local_54 = local_1a0 + -in_EAX;
     iVar11 = (int)local_2d4 + (8 - in_EAX);
     pfVar4 = (float *)(in_EAX + 4);
     local_50 = local_180 + -in_EAX;
-    fVar7 = extraout_EDX_00;
-    param_2 = extraout_EDX_00;
+    fVar6 = extraout_EDX_00;
+    mode = extraout_EDX_00;
     do {
       if ((local_10 != 4.2039e-45) || (0.5 <= pfVar4[2])) {
         local_4c = DAT_100544c0 * pfVar4[-1] + *local_c;
         local_48 = DAT_100544c4 * *pfVar4 + *(float *)((int)pfVar4 + local_a8);
-        local_44 = DAT_100544c8 * pfVar4[1] + *(float *)(local_2c + (int)pfVar4);
+        local_44 = DAT_100544c8 * pfVar4[1] + *(float *)((int)local_2c + (int)pfVar4);
         fVar1 = (local_48 - local_9c[1]) * local_1c +
                 (local_44 - local_9c[2]) * local_18 + (local_4c - local_9c[0]) * local_20;
         if (fVar1 < 0.0 == (fVar1 == 0.0)) {
           if (fVar1 < local_8) {
-            local_28 = (undefined1 *)(fVar1 + 0.5);
+            local_28 = (float *)(fVar1 + 0.5);
             local_5c = (undefined1 *)(int)ROUND(fVar1 + 0.5);
             iVar9 = *(int *)(local_24 + (int)local_5c * 4);
           }
@@ -26204,20 +26220,20 @@ undefined4 __cdecl FUN_10021095(ushort *param_1,float param_2)
         else {
           iVar9 = 0;
         }
-        fVar7 = (float)((uint)fVar7 >> 2 | iVar9 << 0x1e);
+        fVar6 = (float)((uint)fVar6 >> 2 | iVar9 << 0x1e);
         fVar1 = (local_4c - local_9c[iVar9 * 4]) * *(float *)(iVar11 + (int)pfVar4);
-        uVar5 = (uint)param_2 & 3;
+        uVar7 = (uint)mode & 3;
         fVar2 = (local_48 - local_9c[iVar9 * 4 + 1]) * *(float *)(iVar11 + (int)pfVar4);
         local_38 = fVar2;
         fVar3 = (local_44 - local_9c[iVar9 * 4 + 2]) * *(float *)(iVar11 + (int)pfVar4);
         local_34 = fVar3;
-        if (uVar5 != 3) {
+        if (uVar7 != 3) {
           *(float *)(local_b8 + (int)pfVar4) = fVar1 * 0.4375 + *(float *)(local_b8 + (int)pfVar4);
           *(float *)(local_c0 + (int)pfVar4) = fVar2 * 0.4375 + *(float *)(local_c0 + (int)pfVar4);
           *(float *)(local_58 + (int)pfVar4) = fVar3 * 0.4375 + *(float *)(local_58 + (int)pfVar4);
         }
-        if ((uint)param_2 < 0xc) {
-          if (uVar5 != 0) {
+        if ((uint)mode < 0xc) {
+          if (uVar7 != 0) {
             *(float *)(local_b4 + (int)pfVar4) = fVar1 * 0.1875 + *(float *)(local_b4 + (int)pfVar4)
             ;
             *(float *)(local_ac + (int)pfVar4) = fVar2 * 0.1875 + *(float *)(local_ac + (int)pfVar4)
@@ -26229,7 +26245,7 @@ undefined4 __cdecl FUN_10021095(ushort *param_1,float param_2)
           *(float *)(local_a4 + (int)pfVar4) = fVar2 * 0.3125 + *(float *)(local_a4 + (int)pfVar4);
           *(float *)(((int)&local_190 - in_EAX) + (int)pfVar4) =
                fVar3 * 0.3125 + *(float *)(((int)&local_190 - in_EAX) + (int)pfVar4);
-          if (uVar5 != 3) {
+          if (uVar7 != 3) {
             *(float *)(local_a0 + (int)pfVar4) = fVar1 * 0.0625 + *(float *)(local_a0 + (int)pfVar4)
             ;
             *(float *)(local_b0 + (int)pfVar4) =
@@ -26240,28 +26256,32 @@ undefined4 __cdecl FUN_10021095(ushort *param_1,float param_2)
         }
       }
       else {
-        fVar7 = (float)((uint)fVar7 >> 2 | 0xc0000000);
+        fVar6 = (float)((uint)fVar6 >> 2 | 0xc0000000);
       }
-      param_2 = (float)((int)param_2 + 1);
+      mode = (float)((int)mode + 1);
       local_c = local_c + 4;
       pfVar4 = pfVar4 + 4;
-    } while ((uint)param_2 < 0x10);
-    *(float *)(param_1 + 2) = fVar7;
+    } while ((uint)mode < 0x10);
+    *(float *)(out_block + 2) = fVar6;
   }
   return 0;
 }
 
 
 
-/* FUN_10021899 @ 10021899 */
+/* grim_dxt1_decode_color_block @ 10021899 */
 
-undefined4 __cdecl FUN_10021899(float *param_1,ushort *param_2)
+/* decodes a DXT1 color block into 16 RGBA floats */
+
+int __cdecl grim_dxt1_decode_color_block(float *out_rgba,ushort *block)
 
 {
   float *pfVar1;
   ushort uVar2;
   ushort uVar3;
   int iVar4;
+  uint in_EDX;
+  uint rgb565;
   uint uVar5;
   uint uVar6;
   float local_5c [4];
@@ -26284,10 +26304,10 @@ undefined4 __cdecl FUN_10021899(float *param_1,ushort *param_2)
   float local_c;
   float local_8;
   
-  uVar2 = *param_2;
-  FUN_1002060e((uint)uVar2);
-  uVar3 = param_2[1];
-  FUN_1002060e((uint)uVar3);
+  uVar2 = *block;
+  grim_dxt_decode_rgb565((float *)(uint)uVar2,in_EDX);
+  uVar3 = block[1];
+  grim_dxt_decode_rgb565((float *)(uint)uVar3,rgb565);
   if (uVar3 < uVar2) {
     local_3c = (local_4c - local_5c[0]) * 0.33333334 + local_5c[0];
     local_38 = (local_48 - local_5c[1]) * 0.33333334 + local_5c[1];
@@ -26314,15 +26334,15 @@ undefined4 __cdecl FUN_10021899(float *param_1,ushort *param_2)
     local_24 = 0.0;
     local_20 = 0.0;
   }
-  uVar6 = *(uint *)(param_2 + 2);
+  uVar6 = *(uint *)(block + 2);
   iVar4 = 0x10;
   do {
     uVar5 = uVar6 & 3;
-    *param_1 = local_5c[uVar5 * 4];
-    param_1[1] = local_5c[uVar5 * 4 + 1];
-    pfVar1 = param_1 + 3;
-    param_1[2] = local_5c[uVar5 * 4 + 2];
-    param_1 = param_1 + 4;
+    *out_rgba = local_5c[uVar5 * 4];
+    out_rgba[1] = local_5c[uVar5 * 4 + 1];
+    pfVar1 = out_rgba + 3;
+    out_rgba[2] = local_5c[uVar5 * 4 + 2];
+    out_rgba = out_rgba + 4;
     uVar6 = uVar6 >> 2;
     iVar4 = iVar4 + -1;
     *pfVar1 = local_5c[uVar5 * 4 + 3];
@@ -26332,12 +26352,13 @@ undefined4 __cdecl FUN_10021899(float *param_1,ushort *param_2)
 
 
 
-/* FUN_100219d7 @ 100219d7 */
+/* grim_dxt3_decode_block @ 100219d7 */
 
 /* WARNING: Removing unreachable block (ram,0x10021a10) */
 /* WARNING: Removing unreachable block (ram,0x10021a3f) */
+/* decodes a DXT3 block (explicit alpha + DXT1 color) to RGBA floats */
 
-int __cdecl FUN_100219d7(float *param_1,uint *param_2)
+int __cdecl grim_dxt3_decode_block(float *out_rgba,uint *block)
 
 {
   int iVar1;
@@ -26345,11 +26366,11 @@ int __cdecl FUN_100219d7(float *param_1,uint *param_2)
   uint uVar3;
   uint uVar4;
   
-  iVar1 = FUN_10021899(param_1,(ushort *)(param_2 + 2));
+  iVar1 = grim_dxt1_decode_color_block(out_rgba,(ushort *)(block + 2));
   if (-1 < iVar1) {
-    uVar3 = *param_2;
+    uVar3 = *block;
     iVar1 = 8;
-    pfVar2 = param_1 + 3;
+    pfVar2 = out_rgba + 3;
     do {
       uVar4 = uVar3 & 0xf;
       uVar3 = uVar3 >> 4;
@@ -26357,9 +26378,9 @@ int __cdecl FUN_100219d7(float *param_1,uint *param_2)
       pfVar2 = pfVar2 + 4;
       iVar1 = iVar1 + -1;
     } while (iVar1 != 0);
-    uVar3 = param_2[1];
+    uVar3 = block[1];
     iVar1 = 8;
-    pfVar2 = param_1 + 0x23;
+    pfVar2 = out_rgba + 0x23;
     do {
       uVar4 = uVar3 & 0xf;
       uVar3 = uVar3 >> 4;
@@ -26374,9 +26395,11 @@ int __cdecl FUN_100219d7(float *param_1,uint *param_2)
 
 
 
-/* FUN_10021a5a @ 10021a5a */
+/* grim_dxt5_decode_block @ 10021a5a */
 
-int __cdecl FUN_10021a5a(float *param_1,byte *param_2)
+/* decodes a DXT5 block (interpolated alpha + DXT1 color) to RGBA floats */
+
+int __cdecl grim_dxt5_decode_block(float *out_rgba,uchar *block)
 
 {
   float fVar1;
@@ -26387,11 +26410,11 @@ int __cdecl FUN_10021a5a(float *param_1,byte *param_2)
   uint uVar6;
   float local_24 [8];
   
-  iVar3 = FUN_10021899(param_1,(ushort *)(param_2 + 8));
+  iVar3 = grim_dxt1_decode_color_block(out_rgba,(ushort *)(block + 8));
   if (-1 < iVar3) {
-    local_24[0] = (float)*param_2 * 0.003921569;
-    local_24[1] = (float)param_2[1] * 0.003921569;
-    if (param_2[1] < *param_2) {
+    local_24[0] = (float)*block * 0.003921569;
+    local_24[1] = (float)block[1] * 0.003921569;
+    if (block[1] < *block) {
       uVar4 = 1;
       do {
         fVar1 = (float)(int)(7 - uVar4);
@@ -26424,8 +26447,8 @@ int __cdecl FUN_10021a5a(float *param_1,byte *param_2)
       local_24[7] = 1.0;
     }
     iVar3 = 8;
-    uVar4 = (uint)*(uint3 *)(param_2 + 2);
-    pfVar5 = param_1 + 3;
+    uVar4 = (uint)*(uint3 *)(block + 2);
+    pfVar5 = out_rgba + 3;
     do {
       uVar6 = uVar4 & 7;
       uVar4 = uVar4 >> 3;
@@ -26434,8 +26457,8 @@ int __cdecl FUN_10021a5a(float *param_1,byte *param_2)
       iVar3 = iVar3 + -1;
     } while (iVar3 != 0);
     iVar3 = 8;
-    uVar4 = (uint)*(uint3 *)(param_2 + 5);
-    pfVar5 = param_1 + 0x23;
+    uVar4 = (uint)*(uint3 *)(block + 5);
+    pfVar5 = out_rgba + 0x23;
     do {
       uVar6 = uVar4 & 7;
       uVar4 = uVar4 >> 3;
@@ -26450,16 +26473,18 @@ int __cdecl FUN_10021a5a(float *param_1,byte *param_2)
 
 
 
-/* FUN_10021bae @ 10021bae */
+/* grim_dxt3_encode_block @ 10021bae */
 
-void __cdecl FUN_10021bae(undefined4 *param_1,int param_2)
+/* encodes a 4x4 RGBA block into DXT3 (explicit alpha + DXT1 color) */
+
+void __cdecl grim_dxt3_encode_block(uint *out_block,float *rgba)
 
 {
   uint *puVar1;
   float fVar2;
-  undefined4 *puVar3;
+  uint *puVar3;
   int iVar4;
-  undefined4 *extraout_EDX;
+  uint *extraout_EDX;
   uint uVar5;
   float *pfVar6;
   float local_54 [16];
@@ -26468,61 +26493,63 @@ void __cdecl FUN_10021bae(undefined4 *param_1,int param_2)
   float local_c;
   float *local_8;
   
-  puVar3 = param_1;
-  *param_1 = 0;
-  param_1[1] = 0;
+  puVar3 = out_block;
+  *out_block = 0;
+  out_block[1] = 0;
   pfVar6 = local_54;
   for (iVar4 = 0x10; iVar4 != 0; iVar4 = iVar4 + -1) {
     *pfVar6 = 0.0;
     pfVar6 = pfVar6 + 1;
   }
   FUN_10020708(0);
-  local_8 = (float *)(param_2 + 0xc);
-  param_1 = extraout_EDX;
+  local_8 = rgba + 3;
+  out_block = extraout_EDX;
   do {
-    local_c = local_54[(int)param_1] + *local_8;
+    local_c = local_54[(int)out_block] + *local_8;
     local_14 = (int)ROUND(local_c * 15.0 + 0.5);
-    puVar1 = puVar3 + ((uint)param_1 >> 3);
+    puVar1 = puVar3 + ((uint)out_block >> 3);
     local_10 = local_14;
     fVar2 = (float)local_14;
     *puVar1 = *puVar1 >> 4 | local_14 << 0x1c;
     if (local_14 < 0) {
       fVar2 = fVar2 + 4.2949673e+09;
     }
-    uVar5 = (uint)param_1 & 3;
+    uVar5 = (uint)out_block & 3;
     fVar2 = local_c - fVar2 * 0.06666667;
     if (uVar5 != 3) {
-      local_54[(int)param_1 + 1] = fVar2 * 0.4375 + local_54[(int)param_1 + 1];
+      local_54[(int)out_block + 1] = fVar2 * 0.4375 + local_54[(int)out_block + 1];
     }
-    if (param_1 < (undefined4 *)0xc) {
+    if (out_block < (uint *)0xc) {
       if (uVar5 != 0) {
-        local_54[(int)param_1 + 3] = fVar2 * 0.1875 + local_54[(int)param_1 + 3];
+        local_54[(int)out_block + 3] = fVar2 * 0.1875 + local_54[(int)out_block + 3];
       }
-      local_54[(int)(param_1 + 1)] = fVar2 * 0.3125 + local_54[(int)(param_1 + 1)];
+      local_54[(int)(out_block + 1)] = fVar2 * 0.3125 + local_54[(int)(out_block + 1)];
       if (uVar5 != 3) {
-        local_54[(int)param_1 + 5] = fVar2 * 0.0625 + local_54[(int)param_1 + 5];
+        local_54[(int)out_block + 5] = fVar2 * 0.0625 + local_54[(int)out_block + 5];
       }
     }
-    param_1 = (undefined4 *)((int)param_1 + 1);
+    out_block = (uint *)((int)out_block + 1);
     local_8 = local_8 + 4;
-  } while (param_1 < (undefined4 *)0x10);
-  FUN_10021095((ushort *)(puVar3 + 2),0.0);
+  } while (out_block < (uint *)0x10);
+  grim_dxt1_encode_color_block((ushort *)(puVar3 + 2),0.0);
   return;
 }
 
 
 
-/* FUN_10021cc2 @ 10021cc2 */
+/* grim_dxt5_encode_block @ 10021cc2 */
 
-int __cdecl FUN_10021cc2(char *param_1,int param_2)
+/* encodes a 4x4 RGBA block into DXT5 (interpolated alpha + DXT1 color) */
+
+int __cdecl grim_dxt5_encode_block(uchar *out_block,float *rgba)
 
 {
   float fVar1;
   float fVar2;
-  char *pcVar3;
-  char cVar4;
+  uchar *puVar3;
+  uchar uVar4;
   uint uVar5;
-  char cVar6;
+  uchar uVar6;
   int iVar7;
   undefined4 extraout_ECX;
   uint uVar8;
@@ -26540,7 +26567,7 @@ int __cdecl FUN_10021cc2(char *param_1,int param_2)
   float *local_c;
   float local_8;
   
-  pfVar9 = (float *)(param_2 + 0xc);
+  pfVar9 = rgba + 3;
   local_10 = (float *)*pfVar9;
   pfVar12 = local_a4;
   local_c = local_10;
@@ -26549,7 +26576,7 @@ int __cdecl FUN_10021cc2(char *param_1,int param_2)
     pfVar12 = pfVar12 + 1;
   }
   FUN_10020708(0);
-  pcVar3 = param_1;
+  puVar3 = out_block;
   uVar8 = 0;
   pfVar12 = pfVar9;
   do {
@@ -26584,47 +26611,47 @@ int __cdecl FUN_10021cc2(char *param_1,int param_2)
     pfVar12 = pfVar12 + 4;
   } while (uVar8 < 0x10);
   local_8 = DAT_1005db70;
-  iVar7 = FUN_10021095((ushort *)(param_1 + 8),0.0);
+  iVar7 = grim_dxt1_encode_color_block((ushort *)(out_block + 8),0.0);
   if (iVar7 < 0) {
     return iVar7;
   }
   if ((float)local_c == 1.0) {
-    *pcVar3 = -1;
-    pcVar3[1] = -1;
+    *puVar3 = 0xff;
+    puVar3[1] = 0xff;
 LAB_10021ea4:
-    pcVar3[2] = '\0';
-    pcVar3[3] = '\0';
-    pcVar3[4] = '\0';
-    pcVar3[5] = '\0';
-    pcVar3[6] = '\0';
-    pcVar3[7] = '\0';
+    puVar3[2] = '\0';
+    puVar3[3] = '\0';
+    puVar3[4] = '\0';
+    puVar3[5] = '\0';
+    puVar3[6] = '\0';
+    puVar3[7] = '\0';
   }
   else {
     if (((float)local_c == 0.0) || ((float)local_10 == 1.0)) {
-      param_2 = 6;
+      rgba = (float *)0x6;
       uVar8 = 6;
     }
     else {
       uVar8 = 8;
-      param_2 = 8;
+      rgba = (float *)0x8;
     }
-    FUN_10020825(&local_8,(float *)&param_1,(int)(local_a4 + 0x10),uVar8);
+    grim_dxt5_optimize_alpha_endpoints(&local_8,(float *)&out_block,local_a4 + 0x10,uVar8);
     FUN_10020708(extraout_ECX);
     uVar11 = (uint)ROUND(local_8 * 255.0 + 0.5);
-    local_8 = (float)(int)ROUND((float)param_1 * 255.0 + 0.5);
+    local_8 = (float)(int)ROUND((float)out_block * 255.0 + 0.5);
     fVar10 = (float)(uVar11 & 0xff) * 0.003921569;
     local_a4[0x19] = (float)((uint)local_8 & 0xff) * 0.003921569;
-    cVar4 = (char)uVar11;
-    cVar6 = SUB41(local_8,0);
+    uVar4 = (uchar)uVar11;
+    uVar6 = SUB41(local_8,0);
     if (uVar8 == 8) {
-      if (cVar4 == cVar6) {
-        *pcVar3 = cVar4;
-        pcVar3[1] = cVar6;
+      if (uVar4 == uVar6) {
+        *puVar3 = uVar4;
+        puVar3[1] = uVar6;
         goto LAB_10021ea4;
       }
 LAB_10021f19:
-      pcVar3[1] = cVar4;
-      *pcVar3 = cVar6;
+      puVar3[1] = uVar4;
+      *puVar3 = uVar6;
       uVar11 = 1;
       do {
         fVar1 = (float)(int)(7 - uVar11);
@@ -26645,8 +26672,8 @@ LAB_10021f19:
     }
     else {
       if (uVar8 != 6) goto LAB_10021f19;
-      *pcVar3 = cVar4;
-      pcVar3[1] = cVar6;
+      *puVar3 = uVar4;
+      puVar3[1] = uVar6;
       uVar11 = 1;
       do {
         fVar1 = (float)(int)(5 - uVar11);
@@ -26666,9 +26693,9 @@ LAB_10021f19:
       local_a4[0x1f] = 1.0;
       local_a4[0x18] = fVar10;
     }
-    param_1 = (char *)(uVar8 - 1);
-    local_1c = (float)(int)param_1;
-    if ((int)param_1 < 0) {
+    out_block = (uchar *)(uVar8 - 1);
+    local_1c = (float)(int)out_block;
+    if ((int)out_block < 0) {
       local_1c = local_1c + 4.2949673e+09;
     }
     if (local_a4[0x18] == local_a4[0x19]) {
@@ -26687,7 +26714,7 @@ LAB_10021f19:
     fVar10 = 0.0;
     do {
       uVar8 = 0;
-      param_1._2_1_ = '\0';
+      out_block._2_1_ = '\0';
       local_8 = (float)((int)fVar10 + 8U);
       if ((uint)fVar10 < (int)fVar10 + 8U) {
         local_10 = local_c;
@@ -26700,7 +26727,7 @@ LAB_10021f19:
               local_24 = (int)ROUND(fVar2 + 0.5);
               iVar7 = *(int *)(local_14 + local_24 * 4);
             }
-            else if ((param_2 == 6) &&
+            else if ((rgba == (float *)0x6) &&
                     (fVar2 = (local_a4[0x19] + 1.0) * 0.5, fVar2 < fVar1 != (fVar2 == fVar1))) {
               iVar7 = 7;
             }
@@ -26708,7 +26735,7 @@ LAB_10021f19:
               iVar7 = 1;
             }
           }
-          else if ((param_2 != 6) || (local_a4[0x18] * 0.5 < fVar1)) {
+          else if ((rgba != (float *)0x6) || (local_a4[0x18] * 0.5 < fVar1)) {
             iVar7 = 0;
           }
           else {
@@ -26732,14 +26759,14 @@ LAB_10021f19:
           local_10 = local_10 + 4;
           fVar10 = (float)((int)fVar10 + 1);
         } while ((uint)fVar10 < (uint)local_8);
-        param_1._2_1_ = (char)(uVar8 >> 0x10);
+        out_block._2_1_ = (uchar)(uVar8 >> 0x10);
       }
       local_c = local_c + 0x20;
-      pcVar3[4] = param_1._2_1_;
-      pcVar3[2] = (char)uVar8;
-      pcVar3[3] = (char)(uVar8 >> 8);
+      puVar3[4] = out_block._2_1_;
+      puVar3[2] = (uchar)uVar8;
+      puVar3[3] = (uchar)(uVar8 >> 8);
       fVar10 = local_8;
-      pcVar3 = pcVar3 + 3;
+      puVar3 = puVar3 + 3;
     } while ((uint)local_8 < 0x10);
   }
   return 0;
@@ -26747,18 +26774,22 @@ LAB_10021f19:
 
 
 
-/* FUN_1002215a @ 1002215a */
+/* grim_dxt2_encode_block @ 1002215a */
 
-int __cdecl FUN_1002215a(undefined4 *param_1)
+/* premultiplies RGBA and encodes a DXT3-style block (DXT2) */
+
+int __cdecl grim_dxt2_encode_block(void *out_block)
 
 {
   int iVar1;
+  int extraout_EAX;
   float local_104 [64];
   
-  iVar1 = FUN_100206d8(local_104);
+  iVar1 = grim_dxt_premultiply_rgba_block(local_104);
   if (-1 < iVar1) {
-    iVar1 = FUN_10021bae(param_1,(int)local_104);
-    if (-1 < iVar1) {
+    grim_dxt3_encode_block(out_block,local_104);
+    iVar1 = extraout_EAX;
+    if (-1 < extraout_EAX) {
       iVar1 = 0;
     }
   }
@@ -26767,17 +26798,19 @@ int __cdecl FUN_1002215a(undefined4 *param_1)
 
 
 
-/* FUN_1002218e @ 1002218e */
+/* grim_dxt4_encode_block @ 1002218e */
 
-int __cdecl FUN_1002218e(char *param_1)
+/* premultiplies RGBA and encodes a DXT5-style block (DXT4) */
+
+int __cdecl grim_dxt4_encode_block(void *out_block)
 
 {
   int iVar1;
   float local_104 [64];
   
-  iVar1 = FUN_100206d8(local_104);
+  iVar1 = grim_dxt_premultiply_rgba_block(local_104);
   if (-1 < iVar1) {
-    iVar1 = FUN_10021cc2(param_1,(int)local_104);
+    iVar1 = grim_dxt5_encode_block(out_block,local_104);
     if (-1 < iVar1) {
       iVar1 = 0;
     }

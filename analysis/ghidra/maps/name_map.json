@@ -3143,6 +3143,97 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1002060e",
+    "name": "grim_dxt_decode_rgb565",
+    "signature": "void grim_dxt_decode_rgb565(float *out_rgba, unsigned int rgb565)",
+    "comment": "unpacks RGB565 into RGBA floats (alpha=1)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002065a",
+    "name": "grim_dxt_unpremultiply_rgba_block",
+    "signature": "int grim_dxt_unpremultiply_rgba_block(float *rgba)",
+    "comment": "divides rgb by alpha for a 4x4 RGBA block"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100206d8",
+    "name": "grim_dxt_premultiply_rgba_block",
+    "signature": "int grim_dxt_premultiply_rgba_block(float *out_rgba)",
+    "comment": "multiplies rgb by alpha for a 4x4 RGBA block"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002072b",
+    "name": "grim_dxt_pack_rgb565",
+    "signature": "unsigned int grim_dxt_pack_rgb565(float *rgb)",
+    "comment": "clamps rgb floats and packs into RGB565"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10020825",
+    "name": "grim_dxt5_optimize_alpha_endpoints",
+    "signature": "void grim_dxt5_optimize_alpha_endpoints(float *min_out, float *max_out, float *alphas, unsigned int mode)",
+    "comment": "iteratively chooses DXT5 alpha endpoints for 6/8-alpha modes"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10021095",
+    "name": "grim_dxt1_encode_color_block",
+    "signature": "int grim_dxt1_encode_color_block(unsigned short *out_block, float mode)",
+    "comment": "encodes a 4x4 RGBA block into a DXT1 color block (supports 1-bit alpha mode)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10021899",
+    "name": "grim_dxt1_decode_color_block",
+    "signature": "int grim_dxt1_decode_color_block(float *out_rgba, unsigned short *block)",
+    "comment": "decodes a DXT1 color block into 16 RGBA floats"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100219d7",
+    "name": "grim_dxt3_decode_block",
+    "signature": "int grim_dxt3_decode_block(float *out_rgba, unsigned int *block)",
+    "comment": "decodes a DXT3 block (explicit alpha + DXT1 color) to RGBA floats"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10021a5a",
+    "name": "grim_dxt5_decode_block",
+    "signature": "int grim_dxt5_decode_block(float *out_rgba, unsigned char *block)",
+    "comment": "decodes a DXT5 block (interpolated alpha + DXT1 color) to RGBA floats"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10021bae",
+    "name": "grim_dxt3_encode_block",
+    "signature": "void grim_dxt3_encode_block(unsigned int *out_block, float *rgba)",
+    "comment": "encodes a 4x4 RGBA block into DXT3 (explicit alpha + DXT1 color)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10021cc2",
+    "name": "grim_dxt5_encode_block",
+    "signature": "int grim_dxt5_encode_block(unsigned char *out_block, float *rgba)",
+    "comment": "encodes a 4x4 RGBA block into DXT5 (interpolated alpha + DXT1 color)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002215a",
+    "name": "grim_dxt2_encode_block",
+    "signature": "int grim_dxt2_encode_block(void *out_block)",
+    "comment": "premultiplies RGBA and encodes a DXT3-style block (DXT2)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002218e",
+    "name": "grim_dxt4_encode_block",
+    "signature": "int grim_dxt4_encode_block(void *out_block)",
+    "comment": "premultiplies RGBA and encodes a DXT5-style block (DXT4)"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10022c14",
     "name": "memzero",
     "signature": "void memzero(void *dst, unsigned int size)",

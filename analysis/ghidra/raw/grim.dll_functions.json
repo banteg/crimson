@@ -3843,23 +3843,23 @@
     "calls": ["FUN_100246f2"]
   },
   {
-    "name": "FUN_1002060e",
+    "name": "grim_dxt_decode_rgb565",
     "address": "1002060e",
-    "signature": "undefined FUN_1002060e(uint param_1)",
+    "signature": "void grim_dxt_decode_rgb565(float * out_rgba, uint rgb565)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_1002065a",
+    "name": "grim_dxt_unpremultiply_rgba_block",
     "address": "1002065a",
-    "signature": "undefined4 FUN_1002065a(float * param_1)",
+    "signature": "int grim_dxt_unpremultiply_rgba_block(float * rgba)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_100206d8",
+    "name": "grim_dxt_premultiply_rgba_block",
     "address": "100206d8",
-    "signature": "undefined4 FUN_100206d8(float * param_1)",
+    "signature": "int grim_dxt_premultiply_rgba_block(float * out_rgba)",
     "external": false,
     "calls": []
   },
@@ -3871,16 +3871,16 @@
     "calls": []
   },
   {
-    "name": "FUN_1002072b",
+    "name": "grim_dxt_pack_rgb565",
     "address": "1002072b",
-    "signature": "uint FUN_1002072b(float * param_1)",
+    "signature": "uint grim_dxt_pack_rgb565(float * rgb)",
     "external": false,
     "calls": ["FUN_10020708"]
   },
   {
-    "name": "FUN_10020825",
+    "name": "grim_dxt5_optimize_alpha_endpoints",
     "address": "10020825",
-    "signature": "undefined FUN_10020825(float * param_1, float * param_2, int param_3, uint param_4)",
+    "signature": "void grim_dxt5_optimize_alpha_endpoints(float * min_out, float * max_out, float * alphas, uint mode)",
     "external": false,
     "calls": ["FUN_10020708"]
   },
@@ -3892,60 +3892,60 @@
     "calls": ["FUN_10020708"]
   },
   {
-    "name": "FUN_10021095",
+    "name": "grim_dxt1_encode_color_block",
     "address": "10021095",
-    "signature": "undefined4 FUN_10021095(ushort * param_1, float param_2)",
+    "signature": "int grim_dxt1_encode_color_block(ushort * out_block, float mode)",
     "external": false,
-    "calls": ["FUN_1002060e", "FUN_10020708", "FUN_1002072b", "FUN_10020b2a"]
+    "calls": ["FUN_10020708", "FUN_10020b2a", "grim_dxt_decode_rgb565", "grim_dxt_pack_rgb565"]
   },
   {
-    "name": "FUN_10021899",
+    "name": "grim_dxt1_decode_color_block",
     "address": "10021899",
-    "signature": "undefined4 FUN_10021899(float * param_1, ushort * param_2)",
+    "signature": "int grim_dxt1_decode_color_block(float * out_rgba, ushort * block)",
     "external": false,
-    "calls": ["FUN_1002060e"]
+    "calls": ["grim_dxt_decode_rgb565"]
   },
   {
-    "name": "FUN_100219d7",
+    "name": "grim_dxt3_decode_block",
     "address": "100219d7",
-    "signature": "int FUN_100219d7(float * param_1, uint * param_2)",
+    "signature": "int grim_dxt3_decode_block(float * out_rgba, uint * block)",
     "external": false,
-    "calls": ["FUN_10021899"]
+    "calls": ["grim_dxt1_decode_color_block"]
   },
   {
-    "name": "FUN_10021a5a",
+    "name": "grim_dxt5_decode_block",
     "address": "10021a5a",
-    "signature": "int FUN_10021a5a(float * param_1, byte * param_2)",
+    "signature": "int grim_dxt5_decode_block(float * out_rgba, uchar * block)",
     "external": false,
-    "calls": ["FUN_10021899"]
+    "calls": ["grim_dxt1_decode_color_block"]
   },
   {
-    "name": "FUN_10021bae",
+    "name": "grim_dxt3_encode_block",
     "address": "10021bae",
-    "signature": "undefined FUN_10021bae(undefined4 * param_1, int param_2)",
+    "signature": "void grim_dxt3_encode_block(uint * out_block, float * rgba)",
     "external": false,
-    "calls": ["FUN_10020708", "FUN_10021095"]
+    "calls": ["FUN_10020708", "grim_dxt1_encode_color_block"]
   },
   {
-    "name": "FUN_10021cc2",
+    "name": "grim_dxt5_encode_block",
     "address": "10021cc2",
-    "signature": "int FUN_10021cc2(char * param_1, int param_2)",
+    "signature": "int grim_dxt5_encode_block(uchar * out_block, float * rgba)",
     "external": false,
-    "calls": ["FUN_10020708", "FUN_10020825", "FUN_10021095"]
+    "calls": ["FUN_10020708", "grim_dxt1_encode_color_block", "grim_dxt5_optimize_alpha_endpoints"]
   },
   {
-    "name": "FUN_1002215a",
+    "name": "grim_dxt2_encode_block",
     "address": "1002215a",
-    "signature": "int FUN_1002215a(undefined4 * param_1)",
+    "signature": "int grim_dxt2_encode_block(void * out_block)",
     "external": false,
-    "calls": ["FUN_100206d8", "FUN_10021bae"]
+    "calls": ["grim_dxt3_encode_block", "grim_dxt_premultiply_rgba_block"]
   },
   {
-    "name": "FUN_1002218e",
+    "name": "grim_dxt4_encode_block",
     "address": "1002218e",
-    "signature": "int FUN_1002218e(char * param_1)",
+    "signature": "int grim_dxt4_encode_block(void * out_block)",
     "external": false,
-    "calls": ["FUN_100206d8", "FUN_10021cc2"]
+    "calls": ["grim_dxt5_encode_block", "grim_dxt_premultiply_rgba_block"]
   },
   {
     "name": "FUN_100221d0",
