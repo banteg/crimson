@@ -1,3 +1,36 @@
+# Frida sessions
+
+Use this format to capture what we wanted, what actually happened, and what we learned.
+
+## Session template
+
+- **Date:**
+- **Build / platform:**
+- **Scripts:** `grim_hooks.js`, `crimsonland_probe.js`
+- **Attach method:** `frida -n crimsonland.exe -l Z:\...`
+- **Artifacts:** JSONL logs + reducer outputs
+
+### Wants (pre-run)
+
+Describe the goals and the exact in-game actions to trigger.
+
+### Run summary (actual)
+
+Timeline of what happened and when (relative timestamps are fine).
+
+### Findings
+
+- Evidence-backed observations (struct offsets, timers, UI calls, etc).
+- Cite log snippets or reducer outputs.
+
+### Actionable insights
+
+- What to rename/type in Ghidra.
+- Which offsets need MemoryAccessMonitor follow-ups.
+- What to change in hooks for the next run.
+
+---
+
 # session 1
 
 ## session wants
@@ -64,3 +97,10 @@ Based on the video provided, here is the timeline of events.
 *   **02:40** – User quits the game.
 *   **02:42** – **Frida Command:** `exit`.
 
+## findings
+
+- _TBD after analysis._
+
+## actionable insights
+
+- _TBD after analysis._
