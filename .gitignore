@@ -4,6 +4,7 @@
 /analysis/ghidra/projects/
 /analysis/frida/raw/
 /analysis/frida/facts.jsonl
+/analysis/windbg/*.log
 .venv/
 zig-cache/
 zig-out/
