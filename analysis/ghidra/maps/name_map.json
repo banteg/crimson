@@ -2560,9 +2560,9 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00465da5",
-    "name": "crt_mktime64",
-    "signature": "time_t crt_mktime64(int year, int month, int day, int hour, int min, int sec, int dst)",
-    "comment": "CRT: convert date/time to timestamp"
+    "name": "crt_mktime",
+    "signature": "time_t crt_mktime(int year, int month, int day, int hour, int min, int sec, int dst)",
+    "comment": "CRT: convert date/time to timestamp (mktime)"
   },
   {
     "program": "crimsonland.exe",
