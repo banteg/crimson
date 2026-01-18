@@ -188,24 +188,26 @@ function toRuntimePtr(moduleName, staticVa) {
 }
 
 function tryReadU8(p) {
-  try { return Memory.readU8(p); } catch (_) { return null; }
+  try { return p.readU8(); } catch (_) { return null; }
 }
 function tryReadS32(p) {
-  try { return Memory.readS32(p); } catch (_) { return null; }
+  try { return p.readS32(); } catch (_) { return null; }
 }
 function tryReadU32(p) {
-  try { return Memory.readU32(p); } catch (_) { return null; }
+  try { return p.readU32(); } catch (_) { return null; }
 }
 function tryReadFloat(p) {
-  try { return Memory.readFloat(p); } catch (_) { return null; }
+  try { return p.readFloat(); } catch (_) { return null; }
 }
 function tryReadPtr(p) {
-  try { return Memory.readPointer(p); } catch (_) { return null; }
+  try { return p.readPointer(); } catch (_) { return null; }
 }
 function tryReadAnsi(p, maxLen) {
   try {
     if (p.isNull()) return null;
-    return Memory.readAnsiString(p, maxLen);
+    if (typeof p.readCString === 'function') return p.readCString(maxLen);
+    if (typeof p.readUtf8String === 'function') return p.readUtf8String(maxLen);
+    return null;
   } catch (_) {
     return null;
   }
@@ -213,7 +215,8 @@ function tryReadAnsi(p, maxLen) {
 function tryReadUtf16(p, maxLen) {
   try {
     if (p.isNull()) return null;
-    return Memory.readUtf16String(p, maxLen);
+    if (typeof p.readUtf16String === 'function') return p.readUtf16String(maxLen);
+    return null;
   } catch (_) {
     return null;
   }
@@ -651,7 +654,7 @@ class UnknownFieldTracker {
 
     let bytes;
     try {
-      bytes = Memory.readByteArray(start, total);
+      bytes = start.readByteArray(total);
     } catch (_) {
       return;
     }
@@ -1065,7 +1068,7 @@ function hookGameplay() {
       // We don't fully trust bonus_entry layout yet; dump first 0x40 bytes.
       let dump = null;
       try {
-        const bytes = Memory.readByteArray(bonusPtr, 0x40);
+        const bytes = bonusPtr.readByteArray(0x40);
         dump = hexdump(bytes, { offset: 0, length: 0x40, header: false, ansi: false });
       } catch (_) {
         dump = null;

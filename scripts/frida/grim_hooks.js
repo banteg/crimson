@@ -297,23 +297,30 @@ function u32ToF32(u32) {
 }
 
 function safeReadCString(ptrVal) {
-  try { return Memory.readCString(ptrVal); } catch (e) { return null; }
+  try {
+    if (typeof ptrVal.readCString === "function") return ptrVal.readCString();
+    if (typeof ptrVal.readUtf8String === "function") return ptrVal.readUtf8String();
+    return null;
+  } catch (e) { return null; }
 }
 
 function safeReadUtf16(ptrVal) {
-  try { return Memory.readUtf16String(ptrVal); } catch (e) { return null; }
+  try {
+    if (typeof ptrVal.readUtf16String === "function") return ptrVal.readUtf16String();
+    return null;
+  } catch (e) { return null; }
 }
 
 const MEM_READERS = {
-  i8: { size: 1, read: Memory.readS8 },
-  u8: { size: 1, read: Memory.readU8 },
-  i16: { size: 2, read: Memory.readS16 },
-  u16: { size: 2, read: Memory.readU16 },
-  i32: { size: 4, read: Memory.readS32 },
-  u32: { size: 4, read: Memory.readU32 },
-  f32: { size: 4, read: Memory.readFloat },
-  f64: { size: 8, read: Memory.readDouble },
-  ptr: { size: Process.pointerSize, read: Memory.readPointer },
+  i8: { size: 1, read: (p) => p.readS8() },
+  u8: { size: 1, read: (p) => p.readU8() },
+  i16: { size: 2, read: (p) => p.readS16() },
+  u16: { size: 2, read: (p) => p.readU16() },
+  i32: { size: 4, read: (p) => p.readS32() },
+  u32: { size: 4, read: (p) => p.readU32() },
+  f32: { size: 4, read: (p) => p.readFloat() },
+  f64: { size: 8, read: (p) => p.readDouble() },
+  ptr: { size: Process.pointerSize, read: (p) => p.readPointer() },
 };
 
 function rangeInfo(ptrVal) {
@@ -365,7 +372,7 @@ function readMem(memSpec, ptrVal) {
   info.value = readMemRaw(type, count, ptrVal);
   if (isAllNull(info.value)) {
     try {
-      const nextPtr = Memory.readPointer(ptrVal);
+      const nextPtr = ptrVal.readPointer();
       const derefRange = rangeInfo(nextPtr);
       const derefValue = readMemRaw(type, count, nextPtr);
       info.deref = { ptr: nextPtr, value: derefValue, range: derefRange };
@@ -615,7 +622,7 @@ class UnknownFieldTracker {
     const total = this.prepad + this.size;
     let bytes;
     try {
-      bytes = Memory.readByteArray(start, total);
+      bytes = start.readByteArray(total);
     } catch (e) {
       return;
     }
