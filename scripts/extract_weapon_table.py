@@ -4,11 +4,13 @@ from dataclasses import dataclass
 import re
 import struct
 from pathlib import Path
+from typing import Callable
 
 ROOT = Path(__file__).resolve().parents[1]
 C_PATH = ROOT / "analysis/ghidra/raw/crimsonland.exe_decompiled.c"
 STRINGS_PATH = ROOT / "analysis/ghidra/raw/crimsonland.exe_strings.txt"
 OUT_PATH = ROOT / "src/crimson/weapons.py"
+BIN_PATH = ROOT / "game_bins/crimsonland/1.9.93-gog/crimsonland.exe"
 
 BASE_ADDR = 0x4D7A2C
 END_ADDR = 0x4D99A0
@@ -31,6 +33,62 @@ DAMAGE_MULT_OFFSET = 0x70
 class Value:
     raw: str
     number: int | float | None
+
+
+def load_pe_reader(path: Path) -> Callable[[int], str | None] | None:
+    if not path.exists():
+        return None
+    data = path.read_bytes()
+    if len(data) < 0x40:
+        return None
+    pe_offset = struct.unpack_from("<I", data, 0x3C)[0]
+    if data[pe_offset : pe_offset + 4] != b"PE\x00\x00":
+        return None
+    coff = struct.unpack_from("<HHIIIHH", data, pe_offset + 4)
+    num_sections = coff[1]
+    opt_size = coff[5]
+    opt_offset = pe_offset + 4 + 20
+    if opt_offset + opt_size > len(data):
+        return None
+    magic = struct.unpack_from("<H", data, opt_offset)[0]
+    if magic == 0x10B:
+        image_base = struct.unpack_from("<I", data, opt_offset + 28)[0]
+    elif magic == 0x20B:
+        image_base = struct.unpack_from("<Q", data, opt_offset + 24)[0]
+    else:
+        return None
+    sections = []
+    sect_offset = opt_offset + opt_size
+    for idx in range(num_sections):
+        off = sect_offset + idx * 40
+        if off + 40 > len(data):
+            break
+        virt_size, virt_addr, raw_size, raw_ptr = struct.unpack_from("<IIII", data, off + 8)
+        span = max(virt_size, raw_size)
+        sections.append((virt_addr, span, raw_ptr))
+
+    def va_to_offset(va: int) -> int | None:
+        rva = va - image_base
+        if rva < 0:
+            return None
+        for virt_addr, span, raw_ptr in sections:
+            if virt_addr <= rva < virt_addr + span:
+                return raw_ptr + (rva - virt_addr)
+        return None
+
+    def read_c_string(va: int, max_len: int = 256) -> str | None:
+        off = va_to_offset(va)
+        if off is None:
+            return None
+        end = data.find(b"\x00", off, off + max_len)
+        if end == -1:
+            end = off + max_len
+        raw = data[off:end]
+        if not raw or not any(32 <= b < 127 for b in raw):
+            return None
+        return raw.decode("ascii", errors="ignore")
+
+    return read_c_string
 
 
 def parse_strings() -> dict[int, str]:
@@ -83,7 +141,12 @@ def value_as_int(value: Value | None) -> int | None:
 
 def parse_weapon_block(text: str) -> list[str]:
     lines = text.splitlines()
-    start = next(i for i, line in enumerate(lines) if line.startswith("/* FUN_004519b0"))
+    start = next(
+        i
+        for i, line in enumerate(lines)
+        if line.startswith("/* FUN_004519b0")
+        or line.startswith("/* weapon_table_init @ 004519b0")
+    )
     end = next(
         i
         for i, line in enumerate(lines[start + 1 :], start + 1)
@@ -92,16 +155,43 @@ def parse_weapon_block(text: str) -> list[str]:
     return lines[start:end]
 
 
+def parse_offset(sign: str | None, value: str | None) -> int:
+    if not sign or not value:
+        return 0
+    amount = int(value)
+    return amount if sign == "+" else -amount
+
+
+def resolve_string(
+    addr_to_str: dict[int, str],
+    pe_reader: Callable[[int], str | None] | None,
+    addr: int,
+) -> str | None:
+    name = addr_to_str.get(addr)
+    if name:
+        return name
+    if pe_reader:
+        return pe_reader(addr)
+    return None
+
+
 def main() -> None:
     addr_to_str = parse_strings()
     block = parse_weapon_block(C_PATH.read_text())
+    pe_reader = load_pe_reader(BIN_PATH)
 
     entries: list[dict[int, Value]] = [dict() for _ in range((END_ADDR - BASE_ADDR) // STRIDE_BYTES)]
     names: dict[int, str] = {}
 
     current_str_addr: int | None = None
+    current_str_offset = 0
 
-    str_src_re = re.compile(r"pcVar7\s*=\s*s_[A-Za-z0-9_]+_([0-9A-Fa-f]{8})")
+    str_src_re = re.compile(
+        r"pcVar7\s*=\s*s_[A-Za-z0-9_]+_([0-9A-Fa-f]{8})(?:\s*([+-])\s*(\d+))?"
+    )
+    str_src_dat_re = re.compile(
+        r"pcVar7\s*=\s*&DAT_([0-9A-Fa-f]{8})(?:\s*([+-])\s*(\d+))?"
+    )
     str_dst_re = re.compile(r"pcVar8\s*=\s*\(char \*\)&DAT_([0-9A-Fa-f]{8})")
     assign_re = re.compile(r"(?P<dst>_?DAT_[0-9A-Fa-f]{8})\s*=\s*(?P<src>[^;]+);")
 
@@ -109,6 +199,12 @@ def main() -> None:
         m = str_src_re.search(line)
         if m:
             current_str_addr = int(m.group(1), 16)
+            current_str_offset = parse_offset(m.group(2), m.group(3))
+
+        m = str_src_dat_re.search(line)
+        if m:
+            current_str_addr = int(m.group(1), 16)
+            current_str_offset = parse_offset(m.group(2), m.group(3))
 
         m = str_dst_re.search(line)
         if m and current_str_addr is not None:
@@ -117,10 +213,15 @@ def main() -> None:
                 entry = (dst_addr - BASE_ADDR) // STRIDE_BYTES
                 offset = (dst_addr - BASE_ADDR) % STRIDE_BYTES
                 if offset == NAME_OFFSET:
-                    name = addr_to_str.get(current_str_addr)
+                    name = resolve_string(
+                        addr_to_str,
+                        pe_reader,
+                        current_str_addr + current_str_offset,
+                    )
                     if name:
                         names[entry] = name
             current_str_addr = None
+            current_str_offset = 0
 
         m = assign_re.search(line)
         if not m:
