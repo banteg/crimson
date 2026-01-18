@@ -4321,6 +4321,78 @@
       "address": "0x1005db54",
       "name": "grim_mouse_dy",
       "comment": "Mouse delta Y (pixels) accumulated per poll."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1004e55c",
+      "name": "grim_dxt5_alpha_weights_max_8",
+      "comment": "DXT5 alpha optimization: max-endpoint weights for 8-alpha mode."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1004e57c",
+      "name": "grim_dxt5_alpha_weights_min_8",
+      "comment": "DXT5 alpha optimization: min-endpoint weights for 8-alpha mode."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1004e59c",
+      "name": "grim_dxt5_alpha_weights_max_6",
+      "comment": "DXT5 alpha optimization: max-endpoint weights for 6-alpha mode."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1004e5b4",
+      "name": "grim_dxt5_alpha_weights_min_6",
+      "comment": "DXT5 alpha optimization: min-endpoint weights for 6-alpha mode."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1004e5d4",
+      "name": "grim_dxt1_color_weights_max_4",
+      "comment": "DXT1 color optimization: max-endpoint weights for 4-color mode."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1004e5e4",
+      "name": "grim_dxt1_color_weights_min_4",
+      "comment": "DXT1 color optimization: min-endpoint weights for 4-color mode."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1004e5f4",
+      "name": "grim_dxt1_color_weights_max_3",
+      "comment": "DXT1 color optimization: max-endpoint weights for 3-color mode."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1004e600",
+      "name": "grim_dxt1_color_weights_min_3",
+      "comment": "DXT1 color optimization: min-endpoint weights for 3-color mode."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1004e610",
+      "name": "grim_dxt1_index_map_4color",
+      "comment": "DXT1 index mapping table for 4-color mode."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1004e620",
+      "name": "grim_dxt1_index_map_3color",
+      "comment": "DXT1 index mapping table for 3-color mode."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1004e63c",
+      "name": "grim_dxt5_alpha_index_map_8",
+      "comment": "DXT5 alpha index mapping table for 8-alpha mode."
+    },
+    {
+      "program": "grim.dll",
+      "address": "0x1004e65c",
+      "name": "grim_dxt5_alpha_index_map_6",
+      "comment": "DXT5 alpha index mapping table for 6-alpha mode."
     }
   ]
 }

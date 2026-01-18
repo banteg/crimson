@@ -25518,12 +25518,12 @@ grim_dxt5_optimize_alpha_endpoints(float *min_out,float *max_out,float *alphas,u
   float local_8;
   
   if (mode == 6) {
-    pfVar5 = (float *)&DAT_1004e5b4;
-    local_20 = &DAT_1004e59c;
+    pfVar5 = (float *)&grim_dxt5_alpha_weights_min_6;
+    local_20 = &grim_dxt5_alpha_weights_max_6;
   }
   else {
-    pfVar5 = (float *)&DAT_1004e57c;
-    local_20 = (undefined4 *)&DAT_1004e55c;
+    pfVar5 = (float *)&grim_dxt5_alpha_weights_min_8;
+    local_20 = (undefined4 *)&grim_dxt5_alpha_weights_max_8;
   }
   uVar3 = 0;
   local_8 = 1.0;
@@ -25648,9 +25648,12 @@ LAB_10020a28:
 
 
 
-/* FUN_10020b2a @ 10020b2a */
+/* grim_dxt1_optimize_color_endpoints @ 10020b2a */
 
-void __cdecl FUN_10020b2a(float *param_1,float *param_2,int param_3,float param_4)
+/* optimizes DXT1 color endpoints for 3- or 4-color mode */
+
+void __cdecl
+grim_dxt1_optimize_color_endpoints(float *min_out,float *max_out,float *rgba,float mode)
 
 {
   float *pfVar1;
@@ -25663,12 +25666,12 @@ void __cdecl FUN_10020b2a(float *param_1,float *param_2,int param_3,float param_
   float fVar8;
   float fVar9;
   float fVar10;
-  int iVar11;
-  float *pfVar12;
-  int iVar13;
-  uint uVar14;
+  float *pfVar11;
+  int iVar12;
+  float *pfVar13;
+  int iVar14;
   uint uVar15;
-  float *pfVar16;
+  uint uVar16;
   float fVar17;
   float local_c4 [16];
   float *local_84;
@@ -25695,14 +25698,14 @@ void __cdecl FUN_10020b2a(float *param_1,float *param_2,int param_3,float param_
   float local_c;
   undefined4 uStack_8;
   
-  fVar10 = param_4;
-  if (param_4 == 4.2039e-45) {
-    local_6c = (float *)&DAT_1004e600;
-    local_68 = &DAT_1004e5f4;
+  fVar10 = mode;
+  if (mode == 4.2039e-45) {
+    local_6c = (float *)&grim_dxt1_color_weights_min_3;
+    local_68 = &grim_dxt1_color_weights_max_3;
   }
   else {
-    local_6c = (float *)&DAT_1004e5e4;
-    local_68 = (undefined4 *)&DAT_1004e5d4;
+    local_6c = (float *)&grim_dxt1_color_weights_min_4;
+    local_68 = (undefined4 *)&grim_dxt1_color_weights_max_4;
   }
   local_34[4] = 0.0;
   fVar17 = 0.0;
@@ -25711,34 +25714,34 @@ void __cdecl FUN_10020b2a(float *param_1,float *param_2,int param_3,float param_
   local_1c = 0.0;
   local_c = DAT_100544c8;
   uStack_8 = DAT_100544cc;
-  pfVar16 = (float *)(param_3 + 8);
-  iVar11 = 0x10;
-  local_84 = pfVar16;
-  pfVar12 = pfVar16;
-  iVar13 = iVar11;
+  pfVar11 = rgba + 2;
+  iVar12 = 0x10;
+  local_84 = pfVar11;
+  pfVar13 = pfVar11;
+  iVar14 = iVar12;
   do {
-    if (pfVar12[-2] < local_14) {
-      local_14 = pfVar12[-2];
+    if (pfVar13[-2] < local_14) {
+      local_14 = pfVar13[-2];
     }
-    if (pfVar12[-1] < local_10) {
-      local_10 = pfVar12[-1];
+    if (pfVar13[-1] < local_10) {
+      local_10 = pfVar13[-1];
     }
-    if (*pfVar12 < local_c) {
-      local_c = *pfVar12;
+    if (*pfVar13 < local_c) {
+      local_c = *pfVar13;
     }
-    if (local_34[4] < pfVar12[-2]) {
-      local_34[4] = pfVar12[-2];
+    if (local_34[4] < pfVar13[-2]) {
+      local_34[4] = pfVar13[-2];
     }
-    if (fVar17 < pfVar12[-1]) {
-      fVar17 = pfVar12[-1];
+    if (fVar17 < pfVar13[-1]) {
+      fVar17 = pfVar13[-1];
     }
-    if (local_1c < *pfVar12) {
-      local_1c = *pfVar12;
+    if (local_1c < *pfVar13) {
+      local_1c = *pfVar13;
     }
     fVar4 = local_1c;
-    pfVar12 = pfVar12 + 4;
-    iVar13 = iVar13 + -1;
-  } while (iVar13 != 0);
+    pfVar13 = pfVar13 + 4;
+    iVar14 = iVar14 + -1;
+  } while (iVar14 != 0);
   local_34[5] = fVar17;
   fVar7 = local_34[4] - local_14;
   fVar6 = fVar17 - local_10;
@@ -25757,11 +25760,11 @@ void __cdecl FUN_10020b2a(float *param_1,float *param_2,int param_3,float param_
     local_34[1] = 0.0;
     fVar3 = 0.0;
     do {
-      local_44 = (pfVar16[-2] - local_58) * fVar7 * fVar8;
-      local_40 = (pfVar16[-1] - local_54) * fVar6 * fVar8;
-      fVar2 = *pfVar16;
-      pfVar16 = pfVar16 + 4;
-      iVar11 = iVar11 + -1;
+      local_44 = (pfVar11[-2] - local_58) * fVar7 * fVar8;
+      local_40 = (pfVar11[-1] - local_54) * fVar6 * fVar8;
+      fVar2 = *pfVar11;
+      pfVar11 = pfVar11 + 4;
+      iVar12 = iVar12 + -1;
       fVar2 = (fVar2 - local_50) * fVar8 * fVar5;
       fVar9 = local_40 + fVar2 + local_44;
       fVar3 = fVar9 * fVar9 + fVar3;
@@ -25771,48 +25774,48 @@ void __cdecl FUN_10020b2a(float *param_1,float *param_2,int param_3,float param_
       local_34[2] = fVar9 * fVar9 + local_34[2];
       fVar2 = (local_44 - local_40) - fVar2;
       local_34[3] = fVar2 * fVar2 + local_34[3];
-    } while (iVar11 != 0);
+    } while (iVar12 != 0);
     local_34[0] = fVar3;
-    uVar15 = 0;
-    uVar14 = 1;
+    uVar16 = 0;
+    uVar15 = 1;
     do {
-      pfVar12 = local_34 + uVar14;
-      if (fVar3 < *pfVar12) {
-        fVar3 = *pfVar12;
-        uVar15 = uVar14;
+      pfVar13 = local_34 + uVar15;
+      if (fVar3 < *pfVar13) {
+        fVar3 = *pfVar13;
+        uVar16 = uVar15;
       }
-      uVar14 = uVar14 + 1;
-    } while (uVar14 < 4);
-    if ((uVar15 & 2) != 0) {
+      uVar15 = uVar15 + 1;
+    } while (uVar15 < 4);
+    if ((uVar16 & 2) != 0) {
       local_34[5] = local_10;
       local_10 = fVar17;
     }
-    if ((uVar15 & 1) != 0) {
+    if ((uVar16 & 1) != 0) {
       local_1c = local_c;
       local_c = fVar4;
     }
     if (0.00024414062 <= local_48) {
-      local_60 = (float)((int)param_4 + -1);
-      if ((int)param_4 + -1 < 0) {
+      local_60 = (float)((int)mode + -1);
+      if ((int)mode + -1 < 0) {
         local_60 = local_60 + 4.2949673e+09;
       }
-      FUN_10020708(pfVar12);
+      FUN_10020708(pfVar13);
       local_48 = 0.0;
       while( true ) {
-        iVar11 = 0x10;
+        iVar12 = 0x10;
         if (fVar10 != 0.0) {
-          pfVar12 = local_c4 + 1;
-          iVar13 = (int)local_68 - (int)local_6c;
-          pfVar16 = local_6c;
+          pfVar13 = local_c4 + 1;
+          iVar14 = (int)local_68 - (int)local_6c;
+          pfVar11 = local_6c;
           fVar17 = fVar10;
           do {
-            pfVar12[-1] = local_34[4] * *(float *)(iVar13 + (int)pfVar16) + local_14 * *pfVar16;
-            *pfVar12 = local_34[5] * *(float *)(iVar13 + (int)pfVar16) + local_10 * *pfVar16;
-            fVar4 = *pfVar16;
-            pfVar1 = (float *)(iVar13 + (int)pfVar16);
-            pfVar16 = pfVar16 + 1;
-            pfVar12[1] = local_1c * *pfVar1 + local_c * fVar4;
-            pfVar12 = pfVar12 + 4;
+            pfVar13[-1] = local_34[4] * *(float *)(iVar14 + (int)pfVar11) + local_14 * *pfVar11;
+            *pfVar13 = local_34[5] * *(float *)(iVar14 + (int)pfVar11) + local_10 * *pfVar11;
+            fVar4 = *pfVar11;
+            pfVar1 = (float *)(iVar14 + (int)pfVar11);
+            pfVar11 = pfVar11 + 1;
+            pfVar13[1] = local_1c * *pfVar1 + local_c * fVar4;
+            pfVar13 = pfVar13 + 4;
             fVar17 = (float)((int)fVar17 + -1);
           } while (fVar17 != 0.0);
         }
@@ -25832,12 +25835,12 @@ void __cdecl FUN_10020b2a(float *param_1,float *param_2,int param_3,float param_
         local_54 = 0.0;
         local_58 = 0.0;
         local_5c = 0.0;
-        param_4 = 0.0;
-        pfVar12 = local_84;
+        mode = 0.0;
+        pfVar13 = local_84;
         do {
-          fVar5 = (*pfVar12 - local_c) * fVar4 * fVar6 +
-                  (pfVar12[-2] - local_14) * fVar4 * fVar17 +
-                  (pfVar12[-1] - local_10) * fVar7 * fVar4;
+          fVar5 = (*pfVar13 - local_c) * fVar4 * fVar6 +
+                  (pfVar13[-2] - local_14) * fVar4 * fVar17 +
+                  (pfVar13[-1] - local_10) * fVar7 * fVar4;
           local_64 = fVar5;
           if (fVar5 < local_60) {
             local_64 = fVar5 + 0.5;
@@ -25846,24 +25849,24 @@ void __cdecl FUN_10020b2a(float *param_1,float *param_2,int param_3,float param_
           else {
             local_80 = (int)fVar10 + -1;
           }
-          pfVar16 = pfVar12 + -2;
-          local_78 = local_c4[local_80 * 4 + 1] - pfVar12[-1];
-          fVar5 = *pfVar12;
+          pfVar11 = pfVar13 + -2;
+          local_78 = local_c4[local_80 * 4 + 1] - pfVar13[-1];
+          fVar5 = *pfVar13;
           fVar3 = local_6c[local_80] * 0.125;
-          pfVar12 = pfVar12 + 4;
-          iVar11 = iVar11 + -1;
+          pfVar13 = pfVar13 + 4;
+          iVar12 = iVar12 + -1;
           fVar8 = (float)local_68[local_80] * 0.125;
-          param_4 = fVar3 * local_6c[local_80] + param_4;
-          local_58 = fVar3 * (local_c4[local_80 * 4] - *pfVar16) + local_58;
+          mode = fVar3 * local_6c[local_80] + mode;
+          local_58 = fVar3 * (local_c4[local_80 * 4] - *pfVar11) + local_58;
           local_54 = fVar3 * local_78 + local_54;
           local_50 = fVar3 * (local_c4[local_80 * 4 + 2] - fVar5) + local_50;
           local_5c = fVar8 * (float)local_68[local_80] + local_5c;
-          local_34[0] = fVar8 * (local_c4[local_80 * 4] - *pfVar16) + local_34[0];
+          local_34[0] = fVar8 * (local_c4[local_80 * 4] - *pfVar11) + local_34[0];
           local_34[1] = local_78 * fVar8 + local_34[1];
           local_34[2] = fVar8 * (local_c4[local_80 * 4 + 2] - fVar5) + local_34[2];
-        } while (iVar11 != 0);
-        if (0.0 < param_4) {
-          fVar17 = -1.0 / param_4;
+        } while (iVar12 != 0);
+        if (0.0 < mode) {
+          fVar17 = -1.0 / mode;
           local_14 = local_58 * fVar17 + local_14;
           local_10 = local_54 * fVar17 + local_10;
           local_c = fVar17 * local_50 + local_c;
@@ -25881,28 +25884,28 @@ void __cdecl FUN_10020b2a(float *param_1,float *param_2,int param_3,float param_
              (local_34[2] * local_34[2] < 1.5258789e-05)))) ||
            (local_48 = (float)((int)local_48 + 1), 7 < (uint)local_48)) break;
       }
-      *param_1 = local_14;
-      param_1[1] = local_10;
-      param_1[2] = local_c;
-      *param_2 = local_34[4];
-      param_2[1] = local_34[5];
+      *min_out = local_14;
+      min_out[1] = local_10;
+      min_out[2] = local_c;
+      *max_out = local_34[4];
+      max_out[1] = local_34[5];
     }
     else {
-      *param_1 = local_14;
-      param_1[1] = local_10;
-      param_1[2] = local_c;
-      param_2[1] = local_34[5];
-      *param_2 = local_34[4];
+      *min_out = local_14;
+      min_out[1] = local_10;
+      min_out[2] = local_c;
+      max_out[1] = local_34[5];
+      *max_out = local_34[4];
     }
   }
   else {
-    *param_1 = local_14;
-    param_1[1] = local_10;
-    param_1[2] = local_c;
-    param_2[1] = fVar17;
-    *param_2 = local_34[4];
+    *min_out = local_14;
+    min_out[1] = local_10;
+    min_out[2] = local_c;
+    max_out[1] = fVar17;
+    *max_out = local_34[4];
   }
-  param_2[2] = local_1c;
+  max_out[2] = local_1c;
   return;
 }
 
@@ -26097,7 +26100,7 @@ int __cdecl grim_dxt1_encode_color_block(ushort *out_block,float mode)
     pfVar4 = pfVar4 + 4;
     uVar7 = uVar5;
   } while (uVar5 < 0x100);
-  FUN_10020b2a(&local_4c,&local_20,(int)local_2d4,local_10);
+  grim_dxt1_optimize_color_endpoints(&local_4c,&local_20,local_2d4,local_10);
   local_d4 = local_4c * _DAT_100544d0;
   local_d0 = local_48 * _DAT_100544d4;
   local_cc = local_44 * _DAT_100544d8;
@@ -26149,14 +26152,14 @@ int __cdecl grim_dxt1_encode_color_block(ushort *out_block,float mode)
     local_80 = pfVar4[3];
     local_20 = *pfVar4 - local_9c[0];
     if (local_10 == 4.2039e-45) {
-      local_24 = &DAT_1004e620;
+      local_24 = &grim_dxt1_index_map_3color;
       local_7c = local_20 * 0.5;
       local_78 = (local_88 - local_9c[1]) * 0.5;
       local_74 = (local_84 - local_9c[2]) * 0.5;
       local_70 = (local_80 - local_9c[3]) * 0.5;
     }
     else {
-      local_24 = &DAT_1004e610;
+      local_24 = &grim_dxt1_index_map_4color;
       local_7c = local_20 * 0.33333334;
       local_78 = (local_88 - local_9c[1]) * 0.33333334;
       local_74 = (local_84 - local_9c[2]) * 0.33333334;
@@ -26666,7 +26669,7 @@ LAB_10021f19:
         local_a4[uVar11 + 0x19] = (fVar2 * fVar10 + fVar1 * local_a4[0x19]) * 0.14285715;
         uVar11 = uVar5;
       } while (uVar5 < 7);
-      local_14 = &DAT_1004e63c;
+      local_14 = &grim_dxt5_alpha_index_map_8;
       local_a4[0x18] = local_a4[0x19];
       local_a4[0x19] = fVar10;
     }
@@ -26688,7 +26691,7 @@ LAB_10021f19:
         local_a4[uVar11 + 0x19] = (fVar2 * local_a4[0x19] + fVar1 * fVar10) * 0.2;
         uVar11 = uVar5;
       } while (uVar5 < 5);
-      local_14 = &DAT_1004e65c;
+      local_14 = &grim_dxt5_alpha_index_map_6;
       local_a4[0x1e] = 0.0;
       local_a4[0x1f] = 1.0;
       local_a4[0x18] = fVar10;

@@ -3178,6 +3178,13 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10020b2a",
+    "name": "grim_dxt1_optimize_color_endpoints",
+    "signature": "void grim_dxt1_optimize_color_endpoints(float *min_out, float *max_out, float *rgba, float mode)",
+    "comment": "optimizes DXT1 color endpoints for 3- or 4-color mode"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10021095",
     "name": "grim_dxt1_encode_color_block",
     "signature": "int grim_dxt1_encode_color_block(unsigned short *out_block, float mode)",

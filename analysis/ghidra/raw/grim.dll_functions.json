@@ -3885,9 +3885,9 @@
     "calls": ["FUN_10020708"]
   },
   {
-    "name": "FUN_10020b2a",
+    "name": "grim_dxt1_optimize_color_endpoints",
     "address": "10020b2a",
-    "signature": "undefined FUN_10020b2a(float * param_1, float * param_2, int param_3, float param_4)",
+    "signature": "void grim_dxt1_optimize_color_endpoints(float * min_out, float * max_out, float * rgba, float mode)",
     "external": false,
     "calls": ["FUN_10020708"]
   },
@@ -3896,7 +3896,7 @@
     "address": "10021095",
     "signature": "int grim_dxt1_encode_color_block(ushort * out_block, float mode)",
     "external": false,
-    "calls": ["FUN_10020708", "FUN_10020b2a", "grim_dxt_decode_rgb565", "grim_dxt_pack_rgb565"]
+    "calls": ["FUN_10020708", "grim_dxt1_optimize_color_endpoints", "grim_dxt_decode_rgb565", "grim_dxt_pack_rgb565"]
   },
   {
     "name": "grim_dxt1_decode_color_block",
