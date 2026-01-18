@@ -20,7 +20,7 @@ outputs.
   `analysis/ghidra/raw/grim.dll_decompiled.c:22511`.
 - Evidence: zlib strings report "deflate 1.1.3" and "inflate 1.1.3" at
   `analysis/ghidra/raw/grim.dll_strings.txt:220` and `:221`.
-- Status: headers imported (`third_party/headers/zlib.h`).
+- Status: headers imported (`third_party/headers/zlib.h`, `third_party/headers/zconf.h`).
 - Status: no signature mapping yet.
 
 ### libjpeg (binary version unknown; headers are IJG 6b)
@@ -42,6 +42,8 @@ outputs.
   at `third_party/headers/vorbis/codec.h:12`.
 - Evidence (tag match): xiph/vorbis tag v1.0.0 (tagged 2002-07-19) contains identical
   header $Id lines for `include/vorbis/vorbisfile.h` and `include/vorbis/codec.h`.
+- Evidence (binary metadata): radare2 `iI` reports VORBISFILE.DLL compiled
+  Fri Jul 19 11:35:16 2002 (matches the v1.0.0 tag date).
 - Status: headers imported (`third_party/headers/ogg/ogg.h`,
   `third_party/headers/vorbis/codec.h`, `third_party/headers/vorbis/vorbisfile.h`).
 - Status: no signature mapping yet.
