@@ -1712,7 +1712,7 @@ int FUN_00403390(void)
   }
   DAT_00480890 = 0;
   demo_mode_active = 1;
-  FUN_00412dc0();
+  gameplay_reset_state();
   _config_game_mode = 1;
   if (DAT_00480894 == 0) {
     FUN_00402ed0();
@@ -9174,11 +9174,12 @@ void game_load_status(void)
 
 
 
-/* FUN_00412dc0 @ 00412dc0 */
+/* gameplay_reset_state @ 00412dc0 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* resets gameplay/session globals, pools, and availability tables */
 
-void FUN_00412dc0(void)
+void gameplay_reset_state(void)
 
 {
   undefined4 *puVar1;
@@ -21770,7 +21771,7 @@ LAB_0042b17a:
   uStack_58 = (uint)qpc_timestamp_scratch;
   QueryPerformanceCounter((LARGE_INTEGER *)&uStack_58);
   FUN_00461739(uStack_58);
-  FUN_00412dc0();
+  gameplay_reset_state();
   DAT_004aaed9 = 1;
   FUN_004181b0();
   DAT_004aaed9 = 0;
@@ -32217,7 +32218,7 @@ void __cdecl game_state_set(int state_id)
     DAT_0048702c = 0;
     if (render_pass_mode == '\0') {
       DAT_0048724d = '\0';
-      FUN_00412dc0();
+      gameplay_reset_state();
       iVar7 = _quest_stage_minor;
       iVar6 = _quest_stage_major;
       if (_config_game_mode == 3) {
@@ -32256,7 +32257,7 @@ void __cdecl game_state_set(int state_id)
     DAT_0048702c = 0;
     if (render_pass_mode == '\0') {
       DAT_0048724d = '\0';
-      FUN_00412dc0();
+      gameplay_reset_state();
       render_pass_mode = '\x01';
       DAT_00487241 = 1;
     }

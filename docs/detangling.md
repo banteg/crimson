@@ -93,6 +93,13 @@ You can also set `CRIMSON_NAME_MAP` / `CRIMSON_DATA_MAP` to point at custom maps
     resets transition globals, and seeds UI elements; invoked on startup (`FUN_00403500`), when perk selection
     is requested (`FUN_0040af70`), and when UI transitions complete (`ui_elements_update_and_render`).
 
+### Gameplay session reset (high confidence)
+
+- `FUN_00412dc0` -> `gameplay_reset_state`
+  - Evidence: clears HUD/bonus slots, resets spawn/timer globals, seeds creature type textures/SFX, refreshes
+    weapon/perk availability, and zeroes run/high-score counters; invoked when demo mode starts and on state
+    transitions that require a fresh session.
+
 
 ### Input primary action (high confidence)
 

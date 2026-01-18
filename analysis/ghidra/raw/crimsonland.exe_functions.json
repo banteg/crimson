@@ -256,7 +256,7 @@
     "address": "00403390",
     "signature": "int FUN_00403390(void)",
     "external": false,
-    "calls": ["FUN_00402ed0", "FUN_00402fe0", "FUN_004030f0", "FUN_00403250", "FUN_00403370", "FUN_00412dc0", "game_state_set"]
+    "calls": ["FUN_00402ed0", "FUN_00402fe0", "FUN_004030f0", "FUN_00403250", "FUN_00403370", "game_state_set", "gameplay_reset_state"]
   },
   {
     "name": "FUN_00403430",
@@ -679,9 +679,9 @@
     "calls": ["FUN_00402bd0", "console_printf", "crt_fclose", "crt_fopen", "crt_fread", "crt_fseek", "crt_ftell", "game_save_status", "game_sequence_load"]
   },
   {
-    "name": "FUN_00412dc0",
+    "name": "gameplay_reset_state",
     "address": "00412dc0",
-    "signature": "undefined FUN_00412dc0(void)",
+    "signature": "void gameplay_reset_state(void)",
     "external": false,
     "calls": ["FUN_00412940", "FUN_004181b0", "FUN_0041fc80", "_rand", "effect_defaults_reset", "perks_rebuild_available", "projectile_reset_pools", "weapon_refresh_available", "weapon_table_init"]
   },
@@ -1348,7 +1348,7 @@
     "address": "0042b090",
     "signature": "undefined FUN_0042b090(void)",
     "external": false,
-    "calls": ["FUN_00403500", "FUN_00412dc0", "FUN_004181b0", "FUN_0041fed0", "FUN_00461739", "GetLocalTime", "QueryPerformanceCounter", "RegCloseKey", "RegCreateKeyExA", "console_flush_log", "console_printf", "perks_init_database", "reg_read_dword_default", "strdup_malloc", "texture_get_or_load", "weapon_table_init"]
+    "calls": ["FUN_00403500", "FUN_004181b0", "FUN_0041fed0", "FUN_00461739", "GetLocalTime", "QueryPerformanceCounter", "RegCloseKey", "RegCreateKeyExA", "console_flush_log", "console_printf", "gameplay_reset_state", "perks_init_database", "reg_read_dword_default", "strdup_malloc", "texture_get_or_load", "weapon_table_init"]
   },
   {
     "name": "crimsonland_main",
@@ -2307,7 +2307,7 @@
     "address": "004461c0",
     "signature": "void game_state_set(int state_id)",
     "external": false,
-    "calls": ["FUN_0040e940", "FUN_00412dc0", "FUN_0041df40", "console_input_poll", "game_save_status", "quest_start_selected", "thunk_FUN_0043afa0", "ui_elements_reset_state"]
+    "calls": ["FUN_0040e940", "FUN_0041df40", "console_input_poll", "game_save_status", "gameplay_reset_state", "quest_start_selected", "thunk_FUN_0043afa0", "ui_elements_reset_state"]
   },
   {
     "name": "FUN_00446900",

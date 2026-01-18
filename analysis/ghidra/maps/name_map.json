@@ -184,6 +184,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00412dc0",
+    "name": "gameplay_reset_state",
+    "signature": "void gameplay_reset_state(void)",
+    "comment": "resets gameplay/session globals, pools, and availability tables"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004136b0",
     "name": "player_update",
     "signature": "void player_update(void)",
