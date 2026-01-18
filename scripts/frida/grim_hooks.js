@@ -267,13 +267,14 @@ const MEM_READERS = {
 };
 
 function readMem(memSpec, ptrVal) {
-  if (!ptrVal || ptrVal.isNull()) return null;
+  const info = { ptr: ptrVal || null, value: null };
+  if (!ptrVal || ptrVal.isNull()) return info;
   const parsed = /^(\w+)(?:\[(\d+)\])?$/.exec(memSpec);
-  if (!parsed) return null;
+  if (!parsed) return info;
   const type = parsed[1];
   const count = parsed[2] ? parseInt(parsed[2], 10) : 1;
   const reader = MEM_READERS[type];
-  if (!reader) return null;
+  if (!reader) return info;
   const out = [];
   let cur = ptrVal;
   for (let i = 0; i < count; i++) {
@@ -284,7 +285,8 @@ function readMem(memSpec, ptrVal) {
     }
     cur = cur.add(reader.size);
   }
-  return count === 1 ? out[0] : out;
+  info.value = count === 1 ? out[0] : out;
+  return info;
 }
 
 function decodeArg(spec, arg) {
