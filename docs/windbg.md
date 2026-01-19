@@ -382,8 +382,42 @@ Disassembly confirms the check and toggle sequence:
 0040c39f e89c56ffff      call    00401a40         ; console_update
 ```
 
+Additional context from the block entry (`0x0040c360`):
+
+```
+0040c320 6a57            push    57h
+0040c322 8818            mov     byte ptr [eax],bl
+0040c324 8b0d3c084800    mov     ecx,dword ptr [0048083c]
+0040c32a 8b11            mov     edx,dword ptr [ecx]
+0040c32c ff5220          call    dword ptr [edx+20h]
+0040c32f e80c1c0100      call    0041df40
+0040c334 84c0            test    al,al
+0040c336 7513            jne     0040c34b
+0040c338 833d347048000a  cmp     dword ptr [00487034],0Ah
+0040c33f 7e0a            jle     0040c34b
+0040c341 c705347048000a000000 mov dword ptr [00487034],0Ah
+0040c34b 381d84af4a00    cmp     byte ptr [004aaf84],bl
+0040c351 740d            je      0040c360
+0040c353 e898e20100      call    0042a5f0
+0040c358 b001            mov     al,1
+0040c35a 5e              pop     esi
+0040c35b 5b              pop     ebx
+0040c35c 83c428          add     esp,28h
+0040c35f c3              ret
+0040c360 a144084800      mov     eax,dword ptr [00480844]
+```
+
+Additional hotkey in the same block:
+
+```
+0040c3aa 6a58            push    58h              ; DIK_F12
+0040c3ae ff5248          call    dword ptr [edx+48h]
+```
+
 #### Interpretation
 
 - The tilde hotkey uses **Grim2D key polling** (`vtable +0x48`) with `DIK_GRAVE (0x29)`.
 - The toggle is explicit: if `console_open_flag` is 0, it passes 1 to `console_set_open`; otherwise 0.
 - The same function calls `console_update` immediately after the toggle.
+- The hotkey block appears inside a larger per-frame input/update function that also checks `DIK_F12 (0x58)`.
+- The block is gated by a byte flag at `0x004aaf84`; when non-zero, it calls `0x0042a5f0` and returns early.
