@@ -10,11 +10,14 @@ import typer
 from PIL import Image
 
 from . import jaz, paq
-from .quests import tier1
+from .quests import tier1, tier2
 from .quests.types import QuestContext, SpawnEntry
 
 
 app = typer.Typer(add_completion=False)
+
+_QUEST_BUILDERS = {**tier1.TIER1_BUILDERS, **tier2.TIER2_BUILDERS}
+_QUEST_TITLES = {**tier1.TIER1_TITLES, **tier2.TIER2_TITLES}
 
 _SEP_RE = re.compile(r"[\\/]+")
 
@@ -124,10 +127,10 @@ def cmd_quests(
     sort: bool = typer.Option(False, help="sort output by trigger time"),
 ) -> None:
     """Print quest spawn scripts for a given level."""
-    builder = tier1.TIER1_BUILDERS.get(level)
-    title = tier1.TIER1_TITLES.get(level, "unknown")
+    builder = _QUEST_BUILDERS.get(level)
+    title = _QUEST_TITLES.get(level, "unknown")
     if builder is None:
-        available = ", ".join(sorted(tier1.TIER1_BUILDERS))
+        available = ", ".join(sorted(_QUEST_BUILDERS))
         typer.echo(f"unknown level {level!r}. Available: {available}", err=True)
         raise typer.Exit(code=1)
     ctx = QuestContext(width=width, height=height, player_count=player_count)
