@@ -20,9 +20,20 @@ TYPE_ID_TO_NAME = {
     5: "trooper",
 }
 
+FLAG_DEFS: tuple[tuple[str, int, str], ...] = (
+    ("SELF_DAMAGE_TICK", 0x1, "periodic self-damage tick (dt * 60)"),
+    ("SELF_DAMAGE_TICK_STRONG", 0x2, "stronger self-damage tick (dt * 180)"),
+    ("ANIM_PING_PONG", 0x4, "short ping-pong strip"),
+    ("SPLIT_ON_DEATH", 0x8, "split-on-death behavior"),
+    ("RANGED_ATTACK_SHOCK", 0x10, "ranged attack using projectile type 9"),
+    ("ANIM_LONG_STRIP", 0x40, "force long animation strip"),
+    ("AI7_LINK_TIMER", 0x80, "uses link index as timer for AI mode 7"),
+    ("RANGED_ATTACK_VARIANT", 0x100, "ranged attack using orbit_radius as projectile type"),
+    ("BONUS_ON_DEATH", 0x400, "spawns bonus on death"),
+)
+
 ANIM_NOTES = {
     0x4: "short strip (ping-pong)",
-    0x10: "alt strip (+0x20)",
     0x40: "long strip",
     0x44: "long strip (0x40 overrides 0x4)",
 }
@@ -177,6 +188,21 @@ def format_table(case_map: dict[str, dict[str, str | None]]) -> str:
 
 
 def render_code(case_map: dict[str, dict[str, str | None]]) -> str:
+    def format_flags(flags: int | None) -> str:
+        if flags is None:
+            return "None"
+        remaining = flags
+        parts: list[str] = []
+        for name, value, _ in FLAG_DEFS:
+            if remaining & value:
+                parts.append(f"CreatureFlags.{name}")
+                remaining &= ~value
+        if not parts and remaining:
+            return f"CreatureFlags({remaining:#x})"
+        if remaining:
+            parts.append(f"CreatureFlags({remaining:#x})")
+        return " | ".join(parts)
+
     def sort_key(val: str) -> int:
         try:
             return int(val, 0)
@@ -190,20 +216,32 @@ def render_code(case_map: dict[str, dict[str, str | None]]) -> str:
         "\"\"\"Spawn template ids extracted from creature_spawn_template (FUN_00430af0).\"\"\"",
         "",
         "from dataclasses import dataclass",
+        "from enum import IntFlag",
         "",
         "",
+        "class CreatureFlags(IntFlag):",
+    ]
+
+    for name, value, comment in FLAG_DEFS:
+        lines.append(f"    {name} = 0x{value:02x}  # {comment}")
+
+    lines.extend(
+        [
+            "",
+            "",
         "@dataclass(frozen=True, slots=True)",
         "class SpawnTemplate:",
         "    spawn_id: int",
         "    type_id: int | None",
-        "    flags: int | None",
+        "    flags: CreatureFlags | None",
         "    creature: str | None",
         "    anim_note: str | None",
         "",
         f"TYPE_ID_TO_NAME = {TYPE_ID_TO_NAME!r}",
         "",
         "SPAWN_TEMPLATES = [",
-    ]
+        ]
+    )
 
     for key in sorted(case_map, key=sort_key):
         entry = case_map[key]
@@ -215,7 +253,8 @@ def render_code(case_map: dict[str, dict[str, str | None]]) -> str:
         spawn_part = f"spawn_id=0x{spawn_id:02x}" if spawn_id is not None else "spawn_id=None"
         lines.append(
             "    SpawnTemplate("
-            f"{spawn_part}, type_id={type_id!r}, flags={flags!r}, creature={creature!r}, anim_note={anim_note!r}),"
+            f"{spawn_part}, type_id={type_id!r}, flags={format_flags(flags)}, "
+            f"creature={creature!r}, anim_note={anim_note!r}),"
         )
 
     lines.extend(
