@@ -351,3 +351,39 @@ bp crimsonland+0x18b0 ".printf \"[console] console_set_open\\n\"; k; r; dd @esp 
 - The tilde hotkey **calls `console_set_open`**, not a direct flag write.
 - The remaining task is to identify the function containing `0x0040c39a` and the
   specific key check (likely `DIK_GRAVE = 0x29`).
+
+### Session 5 (2026-01-19) - console hotkey check (DIK_GRAVE)
+
+#### Goal
+
+Capture the actual key check that gates the console toggle.
+
+#### Breakpoint
+
+```
+bp /1 crimsonland+0xc39a ".printf \"[console] hotkey callsite 0x0040c39a\\n\"; r; k; u @eip-40 L80; dd @esp L8; gc"
+```
+
+#### Captured
+
+Disassembly confirms the check and toggle sequence:
+
+```
+0040c36d 6a29            push    29h              ; DIK_GRAVE
+0040c37d ff5248          call    dword ptr [edx+48h]
+0040c380 84c0            test    al,al
+0040c382 7416            je      0040c39a
+0040c384 8a15c8ee4700    mov     dl,[0047eec8]    ; console_open_flag
+0040c38f 3ad3            cmp     dl,bl
+0040c391 0f94c0          sete    al               ; al = (open_flag == 0)
+0040c394 50              push    eax
+0040c395 e81655ffff      call    004018b0         ; console_set_open
+0040c39a b9a0ee4700      mov     ecx,0047eea0      ; console state
+0040c39f e89c56ffff      call    00401a40         ; console_update
+```
+
+#### Interpretation
+
+- The tilde hotkey uses **Grim2D key polling** (`vtable +0x48`) with `DIK_GRAVE (0x29)`.
+- The toggle is explicit: if `console_open_flag` is 0, it passes 1 to `console_set_open`; otherwise 0.
+- The same function calls `console_update` immediately after the toggle.

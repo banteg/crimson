@@ -16,6 +16,22 @@ back the tilde/backquote console behavior.
 - Runtime capture shows the tilde hotkey path calls `console_set_open` from
   `0x0040c39a` (call stack: `0x0040c39a -> console_set_open -> DINPUT8::GetDeviceState -> grim`).
 
+#### Hotkey check (runtime)
+
+The hotkey check is performed via Grim2D key polling:
+
+```
+0040c36d 6a29            push    29h              ; DIK_GRAVE
+0040c37d ff5248          call    dword ptr [edx+48h]  ; grim key-down check
+0040c380 84c0            test    al,al
+0040c382 7416            je      0040c39a
+0040c384 8a15c8ee4700    mov     dl,[console_open_flag]
+0040c38f 3ad3            cmp     dl,bl
+0040c391 0f94c0          sete    al               ; al = (open_flag == 0)
+0040c394 50              push    eax
+0040c395 e81655ffff      call    console_set_open
+```
+
 ## Input handling (static)
 
 - Text input is polled via Grim2D `get_key_char` (vtable `+0x50`) in
@@ -87,5 +103,5 @@ The cvar paths emit:
 
 ## Open questions
 
-- Where is the tilde hotkey check wired (input polling vs. UI state)?
-- What function contains `0x0040c39a`, and does it check `DIK_GRAVE (0x29)` directly?
+- What function contains `0x0040c39a` in the real call graph (Ghidra currently labels the
+  containing range as `demo_purchase_screen_update`, which may be a boundary artifact)?
