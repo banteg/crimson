@@ -24,6 +24,15 @@ class SpawnEntry:
 QuestBuilder = Callable[..., list[SpawnEntry]]
 
 
+def terrain_id_for(level: str) -> int:
+    tier_text, quest_text = level.split(".", 1)
+    tier = int(tier_text)
+    quest = int(quest_text)
+    if tier <= 4:
+        return (tier - 1) * 2
+    return quest & 0x3
+
+
 @dataclass(frozen=True, slots=True, kw_only=True)
 class QuestDefinition:
     level: str
@@ -35,3 +44,7 @@ class QuestDefinition:
     unlock_weapon_id: int | None = None
     terrain_id: int | None = None
     builder_address: int | None = None
+
+    def __post_init__(self) -> None:
+        if self.terrain_id is None:
+            object.__setattr__(self, "terrain_id", terrain_id_for(self.level))

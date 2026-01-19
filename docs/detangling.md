@@ -577,7 +577,7 @@ Fields below are high‑confidence; unknown offsets are omitted.
 | `0x04` | `quest_meta_index` | Quest number within tier | Set to `param_3` in `FUN_00430a20`. |
 | `0x08` | `quest_meta_time_limit_ms` | Quest time limit in ms | Written per quest in `quest_database_init` (values like 120000, 300000, 480000). |
 | `0x0c` | `quest_meta_name` | Quest display name pointer | Set to `strdup` of the quest title in `FUN_00430a20`. |
-| `0x10` | `quest_meta_terrain_id` | Terrain descriptor id | Used by `terrain_generate(desc)` via `*(int *)(desc + 0x10)`. |
+| `0x10` | `quest_meta_terrain_id` | Terrain descriptor id | Used by `terrain_generate(desc)` via `*(int *)(desc + 0x10)`. Set in `FUN_00430a20` (tiers 1–4: `2 * (tier - 1)`, tier 5: `quest_index & 3`). |
 | `0x1c` | `quest_selected_builder` | Quest builder function pointer | Assigned after each `FUN_00430a20` call in `quest_database_init`. |
 | `0x20` | `quest_unlock_perk_id` | Perk unlock id | Used by `perks_rebuild_available`. |
 | `0x24` | `quest_unlock_weapon_id` | Weapon unlock id | Used by `weapon_refresh_available`. |

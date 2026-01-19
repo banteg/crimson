@@ -10,9 +10,10 @@ Notes:
 - `Start Weapon (id)` is `quest_start_weapon_id` (1-based weapon id).
 - `Time (ms)` is `quest_meta_time_limit_ms`.
 - `Builder` is the named function symbol used for the quest spawn script.
-- Quest metadata includes a `quest_meta_terrain_id` field (offset `0x10` in the
-  quest meta struct). We store a `terrain_id` slot in `QuestDefinition` for this,
-  but we have not mapped the per-quest values yet.
+- `terrain_id` is the quest metadata terrain descriptor id (offset `0x10`).
+  It is computed in `FUN_00430a20`:
+  - Tiers 1–4: `terrain_id = 2 * (tier - 1)` (0, 2, 4, 6).
+  - Tier 5: `terrain_id = quest_index & 0x3` (1,2,3,0,1,2,3,0,1,2).
 
 ## Quest -> builder table
 | Tier | Quest | Title | Start Weapon (id) | Time (ms) | Builder | Address |
