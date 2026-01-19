@@ -18,6 +18,7 @@ Data map coverage: 19.65% (654 / 3328 symbols)
 - [Python executable spec](python-executable-spec.md) — Draft
 - [Weapon table](weapon-table.md) — In progress
 - [Progress metrics](metrics.md) — Tracking
+- [Work status model](work-status.md) — Draft
 - [Player struct](player-struct.md) — Tracking
 - [Creature struct](creature-struct.md) — Tracking
 - [Projectile struct](projectile-struct.md) — Tracking

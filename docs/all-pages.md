@@ -51,4 +51,5 @@ This page is generated. Run `uv run python scripts/gen_all_pages.py` to update.
 - [Weapon ID map](weapon-id-map.md)
 - [Weapon table (weapon_table_init)](weapon-table.md)
 - [WinDbg / CDB workflow](windbg.md)
+- [Work status model](work-status.md)
 
