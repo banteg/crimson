@@ -363,7 +363,7 @@
     "address": "0x0040d800",
     "name": "credits_screen_update",
     "signature": "void credits_screen_update(void)",
-    "comment": "credits screen update/render loop; draws labels and handles clicks"
+    "comment": "credits screen update/render loop; draws labels and handles clicks; sets DAT_004811c4 and injects secret lines at base index DAT_004811bc when all required lines are flagged"
   },
   {
     "program": "crimsonland.exe",

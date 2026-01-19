@@ -304,6 +304,9 @@ Dumped strings (all flags `0x00000004`):
 - `0x5C` — "(4 bits for index) <- OOOPS I meant FIVE!"
 - `0x5D` — "(4 bits for index)"
 
+Additional dump at `0x00480c70` (index `0x5E` onward) was zeroed, indicating no further injected
+lines beyond `0x5D`.
+
 #### Interpretation
 
 - The Secret button unlock is driven by the **credits line scan** in `credits_screen_update`, not by
