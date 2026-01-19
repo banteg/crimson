@@ -1,4 +1,4 @@
-# Frida 17.5.2 GumJS (JavaScript/TypeScript) scripting cheatsheet
+# Frida GumJS cheatsheet
 
 Use this for writing **agent scripts** (code that runs *inside* the target process) with Frida **17.5.2**.
 

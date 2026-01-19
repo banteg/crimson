@@ -1,4 +1,4 @@
-# Idiomatic raylib (Python) cheatsheet — **raylib 5.5** via **raylib-python-cffi** (`pyray`)
+# raylib (Python) cheatsheet
 
 This cheatsheet is written for the **PyPI package named `raylib`** (a.k.a. *raylib-python-cffi*), whose public, “pythonic” API lives in the **`pyray`** module and targets **raylib 5.5**. ([Electron Studio][1])
 raylib itself is currently at **v5.5** (latest release on the official raylib repo). ([GitHub][2])
