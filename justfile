@@ -93,3 +93,10 @@ zig-build:
 
 zig-run:
     cd rewrite && zig build run
+
+# WinDbg
+windbg-server:
+    cdb -server tcp:port=5005,password=secret -pn crimsonland.exe
+
+windbg-client:
+    cdb -remote tcp:server=127.0.0.1,port=5005,password=secret -bonc -logo C:\Crimsonland\windbg_log.txt
