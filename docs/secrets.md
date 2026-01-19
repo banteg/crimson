@@ -67,6 +67,13 @@ pattern. That logic remains to be found.
 - **Hinted precondition (string)**: click every credits line containing letter `o` and **avoid clicking**
   other lines; this should start “The Secret Path.”
 - **Verified code**: credits UI click handling lives in `credits_screen_update` (`0x0040d800`).
+- **Static logic (clicks)**: the click handler checks for lowercase `'o'` (`0x6f`) in the line text. If
+  present it sets flag `0x4` (clicked) and plays the bonus sfx; if absent it calls
+  `credits_line_clear_flag`, which walks backward to clear the most recently flagged line. This is
+  the explicit misclick penalty.
+- **Static logic (unlock scan)**: after the per-line loop, `credits_screen_update` scans the entire
+  credits line table; if *any* line containing `'o'` is missing flag `0x4`, it bails. If all such
+  lines are flagged, it sets `credits_secret_unlock_flag` and injects the secret lines.
 - **Runtime capture (2026-01-19)**: when the last required line is flagged, the unlock flag
   `DAT_004811c4` is set and the secret lines are injected into the credits line table at base index
   `DAT_004811bc = 0x54`. The injected lines (all flags `0x4`) are:
@@ -80,8 +87,14 @@ pattern. That logic remains to be found.
   - "011111001000111"
   - "(4 bits for index) <- OOOPS I meant FIVE!"
   - "(4 bits for index)"
-  This confirms the **Secret** button appearance is gated by the credits line scan, but the actual
-  “Secret Path” transition logic is still unmapped.
+  This confirms the secret-line injection is gated by the credits line scan; the **Secret** button
+  gating remains unclear, and the actual “Secret Path” transition logic is still unmapped.
+- **Secret button transition (static)**: the Secret button press sets `game_state_pending = 0x1a`,
+  which maps to `credits_secret_alien_zookeeper_update` (AlienZooKeeper minigame). No other
+  “Secret Path” branch is visible in the credits screen decompile.
+- **UI gating (static)**: `ui_button_update` for the Secret button runs unconditionally in
+  `credits_screen_update`; there is no static gate tied to `credits_secret_unlock_flag`. If the
+  button is hidden in practice, that gating likely lives elsewhere (UI data or layout).
 
 #### Secret line decode (5-bit indices)
 

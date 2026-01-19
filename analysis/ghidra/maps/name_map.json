@@ -349,7 +349,7 @@
     "address": "0x0040d040",
     "name": "credits_line_clear_flag",
     "signature": "void credits_line_clear_flag(int index)",
-    "comment": "walks backward to find a line with flag 0x4 and clears it (plays sfx)"
+    "comment": "walks backward to find the last line with flag 0x4 and clears it (penalty for wrong click; plays sfx)"
   },
   {
     "program": "crimsonland.exe",
@@ -363,7 +363,7 @@
     "address": "0x0040d800",
     "name": "credits_screen_update",
     "signature": "void credits_screen_update(void)",
-    "comment": "credits screen update/render loop; draws labels and handles clicks; sets DAT_004811c4 and injects secret lines at base index DAT_004811bc when all required lines are flagged"
+    "comment": "credits screen update/render loop; clicks flag lines containing 'o' (lowercase) and misclicks clear the last flagged line; when all 'o' lines are flagged, sets DAT_004811c4 and injects secret lines at DAT_004811bc; Secret button sets game_state_pending=0x1a (AlienZooKeeper)"
   },
   {
     "program": "crimsonland.exe",

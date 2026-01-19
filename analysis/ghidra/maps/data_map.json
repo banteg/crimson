@@ -537,6 +537,30 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00481188",
+      "name": "credits_secret_button",
+      "comment": "Credits screen Secret button state (ui_button_update target)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0048118d",
+      "name": "credits_secret_button_clicked",
+      "comment": "Credits screen Secret button pressed flag (set by ui_button_update)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004811a0",
+      "name": "credits_back_button",
+      "comment": "Credits screen Back button state (ui_button_update target)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004811a5",
+      "name": "credits_back_button_clicked",
+      "comment": "Credits screen Back button pressed flag (set by ui_button_update)."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004811bc",
       "name": "credits_secret_line_base_index",
       "comment": "Credits Secret injected line base index (observed 0x54)."
