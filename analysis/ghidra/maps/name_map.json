@@ -125,17 +125,17 @@
   },
   {
     "program": "crimsonland.exe",
-    "address": "0x00401a40",
-    "name": "console_update",
-    "signature": "void console_update(int console_state)",
-    "comment": "console update loop: input polling, history, autocomplete, and key handling"
-  },
-  {
-    "program": "crimsonland.exe",
     "address": "0x00401940",
     "name": "console_exec_line",
     "signature": "void console_exec_line(void *console_state, char *line)",
     "comment": "executes a console command or cvar assignment from a line"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00401a40",
+    "name": "console_update",
+    "signature": "void console_update(int console_state)",
+    "comment": "console update loop: input polling, history, autocomplete, and key handling"
   },
   {
     "program": "crimsonland.exe",
@@ -228,17 +228,17 @@
   },
   {
     "program": "crimsonland.exe",
-    "address": "0x004030f0",
-    "name": "demo_setup_variant_1",
-    "signature": "void demo_setup_variant_1(void)",
-    "comment": "demo setup 1: 2P, terrain preset DAT_00484914, templates 0x34/0x35, weapon 5, power-up timer"
-  },
-  {
-    "program": "crimsonland.exe",
     "address": "0x00402fe0",
     "name": "demo_setup_variant_2",
     "signature": "void demo_setup_variant_2(void)",
     "comment": "demo setup 2: 1P, spawns template 0x41 columns, assigns weapon 0x15"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004030f0",
+    "name": "demo_setup_variant_1",
+    "signature": "void demo_setup_variant_1(void)",
+    "comment": "demo setup 1: 2P, terrain preset DAT_00484914, templates 0x34/0x35, weapon 5, power-up timer"
   },
   {
     "program": "crimsonland.exe",
@@ -1231,6 +1231,356 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00434480",
+    "name": "quest_build_nagolipoli",
+    "signature": "void quest_build_nagolipoli(float *entries, int *count)",
+    "comment": "quest builder for Tier 5 Quest 9 (Nagolipoli)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00434860",
+    "name": "quest_build_monster_blues",
+    "signature": "void quest_build_monster_blues(float *entries, int *count)",
+    "comment": "quest builder for Tier 5 Quest 8 (Monster Blues)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004349c0",
+    "name": "quest_build_the_gathering",
+    "signature": "void quest_build_the_gathering(float *entries, int *count)",
+    "comment": "quest builder for Tier 5 Quest 10 (The Gathering)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00434ca0",
+    "name": "quest_build_army_of_three",
+    "signature": "void quest_build_army_of_three(float *entries, int *count)",
+    "comment": "quest builder for Tier 5 Quest 7 (Army of Three)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00434f00",
+    "name": "quest_build_knee_deep_in_the_dead",
+    "signature": "void quest_build_knee_deep_in_the_dead(float *entries, int *count)",
+    "comment": "quest builder for Tier 5 Quest 5 (Knee-deep in the Dead)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00435120",
+    "name": "quest_build_the_gang_wars",
+    "signature": "void quest_build_the_gang_wars(float *entries, int *count)",
+    "comment": "quest builder for Tier 5 Quest 4 (The Gang Wars)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004352d0",
+    "name": "quest_build_the_fortress",
+    "signature": "void quest_build_the_fortress(float *entries, int *count)",
+    "comment": "quest builder for Tier 5 Quest 3 (The Fortress)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00435480",
+    "name": "quest_build_cross_fire",
+    "signature": "void quest_build_cross_fire(float *entries, int *count)",
+    "comment": "quest builder for Tier 5 Quest 6 (Cross Fire)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00435610",
+    "name": "quest_build_the_beating",
+    "signature": "void quest_build_the_beating(float *entries, int *count)",
+    "comment": "quest builder for Tier 5 Quest 1 (The Beating)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004358a0",
+    "name": "quest_build_the_spanking_of_the_dead",
+    "signature": "void quest_build_the_spanking_of_the_dead(float *entries, int *count)",
+    "comment": "quest builder for Tier 5 Quest 2 (The Spanking Of The Dead)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00435a30",
+    "name": "quest_build_hidden_evil",
+    "signature": "void quest_build_hidden_evil(float *entries, int *count)",
+    "comment": "quest builder for Tier 3 Quest 4 (Hidden Evil)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00435bd0",
+    "name": "quest_build_land_hostile",
+    "signature": "void quest_build_land_hostile(float *entries, int *count)",
+    "comment": "quest builder for Tier 1 Quest 1 (Land Hostile)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00435cc0",
+    "name": "quest_build_minor_alien_breach",
+    "signature": "void quest_build_minor_alien_breach(float *entries, int *count)",
+    "comment": "quest builder for Tier 1 Quest 2 (Minor Alien Breach)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00435ea0",
+    "name": "quest_build_alien_squads",
+    "signature": "void quest_build_alien_squads(float *entries, int *count)",
+    "comment": "quest builder for Tier 1 Quest 8 (Alien Squads)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004360a0",
+    "name": "quest_build_zombie_masters",
+    "signature": "void quest_build_zombie_masters(float *entries, int *count)",
+    "comment": "quest builder for Tier 3 Quest 10 (Zombie Masters)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00436120",
+    "name": "quest_build_8_legged_terror",
+    "signature": "void quest_build_8_legged_terror(float *entries, int *count)",
+    "comment": "quest builder for Tier 1 Quest 10 (8-legged Terror)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00436200",
+    "name": "quest_build_ghost_patrols",
+    "signature": "void quest_build_ghost_patrols(float *entries, int *count)",
+    "comment": "quest builder for Tier 2 Quest 9 (Ghost Patrols)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00436350",
+    "name": "quest_build_the_random_factor",
+    "signature": "void quest_build_the_random_factor(float *entries, int *count)",
+    "comment": "quest builder for Tier 1 Quest 6 (The Random Factor)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00436440",
+    "name": "quest_build_spider_wave_syndrome",
+    "signature": "void quest_build_spider_wave_syndrome(float *entries, int *count)",
+    "comment": "quest builder for Tier 1 Quest 7 (Spider Wave Syndrome)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004364a0",
+    "name": "quest_build_nesting_grounds",
+    "signature": "void quest_build_nesting_grounds(float *entries, int *count)",
+    "comment": "quest builder for Tier 1 Quest 9 (Nesting Grounds)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00436720",
+    "name": "quest_build_alien_dens",
+    "signature": "void quest_build_alien_dens(float *entries, int *count)",
+    "comment": "quest builder for Tier 1 Quest 5 (Alien Dens)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00436820",
+    "name": "quest_build_arachnoid_farm",
+    "signature": "void quest_build_arachnoid_farm(float *entries, int *count)",
+    "comment": "quest builder for Tier 2 Quest 3 (Arachnoid Farm)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004369a0",
+    "name": "quest_build_gauntlet",
+    "signature": "void quest_build_gauntlet(float *entries, int *count)",
+    "comment": "quest builder for Tier 4 Quest 7 (Gauntlet)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00436c10",
+    "name": "quest_build_syntax_terror",
+    "signature": "void quest_build_syntax_terror(float *entries, int *count)",
+    "comment": "quest builder for Tier 4 Quest 8 (Syntax Terror)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00436d70",
+    "name": "quest_build_spider_spawns",
+    "signature": "void quest_build_spider_spawns(float *entries, int *count)",
+    "comment": "quest builder for Tier 2 Quest 2 (Spider Spawns)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00436ee0",
+    "name": "quest_build_two_fronts",
+    "signature": "void quest_build_two_fronts(float *entries, int *count)",
+    "comment": "quest builder for Tier 2 Quest 4 (Two Fronts)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00437060",
+    "name": "quest_build_survival_of_the_fastest",
+    "signature": "void quest_build_survival_of_the_fastest(float *entries, int *count)",
+    "comment": "quest builder for Tier 2 Quest 7 (Survival Of The Fastest)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004373c0",
+    "name": "quest_build_spideroids",
+    "signature": "void quest_build_spideroids(float *entries, int *count)",
+    "comment": "quest builder for Tier 2 Quest 10 (Spideroids)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004374a0",
+    "name": "quest_build_evil_zombies_at_large",
+    "signature": "void quest_build_evil_zombies_at_large(float *entries, int *count)",
+    "comment": "quest builder for Tier 2 Quest 6 (Evil Zombies At Large)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004375a0",
+    "name": "quest_build_everred_pastures",
+    "signature": "void quest_build_everred_pastures(float *entries, int *count)",
+    "comment": "quest builder for Tier 2 Quest 1 (Everred Pastures)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00437710",
+    "name": "quest_build_lizard_kings",
+    "signature": "void quest_build_lizard_kings(float *entries, int *count)",
+    "comment": "quest builder for Tier 3 Quest 2 (Lizard Kings)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00437810",
+    "name": "quest_build_sweep_stakes",
+    "signature": "void quest_build_sweep_stakes(float *entries, int *count)",
+    "comment": "quest builder for Tier 2 Quest 5 (Sweep Stakes)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00437920",
+    "name": "quest_build_deja_vu",
+    "signature": "void quest_build_deja_vu(float *entries, int *count)",
+    "comment": "quest builder for Tier 3 Quest 9 (Deja vu)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00437a00",
+    "name": "quest_build_target_practice",
+    "signature": "void quest_build_target_practice(float *entries, int *count)",
+    "comment": "quest builder for Tier 1 Quest 3 (Target Practice)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00437af0",
+    "name": "quest_build_major_alien_breach",
+    "signature": "void quest_build_major_alien_breach(float *entries, int *count)",
+    "comment": "quest builder for Tier 4 Quest 1 (Major Alien Breach)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00437ba0",
+    "name": "quest_build_land_of_lizards",
+    "signature": "void quest_build_land_of_lizards(float *entries, int *count)",
+    "comment": "quest builder for Tier 2 Quest 8 (Land Of Lizards)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00437c70",
+    "name": "quest_build_the_lizquidation",
+    "signature": "void quest_build_the_lizquidation(float *entries, int *count)",
+    "comment": "quest builder for Tier 3 Quest 6 (The Lizquidation)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00437d70",
+    "name": "quest_build_zombie_time",
+    "signature": "void quest_build_zombie_time(float *entries, int *count)",
+    "comment": "quest builder for Tier 4 Quest 2 (Zombie Time)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00437e10",
+    "name": "quest_build_frontline_assault",
+    "signature": "void quest_build_frontline_assault(float *entries, int *count)",
+    "comment": "quest builder for Tier 1 Quest 4 (Frontline Assault)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00437f30",
+    "name": "quest_build_the_collaboration",
+    "signature": "void quest_build_the_collaboration(float *entries, int *count)",
+    "comment": "quest builder for Tier 4 Quest 4 (The Collaboration)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00438050",
+    "name": "quest_build_the_blighting",
+    "signature": "void quest_build_the_blighting(float *entries, int *count)",
+    "comment": "quest builder for Tier 3 Quest 1 (The Blighting)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004382c0",
+    "name": "quest_build_the_annihilation",
+    "signature": "void quest_build_the_annihilation(float *entries, int *count)",
+    "comment": "quest builder for Tier 4 Quest 9 (The Annihilation)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004383e0",
+    "name": "quest_build_the_massacre",
+    "signature": "void quest_build_the_massacre(float *entries, int *count)",
+    "comment": "quest builder for Tier 4 Quest 5 (The Massacre)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004384a0",
+    "name": "quest_build_the_killing",
+    "signature": "void quest_build_the_killing(float *entries, int *count)",
+    "comment": "quest builder for Tier 3 Quest 3 (The Killing)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00438700",
+    "name": "quest_build_lizard_zombie_pact",
+    "signature": "void quest_build_lizard_zombie_pact(float *entries, int *count)",
+    "comment": "quest builder for Tier 4 Quest 3 (Lizard Zombie Pact)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00438840",
+    "name": "quest_build_lizard_raze",
+    "signature": "void quest_build_lizard_raze(float *entries, int *count)",
+    "comment": "quest builder for Tier 3 Quest 8 (Lizard Raze)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00438940",
+    "name": "quest_build_surrounded_by_reptiles",
+    "signature": "void quest_build_surrounded_by_reptiles(float *entries, int *count)",
+    "comment": "quest builder for Tier 3 Quest 5 (Surrounded By Reptiles)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00438a40",
+    "name": "quest_build_the_unblitzkrieg",
+    "signature": "void quest_build_the_unblitzkrieg(float *entries, int *count)",
+    "comment": "quest builder for Tier 4 Quest 6 (The Unblitzkrieg)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00438e10",
+    "name": "quest_build_the_end_of_all",
+    "signature": "void quest_build_the_end_of_all(float *entries, int *count)",
+    "comment": "quest builder for Tier 4 Quest 10 (The End of All)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004390d0",
+    "name": "quest_build_spiders_inc",
+    "signature": "void quest_build_spiders_inc(float *entries, int *count)",
+    "comment": "quest builder for Tier 3 Quest 7 (Spiders Inc.)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00439230",
     "name": "quest_database_init",
     "signature": "void quest_database_init(void)",
@@ -1434,13 +1784,6 @@
   },
   {
     "program": "crimsonland.exe",
-    "address": "0x0043c020",
-    "name": "sfx_entry_load_wav",
-    "signature": "int sfx_entry_load_wav(void *entry, byte *path)",
-    "comment": "loads a WAV sample into an sfx entry"
-  },
-  {
-    "program": "crimsonland.exe",
     "address": "0x0043be20",
     "name": "sfx_entry_seek",
     "signature": "void sfx_entry_seek(int entry, int sample_offset)",
@@ -1473,6 +1816,13 @@
     "name": "sfx_entry_set_volume",
     "signature": "void sfx_entry_set_volume(int entry, float volume)",
     "comment": "sets the volume for active voices"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043c020",
+    "name": "sfx_entry_load_wav",
+    "signature": "int sfx_entry_load_wav(void *entry, byte *path)",
+    "comment": "loads a WAV sample into an sfx entry"
   },
   {
     "program": "crimsonland.exe",
@@ -2001,10 +2351,59 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00461089",
+    "name": "crt_vsprintf",
+    "signature": "int crt_vsprintf(char *dst, char *fmt, void *args)",
+    "comment": "CRT: format string to buffer"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004610da",
+    "name": "crt_atof_l",
+    "signature": "double crt_atof_l(void *locale, char *str)",
+    "comment": "CRT: parse string to double (atof-style, locale)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00461140",
     "name": "crt_ci_pow",
     "signature": "void crt_ci_pow(void)",
     "comment": "x87 helper for pow(base, exp) using ST0/ST1"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046135d",
+    "name": "crt_strtok",
+    "signature": "char * crt_strtok(char *str, char *delim)",
+    "comment": "CRT: tokenize string, uses TLS for state"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00461448",
+    "name": "crt_fflush",
+    "signature": "int crt_fflush(FILE *fp)",
+    "comment": "CRT: fflush wrapper (NULL flushes all)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00461477",
+    "name": "crt_fflush_nolock",
+    "signature": "int crt_fflush_nolock(FILE *fp)",
+    "comment": "CRT: fflush without lock"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004614a5",
+    "name": "crt_flushbuf",
+    "signature": "int crt_flushbuf(FILE *fp)",
+    "comment": "CRT: flush write buffer"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046150a",
+    "name": "crt_flushall",
+    "signature": "int crt_flushall(int mode)",
+    "comment": "CRT: flush all streams (mode 0/1)"
   },
   {
     "program": "crimsonland.exe",
@@ -2099,6 +2498,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00461c0e",
+    "name": "crt_ftell",
+    "signature": "long crt_ftell(FILE *fp)",
+    "comment": "CRT: ftell with file lock"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00461c30",
+    "name": "crt_ftell_nolock",
+    "signature": "long crt_ftell_nolock(FILE *fp)",
+    "comment": "CRT: ftell without lock"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00461d91",
     "name": "crt_fseek",
     "signature": "int crt_fseek(FILE *fp, long offset, int origin)",
@@ -2113,10 +2526,115 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00461e4a",
+    "name": "crt_snprintf",
+    "signature": "int crt_snprintf(char *dst, int size, char *fmt, ...)",
+    "comment": "CRT: size-limited sprintf"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00461e9b",
+    "name": "crt_tolower",
+    "signature": "int crt_tolower(int c)",
+    "comment": "CRT: tolower (current locale)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00461f0a",
+    "name": "crt_tolower_l",
+    "signature": "int crt_tolower_l(void *locale, int c)",
+    "comment": "CRT: tolower with locale"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462104",
+    "name": "crt_toupper",
+    "signature": "int crt_toupper(int c)",
+    "comment": "CRT: toupper (current locale)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462173",
+    "name": "crt_toupper_l",
+    "signature": "int crt_toupper_l(void *locale, int c)",
+    "comment": "CRT: toupper with locale"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046223f",
+    "name": "crt_beginthread",
+    "signature": "void * crt_beginthread(void *start, unsigned int stack_size, void *arg)",
+    "comment": "CRT: beginthread (CreateThread wrapper)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004622b6",
+    "name": "crt_thread_entry",
+    "signature": "unsigned int crt_thread_entry(void *thread_data)",
+    "comment": "CRT: thread start trampoline"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462373",
+    "name": "crt_endthread",
+    "signature": "void crt_endthread(void)",
+    "comment": "CRT: thread cleanup and exit"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046248e",
+    "name": "crt_getcwd",
+    "signature": "char * crt_getcwd(char *buf, unsigned int size)",
+    "comment": "CRT: get current working directory"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004624b5",
+    "name": "crt_getdcwd",
+    "signature": "char * crt_getdcwd(int drive, char *buf, unsigned int size)",
+    "comment": "CRT: get current working directory for drive"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004625c1",
     "name": "crt_free_base",
     "signature": "void crt_free_base(void *ptr)",
     "comment": "CRT heap free implementation"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004626aa",
+    "name": "crt_realloc",
+    "signature": "void * crt_realloc(void *ptr, size_t size)",
+    "comment": "CRT: realloc with heap mode handling and new-handler retry"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462bd4",
+    "name": "crt_qsort",
+    "signature": "void crt_qsort(void *base, size_t num, size_t size, void *cmp)",
+    "comment": "CRT: quicksort with callback (cmp)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462d28",
+    "name": "crt_shortsort",
+    "signature": "void crt_shortsort(char *lo, char *hi, size_t width, void *cmp)",
+    "comment": "CRT: insertion sort for small arrays (cmp)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462d76",
+    "name": "crt_swap",
+    "signature": "void crt_swap(char *a, char *b, size_t width)",
+    "comment": "CRT: swap elements for qsort"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462da2",
+    "name": "crt_getc",
+    "signature": "int crt_getc(FILE *fp)",
+    "comment": "CRT: get character with stream lock"
   },
   {
     "program": "crimsonland.exe",
@@ -2172,6 +2690,34 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004638bf",
+    "name": "crt_fp_format_exp",
+    "signature": "char * crt_fp_format_exp(char *dst, int precision, int caps, int *fp_info, int force_decimal)",
+    "comment": "CRT: formats floating output in scientific notation (adds decimal/exponent)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004639d6",
+    "name": "crt_fp_format_fixed",
+    "signature": "char * crt_fp_format_fixed(char *dst, size_t precision, int *fp_info, int force_decimal)",
+    "comment": "CRT: formats floating output in fixed notation (adds decimal/zeros)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463b61",
+    "name": "crt_str_shift_right",
+    "signature": "void crt_str_shift_right(char *str, int count)",
+    "comment": "CRT: shift string right by count (memmove)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463b86",
+    "name": "crt_msize",
+    "signature": "size_t crt_msize(void *ptr)",
+    "comment": "CRT: allocation size"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00463c74",
     "name": "crt_isctype",
     "signature": "uint crt_isctype(void *this, int c, uint mask)",
@@ -2207,10 +2753,52 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00463e49",
+    "name": "crt_close",
+    "signature": "int crt_close(int fd)",
+    "comment": "CRT: close file handle with lock"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463ea6",
+    "name": "crt_close_nolock",
+    "signature": "int crt_close_nolock(int fd)",
+    "comment": "CRT: close file handle without lock"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463f54",
+    "name": "crt_filbuf",
+    "signature": "int crt_filbuf(FILE *fp)",
+    "comment": "CRT: fill read buffer"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00464030",
+    "name": "crt_openfile",
+    "signature": "FILE * crt_openfile(char *filename, char *mode, int shflag, FILE *stream)",
+    "comment": "CRT: open file with mode string parsing"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004641a0",
+    "name": "crt_getstream",
+    "signature": "FILE * crt_getstream(void)",
+    "comment": "CRT: allocate FILE struct from pool"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00464268",
     "name": "crt_flsbuf",
     "signature": "int crt_flsbuf(int ch, FILE *fp)",
     "comment": "flush buffer or write single char (fputc core)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00464380",
+    "name": "crt_output",
+    "signature": "int crt_output(FILE *stream, char *format, void *args)",
+    "comment": "CRT: core printf formatter"
   },
   {
     "program": "crimsonland.exe",
@@ -2260,6 +2848,27 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004655bf",
+    "name": "crt_commit",
+    "signature": "int crt_commit(int fd)",
+    "comment": "CRT: commit file buffers to disk"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00465652",
+    "name": "crt_write",
+    "signature": "int crt_write(int fd, char *buf, unsigned int count)",
+    "comment": "CRT: write handle with lock"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004656b7",
+    "name": "crt_write_nolock",
+    "signature": "int crt_write_nolock(int fd, char *buf, unsigned int count)",
+    "comment": "CRT: write handle (no lock), text-mode CRLF translation"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00465842",
     "name": "crt_init_locks",
     "comment": "initializes CRT critical sections"
@@ -2275,6 +2884,13 @@
     "address": "0x004658cc",
     "name": "crt_unlock",
     "comment": "CRT lock table leave"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004658f0",
+    "name": "crt_bufcpy",
+    "signature": "void * crt_bufcpy(void *dst, void *src, size_t size)",
+    "comment": "CRT: buffer copy helper (overlap-safe)"
   },
   {
     "program": "crimsonland.exe",
@@ -2313,6 +2929,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00465da5",
+    "name": "crt_mktime",
+    "signature": "long crt_mktime(int year, int month, int day, int hour, int min, int sec, int dst)",
+    "comment": "CRT: convert date/time to timestamp (mktime)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00465f48",
     "name": "crt_terminate",
     "signature": "void crt_terminate(void)",
@@ -2324,6 +2947,20 @@
     "name": "crt_invalid_parameter_noinfo_noreturn",
     "signature": "void crt_invalid_parameter_noinfo_noreturn(void)",
     "comment": "invokes invalid-parameter handler (if set) then terminates"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00465fff",
+    "name": "crt_read",
+    "signature": "int crt_read(int fd, char *buf, unsigned int count)",
+    "comment": "CRT: read handle with lock"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00466064",
+    "name": "crt_read_nolock",
+    "signature": "int crt_read_nolock(int fd, char *buf, unsigned int count)",
+    "comment": "CRT: read handle (no lock), CRLF translation"
   },
   {
     "program": "crimsonland.exe",
@@ -2344,6 +2981,20 @@
     "name": "crt_lseek_nolock",
     "signature": "long crt_lseek_nolock(int fd, long offset, int origin)",
     "comment": "lseek implementation via SetFilePointer"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004664d1",
+    "name": "crt_lcmap_string",
+    "signature": "int crt_lcmap_string(unsigned int locale, unsigned int flags, char *src, int srclen, unsigned short *dst, int dstlen, unsigned int codepage, int use_cp)",
+    "comment": "CRT: LCMapString wrapper with multibyte/Unicode handling"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004667ac",
+    "name": "crt_calloc",
+    "signature": "void * crt_calloc(unsigned int count, unsigned int size)",
+    "comment": "CRT: allocate zeroed block (count*size)"
   },
   {
     "program": "crimsonland.exe",
@@ -2403,6 +3054,13 @@
     "name": "crt_sbh_alloc_units",
     "signature": "void * crt_sbh_alloc_units(uint blocks)",
     "comment": "allocates small-block heap blocks in 16-byte units"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00467e47",
+    "name": "crt_call_new_handler",
+    "signature": "int crt_call_new_handler(size_t size)",
+    "comment": "CRT: call new-handler; returns nonzero to retry allocation"
   },
   {
     "program": "crimsonland.exe",
@@ -2471,24 +3129,17 @@
   },
   {
     "program": "crimsonland.exe",
-    "address": "0x004638bf",
-    "name": "crt_fp_format_exp",
-    "signature": "char * crt_fp_format_exp(char *dst, int precision, int caps, int *fp_info, int force_decimal)",
-    "comment": "CRT: formats floating output in scientific notation (adds decimal/exponent)"
+    "address": "0x0046a590",
+    "name": "crt_memmove",
+    "signature": "void * crt_memmove(void *dst, void *src, size_t size)",
+    "comment": "CRT: copy memory with overlap handling"
   },
   {
     "program": "crimsonland.exe",
-    "address": "0x004639d6",
-    "name": "crt_fp_format_fixed",
-    "signature": "char * crt_fp_format_fixed(char *dst, size_t precision, int *fp_info, int force_decimal)",
-    "comment": "CRT: formats floating output in fixed notation (adds decimal/zeros)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00463b61",
-    "name": "crt_str_shift_right",
-    "signature": "void crt_str_shift_right(char *str, int count)",
-    "comment": "CRT: shift string right by count (memmove)"
+    "address": "0x0046acb6",
+    "name": "crt_get_osfhandle",
+    "signature": "void * crt_get_osfhandle(int fd)",
+    "comment": "CRT: map file descriptor to OS handle"
   },
   {
     "program": "crimsonland.exe",
@@ -2513,10 +3164,38 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0046adbd",
+    "name": "crt_sopen",
+    "signature": "int crt_sopen(char *filename, int oflag, int shflag, int pmode)",
+    "comment": "CRT: open file with share mode, wraps CreateFile"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0046b265",
     "name": "crt_fp_parse",
     "signature": "int crt_fp_parse(void *ctx, ushort *out, int *cursor, byte *str, int flags, int width, int prec, int mode)",
     "comment": "parses a floating-point string into an 80-bit buffer (CRT scanf helper)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046cda0",
+    "name": "crt_chkstk",
+    "signature": "void crt_chkstk(void)",
+    "comment": "CRT: stack probing helper for large alloca (size in EAX)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046cdcf",
+    "name": "crt_strtol_l",
+    "signature": "long crt_strtol_l(void *locale, char *str, char **endptr, int base)",
+    "comment": "CRT: parse integer with base (locale)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046cde6",
+    "name": "crt_strtoxl",
+    "signature": "unsigned long crt_strtoxl(void *locale, char *str, char **endptr, int base, unsigned int flags)",
+    "comment": "CRT: shared strto* core (base/sign/overflow)"
   },
   {
     "program": "crimsonland.exe",
@@ -2534,6 +3213,27 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0046d8e2",
+    "name": "crt_add_u32_carry",
+    "signature": "int crt_add_u32_carry(uint a, uint b, uint *out)",
+    "comment": "CRT: add two u32 values and return carry"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046d961",
+    "name": "crt_u96_shl1",
+    "signature": "void crt_u96_shl1(uint *value)",
+    "comment": "CRT: shift 96-bit value left by 1 (in-place)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046d98f",
+    "name": "crt_u96_shr1",
+    "signature": "void crt_u96_shr1(uint *value)",
+    "comment": "CRT: shift 96-bit value right by 1 (in-place)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0046dd16",
     "name": "crt_chsize",
     "signature": "int crt_chsize(int fd, int size)",
@@ -2545,6 +3245,55 @@
     "name": "strdup_malloc",
     "signature": "char * strdup_malloc(char * src)",
     "comment": "malloc+copy helper"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046e920",
+    "name": "ov_pcm_seek",
+    "signature": "int ov_pcm_seek(OggVorbis_File * vf, ogg_int64_t pos)",
+    "comment": "libvorbisfile: seek to PCM sample"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046e926",
+    "name": "ov_pcm_total",
+    "signature": "ogg_int64_t ov_pcm_total(OggVorbis_File * vf, int i)",
+    "comment": "libvorbisfile: total PCM samples"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046e92c",
+    "name": "ov_info",
+    "signature": "vorbis_info * ov_info(OggVorbis_File * vf, int link)",
+    "comment": "libvorbisfile: query stream info"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046e932",
+    "name": "ov_open_callbacks",
+    "signature": "int ov_open_callbacks(void * datasource, OggVorbis_File * vf, char * initial, long ibytes, ov_callbacks callbacks)",
+    "comment": "libvorbisfile: open with callbacks"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046e938",
+    "name": "ov_clear",
+    "signature": "int ov_clear(OggVorbis_File * vf)",
+    "comment": "libvorbisfile: close and free"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046e93e",
+    "name": "ov_read",
+    "signature": "long ov_read(OggVorbis_File * vf, char * buffer, int length, int bigendianp, int word, int sgned, int * bitstream)",
+    "comment": "libvorbisfile: decode PCM"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10001160",
+    "name": "grim_noop",
+    "signature": "void grim_noop(void)",
+    "comment": "debug stub (no-op)"
   },
   {
     "program": "grim.dll",
@@ -2587,13 +3336,6 @@
     "name": "grim_d3d_init",
     "signature": "int grim_d3d_init(void)",
     "comment": "creates the Direct3D8 interface, configures display mode, and opens the window"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100101f5",
-    "name": "grim_d3d_debug_set_mute",
-    "signature": "void grim_d3d_debug_set_mute(int mute)",
-    "comment": "loads DebugSetMute from d3d8/d3d8d and toggles D3D debug output"
   },
   {
     "program": "grim.dll",
@@ -3325,6 +4067,20 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1000cbff",
+    "name": "float_near_equal",
+    "signature": "int float_near_equal(float a, float b)",
+    "comment": "returns 1 when |a-b| < 1.1920929e-07 (FLT_EPSILON)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100101f5",
+    "name": "grim_d3d_debug_set_mute",
+    "signature": "void grim_d3d_debug_set_mute(int mute)",
+    "comment": "loads DebugSetMute from d3d8/d3d8d and toggles D3D debug output"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1001692e",
     "name": "grim_vertex_space_converter_destroy",
     "signature": "void grim_vertex_space_converter_destroy(void *this)",
@@ -3339,6 +4095,20 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10016cdc",
+    "name": "grim_pixel_format_write_dxt_cache",
+    "signature": "void grim_pixel_format_write_dxt_cache(void *this, uint x, uint y, float *pixels)",
+    "comment": "writes RGBA floats into the DXT block cache and encodes when block data is complete"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100170d6",
+    "name": "fpu_set_round_trunc",
+    "signature": "void fpu_set_round_trunc(void)",
+    "comment": "sets x87 rounding mode to truncate; saves control word in DAT_1005db6c"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x100170f9",
     "name": "grim_pixel_format_init",
     "signature": "void * grim_pixel_format_init(void *this, unsigned int *desc, unsigned int bits_per_pixel, unsigned int coord_mode)",
@@ -3350,6 +4120,314 @@
     "name": "grim_apply_color_key",
     "signature": "void grim_apply_color_key(float *pixels)",
     "comment": "zeroes RGBA pixels that match the current color key"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001a428",
+    "name": "grim_pixel_format_ctor_r8g8b8",
+    "signature": "void * grim_pixel_format_ctor_r8g8b8(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_R8G8B8"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001a444",
+    "name": "grim_pixel_format_init_yuv",
+    "signature": "void * grim_pixel_format_init_yuv(void *this, uint *desc)",
+    "comment": "initializes packed YUV (UYVY/YUY2) cache state and allocates RGB float cache"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001a53c",
+    "name": "grim_pixel_format_ctor_a8r8g8b8",
+    "signature": "void * grim_pixel_format_ctor_a8r8g8b8(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_A8R8G8B8"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001a558",
+    "name": "grim_pixel_format_ctor_x8r8g8b8",
+    "signature": "void * grim_pixel_format_ctor_x8r8g8b8(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_X8R8G8B8"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001a579",
+    "name": "grim_pixel_format_ctor_r5g6b5",
+    "signature": "void * grim_pixel_format_ctor_r5g6b5(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_R5G6B5"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001a595",
+    "name": "grim_pixel_format_flush_yuv_cache",
+    "signature": "int grim_pixel_format_flush_yuv_cache(void *this)",
+    "comment": "flushes cached YUV<->RGB conversions back into packed 16-bit storage"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001a781",
+    "name": "grim_pixel_format_ctor_x1r5g5b5",
+    "signature": "void * grim_pixel_format_ctor_x1r5g5b5(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_X1R5G5B5"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001a79d",
+    "name": "grim_pixel_format_ctor_a1r5g5b5",
+    "signature": "void * grim_pixel_format_ctor_a1r5g5b5(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_A1R5G5B5"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001a7b9",
+    "name": "grim_pixel_format_load_yuv_cache",
+    "signature": "int grim_pixel_format_load_yuv_cache(void *this, uint x, uint y, int load_from_surface)",
+    "comment": "loads packed YUV pixels into float cache and converts to RGB"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001aa8a",
+    "name": "grim_pixel_format_ctor_a4r4g4b4",
+    "signature": "void * grim_pixel_format_ctor_a4r4g4b4(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_A4R4G4B4"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001aaa6",
+    "name": "grim_pixel_format_ctor_r3g3b2",
+    "signature": "void * grim_pixel_format_ctor_r3g3b2(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_R3G3B2"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001aac2",
+    "name": "grim_pixel_format_ctor_a8",
+    "signature": "void * grim_pixel_format_ctor_a8(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_A8"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001aade",
+    "name": "grim_pixel_format_ctor_a8r3g3b2",
+    "signature": "void * grim_pixel_format_ctor_a8r3g3b2(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_A8R3G3B2"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001aafa",
+    "name": "grim_pixel_format_ctor_x4r4g4b4",
+    "signature": "void * grim_pixel_format_ctor_x4r4g4b4(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_X4R4G4B4"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001ab16",
+    "name": "grim_pixel_format_write_yuv_cache",
+    "signature": "void grim_pixel_format_write_yuv_cache(void *this, int x, int y, float *pixels)",
+    "comment": "loads YUV cache for coords, copies RGBA floats into cache, marks dirty for flush"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001aba3",
+    "name": "grim_pixel_format_ctor_a2b10g10r10",
+    "signature": "void * grim_pixel_format_ctor_a2b10g10r10(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_A2B10G10R10"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001ac2e",
+    "name": "grim_pixel_format_ctor_g16r16",
+    "signature": "void * grim_pixel_format_ctor_g16r16(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_G16R16"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001ac4a",
+    "name": "grim_pixel_format_init_dxt",
+    "signature": "void * grim_pixel_format_init_dxt(void *this, uint *desc)",
+    "comment": "initializes DXT block-compressed pixel format (DXT1..DXT5)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001ae3c",
+    "name": "grim_pixel_format_ctor_a8p8",
+    "signature": "void * grim_pixel_format_ctor_a8p8(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_A8P8"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001ae74",
+    "name": "grim_pixel_format_ctor_p8",
+    "signature": "void * grim_pixel_format_ctor_p8(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_P8"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001ae90",
+    "name": "grim_pixel_format_ctor_l8",
+    "signature": "void * grim_pixel_format_ctor_l8(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_L8"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001aeac",
+    "name": "grim_pixel_format_ctor_a8l8",
+    "signature": "void * grim_pixel_format_ctor_a8l8(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_A8L8"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001aee4",
+    "name": "grim_pixel_format_ctor_a4l4",
+    "signature": "void * grim_pixel_format_ctor_a4l4(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_A4L4"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b001",
+    "name": "grim_pixel_format_ctor_v8u8",
+    "signature": "void * grim_pixel_format_ctor_v8u8(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_V8U8"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b01d",
+    "name": "grim_pixel_format_ctor_l6v5u5",
+    "signature": "void * grim_pixel_format_ctor_l6v5u5(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_L6V5U5"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b039",
+    "name": "grim_pixel_format_ctor_x8l8v8u8",
+    "signature": "void * grim_pixel_format_ctor_x8l8v8u8(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_X8L8V8U8"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b055",
+    "name": "grim_pixel_format_ctor_q8w8v8u8",
+    "signature": "void * grim_pixel_format_ctor_q8w8v8u8(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_Q8W8V8U8"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b071",
+    "name": "grim_pixel_format_ctor_v16u16",
+    "signature": "void * grim_pixel_format_ctor_v16u16(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_V16U16"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b08d",
+    "name": "grim_pixel_format_ctor_w11v11u10",
+    "signature": "void * grim_pixel_format_ctor_w11v11u10(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_W11V11U10"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b0a9",
+    "name": "grim_pixel_format_ctor_a2w10v10u10",
+    "signature": "void * grim_pixel_format_ctor_a2w10v10u10(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_A2W10V10U10"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b0c5",
+    "name": "grim_pixel_format_ctor_d16_lockable",
+    "signature": "void * grim_pixel_format_ctor_d16_lockable(void *this, uint *desc)",
+    "comment": "pixel format ctor for D3DFMT_D16_LOCKABLE"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b0e1",
+    "name": "grim_pixel_format_ctor_l16",
+    "signature": "void * grim_pixel_format_ctor_l16(void *this, uint *desc)",
+    "comment": "pixel format ctor for FourCC L16 (16-bit luminance)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b0fd",
+    "name": "grim_pixel_format_read_dxt_cache",
+    "signature": "void grim_pixel_format_read_dxt_cache(void *this, uint x, uint y, float *out)",
+    "comment": "decodes DXT blocks into cache on demand and copies RGBA floats to output (color key aware)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b3a6",
+    "name": "grim_pixel_format_ctor_al16",
+    "signature": "void * grim_pixel_format_ctor_al16(void *this, uint *desc)",
+    "comment": "pixel format ctor for FourCC AL16"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b3c2",
+    "name": "grim_pixel_format_ctor_r16",
+    "signature": "void * grim_pixel_format_ctor_r16(void *this, uint *desc)",
+    "comment": "pixel format ctor for FourCC R16"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b3de",
+    "name": "grim_pixel_format_ctor_ar16",
+    "signature": "void * grim_pixel_format_ctor_ar16(void *this, uint *desc)",
+    "comment": "pixel format ctor for FourCC AR16"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b3fa",
+    "name": "grim_pixel_format_ctor_dxt1",
+    "signature": "void * grim_pixel_format_ctor_dxt1(void *this, uint *desc)",
+    "comment": "pixel format ctor for FourCC DXT1"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b412",
+    "name": "grim_pixel_format_ctor_dxt2",
+    "signature": "void * grim_pixel_format_ctor_dxt2(void *this, uint *desc)",
+    "comment": "pixel format ctor for FourCC DXT2"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b42a",
+    "name": "grim_pixel_format_ctor_dxt3",
+    "signature": "void * grim_pixel_format_ctor_dxt3(void *this, uint *desc)",
+    "comment": "pixel format ctor for FourCC DXT3"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b442",
+    "name": "grim_pixel_format_ctor_dxt4",
+    "signature": "void * grim_pixel_format_ctor_dxt4(void *this, uint *desc)",
+    "comment": "pixel format ctor for FourCC DXT4"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b45a",
+    "name": "grim_pixel_format_ctor_dxt5",
+    "signature": "void * grim_pixel_format_ctor_dxt5(void *this, uint *desc)",
+    "comment": "pixel format ctor for FourCC DXT5"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b4dc",
+    "name": "grim_pixel_format_ctor_uyvy",
+    "signature": "void * grim_pixel_format_ctor_uyvy(void *this)",
+    "comment": "pixel format ctor for FourCC UYVY"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b4f4",
+    "name": "grim_pixel_format_ctor_yuy2",
+    "signature": "void * grim_pixel_format_ctor_yuy2(void *this)",
+    "comment": "pixel format ctor for FourCC YUY2"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b50c",
+    "name": "grim_pixel_format_create",
+    "signature": "void * grim_pixel_format_create(uint *desc)",
+    "comment": "factory: picks pixel format implementation from FourCC/D3DFORMAT"
   },
   {
     "program": "grim.dll",
@@ -3374,6 +4452,18 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1001e147",
+    "name": "FUN_1001e147",
+    "signature": "void FUN_1001e147(png_structp png_ptr, undefined4 *param_2)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001e16c",
+    "name": "FUN_1001e16c",
+    "signature": "void FUN_1001e16c(png_structp png_ptr, undefined4 *param_2)"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1001e191",
     "name": "png_create_read_struct",
     "signature": "png_structp png_create_read_struct(char * user_png_ver, png_voidp error_ptr, void * error_fn, void * warn_fn)",
@@ -3381,10 +4471,89 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1001e294",
+    "name": "FUN_1001e294",
+    "signature": "void FUN_1001e294(png_structp png_ptr, uint *param_2)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001e407",
+    "name": "FUN_1001e407",
+    "signature": "void FUN_1001e407(png_structp png_ptr, int *param_2)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001e427",
+    "name": "FUN_1001e427",
+    "signature": "void FUN_1001e427(void *this, png_structp png_ptr, byte *param_2, byte *param_3)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001e7ce",
+    "name": "FUN_1001e7ce",
+    "signature": "void FUN_1001e7ce(png_structp png_ptr, undefined4 *param_2)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001e81b",
+    "name": "FUN_1001e81b",
+    "signature": "void FUN_1001e81b(png_structp png_ptr, undefined4 *param_2, undefined4 *param_3)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001ea59",
+    "name": "FUN_1001ea59",
+    "signature": "undefined4 FUN_1001ea59(png_structp png_ptr, uint *param_2, uint *param_3, uint *param_4, uint *param_5, uint *param_6, uint *param_7, uint *param_8, uint *param_9)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001fd2d",
+    "name": "FUN_1001fd2d",
+    "signature": "void FUN_1001fd2d(png_structp png_ptr)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10020036",
+    "name": "FUN_10020036",
+    "signature": "void FUN_10020036(png_structp png_ptr)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10020149",
+    "name": "FUN_10020149",
+    "signature": "void FUN_10020149(png_structp png_ptr)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002031c",
+    "name": "FUN_1002031c",
+    "signature": "void FUN_1002031c(png_structp png_ptr, uint *param_2, uint param_3, uint param_4, char param_5, byte param_6, undefined1 param_7, undefined1 param_8, undefined1 param_9)"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1002047c",
     "name": "png_read_data",
     "signature": "void png_read_data(png_structp png_ptr, png_bytep data, png_uint_32 length)",
     "comment": "png read callback wrapper (errors if NULL)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100204a4",
+    "name": "FUN_100204a4",
+    "signature": "void FUN_100204a4(png_structp png_ptr, undefined4 param_2, undefined4 param_3)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002052b",
+    "name": "FUN_1002052b",
+    "signature": "undefined4 * FUN_1002052b(png_structp png_ptr, int param_2, int param_3)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002057e",
+    "name": "png_free_thunk",
+    "signature": "void png_free(png_structp png_ptr, void * ptr)",
+    "comment": "thunk to png_free (jmp 0x10024777)"
   },
   {
     "program": "grim.dll",
@@ -3542,111 +4711,6 @@
   },
   {
     "program": "grim.dll",
-    "address": "0x10034003",
-    "name": "inflate_blocks",
-    "signature": "int inflate_blocks(void *s, z_streamp z, int r)",
-    "comment": "zlib (internal): process inflate blocks"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10036e60",
-    "name": "inflate_flush",
-    "signature": "int inflate_flush(void *s, z_streamp z, int r)",
-    "comment": "zlib (internal): flush pending output"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10036381",
-    "name": "inflate_codes_new",
-    "signature": "void * inflate_codes_new(uInt bl, uInt bd, void *tl, void *td, z_streamp z)",
-    "comment": "zlib (internal): allocate codes state"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100363b5",
-    "name": "inflate_codes",
-    "signature": "int inflate_codes(void *s, z_streamp z, int r)",
-    "comment": "zlib (internal): decode codes"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10036919",
-    "name": "inflate_codes_free",
-    "signature": "void inflate_codes_free(void *c, z_streamp z)",
-    "comment": "zlib (internal): free codes state"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1003692a",
-    "name": "huft_build",
-    "signature": "int huft_build(uInt *b, uInt n, uInt s, uInt *d, uInt *e, void **t, uInt *m, void *hp, uInt *hn)",
-    "comment": "zlib (internal): build Huffman decoding tables"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10036caf",
-    "name": "inflate_trees_bits",
-    "signature": "int inflate_trees_bits(uInt *c, uInt *bb, void **tb, void *hp, z_streamp z)",
-    "comment": "zlib (internal): build bit length Huffman tree"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10036d2e",
-    "name": "inflate_trees_dynamic",
-    "signature": "int inflate_trees_dynamic(uInt nl, uInt nd, uInt *c, uInt *bl, uInt *bd, void **tl, void **td, void *hp, z_streamp z)",
-    "comment": "zlib (internal): build dynamic Huffman trees"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1004b0b0",
-    "name": "inflate_trees_fixed",
-    "signature": "int inflate_trees_fixed(uInt *bl, uInt *bd, void **tl, void **td, z_streamp z)",
-    "comment": "zlib (internal): return fixed Huffman trees"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10033f0b",
-    "name": "inflate_blocks_reset",
-    "signature": "void inflate_blocks_reset(void *s, z_streamp z, uLongf *c)",
-    "comment": "zlib (internal): reset inflate blocks state"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10033f76",
-    "name": "inflate_blocks_new",
-    "signature": "void * inflate_blocks_new(z_streamp z, void *check_func, uInt w)",
-    "comment": "zlib (internal): allocate inflate blocks state"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1003479e",
-    "name": "inflate_blocks_free",
-    "signature": "void inflate_blocks_free(void *s, z_streamp z)",
-    "comment": "zlib (internal): free inflate blocks state"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100347d2",
-    "name": "adler32",
-    "signature": "uLong adler32(uLong adler, Bytef *buf, uInt len)",
-    "comment": "zlib: adler32 checksum"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100348eb",
-    "name": "zcalloc",
-    "signature": "voidpf zcalloc(voidpf opaque, uInt items, uInt size)",
-    "comment": "zlib (internal): default alloc wrapper (calloc)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1002e665",
-    "name": "zcfree",
-    "signature": "void zcfree(voidpf opaque, voidpf ptr)",
-    "comment": "zlib (internal): default free wrapper"
-  },
-  {
-    "program": "grim.dll",
     "address": "0x10024734",
     "name": "png_free_ptr",
     "signature": "void png_free_ptr(void * ptr)",
@@ -3696,80 +4760,6 @@
   },
   {
     "program": "grim.dll",
-    "address": "0x100250d7",
-    "name": "png_crc_finish",
-    "signature": "int png_crc_finish(png_structp png_ptr, png_uint_32 skip)",
-    "comment": "read remaining chunk bytes and check CRC"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1002057e",
-    "name": "png_free_thunk",
-    "signature": "void png_free(png_structp png_ptr, void * ptr)",
-    "comment": "thunk to png_free (jmp 0x10024777)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001e147",
-    "name": "FUN_1001e147",
-    "signature": "void FUN_1001e147(png_structp png_ptr, undefined4 *param_2)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001e16c",
-    "name": "FUN_1001e16c",
-    "signature": "void FUN_1001e16c(png_structp png_ptr, undefined4 *param_2)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001e294",
-    "name": "FUN_1001e294",
-    "signature": "void FUN_1001e294(png_structp png_ptr, uint *param_2)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001e81b",
-    "name": "FUN_1001e81b",
-    "signature": "void FUN_1001e81b(png_structp png_ptr, undefined4 *param_2, undefined4 *param_3)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001ea59",
-    "name": "FUN_1001ea59",
-    "signature": "undefined4 FUN_1001ea59(png_structp png_ptr, uint *param_2, uint *param_3, uint *param_4, uint *param_5, uint *param_6, uint *param_7, uint *param_8, uint *param_9)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001fd2d",
-    "name": "FUN_1001fd2d",
-    "signature": "void FUN_1001fd2d(png_structp png_ptr)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10020149",
-    "name": "FUN_10020149",
-    "signature": "void FUN_10020149(png_structp png_ptr)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1002031c",
-    "name": "FUN_1002031c",
-    "signature": "void FUN_1002031c(png_structp png_ptr, uint *param_2, uint param_3, uint param_4, char param_5, byte param_6, undefined1 param_7, undefined1 param_8, undefined1 param_9)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x100204a4",
-    "name": "FUN_100204a4",
-    "signature": "void FUN_100204a4(png_structp png_ptr, undefined4 param_2, undefined4 param_3)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1002052b",
-    "name": "FUN_1002052b",
-    "signature": "undefined4 * FUN_1002052b(png_structp png_ptr, int param_2, int param_3)"
-  },
-  {
-    "program": "grim.dll",
     "address": "0x10024dc0",
     "name": "FUN_10024dc0",
     "signature": "void FUN_10024dc0(png_structp png_ptr, int param_2, byte *param_3, byte *param_4, int param_5)"
@@ -3782,9 +4772,22 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x100250d7",
+    "name": "png_crc_finish",
+    "signature": "int png_crc_finish(png_structp png_ptr, png_uint_32 skip)",
+    "comment": "read remaining chunk bytes and check CRC"
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10025163",
     "name": "FUN_10025163",
     "signature": "void FUN_10025163(png_structp png_ptr, uint *param_2, int param_3)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10025359",
+    "name": "FUN_10025359",
+    "signature": "void FUN_10025359(void *this, png_structp png_ptr, int param_2, uint param_3)"
   },
   {
     "program": "grim.dll",
@@ -3818,89 +4821,108 @@
   },
   {
     "program": "grim.dll",
-    "address": "0x1001e407",
-    "name": "FUN_1001e407",
-    "signature": "void FUN_1001e407(png_structp png_ptr, int *param_2)"
+    "address": "0x1002e665",
+    "name": "zcfree",
+    "signature": "void zcfree(voidpf opaque, voidpf ptr)",
+    "comment": "zlib (internal): default free wrapper"
   },
   {
     "program": "grim.dll",
-    "address": "0x1001e427",
-    "name": "FUN_1001e427",
-    "signature": "void FUN_1001e427(void *this, png_structp png_ptr, byte *param_2, byte *param_3)"
+    "address": "0x10033f0b",
+    "name": "inflate_blocks_reset",
+    "signature": "void inflate_blocks_reset(void *s, z_streamp z, uLongf *c)",
+    "comment": "zlib (internal): reset inflate blocks state"
   },
   {
     "program": "grim.dll",
-    "address": "0x10020036",
-    "name": "FUN_10020036",
-    "signature": "void FUN_10020036(png_structp png_ptr)"
+    "address": "0x10033f76",
+    "name": "inflate_blocks_new",
+    "signature": "void * inflate_blocks_new(z_streamp z, void *check_func, uInt w)",
+    "comment": "zlib (internal): allocate inflate blocks state"
   },
   {
     "program": "grim.dll",
-    "address": "0x10025359",
-    "name": "FUN_10025359",
-    "signature": "void FUN_10025359(void *this, png_structp png_ptr, int param_2, uint param_3)"
+    "address": "0x10034003",
+    "name": "inflate_blocks",
+    "signature": "int inflate_blocks(void *s, z_streamp z, int r)",
+    "comment": "zlib (internal): process inflate blocks"
   },
   {
     "program": "grim.dll",
-    "address": "0x1001e7ce",
-    "name": "FUN_1001e7ce",
-    "signature": "void FUN_1001e7ce(png_structp png_ptr, undefined4 *param_2)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0046e920",
-    "name": "ov_pcm_seek",
-    "signature": "int ov_pcm_seek(OggVorbis_File * vf, ogg_int64_t pos)",
-    "comment": "libvorbisfile: seek to PCM sample"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0046e926",
-    "name": "ov_pcm_total",
-    "signature": "ogg_int64_t ov_pcm_total(OggVorbis_File * vf, int i)",
-    "comment": "libvorbisfile: total PCM samples"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0046e92c",
-    "name": "ov_info",
-    "signature": "vorbis_info * ov_info(OggVorbis_File * vf, int link)",
-    "comment": "libvorbisfile: query stream info"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0046e932",
-    "name": "ov_open_callbacks",
-    "signature": "int ov_open_callbacks(void * datasource, OggVorbis_File * vf, char * initial, long ibytes, ov_callbacks callbacks)",
-    "comment": "libvorbisfile: open with callbacks"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0046e938",
-    "name": "ov_clear",
-    "signature": "int ov_clear(OggVorbis_File * vf)",
-    "comment": "libvorbisfile: close and free"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0046e93e",
-    "name": "ov_read",
-    "signature": "long ov_read(OggVorbis_File * vf, char * buffer, int length, int bigendianp, int word, int sgned, int * bitstream)",
-    "comment": "libvorbisfile: decode PCM"
+    "address": "0x1003479e",
+    "name": "inflate_blocks_free",
+    "signature": "void inflate_blocks_free(void *s, z_streamp z)",
+    "comment": "zlib (internal): free inflate blocks state"
   },
   {
     "program": "grim.dll",
-    "address": "0x10001160",
-    "name": "grim_noop",
-    "signature": "void grim_noop(void)",
-    "comment": "debug stub (no-op)"
+    "address": "0x100347d2",
+    "name": "adler32",
+    "signature": "uLong adler32(uLong adler, Bytef *buf, uInt len)",
+    "comment": "zlib: adler32 checksum"
   },
   {
     "program": "grim.dll",
-    "address": "0x100170d6",
-    "name": "fpu_set_round_trunc",
-    "signature": "void fpu_set_round_trunc(void)",
-    "comment": "sets x87 rounding mode to truncate; saves control word in DAT_1005db6c"
+    "address": "0x100348eb",
+    "name": "zcalloc",
+    "signature": "voidpf zcalloc(voidpf opaque, uInt items, uInt size)",
+    "comment": "zlib (internal): default alloc wrapper (calloc)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10036381",
+    "name": "inflate_codes_new",
+    "signature": "void * inflate_codes_new(uInt bl, uInt bd, void *tl, void *td, z_streamp z)",
+    "comment": "zlib (internal): allocate codes state"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100363b5",
+    "name": "inflate_codes",
+    "signature": "int inflate_codes(void *s, z_streamp z, int r)",
+    "comment": "zlib (internal): decode codes"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10036919",
+    "name": "inflate_codes_free",
+    "signature": "void inflate_codes_free(void *c, z_streamp z)",
+    "comment": "zlib (internal): free codes state"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003692a",
+    "name": "huft_build",
+    "signature": "int huft_build(uInt *b, uInt n, uInt s, uInt *d, uInt *e, void **t, uInt *m, void *hp, uInt *hn)",
+    "comment": "zlib (internal): build Huffman decoding tables"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10036caf",
+    "name": "inflate_trees_bits",
+    "signature": "int inflate_trees_bits(uInt *c, uInt *bb, void **tb, void *hp, z_streamp z)",
+    "comment": "zlib (internal): build bit length Huffman tree"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10036d2e",
+    "name": "inflate_trees_dynamic",
+    "signature": "int inflate_trees_dynamic(uInt nl, uInt nd, uInt *c, uInt *bl, uInt *bd, void **tl, void **td, void *hp, z_streamp z)",
+    "comment": "zlib (internal): build dynamic Huffman trees"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10036e60",
+    "name": "inflate_flush",
+    "signature": "int inflate_flush(void *s, z_streamp z, int r)",
+    "comment": "zlib (internal): flush pending output"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004b0b0",
+    "name": "inflate_trees_fixed",
+    "signature": "int inflate_trees_fixed(uInt *bl, uInt *bd, void **tl, void **td, z_streamp z)",
+    "comment": "zlib (internal): return fixed Huffman trees"
   },
   {
     "program": "grim.dll",
@@ -3908,677 +4930,5 @@
     "name": "seh_prolog",
     "signature": "void seh_prolog(void)",
     "comment": "MSVC SEH prolog helper (sets FS:[0])"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001ac4a",
-    "name": "grim_pixel_format_init_dxt",
-    "signature": "void * grim_pixel_format_init_dxt(void *this, uint *desc)",
-    "comment": "initializes DXT block-compressed pixel format (DXT1..DXT5)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x10016cdc",
-    "name": "grim_pixel_format_write_dxt_cache",
-    "signature": "void grim_pixel_format_write_dxt_cache(void *this, uint x, uint y, float *pixels)",
-    "comment": "writes RGBA floats into the DXT block cache and encodes when block data is complete"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001b0fd",
-    "name": "grim_pixel_format_read_dxt_cache",
-    "signature": "void grim_pixel_format_read_dxt_cache(void *this, uint x, uint y, float *out)",
-    "comment": "decodes DXT blocks into cache on demand and copies RGBA floats to output (color key aware)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001a444",
-    "name": "grim_pixel_format_init_yuv",
-    "signature": "void * grim_pixel_format_init_yuv(void *this, uint *desc)",
-    "comment": "initializes packed YUV (UYVY/YUY2) cache state and allocates RGB float cache"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001ab16",
-    "name": "grim_pixel_format_write_yuv_cache",
-    "signature": "void grim_pixel_format_write_yuv_cache(void *this, int x, int y, float *pixels)",
-    "comment": "loads YUV cache for coords, copies RGBA floats into cache, marks dirty for flush"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001a428",
-    "name": "grim_pixel_format_ctor_r8g8b8",
-    "signature": "void * grim_pixel_format_ctor_r8g8b8(void *this, uint *desc)",
-    "comment": "pixel format ctor for D3DFMT_R8G8B8"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001a53c",
-    "name": "grim_pixel_format_ctor_a8r8g8b8",
-    "signature": "void * grim_pixel_format_ctor_a8r8g8b8(void *this, uint *desc)",
-    "comment": "pixel format ctor for D3DFMT_A8R8G8B8"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001a558",
-    "name": "grim_pixel_format_ctor_x8r8g8b8",
-    "signature": "void * grim_pixel_format_ctor_x8r8g8b8(void *this, uint *desc)",
-    "comment": "pixel format ctor for D3DFMT_X8R8G8B8"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001a579",
-    "name": "grim_pixel_format_ctor_r5g6b5",
-    "signature": "void * grim_pixel_format_ctor_r5g6b5(void *this, uint *desc)",
-    "comment": "pixel format ctor for D3DFMT_R5G6B5"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001a781",
-    "name": "grim_pixel_format_ctor_x1r5g5b5",
-    "signature": "void * grim_pixel_format_ctor_x1r5g5b5(void *this, uint *desc)",
-    "comment": "pixel format ctor for D3DFMT_X1R5G5B5"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001a79d",
-    "name": "grim_pixel_format_ctor_a1r5g5b5",
-    "signature": "void * grim_pixel_format_ctor_a1r5g5b5(void *this, uint *desc)",
-    "comment": "pixel format ctor for D3DFMT_A1R5G5B5"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001a595",
-    "name": "grim_pixel_format_flush_yuv_cache",
-    "signature": "int grim_pixel_format_flush_yuv_cache(void *this)",
-    "comment": "flushes cached YUV<->RGB conversions back into packed 16-bit storage"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001a7b9",
-    "name": "grim_pixel_format_load_yuv_cache",
-    "signature": "int grim_pixel_format_load_yuv_cache(void *this, uint x, uint y, int load_from_surface)",
-    "comment": "loads packed YUV pixels into float cache and converts to RGB"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001aa8a",
-    "name": "grim_pixel_format_ctor_a4r4g4b4",
-    "signature": "void * grim_pixel_format_ctor_a4r4g4b4(void *this, uint *desc)",
-    "comment": "pixel format ctor for D3DFMT_A4R4G4B4"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001aaa6",
-    "name": "grim_pixel_format_ctor_r3g3b2",
-    "signature": "void * grim_pixel_format_ctor_r3g3b2(void *this, uint *desc)",
-    "comment": "pixel format ctor for D3DFMT_R3G3B2"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001aac2",
-    "name": "grim_pixel_format_ctor_a8",
-    "signature": "void * grim_pixel_format_ctor_a8(void *this, uint *desc)",
-    "comment": "pixel format ctor for D3DFMT_A8"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001aade",
-    "name": "grim_pixel_format_ctor_a8r3g3b2",
-    "signature": "void * grim_pixel_format_ctor_a8r3g3b2(void *this, uint *desc)",
-    "comment": "pixel format ctor for D3DFMT_A8R3G3B2"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001aafa",
-    "name": "grim_pixel_format_ctor_x4r4g4b4",
-    "signature": "void * grim_pixel_format_ctor_x4r4g4b4(void *this, uint *desc)",
-    "comment": "pixel format ctor for D3DFMT_X4R4G4B4"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001aba3",
-    "name": "grim_pixel_format_ctor_a2b10g10r10",
-    "signature": "void * grim_pixel_format_ctor_a2b10g10r10(void *this, uint *desc)",
-    "comment": "pixel format ctor for D3DFMT_A2B10G10R10"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001ac2e",
-    "name": "grim_pixel_format_ctor_g16r16",
-    "signature": "void * grim_pixel_format_ctor_g16r16(void *this, uint *desc)",
-    "comment": "pixel format ctor for D3DFMT_G16R16"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001ae3c",
-    "name": "grim_pixel_format_ctor_a8p8",
-    "signature": "void * grim_pixel_format_ctor_a8p8(void *this, uint *desc)",
-    "comment": "pixel format ctor for D3DFMT_A8P8"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001ae74",
-    "name": "grim_pixel_format_ctor_p8",
-    "signature": "void * grim_pixel_format_ctor_p8(void *this, uint *desc)",
-    "comment": "pixel format ctor for D3DFMT_P8"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001ae90",
-    "name": "grim_pixel_format_ctor_l8",
-    "signature": "void * grim_pixel_format_ctor_l8(void *this, uint *desc)",
-    "comment": "pixel format ctor for D3DFMT_L8"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001aeac",
-    "name": "grim_pixel_format_ctor_a8l8",
-    "signature": "void * grim_pixel_format_ctor_a8l8(void *this, uint *desc)",
-    "comment": "pixel format ctor for D3DFMT_A8L8"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001aee4",
-    "name": "grim_pixel_format_ctor_a4l4",
-    "signature": "void * grim_pixel_format_ctor_a4l4(void *this, uint *desc)",
-    "comment": "pixel format ctor for D3DFMT_A4L4"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001b001",
-    "name": "grim_pixel_format_ctor_v8u8",
-    "signature": "void * grim_pixel_format_ctor_v8u8(void *this, uint *desc)",
-    "comment": "pixel format ctor for D3DFMT_V8U8"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001b01d",
-    "name": "grim_pixel_format_ctor_l6v5u5",
-    "signature": "void * grim_pixel_format_ctor_l6v5u5(void *this, uint *desc)",
-    "comment": "pixel format ctor for D3DFMT_L6V5U5"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001b039",
-    "name": "grim_pixel_format_ctor_x8l8v8u8",
-    "signature": "void * grim_pixel_format_ctor_x8l8v8u8(void *this, uint *desc)",
-    "comment": "pixel format ctor for D3DFMT_X8L8V8U8"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001b055",
-    "name": "grim_pixel_format_ctor_q8w8v8u8",
-    "signature": "void * grim_pixel_format_ctor_q8w8v8u8(void *this, uint *desc)",
-    "comment": "pixel format ctor for D3DFMT_Q8W8V8U8"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001b071",
-    "name": "grim_pixel_format_ctor_v16u16",
-    "signature": "void * grim_pixel_format_ctor_v16u16(void *this, uint *desc)",
-    "comment": "pixel format ctor for D3DFMT_V16U16"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001b08d",
-    "name": "grim_pixel_format_ctor_w11v11u10",
-    "signature": "void * grim_pixel_format_ctor_w11v11u10(void *this, uint *desc)",
-    "comment": "pixel format ctor for D3DFMT_W11V11U10"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001b0a9",
-    "name": "grim_pixel_format_ctor_a2w10v10u10",
-    "signature": "void * grim_pixel_format_ctor_a2w10v10u10(void *this, uint *desc)",
-    "comment": "pixel format ctor for D3DFMT_A2W10V10U10"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001b0c5",
-    "name": "grim_pixel_format_ctor_d16_lockable",
-    "signature": "void * grim_pixel_format_ctor_d16_lockable(void *this, uint *desc)",
-    "comment": "pixel format ctor for D3DFMT_D16_LOCKABLE"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001b0e1",
-    "name": "grim_pixel_format_ctor_l16",
-    "signature": "void * grim_pixel_format_ctor_l16(void *this, uint *desc)",
-    "comment": "pixel format ctor for FourCC L16 (16-bit luminance)"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001b3a6",
-    "name": "grim_pixel_format_ctor_al16",
-    "signature": "void * grim_pixel_format_ctor_al16(void *this, uint *desc)",
-    "comment": "pixel format ctor for FourCC AL16"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001b3c2",
-    "name": "grim_pixel_format_ctor_r16",
-    "signature": "void * grim_pixel_format_ctor_r16(void *this, uint *desc)",
-    "comment": "pixel format ctor for FourCC R16"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001b3de",
-    "name": "grim_pixel_format_ctor_ar16",
-    "signature": "void * grim_pixel_format_ctor_ar16(void *this, uint *desc)",
-    "comment": "pixel format ctor for FourCC AR16"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001b3fa",
-    "name": "grim_pixel_format_ctor_dxt1",
-    "signature": "void * grim_pixel_format_ctor_dxt1(void *this, uint *desc)",
-    "comment": "pixel format ctor for FourCC DXT1"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001b412",
-    "name": "grim_pixel_format_ctor_dxt2",
-    "signature": "void * grim_pixel_format_ctor_dxt2(void *this, uint *desc)",
-    "comment": "pixel format ctor for FourCC DXT2"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001b42a",
-    "name": "grim_pixel_format_ctor_dxt3",
-    "signature": "void * grim_pixel_format_ctor_dxt3(void *this, uint *desc)",
-    "comment": "pixel format ctor for FourCC DXT3"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001b442",
-    "name": "grim_pixel_format_ctor_dxt4",
-    "signature": "void * grim_pixel_format_ctor_dxt4(void *this, uint *desc)",
-    "comment": "pixel format ctor for FourCC DXT4"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001b45a",
-    "name": "grim_pixel_format_ctor_dxt5",
-    "signature": "void * grim_pixel_format_ctor_dxt5(void *this, uint *desc)",
-    "comment": "pixel format ctor for FourCC DXT5"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001b4dc",
-    "name": "grim_pixel_format_ctor_uyvy",
-    "signature": "void * grim_pixel_format_ctor_uyvy(void *this)",
-    "comment": "pixel format ctor for FourCC UYVY"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001b4f4",
-    "name": "grim_pixel_format_ctor_yuy2",
-    "signature": "void * grim_pixel_format_ctor_yuy2(void *this)",
-    "comment": "pixel format ctor for FourCC YUY2"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1001b50c",
-    "name": "grim_pixel_format_create",
-    "signature": "void * grim_pixel_format_create(uint *desc)",
-    "comment": "factory: picks pixel format implementation from FourCC/D3DFORMAT"
-  },
-  {
-    "program": "grim.dll",
-    "address": "0x1000cbff",
-    "name": "float_near_equal",
-    "signature": "int float_near_equal(float a, float b)",
-    "comment": "returns 1 when |a-b| < 1.1920929e-07 (FLT_EPSILON)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00461089",
-    "name": "crt_vsprintf",
-    "signature": "int crt_vsprintf(char *dst, char *fmt, void *args)",
-    "comment": "CRT: format string to buffer"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0046135d",
-    "name": "crt_strtok",
-    "signature": "char * crt_strtok(char *str, char *delim)",
-    "comment": "CRT: tokenize string, uses TLS for state"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00462bd4",
-    "name": "crt_qsort",
-    "signature": "void crt_qsort(void *base, size_t num, size_t size, void *cmp)",
-    "comment": "CRT: quicksort with callback (cmp)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00462d28",
-    "name": "crt_shortsort",
-    "signature": "void crt_shortsort(char *lo, char *hi, size_t width, void *cmp)",
-    "comment": "CRT: insertion sort for small arrays (cmp)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00462d76",
-    "name": "crt_swap",
-    "signature": "void crt_swap(char *a, char *b, size_t width)",
-    "comment": "CRT: swap elements for qsort"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00464030",
-    "name": "crt_openfile",
-    "signature": "FILE * crt_openfile(char *filename, char *mode, int shflag, FILE *stream)",
-    "comment": "CRT: open file with mode string parsing"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004641a0",
-    "name": "crt_getstream",
-    "signature": "FILE * crt_getstream(void)",
-    "comment": "CRT: allocate FILE struct from pool"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00464380",
-    "name": "crt_output",
-    "signature": "int crt_output(FILE *stream, char *format, void *args)",
-    "comment": "CRT: core printf formatter"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00465da5",
-    "name": "crt_mktime",
-    "signature": "long crt_mktime(int year, int month, int day, int hour, int min, int sec, int dst)",
-    "comment": "CRT: convert date/time to timestamp (mktime)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0046a590",
-    "name": "crt_memmove",
-    "signature": "void * crt_memmove(void *dst, void *src, size_t size)",
-    "comment": "CRT: copy memory with overlap handling"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0046adbd",
-    "name": "crt_sopen",
-    "signature": "int crt_sopen(char *filename, int oflag, int shflag, int pmode)",
-    "comment": "CRT: open file with share mode, wraps CreateFile"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004610da",
-    "name": "crt_atof_l",
-    "signature": "double crt_atof_l(void *locale, char *str)",
-    "comment": "CRT: parse string to double (atof-style, locale)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00461c0e",
-    "name": "crt_ftell",
-    "signature": "long crt_ftell(FILE *fp)",
-    "comment": "CRT: ftell with file lock"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00461c30",
-    "name": "crt_ftell_nolock",
-    "signature": "long crt_ftell_nolock(FILE *fp)",
-    "comment": "CRT: ftell without lock"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00461e4a",
-    "name": "crt_snprintf",
-    "signature": "int crt_snprintf(char *dst, int size, char *fmt, ...)",
-    "comment": "CRT: size-limited sprintf"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00465652",
-    "name": "crt_write",
-    "signature": "int crt_write(int fd, char *buf, unsigned int count)",
-    "comment": "CRT: write handle with lock"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004656b7",
-    "name": "crt_write_nolock",
-    "signature": "int crt_write_nolock(int fd, char *buf, unsigned int count)",
-    "comment": "CRT: write handle (no lock), text-mode CRLF translation"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004658f0",
-    "name": "crt_bufcpy",
-    "signature": "void * crt_bufcpy(void *dst, void *src, size_t size)",
-    "comment": "CRT: buffer copy helper (overlap-safe)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00465fff",
-    "name": "crt_read",
-    "signature": "int crt_read(int fd, char *buf, unsigned int count)",
-    "comment": "CRT: read handle with lock"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00466064",
-    "name": "crt_read_nolock",
-    "signature": "int crt_read_nolock(int fd, char *buf, unsigned int count)",
-    "comment": "CRT: read handle (no lock), CRLF translation"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0046cdcf",
-    "name": "crt_strtol_l",
-    "signature": "long crt_strtol_l(void *locale, char *str, char **endptr, int base)",
-    "comment": "CRT: parse integer with base (locale)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0046cde6",
-    "name": "crt_strtoxl",
-    "signature": "unsigned long crt_strtoxl(void *locale, char *str, char **endptr, int base, unsigned int flags)",
-    "comment": "CRT: shared strto* core (base/sign/overflow)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00462da2",
-    "name": "crt_getc",
-    "signature": "int crt_getc(FILE *fp)",
-    "comment": "CRT: get character with stream lock"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00463f54",
-    "name": "crt_filbuf",
-    "signature": "int crt_filbuf(FILE *fp)",
-    "comment": "CRT: fill read buffer"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00463e49",
-    "name": "crt_close",
-    "signature": "int crt_close(int fd)",
-    "comment": "CRT: close file handle with lock"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00463ea6",
-    "name": "crt_close_nolock",
-    "signature": "int crt_close_nolock(int fd)",
-    "comment": "CRT: close file handle without lock"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00461e9b",
-    "name": "crt_tolower",
-    "signature": "int crt_tolower(int c)",
-    "comment": "CRT: tolower (current locale)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00461f0a",
-    "name": "crt_tolower_l",
-    "signature": "int crt_tolower_l(void *locale, int c)",
-    "comment": "CRT: tolower with locale"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00462104",
-    "name": "crt_toupper",
-    "signature": "int crt_toupper(int c)",
-    "comment": "CRT: toupper (current locale)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00462173",
-    "name": "crt_toupper_l",
-    "signature": "int crt_toupper_l(void *locale, int c)",
-    "comment": "CRT: toupper with locale"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00463b86",
-    "name": "crt_msize",
-    "signature": "size_t crt_msize(void *ptr)",
-    "comment": "CRT: allocation size"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00461448",
-    "name": "crt_fflush",
-    "signature": "int crt_fflush(FILE *fp)",
-    "comment": "CRT: fflush wrapper (NULL flushes all)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00461477",
-    "name": "crt_fflush_nolock",
-    "signature": "int crt_fflush_nolock(FILE *fp)",
-    "comment": "CRT: fflush without lock"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004614a5",
-    "name": "crt_flushbuf",
-    "signature": "int crt_flushbuf(FILE *fp)",
-    "comment": "CRT: flush write buffer"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0046150a",
-    "name": "crt_flushall",
-    "signature": "int crt_flushall(int mode)",
-    "comment": "CRT: flush all streams (mode 0/1)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004655bf",
-    "name": "crt_commit",
-    "signature": "int crt_commit(int fd)",
-    "comment": "CRT: commit file buffers to disk"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0046acb6",
-    "name": "crt_get_osfhandle",
-    "signature": "void * crt_get_osfhandle(int fd)",
-    "comment": "CRT: map file descriptor to OS handle"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0046cda0",
-    "name": "crt_chkstk",
-    "signature": "void crt_chkstk(void)",
-    "comment": "CRT: stack probing helper for large alloca (size in EAX)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004667ac",
-    "name": "crt_calloc",
-    "signature": "void * crt_calloc(unsigned int count, unsigned int size)",
-    "comment": "CRT: allocate zeroed block (count*size)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004626aa",
-    "name": "crt_realloc",
-    "signature": "void * crt_realloc(void *ptr, size_t size)",
-    "comment": "CRT: realloc with heap mode handling and new-handler retry"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00467e47",
-    "name": "crt_call_new_handler",
-    "signature": "int crt_call_new_handler(size_t size)",
-    "comment": "CRT: call new-handler; returns nonzero to retry allocation"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004664d1",
-    "name": "crt_lcmap_string",
-    "signature": "int crt_lcmap_string(unsigned int locale, unsigned int flags, char *src, int srclen, unsigned short *dst, int dstlen, unsigned int codepage, int use_cp)",
-    "comment": "CRT: LCMapString wrapper with multibyte/Unicode handling"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0046223f",
-    "name": "crt_beginthread",
-    "signature": "void * crt_beginthread(void *start, unsigned int stack_size, void *arg)",
-    "comment": "CRT: beginthread (CreateThread wrapper)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004622b6",
-    "name": "crt_thread_entry",
-    "signature": "unsigned int crt_thread_entry(void *thread_data)",
-    "comment": "CRT: thread start trampoline"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x00462373",
-    "name": "crt_endthread",
-    "signature": "void crt_endthread(void)",
-    "comment": "CRT: thread cleanup and exit"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0046248e",
-    "name": "crt_getcwd",
-    "signature": "char * crt_getcwd(char *buf, unsigned int size)",
-    "comment": "CRT: get current working directory"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x004624b5",
-    "name": "crt_getdcwd",
-    "signature": "char * crt_getdcwd(int drive, char *buf, unsigned int size)",
-    "comment": "CRT: get current working directory for drive"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0046d8e2",
-    "name": "crt_add_u32_carry",
-    "signature": "int crt_add_u32_carry(uint a, uint b, uint *out)",
-    "comment": "CRT: add two u32 values and return carry"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0046d961",
-    "name": "crt_u96_shl1",
-    "signature": "void crt_u96_shl1(uint *value)",
-    "comment": "CRT: shift 96-bit value left by 1 (in-place)"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0046d98f",
-    "name": "crt_u96_shr1",
-    "signature": "void crt_u96_shr1(uint *value)",
-    "comment": "CRT: shift 96-bit value right by 1 (in-place)"
   }
 ]

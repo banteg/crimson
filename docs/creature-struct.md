@@ -304,5 +304,6 @@ Notes:
   falls back to `quest_build_fallback` (`FUN_004343e0`) (two entries with spawn id
   `0x40`, counts 10/0x14, trigger times
   500/5000).
-- `FUN_00437d70`, `FUN_00438840`, and `FUN_00438940` are examples of quest builders
-  that write multiple `DAT_004857a8` entries with varying spawn ids and timings.
+- `quest_build_zombie_time` (`0x00437d70`), `quest_build_lizard_raze` (`0x00438840`), and
+  `quest_build_surrounded_by_reptiles` (`0x00438940`) are examples of quest builders that write
+  multiple `DAT_004857a8` entries with varying spawn ids and timings.
