@@ -15,6 +15,8 @@ back the tilde/backquote console behavior.
   - Calls Grim2D vtable `+0x4c` to flush input.
 - Runtime capture shows the tilde hotkey path calls `console_set_open` from
   `0x0040c39a` (call stack: `0x0040c39a -> console_set_open -> DINPUT8::GetDeviceState -> grim`).
+- The containing per-frame input/update function starts at `0x0040c1c0`
+  (no EBP frame; begins with `sub esp, 0x28`).
 
 #### Hotkey check (runtime)
 
@@ -110,5 +112,5 @@ The cvar paths emit:
 
 ## Open questions
 
-- What function contains `0x0040c39a` in the real call graph (Ghidra currently labels the
-  containing range as `demo_purchase_screen_update`, which may be a boundary artifact)?
+- None for the console hotkey path right now; the function entry at `0x0040c1c0`
+  is confirmed in WinDbg.

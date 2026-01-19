@@ -430,6 +430,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0040c1c0",
+    "name": "console_hotkey_update",
+    "signature": "void console_hotkey_update(void)",
+    "comment": "per-frame input/update function; contains console hotkey block (DIK_GRAVE) at 0x0040c360 and DIK_F12 check; entry identified via WinDbg"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0040d000",
     "name": "credits_line_set",
     "signature": "void credits_line_set(int index, char *text, int flags)",

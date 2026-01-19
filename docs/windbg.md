@@ -14,11 +14,12 @@ Notes:
 
 - `just windbg-client` uses `-bonc`, so you must `g` after attaching.
 - Client output is **not** persisted by the server; if the client session drops, logs are lost.
-- The server logs to `C:\Crimsonland\windbg.log` (append, Unicode).
+- The server logs to `C:\Crimsonland\windbg.log` (overwritten on each server start, ASCII/ANSI).
 - The server should be started by the user. Codex only connects as a client to run commands,
   and we inspect the server log file to see captured output.
 - `just windbg-tail` prints any new log lines since the last read and remembers its position
   in `C:\Crimsonland\windbg.log.pos`.
+- The tail script decodes ASCII by default and switches to UTF-16 if a BOM is present.
 
 ## Workflows
 
@@ -52,7 +53,7 @@ just windbg-client
 
 Notes:
 
-- The log is written by the server (`-logau`), so it survives client drops.
+- The log is written by the server (`-logo`), so it survives client drops but resets on server restart.
 - The tail script reads only new bytes from `C:\Crimsonland\windbg.log`.
 
 ## Sessions
@@ -422,3 +423,37 @@ Additional hotkey in the same block:
 - The hotkey block appears inside a larger per-frame input/update function that also checks `DIK_F12 (0x58)`.
 - The block is gated by `audio_suspend_flag` (`0x004aaf84`); when non-zero, it calls `audio_resume_all`
   (`0x0042a5f0`) and returns early.
+
+### Session 6 (2026-01-19) - console hotkey function entry
+
+#### Goal
+
+Find the true function entry that contains the hotkey block at `0x0040c360`.
+
+#### Breakpoint
+
+```
+bp 0x0040c1c0 ".printf \"[console] entry 0x0040c1c0\\n\"; kb; u @eip L40; gc"
+```
+
+#### Captured
+
+- **Entry hit:** `0x0040c1c0`
+- **Stack (unwind warning):** call chain passes through Grim (`grim+0x3def`, `grim+0x6025`) and a
+  `crimsonland` caller around `0x0042cf41` before returning to `grim!GRIM__GetInterface`.
+
+**Prolog:**
+
+```
+0040c1c0 8b0d3c084800    mov     ecx,dword ptr [0048083c]
+0040c1c6 83ec28          sub     esp,28h
+0040c1c9 8b01            mov     eax,dword ptr [ecx]
+0040c1cb 53              push    ebx
+0040c1cc 56              push    esi
+0040c1cd ff503c          call    dword ptr [eax+3Ch]
+```
+
+#### Interpretation
+
+- The hotkey block (`0x0040c360`) and its callsite (`0x0040c39a`) live inside a larger per‑frame
+  input/update function that starts at `0x0040c1c0`.
