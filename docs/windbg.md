@@ -26,10 +26,8 @@ Notes:
 - Client output is **not** persisted by the server; if the client session drops, logs are lost.
 - To persist logs, log on the **server** (recommended). Do not use `-logo` on the client,
   because it truncates the log file on every reconnect.
-- If you need a client-side log anyway, use a separate file with `-loga` to append:
-  ```
-  cdb -remote tcp:server=127.0.0.1,port=5005,password=secret -bonc -loga C:\Crimsonland\windbg_client_log.txt
-  ```
+- The server should be started by the user. Codex only connects as a client to run commands,
+  and we inspect the server log file to see captured output.
 
 ## Sessions
 
