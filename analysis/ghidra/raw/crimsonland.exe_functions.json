@@ -91,16 +91,16 @@
     "calls": ["console_push_line", "crt_vsprintf"]
   },
   {
-    "name": "FUN_004018b0",
+    "name": "console_set_open",
     "address": "004018b0",
-    "signature": "undefined FUN_004018b0(void * this, undefined1 param_1)",
+    "signature": "void console_set_open(void * this, void * console_state, char open)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_004018d0",
+    "name": "console_history_apply",
     "address": "004018d0",
-    "signature": "undefined FUN_004018d0(int param_1)",
+    "signature": "void console_history_apply(int console_state)",
     "external": false,
     "calls": []
   },
@@ -112,11 +112,11 @@
     "calls": ["console_command_find", "console_cvar_find", "console_printf", "console_tokenize_line", "crt_atof_l", "crt_free", "strdup_malloc"]
   },
   {
-    "name": "FUN_00401a40",
+    "name": "console_update",
     "address": "00401a40",
-    "signature": "undefined FUN_00401a40(void * param_1)",
+    "signature": "void console_update(int console_state)",
     "external": false,
-    "calls": ["FUN_004018d0", "console_command_autocomplete", "console_cvar_autocomplete", "console_exec_line", "console_input_buffer", "console_input_clear", "console_input_poll", "console_printf", "console_tokenize_line", "operator_new", "strdup_malloc"]
+    "calls": ["console_command_autocomplete", "console_cvar_autocomplete", "console_exec_line", "console_history_apply", "console_input_buffer", "console_input_clear", "console_input_poll", "console_printf", "console_tokenize_line", "operator_new", "strdup_malloc"]
   },
   {
     "name": "FUN_00401dd0",
@@ -1596,37 +1596,352 @@
     "calls": ["console_printf"]
   },
   {
-    "name": "FUN_00436350",
+    "name": "quest_build_nagolipoli",
+    "address": "00434480",
+    "signature": "void quest_build_nagolipoli(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_monster_blues",
+    "address": "00434860",
+    "signature": "void quest_build_monster_blues(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_the_gathering",
+    "address": "004349c0",
+    "signature": "void quest_build_the_gathering(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_army_of_three",
+    "address": "00434ca0",
+    "signature": "void quest_build_army_of_three(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_knee_deep_in_the_dead",
+    "address": "00434f00",
+    "signature": "void quest_build_knee_deep_in_the_dead(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_the_gang_wars",
+    "address": "00435120",
+    "signature": "void quest_build_the_gang_wars(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_the_fortress",
+    "address": "004352d0",
+    "signature": "void quest_build_the_fortress(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_cross_fire",
+    "address": "00435480",
+    "signature": "void quest_build_cross_fire(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_the_beating",
+    "address": "00435610",
+    "signature": "void quest_build_the_beating(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_the_spanking_of_the_dead",
+    "address": "004358a0",
+    "signature": "void quest_build_the_spanking_of_the_dead(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_hidden_evil",
+    "address": "00435a30",
+    "signature": "void quest_build_hidden_evil(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_land_hostile",
+    "address": "00435bd0",
+    "signature": "void quest_build_land_hostile(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_minor_alien_breach",
+    "address": "00435cc0",
+    "signature": "void quest_build_minor_alien_breach(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_alien_squads",
+    "address": "00435ea0",
+    "signature": "void quest_build_alien_squads(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_zombie_masters",
+    "address": "004360a0",
+    "signature": "void quest_build_zombie_masters(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_8_legged_terror",
+    "address": "00436120",
+    "signature": "void quest_build_8_legged_terror(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_ghost_patrols",
+    "address": "00436200",
+    "signature": "void quest_build_ghost_patrols(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_the_random_factor",
     "address": "00436350",
-    "signature": "float FUN_00436350(int param_1, int * param_2)",
+    "signature": "void quest_build_the_random_factor(float * entries, int * count)",
     "external": false,
     "calls": ["crt_rand"]
   },
   {
-    "name": "FUN_00436440",
+    "name": "quest_build_spider_wave_syndrome",
     "address": "00436440",
-    "signature": "undefined FUN_00436440(int param_1, int * param_2)",
+    "signature": "void quest_build_spider_wave_syndrome(float * entries, int * count)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_00437d70",
+    "name": "quest_build_nesting_grounds",
+    "address": "004364a0",
+    "signature": "void quest_build_nesting_grounds(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_alien_dens",
+    "address": "00436720",
+    "signature": "void quest_build_alien_dens(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_arachnoid_farm",
+    "address": "00436820",
+    "signature": "void quest_build_arachnoid_farm(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_gauntlet",
+    "address": "004369a0",
+    "signature": "void quest_build_gauntlet(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_syntax_terror",
+    "address": "00436c10",
+    "signature": "void quest_build_syntax_terror(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_spider_spawns",
+    "address": "00436d70",
+    "signature": "void quest_build_spider_spawns(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_two_fronts",
+    "address": "00436ee0",
+    "signature": "void quest_build_two_fronts(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_survival_of_the_fastest",
+    "address": "00437060",
+    "signature": "void quest_build_survival_of_the_fastest(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_spideroids",
+    "address": "004373c0",
+    "signature": "void quest_build_spideroids(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_evil_zombies_at_large",
+    "address": "004374a0",
+    "signature": "void quest_build_evil_zombies_at_large(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_everred_pastures",
+    "address": "004375a0",
+    "signature": "void quest_build_everred_pastures(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_lizard_kings",
+    "address": "00437710",
+    "signature": "void quest_build_lizard_kings(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_sweep_stakes",
+    "address": "00437810",
+    "signature": "void quest_build_sweep_stakes(float * entries, int * count)",
+    "external": false,
+    "calls": ["crt_rand"]
+  },
+  {
+    "name": "quest_build_deja_vu",
+    "address": "00437920",
+    "signature": "void quest_build_deja_vu(float * entries, int * count)",
+    "external": false,
+    "calls": ["crt_rand"]
+  },
+  {
+    "name": "quest_build_target_practice",
+    "address": "00437a00",
+    "signature": "void quest_build_target_practice(float * entries, int * count)",
+    "external": false,
+    "calls": ["crt_rand"]
+  },
+  {
+    "name": "quest_build_major_alien_breach",
+    "address": "00437af0",
+    "signature": "void quest_build_major_alien_breach(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_land_of_lizards",
+    "address": "00437ba0",
+    "signature": "void quest_build_land_of_lizards(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_the_lizquidation",
+    "address": "00437c70",
+    "signature": "void quest_build_the_lizquidation(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_zombie_time",
     "address": "00437d70",
-    "signature": "undefined FUN_00437d70(int param_1, int * param_2)",
+    "signature": "void quest_build_zombie_time(float * entries, int * count)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_00438840",
+    "name": "quest_build_frontline_assault",
+    "address": "00437e10",
+    "signature": "void quest_build_frontline_assault(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_the_collaboration",
+    "address": "00437f30",
+    "signature": "void quest_build_the_collaboration(float * entries, int * count)",
+    "external": false,
+    "calls": ["__ftol"]
+  },
+  {
+    "name": "quest_build_the_blighting",
+    "address": "00438050",
+    "signature": "void quest_build_the_blighting(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_the_annihilation",
+    "address": "004382c0",
+    "signature": "void quest_build_the_annihilation(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_the_massacre",
+    "address": "004383e0",
+    "signature": "void quest_build_the_massacre(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_the_killing",
+    "address": "004384a0",
+    "signature": "void quest_build_the_killing(float * entries, int * count)",
+    "external": false,
+    "calls": ["crt_rand"]
+  },
+  {
+    "name": "quest_build_lizard_zombie_pact",
+    "address": "00438700",
+    "signature": "void quest_build_lizard_zombie_pact(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_lizard_raze",
     "address": "00438840",
-    "signature": "undefined FUN_00438840(int param_1, int * param_2)",
+    "signature": "void quest_build_lizard_raze(float * entries, int * count)",
     "external": false,
     "calls": []
   },
   {
-    "name": "FUN_00438940",
+    "name": "quest_build_surrounded_by_reptiles",
     "address": "00438940",
-    "signature": "undefined FUN_00438940(undefined4 * param_1, int * param_2)",
+    "signature": "void quest_build_surrounded_by_reptiles(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_the_unblitzkrieg",
+    "address": "00438a40",
+    "signature": "void quest_build_the_unblitzkrieg(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_the_end_of_all",
+    "address": "00438e10",
+    "signature": "void quest_build_the_end_of_all(float * entries, int * count)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "quest_build_spiders_inc",
+    "address": "004390d0",
+    "signature": "void quest_build_spiders_inc(float * entries, int * count)",
     "external": false,
     "calls": []
   },

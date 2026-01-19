@@ -33,6 +33,7 @@ Interesting Functions and Patterns
   GetFileVersionInfoSizeA @ 0046e95c
 
 [OPEN related]
+  console_set_open @ 004018b0
   vorbis_mem_open @ 0041ddd0
   resource_open_read @ 0043b9e0
   crt_fsopen @ 0046100e
@@ -130,6 +131,8 @@ Interesting Functions and Patterns
   crt_snprintf @ 00461e4a
 
 [ERROR related]
+  quest_build_8_legged_terror @ 00436120
+  quest_build_syntax_terror @ 00436c10
   __startOneArgErrorHandling @ 004650e7
   crt_runtime_error_banner @ 00468da3
   crt_report_runtime_error @ 00468ddc
