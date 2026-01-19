@@ -109,3 +109,13 @@ windbg-client:
 [windows]
 windbg-tail:
     uv run python scripts/windbg_tail.py
+
+# Frida
+[windows]
+frida-unlock-secrets:
+    frida -n crimsonland.exe -l scripts\\frida\\unlock_secrets.js
+
+# Screenshots
+[windows]
+game-screenshot:
+    nircmd win activate process crimsonland.exe; sleep 1; nircmd savescreenshotwin "screen.png"
