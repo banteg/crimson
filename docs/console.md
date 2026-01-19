@@ -7,8 +7,10 @@ back the tilde/backquote console behavior.
 ## Open / close (runtime)
 
 - The console is toggled in-game with the tilde/backquote key (`~` / `` ` ``).
-- We have not yet mapped the exact hotkey handler in the input code, but the
-  console input path is fully identified (see below).
+- The open flag is `console_open_flag` (`0x0047eec8`); when set, many gameplay
+  update loops early‑out and input is redirected to the console.
+- `console_set_open` (`0x004018b0`) sets the flag and toggles input capture
+  (calls Grim2D vtable `+0x4c` to flush input).
 
 ## Input handling (static)
 
@@ -17,12 +19,21 @@ back the tilde/backquote console behavior.
 - Enter (`0x0d`) sets `console_input_ready` and NUL-terminates the buffer.
 - Backspace (`0x08`) deletes one char.
 - The input buffer is capped at `0x3ff` chars.
+- Navigation/selection keys are handled in the console update loop
+  (`0x00401a40`) via Grim2D key checks (vtable `+0x44` and `+0x48`):
+  - Up/Down (`0xC8` / `0xD0`) browse history.
+  - Left/Right (`0xCB` / `0xCD`) move the caret.
+  - PageUp/PageDown (`0xC9` / `0xD1`) adjust scroll.
+  - Home (`0xC7`) and End (`0xCF`) jump to start/end.
+  - Tab (`0x0F`) triggers autocomplete (cvars first, then commands).
+  - Ctrl (`0x1D` / `0x9D`) modifies some history/scroll actions.
 
 Relevant globals (see `analysis/ghidra/maps/data_map.json`):
 - `console_input_enabled` (`0x0047f4d4`)
 - `console_input_ready` (`0x0047ea58`)
 - `console_input_buffer` (`0x0047e448`) + length (`0x0047ea54`)
 - `console_prompt_string` (`0x004712c0`, prompt format `"> %s"`)
+- `console_height_px` (`0x0047eeb8`)
 
 ## Command / cvar dispatch (static)
 
@@ -41,23 +52,28 @@ The cvar paths emit:
 
 ## Built-in commands (static registration)
 
-`console_init` (`0x00401560`) registers the core commands below. The handlers
-are not fully named yet, but the strings and registration are confirmed:
+`console_init` (`0x00401560`) registers the core commands below and their
+handlers are identifiable in the binary:
 
-- `cmdlist` (`0x00471244`)
-- `vars` (`0x0047123c`)
-- `set` (`0x00471230`)
-- `echo` (`0x00471234`)
-- `quit` (`0x00471228`)
-- `clear` (`0x00471220`)
-- `extendconsole` (`0x00471210`)
-- `minimizeconsole` (`0x00471200`)
-- `exec` (`0x004711f8`)
-
-Additional help strings exist for:
-- `exec <script>`
-- `set <var> <value>`
-- `"%i commands"` / `"%i variables"`
+- `cmdlist` → `console_cmdlist` (`0x00401370`): prints each command name and
+  a summary line (`"%i commands"`).
+- `vars` → `console_vars` (`0x004013c0`): prints each cvar name and a summary
+  line (`"%i variables"`).
+- `set` → `console_cmd_set` (`0x00401510`): expects 2 args (`set <var> <value>`);
+  otherwise prints usage. Uses `console_register_cvar` and prints
+  `"'%s' set to '%s'"`.
+- `echo` → `console_echo` (`0x00401410`): `echo on` / `echo off` toggles
+  `console_echo_enabled`; otherwise prints args back to the console.
+- `quit` → `console_cmd_quit` (`0x00401240`): sets the quit flag (`0x0047ea50`).
+- `clear` → `console_clear_log` (`0x004011a0`): clears the console log list and
+  resets scroll state.
+- `extendconsole` → `console_cmd_extend` (`0x00401340`): sets
+  `console_height_px` to ~480.
+- `minimizeconsole` → `console_cmd_minimize` (`0x00401360`): sets
+  `console_height_px` to 300.
+- `exec` → `console_cmd_exec` (`0x00401250`): loads a script file and feeds each
+  line into `console_exec_line`; prints `Executing '%s'` or a “cannot open”
+  error.
 
 ## Scripts and logs
 
@@ -69,5 +85,5 @@ Additional help strings exist for:
 ## Open questions
 
 - Where is the tilde hotkey check wired (input polling vs. UI state)?
-- What exactly do `extendconsole` and `minimizeconsole` control (height,
-  history window, or draw mode)?
+- Is the open/close toggle implemented via `console_set_open` or a direct write
+  to `console_open_flag`?

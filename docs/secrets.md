@@ -72,8 +72,12 @@ pattern. That logic remains to be found.
   `credits_line_clear_flag`, which walks backward to clear the most recently flagged line. This is
   the explicit misclick penalty.
 - **Static logic (unlock scan)**: after the per-line loop, `credits_screen_update` scans the entire
-  credits line table; if *any* line containing `'o'` is missing flag `0x4`, it bails. If all such
-  lines are flagged, it sets `credits_secret_unlock_flag` and injects the secret lines.
+  credits line table; if *any* line containing `'o'` is missing flag `0x4`, it **skips the rest of the function**,
+  bypassing the Secret button update.
+- **Secret Button Gating**: The `ui_button_update` call for the Secret button is located *after* the
+  unlock scan. Thus, the button is effectively hidden (not updated/interactive) until **ALL** 'o' lines
+  are flagged. This resolves the gating question: the code path to the button is physically unreachable
+  until the puzzle is solved.
 - **Runtime capture (2026-01-19)**: when the last required line is flagged, the unlock flag
   `DAT_004811c4` is set and the secret lines are injected into the credits line table at base index
   `DAT_004811bc = 0x54`. The injected lines (all flags `0x4`) are:
@@ -87,14 +91,10 @@ pattern. That logic remains to be found.
   - "011111001000111"
   - "(4 bits for index) <- OOOPS I meant FIVE!"
   - "(4 bits for index)"
-  This confirms the secret-line injection is gated by the credits line scan; the **Secret** button
-  gating remains unclear, and the actual “Secret Path” transition logic is still unmapped.
+  This confirms the secret-line injection is gated by the credits line scan.
 - **Secret button transition (static)**: the Secret button press sets `game_state_pending = 0x1a`,
   which maps to `credits_secret_alien_zookeeper_update` (AlienZooKeeper minigame). No other
   “Secret Path” branch is visible in the credits screen decompile.
-- **UI gating (static)**: `ui_button_update` for the Secret button runs unconditionally in
-  `credits_screen_update`; there is no static gate tied to `credits_secret_unlock_flag`. If the
-  button is hidden in practice, that gating likely lives elsewhere (UI data or layout).
 
 #### Secret line decode (5-bit indices)
 
@@ -150,20 +150,23 @@ Final decoded message:
   “CyanYellowRedYellow” + “orthogonal projection” hint.
 - **Verified code (minigame)**: the AlienZooKeeper credits secret is a match-3 board implemented in
   `credits_secret_alien_zookeeper_update` (`0x0040f4f0`). The board is a 6x6 int grid at `0x004819ec`
-  (values `0..4`, `-1` empty, `-3` clearing). Swapping tiles calls
-  `credits_secret_match3_find` (`0x0040f400`), which returns the first 3-in-a-row match it finds:
-  `out_idx` is the **start index** (row-major; leftmost/topmost), and `out_dir` is **orientation**
-  (`0 = vertical`, `1 = horizontal`). On a match, the cell is marked `-3`, match masks are written,
-  score increments, and the timer adds 2000 ms.
-- **Implementation note**: only the **start cell** is marked `-3` on a match, and no clear/fall logic
-  is visible in the decompiled update loop (the refill path only checks for `-1`). This supports the
-  on-screen text that the puzzle is unfinished, but should be confirmed in runtime.
-- **Color mapping (render tint)**: based on the draw path (assuming RGBA), tile values map to:
-  `0 = (1.0, 0.5, 0.5)` red/pink, `1 = (0.5, 0.5, 1.0)` blue, `2 = (1.0, 0.5, 1.0)` magenta,
-  `3 = (0.5, 1.0, 1.0)` cyan, `4 = (1.0, 1.0, 0.5)` yellow. This likely maps the hint
-  **CyanYellowRedYellow** to values `[3,4,0,4]` (inference; needs runtime confirmation).
-- **Unlock logic**: the hint string is still only printed in the startup secret block; no map/mission
-  unlock branch located yet.
+  (values `0..4`, `-1` empty, `-3` clearing).
+- **Match Logic**: Swapping tiles calls `credits_secret_match3_find` (`0x0040f400`), which returns
+  the first 3-in-a-row match it finds. The logic is standard match-3 (horizontal and vertical scans).
+- **No Unlock Found**: The update loop handles scoring, timer (adds 2000ms on match), and "Game Over".
+  **No code path** was found that sets a global unlock flag (like `weapon_table` modification) or
+  writes to the save file upon reaching a score or matching a specific pattern. The minigame appears
+  to be self-contained.
+- **Color mapping (render tint)**: Confirmed via `credits_secret_alien_zookeeper_update` draw calls:
+  - `0 = (1.0, 0.5, 0.5)` Red
+  - `1 = (0.5, 0.5, 1.0)` Blue
+  - `2 = (1.0, 0.5, 1.0)` Magenta
+  - `3 = (0.5, 1.0, 1.0)` Cyan
+  - `4 = (1.0, 1.0, 0.5)` Yellow
+  This maps the hint **CyanYellowRedYellow** to values `[3,4,0,4]`.
+- **Unlock logic**: The hint string remains the only link to any external secret. The minigame itself
+  may just be the "something more" mentioned on screen, or the "Orthogonal projection" hint requires
+  interpreting the pattern `3,4,0,4` outside the game code (e.g. as part of the riddle).
 
 ### “Brave little haxx0r” / “not really meant to see”
 
@@ -190,7 +193,11 @@ All of the hint strings in the cluster are printed from a single guarded block i
 
 ## Open questions
 
-- Which functions gate the Secret Path transition and how are credit clicks tracked?
+- **Resolved**: The Secret Path transition is gated by `credits_screen_update` skipping the Secret button update until all 'o' lines are flagged.
+- **Unresolved**: What does "Dead Center Inside The Triangle Of The First Blood Sacrifice Yourself For Firepower" actually mean in gameplay terms?
+  - Is "First Blood" a specific event/monster?
+  - Is "Triangle" a formation or location?
+  - Does "Sacrifice Yourself" require dying in a specific spot?
 - Are secret weapon unlocks stored in `game.cfg`, or derived from other state (weapon table flags, globals)?
 - Is the startup secret-hint block tied to a “redistribution build” check or another sentinel?
 - Are any of these flags version-specific (v1.9.93 vs earlier)?

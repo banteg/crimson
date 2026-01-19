@@ -22,10 +22,73 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004011a0",
+    "name": "console_clear_log",
+    "signature": "void console_clear_log(void)",
+    "comment": "clears console log history and resets scroll state (clear command handler)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004011f0",
     "name": "console_log_node_free",
     "signature": "void * console_log_node_free(void *node, char free_self)",
     "comment": "frees a console log node (text + next chain) and optionally frees the node"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00401240",
+    "name": "console_cmd_quit",
+    "signature": "void console_cmd_quit(void)",
+    "comment": "sets the quit/exit flag (quit command handler)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00401250",
+    "name": "console_cmd_exec",
+    "signature": "void console_cmd_exec(void)",
+    "comment": "executes a script file via console_exec_line (exec command handler)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00401340",
+    "name": "console_cmd_extend",
+    "signature": "void console_cmd_extend(void)",
+    "comment": "extends console height (extendconsole command handler)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00401360",
+    "name": "console_cmd_minimize",
+    "signature": "void console_cmd_minimize(void)",
+    "comment": "minimizes console height (minimizeconsole command handler)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00401370",
+    "name": "console_cmdlist",
+    "signature": "void console_cmdlist(void)",
+    "comment": "prints registered command names and a count (cmdlist command handler)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004013c0",
+    "name": "console_vars",
+    "signature": "void console_vars(void)",
+    "comment": "prints registered cvar names and a count (vars command handler)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00401410",
+    "name": "console_echo",
+    "signature": "void console_echo(void)",
+    "comment": "toggles echo on/off or prints args back into the console (echo command handler)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00401510",
+    "name": "console_cmd_set",
+    "signature": "void console_cmd_set(void)",
+    "comment": "sets a cvar from tokens (set command handler)"
   },
   {
     "program": "crimsonland.exe",
@@ -45,6 +108,27 @@
     "address": "0x00401870",
     "name": "console_printf",
     "comment": "formats then pushes line"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004018b0",
+    "name": "console_set_open",
+    "signature": "void console_set_open(void *console_state, char open)",
+    "comment": "sets console open flag and toggles input capture"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004018d0",
+    "name": "console_history_apply",
+    "signature": "void console_history_apply(int console_state)",
+    "comment": "loads a history entry into the input buffer (used by Up/Down navigation)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00401a40",
+    "name": "console_update",
+    "signature": "void console_update(int console_state)",
+    "comment": "console update loop: input polling, history, autocomplete, and key handling"
   },
   {
     "program": "crimsonland.exe",

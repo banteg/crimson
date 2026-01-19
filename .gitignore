@@ -10,3 +10,6 @@ zig-cache/
 zig-out/
 /tools/zig/
 .DS_Store
+
+.gemini/
+gha-creds-*.json
