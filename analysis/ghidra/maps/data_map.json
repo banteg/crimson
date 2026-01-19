@@ -183,42 +183,6 @@
     },
     {
       "program": "crimsonland.exe",
-      "address": "0x0047eea0",
-      "name": "console_log_queue",
-      "comment": "Console log/list head used by console_printf."
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x0047eea4",
-      "name": "console_command_list_head",
-      "comment": "Console command list head (console_log_queue + 0x04)."
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x0047eea8",
-      "name": "console_log_head",
-      "comment": "Console log list head (console_log_queue + 0x08)."
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x0047eeac",
-      "name": "console_echo_enabled",
-      "comment": "Console echo flag (console_log_queue + 0x0c)."
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x0047eeb8",
-      "name": "console_height_px",
-      "comment": "Console UI height in pixels (default 300; extendconsole sets 480)."
-    },
-    {
-      "program": "crimsonland.exe",
-      "address": "0x0047eec8",
-      "name": "console_open_flag",
-      "comment": "Console open flag (console_log_queue + 0x28). When set, gameplay updates are paused."
-    },
-    {
-      "program": "crimsonland.exe",
       "address": "0x004755e0",
       "name": "effect_uv_step_2",
       "comment": "Effect UV step for 2x2 atlas (size code 0x80)"
@@ -282,6 +246,42 @@
       "address": "0x0047ea58",
       "name": "console_input_ready",
       "comment": "Console input ready flag (set when Enter pressed)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0047eea0",
+      "name": "console_log_queue",
+      "comment": "Console log/list head used by console_printf."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0047eea4",
+      "name": "console_command_list_head",
+      "comment": "Console command list head (console_log_queue + 0x04)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0047eea8",
+      "name": "console_log_head",
+      "comment": "Console log list head (console_log_queue + 0x08)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0047eeac",
+      "name": "console_echo_enabled",
+      "comment": "Console echo flag (console_log_queue + 0x0c)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0047eeb8",
+      "name": "console_height_px",
+      "comment": "Console UI height in pixels (default 300; extendconsole sets 480)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0047eec8",
+      "name": "console_open_flag",
+      "comment": "Console open flag (console_log_queue + 0x28). When set, gameplay updates are paused."
     },
     {
       "program": "crimsonland.exe",
