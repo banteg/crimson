@@ -6,6 +6,8 @@ game_dir := "game_bins/crimsonland/" + version
 assets_dir := "artifacts/assets"
 atlas_usage := "artifacts/atlas/atlas_usage.json"
 atlas_frames := "artifacts/atlas/frames"
+share_dir := "~/utm/win11/share"
+frida_share_dir := "artifacts/frida/share"
 
 default:
     @just --list
@@ -119,6 +121,14 @@ frida-unlock-secrets:
 [windows]
 frida-quest-spanking-count:
     frida -n crimsonland.exe -l scripts\\frida\\quest_spanking_count.js
+
+[unix]
+frida-copy-share:
+    mkdir -p {{frida_share_dir}}
+    for f in {{share_dir}}/*.jsonl; do \
+        [ -e "$f" ] || continue; \
+        cp -v "$f" {{frida_share_dir}}/; \
+    done
 
 # Screenshots
 [windows]
