@@ -46,7 +46,7 @@
     "address": "00401170",
     "signature": "undefined FUN_00401170(void)",
     "external": false,
-    "calls": ["FUN_00401560"]
+    "calls": ["console_init"]
   },
   {
     "name": "FUN_00401180",
@@ -63,9 +63,9 @@
     "calls": ["console_log_node_free", "crt_free"]
   },
   {
-    "name": "FUN_00401560",
+    "name": "console_init",
     "address": "00401560",
-    "signature": "int * FUN_00401560(int * param_1)",
+    "signature": "int * console_init(int * console_state)",
     "external": false,
     "calls": ["console_register_command", "console_register_cvar", "operator_new", "strdup_malloc"]
   },

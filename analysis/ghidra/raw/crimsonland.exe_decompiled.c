@@ -111,7 +111,7 @@ undefined4 FUN_00401150(void)
 void FUN_00401170(void)
 
 {
-  FUN_00401560(&console_log_queue);
+  console_init(&console_log_queue);
   return;
 }
 
@@ -153,22 +153,23 @@ void * __thiscall console_log_node_free(void *this,void *node,char free_self)
 
 
 
-/* FUN_00401560 @ 00401560 */
+/* console_init @ 00401560 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* initializes the console state, registers core commands/cvars, and seeds prompt/version strings */
 
-int * __fastcall FUN_00401560(int *param_1)
+int * __fastcall console_init(int *console_state)
 
 {
   undefined4 *puVar1;
   char *pcVar2;
   char *unaff_EDI;
   
-  *(undefined1 *)(param_1 + 3) = 1;
-  param_1[6] = 300;
-  param_1[7] = -0x3c6a0000;
-  param_1[9] = 0;
-  param_1[2] = 0;
+  *(undefined1 *)(console_state + 3) = 1;
+  console_state[6] = 300;
+  console_state[7] = -0x3c6a0000;
+  console_state[9] = 0;
+  console_state[2] = 0;
   puVar1 = operator_new(0x24);
   if (puVar1 == (undefined4 *)0x0) {
     puVar1 = (undefined4 *)0x0;
@@ -185,26 +186,27 @@ int * __fastcall FUN_00401560(int *param_1)
     puVar1[4] = 0;
     puVar1[5] = 0;
   }
-  *param_1 = (int)puVar1;
+  *console_state = (int)puVar1;
   puVar1[3] = 0x3f800000;
   pcVar2 = strdup_malloc(&DAT_00471260);
-  *(char **)(*param_1 + 0x10) = pcVar2;
-  *(undefined4 *)(*param_1 + 0x14) = 1;
-  DAT_0047f4d0 = console_register_cvar(param_1,s_con_monoFont_0047124c,&DAT_0047125c,unaff_EDI);
+  *(char **)(*console_state + 0x10) = pcVar2;
+  *(undefined4 *)(*console_state + 0x14) = 1;
+  DAT_0047f4d0 = console_register_cvar
+                           (console_state,s_con_monoFont_0047124c,&DAT_0047125c,unaff_EDI);
   DAT_0047eaa0 = 0;
   _DAT_0047eaa4 = 0;
   _DAT_0047eaa8 = 0;
   _DAT_0047eaac = 0;
   DAT_0047f4cc = 0;
-  console_register_command(param_1,(uint *)s_cmdlist_00471244,&LAB_00401370);
-  console_register_command(param_1,(uint *)&DAT_0047123c,&LAB_004013c0);
-  console_register_command(param_1,(uint *)&DAT_00471234,&LAB_00401410);
-  console_register_command(param_1,(uint *)&DAT_00471230,&LAB_00401510);
-  console_register_command(param_1,(uint *)&DAT_00471228,&LAB_00401240);
-  console_register_command(param_1,(uint *)s_clear_00471220,&LAB_004011a0);
-  console_register_command(param_1,(uint *)s_extendconsole_00471210,&LAB_00401340);
-  console_register_command(param_1,(uint *)s_minimizeconsole_00471200,&LAB_00401360);
-  console_register_command(param_1,(uint *)&DAT_004711f8,&LAB_00401250);
+  console_register_command(console_state,(uint *)console_cmd_cmdlist,&LAB_00401370);
+  console_register_command(console_state,(uint *)&console_cmd_vars,&LAB_004013c0);
+  console_register_command(console_state,(uint *)&console_cmd_echo,&LAB_00401410);
+  console_register_command(console_state,(uint *)&console_cmd_set,&LAB_00401510);
+  console_register_command(console_state,(uint *)&console_cmd_quit,&LAB_00401240);
+  console_register_command(console_state,(uint *)console_cmd_clear,&LAB_004011a0);
+  console_register_command(console_state,(uint *)console_cmd_extend,&LAB_00401340);
+  console_register_command(console_state,(uint *)console_cmd_minimize,&LAB_00401360);
+  console_register_command(console_state,(uint *)&console_cmd_exec,&LAB_00401250);
   puVar1 = operator_new(8);
   if (puVar1 == (undefined4 *)0x0) {
     puVar1 = (undefined4 *)0x0;
@@ -213,11 +215,11 @@ int * __fastcall FUN_00401560(int *param_1)
     puVar1[1] = 0;
     *puVar1 = 0;
   }
-  param_1[4] = (int)puVar1;
+  console_state[4] = (int)puVar1;
   pcVar2 = strdup_malloc(&DAT_0047f4d8);
-  *(char **)param_1[4] = pcVar2;
-  param_1[5] = 0;
-  return param_1;
+  *(char **)console_state[4] = pcVar2;
+  console_state[5] = 0;
+  return console_state;
 }
 
 
@@ -6989,7 +6991,8 @@ void __cdecl credits_line_set(int index,char *text,int flags)
 
 /* credits_line_clear_flag @ 0040d040 */
 
-/* walks backward to find a line with flag 0x4 and clears it (plays sfx) */
+/* walks backward to find the last line with flag 0x4 and clears it (penalty for wrong click; plays
+   sfx) */
 
 void __cdecl credits_line_clear_flag(int index)
 
@@ -7160,8 +7163,9 @@ void credits_build_lines(void)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* credits screen update/render loop; draws labels and handles clicks; sets DAT_004811c4 and injects
-   secret lines at base index DAT_004811bc when all required lines are flagged */
+/* credits screen update/render loop; clicks flag lines containing 'o' (lowercase) and misclicks
+   clear the last flagged line; when all 'o' lines are flagged, sets DAT_004811c4 and injects secret
+   lines at DAT_004811bc; Secret button sets game_state_pending=0x1a (AlienZooKeeper) */
 
 void credits_screen_update(void)
 
@@ -7196,9 +7200,9 @@ void credits_screen_update(void)
     DAT_004811b4 = 0;
     _DAT_004811b0 = 0x3f800000;
     _DAT_004811ac = 0;
-    _DAT_004811a0 = (undefined *)0x0;
+    _credits_back_button = (undefined *)0x0;
     DAT_004811a4 = 0;
-    DAT_004811a5 = '\0';
+    credits_back_button_clicked = '\0';
     _DAT_004811a8 = 0;
     crt_atexit(&DAT_0040df60);
   }
@@ -7209,14 +7213,14 @@ void credits_screen_update(void)
     DAT_0048119c = 0;
     _DAT_00481198 = 0x3f800000;
     _DAT_00481194 = 0;
-    _DAT_00481188 = (char *)0x0;
+    _credits_secret_button = (char *)0x0;
     DAT_0048118c = 0;
-    DAT_0048118d = '\0';
+    credits_secret_button_clicked = '\0';
     _DAT_00481190 = 0;
     crt_atexit(&DAT_0040df50);
   }
   fStack_4 = _DAT_00489dfc + DAT_00489e20;
-  _DAT_00481188 = menu_label_secret;
+  _credits_secret_button = menu_label_secret;
   fVar2 = fStack_4 + 40.0;
   fStack_c = fVar2 + 10.0;
   fStack_10 = ((DAT_00489e1c + _DAT_00489df8 + 300.0 + _DAT_00489de8 + 48.0) - 110.0) - 40.0;
@@ -7322,9 +7326,9 @@ LAB_0040dcc6:
       } while (iVar6 < DAT_00481180 - DAT_00481184);
     }
     fStack_10 = fStack_10 + 100.0;
-    _DAT_004811a0 = &DAT_00472e80;
+    _credits_back_button = &DAT_00472e80;
     fStack_c = fStack_c + 250.0;
-    ui_button_update(&fStack_10,(int *)&DAT_004811a0);
+    ui_button_update(&fStack_10,(int *)&credits_back_button);
     puVar8 = &credits_line_table_ptrs;
     do {
       if ((((char *)*puVar8 != (char *)0x0) &&
@@ -7371,15 +7375,15 @@ LAB_0040dcc6:
     }
     fStack_8 = fStack_10 + 94.0;
     fStack_4 = fStack_c;
-    ui_button_update(&fStack_8,(int *)&DAT_00481188);
+    ui_button_update(&fStack_8,(int *)&credits_secret_button);
   }
 LAB_0040d970:
-  if (DAT_004811a5 != '\0') {
+  if (credits_back_button_clicked != '\0') {
     ui_transition_direction = 0;
     game_state_pending = 4;
     FUN_00446140();
   }
-  if (DAT_0048118d != '\0') {
+  if (credits_secret_button_clicked != '\0') {
     ui_transition_direction = 0;
     game_state_pending = 0x1a;
     FUN_00446140();
