@@ -87,8 +87,113 @@ Spawn ids are numeric and still need creature name mapping.
   - Phase 2: spawn id `0x0d` pairs at y = 256 and y = 768, times `8000..11200` step `800`,
     x = `256 + 0.2 * local_4`.
 
+## Tier 1 spawn scripts (1.x)
+
+Conventions:
+- Entries use the quest spawn table layout: `x`, `y`, `heading`, `spawn_id`, `trigger_ms`, `count`.
+- If `heading` is not listed, it is `0`.
+- `width`/`height` refer to `terrain_texture_width` / `terrain_texture_height`.
+
+### 1.1 Land Hostile (`quest_build_land_hostile`, spawn id 38)
+
+- Entry 0: `x = width / 2`, `y = height + 64`, `t = 500`, `count = 1`.
+- Entry 1: `x = -64`, `y = 1088`, `t = 2500`, `count = 2`.
+- Entry 2: `x = -64`, `y = -64`, `t = 6500`, `count = 3`.
+- Entry 3: `x = 1088`, `y = -64`, `t = 11500`, `count = 4`.
+
+### 1.2 Minor Alien Breach (`quest_build_minor_alien_breach`, spawn ids 38/41)
+
+- Entry 0: `x = 256`, `y = 256`, `t = 1000`, `count = 2` (id 38).
+- Entry 1: `x = 256`, `y = 128`, `t = 1700`, `count = 2` (id 38).
+- Loop: for `i = 2..17`, `t = 3600 * (i - 2)`:
+  - `x = width + 64`, `y = height / 2`, id 38, `count = 1`.
+  - if `i >= 7`, add `x = width + 64`, `y = height / 2 - 256`, id 38, `count = 1`.
+  - if `i >= 11`, add `x = -64`, `y = height / 2 + 256`, id 38, `count = 1`.
+- Special: at `i = 13` (`t = 39600`) add `x = width / 2`, `y = height + 64`, id 41, `count = 1`.
+
+### 1.3 Target Practice (`quest_build_target_practice`, spawn id 54)
+
+- 30 spawns around `(512, 512)` at random polar positions.
+- Radius: `32 * (2..9)` (64..288), random angle per spawn.
+- `heading = atan2(y - 512, x - 512) - pi/2`.
+- Trigger schedule: starts at `2000ms`; step decreases by `50ms` each spawn with a
+  floor of `1100ms`. Loop ends when the step would drop to `500ms`.
+
+### 1.4 Frontline Assault (`quest_build_frontline_assault`, spawn ids 38/26/41)
+
+- Main loop `i = 2..21` (20 waves).
+- Base spawn: `x = width / 2`, `y = 1088`, `count = 1`, `t = i * step - 5000`.
+  - id 38 for `i < 5` and `i >= 10`.
+  - id 26 for `i = 5..9`.
+- `step` starts at `2500ms` and decreases by `50ms` each wave, floored at `1800ms`.
+- Extra spawns:
+  - if `i >= 5`: `x = -64`, `y = -64`, id 38, same `t`, `count = 1`.
+  - if `i >= 11`: `x = 1088`, `y = -64`, id 38, same `t`, `count = 1`.
+  - if `i == 10`: add `x = 1088`, `y = 512` and `x = -64`, `y = 512`, id 41,
+    `t = (step * 5 - 2500) * 2` (same as base `t` for `i = 10`), `count = 1` each.
+
+### 1.5 Alien Dens (`quest_build_alien_dens`, spawn id 8)
+
+- Entry 0: `x = 256`, `y = 256`, `t = 1500`, `count = 1`.
+- Entry 1: `x = 768`, `y = 768`, `t = 1500`, `count = 1`.
+- Entry 2: `x = 512`, `y = 512`, `t = 23500`, `count = player_count`.
+- Entry 3: `x = 256`, `y = 768`, `t = 38500`, `count = 1`.
+- Entry 4: `x = 768`, `y = 256`, `t = 38500`, `count = 1`.
+
+### 1.6 The Random Factor (`quest_build_the_random_factor`, spawn ids 29/41)
+
+- Repeating pair every `10000ms` from `t = 1500` up to `< 101500`:
+  - `x = width + 64`, `y = height / 2`, id 29, `count = player_count * 2 + 4`.
+  - `x = -64`, `y = height / 2`, id 29, `t + 200`, `count = 6`.
+- Randomly (`rand % 5 == 3`), adds a center-top wave:
+  - `x = width / 2`, `y = 1088`, id 41, `t`, `count = player_count`.
+
+### 1.7 Spider Wave Syndrome (`quest_build_spider_wave_syndrome`, spawn id 64)
+
+- Repeated left-side spawns: `x = -64`, `y = height / 2`.
+- Times `1500..100500` step `5500`.
+- `count = player_count * 2 + 6`.
+
+### 1.8 Alien Squads (`quest_build_alien_squads`, spawn ids 18/38)
+
+- Initial spawns (id 18, `count = 1`):
+  - `(-256, 256)` at `1500`.
+  - `(-256, 768)` at `2500`.
+  - `(768, -256)` at `5500`.
+  - `(768, 1280)` at `8500`.
+  - `(1280, 1280)` at `14500`.
+  - `(1280, 768)` at `18500`.
+  - `(-256, 256)` at `25000`.
+  - `(-256, 768)` at `30000`.
+- Loop (id 38, `count = 1`), starting at `t = 36200` and stepping `1800` until `< 83000`:
+  - `(-64, -64)` at `t - 400`.
+  - `(1088, 1088)` at `t`.
+
+### 1.9 Nesting Grounds (`quest_build_nesting_grounds`, spawn ids 29/9/8/30/31)
+
+- Entry 0: `x = width / 2`, `y = height + 64`, id 29, `t = 1500`, `count = player_count * 2 + 6`.
+- Entry 1: `(256, 256)`, id 9, `t = 8000`, `count = 1`.
+- Entry 2: `(512, 512)`, id 9, `t = 13000`, `count = 1`.
+- Entry 3: `(768, 768)`, id 9, `t = 18000`, `count = 1`.
+- Entry 4: `x = width / 2`, `y = height + 64`, id 29, `t = 25000`, `count = player_count * 2 + 6`.
+- Entry 5: `x = width / 2`, `y = height + 64`, id 29, `t = 39000`, `count = player_count * 3 + 3`.
+- Entry 6: `(384, 512)`, id 9, `t = 41100`, `count = 1`.
+- Entry 7: `(640, 512)`, id 9, `t = 42100`, `count = 1`.
+- Entry 8: `(512, 640)`, id 9, `t = 43100`, `count = 1`.
+- Entry 9: `(512, 512)`, id 8, `t = 44100`, `count = 1`.
+- Entry 10: `x = width / 2`, `y = height + 64`, id 30, `t = 50000`, `count = player_count * 2 + 5`.
+- Entry 11: `x = width / 2`, `y = height + 64`, id 31, `t = 55000`, `count = player_count * 2 + 2`.
+
+### 1.10 8-legged Terror (`quest_build_8_legged_terror`, spawn ids 58/61)
+
+- Entry 0: `x = width - 256`, `y = width / 2`, id 58, `t = 1000`, `count = 1`.
+- Loop: `t = 6000.. < 36800` step `2200` (14 waves), id 61:
+  - `(-25, -25)`, `count = player_count`.
+  - `(1049, -25)`, `count = 1`.
+  - `(-25, 1049)`, `count = player_count`.
+  - `(1049, 1049)`, `count = 1`.
+
 ## Open questions
 
-- Split each `quest_build_*` entry into a dedicated Ghidra function and document its
-  spawn table (many are still only named by entrypoint address).
-- Map spawn ids (`0x0d`, `0x1d`, `0x2e`, `0x40`, `0x41`, `0x29`, `0x0c`) to creature types.
+- Map spawn ids to creature types (we still only have numeric ids for quest spawns).
+- Confirm heading semantics for Target Practice (current heading is derived from the spawn angle).
