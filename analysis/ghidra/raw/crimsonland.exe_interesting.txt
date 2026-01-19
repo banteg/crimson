@@ -16,6 +16,7 @@ Interesting Functions and Patterns
 [KEY related]
   input_key_name @ 004036d0
   ui_render_keybind_help @ 00405160
+  console_hotkey_update @ 0040c1c0
   input_any_key_pressed @ 00446000
 
 [TOKEN related]
@@ -77,12 +78,19 @@ Interesting Functions and Patterns
   crt_write_nolock @ 004656b7
 
 [EXEC related]
+  console_cmd_exec @ 00401250
   console_exec_line @ 00401940
 
 [SYSTEM related]
   sfx_system_init @ 0043cf90
 
 [CMD related]
+  console_cmd_quit @ 00401240
+  console_cmd_exec @ 00401250
+  console_cmd_extend @ 00401340
+  console_cmd_minimize @ 00401360
+  console_cmdlist @ 00401370
+  console_cmd_set @ 00401510
   crt_parse_cmdline @ 00468abd
 
 [MALLOC related]
@@ -120,6 +128,7 @@ Interesting Functions and Patterns
   crt_sprintf @ 004616e7
 
 [LOG related]
+  console_clear_log @ 004011a0
   console_log_node_free @ 004011f0
   console_flush_log @ 00402860
   tutorial_prompt_dialog @ 00408530

@@ -56,11 +56,74 @@
     "calls": ["crt_atexit"]
   },
   {
+    "name": "console_clear_log",
+    "address": "004011a0",
+    "signature": "void console_clear_log(void)",
+    "external": false,
+    "calls": ["console_log_node_free", "crt_free"]
+  },
+  {
     "name": "console_log_node_free",
     "address": "004011f0",
     "signature": "void * console_log_node_free(void * this, void * node, char free_self)",
     "external": false,
     "calls": ["console_log_node_free", "crt_free"]
+  },
+  {
+    "name": "console_cmd_quit",
+    "address": "00401240",
+    "signature": "void console_cmd_quit(void)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "console_cmd_exec",
+    "address": "00401250",
+    "signature": "void console_cmd_exec(void)",
+    "external": false,
+    "calls": ["FUN_00460fac", "_strchr", "console_exec_line", "console_printf", "crt_fclose", "crt_fopen"]
+  },
+  {
+    "name": "console_cmd_extend",
+    "address": "00401340",
+    "signature": "void console_cmd_extend(void)",
+    "external": false,
+    "calls": ["__ftol"]
+  },
+  {
+    "name": "console_cmd_minimize",
+    "address": "00401360",
+    "signature": "void console_cmd_minimize(void)",
+    "external": false,
+    "calls": []
+  },
+  {
+    "name": "console_cmdlist",
+    "address": "00401370",
+    "signature": "void console_cmdlist(void)",
+    "external": false,
+    "calls": ["console_printf"]
+  },
+  {
+    "name": "console_vars",
+    "address": "004013c0",
+    "signature": "void console_vars(void)",
+    "external": false,
+    "calls": ["console_printf"]
+  },
+  {
+    "name": "console_echo",
+    "address": "00401410",
+    "signature": "void console_echo(void)",
+    "external": false,
+    "calls": ["FUN_00401120", "FUN_00401150", "console_printf"]
+  },
+  {
+    "name": "console_cmd_set",
+    "address": "00401510",
+    "signature": "void console_cmd_set(void)",
+    "external": false,
+    "calls": ["console_printf", "console_register_cvar"]
   },
   {
     "name": "console_init",
@@ -474,6 +537,13 @@
     "signature": "void demo_purchase_screen_update(void)",
     "external": false,
     "calls": ["ShellExecuteA", "__ftol", "config_load_presets", "crt_atexit", "demo_mode_start", "game_is_full_version", "input_primary_just_pressed", "sfx_mute_all", "sfx_play_exclusive", "ui_button_update", "ui_cursor_render", "ui_draw_textured_quad", "ui_elements_update_and_render"]
+  },
+  {
+    "name": "console_hotkey_update",
+    "address": "0040c1c0",
+    "signature": "void console_hotkey_update(void)",
+    "external": false,
+    "calls": ["FUN_00401dd0", "FUN_00402d50", "FUN_00406350", "FUN_00406af0", "FUN_0040b630", "FUN_0041df50", "Sleep", "__ftol", "audio_resume_all", "audio_suspend_all", "audio_update", "config_sync_from_grim", "console_set_open", "console_update", "crt_fclose", "crt_fopen", "crt_rand", "crt_sprintf", "demo_mode_start", "demo_purchase_screen_update"]
   },
   {
     "name": "credits_line_set",

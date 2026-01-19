@@ -128,6 +128,38 @@ void FUN_00401180(void)
 
 
 
+/* console_clear_log @ 004011a0 */
+
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* clears console log history and resets scroll state (clear command handler) */
+
+void console_clear_log(void)
+
+{
+  undefined4 *ptr;
+  char unaff_DI;
+  
+  ptr = console_log_head;
+  if (console_log_head != (undefined4 *)0x0) {
+    if ((void *)*console_log_head != (void *)0x0) {
+      crt_free((void *)*console_log_head);
+    }
+    *ptr = 0;
+    if ((void *)ptr[1] != (void *)0x0) {
+      console_log_node_free((void *)ptr[1],(void *)0x1,unaff_DI);
+    }
+    ptr[1] = 0;
+    crt_free(ptr);
+  }
+  console_log_head = (undefined4 *)0x0;
+  _DAT_0047eec0 = 0;
+  _DAT_0047eec4 = 0;
+  return;
+}
+
+
+
 /* console_log_node_free @ 004011f0 */
 
 /* frees a console log node (text + next chain) and optionally frees the node */
@@ -149,6 +181,236 @@ void * __thiscall console_log_node_free(void *this,void *node,char free_self)
     crt_free(this);
   }
   return this;
+}
+
+
+
+/* console_cmd_quit @ 00401240 */
+
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* sets the quit/exit flag (quit command handler) */
+
+void console_cmd_quit(void)
+
+{
+  DAT_0047ea50 = 1;
+  return;
+}
+
+
+
+/* console_cmd_exec @ 00401250 */
+
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* executes a script file via console_exec_line (exec command handler) */
+
+void console_cmd_exec(void)
+
+{
+  FILE *fp;
+  char *pcVar1;
+  char *unaff_ESI;
+  
+  if (DAT_0047f4cc != 2) {
+    console_printf(&console_log_queue,(byte *)s_exec_<script>_0047118c);
+    return;
+  }
+  fp = crt_fopen(DAT_0047ea64,&DAT_00471160);
+  if (fp != (FILE *)0x0) {
+    console_printf(&console_log_queue,(byte *)s_Executing___s__00471164);
+    pcVar1 = FUN_00460fac(&DAT_0047e848,0x1ff,&fp->_ptr);
+    while (pcVar1 != (char *)0x0) {
+      pcVar1 = _strchr(&DAT_0047e848,10);
+      if (pcVar1 != (char *)0x0) {
+        *pcVar1 = '\0';
+      }
+      DAT_0047ea47 = 0;
+      if ((((DAT_0047e848 != '/') && (DAT_0047e849 != '/')) && (DAT_0047e848 != '\n')) &&
+         ((DAT_0047e848 != '\0' && (DAT_0047e848 != '#')))) {
+        console_exec_line(&console_log_queue,&DAT_0047e848,unaff_ESI);
+      }
+      pcVar1 = FUN_00460fac(&DAT_0047e848,0x1ff,&fp->_ptr);
+    }
+    crt_fclose(fp);
+    return;
+  }
+  console_printf(&console_log_queue,(byte *)s_Cannot_open_file___s__00471174);
+  return;
+}
+
+
+
+/* console_cmd_extend @ 00401340 */
+
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* extends console height (extendconsole command handler) */
+
+void console_cmd_extend(void)
+
+{
+  longlong lVar1;
+  
+  lVar1 = __ftol();
+  _console_height_px = (int)lVar1;
+  return;
+}
+
+
+
+/* console_cmd_minimize @ 00401360 */
+
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* minimizes console height (minimizeconsole command handler) */
+
+void console_cmd_minimize(void)
+
+{
+  _console_height_px = 300;
+  return;
+}
+
+
+
+/* console_cmdlist @ 00401370 */
+
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* prints registered command names and a count (cmdlist command handler) */
+
+void console_cmdlist(void)
+
+{
+  int iVar1;
+  
+  for (iVar1 = console_command_list_head; iVar1 != 0; iVar1 = *(int *)(iVar1 + 4)) {
+    console_printf(&console_log_queue,&DAT_004711ac);
+  }
+  console_printf(&console_log_queue,(byte *)s__i_commands_0047119c);
+  return;
+}
+
+
+
+/* console_vars @ 004013c0 */
+
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* prints registered cvar names and a count (vars command handler) */
+
+void console_vars(void)
+
+{
+  int iVar1;
+  
+  for (iVar1 = console_log_queue; iVar1 != 0; iVar1 = *(int *)(iVar1 + 4)) {
+    console_printf(&console_log_queue,&DAT_004711ac);
+  }
+  console_printf(&console_log_queue,(byte *)s__i_variables_004711b0);
+  return;
+}
+
+
+
+/* console_echo @ 00401410 */
+
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* toggles echo on/off or prints args back into the console (echo command handler) */
+
+void console_echo(void)
+
+{
+  byte bVar1;
+  int iVar2;
+  byte *pbVar3;
+  byte *pbVar4;
+  int iVar5;
+  bool bVar6;
+  
+  iVar2 = FUN_00401150();
+  if (iVar2 == 2) {
+    pbVar3 = FUN_00401120(1);
+    pbVar4 = &DAT_004711cc;
+    do {
+      bVar1 = *pbVar4;
+      bVar6 = bVar1 < *pbVar3;
+      if (bVar1 != *pbVar3) {
+LAB_00401455:
+        iVar2 = (1 - (uint)bVar6) - (uint)(bVar6 != 0);
+        goto LAB_0040145a;
+      }
+      if (bVar1 == 0) break;
+      bVar1 = pbVar4[1];
+      bVar6 = bVar1 < pbVar3[1];
+      if (bVar1 != pbVar3[1]) goto LAB_00401455;
+      pbVar4 = pbVar4 + 2;
+      pbVar3 = pbVar3 + 2;
+    } while (bVar1 != 0);
+    iVar2 = 0;
+LAB_0040145a:
+    if (iVar2 == 0) {
+      console_echo_enabled = 0;
+      return;
+    }
+  }
+  iVar2 = FUN_00401150();
+  if (iVar2 == 2) {
+    pbVar3 = FUN_00401120(1);
+    pbVar4 = &DAT_004711c8;
+    do {
+      bVar1 = *pbVar4;
+      bVar6 = bVar1 < *pbVar3;
+      if (bVar1 != *pbVar3) {
+LAB_004014a9:
+        iVar2 = (1 - (uint)bVar6) - (uint)(bVar6 != 0);
+        goto LAB_004014ae;
+      }
+      if (bVar1 == 0) break;
+      bVar1 = pbVar4[1];
+      bVar6 = bVar1 < pbVar3[1];
+      if (bVar1 != pbVar3[1]) goto LAB_004014a9;
+      pbVar4 = pbVar4 + 2;
+      pbVar3 = pbVar3 + 2;
+    } while (bVar1 != 0);
+    iVar2 = 0;
+LAB_004014ae:
+    if (iVar2 == 0) {
+      console_echo_enabled = 1;
+      return;
+    }
+  }
+  iVar5 = 1;
+  iVar2 = FUN_00401150();
+  if (1 < iVar2) {
+    do {
+      FUN_00401120(iVar5);
+      console_printf(&console_log_queue,&DAT_004711c4);
+      iVar5 = iVar5 + 1;
+      iVar2 = FUN_00401150();
+    } while (iVar5 < iVar2);
+  }
+  console_printf(&console_log_queue,&DAT_004711c0);
+  return;
+}
+
+
+
+/* console_cmd_set @ 00401510 */
+
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* sets a cvar from tokens (set command handler) */
+
+void console_cmd_set(void)
+
+{
+  char *unaff_retaddr;
+  
+  if (DAT_0047f4cc != 3) {
+    console_printf(&console_log_queue,(byte *)s_set_<var>_<value>_004711e4);
+    return;
+  }
+  console_register_cvar(&console_log_queue,DAT_0047ea64,DAT_0047ea68,unaff_retaddr);
+  console_printf(&console_log_queue,(byte *)s___s__set_to___s__004711d0);
+  return;
 }
 
 
@@ -198,15 +460,15 @@ int * __fastcall console_init(int *console_state)
   _DAT_0047eaa8 = 0;
   _DAT_0047eaac = 0;
   DAT_0047f4cc = 0;
-  console_register_command(console_state,(uint *)console_cmd_cmdlist,&LAB_00401370);
-  console_register_command(console_state,(uint *)&console_cmd_vars,&LAB_004013c0);
-  console_register_command(console_state,(uint *)&console_cmd_echo,&LAB_00401410);
-  console_register_command(console_state,(uint *)&console_cmd_set,&LAB_00401510);
-  console_register_command(console_state,(uint *)&console_cmd_quit,&LAB_00401240);
-  console_register_command(console_state,(uint *)console_cmd_clear,&LAB_004011a0);
-  console_register_command(console_state,(uint *)console_cmd_extend,&LAB_00401340);
-  console_register_command(console_state,(uint *)console_cmd_minimize,&LAB_00401360);
-  console_register_command(console_state,(uint *)&console_cmd_exec,&LAB_00401250);
+  console_register_command(console_state,(uint *)console_cmd_cmdlist,console_cmdlist);
+  console_register_command(console_state,(uint *)&console_cmd_vars,console_vars);
+  console_register_command(console_state,(uint *)&console_cmd_echo,console_echo);
+  console_register_command(console_state,(uint *)&console_cmd_set,console_cmd_set);
+  console_register_command(console_state,(uint *)&console_cmd_quit,console_cmd_quit);
+  console_register_command(console_state,(uint *)console_cmd_clear,console_clear_log);
+  console_register_command(console_state,(uint *)console_cmd_extend,console_cmd_extend);
+  console_register_command(console_state,(uint *)console_cmd_minimize,console_cmd_minimize);
+  console_register_command(console_state,(uint *)&console_cmd_exec,console_cmd_exec);
   puVar1 = operator_new(8);
   if (puVar1 == (undefined4 *)0x0) {
     puVar1 = (undefined4 *)0x0;
@@ -6969,6 +7231,544 @@ void demo_purchase_screen_update(void)
 LAB_0040c103:
   ui_elements_update_and_render();
   ui_cursor_render();
+  return;
+}
+
+
+
+/* console_hotkey_update @ 0040c1c0 */
+
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* per-frame input/update function; contains console hotkey block (DIK_GRAVE) at 0x0040c360 and
+   DIK_F12 check; entry identified via WinDbg */
+
+void console_hotkey_update(void)
+
+{
+  char cVar1;
+  int iVar2;
+  char *pcVar3;
+  undefined4 uVar4;
+  FILE *fp;
+  float *pfVar5;
+  uint uVar6;
+  uint uVar7;
+  float10 fVar8;
+  longlong lVar9;
+  undefined *puVar10;
+  float fStack_b0;
+  float fStack_ac;
+  float fStack_a8;
+  float fStack_a4;
+  float fStack_a0;
+  float fStack_9c;
+  undefined4 uStack_98;
+  undefined4 uStack_94;
+  undefined4 uStack_90;
+  undefined4 uStack_8c;
+  undefined4 uStack_80;
+  undefined4 uStack_7c;
+  undefined4 uStack_78;
+  undefined4 uStack_74;
+  undefined4 uStack_70;
+  undefined4 uStack_6c;
+  undefined4 uStack_68;
+  undefined4 uStack_5c;
+  undefined4 uStack_58;
+  undefined4 uStack_54;
+  undefined4 uStack_50;
+  undefined4 uStack_4c;
+  undefined4 uStack_48;
+  float fVar11;
+  float fVar12;
+  float fVar13;
+  
+  fVar8 = (float10)(**(code **)(*grim_interface_ptr + 0x3c))();
+  frame_dt = (float)fVar8;
+  if (quest_unlock_index < 0x28) {
+    config_hardcore = 0;
+  }
+  iVar2 = game_is_full_version();
+  if ((char)iVar2 == '\0') {
+    if (game_sequence_id < 0) {
+      game_sequence_id = 1200000;
+    }
+    game_sequence_id = game_sequence_get();
+    config_hardcore = 0;
+  }
+  iVar2 = game_is_full_version();
+  if ((char)iVar2 != '\0') {
+    _DAT_0048823c = &LAB_00447350;
+    DAT_00480851 = '\0';
+  }
+  if ((DAT_00486faa == '\0') && (iVar2 = game_is_full_version(), (char)iVar2 != '\0')) {
+    DAT_004875c4 = DAT_004875c4 + 60.0;
+    DAT_004875b8 = DAT_00488218;
+    DAT_004875bc = DAT_0048821c;
+    DAT_00486faa = '\x01';
+    DAT_00488208 = 0;
+    _DAT_004875c0 = _DAT_004875c0 - 20.0;
+  }
+  if ((audio_suspend_flag == '\0') &&
+     (pcVar3 = (char *)(**(code **)(*grim_interface_ptr + 0x24))(), *pcVar3 != '\0')) {
+    if ((render_pass_mode == '\0') || (_config_game_mode != 3)) {
+      terrain_generate_random();
+    }
+    else {
+      uVar6 = _quest_stage_minor - 1;
+      uVar7 = _quest_stage_major - 1;
+      if (9 < (int)uVar6) {
+        uVar6 = uVar6 % 10;
+      }
+      if (3 < (int)uVar7) {
+        uVar7 = uVar7 + (uVar7 >> 2) * -4;
+      }
+      terrain_generate(&quest_selected_meta + (uVar7 + uVar6 * 10) * 0x2c);
+    }
+    uStack_48 = 0x40c32f;
+    (**(code **)(*grim_interface_ptr + 0x20))();
+  }
+  iVar2 = game_is_full_version();
+  if (((char)iVar2 == '\0') && (10 < quest_unlock_index)) {
+    quest_unlock_index = 10;
+  }
+  if (audio_suspend_flag != '\0') {
+    audio_resume_all();
+    return;
+  }
+  DAT_00480848 = DAT_00480848 + frame_dt_ms;
+  cVar1 = ')';
+  uVar4 = (**(code **)(*grim_interface_ptr + 0x48))();
+  if ((char)uVar4 != '\0') {
+    console_set_open(&console_log_queue,
+                     (void *)CONCAT31((int3)((uint)uVar4 >> 8),console_open_flag == '\0'),cVar1);
+  }
+  console_update(0x47eea0);
+  fVar12 = 1.23314e-43;
+  cVar1 = (**(code **)(*grim_interface_ptr + 0x48))();
+  if (cVar1 != '\0') {
+    do {
+      if (DAT_004808c4 < 10) {
+        pcVar3 = s_shot_00_d_bmp_004729b8;
+      }
+      else if (DAT_004808c4 < 100) {
+        pcVar3 = s_shot_0_d_bmp_004729a8;
+      }
+      else {
+        pcVar3 = s_shot__d_bmp_0047299c;
+      }
+      uStack_48 = 0x40c3e3;
+      crt_sprintf(&DAT_0047f634,pcVar3);
+      fp = crt_fopen(&DAT_0047f634,&file_mode_read_binary);
+      if (fp != (FILE *)0x0) {
+        crt_fclose(fp);
+      }
+      DAT_004808c4 = DAT_004808c4 + 1;
+    } while (fp != (FILE *)0x0);
+    (**(code **)(*grim_interface_ptr + 0xc))();
+  }
+  if ((demo_mode_active == '\0') && (DAT_00480850 == '\0')) {
+    game_sequence_id = game_sequence_get();
+    iVar2 = game_state_id;
+    if ((console_open_flag == '\0') && ((render_pass_mode != '\0' && (game_state_id == 9)))) {
+      lVar9 = __ftol();
+      game_sequence_id = game_sequence_id + (int)lVar9;
+    }
+    if ((DAT_0048084c < 1) || (console_open_flag != '\0')) goto LAB_0040c4b7;
+    if (render_pass_mode != '\0') {
+      if ((iVar2 == 9) && (_config_game_mode != 8)) {
+        lVar9 = __ftol();
+        DAT_0048084c = DAT_0048084c + (int)lVar9;
+      }
+      goto LAB_0040c4b7;
+    }
+  }
+  else {
+LAB_0040c4b7:
+    if (((render_pass_mode != '\0') && (iVar2 = perk_count_get(perk_id_reflex_boosted), iVar2 != 0))
+       && (game_state_id == 9)) {
+      frame_dt = frame_dt * 0.9;
+    }
+  }
+  _DAT_0047ea4c = _DAT_0047ea4c + frame_dt;
+  _DAT_0047ea48 = frame_dt;
+  lVar9 = __ftol();
+  frame_dt_ms = (int)lVar9;
+  if (((console_open_flag == '\0') && (render_pass_mode != '\0')) &&
+     ((game_state_id == 9 && (_config_game_mode != 8)))) {
+    DAT_0048718c = DAT_0048718c + frame_dt_ms;
+  }
+  if (DAT_0048702c == '\0') {
+    screen_fade_alpha = screen_fade_alpha - (frame_dt + frame_dt);
+  }
+  else {
+    screen_fade_alpha = frame_dt * 10.0 + screen_fade_alpha;
+  }
+  if (0.0 <= screen_fade_alpha) {
+    if (1.0 < screen_fade_alpha) {
+      screen_fade_alpha = 1.0;
+    }
+  }
+  else {
+    screen_fade_alpha = 0.0;
+  }
+  if (console_open_flag != '\0') {
+    frame_dt = 0.0;
+  }
+  fVar8 = (float10)(**(code **)(*grim_interface_ptr + 0x70))();
+  if ((fVar8 == (float10)0.0) ||
+     (fVar8 = (float10)(**(code **)(*grim_interface_ptr + 0x74))(), fVar8 == (float10)0.0)) {
+    DAT_004871cb = 0;
+  }
+  else {
+    DAT_004871cb = 1;
+    ui_mouse_blocked = 0;
+    DAT_004808c8 = 0;
+  }
+  fVar8 = (float10)(**(code **)(*grim_interface_ptr + 0x84))();
+  fVar13 = (float)fVar8;
+  fVar11 = player_axis_aim_y;
+  (**(code **)(*grim_interface_ptr + 0x84))();
+  uStack_48 = 0x40c68e;
+  (**(code **)(*grim_interface_ptr + 0x84))();
+  uStack_48 = player_axis_move_y;
+  uStack_4c = 0x40c6a6;
+  fVar8 = (float10)(**(code **)(*grim_interface_ptr + 0x84))();
+  if ((float10)0.2 < SQRT((float10)fVar11 * (float10)fVar11 + fVar8 * fVar8)) {
+    fVar12 = fVar12 + fVar11;
+    fVar13 = (float)((float10)fVar13 + fVar8);
+  }
+  if (0.2 < SQRT(fVar12 * fVar12 + fVar13 * fVar13)) {
+    DAT_004808c8 = 1;
+  }
+  if (game_state_id == 9) {
+    DAT_004808c8 = 0;
+LAB_0040c71b:
+    uStack_4c = 0x40c726;
+    fVar8 = (float10)(**(code **)(*grim_interface_ptr + 0x70))();
+    ui_mouse_x = (float)(fVar8 * (float10)_DAT_004807bc + fVar8 * (float10)_DAT_004807bc +
+                        (float10)ui_mouse_x);
+    uStack_4c = 0x40c745;
+    fVar8 = (float10)(**(code **)(*grim_interface_ptr + 0x74))();
+    pfVar5 = (float *)&DAT_004871f4;
+    ui_mouse_y = (float)(fVar8 * (float10)_DAT_004807bc + fVar8 * (float10)_DAT_004807bc +
+                        (float10)ui_mouse_y);
+    do {
+      *pfVar5 = ui_mouse_x;
+      pfVar5[1] = ui_mouse_y;
+      pfVar5 = pfVar5 + 2;
+    } while ((int)pfVar5 < 0x487204);
+  }
+  else {
+    if (DAT_004808c8 != 1) goto LAB_0040c71b;
+    ui_mouse_x = _DAT_004807bc * frame_dt * fVar12 * 540.0 + ui_mouse_x;
+    ui_mouse_y = _DAT_004807bc * frame_dt * fVar13 * 540.0 + ui_mouse_y;
+  }
+  if (ui_mouse_x < 0.0) {
+    ui_mouse_x = 0.0;
+  }
+  if (ui_mouse_y < 0.0) {
+    ui_mouse_y = 0.0;
+  }
+  if ((float)(config_screen_width + -1) < ui_mouse_x) {
+    ui_mouse_x = (float)(config_screen_width + -1);
+  }
+  if ((float)(config_screen_height + -1) < ui_mouse_y) {
+    ui_mouse_y = (float)(config_screen_height + -1);
+  }
+  if ((game_state_id == 0x16) || (DAT_004824d1 != '\0')) {
+    uStack_4c = 0x40c90f;
+    FUN_0040b630();
+  }
+  else if (game_state_id == 9) {
+    if (DAT_00480890 == '\0') {
+      uStack_4c = 0x40c88c;
+      gameplay_update_and_render();
+    }
+    else {
+      uStack_4c = 0;
+      uStack_50 = 0;
+      uStack_54 = 0;
+      uStack_58 = 0;
+      uStack_5c = 0x40c885;
+      (**(code **)(*grim_interface_ptr + 0x2c))();
+    }
+    if (demo_mode_active != '\0') {
+LAB_0040c8a0:
+      uStack_4c = 0x40c8a5;
+      demo_purchase_screen_update();
+    }
+    if (audio_suspend_flag != '\0') {
+      return;
+    }
+  }
+  else {
+    if (game_state_id == 0x18) {
+      uStack_4c = 0x40c8a0;
+      gameplay_update_and_render();
+      goto LAB_0040c8a0;
+    }
+    if (game_state_id == 6) {
+      uStack_4c = 0x40c8bf;
+      perk_selection_screen_update();
+    }
+    else if (game_state_id == 7) {
+      uStack_4c = 0x40c8cb;
+      game_over_screen_update();
+    }
+    else if (game_state_id == 8) {
+      uStack_4c = 0x40c8d7;
+      quest_results_screen_update();
+    }
+    else if (game_state_id == 0xc) {
+      uStack_4c = 0x40c8e3;
+      quest_failed_screen_update();
+    }
+    else if (game_state_id == 0x12) {
+      uStack_4c = 0x40c8ef;
+      survival_gameplay_update_and_render();
+    }
+    else if (game_state_id == 0x15) {
+      uStack_4c = 0x40c8fb;
+      FUN_00406350();
+    }
+    else {
+      DAT_00480890 = '\0';
+      uStack_4c = 0x40c908;
+      FUN_00406af0();
+    }
+  }
+  uStack_4c = 0x3f800000;
+  uStack_50 = 0x40000000;
+  uStack_54 = 0;
+  uStack_58 = 0;
+  uStack_5c = 0x40c929;
+  (**(code **)(*grim_interface_ptr + 0x100))();
+  uStack_6c = 0x18;
+  uStack_68 = 0x3f000000;
+  uStack_70 = 0x40c941;
+  (**(code **)(*grim_interface_ptr + 0x20))();
+  uStack_70 = 0x3f19999a;
+  uStack_74 = 0x3f800000;
+  uStack_78 = 0x3f800000;
+  uStack_7c = 0x3f800000;
+  uStack_80 = 0x40c963;
+  (**(code **)(*grim_interface_ptr + 0x114))();
+  uStack_90 = 0x18;
+  uStack_8c = 0x3ecccccd;
+  uStack_94 = 0x40c97b;
+  (**(code **)(*grim_interface_ptr + 0x20))();
+  uStack_94 = 0x40c980;
+  iVar2 = game_is_full_version();
+  if ((char)iVar2 == '\0') {
+    uStack_94 = 0x3f19999a;
+    uStack_98 = 0x3e99999a;
+    fStack_9c = 0.3;
+    fStack_a0 = 1.0;
+    fStack_a4 = 5.94981e-39;
+    (**(code **)(*grim_interface_ptr + 0x114))();
+  }
+  fStack_a4 = 3.36312e-44;
+  fStack_a0 = 0.45;
+  fStack_a8 = 5.949843e-39;
+  (**(code **)(*grim_interface_ptr + 0x20))();
+  if (*(float *)(DAT_00480868 + 0xc) != 0.0) {
+    fStack_a8 = 0.6;
+    fStack_ac = 1.0;
+    fStack_b0 = 1.0;
+    (**(code **)(*grim_interface_ptr + 0x114))(0x3f800000);
+    (**(code **)(*grim_interface_ptr + 0x40))();
+    lVar9 = __ftol();
+    iVar2 = *grim_interface_ptr;
+    if ((int)lVar9 < 400) {
+      (**(code **)(iVar2 + 0x40))();
+      lVar9 = __ftol();
+      uVar4 = (undefined4)lVar9;
+      puVar10 = &DAT_00471f40;
+      fStack_ac = (float)(config_screen_width + -0x2d);
+    }
+    else {
+      (**(code **)(iVar2 + 0x40))();
+      lVar9 = __ftol();
+      uVar4 = (undefined4)lVar9;
+      puVar10 = &DAT_00472990;
+      fStack_ac = (float)(config_screen_width + -0x33);
+    }
+    (**(code **)(iVar2 + 0x148))
+              (grim_interface_ptr,(float)(int)fStack_ac,(float)(config_screen_height + -0x18),
+               puVar10,uVar4);
+  }
+  fStack_a8 = 0.6;
+  fStack_ac = 1.0;
+  fStack_b0 = 1.0;
+  (**(code **)(*grim_interface_ptr + 0x114))(0x3f800000);
+  FUN_00401dd0(0x47eea0);
+  crt_rand();
+  audio_update();
+  cVar1 = (**(code **)(*grim_interface_ptr + 0x48))(1);
+  if (((cVar1 != '\0') && ((render_pass_mode != '\0' || (game_state_id == 0x16)))) &&
+     ((game_state_id == 9 || ((game_state_id == 0x16 || (game_state_id == 0x12)))))) {
+    ui_transition_direction = 0;
+    game_state_pending = 5;
+    if (plugin_interface_ptr != 0) {
+      *(undefined1 *)(plugin_interface_ptr + 9) = 1;
+    }
+  }
+  if (DAT_00471308 == 0xffffffff) {
+    uVar6 = crt_rand();
+    DAT_00471308 = uVar6 & 0x8000001f;
+    if ((int)DAT_00471308 < 0) {
+      DAT_00471308 = (DAT_00471308 - 1 | 0xffffffe0) + 1;
+    }
+  }
+  if ((((game_state_id == 4) && (render_pass_mode == '\0')) && (local_system_time._2_2_ == 3)) &&
+     ((local_system_day == 3 && (DAT_00471308 == 3)))) {
+    DAT_00471308 = 0xffffffff;
+    (**(code **)(*grim_interface_ptr + 0x114))(0x3e4ccccd,0x3f800000,0x3f19999a,0x3f000000);
+    pcVar3 = s_Orbes_Volantes_Exstare_00472978;
+    uVar4 = 0x40a00000;
+    iVar2 = *grim_interface_ptr;
+    uVar6 = crt_rand();
+    uVar6 = uVar6 & 0x8000003f;
+    if ((int)uVar6 < 0) {
+      uVar6 = (uVar6 - 1 | 0xffffffc0) + 1;
+    }
+    (**(code **)(iVar2 + 0x144))((float)(int)(uVar6 + 0x10),uVar4,pcVar3);
+  }
+  iVar2 = game_is_full_version();
+  if ((char)iVar2 == '\0') {
+    if (demo_mode_active == '\0') {
+      iVar2 = FUN_0041df50();
+      fStack_b0 = (float)game_sequence_id / (float)iVar2;
+      if (1.0 < fStack_b0) {
+        fStack_b0 = 1.0;
+      }
+      fStack_a8 = (float)(config_screen_height + -7);
+      fStack_9c = (float)(int)fStack_a8;
+      fVar12 = 8.0;
+      uStack_98 = 0;
+      uStack_94 = 0;
+      uStack_90 = 0;
+      uStack_8c = 0x3f000000;
+      fStack_a0 = 0.0;
+      (**(code **)(*grim_interface_ptr + 0xd0))
+                (&fStack_a0,(float)config_screen_width,0x41000000,&uStack_98);
+      fStack_a0 = fVar12 * 4.0 + 1.0;
+      fStack_a4 = 0.9 / fStack_a0;
+      fStack_9c = 0.5;
+      fStack_b0 = 2.0;
+      fStack_a0 = 0.5 / fStack_a0;
+      fStack_ac = (float)(config_screen_height + -5);
+      fStack_a8 = fVar12;
+      (**(code **)(*grim_interface_ptr + 0xd0))
+                (&fStack_b0,(float)(config_screen_width + -4) * fVar12,0x40400000,&fStack_a8);
+      goto LAB_0040cd14;
+    }
+LAB_0040cd20:
+    if (game_state_pending == 0) {
+      fStack_a8 = (float)ui_elements_max_timeline();
+      if (fStack_a8 == 0.0) {
+        fStack_b0 = 1.0;
+      }
+      else {
+        fStack_b0 = 1.0 - (float)ui_elements_timeline / (float)(int)fStack_a8;
+      }
+      fStack_b0 = fStack_b0 * fStack_b0;
+      if (game_state_prev == 0x18) {
+        fStack_b0 = 1.0 - fStack_b0;
+        DAT_00480890 = '\0';
+      }
+      if (0.0 <= fStack_b0) {
+        if (1.0 < fStack_b0) {
+          fStack_b0 = 1.0;
+        }
+      }
+      else {
+        fStack_b0 = 0.0;
+      }
+      (**(code **)(*grim_interface_ptr + 0xcc))(0,0,0,fStack_b0);
+    }
+  }
+  else {
+LAB_0040cd14:
+    if (demo_mode_active != '\0') goto LAB_0040cd20;
+  }
+  if (game_state_pending == 10) {
+    fStack_a8 = (float)ui_elements_max_timeline();
+    if (fStack_a8 == 0.0) {
+      fStack_b0 = 1.0;
+    }
+    else {
+      fStack_b0 = 1.0 - (float)ui_elements_timeline / (float)(int)fStack_a8;
+    }
+    if (game_state_prev == 0x16) {
+      fStack_b0 = 1.0 - fStack_b0;
+    }
+    if (0.0 <= fStack_b0) {
+      if (1.0 < fStack_b0) {
+        fStack_b0 = 1.0;
+      }
+    }
+    else {
+      fStack_b0 = 0.0;
+    }
+    (**(code **)(*grim_interface_ptr + 0xcc))(0,0,0,fStack_b0);
+  }
+  cVar1 = (**(code **)(*grim_interface_ptr + 0x44))(0x10);
+  if ((cVar1 == '\0') || (cVar1 = (**(code **)(*grim_interface_ptr + 0x44))(0x38), cVar1 == '\0')) {
+    if (DAT_0047ea50 == '\0') goto LAB_0040cf06;
+  }
+  else {
+    DAT_0047ea50 = '\x01';
+  }
+  iVar2 = game_is_full_version();
+  if ((char)iVar2 != '\0') {
+    config_sync_from_grim();
+    return;
+  }
+  if (DAT_00480851 != '\0') {
+    return;
+  }
+  iVar2 = game_is_full_version();
+  if ((char)iVar2 != '\0') {
+    return;
+  }
+  config_sync_from_grim();
+  demo_mode_start();
+  sfx_mute_all(music_track_crimson_theme_id);
+  sfx_mute_all(music_track_extra_0);
+  sfx_mute_all(music_track_intro_id);
+  sfx_play_exclusive(music_track_shortie_monk_id);
+  DAT_0047ea50 = '\0';
+  DAT_00480851 = '\x01';
+LAB_0040cf06:
+  if (DAT_004d7a24 != '\0') {
+    DAT_004d7a24 = '\0';
+    FUN_00402d50();
+    FUN_00402d50();
+    audio_suspend_all();
+    game_is_full_version();
+  }
+  if (DAT_004d7a25 != '\0') {
+    DAT_004d7a25 = '\0';
+    FUN_00402d50();
+    FUN_00402d50();
+    audio_suspend_all();
+    game_is_full_version();
+  }
+  if (DAT_004d7a26 != '\0') {
+    DAT_004d7a26 = '\0';
+    FUN_00402d50();
+    FUN_00402d50();
+    audio_suspend_all();
+    game_is_full_version();
+  }
+  if ((((DAT_004d11f0 == 0) && (DAT_004d11f8 != '\0')) && (DAT_004d11f4 != 0)) &&
+     ((game_state_id != 0xe || (DAT_00480838 != '\0')))) {
+    Sleep(100);
+    return;
+  }
   return;
 }
 
