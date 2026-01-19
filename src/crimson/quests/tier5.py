@@ -81,7 +81,7 @@ def build_5_2_the_spanking_of_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
         SpawnEntry(768.0, 512.0, 0.0, SPAWN_ID_39, 500, 1),
     ]
 
-    trigger = 5500
+    trigger = 5000
     step_index = 0
     while trigger < 0xA988:
         angle = step_index * 0.33333334
@@ -92,7 +92,7 @@ def build_5_2_the_spanking_of_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
         trigger += 300
         step_index += 1
 
-    offset = (step_index + 1) * 300
+    offset = step_index * 300
     entries.append(SpawnEntry(1280.0, 512.0, 0.0, SPAWN_ID_66, offset + 10000, 16))
     entries.append(SpawnEntry(-256.0, 512.0, 0.0, SPAWN_ID_66, offset + 20000, 16))
     return entries
@@ -109,7 +109,7 @@ def build_5_3_the_fortress(ctx: QuestContext) -> list[SpawnEntry]:
         y = y_seed * 0.125 + 256.0
         entries.append(SpawnEntry(768.0, float(y), 0.0, SPAWN_ID_9, trigger, 1))
         trigger += 600
-        y_seed += 0x80
+        y_seed += 0x200
 
     entry_count = 8
     x_seed = 0x180
@@ -122,7 +122,7 @@ def build_5_3_the_fortress(ctx: QuestContext) -> list[SpawnEntry]:
                 entries.append(SpawnEntry(float(x), float(y), 0.0, SPAWN_ID_10, trigger, 1))
                 trigger += 600
                 entry_count += 1
-        x_seed += 0x60
+        x_seed += 0x180
 
     return entries
 
@@ -278,7 +278,7 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
     for idx in range(6):
         y = idx * 85.333336 + 256.0
         entries.append(SpawnEntry(960.0, y, 0.0, SPAWN_ID_10, base_right, 1))
-        base_right += 25
+        base_right += 100
 
     base_mid = (last_wave + 0xB0 + wave * 4) * 0xA0
     entries.append(SpawnEntry(512.0, 256.0, math.pi, SPAWN_ID_11, base_mid, 1))

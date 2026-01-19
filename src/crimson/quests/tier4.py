@@ -114,7 +114,7 @@ def build_4_6_the_unblitzkrieg(ctx: QuestContext) -> list[SpawnEntry]:
         return SPAWN_ID_13 if toggle else SPAWN_ID_7
 
     entries: list[SpawnEntry] = []
-    trigger = 5000
+    trigger = 500
 
     i_var5 = 0
     for idx in range(10):
@@ -208,7 +208,7 @@ def build_4_7_gauntlet(ctx: QuestContext, full_version: bool = True) -> list[Spa
 
     if ring_count > 0:
         trigger = 4000
-        for count in range(2, ring_count + 1):
+        for count in range(2, ring_count + 2):
             half_w = ctx.width // 2
             entries.append(
                 SpawnEntry(ctx.width + 64.0, float(half_w), 0.0, SPAWN_ID_65, trigger, count)
@@ -266,9 +266,9 @@ def build_4_8_syntax_terror(ctx: QuestContext, full_version: bool = True) -> lis
 def build_4_9_the_annihilation(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     half_w = ctx.width // 2
-    entries.append(SpawnEntry(128.0, float(half_w), 0.0, SPAWN_ID_43, 5000, 2))
+    entries.append(SpawnEntry(128.0, float(half_w), 0.0, SPAWN_ID_43, 500, 2))
 
-    trigger = 5000
+    trigger = 500
     i_var5 = 0
     for idx in range(12):
         y = float(i_var5 // 12 + 0x80)

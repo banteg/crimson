@@ -1,5 +1,7 @@
 # Quest builders
 
+**Status:** High confidence (runtime-validated 2026-01-19)
+
 This document lists the quest builder pointer assigned to each quest in
 `quest_database_init` (`FUN_00439230`). Builder symbols are defined in
 `analysis/ghidra/maps/name_map.json`.
@@ -101,6 +103,13 @@ CLI (`crimson quests <level>`) to print the resolved entries for a given quest.
 - The Spanking Of The Dead (5.2) uses 132 (0x84) entries; validated on 2026-01-19
   with `scripts/frida/quest_spanking_count.js`, which writes to
   `Z:\crimsonland_quest_counts.jsonl` (copied into `artifacts/frida/share/`).
+- Runtime quest-build capture on 2026-01-19 (`scripts/frida/quest_build_dump.js`,
+  output summarized in `analysis/frida/quest_builds_summary.json`) matches the Python
+  reimplementation for deterministic fields (x/y/spawn_id/trigger/count) across
+  all non-random quests. Randomized quests (1.3, 1.6, 2.5, 3.3, 3.9) vary by RNG.
+- Heading values often appear uninitialized in the runtime table for builders that
+  do not explicitly write headings, so treat heading as undefined unless the quest
+  explicitly sets it.
 
 ## Open questions
 

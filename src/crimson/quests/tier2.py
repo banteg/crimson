@@ -127,7 +127,7 @@ def build_2_6_evil_zombies_at_large(ctx: QuestContext) -> list[SpawnEntry]:
     edge_w = ctx.width + 64
     trigger = 1500
     count = 4
-    while count < 13:
+    while count <= 13:
         entries.append(SpawnEntry(edge_w, float(half_w), 0.0, SPAWN_ID_65, trigger, count))
         entries.append(SpawnEntry(-64.0, float(half_w), 0.0, SPAWN_ID_65, trigger, count))
         entries.append(SpawnEntry(float(half_w), float(edge_w), 0.0, SPAWN_ID_65, trigger, count))
@@ -153,10 +153,10 @@ def build_2_7_survival_of_the_fastest(ctx: QuestContext) -> list[SpawnEntry]:
         trigger += 900
         idx += 1
 
-    # Loop 2: y from 256 to <688, step 18, starting at index 6
+    # Loop 2: y from 256 to <688, step 72, starting at index 6
     trigger = 5900
     idx = 6
-    for y in range(0x100, 0x2B0, 0x12):
+    for y in range(0x100, 0x2B0, 0x48):
         set_entry(idx, 688.0, float(y), SPAWN_ID_16, trigger, 1)
         trigger += 900
         idx += 1
@@ -164,7 +164,7 @@ def build_2_7_survival_of_the_fastest(ctx: QuestContext) -> list[SpawnEntry]:
     # Loop 3: x descending from 688, y=688, starting at index 12
     trigger = 11300
     idx = 12
-    for x in (688, 670, 652, 634):
+    for x in (0x2B0, 0x268, 0x220, 0x1D8):
         set_entry(idx, float(x), 688.0, SPAWN_ID_16, trigger, 1)
         trigger += 900
         idx += 1
@@ -172,7 +172,7 @@ def build_2_7_survival_of_the_fastest(ctx: QuestContext) -> list[SpawnEntry]:
     # Loop 4: y descending from 688, x=400, starting at index 16
     trigger = 14900
     idx = 16
-    for y in (688, 670, 652, 634):
+    for y in (0x2B0, 0x268, 0x220, 0x1D8):
         set_entry(idx, 400.0, float(y), SPAWN_ID_16, trigger, 1)
         trigger += 900
         idx += 1
