@@ -104,4 +104,4 @@ windbg-server:
 
 [windows]
 windbg-client:
-    cdb -remote tcp:server=127.0.0.1,port=5005,password=secret -bonc -logo C:\Crimsonland\windbg_log.txt
+    cdb -remote tcp:server=127.0.0.1,port=5005,password=secret -bonc
