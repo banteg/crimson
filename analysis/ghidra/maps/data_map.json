@@ -872,8 +872,20 @@
     },
     {
       "address": "0x00484740",
-      "comment": "Terrain descriptor id used by terrain_generate (quest_selected_meta + 0x10, stride 0x2c).",
+      "comment": "Terrain texture index (layer A) used by terrain_generate (quest_selected_meta + 0x10, stride 0x2c).",
       "name": "quest_meta_terrain_id",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00484744",
+      "comment": "Terrain texture index (layer B) used by terrain_generate (quest_selected_meta + 0x14, stride 0x2c).",
+      "name": "quest_meta_terrain_id_b",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00484748",
+      "comment": "Terrain texture index (layer C) used by terrain_generate (quest_selected_meta + 0x18, stride 0x2c).",
+      "name": "quest_meta_terrain_id_c",
       "program": "crimsonland.exe"
     },
     {
