@@ -11,25 +11,23 @@ from PIL import Image
 
 from . import jaz, paq
 from .quests import tier1, tier2, tier3, tier4, tier5
-from .quests.types import QuestContext, SpawnEntry
+from .quests.types import QuestContext, QuestDefinition, SpawnEntry
 
 
 app = typer.Typer(add_completion=False)
 
-_QUEST_BUILDERS = {
-    **tier1.TIER1_BUILDERS,
-    **tier2.TIER2_BUILDERS,
-    **tier3.TIER3_BUILDERS,
-    **tier4.TIER4_BUILDERS,
-    **tier5.TIER5_BUILDERS,
+_QUEST_DEFS: dict[str, QuestDefinition] = {
+    quest.level: quest
+    for quest in (
+        *tier1.QUESTS,
+        *tier2.QUESTS,
+        *tier3.QUESTS,
+        *tier4.QUESTS,
+        *tier5.QUESTS,
+    )
 }
-_QUEST_TITLES = {
-    **tier1.TIER1_TITLES,
-    **tier2.TIER2_TITLES,
-    **tier3.TIER3_TITLES,
-    **tier4.TIER4_TITLES,
-    **tier5.TIER5_TITLES,
-}
+_QUEST_BUILDERS = {level: quest.builder for level, quest in _QUEST_DEFS.items()}
+_QUEST_TITLES = {level: quest.title for level, quest in _QUEST_DEFS.items()}
 
 _SEP_RE = re.compile(r"[\\/]+")
 
@@ -129,6 +127,27 @@ def _format_entry(idx: int, entry: SpawnEntry) -> str:
     )
 
 
+def _format_id(value: int | None) -> str:
+    if value is None:
+        return "none"
+    return f"0x{value:02x} ({value})"
+
+
+def _format_meta(quest: QuestDefinition) -> list[str]:
+    builder_addr = (
+        f"0x{quest.builder_address:08x}" if quest.builder_address is not None else "unknown"
+    )
+    terrain_id = _format_id(quest.terrain_id)
+    return [
+        f"time_limit_ms={quest.time_limit_ms}",
+        f"start_weapon_id={quest.start_weapon_id}",
+        f"unlock_perk_id={_format_id(quest.unlock_perk_id)}",
+        f"unlock_weapon_id={_format_id(quest.unlock_weapon_id)}",
+        f"builder_address={builder_addr}",
+        f"terrain_id={terrain_id}",
+    ]
+
+
 @app.command("quests")
 def cmd_quests(
     level: str = typer.Argument(..., help="quest level, e.g. 1.1"),
@@ -139,18 +158,20 @@ def cmd_quests(
     sort: bool = typer.Option(False, help="sort output by trigger time"),
 ) -> None:
     """Print quest spawn scripts for a given level."""
-    builder = _QUEST_BUILDERS.get(level)
-    title = _QUEST_TITLES.get(level, "unknown")
-    if builder is None:
+    quest = _QUEST_DEFS.get(level)
+    if quest is None:
         available = ", ".join(sorted(_QUEST_BUILDERS))
         typer.echo(f"unknown level {level!r}. Available: {available}", err=True)
         raise typer.Exit(code=1)
+    builder = quest.builder
+    title = quest.title
     ctx = QuestContext(width=width, height=height, player_count=player_count)
     rng = random.Random(seed) if seed is not None else random.Random()
     entries = _call_builder(builder, ctx, rng)
     if sort:
         entries = sorted(entries, key=lambda e: (e.trigger_ms, e.spawn_id, e.x, e.y))
     typer.echo(f"Quest {level} {title} ({len(entries)} entries)")
+    typer.echo("Meta: " + "; ".join(_format_meta(quest)))
     for idx, entry in enumerate(entries, start=1):
         typer.echo(_format_entry(idx, entry))
 

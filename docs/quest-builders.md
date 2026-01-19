@@ -8,6 +8,9 @@ Notes:
 - `Start Weapon (id)` is `quest_start_weapon_id` (1-based weapon id).
 - `Time (ms)` is `quest_meta_time_limit_ms`.
 - `Builder` is the named function symbol used for the quest spawn script.
+- Quest metadata includes a `quest_meta_terrain_id` field (offset `0x10` in the
+  quest meta struct). We store a `terrain_id` slot in `QuestDefinition` for this,
+  but we have not mapped the per-quest values yet.
 
 ## Quest -> builder table
 | Tier | Quest | Title | Start Weapon (id) | Time (ms) | Builder | Address |
@@ -92,6 +95,12 @@ Spawn ids are numeric and still need creature name mapping.
 Spawn scripts are captured as code in `src/crimson/quests/` (Tier 1 in
 `src/crimson/quests/tier1.py`, Tier 2 in `src/crimson/quests/tier2.py`). Use the
 CLI (`crimson quests <level>`) to print the resolved entries for a given quest.
+
+## Validation notes
+
+- The Spanking Of The Dead (5.2) uses 132 (0x84) entries; validated on 2026-01-19
+  with `scripts/frida/quest_spanking_count.js`, which writes to
+  `Z:\crimsonland_quest_counts.jsonl` (copied into `artifacts/frida/share/`).
 
 ## Open questions
 
