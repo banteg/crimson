@@ -122,6 +122,10 @@ frida-unlock-secrets:
 frida-quest-spanking-count:
     frida -n crimsonland.exe -l scripts\\frida\\quest_spanking_count.js
 
+[windows]
+frida-quest-build-dump:
+    frida -n crimsonland.exe -l scripts\\frida\\quest_build_dump.js
+
 [unix]
 frida-copy-share:
     mkdir -p {{frida_share_dir}}
