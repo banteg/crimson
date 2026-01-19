@@ -30,13 +30,17 @@ def main() -> int:
         data = log_file.read()
         new_pos = log_file.tell()
 
-    encoding = "utf-16-le"
+    encoding = "ascii"
     if pos == 0:
         if data.startswith(b"\xff\xfe"):
             data = data[2:]
+            encoding = "utf-16-le"
         elif data.startswith(b"\xfe\xff"):
             data = data[2:]
             encoding = "utf-16-be"
+        elif data.startswith(b"\xef\xbb\xbf"):
+            data = data[3:]
+            encoding = "utf-8"
 
     sys.stdout.write(data.decode(encoding, errors="replace"))
     STATE_PATH.write_text(str(new_pos))
