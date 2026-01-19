@@ -92,32 +92,33 @@ textures (`ter/fb_q1..q4.jaz`) and only `Terrain A` is used.
 ## Builder notes (known implementations)
 
 The builders below have explicit function bodies in the current Ghidra export.
-Spawn ids are numeric and still need creature name mapping.
+Spawn ids include mapped creature names from `src/crimson/spawn_templates.py`.
 
 - `quest_build_fallback` (`0x004343e0`): two spawn entries at x = -50, y = terrain_height * 0.5
-  with spawn id `0x40`, trigger times `500` / `5000`, and counts `10` / `0x14`.
-- `quest_build_the_random_factor` (`0x00436350`): alternating left/right spawns using spawn id `0x1d`
-  at `1500ms` + `10000ms` steps (right side at `t`, left side at `t+200`), counts
-  scale with player count. Randomly (when `rand % 5 == 3`) adds a center wave
-  using spawn id `0x29` at y = `1088`, count = player count.
-- `quest_build_spider_wave_syndrome` (`0x00436440`): repeated left-side spawns using spawn id `0x40`
-  from `1500ms`, step `5500ms`, until `100500ms`, count = `player_count * 2 + 6`.
-- `quest_build_zombie_time` (`0x00437d70`): paired left/right waves using spawn id `0x41` every
-  `8000ms` from `1500ms` to `97500ms`, count `8` per side.
-- `quest_build_lizard_raze` (`0x00438840`): paired left/right waves using spawn id `0x2e` every
-  `6000ms` from `1500ms` to `91500ms`, count `6` per side, plus three fixed spawns
-  (spawn id `0x0c`, time `10000ms`, count `1`) at (x=128, y=256/384/512).
+  with spawn id `0x40` (spider_sp1), trigger times `500` / `5000`, and counts `10` / `0x14`.
+- `quest_build_the_random_factor` (`0x00436350`): alternating left/right spawns using spawn id
+  `0x1d` (alien) at `1500ms` + `10000ms` steps (right side at `t`, left side at `t+200`), counts
+  scale with player count. Randomly (when `rand % 5 == 3`) adds a center wave using spawn id
+  `0x29` (alien) at y = `1088`, count = player count.
+- `quest_build_spider_wave_syndrome` (`0x00436440`): repeated left-side spawns using spawn id
+  `0x40` (spider_sp1) from `1500ms`, step `5500ms`, until `100500ms`, count = `player_count * 2 + 6`.
+- `quest_build_zombie_time` (`0x00437d70`): paired left/right waves using spawn id `0x41` (zombie)
+  every `8000ms` from `1500ms` to `97500ms`, count `8` per side.
+- `quest_build_lizard_raze` (`0x00438840`): paired left/right waves using spawn id `0x2e` (lizard)
+  every `6000ms` from `1500ms` to `91500ms`, count `6` per side, plus three fixed spawns
+  (spawn id `0x0c` (alien), time `10000ms`, count `1`) at (x=128, y=256/384/512).
 - `quest_build_surrounded_by_reptiles` (`0x00438940`):
-  - Phase 1: spawn id `0x0d` pairs at x = 256 and x = 768, times `1000..4200` step `800`,
+  - Phase 1: spawn id `0x0d` (alien) pairs at x = 256 and x = 768, times `1000..4200` step `800`,
     y = `256 + 0.2 * local_4` where `local_4` steps by `0x200`.
-  - Phase 2: spawn id `0x0d` pairs at y = 256 and y = 768, times `8000..11200` step `800`,
+  - Phase 2: spawn id `0x0d` (alien) pairs at y = 256 and y = 768, times `8000..11200` step `800`,
     x = `256 + 0.2 * local_4`.
 
 ## Quest spawn scripts
 
 Spawn scripts are captured as code in `src/crimson/quests/` (Tier 1 in
 `src/crimson/quests/tier1.py`, Tier 2 in `src/crimson/quests/tier2.py`). Use the
-CLI (`crimson quests <level>`) to print the resolved entries for a given quest.
+CLI (`crimson quests <level>`) to print the resolved entries for a given quest,
+including creature labels from `src/crimson/spawn_templates.py`.
 
 ## Validation notes
 
