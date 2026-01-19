@@ -57,12 +57,22 @@ function writeLog(obj) {
 // Native function wrapper
 let fWeaponAssignPlayer = null;
 
+function resolveAbi() {
+  if (Process.platform !== 'windows') return null;
+  if (Process.arch === 'x64') return 'win64';
+  if (Process.arch === 'ia32') return 'mscdecl';
+  return null;
+}
+
 function resolveFunctions() {
   const p = exePtr(ADDR.weapon_assign_player);
   if (!p) return false;
   
   // void __cdecl weapon_assign_player(int player_idx, int weapon_id)
-  fWeaponAssignPlayer = new NativeFunction(p, 'void', ['int', 'int'], 'cdecl');
+  const abi = resolveAbi();
+  fWeaponAssignPlayer = abi
+    ? new NativeFunction(p, 'void', ['int', 'int'], abi)
+    : new NativeFunction(p, 'void', ['int', 'int']);
   return true;
 }
 
