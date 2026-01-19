@@ -1,0 +1,1635 @@
+{
+  "duplicates": {
+    "1.1": 2,
+    "4.9": 2,
+    "5.10": 2
+  },
+  "event_count": 53,
+  "expected": {
+    "1.1": {
+      "builder_address": 4414416,
+      "title": "Land Hostile"
+    },
+    "1.10": {
+      "builder_address": 4415776,
+      "title": "8-legged Terror"
+    },
+    "1.2": {
+      "builder_address": 4414656,
+      "title": "Minor Alien Breach"
+    },
+    "1.3": {
+      "builder_address": 4422144,
+      "title": "Target Practice"
+    },
+    "1.4": {
+      "builder_address": 4423184,
+      "title": "Frontline Assault"
+    },
+    "1.5": {
+      "builder_address": 4417312,
+      "title": "Alien Dens"
+    },
+    "1.6": {
+      "builder_address": 4416336,
+      "title": "The Random Factor"
+    },
+    "1.7": {
+      "builder_address": 4416576,
+      "title": "Spider Wave Syndrome"
+    },
+    "1.8": {
+      "builder_address": 4415136,
+      "title": "Alien Squads"
+    },
+    "1.9": {
+      "builder_address": 4416672,
+      "title": "Nesting Grounds"
+    },
+    "2.1": {
+      "builder_address": 4421024,
+      "title": "Everred Pastures"
+    },
+    "2.10": {
+      "builder_address": 4420544,
+      "title": "Spideroids"
+    },
+    "2.2": {
+      "builder_address": 4418928,
+      "title": "Spider Spawns"
+    },
+    "2.3": {
+      "builder_address": 4417568,
+      "title": "Arachnoid Farm"
+    },
+    "2.4": {
+      "builder_address": 4419296,
+      "title": "Two Fronts"
+    },
+    "2.5": {
+      "builder_address": 4421648,
+      "title": "Sweep Stakes"
+    },
+    "2.6": {
+      "builder_address": 4420768,
+      "title": "Evil Zombies At Large"
+    },
+    "2.7": {
+      "builder_address": 4419680,
+      "title": "Survival Of The Fastest"
+    },
+    "2.8": {
+      "builder_address": 4422560,
+      "title": "Land Of Lizards"
+    },
+    "2.9": {
+      "builder_address": 4416000,
+      "title": "Ghost Patrols"
+    },
+    "3.1": {
+      "builder_address": 4423760,
+      "title": "The Blighting"
+    },
+    "3.10": {
+      "builder_address": 4415648,
+      "title": "Zombie Masters"
+    },
+    "3.2": {
+      "builder_address": 4421392,
+      "title": "Lizard Kings"
+    },
+    "3.3": {
+      "builder_address": 4424864,
+      "title": "The Killing"
+    },
+    "3.4": {
+      "builder_address": 4414000,
+      "title": "Hidden Evil"
+    },
+    "3.5": {
+      "builder_address": 4426048,
+      "title": "Surrounded By Reptiles"
+    },
+    "3.6": {
+      "builder_address": 4422768,
+      "title": "The Lizquidation"
+    },
+    "3.7": {
+      "builder_address": 4427984,
+      "title": "Spiders Inc."
+    },
+    "3.8": {
+      "builder_address": 4425792,
+      "title": "Lizard Raze"
+    },
+    "3.9": {
+      "builder_address": 4421920,
+      "title": "Deja vu"
+    },
+    "4.1": {
+      "builder_address": 4422384,
+      "title": "Major Alien Breach"
+    },
+    "4.10": {
+      "builder_address": 4427280,
+      "title": "The End of All"
+    },
+    "4.2": {
+      "builder_address": 4423024,
+      "title": "Zombie Time"
+    },
+    "4.3": {
+      "builder_address": 4425472,
+      "title": "Lizard Zombie Pact"
+    },
+    "4.4": {
+      "builder_address": 4423472,
+      "title": "The Collaboration"
+    },
+    "4.5": {
+      "builder_address": 4424672,
+      "title": "The Massacre"
+    },
+    "4.6": {
+      "builder_address": 4426304,
+      "title": "The Unblitzkrieg"
+    },
+    "4.7": {
+      "builder_address": 4417952,
+      "title": "Gauntlet"
+    },
+    "4.8": {
+      "builder_address": 4418576,
+      "title": "Syntax Terror"
+    },
+    "4.9": {
+      "builder_address": 4424384,
+      "title": "The Annihilation"
+    },
+    "5.1": {
+      "builder_address": 4412944,
+      "title": "The Beating"
+    },
+    "5.10": {
+      "builder_address": 4409792,
+      "title": "The Gathering"
+    },
+    "5.2": {
+      "builder_address": 4413600,
+      "title": "The Spanking Of The Dead"
+    },
+    "5.3": {
+      "builder_address": 4412112,
+      "title": "The Fortress"
+    },
+    "5.4": {
+      "builder_address": 4411680,
+      "title": "The Gang Wars"
+    },
+    "5.5": {
+      "builder_address": 4411136,
+      "title": "Knee-deep in the Dead"
+    },
+    "5.6": {
+      "builder_address": 4412544,
+      "title": "Cross Fire"
+    },
+    "5.7": {
+      "builder_address": 4410528,
+      "title": "Army of Three"
+    },
+    "5.8": {
+      "builder_address": 4409440,
+      "title": "Monster Blues"
+    },
+    "5.9": {
+      "builder_address": 4408448,
+      "title": "Nagolipoli"
+    }
+  },
+  "missing_levels": [],
+  "runs": [
+    {
+      "builder_name": "quest_build_land_hostile",
+      "builder_va": "0x00435bd0",
+      "entries_truncated": false,
+      "entry_count": 4,
+      "full_version": 256,
+      "key": "1.1",
+      "max_trigger_ms": 11500,
+      "min_trigger_ms": 500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x26": 4
+      },
+      "spawn_ids": [
+        "0x26"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 0,
+      "time_limit_ms": 120000,
+      "title": "Land Hostile",
+      "ts": "2026-01-19T19:40:58.504Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 2
+    },
+    {
+      "builder_name": "quest_build_minor_alien_breach",
+      "builder_va": "0x00435cc0",
+      "entries_truncated": false,
+      "entry_count": 37,
+      "full_version": 256,
+      "key": "1.2",
+      "max_trigger_ms": 54000,
+      "min_trigger_ms": 0,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x26": 36,
+        "0x29": 1
+      },
+      "spawn_ids": [
+        "0x26",
+        "0x29"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 0,
+      "time_limit_ms": 120000,
+      "title": "Minor Alien Breach",
+      "ts": "2026-01-19T19:41:07.634Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 3
+    },
+    {
+      "builder_name": "quest_build_target_practice",
+      "builder_va": "0x00437a00",
+      "entries_truncated": false,
+      "entry_count": 30,
+      "full_version": 256,
+      "key": "1.3",
+      "max_trigger_ms": 42450,
+      "min_trigger_ms": 2000,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x36": 30
+      },
+      "spawn_ids": [
+        "0x36"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 0,
+      "time_limit_ms": 65000,
+      "title": "Target Practice",
+      "ts": "2026-01-19T19:41:16.017Z",
+      "unlock_perk_id": 28,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_frontline_assault",
+      "builder_va": "0x00437e10",
+      "entries_truncated": false,
+      "entry_count": 50,
+      "full_version": 256,
+      "key": "1.4",
+      "max_trigger_ms": 32800,
+      "min_trigger_ms": 0,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x1a": 5,
+        "0x26": 43,
+        "0x29": 2
+      },
+      "spawn_ids": [
+        "0x1a",
+        "0x26",
+        "0x29"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 0,
+      "time_limit_ms": 300000,
+      "title": "Frontline Assault",
+      "ts": "2026-01-19T19:41:24.412Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 8
+    },
+    {
+      "builder_name": "quest_build_alien_dens",
+      "builder_va": "0x00436720",
+      "entries_truncated": false,
+      "entry_count": 5,
+      "full_version": 256,
+      "key": "1.5",
+      "max_trigger_ms": 38500,
+      "min_trigger_ms": 1500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x08": 5
+      },
+      "spawn_ids": [
+        "0x08"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 0,
+      "time_limit_ms": 180000,
+      "title": "Alien Dens",
+      "ts": "2026-01-19T19:41:33.346Z",
+      "unlock_perk_id": 29,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_the_random_factor",
+      "builder_va": "0x00436350",
+      "entries_truncated": false,
+      "entry_count": 23,
+      "full_version": 256,
+      "key": "1.6",
+      "max_trigger_ms": 91700,
+      "min_trigger_ms": 1500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x1d": 20,
+        "0x29": 3
+      },
+      "spawn_ids": [
+        "0x1d",
+        "0x29"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 0,
+      "time_limit_ms": 300000,
+      "title": "The Random Factor",
+      "ts": "2026-01-19T19:41:41.230Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 5
+    },
+    {
+      "builder_name": "quest_build_spider_wave_syndrome",
+      "builder_va": "0x00436440",
+      "entries_truncated": false,
+      "entry_count": 18,
+      "full_version": 256,
+      "key": "1.7",
+      "max_trigger_ms": 95000,
+      "min_trigger_ms": 1500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x40": 18
+      },
+      "spawn_ids": [
+        "0x40"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 0,
+      "time_limit_ms": 240000,
+      "title": "Spider Wave Syndrome",
+      "ts": "2026-01-19T19:41:49.623Z",
+      "unlock_perk_id": 30,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_alien_squads",
+      "builder_va": "0x00435ea0",
+      "entries_truncated": false,
+      "entry_count": 60,
+      "full_version": 256,
+      "key": "1.8",
+      "max_trigger_ms": 81200,
+      "min_trigger_ms": 1500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x12": 8,
+        "0x26": 52
+      },
+      "spawn_ids": [
+        "0x12",
+        "0x26"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 0,
+      "time_limit_ms": 180000,
+      "title": "Alien Squads",
+      "ts": "2026-01-19T19:41:57.732Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 6
+    },
+    {
+      "builder_name": "quest_build_nesting_grounds",
+      "builder_va": "0x004364a0",
+      "entries_truncated": false,
+      "entry_count": 12,
+      "full_version": 256,
+      "key": "1.9",
+      "max_trigger_ms": 55000,
+      "min_trigger_ms": 1500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x08": 1,
+        "0x09": 6,
+        "0x1d": 3,
+        "0x1e": 1,
+        "0x1f": 1
+      },
+      "spawn_ids": [
+        "0x08",
+        "0x09",
+        "0x1d",
+        "0x1e",
+        "0x1f"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 0,
+      "time_limit_ms": 240000,
+      "title": "Nesting Grounds",
+      "ts": "2026-01-19T19:42:06.216Z",
+      "unlock_perk_id": 31,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_8_legged_terror",
+      "builder_va": "0x00436120",
+      "entries_truncated": false,
+      "entry_count": 57,
+      "full_version": 256,
+      "key": "1.10",
+      "max_trigger_ms": 34600,
+      "min_trigger_ms": 1000,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x3a": 1,
+        "0x3d": 56
+      },
+      "spawn_ids": [
+        "0x3a",
+        "0x3d"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 0,
+      "time_limit_ms": 240000,
+      "title": "8-legged Terror",
+      "ts": "2026-01-19T19:42:14.273Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 12
+    },
+    {
+      "builder_name": "quest_build_everred_pastures",
+      "builder_va": "0x004375a0",
+      "entries_truncated": false,
+      "entry_count": 34,
+      "full_version": 256,
+      "key": "2.1",
+      "max_trigger_ms": 92500,
+      "min_trigger_ms": 1500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x1b": 2,
+        "0x32": 8,
+        "0x33": 8,
+        "0x34": 8,
+        "0x35": 8
+      },
+      "spawn_ids": [
+        "0x1b",
+        "0x32",
+        "0x33",
+        "0x34",
+        "0x35"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 2,
+      "time_limit_ms": 300000,
+      "title": "Everred Pastures",
+      "ts": "2026-01-19T19:42:22.935Z",
+      "unlock_perk_id": 32,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_spider_spawns",
+      "builder_va": "0x00436d70",
+      "entries_truncated": false,
+      "entry_count": 11,
+      "full_version": 256,
+      "key": "2.2",
+      "max_trigger_ms": 31500,
+      "min_trigger_ms": 1500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x0a": 1,
+        "0x10": 8,
+        "0x38": 2
+      },
+      "spawn_ids": [
+        "0x0a",
+        "0x10",
+        "0x38"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 2,
+      "time_limit_ms": 300000,
+      "title": "Spider Spawns",
+      "ts": "2026-01-19T19:42:30.880Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 9
+    },
+    {
+      "builder_name": "quest_build_arachnoid_farm",
+      "builder_va": "0x00436820",
+      "entries_truncated": false,
+      "entry_count": 18,
+      "full_version": 256,
+      "key": "2.3",
+      "max_trigger_ms": 65000,
+      "min_trigger_ms": 500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x0a": 10,
+        "0x10": 8
+      },
+      "spawn_ids": [
+        "0x0a",
+        "0x10"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 2,
+      "time_limit_ms": 240000,
+      "title": "Arachnoid Farm",
+      "ts": "2026-01-19T19:42:38.676Z",
+      "unlock_perk_id": 33,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_two_fronts",
+      "builder_va": "0x00436ee0",
+      "entries_truncated": false,
+      "entry_count": 86,
+      "full_version": 256,
+      "key": "2.4",
+      "max_trigger_ms": 80000,
+      "min_trigger_ms": 1000,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x07": 3,
+        "0x0a": 3,
+        "0x1a": 40,
+        "0x1b": 40
+      },
+      "spawn_ids": [
+        "0x07",
+        "0x0a",
+        "0x1a",
+        "0x1b"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 2,
+      "time_limit_ms": 240000,
+      "title": "Two Fronts",
+      "ts": "2026-01-19T19:42:46.505Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 21
+    },
+    {
+      "builder_name": "quest_build_sweep_stakes",
+      "builder_va": "0x00437810",
+      "entries_truncated": false,
+      "entry_count": 64,
+      "full_version": 256,
+      "key": "2.5",
+      "max_trigger_ms": 23600,
+      "min_trigger_ms": 2000,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x36": 64
+      },
+      "spawn_ids": [
+        "0x36"
+      ],
+      "start_weapon_id": 6,
+      "terrain_id": 2,
+      "time_limit_ms": 35000,
+      "title": "Sweep Stakes",
+      "ts": "2026-01-19T19:42:55.785Z",
+      "unlock_perk_id": 34,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_evil_zombies_at_large",
+      "builder_va": "0x004374a0",
+      "entries_truncated": false,
+      "entry_count": 40,
+      "full_version": 256,
+      "key": "2.6",
+      "max_trigger_ms": 51000,
+      "min_trigger_ms": 1500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x41": 40
+      },
+      "spawn_ids": [
+        "0x41"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 2,
+      "time_limit_ms": 180000,
+      "title": "Evil Zombies At Large",
+      "ts": "2026-01-19T19:43:03.757Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 7
+    },
+    {
+      "builder_name": "quest_build_survival_of_the_fastest",
+      "builder_va": "0x00437060",
+      "entries_truncated": false,
+      "entry_count": 26,
+      "full_version": 256,
+      "key": "2.7",
+      "max_trigger_ms": 24300,
+      "min_trigger_ms": 500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x07": 2,
+        "0x10": 24
+      },
+      "spawn_ids": [
+        "0x07",
+        "0x10"
+      ],
+      "start_weapon_id": 5,
+      "terrain_id": 2,
+      "time_limit_ms": 120000,
+      "title": "Survival Of The Fastest",
+      "ts": "2026-01-19T19:43:11.568Z",
+      "unlock_perk_id": 35,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_land_of_lizards",
+      "builder_va": "0x00437ba0",
+      "entries_truncated": false,
+      "entry_count": 4,
+      "full_version": 256,
+      "key": "2.8",
+      "max_trigger_ms": 32000,
+      "min_trigger_ms": 2000,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x0e": 4
+      },
+      "spawn_ids": [
+        "0x0e"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 2,
+      "time_limit_ms": 180000,
+      "title": "Land Of Lizards",
+      "ts": "2026-01-19T19:43:19.553Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 4
+    },
+    {
+      "builder_name": "quest_build_ghost_patrols",
+      "builder_va": "0x00436200",
+      "entries_truncated": false,
+      "entry_count": 15,
+      "full_version": 256,
+      "key": "2.9",
+      "max_trigger_ms": 37500,
+      "min_trigger_ms": 1500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x18": 1,
+        "0x19": 12,
+        "0x2b": 2
+      },
+      "spawn_ids": [
+        "0x18",
+        "0x19",
+        "0x2b"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 2,
+      "time_limit_ms": 180000,
+      "title": "Ghost Patrols",
+      "ts": "2026-01-19T19:43:28.070Z",
+      "unlock_perk_id": 36,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_spideroids",
+      "builder_va": "0x004373c0",
+      "entries_truncated": false,
+      "entry_count": 3,
+      "full_version": 256,
+      "key": "2.10",
+      "max_trigger_ms": 6000,
+      "min_trigger_ms": 1000,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x01": 3
+      },
+      "spawn_ids": [
+        "0x01"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 2,
+      "time_limit_ms": 360000,
+      "title": "Spideroids",
+      "ts": "2026-01-19T19:43:35.708Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 11
+    },
+    {
+      "builder_name": "quest_build_the_blighting",
+      "builder_va": "0x00438050",
+      "entries_truncated": false,
+      "entry_count": 17,
+      "full_version": 256,
+      "key": "3.1",
+      "max_trigger_ms": 101000,
+      "min_trigger_ms": 1500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x07": 4,
+        "0x1a": 3,
+        "0x1c": 4,
+        "0x2b": 6
+      },
+      "spawn_ids": [
+        "0x07",
+        "0x1a",
+        "0x1c",
+        "0x2b"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 4,
+      "time_limit_ms": 300000,
+      "title": "The Blighting",
+      "ts": "2026-01-19T19:43:48.825Z",
+      "unlock_perk_id": 37,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_lizard_kings",
+      "builder_va": "0x00437710",
+      "entries_truncated": false,
+      "entry_count": 31,
+      "full_version": 256,
+      "key": "3.2",
+      "max_trigger_ms": 25800,
+      "min_trigger_ms": 1500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x11": 3,
+        "0x31": 28
+      },
+      "spawn_ids": [
+        "0x11",
+        "0x31"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 4,
+      "time_limit_ms": 180000,
+      "title": "Lizard Kings",
+      "ts": "2026-01-19T19:43:56.334Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 10
+    },
+    {
+      "builder_name": "quest_build_the_killing",
+      "builder_va": "0x004384a0",
+      "entries_truncated": false,
+      "entry_count": 14,
+      "full_version": 256,
+      "key": "3.3",
+      "max_trigger_ms": 58000,
+      "min_trigger_ms": 2000,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x07": 6,
+        "0x1a": 3,
+        "0x1b": 2,
+        "0x1c": 3
+      },
+      "spawn_ids": [
+        "0x07",
+        "0x1a",
+        "0x1b",
+        "0x1c"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 4,
+      "time_limit_ms": 300000,
+      "title": "The Killing",
+      "ts": "2026-01-19T19:44:04.467Z",
+      "unlock_perk_id": 38,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_hidden_evil",
+      "builder_va": "0x00435a30",
+      "entries_truncated": false,
+      "entry_count": 5,
+      "full_version": 256,
+      "key": "3.4",
+      "max_trigger_ms": 35000,
+      "min_trigger_ms": 500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x21": 1,
+        "0x22": 2,
+        "0x23": 2
+      },
+      "spawn_ids": [
+        "0x21",
+        "0x22",
+        "0x23"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 4,
+      "time_limit_ms": 300000,
+      "title": "Hidden Evil",
+      "ts": "2026-01-19T19:44:12.015Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 13
+    },
+    {
+      "builder_name": "quest_build_surrounded_by_reptiles",
+      "builder_va": "0x00438940",
+      "entries_truncated": false,
+      "entry_count": 20,
+      "full_version": 256,
+      "key": "3.5",
+      "max_trigger_ms": 11200,
+      "min_trigger_ms": 1000,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x0d": 20
+      },
+      "spawn_ids": [
+        "0x0d"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 4,
+      "time_limit_ms": 300000,
+      "title": "Surrounded By Reptiles",
+      "ts": "2026-01-19T19:44:20.157Z",
+      "unlock_perk_id": 39,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_the_lizquidation",
+      "builder_va": "0x00437c70",
+      "entries_truncated": false,
+      "entry_count": 21,
+      "full_version": 256,
+      "key": "3.6",
+      "max_trigger_ms": 73500,
+      "min_trigger_ms": 1500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x2b": 1,
+        "0x2e": 20
+      },
+      "spawn_ids": [
+        "0x2b",
+        "0x2e"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 4,
+      "time_limit_ms": 300000,
+      "title": "The Lizquidation",
+      "ts": "2026-01-19T19:44:28.157Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 15
+    },
+    {
+      "builder_name": "quest_build_spiders_inc",
+      "builder_va": "0x004390d0",
+      "entries_truncated": false,
+      "entry_count": 33,
+      "full_version": 256,
+      "key": "3.7",
+      "max_trigger_ms": 101000,
+      "min_trigger_ms": 500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x38": 32,
+        "0x40": 1
+      },
+      "spawn_ids": [
+        "0x38",
+        "0x40"
+      ],
+      "start_weapon_id": 11,
+      "terrain_id": 4,
+      "time_limit_ms": 300000,
+      "title": "Spiders Inc.",
+      "ts": "2026-01-19T19:44:36.106Z",
+      "unlock_perk_id": 40,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_lizard_raze",
+      "builder_va": "0x00438840",
+      "entries_truncated": false,
+      "entry_count": 33,
+      "full_version": 256,
+      "key": "3.8",
+      "max_trigger_ms": 85500,
+      "min_trigger_ms": 1500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x0c": 3,
+        "0x2e": 30
+      },
+      "spawn_ids": [
+        "0x0c",
+        "0x2e"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 4,
+      "time_limit_ms": 300000,
+      "title": "Lizard Raze",
+      "ts": "2026-01-19T19:44:44.211Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 18
+    },
+    {
+      "builder_name": "quest_build_deja_vu",
+      "builder_va": "0x00437920",
+      "entries_truncated": false,
+      "entry_count": 72,
+      "full_version": 256,
+      "key": "3.9",
+      "max_trigger_ms": 25120,
+      "min_trigger_ms": 2000,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x0d": 72
+      },
+      "spawn_ids": [
+        "0x0d"
+      ],
+      "start_weapon_id": 6,
+      "terrain_id": 4,
+      "time_limit_ms": 120000,
+      "title": "Deja vu",
+      "ts": "2026-01-19T19:44:52.487Z",
+      "unlock_perk_id": 41,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_zombie_masters",
+      "builder_va": "0x004360a0",
+      "entries_truncated": false,
+      "entry_count": 4,
+      "full_version": 256,
+      "key": "3.10",
+      "max_trigger_ms": 18000,
+      "min_trigger_ms": 1000,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x00": 4
+      },
+      "spawn_ids": [
+        "0x00"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 4,
+      "time_limit_ms": 300000,
+      "title": "Zombie Masters",
+      "ts": "2026-01-19T19:45:00.647Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 20
+    },
+    {
+      "builder_name": "quest_build_major_alien_breach",
+      "builder_va": "0x00437af0",
+      "entries_truncated": false,
+      "entry_count": 200,
+      "full_version": 256,
+      "key": "4.1",
+      "max_trigger_ms": 129235,
+      "min_trigger_ms": 4000,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x20": 200
+      },
+      "spawn_ids": [
+        "0x20"
+      ],
+      "start_weapon_id": 18,
+      "terrain_id": 6,
+      "time_limit_ms": 300000,
+      "title": "Major Alien Breach",
+      "ts": "2026-01-19T19:45:09.578Z",
+      "unlock_perk_id": 42,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_zombie_time",
+      "builder_va": "0x00437d70",
+      "entries_truncated": false,
+      "entry_count": 24,
+      "full_version": 256,
+      "key": "4.2",
+      "max_trigger_ms": 89500,
+      "min_trigger_ms": 1500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x41": 24
+      },
+      "spawn_ids": [
+        "0x41"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 6,
+      "time_limit_ms": 300000,
+      "title": "Zombie Time",
+      "ts": "2026-01-19T19:45:16.776Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 19
+    },
+    {
+      "builder_name": "quest_build_lizard_zombie_pact",
+      "builder_va": "0x00438700",
+      "entries_truncated": false,
+      "entry_count": 40,
+      "full_version": 256,
+      "key": "4.3",
+      "max_trigger_ms": 106500,
+      "min_trigger_ms": 1500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x0c": 8,
+        "0x41": 32
+      },
+      "spawn_ids": [
+        "0x0c",
+        "0x41"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 6,
+      "time_limit_ms": 300000,
+      "title": "Lizard Zombie Pact",
+      "ts": "2026-01-19T19:45:24.625Z",
+      "unlock_perk_id": 43,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_the_collaboration",
+      "builder_va": "0x00437f30",
+      "entries_truncated": false,
+      "entry_count": 64,
+      "full_version": 256,
+      "key": "4.4",
+      "max_trigger_ms": 166500,
+      "min_trigger_ms": 1500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x1a": 16,
+        "0x1b": 16,
+        "0x1c": 16,
+        "0x41": 16
+      },
+      "spawn_ids": [
+        "0x1a",
+        "0x1b",
+        "0x1c",
+        "0x41"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 6,
+      "time_limit_ms": 360000,
+      "title": "The Collaboration",
+      "ts": "2026-01-19T19:45:32.961Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 14
+    },
+    {
+      "builder_name": "quest_build_the_massacre",
+      "builder_va": "0x004383e0",
+      "entries_truncated": false,
+      "entry_count": 27,
+      "full_version": 256,
+      "key": "4.5",
+      "max_trigger_ms": 86500,
+      "min_trigger_ms": 1500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x2b": 9,
+        "0x41": 18
+      },
+      "spawn_ids": [
+        "0x2b",
+        "0x41"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 6,
+      "time_limit_ms": 300000,
+      "title": "The Massacre",
+      "ts": "2026-01-19T19:45:40.499Z",
+      "unlock_perk_id": 44,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_the_unblitzkrieg",
+      "builder_va": "0x00438a40",
+      "entries_truncated": false,
+      "entry_count": 81,
+      "full_version": 256,
+      "key": "4.6",
+      "max_trigger_ms": 82700,
+      "min_trigger_ms": 500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x07": 41,
+        "0x0d": 40
+      },
+      "spawn_ids": [
+        "0x07",
+        "0x0d"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 6,
+      "time_limit_ms": 600000,
+      "title": "The Unblitzkrieg",
+      "ts": "2026-01-19T19:45:48.096Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 17
+    },
+    {
+      "builder_name": "quest_build_gauntlet",
+      "builder_va": "0x004369a0",
+      "entries_truncated": false,
+      "entry_count": 68,
+      "full_version": 256,
+      "key": "4.7",
+      "max_trigger_ms": 53500,
+      "min_trigger_ms": 0,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x0a": 28,
+        "0x41": 40
+      },
+      "spawn_ids": [
+        "0x0a",
+        "0x41"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 6,
+      "time_limit_ms": 300000,
+      "title": "Gauntlet",
+      "ts": "2026-01-19T19:45:56.190Z",
+      "unlock_perk_id": 45,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_syntax_terror",
+      "builder_va": "0x00436c10",
+      "entries_truncated": false,
+      "entry_count": 40,
+      "full_version": 256,
+      "key": "4.8",
+      "max_trigger_ms": 94200,
+      "min_trigger_ms": 1500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x07": 40
+      },
+      "spawn_ids": [
+        "0x07"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 6,
+      "time_limit_ms": 300000,
+      "title": "Syntax Terror",
+      "ts": "2026-01-19T19:46:04.159Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 22
+    },
+    {
+      "builder_name": "quest_build_the_annihilation",
+      "builder_va": "0x004382c0",
+      "entries_truncated": false,
+      "entry_count": 25,
+      "full_version": 256,
+      "key": "4.9",
+      "max_trigger_ms": 48300,
+      "min_trigger_ms": 500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x07": 24,
+        "0x2b": 1
+      },
+      "spawn_ids": [
+        "0x07",
+        "0x2b"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 6,
+      "time_limit_ms": 300000,
+      "title": "The Annihilation",
+      "ts": "2026-01-19T19:46:11.197Z",
+      "unlock_perk_id": 46,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_the_annihilation",
+      "builder_va": "0x004382c0",
+      "entries_truncated": false,
+      "entry_count": 25,
+      "full_version": 256,
+      "key": "4.9",
+      "max_trigger_ms": 48300,
+      "min_trigger_ms": 500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x07": 24,
+        "0x2b": 1
+      },
+      "spawn_ids": [
+        "0x07",
+        "0x2b"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 6,
+      "time_limit_ms": 300000,
+      "title": "The Annihilation",
+      "ts": "2026-01-19T19:46:24.600Z",
+      "unlock_perk_id": 46,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_the_end_of_all",
+      "builder_va": "0x00438e10",
+      "entries_truncated": false,
+      "entry_count": 25,
+      "full_version": 256,
+      "key": "4.10",
+      "max_trigger_ms": 51000,
+      "min_trigger_ms": 3000,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x07": 12,
+        "0x0b": 1,
+        "0x3c": 12
+      },
+      "spawn_ids": [
+        "0x07",
+        "0x0b",
+        "0x3c"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 6,
+      "time_limit_ms": 480000,
+      "title": "The End of All",
+      "ts": "2026-01-19T19:46:32.074Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 23
+    },
+    {
+      "builder_name": "quest_build_the_beating",
+      "builder_va": "0x00435610",
+      "entries_truncated": false,
+      "entry_count": 31,
+      "full_version": 256,
+      "key": "5.1",
+      "max_trigger_ms": 40500,
+      "min_trigger_ms": 500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x0f": 6,
+        "0x12": 6,
+        "0x25": 16,
+        "0x27": 1,
+        "0x29": 2
+      },
+      "spawn_ids": [
+        "0x0f",
+        "0x12",
+        "0x25",
+        "0x27",
+        "0x29"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 1,
+      "time_limit_ms": 480000,
+      "title": "The Beating",
+      "ts": "2026-01-19T19:46:40.405Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 31
+    },
+    {
+      "builder_name": "quest_build_the_spanking_of_the_dead",
+      "builder_va": "0x004358a0",
+      "entries_truncated": false,
+      "entry_count": 132,
+      "full_version": 256,
+      "key": "5.2",
+      "max_trigger_ms": 58400,
+      "min_trigger_ms": 500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x27": 2,
+        "0x41": 128,
+        "0x42": 2
+      },
+      "spawn_ids": [
+        "0x27",
+        "0x41",
+        "0x42"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 2,
+      "time_limit_ms": 480000,
+      "title": "The Spanking Of The Dead",
+      "ts": "2026-01-19T19:46:48.592Z",
+      "unlock_perk_id": 47,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_the_fortress",
+      "builder_va": "0x004352d0",
+      "entries_truncated": false,
+      "entry_count": 42,
+      "full_version": 256,
+      "key": "5.3",
+      "max_trigger_ms": 30100,
+      "min_trigger_ms": 100,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x09": 7,
+        "0x0a": 34,
+        "0x40": 1
+      },
+      "spawn_ids": [
+        "0x09",
+        "0x0a",
+        "0x40"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 3,
+      "time_limit_ms": 480000,
+      "title": "The Fortress",
+      "ts": "2026-01-19T19:46:56.577Z",
+      "unlock_perk_id": 48,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_the_gang_wars",
+      "builder_va": "0x00435120",
+      "entries_truncated": false,
+      "entry_count": 24,
+      "full_version": 256,
+      "key": "5.4",
+      "max_trigger_ms": 107500,
+      "min_trigger_ms": 100,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x12": 22,
+        "0x13": 2
+      },
+      "spawn_ids": [
+        "0x12",
+        "0x13"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 0,
+      "time_limit_ms": 480000,
+      "title": "The Gang Wars",
+      "ts": "2026-01-19T19:47:03.883Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 30
+    },
+    {
+      "builder_name": "quest_build_knee_deep_in_the_dead",
+      "builder_va": "0x00434f00",
+      "entries_truncated": false,
+      "entry_count": 245,
+      "full_version": 256,
+      "key": "5.5",
+      "max_trigger_ms": 96300,
+      "min_trigger_ms": 100,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x41": 166,
+        "0x42": 70,
+        "0x43": 9
+      },
+      "spawn_ids": [
+        "0x41",
+        "0x42",
+        "0x43"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 1,
+      "time_limit_ms": 480000,
+      "title": "Knee-deep in the Dead",
+      "ts": "2026-01-19T19:47:11.173Z",
+      "unlock_perk_id": 49,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_cross_fire",
+      "builder_va": "0x00435480",
+      "entries_truncated": false,
+      "entry_count": 7,
+      "full_version": 256,
+      "key": "5.6",
+      "max_trigger_ms": 26000,
+      "min_trigger_ms": 100,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x01": 1,
+        "0x3c": 3,
+        "0x40": 3
+      },
+      "spawn_ids": [
+        "0x01",
+        "0x3c",
+        "0x40"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 2,
+      "time_limit_ms": 480000,
+      "title": "Cross Fire",
+      "ts": "2026-01-19T19:47:18.405Z",
+      "unlock_perk_id": 50,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_army_of_three",
+      "builder_va": "0x00434ca0",
+      "entries_truncated": false,
+      "entry_count": 11,
+      "full_version": 256,
+      "key": "5.7",
+      "max_trigger_ms": 56500,
+      "min_trigger_ms": 500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x15": 4,
+        "0x16": 3,
+        "0x17": 4
+      },
+      "spawn_ids": [
+        "0x15",
+        "0x16",
+        "0x17"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 3,
+      "time_limit_ms": 480000,
+      "title": "Army of Three",
+      "ts": "2026-01-19T19:47:26.613Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_monster_blues",
+      "builder_va": "0x00434860",
+      "entries_truncated": false,
+      "entry_count": 68,
+      "full_version": 256,
+      "key": "5.8",
+      "max_trigger_ms": 84200,
+      "min_trigger_ms": 500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x03": 18,
+        "0x04": 1,
+        "0x05": 32,
+        "0x06": 17
+      },
+      "spawn_ids": [
+        "0x03",
+        "0x04",
+        "0x05",
+        "0x06"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 0,
+      "time_limit_ms": 480000,
+      "title": "Monster Blues",
+      "ts": "2026-01-19T19:47:34.017Z",
+      "unlock_perk_id": 51,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_nagolipoli",
+      "builder_va": "0x00434480",
+      "entries_truncated": false,
+      "entry_count": 164,
+      "full_version": 256,
+      "key": "5.9",
+      "max_trigger_ms": 54100,
+      "min_trigger_ms": 2000,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x0a": 12,
+        "0x0b": 2,
+        "0x1c": 130,
+        "0x40": 20
+      },
+      "spawn_ids": [
+        "0x0a",
+        "0x0b",
+        "0x1c",
+        "0x40"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 1,
+      "time_limit_ms": 480000,
+      "title": "Nagolipoli",
+      "ts": "2026-01-19T19:47:42.765Z",
+      "unlock_perk_id": 52,
+      "unlock_weapon_id": 0
+    },
+    {
+      "builder_name": "quest_build_the_gathering",
+      "builder_va": "0x004349c0",
+      "entries_truncated": false,
+      "entry_count": 13,
+      "full_version": 256,
+      "key": "5.10",
+      "max_trigger_ms": 109500,
+      "min_trigger_ms": 500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x00": 2,
+        "0x01": 4,
+        "0x3a": 3,
+        "0x3c": 4
+      },
+      "spawn_ids": [
+        "0x00",
+        "0x01",
+        "0x3a",
+        "0x3c"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 2,
+      "time_limit_ms": 480000,
+      "title": "The Gathering",
+      "ts": "2026-01-19T19:47:50.722Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 28
+    },
+    {
+      "builder_name": "quest_build_the_gathering",
+      "builder_va": "0x004349c0",
+      "entries_truncated": false,
+      "entry_count": 13,
+      "full_version": 257,
+      "key": "5.10",
+      "max_trigger_ms": 109500,
+      "min_trigger_ms": 500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x00": 2,
+        "0x01": 4,
+        "0x3a": 3,
+        "0x3c": 4
+      },
+      "spawn_ids": [
+        "0x00",
+        "0x01",
+        "0x3a",
+        "0x3c"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 2,
+      "time_limit_ms": 480000,
+      "title": "The Gathering",
+      "ts": "2026-01-19T19:48:00.001Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 28
+    },
+    {
+      "builder_name": "quest_build_land_hostile",
+      "builder_va": "0x00435bd0",
+      "entries_truncated": false,
+      "entry_count": 4,
+      "full_version": 257,
+      "key": "1.1",
+      "max_trigger_ms": 11500,
+      "min_trigger_ms": 500,
+      "player_count": 1,
+      "spawn_id_counts": {
+        "0x26": 4
+      },
+      "spawn_ids": [
+        "0x26"
+      ],
+      "start_weapon_id": 1,
+      "terrain_id": 0,
+      "time_limit_ms": 120000,
+      "title": "Land Hostile",
+      "ts": "2026-01-19T19:48:09.632Z",
+      "unlock_perk_id": 0,
+      "unlock_weapon_id": 2
+    }
+  ],
+  "source_logs": [
+    "artifacts/frida/share/crimsonland_quest_builds.jsonl"
+  ],
+  "unique_keys": 50
+}

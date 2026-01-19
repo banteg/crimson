@@ -1,0 +1,54 @@
+key,title,ts,builder_name,builder_va,entry_count,entries_truncated,time_limit_ms,terrain_id,start_weapon_id,unlock_perk_id,unlock_weapon_id,full_version,player_count,spawn_ids,min_trigger_ms,max_trigger_ms
+1.1,Land Hostile,2026-01-19T19:40:58.504Z,quest_build_land_hostile,0x00435bd0,4,False,120000,0,1,0,2,256,1,0x26,500,11500
+1.2,Minor Alien Breach,2026-01-19T19:41:07.634Z,quest_build_minor_alien_breach,0x00435cc0,37,False,120000,0,1,0,3,256,1,0x26;0x29,0,54000
+1.3,Target Practice,2026-01-19T19:41:16.017Z,quest_build_target_practice,0x00437a00,30,False,65000,0,1,28,0,256,1,0x36,2000,42450
+1.4,Frontline Assault,2026-01-19T19:41:24.412Z,quest_build_frontline_assault,0x00437e10,50,False,300000,0,1,0,8,256,1,0x1a;0x26;0x29,0,32800
+1.5,Alien Dens,2026-01-19T19:41:33.346Z,quest_build_alien_dens,0x00436720,5,False,180000,0,1,29,0,256,1,0x08,1500,38500
+1.6,The Random Factor,2026-01-19T19:41:41.230Z,quest_build_the_random_factor,0x00436350,23,False,300000,0,1,0,5,256,1,0x1d;0x29,1500,91700
+1.7,Spider Wave Syndrome,2026-01-19T19:41:49.623Z,quest_build_spider_wave_syndrome,0x00436440,18,False,240000,0,1,30,0,256,1,0x40,1500,95000
+1.8,Alien Squads,2026-01-19T19:41:57.732Z,quest_build_alien_squads,0x00435ea0,60,False,180000,0,1,0,6,256,1,0x12;0x26,1500,81200
+1.9,Nesting Grounds,2026-01-19T19:42:06.216Z,quest_build_nesting_grounds,0x004364a0,12,False,240000,0,1,31,0,256,1,0x08;0x09;0x1d;0x1e;0x1f,1500,55000
+1.10,8-legged Terror,2026-01-19T19:42:14.273Z,quest_build_8_legged_terror,0x00436120,57,False,240000,0,1,0,12,256,1,0x3a;0x3d,1000,34600
+2.1,Everred Pastures,2026-01-19T19:42:22.935Z,quest_build_everred_pastures,0x004375a0,34,False,300000,2,1,32,0,256,1,0x1b;0x32;0x33;0x34;0x35,1500,92500
+2.2,Spider Spawns,2026-01-19T19:42:30.880Z,quest_build_spider_spawns,0x00436d70,11,False,300000,2,1,0,9,256,1,0x0a;0x10;0x38,1500,31500
+2.3,Arachnoid Farm,2026-01-19T19:42:38.676Z,quest_build_arachnoid_farm,0x00436820,18,False,240000,2,1,33,0,256,1,0x0a;0x10,500,65000
+2.4,Two Fronts,2026-01-19T19:42:46.505Z,quest_build_two_fronts,0x00436ee0,86,False,240000,2,1,0,21,256,1,0x07;0x0a;0x1a;0x1b,1000,80000
+2.5,Sweep Stakes,2026-01-19T19:42:55.785Z,quest_build_sweep_stakes,0x00437810,64,False,35000,2,6,34,0,256,1,0x36,2000,23600
+2.6,Evil Zombies At Large,2026-01-19T19:43:03.757Z,quest_build_evil_zombies_at_large,0x004374a0,40,False,180000,2,1,0,7,256,1,0x41,1500,51000
+2.7,Survival Of The Fastest,2026-01-19T19:43:11.568Z,quest_build_survival_of_the_fastest,0x00437060,26,False,120000,2,5,35,0,256,1,0x07;0x10,500,24300
+2.8,Land Of Lizards,2026-01-19T19:43:19.553Z,quest_build_land_of_lizards,0x00437ba0,4,False,180000,2,1,0,4,256,1,0x0e,2000,32000
+2.9,Ghost Patrols,2026-01-19T19:43:28.070Z,quest_build_ghost_patrols,0x00436200,15,False,180000,2,1,36,0,256,1,0x18;0x19;0x2b,1500,37500
+2.10,Spideroids,2026-01-19T19:43:35.708Z,quest_build_spideroids,0x004373c0,3,False,360000,2,1,0,11,256,1,0x01,1000,6000
+3.1,The Blighting,2026-01-19T19:43:48.825Z,quest_build_the_blighting,0x00438050,17,False,300000,4,1,37,0,256,1,0x07;0x1a;0x1c;0x2b,1500,101000
+3.2,Lizard Kings,2026-01-19T19:43:56.334Z,quest_build_lizard_kings,0x00437710,31,False,180000,4,1,0,10,256,1,0x11;0x31,1500,25800
+3.3,The Killing,2026-01-19T19:44:04.467Z,quest_build_the_killing,0x004384a0,14,False,300000,4,1,38,0,256,1,0x07;0x1a;0x1b;0x1c,2000,58000
+3.4,Hidden Evil,2026-01-19T19:44:12.015Z,quest_build_hidden_evil,0x00435a30,5,False,300000,4,1,0,13,256,1,0x21;0x22;0x23,500,35000
+3.5,Surrounded By Reptiles,2026-01-19T19:44:20.157Z,quest_build_surrounded_by_reptiles,0x00438940,20,False,300000,4,1,39,0,256,1,0x0d,1000,11200
+3.6,The Lizquidation,2026-01-19T19:44:28.157Z,quest_build_the_lizquidation,0x00437c70,21,False,300000,4,1,0,15,256,1,0x2b;0x2e,1500,73500
+3.7,Spiders Inc.,2026-01-19T19:44:36.106Z,quest_build_spiders_inc,0x004390d0,33,False,300000,4,11,40,0,256,1,0x38;0x40,500,101000
+3.8,Lizard Raze,2026-01-19T19:44:44.211Z,quest_build_lizard_raze,0x00438840,33,False,300000,4,1,0,18,256,1,0x0c;0x2e,1500,85500
+3.9,Deja vu,2026-01-19T19:44:52.487Z,quest_build_deja_vu,0x00437920,72,False,120000,4,6,41,0,256,1,0x0d,2000,25120
+3.10,Zombie Masters,2026-01-19T19:45:00.647Z,quest_build_zombie_masters,0x004360a0,4,False,300000,4,1,0,20,256,1,0x00,1000,18000
+4.1,Major Alien Breach,2026-01-19T19:45:09.578Z,quest_build_major_alien_breach,0x00437af0,200,False,300000,6,18,42,0,256,1,0x20,4000,129235
+4.2,Zombie Time,2026-01-19T19:45:16.776Z,quest_build_zombie_time,0x00437d70,24,False,300000,6,1,0,19,256,1,0x41,1500,89500
+4.3,Lizard Zombie Pact,2026-01-19T19:45:24.625Z,quest_build_lizard_zombie_pact,0x00438700,40,False,300000,6,1,43,0,256,1,0x0c;0x41,1500,106500
+4.4,The Collaboration,2026-01-19T19:45:32.961Z,quest_build_the_collaboration,0x00437f30,64,False,360000,6,1,0,14,256,1,0x1a;0x1b;0x1c;0x41,1500,166500
+4.5,The Massacre,2026-01-19T19:45:40.499Z,quest_build_the_massacre,0x004383e0,27,False,300000,6,1,44,0,256,1,0x2b;0x41,1500,86500
+4.6,The Unblitzkrieg,2026-01-19T19:45:48.096Z,quest_build_the_unblitzkrieg,0x00438a40,81,False,600000,6,1,0,17,256,1,0x07;0x0d,500,82700
+4.7,Gauntlet,2026-01-19T19:45:56.190Z,quest_build_gauntlet,0x004369a0,68,False,300000,6,1,45,0,256,1,0x0a;0x41,0,53500
+4.8,Syntax Terror,2026-01-19T19:46:04.159Z,quest_build_syntax_terror,0x00436c10,40,False,300000,6,1,0,22,256,1,0x07,1500,94200
+4.9,The Annihilation,2026-01-19T19:46:11.197Z,quest_build_the_annihilation,0x004382c0,25,False,300000,6,1,46,0,256,1,0x07;0x2b,500,48300
+4.9,The Annihilation,2026-01-19T19:46:24.600Z,quest_build_the_annihilation,0x004382c0,25,False,300000,6,1,46,0,256,1,0x07;0x2b,500,48300
+4.10,The End of All,2026-01-19T19:46:32.074Z,quest_build_the_end_of_all,0x00438e10,25,False,480000,6,1,0,23,256,1,0x07;0x0b;0x3c,3000,51000
+5.1,The Beating,2026-01-19T19:46:40.405Z,quest_build_the_beating,0x00435610,31,False,480000,1,1,0,31,256,1,0x0f;0x12;0x25;0x27;0x29,500,40500
+5.2,The Spanking Of The Dead,2026-01-19T19:46:48.592Z,quest_build_the_spanking_of_the_dead,0x004358a0,132,False,480000,2,1,47,0,256,1,0x27;0x41;0x42,500,58400
+5.3,The Fortress,2026-01-19T19:46:56.577Z,quest_build_the_fortress,0x004352d0,42,False,480000,3,1,48,0,256,1,0x09;0x0a;0x40,100,30100
+5.4,The Gang Wars,2026-01-19T19:47:03.883Z,quest_build_the_gang_wars,0x00435120,24,False,480000,0,1,0,30,256,1,0x12;0x13,100,107500
+5.5,Knee-deep in the Dead,2026-01-19T19:47:11.173Z,quest_build_knee_deep_in_the_dead,0x00434f00,245,False,480000,1,1,49,0,256,1,0x41;0x42;0x43,100,96300
+5.6,Cross Fire,2026-01-19T19:47:18.405Z,quest_build_cross_fire,0x00435480,7,False,480000,2,1,50,0,256,1,0x01;0x3c;0x40,100,26000
+5.7,Army of Three,2026-01-19T19:47:26.613Z,quest_build_army_of_three,0x00434ca0,11,False,480000,3,1,0,0,256,1,0x15;0x16;0x17,500,56500
+5.8,Monster Blues,2026-01-19T19:47:34.017Z,quest_build_monster_blues,0x00434860,68,False,480000,0,1,51,0,256,1,0x03;0x04;0x05;0x06,500,84200
+5.9,Nagolipoli,2026-01-19T19:47:42.765Z,quest_build_nagolipoli,0x00434480,164,False,480000,1,1,52,0,256,1,0x0a;0x0b;0x1c;0x40,2000,54100
+5.10,The Gathering,2026-01-19T19:47:50.722Z,quest_build_the_gathering,0x004349c0,13,False,480000,2,1,0,28,256,1,0x00;0x01;0x3a;0x3c,500,109500
+5.10,The Gathering,2026-01-19T19:48:00.001Z,quest_build_the_gathering,0x004349c0,13,False,480000,2,1,0,28,257,1,0x00;0x01;0x3a;0x3c,500,109500
+1.1,Land Hostile,2026-01-19T19:48:09.632Z,quest_build_land_hostile,0x00435bd0,4,False,120000,0,1,0,2,257,1,0x26,500,11500
