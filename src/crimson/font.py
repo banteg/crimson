@@ -132,7 +132,9 @@ class SmallFont:
                 glyph_w = max(int(round(width * scale)), 1)
                 glyph_h = max(line_height, 1)
                 if scale != 1.0:
-                    glyph = glyph.resize((glyph_w, glyph_h), resample=Image.NEAREST)
+                    glyph = glyph.resize(
+                        (glyph_w, glyph_h), resample=Image.Resampling.NEAREST
+                    )
                 if color != (255, 255, 255, 255):
                     glyph = _apply_tint(glyph, color)
                 output.alpha_composite(glyph, dest=(x_px, y))

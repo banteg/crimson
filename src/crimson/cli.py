@@ -56,11 +56,13 @@ def _extract_one(paq_path: Path, assets_root: Path) -> int:
 def cmd_extract(game_dir: Path, assets_dir: Path) -> None:
     """Extract all .paq files into a flat asset directory."""
     if not game_dir.is_dir():
-        raise typer.Exit(f"game dir not found: {game_dir}")
+        typer.echo(f"game dir not found: {game_dir}", err=True)
+        raise typer.Exit(code=1)
     assets_dir.mkdir(parents=True, exist_ok=True)
     paqs = sorted(game_dir.rglob("*.paq"))
     if not paqs:
-        raise typer.Exit(f"no .paq files under {game_dir}")
+        typer.echo(f"no .paq files under {game_dir}", err=True)
+        raise typer.Exit(code=1)
     total = 0
     for paq_path in paqs:
         total += _extract_one(paq_path, assets_dir)
@@ -83,7 +85,8 @@ def cmd_font(
 ) -> None:
     """Render a sample image with the small font."""
     if text and text_file:
-        raise typer.Exit("use either --text or --text-file, not both")
+        typer.echo("use either --text or --text-file, not both", err=True)
+        raise typer.Exit(code=1)
     if text_file is not None:
         text = text_file.read_text(encoding="utf-8", errors="replace")
     from . import font
@@ -125,7 +128,8 @@ def cmd_quests(
     title = tier1.TIER1_TITLES.get(level, "unknown")
     if builder is None:
         available = ", ".join(sorted(tier1.TIER1_BUILDERS))
-        raise typer.Exit(f"unknown level {level!r}. Available: {available}")
+        typer.echo(f"unknown level {level!r}. Available: {available}", err=True)
+        raise typer.Exit(code=1)
     ctx = QuestContext(width=width, height=height, player_count=player_count)
     rng = random.Random(seed) if seed is not None else random.Random()
     entries = _call_builder(builder, ctx, rng)
