@@ -196,8 +196,9 @@ All of the hint strings in the cluster are printed from a single guarded block i
 - **Resolved**: The Secret Path transition is gated by `credits_screen_update` skipping the Secret button update until all 'o' lines are flagged.
 - **Unresolved**: What does "Dead Center Inside The Triangle Of The First Blood Sacrifice Yourself For Firepower" actually mean in gameplay terms?
   - Is "First Blood" a specific event/monster?
-  - Is "Triangle" a formation or location?
+  - Is "Triangle" a formation or location? **Lead:** `D3DPT_TRIANGLEFAN` is used in the rendering code (Grim2D vtable `0xd8`), possibly for circle fills. Could "Inside The Triangle" mean inside a specific rendered shape or a glitch?
   - Does "Sacrifice Yourself" require dying in a specific spot?
 - Are secret weapon unlocks stored in `game.cfg`, or derived from other state (weapon table flags, globals)?
+  - **Partial Answer:** `quest_database_init` initializes the `quest_unlock_weapon_id` array with static values (e.g., `quest_unlock_weapon_id = 2` for the shotgun). A "secret weapon" unlock would likely require writing to this array (`DAT_00484754`) or the `weapon_table` availability flags directly.
 - Is the startup secret-hint block tied to a “redistribution build” check or another sentinel?
 - Are any of these flags version-specific (v1.9.93 vs earlier)?

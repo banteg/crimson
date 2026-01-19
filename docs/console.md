@@ -52,8 +52,7 @@ The cvar paths emit:
 
 ## Built-in commands (static registration)
 
-`console_init` (`0x00401560`) registers the core commands below and their
-handlers are identifiable in the binary:
+`console_init` (`0x00401560`) registers the core commands below. The handlers have been mapped:
 
 - `cmdlist` → `console_cmdlist` (`0x00401370`): prints each command name and
   a summary line (`"%i commands"`).
@@ -68,9 +67,9 @@ handlers are identifiable in the binary:
 - `clear` → `console_clear_log` (`0x004011a0`): clears the console log list and
   resets scroll state.
 - `extendconsole` → `console_cmd_extend` (`0x00401340`): sets
-  `console_height_px` to ~480.
+  `console_height_px` (`0x0047eeb8`) to ~480.
 - `minimizeconsole` → `console_cmd_minimize` (`0x00401360`): sets
-  `console_height_px` to 300.
+  `console_height_px` (`0x0047eeb8`) to 300.
 - `exec` → `console_cmd_exec` (`0x00401250`): loads a script file and feeds each
   line into `console_exec_line`; prints `Executing '%s'` or a “cannot open”
   error.
