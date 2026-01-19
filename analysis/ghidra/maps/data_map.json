@@ -525,6 +525,30 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x00480980",
+      "name": "credits_line_table_ptrs",
+      "comment": "Credits line table: pointer slots (interleaved with flags, stride 8 bytes)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00480984",
+      "name": "credits_line_table_flags",
+      "comment": "Credits line table flags (interleaved with pointers, stride 8 bytes; bit0 heading, bit2 clicked)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004811bc",
+      "name": "credits_secret_line_base_index",
+      "comment": "Credits Secret injected line base index (observed 0x54)."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x004811c4",
+      "name": "credits_secret_unlock_flag",
+      "comment": "Credits Secret unlock flag set after clicking all required lines."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004819d0",
       "name": "credits_secret_reset_button",
       "comment": "Credits secret UI button state for Reset (ui_button_update target)."

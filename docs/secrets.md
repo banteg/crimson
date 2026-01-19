@@ -66,8 +66,22 @@ pattern. That logic remains to be found.
 
 - **Hinted precondition (string)**: click every credits line containing letter `o` and **avoid clicking**
   other lines; this should start “The Secret Path.”
-- **Verified code**: credits UI click handling lives in `credits_screen_update` (`0x0040d800`), but we
-  have not yet found any branching logic that starts the Secret Path.
+- **Verified code**: credits UI click handling lives in `credits_screen_update` (`0x0040d800`).
+- **Runtime capture (2026-01-19)**: when the last required line is flagged, the unlock flag
+  `DAT_004811c4` is set and the secret lines are injected into the credits line table at base index
+  `DAT_004811bc = 0x54`. The injected lines (all flags `0x4`) are:
+  - "Inside Dead Let Mighty Blood"
+  - "Do Firepower See Mark Of"
+  - "The Sacrifice Old Center"
+  - "Yourself Ground First For"
+  - "Triangle Cube Last Not Flee"
+  - "0001001110000010101110011"
+  - "0101001011100010010101100"
+  - "011111001000111"
+  - "(4 bits for index) <- OOOPS I meant FIVE!"
+  - "(4 bits for index)"
+  This confirms the **Secret** button appearance is gated by the credits line scan, but the actual
+  “Secret Path” transition logic is still unmapped.
 
 ### Secret weapons
 

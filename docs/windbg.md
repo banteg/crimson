@@ -260,3 +260,52 @@ At `esp=0x0019f8fc`:
 - The flashing Reset/Back hover effect correlates with `0x004824e4 < 0x100`.
 - `out_dir` encodes orientation only (0 = vertical, 1 = horizontal); no absolute direction.
 - Still missing: exact “timer zero / dying sound” callsite; likely triggered by a different state flag or audio hook.
+
+### Session 3 (2026-01-19) - credits screen / Secret button unlock
+
+#### Goal
+
+Capture the exact unlock point for the **Secret** button on the credits screen and dump the injected
+secret lines.
+
+#### Breakpoint
+
+One-shot write watch on the unlock flag:
+
+```
+ba w1 crimsonland+0x811c4 ".printf \"[credits] Secret unlock write (DAT_004811c4)\\n\"; k; r; dd crimsonland+0x811c4 L1; dd crimsonland+0x811bc L1; dd crimsonland+0x80980 L40; gc"
+```
+
+#### Captured
+
+- **Hit location:** `EIP=0x0040dda7` (`credits_screen_update` + `0x5a7`)
+- **Instruction:** `mov edx, dword ptr [crimsonland+0x80984 + eax*8]`
+- **Registers:** `EAX=0x54` (line index)
+- **Unlock flag:** `DAT_004811c4 = 1`
+- **Secret base index:** `DAT_004811bc = 0x54`
+
+#### Secret line table dump
+
+The credits line table lives at `0x00480980` and is a pair array: `ptr, flags`.
+The secret lines begin at index `0x54`, so the injected block starts at:
+
+- `0x00480980 + 0x54*8 = 0x00480c20`
+
+Dumped strings (all flags `0x00000004`):
+
+- `0x54` — "Inside Dead Let Mighty Blood"
+- `0x55` — "Do Firepower See Mark Of"
+- `0x56` — "The Sacrifice Old Center"
+- `0x57` — "Yourself Ground First For"
+- `0x58` — "Triangle Cube Last Not Flee"
+- `0x59` — "0001001110000010101110011"
+- `0x5A` — "0101001011100010010101100"
+- `0x5B` — "011111001000111"
+- `0x5C` — "(4 bits for index) <- OOOPS I meant FIVE!"
+- `0x5D` — "(4 bits for index)"
+
+#### Interpretation
+
+- The Secret button unlock is driven by the **credits line scan** in `credits_screen_update`, not by
+  a separate hidden state. Once all required lines are flagged, `DAT_004811c4` is set and the secret
+  lines are injected at index `0x54`.
