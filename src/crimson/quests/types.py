@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Callable
 
 
 @dataclass(frozen=True, slots=True)
@@ -18,3 +19,13 @@ class SpawnEntry:
     spawn_id: int
     trigger_ms: int
     count: int
+
+
+QuestBuilder = Callable[..., list[SpawnEntry]]
+
+
+@dataclass(frozen=True, slots=True)
+class QuestDefinition:
+    level: str
+    title: str
+    builder: QuestBuilder
