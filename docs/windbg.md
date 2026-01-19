@@ -5,7 +5,7 @@
 Server (run once, long-lived):
 
 ```
-cdb -server tcp:port=5005,password=secret -noio -pn crimsonland.exe
+cdb -server tcp:port=5005,password=secret -pn crimsonland.exe
 ```
 
 Client (reconnect as needed):
