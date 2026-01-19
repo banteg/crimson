@@ -15,6 +15,7 @@ Data map coverage: 19.65% (654 / 3328 symbols)
 - [Small font (smallFnt.dat)](formats/font.md) — Draft
 - [Sprite atlas cutting](atlas.md) — In progress
 - [Extraction pipeline](pipeline.md) — In progress
+- [Python executable spec](python-executable-spec.md) — Draft
 - [Weapon table](weapon-table.md) — In progress
 - [Progress metrics](metrics.md) — Tracking
 - [Player struct](player-struct.md) — Tracking
