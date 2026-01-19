@@ -105,3 +105,7 @@ windbg-server:
 [windows]
 windbg-client:
     cdb -remote tcp:server=127.0.0.1,port=5005,password=secret -bonc
+
+[windows]
+windbg-tail:
+    uv run python scripts/windbg_tail.py

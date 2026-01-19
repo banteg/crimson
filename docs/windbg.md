@@ -2,32 +2,69 @@
 
 ## Remote server setup (works reliably)
 
-Server (run once, long-lived):
-
-```
-cdb -server tcp:port=5005,password=secret -logau C:\Crimsonland\windbg.log -pn crimsonland.exe
-```
-
-Client (reconnect as needed):
-
-```
-cdb -remote tcp:server=127.0.0.1,port=5005,password=secret -bonc
-```
-
 Just shortcuts (Windows):
 
 ```
 just windbg-server
 just windbg-client
+just windbg-tail
 ```
 
 Notes:
-- `-bonc` breaks on connect, so you must `g` after attaching.
+
+- `just windbg-client` uses `-bonc`, so you must `g` after attaching.
 - Client output is **not** persisted by the server; if the client session drops, logs are lost.
-- To persist logs, log on the **server** (recommended). Do not use `-logo` on the client,
-  because it truncates the log file on every reconnect.
+- The server logs to `C:\Crimsonland\windbg.log` (append, Unicode).
 - The server should be started by the user. Codex only connects as a client to run commands,
   and we inspect the server log file to see captured output.
+- `just windbg-tail` prints any new log lines since the last read and remembers its position
+  in `C:\Crimsonland\windbg.log.pos`.
+
+## Workflows
+
+### User workflow (interactive)
+
+1) Start the server (once, long-lived):
+
+```
+just windbg-server
+```
+
+2) Connect a client:
+
+```
+just windbg-client
+```
+
+3) If you want to review what happened since last time, tail the log:
+
+```
+just windbg-tail
+```
+
+4) When you are done, disconnect the client without killing the session (Ctrl+B). Avoid `q`.
+
+### Agent workflow (short-lived reconnects)
+
+1) The user starts the server and keeps it running. The agent never starts a server.
+
+2) On every agent reconnect, catch up first:
+
+```
+just windbg-tail
+```
+
+3) Then connect and run the agent commands:
+
+```
+just windbg-client
+```
+
+4) Resume the game (`g`) if needed, and disconnect the client (Ctrl+B).
+
+Notes:
+- The log is written by the server (`-logau`), so it survives client drops.
+- The tail script reads only new bytes from `C:\Crimsonland\windbg.log`.
 
 ## Sessions
 
