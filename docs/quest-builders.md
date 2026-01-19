@@ -1,0 +1,95 @@
+# Quest builders
+
+This document lists the quest builder pointer assigned to each quest in
+`quest_database_init` (`FUN_00439230`).
+
+Notes:
+- `Start Weapon (id)` is `quest_start_weapon_id` (1-based weapon id).
+- `Time (ms)` is `quest_meta_time_limit_ms`.
+- `Builder` is the function pointer stored at `quest_selected_builder`.
+  `LAB_...` entries are unnamed entry points that Ghidra has not yet split into
+  dedicated functions.
+
+## Quest -> builder table
+| Tier | Quest | Title | Start Weapon (id) | Time (ms) | Builder |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 1 | Land Hostile | 1 | 120000 | LAB_00435bd0 |
+| 1 | 2 | Minor Alien Breach | 1 | 120000 | LAB_00435cc0 |
+| 1 | 3 | Target Practice | 1 | 65000 | LAB_00437a00 |
+| 1 | 4 | Frontline Assault | 1 | 300000 | LAB_00437e10 |
+| 1 | 5 | Alien Dens | 1 | 180000 | LAB_00436720 |
+| 1 | 6 | The Random Factor | 1 | 300000 | FUN_00436350 |
+| 1 | 7 | Spider Wave Syndrome | 1 | 240000 | FUN_00436440 |
+| 1 | 8 | Alien Squads | 1 | 180000 | LAB_00435ea0 |
+| 1 | 9 | Nesting Grounds | 1 | 240000 | LAB_004364a0 |
+| 1 | 10 | 8-legged Terror | 1 | 240000 | LAB_00436120 |
+| 2 | 1 | Everred Pastures | 1 | 300000 | LAB_004375a0 |
+| 2 | 2 | Spider Spawns | 1 | 300000 | LAB_00436d70 |
+| 2 | 3 | Arachnoid Farm | 1 | 240000 | LAB_00436820 |
+| 2 | 4 | Two Fronts | 1 | 240000 | LAB_00436ee0 |
+| 2 | 5 | Sweep Stakes | 6 | 35000 | LAB_00437810 |
+| 2 | 6 | Evil Zombies At Large | 1 | 180000 | LAB_004374a0 |
+| 2 | 7 | Survival Of The Fastest | 5 | 120000 | LAB_00437060 |
+| 2 | 8 | Land Of Lizards | 1 | 180000 | LAB_00437ba0 |
+| 2 | 9 | Ghost Patrols | 1 | 180000 | LAB_00436200 |
+| 2 | 10 | Spideroids | 1 | 360000 | LAB_004373c0 |
+| 3 | 1 | The Blighting | 1 | 300000 | LAB_00438050 |
+| 3 | 2 | Lizard Kings | 1 | 180000 | LAB_00437710 |
+| 3 | 3 | The Killing | 1 | 300000 | LAB_004384a0 |
+| 3 | 4 | Hidden Evil | 1 | 300000 | LAB_00435a30 |
+| 3 | 5 | Surrounded By Reptiles | 1 | 300000 | FUN_00438940 |
+| 3 | 6 | The Lizquidation | 1 | 300000 | LAB_00437c70 |
+| 3 | 7 | Spiders Inc. | 11 | 300000 | LAB_004390d0 |
+| 3 | 8 | Lizard Raze | 1 | 300000 | FUN_00438840 |
+| 3 | 9 | Deja vu | 6 | 120000 | LAB_00437920 |
+| 3 | 10 | Zombie Masters | 1 | 300000 | LAB_004360a0 |
+| 4 | 1 | Major Alien Breach | 18 | 300000 | LAB_00437af0 |
+| 4 | 2 | Zombie Time | 1 | 300000 | FUN_00437d70 |
+| 4 | 3 | Lizard Zombie Pact | 1 | 300000 | LAB_00438700 |
+| 4 | 4 | The Collaboration | 1 | 360000 | LAB_00437f30 |
+| 4 | 5 | The Massacre | 1 | 300000 | LAB_004383e0 |
+| 4 | 6 | The Unblitzkrieg | 1 | 600000 | LAB_00438a40 |
+| 4 | 7 | Gauntlet | 1 | 300000 | LAB_004369a0 |
+| 4 | 8 | Syntax Terror | 1 | 300000 | LAB_00436c10 |
+| 4 | 9 | The Annihilation | 1 | 300000 | LAB_004382c0 |
+| 4 | 10 | The End of All | 1 | 480000 | LAB_00438e10 |
+| 5 | 1 | The Beating | 1 | 480000 | LAB_00435610 |
+| 5 | 2 | The Spanking Of The Dead | 1 | 480000 | LAB_004358a0 |
+| 5 | 3 | The Fortress | 1 | 480000 | LAB_004352d0 |
+| 5 | 4 | The Gang Wars | 1 | 480000 | LAB_00435120 |
+| 5 | 5 | Knee-deep in the Dead | 1 | 480000 | LAB_00434f00 |
+| 5 | 6 | Cross Fire | 1 | 480000 | LAB_00435480 |
+| 5 | 7 | Army of Three | 1 | 480000 | LAB_00434ca0 |
+| 5 | 8 | Monster Blues | 1 | 480000 | LAB_00434860 |
+| 5 | 9 | Nagolipoli | 1 | 480000 | LAB_00434480 |
+| 5 | 10 | The Gathering | 1 | 480000 | LAB_004349c0 |
+
+## Builder notes (known implementations)
+
+The builders below have explicit function bodies in the current Ghidra export.
+Spawn ids are numeric and still need creature name mapping.
+
+- `quest_build_fallback` (`004343e0`): two spawn entries at x = -50, y = terrain_height * 0.5
+  with spawn id `0x40`, trigger times `500` / `5000`, and counts `10` / `0x14`.
+- `FUN_00436350` (The Random Factor): alternating left/right spawns using spawn id `0x1d`
+  at `1500ms` + `10000ms` steps (right side at `t`, left side at `t+200`), counts
+  scale with player count. Randomly (when `rand % 5 == 3`) adds a center wave
+  using spawn id `0x29` at y = `1088`, count = player count.
+- `FUN_00436440` (Spider Wave Syndrome): repeated left-side spawns using spawn id `0x40`
+  from `1500ms`, step `5500ms`, until `100500ms`, count = `player_count * 2 + 6`.
+- `FUN_00437d70` (Zombie Time): paired left/right waves using spawn id `0x41` every
+  `8000ms` from `1500ms` to `97500ms`, count `8` per side.
+- `FUN_00438840` (Lizard Raze): paired left/right waves using spawn id `0x2e` every
+  `6000ms` from `1500ms` to `91500ms`, count `6` per side, plus three fixed spawns
+  (spawn id `0x0c`, time `10000ms`, count `1`) at (x=128, y=256/384/512).
+- `FUN_00438940` (Surrounded By Reptiles):
+  - Phase 1: spawn id `0x0d` pairs at x = 256 and x = 768, times `1000..4200` step `800`,
+    y = `256 + 0.2 * local_4` where `local_4` steps by `0x200`.
+  - Phase 2: spawn id `0x0d` pairs at y = 256 and y = 768, times `8000..11200` step `800`,
+    x = `256 + 0.2 * local_4`.
+
+## Open questions
+
+- Split `LAB_...` entry points into named functions in Ghidra and document their
+  spawn tables.
+- Map spawn ids (`0x0d`, `0x1d`, `0x2e`, `0x40`, `0x41`, `0x29`, `0x0c`) to creature types.
