@@ -61,3 +61,8 @@ class QuestDefinition:
             object.__setattr__(self, "terrain_ids", terrain_ids)
         if self.terrain_id is None:
             object.__setattr__(self, "terrain_id", terrain_ids[0])
+
+    @property
+    def level_key(self) -> tuple[int, int]:
+        tier_text, quest_text = self.level.split(".", 1)
+        return int(tier_text), int(quest_text)

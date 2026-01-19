@@ -3,7 +3,8 @@ from __future__ import annotations
 import math
 import random
 
-from .types import QuestContext, QuestDefinition, SpawnEntry
+from .registry import register_quest
+from .types import QuestContext, SpawnEntry
 
 SPAWN_ID_1 = 0x01
 SPAWN_ID_7 = 0x07
@@ -25,6 +26,14 @@ SPAWN_ID_56 = 0x38
 SPAWN_ID_65 = 0x41
 
 
+@register_quest(
+    level="2.1",
+    title="Everred Pastures",
+    time_limit_ms=300000,
+    start_weapon_id=1,
+    unlock_perk_id=0x20,
+    builder_address=0x004375a0,
+)
 def build_2_1_everred_pastures(ctx: QuestContext) -> list[SpawnEntry]:
     half_w = ctx.width // 2
     edge_w = ctx.width + 64
@@ -42,6 +51,14 @@ def build_2_1_everred_pastures(ctx: QuestContext) -> list[SpawnEntry]:
     return entries
 
 
+@register_quest(
+    level="2.2",
+    title="Spider Spawns",
+    time_limit_ms=300000,
+    start_weapon_id=1,
+    unlock_weapon_id=0x09,
+    builder_address=0x00436d70,
+)
 def build_2_2_spider_spawns(ctx: QuestContext) -> list[SpawnEntry]:
     return [
         SpawnEntry(128.0, 128.0, 0.0, SPAWN_ID_16, 1500, 1),
@@ -58,6 +75,14 @@ def build_2_2_spider_spawns(ctx: QuestContext) -> list[SpawnEntry]:
     ]
 
 
+@register_quest(
+    level="2.3",
+    title="Arachnoid Farm",
+    time_limit_ms=240000,
+    start_weapon_id=1,
+    unlock_perk_id=0x21,
+    builder_address=0x00436820,
+)
 def build_2_3_arachnoid_farm(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     if ctx.player_count + 4 >= 0:
@@ -80,6 +105,14 @@ def build_2_3_arachnoid_farm(ctx: QuestContext) -> list[SpawnEntry]:
     return entries
 
 
+@register_quest(
+    level="2.4",
+    title="Two Fronts",
+    time_limit_ms=240000,
+    start_weapon_id=1,
+    unlock_weapon_id=0x15,
+    builder_address=0x00436ee0,
+)
 def build_2_4_two_fronts(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     half_w = ctx.width // 2
@@ -100,6 +133,14 @@ def build_2_4_two_fronts(ctx: QuestContext) -> list[SpawnEntry]:
     return entries
 
 
+@register_quest(
+    level="2.5",
+    title="Sweep Stakes",
+    time_limit_ms=35000,
+    start_weapon_id=6,
+    unlock_perk_id=0x22,
+    builder_address=0x00437810,
+)
 def build_2_5_sweep_stakes(ctx: QuestContext, rng: random.Random | None = None) -> list[SpawnEntry]:
     rng = rng or random.Random()
     entries: list[SpawnEntry] = []
@@ -121,6 +162,14 @@ def build_2_5_sweep_stakes(ctx: QuestContext, rng: random.Random | None = None) 
     return entries
 
 
+@register_quest(
+    level="2.6",
+    title="Evil Zombies At Large",
+    time_limit_ms=180000,
+    start_weapon_id=1,
+    unlock_weapon_id=0x07,
+    builder_address=0x004374a0,
+)
 def build_2_6_evil_zombies_at_large(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     half_w = ctx.width // 2
@@ -137,6 +186,14 @@ def build_2_6_evil_zombies_at_large(ctx: QuestContext) -> list[SpawnEntry]:
     return entries
 
 
+@register_quest(
+    level="2.7",
+    title="Survival Of The Fastest",
+    time_limit_ms=120000,
+    start_weapon_id=5,
+    unlock_perk_id=0x23,
+    builder_address=0x00437060,
+)
 def build_2_7_survival_of_the_fastest(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry | None] = [None] * 26
 
@@ -194,6 +251,14 @@ def build_2_7_survival_of_the_fastest(ctx: QuestContext) -> list[SpawnEntry]:
     return [entry for entry in entries if entry is not None]
 
 
+@register_quest(
+    level="2.8",
+    title="Land Of Lizards",
+    time_limit_ms=180000,
+    start_weapon_id=1,
+    unlock_weapon_id=0x04,
+    builder_address=0x00437ba0,
+)
 def build_2_8_land_of_lizards(ctx: QuestContext) -> list[SpawnEntry]:
     return [
         SpawnEntry(256.0, 256.0, 0.0, SPAWN_ID_14, 2000, 1),
@@ -203,6 +268,14 @@ def build_2_8_land_of_lizards(ctx: QuestContext) -> list[SpawnEntry]:
     ]
 
 
+@register_quest(
+    level="2.9",
+    title="Ghost Patrols",
+    time_limit_ms=180000,
+    start_weapon_id=1,
+    unlock_perk_id=0x24,
+    builder_address=0x00436200,
+)
 def build_2_9_ghost_patrols(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     half_w = ctx.width // 2
@@ -219,6 +292,14 @@ def build_2_9_ghost_patrols(ctx: QuestContext) -> list[SpawnEntry]:
     return entries
 
 
+@register_quest(
+    level="2.10",
+    title="Spideroids",
+    time_limit_ms=360000,
+    start_weapon_id=1,
+    unlock_weapon_id=0x0B,
+    builder_address=0x004373c0,
+)
 def build_2_10_spideroids(ctx: QuestContext, full_version: bool = True) -> list[SpawnEntry]:
     entries = [
         SpawnEntry(1088.0, 512.0, 0.0, SPAWN_ID_1, 1000, 1),
@@ -233,109 +314,9 @@ def build_2_10_spideroids(ctx: QuestContext, full_version: bool = True) -> list[
     return entries
 
 
-QUESTS = [
-    QuestDefinition(
-        level="2.1",
-        title="Everred Pastures",
-        builder=build_2_1_everred_pastures,
-        time_limit_ms=300000,
-        start_weapon_id=1,
-        unlock_perk_id=0x20,
-        builder_address=0x004375a0,
-    ),
-    QuestDefinition(
-        level="2.2",
-        title="Spider Spawns",
-        builder=build_2_2_spider_spawns,
-        time_limit_ms=300000,
-        start_weapon_id=1,
-        unlock_weapon_id=0x09,
-        builder_address=0x00436d70,
-    ),
-    QuestDefinition(
-        level="2.3",
-        title="Arachnoid Farm",
-        builder=build_2_3_arachnoid_farm,
-        time_limit_ms=240000,
-        start_weapon_id=1,
-        unlock_perk_id=0x21,
-        builder_address=0x00436820,
-    ),
-    QuestDefinition(
-        level="2.4",
-        title="Two Fronts",
-        builder=build_2_4_two_fronts,
-        time_limit_ms=240000,
-        start_weapon_id=1,
-        unlock_weapon_id=0x15,
-        builder_address=0x00436ee0,
-    ),
-    QuestDefinition(
-        level="2.5",
-        title="Sweep Stakes",
-        builder=build_2_5_sweep_stakes,
-        time_limit_ms=35000,
-        start_weapon_id=6,
-        unlock_perk_id=0x22,
-        builder_address=0x00437810,
-    ),
-    QuestDefinition(
-        level="2.6",
-        title="Evil Zombies At Large",
-        builder=build_2_6_evil_zombies_at_large,
-        time_limit_ms=180000,
-        start_weapon_id=1,
-        unlock_weapon_id=0x07,
-        builder_address=0x004374a0,
-    ),
-    QuestDefinition(
-        level="2.7",
-        title="Survival Of The Fastest",
-        builder=build_2_7_survival_of_the_fastest,
-        time_limit_ms=120000,
-        start_weapon_id=5,
-        unlock_perk_id=0x23,
-        builder_address=0x00437060,
-    ),
-    QuestDefinition(
-        level="2.8",
-        title="Land Of Lizards",
-        builder=build_2_8_land_of_lizards,
-        time_limit_ms=180000,
-        start_weapon_id=1,
-        unlock_weapon_id=0x04,
-        builder_address=0x00437ba0,
-    ),
-    QuestDefinition(
-        level="2.9",
-        title="Ghost Patrols",
-        builder=build_2_9_ghost_patrols,
-        time_limit_ms=180000,
-        start_weapon_id=1,
-        unlock_perk_id=0x24,
-        builder_address=0x00436200,
-    ),
-    QuestDefinition(
-        level="2.10",
-        title="Spideroids",
-        builder=build_2_10_spideroids,
-        time_limit_ms=360000,
-        start_weapon_id=1,
-        unlock_weapon_id=0x0B,
-        builder_address=0x004373c0,
-    ),
-]
-
-TIER2_BUILDERS = {quest.level: quest.builder for quest in QUESTS}
-TIER2_TITLES = {quest.level: quest.title for quest in QUESTS}
-
 __all__ = [
     "QuestContext",
-    "QuestDefinition",
     "SpawnEntry",
-    "QUESTS",
-    "TIER2_BUILDERS",
-    "TIER2_TITLES",
     "build_2_1_everred_pastures",
     "build_2_2_spider_spawns",
     "build_2_3_arachnoid_farm",

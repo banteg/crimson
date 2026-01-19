@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import math
 
-from .types import QuestContext, QuestDefinition, SpawnEntry
+from .registry import register_quest
+from .types import QuestContext, SpawnEntry
 
 SPAWN_ID_0 = 0x00
 SPAWN_ID_1 = 0x01
@@ -31,7 +32,14 @@ SPAWN_ID_65 = 0x41
 SPAWN_ID_66 = 0x42
 SPAWN_ID_67 = 0x43
 
-
+@register_quest(
+    level="5.1",
+    title="The Beating",
+    time_limit_ms=480000,
+    start_weapon_id=1,
+    unlock_weapon_id=0x1F,
+    builder_address=0x00435610,
+)
 def build_5_1_the_beating(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
         SpawnEntry(256.0, 256.0, 0.0, SPAWN_ID_39, 500, 1),
@@ -74,7 +82,14 @@ def build_5_1_the_beating(ctx: QuestContext) -> list[SpawnEntry]:
 
     return entries
 
-
+@register_quest(
+    level="5.2",
+    title="The Spanking Of The Dead",
+    time_limit_ms=480000,
+    start_weapon_id=1,
+    unlock_perk_id=0x2F,
+    builder_address=0x004358a0,
+)
 def build_5_2_the_spanking_of_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
         SpawnEntry(256.0, 512.0, 0.0, SPAWN_ID_39, 500, 1),
@@ -97,7 +112,14 @@ def build_5_2_the_spanking_of_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
     entries.append(SpawnEntry(-256.0, 512.0, 0.0, SPAWN_ID_66, offset + 20000, 16))
     return entries
 
-
+@register_quest(
+    level="5.3",
+    title="The Fortress",
+    time_limit_ms=480000,
+    start_weapon_id=1,
+    unlock_perk_id=0x30,
+    builder_address=0x004352d0,
+)
 def build_5_3_the_fortress(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
         SpawnEntry(-50.0, float(ctx.height // 2), 0.0, SPAWN_ID_64, 100, 6),
@@ -126,7 +148,14 @@ def build_5_3_the_fortress(ctx: QuestContext) -> list[SpawnEntry]:
 
     return entries
 
-
+@register_quest(
+    level="5.4",
+    title="The Gang Wars",
+    time_limit_ms=480000,
+    start_weapon_id=1,
+    unlock_weapon_id=0x1E,
+    builder_address=0x00435120,
+)
 def build_5_4_the_gang_wars(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
         SpawnEntry(-150.0, float(ctx.height // 2), 0.0, SPAWN_ID_18, 100, 1),
@@ -148,7 +177,14 @@ def build_5_4_the_gang_wars(ctx: QuestContext) -> list[SpawnEntry]:
     entries.append(SpawnEntry(512.0, 1152.0, 0.0, SPAWN_ID_19, 107500, 3))
     return entries
 
-
+@register_quest(
+    level="5.5",
+    title="Knee-deep in the Dead",
+    time_limit_ms=480000,
+    start_weapon_id=1,
+    unlock_perk_id=0x31,
+    builder_address=0x00434f00,
+)
 def build_5_5_knee_deep_in_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
         SpawnEntry(-50.0, float(ctx.height * 0.5), 0.0, SPAWN_ID_67, 100, 1),
@@ -186,7 +222,14 @@ def build_5_5_knee_deep_in_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
 
     return entries
 
-
+@register_quest(
+    level="5.6",
+    title="Cross Fire",
+    time_limit_ms=480000,
+    start_weapon_id=1,
+    unlock_perk_id=0x32,
+    builder_address=0x00435480,
+)
 def build_5_6_cross_fire(ctx: QuestContext) -> list[SpawnEntry]:
     return [
         SpawnEntry(1074.0, float(ctx.height * 0.5), 0.0, SPAWN_ID_64, 100, 6),
@@ -198,7 +241,13 @@ def build_5_6_cross_fire(ctx: QuestContext) -> list[SpawnEntry]:
         SpawnEntry(512.0, -128.0, 0.0, SPAWN_ID_64, 26000, 6),
     ]
 
-
+@register_quest(
+    level="5.7",
+    title="Army of Three",
+    time_limit_ms=480000,
+    start_weapon_id=1,
+    builder_address=0x00434ca0,
+)
 def build_5_7_army_of_three(ctx: QuestContext) -> list[SpawnEntry]:
     return [
         SpawnEntry(-64.0, 256.0, 0.0, SPAWN_ID_21, 500, 1),
@@ -214,7 +263,14 @@ def build_5_7_army_of_three(ctx: QuestContext) -> list[SpawnEntry]:
         SpawnEntry(512.0, -256.0, 0.0, SPAWN_ID_23, 56500, 3),
     ]
 
-
+@register_quest(
+    level="5.8",
+    title="Monster Blues",
+    time_limit_ms=480000,
+    start_weapon_id=1,
+    unlock_perk_id=0x33,
+    builder_address=0x00434860,
+)
 def build_5_8_monster_blues(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
         SpawnEntry(-50.0, float(ctx.height * 0.5), 0.0, SPAWN_ID_4, 500, 10),
@@ -236,7 +292,14 @@ def build_5_8_monster_blues(ctx: QuestContext) -> list[SpawnEntry]:
         trigger += 900
     return entries
 
-
+@register_quest(
+    level="5.9",
+    title="Nagolipoli",
+    time_limit_ms=480000,
+    start_weapon_id=1,
+    unlock_perk_id=0x34,
+    builder_address=0x00434480,
+)
 def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
 
@@ -289,7 +352,14 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
     entries.append(SpawnEntry(512.0, -64.0, 3.926991, SPAWN_ID_28, base_vertical, 8))
     return entries
 
-
+@register_quest(
+    level="5.10",
+    title="The Gathering",
+    time_limit_ms=480000,
+    start_weapon_id=1,
+    unlock_weapon_id=0x1C,
+    builder_address=0x004349c0,
+)
 def build_5_10_the_gathering(ctx: QuestContext) -> list[SpawnEntry]:
     return [
         SpawnEntry(256.0, 512.0, 0.0, SPAWN_ID_1, 500, 1),
@@ -308,108 +378,9 @@ def build_5_10_the_gathering(ctx: QuestContext) -> list[SpawnEntry]:
     ]
 
 
-QUESTS = [
-    QuestDefinition(
-        level="5.1",
-        title="The Beating",
-        builder=build_5_1_the_beating,
-        time_limit_ms=480000,
-        start_weapon_id=1,
-        unlock_weapon_id=0x1F,
-        builder_address=0x00435610,
-    ),
-    QuestDefinition(
-        level="5.2",
-        title="The Spanking Of The Dead",
-        builder=build_5_2_the_spanking_of_the_dead,
-        time_limit_ms=480000,
-        start_weapon_id=1,
-        unlock_perk_id=0x2F,
-        builder_address=0x004358a0,
-    ),
-    QuestDefinition(
-        level="5.3",
-        title="The Fortress",
-        builder=build_5_3_the_fortress,
-        time_limit_ms=480000,
-        start_weapon_id=1,
-        unlock_perk_id=0x30,
-        builder_address=0x004352d0,
-    ),
-    QuestDefinition(
-        level="5.4",
-        title="The Gang Wars",
-        builder=build_5_4_the_gang_wars,
-        time_limit_ms=480000,
-        start_weapon_id=1,
-        unlock_weapon_id=0x1E,
-        builder_address=0x00435120,
-    ),
-    QuestDefinition(
-        level="5.5",
-        title="Knee-deep in the Dead",
-        builder=build_5_5_knee_deep_in_the_dead,
-        time_limit_ms=480000,
-        start_weapon_id=1,
-        unlock_perk_id=0x31,
-        builder_address=0x00434f00,
-    ),
-    QuestDefinition(
-        level="5.6",
-        title="Cross Fire",
-        builder=build_5_6_cross_fire,
-        time_limit_ms=480000,
-        start_weapon_id=1,
-        unlock_perk_id=0x32,
-        builder_address=0x00435480,
-    ),
-    QuestDefinition(
-        level="5.7",
-        title="Army of Three",
-        builder=build_5_7_army_of_three,
-        time_limit_ms=480000,
-        start_weapon_id=1,
-        builder_address=0x00434ca0,
-    ),
-    QuestDefinition(
-        level="5.8",
-        title="Monster Blues",
-        builder=build_5_8_monster_blues,
-        time_limit_ms=480000,
-        start_weapon_id=1,
-        unlock_perk_id=0x33,
-        builder_address=0x00434860,
-    ),
-    QuestDefinition(
-        level="5.9",
-        title="Nagolipoli",
-        builder=build_5_9_nagolipoli,
-        time_limit_ms=480000,
-        start_weapon_id=1,
-        unlock_perk_id=0x34,
-        builder_address=0x00434480,
-    ),
-    QuestDefinition(
-        level="5.10",
-        title="The Gathering",
-        builder=build_5_10_the_gathering,
-        time_limit_ms=480000,
-        start_weapon_id=1,
-        unlock_weapon_id=0x1C,
-        builder_address=0x004349c0,
-    ),
-]
-
-TIER5_BUILDERS = {quest.level: quest.builder for quest in QUESTS}
-TIER5_TITLES = {quest.level: quest.title for quest in QUESTS}
-
 __all__ = [
     "QuestContext",
-    "QuestDefinition",
     "SpawnEntry",
-    "QUESTS",
-    "TIER5_BUILDERS",
-    "TIER5_TITLES",
     "build_5_1_the_beating",
     "build_5_2_the_spanking_of_the_dead",
     "build_5_3_the_fortress",

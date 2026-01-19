@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import math
 
-from .types import QuestContext, QuestDefinition, SpawnEntry
+from .registry import register_quest
+from .types import QuestContext, SpawnEntry
 
 SPAWN_ID_7 = 0x07
 SPAWN_ID_10 = 0x0A
@@ -17,7 +18,14 @@ SPAWN_ID_43 = 0x2B
 SPAWN_ID_60 = 0x3C
 SPAWN_ID_65 = 0x41
 
-
+@register_quest(
+    level="4.1",
+    title="Major Alien Breach",
+    time_limit_ms=300000,
+    start_weapon_id=18,
+    unlock_perk_id=0x2A,
+    builder_address=0x00437af0,
+)
 def build_4_1_major_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     trigger = 4000
@@ -34,7 +42,14 @@ def build_4_1_major_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
             trigger = 1000
     return entries
 
-
+@register_quest(
+    level="4.2",
+    title="Zombie Time",
+    time_limit_ms=300000,
+    start_weapon_id=1,
+    unlock_weapon_id=0x13,
+    builder_address=0x00437d70,
+)
 def build_4_2_zombie_time(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     trigger = 1500
@@ -47,7 +62,14 @@ def build_4_2_zombie_time(ctx: QuestContext) -> list[SpawnEntry]:
         trigger += 8000
     return entries
 
-
+@register_quest(
+    level="4.3",
+    title="Lizard Zombie Pact",
+    time_limit_ms=300000,
+    start_weapon_id=1,
+    unlock_perk_id=0x2B,
+    builder_address=0x00438700,
+)
 def build_4_3_lizard_zombie_pact(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     trigger = 1500
@@ -70,7 +92,14 @@ def build_4_3_lizard_zombie_pact(ctx: QuestContext) -> list[SpawnEntry]:
         wave += 1
     return entries
 
-
+@register_quest(
+    level="4.4",
+    title="The Collaboration",
+    time_limit_ms=360000,
+    start_weapon_id=1,
+    unlock_weapon_id=0x0E,
+    builder_address=0x00437f30,
+)
 def build_4_4_the_collaboration(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     trigger = 1500
@@ -90,7 +119,14 @@ def build_4_4_the_collaboration(ctx: QuestContext) -> list[SpawnEntry]:
         wave += 1
     return entries
 
-
+@register_quest(
+    level="4.5",
+    title="The Massacre",
+    time_limit_ms=300000,
+    start_weapon_id=1,
+    unlock_perk_id=0x2C,
+    builder_address=0x004383e0,
+)
 def build_4_5_the_massacre(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     trigger = 1500
@@ -108,7 +144,14 @@ def build_4_5_the_massacre(ctx: QuestContext) -> list[SpawnEntry]:
         wave += 1
     return entries
 
-
+@register_quest(
+    level="4.6",
+    title="The Unblitzkrieg",
+    time_limit_ms=600000,
+    start_weapon_id=1,
+    unlock_weapon_id=0x11,
+    builder_address=0x00438a40,
+)
 def build_4_6_the_unblitzkrieg(ctx: QuestContext) -> list[SpawnEntry]:
     def spawn_id_for(toggle: bool) -> int:
         return SPAWN_ID_13 if toggle else SPAWN_ID_7
@@ -191,7 +234,14 @@ def build_4_6_the_unblitzkrieg(ctx: QuestContext) -> list[SpawnEntry]:
         i_var5 += 0x270
     return entries
 
-
+@register_quest(
+    level="4.7",
+    title="Gauntlet",
+    time_limit_ms=300000,
+    start_weapon_id=1,
+    unlock_perk_id=0x2D,
+    builder_address=0x004369a0,
+)
 def build_4_7_gauntlet(ctx: QuestContext, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     player_count = ctx.player_count + (4 if full_version else 0)
@@ -235,7 +285,14 @@ def build_4_7_gauntlet(ctx: QuestContext, full_version: bool = True) -> list[Spa
             trigger += 500
     return entries
 
-
+@register_quest(
+    level="4.8",
+    title="Syntax Terror",
+    time_limit_ms=300000,
+    start_weapon_id=1,
+    unlock_weapon_id=0x16,
+    builder_address=0x00436c10,
+)
 def build_4_8_syntax_terror(ctx: QuestContext, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     player_count = ctx.player_count + (4 if full_version else 0)
@@ -262,7 +319,14 @@ def build_4_8_syntax_terror(ctx: QuestContext, full_version: bool = True) -> lis
         outer_index += 1
     return entries
 
-
+@register_quest(
+    level="4.9",
+    title="The Annihilation",
+    time_limit_ms=300000,
+    start_weapon_id=1,
+    unlock_perk_id=0x2E,
+    builder_address=0x004382c0,
+)
 def build_4_9_the_annihilation(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     half_w = ctx.width // 2
@@ -289,7 +353,14 @@ def build_4_9_the_annihilation(ctx: QuestContext) -> list[SpawnEntry]:
         i_var5 += 0x300
     return entries
 
-
+@register_quest(
+    level="4.10",
+    title="The End of All",
+    time_limit_ms=480000,
+    start_weapon_id=1,
+    unlock_weapon_id=0x17,
+    builder_address=0x00438e10,
+)
 def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
         SpawnEntry(128.0, 128.0, 0.0, SPAWN_ID_60, 3000, 1),
@@ -348,109 +419,9 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
     return entries
 
 
-QUESTS = [
-    QuestDefinition(
-        level="4.1",
-        title="Major Alien Breach",
-        builder=build_4_1_major_alien_breach,
-        time_limit_ms=300000,
-        start_weapon_id=18,
-        unlock_perk_id=0x2A,
-        builder_address=0x00437af0,
-    ),
-    QuestDefinition(
-        level="4.2",
-        title="Zombie Time",
-        builder=build_4_2_zombie_time,
-        time_limit_ms=300000,
-        start_weapon_id=1,
-        unlock_weapon_id=0x13,
-        builder_address=0x00437d70,
-    ),
-    QuestDefinition(
-        level="4.3",
-        title="Lizard Zombie Pact",
-        builder=build_4_3_lizard_zombie_pact,
-        time_limit_ms=300000,
-        start_weapon_id=1,
-        unlock_perk_id=0x2B,
-        builder_address=0x00438700,
-    ),
-    QuestDefinition(
-        level="4.4",
-        title="The Collaboration",
-        builder=build_4_4_the_collaboration,
-        time_limit_ms=360000,
-        start_weapon_id=1,
-        unlock_weapon_id=0x0E,
-        builder_address=0x00437f30,
-    ),
-    QuestDefinition(
-        level="4.5",
-        title="The Massacre",
-        builder=build_4_5_the_massacre,
-        time_limit_ms=300000,
-        start_weapon_id=1,
-        unlock_perk_id=0x2C,
-        builder_address=0x004383e0,
-    ),
-    QuestDefinition(
-        level="4.6",
-        title="The Unblitzkrieg",
-        builder=build_4_6_the_unblitzkrieg,
-        time_limit_ms=600000,
-        start_weapon_id=1,
-        unlock_weapon_id=0x11,
-        builder_address=0x00438a40,
-    ),
-    QuestDefinition(
-        level="4.7",
-        title="Gauntlet",
-        builder=build_4_7_gauntlet,
-        time_limit_ms=300000,
-        start_weapon_id=1,
-        unlock_perk_id=0x2D,
-        builder_address=0x004369a0,
-    ),
-    QuestDefinition(
-        level="4.8",
-        title="Syntax Terror",
-        builder=build_4_8_syntax_terror,
-        time_limit_ms=300000,
-        start_weapon_id=1,
-        unlock_weapon_id=0x16,
-        builder_address=0x00436c10,
-    ),
-    QuestDefinition(
-        level="4.9",
-        title="The Annihilation",
-        builder=build_4_9_the_annihilation,
-        time_limit_ms=300000,
-        start_weapon_id=1,
-        unlock_perk_id=0x2E,
-        builder_address=0x004382c0,
-    ),
-    QuestDefinition(
-        level="4.10",
-        title="The End of All",
-        builder=build_4_10_the_end_of_all,
-        time_limit_ms=480000,
-        start_weapon_id=1,
-        unlock_weapon_id=0x17,
-        builder_address=0x00438e10,
-    ),
-]
-
-TIER4_BUILDERS = {quest.level: quest.builder for quest in QUESTS}
-TIER4_TITLES = {quest.level: quest.title for quest in QUESTS}
-
 __all__ = [
     "QuestContext",
-    "QuestDefinition",
     "SpawnEntry",
-    "QUESTS",
-    "TIER4_BUILDERS",
-    "TIER4_TITLES",
     "build_4_1_major_alien_breach",
     "build_4_2_zombie_time",
     "build_4_3_lizard_zombie_pact",

@@ -3,7 +3,8 @@ from __future__ import annotations
 import math
 import random
 
-from .types import QuestContext, QuestDefinition, SpawnEntry
+from .registry import register_quest
+from .types import QuestContext, SpawnEntry
 
 SPAWN_ID_8 = 0x08
 SPAWN_ID_9 = 0x09
@@ -20,6 +21,14 @@ SPAWN_ID_61 = 0x3D
 SPAWN_ID_64 = 0x40
 
 
+@register_quest(
+    level="1.1",
+    title="Land Hostile",
+    time_limit_ms=120000,
+    start_weapon_id=1,
+    unlock_weapon_id=0x02,
+    builder_address=0x00435bd0,
+)
 def build_1_1_land_hostile(ctx: QuestContext) -> list[SpawnEntry]:
     half_w = ctx.width // 2
     edge_h = ctx.height + 64
@@ -31,6 +40,14 @@ def build_1_1_land_hostile(ctx: QuestContext) -> list[SpawnEntry]:
     ]
 
 
+@register_quest(
+    level="1.2",
+    title="Minor Alien Breach",
+    time_limit_ms=120000,
+    start_weapon_id=1,
+    unlock_weapon_id=0x03,
+    builder_address=0x00435cc0,
+)
 def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
     half_w = ctx.width // 2
     half_h = ctx.height // 2
@@ -57,6 +74,14 @@ def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
     return entries
 
 
+@register_quest(
+    level="1.3",
+    title="Target Practice",
+    time_limit_ms=65000,
+    start_weapon_id=1,
+    unlock_perk_id=0x1C,
+    builder_address=0x00437a00,
+)
 def build_1_3_target_practice(
     ctx: QuestContext, rng: random.Random | None = None
 ) -> list[SpawnEntry]:
@@ -78,6 +103,14 @@ def build_1_3_target_practice(
     return entries
 
 
+@register_quest(
+    level="1.4",
+    title="Frontline Assault",
+    time_limit_ms=300000,
+    start_weapon_id=1,
+    unlock_weapon_id=0x08,
+    builder_address=0x00437e10,
+)
 def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     half_w = ctx.width // 2
@@ -106,6 +139,14 @@ def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
     return entries
 
 
+@register_quest(
+    level="1.5",
+    title="Alien Dens",
+    time_limit_ms=180000,
+    start_weapon_id=1,
+    unlock_perk_id=0x1D,
+    builder_address=0x00436720,
+)
 def build_1_5_alien_dens(ctx: QuestContext) -> list[SpawnEntry]:
     return [
         SpawnEntry(256.0, 256.0, 0.0, SPAWN_ID_8, 1500, 1),
@@ -116,6 +157,14 @@ def build_1_5_alien_dens(ctx: QuestContext) -> list[SpawnEntry]:
     ]
 
 
+@register_quest(
+    level="1.6",
+    title="The Random Factor",
+    time_limit_ms=300000,
+    start_weapon_id=1,
+    unlock_weapon_id=0x05,
+    builder_address=0x00436350,
+)
 def build_1_6_the_random_factor(
     ctx: QuestContext, rng: random.Random | None = None
 ) -> list[SpawnEntry]:
@@ -146,6 +195,14 @@ def build_1_6_the_random_factor(
     return entries
 
 
+@register_quest(
+    level="1.7",
+    title="Spider Wave Syndrome",
+    time_limit_ms=240000,
+    start_weapon_id=1,
+    unlock_perk_id=0x1E,
+    builder_address=0x00436440,
+)
 def build_1_7_spider_wave_syndrome(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     trigger = 1500
@@ -157,6 +214,14 @@ def build_1_7_spider_wave_syndrome(ctx: QuestContext) -> list[SpawnEntry]:
     return entries
 
 
+@register_quest(
+    level="1.8",
+    title="Alien Squads",
+    time_limit_ms=180000,
+    start_weapon_id=1,
+    unlock_weapon_id=0x06,
+    builder_address=0x00435ea0,
+)
 def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
     entries = [
         SpawnEntry(-256.0, 256.0, 0.0, SPAWN_ID_18, 1500, 1),
@@ -180,6 +245,14 @@ def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
     return entries
 
 
+@register_quest(
+    level="1.9",
+    title="Nesting Grounds",
+    time_limit_ms=240000,
+    start_weapon_id=1,
+    unlock_perk_id=0x1F,
+    builder_address=0x004364a0,
+)
 def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:
     entries = [
         SpawnEntry(float(ctx.width // 2), ctx.height + 64.0, 0.0, SPAWN_ID_29, 1500, ctx.player_count * 2 + 6),
@@ -198,6 +271,14 @@ def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:
     return entries
 
 
+@register_quest(
+    level="1.10",
+    title="8-legged Terror",
+    time_limit_ms=240000,
+    start_weapon_id=1,
+    unlock_weapon_id=0x0C,
+    builder_address=0x00436120,
+)
 def build_1_10_8_legged_terror(ctx: QuestContext) -> list[SpawnEntry]:
     entries = [
         SpawnEntry(float(ctx.width - 256), float(ctx.width // 2), 0.0, SPAWN_ID_58, 1000, 1)
@@ -220,109 +301,9 @@ def build_1_10_8_legged_terror(ctx: QuestContext) -> list[SpawnEntry]:
     return entries
 
 
-QUESTS = [
-    QuestDefinition(
-        level="1.1",
-        title="Land Hostile",
-        builder=build_1_1_land_hostile,
-        time_limit_ms=120000,
-        start_weapon_id=1,
-        unlock_weapon_id=0x02,
-        builder_address=0x00435bd0,
-    ),
-    QuestDefinition(
-        level="1.2",
-        title="Minor Alien Breach",
-        builder=build_1_2_minor_alien_breach,
-        time_limit_ms=120000,
-        start_weapon_id=1,
-        unlock_weapon_id=0x03,
-        builder_address=0x00435cc0,
-    ),
-    QuestDefinition(
-        level="1.3",
-        title="Target Practice",
-        builder=build_1_3_target_practice,
-        time_limit_ms=65000,
-        start_weapon_id=1,
-        unlock_perk_id=0x1C,
-        builder_address=0x00437a00,
-    ),
-    QuestDefinition(
-        level="1.4",
-        title="Frontline Assault",
-        builder=build_1_4_frontline_assault,
-        time_limit_ms=300000,
-        start_weapon_id=1,
-        unlock_weapon_id=0x08,
-        builder_address=0x00437e10,
-    ),
-    QuestDefinition(
-        level="1.5",
-        title="Alien Dens",
-        builder=build_1_5_alien_dens,
-        time_limit_ms=180000,
-        start_weapon_id=1,
-        unlock_perk_id=0x1D,
-        builder_address=0x00436720,
-    ),
-    QuestDefinition(
-        level="1.6",
-        title="The Random Factor",
-        builder=build_1_6_the_random_factor,
-        time_limit_ms=300000,
-        start_weapon_id=1,
-        unlock_weapon_id=0x05,
-        builder_address=0x00436350,
-    ),
-    QuestDefinition(
-        level="1.7",
-        title="Spider Wave Syndrome",
-        builder=build_1_7_spider_wave_syndrome,
-        time_limit_ms=240000,
-        start_weapon_id=1,
-        unlock_perk_id=0x1E,
-        builder_address=0x00436440,
-    ),
-    QuestDefinition(
-        level="1.8",
-        title="Alien Squads",
-        builder=build_1_8_alien_squads,
-        time_limit_ms=180000,
-        start_weapon_id=1,
-        unlock_weapon_id=0x06,
-        builder_address=0x00435ea0,
-    ),
-    QuestDefinition(
-        level="1.9",
-        title="Nesting Grounds",
-        builder=build_1_9_nesting_grounds,
-        time_limit_ms=240000,
-        start_weapon_id=1,
-        unlock_perk_id=0x1F,
-        builder_address=0x004364a0,
-    ),
-    QuestDefinition(
-        level="1.10",
-        title="8-legged Terror",
-        builder=build_1_10_8_legged_terror,
-        time_limit_ms=240000,
-        start_weapon_id=1,
-        unlock_weapon_id=0x0C,
-        builder_address=0x00436120,
-    ),
-]
-
-TIER1_BUILDERS = {quest.level: quest.builder for quest in QUESTS}
-TIER1_TITLES = {quest.level: quest.title for quest in QUESTS}
-
 __all__ = [
     "QuestContext",
-    "QuestDefinition",
     "SpawnEntry",
-    "QUESTS",
-    "TIER1_BUILDERS",
-    "TIER1_TITLES",
     "build_1_1_land_hostile",
     "build_1_2_minor_alien_breach",
     "build_1_3_target_practice",

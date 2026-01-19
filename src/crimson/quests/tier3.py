@@ -3,7 +3,8 @@ from __future__ import annotations
 import math
 import random
 
-from .types import QuestContext, QuestDefinition, SpawnEntry
+from .registry import register_quest
+from .types import QuestContext, SpawnEntry
 
 SPAWN_ID_0 = 0x00
 SPAWN_ID_7 = 0x07
@@ -22,7 +23,14 @@ SPAWN_ID_49 = 0x31
 SPAWN_ID_56 = 0x38
 SPAWN_ID_64 = 0x40
 
-
+@register_quest(
+    level="3.1",
+    title="The Blighting",
+    time_limit_ms=300000,
+    start_weapon_id=1,
+    unlock_perk_id=0x25,
+    builder_address=0x00438050,
+)
 def build_3_1_the_blighting(ctx: QuestContext) -> list[SpawnEntry]:
     half_w = ctx.width // 2
     entries = [
@@ -63,7 +71,14 @@ def build_3_1_the_blighting(ctx: QuestContext) -> list[SpawnEntry]:
         trigger += 1000
     return entries
 
-
+@register_quest(
+    level="3.2",
+    title="Lizard Kings",
+    time_limit_ms=180000,
+    start_weapon_id=1,
+    unlock_weapon_id=0x0A,
+    builder_address=0x00437710,
+)
 def build_3_2_lizard_kings(ctx: QuestContext) -> list[SpawnEntry]:
     entries = [
         SpawnEntry(1152.0, 512.0, 0.0, SPAWN_ID_17, 1500, 1),
@@ -80,7 +95,14 @@ def build_3_2_lizard_kings(ctx: QuestContext) -> list[SpawnEntry]:
         trigger += 900
     return entries
 
-
+@register_quest(
+    level="3.3",
+    title="The Killing",
+    time_limit_ms=300000,
+    start_weapon_id=1,
+    unlock_perk_id=0x26,
+    builder_address=0x004384a0,
+)
 def build_3_3_the_killing(
     ctx: QuestContext, rng: random.Random | None = None
 ) -> list[SpawnEntry]:
@@ -120,7 +142,14 @@ def build_3_3_the_killing(
         trigger += 6000
     return entries
 
-
+@register_quest(
+    level="3.4",
+    title="Hidden Evil",
+    time_limit_ms=300000,
+    start_weapon_id=1,
+    unlock_weapon_id=0x0D,
+    builder_address=0x00435a30,
+)
 def build_3_4_hidden_evil(ctx: QuestContext) -> list[SpawnEntry]:
     half_w = ctx.width // 2
     edge_h = ctx.height + 64
@@ -132,7 +161,14 @@ def build_3_4_hidden_evil(ctx: QuestContext) -> list[SpawnEntry]:
         SpawnEntry(float(half_w), float(edge_h), 0.0, SPAWN_ID_34, 35000, 30),
     ]
 
-
+@register_quest(
+    level="3.5",
+    title="Surrounded By Reptiles",
+    time_limit_ms=300000,
+    start_weapon_id=1,
+    unlock_perk_id=0x27,
+    builder_address=0x00438940,
+)
 def build_3_5_surrounded_by_reptiles(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     trigger = 1000
@@ -154,7 +190,14 @@ def build_3_5_surrounded_by_reptiles(ctx: QuestContext) -> list[SpawnEntry]:
         offset += 0x200
     return entries
 
-
+@register_quest(
+    level="3.6",
+    title="The Lizquidation",
+    time_limit_ms=300000,
+    start_weapon_id=1,
+    unlock_weapon_id=0x0F,
+    builder_address=0x00437c70,
+)
 def build_3_6_the_lizquidation(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     half_w = ctx.width // 2
@@ -170,7 +213,14 @@ def build_3_6_the_lizquidation(ctx: QuestContext) -> list[SpawnEntry]:
         trigger += 8000
     return entries
 
-
+@register_quest(
+    level="3.7",
+    title="Spiders Inc.",
+    time_limit_ms=300000,
+    start_weapon_id=11,
+    unlock_perk_id=0x28,
+    builder_address=0x004390d0,
+)
 def build_3_7_spiders_inc(ctx: QuestContext) -> list[SpawnEntry]:
     half_w = ctx.width // 2
     entries = [
@@ -189,7 +239,14 @@ def build_3_7_spiders_inc(ctx: QuestContext) -> list[SpawnEntry]:
         step_count += 1
     return entries
 
-
+@register_quest(
+    level="3.8",
+    title="Lizard Raze",
+    time_limit_ms=300000,
+    start_weapon_id=1,
+    unlock_weapon_id=0x12,
+    builder_address=0x00438840,
+)
 def build_3_8_lizard_raze(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     half_w = ctx.width // 2
@@ -207,7 +264,14 @@ def build_3_8_lizard_raze(ctx: QuestContext) -> list[SpawnEntry]:
     )
     return entries
 
-
+@register_quest(
+    level="3.9",
+    title="Deja vu",
+    time_limit_ms=120000,
+    start_weapon_id=6,
+    unlock_perk_id=0x29,
+    builder_address=0x00437920,
+)
 def build_3_9_deja_vu(ctx: QuestContext, rng: random.Random | None = None) -> list[SpawnEntry]:
     rng = rng or random.Random()
     entries: list[SpawnEntry] = []
@@ -227,7 +291,14 @@ def build_3_9_deja_vu(ctx: QuestContext, rng: random.Random | None = None) -> li
         step -= 0x50
     return entries
 
-
+@register_quest(
+    level="3.10",
+    title="Zombie Masters",
+    time_limit_ms=300000,
+    start_weapon_id=1,
+    unlock_weapon_id=0x14,
+    builder_address=0x004360a0,
+)
 def build_3_10_zombie_masters(ctx: QuestContext) -> list[SpawnEntry]:
     return [
         SpawnEntry(256.0, 256.0, 0.0, SPAWN_ID_0, 1000, ctx.player_count),
@@ -237,109 +308,9 @@ def build_3_10_zombie_masters(ctx: QuestContext) -> list[SpawnEntry]:
     ]
 
 
-QUESTS = [
-    QuestDefinition(
-        level="3.1",
-        title="The Blighting",
-        builder=build_3_1_the_blighting,
-        time_limit_ms=300000,
-        start_weapon_id=1,
-        unlock_perk_id=0x25,
-        builder_address=0x00438050,
-    ),
-    QuestDefinition(
-        level="3.2",
-        title="Lizard Kings",
-        builder=build_3_2_lizard_kings,
-        time_limit_ms=180000,
-        start_weapon_id=1,
-        unlock_weapon_id=0x0A,
-        builder_address=0x00437710,
-    ),
-    QuestDefinition(
-        level="3.3",
-        title="The Killing",
-        builder=build_3_3_the_killing,
-        time_limit_ms=300000,
-        start_weapon_id=1,
-        unlock_perk_id=0x26,
-        builder_address=0x004384a0,
-    ),
-    QuestDefinition(
-        level="3.4",
-        title="Hidden Evil",
-        builder=build_3_4_hidden_evil,
-        time_limit_ms=300000,
-        start_weapon_id=1,
-        unlock_weapon_id=0x0D,
-        builder_address=0x00435a30,
-    ),
-    QuestDefinition(
-        level="3.5",
-        title="Surrounded By Reptiles",
-        builder=build_3_5_surrounded_by_reptiles,
-        time_limit_ms=300000,
-        start_weapon_id=1,
-        unlock_perk_id=0x27,
-        builder_address=0x00438940,
-    ),
-    QuestDefinition(
-        level="3.6",
-        title="The Lizquidation",
-        builder=build_3_6_the_lizquidation,
-        time_limit_ms=300000,
-        start_weapon_id=1,
-        unlock_weapon_id=0x0F,
-        builder_address=0x00437c70,
-    ),
-    QuestDefinition(
-        level="3.7",
-        title="Spiders Inc.",
-        builder=build_3_7_spiders_inc,
-        time_limit_ms=300000,
-        start_weapon_id=11,
-        unlock_perk_id=0x28,
-        builder_address=0x004390d0,
-    ),
-    QuestDefinition(
-        level="3.8",
-        title="Lizard Raze",
-        builder=build_3_8_lizard_raze,
-        time_limit_ms=300000,
-        start_weapon_id=1,
-        unlock_weapon_id=0x12,
-        builder_address=0x00438840,
-    ),
-    QuestDefinition(
-        level="3.9",
-        title="Deja vu",
-        builder=build_3_9_deja_vu,
-        time_limit_ms=120000,
-        start_weapon_id=6,
-        unlock_perk_id=0x29,
-        builder_address=0x00437920,
-    ),
-    QuestDefinition(
-        level="3.10",
-        title="Zombie Masters",
-        builder=build_3_10_zombie_masters,
-        time_limit_ms=300000,
-        start_weapon_id=1,
-        unlock_weapon_id=0x14,
-        builder_address=0x004360a0,
-    ),
-]
-
-TIER3_BUILDERS = {quest.level: quest.builder for quest in QUESTS}
-TIER3_TITLES = {quest.level: quest.title for quest in QUESTS}
-
 __all__ = [
     "QuestContext",
-    "QuestDefinition",
     "SpawnEntry",
-    "QUESTS",
-    "TIER3_BUILDERS",
-    "TIER3_TITLES",
     "build_3_1_the_blighting",
     "build_3_2_lizard_kings",
     "build_3_3_the_killing",

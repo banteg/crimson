@@ -10,23 +10,14 @@ import typer
 from PIL import Image
 
 from . import jaz, paq
-from .quests import tier1, tier2, tier3, tier4, tier5
+from .quests import all_quests
 from .quests.types import QuestContext, QuestDefinition, SpawnEntry
 from .spawn_templates import spawn_id_label
 
 
 app = typer.Typer(add_completion=False)
 
-_QUEST_DEFS: dict[str, QuestDefinition] = {
-    quest.level: quest
-    for quest in (
-        *tier1.QUESTS,
-        *tier2.QUESTS,
-        *tier3.QUESTS,
-        *tier4.QUESTS,
-        *tier5.QUESTS,
-    )
-}
+_QUEST_DEFS: dict[str, QuestDefinition] = {quest.level: quest for quest in all_quests()}
 _QUEST_BUILDERS = {level: quest.builder for level, quest in _QUEST_DEFS.items()}
 _QUEST_TITLES = {level: quest.title for level, quest in _QUEST_DEFS.items()}
 
