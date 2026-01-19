@@ -6975,12 +6975,12 @@ void __cdecl credits_line_set(int index,char *text,int flags)
 {
   char *pcVar1;
   
-  (&DAT_00480984)[index * 2] = flags;
-  if ((void *)(&DAT_00480980)[index * 2] != (void *)0x0) {
-    crt_free((void *)(&DAT_00480980)[index * 2]);
+  (&credits_line_table_flags)[index * 2] = flags;
+  if ((void *)(&credits_line_table_ptrs)[index * 2] != (void *)0x0) {
+    crt_free((void *)(&credits_line_table_ptrs)[index * 2]);
   }
   pcVar1 = strdup_malloc(text);
-  (&DAT_00480980)[index * 2] = pcVar1;
+  (&credits_line_table_ptrs)[index * 2] = pcVar1;
   DAT_004811b8 = index;
   return;
 }
@@ -6997,7 +6997,7 @@ void __cdecl credits_line_clear_flag(int index)
   byte *pbVar1;
   
   if (-1 < index) {
-    pbVar1 = (byte *)(&DAT_00480984 + index * 2);
+    pbVar1 = (byte *)(&credits_line_table_flags + index * 2);
     while ((*pbVar1 & 4) == 0) {
       index = index + -1;
       pbVar1 = pbVar1 + -8;
@@ -7005,7 +7005,7 @@ void __cdecl credits_line_clear_flag(int index)
         return;
       }
     }
-    (&DAT_00480984)[index * 2] = (&DAT_00480984)[index * 2] & 0xfffffffb;
+    (&credits_line_table_flags)[index * 2] = (&credits_line_table_flags)[index * 2] & 0xfffffffb;
     sfx_play(sfx_trooper_inpain_01);
   }
   return;
@@ -7108,7 +7108,7 @@ void credits_build_lines(void)
   credits_line_set(0x51,&DAT_0047f4d8,0);
   credits_line_set(0x52,&DAT_0047f4d8,0);
   credits_line_set(0x53,&DAT_0047f4d8,0);
-  DAT_004811bc = 0x54;
+  credits_secret_line_base_index = 0x54;
   credits_line_set(0x54,&DAT_0047f4d8,0);
   credits_line_set(0x55,&DAT_0047f4d8,0);
   credits_line_set(0x56,&DAT_0047f4d8,0);
@@ -7160,7 +7160,8 @@ void credits_build_lines(void)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* credits screen update/render loop; draws labels and handles clicks */
+/* credits screen update/render loop; draws labels and handles clicks; sets DAT_004811c4 and injects
+   secret lines at base index DAT_004811bc when all required lines are flagged */
 
 void credits_screen_update(void)
 
@@ -7251,7 +7252,7 @@ void credits_screen_update(void)
         if (iVar7 < 0) {
           iVar7 = 0;
         }
-        iVar4 = (**(code **)(*grim_interface_ptr + 0x14c))((&DAT_00480980)[iVar7 * 2]);
+        iVar4 = (**(code **)(*grim_interface_ptr + 0x14c))((&credits_line_table_ptrs)[iVar7 * 2]);
         fStack_8 = ((float)iStack_28 + fStack_10) - fStack_24;
         fVar13 = (fStack_10 - 16.0) + 24.0;
         if (fVar13 <= fStack_8) {
@@ -7277,18 +7278,18 @@ LAB_0040db8e:
         fStack_c = (fVar2 + 140.0) - (float)(iVar4 / 2);
         iVar4 = ui_mouse_inside_rect(&fStack_c,0x10,iVar4);
         if (((char)iVar4 != '\0') && (iVar4 = input_primary_just_pressed(), (char)iVar4 != '\0')) {
-          pcVar5 = _strchr((char *)(&DAT_00480980)[iVar7 * 2],0x6f);
+          pcVar5 = _strchr((char *)(&credits_line_table_ptrs)[iVar7 * 2],0x6f);
           if (pcVar5 == (char *)0x0) {
             credits_line_clear_flag(iVar7);
           }
           else {
-            if ((*(byte *)(&DAT_00480984 + iVar7 * 2) & 4) == 0) {
+            if ((*(byte *)(&credits_line_table_flags + iVar7 * 2) & 4) == 0) {
               sfx_play(sfx_ui_bonus);
             }
-            (&DAT_00480984)[iVar7 * 2] = (&DAT_00480984)[iVar7 * 2] | 4;
+            (&credits_line_table_flags)[iVar7 * 2] = (&credits_line_table_flags)[iVar7 * 2] | 4;
           }
         }
-        uVar1 = (&DAT_00480984)[iVar7 * 2];
+        uVar1 = (&credits_line_table_flags)[iVar7 * 2];
         if ((uVar1 & 4) == 0) {
           iVar4 = *grim_interface_ptr;
           if ((uVar1 & 1) == 0) {
@@ -7315,7 +7316,7 @@ LAB_0040dcc6:
         }
         (**(code **)(iVar4 + 0x114))(uVar10,uVar11,uVar12,fVar13);
         (**(code **)(*grim_interface_ptr + 0x144))
-                  ((fStack_24 + 140.0) - unaff_EDI,fVar13,(&DAT_00480980)[iVar7 * 2]);
+                  ((fStack_24 + 140.0) - unaff_EDI,fVar13,(&credits_line_table_ptrs)[iVar7 * 2]);
         iVar6 = iVar6 + 1;
         fStack_24 = (float)((int)fStack_24 + 0x10);
       } while (iVar6 < DAT_00481180 - DAT_00481184);
@@ -7324,48 +7325,49 @@ LAB_0040dcc6:
     _DAT_004811a0 = &DAT_00472e80;
     fStack_c = fStack_c + 250.0;
     ui_button_update(&fStack_10,(int *)&DAT_004811a0);
-    puVar8 = &DAT_00480980;
+    puVar8 = &credits_line_table_ptrs;
     do {
       if ((((char *)*puVar8 != (char *)0x0) &&
           (pcVar5 = _strchr((char *)*puVar8,0x6f), pcVar5 != (char *)0x0)) &&
          ((*(byte *)(puVar8 + 1) & 4) == 0)) goto LAB_0040d970;
-      iVar6 = DAT_004811bc;
+      iVar6 = credits_secret_line_base_index;
       puVar8 = puVar8 + 2;
     } while ((int)puVar8 < 0x481180);
-    if (DAT_004811c4 == '\0') {
-      DAT_004811c4 = '\x01';
-      (&DAT_00480984)[DAT_004811bc * 2] = (&DAT_00480984)[DAT_004811bc * 2] | 4;
-      (&DAT_00480984)[(iVar6 + 1) * 2] = (&DAT_0048098c)[iVar6 * 2] | 4;
-      (&DAT_00480984)[(iVar6 + 2) * 2] = (&DAT_0048098c)[(iVar6 + 1) * 2] | 4;
-      (&DAT_00480984)[(iVar6 + 3) * 2] = (&DAT_0048098c)[(iVar6 + 2) * 2] | 4;
-      (&DAT_00480984)[(iVar6 + 4) * 2] = (&DAT_0048098c)[(iVar6 + 3) * 2] | 4;
-      (&DAT_00480984)[(iVar6 + 5) * 2] = (&DAT_0048098c)[(iVar6 + 4) * 2] | 4;
-      (&DAT_00480984)[(iVar6 + 6) * 2] = (&DAT_0048098c)[(iVar6 + 5) * 2] | 4;
-      (&DAT_00480984)[(iVar6 + 7) * 2] = (&DAT_0048098c)[(iVar6 + 6) * 2] | 4;
+    if (credits_secret_unlock_flag == '\0') {
+      credits_secret_unlock_flag = '\x01';
+      (&credits_line_table_flags)[credits_secret_line_base_index * 2] =
+           (&credits_line_table_flags)[credits_secret_line_base_index * 2] | 4;
+      (&credits_line_table_flags)[(iVar6 + 1) * 2] = (&DAT_0048098c)[iVar6 * 2] | 4;
+      (&credits_line_table_flags)[(iVar6 + 2) * 2] = (&DAT_0048098c)[(iVar6 + 1) * 2] | 4;
+      (&credits_line_table_flags)[(iVar6 + 3) * 2] = (&DAT_0048098c)[(iVar6 + 2) * 2] | 4;
+      (&credits_line_table_flags)[(iVar6 + 4) * 2] = (&DAT_0048098c)[(iVar6 + 3) * 2] | 4;
+      (&credits_line_table_flags)[(iVar6 + 5) * 2] = (&DAT_0048098c)[(iVar6 + 4) * 2] | 4;
+      (&credits_line_table_flags)[(iVar6 + 6) * 2] = (&DAT_0048098c)[(iVar6 + 5) * 2] | 4;
+      (&credits_line_table_flags)[(iVar6 + 7) * 2] = (&DAT_0048098c)[(iVar6 + 6) * 2] | 4;
       iVar7 = iVar6 + 8;
-      (&DAT_00480984)[iVar7 * 2] = (&DAT_0048098c)[(iVar6 + 7) * 2] | 4;
+      (&credits_line_table_flags)[iVar7 * 2] = (&DAT_0048098c)[(iVar6 + 7) * 2] | 4;
       (&DAT_0048098c)[iVar7 * 2] = (&DAT_0048098c)[iVar7 * 2] | 4;
       pcVar5 = strdup_malloc(s_Inside_Dead_Let_Mighty_Blood_00472e60);
-      (&DAT_00480980)[iVar6 * 2] = pcVar5;
+      (&credits_line_table_ptrs)[iVar6 * 2] = pcVar5;
       pcVar5 = strdup_malloc(s_Do_Firepower_See_Mark_Of_00472e44);
-      (&DAT_00480980)[(iVar6 + 1) * 2] = pcVar5;
+      (&credits_line_table_ptrs)[(iVar6 + 1) * 2] = pcVar5;
       pcVar5 = strdup_malloc(s_The_Sacrifice_Old_Center_00472e28);
-      (&DAT_00480980)[(iVar6 + 2) * 2] = pcVar5;
+      (&credits_line_table_ptrs)[(iVar6 + 2) * 2] = pcVar5;
       pcVar5 = strdup_malloc(s_Yourself_Ground_First_For_00472e0c);
-      (&DAT_00480980)[(iVar6 + 3) * 2] = pcVar5;
+      (&credits_line_table_ptrs)[(iVar6 + 3) * 2] = pcVar5;
       pcVar5 = strdup_malloc(s_Triangle_Cube_Last_Not_Flee_00472df0);
-      (&DAT_00480980)[(iVar6 + 4) * 2] = pcVar5;
+      (&credits_line_table_ptrs)[(iVar6 + 4) * 2] = pcVar5;
       pcVar5 = strdup_malloc(s_0001001110000010101110011_00472dd4);
-      (&DAT_00480980)[(iVar6 + 5) * 2] = pcVar5;
+      (&credits_line_table_ptrs)[(iVar6 + 5) * 2] = pcVar5;
       pcVar5 = strdup_malloc(s_0101001011100010010101100_00472db8);
-      (&DAT_00480980)[(iVar6 + 6) * 2] = pcVar5;
+      (&credits_line_table_ptrs)[(iVar6 + 6) * 2] = pcVar5;
       pcVar5 = strdup_malloc(s_011111001000111_00472da8);
-      (&DAT_00480980)[(iVar6 + 7) * 2] = pcVar5;
+      (&credits_line_table_ptrs)[(iVar6 + 7) * 2] = pcVar5;
       pcVar5 = strdup_malloc(s__4_bits_for_index__<__OOOPS_I_me_00472d7c);
-      (&DAT_00480980)[(iVar6 + 8) * 2] = pcVar5;
+      (&credits_line_table_ptrs)[(iVar6 + 8) * 2] = pcVar5;
       crt_free((void *)(&DAT_00480988)[(iVar6 + 8) * 2]);
       pcVar5 = strdup_malloc(s__4_bits_for_index__00472d68);
-      (&DAT_00480980)[(iVar6 + 9) * 2] = pcVar5;
+      (&credits_line_table_ptrs)[(iVar6 + 9) * 2] = pcVar5;
     }
     fStack_8 = fStack_10 + 94.0;
     fStack_4 = fStack_c;
@@ -7604,8 +7606,8 @@ bool FUN_0040e940(void)
 
 /* credits_secret_match3_find @ 0040f400 */
 
-/* scans a 6x6 board for a 3-in-a-row match; writes start index + orientation (0=vertical,
-   1=horizontal) */
+/* scans a 6x6 board for a 3-in-a-row match; writes start index (row-major; leftmost/topmost) +
+   orientation (0=vertical, 1=horizontal) */
 
 uint __cdecl credits_secret_match3_find(int *board,int *out_idx,uchar *out_dir)
 
