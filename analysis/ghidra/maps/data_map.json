@@ -2859,6 +2859,12 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x004aaf84",
+      "name": "audio_suspend_flag",
+      "comment": "Audio suspend flag set by audio_suspend_all (1) and cleared by audio_resume_all (0); gates console hotkey block."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004ab1bc",
       "name": "effect_template_vel_x",
       "comment": "Effect template vel_x (effect template block base)"

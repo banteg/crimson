@@ -420,4 +420,5 @@ Additional hotkey in the same block:
 - The toggle is explicit: if `console_open_flag` is 0, it passes 1 to `console_set_open`; otherwise 0.
 - The same function calls `console_update` immediately after the toggle.
 - The hotkey block appears inside a larger per-frame input/update function that also checks `DIK_F12 (0x58)`.
-- The block is gated by a byte flag at `0x004aaf84`; when non-zero, it calls `0x0042a5f0` and returns early.
+- The block is gated by `audio_suspend_flag` (`0x004aaf84`); when non-zero, it calls `audio_resume_all`
+  (`0x0042a5f0`) and returns early.

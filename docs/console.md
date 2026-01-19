@@ -36,8 +36,8 @@ Additional context:
 
 - The hotkey check sits inside a larger per-frame input/update block that also polls
   `DIK_F12 (0x58)`.
-- The block is gated by a byte flag at `0x004aaf84`; when non-zero it calls `0x0042a5f0`
-  and returns early (skipping the tilde toggle).
+- The block is gated by `audio_suspend_flag` (`0x004aaf84`): when non-zero it calls
+  `audio_resume_all` (`0x0042a5f0`) and returns early (skipping the tilde toggle).
 
 ## Input handling (static)
 
@@ -112,4 +112,3 @@ The cvar paths emit:
 
 - What function contains `0x0040c39a` in the real call graph (Ghidra currently labels the
   containing range as `demo_purchase_screen_update`, which may be a boundary artifact)?
-- What is the gating flag at `0x004aaf84` (and does it correspond to a modal/menu state)?
