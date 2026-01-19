@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 import random
 
-from .types import QuestContext, SpawnEntry
+from .types import QuestContext, QuestDefinition, SpawnEntry
 
 SPAWN_ID_1 = 0x01
 SPAWN_ID_7 = 0x07
@@ -233,35 +233,27 @@ def build_2_10_spideroids(ctx: QuestContext, full_version: bool = True) -> list[
     return entries
 
 
-TIER2_BUILDERS = {
-    "2.1": build_2_1_everred_pastures,
-    "2.2": build_2_2_spider_spawns,
-    "2.3": build_2_3_arachnoid_farm,
-    "2.4": build_2_4_two_fronts,
-    "2.5": build_2_5_sweep_stakes,
-    "2.6": build_2_6_evil_zombies_at_large,
-    "2.7": build_2_7_survival_of_the_fastest,
-    "2.8": build_2_8_land_of_lizards,
-    "2.9": build_2_9_ghost_patrols,
-    "2.10": build_2_10_spideroids,
-}
+QUESTS = [
+    QuestDefinition("2.1", "Everred Pastures", build_2_1_everred_pastures),
+    QuestDefinition("2.2", "Spider Spawns", build_2_2_spider_spawns),
+    QuestDefinition("2.3", "Arachnoid Farm", build_2_3_arachnoid_farm),
+    QuestDefinition("2.4", "Two Fronts", build_2_4_two_fronts),
+    QuestDefinition("2.5", "Sweep Stakes", build_2_5_sweep_stakes),
+    QuestDefinition("2.6", "Evil Zombies At Large", build_2_6_evil_zombies_at_large),
+    QuestDefinition("2.7", "Survival Of The Fastest", build_2_7_survival_of_the_fastest),
+    QuestDefinition("2.8", "Land Of Lizards", build_2_8_land_of_lizards),
+    QuestDefinition("2.9", "Ghost Patrols", build_2_9_ghost_patrols),
+    QuestDefinition("2.10", "Spideroids", build_2_10_spideroids),
+]
 
-TIER2_TITLES = {
-    "2.1": "Everred Pastures",
-    "2.2": "Spider Spawns",
-    "2.3": "Arachnoid Farm",
-    "2.4": "Two Fronts",
-    "2.5": "Sweep Stakes",
-    "2.6": "Evil Zombies At Large",
-    "2.7": "Survival Of The Fastest",
-    "2.8": "Land Of Lizards",
-    "2.9": "Ghost Patrols",
-    "2.10": "Spideroids",
-}
+TIER2_BUILDERS = {quest.level: quest.builder for quest in QUESTS}
+TIER2_TITLES = {quest.level: quest.title for quest in QUESTS}
 
 __all__ = [
     "QuestContext",
+    "QuestDefinition",
     "SpawnEntry",
+    "QUESTS",
     "TIER2_BUILDERS",
     "TIER2_TITLES",
     "build_2_1_everred_pastures",

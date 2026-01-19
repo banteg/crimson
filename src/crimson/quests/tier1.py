@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 import random
 
-from .types import QuestContext, SpawnEntry
+from .types import QuestContext, QuestDefinition, SpawnEntry
 
 SPAWN_ID_8 = 0x08
 SPAWN_ID_9 = 0x09
@@ -220,35 +220,27 @@ def build_1_10_8_legged_terror(ctx: QuestContext) -> list[SpawnEntry]:
     return entries
 
 
-TIER1_BUILDERS = {
-    "1.1": build_1_1_land_hostile,
-    "1.2": build_1_2_minor_alien_breach,
-    "1.3": build_1_3_target_practice,
-    "1.4": build_1_4_frontline_assault,
-    "1.5": build_1_5_alien_dens,
-    "1.6": build_1_6_the_random_factor,
-    "1.7": build_1_7_spider_wave_syndrome,
-    "1.8": build_1_8_alien_squads,
-    "1.9": build_1_9_nesting_grounds,
-    "1.10": build_1_10_8_legged_terror,
-}
+QUESTS = [
+    QuestDefinition("1.1", "Land Hostile", build_1_1_land_hostile),
+    QuestDefinition("1.2", "Minor Alien Breach", build_1_2_minor_alien_breach),
+    QuestDefinition("1.3", "Target Practice", build_1_3_target_practice),
+    QuestDefinition("1.4", "Frontline Assault", build_1_4_frontline_assault),
+    QuestDefinition("1.5", "Alien Dens", build_1_5_alien_dens),
+    QuestDefinition("1.6", "The Random Factor", build_1_6_the_random_factor),
+    QuestDefinition("1.7", "Spider Wave Syndrome", build_1_7_spider_wave_syndrome),
+    QuestDefinition("1.8", "Alien Squads", build_1_8_alien_squads),
+    QuestDefinition("1.9", "Nesting Grounds", build_1_9_nesting_grounds),
+    QuestDefinition("1.10", "8-legged Terror", build_1_10_8_legged_terror),
+]
 
-TIER1_TITLES = {
-    "1.1": "Land Hostile",
-    "1.2": "Minor Alien Breach",
-    "1.3": "Target Practice",
-    "1.4": "Frontline Assault",
-    "1.5": "Alien Dens",
-    "1.6": "The Random Factor",
-    "1.7": "Spider Wave Syndrome",
-    "1.8": "Alien Squads",
-    "1.9": "Nesting Grounds",
-    "1.10": "8-legged Terror",
-}
+TIER1_BUILDERS = {quest.level: quest.builder for quest in QUESTS}
+TIER1_TITLES = {quest.level: quest.title for quest in QUESTS}
 
 __all__ = [
     "QuestContext",
+    "QuestDefinition",
     "SpawnEntry",
+    "QUESTS",
     "TIER1_BUILDERS",
     "TIER1_TITLES",
     "build_1_1_land_hostile",
