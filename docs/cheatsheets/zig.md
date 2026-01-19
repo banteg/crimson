@@ -1,4 +1,4 @@
-## Zig “15” = Zig 0.15.x (baseline: 0.15.2)
+# Zig "15" = Zig 0.15.x (baseline: 0.15.2)
 
 Zig uses **0.x** versioning (pre-1.0). What people call “Zig 15” is almost always **Zig 0.15.x**. As of **Oct 11, 2025**, the latest stable is **0.15.2**; **0.15.1** (Aug 19, 2025) is the one with the big release notes that describe most of the breaking changes you’ll hit when moving to 0.15. ([Zig Programming Language][1])
 
@@ -8,9 +8,9 @@ This guide focuses on the big 0.15.x breakage areas you named: **I/O**, **Reader
 
 ---
 
-# 1) The big one: “Writergate” (new I/O model)
+## 1) The big one: "Writergate" (new I/O model)
 
-## What changed conceptually
+### What changed conceptually
 
 Zig 0.15 deprecates the old `std.io` reader/writer interfaces and introduces **new non-generic** interfaces:
 
@@ -19,7 +19,7 @@ Zig 0.15 deprecates the old `std.io` reader/writer interfaces and introduces **n
 
 The key design shift is: **the buffer is part of the interface** (“buffer above the vtable”), not wrapped via separate `BufferedReader/BufferedWriter` layers. This is meant to reduce “anytype poisoning”, improve optimizer visibility (especially in Debug), and provide richer stream operations (discard, splat, sendFile, peek, etc.). ([Zig Programming Language][3])
 
-### The practical consequences you feel immediately
+#### The practical consequences you feel immediately
 
 * You now **provide buffers explicitly** in many places.
 * **You must flush** buffered writers or output may never appear.
@@ -27,16 +27,16 @@ The key design shift is: **the buffer is part of the interface** (“buffer abov
 
 ---
 
-## The new “default” stdout printing pattern (buffer + flush)
+### The new "default" stdout printing pattern (buffer + flush)
 
-### Old (pre-0.15-ish)
+#### Old (pre-0.15-ish)
 
 ```zig
 var stdout = std.io.getStdOut().writer();
 try stdout.print("Hello\n", .{});
 ```
 
-### New (0.15)
+#### New (0.15)
 
 ```zig
 const std = @import("std");
@@ -53,7 +53,7 @@ pub fn main() !void {
 
 This is the recommended migration pattern: **buffering + explicit flush**. ([Zig Programming Language][3])
 
-### “But I just want Hello World”
+#### "But I just want Hello World"
 
 The language reference still shows a minimal “Hello World” via:
 
@@ -65,9 +65,9 @@ That’s fine for simple output; for formatted/high-frequency output, the buffer
 
 ---
 
-## BufferedWriter and CountingWriter are gone (and what replaces them)
+### BufferedWriter and CountingWriter are gone (and what replaces them)
 
-### `std.io.bufferedWriter` deleted → you supply the buffer
+#### `std.io.bufferedWriter` deleted → you supply the buffer
 
 Old:
 
@@ -91,7 +91,7 @@ try stdout.flush();
 
 ([Zig Programming Language][3])
 
-### `CountingWriter` deleted → use these instead
+#### `CountingWriter` deleted → use these instead
 
 * discard + count: `std.Io.Writer.Discarding`
 * allocate output: `std.Io.Writer.Allocating`
@@ -99,7 +99,7 @@ try stdout.flush();
 
 ---
 
-## Adapter: bridging old writers/readers to the new API
+### Adapter: bridging old writers/readers to the new API
 
 If you still have an old-style writer (common while migrating a codebase), there’s an adapter:
 
@@ -115,9 +115,9 @@ This can help you migrate incrementally. ([Zig Programming Language][3])
 
 ---
 
-# 2) Readers/Writers in 0.15: “how do I actually *use* them now?”
+## 2) Readers/Writers in 0.15: "how do I actually *use* them now?"
 
-## The “interface pointer” shape (and the consistency trap)
+### The "interface pointer" shape (and the consistency trap)
 
 A very common 0.15 stumbling block is: different concrete reader/writer wrappers expose the `*std.Io.Reader` / `*std.Io.Writer` differently:
 
@@ -126,7 +126,7 @@ A very common 0.15 stumbling block is: different concrete reader/writer wrappers
 
 This is shown both in official release notes (HTTP server example) and discussed in the community (e.g., the TLS client example). ([Zig Programming Language][3])
 
-### Example: net.Stream → TLS client
+#### Example: net.Stream → TLS client
 
 A minimal “convert Stream.Reader/Writer to Io.Reader/Writer” pattern looks like:
 
@@ -148,7 +148,7 @@ Two important gotchas called out in practice:
 
 ---
 
-## Reading: line-based input changed (and the error model is more explicit)
+### Reading: line-based input changed (and the error model is more explicit)
 
 Release notes show a new pattern for delimiter-based reading that surfaces actionable errors such as:
 
@@ -175,7 +175,7 @@ You’ll also see simpler “read line” patterns in updated community guides u
 
 ---
 
-## Reading a file into memory using the new reader
+### Reading a file into memory using the new reader
 
 A concrete example of the new `file.reader(&buffer)` style:
 
@@ -200,9 +200,9 @@ This highlights a few 0.15 realities:
 
 ---
 
-# 3) Formatting + print breakage: `{f}` is now required for format methods
+## 3) Formatting + print breakage: `{f}` is now required for format methods
 
-## The new rule
+### The new rule
 
 If a value has a `format` method, plain `{}` can become ambiguous. Zig 0.15 requires you to explicitly say:
 
@@ -217,24 +217,24 @@ std.debug.print("{f}", .{std.zig.fmtId("example")});
 
 ([Zig Programming Language][3])
 
-### Why it matters for JSON
+#### Why it matters for JSON
 
 `std.json.fmt(...)` produces a value intended to be formatted via a format method—so you typically print it with **`{f}`** (more in the JSON section). ([Zig Guide][7])
 
 ---
 
-## Other formatting-related breakage you may notice
+### Other formatting-related breakage you may notice
 
 * **Formatted alignment is now ASCII/bytes-only**, not Unicode-aware. If you were depending on Unicode column alignment, you’ll need your own Unicode-width handling. ([Zig Programming Language][3])
 * `std.fmt.format` is deprecated in favor of `std.Io.Writer.print`. ([Zig Programming Language][3])
 
 ---
 
-# 4) Arrays in 0.15: ArrayList flipped (unmanaged is now the default)
+## 4) Arrays in 0.15: ArrayList flipped (unmanaged is now the default)
 
 This is the other big “every codebase feels it” change.
 
-## What changed
+### What changed
 
 * Old `std.ArrayList` (managed, stored an allocator) moved to:
 
@@ -245,9 +245,9 @@ A community summary puts it bluntly:
 
 > what used to be `ArrayListUnmanaged` is now `ArrayList` … old `ArrayList` is now `std.array_list.Managed`. ([Ziggit][2])
 
-## Migration patterns
+### Migration patterns
 
-### Pattern A: building a growable byte buffer (string builder)
+#### Pattern A: building a growable byte buffer (string builder)
 
 **0.15-style (allocator passed explicitly):**
 
@@ -268,7 +268,7 @@ pub fn build_query(allocator: std.mem.Allocator, params: []Param) ![]u8 {
 
 This is exactly the “new normal”: allocator is *not* stored; you pass it in. ([Ziggit][2])
 
-### Pattern B: “I just want an empty list and append”
+#### Pattern B: "I just want an empty list and append"
 
 ```zig
 var list: std.ArrayList(u8) = .empty;
@@ -280,7 +280,7 @@ try list.appendSlice(allocator, "BC");
 
 The `.empty` + `deinit(allocator)` style is used in updated 0.15 guides. ([Zig Guide][6])
 
-### Pattern C: formatted append directly into an ArrayList
+#### Pattern C: formatted append directly into an ArrayList
 
 `ArrayList(u8)` can act like a string builder with `print`:
 
@@ -295,7 +295,7 @@ try list.print(allocator, "Hello {s}!", .{"World"});
 
 ---
 
-## BoundedArray removed: what to use instead
+### BoundedArray removed: what to use instead
 
 `std.BoundedArray` is removed. The release notes recommend three broad migration choices:
 
@@ -307,7 +307,7 @@ The notes show replacing BoundedArray with `initBuffer(&buffer)` + bounded appen
 
 ---
 
-## “Ring buffers” and `std.fifo` deletions (related to arrays + IO)
+### "Ring buffers" and `std.fifo` deletions (related to arrays + IO)
 
 0.15 deletes several ring-buffer implementations (`std.fifo.LinearFifo`, `std.RingBuffer`, etc.), explicitly pointing out that the new `std.Io.Reader` / `std.Io.Writer` are themselves ring buffers and cover many of the prior use cases. `std.fifo` is deleted. ([Zig Programming Language][3])
 
@@ -319,9 +319,9 @@ If your code used `std.fifo`/queues, expect to either:
 
 ---
 
-# 5) JSON in Zig 0.15: parsing is familiar; writing changed because I/O changed
+## 5) JSON in Zig 0.15: parsing is familiar; writing changed because I/O changed
 
-## Parsing JSON: `parseFromSlice` still looks like you remember
+### Parsing JSON: `parseFromSlice` still looks like you remember
 
 Example:
 
@@ -347,9 +347,9 @@ Key points:
 
 ---
 
-## Writing / stringifying JSON: two good 0.15-native approaches
+### Writing / stringifying JSON: two good 0.15-native approaches
 
-### Approach A: `std.json.fmt(...)` + print with `{f}`
+#### Approach A: `std.json.fmt(...)` + print with `{f}`
 
 This is very ergonomic when you already have a Writer and want formatting control:
 
@@ -369,7 +369,7 @@ const bytes = out.written();
 
 This pattern is shown in up-to-date 0.15 guides, and `{f}` is required due to the 0.15 formatting rule change. ([Zig Guide][7])
 
-### Approach B: `std.json.Stringify.value(...)` writing directly to a `*std.Io.Writer`
+#### Approach B: `std.json.Stringify.value(...)` writing directly to a `*std.Io.Writer`
 
 This is great for fixed buffers and for streaming to files/sockets.
 
@@ -391,7 +391,7 @@ That exact shape is used in modern 0.15 examples. ([Renato Athaydes][8])
 
 ---
 
-## Writing JSON to a file in 0.15 (putting it all together)
+### Writing JSON to a file in 0.15 (putting it all together)
 
 A practical pattern:
 
@@ -419,11 +419,11 @@ This combines:
 
 ---
 
-# 6) High-signal “rename/deletion” cheat sheet for these areas
+## 6) High-signal "rename/deletion" cheat sheet for these areas
 
 From the 0.15 release notes’ “Deletions and Deprecations” section (selected items that commonly break builds): ([Zig Programming Language][3])
 
-### I/O / Reader / Writer
+#### I/O / Reader / Writer
 
 * `std.io.GenericReader` → `std.Io.Reader`
 * `std.io.GenericWriter` → `std.Io.Writer`
@@ -437,31 +437,31 @@ From the 0.15 release notes’ “Deletions and Deprecations” section (selecte
 * deleted: `std.io.bufferedWriter` (BufferedWriter)
   → supply a buffer to the writer directly. ([Zig Programming Language][3])
 
-### Arrays / ArrayList
+#### Arrays / ArrayList
 
 * `std.ArrayList` (managed) → `std.array_list.Managed` (planned for eventual removal)
 * default `std.ArrayList` is now unmanaged-style (allocator passed to methods). ([Zig Programming Language][3])
 * removed: `std.BoundedArray`
   → use caller-provided buffers, allocation, or ArrayList backed by a stack buffer. ([Zig Programming Language][3])
 
-### JSON
+#### JSON
 
 * Parsing: `std.json.parseFromSlice` remains the go-to for “parse JSON bytes into a type.” ([Zig Guide][7])
 * Writing: prefer `std.json.fmt` + `{f}`, or `std.json.Stringify.value` to a `*std.Io.Writer`. ([Zig Guide][7])
 
 ---
 
-# 7) Common 0.15 migration errors and what they mean
+## 7) Common 0.15 migration errors and what they mean
 
-## “Nothing prints”
+### "Nothing prints"
 
 You forgot to `flush()` your buffered writer. The release notes explicitly warn about this, and it’s the most common surprise. ([Zig Programming Language][3])
 
-## “ambiguous format string; specify {f} … or {any} …”
+### "ambiguous format string; specify {f} … or {any} …"
 
 You’re printing something that provides a format method (e.g. `std.zig.fmtId`, `std.json.fmt`, and many more). Update `{}` to `{f}` (or `{any}` if you explicitly want the raw debug-ish representation). ([Zig Programming Language][3])
 
-## “expected type *std.Io.Writer, found …”
+### "expected type *std.Io.Writer, found …"
 
 A stdlib API now wants the **interface pointer**, not your concrete writer type.
 
@@ -470,7 +470,7 @@ A stdlib API now wants the **interface pointer**, not your concrete writer type.
 
 Also ensure the underlying objects live long enough (stable address). ([Zig Programming Language][3])
 
-## ArrayList: “method requires allocator parameter”
+### ArrayList: "method requires allocator parameter"
 
 That’s expected: in 0.15 the default ArrayList no longer stores the allocator. Update calls like:
 
@@ -480,7 +480,7 @@ That’s expected: in 0.15 the default ArrayList no longer stores the allocator.
 
 ---
 
-# 8) A practical upgrade checklist (I/O + arrays + JSON)
+## 8) A practical upgrade checklist (I/O + arrays + JSON)
 
 1. **Pick Zig 0.15.2** as your target compiler. ([Zig Programming Language][1])
 2. If upgrading from older Zig, do sequential upgrades (0.13 → 0.14 → 0.15) and read each release note set. ([Ziggit][2])
@@ -520,9 +520,9 @@ Below is a “how to write idiomatic Zig” guide aimed at **Zig 0.15.x** (what 
 
 ---
 
-# Idiomatic Zig 0.15: style, patterns, and cheatsheets
+## Idiomatic Zig 0.15: style, patterns, and cheatsheets
 
-## The mindset that produces idiomatic Zig
+### The mindset that produces idiomatic Zig
 
 Zig’s own “Zen” is a good north star. It’s not “rules”, but it explains why idioms look the way they do. ([Zig Programming Language][2])
 
@@ -545,13 +545,13 @@ Two other “philosophy facts” drive idioms a lot:
 
 ---
 
-## “Style” in Zig: mostly just `zig fmt`
+### "Style" in Zig: mostly just `zig fmt`
 
-### The golden rule
+#### The golden rule
 
 Run **`zig fmt`** and don’t fight it. The official style guide explicitly says `zig fmt` will apply the recommendations and that a style guide is only needed for cases where `zig fmt` doesn’t format something. ([Zig Programming Language][2])
 
-### Naming conventions (official)
+#### Naming conventions (official)
 
 The language reference’s style guide lays out the conventions most people treat as canonical: ([Zig Programming Language][2])
 
@@ -565,7 +565,7 @@ The language reference’s style guide lays out the conventions most people trea
   * types (`struct`, `enum`, `union`, etc.) ([Zig Programming Language][2])
 * Names should **not** redundantly encode the namespace/type (avoid `array_list.ArrayList`-style repetition). ([Zig Programming Language][2])
 
-### Doc comments (official)
+#### Doc comments (official)
 
 * `///` documents the next declaration.
 * `//!` documents the containing *thing* (often a file/module). ([Zig Programming Language][2])
@@ -575,15 +575,15 @@ The style guide also recommends a useful convention in API docs:
 * Use **“Assume”** for preconditions that are *illegal behavior* if violated.
 * Use **“Assert”** for preconditions that are checked and produce safety-checked failure. ([Zig Programming Language][2])
 
-### Bonus: generating docs
+#### Bonus: generating docs
 
 Doc comments can be emitted as HTML using `zig test -femit-docs …`. ([Zig Programming Language][2])
 
 ---
 
-## Idiomatic defaults: `const`, explicit lifetimes, explicit ownership
+### Idiomatic defaults: `const`, explicit lifetimes, explicit ownership
 
-### Prefer `const` by default
+#### Prefer `const` by default
 
 Idiomatic Zig code is aggressively immutable until it must be mutable:
 
@@ -602,7 +602,7 @@ pub fn main() !void {
 
 This aligns with “communicate intent precisely”: mutability stands out.
 
-### Ownership & lifetime are part of the API surface
+#### Ownership & lifetime are part of the API surface
 
 The language reference is blunt: it’s the programmer’s responsibility to ensure pointers aren’t used after the memory is gone, and docs should explain who “owns” returned pointers. ([Zig Programming Language][2])
 
@@ -636,19 +636,19 @@ That `file.reader(&buf)` + `r.interface.readAlloc(...)` pattern matches current 
 
 ---
 
-## Strings, bytes, and “arrays vs slices” (the idiomatic mental model)
+### Strings, bytes, and "arrays vs slices" (the idiomatic mental model)
 
-### Strings are bytes
+#### Strings are bytes
 
 In Zig, “strings” are usually just `[]const u8` (a byte slice you *treat* as UTF‑8).
 
-### Arrays vs slices (practical meaning)
+#### Arrays vs slices (practical meaning)
 
 * `[N]T` is an **array value** with length known at compile time.
 * `[]T` is a **slice**: pointer + length (a view into something else).
 * `[]const u8` is the most common “string view”.
 
-### String literals are *not* mutable slices
+#### String literals are *not* mutable slices
 
 The language reference shows this sharp edge clearly: string literals have an array pointer type, and you can’t assign them to `[]u8` (mutable slice).
 
@@ -661,13 +661,13 @@ const slice: []u8 = buf[0..];
 
 ---
 
-## Errors & optionals: idiomatic control flow tools
+### Errors & optionals: idiomatic control flow tools
 
-### Errors are values and can’t be silently ignored
+#### Errors are values and can't be silently ignored
 
 Zig will complain if you discard an error union without handling it, and it tells you to use `try`, `catch`, or `if`. ([Zig Programming Language][3])
 
-### Idiomatic patterns
+#### Idiomatic patterns
 
 **1) Propagate with `try`**
 
@@ -702,7 +702,7 @@ try list.appendSlice(allocator, "hello");
 * `?T` means “this is allowed to be missing”
 * `error!T` means “this operation can fail”
 
-### Heap allocation failure is a first-class error
+#### Heap allocation failure is a first-class error
 
 Zig’s docs explicitly recommend treating `error.OutOfMemory` as the representation of heap allocation failure, rather than unconditionally crashing. ([Zig Programming Language][2])
 
@@ -713,7 +713,7 @@ That’s why idiomatic Zig APIs:
 
 ---
 
-## Resource management: `defer` and “make cleanup obvious”
+### Resource management: `defer` and "make cleanup obvious"
 
 Idiomatic Zig tries to make resource cleanup visually checkable:
 
@@ -728,9 +728,9 @@ Use `errdefer` when the cleanup is only correct for the error path (e.g., before
 
 ---
 
-## Containers in Zig 0.15: ArrayList is unmanaged by default
+### Containers in Zig 0.15: ArrayList is unmanaged by default
 
-### The big idiom shift
+#### The big idiom shift
 
 In Zig 0.15, the **unmanaged** variant is the default:
 
@@ -738,7 +738,7 @@ In Zig 0.15, the **unmanaged** variant is the default:
 * the default `std.ArrayList` now follows the “pass allocator to methods” style
   The release notes explain the rationale and warn the managed names will eventually be removed. ([Zig Programming Language][5])
 
-### Idiomatic ArrayList usage (0.15)
+#### Idiomatic ArrayList usage (0.15)
 
 Use `.empty`, pass an allocator to operations, and `deinit(allocator)`:
 
@@ -760,17 +760,17 @@ test "arraylist basics" {
 
 That matches common 0.15-era examples. ([Zig Guide][6])
 
-### Stack-buffer backed “array list”
+#### Stack-buffer backed "array list"
 
 0.15 also pushes a pattern: if you want a fixed maximum but stack storage, use `ArrayListUnmanaged.initBuffer(&buffer)` and bounded appends. ([Zig Programming Language][5])
 
 ---
 
-## I/O in Zig 0.15: the idiomatic Reader/Writer style
+### I/O in Zig 0.15: the idiomatic Reader/Writer style
 
 Zig 0.15’s I/O story heavily influences “idiomatic Zig”, because it nudges you to write APIs that accept readers/writers rather than concrete streams or generic types.
 
-### The core idiom
+#### The core idiom
 
 * Create a writer/reader with an explicit buffer
 * Pass around `*std.Io.Writer` / `*std.Io.Reader` (the interface)
@@ -793,7 +793,7 @@ pub fn main() !void {
 }
 ```
 
-### Write functions that accept a writer (idiomatic library design)
+#### Write functions that accept a writer (idiomatic library design)
 
 ```zig
 fn greet(writer: *std.Io.Writer, name: []const u8) !void {
@@ -806,21 +806,21 @@ This is idiomatic because:
 * it avoids hidden allocations (callers choose buffering / destination)
 * it composes with files, sockets, memory writers, etc.
 
-### `std.debug.print` is for “debug output; ignore errors”
+#### `std.debug.print` is for "debug output; ignore errors"
 
 The language reference notes that `std.debug.print` is appropriate for stderr where errors are irrelevant, and it’s simpler than building your own writer. ([Zig Programming Language][2])
 
 ---
 
-## Formatting in Zig 0.15: `{f}`, new `format` signature, and “print everywhere”
+### Formatting in Zig 0.15: `{f}`, new `format` signature, and "print everywhere"
 
-### Prefer `writer.print(...)` over `std.fmt.format`
+#### Prefer `writer.print(...)` over `std.fmt.format`
 
 0.15 deprecates/redirects older formatting patterns toward writers:
 
 * `std.fmt.format -> std.Io.Writer.print` ([Zig Programming Language][5])
 
-### `{f}` is how you call a type’s format method now
+#### `{f}` is how you call a type's format method now
 
 Zig 0.15.1 changed custom formatting:
 
@@ -835,7 +835,7 @@ Zig 0.15.1 changed custom formatting:
 
 And it’s invoked with `{f}` rather than `{}`. ([Zig Programming Language][5])
 
-### `std.fmt.allocPrint` and friends are still idiomatic when you need a string
+#### `std.fmt.allocPrint` and friends are still idiomatic when you need a string
 
 If you truly want a string in memory, `std.fmt.allocPrint` is a straightforward idiom. ([Zig Guide][7])
 
@@ -844,7 +844,7 @@ const s = try std.fmt.allocPrint(allocator, "{d} + {d}", .{ 1, 2 });
 defer allocator.free(s);
 ```
 
-### Formatting specifier cheat sheet (common ones)
+#### Formatting specifier cheat sheet (common ones)
 
 A few that show up constantly (examples are from Zig 0.15.2 guides): ([Zig Guide][8])
 
@@ -861,9 +861,9 @@ A few that show up constantly (examples are from Zig 0.15.2 guides): ([Zig Guide
 
 ---
 
-## JSON in Zig 0.15: idiomatic parsing & printing
+### JSON in Zig 0.15: idiomatic parsing & printing
 
-### Parse into a typed struct (idiomatic)
+#### Parse into a typed struct (idiomatic)
 
 The “typed parse” pattern is:
 
@@ -887,7 +887,7 @@ defer parsed.deinit();
 const place = parsed.value;
 ```
 
-### Stringify / format JSON (idiomatic)
+#### Stringify / format JSON (idiomatic)
 
 A convenient idiom in 0.15 is: create an allocating writer, then `print("{f}", .{std.json.fmt(value, .{})})`. ([Zig Guide][9])
 
@@ -905,7 +905,7 @@ Also note: JSON parsing needs an allocator for strings/arrays/maps inside JSON d
 
 ---
 
-## Build system (0.15 idioms): `root_module` + `createModule`
+### Build system (0.15 idioms): `root_module` + `createModule`
 
 A minimal, idiomatic `build.zig` in 0.15 looks like this (from Zig’s build system docs): ([Zig Programming Language][10])
 
@@ -929,7 +929,7 @@ If you’re coming from older versions: 0.15 removed deprecated root module fiel
 
 ---
 
-## Comptime & generics: idiomatic guidance (practical, not dogmatic)
+### Comptime & generics: idiomatic guidance (practical, not dogmatic)
 
 Zig idioms around generics tend to favor:
 
@@ -939,9 +939,9 @@ Zig idioms around generics tend to favor:
 
 ---
 
-# Cheatsheets
+## Cheatsheets
 
-## 1) Declarations & basics
+### 1) Declarations & basics
 
 ```zig
 const std = @import("std");
@@ -966,7 +966,7 @@ test "something" {
 }
 ```
 
-## 2) Types: arrays, slices, pointers
+### 2) Types: arrays, slices, pointers
 
 * `[N]T` → array value (stack-allocated when local)
 * `[]T` → slice (ptr + len)
@@ -979,7 +979,7 @@ test "something" {
 
 **String literal reminder:** not a mutable `[]u8` by default.
 
-## 3) Optionals (`?T`)
+### 3) Optionals (`?T`)
 
 ```zig
 const maybe: ?u32 = 10;
@@ -993,7 +993,7 @@ if (maybe) |v| {
 }
 ```
 
-## 4) Errors (`error!T`) and propagation
+### 4) Errors (`error!T`) and propagation
 
 ```zig
 fn mightFail() !u32 {
@@ -1015,7 +1015,7 @@ const v = mightFail() catch |err| switch (err) {
 };
 ```
 
-## 5) Resource cleanup (`defer` / `errdefer`)
+### 5) Resource cleanup (`defer` / `errdefer`)
 
 ```zig
 const file = try std.fs.cwd().openFile("data.txt", .{});
@@ -1029,7 +1029,7 @@ try list.appendSlice(allocator, "hi");
 defer list.deinit(allocator); // once ownership is “committed”
 ```
 
-## 6) ArrayList (0.15 style)
+### 6) ArrayList (0.15 style)
 
 **Heap-backed:**
 
@@ -1053,7 +1053,7 @@ var list = std.ArrayListUnmanaged(u8).initBuffer(&buf);
 
 ([Zig Programming Language][5])
 
-## 7) I/O (0.15 stdout writer pattern)
+### 7) I/O (0.15 stdout writer pattern)
 
 ```zig
 var buf: [1024]u8 = undefined;
@@ -1066,7 +1066,7 @@ try out.flush();
 
 ([Zig Programming Language][5])
 
-## 8) “Write to memory” patterns
+### 8) "Write to memory" patterns
 
 * Use `std.ArrayList(u8)` and `list.print(allocator, ...)` ([Zig Guide][4])
 * Or use an allocating writer for formatting / JSON output ([Zig Guide][9])
@@ -1082,13 +1082,13 @@ try list.print(allocator, "Hello {s}!", .{"World"});
 
 ([Zig Guide][4])
 
-## 9) Formatting quick ref
+### 9) Formatting quick ref
 
 * Build a string: `std.fmt.allocPrint` ([Zig Guide][7])
 * Print to any writer: `writer.print(...)` (and prefer this over older `std.fmt.format`) ([Zig Programming Language][5])
 * Custom formatting: implement `format(this, writer: *std.Io.Writer) ...` and call with `{f}` ([Zig Programming Language][5])
 
-## 10) JSON quick ref
+### 10) JSON quick ref
 
 **Parse:**
 
@@ -1108,7 +1108,7 @@ try writer.print("{f}", .{std.json.fmt(value, .{})});
 
 ([Zig Guide][9])
 
-## 11) Build.zig “hello world”
+### 11) Build.zig "hello world"
 
 ```zig
 pub fn build(b: *std.Build) void {
