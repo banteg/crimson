@@ -379,12 +379,13 @@ Config blob layout (partial, 0x480 bytes, base `DAT_00480348`):
 | `0x46e` | `DAT_004807b6` | `u8` | `?` | Config bool applied via Grim id `0x54` (unknown). |
 | `0x470` | `DAT_004807b8` | `u32` | `?` | Detail preset (drives `DAT_00480356/58/59`). |
 
-Runtime note (2026-01-19 quest-build capture):
-- Reading a u32 at `DAT_00480790` produced `0x00000100` for standard runs and
-  `0x00000101` for hardcore runs. This suggests the low byte at `0x448`
-  (0x00480790) toggles with hardcore while the next byte stays `1`.
-  We should log per-byte values to confirm whether `config_full_version` lives at
-  `DAT_00480790` or `DAT_00480791`.
+Runtime note (2026-01-19 quest-build capture, 1.1 runs):
+- Byte reads at `DAT_00480790..93` were `[1, 1, 0, 0]` for hardcore and
+  `[0, 1, 0, 0]` for normal (both 1P/2P). This implies:
+  - **`DAT_00480790` (offset `0x448`) toggles with hardcore** (`0` normal, `1` hardcore).
+  - The next byte `DAT_00480791` stayed `1` in all runs (likely the full-version flag).
+  - If so, our `config_full_version`/`config_perk_prompt_state` labels are off by one.
+    We should verify by toggling the perk prompt setting and re-checking these bytes.
 | `0x478` | `DAT_004807c0` | `u32` | `?` | Keybind: pick perk (Level‑up prompt). |
 | `0x47c` | `DAT_004807c4` | `u32` | `?` | Keybind: reload. |
 
