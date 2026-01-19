@@ -29,6 +29,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00401560",
+    "name": "console_init",
+    "signature": "int * console_init(int *console_state)",
+    "comment": "initializes the console state, registers core commands/cvars, and seeds prompt/version strings"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004017a0",
     "name": "console_push_line",
     "comment": "pushes line into console queue"

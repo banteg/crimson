@@ -9,6 +9,60 @@
     },
     {
       "program": "crimsonland.exe",
+      "address": "0x004711f8",
+      "name": "console_cmd_exec",
+      "comment": "Console command string: \"exec\"."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00471200",
+      "name": "console_cmd_minimize",
+      "comment": "Console command string: \"minimizeconsole\"."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00471210",
+      "name": "console_cmd_extend",
+      "comment": "Console command string: \"extendconsole\"."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00471220",
+      "name": "console_cmd_clear",
+      "comment": "Console command string: \"clear\"."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00471228",
+      "name": "console_cmd_quit",
+      "comment": "Console command string: \"quit\"."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00471230",
+      "name": "console_cmd_set",
+      "comment": "Console command string: \"set\"."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00471234",
+      "name": "console_cmd_echo",
+      "comment": "Console command string: \"echo\"."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x0047123c",
+      "name": "console_cmd_vars",
+      "comment": "Console command string: \"vars\"."
+    },
+    {
+      "program": "crimsonland.exe",
+      "address": "0x00471244",
+      "name": "console_cmd_cmdlist",
+      "comment": "Console command string: \"cmdlist\"."
+    },
+    {
+      "program": "crimsonland.exe",
       "address": "0x004712c0",
       "name": "console_prompt_string",
       "comment": "Console prompt string used for input rendering."

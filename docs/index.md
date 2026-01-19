@@ -32,6 +32,7 @@ Data map coverage: 19.65% (654 / 3328 symbols)
 - [Game mode map](game-mode-map.md) — Tracking
 - [Save/status file (game.cfg)](save-status-format.md) — Draft
 - [Secrets and unlocks](secrets.md) — Draft
+- [In-game console](console.md) — Draft
 - [Detangling notes](detangling.md) — In progress
 - [Frida workflow](frida-workflow.md) — In progress
 - [Entrypoint trace](entrypoint.md) — In progress

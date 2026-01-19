@@ -6,6 +6,7 @@ This page is generated. Run `uv run python scripts/gen_all_pages.py` to update.
 - [Bonus ID map](bonus-id-map.md)
 - [Frida 17.5.2 GumJS (JavaScript/TypeScript) scripting cheatsheet](cheatsheets/frida.md)
 - [1) The big one: “Writergate” (new I/O model)](cheatsheets/zig.md)
+- [In-game console (tilde)](console.md)
 - [Creature struct (creature_pool / DAT_0049bf38)](creature-struct.md)
 - [Frame loop (gameplay)](crimsonland-exe/frame-loop.md)
 - [Gameplay glue](crimsonland-exe/gameplay.md)
@@ -45,4 +46,5 @@ This page is generated. Run `uv run python scripts/gen_all_pages.py` to update.
 - [UI weapon icon atlas (ui_wicons.png)](ui-wicons-map.md)
 - [Weapon ID map](weapon-id-map.md)
 - [Weapon table (weapon_table_init)](weapon-table.md)
+- [WinDbg / CDB workflow](windbg.md)
 
