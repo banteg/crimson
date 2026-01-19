@@ -10,14 +10,14 @@ import typer
 from PIL import Image
 
 from . import jaz, paq
-from .quests import tier1, tier2
+from .quests import tier1, tier2, tier3
 from .quests.types import QuestContext, SpawnEntry
 
 
 app = typer.Typer(add_completion=False)
 
-_QUEST_BUILDERS = {**tier1.TIER1_BUILDERS, **tier2.TIER2_BUILDERS}
-_QUEST_TITLES = {**tier1.TIER1_TITLES, **tier2.TIER2_TITLES}
+_QUEST_BUILDERS = {**tier1.TIER1_BUILDERS, **tier2.TIER2_BUILDERS, **tier3.TIER3_BUILDERS}
+_QUEST_TITLES = {**tier1.TIER1_TITLES, **tier2.TIER2_TITLES, **tier3.TIER3_TITLES}
 
 _SEP_RE = re.compile(r"[\\/]+")
 
