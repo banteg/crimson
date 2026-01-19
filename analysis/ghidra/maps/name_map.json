@@ -370,7 +370,7 @@
     "address": "0x0040f400",
     "name": "credits_secret_match3_find",
     "signature": "uint credits_secret_match3_find(int *board, int *out_idx, unsigned char *out_dir)",
-    "comment": "scans a 6x6 board for a 3-in-a-row match; writes start index + orientation (0=vertical, 1=horizontal)"
+    "comment": "scans a 6x6 board for a 3-in-a-row match; writes start index (row-major; leftmost/topmost) + orientation (0=vertical, 1=horizontal)"
   },
   {
     "program": "crimsonland.exe",

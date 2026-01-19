@@ -226,10 +226,10 @@ At `esp=0x0019f8fc`:
 
 **Direction encoding (out_dir)**
 
-- We attempted to map `out_dir` to absolute move direction, but the logging was noisy and multiple hits fired per user move.
-- Observed `out_dir` values were often `0x01` across different moves, suggesting it may not encode absolute direction.
-- Hypothesis: `out_dir` may encode axis or relative polarity (or another flag), not absolute direction.
-- Next reliable step: capture a one-shot return with `out_idx/out_dir` *and* a full board dump, then infer direction by comparing tiles.
+- Static analysis of `credits_secret_match3_find` confirms:
+  - `out_dir = 0x01` for **horizontal** matches (left-to-right).
+  - `out_dir = 0x00` for **vertical** matches (top-to-bottom).
+  - `out_idx` is the **start index** of the 3-tile run in row-major order (leftmost/topmost).
 
 **Selection/swap flow**
 
@@ -258,4 +258,5 @@ At `esp=0x0019f8fc`:
 - `0x0040f400` confirmed: `out_idx/out_dir` are non-zero on success and zero on miss.
 - `0x004824e4` is the countdown timer; `0x004824e8` tracks a paired value in the same update block.
 - The flashing Reset/Back hover effect correlates with `0x004824e4 < 0x100`.
+- `out_dir` encodes orientation only (0 = vertical, 1 = horizontal); no absolute direction.
 - Still missing: exact “timer zero / dying sound” callsite; likely triggered by a different state flag or audio hook.

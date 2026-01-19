@@ -79,8 +79,22 @@ pattern. That logic remains to be found.
 
 - **Hinted precondition (string)**: “Inside AlienZooKeeper” there are combinations; example combo
   “CyanYellowRedYellow” + “orthogonal projection” hint.
-- **Verified code**: the hint string is printed in the startup secret block only. No map/mission logic
-  located yet.
+- **Verified code (minigame)**: the AlienZooKeeper credits secret is a match-3 board implemented in
+  `credits_secret_alien_zookeeper_update` (`0x0040f4f0`). The board is a 6x6 int grid at `0x004819ec`
+  (values `0..4`, `-1` empty, `-3` clearing). Swapping tiles calls
+  `credits_secret_match3_find` (`0x0040f400`), which returns the first 3-in-a-row match it finds:
+  `out_idx` is the **start index** (row-major; leftmost/topmost), and `out_dir` is **orientation**
+  (`0 = vertical`, `1 = horizontal`). On a match, the cell is marked `-3`, match masks are written,
+  score increments, and the timer adds 2000 ms.
+- **Implementation note**: only the **start cell** is marked `-3` on a match, and no clear/fall logic
+  is visible in the decompiled update loop (the refill path only checks for `-1`). This supports the
+  on-screen text that the puzzle is unfinished, but should be confirmed in runtime.
+- **Color mapping (render tint)**: based on the draw path (assuming RGBA), tile values map to:
+  `0 = (1.0, 0.5, 0.5)` red/pink, `1 = (0.5, 0.5, 1.0)` blue, `2 = (1.0, 0.5, 1.0)` magenta,
+  `3 = (0.5, 1.0, 1.0)` cyan, `4 = (1.0, 1.0, 0.5)` yellow. This likely maps the hint
+  **CyanYellowRedYellow** to values `[3,4,0,4]` (inference; needs runtime confirmation).
+- **Unlock logic**: the hint string is still only printed in the startup secret block; no map/mission
+  unlock branch located yet.
 
 ### “Brave little haxx0r” / “not really meant to see”
 

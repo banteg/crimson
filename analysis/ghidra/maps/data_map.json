@@ -533,7 +533,7 @@
       "program": "crimsonland.exe",
       "address": "0x004819ec",
       "name": "credits_secret_board",
-      "comment": "Credits secret match-3 board (6x6 ints; values 0..4, -1 empty, -3 clearing)."
+      "comment": "Credits secret match-3 board (6x6 ints; values 0..4, -1 empty, -3 clearing). Render tints: 0 red/pink, 1 blue, 2 magenta, 3 cyan, 4 yellow."
     },
     {
       "program": "crimsonland.exe",
