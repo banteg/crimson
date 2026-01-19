@@ -10,7 +10,7 @@ import typer
 from PIL import Image
 
 from . import jaz, paq
-from .quests import tier1, tier2, tier3, tier4
+from .quests import tier1, tier2, tier3, tier4, tier5
 from .quests.types import QuestContext, SpawnEntry
 
 
@@ -21,12 +21,14 @@ _QUEST_BUILDERS = {
     **tier2.TIER2_BUILDERS,
     **tier3.TIER3_BUILDERS,
     **tier4.TIER4_BUILDERS,
+    **tier5.TIER5_BUILDERS,
 }
 _QUEST_TITLES = {
     **tier1.TIER1_TITLES,
     **tier2.TIER2_TITLES,
     **tier3.TIER3_TITLES,
     **tier4.TIER4_TITLES,
+    **tier5.TIER5_TITLES,
 }
 
 _SEP_RE = re.compile(r"[\\/]+")
