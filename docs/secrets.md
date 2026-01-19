@@ -83,6 +83,48 @@ pattern. That logic remains to be found.
   This confirms the **Secret** button appearance is gated by the credits line scan, but the actual
   “Secret Path” transition logic is still unmapped.
 
+#### Secret line decode (5-bit indices)
+
+The hint line **"(4 bits for index) <- OOOPS I meant FIVE!"** indicates the binary strings are
+5-bit indices into the ordered word list built from the five quoted lines:
+
+1. Inside
+2. Dead
+3. Let
+4. Mighty
+5. Blood
+6. Do
+7. Firepower
+8. See
+9. Mark
+10. Of
+11. The
+12. Sacrifice
+13. Old
+14. Center
+15. Yourself
+16. Ground
+17. First
+18. For
+19. Triangle
+20. Cube
+21. Last
+22. Not
+23. Flee
+
+Decode:
+
+- `0001001110000010101110011` -> `00010 01110 00001 01011 10011`
+  -> 2, 14, 1, 11, 19 -> "Dead Center Inside The Triangle"
+- `0101001011100010010101100` -> `01010 01011 10001 00101 01100`
+  -> 10, 11, 17, 5, 12 -> "Of The First Blood Sacrifice"
+- `011111001000111` -> `01111 10010 00111`
+  -> 15, 18, 7 -> "Yourself For Firepower"
+
+Final decoded message:
+
+"Dead Center Inside The Triangle Of The First Blood Sacrifice Yourself For Firepower"
+
 ### Secret weapons
 
 - **Hinted precondition (string)**: there are “few secret weapons” hidden in the game.
