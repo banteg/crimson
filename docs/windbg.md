@@ -139,7 +139,7 @@ At `esp=0x0019f8fc`:
 - The globals touched in the snippet align with credits secret state (selection index, timer, score, flags), now mapped in `data_map.json`.
 - Remaining gap: record `*out_idx` and `*out_dir` to confirm orientation encoding.
 
-### Session 2 (planned) - credits secret
+### Session 2 (2026-01-19) - credits secret
 
 #### Wishlist
 
@@ -151,8 +151,63 @@ At `esp=0x0019f8fc`:
 
 #### Captured
 
-- Pending.
+**Match-3 finder `0x0040f400`**
+
+- **Hit (miss case):**
+  - Return address: `0x0040fbdd`
+  - Args:
+    - board = `0x004819ec`
+    - out_idx_ptr = `0x0019f928`
+    - out_dir_ptr = `0x0019f91f`
+  - `*out_idx = 0x00000000`, `*out_dir = 0x00`
+  - Board sample (6x6 ints; `-3` = `0xFFFFFFFD`):
+    ```
+    4 4 2 4 0 4
+    1 1 2 2 4 4
+    1 -3 4 4 1 3
+    2 -3 2 1 0 0
+    2 0 3 4 2 3
+    ```
+
+- **Hit (success case):**
+  - Return address: `0x0040fe59`
+  - Args:
+    - board = `0x004819ec`
+    - out_idx_ptr = `0x0019f938`
+    - out_dir_ptr = `0x0019f91f`
+  - `*out_idx = 0x00000012`, `*out_dir = 0x01`
+  - Board sample:
+    ```
+    2 4 3 0 4 1
+    2 4 1 0 4 1
+    3 0 2 3 2 3
+    2 3 4 4 0 0
+    1 2 4 1 3 3
+    4 3 2 0 1 1
+    ```
+
+**Selection/swap flow**
+
+- `ba w4 0x00472ef0` hit at `0x0040fe6a` inside the credits secret update block.
+- Callsite is in the same `0x0040fe6a..0x0040fe9a` region that initializes UI globals.
+
+**Timer globals**
+
+- `0x004824e4` is the main countdown value.
+  - Timer update block: `0x0040f69d..0x0040f6a3` (`mov [0x004824e4], eax`).
+  - One-shot log:
+    - pre: `0x004824e4 = 0x00000000`, `0x004824e8 = 0x0000fd3b`
+    - post: `0x004824e4 = 0x00002580`, `0x004824e8 = 0x0001039a`
+- Low-timer trigger: `0x0040f6a3` when `0x004824e4 < 0x100` (observed `cur = 0x47`).
+
+**Caller chain**
+
+- Per-frame update chain repeats:
+  - `... -> crimsonland+0x4732a -> crimsonland+0x46bd7 -> crimsonland+0x1a64d -> crimsonland+0x6b2e -> grim...`
 
 #### Interpretation
 
-- Pending.
+- `0x0040f400` confirmed: `out_idx/out_dir` are non-zero on success and zero on miss.
+- `0x004824e4` is the countdown timer; `0x004824e8` tracks a paired value in the same update block.
+- The flashing Reset/Back hover effect correlates with `0x004824e4 < 0x100`.
+- Still missing: exact “timer zero / dying sound” callsite; likely triggered by a different state flag or audio hook.
