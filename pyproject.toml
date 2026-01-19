@@ -9,7 +9,6 @@ dependencies = [
 ]
 
 [project.scripts]
-paq = "crimson.cli:main"
 crimson = "crimson.cli:main"
 
 [build-system]
