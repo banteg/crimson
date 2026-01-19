@@ -1,3 +1,8 @@
+---
+tags:
+  - status-completed
+---
+
 # PAQ archive format
 
 **Status:** Completed

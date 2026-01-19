@@ -1,3 +1,8 @@
+---
+tags:
+  - status-tracking
+---
+
 # SFX label suggestions
 
 Suggested data label names derived from [SFX ID map](sfx-id-map.md).

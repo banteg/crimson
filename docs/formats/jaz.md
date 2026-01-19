@@ -1,3 +1,8 @@
+---
+tags:
+  - status-completed
+---
+
 # JAZ texture format
 
 **Status:** Completed

@@ -1,3 +1,8 @@
+---
+tags:
+  - status-draft
+---
+
 # Small font (smallFnt.dat)
 
 **Status:** Draft

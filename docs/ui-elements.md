@@ -1,3 +1,8 @@
+---
+tags:
+  - status-draft
+---
+
 # UI elements
 
 **Status:** Draft

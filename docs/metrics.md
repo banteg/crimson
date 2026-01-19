@@ -1,3 +1,8 @@
+---
+tags:
+  - status-tracking
+---
+
 # Progress metrics
 
 **Status:** Tracking

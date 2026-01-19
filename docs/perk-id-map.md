@@ -1,3 +1,8 @@
+---
+tags:
+  - status-draft
+---
+
 # Perk ID map
 
 Derived from `FUN_0042fd90` (perk database init). IDs are stored in `DAT_004c2b**`/`DAT_004c2c**`

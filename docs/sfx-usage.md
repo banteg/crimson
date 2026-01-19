@@ -1,3 +1,8 @@
+---
+tags:
+  - status-tracking
+---
+
 # SFX usage hotspots
 
 Most-referenced SFX ids in the decompiled code (raw occurrence counts, including init).

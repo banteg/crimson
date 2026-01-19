@@ -1,3 +1,8 @@
+---
+tags:
+  - status-draft
+---
+
 # Python executable spec
 
 **Status:** Draft

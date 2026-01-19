@@ -1,3 +1,8 @@
+---
+tags:
+  - status-draft
+---
+
 # Game mode map
 
 Observed values for `_DAT_00480360` (game mode selector) from the decompiled `crimsonland.exe`.

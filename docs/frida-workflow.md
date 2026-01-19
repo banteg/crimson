@@ -1,3 +1,8 @@
+---
+tags:
+  - status-in-progress
+---
+
 # Frida workflow
 
 Use Frida as a runtime evidence engine and keep Ghidra maps as the source of truth.

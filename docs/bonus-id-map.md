@@ -1,3 +1,8 @@
+---
+tags:
+  - status-draft
+---
+
 # Bonus ID map
 
 This map is derived from `bonus_metadata_init`, which builds the bonus metadata table at `bonus_meta_label`.

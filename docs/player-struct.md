@@ -1,3 +1,8 @@
+---
+tags:
+  - status-draft
+---
+
 # Player struct (player_health / DAT_004908d4)
 
 This page tracks the per-player runtime struct stored in `player_health`

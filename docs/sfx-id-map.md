@@ -1,3 +1,8 @@
+---
+tags:
+  - status-tracking
+---
+
 # SFX ID map
 
 Derived from `audio_init_sfx` (`FUN_0043caa0`). `FUN_0043c740` returns the SFX id

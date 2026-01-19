@@ -1,3 +1,8 @@
+---
+tags:
+  - status-draft
+---
+
 # Save/status file (game.cfg)
 
 Crimsonland stores quest progress and several counters in `game.cfg` (the “status” file). The

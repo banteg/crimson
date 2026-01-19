@@ -19,19 +19,19 @@ Data map coverage: 19.65% (654 / 3328 symbols)
 - [Weapon table](weapon-table.md) — In progress
 - [Progress metrics](metrics.md) — Tracking
 - [Work status model](work-status.md) — Draft
-- [Player struct](player-struct.md) — Tracking
-- [Creature struct](creature-struct.md) — Tracking
-- [Projectile struct](projectile-struct.md) — Tracking
-- [Effects pools](effects-struct.md) — Tracking
+- [Player struct](player-struct.md) — Draft
+- [Creature struct](creature-struct.md) — Draft
+- [Projectile struct](projectile-struct.md) — Draft
+- [Effects pools](effects-struct.md) — Draft
 - [UI elements](ui-elements.md) — Draft
-- [Perk ID map](perk-id-map.md) — Tracking
-- [Bonus ID map](bonus-id-map.md) — Tracking
-- [Weapon ID map](weapon-id-map.md) — Tracking
+- [Perk ID map](perk-id-map.md) — Draft
+- [Bonus ID map](bonus-id-map.md) — Draft
+- [Weapon ID map](weapon-id-map.md) — Draft
 - [Weapon icon atlas](ui-wicons-map.md) — Tracking
 - [SFX ID map](sfx-id-map.md) — Tracking
 - [SFX usage](sfx-usage.md) — Tracking
 - [SFX labels](sfx-labels.md) — Tracking
-- [Game mode map](game-mode-map.md) — Tracking
+- [Game mode map](game-mode-map.md) — Draft
 - [Save/status file (game.cfg)](save-status-format.md) — Draft
 - [Secrets and unlocks](secrets.md) — Draft
 - [In-game console](console.md) — Draft

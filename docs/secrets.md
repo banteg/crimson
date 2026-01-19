@@ -1,3 +1,8 @@
+---
+tags:
+  - status-draft
+---
+
 # Secrets and unlocks (draft)
 
 This page tracks hidden unlock conditions and Easter eggs (Secret Path, secret weapons, etc.) so we can

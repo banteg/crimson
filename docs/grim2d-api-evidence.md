@@ -1,3 +1,8 @@
+---
+tags:
+  - status-draft
+---
+
 # Grim2D vtable evidence appendix
 
 This appendix collects one concrete callsite snippet per vtable offset,

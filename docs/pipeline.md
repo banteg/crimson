@@ -1,3 +1,8 @@
+---
+tags:
+  - status-in-progress
+---
+
 # Extraction pipeline
 
 **Status:** In progress

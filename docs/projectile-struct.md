@@ -1,3 +1,8 @@
+---
+tags:
+  - status-draft
+---
+
 # Projectile struct
 
 This map documents `projectile_pool` (`DAT_004926b8`).

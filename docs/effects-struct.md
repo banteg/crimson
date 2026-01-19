@@ -1,3 +1,8 @@
+---
+tags:
+  - status-draft
+---
+
 # Effects pools
 
 This page tracks the smaller effect pools used for weapon and perk visuals.

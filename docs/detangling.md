@@ -1,3 +1,8 @@
+---
+tags:
+  - status-in-progress
+---
+
 # Detangling notes
 
 **Status:** In progress

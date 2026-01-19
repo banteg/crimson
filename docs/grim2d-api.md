@@ -1,3 +1,8 @@
+---
+tags:
+  - status-draft
+---
+
 # Grim2D API vtable (draft)
 
 This is a first-pass extraction of the Grim2D API vtable usage from the

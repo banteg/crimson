@@ -1,3 +1,8 @@
+---
+tags:
+  - status-in-progress
+---
+
 # Weapon table (weapon_table_init)
 
 **Status:** In progress

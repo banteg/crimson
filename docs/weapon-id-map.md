@@ -1,3 +1,8 @@
+---
+tags:
+  - status-draft
+---
+
 # Weapon ID map
 
 **Source:** `weapon_table_init` (`FUN_004519b0`) copies weapon display names into

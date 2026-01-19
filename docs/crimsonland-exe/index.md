@@ -1,3 +1,8 @@
+---
+tags:
+  - status-draft
+---
+
 # Crimsonland.exe overview (by concern)
 
 **Status:** Draft

@@ -1,3 +1,8 @@
+---
+tags:
+  - status-tracking
+---
+
 # UI weapon icon atlas (ui_wicons.png)
 
 **Source texture:** `ui_wicons.png` (`ui_weapon_icons_texture`, 256×256 RGBA).

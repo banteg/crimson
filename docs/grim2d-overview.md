@@ -1,3 +1,8 @@
+---
+tags:
+  - status-draft
+---
+
 # Grim2D overview
 
 Grim2D is the game's 2D rendering + input facade exposed by `grim.dll`.

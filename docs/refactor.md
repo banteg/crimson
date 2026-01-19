@@ -1,3 +1,8 @@
+---
+tags:
+  - status-planned
+---
+
 # Refactor attempt
 
 **Status:** Planned (rewrite not started yet as of 2026-01-16)

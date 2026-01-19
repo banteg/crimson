@@ -1,3 +1,8 @@
+---
+tags:
+  - status-draft
+---
+
 # In-game console (tilde)
 
 Crimsonland includes a developer-style console that appears in-game and accepts
