@@ -81,6 +81,7 @@ def build_1_3_target_practice(
 def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     half_w = ctx.width // 2
+    half_h = ctx.height // 2
     edge_w = ctx.width + 64
     edge_h = ctx.height + 64
     step = 2500
@@ -99,8 +100,8 @@ def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
             entries.append(SpawnEntry(edge_w, -64.0, 0.0, SPAWN_ID_38, trigger, 1))
         if i == 10:
             burst_trigger = (step * 5 - 2500) * 2
-            entries.append(SpawnEntry(edge_w, float(half_w), 0.0, SPAWN_ID_41, burst_trigger, 1))
-            entries.append(SpawnEntry(-64.0, float(half_w), 0.0, SPAWN_ID_41, burst_trigger, 1))
+            entries.append(SpawnEntry(edge_w, float(half_h), 0.0, SPAWN_ID_41, burst_trigger, 1))
+            entries.append(SpawnEntry(-64.0, float(half_h), 0.0, SPAWN_ID_41, burst_trigger, 1))
         step = max(step - 50, 1800)
     return entries
 
@@ -232,10 +233,24 @@ TIER1_BUILDERS = {
     "1.10": build_1_10_8_legged_terror,
 }
 
+TIER1_TITLES = {
+    "1.1": "Land Hostile",
+    "1.2": "Minor Alien Breach",
+    "1.3": "Target Practice",
+    "1.4": "Frontline Assault",
+    "1.5": "Alien Dens",
+    "1.6": "The Random Factor",
+    "1.7": "Spider Wave Syndrome",
+    "1.8": "Alien Squads",
+    "1.9": "Nesting Grounds",
+    "1.10": "8-legged Terror",
+}
+
 __all__ = [
     "QuestContext",
     "SpawnEntry",
     "TIER1_BUILDERS",
+    "TIER1_TITLES",
     "build_1_1_land_hostile",
     "build_1_2_minor_alien_breach",
     "build_1_3_target_practice",
