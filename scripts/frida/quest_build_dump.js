@@ -24,6 +24,7 @@ const ADDR = {
   quest_stage_minor: 0x00487008,
   config_full_version: 0x00480790,
   config_player_count: 0x0048035c,
+  config_game_mode: 0x00480360,
 };
 
 const META_STRIDE = 0x2c;
@@ -150,6 +151,14 @@ function safeReadU32(ptr) {
   }
 }
 
+function safeReadU8(ptr) {
+  try {
+    return ptr.readU8();
+  } catch (_) {
+    return null;
+  }
+}
+
 function readStage() {
   const majorPtr = exePtr(ADDR.quest_stage_major);
   const minorPtr = exePtr(ADDR.quest_stage_minor);
@@ -163,11 +172,23 @@ function readStage() {
 function readConfig() {
   const fullPtr = exePtr(ADDR.config_full_version);
   const countPtr = exePtr(ADDR.config_player_count);
+  const modePtr = exePtr(ADDR.config_game_mode);
   const fullVersion = fullPtr ? safeReadS32(fullPtr) : null;
+  const fullBytes = fullPtr
+    ? [
+        safeReadU8(fullPtr),
+        safeReadU8(fullPtr.add(1)),
+        safeReadU8(fullPtr.add(2)),
+        safeReadU8(fullPtr.add(3)),
+      ]
+    : null;
   const playerCount = countPtr ? safeReadS32(countPtr) : null;
+  const gameMode = modePtr ? safeReadS32(modePtr) : null;
   return {
     full_version: fullVersion,
+    full_version_bytes: fullBytes,
     player_count: playerCount,
+    game_mode: gameMode,
   };
 }
 
