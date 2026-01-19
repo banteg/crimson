@@ -116,6 +116,10 @@ windbg-tail:
 frida-unlock-secrets:
     frida -n crimsonland.exe -l scripts\\frida\\unlock_secrets.js
 
+[windows]
+frida-quest-spanking-count:
+    frida -n crimsonland.exe -l scripts\\frida\\quest_spanking_count.js
+
 # Screenshots
 [windows]
 game-screenshot:
