@@ -22,7 +22,7 @@ Notes:
 
 ## Workflows
 
-### User workflow (interactive)
+### User workflow (server owner)
 
 1) Start the server (once, long-lived):
 
@@ -30,19 +30,7 @@ Notes:
 just windbg-server
 ```
 
-2) Connect a client:
-
-```
-just windbg-client
-```
-
-3) If you want to review what happened since last time, tail the log:
-
-```
-just windbg-tail
-```
-
-4) When you are done, disconnect the client without killing the session (Ctrl+B). Avoid `q`.
+2) Keep it running. The user does not need to connect a client or tail the log.
 
 ### Agent workflow (short-lived reconnects)
 
@@ -63,6 +51,7 @@ just windbg-client
 4) Resume the game (`g`) if needed, and disconnect the client (Ctrl+B).
 
 Notes:
+
 - The log is written by the server (`-logau`), so it survives client drops.
 - The tail script reads only new bytes from `C:\Crimsonland\windbg.log`.
 
