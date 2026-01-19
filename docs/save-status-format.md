@@ -48,7 +48,7 @@ Offsets are relative to the decoded payload (`game_status_blob`).
 | --- | --- | --- | --- |
 | `0x00` | u16 | `quest_unlock_index` | Max quest unlock index (limited version). |
 | `0x02` | u16 | `quest_unlock_index_full` | Max quest unlock index (full version). |
-| `0x04` | u32[53] | `weapon_usage_counts` | Weapon usage counters indexed by weapon id (0–52). |
+| `0x04` | u32[53] | `weapon_usage_counts` | Weapon usage counters indexed by weapon id (1-based; slot 0 unused). Note: id 53 would overlap `quest_play_counts[0]` if written. |
 | `0xD8` | u32[91] | `quest_play_counts` | Quest play/attempt counters (`major * 10 + minor`). Length inferred from known tail fields. |
 | `0x244` | u32 | `mode_play_survival` | Incremented when starting Survival (mode 1). |
 | `0x248` | u32 | `mode_play_rush` | Incremented when starting Rush (mode 2). |
@@ -68,7 +68,7 @@ uv run python scripts/save_status.py set game.cfg --set quest_unlock_index=30 --
 
 Supported edits:
 - `quest_unlock_index`, `quest_unlock_index_full`, `game_sequence_id`
-- `weapon_usage.<id>` (0–52)
+- `weapon_usage.<slot>` (0–52; slot = weapon_id, 0 unused)
 - `quest_play.<index>` (0–90)
 - `mode_play.<survival|rush|typo|other>`
 

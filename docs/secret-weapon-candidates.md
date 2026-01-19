@@ -5,9 +5,8 @@ progression, making them candidates for "Secret Weapons" or unfinished content.
 
 ## Methodology
 
-1. **Full Weapon List**: Derived from `docs/weapon-id-map.md` (0-based ids 0-52).
-   In code, weapon IDs are 1-based (0 is the dummy/none entry), so this doc uses
-   the in-code values (add +1 to the map).
+1. **Full Weapon List**: Derived from `docs/weapon-id-map.md` (1-based ids 1-53;
+   id 0 is the dummy/none entry).
 2. **Quest Unlocks**: Analyzed `quest_database_init` (`FUN_00439230`) in
    `crimsonland.exe`.
    - Each quest entry is initialized via `FUN_00430a20`.

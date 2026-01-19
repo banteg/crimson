@@ -11,7 +11,7 @@ weapon_table (`DAT_004d7a2c`) + weapon_id * 0x1f
 ```
 
 `0x1f` is a count of `u32` slots, so the stride is **0x7c bytes** per entry.
-Entry `0` is a dummy (id = -1); weapon id `0` (Pistol) starts at entry `1`.
+Entry `0` is a dummy (none); weapon id `1` (Pistol) starts at entry `1`.
 
 Note: the returned pointer is **not** the first field of the entry.
 There is a 4‑byte field at offset `-0x04` (`weapon_ammo_class` / `DAT_004d7a28`)
@@ -43,7 +43,7 @@ All offsets below are in **bytes**, relative to the pointer returned by
 ## Notes
 
 - Runtime probe (2026-01-18) sample entry confirms indexing scheme:
-  - `weapon_id=1` (Assault Rifle) resolved to entry index **2** (`weapon_id+1`).
+  - `weapon_id=2` (Assault Rifle) resolved to entry index **2**.
   - Observed fields: `clip_size=25`, `shot_cooldown=0.117`, `reload_time=1.2`, `spread_heat=0.09`,
     `shot_sfx_base=34`, `shot_sfx_count=1`, `reload_sfx=35`, `hud_icon_id=1`, `flags=1`,
     `projectile_meta=50`, `damage_scale=1`, `pellet_count=1`, `ammo_class=0` (from `-0x04`).
@@ -66,9 +66,9 @@ All offsets below are in **bytes**, relative to the pointer returned by
 - Pellet count (offset `0x74`, `weapon_projectile_pellet_count`) is used by the Fire Bullets bonus
   to spawn multiple `0x2d` pellets per shot.
 - Several weapons bypass the main projectile pool and use particle or secondary
-  projectile pools instead (Plasma Rifle `0x8`, HR Flamer `0xf`, Mini-Rocket
-  Swarmers `0x10`, Seeker Rockets `0xc`, Plasma Shotgun `0xd`, Rocket Minigun
-  `0x11`, Pulse Gun `0x12`, Rainbow Gun `0x2a`).
+  projectile pools instead (Plasma Rifle `0x9`, HR Flamer `0x10`, Mini-Rocket
+  Swarmers `0x11`, Seeker Rockets `0x0d`, Plasma Shotgun `0x0e`, Rocket Minigun
+  `0x12`, Pulse Gun `0x13`, Rainbow Gun `0x2b`).
 - Secondary projectile type behavior and particle style ids are tracked in
   [Effects pools](effects-struct.md).
 - The alt-weapon swap stores per-player runtime state in parallel arrays:
