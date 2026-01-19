@@ -3,17 +3,17 @@
 // Unlocks/cycles secret weapons for Player 0.
 
 const CONFIG = {
-  // Secret weapon IDs to cycle through
-  // 32: RayGun
-  // 40: Plague Sphreader Gun
-  // 41: Bubblegun
-  // 42: Rainbow Gun
-  // 43: Grim Weapon
-  // 49: Transmutator
-  // 50: Blaster R-300
-  // 51: Lighting Rifle
-  // 52: Nuke Launcher
-  secretWeaponIds: [32, 40, 41, 42, 43, 49, 50, 51, 52],
+  // Secret weapon IDs to cycle through (in-code ids; 0 is dummy/none)
+  // 33: RayGun
+  // 41: Plague Sphreader Gun
+  // 42: Bubblegun
+  // 43: Rainbow Gun
+  // 44: Grim Weapon
+  // 50: Transmutator
+  // 51: Blaster R-300
+  // 52: Lighting Rifle
+  // 53: Nuke Launcher
+  secretWeaponIds: [33, 41, 42, 43, 44, 50, 51, 52, 53],
   cycleIntervalMs: 5000,
   logPath: 'Z:\\crimsonland_unlock_secrets.jsonl',
 };
@@ -61,9 +61,8 @@ function resolveFunctions() {
   const p = exePtr(ADDR.weapon_assign_player);
   if (!p) return false;
   
-  // void __fastcall weapon_assign_player(int player_idx, int weapon_id)
-  // fastcall: ecx=arg0, edx=arg1
-  fWeaponAssignPlayer = new NativeFunction(p, 'void', ['int', 'int'], 'fastcall');
+  // void __cdecl weapon_assign_player(int player_idx, int weapon_id)
+  fWeaponAssignPlayer = new NativeFunction(p, 'void', ['int', 'int'], 'cdecl');
   return true;
 }
 
