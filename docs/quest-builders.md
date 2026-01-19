@@ -131,8 +131,9 @@ CLI (`crimson quests <level>`) to print the resolved entries for a given quest.
 - Heading values often appear uninitialized in the runtime table for builders that
   do not explicitly write headings, so treat heading as undefined unless the quest
   explicitly sets it.
+- Spawn template ids are now mapped to creature types via `creature_spawn_template`,
+  exported in `src/crimson/spawn_templates.py`.
 
 ## Open questions
 
-- Map spawn ids to creature types (we still only have numeric ids for quest spawns).
 - Confirm heading semantics for Target Practice (current heading is derived from the spawn angle).

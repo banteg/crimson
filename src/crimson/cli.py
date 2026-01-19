@@ -12,6 +12,7 @@ from PIL import Image
 from . import jaz, paq
 from .quests import tier1, tier2, tier3, tier4, tier5
 from .quests.types import QuestContext, QuestDefinition, SpawnEntry
+from .spawn_templates import spawn_id_label
 
 
 app = typer.Typer(add_completion=False)
@@ -119,9 +120,11 @@ def _call_builder(builder, ctx: QuestContext, rng: random.Random | None) -> list
 
 
 def _format_entry(idx: int, entry: SpawnEntry) -> str:
+    creature = spawn_id_label(entry.spawn_id)
     return (
         f"{idx:02d}  t={entry.trigger_ms:5d}  "
         f"id=0x{entry.spawn_id:02x} ({entry.spawn_id:2d})  "
+        f"creature={creature:10s}  "
         f"count={entry.count:2d}  "
         f"x={entry.x:7.1f}  y={entry.y:7.1f}  heading={entry.heading:7.3f}"
     )
