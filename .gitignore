@@ -6,6 +6,7 @@
 /analysis/frida/facts.jsonl
 /analysis/windbg/*.log
 .venv/
+screenshots/
 zig-cache/
 zig-out/
 /tools/zig/

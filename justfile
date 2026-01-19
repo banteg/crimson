@@ -118,4 +118,6 @@ frida-unlock-secrets:
 # Screenshots
 [windows]
 game-screenshot:
-    nircmd win activate process crimsonland.exe; sleep 1; nircmd savescreenshotwin "screen.png"
+    nircmd win activate process crimsonland.exe
+    sleep 1
+    nircmd savescreenshotwin "screenshots\\screen.png"
