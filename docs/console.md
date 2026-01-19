@@ -9,8 +9,12 @@ back the tilde/backquote console behavior.
 - The console is toggled in-game with the tilde/backquote key (`~` / `` ` ``).
 - The open flag is `console_open_flag` (`0x0047eec8`); when set, many gameplay
   update loops early‑out and input is redirected to the console.
-- `console_set_open` (`0x004018b0`) sets the flag and toggles input capture
-  (calls Grim2D vtable `+0x4c` to flush input).
+- `console_set_open` (`0x004018b0`) sets the open flag and toggles input capture:
+  - Writes `console_open_flag` (`0x0047eec8`) via the console state struct.
+  - Writes `console_input_enabled` (`0x0047f4d4`).
+  - Calls Grim2D vtable `+0x4c` to flush input.
+- Runtime capture shows the tilde hotkey path calls `console_set_open` from
+  `0x0040c39a` (call stack: `0x0040c39a -> console_set_open -> DINPUT8::GetDeviceState -> grim`).
 
 ## Input handling (static)
 
@@ -84,5 +88,4 @@ The cvar paths emit:
 ## Open questions
 
 - Where is the tilde hotkey check wired (input polling vs. UI state)?
-- Is the open/close toggle implemented via `console_set_open` or a direct write
-  to `console_open_flag`?
+- What function contains `0x0040c39a`, and does it check `DIK_GRAVE (0x29)` directly?

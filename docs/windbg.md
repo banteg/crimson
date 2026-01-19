@@ -312,3 +312,42 @@ lines beyond `0x5D`.
 - The Secret button unlock is driven by the **credits line scan** in `credits_screen_update`, not by
   a separate hidden state. Once all required lines are flagged, `DAT_004811c4` is set and the secret
   lines are injected at index `0x54`.
+
+### Session 4 (2026-01-19) - console tilde hotkey
+
+#### Goal
+
+Identify the runtime path that toggles the in-game console when pressing `~`.
+
+#### Breakpoints
+
+```
+ba w1 crimsonland+0x7eec8 ".printf \"[console] open_flag write\\n\"; k; r; u @eip L12; dd crimsonland+0x7eec8 L1; gc"
+ba w4 crimsonland+0x7f4d4 ".printf \"[console] 0x7f4d4 write\\n\"; k; r; u @eip L12; dd crimsonland+0x7f4d4 L1; gc"
+bp crimsonland+0x18b0 ".printf \"[console] console_set_open\\n\"; k; r; dd @esp L4; gc"
+```
+
+#### Captured
+
+- **Callsite:** `0x0040c39a` calls `console_set_open` (`0x004018b0`) when `~` is pressed.
+- **Call stack:** `0x0040c39a -> 0x004018b0 -> DINPUT8!CDIDev_GetDeviceState -> grim...`
+- **Writes inside `console_set_open`:**
+  - `console_open_flag` (`0x0047eec8`) written at `0x004018b7`
+  - `console_input_enabled` (`0x0047f4d4`) written at `0x004018bd`
+
+**Disasm snippet (from `console_set_open`):**
+
+```
+004018b0 8a442404        mov     al,byte ptr [esp+4]
+004018b7 8b0d3c084800    mov     ecx,dword ptr [0048083c]
+004018bd a2d4f44700      mov     byte ptr [0047f4d4],al
+004018c2 8b01            mov     eax,dword ptr [ecx]
+004018c4 ff504c          call    dword ptr [eax+4Ch]
+004018c7 c20400          ret     4
+```
+
+#### Interpretation
+
+- The tilde hotkey **calls `console_set_open`**, not a direct flag write.
+- The remaining task is to identify the function containing `0x0040c39a` and the
+  specific key check (likely `DIK_GRAVE = 0x29`).

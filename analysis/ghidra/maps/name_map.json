@@ -114,7 +114,7 @@
     "address": "0x004018b0",
     "name": "console_set_open",
     "signature": "void console_set_open(void *console_state, char open)",
-    "comment": "sets console open flag and toggles input capture"
+    "comment": "sets console_open_flag (console_state+0x28) and console_input_enabled (0x0047f4d4); flushes input via Grim2D vtable +0x4c"
   },
   {
     "program": "crimsonland.exe",
