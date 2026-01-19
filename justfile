@@ -1,4 +1,5 @@
 set shell := ["bash", "-uc"]
+set windows-shell := ["pwsh", "-NoLogo", "-Command"]
 
 version := "1.9.93-gog"
 game_dir := "game_bins/crimsonland/" + version
@@ -54,6 +55,7 @@ spawn-templates:
     uv run python scripts/gen_spawn_templates.py
 
 # Ghidra
+[unix]
 ghidra-exe:
     ./analysis/ghidra/tooling/ghidra-analyze.sh \
       --script-path analysis/ghidra/scripts \
@@ -67,6 +69,7 @@ ghidra-exe:
       -o analysis/ghidra/raw \
       {{game_dir}}/crimsonland.exe
 
+[unix]
 ghidra-grim:
     ./analysis/ghidra/tooling/ghidra-analyze.sh \
       --script-path analysis/ghidra/scripts \
@@ -95,8 +98,10 @@ zig-run:
     cd rewrite && zig build run
 
 # WinDbg
+[windows]
 windbg-server:
     cdb -server tcp:port=5005,password=secret -pn crimsonland.exe
 
+[windows]
 windbg-client:
     cdb -remote tcp:server=127.0.0.1,port=5005,password=secret -bonc -logo C:\Crimsonland\windbg_log.txt
