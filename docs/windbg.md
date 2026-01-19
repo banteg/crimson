@@ -199,6 +199,9 @@ At `esp=0x0019f8fc`:
     - pre: `0x004824e4 = 0x00000000`, `0x004824e8 = 0x0000fd3b`
     - post: `0x004824e4 = 0x00002580`, `0x004824e8 = 0x0001039a`
 - Low-timer trigger: `0x0040f6a3` when `0x004824e4 < 0x100` (observed `cur = 0x47`).
+- Timer-expire sfx:
+  - Breakpoint at `0x0040f6b5` (call to `0x0043d120`, `sfx_play(sfx_trooper_die_01)` in decompile).
+  - Hit with `0x004824e4 = 0xFFFFFFF9` (timer already negative at callsite).
 
 **Caller chain**
 
