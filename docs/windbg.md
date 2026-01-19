@@ -186,6 +186,13 @@ At `esp=0x0019f8fc`:
     4 3 2 0 1 1
     ```
 
+**Direction encoding (out_dir)**
+
+- We attempted to map `out_dir` to absolute move direction, but the logging was noisy and multiple hits fired per user move.
+- Observed `out_dir` values were often `0x01` across different moves, suggesting it may not encode absolute direction.
+- Hypothesis: `out_dir` may encode axis or relative polarity (or another flag), not absolute direction.
+- Next reliable step: capture a one-shot return with `out_idx/out_dir` *and* a full board dump, then infer direction by comparing tiles.
+
 **Selection/swap flow**
 
 - `ba w4 0x00472ef0` hit at `0x0040fe6a` inside the credits secret update block.
