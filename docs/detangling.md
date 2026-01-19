@@ -367,9 +367,9 @@ Config blob layout (partial, 0x480 bytes, base `DAT_00480348`):
 | `0x1f8` | `DAT_00480540` | `u32*` | alias | Points at `&DAT_00480510[12]` (used for the copy loop). |
 | `0x440` | `DAT_00480788` | `u32` | `0` | Unknown (defaulted in `FUN_0041ec60`, no xrefs). |
 | `0x444` | `DAT_0048078c` | `u32` | `0` | Unknown (defaulted in `FUN_0041ec60`, no xrefs). |
-| `0x448` | `DAT_00480790` | `u8` | `0` | Full‑version/unlimited flag (gates quest logic and UI strings). |
-| `0x449` | `DAT_00480791` | `u8` | `1` | Perk prompt state (reset when `DAT_00480794` rolls over). |
-| `0x44c` | `DAT_00480794` | `u8` | `0` | Perk prompt counter (`0..0x32`). |
+| `0x448` | `DAT_00480790` | `u8` | `0` | Hardcore flag (`0` normal, `1` hardcore). |
+| `0x449` | `DAT_00480791` | `u8` | `1` | Full‑version/unlimited flag (gates quest logic and UI strings). |
+| `0x44c` | `DAT_00480794` | `u32` | `0` | Perk prompt counter (`0..0x32`, increments on each prompt). |
 | `0x450` | `DAT_00480798` | `u32` | `1` | Unknown (defaulted in `FUN_0041ec60`, no xrefs). |
 | `0x460` | `DAT_004807a8` | `u32` | `1` | Unknown (defaulted in `FUN_0041ec60`, no xrefs). |
 | `0x464` | `DAT_004807ac` | `float` | `?` | SFX volume multiplier. |
@@ -380,12 +380,12 @@ Config blob layout (partial, 0x480 bytes, base `DAT_00480348`):
 | `0x470` | `DAT_004807b8` | `u32` | `?` | Detail preset (drives `DAT_00480356/58/59`). |
 
 Runtime note (2026-01-19 quest-build capture, 1.1 runs):
-- Byte reads at `DAT_00480790..93` were `[1, 1, 0, 0]` for hardcore and
-  `[0, 1, 0, 0]` for normal (both 1P/2P). This implies:
-  - **`DAT_00480790` (offset `0x448`) toggles with hardcore** (`0` normal, `1` hardcore).
-  - The next byte `DAT_00480791` stayed `1` in all runs (likely the full-version flag).
-  - If so, our `config_full_version`/`config_perk_prompt_state` labels are off by one.
-    We should verify by toggling the perk prompt setting and re-checking these bytes.
+- Bytes at `DAT_00480790..93` were `[1, 1, 0, 0]` for hardcore and `[0, 1, 0, 0]`
+  for normal (both 1P/2P). This confirms:
+  - `DAT_00480790` toggles with hardcore (`0` normal, `1` hardcore).
+  - `DAT_00480791` is the full‑version flag (stayed `1` in all runs).
+- `DAT_00480794` increments on perk prompt opens (observed `0x1a..0x1d`).
+- Forcing `DAT_00480791 = 0` at runtime showed no visible change (likely read on load).
 | `0x478` | `DAT_004807c0` | `u32` | `?` | Keybind: pick perk (Level‑up prompt). |
 | `0x47c` | `DAT_004807c4` | `u32` | `?` | Keybind: reload. |
 
@@ -455,7 +455,7 @@ tail bytes are validated against the current date and the full‑version flag.
 | `0x42` | `DAT_00487082` | Month (1–12) | Stored from `local_system_time._2_1_` (`DAT_00495ac8`); compared to `local_system_time._2_2_`. |
 | `0x43` | `DAT_00487083` | Year‑2000 | Stored as `(char)local_system_time + '0'` (`DAT_00495ac8`, low byte wraps); compared to `year - 2000`. |
 | `0x44` | `DAT_00487084` | Score flags | Bit 0 gates update vs append (and load gating in `highscore_load_table`); bit 1 is set to `2` when replacing an existing record and bypasses the load gate; bit 2 marks the entry selected for display after duplicate reduction. |
-| `0x45` | `DAT_00487085` | Full‑version marker | Set to `0x75` (`'u'`) when `DAT_00480790 != 0`; checked in quest‑mode load to accept full/limited records. |
+| `0x45` | `DAT_00487085` | Full‑version marker | Set to `0x75` (`'u'`) when `DAT_00480791 != 0`; checked in quest‑mode load to accept full/limited records. |
 | `0x46` | `DAT_00487040 + 0x46` | Sentinel `0x7c` (`'|'`) | Initialized in `highscore_load_table` default‑record loop. |
 | `0x47` | `DAT_00487040 + 0x47` | Sentinel `0xff` | Initialized in `highscore_load_table` default‑record loop. |
 
