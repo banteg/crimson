@@ -1873,7 +1873,7 @@ void perk_prompt_update_and_render(void)
         perk_prompt_timer = 200;
       }
     }
-    if ((config_perk_prompt_state != '\0') && (0 < perk_prompt_timer)) {
+    if ((config_full_version != '\0') && (0 < perk_prompt_timer)) {
       local_8c = (float)perk_prompt_timer * 0.005;
       acStack_90[0] = '\0';
       acStack_90[1] = '\0';
@@ -4094,7 +4094,7 @@ void FUN_00406350(void)
   fStack_3c = 0.8;
   pcStack_44 = (char *)0x406416;
   (**(code **)(*grim_interface_ptr + 0x20))();
-  if (config_full_version == '\0') {
+  if (config_hardcore == '\0') {
     pcStack_44 = s_Congratulations__004722c8;
   }
   else {
@@ -4108,7 +4108,7 @@ void FUN_00406350(void)
   fStack_3c = fStack_3c - 8.0;
   piStack_50 = (int *)0x3f000000;
   (**(code **)(*grim_interface_ptr + 0x20))(0x18);
-  if (config_full_version == '\0') {
+  if (config_hardcore == '\0') {
     (**(code **)(*grim_interface_ptr + 0x148))
               (grim_interface_ptr,piStack_50,fStack_4c,s_You_ve_completed_all_the_levels_b_00472288)
     ;
@@ -4512,7 +4512,7 @@ LAB_00407129:
           if (quest_unlock_index < iVar2) {
             quest_unlock_index = iVar2;
           }
-          if ((config_full_version != '\0') && (quest_unlock_index_full < iVar2)) {
+          if ((config_hardcore != '\0') && (quest_unlock_index_full < iVar2)) {
             quest_unlock_index_full = iVar2;
           }
           game_save_status();
@@ -6492,7 +6492,7 @@ LAB_0040ad8e:
       config_perk_prompt_counter = config_perk_prompt_counter + 1;
       if (0x32 < config_perk_prompt_counter) {
         config_perk_prompt_counter = 0;
-        config_perk_prompt_state = 0;
+        config_full_version = 0;
       }
       sfx_play(sfx_ui_levelup);
       player_level = player_level + 1;
@@ -8393,7 +8393,7 @@ LAB_004103c2:
     DAT_0048724d = '\x01';
     DAT_00487250 = _quest_stage_major;
     DAT_00487254 = _quest_stage_minor;
-    DAT_0048725c = config_full_version;
+    DAT_0048725c = config_hardcore;
     ui_transition_direction = '\0';
     game_state_pending = 0xe;
   }
@@ -9133,7 +9133,7 @@ LAB_00411906:
     DAT_0048724d = '\x01';
     DAT_00487250 = _quest_stage_major;
     DAT_00487254 = _quest_stage_minor;
-    DAT_0048725c = config_full_version;
+    DAT_0048725c = config_hardcore;
     ui_transition_direction = '\0';
     game_state_pending = 0xe;
   }
@@ -9395,9 +9395,9 @@ LAB_004124e2:
     else if (uVar6 == 0) goto LAB_004124e2;
     if ((shock_chain_links_left < 1) || (uVar7 != 7)) {
       if (_config_game_mode == 3) {
-        if ((((config_full_version == '\0') || (_quest_stage_major != 3)) &&
-            (_quest_stage_major != 2)) || ((_quest_stage_minor != 10 || (uVar7 != 5)))) {
-          if ((config_full_version != '\0') && (_quest_stage_major == 2)) {
+        if ((((config_hardcore == '\0') || (_quest_stage_major != 3)) && (_quest_stage_major != 2))
+           || ((_quest_stage_minor != 10 || (uVar7 != 5)))) {
+          if ((config_hardcore != '\0') && (_quest_stage_major == 2)) {
             if (_quest_stage_minor == 10) {
 joined_r0x00412584:
               if (uVar7 == 0xb) goto LAB_00412613;
@@ -23893,10 +23893,10 @@ int __cdecl perk_can_offer(int perk_index)
   uint uVar2;
   
   uVar2 = _config_game_mode;
-  if (((((_config_game_mode != 3) || (config_full_version == '\0')) || (_quest_stage_minor != 10))
-      || ((_quest_stage_major != 2 ||
-          (((perk_index != perk_id_poison_bullets && (perk_index != perk_id_veins_of_poison)) &&
-           (perk_index != perk_id_plaguebearer)))))) &&
+  if (((((_config_game_mode != 3) || (config_hardcore == '\0')) || (_quest_stage_minor != 10)) ||
+      ((_quest_stage_major != 2 ||
+       (((perk_index != perk_id_poison_bullets && (perk_index != perk_id_veins_of_poison)) &&
+        (perk_index != perk_id_plaguebearer)))))) &&
      (((_config_player_count != 2 || (((&perk_flags_table)[perk_index * 0x14] & 2) != 0)) &&
       ((_config_game_mode != 3 ||
        (uVar2 = perk_index * 5, ((&perk_flags_table)[perk_index * 0x14] & 1) != 0)))))) {
@@ -26293,15 +26293,15 @@ LAB_004310b8:
     *(undefined4 *)(puVar9 + 0x78) = 0;
     *(float *)(puVar9 + 0x5c) = *(float *)(puVar9 + 0x5c) * 1.2;
   }
-  if ((template_id == 0x38) && (config_full_version != '\0')) {
+  if ((template_id == 0x38) && (config_hardcore != '\0')) {
     *(float *)(puVar9 + 0x5c) = *(float *)(puVar9 + 0x5c) * 0.7;
   }
   *(float *)(puVar9 + 0x2c) = heading;
-  if ((config_full_version == '\0') &&
+  if ((config_hardcore == '\0') &&
      (((puVar9[0x8c] & 4) == 0 ||
       ((&creature_spawn_slot_interval)[*(int *)(puVar9 + 0x78) * 6] =
             (float)(&creature_spawn_slot_interval)[*(int *)(puVar9 + 0x78) * 6] + 0.2,
-      config_full_version == '\0')))) {
+      config_hardcore == '\0')))) {
     if (0 < DAT_00487194) {
       switch(DAT_00487194) {
       case 1:
@@ -28032,7 +28032,7 @@ void quest_build_gauntlet(float *entries,int *count)
   pfVar3 = entries;
   iVar5 = 0;
   iStack_8 = 0;
-  if (config_full_version != '\0') {
+  if (config_hardcore != '\0') {
     _config_player_count = _config_player_count + 4;
   }
   iStack_4 = _config_player_count + 9;
@@ -28108,7 +28108,7 @@ void quest_build_gauntlet(float *entries,int *count)
       pfVar3 = pfVar3 + 6;
     } while ((int)entries < iStack_4);
   }
-  if (config_full_version == '\0') {
+  if (config_hardcore == '\0') {
     *count = iVar5;
     return;
   }
@@ -28141,7 +28141,7 @@ void quest_build_syntax_terror(float *entries,int *count)
   
   iVar4 = 0;
   iStack_1c = 0;
-  if (config_full_version != '\0') {
+  if (config_hardcore != '\0') {
     _config_player_count = _config_player_count + 4;
   }
   iStack_18 = 0;
@@ -28176,7 +28176,7 @@ void quest_build_syntax_terror(float *entries,int *count)
     iStack_18 = iStack_18 + 1;
     fStack_10 = (float)((int)fStack_10 + 30000);
   } while (iStack_14 < 0x159d);
-  if (config_full_version == '\0') {
+  if (config_hardcore == '\0') {
     *count = iVar4;
     return;
   }
@@ -28464,7 +28464,7 @@ void quest_build_spideroids(float *entries,int *count)
   entries[0x10] = 8.40779e-42;
   entries[0x11] = 1.4013e-45;
   iVar2 = 3;
-  if (config_full_version != '\0') {
+  if (config_hardcore != '\0') {
     entries[0x12] = 1088.0;
     entries[0x13] = 762.0;
     entries[0x15] = 1.4013e-45;
@@ -28477,7 +28477,7 @@ void quest_build_spideroids(float *entries,int *count)
     entries[0x1d] = 1.4013e-45;
     iVar2 = 5;
   }
-  if ((_config_player_count < 2) && (config_full_version == '\0')) {
+  if ((_config_player_count < 2) && (config_hardcore == '\0')) {
     *count = iVar2;
     return;
   }
@@ -29874,7 +29874,7 @@ void quest_build_the_end_of_all(float *entries,int *count)
     fVar5 = (float)((int)fVar5 + 300);
     pfVar4 = pfVar4 + 6;
   } while ((int)fVar5 < 0xaf00);
-  if (config_full_version != '\0') {
+  if (config_hardcore != '\0') {
     entries = (float *)0x0;
     fVar5 = 8.80015e-41;
     iVar7 = 0x21;
@@ -30455,7 +30455,7 @@ void __cdecl quest_start_selected(int tier,int index)
     piVar1 = &DAT_004857bc;
     iVar2 = quest_spawn_count;
     do {
-      if (((config_full_version != '\0') && (iVar4 = *piVar1, 1 < iVar4)) && (piVar1[-2] != 0x3c)) {
+      if (((config_hardcore != '\0') && (iVar4 = *piVar1, 1 < iVar4)) && (piVar1[-2] != 0x3c)) {
         if (piVar1[-2] == 0x2b) {
           iVar4 = iVar4 + 2;
         }
@@ -31028,7 +31028,7 @@ void highscore_load_table(void)
       pcVar3 = highscore_read_record((char *)local_48,fp);
       if ((pcVar3 == (char *)0x0) || ((local_20 & 0xff) != _config_game_mode)) goto LAB_0043b2ba;
       if (_config_game_mode == 3) {
-        if (config_full_version == '\0') {
+        if (config_hardcore == '\0') {
           if (cStack_3 == '\0') goto LAB_0043b0ff;
         }
         else if (cStack_3 == 'u') goto LAB_0043b0ff;
@@ -31365,7 +31365,7 @@ char * highscore_build_path(void)
   }
   else {
     if (_config_game_mode == 3) {
-      if (config_full_version == '\0') {
+      if (config_hardcore == '\0') {
         crt_sprintf(&DAT_004c36dc,s__s_scores5_questhc_d__d_hi_00477c10,&DAT_004c375c,
                     _quest_stage_major,_quest_stage_minor);
       }
@@ -31448,7 +31448,7 @@ void highscore_record_init(void)
     uVar2 = (uVar2 - 1 | 0xf0000000) + 1;
   }
   _DAT_00487078 = uVar2 + 0x310;
-  highscore_full_version_marker = -(config_full_version != '\0') & 0x75;
+  highscore_full_version_marker = -(config_hardcore != '\0') & 0x75;
   return;
 }
 
