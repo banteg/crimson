@@ -16,6 +16,15 @@ cdb -remote tcp:server=127.0.0.1,port=5005,password=secret -bonc
 
 Notes:
 - `-bonc` breaks on connect, so you must `g` after attaching.
+- Client output is **not** persisted by the server; if the client session drops, logs are lost.
+- To persist logs, start the client with a log file:
+  ```
+  cdb -remote tcp:server=127.0.0.1,port=5005,password=secret -bonc -logo C:\Crimsonland\windbg_log.txt
+  ```
+  Or enable logging after attach:
+  ```
+  .logopen /t C:\Crimsonland\windbg_log.txt
+  ```
 
 ## Sessions
 
