@@ -19,6 +19,7 @@ Data map coverage: 19.65% (654 / 3328 symbols)
 - [Weapon table](weapon-table.md) — In progress
 - [Progress metrics](metrics.md) — Tracking
 - [Work status model](work-status.md) — Draft
+- [Worklog](worklog.md) — Tracking
 - [Player struct](player-struct.md) — Draft
 - [Creature struct](creature-struct.md) — Draft
 - [Projectile struct](projectile-struct.md) — Draft
