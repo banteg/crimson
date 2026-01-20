@@ -8,20 +8,20 @@ const OUT_PATHS = [
 ];
 
 const EXE_RVAS = {
-    terrain_generate: 0x417b80,
-    terrain_render: 0x4188a0,
+    terrain_generate: 0x17b80,
+    terrain_render: 0x188a0,
 };
 
 const DATA_RVAS = {
-    config_texture_scale: 0x4803b8,
-    config_screen_width: 0x480504,
-    config_screen_height: 0x480508,
-    terrain_render_target: 0x48f530,
-    terrain_texture_width: 0x48f534,
-    terrain_texture_height: 0x48f538,
-    terrain_textures_base: 0x48f548,
-    camera_offset_x: 0x484fc8,
-    camera_offset_y: 0x484fcc,
+    config_texture_scale: 0x803b8,
+    config_screen_width: 0x80504,
+    config_screen_height: 0x80508,
+    terrain_render_target: 0x8f530,
+    terrain_texture_width: 0x8f534,
+    terrain_texture_height: 0x8f538,
+    terrain_textures_base: 0x8f548,
+    camera_offset_x: 0x84fc8,
+    camera_offset_y: 0x84fcc,
 };
 
 const GRIM_RVAS = {
