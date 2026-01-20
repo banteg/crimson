@@ -5,9 +5,14 @@ from pathlib import Path
 
 import pyray as rl
 
+from .font_small import SmallFontData, draw_small_text, load_small_font
 from .registry import register_view
 from .types import View, ViewContext
 
+UI_TEXT_SCALE = 1.0
+UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
+UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
+UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 
 @dataclass(frozen=True, slots=True)
 class SpriteSheetSpec:
@@ -44,10 +49,25 @@ class SpriteSheetView:
         self._missing_assets: list[str] = []
         self._sheets: list[SpriteSheet] = []
         self._index = 0
+        self._small: SmallFontData | None = None
+
+    def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
+        if self._small is not None:
+            return int(self._small.cell_size * scale)
+        return int(20 * scale)
+
+    def _draw_ui_text(
+        self, text: str, x: float, y: float, color: rl.Color, scale: float = UI_TEXT_SCALE
+    ) -> None:
+        if self._small is not None:
+            draw_small_text(self._small, text, x, y, scale, color)
+        else:
+            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
 
     def open(self) -> None:
         self._missing_assets.clear()
         self._sheets.clear()
+        self._small = load_small_font(self._assets_root, self._missing_assets)
         for spec in SPRITE_SHEETS:
             path = self._assets_root / "crimson" / spec.rel_path
             if not path.is_file():
@@ -62,6 +82,9 @@ class SpriteSheetView:
         for sheet in self._sheets:
             rl.unload_texture(sheet.texture)
         self._sheets.clear()
+        if self._small is not None:
+            rl.unload_texture(self._small.texture)
+            self._small = None
 
     def update(self, dt: float) -> None:
         del dt
@@ -107,10 +130,10 @@ class SpriteSheetView:
         rl.clear_background(rl.Color(12, 12, 14, 255))
         if self._missing_assets:
             message = "Missing assets: " + ", ".join(self._missing_assets)
-            rl.draw_text(message, 24, 24, 20, rl.Color(240, 80, 80, 255))
+            self._draw_ui_text(message, 24, 24, UI_ERROR_COLOR)
             return
         if not self._sheets:
-            rl.draw_text("No sprite sheets loaded.", 24, 24, 20, rl.WHITE)
+            self._draw_ui_text("No sprite sheets loaded.", 24, 24, UI_TEXT_COLOR)
             return
 
         self._handle_input()
@@ -119,9 +142,9 @@ class SpriteSheetView:
 
         margin = 24
         info = f"{sheet.name} (grid {grid}x{grid})"
-        rl.draw_text(info, margin, margin, 22, rl.Color(220, 220, 220, 255))
+        self._draw_ui_text(info, margin, margin, UI_TEXT_COLOR)
         hint = "Left/Right: sheet  Up/Down: grid  1/2/4/8: grid"
-        rl.draw_text(hint, margin, margin + 28, 16, rl.Color(140, 140, 140, 255))
+        self._draw_ui_text(hint, margin, margin + self._ui_line_height() + 6, UI_HINT_COLOR)
 
         available_width = rl.get_screen_width() - margin * 2
         available_height = rl.get_screen_height() - margin * 2 - 60
@@ -173,12 +196,11 @@ class SpriteSheetView:
                     float(cell_h),
                 )
                 rl.draw_rectangle_lines_ex(hl, 2, rl.Color(240, 200, 80, 255))
-                rl.draw_text(
+                self._draw_ui_text(
                     f"frame {index:02d}",
-                    int(x),
-                    int(y + draw_h + 10),
-                    18,
-                    rl.Color(220, 220, 220, 255),
+                    x,
+                    y + draw_h + 10,
+                    UI_TEXT_COLOR,
                 )
 
 
