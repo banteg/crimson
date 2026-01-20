@@ -6,7 +6,6 @@ const EXE_GRIM_INTERFACE_RVA = 0x8083c;
 
 const OUT_PATHS = [
     "Z:\\quest_title_colors.jsonl",
-    "C:\\Temp\\quest_title_colors.jsonl",
 ];
 
 // grim.dll RVAs (1.9.93)

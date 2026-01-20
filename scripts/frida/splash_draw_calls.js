@@ -4,7 +4,6 @@ const GRIM_MODULE = "grim.dll";
 
 const OUT_PATHS = [
     "Z:\\splash_draw_calls.jsonl",
-    "C:\\Temp\\splash_draw_calls.jsonl",
 ];
 
 const GRIM_RVAS = {

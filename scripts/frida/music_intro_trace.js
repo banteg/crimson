@@ -1,26 +1,31 @@
 'use strict';
 
-// Usage:
-//   frida -n crimsonland.exe -l Z:\music_playback_trace.js
-//   frida -f "C:\\Crimsonland\\crimsonland.exe" -l Z:\music_playback_trace.js
+// Trace where the intro music starts/stops by logging backtraces for
+// sfx_play_exclusive / sfx_mute_all calls.
+//
+// Usage (attach):
+//   frida -n crimsonland.exe -l Z:\music_intro_trace.js
+// Usage (spawn):
+//   frida -f "C:\\Crimsonland\\crimsonland.exe" -l Z:\music_intro_trace.js
 //   # then in REPL: %resume
 
 const CONFIG = {
   exeName: 'crimsonland.exe',
   linkBase: ptr('0x00400000'),
-  logPaths: ['Z:\\music_playback_trace.jsonl'],
+  logPaths: ['Z:\\music_intro_trace.jsonl'],
   logToConsole: true,
+  maxFrames: 12,
 };
 
 const ADDR = {
   music_load_track: 0x0043c8d0,
-  music_queue_track: 0x0043c960,
-  sfx_play: 0x0043d120,
   sfx_play_exclusive: 0x0043d460,
   sfx_mute_all: 0x0043d550,
 };
 
 const trackIdToName = {};
+let introTrackId = null;
+
 const LOG = { files: [], ok: false, warned: false };
 
 function exePtr(mod, staticVa) {
@@ -48,7 +53,7 @@ function writeLog(obj) {
     for (const f of LOG.files) f.write(line + '\n');
   } else if (!LOG.warned) {
     LOG.warned = true;
-    console.log('[music_playback_trace] File logging unavailable, console only.');
+    console.log('[music_intro_trace] File logging unavailable, console only.');
   }
   if (CONFIG.logToConsole) console.log(line);
 }
@@ -72,15 +77,42 @@ function safeReadUtf8(ptrVal) {
   }
 }
 
+function staticVa(addr, mod) {
+  if (!mod) return null;
+  return ptr(CONFIG.linkBase).add(addr.sub(mod.base)).toString();
+}
+
+function buildBacktrace(context) {
+  const frames = [];
+  const addrs = Thread.backtrace(context, Backtracer.ACCURATE)
+    .slice(0, CONFIG.maxFrames);
+  for (const addr of addrs) {
+    const mod = Process.findModuleByAddress(addr);
+    const sym = DebugSymbol.fromAddress(addr);
+    frames.push({
+      address: addr.toString(),
+      module: mod ? mod.name : null,
+      offset: mod ? addr.sub(mod.base).toString() : null,
+      static_va: mod ? staticVa(addr, mod) : null,
+      symbol: sym && sym.name ? sym.name : null,
+    });
+  }
+  return frames;
+}
+
 function hookMusicLoadTrack(addr) {
   Interceptor.attach(addr, {
     onEnter(args) {
-      const path = safeReadUtf8(args[0]);
-      this._path = path;
+      this._path = safeReadUtf8(args[0]);
     },
     onLeave(retval) {
       const id = retval.toInt32();
-      if (this._path) trackIdToName[id] = this._path;
+      if (this._path) {
+        trackIdToName[id] = this._path;
+        if (this._path.indexOf('intro.ogg') !== -1) {
+          introTrackId = id;
+        }
+      }
       writeLog({
         tag: 'music_load_track',
         track_id: id,
@@ -94,10 +126,16 @@ function hookTrackCall(tag, addr) {
   Interceptor.attach(addr, {
     onEnter(args) {
       const trackId = args[0].toInt32();
+      const name = trackIdToName[trackId] || null;
+      const isIntro = introTrackId !== null && trackId === introTrackId;
       writeLog({
         tag,
         track_id: trackId,
-        track_name: trackIdToName[trackId] || null,
+        track_name: name,
+        intro_track_id: introTrackId,
+        interesting: isIntro,
+        return_address: this.returnAddress ? this.returnAddress.toString() : null,
+        backtrace: buildBacktrace(this.context),
       });
     },
   });
@@ -110,10 +148,7 @@ function attachAll() {
     return;
   }
   writeLog({ tag: 'start', base: mod.base.toString(), arch: Process.arch });
-  const musicLoadPtr = exePtr(mod, ADDR.music_load_track);
-  hookMusicLoadTrack(musicLoadPtr);
-  hookTrackCall('music_queue_track', exePtr(mod, ADDR.music_queue_track));
-  hookTrackCall('sfx_play', exePtr(mod, ADDR.sfx_play));
+  hookMusicLoadTrack(exePtr(mod, ADDR.music_load_track));
   hookTrackCall('sfx_play_exclusive', exePtr(mod, ADDR.sfx_play_exclusive));
   hookTrackCall('sfx_mute_all', exePtr(mod, ADDR.sfx_mute_all));
 }
