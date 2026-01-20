@@ -176,6 +176,36 @@ def cmd_quests(
         typer.echo(_format_entry(idx, entry))
 
 
+@app.command("view")
+def cmd_view(
+    name: str = typer.Argument(..., help="view name (e.g. empty)"),
+    width: int = typer.Option(1280, help="window width"),
+    height: int = typer.Option(720, help="window height"),
+    fps: int = typer.Option(60, help="target fps"),
+    assets_dir: Path = typer.Option(
+        Path("artifacts") / "assets", help="assets root (default: ./artifacts/assets)"
+    ),
+) -> None:
+    """Launch a Raylib debug view."""
+    from .raylib_app import run_view
+    from .views import all_views, view_by_name
+    from .views.types import ViewContext
+
+    view_def = view_by_name(name)
+    if view_def is None:
+        available = ", ".join(view.name for view in all_views())
+        typer.echo(f"unknown view {name!r}. Available: {available}", err=True)
+        raise typer.Exit(code=1)
+    ctx = ViewContext(assets_dir=assets_dir)
+    params = inspect.signature(view_def.factory).parameters
+    if "ctx" in params:
+        view = view_def.factory(ctx=ctx)
+    else:
+        view = view_def.factory()
+    title = f"{view_def.title} — Crimsonland Reimpl"
+    run_view(view, width=width, height=height, title=title, fps=fps)
+
+
 def main(argv: list[str] | None = None) -> None:
     app(prog_name="crimson", args=argv)
 
