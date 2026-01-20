@@ -19,6 +19,9 @@ from .registry import register_view
 from .types import View, ViewContext
 
 SMALL_SAMPLE_SCALE = 1.0
+UI_TEXT_SCALE = 1.0
+UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
+UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 
 
 class FontView:
@@ -28,6 +31,19 @@ class FontView:
         self._small: SmallFontData | None = None
         self._grim_mono: GrimMonoFont | None = None
         self._sample = DEFAULT_SAMPLE
+
+    def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
+        if self._small is not None:
+            return int(self._small.cell_size * scale)
+        return int(20 * scale)
+
+    def _draw_ui_text(
+        self, text: str, x: float, y: float, color: rl.Color, scale: float = UI_TEXT_SCALE
+    ) -> None:
+        if self._small is not None:
+            draw_small_text(self._small, text, x, y, scale, color)
+        else:
+            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
 
     def close(self) -> None:
         if self._small is not None:
@@ -47,11 +63,11 @@ class FontView:
         rl.clear_background(rl.Color(12, 12, 14, 255))
         if self._missing_assets:
             message = "Missing assets: " + ", ".join(self._missing_assets)
-            rl.draw_text(message, 24, 24, 20, rl.Color(240, 80, 80, 255))
+            self._draw_ui_text(message, 24, 24, UI_ERROR_COLOR)
             return
         y = 24
-        rl.draw_text("Small font", 24, y, 20, rl.Color(220, 220, 220, 255))
-        y += 28
+        self._draw_ui_text("Small font", 24, y, UI_TEXT_COLOR)
+        y += self._ui_line_height() + 12
         if self._small is not None:
             draw_small_text(
                 self._small, self._sample, 24, y, SMALL_SAMPLE_SCALE, rl.WHITE
@@ -65,8 +81,8 @@ class FontView:
                 + 40
             )
 
-        rl.draw_text("Grim2D mono font", 24, y, 20, rl.Color(220, 220, 220, 255))
-        y += 28
+        self._draw_ui_text("Grim2D mono font", 24, y, UI_TEXT_COLOR)
+        y += self._ui_line_height() + 12
         if self._grim_mono is not None:
             mono_scale = self._quest_title_scale()
             draw_grim_mono_text(
