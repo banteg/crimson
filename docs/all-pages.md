@@ -19,7 +19,7 @@ This page is generated. Run `uv run python scripts/gen_all_pages.py` to update.
 - [Detangling notes](detangling.md)
 - [Effects pools](effects-struct.md)
 - [Entrypoint trace](entrypoint.md)
-- [Small font (smallFnt.dat)](formats/font.md)
+- [Fonts](formats/fonts.md)
 - [JAZ texture format](formats/jaz.md)
 - [PAQ archive format](formats/paq.md)
 - [Frida workflow](frida-workflow.md)
@@ -52,4 +52,3 @@ This page is generated. Run `uv run python scripts/gen_all_pages.py` to update.
 - [Weapon table (weapon_table_init)](weapon-table.md)
 - [WinDbg / CDB workflow](windbg.md)
 - [Work status model](work-status.md)
-

@@ -12,7 +12,7 @@ Data map coverage: 19.65% (654 / 3328 symbols)
 
 - [PAQ archives](formats/paq.md) — Completed
 - [JAZ textures](formats/jaz.md) — Completed
-- [Small font (smallFnt.dat)](formats/font.md) — Draft
+- [Fonts](formats/fonts.md) — Draft
 - [Sprite atlas cutting](atlas.md) — In progress
 - [Extraction pipeline](pipeline.md) — In progress
 - [Python executable spec](python-executable-spec.md) — Draft
