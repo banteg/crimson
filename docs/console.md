@@ -108,6 +108,29 @@ The cvar paths emit:
   line into `console_exec_line`; prints `Executing '%s'` or a “cannot open”
   error.
 
+## Known console variables (cvars)
+
+Core cvars are registered in `register_core_cvars` (`0x00402c00`) and during startup.
+These can be used for debugging or tweaking engine behavior:
+
+| Cvar | Role (inferred) |
+| --- | --- |
+| `cv_showFPS` | Displays framerate counter |
+| `cv_verbose` | Enables verbose logging (useful for debugging) |
+| `cv_friendlyFire` | Toggles friendly fire |
+| `cv_silentloads` | Suppress loading screen text/transitions |
+| `cv_bodiesFade` | Controls corpse fading time |
+| `cv_terrainBodiesTransparency` | Controls corpse transparency on terrain |
+| `cv_terrainFilter` | Texture filtering setting for terrain |
+| `cv_uiTransparency` | HUD transparency |
+| `cv_uiPointFilterPanels` | UI filtering mode |
+| `cv_uiSmallIndicators` | Use smaller UI elements |
+| `cv_enableMousePointAndClickMovement` | Click-to-move (accessibility/debug) |
+| `cv_aimEnhancementFade` | Aim assist visual feedback |
+| `cv_padAimDistMul` | Gamepad aiming sensitivity/distance |
+| `v_width` | Viewport width (registered after autoexec) |
+| `v_height` | Viewport height (registered after autoexec) |
+
 ## Scripts and logs
 
 - `exec` is used to run scripts such as `autoexec.txt` and
