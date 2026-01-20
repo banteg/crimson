@@ -7,6 +7,7 @@ import random
 import pyray as rl
 
 from .config import CrimsonConfig, ensure_crimson_cfg
+from .console import ConsoleState, create_console
 from .entrypoint import DEFAULT_BASE_DIR
 from .raylib_app import run_view
 from .views.types import View
@@ -26,6 +27,7 @@ class GameState:
     base_dir: Path
     rng: random.Random
     config: CrimsonConfig
+    console: ConsoleState
 
 
 class BootView:
@@ -61,7 +63,13 @@ def run_game(config: GameConfig) -> None:
     width = cfg.screen_width if config.width is None else config.width
     height = cfg.screen_height if config.height is None else config.height
     rng = random.Random(config.seed)
-    state = GameState(base_dir=base_dir, rng=rng, config=cfg)
+    console = create_console(base_dir)
+    console.log.log("crimson: boot start")
+    console.log.log(
+        f"config: {cfg.screen_width}x{cfg.screen_height} windowed={cfg.windowed_flag}"
+    )
+    console.log.flush()
+    state = GameState(base_dir=base_dir, rng=rng, config=cfg, console=console)
     view: View = BootView(state)
     run_view(
         view,
