@@ -29,6 +29,14 @@ QUEST_NUMBER_Y_OFFSET_BASE = 4.048
 QUEST_NUMBER_Y_OFFSET_REF_SCALE = 0.75
 QUEST_NUMBER_X_OFFSET_BASE = 46.72
 
+GRIM_MONO_FILTERS = [
+    ("Point", rl.TEXTURE_FILTER_POINT),
+    ("Bilinear", rl.TEXTURE_FILTER_BILINEAR),
+    ("Trilinear", rl.TEXTURE_FILTER_TRILINEAR),
+]
+GRIM_MONO_DEFAULT_FILTER_INDEX = 2
+GRIM_MONO_FILTER_KEY = rl.KeyboardKey.KEY_F
+
 
 class FontView:
     def __init__(self, ctx: ViewContext) -> None:
@@ -37,6 +45,8 @@ class FontView:
         self._small: SmallFontData | None = None
         self._grim_mono: GrimMonoFont | None = None
         self._sample = DEFAULT_SAMPLE
+        self._grim_filter_index = GRIM_MONO_DEFAULT_FILTER_INDEX
+        self._grim_has_mipmaps = False
 
     def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
         if self._small is not None:
@@ -61,9 +71,36 @@ class FontView:
         self._missing_assets.clear()
         self._small = load_small_font(self._assets_root, self._missing_assets)
         self._grim_mono = load_grim_mono_font(self._assets_root, self._missing_assets)
+        self._grim_filter_index = GRIM_MONO_DEFAULT_FILTER_INDEX
+        self._grim_has_mipmaps = False
+        self._apply_grim_filter()
 
     def update(self, dt: float) -> None:
         del dt
+        self._handle_input()
+
+    def _handle_input(self) -> None:
+        if rl.is_key_pressed(GRIM_MONO_FILTER_KEY):
+            self._cycle_grim_filter(1)
+
+    def _cycle_grim_filter(self, delta: int) -> None:
+        if not GRIM_MONO_FILTERS:
+            return
+        self._grim_filter_index = (self._grim_filter_index + delta) % len(
+            GRIM_MONO_FILTERS
+        )
+        self._apply_grim_filter()
+
+    def _apply_grim_filter(self) -> None:
+        if self._grim_mono is None:
+            return
+        name, value = GRIM_MONO_FILTERS[self._grim_filter_index]
+        if value == rl.TEXTURE_FILTER_TRILINEAR and not self._grim_has_mipmaps:
+            gen = getattr(rl, "gen_texture_mipmaps", None)
+            if gen is not None:
+                gen(self._grim_mono.texture)
+                self._grim_has_mipmaps = True
+        rl.set_texture_filter(self._grim_mono.texture, value)
 
     def draw(self) -> None:
         rl.clear_background(rl.Color(12, 12, 14, 255))
@@ -90,6 +127,11 @@ class FontView:
         self._draw_ui_text("Grim2D mono font", 24, y, UI_TEXT_COLOR)
         y += self._ui_line_height() + 12
         if self._grim_mono is not None:
+            filter_name, _ = GRIM_MONO_FILTERS[self._grim_filter_index]
+            self._draw_ui_text(
+                f"Filter: {filter_name} (F to cycle)", 24, y, UI_TEXT_COLOR
+            )
+            y += self._ui_line_height(0.9) + 6
             mono_scale = self._quest_title_scale()
             draw_grim_mono_text(
                 self._grim_mono, self._sample, 24, y, mono_scale, rl.WHITE
