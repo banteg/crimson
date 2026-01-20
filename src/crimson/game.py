@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+import datetime as dt
+import faulthandler
 import random
+import traceback
 
 import pyray as rl
 
@@ -90,39 +93,53 @@ class BootView:
 def run_game(config: GameConfig) -> None:
     base_dir = config.base_dir
     base_dir.mkdir(parents=True, exist_ok=True)
+    crash_path = base_dir / "crash.log"
+    crash_file = crash_path.open("a", encoding="utf-8", buffering=1)
+    faulthandler.enable(crash_file)
+    crash_file.write(f"\n[{dt.datetime.now().isoformat()}] run_game start\n")
     cfg = ensure_crimson_cfg(base_dir)
     width = cfg.screen_width if config.width is None else config.width
     height = cfg.screen_height if config.height is None else config.height
     rng = random.Random(config.seed)
     console = create_console(base_dir)
     assets_dir = config.assets_dir if config.assets_dir is not None else base_dir
-    register_boot_commands(console)
-    register_core_cvars(console, width, height)
-    console.log.log("crimson: boot start")
-    console.log.log(
-        f"config: {cfg.screen_width}x{cfg.screen_height} windowed={cfg.windowed_flag}"
-    )
-    console.log.log(f"commands: {len(console.commands)} registered")
-    console.log.log(f"cvars: {len(console.cvars)} registered")
-    console.exec_line("exec autoexec.txt")
-    console.log.flush()
-    state = GameState(
-        base_dir=base_dir,
-        assets_dir=assets_dir,
-        rng=rng,
-        config=cfg,
-        console=console,
-        logos=None,
-    )
-    config_flags = 0
-    if cfg.windowed_flag == 0:
-        config_flags |= rl.ConfigFlags.FLAG_FULLSCREEN_MODE
-    view: View = BootView(state)
-    run_view(
-        view,
-        width=width,
-        height=height,
-        title="Crimsonland",
-        fps=config.fps,
-        config_flags=config_flags,
-    )
+    try:
+        register_boot_commands(console)
+        register_core_cvars(console, width, height)
+        console.log.log("crimson: boot start")
+        console.log.log(
+            f"config: {cfg.screen_width}x{cfg.screen_height} windowed={cfg.windowed_flag}"
+        )
+        console.log.log(f"commands: {len(console.commands)} registered")
+        console.log.log(f"cvars: {len(console.cvars)} registered")
+        console.exec_line("exec autoexec.txt")
+        console.log.flush()
+        state = GameState(
+            base_dir=base_dir,
+            assets_dir=assets_dir,
+            rng=rng,
+            config=cfg,
+            console=console,
+            logos=None,
+        )
+        config_flags = 0
+        if cfg.windowed_flag == 0:
+            config_flags |= rl.ConfigFlags.FLAG_FULLSCREEN_MODE
+        view: View = BootView(state)
+        run_view(
+            view,
+            width=width,
+            height=height,
+            title="Crimsonland",
+            fps=config.fps,
+            config_flags=config_flags,
+        )
+    except Exception:
+        crash_file.write("python exception:\n")
+        crash_file.write(traceback.format_exc())
+        crash_file.write("\n")
+        crash_file.flush()
+        raise
+    finally:
+        faulthandler.disable()
+        crash_file.close()
