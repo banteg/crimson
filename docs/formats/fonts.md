@@ -9,8 +9,8 @@ tags:
 
 Crimsonland ships two bitmap fonts:
 
-- **Small font** (`smallFnt.dat` + `smallWhite.png`): variable-width, 16x16 atlas, used by `grim_draw_text_small`.
-- **Mono font** (Grim2D resource id `0x6f`): fixed 16px grid, used by `grim_draw_text_mono`.
+- **Small font** (`smallFnt.dat` + `smallWhite.png`): variable-width, 16x16 atlas, used by `grim_draw_text_small`. [static]
+- **Grim2D mono font** (resource id `0x6f`): fixed 16px grid, used by `grim_draw_text_mono`. [static]
 
 ## Small font (smallFnt.dat)
 
@@ -50,30 +50,25 @@ A small bias of 1/512 is applied to the U/V values in code to reduce bleeding.
 - `grim_font2_char_map` is initialized as an identity lookup table, so glyph index
   equals the byte value. [static]
 
-## Mono font (grim_draw_text_mono)
+## Grim2D mono font (grim_draw_text_mono)
 
 ### Source
 
 - `grim_draw_text_mono` binds `grim_font_texture`, which is loaded from Grim2D resources
-  (resource id `0x6f`).
+  (resource id `0x6f`). [static]
 - This is not yet confirmed to match `default_font_courier.tga` from `crimson.paq`. [static]
 
 ### Behavior
 
-- **Advance**: `16 * scale` (fixed).
-- **Draw size**: `32 * scale` width x `32 * scale` height.
-- **Visual effect**: Characters are drawn at 2x the size of their horizontal spacing, creating a dense, tall appearance (effective 1:2 aspect ratio relative to the grid).
-- **UVs**: 16x16 table (`grim_font2_uv_u/v`), indexed directly by byte value (`grim_font2_char_map` is identity).
-- **Special codes**: Handles 0xA7, 0xE4, 0xE5, 0xF6 and `\n`.
+- **Advance**: `16 * scale` (fixed). [static]
+- **Line height**: `28 * scale` (newline step). [static]
+- **Draw size**: `32 * scale` width x `32 * scale` height. [static]
+- **Visual effect**: Characters are drawn at 2x the size of their horizontal spacing, creating a dense, tall appearance (effective 1:2 aspect ratio relative to the grid). [static]
+- **UVs**: 16x16 table (`grim_font2_uv_u/v`), indexed directly by byte value (`grim_font2_char_map` is identity). [static]
+- **Special codes**: Handles 0xA7, 0xE4, 0xE5, 0xF6 and `\n`. [static]
 
-## Sample render (small font)
-
-```
-uv run paq font --assets-dir artifacts/assets --out artifacts/fonts/small_font_sample.png
-```
-
-Custom text:
+## Sample render (interactive)
 
 ```
-uv run paq font --assets-dir artifacts/assets --text "Hello, world!" --scale 2.0
+uv run crimson view fonts
 ```

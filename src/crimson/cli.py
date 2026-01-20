@@ -74,35 +74,6 @@ def cmd_extract(game_dir: Path, assets_dir: Path) -> None:
     typer.echo(f"extracted {total} files")
 
 
-@app.command("font")
-def cmd_font(
-    assets_dir: Path = typer.Option(
-        Path("artifacts") / "assets",
-        help="assets root (default: ./artifacts/assets)",
-    ),
-    out_path: Path = typer.Option(
-        Path("artifacts") / "fonts" / "small_font_sample.png",
-        help="output image path",
-    ),
-    text: str | None = typer.Option(None, help="text to render"),
-    text_file: Path | None = typer.Option(None, help="path to a text file"),
-    scale: float = typer.Option(2.0, help="scale factor"),
-) -> None:
-    """Render a sample image with the small font."""
-    if text and text_file:
-        typer.echo("use either --text or --text-file, not both", err=True)
-        raise typer.Exit(code=1)
-    if text_file is not None:
-        text = text_file.read_text(encoding="utf-8", errors="replace")
-    from .grim2d import font
-
-    if text is None:
-        text = font.DEFAULT_SAMPLE
-    font_data = font.load_small_font_from_assets(assets_dir)
-    font.render_sample(font_data, out_path, text=text, scale=scale)
-    typer.echo(f"wrote {out_path}")
-
-
 def _call_builder(
     builder, ctx: QuestContext, rng: random.Random | None
 ) -> list[SpawnEntry]:

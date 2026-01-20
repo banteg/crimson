@@ -10,7 +10,6 @@ width table specifies the pixel advance per glyph.
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
 
 from PIL import Image
 
@@ -61,7 +60,9 @@ class SmallFont:
     grid: int = GRID_SIZE
     cell_size: int = CELL_SIZE
 
-    def glyph_rect(self, idx: int, width: int | None = None) -> tuple[int, int, int, int]:
+    def glyph_rect(
+        self, idx: int, width: int | None = None
+    ) -> tuple[int, int, int, int]:
         if not 0 <= idx < WIDTH_TABLE_SIZE:
             raise ValueError(f"glyph index out of range: {idx}")
         row = idx // self.grid
@@ -148,43 +149,3 @@ def load_small_font(widths_path: str | Path, atlas_path: str | Path) -> SmallFon
         raise ValueError(f"expected {WIDTH_TABLE_SIZE} bytes, got {len(widths)}")
     atlas = Image.open(atlas_path).convert("RGBA")
     return SmallFont(widths=widths, atlas=atlas)
-
-
-def load_small_font_from_assets(assets_root: str | Path) -> SmallFont:
-    root = Path(assets_root)
-    widths_path = root / "crimson" / "load" / "smallFnt.dat"
-    atlas_path = root / "crimson" / "load" / "smallWhite.png"
-    return load_small_font(widths_path, atlas_path)
-
-
-def render_sample(
-    font: SmallFont,
-    out_path: str | Path,
-    text: str = DEFAULT_SAMPLE,
-    *,
-    scale: float = 2.0,
-    color: tuple[int, int, int, int] = (255, 255, 255, 255),
-) -> Path:
-    output = font.render_text(text, color=color, scale=scale)
-    dest = Path(out_path)
-    dest.parent.mkdir(parents=True, exist_ok=True)
-    output.save(dest)
-    return dest
-
-
-def main(argv: Iterable[str] | None = None) -> int:
-    args = list(argv or [])
-    assets_root = Path("assets")
-    out_path = Path("output") / "small_font_sample.png"
-    if args:
-        out_path = Path(args[0])
-    if len(args) > 1:
-        assets_root = Path(args[1])
-    font = load_small_font_from_assets(assets_root)
-    render_sample(font, out_path)
-    print(f"wrote {out_path}")
-    return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
