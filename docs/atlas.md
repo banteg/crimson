@@ -21,6 +21,16 @@ Step sizes:
 - 8×8: 0.125
 - 16×16: 0.0625
 
+The effect quad builder does **not** use these steps for the max UV.
+Instead, it uses `effect_uv_step_*` constants from the exe:
+
+- grid2: 0.4921875 (126 px of 128)
+- grid4: 0.2421875 (62 px of 64)
+- grid8: 0.1171875 (30 px of 32)
+- grid16: 0.0546875 (14 px of 16)
+
+This effectively insets the right/bottom edge by 2 pixels to avoid bleeding.
+
 
 The renderer later uses these tables to build quads:
 
