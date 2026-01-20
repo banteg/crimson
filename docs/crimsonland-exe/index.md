@@ -18,6 +18,7 @@ Sections:
 - [Rendering](rendering.md)
 - [UI and menus](ui.md)
 - [Screens and flows](screens.md)
+- [Online scores](online-scores.md)
 - [Gameplay glue](gameplay.md)
 
 Related references:
