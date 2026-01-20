@@ -39,6 +39,7 @@ const outFiles = {};
 let outWarned = false;
 let lastBaseExe = null;
 let lastBaseGrim = null;
+let ifaceLogged = false;
 
 const inTerrainRender = {};
 
@@ -373,10 +374,19 @@ function attachInterface(exeBase) {
     if (!ifacePtr || ifacePtr.isNull()) return;
     const bindPtr = safeReadPointer(ifacePtr.add(0xc4));
     const uvPtr = safeReadPointer(ifacePtr.add(0x100));
-    if (bindPtr) {
+    if (!ifaceLogged) {
+        ifaceLogged = true;
+        writeLine({
+            tag: "iface_ptr",
+            iface: ifacePtr.toString(),
+            bind_ptr: bindPtr ? bindPtr.toString() : null,
+            uv_ptr: uvPtr ? uvPtr.toString() : null,
+        });
+    }
+    if (bindPtr && !bindPtr.isNull()) {
         attachOnce("iface_bind_texture", bindPtr, hookIfaceBindTexture);
     }
-    if (uvPtr) {
+    if (uvPtr && !uvPtr.isNull()) {
         attachOnce("iface_set_uv", uvPtr, hookIfaceSetUv);
     }
 }
