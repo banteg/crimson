@@ -188,6 +188,10 @@ def format_table(case_map: dict[str, dict[str, str | None]]) -> str:
 
 
 def render_code(case_map: dict[str, dict[str, str | None]]) -> str:
+    def enum_member_name(name: str) -> str:
+        cleaned = re.sub(r"[^A-Za-z0-9]+", "_", name).strip("_")
+        return cleaned.upper() or "UNKNOWN"
+
     def format_flags(flags: int | None) -> str:
         if flags is None:
             return "None"
@@ -216,11 +220,22 @@ def render_code(case_map: dict[str, dict[str, str | None]]) -> str:
         "\"\"\"Spawn template ids extracted from creature_spawn_template (FUN_00430af0).\"\"\"",
         "",
         "from dataclasses import dataclass",
-        "from enum import IntFlag",
+        "from enum import IntEnum, IntFlag",
         "",
         "",
-        "class CreatureFlags(IntFlag):",
+        "class CreatureTypeId(IntEnum):",
     ]
+
+    for type_id, name in sorted(TYPE_ID_TO_NAME.items()):
+        lines.append(f"    {enum_member_name(name)} = {type_id}")
+
+    lines.extend(
+        [
+            "",
+            "",
+            "class CreatureFlags(IntFlag):",
+        ]
+    )
 
     for name, value, comment in FLAG_DEFS:
         lines.append(f"    {name} = 0x{value:02x}  # {comment}")
@@ -232,7 +247,7 @@ def render_code(case_map: dict[str, dict[str, str | None]]) -> str:
         "@dataclass(frozen=True, slots=True)",
         "class SpawnTemplate:",
         "    spawn_id: int",
-        "    type_id: int | None",
+        "    type_id: CreatureTypeId | None",
         "    flags: CreatureFlags | None",
         "    creature: str | None",
         "    anim_note: str | None",
@@ -251,9 +266,15 @@ def render_code(case_map: dict[str, dict[str, str | None]]) -> str:
         creature = TYPE_ID_TO_NAME.get(type_id) if type_id is not None else None
         anim_note = ANIM_NOTES.get(flags)
         spawn_part = f"spawn_id=0x{spawn_id:02x}" if spawn_id is not None else "spawn_id=None"
+        if type_id is None:
+            type_expr = "None"
+        elif type_id in TYPE_ID_TO_NAME:
+            type_expr = f"CreatureTypeId.{enum_member_name(TYPE_ID_TO_NAME[type_id])}"
+        else:
+            type_expr = repr(type_id)
         lines.append(
             "    SpawnTemplate("
-            f"{spawn_part}, type_id={type_id!r}, flags={format_flags(flags)}, "
+            f"{spawn_part}, type_id={type_expr}, flags={format_flags(flags)}, "
             f"creature={creature!r}, anim_note={anim_note!r}),"
         )
 

@@ -4,7 +4,16 @@ from __future__ import annotations
 """Spawn template ids extracted from creature_spawn_template (FUN_00430af0)."""
 
 from dataclasses import dataclass
-from enum import IntFlag
+from enum import IntEnum, IntFlag
+
+
+class CreatureTypeId(IntEnum):
+    ZOMBIE = 0
+    LIZARD = 1
+    ALIEN = 2
+    SPIDER_SP1 = 3
+    SPIDER_SP2 = 4
+    TROOPER = 5
 
 
 class CreatureFlags(IntFlag):
@@ -22,7 +31,7 @@ class CreatureFlags(IntFlag):
 @dataclass(frozen=True, slots=True)
 class SpawnTemplate:
     spawn_id: int
-    type_id: int | None
+    type_id: CreatureTypeId | None
     flags: CreatureFlags | None
     creature: str | None
     anim_note: str | None
@@ -30,72 +39,72 @@ class SpawnTemplate:
 TYPE_ID_TO_NAME = {0: 'zombie', 1: 'lizard', 2: 'alien', 3: 'spider_sp1', 4: 'spider_sp2', 5: 'trooper'}
 
 SPAWN_TEMPLATES = [
-    SpawnTemplate(spawn_id=0x00, type_id=0, flags=CreatureFlags.ANIM_PING_PONG | CreatureFlags.ANIM_LONG_STRIP, creature='zombie', anim_note='long strip (0x40 overrides 0x4)'),
-    SpawnTemplate(spawn_id=0x01, type_id=4, flags=CreatureFlags.SPLIT_ON_DEATH, creature='spider_sp2', anim_note=None),
-    SpawnTemplate(spawn_id=0x03, type_id=3, flags=None, creature='spider_sp1', anim_note=None),
-    SpawnTemplate(spawn_id=0x04, type_id=1, flags=None, creature='lizard', anim_note=None),
-    SpawnTemplate(spawn_id=0x05, type_id=4, flags=None, creature='spider_sp2', anim_note=None),
-    SpawnTemplate(spawn_id=0x06, type_id=2, flags=None, creature='alien', anim_note=None),
-    SpawnTemplate(spawn_id=0x07, type_id=2, flags=CreatureFlags.ANIM_PING_PONG, creature='alien', anim_note='short strip (ping-pong)'),
-    SpawnTemplate(spawn_id=0x08, type_id=1, flags=CreatureFlags.RANGED_ATTACK_SHOCK, creature='lizard', anim_note=None),
-    SpawnTemplate(spawn_id=0x09, type_id=2, flags=CreatureFlags.ANIM_PING_PONG, creature='alien', anim_note='short strip (ping-pong)'),
-    SpawnTemplate(spawn_id=0x0a, type_id=2, flags=CreatureFlags.ANIM_PING_PONG, creature='alien', anim_note='short strip (ping-pong)'),
-    SpawnTemplate(spawn_id=0x0b, type_id=2, flags=CreatureFlags.ANIM_PING_PONG, creature='alien', anim_note='short strip (ping-pong)'),
-    SpawnTemplate(spawn_id=0x0c, type_id=2, flags=CreatureFlags.ANIM_PING_PONG, creature='alien', anim_note='short strip (ping-pong)'),
-    SpawnTemplate(spawn_id=0x0d, type_id=2, flags=CreatureFlags.ANIM_PING_PONG, creature='alien', anim_note='short strip (ping-pong)'),
-    SpawnTemplate(spawn_id=0x0e, type_id=2, flags=CreatureFlags.ANIM_PING_PONG, creature='alien', anim_note='short strip (ping-pong)'),
-    SpawnTemplate(spawn_id=0x0f, type_id=2, flags=CreatureFlags.ANIM_PING_PONG, creature='alien', anim_note='short strip (ping-pong)'),
-    SpawnTemplate(spawn_id=0x10, type_id=2, flags=CreatureFlags.ANIM_PING_PONG, creature='alien', anim_note='short strip (ping-pong)'),
-    SpawnTemplate(spawn_id=0x11, type_id=1, flags=None, creature='lizard', anim_note=None),
-    SpawnTemplate(spawn_id=0x12, type_id=2, flags=None, creature='alien', anim_note=None),
-    SpawnTemplate(spawn_id=0x13, type_id=2, flags=CreatureFlags.ANIM_PING_PONG, creature='alien', anim_note='short strip (ping-pong)'),
-    SpawnTemplate(spawn_id=0x14, type_id=2, flags=None, creature='alien', anim_note=None),
-    SpawnTemplate(spawn_id=0x15, type_id=2, flags=None, creature='alien', anim_note=None),
-    SpawnTemplate(spawn_id=0x16, type_id=1, flags=None, creature='lizard', anim_note=None),
-    SpawnTemplate(spawn_id=0x17, type_id=3, flags=None, creature='spider_sp1', anim_note=None),
-    SpawnTemplate(spawn_id=0x18, type_id=2, flags=None, creature='alien', anim_note=None),
-    SpawnTemplate(spawn_id=0x19, type_id=2, flags=None, creature='alien', anim_note=None),
-    SpawnTemplate(spawn_id=0x1a, type_id=2, flags=None, creature='alien', anim_note=None),
-    SpawnTemplate(spawn_id=0x1b, type_id=3, flags=None, creature='spider_sp1', anim_note=None),
-    SpawnTemplate(spawn_id=0x1c, type_id=3, flags=CreatureFlags.RANGED_ATTACK_SHOCK, creature='spider_sp1', anim_note=None),
-    SpawnTemplate(spawn_id=0x1d, type_id=2, flags=None, creature='alien', anim_note=None),
-    SpawnTemplate(spawn_id=0x1e, type_id=2, flags=None, creature='alien', anim_note=None),
-    SpawnTemplate(spawn_id=0x1f, type_id=2, flags=None, creature='alien', anim_note=None),
-    SpawnTemplate(spawn_id=0x20, type_id=2, flags=None, creature='alien', anim_note=None),
-    SpawnTemplate(spawn_id=0x21, type_id=2, flags=None, creature='alien', anim_note=None),
-    SpawnTemplate(spawn_id=0x22, type_id=2, flags=None, creature='alien', anim_note=None),
-    SpawnTemplate(spawn_id=0x23, type_id=2, flags=None, creature='alien', anim_note=None),
-    SpawnTemplate(spawn_id=0x24, type_id=2, flags=None, creature='alien', anim_note=None),
-    SpawnTemplate(spawn_id=0x25, type_id=2, flags=None, creature='alien', anim_note=None),
-    SpawnTemplate(spawn_id=0x26, type_id=2, flags=None, creature='alien', anim_note=None),
-    SpawnTemplate(spawn_id=0x27, type_id=2, flags=CreatureFlags.BONUS_ON_DEATH, creature='alien', anim_note=None),
-    SpawnTemplate(spawn_id=0x28, type_id=3, flags=CreatureFlags.RANGED_ATTACK_SHOCK, creature='spider_sp1', anim_note=None),
-    SpawnTemplate(spawn_id=0x29, type_id=2, flags=None, creature='alien', anim_note=None),
-    SpawnTemplate(spawn_id=0x2a, type_id=2, flags=None, creature='alien', anim_note=None),
-    SpawnTemplate(spawn_id=0x2b, type_id=2, flags=None, creature='alien', anim_note=None),
-    SpawnTemplate(spawn_id=0x2c, type_id=2, flags=None, creature='alien', anim_note=None),
-    SpawnTemplate(spawn_id=0x2d, type_id=2, flags=None, creature='alien', anim_note=None),
-    SpawnTemplate(spawn_id=0x2e, type_id=1, flags=None, creature='lizard', anim_note=None),
-    SpawnTemplate(spawn_id=0x2f, type_id=1, flags=None, creature='lizard', anim_note=None),
-    SpawnTemplate(spawn_id=0x30, type_id=1, flags=None, creature='lizard', anim_note=None),
-    SpawnTemplate(spawn_id=0x31, type_id=1, flags=None, creature='lizard', anim_note=None),
-    SpawnTemplate(spawn_id=0x32, type_id=2, flags=CreatureFlags.RANGED_ATTACK_SHOCK, creature='alien', anim_note=None),
-    SpawnTemplate(spawn_id=0x33, type_id=3, flags=None, creature='spider_sp1', anim_note=None),
-    SpawnTemplate(spawn_id=0x34, type_id=3, flags=None, creature='spider_sp1', anim_note=None),
-    SpawnTemplate(spawn_id=0x35, type_id=4, flags=None, creature='spider_sp2', anim_note=None),
-    SpawnTemplate(spawn_id=0x36, type_id=2, flags=None, creature='alien', anim_note=None),
-    SpawnTemplate(spawn_id=0x37, type_id=4, flags=CreatureFlags.RANGED_ATTACK_VARIANT, creature='spider_sp2', anim_note=None),
-    SpawnTemplate(spawn_id=0x38, type_id=3, flags=CreatureFlags.AI7_LINK_TIMER, creature='spider_sp1', anim_note=None),
-    SpawnTemplate(spawn_id=0x39, type_id=3, flags=CreatureFlags.AI7_LINK_TIMER, creature='spider_sp1', anim_note=None),
-    SpawnTemplate(spawn_id=0x3a, type_id=3, flags=CreatureFlags.RANGED_ATTACK_SHOCK, creature='spider_sp1', anim_note=None),
-    SpawnTemplate(spawn_id=0x3b, type_id=3, flags=None, creature='spider_sp1', anim_note=None),
-    SpawnTemplate(spawn_id=0x3c, type_id=3, flags=CreatureFlags.RANGED_ATTACK_VARIANT, creature='spider_sp1', anim_note=None),
-    SpawnTemplate(spawn_id=0x3d, type_id=3, flags=None, creature='spider_sp1', anim_note=None),
-    SpawnTemplate(spawn_id=0x3e, type_id=3, flags=None, creature='spider_sp1', anim_note=None),
-    SpawnTemplate(spawn_id=0x40, type_id=3, flags=None, creature='spider_sp1', anim_note=None),
-    SpawnTemplate(spawn_id=0x41, type_id=0, flags=None, creature='zombie', anim_note=None),
-    SpawnTemplate(spawn_id=0x42, type_id=0, flags=None, creature='zombie', anim_note=None),
-    SpawnTemplate(spawn_id=0x43, type_id=0, flags=None, creature='zombie', anim_note=None),
+    SpawnTemplate(spawn_id=0x00, type_id=CreatureTypeId.ZOMBIE, flags=CreatureFlags.ANIM_PING_PONG | CreatureFlags.ANIM_LONG_STRIP, creature='zombie', anim_note='long strip (0x40 overrides 0x4)'),
+    SpawnTemplate(spawn_id=0x01, type_id=CreatureTypeId.SPIDER_SP2, flags=CreatureFlags.SPLIT_ON_DEATH, creature='spider_sp2', anim_note=None),
+    SpawnTemplate(spawn_id=0x03, type_id=CreatureTypeId.SPIDER_SP1, flags=None, creature='spider_sp1', anim_note=None),
+    SpawnTemplate(spawn_id=0x04, type_id=CreatureTypeId.LIZARD, flags=None, creature='lizard', anim_note=None),
+    SpawnTemplate(spawn_id=0x05, type_id=CreatureTypeId.SPIDER_SP2, flags=None, creature='spider_sp2', anim_note=None),
+    SpawnTemplate(spawn_id=0x06, type_id=CreatureTypeId.ALIEN, flags=None, creature='alien', anim_note=None),
+    SpawnTemplate(spawn_id=0x07, type_id=CreatureTypeId.ALIEN, flags=CreatureFlags.ANIM_PING_PONG, creature='alien', anim_note='short strip (ping-pong)'),
+    SpawnTemplate(spawn_id=0x08, type_id=CreatureTypeId.LIZARD, flags=CreatureFlags.RANGED_ATTACK_SHOCK, creature='lizard', anim_note=None),
+    SpawnTemplate(spawn_id=0x09, type_id=CreatureTypeId.ALIEN, flags=CreatureFlags.ANIM_PING_PONG, creature='alien', anim_note='short strip (ping-pong)'),
+    SpawnTemplate(spawn_id=0x0a, type_id=CreatureTypeId.ALIEN, flags=CreatureFlags.ANIM_PING_PONG, creature='alien', anim_note='short strip (ping-pong)'),
+    SpawnTemplate(spawn_id=0x0b, type_id=CreatureTypeId.ALIEN, flags=CreatureFlags.ANIM_PING_PONG, creature='alien', anim_note='short strip (ping-pong)'),
+    SpawnTemplate(spawn_id=0x0c, type_id=CreatureTypeId.ALIEN, flags=CreatureFlags.ANIM_PING_PONG, creature='alien', anim_note='short strip (ping-pong)'),
+    SpawnTemplate(spawn_id=0x0d, type_id=CreatureTypeId.ALIEN, flags=CreatureFlags.ANIM_PING_PONG, creature='alien', anim_note='short strip (ping-pong)'),
+    SpawnTemplate(spawn_id=0x0e, type_id=CreatureTypeId.ALIEN, flags=CreatureFlags.ANIM_PING_PONG, creature='alien', anim_note='short strip (ping-pong)'),
+    SpawnTemplate(spawn_id=0x0f, type_id=CreatureTypeId.ALIEN, flags=CreatureFlags.ANIM_PING_PONG, creature='alien', anim_note='short strip (ping-pong)'),
+    SpawnTemplate(spawn_id=0x10, type_id=CreatureTypeId.ALIEN, flags=CreatureFlags.ANIM_PING_PONG, creature='alien', anim_note='short strip (ping-pong)'),
+    SpawnTemplate(spawn_id=0x11, type_id=CreatureTypeId.LIZARD, flags=None, creature='lizard', anim_note=None),
+    SpawnTemplate(spawn_id=0x12, type_id=CreatureTypeId.ALIEN, flags=None, creature='alien', anim_note=None),
+    SpawnTemplate(spawn_id=0x13, type_id=CreatureTypeId.ALIEN, flags=CreatureFlags.ANIM_PING_PONG, creature='alien', anim_note='short strip (ping-pong)'),
+    SpawnTemplate(spawn_id=0x14, type_id=CreatureTypeId.ALIEN, flags=None, creature='alien', anim_note=None),
+    SpawnTemplate(spawn_id=0x15, type_id=CreatureTypeId.ALIEN, flags=None, creature='alien', anim_note=None),
+    SpawnTemplate(spawn_id=0x16, type_id=CreatureTypeId.LIZARD, flags=None, creature='lizard', anim_note=None),
+    SpawnTemplate(spawn_id=0x17, type_id=CreatureTypeId.SPIDER_SP1, flags=None, creature='spider_sp1', anim_note=None),
+    SpawnTemplate(spawn_id=0x18, type_id=CreatureTypeId.ALIEN, flags=None, creature='alien', anim_note=None),
+    SpawnTemplate(spawn_id=0x19, type_id=CreatureTypeId.ALIEN, flags=None, creature='alien', anim_note=None),
+    SpawnTemplate(spawn_id=0x1a, type_id=CreatureTypeId.ALIEN, flags=None, creature='alien', anim_note=None),
+    SpawnTemplate(spawn_id=0x1b, type_id=CreatureTypeId.SPIDER_SP1, flags=None, creature='spider_sp1', anim_note=None),
+    SpawnTemplate(spawn_id=0x1c, type_id=CreatureTypeId.SPIDER_SP1, flags=CreatureFlags.RANGED_ATTACK_SHOCK, creature='spider_sp1', anim_note=None),
+    SpawnTemplate(spawn_id=0x1d, type_id=CreatureTypeId.ALIEN, flags=None, creature='alien', anim_note=None),
+    SpawnTemplate(spawn_id=0x1e, type_id=CreatureTypeId.ALIEN, flags=None, creature='alien', anim_note=None),
+    SpawnTemplate(spawn_id=0x1f, type_id=CreatureTypeId.ALIEN, flags=None, creature='alien', anim_note=None),
+    SpawnTemplate(spawn_id=0x20, type_id=CreatureTypeId.ALIEN, flags=None, creature='alien', anim_note=None),
+    SpawnTemplate(spawn_id=0x21, type_id=CreatureTypeId.ALIEN, flags=None, creature='alien', anim_note=None),
+    SpawnTemplate(spawn_id=0x22, type_id=CreatureTypeId.ALIEN, flags=None, creature='alien', anim_note=None),
+    SpawnTemplate(spawn_id=0x23, type_id=CreatureTypeId.ALIEN, flags=None, creature='alien', anim_note=None),
+    SpawnTemplate(spawn_id=0x24, type_id=CreatureTypeId.ALIEN, flags=None, creature='alien', anim_note=None),
+    SpawnTemplate(spawn_id=0x25, type_id=CreatureTypeId.ALIEN, flags=None, creature='alien', anim_note=None),
+    SpawnTemplate(spawn_id=0x26, type_id=CreatureTypeId.ALIEN, flags=None, creature='alien', anim_note=None),
+    SpawnTemplate(spawn_id=0x27, type_id=CreatureTypeId.ALIEN, flags=CreatureFlags.BONUS_ON_DEATH, creature='alien', anim_note=None),
+    SpawnTemplate(spawn_id=0x28, type_id=CreatureTypeId.SPIDER_SP1, flags=CreatureFlags.RANGED_ATTACK_SHOCK, creature='spider_sp1', anim_note=None),
+    SpawnTemplate(spawn_id=0x29, type_id=CreatureTypeId.ALIEN, flags=None, creature='alien', anim_note=None),
+    SpawnTemplate(spawn_id=0x2a, type_id=CreatureTypeId.ALIEN, flags=None, creature='alien', anim_note=None),
+    SpawnTemplate(spawn_id=0x2b, type_id=CreatureTypeId.ALIEN, flags=None, creature='alien', anim_note=None),
+    SpawnTemplate(spawn_id=0x2c, type_id=CreatureTypeId.ALIEN, flags=None, creature='alien', anim_note=None),
+    SpawnTemplate(spawn_id=0x2d, type_id=CreatureTypeId.ALIEN, flags=None, creature='alien', anim_note=None),
+    SpawnTemplate(spawn_id=0x2e, type_id=CreatureTypeId.LIZARD, flags=None, creature='lizard', anim_note=None),
+    SpawnTemplate(spawn_id=0x2f, type_id=CreatureTypeId.LIZARD, flags=None, creature='lizard', anim_note=None),
+    SpawnTemplate(spawn_id=0x30, type_id=CreatureTypeId.LIZARD, flags=None, creature='lizard', anim_note=None),
+    SpawnTemplate(spawn_id=0x31, type_id=CreatureTypeId.LIZARD, flags=None, creature='lizard', anim_note=None),
+    SpawnTemplate(spawn_id=0x32, type_id=CreatureTypeId.ALIEN, flags=CreatureFlags.RANGED_ATTACK_SHOCK, creature='alien', anim_note=None),
+    SpawnTemplate(spawn_id=0x33, type_id=CreatureTypeId.SPIDER_SP1, flags=None, creature='spider_sp1', anim_note=None),
+    SpawnTemplate(spawn_id=0x34, type_id=CreatureTypeId.SPIDER_SP1, flags=None, creature='spider_sp1', anim_note=None),
+    SpawnTemplate(spawn_id=0x35, type_id=CreatureTypeId.SPIDER_SP2, flags=None, creature='spider_sp2', anim_note=None),
+    SpawnTemplate(spawn_id=0x36, type_id=CreatureTypeId.ALIEN, flags=None, creature='alien', anim_note=None),
+    SpawnTemplate(spawn_id=0x37, type_id=CreatureTypeId.SPIDER_SP2, flags=CreatureFlags.RANGED_ATTACK_VARIANT, creature='spider_sp2', anim_note=None),
+    SpawnTemplate(spawn_id=0x38, type_id=CreatureTypeId.SPIDER_SP1, flags=CreatureFlags.AI7_LINK_TIMER, creature='spider_sp1', anim_note=None),
+    SpawnTemplate(spawn_id=0x39, type_id=CreatureTypeId.SPIDER_SP1, flags=CreatureFlags.AI7_LINK_TIMER, creature='spider_sp1', anim_note=None),
+    SpawnTemplate(spawn_id=0x3a, type_id=CreatureTypeId.SPIDER_SP1, flags=CreatureFlags.RANGED_ATTACK_SHOCK, creature='spider_sp1', anim_note=None),
+    SpawnTemplate(spawn_id=0x3b, type_id=CreatureTypeId.SPIDER_SP1, flags=None, creature='spider_sp1', anim_note=None),
+    SpawnTemplate(spawn_id=0x3c, type_id=CreatureTypeId.SPIDER_SP1, flags=CreatureFlags.RANGED_ATTACK_VARIANT, creature='spider_sp1', anim_note=None),
+    SpawnTemplate(spawn_id=0x3d, type_id=CreatureTypeId.SPIDER_SP1, flags=None, creature='spider_sp1', anim_note=None),
+    SpawnTemplate(spawn_id=0x3e, type_id=CreatureTypeId.SPIDER_SP1, flags=None, creature='spider_sp1', anim_note=None),
+    SpawnTemplate(spawn_id=0x40, type_id=CreatureTypeId.SPIDER_SP1, flags=None, creature='spider_sp1', anim_note=None),
+    SpawnTemplate(spawn_id=0x41, type_id=CreatureTypeId.ZOMBIE, flags=None, creature='zombie', anim_note=None),
+    SpawnTemplate(spawn_id=0x42, type_id=CreatureTypeId.ZOMBIE, flags=None, creature='zombie', anim_note=None),
+    SpawnTemplate(spawn_id=0x43, type_id=CreatureTypeId.ZOMBIE, flags=None, creature='zombie', anim_note=None),
 ]
 
 SPAWN_ID_TO_TEMPLATE = {entry.spawn_id: entry for entry in SPAWN_TEMPLATES}
