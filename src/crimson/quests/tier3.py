@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 import random
 
+from ..perks import PerkId
 from .registry import register_quest
 from .types import QuestContext, SpawnEntry
 
@@ -28,7 +29,7 @@ SPAWN_ID_64 = 0x40
     title="The Blighting",
     time_limit_ms=300000,
     start_weapon_id=1,
-    unlock_perk_id=0x25,
+    unlock_perk_id=PerkId.TOXIC_AVENGER,
     builder_address=0x00438050,
 )
 def build_3_1_the_blighting(ctx: QuestContext) -> list[SpawnEntry]:
@@ -100,7 +101,7 @@ def build_3_2_lizard_kings(ctx: QuestContext) -> list[SpawnEntry]:
     title="The Killing",
     time_limit_ms=300000,
     start_weapon_id=1,
-    unlock_perk_id=0x26,
+    unlock_perk_id=PerkId.REGENERATION,
     builder_address=0x004384a0,
 )
 def build_3_3_the_killing(
@@ -166,7 +167,7 @@ def build_3_4_hidden_evil(ctx: QuestContext) -> list[SpawnEntry]:
     title="Surrounded By Reptiles",
     time_limit_ms=300000,
     start_weapon_id=1,
-    unlock_perk_id=0x27,
+    unlock_perk_id=PerkId.PYROMANIAC,
     builder_address=0x00438940,
 )
 def build_3_5_surrounded_by_reptiles(ctx: QuestContext) -> list[SpawnEntry]:
@@ -218,7 +219,7 @@ def build_3_6_the_lizquidation(ctx: QuestContext) -> list[SpawnEntry]:
     title="Spiders Inc.",
     time_limit_ms=300000,
     start_weapon_id=11,
-    unlock_perk_id=0x28,
+    unlock_perk_id=PerkId.NINJA,
     builder_address=0x004390d0,
 )
 def build_3_7_spiders_inc(ctx: QuestContext) -> list[SpawnEntry]:
@@ -269,7 +270,7 @@ def build_3_8_lizard_raze(ctx: QuestContext) -> list[SpawnEntry]:
     title="Deja vu",
     time_limit_ms=120000,
     start_weapon_id=6,
-    unlock_perk_id=0x29,
+    unlock_perk_id=PerkId.HIGHLANDER,
     builder_address=0x00437920,
 )
 def build_3_9_deja_vu(ctx: QuestContext, rng: random.Random | None = None) -> list[SpawnEntry]:

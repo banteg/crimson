@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 import random
 
+from ..perks import PerkId
 from .registry import register_quest
 from .types import QuestContext, SpawnEntry
 
@@ -79,7 +80,7 @@ def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
     title="Target Practice",
     time_limit_ms=65000,
     start_weapon_id=1,
-    unlock_perk_id=0x1C,
+    unlock_perk_id=PerkId.URANIUM_FILLED_BULLETS,
     builder_address=0x00437a00,
 )
 def build_1_3_target_practice(
@@ -144,7 +145,7 @@ def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
     title="Alien Dens",
     time_limit_ms=180000,
     start_weapon_id=1,
-    unlock_perk_id=0x1D,
+    unlock_perk_id=PerkId.DOCTOR,
     builder_address=0x00436720,
 )
 def build_1_5_alien_dens(ctx: QuestContext) -> list[SpawnEntry]:
@@ -200,7 +201,7 @@ def build_1_6_the_random_factor(
     title="Spider Wave Syndrome",
     time_limit_ms=240000,
     start_weapon_id=1,
-    unlock_perk_id=0x1E,
+    unlock_perk_id=PerkId.MONSTER_VISION,
     builder_address=0x00436440,
 )
 def build_1_7_spider_wave_syndrome(ctx: QuestContext) -> list[SpawnEntry]:
@@ -250,7 +251,7 @@ def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
     title="Nesting Grounds",
     time_limit_ms=240000,
     start_weapon_id=1,
-    unlock_perk_id=0x1F,
+    unlock_perk_id=PerkId.HOT_TEMPERED,
     builder_address=0x004364a0,
 )
 def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:

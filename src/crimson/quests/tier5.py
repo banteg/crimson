@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 
+from ..perks import PerkId
 from .registry import register_quest
 from .types import QuestContext, SpawnEntry
 
@@ -87,7 +88,7 @@ def build_5_1_the_beating(ctx: QuestContext) -> list[SpawnEntry]:
     title="The Spanking Of The Dead",
     time_limit_ms=480000,
     start_weapon_id=1,
-    unlock_perk_id=0x2F,
+    unlock_perk_id=PerkId.DEATH_CLOCK,
     builder_address=0x004358a0,
 )
 def build_5_2_the_spanking_of_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
@@ -117,7 +118,7 @@ def build_5_2_the_spanking_of_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
     title="The Fortress",
     time_limit_ms=480000,
     start_weapon_id=1,
-    unlock_perk_id=0x30,
+    unlock_perk_id=PerkId.MY_FAVOURITE_WEAPON,
     builder_address=0x004352d0,
 )
 def build_5_3_the_fortress(ctx: QuestContext) -> list[SpawnEntry]:
@@ -182,7 +183,7 @@ def build_5_4_the_gang_wars(ctx: QuestContext) -> list[SpawnEntry]:
     title="Knee-deep in the Dead",
     time_limit_ms=480000,
     start_weapon_id=1,
-    unlock_perk_id=0x31,
+    unlock_perk_id=PerkId.BANDAGE,
     builder_address=0x00434f00,
 )
 def build_5_5_knee_deep_in_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
@@ -227,7 +228,7 @@ def build_5_5_knee_deep_in_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
     title="Cross Fire",
     time_limit_ms=480000,
     start_weapon_id=1,
-    unlock_perk_id=0x32,
+    unlock_perk_id=PerkId.ANGRY_RELOADER,
     builder_address=0x00435480,
 )
 def build_5_6_cross_fire(ctx: QuestContext) -> list[SpawnEntry]:
@@ -268,7 +269,7 @@ def build_5_7_army_of_three(ctx: QuestContext) -> list[SpawnEntry]:
     title="Monster Blues",
     time_limit_ms=480000,
     start_weapon_id=1,
-    unlock_perk_id=0x33,
+    unlock_perk_id=PerkId.ION_GUN_MASTER,
     builder_address=0x00434860,
 )
 def build_5_8_monster_blues(ctx: QuestContext) -> list[SpawnEntry]:
@@ -297,7 +298,7 @@ def build_5_8_monster_blues(ctx: QuestContext) -> list[SpawnEntry]:
     title="Nagolipoli",
     time_limit_ms=480000,
     start_weapon_id=1,
-    unlock_perk_id=0x34,
+    unlock_perk_id=PerkId.STATIONARY_RELOADER,
     builder_address=0x00434480,
 )
 def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:

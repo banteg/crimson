@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 
+from ..perks import PerkId
 from .registry import register_quest
 from .types import QuestContext, SpawnEntry
 
@@ -23,7 +24,7 @@ SPAWN_ID_65 = 0x41
     title="Major Alien Breach",
     time_limit_ms=300000,
     start_weapon_id=18,
-    unlock_perk_id=0x2A,
+    unlock_perk_id=PerkId.JINXED,
     builder_address=0x00437af0,
 )
 def build_4_1_major_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
@@ -67,7 +68,7 @@ def build_4_2_zombie_time(ctx: QuestContext) -> list[SpawnEntry]:
     title="Lizard Zombie Pact",
     time_limit_ms=300000,
     start_weapon_id=1,
-    unlock_perk_id=0x2B,
+    unlock_perk_id=PerkId.PERK_MASTER,
     builder_address=0x00438700,
 )
 def build_4_3_lizard_zombie_pact(ctx: QuestContext) -> list[SpawnEntry]:
@@ -124,7 +125,7 @@ def build_4_4_the_collaboration(ctx: QuestContext) -> list[SpawnEntry]:
     title="The Massacre",
     time_limit_ms=300000,
     start_weapon_id=1,
-    unlock_perk_id=0x2C,
+    unlock_perk_id=PerkId.REFLEX_BOOSTED,
     builder_address=0x004383e0,
 )
 def build_4_5_the_massacre(ctx: QuestContext) -> list[SpawnEntry]:
@@ -239,7 +240,7 @@ def build_4_6_the_unblitzkrieg(ctx: QuestContext) -> list[SpawnEntry]:
     title="Gauntlet",
     time_limit_ms=300000,
     start_weapon_id=1,
-    unlock_perk_id=0x2D,
+    unlock_perk_id=PerkId.GREATER_REGENERATION,
     builder_address=0x004369a0,
 )
 def build_4_7_gauntlet(ctx: QuestContext, full_version: bool = True) -> list[SpawnEntry]:
@@ -324,7 +325,7 @@ def build_4_8_syntax_terror(ctx: QuestContext, full_version: bool = True) -> lis
     title="The Annihilation",
     time_limit_ms=300000,
     start_weapon_id=1,
-    unlock_perk_id=0x2E,
+    unlock_perk_id=PerkId.BREATHING_ROOM,
     builder_address=0x004382c0,
 )
 def build_4_9_the_annihilation(ctx: QuestContext) -> list[SpawnEntry]:

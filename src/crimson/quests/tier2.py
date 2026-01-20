@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 import random
 
+from ..perks import PerkId
 from .registry import register_quest
 from .types import QuestContext, SpawnEntry
 
@@ -31,7 +32,7 @@ SPAWN_ID_65 = 0x41
     title="Everred Pastures",
     time_limit_ms=300000,
     start_weapon_id=1,
-    unlock_perk_id=0x20,
+    unlock_perk_id=PerkId.BONUS_ECONOMIST,
     builder_address=0x004375a0,
 )
 def build_2_1_everred_pastures(ctx: QuestContext) -> list[SpawnEntry]:
@@ -80,7 +81,7 @@ def build_2_2_spider_spawns(ctx: QuestContext) -> list[SpawnEntry]:
     title="Arachnoid Farm",
     time_limit_ms=240000,
     start_weapon_id=1,
-    unlock_perk_id=0x21,
+    unlock_perk_id=PerkId.THICK_SKINNED,
     builder_address=0x00436820,
 )
 def build_2_3_arachnoid_farm(ctx: QuestContext) -> list[SpawnEntry]:
@@ -138,7 +139,7 @@ def build_2_4_two_fronts(ctx: QuestContext) -> list[SpawnEntry]:
     title="Sweep Stakes",
     time_limit_ms=35000,
     start_weapon_id=6,
-    unlock_perk_id=0x22,
+    unlock_perk_id=PerkId.BARREL_GREASER,
     builder_address=0x00437810,
 )
 def build_2_5_sweep_stakes(ctx: QuestContext, rng: random.Random | None = None) -> list[SpawnEntry]:
@@ -191,7 +192,7 @@ def build_2_6_evil_zombies_at_large(ctx: QuestContext) -> list[SpawnEntry]:
     title="Survival Of The Fastest",
     time_limit_ms=120000,
     start_weapon_id=5,
-    unlock_perk_id=0x23,
+    unlock_perk_id=PerkId.AMMUNITION_WITHIN,
     builder_address=0x00437060,
 )
 def build_2_7_survival_of_the_fastest(ctx: QuestContext) -> list[SpawnEntry]:
@@ -273,7 +274,7 @@ def build_2_8_land_of_lizards(ctx: QuestContext) -> list[SpawnEntry]:
     title="Ghost Patrols",
     time_limit_ms=180000,
     start_weapon_id=1,
-    unlock_perk_id=0x24,
+    unlock_perk_id=PerkId.VEINS_OF_POISON,
     builder_address=0x00436200,
 )
 def build_2_9_ghost_patrols(ctx: QuestContext) -> list[SpawnEntry]:
