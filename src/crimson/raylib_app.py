@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import os
 from pathlib import Path
+import shutil
 
 import pyray as rl
 
@@ -52,12 +52,10 @@ def run_view(
         if take_screenshot:
             screenshot_dir.mkdir(parents=True, exist_ok=True)
             filename = f"{screenshot_index:05d}.png"
-            prev_cwd = os.getcwd()
-            try:
-                os.chdir(screenshot_dir)
-                rl.take_screenshot(filename)
-            finally:
-                os.chdir(prev_cwd)
+            rl.take_screenshot(filename)
+            src = Path.cwd() / filename
+            if src.exists():
+                shutil.move(str(src), str(screenshot_dir / filename))
             screenshot_index += 1
     close_fn = getattr(view, "close", None)
     if callable(close_fn):
