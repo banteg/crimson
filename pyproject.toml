@@ -19,3 +19,6 @@ build-backend = "uv_build"
 dev = [
     "zensical>=0.0.16",
 ]
+
+[tool.ruff]
+extend-ignore = ["E402"]
