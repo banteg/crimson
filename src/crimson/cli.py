@@ -221,9 +221,9 @@ def cmd_game(
         Path("artifacts") / "runtime",
         help="base path for runtime files (default: artifacts/runtime)",
     ),
-    assets_dir: Path = typer.Option(
-        Path("artifacts") / "assets",
-        help="assets root (default: artifacts/assets)",
+    assets_dir: Path | None = typer.Option(
+        None,
+        help="assets root (default: base-dir)",
     ),
 ) -> None:
     """Run the reimplementation entrypoint."""

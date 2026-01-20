@@ -3,11 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 import random
-import shutil
 
 import pyray as rl
 
-from .assets import LogoAssets, PAQ_NAME, load_logo_assets
+from .assets import LogoAssets, load_logo_assets
 from .config import CrimsonConfig, ensure_crimson_cfg
 from .console import (
     ConsoleState,
@@ -15,7 +14,7 @@ from .console import (
     register_boot_commands,
     register_core_cvars,
 )
-from .entrypoint import DEFAULT_ASSETS_DIR, DEFAULT_BASE_DIR
+from .entrypoint import DEFAULT_BASE_DIR
 from .raylib_app import run_view
 from .views.types import View
 
@@ -23,7 +22,7 @@ from .views.types import View
 @dataclass(frozen=True, slots=True)
 class GameConfig:
     base_dir: Path = DEFAULT_BASE_DIR
-    assets_dir: Path = DEFAULT_ASSETS_DIR
+    assets_dir: Path | None = None
     width: int | None = None
     height: int | None = None
     fps: int = 60
@@ -96,12 +95,7 @@ def run_game(config: GameConfig) -> None:
     height = cfg.screen_height if config.height is None else config.height
     rng = random.Random(config.seed)
     console = create_console(base_dir)
-    paq_src = config.assets_dir / PAQ_NAME
-    paq_dst = base_dir / PAQ_NAME
-    if not paq_dst.exists() and paq_src.exists():
-        shutil.copy2(paq_src, paq_dst)
-        console.log.log(f"copied {paq_src} -> {paq_dst}")
-    assets_dir = base_dir if paq_dst.exists() else config.assets_dir
+    assets_dir = config.assets_dir if config.assets_dir is not None else base_dir
     register_boot_commands(console)
     register_core_cvars(console, width, height)
     console.log.log("crimson: boot start")
