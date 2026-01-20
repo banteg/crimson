@@ -246,7 +246,7 @@ def cmd_config(
     ),
 ) -> None:
     """Inspect crimson.cfg configuration values."""
-    from .config import CRIMSON_CFG_NAME, load_crimson_cfg
+    from .config import CRIMSON_CFG_NAME, CRIMSON_CFG_STRUCT, load_crimson_cfg
 
     cfg_path = path if path is not None else base_dir / CRIMSON_CFG_NAME
     config = load_crimson_cfg(cfg_path)
@@ -255,6 +255,24 @@ def cmd_config(
     typer.echo(f"windowed: {config.windowed_flag}")
     typer.echo(f"bpp: {config.screen_bpp}")
     typer.echo(f"texture_scale: {config.texture_scale}")
+    typer.echo("fields:")
+    for sub in CRIMSON_CFG_STRUCT.subcons:
+        name = sub.name
+        if not name:
+            continue
+        value = config.data[name]
+        typer.echo(f"{name}: {_format_cfg_value(value)}")
+
+
+def _format_cfg_value(value: object) -> str:
+    if isinstance(value, (bytes, bytearray)):
+        length = len(value)
+        prefix = value.split(b"\x00", 1)[0]
+        if prefix and all(32 <= b < 127 for b in prefix):
+            text = prefix.decode("ascii", errors="replace")
+            return f"{text!r} (len={length})"
+        return f"0x{bytes(value).hex()} (len={length})"
+    return str(value)
 
 
 def main(argv: list[str] | None = None) -> None:
