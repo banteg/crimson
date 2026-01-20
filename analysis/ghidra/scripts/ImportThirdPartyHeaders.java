@@ -49,6 +49,7 @@ public class ImportThirdPartyHeaders extends GhidraScript {
         addHeader(headerFiles, missing, new File(root, "dinput.h"));
         addHeader(headerFiles, missing, new File(root, "dinputd_stub.h"));
         addHeader(headerFiles, missing, new File(root, "dsound.h"));
+        addHeader(headerFiles, missing, new File(root, "grim2d.h"));
 
         if (headerFiles.isEmpty()) {
             printerr("No headers found to parse under: " + root.getAbsolutePath());

@@ -916,7 +916,8 @@
       "address": "0x0048083c",
       "comment": "Grim interface pointer used for input queries (vtable +0x58/+0x80).",
       "name": "grim_interface_ptr",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "IGrim2D *"
     },
     {
       "address": "0x00480840",
@@ -4450,7 +4451,8 @@
       "address": "0x1004c238",
       "comment": "Grim2D interface vtable (used by GRIM__GetInterface).",
       "name": "grim_interface_vtable",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "IGrim2D_vtbl"
     },
     {
       "address": "0x1004e55c",
@@ -4923,7 +4925,8 @@
       "address": "0x1005d81c",
       "comment": "Singleton Grim2D interface instance (vtable pointer stored at grim_interface_vtable).",
       "name": "grim_interface_instance",
-      "program": "grim.dll"
+      "program": "grim.dll",
+      "type": "IGrim2D *"
     },
     {
       "address": "0x1005d820",
