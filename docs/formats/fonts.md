@@ -67,6 +67,16 @@ A small bias of 1/512 is applied to the U/V values in code to reduce bleeding.
 - **UVs**: 16x16 table (`grim_font2_uv_u/v`), indexed directly by byte value (`grim_font2_char_map` is identity). [static]
 - **Special codes**: Handles 0xA7, 0xE4, 0xE5, 0xF6 and `\n`. [static]
 
+### Quest title overlay (runtime evidence)
+
+The quest HUD renders the level number and title with separate mono draws:
+
+- **Title** (`"Land Hostile"`) uses the base scale (0.75 at 640px width, 0.8 at larger widths). [static+runtime]
+- **Number** (`"1.1"`) uses `base_scale - 0.2` (observed 0.55 when base is 0.75). [runtime]
+- **Opacity**: number alpha is **50%** of title alpha (ratio 0.5 across captures). [runtime]
+
+Evidence: `artifacts/frida/share/quest_title_colors.jsonl` (quest HUD capture on 2026-01-20). Runtime logs show paired `draw_text_mono` calls for the title and number with the scale/alpha ratios above.
+
 ## Sample render (interactive)
 
 ```

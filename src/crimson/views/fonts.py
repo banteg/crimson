@@ -22,6 +22,10 @@ SMALL_SAMPLE_SCALE = 1.0
 UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
+QUEST_TITLE_ALPHA = 1.0
+QUEST_NUMBER_ALPHA_RATIO = 0.5
+QUEST_NUMBER_SCALE_DELTA = 0.2
+QUEST_NUMBER_Y_OFFSET = 4.0
 
 
 class FontView:
@@ -106,12 +110,28 @@ class FontView:
         if self._grim_mono is None:
             return
         font = self._grim_mono
-        label = "1.1 Land Hostile"
-        scale = self._quest_title_scale()
-        width = len(label) * font.advance * scale
-        x = (rl.get_screen_width() / 2.0) - (width / 2.0)
-        y = (rl.get_screen_height() / 2.0) - 32.0
-        draw_grim_mono_text(font, label, x, y, scale, rl.WHITE)
+        title = "Land Hostile"
+        number = "1.1"
+        title_scale = self._quest_title_scale()
+        number_scale = max(0.0, title_scale - QUEST_NUMBER_SCALE_DELTA)
+
+        title_width = len(title) * font.advance * title_scale
+        number_width = len(number) * font.advance * number_scale
+
+        center_x = rl.get_screen_width() / 2.0
+        title_x = center_x - (title_width / 2.0)
+        number_x = center_x - (number_width / 2.0)
+
+        title_y = (rl.get_screen_height() / 2.0) - 32.0
+        number_y = title_y + QUEST_NUMBER_Y_OFFSET
+
+        title_color = rl.Color(255, 255, 255, int(255 * QUEST_TITLE_ALPHA))
+        number_color = rl.Color(
+            255, 255, 255, int(255 * QUEST_TITLE_ALPHA * QUEST_NUMBER_ALPHA_RATIO)
+        )
+
+        draw_grim_mono_text(font, title, title_x, title_y, title_scale, title_color)
+        draw_grim_mono_text(font, number, number_x, number_y, number_scale, number_color)
 
 
 @register_view("fonts", "Font preview")
