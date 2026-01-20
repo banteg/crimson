@@ -16,6 +16,9 @@ def run_view(
     """Run a Raylib window with a pluggable debug view."""
     rl.init_window(width, height, title)
     rl.set_target_fps(fps)
+    open_fn = getattr(view, "open", None)
+    if callable(open_fn):
+        open_fn()
     while not rl.window_should_close():
         dt = rl.get_frame_time()
         view.update(dt)
