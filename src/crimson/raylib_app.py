@@ -7,7 +7,7 @@ import pyray as rl
 from .views.types import View
 
 SCREENSHOT_DIR = Path("screenshots")
-SCREENSHOT_KEY = rl.KeyboardKey.KEY_F12
+SCREENSHOT_KEY = rl.KeyboardKey.KEY_P
 
 
 def _next_screenshot_index(directory: Path) -> int:
