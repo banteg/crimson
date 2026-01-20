@@ -43,6 +43,25 @@ weapon icons, along with health/score overlays.
 `terrain_generate` renders the terrain texture into a render target and selects
 its base texture index from a per-level descriptor.
 
+### Runtime evidence (2026-01-20)
+
+`terrain_trace.jsonl` confirms the render path uses config-sized UVs over a
+1024×1024 terrain texture:
+
+- `u0 = -camera_offset_x / terrain_texture_width`
+- `v0 = -camera_offset_y / terrain_texture_height`
+- `u1 = u0 + (config_screen_width / terrain_texture_width)`
+- `v1 = v0 + (config_screen_height / terrain_texture_height)`
+
+Example capture (800×600 config, 1024×1024 terrain):
+`u0=0.21875`, `u1=1.0`, `v0≈0.2228192`, `v1≈0.8087567` (deltas match
+`800/1024` and `600/1024`). This matches the decompile and shows camera
+clamping to the terrain edges.
+
+The same trace confirms quest terrain indices:
+`base/overlay/detail = (0,1,0)`, `(2,3,2)`, `(4,5,4)`, `(6,7,6)` for tiers 1–4,
+matching the quest metadata and `terrain_ids_for` logic.
+
 ## UI overlays
 
 `player_render_overlays` draws per-player indicators (aim reticles, shields,

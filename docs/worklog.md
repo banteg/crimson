@@ -12,6 +12,7 @@ Reverse-chronological log of notable repo changes, grouped by day.
 - Added entrypoint boot plan scaffolding and a `crimson game` step-1 runner.
 - Documented `crimson.cfg` and added a Construct-based loader/writer.
 - Added/expanded Raylib debug views (sprites, terrain, particles, UI, fonts) and quest title layout matching.
+- Added a ground demo view that renders per-quest terrain (level switching + title overlay).
 - Added Frida probes for quest title colors and atlas UV selection, plus supporting docs.
 - Added screenshot capture for all views (hotkey `P`, saves to `screenshots/`).
 
