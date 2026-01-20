@@ -6,7 +6,7 @@
 /analysis/frida/raw/
 /analysis/frida/facts.jsonl
 /analysis/windbg/*.log
-/analysis/binary_ninja/
+/analysis/binary_ninja/*.bndb
 .venv/
 .venv-dev/
 screenshots/
