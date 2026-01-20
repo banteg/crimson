@@ -1063,6 +1063,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0042b090",
+    "name": "game_startup_init_prelude",
+    "signature": "void game_startup_init_prelude(void)",
+    "comment": "prelude called by game_startup_init; handles core init, dates, registry time, and terrain reset"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0042b290",
     "name": "game_startup_init",
     "signature": "void game_startup_init(void)",

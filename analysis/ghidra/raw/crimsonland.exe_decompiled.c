@@ -23282,11 +23282,13 @@ int load_textures_step(void)
 
 
 
-/* FUN_0042b090 @ 0042b090 */
+/* game_startup_init_prelude @ 0042b090 */
 
 /* WARNING: Type propagation algorithm not settling */
+/* prelude called by game_startup_init; handles core init, dates, registry time, and terrain reset
+    */
 
-void FUN_0042b090(void)
+void game_startup_init_prelude(void)
 
 {
   LONG LVar1;
@@ -23411,7 +23413,7 @@ void game_startup_init(void)
   if ((DAT_00473a60 == '\0') && (DAT_004aaf86 != '\0')) {
     texture_get_or_load(s_splashReflexive_00474714,s_load_splashReflexive_jpg_00474724);
     texture_get_or_load(s_splash10Tons_004746ec,s_load_splash10tons_jaz_004746fc);
-    FUN_0042b090();
+    game_startup_init_prelude();
     crt_beginthread(&LAB_0042b250,0,(void *)0x0);
     DAT_004aaf86 = '\0';
     DAT_004aaf9c = '\x01';

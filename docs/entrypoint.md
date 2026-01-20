@@ -155,5 +155,17 @@ loaded. All callsites below are visible in
 
 The "pre-logo" phase ends at step 8; step 9 is the earliest point where the
 logo/splash textures become available.
+
+## Game startup init boundary (BN-assisted)
+
+Binary Ninja HLIL shows the **real `game_startup_init` entry** at
+`0x0042b290` (function `sub_42b290`), with a caller inside
+`crimsonland_main` (`sub_42c450` ref at `0x0042cb1d`).
+
+Ghidra’s auto-analysis had previously created a shorter function at
+`0x0042b090` that does **not** include the intro music handoff block. We now
+label `0x0042b090` as `game_startup_init_prelude` and force-create
+`game_startup_init` at `0x0042b290` so the decompiler exports include the
+intro play/mute and theme switch logic.
 - The early CRT cluster is now tagged as `crt_*` (heap/TLS/IO); confirm exact
   MSVCRT symbol names later.
