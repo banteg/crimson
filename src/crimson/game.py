@@ -43,6 +43,15 @@ class BootView:
     def __init__(self, state: GameState) -> None:
         self._state = state
 
+    def open(self) -> None:
+        if self._state.logos is None:
+            logos = load_logo_assets(self._state.assets_dir)
+            self._state.console.log.log(
+                f"logo assets: {logos.loaded_count()}/{len(logos.all())} loaded"
+            )
+            self._state.console.log.flush()
+            self._state.logos = logos
+
     def update(self, dt: float) -> None:
         del dt
 
@@ -96,15 +105,13 @@ def run_game(config: GameConfig) -> None:
     console.log.log(f"cvars: {len(console.cvars)} registered")
     console.exec_line("exec autoexec.txt")
     console.log.flush()
-    logos = load_logo_assets(config.assets_dir)
-    console.log.log(f"logo assets: {logos.loaded_count()}/{len(logos.all())} loaded")
     state = GameState(
         base_dir=base_dir,
         assets_dir=config.assets_dir,
         rng=rng,
         config=cfg,
         console=console,
-        logos=logos,
+        logos=None,
     )
     config_flags = 0
     if cfg.windowed_flag == 0:
