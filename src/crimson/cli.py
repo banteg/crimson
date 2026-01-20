@@ -74,6 +74,32 @@ def cmd_extract(game_dir: Path, assets_dir: Path) -> None:
     typer.echo(f"extracted {total} files")
 
 
+@app.command("entrypoint")
+def cmd_entrypoint(
+    base_dir: Path | None = typer.Option(
+        None, help="base path for runtime files (default: artifacts/runtime)"
+    ),
+    assets_dir: Path | None = typer.Option(
+        None, help="assets root (default: artifacts/assets)"
+    ),
+) -> None:
+    """Print the planned entrypoint boot sequence."""
+    from .entrypoint import (
+        DEFAULT_ASSETS_DIR,
+        DEFAULT_BASE_DIR,
+        EntrypointConfig,
+        format_entrypoint_plan,
+        run_entrypoint,
+    )
+
+    config = EntrypointConfig(
+        base_dir=DEFAULT_BASE_DIR if base_dir is None else base_dir,
+        assets_dir=DEFAULT_ASSETS_DIR if assets_dir is None else assets_dir,
+    )
+    plan = run_entrypoint(config)
+    typer.echo(format_entrypoint_plan(plan))
+
+
 def _call_builder(
     builder, ctx: QuestContext, rng: random.Random | None
 ) -> list[SpawnEntry]:
