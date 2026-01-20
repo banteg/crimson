@@ -92,6 +92,30 @@ BOOT_STEPS: tuple[BootStep, ...] = (
         trace="ui_render_* + draw textured quads",
         needs=("splash_scene", "sprite_draw"),
     ),
+    BootStep(
+        key="load_textures_step",
+        title="Stage-based texture loading",
+        trace="load_textures_step (DAT_004aaf88)",
+        needs=("texture_cache", "paq_loader"),
+    ),
+    BootStep(
+        key="company_logos",
+        title="Company logo sequence",
+        trace="splash10tons / splashReflexive draws",
+        needs=("logo_sequence", "sprite_draw"),
+    ),
+    BootStep(
+        key="audio_music_pack",
+        title="Load music pack and register tracks",
+        trace="audio_init_music",
+        needs=("audio_device", "music_paq"),
+    ),
+    BootStep(
+        key="menu_prep",
+        title="Prepare main menu UI assets",
+        trace="ui_element_load(ui_signCrimson/ui_menuItem/ui_menuPanel)",
+        needs=("menu_ui_textures", "ui_elements"),
+    ),
 )
 
 
