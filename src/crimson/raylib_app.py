@@ -1,8 +1,24 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pyray as rl
 
 from .views.types import View
+
+SCREENSHOT_DIR = Path("screenshots")
+SCREENSHOT_KEY = rl.KeyboardKey.KEY_F12
+
+
+def _next_screenshot_index(directory: Path) -> int:
+    if not directory.exists():
+        return 1
+    max_index = 0
+    for entry in directory.glob("*.png"):
+        stem = entry.stem
+        if stem.isdigit():
+            max_index = max(max_index, int(stem))
+    return max_index + 1
 
 
 def run_view(
@@ -19,12 +35,19 @@ def run_view(
     open_fn = getattr(view, "open", None)
     if callable(open_fn):
         open_fn()
+    screenshot_index = _next_screenshot_index(SCREENSHOT_DIR)
     while not rl.window_should_close():
         dt = rl.get_frame_time()
         view.update(dt)
+        take_screenshot = rl.is_key_pressed(SCREENSHOT_KEY)
         rl.begin_drawing()
         view.draw()
         rl.end_drawing()
+        if take_screenshot:
+            SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
+            path = SCREENSHOT_DIR / f"{screenshot_index:05d}.png"
+            rl.take_screenshot(str(path))
+            screenshot_index += 1
     close_fn = getattr(view, "close", None)
     if callable(close_fn):
         close_fn()
