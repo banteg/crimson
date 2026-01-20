@@ -2,7 +2,10 @@
 
 const GRIM_MODULE = "grim.dll";
 const EXE_MODULE = "crimsonland.exe";
-const OUT_PATH = "Z:\\quest_title_colors.jsonl";
+const OUT_PATHS = [
+    "Z:\\quest_title_colors.jsonl",
+    "C:\\Temp\\quest_title_colors.jsonl",
+];
 const EXE_GRIM_INTERFACE_RVA = 0x8083c;
 
 const LOG_ALL_TEXT = false;
@@ -19,7 +22,8 @@ const GRIM_RVAS = {
 
 const DEFAULT_COLOR = { r: 1, g: 1, b: 1, a: 1 };
 let last_color = { r: DEFAULT_COLOR.r, g: DEFAULT_COLOR.g, b: DEFAULT_COLOR.b, a: DEFAULT_COLOR.a };
-let outFile = null;
+const outFiles = {};
+let outWarned = false;
 let loggedFirst = 0;
 const counts = {
     set_color: 0,
@@ -29,20 +33,35 @@ const counts = {
 };
 const attached = {};
 
-function openOutFile() {
-    if (outFile) return;
-    try {
-        outFile = new File(OUT_PATH, "a");
-    } catch (e) {
-        outFile = null;
+function openOutFiles() {
+    for (let i = 0; i < OUT_PATHS.length; i++) {
+        const path = OUT_PATHS[i];
+        if (outFiles[path]) continue;
+        try {
+            outFiles[path] = new File(path, "a");
+        } catch (e) {
+            outFiles[path] = null;
+        }
     }
 }
 
 function writeLine(obj) {
     const line = JSON.stringify(obj) + "\n";
     try {
-        openOutFile();
-        if (outFile) outFile.write(line);
+        openOutFiles();
+        let wrote = false;
+        for (const path in outFiles) {
+            const f = outFiles[path];
+            if (!f) continue;
+            try {
+                f.write(line);
+                wrote = true;
+            } catch (e) {}
+        }
+        if (!wrote && !outWarned) {
+            outWarned = true;
+            console.log("quest_title_colors: file logging unavailable, console only");
+        }
     } catch (e) {
         // Fall back to console only.
     }
