@@ -9,6 +9,7 @@ def _register_builtin_views() -> None:
     from . import animations as _animations  # noqa: F401
     from . import sprites as _sprites  # noqa: F401
     from . import terrain as _terrain  # noqa: F401
+    from . import ground as _ground  # noqa: F401
     from . import projectiles as _projectiles  # noqa: F401
     from . import bonuses as _bonuses  # noqa: F401
     from . import wicons as _wicons  # noqa: F401
