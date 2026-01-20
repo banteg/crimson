@@ -79,19 +79,29 @@ class SpriteSheetView:
             return
         sheet.grid_index = sheet.grids.index(grid)
 
+    def _cycle_grid(self, delta: int) -> None:
+        if not self._sheets:
+            return
+        sheet = self._sheets[self._index]
+        sheet.grid_index = (sheet.grid_index + delta) % len(sheet.grids)
+
     def _handle_input(self) -> None:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT):
             self._advance_sheet(1)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT):
             self._advance_sheet(-1)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_UP):
+            self._cycle_grid(1)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_DOWN):
+            self._cycle_grid(-1)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ONE):
+            self._set_grid(1)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_TWO):
             self._set_grid(2)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_FOUR):
             self._set_grid(4)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_EIGHT):
             self._set_grid(8)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_SIXTEEN):
-            self._set_grid(16)
 
     def draw(self) -> None:
         rl.clear_background(rl.Color(12, 12, 14, 255))
@@ -110,7 +120,7 @@ class SpriteSheetView:
         margin = 24
         info = f"{sheet.name} (grid {grid}x{grid})"
         rl.draw_text(info, margin, margin, 22, rl.Color(220, 220, 220, 255))
-        hint = "Left/Right: sheet  2/4/8/16: grid"
+        hint = "Left/Right: sheet  Up/Down: grid  1/2/4/8: grid"
         rl.draw_text(hint, margin, margin + 28, 16, rl.Color(140, 140, 140, 255))
 
         available_width = rl.get_screen_width() - margin * 2
