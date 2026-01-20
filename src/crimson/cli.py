@@ -221,12 +221,17 @@ def cmd_game(
         Path("artifacts") / "runtime",
         help="base path for runtime files (default: artifacts/runtime)",
     ),
+    assets_dir: Path = typer.Option(
+        Path("artifacts") / "assets",
+        help="assets root (default: artifacts/assets)",
+    ),
 ) -> None:
     """Run the reimplementation entrypoint."""
     from .game import GameConfig, run_game
 
     config = GameConfig(
         base_dir=base_dir,
+        assets_dir=assets_dir,
         width=width,
         height=height,
         fps=fps,

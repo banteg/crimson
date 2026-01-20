@@ -6,6 +6,7 @@ import random
 
 import pyray as rl
 
+from .assets import LogoAssets, load_logo_assets
 from .config import CrimsonConfig, ensure_crimson_cfg
 from .console import (
     ConsoleState,
@@ -13,7 +14,7 @@ from .console import (
     register_boot_commands,
     register_core_cvars,
 )
-from .entrypoint import DEFAULT_BASE_DIR
+from .entrypoint import DEFAULT_ASSETS_DIR, DEFAULT_BASE_DIR
 from .raylib_app import run_view
 from .views.types import View
 
@@ -21,6 +22,7 @@ from .views.types import View
 @dataclass(frozen=True, slots=True)
 class GameConfig:
     base_dir: Path = DEFAULT_BASE_DIR
+    assets_dir: Path = DEFAULT_ASSETS_DIR
     width: int | None = None
     height: int | None = None
     fps: int = 60
@@ -30,9 +32,11 @@ class GameConfig:
 @dataclass(frozen=True, slots=True)
 class GameState:
     base_dir: Path
+    assets_dir: Path
     rng: random.Random
     config: CrimsonConfig
     console: ConsoleState
+    logos: LogoAssets | None
 
 
 class BootView:
@@ -59,6 +63,19 @@ class BootView:
             18,
             rl.Color(180, 180, 180, 255),
         )
+        logos = self._state.logos
+        if logos is not None:
+            rl.draw_text(
+                f"Logo assets loaded: {logos.loaded_count()}/{len(logos.all())}",
+                24,
+                78,
+                18,
+                rl.Color(180, 180, 180, 255),
+            )
+
+    def close(self) -> None:
+        if self._state.logos is not None:
+            self._state.logos.unload()
 
 
 def run_game(config: GameConfig) -> None:
@@ -79,7 +96,16 @@ def run_game(config: GameConfig) -> None:
     console.log.log(f"cvars: {len(console.cvars)} registered")
     console.exec_line("exec autoexec.txt")
     console.log.flush()
-    state = GameState(base_dir=base_dir, rng=rng, config=cfg, console=console)
+    logos = load_logo_assets(config.assets_dir)
+    console.log.log(f"logo assets: {logos.loaded_count()}/{len(logos.all())} loaded")
+    state = GameState(
+        base_dir=base_dir,
+        assets_dir=config.assets_dir,
+        rng=rng,
+        config=cfg,
+        console=console,
+        logos=logos,
+    )
     config_flags = 0
     if cfg.windowed_flag == 0:
         config_flags |= rl.ConfigFlags.FLAG_FULLSCREEN_MODE
