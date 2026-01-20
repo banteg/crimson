@@ -36,6 +36,7 @@ const counts = {
 };
 
 const attached = {};
+let lastBases = { grim: null, exe: null };
 const outFiles = {};
 let outWarned = false;
 
@@ -84,6 +85,8 @@ function summary() {
         counts: counts,
         last_color: last_color,
         last_scale: last_scale,
+        grim_base: lastBases.grim,
+        exe_base: lastBases.exe,
     });
 }
 
@@ -105,7 +108,7 @@ function isReadable(ptrVal) {
 function safeReadFloat(ptrVal) {
     try {
         if (!isReadable(ptrVal)) return null;
-        return Memory.readFloat(ptrVal);
+        return ptrVal.readFloat();
     } catch (e) {
         return null;
     }
@@ -114,7 +117,7 @@ function safeReadFloat(ptrVal) {
 function safeReadI32(ptrVal) {
     try {
         if (!isReadable(ptrVal)) return null;
-        return Memory.readS32(ptrVal);
+        return ptrVal.readS32();
     } catch (e) {
         return null;
     }
@@ -202,7 +205,7 @@ function hookSetColorPtr(addr) {
             counts.set_color_ptr += 1;
             const sp = getStackPointer(this.context);
             if (sp === null) return;
-            const ptrVal = Memory.readPointer(sp.add(4));
+            const ptrVal = sp.add(4).readPointer();
             if (ptrVal.isNull()) return;
             const r = safeReadFloat(ptrVal.add(0));
             const g = safeReadFloat(ptrVal.add(4));
@@ -222,7 +225,7 @@ function hookDrawTextMono(addr) {
             if (sp === null) return;
             const x = safeReadFloat(sp.add(4));
             const y = safeReadFloat(sp.add(8));
-            const textPtr = Memory.readPointer(sp.add(12));
+            const textPtr = sp.add(12).readPointer();
             const text = safeReadCString(textPtr, 256);
             if (!shouldLogText(text)) return;
             bumpFirst();
@@ -247,7 +250,7 @@ function hookDrawTextMonoFmt(addr) {
             if (sp === null) return;
             const x = safeReadFloat(sp.add(4));
             const y = safeReadFloat(sp.add(8));
-            const fmtPtr = Memory.readPointer(sp.add(12));
+            const fmtPtr = sp.add(12).readPointer();
             const fmt = safeReadCString(fmtPtr, 64);
             const a0 = safeReadI32(sp.add(16));
             const a1 = safeReadI32(sp.add(20));
@@ -271,8 +274,51 @@ function hookDrawTextMonoFmt(addr) {
     });
 }
 
+function findModuleBase(name) {
+    let base = null;
+    try {
+        const mod = Process.findModuleByName(name);
+        if (mod && mod.base) {
+            base = mod.base;
+        }
+    } catch (e) {
+        base = null;
+    }
+    if (base) return base;
+    const lower = name.toLowerCase();
+    const mods = Process.enumerateModules();
+    for (let i = 0; i < mods.length; i++) {
+        const m = mods[i];
+        const modName = (m.name || "").toLowerCase();
+        if (modName === lower || modName.indexOf(lower) !== -1) {
+            return m.base;
+        }
+        const path = (m.path || "").toLowerCase();
+        if (path.indexOf(lower) !== -1) {
+            return m.base;
+        }
+    }
+    return null;
+}
+
+function normalizePtr(value) {
+    if (value === null || value === undefined) return null;
+    if (value.add && typeof value.add === "function") return value;
+    if (typeof value === "string" || typeof value === "number") {
+        try {
+            return ptr(value);
+        } catch (e) {
+            return null;
+        }
+    }
+    try {
+        if (value.toString) return ptr(value.toString());
+    } catch (e) {}
+    return null;
+}
+
 function attachByRva() {
-    const grimBase = Module.findBaseAddress(GRIM_MODULE);
+    const grimBase = normalizePtr(findModuleBase(GRIM_MODULE));
     if (!grimBase) return false;
 
     attachOnce("set_render_state", grimBase.add(GRIM_RVAS.set_render_state), hookSetRenderState);
@@ -285,12 +331,12 @@ function attachByRva() {
 }
 
 function attachByVtable() {
-    const exeBase = Module.findBaseAddress(EXE_MODULE);
+    const exeBase = normalizePtr(findModuleBase(EXE_MODULE));
     if (!exeBase) return false;
     const ifacePtrAddr = exeBase.add(EXE_GRIM_INTERFACE_RVA);
     let iface = null;
     try {
-        iface = Memory.readPointer(ifacePtrAddr);
+        iface = ifacePtrAddr.readPointer();
     } catch (e) {
         return false;
     }
@@ -298,30 +344,28 @@ function attachByVtable() {
 
     let vtable = null;
     try {
-        vtable = Memory.readPointer(iface);
+        vtable = iface.readPointer();
     } catch (e) {
         return false;
     }
     if (!vtable || vtable.isNull()) return false;
 
-    attachOnce("set_render_state(vtable)", Memory.readPointer(vtable.add(0x20)), hookSetRenderState);
-    attachOnce("set_color(vtable)", Memory.readPointer(vtable.add(0x114)), hookSetColor);
-    attachOnce("set_color_ptr(vtable)", Memory.readPointer(vtable.add(0x110)), hookSetColorPtr);
-    attachOnce("draw_text_mono(vtable)", Memory.readPointer(vtable.add(0x13c)), hookDrawTextMono);
-    attachOnce("draw_text_mono_fmt(vtable)", Memory.readPointer(vtable.add(0x140)), hookDrawTextMonoFmt);
+    attachOnce("set_render_state(vtable)", vtable.add(0x20).readPointer(), hookSetRenderState);
+    attachOnce("set_color(vtable)", vtable.add(0x114).readPointer(), hookSetColor);
+    attachOnce("set_color_ptr(vtable)", vtable.add(0x110).readPointer(), hookSetColorPtr);
+    attachOnce("draw_text_mono(vtable)", vtable.add(0x13c).readPointer(), hookDrawTextMono);
+    attachOnce("draw_text_mono_fmt(vtable)", vtable.add(0x140).readPointer(), hookDrawTextMonoFmt);
 
     return true;
 }
 
 function tick() {
-    const grimBase = Module.findBaseAddress(GRIM_MODULE);
-    const exeBase = Module.findBaseAddress(EXE_MODULE);
-    if (grimBase) {
-        attachByRva();
-    }
-    if (exeBase) {
-        attachByVtable();
-    }
+    const grimBase = normalizePtr(findModuleBase(GRIM_MODULE));
+    const exeBase = normalizePtr(findModuleBase(EXE_MODULE));
+    lastBases.grim = grimBase ? grimBase.toString() : null;
+    lastBases.exe = exeBase ? exeBase.toString() : null;
+    if (grimBase) attachByRva();
+    if (exeBase) attachByVtable();
 }
 
 writeLine({ tag: "start", arch: Process.arch, pointer_size: Process.pointerSize });
