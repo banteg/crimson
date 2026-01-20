@@ -104,5 +104,56 @@ Notes:
 
 - `crimsonland_main()` includes DirectX version checks, Grim2D loading, config
   load/apply, input/audio/renderer setup, and the game loop + shutdown.
+
+## Pre-logo loading pipeline (inside `crimsonland_main`)
+
+This is the simplified startup slice **before** the logo/splash assets are first
+loaded. All callsites below are visible in
+`analysis/ghidra/raw/crimsonland.exe_decompiled.c` under
+`crimsonland_main @ 0x0042c450`.
+
+1) Seed + DirectX check:
+   - `FUN_004623b2` → `crt_srand`.
+   - `dx_get_version` → MessageBox + early exit when too old.
+   - `Direct3DCreate8` used as a presence check, then released.
+2) Core paths + logging:
+   - `crt_getcwd` → `game_base_path`.
+   - Console banner prints + `console_flush_log`.
+3) Config file + console commands:
+   - `config_ensure_file`.
+   - Registers commands: `setGammaRamp`, `snd_addGameTune`, `generateterrain`,
+     `telltimesurvived`, `setresourcepaq`, `loadtexture`, `openurl`,
+     `sndfreqadjustment`.
+4) Grim2D interface:
+   - `grim_load_interface` (dev path), fallback to `grim.dll`.
+   - Secret-hint print block executes immediately after this call (guard looks
+     bogus in the decompiler).
+   - `register_core_cvars`.
+5) Config + save bootstrap:
+   - `config_load_presets`.
+   - `game_load_status` + `game_sequence_load`.
+6) Grim config dialog + settings:
+   - `grim_apply_config` (`vtable +0x10`).
+   - `config_sync_from_grim`, then `config_load_presets` again.
+   - `grim_get_config_var` (`vtable +0x24`) reads texture scale, windowed flag,
+     screen dimensions, and backend flags.
+   - `grim_set_render_state` (`vtable +0x20`) repeated while applying settings.
+7) Input + system init:
+   - Logs: keyboard/mouse/joystick.
+   - `grim_init_system` (`vtable +0x14`) → initializes D3D/input + loads
+     `smallFnt.dat`. On failure, shows `grim_get_error_text` and exits.
+8) Post-init setup:
+   - `console_exec_line("exec autoexec.txt")`.
+   - Registers `v_width` / `v_height` cvars from the screen size.
+   - `init_audio_and_terrain`.
+9) **Logo assets load (first appearance of splash resources)**:
+   - `texture_get_or_load("backplasma", "load\\backplasma.jaz")`
+   - `texture_get_or_load("mockup", "load\\mockup.jaz")`
+   - `texture_get_or_load("logo_esrb", "load\\esrb_mature.jaz")`
+   - `texture_get_or_load("loading", "load\\loading.jaz")`
+   - `texture_get_or_load("cl_logo", "load\\logo_crimsonland.tga")`
+
+The "pre-logo" phase ends at step 8; step 9 is the earliest point where the
+logo/splash textures become available.
 - The early CRT cluster is now tagged as `crt_*` (heap/TLS/IO); confirm exact
   MSVCRT symbol names later.
