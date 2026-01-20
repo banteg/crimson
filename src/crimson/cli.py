@@ -94,7 +94,7 @@ def cmd_font(
         raise typer.Exit(code=1)
     if text_file is not None:
         text = text_file.read_text(encoding="utf-8", errors="replace")
-    from . import font
+    from .grim2d import font
 
     if text is None:
         text = font.DEFAULT_SAMPLE

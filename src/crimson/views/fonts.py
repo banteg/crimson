@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pyray as rl
 
-from ..font import DEFAULT_SAMPLE
+from ..grim2d.font import DEFAULT_SAMPLE
 from .registry import register_view
 from .types import View, ViewContext
 
