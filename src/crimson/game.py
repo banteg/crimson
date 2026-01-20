@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+import os
 import datetime as dt
 import faulthandler
 import random
@@ -145,7 +146,17 @@ LOGO_REF_IN_START = 7.0
 LOGO_REF_IN_END = 8.0
 LOGO_REF_HOLD_END = 10.0
 LOGO_REF_OUT_END = 11.0
-DEBUG_LOADING_HOLD_SECONDS = 3.0
+DEBUG_LOADING_HOLD_ENV = "CRIMSON_DEBUG_LOADING_HOLD_SECONDS"
+
+
+def _debug_loading_hold_seconds() -> float:
+    raw = os.getenv(DEBUG_LOADING_HOLD_ENV, "").strip()
+    if not raw:
+        return 0.0
+    try:
+        return max(0.0, float(raw))
+    except ValueError:
+        return 0.0
 
 MENU_PREP_TEXTURES: tuple[tuple[str, str], ...] = (
     ("ui_signCrimson", "ui/ui_signCrimson.jaz"),
@@ -169,7 +180,7 @@ class BootView:
         self._theme_started = False
         self._company_logos_loaded = False
         self._menu_prepped = False
-        self._loading_hold_remaining = DEBUG_LOADING_HOLD_SECONDS
+        self._loading_hold_remaining = _debug_loading_hold_seconds()
 
     def _load_texture_stage(self, stage: int) -> None:
         cache = self._state.texture_cache
@@ -259,13 +270,16 @@ class BootView:
                     self._load_company_logos()
                     self._prepare_menu_assets()
                     self._fade_out_ready = True
-                    self._loading_hold_remaining = DEBUG_LOADING_HOLD_SECONDS
+                    self._loading_hold_remaining = _debug_loading_hold_seconds()
                     if self._boot_time > 0.5:
                         self._boot_time = 0.5
             return
 
         if self._fade_out_ready and not self._fade_out_done:
             if self._loading_hold_remaining > 0.0:
+                if self._boot_time < 0.5:
+                    self._boot_time = min(0.5, self._boot_time + frame_dt)
+                    return
                 self._loading_hold_remaining = max(
                     0.0, self._loading_hold_remaining - frame_dt
                 )
