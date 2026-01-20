@@ -7,10 +7,10 @@ from pathlib import Path
 import pyray as rl
 from PIL import Image
 
-from . import jaz
+from . import jaz, paq
 
 
-ASSET_ROOT_NAME = "crimson"
+PAQ_NAME = "crimson.paq"
 
 
 @dataclass(slots=True)
@@ -49,14 +49,6 @@ class LogoAssets:
             asset.unload()
 
 
-def _resolve_asset_path(assets_dir: Path, rel_path: str) -> tuple[Path, Path | None]:
-    raw_path = assets_dir / ASSET_ROOT_NAME / Path(rel_path)
-    suffix = raw_path.suffix.lower()
-    if suffix in (".jaz", ".tga"):
-        return raw_path.with_suffix(".png"), raw_path
-    return raw_path, None
-
-
 def _load_texture_from_bytes(data: bytes, fmt: str) -> rl.Texture2D:
     image = rl.load_image_from_memory(fmt, data, len(data))
     texture = rl.load_texture_from_image(image)
@@ -64,14 +56,13 @@ def _load_texture_from_bytes(data: bytes, fmt: str) -> rl.Texture2D:
     return texture
 
 
-def _load_texture_asset(assets_dir: Path, name: str, rel_path: str) -> TextureAsset:
-    png_path, raw_path = _resolve_asset_path(assets_dir, rel_path)
-    if png_path.exists():
-        return TextureAsset(name=name, rel_path=rel_path, texture=rl.load_texture(str(png_path)))
-    if raw_path is None or not raw_path.exists():
+def _load_texture_asset_from_bytes(
+    name: str, rel_path: str, data: bytes | None
+) -> TextureAsset:
+    if data is None:
         return TextureAsset(name=name, rel_path=rel_path, texture=None)
-    if raw_path.suffix.lower() == ".jaz":
-        jaz_image = jaz.decode_jaz_bytes(raw_path.read_bytes())
+    if rel_path.lower().endswith(".jaz"):
+        jaz_image = jaz.decode_jaz_bytes(data)
         buf = io.BytesIO()
         jaz_image.composite_image().save(buf, format="PNG")
         return TextureAsset(
@@ -79,8 +70,8 @@ def _load_texture_asset(assets_dir: Path, name: str, rel_path: str) -> TextureAs
             rel_path=rel_path,
             texture=_load_texture_from_bytes(buf.getvalue(), ".png"),
         )
-    if raw_path.suffix.lower() == ".tga":
-        img = Image.open(raw_path)
+    if rel_path.lower().endswith(".tga"):
+        img = Image.open(io.BytesIO(data))
         buf = io.BytesIO()
         img.save(buf, format="PNG")
         return TextureAsset(
@@ -92,12 +83,25 @@ def _load_texture_asset(assets_dir: Path, name: str, rel_path: str) -> TextureAs
 
 
 def load_logo_assets(assets_dir: Path) -> LogoAssets:
+    paq_path = assets_dir / PAQ_NAME
+    entries: dict[str, bytes] = {}
+    if paq_path.exists():
+        for name, data in paq.iter_entries(paq_path):
+            entries[name.replace("\\", "/")] = data
     return LogoAssets(
-        backplasma=_load_texture_asset(assets_dir, "backplasma", "load/backplasma.jaz"),
-        mockup=_load_texture_asset(assets_dir, "mockup", "load/mockup.jaz"),
-        logo_esrb=_load_texture_asset(assets_dir, "logo_esrb", "load/esrb_mature.jaz"),
-        loading=_load_texture_asset(assets_dir, "loading", "load/loading.jaz"),
-        cl_logo=_load_texture_asset(
-            assets_dir, "cl_logo", "load/logo_crimsonland.tga"
+        backplasma=_load_texture_asset_from_bytes(
+            "backplasma", "load/backplasma.jaz", entries.get("load/backplasma.jaz")
+        ),
+        mockup=_load_texture_asset_from_bytes(
+            "mockup", "load/mockup.jaz", entries.get("load/mockup.jaz")
+        ),
+        logo_esrb=_load_texture_asset_from_bytes(
+            "logo_esrb", "load/esrb_mature.jaz", entries.get("load/esrb_mature.jaz")
+        ),
+        loading=_load_texture_asset_from_bytes(
+            "loading", "load/loading.jaz", entries.get("load/loading.jaz")
+        ),
+        cl_logo=_load_texture_asset_from_bytes(
+            "cl_logo", "load/logo_crimsonland.tga", entries.get("load/logo_crimsonland.tga")
         ),
     )
