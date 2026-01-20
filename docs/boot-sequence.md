@@ -27,11 +27,13 @@ The game pre-loads specific textures needed for the splash screen and loading sc
 
 | Texture | Resource | Notes |
 | --- | --- | --- |
-| `backplasma` | `load\backplasma.jaz` | Main menu background plasma? |
-| `mockup` | `load\mockup.jaz` | Menu overlay/mockup? |
-| `logo_esrb` | `load\esrb_mature.jaz` | "Mature 17+" rating logo. |
-| `loading` | `load\loading.jaz` | Full-screen "Loading..." image. |
-| `cl_logo` | `load\logo_crimsonland.tga` | Crimsonland logo. |
+| `backplasma` | `load\backplasma.jaz` | 64×64 RGBA plasma tile (extracted as `backplasma.png`). |
+| `mockup` | `load\mockup.jaz` | 512×256 RGBA overlay (extracted as `mockup.png`). |
+| `logo_esrb` | `load\esrb_mature.jaz` | 256×128 RGBA ESRB logo (extracted as `esrb_mature.png`). |
+| `loading` | `load\loading.jaz` | 128×32 RGBA "LOADING..." (extracted as `loading.png`). |
+| `cl_logo` | `load\logo_crimsonland.tga` | 512×64 RGBA logo (extracted as `logo_crimsonland.png`). |
+| `splash10tons` | `load\splash10tons.jaz` | 512×128 RGBA company logo (extracted as `splash10tons.png`). |
+| `splashReflexive` | `load\splashReflexive.jpg` | 512×256 RGB company logo (extracted as `splashReflexive.jpg`). |
 
 > **Note:** `splash10tons` and `splashReflexive` strings exist in the binary but their explicit `texture_get_or_load` calls are not visible in `crimsonland_main` decompilation. They are likely loaded/rendered in a sub-function or dynamically by name.
 
@@ -67,7 +69,58 @@ exact draw calls for the splash/loading screen at 800x600. Key facts:
 > **Note:** The capture only logs splash draws in frame 0, so timing/duration
 > of the fade remains unknown; this is a geometry + layering reference.
 
-## 4. Company Logo Sequence (Inferred)
+## 4. Splash Render Routine (Static + Runtime)
+
+The draw calls above map to a single render routine located between
+`load_textures_step` and `crimsonland_main` (addresses around `0x0042be90` to
+`0x0042c1e2`). It is not named in the decompiler output but the assembly is
+clear. The routine:
+
+### State / fade
+
+- `DAT_004aaf90` is incremented each tick by `DAT_00480840` (frame delta).
+- `alpha = clamp(2.0 * DAT_004aaf90, 0.0, 1.0)`; clamped by comparing against
+  constants `1.0` and `0.0`.
+- The same `alpha` is used for `logo_esrb`, `loading`, and `cl_logo`.
+- The band frame uses `alpha * 0.7` (validated in runtime capture).
+
+### Render setup (per frame)
+
+From the assembly around `0x0042be90`:
+
+- `grim_clear_color(0, 0, 0, 1)` (vtable +0x2c).
+- `grim_set_render_state(0x15, 1)` (vtable +0x20).
+- `grim_set_color(1, 1, 1, alpha)` (vtable +0x114).
+- `grim_set_uv(0, 0, 1, 1)` (vtable +0x100).
+- `grim_set_rotation(0)` (vtable +0xfc).
+
+### Draw order (per pass)
+
+Each pass uses `grim_get_texture_handle` + `grim_bind_texture`, then
+`grim_begin_batch` → `grim_draw_quad` → `grim_end_batch`:
+
+1. **ESRB** (`logo_esrb`)
+   - `x = screen_width - 257`
+   - `y = screen_height - 129`
+   - `w = 256`, `h = 128`
+2. **Loading** (`loading`)
+   - `x = (screen_width * 0.5) + 128`
+   - `y = (screen_height * 0.5) + 16`
+   - `w = 128`, `h = 32`
+3. **Logo** (`cl_logo`)
+   - `x = (screen_width * 0.5) - 256`
+   - `y = (screen_height * 0.5) - 32`
+   - `w = 512`, `h = 64`
+4. **Band frame** (four 1px quads tinted)
+   - Top: `x = -4`, `y = (screen_height * 0.5) - 68`, `w = screen_width + 8`, `h = 1`
+   - Bottom: `x = -4`, `y = (screen_height * 0.5) + 60`, `w = screen_width + 9`, `h = 1`
+   - Left: `x = -4`, `y = (screen_height * 0.5) - 68`, `w = 1`, `h = 128`
+   - Right: `x = screen_width + 4`, `y = (screen_height * 0.5) - 68`, `w = 1`, `h = 128`
+
+> The band frame draw is implemented inside `grim.dll` (callsites in the DLL),
+> but the geometry and color are confirmed via Frida capture.
+
+## 5. Company Logo Sequence (Inferred)
 
 Between the splash and main asset loop, the game renders the company logos.
 Exact logic is still unresolved in decompilation; likely sequence:
@@ -75,7 +128,7 @@ Exact logic is still unresolved in decompilation; likely sequence:
 1. **10tons splash:** `splash10tons` (inferred from string presence).
 2. **Reflexive splash:** `splashReflexive` (inferred from string presence).
 
-## 5. Main Asset Loading Loop (`load_textures_step`)
+## 6. Main Asset Loading Loop (`load_textures_step`)
 
 The game enters a loop where it calls `load_textures_step` (`0x0042abd0`) repeatedly.
 While this loop runs, the `loading` texture (`load\loading.jaz`) is displayed on screen.
@@ -97,7 +150,7 @@ While this loop runs, the `loading` texture (`load\loading.jaz`) is displayed on
 | **8** | **Muzzle Flash & Dropdowns:** `muzzleFlash`, `ui_dropDown` (On/Off). |
 | **9** | **Finalization:** Creates `bullet_i` and `aim64` sprites. Sets `game_state_id = 0`. |
 
-## 6. Startup Finalization
+## 7. Startup Finalization
 (`game_startup_init` @ `0x0042b090`)
 
 Once loading is complete (`step > 9`):
@@ -109,7 +162,7 @@ Once loading is complete (`step > 9`):
 5. **Gameplay Reset:** `gameplay_reset_state`, `terrain_generate_random`.
 6. **Registry:** Updates "Time Played" counter.
 
-## 7. Main Loop
+## 8. Main Loop
 
 The game enters the main loop (likely `FUN_0040c1c0` wrapper) with `game_state_id = 0` (Main Menu).
 
