@@ -8,6 +8,7 @@ import pyray as rl
 GRIM_MONO_ADVANCE = 16.0
 GRIM_MONO_DRAW_SIZE = 32.0
 GRIM_MONO_LINE_HEIGHT = 28.0
+GRIM_MONO_TEXTURE_FILTER = rl.TEXTURE_FILTER_BILINEAR
 
 
 @dataclass(frozen=True, slots=True)
@@ -27,6 +28,7 @@ def load_grim_mono_font(
         missing_assets.append("default_font_courier.png")
         return None
     texture = rl.load_texture(str(atlas_path))
+    rl.set_texture_filter(texture, GRIM_MONO_TEXTURE_FILTER)
     grid = 16
     cell_width = texture.width / grid
     cell_height = texture.height / grid
