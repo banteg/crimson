@@ -22,6 +22,41 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004010f0",
+    "name": "FUN_004010f0",
+    "signature": "int FUN_004010f0(int arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] int32_t __stdcall sub_4010f0(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00401120",
+    "name": "FUN_00401120",
+    "signature": "void * FUN_00401120(int arg1)",
+    "comment": "[binja] void* sub_401120(int32_t arg1)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00401150",
+    "name": "FUN_00401150",
+    "signature": "int FUN_00401150(void)",
+    "comment": "[binja] int32_t sub_401150()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00401170",
+    "name": "FUN_00401170",
+    "signature": "int FUN_00401170(void)",
+    "comment": "[binja] int32_t sub_401170()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00401180",
+    "name": "FUN_00401180",
+    "signature": "int FUN_00401180(void)",
+    "comment": "[binja] int32_t sub_401180()"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004011a0",
     "name": "console_clear_log",
     "signature": "void console_clear_log(void)",
@@ -99,6 +134,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004016e0",
+    "name": "FUN_004016e0",
+    "signature": "void FUN_004016e0(int *arg1)",
+    "comment": "[binja] void __fastcall sub_4016e0(int32_t* arg1)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004017a0",
     "name": "console_push_line",
     "signature": "void console_push_line(void *console_state, char *line)",
@@ -138,6 +180,13 @@
     "name": "console_update",
     "signature": "void console_update(int console_state)",
     "comment": "console update loop: input polling, history, autocomplete, and key handling"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00401dd0",
+    "name": "FUN_00401dd0",
+    "signature": "int FUN_00401dd0(void *arg1)",
+    "comment": "[binja] int32_t __fastcall sub_401dd0(void* arg1)"
   },
   {
     "program": "crimsonland.exe",
@@ -225,6 +274,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00402d50",
+    "name": "FUN_00402d50",
+    "signature": "int FUN_00402d50(void)",
+    "comment": "[binja] int32_t sub_402d50()"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00402ed0",
     "name": "demo_setup_variant_0",
     "signature": "void demo_setup_variant_0(void)",
@@ -253,10 +309,24 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00403370",
+    "name": "FUN_00403370",
+    "signature": "int FUN_00403370(void)",
+    "comment": "[binja] int32_t sub_403370()"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00403390",
     "name": "demo_mode_start",
     "signature": "int demo_mode_start(void)",
     "comment": "starts demo mode and cycles the demo setup"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00403430",
+    "name": "FUN_00403430",
+    "signature": "int FUN_00403430(float *arg1, int arg2, int arg3)",
+    "comment": "[binja] int32_t sub_403430(float* arg1, int32_t arg2, int32_t arg3)"
   },
   {
     "program": "crimsonland.exe",
@@ -334,6 +404,20 @@
     "name": "ui_draw_clock_gauge",
     "signature": "void ui_draw_clock_gauge(void)",
     "comment": "draws the 32x32 clock gauge at the current transform"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00406350",
+    "name": "FUN_00406350",
+    "signature": "int FUN_00406350(void)",
+    "comment": "[binja] int32_t sub_406350()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00406af0",
+    "name": "FUN_00406af0",
+    "signature": "int FUN_00406af0(void)",
+    "comment": "[binja] int32_t sub_406af0()"
   },
   {
     "program": "crimsonland.exe",
@@ -428,6 +512,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0040b5d0",
+    "name": "FUN_0040b5d0",
+    "signature": "int * FUN_0040b5d0(void)",
+    "comment": "[binja] int32_t* sub_40b5d0()"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0040b740",
     "name": "demo_purchase_screen_update",
     "signature": "void demo_purchase_screen_update(void)",
@@ -470,6 +561,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0040e000",
+    "name": "FUN_0040e000",
+    "signature": "int FUN_0040e000(char *arg1)",
+    "comment": "[binja] int32_t sub_40e000(char* arg1)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e690",
+    "name": "FUN_0040e690",
+    "signature": "void FUN_0040e690(char *arg1)",
+    "comment": "[binja] void __stdcall sub_40e690(char* arg1)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0040f400",
     "name": "credits_secret_match3_find",
     "signature": "uint credits_secret_match3_find(int *board, int *out_idx, unsigned char *out_dir)",
@@ -481,6 +586,13 @@
     "name": "credits_secret_alien_zookeeper_update",
     "signature": "void credits_secret_alien_zookeeper_update(void)",
     "comment": "updates and renders the AlienZooKeeper credits secret; drives match-3 board state and UI"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040ff50",
+    "name": "FUN_0040ff50",
+    "signature": "int FUN_0040ff50(int arg1)",
+    "comment": "[binja] int32_t sub_40ff50(int32_t arg1)"
   },
   {
     "program": "crimsonland.exe",
@@ -505,6 +617,55 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004120b0",
+    "name": "FUN_004120b0",
+    "signature": "int FUN_004120b0(void)",
+    "comment": "[binja] int32_t sub_4120b0()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412190",
+    "name": "FUN_00412190",
+    "signature": "int FUN_00412190(void)",
+    "comment": "[binja] int32_t sub_412190()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004121f0",
+    "name": "FUN_004121f0",
+    "signature": "int FUN_004121f0(void)",
+    "comment": "[binja] int32_t sub_4121f0()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412360",
+    "name": "FUN_00412360",
+    "signature": "int FUN_00412360(void)",
+    "comment": "[binja] int32_t sub_412360()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004123d0",
+    "name": "FUN_004123d0",
+    "signature": "int FUN_004123d0(void)",
+    "comment": "[binja] int32_t sub_4123d0()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412410",
+    "name": "FUN_00412410",
+    "signature": "void * FUN_00412410(int *arg1)",
+    "comment": "[binja] void* __fastcall sub_412410(int32_t* arg1)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412440",
+    "name": "FUN_00412440",
+    "signature": "int FUN_00412440(void)",
+    "comment": "[binja] int32_t sub_412440()"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00412470",
     "name": "bonus_pick_random_type",
     "signature": "uint bonus_pick_random_type(void)",
@@ -516,6 +677,13 @@
     "name": "bonus_metadata_init",
     "signature": "void bonus_metadata_init(void)",
     "comment": "builds bonus metadata table (labels, descriptions, durations)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00412940",
+    "name": "FUN_00412940",
+    "signature": "char * FUN_00412940(void)",
+    "comment": "[binja] char* sub_412940()"
   },
   {
     "program": "crimsonland.exe",
@@ -565,6 +733,34 @@
     "name": "player_update",
     "signature": "void player_update(void)",
     "comment": "per-player gameplay update: movement, firing, status timers, and effects"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00417640",
+    "name": "FUN_00417640",
+    "signature": "float * FUN_00417640(float *arg1, float *arg2, float *arg3)",
+    "comment": "[binja] float* __thiscall sub_417640(float* arg1, float* arg2, float* arg3)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00417690",
+    "name": "FUN_00417690",
+    "signature": "int FUN_00417690(void)",
+    "comment": "[binja] int32_t sub_417690()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00417aa0",
+    "name": "FUN_00417aa0",
+    "signature": "void * FUN_00417aa0(void *arg1)",
+    "comment": "[binja] void* __fastcall sub_417aa0(void* arg1)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00417ab0",
+    "name": "FUN_00417ab0",
+    "signature": "char * FUN_00417ab0(char *arg1)",
+    "comment": "[binja] char* __fastcall sub_417ab0(char* arg1)"
   },
   {
     "program": "crimsonland.exe",
@@ -687,6 +883,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0041cfe0",
+    "name": "FUN_0041cfe0",
+    "signature": "int FUN_0041cfe0(int *arg1, int *arg2, char *arg3)",
+    "comment": "[binja] int32_t sub_41cfe0(int32_t* arg1, int32_t* arg2, char* arg3)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041db50",
+    "name": "FUN_0041db50",
+    "signature": "int FUN_0041db50(uint arg1, int *arg2)",
+    "comment": "[binja] int32_t sub_41db50(uint32_t arg1, int32_t* arg2)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0041dc80",
     "name": "grim_load_interface",
     "signature": "int grim_load_interface(char *dll_name)",
@@ -747,6 +957,13 @@
     "name": "game_sequence_get",
     "signature": "int game_sequence_get(void)",
     "comment": "returns the saved game_sequence_id"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041e270",
+    "name": "FUN_0041e270",
+    "signature": "int FUN_0041e270(float *arg1, float *arg2)",
+    "comment": "[binja] int32_t sub_41e270(float* arg1, float* arg2)"
   },
   {
     "program": "crimsonland.exe",
@@ -845,6 +1062,13 @@
     "name": "weapon_table_entry",
     "signature": "char * weapon_table_entry(int weapon_id)",
     "comment": "returns the entry base (&DAT_004d7a2c + weapon_id * 0x1f)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0041fc80",
+    "name": "FUN_0041fc80",
+    "signature": "void * FUN_0041fc80(void)",
+    "comment": "[binja] void* sub_41fc80()"
   },
   {
     "program": "crimsonland.exe",
@@ -978,6 +1202,13 @@
     "name": "creature_alloc_slot",
     "signature": "int creature_alloc_slot(void)",
     "comment": "finds a free creature entry in DAT_0049bf38 and seeds defaults"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004281e0",
+    "name": "FUN_004281e0",
+    "signature": "void * FUN_004281e0(void)",
+    "comment": "[binja] void* sub_4281e0()"
   },
   {
     "program": "crimsonland.exe",
@@ -1171,10 +1402,59 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0042f080",
+    "name": "FUN_0042f080",
+    "signature": "void * FUN_0042f080(float *arg1)",
+    "comment": "[binja] void* sub_42f080(float* arg1)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042f270",
+    "name": "FUN_0042f270",
+    "signature": "void * FUN_0042f270(float *arg1, float arg2, float arg3)",
+    "comment": "[binja] void* sub_42f270(float* arg1, float arg2, float arg3)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042f330",
+    "name": "FUN_0042f330",
+    "signature": "void * FUN_0042f330(float *arg1, float arg2, int arg3)",
+    "comment": "[binja] void* sub_42f330(float* arg1, float arg2, int32_t arg3)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042f3f0",
+    "name": "FUN_0042f3f0",
+    "signature": "void * FUN_0042f3f0(float *arg1, float arg2, float arg3)",
+    "comment": "[binja] void* sub_42f3f0(float* arg1, float arg2, float arg3)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042f540",
+    "name": "FUN_0042f540",
+    "signature": "int FUN_0042f540(int arg1, float arg2)",
+    "comment": "[binja] int32_t sub_42f540(int32_t arg1, float arg2)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0042f6c0",
     "name": "effect_spawn_explosion_burst",
     "signature": "void effect_spawn_explosion_burst(float *pos, float scale)",
     "comment": "spawns explosion burst and shockwave particles"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042faa0",
+    "name": "FUN_0042faa0",
+    "signature": "int FUN_0042faa0(void)",
+    "comment": "[binja] int32_t sub_42faa0()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042fae0",
+    "name": "FUN_0042fae0",
+    "signature": "int FUN_0042fae0(void)",
+    "comment": "[binja] int32_t sub_42fae0()"
   },
   {
     "program": "crimsonland.exe",
@@ -1210,6 +1490,13 @@
     "name": "perks_init_database",
     "signature": "void perks_init_database(void)",
     "comment": "builds the perk table (ids, names, descriptions)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00430a20",
+    "name": "FUN_00430a20",
+    "signature": "int FUN_00430a20(int *arg1, int arg2, int arg3, char *arg4)",
+    "comment": "[binja] int32_t sub_430a20(int32_t* arg1, int32_t arg2, int32_t arg3, char* arg4)"
   },
   {
     "program": "crimsonland.exe",
@@ -1619,6 +1906,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0043aa90",
+    "name": "FUN_0043aa90",
+    "signature": "void * FUN_0043aa90(void *arg1, void *arg2)",
+    "comment": "[binja] void* sub_43aa90(void* arg1, void* arg2)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0043ab10",
     "name": "highscore_read_record",
     "signature": "char * highscore_read_record(char *buffer, FILE *fp)",
@@ -1693,6 +1987,13 @@
     "name": "highscore_record_init",
     "signature": "void highscore_record_init(void)",
     "comment": "fills the active high score record metadata for the current run"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043b810",
+    "name": "FUN_0043b810",
+    "signature": "void * FUN_0043b810(void *arg1)",
+    "comment": "[binja] void* __fastcall sub_43b810(void* arg1)"
   },
   {
     "program": "crimsonland.exe",
@@ -2053,6 +2354,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0043d9b0",
+    "name": "FUN_0043d9b0",
+    "signature": "int FUN_0043d9b0(int *arg1, int arg2)",
+    "comment": "[binja] int32_t sub_43d9b0(int32_t* arg1, int32_t arg2)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0043dc80",
     "name": "ui_checkbox_update",
     "signature": "int ui_checkbox_update(float *xy, char *checkbox)",
@@ -2109,6 +2417,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004443c0",
+    "name": "FUN_004443c0",
+    "signature": "int FUN_004443c0(float *arg1, char arg2)",
+    "comment": "[binja] int32_t sub_4443c0(float* arg1, char arg2)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00444810",
     "name": "creature_spawn_tinted",
     "signature": "int creature_spawn_tinted(float *pos, float *rgba, int type_id)",
@@ -2120,6 +2435,20 @@
     "name": "player_fire_weapon",
     "signature": "void player_fire_weapon(char param_1, char param_2)",
     "comment": "handles player firing: cooldowns, ammo, projectiles, and muzzle effects"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004451b0",
+    "name": "FUN_004451b0",
+    "signature": "void * FUN_004451b0(void)",
+    "comment": "[binja] void* sub_4451b0()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00445310",
+    "name": "FUN_00445310",
+    "signature": "int FUN_00445310(char *arg1, int arg2)",
+    "comment": "[binja] int32_t sub_445310(char* arg1, int32_t arg2)"
   },
   {
     "program": "crimsonland.exe",
@@ -2207,10 +2536,59 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004473e0",
+    "name": "FUN_004473e0",
+    "signature": "int FUN_004473e0(void)",
+    "comment": "[binja] int32_t sub_4473e0()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00447420",
+    "name": "FUN_00447420",
+    "signature": "int FUN_00447420(void)",
+    "comment": "[binja] int32_t sub_447420()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00447580",
+    "name": "FUN_00447580",
+    "signature": "int FUN_00447580(void)",
+    "comment": "[binja] int32_t sub_447580()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00447c90",
+    "name": "FUN_00447c90",
+    "signature": "int FUN_00447c90(int arg1)",
+    "comment": "[binja] int32_t sub_447c90(int32_t arg1)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00447cf0",
     "name": "input_scheme_label",
     "signature": "char * input_scheme_label(int scheme)",
     "comment": "maps control scheme ids to labels (Relative/Static/Dual Action Pad/etc)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0044ecf0",
+    "name": "FUN_0044ecf0",
+    "signature": "float * FUN_0044ecf0(float *arg1, float *arg2, float *arg3)",
+    "comment": "[binja] float* __thiscall sub_44ecf0(float* arg1, float* arg2, float* arg3)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0044faa0",
+    "name": "FUN_0044faa0",
+    "signature": "char * FUN_0044faa0(char *arg1)",
+    "comment": "[binja] char* sub_44faa0(char* arg1)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0044fb50",
+    "name": "FUN_0044fb50",
+    "signature": "float FUN_0044fb50(float arg1)",
+    "comment": "[binja] float sub_44fb50(float arg1)"
   },
   {
     "program": "crimsonland.exe",
@@ -2256,10 +2634,241 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00452f1d",
+    "name": "FUN_00452f1d",
+    "signature": "int FUN_00452f1d(void)",
+    "comment": "[binja] int32_t sub_452f1d()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045315a",
+    "name": "FUN_0045315a",
+    "signature": "int FUN_0045315a(void)",
+    "comment": "[binja] int32_t sub_45315a()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00453464",
+    "name": "FUN_00453464",
+    "signature": "int FUN_00453464(void)",
+    "comment": "[binja] int32_t sub_453464()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004534ea",
+    "name": "FUN_004534ea",
+    "signature": "int FUN_004534ea(void)",
+    "comment": "[binja] int32_t sub_4534ea()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00453a57",
+    "name": "FUN_00453a57",
+    "signature": "int FUN_00453a57(void)",
+    "comment": "[binja] int32_t sub_453a57()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00453ca0",
+    "name": "FUN_00453ca0",
+    "signature": "int FUN_00453ca0(void)",
+    "comment": "[binja] int32_t sub_453ca0()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00453f63",
+    "name": "FUN_00453f63",
+    "signature": "int FUN_00453f63(void)",
+    "comment": "[binja] int32_t sub_453f63()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00454433",
+    "name": "FUN_00454433",
+    "signature": "float * FUN_00454433(float *arg1, float arg2)",
+    "comment": "[binja] float* __stdcall sub_454433(float* arg1, float arg2)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004544c9",
+    "name": "FUN_004544c9",
+    "signature": "float * FUN_004544c9(float *arg1, float arg2)",
+    "comment": "[binja] float* __stdcall sub_4544c9(float* arg1, float arg2)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00454560",
+    "name": "FUN_00454560",
+    "signature": "float * FUN_00454560(float *arg1, float arg2)",
+    "comment": "[binja] float* __stdcall sub_454560(float* arg1, float arg2)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004545fc",
+    "name": "FUN_004545fc",
+    "signature": "float * FUN_004545fc(float *arg1, float arg2, float arg3)",
+    "comment": "[binja] float* __stdcall sub_4545fc(float* arg1, float arg2, float arg3)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004546fe",
+    "name": "FUN_004546fe",
+    "signature": "int FUN_004546fe(void)",
+    "comment": "[binja] int32_t sub_4546fe()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00454821",
+    "name": "FUN_00454821",
+    "signature": "int FUN_00454821(void)",
+    "comment": "[binja] int32_t sub_454821()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00454b64",
+    "name": "FUN_00454b64",
+    "signature": "float * FUN_00454b64(float arg1, float arg2, float arg3)",
+    "comment": "[binja] float* __stdcall sub_454b64(float arg1, float arg2, float arg3)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00454ccd",
+    "name": "FUN_00454ccd",
+    "signature": "int FUN_00454ccd(void)",
+    "comment": "[binja] int32_t sub_454ccd()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00454e3c",
+    "name": "FUN_00454e3c",
+    "signature": "int FUN_00454e3c(void)",
+    "comment": "[binja] int32_t sub_454e3c()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00454f03",
+    "name": "FUN_00454f03",
+    "signature": "int FUN_00454f03(void)",
+    "comment": "[binja] int32_t sub_454f03()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00454f87",
+    "name": "FUN_00454f87",
+    "signature": "int FUN_00454f87(void)",
+    "comment": "[binja] int32_t sub_454f87()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004551b6",
+    "name": "FUN_004551b6",
+    "signature": "int FUN_004551b6(void)",
+    "comment": "[binja] int32_t sub_4551b6()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00455281",
+    "name": "FUN_00455281",
+    "signature": "int FUN_00455281(void)",
+    "comment": "[binja] int32_t sub_455281()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00455587",
+    "name": "FUN_00455587",
+    "signature": "int * FUN_00455587(int *arg1, float arg2)",
+    "comment": "[binja] int32_t* __stdcall sub_455587(int32_t* arg1, float arg2)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00455614",
+    "name": "FUN_00455614",
+    "signature": "float * FUN_00455614(float *arg1, float *arg2, float *arg3)",
+    "comment": "[binja] float* __stdcall sub_455614(float* arg1, float* arg2, float* arg3)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045567f",
+    "name": "FUN_0045567f",
+    "signature": "float * FUN_0045567f(float *arg1, float *arg2, float *arg3)",
+    "comment": "[binja] float* __stdcall sub_45567f(float* arg1, float* arg2, float* arg3)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004556ff",
+    "name": "FUN_004556ff",
+    "signature": "float * FUN_004556ff(float *arg1, float *arg2, float *arg3)",
+    "comment": "[binja] float* __stdcall sub_4556ff(float* arg1, float* arg2, float* arg3)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0045573b",
+    "name": "FUN_0045573b",
+    "signature": "float * FUN_0045573b(float *arg1, float arg2)",
+    "comment": "[binja] float* __stdcall sub_45573b(float* arg1, float arg2)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004557db",
+    "name": "FUN_004557db",
+    "signature": "float * FUN_004557db(float *arg1, float *arg2, float *arg3)",
+    "comment": "[binja] float* __stdcall sub_4557db(float* arg1, float* arg2, float* arg3)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00455a27",
+    "name": "FUN_00455a27",
+    "signature": "float * FUN_00455a27(float *arg1, float *arg2, int *arg3, int *arg4, int *arg5, int *arg6)",
+    "comment": "[binja] float* __stdcall sub_455a27(float* arg1, float* arg2, int32_t* arg3, int32_t* arg4, int32_t* arg5, int32_t* arg6)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00455bcd",
+    "name": "FUN_00455bcd",
+    "signature": "float * FUN_00455bcd(float *arg1, float arg2)",
+    "comment": "[binja] float* __stdcall sub_455bcd(float* arg1, float arg2)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00455c86",
+    "name": "FUN_00455c86",
+    "signature": "int FUN_00455c86(int arg1, float arg2, float arg3, float arg4)",
+    "comment": "[binja] int32_t __stdcall sub_455c86(int32_t arg1, float arg2, float arg3, float arg4)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004566d3",
     "name": "renderer_select_backend",
     "signature": "int renderer_select_backend(int reset)",
     "comment": "selects renderer table based on config"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004569d0",
+    "name": "FUN_004569d0",
+    "signature": "int FUN_004569d0(void)",
+    "comment": "[binja] int32_t sub_4569d0()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00456eec",
+    "name": "FUN_00456eec",
+    "signature": "float * FUN_00456eec(float *arg1, float *arg2)",
+    "comment": "[binja] float* __stdcall sub_456eec(float* arg1, float* arg2)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00456fb6",
+    "name": "FUN_00456fb6",
+    "signature": "int FUN_00456fb6(int arg1, int arg2, void *arg3)",
+    "comment": "[binja] int32_t __stdcall sub_456fb6(int32_t arg1, int32_t arg2, void* arg3)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00457099",
+    "name": "FUN_00457099",
+    "signature": "void * FUN_00457099(void *arg1, int arg2, int arg3)",
+    "comment": "[binja] void* __stdcall sub_457099(void* arg1, int32_t arg2, int32_t arg3)"
   },
   {
     "program": "crimsonland.exe",
@@ -2326,6 +2935,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00460cb8",
+    "name": "FUN_00460cb8",
+    "signature": "int FUN_00460cb8(void)",
+    "comment": "[binja] int32_t sub_460cb8()"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00460d08",
     "name": "crt_onexit",
     "signature": "void * crt_onexit(void *func)",
@@ -2351,6 +2967,13 @@
     "name": "crt_fclose",
     "signature": "int crt_fclose(FILE *fp)",
     "comment": "fclose wrapper with CRT lock/unlock"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00460fac",
+    "name": "FUN_00460fac",
+    "signature": "char * FUN_00460fac(char *arg1, int arg2, int *arg3)",
+    "comment": "[binja] char* sub_460fac(char* arg1, int32_t arg2, int32_t* arg3)"
   },
   {
     "program": "crimsonland.exe",
@@ -2599,6 +3222,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004623b2",
+    "name": "FUN_004623b2",
+    "signature": "int FUN_004623b2(int *arg1)",
+    "comment": "[binja] int32_t sub_4623b2(int32_t* arg1)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0046248e",
     "name": "crt_getcwd",
     "signature": "char * crt_getcwd(char *buf, unsigned int size)",
@@ -2613,6 +3243,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0046258a",
+    "name": "FUN_0046258a",
+    "signature": "int FUN_0046258a(int arg1)",
+    "comment": "[binja] int32_t sub_46258a(int32_t arg1)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004625c1",
     "name": "crt_free_base",
     "signature": "void crt_free_base(void *ptr)",
@@ -2620,10 +3257,66 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0046262b",
+    "name": "FUN_0046262b",
+    "signature": "int FUN_0046262b(void)",
+    "comment": "[binja] int32_t sub_46262b()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462683",
+    "name": "FUN_00462683",
+    "signature": "int FUN_00462683(void)",
+    "comment": "[binja] int32_t sub_462683()"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004626aa",
     "name": "crt_realloc",
     "signature": "void * crt_realloc(void *ptr, size_t size)",
     "comment": "CRT: realloc with heap mode handling and new-handler retry"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462835",
+    "name": "FUN_00462835",
+    "signature": "int FUN_00462835(void)",
+    "comment": "[binja] int32_t sub_462835()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462983",
+    "name": "FUN_00462983",
+    "signature": "int FUN_00462983(void)",
+    "comment": "[binja] int32_t sub_462983()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462a17",
+    "name": "FUN_00462a17",
+    "signature": "void * FUN_00462a17(uint arg1)",
+    "comment": "[binja] void* sub_462a17(uint32_t arg1)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462a7e",
+    "name": "FUN_00462a7e",
+    "signature": "int FUN_00462a7e(void)",
+    "comment": "[binja] int32_t sub_462a7e()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462add",
+    "name": "FUN_00462add",
+    "signature": "int FUN_00462add(void)",
+    "comment": "[binja] int32_t sub_462add()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00462ba0",
+    "name": "FUN_00462ba0",
+    "signature": "int FUN_00462ba0(char *arg1, char *arg2)",
+    "comment": "[binja] int32_t sub_462ba0(char* arg1, char* arg2)"
   },
   {
     "program": "crimsonland.exe",
@@ -2707,6 +3400,62 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00463325",
+    "name": "FUN_00463325",
+    "signature": "int FUN_00463325(int arg1, void *arg2)",
+    "comment": "[binja] int32_t sub_463325(int32_t arg1, void* const arg2)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046332c",
+    "name": "FUN_0046332c",
+    "signature": "int FUN_0046332c(int arg1, void *arg2)",
+    "comment": "[binja] int32_t sub_46332c(int32_t arg1, void* const arg2)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463333",
+    "name": "FUN_00463333",
+    "signature": "void * FUN_00463333(int arg1, void *arg2)",
+    "comment": "[binja] struct _EXCEPTION_REGISTRATION_RECORD* __stdcall sub_463333(int32_t arg1, EXCEPTION_RECORD* arg2)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046340c",
+    "name": "FUN_0046340c",
+    "signature": "int FUN_0046340c(PEXCEPTION_RECORD arg1, PVOID arg2, DWORD arg3)",
+    "comment": "[binja] int32_t sub_46340c(PEXCEPTION_RECORD arg1, PVOID arg2, DWORD arg3)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004634e7",
+    "name": "FUN_004634e7",
+    "signature": "int FUN_004634e7(EXCEPTION_RECORD *arg1, void *arg2, DWORD arg3)",
+    "comment": "[binja] int32_t sub_4634e7(EXCEPTION_RECORD* arg1, void* arg2, DWORD arg3)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004636c8",
+    "name": "FUN_004636c8",
+    "signature": "void * FUN_004636c8(void)",
+    "comment": "[binja] void* const __EH_prolog()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463737",
+    "name": "FUN_00463737",
+    "signature": "int FUN_00463737(void)",
+    "comment": "[binja] int32_t sub_463737()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463760",
+    "name": "FUN_00463760",
+    "signature": "int FUN_00463760(char *arg1)",
+    "comment": "[binja] int32_t sub_463760(char* arg1)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004638bf",
     "name": "crt_fp_format_exp",
     "signature": "char * crt_fp_format_exp(char *dst, int precision, int caps, int *fp_info, int force_decimal)",
@@ -2732,6 +3481,20 @@
     "name": "crt_msize",
     "signature": "size_t crt_msize(void *ptr)",
     "comment": "CRT: allocation size"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463bf0",
+    "name": "FUN_00463bf0",
+    "signature": "int FUN_00463bf0(void)",
+    "comment": "[binja] int32_t sub_463bf0()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00463c6b",
+    "name": "FUN_00463c6b",
+    "signature": "int FUN_00463c6b(void)",
+    "comment": "[binja] int32_t sub_463c6b()"
   },
   {
     "program": "crimsonland.exe",
@@ -2837,6 +3600,34 @@
     "name": "crt_putc_buffer_nolock",
     "signature": "void crt_putc_buffer_nolock(char *buf, int count, FILE *fp, int *out_count)",
     "comment": "emit buffer chars via crt_putc_nolock (printf string helper)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00464bbc",
+    "name": "FUN_00464bbc",
+    "signature": "int FUN_00464bbc(int *arg1)",
+    "comment": "[binja] int32_t sub_464bbc(int32_t* arg1)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00464bc9",
+    "name": "FUN_00464bc9",
+    "signature": "int FUN_00464bc9(int *arg1)",
+    "comment": "[binja] int32_t sub_464bc9(int32_t* arg1)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00464bd9",
+    "name": "FUN_00464bd9",
+    "signature": "void * FUN_00464bd9(int *arg1)",
+    "comment": "[binja] void* sub_464bd9(int32_t* arg1)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004652bc",
+    "name": "FUN_004652bc",
+    "signature": "int FUN_004652bc(double arg1, int arg2, int arg3, double *arg4)",
+    "comment": "[binja] int32_t sub_4652bc(double arg1, int32_t arg2, int32_t arg3, double* arg4)"
   },
   {
     "program": "crimsonland.exe",
@@ -3008,6 +3799,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004666f5",
+    "name": "FUN_004666f5",
+    "signature": "int FUN_004666f5(int *arg1)",
+    "comment": "[binja] int32_t sub_4666f5(int32_t* arg1)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004667ac",
     "name": "crt_calloc",
     "signature": "void * crt_calloc(unsigned int count, unsigned int size)",
@@ -3015,10 +3813,31 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00466845",
+    "name": "FUN_00466845",
+    "signature": "int FUN_00466845(void)",
+    "comment": "[binja] int32_t sub_466845()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004668ce",
+    "name": "FUN_004668ce",
+    "signature": "int FUN_004668ce(void)",
+    "comment": "[binja] int32_t sub_4668ce()"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004668e9",
     "name": "crt_exception_filter",
     "signature": "long crt_exception_filter(int code, _EXCEPTION_POINTERS *info)",
     "comment": "CRT exception filter/dispatch"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00466a61",
+    "name": "FUN_00466a61",
+    "signature": "void * FUN_00466a61(int *arg1)",
+    "comment": "[binja] HMODULE sub_466a61(int32_t* arg1)"
   },
   {
     "program": "crimsonland.exe",
@@ -3047,6 +3866,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00466ca6",
+    "name": "FUN_00466ca6",
+    "signature": "int * FUN_00466ca6(void *arg1, int *arg2)",
+    "comment": "[binja] int32_t* sub_466ca6(void* arg1, int32_t* arg2)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00466fcf",
     "name": "crt_sbh_alloc",
     "signature": "void * crt_sbh_alloc(uint size)",
@@ -3054,9 +3880,30 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004672d8",
+    "name": "FUN_004672d8",
+    "signature": "int * FUN_004672d8(void)",
+    "comment": "[binja] int32_t* sub_4672d8()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00467484",
+    "name": "FUN_00467484",
+    "signature": "int FUN_00467484(int *arg1, void * *arg2, void *arg3)",
+    "comment": "[binja] int32_t sub_467484(int32_t* arg1, void** arg2, void* arg3)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0046777a",
     "name": "crt_sbh_create_region",
     "comment": "CRT small-block heap region init"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004678be",
+    "name": "FUN_004678be",
+    "signature": "BOOL FUN_004678be(int *arg1)",
+    "comment": "[binja] BOOL sub_4678be(int32_t* arg1)"
   },
   {
     "program": "crimsonland.exe",
@@ -3067,6 +3914,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00467a2d",
+    "name": "FUN_00467a2d",
+    "signature": "void * FUN_00467a2d(void *arg1, int arg2, char *arg3)",
+    "comment": "[binja] void* sub_467a2d(void* arg1, int32_t arg2, char* arg3)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00467a72",
     "name": "crt_sbh_alloc_units",
     "signature": "void * crt_sbh_alloc_units(uint blocks)",
@@ -3074,10 +3928,31 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00467d9e",
+    "name": "FUN_00467d9e",
+    "signature": "int FUN_00467d9e(void *arg1, void * *arg2, char *arg3, int arg4)",
+    "comment": "[binja] int32_t sub_467d9e(void* arg1, void** arg2, char* arg3, int32_t arg4)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00467e47",
     "name": "crt_call_new_handler",
     "signature": "int crt_call_new_handler(size_t size)",
     "comment": "CRT: call new-handler; returns nonzero to retry allocation"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004688be",
+    "name": "FUN_004688be",
+    "signature": "uint FUN_004688be(int *arg1)",
+    "comment": "[binja] uint32_t sub_4688be(int32_t* arg1)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004688ef",
+    "name": "FUN_004688ef",
+    "signature": "uint FUN_004688ef(int *arg1, int *arg2)",
+    "comment": "[binja] uint32_t sub_4688ef(int32_t* arg1, int32_t* arg2)"
   },
   {
     "program": "crimsonland.exe",
@@ -3125,10 +4000,108 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0046953d",
+    "name": "FUN_0046953d",
+    "signature": "int * FUN_0046953d(int *arg1)",
+    "comment": "[binja] int32_t* sub_46953d(int32_t* arg1)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004695fb",
     "name": "crt_cxx_frame_handler",
     "signature": "int crt_cxx_frame_handler(PEXCEPTION_RECORD record, PVOID frame, DWORD context, void *dispatcher, int *func_info, int try_level, PVOID handler_data, char is_rethrow)",
     "comment": "MSVC C++ exception frame handler"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x004698f3",
+    "name": "FUN_004698f3",
+    "signature": "int FUN_004698f3(char *arg1, char *arg2, int *arg3)",
+    "comment": "[binja] int32_t sub_4698f3(char* arg1, char* arg2, int32_t* arg3)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00469bae",
+    "name": "FUN_00469bae",
+    "signature": "void * FUN_00469bae(void *arg1, int arg2, char *arg3, char *arg4)",
+    "comment": "[binja] void* sub_469bae(void* arg1, int32_t arg2, char* arg3, char* arg4)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00469d72",
+    "name": "FUN_00469d72",
+    "signature": "void * FUN_00469d72(void *arg1)",
+    "comment": "[binja] void* sub_469d72(void* arg1)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00469fb2",
+    "name": "FUN_00469fb2",
+    "signature": "int FUN_00469fb2(int arg1, int arg2)",
+    "comment": "[binja] int32_t sub_469fb2(int32_t arg1, int32_t arg2)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00469ffb",
+    "name": "FUN_00469ffb",
+    "signature": "int FUN_00469ffb(int arg1, int arg2)",
+    "comment": "[binja] int32_t sub_469ffb(int32_t arg1, int32_t arg2)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046a051",
+    "name": "FUN_0046a051",
+    "signature": "int FUN_0046a051(int arg1, int *arg2)",
+    "comment": "[binja] int32_t sub_46a051(int32_t arg1, int32_t* arg2)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046a0dd",
+    "name": "FUN_0046a0dd",
+    "signature": "int * FUN_0046a0dd(int arg1, int *arg2)",
+    "comment": "[binja] int32_t* sub_46a0dd(int32_t arg1, int32_t* arg2)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046a0f8",
+    "name": "FUN_0046a0f8",
+    "signature": "void FUN_0046a0f8(int *arg1)",
+    "comment": "[binja] void sub_46a0f8(int32_t* arg1)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046a104",
+    "name": "FUN_0046a104",
+    "signature": "int FUN_0046a104(int *arg1)",
+    "comment": "[binja] int32_t sub_46a104(int32_t* arg1)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046a11f",
+    "name": "FUN_0046a11f",
+    "signature": "int * FUN_0046a11f(int *arg1, int arg2)",
+    "comment": "[binja] int32_t* sub_46a11f(int32_t* arg1, int32_t arg2)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046a1ac",
+    "name": "FUN_0046a1ac",
+    "signature": "int FUN_0046a1ac(short *arg1, int *arg2, int *arg3)",
+    "comment": "[binja] int32_t sub_46a1ac(int16_t* arg1, int32_t* arg2, int32_t* arg3)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046a318",
+    "name": "FUN_0046a318",
+    "signature": "int FUN_0046a318(short *arg1, int *arg2)",
+    "comment": "[binja] int32_t sub_46a318(int16_t* arg1, int32_t* arg2)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046a32e",
+    "name": "FUN_0046a32e",
+    "signature": "int FUN_0046a32e(short *arg1, int *arg2)",
+    "comment": "[binja] int32_t sub_46a32e(int16_t* arg1, int32_t* arg2)"
   },
   {
     "program": "crimsonland.exe",
@@ -3146,10 +4119,38 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0046a471",
+    "name": "FUN_0046a471",
+    "signature": "int * FUN_0046a471(int *arg1, int *arg2)",
+    "comment": "[binja] int32_t* sub_46a471(int32_t* arg1, int32_t* arg2)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0046a590",
     "name": "crt_memmove",
     "signature": "void * crt_memmove(void *dst, void *src, size_t size)",
     "comment": "CRT: copy memory with overlap handling"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046a8c5",
+    "name": "FUN_0046a8c5",
+    "signature": "int FUN_0046a8c5(void)",
+    "comment": "[binja] int32_t sub_46a8c5()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046abbb",
+    "name": "FUN_0046abbb",
+    "signature": "int FUN_0046abbb(int arg1, HANDLE arg2)",
+    "comment": "[binja] int32_t sub_46abbb(int32_t arg1, HANDLE arg2)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046ac37",
+    "name": "FUN_0046ac37",
+    "signature": "int FUN_0046ac37(int arg1)",
+    "comment": "[binja] int32_t sub_46ac37(int32_t arg1)"
   },
   {
     "program": "crimsonland.exe",
@@ -3195,6 +4196,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0046c4cb",
+    "name": "FUN_0046c4cb",
+    "signature": "int * FUN_0046c4cb(int arg1, int *arg2, uint arg3)",
+    "comment": "[binja] int32_t* sub_46c4cb(int32_t arg1, int32_t* arg2, uint32_t arg3)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0046cda0",
     "name": "crt_chkstk",
     "signature": "void crt_chkstk(void)",
@@ -3216,6 +4224,20 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0046d1ad",
+    "name": "FUN_0046d1ad",
+    "signature": "int FUN_0046d1ad(char arg1)",
+    "comment": "[binja] int32_t sub_46d1ad(char arg1)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046d1be",
+    "name": "FUN_0046d1be",
+    "signature": "int FUN_0046d1be(char arg1, int arg2, char arg3)",
+    "comment": "[binja] int32_t sub_46d1be(char arg1, int32_t arg2, char arg3)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0046d1ef",
     "name": "crt_setmbcp",
     "signature": "int crt_setmbcp(int codepage)",
@@ -3223,10 +4245,38 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0046d442",
+    "name": "FUN_0046d442",
+    "signature": "void * FUN_0046d442(void)",
+    "comment": "[binja] void* sub_46d442()"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0046d5c7",
     "name": "crt_mbcs_init",
     "signature": "void crt_mbcs_init(void)",
     "comment": "CRT: one-time init of multibyte/ctype tables (GetACP)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046d5e3",
+    "name": "FUN_0046d5e3",
+    "signature": "int FUN_0046d5e3(int arg1, int arg2, int arg3)",
+    "comment": "[binja] int32_t sub_46d5e3(int32_t arg1, int32_t arg2, int32_t arg3)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046d66f",
+    "name": "FUN_0046d66f",
+    "signature": "int FUN_0046d66f(int *arg1)",
+    "comment": "[binja] int32_t __stdcall sub_46d66f(int32_t* arg1)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046d723",
+    "name": "FUN_0046d723",
+    "signature": "int FUN_0046d723(void *arg1)",
+    "comment": "[binja] int32_t sub_46d723(void* arg1)"
   },
   {
     "program": "crimsonland.exe",
@@ -3251,10 +4301,52 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0046d9bc",
+    "name": "FUN_0046d9bc",
+    "signature": "int FUN_0046d9bc(char *arg1, int arg2, int arg3)",
+    "comment": "[binja] int32_t sub_46d9bc(char* arg1, int32_t arg2, int32_t arg3)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0046dd16",
     "name": "crt_chsize",
     "signature": "int crt_chsize(int fd, int size)",
     "comment": "resize file (truncate/extend via lseek + SetEndOfFile/zero fill)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046de3b",
+    "name": "FUN_0046de3b",
+    "signature": "short * FUN_0046de3b(short *arg1, int *arg2)",
+    "comment": "[binja] int16_t* sub_46de3b(int16_t* arg1, int32_t* arg2)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046e160",
+    "name": "FUN_0046e160",
+    "signature": "int FUN_0046e160(char *arg1, char *arg2, int arg3)",
+    "comment": "[binja] int32_t sub_46e160(char* arg1, char* arg2, int32_t arg3)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046e301",
+    "name": "FUN_0046e301",
+    "signature": "int FUN_0046e301(void)",
+    "comment": "[binja] int32_t sub_46e301()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046e617",
+    "name": "FUN_0046e617",
+    "signature": "int FUN_0046e617(char *arg1, int arg2)",
+    "comment": "[binja] int32_t sub_46e617(char* arg1, int32_t arg2)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0046e7f6",
+    "name": "FUN_0046e7f6",
+    "signature": "void * FUN_0046e7f6(int *arg1)",
+    "comment": "[binja] void* sub_46e7f6(int32_t* arg1)"
   },
   {
     "program": "crimsonland.exe",

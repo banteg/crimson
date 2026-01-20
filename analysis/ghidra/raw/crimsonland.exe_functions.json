@@ -23,35 +23,35 @@
   {
     "name": "FUN_004010f0",
     "address": "004010f0",
-    "signature": "undefined FUN_004010f0(undefined4 param_1, undefined4 param_2, int param_3, undefined * param_4)",
+    "signature": "int FUN_004010f0(int arg1, int arg2, int arg3, int arg4)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_00401120",
     "address": "00401120",
-    "signature": "undefined * FUN_00401120(int param_1)",
+    "signature": "void * FUN_00401120(int arg1)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_00401150",
     "address": "00401150",
-    "signature": "undefined4 FUN_00401150(void)",
+    "signature": "int FUN_00401150(void)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_00401170",
     "address": "00401170",
-    "signature": "undefined FUN_00401170(void)",
+    "signature": "int FUN_00401170(void)",
     "external": false,
     "calls": ["console_init"]
   },
   {
     "name": "FUN_00401180",
     "address": "00401180",
-    "signature": "undefined FUN_00401180(void)",
+    "signature": "int FUN_00401180(void)",
     "external": false,
     "calls": ["crt_atexit"]
   },
@@ -135,7 +135,7 @@
   {
     "name": "FUN_004016e0",
     "address": "004016e0",
-    "signature": "undefined FUN_004016e0(undefined4 * param_1)",
+    "signature": "void FUN_004016e0(int * arg1)",
     "external": false,
     "calls": ["console_log_node_free", "crt_free"]
   },
@@ -184,7 +184,7 @@
   {
     "name": "FUN_00401dd0",
     "address": "00401dd0",
-    "signature": "undefined FUN_00401dd0(int param_1)",
+    "signature": "int FUN_00401dd0(void * arg1)",
     "external": false,
     "calls": ["console_input_buffer", "crt_ci_pow"]
   },
@@ -275,7 +275,7 @@
   {
     "name": "FUN_00402d50",
     "address": "00402d50",
-    "signature": "undefined FUN_00402d50(void)",
+    "signature": "int FUN_00402d50(void)",
     "external": false,
     "calls": []
   },
@@ -310,7 +310,7 @@
   {
     "name": "FUN_00403370",
     "address": "00403370",
-    "signature": "undefined FUN_00403370(void)",
+    "signature": "int FUN_00403370(void)",
     "external": false,
     "calls": []
   },
@@ -324,7 +324,7 @@
   {
     "name": "FUN_00403430",
     "address": "00403430",
-    "signature": "undefined4 FUN_00403430(float * param_1, int param_2, int param_3)",
+    "signature": "int FUN_00403430(float * arg1, int arg2, int arg3)",
     "external": false,
     "calls": []
   },
@@ -415,14 +415,14 @@
   {
     "name": "FUN_00406350",
     "address": "00406350",
-    "signature": "undefined FUN_00406350(void)",
+    "signature": "int FUN_00406350(void)",
     "external": false,
     "calls": ["crt_atexit", "gameplay_render_world", "sfx_mute_all", "sfx_play_exclusive", "ui_button_update", "ui_cursor_render", "ui_elements_update_and_render"]
   },
   {
     "name": "FUN_00406af0",
     "address": "00406af0",
-    "signature": "undefined FUN_00406af0(void)",
+    "signature": "int FUN_00406af0(void)",
     "external": false,
     "calls": ["gameplay_render_world", "perk_prompt_update_and_render", "terrain_render", "ui_cursor_render", "ui_elements_update_and_render"]
   },
@@ -520,7 +520,7 @@
   {
     "name": "FUN_0040b5d0",
     "address": "0040b5d0",
-    "signature": "undefined FUN_0040b5d0(void)",
+    "signature": "int * FUN_0040b5d0(void)",
     "external": false,
     "calls": []
   },
@@ -576,7 +576,7 @@
   {
     "name": "FUN_0040e000",
     "address": "0040e000",
-    "signature": "undefined FUN_0040e000(byte * param_1)",
+    "signature": "int FUN_0040e000(char * arg1)",
     "external": false,
     "calls": ["OutputDebugStringA", "crt_vsprintf"]
   },
@@ -597,7 +597,7 @@
   {
     "name": "FUN_0040e690",
     "address": "0040e690",
-    "signature": "undefined FUN_0040e690(byte * param_1)",
+    "signature": "void FUN_0040e690(char * arg1)",
     "external": false,
     "calls": []
   },
@@ -639,7 +639,7 @@
   {
     "name": "FUN_0040ff50",
     "address": "0040ff50",
-    "signature": "undefined * FUN_0040ff50(int param_1)",
+    "signature": "int FUN_0040ff50(int arg1)",
     "external": false,
     "calls": ["crt_sprintf"]
   },
@@ -667,49 +667,49 @@
   {
     "name": "FUN_004120b0",
     "address": "004120b0",
-    "signature": "undefined FUN_004120b0(void)",
+    "signature": "int FUN_004120b0(void)",
     "external": false,
     "calls": ["crt_rand"]
   },
   {
     "name": "FUN_00412190",
     "address": "00412190",
-    "signature": "undefined FUN_00412190(void)",
+    "signature": "int FUN_00412190(void)",
     "external": false,
     "calls": ["crt_ehvec_ctor"]
   },
   {
     "name": "FUN_004121f0",
     "address": "004121f0",
-    "signature": "undefined FUN_004121f0(void)",
+    "signature": "int FUN_004121f0(void)",
     "external": false,
     "calls": ["crt_atexit"]
   },
   {
     "name": "FUN_00412360",
     "address": "00412360",
-    "signature": "undefined FUN_00412360(void)",
+    "signature": "int FUN_00412360(void)",
     "external": false,
     "calls": ["crt_rand"]
   },
   {
     "name": "FUN_004123d0",
     "address": "004123d0",
-    "signature": "undefined FUN_004123d0(void)",
+    "signature": "int FUN_004123d0(void)",
     "external": false,
     "calls": ["crt_ehvec_ctor"]
   },
   {
     "name": "FUN_00412410",
     "address": "00412410",
-    "signature": "undefined FUN_00412410(undefined4 * param_1)",
+    "signature": "void * FUN_00412410(int * arg1)",
     "external": false,
     "calls": ["crt_free"]
   },
   {
     "name": "FUN_00412440",
     "address": "00412440",
-    "signature": "undefined FUN_00412440(void)",
+    "signature": "int FUN_00412440(void)",
     "external": false,
     "calls": ["crt_atexit"]
   },
@@ -730,7 +730,7 @@
   {
     "name": "FUN_00412940",
     "address": "00412940",
-    "signature": "undefined FUN_00412940(void)",
+    "signature": "char * FUN_00412940(void)",
     "external": false,
     "calls": []
   },
@@ -793,7 +793,7 @@
   {
     "name": "FUN_00417640",
     "address": "00417640",
-    "signature": "undefined FUN_00417640(void * this, float * param_1, float * param_2)",
+    "signature": "float * FUN_00417640(void * this, float * arg1, float * arg2, float * arg3)",
     "external": false,
     "calls": []
   },
@@ -807,7 +807,7 @@
   {
     "name": "FUN_00417690",
     "address": "00417690",
-    "signature": "undefined FUN_00417690(void)",
+    "signature": "int FUN_00417690(void)",
     "external": false,
     "calls": ["FUN_004010f0", "FUN_00417a90"]
   },
@@ -821,14 +821,14 @@
   {
     "name": "FUN_00417aa0",
     "address": "00417aa0",
-    "signature": "undefined FUN_00417aa0(int param_1)",
+    "signature": "void * FUN_00417aa0(void * arg1)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_00417ab0",
     "address": "00417ab0",
-    "signature": "undefined FUN_00417ab0(undefined1 * param_1)",
+    "signature": "char * FUN_00417ab0(char * arg1)",
     "external": false,
     "calls": []
   },
@@ -968,14 +968,14 @@
   {
     "name": "FUN_0041cfe0",
     "address": "0041cfe0",
-    "signature": "undefined4 FUN_0041cfe0(undefined4 * param_1, undefined4 * param_2, undefined1 * param_3)",
+    "signature": "int FUN_0041cfe0(int * arg1, int * arg2, char * arg3)",
     "external": false,
     "calls": ["FUN_0041db50", "FUN_0041dc10", "FUN_0041dc50", "GetSystemDirectoryA"]
   },
   {
     "name": "FUN_0041db50",
     "address": "0041db50",
-    "signature": "undefined4 FUN_0041db50(LPCSTR param_1, undefined4 * param_2)",
+    "signature": "int FUN_0041db50(uint arg1, int * arg2)",
     "external": false,
     "calls": ["GetFileVersionInfoA", "GetFileVersionInfoSizeA", "VerQueryValueA", "crt_free", "operator_new"]
   },
@@ -1066,7 +1066,7 @@
   {
     "name": "FUN_0041e270",
     "address": "0041e270",
-    "signature": "undefined4 FUN_0041e270(float * param_1, float * param_2)",
+    "signature": "int FUN_0041e270(float * arg1, float * arg2)",
     "external": false,
     "calls": []
   },
@@ -1185,7 +1185,7 @@
   {
     "name": "FUN_0041fc80",
     "address": "0041fc80",
-    "signature": "undefined FUN_0041fc80(void)",
+    "signature": "void * FUN_0041fc80(void)",
     "external": false,
     "calls": ["console_printf"]
   },
@@ -1332,7 +1332,7 @@
   {
     "name": "FUN_004281e0",
     "address": "004281e0",
-    "signature": "undefined FUN_004281e0(void)",
+    "signature": "void * FUN_004281e0(void)",
     "external": false,
     "calls": []
   },
@@ -1528,35 +1528,35 @@
   {
     "name": "FUN_0042f080",
     "address": "0042f080",
-    "signature": "undefined FUN_0042f080(undefined4 * param_1)",
+    "signature": "void * FUN_0042f080(float * arg1)",
     "external": false,
     "calls": ["crt_rand", "effect_spawn"]
   },
   {
     "name": "FUN_0042f270",
     "address": "0042f270",
-    "signature": "undefined FUN_0042f270(undefined4 * param_1, float param_2, float param_3)",
+    "signature": "void * FUN_0042f270(float * arg1, float arg2, float arg3)",
     "external": false,
     "calls": ["effect_spawn"]
   },
   {
     "name": "FUN_0042f330",
     "address": "0042f330",
-    "signature": "undefined FUN_0042f330(undefined4 * param_1, float param_2, undefined4 param_3)",
+    "signature": "void * FUN_0042f330(float * arg1, float arg2, int arg3)",
     "external": false,
     "calls": ["effect_spawn"]
   },
   {
     "name": "FUN_0042f3f0",
     "address": "0042f3f0",
-    "signature": "undefined FUN_0042f3f0(float * param_1, undefined4 param_2, int param_3)",
+    "signature": "void * FUN_0042f3f0(float * arg1, float arg2, float arg3)",
     "external": false,
     "calls": ["__ftol", "crt_rand", "effect_spawn"]
   },
   {
     "name": "FUN_0042f540",
     "address": "0042f540",
-    "signature": "undefined FUN_0042f540(undefined4 * param_1, float param_2)",
+    "signature": "int FUN_0042f540(int arg1, float arg2)",
     "external": false,
     "calls": ["__ftol", "crt_rand", "effect_spawn"]
   },
@@ -1570,14 +1570,14 @@
   {
     "name": "FUN_0042faa0",
     "address": "0042faa0",
-    "signature": "undefined FUN_0042faa0(void)",
+    "signature": "int FUN_0042faa0(void)",
     "external": false,
     "calls": ["crt_ehvec_ctor"]
   },
   {
     "name": "FUN_0042fae0",
     "address": "0042fae0",
-    "signature": "undefined FUN_0042fae0(void)",
+    "signature": "int FUN_0042fae0(void)",
     "external": false,
     "calls": ["crt_atexit"]
   },
@@ -1626,7 +1626,7 @@
   {
     "name": "FUN_00430a20",
     "address": "00430a20",
-    "signature": "undefined FUN_00430a20(int * param_1, int param_2, uint param_3, uint * param_4)",
+    "signature": "int FUN_00430a20(int * arg1, int arg2, int arg3, char * arg4)",
     "external": false,
     "calls": ["console_printf", "crt_free", "strdup_malloc"]
   },
@@ -2053,7 +2053,7 @@
   {
     "name": "FUN_0043aa90",
     "address": "0043aa90",
-    "signature": "undefined FUN_0043aa90(char * param_1, char * param_2)",
+    "signature": "void * FUN_0043aa90(void * arg1, void * arg2)",
     "external": false,
     "calls": []
   },
@@ -2144,7 +2144,7 @@
   {
     "name": "FUN_0043b810",
     "address": "0043b810",
-    "signature": "undefined FUN_0043b810(int param_1)",
+    "signature": "void * FUN_0043b810(void * arg1)",
     "external": false,
     "calls": []
   },
@@ -2508,7 +2508,7 @@
   {
     "name": "FUN_0043d9b0",
     "address": "0043d9b0",
-    "signature": "undefined FUN_0043d9b0(float * param_1, int * param_2)",
+    "signature": "int FUN_0043d9b0(int * arg1, int arg2)",
     "external": false,
     "calls": ["__ftol", "input_primary_is_down", "ui_focus_draw", "ui_focus_set", "ui_focus_update", "ui_mouse_inside_rect"]
   },
@@ -2592,7 +2592,7 @@
   {
     "name": "FUN_004443c0",
     "address": "004443c0",
-    "signature": "uint FUN_004443c0(float * param_1, undefined1 param_2)",
+    "signature": "int FUN_004443c0(float * arg1, char arg2)",
     "external": false,
     "calls": ["crt_atexit", "crt_free", "highscore_load_table", "input_primary_just_pressed", "strdup_malloc", "ui_button_update", "ui_list_widget_update", "ui_text_input_update"]
   },
@@ -2620,14 +2620,14 @@
   {
     "name": "FUN_004451b0",
     "address": "004451b0",
-    "signature": "undefined1 * FUN_004451b0(void)",
+    "signature": "void * FUN_004451b0(void)",
     "external": false,
     "calls": ["console_printf", "crt_isalpha", "crt_rand", "crt_sprintf", "highscore_load_table"]
   },
   {
     "name": "FUN_00445310",
     "address": "00445310",
-    "signature": "undefined4 FUN_00445310(byte * param_1, int param_2)",
+    "signature": "int FUN_00445310(char * arg1, int arg2)",
     "external": false,
     "calls": []
   },
@@ -2732,28 +2732,28 @@
   {
     "name": "FUN_004473e0",
     "address": "004473e0",
-    "signature": "undefined FUN_004473e0(void)",
+    "signature": "int FUN_004473e0(void)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_00447420",
     "address": "00447420",
-    "signature": "undefined FUN_00447420(void)",
+    "signature": "int FUN_00447420(void)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_00447580",
     "address": "00447580",
-    "signature": "undefined FUN_00447580(void)",
+    "signature": "int FUN_00447580(void)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_00447c90",
     "address": "00447c90",
-    "signature": "char * FUN_00447c90(undefined4 param_1)",
+    "signature": "int FUN_00447c90(int arg1)",
     "external": false,
     "calls": []
   },
@@ -2774,21 +2774,21 @@
   {
     "name": "FUN_0044ecf0",
     "address": "0044ecf0",
-    "signature": "undefined FUN_0044ecf0(void * this, float * param_1, float * param_2)",
+    "signature": "float * FUN_0044ecf0(void * this, float * arg1, float * arg2, float * arg3)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_0044faa0",
     "address": "0044faa0",
-    "signature": "undefined FUN_0044faa0(undefined1 * param_1)",
+    "signature": "char * FUN_0044faa0(char * arg1)",
     "external": false,
     "calls": ["console_printf"]
   },
   {
     "name": "FUN_0044fb50",
     "address": "0044fb50",
-    "signature": "undefined FUN_0044fb50(undefined * param_1)",
+    "signature": "float FUN_0044fb50(float arg1)",
     "external": false,
     "calls": []
   },
@@ -2837,14 +2837,14 @@
   {
     "name": "FUN_00452f1d",
     "address": "00452f1d",
-    "signature": "undefined FUN_00452f1d(void)",
+    "signature": "int FUN_00452f1d(void)",
     "external": false,
     "calls": ["renderer_select_backend"]
   },
   {
     "name": "thunk_FUN_00452f1d",
     "address": "00452f2a",
-    "signature": "undefined thunk_FUN_00452f1d(void)",
+    "signature": "int thunk_FUN_00452f1d(void)",
     "external": false,
     "calls": []
   },
@@ -2893,14 +2893,14 @@
   {
     "name": "FUN_0045315a",
     "address": "0045315a",
-    "signature": "undefined FUN_0045315a(void)",
+    "signature": "int FUN_0045315a(void)",
     "external": false,
     "calls": ["renderer_select_backend"]
   },
   {
     "name": "thunk_FUN_0045315a",
     "address": "00453167",
-    "signature": "undefined thunk_FUN_0045315a(void)",
+    "signature": "int thunk_FUN_0045315a(void)",
     "external": false,
     "calls": []
   },
@@ -2942,21 +2942,21 @@
   {
     "name": "FUN_00453464",
     "address": "00453464",
-    "signature": "undefined FUN_00453464(void)",
+    "signature": "int FUN_00453464(void)",
     "external": false,
     "calls": ["renderer_select_backend"]
   },
   {
     "name": "thunk_FUN_00453464",
     "address": "00453471",
-    "signature": "undefined thunk_FUN_00453464(void)",
+    "signature": "int thunk_FUN_00453464(void)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_004534ea",
     "address": "004534ea",
-    "signature": "undefined FUN_004534ea(void)",
+    "signature": "int FUN_004534ea(void)",
     "external": false,
     "calls": ["renderer_select_backend"]
   },
@@ -2998,42 +2998,42 @@
   {
     "name": "FUN_00453a57",
     "address": "00453a57",
-    "signature": "undefined FUN_00453a57(void)",
+    "signature": "int FUN_00453a57(void)",
     "external": false,
     "calls": ["renderer_select_backend"]
   },
   {
     "name": "thunk_FUN_00453a57",
     "address": "00453a64",
-    "signature": "undefined thunk_FUN_00453a57(void)",
+    "signature": "int thunk_FUN_00453a57(void)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_00453ca0",
     "address": "00453ca0",
-    "signature": "undefined FUN_00453ca0(void)",
+    "signature": "int FUN_00453ca0(void)",
     "external": false,
     "calls": ["renderer_select_backend"]
   },
   {
     "name": "thunk_FUN_00453ca0",
     "address": "00453cad",
-    "signature": "undefined thunk_FUN_00453ca0(void)",
+    "signature": "int thunk_FUN_00453ca0(void)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_00453f63",
     "address": "00453f63",
-    "signature": "undefined FUN_00453f63(void)",
+    "signature": "int FUN_00453f63(void)",
     "external": false,
     "calls": ["renderer_select_backend"]
   },
   {
     "name": "thunk_FUN_00453f63",
     "address": "00453f70",
-    "signature": "undefined thunk_FUN_00453f63(void)",
+    "signature": "int thunk_FUN_00453f63(void)",
     "external": false,
     "calls": []
   },
@@ -3061,7 +3061,7 @@
   {
     "name": "FUN_00454433",
     "address": "00454433",
-    "signature": "undefined FUN_00454433(undefined4 * param_1, float param_2)",
+    "signature": "float * FUN_00454433(float * arg1, float arg2)",
     "external": false,
     "calls": []
   },
@@ -3075,7 +3075,7 @@
   {
     "name": "FUN_004544c9",
     "address": "004544c9",
-    "signature": "undefined FUN_004544c9(float * param_1, float param_2)",
+    "signature": "float * FUN_004544c9(float * arg1, float arg2)",
     "external": false,
     "calls": []
   },
@@ -3089,7 +3089,7 @@
   {
     "name": "FUN_00454560",
     "address": "00454560",
-    "signature": "undefined FUN_00454560(float * param_1, float param_2)",
+    "signature": "float * FUN_00454560(float * arg1, float arg2)",
     "external": false,
     "calls": []
   },
@@ -3103,21 +3103,21 @@
   {
     "name": "FUN_004545fc",
     "address": "004545fc",
-    "signature": "undefined FUN_004545fc(float * param_1, float * param_2, float param_3)",
+    "signature": "float * FUN_004545fc(float * arg1, float arg2, float arg3)",
     "external": false,
     "calls": ["thunk_FUN_0045315a"]
   },
   {
     "name": "FUN_004546fe",
     "address": "004546fe",
-    "signature": "undefined FUN_004546fe(void)",
+    "signature": "int FUN_004546fe(void)",
     "external": false,
     "calls": ["renderer_select_backend"]
   },
   {
     "name": "thunk_FUN_004546fe",
     "address": "0045470b",
-    "signature": "undefined thunk_FUN_004546fe(void)",
+    "signature": "int thunk_FUN_004546fe(void)",
     "external": false,
     "calls": []
   },
@@ -3131,7 +3131,7 @@
   {
     "name": "FUN_00454821",
     "address": "00454821",
-    "signature": "undefined FUN_00454821(void)",
+    "signature": "int FUN_00454821(void)",
     "external": false,
     "calls": ["renderer_select_backend"]
   },
@@ -3159,7 +3159,7 @@
   {
     "name": "FUN_00454b64",
     "address": "00454b64",
-    "signature": "float * FUN_00454b64(float * param_1, undefined4 param_2, float param_3)",
+    "signature": "float * FUN_00454b64(float arg1, float arg2, float arg3)",
     "external": false,
     "calls": ["thunk_FUN_0045315a"]
   },
@@ -3180,42 +3180,42 @@
   {
     "name": "FUN_00454ccd",
     "address": "00454ccd",
-    "signature": "undefined FUN_00454ccd(void)",
+    "signature": "int FUN_00454ccd(void)",
     "external": false,
     "calls": ["renderer_select_backend"]
   },
   {
     "name": "thunk_FUN_00454ccd",
     "address": "00454cda",
-    "signature": "undefined thunk_FUN_00454ccd(void)",
+    "signature": "int thunk_FUN_00454ccd(void)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_00454e3c",
     "address": "00454e3c",
-    "signature": "undefined FUN_00454e3c(void)",
+    "signature": "int FUN_00454e3c(void)",
     "external": false,
     "calls": ["renderer_select_backend"]
   },
   {
     "name": "thunk_FUN_00454e3c",
     "address": "00454e49",
-    "signature": "undefined thunk_FUN_00454e3c(void)",
+    "signature": "int thunk_FUN_00454e3c(void)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_00454f03",
     "address": "00454f03",
-    "signature": "undefined FUN_00454f03(void)",
+    "signature": "int FUN_00454f03(void)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_00454f87",
     "address": "00454f87",
-    "signature": "undefined FUN_00454f87(void)",
+    "signature": "int FUN_00454f87(void)",
     "external": false,
     "calls": []
   },
@@ -3250,7 +3250,7 @@
   {
     "name": "FUN_004551b6",
     "address": "004551b6",
-    "signature": "undefined FUN_004551b6(void)",
+    "signature": "int FUN_004551b6(void)",
     "external": false,
     "calls": ["renderer_select_backend"]
   },
@@ -3264,56 +3264,56 @@
   {
     "name": "FUN_00455281",
     "address": "00455281",
-    "signature": "undefined FUN_00455281(void)",
+    "signature": "int FUN_00455281(void)",
     "external": false,
     "calls": ["renderer_select_backend"]
   },
   {
     "name": "thunk_FUN_00455281",
     "address": "0045528e",
-    "signature": "undefined thunk_FUN_00455281(void)",
+    "signature": "int thunk_FUN_00455281(void)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_00455587",
     "address": "00455587",
-    "signature": "undefined FUN_00455587(float * param_1, float * param_2)",
+    "signature": "int * FUN_00455587(int * arg1, float arg2)",
     "external": false,
     "calls": ["float_near_equal"]
   },
   {
     "name": "FUN_00455614",
     "address": "00455614",
-    "signature": "undefined FUN_00455614(float * param_1, float * param_2, float * param_3)",
+    "signature": "float * FUN_00455614(float * arg1, float * arg2, float * arg3)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_0045567f",
     "address": "0045567f",
-    "signature": "undefined FUN_0045567f(float * param_1, float * param_2, float * param_3)",
+    "signature": "float * FUN_0045567f(float * arg1, float * arg2, float * arg3)",
     "external": false,
     "calls": ["float_near_equal"]
   },
   {
     "name": "FUN_004556ff",
     "address": "004556ff",
-    "signature": "undefined FUN_004556ff(float * param_1, float * param_2, float * param_3)",
+    "signature": "float * FUN_004556ff(float * arg1, float * arg2, float * arg3)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_0045573b",
     "address": "0045573b",
-    "signature": "undefined FUN_0045573b(float * param_1, float * param_2)",
+    "signature": "float * FUN_0045573b(float * arg1, float arg2)",
     "external": false,
     "calls": ["float_near_equal"]
   },
   {
     "name": "FUN_004557db",
     "address": "004557db",
-    "signature": "undefined FUN_004557db(float * param_1, float * param_2, float * param_3)",
+    "signature": "float * FUN_004557db(float * arg1, float * arg2, float * arg3)",
     "external": false,
     "calls": ["float_near_equal"]
   },
@@ -3327,21 +3327,21 @@
   {
     "name": "FUN_00455a27",
     "address": "00455a27",
-    "signature": "float * FUN_00455a27(float * param_1, float * param_2, int * param_3, int param_4, int param_5, int param_6)",
+    "signature": "float * FUN_00455a27(float * arg1, float * arg2, int * arg3, int * arg4, int * arg5, int * arg6)",
     "external": false,
     "calls": ["thunk_FUN_00453464", "thunk_FUN_00453a57", "thunk_FUN_00453f63"]
   },
   {
     "name": "FUN_00455bcd",
     "address": "00455bcd",
-    "signature": "undefined FUN_00455bcd(float * param_1, float * param_2)",
+    "signature": "float * FUN_00455bcd(float * arg1, float arg2)",
     "external": false,
     "calls": ["float_near_equal"]
   },
   {
     "name": "FUN_00455c86",
     "address": "00455c86",
-    "signature": "undefined4 FUN_00455c86(undefined4 param_1, undefined4 param_2, undefined4 param_3, undefined4 param_4)",
+    "signature": "int FUN_00455c86(int arg1, float arg2, float arg3, float arg4)",
     "external": false,
     "calls": ["thunk_FUN_004546fe", "thunk_FUN_00454bc0"]
   },
@@ -3432,7 +3432,7 @@
   {
     "name": "FUN_004569d0",
     "address": "004569d0",
-    "signature": "undefined8 FUN_004569d0(void)",
+    "signature": "int FUN_004569d0(void)",
     "external": false,
     "calls": []
   },
@@ -3446,21 +3446,21 @@
   {
     "name": "FUN_00456eec",
     "address": "00456eec",
-    "signature": "float * FUN_00456eec(float * param_1, float * param_2)",
+    "signature": "float * FUN_00456eec(float * arg1, float * arg2)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_00456fb6",
     "address": "00456fb6",
-    "signature": "undefined FUN_00456fb6(float * param_1, float * param_2, float * param_3)",
+    "signature": "int FUN_00456fb6(int arg1, int arg2, void * arg3)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_00457099",
     "address": "00457099",
-    "signature": "undefined FUN_00457099(float * param_1, float * param_2, float * param_3)",
+    "signature": "void * FUN_00457099(void * arg1, int arg2, int arg3)",
     "external": false,
     "calls": []
   },
@@ -3684,7 +3684,7 @@
   {
     "name": "FUN_00460cb8",
     "address": "00460cb8",
-    "signature": "undefined FUN_00460cb8(void)",
+    "signature": "int FUN_00460cb8(void)",
     "external": false,
     "calls": ["FUN_00460cd0", "FUN_004636e7", "FUN_00463737"]
   },
@@ -3754,7 +3754,7 @@
   {
     "name": "FUN_00460fac",
     "address": "00460fac",
-    "signature": "char * FUN_00460fac(char * param_1, int param_2, undefined4 * param_3)",
+    "signature": "char * FUN_00460fac(char * arg1, int arg2, int * arg3)",
     "external": false,
     "calls": ["crt_filbuf", "crt_lock_file", "crt_unlock_file"]
   },
@@ -4083,7 +4083,7 @@
   {
     "name": "FUN_004623b2",
     "address": "004623b2",
-    "signature": "undefined FUN_004623b2(int * param_1)",
+    "signature": "int FUN_004623b2(int * arg1)",
     "external": false,
     "calls": ["GetLocalTime", "GetSystemTime", "GetTimeZoneInformation", "crt_mktime"]
   },
@@ -4104,7 +4104,7 @@
   {
     "name": "FUN_0046258a",
     "address": "0046258a",
-    "signature": "undefined4 FUN_0046258a(uint param_1)",
+    "signature": "int FUN_0046258a(int arg1)",
     "external": false,
     "calls": ["GetDriveTypeA"]
   },
@@ -4118,14 +4118,14 @@
   {
     "name": "FUN_0046262b",
     "address": "0046262b",
-    "signature": "undefined FUN_0046262b(void)",
+    "signature": "int FUN_0046262b(void)",
     "external": false,
     "calls": ["crt_unlock"]
   },
   {
     "name": "FUN_00462683",
     "address": "00462683",
-    "signature": "undefined FUN_00462683(void)",
+    "signature": "int FUN_00462683(void)",
     "external": false,
     "calls": ["crt_unlock"]
   },
@@ -4139,14 +4139,14 @@
   {
     "name": "FUN_00462835",
     "address": "00462835",
-    "signature": "undefined FUN_00462835(void)",
+    "signature": "int FUN_00462835(void)",
     "external": false,
     "calls": ["crt_unlock"]
   },
   {
     "name": "FUN_00462983",
     "address": "00462983",
-    "signature": "undefined FUN_00462983(void)",
+    "signature": "int FUN_00462983(void)",
     "external": false,
     "calls": ["crt_unlock"]
   },
@@ -4167,21 +4167,21 @@
   {
     "name": "FUN_00462a17",
     "address": "00462a17",
-    "signature": "undefined FUN_00462a17(uint * param_1)",
+    "signature": "void * FUN_00462a17(uint arg1)",
     "external": false,
     "calls": ["FUN_00462a7e", "FUN_00462add", "HeapAlloc", "crt_lock", "crt_sbh_alloc", "crt_sbh_alloc_units"]
   },
   {
     "name": "FUN_00462a7e",
     "address": "00462a7e",
-    "signature": "undefined FUN_00462a7e(void)",
+    "signature": "int FUN_00462a7e(void)",
     "external": false,
     "calls": ["crt_unlock"]
   },
   {
     "name": "FUN_00462add",
     "address": "00462add",
-    "signature": "undefined FUN_00462add(void)",
+    "signature": "int FUN_00462add(void)",
     "external": false,
     "calls": ["crt_unlock"]
   },
@@ -4195,7 +4195,7 @@
   {
     "name": "FUN_00462ba0",
     "address": "00462ba0",
-    "signature": "undefined FUN_00462ba0(char * param_1, byte * param_2)",
+    "signature": "int FUN_00462ba0(char * arg1, char * arg2)",
     "external": false,
     "calls": ["FUN_00467e62", "_strlen"]
   },
@@ -4356,21 +4356,21 @@
   {
     "name": "FUN_00463325",
     "address": "00463325",
-    "signature": "undefined FUN_00463325(undefined4 param_1, undefined * UNRECOVERED_JUMPTABLE)",
+    "signature": "int FUN_00463325(int arg1, void * arg2)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_0046332c",
     "address": "0046332c",
-    "signature": "undefined FUN_0046332c(undefined4 param_1, undefined * UNRECOVERED_JUMPTABLE)",
+    "signature": "int FUN_0046332c(int arg1, void * arg2)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_00463333",
     "address": "00463333",
-    "signature": "undefined FUN_00463333(PVOID param_1, PEXCEPTION_RECORD param_2)",
+    "signature": "void * FUN_00463333(int arg1, void * arg2)",
     "external": false,
     "calls": ["RtlUnwind"]
   },
@@ -4391,7 +4391,7 @@
   {
     "name": "FUN_0046340c",
     "address": "0046340c",
-    "signature": "undefined FUN_0046340c(PEXCEPTION_RECORD param_1, PVOID param_2, DWORD param_3)",
+    "signature": "int FUN_0046340c(PEXCEPTION_RECORD arg1, PVOID arg2, DWORD arg3)",
     "external": false,
     "calls": ["crt_cxx_frame_handler"]
   },
@@ -4405,7 +4405,7 @@
   {
     "name": "FUN_004634e7",
     "address": "004634e7",
-    "signature": "undefined4 FUN_004634e7(PEXCEPTION_RECORD param_1, PVOID param_2, DWORD param_3)",
+    "signature": "int FUN_004634e7(EXCEPTION_RECORD * arg1, void * arg2, DWORD arg3)",
     "external": false,
     "calls": ["FUN_00463333", "crt_cxx_frame_handler"]
   },
@@ -4454,7 +4454,7 @@
   {
     "name": "FUN_004636c8",
     "address": "004636c8",
-    "signature": "undefined FUN_004636c8(void)",
+    "signature": "void * FUN_004636c8(void)",
     "external": false,
     "calls": []
   },
@@ -4475,14 +4475,14 @@
   {
     "name": "FUN_00463737",
     "address": "00463737",
-    "signature": "undefined FUN_00463737(void)",
+    "signature": "int FUN_00463737(void)",
     "external": false,
     "calls": ["FUN_004636f9", "GetModuleHandleA", "GetProcAddress"]
   },
   {
     "name": "FUN_00463760",
     "address": "00463760",
-    "signature": "undefined FUN_00463760(char * param_1)",
+    "signature": "int FUN_00463760(char * arg1)",
     "external": false,
     "calls": ["crt_isctype", "crt_tolower"]
   },
@@ -4552,14 +4552,14 @@
   {
     "name": "FUN_00463bf0",
     "address": "00463bf0",
-    "signature": "undefined FUN_00463bf0(void)",
+    "signature": "int FUN_00463bf0(void)",
     "external": false,
     "calls": ["crt_unlock"]
   },
   {
     "name": "FUN_00463c6b",
     "address": "00463c6b",
-    "signature": "undefined FUN_00463c6b(void)",
+    "signature": "int FUN_00463c6b(void)",
     "external": false,
     "calls": ["crt_unlock"]
   },
@@ -4678,21 +4678,21 @@
   {
     "name": "FUN_00464bbc",
     "address": "00464bbc",
-    "signature": "undefined4 FUN_00464bbc(int * param_1)",
+    "signature": "int FUN_00464bbc(int * arg1)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_00464bc9",
     "address": "00464bc9",
-    "signature": "undefined8 FUN_00464bc9(int * param_1)",
+    "signature": "int FUN_00464bc9(int * arg1)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_00464bd9",
     "address": "00464bd9",
-    "signature": "undefined4 FUN_00464bd9(int * param_1)",
+    "signature": "void * FUN_00464bd9(int * arg1)",
     "external": false,
     "calls": []
   },
@@ -4783,7 +4783,7 @@
   {
     "name": "FUN_004652bc",
     "address": "004652bc",
-    "signature": "undefined4 FUN_004652bc(int param_1, int param_2, double param_3, double * param_4)",
+    "signature": "int FUN_004652bc(double arg1, int arg2, int arg3, double * arg4)",
     "external": false,
     "calls": ["FUN_004653ec"]
   },
@@ -4979,7 +4979,7 @@
   {
     "name": "FUN_004666f5",
     "address": "004666f5",
-    "signature": "undefined4 FUN_004666f5(undefined4 * param_1)",
+    "signature": "int FUN_004666f5(int * arg1)",
     "external": false,
     "calls": ["FUN_0046b08c", "_malloc"]
   },
@@ -5000,14 +5000,14 @@
   {
     "name": "FUN_00466845",
     "address": "00466845",
-    "signature": "undefined FUN_00466845(void)",
+    "signature": "int FUN_00466845(void)",
     "external": false,
     "calls": ["crt_unlock"]
   },
   {
     "name": "FUN_004668ce",
     "address": "004668ce",
-    "signature": "undefined FUN_004668ce(void)",
+    "signature": "int FUN_004668ce(void)",
     "external": false,
     "calls": ["crt_unlock"]
   },
@@ -5028,7 +5028,7 @@
   {
     "name": "FUN_00466a61",
     "address": "00466a61",
-    "signature": "undefined FUN_00466a61(undefined4 * param_1)",
+    "signature": "void * FUN_00466a61(int * arg1)",
     "external": false,
     "calls": ["GetModuleHandleA"]
   },
@@ -5063,7 +5063,7 @@
   {
     "name": "FUN_00466ca6",
     "address": "00466ca6",
-    "signature": "undefined FUN_00466ca6(uint * param_1, int param_2)",
+    "signature": "int * FUN_00466ca6(void * arg1, int * arg2)",
     "external": false,
     "calls": ["HeapFree", "VirtualFree", "crt_memmove"]
   },
@@ -5077,7 +5077,7 @@
   {
     "name": "FUN_004672d8",
     "address": "004672d8",
-    "signature": "undefined4 * FUN_004672d8(void)",
+    "signature": "int * FUN_004672d8(void)",
     "external": false,
     "calls": ["HeapAlloc", "HeapFree", "HeapReAlloc", "VirtualAlloc"]
   },
@@ -5091,7 +5091,7 @@
   {
     "name": "FUN_00467484",
     "address": "00467484",
-    "signature": "undefined4 FUN_00467484(uint * param_1, int param_2, int param_3)",
+    "signature": "int FUN_00467484(int * arg1, void * * arg2, void * arg3)",
     "external": false,
     "calls": []
   },
@@ -5105,7 +5105,7 @@
   {
     "name": "FUN_004678be",
     "address": "004678be",
-    "signature": "undefined FUN_004678be(undefined * * param_1)",
+    "signature": "BOOL FUN_004678be(int * arg1)",
     "external": false,
     "calls": ["HeapFree", "VirtualFree"]
   },
@@ -5126,7 +5126,7 @@
   {
     "name": "FUN_00467a2d",
     "address": "00467a2d",
-    "signature": "undefined FUN_00467a2d(int param_1, int param_2, byte * param_3)",
+    "signature": "void * FUN_00467a2d(void * arg1, int arg2, char * arg3)",
     "external": false,
     "calls": ["FUN_00467914"]
   },
@@ -5147,7 +5147,7 @@
   {
     "name": "FUN_00467d9e",
     "address": "00467d9e",
-    "signature": "undefined4 FUN_00467d9e(int param_1, int * param_2, byte * param_3, uint param_4)",
+    "signature": "int FUN_00467d9e(void * arg1, void * * arg2, char * arg3, int arg4)",
     "external": false,
     "calls": []
   },
@@ -5175,7 +5175,7 @@
   {
     "name": "FUN_004688be",
     "address": "004688be",
-    "signature": "uint FUN_004688be(undefined4 * param_1)",
+    "signature": "uint FUN_004688be(int * arg1)",
     "external": false,
     "calls": ["crt_filbuf"]
   },
@@ -5189,7 +5189,7 @@
   {
     "name": "FUN_004688ef",
     "address": "004688ef",
-    "signature": "uint FUN_004688ef(int * param_1, undefined4 * param_2)",
+    "signature": "uint FUN_004688ef(int * arg1, int * arg2)",
     "external": false,
     "calls": ["FUN_004688be", "crt_isspace"]
   },
@@ -5280,7 +5280,7 @@
   {
     "name": "FUN_0046953d",
     "address": "0046953d",
-    "signature": "undefined FUN_0046953d(int param_1)",
+    "signature": "int * FUN_0046953d(int * arg1)",
     "external": false,
     "calls": ["crt_errno_ptr"]
   },
@@ -5336,7 +5336,7 @@
   {
     "name": "FUN_004698f3",
     "address": "004698f3",
-    "signature": "undefined4 FUN_004698f3(byte * param_1, byte * param_2, uint * param_3)",
+    "signature": "int FUN_004698f3(char * arg1, char * arg2, int * arg3)",
     "external": false,
     "calls": ["_strcmp"]
   },
@@ -5371,14 +5371,14 @@
   {
     "name": "FUN_00469bae",
     "address": "00469bae",
-    "signature": "undefined FUN_00469bae(int param_1, int param_2, byte * param_3, byte * param_4)",
+    "signature": "void * FUN_00469bae(void * arg1, int arg2, char * arg3, char * arg4)",
     "external": false,
     "calls": ["FUN_00463325", "FUN_0046332c", "FUN_00469dd9", "FUN_0046d6d3", "FUN_0046d6ef", "FUN_0046d70b", "crt_invalid_parameter_noinfo_noreturn", "crt_memmove"]
   },
   {
     "name": "FUN_00469d72",
     "address": "00469d72",
-    "signature": "undefined FUN_00469d72(int param_1)",
+    "signature": "void * FUN_00469d72(void * arg1)",
     "external": false,
     "calls": ["FUN_00463325"]
   },
@@ -5427,70 +5427,70 @@
   {
     "name": "FUN_00469fb2",
     "address": "00469fb2",
-    "signature": "undefined4 FUN_00469fb2(int param_1, int param_2)",
+    "signature": "int FUN_00469fb2(int arg1, int arg2)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_00469ffb",
     "address": "00469ffb",
-    "signature": "undefined FUN_00469ffb(int param_1, int param_2)",
+    "signature": "int FUN_00469ffb(int arg1, int arg2)",
     "external": false,
     "calls": ["crt_add_u32_carry"]
   },
   {
     "name": "FUN_0046a051",
     "address": "0046a051",
-    "signature": "undefined4 FUN_0046a051(int param_1, int param_2)",
+    "signature": "int FUN_0046a051(int arg1, int * arg2)",
     "external": false,
     "calls": ["FUN_00469fb2", "FUN_00469ffb"]
   },
   {
     "name": "FUN_0046a0dd",
     "address": "0046a0dd",
-    "signature": "undefined FUN_0046a0dd(int param_1, undefined4 * param_2)",
+    "signature": "int * FUN_0046a0dd(int arg1, int * arg2)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_0046a0f8",
     "address": "0046a0f8",
-    "signature": "undefined FUN_0046a0f8(undefined4 * param_1)",
+    "signature": "void FUN_0046a0f8(int * arg1)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_0046a104",
     "address": "0046a104",
-    "signature": "undefined4 FUN_0046a104(int * param_1)",
+    "signature": "int FUN_0046a104(int * arg1)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_0046a11f",
     "address": "0046a11f",
-    "signature": "undefined FUN_0046a11f(uint * param_1, uint param_2)",
+    "signature": "int * FUN_0046a11f(int * arg1, int arg2)",
     "external": false,
     "calls": []
   },
   {
     "name": "FUN_0046a1ac",
     "address": "0046a1ac",
-    "signature": "undefined4 FUN_0046a1ac(ushort * param_1, uint * param_2, int * param_3)",
+    "signature": "int FUN_0046a1ac(short * arg1, int * arg2, int * arg3)",
     "external": false,
     "calls": ["FUN_0046a051", "FUN_0046a0dd", "FUN_0046a0f8", "FUN_0046a104", "FUN_0046a11f"]
   },
   {
     "name": "FUN_0046a318",
     "address": "0046a318",
-    "signature": "undefined FUN_0046a318(ushort * param_1, uint * param_2)",
+    "signature": "int FUN_0046a318(short * arg1, int * arg2)",
     "external": false,
     "calls": ["FUN_0046a1ac"]
   },
   {
     "name": "FUN_0046a32e",
     "address": "0046a32e",
-    "signature": "undefined FUN_0046a32e(ushort * param_1, uint * param_2)",
+    "signature": "int FUN_0046a32e(short * arg1, int * arg2)",
     "external": false,
     "calls": ["FUN_0046a1ac"]
   },
@@ -5525,7 +5525,7 @@
   {
     "name": "FUN_0046a471",
     "address": "0046a471",
-    "signature": "undefined FUN_0046a471(uint * param_1, uint * param_2)",
+    "signature": "int * FUN_0046a471(int * arg1, int * arg2)",
     "external": false,
     "calls": []
   },
@@ -5546,7 +5546,7 @@
   {
     "name": "FUN_0046a8c5",
     "address": "0046a8c5",
-    "signature": "undefined FUN_0046a8c5(void)",
+    "signature": "int FUN_0046a8c5(void)",
     "external": false,
     "calls": ["__amsg_exit"]
   },
@@ -5567,14 +5567,14 @@
   {
     "name": "FUN_0046abbb",
     "address": "0046abbb",
-    "signature": "undefined4 FUN_0046abbb(uint param_1, HANDLE param_2)",
+    "signature": "int FUN_0046abbb(int arg1, HANDLE arg2)",
     "external": false,
     "calls": ["SetStdHandle", "crt_doserrno_ptr", "crt_errno_ptr"]
   },
   {
     "name": "FUN_0046ac37",
     "address": "0046ac37",
-    "signature": "undefined4 FUN_0046ac37(uint param_1)",
+    "signature": "int FUN_0046ac37(int arg1)",
     "external": false,
     "calls": ["SetStdHandle", "crt_doserrno_ptr", "crt_errno_ptr"]
   },
@@ -5658,7 +5658,7 @@
   {
     "name": "FUN_0046c4cb",
     "address": "0046c4cb",
-    "signature": "undefined FUN_0046c4cb(uint param_1, int * param_2, ushort * param_3)",
+    "signature": "int * FUN_0046c4cb(int arg1, int * arg2, uint arg3)",
     "external": false,
     "calls": ["FUN_00469073", "FUN_00469326", "FUN_0046953d", "FUN_00469582", "FUN_0046d66c"]
   },
@@ -5791,14 +5791,14 @@
   {
     "name": "FUN_0046d1ad",
     "address": "0046d1ad",
-    "signature": "undefined FUN_0046d1ad(byte param_1)",
+    "signature": "int FUN_0046d1ad(char arg1)",
     "external": false,
     "calls": ["FUN_0046d1be"]
   },
   {
     "name": "FUN_0046d1be",
     "address": "0046d1be",
-    "signature": "undefined4 FUN_0046d1be(byte param_1, uint param_2, byte param_3)",
+    "signature": "int FUN_0046d1be(char arg1, int arg2, char arg3)",
     "external": false,
     "calls": []
   },
@@ -5833,7 +5833,7 @@
   {
     "name": "FUN_0046d442",
     "address": "0046d442",
-    "signature": "undefined FUN_0046d442(void)",
+    "signature": "void * FUN_0046d442(void)",
     "external": false,
     "calls": ["FUN_0046a8ce", "GetCPInfo", "crt_lcmap_string"]
   },
@@ -5847,7 +5847,7 @@
   {
     "name": "FUN_0046d5e3",
     "address": "0046d5e3",
-    "signature": "int FUN_0046d5e3(undefined4 param_1, undefined4 param_2, undefined4 param_3)",
+    "signature": "int FUN_0046d5e3(int arg1, int arg2, int arg3)",
     "external": false,
     "calls": ["GetProcAddress", "LoadLibraryA"]
   },
@@ -5861,7 +5861,7 @@
   {
     "name": "FUN_0046d66f",
     "address": "0046d66f",
-    "signature": "int FUN_0046d66f(int * param_1)",
+    "signature": "int FUN_0046d66f(int * arg1)",
     "external": false,
     "calls": ["FUN_0046d70b", "crt_terminate"]
   },
@@ -5889,7 +5889,7 @@
   {
     "name": "FUN_0046d723",
     "address": "0046d723",
-    "signature": "undefined4 FUN_0046d723(DWORD * param_1)",
+    "signature": "int FUN_0046d723(void * arg1)",
     "external": false,
     "calls": ["FUN_0046d8a5", "__exit", "crt_get_thread_data", "crt_lock", "crt_unlock"]
   },
@@ -5931,7 +5931,7 @@
   {
     "name": "FUN_0046d9bc",
     "address": "0046d9bc",
-    "signature": "undefined FUN_0046d9bc(char * param_1, int param_2, uint * param_3)",
+    "signature": "int FUN_0046d9bc(char * arg1, int arg2, int arg3)",
     "external": false,
     "calls": ["___add_12", "crt_u96_shl1"]
   },
@@ -5952,7 +5952,7 @@
   {
     "name": "FUN_0046de3b",
     "address": "0046de3b",
-    "signature": "undefined FUN_0046de3b(int * param_1, int * param_2)",
+    "signature": "short * FUN_0046de3b(short * arg1, int * arg2)",
     "external": false,
     "calls": ["crt_add_u32_carry", "crt_u96_shl1", "crt_u96_shr1"]
   },
@@ -5973,7 +5973,7 @@
   {
     "name": "FUN_0046e160",
     "address": "0046e160",
-    "signature": "undefined4 FUN_0046e160(byte * param_1, char * param_2, void * param_3)",
+    "signature": "int FUN_0046e160(char * arg1, char * arg2, int arg3)",
     "external": false,
     "calls": ["crt_lock", "crt_tolower_l", "crt_unlock"]
   },
@@ -5994,7 +5994,7 @@
   {
     "name": "FUN_0046e301",
     "address": "0046e301",
-    "signature": "undefined4 FUN_0046e301(void)",
+    "signature": "int FUN_0046e301(void)",
     "external": false,
     "calls": ["FUN_0046e617", "WideCharToMultiByte", "_malloc"]
   },
@@ -6015,7 +6015,7 @@
   {
     "name": "FUN_0046e617",
     "address": "0046e617",
-    "signature": "undefined4 FUN_0046e617(uint * param_1, int param_2)",
+    "signature": "int FUN_0046e617(char * arg1, int arg2)",
     "external": false,
     "calls": ["FUN_0046e301", "FUN_0046e79e", "FUN_0046e7f6", "FUN_0046e85d", "SetEnvironmentVariableA", "_malloc", "_strlen", "crt_free_base", "crt_realloc", "crt_strcpy"]
   },
@@ -6029,7 +6029,7 @@
   {
     "name": "FUN_0046e7f6",
     "address": "0046e7f6",
-    "signature": "undefined4 * FUN_0046e7f6(int * param_1)",
+    "signature": "void * FUN_0046e7f6(int * arg1)",
     "external": false,
     "calls": ["__amsg_exit", "_malloc", "strdup_malloc"]
   },
