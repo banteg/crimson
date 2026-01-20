@@ -44,6 +44,10 @@ const GRIM_UV = {
   v0: 0x1005b294,
   u1: 0x1005b298,
   v1: 0x1005b29c,
+  u2: 0x1005b2a0,
+  v2: 0x1005b2a4,
+  u3: 0x1005b2a8,
+  v3: 0x1005b2ac,
 };
 
 const SESSION_ID = Date.now().toString(16) + '-' + Math.floor(Math.random() * 0xfffff).toString(16);
@@ -128,12 +132,27 @@ function shouldLogForHandle(handle, handles) {
 }
 
 function readUv() {
-  return {
+  const uv = {
     u0: safeReadF32(STATE.grimUv.u0),
     v0: safeReadF32(STATE.grimUv.v0),
     u1: safeReadF32(STATE.grimUv.u1),
     v1: safeReadF32(STATE.grimUv.v1),
+    u2: safeReadF32(STATE.grimUv.u2),
+    v2: safeReadF32(STATE.grimUv.v2),
+    u3: safeReadF32(STATE.grimUv.u3),
+    v3: safeReadF32(STATE.grimUv.v3),
   };
+  const uVals = [uv.u0, uv.u1, uv.u2, uv.u3].filter((v) => v !== null);
+  const vVals = [uv.v0, uv.v1, uv.v2, uv.v3].filter((v) => v !== null);
+  if (uVals.length) {
+    uv.u_min = Math.min.apply(null, uVals);
+    uv.u_max = Math.max.apply(null, uVals);
+  }
+  if (vVals.length) {
+    uv.v_min = Math.min.apply(null, vVals);
+    uv.v_max = Math.max.apply(null, vVals);
+  }
+  return uv;
 }
 
 function formatCaller(addr) {
@@ -299,6 +318,10 @@ function installHooks() {
   STATE.grimUv.v0 = toRuntimePtr(STATE.grimBase.base, CONFIG.grimLinkBase, GRIM_UV.v0);
   STATE.grimUv.u1 = toRuntimePtr(STATE.grimBase.base, CONFIG.grimLinkBase, GRIM_UV.u1);
   STATE.grimUv.v1 = toRuntimePtr(STATE.grimBase.base, CONFIG.grimLinkBase, GRIM_UV.v1);
+  STATE.grimUv.u2 = toRuntimePtr(STATE.grimBase.base, CONFIG.grimLinkBase, GRIM_UV.u2);
+  STATE.grimUv.v2 = toRuntimePtr(STATE.grimBase.base, CONFIG.grimLinkBase, GRIM_UV.v2);
+  STATE.grimUv.u3 = toRuntimePtr(STATE.grimBase.base, CONFIG.grimLinkBase, GRIM_UV.u3);
+  STATE.grimUv.v3 = toRuntimePtr(STATE.grimBase.base, CONFIG.grimLinkBase, GRIM_UV.v3);
 
   hookBindTexture();
   hookAtlasFrame();
