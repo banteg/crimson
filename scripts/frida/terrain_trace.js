@@ -10,6 +10,7 @@ const OUT_PATHS = [
 const EXE_RVAS = {
     terrain_generate: 0x17b80,
     terrain_render: 0x188a0,
+    grim_interface_ptr: 0x8083c,
 };
 
 const DATA_RVAS = {
@@ -47,6 +48,8 @@ const counts = {
     set_uv: 0,
     bind_texture: 0,
     get_texture_handle: 0,
+    iface_set_uv: 0,
+    iface_bind_texture: 0,
 };
 
 function nowMs() {
@@ -322,6 +325,62 @@ function hookSetUv(addr) {
     });
 }
 
+function hookIfaceBindTexture(addr) {
+    Interceptor.attach(addr, {
+        onEnter: function(args) {
+            counts.iface_bind_texture += 1;
+            if (!inTerrainRender[this.threadId]) return;
+            const handle = args[0] ? args[0].toInt32() : null;
+            const stage = args[1] ? args[1].toInt32() : null;
+            const name = texture_names[String(handle)];
+            writeLine({
+                tag: "iface_bind_texture",
+                thread_id: this.threadId,
+                handle: handle,
+                stage: stage,
+                name: name || null,
+                ecx: this.context.ecx !== undefined ? this.context.ecx.toString() : null,
+            });
+        },
+    });
+}
+
+function hookIfaceSetUv(addr) {
+    Interceptor.attach(addr, {
+        onEnter: function() {
+            counts.iface_set_uv += 1;
+            if (!inTerrainRender[this.threadId]) return;
+            const sp = getStackPointer(this.context);
+            if (sp === null) return;
+            const u0 = safeReadFloat(sp.add(4));
+            const v0 = safeReadFloat(sp.add(8));
+            const u1 = safeReadFloat(sp.add(12));
+            const v1 = safeReadFloat(sp.add(16));
+            writeLine({
+                tag: "iface_set_uv",
+                thread_id: this.threadId,
+                u0: u0,
+                v0: v0,
+                u1: u1,
+                v1: v1,
+            });
+        },
+    });
+}
+
+function attachInterface(exeBase) {
+    const ifacePtr = safeReadPointer(exeBase.add(EXE_RVAS.grim_interface_ptr));
+    if (!ifacePtr || ifacePtr.isNull()) return;
+    const bindPtr = safeReadPointer(ifacePtr.add(0xc4));
+    const uvPtr = safeReadPointer(ifacePtr.add(0x100));
+    if (bindPtr) {
+        attachOnce("iface_bind_texture", bindPtr, hookIfaceBindTexture);
+    }
+    if (uvPtr) {
+        attachOnce("iface_set_uv", uvPtr, hookIfaceSetUv);
+    }
+}
+
 function attachByRva(exeBase, grimBase) {
     if (exeBase) {
         attachOnce(
@@ -334,6 +393,7 @@ function attachByRva(exeBase, grimBase) {
             exeBase.add(EXE_RVAS.terrain_render),
             (addr) => hookTerrainRender(addr, exeBase),
         );
+        attachInterface(exeBase);
     }
     if (grimBase) {
         attachOnce("get_texture_handle", grimBase.add(GRIM_RVAS.get_texture_handle), hookGetTextureHandle);
