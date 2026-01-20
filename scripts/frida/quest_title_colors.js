@@ -3,6 +3,11 @@
 const GRIM_MODULE = "grim.dll";
 const EXE_MODULE = "crimsonland.exe";
 const OUT_PATH = "Z:\\quest_title_colors.jsonl";
+const EXE_GRIM_INTERFACE_RVA = 0x8083c;
+
+const LOG_ALL_TEXT = false;
+const LOG_FIRST_N = 8;
+const SUMMARY_INTERVAL_MS = 4000;
 
 // grim.dll RVAs from grim_hooks_targets + decomp addresses
 const GRIM_RVAS = {
@@ -15,6 +20,14 @@ const GRIM_RVAS = {
 const DEFAULT_COLOR = { r: 1, g: 1, b: 1, a: 1 };
 let last_color = { r: DEFAULT_COLOR.r, g: DEFAULT_COLOR.g, b: DEFAULT_COLOR.b, a: DEFAULT_COLOR.a };
 let outFile = null;
+let loggedFirst = 0;
+const counts = {
+    set_color: 0,
+    set_color_ptr: 0,
+    draw_text_mono: 0,
+    draw_text_mono_fmt: 0,
+};
+const attached = {};
 
 function openOutFile() {
     if (outFile) return;
@@ -76,6 +89,8 @@ function safeReadCString(ptrVal, maxLen) {
 
 function shouldLogText(text) {
     if (!text) return false;
+    if (LOG_ALL_TEXT) return true;
+    if (LOG_FIRST_N > 0 && loggedFirst < LOG_FIRST_N) return true;
     if (text.indexOf("Land Hostile") !== -1) return true;
     if (/^\d+\.\d+$/.test(text)) return true;
     return false;
@@ -90,12 +105,14 @@ function logDraw(tag, text, x, y) {
     if (x !== null && x !== undefined) msg.x = x;
     if (y !== null && y !== undefined) msg.y = y;
     msg.ts = Date.now();
+    if (LOG_FIRST_N > 0 && loggedFirst < LOG_FIRST_N) loggedFirst += 1;
     writeLine(msg);
 }
 
 function hookSetColor(addr) {
     Interceptor.attach(addr, {
         onEnter: function() {
+            counts.set_color += 1;
             const sp = getStackPointer(this.context);
             if (sp === null) return;
             const r = safeReadFloat(sp.add(4));
@@ -111,6 +128,7 @@ function hookSetColor(addr) {
 function hookSetColorPtr(addr) {
     Interceptor.attach(addr, {
         onEnter: function() {
+            counts.set_color_ptr += 1;
             const sp = getStackPointer(this.context);
             if (sp === null) return;
             const ptrVal = Memory.readPointer(sp.add(4));
@@ -128,6 +146,7 @@ function hookSetColorPtr(addr) {
 function hookDrawTextMono(addr) {
     Interceptor.attach(addr, {
         onEnter: function() {
+            counts.draw_text_mono += 1;
             const sp = getStackPointer(this.context);
             if (sp === null) return;
             const x = safeReadFloat(sp.add(4));
@@ -143,6 +162,7 @@ function hookDrawTextMono(addr) {
 function hookDrawTextMonoFmt(addr) {
     Interceptor.attach(addr, {
         onEnter: function() {
+            counts.draw_text_mono_fmt += 1;
             const sp = getStackPointer(this.context);
             if (sp === null) return;
             const textPtr = Memory.readPointer(sp.add(12));
@@ -156,29 +176,55 @@ function hookDrawTextMonoFmt(addr) {
 
 function hookByRvas() {
     const grimBase = Module.findBaseAddress(GRIM_MODULE);
+    const exeBase = Module.findBaseAddress(EXE_MODULE);
+
     if (!grimBase) {
         console.log("Waiting for grim.dll...");
         setTimeout(hookByRvas, 1000);
         return;
     }
 
-    const setColorAddr = grimBase.add(GRIM_RVAS.set_color);
-    const setColorPtrAddr = grimBase.add(GRIM_RVAS.set_color_ptr);
-    const drawMonoAddr = grimBase.add(GRIM_RVAS.draw_text_mono);
-    const drawMonoFmtAddr = grimBase.add(GRIM_RVAS.draw_text_mono_fmt);
+    const tryAttach = function(name, addr, hookFn) {
+        if (!addr || addr.isNull()) return;
+        const key = name + ":" + addr.toString();
+        if (attached[key]) return;
+        attached[key] = true;
+        hookFn(addr);
+        console.log("hook " + name + ": " + addr);
+    };
 
     console.log("grim.dll base: " + grimBase);
-    console.log("hook set_color: " + setColorAddr);
-    console.log("hook set_color_ptr: " + setColorPtrAddr);
-    console.log("hook draw_text_mono: " + drawMonoAddr);
-    console.log("hook draw_text_mono_fmt: " + drawMonoFmtAddr);
+    tryAttach("set_color", grimBase.add(GRIM_RVAS.set_color), hookSetColor);
+    tryAttach("set_color_ptr", grimBase.add(GRIM_RVAS.set_color_ptr), hookSetColorPtr);
+    tryAttach("draw_text_mono", grimBase.add(GRIM_RVAS.draw_text_mono), hookDrawTextMono);
+    tryAttach("draw_text_mono_fmt", grimBase.add(GRIM_RVAS.draw_text_mono_fmt), hookDrawTextMonoFmt);
 
-    hookSetColor(setColorAddr);
-    hookSetColorPtr(setColorPtrAddr);
-    hookDrawTextMono(drawMonoAddr);
-    hookDrawTextMonoFmt(drawMonoFmtAddr);
+    if (exeBase) {
+        const ifacePtrAddr = exeBase.add(EXE_GRIM_INTERFACE_RVA);
+        try {
+            const iface = Memory.readPointer(ifacePtrAddr);
+            if (!iface.isNull()) {
+                const vtable = Memory.readPointer(iface);
+                tryAttach("set_color(vtable)", Memory.readPointer(vtable.add(0x114)), hookSetColor);
+                tryAttach("set_color_ptr(vtable)", Memory.readPointer(vtable.add(0x110)), hookSetColorPtr);
+                tryAttach("draw_text_mono(vtable)", Memory.readPointer(vtable.add(0x13c)), hookDrawTextMono);
+                tryAttach("draw_text_mono_fmt(vtable)", Memory.readPointer(vtable.add(0x140)), hookDrawTextMonoFmt);
+            }
+        } catch (e) {
+            // Ignore and rely on RVAs.
+        }
+    }
 
     console.log("Hooks installed. Trigger quest overlay to capture title colors.");
 }
+
+setInterval(function() {
+    writeLine({
+        tag: "summary",
+        ts: Date.now(),
+        counts: counts,
+        last_color: last_color,
+    });
+}, SUMMARY_INTERVAL_MS);
 
 hookByRvas();
