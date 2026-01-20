@@ -32,7 +32,7 @@ class GameConfig:
     seed: int | None = None
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(slots=True)
 class GameState:
     base_dir: Path
     assets_dir: Path
