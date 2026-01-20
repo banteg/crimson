@@ -2,36 +2,46 @@
 
 const GRIM_MODULE = "grim.dll";
 const EXE_MODULE = "crimsonland.exe";
+const EXE_GRIM_INTERFACE_RVA = 0x8083c;
+
 const OUT_PATHS = [
     "Z:\\quest_title_colors.jsonl",
     "C:\\Temp\\quest_title_colors.jsonl",
 ];
-const EXE_GRIM_INTERFACE_RVA = 0x8083c;
 
-const LOG_ALL_TEXT = false;
-const LOG_FIRST_N = 8;
-const SUMMARY_INTERVAL_MS = 4000;
-
-// grim.dll RVAs from grim_hooks_targets + decomp addresses
+// grim.dll RVAs (1.9.93)
 const GRIM_RVAS = {
+    set_render_state: 0x06580,
     set_color: 0x07f90,
     set_color_ptr: 0x08040,
     draw_text_mono: 0x092b0,
     draw_text_mono_fmt: 0x09940,
 };
 
+const LOG_ALL_TEXT = true; // set false to reduce spam
+const LOG_FIRST_N = 12;
+const SUMMARY_INTERVAL_MS = 4000;
+
 const DEFAULT_COLOR = { r: 1, g: 1, b: 1, a: 1 };
 let last_color = { r: DEFAULT_COLOR.r, g: DEFAULT_COLOR.g, b: DEFAULT_COLOR.b, a: DEFAULT_COLOR.a };
-const outFiles = {};
-let outWarned = false;
-let loggedFirst = 0;
+let last_scale = null;
+let logged_first = 0;
+
 const counts = {
+    set_render_state: 0,
     set_color: 0,
     set_color_ptr: 0,
     draw_text_mono: 0,
     draw_text_mono_fmt: 0,
 };
+
 const attached = {};
+const outFiles = {};
+let outWarned = false;
+
+function nowMs() {
+    return Date.now();
+}
 
 function openOutFiles() {
     for (let i = 0; i < OUT_PATHS.length; i++) {
@@ -46,10 +56,11 @@ function openOutFiles() {
 }
 
 function writeLine(obj) {
+    obj.ts = nowMs();
     const line = JSON.stringify(obj) + "\n";
+    let wrote = false;
     try {
         openOutFiles();
-        let wrote = false;
         for (const path in outFiles) {
             const f = outFiles[path];
             if (!f) continue;
@@ -58,14 +69,22 @@ function writeLine(obj) {
                 wrote = true;
             } catch (e) {}
         }
-        if (!wrote && !outWarned) {
-            outWarned = true;
-            console.log("quest_title_colors: file logging unavailable, console only");
-        }
-    } catch (e) {
-        // Fall back to console only.
+    } catch (e) {}
+
+    if (!wrote && !outWarned) {
+        outWarned = true;
+        console.log("quest_title_colors: file logging unavailable, console only");
     }
     console.log(line.trim());
+}
+
+function summary() {
+    writeLine({
+        tag: "summary",
+        counts: counts,
+        last_color: last_color,
+        last_scale: last_scale,
+    });
 }
 
 function getStackPointer(ctx) {
@@ -92,6 +111,15 @@ function safeReadFloat(ptrVal) {
     }
 }
 
+function safeReadI32(ptrVal) {
+    try {
+        if (!isReadable(ptrVal)) return null;
+        return Memory.readS32(ptrVal);
+    } catch (e) {
+        return null;
+    }
+}
+
 function safeReadCString(ptrVal, maxLen) {
     try {
         if (ptrVal.isNull()) return null;
@@ -109,23 +137,47 @@ function safeReadCString(ptrVal, maxLen) {
 function shouldLogText(text) {
     if (!text) return false;
     if (LOG_ALL_TEXT) return true;
-    if (LOG_FIRST_N > 0 && loggedFirst < LOG_FIRST_N) return true;
+    if (LOG_FIRST_N > 0 && logged_first < LOG_FIRST_N) return true;
     if (text.indexOf("Land Hostile") !== -1) return true;
     if (/^\d+\.\d+$/.test(text)) return true;
     return false;
 }
 
-function logDraw(tag, text, x, y) {
-    const msg = {
-        tag: tag,
-        text: text,
-        color: last_color,
-    };
-    if (x !== null && x !== undefined) msg.x = x;
-    if (y !== null && y !== undefined) msg.y = y;
-    msg.ts = Date.now();
-    if (LOG_FIRST_N > 0 && loggedFirst < LOG_FIRST_N) loggedFirst += 1;
-    writeLine(msg);
+function bumpFirst() {
+    if (LOG_FIRST_N > 0 && logged_first < LOG_FIRST_N) {
+        logged_first += 1;
+    }
+}
+
+function attachOnce(name, addr, hookFn) {
+    if (!addr || addr.isNull()) return;
+    const key = name + ":" + addr.toString();
+    if (attached[key]) return;
+    attached[key] = true;
+    try {
+        hookFn(addr);
+        writeLine({ tag: "attach", name: name, addr: addr.toString() });
+    } catch (e) {
+        writeLine({ tag: "attach_error", name: name, addr: addr.toString(), err: String(e) });
+    }
+}
+
+function hookSetRenderState(addr) {
+    Interceptor.attach(addr, {
+        onEnter: function() {
+            counts.set_render_state += 1;
+            const sp = getStackPointer(this.context);
+            if (sp === null) return;
+            const state = safeReadI32(sp.add(4));
+            const value = safeReadI32(sp.add(8));
+            if (state === null || value === null) return;
+            if (state === 0x18) {
+                const asFloat = safeReadFloat(sp.add(8));
+                last_scale = asFloat;
+                writeLine({ tag: "render_state", state: state, value: value, as_float: asFloat });
+            }
+        },
+    });
 }
 
 function hookSetColor(addr) {
@@ -173,7 +225,16 @@ function hookDrawTextMono(addr) {
             const textPtr = Memory.readPointer(sp.add(12));
             const text = safeReadCString(textPtr, 256);
             if (!shouldLogText(text)) return;
-            logDraw("draw_text_mono", text, x, y);
+            bumpFirst();
+            writeLine({
+                tag: "draw_text_mono",
+                text: text,
+                x: x,
+                y: y,
+                color: last_color,
+                scale: last_scale,
+                ret: this.returnAddress ? this.returnAddress.toString() : null,
+            });
         },
     });
 }
@@ -184,66 +245,87 @@ function hookDrawTextMonoFmt(addr) {
             counts.draw_text_mono_fmt += 1;
             const sp = getStackPointer(this.context);
             if (sp === null) return;
-            const textPtr = Memory.readPointer(sp.add(12));
-            const fmt = safeReadCString(textPtr, 64);
-            if (!fmt) return;
-            if (fmt.indexOf("%d.%d") === -1 && fmt.indexOf("%d.%d%c") === -1) return;
-            logDraw("draw_text_mono_fmt", fmt, null, null);
+            const x = safeReadFloat(sp.add(4));
+            const y = safeReadFloat(sp.add(8));
+            const fmtPtr = Memory.readPointer(sp.add(12));
+            const fmt = safeReadCString(fmtPtr, 64);
+            const a0 = safeReadI32(sp.add(16));
+            const a1 = safeReadI32(sp.add(20));
+            const text = fmt && fmt.indexOf("%d") !== -1 && a0 !== null && a1 !== null
+                ? (a0 + "." + a1)
+                : null;
+            if (!shouldLogText(text || fmt)) return;
+            bumpFirst();
+            writeLine({
+                tag: "draw_text_mono_fmt",
+                fmt: fmt,
+                text: text,
+                args: [a0, a1],
+                x: x,
+                y: y,
+                color: last_color,
+                scale: last_scale,
+                ret: this.returnAddress ? this.returnAddress.toString() : null,
+            });
         },
     });
 }
 
-function hookByRvas() {
+function attachByRva() {
     const grimBase = Module.findBaseAddress(GRIM_MODULE);
-    const exeBase = Module.findBaseAddress(EXE_MODULE);
+    if (!grimBase) return false;
 
-    if (!grimBase) {
-        console.log("Waiting for grim.dll...");
-        setTimeout(hookByRvas, 1000);
-        return;
-    }
+    attachOnce("set_render_state", grimBase.add(GRIM_RVAS.set_render_state), hookSetRenderState);
+    attachOnce("set_color", grimBase.add(GRIM_RVAS.set_color), hookSetColor);
+    attachOnce("set_color_ptr", grimBase.add(GRIM_RVAS.set_color_ptr), hookSetColorPtr);
+    attachOnce("draw_text_mono", grimBase.add(GRIM_RVAS.draw_text_mono), hookDrawTextMono);
+    attachOnce("draw_text_mono_fmt", grimBase.add(GRIM_RVAS.draw_text_mono_fmt), hookDrawTextMonoFmt);
 
-    const tryAttach = function(name, addr, hookFn) {
-        if (!addr || addr.isNull()) return;
-        const key = name + ":" + addr.toString();
-        if (attached[key]) return;
-        attached[key] = true;
-        hookFn(addr);
-        console.log("hook " + name + ": " + addr);
-    };
-
-    console.log("grim.dll base: " + grimBase);
-    tryAttach("set_color", grimBase.add(GRIM_RVAS.set_color), hookSetColor);
-    tryAttach("set_color_ptr", grimBase.add(GRIM_RVAS.set_color_ptr), hookSetColorPtr);
-    tryAttach("draw_text_mono", grimBase.add(GRIM_RVAS.draw_text_mono), hookDrawTextMono);
-    tryAttach("draw_text_mono_fmt", grimBase.add(GRIM_RVAS.draw_text_mono_fmt), hookDrawTextMonoFmt);
-
-    if (exeBase) {
-        const ifacePtrAddr = exeBase.add(EXE_GRIM_INTERFACE_RVA);
-        try {
-            const iface = Memory.readPointer(ifacePtrAddr);
-            if (!iface.isNull()) {
-                const vtable = Memory.readPointer(iface);
-                tryAttach("set_color(vtable)", Memory.readPointer(vtable.add(0x114)), hookSetColor);
-                tryAttach("set_color_ptr(vtable)", Memory.readPointer(vtable.add(0x110)), hookSetColorPtr);
-                tryAttach("draw_text_mono(vtable)", Memory.readPointer(vtable.add(0x13c)), hookDrawTextMono);
-                tryAttach("draw_text_mono_fmt(vtable)", Memory.readPointer(vtable.add(0x140)), hookDrawTextMonoFmt);
-            }
-        } catch (e) {
-            // Ignore and rely on RVAs.
-        }
-    }
-
-    console.log("Hooks installed. Trigger quest overlay to capture title colors.");
+    return true;
 }
 
-setInterval(function() {
-    writeLine({
-        tag: "summary",
-        ts: Date.now(),
-        counts: counts,
-        last_color: last_color,
-    });
-}, SUMMARY_INTERVAL_MS);
+function attachByVtable() {
+    const exeBase = Module.findBaseAddress(EXE_MODULE);
+    if (!exeBase) return false;
+    const ifacePtrAddr = exeBase.add(EXE_GRIM_INTERFACE_RVA);
+    let iface = null;
+    try {
+        iface = Memory.readPointer(ifacePtrAddr);
+    } catch (e) {
+        return false;
+    }
+    if (!iface || iface.isNull()) return false;
 
-hookByRvas();
+    let vtable = null;
+    try {
+        vtable = Memory.readPointer(iface);
+    } catch (e) {
+        return false;
+    }
+    if (!vtable || vtable.isNull()) return false;
+
+    attachOnce("set_render_state(vtable)", Memory.readPointer(vtable.add(0x20)), hookSetRenderState);
+    attachOnce("set_color(vtable)", Memory.readPointer(vtable.add(0x114)), hookSetColor);
+    attachOnce("set_color_ptr(vtable)", Memory.readPointer(vtable.add(0x110)), hookSetColorPtr);
+    attachOnce("draw_text_mono(vtable)", Memory.readPointer(vtable.add(0x13c)), hookDrawTextMono);
+    attachOnce("draw_text_mono_fmt(vtable)", Memory.readPointer(vtable.add(0x140)), hookDrawTextMonoFmt);
+
+    return true;
+}
+
+function tick() {
+    const grimBase = Module.findBaseAddress(GRIM_MODULE);
+    const exeBase = Module.findBaseAddress(EXE_MODULE);
+    if (grimBase) {
+        attachByRva();
+    }
+    if (exeBase) {
+        attachByVtable();
+    }
+}
+
+writeLine({ tag: "start", arch: Process.arch, pointer_size: Process.pointerSize });
+setInterval(summary, SUMMARY_INTERVAL_MS);
+setInterval(tick, 1000);
+
+tick();
