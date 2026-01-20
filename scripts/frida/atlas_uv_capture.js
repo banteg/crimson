@@ -140,12 +140,25 @@ function formatCaller(addr) {
   if (!CONFIG.includeCaller || !addr) return null;
   const sym = DebugSymbol.fromAddress(addr);
   if (!sym || !sym.moduleName) return addr.toString();
-  const offset = sym.address ? sym.address.sub(Module.getBaseAddress(sym.moduleName)) : null;
+  let offset = null;
+  try {
+    const mod = Process.getModuleByName(sym.moduleName);
+    offset = sym.address ? sym.address.sub(mod.base) : null;
+  } catch (_) {
+    offset = null;
+  }
   return sym.moduleName + (offset ? '+' + offset.toString() : '');
 }
 
+function u32ToF32(value) {
+  const buf = new ArrayBuffer(4);
+  const view = new DataView(buf);
+  view.setUint32(0, value, true);
+  return view.getFloat32(0, true);
+}
+
 function hookBindTexture() {
-  const addr = STATE.grimBase.add(GRIM_RVA.bind_texture);
+  const addr = STATE.grimBase.base.add(GRIM_RVA.bind_texture);
   Interceptor.attach(addr, {
     onEnter(args) {
       const handle = args[0].toInt32();
@@ -169,7 +182,7 @@ function hookBindTexture() {
 }
 
 function hookAtlasFrame() {
-  const addr = STATE.grimBase.add(GRIM_RVA.set_atlas_frame);
+  const addr = STATE.grimBase.base.add(GRIM_RVA.set_atlas_frame);
   Interceptor.attach(addr, {
     onEnter(args) {
       this.atlas_size = args[0].toInt32();
@@ -198,7 +211,7 @@ function hookAtlasFrame() {
 }
 
 function hookSubRect() {
-  const addr = STATE.grimBase.add(GRIM_RVA.set_sub_rect);
+  const addr = STATE.grimBase.base.add(GRIM_RVA.set_sub_rect);
   Interceptor.attach(addr, {
     onEnter(args) {
       this.atlas_size = args[0].toInt32();
@@ -231,7 +244,7 @@ function hookSubRect() {
 }
 
 function hookSetUv() {
-  const addr = STATE.grimBase.add(GRIM_RVA.set_uv);
+  const addr = STATE.grimBase.base.add(GRIM_RVA.set_uv);
   Interceptor.attach(addr, {
     onEnter(args) {
       const handle = STATE.boundTextures[0] ?? null;
@@ -240,10 +253,10 @@ function hookSetUv() {
       writeLog({
         event: 'set_uv',
         ts: nowIso(),
-        u0: args[0].readFloat(),
-        v0: args[1].readFloat(),
-        u1: args[2].readFloat(),
-        v1: args[3].readFloat(),
+        u0: u32ToF32(args[0].toUInt32()),
+        v0: u32ToF32(args[1].toUInt32()),
+        u1: u32ToF32(args[2].toUInt32()),
+        v1: u32ToF32(args[3].toUInt32()),
         handle,
         label: labelForHandle(handle, handles),
         caller: formatCaller(this.returnAddress),
@@ -253,7 +266,7 @@ function hookSetUv() {
 }
 
 function hookSetUvPoint() {
-  const addr = STATE.grimBase.add(GRIM_RVA.set_uv_point);
+  const addr = STATE.grimBase.base.add(GRIM_RVA.set_uv_point);
   Interceptor.attach(addr, {
     onEnter(args) {
       const handle = STATE.boundTextures[0] ?? null;
@@ -263,8 +276,8 @@ function hookSetUvPoint() {
         event: 'set_uv_point',
         ts: nowIso(),
         index: args[0].toInt32(),
-        u: args[1].readFloat(),
-        v: args[2].readFloat(),
+        u: u32ToF32(args[1].toUInt32()),
+        v: u32ToF32(args[2].toUInt32()),
         handle,
         label: labelForHandle(handle, handles),
         caller: formatCaller(this.returnAddress),
