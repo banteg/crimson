@@ -125,9 +125,65 @@ def default_crimson_cfg_data() -> dict:
     config = CrimsonConfig(path=Path("<memory>"), data=data)
     config.texture_scale = 1.0
     config.screen_bpp = 32
-    config.screen_width = 1024
-    config.screen_height = 768
-    config.windowed_flag = 1
+    config.screen_width = 800
+    config.screen_height = 600
+    config.windowed_flag = 0
+    config.data["player_count"] = 1
+    config.data["game_mode"] = 1
+    config.data["full_version_flag"] = 1
+    config.data["fx_toggle"] = 1
+    config.data["sfx_volume"] = 1.0
+    config.data["music_volume"] = 1.0
+    config.data["selected_name_slot"] = 0
+    config.data["saved_name_index"] = 1
+
+    saved_name_order = bytearray()
+    for idx in range(8):
+        saved_name_order += idx.to_bytes(4, "little")
+    config.data["saved_name_order"] = bytes(saved_name_order)
+
+    name_entry = b"default" + b"\x00" * (0x1B - len("default"))
+    config.data["saved_names"] = name_entry * 8
+
+    player_name = b"10tons" + b"\x00" * (0x20 - len("10tons"))
+    config.data["player_name"] = player_name
+    config.data["player_name_len"] = 0
+
+    keybinds = [
+        0x11,
+        0x1F,
+        0x1E,
+        0x20,
+        0x100,
+        0x17E,
+        0x17E,
+        0x10,
+        0x12,
+        0x13F,
+        0x140,
+        0x141,
+        0x153,
+        0x17E,
+        0x17E,
+        0x17E,
+        200,
+        0xD0,
+        0xCB,
+        0xCD,
+        0x9D,
+        0x17E,
+        0x17E,
+        0xD3,
+        0xD1,
+        0x13F,
+        0x140,
+        0x141,
+        0x153,
+        0x17E,
+        0x17E,
+        0x17E,
+    ]
+    config.data["keybinds"] = b"".join(value.to_bytes(4, "little") for value in keybinds)
     return data
 
 

@@ -22,6 +22,15 @@ Observed file:
   - windowed flag = 1
   - texture scale = 1.0
 
+Hardcoded defaults (from `config_sync_from_grim` when `grim_config_invoked` is set):
+
+- width 800, height 600
+- windowed flag = 0 (fullscreen)
+- bpp = 32
+- sfx/music volume = 1.0
+- player name defaults to `10tons`
+- saved names default to `"default"` x8
+
 ## Load / write behavior
 
 From the decompile (see `docs/detangling.md`):
@@ -72,9 +81,9 @@ the blob start.
 | `0x1b0` | `u32` | `9000` | Compared to Grim vtable +0xa4 (likely dead). |
 | `0x1b4` | `u32` | `27000` | Compared to Grim vtable +0xa4 (likely dead). |
 | `0x1b8` | `u32` | `32` | Display color depth (bits-per-pixel). |
-| `0x1bc` | `u32` | `800/1024` | Screen width (file in game_bins is 1024). |
-| `0x1c0` | `u32` | `600/768` | Screen height (file in game_bins is 768). |
-| `0x1c4` | `u8` | `0/1` | Windowed flag (`0` = fullscreen, `1` = windowed). |
+| `0x1bc` | `u32` | `800` | Screen width (hardcoded default; file in game_bins is 1024). |
+| `0x1c0` | `u32` | `600` | Screen height (hardcoded default; file in game_bins is 768). |
+| `0x1c4` | `u8` | `0` | Windowed flag (`0` = fullscreen, `1` = windowed). |
 | `0x1c8` | `u32[0x20]` | table | Keybind blocks (2 x 16 dwords; indices `0..12` copied). |
 | `0x1f8` | `u32*` | alias | Points at `&keybinds[12]` (copy loop). |
 | `0x440` | `u32` | `0` | Unknown. |
