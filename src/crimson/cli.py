@@ -207,6 +207,30 @@ def cmd_view(
     run_view(view, width=width, height=height, title=title, fps=fps)
 
 
+@app.command("game")
+def cmd_game(
+    width: int = typer.Option(1024, help="window width"),
+    height: int = typer.Option(768, help="window height"),
+    fps: int = typer.Option(60, help="target fps"),
+    seed: int | None = typer.Option(None, help="rng seed"),
+    base_dir: Path = typer.Option(
+        Path("artifacts") / "runtime",
+        help="base path for runtime files (default: artifacts/runtime)",
+    ),
+) -> None:
+    """Run the reimplementation entrypoint."""
+    from .game import GameConfig, run_game
+
+    config = GameConfig(
+        base_dir=base_dir,
+        width=width,
+        height=height,
+        fps=fps,
+        seed=seed,
+    )
+    run_game(config)
+
+
 def main(argv: list[str] | None = None) -> None:
     app(prog_name="crimson", args=argv)
 
