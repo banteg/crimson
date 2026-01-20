@@ -1,6 +1,6 @@
 ---
 tags:
-  - status-verified
+  - status-in-progress
 ---
 
 # Boot / Loading Sequence
@@ -35,7 +35,8 @@ The game pre-loads specific textures needed for the splash screen and loading sc
 | `splash10tons` | `load\splash10tons.jaz` | 512×128 RGBA company logo (extracted as `splash10tons.png`). |
 | `splashReflexive` | `load\splashReflexive.jpg` | 512×256 RGB company logo (extracted as `splashReflexive.jpg`). |
 
-> **Note:** `splash10tons` and `splashReflexive` strings exist in the binary but their explicit `texture_get_or_load` calls are not visible in `crimsonland_main` decompilation. They are likely loaded/rendered in a sub-function or dynamically by name.
+> **Note:** `splash10tons` and `splashReflexive` are loaded in `game_startup_init`
+> after the main texture steps complete, not directly inside `crimsonland_main`.
 
 ## 3. Splash Screen Rendering (Runtime Evidence)
 
@@ -120,13 +121,41 @@ Each pass uses `grim_get_texture_handle` + `grim_bind_texture`, then
 > The band frame draw is implemented inside `grim.dll` (callsites in the DLL),
 > but the geometry and color are confirmed via Frida capture.
 
-## 5. Company Logo Sequence (Inferred)
+## 5. Company Logo Sequence (Static)
 
-Between the splash and main asset loop, the game renders the company logos.
-Exact logic is still unresolved in decompilation; likely sequence:
+The company logo sequence runs inside `game_startup_init` after
+`load_textures_step` completes and the splash fade-out finishes.
 
-1. **10tons splash:** `splash10tons` (inferred from string presence).
-2. **Reflexive splash:** `splashReflexive` (inferred from string presence).
+### Activation / gating
+
+- When textures finish, the game loads `splashReflexive` and `splash10Tons`,
+  runs `game_startup_init_prelude`, starts the sound thread, and clamps
+  `_DAT_004aaf90` to `0.5` if it is larger. `[static]`
+- A 5-tick delay (`Sleep(5)` per tick) runs before the logos display. `[static]`
+
+### Timing model
+
+- The internal timer (`_DAT_004aaf90`) advances by `frame_dt * 1.1`. `[static]`
+- For logo rendering, it uses `t = _DAT_004aaf90 - 2.0`. `[static]`
+- If the user skips (key/mouse), time jumps to `t = 16.0` when not inside a
+  fade window; otherwise it accelerates by `frame_dt * 4.0`. `[static]`
+
+### 10tons logo (512×128)
+
+- Fade in: `t` in `[1.0, 2.0)` → alpha = `t - 1.0` (0→1). `[static]`
+- Hold: `t` in `[2.0, 4.0)` → alpha = 1.0. `[static]`
+- Fade out: `t` in `[4.0, 5.0)` → alpha = `1.0 - (t - 4.0)` (1→0). `[static]`
+
+### Reflexive logo (512×256)
+
+- Fade in: `t` in `[7.0, 8.0)` → alpha = `t - 7.0`. `[static]`
+- Hold: `t` in `[8.0, 10.0)` → alpha = 1.0. `[static]`
+- Fade out: `t` in `[10.0, 11.0)` → alpha = `1.0 - (t - 10.0)`. `[static]`
+
+### Handoff to theme
+
+- When `_DAT_004aaf90 > 14.0`, the intro is muted and `crimson_theme` (or
+  `crimsonquest` in demo mode) begins, ending the logo sequence. `[static+runtime]`
 
 ## 6. Main Asset Loading Loop (`load_textures_step`)
 
