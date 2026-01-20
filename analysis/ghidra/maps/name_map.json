@@ -101,12 +101,14 @@
     "program": "crimsonland.exe",
     "address": "0x004017a0",
     "name": "console_push_line",
+    "signature": "void console_push_line(void *console_state, char *line)",
     "comment": "pushes line into console queue"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00401870",
     "name": "console_printf",
+    "signature": "int console_printf(void *console_state, char *fmt, ...)",
     "comment": "formats then pushes line"
   },
   {
@@ -183,6 +185,7 @@
     "program": "crimsonland.exe",
     "address": "0x004026e0",
     "name": "console_register_command",
+    "signature": "void console_register_command(void *console_state, char *name, void *handler)",
     "comment": "registers a console command and handler"
   },
   {
@@ -217,6 +220,7 @@
     "program": "crimsonland.exe",
     "address": "0x00402c00",
     "name": "register_core_cvars",
+    "signature": "void register_core_cvars(void)",
     "comment": "registers built-in cvars"
   },
   {
@@ -377,6 +381,7 @@
     "program": "crimsonland.exe",
     "address": "0x00408990",
     "name": "tutorial_timeline_update",
+    "signature": "void tutorial_timeline_update(void)",
     "comment": "drives tutorial stage timing, messages, and scripted spawns"
   },
   {
@@ -789,6 +794,7 @@
     "program": "crimsonland.exe",
     "address": "0x0041f1a0",
     "name": "config_load_presets",
+    "signature": "uint config_load_presets(void)",
     "comment": "loads config presets into globals"
   },
   {
@@ -802,6 +808,7 @@
     "program": "crimsonland.exe",
     "address": "0x0041f580",
     "name": "bonus_alloc_slot",
+    "signature": "int * bonus_alloc_slot(void)",
     "comment": "returns a free bonus slot in DAT_00482948 (or DAT_00490630 sentinel)"
   },
   {
@@ -969,12 +976,14 @@
     "program": "crimsonland.exe",
     "address": "0x00428140",
     "name": "creature_alloc_slot",
+    "signature": "int creature_alloc_slot(void)",
     "comment": "finds a free creature entry in DAT_0049bf38 and seeds defaults"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00428210",
     "name": "creatures_none_active",
+    "signature": "uint creatures_none_active(void)",
     "comment": "returns low byte 1 when no active creature entries exist (0 otherwise); sets DAT_0048700c"
   },
   {

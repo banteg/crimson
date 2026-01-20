@@ -44,7 +44,7 @@ def _log_error(message: str) -> None:
         print(f"error: {message}")
 
 
-def _candidate_roots() -> list[Path]:
+def _candidate_roots(bv=None) -> list[Path]:
     roots: list[Path] = []
     if "__file__" in globals():
         try:
@@ -54,6 +54,14 @@ def _candidate_roots() -> list[Path]:
                 roots.append(script_path.parents[1])
         except Exception:
             pass
+    if bv is not None and hasattr(bv, "file"):
+        for attr in ("original_filename", "filename", "file_name", "path"):
+            value = getattr(bv.file, attr, None)
+            if value:
+                try:
+                    roots.append(Path(str(value)).resolve().parent)
+                except Exception:
+                    pass
     try:
         roots.append(Path.cwd())
     except Exception:
@@ -61,18 +69,18 @@ def _candidate_roots() -> list[Path]:
     return roots
 
 
-def _find_repo_root() -> Path | None:
-    for root in _candidate_roots():
+def _find_repo_root(bv=None) -> Path | None:
+    for root in _candidate_roots(bv):
         if (root / "analysis" / "ghidra" / "maps").is_dir():
             return root
     return None
 
 
-def _default_map_path(env_var: str, rel_path: str) -> Path | None:
+def _default_map_path(env_var: str, rel_path: str, bv=None) -> Path | None:
     env_value = os.getenv(env_var, "").strip()
     if env_value:
         return Path(env_value).expanduser()
-    repo_root = _find_repo_root()
+    repo_root = _find_repo_root(bv)
     if repo_root:
         return repo_root / rel_path
     return None
@@ -145,11 +153,17 @@ def _program_candidates(bv) -> set[str]:
         value = getattr(file_obj, attr, None)
         if not value:
             continue
-        candidates.add(str(value).lower())
-        candidates.add(os.path.basename(str(value)).lower())
+        for item in (str(value), os.path.basename(str(value))):
+            lowered = item.lower()
+            candidates.add(lowered)
+            if lowered.endswith(".bndb"):
+                candidates.add(lowered[:-5])
     basename = getattr(file_obj, "basename", None)
     if basename:
-        candidates.add(str(basename).lower())
+        lowered = str(basename).lower()
+        candidates.add(lowered)
+        if lowered.endswith(".bndb"):
+            candidates.add(lowered[:-5])
     return candidates
 
 
@@ -246,7 +260,7 @@ def _ensure_address_valid(bv, addr: int) -> bool:
 
 def apply_name_map(bv, map_path: Path | None = None) -> dict[str, int]:
     if map_path is None:
-        map_path = _default_map_path("CRIMSON_NAME_MAP", "analysis/ghidra/maps/name_map.json")
+        map_path = _default_map_path("CRIMSON_NAME_MAP", "analysis/ghidra/maps/name_map.json", bv)
     if map_path is None or not map_path.exists():
         _log_error("name map not found; set CRIMSON_NAME_MAP or pass a path")
         return {}
@@ -336,7 +350,7 @@ def apply_name_map(bv, map_path: Path | None = None) -> dict[str, int]:
 
 def apply_data_map(bv, map_path: Path | None = None) -> dict[str, int]:
     if map_path is None:
-        map_path = _default_map_path("CRIMSON_DATA_MAP", "analysis/ghidra/maps/data_map.json")
+        map_path = _default_map_path("CRIMSON_DATA_MAP", "analysis/ghidra/maps/data_map.json", bv)
     if map_path is None or not map_path.exists():
         _log_error("data map not found; set CRIMSON_DATA_MAP or pass a path")
         return {}

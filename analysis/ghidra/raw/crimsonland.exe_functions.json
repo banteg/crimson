@@ -142,14 +142,14 @@
   {
     "name": "console_push_line",
     "address": "004017a0",
-    "signature": "undefined console_push_line(void * this, uint * param_1)",
+    "signature": "void console_push_line(void * this, void * console_state, char * line)",
     "external": false,
     "calls": ["console_log_node_free", "crt_free", "operator_new", "strdup_malloc"]
   },
   {
     "name": "console_printf",
     "address": "00401870",
-    "signature": "undefined console_printf(void * param_1, byte * param_2)",
+    "signature": "int console_printf(void * console_state, char * fmt, ...)",
     "external": false,
     "calls": ["console_push_line", "crt_vsprintf"]
   },
@@ -233,7 +233,7 @@
   {
     "name": "console_register_command",
     "address": "004026e0",
-    "signature": "undefined console_register_command(void * this, uint * param_1, undefined4 param_2)",
+    "signature": "void console_register_command(void * this, void * console_state, char * name, void * handler)",
     "external": false,
     "calls": ["operator_new", "strdup_malloc"]
   },
@@ -268,7 +268,7 @@
   {
     "name": "register_core_cvars",
     "address": "00402c00",
-    "signature": "undefined register_core_cvars(void)",
+    "signature": "void register_core_cvars(void)",
     "external": false,
     "calls": ["console_register_cvar"]
   },
@@ -471,7 +471,7 @@
   {
     "name": "tutorial_timeline_update",
     "address": "00408990",
-    "signature": "undefined tutorial_timeline_update(void)",
+    "signature": "void tutorial_timeline_update(void)",
     "external": false,
     "calls": ["creature_spawn_template", "creatures_none_active", "effect_spawn_burst", "sfx_play", "tutorial_prompt_dialog"]
   },
@@ -1143,7 +1143,7 @@
   {
     "name": "bonus_alloc_slot",
     "address": "0041f580",
-    "signature": "undefined4 * bonus_alloc_slot(void)",
+    "signature": "int * bonus_alloc_slot(void)",
     "external": false,
     "calls": []
   },

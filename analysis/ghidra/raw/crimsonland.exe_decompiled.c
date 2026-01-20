@@ -212,12 +212,12 @@ void console_cmd_exec(void)
   char *unaff_ESI;
   
   if (DAT_0047f4cc != 2) {
-    console_printf(&console_log_queue,(byte *)s_exec_<script>_0047118c);
+    console_printf(&console_log_queue,s_exec_<script>_0047118c);
     return;
   }
   fp = crt_fopen(DAT_0047ea64,&DAT_00471160);
   if (fp != (FILE *)0x0) {
-    console_printf(&console_log_queue,(byte *)s_Executing___s__00471164);
+    console_printf(&console_log_queue,s_Executing___s__00471164,DAT_0047ea64);
     pcVar1 = FUN_00460fac(&DAT_0047e848,0x1ff,&fp->_ptr);
     while (pcVar1 != (char *)0x0) {
       pcVar1 = _strchr(&DAT_0047e848,10);
@@ -234,7 +234,7 @@ void console_cmd_exec(void)
     crt_fclose(fp);
     return;
   }
-  console_printf(&console_log_queue,(byte *)s_Cannot_open_file___s__00471174);
+  console_printf(&console_log_queue,s_Cannot_open_file___s__00471174,DAT_0047ea64);
   return;
 }
 
@@ -281,12 +281,16 @@ void console_cmd_minimize(void)
 void console_cmdlist(void)
 
 {
-  int iVar1;
+  undefined4 *puVar1;
+  int iVar2;
   
-  for (iVar1 = console_command_list_head; iVar1 != 0; iVar1 = *(int *)(iVar1 + 4)) {
-    console_printf(&console_log_queue,&DAT_004711ac);
+  iVar2 = 0;
+  for (puVar1 = console_command_list_head; puVar1 != (undefined4 *)0x0;
+      puVar1 = (undefined4 *)puVar1[1]) {
+    console_printf(&console_log_queue,&DAT_004711ac,*puVar1);
+    iVar2 = iVar2 + 1;
   }
-  console_printf(&console_log_queue,(byte *)s__i_commands_0047119c);
+  console_printf(&console_log_queue,s__i_commands_0047119c,iVar2);
   return;
 }
 
@@ -300,12 +304,15 @@ void console_cmdlist(void)
 void console_vars(void)
 
 {
-  int iVar1;
+  undefined4 *puVar1;
+  int iVar2;
   
-  for (iVar1 = console_log_queue; iVar1 != 0; iVar1 = *(int *)(iVar1 + 4)) {
-    console_printf(&console_log_queue,&DAT_004711ac);
+  iVar2 = 0;
+  for (puVar1 = console_log_queue; puVar1 != (undefined4 *)0x0; puVar1 = (undefined4 *)puVar1[1]) {
+    console_printf(&console_log_queue,&DAT_004711ac,*puVar1);
+    iVar2 = iVar2 + 1;
   }
-  console_printf(&console_log_queue,(byte *)s__i_variables_004711b0);
+  console_printf(&console_log_queue,s__i_variables_004711b0,iVar2);
   return;
 }
 
@@ -322,27 +329,28 @@ void console_echo(void)
   byte bVar1;
   int iVar2;
   byte *pbVar3;
-  byte *pbVar4;
-  int iVar5;
-  bool bVar6;
+  undefined *puVar4;
+  byte *pbVar5;
+  int iVar6;
+  bool bVar7;
   
   iVar2 = FUN_00401150();
   if (iVar2 == 2) {
     pbVar3 = FUN_00401120(1);
-    pbVar4 = &DAT_004711cc;
+    pbVar5 = &DAT_004711cc;
     do {
-      bVar1 = *pbVar4;
-      bVar6 = bVar1 < *pbVar3;
+      bVar1 = *pbVar5;
+      bVar7 = bVar1 < *pbVar3;
       if (bVar1 != *pbVar3) {
 LAB_00401455:
-        iVar2 = (1 - (uint)bVar6) - (uint)(bVar6 != 0);
+        iVar2 = (1 - (uint)bVar7) - (uint)(bVar7 != 0);
         goto LAB_0040145a;
       }
       if (bVar1 == 0) break;
-      bVar1 = pbVar4[1];
-      bVar6 = bVar1 < pbVar3[1];
+      bVar1 = pbVar5[1];
+      bVar7 = bVar1 < pbVar3[1];
       if (bVar1 != pbVar3[1]) goto LAB_00401455;
-      pbVar4 = pbVar4 + 2;
+      pbVar5 = pbVar5 + 2;
       pbVar3 = pbVar3 + 2;
     } while (bVar1 != 0);
     iVar2 = 0;
@@ -355,20 +363,20 @@ LAB_0040145a:
   iVar2 = FUN_00401150();
   if (iVar2 == 2) {
     pbVar3 = FUN_00401120(1);
-    pbVar4 = &DAT_004711c8;
+    pbVar5 = &DAT_004711c8;
     do {
-      bVar1 = *pbVar4;
-      bVar6 = bVar1 < *pbVar3;
+      bVar1 = *pbVar5;
+      bVar7 = bVar1 < *pbVar3;
       if (bVar1 != *pbVar3) {
 LAB_004014a9:
-        iVar2 = (1 - (uint)bVar6) - (uint)(bVar6 != 0);
+        iVar2 = (1 - (uint)bVar7) - (uint)(bVar7 != 0);
         goto LAB_004014ae;
       }
       if (bVar1 == 0) break;
-      bVar1 = pbVar4[1];
-      bVar6 = bVar1 < pbVar3[1];
+      bVar1 = pbVar5[1];
+      bVar7 = bVar1 < pbVar3[1];
       if (bVar1 != pbVar3[1]) goto LAB_004014a9;
-      pbVar4 = pbVar4 + 2;
+      pbVar5 = pbVar5 + 2;
       pbVar3 = pbVar3 + 2;
     } while (bVar1 != 0);
     iVar2 = 0;
@@ -378,15 +386,15 @@ LAB_004014ae:
       return;
     }
   }
-  iVar5 = 1;
+  iVar6 = 1;
   iVar2 = FUN_00401150();
   if (1 < iVar2) {
     do {
-      FUN_00401120(iVar5);
-      console_printf(&console_log_queue,&DAT_004711c4);
-      iVar5 = iVar5 + 1;
+      puVar4 = FUN_00401120(iVar6);
+      console_printf(&console_log_queue,&DAT_004711c4,puVar4);
+      iVar6 = iVar6 + 1;
       iVar2 = FUN_00401150();
-    } while (iVar5 < iVar2);
+    } while (iVar6 < iVar2);
   }
   console_printf(&console_log_queue,&DAT_004711c0);
   return;
@@ -402,14 +410,15 @@ LAB_004014ae:
 void console_cmd_set(void)
 
 {
+  undefined4 *puVar1;
   char *unaff_retaddr;
   
   if (DAT_0047f4cc != 3) {
-    console_printf(&console_log_queue,(byte *)s_set_<var>_<value>_004711e4);
+    console_printf(&console_log_queue,s_set_<var>_<value>_004711e4);
     return;
   }
-  console_register_cvar(&console_log_queue,DAT_0047ea64,DAT_0047ea68,unaff_retaddr);
-  console_printf(&console_log_queue,(byte *)s___s__set_to___s__004711d0);
+  puVar1 = console_register_cvar(&console_log_queue,DAT_0047ea64,DAT_0047ea68,unaff_retaddr);
+  console_printf(&console_log_queue,s___s__set_to___s__004711d0,*puVar1,puVar1[4]);
   return;
 }
 
@@ -460,15 +469,16 @@ int * __fastcall console_init(int *console_state)
   _DAT_0047eaa8 = 0;
   _DAT_0047eaac = 0;
   DAT_0047f4cc = 0;
-  console_register_command(console_state,(uint *)console_cmd_cmdlist,console_cmdlist);
-  console_register_command(console_state,(uint *)&console_cmd_vars,console_vars);
-  console_register_command(console_state,(uint *)&console_cmd_echo,console_echo);
-  console_register_command(console_state,(uint *)&console_cmd_set,console_cmd_set);
-  console_register_command(console_state,(uint *)&console_cmd_quit,console_cmd_quit);
-  console_register_command(console_state,(uint *)console_cmd_clear,console_clear_log);
-  console_register_command(console_state,(uint *)console_cmd_extend,console_cmd_extend);
-  console_register_command(console_state,(uint *)console_cmd_minimize,console_cmd_minimize);
-  console_register_command(console_state,(uint *)&console_cmd_exec,console_cmd_exec);
+  console_register_command(console_state,console_cmd_cmdlist,(char *)console_cmdlist,unaff_EDI);
+  console_register_command(console_state,&console_cmd_vars,(char *)console_vars,unaff_EDI);
+  console_register_command(console_state,&console_cmd_echo,(char *)console_echo,unaff_EDI);
+  console_register_command(console_state,&console_cmd_set,(char *)console_cmd_set,unaff_EDI);
+  console_register_command(console_state,&console_cmd_quit,(char *)console_cmd_quit,unaff_EDI);
+  console_register_command(console_state,console_cmd_clear,(char *)console_clear_log,unaff_EDI);
+  console_register_command(console_state,console_cmd_extend,(char *)console_cmd_extend,unaff_EDI);
+  console_register_command
+            (console_state,console_cmd_minimize,(char *)console_cmd_minimize,unaff_EDI);
+  console_register_command(console_state,&console_cmd_exec,(char *)console_cmd_exec,unaff_EDI);
   puVar1 = operator_new(8);
   if (puVar1 == (undefined4 *)0x0) {
     puVar1 = (undefined4 *)0x0;
@@ -547,7 +557,7 @@ void __fastcall FUN_004016e0(undefined4 *param_1)
 
 /* pushes line into console queue */
 
-void __thiscall console_push_line(void *this,uint *param_1)
+void __thiscall console_push_line(void *this,void *console_state,char *line)
 
 {
   int iVar1;
@@ -590,7 +600,7 @@ void __thiscall console_push_line(void *this,uint *param_1)
       puVar4[1] = 0;
       *puVar4 = 0;
     }
-    pcVar5 = strdup_malloc((char *)param_1);
+    pcVar5 = strdup_malloc(console_state);
     *puVar4 = pcVar5;
     puVar4[1] = *(undefined4 *)((int)this + 8);
     *(undefined4 **)((int)this + 8) = puVar4;
@@ -605,14 +615,21 @@ void __thiscall console_push_line(void *this,uint *param_1)
 
 /* formats then pushes line */
 
-void __cdecl console_printf(void *param_1,byte *param_2)
+int __cdecl console_printf(void *console_state,char *fmt,...)
 
 {
-  if (*(char *)((int)param_1 + 0xc) != '\0') {
-    crt_vsprintf(&DAT_0047f2cc,(char *)param_2,&stack0x0000000c);
-    console_push_line(param_1,(uint *)&DAT_0047f2cc);
+  undefined4 in_EAX;
+  int iVar1;
+  int extraout_EAX;
+  char *unaff_ESI;
+  
+  iVar1 = CONCAT31((int3)((uint)in_EAX >> 8),*(char *)((int)console_state + 0xc));
+  if (*(char *)((int)console_state + 0xc) != '\0') {
+    crt_vsprintf(&DAT_0047f2cc,fmt,&stack0x0000000c);
+    console_push_line(console_state,&DAT_0047f2cc,unaff_ESI);
+    iVar1 = extraout_EAX;
   }
-  return;
+  return iVar1;
 }
 
 
@@ -711,7 +728,7 @@ void __fastcall console_history_apply(int console_state)
 void __thiscall console_exec_line(void *this,void *console_state,char *line)
 
 {
-  void *pvVar1;
+  undefined4 *puVar1;
   void *pvVar2;
   char *pcVar3;
   char *unaff_EDI;
@@ -720,33 +737,34 @@ void __thiscall console_exec_line(void *this,void *console_state,char *line)
   
   console_tokenize_line(console_state);
   if (DAT_0047f4cc != 0) {
-    pvVar1 = console_cvar_find(this,DAT_0047ea60,unaff_EDI);
+    puVar1 = console_cvar_find(this,DAT_0047ea60,unaff_EDI);
     pvVar2 = console_command_find(this,DAT_0047ea60,unaff_EDI);
-    if (pvVar1 == (void *)0x0) {
+    if (puVar1 == (undefined4 *)0x0) {
       if (pvVar2 == (void *)0x0) {
-        console_printf(this,(byte *)s_Unknown_command___s__0047126c);
+        console_printf(this,s_Unknown_command___s__0047126c);
         return;
       }
       (**(code **)((int)pvVar2 + 8))();
       return;
     }
     if (DAT_0047f4cc == 2) {
-      if (*(void **)((int)pvVar1 + 0x10) != (void *)0x0) {
-        crt_free(*(void **)((int)pvVar1 + 0x10));
+      if ((void *)puVar1[4] != (void *)0x0) {
+        crt_free((void *)puVar1[4]);
       }
-      *(undefined4 *)((int)pvVar1 + 0x10) = 0;
+      puVar1[4] = 0;
       str = DAT_0047ea64;
       pcVar3 = strdup_malloc(DAT_0047ea64);
-      *(char **)((int)pvVar1 + 0x10) = pcVar3;
+      puVar1[4] = pcVar3;
       dVar4 = crt_atof_l(DAT_0047ea64,DAT_0047ea64,str);
-      *(float *)((int)pvVar1 + 0xc) = (float)dVar4;
+      puVar1[3] = (float)dVar4;
       if (*(char *)((int)this + 0xc) != '\0') {
-        console_printf(this,(byte *)s___s__set_to___s____ff__00471298);
+        console_printf(this,s___s__set_to___s____ff__00471298,*puVar1,puVar1[4],(double)(float)dVar4
+                      );
         return;
       }
     }
     else if (*(char *)((int)this + 0xc) != '\0') {
-      console_printf(this,(byte *)s___s__is___s____ff__00471284);
+      console_printf(this,s___s__is___s____ff__00471284,*puVar1,puVar1[4],(double)(float)puVar1[3]);
       return;
     }
   }
@@ -965,8 +983,8 @@ LAB_00401cf6:
     *(undefined4 **)(console_state + 0x10) = puVar6;
   }
   *(undefined4 *)(console_state + 0x14) = 0;
-  console_input_buffer();
-  console_printf(&console_log_queue,(byte *)s_>__s_004712b0);
+  pcVar4 = console_input_buffer();
+  console_printf(&console_log_queue,s_>__s_004712b0,pcVar4);
   pcVar4 = console_input_buffer();
   console_exec_line((void *)console_state,pcVar4,unaff_EDI);
   console_input_clear();
@@ -1494,7 +1512,7 @@ LAB_00402683:
 
 /* registers a console command and handler */
 
-void __thiscall console_register_command(void *this,uint *param_1,undefined4 param_2)
+void __thiscall console_register_command(void *this,void *console_state,char *name,void *handler)
 
 {
   int iVar1;
@@ -1507,12 +1525,12 @@ void __thiscall console_register_command(void *this,uint *param_1,undefined4 par
     puVar3 = (undefined4 *)0x0;
   }
   else {
-    pcVar4 = strdup_malloc((char *)param_1);
+    pcVar4 = strdup_malloc(console_state);
     *puVar3 = pcVar4;
     puVar3[1] = 0;
     puVar3[2] = 0;
   }
-  puVar3[2] = param_2;
+  puVar3[2] = name;
   iVar1 = *(int *)((int)this + 4);
   if (iVar1 != 0) {
     for (iVar2 = *(int *)(iVar1 + 4); iVar2 != 0; iVar2 = *(int *)(iVar2 + 4)) {
@@ -2073,17 +2091,17 @@ int __cdecl ui_mouse_inside_rect(float *xy,int h,int w)
 int game_core_init(void)
 
 {
-  undefined4 uVar1;
+  int iVar1;
   
-  console_printf(&console_log_queue,(byte *)s_GDI_initializing_UI_elements__00471468);
+  console_printf(&console_log_queue,s_GDI_initializing_UI_elements__00471468);
   quest_database_init();
   effect_defaults_reset();
   ui_menu_assets_init();
   bonus_metadata_init();
   render_pass_mode = 0;
   game_state_set(0);
-  uVar1 = console_printf(&console_log_queue,(byte *)s_Core_Init_done__00471454);
-  return CONCAT31((int3)((uint)uVar1 >> 8),1);
+  iVar1 = console_printf(&console_log_queue,s_Core_Init_done__00471454);
+  return CONCAT31((int3)((uint)iVar1 >> 8),1);
 }
 
 
@@ -3362,7 +3380,7 @@ LAB_00404603:
     }
   } while( true );
   if (24999 < iVar3) {
-    console_printf(&console_log_queue,(byte *)s_Perk_Randomizer_failed_to_genera_00471afc);
+    console_printf(&console_log_queue,s_Perk_Randomizer_failed_to_genera_00471afc);
   }
   iVar5 = iVar5 + 1;
   if (6 < iVar5) {
@@ -8130,10 +8148,10 @@ undefined4 * FUN_0040e700(void)
   char local_200 [512];
   
   crt_sprintf(local_200,s_mods__s_00472f58);
-  console_printf(&console_log_queue,(byte *)s_CMOD____s__00472fec);
+  console_printf(&console_log_queue,s_CMOD____s__00472fec,local_200);
   DAT_004824d8 = LoadLibraryA(local_200);
   if (DAT_004824d8 == (HMODULE)0x0) {
-    console_printf(&console_log_queue,(byte *)s_CMOD__Load_library_failed__00472fd0);
+    console_printf(&console_log_queue,s_CMOD__Load_library_failed__00472fd0);
     return (undefined4 *)0x0;
   }
   pFVar1 = GetProcAddress(DAT_004824d8,s_CMOD_GetInfo_00472fc0);
@@ -8156,7 +8174,7 @@ undefined4 * FUN_0040e700(void)
     }
     puVar2 = (undefined4 *)(*pFVar1)();
     if (puVar2 == (undefined4 *)0x0) {
-      console_printf(&console_log_queue,(byte *)s_CMOD__bad_CMOD_GetInfo_function_00472f84);
+      console_printf(&console_log_queue,s_CMOD__bad_CMOD_GetInfo_function_00472f84);
     }
     else {
       puVar4 = &DAT_00481c88;
@@ -8167,10 +8185,10 @@ undefined4 * FUN_0040e700(void)
       }
     }
     FreeLibrary(DAT_004824d8);
-    console_printf(&console_log_queue,(byte *)s_CMOD__mod_enum___s__00472f6c);
+    console_printf(&console_log_queue,s_CMOD__mod_enum___s__00472f6c,&DAT_00481c88);
     return &DAT_00481c88;
   }
-  console_printf(&console_log_queue,(byte *)s_CMOD_GetInfo_failed__00472fa8);
+  console_printf(&console_log_queue,s_CMOD_GetInfo_failed__00472fa8);
   FreeLibrary(DAT_004824d8);
   return (undefined4 *)0x0;
 }
@@ -8187,26 +8205,26 @@ int FUN_0040e860(void)
   char local_200 [512];
   
   crt_sprintf(local_200,s_mods__s_00472f58);
-  console_printf(&console_log_queue,(byte *)s_CMOD____s__00472fec);
+  console_printf(&console_log_queue,s_CMOD____s__00472fec,local_200);
   DAT_004824d8 = LoadLibraryA(local_200);
   if (DAT_004824d8 == (HMODULE)0x0) {
-    console_printf(&console_log_queue,(byte *)s_CMOD__Load_library_failed__00472fd0);
+    console_printf(&console_log_queue,s_CMOD__Load_library_failed__00472fd0);
     return 0;
   }
   pFVar1 = GetProcAddress(DAT_004824d8,s_CMOD_GetMod_00473044);
   if (pFVar1 == (FARPROC)0x0) {
-    console_printf(&console_log_queue,(byte *)s_CMOD__CMOD_GetMod_failed__00473028);
+    console_printf(&console_log_queue,s_CMOD__CMOD_GetMod_failed__00473028);
     FreeLibrary(DAT_004824d8);
     return 0;
   }
   iVar2 = (*pFVar1)();
   if (iVar2 == 0) {
-    console_printf(&console_log_queue,(byte *)s_CMOD__bad_CMOD_GetMod_function_00473008);
+    console_printf(&console_log_queue,s_CMOD__bad_CMOD_GetMod_function_00473008);
   }
   else {
     *(undefined **)(iVar2 + 4) = &DAT_00481a80;
   }
-  console_printf(&console_log_queue,(byte *)s_CMOD_GetMod_ok_00472ff8);
+  console_printf(&console_log_queue,s_CMOD_GetMod_ok_00472ff8);
   return iVar2;
 }
 
@@ -10236,14 +10254,14 @@ void game_save_status(void)
     crt_fwrite(&local_4,4,1,fp);
     crt_fclose(fp);
     if (*(float *)(DAT_00480864 + 0xc) != 0.0) {
-      console_printf(&console_log_queue,(byte *)s_GAME_SaveStatus_OK__00473644);
+      console_printf(&console_log_queue,s_GAME_SaveStatus_OK__00473644);
     }
     game_load_status();
     game_sequence_load();
     game_sequence_load();
     return;
   }
-  console_printf(&console_log_queue,(byte *)s_GAME_SaveStatus_FAILED__00473628);
+  console_printf(&console_log_queue,s_GAME_SaveStatus_FAILED__00473628);
   game_sequence_load();
   return;
 }
@@ -10273,8 +10291,8 @@ void game_load_status(void)
   fp = crt_fopen(path,mode);
   uVar5 = 0;
   if (fp == (FILE *)0x0) {
-    console_printf(&console_log_queue,(byte *)s_GAME_LoadStatus_FAILED__004736a0);
-    console_printf(&console_log_queue,(byte *)s_Generating_new_file___00473688);
+    console_printf(&console_log_queue,s_GAME_LoadStatus_FAILED__004736a0);
+    console_printf(&console_log_queue,s_Generating_new_file___00473688);
     game_status_blob = 0;
     game_sequence_load();
     game_save_status();
@@ -10285,7 +10303,7 @@ void game_load_status(void)
     lVar2 = crt_ftell(fp);
     if (lVar2 != 0x26c) {
       crt_fclose(fp);
-      console_printf(&console_log_queue,(byte *)s_GAME_LoadStatus_FAILED__invalid_f_00473700);
+      console_printf(&console_log_queue,s_GAME_LoadStatus_FAILED__invalid_f_00473700);
       game_sequence_load();
       return;
     }
@@ -10307,7 +10325,7 @@ void game_load_status(void)
     } while (uVar5 < 0x10b18);
     if (iVar6 != local_4) {
       crt_fclose(fp);
-      console_printf(&console_log_queue,(byte *)s_GAME_LoadStatus_FAILED__check_su_004736d4);
+      console_printf(&console_log_queue,s_GAME_LoadStatus_FAILED__check_su_004736d4);
       game_sequence_load();
       return;
     }
@@ -10315,7 +10333,7 @@ void game_load_status(void)
     quest_unlock_index = game_status_blob & 0xffff;
     crt_fclose(fp);
     if (*(float *)(DAT_00480864 + 0xc) != 0.0) {
-      console_printf(&console_log_queue,(byte *)s_GAME_LoadStatus_OK__004736bc);
+      console_printf(&console_log_queue,s_GAME_LoadStatus_OK__004736bc);
       return;
     }
   }
@@ -12945,7 +12963,7 @@ void terrain_generate_random(void)
     (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,2);
     (*grim_interface_ptr->vtable->grim_set_render_target)(-1);
     if (*(float *)(DAT_00480864 + 0xc) != 0.0) {
-      console_printf(&console_log_queue,(byte *)(s_____Generated_terrain__0047377a + 2));
+      console_printf(&console_log_queue,s_____Generated_terrain__0047377a + 2);
     }
   }
   return;
@@ -13545,13 +13563,13 @@ void __cdecl ui_element_load(void *element,char *jaz_path)
   } while (cVar1 != '\0');
   local_100[~uVar3 - 5] = '\0';
   if (*(float *)(DAT_00480854 + 0xc) == 0.0) {
-    console_printf(&console_log_queue,(byte *)s_Loading_uiElement__s_004737b4);
+    console_printf(&console_log_queue,s_Loading_uiElement__s_004737b4,local_100);
   }
   (*grim_interface_ptr->vtable->grim_load_texture)(local_100,jaz_path);
   iVar2 = (*grim_interface_ptr->vtable->grim_get_texture_handle)(&stack0xfffffef8);
   *(int *)(iStack_8 + 0xe0) = iVar2;
   if (iVar2 == -1) {
-    console_printf(&console_log_queue,(byte *)s___FAILED_Loading_uiElement__s_00473794);
+    console_printf(&console_log_queue,s___FAILED_Loading_uiElement__s_00473794,&stack0xfffffef4);
   }
   return;
 }
@@ -16960,7 +16978,7 @@ void __cdecl angle_approach(float *angle,float target,float rate)
 
 /* returns a free bonus slot in DAT_00482948 (or DAT_00490630 sentinel) */
 
-undefined4 * bonus_alloc_slot(void)
+int * bonus_alloc_slot(void)
 
 {
   int *piVar1;
@@ -16975,7 +16993,7 @@ undefined4 * bonus_alloc_slot(void)
     piVar1 = piVar1 + 7;
     iVar2 = iVar2 + 1;
   } while ((int)piVar1 < 0x482b08);
-  return (undefined4 *)&bonus_pool_sentinel;
+  return (int *)&bonus_pool_sentinel;
 }
 
 
@@ -17070,7 +17088,7 @@ uint * __cdecl bonus_spawn_at_pos(float *pos)
      (((float)(terrain_texture_height + -0x20) < pos[1] || (_config_game_mode == 2)))) {
     return (uint *)&bonus_pool_sentinel;
   }
-  puVar1 = bonus_alloc_slot();
+  puVar1 = (uint *)bonus_alloc_slot();
   piVar4 = &bonus_pool;
   while ((*piVar4 == 0 ||
          (32.0 <= SQRT((pos[1] - (float)piVar4[5]) * (pos[1] - (float)piVar4[5]) +
@@ -17312,7 +17330,7 @@ void FUN_0041fc80(void)
   bool bVar10;
   
   if (*(float *)(DAT_00480864 + 0xc) != 0.0) {
-    console_printf(&console_log_queue,(byte *)s___Reseting_players__00473e54);
+    console_printf(&console_log_queue,s___Reseting_players__00473e54);
   }
   render_overlay_player_index = 0;
   do {
@@ -21107,7 +21125,7 @@ int creature_alloc_slot(void)
     iVar3 = iVar3 + 1;
   } while ((int)pcVar1 < 0x4aa338);
   if (*(float *)(DAT_00480864 + 0xc) != 0.0) {
-    console_printf(&console_log_queue,(byte *)s_No_free_creatures_to_spawn__00473e6c);
+    console_printf(&console_log_queue,s_No_free_creatures_to_spawn__00473e6c);
   }
   return 0x180;
 }
@@ -21943,18 +21961,18 @@ int audio_resume_all(void)
 
 {
   float fVar1;
-  undefined4 uVar2;
+  int iVar2;
   
   audio_resume_channels();
   fVar1 = *(float *)(DAT_00480864 + 0xc);
-  uVar2 = CONCAT22((short)((uint)DAT_00480864 >> 0x10),
+  iVar2 = CONCAT22((short)((uint)DAT_00480864 >> 0x10),
                    (ushort)(fVar1 < 0.0) << 8 | (ushort)NAN(fVar1) << 10 |
                    (ushort)(fVar1 == 0.0) << 0xe);
   if ((fVar1 == 0.0) == 0) {
-    uVar2 = console_printf(&console_log_queue,(byte *)s_<___Restored_00473e94);
+    iVar2 = console_printf(&console_log_queue,s_<___Restored_00473e94);
   }
   audio_suspend_flag = 0;
-  return CONCAT31((int3)((uint)uVar2 >> 8),1);
+  return CONCAT31((int3)((uint)iVar2 >> 8),1);
 }
 
 
@@ -21968,7 +21986,7 @@ void audio_suspend_all(void)
 {
   audio_suspend_channels();
   if (*(float *)(DAT_00480864 + 0xc) != 0.0) {
-    console_printf(&console_log_queue,(byte *)s_<___Suspended_00473ea4);
+    console_printf(&console_log_queue,s_<___Suspended_00473ea4);
   }
   audio_suspend_flag = 1;
   return;
@@ -21990,12 +22008,12 @@ int __cdecl texture_get_or_load(char *name,char *path)
     iVar1 = (*grim_interface_ptr->vtable->grim_load_texture)(name,name);
     if ((char)iVar1 != '\0') {
       if (*(float *)(DAT_00480854 + 0xc) == 0.0) {
-        console_printf(&console_log_queue,(byte *)s____loading_texture___s__ok_00473ed4);
+        console_printf(&console_log_queue,s____loading_texture___s__ok_00473ed4,name);
       }
       iVar1 = (*grim_interface_ptr->vtable->grim_get_texture_handle)(name);
       return iVar1;
     }
-    console_printf(&console_log_queue,(byte *)s____loading_texture___s__failed_00473eb4);
+    console_printf(&console_log_queue,s____loading_texture___s__failed_00473eb4,name);
     iVar1 = -1;
   }
   return iVar1;
@@ -22017,12 +22035,12 @@ int __cdecl texture_get_or_load_alt(char *name,char *path)
     iVar1 = (*grim_interface_ptr->vtable->grim_load_texture)(name,name);
     if ((char)iVar1 != '\0') {
       if (*(float *)(DAT_00480854 + 0xc) == 0.0) {
-        console_printf(&console_log_queue,(byte *)s____loading_texture___s__ok_00473ed4);
+        console_printf(&console_log_queue,s____loading_texture___s__ok_00473ed4,name);
       }
       iVar1 = (*grim_interface_ptr->vtable->grim_get_texture_handle)(name);
       return iVar1;
     }
-    console_printf(&console_log_queue,(byte *)s____loading_texture___s__failed_00473eb4);
+    console_printf(&console_log_queue,s____loading_texture___s__failed_00473eb4,name);
     iVar1 = -1;
   }
   return iVar1;
@@ -22083,11 +22101,11 @@ void init_audio_and_terrain(void)
   longlong lVar4;
   char *pcVar5;
   
-  console_printf(&console_log_queue,(byte *)s_Init_Grim_successful__00474114);
+  console_printf(&console_log_queue,s_Init_Grim_successful__00474114);
   console_printf(&console_log_queue,&DAT_004711c0);
-  console_printf(&console_log_queue,(byte *)s________________________004740fc);
-  console_printf(&console_log_queue,(byte *)s___Sound_init___________004740e4);
-  console_printf(&console_log_queue,(byte *)s________________________004740fc);
+  console_printf(&console_log_queue,s________________________004740fc);
+  console_printf(&console_log_queue,s___Sound_init___________004740e4);
+  console_printf(&console_log_queue,s________________________004740fc);
   if (DAT_004aaeea == '\0') {
     iVar3 = sfx_system_init();
     if ((char)iVar3 == '\0') {
@@ -22095,7 +22113,7 @@ void init_audio_and_terrain(void)
     }
   }
   else {
-    console_printf(&console_log_queue,(byte *)s____no_sounds_selected_004740cc);
+    console_printf(&console_log_queue,s____no_sounds_selected_004740cc);
   }
   console_printf(&console_log_queue,&DAT_004711c0);
   terrain_texture_width = 0x400;
@@ -22124,18 +22142,18 @@ void init_audio_and_terrain(void)
       if ((char)iVar3 == '\0') {
         terrain_texture_failed = '\x01';
         config_texture_scale = fVar2;
-        console_printf(&console_log_queue,(byte *)s_Failed_to_create_terrain_texture_004740a0);
+        console_printf(&console_log_queue,s_Failed_to_create_terrain_texture_004740a0);
         pcVar5 = s___>_entering_safemode__00474088;
       }
       else {
         pcVar5 = s_Created_terrain_texture__0047406c;
       }
-      console_printf(&console_log_queue,(byte *)pcVar5);
+      console_printf(&console_log_queue,pcVar5);
       pcVar5 = extraout_EDX_00;
     }
     if (terrain_texture_failed == '\0') goto LAB_0042abbf;
   }
-  console_printf(&console_log_queue,(byte *)s_Running_in_safemode__using_stati_00474034);
+  console_printf(&console_log_queue,s_Running_in_safemode__using_stati_00474034);
   pcVar5 = extraout_EDX_01;
 LAB_0042abbf:
   console_flush_log(&console_log_queue,pcVar5);
@@ -22334,7 +22352,7 @@ void game_startup_init_prelude(void)
   effect_uv_tables_init();
   console_flush_log(&console_log_queue,filename);
   pHStack_40 = (HKEY)0x42b10a;
-  console_printf(&console_log_queue,(byte *)s_Entering_Crimsonland___0047465c);
+  console_printf(&console_log_queue,s_Entering_Crimsonland___0047465c);
   perks_init_database();
   weapon_table_init();
   game_core_init();
@@ -22353,7 +22371,7 @@ LAB_0042b17a:
   puVar2 = &console_log_queue;
   DAT_004aaed8 = 0;
   pHStack_40 = (HKEY)0x42b190;
-  console_printf(&console_log_queue,(byte *)s_Unloaded_resource_paq_00474630);
+  console_printf(&console_log_queue,s_Unloaded_resource_paq_00474630);
   (*grim_interface_ptr->vtable->grim_set_render_state)(0x10,in_stack_ffffffbc);
   seed = ZEXT24(qpc_timestamp_scratch);
   QueryPerformanceCounter((LARGE_INTEGER *)&stack0xffffffc8);
@@ -22799,6 +22817,7 @@ int crimsonland_main(void)
   char *extraout_EDX_05;
   char *extraout_EDX_06;
   char *extraout_EDX_07;
+  void *unaff_EDI;
   LPCCH pCVar15;
   undefined4 uVar16;
   HKEY key;
@@ -22847,8 +22866,8 @@ int crimsonland_main(void)
   GetCommandLineA();
   DAT_00473a64 = 0x7b;
   This = Direct3DCreate8(0xdc);
-  console_printf(&console_log_queue,(byte *)s_Crimsonland_00474d64);
-  console_printf(&console_log_queue,(byte *)s_____________00474d54);
+  console_printf(&console_log_queue,s_Crimsonland_00474d64);
+  console_printf(&console_log_queue,s_____________00474d54);
   console_printf(&console_log_queue,&DAT_004711c0);
   console_flush_log(&console_log_queue,filename);
   if (This == (IDirect3D8 *)0x0) {
@@ -22856,17 +22875,17 @@ int crimsonland_main(void)
     return 0;
   }
   (*This->lpVtbl->Release)(This);
-  console_printf(&console_log_queue,(byte *)s_Game_base_path____s__00474ca0);
+  console_printf(&console_log_queue,s_Game_base_path____s__00474ca0);
   console_flush_log(&console_log_queue,filename_00);
   config_ensure_file();
-  console_register_command(&console_log_queue,(uint *)s_setGammaRamp_00474c90,&LAB_0042c3d0);
-  console_register_command(&console_log_queue,(uint *)s_snd_addGameTune_00474c80,&LAB_0042c360);
-  console_register_command(&console_log_queue,(uint *)s_generateterrain_00474c70,&LAB_0042a970);
-  console_register_command(&console_log_queue,(uint *)s_telltimesurvived_00474c5c,&LAB_0042a860);
-  console_register_command(&console_log_queue,(uint *)s_setresourcepaq_00474c4c,&LAB_0042a7c0);
-  console_register_command(&console_log_queue,(uint *)s_loadtexture_00474c40,&LAB_0042a780);
-  console_register_command(&console_log_queue,(uint *)s_openurl_00474c38,&LAB_0042a890);
-  console_register_command(&console_log_queue,(uint *)s_sndfreqadjustment_00474c24,&LAB_0042a930);
+  console_register_command(&console_log_queue,s_setGammaRamp_00474c90,&LAB_0042c3d0,unaff_EDI);
+  console_register_command(&console_log_queue,s_snd_addGameTune_00474c80,&LAB_0042c360,unaff_EDI);
+  console_register_command(&console_log_queue,s_generateterrain_00474c70,&LAB_0042a970,unaff_EDI);
+  console_register_command(&console_log_queue,s_telltimesurvived_00474c5c,&LAB_0042a860,unaff_EDI);
+  console_register_command(&console_log_queue,s_setresourcepaq_00474c4c,&LAB_0042a7c0,unaff_EDI);
+  console_register_command(&console_log_queue,s_loadtexture_00474c40,&LAB_0042a780,unaff_EDI);
+  console_register_command(&console_log_queue,s_openurl_00474c38,&LAB_0042a890,unaff_EDI);
+  console_register_command(&console_log_queue,s_sndfreqadjustment_00474c24,&LAB_0042a930,unaff_EDI);
   puVar10 = &DAT_004852d0;
   for (iVar3 = 0x3f; iVar3 != 0; iVar3 = iVar3 + -1) {
     *puVar10 = 0;
@@ -22888,10 +22907,10 @@ int crimsonland_main(void)
   DAT_004852db = 99;
   DAT_004852dc = 0x6b;
   grim_interface_ptr = (IGrim2D *)grim_load_interface(s____grim_grSystem_c_Release_grim__00474c00);
-  console_printf(&console_log_queue,(byte *)s________________________004740fc);
-  console_printf(&console_log_queue,(byte *)s_______Grim2D_API_______00474be8);
-  console_printf(&console_log_queue,(byte *)s________________________004740fc);
-  console_printf(&console_log_queue,(byte *)s_Initiating_Grim_00474bd4);
+  console_printf(&console_log_queue,s________________________004740fc);
+  console_printf(&console_log_queue,s_______Grim2D_API_______00474be8);
+  console_printf(&console_log_queue,s________________________004740fc);
+  console_printf(&console_log_queue,s_Initiating_Grim_00474bd4);
   console_flush_log(&console_log_queue,filename_01);
   DAT_004852e1 = 0x75;
   DAT_004852eb = 0x75;
@@ -22913,7 +22932,7 @@ int crimsonland_main(void)
   DAT_004852ee = 0x5c;
   pcVar5 = extraout_EDX;
   if (grim_interface_ptr == (IGrim2D *)0x0) {
-    console_printf(&console_log_queue,(byte *)s____DEV_dll_not_found__trying_to_f_00474ba4);
+    console_printf(&console_log_queue,s____DEV_dll_not_found__trying_to_f_00474ba4);
     grim_interface_ptr = (IGrim2D *)grim_load_interface(s_grim_dll_00474b98);
     pcVar5 = extraout_EDX_00;
   }
@@ -22933,20 +22952,20 @@ int crimsonland_main(void)
     MessageBoxA((HWND)0x0,s_Grim_dll_is_corrupted_or_missing_00474b10,&DAT_00474b90,0);
     return 0;
   }
-  console_printf(&console_log_queue,(byte *)s____interface_created_00474af8);
-  console_printf(&console_log_queue,(byte *)s____registering_core_variables_00474ad8);
+  console_printf(&console_log_queue,s____interface_created_00474af8);
+  console_printf(&console_log_queue,s____registering_core_variables_00474ad8);
   register_core_cvars();
   if (DAT_00473a64 != 0x7b) {
     grim_interface_ptr = (IGrim2D *)0x0;
   }
   console_flush_log(&console_log_queue,filename_02);
-  console_printf(&console_log_queue,(byte *)s____loading_config_pre_sets_00474abc);
+  console_printf(&console_log_queue,s____loading_config_pre_sets_00474abc);
   uVar2 = 0x42c954;
   config_load_presets();
   game_load_status();
   game_sequence_load();
   console_flush_log(&console_log_queue,filename_03);
-  console_printf(&console_log_queue,(byte *)s____invoking_grim_config_00474aa0);
+  console_printf(&console_log_queue,s____invoking_grim_config_00474aa0);
   console_flush_log(&console_log_queue,filename_04);
   iVar3 = (*grim_interface_ptr->vtable->grim_apply_config)();
   grim_config_invoked = 1;
@@ -22959,7 +22978,7 @@ int crimsonland_main(void)
   config_sync_from_grim();
   grim_config_invoked = 0;
   config_load_presets();
-  console_printf(&console_log_queue,(byte *)s____setting_system_states_00474a84);
+  console_printf(&console_log_queue,s____setting_system_states_00474a84);
   console_flush_log(&console_log_queue,filename_05);
   pcVar5 = (char *)(*grim_interface_ptr->vtable->grim_get_config_var)(auStack_41c,0x54);
   terrain_texture_failed = *pcVar5;
@@ -22980,10 +22999,10 @@ int crimsonland_main(void)
   else {
     pcVar5 = s____using_SAFEMODE_fallback_backe_00474a60;
   }
-  console_printf(&console_log_queue,(byte *)pcVar5);
+  console_printf(&console_log_queue,pcVar5);
   pcVar5 = extraout_EDX_01;
   if (grim_interface_ptr == (IGrim2D *)0x0) {
-    console_printf(&console_log_queue,(byte *)s____using_DEVELOPER_backend_00474a28);
+    console_printf(&console_log_queue,s____using_DEVELOPER_backend_00474a28);
     pcVar5 = extraout_EDX_02;
   }
   console_flush_log(&console_log_queue,pcVar5);
@@ -22992,7 +23011,7 @@ int crimsonland_main(void)
   (*grim_interface_ptr->vtable->grim_set_render_state)(6,in_stack_fffffba8);
   (*grim_interface_ptr->vtable->grim_set_render_state)
             (0x42,CONCAT31((int3)((uint)in_stack_fffffb9c >> 8),1));
-  console_printf(&console_log_queue,(byte *)s____setting_system_states_00474a84);
+  console_printf(&console_log_queue,s____setting_system_states_00474a84);
   (*grim_interface_ptr->vtable->grim_set_render_state)(7,in_stack_fffffb90);
   piVar8 = (int *)(*grim_interface_ptr->vtable->grim_get_config_var)((uint *)&stack0xfffffba8,0x29);
   config_screen_width = *piVar8;
@@ -23000,26 +23019,26 @@ int crimsonland_main(void)
   config_screen_height = *piVar8;
   if (config_windowed == '\0') {
     pcVar5 = s____selected_fullscreen_mode__dx__004749d0;
-    console_printf(&console_log_queue,(byte *)s____selected_fullscreen_mode__dx__004749d0);
+    console_printf(&console_log_queue,s____selected_fullscreen_mode__dx__004749d0);
   }
   else {
     pcVar5 = (char *)&console_log_queue;
-    console_printf(&console_log_queue,(byte *)s____selected_windowed_mode__windo_004749f8);
+    console_printf(&console_log_queue,s____selected_windowed_mode__windo_004749f8);
   }
   DAT_004aaeda = config_music_disabled;
   (*grim_interface_ptr->vtable->grim_set_render_state)(0xb,CONCAT31((int3)((uint)pcVar5 >> 8),1));
-  console_printf(&console_log_queue,(byte *)s____using_keyboard_004749bc);
+  console_printf(&console_log_queue,s____using_keyboard_004749bc);
   (*grim_interface_ptr->vtable->grim_set_render_state)
             (0xc,CONCAT31((int3)((uint)in_stack_fffffb78 >> 8),1));
   pcVar5 = (char *)0x42cc6a;
-  console_printf(&console_log_queue,(byte *)s____using_mouse_004749ac);
+  console_printf(&console_log_queue,s____using_mouse_004749ac);
   (*grim_interface_ptr->vtable->grim_set_render_state)
             (0xe,CONCAT31((int3)((uint)in_stack_fffffb6c >> 8),1));
-  console_printf(&console_log_queue,(byte *)s____using_joystick_00474998);
-  console_printf(&console_log_queue,(byte *)s____initiating_Grim_system_0047497c);
+  console_printf(&console_log_queue,s____using_joystick_00474998);
+  console_printf(&console_log_queue,s____initiating_Grim_system_0047497c);
   iVar3 = (*grim_interface_ptr->vtable->grim_init_system)();
   if ((char)iVar3 == '\0') {
-    console_printf(&console_log_queue,(byte *)s_Critical_failure__00474968);
+    console_printf(&console_log_queue,s_Critical_failure__00474968);
     uType = 0;
     lpCaption = s_Crimsonland__00474958;
     pcVar5 = (*grim_interface_ptr->vtable->grim_get_error_text)();
@@ -23043,7 +23062,7 @@ int crimsonland_main(void)
   *(float *)((int)pvVar9 + 0xc) = (float)config_screen_height;
   init_audio_and_terrain();
   (*grim_interface_ptr->vtable->grim_set_render_state)(0x10,in_stack_fffffb30);
-  console_printf(&console_log_queue,(byte *)s_Set_resource_paq_to__crimson_paq_004748f8);
+  console_printf(&console_log_queue,s_Set_resource_paq_to__crimson_paq_004748f8);
   texture_get_or_load(s_backplasma_0047296c,s_load_backplasma_jaz_004748e4);
   texture_get_or_load(s_mockup_00472964,s_load_mockup_jaz_004748d4);
   texture_get_or_load(s_logo_esrb_004746d8,s_load_esrb_mature_jaz_004748bc);
@@ -23100,10 +23119,10 @@ int crimsonland_main(void)
     RegCloseKey(key);
   }
   else {
-    console_printf(&console_log_queue,(byte *)s_Kameli_was_NOT_hairy__00474874);
+    console_printf(&console_log_queue,s_Kameli_was_NOT_hairy__00474874);
   }
   game_save_status();
-  console_printf(&console_log_queue,(byte *)s_Leaving_Crimsonland___0047485c);
+  console_printf(&console_log_queue,s_Leaving_Crimsonland___0047485c);
   pcVar5 = extraout_EDX_03;
   if (DAT_004aaee4 != (void *)0x0) {
     crt_free(DAT_004aaee4);
@@ -23111,11 +23130,11 @@ int crimsonland_main(void)
   }
   console_flush_log(&console_log_queue,pcVar5);
   audio_shutdown_all();
-  console_printf(&console_log_queue,(byte *)s_Shutdown_Grim___00474848);
+  console_printf(&console_log_queue,s_Shutdown_Grim___00474848);
   (*grim_interface_ptr->vtable->grim_shutdown)();
   console_flush_log(&console_log_queue,filename_06);
   (*grim_interface_ptr->vtable->grim_release)();
-  console_printf(&console_log_queue,(byte *)s_Waving_the_Grim_Reaper_goodbye___00474824);
+  console_printf(&console_log_queue,s_Waving_the_Grim_Reaper_goodbye___00474824);
   console_flush_log(&console_log_queue,filename_07);
   pcVar5 = extraout_EDX_05;
   if (((DAT_004d11f0 == 0) && (DAT_004d11f8 != '\0')) && (DAT_004d11f4 != (LPCCH)0x0)) {
@@ -23139,7 +23158,7 @@ int crimsonland_main(void)
     HVar4 = HlinkNavigateString((IUnknown *)0x0,(LPCWSTR)&uStack_4b4);
     pcVar5 = extraout_EDX_06;
     if (HVar4 < 0) {
-      console_printf(&console_log_queue,(byte *)s_Failed_to_open_browser_at___s___00474800);
+      console_printf(&console_log_queue,s_Failed_to_open_browser_at___s___00474800,DAT_004d11f4);
       pcVar5 = extraout_EDX_07;
     }
     DAT_004d11f8 = '\0';
@@ -24117,7 +24136,7 @@ int perk_select_random(void)
     }
     iVar3 = iVar3 + 1;
   } while (iVar3 < 0x3e9);
-  console_printf(&console_log_queue,(byte *)(s___Perk_Randomizer_failed_to_gene_00475696 + 2));
+  console_printf(&console_log_queue,s___Perk_Randomizer_failed_to_gene_00475696 + 2);
   return perk_id_instant_winner;
 }
 
@@ -24669,7 +24688,7 @@ void __cdecl FUN_00430a20(int *param_1,int param_2,uint param_3,uint *param_4)
   
   if ((void *)param_1[3] != (void *)0x0) {
     crt_free((void *)param_1[3]);
-    console_printf(&console_log_queue,(byte *)(s___Quest_overwritten__00477742 + 2));
+    console_printf(&console_log_queue,s___Quest_overwritten__00477742 + 2);
   }
   pcVar2 = strdup_malloc((char *)param_4);
   param_1[3] = (int)pcVar2;
@@ -26454,7 +26473,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
 LAB_00431094:
   *(undefined4 *)(puVar9 + 0x6c) = 2;
   *(undefined4 *)(puVar9 + 0x24) = 0x41a00000;
-  console_printf(&console_log_queue,(byte *)s_Unhandled_creatureType__00477758);
+  console_printf(&console_log_queue,s_Unhandled_creatureType__00477758);
 LAB_004310b8:
   if ((((demo_mode_active == '\0') && (0.0 < *(float *)(puVar9 + 0x14))) &&
       (*(float *)(puVar9 + 0x14) < (float)terrain_texture_width)) &&
@@ -26679,7 +26698,7 @@ void __cdecl quest_build_fallback(float *entries,int *count)
 {
   float fVar1;
   
-  console_printf(&console_log_queue,(byte *)(s___Generating_a_fallback_quest__00477782 + 2));
+  console_printf(&console_log_queue,s___Generating_a_fallback_quest__00477782 + 2);
   fVar1 = (float)terrain_texture_height;
   *entries = -50.0;
   entries[1] = fVar1 * 0.5;
@@ -30616,7 +30635,7 @@ void __cdecl quest_start_selected(int tier,int index)
   terrain_generate(&quest_selected_meta + iVar3);
   weapon_assign_player(0,*(int *)(&quest_start_weapon_id + iVar3));
   weapon_assign_player(1,*(int *)(&quest_start_weapon_id + iVar3));
-  console_printf(&console_log_queue,(byte *)s_Setup_tier__d_quest__d__00477aec);
+  console_printf(&console_log_queue,s_Setup_tier__d_quest__d__00477aec,tier,index);
   if (*(code **)(&quest_selected_builder + iVar3) == (code *)0x0) {
     quest_build_fallback((float *)&quest_spawn_table,&quest_spawn_count);
   }
@@ -30686,8 +30705,7 @@ undefined4 FUN_0043aa60(void)
   
   iVar1 = game_is_full_version();
   if ((char)iVar1 == '\0') {
-    iVar1 = console_printf(&console_log_queue,
-                           (byte *)(s___Potentially_illegal_score_dete_00477b16 + 2));
+    iVar1 = console_printf(&console_log_queue,s___Potentially_illegal_score_dete_00477b16 + 2);
   }
   return CONCAT31((int3)((uint)iVar1 >> 8),1);
 }
@@ -30781,7 +30799,7 @@ char * __cdecl highscore_read_record(char *buffer,FILE *fp)
   } while (iVar4 != 0);
   if (local_4 != iVar3) {
     buffer[0x1f] = '\0';
-    console_printf(&console_log_queue,(byte *)s_WARN__checksum_failure_on_score_b_00477b40);
+    console_printf(&console_log_queue,s_WARN__checksum_failure_on_score_b_00477b40,buffer);
     return (char *)0x0;
   }
   return buffer;
@@ -31410,7 +31428,7 @@ void __cdecl highscore_save_record(byte *record)
   
   path = highscore_build_path();
   if (record == (byte *)0x0) {
-    console_printf(&console_log_queue,(byte *)s_UNEXPECTED__sc_is_null__00477bac);
+    console_printf(&console_log_queue,s_UNEXPECTED__sc_is_null__00477bac);
     return;
   }
   uVar2 = 0xffffffff;
@@ -31432,7 +31450,7 @@ void __cdecl highscore_save_record(byte *record)
      (iVar3 = highscore_update_record(path,record), (char)iVar3 == '\0')) {
     fp = crt_fopen(path,&DAT_00477ba0);
     if (fp == (FILE *)0x0) {
-      console_printf(&console_log_queue,(byte *)s_Unable_to_save_score__disk_full_o_00477b6c);
+      console_printf(&console_log_queue,s_Unable_to_save_score__disk_full_o_00477b6c);
       return;
     }
     highscore_write_record(record,fp);
@@ -31576,11 +31594,11 @@ LAB_0043b67f:
   if (config_name_slot_selected != 0) {
     crt_sprintf(&DAT_004c365c,&DAT_00477bf4,&DAT_004c36dc,
                 (int)&config_saved_name_0 + config_name_slot_selected * 0x1b);
-    console_printf(&console_log_queue,(byte *)s_Opening_named_cache___s__00477bd8);
+    console_printf(&console_log_queue,s_Opening_named_cache___s__00477bd8,&DAT_004c365c);
     return &DAT_004c365c;
   }
   if (*(float *)(DAT_00480864 + 0xc) != 0.0) {
-    console_printf(&console_log_queue,(byte *)s_Opening___s__00477bc8);
+    console_printf(&console_log_queue,s_Opening___s__00477bc8,&DAT_004c36dc);
   }
   return &DAT_004c36dc;
 }
@@ -32754,7 +32772,7 @@ LAB_0043c7c5:
     iVar4 = 0;
 LAB_0043c7ca:
     if (iVar4 == 0) {
-      console_printf(&console_log_queue,(byte *)s_Warning__sample___s__not_accepte_00477db0);
+      console_printf(&console_log_queue,s_Warning__sample___s__not_accepte_00477db0,path);
       path = s_trooper_inPain_01_ogg_00477d98;
     }
     pcVar5 = _strstr(path,&DAT_00477dd4);
@@ -32775,14 +32793,14 @@ LAB_0043c7ca:
       if ((char)iVar4 != '\0') {
 LAB_0043c885:
         if (*(float *)(DAT_00480854 + 0xc) == 0.0) {
-          console_printf(&console_log_queue,(byte *)s_SFX_Sample__d_<____s__ok_00477d2c);
+          console_printf(&console_log_queue,s_SFX_Sample__d_<____s__ok_00477d2c,iVar6,path);
         }
         DAT_004cc8d8 = DAT_004cc8d8 + 1;
         return iVar6;
       }
       pcVar5 = s____loading_ogg_sample___s__faile_00477d6c;
     }
-    console_printf(&console_log_queue,(byte *)pcVar5);
+    console_printf(&console_log_queue,pcVar5,path);
   }
   return -1;
 }
@@ -32815,10 +32833,10 @@ int __cdecl music_load_track(char *path)
   }
   iVar2 = music_entry_load_ogg(&music_entry_table + iVar3 * 0x84,(byte *)path);
   if ((char)iVar2 == '\0') {
-    console_printf(&console_log_queue,(byte *)s_SFX_Tune__d_<____s__FAILED_00477df4);
+    console_printf(&console_log_queue,s_SFX_Tune__d_<____s__FAILED_00477df4,iVar3,path);
     return iVar3;
   }
-  console_printf(&console_log_queue,(byte *)s_SFX_Tune__d_<____s__ok_00477ddc);
+  console_printf(&console_log_queue,s_SFX_Tune__d_<____s__ok_00477ddc,iVar3,path);
   return iVar3;
 }
 
@@ -32871,7 +32889,7 @@ void audio_init_music(void)
   int iVar1;
   undefined4 *puVar2;
   char *unaff_retaddr;
-  char *pcVar3;
+  char *fmt;
   
   if ((config_blob == '\0') && (config_music_disabled == '\0')) {
     puVar2 = &sfx_mute_flags;
@@ -32887,12 +32905,12 @@ void audio_init_music(void)
     iVar1 = resource_pack_set(s_music_paq_00477eec);
     DAT_004cc8d5 = (char)iVar1;
     if (DAT_004cc8d5 == '\0') {
-      pcVar3 = s____resource_paq__music_paq__not_f_00477e84;
+      fmt = s____resource_paq__music_paq__not_f_00477e84;
     }
     else {
-      pcVar3 = s____set_sound_resource_paq__music_00477ec4;
+      fmt = s____set_sound_resource_paq__music_00477ec4;
     }
-    console_printf(&console_log_queue,(byte *)pcVar3);
+    console_printf(&console_log_queue,fmt);
     music_track_intro_id = music_load_track(s_music_intro_ogg_00477e74);
     music_track_shortie_monk_id = music_load_track(s_music_shortie_monk_ogg_00477e5c);
     console_exec_line(&console_log_queue,s_exec_music_game_tunes_txt_00477e40,unaff_retaddr);
@@ -32916,20 +32934,22 @@ void audio_init_sfx(void)
 
 {
   int iVar1;
-  int *piVar2;
-  char *pcVar3;
+  DWORD DVar2;
+  DWORD DVar3;
+  int *piVar4;
+  char *fmt;
   
   if (config_blob == '\0') {
     iVar1 = resource_pack_set(s_sfx_paq_004784f4);
     DAT_004cc8d5 = (char)iVar1;
     if (DAT_004cc8d5 == '\0') {
-      pcVar3 = s____failed_to_set_sound_resource_p_0047849c;
+      fmt = s____failed_to_set_sound_resource_p_0047849c;
     }
     else {
-      pcVar3 = s____set_sound_resource_paq__sfx_p_004784cc;
+      fmt = s____set_sound_resource_paq__sfx_p_004784cc;
     }
-    console_printf(&console_log_queue,(byte *)pcVar3);
-    timeGetTime();
+    console_printf(&console_log_queue,fmt);
+    DVar2 = timeGetTime();
     sfx_trooper_inpain_01 = sfx_load_sample(s_trooper_inPain_01_ogg_00477d98);
     sfx_trooper_inpain_02 = sfx_load_sample(s_trooper_inPain_02_ogg_00478484);
     _sfx_trooper_inpain_03 = sfx_load_sample(s_trooper_inPain_03_ogg_0047846c);
@@ -33005,13 +33025,16 @@ void audio_init_sfx(void)
     sfx_ui_clink_01 = sfx_load_sample(s_ui_clink_01_ogg_00477f58);
     sfx_bloodspill_01 = sfx_load_sample(s_bloodSpill_01_ogg_00477f44);
     _sfx_bloodspill_02 = sfx_load_sample(s_bloodSpill_02_ogg_00477f30);
-    timeGetTime();
-    piVar2 = &sfx_entry_table_state;
+    DVar3 = timeGetTime();
+    iVar1 = 0;
+    piVar4 = &sfx_entry_table_state;
     do {
-      if (*piVar2 == 0) break;
-      piVar2 = piVar2 + 0x21;
-    } while ((int)piVar2 < 0x4cc6e4);
-    console_printf(&console_log_queue,(byte *)s__d_samples_loaded_to_sound_libra_00477ef8);
+      if (*piVar4 == 0) break;
+      piVar4 = piVar4 + 0x21;
+      iVar1 = iVar1 + 1;
+    } while ((int)piVar4 < 0x4cc6e4);
+    console_printf(&console_log_queue,s__d_samples_loaded_to_sound_libra_00477ef8,iVar1,
+                   (double)((float)(int)(DVar3 - DVar2) * 0.001));
   }
   return;
 }
@@ -33028,39 +33051,38 @@ int sfx_system_init(void)
   undefined4 in_EAX;
   HWND hwnd;
   int iVar1;
-  undefined4 uVar2;
-  undefined4 *puVar3;
-  uint uVar4;
+  undefined4 *puVar2;
+  uint uVar3;
   
   if (config_blob != '\0') {
     return CONCAT31((int3)((uint)in_EAX >> 8),1);
   }
-  console_printf(&console_log_queue,(byte *)s_Initializing_Grim_SFX_sound_syst_004785c8);
-  uVar4 = 2;
+  console_printf(&console_log_queue,s_Initializing_Grim_SFX_sound_syst_004785c8);
+  uVar3 = 2;
   hwnd = GetForegroundWindow();
-  iVar1 = dsound_init(hwnd,uVar4);
+  iVar1 = dsound_init(hwnd,uVar3);
   if ((char)iVar1 == '\0') {
-    uVar4 = console_printf(&console_log_queue,(byte *)s____FAILED__unable_to_init_Grim_S_00478590);
+    uVar3 = console_printf(&console_log_queue,s____FAILED__unable_to_init_Grim_S_00478590);
     config_blob = 1;
     config_music_disabled = 1;
-    return uVar4 & 0xffffff00;
+    return uVar3 & 0xffffff00;
   }
-  console_printf(&console_log_queue,(byte *)s____init_44100_Hz_16_bit_ok_00478574);
-  console_printf(&console_log_queue,(byte *)s____using_DirectSound_output_00478554);
-  console_printf(&console_log_queue,(byte *)s____using_default_speaker_config_00478530);
-  console_printf(&console_log_queue,(byte *)s____saying_hello_to_the_Ogg__00478510);
-  puVar3 = &sfx_cooldown_table;
+  console_printf(&console_log_queue,s____init_44100_Hz_16_bit_ok_00478574);
+  console_printf(&console_log_queue,s____using_DirectSound_output_00478554);
+  console_printf(&console_log_queue,s____using_default_speaker_config_00478530);
+  console_printf(&console_log_queue,s____saying_hello_to_the_Ogg__00478510);
+  puVar2 = &sfx_cooldown_table;
   for (iVar1 = 0x80; iVar1 != 0; iVar1 = iVar1 + -1) {
-    *puVar3 = 0;
-    puVar3 = puVar3 + 1;
+    *puVar2 = 0;
+    puVar2 = puVar2 + 1;
   }
-  puVar3 = &sfx_voice_table;
+  puVar2 = &sfx_voice_table;
   for (iVar1 = 0x20; iVar1 != 0; iVar1 = iVar1 + -1) {
-    *puVar3 = 0;
-    puVar3 = puVar3 + 1;
+    *puVar2 = 0;
+    puVar2 = puVar2 + 1;
   }
-  uVar2 = console_printf(&console_log_queue,(byte *)s_Init_Grim_SFX_done_004784fc);
-  return CONCAT31((int3)((uint)uVar2 >> 8),1);
+  iVar1 = console_printf(&console_log_queue,s_Init_Grim_SFX_done_004784fc);
+  return CONCAT31((int3)((uint)iVar1 >> 8),1);
 }
 
 
@@ -33081,8 +33103,8 @@ void sfx_release_all(void)
       sfx_release_entry((int)entry);
       entry = entry + 0x84;
     } while ((int)entry < 0x4cc6d0);
-    console_printf(&console_log_queue,(byte *)s_SFX_Shutdown____004785fc);
-    console_printf(&console_log_queue,(byte *)s_SFX_Released__004785ec);
+    console_printf(&console_log_queue,s_SFX_Shutdown____004785fc);
+    console_printf(&console_log_queue,s_SFX_Released__004785ec);
     console_flush_log(&console_log_queue,filename);
   }
   return;
@@ -33370,8 +33392,7 @@ void sfx_update_mute_fades(void)
           if (*(char *)((int)&sfx_mute_flags + iVar2) == '\0') {
             (**(code **)(**(int **)(entry + 0x24) + 0x24))(*(int **)(entry + 0x24),abStack_4);
             if ((abStack_4[0] & 1) == 0) {
-              console_printf(&console_log_queue,(byte *)s_SND__detected_unsilenced_hearabl_00478610)
-              ;
+              console_printf(&console_log_queue,s_SND__detected_unsilenced_hearabl_00478610);
               sfx_entry_resume((int)entry);
             }
             goto LAB_0043d63c;
@@ -35662,7 +35683,7 @@ LAB_00445213:
         pbVar2 = pbVar2 + 1;
         pbVar11 = pbVar11 + 1;
       }
-      console_printf(&console_log_queue,(byte *)s__d__unique___s_00478e14);
+      console_printf(&console_log_queue,s__d__unique___s_00478e14,local_4,pbVar9);
       iVar8 = local_4;
       local_8 = local_8 + 0x20;
 LAB_004452a7:
@@ -37156,7 +37177,7 @@ void __cdecl FUN_0044faa0(undefined1 *param_1)
 
 {
   if (param_1 == (undefined1 *)0x0) {
-    console_printf(&console_log_queue,(byte *)s_____Elem____NULL__0047928c);
+    console_printf(&console_log_queue,s_____Elem____NULL__0047928c);
     return;
   }
   *(undefined4 *)(param_1 + 0x11c) = 0xffffffff;
