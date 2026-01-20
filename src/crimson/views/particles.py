@@ -14,6 +14,7 @@ UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 UI_KNOWN_COLOR = rl.Color(80, 160, 240, 255)
 UI_HOVER_COLOR = rl.Color(240, 200, 80, 255)
+UI_CLAMP_COLOR = rl.Color(120, 120, 220, 255)
 
 SIZE_CODE_GRID = {
     0x10: 16,
@@ -84,6 +85,7 @@ class ParticleView:
         self._texture: rl.Texture | None = None
         self._small: SmallFontData | None = None
         self._grid = 8
+        self._show_uv_clamp = False
 
     def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
         if self._small is not None:
@@ -135,6 +137,8 @@ class ParticleView:
             self._grid = 8
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ONE):
             self._grid = 16
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_U):
+            self._show_uv_clamp = not self._show_uv_clamp
 
     def draw(self) -> None:
         rl.clear_background(rl.Color(12, 12, 14, 255))
@@ -196,10 +200,18 @@ class ParticleView:
             hl = rl.Rectangle(
                 float(x + col * cell_w),
                 float(y + row * cell_h),
-                float(sample_w),
-                float(sample_h),
+                float(cell_w),
+                float(cell_h),
             )
             rl.draw_rectangle_lines_ex(hl, 2, UI_KNOWN_COLOR)
+            if self._show_uv_clamp:
+                inset = rl.Rectangle(
+                    float(x + col * cell_w),
+                    float(y + row * cell_h),
+                    float(sample_w),
+                    float(sample_h),
+                )
+                rl.draw_rectangle_lines_ex(inset, 1, UI_CLAMP_COLOR)
 
         hovered_index = None
         mouse = rl.get_mouse_position()
@@ -211,10 +223,18 @@ class ParticleView:
                 hl = rl.Rectangle(
                     float(x + col * cell_w),
                     float(y + row * cell_h),
-                    float(sample_w),
-                    float(sample_h),
+                    float(cell_w),
+                    float(cell_h),
                 )
                 rl.draw_rectangle_lines_ex(hl, 3, UI_HOVER_COLOR)
+                if self._show_uv_clamp:
+                    inset = rl.Rectangle(
+                        float(x + col * cell_w),
+                        float(y + row * cell_h),
+                        float(sample_w),
+                        float(sample_h),
+                    )
+                    rl.draw_rectangle_lines_ex(inset, 1, UI_CLAMP_COLOR)
 
         info_x = x + draw_w + panel_gap
         info_y = margin
@@ -226,20 +246,21 @@ class ParticleView:
         )
         info_y += self._ui_line_height() + 6
         self._draw_ui_text(
-            "Up/Down: grid  2/4/8: direct  1: grid16",
+            "Up/Down: grid  2/4/8: direct  1: grid16  U: UV clamp",
             info_x,
             info_y,
             UI_HINT_COLOR,
         )
         info_y += self._ui_line_height() + 12
-        step_px = int(round(self._texture.width * step))
-        self._draw_ui_text(
-            f"UV step: {step_px}px (cell {int(self._texture.width / grid)}px)",
-            info_x,
-            info_y,
-            UI_HINT_COLOR,
-        )
-        info_y += self._ui_line_height() + 12
+        if self._show_uv_clamp:
+            step_px = int(round(self._texture.width * step))
+            self._draw_ui_text(
+                f"UV clamp: {step_px}px of {int(self._texture.width / grid)}px",
+                info_x,
+                info_y,
+                UI_HINT_COLOR,
+            )
+            info_y += self._ui_line_height() + 12
 
         if hovered_index is not None:
             self._draw_ui_text(
