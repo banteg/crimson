@@ -53,8 +53,16 @@ A small bias of 1/512 is applied to the U/V values in code to reduce bleeding.
 
 - No kerning table is referenced; widths are the only per-glyph metric.
 - Empty atlas cells observed at indices 32, 160, 253-255 (space + unused).
-- `default_font_courier.tga` in `crimson.paq` is likely the fixed-width font
-  used by vtable offset `0x13c`, but that mapping still needs confirmation.
+- The fixed-width mono font used by vtable offset `0x13c` (`grim_draw_text_mono`)
+  binds `grim_font_texture`, which is loaded from Grim2D resources (resource id `0x6f`).
+  This is not yet confirmed to match `default_font_courier.tga` from `crimson.paq`. [static]
+
+## Mono font behavior (grim_draw_text_mono)
+
+- Uses a fixed 16px grid: advance = `16 * scale`, line height = `16 * scale`. [static]
+- UVs come from a 16x16 table (`grim_font2_uv_u/v`), indexed directly by byte value
+  (`grim_font2_char_map` is identity). [static]
+- Handles special codes 0xA7, 0xE4, 0xE5, 0xF6 in addition to newline. [static]
 
 
 ## Sample render
