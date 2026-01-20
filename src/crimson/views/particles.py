@@ -22,6 +22,13 @@ SIZE_CODE_GRID = {
     0x80: 2,
 }
 
+EFFECT_UV_STEP = {
+    2: 0.4921875,
+    4: 0.2421875,
+    8: 0.1171875,
+    16: 0.0546875,
+}
+
 
 @dataclass(frozen=True, slots=True)
 class EffectEntry:
@@ -163,6 +170,9 @@ class ParticleView:
         grid = self._grid
         cell_w = draw_w / grid
         cell_h = draw_h / grid
+        step = EFFECT_UV_STEP.get(grid, 1.0 / grid)
+        sample_w = self._texture.width * step * scale
+        sample_h = self._texture.height * step * scale
         for i in range(1, grid):
             rl.draw_line(
                 int(x + i * cell_w),
@@ -186,8 +196,8 @@ class ParticleView:
             hl = rl.Rectangle(
                 float(x + col * cell_w),
                 float(y + row * cell_h),
-                float(cell_w),
-                float(cell_h),
+                float(sample_w),
+                float(sample_h),
             )
             rl.draw_rectangle_lines_ex(hl, 2, UI_KNOWN_COLOR)
 
@@ -201,8 +211,8 @@ class ParticleView:
                 hl = rl.Rectangle(
                     float(x + col * cell_w),
                     float(y + row * cell_h),
-                    float(cell_w),
-                    float(cell_h),
+                    float(sample_w),
+                    float(sample_h),
                 )
                 rl.draw_rectangle_lines_ex(hl, 3, UI_HOVER_COLOR)
 
@@ -217,6 +227,14 @@ class ParticleView:
         info_y += self._ui_line_height() + 6
         self._draw_ui_text(
             "Up/Down: grid  2/4/8: direct  1: grid16",
+            info_x,
+            info_y,
+            UI_HINT_COLOR,
+        )
+        info_y += self._ui_line_height() + 12
+        step_px = int(round(self._texture.width * step))
+        self._draw_ui_text(
+            f"UV step: {step_px}px (cell {int(self._texture.width / grid)}px)",
             info_x,
             info_y,
             UI_HINT_COLOR,
