@@ -4511,6 +4511,38 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10002f60",
+    "name": "FUN_10002f60",
+    "signature": "bool FUN_10002f60(void* arg1)",
+    "comment": "[binja] BOOL __fastcall sub_10002f60(void* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10002f80",
+    "name": "FUN_10002f80",
+    "signature": "uint FUN_10002f80(void* arg1)",
+    "comment": "[binja] uint32_t __fastcall sub_10002f80(void* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10002fc0",
+    "name": "FUN_10002fc0",
+    "signature": "int FUN_10002fc0(char* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_10002fc0(char* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10003090",
+    "name": "FUN_10003090",
+    "signature": "int FUN_10003090(void)",
+    "comment": "[binja] int32_t sub_10003090()",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10003e60",
     "name": "grim_d3d_init",
     "signature": "int grim_d3d_init(void)",
@@ -4543,6 +4575,14 @@
     "name": "grim_texture_release",
     "signature": "void grim_texture_release(void *texture)",
     "comment": "releases COM objects and frees texture name"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10004b70",
+    "name": "FUN_10004b70",
+    "signature": "char* FUN_10004b70(char* arg1, void** arg2, int* arg3, int* arg4)",
+    "comment": "[binja] char* sub_10004b70(char* arg1, void** arg2, int32_t* arg3, int32_t* arg4)",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -5169,6 +5209,14 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10009a20",
+    "name": "FUN_10009a20",
+    "signature": "int FUN_10009a20(HINSTANCE arg1, int arg2)",
+    "comment": "[binja] int32_t __stdcall sub_10009a20(HINSTANCE arg1, int32_t arg2)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1000a1c0",
     "name": "grim_joystick_init",
     "signature": "int grim_joystick_init(int hwnd)",
@@ -5239,10 +5287,170 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1000a810",
+    "name": "FUN_1000a810",
+    "signature": "int FUN_1000a810(int arg1)",
+    "comment": "[binja] int32_t __fastcall sub_1000a810(int32_t arg1) __pure",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000a840",
+    "name": "FUN_1000a840",
+    "signature": "bool FUN_1000a840(int* arg1, uint arg2, int arg3, int arg4)",
+    "comment": "[binja] bool __stdcall sub_1000a840(int32_t* arg1, uint32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000a880",
+    "name": "FUN_1000a880",
+    "signature": "char* FUN_1000a880(char* arg1, uint* arg2)",
+    "comment": "[binja] char* __stdcall sub_1000a880(char* arg1, uint32_t* arg2)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000a93e",
+    "name": "FUN_1000a93e",
+    "signature": "int FUN_1000a93e(int arg1)",
+    "comment": "[binja] int32_t __stdcall sub_1000a93e(int32_t arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000a9e9",
+    "name": "entry",
+    "signature": "int entry(HINSTANCE arg1, int arg2, int arg3)",
+    "comment": "[binja] int32_t __stdcall _start(HINSTANCE arg1, int32_t arg2, int32_t arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1000aaa6",
     "name": "grim_format_info_lookup",
     "signature": "int * grim_format_info_lookup(int format)",
     "comment": "returns pointer to the D3D format descriptor entry (fallbacks to default)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000aaca",
+    "name": "FUN_1000aaca",
+    "signature": "int FUN_1000aaca(void* arg1, int arg2)",
+    "comment": "[binja] int32_t __fastcall sub_1000aaca(void* arg1, int32_t arg2)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000acc0",
+    "name": "FUN_1000acc0",
+    "signature": "int FUN_1000acc0(int* arg1, int arg2, int* arg3, int arg4, int arg5, int arg6, int arg7, int* arg8, int arg9, int arg10)",
+    "comment": "[binja] int32_t __stdcall sub_1000acc0(int32_t* arg1, int32_t arg2, int32_t* arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7, int32_t* arg8, int32_t arg9, int32_t arg10)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000ad9f",
+    "name": "FUN_1000ad9f",
+    "signature": "int FUN_1000ad9f(int arg1, int arg2, int* arg3, int arg4, int* arg5, int* arg6)",
+    "comment": "[binja] int32_t sub_1000ad9f(int32_t arg1, int32_t arg2, int32_t* arg3, int32_t arg4, int32_t* arg5, int32_t* arg6)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000ae52",
+    "name": "FUN_1000ae52",
+    "signature": "int FUN_1000ae52(int arg1, int arg2, int* arg3, int arg4, int* arg5)",
+    "comment": "[binja] int32_t __stdcall sub_1000ae52(int32_t arg1, int32_t arg2, int32_t* arg3, int32_t arg4, int32_t* arg5)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000ae72",
+    "name": "FUN_1000ae72",
+    "signature": "int FUN_1000ae72(int* arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11)",
+    "comment": "[binja] int32_t __stdcall sub_1000ae72(int32_t* arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7, int32_t arg8, int32_t arg9, int32_t arg10, int32_t arg11)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000b26f",
+    "name": "FUN_1000b26f",
+    "signature": "int FUN_1000b26f(int** arg1, int* arg2, int* arg3, int* arg4, int arg5, int arg6, int arg7)",
+    "comment": "[binja] int32_t __stdcall sub_1000b26f(int32_t** arg1, int32_t* arg2, int32_t* arg3, int32_t* arg4, int32_t arg5, int32_t arg6, int32_t arg7)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000b297",
+    "name": "FUN_1000b297",
+    "signature": "int FUN_1000b297(int** arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] int32_t __stdcall sub_1000b297(int32_t** arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000b3fe",
+    "name": "FUN_1000b3fe",
+    "signature": "int FUN_1000b3fe(int* arg1, int* arg2, int arg3, int arg4, float arg5)",
+    "comment": "[binja] int32_t __stdcall sub_1000b3fe(int32_t* arg1, int32_t* arg2, int32_t arg3, int32_t arg4, float arg5)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000bbfc",
+    "name": "FUN_1000bbfc",
+    "signature": "int FUN_1000bbfc(int* arg1, int* arg2, int* arg3, int* arg4, int* arg5, int arg6, int arg7)",
+    "comment": "[binja] int32_t __stdcall sub_1000bbfc(int32_t* arg1, int32_t* arg2, int32_t* arg3, int32_t* arg4, int32_t* arg5, int32_t arg6, int32_t arg7)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000bda2",
+    "name": "FUN_1000bda2",
+    "signature": "int FUN_1000bda2(int* arg1, int arg2, int arg3, int* arg4, int arg5, int arg6, int arg7, int arg8)",
+    "comment": "[binja] int32_t __stdcall sub_1000bda2(int32_t* arg1, int32_t arg2, int32_t arg3, int32_t* arg4, int32_t arg5, int32_t arg6, int32_t arg7, int32_t arg8)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000c1e8",
+    "name": "FUN_1000c1e8",
+    "signature": "void* FUN_1000c1e8(int arg1, int arg2, int* arg3, int arg4)",
+    "comment": "[binja] void* __stdcall sub_1000c1e8(int32_t arg1, int32_t arg2, int32_t* arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000c205",
+    "name": "FUN_1000c205",
+    "signature": "int FUN_1000c205(int* arg1, int* arg2, int arg3, int arg4)",
+    "comment": "[binja] int32_t __stdcall sub_1000c205(int32_t* arg1, int32_t* arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000c4e9",
+    "name": "FUN_1000c4e9",
+    "signature": "int FUN_1000c4e9(int** arg1, void* arg2, int* arg3, int arg4, int arg5, int arg6, int arg7, int arg8, void* arg9, int arg10, int arg11, int** arg12)",
+    "comment": "[binja] int32_t sub_1000c4e9(int32_t** arg1, void* arg2, int32_t* arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7, int32_t arg8, void* arg9, int32_t arg10, int32_t arg11, int32_t** arg12)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000cb5c",
+    "name": "FUN_1000cb5c",
+    "signature": "int FUN_1000cb5c(int** arg1, void* arg2, int* arg3, int arg4, int arg5, int arg6, int arg7, void* arg8, int arg9, int arg10, int** arg11, int arg12, int arg13, int arg14, int arg15)",
+    "comment": "[binja] int32_t __stdcall sub_1000cb5c(int32_t** arg1, void* arg2, int32_t* arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7, void* arg8, int32_t arg9, int32_t arg10, int32_t** arg11, int32_t arg12, int32_t arg13, int32_t arg14, int32_t arg15)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000cb9c",
+    "name": "FUN_1000cb9c",
+    "signature": "int FUN_1000cb9c(int** arg1, int* arg2, int arg3, int arg4, int arg5, int arg6, void* arg7, int arg8, int arg9, int** arg10, int arg11, int arg12, int arg13, int arg14)",
+    "comment": "[binja] int32_t __stdcall sub_1000cb9c(int32_t** arg1, int32_t* arg2, int32_t arg3, int32_t arg4, int32_t arg5, int32_t arg6, void* arg7, int32_t arg8, int32_t arg9, int32_t** arg10, int32_t arg11, int32_t arg12, int32_t arg13, int32_t arg14)",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -5253,10 +5461,786 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1000cc3f",
+    "name": "FUN_1000cc3f",
+    "signature": "int FUN_1000cc3f(int arg1, int arg2, int arg3, int arg4, int arg5, float arg6)",
+    "comment": "[binja] int32_t __stdcall sub_1000cc3f(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000cc69",
+    "name": "FUN_1000cc69",
+    "signature": "float* FUN_1000cc69(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
+    "comment": "[binja] float* __stdcall sub_1000cc69(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000ccf7",
+    "name": "FUN_1000ccf7",
+    "signature": "int FUN_1000ccf7(int arg1, int arg2, int arg3, int arg4, int arg5, float arg6)",
+    "comment": "[binja] int32_t __stdcall sub_1000ccf7(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000cd21",
+    "name": "FUN_1000cd21",
+    "signature": "float* FUN_1000cd21(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
+    "comment": "[binja] float* __stdcall sub_1000cd21(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000cdd0",
+    "name": "FUN_1000cdd0",
+    "signature": "int FUN_1000cdd0(int arg1, int arg2, int arg3, int arg4, float arg5, float arg6)",
+    "comment": "[binja] int32_t __stdcall sub_1000cdd0(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, float arg5, float arg6)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000cdff",
+    "name": "FUN_1000cdff",
+    "signature": "float* FUN_1000cdff(float* arg1, float* arg2, float* arg3, float* arg4, float arg5, float arg6)",
+    "comment": "[binja] float* __stdcall sub_1000cdff(float* arg1, float* arg2, float* arg3, float* arg4, float arg5, float arg6)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000cea6",
+    "name": "FUN_1000cea6",
+    "signature": "float* FUN_1000cea6(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
+    "comment": "[binja] float* __stdcall sub_1000cea6(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000cf54",
+    "name": "FUN_1000cf54",
+    "signature": "int FUN_1000cf54(int arg1, int arg2, int arg3, int arg4, int arg5, float arg6)",
+    "comment": "[binja] int32_t __stdcall sub_1000cf54(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000cf7e",
+    "name": "FUN_1000cf7e",
+    "signature": "float* FUN_1000cf7e(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
+    "comment": "[binja] float* __stdcall sub_1000cf7e(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000d04f",
+    "name": "FUN_1000d04f",
+    "signature": "int FUN_1000d04f(int arg1, int arg2, int arg3, int arg4, float arg5, float arg6)",
+    "comment": "[binja] int32_t __stdcall sub_1000d04f(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, float arg5, float arg6)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000d07e",
+    "name": "FUN_1000d07e",
+    "signature": "float* FUN_1000d07e(float* arg1, float* arg2, float* arg3, float* arg4, float arg5, float arg6)",
+    "comment": "[binja] float* __stdcall sub_1000d07e(float* arg1, float* arg2, float* arg3, float* arg4, float arg5, float arg6)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000d34f",
+    "name": "FUN_1000d34f",
+    "signature": "float* FUN_1000d34f(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
+    "comment": "[binja] float* __stdcall sub_1000d34f(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000d420",
+    "name": "FUN_1000d420",
+    "signature": "int FUN_1000d420(int arg1, int arg2, int arg3, int arg4, int arg5, float arg6)",
+    "comment": "[binja] int32_t __stdcall sub_1000d420(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000d44a",
+    "name": "FUN_1000d44a",
+    "signature": "float* FUN_1000d44a(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
+    "comment": "[binja] float* __stdcall sub_1000d44a(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000d53d",
+    "name": "FUN_1000d53d",
+    "signature": "int FUN_1000d53d(int arg1, int arg2, int arg3, int arg4, float arg5, float arg6)",
+    "comment": "[binja] int32_t __stdcall sub_1000d53d(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, float arg5, float arg6)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000d56c",
+    "name": "FUN_1000d56c",
+    "signature": "float* FUN_1000d56c(float* arg1, float* arg2, float* arg3, float* arg4, float arg5, float arg6)",
+    "comment": "[binja] float* __stdcall sub_1000d56c(float* arg1, float* arg2, float* arg3, float* arg4, float arg5, float arg6)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e012",
+    "name": "FUN_1000e012",
+    "signature": "int FUN_1000e012(float arg1, float arg2, float arg3)",
+    "comment": "[binja] int32_t __stdcall sub_1000e012(float arg1, float arg2, float arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e09c",
+    "name": "FUN_1000e09c",
+    "signature": "int FUN_1000e09c(float arg1, float arg2, float arg3)",
+    "comment": "[binja] int32_t __stdcall sub_1000e09c(float arg1, float arg2, float arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e126",
+    "name": "FUN_1000e126",
+    "signature": "int FUN_1000e126(float arg1)",
+    "comment": "[binja] int32_t __stdcall sub_1000e126(float arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e142",
+    "name": "FUN_1000e142",
+    "signature": "float* FUN_1000e142(float* arg1, float arg2)",
+    "comment": "[binja] float* __stdcall sub_1000e142(float* arg1, float arg2)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e1bc",
+    "name": "FUN_1000e1bc",
+    "signature": "int FUN_1000e1bc(float arg1)",
+    "comment": "[binja] int32_t __stdcall sub_1000e1bc(float arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e1d8",
+    "name": "FUN_1000e1d8",
+    "signature": "float* FUN_1000e1d8(float* arg1, float arg2)",
+    "comment": "[binja] float* __stdcall sub_1000e1d8(float* arg1, float arg2)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e253",
+    "name": "FUN_1000e253",
+    "signature": "int FUN_1000e253(float arg1)",
+    "comment": "[binja] int32_t __stdcall sub_1000e253(float arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e26f",
+    "name": "FUN_1000e26f",
+    "signature": "float* FUN_1000e26f(float* arg1, float arg2)",
+    "comment": "[binja] float* __stdcall sub_1000e26f(float* arg1, float arg2)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e2eb",
+    "name": "FUN_1000e2eb",
+    "signature": "int FUN_1000e2eb(int arg1, float arg2)",
+    "comment": "[binja] int32_t __stdcall sub_1000e2eb(int32_t arg1, float arg2)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e30b",
+    "name": "FUN_1000e30b",
+    "signature": "float* FUN_1000e30b(float* arg1, float arg2, float arg3)",
+    "comment": "[binja] float* __stdcall sub_1000e30b(float* arg1, float arg2, float arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e502",
+    "name": "FUN_1000e502",
+    "signature": "int FUN_1000e502(float arg1, float arg2, float arg3)",
+    "comment": "[binja] int32_t __stdcall sub_1000e502(float arg1, float arg2, float arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e541",
+    "name": "FUN_1000e541",
+    "signature": "int FUN_1000e541(int arg1, float arg2, int arg3, int arg4, int arg5)",
+    "comment": "[binja] int32_t __stdcall sub_1000e541(int32_t arg1, float arg2, int32_t arg3, int32_t arg4, int32_t arg5)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e568",
+    "name": "FUN_1000e568",
+    "signature": "float* FUN_1000e568(float* arg1, float arg2, float* arg3, int arg4, float* arg5)",
+    "comment": "[binja] float* __stdcall sub_1000e568(float* arg1, float arg2, float* arg3, int32_t arg4, float* arg5)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e853",
+    "name": "FUN_1000e853",
+    "signature": "int FUN_1000e853(int arg1, float arg2)",
+    "comment": "[binja] int32_t __stdcall sub_1000e853(int32_t arg1, float arg2)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e873",
+    "name": "FUN_1000e873",
+    "signature": "float* FUN_1000e873(float arg1, float arg2, float arg3)",
+    "comment": "[binja] float* __stdcall sub_1000e873(float arg1, float arg2, float arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000e8cf",
+    "name": "FUN_1000e8cf",
+    "signature": "int FUN_1000e8cf(float arg1, float arg2, float arg3)",
+    "comment": "[binja] int32_t __stdcall sub_1000e8cf(float arg1, float arg2, float arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000ed37",
+    "name": "FUN_1000ed37",
+    "signature": "int FUN_1000ed37(int arg1, int arg2, float arg3)",
+    "comment": "[binja] int32_t __stdcall sub_1000ed37(int32_t arg1, int32_t arg2, float arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000ee44",
+    "name": "FUN_1000ee44",
+    "signature": "int FUN_1000ee44(int arg1, int arg2, int arg3, int arg4, int arg5, float arg6)",
+    "comment": "[binja] int32_t __stdcall sub_1000ee44(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000ee6e",
+    "name": "FUN_1000ee6e",
+    "signature": "int FUN_1000ee6e(int arg1, int arg2, int arg3, int arg4, int arg5, float arg6)",
+    "comment": "[binja] int32_t __stdcall sub_1000ee6e(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000ef05",
+    "name": "FUN_1000ef05",
+    "signature": "int* FUN_1000ef05(int* arg1, int* arg2, int arg3, int arg4, float arg5, float arg6)",
+    "comment": "[binja] int32_t* __stdcall sub_1000ef05(int32_t* arg1, int32_t* arg2, int32_t arg3, int32_t arg4, float arg5, float arg6)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000f296",
+    "name": "FUN_1000f296",
+    "signature": "int* FUN_1000f296(int* arg1, float arg2)",
+    "comment": "[binja] int32_t* __stdcall sub_1000f296(int32_t* arg1, float arg2)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000f323",
+    "name": "FUN_1000f323",
+    "signature": "float* FUN_1000f323(float* arg1, float* arg2, float* arg3)",
+    "comment": "[binja] float* __stdcall sub_1000f323(float* arg1, float* arg2, float* arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000f38e",
+    "name": "FUN_1000f38e",
+    "signature": "float* FUN_1000f38e(float* arg1, float* arg2, float* arg3)",
+    "comment": "[binja] float* __stdcall sub_1000f38e(float* arg1, float* arg2, float* arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000f40e",
+    "name": "FUN_1000f40e",
+    "signature": "float* FUN_1000f40e(float* arg1, float* arg2, float* arg3)",
+    "comment": "[binja] float* __stdcall sub_1000f40e(float* arg1, float* arg2, float* arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000f44a",
+    "name": "FUN_1000f44a",
+    "signature": "float* FUN_1000f44a(float* arg1, float arg2)",
+    "comment": "[binja] float* __stdcall sub_1000f44a(float* arg1, float arg2)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000f4ea",
+    "name": "FUN_1000f4ea",
+    "signature": "float* FUN_1000f4ea(float* arg1, float* arg2, float* arg3)",
+    "comment": "[binja] float* __stdcall sub_1000f4ea(float* arg1, float* arg2, float* arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000f5a9",
+    "name": "FUN_1000f5a9",
+    "signature": "float* FUN_1000f5a9(float* arg1, int arg2, int* arg3, int* arg4, int* arg5, int* arg6)",
+    "comment": "[binja] float* __stdcall sub_1000f5a9(float* arg1, int32_t arg2, int32_t* arg3, int32_t* arg4, int32_t* arg5, int32_t* arg6)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000f8dc",
+    "name": "FUN_1000f8dc",
+    "signature": "float* FUN_1000f8dc(float* arg1, float arg2)",
+    "comment": "[binja] float* __stdcall sub_1000f8dc(float* arg1, float arg2)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000f995",
+    "name": "FUN_1000f995",
+    "signature": "int FUN_1000f995(int arg1, float arg2, float arg3, float arg4)",
+    "comment": "[binja] int32_t __stdcall sub_1000f995(int32_t arg1, float arg2, float arg3, float arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000f9ce",
+    "name": "FUN_1000f9ce",
+    "signature": "float* FUN_1000f9ce(float* arg1, float* arg2, void* arg3, int* arg4, float* arg5, int arg6, float* arg7)",
+    "comment": "[binja] float* __stdcall sub_1000f9ce(float* arg1, float* arg2, void* arg3, int32_t* arg4, float* arg5, int32_t arg6, float* arg7)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000fc82",
+    "name": "FUN_1000fc82",
+    "signature": "float* FUN_1000fc82(float* arg1, float* arg2, int arg3)",
+    "comment": "[binja] float* __stdcall sub_1000fc82(float* arg1, float* arg2, int32_t arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1000fd5c",
+    "name": "FUN_1000fd5c",
+    "signature": "float* FUN_1000fd5c(float* arg1, float arg2)",
+    "comment": "[binja] float* __stdcall sub_1000fd5c(float* arg1, float arg2)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x100101f5",
     "name": "grim_d3d_debug_set_mute",
     "signature": "void grim_d3d_debug_set_mute(int mute)",
     "comment": "loads DebugSetMute from d3d8/d3d8d and toggles D3D debug output"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10010285",
+    "name": "FUN_10010285",
+    "signature": "int* FUN_10010285(int* arg1)",
+    "comment": "[binja] int32_t* __fastcall sub_10010285(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001029e",
+    "name": "FUN_1001029e",
+    "signature": "int FUN_1001029e(void* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_1001029e(void* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100102f7",
+    "name": "FUN_100102f7",
+    "signature": "void* FUN_100102f7(void* arg1, char arg2)",
+    "comment": "[binja] void* __thiscall sub_100102f7(void* arg1, char arg2)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10010313",
+    "name": "FUN_10010313",
+    "signature": "int FUN_10010313(int* arg1, int* arg2)",
+    "comment": "[binja] int32_t __thiscall sub_10010313(int32_t* arg1, int32_t* arg2)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100103d6",
+    "name": "FUN_100103d6",
+    "signature": "int FUN_100103d6(int* arg1, void* arg2, void* arg3)",
+    "comment": "[binja] int32_t __thiscall sub_100103d6(int32_t* arg1, void* arg2, void* arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10010aec",
+    "name": "FUN_10010aec",
+    "signature": "int FUN_10010aec(int* arg1, HANDLE arg2)",
+    "comment": "[binja] int32_t __thiscall sub_10010aec(int32_t* arg1, HANDLE arg2)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10010e13",
+    "name": "FUN_10010e13",
+    "signature": "int FUN_10010e13(int* arg1, int arg2, int arg3)",
+    "comment": "[binja] int32_t __thiscall sub_10010e13(int32_t* arg1, int32_t arg2, int32_t arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10011083",
+    "name": "FUN_10011083",
+    "signature": "int FUN_10011083(int* arg1, void* arg2, int arg3)",
+    "comment": "[binja] int32_t __thiscall sub_10011083(int32_t* arg1, void* arg2, int32_t arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001152a",
+    "name": "FUN_1001152a",
+    "signature": "int FUN_1001152a(int* arg1, char* arg2, int arg3)",
+    "comment": "[binja] int32_t __thiscall sub_1001152a(int32_t* arg1, char* arg2, int32_t arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100117ff",
+    "name": "FUN_100117ff",
+    "signature": "int FUN_100117ff(int* arg1, void* arg2, void* arg3)",
+    "comment": "[binja] int32_t __thiscall sub_100117ff(int32_t* arg1, void* arg2, void* arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10011d95",
+    "name": "FUN_10011d95",
+    "signature": "int FUN_10011d95(int* arg1, uint arg2, int* arg3)",
+    "comment": "[binja] int32_t __thiscall sub_10011d95(int32_t* arg1, uint32_t arg2, int32_t* arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100120d6",
+    "name": "FUN_100120d6",
+    "signature": "int FUN_100120d6(int* arg1, HANDLE arg2)",
+    "comment": "[binja] int32_t __thiscall sub_100120d6(int32_t* arg1, HANDLE arg2)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001237e",
+    "name": "FUN_1001237e",
+    "signature": "int FUN_1001237e(int* arg1, int arg2, int arg3, int* arg4)",
+    "comment": "[binja] int32_t __thiscall sub_1001237e(int32_t* arg1, int32_t arg2, int32_t arg3, int32_t* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10012647",
+    "name": "FUN_10012647",
+    "signature": "int FUN_10012647(short* arg1, void* arg2)",
+    "comment": "[binja] int32_t __stdcall sub_10012647(int16_t* arg1, void* arg2)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10012677",
+    "name": "FUN_10012677",
+    "signature": "int FUN_10012677(int* arg1, void* arg2, int* arg3, int* arg4, int arg5)",
+    "comment": "[binja] int32_t __thiscall sub_10012677(int32_t* arg1, void* arg2, int32_t* arg3, int32_t* arg4, int32_t arg5)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001284c",
+    "name": "FUN_1001284c",
+    "signature": "int* FUN_1001284c(int* arg1)",
+    "comment": "[binja] int32_t* __fastcall sub_1001284c(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10012856",
+    "name": "FUN_10012856",
+    "signature": "void FUN_10012856(int* arg1)",
+    "comment": "[binja] void __fastcall sub_10012856(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10012b47",
+    "name": "FUN_10012b47",
+    "signature": "int* FUN_10012b47(int* arg1, char arg2)",
+    "comment": "[binja] int32_t* __thiscall sub_10012b47(int32_t* arg1, char arg2)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10012b93",
+    "name": "FUN_10012b93",
+    "signature": "int FUN_10012b93(int* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_10012b93(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10013007",
+    "name": "FUN_10013007",
+    "signature": "int FUN_10013007(int* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_10013007(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100132bb",
+    "name": "FUN_100132bb",
+    "signature": "int FUN_100132bb(int* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_100132bb(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10013551",
+    "name": "FUN_10013551",
+    "signature": "int FUN_10013551(int* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_10013551(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10013582",
+    "name": "FUN_10013582",
+    "signature": "int FUN_10013582(int* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_10013582(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100136d2",
+    "name": "FUN_100136d2",
+    "signature": "int FUN_100136d2(int* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_100136d2(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100137f6",
+    "name": "FUN_100137f6",
+    "signature": "int FUN_100137f6(int* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_100137f6(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10013945",
+    "name": "FUN_10013945",
+    "signature": "int FUN_10013945(int* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_10013945(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10013a98",
+    "name": "FUN_10013a98",
+    "signature": "int FUN_10013a98(int* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_10013a98(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10013bd7",
+    "name": "FUN_10013bd7",
+    "signature": "int FUN_10013bd7(int* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_10013bd7(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10013c72",
+    "name": "FUN_10013c72",
+    "signature": "int FUN_10013c72(int* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_10013c72(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10013dbe",
+    "name": "FUN_10013dbe",
+    "signature": "int FUN_10013dbe(int* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_10013dbe(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10013edf",
+    "name": "FUN_10013edf",
+    "signature": "int FUN_10013edf(int* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_10013edf(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001402b",
+    "name": "FUN_1001402b",
+    "signature": "int FUN_1001402b(int* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_1001402b(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001416a",
+    "name": "FUN_1001416a",
+    "signature": "int FUN_1001416a(int* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_1001416a(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100142a2",
+    "name": "FUN_100142a2",
+    "signature": "int FUN_100142a2(int* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_100142a2(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10014393",
+    "name": "FUN_10014393",
+    "signature": "int FUN_10014393(int* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_10014393(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10014595",
+    "name": "FUN_10014595",
+    "signature": "int FUN_10014595(int* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_10014595(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10014799",
+    "name": "FUN_10014799",
+    "signature": "int FUN_10014799(int* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_10014799(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10014bbc",
+    "name": "FUN_10014bbc",
+    "signature": "int FUN_10014bbc(int* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_10014bbc(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001514e",
+    "name": "FUN_1001514e",
+    "signature": "int FUN_1001514e(int* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_1001514e(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10015534",
+    "name": "FUN_10015534",
+    "signature": "int FUN_10015534(int* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_10015534(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10015c65",
+    "name": "FUN_10015c65",
+    "signature": "int FUN_10015c65(int* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_10015c65(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10016007",
+    "name": "FUN_10016007",
+    "signature": "int FUN_10016007(int* arg1, void*** arg2, void*** arg3, int arg4)",
+    "comment": "[binja] int32_t __thiscall sub_10016007(int32_t* arg1, void*** arg2, void*** arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10016121",
+    "name": "FUN_10016121",
+    "signature": "int* FUN_10016121(int* arg1)",
+    "comment": "[binja] int32_t* __fastcall sub_10016121(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10016131",
+    "name": "FUN_10016131",
+    "signature": "int FUN_10016131(char* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_10016131(char* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001619a",
+    "name": "FUN_1001619a",
+    "signature": "int* FUN_1001619a(int* arg1)",
+    "comment": "[binja] int32_t* __fastcall sub_1001619a(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100161a0",
+    "name": "FUN_100161a0",
+    "signature": "int FUN_100161a0(int* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_100161a0(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100161b6",
+    "name": "FUN_100161b6",
+    "signature": "int FUN_100161b6(char* arg1)",
+    "comment": "[binja] int32_t __fastcall j_sub_10016131(char* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100161bb",
+    "name": "FUN_100161bb",
+    "signature": "int FUN_100161bb(char* arg1, int* arg2, int* arg3, int arg4, int* arg5, int arg6, int arg7)",
+    "comment": "[binja] int32_t __thiscall sub_100161bb(char* arg1, int32_t* arg2, int32_t* arg3, int32_t arg4, int32_t* arg5, int32_t arg6, int32_t arg7)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100165d3",
+    "name": "FUN_100165d3",
+    "signature": "int FUN_100165d3(int* arg1, int* arg2, int* arg3, int arg4, int arg5, int arg6, int arg7)",
+    "comment": "[binja] int32_t __thiscall sub_100165d3(int32_t* arg1, int32_t* arg2, int32_t* arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7)",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -5271,6 +6255,14 @@
     "name": "grim_convert_vertex_space",
     "signature": "float * grim_convert_vertex_space(void *this, float *src)",
     "comment": "converts vec4 coordinates between space modes (1/2/3), writes to this+0x104c, returns the output buffer"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10016c3c",
+    "name": "FUN_10016c3c",
+    "signature": "int FUN_10016c3c(void*** arg1)",
+    "comment": "[binja] int32_t __fastcall sub_10016c3c(void*** arg1)",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -5295,10 +6287,498 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x10017345",
+    "name": "FUN_10017345",
+    "signature": "void*** FUN_10017345(void*** arg1, char arg2)",
+    "comment": "[binja] void*** __thiscall sub_10017345(void*** arg1, char arg2)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10017361",
+    "name": "FUN_10017361",
+    "signature": "int FUN_10017361(void* arg1, void* arg2)",
+    "comment": "[binja] int32_t __thiscall sub_10017361(void* arg1, void* arg2)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100173dc",
+    "name": "FUN_100173dc",
+    "signature": "int FUN_100173dc(int* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_100173dc(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x100174a8",
     "name": "grim_apply_color_key",
     "signature": "void grim_apply_color_key(float *pixels)",
     "comment": "zeroes RGBA pixels that match the current color key"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10017518",
+    "name": "FUN_10017518",
+    "signature": "short FUN_10017518(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_10017518(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10017604",
+    "name": "FUN_10017604",
+    "signature": "short FUN_10017604(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_10017604(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10017727",
+    "name": "FUN_10017727",
+    "signature": "short FUN_10017727(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_10017727(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10017828",
+    "name": "FUN_10017828",
+    "signature": "short FUN_10017828(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_10017828(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10017929",
+    "name": "FUN_10017929",
+    "signature": "short FUN_10017929(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_10017929(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10017a2a",
+    "name": "FUN_10017a2a",
+    "signature": "short FUN_10017a2a(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_10017a2a(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10017b47",
+    "name": "FUN_10017b47",
+    "signature": "short FUN_10017b47(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_10017b47(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10017c6a",
+    "name": "FUN_10017c6a",
+    "signature": "short FUN_10017c6a(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_10017c6a(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10017d68",
+    "name": "FUN_10017d68",
+    "signature": "short FUN_10017d68(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_10017d68(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10017e11",
+    "name": "FUN_10017e11",
+    "signature": "short FUN_10017e11(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_10017e11(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10017f34",
+    "name": "FUN_10017f34",
+    "signature": "short FUN_10017f34(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_10017f34(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10018035",
+    "name": "FUN_10018035",
+    "signature": "short FUN_10018035(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_10018035(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10018158",
+    "name": "FUN_10018158",
+    "signature": "short FUN_10018158(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_10018158(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10018228",
+    "name": "FUN_10018228",
+    "signature": "short FUN_10018228(void* arg1, int arg2, int arg3, float* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_10018228(void* arg1, int32_t arg2, int32_t arg3, float* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10018340",
+    "name": "FUN_10018340",
+    "signature": "void* FUN_10018340(void* arg1, void* arg2, float arg3, void* arg4)",
+    "comment": "[binja] void* __thiscall sub_10018340(void* arg1, void* arg2, float arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10018405",
+    "name": "FUN_10018405",
+    "signature": "short FUN_10018405(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_10018405(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100184ca",
+    "name": "FUN_100184ca",
+    "signature": "short FUN_100184ca(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_100184ca(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100185c0",
+    "name": "FUN_100185c0",
+    "signature": "short FUN_100185c0(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_100185c0(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100186ab",
+    "name": "FUN_100186ab",
+    "signature": "short FUN_100186ab(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_100186ab(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10018780",
+    "name": "FUN_10018780",
+    "signature": "short FUN_10018780(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_10018780(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10018885",
+    "name": "FUN_10018885",
+    "signature": "short FUN_10018885(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_10018885(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10018990",
+    "name": "FUN_10018990",
+    "signature": "short FUN_10018990(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_10018990(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10018aca",
+    "name": "FUN_10018aca",
+    "signature": "short FUN_10018aca(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_10018aca(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10018ba0",
+    "name": "FUN_10018ba0",
+    "signature": "short FUN_10018ba0(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_10018ba0(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10018caa",
+    "name": "FUN_10018caa",
+    "signature": "short FUN_10018caa(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_10018caa(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10018de0",
+    "name": "FUN_10018de0",
+    "signature": "short FUN_10018de0(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_10018de0(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10018ea7",
+    "name": "FUN_10018ea7",
+    "signature": "short FUN_10018ea7(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_10018ea7(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10018f6e",
+    "name": "FUN_10018f6e",
+    "signature": "short FUN_10018f6e(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_10018f6e(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001905c",
+    "name": "FUN_1001905c",
+    "signature": "short FUN_1001905c(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_1001905c(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001914b",
+    "name": "FUN_1001914b",
+    "signature": "short FUN_1001914b(void* arg1, int arg2, int arg3, void* arg4)",
+    "comment": "[binja] int16_t __thiscall sub_1001914b(void* arg1, int32_t arg2, int32_t arg3, void* arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100192a7",
+    "name": "FUN_100192a7",
+    "signature": "void* FUN_100192a7(void* arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] void* __thiscall sub_100192a7(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10019333",
+    "name": "FUN_10019333",
+    "signature": "int* FUN_10019333(void* arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] int32_t* __thiscall sub_10019333(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100193d9",
+    "name": "FUN_100193d9",
+    "signature": "void* FUN_100193d9(void* arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] void* __thiscall sub_100193d9(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10019475",
+    "name": "FUN_10019475",
+    "signature": "short* FUN_10019475(void* arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] int16_t* __thiscall sub_10019475(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001951a",
+    "name": "FUN_1001951a",
+    "signature": "short* FUN_1001951a(void* arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] int16_t* __thiscall sub_1001951a(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100195bc",
+    "name": "FUN_100195bc",
+    "signature": "short* FUN_100195bc(void* arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] int16_t* __thiscall sub_100195bc(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001966c",
+    "name": "FUN_1001966c",
+    "signature": "void* FUN_1001966c(void* arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] void* __thiscall sub_1001966c(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001971b",
+    "name": "FUN_1001971b",
+    "signature": "int* FUN_1001971b(void* arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] int32_t* __thiscall sub_1001971b(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100197f1",
+    "name": "FUN_100197f1",
+    "signature": "int* FUN_100197f1(void* arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] int32_t* __thiscall sub_100197f1(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10019883",
+    "name": "FUN_10019883",
+    "signature": "char* FUN_10019883(void* arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] char* __thiscall sub_10019883(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10019925",
+    "name": "FUN_10019925",
+    "signature": "char* FUN_10019925(void* arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] char* __thiscall sub_10019925(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10019997",
+    "name": "FUN_10019997",
+    "signature": "char* FUN_10019997(void* arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] char* __thiscall sub_10019997(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10019a49",
+    "name": "FUN_10019a49",
+    "signature": "void* FUN_10019a49(void* arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] void* __thiscall sub_10019a49(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10019ae8",
+    "name": "FUN_10019ae8",
+    "signature": "char* FUN_10019ae8(void* arg1, void* arg2, int arg3, uint arg4)",
+    "comment": "[binja] char* __thiscall sub_10019ae8(void* arg1, void* arg2, int32_t arg3, uint32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10019bd3",
+    "name": "FUN_10019bd3",
+    "signature": "char* FUN_10019bd3(void* arg1, int arg2, int arg3, uint arg4)",
+    "comment": "[binja] char* __thiscall sub_10019bd3(void* arg1, int32_t arg2, int32_t arg3, uint32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10019c41",
+    "name": "FUN_10019c41",
+    "signature": "char* FUN_10019c41(void* arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] char* __thiscall sub_10019c41(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10019cca",
+    "name": "FUN_10019cca",
+    "signature": "char* FUN_10019cca(void* arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] char* __thiscall sub_10019cca(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10019d53",
+    "name": "FUN_10019d53",
+    "signature": "char* FUN_10019d53(void* arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] char* __thiscall sub_10019d53(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10019dd5",
+    "name": "FUN_10019dd5",
+    "signature": "char* FUN_10019dd5(void* arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] char* __thiscall sub_10019dd5(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10019e86",
+    "name": "FUN_10019e86",
+    "signature": "char* FUN_10019e86(void* arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] char* __thiscall sub_10019e86(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10019f17",
+    "name": "FUN_10019f17",
+    "signature": "char* FUN_10019f17(void* arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] char* __thiscall sub_10019f17(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10019fae",
+    "name": "FUN_10019fae",
+    "signature": "short* FUN_10019fae(void* arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] int16_t* __thiscall sub_10019fae(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001a031",
+    "name": "FUN_1001a031",
+    "signature": "int* FUN_1001a031(void* arg1, uint arg2, int arg3, int arg4)",
+    "comment": "[binja] int32_t* __thiscall sub_1001a031(void* arg1, uint32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001a0eb",
+    "name": "FUN_1001a0eb",
+    "signature": "int* FUN_1001a0eb(void* arg1, uint arg2, int arg3, int arg4)",
+    "comment": "[binja] int32_t* __thiscall sub_1001a0eb(void* arg1, uint32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001a1be",
+    "name": "FUN_1001a1be",
+    "signature": "short* FUN_1001a1be(void* arg1, int arg2, int arg3, uint arg4)",
+    "comment": "[binja] int16_t* __thiscall sub_1001a1be(void* arg1, int32_t arg2, int32_t arg3, uint32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001a22e",
+    "name": "FUN_1001a22e",
+    "signature": "int* FUN_1001a22e(void* arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] int32_t* __thiscall sub_1001a22e(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001a2bc",
+    "name": "FUN_1001a2bc",
+    "signature": "void* FUN_1001a2bc(void* arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] void* __thiscall sub_1001a2bc(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001a348",
+    "name": "FUN_1001a348",
+    "signature": "uint FUN_1001a348(uint arg1, uint arg2, int arg3, uint arg4)",
+    "comment": "[binja] uint32_t __thiscall sub_1001a348(uint32_t arg1, uint32_t arg2, int32_t arg3, uint32_t arg4)",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -5435,6 +6915,14 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1001ae58",
+    "name": "FUN_1001ae58",
+    "signature": "void*** FUN_1001ae58(void*** arg1, char arg2)",
+    "comment": "[binja] void*** __thiscall sub_1001ae58(void*** arg1, char arg2)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1001ae74",
     "name": "grim_pixel_format_ctor_p8",
     "signature": "void * grim_pixel_format_ctor_p8(void *this, uint *desc)",
@@ -5456,10 +6944,26 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1001aec8",
+    "name": "FUN_1001aec8",
+    "signature": "void*** FUN_1001aec8(void*** arg1, char arg2)",
+    "comment": "[binja] void*** __thiscall sub_1001aec8(void*** arg1, char arg2)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1001aee4",
     "name": "grim_pixel_format_ctor_a4l4",
     "signature": "void * grim_pixel_format_ctor_a4l4(void *this, uint *desc)",
     "comment": "pixel format ctor for D3DFMT_A4L4"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001af00",
+    "name": "FUN_1001af00",
+    "signature": "void* FUN_1001af00(void* arg1)",
+    "comment": "[binja] void* __fastcall sub_1001af00(void* arg1)",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -5589,6 +7093,22 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1001b472",
+    "name": "FUN_1001b472",
+    "signature": "void*** FUN_1001b472(void*** arg1, char arg2)",
+    "comment": "[binja] void*** __thiscall sub_1001b472(void*** arg1, char arg2)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001b493",
+    "name": "FUN_1001b493",
+    "signature": "int FUN_1001b493(void*** arg1)",
+    "comment": "[binja] int32_t __fastcall sub_1001b493(void*** arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1001b4dc",
     "name": "grim_pixel_format_ctor_uyvy",
     "signature": "void * grim_pixel_format_ctor_uyvy(void *this)",
@@ -5607,6 +7127,78 @@
     "name": "grim_pixel_format_create",
     "signature": "void * grim_pixel_format_create(uint *desc)",
     "comment": "factory: picks pixel format implementation from FourCC/D3DFORMAT"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001bc84",
+    "name": "FUN_1001bc84",
+    "signature": "void*** FUN_1001bc84(void*** arg1, char arg2)",
+    "comment": "[binja] void*** __thiscall sub_1001bc84(void*** arg1, char arg2)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001bca5",
+    "name": "FUN_1001bca5",
+    "signature": "int* FUN_1001bca5(int* arg1)",
+    "comment": "[binja] int32_t* __fastcall sub_1001bca5(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001bcb7",
+    "name": "FUN_1001bcb7",
+    "signature": "int FUN_1001bcb7(int* arg1, int* arg2, int* arg3)",
+    "comment": "[binja] int32_t __thiscall sub_1001bcb7(int32_t* arg1, int32_t* arg2, int32_t* arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001bdc7",
+    "name": "FUN_1001bdc7",
+    "signature": "int FUN_1001bdc7(void** arg1, int arg2, int* arg3)",
+    "comment": "[binja] int32_t __thiscall sub_1001bdc7(void** arg1, int32_t arg2, int32_t* arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001be91",
+    "name": "FUN_1001be91",
+    "signature": "int FUN_1001be91(int* arg1)",
+    "comment": "[binja] int32_t __fastcall sub_1001be91(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001bed2",
+    "name": "FUN_1001bed2",
+    "signature": "void FUN_1001bed2(int* arg1)",
+    "comment": "[binja] void __fastcall sub_1001bed2(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001bf39",
+    "name": "FUN_1001bf39",
+    "signature": "int FUN_1001bf39(int arg1)",
+    "comment": "[binja] int32_t __fastcall sub_1001bf39(int32_t arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001bff7",
+    "name": "FUN_1001bff7",
+    "signature": "int FUN_1001bff7(int arg1)",
+    "comment": "[binja] int32_t __fastcall sub_1001bff7(int32_t arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1001c02f",
+    "name": "FUN_1001c02f",
+    "signature": "int FUN_1001c02f(int arg1)",
+    "comment": "[binja] int32_t __fastcall sub_1001c02f(int32_t arg1)",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -5750,6 +7342,14 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x100205da",
+    "name": "FUN_100205da",
+    "signature": "void FUN_100205da(int arg1)",
+    "comment": "[binja] void sub_100205da(int32_t arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1002060e",
     "name": "grim_dxt_decode_rgb565",
     "signature": "void grim_dxt_decode_rgb565(float *out_rgba, unsigned int rgb565)",
@@ -5848,10 +7448,82 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1002290c",
+    "name": "FUN_1002290c",
+    "signature": "float* FUN_1002290c(float* arg1, float* arg2)",
+    "comment": "[binja] float* __stdcall sub_1002290c(float* arg1, float* arg2)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100229d6",
+    "name": "FUN_100229d6",
+    "signature": "int FUN_100229d6(int arg1, int arg2, void* arg3)",
+    "comment": "[binja] int32_t __stdcall sub_100229d6(int32_t arg1, int32_t arg2, void* arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10022ab9",
+    "name": "FUN_10022ab9",
+    "signature": "void* FUN_10022ab9(void* arg1, int arg2, int arg3)",
+    "comment": "[binja] void* __stdcall sub_10022ab9(void* arg1, int32_t arg2, int32_t arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x10022c14",
     "name": "memzero",
     "signature": "void memzero(void *dst, unsigned int size)",
     "comment": "zero-fill helper (memset to 0)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10022c2f",
+    "name": "FUN_10022c2f",
+    "signature": "int FUN_10022c2f(int arg1)",
+    "comment": "[binja] int32_t __fastcall sub_10022c2f(int32_t arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002318f",
+    "name": "FUN_1002318f",
+    "signature": "void* FUN_1002318f(int* arg1, int* arg2, int* arg3)",
+    "comment": "[binja] void* sub_1002318f(int32_t* arg1, int32_t* arg2, int32_t* arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002328b",
+    "name": "FUN_1002328b",
+    "signature": "void* FUN_1002328b(uint arg1, int arg2, int arg3)",
+    "comment": "[binja] void* sub_1002328b(uint32_t arg1, int32_t arg2, int32_t arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10023449",
+    "name": "FUN_10023449",
+    "signature": "void* FUN_10023449(int* arg1, int* arg2, char arg3, int arg4, int arg5, int arg6)",
+    "comment": "[binja] void* sub_10023449(int32_t* arg1, int32_t* arg2, char arg3, int32_t arg4, int32_t arg5, int32_t arg6)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100234aa",
+    "name": "FUN_100234aa",
+    "signature": "void* FUN_100234aa(int* arg1, int* arg2, char arg3, int arg4, int arg5, int arg6)",
+    "comment": "[binja] void* sub_100234aa(int32_t* arg1, int32_t* arg2, char arg3, int32_t arg4, int32_t arg5, int32_t arg6)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10023c18",
+    "name": "FUN_10023c18",
+    "signature": "int FUN_10023c18(int arg1, void* arg2)",
+    "comment": "[binja] int32_t __fastcall sub_10023c18(int32_t arg1, void* arg2)",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -5908,6 +7580,22 @@
     "name": "png_free",
     "signature": "void png_free(png_structp png_ptr, void * ptr)",
     "comment": "png free callback wrapper"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10024790",
+    "name": "FUN_10024790",
+    "signature": "int FUN_10024790(int arg1, int arg2, int arg3)",
+    "comment": "[binja] int32_t sub_10024790(int32_t arg1, int32_t arg2, int32_t arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100247b3",
+    "name": "FUN_100247b3",
+    "signature": "int FUN_100247b3(int arg1, char arg2, int arg3)",
+    "comment": "[binja] int32_t sub_100247b3(int32_t arg1, char arg2, int32_t arg3)",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -6000,10 +7688,90 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1002e65a",
+    "name": "FUN_1002e65a",
+    "signature": "int FUN_1002e65a(uint arg1)",
+    "comment": "[binja] int32_t sub_1002e65a(uint32_t arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1002e665",
     "name": "zcfree",
     "signature": "void zcfree(voidpf opaque, voidpf ptr)",
     "comment": "zlib (internal): default free wrapper"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002e670",
+    "name": "FUN_1002e670",
+    "signature": "int FUN_1002e670(int arg1)",
+    "comment": "[binja] int32_t sub_1002e670(int32_t arg1) __pure",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1002ec9d",
+    "name": "FUN_1002ec9d",
+    "signature": "void* FUN_1002ec9d(void* arg1)",
+    "comment": "[binja] void* __fastcall sub_1002ec9d(void* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10031078",
+    "name": "FUN_10031078",
+    "signature": "int FUN_10031078(int arg1, int arg2, int arg3, int arg4, int* arg5)",
+    "comment": "[binja] int32_t sub_10031078(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t* arg5)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10031108",
+    "name": "FUN_10031108",
+    "signature": "int FUN_10031108(void* arg1, int arg2, int* arg3, int arg4)",
+    "comment": "[binja] int32_t sub_10031108(void* arg1, int32_t arg2, int32_t* arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100312d7",
+    "name": "FUN_100312d7",
+    "signature": "int* FUN_100312d7(void* arg1, int arg2, int* arg3, int arg4, int* arg5, int arg6)",
+    "comment": "[binja] int32_t* sub_100312d7(void* arg1, int32_t arg2, int32_t* arg3, int32_t arg4, int32_t* arg5, int32_t arg6)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003148d",
+    "name": "FUN_1003148d",
+    "signature": "int* FUN_1003148d(int* arg1, int arg2, int* arg3)",
+    "comment": "[binja] int32_t* sub_1003148d(int32_t* arg1, int32_t arg2, int32_t* arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100314e4",
+    "name": "FUN_100314e4",
+    "signature": "int* FUN_100314e4(void* arg1, int* arg2, int* arg3)",
+    "comment": "[binja] int32_t* sub_100314e4(void* arg1, int32_t* arg2, int32_t* arg3)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10032110",
+    "name": "FUN_10032110",
+    "signature": "int FUN_10032110(void* arg1, int arg2, int* arg3, int arg4, int* arg5)",
+    "comment": "[binja] int32_t sub_10032110(void* arg1, int32_t arg2, int32_t* arg3, int32_t arg4, int32_t* arg5)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100324f2",
+    "name": "FUN_100324f2",
+    "signature": "short* FUN_100324f2(short* arg1, short* arg2, int arg3)",
+    "comment": "[binja] int16_t* sub_100324f2(int16_t* arg1, int16_t* arg2, int32_t arg3)",
+    "create": false
   },
   {
     "program": "grim.dll",
@@ -6098,6 +7866,70 @@
   },
   {
     "program": "grim.dll",
+    "address": "0x1003d0d0",
+    "name": "FUN_1003d0d0",
+    "signature": "char* FUN_1003d0d0(int arg1)",
+    "comment": "[binja] char* __fastcall sub_1003d0d0(int32_t arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003d930",
+    "name": "FUN_1003d930",
+    "signature": "int FUN_1003d930(int* arg1)",
+    "comment": "[binja] int32_t sub_1003d930(int32_t* arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003db20",
+    "name": "FUN_1003db20",
+    "signature": "int FUN_1003db20(int arg1)",
+    "comment": "[binja] int32_t sub_1003db20(int32_t arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1003e530",
+    "name": "FUN_1003e530",
+    "signature": "int FUN_1003e530(int arg1)",
+    "comment": "[binja] int32_t sub_1003e530(int32_t arg1) __pure",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10041a60",
+    "name": "FUN_10041a60",
+    "signature": "int FUN_10041a60(void* arg1, int arg2, int arg3, int arg4, void** arg5)",
+    "comment": "[binja] int32_t sub_10041a60(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4, void** arg5)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10041b00",
+    "name": "FUN_10041b00",
+    "signature": "int FUN_10041b00(void* arg1, int arg2, int* arg3, int arg4)",
+    "comment": "[binja] int32_t sub_10041b00(void* arg1, int32_t arg2, int32_t* arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10047a00",
+    "name": "FUN_10047a00",
+    "signature": "int FUN_10047a00(uint arg1, uint arg2)",
+    "comment": "[binja] int32_t sub_10047a00(uint32_t arg1, uint32_t arg2)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10047a20",
+    "name": "FUN_10047a20",
+    "signature": "int FUN_10047a20(int arg1)",
+    "comment": "[binja] int32_t sub_10047a20(int32_t arg1)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
     "address": "0x1004b0b0",
     "name": "inflate_trees_fixed",
     "signature": "int inflate_trees_fixed(uInt *bl, uInt *bd, void **tl, void **td, z_streamp z)",
@@ -6109,5 +7941,29 @@
     "name": "seh_prolog",
     "signature": "void seh_prolog(void)",
     "comment": "MSVC SEH prolog helper (sets FS:[0])"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004b5cf",
+    "name": "FUN_1004b5cf",
+    "signature": "int FUN_1004b5cf(int arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] int32_t __stdcall sub_1004b5cf(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004b64f",
+    "name": "FUN_1004b64f",
+    "signature": "void * FUN_1004b64f(int arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] struct _EXCEPTION_REGISTRATION_RECORD* __stdcall sub_1004b64f(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x1004b6c3",
+    "name": "FUN_1004b6c3",
+    "signature": "int FUN_1004b6c3(int arg1, int arg2, int arg3, int arg4)",
+    "comment": "[binja] int32_t __stdcall sub_1004b6c3(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4)",
+    "create": false
   }
 ]
