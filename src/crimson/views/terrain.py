@@ -5,9 +5,13 @@ from pathlib import Path
 
 import pyray as rl
 
+from .font_small import SmallFontData, draw_small_text, load_small_font
 from .registry import register_view
 from .types import View, ViewContext
 
+UI_TEXT_SCALE = 1.0
+UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
+UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 
 @dataclass(frozen=True, slots=True)
 class TerrainTexture:
@@ -37,10 +41,25 @@ class TerrainView:
         self._assets_root = ctx.assets_dir
         self._missing_assets: list[str] = []
         self._textures: list[TerrainTexture] = []
+        self._small: SmallFontData | None = None
+
+    def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
+        if self._small is not None:
+            return int(self._small.cell_size * scale)
+        return int(20 * scale)
+
+    def _draw_ui_text(
+        self, text: str, x: float, y: float, color: rl.Color, scale: float = UI_TEXT_SCALE
+    ) -> None:
+        if self._small is not None:
+            draw_small_text(self._small, text, x, y, scale, color)
+        else:
+            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
 
     def open(self) -> None:
         self._missing_assets.clear()
         self._textures.clear()
+        self._small = load_small_font(self._assets_root, self._missing_assets)
         for terrain_id, name, rel_path in TERRAIN_TEXTURES:
             path = self._assets_root / "crimson" / rel_path
             if not path.is_file():
@@ -55,6 +74,9 @@ class TerrainView:
         for entry in self._textures:
             rl.unload_texture(entry.texture)
         self._textures.clear()
+        if self._small is not None:
+            rl.unload_texture(self._small.texture)
+            self._small = None
 
     def update(self, dt: float) -> None:
         del dt
@@ -63,10 +85,10 @@ class TerrainView:
         rl.clear_background(rl.Color(12, 12, 14, 255))
         if self._missing_assets:
             message = "Missing assets: " + ", ".join(self._missing_assets)
-            rl.draw_text(message, 24, 24, 20, rl.Color(240, 80, 80, 255))
+            self._draw_ui_text(message, 24, 24, UI_ERROR_COLOR)
             return
         if not self._textures:
-            rl.draw_text("No terrain textures loaded.", 24, 24, 20, rl.WHITE)
+            self._draw_ui_text("No terrain textures loaded.", 24, 24, UI_TEXT_COLOR)
             return
 
         cols = 4
@@ -74,7 +96,7 @@ class TerrainView:
         margin = 24
         gap_x = 16
         gap_y = 20
-        label_height = 18
+        label_height = self._ui_line_height()
 
         cell_w = max(entry.texture.width for entry in self._textures)
         cell_h = max(entry.texture.height for entry in self._textures)
@@ -89,7 +111,7 @@ class TerrainView:
             x = margin + col * (cell_w * scale + gap_x)
             y = margin + row * (cell_h * scale + gap_y + label_height)
             label = f"{entry.terrain_id:02d} {entry.name}"
-            rl.draw_text(label, int(x), int(y), 16, rl.Color(220, 220, 220, 255))
+            self._draw_ui_text(label, x, y, UI_TEXT_COLOR)
             dst = rl.Rectangle(
                 float(x),
                 float(y + label_height),
