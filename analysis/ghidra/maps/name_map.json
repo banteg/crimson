@@ -1066,7 +1066,25 @@
     "address": "0x0042b090",
     "name": "game_startup_init",
     "signature": "void game_startup_init(void)",
-    "comment": "startup init: logs, builds perks/weapons, seeds UI/effects, and loads registry time"
+    "comment": "startup init: logs, builds perks/weapons, seeds UI/effects, loads registry time; triggers intro music then switches to crimson_theme"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042b556",
+    "name": "game_startup_intro_mute_callsite",
+    "comment": "callsite: sfx_mute_all(music_track_intro_id) during boot music handoff"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042b584",
+    "name": "game_startup_theme_play_callsite",
+    "comment": "callsite: sfx_play_exclusive(music_track_crimson_theme_id) after intro"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042b69a",
+    "name": "game_startup_intro_play_callsite",
+    "comment": "callsite: sfx_play_exclusive(music_track_intro_id) after boot"
   },
   {
     "program": "crimsonland.exe",
