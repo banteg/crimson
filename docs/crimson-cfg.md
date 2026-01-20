@@ -45,79 +45,67 @@ From the decompile (see `docs/detangling.md`):
 
 This means the file is treated as a **fixed struct** and rewritten wholesale.
 
-## Field layout (partial)
+## Field layout
 
 Base address in the decompile is `DAT_00480348`. Offsets below are relative to
 the blob start.
 
-| Offset | Size | Default | Notes |
-| --- | --- | --- | --- |
-| `0x00` | `u8` | `0` | Sound disable flag (nonzero skips SFX and music init; applied via config id `0x53`). |
-| `0x01` | `u8` | `0` | Music disable flag (music init requires sound flag == 0). |
-| `0x02` | `u8` | `0` | High-score date validation mode. |
-| `0x03` | `u8` | `0` | High-score duplicate handling. |
-| `0x04` | `u8[2]` | `1,1` | Per-player HUD indicator toggle. |
-| `0x08` | `u32` | `8` | Unknown; set during `config_sync_from_grim`. |
-| `0x0e` | `u8` | `0/1` | FX detail toggle (set by detail preset). |
-| `0x10` | `u8` | `0/1` | FX detail toggle (set by detail preset). |
-| `0x11` | `u8` | `0/1` | FX detail toggle (set by detail preset). |
-| `0x14` | `u32` | `1/2` | Player count. |
-| `0x18` | `u32` | `1..8` | Game mode/state selector (values `1/2/3/4/8` observed). |
-| `0x1c` | `u8[...]` | `0` | Per-player mode flag (value `4` triggers alternate HUD draw). |
-| `0x44` | `u32` | `0` | Unknown. |
-| `0x48` | `u32` | `0` | Unknown. |
-| `0x6c` | `u32` | `0` | Unknown. |
-| `0x70` | `f32` | `1.0` | Texture/terrain scale factor (clamped `0.5..4.0`). |
-| `0x74` | `char[12]` | empty | Copied out by `config_sync_from_grim`; no consumers yet. |
-| `0x80` | `u32` | `0` | Selected name slot (0..7). |
-| `0x84` | `u32` | `1` | Saved-name count / insert index. |
-| `0x88` | `u32[8]` | `0..7` | Saved-name order table (seeded; no xrefs). |
-| `0xa8` | `char[0xd8]` | `"default" x8` | 8 saved names, 0x1b bytes each. |
-| `0x180` | `char[0x20]` | default name | Player name (copied to runtime on load). |
-| `0x1a0` | `u32` | `0` | Player name length (overwritten on load; 1.9.93 file stores 0). |
-| `0x1a4` | `u32` | `100` | Unknown. |
-| `0x1a8` | `u32` | `0` | Unknown. |
-| `0x1ac` | `u32` | `0` | Unknown. |
-| `0x1b0` | `u32` | `9000` | Compared to Grim vtable +0xa4 (likely dead). |
-| `0x1b4` | `u32` | `27000` | Compared to Grim vtable +0xa4 (likely dead). |
-| `0x1b8` | `u32` | `32` | Display color depth (bits-per-pixel). |
-| `0x1bc` | `u32` | `800` | Screen width (hardcoded default; file in game_bins is 1024). |
-| `0x1c0` | `u32` | `600` | Screen height (hardcoded default; file in game_bins is 768). |
-| `0x1c4` | `u8` | `0` | Windowed flag (`0` = fullscreen, `1` = windowed). |
-| `0x1c8` | `u32[0x20]` | table | Keybind blocks (2 x 16 dwords; indices `0..12` copied). |
-| `0x1f8` | `u32*` | alias | Points at `&keybinds[12]` (copy loop). |
-| `0x440` | `u32` | `0` | Unknown. |
-| `0x444` | `u32` | `0` | Unknown. |
-| `0x448` | `u8` | `0` | Hardcore flag. |
-| `0x449` | `u8` | `1` | Full-version/unlimited flag (gates quest logic). |
-| `0x44c` | `u32` | `0` | Perk prompt counter. |
-| `0x450` | `u32` | `1` | Unknown. |
-| `0x460` | `u32` | `1` | Unknown. |
-| `0x464` | `f32` | `?` | SFX volume multiplier. |
-| `0x468` | `f32` | `?` | Music volume multiplier. |
-| `0x46c` | `u8` | `0` | FX toggle (gore/particle path; forced to 1 if cfg missing). |
-| `0x46d` | `u8` | `0` | Score load gate (paired with date mode). |
-| `0x46e` | `u8` | `?` | Config bool applied via Grim id `0x54`. |
-| `0x470` | `u32` | `?` | Detail preset (drives `0x0e/0x10/0x11`). |
-| `0x478` | `u32` | `?` | Keybind: pick perk (level-up prompt). |
-| `0x47c` | `u32` | `?` | Keybind: reload. |
+| Offset | Size | Default | Name | Description |
+| --- | --- | --- | --- | --- |
+| `0x000` | 0xA8 | - | Unused/Reserved? | Initial area, seems mostly zeroed/unused. |
+| `0x0A8` | 216 | `"default"` x8 | `config_saved_names` | 8 saved names (player name cache), 27 bytes each. |
+| `0x180` | 32 | `10tons` | `config_player_name` | Current player name (char[32] or similar?). |
+| `0x1A0` | 4 | `0` | `config_player_name_length` | Length of player name. |
+| `0x1A4` | 28 | - | Unused/Padding? | Gap. |
+| `0x1B8` | 4 | `32` | `config_display_bpp` | Bits per pixel (16/32). |
+| `0x1BC` | 4 | `800` | `config_screen_width` | Screen width. |
+| `0x1C0` | 4 | `600` | `config_screen_height` | Screen height. |
+| `0x1C4` | 4 | `0` | `config_windowed` | Windowed mode flag (0=fullscreen). |
+| `0x1C8` | 52 | - | P1 Keybinds | Player 1 control bindings (13 dwords). |
+| `0x1FC` | 12 | - | P1 Padding | Padding (3 dwords). |
+| `0x208` | 52 | - | P2 Keybinds | Player 2 control bindings (13 dwords). |
+| `0x23C` | 12 | - | P2 Padding | Padding (3 dwords). |
+| `0x248` | 512 | - | Unused/Reserved | Large gap (possibly for P3/P4 + padding). |
+| `0x448` | 1 | `0` | `config_hardcore` | Hardcore mode flag. |
+| `0x449` | 1 | `1` | `config_full_version` | Full version flag. |
+| `0x44A` | 2 | - | Unused? | Alignment. |
+| `0x44C` | 4 | `0` | `config_perk_prompt_counter` | Counter for perk prompts. |
+| `0x450` | 28 | - | Unused? | Gap. |
+| `0x464` | 4 | `1.0` | `config_sfx_volume` | SFX Volume (float). |
+| `0x468` | 4 | `1.0` | `config_music_volume` | Music Volume (float). |
+| `0x46C` | 1 | `0` | `config_fx_toggle` | FX Detail toggle. |
+| `0x46D` | 1 | `0` | `config_score_load_gate` | Score loading flag. |
+| `0x46E` | 2 | - | Unused? | Alignment. |
+| `0x470` | 4 | - | `config_detail_preset` | Detail preset index. |
+| `0x474` | 4 | - | Unused? | Gap. |
+| `0x478` | 4 | - | `config_key_pick_perk` | Keybind: Pick Perk. |
+| `0x47C` | 4 | - | `config_key_reload` | Keybind: Reload. |
+| `0x480` | - | - | End | End of file. |
 
-## Keybind block layout (partial)
+## Keybind Block Structure
 
-Block is `u32[0x20]` at `0x1c8` (2 x 16 dwords). Indices `0..12` are copied
-into runtime key tables.
+Each player block is 52 bytes (13 dwords), followed by 12 bytes padding.
+The values map to DirectInput key codes (scancodes).
 
-| Index | P1 default | P2 default | Notes |
-| --- | --- | --- | --- |
-| `0` | `0x11` (W) | `0xc8` (Up) | Move up |
-| `1` | `0x1f` (S) | `0xd0` (Down) | Move down |
-| `2` | `0x1e` (A) | `0xcb` (Left) | Move left |
-| `3` | `0x20` (D) | `0xcd` (Right) | Move right |
-| `4` | `0x100` | `0x9d` (RControl) | Primary fire |
-| `5` | `0x17e` | `0x17e` | Unused/reserved |
-| `6` | `0x17e` | `0x17e` | Unused/reserved |
-| `7` | `0x10` (Q) | `0xd3` (Delete) | Rotate/aux |
-| `8` | `0x12` (E) | `0xd1` (PageDown) | Rotate/aux |
+**Offset** refers to index within the block (0-12).
+
+| Index | Name | P1 Default | P2 Default | Notes |
+| --- | --- | --- | --- | --- |
+| `0` | Move Forward | `0x11` (W) | `0xc8` (Up) | |
+| `1` | Move Backward | `0x1f` (S) | `0xd0` (Down) | |
+| `2` | Turn Left | `0x1e` (A) | `0xcb` (Left) | |
+| `3` | Turn Right | `0x20` (D) | `0xcd` (Right) | |
+| `4` | Fire | `0x100` (LMouse) | `0x9d` (RControl) | P1 uses mouse button 0 by default. |
+| `5` | Reserved 0 | `0x17e` | `0x17e` | |
+| `6` | Reserved 1 | `0x17e` | `0x17e` | |
+| `7` | Aim Left | `0x10` (Q) | `0xd3` (Delete) | |
+| `8` | Aim Right | `0x12` (E) | `0xd1` (PageDown) | |
+| `9` | Axis Aim Y | `0x140` | `0x17e` | Analog axis (P1 Mouse Y). |
+| `10` | Axis Aim X | `0x13f` | `0x17e` | Analog axis (P1 Mouse X). |
+| `11` | Axis Move Y | `0x153` | `0x17e` | Analog axis. |
+| `12` | Axis Move X | `0x17e` | `0x17e` | Analog axis. |
+
+**P3/P4 Note:** The game loop in `config_load_presets` iterates only twice (for P1 and P2). The large gap after P2 suggests P3/P4 slots might have been planned but are not loaded by this version of the executable.
 
 ## Notes
 
