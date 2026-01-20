@@ -145,3 +145,13 @@ def ensure_crimson_cfg(base_dir: Path) -> CrimsonConfig:
     config = CrimsonConfig(path=path, data=parsed)
     config.save()
     return config
+
+
+def load_crimson_cfg(path: Path) -> CrimsonConfig:
+    data = path.read_bytes()
+    if len(data) != CRIMSON_CFG_SIZE:
+        raise ValueError(
+            f"{path} has unexpected size {len(data)} (expected {CRIMSON_CFG_SIZE})"
+        )
+    parsed = CRIMSON_CFG_STRUCT.parse(data)
+    return CrimsonConfig(path=path, data=parsed)

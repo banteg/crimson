@@ -235,6 +235,28 @@ def cmd_game(
     run_game(config)
 
 
+@app.command("config")
+def cmd_config(
+    path: Path | None = typer.Option(
+        None, help="path to crimson.cfg (default: base-dir/crimson.cfg)"
+    ),
+    base_dir: Path = typer.Option(
+        Path("artifacts") / "runtime",
+        help="base path for runtime files (default: artifacts/runtime)",
+    ),
+) -> None:
+    """Inspect crimson.cfg configuration values."""
+    from .config import CRIMSON_CFG_NAME, load_crimson_cfg
+
+    cfg_path = path if path is not None else base_dir / CRIMSON_CFG_NAME
+    config = load_crimson_cfg(cfg_path)
+    typer.echo(f"path: {config.path}")
+    typer.echo(f"screen: {config.screen_width}x{config.screen_height}")
+    typer.echo(f"windowed: {config.windowed_flag}")
+    typer.echo(f"bpp: {config.screen_bpp}")
+    typer.echo(f"texture_scale: {config.texture_scale}")
+
+
 def main(argv: list[str] | None = None) -> None:
     app(prog_name="crimson", args=argv)
 
