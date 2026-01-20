@@ -7,7 +7,7 @@ import random
 import pyray as rl
 
 from .config import CrimsonConfig, ensure_crimson_cfg
-from .console import ConsoleState, create_console
+from .console import ConsoleState, create_console, register_boot_commands
 from .entrypoint import DEFAULT_BASE_DIR
 from .raylib_app import run_view
 from .views.types import View
@@ -64,12 +64,17 @@ def run_game(config: GameConfig) -> None:
     height = cfg.screen_height if config.height is None else config.height
     rng = random.Random(config.seed)
     console = create_console(base_dir)
+    register_boot_commands(console)
     console.log.log("crimson: boot start")
     console.log.log(
         f"config: {cfg.screen_width}x{cfg.screen_height} windowed={cfg.windowed_flag}"
     )
+    console.log.log(f"commands: {len(console.commands)} registered")
     console.log.flush()
     state = GameState(base_dir=base_dir, rng=rng, config=cfg, console=console)
+    config_flags = 0
+    if cfg.windowed_flag == 0:
+        config_flags |= rl.ConfigFlags.FLAG_FULLSCREEN_MODE
     view: View = BootView(state)
     run_view(
         view,
@@ -77,4 +82,5 @@ def run_game(config: GameConfig) -> None:
         height=height,
         title="Crimsonland",
         fps=config.fps,
+        config_flags=config_flags,
     )

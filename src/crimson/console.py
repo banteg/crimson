@@ -49,3 +49,25 @@ class ConsoleState:
 
 def create_console(base_dir: Path) -> ConsoleState:
     return ConsoleState(base_dir=base_dir, log=ConsoleLog(base_dir=base_dir))
+
+
+def _make_noop_command(console: ConsoleState, name: str) -> CommandHandler:
+    def _handler(args: list[str]) -> None:
+        console.log.log(f"command {name} called with {len(args)} args")
+
+    return _handler
+
+
+def register_boot_commands(console: ConsoleState) -> None:
+    commands = (
+        "setGammaRamp",
+        "snd_addGameTune",
+        "generateterrain",
+        "telltimesurvived",
+        "setresourcepaq",
+        "loadtexture",
+        "openurl",
+        "sndfreqadjustment",
+    )
+    for name in commands:
+        console.register_command(name, _make_noop_command(console, name))
