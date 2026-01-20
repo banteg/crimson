@@ -46,6 +46,24 @@ class ConsoleState:
     def register_cvar(self, name: str, value: str) -> None:
         self.cvars[name] = value
 
+    def exec_line(self, line: str) -> None:
+        tokens = line.strip().split()
+        if not tokens:
+            return
+        name, args = tokens[0], tokens[1:]
+        handler = self.commands.get(name)
+        if handler is not None:
+            handler(args)
+            return
+        if name in self.cvars:
+            if args:
+                self.cvars[name] = " ".join(args)
+                self.log.log(f"cvar {name} set to {self.cvars[name]}")
+            else:
+                self.log.log(f"cvar {name} = {self.cvars[name]}")
+            return
+        self.log.log(f"unknown command: {name}")
+
 
 def create_console(base_dir: Path) -> ConsoleState:
     return ConsoleState(base_dir=base_dir, log=ConsoleLog(base_dir=base_dir))
@@ -71,3 +89,8 @@ def register_boot_commands(console: ConsoleState) -> None:
     )
     for name in commands:
         console.register_command(name, _make_noop_command(console, name))
+
+
+def register_core_cvars(console: ConsoleState, width: int, height: int) -> None:
+    console.register_cvar("v_width", str(width))
+    console.register_cvar("v_height", str(height))

@@ -7,7 +7,12 @@ import random
 import pyray as rl
 
 from .config import CrimsonConfig, ensure_crimson_cfg
-from .console import ConsoleState, create_console, register_boot_commands
+from .console import (
+    ConsoleState,
+    create_console,
+    register_boot_commands,
+    register_core_cvars,
+)
 from .entrypoint import DEFAULT_BASE_DIR
 from .raylib_app import run_view
 from .views.types import View
@@ -65,11 +70,14 @@ def run_game(config: GameConfig) -> None:
     rng = random.Random(config.seed)
     console = create_console(base_dir)
     register_boot_commands(console)
+    register_core_cvars(console, width, height)
     console.log.log("crimson: boot start")
     console.log.log(
         f"config: {cfg.screen_width}x{cfg.screen_height} windowed={cfg.windowed_flag}"
     )
     console.log.log(f"commands: {len(console.commands)} registered")
+    console.log.log(f"cvars: {len(console.cvars)} registered")
+    console.exec_line("exec autoexec.txt")
     console.log.flush()
     state = GameState(base_dir=base_dir, rng=rng, config=cfg, console=console)
     config_flags = 0
