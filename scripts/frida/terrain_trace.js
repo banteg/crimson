@@ -372,13 +372,16 @@ function hookIfaceSetUv(addr) {
 function attachInterface(exeBase) {
     const ifacePtr = safeReadPointer(exeBase.add(EXE_RVAS.grim_interface_ptr));
     if (!ifacePtr || ifacePtr.isNull()) return;
-    const bindPtr = safeReadPointer(ifacePtr.add(0xc4));
-    const uvPtr = safeReadPointer(ifacePtr.add(0x100));
+    const vtablePtr = safeReadPointer(ifacePtr);
+    if (!vtablePtr || vtablePtr.isNull()) return;
+    const bindPtr = safeReadPointer(vtablePtr.add(0xc4));
+    const uvPtr = safeReadPointer(vtablePtr.add(0x100));
     if (!ifaceLogged) {
         ifaceLogged = true;
         writeLine({
             tag: "iface_ptr",
             iface: ifacePtr.toString(),
+            vtable: vtablePtr.toString(),
             bind_ptr: bindPtr ? bindPtr.toString() : null,
             uv_ptr: uvPtr ? uvPtr.toString() : null,
         });
