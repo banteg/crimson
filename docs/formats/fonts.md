@@ -55,15 +55,16 @@ A small bias of 1/512 is applied to the U/V values in code to reduce bleeding.
 ### Source
 
 - `grim_draw_text_mono` binds `grim_font_texture`, which is loaded from Grim2D resources
-  (resource id `0x6f`). [static]
+  (resource id `0x6f`).
 - This is not yet confirmed to match `default_font_courier.tga` from `crimson.paq`. [static]
 
 ### Behavior
 
-- Fixed 16px grid: advance = `16 * scale`, line height = `16 * scale`. [static]
-- UVs come from a 16x16 table (`grim_font2_uv_u/v`), indexed directly by byte value
-  (`grim_font2_char_map` is identity). [static]
-- Handles special codes 0xA7, 0xE4, 0xE5, 0xF6 in addition to newline. [static]
+- **Advance**: `16 * scale` (fixed).
+- **Draw size**: `32 * scale` width x `32 * scale` height.
+- **Visual effect**: Characters are drawn at 2x the size of their horizontal spacing, creating a dense, tall appearance (effective 1:2 aspect ratio relative to the grid).
+- **UVs**: 16x16 table (`grim_font2_uv_u/v`), indexed directly by byte value (`grim_font2_char_map` is identity).
+- **Special codes**: Handles 0xA7, 0xE4, 0xE5, 0xF6 and `\n`.
 
 ## Sample render (small font)
 

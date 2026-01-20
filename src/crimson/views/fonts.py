@@ -94,6 +94,19 @@ class FontView:
         if self._mono is not None:
             self._draw_mono_text(self._sample, 24, y, 1.0, rl.WHITE)
 
+        self._draw_quest_title_overlay()
+
+    def _draw_quest_title_overlay(self) -> None:
+        if self._mono is None:
+            return
+        font = self._mono
+        label = "1.1 Land Hostile"
+        scale = 0.8
+        width = len(label) * font.advance * scale
+        x = (rl.get_screen_width() / 2.0) - (width / 2.0)
+        y = (rl.get_screen_height() / 2.0) - 32.0
+        self._draw_mono_text(label, x, y, scale, rl.WHITE)
+
     def _draw_small_text(self, text: str, x: float, y: float, scale: float, color: rl.Color) -> None:
         if self._small is None:
             return
@@ -155,8 +168,8 @@ class FontView:
             dst = rl.Rectangle(
                 float(x_pos),
                 float(y_pos),
-                float(font.advance * scale),
-                float(font.advance * scale),
+                float(32.0 * scale),
+                float(32.0 * scale),
             )
             rl.draw_texture_pro(font.texture, src, dst, origin, 0.0, color)
             x_pos += font.advance * scale
