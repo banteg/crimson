@@ -3519,7 +3519,7 @@ undefined4 FUN_10006ea0(void)
   
   fVar2 = DAT_1005d158;
   fVar1 = DAT_1005d138;
-  iVar3 = (**(code **)(*grim_interface_instance + 0x9c))();
+  iVar3 = (*grim_interface_instance->vtable->grim_get_joystick_y)();
   if ((float)iVar3 - fVar2 < -fVar1) {
     return 1;
   }
@@ -3539,7 +3539,7 @@ undefined4 FUN_10006ef0(void)
   
   fVar2 = DAT_1005d158;
   fVar1 = DAT_1005d138;
-  iVar3 = (**(code **)(*grim_interface_instance + 0x9c))();
+  iVar3 = (*grim_interface_instance->vtable->grim_get_joystick_y)();
   if (fVar1 < (float)iVar3 - fVar2) {
     return 1;
   }
@@ -3559,7 +3559,7 @@ undefined4 FUN_10006f40(void)
   
   fVar2 = DAT_1005d148;
   fVar1 = DAT_1005d138;
-  iVar3 = (**(code **)(*grim_interface_instance + 0x98))();
+  iVar3 = (*grim_interface_instance->vtable->grim_get_joystick_x)();
   if ((float)iVar3 - fVar2 < -fVar1) {
     return 1;
   }
@@ -3579,7 +3579,7 @@ undefined4 FUN_10006f90(void)
   
   fVar2 = DAT_1005d148;
   fVar1 = DAT_1005d138;
-  iVar3 = (**(code **)(*grim_interface_instance + 0x98))();
+  iVar3 = (*grim_interface_instance->vtable->grim_get_joystick_x)();
   if (fVar1 < (float)iVar3 - fVar2) {
     return 1;
   }
@@ -5798,11 +5798,11 @@ undefined4 * GRIM__GetInterface(void)
   (*grim_d3d8_probe->lpVtbl->Release)(grim_d3d8_probe);
   FUN_100052f0();
   grim_interface_instance = operator_new(4);
-  if (grim_interface_instance != (undefined4 *)0x0) {
-    *grim_interface_instance = &grim_interface_vtable;
+  if (grim_interface_instance != (IGrim2D *)0x0) {
+    grim_interface_instance->vtable = &grim_interface_vtable;
     return grim_interface_instance;
   }
-  grim_interface_instance = (undefined4 *)0x0;
+  grim_interface_instance = (IGrim2D *)0x0;
   return (undefined4 *)0x0;
 }
 
