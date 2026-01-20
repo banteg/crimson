@@ -86,8 +86,8 @@ class FontView:
         rl.draw_text("Small font", 24, y, 20, rl.Color(220, 220, 220, 255))
         y += 28
         if self._small is not None:
-            self._draw_small_text(self._sample, 24, y, 1.5, rl.WHITE)
-            y += int(self._small.cell_size * 1.5 * (self._sample.count("\n") + 1)) + 40
+            self._draw_small_text(self._sample, 24, y, 1.0, rl.WHITE)
+            y += int(self._small.cell_size * (self._sample.count("\n") + 1)) + 40
 
         rl.draw_text("Mono font", 24, y, 20, rl.Color(220, 220, 220, 255))
         y += 28
