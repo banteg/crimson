@@ -1,14 +1,18 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
 
 import pyray as rl
 
 from ..spawn_templates import CreatureFlags, CreatureTypeId, SPAWN_TEMPLATES, SpawnTemplate
+from .font_small import SmallFontData, draw_small_text, load_small_font
 from .registry import register_view
 from .types import View, ViewContext
 
+UI_TEXT_SCALE = 1.0
+UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
+UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
+UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 
 @dataclass(frozen=True, slots=True)
 class TypeAnimInfo:
@@ -32,6 +36,7 @@ class CreatureAnimationView:
         self._assets_root = ctx.assets_dir
         self._missing_assets: list[str] = []
         self._textures: dict[str, rl.Texture] = {}
+        self._small: SmallFontData | None = None
         self._templates: list[SpawnTemplate] = [
             entry
             for entry in SPAWN_TEMPLATES
@@ -40,9 +45,23 @@ class CreatureAnimationView:
         self._index = 0
         self._phase = 0.0
 
+    def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
+        if self._small is not None:
+            return int(self._small.cell_size * scale)
+        return int(20 * scale)
+
+    def _draw_ui_text(
+        self, text: str, x: float, y: float, color: rl.Color, scale: float = UI_TEXT_SCALE
+    ) -> None:
+        if self._small is not None:
+            draw_small_text(self._small, text, x, y, scale, color)
+        else:
+            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
+
     def open(self) -> None:
         self._missing_assets.clear()
         self._textures.clear()
+        self._small = load_small_font(self._assets_root, self._missing_assets)
         for entry in self._templates:
             if entry.creature is None:
                 continue
@@ -58,6 +77,9 @@ class CreatureAnimationView:
         for texture in self._textures.values():
             rl.unload_texture(texture)
         self._textures.clear()
+        if self._small is not None:
+            rl.unload_texture(self._small.texture)
+            self._small = None
 
     def update(self, dt: float) -> None:
         template = self._current_template()
@@ -109,24 +131,24 @@ class CreatureAnimationView:
         rl.clear_background(rl.Color(12, 12, 14, 255))
         if self._missing_assets:
             message = "Missing assets: " + ", ".join(self._missing_assets)
-            rl.draw_text(message, 24, 24, 20, rl.Color(240, 80, 80, 255))
+            self._draw_ui_text(message, 24, 24, UI_ERROR_COLOR)
             return
         if not self._templates:
-            rl.draw_text("No spawn templates loaded.", 24, 24, 20, rl.WHITE)
+            self._draw_ui_text("No spawn templates loaded.", 24, 24, UI_TEXT_COLOR)
             return
 
         self._handle_input()
         template = self._current_template()
         if template is None or template.type_id is None or template.creature is None:
-            rl.draw_text("Invalid template.", 24, 24, 20, rl.WHITE)
+            self._draw_ui_text("Invalid template.", 24, 24, UI_TEXT_COLOR)
             return
         texture = self._textures.get(template.creature)
         if texture is None:
-            rl.draw_text("Missing texture for creature.", 24, 24, 20, rl.WHITE)
+            self._draw_ui_text("Missing texture for creature.", 24, 24, UI_TEXT_COLOR)
             return
         info = TYPE_ANIM.get(template.type_id)
         if info is None:
-            rl.draw_text("Missing anim info.", 24, 24, 20, rl.WHITE)
+            self._draw_ui_text("Missing anim info.", 24, 24, UI_TEXT_COLOR)
             return
 
         frame, mirror, mode = self._select_frame(template, info)
@@ -137,9 +159,9 @@ class CreatureAnimationView:
 
         margin = 24
         title = f"{template.creature} (spawn 0x{template.spawn_id:02x})"
-        rl.draw_text(title, margin, margin, 22, rl.Color(220, 220, 220, 255))
+        self._draw_ui_text(title, margin, margin, UI_TEXT_COLOR)
         hint = "Left/Right: spawn template"
-        rl.draw_text(hint, margin, margin + 28, 16, rl.Color(140, 140, 140, 255))
+        self._draw_ui_text(hint, margin, margin + self._ui_line_height() + 6, UI_HINT_COLOR)
 
         sheet_scale = min(
             1.0,
@@ -191,8 +213,8 @@ class CreatureAnimationView:
         ]
         y = int(preview_y + preview_size + 16)
         for line in info_lines:
-            rl.draw_text(line, int(preview_x), y, 18, rl.Color(200, 200, 200, 255))
-            y += 20
+            self._draw_ui_text(line, preview_x, y, UI_TEXT_COLOR)
+            y += self._ui_line_height() + 4
 
 
 @register_view("animations", "Creature animation preview")
