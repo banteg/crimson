@@ -103,7 +103,9 @@ def cmd_font(
     typer.echo(f"wrote {out_path}")
 
 
-def _call_builder(builder, ctx: QuestContext, rng: random.Random | None) -> list[SpawnEntry]:
+def _call_builder(
+    builder, ctx: QuestContext, rng: random.Random | None
+) -> list[SpawnEntry]:
     params = inspect.signature(builder).parameters
     if "rng" in params:
         return builder(ctx, rng=rng)
@@ -135,7 +137,9 @@ def _format_id_list(values: tuple[int, ...] | None) -> str:
 
 def _format_meta(quest: QuestDefinition) -> list[str]:
     builder_addr = (
-        f"0x{quest.builder_address:08x}" if quest.builder_address is not None else "unknown"
+        f"0x{quest.builder_address:08x}"
+        if quest.builder_address is not None
+        else "unknown"
     )
     terrain_ids = _format_id_list(quest.terrain_ids)
     return [
@@ -202,7 +206,7 @@ def cmd_view(
         view = view_def.factory(ctx=ctx)
     else:
         view = view_def.factory()
-    title = f"{view_def.title} — Crimsonland Reimpl"
+    title = f"{view_def.title} — Crimsonland"
     run_view(view, width=width, height=height, title=title, fps=fps)
 
 

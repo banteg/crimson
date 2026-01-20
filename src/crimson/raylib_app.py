@@ -10,7 +10,7 @@ def run_view(
     *,
     width: int = 1280,
     height: int = 720,
-    title: str = "Crimsonland Reimpl",
+    title: str = "Crimsonland",
     fps: int = 60,
 ) -> None:
     """Run a Raylib window with a pluggable debug view."""
@@ -34,7 +34,7 @@ def run_view(
 def run_window(
     width: int = 1280,
     height: int = 720,
-    title: str = "Crimsonland Reimpl",
+    title: str = "Crimsonland",
     fps: int = 60,
 ) -> None:
     """Open a minimal Raylib window for the reference implementation."""
