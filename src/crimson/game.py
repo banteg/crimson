@@ -60,6 +60,9 @@ class BootView:
 
     def draw(self) -> None:
         rl.clear_background(rl.Color(8, 8, 10, 255))
+        logos = self._state.logos
+        if logos is not None:
+            self._draw_splash(logos)
         rl.draw_text(
             "Boot step 1: RNG seeded + window init",
             24,
@@ -75,7 +78,6 @@ class BootView:
             18,
             rl.Color(180, 180, 180, 255),
         )
-        logos = self._state.logos
         if logos is not None:
             rl.draw_text(
                 f"Logo assets loaded: {logos.loaded_count()}/{len(logos.all())}",
@@ -88,6 +90,33 @@ class BootView:
     def close(self) -> None:
         if self._state.logos is not None:
             self._state.logos.unload()
+
+    def _draw_splash(self, logos: LogoAssets) -> None:
+        back = logos.backplasma.texture
+        if back is not None:
+            rl.draw_texture_pro(
+                back,
+                rl.Rectangle(0, 0, float(back.width), float(back.height)),
+                rl.Rectangle(0, 0, float(rl.get_screen_width()), float(rl.get_screen_height())),
+                rl.Vector2(0, 0),
+                0.0,
+                rl.WHITE,
+            )
+        logo = logos.cl_logo.texture
+        if logo is not None:
+            logo_w = float(logo.width)
+            logo_h = float(logo.height)
+            logo_x = (rl.get_screen_width() - logo_w) / 2.0
+            logo_y = (rl.get_screen_height() * 0.5) - (logo_h * 0.6)
+            rl.draw_texture_v(logo, rl.Vector2(logo_x, logo_y), rl.WHITE)
+        esrb = logos.logo_esrb.texture
+        if esrb is not None:
+            pad = 16.0
+            esrb_w = float(esrb.width)
+            esrb_h = float(esrb.height)
+            esrb_x = rl.get_screen_width() - esrb_w - pad
+            esrb_y = rl.get_screen_height() - esrb_h - pad
+            rl.draw_texture_v(esrb, rl.Vector2(esrb_x, esrb_y), rl.WHITE)
 
 
 def run_game(config: GameConfig) -> None:
