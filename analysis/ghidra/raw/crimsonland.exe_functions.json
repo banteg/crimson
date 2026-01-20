@@ -1428,11 +1428,18 @@
     "calls": ["console_flush_log", "texture_get_or_load", "texture_get_or_load_alt"]
   },
   {
-    "name": "game_startup_init",
+    "name": "FUN_0042b090",
     "address": "0042b090",
-    "signature": "void game_startup_init(void)",
+    "signature": "undefined FUN_0042b090(void)",
     "external": false,
     "calls": ["GetLocalTime", "QueryPerformanceCounter", "RegCloseKey", "RegCreateKeyExA", "console_flush_log", "console_printf", "crt_srand", "effect_uv_tables_init", "game_core_init", "gameplay_reset_state", "perks_init_database", "reg_read_dword_default", "strdup_malloc", "terrain_generate_random", "texture_get_or_load", "weapon_table_init"]
+  },
+  {
+    "name": "game_startup_init",
+    "address": "0042b290",
+    "signature": "void game_startup_init(void)",
+    "external": false,
+    "calls": ["FUN_00401dd0", "FUN_0042b090", "Sleep", "__ftol", "audio_update", "console_set_open", "console_update", "crt_beginthread", "demo_mode_start", "game_is_full_version", "input_primary_just_pressed", "load_textures_step", "sfx_is_unmuted", "sfx_mute_all", "sfx_play_exclusive", "texture_get_or_load"]
   },
   {
     "name": "crimsonland_main",

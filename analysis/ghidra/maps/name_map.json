@@ -1063,9 +1063,10 @@
   },
   {
     "program": "crimsonland.exe",
-    "address": "0x0042b090",
+    "address": "0x0042b290",
     "name": "game_startup_init",
     "signature": "void game_startup_init(void)",
+    "create": true,
     "comment": "startup init: logs, builds perks/weapons, seeds UI/effects, loads registry time; triggers intro music then switches to crimson_theme"
   },
   {

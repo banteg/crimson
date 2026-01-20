@@ -151,7 +151,7 @@ While this loop runs, the `loading` texture (`load\loading.jaz`) is displayed on
 | **9** | **Finalization:** Creates `bullet_i` and `aim64` sprites. Sets `game_state_id = 0`. |
 
 ## 7. Startup Finalization
-(`game_startup_init` @ `0x0042b090`)
+(`game_startup_init` @ `0x0042b290`)
 
 Once loading is complete (`step > 9`):
 

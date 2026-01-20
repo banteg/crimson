@@ -36,6 +36,7 @@ public class ApplyNameMap extends GhidraScript {
         String name;
         String signature;
         String comment;
+        Boolean create;
     }
 
     private static String defaultMapPath() {
@@ -261,9 +262,23 @@ public class ApplyNameMap extends GhidraScript {
             }
             Function function = functionManager.getFunctionAt(addr);
             if (function == null) {
-                printerr("No function at " + addr + " for " + row.name);
-                missing++;
-                continue;
+                boolean shouldCreate = row.create != null && row.create.booleanValue();
+                if (shouldCreate) {
+                    if (functionManager.getFunctionContaining(addr) != null) {
+                        printerr("ApplyNameMap: address " + addr + " inside existing function for " + row.name);
+                        missing++;
+                        continue;
+                    }
+                    if (currentProgram.getListing().getInstructionAt(addr) == null) {
+                        disassemble(addr);
+                    }
+                    function = createFunction(addr, row.name);
+                }
+                if (function == null) {
+                    printerr("No function at " + addr + " for " + row.name);
+                    missing++;
+                    continue;
+                }
             }
 
             boolean changed = false;
