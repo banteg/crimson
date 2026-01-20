@@ -5046,6 +5046,24 @@
       "comment": "Mouse delta Y (pixels) accumulated per poll.",
       "name": "grim_mouse_dy",
       "program": "grim.dll"
+    },
+    {
+      "address": "0x0042b556",
+      "comment": "Callsite: sfx_mute_all(music_track_intro_id) during boot music handoff (Frida: music_intro_trace.jsonl).",
+      "name": "game_startup_intro_mute_callsite",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0042b584",
+      "comment": "Callsite: sfx_play_exclusive(music_track_crimson_theme_id) after intro (Frida: music_intro_trace.jsonl).",
+      "name": "game_startup_theme_play_callsite",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0042b69a",
+      "comment": "Callsite: sfx_play_exclusive(music_track_intro_id) during boot (Frida: music_intro_trace.jsonl).",
+      "name": "game_startup_intro_play_callsite",
+      "program": "crimsonland.exe"
     }
   ],
   "notes": "Data label map for globals and tables. Keep names unique per program."

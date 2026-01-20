@@ -1070,24 +1070,6 @@
   },
   {
     "program": "crimsonland.exe",
-    "address": "0x0042b556",
-    "name": "game_startup_intro_mute_callsite",
-    "comment": "callsite: sfx_mute_all(music_track_intro_id) during boot music handoff"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0042b584",
-    "name": "game_startup_theme_play_callsite",
-    "comment": "callsite: sfx_play_exclusive(music_track_crimson_theme_id) after intro"
-  },
-  {
-    "program": "crimsonland.exe",
-    "address": "0x0042b69a",
-    "name": "game_startup_intro_play_callsite",
-    "comment": "callsite: sfx_play_exclusive(music_track_intro_id) after boot"
-  },
-  {
-    "program": "crimsonland.exe",
     "address": "0x0042c450",
     "name": "crimsonland_main",
     "signature": "int crimsonland_main(void)",

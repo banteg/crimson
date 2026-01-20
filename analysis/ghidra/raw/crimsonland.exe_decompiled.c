@@ -3804,28 +3804,28 @@ void __cdecl ui_render_keybind_help(float *xy,float alpha)
     (**(code **)(*grim_interface_ptr + 0x148))(grim_interface_ptr,fVar7,fVar10,&DAT_00471fb4);
     fVar9 = fVar8 + 64.0;
     iVar3 = *grim_interface_ptr;
-    pcVar5 = input_key_name((&config_keybind_table)[iStack_5c * 5]);
+    pcVar5 = input_key_name((&config_p1_move_forward)[iStack_5c * 5]);
     (**(code **)(iVar3 + 0x148))(grim_interface_ptr,fVar9,fVar10,&DAT_00471fc4,pcVar5);
     fVar6 = fVar6 + 16.0;
     (**(code **)(*grim_interface_ptr + 0x148))(grim_interface_ptr,fVar7,fVar6,s_Down__00471fac);
     iVar3 = *grim_interface_ptr;
-    pcVar5 = input_key_name((&config_keybind_table)[iVar2 + 1]);
+    pcVar5 = input_key_name((&config_p1_move_forward)[iVar2 + 1]);
     (**(code **)(iVar3 + 0x148))(grim_interface_ptr,fVar9,fVar6,&DAT_00471fc4,pcVar5);
     fVar6 = fVar6 + 16.0;
     (**(code **)(*grim_interface_ptr + 0x148))(grim_interface_ptr,fVar7,fVar6,s_Left__00471fa4);
     iVar3 = *grim_interface_ptr;
-    pcVar5 = input_key_name((&config_keybind_table)[iVar2 + 2]);
+    pcVar5 = input_key_name((&config_p1_move_forward)[iVar2 + 2]);
     (**(code **)(iVar3 + 0x148))(grim_interface_ptr,fVar9,fVar6,&DAT_00471fc4,pcVar5);
     fVar6 = fVar6 + 16.0;
     (**(code **)(*grim_interface_ptr + 0x148))(grim_interface_ptr,fVar7,fVar6,s_Right__00471f9c);
     iVar3 = *grim_interface_ptr;
-    pcVar5 = input_key_name((&config_keybind_table)[iVar2 + 3]);
+    pcVar5 = input_key_name((&config_p1_move_forward)[iVar2 + 3]);
     (**(code **)(iVar3 + 0x148))(grim_interface_ptr,fVar9,fVar6,&DAT_00471fc4,pcVar5);
     fVar6 = fVar6 + 16.0;
     fVar10 = fVar6;
     (**(code **)(*grim_interface_ptr + 0x148))(grim_interface_ptr,fVar7,fVar6,s_Fire__00471f94);
     iVar3 = *grim_interface_ptr;
-    pcVar5 = input_key_name((&DAT_00480514)[iVar2 + 3]);
+    pcVar5 = input_key_name((&config_p1_move_backward)[iVar2 + 3]);
     (**(code **)(iVar3 + 0x148))(grim_interface_ptr,fVar9,fVar6,&DAT_00471fc4,pcVar5);
     if (iStack_5c == 0) {
       fVar6 = fVar10 - 94.0;
@@ -17551,7 +17551,7 @@ uint config_load_presets(void)
   crt_fread(&config_blob,0x480,1,fp);
   crt_fclose(fp);
   puVar6 = &player_move_key_backward;
-  puVar4 = &config_keybind_table_p2;
+  puVar4 = &config_p1_axis_move_x;
   do {
     puVar5 = puVar4 + 0x10;
     puVar6[-1] = puVar4[-0xc];
@@ -23285,7 +23285,8 @@ int load_textures_step(void)
 /* game_startup_init @ 0042b090 */
 
 /* WARNING: Type propagation algorithm not settling */
-/* startup init: logs, builds perks/weapons, seeds UI/effects, and loads registry time */
+/* startup init: logs, builds perks/weapons, seeds UI/effects, loads registry time; triggers intro
+   music then switches to crimson_theme */
 
 void game_startup_init(void)
 
@@ -23652,7 +23653,7 @@ int crimsonland_main(void)
   (**(code **)(*grim_interface_ptr + 0x54))(&key_char_buffer,&key_char_count,uVar2);
   config_sync_from_grim();
   puVar14 = &player_move_key_backward;
-  puVar10 = &config_keybind_table_p2;
+  puVar10 = &config_p1_axis_move_x;
   do {
     puVar11 = puVar10 + 0x10;
     puVar14[-1] = puVar10[-0xc];
@@ -32175,7 +32176,7 @@ char * highscore_build_path(void)
       }
       goto LAB_0043b67f;
     }
-    puVar4 = (undefined *)((int)&config_saved_names + config_name_slot_selected * 0x1b);
+    puVar4 = (undefined *)((int)&config_saved_name_0 + config_name_slot_selected * 0x1b);
     pcVar3 = s_scores5_unknown_hi_00477bfc;
   }
   crt_sprintf(&DAT_004c36dc,pcVar3,puVar4);
@@ -32199,7 +32200,7 @@ LAB_0043b67f:
   }
   if (config_name_slot_selected != 0) {
     crt_sprintf(&DAT_004c365c,&DAT_00477bf4,&DAT_004c36dc,
-                (int)&config_saved_names + config_name_slot_selected * 0x1b);
+                (int)&config_saved_name_0 + config_name_slot_selected * 0x1b);
     console_printf(&console_log_queue,(byte *)s_Opening_named_cache___s__00477bd8);
     return &DAT_004c365c;
   }
@@ -35652,7 +35653,7 @@ uint __cdecl FUN_004443c0(float *param_1,undefined1 param_2)
   local_c = 0;
   if (0 < config_name_slot_count) {
     puVar5 = &DAT_004ccb5c;
-    puVar2 = &config_saved_names;
+    puVar2 = &config_saved_name_0;
     local_c = config_name_slot_count;
     iVar8 = config_name_slot_count;
     do {
@@ -35701,7 +35702,7 @@ uint __cdecl FUN_004443c0(float *param_1,undefined1 param_2)
     if ((char)iVar8 == '\0') goto LAB_004446ac;
     uVar6 = 0xffffffff;
     config_name_slot_count = config_name_slot_count + -1;
-    pcVar3 = (char *)((int)&config_saved_names + config_name_slot_count * 0x1b);
+    pcVar3 = (char *)((int)&config_saved_name_0 + config_name_slot_count * 0x1b);
     do {
       pcVar9 = pcVar3;
       if (uVar6 == 0) break;
@@ -35712,7 +35713,7 @@ uint __cdecl FUN_004443c0(float *param_1,undefined1 param_2)
     } while (cVar1 != '\0');
     uVar6 = ~uVar6;
     pcVar3 = pcVar9 + -uVar6;
-    pcVar9 = (char *)((int)&config_saved_names + config_name_slot_selected * 0x1b);
+    pcVar9 = (char *)((int)&config_saved_name_0 + config_name_slot_selected * 0x1b);
     for (uVar7 = uVar6 >> 2; uVar7 != 0; uVar7 = uVar7 - 1) {
       *(undefined4 *)pcVar9 = *(undefined4 *)pcVar3;
       pcVar3 = pcVar3 + 4;
@@ -35747,7 +35748,7 @@ uint __cdecl FUN_004443c0(float *param_1,undefined1 param_2)
     } while (cVar1 != '\0');
     uVar6 = ~uVar6;
     pcVar3 = pcVar9 + -uVar6;
-    pcVar9 = (char *)((int)&config_saved_names + config_name_slot_count * 0x1b);
+    pcVar9 = (char *)((int)&config_saved_name_0 + config_name_slot_count * 0x1b);
     for (uVar7 = uVar6 >> 2; uVar7 != 0; uVar7 = uVar7 - 1) {
       *(undefined4 *)pcVar9 = *(undefined4 *)pcVar3;
       pcVar3 = pcVar3 + 4;
@@ -35773,7 +35774,7 @@ uint __cdecl FUN_004443c0(float *param_1,undefined1 param_2)
       } while (cVar1 != '\0');
       uVar6 = ~uVar6;
       pcVar3 = pcVar9 + -uVar6;
-      pcVar9 = (char *)&config_saved_name_2;
+      pcVar9 = (char *)&config_saved_name_1;
       for (uVar7 = uVar6 >> 2; uVar7 != 0; uVar7 = uVar7 - 1) {
         *(undefined4 *)pcVar9 = *(undefined4 *)pcVar3;
         pcVar3 = pcVar3 + 4;

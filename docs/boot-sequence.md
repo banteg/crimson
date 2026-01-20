@@ -162,6 +162,25 @@ Once loading is complete (`step > 9`):
 5. **Gameplay Reset:** `gameplay_reset_state`, `terrain_generate_random`.
 6. **Registry:** Updates "Time Played" counter.
 
+### Boot music handoff (runtime evidence)
+
+Frida trace (`artifacts/frida/share/music_intro_trace.jsonl`) shows the **intro
+track is played inside `game_startup_init`**, then muted and replaced by
+`crimson_theme`:
+
+- `sfx_play_exclusive(music_track_intro_id)` at `0x0042b69a`
+- `sfx_mute_all(music_track_intro_id)` at `0x0042b556`
+- `sfx_play_exclusive(music_track_crimson_theme_id)` at `0x0042b584`
+
+Measured timing from the same trace:
+
+- Intro starts ~20.4s after process start and plays for ~12.7s.
+- Theme starts immediately after intro mute (same frame).
+
+Additional `sfx_mute_all` calls with return addresses in `FUN_00447420`
+(`0x00447420`) occur later during UI transitions (menu flow), not the boot
+sequence.
+
 ## 8. Main Loop
 
 The game enters the main loop (likely `FUN_0040c1c0` wrapper) with `game_state_id = 0` (Main Menu).
