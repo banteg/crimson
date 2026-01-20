@@ -264,6 +264,10 @@ Entry size: `0x08` bytes. Indexed by `effect_id`.
 `effect_select_texture` (`FUN_0042e0a0`) reads this table and calls the renderer
 with grid sizes `16/8/4/2` depending on the size code (`0x10/0x20/0x40/0x80`).
 
+Runtime capture confirms Grim’s `set_atlas_frame` uses **full‑cell UVs** for
+particles; the `effect_uv_step_*` clamp is only applied when `effect_spawn`
+stores UVs in the effect pool.
+
 | Offset | Field | Evidence |
 | --- | --- | --- |
 | 0x00 | atlas size code | Read by `effect_select_texture`/`effect_spawn`; values `0x10/0x20/0x40/0x80` map to `16/8/4/2` cell atlases. |

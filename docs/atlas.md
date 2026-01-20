@@ -21,8 +21,8 @@ Step sizes:
 - 8×8: 0.125
 - 16×16: 0.0625
 
-The effect quad builder uses `effect_uv_step_*` constants from the exe as a
-**UV clamp**, not as a different grid size:
+`effect_spawn` uses `effect_uv_step_*` constants from the exe as a **UV clamp**,
+but Grim’s `set_atlas_frame`/`set_sub_rect` use full grid cells:
 
 - grid2: 0.4921875 (126 px of 128)
 - grid4: 0.2421875 (62 px of 64)
@@ -31,7 +31,8 @@ The effect quad builder uses `effect_uv_step_*` constants from the exe as a
 
 This effectively insets the right/bottom edge by 2 pixels to avoid bleeding.
 Atlas cells are still laid out on full grid boundaries; the clamp just shrinks
-the sampled UV rect inside each cell.
+the per‑effect UV rect stored in the effect pool. Runtime capture shows
+`set_atlas_frame` on `particles.png` always emits full‑cell UVs (step = 1/grid).
 
 
 The renderer later uses these tables to build quads:
