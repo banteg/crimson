@@ -96,6 +96,19 @@ def play_music(state: AudioState, track_name: str) -> None:
     state.active_track = track_name
 
 
+def stop_music(state: AudioState) -> None:
+    if not state.ready:
+        return
+    if state.active_track is None:
+        return
+    music = state.music_tracks.get(state.active_track)
+    if music is None:
+        state.active_track = None
+        return
+    rl.stop_music_stream(music)
+    state.active_track = None
+
+
 def update_audio(state: AudioState) -> None:
     if not state.ready:
         return

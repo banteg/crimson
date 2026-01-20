@@ -9,7 +9,14 @@ import traceback
 
 import pyray as rl
 
-from .audio import AudioState, init_audio_state, play_music, update_audio, shutdown_audio
+from .audio import (
+    AudioState,
+    init_audio_state,
+    play_music,
+    stop_music,
+    update_audio,
+    shutdown_audio,
+)
 from .assets import LogoAssets, PaqTextureCache, load_logo_assets, load_paq_entries
 from .config import CrimsonConfig, ensure_crimson_cfg
 from .console import (
@@ -120,11 +127,25 @@ TEXTURE_LOAD_STAGES: dict[int, tuple[tuple[str, str], ...]] = {
     9: (),
 }
 
-LOGO_SEQUENCE: tuple[tuple[str, str, float], ...] = (
-    ("splash10tons", "load/splash10tons.jaz", 2.0),
-    ("splashReflexive", "load/splashReflexive.jpg", 2.0),
-)
-LOADING_HOLD_SECONDS = 2.0
+COMPANY_LOGOS: dict[str, str] = {
+    "splash10tons": "load/splash10tons.jaz",
+    "splashReflexive": "load/splashReflexive.jpg",
+}
+SPLASH_ALPHA_SCALE = 2.0
+LOGO_TIME_SCALE = 1.1
+LOGO_TIME_OFFSET = 2.0
+LOGO_SKIP_ACCEL = 4.0
+LOGO_SKIP_JUMP = 16.0
+LOGO_THEME_TRIGGER = 14.0
+LOGO_10_IN_START = 1.0
+LOGO_10_IN_END = 2.0
+LOGO_10_HOLD_END = 4.0
+LOGO_10_OUT_END = 5.0
+LOGO_REF_IN_START = 7.0
+LOGO_REF_IN_END = 8.0
+LOGO_REF_HOLD_END = 10.0
+LOGO_REF_OUT_END = 11.0
+DEBUG_LOADING_HOLD_SECONDS = 3.0
 
 MENU_PREP_TEXTURES: tuple[tuple[str, str], ...] = (
     ("ui_signCrimson", "ui/ui_signCrimson.jaz"),
@@ -138,10 +159,17 @@ class BootView:
         self._state = state
         self._texture_stage = 0
         self._textures_done = False
-        self._phase = "loading"
-        self._phase_time = 0.0
-        self._logo_index = 0
+        self._boot_time = 0.0
+        self._fade_out_ready = False
+        self._fade_out_done = False
+        self._logo_delay_ticks = 0
+        self._logo_skip = False
+        self._logo_active = False
+        self._intro_started = False
+        self._theme_started = False
+        self._company_logos_loaded = False
         self._menu_prepped = False
+        self._loading_hold_remaining = DEBUG_LOADING_HOLD_SECONDS
 
     def _load_texture_stage(self, stage: int) -> None:
         cache = self._state.texture_cache
@@ -153,25 +181,25 @@ class BootView:
         for name, rel_path in stage_defs:
             cache.get_or_load(name, rel_path)
 
-    def _start_logo_sequence(self) -> None:
+    def _load_company_logos(self) -> None:
+        if self._company_logos_loaded:
+            return
         cache = self._state.texture_cache
         if cache is None:
             return
-        for name, rel_path, _duration in LOGO_SEQUENCE:
+        for name, rel_path in COMPANY_LOGOS.items():
             cache.get_or_load(name, rel_path)
         loaded = sum(
             1
-            for name, _rel, _duration in LOGO_SEQUENCE
+            for name in COMPANY_LOGOS
             if cache.get(name) and cache.get(name).texture is not None
         )
-        if LOGO_SEQUENCE:
+        if COMPANY_LOGOS:
             self._state.console.log.log(
-                f"company logos loaded: {loaded}/{len(LOGO_SEQUENCE)}"
+                f"company logos loaded: {loaded}/{len(COMPANY_LOGOS)}"
             )
             self._state.console.log.flush()
-        self._phase = "logo_sequence"
-        self._phase_time = 0.0
-        self._logo_index = 0
+        self._company_logos_loaded = True
 
     def _prepare_menu_assets(self) -> None:
         if self._menu_prepped:
@@ -192,8 +220,6 @@ class BootView:
             )
             self._state.console.log.flush()
         self._menu_prepped = True
-        if self._state.audio is not None:
-            play_music(self._state.audio, "crimson_theme")
 
     def open(self) -> None:
         if self._state.logos is None:
@@ -211,15 +237,18 @@ class BootView:
             )
 
     def update(self, dt: float) -> None:
+        frame_dt = min(dt, 0.1)
         if self._state.audio is not None:
             update_audio(self._state.audio)
+        if self._theme_started:
+            return
         if not self._textures_done:
+            self._boot_time += frame_dt
             if self._texture_stage in TEXTURE_LOAD_STAGES:
                 self._load_texture_stage(self._texture_stage)
                 self._texture_stage += 1
                 if self._texture_stage >= len(TEXTURE_LOAD_STAGES):
                     self._textures_done = True
-                    self._phase_time = 0.0
                     if self._state.texture_cache is not None:
                         loaded = self._state.texture_cache.loaded_count()
                         total = len(self._state.texture_cache.textures)
@@ -227,37 +256,64 @@ class BootView:
                             f"boot textures loaded: {loaded}/{total}"
                         )
                         self._state.console.log.flush()
+                    self._load_company_logos()
+                    self._prepare_menu_assets()
+                    self._fade_out_ready = True
+                    self._loading_hold_remaining = DEBUG_LOADING_HOLD_SECONDS
+                    if self._boot_time > 0.5:
+                        self._boot_time = 0.5
             return
 
-        if self._phase == "loading":
-            self._phase_time += dt
-            if self._phase_time < LOADING_HOLD_SECONDS:
+        if self._fade_out_ready and not self._fade_out_done:
+            if self._loading_hold_remaining > 0.0:
+                self._loading_hold_remaining = max(
+                    0.0, self._loading_hold_remaining - frame_dt
+                )
                 return
-            self._start_logo_sequence()
+            self._boot_time -= frame_dt
+            if self._boot_time <= 0.0:
+                self._boot_time = 0.0
+                self._fade_out_done = True
             return
-        if self._phase == "logo_sequence":
-            self._phase_time += dt
-            if not LOGO_SEQUENCE:
-                return
-            _name, _rel, duration = LOGO_SEQUENCE[self._logo_index]
-            if self._phase_time >= duration:
-                self._phase_time = 0.0
-                if self._logo_index + 1 < len(LOGO_SEQUENCE):
-                    self._logo_index += 1
-                else:
-                    self._phase = "menu_ready"
-                    self._prepare_menu_assets()
-        elif self._phase == "menu_ready":
+
+        if not self._fade_out_done:
+            self._boot_time += frame_dt
             return
+
+        if self._logo_delay_ticks < 5:
+            self._logo_delay_ticks += 1
+            return
+
+        self._logo_active = True
+        if self._boot_time > LOGO_THEME_TRIGGER:
+            self._start_theme()
+            return
+        if not self._intro_started and self._state.audio is not None:
+            play_music(self._state.audio, "intro")
+            self._intro_started = True
+        if not self._logo_skip and self._skip_triggered():
+            self._logo_skip = True
+        self._boot_time += frame_dt * LOGO_TIME_SCALE
+        t = self._boot_time - LOGO_TIME_OFFSET
+        if self._logo_skip:
+            if t < LOGO_10_IN_START or (
+                LOGO_10_OUT_END <= t
+                and (t < LOGO_REF_IN_START or LOGO_REF_OUT_END <= t)
+            ):
+                t = LOGO_SKIP_JUMP
+            else:
+                t += frame_dt * LOGO_SKIP_ACCEL
+            self._boot_time = t + LOGO_TIME_OFFSET
 
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
-        if self._phase == "loading":
+        if not self._fade_out_ready or not self._fade_out_done:
             logos = self._state.logos
             if logos is not None:
-                self._draw_splash(logos)
+                self._draw_splash(logos, self._splash_alpha())
             return
-        self._draw_company_logo()
+        if self._logo_active and not self._theme_started:
+            self._draw_company_logo_sequence()
 
     def close(self) -> None:
         if self._state.logos is not None:
@@ -267,13 +323,54 @@ class BootView:
         if self._state.audio is not None:
             shutdown_audio(self._state.audio)
 
-    def _draw_company_logo(self) -> None:
-        if not LOGO_SEQUENCE:
+    def _start_theme(self) -> None:
+        if self._theme_started:
             return
+        if self._state.audio is not None:
+            stop_music(self._state.audio)
+            play_music(self._state.audio, "crimson_theme")
+        self._theme_started = True
+
+    def _skip_triggered(self) -> bool:
+        if rl.get_key_pressed() != 0:
+            return True
+        if rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
+            return True
+        if rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_RIGHT):
+            return True
+        return False
+
+    def _logo_state(self, t: float) -> tuple[str, float] | None:
+        if LOGO_10_IN_START <= t < LOGO_10_OUT_END:
+            if t < LOGO_10_IN_END:
+                alpha = t - LOGO_10_IN_START
+            elif t < LOGO_10_HOLD_END:
+                alpha = 1.0
+            else:
+                alpha = 1.0 - (t - LOGO_10_HOLD_END)
+            return ("splash10tons", self._clamp01(alpha))
+        if LOGO_REF_IN_START <= t < LOGO_REF_OUT_END:
+            if t < LOGO_REF_IN_END:
+                alpha = t - LOGO_REF_IN_START
+            elif t < LOGO_REF_HOLD_END:
+                alpha = 1.0
+            else:
+                alpha = 1.0 - (t - LOGO_REF_HOLD_END)
+            return ("splashReflexive", self._clamp01(alpha))
+        return None
+
+    def _draw_company_logo_sequence(self) -> None:
         cache = self._state.texture_cache
         if cache is None:
             return
-        name, rel_path, _duration = LOGO_SEQUENCE[self._logo_index]
+        t = self._boot_time - LOGO_TIME_OFFSET
+        state = self._logo_state(t)
+        if state is None:
+            return
+        name, alpha = state
+        rel_path = COMPANY_LOGOS.get(name)
+        if rel_path is None:
+            return
         asset = cache.get_or_load(name, rel_path)
         if asset.texture is None:
             return
@@ -282,53 +379,86 @@ class BootView:
         tex_h = float(tex.height)
         x = (rl.get_screen_width() - tex_w) * 0.5
         y = (rl.get_screen_height() - tex_h) * 0.5
-        rl.draw_texture_v(tex, rl.Vector2(x, y), rl.WHITE)
+        tint = rl.Color(255, 255, 255, int(round(alpha * 255.0)))
+        rl.draw_texture_v(tex, rl.Vector2(x, y), tint)
 
-    def _draw_splash(self, logos: LogoAssets) -> None:
+    def _splash_alpha(self) -> float:
+        return self._clamp01(self._boot_time * SPLASH_ALPHA_SCALE)
+
+    @staticmethod
+    def _clamp01(value: float) -> float:
+        if value < 0.0:
+            return 0.0
+        if value > 1.0:
+            return 1.0
+        return value
+
+    def _draw_splash(self, logos: LogoAssets, alpha: float) -> None:
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
+        if alpha <= 0.0:
+            return
 
         logo = logos.cl_logo.texture
         logo_h = float(logo.height) if logo is not None else 64.0
         band_height = logo_h * 2.0
         band_top = (screen_h - band_height) * 0.5 - 4.0
         band_bottom = band_top + band_height
+        band_left = -4.0
+        band_right = screen_w + 4.0
 
-        back = logos.backplasma.texture
-        if back is not None:
-            rl.draw_texture_pro(
-                back,
-                rl.Rectangle(0, 0, float(back.width), float(back.height)),
-                rl.Rectangle(0, band_top, screen_w, band_height),
-                rl.Vector2(0, 0),
-                0.0,
-                rl.Color(128, 128, 128, 255),
-            )
-        line_color = rl.Color(104, 122, 138, 255)
-        rl.draw_rectangle(0, int(round(band_top)), int(screen_w), 1, line_color)
-        rl.draw_rectangle(0, int(round(band_bottom)), int(screen_w), 1, line_color)
+        line_alpha = self._clamp01(alpha * 0.7)
+        line_color = rl.Color(149, 175, 198, int(round(line_alpha * 255.0)))
+        rl.draw_rectangle(
+            int(round(band_left)),
+            int(round(band_top)),
+            int(round(band_right - band_left)),
+            1,
+            line_color,
+        )
+        rl.draw_rectangle(
+            int(round(band_left)),
+            int(round(band_bottom)),
+            int(round(band_right - band_left)),
+            1,
+            line_color,
+        )
+        rl.draw_rectangle(
+            int(round(band_left)),
+            int(round(band_top)),
+            1,
+            int(round(band_height)),
+            line_color,
+        )
+        rl.draw_rectangle(
+            int(round(band_right)),
+            int(round(band_top)),
+            1,
+            int(round(band_height)),
+            line_color,
+        )
+
+        tint = rl.Color(255, 255, 255, int(round(alpha * 255.0)))
 
         if logo is not None:
             logo_w = float(logo.width)
             logo_h = float(logo.height)
             logo_x = (screen_w - logo_w) * 0.5
             logo_y = (screen_h - logo_h) * 0.5
-            rl.draw_texture_v(logo, rl.Vector2(logo_x, logo_y), rl.WHITE)
+            rl.draw_texture_v(logo, rl.Vector2(logo_x, logo_y), tint)
             loading = logos.loading.texture
             if loading is not None:
-                loading_w = float(loading.width)
-                loading_h = float(loading.height)
-                loading_x = logo_x + logo_w
-                loading_y = logo_y + logo_h - loading_h
-                rl.draw_texture_v(loading, rl.Vector2(loading_x, loading_y), rl.WHITE)
+                loading_x = screen_w * 0.5 + 128.0
+                loading_y = screen_h * 0.5 + 16.0
+                rl.draw_texture_v(loading, rl.Vector2(loading_x, loading_y), tint)
 
         esrb = logos.logo_esrb.texture
         if esrb is not None:
             esrb_w = float(esrb.width)
             esrb_h = float(esrb.height)
-            esrb_x = screen_w - esrb_w
-            esrb_y = screen_h - esrb_h
-            rl.draw_texture_v(esrb, rl.Vector2(esrb_x, esrb_y), rl.WHITE)
+            esrb_x = screen_w - esrb_w - 1.0
+            esrb_y = screen_h - esrb_h - 1.0
+            rl.draw_texture_v(esrb, rl.Vector2(esrb_x, esrb_y), tint)
 
 
 def run_game(config: GameConfig) -> None:
