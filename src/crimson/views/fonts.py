@@ -25,7 +25,9 @@ UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 QUEST_TITLE_ALPHA = 1.0
 QUEST_NUMBER_ALPHA_RATIO = 0.5
 QUEST_NUMBER_SCALE_DELTA = 0.2
-QUEST_NUMBER_Y_OFFSET = 4.0
+QUEST_NUMBER_Y_OFFSET_BASE = 4.048
+QUEST_NUMBER_Y_OFFSET_REF_SCALE = 0.75
+QUEST_NUMBER_X_OFFSET_BASE = 46.72
 
 
 class FontView:
@@ -120,10 +122,10 @@ class FontView:
 
         center_x = rl.get_screen_width() / 2.0
         title_x = center_x - (title_width / 2.0)
-        number_x = center_x - (number_width / 2.0)
+        number_x = title_x - (QUEST_NUMBER_X_OFFSET_BASE * title_scale)
 
         title_y = (rl.get_screen_height() / 2.0) - 32.0
-        number_y = title_y + QUEST_NUMBER_Y_OFFSET
+        number_y = title_y + (QUEST_NUMBER_Y_OFFSET_BASE * (title_scale / QUEST_NUMBER_Y_OFFSET_REF_SCALE))
 
         title_color = rl.Color(255, 255, 255, int(255 * QUEST_TITLE_ALPHA))
         number_color = rl.Color(
