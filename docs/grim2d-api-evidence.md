@@ -1810,7 +1810,8 @@ grim.dll vertex fill (color + UV slots):
 
 - Provisional name: `draw_text_mono` (high)
 - Guess: `void draw_text_mono(float x, float y, const char *text)`
-- Notes: fixed 16px grid; special-cases a few extended codes (0xA7, 0xE4, 0xE5, 0xF6)
+- Notes: fixed 16px grid; special-cases a few extended codes (0xA7, 0xE4, 0xE5, 0xF6).
+- Font texture is loaded into `grim_font_texture` from Grim2D resources (resource id `0x6f`). [static]
 - Ghidra signature: `void grim_draw_text_mono(float x, float y, char *text)`
 - Suggested signature: `void grim_draw_text_mono(float x, float y, const char *text)`
 - Call sites: 5 (unique funcs: 3)

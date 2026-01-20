@@ -301,9 +301,9 @@ These offsets appear with keycodes or input-related values:
 | `0x130` | `submit_vertices_offset_color` | `void submit_vertices_offset_color(const float *verts, int count, const float *offset, const uint32_t *color)` | high | copies verts, offsets XY, overrides packed color from `*color` |
 | `0x134` | `submit_vertices_transform_color` | `void submit_vertices_transform_color(const float *verts, int count, const float *offset, const float *matrix, const uint32_t *color)` | high | copies verts, applies matrix+offset, overrides packed color from `*color` |
 | `0x138` | `draw_quad_points` | `void draw_quad_points(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3)` | high | pushes quad from 4 points using current UV/color slots |
-| `0x13c` | `draw_text_mono` | `void draw_text_mono(float x, float y, const char *text)` | high | fixed 16px grid; handles a few extended codes |
+| `0x13c` | `draw_text_mono` | `void draw_text_mono(float x, float y, const char *text)` | high | fixed 16px grid; handles a few extended codes; binds Grim2D font texture (resource `0x6f`) |
 | `0x140` | `draw_text_mono_fmt` | `void draw_text_mono_fmt(float x, float y, const char *fmt, ...)` | high | printf-style wrapper around `draw_text_mono` |
-| `0x144` | `draw_text_small` | `void draw_text_small(float x, float y, const char *text)` | high | binds `GRIM_Font2`, uses width/UV tables |
+| `0x144` | `draw_text_small` | `void draw_text_small(float x, float y, const char *text)` | high | binds `GRIM_Font2`, uses width/UV tables (see `formats/fonts.md`) |
 | `0x148` | `draw_text_small_fmt` | `void draw_text_small_fmt(float x, float y, const char *fmt, ...)` | high | formatted small-font text (wrapper around `0x144`) |
 | `0x14c` | `measure_text_width` | `int measure_text_width(const char *text)` | high | width metric for small font (handles newlines) |
 
