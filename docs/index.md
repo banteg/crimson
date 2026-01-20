@@ -33,6 +33,7 @@ Data map coverage: 19.65% (654 / 3328 symbols)
 - [SFX labels](sfx-labels.md) — Tracking
 - [Game mode map](game-mode-map.md) — Draft
 - [Save/status file (game.cfg)](save-status-format.md) — Draft
+- [Config blob (crimson.cfg)](crimson-cfg.md) — Draft
 - [Secrets and unlocks](secrets.md) — Draft
 - [In-game console](console.md) — Draft
 - [Detangling notes](detangling.md) — In progress

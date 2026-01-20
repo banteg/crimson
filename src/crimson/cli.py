@@ -209,8 +209,12 @@ def cmd_view(
 
 @app.command("game")
 def cmd_game(
-    width: int = typer.Option(1024, help="window width"),
-    height: int = typer.Option(768, help="window height"),
+    width: int | None = typer.Option(
+        None, help="window width (default: use crimson.cfg)"
+    ),
+    height: int | None = typer.Option(
+        None, help="window height (default: use crimson.cfg)"
+    ),
     fps: int = typer.Option(60, help="target fps"),
     seed: int | None = typer.Option(None, help="rng seed"),
     base_dir: Path = typer.Option(
