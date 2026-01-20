@@ -5,6 +5,7 @@ requires-python = ">=3.14"
 dependencies = [
     "construct>=2.10.70",
     "pillow>=12.1.0",
+    "raylib>=5.5.0.4",
     "typer>=0.21.1",
 ]
 
