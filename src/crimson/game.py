@@ -63,29 +63,6 @@ class BootView:
         logos = self._state.logos
         if logos is not None:
             self._draw_splash(logos)
-        rl.draw_text(
-            "Boot step 1: RNG seeded + window init",
-            24,
-            24,
-            20,
-            rl.Color(220, 220, 220, 255),
-        )
-        rl.draw_text(
-            f"Config: {self._state.config.screen_width}x{self._state.config.screen_height} "
-            f"windowed={self._state.config.windowed_flag}",
-            24,
-            52,
-            18,
-            rl.Color(180, 180, 180, 255),
-        )
-        if logos is not None:
-            rl.draw_text(
-                f"Logo assets loaded: {logos.loaded_count()}/{len(logos.all())}",
-                24,
-                78,
-                18,
-                rl.Color(180, 180, 180, 255),
-            )
 
     def close(self) -> None:
         if self._state.logos is not None:
