@@ -40263,36 +40263,50 @@ int FUN_00453f63(void)
 
 /* FUN_00454303 @ 00454303 */
 
-void FUN_00454303(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)
+/* [binja] int32_t __stdcall sub_454303(float arg1, float arg2, float arg3); wrapper calls
+   PTR_FUN_00479624 (idx 0x21) */
+
+float * FUN_00454303(float *arg1,float arg2,float arg3,float arg4)
 
 {
+  float *pfVar1;
+  
   renderer_select_backend(1);
-  (*(code *)PTR_FUN_00479624)(param_1,param_2,param_3,param_4);
-  return;
+  pfVar1 = (float *)(*(code *)PTR_FUN_00479624)(arg1,arg2,arg3,arg4);
+  return pfVar1;
 }
 
 
 
 /* FUN_0045438d @ 0045438d */
 
-void FUN_0045438d(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)
+/* [binja] int32_t __stdcall sub_45438d(float arg1, float arg2, float arg3); wrapper calls
+   PTR_FUN_00479608 (idx 0x1a) */
+
+float * FUN_0045438d(float *arg1,float arg2,float arg3,float arg4)
 
 {
+  float *pfVar1;
+  
   renderer_select_backend(1);
-  (*(code *)PTR_FUN_00479608)(param_1,param_2,param_3,param_4);
-  return;
+  pfVar1 = (float *)(*(code *)PTR_FUN_00479608)(arg1,arg2,arg3,arg4);
+  return pfVar1;
 }
 
 
 
 /* FUN_00454417 @ 00454417 */
 
-void FUN_00454417(undefined4 param_1,undefined4 param_2)
+/* [binja] int32_t __stdcall sub_454417(float arg1); wrapper calls PTR_FUN_00479618 (idx 0x1e) */
+
+float * FUN_00454417(float *arg1,float arg2)
 
 {
+  float *pfVar1;
+  
   renderer_select_backend(1);
-  (*(code *)PTR_FUN_00479618)(param_1,param_2);
-  return;
+  pfVar1 = (float *)(*(code *)PTR_FUN_00479618)(arg1,arg2);
+  return pfVar1;
 }
 
 
@@ -40332,12 +40346,16 @@ float * FUN_00454433(float *arg1,float arg2)
 
 /* FUN_004544ad @ 004544ad */
 
-void FUN_004544ad(undefined4 param_1,undefined4 param_2)
+/* [binja] int32_t __stdcall sub_4544ad(float arg1); wrapper calls PTR_FUN_0047961c (idx 0x1f) */
+
+float * FUN_004544ad(float *arg1,float arg2)
 
 {
+  float *pfVar1;
+  
   renderer_select_backend(1);
-  (*(code *)PTR_FUN_0047961c)(param_1,param_2);
-  return;
+  pfVar1 = (float *)(*(code *)PTR_FUN_0047961c)(arg1,arg2);
+  return pfVar1;
 }
 
 
@@ -40377,12 +40395,16 @@ float * FUN_004544c9(float *arg1,float arg2)
 
 /* FUN_00454544 @ 00454544 */
 
-void FUN_00454544(undefined4 param_1,undefined4 param_2)
+/* [binja] int32_t __stdcall sub_454544(float arg1); wrapper calls PTR_FUN_00479620 (idx 0x20) */
+
+float * FUN_00454544(float *arg1,float arg2)
 
 {
+  float *pfVar1;
+  
   renderer_select_backend(1);
-  (*(code *)PTR_FUN_00479620)(param_1,param_2);
-  return;
+  pfVar1 = (float *)(*(code *)PTR_FUN_00479620)(arg1,arg2);
+  return pfVar1;
 }
 
 
@@ -40422,12 +40444,17 @@ float * FUN_00454560(float *arg1,float arg2)
 
 /* FUN_004545dc @ 004545dc */
 
-void FUN_004545dc(undefined4 param_1,undefined4 param_2,undefined4 param_3)
+/* [binja] int32_t __stdcall sub_4545dc(int arg1, float arg2); wrapper calls PTR_FUN_00479648 (idx
+   0x2a) */
+
+float * FUN_004545dc(float *arg1,float *arg2,float arg3)
 
 {
+  float *pfVar1;
+  
   renderer_select_backend(1);
-  (*(code *)PTR_FUN_00479648)(param_1,param_2,param_3);
-  return;
+  pfVar1 = (float *)(*(code *)PTR_FUN_00479648)(arg1,arg2,arg3);
+  return pfVar1;
 }
 
 
@@ -40505,12 +40532,17 @@ int FUN_004546fe(void)
 
 /* FUN_004547f3 @ 004547f3 */
 
-void FUN_004547f3(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)
+/* [binja] int32_t __stdcall sub_4547f3(float arg1, float arg2, float arg3); wrapper calls
+   PTR_FUN_00479640 (idx 0x28) */
+
+float * FUN_004547f3(float *arg1,float arg2,float arg3,float arg4)
 
 {
+  float *pfVar1;
+  
   renderer_select_backend(1);
-  (*(code *)PTR_FUN_00479640)(param_1,param_2,param_3,param_4);
-  return;
+  pfVar1 = (float *)(*(code *)PTR_FUN_00479640)(arg1,arg2,arg3,arg4);
+  return pfVar1;
 }
 
 
@@ -40595,12 +40627,17 @@ FUN_00454859(undefined4 *param_1,undefined4 param_2,float *param_3,int param_4,f
 
 /* FUN_00454b44 @ 00454b44 */
 
-void FUN_00454b44(undefined4 param_1,undefined4 param_2,undefined4 param_3)
+/* [binja] int32_t __stdcall sub_454b44(int arg1, float arg2); wrapper calls PTR_FUN_00479614 (idx
+   0x1d) */
+
+float * FUN_00454b44(float *arg1,float *arg2,float arg3)
 
 {
+  float *pfVar1;
+  
   renderer_select_backend(1);
-  (*(code *)PTR_FUN_00479614)(param_1,param_2,param_3);
-  return;
+  pfVar1 = (float *)(*(code *)PTR_FUN_00479614)(arg1,arg2,arg3);
+  return pfVar1;
 }
 
 
@@ -40634,12 +40671,17 @@ float * FUN_00454b64(float arg1,float arg2,float arg3)
 
 /* FUN_00454bc0 @ 00454bc0 */
 
-void FUN_00454bc0(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)
+/* [binja] int32_t __stdcall sub_454bc0(float arg1, float arg2, float arg3); wrapper calls
+   PTR_FUN_00479604 (idx 0x19) */
+
+float * FUN_00454bc0(float *arg1,float arg2,float arg3,float arg4)
 
 {
+  float *pfVar1;
+  
   renderer_select_backend(1);
-  (*(code *)PTR_FUN_00479604)(param_1,param_2,param_3,param_4);
-  return;
+  pfVar1 = (float *)(*(code *)PTR_FUN_00479604)(arg1,arg2,arg3,arg4);
+  return pfVar1;
 }
 
 
@@ -40720,12 +40762,17 @@ int FUN_00454f87(void)
 
 /* FUN_00455028 @ 00455028 */
 
-void FUN_00455028(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)
+/* [binja] int32_t __stdcall sub_455028(int arg1, int arg2, float arg3); wrapper calls
+   PTR_FUN_0047962c (idx 0x23) */
+
+float * FUN_00455028(float *arg1,float *arg2,float *arg3,float arg4)
 
 {
+  float *pfVar1;
+  
   renderer_select_backend(1);
-  (*(code *)PTR_FUN_0047962c)(param_1,param_2,param_3,param_4);
-  return;
+  pfVar1 = (float *)(*(code *)PTR_FUN_0047962c)(arg1,arg2,arg3,arg4);
+  return pfVar1;
 }
 
 
@@ -40745,14 +40792,13 @@ void FUN_00455135(undefined4 param_1,undefined4 param_2,undefined4 param_3,undef
 
 /* FUN_0045515f @ 0045515f */
 
-undefined4
-FUN_0045515f(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4,
-            undefined4 param_5,float param_6)
+float * FUN_0045515f(float *param_1,float *param_2,float *param_3,float *param_4,float *param_5,
+                    float param_6)
 
 {
   float fVar1;
-  undefined1 local_24 [16];
-  undefined1 local_14 [16];
+  float local_24 [4];
+  float local_14 [4];
   
   thunk_FUN_00455028(local_24,param_2,param_5,param_6);
   thunk_FUN_00455028(local_14,param_3,param_4,param_6);
@@ -40785,21 +40831,21 @@ int FUN_004551b6(void)
 /* FUN_004551f6 @ 004551f6 */
 
 undefined4 *
-FUN_004551f6(undefined4 *param_1,undefined4 *param_2,undefined4 param_3,undefined4 param_4,
-            float param_5,float param_6)
+FUN_004551f6(undefined4 *param_1,undefined4 *param_2,float *param_3,float *param_4,float param_5,
+            float param_6)
 
 {
   float a;
   int iVar1;
-  undefined1 local_24 [16];
-  undefined1 local_14 [16];
+  float local_24 [4];
+  float local_14 [4];
   
   a = param_5 + param_6;
   iVar1 = float_near_equal(a,0.0);
   if (iVar1 == 0) {
-    thunk_FUN_00455028(local_24,param_2,param_3,a);
-    thunk_FUN_00455028(local_14,param_2,param_4,a);
-    thunk_FUN_00455028(param_1,local_24,local_14,param_6 / a);
+    thunk_FUN_00455028(local_24,(float *)param_2,param_3,a);
+    thunk_FUN_00455028(local_14,(float *)param_2,param_4,a);
+    thunk_FUN_00455028((float *)param_1,local_24,local_14,param_6 / a);
   }
   else if (param_1 != param_2) {
     *param_1 = *param_2;
@@ -41241,7 +41287,7 @@ float * FUN_00455bcd(float *arg1,float arg2)
 int FUN_00455c86(int arg1,float arg2,float arg3,float arg4)
 
 {
-  undefined1 local_14 [16];
+  float local_14 [4];
   
   thunk_FUN_00454bc0(local_14,arg2,arg3,arg4);
   thunk_FUN_004546fe();
