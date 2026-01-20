@@ -123,6 +123,8 @@ class CrimsonConfig:
 def default_crimson_cfg_data() -> dict:
     data = CRIMSON_CFG_STRUCT.parse(bytes(CRIMSON_CFG_SIZE))
     config = CrimsonConfig(path=Path("<memory>"), data=data)
+    config.data["hud_indicators"] = b"\x01\x01"
+    config.data["unknown_08"] = 8
     config.texture_scale = 1.0
     config.screen_bpp = 32
     config.screen_width = 800
@@ -136,6 +138,9 @@ def default_crimson_cfg_data() -> dict:
     config.data["music_volume"] = 1.0
     config.data["selected_name_slot"] = 0
     config.data["saved_name_index"] = 1
+    config.data["unknown_1a4"] = 100
+    config.data["unknown_1b0"] = 9000
+    config.data["unknown_1b4"] = 27000
 
     saved_name_order = bytearray()
     for idx in range(8):
@@ -183,7 +188,10 @@ def default_crimson_cfg_data() -> dict:
         0x17E,
         0x17E,
     ]
-    config.data["keybinds"] = b"".join(value.to_bytes(4, "little") for value in keybinds)
+    keybind_blob = b"".join(value.to_bytes(4, "little") for value in keybinds)
+    if len(keybind_blob) != 0x80:
+        raise ValueError(f"expected 0x80 bytes of keybinds, got {len(keybind_blob)}")
+    config.data["keybinds"] = keybind_blob
     return data
 
 
