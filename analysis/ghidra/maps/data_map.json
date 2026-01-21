@@ -2055,8 +2055,9 @@
     },
     {
       "address": "0x004908d4",
-      "comment": "Per-player health (player table base, stride 0xd8)",
+      "comment": "Per-player state table base (stride 0x360 bytes / 0xd8 dwords)",
       "name": "player_health",
+      "type": "player_state_t",
       "program": "crimsonland.exe"
     },
     {
@@ -4341,8 +4342,9 @@
     },
     {
       "address": "0x004c4250",
-      "comment": "Music entry table (track slots).",
+      "comment": "Music entry table (track slots, stride 0x84).",
       "name": "music_entry_table",
+      "type": "music_channel_t",
       "program": "crimsonland.exe"
     },
     {
@@ -4391,6 +4393,7 @@
       "address": "0x004d7a2c",
       "comment": "Weapon table base (stride 0x7c bytes)",
       "name": "weapon_table",
+      "type": "weapon_stats_t",
       "program": "crimsonland.exe"
     },
     {
