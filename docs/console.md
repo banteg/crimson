@@ -108,6 +108,19 @@ The cvar paths emit:
   line into `console_exec_line`; prints `Executing '%s'` or a “cannot open”
   error.
 
+## Startup commands (registered in crimsonland_main)
+
+`crimsonland_main` registers several additional commands during startup:
+
+- `setGammaRamp` → `console_cmd_set_gamma_ramp` (`0x0042c3d0`).
+- `snd_addGameTune` → `console_cmd_snd_add_game_tune` (`0x0042c360`).
+- `generateterrain` → `console_cmd_generate_terrain` (`0x0042a970`).
+- `telltimesurvived` → `console_cmd_tell_time_survived` (`0x0042a860`).
+- `setresourcepaq` → `console_cmd_set_resource_paq` (`0x0042a7c0`).
+- `loadtexture` → `console_cmd_load_texture` (`0x0042a780`).
+- `openurl` → `console_cmd_open_url` (`0x0042a890`).
+- `sndfreqadjustment` → `console_cmd_snd_freq_adjustment` (`0x0042a930`).
+
 ## Known console variables (cvars)
 
 Core cvars are registered in `register_core_cvars` (`0x00402c00`) and during startup.

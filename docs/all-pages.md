@@ -3,15 +3,20 @@
 This page is generated. Run `uv run python scripts/gen_all_pages.py` to update.
 
 - [Sprite atlas cutting (Crimsonland)](atlas.md)
+- [Binary Analysis](binary-analysis.md)
 - [Bonus ID map](bonus-id-map.md)
+- [Boot / Loading Sequence](boot-sequence.md)
 - [Frida GumJS cheatsheet](cheatsheets/frida.md)
 - [raylib (Python) cheatsheet](cheatsheets/raylib.md)
 - [Zig 0.15 cheatsheet](cheatsheets/zig.md)
 - [In-game console (tilde)](console.md)
 - [Creature struct (creature_pool / DAT_0049bf38)](creature-struct.md)
+- [Crimson config blob (crimson.cfg)](crimson-cfg.md)
 - [Frame loop (gameplay)](crimsonland-exe/frame-loop.md)
 - [Gameplay glue](crimsonland-exe/gameplay.md)
 - [Crimsonland.exe overview (by concern)](crimsonland-exe/index.md)
+- [Mods (CMOD plugins)](crimsonland-exe/mods.md)
+- [Online high scores (WinINet protocol)](crimsonland-exe/online-scores.md)
 - [Rendering pipeline](crimsonland-exe/rendering.md)
 - [Screens and flows](crimsonland-exe/screens.md)
 - [State machine](crimsonland-exe/state-machine.md)
@@ -52,3 +57,5 @@ This page is generated. Run `uv run python scripts/gen_all_pages.py` to update.
 - [Weapon table (weapon_table_init)](weapon-table.md)
 - [WinDbg / CDB workflow](windbg.md)
 - [Work status model](work-status.md)
+- [Worklog](worklog.md)
+

@@ -575,6 +575,27 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0040e700",
+    "name": "mod_load_info",
+    "signature": "void * mod_load_info(void)",
+    "comment": "loads mods\\%s, calls CMOD_GetInfo, copies the info struct to DAT_00481c88, and returns it"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e860",
+    "name": "mod_load_mod",
+    "signature": "void * mod_load_mod(void)",
+    "comment": "loads mods\\%s, calls CMOD_GetMod, wires the mod context (offset +4), and returns the mod interface pointer"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e940",
+    "name": "mods_any_available",
+    "signature": "bool mods_any_available(void)",
+    "comment": "returns true if any mods\\*.dll exist"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0040f400",
     "name": "credits_secret_match3_find",
     "signature": "uint credits_secret_match3_find(int *board, int *out_idx, unsigned char *out_dir)",
@@ -1275,6 +1296,54 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0042a780",
+    "name": "console_cmd_load_texture",
+    "signature": "void console_cmd_load_texture(void)",
+    "create": true,
+    "comment": "console command handler for loadtexture; calls texture_get_or_load(name, path)"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042a7c0",
+    "name": "console_cmd_set_resource_paq",
+    "signature": "void console_cmd_set_resource_paq(void)",
+    "create": true,
+    "comment": "console command handler for setresourcepaq; validates file and updates Grim config id 0x10"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042a860",
+    "name": "console_cmd_tell_time_survived",
+    "signature": "void console_cmd_tell_time_survived(void)",
+    "create": true,
+    "comment": "console command handler for telltimesurvived; prints survived time in seconds"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042a890",
+    "name": "console_cmd_open_url",
+    "signature": "void console_cmd_open_url(void)",
+    "create": true,
+    "comment": "console command handler for openurl; converts to wide and calls HlinkNavigateString"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042a930",
+    "name": "console_cmd_snd_freq_adjustment",
+    "signature": "void console_cmd_snd_freq_adjustment(void)",
+    "create": true,
+    "comment": "console command handler for sndfreqadjustment; toggles DAT_004807a8 and prints status"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042a970",
+    "name": "console_cmd_generate_terrain",
+    "signature": "void console_cmd_generate_terrain(void)",
+    "create": true,
+    "comment": "console command handler for generateterrain; calls terrain_generate_random"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0042a980",
     "name": "reg_read_dword_default",
     "signature": "int reg_read_dword_default(HKEY key, char *name, unsigned int *out, unsigned int fallback)",
@@ -1315,6 +1384,22 @@
     "signature": "void game_startup_init(void)",
     "create": true,
     "comment": "startup init: logs, builds perks/weapons, seeds UI/effects, loads registry time; triggers intro music then switches to crimson_theme"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042c360",
+    "name": "console_cmd_snd_add_game_tune",
+    "signature": "void console_cmd_snd_add_game_tune(void)",
+    "create": true,
+    "comment": "console command handler for snd_addGameTune; loads music\\%s and queues the track"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0042c3d0",
+    "name": "console_cmd_set_gamma_ramp",
+    "signature": "void console_cmd_set_gamma_ramp(void)",
+    "create": true,
+    "comment": "console command handler for setGammaRamp; parses float and calls grim_set_config_var(0x1c)"
   },
   {
     "program": "crimsonland.exe",

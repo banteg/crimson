@@ -132,6 +132,28 @@ Validation highlights (see the evidence appendix for snippets):
 - `grim_check_device` has no decompiled callsites yet; grim.dll returns a D3D-style status code.
 - `grim_draw_fullscreen_color` only draws when alpha is positive and forces texture stage 0 to null.
 
+## Grim config IDs (vtable `+0x20` / `grim_set_config_var`)
+
+High-confidence IDs from the grim.dll switch body (partial list):
+
+| ID | Label (proposed) | Behavior (grim.dll) | Notes |
+| --- | --- | --- | --- |
+| `0x10` | `GRIM_CFG_RESOURCE_PAQ` | Stores a string path, validates with `FUN_10005a40`, updates config table | Used by `setresourcepaq` console command. |
+| `0x12` | `GRIM_CFG_ALPHABLEND_ENABLE` | `SetRenderState(D3DRS_ALPHABLENDENABLE, value & 0xff)` | Toggles alpha blending. |
+| `0x13` | `GRIM_CFG_SRC_BLEND` | `SetRenderState(D3DRS_SRCBLEND, value)` | UI uses `5` (SRCALPHA). |
+| `0x14` | `GRIM_CFG_DEST_BLEND` | `SetRenderState(D3DRS_DESTBLEND, value)` | UI uses `6` (INVSRCALPHA). |
+| `0x15` | `GRIM_CFG_TEX_FILTER` | `SetTextureStageState(MINFILTER/MAGFILTER, value)` | When `value==3`, sets anisotropy. |
+| `0x18` | `GRIM_CFG_UI_SCALE` (tentative) | Default path: stores value in config table | Called with float-like values (0.5, 1.0). |
+| `0x1b` | `GRIM_CFG_TEXTURE_FACTOR` | `SetRenderState(D3DRS_TEXTUREFACTOR, packed RGB)` | Uses float→int conversions before packing. |
+| `0x1c` | `GRIM_CFG_GAMMA_RAMP` | Builds `D3DGAMMARAMP` and calls `SetGammaRamp` | Triggered by `setGammaRamp`. |
+| `0x29` | `GRIM_CFG_BACKBUFFER_WIDTH` | Sets `grim_backbuffer_width` | Mirrors config table. |
+| `0x2a` | `GRIM_CFG_BACKBUFFER_HEIGHT` | Sets `grim_backbuffer_height` | Mirrors config table. |
+| `0x2b` | `GRIM_CFG_TEXTURE_FORMAT` | Sets `grim_texture_format` based on `value` | Likely BPP/format selector. |
+| `0x36` | `GRIM_CFG_PRESENT` | Calls `IDirect3DDevice8::Present` | Explicit present trigger. |
+| `0x55` | `GRIM_CFG_RENDER_DISABLED` | Sets `grim_render_disabled` flag | Gates rendering. |
+
+Other handled IDs exist (e.g., `0x5`, `0x6`, `0x7`, `0xb`, `0xc`, `0xd`, `0xe`, `0x1a`, `0x2d`, `0x34`, `0x42`, `0x52`) but their semantics remain unknown; they mostly write into the config tables and/or stash pointers for later use.
+
 
 ## Validation backlog
 

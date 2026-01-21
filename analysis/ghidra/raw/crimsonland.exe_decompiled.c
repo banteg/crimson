@@ -8183,11 +8183,12 @@ LAB_0040e6cc:
 
 
 
-/* FUN_0040e700 @ 0040e700 */
+/* mod_load_info @ 0040e700 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* loads mods\%s, calls CMOD_GetInfo, copies the info struct to DAT_00481c88, and returns it */
 
-undefined4 * FUN_0040e700(void)
+void * mod_load_info(void)
 
 {
   FARPROC pFVar1;
@@ -8201,7 +8202,7 @@ undefined4 * FUN_0040e700(void)
   DAT_004824d8 = LoadLibraryA(local_200);
   if (DAT_004824d8 == (HMODULE)0x0) {
     console_printf(&console_log_queue,s_CMOD__Load_library_failed__00472fd0);
-    return (undefined4 *)0x0;
+    return (void *)0x0;
   }
   pFVar1 = GetProcAddress(DAT_004824d8,s_CMOD_GetInfo_00472fc0);
   if (pFVar1 != (FARPROC)0x0) {
@@ -8239,18 +8240,21 @@ undefined4 * FUN_0040e700(void)
   }
   console_printf(&console_log_queue,s_CMOD_GetInfo_failed__00472fa8);
   FreeLibrary(DAT_004824d8);
-  return (undefined4 *)0x0;
+  return (void *)0x0;
 }
 
 
 
-/* FUN_0040e860 @ 0040e860 */
+/* mod_load_mod @ 0040e860 */
 
-int FUN_0040e860(void)
+/* loads mods\%s, calls CMOD_GetMod, wires the mod context (offset +4), and returns the mod
+   interface pointer */
+
+void * mod_load_mod(void)
 
 {
   FARPROC pFVar1;
-  int iVar2;
+  void *pvVar2;
   char local_200 [512];
   
   crt_sprintf(local_200,s_mods__s_00472f58);
@@ -8258,30 +8262,32 @@ int FUN_0040e860(void)
   DAT_004824d8 = LoadLibraryA(local_200);
   if (DAT_004824d8 == (HMODULE)0x0) {
     console_printf(&console_log_queue,s_CMOD__Load_library_failed__00472fd0);
-    return 0;
+    return (void *)0x0;
   }
   pFVar1 = GetProcAddress(DAT_004824d8,s_CMOD_GetMod_00473044);
   if (pFVar1 == (FARPROC)0x0) {
     console_printf(&console_log_queue,s_CMOD__CMOD_GetMod_failed__00473028);
     FreeLibrary(DAT_004824d8);
-    return 0;
+    return (void *)0x0;
   }
-  iVar2 = (*pFVar1)();
-  if (iVar2 == 0) {
+  pvVar2 = (void *)(*pFVar1)();
+  if (pvVar2 == (void *)0x0) {
     console_printf(&console_log_queue,s_CMOD__bad_CMOD_GetMod_function_00473008);
   }
   else {
-    *(undefined **)(iVar2 + 4) = &DAT_00481a80;
+    *(undefined **)((int)pvVar2 + 4) = &DAT_00481a80;
   }
   console_printf(&console_log_queue,s_CMOD_GetMod_ok_00472ff8);
-  return iVar2;
+  return pvVar2;
 }
 
 
 
-/* FUN_0040e940 @ 0040e940 */
+/* mods_any_available @ 0040e940 */
 
-bool FUN_0040e940(void)
+/* returns true if any mods\*.dll exist */
+
+bool mods_any_available(void)
 
 {
   HANDLE handle;
@@ -22163,6 +22169,143 @@ int __cdecl texture_get_or_load_alt(char *name,char *path)
 
 
 
+/* console_cmd_load_texture @ 0042a780 */
+
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* console command handler for loadtexture; calls texture_get_or_load(name, path) */
+
+void console_cmd_load_texture(void)
+
+{
+  int iVar1;
+  char *path;
+  char *name;
+  
+  iVar1 = FUN_00401150();
+  if (iVar1 != 2) {
+    console_printf(&console_log_queue,s_loadtexture_<texturefileid>_00473ef0);
+    return;
+  }
+  path = FUN_00401120(2);
+  name = FUN_00401120(2);
+  texture_get_or_load(name,path);
+  return;
+}
+
+
+
+/* console_cmd_set_resource_paq @ 0042a7c0 */
+
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* console command handler for setresourcepaq; validates file and updates Grim config id 0x10 */
+
+void console_cmd_set_resource_paq(void)
+
+{
+  int iVar1;
+  char *path;
+  FILE *fp;
+  void *pvVar2;
+  uint in_stack_ffffffec;
+  char *mode;
+  
+  iVar1 = FUN_00401150();
+  if (iVar1 != 2) {
+    console_printf(&console_log_queue,s_setresourcepaq_<resourcepaq>_00473f44);
+    return;
+  }
+  mode = &file_mode_read_binary;
+  path = FUN_00401120(1);
+  fp = crt_fopen(path,mode);
+  if (fp == (FILE *)0x0) {
+    pvVar2 = FUN_00401120(1);
+    console_printf(&console_log_queue,s_File___s__not_found__00473f2c,pvVar2);
+    return;
+  }
+  crt_fclose(fp);
+  FUN_00401120(1);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x10,in_stack_ffffffec);
+  pvVar2 = FUN_00401120(1);
+  console_printf(&console_log_queue,s_Set_resource_paq_to___s__00473f10,pvVar2);
+  return;
+}
+
+
+
+/* console_cmd_tell_time_survived @ 0042a860 */
+
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* console command handler for telltimesurvived; prints survived time in seconds */
+
+void console_cmd_tell_time_survived(void)
+
+{
+  longlong lVar1;
+  
+  lVar1 = __ftol();
+  console_printf(&console_log_queue,s_Survived___i_seconds__00473f64,(int)lVar1);
+  return;
+}
+
+
+
+/* console_cmd_open_url @ 0042a890 */
+
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* console command handler for openurl; converts to wide and calls HlinkNavigateString */
+
+void console_cmd_open_url(void)
+
+{
+  int iVar1;
+  LPCCH lpMultiByteStr;
+  HRESULT HVar2;
+  void *pvVar3;
+  WCHAR *lpWideCharStr;
+  int cchWideChar;
+  WCHAR aWStack_208 [260];
+  
+  lpWideCharStr = aWStack_208;
+  iVar1 = FUN_00401150();
+  if (iVar1 != 2) {
+    console_printf(&console_log_queue,s_openurl_<url>_00473fbc);
+    return;
+  }
+  cchWideChar = 0x104;
+  iVar1 = -1;
+  lpMultiByteStr = FUN_00401120(1);
+  MultiByteToWideChar(0,0,lpMultiByteStr,iVar1,lpWideCharStr,cchWideChar);
+  HVar2 = HlinkNavigateString((IUnknown *)0x0,aWStack_208);
+  if (HVar2 < 0) {
+    console_printf(&console_log_queue,s_Failed_to_launch_web_browser__00473f9c);
+    return;
+  }
+  pvVar3 = FUN_00401120(1);
+  console_printf(&console_log_queue,s_Launching_web_browser___s____00473f7c,pvVar3);
+  return;
+}
+
+
+
+/* console_cmd_snd_freq_adjustment @ 0042a930 */
+
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* console command handler for sndfreqadjustment; toggles DAT_004807a8 and prints status */
+
+void console_cmd_snd_freq_adjustment(void)
+
+{
+  DAT_004807a8 = DAT_004807a8 == '\0';
+  if ((bool)DAT_004807a8) {
+    console_printf(&console_log_queue,s_Sound_frequency_adjustment_is_no_00473ffc);
+    return;
+  }
+  console_printf(&console_log_queue,s_Sound_frequency_adjustment_is_no_00473fcc);
+  return;
+}
+
+
+
 /* reg_read_dword_default @ 0042a980 */
 
 /* reads a registry DWORD or writes fallback to output */
@@ -22890,6 +23033,66 @@ LAB_0042bea6:
 
 
 
+/* console_cmd_snd_add_game_tune @ 0042c360 */
+
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* console command handler for snd_addGameTune; loads music\%s and queues the track */
+
+void console_cmd_snd_add_game_tune(void)
+
+{
+  int iVar1;
+  void *pvVar2;
+  char acStack_400 [1024];
+  
+  iVar1 = FUN_00401150();
+  if (iVar1 != 2) {
+    console_printf(&console_log_queue,s_snd_addGameTune_<tuneName_ogg>_0047474c);
+    return;
+  }
+  pvVar2 = FUN_00401120(1);
+  crt_sprintf(acStack_400,s_music__s_00474740,pvVar2);
+  iVar1 = music_load_track(acStack_400);
+  if (-1 < iVar1) {
+    music_queue_track(iVar1);
+  }
+  return;
+}
+
+
+
+/* console_cmd_set_gamma_ramp @ 0042c3d0 */
+
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* console command handler for setGammaRamp; parses float and calls grim_set_config_var(0x1c) */
+
+void console_cmd_set_gamma_ramp(void)
+
+{
+  int iVar1;
+  void *locale;
+  void *this;
+  double dVar2;
+  float fVar3;
+  char *str;
+  
+  iVar1 = FUN_00401150();
+  if (iVar1 != 2) {
+    console_printf(&console_log_queue,s_setGammaRamp_<scalar_>_0>_004747e4);
+    console_printf(&console_log_queue,s_Command_adjusts_gamma_ramp_linea_0047479c);
+    return;
+  }
+  str = (char *)0x1;
+  locale = FUN_00401120(1);
+  dVar2 = crt_atof_l(this,locale,str);
+  fVar3 = 3.92364e-44;
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x1c,(uint)(float)dVar2);
+  console_printf(&console_log_queue,s_Gamma_ramp_regenerated_and_multi_0047476c,(double)fVar3);
+  return;
+}
+
+
+
 /* crimsonland_main @ 0042c450 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
@@ -22993,14 +23196,28 @@ int crimsonland_main(void)
   console_printf(&console_log_queue,s_Game_base_path____s__00474ca0);
   console_flush_log(&console_log_queue,filename_00);
   config_ensure_file();
-  console_register_command(&console_log_queue,s_setGammaRamp_00474c90,&LAB_0042c3d0,unaff_EDI);
-  console_register_command(&console_log_queue,s_snd_addGameTune_00474c80,&LAB_0042c360,unaff_EDI);
-  console_register_command(&console_log_queue,s_generateterrain_00474c70,&LAB_0042a970,unaff_EDI);
-  console_register_command(&console_log_queue,s_telltimesurvived_00474c5c,&LAB_0042a860,unaff_EDI);
-  console_register_command(&console_log_queue,s_setresourcepaq_00474c4c,&LAB_0042a7c0,unaff_EDI);
-  console_register_command(&console_log_queue,s_loadtexture_00474c40,&LAB_0042a780,unaff_EDI);
-  console_register_command(&console_log_queue,s_openurl_00474c38,&LAB_0042a890,unaff_EDI);
-  console_register_command(&console_log_queue,s_sndfreqadjustment_00474c24,&LAB_0042a930,unaff_EDI);
+  console_register_command
+            (&console_log_queue,s_setGammaRamp_00474c90,(char *)console_cmd_set_gamma_ramp,unaff_EDI
+            );
+  console_register_command
+            (&console_log_queue,s_snd_addGameTune_00474c80,(char *)console_cmd_snd_add_game_tune,
+             unaff_EDI);
+  console_register_command
+            (&console_log_queue,s_generateterrain_00474c70,(char *)console_cmd_generate_terrain,
+             unaff_EDI);
+  console_register_command
+            (&console_log_queue,s_telltimesurvived_00474c5c,(char *)console_cmd_tell_time_survived,
+             unaff_EDI);
+  console_register_command
+            (&console_log_queue,s_setresourcepaq_00474c4c,(char *)console_cmd_set_resource_paq,
+             unaff_EDI);
+  console_register_command
+            (&console_log_queue,s_loadtexture_00474c40,(char *)console_cmd_load_texture,unaff_EDI);
+  console_register_command
+            (&console_log_queue,s_openurl_00474c38,(char *)console_cmd_open_url,unaff_EDI);
+  console_register_command
+            (&console_log_queue,s_sndfreqadjustment_00474c24,(char *)console_cmd_snd_freq_adjustment
+             ,unaff_EDI);
   puVar10 = &DAT_004852d0;
   for (iVar3 = 0x3f; iVar3 != 0; iVar3 = iVar3 + -1) {
     *puVar10 = 0;
@@ -36592,7 +36809,7 @@ void __cdecl game_state_set(int state_id)
     DAT_00487290 = 1;
     iVar3 = game_is_full_version();
     if ((char)iVar3 != '\0') {
-      bVar2 = FUN_0040e940();
+      bVar2 = mods_any_available();
       if (bVar2) {
         DAT_00488208 = 1;
       }

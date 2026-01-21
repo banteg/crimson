@@ -602,23 +602,23 @@
     "calls": []
   },
   {
-    "name": "FUN_0040e700",
+    "name": "mod_load_info",
     "address": "0040e700",
-    "signature": "undefined4 * FUN_0040e700(void)",
+    "signature": "void * mod_load_info(void)",
     "external": false,
     "calls": ["FreeLibrary", "GetProcAddress", "LoadLibraryA", "console_printf", "crt_atexit", "crt_sprintf"]
   },
   {
-    "name": "FUN_0040e860",
+    "name": "mod_load_mod",
     "address": "0040e860",
-    "signature": "int FUN_0040e860(void)",
+    "signature": "void * mod_load_mod(void)",
     "external": false,
     "calls": ["FreeLibrary", "GetProcAddress", "LoadLibraryA", "console_printf", "crt_sprintf"]
   },
   {
-    "name": "FUN_0040e940",
+    "name": "mods_any_available",
     "address": "0040e940",
-    "signature": "bool FUN_0040e940(void)",
+    "signature": "bool mods_any_available(void)",
     "external": false,
     "calls": ["crt_findclose", "crt_findfirst", "crt_findnext"]
   },
@@ -1400,6 +1400,48 @@
     "calls": ["console_printf"]
   },
   {
+    "name": "console_cmd_load_texture",
+    "address": "0042a780",
+    "signature": "void console_cmd_load_texture(void)",
+    "external": false,
+    "calls": ["FUN_00401120", "FUN_00401150", "console_printf", "texture_get_or_load"]
+  },
+  {
+    "name": "console_cmd_set_resource_paq",
+    "address": "0042a7c0",
+    "signature": "void console_cmd_set_resource_paq(void)",
+    "external": false,
+    "calls": ["FUN_00401120", "FUN_00401150", "console_printf", "crt_fclose", "crt_fopen"]
+  },
+  {
+    "name": "console_cmd_tell_time_survived",
+    "address": "0042a860",
+    "signature": "void console_cmd_tell_time_survived(void)",
+    "external": false,
+    "calls": ["__ftol", "console_printf"]
+  },
+  {
+    "name": "console_cmd_open_url",
+    "address": "0042a890",
+    "signature": "void console_cmd_open_url(void)",
+    "external": false,
+    "calls": ["FUN_00401120", "FUN_00401150", "HlinkNavigateString", "MultiByteToWideChar", "console_printf"]
+  },
+  {
+    "name": "console_cmd_snd_freq_adjustment",
+    "address": "0042a930",
+    "signature": "void console_cmd_snd_freq_adjustment(void)",
+    "external": false,
+    "calls": ["console_printf"]
+  },
+  {
+    "name": "console_cmd_generate_terrain",
+    "address": "0042a970",
+    "signature": "void console_cmd_generate_terrain(void)",
+    "external": false,
+    "calls": ["terrain_generate_random"]
+  },
+  {
     "name": "reg_read_dword_default",
     "address": "0042a980",
     "signature": "int reg_read_dword_default(HKEY key, char * name, uint * out, uint fallback)",
@@ -1440,6 +1482,20 @@
     "signature": "void game_startup_init(void)",
     "external": false,
     "calls": ["FUN_00401dd0", "Sleep", "__ftol", "audio_update", "console_set_open", "console_update", "crt_beginthread", "demo_mode_start", "game_is_full_version", "game_startup_init_prelude", "input_primary_just_pressed", "load_textures_step", "sfx_is_unmuted", "sfx_mute_all", "sfx_play_exclusive", "texture_get_or_load"]
+  },
+  {
+    "name": "console_cmd_snd_add_game_tune",
+    "address": "0042c360",
+    "signature": "void console_cmd_snd_add_game_tune(void)",
+    "external": false,
+    "calls": ["FUN_00401120", "FUN_00401150", "console_printf", "crt_sprintf", "music_load_track", "music_queue_track"]
+  },
+  {
+    "name": "console_cmd_set_gamma_ramp",
+    "address": "0042c3d0",
+    "signature": "void console_cmd_set_gamma_ramp(void)",
+    "external": false,
+    "calls": ["FUN_00401120", "FUN_00401150", "console_printf", "crt_atof_l"]
   },
   {
     "name": "crimsonland_main",
@@ -2713,7 +2769,7 @@
     "address": "004461c0",
     "signature": "void game_state_set(int state_id)",
     "external": false,
-    "calls": ["FUN_0040e940", "console_input_poll", "game_is_full_version", "game_save_status", "gameplay_reset_state", "highscore_load_table", "quest_start_selected", "ui_elements_reset_state"]
+    "calls": ["console_input_poll", "game_is_full_version", "game_save_status", "gameplay_reset_state", "highscore_load_table", "mods_any_available", "quest_start_selected", "ui_elements_reset_state"]
   },
   {
     "name": "ui_element_update",

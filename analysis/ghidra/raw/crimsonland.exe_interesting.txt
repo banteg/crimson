@@ -22,6 +22,9 @@ Interesting Functions and Patterns
 [TOKEN related]
   console_tokenize_line @ 00402580
 
+[URL related]
+  console_cmd_open_url @ 0042a890
+
 [FILE related]
   config_ensure_file @ 0041f130
   crt_lock_file @ 00463da5
@@ -36,6 +39,7 @@ Interesting Functions and Patterns
 [OPEN related]
   console_set_open @ 004018b0
   vorbis_mem_open @ 0041ddd0
+  console_cmd_open_url @ 0042a890
   resource_open_read @ 0043b9e0
   crt_fsopen @ 0046100e
   crt_fopen @ 0046103f
@@ -91,6 +95,14 @@ Interesting Functions and Patterns
   console_cmd_minimize @ 00401360
   console_cmdlist @ 00401370
   console_cmd_set @ 00401510
+  console_cmd_load_texture @ 0042a780
+  console_cmd_set_resource_paq @ 0042a7c0
+  console_cmd_tell_time_survived @ 0042a860
+  console_cmd_open_url @ 0042a890
+  console_cmd_snd_freq_adjustment @ 0042a930
+  console_cmd_generate_terrain @ 0042a970
+  console_cmd_snd_add_game_tune @ 0042c360
+  console_cmd_set_gamma_ramp @ 0042c3d0
   crt_parse_cmdline @ 00468abd
 
 [MALLOC related]
