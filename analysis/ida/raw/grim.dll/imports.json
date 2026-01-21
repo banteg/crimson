@@ -1,0 +1,557 @@
+[
+  {
+    "entries": [
+      {
+        "address": "0x1004C024",
+        "name": "FindResourceA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C028",
+        "name": "LoadLibraryA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C02C",
+        "name": "GetLocalTime",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C030",
+        "name": "WinExec",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C034",
+        "name": "GetModuleHandleA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C038",
+        "name": "Sleep",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C03C",
+        "name": "WriteFile",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C040",
+        "name": "GetLastError",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C044",
+        "name": "GetFileSize",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C048",
+        "name": "MapViewOfFile",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C04C",
+        "name": "CreateFileMappingA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C050",
+        "name": "CreateFileA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C054",
+        "name": "CreateFileW",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C058",
+        "name": "LoadResource",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C05C",
+        "name": "LockResource",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C060",
+        "name": "SizeofResource",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C064",
+        "name": "IsProcessorFeaturePresent",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C068",
+        "name": "UnmapViewOfFile",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C06C",
+        "name": "CloseHandle",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C070",
+        "name": "GetVersionExA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C074",
+        "name": "WideCharToMultiByte",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C078",
+        "name": "GetProcAddress",
+        "ordinal": 0
+      }
+    ],
+    "module": "KERNEL32"
+  },
+  {
+    "entries": [
+      {
+        "address": "0x1004C11C",
+        "name": "GetForegroundWindow",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C120",
+        "name": "MessageBoxA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C124",
+        "name": "EndDialog",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C128",
+        "name": "SendMessageA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C12C",
+        "name": "GetDlgItem",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C130",
+        "name": "GetWindowTextA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C134",
+        "name": "SetWindowTextA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C138",
+        "name": "LoadIconA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C13C",
+        "name": "PeekMessageA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C140",
+        "name": "DialogBoxParamA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C144",
+        "name": "ShowWindow",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C148",
+        "name": "SetForegroundWindow",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C14C",
+        "name": "TranslateMessage",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C150",
+        "name": "DispatchMessageA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C154",
+        "name": "ShowCursor",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C158",
+        "name": "DefWindowProcA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C15C",
+        "name": "BeginPaint",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C160",
+        "name": "EndPaint",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C164",
+        "name": "GetClientRect",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C168",
+        "name": "PostQuitMessage",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C16C",
+        "name": "DestroyWindow",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C170",
+        "name": "UnregisterClassA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C174",
+        "name": "GetActiveWindow",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C178",
+        "name": "LoadCursorA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C17C",
+        "name": "RegisterClassExA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C180",
+        "name": "GetDesktopWindow",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C184",
+        "name": "GetSystemMetrics",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C188",
+        "name": "AdjustWindowRectEx",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C18C",
+        "name": "CreateWindowExA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C190",
+        "name": "UpdateWindow",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C194",
+        "name": "SetFocus",
+        "ordinal": 0
+      }
+    ],
+    "module": "USER32"
+  },
+  {
+    "entries": [
+      {
+        "address": "0x1004C018",
+        "name": "DeleteObject",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C01C",
+        "name": "GetStockObject",
+        "ordinal": 0
+      }
+    ],
+    "module": "GDI32"
+  },
+  {
+    "entries": [
+      {
+        "address": "0x1004C080",
+        "name": "_CIacos",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C084",
+        "name": "_finite",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C088",
+        "name": "isdigit",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C08C",
+        "name": "isspace",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C090",
+        "name": "_CIpow",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C094",
+        "name": "floor",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C098",
+        "name": "exit",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C09C",
+        "name": "calloc",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C0A0",
+        "name": "_adjust_fdiv",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C0A4",
+        "name": "sscanf",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C0A8",
+        "name": "getenv",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C0AC",
+        "name": "_except_handler3",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C0B0",
+        "name": "_strdup",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C0B4",
+        "name": "vsprintf",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C0B8",
+        "name": "fclose",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C0BC",
+        "name": "fwrite",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C0C0",
+        "name": "fopen",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C0C4",
+        "name": "fread",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C0C8",
+        "name": "ftell",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C0CC",
+        "name": "fseek",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C0D0",
+        "name": "sprintf",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C0D4",
+        "name": "atoi",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C0D8",
+        "name": "strchr",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C0DC",
+        "name": "strstr",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C0E0",
+        "name": "_getcwd",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C0E4",
+        "name": "??3@YAXPAX@Z",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C0E8",
+        "name": "??2@YAPAXI@Z",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C0EC",
+        "name": "__CxxFrameHandler",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C0F0",
+        "name": "_setjmp3",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C0F4",
+        "name": "__CxxLongjmpUnwind",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C0F8",
+        "name": "longjmp",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C0FC",
+        "name": "_ftol",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C100",
+        "name": "__dllonexit",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C104",
+        "name": "_onexit",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C108",
+        "name": "free",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C10C",
+        "name": "_initterm",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C110",
+        "name": "malloc",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C114",
+        "name": "?terminate@@YAXXZ",
+        "ordinal": 0
+      }
+    ],
+    "module": "MSVCRT"
+  },
+  {
+    "entries": [
+      {
+        "address": "0x1004C1AC",
+        "name": "Direct3DCreate8",
+        "ordinal": 0
+      }
+    ],
+    "module": "d3d8"
+  },
+  {
+    "entries": [
+      {
+        "address": "0x1004C19C",
+        "name": "timeGetTime",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C1A0",
+        "name": "timeBeginPeriod",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C1A4",
+        "name": "timeEndPeriod",
+        "ordinal": 0
+      }
+    ],
+    "module": "WINMM"
+  },
+  {
+    "entries": [
+      {
+        "address": "0x1004C010",
+        "name": "DirectInput8Create",
+        "ordinal": 0
+      }
+    ],
+    "module": "DINPUT8"
+  },
+  {
+    "entries": [
+      {
+        "address": "0x1004C1B4",
+        "name": "HlinkNavigateString",
+        "ordinal": 0
+      }
+    ],
+    "module": "urlmon"
+  },
+  {
+    "entries": [
+      {
+        "address": "0x1004C000",
+        "name": "RegQueryValueExA",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C004",
+        "name": "RegCloseKey",
+        "ordinal": 0
+      },
+      {
+        "address": "0x1004C008",
+        "name": "RegOpenKeyA",
+        "ordinal": 0
+      }
+    ],
+    "module": "ADVAPI32"
+  }
+]

@@ -138,6 +138,22 @@ frida-quest-build-dump:
 ghidra-sync:
     wsl -e bash -lc "cd ~/dev/crimson && just ghidra-sync"
 
+[windows]
+ida-export-exe:
+    $IDA_DIR="C:\\Program Files\\IDA Professional 9.2"; $OUT_DIR="analysis\\ida\\raw\\crimsonland.exe"; mkdir -Force $OUT_DIR | Out-Null; $OUT_DIR=(Resolve-Path $OUT_DIR).Path; & "$IDA_DIR\\idat.exe" -A -L"$OUT_DIR\\ida.log" -S"scripts\\ida_export.py $OUT_DIR" "{{game_dir}}\\crimsonland.exe"
+
+[windows]
+ida-export-grim:
+    $IDA_DIR="C:\\Program Files\\IDA Professional 9.2"; $OUT_DIR="analysis\\ida\\raw\\grim.dll"; mkdir -Force $OUT_DIR | Out-Null; $OUT_DIR=(Resolve-Path $OUT_DIR).Path; & "$IDA_DIR\\idat.exe" -A -L"$OUT_DIR\\ida.log" -S"scripts\\ida_export.py $OUT_DIR" "{{game_dir}}\\grim.dll"
+
+[windows]
+ida-decompile-exe:
+    $IDA_DIR="C:\\Program Files\\IDA Professional 9.2"; $OUT_DIR="analysis\\ida\\raw\\crimsonland.exe"; mkdir -Force $OUT_DIR | Out-Null; & "$IDA_DIR\\idat.exe" -A -L"$OUT_DIR\\ida_decompile.log" -S"scripts\\ida_decompile.py $OUT_DIR\\crimsonland.exe_decompiled.c" "{{game_dir}}\\crimsonland.exe"
+
+[windows]
+ida-decompile-grim:
+    $IDA_DIR="C:\\Program Files\\IDA Professional 9.2"; $OUT_DIR="analysis\\ida\\raw\\grim.dll"; mkdir -Force $OUT_DIR | Out-Null; & "$IDA_DIR\\idat.exe" -A -L"$OUT_DIR\\ida_decompile.log" -S"scripts\\ida_decompile.py $OUT_DIR\\grim.dll_decompiled.c" "{{game_dir}}\\grim.dll"
+
 [unix]
 frida-copy-share:
     mkdir -p {{frida_share_dir}}

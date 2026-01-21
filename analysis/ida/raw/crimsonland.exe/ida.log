@@ -1,0 +1,81 @@
+
+Database C:\dev\crimson\game_bins\crimsonland\1.9.93-gog\crimsonland.exe.id0 already exists.
+Do you want to overwrite it? -> ~L~oad existing
+
+  bytes   pages size description
+--------- ----- ---- --------------------------------------------
+   524288    64 8192 allocating memory for b-tree...
+  2097152   256 8192 allocating memory for virtual array...
+   262144    32 8192 allocating memory for name pointers...
+-----------------------------------------------------------------
+  2883584            total memory allocated
+
+Loading processor module C:\Program Files\IDA Professional 9.2\procs\pc.dll for metapc...OK
+Loading type libraries...
+Autoanalysis subsystem has been initialized.
+Database for file 'crimsonland.exe' has been loaded.
+Hex-Rays Decompiler plugin has been loaded (v9.2.0.250908)
+  The hotkeys are F5: decompile, Ctrl-F5: decompile all.
+
+  Please check the Edit/Plugins menu for more information.
+Hex-rays version 9.2.0.250908 has been detected, gooMBA plugin ready to use
+IDA export complete: C:\dev\crimson\analysis\ida\raw\crimsonland.exe
+scripts\ida_export.py: Traceback (most recent call last):
+  File "C:\Program Files\IDA Professional 9.2\python\ida_idaapi.py", line 502, in IDAPython_ExecScript
+    exec(code, g)
+  File "scripts/ida_export.py", line 190, in <module>
+    raise SystemExit(main())
+SystemExit: 0
+ -> OK
+Flushing buffers, please wait...ok
+Unloading IDP module C:\Program Files\IDA Professional 9.2\procs\pc.dll...Database C:\dev\crimson\game_bins\crimsonland\1.9.93-gog\crimsonland.exe.id0 already exists.
+Do you want to overwrite it? -> ~L~oad existing
+
+  bytes   pages size description
+--------- ----- ---- --------------------------------------------
+   524288    64 8192 allocating memory for b-tree...
+  2097152   256 8192 allocating memory for virtual array...
+   262144    32 8192 allocating memory for name pointers...
+-----------------------------------------------------------------
+  2883584            total memory allocated
+
+Loading processor module C:\Program Files\IDA Professional 9.2\procs\pc.dll for metapc...OK
+Loading type libraries...
+Autoanalysis subsystem has been initialized.
+Database for file 'crimsonland.exe' has been loaded.
+Hex-Rays Decompiler plugin has been loaded (v9.2.0.250908)
+  The hotkeys are F5: decompile, Ctrl-F5: decompile all.
+
+  Please check the Edit/Plugins menu for more information.
+Hex-rays version 9.2.0.250908 has been detected, gooMBA plugin ready to use
+IDA export complete: C:\dev\crimson\analysis\ida\raw\crimsonland.exe
+Flushing buffers, please wait...ok
+Unloading IDP module C:\Program Files\IDA Professional 9.2\procs\pc.dll...Database C:\dev\crimson\game_bins\crimsonland\1.9.93-gog\crimsonland.exe.i64 already exists.
+Do you want to overwrite it? -> ~L~oad existing
+
+  bytes   pages size description
+--------- ----- ---- --------------------------------------------
+   524288    64 8192 allocating memory for b-tree...
+  2097152   256 8192 allocating memory for virtual array...
+   262144    32 8192 allocating memory for name pointers...
+-----------------------------------------------------------------
+  2883584            total memory allocated
+
+Loading processor module C:\Program Files\IDA Professional 9.2\procs\pc.dll for metapc...OK
+Loading type libraries...
+Autoanalysis subsystem has been initialized.
+Database for file 'crimsonland.exe' has been loaded.
+Hex-Rays Decompiler plugin has been loaded (v9.2.0.250908)
+  The hotkeys are F5: decompile, Ctrl-F5: decompile all.
+
+  Please check the Edit/Plugins menu for more information.
+Hex-rays version 9.2.0.250908 has been detected, gooMBA plugin ready to use
+Using FLIRT signature: Microsoft VisualC 2-14/net runtime
+Using FLIRT signature: SEH for vc7-14
+Propagating type information...
+Function argument information has been propagated
+lumina: Signature decryption failed with code: -2
+The initial autoanalysis has been finished.
+IDA export complete: C:\dev\crimson\analysis\ida\raw\crimsonland.exe
+Flushing buffers, please wait...ok
+Unloading IDP module C:\Program Files\IDA Professional 9.2\procs\pc.dll...

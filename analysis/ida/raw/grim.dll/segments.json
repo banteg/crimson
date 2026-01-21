@@ -1,0 +1,32 @@
+[
+  {
+    "end": "0x1004C000",
+    "name": ".text",
+    "perm": 5,
+    "start": "0x10001000"
+  },
+  {
+    "end": "0x1004C1BC",
+    "name": ".idata",
+    "perm": 4,
+    "start": "0x1004C000"
+  },
+  {
+    "end": "0x10053000",
+    "name": ".rdata",
+    "perm": 4,
+    "start": "0x1004C1BC"
+  },
+  {
+    "end": "0x1005E000",
+    "name": ".data",
+    "perm": 6,
+    "start": "0x10053000"
+  },
+  {
+    "end": "0x1005F000",
+    "name": ".data1",
+    "perm": 6,
+    "start": "0x1005E000"
+  }
+]

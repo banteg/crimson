@@ -1,0 +1,3052 @@
+[
+  {
+    "address": "0x1004CA74",
+    "type": "ascii",
+    "value": "d3d8d.dll"
+  },
+  {
+    "address": "0x1004CA80",
+    "type": "ascii",
+    "value": "DebugSetMute"
+  },
+  {
+    "address": "0x1004CA90",
+    "type": "ascii",
+    "value": "d3d8.dll"
+  },
+  {
+    "address": "0x1004CA9C",
+    "type": "ascii",
+    "value": "read error"
+  },
+  {
+    "address": "0x1004CAD8",
+    "type": "ascii",
+    "value": "1.0.5"
+  },
+  {
+    "address": "0x1004CE00",
+    "type": "ascii",
+    "value": "Software\\Microsoft\\Direct3D"
+  },
+  {
+    "address": "0x1004CE1C",
+    "type": "ascii",
+    "value": "DisableMMX"
+  },
+  {
+    "address": "0x1004CE28",
+    "type": "ascii",
+    "value": "GenuineIntel"
+  },
+  {
+    "address": "0x1004CE38",
+    "type": "ascii",
+    "value": "DisableD3DXPSGP"
+  },
+  {
+    "address": "0x1004D02C",
+    "type": "ascii",
+    "value": "Application transferred too many scanlines"
+  },
+  {
+    "address": "0x1004D058",
+    "type": "ascii",
+    "value": "Invalid SOS parameters for sequential JPEG"
+  },
+  {
+    "address": "0x1004D084",
+    "type": "ascii",
+    "value": "Corrupt JPEG data: found marker 0x%02x instead of RST%d"
+  },
+  {
+    "address": "0x1004D0BC",
+    "type": "ascii",
+    "value": "Premature end of JPEG file"
+  },
+  {
+    "address": "0x1004D0D8",
+    "type": "ascii",
+    "value": "Warning: unknown JFIF revision number %d.%02d"
+  },
+  {
+    "address": "0x1004D108",
+    "type": "ascii",
+    "value": "Corrupt JPEG data: bad Huffman code"
+  },
+  {
+    "address": "0x1004D12C",
+    "type": "ascii",
+    "value": "Corrupt JPEG data: premature end of data segment"
+  },
+  {
+    "address": "0x1004D160",
+    "type": "ascii",
+    "value": "Corrupt JPEG data: %u extraneous bytes before marker 0x%02x"
+  },
+  {
+    "address": "0x1004D1A0",
+    "type": "ascii",
+    "value": "Inconsistent progression sequence for component %d coefficient %d"
+  },
+  {
+    "address": "0x1004D1E4",
+    "type": "ascii",
+    "value": "Unknown Adobe color transform code %d"
+  },
+  {
+    "address": "0x1004D20C",
+    "type": "ascii",
+    "value": "Obtained XMS handle %u"
+  },
+  {
+    "address": "0x1004D224",
+    "type": "ascii",
+    "value": "Freed XMS handle %u"
+  },
+  {
+    "address": "0x1004D238",
+    "type": "ascii",
+    "value": "Unrecognized component IDs %d %d %d, assuming YCbCr"
+  },
+  {
+    "address": "0x1004D26C",
+    "type": "ascii",
+    "value": "Opened temporary file %s"
+  },
+  {
+    "address": "0x1004D288",
+    "type": "ascii",
+    "value": "Closed temporary file %s"
+  },
+  {
+    "address": "0x1004D2A4",
+    "type": "ascii",
+    "value": "  Ss=%d, Se=%d, Ah=%d, Al=%d"
+  },
+  {
+    "address": "0x1004D2C4",
+    "type": "ascii",
+    "value": "    Component %d: dc=%d ac=%d"
+  },
+  {
+    "address": "0x1004D2E4",
+    "type": "ascii",
+    "value": "Start Of Scan: %d components"
+  },
+  {
+    "address": "0x1004D304",
+    "type": "ascii",
+    "value": "Start of Image"
+  },
+  {
+    "address": "0x1004D314",
+    "type": "ascii",
+    "value": "    Component %d: %dhx%dv q=%d"
+  },
+  {
+    "address": "0x1004D334",
+    "type": "ascii",
+    "value": "Start Of Frame 0x%02x: width=%u, height=%u, components=%d"
+  },
+  {
+    "address": "0x1004D370",
+    "type": "ascii",
+    "value": "Smoothing not supported with nonstandard sampling ratios"
+  },
+  {
+    "address": "0x1004D3AC",
+    "type": "ascii",
+    "value": "RST%d"
+  },
+  {
+    "address": "0x1004D3B4",
+    "type": "ascii",
+    "value": "At marker 0x%02x, recovery action %d"
+  },
+  {
+    "address": "0x1004D3DC",
+    "type": "ascii",
+    "value": "Selected %d colors for quantization"
+  },
+  {
+    "address": "0x1004D400",
+    "type": "ascii",
+    "value": "Quantizing to %d colors"
+  },
+  {
+    "address": "0x1004D418",
+    "type": "ascii",
+    "value": "Quantizing to %d = %d*%d*%d colors"
+  },
+  {
+    "address": "0x1004D43C",
+    "type": "ascii",
+    "value": "        %4u %4u %4u %4u %4u %4u %4u %4u"
+  },
+  {
+    "address": "0x1004D464",
+    "type": "ascii",
+    "value": "Unexpected marker 0x%02x"
+  },
+  {
+    "address": "0x1004D480",
+    "type": "ascii",
+    "value": "Skipping marker 0x%02x, length %u"
+  },
+  {
+    "address": "0x1004D4A4",
+    "type": "ascii",
+    "value": "    with %d x %d thumbnail image"
+  },
+  {
+    "address": "0x1004D4C8",
+    "type": "ascii",
+    "value": "Unknown JFIF minor revision number %d.%02d"
+  },
+  {
+    "address": "0x1004D4F4",
+    "type": "ascii",
+    "value": "Warning: thumbnail image size does not match data length %u"
+  },
+  {
+    "address": "0x1004D530",
+    "type": "ascii",
+    "value": "JFIF APP0 marker, density %dx%d  %d"
+  },
+  {
+    "address": "0x1004D554",
+    "type": "ascii",
+    "value": "        %3d %3d %3d %3d %3d %3d %3d %3d"
+  },
+  {
+    "address": "0x1004D57C",
+    "type": "ascii",
+    "value": "End Of Image"
+  },
+  {
+    "address": "0x1004D58C",
+    "type": "ascii",
+    "value": "Obtained EMS handle %u"
+  },
+  {
+    "address": "0x1004D5A4",
+    "type": "ascii",
+    "value": "Freed EMS handle %u"
+  },
+  {
+    "address": "0x1004D5B8",
+    "type": "ascii",
+    "value": "Define Restart Interval %u"
+  },
+  {
+    "address": "0x1004D5D4",
+    "type": "ascii",
+    "value": "Define Quantization Table %d  precision %d"
+  },
+  {
+    "address": "0x1004D600",
+    "type": "ascii",
+    "value": "Define Huffman Table 0x%02x"
+  },
+  {
+    "address": "0x1004D61C",
+    "type": "ascii",
+    "value": "Define Arithmetic Table 0x%02x: 0x%02x"
+  },
+  {
+    "address": "0x1004D644",
+    "type": "ascii",
+    "value": "Unknown APP14 marker (not Adobe), length %u"
+  },
+  {
+    "address": "0x1004D670",
+    "type": "ascii",
+    "value": "Unknown APP0 marker (not JFIF), length %u"
+  },
+  {
+    "address": "0x1004D6A0",
+    "type": "ascii",
+    "value": "Adobe APP14 marker: version %d, flags 0x%04x 0x%04x, transform %d"
+  },
+  {
+    "address": "0x1004D6E4",
+    "type": "ascii",
+    "value": "Caution: quantization tables are too coarse for baseline JPEG"
+  },
+  {
+    "address": "0x1004D724",
+    "type": "ascii",
+    "value": "6a  7-Feb-96"
+  },
+  {
+    "address": "0x1004D734",
+    "type": "ascii",
+    "value": "Copyright (C) 1996, Thomas G. Lane"
+  },
+  {
+    "address": "0x1004D758",
+    "type": "ascii",
+    "value": "Write to XMS failed"
+  },
+  {
+    "address": "0x1004D76C",
+    "type": "ascii",
+    "value": "Read from XMS failed"
+  },
+  {
+    "address": "0x1004D784",
+    "type": "ascii",
+    "value": "Image too wide for this implementation"
+  },
+  {
+    "address": "0x1004D7AC",
+    "type": "ascii",
+    "value": "Virtual array controller messed up"
+  },
+  {
+    "address": "0x1004D7D0",
+    "type": "ascii",
+    "value": "Unsupported marker type 0x%02x"
+  },
+  {
+    "address": "0x1004D7F0",
+    "type": "ascii",
+    "value": "Application transferred too few scanlines"
+  },
+  {
+    "address": "0x1004D81C",
+    "type": "ascii",
+    "value": "Write failed on temporary file --- out of disk space?"
+  },
+  {
+    "address": "0x1004D854",
+    "type": "ascii",
+    "value": "Seek failed on temporary file"
+  },
+  {
+    "address": "0x1004D874",
+    "type": "ascii",
+    "value": "Read failed on temporary file"
+  },
+  {
+    "address": "0x1004D894",
+    "type": "ascii",
+    "value": "Failed to create temporary file %s"
+  },
+  {
+    "address": "0x1004D8B8",
+    "type": "ascii",
+    "value": "Invalid JPEG file structure: SOS before SOF"
+  },
+  {
+    "address": "0x1004D8E4",
+    "type": "ascii",
+    "value": "Invalid JPEG file structure: two SOI markers"
+  },
+  {
+    "address": "0x1004D914",
+    "type": "ascii",
+    "value": "Unsupported JPEG process: SOF type 0x%02x"
+  },
+  {
+    "address": "0x1004D940",
+    "type": "ascii",
+    "value": "Invalid JPEG file structure: missing SOS marker"
+  },
+  {
+    "address": "0x1004D970",
+    "type": "ascii",
+    "value": "Invalid JPEG file structure: two SOF markers"
+  },
+  {
+    "address": "0x1004D9A0",
+    "type": "ascii",
+    "value": "Cannot quantize to more than %d colors"
+  },
+  {
+    "address": "0x1004D9C8",
+    "type": "ascii",
+    "value": "Cannot quantize to fewer than %d colors"
+  },
+  {
+    "address": "0x1004D9F0",
+    "type": "ascii",
+    "value": "Cannot quantize more than %d color components"
+  },
+  {
+    "address": "0x1004DA20",
+    "type": "ascii",
+    "value": "Insufficient memory (case %d)"
+  },
+  {
+    "address": "0x1004DA40",
+    "type": "ascii",
+    "value": "Not a JPEG file: starts with 0x%02x 0x%02x"
+  },
+  {
+    "address": "0x1004DA6C",
+    "type": "ascii",
+    "value": "Quantization table 0x%02x was not defined"
+  },
+  {
+    "address": "0x1004DA98",
+    "type": "ascii",
+    "value": "JPEG datastream contains no image"
+  },
+  {
+    "address": "0x1004DABC",
+    "type": "ascii",
+    "value": "Huffman table 0x%02x was not defined"
+  },
+  {
+    "address": "0x1004DAE4",
+    "type": "ascii",
+    "value": "Backing store not supported"
+  },
+  {
+    "address": "0x1004DB00",
+    "type": "ascii",
+    "value": "Requested feature was omitted at compile time"
+  },
+  {
+    "address": "0x1004DB30",
+    "type": "ascii",
+    "value": "Not implemented yet"
+  },
+  {
+    "address": "0x1004DB44",
+    "type": "ascii",
+    "value": "Invalid color quantization mode change"
+  },
+  {
+    "address": "0x1004DB6C",
+    "type": "ascii",
+    "value": "Scan script does not transmit all data"
+  },
+  {
+    "address": "0x1004DB94",
+    "type": "ascii",
+    "value": "Cannot transcode due to multiple use of quantization table %d"
+  },
+  {
+    "address": "0x1004DBD4",
+    "type": "ascii",
+    "value": "Premature end of input file"
+  },
+  {
+    "address": "0x1004DBF0",
+    "type": "ascii",
+    "value": "Empty input file"
+  },
+  {
+    "address": "0x1004DC04",
+    "type": "ascii",
+    "value": "Maximum supported image dimension is %u pixels"
+  },
+  {
+    "address": "0x1004DC34",
+    "type": "ascii",
+    "value": "Missing Huffman code table entry"
+  },
+  {
+    "address": "0x1004DC58",
+    "type": "ascii",
+    "value": "Huffman code size table overflow"
+  },
+  {
+    "address": "0x1004DC7C",
+    "type": "ascii",
+    "value": "Fractional sampling not implemented yet"
+  },
+  {
+    "address": "0x1004DCA4",
+    "type": "ascii",
+    "value": "Output file write error --- out of disk space?"
+  },
+  {
+    "address": "0x1004DCD4",
+    "type": "ascii",
+    "value": "Input file read error"
+  },
+  {
+    "address": "0x1004DCEC",
+    "type": "ascii",
+    "value": "Didn't expect more than one scan"
+  },
+  {
+    "address": "0x1004DD10",
+    "type": "ascii",
+    "value": "Write to EMS failed"
+  },
+  {
+    "address": "0x1004DD24",
+    "type": "ascii",
+    "value": "Read from EMS failed"
+  },
+  {
+    "address": "0x1004DD3C",
+    "type": "ascii",
+    "value": "Empty JPEG image (DNL not supported)"
+  },
+  {
+    "address": "0x1004DD64",
+    "type": "ascii",
+    "value": "Bogus DQT index %d"
+  },
+  {
+    "address": "0x1004DD78",
+    "type": "ascii",
+    "value": "Bogus DHT index %d"
+  },
+  {
+    "address": "0x1004DD8C",
+    "type": "ascii",
+    "value": "Bogus DHT counts"
+  },
+  {
+    "address": "0x1004DDA0",
+    "type": "ascii",
+    "value": "Bogus DAC value 0x%x"
+  },
+  {
+    "address": "0x1004DDB8",
+    "type": "ascii",
+    "value": "Bogus DAC index %d"
+  },
+  {
+    "address": "0x1004DDCC",
+    "type": "ascii",
+    "value": "Unsupported color conversion request"
+  },
+  {
+    "address": "0x1004DDF4",
+    "type": "ascii",
+    "value": "Too many color components: %d, max %d"
+  },
+  {
+    "address": "0x1004DE1C",
+    "type": "ascii",
+    "value": "CCIR601 sampling not implemented yet"
+  },
+  {
+    "address": "0x1004DE44",
+    "type": "ascii",
+    "value": "Suspension not allowed here"
+  },
+  {
+    "address": "0x1004DE60",
+    "type": "ascii",
+    "value": "Buffer passed to JPEG library is too small"
+  },
+  {
+    "address": "0x1004DE8C",
+    "type": "ascii",
+    "value": "Bogus virtual array access"
+  },
+  {
+    "address": "0x1004DEA8",
+    "type": "ascii",
+    "value": "JPEG parameter struct mismatch: library thinks size is %u, caller expects %u"
+  },
+  {
+    "address": "0x1004DEF8",
+    "type": "ascii",
+    "value": "Improper call to JPEG library in state %d"
+  },
+  {
+    "address": "0x1004DF24",
+    "type": "ascii",
+    "value": "Invalid scan script at entry %d"
+  },
+  {
+    "address": "0x1004DF44",
+    "type": "ascii",
+    "value": "Bogus sampling factors"
+  },
+  {
+    "address": "0x1004DF5C",
+    "type": "ascii",
+    "value": "Invalid progressive parameters at scan script entry %d"
+  },
+  {
+    "address": "0x1004DF94",
+    "type": "ascii",
+    "value": "Invalid progressive parameters Ss=%d Se=%d Ah=%d Al=%d"
+  },
+  {
+    "address": "0x1004DFCC",
+    "type": "ascii",
+    "value": "Unsupported JPEG data precision %d"
+  },
+  {
+    "address": "0x1004DFF0",
+    "type": "ascii",
+    "value": "Invalid memory pool code %d"
+  },
+  {
+    "address": "0x1004E00C",
+    "type": "ascii",
+    "value": "Sampling factors too large for interleaved scan"
+  },
+  {
+    "address": "0x1004E03C",
+    "type": "ascii",
+    "value": "Wrong JPEG library version: library is %d, caller expects %d"
+  },
+  {
+    "address": "0x1004E07C",
+    "type": "ascii",
+    "value": "Bogus marker length"
+  },
+  {
+    "address": "0x1004E090",
+    "type": "ascii",
+    "value": "Bogus JPEG colorspace"
+  },
+  {
+    "address": "0x1004E0A8",
+    "type": "ascii",
+    "value": "Bogus input colorspace"
+  },
+  {
+    "address": "0x1004E0C0",
+    "type": "ascii",
+    "value": "IDCT output block size %d not supported"
+  },
+  {
+    "address": "0x1004E0E8",
+    "type": "ascii",
+    "value": "Invalid component ID %d in SOS"
+  },
+  {
+    "address": "0x1004E108",
+    "type": "ascii",
+    "value": "Bogus buffer control mode"
+  },
+  {
+    "address": "0x1004E124",
+    "type": "ascii",
+    "value": "MAX_ALLOC_CHUNK is wrong, please fix"
+  },
+  {
+    "address": "0x1004E14C",
+    "type": "ascii",
+    "value": "ALIGN_TYPE is wrong, please fix"
+  },
+  {
+    "address": "0x1004E16C",
+    "type": "ascii",
+    "value": "Sorry, there are legal restrictions on arithmetic coding"
+  },
+  {
+    "address": "0x1004E1A8",
+    "type": "ascii",
+    "value": "Bogus message code %d"
+  },
+  {
+    "address": "0x1004E1C1",
+    "type": "ascii",
+    "value": "123456789ABCDEF1.0.5"
+  },
+  {
+    "address": "0x1004E24C",
+    "type": "ascii",
+    "value": "zlib version error"
+  },
+  {
+    "address": "0x1004E260",
+    "type": "ascii",
+    "value": "zlib memory error"
+  },
+  {
+    "address": "0x1004E274",
+    "type": "ascii",
+    "value": "Unknown zlib error"
+  },
+  {
+    "address": "0x1004E288",
+    "type": "ascii",
+    "value": "1.1.3"
+  },
+  {
+    "address": "0x1004E290",
+    "type": "ascii",
+    "value": "Incompatible libpng version in application and library"
+  },
+  {
+    "address": "0x1004E2C8",
+    "type": "ascii",
+    "value": "Missing PLTE before IDAT"
+  },
+  {
+    "address": "0x1004E2E4",
+    "type": "ascii",
+    "value": "Missing IHDR before IDAT"
+  },
+  {
+    "address": "0x1004E300",
+    "type": "ascii",
+    "value": "PNG file corrupted by ASCII conversion"
+  },
+  {
+    "address": "0x1004E328",
+    "type": "ascii",
+    "value": "Not a PNG file"
+  },
+  {
+    "address": "0x1004E338",
+    "type": "ascii",
+    "value": "Extra compressed data"
+  },
+  {
+    "address": "0x1004E350",
+    "type": "ascii",
+    "value": "Decompression error"
+  },
+  {
+    "address": "0x1004E364",
+    "type": "ascii",
+    "value": "Not enough image data"
+  },
+  {
+    "address": "0x1004E37C",
+    "type": "ascii",
+    "value": "Invalid attempt to read row data"
+  },
+  {
+    "address": "0x1004E3A0",
+    "type": "ascii",
+    "value": "Width too large for libpng to process image data."
+  },
+  {
+    "address": "0x1004E408",
+    "type": "ascii",
+    "value": "png_do_dither returned rowbytes=0"
+  },
+  {
+    "address": "0x1004E42C",
+    "type": "ascii",
+    "value": "NULL row buffer"
+  },
+  {
+    "address": "0x1004E43C",
+    "type": "ascii",
+    "value": "Width too large to process image data; rowbytes will overflow."
+  },
+  {
+    "address": "0x1004E488",
+    "type": "ascii",
+    "value": "Call to NULL read function"
+  },
+  {
+    "address": "0x1004E4A4",
+    "type": "ascii",
+    "value": "same structure.  Resetting write_data_fn to NULL."
+  },
+  {
+    "address": "0x1004E4D8",
+    "type": "ascii",
+    "value": "It's an error to set both read_data_fn and write_data_fn in the "
+  },
+  {
+    "address": "0x1004E51D",
+    "type": "ascii",
+    "value": "PNG\r\n"
+  },
+  {
+    "address": "0x1004E575",
+    "type": "ascii",
+    "value": "m[?%I"
+  },
+  {
+    "address": "0x1004E792",
+    "type": "ascii",
+    "value": "Y>t$7?*"
+  },
+  {
+    "address": "0x1004E7A0",
+    "type": "ascii",
+    "value": "AuthenticAMD"
+  },
+  {
+    "address": "0x1004E7B0",
+    "type": "ascii",
+    "value": "UnknownVendr"
+  },
+  {
+    "address": "0x1004EA10",
+    "type": "ascii",
+    "value": "need dictionary"
+  },
+  {
+    "address": "0x1004EA20",
+    "type": "ascii",
+    "value": "incorrect data check"
+  },
+  {
+    "address": "0x1004EA38",
+    "type": "ascii",
+    "value": "incorrect header check"
+  },
+  {
+    "address": "0x1004EA50",
+    "type": "ascii",
+    "value": "invalid window size"
+  },
+  {
+    "address": "0x1004EA64",
+    "type": "ascii",
+    "value": "unknown compression method"
+  },
+  {
+    "address": "0x1004EA80",
+    "type": "ascii",
+    "value": "Out of Memory"
+  },
+  {
+    "address": "0x1004EB08",
+    "type": "ascii",
+    "value": "invalid chunk type"
+  },
+  {
+    "address": "0x1004EB1C",
+    "type": "ascii",
+    "value": "Ignoring bad adaptive filter type"
+  },
+  {
+    "address": "0x1004EB40",
+    "type": "ascii",
+    "value": "CRC error"
+  },
+  {
+    "address": "0x1004EB4C",
+    "type": "ascii",
+    "value": "Unknown filter method in IHDR"
+  },
+  {
+    "address": "0x1004EB6C",
+    "type": "ascii",
+    "value": "Unknown compression method in IHDR"
+  },
+  {
+    "address": "0x1004EB90",
+    "type": "ascii",
+    "value": "Unknown interlace method in IHDR"
+  },
+  {
+    "address": "0x1004EBB4",
+    "type": "ascii",
+    "value": "Invalid color type/bit depth combination in IHDR"
+  },
+  {
+    "address": "0x1004EBE8",
+    "type": "ascii",
+    "value": "Invalid color type in IHDR"
+  },
+  {
+    "address": "0x1004EC04",
+    "type": "ascii",
+    "value": "Invalid bit depth in IHDR"
+  },
+  {
+    "address": "0x1004EC20",
+    "type": "ascii",
+    "value": "Invalid image size in IHDR"
+  },
+  {
+    "address": "0x1004EC3C",
+    "type": "ascii",
+    "value": "Invalid IHDR chunk"
+  },
+  {
+    "address": "0x1004EC50",
+    "type": "ascii",
+    "value": "Out of place IHDR"
+  },
+  {
+    "address": "0x1004EC64",
+    "type": "ascii",
+    "value": "Truncating incorrect tRNS chunk length"
+  },
+  {
+    "address": "0x1004EC8C",
+    "type": "ascii",
+    "value": "Invalid palette chunk"
+  },
+  {
+    "address": "0x1004ECA4",
+    "type": "ascii",
+    "value": "Duplicate PLTE chunk"
+  },
+  {
+    "address": "0x1004ECBC",
+    "type": "ascii",
+    "value": "Invalid PLTE after IDAT"
+  },
+  {
+    "address": "0x1004ECD4",
+    "type": "ascii",
+    "value": "Missing IHDR before PLTE"
+  },
+  {
+    "address": "0x1004ECF0",
+    "type": "ascii",
+    "value": "Incorrect IEND chunk length"
+  },
+  {
+    "address": "0x1004ED0C",
+    "type": "ascii",
+    "value": "No image in file"
+  },
+  {
+    "address": "0x1004ED20",
+    "type": "ascii",
+    "value": "Ignoring incorrect gAMA value when sRGB is also present"
+  },
+  {
+    "address": "0x1004ED68",
+    "type": "ascii",
+    "value": "Duplicate gAMA chunk"
+  },
+  {
+    "address": "0x1004ED80",
+    "type": "ascii",
+    "value": "Out of place gAMA chunk"
+  },
+  {
+    "address": "0x1004ED98",
+    "type": "ascii",
+    "value": "Invalid gAMA after IDAT"
+  },
+  {
+    "address": "0x1004EDB0",
+    "type": "ascii",
+    "value": "Incorrect gAMA chunk length"
+  },
+  {
+    "address": "0x1004EDCC",
+    "type": "ascii",
+    "value": "Missing IHDR before gAMA"
+  },
+  {
+    "address": "0x1004EDEC",
+    "type": "ascii",
+    "value": "Unknown sRGB intent"
+  },
+  {
+    "address": "0x1004EE00",
+    "type": "ascii",
+    "value": "Duplicate sRGB chunk"
+  },
+  {
+    "address": "0x1004EE18",
+    "type": "ascii",
+    "value": "Out of place sRGB chunk"
+  },
+  {
+    "address": "0x1004EE30",
+    "type": "ascii",
+    "value": "Invalid sRGB after IDAT"
+  },
+  {
+    "address": "0x1004EE48",
+    "type": "ascii",
+    "value": "Incorrect sRGB chunk length"
+  },
+  {
+    "address": "0x1004EE64",
+    "type": "ascii",
+    "value": "Missing IHDR before sRGB"
+  },
+  {
+    "address": "0x1004EE80",
+    "type": "ascii",
+    "value": "tRNS chunk not allowed with alpha channel"
+  },
+  {
+    "address": "0x1004EEAC",
+    "type": "ascii",
+    "value": "Incorrect tRNS chunk length"
+  },
+  {
+    "address": "0x1004EEC8",
+    "type": "ascii",
+    "value": "Duplicate tRNS chunk"
+  },
+  {
+    "address": "0x1004EEE0",
+    "type": "ascii",
+    "value": "Invalid tRNS after IDAT"
+  },
+  {
+    "address": "0x1004EEF8",
+    "type": "ascii",
+    "value": "Zero length tRNS chunk"
+  },
+  {
+    "address": "0x1004EF10",
+    "type": "ascii",
+    "value": "Missing PLTE before tRNS"
+  },
+  {
+    "address": "0x1004EF2C",
+    "type": "ascii",
+    "value": "Missing IHDR before tRNS"
+  },
+  {
+    "address": "0x1004EF48",
+    "type": "ascii",
+    "value": "unknown critical chunk"
+  },
+  {
+    "address": "0x1004EF60",
+    "type": "ascii",
+    "value": "Extra compression data"
+  },
+  {
+    "address": "0x1004EF78",
+    "type": "ascii",
+    "value": "Decompression Error"
+  },
+  {
+    "address": "0x1004EF95",
+    "type": "ascii",
+    "value": "0\u0007w,a"
+  },
+  {
+    "address": "0x1004F0D1",
+    "type": "ascii",
+    "value": "Qkkbal"
+  },
+  {
+    "address": "0x1004F32D",
+    "type": "ascii",
+    "value": "wn>Jj"
+  },
+  {
+    "address": "0x1004F533",
+    "type": "ascii",
+    "value": "sAmTb"
+  },
+  {
+    "address": "0x1004F540",
+    "type": "ascii",
+    "value": "BKbhTb~XBK!;"
+  },
+  {
+    "address": "0x1004F565",
+    "type": "ascii",
+    "value": "A!;I2"
+  },
+  {
+    "address": "0x1004F571",
+    "type": "ascii",
+    "value": "\"\u000b0A-"
+  },
+  {
+    "address": "0x1004F72C",
+    "type": "ascii",
+    "value": "invalid bit length repeat"
+  },
+  {
+    "address": "0x1004F748",
+    "type": "ascii",
+    "value": "too many length or distance symbols"
+  },
+  {
+    "address": "0x1004F76C",
+    "type": "ascii",
+    "value": "invalid stored block lengths"
+  },
+  {
+    "address": "0x1004F78C",
+    "type": "ascii",
+    "value": "invalid block type"
+  },
+  {
+    "address": "0x1004F7A0",
+    "type": "ascii",
+    "value": "incompatible version"
+  },
+  {
+    "address": "0x1004F7B8",
+    "type": "ascii",
+    "value": "buffer error"
+  },
+  {
+    "address": "0x1004F7C8",
+    "type": "ascii",
+    "value": "insufficient memory"
+  },
+  {
+    "address": "0x1004F7DC",
+    "type": "ascii",
+    "value": "data error"
+  },
+  {
+    "address": "0x1004F7E8",
+    "type": "ascii",
+    "value": "stream error"
+  },
+  {
+    "address": "0x1004F7F8",
+    "type": "ascii",
+    "value": "file error"
+  },
+  {
+    "address": "0x1004F804",
+    "type": "ascii",
+    "value": "stream end"
+  },
+  {
+    "address": "0x1004F830",
+    "type": "ascii",
+    "value": "invalid distance code"
+  },
+  {
+    "address": "0x1004F848",
+    "type": "ascii",
+    "value": "invalid literal/length code"
+  },
+  {
+    "address": "0x1004FA58",
+    "type": "ascii",
+    "value": "incomplete dynamic bit lengths tree"
+  },
+  {
+    "address": "0x1004FA7C",
+    "type": "ascii",
+    "value": "oversubscribed dynamic bit lengths tree"
+  },
+  {
+    "address": "0x1004FAA4",
+    "type": "ascii",
+    "value": "incomplete literal/length tree"
+  },
+  {
+    "address": "0x1004FAC4",
+    "type": "ascii",
+    "value": "oversubscribed literal/length tree"
+  },
+  {
+    "address": "0x1004FAE8",
+    "type": "ascii",
+    "value": "empty distance tree with lengths"
+  },
+  {
+    "address": "0x1004FB0C",
+    "type": "ascii",
+    "value": "incomplete distance tree"
+  },
+  {
+    "address": "0x1004FB28",
+    "type": "ascii",
+    "value": "oversubscribed distance tree"
+  },
+  {
+    "address": "0x100507B3",
+    "type": "ascii",
+    "value": "sAmTb"
+  },
+  {
+    "address": "0x100507C0",
+    "type": "ascii",
+    "value": "BKbhTb~XBK!;"
+  },
+  {
+    "address": "0x100507E5",
+    "type": "ascii",
+    "value": "A!;I2"
+  },
+  {
+    "address": "0x100507F1",
+    "type": "ascii",
+    "value": "\"\u000b0A-"
+  },
+  {
+    "address": "0x10050970",
+    "type": "ascii",
+    "value": " deflate 1.1.3 Copyright 1995-1998 Jean-loup Gailly "
+  },
+  {
+    "address": "0x10051074",
+    "type": "ascii",
+    "value": "\u0007\u0007\u0007\u0007\b\b\b\b\b\b\b\b\t\t\t\t\t\t\t\t\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\u000b\u000b\u000b\u000b\u000b\u000b\u000b\u000b\u000b\u000b\u000b\u000b\u000b\u000b\u000b\u000b"
+  },
+  {
+    "address": "0x100510C8",
+    "type": "ascii",
+    "value": "\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r\r"
+  },
+  {
+    "address": "0x100511C8",
+    "type": "ascii",
+    "value": "\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b"
+  },
+  {
+    "address": "0x1005126F",
+    "type": "ascii",
+    "value": "\u0007\b\b\t\t\n\n\u000b\u000b"
+  },
+  {
+    "address": "0x10051348",
+    "type": "ascii",
+    "value": "\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b\u001b"
+  },
+  {
+    "address": "0x100514A0",
+    "type": "ascii",
+    "value": " inflate 1.1.3 Copyright 1995-1998 Mark Adler "
+  },
+  {
+    "address": "0x10051EBE",
+    "type": "ascii",
+    "value": "GetProcAddress"
+  },
+  {
+    "address": "0x10051ED0",
+    "type": "ascii",
+    "value": "LoadLibraryA"
+  },
+  {
+    "address": "0x10051EE0",
+    "type": "ascii",
+    "value": "GetLocalTime"
+  },
+  {
+    "address": "0x10051EF0",
+    "type": "ascii",
+    "value": "WinExec"
+  },
+  {
+    "address": "0x10051EFA",
+    "type": "ascii",
+    "value": "GetModuleHandleA"
+  },
+  {
+    "address": "0x10051F0E",
+    "type": "ascii",
+    "value": "Sleep"
+  },
+  {
+    "address": "0x10051F16",
+    "type": "ascii",
+    "value": "SizeofResource"
+  },
+  {
+    "address": "0x10051F28",
+    "type": "ascii",
+    "value": "LockResource"
+  },
+  {
+    "address": "0x10051F38",
+    "type": "ascii",
+    "value": "LoadResource"
+  },
+  {
+    "address": "0x10051F48",
+    "type": "ascii",
+    "value": "FindResourceA"
+  },
+  {
+    "address": "0x10051F56",
+    "type": "ascii",
+    "value": "KERNEL32.dll"
+  },
+  {
+    "address": "0x10051F66",
+    "type": "ascii",
+    "value": "MessageBoxA"
+  },
+  {
+    "address": "0x10051F74",
+    "type": "ascii",
+    "value": "EndDialog"
+  },
+  {
+    "address": "0x10051F80",
+    "type": "ascii",
+    "value": "SendMessageA"
+  },
+  {
+    "address": "0x10051F90",
+    "type": "ascii",
+    "value": "GetDlgItem"
+  },
+  {
+    "address": "0x10051F9E",
+    "type": "ascii",
+    "value": "GetWindowTextA"
+  },
+  {
+    "address": "0x10051FB0",
+    "type": "ascii",
+    "value": "SetWindowTextA"
+  },
+  {
+    "address": "0x10051FC2",
+    "type": "ascii",
+    "value": "DialogBoxParamA"
+  },
+  {
+    "address": "0x10051FD4",
+    "type": "ascii",
+    "value": "ShowWindow"
+  },
+  {
+    "address": "0x10051FE2",
+    "type": "ascii",
+    "value": "SetFocus"
+  },
+  {
+    "address": "0x10051FEE",
+    "type": "ascii",
+    "value": "UpdateWindow"
+  },
+  {
+    "address": "0x10051FFE",
+    "type": "ascii",
+    "value": "CreateWindowExA"
+  },
+  {
+    "address": "0x10052010",
+    "type": "ascii",
+    "value": "AdjustWindowRectEx"
+  },
+  {
+    "address": "0x10052026",
+    "type": "ascii",
+    "value": "GetSystemMetrics"
+  },
+  {
+    "address": "0x1005203A",
+    "type": "ascii",
+    "value": "GetDesktopWindow"
+  },
+  {
+    "address": "0x1005204E",
+    "type": "ascii",
+    "value": "RegisterClassExA"
+  },
+  {
+    "address": "0x10052062",
+    "type": "ascii",
+    "value": "LoadCursorA"
+  },
+  {
+    "address": "0x10052070",
+    "type": "ascii",
+    "value": "UnregisterClassA"
+  },
+  {
+    "address": "0x10052084",
+    "type": "ascii",
+    "value": "DestroyWindow"
+  },
+  {
+    "address": "0x10052094",
+    "type": "ascii",
+    "value": "PostQuitMessage"
+  },
+  {
+    "address": "0x100520A6",
+    "type": "ascii",
+    "value": "GetClientRect"
+  },
+  {
+    "address": "0x100520B6",
+    "type": "ascii",
+    "value": "EndPaint"
+  },
+  {
+    "address": "0x100520C2",
+    "type": "ascii",
+    "value": "BeginPaint"
+  },
+  {
+    "address": "0x100520D0",
+    "type": "ascii",
+    "value": "DefWindowProcA"
+  },
+  {
+    "address": "0x100520E2",
+    "type": "ascii",
+    "value": "ShowCursor"
+  },
+  {
+    "address": "0x100520F0",
+    "type": "ascii",
+    "value": "DispatchMessageA"
+  },
+  {
+    "address": "0x10052104",
+    "type": "ascii",
+    "value": "TranslateMessage"
+  },
+  {
+    "address": "0x10052118",
+    "type": "ascii",
+    "value": "SetForegroundWindow"
+  },
+  {
+    "address": "0x1005212E",
+    "type": "ascii",
+    "value": "PeekMessageA"
+  },
+  {
+    "address": "0x1005213E",
+    "type": "ascii",
+    "value": "LoadIconA"
+  },
+  {
+    "address": "0x1005214A",
+    "type": "ascii",
+    "value": "GetForegroundWindow"
+  },
+  {
+    "address": "0x1005215E",
+    "type": "ascii",
+    "value": "USER32.dll"
+  },
+  {
+    "address": "0x1005216C",
+    "type": "ascii",
+    "value": "GetStockObject"
+  },
+  {
+    "address": "0x1005217E",
+    "type": "ascii",
+    "value": "DeleteObject"
+  },
+  {
+    "address": "0x1005218C",
+    "type": "ascii",
+    "value": "GDI32.dll"
+  },
+  {
+    "address": "0x10052198",
+    "type": "ascii",
+    "value": "vsprintf"
+  },
+  {
+    "address": "0x100521A4",
+    "type": "ascii",
+    "value": "fclose"
+  },
+  {
+    "address": "0x100521AE",
+    "type": "ascii",
+    "value": "fwrite"
+  },
+  {
+    "address": "0x100521B8",
+    "type": "ascii",
+    "value": "fopen"
+  },
+  {
+    "address": "0x100521C0",
+    "type": "ascii",
+    "value": "fread"
+  },
+  {
+    "address": "0x100521C8",
+    "type": "ascii",
+    "value": "ftell"
+  },
+  {
+    "address": "0x100521D0",
+    "type": "ascii",
+    "value": "fseek"
+  },
+  {
+    "address": "0x100521D8",
+    "type": "ascii",
+    "value": "sprintf"
+  },
+  {
+    "address": "0x100521EA",
+    "type": "ascii",
+    "value": "strchr"
+  },
+  {
+    "address": "0x100521F4",
+    "type": "ascii",
+    "value": "strstr"
+  },
+  {
+    "address": "0x100521FE",
+    "type": "ascii",
+    "value": "_getcwd"
+  },
+  {
+    "address": "0x10052208",
+    "type": "ascii",
+    "value": "??3@YAXPAX@Z"
+  },
+  {
+    "address": "0x10052218",
+    "type": "ascii",
+    "value": "??2@YAPAXI@Z"
+  },
+  {
+    "address": "0x10052228",
+    "type": "ascii",
+    "value": "__CxxFrameHandler"
+  },
+  {
+    "address": "0x1005223C",
+    "type": "ascii",
+    "value": "_setjmp3"
+  },
+  {
+    "address": "0x10052248",
+    "type": "ascii",
+    "value": "__CxxLongjmpUnwind"
+  },
+  {
+    "address": "0x1005225E",
+    "type": "ascii",
+    "value": "longjmp"
+  },
+  {
+    "address": "0x10052268",
+    "type": "ascii",
+    "value": "_ftol"
+  },
+  {
+    "address": "0x1005226E",
+    "type": "ascii",
+    "value": "MSVCRT.dll"
+  },
+  {
+    "address": "0x1005227C",
+    "type": "ascii",
+    "value": "__dllonexit"
+  },
+  {
+    "address": "0x1005228A",
+    "type": "ascii",
+    "value": "_onexit"
+  },
+  {
+    "address": "0x1005229C",
+    "type": "ascii",
+    "value": "_initterm"
+  },
+  {
+    "address": "0x100522A8",
+    "type": "ascii",
+    "value": "malloc"
+  },
+  {
+    "address": "0x100522B2",
+    "type": "ascii",
+    "value": "_adjust_fdiv"
+  },
+  {
+    "address": "0x100522C2",
+    "type": "ascii",
+    "value": "Direct3DCreate8"
+  },
+  {
+    "address": "0x100522D2",
+    "type": "ascii",
+    "value": "d3d8.dll"
+  },
+  {
+    "address": "0x100522DE",
+    "type": "ascii",
+    "value": "timeGetTime"
+  },
+  {
+    "address": "0x100522EC",
+    "type": "ascii",
+    "value": "timeEndPeriod"
+  },
+  {
+    "address": "0x100522FC",
+    "type": "ascii",
+    "value": "timeBeginPeriod"
+  },
+  {
+    "address": "0x1005230C",
+    "type": "ascii",
+    "value": "WINMM.dll"
+  },
+  {
+    "address": "0x10052318",
+    "type": "ascii",
+    "value": "DirectInput8Create"
+  },
+  {
+    "address": "0x1005232C",
+    "type": "ascii",
+    "value": "DINPUT8.dll"
+  },
+  {
+    "address": "0x1005233A",
+    "type": "ascii",
+    "value": "HlinkNavigateString"
+  },
+  {
+    "address": "0x1005234E",
+    "type": "ascii",
+    "value": "urlmon.dll"
+  },
+  {
+    "address": "0x1005235C",
+    "type": "ascii",
+    "value": "WriteFile"
+  },
+  {
+    "address": "0x10052368",
+    "type": "ascii",
+    "value": "GetLastError"
+  },
+  {
+    "address": "0x10052378",
+    "type": "ascii",
+    "value": "GetFileSize"
+  },
+  {
+    "address": "0x10052386",
+    "type": "ascii",
+    "value": "MapViewOfFile"
+  },
+  {
+    "address": "0x10052396",
+    "type": "ascii",
+    "value": "CreateFileMappingA"
+  },
+  {
+    "address": "0x100523AC",
+    "type": "ascii",
+    "value": "CreateFileA"
+  },
+  {
+    "address": "0x100523BA",
+    "type": "ascii",
+    "value": "CreateFileW"
+  },
+  {
+    "address": "0x100523C8",
+    "type": "ascii",
+    "value": "WideCharToMultiByte"
+  },
+  {
+    "address": "0x100523DE",
+    "type": "ascii",
+    "value": "GetVersionExA"
+  },
+  {
+    "address": "0x100523EE",
+    "type": "ascii",
+    "value": "CloseHandle"
+  },
+  {
+    "address": "0x100523FC",
+    "type": "ascii",
+    "value": "UnmapViewOfFile"
+  },
+  {
+    "address": "0x1005240E",
+    "type": "ascii",
+    "value": "IsProcessorFeaturePresent"
+  },
+  {
+    "address": "0x1005242A",
+    "type": "ascii",
+    "value": "GetActiveWindow"
+  },
+  {
+    "address": "0x1005243C",
+    "type": "ascii",
+    "value": "RegCloseKey"
+  },
+  {
+    "address": "0x1005244A",
+    "type": "ascii",
+    "value": "RegQueryValueExA"
+  },
+  {
+    "address": "0x1005245E",
+    "type": "ascii",
+    "value": "RegOpenKeyA"
+  },
+  {
+    "address": "0x1005246A",
+    "type": "ascii",
+    "value": "ADVAPI32.dll"
+  },
+  {
+    "address": "0x1005247A",
+    "type": "ascii",
+    "value": "_strdup"
+  },
+  {
+    "address": "0x10052484",
+    "type": "ascii",
+    "value": "_CIacos"
+  },
+  {
+    "address": "0x1005248E",
+    "type": "ascii",
+    "value": "_finite"
+  },
+  {
+    "address": "0x10052498",
+    "type": "ascii",
+    "value": "isdigit"
+  },
+  {
+    "address": "0x100524A2",
+    "type": "ascii",
+    "value": "isspace"
+  },
+  {
+    "address": "0x100524AC",
+    "type": "ascii",
+    "value": "_CIpow"
+  },
+  {
+    "address": "0x100524B6",
+    "type": "ascii",
+    "value": "floor"
+  },
+  {
+    "address": "0x100524C6",
+    "type": "ascii",
+    "value": "calloc"
+  },
+  {
+    "address": "0x100524D0",
+    "type": "ascii",
+    "value": "sscanf"
+  },
+  {
+    "address": "0x100524DA",
+    "type": "ascii",
+    "value": "getenv"
+  },
+  {
+    "address": "0x100524E4",
+    "type": "ascii",
+    "value": "_except_handler3"
+  },
+  {
+    "address": "0x100524F8",
+    "type": "ascii",
+    "value": "?terminate@@YAXXZ"
+  },
+  {
+    "address": "0x10052542",
+    "type": "ascii",
+    "value": "grim.dll"
+  },
+  {
+    "address": "0x1005254B",
+    "type": "ascii",
+    "value": "GRIM__GetInterface"
+  },
+  {
+    "address": "0x10053074",
+    "type": "ascii",
+    "value": "Parental lock is now disabled. Full gore is shown."
+  },
+  {
+    "address": "0x100530A8",
+    "type": "ascii",
+    "value": "Parental lock is now enabled. No blood is shown and bodies fade away."
+  },
+  {
+    "address": "0x100530F4",
+    "type": "ascii",
+    "value": "System: No Frame Function defined."
+  },
+  {
+    "address": "0x10053118",
+    "type": "ascii",
+    "value": "None (static texture, no decals stored)"
+  },
+  {
+    "address": "0x10053140",
+    "type": "ascii",
+    "value": "Half (faster, 4x less memory used)"
+  },
+  {
+    "address": "0x10053164",
+    "type": "ascii",
+    "value": "Full (default)"
+  },
+  {
+    "address": "0x10053174",
+    "type": "ascii",
+    "value": "Double (slowest, 4x more mem used)"
+  },
+  {
+    "address": "0x10053198",
+    "type": "ascii",
+    "value": "DXT5 compressed"
+  },
+  {
+    "address": "0x100531A8",
+    "type": "ascii",
+    "value": "DXT3 compressed"
+  },
+  {
+    "address": "0x100531B8",
+    "type": "ascii",
+    "value": "16-bit A4R4G4B4"
+  },
+  {
+    "address": "0x100531C8",
+    "type": "ascii",
+    "value": "16-bit A8R3G3B2"
+  },
+  {
+    "address": "0x100531D8",
+    "type": "ascii",
+    "value": "32-bit A8R8G8B8 (highest detail)"
+  },
+  {
+    "address": "0x100531FC",
+    "type": "ascii",
+    "value": "Autodetect (select the best available)"
+  },
+  {
+    "address": "0x10053224",
+    "type": "ascii",
+    "value": "10tons"
+  },
+  {
+    "address": "0x1005322C",
+    "type": "ascii",
+    "value": "default"
+  },
+  {
+    "address": "0x10053234",
+    "type": "ascii",
+    "value": "crimson.cfg"
+  },
+  {
+    "address": "0x10053248",
+    "type": "ascii",
+    "value": "No supported display adapters were found on your system.\nYou might not have Direct3D 8.1 compatible display adapter installed.\n\nWould you still like to try and run Crimsonland?"
+  },
+  {
+    "address": "0x100532FC",
+    "type": "ascii",
+    "value": "Crimsonland"
+  },
+  {
+    "address": "0x1005330C",
+    "type": "ascii",
+    "value": "%s (default)"
+  },
+  {
+    "address": "0x1005331C",
+    "type": "ascii",
+    "value": "Password is incorrect.\n"
+  },
+  {
+    "address": "0x10053334",
+    "type": "ascii",
+    "value": "Please give a password.\n"
+  },
+  {
+    "address": "0x10053350",
+    "type": "ascii",
+    "value": "About password"
+  },
+  {
+    "address": "0x10053360",
+    "type": "ascii",
+    "value": "Given passwords don't match.\n"
+  },
+  {
+    "address": "0x10053380",
+    "type": "ascii",
+    "value": "About passwords"
+  },
+  {
+    "address": "0x10053390",
+    "type": "ascii",
+    "value": "1024x768x32"
+  },
+  {
+    "address": "0x1005339C",
+    "type": "ascii",
+    "value": "960x600x32 (wide)"
+  },
+  {
+    "address": "0x100533B0",
+    "type": "ascii",
+    "value": "800x600x32"
+  },
+  {
+    "address": "0x100533BC",
+    "type": "ascii",
+    "value": "640x480x32"
+  },
+  {
+    "address": "0x100533C8",
+    "type": "ascii",
+    "value": "1024x768x16"
+  },
+  {
+    "address": "0x100533D4",
+    "type": "ascii",
+    "value": "960x600x16 (wide)"
+  },
+  {
+    "address": "0x100533E8",
+    "type": "ascii",
+    "value": "800x600x16"
+  },
+  {
+    "address": "0x100533F4",
+    "type": "ascii",
+    "value": "640x480x16"
+  },
+  {
+    "address": "0x10053400",
+    "type": "ascii",
+    "value": "1024x768 (windowed)"
+  },
+  {
+    "address": "0x10053414",
+    "type": "ascii",
+    "value": "960x600 (wide window)"
+  },
+  {
+    "address": "0x1005342C",
+    "type": "ascii",
+    "value": "800x600 (windowed)"
+  },
+  {
+    "address": "0x10053440",
+    "type": "ascii",
+    "value": "640x480 (windowed)"
+  },
+  {
+    "address": "0x10053454",
+    "type": "ascii",
+    "value": "No supported display adapters detected"
+  },
+  {
+    "address": "0x1005347C",
+    "type": "ascii",
+    "value": "w: %d h %d bpp %d\n"
+  },
+  {
+    "address": "0x10053494",
+    "type": "ascii",
+    "value": "window"
+  },
+  {
+    "address": "0x1005349C",
+    "type": "ascii",
+    "value": "Failed to open the Crimsonland Manual html file."
+  },
+  {
+    "address": "0x100534D0",
+    "type": "ascii",
+    "value": "explorer.exe manual.html"
+  },
+  {
+    "address": "0x100534EC",
+    "type": "ascii",
+    "value": "Failed to open browser at http://www.crimsonland.com/"
+  },
+  {
+    "address": "0x1005355C",
+    "type": "ascii",
+    "value": "Unable to load configuration file.\nYou can't set parental lock."
+  },
+  {
+    "address": "0x1005359C",
+    "type": "ascii",
+    "value": "Parental lock problem"
+  },
+  {
+    "address": "0x100535B4",
+    "type": "ascii",
+    "value": "WIN: Could not create the main window."
+  },
+  {
+    "address": "0x100535DC",
+    "type": "ascii",
+    "value": "Crimson"
+  },
+  {
+    "address": "0x100535E4",
+    "type": "ascii",
+    "value": "<- hResult"
+  },
+  {
+    "address": "0x100535F0",
+    "type": "ascii",
+    "value": "D3DERR_INVALIDCALL"
+  },
+  {
+    "address": "0x10053604",
+    "type": "ascii",
+    "value": "D3DERR_DEVICELOST"
+  },
+  {
+    "address": "0x10053618",
+    "type": "ascii",
+    "value": "D3D: Unable to backup texture. (CopyRects)"
+  },
+  {
+    "address": "0x10053644",
+    "type": "ascii",
+    "value": "D3D: Unable to backup texture. (GetSurfaceLevel)"
+  },
+  {
+    "address": "0x10053678",
+    "type": "ascii",
+    "value": "D3D: Unable to backup texture. (CreateImageSurface)"
+  },
+  {
+    "address": "0x100536AC",
+    "type": "ascii",
+    "value": "(already backed up)\n"
+  },
+  {
+    "address": "0x100536C4",
+    "type": "ascii",
+    "value": "Backup Dynamics\n"
+  },
+  {
+    "address": "0x100536D8",
+    "type": "ascii",
+    "value": "D3D: Unable to restore texture. (CopyRects)"
+  },
+  {
+    "address": "0x10053704",
+    "type": "ascii",
+    "value": "D3D: Unable to recreate texture. (GetSurfaceLevel)"
+  },
+  {
+    "address": "0x10053738",
+    "type": "ascii",
+    "value": "(not backedup) \n"
+  },
+  {
+    "address": "0x1005374C",
+    "type": "ascii",
+    "value": "RestoreDynamics\n"
+  },
+  {
+    "address": "0x10053760",
+    "type": "ascii",
+    "value": "Done D3D_TryResetDevice, failed to reset device..\n"
+  },
+  {
+    "address": "0x10053794",
+    "type": "ascii",
+    "value": "Done D3D_TryResetDevice ok..\n"
+  },
+  {
+    "address": "0x100537B4",
+    "type": "ascii",
+    "value": "RestoreDynamics() == false) at line 1006"
+  },
+  {
+    "address": "0x100537E0",
+    "type": "ascii",
+    "value": "D3D: Unable to recreate a texture."
+  },
+  {
+    "address": "0x10053804",
+    "type": "ascii",
+    "value": "D3D: Unable to restore device."
+  },
+  {
+    "address": "0x1005382C",
+    "type": "ascii",
+    "value": "Entering D3D_TryResetDevice..\n"
+  },
+  {
+    "address": "0x1005384C",
+    "type": "ascii",
+    "value": "MyApp::Init()\n"
+  },
+  {
+    "address": "0x1005385C",
+    "type": "ascii",
+    "value": "WM_CANCELMODE"
+  },
+  {
+    "address": "0x1005386C",
+    "type": "ascii",
+    "value": "WM_ACTIVATEAPP active"
+  },
+  {
+    "address": "0x10053884",
+    "type": "ascii",
+    "value": "WM_ACTIVATEAPP inactive"
+  },
+  {
+    "address": "0x1005389C",
+    "type": "ascii",
+    "value": "WM_ACTIVATE inactive"
+  },
+  {
+    "address": "0x100538B4",
+    "type": "ascii",
+    "value": "d3d not ready!"
+  },
+  {
+    "address": "0x100538C4",
+    "type": "ascii",
+    "value": "WM_ACTIVATE active"
+  },
+  {
+    "address": "0x100538D8",
+    "type": "ascii",
+    "value": "dc WM_ACTIVATE inactive"
+  },
+  {
+    "address": "0x100538F0",
+    "type": "ascii",
+    "value": "dc WM_ACTIVATE active"
+  },
+  {
+    "address": "0x10053908",
+    "type": "ascii",
+    "value": "dc WM_ACTIVATEAPP active"
+  },
+  {
+    "address": "0x10053924",
+    "type": "ascii",
+    "value": "dc WM_ACTIVATEAPP inactive"
+  },
+  {
+    "address": "0x10053940",
+    "type": "ascii",
+    "value": "dc WM_CANCELMODE"
+  },
+  {
+    "address": "0x10053954",
+    "type": "ascii",
+    "value": "WM_MESSAGE (d3d)"
+  },
+  {
+    "address": "0x10053968",
+    "type": "ascii",
+    "value": "WM_MESSAGE (dc)"
+  },
+  {
+    "address": "0x10053978",
+    "type": "ascii",
+    "value": "D3D: Unable to load grim splash texture."
+  },
+  {
+    "address": "0x100539A4",
+    "type": "ascii",
+    "value": "D3D: Unable to load default font texture."
+  },
+  {
+    "address": "0x100539D0",
+    "type": "ascii",
+    "value": "D3D: Could not find any compatible texture formats."
+  },
+  {
+    "address": "0x10053A04",
+    "type": "ascii",
+    "value": "D3D: Could not set the requested screenmode."
+  },
+  {
+    "address": "0x10053A34",
+    "type": "ascii",
+    "value": "D3D: Error getting adapter display mode."
+  },
+  {
+    "address": "0x10053A60",
+    "type": "ascii",
+    "value": "D3D: Could not init DirectX 8.1, (re)install it."
+  },
+  {
+    "address": "0x10053A94",
+    "type": "ascii",
+    "value": "D3D: Internal: Could not create index buffer."
+  },
+  {
+    "address": "0x10053AC4",
+    "type": "ascii",
+    "value": "D3D: Internal: Could not create vertex buffer."
+  },
+  {
+    "address": "0x10053AF4",
+    "type": "ascii",
+    "value": "D3D: No supported texture formats found."
+  },
+  {
+    "address": "0x10053B24",
+    "type": "ascii",
+    "value": "D3D: Could not load a texture."
+  },
+  {
+    "address": "0x10053B44",
+    "type": "ascii",
+    "value": "D3D: Texture slot not free."
+  },
+  {
+    "address": "0x10053B60",
+    "type": "ascii",
+    "value": "All texture slots are used."
+  },
+  {
+    "address": "0x10053B7C",
+    "type": "ascii",
+    "value": "Grim - No Title"
+  },
+  {
+    "address": "0x10053B8C",
+    "type": "ascii",
+    "value": "load\\smallFnt.dat"
+  },
+  {
+    "address": "0x10053BA0",
+    "type": "ascii",
+    "value": "crimson.paq"
+  },
+  {
+    "address": "0x10053BAC",
+    "type": "ascii",
+    "value": "DI8: Could not initialize joystic."
+  },
+  {
+    "address": "0x10053BD0",
+    "type": "ascii",
+    "value": "DI8: Could not initialize keyboard."
+  },
+  {
+    "address": "0x10053BF4",
+    "type": "ascii",
+    "value": "DI8: Could not initialize mouse."
+  },
+  {
+    "address": "0x10053C18",
+    "type": "ascii",
+    "value": "D3D: Could not create a texture."
+  },
+  {
+    "address": "0x10053C3C",
+    "type": "ascii",
+    "value": "GRIM_Font2"
+  },
+  {
+    "address": "0x10053C48",
+    "type": "ascii",
+    "value": "stall"
+  },
+  {
+    "address": "0x10053EA4",
+    "type": "ascii",
+    "value": "UYVYYUY2DXT1DXT2DXT3DXT4DXT5F"
+  },
+  {
+    "address": "0x1005424C",
+    "type": "ascii",
+    "value": "UYVY "
+  },
+  {
+    "address": "0x10054270",
+    "type": "ascii",
+    "value": "YUY2 "
+  },
+  {
+    "address": "0x10054294",
+    "type": "ascii",
+    "value": "DXT1 "
+  },
+  {
+    "address": "0x100542B8",
+    "type": "ascii",
+    "value": "DXT2 "
+  },
+  {
+    "address": "0x100542DC",
+    "type": "ascii",
+    "value": "DXT3 "
+  },
+  {
+    "address": "0x10054300",
+    "type": "ascii",
+    "value": "DXT4 "
+  },
+  {
+    "address": "0x10054324",
+    "type": "ascii",
+    "value": "DXT5 "
+  },
+  {
+    "address": "0x10057064",
+    "type": "ascii",
+    "value": "Application transferred too many scanlines"
+  },
+  {
+    "address": "0x10057090",
+    "type": "ascii",
+    "value": "Invalid SOS parameters for sequential JPEG"
+  },
+  {
+    "address": "0x100570BC",
+    "type": "ascii",
+    "value": "Corrupt JPEG data: found marker 0x%02x instead of RST%d"
+  },
+  {
+    "address": "0x100570F4",
+    "type": "ascii",
+    "value": "Premature end of JPEG file"
+  },
+  {
+    "address": "0x10057110",
+    "type": "ascii",
+    "value": "Warning: unknown JFIF revision number %d.%02d"
+  },
+  {
+    "address": "0x10057140",
+    "type": "ascii",
+    "value": "Corrupt JPEG data: bad Huffman code"
+  },
+  {
+    "address": "0x10057164",
+    "type": "ascii",
+    "value": "Corrupt JPEG data: premature end of data segment"
+  },
+  {
+    "address": "0x10057198",
+    "type": "ascii",
+    "value": "Corrupt JPEG data: %u extraneous bytes before marker 0x%02x"
+  },
+  {
+    "address": "0x100571D4",
+    "type": "ascii",
+    "value": "Inconsistent progression sequence for component %d coefficient %d"
+  },
+  {
+    "address": "0x10057218",
+    "type": "ascii",
+    "value": "Unknown Adobe color transform code %d"
+  },
+  {
+    "address": "0x10057240",
+    "type": "ascii",
+    "value": "Obtained XMS handle %u"
+  },
+  {
+    "address": "0x10057258",
+    "type": "ascii",
+    "value": "Freed XMS handle %u"
+  },
+  {
+    "address": "0x1005726C",
+    "type": "ascii",
+    "value": "Unrecognized component IDs %d %d %d, assuming YCbCr"
+  },
+  {
+    "address": "0x100572A0",
+    "type": "ascii",
+    "value": "Opened temporary file %s"
+  },
+  {
+    "address": "0x100572BC",
+    "type": "ascii",
+    "value": "Closed temporary file %s"
+  },
+  {
+    "address": "0x100572D8",
+    "type": "ascii",
+    "value": "  Ss=%d, Se=%d, Ah=%d, Al=%d"
+  },
+  {
+    "address": "0x100572F8",
+    "type": "ascii",
+    "value": "    Component %d: dc=%d ac=%d"
+  },
+  {
+    "address": "0x10057318",
+    "type": "ascii",
+    "value": "Start Of Scan: %d components"
+  },
+  {
+    "address": "0x10057338",
+    "type": "ascii",
+    "value": "Start of Image"
+  },
+  {
+    "address": "0x10057348",
+    "type": "ascii",
+    "value": "    Component %d: %dhx%dv q=%d"
+  },
+  {
+    "address": "0x10057368",
+    "type": "ascii",
+    "value": "Start Of Frame 0x%02x: width=%u, height=%u, components=%d"
+  },
+  {
+    "address": "0x100573A4",
+    "type": "ascii",
+    "value": "Smoothing not supported with nonstandard sampling ratios"
+  },
+  {
+    "address": "0x100573E0",
+    "type": "ascii",
+    "value": "RST%d"
+  },
+  {
+    "address": "0x100573E8",
+    "type": "ascii",
+    "value": "At marker 0x%02x, recovery action %d"
+  },
+  {
+    "address": "0x10057410",
+    "type": "ascii",
+    "value": "Selected %d colors for quantization"
+  },
+  {
+    "address": "0x10057434",
+    "type": "ascii",
+    "value": "Quantizing to %d colors"
+  },
+  {
+    "address": "0x1005744C",
+    "type": "ascii",
+    "value": "Quantizing to %d = %d*%d*%d colors"
+  },
+  {
+    "address": "0x10057470",
+    "type": "ascii",
+    "value": "        %4u %4u %4u %4u %4u %4u %4u %4u"
+  },
+  {
+    "address": "0x10057498",
+    "type": "ascii",
+    "value": "Unexpected marker 0x%02x"
+  },
+  {
+    "address": "0x100574B4",
+    "type": "ascii",
+    "value": "Skipping marker 0x%02x, length %u"
+  },
+  {
+    "address": "0x100574D8",
+    "type": "ascii",
+    "value": "    with %d x %d thumbnail image"
+  },
+  {
+    "address": "0x100574FC",
+    "type": "ascii",
+    "value": "Unknown JFIF minor revision number %d.%02d"
+  },
+  {
+    "address": "0x10057528",
+    "type": "ascii",
+    "value": "Warning: thumbnail image size does not match data length %u"
+  },
+  {
+    "address": "0x10057564",
+    "type": "ascii",
+    "value": "JFIF APP0 marker, density %dx%d  %d"
+  },
+  {
+    "address": "0x10057588",
+    "type": "ascii",
+    "value": "        %3d %3d %3d %3d %3d %3d %3d %3d"
+  },
+  {
+    "address": "0x100575B0",
+    "type": "ascii",
+    "value": "End Of Image"
+  },
+  {
+    "address": "0x100575C0",
+    "type": "ascii",
+    "value": "Obtained EMS handle %u"
+  },
+  {
+    "address": "0x100575D8",
+    "type": "ascii",
+    "value": "Freed EMS handle %u"
+  },
+  {
+    "address": "0x100575EC",
+    "type": "ascii",
+    "value": "Define Restart Interval %u"
+  },
+  {
+    "address": "0x10057608",
+    "type": "ascii",
+    "value": "Define Quantization Table %d  precision %d"
+  },
+  {
+    "address": "0x10057634",
+    "type": "ascii",
+    "value": "Define Huffman Table 0x%02x"
+  },
+  {
+    "address": "0x10057650",
+    "type": "ascii",
+    "value": "Define Arithmetic Table 0x%02x: 0x%02x"
+  },
+  {
+    "address": "0x10057678",
+    "type": "ascii",
+    "value": "Unknown APP14 marker (not Adobe), length %u"
+  },
+  {
+    "address": "0x100576A4",
+    "type": "ascii",
+    "value": "Unknown APP0 marker (not JFIF), length %u"
+  },
+  {
+    "address": "0x100576D0",
+    "type": "ascii",
+    "value": "Adobe APP14 marker: version %d, flags 0x%04x 0x%04x, transform %d"
+  },
+  {
+    "address": "0x10057714",
+    "type": "ascii",
+    "value": "Caution: quantization tables are too coarse for baseline JPEG"
+  },
+  {
+    "address": "0x10057754",
+    "type": "ascii",
+    "value": "6a  7-Feb-96"
+  },
+  {
+    "address": "0x10057764",
+    "type": "ascii",
+    "value": "Copyright (C) 1996, Thomas G. Lane"
+  },
+  {
+    "address": "0x10057788",
+    "type": "ascii",
+    "value": "Write to XMS failed"
+  },
+  {
+    "address": "0x1005779C",
+    "type": "ascii",
+    "value": "Read from XMS failed"
+  },
+  {
+    "address": "0x100577B4",
+    "type": "ascii",
+    "value": "Image too wide for this implementation"
+  },
+  {
+    "address": "0x100577DC",
+    "type": "ascii",
+    "value": "Virtual array controller messed up"
+  },
+  {
+    "address": "0x10057800",
+    "type": "ascii",
+    "value": "Unsupported marker type 0x%02x"
+  },
+  {
+    "address": "0x10057820",
+    "type": "ascii",
+    "value": "Application transferred too few scanlines"
+  },
+  {
+    "address": "0x1005784C",
+    "type": "ascii",
+    "value": "Write failed on temporary file --- out of disk space?"
+  },
+  {
+    "address": "0x10057884",
+    "type": "ascii",
+    "value": "Seek failed on temporary file"
+  },
+  {
+    "address": "0x100578A4",
+    "type": "ascii",
+    "value": "Read failed on temporary file"
+  },
+  {
+    "address": "0x100578C4",
+    "type": "ascii",
+    "value": "Failed to create temporary file %s"
+  },
+  {
+    "address": "0x100578E8",
+    "type": "ascii",
+    "value": "Invalid JPEG file structure: SOS before SOF"
+  },
+  {
+    "address": "0x10057914",
+    "type": "ascii",
+    "value": "Invalid JPEG file structure: two SOI markers"
+  },
+  {
+    "address": "0x10057944",
+    "type": "ascii",
+    "value": "Unsupported JPEG process: SOF type 0x%02x"
+  },
+  {
+    "address": "0x10057970",
+    "type": "ascii",
+    "value": "Invalid JPEG file structure: missing SOS marker"
+  },
+  {
+    "address": "0x100579A0",
+    "type": "ascii",
+    "value": "Invalid JPEG file structure: two SOF markers"
+  },
+  {
+    "address": "0x100579D0",
+    "type": "ascii",
+    "value": "Cannot quantize to more than %d colors"
+  },
+  {
+    "address": "0x100579F8",
+    "type": "ascii",
+    "value": "Cannot quantize to fewer than %d colors"
+  },
+  {
+    "address": "0x10057A20",
+    "type": "ascii",
+    "value": "Cannot quantize more than %d color components"
+  },
+  {
+    "address": "0x10057A50",
+    "type": "ascii",
+    "value": "Insufficient memory (case %d)"
+  },
+  {
+    "address": "0x10057A70",
+    "type": "ascii",
+    "value": "Not a JPEG file: starts with 0x%02x 0x%02x"
+  },
+  {
+    "address": "0x10057A9C",
+    "type": "ascii",
+    "value": "Quantization table 0x%02x was not defined"
+  },
+  {
+    "address": "0x10057AC8",
+    "type": "ascii",
+    "value": "JPEG datastream contains no image"
+  },
+  {
+    "address": "0x10057AEC",
+    "type": "ascii",
+    "value": "Huffman table 0x%02x was not defined"
+  },
+  {
+    "address": "0x10057B14",
+    "type": "ascii",
+    "value": "Backing store not supported"
+  },
+  {
+    "address": "0x10057B30",
+    "type": "ascii",
+    "value": "Requested feature was omitted at compile time"
+  },
+  {
+    "address": "0x10057B60",
+    "type": "ascii",
+    "value": "Not implemented yet"
+  },
+  {
+    "address": "0x10057B74",
+    "type": "ascii",
+    "value": "Invalid color quantization mode change"
+  },
+  {
+    "address": "0x10057B9C",
+    "type": "ascii",
+    "value": "Scan script does not transmit all data"
+  },
+  {
+    "address": "0x10057BC4",
+    "type": "ascii",
+    "value": "Cannot transcode due to multiple use of quantization table %d"
+  },
+  {
+    "address": "0x10057C04",
+    "type": "ascii",
+    "value": "Premature end of input file"
+  },
+  {
+    "address": "0x10057C20",
+    "type": "ascii",
+    "value": "Empty input file"
+  },
+  {
+    "address": "0x10057C34",
+    "type": "ascii",
+    "value": "Maximum supported image dimension is %u pixels"
+  },
+  {
+    "address": "0x10057C64",
+    "type": "ascii",
+    "value": "Missing Huffman code table entry"
+  },
+  {
+    "address": "0x10057C88",
+    "type": "ascii",
+    "value": "Huffman code size table overflow"
+  },
+  {
+    "address": "0x10057CAC",
+    "type": "ascii",
+    "value": "Fractional sampling not implemented yet"
+  },
+  {
+    "address": "0x10057CD4",
+    "type": "ascii",
+    "value": "Output file write error --- out of disk space?"
+  },
+  {
+    "address": "0x10057D04",
+    "type": "ascii",
+    "value": "Input file read error"
+  },
+  {
+    "address": "0x10057D1C",
+    "type": "ascii",
+    "value": "Didn't expect more than one scan"
+  },
+  {
+    "address": "0x10057D40",
+    "type": "ascii",
+    "value": "Write to EMS failed"
+  },
+  {
+    "address": "0x10057D54",
+    "type": "ascii",
+    "value": "Read from EMS failed"
+  },
+  {
+    "address": "0x10057D6C",
+    "type": "ascii",
+    "value": "Empty JPEG image (DNL not supported)"
+  },
+  {
+    "address": "0x10057D94",
+    "type": "ascii",
+    "value": "Bogus DQT index %d"
+  },
+  {
+    "address": "0x10057DA8",
+    "type": "ascii",
+    "value": "Bogus DHT index %d"
+  },
+  {
+    "address": "0x10057DBC",
+    "type": "ascii",
+    "value": "Bogus DHT counts"
+  },
+  {
+    "address": "0x10057DD0",
+    "type": "ascii",
+    "value": "Bogus DAC value 0x%x"
+  },
+  {
+    "address": "0x10057DE8",
+    "type": "ascii",
+    "value": "Bogus DAC index %d"
+  },
+  {
+    "address": "0x10057DFC",
+    "type": "ascii",
+    "value": "Unsupported color conversion request"
+  },
+  {
+    "address": "0x10057E24",
+    "type": "ascii",
+    "value": "Too many color components: %d, max %d"
+  },
+  {
+    "address": "0x10057E4C",
+    "type": "ascii",
+    "value": "CCIR601 sampling not implemented yet"
+  },
+  {
+    "address": "0x10057E74",
+    "type": "ascii",
+    "value": "Suspension not allowed here"
+  },
+  {
+    "address": "0x10057E90",
+    "type": "ascii",
+    "value": "Buffer passed to JPEG library is too small"
+  },
+  {
+    "address": "0x10057EBC",
+    "type": "ascii",
+    "value": "Bogus virtual array access"
+  },
+  {
+    "address": "0x10057ED8",
+    "type": "ascii",
+    "value": "JPEG parameter struct mismatch: library thinks size is %u, caller expects %u"
+  },
+  {
+    "address": "0x10057F28",
+    "type": "ascii",
+    "value": "Improper call to JPEG library in state %d"
+  },
+  {
+    "address": "0x10057F54",
+    "type": "ascii",
+    "value": "Invalid scan script at entry %d"
+  },
+  {
+    "address": "0x10057F74",
+    "type": "ascii",
+    "value": "Bogus sampling factors"
+  },
+  {
+    "address": "0x10057F8C",
+    "type": "ascii",
+    "value": "Invalid progressive parameters at scan script entry %d"
+  },
+  {
+    "address": "0x10057FC4",
+    "type": "ascii",
+    "value": "Invalid progressive parameters Ss=%d Se=%d Ah=%d Al=%d"
+  },
+  {
+    "address": "0x10057FFC",
+    "type": "ascii",
+    "value": "Unsupported JPEG data precision %d"
+  },
+  {
+    "address": "0x10058020",
+    "type": "ascii",
+    "value": "Invalid memory pool code %d"
+  },
+  {
+    "address": "0x1005803C",
+    "type": "ascii",
+    "value": "Sampling factors too large for interleaved scan"
+  },
+  {
+    "address": "0x1005806C",
+    "type": "ascii",
+    "value": "Wrong JPEG library version: library is %d, caller expects %d"
+  },
+  {
+    "address": "0x100580AC",
+    "type": "ascii",
+    "value": "Bogus marker length"
+  },
+  {
+    "address": "0x100580C0",
+    "type": "ascii",
+    "value": "Bogus JPEG colorspace"
+  },
+  {
+    "address": "0x100580D8",
+    "type": "ascii",
+    "value": "Bogus input colorspace"
+  },
+  {
+    "address": "0x100580F0",
+    "type": "ascii",
+    "value": "IDCT output block size %d not supported"
+  },
+  {
+    "address": "0x10058118",
+    "type": "ascii",
+    "value": "Invalid component ID %d in SOS"
+  },
+  {
+    "address": "0x10058138",
+    "type": "ascii",
+    "value": "Bogus buffer control mode"
+  },
+  {
+    "address": "0x10058154",
+    "type": "ascii",
+    "value": "MAX_ALLOC_CHUNK is wrong, please fix"
+  },
+  {
+    "address": "0x1005817C",
+    "type": "ascii",
+    "value": "ALIGN_TYPE is wrong, please fix"
+  },
+  {
+    "address": "0x1005819C",
+    "type": "ascii",
+    "value": "Sorry, there are legal restrictions on arithmetic coding"
+  },
+  {
+    "address": "0x100581D8",
+    "type": "ascii",
+    "value": "Bogus message code %d"
+  },
+  {
+    "address": "0x100581F0",
+    "type": "ascii",
+    "value": "JPEG Error"
+  },
+  {
+    "address": "0x100581FC",
+    "type": "ascii",
+    "value": "%ld%c"
+  },
+  {
+    "address": "0x10058204",
+    "type": "ascii",
+    "value": "JPEGMEM"
+  },
+  {
+    "address": "0x1005820C",
+    "type": "ascii",
+    "value": "1.1.3"
+  },
+  {
+    "address": "0x10058218",
+    "type": "ascii",
+    "value": "need dictionary"
+  },
+  {
+    "address": "0x10058228",
+    "type": "ascii",
+    "value": "incorrect data check"
+  },
+  {
+    "address": "0x10058240",
+    "type": "ascii",
+    "value": "incorrect header check"
+  },
+  {
+    "address": "0x10058258",
+    "type": "ascii",
+    "value": "invalid window size"
+  },
+  {
+    "address": "0x1005826C",
+    "type": "ascii",
+    "value": "unknown compression method"
+  },
+  {
+    "address": "0x100582B0",
+    "type": "ascii",
+    "value": "incompatible version"
+  },
+  {
+    "address": "0x100582C8",
+    "type": "ascii",
+    "value": "buffer error"
+  },
+  {
+    "address": "0x100582D8",
+    "type": "ascii",
+    "value": "insufficient memory"
+  },
+  {
+    "address": "0x100582EC",
+    "type": "ascii",
+    "value": "data error"
+  },
+  {
+    "address": "0x100582F8",
+    "type": "ascii",
+    "value": "stream error"
+  },
+  {
+    "address": "0x10058308",
+    "type": "ascii",
+    "value": "file error"
+  },
+  {
+    "address": "0x10058314",
+    "type": "ascii",
+    "value": "stream end"
+  },
+  {
+    "address": "0x10058364",
+    "type": "ascii",
+    "value": "invalid bit length repeat"
+  },
+  {
+    "address": "0x10058380",
+    "type": "ascii",
+    "value": "too many length or distance symbols"
+  },
+  {
+    "address": "0x100583A4",
+    "type": "ascii",
+    "value": "invalid stored block lengths"
+  },
+  {
+    "address": "0x100583C4",
+    "type": "ascii",
+    "value": "invalid block type"
+  },
+  {
+    "address": "0x100583D8",
+    "type": "ascii",
+    "value": "invalid distance code"
+  },
+  {
+    "address": "0x100583F0",
+    "type": "ascii",
+    "value": "invalid literal/length code"
+  },
+  {
+    "address": "0x10059518",
+    "type": "ascii",
+    "value": "incomplete dynamic bit lengths tree"
+  },
+  {
+    "address": "0x1005953C",
+    "type": "ascii",
+    "value": "oversubscribed dynamic bit lengths tree"
+  },
+  {
+    "address": "0x10059564",
+    "type": "ascii",
+    "value": "incomplete literal/length tree"
+  },
+  {
+    "address": "0x10059584",
+    "type": "ascii",
+    "value": "oversubscribed literal/length tree"
+  },
+  {
+    "address": "0x100595A8",
+    "type": "ascii",
+    "value": "empty distance tree with lengths"
+  },
+  {
+    "address": "0x100595CC",
+    "type": "ascii",
+    "value": "incomplete distance tree"
+  },
+  {
+    "address": "0x100595E8",
+    "type": "ascii",
+    "value": "oversubscribed distance tree"
+  },
+  {
+    "address": "0x1005E0AA",
+    "type": "ascii",
+    "value": "Y>t$7?*"
+  },
+  {
+    "address": "0x1005E0BA",
+    "type": "ascii",
+    "value": "Y>t$7?"
+  },
+  {
+    "address": "0x1005E57F",
+    "type": "ascii",
+    "value": "4h!\"4h!\"4h!\"4h!\"4"
+  },
+  {
+    "address": "0x1005E62F",
+    "type": "ascii",
+    "value": "=h!\"4h!\"4h!\"4h!\"4"
+  }
+]

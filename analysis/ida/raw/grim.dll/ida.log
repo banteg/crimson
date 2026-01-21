@@ -1,0 +1,50 @@
+Possible file format: MS-DOS executable (EXE) (C:\Program Files\IDA Professional 9.2\loaders\dos.dll)
+Possible file format: Portable executable for 80386 (PE) (C:\Program Files\IDA Professional 9.2\loaders\pe.dll)
+
+  bytes   pages size description
+--------- ----- ---- --------------------------------------------
+  2326528   284 8192 allocating memory for b-tree...
+  2326528   284 8192 allocating memory for virtual array...
+   262144    32 8192 allocating memory for name pointers...
+-----------------------------------------------------------------
+  4915200            total memory allocated
+
+Loading file 'C:\dev\crimson\game_bins\crimsonland\1.9.93-gog\grim.dll' into database...
+Detected file format: Portable executable for 80386 (PE)
+Loading processor module C:\Program Files\IDA Professional 9.2\procs\pc.dll for metapc...OK
+Autoanalysis subsystem has been initialized.
+Assuming __cdecl calling convention by default
+  0. Creating a new segment  (10001000-1004C000) ... ... OK
+  1. Creating a new segment  (1004C000-10053000) ... ... OK
+  2. Creating a new segment  (10053000-1005E000) ... ... OK
+  3. Creating a new segment  (1005E000-1005F000) ... ... OK
+Reading exports directory...
+Reading imports directory...
+Applying fixups...
+  4. Creating a new segment  (1004C1BC-10053000) ... ... OK
+Plan  FLIRT signature: Microsoft VisualC 2-14/net runtime
+autoload.cfg: vc32rtf.sig autoloads mssdk_win7.til
+Type library 'mssdk_win7' loaded. Applying types...
+Types applied to 89 names.
+main() function at 10009A20, named "_DllMain@12"
+Plan  FLIRT signature: SEH for vc7-14
+Marking typical code sequences...
+Flushing buffers, please wait...ok
+File 'C:\dev\crimson\game_bins\crimsonland\1.9.93-gog\grim.dll' has been successfully loaded into the database.
+Flushing buffers, please wait...ok
+Hex-Rays Decompiler plugin has been loaded (v9.2.0.250908)
+  The hotkeys are F5: decompile, Ctrl-F5: decompile all.
+
+  Please check the Edit/Plugins menu for more information.
+Hex-rays version 9.2.0.250908 has been detected, gooMBA plugin ready to use
+IDA is analysing the input file...
+You may start to explore the input file right now.
+Using FLIRT signature: Microsoft VisualC 2-14/net runtime
+Using FLIRT signature: SEH for vc7-14
+Propagating type information...
+Function argument information has been propagated
+lumina: Signature decryption failed with code: -2
+The initial autoanalysis has been finished.
+IDA export complete: C:\dev\crimson\analysis\ida\raw\grim.dll
+Flushing buffers, please wait...ok
+Unloading IDP module C:\Program Files\IDA Professional 9.2\procs\pc.dll...

@@ -1,0 +1,12 @@
+[
+  {
+    "address": "0x00000001",
+    "name": "GRIM__GetInterface",
+    "ordinal": 268474816
+  },
+  {
+    "address": "0x1000A9E9",
+    "name": "DllEntryPoint",
+    "ordinal": 268478953
+  }
+]

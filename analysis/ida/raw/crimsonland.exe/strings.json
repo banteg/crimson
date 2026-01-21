@@ -1,0 +1,7007 @@
+[
+  {
+    "address": "0x0046F838",
+    "type": "ascii",
+    "value": "Software\\Microsoft\\Direct3D"
+  },
+  {
+    "address": "0x0046F854",
+    "type": "ascii",
+    "value": "GenuineIntel"
+  },
+  {
+    "address": "0x0046F864",
+    "type": "ascii",
+    "value": "DisableD3DXPSGP"
+  },
+  {
+    "address": "0x0046F992",
+    "type": "ascii",
+    "value": "Y>t$7?*"
+  },
+  {
+    "address": "0x0046F9A0",
+    "type": "ascii",
+    "value": "AuthenticAMD"
+  },
+  {
+    "address": "0x0046F9B0",
+    "type": "ascii",
+    "value": "UnknownVendr"
+  },
+  {
+    "address": "0x0046FA90",
+    "type": "ascii",
+    "value": "IsProcessorFeaturePresent"
+  },
+  {
+    "address": "0x0046FAAC",
+    "type": "ascii",
+    "value": "KERNEL32"
+  },
+  {
+    "address": "0x0046FAB8",
+    "type": "ascii",
+    "value": "e+000"
+  },
+  {
+    "address": "0x0046FAF9",
+    "type": "ascii",
+    "value": " (8PX\u0007\b"
+  },
+  {
+    "address": "0x0046FB01",
+    "type": "ascii",
+    "value": "700WP\u0007"
+  },
+  {
+    "address": "0x0046FB10",
+    "type": "ascii",
+    "value": "\b`h````"
+  },
+  {
+    "address": "0x0046FB19",
+    "type": "ascii",
+    "value": "ppxxxx\b\u0007\b"
+  },
+  {
+    "address": "0x0046FB44",
+    "type": "ascii",
+    "value": "(null)"
+  },
+  {
+    "address": "0x0046FC00",
+    "type": "ascii",
+    "value": "__GLOBAL_HEAP_SELECTED"
+  },
+  {
+    "address": "0x0046FC18",
+    "type": "ascii",
+    "value": "__MSVCRT_HEAP_SELECT"
+  },
+  {
+    "address": "0x0046FC30",
+    "type": "ascii",
+    "value": "runtime error "
+  },
+  {
+    "address": "0x0046FC40",
+    "type": "ascii",
+    "value": "TLOSS error\r\n"
+  },
+  {
+    "address": "0x0046FC50",
+    "type": "ascii",
+    "value": "SING error\r\n"
+  },
+  {
+    "address": "0x0046FC60",
+    "type": "ascii",
+    "value": "DOMAIN error\r\n"
+  },
+  {
+    "address": "0x0046FC70",
+    "type": "ascii",
+    "value": "R6028\r\n- unable to initialize heap\r\n"
+  },
+  {
+    "address": "0x0046FC98",
+    "type": "ascii",
+    "value": "R6027\r\n- not enough space for lowio initialization\r\n"
+  },
+  {
+    "address": "0x0046FCD0",
+    "type": "ascii",
+    "value": "R6026\r\n- not enough space for stdio initialization\r\n"
+  },
+  {
+    "address": "0x0046FD08",
+    "type": "ascii",
+    "value": "R6025\r\n- pure virtual function call\r\n"
+  },
+  {
+    "address": "0x0046FD30",
+    "type": "ascii",
+    "value": "R6024\r\n- not enough space for _onexit/atexit table\r\n"
+  },
+  {
+    "address": "0x0046FD68",
+    "type": "ascii",
+    "value": "R6019\r\n- unable to open console device\r\n"
+  },
+  {
+    "address": "0x0046FD94",
+    "type": "ascii",
+    "value": "R6018\r\n- unexpected heap error\r\n"
+  },
+  {
+    "address": "0x0046FDB8",
+    "type": "ascii",
+    "value": "R6017\r\n- unexpected multithread lock error\r\n"
+  },
+  {
+    "address": "0x0046FDE8",
+    "type": "ascii",
+    "value": "R6016\r\n- not enough space for thread data\r\n"
+  },
+  {
+    "address": "0x0046FE14",
+    "type": "ascii",
+    "value": "\r\nabnormal program termination\r\n"
+  },
+  {
+    "address": "0x0046FE38",
+    "type": "ascii",
+    "value": "R6009\r\n- not enough space for environment\r\n"
+  },
+  {
+    "address": "0x0046FE64",
+    "type": "ascii",
+    "value": "R6008\r\n- not enough space for arguments\r\n"
+  },
+  {
+    "address": "0x0046FE90",
+    "type": "ascii",
+    "value": "R6002\r\n- floating point not loaded\r\n"
+  },
+  {
+    "address": "0x0046FEB8",
+    "type": "ascii",
+    "value": "Microsoft Visual C++ Runtime Library"
+  },
+  {
+    "address": "0x0046FEE4",
+    "type": "ascii",
+    "value": "Runtime Error!\n\nProgram: "
+  },
+  {
+    "address": "0x0046FF04",
+    "type": "ascii",
+    "value": "<program name unknown>"
+  },
+  {
+    "address": "0x0046FF28",
+    "type": "ascii",
+    "value": "frexp"
+  },
+  {
+    "address": "0x0046FF38",
+    "type": "ascii",
+    "value": "_hypot"
+  },
+  {
+    "address": "0x0046FF40",
+    "type": "ascii",
+    "value": "_cabs"
+  },
+  {
+    "address": "0x0046FF48",
+    "type": "ascii",
+    "value": "ldexp"
+  },
+  {
+    "address": "0x0046FF60",
+    "type": "ascii",
+    "value": "floor"
+  },
+  {
+    "address": "0x0046FF84",
+    "type": "ascii",
+    "value": "atan2"
+  },
+  {
+    "address": "0x0046FFBC",
+    "type": "ascii",
+    "value": "log10"
+  },
+  {
+    "address": "0x00470024",
+    "type": "ascii",
+    "value": "SunMonTueWedThuFriSat"
+  },
+  {
+    "address": "0x0047003C",
+    "type": "ascii",
+    "value": "JanFebMarAprMayJunJulAugSepOctNovDec"
+  },
+  {
+    "address": "0x00470068",
+    "type": "ascii",
+    "value": "GetLastActivePopup"
+  },
+  {
+    "address": "0x0047007C",
+    "type": "ascii",
+    "value": "GetActiveWindow"
+  },
+  {
+    "address": "0x0047008C",
+    "type": "ascii",
+    "value": "MessageBoxA"
+  },
+  {
+    "address": "0x00470098",
+    "type": "ascii",
+    "value": "user32.dll"
+  },
+  {
+    "address": "0x004700A4",
+    "type": "ascii",
+    "value": "1#QNAN"
+  },
+  {
+    "address": "0x004700AC",
+    "type": "ascii",
+    "value": "1#INF"
+  },
+  {
+    "address": "0x004700B4",
+    "type": "ascii",
+    "value": "1#IND"
+  },
+  {
+    "address": "0x004700BC",
+    "type": "ascii",
+    "value": "1#SNAN"
+  },
+  {
+    "address": "0x004700C4",
+    "type": "ascii",
+    "value": "H:mm:ss"
+  },
+  {
+    "address": "0x004700CC",
+    "type": "ascii",
+    "value": "dddd, MMMM dd, yyyy"
+  },
+  {
+    "address": "0x004700E0",
+    "type": "ascii",
+    "value": "M/d/yy"
+  },
+  {
+    "address": "0x004700F0",
+    "type": "ascii",
+    "value": "December"
+  },
+  {
+    "address": "0x004700FC",
+    "type": "ascii",
+    "value": "November"
+  },
+  {
+    "address": "0x00470108",
+    "type": "ascii",
+    "value": "October"
+  },
+  {
+    "address": "0x00470110",
+    "type": "ascii",
+    "value": "September"
+  },
+  {
+    "address": "0x0047011C",
+    "type": "ascii",
+    "value": "August"
+  },
+  {
+    "address": "0x00470134",
+    "type": "ascii",
+    "value": "April"
+  },
+  {
+    "address": "0x0047013C",
+    "type": "ascii",
+    "value": "March"
+  },
+  {
+    "address": "0x00470144",
+    "type": "ascii",
+    "value": "February"
+  },
+  {
+    "address": "0x00470150",
+    "type": "ascii",
+    "value": "January"
+  },
+  {
+    "address": "0x00470158",
+    "type": "ascii",
+    "value": "Saturday"
+  },
+  {
+    "address": "0x00470164",
+    "type": "ascii",
+    "value": "Friday"
+  },
+  {
+    "address": "0x0047016C",
+    "type": "ascii",
+    "value": "Thursday"
+  },
+  {
+    "address": "0x00470178",
+    "type": "ascii",
+    "value": "Wednesday"
+  },
+  {
+    "address": "0x00470184",
+    "type": "ascii",
+    "value": "Tuesday"
+  },
+  {
+    "address": "0x0047018C",
+    "type": "ascii",
+    "value": "Monday"
+  },
+  {
+    "address": "0x00470194",
+    "type": "ascii",
+    "value": "Sunday"
+  },
+  {
+    "address": "0x00470552",
+    "type": "ascii",
+    "value": "FreeLibrary"
+  },
+  {
+    "address": "0x00470560",
+    "type": "ascii",
+    "value": "Sleep"
+  },
+  {
+    "address": "0x00470568",
+    "type": "ascii",
+    "value": "OutputDebugStringA"
+  },
+  {
+    "address": "0x0047057E",
+    "type": "ascii",
+    "value": "GetProcAddress"
+  },
+  {
+    "address": "0x00470590",
+    "type": "ascii",
+    "value": "LoadLibraryA"
+  },
+  {
+    "address": "0x004705A0",
+    "type": "ascii",
+    "value": "WideCharToMultiByte"
+  },
+  {
+    "address": "0x004705B6",
+    "type": "ascii",
+    "value": "GetSystemDirectoryA"
+  },
+  {
+    "address": "0x004705CC",
+    "type": "ascii",
+    "value": "MultiByteToWideChar"
+  },
+  {
+    "address": "0x004705E2",
+    "type": "ascii",
+    "value": "QueryPerformanceCounter"
+  },
+  {
+    "address": "0x004705FC",
+    "type": "ascii",
+    "value": "GetLocalTime"
+  },
+  {
+    "address": "0x0047060C",
+    "type": "ascii",
+    "value": "GetCommandLineA"
+  },
+  {
+    "address": "0x0047061E",
+    "type": "ascii",
+    "value": "GetLastError"
+  },
+  {
+    "address": "0x0047062E",
+    "type": "ascii",
+    "value": "CreateDirectoryA"
+  },
+  {
+    "address": "0x00470640",
+    "type": "ascii",
+    "value": "KERNEL32.dll"
+  },
+  {
+    "address": "0x00470650",
+    "type": "ascii",
+    "value": "GetKeyNameTextA"
+  },
+  {
+    "address": "0x00470662",
+    "type": "ascii",
+    "value": "MessageBoxA"
+  },
+  {
+    "address": "0x00470670",
+    "type": "ascii",
+    "value": "GetForegroundWindow"
+  },
+  {
+    "address": "0x00470684",
+    "type": "ascii",
+    "value": "USER32.dll"
+  },
+  {
+    "address": "0x00470692",
+    "type": "ascii",
+    "value": "RegCloseKey"
+  },
+  {
+    "address": "0x004706A0",
+    "type": "ascii",
+    "value": "RegCreateKeyExA"
+  },
+  {
+    "address": "0x004706B2",
+    "type": "ascii",
+    "value": "RegQueryValueExA"
+  },
+  {
+    "address": "0x004706C6",
+    "type": "ascii",
+    "value": "RegSetValueExA"
+  },
+  {
+    "address": "0x004706D6",
+    "type": "ascii",
+    "value": "ADVAPI32.dll"
+  },
+  {
+    "address": "0x004706E6",
+    "type": "ascii",
+    "value": "ShellExecuteA"
+  },
+  {
+    "address": "0x004706F4",
+    "type": "ascii",
+    "value": "SHELL32.dll"
+  },
+  {
+    "address": "0x00470702",
+    "type": "ascii",
+    "value": "CoUninitialize"
+  },
+  {
+    "address": "0x00470714",
+    "type": "ascii",
+    "value": "CoCreateInstance"
+  },
+  {
+    "address": "0x00470728",
+    "type": "ascii",
+    "value": "CoInitialize"
+  },
+  {
+    "address": "0x00470736",
+    "type": "ascii",
+    "value": "ole32.dll"
+  },
+  {
+    "address": "0x00470740",
+    "type": "ascii",
+    "value": "OLEAUT32.dll"
+  },
+  {
+    "address": "0x00470750",
+    "type": "ascii",
+    "value": "ov_pcm_seek"
+  },
+  {
+    "address": "0x0047075E",
+    "type": "ascii",
+    "value": "ov_pcm_total"
+  },
+  {
+    "address": "0x0047076E",
+    "type": "ascii",
+    "value": "ov_info"
+  },
+  {
+    "address": "0x00470778",
+    "type": "ascii",
+    "value": "ov_open_callbacks"
+  },
+  {
+    "address": "0x0047078C",
+    "type": "ascii",
+    "value": "ov_clear"
+  },
+  {
+    "address": "0x00470798",
+    "type": "ascii",
+    "value": "ov_read"
+  },
+  {
+    "address": "0x004707A0",
+    "type": "ascii",
+    "value": "vorbisfile.dll"
+  },
+  {
+    "address": "0x004707B2",
+    "type": "ascii",
+    "value": "HlinkNavigateString"
+  },
+  {
+    "address": "0x004707C6",
+    "type": "ascii",
+    "value": "urlmon.dll"
+  },
+  {
+    "address": "0x004707D4",
+    "type": "ascii",
+    "value": "timeGetTime"
+  },
+  {
+    "address": "0x004707E0",
+    "type": "ascii",
+    "value": "WINMM.dll"
+  },
+  {
+    "address": "0x004707EC",
+    "type": "ascii",
+    "value": "Direct3DCreate8"
+  },
+  {
+    "address": "0x004707FC",
+    "type": "ascii",
+    "value": "d3d8.dll"
+  },
+  {
+    "address": "0x00470808",
+    "type": "ascii",
+    "value": "VerQueryValueA"
+  },
+  {
+    "address": "0x0047081A",
+    "type": "ascii",
+    "value": "GetFileVersionInfoA"
+  },
+  {
+    "address": "0x00470830",
+    "type": "ascii",
+    "value": "GetFileVersionInfoSizeA"
+  },
+  {
+    "address": "0x00470848",
+    "type": "ascii",
+    "value": "VERSION.dll"
+  },
+  {
+    "address": "0x00470854",
+    "type": "ascii",
+    "value": "WS2_32.dll"
+  },
+  {
+    "address": "0x00470862",
+    "type": "ascii",
+    "value": "InternetCloseHandle"
+  },
+  {
+    "address": "0x00470878",
+    "type": "ascii",
+    "value": "InternetGetLastResponseInfoA"
+  },
+  {
+    "address": "0x00470898",
+    "type": "ascii",
+    "value": "InternetReadFile"
+  },
+  {
+    "address": "0x004708AC",
+    "type": "ascii",
+    "value": "HttpSendRequestA"
+  },
+  {
+    "address": "0x004708C0",
+    "type": "ascii",
+    "value": "HttpOpenRequestA"
+  },
+  {
+    "address": "0x004708D4",
+    "type": "ascii",
+    "value": "InternetConnectA"
+  },
+  {
+    "address": "0x004708E8",
+    "type": "ascii",
+    "value": "InternetOpenA"
+  },
+  {
+    "address": "0x004708F6",
+    "type": "ascii",
+    "value": "WININET.dll"
+  },
+  {
+    "address": "0x00470902",
+    "type": "ascii",
+    "value": "DSOUND.dll"
+  },
+  {
+    "address": "0x00470910",
+    "type": "ascii",
+    "value": "IsProcessorFeaturePresent"
+  },
+  {
+    "address": "0x0047092C",
+    "type": "ascii",
+    "value": "GetVersionExA"
+  },
+  {
+    "address": "0x0047093C",
+    "type": "ascii",
+    "value": "FindFirstFileA"
+  },
+  {
+    "address": "0x0047094E",
+    "type": "ascii",
+    "value": "FindNextFileA"
+  },
+  {
+    "address": "0x0047095E",
+    "type": "ascii",
+    "value": "FindClose"
+  },
+  {
+    "address": "0x0047096A",
+    "type": "ascii",
+    "value": "FileTimeToSystemTime"
+  },
+  {
+    "address": "0x00470982",
+    "type": "ascii",
+    "value": "FileTimeToLocalFileTime"
+  },
+  {
+    "address": "0x0047099C",
+    "type": "ascii",
+    "value": "InterlockedDecrement"
+  },
+  {
+    "address": "0x004709B4",
+    "type": "ascii",
+    "value": "InterlockedIncrement"
+  },
+  {
+    "address": "0x004709CC",
+    "type": "ascii",
+    "value": "ResumeThread"
+  },
+  {
+    "address": "0x004709DC",
+    "type": "ascii",
+    "value": "CreateThread"
+  },
+  {
+    "address": "0x004709EC",
+    "type": "ascii",
+    "value": "TlsSetValue"
+  },
+  {
+    "address": "0x004709FA",
+    "type": "ascii",
+    "value": "TlsGetValue"
+  },
+  {
+    "address": "0x00470A08",
+    "type": "ascii",
+    "value": "ExitThread"
+  },
+  {
+    "address": "0x00470A16",
+    "type": "ascii",
+    "value": "CloseHandle"
+  },
+  {
+    "address": "0x00470A24",
+    "type": "ascii",
+    "value": "GetTimeZoneInformation"
+  },
+  {
+    "address": "0x00470A3E",
+    "type": "ascii",
+    "value": "GetSystemTime"
+  },
+  {
+    "address": "0x00470A4E",
+    "type": "ascii",
+    "value": "GetCurrentDirectoryA"
+  },
+  {
+    "address": "0x00470A66",
+    "type": "ascii",
+    "value": "GetFullPathNameA"
+  },
+  {
+    "address": "0x00470A7A",
+    "type": "ascii",
+    "value": "GetDriveTypeA"
+  },
+  {
+    "address": "0x00470A8A",
+    "type": "ascii",
+    "value": "HeapFree"
+  },
+  {
+    "address": "0x00470A96",
+    "type": "ascii",
+    "value": "HeapReAlloc"
+  },
+  {
+    "address": "0x00470AA4",
+    "type": "ascii",
+    "value": "HeapAlloc"
+  },
+  {
+    "address": "0x00470AB0",
+    "type": "ascii",
+    "value": "ExitProcess"
+  },
+  {
+    "address": "0x00470ABE",
+    "type": "ascii",
+    "value": "TerminateProcess"
+  },
+  {
+    "address": "0x00470AD2",
+    "type": "ascii",
+    "value": "GetCurrentProcess"
+  },
+  {
+    "address": "0x00470AE6",
+    "type": "ascii",
+    "value": "GetModuleHandleA"
+  },
+  {
+    "address": "0x00470AFA",
+    "type": "ascii",
+    "value": "GetStartupInfoA"
+  },
+  {
+    "address": "0x00470B0C",
+    "type": "ascii",
+    "value": "GetVersion"
+  },
+  {
+    "address": "0x00470B1A",
+    "type": "ascii",
+    "value": "RtlUnwind"
+  },
+  {
+    "address": "0x00470B26",
+    "type": "ascii",
+    "value": "HeapSize"
+  },
+  {
+    "address": "0x00470B32",
+    "type": "ascii",
+    "value": "EnterCriticalSection"
+  },
+  {
+    "address": "0x00470B4A",
+    "type": "ascii",
+    "value": "LeaveCriticalSection"
+  },
+  {
+    "address": "0x00470B62",
+    "type": "ascii",
+    "value": "InitializeCriticalSection"
+  },
+  {
+    "address": "0x00470B7E",
+    "type": "ascii",
+    "value": "GetCurrentThreadId"
+  },
+  {
+    "address": "0x00470B94",
+    "type": "ascii",
+    "value": "TlsAlloc"
+  },
+  {
+    "address": "0x00470BA0",
+    "type": "ascii",
+    "value": "SetLastError"
+  },
+  {
+    "address": "0x00470BB0",
+    "type": "ascii",
+    "value": "FlushFileBuffers"
+  },
+  {
+    "address": "0x00470BC4",
+    "type": "ascii",
+    "value": "WriteFile"
+  },
+  {
+    "address": "0x00470BD0",
+    "type": "ascii",
+    "value": "DeleteCriticalSection"
+  },
+  {
+    "address": "0x00470BE8",
+    "type": "ascii",
+    "value": "ReadFile"
+  },
+  {
+    "address": "0x00470BF4",
+    "type": "ascii",
+    "value": "SetHandleCount"
+  },
+  {
+    "address": "0x00470C06",
+    "type": "ascii",
+    "value": "GetStdHandle"
+  },
+  {
+    "address": "0x00470C16",
+    "type": "ascii",
+    "value": "GetFileType"
+  },
+  {
+    "address": "0x00470C24",
+    "type": "ascii",
+    "value": "SetFilePointer"
+  },
+  {
+    "address": "0x00470C36",
+    "type": "ascii",
+    "value": "LCMapStringA"
+  },
+  {
+    "address": "0x00470C46",
+    "type": "ascii",
+    "value": "LCMapStringW"
+  },
+  {
+    "address": "0x00470C56",
+    "type": "ascii",
+    "value": "UnhandledExceptionFilter"
+  },
+  {
+    "address": "0x00470C72",
+    "type": "ascii",
+    "value": "GetModuleFileNameA"
+  },
+  {
+    "address": "0x00470C88",
+    "type": "ascii",
+    "value": "GetEnvironmentVariableA"
+  },
+  {
+    "address": "0x00470CA2",
+    "type": "ascii",
+    "value": "HeapDestroy"
+  },
+  {
+    "address": "0x00470CB0",
+    "type": "ascii",
+    "value": "HeapCreate"
+  },
+  {
+    "address": "0x00470CBE",
+    "type": "ascii",
+    "value": "VirtualFree"
+  },
+  {
+    "address": "0x00470CCC",
+    "type": "ascii",
+    "value": "VirtualAlloc"
+  },
+  {
+    "address": "0x00470CDC",
+    "type": "ascii",
+    "value": "IsBadWritePtr"
+  },
+  {
+    "address": "0x00470CEC",
+    "type": "ascii",
+    "value": "FreeEnvironmentStringsA"
+  },
+  {
+    "address": "0x00470D06",
+    "type": "ascii",
+    "value": "FreeEnvironmentStringsW"
+  },
+  {
+    "address": "0x00470D20",
+    "type": "ascii",
+    "value": "GetEnvironmentStrings"
+  },
+  {
+    "address": "0x00470D38",
+    "type": "ascii",
+    "value": "GetEnvironmentStringsW"
+  },
+  {
+    "address": "0x00470D52",
+    "type": "ascii",
+    "value": "RaiseException"
+  },
+  {
+    "address": "0x00470D64",
+    "type": "ascii",
+    "value": "GetStringTypeA"
+  },
+  {
+    "address": "0x00470D76",
+    "type": "ascii",
+    "value": "GetStringTypeW"
+  },
+  {
+    "address": "0x00470D88",
+    "type": "ascii",
+    "value": "SetStdHandle"
+  },
+  {
+    "address": "0x00470D98",
+    "type": "ascii",
+    "value": "CreateFileA"
+  },
+  {
+    "address": "0x00470DA6",
+    "type": "ascii",
+    "value": "GetCPInfo"
+  },
+  {
+    "address": "0x00470DB2",
+    "type": "ascii",
+    "value": "GetACP"
+  },
+  {
+    "address": "0x00470DBC",
+    "type": "ascii",
+    "value": "GetOEMCP"
+  },
+  {
+    "address": "0x00470DC8",
+    "type": "ascii",
+    "value": "SetUnhandledExceptionFilter"
+  },
+  {
+    "address": "0x00470DE6",
+    "type": "ascii",
+    "value": "IsBadReadPtr"
+  },
+  {
+    "address": "0x00470DF6",
+    "type": "ascii",
+    "value": "IsBadCodePtr"
+  },
+  {
+    "address": "0x00470E06",
+    "type": "ascii",
+    "value": "SetEndOfFile"
+  },
+  {
+    "address": "0x00470E16",
+    "type": "ascii",
+    "value": "CompareStringA"
+  },
+  {
+    "address": "0x00470E28",
+    "type": "ascii",
+    "value": "CompareStringW"
+  },
+  {
+    "address": "0x00470E3A",
+    "type": "ascii",
+    "value": "SetEnvironmentVariableA"
+  },
+  {
+    "address": "0x00470E54",
+    "type": "ascii",
+    "value": "RegOpenKeyA"
+  },
+  {
+    "address": "0x00471164",
+    "type": "ascii",
+    "value": "Executing '%s'\n"
+  },
+  {
+    "address": "0x00471174",
+    "type": "ascii",
+    "value": "Cannot open file '%s'\n"
+  },
+  {
+    "address": "0x0047118C",
+    "type": "ascii",
+    "value": "exec <script>\n"
+  },
+  {
+    "address": "0x0047119C",
+    "type": "ascii",
+    "value": "%i commands\n"
+  },
+  {
+    "address": "0x004711B0",
+    "type": "ascii",
+    "value": "%i variables\n"
+  },
+  {
+    "address": "0x004711D0",
+    "type": "ascii",
+    "value": "'%s' set to '%s'\n"
+  },
+  {
+    "address": "0x004711E4",
+    "type": "ascii",
+    "value": "set <var> <value>\n"
+  },
+  {
+    "address": "0x00471200",
+    "type": "ascii",
+    "value": "minimizeconsole"
+  },
+  {
+    "address": "0x00471210",
+    "type": "ascii",
+    "value": "extendconsole"
+  },
+  {
+    "address": "0x00471220",
+    "type": "ascii",
+    "value": "clear"
+  },
+  {
+    "address": "0x00471244",
+    "type": "ascii",
+    "value": "cmdlist"
+  },
+  {
+    "address": "0x0047124C",
+    "type": "ascii",
+    "value": "con_monoFont"
+  },
+  {
+    "address": "0x00471264",
+    "type": "ascii",
+    "value": "version"
+  },
+  {
+    "address": "0x0047126C",
+    "type": "ascii",
+    "value": "Unknown command \"%s\"\n"
+  },
+  {
+    "address": "0x00471284",
+    "type": "ascii",
+    "value": "\"%s\" is \"%s\" (%ff)\n"
+  },
+  {
+    "address": "0x00471298",
+    "type": "ascii",
+    "value": "\"%s\" set to \"%s\" (%ff)\n"
+  },
+  {
+    "address": "0x004712B0",
+    "type": "ascii",
+    "value": "> %s\n"
+  },
+  {
+    "address": "0x004712C4",
+    "type": "ascii",
+    "value": "Crimsonland 1.9.93"
+  },
+  {
+    "address": "0x00471314",
+    "type": "ascii",
+    "value": "10tons"
+  },
+  {
+    "address": "0x0047131C",
+    "type": "ascii",
+    "value": "default"
+  },
+  {
+    "address": "0x00471324",
+    "type": "ascii",
+    "value": "%s\\%s"
+  },
+  {
+    "address": "0x0047132C",
+    "type": "ascii",
+    "value": "cv_padAimDistMul"
+  },
+  {
+    "address": "0x00471344",
+    "type": "ascii",
+    "value": "cv_showFPS"
+  },
+  {
+    "address": "0x00471350",
+    "type": "ascii",
+    "value": "cv_friendlyFire"
+  },
+  {
+    "address": "0x00471360",
+    "type": "ascii",
+    "value": "cv_aimEnhancementFade"
+  },
+  {
+    "address": "0x00471378",
+    "type": "ascii",
+    "value": "cv_uiSmallIndicators"
+  },
+  {
+    "address": "0x00471390",
+    "type": "ascii",
+    "value": "cv_terrainBodiesTransparency"
+  },
+  {
+    "address": "0x004713B0",
+    "type": "ascii",
+    "value": "cv_verbose"
+  },
+  {
+    "address": "0x004713BC",
+    "type": "ascii",
+    "value": "cv_enableMousePointAndClickMovement"
+  },
+  {
+    "address": "0x004713E0",
+    "type": "ascii",
+    "value": "cv_uiPointFilterPanels"
+  },
+  {
+    "address": "0x004713FC",
+    "type": "ascii",
+    "value": "cv_uiTransparency"
+  },
+  {
+    "address": "0x00471410",
+    "type": "ascii",
+    "value": "cv_bodiesFade"
+  },
+  {
+    "address": "0x00471420",
+    "type": "ascii",
+    "value": "cv_terrainFilter"
+  },
+  {
+    "address": "0x00471434",
+    "type": "ascii",
+    "value": "cv_silentloads"
+  },
+  {
+    "address": "0x00471444",
+    "type": "ascii",
+    "value": "Please wait..."
+  },
+  {
+    "address": "0x00471454",
+    "type": "ascii",
+    "value": "Core Init done.\n"
+  },
+  {
+    "address": "0x00471468",
+    "type": "ascii",
+    "value": "GDI initializing UI elements.\n"
+  },
+  {
+    "address": "0x00471488",
+    "type": "ascii",
+    "value": "Press %s to pick a perk"
+  },
+  {
+    "address": "0x004714A0",
+    "type": "ascii",
+    "value": "Unknown"
+  },
+  {
+    "address": "0x004714A8",
+    "type": "ascii",
+    "value": "MEDIASELECT"
+  },
+  {
+    "address": "0x004714BC",
+    "type": "ascii",
+    "value": "MYCOMPUTER"
+  },
+  {
+    "address": "0x004714C8",
+    "type": "ascii",
+    "value": "WEBBACK"
+  },
+  {
+    "address": "0x004714D0",
+    "type": "ascii",
+    "value": "WEBFORWARD"
+  },
+  {
+    "address": "0x004714DC",
+    "type": "ascii",
+    "value": "WEBSTOP"
+  },
+  {
+    "address": "0x004714E4",
+    "type": "ascii",
+    "value": "WEBREFRESH"
+  },
+  {
+    "address": "0x004714F0",
+    "type": "ascii",
+    "value": "WEBFAVORITES"
+  },
+  {
+    "address": "0x00471500",
+    "type": "ascii",
+    "value": "WEBSEARCH"
+  },
+  {
+    "address": "0x00471514",
+    "type": "ascii",
+    "value": "SLEEP"
+  },
+  {
+    "address": "0x0047151C",
+    "type": "ascii",
+    "value": "POWER"
+  },
+  {
+    "address": "0x0047153C",
+    "type": "ascii",
+    "value": "DELETE"
+  },
+  {
+    "address": "0x00471544",
+    "type": "ascii",
+    "value": "INSERT"
+  },
+  {
+    "address": "0x00471560",
+    "type": "ascii",
+    "value": "RIGHT"
+  },
+  {
+    "address": "0x00471570",
+    "type": "ascii",
+    "value": "PRIOR"
+  },
+  {
+    "address": "0x00471584",
+    "type": "ascii",
+    "value": "PAUSE"
+  },
+  {
+    "address": "0x0047158C",
+    "type": "ascii",
+    "value": "RMENU"
+  },
+  {
+    "address": "0x00471594",
+    "type": "ascii",
+    "value": "SYSRQ"
+  },
+  {
+    "address": "0x0047159C",
+    "type": "ascii",
+    "value": "DIVIDE"
+  },
+  {
+    "address": "0x004715A4",
+    "type": "ascii",
+    "value": "NUMPADCOMMA"
+  },
+  {
+    "address": "0x004715B0",
+    "type": "ascii",
+    "value": "WEBHOME"
+  },
+  {
+    "address": "0x004715B8",
+    "type": "ascii",
+    "value": "VOLUMEUP"
+  },
+  {
+    "address": "0x004715C4",
+    "type": "ascii",
+    "value": "VOLUMEDOWN"
+  },
+  {
+    "address": "0x004715D0",
+    "type": "ascii",
+    "value": "MEDIASTOP"
+  },
+  {
+    "address": "0x004715DC",
+    "type": "ascii",
+    "value": "PLAYPAUSE"
+  },
+  {
+    "address": "0x004715E8",
+    "type": "ascii",
+    "value": "CALCULATOR"
+  },
+  {
+    "address": "0x004715FC",
+    "type": "ascii",
+    "value": "RCONTROL"
+  },
+  {
+    "address": "0x00471608",
+    "type": "ascii",
+    "value": "NUMPADENTER"
+  },
+  {
+    "address": "0x00471614",
+    "type": "ascii",
+    "value": "NEXTTRACK"
+  },
+  {
+    "address": "0x00471620",
+    "type": "ascii",
+    "value": "UNLABELED"
+  },
+  {
+    "address": "0x00471638",
+    "type": "ascii",
+    "value": "KANJI"
+  },
+  {
+    "address": "0x00471640",
+    "type": "ascii",
+    "value": "UNDERLINE"
+  },
+  {
+    "address": "0x0047164C",
+    "type": "ascii",
+    "value": "COLON"
+  },
+  {
+    "address": "0x00471658",
+    "type": "ascii",
+    "value": "PREVTRACK"
+  },
+  {
+    "address": "0x00471664",
+    "type": "ascii",
+    "value": "NUMPADEQUALS"
+  },
+  {
+    "address": "0x00471674",
+    "type": "ascii",
+    "value": "ABNT_C2"
+  },
+  {
+    "address": "0x00471680",
+    "type": "ascii",
+    "value": "NOCONVERT"
+  },
+  {
+    "address": "0x0047168C",
+    "type": "ascii",
+    "value": "CONVERT"
+  },
+  {
+    "address": "0x00471694",
+    "type": "ascii",
+    "value": "ABNT_C1"
+  },
+  {
+    "address": "0x004716B8",
+    "type": "ascii",
+    "value": "OEM_102"
+  },
+  {
+    "address": "0x004716C0",
+    "type": "ascii",
+    "value": "DECIMAL"
+  },
+  {
+    "address": "0x004716C8",
+    "type": "ascii",
+    "value": "NUMPAD0"
+  },
+  {
+    "address": "0x004716D0",
+    "type": "ascii",
+    "value": "NUMPAD3"
+  },
+  {
+    "address": "0x004716D8",
+    "type": "ascii",
+    "value": "NUMPAD2"
+  },
+  {
+    "address": "0x004716E0",
+    "type": "ascii",
+    "value": "NUMPAD1"
+  },
+  {
+    "address": "0x004716EC",
+    "type": "ascii",
+    "value": "NUMPAD6"
+  },
+  {
+    "address": "0x004716F4",
+    "type": "ascii",
+    "value": "NUMPAD5"
+  },
+  {
+    "address": "0x004716FC",
+    "type": "ascii",
+    "value": "NUMPAD4"
+  },
+  {
+    "address": "0x00471704",
+    "type": "ascii",
+    "value": "SUBTRACT"
+  },
+  {
+    "address": "0x00471710",
+    "type": "ascii",
+    "value": "NUMPAD9"
+  },
+  {
+    "address": "0x00471718",
+    "type": "ascii",
+    "value": "NUMPAD8"
+  },
+  {
+    "address": "0x00471720",
+    "type": "ascii",
+    "value": "NUMPAD7"
+  },
+  {
+    "address": "0x00471728",
+    "type": "ascii",
+    "value": "SCROLL"
+  },
+  {
+    "address": "0x00471730",
+    "type": "ascii",
+    "value": "NUMLOCK"
+  },
+  {
+    "address": "0x00471760",
+    "type": "ascii",
+    "value": "CAPITAL"
+  },
+  {
+    "address": "0x00471768",
+    "type": "ascii",
+    "value": "SPACE"
+  },
+  {
+    "address": "0x00471770",
+    "type": "ascii",
+    "value": "LMENU"
+  },
+  {
+    "address": "0x00471778",
+    "type": "ascii",
+    "value": "MULTIPLY"
+  },
+  {
+    "address": "0x00471784",
+    "type": "ascii",
+    "value": "RSHIFT"
+  },
+  {
+    "address": "0x0047178C",
+    "type": "ascii",
+    "value": "SLASH"
+  },
+  {
+    "address": "0x00471794",
+    "type": "ascii",
+    "value": "PERIOD"
+  },
+  {
+    "address": "0x0047179C",
+    "type": "ascii",
+    "value": "COMMA"
+  },
+  {
+    "address": "0x004717C0",
+    "type": "ascii",
+    "value": "BACKSLASH"
+  },
+  {
+    "address": "0x004717CC",
+    "type": "ascii",
+    "value": "LSHIFT"
+  },
+  {
+    "address": "0x004717D4",
+    "type": "ascii",
+    "value": "GRAVE"
+  },
+  {
+    "address": "0x004717DC",
+    "type": "ascii",
+    "value": "APOSTROPHE"
+  },
+  {
+    "address": "0x004717E8",
+    "type": "ascii",
+    "value": "SEMICOLON"
+  },
+  {
+    "address": "0x00471818",
+    "type": "ascii",
+    "value": "LCONTROL"
+  },
+  {
+    "address": "0x00471824",
+    "type": "ascii",
+    "value": "RETURN"
+  },
+  {
+    "address": "0x0047182C",
+    "type": "ascii",
+    "value": "RBRACKET"
+  },
+  {
+    "address": "0x00471838",
+    "type": "ascii",
+    "value": "LBRACKET"
+  },
+  {
+    "address": "0x00471878",
+    "type": "ascii",
+    "value": "EQUALS"
+  },
+  {
+    "address": "0x00471880",
+    "type": "ascii",
+    "value": "MINUS"
+  },
+  {
+    "address": "0x00471888",
+    "type": "ascii",
+    "value": "DIK_0"
+  },
+  {
+    "address": "0x00471890",
+    "type": "ascii",
+    "value": "DIK_9"
+  },
+  {
+    "address": "0x00471898",
+    "type": "ascii",
+    "value": "DIK_8"
+  },
+  {
+    "address": "0x004718A0",
+    "type": "ascii",
+    "value": "DIK_7"
+  },
+  {
+    "address": "0x004718A8",
+    "type": "ascii",
+    "value": "DIK_6"
+  },
+  {
+    "address": "0x004718B0",
+    "type": "ascii",
+    "value": "DIK_5"
+  },
+  {
+    "address": "0x004718B8",
+    "type": "ascii",
+    "value": "DIK_4"
+  },
+  {
+    "address": "0x004718C0",
+    "type": "ascii",
+    "value": "DIK_3"
+  },
+  {
+    "address": "0x004718C8",
+    "type": "ascii",
+    "value": "DIK_2"
+  },
+  {
+    "address": "0x004718D0",
+    "type": "ascii",
+    "value": "DIK_1"
+  },
+  {
+    "address": "0x004718D8",
+    "type": "ascii",
+    "value": "DIK_ESCAPE"
+  },
+  {
+    "address": "0x004718E4",
+    "type": "ascii",
+    "value": "RawInput ?"
+  },
+  {
+    "address": "0x004718F0",
+    "type": "ascii",
+    "value": "RIM2Btn5"
+  },
+  {
+    "address": "0x004718FC",
+    "type": "ascii",
+    "value": "RIM2Btn4"
+  },
+  {
+    "address": "0x00471908",
+    "type": "ascii",
+    "value": "RIM2Btn3"
+  },
+  {
+    "address": "0x00471914",
+    "type": "ascii",
+    "value": "RIM2Btn2"
+  },
+  {
+    "address": "0x00471920",
+    "type": "ascii",
+    "value": "RIM2Btn1"
+  },
+  {
+    "address": "0x0047192C",
+    "type": "ascii",
+    "value": "RIM1Btn5"
+  },
+  {
+    "address": "0x00471938",
+    "type": "ascii",
+    "value": "RIM1Btn4"
+  },
+  {
+    "address": "0x00471944",
+    "type": "ascii",
+    "value": "RIM1Btn3"
+  },
+  {
+    "address": "0x00471950",
+    "type": "ascii",
+    "value": "RIM1Btn2"
+  },
+  {
+    "address": "0x0047195C",
+    "type": "ascii",
+    "value": "RIM1Btn1"
+  },
+  {
+    "address": "0x00471968",
+    "type": "ascii",
+    "value": "RIM0Btn5"
+  },
+  {
+    "address": "0x00471974",
+    "type": "ascii",
+    "value": "RIM0Btn4"
+  },
+  {
+    "address": "0x00471980",
+    "type": "ascii",
+    "value": "RIM0Btn3"
+  },
+  {
+    "address": "0x0047198C",
+    "type": "ascii",
+    "value": "RIM0Btn2"
+  },
+  {
+    "address": "0x00471998",
+    "type": "ascii",
+    "value": "RIM0Btn1"
+  },
+  {
+    "address": "0x004719A4",
+    "type": "ascii",
+    "value": "RIM2YAxis"
+  },
+  {
+    "address": "0x004719B0",
+    "type": "ascii",
+    "value": "RIM1YAxis"
+  },
+  {
+    "address": "0x004719BC",
+    "type": "ascii",
+    "value": "RIM0YAxis"
+  },
+  {
+    "address": "0x004719C8",
+    "type": "ascii",
+    "value": "RIM2XAxis"
+  },
+  {
+    "address": "0x004719D4",
+    "type": "ascii",
+    "value": "RIM1XAxis"
+  },
+  {
+    "address": "0x004719E0",
+    "type": "ascii",
+    "value": "RIM0XAxis"
+  },
+  {
+    "address": "0x004719EC",
+    "type": "ascii",
+    "value": "unbound"
+  },
+  {
+    "address": "0x004719F4",
+    "type": "ascii",
+    "value": "JoyRotZ"
+  },
+  {
+    "address": "0x004719FC",
+    "type": "ascii",
+    "value": "JoyRotY"
+  },
+  {
+    "address": "0x00471A04",
+    "type": "ascii",
+    "value": "JoyRotX"
+  },
+  {
+    "address": "0x00471A0C",
+    "type": "ascii",
+    "value": "JoyAxisZ"
+  },
+  {
+    "address": "0x00471A18",
+    "type": "ascii",
+    "value": "JoyAxisY"
+  },
+  {
+    "address": "0x00471A24",
+    "type": "ascii",
+    "value": "JoyAxisX"
+  },
+  {
+    "address": "0x00471A30",
+    "type": "ascii",
+    "value": "JoysRight"
+  },
+  {
+    "address": "0x00471A3C",
+    "type": "ascii",
+    "value": "JoysLeft"
+  },
+  {
+    "address": "0x00471A48",
+    "type": "ascii",
+    "value": "JoysDown"
+  },
+  {
+    "address": "0x00471A54",
+    "type": "ascii",
+    "value": "JoysUp"
+  },
+  {
+    "address": "0x00471A5C",
+    "type": "ascii",
+    "value": "Joys12"
+  },
+  {
+    "address": "0x00471A64",
+    "type": "ascii",
+    "value": "Joys11"
+  },
+  {
+    "address": "0x00471A6C",
+    "type": "ascii",
+    "value": "Joys10"
+  },
+  {
+    "address": "0x00471A74",
+    "type": "ascii",
+    "value": "Joys9"
+  },
+  {
+    "address": "0x00471A7C",
+    "type": "ascii",
+    "value": "Joys8"
+  },
+  {
+    "address": "0x00471A84",
+    "type": "ascii",
+    "value": "Joys7"
+  },
+  {
+    "address": "0x00471A8C",
+    "type": "ascii",
+    "value": "Joys6"
+  },
+  {
+    "address": "0x00471A94",
+    "type": "ascii",
+    "value": "Joys5"
+  },
+  {
+    "address": "0x00471A9C",
+    "type": "ascii",
+    "value": "Joys4"
+  },
+  {
+    "address": "0x00471AA4",
+    "type": "ascii",
+    "value": "Joys3"
+  },
+  {
+    "address": "0x00471AAC",
+    "type": "ascii",
+    "value": "Joys2"
+  },
+  {
+    "address": "0x00471AB4",
+    "type": "ascii",
+    "value": "Joys1"
+  },
+  {
+    "address": "0x00471ABC",
+    "type": "ascii",
+    "value": "MWheelDown"
+  },
+  {
+    "address": "0x00471AC8",
+    "type": "ascii",
+    "value": "MWheelUp"
+  },
+  {
+    "address": "0x00471AD4",
+    "type": "ascii",
+    "value": "Mouse5"
+  },
+  {
+    "address": "0x00471ADC",
+    "type": "ascii",
+    "value": "Mouse4"
+  },
+  {
+    "address": "0x00471AE4",
+    "type": "ascii",
+    "value": "Mouse3"
+  },
+  {
+    "address": "0x00471AEC",
+    "type": "ascii",
+    "value": "Mouse2"
+  },
+  {
+    "address": "0x00471AF4",
+    "type": "ascii",
+    "value": "Mouse1"
+  },
+  {
+    "address": "0x00471AFC",
+    "type": "ascii",
+    "value": "Perk Randomizer failed to generate random unpicked perks.\n"
+  },
+  {
+    "address": "0x00471B40",
+    "type": "ascii",
+    "value": "http://buy.crimsonland.com"
+  },
+  {
+    "address": "0x00471B5C",
+    "type": "ascii",
+    "value": "Already paid"
+  },
+  {
+    "address": "0x00471B6C",
+    "type": "ascii",
+    "value": "Purchase"
+  },
+  {
+    "address": "0x00471B78",
+    "type": "ascii",
+    "value": "Maybe later"
+  },
+  {
+    "address": "0x00471B84",
+    "type": "ascii",
+    "value": "it now? You'll have a great time!"
+  },
+  {
+    "address": "0x00471BA8",
+    "type": "ascii",
+    "value": "and takes just minutes. "
+  },
+  {
+    "address": "0x00471BC4",
+    "type": "ascii",
+    "value": "please upgrade to the full version of Crimsonland.  The process is very easy"
+  },
+  {
+    "address": "0x00471C14",
+    "type": "ascii",
+    "value": "have %s time left to play Quest mode levels only."
+  },
+  {
+    "address": "0x00471C48",
+    "type": "ascii",
+    "value": "You have used up your play time in this game mode. However, you still"
+  },
+  {
+    "address": "0x00471C90",
+    "type": "ascii",
+    "value": "Buy the full version to gain unrestricted access to all 3"
+  },
+  {
+    "address": "0x00471CCC",
+    "type": "ascii",
+    "value": "is very easy and takes just minutes."
+  },
+  {
+    "address": "0x00471CF4",
+    "type": "ascii",
+    "value": "all features, please upgrade to the full version of Crimsonland.  The process"
+  },
+  {
+    "address": "0x00471D44",
+    "type": "ascii",
+    "value": "Trial time is up. If you would like to have unlimited play time and access to"
+  },
+  {
+    "address": "0x00471D94",
+    "type": "ascii",
+    "value": "game modes and be able to post your scores on the Internet. Why not buy"
+  },
+  {
+    "address": "0x00471DDC",
+    "type": "ascii",
+    "value": "The full version features unrestricted access to all 3"
+  },
+  {
+    "address": "0x00471E14",
+    "type": "ascii",
+    "value": "please upgrade to the full version of Crimsonland."
+  },
+  {
+    "address": "0x00471E48",
+    "type": "ascii",
+    "value": "If you would like to have unlimited play time and access to all features,"
+  },
+  {
+    "address": "0x00471E94",
+    "type": "ascii",
+    "value": "However, you still have %s time left to play Survival and Rush game modes."
+  },
+  {
+    "address": "0x00471EE0",
+    "type": "ascii",
+    "value": "You've completed all Quest mode levels available in the Demo version."
+  },
+  {
+    "address": "0x00471F28",
+    "type": "ascii",
+    "value": "%d:%s.%d"
+  },
+  {
+    "address": "0x00471F34",
+    "type": "ascii",
+    "value": "%d:%s.0%d"
+  },
+  {
+    "address": "0x00471F48",
+    "type": "ascii",
+    "value": "You've been playing the Demo version of"
+  },
+  {
+    "address": "0x00471F70",
+    "type": "ascii",
+    "value": "cl_logo"
+  },
+  {
+    "address": "0x00471F78",
+    "type": "ascii",
+    "value": "Press F1 to return to game"
+  },
+  {
+    "address": "0x00471F94",
+    "type": "ascii",
+    "value": "Fire:"
+  },
+  {
+    "address": "0x00471F9C",
+    "type": "ascii",
+    "value": "Right:"
+  },
+  {
+    "address": "0x00471FA4",
+    "type": "ascii",
+    "value": "Left:"
+  },
+  {
+    "address": "0x00471FAC",
+    "type": "ascii",
+    "value": "Down:"
+  },
+  {
+    "address": "0x00471FB8",
+    "type": "ascii",
+    "value": "Player %d"
+  },
+  {
+    "address": "0x00471FC8",
+    "type": "ascii",
+    "value": "Reload:"
+  },
+  {
+    "address": "0x00471FD0",
+    "type": "ascii",
+    "value": "%s or SPACE BAR or KeyPadAdd"
+  },
+  {
+    "address": "0x00471FF0",
+    "type": "ascii",
+    "value": "Level Up:"
+  },
+  {
+    "address": "0x00471FFC",
+    "type": "ascii",
+    "value": "key info"
+  },
+  {
+    "address": "0x00472008",
+    "type": "ascii",
+    "value": "Select"
+  },
+  {
+    "address": "0x00472010",
+    "type": "ascii",
+    "value": "Cancel"
+  },
+  {
+    "address": "0x00472018",
+    "type": "ascii",
+    "value": "extra perk sponsored by the Perk Expert"
+  },
+  {
+    "address": "0x00472040",
+    "type": "ascii",
+    "value": "extra perks sponsored by the Perk Master"
+  },
+  {
+    "address": "0x00472084",
+    "type": "ascii",
+    "value": "Main Menu"
+  },
+  {
+    "address": "0x00472090",
+    "type": "ascii",
+    "value": "Typ'o'Shooter"
+  },
+  {
+    "address": "0x004720A0",
+    "type": "ascii",
+    "value": "  Rush  "
+  },
+  {
+    "address": "0x004720AC",
+    "type": "ascii",
+    "value": "Survival"
+  },
+  {
+    "address": "0x004720B8",
+    "type": "ascii",
+    "value": "Good luck with your battles, trooper!"
+  },
+  {
+    "address": "0x004720E0",
+    "type": "ascii",
+    "value": "for you: Splitter Gun."
+  },
+  {
+    "address": "0x004720F8",
+    "type": "ascii",
+    "value": "efforts a new weapon has been unlocked "
+  },
+  {
+    "address": "0x00472120",
+    "type": "ascii",
+    "value": "virtually impossible. To reward your"
+  },
+  {
+    "address": "0x00472148",
+    "type": "ascii",
+    "value": "You've done the thing we all thought was"
+  },
+  {
+    "address": "0x00472174",
+    "type": "ascii",
+    "value": "mode is unlocked for you: Typ'o'Shooter."
+  },
+  {
+    "address": "0x004721A0",
+    "type": "ascii",
+    "value": "playing, a completely new and different game"
+  },
+  {
+    "address": "0x004721D0",
+    "type": "ascii",
+    "value": "As an additional reward for your victorious"
+  },
+  {
+    "address": "0x004721FC",
+    "type": "ascii",
+    "value": "You can also replay the quests in Hardcore."
+  },
+  {
+    "address": "0x00472228",
+    "type": "ascii",
+    "value": "and weapons your Survival is just a bit easier."
+  },
+  {
+    "address": "0x00472258",
+    "type": "ascii",
+    "value": "isn't over yet! With all of the unlocked perks"
+  },
+  {
+    "address": "0x00472288",
+    "type": "ascii",
+    "value": "You've completed all the levels but the battle"
+  },
+  {
+    "address": "0x004722B8",
+    "type": "ascii",
+    "value": "   Incredible!"
+  },
+  {
+    "address": "0x004722C8",
+    "type": "ascii",
+    "value": "Congratulations!"
+  },
+  {
+    "address": "0x004722DC",
+    "type": "ascii",
+    "value": "Skip tutorial"
+  },
+  {
+    "address": "0x004722EC",
+    "type": "ascii",
+    "value": "Play a game"
+  },
+  {
+    "address": "0x004722F8",
+    "type": "ascii",
+    "value": "Repeat tutorial"
+  },
+  {
+    "address": "0x00472308",
+    "type": "ascii",
+    "value": "Great! Now you are ready to start playing Crimsonland!"
+  },
+  {
+    "address": "0x00472340",
+    "type": "ascii",
+    "value": "Perks can give you extra abilities that help\nyou survive in Crimsonland."
+  },
+  {
+    "address": "0x0047238C",
+    "type": "ascii",
+    "value": "Now let's learn about Perks. You can pick a Perk by clicking\nthe 'level up' sign at the upper right corner of the screen."
+  },
+  {
+    "address": "0x00472408",
+    "type": "ascii",
+    "value": "It will help you to move and shoot and aim at the same time, so practice!"
+  },
+  {
+    "address": "0x00472454",
+    "type": "ascii",
+    "value": "Now, move the mouse to aim at the monsters"
+  },
+  {
+    "address": "0x00472480",
+    "type": "ascii",
+    "value": "Now learn to shoot and move at the same time.\nClick the left Mouse button to shoot."
+  },
+  {
+    "address": "0x004724D4",
+    "type": "ascii",
+    "value": "Now pick up the bonuses by walking over them"
+  },
+  {
+    "address": "0x00472504",
+    "type": "ascii",
+    "value": "First learn to move by pushing the arrow keys."
+  },
+  {
+    "address": "0x00472534",
+    "type": "ascii",
+    "value": "In this tutorial you'll learn how to play Crimsonland"
+  },
+  {
+    "address": "0x0047256C",
+    "type": "ascii",
+    "value": "Reflex Boost powerup slows down time giving you a chance to react better"
+  },
+  {
+    "address": "0x004725B8",
+    "type": "ascii",
+    "value": "This is the nuke powerup, picking it up causes a huge\nexposion harming all monsters nearby!"
+  },
+  {
+    "address": "0x00472614",
+    "type": "ascii",
+    "value": "This powerup doubles all experience points gained when\nx2 powerup is active."
+  },
+  {
+    "address": "0x00472664",
+    "type": "ascii",
+    "value": "This is a weapon powerup. Picking it you gets\nyou another weapon. This one is a submachine gun."
+  },
+  {
+    "address": "0x004726C4",
+    "type": "ascii",
+    "value": "This is the speed powerup, it makes you move faster for\na limited amount of time."
+  },
+  {
+    "address": "0x0047271C",
+    "type": "ascii",
+    "value": "Want to post your high scores?"
+  },
+  {
+    "address": "0x0047273C",
+    "type": "ascii",
+    "value": "Want unlimited Play time?"
+  },
+  {
+    "address": "0x00472758",
+    "type": "ascii",
+    "value": "Want more Perks?"
+  },
+  {
+    "address": "0x0047276C",
+    "type": "ascii",
+    "value": "Want more Weapons?"
+  },
+  {
+    "address": "0x00472780",
+    "type": "ascii",
+    "value": "Want more Levels?"
+  },
+  {
+    "address": "0x00472794",
+    "type": "ascii",
+    "value": "Purchasing the game is very easy and secure."
+  },
+  {
+    "address": "0x004727C4",
+    "type": "ascii",
+    "value": "-The ability to post your high scores online!"
+  },
+  {
+    "address": "0x004727F4",
+    "type": "ascii",
+    "value": " hours of intense and fun gameplay!"
+  },
+  {
+    "address": "0x00472818",
+    "type": "ascii",
+    "value": "-40 insane Levels that give you"
+  },
+  {
+    "address": "0x00472838",
+    "type": "ascii",
+    "value": "-Over 40 game altering Perks!"
+  },
+  {
+    "address": "0x00472858",
+    "type": "ascii",
+    "value": " fire and electricity!"
+  },
+  {
+    "address": "0x00472870",
+    "type": "ascii",
+    "value": " weapons that allow you to deal death with plasma, lead,"
+  },
+  {
+    "address": "0x004728AC",
+    "type": "ascii",
+    "value": "-The varied weapon arsenal consisting of over 20 unique"
+  },
+  {
+    "address": "0x004728E4",
+    "type": "ascii",
+    "value": "-Unlimited Play Time in three thrilling Game Modes!"
+  },
+  {
+    "address": "0x00472918",
+    "type": "ascii",
+    "value": "Full version features:"
+  },
+  {
+    "address": "0x00472930",
+    "type": "ascii",
+    "value": "Upgrade to the full version of Crimsonland Today!"
+  },
+  {
+    "address": "0x00472964",
+    "type": "ascii",
+    "value": "mockup"
+  },
+  {
+    "address": "0x0047296C",
+    "type": "ascii",
+    "value": "backplasma"
+  },
+  {
+    "address": "0x00472978",
+    "type": "ascii",
+    "value": "Orbes Volantes Exstare"
+  },
+  {
+    "address": "0x0047299C",
+    "type": "ascii",
+    "value": "shot_%d.bmp"
+  },
+  {
+    "address": "0x004729A8",
+    "type": "ascii",
+    "value": "shot_0%d.bmp"
+  },
+  {
+    "address": "0x004729B8",
+    "type": "ascii",
+    "value": "shot_00%d.bmp"
+  },
+  {
+    "address": "0x004729D8",
+    "type": "ascii",
+    "value": "(and be patient!)"
+  },
+  {
+    "address": "0x004729EC",
+    "type": "ascii",
+    "value": "Click the ones with the round ones!"
+  },
+  {
+    "address": "0x00472A10",
+    "type": "ascii",
+    "value": "You can stop watching now."
+  },
+  {
+    "address": "0x00472A2C",
+    "type": "ascii",
+    "value": "(see vorbis.txt)"
+  },
+  {
+    "address": "0x00472A40",
+    "type": "ascii",
+    "value": "2003 (c) Xiph.Org Foundation"
+  },
+  {
+    "address": "0x00472A60",
+    "type": "ascii",
+    "value": "Uses Vorbis Audio Decompression"
+  },
+  {
+    "address": "0x00472A80",
+    "type": "ascii",
+    "value": "Pasi Heinonen"
+  },
+  {
+    "address": "0x00472A90",
+    "type": "ascii",
+    "value": "10tons logo by"
+  },
+  {
+    "address": "0x00472AA0",
+    "type": "ascii",
+    "value": "2003 (c) 10tons entertainment"
+  },
+  {
+    "address": "0x00472AC0",
+    "type": "ascii",
+    "value": "Muzzy"
+  },
+  {
+    "address": "0x00472AC8",
+    "type": "ascii",
+    "value": "Matricks"
+  },
+  {
+    "address": "0x00472AD4",
+    "type": "ascii",
+    "value": "Chaos^"
+  },
+  {
+    "address": "0x00472ADC",
+    "type": "ascii",
+    "value": "Greeting to:"
+  },
+  {
+    "address": "0x00472AEC",
+    "type": "ascii",
+    "value": "Ville M"
+  },
+  {
+    "address": "0x00472AFC",
+    "type": "ascii",
+    "value": "Toni Nurminen"
+  },
+  {
+    "address": "0x00472B0C",
+    "type": "ascii",
+    "value": "Simon Hallam"
+  },
+  {
+    "address": "0x00472B1C",
+    "type": "ascii",
+    "value": "Mike Colonnese"
+  },
+  {
+    "address": "0x00472B2C",
+    "type": "ascii",
+    "value": "Mika Alatalo"
+  },
+  {
+    "address": "0x00472B3C",
+    "type": "ascii",
+    "value": "Matti Alanen"
+  },
+  {
+    "address": "0x00472B4C",
+    "type": "ascii",
+    "value": "Markus Lassila"
+  },
+  {
+    "address": "0x00472B5C",
+    "type": "ascii",
+    "value": "Lee Cooper"
+  },
+  {
+    "address": "0x00472B68",
+    "type": "ascii",
+    "value": "Lars Brubaker"
+  },
+  {
+    "address": "0x00472B78",
+    "type": "ascii",
+    "value": "Kalle Hahl"
+  },
+  {
+    "address": "0x00472B84",
+    "type": "ascii",
+    "value": "Juha Alatalo"
+  },
+  {
+    "address": "0x00472B94",
+    "type": "ascii",
+    "value": "Jeff McAteer"
+  },
+  {
+    "address": "0x00472BA4",
+    "type": "ascii",
+    "value": "Jarkko Forsbacka"
+  },
+  {
+    "address": "0x00472BB8",
+    "type": "ascii",
+    "value": "James C. Smith"
+  },
+  {
+    "address": "0x00472BC8",
+    "type": "ascii",
+    "value": "Ernie Ramirez"
+  },
+  {
+    "address": "0x00472BD8",
+    "type": "ascii",
+    "value": "Erik Van Pelt"
+  },
+  {
+    "address": "0x00472BE8",
+    "type": "ascii",
+    "value": "Eric Dallaire"
+  },
+  {
+    "address": "0x00472BF8",
+    "type": "ascii",
+    "value": "Dirk Bunk"
+  },
+  {
+    "address": "0x00472C04",
+    "type": "ascii",
+    "value": "Dan Ruskin"
+  },
+  {
+    "address": "0x00472C10",
+    "type": "ascii",
+    "value": "Bryce Baker"
+  },
+  {
+    "address": "0x00472C1C",
+    "type": "ascii",
+    "value": "Avraham Petrosyan"
+  },
+  {
+    "address": "0x00472C30",
+    "type": "ascii",
+    "value": "Play testers:"
+  },
+  {
+    "address": "0x00472C40",
+    "type": "ascii",
+    "value": "Peter Hajba / Remedy"
+  },
+  {
+    "address": "0x00472C58",
+    "type": "ascii",
+    "value": "Petri J"
+  },
+  {
+    "address": "0x00472C60",
+    "type": "ascii",
+    "value": "rvilehto / Remedy"
+  },
+  {
+    "address": "0x00472C74",
+    "type": "ascii",
+    "value": "Special thanks to:"
+  },
+  {
+    "address": "0x00472C88",
+    "type": "ascii",
+    "value": "Miikka Kulmala"
+  },
+  {
+    "address": "0x00472C98",
+    "type": "ascii",
+    "value": "Manual:"
+  },
+  {
+    "address": "0x00472CA0",
+    "type": "ascii",
+    "value": "Ion Hardie"
+  },
+  {
+    "address": "0x00472CAC",
+    "type": "ascii",
+    "value": "Sound Effects:"
+  },
+  {
+    "address": "0x00472CBC",
+    "type": "ascii",
+    "value": "Ville Eriksson"
+  },
+  {
+    "address": "0x00472CCC",
+    "type": "ascii",
+    "value": "Valtteri Pihlajam"
+  },
+  {
+    "address": "0x00472CE4",
+    "type": "ascii",
+    "value": "Music:"
+  },
+  {
+    "address": "0x00472CEC",
+    "type": "ascii",
+    "value": "Timo Palonen"
+  },
+  {
+    "address": "0x00472CFC",
+    "type": "ascii",
+    "value": "3D Modelling:"
+  },
+  {
+    "address": "0x00472D0C",
+    "type": "ascii",
+    "value": "2D Art:"
+  },
+  {
+    "address": "0x00472D14",
+    "type": "ascii",
+    "value": "Zach Young"
+  },
+  {
+    "address": "0x00472D20",
+    "type": "ascii",
+    "value": "Producer:"
+  },
+  {
+    "address": "0x00472D2C",
+    "type": "ascii",
+    "value": "Programming:"
+  },
+  {
+    "address": "0x00472D3C",
+    "type": "ascii",
+    "value": "Tero Alatalo"
+  },
+  {
+    "address": "0x00472D4C",
+    "type": "ascii",
+    "value": "Game Design:"
+  },
+  {
+    "address": "0x00472D5C",
+    "type": "ascii",
+    "value": "Crimsonland"
+  },
+  {
+    "address": "0x00472D68",
+    "type": "ascii",
+    "value": "(4 bits for index)"
+  },
+  {
+    "address": "0x00472D7C",
+    "type": "ascii",
+    "value": "(4 bits for index) <- OOOPS I meant FIVE!"
+  },
+  {
+    "address": "0x00472DA8",
+    "type": "ascii",
+    "value": "011111001000111"
+  },
+  {
+    "address": "0x00472DB8",
+    "type": "ascii",
+    "value": "0101001011100010010101100"
+  },
+  {
+    "address": "0x00472DD4",
+    "type": "ascii",
+    "value": "0001001110000010101110011"
+  },
+  {
+    "address": "0x00472DF0",
+    "type": "ascii",
+    "value": "Triangle Cube Last Not Flee"
+  },
+  {
+    "address": "0x00472E0C",
+    "type": "ascii",
+    "value": "Yourself Ground First For"
+  },
+  {
+    "address": "0x00472E28",
+    "type": "ascii",
+    "value": "The Sacrifice Old Center"
+  },
+  {
+    "address": "0x00472E44",
+    "type": "ascii",
+    "value": "Do Firepower See Mark Of"
+  },
+  {
+    "address": "0x00472E60",
+    "type": "ascii",
+    "value": "Inside Dead Let Mighty Blood"
+  },
+  {
+    "address": "0x00472E88",
+    "type": "ascii",
+    "value": "credits"
+  },
+  {
+    "address": "0x00472E90",
+    "type": "ascii",
+    "value": "Secret"
+  },
+  {
+    "address": "0x00472F34",
+    "type": "ascii",
+    "value": "IDirect3D8"
+  },
+  {
+    "address": "0x00472F40",
+    "type": "ascii",
+    "value": "GrimSFX"
+  },
+  {
+    "address": "0x00472F48",
+    "type": "ascii",
+    "value": "GrimGFX"
+  },
+  {
+    "address": "0x00472F50",
+    "type": "ascii",
+    "value": "CLM_%s"
+  },
+  {
+    "address": "0x00472F58",
+    "type": "ascii",
+    "value": "mods\\%s"
+  },
+  {
+    "address": "0x00472F60",
+    "type": "ascii",
+    "value": "game_pause"
+  },
+  {
+    "address": "0x00472F6C",
+    "type": "ascii",
+    "value": "CMOD: mod enum '%s'\n"
+  },
+  {
+    "address": "0x00472F84",
+    "type": "ascii",
+    "value": "CMOD: bad CMOD_GetInfo function\n"
+  },
+  {
+    "address": "0x00472FA8",
+    "type": "ascii",
+    "value": "CMOD_GetInfo failed.\n"
+  },
+  {
+    "address": "0x00472FC0",
+    "type": "ascii",
+    "value": "CMOD_GetInfo"
+  },
+  {
+    "address": "0x00472FD0",
+    "type": "ascii",
+    "value": "CMOD: Load library failed.\n"
+  },
+  {
+    "address": "0x00472FEC",
+    "type": "ascii",
+    "value": "CMOD: '%s'\n"
+  },
+  {
+    "address": "0x00472FF8",
+    "type": "ascii",
+    "value": "CMOD_GetMod ok\n"
+  },
+  {
+    "address": "0x00473008",
+    "type": "ascii",
+    "value": "CMOD: bad CMOD_GetMod function\n"
+  },
+  {
+    "address": "0x00473028",
+    "type": "ascii",
+    "value": "CMOD: CMOD_GetMod failed.\n"
+  },
+  {
+    "address": "0x00473044",
+    "type": "ascii",
+    "value": "CMOD_GetMod"
+  },
+  {
+    "address": "0x00473050",
+    "type": "ascii",
+    "value": "mods\\*.dll"
+  },
+  {
+    "address": "0x0047305C",
+    "type": "ascii",
+    "value": "Launch"
+  },
+  {
+    "address": "0x00473064",
+    "type": "ascii",
+    "value": "Main menu"
+  },
+  {
+    "address": "0x00473070",
+    "type": "ascii",
+    "value": "(Unsupported API version)"
+  },
+  {
+    "address": "0x0047308C",
+    "type": "ascii",
+    "value": "Filename:"
+  },
+  {
+    "address": "0x00473098",
+    "type": "ascii",
+    "value": "Author(s):"
+  },
+  {
+    "address": "0x004730AC",
+    "type": "ascii",
+    "value": "v%.2f"
+  },
+  {
+    "address": "0x004730B4",
+    "type": "ascii",
+    "value": "list of mods:"
+  },
+  {
+    "address": "0x004730C4",
+    "type": "ascii",
+    "value": "+ more"
+  },
+  {
+    "address": "0x004730D4",
+    "type": "ascii",
+    "value": "Reset"
+  },
+  {
+    "address": "0x004730DC",
+    "type": "ascii",
+    "value": "Game Over"
+  },
+  {
+    "address": "0x004730E8",
+    "type": "ascii",
+    "value": "score: %d"
+  },
+  {
+    "address": "0x004730F4",
+    "type": "ascii",
+    "value": "..or something more?"
+  },
+  {
+    "address": "0x0047310C",
+    "type": "ascii",
+    "value": "a puzzle game unfinished"
+  },
+  {
+    "address": "0x00473128",
+    "type": "ascii",
+    "value": "AlienZooKeeper"
+  },
+  {
+    "address": "0x00473148",
+    "type": "ascii",
+    "value": "%d:%d"
+  },
+  {
+    "address": "0x00473150",
+    "type": "ascii",
+    "value": "%d:0%d"
+  },
+  {
+    "address": "0x00473158",
+    "type": "ascii",
+    "value": "High scores"
+  },
+  {
+    "address": "0x00473164",
+    "type": "ascii",
+    "value": "Play Again"
+  },
+  {
+    "address": "0x00473170",
+    "type": "ascii",
+    "value": "Score too low for top%d."
+  },
+  {
+    "address": "0x00473190",
+    "type": "ascii",
+    "value": "State your name, trooper!"
+  },
+  {
+    "address": "0x004731AC",
+    "type": "ascii",
+    "value": "Play Another"
+  },
+  {
+    "address": "0x004731BC",
+    "type": "ascii",
+    "value": "Quest failed, try again."
+  },
+  {
+    "address": "0x004731D8",
+    "type": "ascii",
+    "value": "Try one more time?"
+  },
+  {
+    "address": "0x004731EC",
+    "type": "ascii",
+    "value": "Persistence will be rewared."
+  },
+  {
+    "address": "0x0047320C",
+    "type": "ascii",
+    "value": "No luck this time, have another go?"
+  },
+  {
+    "address": "0x00473230",
+    "type": "ascii",
+    "value": "Third time no good."
+  },
+  {
+    "address": "0x00473244",
+    "type": "ascii",
+    "value": "You didn't make it, do try again."
+  },
+  {
+    "address": "0x00473268",
+    "type": "ascii",
+    "value": "Show End Note"
+  },
+  {
+    "address": "0x00473278",
+    "type": "ascii",
+    "value": "Play Next"
+  },
+  {
+    "address": "0x00473284",
+    "type": "ascii",
+    "value": "Perk unlocked:"
+  },
+  {
+    "address": "0x00473294",
+    "type": "ascii",
+    "value": "Weapon unlocked:"
+  },
+  {
+    "address": "0x004732A8",
+    "type": "ascii",
+    "value": "State your name trooper!"
+  },
+  {
+    "address": "0x004732C4",
+    "type": "ascii",
+    "value": "Final Time:"
+  },
+  {
+    "address": "0x004732D0",
+    "type": "ascii",
+    "value": "Unpicked Perk Bonus:"
+  },
+  {
+    "address": "0x004732E8",
+    "type": "ascii",
+    "value": "Life Bonus:"
+  },
+  {
+    "address": "0x004732F4",
+    "type": "ascii",
+    "value": "Base Time:"
+  },
+  {
+    "address": "0x0047331C",
+    "type": "ascii",
+    "value": "You regain some of your health.."
+  },
+  {
+    "address": "0x00473340",
+    "type": "ascii",
+    "value": "MediKit"
+  },
+  {
+    "address": "0x00473348",
+    "type": "ascii",
+    "value": "For few seconds -- make them count."
+  },
+  {
+    "address": "0x0047336C",
+    "type": "ascii",
+    "value": "Fire Bullets"
+  },
+  {
+    "address": "0x0047337C",
+    "type": "ascii",
+    "value": "Your firerate and load time increase for a short period."
+  },
+  {
+    "address": "0x004733B8",
+    "type": "ascii",
+    "value": "Weapon Power Up"
+  },
+  {
+    "address": "0x004733C8",
+    "type": "ascii",
+    "value": "Suddenly monsters run away from you and you can eat them."
+  },
+  {
+    "address": "0x00473404",
+    "type": "ascii",
+    "value": "Energizer"
+  },
+  {
+    "address": "0x00473410",
+    "type": "ascii",
+    "value": "Your movement speed increases for a while."
+  },
+  {
+    "address": "0x0047343C",
+    "type": "ascii",
+    "value": "Speed"
+  },
+  {
+    "address": "0x00473444",
+    "type": "ascii",
+    "value": "Monsters are frozen."
+  },
+  {
+    "address": "0x0047345C",
+    "type": "ascii",
+    "value": "Freeze"
+  },
+  {
+    "address": "0x00473464",
+    "type": "ascii",
+    "value": "Force field protects you for a while."
+  },
+  {
+    "address": "0x0047348C",
+    "type": "ascii",
+    "value": "Shield"
+  },
+  {
+    "address": "0x00473494",
+    "type": "ascii",
+    "value": "You get more time to react as the game slows down."
+  },
+  {
+    "address": "0x004734C8",
+    "type": "ascii",
+    "value": "Reflex Boost"
+  },
+  {
+    "address": "0x004734D8",
+    "type": "ascii",
+    "value": "Chain of shocks shock the crowd."
+  },
+  {
+    "address": "0x004734FC",
+    "type": "ascii",
+    "value": "Shock Chain"
+  },
+  {
+    "address": "0x00473508",
+    "type": "ascii",
+    "value": "Fireballs all over the place."
+  },
+  {
+    "address": "0x00473528",
+    "type": "ascii",
+    "value": "Fireblast"
+  },
+  {
+    "address": "0x00473534",
+    "type": "ascii",
+    "value": "Every experience point you get is doubled when this bonus is active."
+  },
+  {
+    "address": "0x0047357C",
+    "type": "ascii",
+    "value": "Double Experience"
+  },
+  {
+    "address": "0x00473590",
+    "type": "ascii",
+    "value": "An amazing explosion of ATOMIC power."
+  },
+  {
+    "address": "0x004735C0",
+    "type": "ascii",
+    "value": "You get a new weapon."
+  },
+  {
+    "address": "0x004735D8",
+    "type": "ascii",
+    "value": "Weapon"
+  },
+  {
+    "address": "0x004735E0",
+    "type": "ascii",
+    "value": "You gain some experience points."
+  },
+  {
+    "address": "0x00473604",
+    "type": "ascii",
+    "value": "Points"
+  },
+  {
+    "address": "0x0047360C",
+    "type": "ascii",
+    "value": "Quests"
+  },
+  {
+    "address": "0x0047361C",
+    "type": "ascii",
+    "value": "sequence"
+  },
+  {
+    "address": "0x00473628",
+    "type": "ascii",
+    "value": "GAME_SaveStatus FAILED!\n"
+  },
+  {
+    "address": "0x00473644",
+    "type": "ascii",
+    "value": "GAME_SaveStatus OK.\n"
+  },
+  {
+    "address": "0x0047365C",
+    "type": "ascii",
+    "value": "game.cfg"
+  },
+  {
+    "address": "0x0047366C",
+    "type": "ascii",
+    "value": "transferFailed"
+  },
+  {
+    "address": "0x0047367C",
+    "type": "ascii",
+    "value": "dataPathId"
+  },
+  {
+    "address": "0x00473688",
+    "type": "ascii",
+    "value": "Generating new file..\n"
+  },
+  {
+    "address": "0x004736A0",
+    "type": "ascii",
+    "value": "GAME_LoadStatus FAILED!\n"
+  },
+  {
+    "address": "0x004736BC",
+    "type": "ascii",
+    "value": "GAME_LoadStatus OK.\n"
+  },
+  {
+    "address": "0x004736D4",
+    "type": "ascii",
+    "value": "GAME_LoadStatus FAILED, check sum invalid\n"
+  },
+  {
+    "address": "0x00473700",
+    "type": "ascii",
+    "value": "GAME_LoadStatus FAILED, invalid file size\n"
+  },
+  {
+    "address": "0x0047372C",
+    "type": "ascii",
+    "value": "trooper"
+  },
+  {
+    "address": "0x00473734",
+    "type": "ascii",
+    "value": "alien"
+  },
+  {
+    "address": "0x0047373C",
+    "type": "ascii",
+    "value": "spider_sp2"
+  },
+  {
+    "address": "0x00473748",
+    "type": "ascii",
+    "value": "spider_sp1"
+  },
+  {
+    "address": "0x00473754",
+    "type": "ascii",
+    "value": "lizard"
+  },
+  {
+    "address": "0x0047375C",
+    "type": "ascii",
+    "value": "zombie"
+  },
+  {
+    "address": "0x00473764",
+    "type": "ascii",
+    "value": "Empty"
+  },
+  {
+    "address": "0x0047377C",
+    "type": "ascii",
+    "value": "- Generated terrain.\n"
+  },
+  {
+    "address": "0x00473794",
+    "type": "ascii",
+    "value": "! FAILED Loading uiElement %s\n"
+  },
+  {
+    "address": "0x004737B4",
+    "type": "ascii",
+    "value": "Loading uiElement %s\n"
+  },
+  {
+    "address": "0x004737CC",
+    "type": "ascii",
+    "value": "ui\\ui_menuPanel.jaz"
+  },
+  {
+    "address": "0x004737E0",
+    "type": "ascii",
+    "value": "ui\\ui_menuItem.jaz"
+  },
+  {
+    "address": "0x004737F4",
+    "type": "ascii",
+    "value": "ui\\ui_signCrimson.jaz"
+  },
+  {
+    "address": "0x00473810",
+    "type": "ascii",
+    "value": "%d seconds"
+  },
+  {
+    "address": "0x0047381C",
+    "type": "ascii",
+    "value": "%d.%d"
+  },
+  {
+    "address": "0x00473824",
+    "type": "ascii",
+    "value": "Progress"
+  },
+  {
+    "address": "0x00473838",
+    "type": "ascii",
+    "value": "ui\\ui_indElectric.jaz"
+  },
+  {
+    "address": "0x00473850",
+    "type": "ascii",
+    "value": "ui\\ui_indRocket.jaz"
+  },
+  {
+    "address": "0x00473864",
+    "type": "ascii",
+    "value": "ui\\ui_indBullet.jaz"
+  },
+  {
+    "address": "0x00473878",
+    "type": "ascii",
+    "value": "ui\\ui_indFire.jaz"
+  },
+  {
+    "address": "0x0047388C",
+    "type": "ascii",
+    "value": "iHeart"
+  },
+  {
+    "address": "0x00473894",
+    "type": "ascii",
+    "value": "iGameUI"
+  },
+  {
+    "address": "0x0047389C",
+    "type": "ascii",
+    "value": "%d.%d%c"
+  },
+  {
+    "address": "0x00473950",
+    "type": "ascii",
+    "value": "\\d3d9.dll"
+  },
+  {
+    "address": "0x0047395C",
+    "type": "ascii",
+    "value": "\\dpnet.dll"
+  },
+  {
+    "address": "0x00473968",
+    "type": "ascii",
+    "value": "\\mpg2splt.ax"
+  },
+  {
+    "address": "0x00473978",
+    "type": "ascii",
+    "value": "\\d3d8.dll"
+  },
+  {
+    "address": "0x00473984",
+    "type": "ascii",
+    "value": "\\dinput.dll"
+  },
+  {
+    "address": "0x00473990",
+    "type": "ascii",
+    "value": "\\dplayx.dll"
+  },
+  {
+    "address": "0x0047399C",
+    "type": "ascii",
+    "value": "\\d3drg8x.dll"
+  },
+  {
+    "address": "0x004739AC",
+    "type": "ascii",
+    "value": "\\ddraw.dll"
+  },
+  {
+    "address": "0x004739BC",
+    "type": "ascii",
+    "value": "GRIM__GetInterface"
+  },
+  {
+    "address": "0x004739D0",
+    "type": "ascii",
+    "value": "Input does not appear to be an Ogg bitstream.\n"
+  },
+  {
+    "address": "0x00473A6C",
+    "type": "ascii",
+    "value": "Software\\10tons\\Crimsonland\\"
+  },
+  {
+    "address": "0x00473A8C",
+    "type": "ascii",
+    "value": "Brave little haxx0r aren't you?\n"
+  },
+  {
+    "address": "0x00473AB0",
+    "type": "ascii",
+    "value": "Muzzy has already been digging through these! \"<muzzy> oli kyll"
+  },
+  {
+    "address": "0x00473AF0",
+    "type": "ascii",
+    "value": " mukava yll"
+  },
+  {
+    "address": "0x00473B04",
+    "type": "ascii",
+    "value": " oma nimi siell"
+  },
+  {
+    "address": "0x00473B14",
+    "type": "ascii",
+    "value": " :D\"Wonder what he's up to now...\n"
+  },
+  {
+    "address": "0x00473B38",
+    "type": "ascii",
+    "value": "This is all about fixing city walls with Magic Paint. To stop sinking, you know?\n"
+  },
+  {
+    "address": "0x00473B8C",
+    "type": "ascii",
+    "value": "I'll state this as clearly as I can: click each line with letter o(s) in them in scrolling credits to start The Secret Path. Be careful though: don't click on other lines!\n"
+  },
+  {
+    "address": "0x00473C3C",
+    "type": "ascii",
+    "value": "Inside AlienZooKeeper can be found few interesting combinations. CyanYellowRedYellow doesn't mean anything but what about if you run it through an orthogonal projection?\n"
+  },
+  {
+    "address": "0x00473CE8",
+    "type": "ascii",
+    "value": "Do remember you're probably seeing something that not really meant to see! Don't believe everything...\n"
+  },
+  {
+    "address": "0x00473D50",
+    "type": "ascii",
+    "value": "I'll tell you a little secret; there are few secret weapons hidden inside the game!\n"
+  },
+  {
+    "address": "0x00473DA8",
+    "type": "ascii",
+    "value": "Pikku-Reijo ei tiennyt mihin ryhtyi juodessaan seepran. Seepran raidat maistuivat kitkerilt"
+  },
+  {
+    "address": "0x00473E04",
+    "type": "ascii",
+    "value": " ja niist"
+  },
+  {
+    "address": "0x00473E0E",
+    "type": "ascii",
+    "value": " tuli Reijolle huono olo. Voi voi.\n"
+  },
+  {
+    "address": "0x00473E34",
+    "type": "ascii",
+    "value": " %ReDistrBuildXX%"
+  },
+  {
+    "address": "0x00473E48",
+    "type": "ascii",
+    "value": "crimson.cfg"
+  },
+  {
+    "address": "0x00473E54",
+    "type": "ascii",
+    "value": "- Reseting players.\n"
+  },
+  {
+    "address": "0x00473E6C",
+    "type": "ascii",
+    "value": "No free creatures to spawn!\n"
+  },
+  {
+    "address": "0x00473E8C",
+    "type": "ascii",
+    "value": "%s: %d"
+  },
+  {
+    "address": "0x00473E94",
+    "type": "ascii",
+    "value": "<-- Restored\n"
+  },
+  {
+    "address": "0x00473EA4",
+    "type": "ascii",
+    "value": "<-- Suspended\n"
+  },
+  {
+    "address": "0x00473EB4",
+    "type": "ascii",
+    "value": "...loading texture '%s' failed\n"
+  },
+  {
+    "address": "0x00473ED4",
+    "type": "ascii",
+    "value": "...loading texture '%s' ok\n"
+  },
+  {
+    "address": "0x00473EF0",
+    "type": "ascii",
+    "value": "loadtexture <texturefileid>\n"
+  },
+  {
+    "address": "0x00473F10",
+    "type": "ascii",
+    "value": "Set resource paq to '%s'\n"
+  },
+  {
+    "address": "0x00473F2C",
+    "type": "ascii",
+    "value": "File '%s' not found.\n"
+  },
+  {
+    "address": "0x00473F44",
+    "type": "ascii",
+    "value": "setresourcepaq <resourcepaq>\n"
+  },
+  {
+    "address": "0x00473F64",
+    "type": "ascii",
+    "value": "Survived: %i seconds.\n"
+  },
+  {
+    "address": "0x00473F7C",
+    "type": "ascii",
+    "value": "Launching web browser (%s)..\n"
+  },
+  {
+    "address": "0x00473F9C",
+    "type": "ascii",
+    "value": "Failed to launch web browser.\n"
+  },
+  {
+    "address": "0x00473FBC",
+    "type": "ascii",
+    "value": "openurl <url>\n"
+  },
+  {
+    "address": "0x00473FCC",
+    "type": "ascii",
+    "value": "Sound frequency adjustment is now disabled.\n"
+  },
+  {
+    "address": "0x00473FFC",
+    "type": "ascii",
+    "value": "Sound frequency adjustment is now enabled.\n"
+  },
+  {
+    "address": "0x00474028",
+    "type": "ascii",
+    "value": "console.log"
+  },
+  {
+    "address": "0x00474034",
+    "type": "ascii",
+    "value": "Running in safemode, using static terrain textures.\n"
+  },
+  {
+    "address": "0x0047406C",
+    "type": "ascii",
+    "value": "Created terrain texture.\n"
+  },
+  {
+    "address": "0x00474088",
+    "type": "ascii",
+    "value": "--> entering safemode.\n"
+  },
+  {
+    "address": "0x004740A0",
+    "type": "ascii",
+    "value": "Failed to create terrain texture.\n"
+  },
+  {
+    "address": "0x004740C4",
+    "type": "ascii",
+    "value": "ground"
+  },
+  {
+    "address": "0x004740CC",
+    "type": "ascii",
+    "value": "...no sounds selected\n"
+  },
+  {
+    "address": "0x004740E4",
+    "type": "ascii",
+    "value": "- Sound init ---------\n"
+  },
+  {
+    "address": "0x004740FC",
+    "type": "ascii",
+    "value": "----------------------\n"
+  },
+  {
+    "address": "0x00474114",
+    "type": "ascii",
+    "value": "Init Grim successful.\n"
+  },
+  {
+    "address": "0x0047412C",
+    "type": "ascii",
+    "value": "aim64"
+  },
+  {
+    "address": "0x00474134",
+    "type": "ascii",
+    "value": "ui_dropOff"
+  },
+  {
+    "address": "0x00474140",
+    "type": "ascii",
+    "value": "ui\\ui_dropDownOff.jaz"
+  },
+  {
+    "address": "0x00474158",
+    "type": "ascii",
+    "value": "ui_dropOn"
+  },
+  {
+    "address": "0x00474164",
+    "type": "ascii",
+    "value": "ui\\ui_dropDownOn.jaz"
+  },
+  {
+    "address": "0x0047417C",
+    "type": "ascii",
+    "value": "game\\muzzleFlash.jaz"
+  },
+  {
+    "address": "0x00474194",
+    "type": "ascii",
+    "value": "ui\\ui_clockPointer.jaz"
+  },
+  {
+    "address": "0x004741AC",
+    "type": "ascii",
+    "value": "ui\\ui_clockTable.jaz"
+  },
+  {
+    "address": "0x004741C4",
+    "type": "ascii",
+    "value": "ui\\ui_lifeHeart.jaz"
+  },
+  {
+    "address": "0x004741D8",
+    "type": "ascii",
+    "value": "ui\\ui_gameTop.jaz"
+  },
+  {
+    "address": "0x004741EC",
+    "type": "ascii",
+    "value": "ui_wicons"
+  },
+  {
+    "address": "0x004741F8",
+    "type": "ascii",
+    "value": "ui\\ui_wicons.jaz"
+  },
+  {
+    "address": "0x0047420C",
+    "type": "ascii",
+    "value": "ui\\ui_num5.jaz"
+  },
+  {
+    "address": "0x0047421C",
+    "type": "ascii",
+    "value": "ui\\ui_num4.jaz"
+  },
+  {
+    "address": "0x0047422C",
+    "type": "ascii",
+    "value": "ui\\ui_num3.jaz"
+  },
+  {
+    "address": "0x0047423C",
+    "type": "ascii",
+    "value": "ui\\ui_num2.jaz"
+  },
+  {
+    "address": "0x0047424C",
+    "type": "ascii",
+    "value": "ui\\ui_num1.jaz"
+  },
+  {
+    "address": "0x0047425C",
+    "type": "ascii",
+    "value": "ui\\ui_textQuest.jaz"
+  },
+  {
+    "address": "0x00474270",
+    "type": "ascii",
+    "value": "ui\\ui_textLevComp.jaz"
+  },
+  {
+    "address": "0x00474288",
+    "type": "ascii",
+    "value": "ter\\fb_q4.jaz"
+  },
+  {
+    "address": "0x00474298",
+    "type": "ascii",
+    "value": "ter\\fb_q3.jaz"
+  },
+  {
+    "address": "0x004742A8",
+    "type": "ascii",
+    "value": "ter\\fb_q2.jaz"
+  },
+  {
+    "address": "0x004742B8",
+    "type": "ascii",
+    "value": "ter\\fb_q1.jaz"
+  },
+  {
+    "address": "0x004742C8",
+    "type": "ascii",
+    "value": "ter\\ter_q4_tex1.jaz"
+  },
+  {
+    "address": "0x004742DC",
+    "type": "ascii",
+    "value": "ter\\ter_q4_base.jaz"
+  },
+  {
+    "address": "0x004742F0",
+    "type": "ascii",
+    "value": "ter\\ter_q3_tex1.jaz"
+  },
+  {
+    "address": "0x00474304",
+    "type": "ascii",
+    "value": "ter\\ter_q3_base.jaz"
+  },
+  {
+    "address": "0x00474318",
+    "type": "ascii",
+    "value": "ter\\ter_q2_tex1.jaz"
+  },
+  {
+    "address": "0x0047432C",
+    "type": "ascii",
+    "value": "ter\\ter_q2_base.jaz"
+  },
+  {
+    "address": "0x00474340",
+    "type": "ascii",
+    "value": "ter\\ter_q1_tex1.jaz"
+  },
+  {
+    "address": "0x00474354",
+    "type": "ascii",
+    "value": "ter\\ter_q1_base.jaz"
+  },
+  {
+    "address": "0x00474368",
+    "type": "ascii",
+    "value": "ui\\ui_aim.jaz"
+  },
+  {
+    "address": "0x00474378",
+    "type": "ascii",
+    "value": "ui\\ui_cursor.jaz"
+  },
+  {
+    "address": "0x0047438C",
+    "type": "ascii",
+    "value": "ui\\ui_arrow.jaz"
+  },
+  {
+    "address": "0x0047439C",
+    "type": "ascii",
+    "value": "ui\\ui_indPanel.jaz"
+  },
+  {
+    "address": "0x004743B0",
+    "type": "ascii",
+    "value": "ui\\ui_indLife.jaz"
+  },
+  {
+    "address": "0x004743C4",
+    "type": "ascii",
+    "value": "game\\particles.jaz"
+  },
+  {
+    "address": "0x004743D8",
+    "type": "ascii",
+    "value": "bonuses"
+  },
+  {
+    "address": "0x004743E0",
+    "type": "ascii",
+    "value": "game\\bonuses.jaz"
+  },
+  {
+    "address": "0x004743F4",
+    "type": "ascii",
+    "value": "ui_rectOn"
+  },
+  {
+    "address": "0x00474400",
+    "type": "ascii",
+    "value": "ui\\ui_rectOn.jaz"
+  },
+  {
+    "address": "0x00474414",
+    "type": "ascii",
+    "value": "ui_rectOff"
+  },
+  {
+    "address": "0x00474420",
+    "type": "ascii",
+    "value": "ui\\ui_rectOff.jaz"
+  },
+  {
+    "address": "0x00474434",
+    "type": "ascii",
+    "value": "ui_checkOff"
+  },
+  {
+    "address": "0x00474440",
+    "type": "ascii",
+    "value": "ui\\ui_checkOff.jaz"
+  },
+  {
+    "address": "0x00474454",
+    "type": "ascii",
+    "value": "ui_checkOn"
+  },
+  {
+    "address": "0x00474460",
+    "type": "ascii",
+    "value": "ui\\ui_checkOn.jaz"
+  },
+  {
+    "address": "0x00474474",
+    "type": "ascii",
+    "value": "ui_buttonMd"
+  },
+  {
+    "address": "0x00474480",
+    "type": "ascii",
+    "value": "ui\\ui_button_128x32.jaz"
+  },
+  {
+    "address": "0x00474498",
+    "type": "ascii",
+    "value": "ui_buttonSm"
+  },
+  {
+    "address": "0x004744A4",
+    "type": "ascii",
+    "value": "ui\\ui_button_64x32.jaz"
+  },
+  {
+    "address": "0x004744BC",
+    "type": "ascii",
+    "value": "ui_iconAim"
+  },
+  {
+    "address": "0x004744C8",
+    "type": "ascii",
+    "value": "ui\\ui_iconAim.jaz"
+  },
+  {
+    "address": "0x004744DC",
+    "type": "ascii",
+    "value": "projs"
+  },
+  {
+    "address": "0x004744E4",
+    "type": "ascii",
+    "value": "game\\projs.jaz"
+  },
+  {
+    "address": "0x004744F4",
+    "type": "ascii",
+    "value": "bodyset"
+  },
+  {
+    "address": "0x004744FC",
+    "type": "ascii",
+    "value": "game\\bodyset.jaz"
+  },
+  {
+    "address": "0x00474510",
+    "type": "ascii",
+    "value": "bulletTrail"
+  },
+  {
+    "address": "0x0047451C",
+    "type": "ascii",
+    "value": "load\\bulletTrail.tga"
+  },
+  {
+    "address": "0x00474534",
+    "type": "ascii",
+    "value": "bullet_i"
+  },
+  {
+    "address": "0x00474540",
+    "type": "ascii",
+    "value": "load\\bullet16.tga"
+  },
+  {
+    "address": "0x00474554",
+    "type": "ascii",
+    "value": "arrow"
+  },
+  {
+    "address": "0x0047455C",
+    "type": "ascii",
+    "value": "load\\arrow.tga"
+  },
+  {
+    "address": "0x0047456C",
+    "type": "ascii",
+    "value": "game\\lizard.jaz"
+  },
+  {
+    "address": "0x0047457C",
+    "type": "ascii",
+    "value": "game\\alien.jaz"
+  },
+  {
+    "address": "0x0047458C",
+    "type": "ascii",
+    "value": "game\\spider_sp2.jaz"
+  },
+  {
+    "address": "0x004745A0",
+    "type": "ascii",
+    "value": "game\\spider_sp1.jaz"
+  },
+  {
+    "address": "0x004745B4",
+    "type": "ascii",
+    "value": "game\\zombie.jaz"
+  },
+  {
+    "address": "0x004745C4",
+    "type": "ascii",
+    "value": "game\\trooper.jaz"
+  },
+  {
+    "address": "0x004745D8",
+    "type": "ascii",
+    "value": "GRIM_Font2"
+  },
+  {
+    "address": "0x004745E4",
+    "type": "ascii",
+    "value": "load\\smallWhite.tga"
+  },
+  {
+    "address": "0x004745F8",
+    "type": "ascii",
+    "value": "timePlayed"
+  },
+  {
+    "address": "0x00474604",
+    "type": "ascii",
+    "value": "Software\\10tons entertainment\\Crimsonland"
+  },
+  {
+    "address": "0x00474630",
+    "type": "ascii",
+    "value": "Unloaded resource paq\n"
+  },
+  {
+    "address": "0x00474648",
+    "type": "ascii",
+    "value": "balloon"
+  },
+  {
+    "address": "0x00474650",
+    "type": "ascii",
+    "value": "balloon.tga"
+  },
+  {
+    "address": "0x0047465C",
+    "type": "ascii",
+    "value": "Entering Crimsonland..\n"
+  },
+  {
+    "address": "0x00474674",
+    "type": "ascii",
+    "value": "endthread () - (Sound library)\n"
+  },
+  {
+    "address": "0x00474694",
+    "type": "ascii",
+    "value": "beginthread () - (Sound library)\n"
+  },
+  {
+    "address": "0x004746B8",
+    "type": "ascii",
+    "value": "Grim SFX: %d/%d"
+  },
+  {
+    "address": "0x004746C8",
+    "type": "ascii",
+    "value": "Grim GFX %d/%d"
+  },
+  {
+    "address": "0x004746D8",
+    "type": "ascii",
+    "value": "logo_esrb"
+  },
+  {
+    "address": "0x004746E4",
+    "type": "ascii",
+    "value": "loading"
+  },
+  {
+    "address": "0x004746EC",
+    "type": "ascii",
+    "value": "splash10Tons"
+  },
+  {
+    "address": "0x004746FC",
+    "type": "ascii",
+    "value": "load\\splash10tons.jaz"
+  },
+  {
+    "address": "0x00474714",
+    "type": "ascii",
+    "value": "splashReflexive"
+  },
+  {
+    "address": "0x00474724",
+    "type": "ascii",
+    "value": "load\\splashReflexive.jpg"
+  },
+  {
+    "address": "0x00474740",
+    "type": "ascii",
+    "value": "music\\%s"
+  },
+  {
+    "address": "0x0047474C",
+    "type": "ascii",
+    "value": "snd_addGameTune <tuneName.ogg>\n"
+  },
+  {
+    "address": "0x0047476C",
+    "type": "ascii",
+    "value": "Gamma ramp regenerated and multiplied with %f\n"
+  },
+  {
+    "address": "0x0047479C",
+    "type": "ascii",
+    "value": "Command adjusts gamma ramp linearly by multiplying with given scalar\n"
+  },
+  {
+    "address": "0x004747E4",
+    "type": "ascii",
+    "value": "setGammaRamp <scalar > 0>\n"
+  },
+  {
+    "address": "0x00474800",
+    "type": "ascii",
+    "value": "Failed to open browser at '%s'.\n"
+  },
+  {
+    "address": "0x00474824",
+    "type": "ascii",
+    "value": "Waving the Grim Reaper goodbye..\n"
+  },
+  {
+    "address": "0x00474848",
+    "type": "ascii",
+    "value": "Shutdown Grim..\n"
+  },
+  {
+    "address": "0x0047485C",
+    "type": "ascii",
+    "value": "Leaving Crimsonland..\n"
+  },
+  {
+    "address": "0x00474874",
+    "type": "ascii",
+    "value": "Kameli was NOT hairy.\n"
+  },
+  {
+    "address": "0x0047488C",
+    "type": "ascii",
+    "value": "load\\logo_crimsonland.tga"
+  },
+  {
+    "address": "0x004748A8",
+    "type": "ascii",
+    "value": "load\\loading.jaz"
+  },
+  {
+    "address": "0x004748BC",
+    "type": "ascii",
+    "value": "load\\esrb_mature.jaz"
+  },
+  {
+    "address": "0x004748D4",
+    "type": "ascii",
+    "value": "load\\mockup.jaz"
+  },
+  {
+    "address": "0x004748E4",
+    "type": "ascii",
+    "value": "load\\backplasma.jaz"
+  },
+  {
+    "address": "0x004748F8",
+    "type": "ascii",
+    "value": "Set resource paq to 'crimson.paq'\n"
+  },
+  {
+    "address": "0x0047491C",
+    "type": "ascii",
+    "value": "crimson.paq"
+  },
+  {
+    "address": "0x00474928",
+    "type": "ascii",
+    "value": "v_height"
+  },
+  {
+    "address": "0x00474938",
+    "type": "ascii",
+    "value": "v_width"
+  },
+  {
+    "address": "0x00474944",
+    "type": "ascii",
+    "value": "exec autoexec.txt"
+  },
+  {
+    "address": "0x00474958",
+    "type": "ascii",
+    "value": "Crimsonland:"
+  },
+  {
+    "address": "0x00474968",
+    "type": "ascii",
+    "value": "Critical failure.\n"
+  },
+  {
+    "address": "0x0047497C",
+    "type": "ascii",
+    "value": "...initiating Grim system\n"
+  },
+  {
+    "address": "0x00474998",
+    "type": "ascii",
+    "value": "...using joystick\n"
+  },
+  {
+    "address": "0x004749AC",
+    "type": "ascii",
+    "value": "...using mouse\n"
+  },
+  {
+    "address": "0x004749BC",
+    "type": "ascii",
+    "value": "...using keyboard\n"
+  },
+  {
+    "address": "0x004749D0",
+    "type": "ascii",
+    "value": "...selected fullscreen mode %dx%dx%d"
+  },
+  {
+    "address": "0x004749F8",
+    "type": "ascii",
+    "value": "...selected windowed mode, window size %dx%d"
+  },
+  {
+    "address": "0x00474A28",
+    "type": "ascii",
+    "value": "...using DEVELOPER backend\n"
+  },
+  {
+    "address": "0x00474A44",
+    "type": "ascii",
+    "value": "...using PRIMARY backend\n"
+  },
+  {
+    "address": "0x00474A60",
+    "type": "ascii",
+    "value": "...using SAFEMODE fallback backend\n"
+  },
+  {
+    "address": "0x00474A84",
+    "type": "ascii",
+    "value": "...setting system states\n"
+  },
+  {
+    "address": "0x00474AA0",
+    "type": "ascii",
+    "value": "...invoking grim config\n"
+  },
+  {
+    "address": "0x00474ABC",
+    "type": "ascii",
+    "value": "...loading config pre-sets\n"
+  },
+  {
+    "address": "0x00474AD8",
+    "type": "ascii",
+    "value": "...registering core variables\n"
+  },
+  {
+    "address": "0x00474AF8",
+    "type": "ascii",
+    "value": "...interface created\n"
+  },
+  {
+    "address": "0x00474B10",
+    "type": "ascii",
+    "value": "Grim.dll is corrupted or missing.\n\n(You also might have too old\nDirectX version installed. Try\n(re)installing DX8.1 or above)"
+  },
+  {
+    "address": "0x00474B98",
+    "type": "ascii",
+    "value": "grim.dll"
+  },
+  {
+    "address": "0x00474BA4",
+    "type": "ascii",
+    "value": "...DEV dll not found, trying to find REL dll\n"
+  },
+  {
+    "address": "0x00474BD4",
+    "type": "ascii",
+    "value": "Initiating Grim\n"
+  },
+  {
+    "address": "0x00474BE8",
+    "type": "ascii",
+    "value": "----- Grim2D API -----\n"
+  },
+  {
+    "address": "0x00474C00",
+    "type": "ascii",
+    "value": "..\\grim_grSystem_c\\Release\\grim.dll"
+  },
+  {
+    "address": "0x00474C24",
+    "type": "ascii",
+    "value": "sndfreqadjustment"
+  },
+  {
+    "address": "0x00474C38",
+    "type": "ascii",
+    "value": "openurl"
+  },
+  {
+    "address": "0x00474C40",
+    "type": "ascii",
+    "value": "loadtexture"
+  },
+  {
+    "address": "0x00474C4C",
+    "type": "ascii",
+    "value": "setresourcepaq"
+  },
+  {
+    "address": "0x00474C5C",
+    "type": "ascii",
+    "value": "telltimesurvived"
+  },
+  {
+    "address": "0x00474C70",
+    "type": "ascii",
+    "value": "generateterrain"
+  },
+  {
+    "address": "0x00474C80",
+    "type": "ascii",
+    "value": "snd_addGameTune"
+  },
+  {
+    "address": "0x00474C90",
+    "type": "ascii",
+    "value": "setGammaRamp"
+  },
+  {
+    "address": "0x00474CA0",
+    "type": "ascii",
+    "value": "Game base path: '%s'\n"
+  },
+  {
+    "address": "0x00474CB8",
+    "type": "ascii",
+    "value": "DirectX8.1 not detected.\n\nCrimsonland needs Microsoft DirectX 8.1 installed\non the system. It is available for download at\nhttp://www.microsoft.com/directx"
+  },
+  {
+    "address": "0x00474D54",
+    "type": "ascii",
+    "value": "-----------\n"
+  },
+  {
+    "address": "0x00474D64",
+    "type": "ascii",
+    "value": "Crimsonland\n"
+  },
+  {
+    "address": "0x00474D74",
+    "type": "ascii",
+    "value": "Unknown DirectX version detected. You need to have DirectX version 8.1 or newer\nto run Crimsonland.\n\nWould you like to try and run the game anyway?"
+  },
+  {
+    "address": "0x00474E08",
+    "type": "ascii",
+    "value": "Failed to launch web browser."
+  },
+  {
+    "address": "0x00474E28",
+    "type": "ascii",
+    "value": "http://www.microsoft.com/windows/directx/default.aspx"
+  },
+  {
+    "address": "0x00474E60",
+    "type": "ascii",
+    "value": "\nDirectX8.1 or newer not detected.\n\nCrimsonland needs Microsoft DirectX 8.1 installed on the system to run.\nIt is available for download at http://www.microsoft.com/directx\n\nWould you like to open your browser at location you can download DirectX?\n\n"
+  },
+  {
+    "address": "0x00474F60",
+    "type": "ascii",
+    "value": "application/octet-stream"
+  },
+  {
+    "address": "0x00474F90",
+    "type": "ascii",
+    "value": "endthread ()  (High scores)\n"
+  },
+  {
+    "address": "0x00474FB0",
+    "type": "ascii",
+    "value": "ONLINE Scores: CleanUp\n"
+  },
+  {
+    "address": "0x00474FC8",
+    "type": "ascii",
+    "value": "ONLINE Scores: InternetConnect failed.\n"
+  },
+  {
+    "address": "0x00474FF0",
+    "type": "ascii",
+    "value": "ONLINE Scores: HttpOpenRequest failed.\n"
+  },
+  {
+    "address": "0x00475018",
+    "type": "ascii",
+    "value": "ONLINE Scores: Scores sent and received ok.\n"
+  },
+  {
+    "address": "0x00475048",
+    "type": "ascii",
+    "value": "<-- (%d %d)\n"
+  },
+  {
+    "address": "0x00475058",
+    "type": "ascii",
+    "value": "invalid feedback (%d bytes).\n"
+  },
+  {
+    "address": "0x00475078",
+    "type": "ascii",
+    "value": "- Saving scores...\n"
+  },
+  {
+    "address": "0x0047508C",
+    "type": "ascii",
+    "value": "->%s<-\n"
+  },
+  {
+    "address": "0x00475094",
+    "type": "ascii",
+    "value": "! Invalid number of bytes received (%d should be %d).\n"
+  },
+  {
+    "address": "0x004750CC",
+    "type": "ascii",
+    "value": "<-- %d scores (%d+%d) received in %d bytes.\n"
+  },
+  {
+    "address": "0x004750FC",
+    "type": "ascii",
+    "value": "ONLINE Scores: Beginning to parse data..\n"
+  },
+  {
+    "address": "0x00475128",
+    "type": "ascii",
+    "value": "Warning: receiving too much data, breaking out..\n"
+  },
+  {
+    "address": "0x0047515C",
+    "type": "ascii",
+    "value": "Or: %s\n"
+  },
+  {
+    "address": "0x00475164",
+    "type": "ascii",
+    "value": "Reason: %d\n"
+  },
+  {
+    "address": "0x00475170",
+    "type": "ascii",
+    "value": "ONLINE Scores: InternetReadFile failed.\n"
+  },
+  {
+    "address": "0x0047519C",
+    "type": "ascii",
+    "value": "ONLINE Scores: HttpSendRequest failed.\n"
+  },
+  {
+    "address": "0x004751C4",
+    "type": "ascii",
+    "value": "<-- Sending %d scores in %d bytes.\n"
+  },
+  {
+    "address": "0x004751F0",
+    "type": "ascii",
+    "value": "HTTP/1.1"
+  },
+  {
+    "address": "0x00475204",
+    "type": "ascii",
+    "value": "guest"
+  },
+  {
+    "address": "0x0047520C",
+    "type": "ascii",
+    "value": "ONLINE Scores: InternetOpen failed.\n"
+  },
+  {
+    "address": "0x00475234",
+    "type": "ascii",
+    "value": "Detected a potential illegal score: refusing to send it online.\n"
+  },
+  {
+    "address": "0x0047527C",
+    "type": "ascii",
+    "value": "application/x-comet"
+  },
+  {
+    "address": "0x00475290",
+    "type": "ascii",
+    "value": "application/msword"
+  },
+  {
+    "address": "0x004752A4",
+    "type": "ascii",
+    "value": "application/vnd.ms-excel"
+  },
+  {
+    "address": "0x004752C0",
+    "type": "ascii",
+    "value": "application/vnd.ms-powerpoint"
+  },
+  {
+    "address": "0x004752E0",
+    "type": "ascii",
+    "value": "image/pjpeg"
+  },
+  {
+    "address": "0x004752EC",
+    "type": "ascii",
+    "value": "image/jpeg"
+  },
+  {
+    "address": "0x004752F8",
+    "type": "ascii",
+    "value": "image/x-xbitmap"
+  },
+  {
+    "address": "0x00475308",
+    "type": "ascii",
+    "value": "image/gif"
+  },
+  {
+    "address": "0x00475314",
+    "type": "ascii",
+    "value": "Content-Disposition: inline; filename=\"test\"\r\nContent-type: application/octet-stream"
+  },
+  {
+    "address": "0x0047536C",
+    "type": "ascii",
+    "value": "beginthread () highscores thread.\n"
+  },
+  {
+    "address": "0x00475390",
+    "type": "ascii",
+    "value": "endthread ()  (version check)\n"
+  },
+  {
+    "address": "0x004753B0",
+    "type": "ascii",
+    "value": "Version Check: CleanUp\n"
+  },
+  {
+    "address": "0x004753C8",
+    "type": "ascii",
+    "value": "Version Check: InternetConnect failed.\n"
+  },
+  {
+    "address": "0x004753F0",
+    "type": "ascii",
+    "value": "Version Check: HttpOpenRequest failed.\n"
+  },
+  {
+    "address": "0x00475418",
+    "type": "ascii",
+    "value": "Received: '%s'\n"
+  },
+  {
+    "address": "0x00475428",
+    "type": "ascii",
+    "value": "Data not ok.\n"
+  },
+  {
+    "address": "0x00475438",
+    "type": "ascii",
+    "value": "Local Version: '%s'\n"
+  },
+  {
+    "address": "0x00475450",
+    "type": "ascii",
+    "value": "Newest Version: '%s'\n"
+  },
+  {
+    "address": "0x00475468",
+    "type": "ascii",
+    "value": "Link: '%s'\n"
+  },
+  {
+    "address": "0x00475474",
+    "type": "ascii",
+    "value": "There is a newer version available. (v%d.%d.%d)\n"
+  },
+  {
+    "address": "0x004754A8",
+    "type": "ascii",
+    "value": "Crimsonland %d.%d.%d<"
+  },
+  {
+    "address": "0x004754C0",
+    "type": "ascii",
+    "value": "Data seems ok.\n"
+  },
+  {
+    "address": "0x004754D0",
+    "type": "ascii",
+    "value": "<a href"
+  },
+  {
+    "address": "0x004754D8",
+    "type": "ascii",
+    "value": "Version Check: Beginning to parse data..\n"
+  },
+  {
+    "address": "0x00475504",
+    "type": "ascii",
+    "value": "Version Check: InternetReadFile failed.\n"
+  },
+  {
+    "address": "0x00475530",
+    "type": "ascii",
+    "value": "Receiving data...\n"
+  },
+  {
+    "address": "0x00475544",
+    "type": "ascii",
+    "value": "Version Check: HttpSendRequest failed.\n"
+  },
+  {
+    "address": "0x0047556C",
+    "type": "ascii",
+    "value": "Connecting server...\n"
+  },
+  {
+    "address": "0x00475584",
+    "type": "ascii",
+    "value": "www.crimsonland.com"
+  },
+  {
+    "address": "0x00475598",
+    "type": "ascii",
+    "value": "Version Check: InternetOpen failed.\n"
+  },
+  {
+    "address": "0x004755C0",
+    "type": "ascii",
+    "value": "beginthread () (version check)\n"
+  },
+  {
+    "address": "0x00475698",
+    "type": "ascii",
+    "value": "Perk Randomizer failed to generate a random perk!\n"
+  },
+  {
+    "address": "0x004756CC",
+    "type": "ascii",
+    "value": "The computer removes half of the wrong monsters for you. You don't gain any experience."
+  },
+  {
+    "address": "0x00475724",
+    "type": "ascii",
+    "value": "Lifeline 50-50"
+  },
+  {
+    "address": "0x00475734",
+    "type": "ascii",
+    "value": "Damage received during reloading a weapon is halved."
+  },
+  {
+    "address": "0x0047576C",
+    "type": "ascii",
+    "value": "Tough Reloader"
+  },
+  {
+    "address": "0x0047577C",
+    "type": "ascii",
+    "value": "It comes a time in each man's life when you'd just rather not move anymore. Being living fortress not moving comes with extra benefits as well. You do the more damage the longer you stand still."
+  },
+  {
+    "address": "0x00475840",
+    "type": "ascii",
+    "value": "Living Fortress"
+  },
+  {
+    "address": "0x00475850",
+    "type": "ascii",
+    "value": "You have a fireball stuck in your throat. Repeatedly. Mind your manners."
+  },
+  {
+    "address": "0x0047589C",
+    "type": "ascii",
+    "value": "Fire Caugh"
+  },
+  {
+    "address": "0x004758A8",
+    "type": "ascii",
+    "value": "You have the ability to go boom for you are the MAN BOMB. Going boom requires a lot of concentration and standing completely still for a few seconds."
+  },
+  {
+    "address": "0x00475940",
+    "type": "ascii",
+    "value": "Man Bomb"
+  },
+  {
+    "address": "0x0047594C",
+    "type": "ascii",
+    "value": "It's incredibly hard to reload your piece while moving around, you've noticed. In fact, realizing that, when you don't move a (leg) muscle you can reload the gun THREE TIMES FASTER!"
+  },
+  {
+    "address": "0x00475A04",
+    "type": "ascii",
+    "value": "Stationary Reloader"
+  },
+  {
+    "address": "0x00475A18",
+    "type": "ascii",
+    "value": "You're good with ion weapons. You're so good that not only your shots do slightly more damage but your ion blast radius is also increased."
+  },
+  {
+    "address": "0x00475AA4",
+    "type": "ascii",
+    "value": "Ion Gun Master"
+  },
+  {
+    "address": "0x00475AB4",
+    "type": "ascii",
+    "value": "You hate it when you run out of shots. You HATE HATE HATE reloading your gun. Lucky for you, and strangely enough, your hate materializes as Mighty Balls of Fire. Or more like Quite Decent Balls of Fire, but it's still kinda neat, huh?"
+  },
+  {
+    "address": "0x00475BA0",
+    "type": "ascii",
+    "value": "Angry Reloader"
+  },
+  {
+    "address": "0x00475BB0",
+    "type": "ascii",
+    "value": "Here, eat this bandage and you'll feel a lot better in no time. (restores up to 50% health)"
+  },
+  {
+    "address": "0x00475C0C",
+    "type": "ascii",
+    "value": "Bandage"
+  },
+  {
+    "address": "0x00475C14",
+    "type": "ascii",
+    "value": "You've grown very fond of your piece. You polish it all the time and talk nice to it, your precious. (+2 clip size, no more random weapon bonuses) "
+  },
+  {
+    "address": "0x00475CA8",
+    "type": "ascii",
+    "value": "My Favourite Weapon"
+  },
+  {
+    "address": "0x00475CBC",
+    "type": "ascii",
+    "value": "You die exactly in 30 seconds. You can't escape your destiny, but feel free to go on a spree. Tick, tock."
+  },
+  {
+    "address": "0x00475D28",
+    "type": "ascii",
+    "value": "Death Clock"
+  },
+  {
+    "address": "0x00475D34",
+    "type": "ascii",
+    "value": "Trade 2/3rds of your health for the killing of every single creature on the screen. No, you don't get the experience."
+  },
+  {
+    "address": "0x00475DAC",
+    "type": "ascii",
+    "value": "Breathing Room"
+  },
+  {
+    "address": "0x00475DBC",
+    "type": "ascii",
+    "value": "Your health replenishes faster than ever."
+  },
+  {
+    "address": "0x00475DE8",
+    "type": "ascii",
+    "value": "Greater Regeneration"
+  },
+  {
+    "address": "0x00475E00",
+    "type": "ascii",
+    "value": "To you the world seems to go on about 10% slower than to an average person. It can be rather irritating sometimes, but it does give you a chance to react better."
+  },
+  {
+    "address": "0x00475EA4",
+    "type": "ascii",
+    "value": "Reflex Boosted"
+  },
+  {
+    "address": "0x00475EB4",
+    "type": "ascii",
+    "value": "Being the Perk Expert taught you a few things and now you are ready to take your training to the next level doubling the ability effect."
+  },
+  {
+    "address": "0x00475F40",
+    "type": "ascii",
+    "value": "Perk Master"
+  },
+  {
+    "address": "0x00475F4C",
+    "type": "ascii",
+    "value": "Things happen near you. Strangest things. Creatures just drop dead and accidents happen. Beware."
+  },
+  {
+    "address": "0x00475FB0",
+    "type": "ascii",
+    "value": "Jinxed"
+  },
+  {
+    "address": "0x00475FB8",
+    "type": "ascii",
+    "value": "You are immortal. Well, almost immortal. Instead of actually losing health on attacks you've got a 10% chance of just dropping dead whenever a monster attacks you. There really can be only one, you know."
+  },
+  {
+    "address": "0x00476084",
+    "type": "ascii",
+    "value": "Highlander"
+  },
+  {
+    "address": "0x00476090",
+    "type": "ascii",
+    "value": "You've taken your dodging abilities to the next level; monsters have really hard time hitting you."
+  },
+  {
+    "address": "0x004760F4",
+    "type": "ascii",
+    "value": "Ninja"
+  },
+  {
+    "address": "0x004760FC",
+    "type": "ascii",
+    "value": "You just enjoy using fire as your Tool of Destruction and you're good at it too; your fire based weapons do a lot more damage."
+  },
+  {
+    "address": "0x0047617C",
+    "type": "ascii",
+    "value": "Pyromaniac"
+  },
+  {
+    "address": "0x00476188",
+    "type": "ascii",
+    "value": "Your health replenishes but very slowly. What more there is to say?"
+  },
+  {
+    "address": "0x004761CC",
+    "type": "ascii",
+    "value": "Regeneration"
+  },
+  {
+    "address": "0x004761DC",
+    "type": "ascii",
+    "value": "You started out just by being poisonous. The next logical step for you is to become highly toxic -- the ULTIMATE TOXIC AVENGER. Most monsters touching you will just drop dead within seconds!"
+  },
+  {
+    "address": "0x0047629C",
+    "type": "ascii",
+    "value": "Toxic Avenger"
+  },
+  {
+    "address": "0x004762AC",
+    "type": "ascii",
+    "value": "A strong poison runs through your veins. Monsters taking a bite of you are eventually to experience an agonizing death."
+  },
+  {
+    "address": "0x00476324",
+    "type": "ascii",
+    "value": "Veins of Poison"
+  },
+  {
+    "address": "0x00476334",
+    "type": "ascii",
+    "value": "Empty clip doesn't prevent you from shooting with a weapon; instead the ammunition is drawn from your health while you are reloading."
+  },
+  {
+    "address": "0x004763BC",
+    "type": "ascii",
+    "value": "Ammunition Within"
+  },
+  {
+    "address": "0x004763D0",
+    "type": "ascii",
+    "value": "After studying a lot of physics and friction you've come up with a way to make your bullets fly faster. More speed, more damage."
+  },
+  {
+    "address": "0x00476454",
+    "type": "ascii",
+    "value": "Barrel Greaser"
+  },
+  {
+    "address": "0x00476464",
+    "type": "ascii",
+    "value": "Trade 1/3 of your health for only receiving 2/3rds damage on attacks."
+  },
+  {
+    "address": "0x004764AC",
+    "type": "ascii",
+    "value": "Thick Skinned"
+  },
+  {
+    "address": "0x004764BC",
+    "type": "ascii",
+    "value": "Your bonus power-ups last 50% longer than they normally would."
+  },
+  {
+    "address": "0x004764FC",
+    "type": "ascii",
+    "value": "Bonus Economist"
+  },
+  {
+    "address": "0x0047650C",
+    "type": "ascii",
+    "value": "It literally boils inside you. That's exactly why you need to let it out once in a while, unfortunately for those near you."
+  },
+  {
+    "address": "0x00476588",
+    "type": "ascii",
+    "value": "Hot Tempered"
+  },
+  {
+    "address": "0x00476598",
+    "type": "ascii",
+    "value": "With your newly enhanced senses you can see all bad energy VERY clearly. That's got to be enough."
+  },
+  {
+    "address": "0x004765FC",
+    "type": "ascii",
+    "value": "Monster Vision"
+  },
+  {
+    "address": "0x0047660C",
+    "type": "ascii",
+    "value": "With a single glance you can tell the medical condition of, well, anything. Also, being a doctor, you know exactly what hurts the most enabling you to do slightly more damage with your attacks."
+  },
+  {
+    "address": "0x004766D0",
+    "type": "ascii",
+    "value": "Doctor"
+  },
+  {
+    "address": "0x004766D8",
+    "type": "ascii",
+    "value": "Your bullets have a nice creamy uranium filling. Yummy. Now that's gotta hurt the monsters more, right?"
+  },
+  {
+    "address": "0x00476740",
+    "type": "ascii",
+    "value": "Uranium Filled Bullets"
+  },
+  {
+    "address": "0x00476758",
+    "type": "ascii",
+    "value": "You somehow seem to lure all kinds of bonuses to appear around you more often."
+  },
+  {
+    "address": "0x004767A8",
+    "type": "ascii",
+    "value": "Bonus Magnet"
+  },
+  {
+    "address": "0x004767B8",
+    "type": "ascii",
+    "value": "It seems so stupid just to take the hits. Each time a monster attacks you you have a chance to dodge the attack."
+  },
+  {
+    "address": "0x0047682C",
+    "type": "ascii",
+    "value": "Dodger"
+  },
+  {
+    "address": "0x00476834",
+    "type": "ascii",
+    "value": "You tend to explicitly treat each of your bullets with rat poison. You do it for good luck, but it seems to have other side effects too."
+  },
+  {
+    "address": "0x004768C0",
+    "type": "ascii",
+    "value": "Poison Bullets"
+  },
+  {
+    "address": "0x004768D0",
+    "type": "ascii",
+    "value": "In exchange for your soul, a dark stranger is offering you three (3) new perks. To collect his part of the bargain soon enough, your health is reduced to a near-death status. Just sign down here below this pentagram.."
+  },
+  {
+    "address": "0x004769AC",
+    "type": "ascii",
+    "value": "Infernal Contract"
+  },
+  {
+    "address": "0x004769C0",
+    "type": "ascii",
+    "value": "Attempt to shoot with an empty clip leads to a severe loss of experience. But hey, whatever makes them go down, right?"
+  },
+  {
+    "address": "0x00476A38",
+    "type": "ascii",
+    "value": "Regression Bullets"
+  },
+  {
+    "address": "0x00476A4C",
+    "type": "ascii",
+    "value": "Monsters can't slow you down with their nasty scratches and bites. It still hurts but you simply ignore the pain."
+  },
+  {
+    "address": "0x00476AC0",
+    "type": "ascii",
+    "value": "Unstoppable"
+  },
+  {
+    "address": "0x00476ACC",
+    "type": "ascii",
+    "value": "You sure know how to pick a perk -- most people just don't see that extra perk laying around. This gives you the opportunity to pick the freshest and shiniest perks from the top."
+  },
+  {
+    "address": "0x00476B80",
+    "type": "ascii",
+    "value": "Perk Expert"
+  },
+  {
+    "address": "0x00476B8C",
+    "type": "ascii",
+    "value": "Picking up bonuses has never been so easy and FUN. You can pick up bonuses simply by aiming at them for a while. Ingenious."
+  },
+  {
+    "address": "0x00476C08",
+    "type": "ascii",
+    "value": "Telekinetic"
+  },
+  {
+    "address": "0x00476C14",
+    "type": "ascii",
+    "value": "Pick this and you'll get your revenge. It's a promise."
+  },
+  {
+    "address": "0x00476C4C",
+    "type": "ascii",
+    "value": "Final Revenge"
+  },
+  {
+    "address": "0x00476C5C",
+    "type": "ascii",
+    "value": "When you can't stand waiting your gun to be reloaded you can speed up the process by clicking your FIRE button repeatedly as fast as you can."
+  },
+  {
+    "address": "0x00476CEC",
+    "type": "ascii",
+    "value": "Anxious Loader"
+  },
+  {
+    "address": "0x00476CFC",
+    "type": "ascii",
+    "value": "You master the art of melee fighting. You don't just stand still when monsters come near -- you hit back. Hard."
+  },
+  {
+    "address": "0x00476D6C",
+    "type": "ascii",
+    "value": "Mr. Melee"
+  },
+  {
+    "address": "0x00476D78",
+    "type": "ascii",
+    "value": "Here, have this weapon. No questions asked."
+  },
+  {
+    "address": "0x00476DA4",
+    "type": "ascii",
+    "value": "Random Weapon"
+  },
+  {
+    "address": "0x00476DB4",
+    "type": "ascii",
+    "value": "Fifty-fifty chance of dying OR gaining 10k experience points. Place your bets. Interested, anyone?"
+  },
+  {
+    "address": "0x00476E18",
+    "type": "ascii",
+    "value": "Fatal Lottery"
+  },
+  {
+    "address": "0x00476E28",
+    "type": "ascii",
+    "value": "Funny how you make your gun spit bullets faster than the next guy. Even the most professional of engineers are astonished."
+  },
+  {
+    "address": "0x00476EA4",
+    "type": "ascii",
+    "value": "Fastshot"
+  },
+  {
+    "address": "0x00476EB0",
+    "type": "ascii",
+    "value": "You are the Radioactive-man; you have that healthy green glow around you! Others don't like it though, it makes them sick and nauseous whenever near you. It does affect your social life a bit."
+  },
+  {
+    "address": "0x00476F74",
+    "type": "ascii",
+    "value": "Radioactive"
+  },
+  {
+    "address": "0x00476F80",
+    "type": "ascii",
+    "value": "You squeeze and you push and you pack your clips with about 20% more ammo than a regular fellow. They call you Ammo Maniac with a deep respect in their voices."
+  },
+  {
+    "address": "0x00477020",
+    "type": "ascii",
+    "value": "Ammo Maniac"
+  },
+  {
+    "address": "0x0047702C",
+    "type": "ascii",
+    "value": "No living (nor dead) can resist the hypnotic power of your eyes: monsters freeze still as you look at them!"
+  },
+  {
+    "address": "0x00477098",
+    "type": "ascii",
+    "value": "Evil Eyes"
+  },
+  {
+    "address": "0x004770A4",
+    "type": "ascii",
+    "value": "You carry a horrible disease. Good for you: you are immune. Bad for them: it is contagious! (Monsters become resistant over time though.)"
+  },
+  {
+    "address": "0x00477130",
+    "type": "ascii",
+    "value": "Plaguebearer"
+  },
+  {
+    "address": "0x00477140",
+    "type": "ascii",
+    "value": "Ever fancied about having two weapons available for use? This might be your lucky day; with this perk you'll get an extra weapon slot for another gun! Carrying around two guns slows you down slightly though. (You can switch the weapon slots with RELOAD key)"
+  },
+  {
+    "address": "0x00477244",
+    "type": "ascii",
+    "value": "Alternate Weapon"
+  },
+  {
+    "address": "0x00477258",
+    "type": "ascii",
+    "value": "I'll make you a deal: I'll give you 18% more experience points, and you'll give me your life. So you'll die but score higher. Ponder that one for a sec."
+  },
+  {
+    "address": "0x004772F4",
+    "type": "ascii",
+    "value": "Grim Deal"
+  },
+  {
+    "address": "0x00477300",
+    "type": "ascii",
+    "value": "2500 experience points. Right away. Take it or leave it."
+  },
+  {
+    "address": "0x0047733C",
+    "type": "ascii",
+    "value": "Instant Winner"
+  },
+  {
+    "address": "0x0047734C",
+    "type": "ascii",
+    "value": "You see flames everywhere. Bare aiming at creatures causes them to heat up."
+  },
+  {
+    "address": "0x00477398",
+    "type": "ascii",
+    "value": "Pyrokinetic"
+  },
+  {
+    "address": "0x004773A4",
+    "type": "ascii",
+    "value": "You move like a train that has feet and runs. You just need a little time to warm up. In other words you'll move faster the longer you run without stopping."
+  },
+  {
+    "address": "0x00477444",
+    "type": "ascii",
+    "value": "Long Distance Runner"
+  },
+  {
+    "address": "0x0047745C",
+    "type": "ascii",
+    "value": "Why kill for experience when you can make some of your own for free! With this perk the experience just keeps flowing in at a constant rate."
+  },
+  {
+    "address": "0x004774EC",
+    "type": "ascii",
+    "value": "Lean Mean Exp Machine"
+  },
+  {
+    "address": "0x00477504",
+    "type": "ascii",
+    "value": "Man, you sure know how to load a gun."
+  },
+  {
+    "address": "0x0047752C",
+    "type": "ascii",
+    "value": "Fastloader"
+  },
+  {
+    "address": "0x00477538",
+    "type": "ascii",
+    "value": "Miraculously your aiming improves drastically, but you take a little bit more time on actually firing the gun. If you order now, you also get a fancy LASER SIGHT without ANY charge!"
+  },
+  {
+    "address": "0x004775F0",
+    "type": "ascii",
+    "value": "Sharpshooter"
+  },
+  {
+    "address": "0x00477600",
+    "type": "ascii",
+    "value": "You learn things faster than a regular Joe from now on gaining 30% more experience points from everything you do."
+  },
+  {
+    "address": "0x00477674",
+    "type": "ascii",
+    "value": "Quick Learner"
+  },
+  {
+    "address": "0x00477684",
+    "type": "ascii",
+    "value": "More the merrier. More blood guarantees a 30% better experience. You spill more blood and gain more experience points."
+  },
+  {
+    "address": "0x004776FC",
+    "type": "ascii",
+    "value": "Bloody Mess"
+  },
+  {
+    "address": "0x00477708",
+    "type": "ascii",
+    "value": "You shouldn't be seeing this.."
+  },
+  {
+    "address": "0x00477728",
+    "type": "ascii",
+    "value": "AntiPerk"
+  },
+  {
+    "address": "0x00477744",
+    "type": "ascii",
+    "value": "Quest overwritten!\n"
+  },
+  {
+    "address": "0x00477758",
+    "type": "ascii",
+    "value": "Unhandled creatureType.\n"
+  },
+  {
+    "address": "0x00477784",
+    "type": "ascii",
+    "value": "Generating a fallback quest.\n"
+  },
+  {
+    "address": "0x004777A4",
+    "type": "ascii",
+    "value": "The Gathering"
+  },
+  {
+    "address": "0x004777B4",
+    "type": "ascii",
+    "value": "Nagolipoli"
+  },
+  {
+    "address": "0x004777C0",
+    "type": "ascii",
+    "value": "Monster Blues"
+  },
+  {
+    "address": "0x004777D0",
+    "type": "ascii",
+    "value": "Army of Three"
+  },
+  {
+    "address": "0x004777E0",
+    "type": "ascii",
+    "value": "Cross Fire"
+  },
+  {
+    "address": "0x004777EC",
+    "type": "ascii",
+    "value": "Knee-deep in the Dead"
+  },
+  {
+    "address": "0x00477804",
+    "type": "ascii",
+    "value": "The Gang Wars"
+  },
+  {
+    "address": "0x00477814",
+    "type": "ascii",
+    "value": "The Fortress"
+  },
+  {
+    "address": "0x00477824",
+    "type": "ascii",
+    "value": "The Spanking Of The Dead"
+  },
+  {
+    "address": "0x00477840",
+    "type": "ascii",
+    "value": "The Beating"
+  },
+  {
+    "address": "0x0047784C",
+    "type": "ascii",
+    "value": "The End of All"
+  },
+  {
+    "address": "0x0047785C",
+    "type": "ascii",
+    "value": "The Annihilation"
+  },
+  {
+    "address": "0x00477870",
+    "type": "ascii",
+    "value": "Syntax Terror"
+  },
+  {
+    "address": "0x00477880",
+    "type": "ascii",
+    "value": "Gauntlet"
+  },
+  {
+    "address": "0x0047788C",
+    "type": "ascii",
+    "value": "The Unblitzkrieg"
+  },
+  {
+    "address": "0x004778A0",
+    "type": "ascii",
+    "value": "The Massacre"
+  },
+  {
+    "address": "0x004778B0",
+    "type": "ascii",
+    "value": "The Collaboration"
+  },
+  {
+    "address": "0x004778C4",
+    "type": "ascii",
+    "value": "Lizard Zombie Pact"
+  },
+  {
+    "address": "0x004778D8",
+    "type": "ascii",
+    "value": "Zombie Time"
+  },
+  {
+    "address": "0x004778E4",
+    "type": "ascii",
+    "value": "Major Alien Breach"
+  },
+  {
+    "address": "0x004778F8",
+    "type": "ascii",
+    "value": "Zombie Masters"
+  },
+  {
+    "address": "0x00477908",
+    "type": "ascii",
+    "value": "Deja vu"
+  },
+  {
+    "address": "0x00477910",
+    "type": "ascii",
+    "value": "Lizard Raze"
+  },
+  {
+    "address": "0x0047791C",
+    "type": "ascii",
+    "value": "Spiders Inc."
+  },
+  {
+    "address": "0x0047792C",
+    "type": "ascii",
+    "value": "The Lizquidation"
+  },
+  {
+    "address": "0x00477940",
+    "type": "ascii",
+    "value": "Surrounded By Reptiles"
+  },
+  {
+    "address": "0x00477958",
+    "type": "ascii",
+    "value": "Hidden Evil"
+  },
+  {
+    "address": "0x00477964",
+    "type": "ascii",
+    "value": "The Killing"
+  },
+  {
+    "address": "0x00477970",
+    "type": "ascii",
+    "value": "Lizard Kings"
+  },
+  {
+    "address": "0x00477980",
+    "type": "ascii",
+    "value": "The Blighting"
+  },
+  {
+    "address": "0x00477990",
+    "type": "ascii",
+    "value": "Spideroids"
+  },
+  {
+    "address": "0x0047799C",
+    "type": "ascii",
+    "value": "Ghost Patrols"
+  },
+  {
+    "address": "0x004779AC",
+    "type": "ascii",
+    "value": "Land Of Lizards"
+  },
+  {
+    "address": "0x004779BC",
+    "type": "ascii",
+    "value": "Survival Of The Fastest"
+  },
+  {
+    "address": "0x004779D4",
+    "type": "ascii",
+    "value": "Evil Zombies At Large"
+  },
+  {
+    "address": "0x004779EC",
+    "type": "ascii",
+    "value": "Sweep Stakes"
+  },
+  {
+    "address": "0x004779FC",
+    "type": "ascii",
+    "value": "Two Fronts"
+  },
+  {
+    "address": "0x00477A08",
+    "type": "ascii",
+    "value": "Arachnoid Farm"
+  },
+  {
+    "address": "0x00477A18",
+    "type": "ascii",
+    "value": "Spider Spawns"
+  },
+  {
+    "address": "0x00477A28",
+    "type": "ascii",
+    "value": "Everred Pastures"
+  },
+  {
+    "address": "0x00477A3C",
+    "type": "ascii",
+    "value": "8-legged Terror"
+  },
+  {
+    "address": "0x00477A4C",
+    "type": "ascii",
+    "value": "Nesting Grounds"
+  },
+  {
+    "address": "0x00477A5C",
+    "type": "ascii",
+    "value": "Alien Squads"
+  },
+  {
+    "address": "0x00477A6C",
+    "type": "ascii",
+    "value": "Spider Wave Syndrome"
+  },
+  {
+    "address": "0x00477A84",
+    "type": "ascii",
+    "value": "The Random Factor"
+  },
+  {
+    "address": "0x00477A98",
+    "type": "ascii",
+    "value": "Alien Dens"
+  },
+  {
+    "address": "0x00477AA4",
+    "type": "ascii",
+    "value": "Frontline Assault"
+  },
+  {
+    "address": "0x00477AB8",
+    "type": "ascii",
+    "value": "Target Practice"
+  },
+  {
+    "address": "0x00477AC8",
+    "type": "ascii",
+    "value": "Minor Alien Breach"
+  },
+  {
+    "address": "0x00477ADC",
+    "type": "ascii",
+    "value": "Land Hostile"
+  },
+  {
+    "address": "0x00477AEC",
+    "type": "ascii",
+    "value": "Setup tier %d quest %d.\n"
+  },
+  {
+    "address": "0x00477B18",
+    "type": "ascii",
+    "value": "Potentially illegal score detected.\n"
+  },
+  {
+    "address": "0x00477B40",
+    "type": "ascii",
+    "value": "WARN: checksum failure on score by %s\n"
+  },
+  {
+    "address": "0x00477B6C",
+    "type": "ascii",
+    "value": "Unable to save score: disk full or file in use?\n"
+  },
+  {
+    "address": "0x00477BA4",
+    "type": "ascii",
+    "value": "scores5"
+  },
+  {
+    "address": "0x00477BAC",
+    "type": "ascii",
+    "value": "UNEXPECTED: sc is null!\n"
+  },
+  {
+    "address": "0x00477BC8",
+    "type": "ascii",
+    "value": "Opening '%s'\n"
+  },
+  {
+    "address": "0x00477BD8",
+    "type": "ascii",
+    "value": "Opening named cache '%s'\n"
+  },
+  {
+    "address": "0x00477BFC",
+    "type": "ascii",
+    "value": "scores5\\unknown.hi"
+  },
+  {
+    "address": "0x00477C10",
+    "type": "ascii",
+    "value": "%s\\scores5\\questhc%d_%d.hi"
+  },
+  {
+    "address": "0x00477C2C",
+    "type": "ascii",
+    "value": "%s\\scores5\\quest%d_%d.hi"
+  },
+  {
+    "address": "0x00477C48",
+    "type": "ascii",
+    "value": "%s\\scores5\\survival.hi"
+  },
+  {
+    "address": "0x00477C60",
+    "type": "ascii",
+    "value": "%s\\scores5\\rush.hi"
+  },
+  {
+    "address": "0x00477C74",
+    "type": "ascii",
+    "value": "--- SND_  Buffer restored.\n"
+  },
+  {
+    "address": "0x00477CA0",
+    "type": "ascii",
+    "value": "--- SND_  Failed to duplicate the buffer.\n"
+  },
+  {
+    "address": "0x00477CCC",
+    "type": "ascii",
+    "value": "--- SND_  Somehow data on the second lock too! This can't be happening!.\n"
+  },
+  {
+    "address": "0x00477D2C",
+    "type": "ascii",
+    "value": "SFX Sample %d <- '%s' ok\n"
+  },
+  {
+    "address": "0x00477D48",
+    "type": "ascii",
+    "value": "...loading wav sample '%s' failed\n"
+  },
+  {
+    "address": "0x00477D6C",
+    "type": "ascii",
+    "value": "...loading ogg sample '%s' failed\n"
+  },
+  {
+    "address": "0x00477D90",
+    "type": "ascii",
+    "value": "sfx\\%s"
+  },
+  {
+    "address": "0x00477D98",
+    "type": "ascii",
+    "value": "trooper_inPain_01.ogg"
+  },
+  {
+    "address": "0x00477DB0",
+    "type": "ascii",
+    "value": "Warning: sample '%s' not accepted.\n"
+  },
+  {
+    "address": "0x00477DDC",
+    "type": "ascii",
+    "value": "SFX Tune %d <- '%s' ok\n"
+  },
+  {
+    "address": "0x00477DF4",
+    "type": "ascii",
+    "value": "SFX Tune %d <- '%s' FAILED\n"
+  },
+  {
+    "address": "0x00477E10",
+    "type": "ascii",
+    "value": "music\\crimsonquest.ogg"
+  },
+  {
+    "address": "0x00477E28",
+    "type": "ascii",
+    "value": "music\\crimson_theme.ogg"
+  },
+  {
+    "address": "0x00477E40",
+    "type": "ascii",
+    "value": "exec music\\game_tunes.txt"
+  },
+  {
+    "address": "0x00477E5C",
+    "type": "ascii",
+    "value": "music\\shortie_monk.ogg"
+  },
+  {
+    "address": "0x00477E74",
+    "type": "ascii",
+    "value": "music\\intro.ogg"
+  },
+  {
+    "address": "0x00477E84",
+    "type": "ascii",
+    "value": "...resource paq 'music.paq' not found, using separate files.\n"
+  },
+  {
+    "address": "0x00477EC4",
+    "type": "ascii",
+    "value": "...set sound resource paq 'music.paq'\n"
+  },
+  {
+    "address": "0x00477EEC",
+    "type": "ascii",
+    "value": "music.paq"
+  },
+  {
+    "address": "0x00477EF8",
+    "type": "ascii",
+    "value": "%d samples loaded to sound library in %.2f seconds.\n"
+  },
+  {
+    "address": "0x00477F30",
+    "type": "ascii",
+    "value": "bloodSpill_02.ogg"
+  },
+  {
+    "address": "0x00477F44",
+    "type": "ascii",
+    "value": "bloodSpill_01.ogg"
+  },
+  {
+    "address": "0x00477F58",
+    "type": "ascii",
+    "value": "ui_clink_01.ogg"
+  },
+  {
+    "address": "0x00477F68",
+    "type": "ascii",
+    "value": "ui_typeEnter.ogg"
+  },
+  {
+    "address": "0x00477F7C",
+    "type": "ascii",
+    "value": "ui_typeClick_02.ogg"
+  },
+  {
+    "address": "0x00477F90",
+    "type": "ascii",
+    "value": "ui_typeClick_01.ogg"
+  },
+  {
+    "address": "0x00477FA4",
+    "type": "ascii",
+    "value": "ui_levelUp.ogg"
+  },
+  {
+    "address": "0x00477FB4",
+    "type": "ascii",
+    "value": "ui_panelClick.ogg"
+  },
+  {
+    "address": "0x00477FC8",
+    "type": "ascii",
+    "value": "ui_buttonClick.ogg"
+  },
+  {
+    "address": "0x00477FDC",
+    "type": "ascii",
+    "value": "ui_bonus.ogg"
+  },
+  {
+    "address": "0x00477FEC",
+    "type": "ascii",
+    "value": "questHit.ogg"
+  },
+  {
+    "address": "0x00477FFC",
+    "type": "ascii",
+    "value": "shockwave.ogg"
+  },
+  {
+    "address": "0x0047800C",
+    "type": "ascii",
+    "value": "explosion_large.ogg"
+  },
+  {
+    "address": "0x00478020",
+    "type": "ascii",
+    "value": "explosion_medium.ogg"
+  },
+  {
+    "address": "0x00478038",
+    "type": "ascii",
+    "value": "explosion_small.ogg"
+  },
+  {
+    "address": "0x0047804C",
+    "type": "ascii",
+    "value": "shock_hit_01.ogg"
+  },
+  {
+    "address": "0x00478060",
+    "type": "ascii",
+    "value": "bullet_hit_06.ogg"
+  },
+  {
+    "address": "0x00478074",
+    "type": "ascii",
+    "value": "bullet_hit_05.ogg"
+  },
+  {
+    "address": "0x00478088",
+    "type": "ascii",
+    "value": "bullet_hit_04.ogg"
+  },
+  {
+    "address": "0x0047809C",
+    "type": "ascii",
+    "value": "bullet_hit_03.ogg"
+  },
+  {
+    "address": "0x004780B0",
+    "type": "ascii",
+    "value": "bullet_hit_02.ogg"
+  },
+  {
+    "address": "0x004780C4",
+    "type": "ascii",
+    "value": "bullet_hit_01.ogg"
+  },
+  {
+    "address": "0x004780D8",
+    "type": "ascii",
+    "value": "rocketmini_fire.ogg"
+  },
+  {
+    "address": "0x004780EC",
+    "type": "ascii",
+    "value": "rocket_fire.ogg"
+  },
+  {
+    "address": "0x004780FC",
+    "type": "ascii",
+    "value": "shockMinigun_fire.ogg"
+  },
+  {
+    "address": "0x00478114",
+    "type": "ascii",
+    "value": "shock_reload.ogg"
+  },
+  {
+    "address": "0x00478128",
+    "type": "ascii",
+    "value": "flamer_fire_02.ogg"
+  },
+  {
+    "address": "0x0047813C",
+    "type": "ascii",
+    "value": "flamer_fire_01.ogg"
+  },
+  {
+    "address": "0x00478150",
+    "type": "ascii",
+    "value": "pulse_fire.ogg"
+  },
+  {
+    "address": "0x00478160",
+    "type": "ascii",
+    "value": "plasmaShotgun_fire.ogg"
+  },
+  {
+    "address": "0x00478178",
+    "type": "ascii",
+    "value": "plasmaMinigun_fire.ogg"
+  },
+  {
+    "address": "0x00478190",
+    "type": "ascii",
+    "value": "shock_fire.ogg"
+  },
+  {
+    "address": "0x004781A0",
+    "type": "ascii",
+    "value": "hrpm_fire.ogg"
+  },
+  {
+    "address": "0x004781B0",
+    "type": "ascii",
+    "value": "gauss_fire.ogg"
+  },
+  {
+    "address": "0x004781C0",
+    "type": "ascii",
+    "value": "autorifle_reload.ogg"
+  },
+  {
+    "address": "0x004781D8",
+    "type": "ascii",
+    "value": "autorifle_fire.ogg"
+  },
+  {
+    "address": "0x004781EC",
+    "type": "ascii",
+    "value": "shotgun_reload.ogg"
+  },
+  {
+    "address": "0x00478200",
+    "type": "ascii",
+    "value": "shotgun_fire.ogg"
+  },
+  {
+    "address": "0x00478214",
+    "type": "ascii",
+    "value": "pistol_reload.ogg"
+  },
+  {
+    "address": "0x00478228",
+    "type": "ascii",
+    "value": "pistol_fire.ogg"
+  },
+  {
+    "address": "0x00478238",
+    "type": "ascii",
+    "value": "spider_attack_02.ogg"
+  },
+  {
+    "address": "0x00478250",
+    "type": "ascii",
+    "value": "spider_attack_01.ogg"
+  },
+  {
+    "address": "0x00478268",
+    "type": "ascii",
+    "value": "spider_die_04.ogg"
+  },
+  {
+    "address": "0x0047827C",
+    "type": "ascii",
+    "value": "spider_die_03.ogg"
+  },
+  {
+    "address": "0x00478290",
+    "type": "ascii",
+    "value": "spider_die_02.ogg"
+  },
+  {
+    "address": "0x004782A4",
+    "type": "ascii",
+    "value": "spider_die_01.ogg"
+  },
+  {
+    "address": "0x004782B8",
+    "type": "ascii",
+    "value": "lizard_attack_02.ogg"
+  },
+  {
+    "address": "0x004782D0",
+    "type": "ascii",
+    "value": "lizard_attack_01.ogg"
+  },
+  {
+    "address": "0x004782E8",
+    "type": "ascii",
+    "value": "lizard_die_04.ogg"
+  },
+  {
+    "address": "0x004782FC",
+    "type": "ascii",
+    "value": "lizard_die_03.ogg"
+  },
+  {
+    "address": "0x00478310",
+    "type": "ascii",
+    "value": "lizard_die_02.ogg"
+  },
+  {
+    "address": "0x00478324",
+    "type": "ascii",
+    "value": "lizard_die_01.ogg"
+  },
+  {
+    "address": "0x00478338",
+    "type": "ascii",
+    "value": "alien_attack_02.ogg"
+  },
+  {
+    "address": "0x0047834C",
+    "type": "ascii",
+    "value": "alien_attack_01.ogg"
+  },
+  {
+    "address": "0x00478360",
+    "type": "ascii",
+    "value": "alien_die_04.ogg"
+  },
+  {
+    "address": "0x00478374",
+    "type": "ascii",
+    "value": "alien_die_03.ogg"
+  },
+  {
+    "address": "0x00478388",
+    "type": "ascii",
+    "value": "alien_die_02.ogg"
+  },
+  {
+    "address": "0x0047839C",
+    "type": "ascii",
+    "value": "alien_die_01.ogg"
+  },
+  {
+    "address": "0x004783B0",
+    "type": "ascii",
+    "value": "zombie_attack_02.ogg"
+  },
+  {
+    "address": "0x004783C8",
+    "type": "ascii",
+    "value": "zombie_attack_01.ogg"
+  },
+  {
+    "address": "0x004783E0",
+    "type": "ascii",
+    "value": "zombie_die_04.ogg"
+  },
+  {
+    "address": "0x004783F4",
+    "type": "ascii",
+    "value": "zombie_die_03.ogg"
+  },
+  {
+    "address": "0x00478408",
+    "type": "ascii",
+    "value": "zombie_die_02.ogg"
+  },
+  {
+    "address": "0x0047841C",
+    "type": "ascii",
+    "value": "zombie_die_01.ogg"
+  },
+  {
+    "address": "0x00478430",
+    "type": "ascii",
+    "value": "trooper_die_03.ogg"
+  },
+  {
+    "address": "0x00478444",
+    "type": "ascii",
+    "value": "trooper_die_02.ogg"
+  },
+  {
+    "address": "0x00478458",
+    "type": "ascii",
+    "value": "trooper_die_01.ogg"
+  },
+  {
+    "address": "0x0047846C",
+    "type": "ascii",
+    "value": "trooper_inPain_03.ogg"
+  },
+  {
+    "address": "0x00478484",
+    "type": "ascii",
+    "value": "trooper_inPain_02.ogg"
+  },
+  {
+    "address": "0x0047849C",
+    "type": "ascii",
+    "value": "...failed to set sound resource paq 'sfx.paq'\n"
+  },
+  {
+    "address": "0x004784CC",
+    "type": "ascii",
+    "value": "...set sound resource paq 'sfx.paq'\n"
+  },
+  {
+    "address": "0x004784F4",
+    "type": "ascii",
+    "value": "sfx.paq"
+  },
+  {
+    "address": "0x004784FC",
+    "type": "ascii",
+    "value": "Init Grim SFX done\n"
+  },
+  {
+    "address": "0x00478510",
+    "type": "ascii",
+    "value": "...saying hello to the Ogg!\n"
+  },
+  {
+    "address": "0x00478530",
+    "type": "ascii",
+    "value": "...using default speaker config\n"
+  },
+  {
+    "address": "0x00478554",
+    "type": "ascii",
+    "value": "...using DirectSound output\n"
+  },
+  {
+    "address": "0x00478574",
+    "type": "ascii",
+    "value": "...init 44100 Hz 16 bit ok\n"
+  },
+  {
+    "address": "0x00478590",
+    "type": "ascii",
+    "value": "...FAILED: unable to init Grim SFX. No sounds used.\n"
+  },
+  {
+    "address": "0x004785C8",
+    "type": "ascii",
+    "value": "Initializing Grim SFX sound system\n"
+  },
+  {
+    "address": "0x004785EC",
+    "type": "ascii",
+    "value": "SFX Released.\n"
+  },
+  {
+    "address": "0x004785FC",
+    "type": "ascii",
+    "value": "SFX_Shutdown ()\n"
+  },
+  {
+    "address": "0x00478610",
+    "type": "ascii",
+    "value": "SND: detected unsilenced hearable tune not playing -- starting up..\n"
+  },
+  {
+    "address": "0x0047867C",
+    "type": "ascii",
+    "value": "(total %dh)"
+  },
+  {
+    "address": "0x00478688",
+    "type": "ascii",
+    "value": "for new Crimsonland versions"
+  },
+  {
+    "address": "0x004786A8",
+    "type": "ascii",
+    "value": "Connect the Internet and check"
+  },
+  {
+    "address": "0x004786C8",
+    "type": "ascii",
+    "value": "of Crimsonland."
+  },
+  {
+    "address": "0x004786D8",
+    "type": "ascii",
+    "value": "You've got the newest version"
+  },
+  {
+    "address": "0x004786F8",
+    "type": "ascii",
+    "value": "Failed.."
+  },
+  {
+    "address": "0x00478704",
+    "type": "ascii",
+    "value": "Done.."
+  },
+  {
+    "address": "0x0047870C",
+    "type": "ascii",
+    "value": "Connecting server.."
+  },
+  {
+    "address": "0x00478720",
+    "type": "ascii",
+    "value": "played for %d hours %d minutes"
+  },
+  {
+    "address": "0x00478740",
+    "type": "ascii",
+    "value": "Check for updates"
+  },
+  {
+    "address": "0x00478754",
+    "type": "ascii",
+    "value": "(Mods)"
+  },
+  {
+    "address": "0x0047875C",
+    "type": "ascii",
+    "value": " (Typ'o'Shooter) "
+  },
+  {
+    "address": "0x00478770",
+    "type": "ascii",
+    "value": " Credits "
+  },
+  {
+    "address": "0x0047877C",
+    "type": "ascii",
+    "value": "  Perks  "
+  },
+  {
+    "address": "0x00478788",
+    "type": "ascii",
+    "value": "  Weapons  "
+  },
+  {
+    "address": "0x00478794",
+    "type": "ascii",
+    "value": "Clip size: %d"
+  },
+  {
+    "address": "0x004787A4",
+    "type": "ascii",
+    "value": "Reload time: %.1f secs"
+  },
+  {
+    "address": "0x004787BC",
+    "type": "ascii",
+    "value": "Firerate:    n/a"
+  },
+  {
+    "address": "0x004787D0",
+    "type": "ascii",
+    "value": "Firerate:    %d rpm"
+  },
+  {
+    "address": "0x004787E4",
+    "type": "ascii",
+    "value": "wepno #%d"
+  },
+  {
+    "address": "0x004787F0",
+    "type": "ascii",
+    "value": "%d weapons in database"
+  },
+  {
+    "address": "0x00478808",
+    "type": "ascii",
+    "value": "Unlocked Weapons Database"
+  },
+  {
+    "address": "0x00478824",
+    "type": "ascii",
+    "value": "Requires: %s"
+  },
+  {
+    "address": "0x00478834",
+    "type": "ascii",
+    "value": "perkno #%d"
+  },
+  {
+    "address": "0x00478840",
+    "type": "ascii",
+    "value": "Perks"
+  },
+  {
+    "address": "0x00478848",
+    "type": "ascii",
+    "value": "%d perks in database"
+  },
+  {
+    "address": "0x00478860",
+    "type": "ascii",
+    "value": "Unlocked Perks Database"
+  },
+  {
+    "address": "0x00478878",
+    "type": "ascii",
+    "value": "%d. %s %d"
+  },
+  {
+    "address": "0x004788B8",
+    "type": "ascii",
+    "value": "The % of shot bullets hit the target"
+  },
+  {
+    "address": "0x004788E0",
+    "type": "ascii",
+    "value": "The time the game lasted"
+  },
+  {
+    "address": "0x004788FC",
+    "type": "ascii",
+    "value": "Most used weapon during the game"
+  },
+  {
+    "address": "0x00478920",
+    "type": "ascii",
+    "value": "Hit %%: %d%%"
+  },
+  {
+    "address": "0x00478930",
+    "type": "ascii",
+    "value": "Frags: %d"
+  },
+  {
+    "address": "0x0047893C",
+    "type": "ascii",
+    "value": "Game time"
+  },
+  {
+    "address": "0x00478948",
+    "type": "ascii",
+    "value": "Experience"
+  },
+  {
+    "address": "0x00478954",
+    "type": "ascii",
+    "value": "Rank: %s"
+  },
+  {
+    "address": "0x00478960",
+    "type": "ascii",
+    "value": "%.2f secs"
+  },
+  {
+    "address": "0x0047896C",
+    "type": "ascii",
+    "value": "Score"
+  },
+  {
+    "address": "0x00478974",
+    "type": "ascii",
+    "value": "Local score"
+  },
+  {
+    "address": "0x00478980",
+    "type": "ascii",
+    "value": "Score from the Internet"
+  },
+  {
+    "address": "0x00478998",
+    "type": "ascii",
+    "value": "uni#%d"
+  },
+  {
+    "address": "0x004789A0",
+    "type": "ascii",
+    "value": "Internet score of local origin"
+  },
+  {
+    "address": "0x004789C0",
+    "type": "ascii",
+    "value": "NOTE:"
+  },
+  {
+    "address": "0x004789C8",
+    "type": "ascii",
+    "value": "Get the update"
+  },
+  {
+    "address": "0x004789D8",
+    "type": "ascii",
+    "value": "game available for download."
+  },
+  {
+    "address": "0x004789F8",
+    "type": "ascii",
+    "value": "There is a newer version of the"
+  },
+  {
+    "address": "0x00478A18",
+    "type": "ascii",
+    "value": "Play a game of selected game mode"
+  },
+  {
+    "address": "0x00478A3C",
+    "type": "ascii",
+    "value": "Only receive scores from the Internet. (Demo)"
+  },
+  {
+    "address": "0x00478A6C",
+    "type": "ascii",
+    "value": "Update scores from the Internet"
+  },
+  {
+    "address": "0x00478A8C",
+    "type": "ascii",
+    "value": "Failed to update scores. Try again later."
+  },
+  {
+    "address": "0x00478AB8",
+    "type": "ascii",
+    "value": "Done..."
+  },
+  {
+    "address": "0x00478AC0",
+    "type": "ascii",
+    "value": "Receiving internet scores..."
+  },
+  {
+    "address": "0x00478AE0",
+    "type": "ascii",
+    "value": "Connected...."
+  },
+  {
+    "address": "0x00478AF0",
+    "type": "ascii",
+    "value": "Sending local scores..."
+  },
+  {
+    "address": "0x00478B08",
+    "type": "ascii",
+    "value": "Connected..."
+  },
+  {
+    "address": "0x00478B18",
+    "type": "ascii",
+    "value": "Connecting..."
+  },
+  {
+    "address": "0x00478B28",
+    "type": "ascii",
+    "value": "2 players"
+  },
+  {
+    "address": "0x00478B34",
+    "type": "ascii",
+    "value": "1 player"
+  },
+  {
+    "address": "0x00478B40",
+    "type": "ascii",
+    "value": "Show scores:"
+  },
+  {
+    "address": "0x00478B50",
+    "type": "ascii",
+    "value": "Game mode"
+  },
+  {
+    "address": "0x00478B5C",
+    "type": "ascii",
+    "value": "Number of players"
+  },
+  {
+    "address": "0x00478B70",
+    "type": "ascii",
+    "value": "Selected score list:"
+  },
+  {
+    "address": "0x00478B88",
+    "type": "ascii",
+    "value": "Best of day"
+  },
+  {
+    "address": "0x00478B94",
+    "type": "ascii",
+    "value": "Best of week"
+  },
+  {
+    "address": "0x00478BA4",
+    "type": "ascii",
+    "value": "Best of month"
+  },
+  {
+    "address": "0x00478BB4",
+    "type": "ascii",
+    "value": "Best of all time"
+  },
+  {
+    "address": "0x00478BC8",
+    "type": "ascii",
+    "value": "Show internet scores"
+  },
+  {
+    "address": "0x00478BE0",
+    "type": "ascii",
+    "value": "Receive all"
+  },
+  {
+    "address": "0x00478BEC",
+    "type": "ascii",
+    "value": "Receive scores"
+  },
+  {
+    "address": "0x00478BFC",
+    "type": "ascii",
+    "value": "Update all"
+  },
+  {
+    "address": "0x00478C08",
+    "type": "ascii",
+    "value": "Update scores"
+  },
+  {
+    "address": "0x00478C18",
+    "type": "ascii",
+    "value": "%d\t%d\t%s"
+  },
+  {
+    "address": "0x00478C24",
+    "type": "ascii",
+    "value": "Hardcore"
+  },
+  {
+    "address": "0x00478C30",
+    "type": "ascii",
+    "value": "Player"
+  },
+  {
+    "address": "0x00478C40",
+    "type": "ascii",
+    "value": "%d.%d: %s"
+  },
+  {
+    "address": "0x00478C4C",
+    "type": "ascii",
+    "value": "High scores - %s"
+  },
+  {
+    "address": "0x00478C60",
+    "type": "ascii",
+    "value": "Delete"
+  },
+  {
+    "address": "0x00478C6C",
+    "type": "ascii",
+    "value": "<add new named list>"
+  },
+  {
+    "address": "0x00478CAC",
+    "type": "ascii",
+    "value": "break"
+  },
+  {
+    "address": "0x00478CC4",
+    "type": "ascii",
+    "value": "scape"
+  },
+  {
+    "address": "0x00478CCC",
+    "type": "ascii",
+    "value": "below"
+  },
+  {
+    "address": "0x00478CEC",
+    "type": "ascii",
+    "value": "sleep"
+  },
+  {
+    "address": "0x00478CFC",
+    "type": "ascii",
+    "value": "unique"
+  },
+  {
+    "address": "0x00478D20",
+    "type": "ascii",
+    "value": "jumper"
+  },
+  {
+    "address": "0x00478D2C",
+    "type": "ascii",
+    "value": "brown"
+  },
+  {
+    "address": "0x00478D34",
+    "type": "ascii",
+    "value": "quick"
+  },
+  {
+    "address": "0x00478D5C",
+    "type": "ascii",
+    "value": "harry"
+  },
+  {
+    "address": "0x00478E04",
+    "type": "ascii",
+    "value": "quickbrownfox"
+  },
+  {
+    "address": "0x00478E14",
+    "type": "ascii",
+    "value": "%d. unique: %s\n"
+  },
+  {
+    "address": "0x00478E24",
+    "type": "ascii",
+    "value": "%s%s%s"
+  },
+  {
+    "address": "0x00478E2C",
+    "type": "ascii",
+    "value": "%s%s%s%s"
+  },
+  {
+    "address": "0x00478E38",
+    "type": "ascii",
+    "value": "reload"
+  },
+  {
+    "address": "0x00478E68",
+    "type": "ascii",
+    "value": "Controls"
+  },
+  {
+    "address": "0x00478E74",
+    "type": "ascii",
+    "value": "UI Info texts"
+  },
+  {
+    "address": "0x00478E84",
+    "type": "ascii",
+    "value": "Mouse sensitivity:"
+  },
+  {
+    "address": "0x00478E98",
+    "type": "ascii",
+    "value": "Graphics detail:"
+  },
+  {
+    "address": "0x00478EAC",
+    "type": "ascii",
+    "value": "Music volume:"
+  },
+  {
+    "address": "0x00478EBC",
+    "type": "ascii",
+    "value": "Sound volume:"
+  },
+  {
+    "address": "0x00478ECC",
+    "type": "ascii",
+    "value": "Computer"
+  },
+  {
+    "address": "0x00478ED8",
+    "type": "ascii",
+    "value": "Dual Action Pad"
+  },
+  {
+    "address": "0x00478EE8",
+    "type": "ascii",
+    "value": "Joystick"
+  },
+  {
+    "address": "0x00478EF4",
+    "type": "ascii",
+    "value": "Keyboard"
+  },
+  {
+    "address": "0x00478F00",
+    "type": "ascii",
+    "value": "Mouse relative"
+  },
+  {
+    "address": "0x00478F10",
+    "type": "ascii",
+    "value": "Mouse"
+  },
+  {
+    "address": "0x00478F18",
+    "type": "ascii",
+    "value": "Mouse point&click"
+  },
+  {
+    "address": "0x00478F2C",
+    "type": "ascii",
+    "value": "Static"
+  },
+  {
+    "address": "0x00478F34",
+    "type": "ascii",
+    "value": "Relative"
+  },
+  {
+    "address": "0x00478F40",
+    "type": "ascii",
+    "value": "(%d/%d)"
+  },
+  {
+    "address": "0x00478F48",
+    "type": "ascii",
+    "value": "(completed/games)"
+  },
+  {
+    "address": "0x00478F5C",
+    "type": "ascii",
+    "value": "Assign control (eg. press a key)."
+  },
+  {
+    "address": "0x00478F80",
+    "type": "ascii",
+    "value": "     (press ESCAPE to cancel)"
+  },
+  {
+    "address": "0x00478FA0",
+    "type": "ascii",
+    "value": "axis you want to assign the control to"
+  },
+  {
+    "address": "0x00478FC8",
+    "type": "ascii",
+    "value": " Move joystick/pad analog controller"
+  },
+  {
+    "address": "0x00478FF8",
+    "type": "ascii",
+    "value": "Left/Right Axis:"
+  },
+  {
+    "address": "0x0047900C",
+    "type": "ascii",
+    "value": "Up/Down Axis:"
+  },
+  {
+    "address": "0x0047901C",
+    "type": "ascii",
+    "value": "Move to cursor:"
+  },
+  {
+    "address": "0x0047902C",
+    "type": "ascii",
+    "value": "Turn right:"
+  },
+  {
+    "address": "0x00479038",
+    "type": "ascii",
+    "value": "Turn left:"
+  },
+  {
+    "address": "0x00479044",
+    "type": "ascii",
+    "value": "Backwards:"
+  },
+  {
+    "address": "0x00479050",
+    "type": "ascii",
+    "value": "Forward:"
+  },
+  {
+    "address": "0x0047905C",
+    "type": "ascii",
+    "value": "Move Right:"
+  },
+  {
+    "address": "0x00479068",
+    "type": "ascii",
+    "value": "Move Left:"
+  },
+  {
+    "address": "0x00479074",
+    "type": "ascii",
+    "value": "Move Down:"
+  },
+  {
+    "address": "0x00479080",
+    "type": "ascii",
+    "value": "Move Up:"
+  },
+  {
+    "address": "0x0047908C",
+    "type": "ascii",
+    "value": "Moving"
+  },
+  {
+    "address": "0x00479094",
+    "type": "ascii",
+    "value": "Aim Left/Right Axis:"
+  },
+  {
+    "address": "0x004790AC",
+    "type": "ascii",
+    "value": "Aim Up/Down Axis:"
+  },
+  {
+    "address": "0x004790C0",
+    "type": "ascii",
+    "value": "Torso right:"
+  },
+  {
+    "address": "0x004790D0",
+    "type": "ascii",
+    "value": "Torso left:"
+  },
+  {
+    "address": "0x004790DC",
+    "type": "ascii",
+    "value": "Aiming"
+  },
+  {
+    "address": "0x004790E4",
+    "type": "ascii",
+    "value": "Configured controls"
+  },
+  {
+    "address": "0x004790F8",
+    "type": "ascii",
+    "value": "Show direction arrow"
+  },
+  {
+    "address": "0x00479110",
+    "type": "ascii",
+    "value": "Moving method:"
+  },
+  {
+    "address": "0x00479120",
+    "type": "ascii",
+    "value": "Aiming method:"
+  },
+  {
+    "address": "0x00479130",
+    "type": "ascii",
+    "value": "Configure for:"
+  },
+  {
+    "address": "0x00479140",
+    "type": "ascii",
+    "value": "Player 4"
+  },
+  {
+    "address": "0x0047914C",
+    "type": "ascii",
+    "value": "Player 3"
+  },
+  {
+    "address": "0x00479158",
+    "type": "ascii",
+    "value": "Player 2"
+  },
+  {
+    "address": "0x00479164",
+    "type": "ascii",
+    "value": "Player 1"
+  },
+  {
+    "address": "0x00479170",
+    "type": "ascii",
+    "value": "Redefine"
+  },
+  {
+    "address": "0x0047917C",
+    "type": "ascii",
+    "value": "Learn how to play Crimsonland."
+  },
+  {
+    "address": "0x0047919C",
+    "type": "ascii",
+    "value": "Use your typing skills as the weapon to lay\nthem down."
+  },
+  {
+    "address": "0x004791D4",
+    "type": "ascii",
+    "value": "Gain perks and weapons and fight back."
+  },
+  {
+    "address": "0x004791FC",
+    "type": "ascii",
+    "value": "Face a rush of aliens in Rush mode."
+  },
+  {
+    "address": "0x00479220",
+    "type": "ascii",
+    "value": "Unlock new weapons and perks in Quest mode."
+  },
+  {
+    "address": "0x0047924C",
+    "type": "ascii",
+    "value": "4 players"
+  },
+  {
+    "address": "0x00479258",
+    "type": "ascii",
+    "value": "3 players"
+  },
+  {
+    "address": "0x00479264",
+    "type": "ascii",
+    "value": "times played:"
+  },
+  {
+    "address": "0x00479274",
+    "type": "ascii",
+    "value": "Tutorial"
+  },
+  {
+    "address": "0x00479280",
+    "type": "ascii",
+    "value": " Quests "
+  },
+  {
+    "address": "0x0047928C",
+    "type": "ascii",
+    "value": "!!! Elem == NULL!\n"
+  },
+  {
+    "address": "0x004792A0",
+    "type": "ascii",
+    "value": "ui\\ui_textLevelUp.jaz"
+  },
+  {
+    "address": "0x004792B8",
+    "type": "ascii",
+    "value": "ui\\ui_textWellDone.jaz"
+  },
+  {
+    "address": "0x004792D0",
+    "type": "ascii",
+    "value": "ui\\ui_textPickAPerk.jaz"
+  },
+  {
+    "address": "0x004792E8",
+    "type": "ascii",
+    "value": "ui\\ui_textControls.jaz"
+  },
+  {
+    "address": "0x00479300",
+    "type": "ascii",
+    "value": "ui\\ui_textReaper.jaz"
+  },
+  {
+    "address": "0x00479318",
+    "type": "ascii",
+    "value": "ui\\ui_itemTexts.jaz"
+  },
+  {
+    "address": "0x0047933C",
+    "type": "ascii",
+    "value": "Lighting Rifle"
+  },
+  {
+    "address": "0x0047934C",
+    "type": "ascii",
+    "value": "Nuke Launcher"
+  },
+  {
+    "address": "0x0047935C",
+    "type": "ascii",
+    "value": "Blaster R-300"
+  },
+  {
+    "address": "0x0047936C",
+    "type": "ascii",
+    "value": "Transmutator"
+  },
+  {
+    "address": "0x0047937C",
+    "type": "ascii",
+    "value": "Spider Plasma"
+  },
+  {
+    "address": "0x0047938C",
+    "type": "ascii",
+    "value": "Bubblegun"
+  },
+  {
+    "address": "0x00479398",
+    "type": "ascii",
+    "value": "Grim Weapon"
+  },
+  {
+    "address": "0x004793A4",
+    "type": "ascii",
+    "value": "Rainbow Gun"
+  },
+  {
+    "address": "0x004793B0",
+    "type": "ascii",
+    "value": "Plague Sphreader Gun"
+  },
+  {
+    "address": "0x004793C8",
+    "type": "ascii",
+    "value": "Blade Gun"
+  },
+  {
+    "address": "0x004793D4",
+    "type": "ascii",
+    "value": "Shrinkifier 5k"
+  },
+  {
+    "address": "0x004793E4",
+    "type": "ascii",
+    "value": "Splitter Gun"
+  },
+  {
+    "address": "0x004793F4",
+    "type": "ascii",
+    "value": "RayGun"
+  },
+  {
+    "address": "0x004793FC",
+    "type": "ascii",
+    "value": "Flameburst"
+  },
+  {
+    "address": "0x00479408",
+    "type": "ascii",
+    "value": "Evil Scythe"
+  },
+  {
+    "address": "0x00479414",
+    "type": "ascii",
+    "value": "Plasma Cannon"
+  },
+  {
+    "address": "0x00479424",
+    "type": "ascii",
+    "value": "Gauss Shotgun"
+  },
+  {
+    "address": "0x00479434",
+    "type": "ascii",
+    "value": "Ion Shotgun"
+  },
+  {
+    "address": "0x00479440",
+    "type": "ascii",
+    "value": "Ion Cannon"
+  },
+  {
+    "address": "0x0047944C",
+    "type": "ascii",
+    "value": "Ion Minigun"
+  },
+  {
+    "address": "0x00479458",
+    "type": "ascii",
+    "value": "Ion Rifle"
+  },
+  {
+    "address": "0x00479464",
+    "type": "ascii",
+    "value": "Pulse Gun"
+  },
+  {
+    "address": "0x00479470",
+    "type": "ascii",
+    "value": "Rocket Minigun"
+  },
+  {
+    "address": "0x00479480",
+    "type": "ascii",
+    "value": "Mini-Rocket Swarmers"
+  },
+  {
+    "address": "0x00479498",
+    "type": "ascii",
+    "value": "HR Flamer"
+  },
+  {
+    "address": "0x004794A4",
+    "type": "ascii",
+    "value": "Blow Torch"
+  },
+  {
+    "address": "0x004794B0",
+    "type": "ascii",
+    "value": "Plasma Shotgun"
+  },
+  {
+    "address": "0x004794C0",
+    "type": "ascii",
+    "value": "Mean Minigun"
+  },
+  {
+    "address": "0x004794D0",
+    "type": "ascii",
+    "value": "Seeker Rockets"
+  },
+  {
+    "address": "0x004794E0",
+    "type": "ascii",
+    "value": "Rocket Launcher"
+  },
+  {
+    "address": "0x004794F0",
+    "type": "ascii",
+    "value": "Gauss Gun"
+  },
+  {
+    "address": "0x004794FC",
+    "type": "ascii",
+    "value": "Plasma Minigun"
+  },
+  {
+    "address": "0x0047950C",
+    "type": "ascii",
+    "value": "Multi-Plasma"
+  },
+  {
+    "address": "0x0047951C",
+    "type": "ascii",
+    "value": "Plasma Rifle"
+  },
+  {
+    "address": "0x0047952C",
+    "type": "ascii",
+    "value": "Flamethrower"
+  },
+  {
+    "address": "0x0047953C",
+    "type": "ascii",
+    "value": "Submachine Gun"
+  },
+  {
+    "address": "0x0047954C",
+    "type": "ascii",
+    "value": "Jackhammer"
+  },
+  {
+    "address": "0x00479558",
+    "type": "ascii",
+    "value": "Sawed-off Shotgun"
+  },
+  {
+    "address": "0x0047956C",
+    "type": "ascii",
+    "value": "Shotgun"
+  },
+  {
+    "address": "0x00479574",
+    "type": "ascii",
+    "value": "Assault Rifle"
+  },
+  {
+    "address": "0x00479584",
+    "type": "ascii",
+    "value": "Pistol"
+  },
+  {
+    "address": "0x0047958C",
+    "type": "ascii",
+    "value": "Fire bullets"
+  },
+  {
+    "address": "0x0047DB18",
+    "type": "ascii",
+    "value": " \t-\r]"
+  },
+  {
+    "address": "0x0047E36E",
+    "type": "ascii",
+    "value": "z?aUY"
+  },
+  {
+    "address": "0x0047E3B0",
+    "type": "ascii",
+    "value": "zc%C1"
+  },
+  {
+    "address": "0x0047E403",
+    "type": "ascii",
+    "value": "-64OS"
+  },
+  {
+    "address": "0x004DC0AA",
+    "type": "ascii",
+    "value": "Y>t$7?*"
+  },
+  {
+    "address": "0x004DC0BA",
+    "type": "ascii",
+    "value": "Y>t$7?"
+  },
+  {
+    "address": "0x004DC57F",
+    "type": "ascii",
+    "value": "4h!\"4h!\"4h!\"4h!\"4"
+  },
+  {
+    "address": "0x004DC62F",
+    "type": "ascii",
+    "value": "=h!\"4h!\"4h!\"4h!\"4"
+  }
+]
