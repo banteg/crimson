@@ -525,8 +525,8 @@ class MenuEntry:
     slot: int
     row: int
     y: float
-    counter_value: int = 0
-    counter_timer_ms: int = 0
+    hover_amount: int = 0
+    time_since_ready_ms: int = 0x100
 
 
 class MenuView:
@@ -539,8 +539,13 @@ class MenuView:
         self._full_version = False
         self._timeline_ms = 0
         self._timeline_max_ms = 0
+        self._widescreen_y_shift = 0.0
+        self._menu_screen_width = 0
 
     def open(self) -> None:
+        screen_w = float(rl.get_screen_width())
+        self._menu_screen_width = int(screen_w)
+        self._widescreen_y_shift = self._menu_widescreen_y_shift(screen_w)
         cache = self._ensure_cache()
         sign = cache.get_or_load("ui_signCrimson", "ui/ui_signCrimson.jaz").texture
         item = cache.get_or_load("ui_menuItem", "ui/ui_menuItem.jaz").texture
@@ -588,7 +593,8 @@ class MenuView:
                 f"menu select: {self._selected_index} (row {entry.row})"
             )
             self._state.console.log.flush()
-        self._update_label_counters(dt_ms)
+        self._update_ready_timers(dt_ms)
+        self._update_hover_amounts(dt_ms)
 
     def draw(self) -> None:
         rl.clear_background(rl.BLACK)
@@ -636,7 +642,7 @@ class MenuView:
         other_games: bool,
     ) -> list[MenuEntry]:
         rows = self._menu_label_rows(full_version, other_games)
-        slot_ys = self._menu_slot_ys(other_games)
+        slot_ys = self._menu_slot_ys(other_games, self._widescreen_y_shift)
         active = self._menu_slot_active(full_version, mods_available, other_games)
         entries: list[MenuEntry] = []
         for slot, (row, y, enabled) in enumerate(
@@ -657,7 +663,7 @@ class MenuView:
         return [top, 1, 2, 3, slot4, 6]
 
     @staticmethod
-    def _menu_slot_ys(other_games: bool) -> list[float]:
+    def _menu_slot_ys(other_games: bool, y_shift: float) -> list[float]:
         ys = [
             MENU_LABEL_BASE_Y,
             MENU_LABEL_BASE_Y + MENU_LABEL_STEP,
@@ -666,7 +672,7 @@ class MenuView:
             MENU_LABEL_BASE_Y + MENU_LABEL_STEP * 4.0,
             MENU_LABEL_BASE_Y + MENU_LABEL_STEP * (5.0 if other_games else 4.0),
         ]
-        return ys
+        return [y + y_shift for y in ys]
 
     @staticmethod
     def _menu_slot_active(
@@ -692,6 +698,9 @@ class MenuView:
         if item is None:
             return
         label_tex = assets.labels
+        item_w = float(item.width)
+        item_h = float(item.height)
+        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
         for entry in self._menu_entries:
             pos_x = self._menu_slot_pos_x(entry.slot)
             pos_y = entry.y
@@ -699,43 +708,74 @@ class MenuView:
                 index=entry.slot + 2,
                 start_ms=self._menu_slot_start_ms(entry.slot),
                 end_ms=self._menu_slot_end_ms(entry.slot),
-                width=float(item.width),
+                width=item_w,
             )
-            pos_x += slide_x
+            _ = slide_x  # slide is ignored for render_mode==0 (transform) elements
+            item_scale, local_y_shift = self._menu_item_scale(entry.slot)
+            offset_x = MENU_ITEM_OFFSET_X * item_scale
+            offset_y = MENU_ITEM_OFFSET_Y * item_scale - local_y_shift
+            dst = rl.Rectangle(
+                pos_x + offset_x,
+                pos_y + offset_y,
+                item_w * item_scale,
+                item_h * item_scale,
+            )
+            origin = rl.Vector2(-offset_x, -offset_y)
+            rotation_deg = math.degrees(angle_rad)
+            if fx_detail:
+                self._draw_ui_quad(
+                    texture=item,
+                    src=rl.Rectangle(0.0, 0.0, item_w, item_h),
+                    dst=rl.Rectangle(dst.x + 7.0, dst.y + 7.0, dst.width, dst.height),
+                    origin=origin,
+                    rotation_deg=rotation_deg,
+                    tint=rl.Color(0x44, 0x44, 0x44, 0x44),
+                )
             self._draw_ui_quad(
                 texture=item,
-                src=rl.Rectangle(0.0, 0.0, float(item.width), float(item.height)),
-                dst=rl.Rectangle(
-                    pos_x + MENU_ITEM_OFFSET_X,
-                    pos_y + MENU_ITEM_OFFSET_Y,
-                    float(item.width),
-                    float(item.height),
-                ),
-                origin=rl.Vector2(-MENU_ITEM_OFFSET_X, -MENU_ITEM_OFFSET_Y),
-                rotation_deg=math.degrees(angle_rad),
+                src=rl.Rectangle(0.0, 0.0, item_w, item_h),
+                dst=dst,
+                origin=origin,
+                rotation_deg=rotation_deg,
                 tint=rl.WHITE,
             )
-            alpha = self._label_alpha(entry.counter_value)
+            alpha = self._label_alpha(entry.hover_amount)
             tint = rl.Color(255, 255, 255, alpha)
             src = rl.Rectangle(
                 0.0,
                 float(entry.row) * MENU_LABEL_ROW_HEIGHT,
-                MENU_LABEL_WIDTH,
-                MENU_LABEL_HEIGHT,
+                float(label_tex.width),
+                MENU_LABEL_ROW_HEIGHT,
             )
+            label_offset_x = MENU_LABEL_OFFSET_X * item_scale
+            label_offset_y = MENU_LABEL_OFFSET_Y * item_scale - local_y_shift
+            label_dst = rl.Rectangle(
+                pos_x + label_offset_x,
+                pos_y + label_offset_y,
+                MENU_LABEL_WIDTH * item_scale,
+                MENU_LABEL_HEIGHT * item_scale,
+            )
+            label_origin = rl.Vector2(-label_offset_x, -label_offset_y)
             self._draw_ui_quad(
                 texture=label_tex,
                 src=src,
-                dst=rl.Rectangle(
-                    pos_x + MENU_LABEL_OFFSET_X,
-                    pos_y + MENU_LABEL_OFFSET_Y,
-                    MENU_LABEL_WIDTH,
-                    MENU_LABEL_HEIGHT,
-                ),
-                origin=rl.Vector2(-MENU_LABEL_OFFSET_X, -MENU_LABEL_OFFSET_Y),
-                rotation_deg=math.degrees(angle_rad),
+                dst=label_dst,
+                origin=label_origin,
+                rotation_deg=rotation_deg,
                 tint=tint,
             )
+            if self._menu_entry_enabled(entry) and entry.time_since_ready_ms < 0x100:
+                glow_alpha = 0xFF - (entry.time_since_ready_ms // 2)
+                rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+                self._draw_ui_quad(
+                    texture=label_tex,
+                    src=src,
+                    dst=label_dst,
+                    origin=label_origin,
+                    rotation_deg=rotation_deg,
+                    tint=rl.Color(255, 255, 255, glow_alpha),
+                )
+                rl.end_blend_mode()
 
     def _mods_available(self) -> bool:
         mods_dir = self._state.base_dir / "mods"
@@ -745,8 +785,8 @@ class MenuView:
 
     def _other_games_enabled(self) -> bool:
         # Original game checks a config string via grim_get_config_var(100).
-        # Our config-var system is not implemented yet; treat it as empty.
-        return False
+        # Our config-var system is not implemented yet; allow a simple env opt-in.
+        return os.getenv("CRIMSON_GRIM_CONFIG_VAR_100", "").strip() != ""
 
     def _hovered_entry_index(self) -> int | None:
         if not self._menu_entries:
@@ -754,33 +794,32 @@ class MenuView:
         mouse = rl.get_mouse_position()
         mouse_x = float(mouse.x)
         mouse_y = float(mouse.y)
-        assets = self._assets
-        if assets is None or assets.item is None:
-            return None
-        item_w = float(assets.item.width)
-        item_h = float(assets.item.height)
         for idx, entry in enumerate(self._menu_entries):
             if not self._menu_entry_enabled(entry):
                 continue
-            pos_x = self._menu_slot_pos_x(entry.slot)
-            pos_y = entry.y
-            x0 = pos_x + MENU_ITEM_OFFSET_X
-            y0 = pos_y + MENU_ITEM_OFFSET_Y
-            x1 = x0 + item_w
-            y1 = y0 + item_h
-            if x0 <= mouse_x <= x1 and y0 <= mouse_y <= y1:
+            left, top, right, bottom = self._menu_item_bounds(entry)
+            if left <= mouse_x <= right and top <= mouse_y <= bottom:
                 return idx
         return None
 
-    def _update_label_counters(self, dt_ms: int) -> None:
+    def _update_ready_timers(self, dt_ms: int) -> None:
+        for idx, entry in enumerate(self._menu_entries):
+            enabled = self._menu_entry_enabled(entry)
+            if enabled and entry.time_since_ready_ms == 0x100:
+                entry.time_since_ready_ms = 0
+            if enabled and entry.time_since_ready_ms < 0x100:
+                entry.time_since_ready_ms = min(0x100, entry.time_since_ready_ms + dt_ms)
+            if not enabled:
+                entry.time_since_ready_ms = 0x100
+
+    def _update_hover_amounts(self, dt_ms: int) -> None:
         for idx, entry in enumerate(self._menu_entries):
             hover = idx == self._selected_index
             if hover:
-                entry.counter_value += dt_ms * 6
+                entry.hover_amount += dt_ms * 6
             else:
-                entry.counter_value -= dt_ms * 2
-            entry.counter_value = max(0, min(1000, entry.counter_value))
-            entry.counter_timer_ms += dt_ms
+                entry.hover_amount -= dt_ms * 2
+            entry.hover_amount = max(0, min(1000, entry.hover_amount))
 
     @staticmethod
     def _label_alpha(counter_value: int) -> int:
@@ -789,6 +828,38 @@ class MenuView:
 
     def _menu_entry_enabled(self, entry: MenuEntry) -> bool:
         return self._timeline_ms >= self._menu_slot_end_ms(entry.slot)
+
+    @staticmethod
+    def _menu_widescreen_y_shift(screen_w: float) -> float:
+        # ((screen_width / 640.0) * 150.0) - 150.0
+        return (screen_w * 0.0015625 * 150.0) - 150.0
+
+    def _menu_item_scale(self, slot: int) -> tuple[float, float]:
+        if self._menu_screen_width < 641:
+            return 0.9, float(slot) * 11.0
+        return 1.0, 0.0
+
+    def _menu_item_bounds(self, entry: MenuEntry) -> tuple[float, float, float, float]:
+        # FUN_0044fb50: inset bounds derived from quad0 v0/v2 and pos_x/pos_y.
+        assets = self._assets
+        if assets is None or assets.item is None:
+            return (0.0, 0.0, 0.0, 0.0)
+        item_w = float(assets.item.width)
+        item_h = float(assets.item.height)
+        item_scale, local_y_shift = self._menu_item_scale(entry.slot)
+        x0 = MENU_ITEM_OFFSET_X * item_scale
+        y0 = MENU_ITEM_OFFSET_Y * item_scale - local_y_shift
+        x2 = (MENU_ITEM_OFFSET_X + item_w) * item_scale
+        y2 = (MENU_ITEM_OFFSET_Y + item_h) * item_scale - local_y_shift
+        w = x2 - x0
+        h = y2 - y0
+        pos_x = self._menu_slot_pos_x(entry.slot)
+        pos_y = entry.y
+        left = pos_x + x0 + w * 0.54
+        top = pos_y + y0 + h * 0.28
+        right = pos_x + x2 - w * 0.05
+        bottom = pos_y + y2 - h * 0.10
+        return left, top, right, bottom
 
     @staticmethod
     def _menu_slot_pos_x(slot: int) -> float:
@@ -880,7 +951,7 @@ class MenuView:
             end_ms=300,
             width=sign_w,
         )
-        pos_x += slide_x
+        _ = slide_x  # slide is ignored for render_mode==0 (transform) elements
         sign = assets.sign
         self._draw_ui_quad(
             texture=sign,
