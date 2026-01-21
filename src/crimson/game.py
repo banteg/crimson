@@ -526,7 +526,7 @@ class MenuEntry:
     row: int
     y: float
     hover_amount: int = 0
-    ready_timer_ms: int = -1
+    ready_timer_ms: int = 0x100
 
 
 class MenuView:
@@ -780,8 +780,10 @@ class MenuView:
                 rotation_deg=rotation_deg,
                 tint=tint,
             )
-            if self._menu_entry_enabled(entry) and 0 <= entry.ready_timer_ms < 0x100:
-                glow_alpha = 0xFF - (entry.ready_timer_ms // 2)
+            if self._menu_entry_enabled(entry):
+                glow_alpha = alpha
+                if 0 <= entry.ready_timer_ms < 0x100:
+                    glow_alpha = 0xFF - (entry.ready_timer_ms // 2)
                 rl.begin_blend_mode(rl.BLEND_ADDITIVE)
                 self._draw_ui_quad(
                     texture=label_tex,
@@ -820,13 +822,6 @@ class MenuView:
 
     def _update_ready_timers(self, dt_ms: int) -> None:
         for entry in self._menu_entries:
-            enabled = self._menu_entry_enabled(entry)
-            if not enabled:
-                entry.ready_timer_ms = -1
-                continue
-
-            if entry.ready_timer_ms < 0:
-                entry.ready_timer_ms = 0
             if entry.ready_timer_ms < 0x100:
                 entry.ready_timer_ms = min(0x100, entry.ready_timer_ms + dt_ms)
 

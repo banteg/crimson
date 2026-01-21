@@ -65,7 +65,7 @@ Offsets below are relative to the UI element base pointer.
 | 0x204 | overlay_texture_handle | Overlay texture handle (`-1` disables). |
 | 0x2f4 | hover_enter_played | Gate for "hover enter" SFX. |
 | 0x2f8 | hover_amount | Hover lerp value, clamped 0..1000. |
-| 0x2fc | time_since_ready | Increments up to `0x100` after `ready=1`. |
+| 0x2fc | time_since_ready | Initialized to `0x100` in `FUN_0044faa0` and increments in `ui_element_update`. If it ever falls into `0..0xFF`, `ui_element_render` uses it to override glow alpha. |
 | 0x300 | render_scale | Used to pick a special render state when zero. |
 | 0x304 | rot_m00 | Rotation matrix (cos). |
 | 0x308 | rot_m01 | Rotation matrix (-sin). |
@@ -121,7 +121,7 @@ When `config_blob.reserved0[0x0e]` (aka `fx_detail_0`) is nonzero:
   `0x44444444`.
 
 Additionally, after drawing the overlay normally, `ui_element_render` performs a
-short "glow" re-draw (blend mode differs) while `time_since_ready < 0x100`,
-using:
+"glow" re-draw in an additive blend mode for clickable + enabled elements. If
+`time_since_ready` is in `0..0xFF`, it overrides the glow alpha using:
 
 `alpha_glow = 0xFF - (time_since_ready / 2)`
