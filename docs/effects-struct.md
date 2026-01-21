@@ -142,6 +142,9 @@ at `fx_queue` + offsets.
 This queue is written by `fx_queue_add` (`FUN_0041e840`) and rendered (then
 cleared) by `fx_queue_render` once per frame.
 
+See also: [Terrain pipeline](crimsonland-exe/terrain.md) for the render-target
+baking details (blend modes, scaling, and corpse two-pass behavior).
+
 ### Struct view (fx_queue_entry_t)
 
 ```c

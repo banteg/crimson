@@ -17,8 +17,9 @@ TERRAIN_DETAIL_TINT = rl.Color(178, 178, 178, 153)
 TERRAIN_DENSITY_BASE = 800
 TERRAIN_DENSITY_OVERLAY = 0x23
 TERRAIN_DENSITY_DETAIL = 0x0F
-TERRAIN_DENSITY_DIV = 0x80000
+TERRAIN_DENSITY_SHIFT = 13
 TERRAIN_ROTATION_MAX = 0x13A
+TERRAIN_TILE_SIZE = 256
 CRT_RAND_MULT = 214013
 CRT_RAND_INC = 2531011
 
@@ -40,30 +41,51 @@ class GroundRenderer:
     width: int = TERRAIN_TEXTURE_SIZE
     height: int = TERRAIN_TEXTURE_SIZE
     texture_scale: float = 1.0
+    texture_failed: bool = False
     screen_width: float | None = None
     screen_height: float | None = None
     overlay: rl.Texture | None = None
     overlay_detail: rl.Texture | None = None
+    tile: rl.Texture | None = None
+    display_filter: int = 2
     render_target: rl.RenderTexture | None = None
 
     def create_render_target(self) -> None:
-        render_w, render_h = self._render_target_size()
+        if self.texture_failed:
+            if self.render_target is not None:
+                rl.unload_render_texture(self.render_target)
+                self.render_target = None
+            return
+
+        scale = self.texture_scale
+        if scale < 0.5:
+            scale = 0.5
+        elif scale > 4.0:
+            scale = 4.0
+        self.texture_scale = scale
+
+        render_w, render_h = self._render_target_size_for(scale)
+        if self._ensure_render_target(render_w, render_h):
+            return
+
+        old_scale = scale
+        self.texture_scale = scale + scale
+        render_w, render_h = self._render_target_size_for(self.texture_scale)
+        if self._ensure_render_target(render_w, render_h):
+            return
+
+        self.texture_failed = True
+        self.texture_scale = old_scale
         if self.render_target is not None:
-            if (
-                self.render_target.texture.width == render_w
-                and self.render_target.texture.height == render_h
-            ):
-                return
             rl.unload_render_texture(self.render_target)
-        self.render_target = rl.load_render_texture(render_w, render_h)
-        rl.set_texture_filter(self.render_target.texture, rl.TEXTURE_FILTER_BILINEAR)
-        rl.set_texture_wrap(self.render_target.texture, rl.TEXTURE_WRAP_CLAMP)
+            self.render_target = None
 
     def generate(self, seed: int | None = None) -> None:
         self.create_render_target()
         if self.render_target is None:
             return
         rng = CrtRand(seed)
+        self._set_stamp_filters(point=True)
         rl.begin_texture_mode(self.render_target)
         rl.clear_background(TERRAIN_CLEAR_COLOR)
         self._scatter_texture(
@@ -79,11 +101,14 @@ class GroundRenderer:
                 detail, TERRAIN_DETAIL_TINT, rng, TERRAIN_DENSITY_DETAIL
             )
         rl.end_texture_mode()
+        self._set_stamp_filters(point=False)
 
     def draw(self, camera_x: float, camera_y: float) -> None:
-        target = self.render_target
-        if target is None:
+        if self.render_target is None:
+            self._draw_fallback(camera_x, camera_y)
             return
+
+        target = self.render_target
         out_w = float(rl.get_screen_width())
         out_h = float(rl.get_screen_height())
         screen_w = float(self.screen_width or out_w)
@@ -103,7 +128,11 @@ class GroundRenderer:
         src_h = (v1 - v0) * float(target.texture.height)
         src = rl.Rectangle(src_x, src_y, src_w, -src_h)
         dst = rl.Rectangle(0.0, 0.0, out_w, out_h)
+        if self.display_filter == 1:
+            rl.set_texture_filter(target.texture, rl.TEXTURE_FILTER_POINT)
         rl.draw_texture_pro(target.texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+        if self.display_filter == 1:
+            rl.set_texture_filter(target.texture, rl.TEXTURE_FILTER_BILINEAR)
 
     def _scatter_texture(
         self,
@@ -113,7 +142,7 @@ class GroundRenderer:
         density: int,
     ) -> None:
         area = self.width * self.height
-        count = (area * density) // TERRAIN_DENSITY_DIV
+        count = (area * density) >> TERRAIN_DENSITY_SHIFT
         if count <= 0:
             return
         inv_scale = 1.0 / self._normalized_texture_scale()
@@ -131,6 +160,36 @@ class GroundRenderer:
                 texture, src, dst, origin, math.degrees(angle), tint
             )
 
+    def _draw_fallback(self, camera_x: float, camera_y: float) -> None:
+        tile = self.tile or self.texture
+        out_w = float(rl.get_screen_width())
+        out_h = float(rl.get_screen_height())
+        screen_w = float(self.screen_width or out_w)
+        screen_h = float(self.screen_height or out_h)
+        if screen_w > self.width:
+            screen_w = float(self.width)
+        if screen_h > self.height:
+            screen_h = float(self.height)
+
+        cam_x, cam_y = self._clamp_camera(camera_x, camera_y, screen_w, screen_h)
+        scale_x = out_w / screen_w if screen_w > 0 else 1.0
+        scale_y = out_h / screen_h if screen_h > 0 else 1.0
+        tiles_x = (self.width >> 8) + 1
+        tiles_y = (self.height >> 8) + 1
+        src = rl.Rectangle(0.0, 0.0, float(tile.width), float(tile.height))
+        origin = rl.Vector2(0.0, 0.0)
+        for ty in range(tiles_y):
+            for tx in range(tiles_x):
+                x = (float(tx * TERRAIN_TILE_SIZE) + cam_x) * scale_x
+                y = (float(ty * TERRAIN_TILE_SIZE) + cam_y) * scale_y
+                dst = rl.Rectangle(
+                    x,
+                    y,
+                    float(TERRAIN_TILE_SIZE) * scale_x,
+                    float(TERRAIN_TILE_SIZE) * scale_y,
+                )
+                rl.draw_texture_pro(tile, src, dst, origin, 0.0, rl.WHITE)
+
     def _clamp_camera(
         self, camera_x: float, camera_y: float, screen_w: float, screen_h: float
     ) -> tuple[float, float]:
@@ -138,24 +197,59 @@ class GroundRenderer:
         min_y = screen_h - float(self.height)
         if camera_x < min_x:
             camera_x = min_x
-        if camera_x > 0.0:
-            camera_x = 0.0
+        if camera_x > -1.0:
+            camera_x = -1.0
         if camera_y < min_y:
             camera_y = min_y
-        if camera_y > 0.0:
-            camera_y = 0.0
+        if camera_y > -1.0:
+            camera_y = -1.0
         return camera_x, camera_y
 
-    def _render_target_size(self) -> tuple[int, int]:
-        scale = self._normalized_texture_scale()
-        render_w = max(1, int(round(self.width / scale)))
-        render_h = max(1, int(round(self.height / scale)))
+    def _ensure_render_target(self, render_w: int, render_h: int) -> bool:
+        if self.render_target is not None:
+            if (
+                self.render_target.texture.width == render_w
+                and self.render_target.texture.height == render_h
+            ):
+                return True
+            rl.unload_render_texture(self.render_target)
+            self.render_target = None
+
+        try:
+            candidate = rl.load_render_texture(render_w, render_h)
+        except Exception:
+            return False
+
+        if not getattr(candidate, "id", 0) or not rl.is_render_texture_valid(candidate):
+            if getattr(candidate, "id", 0):
+                rl.unload_render_texture(candidate)
+            return False
+        if (
+            getattr(getattr(candidate, "texture", None), "width", 0) <= 0
+            or getattr(getattr(candidate, "texture", None), "height", 0) <= 0
+        ):
+            rl.unload_render_texture(candidate)
+            return False
+
+        self.render_target = candidate
+        rl.set_texture_filter(self.render_target.texture, rl.TEXTURE_FILTER_BILINEAR)
+        rl.set_texture_wrap(self.render_target.texture, rl.TEXTURE_WRAP_CLAMP)
+        return True
+
+    def _render_target_size_for(self, scale: float) -> tuple[int, int]:
+        render_w = max(1, int(self.width / scale))
+        render_h = max(1, int(self.height / scale))
         return render_w, render_h
 
     def _normalized_texture_scale(self) -> float:
         scale = self.texture_scale
         if scale < 0.5:
             scale = 0.5
-        elif scale > 4.0:
-            scale = 4.0
         return scale
+
+    def _set_stamp_filters(self, *, point: bool) -> None:
+        mode = rl.TEXTURE_FILTER_POINT if point else rl.TEXTURE_FILTER_BILINEAR
+        for texture in (self.texture, self.overlay, self.overlay_detail):
+            if texture is None:
+                continue
+            rl.set_texture_filter(texture, mode)

@@ -45,6 +45,9 @@ weapon icons, along with health/score overlays.
 `terrain_generate` renders the terrain texture into a render target and selects
 its base texture index from a per-level descriptor.
 
+For the full pipeline (init, procedural stamping, FX decal baking, and final
+screen draw), see [Terrain pipeline](terrain.md).
+
 ### Runtime evidence (2026-01-20)
 
 `terrain_trace.jsonl` confirms the render path uses config-sized UVs over a
