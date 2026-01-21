@@ -433,6 +433,16 @@ Grim misc getter (vtable `+0xa4` → `FUN_100075b0`):
 - Returns `*(DAT_1005d850 + index*4)`; only index 0 observed in `crimsonland.exe` (`FUN_0041e8d0/1e8f0`).
 
 
+### High score record (0x48 bytes) — name 0x00..0x1f
+
+The record begins with the player name (copied from config on load and compared
+by `highscore_record_equals`).
+
+| Offset | Address | Meaning | Evidence |
+| --- | --- | --- | --- |
+| `0x00` | `DAT_00487040` | Player name (NUL‑terminated, 0x20 bytes) | Copied from config `player_name` on load; compared in `highscore_record_equals`. |
+
+
 ### High score record (0x48 bytes) — metadata 0x20..0x37
 
 The high score record embeds run metadata used for duplicate detection and ranking. These
@@ -449,6 +459,10 @@ fields are compared in `highscore_record_equals` before a score can replace an e
 | `0x2c` | `DAT_0048706c` | Shots fired | Incremented on projectile spawns; clamped against hits; compared in `highscore_record_equals`. |
 | `0x30` | `DAT_00487070` | Shots hit | Incremented on projectile hit paths (creature hitbox size 16.0); clamped to shots fired; compared in `highscore_record_equals`. |
 | `0x34` | `DAT_00487074` | Creature kill count | Incremented on creature death paths; compared in `highscore_record_equals`. |
+
+Bytes `0x38..0x3f` are currently unknown. The online submit path zeroes `0x3c..0x3f`
+in the 0x40-byte record copies (`FUN_0043aa90`), suggesting those bytes are not
+required for leaderboard uploads.
 
 
 ### High score record (0x48 bytes) — tail bytes 0x40..0x47

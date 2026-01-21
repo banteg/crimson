@@ -1206,6 +1206,7 @@
       "address": "0x00482b10",
       "comment": "High score table entries (0x48-byte records).",
       "name": "highscore_table",
+      "type": "highscore_record_t",
       "program": "crimsonland.exe"
     },
     {
@@ -1573,6 +1574,7 @@
       "address": "0x00487040",
       "comment": "Active high score record buffer (0x48 bytes).",
       "name": "highscore_active_record",
+      "type": "highscore_record_t",
       "program": "crimsonland.exe"
     },
     {

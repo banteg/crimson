@@ -4751,7 +4751,7 @@ LAB_00407129:
           ui_transition_direction = 0;
           (*grim_interface_ptr->vtable->grim_flush_input)();
           console_input_poll();
-          highscore_score_xp = 0;
+          highscore_active_record.score_xp = 0;
         }
         DAT_00487088 = DAT_00487088 + frame_dt_ms;
       }
@@ -4794,7 +4794,7 @@ void rush_mode_update(void)
     survival_spawn_cooldown = survival_spawn_cooldown - config_blob.reserved0._20_4_ * frame_dt_ms;
     while (survival_spawn_cooldown < 0) {
       survival_spawn_cooldown = survival_spawn_cooldown + 0xfa;
-      fVar2 = (float10)(survival_elapsed_ms + 1);
+      fVar2 = (float10)(int)(highscore_active_record.survival_elapsed_ms + 1);
       local_4 = 0x3f800000;
       local_10 = (float)(fVar2 * (float10)8.333333e-06 + (float10)0.3);
       local_c = (float)(fVar2 * (float10)10000.0 + (float10)0.3);
@@ -4825,11 +4825,13 @@ void rush_mode_update(void)
         local_8 = 0.0;
       }
       local_20 = (float)terrain_texture_width + 64.0;
-      fVar2 = (float10)fcos((float10)survival_elapsed_ms * (float10)0.001);
+      fVar2 = (float10)fcos((float10)(int)highscore_active_record.survival_elapsed_ms *
+                            (float10)0.001);
       local_1c = (float)((float10)terrain_texture_height * (float10)0.5 + fVar2 * (float10)256.0);
       iVar1 = creature_spawn(&local_20,&local_10,2);
       local_18 = -64.0;
-      fVar2 = (float10)fsin((float10)survival_elapsed_ms * (float10)0.001);
+      fVar2 = (float10)fsin((float10)(int)highscore_active_record.survival_elapsed_ms *
+                            (float10)0.001);
       (&creature_pool)[iVar1].ai_mode = 8;
       local_14 = (float)((float10)terrain_texture_height * (float10)0.5 + fVar2 * (float10)256.0);
       iVar1 = creature_spawn(&local_18,&local_10,3);
@@ -5150,7 +5152,8 @@ void survival_update(void)
   }
   if (config_blob.reserved0._20_4_ == 1) {
     if ((((survival_reward_damage_seen == '\0') && (survival_reward_fire_seen == '\0')) &&
-        (64000 < survival_elapsed_ms)) && (survival_reward_handout_enabled != '\0')) {
+        (64000 < (int)highscore_active_record.survival_elapsed_ms)) &&
+       (survival_reward_handout_enabled != '\0')) {
       if (player_health._pad0._668_4_ == 1) {
         weapon_assign_player(0,0x18);
         DAT_00486fb8 = 0x18;
@@ -5324,7 +5327,7 @@ joined_r0x004082fb:
     player_health._pad0[0x29f] = player_health._pad0[0x29f];
     return;
   }
-  iVar5 = 500 - survival_elapsed_ms / 0x708;
+  iVar5 = 500 - (int)highscore_active_record.survival_elapsed_ms / 0x708;
   if (iVar5 < 0) {
     uVar6 = 1U - iVar5 >> 1;
     iVar5 = iVar5 + uVar6 * 2;
@@ -6771,10 +6774,10 @@ LAB_0040ad8e:
   if (config_blob.reserved0._24_4_ == 3) {
     quest_mode_update();
   }
-  highscore_score_xp._0_1_ = player_health._pad0[0x88];
-  highscore_score_xp._1_1_ = player_health._pad0[0x89];
-  highscore_score_xp._2_1_ = player_health._pad0[0x8a];
-  highscore_score_xp._3_1_ = player_health._pad0[0x8b];
+  highscore_active_record.score_xp._0_1_ = player_health._pad0[0x88];
+  highscore_active_record.score_xp._1_1_ = player_health._pad0[0x89];
+  highscore_active_record.score_xp._2_1_ = player_health._pad0[0x8a];
+  highscore_active_record.score_xp._3_1_ = player_health._pad0[0x8b];
   if ((console_open_flag == '\0') && (game_paused_flag == '\0')) {
     if (0.0 < _bonus_weapon_power_up_timer) {
       _bonus_weapon_power_up_timer = _bonus_weapon_power_up_timer - frame_dt;
@@ -6786,7 +6789,8 @@ LAB_0040ad8e:
     if ((bool)time_scale_active) {
       _bonus_reflex_boost_timer = _bonus_reflex_boost_timer - frame_dt;
     }
-    survival_elapsed_ms = survival_elapsed_ms + frame_dt_ms;
+    highscore_active_record.survival_elapsed_ms =
+         highscore_active_record.survival_elapsed_ms + frame_dt_ms;
     (&DAT_0048708c)[player_health._pad0._668_4_] =
          (&DAT_0048708c)[player_health._pad0._668_4_] + frame_dt_ms;
   }
@@ -8905,10 +8909,13 @@ void game_over_screen_update(void)
   uint uVar3;
   uint uVar4;
   int iVar5;
-  char *pcVar6;
-  undefined4 *puVar7;
-  char *pcVar8;
-  longlong lVar9;
+  undefined4 *puVar6;
+  char *pcVar7;
+  highscore_record_t *phVar8;
+  undefined4 *puVar9;
+  char *pcVar10;
+  highscore_record_t *phVar11;
+  longlong lVar12;
   int y;
   int w;
   float local_18;
@@ -8954,60 +8961,60 @@ void game_over_screen_update(void)
   perk_prompt_update_and_render();
   local_4 = _DAT_0048cc64 + DAT_0048cc88;
   local_10 = DAT_0048cc84 + _DAT_0048cc60 + 180.0;
-  pcVar6 = (char *)(local_4 + 40.0);
+  pcVar7 = (char *)(local_4 + 40.0);
   w = 0x40;
   local_18 = (_DAT_0048cc50 + local_10 + 44.0) - 10.0;
   y = 0x100;
   iVar2 = DAT_0048f7f8;
-  local_14 = pcVar6;
-  local_c = pcVar6;
+  local_14 = pcVar7;
+  local_c = pcVar7;
   local_8 = local_18;
-  lVar9 = __ftol();
-  iVar5 = (int)lVar9;
-  lVar9 = __ftol();
-  ui_draw_textured_quad((int)lVar9,iVar5,y,w,iVar2);
+  lVar12 = __ftol();
+  iVar5 = (int)lVar12;
+  lVar12 = __ftol();
+  ui_draw_textured_quad((int)lVar12,iVar5,y,w,iVar2);
   if (DAT_00487234 == -1) {
     highscore_load_table();
     DAT_004825a4 = highscore_rank_index();
-    highscore_record_game_mode = config_blob.reserved0[0x18];
+    highscore_active_record.game_mode_id = config_blob.reserved0[0x18];
     (*grim_interface_ptr->vtable->grim_flush_input)();
     console_input_poll();
     (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x1c);
     if (DAT_004825a4 < 100) {
       uVar3 = 0xffffffff;
       DAT_00487234 = 0;
-      pcVar6 = (char *)&highscore_active_record;
+      phVar11 = &highscore_active_record;
       do {
-        pcVar8 = pcVar6;
+        phVar8 = phVar11;
         if (uVar3 == 0) break;
         uVar3 = uVar3 - 1;
-        pcVar8 = pcVar6 + 1;
-        cVar1 = *pcVar6;
-        pcVar6 = pcVar8;
-      } while (cVar1 != '\0');
+        phVar8 = (highscore_record_t *)(phVar11->player_name + 1);
+        pcVar7 = phVar11->player_name;
+        phVar11 = phVar8;
+      } while (*pcVar7 != '\0');
       uVar3 = ~uVar3;
       _DAT_00482598 = 0x14;
       _DAT_00482590 = &DAT_0048256c;
-      pcVar6 = pcVar8 + -uVar3;
-      pcVar8 = (char *)&DAT_0048256c;
+      puVar6 = (undefined4 *)((int)phVar8 - uVar3);
+      puVar9 = &DAT_0048256c;
       for (uVar4 = uVar3 >> 2; uVar4 != 0; uVar4 = uVar4 - 1) {
-        *(undefined4 *)pcVar8 = *(undefined4 *)pcVar6;
-        pcVar6 = pcVar6 + 4;
-        pcVar8 = pcVar8 + 4;
+        *puVar9 = *puVar6;
+        puVar6 = puVar6 + 1;
+        puVar9 = puVar9 + 1;
       }
       for (uVar3 = uVar3 & 3; uVar3 != 0; uVar3 = uVar3 - 1) {
-        *pcVar8 = *pcVar6;
-        pcVar6 = pcVar6 + 1;
-        pcVar8 = pcVar8 + 1;
+        *(undefined1 *)puVar9 = *(undefined1 *)puVar6;
+        puVar6 = (undefined4 *)((int)puVar6 + 1);
+        puVar9 = (undefined4 *)((int)puVar9 + 1);
       }
       uVar3 = 0xffffffff;
-      pcVar6 = (char *)&highscore_active_record;
+      phVar11 = &highscore_active_record;
       do {
         if (uVar3 == 0) break;
         uVar3 = uVar3 - 1;
-        cVar1 = *pcVar6;
-        pcVar6 = pcVar6 + 1;
-      } while (cVar1 != '\0');
+        pcVar7 = phVar11->player_name;
+        phVar11 = (highscore_record_t *)(phVar11->player_name + 1);
+      } while (*pcVar7 != '\0');
       DAT_00482594 = ~uVar3 - 1;
 LAB_00410232:
       local_18 = local_18 + 8.0;
@@ -9026,12 +9033,12 @@ LAB_00410232:
       if (((char)iVar2 != '\0') || (DAT_004825ad != '\0')) {
         uVar3 = 0xffffffff;
         iVar2 = 0;
-        pcVar6 = (char *)&DAT_0048256c;
+        pcVar7 = (char *)&DAT_0048256c;
         do {
           if (uVar3 == 0) break;
           uVar3 = uVar3 - 1;
-          cVar1 = *pcVar6;
-          pcVar6 = pcVar6 + 1;
+          cVar1 = *pcVar7;
+          pcVar7 = pcVar7 + 1;
         } while (cVar1 != '\0');
         iVar5 = ~uVar3 - 1;
         if (0 < iVar5) {
@@ -9044,37 +9051,40 @@ LAB_00410232:
           if (*(char *)((int)&DAT_0048256c + iVar2) != '\0') {
             DAT_00487234 = 1;
             sfx_play(sfx_ui_typeenter);
-            puVar7 = &highscore_active_record;
+            phVar11 = &highscore_active_record;
             for (iVar2 = 7; iVar2 != 0; iVar2 = iVar2 + -1) {
-              *puVar7 = 0;
-              puVar7 = puVar7 + 1;
+              phVar11->player_name[0] = '\0';
+              phVar11->player_name[1] = '\0';
+              phVar11->player_name[2] = '\0';
+              phVar11->player_name[3] = '\0';
+              phVar11 = (highscore_record_t *)(phVar11->player_name + 4);
             }
             uVar3 = 0xffffffff;
-            pcVar6 = (char *)&DAT_0048256c;
+            pcVar7 = (char *)&DAT_0048256c;
             do {
-              pcVar8 = pcVar6;
+              pcVar10 = pcVar7;
               if (uVar3 == 0) break;
               uVar3 = uVar3 - 1;
-              pcVar8 = pcVar6 + 1;
-              cVar1 = *pcVar6;
-              pcVar6 = pcVar8;
+              pcVar10 = pcVar7 + 1;
+              cVar1 = *pcVar7;
+              pcVar7 = pcVar10;
             } while (cVar1 != '\0');
             uVar3 = ~uVar3;
             _DAT_00482590 = &DAT_0048256c;
-            pcVar6 = pcVar8 + -uVar3;
-            pcVar8 = (char *)&highscore_active_record;
+            pcVar7 = pcVar10 + -uVar3;
+            phVar11 = &highscore_active_record;
             for (uVar4 = uVar3 >> 2; iVar2 = DAT_00482594, uVar4 != 0; uVar4 = uVar4 - 1) {
-              *(undefined4 *)pcVar8 = *(undefined4 *)pcVar6;
-              pcVar6 = pcVar6 + 4;
-              pcVar8 = pcVar8 + 4;
+              *(undefined4 *)phVar11->player_name = *(undefined4 *)pcVar7;
+              pcVar7 = pcVar7 + 4;
+              phVar11 = (highscore_record_t *)(phVar11->player_name + 4);
             }
             player_name_length = DAT_00482594;
             for (uVar3 = uVar3 & 3; uVar3 != 0; uVar3 = uVar3 - 1) {
-              *pcVar8 = *pcVar6;
-              pcVar6 = pcVar6 + 1;
-              pcVar8 = pcVar8 + 1;
+              phVar11->player_name[0] = *pcVar7;
+              pcVar7 = pcVar7 + 1;
+              phVar11 = (highscore_record_t *)(phVar11->player_name + 1);
             }
-            *(undefined1 *)((int)&highscore_active_record + iVar2) = 0;
+            highscore_active_record.player_name[iVar2] = '\0';
             highscore_save_active();
             highscore_load_table();
             goto LAB_004103c2;
@@ -9103,10 +9113,10 @@ LAB_004103c2:
   local_18 = local_8 + 30.0;
   _DAT_00482590 = &DAT_0048256c;
   if (DAT_004825a4 < 100) {
-    local_14 = (char *)((float)pcVar6 + 64.0);
+    local_14 = (char *)((float)pcVar7 + 64.0);
   }
   else {
-    local_14 = (char *)((float)pcVar6 + 62.0);
+    local_14 = (char *)((float)pcVar7 + 62.0);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               ((float)grim_interface_ptr,local_18 + 8.0,local_14);
     local_14 = (char *)(local_8 + 6.0);
@@ -9250,7 +9260,7 @@ void quest_failed_screen_update(void)
   if (DAT_00487234 == -1) {
     highscore_load_table();
     DAT_00482604 = highscore_rank_index();
-    highscore_record_game_mode = config_blob.reserved0[0x18];
+    highscore_active_record.game_mode_id = config_blob.reserved0[0x18];
     (*grim_interface_ptr->vtable->grim_flush_input)();
     console_input_poll();
     (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x1c);
@@ -9390,9 +9400,13 @@ void quest_results_screen_update(void)
   uint uVar4;
   uint uVar5;
   int iVar6;
-  char *pcVar7;
+  undefined4 *puVar7;
   char *pcVar8;
-  longlong lVar9;
+  highscore_record_t *phVar9;
+  undefined4 *puVar10;
+  char *pcVar11;
+  highscore_record_t *phVar12;
+  longlong lVar13;
   char *unaff_retaddr;
   char *in_stack_00000004;
   char *in_stack_00000008;
@@ -9411,10 +9425,10 @@ void quest_results_screen_update(void)
   float in_stack_00000054;
   int y;
   int w;
-  float fVar10;
-  float fVar11;
+  float fVar14;
+  float fVar15;
   char *local_c;
-  float fVar12;
+  float fVar16;
   
   _bonus_reflex_boost_timer = 0;
   DAT_00487194 = 0;
@@ -9446,18 +9460,18 @@ void quest_results_screen_update(void)
     _DAT_004826f4 = 0x60;
     crt_atexit(&DAT_00412060);
   }
-  fVar12 = _DAT_0048dbdc + DAT_0048dc00;
+  fVar16 = _DAT_0048dbdc + DAT_0048dc00;
   w = 0x40;
   y = 0x100;
-  fVar10 = fVar12 + 40.0;
-  fVar11 = DAT_0048dbfc + _DAT_0048dbd8 + 180.0 + _DAT_0048dbc8 + 40.0;
+  fVar14 = fVar16 + 40.0;
+  fVar15 = DAT_0048dbfc + _DAT_0048dbd8 + 180.0 + _DAT_0048dbc8 + 40.0;
   iVar3 = DAT_0048f804;
-  lVar9 = __ftol();
-  iVar6 = (int)lVar9;
-  lVar9 = __ftol();
-  ui_draw_textured_quad((int)lVar9,iVar6,y,w,iVar3);
-  local_c = (char *)(fVar10 + 56.0);
-  fVar10 = fVar11;
+  lVar13 = __ftol();
+  iVar6 = (int)lVar13;
+  lVar13 = __ftol();
+  ui_draw_textured_quad((int)lVar13,iVar6,y,w,iVar3);
+  local_c = (char *)(fVar14 + 56.0);
+  fVar14 = fVar15;
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
   if (((game_state_prev == 0xe) && (ui_transition_direction != '\0')) && (DAT_0048724d != '\0')) {
     DAT_0048724d = '\0';
@@ -9468,19 +9482,19 @@ void quest_results_screen_update(void)
       iVar3 = _quest_stage_minor + -0xb + _quest_stage_major * 10;
       DAT_00482700 = (&quest_unlock_weapon_id)[iVar3 * 0xb];
       DAT_00482704 = (&quest_unlock_perk_id)[iVar3 * 0xb];
-      lVar9 = __ftol();
-      player_health._pad0._0_4_ = (BADTYPE)(int)lVar9;
-      lVar9 = __ftol();
-      iVar3 = (int)lVar9;
+      lVar13 = __ftol();
+      player_health._pad0._0_4_ = (BADTYPE)(int)lVar13;
+      lVar13 = __ftol();
+      iVar3 = (int)lVar13;
       if (config_blob.reserved0._20_4_ == 2) {
         DAT_00482600 = iVar3;
-        lVar9 = __ftol();
-        iVar3 = iVar3 + (int)lVar9;
+        lVar13 = __ftol();
+        iVar3 = iVar3 + (int)lVar13;
       }
       DAT_0048270c = (quest_spawn_timeline + perk_pending_count * -1000) - iVar3;
-      survival_elapsed_ms = DAT_0048270c;
+      highscore_active_record.survival_elapsed_ms = DAT_0048270c;
       if (DAT_0048270c == 0) {
-        survival_elapsed_ms = 1;
+        highscore_active_record.survival_elapsed_ms = 1;
       }
       DAT_00482708 = 0;
       DAT_00482600 = iVar3;
@@ -9503,7 +9517,7 @@ void quest_results_screen_update(void)
             DAT_00482724 = 0x28;
             sfx_play(sfx_ui_clink_01);
             DAT_00482720 = DAT_00482710;
-            if (quest_spawn_timeline <= DAT_00482710) {
+            if ((int)quest_spawn_timeline <= (int)DAT_00482710) {
               DAT_0048271c = DAT_0048271c + 1;
               DAT_00482710 = quest_spawn_timeline;
               DAT_00482720 = DAT_00482710;
@@ -9513,7 +9527,7 @@ void quest_results_screen_update(void)
             DAT_00482714 = DAT_00482714 + 1000;
             DAT_00482724 = 0x96;
             sfx_play(sfx_ui_clink_01);
-            DAT_00482720 = DAT_00482720 + -1000;
+            DAT_00482720 = DAT_00482720 - 1000;
             if (DAT_00482600 <= DAT_00482714) {
               DAT_00482714 = DAT_00482600;
               DAT_0048271c = DAT_0048271c + 1;
@@ -9523,12 +9537,12 @@ void quest_results_screen_update(void)
             DAT_00482718 = DAT_00482718 + 1;
             DAT_00482724 = 300;
             sfx_play(sfx_ui_clink_01);
-            DAT_00482720 = DAT_00482720 + -1000;
+            DAT_00482720 = DAT_00482720 - 1000;
             if (perk_pending_count <= DAT_00482718) {
               DAT_00482718 = perk_pending_count;
               DAT_0048271c = DAT_0048271c + 1;
               DAT_00482724 = 1000;
-              survival_elapsed_ms = DAT_0048270c;
+              highscore_active_record.survival_elapsed_ms = DAT_0048270c;
               DAT_00482720 = DAT_0048270c;
             }
           }
@@ -9538,29 +9552,29 @@ void quest_results_screen_update(void)
           DAT_00482708 = DAT_00482708 + 1;
         }
       }
-      fVar10 = 1.0 - (float)DAT_00482708 * 0.1;
-      if (0.0 <= fVar10) {
-        if (1.0 < fVar10) {
-          fVar10 = 1.0;
+      fVar14 = 1.0 - (float)DAT_00482708 * 0.1;
+      if (0.0 <= fVar14) {
+        if (1.0 < fVar14) {
+          fVar14 = 1.0;
         }
       }
       else {
-        fVar10 = 0.0;
+        fVar14 = 0.0;
       }
-      fVar11 = fVar11 + 32.0;
+      fVar15 = fVar15 + 32.0;
       if (DAT_0048271c == 0) {
-        (*grim_interface_ptr->vtable->grim_set_color)(0.1,0.8,0.1,fVar10);
+        (*grim_interface_ptr->vtable->grim_set_color)(0.1,0.8,0.1,fVar14);
       }
       else {
-        (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar10 * 0.4);
+        (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar14 * 0.4);
       }
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                ((float)grim_interface_ptr,fVar11,(char *)((float)local_c + 40.0 + 20.0));
+                ((float)grim_interface_ptr,fVar15,(char *)((float)local_c + 40.0 + 20.0));
       pIVar2 = grim_interface_ptr->vtable;
-      FUN_0040ff50(DAT_00482710 / 1000);
-      (*pIVar2->grim_draw_text_small_fmt)((float)grim_interface_ptr,fVar12 + 132.0,unaff_retaddr);
+      FUN_0040ff50((int)DAT_00482710 / 1000);
+      (*pIVar2->grim_draw_text_small_fmt)((float)grim_interface_ptr,fVar16 + 132.0,unaff_retaddr);
       if (DAT_0048271c == 1) {
-        (*grim_interface_ptr->vtable->grim_set_color)(0.1,0.8,0.1,fVar10);
+        (*grim_interface_ptr->vtable->grim_set_color)(0.1,0.8,0.1,fVar14);
       }
       else {
         (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,(float)unaff_retaddr * 0.4);
@@ -9576,8 +9590,8 @@ void quest_results_screen_update(void)
       (*pIVar2->grim_draw_text_small_fmt)
                 ((float)grim_interface_ptr,in_stack_00000014 + 132.0,in_stack_00000018);
       if (DAT_0048271c == 2) {
-        in_stack_00000004 = (char *)fVar10;
-        (*grim_interface_ptr->vtable->grim_set_color)(0.1,0.8,0.1,fVar10);
+        in_stack_00000004 = (char *)fVar14;
+        (*grim_interface_ptr->vtable->grim_set_color)(0.1,0.8,0.1,fVar14);
       }
       else {
         in_stack_00000004 = (char *)((float)in_stack_00000018 * 0.4);
@@ -9597,7 +9611,7 @@ void quest_results_screen_update(void)
       (*pIVar2->grim_draw_text_small_fmt)
                 ((float)grim_interface_ptr,(float)in_stack_00000004,in_stack_00000030);
       in_stack_0000003c = (char *)((float)in_stack_0000003c + 20.0);
-      (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar10);
+      (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar14);
       in_stack_00000030 = (char *)(in_stack_00000038 - 4.0);
       in_stack_00000034 = (float)in_stack_0000003c + 1.0;
       (*grim_interface_ptr->vtable->grim_draw_rect_outline)((float *)&stack0x00000030,168.0,1.0);
@@ -9605,7 +9619,7 @@ void quest_results_screen_update(void)
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
                 ((float)grim_interface_ptr,in_stack_00000038,in_stack_0000003c);
       pIVar2 = grim_interface_ptr->vtable;
-      FUN_0040ff50(DAT_00482720 / 1000);
+      FUN_0040ff50((int)DAT_00482720 / 1000);
       (*pIVar2->grim_draw_text_small_fmt)
                 ((float)grim_interface_ptr,in_stack_00000044 + 132.0,in_stack_00000048);
       in_stack_00000054 = in_stack_00000054 + 20.0;
@@ -9645,38 +9659,38 @@ void quest_results_screen_update(void)
       }
       uVar4 = 0xffffffff;
       _DAT_004826f0 = 0x14;
-      pcVar7 = (char *)&highscore_active_record;
+      phVar12 = &highscore_active_record;
       do {
-        pcVar8 = pcVar7;
+        phVar9 = phVar12;
         if (uVar4 == 0) break;
         uVar4 = uVar4 - 1;
-        pcVar8 = pcVar7 + 1;
-        cVar1 = *pcVar7;
-        pcVar7 = pcVar8;
-      } while (cVar1 != '\0');
+        phVar9 = (highscore_record_t *)(phVar12->player_name + 1);
+        pcVar8 = phVar12->player_name;
+        phVar12 = phVar9;
+      } while (*pcVar8 != '\0');
       uVar4 = ~uVar4;
       _DAT_004826e8 = &DAT_004825dc;
       DAT_00487234 = 1;
-      pcVar7 = pcVar8 + -uVar4;
-      pcVar8 = &DAT_004825dc;
+      puVar7 = (undefined4 *)((int)phVar9 - uVar4);
+      puVar10 = (undefined4 *)&DAT_004825dc;
       for (uVar5 = uVar4 >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
-        *(undefined4 *)pcVar8 = *(undefined4 *)pcVar7;
-        pcVar7 = pcVar7 + 4;
-        pcVar8 = pcVar8 + 4;
+        *puVar10 = *puVar7;
+        puVar7 = puVar7 + 1;
+        puVar10 = puVar10 + 1;
       }
       for (uVar4 = uVar4 & 3; uVar4 != 0; uVar4 = uVar4 - 1) {
-        *pcVar8 = *pcVar7;
-        pcVar7 = pcVar7 + 1;
-        pcVar8 = pcVar8 + 1;
+        *(undefined1 *)puVar10 = *(undefined1 *)puVar7;
+        puVar7 = (undefined4 *)((int)puVar7 + 1);
+        puVar10 = (undefined4 *)((int)puVar10 + 1);
       }
       uVar4 = 0xffffffff;
-      pcVar7 = (char *)&highscore_active_record;
+      phVar12 = &highscore_active_record;
       do {
         if (uVar4 == 0) break;
         uVar4 = uVar4 - 1;
-        cVar1 = *pcVar7;
-        pcVar7 = pcVar7 + 1;
-      } while (cVar1 != '\0');
+        pcVar8 = phVar12->player_name;
+        phVar12 = (highscore_record_t *)(phVar12->player_name + 1);
+      } while (*pcVar8 != '\0');
       DAT_004826ec = ~uVar4 - 1;
       perk_prompt_update_and_render();
       ui_cursor_render();
@@ -9693,13 +9707,13 @@ void quest_results_screen_update(void)
       local_c = (char *)((float)local_c + 22.0);
       (*grim_interface_ptr->vtable->grim_set_color_ptr)((float *)&DAT_004965f8);
       (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-                ((float)grim_interface_ptr,fVar11 + 42.0,local_c);
-      fVar10 = (float)unaff_retaddr + 32.0;
+                ((float)grim_interface_ptr,fVar15 + 42.0,local_c);
+      fVar14 = (float)unaff_retaddr + 32.0;
       DAT_00496604 = 0.7;
-      in_stack_00000004 = (char *)(fVar12 + 170.0);
+      in_stack_00000004 = (char *)(fVar16 + 170.0);
       _DAT_004826f4 = 0xa6;
       _DAT_00482520 = &DAT_0047318c;
-      in_stack_00000008 = (char *)(fVar10 - 8.0);
+      in_stack_00000008 = (char *)(fVar14 - 8.0);
       _DAT_00482530 = local_c;
       _DAT_004826f8 = local_c;
       ui_button_update((float *)&stack0x00000004,(int *)&DAT_00482520);
@@ -9707,12 +9721,12 @@ void quest_results_screen_update(void)
       if (((char)iVar3 != '\0') || (DAT_00482525 != '\0')) {
         uVar4 = 0xffffffff;
         iVar3 = 0;
-        pcVar7 = &DAT_004825dc;
+        pcVar8 = &DAT_004825dc;
         do {
           if (uVar4 == 0) break;
           uVar4 = uVar4 - 1;
-          cVar1 = *pcVar7;
-          pcVar7 = pcVar7 + 1;
+          cVar1 = *pcVar8;
+          pcVar8 = pcVar8 + 1;
         } while (cVar1 != '\0');
         iVar6 = ~uVar4 - 1;
         if (0 < iVar6) {
@@ -9727,32 +9741,32 @@ void quest_results_screen_update(void)
             sfx_play(sfx_ui_typeenter);
             iVar3 = DAT_004826ec;
             uVar4 = 0xffffffff;
-            pcVar7 = &DAT_004825dc;
+            pcVar8 = &DAT_004825dc;
             do {
-              pcVar8 = pcVar7;
+              pcVar11 = pcVar8;
               if (uVar4 == 0) break;
               uVar4 = uVar4 - 1;
-              pcVar8 = pcVar7 + 1;
-              cVar1 = *pcVar7;
-              pcVar7 = pcVar8;
+              pcVar11 = pcVar8 + 1;
+              cVar1 = *pcVar8;
+              pcVar8 = pcVar11;
             } while (cVar1 != '\0');
             uVar4 = ~uVar4;
             player_name_length = DAT_004826ec;
-            pcVar7 = pcVar8 + -uVar4;
-            pcVar8 = (char *)&highscore_active_record;
+            pcVar8 = pcVar11 + -uVar4;
+            phVar12 = &highscore_active_record;
             for (uVar5 = uVar4 >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
-              *(undefined4 *)pcVar8 = *(undefined4 *)pcVar7;
-              pcVar7 = pcVar7 + 4;
+              *(undefined4 *)phVar12->player_name = *(undefined4 *)pcVar8;
               pcVar8 = pcVar8 + 4;
+              phVar12 = (highscore_record_t *)(phVar12->player_name + 4);
             }
             DAT_004826ec = 0;
             _DAT_004826f0 = 0;
             for (uVar4 = uVar4 & 3; uVar4 != 0; uVar4 = uVar4 - 1) {
-              *pcVar8 = *pcVar7;
-              pcVar7 = pcVar7 + 1;
+              phVar12->player_name[0] = *pcVar8;
               pcVar8 = pcVar8 + 1;
+              phVar12 = (highscore_record_t *)(phVar12->player_name + 1);
             }
-            *(undefined1 *)((int)&highscore_active_record + iVar3) = 0;
+            highscore_active_record.player_name[iVar3] = '\0';
             _DAT_004826e8 = &DAT_004825dc;
             highscore_save_active();
             highscore_load_table();
@@ -9763,10 +9777,10 @@ void quest_results_screen_update(void)
         sfx_play(sfx_shock_hit_01);
       }
 LAB_00411906:
-      fVar10 = fVar10 + 30.0;
+      fVar14 = fVar14 + 30.0;
       (*grim_interface_ptr->vtable->grim_set_color_ptr)((float *)&DAT_004965f8);
-      in_stack_00000004 = (char *)(fVar12 + 26.0);
-      in_stack_00000008 = (char *)(fVar10 + 16.0);
+      in_stack_00000004 = (char *)(fVar16 + 26.0);
+      in_stack_00000008 = (char *)(fVar14 + 16.0);
       ui_text_input_render(&stack0x00000004,6.652423e-39,(float)local_c);
       perk_prompt_update_and_render();
       ui_cursor_render();
@@ -9780,25 +9794,25 @@ LAB_00411906:
   else {
     DAT_00482708 = 500;
   }
-  fVar11 = (float)DAT_00482708;
-  fVar10 = fVar10 + 30.0;
-  (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar11 * 0.002);
-  in_stack_00000004 = (char *)fVar12;
+  fVar15 = (float)DAT_00482708;
+  fVar14 = fVar14 + 30.0;
+  (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar15 * 0.002);
+  in_stack_00000004 = (char *)fVar16;
   if (99 < DAT_00482620) {
     local_c = (char *)((float)local_c + 6.0);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              ((float)grim_interface_ptr,fVar10 + 8.0,local_c);
+              ((float)grim_interface_ptr,fVar14 + 8.0,local_c);
     unaff_retaddr = (char *)((float)unaff_retaddr + 6.0);
-    in_stack_00000004 = (char *)fVar12;
+    in_stack_00000004 = (char *)fVar16;
   }
   in_stack_00000008 = (char *)((float)unaff_retaddr + 16.0);
-  fVar12 = (float)in_stack_00000004;
-  ui_text_input_render(&stack0x00000004,6.652423e-39,fVar11 * 0.002);
-  fVar10 = (float)unaff_retaddr + 78.0 + 6.0;
+  fVar16 = (float)in_stack_00000004;
+  ui_text_input_render(&stack0x00000004,6.652423e-39,fVar15 * 0.002);
+  fVar14 = (float)unaff_retaddr + 78.0 + 6.0;
   if (DAT_00482700 != 0) {
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              ((float)grim_interface_ptr,fVar12,(char *)(fVar10 + 1.0));
+              ((float)grim_interface_ptr,fVar16,(char *)(fVar14 + 1.0));
     in_stack_0000000c = (char *)((float)in_stack_0000000c + 14.0);
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.9);
     pIVar2 = grim_interface_ptr->vtable;
@@ -9810,7 +9824,7 @@ LAB_00411906:
   if (DAT_00482704 != perk_id_antiperk) {
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
-              ((float)grim_interface_ptr,fVar12,(char *)(fVar10 + 1.0));
+              ((float)grim_interface_ptr,fVar16,(char *)(fVar14 + 1.0));
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.9);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               ((float)grim_interface_ptr,(float)in_stack_00000008,
@@ -9949,42 +9963,49 @@ int FUN_004120b0(void)
   uint uVar3;
   uint uVar4;
   char *pcVar5;
-  undefined4 *puVar6;
-  char *pcVar7;
+  char *pcVar6;
+  highscore_record_t *phVar7;
   
-  puVar6 = &highscore_active_record;
+  phVar7 = &highscore_active_record;
   for (iVar2 = 0x12; iVar2 != 0; iVar2 = iVar2 + -1) {
-    *puVar6 = 0;
-    puVar6 = puVar6 + 1;
+    phVar7->player_name[0] = '\0';
+    phVar7->player_name[1] = '\0';
+    phVar7->player_name[2] = '\0';
+    phVar7->player_name[3] = '\0';
+    phVar7 = (highscore_record_t *)(phVar7->player_name + 4);
   }
   uVar3 = 0xffffffff;
   pcVar5 = &default_player_name;
   do {
-    pcVar7 = pcVar5;
+    pcVar6 = pcVar5;
     if (uVar3 == 0) break;
     uVar3 = uVar3 - 1;
-    pcVar7 = pcVar5 + 1;
+    pcVar6 = pcVar5 + 1;
     cVar1 = *pcVar5;
-    pcVar5 = pcVar7;
+    pcVar5 = pcVar6;
   } while (cVar1 != '\0');
   uVar3 = ~uVar3;
-  pcVar5 = pcVar7 + -uVar3;
-  pcVar7 = (char *)&highscore_active_record;
+  pcVar5 = pcVar6 + -uVar3;
+  phVar7 = &highscore_active_record;
   for (uVar4 = uVar3 >> 2; uVar4 != 0; uVar4 = uVar4 - 1) {
-    *(undefined4 *)pcVar7 = *(undefined4 *)pcVar5;
+    *(undefined4 *)phVar7->player_name = *(undefined4 *)pcVar5;
     pcVar5 = pcVar5 + 4;
-    pcVar7 = pcVar7 + 4;
+    phVar7 = (highscore_record_t *)(phVar7->player_name + 4);
   }
   for (uVar3 = uVar3 & 3; uVar3 != 0; uVar3 = uVar3 - 1) {
-    *pcVar7 = *pcVar5;
+    phVar7->player_name[0] = *pcVar5;
     pcVar5 = pcVar5 + 1;
-    pcVar7 = pcVar7 + 1;
+    phVar7 = (highscore_record_t *)(phVar7->player_name + 1);
   }
-  highscore_flags = 0;
-  DAT_00487086 = 0x7c;
-  DAT_00487087 = 0xff;
+  highscore_active_record.flags = '\0';
+  highscore_active_record.sentinel_pipe = '|';
+  highscore_active_record.sentinel_ff = 0xff;
   uVar3 = crt_rand();
-  _DAT_00487078 = uVar3 & 0xfee050f;
+  uVar3 = uVar3 & 0xfee050f;
+  highscore_active_record.reserved0[0] = (char)uVar3;
+  highscore_active_record.reserved0[1] = (char)(uVar3 >> 8);
+  highscore_active_record.reserved0[2] = (char)(uVar3 >> 0x10);
+  highscore_active_record.reserved0[3] = (char)(uVar3 >> 0x18);
   _bonus_energizer_timer = 0;
   survival_spawn_stage = 0;
   _DAT_00487028 = 0;
@@ -10044,20 +10065,21 @@ int FUN_00412360(void)
   uint uVar3;
   uint uVar4;
   int iVar5;
-  undefined1 *puVar6;
+  uchar *puVar6;
   char *pcVar7;
   char *pcVar8;
+  highscore_record_t *phVar9;
   
-  puVar6 = &DAT_00482b56;
+  puVar6 = &highscore_table.sentinel_pipe;
   iVar5 = 100;
   do {
-    pcVar7 = puVar6 + -0x46;
+    phVar9 = (highscore_record_t *)(puVar6 + -0x46);
     for (iVar2 = 0x12; iVar2 != 0; iVar2 = iVar2 + -1) {
-      pcVar7[0] = '\0';
-      pcVar7[1] = '\0';
-      pcVar7[2] = '\0';
-      pcVar7[3] = '\0';
-      pcVar7 = pcVar7 + 4;
+      phVar9->player_name[0] = '\0';
+      phVar9->player_name[1] = '\0';
+      phVar9->player_name[2] = '\0';
+      phVar9->player_name[3] = '\0';
+      phVar9 = (highscore_record_t *)(phVar9->player_name + 4);
     }
     uVar3 = 0xffffffff;
     pcVar7 = &default_player_name;
@@ -10071,19 +10093,19 @@ int FUN_00412360(void)
     } while (cVar1 != '\0');
     uVar3 = ~uVar3;
     pcVar7 = pcVar8 + -uVar3;
-    pcVar8 = puVar6 + -0x46;
+    phVar9 = (highscore_record_t *)(puVar6 + -0x46);
     for (uVar4 = uVar3 >> 2; uVar4 != 0; uVar4 = uVar4 - 1) {
-      *(undefined4 *)pcVar8 = *(undefined4 *)pcVar7;
+      *(undefined4 *)phVar9->player_name = *(undefined4 *)pcVar7;
       pcVar7 = pcVar7 + 4;
-      pcVar8 = pcVar8 + 4;
+      phVar9 = (highscore_record_t *)(phVar9->player_name + 4);
     }
     for (uVar3 = uVar3 & 3; uVar3 != 0; uVar3 = uVar3 - 1) {
-      *pcVar8 = *pcVar7;
+      phVar9->player_name[0] = *pcVar7;
       pcVar7 = pcVar7 + 1;
-      pcVar8 = pcVar8 + 1;
+      phVar9 = (highscore_record_t *)(phVar9->player_name + 1);
     }
-    puVar6[-2] = 0;
-    *puVar6 = 0x7c;
+    puVar6[-2] = '\0';
+    *puVar6 = '|';
     puVar6[1] = 0xff;
     uVar3 = crt_rand();
     *(uint *)(puVar6 + -0xe) = uVar3 & 0xfee050f;
@@ -10625,14 +10647,15 @@ void gameplay_reset_state(void)
 {
   undefined4 uVar1;
   undefined4 *puVar2;
-  uchar *puVar3;
-  projectile_t *ppVar4;
-  sprite_effect_t *psVar5;
-  secondary_projectile_t *psVar6;
-  int iVar7;
+  uint uVar3;
+  uchar *puVar4;
+  projectile_t *ppVar5;
+  sprite_effect_t *psVar6;
+  secondary_projectile_t *psVar7;
   int iVar8;
-  int *piVar9;
+  int iVar9;
   int *piVar10;
+  int *piVar11;
   
   puVar2 = &bonus_hud_slot_y;
   DAT_0048727c = 0;
@@ -10732,7 +10755,7 @@ void gameplay_reset_state(void)
   perk_choices_dirty = 1;
   bonus_spawn_guard = 0;
   puVar2 = &DAT_0048708c;
-  for (iVar8 = 0x40; iVar8 != 0; iVar8 = iVar8 + -1) {
+  for (iVar9 = 0x40; iVar9 != 0; iVar9 = iVar9 + -1) {
     *puVar2 = 0;
     puVar2 = puVar2 + 1;
   }
@@ -10751,23 +10774,23 @@ void gameplay_reset_state(void)
   _bonus_energizer_timer = 0;
   plaguebearer_infection_count = 0;
   DAT_00487268 = 0xffffffff;
-  highscore_full_version_marker = 0;
-  survival_elapsed_ms = 0;
-  highscore_score_xp = 0;
-  highscore_record_quest_minor = 0;
-  highscore_record_quest_major = 0;
-  highscore_record_game_mode = 0;
-  highscore_record_weapon_id = 0;
-  creature_kill_count = 0;
-  highscore_record_shots_hit = 0;
-  highscore_record_shots_fired = 0;
-  highscore_date_checksum = 0;
-  highscore_year_offset = 0;
-  highscore_month = 0;
-  highscore_day = 0;
-  highscore_flags = 0;
-  _DAT_00487078 = crt_rand();
-  _DAT_00487078 = _DAT_00487078 & 0xfee050f;
+  highscore_active_record.full_version_marker = '\0';
+  highscore_active_record.survival_elapsed_ms = 0;
+  highscore_active_record.score_xp = 0;
+  highscore_active_record.quest_stage_minor = '\0';
+  highscore_active_record.quest_stage_major = '\0';
+  highscore_active_record.game_mode_id = '\0';
+  highscore_active_record.most_used_weapon_id = '\0';
+  highscore_active_record.creature_kill_count = 0;
+  highscore_active_record.shots_hit = 0;
+  highscore_active_record.shots_fired = 0;
+  highscore_active_record.date_checksum = '\0';
+  highscore_active_record.year_offset = '\0';
+  highscore_active_record.month = '\0';
+  highscore_active_record.day = '\0';
+  highscore_active_record.flags = '\0';
+  uVar3 = crt_rand();
+  highscore_active_record.reserved0._0_4_ = uVar3 & 0xfee050f;
   _DAT_004aaf24 = 0;
   _bonus_freeze_timer = 0;
   _DAT_004aaf1c = 0;
@@ -10777,66 +10800,66 @@ void gameplay_reset_state(void)
   FUN_0041fc80();
   DAT_004871d0 = 0;
   DAT_004871d4 = 0;
-  puVar3 = player_health._pad0 + 0x2ec;
+  puVar4 = player_health._pad0 + 0x2ec;
   do {
-    puVar3[0x14] = '\0';
-    puVar3[0x15] = '\0';
-    puVar3[0x16] = 0x80;
-    puVar3[0x17] = 0xbf;
-    puVar3[0x18] = '\0';
-    puVar3[0x19] = '\0';
-    puVar3[0x1a] = 0x80;
-    puVar3[0x1b] = 0xbf;
-    puVar3[0] = '\0';
-    puVar3[1] = '\0';
-    puVar3[2] = 200;
-    puVar3[3] = 'B';
-    puVar3[0xc] = '\0';
-    puVar3[0xd] = '\0';
-    puVar3[0xe] = '\0';
-    puVar3[0xf] = '\0';
-    puVar3 = puVar3 + 0x360;
-  } while ((int)puVar3 < 0x491280);
+    puVar4[0x14] = '\0';
+    puVar4[0x15] = '\0';
+    puVar4[0x16] = 0x80;
+    puVar4[0x17] = 0xbf;
+    puVar4[0x18] = '\0';
+    puVar4[0x19] = '\0';
+    puVar4[0x1a] = 0x80;
+    puVar4[0x1b] = 0xbf;
+    puVar4[0] = '\0';
+    puVar4[1] = '\0';
+    puVar4[2] = 200;
+    puVar4[3] = 'B';
+    puVar4[0xc] = '\0';
+    puVar4[0xd] = '\0';
+    puVar4[0xe] = '\0';
+    puVar4[0xf] = '\0';
+    puVar4 = puVar4 + 0x360;
+  } while ((int)puVar4 < 0x491280);
   puVar2 = &bonus_pool;
   do {
     *puVar2 = 0;
     puVar2 = puVar2 + 7;
   } while ((int)puVar2 < 0x482b08);
-  ppVar4 = &projectile_pool;
+  ppVar5 = &projectile_pool;
   do {
-    ppVar4->active = '\0';
-    ppVar4 = ppVar4 + 1;
-  } while ((int)ppVar4 < 0x493eb8);
-  psVar5 = &sprite_effect_pool;
+    ppVar5->active = '\0';
+    ppVar5 = ppVar5 + 1;
+  } while ((int)ppVar5 < 0x493eb8);
+  psVar6 = &sprite_effect_pool;
   do {
-    *(undefined1 *)&psVar5->active = 0;
-    psVar5 = psVar5 + 1;
-  } while ((int)psVar5 < 0x49aa20);
-  psVar6 = &secondary_projectile_pool;
+    *(undefined1 *)&psVar6->active = 0;
+    psVar6 = psVar6 + 1;
+  } while ((int)psVar6 < 0x49aa20);
+  psVar7 = &secondary_projectile_pool;
   do {
-    psVar6->active = '\0';
-    psVar6 = (secondary_projectile_t *)&psVar6[1].angle;
-  } while ((int)psVar6 < 0x4965d8);
-  iVar8 = 0;
-  piVar9 = &creature_pool.target_player;
+    psVar7->active = '\0';
+    psVar7 = (secondary_projectile_t *)&psVar7[1].angle;
+  } while ((int)psVar7 < 0x4965d8);
+  iVar9 = 0;
+  piVar10 = &creature_pool.target_player;
   do {
     uVar1 = config_blob.reserved0._20_4_;
-    piVar9[-0xe] = 0;
-    ((creature_t *)(piVar9 + -0x1c))->active = '\0';
+    piVar10[-0xe] = 0;
+    ((creature_t *)(piVar10 + -0x1c))->active = '\0';
     if (uVar1 == 0) {
-      *(undefined1 *)piVar9 = 0;
+      *(undefined1 *)piVar10 = 0;
     }
     else {
-      *(char *)piVar9 = (char)(iVar8 % (int)uVar1);
+      *(char *)piVar10 = (char)(iVar9 % (int)uVar1);
     }
-    *(uchar *)(piVar9 + -0x1a) = '\x01';
-    piVar9[7] = 0;
-    iVar7 = crt_rand();
-    piVar10 = piVar9 + 0x26;
-    iVar8 = iVar8 + 1;
-    piVar9[9] = (int)(float)(iVar7 % 0x1f);
-    piVar9 = piVar10;
-  } while ((int)piVar10 < 0x4aa3a8);
+    *(uchar *)(piVar10 + -0x1a) = '\x01';
+    piVar10[7] = 0;
+    iVar8 = crt_rand();
+    piVar11 = piVar10 + 0x26;
+    iVar9 = iVar9 + 1;
+    piVar10[9] = (int)(float)(iVar8 % 0x1f);
+    piVar10 = piVar11;
+  } while ((int)piVar11 < 0x4aa3a8);
   puVar2 = &creature_spawn_slot_owner;
   do {
     *puVar2 = 0;
@@ -10844,23 +10867,23 @@ void gameplay_reset_state(void)
   } while ((int)puVar2 < 0x4852d0);
   fx_queue_rotated = 0;
   fx_queue_count = 0;
-  highscore_full_version_marker = 0;
-  survival_elapsed_ms = 0;
-  highscore_score_xp = 0;
-  highscore_record_quest_minor = 0;
-  highscore_record_quest_major = 0;
-  highscore_record_game_mode = 0;
-  highscore_record_weapon_id = 0;
-  creature_kill_count = 0;
-  highscore_record_shots_hit = 0;
-  highscore_record_shots_fired = 0;
-  highscore_date_checksum = 0;
-  highscore_year_offset = 0;
-  highscore_month = 0;
-  highscore_day = 0;
-  highscore_flags = 0;
-  _DAT_00487078 = crt_rand();
-  _DAT_00487078 = _DAT_00487078 & 0xfee050f;
+  highscore_active_record.full_version_marker = '\0';
+  highscore_active_record.survival_elapsed_ms = 0;
+  highscore_active_record.score_xp = 0;
+  highscore_active_record.quest_stage_minor = '\0';
+  highscore_active_record.quest_stage_major = '\0';
+  highscore_active_record.game_mode_id = '\0';
+  highscore_active_record.most_used_weapon_id = '\0';
+  highscore_active_record.creature_kill_count = 0;
+  highscore_active_record.shots_hit = 0;
+  highscore_active_record.shots_fired = 0;
+  highscore_active_record.date_checksum = '\0';
+  highscore_active_record.year_offset = '\0';
+  highscore_active_record.month = '\0';
+  highscore_active_record.day = '\0';
+  highscore_active_record.flags = '\0';
+  uVar3 = crt_rand();
+  highscore_active_record.reserved0._0_4_ = uVar3 & 0xfee050f;
   terrain_generate_random();
   return;
 }
@@ -14883,7 +14906,7 @@ void ui_render_hud(void)
     }
     fStack_50 = (float)(creature_spawned_count + iVar3);
     unaff_EDI = 10.0;
-    DAT_004902f8 = (float)creature_kill_count / (float)(int)fStack_50;
+    DAT_004902f8 = (float)(int)highscore_active_record.creature_kill_count / (float)(int)fStack_50;
     ui_draw_progress_bar((float *)&stack0xffffffbc,70.0,DAT_004902f8,(float *)&DAT_004871a0);
     iVar3 = 0x9e;
     fVar19 = 2.21405e-43;
@@ -14984,7 +15007,7 @@ LAB_0041bdf8:
     (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
     (*grim_interface_ptr->vtable->grim_set_rotation)
-              ((float)(survival_elapsed_ms / 1000) * 0.10471976);
+              ((float)((int)highscore_active_record.survival_elapsed_ms / 1000) * 0.10471976);
     (*grim_interface_ptr->vtable->grim_draw_quad)(220.0,2.0,32.0,32.0);
     (*grim_interface_ptr->vtable->grim_end_batch)();
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
@@ -16943,7 +16966,7 @@ void __cdecl creature_handle_death(int creature_id,bool keep_corpse)
       } while (iVar5 != 0);
       iVar5 = crt_rand();
       effect_spawn_freeze_shatter(pos,(float)(iVar5 % 0x264) * 0.01);
-      creature_kill_count = creature_kill_count + 1;
+      highscore_active_record.creature_kill_count = highscore_active_record.creature_kill_count + 1;
       pcVar1->active = '\0';
       fx_queue_add_random(pos);
     }
@@ -16970,8 +16993,10 @@ int config_sync_from_grim(void)
   uint uVar8;
   uint uVar9;
   int iVar10;
-  uchar *puVar11;
-  char *pcVar12;
+  highscore_record_t *phVar11;
+  highscore_record_t *phVar12;
+  uchar *puVar13;
+  char *pcVar14;
   char *pcStack_494;
   uint local_490 [4];
   undefined1 uStack_480;
@@ -17067,27 +17092,27 @@ int config_sync_from_grim(void)
   config_blob.player_name_length = player_name_length;
   config_blob.reserved7[0] = *puVar4;
   uVar8 = 0xffffffff;
-  pcVar5 = (char *)&highscore_active_record;
+  phVar11 = &highscore_active_record;
   do {
-    pcVar12 = pcVar5;
+    phVar12 = phVar11;
     if (uVar8 == 0) break;
     uVar8 = uVar8 - 1;
-    pcVar12 = pcVar5 + 1;
-    cVar1 = *pcVar5;
-    pcVar5 = pcVar12;
-  } while (cVar1 != '\0');
+    phVar12 = (highscore_record_t *)(phVar11->player_name + 1);
+    pcVar5 = phVar11->player_name;
+    phVar11 = phVar12;
+  } while (*pcVar5 != '\0');
   uVar8 = ~uVar8;
-  pcVar5 = pcVar12 + -uVar8;
-  pcVar12 = config_blob.player_name;
+  pcVar5 = (char *)((int)phVar12 - uVar8);
+  pcVar14 = config_blob.player_name;
   for (uVar9 = uVar8 >> 2; uVar9 != 0; uVar9 = uVar9 - 1) {
-    *(undefined4 *)pcVar12 = *(undefined4 *)pcVar5;
+    *(undefined4 *)pcVar14 = *(undefined4 *)pcVar5;
     pcVar5 = pcVar5 + 4;
-    pcVar12 = pcVar12 + 4;
+    pcVar14 = pcVar14 + 4;
   }
   for (uVar8 = uVar8 & 3; uVar8 != 0; uVar8 = uVar8 - 1) {
-    *pcVar12 = *pcVar5;
+    *pcVar14 = *pcVar5;
     pcVar5 = pcVar5 + 1;
-    pcVar12 = pcVar12 + 1;
+    pcVar14 = pcVar14 + 1;
   }
   if (grim_config_invoked != '\0') {
     pcStack_494 = acStack_3d8;
@@ -17117,27 +17142,27 @@ int config_sync_from_grim(void)
       *piVar3 = iVar10;
       pcVar5 = s_default_0047131c;
       do {
-        pcVar12 = pcVar5;
+        pcVar14 = pcVar5;
         if (uVar8 == 0) break;
         uVar8 = uVar8 - 1;
-        pcVar12 = pcVar5 + 1;
+        pcVar14 = pcVar5 + 1;
         cVar1 = *pcVar5;
-        pcVar5 = pcVar12;
+        pcVar5 = pcVar14;
       } while (cVar1 != '\0');
       uVar8 = ~uVar8;
       piVar3 = piVar3 + 1;
-      pcVar5 = pcVar12 + -uVar8;
-      pcVar12 = pcStack_494;
+      pcVar5 = pcVar14 + -uVar8;
+      pcVar14 = pcStack_494;
       for (uVar9 = uVar8 >> 2; uVar9 != 0; uVar9 = uVar9 - 1) {
-        *(undefined4 *)pcVar12 = *(undefined4 *)pcVar5;
+        *(undefined4 *)pcVar14 = *(undefined4 *)pcVar5;
         pcVar5 = pcVar5 + 4;
-        pcVar12 = pcVar12 + 4;
+        pcVar14 = pcVar14 + 4;
       }
       iVar10 = iVar10 + 1;
       for (uVar8 = uVar8 & 3; uVar8 != 0; uVar8 = uVar8 - 1) {
-        *pcVar12 = *pcVar5;
+        *pcVar14 = *pcVar5;
         pcVar5 = pcVar5 + 1;
-        pcVar12 = pcVar12 + 1;
+        pcVar14 = pcVar14 + 1;
       }
       pcStack_494 = pcStack_494 + 0x1b;
     } while (iVar10 < 8);
@@ -17154,25 +17179,25 @@ int config_sync_from_grim(void)
     uVar8 = 0xffffffff;
     pcVar5 = &default_player_name;
     do {
-      pcVar12 = pcVar5;
+      pcVar14 = pcVar5;
       if (uVar8 == 0) break;
       uVar8 = uVar8 - 1;
-      pcVar12 = pcVar5 + 1;
+      pcVar14 = pcVar5 + 1;
       cVar1 = *pcVar5;
-      pcVar5 = pcVar12;
+      pcVar5 = pcVar14;
     } while (cVar1 != '\0');
     uVar8 = ~uVar8;
-    pcVar5 = pcVar12 + -uVar8;
-    pcVar12 = acStack_300;
+    pcVar5 = pcVar14 + -uVar8;
+    pcVar14 = acStack_300;
     for (uVar9 = uVar8 >> 2; uVar9 != 0; uVar9 = uVar9 - 1) {
-      *(undefined4 *)pcVar12 = *(undefined4 *)pcVar5;
+      *(undefined4 *)pcVar14 = *(undefined4 *)pcVar5;
       pcVar5 = pcVar5 + 4;
-      pcVar12 = pcVar12 + 4;
+      pcVar14 = pcVar14 + 4;
     }
     for (uVar8 = uVar8 & 3; uVar8 != 0; uVar8 = uVar8 - 1) {
-      *pcVar12 = *pcVar5;
+      *pcVar14 = *pcVar5;
       pcVar5 = pcVar5 + 1;
-      pcVar12 = pcVar12 + 1;
+      pcVar14 = pcVar14 + 1;
     }
     uStack_3fc = 1;
     uStack_20 = 1;
@@ -17227,7 +17252,7 @@ int config_sync_from_grim(void)
     uStack_264 = 0x17e;
     uStack_260 = 0x17e;
     uStack_25c = 0xd3;
-    pcVar12 = &file_mode_read_binary;
+    pcVar14 = &file_mode_read_binary;
     uStack_258 = 0xd1;
     uStack_254 = 0x13f;
     uStack_250 = 0x140;
@@ -17238,7 +17263,7 @@ int config_sync_from_grim(void)
     uStack_23c = 0x17e;
     uStack_47c = 0x101;
     pcVar5 = game_build_path(config_filename);
-    pFVar6 = crt_fopen(pcVar5,pcVar12);
+    pFVar6 = crt_fopen(pcVar5,pcVar14);
     if (pFVar6 != (FILE *)0x0) {
       crt_fseek(pFVar6,0,2);
       lVar7 = crt_ftell(pFVar6);
@@ -17248,34 +17273,34 @@ int config_sync_from_grim(void)
         uVar8 = 0xffffffff;
         pcVar5 = acStack_40c;
         do {
-          pcVar12 = pcVar5;
+          pcVar14 = pcVar5;
           if (uVar8 == 0) break;
           uVar8 = uVar8 - 1;
-          pcVar12 = pcVar5 + 1;
+          pcVar14 = pcVar5 + 1;
           cVar1 = *pcVar5;
-          pcVar5 = pcVar12;
+          pcVar5 = pcVar14;
         } while (cVar1 != '\0');
         uVar8 = ~uVar8;
         config_blob.fx_toggle = uStack_14;
-        puVar4 = (uchar *)(pcVar12 + -uVar8);
-        puVar11 = config_blob.reserved0 + 0x74;
+        puVar4 = (uchar *)(pcVar14 + -uVar8);
+        puVar13 = config_blob.reserved0 + 0x74;
         for (uVar9 = uVar8 >> 2; uVar9 != 0; uVar9 = uVar9 - 1) {
-          *(undefined4 *)puVar11 = *(undefined4 *)puVar4;
+          *(undefined4 *)puVar13 = *(undefined4 *)puVar4;
           puVar4 = puVar4 + 4;
-          puVar11 = puVar11 + 4;
+          puVar13 = puVar13 + 4;
         }
         for (uVar8 = uVar8 & 3; uVar8 != 0; uVar8 = uVar8 - 1) {
-          *puVar11 = *puVar4;
+          *puVar13 = *puVar4;
           puVar4 = puVar4 + 1;
-          puVar11 = puVar11 + 1;
+          puVar13 = puVar13 + 1;
         }
       }
       crt_fclose(pFVar6);
     }
   }
-  pcVar12 = &file_mode_write_binary;
+  pcVar14 = &file_mode_write_binary;
   pcVar5 = game_build_path(config_filename);
-  pFVar6 = crt_fopen(pcVar5,pcVar12);
+  pFVar6 = crt_fopen(pcVar5,pcVar14);
   iVar10 = 0;
   if (pFVar6 != (FILE *)0x0) {
     crt_fwrite(&config_blob,0x480,1,pFVar6);
@@ -17334,12 +17359,13 @@ uint config_load_presets(void)
   int *piVar7;
   uint uVar8;
   char unaff_DI;
+  highscore_record_t *phVar9;
   undefined4 in_stack_ffffffa0;
   undefined4 in_stack_ffffffd0;
-  crimson_cfg_t *pcVar9;
-  char *pcVar10;
+  crimson_cfg_t *pcVar10;
+  char *pcVar11;
   
-  pcVar10 = &file_mode_read_binary;
+  pcVar11 = &file_mode_read_binary;
   player_health.input.move_key_forward = 0x11;
   player_health.input.move_key_backward = 0x1f;
   player_health.input.turn_key_left = 0x1e;
@@ -17359,7 +17385,7 @@ uint config_load_presets(void)
   player_alt_key_reserved_2 = 0xd3;
   player_alt_key_reserved_3 = 0xc9;
   pcVar2 = game_build_path(config_filename);
-  fp = crt_fopen(pcVar2,pcVar10);
+  fp = crt_fopen(pcVar2,pcVar11);
   if (fp == (FILE *)0x0) {
     return 0;
   }
@@ -17371,7 +17397,7 @@ uint config_load_presets(void)
     return uVar4 & 0xffffff00;
   }
   crt_fseek(fp,0,0);
-  pcVar9 = &config_blob;
+  pcVar10 = &config_blob;
   crt_fread(&config_blob,0x480,1,fp);
   crt_fclose(fp);
   piVar7 = &player_health.input.move_key_backward;
@@ -17397,7 +17423,7 @@ uint config_load_presets(void)
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x59,config_blob.reserved0._112_4_);
   if (unaff_DI == '\0') {
     (*grim_interface_ptr->vtable->grim_set_config_var)
-              (0x54,CONCAT31((int3)((uint)pcVar9 >> 8),config_blob.reserved7[0]));
+              (0x54,CONCAT31((int3)((uint)pcVar10 >> 8),config_blob.reserved7[0]));
     (*grim_interface_ptr->vtable->grim_set_config_var)
               (8,CONCAT31((int3)((uint)in_stack_ffffffd0 >> 8),(undefined1)config_blob.windowed));
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x2b,config_blob.display_bpp);
@@ -17409,25 +17435,25 @@ uint config_load_presets(void)
   uVar4 = 0xffffffff;
   pcVar2 = config_blob.player_name;
   do {
-    pcVar10 = pcVar2;
+    pcVar11 = pcVar2;
     if (uVar4 == 0) break;
     uVar4 = uVar4 - 1;
-    pcVar10 = pcVar2 + 1;
+    pcVar11 = pcVar2 + 1;
     cVar1 = *pcVar2;
-    pcVar2 = pcVar10;
+    pcVar2 = pcVar11;
   } while (cVar1 != '\0');
   uVar4 = ~uVar4;
-  pcVar2 = pcVar10 + -uVar4;
-  pcVar10 = (char *)&highscore_active_record;
+  pcVar2 = pcVar11 + -uVar4;
+  phVar9 = &highscore_active_record;
   for (uVar8 = uVar4 >> 2; uVar8 != 0; uVar8 = uVar8 - 1) {
-    *(undefined4 *)pcVar10 = *(undefined4 *)pcVar2;
+    *(undefined4 *)phVar9->player_name = *(undefined4 *)pcVar2;
     pcVar2 = pcVar2 + 4;
-    pcVar10 = pcVar10 + 4;
+    phVar9 = (highscore_record_t *)(phVar9->player_name + 4);
   }
   for (uVar8 = uVar4 & 3; uVar8 != 0; uVar8 = uVar8 - 1) {
-    *pcVar10 = *pcVar2;
+    phVar9->player_name[0] = *pcVar2;
     pcVar2 = pcVar2 + 1;
-    pcVar10 = pcVar10 + 1;
+    phVar9 = (highscore_record_t *)(phVar9->player_name + 1);
   }
   player_name_length = config_blob.player_name_length;
   config_blob.reserved0[2] = '\0';
@@ -18283,7 +18309,7 @@ int __cdecl fx_spawn_secondary_projectile(float *pos,float angle,int type_id)
   } while ((int)psVar2 < 0x4965d8);
   iVar4 = 0x3f;
 LAB_0042037f:
-  highscore_record_shots_fired = highscore_record_shots_fired + 1;
+  highscore_active_record.shots_fired = highscore_active_record.shots_fired + 1;
   fVar5 = (float10)fcos((float10)angle - (float10)1.5707964);
   iVar1 = iVar4 * 0x2c;
   *(undefined1 *)((int)&secondary_projectile_pool + iVar1) = 1;
@@ -18323,7 +18349,8 @@ int __cdecl projectile_spawn(float *pos,float angle,int type_id,int owner_id)
   
   if (bonus_spawn_guard == '\0') {
     while (((((owner_id == -100 || (owner_id == -1)) || (owner_id == -2)) || (owner_id == -3)) &&
-           ((highscore_record_shots_fired = highscore_record_shots_fired + 1, type_id != 0x2d &&
+           ((highscore_active_record.shots_fired = highscore_active_record.shots_fired + 1,
+            type_id != 0x2d &&
             ((0.0 < (float)player_health._pad0._760_4_ || (0.0 < player2_fire_bullets_timer))))))) {
       type_id = 0x2d;
     }
@@ -18841,7 +18868,7 @@ LAB_004219f8:
                     }
                   }
                   if ((&creature_pool)[iVar4].hitbox_size == 16.0) {
-                    highscore_record_shots_hit = highscore_record_shots_hit + 1;
+                    highscore_active_record.shots_hit = highscore_active_record.shots_hit + 1;
                   }
                   iVar9 = perk_count_get(perk_id_bloody_mess_quick_learner);
                   if (iVar9 != 0) {
@@ -19228,7 +19255,7 @@ LAB_00421d65:
         iVar4 = creature_find_in_radius(pfVar11,8.0,0);
         if (iVar4 != -1) {
           if ((&creature_pool)[iVar4].hitbox_size == 16.0) {
-            highscore_record_shots_hit = highscore_record_shots_hit + 1;
+            highscore_active_record.shots_hit = highscore_active_record.shots_hit + 1;
           }
           if (_bonus_freeze_timer <= 0.0) {
             iVar9 = crt_rand();
@@ -21364,7 +21391,8 @@ LAB_0042733a:
                 goto LAB_004276d6;
               }
             }
-            creature_kill_count = creature_kill_count + 1;
+            highscore_active_record.creature_kill_count =
+                 highscore_active_record.creature_kill_count + 1;
             if ((config_blob.fx_toggle == '\0') && (((&creature_pool)[local_7c].flags & 4) != 0)) {
               iVar7 = 8;
               do {
@@ -21781,13 +21809,14 @@ int __cdecl creature_spawn(float *pos,float *tint_rgba,int type_id)
   *(undefined1 *)&(&creature_pool)[iVar3].force_target = 0;
   (&creature_pool)[iVar3].state_flag = '\x01';
   (&creature_pool)[iVar3].hitbox_size = 16.0;
-  fVar1 = (float)survival_elapsed_ms;
+  fVar1 = (float)(int)highscore_active_record.survival_elapsed_ms;
   (&creature_pool)[iVar3].vel_x = 0.0;
   (&creature_pool)[iVar3].vel_y = 0.0;
   (&creature_pool)[iVar3].health = fVar1 * 0.000100000005 + 10.0;
   iVar4 = crt_rand();
   (&creature_pool)[iVar3].heading = (float)(iVar4 % 0x13a) * 0.01;
-  (&creature_pool)[iVar3].move_speed = (float)survival_elapsed_ms * 1.0000001e-05 + 2.5;
+  (&creature_pool)[iVar3].move_speed =
+       (float)(int)highscore_active_record.survival_elapsed_ms * 1.0000001e-05 + 2.5;
   iVar4 = crt_rand();
   (&creature_pool)[iVar3].attack_cooldown = 0.0;
   (&creature_pool)[iVar3].reward_value = (float)(iVar4 % 0x1e + 0x8c);
@@ -21796,7 +21825,7 @@ int __cdecl creature_spawn(float *pos,float *tint_rgba,int type_id)
   (&creature_pool)[iVar3].tint_b = tint_rgba[2];
   fVar1 = (&creature_pool)[iVar3].health;
   (&creature_pool)[iVar3].tint_a = tint_rgba[3];
-  fVar2 = (float)survival_elapsed_ms;
+  fVar2 = (float)(int)highscore_active_record.survival_elapsed_ms;
   (&creature_pool)[iVar3].contact_damage = 4.0;
   (&creature_pool)[iVar3].max_health = fVar1;
   (&creature_pool)[iVar3].size = fVar2 * 1.0000001e-05 + 47.0;
@@ -22301,7 +22330,9 @@ void bonus_render(void)
           crt_ci_pow();
           fVar1 = (float)((extraout_ST0 * (float10)0.25 + (float10)0.75) * (float10)fVar1);
           (*grim_interface_ptr->vtable->grim_set_color_ptr)(&fStack_50);
-          fVar10 = (float10)fsin((float10)fVar15 - (float10)survival_elapsed_ms * (float10)0.003);
+          fVar10 = (float10)fsin((float10)fVar15 -
+                                 (float10)(int)highscore_active_record.survival_elapsed_ms *
+                                 (float10)0.003);
           (*grim_interface_ptr->vtable->grim_set_rotation)((float)(fVar10 * (float10)0.2));
           if ((pfVar7[-2] == 1.4013e-45) && (pfVar7[4] == 1.4013e-42)) {
             (*grim_interface_ptr->vtable->grim_set_atlas_frame)(4,iVar5 + 1);
@@ -22345,7 +22376,9 @@ void bonus_render(void)
         crt_ci_pow();
         fVar16 = (float)((extraout_ST0_00 * (float10)0.25 + (float10)0.75) * (float10)fVar16);
         (*grim_interface_ptr->vtable->grim_set_color_ptr)(&fStack_50);
-        fVar10 = (float10)fsin((float10)iVar12 - (float10)survival_elapsed_ms * (float10)0.003);
+        fVar10 = (float10)fsin((float10)iVar12 -
+                               (float10)(int)highscore_active_record.survival_elapsed_ms *
+                               (float10)0.003);
         (*grim_interface_ptr->vtable->grim_set_rotation)((float)fVar10);
         (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
         (*grim_interface_ptr->vtable->grim_set_sub_rect)
@@ -31390,11 +31423,12 @@ void quest_database_init(void)
 void __cdecl quest_start_selected(int tier,int index)
 
 {
-  int *piVar1;
-  int iVar2;
+  uint uVar1;
+  int *piVar2;
   int iVar3;
   int iVar4;
   int iVar5;
+  int iVar6;
   
   FUN_004281e0();
   quest_spawn_count = 0;
@@ -31402,64 +31436,64 @@ void __cdecl quest_start_selected(int tier,int index)
   DAT_00487244 = 0;
   fx_queue_rotated = 0;
   fx_queue_count = 0;
-  highscore_full_version_marker = 0;
-  survival_elapsed_ms = 0;
-  highscore_score_xp = 0;
-  highscore_record_quest_minor = 0;
-  highscore_record_quest_major = 0;
-  highscore_record_game_mode = 0;
-  highscore_record_weapon_id = 0;
-  creature_kill_count = 0;
-  highscore_record_shots_hit = 0;
-  highscore_record_shots_fired = 0;
-  highscore_date_checksum = 0;
-  highscore_year_offset = 0;
-  highscore_month = 0;
-  highscore_day = 0;
-  highscore_flags = 0;
-  _DAT_00487078 = crt_rand();
-  _DAT_00487078 = _DAT_00487078 & 0xfee050f;
+  highscore_active_record.full_version_marker = '\0';
+  highscore_active_record.survival_elapsed_ms = 0;
+  highscore_active_record.score_xp = 0;
+  highscore_active_record.quest_stage_minor = '\0';
+  highscore_active_record.quest_stage_major = '\0';
+  highscore_active_record.game_mode_id = '\0';
+  highscore_active_record.most_used_weapon_id = '\0';
+  highscore_active_record.creature_kill_count = 0;
+  highscore_active_record.shots_hit = 0;
+  highscore_active_record.shots_fired = 0;
+  highscore_active_record.date_checksum = '\0';
+  highscore_active_record.year_offset = '\0';
+  highscore_active_record.month = '\0';
+  highscore_active_record.day = '\0';
+  highscore_active_record.flags = '\0';
+  uVar1 = crt_rand();
+  highscore_active_record.reserved0._0_4_ = uVar1 & 0xfee050f;
   projectile_reset_pools();
   player_pos_x = (float)terrain_texture_width * 0.5;
   player_pos_y = (float)terrain_texture_height * 0.5;
-  iVar3 = (index + -0xb + tier * 10) * 0x2c;
-  terrain_generate(&quest_selected_meta + iVar3);
-  weapon_assign_player(0,*(int *)(&quest_start_weapon_id + iVar3));
-  weapon_assign_player(1,*(int *)(&quest_start_weapon_id + iVar3));
+  iVar4 = (index + -0xb + tier * 10) * 0x2c;
+  terrain_generate(&quest_selected_meta + iVar4);
+  weapon_assign_player(0,*(int *)(&quest_start_weapon_id + iVar4));
+  weapon_assign_player(1,*(int *)(&quest_start_weapon_id + iVar4));
   console_printf(&console_log_queue,s_Setup_tier__d_quest__d__00477aec,tier,index);
-  if (*(code **)(&quest_selected_builder + iVar3) == (code *)0x0) {
+  if (*(code **)(&quest_selected_builder + iVar4) == (code *)0x0) {
     quest_build_fallback((float *)&quest_spawn_table,&quest_spawn_count);
   }
   else {
-    (**(code **)(&quest_selected_builder + iVar3))();
+    (**(code **)(&quest_selected_builder + iVar4))();
   }
-  iVar5 = 0;
-  iVar3 = 0;
+  iVar6 = 0;
+  iVar4 = 0;
   _DAT_00486fd4 = 0;
   _DAT_00487030 = 0;
   if (0 < quest_spawn_count) {
-    piVar1 = &DAT_004857bc;
-    iVar2 = quest_spawn_count;
+    piVar2 = &DAT_004857bc;
+    iVar3 = quest_spawn_count;
     do {
-      if (((config_blob.hardcore != '\0') && (iVar4 = *piVar1, 1 < iVar4)) && (piVar1[-2] != 0x3c))
+      if (((config_blob.hardcore != '\0') && (iVar5 = *piVar2, 1 < iVar5)) && (piVar2[-2] != 0x3c))
       {
-        if (piVar1[-2] == 0x2b) {
-          iVar4 = iVar4 + 2;
+        if (piVar2[-2] == 0x2b) {
+          iVar5 = iVar5 + 2;
         }
         else {
-          iVar4 = iVar4 + 8;
+          iVar5 = iVar5 + 8;
         }
-        *piVar1 = iVar4;
+        *piVar2 = iVar5;
       }
-      iVar5 = iVar5 + *piVar1;
-      if (iVar3 < piVar1[-1]) {
-        iVar3 = piVar1[-1];
+      iVar6 = iVar6 + *piVar2;
+      if (iVar4 < piVar2[-1]) {
+        iVar4 = piVar2[-1];
       }
-      piVar1 = piVar1 + 6;
-      iVar2 = iVar2 + -1;
-      _DAT_00486fd4 = iVar5;
-      _DAT_00487030 = iVar3;
-    } while (iVar2 != 0);
+      piVar2 = piVar2 + 6;
+      iVar3 = iVar3 + -1;
+      _DAT_00486fd4 = iVar6;
+      _DAT_00487030 = iVar4;
+    } while (iVar3 != 0);
   }
   return;
 }
@@ -31841,25 +31875,25 @@ byte * __cdecl highscore_find_name_entry(byte *record,int count)
   byte *pbVar2;
   int iVar3;
   int iVar4;
-  byte *pbVar5;
-  byte *pbVar6;
+  highscore_record_t *phVar5;
+  highscore_record_t *phVar6;
   bool bVar7;
   
   iVar4 = 0;
   if (0 < count) {
-    pbVar5 = &highscore_table;
+    phVar5 = &highscore_table;
     pbVar2 = record;
-    pbVar6 = pbVar5;
+    phVar6 = phVar5;
 LAB_0043af49:
     do {
       bVar1 = *pbVar2;
-      bVar7 = bVar1 < *pbVar5;
-      if (bVar1 == *pbVar5) {
+      bVar7 = bVar1 < (byte)phVar5->player_name[0];
+      if (bVar1 == phVar5->player_name[0]) {
         if (bVar1 != 0) {
           bVar1 = pbVar2[1];
-          bVar7 = bVar1 < pbVar5[1];
-          if (bVar1 != pbVar5[1]) goto LAB_0043af6d;
-          pbVar5 = pbVar5 + 2;
+          bVar7 = bVar1 < (byte)phVar5->player_name[1];
+          if (bVar1 != phVar5->player_name[1]) goto LAB_0043af6d;
+          phVar5 = (highscore_record_t *)(phVar5->player_name + 2);
           pbVar2 = pbVar2 + 2;
           if (bVar1 != 0) goto LAB_0043af49;
         }
@@ -31870,12 +31904,12 @@ LAB_0043af6d:
         iVar3 = (1 - (uint)bVar7) - (uint)(bVar7 != 0);
       }
       if (iVar3 == 0) {
-        return &highscore_table + iVar4 * 0x48;
+        return (byte *)(&highscore_table + iVar4);
       }
       iVar4 = iVar4 + 1;
-      pbVar5 = pbVar6 + 0x48;
+      phVar5 = phVar6 + 1;
       pbVar2 = record;
-      pbVar6 = pbVar5;
+      phVar6 = phVar5;
     } while (iVar4 < count);
   }
   return (byte *)0x0;
@@ -31894,20 +31928,21 @@ void highscore_load_table(void)
   byte bVar2;
   char *pcVar3;
   FILE *fp;
-  undefined4 *puVar4;
-  byte *pbVar5;
-  int iVar6;
+  byte *pbVar4;
+  highscore_record_t *phVar5;
+  char *pcVar6;
   int iVar7;
-  uint uVar8;
+  int iVar8;
   uint uVar9;
-  int iVar10;
-  undefined1 *puVar11;
-  int iVar12;
-  char *pcVar13;
+  uint uVar10;
+  int iVar11;
+  uchar *puVar12;
+  int iVar13;
   byte *pbVar14;
   char *pcVar15;
-  undefined4 *puVar16;
+  highscore_record_t *phVar16;
   bool bVar17;
+  undefined1 *cmp;
   int local_58;
   int local_54;
   int local_50;
@@ -31924,36 +31959,36 @@ void highscore_load_table(void)
   undefined1 uStack_2;
   undefined1 local_1;
   
-  pbVar14 = local_48;
-  for (iVar7 = 0x12; iVar7 != 0; iVar7 = iVar7 + -1) {
-    pbVar14[0] = 0;
-    pbVar14[1] = 0;
-    pbVar14[2] = 0;
-    pbVar14[3] = 0;
-    pbVar14 = pbVar14 + 4;
+  pbVar4 = local_48;
+  for (iVar8 = 0x12; iVar8 != 0; iVar8 = iVar8 + -1) {
+    pbVar4[0] = 0;
+    pbVar4[1] = 0;
+    pbVar4[2] = 0;
+    pbVar4[3] = 0;
+    pbVar4 = pbVar4 + 4;
   }
-  uVar8 = 0xffffffff;
+  uVar9 = 0xffffffff;
   pcVar3 = &default_player_name;
   do {
-    pcVar13 = pcVar3;
-    if (uVar8 == 0) break;
-    uVar8 = uVar8 - 1;
-    pcVar13 = pcVar3 + 1;
+    pcVar6 = pcVar3;
+    if (uVar9 == 0) break;
+    uVar9 = uVar9 - 1;
+    pcVar6 = pcVar3 + 1;
     cVar1 = *pcVar3;
-    pcVar3 = pcVar13;
+    pcVar3 = pcVar6;
   } while (cVar1 != '\0');
-  uVar8 = ~uVar8;
-  pbVar14 = (byte *)(pcVar13 + -uVar8);
-  pbVar5 = local_48;
-  for (uVar9 = uVar8 >> 2; uVar9 != 0; uVar9 = uVar9 - 1) {
-    *(undefined4 *)pbVar5 = *(undefined4 *)pbVar14;
+  uVar9 = ~uVar9;
+  pbVar4 = (byte *)(pcVar6 + -uVar9);
+  pbVar14 = local_48;
+  for (uVar10 = uVar9 >> 2; uVar10 != 0; uVar10 = uVar10 - 1) {
+    *(undefined4 *)pbVar14 = *(undefined4 *)pbVar4;
+    pbVar4 = pbVar4 + 4;
     pbVar14 = pbVar14 + 4;
-    pbVar5 = pbVar5 + 4;
   }
-  for (uVar8 = uVar8 & 3; uVar8 != 0; uVar8 = uVar8 - 1) {
-    *pbVar5 = *pbVar14;
+  for (uVar9 = uVar9 & 3; uVar9 != 0; uVar9 = uVar9 - 1) {
+    *pbVar14 = *pbVar4;
+    pbVar4 = pbVar4 + 1;
     pbVar14 = pbVar14 + 1;
-    pbVar5 = pbVar5 + 1;
   }
   bStack_4 = 0;
   uStack_2 = 0x7c;
@@ -31962,50 +31997,50 @@ void highscore_load_table(void)
   local_10 = local_10 & 0xfee050f;
   pcVar3 = highscore_build_path();
   DAT_004c395c = 0;
-  puVar11 = &DAT_00482b56;
+  puVar12 = &highscore_table.sentinel_pipe;
   do {
-    pcVar13 = puVar11 + -0x46;
-    for (iVar7 = 0x12; iVar7 != 0; iVar7 = iVar7 + -1) {
-      pcVar13[0] = '\0';
-      pcVar13[1] = '\0';
-      pcVar13[2] = '\0';
-      pcVar13[3] = '\0';
-      pcVar13 = pcVar13 + 4;
+    phVar16 = (highscore_record_t *)(puVar12 + -0x46);
+    for (iVar8 = 0x12; iVar8 != 0; iVar8 = iVar8 + -1) {
+      phVar16->player_name[0] = '\0';
+      phVar16->player_name[1] = '\0';
+      phVar16->player_name[2] = '\0';
+      phVar16->player_name[3] = '\0';
+      phVar16 = (highscore_record_t *)(phVar16->player_name + 4);
     }
-    uVar8 = 0xffffffff;
-    pcVar13 = &default_player_name;
+    uVar9 = 0xffffffff;
+    pcVar6 = &default_player_name;
     do {
-      pcVar15 = pcVar13;
-      if (uVar8 == 0) break;
-      uVar8 = uVar8 - 1;
-      pcVar15 = pcVar13 + 1;
-      cVar1 = *pcVar13;
-      pcVar13 = pcVar15;
+      pcVar15 = pcVar6;
+      if (uVar9 == 0) break;
+      uVar9 = uVar9 - 1;
+      pcVar15 = pcVar6 + 1;
+      cVar1 = *pcVar6;
+      pcVar6 = pcVar15;
     } while (cVar1 != '\0');
-    uVar8 = ~uVar8;
-    pcVar13 = pcVar15 + -uVar8;
-    pcVar15 = puVar11 + -0x46;
-    for (uVar9 = uVar8 >> 2; uVar9 != 0; uVar9 = uVar9 - 1) {
-      *(undefined4 *)pcVar15 = *(undefined4 *)pcVar13;
-      pcVar13 = pcVar13 + 4;
-      pcVar15 = pcVar15 + 4;
+    uVar9 = ~uVar9;
+    pcVar6 = pcVar15 + -uVar9;
+    phVar16 = (highscore_record_t *)(puVar12 + -0x46);
+    for (uVar10 = uVar9 >> 2; uVar10 != 0; uVar10 = uVar10 - 1) {
+      *(undefined4 *)phVar16->player_name = *(undefined4 *)pcVar6;
+      pcVar6 = pcVar6 + 4;
+      phVar16 = (highscore_record_t *)(phVar16->player_name + 4);
     }
-    for (uVar8 = uVar8 & 3; uVar8 != 0; uVar8 = uVar8 - 1) {
-      *pcVar15 = *pcVar13;
-      pcVar13 = pcVar13 + 1;
-      pcVar15 = pcVar15 + 1;
+    for (uVar9 = uVar9 & 3; uVar9 != 0; uVar9 = uVar9 - 1) {
+      phVar16->player_name[0] = *pcVar6;
+      pcVar6 = pcVar6 + 1;
+      phVar16 = (highscore_record_t *)(phVar16->player_name + 1);
     }
-    puVar11[-2] = 0;
-    *puVar11 = 0x7c;
-    puVar11[1] = 0xff;
-    uVar8 = crt_rand();
-    *(uint *)(puVar11 + -0xe) = uVar8 & 0xfee050f;
-    puVar11 = puVar11 + 0x48;
-  } while ((int)puVar11 < 0x484776);
-  iVar7 = 0;
+    puVar12[-2] = '\0';
+    *puVar12 = '|';
+    puVar12[1] = 0xff;
+    uVar9 = crt_rand();
+    *(uint *)(puVar12 + -0xe) = uVar9 & 0xfee050f;
+    puVar12 = puVar12 + 0x48;
+  } while ((int)puVar12 < 0x484776);
+  iVar8 = 0;
   fp = crt_fopen(pcVar3,&file_mode_read_binary);
   if (fp != (FILE *)0x0) {
-    uVar8 = highscore_date_checksum
+    uVar9 = highscore_date_checksum
                       (local_system_time & 0xffff,local_system_time >> 0x10,(uint)local_system_day);
     bVar2 = (byte)fp->_flag;
     while ((bVar2 & 0x10) == 0) {
@@ -32029,77 +32064,77 @@ LAB_0043b0ff:
                (local_system_time._2_2_ == bStack_6)) goto LAB_0043b1df;
           }
           else if (config_blob.reserved0[2] == '\x02') {
-            if ((uVar8 == (CONCAT12(uStack_5,CONCAT11(bStack_6,local_7)) & 0xff)) &&
+            if ((uVar9 == (CONCAT12(uStack_5,CONCAT11(bStack_6,local_7)) & 0xff)) &&
                ((local_system_time & 0xffff) ==
                 (CONCAT12(cStack_3,CONCAT11(bStack_4,uStack_5)) & 0xff) + 2000)) {
 LAB_0043b1df:
               if ((config_blob.reserved0[3] == '\x01') &&
-                 (pbVar14 = highscore_find_name_entry(local_48,iVar7), pbVar14 != (byte *)0x0)) {
-                pbVar5 = local_48;
-                for (iVar10 = 0x12; iVar10 != 0; iVar10 = iVar10 + -1) {
-                  *(undefined4 *)pbVar14 = *(undefined4 *)pbVar5;
-                  pbVar5 = pbVar5 + 4;
+                 (pbVar4 = highscore_find_name_entry(local_48,iVar8), pbVar4 != (byte *)0x0)) {
+                pbVar14 = local_48;
+                for (iVar11 = 0x12; iVar11 != 0; iVar11 = iVar11 + -1) {
+                  *(undefined4 *)pbVar4 = *(undefined4 *)pbVar14;
                   pbVar14 = pbVar14 + 4;
+                  pbVar4 = pbVar4 + 4;
                 }
               }
-              else if (iVar7 == 99) {
-                puVar16 = (undefined4 *)&highscore_table;
+              else if (iVar8 == 99) {
+                phVar16 = &highscore_table;
                 if (config_blob.reserved0._24_4_ == 2) {
-                  puVar4 = (undefined4 *)&DAT_00482b58;
+                  phVar5 = (highscore_record_t *)&DAT_00482b58;
                   do {
-                    if ((int)puVar4[8] < (int)puVar16[8]) {
-                      puVar16 = puVar4;
+                    if ((int)phVar5->survival_elapsed_ms < (int)phVar16->survival_elapsed_ms) {
+                      phVar16 = phVar5;
                     }
-                    puVar4 = puVar4 + 0x12;
-                  } while ((int)puVar4 < 0x484730);
-                  pbVar14 = local_48;
-                  for (iVar10 = 0x12; iVar10 != 0; iVar10 = iVar10 + -1) {
-                    *puVar16 = *(undefined4 *)pbVar14;
-                    pbVar14 = pbVar14 + 4;
-                    puVar16 = puVar16 + 1;
+                    phVar5 = phVar5 + 1;
+                  } while ((int)phVar5 < 0x484730);
+                  pbVar4 = local_48;
+                  for (iVar11 = 0x12; iVar11 != 0; iVar11 = iVar11 + -1) {
+                    *(undefined4 *)phVar16->player_name = *(undefined4 *)pbVar4;
+                    pbVar4 = pbVar4 + 4;
+                    phVar16 = (highscore_record_t *)(phVar16->player_name + 4);
                   }
                 }
                 else {
-                  puVar4 = (undefined4 *)&DAT_00482b58;
+                  phVar5 = (highscore_record_t *)&DAT_00482b58;
                   if (config_blob.reserved0._24_4_ == 3) {
                     do {
-                      if ((int)puVar16[8] < (int)puVar4[8]) {
-                        puVar16 = puVar4;
+                      if ((int)phVar16->survival_elapsed_ms < (int)phVar5->survival_elapsed_ms) {
+                        phVar16 = phVar5;
                       }
-                      puVar4 = puVar4 + 0x12;
-                    } while ((int)puVar4 < 0x484730);
-                    pbVar14 = local_48;
-                    for (iVar10 = 0x12; iVar10 != 0; iVar10 = iVar10 + -1) {
-                      *puVar16 = *(undefined4 *)pbVar14;
-                      pbVar14 = pbVar14 + 4;
-                      puVar16 = puVar16 + 1;
+                      phVar5 = phVar5 + 1;
+                    } while ((int)phVar5 < 0x484730);
+                    pbVar4 = local_48;
+                    for (iVar11 = 0x12; iVar11 != 0; iVar11 = iVar11 + -1) {
+                      *(undefined4 *)phVar16->player_name = *(undefined4 *)pbVar4;
+                      pbVar4 = pbVar4 + 4;
+                      phVar16 = (highscore_record_t *)(phVar16->player_name + 4);
                     }
                   }
                   else {
                     do {
-                      if ((int)puVar4[9] < (int)puVar16[9]) {
-                        puVar16 = puVar4;
+                      if ((int)phVar5->score_xp < (int)phVar16->score_xp) {
+                        phVar16 = phVar5;
                       }
-                      puVar4 = puVar4 + 0x12;
-                    } while ((int)puVar4 < 0x484730);
-                    pbVar14 = local_48;
-                    for (iVar10 = 0x12; iVar10 != 0; iVar10 = iVar10 + -1) {
-                      *puVar16 = *(undefined4 *)pbVar14;
-                      pbVar14 = pbVar14 + 4;
-                      puVar16 = puVar16 + 1;
+                      phVar5 = phVar5 + 1;
+                    } while ((int)phVar5 < 0x484730);
+                    pbVar4 = local_48;
+                    for (iVar11 = 0x12; iVar11 != 0; iVar11 = iVar11 + -1) {
+                      *(undefined4 *)phVar16->player_name = *(undefined4 *)pbVar4;
+                      pbVar4 = pbVar4 + 4;
+                      phVar16 = (highscore_record_t *)(phVar16->player_name + 4);
                     }
                   }
                 }
               }
               else {
-                iVar12 = iVar7 + 1;
-                pbVar14 = local_48;
-                puVar16 = (undefined4 *)(&highscore_table + iVar7 * 0x48);
-                DAT_004c395c = iVar12;
-                for (iVar10 = 0x12; iVar7 = iVar12, iVar10 != 0; iVar10 = iVar10 + -1) {
-                  *puVar16 = *(undefined4 *)pbVar14;
-                  pbVar14 = pbVar14 + 4;
-                  puVar16 = puVar16 + 1;
+                iVar13 = iVar8 + 1;
+                pbVar4 = local_48;
+                phVar16 = &highscore_table + iVar8;
+                DAT_004c395c = iVar13;
+                for (iVar11 = 0x12; iVar8 = iVar13, iVar11 != 0; iVar11 = iVar11 + -1) {
+                  *(undefined4 *)phVar16->player_name = *(undefined4 *)pbVar4;
+                  pbVar4 = pbVar4 + 4;
+                  phVar16 = (highscore_record_t *)(phVar16->player_name + 4);
                 }
               }
             }
@@ -32118,85 +32153,86 @@ LAB_0043b2ba:
       DAT_004c395c = 100;
     }
     if (config_blob.reserved0._24_4_ == 2) {
-      puVar11 = &LAB_0043aed0;
+      cmp = &LAB_0043aed0;
     }
     else if (config_blob.reserved0._24_4_ == 3) {
-      puVar11 = &LAB_0043aef0;
+      cmp = &LAB_0043aef0;
     }
     else {
-      puVar11 = &LAB_0043aeb0;
+      cmp = &LAB_0043aeb0;
     }
-    crt_qsort(&highscore_table,100,0x48,puVar11);
+    crt_qsort(&highscore_table,100,0x48,cmp);
     if (config_blob.reserved0._128_4_ == 0) {
       local_4c = 0;
       if (0 < DAT_004c395c) {
         local_50 = 0;
-        iVar7 = DAT_004c395c;
+        iVar8 = DAT_004c395c;
         do {
-          iVar10 = DAT_004c395c;
-          if ((((&DAT_00482b54)[local_50] & 4) == 0) && (((&DAT_00482b54)[local_50] & 1) != 0)) {
-            iVar7 = 0;
-            iVar12 = 0;
+          iVar11 = DAT_004c395c;
+          if (((highscore_table.reserved0[local_50 + 0xc] & 4) == 0) &&
+             ((highscore_table.reserved0[local_50 + 0xc] & 1) != 0)) {
+            iVar8 = 0;
+            iVar13 = 0;
             local_58 = local_50;
             local_54 = local_4c;
             do {
-              pbVar14 = &highscore_table + iVar12;
-              if (((&DAT_00482b54)[iVar12] & 1) != 0) {
-                pbVar5 = &highscore_table + local_50;
+              pcVar3 = highscore_table.player_name + iVar13;
+              if ((highscore_table.reserved0[iVar13 + 0xc] & 1) != 0) {
+                pcVar6 = highscore_table.player_name + local_50;
                 do {
-                  bVar2 = *pbVar5;
-                  bVar17 = bVar2 < *pbVar14;
-                  if (bVar2 != *pbVar14) {
+                  bVar2 = *pcVar6;
+                  bVar17 = bVar2 < (byte)*pcVar3;
+                  if (bVar2 != *pcVar3) {
 LAB_0043b39e:
-                    iVar6 = (1 - (uint)bVar17) - (uint)(bVar17 != 0);
+                    iVar7 = (1 - (uint)bVar17) - (uint)(bVar17 != 0);
                     goto LAB_0043b3a3;
                   }
                   if (bVar2 == 0) break;
-                  bVar2 = pbVar5[1];
-                  bVar17 = bVar2 < pbVar14[1];
-                  if (bVar2 != pbVar14[1]) goto LAB_0043b39e;
-                  pbVar5 = pbVar5 + 2;
-                  pbVar14 = pbVar14 + 2;
+                  bVar2 = pcVar6[1];
+                  bVar17 = bVar2 < (byte)pcVar3[1];
+                  if (bVar2 != pcVar3[1]) goto LAB_0043b39e;
+                  pcVar6 = pcVar6 + 2;
+                  pcVar3 = pcVar3 + 2;
                 } while (bVar2 != 0);
-                iVar6 = 0;
+                iVar7 = 0;
 LAB_0043b3a3:
-                if (iVar6 == 0) {
-                  if (*(char *)(local_58 + 0x482b38) == '\x02') {
-                    if (*(int *)((int)&DAT_00482b30 + local_58) <
-                        *(int *)((int)&DAT_00482b30 + iVar12)) {
+                if (iVar7 == 0) {
+                  if (highscore_table.reserved0[local_58 + -0x10] == '\x02') {
+                    if (*(int *)(highscore_table.reserved0 + local_58 + -0x18) <
+                        *(int *)(highscore_table.reserved0 + iVar13 + -0x18)) {
 LAB_0043b3d0:
-                      local_58 = iVar12;
-                      local_54 = iVar7;
+                      local_58 = iVar13;
+                      local_54 = iVar8;
                     }
                   }
-                  else if (*(int *)((int)&DAT_00482b34 + local_58) <
-                           *(int *)((int)&DAT_00482b34 + iVar12)) goto LAB_0043b3d0;
+                  else if (*(int *)(highscore_table.reserved0 + local_58 + -0x14) <
+                           *(int *)(highscore_table.reserved0 + iVar13 + -0x14)) goto LAB_0043b3d0;
                 }
               }
-              iVar7 = iVar7 + 1;
-              iVar12 = iVar12 + 0x48;
-            } while (iVar7 < DAT_004c395c);
-            (&DAT_00482b54)[local_54 * 0x48] = (&DAT_00482b54)[local_54 * 0x48] | 4;
-            iVar7 = iVar10;
+              iVar8 = iVar8 + 1;
+              iVar13 = iVar13 + 0x48;
+            } while (iVar8 < DAT_004c395c);
+            (&highscore_table)[local_54].flags = (&highscore_table)[local_54].flags | 4;
+            iVar8 = iVar11;
           }
           local_4c = local_4c + 1;
           local_50 = local_50 + 0x48;
-          if (iVar7 <= local_4c) {
+          if (iVar8 <= local_4c) {
             return;
           }
         } while( true );
       }
     }
     else if (0 < DAT_004c395c) {
-      pbVar14 = &DAT_00482b54;
-      iVar7 = DAT_004c395c;
+      puVar12 = &highscore_table.flags;
+      iVar8 = DAT_004c395c;
       do {
-        if ((*pbVar14 & 1) != 0) {
-          *pbVar14 = *pbVar14 | 4;
+        if ((*puVar12 & 1) != 0) {
+          *puVar12 = *puVar12 | 4;
         }
-        pbVar14 = pbVar14 + 0x48;
-        iVar7 = iVar7 + -1;
-      } while (iVar7 != 0);
+        puVar12 = puVar12 + 0x48;
+        iVar8 = iVar8 + -1;
+      } while (iVar8 != 0);
     }
   }
   return;
@@ -32275,16 +32311,16 @@ int highscore_rank_index(void)
 {
   int iVar1;
   int iVar2;
-  int *piVar3;
+  uint *puVar3;
   
   iVar2 = DAT_004c395c;
   if (config_blob.reserved0._24_4_ == 2) {
     iVar1 = 0;
     if (0 < DAT_004c395c) {
-      piVar3 = &DAT_00482b30;
-      while (iVar2 = iVar1, survival_elapsed_ms <= *piVar3) {
+      puVar3 = &highscore_table.survival_elapsed_ms;
+      while (iVar2 = iVar1, (int)highscore_active_record.survival_elapsed_ms <= (int)*puVar3) {
         iVar1 = iVar1 + 1;
-        piVar3 = piVar3 + 0x12;
+        puVar3 = puVar3 + 0x12;
         if (DAT_004c395c <= iVar1) {
           return DAT_004c395c;
         }
@@ -32294,10 +32330,10 @@ int highscore_rank_index(void)
   else if (config_blob.reserved0._24_4_ == 3) {
     iVar1 = 0;
     if (0 < DAT_004c395c) {
-      piVar3 = &DAT_00482b30;
-      while (iVar2 = iVar1, *piVar3 <= survival_elapsed_ms) {
+      puVar3 = &highscore_table.survival_elapsed_ms;
+      while (iVar2 = iVar1, (int)*puVar3 <= (int)highscore_active_record.survival_elapsed_ms) {
         iVar1 = iVar1 + 1;
-        piVar3 = piVar3 + 0x12;
+        puVar3 = puVar3 + 0x12;
         if (DAT_004c395c <= iVar1) {
           return DAT_004c395c;
         }
@@ -32307,13 +32343,13 @@ int highscore_rank_index(void)
   else {
     iVar1 = 0;
     if (0 < DAT_004c395c) {
-      piVar3 = &DAT_00482b34;
+      puVar3 = &highscore_table.score_xp;
       do {
-        if (*piVar3 < highscore_score_xp) {
+        if ((int)*puVar3 < (int)highscore_active_record.score_xp) {
           return iVar1;
         }
         iVar1 = iVar1 + 1;
-        piVar3 = piVar3 + 0x12;
+        puVar3 = puVar3 + 0x12;
       } while (iVar1 < DAT_004c395c);
     }
   }
@@ -32398,7 +32434,6 @@ LAB_0043b67f:
 
 /* highscore_record_init @ 0043b750 */
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* fills the active high score record metadata for the current run */
 
 void highscore_record_init(void)
@@ -32419,21 +32454,21 @@ void highscore_record_init(void)
     }
     iVar1 = iVar1 + 1;
   } while (iVar1 < 0x40);
-  highscore_record_weapon_id = (undefined1)iVar4;
-  if (highscore_record_shots_fired < highscore_record_shots_hit) {
-    highscore_record_shots_hit = highscore_record_shots_fired;
+  highscore_active_record.most_used_weapon_id = (uchar)iVar4;
+  if ((int)highscore_active_record.shots_fired < (int)highscore_active_record.shots_hit) {
+    highscore_active_record.shots_hit = highscore_active_record.shots_fired;
   }
-  highscore_record_game_mode = config_blob.reserved0[0x18];
-  highscore_record_quest_major = quest_stage_major;
-  highscore_record_quest_minor = quest_stage_minor;
-  highscore_flags = 0;
+  highscore_active_record.game_mode_id = config_blob.reserved0[0x18];
+  highscore_active_record.quest_stage_major = quest_stage_major;
+  highscore_active_record.quest_stage_minor = quest_stage_minor;
+  highscore_active_record.flags = '\0';
   uVar2 = crt_rand();
   uVar2 = uVar2 & 0x8fffffff;
   if ((int)uVar2 < 0) {
     uVar2 = (uVar2 - 1 | 0xf0000000) + 1;
   }
-  _DAT_00487078 = uVar2 + 0x310;
-  highscore_full_version_marker = -(config_blob.hardcore != '\0') & 0x75;
+  highscore_active_record.reserved0._0_4_ = uVar2 + 0x310;
+  highscore_active_record.full_version_marker = -(config_blob.hardcore != '\0') & 0x75;
   return;
 }
 
@@ -36425,121 +36460,125 @@ void * FUN_004451b0(void)
 
 {
   byte bVar1;
-  byte *pbVar2;
-  int iVar3;
-  uint uVar4;
-  void *pvVar5;
+  char *pcVar2;
+  highscore_record_t *phVar3;
+  int iVar4;
+  uint uVar5;
+  void *pvVar6;
   void *this;
   void *extraout_ECX;
-  uint uVar6;
-  int iVar7;
+  uint uVar7;
   int iVar8;
-  byte *pbVar9;
-  byte *pbVar10;
-  byte *pbVar11;
-  bool bVar12;
-  byte *local_8;
+  int iVar9;
+  highscore_record_t *phVar10;
+  undefined4 *puVar11;
+  byte *pbVar12;
+  byte *pbVar13;
+  highscore_record_t *phVar14;
+  undefined4 *puVar15;
+  bool bVar16;
+  undefined4 *local_8;
   int local_4;
   
   if (DAT_004d7580 == '\0') {
     highscore_load_table();
-    iVar8 = 0;
-    pbVar9 = &highscore_table;
+    iVar9 = 0;
+    phVar10 = &highscore_table;
     local_4 = 0;
-    local_8 = &DAT_004d1228;
+    local_8 = (undefined4 *)&DAT_004d1228;
     do {
-      pbVar10 = &DAT_004d1228;
-      iVar7 = 0;
-      pbVar2 = pbVar9;
-      pbVar11 = pbVar10;
+      pbVar12 = &DAT_004d1228;
+      iVar8 = 0;
+      phVar3 = phVar10;
+      pbVar13 = pbVar12;
       if (0x4d1228 < (int)local_8) {
 LAB_004451ef:
         do {
-          bVar1 = *pbVar2;
-          bVar12 = bVar1 < *pbVar10;
-          if (bVar1 == *pbVar10) {
+          bVar1 = phVar3->player_name[0];
+          bVar16 = bVar1 < *pbVar12;
+          if (bVar1 == *pbVar12) {
             if (bVar1 != 0) {
-              bVar1 = pbVar2[1];
-              bVar12 = bVar1 < pbVar10[1];
-              if (bVar1 != pbVar10[1]) goto LAB_00445213;
-              pbVar10 = pbVar10 + 2;
-              pbVar2 = pbVar2 + 2;
+              bVar1 = phVar3->player_name[1];
+              bVar16 = bVar1 < pbVar12[1];
+              if (bVar1 != pbVar12[1]) goto LAB_00445213;
+              pbVar12 = pbVar12 + 2;
+              phVar3 = (highscore_record_t *)(phVar3->player_name + 2);
               if (bVar1 != 0) goto LAB_004451ef;
             }
-            iVar3 = 0;
+            iVar4 = 0;
           }
           else {
 LAB_00445213:
-            iVar3 = (1 - (uint)bVar12) - (uint)(bVar12 != 0);
+            iVar4 = (1 - (uint)bVar16) - (uint)(bVar16 != 0);
           }
-          iVar8 = local_4;
-          if (iVar3 == 0) goto LAB_004452a7;
-          iVar7 = iVar7 + 1;
-          pbVar10 = pbVar11 + 0x20;
-          pbVar2 = pbVar9;
-          pbVar11 = pbVar10;
-        } while (iVar7 < local_4);
+          iVar9 = local_4;
+          if (iVar4 == 0) goto LAB_004452a7;
+          iVar8 = iVar8 + 1;
+          pbVar12 = pbVar13 + 0x20;
+          phVar3 = phVar10;
+          pbVar13 = pbVar12;
+        } while (iVar8 < local_4);
       }
-      uVar4 = 0xffffffff;
-      iVar7 = 0;
-      pbVar2 = pbVar9;
+      uVar5 = 0xffffffff;
+      iVar8 = 0;
+      phVar3 = phVar10;
       do {
-        if (uVar4 == 0) break;
-        uVar4 = uVar4 - 1;
-        bVar1 = *pbVar2;
-        pbVar2 = pbVar2 + 1;
-      } while (bVar1 != 0);
-      pvVar5 = (void *)(~uVar4 - 1);
-      this = pvVar5;
-      if (0 < (int)pvVar5) {
+        if (uVar5 == 0) break;
+        uVar5 = uVar5 - 1;
+        pcVar2 = phVar3->player_name;
+        phVar3 = (highscore_record_t *)(phVar3->player_name + 1);
+      } while (*pcVar2 != '\0');
+      pvVar6 = (void *)(~uVar5 - 1);
+      this = pvVar6;
+      if (0 < (int)pvVar6) {
         do {
-          uVar4 = crt_isalpha(this,(int)(char)pbVar9[iVar7]);
-          if ((uVar4 == 0) && (pbVar9[iVar7] != 0x2e)) goto LAB_004452a7;
-          iVar7 = iVar7 + 1;
+          uVar5 = crt_isalpha(this,(int)phVar10->player_name[iVar8]);
+          if ((uVar5 == 0) && (phVar10->player_name[iVar8] != '.')) goto LAB_004452a7;
+          iVar8 = iVar8 + 1;
           this = extraout_ECX;
-        } while (iVar7 < (int)pvVar5);
+        } while (iVar8 < (int)pvVar6);
       }
-      uVar4 = 0xffffffff;
-      local_4 = iVar8 + 1;
-      pbVar2 = pbVar9;
+      uVar5 = 0xffffffff;
+      local_4 = iVar9 + 1;
+      phVar3 = phVar10;
       do {
-        pbVar11 = pbVar2;
-        if (uVar4 == 0) break;
-        uVar4 = uVar4 - 1;
-        pbVar11 = pbVar2 + 1;
-        bVar1 = *pbVar2;
-        pbVar2 = pbVar11;
-      } while (bVar1 != 0);
-      uVar4 = ~uVar4;
-      pbVar2 = pbVar11 + -uVar4;
-      pbVar11 = local_8;
-      for (uVar6 = uVar4 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
-        *(undefined4 *)pbVar11 = *(undefined4 *)pbVar2;
-        pbVar2 = pbVar2 + 4;
-        pbVar11 = pbVar11 + 4;
+        phVar14 = phVar3;
+        if (uVar5 == 0) break;
+        uVar5 = uVar5 - 1;
+        phVar14 = (highscore_record_t *)(phVar3->player_name + 1);
+        pcVar2 = phVar3->player_name;
+        phVar3 = phVar14;
+      } while (*pcVar2 != '\0');
+      uVar5 = ~uVar5;
+      puVar11 = (undefined4 *)((int)phVar14 - uVar5);
+      puVar15 = local_8;
+      for (uVar7 = uVar5 >> 2; uVar7 != 0; uVar7 = uVar7 - 1) {
+        *puVar15 = *puVar11;
+        puVar11 = puVar11 + 1;
+        puVar15 = puVar15 + 1;
       }
-      for (uVar4 = uVar4 & 3; uVar4 != 0; uVar4 = uVar4 - 1) {
-        *pbVar11 = *pbVar2;
-        pbVar2 = pbVar2 + 1;
-        pbVar11 = pbVar11 + 1;
+      for (uVar5 = uVar5 & 3; uVar5 != 0; uVar5 = uVar5 - 1) {
+        *(undefined1 *)puVar15 = *(undefined1 *)puVar11;
+        puVar11 = (undefined4 *)((int)puVar11 + 1);
+        puVar15 = (undefined4 *)((int)puVar15 + 1);
       }
-      console_printf(&console_log_queue,s__d__unique___s_00478e14,local_4,pbVar9);
-      iVar8 = local_4;
-      local_8 = local_8 + 0x20;
+      console_printf(&console_log_queue,s__d__unique___s_00478e14,local_4,phVar10);
+      iVar9 = local_4;
+      local_8 = local_8 + 8;
 LAB_004452a7:
-      pbVar9 = pbVar9 + 0x48;
-    } while ((int)pbVar9 < 0x484730);
+      phVar10 = phVar10 + 1;
+    } while ((int)phVar10 < 0x484730);
     DAT_004d7580 = '\x01';
-    DAT_004d7584 = iVar8;
-    if (iVar8 == 0) {
+    DAT_004d7584 = iVar9;
+    if (iVar9 == 0) {
       crt_sprintf(&DAT_004d1228,s_quickbrownfox_00478e04);
     }
   }
   if (DAT_004d7584 < 1) {
     return &DAT_004d1228;
   }
-  iVar8 = crt_rand();
-  return &DAT_004d1228 + (iVar8 % DAT_004d7584) * 0x20;
+  iVar9 = crt_rand();
+  return &DAT_004d1228 + (iVar9 % DAT_004d7584) * 0x20;
 }
 
 
@@ -36618,12 +36657,16 @@ void __cdecl creature_name_assign_random(int creature_id)
   
   local_4 = 0;
   do {
-    if (highscore_score_xp < 0x79) {
+    if ((int)highscore_active_record.score_xp < 0x79) {
 LAB_0044544d:
-      if (((highscore_score_xp < 0x51) || (iVar3 = crt_rand(), 0x4f < iVar3 % 100)) &&
-         ((highscore_score_xp < 0x3d || (iVar3 = crt_rand(), 0x27 < iVar3 % 100)))) {
-        if (((highscore_score_xp < 0x29) || (iVar3 = crt_rand(), 0x4f < iVar3 % 100)) &&
-           ((highscore_score_xp < 0x15 || (iVar3 = crt_rand(), 0x27 < iVar3 % 100)))) {
+      if ((((int)highscore_active_record.score_xp < 0x51) ||
+          (iVar3 = crt_rand(), 0x4f < iVar3 % 100)) &&
+         (((int)highscore_active_record.score_xp < 0x3d || (iVar3 = crt_rand(), 0x27 < iVar3 % 100))
+         )) {
+        if ((((int)highscore_active_record.score_xp < 0x29) ||
+            (iVar3 = crt_rand(), 0x4f < iVar3 % 100)) &&
+           (((int)highscore_active_record.score_xp < 0x15 ||
+            (iVar3 = crt_rand(), 0x27 < iVar3 % 100)))) {
           dst = &DAT_004d152c + creature_id * 0x40;
           pcVar4 = FUN_00444f70('\0');
           crt_sprintf(dst,&DAT_00471fc4,pcVar4);
@@ -36672,8 +36715,8 @@ LAB_0044544d:
         }
       }
       else {
-        if ((highscore_score_xp < 0x79) || (iVar3 = crt_rand(), 0x4f < iVar3 % 100))
-        goto LAB_0044544d;
+        if (((int)highscore_active_record.score_xp < 0x79) ||
+           (iVar3 = crt_rand(), 0x4f < iVar3 % 100)) goto LAB_0044544d;
         dst = &DAT_004d152c + creature_id * 0x40;
         pcVar4 = FUN_00444f70('\0');
         pcVar5 = FUN_00444f70('\0');
@@ -36965,11 +37008,12 @@ LAB_00445905:
     survival_spawn_cooldown = survival_spawn_cooldown - config_blob.reserved0._20_4_ * frame_dt_ms;
   }
   while (survival_spawn_cooldown < 0) {
-    survival_spawn_cooldown = survival_spawn_cooldown + (0xdac - survival_elapsed_ms / 800);
+    survival_spawn_cooldown =
+         survival_spawn_cooldown + (0xdac - (int)highscore_active_record.survival_elapsed_ms / 800);
     if (survival_spawn_cooldown < 100) {
       survival_spawn_cooldown = 100;
     }
-    local_28 = survival_elapsed_ms + 1;
+    local_28 = highscore_active_record.survival_elapsed_ms + 1;
     uStack_4 = 0x3f800000;
     fVar11 = (float10)(int)local_28;
     fStack_10 = (float)(fVar11 * (float10)8.333333e-06 + (float10)0.3);
@@ -37002,20 +37046,23 @@ LAB_00445905:
     }
     DAT_004d758c = DAT_004d758c + 1;
     local_30 = (float)terrain_texture_width + 64.0;
-    fVar11 = (float10)fcos((float10)survival_elapsed_ms * (float10)0.001);
+    fVar11 = (float10)fcos((float10)(int)highscore_active_record.survival_elapsed_ms *
+                           (float10)0.001);
     fStack_2c = (float)((float10)terrain_texture_height * (float10)0.5 + fVar11 * (float10)256.0);
     iVar5 = creature_spawn_tinted(&local_30,&fStack_10,4);
     creature_name_assign_random(iVar5);
     fStack_20 = -64.0;
-    fVar11 = (float10)fcos((float10)survival_elapsed_ms * (float10)0.001);
+    fVar11 = (float10)fcos((float10)(int)highscore_active_record.survival_elapsed_ms *
+                           (float10)0.001);
     fStack_1c = (float)((float10)terrain_texture_height * (float10)0.5 + fVar11 * (float10)256.0);
     iVar5 = creature_spawn_tinted(&fStack_20,&fStack_10,2);
     creature_name_assign_random(iVar5);
   }
-  highscore_score_xp = player_health._pad0._136_4_;
+  highscore_active_record.score_xp = player_health._pad0._136_4_;
   if (console_open_flag == '\0') {
     _bonus_weapon_power_up_timer = 0;
-    survival_elapsed_ms = survival_elapsed_ms + frame_dt_ms;
+    highscore_active_record.survival_elapsed_ms =
+         highscore_active_record.survival_elapsed_ms + frame_dt_ms;
     _bonus_reflex_boost_timer = 0;
     time_scale_active = '\0';
     (&DAT_0048708c)[player_health._pad0._668_4_] =
@@ -37071,8 +37118,8 @@ LAB_00445905:
   pIVar3 = grim_interface_ptr->vtable;
   iVar5 = (*pIVar3->grim_measure_text_width)(&DAT_004d14a8);
   (*pIVar3->grim_draw_text_small_fmt)((float)grim_interface_ptr,(float)iVar5 + 14.0,pcVar6);
-  highscore_record_shots_hit = DAT_004d757c;
-  highscore_record_shots_fired = DAT_004d7578;
+  highscore_active_record.shots_hit = DAT_004d757c;
+  highscore_active_record.shots_fired = DAT_004d7578;
   ui_elements_update_and_render();
   return;
 }

@@ -287,4 +287,26 @@ typedef struct game_status_t {
     unsigned char reserved0[0x10];
 } game_status_t;
 
+typedef struct highscore_record_t {
+    char player_name[0x20];
+    unsigned int survival_elapsed_ms;
+    unsigned int score_xp;
+    unsigned char game_mode_id;
+    unsigned char quest_stage_major;
+    unsigned char quest_stage_minor;
+    unsigned char most_used_weapon_id;
+    unsigned int shots_fired;
+    unsigned int shots_hit;
+    unsigned int creature_kill_count;
+    unsigned char reserved0[0x08];
+    unsigned char day;
+    unsigned char date_checksum;
+    unsigned char month;
+    unsigned char year_offset;
+    unsigned char flags;
+    unsigned char full_version_marker;
+    unsigned char sentinel_pipe;
+    unsigned char sentinel_ff;
+} highscore_record_t;
+
 #endif
