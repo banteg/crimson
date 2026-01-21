@@ -10,12 +10,15 @@ tags:
 `weapon_table + weapon_id * 0x1f` (stride `0x7c`).
 
 Notes:
+
 - Weapon ids are **1-based** in code. Id `0` is a dummy/none entry
   (entry 0 has ammo class `-1`).
+
 - Some weapon name strings are stored at offsets that Ghidra’s string extractor
   truncates (e.g., 0x0047956c → **Shotgun**, 0x004793f4 → **RayGun**,
   0x0047933a + 2 → **Lighting Rifle**). These are resolved by reading the
   executable bytes at the exact address, matching the `weapon_table_init` copies.
+
 - IDs 34–40 and 46–49 are left **Unknown / unlabelled** because
   `weapon_table_init` never copies a name into those entries and there are no
   direct callsite references to those ids. They are likely unused/reserved.

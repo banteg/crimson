@@ -56,6 +56,7 @@ A small bias of 1/512 is applied to the U/V values in code to reduce bleeding.
 
 - `grim_draw_text_mono` binds `grim_font_texture`, which is loaded from Grim2D resources
   (resource id `0x6f`). [static]
+
 - This is not yet confirmed to match `default_font_courier.tga` from `crimson.paq`. [static]
 
 ### Behavior

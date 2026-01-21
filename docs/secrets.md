@@ -57,8 +57,10 @@ labels and consumes the credits line table.
   `credits` label (`0x00472e88`) and sets the `Secret` label pointer (`0x00472e90`). It calls
   `credits_build_lines` on first entry to populate the table, then loops over visible lines and
   handles clicks (including SFX feedback).
+
 - `credits_build_lines` (`0x0040d090`): populates the credits line table with headings, names, and
   trailing hint lines (including “Click the ones with the round on...”).
+
 - `credits_line_set` (`0x0040d000`): stores a single line + flags in the credits line table.
 
 These functions provide a concrete anchor for the **credits click puzzle** logic, but we still have not
@@ -71,21 +73,26 @@ pattern. That logic remains to be found.
 
 - **Hinted precondition (string)**: click every credits line containing letter `o` and **avoid clicking**
   other lines; this should start “The Secret Path.”
+
 - **Verified code**: credits UI click handling lives in `credits_screen_update` (`0x0040d800`).
 - **Static logic (clicks)**: the click handler checks for lowercase `'o'` (`0x6f`) in the line text. If
   present it sets flag `0x4` (clicked) and plays the bonus sfx; if absent it calls
   `credits_line_clear_flag`, which walks backward to clear the most recently flagged line. This is
   the explicit misclick penalty.
+
 - **Static logic (unlock scan)**: after the per-line loop, `credits_screen_update` scans the entire
   credits line table; if *any* line containing `'o'` is missing flag `0x4`, it **skips the rest of the function**,
   bypassing the Secret button update.
+
 - **Secret Button Gating**: The `ui_button_update` call for the Secret button is located *after* the
   unlock scan. Thus, the button is effectively hidden (not updated/interactive) until **ALL** 'o' lines
   are flagged. This resolves the gating question: the code path to the button is physically unreachable
   until the puzzle is solved.
+
 - **Runtime capture (2026-01-19)**: when the last required line is flagged, the unlock flag
   `DAT_004811c4` is set and the secret lines are injected into the credits line table at base index
   `DAT_004811bc = 0x54`. The injected lines (all flags `0x4`) are:
+
   - "Inside Dead Let Mighty Blood"
   - "Do Firepower See Mark Of"
   - "The Sacrifice Old Center"
@@ -97,6 +104,7 @@ pattern. That logic remains to be found.
   - "(4 bits for index) <- OOOPS I meant FIVE!"
   - "(4 bits for index)"
   This confirms the secret-line injection is gated by the credits line scan.
+
 - **Secret button transition (static)**: the Secret button press sets `game_state_pending = 0x1a`,
   which maps to `credits_secret_alien_zookeeper_update` (AlienZooKeeper minigame). No other
   “Secret Path” branch is visible in the credits screen decompile.
@@ -134,8 +142,10 @@ Decode:
 
 - `0001001110000010101110011` -> `00010 01110 00001 01011 10011`
   -> 2, 14, 1, 11, 19 -> "Dead Center Inside The Triangle"
+
 - `0101001011100010010101100` -> `01010 01011 10001 00101 01100`
   -> 10, 11, 17, 5, 12 -> "Of The First Blood Sacrifice"
+
 - `011111001000111` -> `01111 10010 00111`
   -> 15, 18, 7 -> "Yourself For Firepower"
 
@@ -153,15 +163,19 @@ Final decoded message:
 
 - **Hinted precondition (string)**: “Inside AlienZooKeeper” there are combinations; example combo
   “CyanYellowRedYellow” + “orthogonal projection” hint.
+
 - **Verified code (minigame)**: the AlienZooKeeper credits secret is a match-3 board implemented in
   `credits_secret_alien_zookeeper_update` (`0x0040f4f0`). The board is a 6x6 int grid at `0x004819ec`
   (values `0..4`, `-1` empty, `-3` clearing).
+
 - **Match Logic**: Swapping tiles calls `credits_secret_match3_find` (`0x0040f400`), which returns
   the first 3-in-a-row match it finds. The logic is standard match-3 (horizontal and vertical scans).
+
 - **No Unlock Found**: The update loop handles scoring, timer (adds 2000ms on match), and "Game Over".
   **No code path** was found that sets a global unlock flag (like `weapon_table` modification) or
   writes to the save file upon reaching a score or matching a specific pattern. The minigame appears
   to be self-contained.
+
 - **Color mapping (render tint)**: Confirmed via `credits_secret_alien_zookeeper_update` draw calls:
   - `0 = (1.0, 0.5, 0.5)` Red
   - `1 = (0.5, 0.5, 1.0)` Blue
@@ -169,6 +183,7 @@ Final decoded message:
   - `3 = (0.5, 1.0, 1.0)` Cyan
   - `4 = (1.0, 1.0, 0.5)` Yellow
   This maps the hint **CyanYellowRedYellow** to values `[3,4,0,4]`.
+
 - **Unlock logic**: The hint string remains the only link to any external secret. The minigame itself
   may just be the "something more" mentioned on screen, or the "Orthogonal projection" hint requires
   interpreting the pattern `3,4,0,4` outside the game code (e.g. as part of the riddle).
@@ -177,6 +192,7 @@ Final decoded message:
 
 - **Observed logic**: these lines are printed alongside the hint block under the same guard condition in
   `crimsonland_main`. They likely indicate a debug/redistribution build or an anti-tamper path.
+
 - **Verified code**: only the startup print path; the guard condition needs disassembly confirmation.
 
 ## Verified code per hint (current)

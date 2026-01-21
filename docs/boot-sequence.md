@@ -45,6 +45,7 @@ exact draw calls for the splash/loading screen at 800x600. Key facts:
 
 - **Background:** black clear. No `backplasma` or `mockup` draw calls appear in
   the captured splash frame.
+
 - **Drawn textures:** `cl_logo`, `loading`, `logo_esrb`.
 - **Band frame:** 1px rectangle around the logo band, rendered using
   `cl_logo` as a solid-tinted quad.
@@ -64,6 +65,7 @@ exact draw calls for the splash/loading screen at 800x600. Key facts:
 
 - Logo/Loading/ESRB are drawn with a shared fade alpha (observed sequence:
   `0.03, 0.23, 0.42, 0.598, 0.772, 0.932, 1.0`).
+
 - Band frame color ≈ `#95AFC6` (r=0.5843, g=0.6863, b=0.7765).
 - Band frame alpha = `logo_alpha * 0.7`.
 
@@ -82,6 +84,7 @@ clear. The routine:
 - `DAT_004aaf90` is incremented each tick by `DAT_00480840` (frame delta).
 - `alpha = clamp(2.0 * DAT_004aaf90, 0.0, 1.0)`; clamped by comparing against
   constants `1.0` and `0.0`.
+
 - The same `alpha` is used for `logo_esrb`, `loading`, and `cl_logo`.
 - The band frame uses `alpha * 0.7` (validated in runtime capture).
 
@@ -131,6 +134,7 @@ The company logo sequence runs inside `game_startup_init` after
 - When textures finish, the game loads `splashReflexive` and `splash10Tons`,
   runs `game_startup_init_prelude`, starts the sound thread, and clamps
   `_DAT_004aaf90` to `0.5` if it is larger. `[static]`
+
 - A 5-tick delay (`Sleep(5)` per tick) runs before the logos display. `[static]`
 
 ### Timing model
@@ -237,5 +241,6 @@ and map the Grim2D calls to the runtime draw order.
 ## Verification
 
 To verify the "Loading" screen behavior:
+
 - Check if `load\loading.jaz` is displayed fullscreen during the asset loading phase.
 - Ensure the loop processes all 10 steps of `load_textures_step`.

@@ -124,10 +124,12 @@ loaded. All callsites below are visible in
    - Registers commands: `setGammaRamp`, `snd_addGameTune`, `generateterrain`,
      `telltimesurvived`, `setresourcepaq`, `loadtexture`, `openurl`,
      `sndfreqadjustment`.
+
 4) Grim2D interface:
    - `grim_load_interface` (dev path), fallback to `grim.dll`.
    - Secret-hint print block executes immediately after this call (guard looks
      bogus in the decompiler).
+
    - `register_core_cvars`.
 5) Config + save bootstrap:
    - `config_load_presets`.
@@ -137,11 +139,13 @@ loaded. All callsites below are visible in
    - `config_sync_from_grim`, then `config_load_presets` again.
    - `grim_get_config_var` (`vtable +0x24`) reads texture scale, windowed flag,
      screen dimensions, and backend flags.
+
    - `grim_set_config_var` (`vtable +0x20`) repeated while applying settings (config/state IDs include D3D render state values).
 7) Input + system init:
    - Logs: keyboard/mouse/joystick.
    - `grim_init_system` (`vtable +0x14`) → initializes D3D/input + loads
      `smallFnt.dat`. On failure, shows `grim_get_error_text` and exits.
+
 8) Post-init setup:
    - `console_exec_line("exec autoexec.txt")`.
    - Registers `v_width` / `v_height` cvars from the screen size.
@@ -167,5 +171,6 @@ Ghidra’s auto-analysis had previously created a shorter function at
 label `0x0042b090` as `game_startup_init_prelude` and force-create
 `game_startup_init` at `0x0042b290` so the decompiler exports include the
 intro play/mute and theme switch logic.
+
 - The early CRT cluster is now tagged as `crt_*` (heap/TLS/IO); confirm exact
   MSVCRT symbol names later.

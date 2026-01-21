@@ -10,10 +10,13 @@ Responsibilities:
 
 - Updates the global transition timeline `ui_elements_timeline` (`DAT_00487248`) using `DAT_00480844`.
   Direction is controlled by `ui_transition_direction` (`DAT_0048724c`) (0 = countdown, nonzero = count up).
+
 - When the timeline goes below zero, it calls `FUN_004461c0` with `game_state_pending` (`DAT_00487274`) to
   switch state and then sets `game_state_pending` (`DAT_00487274`) = `0x19` (idle).
+
 - Clamps the timeline to the maximum active element value
   (`ui_elements_max_timeline`).
+
 - Iterates the UI element table `DAT_0048f208`..`DAT_0048f168`, calling
   `FUN_00446900` and `ui_element_render` for each entry.
 
@@ -21,6 +24,7 @@ Helpers:
 
 - `ui_elements_reset_state` (`FUN_00446170`) clears element active flags and
   hover timers.
+
 - `ui_elements_max_timeline` (`FUN_00446190`) returns the max timeline value
   among active elements.
 

@@ -53,17 +53,21 @@ We also generate an evidence appendix with callsite snippets:
 - `grim_convert_vertex_space` (`0x10016944`) remaps vec4 coordinates between three space
   modes used by the batcher. Modes 1/2/3 control whether xyz and w are in `[-1, 1]`
   or `[0, 1]`; see the evidence appendix for inferred mappings.
+
 - `grim_pixel_format_init` (`0x100170f9`) initializes format descriptors and palette
   expansion; it also stores the coordinate mode later compared against the current
   mode before converting vertices.
+
 - `grim_config_dialog_proc` (`0x10002120`) handles the Grim2D config dialog messages.
 - `grim_window_create` (`0x10002680`) registers the window class and creates the main window.
 - `grim_window_destroy` (`0x10002880`) posts quit and destroys the main window.
 - `grim_d3d_init` (`0x10003e60`) creates the Direct3D8 interface and sets up the device.
 - `grim_keyboard_init` (`0x1000a390`) / `grim_keyboard_poll` (`0x1000a4a0`) / `grim_keyboard_shutdown`
   (`0x1000a550`) manage the DirectInput keyboard device.
+
 - `grim_mouse_init` (`0x1000a5a0`) / `grim_mouse_poll` (`0x1000a670`) / `grim_mouse_shutdown`
   (`0x1000a7d0`) manage the DirectInput mouse device.
+
 - `grim_joystick_init` (`0x1000a1c0`) / `grim_joystick_poll` (`0x1000a2b0`) manage the DirectInput
   joystick device.
 
@@ -100,35 +104,46 @@ Validation highlights (see the evidence appendix for snippets):
 
 - `grim_set_config_var` callsites pass `(id, value)` pairs like `(0x15, 2)` and `(0x18, 0x3f000000)`;
   some IDs map to D3D render/texture stage state, while others drive config side effects.
+
 - `grim_bind_texture` is called with `(handle, 0)` and followed by `grim_set_uv` + `grim_draw_quad`,
   consistent with binding stage 0 before drawing.
+
 - `grim_set_uv` receives literal `0/1` and atlas fractions (e.g. `0.0625`, `0.00390625`) before draws,
   confirming a 4-float UV rectangle.
+
 - `grim_set_atlas_frame` uses atlas sizes `4/8/16` plus frame indices, while `grim_set_sub_rect` supplies
   width/height for multi-cell frames.
+
 - `grim_set_sub_rect` shows explicit calls like `(8, 2, 1, frame<<1)` and is followed by `grim_draw_quad`,
   matching atlas grid sub-rect selection.
+
 - `grim_begin_batch` / `grim_end_batch` bracket `grim_draw_quad` and `submit_*` calls in most UI paths.
 - `grim_draw_quad_xy` is a thin wrapper around `grim_draw_quad` that forwards `xy[0]/xy[1]`.
 - `grim_draw_text_small_fmt` calls `vsprintf` in grim.dll and forwards to `grim_draw_text_small`, so the
   varargs signature is correct.
+
 - `grim_measure_text_width` returns an integer width used for layout/centering in menus.
 - `grim_set_color` / `grim_set_color_slot` pass RGBA floats or float pointers that grim.dll packs into ARGB.
 - `grim_submit_vertices_offset` appears as vtable offset `+ 300` (0x12c) in the decompiler and adds XY
   offsets to 7-float stride vertices before batching.
+
 - `grim_draw_quad_points` emits four explicit points with current UV/color slots and batches immediately.
 - `grim_draw_line` builds a half-width vector then forwards to `grim_draw_line_quad`, which emits the quad
   via `grim_draw_quad_points`.
+
 - `grim_draw_circle_filled` / `grim_draw_circle_outline` appear in gameplay effects with UV + color setup
   immediately before the draw calls.
+
 - The timing helpers (`get_time_ms`, `set_time_ms`, `get_frame_dt`, `get_fps`) have no decompiled callsites yet;
   grim.dll stores a millisecond counter and clamps frame delta to `0.1`.
+
 - `grim_apply_config` opens the Grim2D config dialog and initializes Direct3D8 before applying settings.
 - `grim_apply_settings` forwards to Grim2D’s internal settings routine (`FUN_10003c00`).
 - `grim_init_system` initializes D3D and input devices, then loads `smallFnt.dat`.
 - `grim_set_render_target` is invoked with render target handles and `-1` to restore the backbuffer.
 - `grim_get_config_float` maps IDs `0x13f..0x155` to scaled config values and special-cases `0x15f`
   to return the mouse X delta (`grim_get_mouse_dx`).
+
 - `grim_check_device` has no decompiled callsites yet; grim.dll returns a D3D-style status code.
 - `grim_draw_fullscreen_color` only draws when alpha is positive and forces texture stage 0 to null.
 
@@ -229,13 +244,16 @@ These offsets appear with keycodes or input-related values:
 
 - `0x44` / `0x48` used with keycodes like `0x1d`, `0x9d`, `0xd0`, `200`
   in `FUN_00401a40` (likely key down / key pressed checks).
+
 - `0x50` is a zero-arg call in `FUN_00401060` (likely a per-frame poll).
 - `0x58` / `0x80` appear in input handling loops in `FUN_00446030`.
 - `0x80` routes IDs `< 0x100` to `is_key_down` and uses `0x100/0x101` for mouse buttons 0/1.
 - `0x84` returns a float and is queried with IDs `0x13f..0x155`
   in `FUN_00448b50` (likely config values); ID `0x15f` returns mouse X delta.
+
 - `0x60`/`0x70`/`0x74` read the DirectInput mouse deltas, while
   `0x64`/`0x68`/`0x6c` update or return the accumulated mouse position.
+
 - `0x88`..`0x94` are scratch slot accessors (float/int arrays).
 - `0x98`..`0xa0` return cached joystick axis values.
 

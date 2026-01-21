@@ -64,9 +64,11 @@ Related tables:
 
 - `weapon_ammo_class` (`DAT_004d7a28`) is consulted during `projectile_update` to gate one of the hit
   effect paths (value `4` skips it).
+
 - `weapon_projectile_damage_scale` is used as the damage scale for each `type_id`.
 - `weapon_projectile_meta` is copied into the projectile entry on spawn and shares the
   same stride as the weapon table.
+
 - `projectile_pool + 0x30` (`DAT_004926e8`) acts like a shared damage pool for
   piercing projectiles: it is decremented on hit and, if still positive, passed
   into `FUN_004207c0` as the damage value before subtracting the target's health.

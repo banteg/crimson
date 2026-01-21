@@ -87,10 +87,12 @@ grim.dll_functions.json
 - `FUN_00402bd0` -> `game_build_path`
   - Evidence: formats `"%s\\%s"` with `game_base_path` and a filename argument; used with
     `console.log`, `game.cfg` (save/status blob), and `crimson.cfg` (config blob).
+
 - `FUN_0041ec60` -> `config_sync_from_grim`
   - Evidence: pulls Grim config values (`+0x24` accessor), seeds default config blob when the
     Grim config dialog was invoked, loads `crimson.cfg` overrides, and writes the 0x480‑byte
     blob back out.
+
 - `FUN_0041f130` -> `config_ensure_file`
   - Evidence: ensures `crimson.cfg` exists by writing the current config blob when missing.
 
@@ -99,6 +101,7 @@ grim.dll_functions.json
 - `FUN_00402580` -> `console_tokenize_line`
   - Evidence: copies the input into `DAT_0047eaa0`, splits with `crt_strtok`, stores the command in
     `DAT_0047ea60` and arguments in `DAT_0047ea64..`, and updates `DAT_0047f4cc` (token count).
+
 - `FUN_00402480` -> `console_cvar_find`
   - Evidence: walks the cvar list at `*this` and string-compares entry names against the target.
 - `FUN_004024e0` -> `console_cvar_unregister`
@@ -110,6 +113,7 @@ grim.dll_functions.json
 - `FUN_00402630` -> `console_cvar_autocomplete`
   - Evidence: returns an exact match or `_strncmp` prefix match; used to fill the input buffer during tab
     completion.
+
 - `FUN_004027b0` -> `console_command_autocomplete`
   - Evidence: same as `console_cvar_autocomplete`, but over the command list.
 
@@ -120,9 +124,11 @@ grim.dll_functions.json
   - Evidence: advances a global timeline (`ui_elements_timeline` (`DAT_00487248`)) based on `DAT_00480844`, clamps to
     `ui_elements_max_timeline`, triggers screen transitions via `FUN_004461c0`, and iterates
     `DAT_0048f208`..`DAT_0048f168` calling `FUN_00446900` + `ui_element_render`.
+
 - `FUN_00446170` -> `ui_elements_reset_state`
   - Evidence: clears the element active flag (`*(char *)element`) and zeroes the per-element
     hover timer at `+0x2f8` across the UI element table.
+
 - `FUN_00446190` -> `ui_elements_max_timeline`
   - Evidence: returns the max `element+0x10` value among active elements (used to clamp the
     UI transition timeline).
@@ -152,6 +158,7 @@ grim.dll_functions.json
 - `FUN_0043ecf0` -> `ui_text_input_update`
   - Evidence: handles focus/hover, polls text input via `console_input_poll`, plays typing SFX, and renders
     the input box plus caret.
+
 - `FUN_004413a0` -> `ui_text_input_render`
   - Evidence: renders the text input field with caret blink and state‑dependent colors; used by high‑score
     entry paths and other text input flows.
@@ -165,6 +172,7 @@ grim.dll_functions.json
 - `FUN_0043b9e0` -> `resource_open_read`
   - Evidence: when a resource pack is active, opens the pack and searches entries; otherwise opens the file
     directly, returns the file size, and leaves the file handle in a global used by sample/track loaders.
+
 - `FUN_0043bad0` -> `resource_close`
   - Evidence: closes the global resource file handle (`DAT_004c3c68`) after a read.
 - `FUN_0043bca0` -> `resource_read_alloc`
@@ -229,9 +237,11 @@ for the field layout used by `sfx_entry_table` and `music_entry_table`.
   - Evidence: edge-detects a primary action by latching `DAT_00478e50`, checks mouse button
     `(*DAT_0048083c + 0x58)(0)`, and scans per-player fire bindings at `player_fire_key` (stride
     `0xd8`). Used across UI click/confirm paths and player fire/selection logic.
+
 - `FUN_004460f0` -> `input_primary_is_down`
   - Evidence: returns true while the primary action is held (mouse button 0, `player_fire_key`,
     or `player_alt_fire_key`), used by UI scroll/drag handling.
+
 - `FUN_00446000` -> `input_any_key_pressed`
   - Evidence: scans keycodes `2..0x17e` via the input callback at `(*DAT_0048083c + 0x80)`.
 
@@ -268,6 +278,7 @@ for the field layout used by `sfx_entry_table` and `music_entry_table`.
   - Evidence: calls `creature_alloc_slot`, writes the `DAT_0049bf38` pool fields, maps
     `template_id` to type/flags, and spawns linked satellites; heading `-100` uses
     a randomized heading.
+
 - `FUN_004207c0` -> `creature_apply_damage`
   - Evidence: applies perk multipliers, reduces HP and knockback, calls
     `creature_handle_death`, spawns effects, and returns `1` when the creature dies.
@@ -322,15 +333,19 @@ analog control schemes selected in the per-player mode flags:
 | `DAT_00490c04` | `player_axis_aim_y` | aim scheme `DAT_0048038c == 4` | Paired with `player_axis_aim_x`. |
 
 Config edit path status:
+
 - No in-game rebind writes to `DAT_00480540` found in the decompile.
 - `config_load_presets` reads the 0x480‑byte config blob from disk into `DAT_00480348`
   and then copies the keybind table (`DAT_00480540`) into the per-player runtime slots.
+
 - `FUN_0041ec60` seeds defaults in a local 0x480 blob, optionally reads a 0x480‑byte
   config from `DAT_00472998`, copies the string field at offset `0x74` and the flag
   at offset `0x46c` into globals (`DAT_004803bc`, `DAT_004807b4`), then writes the
   global blob (`DAT_00480348`, size `0x480`) using mode `DAT_00473668` (`"wb"`).
+
 - `FUN_0041f130` is a fallback path that writes the same `DAT_00480348` blob using
   mode `DAT_00473668` (`"wb"`) when the `DAT_00472998` config file is missing.
+
 - File evidence: `game_bins/crimsonland/1.9.93-gog/crimson.cfg` is exactly `0x480` bytes; `game_bins/crimsonland/1.9.93-gog/game.cfg` is not
   (likely a save/progress file). `DAT_00472998` is `"rb"`; the filename is supplied
   by `FUN_00402bd0` (`"%s\\%s"`).
@@ -388,8 +403,10 @@ Config blob layout (partial, 0x480 bytes, base `DAT_00480348`):
 | `0x470` | `DAT_004807b8` | `u32` | `?` | Detail preset (drives `DAT_00480356/58/59`). |
 
 Runtime note (2026-01-19 quest-build capture, 1.1 runs):
+
 - Bytes at `DAT_00480790..93` were `[1, 1, 0, 0]` for hardcore and `[0, 1, 0, 0]`
   for normal (both 1P/2P). This confirms:
+
   - `DAT_00480790` toggles with hardcore (`0` normal, `1` hardcore).
   - `DAT_00480791` is the full‑version flag (stayed `1` in all runs).
 - `DAT_00480794` increments on perk prompt opens (observed `0x1a..0x1d`).
@@ -420,6 +437,7 @@ Keybind block layout (`DAT_00480510`, 2 × 16 dwords, indices `0..12` copied int
 | `15` | `0x17e` | `0x17e` | Unused/reserved. |
 
 Grim input query (partial, vtable `+0x80` → `FUN_10006fe0` in `grim.dll`):
+
 - `code < 0x100`: DirectInput keyboard state (raw DIK).
 - `0x100..0x104`: mouse buttons `0..4` (via Grim `+0x58`).
 - `0x11f..0x12b`: joystick buttons `0..12` (via Grim `+0xa8`).
@@ -427,9 +445,11 @@ Grim input query (partial, vtable `+0x80` → `FUN_10006fe0` in `grim.dll`):
 - `0x16d..0x17b`: joystick POV/axis queries via `DAT_1005d3b4` (if device present).
 
 Grim key‑click helper (vtable `+0x48` → `FUN_10007390`):
+
 - Uses `FUN_1000a370` (keyboard state byte) plus per‑key timers; returns 1 on a new press edge.
 
 Grim misc getter (vtable `+0xa4` → `FUN_100075b0`):
+
 - Returns `*(DAT_1005d850 + index*4)`; only index 0 observed in `crimsonland.exe` (`FUN_0041e8d0/1e8f0`).
 
 
@@ -482,16 +502,20 @@ tail bytes are validated against the current date and the full‑version flag.
 | `0x47` | `DAT_00487040 + 0x47` | Sentinel `0xff` | Initialized in `highscore_load_table` default‑record loop. |
 
 Checksum helper (`highscore_date_checksum`):
+
 - Inputs: year, month, day (from `local_system_time` + `local_system_day`).
 - Returns a week‑of‑year style checksum (1..53) used when `config_highscore_date_mode == 2`.
 - Used during both record write (`highscore_write_record`) and validation (`highscore_load_table`).
 
 High score validation (`highscore_load_table`):
+
 - Records only proceed to date checks if `config_score_load_gate` is set, or the record flags
   have bit 0 clear, or bit 1 set.
+
 - Mode 3: day + month + year must match (`local_system_day`, `local_system_time`).
 - Mode 2: checksum from `highscore_date_checksum(year, month, day)` must match the stored checksum byte
   (`highscore_date_checksum` at `DAT_00487081`), and year must match.
+
 - Mode 1: month + year must match; other mode values skip the date check.
 
 ### Quest progression counters (high confidence)
@@ -499,6 +523,7 @@ High score validation (`highscore_load_table`):
 - `quest_stage_major` (`DAT_00487004`) tracks the current quest episode/tier.
   - Evidence: increments after every 10 minor stages (`if 10 < quest_stage_minor` then
     `quest_stage_major++`, `quest_stage_minor -= 10`) during quest summary flow.
+
 - Initialized to `1` in `FUN_004120b0` alongside high‑score state reset.
 - `quest_stage_minor` (`DAT_00487008`) tracks the quest mission within the episode.
   - Evidence: used in quest string lookups and final‑mission checks (`major == 5 && minor == 10`).
@@ -507,21 +532,27 @@ High score validation (`highscore_load_table`):
   select metadata and to build per‑quest high‑score filenames (`scores5\\quest*.hi`). Quest
   unlock progress is saved separately in `game_status_blob` via `quest_unlock_index` and
   `quest_unlock_index_full` (see below).
+
 - `quest_play_counts` (`DAT_00485618`) increments on quest start (`game_state_id == 9`,
   `_config_game_mode == 3`) using the `[major * 10 + minor]` index.
+
 - `quest_unlock_index` (`DAT_00487034`) stores the max quest unlock index (computed as
   `quest_stage_major * 10 + quest_stage_minor - 10`). It is updated on quest completion and
   persisted via `game_save_status`/`game_load_status`.
+
 - `quest_unlock_index_full` (`DAT_00487038`) stores the full‑version unlock index (same
   calculation) and is only updated when `config_full_version` is set.
+
 - `quest_meta_cursor` (`DAT_004c3650`) tracks the quest metadata entry last written by
   `FUN_00430a20` during `quest_database_init`.
+
 - `quest_monster_vision_meta` (`DAT_004c3658`) points to a specific quest metadata entry
   used to force the Monster Vision perk in `perks_generate_choices`.
 
 ### Quest unlock table (perk/weapon rewards)
 
 Quest metadata includes two reward fields:
+
 - `quest_unlock_perk_id` (`DAT_00484750`, offset `+0x20`) — perk unlock for a quest (stride `0x2c`).
 - `quest_unlock_weapon_id` (`DAT_00484754`, offset `+0x24`) — weapon unlock for a quest (stride `0x2c`).
 
@@ -529,6 +560,7 @@ Indexing: `quest_index = (quest_stage_major - 1) * 10 + (quest_stage_minor - 1)`
 Values below are initialized in `quest_database_init` (`FUN_00439230`).
 
 Tier 1
+
 - Quest 1: weapon Assault Rifle (id 0x02)
 - Quest 2: weapon Shotgun (id 0x03)
 - Quest 3: perk Uranium Filled Bullets (perk_id_uranium_filled_bullets, id 0x1c)
@@ -541,6 +573,7 @@ Tier 1
 - Quest 10: weapon Rocket Launcher (id 0x0c)
 
 Tier 2
+
 - Quest 1: perk Bonus Economist (perk_id_bonus_economist, id 0x20)
 - Quest 2: weapon Plasma Rifle (id 0x09)
 - Quest 3: perk Thick Skinned (perk_id_thick_skinned, id 0x21)
@@ -553,6 +586,7 @@ Tier 2
 - Quest 10: weapon Plasma Minigun (id 0x0b)
 
 Tier 3
+
 - Quest 1: perk Toxic Avenger (perk_id_toxic_avenger, id 0x25)
 - Quest 2: weapon Multi-Plasma (id 0x0a)
 - Quest 3: perk Regeneration (perk_id_regeneration, id 0x26)
@@ -565,6 +599,7 @@ Tier 3
 - Quest 10: weapon Jackhammer (id 0x14)
 
 Tier 4
+
 - Quest 1: perk Jinxed (perk_id_jinxed, id 0x2a)
 - Quest 2: weapon Pulse Gun (id 0x13)
 - Quest 3: perk Perk Master (perk_id_perk_master, id 0x2b)
@@ -577,6 +612,7 @@ Tier 4
 - Quest 10: weapon Ion Cannon (id 0x17)
 
 Tier 5
+
 - Quest 1: weapon Ion Shotgun (id 0x1f)
 - Quest 2: perk Death Clock (perk_id_death_clock, id 0x2f)
 - Quest 3: perk My Favourite Weapon (perk_id_my_favourite_weapon, id 0x30)
@@ -608,13 +644,16 @@ Fields below are high‑confidence; unknown offsets are omitted.
 | `0x28` | `quest_start_weapon_id` | Starting weapon id | Used by `quest_start_selected` to equip both players. |
 
 Record match + display selection:
+
 - `highscore_record_equals` is the equality predicate used during save‑file replacement; it compares the
   player name plus metadata fields at offsets `0x20..0x34` (ints + a byte) and does not look
   at the flags byte.
+
 - After loading/sorting, `highscore_load_table` sets flag bit 2 on the single best record per name
   (or all records when a name slot is selected), so the UI can filter displayed entries.
 
 Init timing note:
+
 - `qpc_timestamp_scratch` (`DAT_00495ad6`) is only used as a temporary QPC storage during
   early init (`QueryPerformanceCounter` in `game_startup_init`); it sits near the date scratch
   globals but is not part of the high‑score checksum path.
@@ -636,6 +675,7 @@ Init timing note:
 - `FUN_0042a670` -> `texture_get_or_load`
   - Evidence: calls Grim `get_texture_handle` (0xc0); if missing, calls `load_texture` (0xb4),
     logs success/failure, and re-queries handle.
+
 - `FUN_0042a700` -> `texture_get_or_load_alt`
   - Evidence: identical body to `texture_get_or_load`; primary callers pass `.jaz` assets.
 
@@ -649,6 +689,7 @@ Init timing note:
   - Both call `crt_get_thread_data()` and return pointer offsets (`+2`, `+3`).
   - `crt_dosmaperr` stores Win32 errors into `*crt_doserrno_ptr` and maps to `*crt_errno_ptr`
     via the error table at `DAT_0047b7c0`.
+
   - File I/O wrappers set these directly on failure:
     - `FUN_004655bf` (FlushFileBuffers) stores `GetLastError()` in `*FUN_00465d9c` and sets
       `*FUN_00465d93 = 9` (EBADF).
@@ -662,6 +703,7 @@ Init timing note:
 - `FUN_0046586b` -> `crt_lock`
   - Evidence: calls `InitializeCriticalSection`, `EnterCriticalSection`, and `__amsg_exit` in the
     lock path; invoked by `crt_exit_lock` and many CRT wrappers.
+
 - `FUN_004658cc` -> `crt_unlock`
   - Evidence: calls `LeaveCriticalSection`; invoked by `crt_exit_unlock` and many CRT wrappers.
 - `FUN_00463da5` -> `crt_lock_file`
@@ -679,6 +721,7 @@ Init timing note:
 - `FUN_00463c74` -> `crt_isctype`
   - Evidence: uses `PTR_DAT_0047b1c0` table for single-byte and falls back to
     `GetStringTypeA/W` for multi-byte characters.
+
 - `FUN_00462fd0` -> `crt_isalpha`
   - Evidence: calls `crt_isctype` with mask `0x103` (alpha/upper/lower).
 - `FUN_00462ffe` -> `crt_isspace`
@@ -690,6 +733,7 @@ Init timing note:
 - `FUN_00460d08` -> `crt_onexit`
   - Evidence: takes exit callback, grows onexit table (`DAT_004db4f4`/`DAT_004db4f0`) via
     `FUN_004626aa`, stores pointer, and wraps with `crt_exit_lock`/`crt_exit_unlock`.
+
 - `FUN_00460d86` -> `crt_atexit`
   - Evidence: calls `crt_onexit` and returns `0` on success, `-1` on failure.
 - `FUN_00460dc7` -> `crt_free`
@@ -697,9 +741,11 @@ Init timing note:
 - `FUN_004625c1` -> `crt_free_base`
   - Evidence: checks heap mode (`DAT_004da3a8`), locks heap, frees via small-block helpers, and
     falls back to `HeapFree`.
+
 - `FUN_00460e5d` -> `crt_fclose`
   - Evidence: if `_flag & 0x40` not set, locks stream, calls `__fclose_lk`, unlocks; otherwise
     clears `_flag`.
+
 - `FUN_0046100e` -> `crt_fsopen`
   - Evidence: parses mode string, passes share flag to `FUN_0046adbd`, populates `FILE` fields.
 - `FUN_0046103f` -> `crt_fopen`
@@ -719,12 +765,15 @@ Init timing note:
 - `FUN_004616e7` -> `crt_sprintf`
   - Evidence: uses CRT output core `FUN_00464380` with an unbounded count (`0x7fffffff`) and
     terminates with `\0` on success.
+
 - `FUN_00464268` -> `crt_flsbuf`
   - Evidence: flushes/allocates stream buffers, handles append seeks, and writes a single char;
     used by `crt_fwrite`/`crt_sprintf` when buffers underflow.
+
 - `FUN_00464b1e` -> `crt_putc_nolock`
   - Evidence: decrements buffer count, calls `crt_flsbuf` on underflow, otherwise writes byte and
     updates the output counter (printf output helper).
+
 - `FUN_00464b53` -> `crt_putc_repeat_nolock`
   - Evidence: loops count times calling `crt_putc_nolock`, used for space/zero padding in printf.
 - `FUN_00464b84` -> `crt_putc_buffer_nolock`
@@ -771,6 +820,7 @@ Init timing note:
 - `FUN_1000aaa6` -> `grim_format_info_lookup`
   - Evidence: walks the D3D format descriptor table (`DAT_1004c3b0`) and returns the entry for the
     requested format id, falling back to a default descriptor.
+
 - `FUN_100174a8` -> `grim_apply_color_key`
   - Evidence: iterates RGBA float pixels and zeroes those that match the current color key
     (`this+0x1c..0x28`), used after converting pixel buffers.
@@ -782,20 +832,25 @@ Init timing note:
   - Evidence: validates entry in `DAT_004c84e4`, checks cooldown `DAT_004c3c80`, sets sample rate
     via `bonus_reflex_boost_timer` into `DAT_00477d28`, chooses a voice (`FUN_0043be60`), calls vtable +0x40
     with pan 0, then sets volume with `FUN_0043bfa0`.
+
 - `FUN_0043d260` -> `sfx_play_panned`
   - Evidence: same as `sfx_play`, but converts an FPU value to pan (`__ftol`), clamps to
     `[-10000, 10000]`, and passes pan to vtable +0x40.
+
 - `FUN_0043d550` -> `sfx_mute_all`
   - Evidence: sets `DAT_004c8450[sfx]=1` and recursively mutes all other unmuted ids using
     `sfx_is_unmuted`.
+
 - `FUN_0043d7c0` -> `sfx_is_unmuted`
   - Evidence: returns true when `DAT_004cc8d6` is set and the per-id mute flag is clear.
 - `FUN_0043d460` -> `sfx_play_exclusive`
   - Evidence: mutes other ids, optionally selects a random variant, and ensures the chosen id is
     unmuted with its volume set in `DAT_004c404c`.
+
 - `FUN_0043d5b0` -> `sfx_update_mute_fades`
   - Evidence: ramps per-id volume toward `DAT_004807b0` when unmuted and fades to zero when muted,
     stopping voices via `FUN_0043bf60`.
+
 - `FUN_0043c9c0` -> `audio_init_music`
   - Evidence: loads `music.paq`, logs status, and registers track ids:
     - `DAT_004c4030` = `music_intro.ogg`
@@ -803,6 +858,7 @@ Init timing note:
     - `DAT_004c4038` = `music_crimson_theme.ogg`
     - `DAT_004c4044` = `music_crimsonquest.ogg`
     - `DAT_004c403c`/`_DAT_004c4040` = subsequent track ids (+1/+2).
+
 - `FUN_0043caa0` -> `audio_init_sfx`
   - Evidence: loads `sfx.paq` and registers the sound effect ids.
   - See [SFX ID map](sfx-id-map.md) for the extracted id-to-file mapping.
@@ -811,6 +867,7 @@ Init timing note:
 - `FUN_0043c740` -> `sfx_load_sample`
   - Evidence: allocates a free slot in `DAT_004c84e4`, loads `.ogg`/`.wav` data, and returns the
     sample id.
+
 - `FUN_0043c700` -> `sfx_release_sample`
   - Evidence: releases an sfx entry by id via `sfx_release_entry`.
 - `FUN_0043c090` -> `sfx_release_entry`
@@ -848,6 +905,7 @@ Init timing note:
 - `FUN_00412a80` -> `game_save_status`
   - Evidence: writes registry values (`sequence`, `dataPathId`, `transferFailed`) and saves a
     `game.cfg`-style status file; logs `GAME_SaveStatus OK/FAILED`.
+
 - `FUN_00412c10` -> `game_load_status`
   - Evidence: loads the status file, validates checksum/size, and regenerates it on failure;
     logs `GAME_LoadStatus ...`.
@@ -864,22 +922,28 @@ Init timing note:
 - `FUN_0042e0a0` -> `effect_select_texture`
   - Evidence: maps effect id through `effect_id_size_code` / `effect_id_frame` and calls Grim vtable +0x104 with
     texture page bitmasks.
+
 - `FUN_0042e120` -> `effect_spawn`
   - Evidence: pops an entry from the pool `effect_free_list_head`, copies template `effect_template_vel_x`,
     writes position from `param_2`, tags the effect id, and assigns quad UVs from atlas tables
     `effect_id_size_code` / `effect_id_frame` plus arrays `effect_uv16_u`, `effect_uv8_u`, `effect_uv4_u`, `effect_uv2_u`.
+
 - `FUN_0042e710` -> `effects_update`
   - Evidence: iterates pool entries, advances timers/positions with `DAT_00480840`, and calls
     `effect_free` when expired.
+
 - `FUN_0042e820` -> `effects_render`
   - Evidence: sets render state, iterates effects, computes rotated quad vertices, and submits
     via Grim vtable +0x134.
+
 - `FUN_00427700` -> `fx_queue_add_random`
   - Evidence: chooses a random effect id `3..7`, random grayscale color/size, and pushes an entry
     via `fx_queue_add`; uses `fx_queue_random_color_*` scratch globals.
+
 - `FUN_0042ec80` -> `effect_spawn_freeze_shard`
   - Evidence: configures the effect template and spawns a random `8..10` variant with velocity
     based on `(angle + pi)`; used by freeze/shatter logic.
+
 - `FUN_0042ee00` -> `effect_spawn_freeze_shatter`
   - Evidence: spawns four `effect_id 0xe` bursts at 90° offsets plus extra `effect_spawn_freeze_shard`
     calls.
@@ -890,39 +954,50 @@ Init timing note:
 - `FUN_0042fd90` -> `perks_init_database`
   - Evidence: assigns perk id constants (`DAT_004c2b**`/`DAT_004c2c**`) and fills the perk
     name/description tables via `FUN_0042fd00`.
+
   - See [Perk ID map](perk-id-map.md) for the extracted id-to-name mapping.
 - `FUN_0042fb10` -> `perk_can_offer`
   - Evidence: checks mode gates and perk flags, then returns a nonzero byte if the perk is eligible.
 - `FUN_0042fbd0` -> `perk_select_random`
   - Evidence: randomizes an id from the perk table, calls `perk_can_offer`, and logs a failure when
     selection runs too long.
+
 - `FUN_0042fc30` -> `perks_rebuild_available`
   - Evidence: resets `DAT_004c2c4c` flags and re-enables base/unlocked perks.
   - Table layout (stride `0x14`): `name` @ `DAT_004c2c40`, `desc` @ `DAT_004c2c44`,
     `flags` @ `DAT_004c2c48`, `available` @ `DAT_004c2c4c`, `prereq` @ `DAT_004c2c50`.
+
   - Flag bits (inferred):
     - `0x1` allows perks when `_DAT_00480360 == 3`.
     - `0x2` allows perks when `_DAT_0048035c == 2` (two-player mode).
     - `0x4` marks stackable perks (random selection accepts them even if already taken).
+
   - Prereq field is checked via `perk_count_get` and gates perks like Toxic Avenger (requires
     Veins of Poison), Ninja (requires Dodger), Perk Master (requires Perk Expert), and
     Greater Regeneration (requires Regeneration).
+
 - `FUN_004055e0` -> `perk_apply`
   - Evidence: called after selecting a perk in the UI, increments `perk_count_get` table, and
     executes the perk-specific effects (exp, health, weapon changes, perk spawns).
+
 - `FUN_004045a0` -> `perks_generate_choices`
   - Evidence: fills `DAT_004807e8` with randomly selected perks using `perk_select_random`,
     enforces uniqueness, and applies special-case handling for mode `8` (fixed perk list).
+
 - Perk prompt UI gates (high confidence):
   - `perk_prompt_timer` (`DAT_0048f524`) ramps 0..200 while perks are pending and feeds the
     prompt alpha plus the transform matrix (`perk_prompt_transform_*` at `DAT_0048f510..DAT_0048f51c`).
+
   - `perk_prompt_origin_x/y` (`DAT_0048f224`/`DAT_0048f228`) anchor the prompt bounds for hover/click
     tests; `perk_prompt_bounds_min_*` (`DAT_0048f248`/`DAT_0048f24c`) and
     `perk_prompt_bounds_max_*` (`DAT_0048f280`/`DAT_0048f284`) define the relative rectangle.
+
   - `perk_prompt_hover_active` (`DAT_0048f500`) flips when the cursor enters/leaves the perk prompt
     bounds and gates whether the click target is active.
+
   - `perk_prompt_pulse` (`DAT_0048f504`) ramps `0..1000` (decays when not hovered, accelerates when
     hovered) and is forced to `1000` when the perk pick key is pressed.
+
   - `perk_choices_dirty` (`DAT_00486fb0`) is set after perk selection and on reset, then cleared the
     first time `perks_generate_choices` runs before switching to state `6`.
 
@@ -934,6 +1009,7 @@ Init timing note:
     "Play a game", and "Skip tutorial"; click handlers restart the tutorial (clears perk count
     table `player_perk_counts` (`DAT_00490968`) and resets timers) or exit to game (sets `game_state_pending` (`DAT_00487274`), flushes input,
     and resets `DAT_00486fe0`).
+
   - Signature (inferred): `void tutorial_prompt_dialog(char *text, float alpha)`
   - `alpha` comes from `tutorial_timeline_update` (0..1), controls the prompt fade, and is used
     to scale the button visuals; the decompiler currently shows it as a `char` because the call
@@ -945,12 +1021,14 @@ Init timing note:
 - `FUN_00408990` -> `tutorial_timeline_update`
   - Evidence: loads the tutorial string table, advances `DAT_00486fd8` stage index when
     `DAT_00486fe0` counts up from `-1000`, and renders each stage via `tutorial_prompt_dialog`.
+
   - Timers:
     - `DAT_00486fdc` accumulates per-frame time (`DAT_00480844`), gates stage 0 auto-advance
       and is used to fade stage 5 after 5 seconds.
     - `DAT_00486fe0` is a stage transition/fade timer: it counts up from `-1000` toward `-1`
       to advance the stage, then counts up from `0` to `1000` before snapping back to `-1`.
       The absolute value is scaled by `0.001` to derive the prompt alpha.
+
   - Stage transitions observed:
     - Stage 0: after `DAT_00486fdc > 6000` and `DAT_00486fe0 == -1`, clears `DAT_004808a8`,
       resets `DAT_004712fc`, and sets `DAT_00486fe0 = -1000`.
@@ -965,6 +1043,7 @@ Init timing note:
     - Stage 5: increments `DAT_004808a8` on repeated `creatures_none_active()` events, spawns markers/bonuses,
       and after 8 iterations sets `player_experience` (`DAT_0049095c`) to 3000 and `DAT_00486fe0 = -1000`.
     - Stage 6: waits for `perk_pending_count` (`DAT_00486fac`) < 1, spawns markers, then sets `DAT_00486fe0 = -1000`.
+
   - Stage 7: waits for `creatures_none_active()` with no active bonus slots, then sets `DAT_00486fe0 = -1000`.
   - Stage text table (array indexed by `DAT_00486fd8`, base is `local_38`):
 
@@ -986,12 +1065,15 @@ Init timing note:
     - The hint text is fetched from the same stack string block (`afStack_5c[DAT_004712fc + 2]`);
       entries that point to `DAT_00472718` are skipped because the string starts with `0xa7`
       (`-0x59`), matching the guard byte check.
+
   - Additional strings in the same stack block include perk tutorial lines
     ("It will help you to move and shoot...", Perks intro, Perks description, "Great! Now you are ready to start"),
     plus speed/weapon/x2 powerup blurbs (`local_44/local_40/local_3c`).
+
   - Helper: `FUN_00428210` -> `creatures_none_active`
     - Evidence: scans the creature table at `DAT_0049bf38` for any active entries, sets `DAT_0048700c`,
       and returns low byte `1` only when the table is empty.
+
   - Stage index wraps to 0 when `DAT_00486fd8` reaches 9; counters are initialized in `FUN_00412dc0`
     (`DAT_00486fd8 = -1`, `DAT_00486fe0 = -1000`) and reset by `tutorial_prompt_dialog`.
 
@@ -1000,9 +1082,11 @@ Init timing note:
 - `FUN_004034a0` -> `ui_mouse_inside_rect`
   - Evidence: checks mouse coordinates (`DAT_004871ec`/`DAT_004871f0`) against `xy + (w, h)` and
     returns 1 when inside and `DAT_004871cc` is clear.
+
 - `FUN_0043d830` -> `ui_focus_update`
   - Evidence: tracks a rolling list of focus candidates in `DAT_004ccbd0`, responds to key input
     to move focus, and returns nonzero when the provided id matches the focused entry.
+
 - `FUN_0043d940` -> `ui_focus_draw`
   - Evidence: draws a small highlight quad near the focused item location using the UI renderer.
 - `FUN_0043e830` -> `ui_button_update`
@@ -1028,14 +1112,17 @@ Button struct (size `0x18`, used by `DAT_0047f5f8` / `DAT_00480250` / `DAT_00480
 - `FUN_0043a790` -> `quest_start_selected`
   - Evidence: resets quest state, selects quest metadata at `DAT_00484730`, queues perk state, and
     runs the quest builder at `DAT_0048474c` (or `quest_build_fallback` when null).
+
 - `FUN_00434250` -> `quest_spawn_timeline_update`
   - Evidence: walks the quest spawn table (`DAT_004857a8`, count `DAT_00482b08`), checks trigger
     time vs `DAT_00486fd0`, and spawns each entry with `FUN_00430af0` using a 0x28 spacing offset.
+
 - `FUN_00434220` -> `quest_spawn_table_empty`
   - Evidence: returns 1 when all spawn entries have been cleared (no pending spawns).
 - `FUN_004343e0` -> `quest_build_fallback`
   - Evidence: logs a fallback warning and writes two default entries (spawn id `0x40`, counts 10/0x14,
     trigger times 500/5000).
+
 - `FUN_004343c0` -> `quest_database_advance_slot`
   - Evidence: increments quest index, wraps every 10, and advances the tier.
 - `FUN_00439230` -> `quest_database_init`
@@ -1048,6 +1135,7 @@ Button struct (size `0x18`, used by `DAT_0047f5f8` / `DAT_00480250` / `DAT_00480
 - `FUN_00428140` -> `creature_alloc_slot`
   - Evidence: scans `DAT_0049bf38` in `0x98`-byte strides for `active == 0`, clears flags/seed fields,
     increments `DAT_00486fb4`, and returns the slot index (or `0x180` on failure).
+
 - Layout (entry size `0x98`, base `DAT_0049bf38`, pool size `0x180`):
 
   | Offset | Field | Evidence |
@@ -1081,12 +1169,15 @@ See [Creature struct](creature-struct.md) for the expanded field map and cross-l
 - `FUN_00420440` -> `projectile_spawn`
   - Evidence: allocates a slot in `projectile_pool` (`DAT_004926b8`), initializes angle/pos/type/owner,
     and callers store the return index.
+
 - `FUN_00420b90` -> `projectile_update`
   - Evidence: iterates `0x60` projectile entries, advances movement, checks collisions against
     creatures/players, spawns hit effects, and clears expired entries.
+
 - `FUN_004205d0` -> `projectile_reset_pools`
   - Evidence: clears `projectile_pool` (`DAT_004926b8`, `0x40` stride) and
     `particle_pool` (`DAT_00493eb8`, `0x38` stride).
+
 - `FUN_00420600` -> `creatures_apply_radius_damage`
   - Evidence: loops active creatures, checks distance vs radius + size, and calls `FUN_004207c0`.
 - `FUN_004206a0` -> `creature_find_in_radius`
@@ -1094,6 +1185,7 @@ See [Creature struct](creature-struct.md) for the expanded field map and cross-l
 - `FUN_00420730` -> `player_find_in_radius`
   - Evidence: scans the player health table (`player_health`, `DAT_004908d4`), skipping the owner id,
     and returns the first player within range.
+
 - Layout (entry size `0x40`, base `projectile_pool` (`DAT_004926b8`), pool size `0x60`):
 
   | Offset | Field | Evidence |
@@ -1114,14 +1206,17 @@ See [Projectile struct](projectile-struct.md) for the expanded field map and not
 - `FUN_00420130` -> `fx_spawn_particle`
   - Evidence: allocates a `0x38`-byte entry in `particle_pool` (`DAT_00493eb8`), sets position, angle,
     and velocity (speed ~90), and returns the slot index.
+
 - `FUN_00420240` -> `fx_spawn_particle_slow`
   - Evidence: same pool as `fx_spawn_particle`, but speed ~30 and sets style id `8`.
 - `FUN_00420360` -> `fx_spawn_secondary_projectile`
   - Evidence: allocates a `0x2c`-byte entry in `secondary_projectile_pool` (`DAT_00495ad8`) with type
     id, velocity, and optional nearest-creature target when `type_id == 2`.
+
 - `FUN_0041fbb0` -> `fx_spawn_sprite`
   - Evidence: allocates a `0x2c`-byte entry in `sprite_effect_pool` (`DAT_00496820`) with position,
     velocity, tint, and a scalar parameter used by the renderer.
+
 - Layouts and fields are tracked in [Effects pools](effects-struct.md).
 
 
@@ -1130,20 +1225,25 @@ See [Projectile struct](projectile-struct.md) for the expanded field map and not
 - `FUN_0041f580` -> `bonus_alloc_slot`
   - Evidence: scans `bonus_pool` (`DAT_00482948`) in `0x1c`-byte strides and returns the first entry
     with type `0` (or the sentinel `bonus_pool_sentinel` / `DAT_00490630` when full).
+
 - `FUN_0041f5b0` -> `bonus_spawn_at`
   - Evidence: clamps position to arena bounds, writes entry fields (type, lifetime, size, position,
     duration override), and spawns a pickup effect via `FUN_0042e120`.
+
 - `FUN_0040a320` -> `bonus_update`
   - Evidence: decrements bonus lifetimes, checks player proximity, calls `bonus_apply` on pickup,
     and clears entries when `time_left` expires.
+
 - `FUN_004295f0` -> `bonus_render`
   - Evidence: renders bonus icons from `DAT_0048f7f0`, scales/fades by timer, and draws label text
     via `bonus_label_for_entry` when players are nearby.
+
 - `FUN_00429580` -> `bonus_label_for_entry`
   - Evidence: returns a formatted label string for bonus entries (weapon/score cases use a formatter).
 - `FUN_00409890` -> `bonus_apply`
   - Evidence: applies bonus effects based on entry type (`param_2[0]`), spawns effects via
     `FUN_0042e120`, and plays bonus SFX (`FUN_0043d260`).
+
 - See [Bonus ID map](bonus-id-map.md) for the id-to-name table and default amounts.
 - Layout (entry size `0x1c`, base `bonus_pool` (`DAT_00482948`), 16 entries):
 
@@ -1162,6 +1262,7 @@ See [Projectile struct](projectile-struct.md) for the expanded field map and not
 
 - `_DAT_00480360` holds the current game mode. See [Game mode map](game-mode-map.md) for the observed
   values and evidence.
+
 - `FUN_00412960` -> `game_mode_label`
   - Evidence: returns a label string based on `_DAT_00480360` (Survival, Quests, Typ-o-Shooter, etc.).
 
@@ -1171,20 +1272,27 @@ See [Projectile struct](projectile-struct.md) for the expanded field map and not
 - `FUN_00407cd0` -> `survival_update`
   - Evidence: runs only when `_DAT_00480360 == 1`, advances scripted spawn stages, and calls
     `survival_spawn_creature` when the spawn timer elapses.
+
 - `FUN_00407510` -> `survival_spawn_creature`
   - Evidence: allocates a creature slot, assigns spawn position, and selects a type based on
     `DAT_0049095c` thresholds before seeding speed/health and flags.
+
 - Key state:
   - `DAT_00486fc4` acts as the spawn cooldown accumulator; it is decremented by
     `player_count * frame_dt`, and when it drops below zero a burst of spawns is scheduled.
+
   - `DAT_00487060` is the survival elapsed timer (ms). It is incremented each frame and is used
     to scale spawn cadence and HUD timers.
+
   - `DAT_00487190` is the scripted spawn stage index (0..10) that gates bonus/marker spawns by
     `DAT_00490964` milestones.
+
   - `player_experience` (`DAT_0049095c`) is the survival XP/progression score (HUD label `Xp`, displayed via the
     smoothed `DAT_00490300`) and is used for creature type/health scaling in `survival_spawn_creature`.
+
   - `player_level` (`DAT_00490964`) is the survival level/milestone counter (drawn as `%d` in the HUD) that gates
     scripted spawns in `survival_update`; it increments when `player_experience` surpasses a periodic
     threshold.
+
   - The HUD shows `Xp`, the smoothed XP value, and a `Progress` label with a bar fed by
     `player_experience`/`player_level` (`DAT_0049095c`/`DAT_00490964`) and a 1-second timer derived from `crt_ci_pow()`.

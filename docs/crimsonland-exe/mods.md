@@ -45,6 +45,7 @@ seeds the tail values (`1.0f`, `3`) before copying.
 - Resolves `CMOD_GetMod` via `GetProcAddress`.
 - Calls it and (on success) writes a context pointer at offset `+4` of the
   returned interface.
+
 - Logs success/failure to the console.
 
 ### Mod interface object (CMOD_GetMod)

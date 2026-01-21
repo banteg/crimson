@@ -8,6 +8,7 @@ This page summarizes the primary render paths in `crimsonland.exe`.
 
 - If `render_pass_mode` (`DAT_00487240`) == `0` and `game_state_id` (`DAT_00487270`) != `5`, it draws terrain only via
   `FUN_004188a0`.
+
 - Otherwise it runs the full gameplay render pass `FUN_00405960`.
 - After either branch it applies a fullscreen fade (`DAT_00487264`), runs
   `ui_elements_update_and_render`, calls `FUN_00403550` (perk prompt), and
@@ -21,6 +22,7 @@ Order of major passes:
 2) `FUN_004188a0` (terrain/backbuffer blit)
 3) `player_render_overlays` (`FUN_00428390`) for players with
    `player_health` (`DAT_004908d4`) <= 0
+
 4) `creature_render_all` (`FUN_00419680`)
 5) `player_render_overlays` for players with `player_health` (`DAT_004908d4`) > 0
 6) `projectile_render` (`FUN_00422c70`)

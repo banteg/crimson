@@ -126,11 +126,13 @@ This returns a pointer to the Grim2D interface vtable.
 ### grim.dll
 
 Statically linked image libraries:
+
 - **libjpeg** (IJG) - JPEG decoding
 - **libpng** - PNG decoding  
 - **zlib** - Deflate compression
 
 Evidence: Library signature strings found at:
+
 - libjpeg: 0x04d0e9 ("JFIF")
 - libpng: 0x04e29d
 - zlib: 0x04e24c, deflate/inflate at 0x050971/0x0514a1

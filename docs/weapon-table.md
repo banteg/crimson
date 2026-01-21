@@ -83,34 +83,45 @@ All offsets below are in **bytes**, relative to the pointer returned by
 
 - UI text for weapons is pulled directly from the `weapon_table` name field (`offset 0x00`).
   Examples:
+
   - **HUD** (`ui_render_hud`): passes `&weapon_table + player_weapon_id * 0x1f` into
     `grim_text_width`/`grim_text_draw` (`grim_interface_ptr + 0x14c/0x144`), then draws the name.
+
   - **End‑of‑game stats**: uses `param_2 + 0x2b` (most‑used weapon id) to index
     `&weapon_table + id * 0x1f` for the “Most used weapon” label.
+
   - **Quest completion**: uses `quest_unlock_weapon_id` via `weapon_table_entry()` to render
     the unlocked weapon name.
   This means `ui_itemTexts.jaz` is **not** the weapon list source; it’s used for menu labels.
+
 - Ammo class values (offset `-0x04`): `0` bullet (`ui_ui_indBullet.jaz`), `1` fire
   (`ui_ui_indFire.jaz`), `2` rocket (`ui_ui_indRocket.jaz`), `>= 3` electric
   (`ui_ui_indElectric.jaz`).
+
 - Flag bits (offset `0x68`): `0x1` spawn muzzle flash / shot burst effect
   (`FUN_0042e120(0x12, ...)`), `0x4` use the smaller crosshair size, `0x8` hide
   the crosshair entirely.
+
 - Pellet count (offset `0x74`, `weapon_projectile_pellet_count`) is used by the Fire Bullets bonus
   to spawn multiple `0x2d` pellets per shot.
+
 - Several weapons bypass the main projectile pool and use particle or secondary
   projectile pools instead (Plasma Rifle `0x9`, HR Flamer `0x10`, Mini-Rocket
   Swarmers `0x11`, Seeker Rockets `0x0d`, Plasma Shotgun `0x0e`, Rocket Minigun
   `0x12`, Pulse Gun `0x13`, Rainbow Gun `0x2b`).
+
 - Secondary projectile type behavior and particle style ids are tracked in
   [Effects pools](effects-struct.md).
+
 - The alt-weapon swap stores per-player runtime state in parallel arrays:
   `player_alt_weapon_id` (`DAT_00490b8c`), `player_alt_clip_size` (`DAT_00490b90`),
   `player_alt_reload_active` (`DAT_00490b94`), `player_alt_ammo` (`DAT_00490b98`),
   `player_alt_reload_timer` (`DAT_00490b9c`), `player_alt_shot_cooldown`
   (`DAT_00490ba0`), and `player_alt_reload_timer_max` (`DAT_00490ba4`).
+
 - The same stride is used by projectile metadata lookups (`weapon_projectile_meta`,
   `weapon_projectile_damage_scale`) keyed by projectile type ids in `projectile_spawn` and
   `projectile_update`.
+
 - Many fields are only written in `FUN_004519b0`; only a subset are referenced
   by symbol elsewhere (reload/spread/sfx/flags/damage).

@@ -17,8 +17,10 @@ Notes:
 - The server logs to `C:\Crimsonland\windbg.log` (overwritten on each server start, ASCII/ANSI).
 - The server should be started by the user. Codex only connects as a client to run commands,
   and we inspect the server log file to see captured output.
+
 - `just windbg-tail` prints any new log lines since the last read and remembers its position
   in `C:\Crimsonland\windbg.log.pos`.
+
 - The tail script decodes ASCII by default and switches to UTF-16 if a BOM is present.
 
 ## Workflows
@@ -127,11 +129,13 @@ If you want, I can translate the WinDbg outputs into specific name-map updates o
 **Target:** `crimsonland.exe+0x40f400` (absolute `0x0040f400`)
 
 **Breakpoint hit:**
+
 - EIP: `0x0040f400`
 - Return address (caller): `0x0040fe59`
 
 **Stack / Args (cdecl):**
 At `esp=0x0019f8fc`:
+
 - `[@esp]` return address: `0x0040fe59`
 - `[@esp+4]` board pointer: `0x004819ec`
 - `[@esp+8]` out_idx pointer: `0x0019f938`
@@ -198,6 +202,7 @@ At `esp=0x0019f8fc`:
     - board = `0x004819ec`
     - out_idx_ptr = `0x0019f928`
     - out_dir_ptr = `0x0019f91f`
+
   - `*out_idx = 0x00000000`, `*out_dir = 0x00`
   - Board sample (6x6 ints; `-3` = `0xFFFFFFFD`):
     ```
@@ -214,6 +219,7 @@ At `esp=0x0019f8fc`:
     - board = `0x004819ec`
     - out_idx_ptr = `0x0019f938`
     - out_dir_ptr = `0x0019f91f`
+
   - `*out_idx = 0x00000012`, `*out_dir = 0x01`
   - Board sample:
     ```
@@ -244,6 +250,7 @@ At `esp=0x0019f8fc`:
   - One-shot log:
     - pre: `0x004824e4 = 0x00000000`, `0x004824e8 = 0x0000fd3b`
     - post: `0x004824e4 = 0x00002580`, `0x004824e8 = 0x0001039a`
+
 - Low-timer trigger: `0x0040f6a3` when `0x004824e4 < 0x100` (observed `cur = 0x47`).
 - Timer-expire sfx:
   - Breakpoint at `0x0040f6b5` (call to `0x0043d120`, `sfx_play(sfx_trooper_die_01)` in decompile).

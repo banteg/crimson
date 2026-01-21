@@ -178,9 +178,11 @@ Notes:
 
 - `effect_select_texture` resolves `effect_id` through `effect_id_size_code` / `effect_id_frame` and sets
   atlas size/frame (`0x10/0x20/0x40/0x80` -> `16/8/4/2` cells).
+
 - `fx_queue_add_random` is a small helper that spawns a random `fx_queue_add` entry
   (effect ids `3..7`) with randomized grayscale color and size; it uses the
   `fx_queue_random_color_*` scratch RGBA globals.
+
 - `fx_queue_add` clamps the queue length to `0x7f` if the caller overflows it.
 
 ## Sprite effect pool (`sprite_effect_pool` / `DAT_00496820`)
@@ -236,8 +238,10 @@ Notes:
   through the creature type table: `frame = *(int *)(&DAT_00482764 + effect_id * 0x44)`.
   That offset is the per‑type `corpse frame` (see `docs/creature-struct.md`),
   and the frame is converted to UVs via the 4x atlas tables (`effect_uv4_u` / `effect_uv4_v`).
+
 - The rotated queue is drawn in two passes: the first uses half alpha and a
   slightly inflated size (`scale * 1.064`), the second uses full alpha/size.
+
 - `fx_queue_add_rotated` skips enqueuing when `DAT_004871c8 != 0` or the queue is full.
 
 ## Effect entries (`effect_pool_pos_x` pool)
@@ -249,6 +253,7 @@ Spawn/update helpers:
 
 - `effect_spawn` (`FUN_0042e120`) allocates an entry and seeds UVs for the
   selected atlas frame.
+
 - `effects_update` (`FUN_0042e710`) advances timers/velocities and frees expired entries.
 - `effects_render` (`FUN_0042e820`) draws active entries.
 
@@ -308,9 +313,11 @@ Notes:
 - `effect_spawn` fills a 4‑corner quad starting at `0x48`. The position and UV
   components are spaced with a 7‑float stride, leaving three unknown floats
   between the position and UV fields for each corner.
+
 - `effects_render` splits entries by `flags & 0x40`. Both passes build a 2x2
   rotation/scale matrix from `rotation` + `scale` and draw the quad data starting
   at `0x48`.
+
 - `effect_free` (`FUN_0042e080`) clears `flags` to `0` and pushes the entry back
   onto the free list; the flag presets always include bit `0x1` to keep `flags`
   nonzero while active.
@@ -337,6 +344,7 @@ Quad layout (from `effect_spawn` writes):
 
 - `effect_spawn` reads `effect_id_size_code` / `effect_id_frame` to pick atlas size + frame index, then
   pulls UVs from size-specific tables:
+
   - `0x10` -> `effect_uv16_u` / `effect_uv16_v` with base `effect_uv_step_16`.
   - `0x20` -> `effect_uv8_u` / `effect_uv8_v` with base `effect_uv_step_8`.
   - `0x40` -> `effect_uv4_u` / `effect_uv4_v` with base `effect_uv_step_4`.

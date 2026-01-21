@@ -68,10 +68,13 @@ timer crosses its threshold:
 
 - **Man Bomb** (`DAT_004c2c24`): uses `player_man_bomb_timer` (`DAT_00490950`) as a charge timer, then spawns
   8 projectiles in a ring (types `0x15/0x16`) and plays a burst SFX.
+
 - **Fire Cough** (`DAT_004c2c2c`): uses `player_fire_cough_timer` (`DAT_00490958`) to periodically spawn a
   `0x2d` fire projectile from the muzzle and a small sprite burst.
+
 - **Hot Tempered** (`DAT_004c2bfc`): uses `player_hot_tempered_timer` (`DAT_0049094c`) to periodically spawn a
   ring of projectiles (`0xb` and `9`).
+
 - **Living Fortress** (`DAT_004c2c28`): increments `player_living_fortress_timer` (`DAT_00490954`) while stationary
   (clamped to ~30s); likely consumed by damage scaling elsewhere.
 
@@ -79,11 +82,14 @@ timer crosses its threshold:
 
 - **Sharpshooter** (`DAT_004c2b48`) modifies how fast `player_spread_heat` (`DAT_00490b68`) decays and
   lowers the minimum spread value.
+
 - **Anxious Loader** (`DAT_004c2b90`) reduces the reload timer by `0.05` on each
   primary press while reloading.
+
 - **Stationary Reloader** (`DAT_004c2c10`) triples reload decay when stationary.
 - **Angry Reloader** (`DAT_004c2c20`) triggers a projectile ring (`0xb`) when the
   reload timer crosses the 50% mark.
+
 - **Tough Reloader** (`DAT_004c2c30`) halves incoming damage while
   `player_reload_active` (`DAT_00490b78`) is set.
 
@@ -108,6 +114,7 @@ shot cooldown (`player_shot_cooldown` / `DAT_00490b84`) at 1.5x speed.
 - **Fire Bullets** (bonus id 14): while `player_fire_bullets_timer` (`DAT_00490bcc`) > 0, `projectile_spawn`
   forces player-owned projectiles to type `0x2d` and uses the pellet count from
   the weapon table (`weapon_projectile_pellet_count[weapon_id]`).
+
 - **Spawn guard:** `bonus_spawn_guard` is set while bonus/perk effects spawn
   projectiles to prevent bonus drops from chaining during those effect bursts.
 

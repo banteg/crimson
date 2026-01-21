@@ -158,6 +158,7 @@ Notes:
 
 - Linked modes use `DAT_0049bfb0` as the linked creature index and `DAT_0049bfb4/b8`
   as the per-creature offset.
+
 - Mode `7` interacts with the `0x80` flag and the `DAT_0049bfb0` link index; if
   either guard fails, the mode resets to `0`.
 
@@ -169,16 +170,20 @@ Related notes:
   using the creature tint and size. The `effect_id` is usually the creature `type_id`,
   but short-strip creatures (`flags & 0x4` without `0x40`) force `effect_id = 7`
   (likely a generic corpse sprite).
+
 - Animation phase (`0x94`) is incremented by a per-type rate stored at
   `&DAT_0048275c + type_id * 0x44` and wraps at **31** for the primary strip or **15**
   for the short ping‑pong strip. The renderer then selects a frame index for the 8×8
   atlas (see `FUN_00418b60`).
+
 - `creature_update_all` scales the animation step by movement speed, size, and a
   local scale factor (tether/orbit cases), using `rate * speed * dt * (30/size)`
   multiplied by **25** (long strip) or **22** (short strip) before wrapping.
+
 - Flags `0x4` and `0x40` influence sprite selection in `FUN_00418b60`:
   `0x4` selects the short 8‑frame ping‑pong strip and `0x40` forces the long strip
   even when `0x4` is set.
+
 - `FUN_00418b60` computes the short strip frame as
   `frame = base + 0x10 + ping_pong(int(phase) & 0xf)`, where `ping_pong` mirrors
   indices `> 7` to `0xf - idx`. The long strip uses `frame = base + int(phase)`
@@ -194,9 +199,11 @@ The `creature_flags` bitfield is consulted in `creature_update_all` and related 
 - **0x4** — short ping‑pong animation strip (see render notes above).
 - **0x10** — ranged attack: when `attack_cooldown <= 0` and target distance > 64,
   spawns projectile type `9` and plays `sfx_shock_fire` (`DAT_004c3f9c`).
+
 - **0x40** — force long animation strip even if `0x4` is set.
 - **0x80** — uses `creature_link_index` as a timer that toggles AI mode `7`
   with randomized positive/negative durations.
+
 - **0x100** — ranged attack variant: spawns projectile using the
   `creature_orbit_radius` field as the projectile type id and plays
   `sfx_plasmaminigun_fire` (`DAT_004c3fa0`).
@@ -335,12 +342,16 @@ Notes:
 - `FUN_00402ed0`, `FUN_00402fe0`, `FUN_004030f0`, `FUN_00403250`: mode setup
   helpers called from `FUN_00403390` (hard‑coded spawn ids like `0x34`, `0x35`,
   `0x38`, `0x41`, `0x24`, `0x25`).
+
 - `survival_update` (`FUN_00407cd0`): milestone spawns using `0x12`, `0x2b`,
   `0x2c`, `0x35`, `0x38`, `0x3a`, `0x3c`, and `1`.
+
 - Tutorial timeline (`FUN_00408990`): scripted spawns using `0x24`, `0x26`,
   `0x27`, `0x28`, `0x40`.
+
 - Quest/timeline spawner (`quest_spawn_timeline_update`, `FUN_00434250`): pulls spawn ids from the
   table at `DAT_004857a8` (`pfVar4[3]`) with counts in `pfVar4[5]`.
+
 - AI subspawns (`creature_update_all`): periodic spawns using `&DAT_00484fe4 + iVar6 * 0x18`,
   which is seeded for some template ids inside `FUN_00430af0`.
 
@@ -368,6 +379,7 @@ Notes:
   falls back to `quest_build_fallback` (`FUN_004343e0`) (two entries with spawn id
   `0x40`, counts 10/0x14, trigger times
   500/5000).
+
 - `quest_build_zombie_time` (`0x00437d70`), `quest_build_lizard_raze` (`0x00438840`), and
   `quest_build_surrounded_by_reptiles` (`0x00438940`) are examples of quest builders that write
   multiple `DAT_004857a8` entries with varying spawn ids and timings.

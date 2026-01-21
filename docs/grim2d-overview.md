@@ -14,10 +14,13 @@ At a high level, Grim2D provides:
 
 - 2D rendering on a Direct3D8 device: textured quads, lines, circles, and UI
   primitives with batching and per-vertex color/UV state.
+
 - Bitmap text rendering for mono and small fonts, with width tables and
   formatted wrappers.
+
 - Texture lifecycle helpers (create, load, validate, destroy) and render target
   switching for offscreen draws.
+
 - Input/config/time helpers: keyboard/mouse/joystick queries, config floats,
   and timing values used by the game loop.
 
@@ -32,6 +35,7 @@ High-confidence globals from the grim.dll decompilation:
 - **Config storage:** `grim_config_blob` plus `grim_config_var0_table`..`grim_config_var3_table`.
 - **Font tables:** `grim_font2_char_map`, `grim_font2_glyph_widths`, `grim_font2_uv_u`,
   `grim_font2_uv_v`, and `grim_font2_texture_handle`.
+
 - **DirectInput:** `grim_dinput_keyboard`/`grim_keyboard_device`/`grim_keyboard_state`,
   `grim_dinput_mouse`/`grim_mouse_device`/`grim_mouse_state`,
   `grim_dinput_joystick`/`grim_joystick_device`/`grim_joystick_state`.

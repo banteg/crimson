@@ -148,4 +148,5 @@ The values map to DirectInput key codes (scancodes).
 
 - The blob is always written at full size; unknown fields should be preserved
   when round-tripping.
+
 - `game.cfg` is a different file (save/status) and does **not** share this layout.

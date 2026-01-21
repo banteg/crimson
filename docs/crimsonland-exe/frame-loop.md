@@ -9,6 +9,7 @@ Other states have their own loops but reuse the same render pass (`FUN_00405960`
 
 - `game_paused_flag` (`DAT_004808b8`): pause toggle. When set, gameplay updates are skipped and UI
   timers are adjusted.
+
 - `demo_mode_active` (`DAT_0048700d`): demo/attract gating. Disables HUD and alters update behavior.
 - `game_state_id` (`DAT_00487270`): must be `9` for creature/projectile/player updates.
 - `game_is_full_version()`: used in multiple places to gate demo/trial timing behavior.
@@ -17,6 +18,7 @@ Other states have their own loops but reuse the same render pass (`FUN_00405960`
 
 1) Time scaling: if Reflex Boost is active (`time_scale_active`), scale `DAT_00480840`
    and recompute `DAT_00480844`.
+
 2) Perk tick helpers (`perks_update_effects`) when not gated by demo logic.
 3) `effects_update`.
 4) If not paused and state is `9`:
@@ -42,11 +44,13 @@ Other states have their own loops but reuse the same render pass (`FUN_00405960`
       `DAT_0048f280/0048f284`) define the perk prompt hover rectangle.
     - `perk_choices_dirty` (`DAT_00486fb0`) forces a one-shot `perks_generate_choices()` before
       switching to state `6`.
+
 12) `bonus_update`.
 13) HUD/UI passes:
     - `ui_render_aim_indicators` (player indicators)
     - `hud_update_and_render` (HUD)
     - `ui_elements_update_and_render`
+
 14) Demo overlay and cursor handling.
 
 Camera shake state (used by `camera_update`):

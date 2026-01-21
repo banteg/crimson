@@ -1971,6 +1971,7 @@ grim.dll body:
 - Uses `this+0x1058` as a vertex count and writes vec4s to `this+0x104c`.
 - Remaps coordinates between three space modes (`this+8` and `this+0x1048`) with explicit
   `[-1, 1]` ↔ `[0, 1]` conversions (`(v + 1) * 0.5` and `v * 2 - 1`).
+
 - Inferred mapping:
   - Mode 1: xyz in `[-1, 1]`, w in `[-1, 1]`.
   - Mode 2: xyz in `[0, 1]`, w in `[-1, 1]`.
@@ -1979,6 +1980,7 @@ grim.dll body:
 - Constructors feeding the mode parameter:
   - Mode 2: vtables `PTR_FUN_1004ccd0`, `PTR_FUN_1004cce0`, `PTR_FUN_1004ccf0`,
     `PTR_FUN_1004cd10`, `PTR_FUN_1004cd20`, `PTR_FUN_1004cd30` (param2 is `0x10` or `0x20`).
+
   - Mode 3: only `PTR_FUN_1004cd00` (param2 `0x20`).
   - Mode 1: remaining constructors (`PTR_FUN_1004cb6c`..`PTR_FUN_1004cd80`) using
     param2 values `0`, `8`, `0x10`, `0x18`, `0x20`, `0x30`, `0x40`.
@@ -1990,8 +1992,10 @@ grim.dll body:
 - Notes:
   - Called by many format-specific constructors; `param_2 >> 3` is stored as bytes-per-pixel
     (`this+0x1068`) and used to derive buffer pitches and sizes.
+
   - `param_3` is stored at `this+8` and later compared to `this+0x1048` to decide whether
     `grim_convert_vertex_space` should run.
+
   - `param_1` appears to be a descriptor block: width/height/stride fields copy into
     `this+0x1030..0x1044`, and palette data (if present at `param_1[0x12]`) is expanded into
     a 0x400-byte RGBA table at `this+0x34`.

@@ -40,6 +40,9 @@ docs-map-progress:
 docs-build:
     uv run zensical build
 
+docs-zensical-fix:
+    uv run python scripts/zensical_fix_md.py docs
+
 # Analysis
 entrypoint-trace:
     uv run python scripts/entrypoint_trace.py --depth 2 --skip-external

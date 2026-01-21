@@ -433,6 +433,7 @@ From the 0.15 release notes’ “Deletions and Deprecations” section (selecte
 * `std.fs.File.writer` → `std.fs.File.deprecatedWriter`
 * deleted: `std.io.SeekableStream`
   → use `*std.fs.File.Reader`, `*std.fs.File.Writer`, or an in-memory concrete type like ArrayList (depending on what you’re actually doing). ([Zig Programming Language][3])
+
 * deleted: `std.Io.BufferedReader`
 * deleted: `std.io.bufferedWriter` (BufferedWriter)
   → supply a buffer to the writer directly. ([Zig Programming Language][3])

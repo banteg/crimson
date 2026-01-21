@@ -14,8 +14,10 @@ Pool facts:
 - Base address: `player_health` (`DAT_004908d4`).
 - Access pattern: `field_base + player_index * 0x360` (disassembly often shows
   `player_index * 0xd8` because the base pointer is typed as `float*`/`u32*`).
+
 - Input bindings live in a `player_input_t` sub-struct at offset `0x308`
   (13 dwords / 0x34 bytes).
+
 - Player 2 constants appear as base + `0x360` (e.g. `player2_health` at `DAT_00490c34`).
 - Some high-confidence fields live before `player_health` (negative offsets).
 
@@ -25,10 +27,13 @@ Captured with `scripts/frida/crimsonland_probe.js` after fixing pointer-based re
 
 - `player_take_damage` logs show sane values and health deltas (e.g. 100 -> 95 with `damage_f32=5`),
   confirming that the base/stride assumptions are valid for the current build.
+
 - The unknown-field tracker flagged offsets **0x2BC / 0x2C4 / 0x2D0** as frequently changing; these
   correspond to the **alt-weapon** block already listed below (good cross-check).
+
 - The tracker also flagged offsets **0x34C / 0x350 / 0x354** near the tail of the struct
   (observed values included `16.0` and `432.0`). These are likely real fields; add candidates below.
+
 - The runtime probe currently reads `player_clip_size` / `player_ammo` as float bit patterns
   (e.g. `0x41200000` = `10.0`, `0x41400000` = `12.0`). This suggests those fields may be stored
   as floats in the struct (or our type assignment is still off). Needs Ghidra confirmation.
@@ -104,10 +109,13 @@ Runtime probe flagged the following offsets as frequently changing but not yet m
 
 - **Health gate:** `player_health` at the table base is decremented by `player_take_damage`; `<= 0`
   counts as dead and starts `player_death_timer`.
+
 - **Shield immunity:** when `player_shield_timer > 0`, `player_take_damage` returns early and the
   damage is ignored.
+
 - **Reload mitigation:** `player_reload_active` is set when a reload starts; with Tough Reloader
   active, incoming damage is halved while this flag is set.
+
 - **Low-health warning:** `player_low_health_timer` is reset when HP dips below 20 and is used to
   drive warning effects/SFX while it counts down.
 
@@ -115,6 +123,7 @@ Runtime probe flagged the following offsets as frequently changing but not yet m
 
 - Movement scheme `DAT_00480364 == 3` reads analog inputs from
   `player_axis_move_x` / `player_axis_move_y`.
+
 - Aim scheme `DAT_0048038c == 4` reads analog inputs from
   `player_axis_aim_x` / `player_axis_aim_y`.
 

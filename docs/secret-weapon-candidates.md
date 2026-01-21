@@ -7,14 +7,18 @@ progression, making them candidates for "Secret Weapons" or unfinished content.
 
 1. **Full Weapon List**: Derived from `docs/weapon-id-map.md` (1-based ids 1-53;
    id 0 is the dummy/none entry).
+
 2. **Quest Unlocks**: Analyzed `quest_database_init` (`FUN_00439230`) in
    `crimsonland.exe`.
+
    - Each quest entry is initialized via `FUN_00430a20`.
    - `quest_unlock_weapon_id` is at offset `0x24` (set by
      `*(undefined4 *)(quest_meta_cursor + 0x24) = ...`).
+
    - `FUN_00430a20` sets the tier, index, and name; it does not set unlock IDs.
    - The unlock IDs are set after the `FUN_00430a20` call in
      `quest_database_init`.
+
    - Many quests store `0` in the unlock slot; with the 1-based ID scheme,
      `0` maps to the dummy entry (no weapon).
 
@@ -26,6 +30,7 @@ So `quest_unlock_weapon_id` for quest `i` is at `0x00484754 + i * 0x2c`.
 
 The "flat" assignments at the end of the function target addresses that line up
 with this stride:
+
 - `quest_unlock_weapon_id` = `0x00484754` (quest 0 unlock slot)
 - `DAT_00484780` = `0x00484754 + 0x2c` = `0x00484780`
 - `_DAT_004847ac` = `0x00484780 + 0x2c` = `0x004847ac`
@@ -93,6 +98,7 @@ with this stride:
 
 `weapon_refresh_available` clears the availability flags and then sets entry 1
 available before it processes the unlock list:
+
 - Entry 0 is the dummy/none weapon.
 - Entry 1 is Pistol, so Pistol is always available.
 - In `_config_game_mode == 1`, it also sets entry 2 (Assault Rifle), entry 3
@@ -153,15 +159,18 @@ The following named weapons are absent from the standard quest unlock sequence
 | 53 | Nuke Launcher | 1 | 4.00s | 8.00s | Flag 0x8. |
 
 **Observations:**
+
 - Weapons 41-53 often have missing or reused SFX ids (`_DAT_...`) and odd stats.
 - "Plague Sphreader" does 0 damage and likely relies on the Plague mechanic
   (see Plaguebearer perk).
+
 - "Fire bullets" is a named weapon entry with projectile type 60 and low damage
   scale; likely a bonus/test entry.
 
 ## Start Weapon Analysis
 
 Check `quest_start_weapon_id` (offset 0x28) assignments in `quest_database_init`.
+
 - `s_Land_Hostile`: `*(undefined4 *)(quest_meta_cursor + 0x28) = 1;` -> **Pistol (1)**.
 - `s_Minor_Alien_Breach`: `... = 1;`
 - ... many `1`s.

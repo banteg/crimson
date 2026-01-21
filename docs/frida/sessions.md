@@ -51,6 +51,7 @@ Here’s a short session I’d love recorded to nail down unknown player‑struc
   2. Shoot + reload a few times. Take damage until HP drops below ~20 to trigger low‑health behavior/blood bursts.
   3. Pick up as many bonus types as you can find (Reflex/slow‑time, Freeze, Weapon Power‑Up, Double XP, Shield/armor).
      After each pickup, run dumpPlayer(0) again.
+
   4. Trigger a perk selection screen (level up). As it appears, run: startHotWindow(2000) to capture UI draw calls. Then pick a perk.
   5. Die to reach game‑over/high‑score entry; when the screen appears, run startHotWindow(2000) again. Type a name, view High Scores, return to menu.
 
@@ -68,33 +69,39 @@ Based on the video provided, here is the timeline of events.
 **Note:** As requested, **00:00** corresponds to **00:11** in the video player (the moment the "Play" button was clicked in the launcher).
 
 **Startup & Initialization**
+
 *   **00:00** – Launcher "Play" button clicked.
 *   **00:26** – Main Menu appears.
 *   **00:30** – User selects "Play Game" -> "Survival".
 *   **00:33** – **Gameplay begins.**
 
 **Session Part 1: Baseline & Damage**
+
 *   **00:35** – Player fires weapon and reloads (Step 2).
 *   **00:40** – **Frida Command:** `dumpPlayer(0)` (Baseline state).
 *   **00:57** – Player takes significant damage (HP turns red).
 *   **01:03** – **Frida Command:** `dumpPlayer(0)` (Capturing low health state).
 
 **Session Part 2: Power-ups**
+
 *   **01:19** – Player picks up **"Freeze"** bonus.
 *   **01:21** – **Frida Command:** `dumpPlayer(0)` (Capturing Freeze flag/timer).
 *   **01:24** – Player picks up **"Fire Bullets"** bonus.
 *   **01:26** – **Frida Command:** `dumpPlayer(0)` (Capturing Fire Bullets flag/timer).
 
 **Session Part 3: Perk UI Analysis**
+
 *   **01:35** – Player levels up; "PICK A PERK" screen appears.
 *   **01:37** – **Frida Command:** `startHotWindow(2000)` (Capturing UI draw calls for the perk window).
 *   **01:42** – Player selects the "Telekinetic" perk.
 
 **Session Part 4: Speed Bonus**
+
 *   **02:11** – Player picks up **"Speed"** bonus.
 *   **02:13** – **Frida Command:** `dumpPlayer(0)` (Capturing Speed flag/timer).
 
 **Session Part 5: Game Over & High Score UI**
+
 *   **02:23** – Player dies; "THE REAPER GOT YOU" screen appears.
 *   **02:27** – **Frida Command:** `startHotWindow(2000)` (Capturing UI draw calls for the high score entry).
 *   **02:28** – User enters name "banteg" into the high score field.
@@ -107,14 +114,19 @@ Based on the video provided, here is the timeline of events.
 
 - Auto-record triggers fired; counts: startup (1), low_health (1), bonus_apply (4), perk_apply (1),
   perk_selection_screen (6), game_over_screen (10). Low-health dump shows HP crossing ~24.19 → 18.67.
+
 - Unknown-field tracker still only reported offsets `0x2BC`, `0x2C4`, `0x2D0`, `0x34C`, `0x350`, `0x354`
   with count=1 each, so no clear “hot” offset yet.
+
 - Texture name decoding remains unreliable: `texture_get_or_load` names are mostly null or long garbage blobs
   (string-table dumps), implying the arg is not a direct `char *` for these callsites.
+
 - Disassembly shows `texture_get_or_load` / `_alt` take **two args** (name + path). Callers push both.
   We were only logging arg0; update the probe to log both and prefer the path string.
+
 - Grim vtable evidence aligns with render-heavy paths (`ui_element_render`, `ui_render_hud`, `projectile_render`,
   `creature_render_type`, `bonus_render`), confirming coverage but not yielding new renames.
+
 - SFX evidence is still sparse; sfx 63 appears in `ui_button_update`/`ui_menu_item_update` and perk UI, likely
   a UI click/confirm.
 
@@ -122,10 +134,13 @@ Based on the video provided, here is the timeline of events.
 
 - Raise `autoRecord.dumpCooldownMs` / `hotWindowCooldownMs` (or add “once per screen” gating) to avoid repeated
   dumps during `perk_selection_screen_update` and `game_over_screen_update`.
+
 - Add a reducer step to diff `auto_dump_player` snapshots per reason (bonus/perk/low health) and emit changed
   offsets to focus MemoryAccessMonitor drills.
+
 - Improve texture name decoding by treating the arg as a struct pointer (probe `*(arg+0x??)` for cstr) or
   hook upstream callsites where the string is still intact. (Now logging both name + path.)
+
 - Extend the reducer to resolve `unmapped_calls.json` entries by module base (grim.dll) so raw addresses
   aren’t lumped together as unknown.
 
@@ -156,11 +171,14 @@ Short run to main menu only (no gameplay). Both hooks attached; the game stayed 
 
 - Auto-record: only `startup` fired (1 dump). Unknown-field tracker still only reported offsets
   `0x2BC`, `0x2C4`, `0x2D0`, `0x34C`, `0x350`, `0x354` (count=1 each).
+
 - SFX evidence: `ui_element_update` called `sfx_play` with IDs **64** (x5) and **63** (x1).
   `game_startup_init` triggered **0** and **4** once each.
+
 - Texture requests: 65 calls across `texture_get_or_load` / `_alt`, but decoded names are still garbage.
   `path_bytes_hex` shows NUL-terminated strings (e.g., `load\\mockup.jaz`), so string decoding needs to
   stop at the first NUL.
+
 - Grim vtable activity is dominated by UI rendering (`ui_element_render`, `grim_begin_batch`,
   `grim_end_batch`), as expected for a menu-only run.
 
@@ -190,8 +208,10 @@ Single Quest run (one level), then quest results screen. Both hooks attached for
 
 - **Texture decoding fixed:** `texture_get_or_load` now yields clean names like `load\\backplasma.jaz`,
   `ui\\ui_indBullet.jaz`, `ter\\ter_q1_base.jaz` (no more string-table garbage).
+
 - **Quest results UI evidence:** `quest_results_screen_update` fired 69 times and carries SFX IDs
   **5** (x64) plus **69**/**68**/**4** (single-digit counts).
+
 - **Gameplay SFX clusters:**
   - `player_update`: sfx **46** (x120), **34**/**39** (x23 each), **30** (x1).
   - `projectile_update`: sfx **56** (x39), **50/51/52/53** (low counts).
@@ -200,6 +220,7 @@ Single Quest run (one level), then quest results screen. Both hooks attached for
 - **Auto-dump triggers:** `bonus_apply` (5), `perk_selection_screen` (5), `quest_results_screen` (6),
   `perk_apply` (1), `startup` (1). Unknown-field tracker still only reported offsets
   `0x2BC`, `0x2C4`, `0x2D0`, `0x34C`, `0x350`, `0x354` (count=1 each).
+
 - **Timer fields observed:** `shield_timer_f32` and `fire_bullets_timer_f32` were non-zero after bonus
   pickups; `speed_bonus_timer_f32` stayed 0 in this run.
 
@@ -207,6 +228,7 @@ Single Quest run (one level), then quest results screen. Both hooks attached for
 
 - Use MemoryAccessMonitor on the unknown offsets during the next run; they still aren’t surfacing in the
   tracker, so we need targeted watchpoints to identify their owners.
+
 - If we want to name SFX IDs, a short capture around quest results and reload events should be enough to
   label **5/69/68/4**, **46**, **56**, and the damage set (**0/1/2/12/13/14/15**).
 
@@ -232,14 +254,17 @@ Short session with a small amount of gameplay. One bonus pickup, then low-health
 - **Auto-dump triggers:** `startup` (1), `bonus_apply` (1), `low_health` (1).
 - **Low-health snapshot:** health dropped to `-13.86` while `low_health_timer_f32` stayed at `100`.
   Timers for `shield`/`fire_bullets` were still `0` in this run.
+
 - **SFX evidence:** small run, but `quest_failed_screen_update` shows sfx **1** (x17) and **4** (x1).
   `player_update` continues to emit **30/42/43**; `creature_update_all` emits **38**.
+
 - **Unknown-field tracker:** still only offsets `0x2BC/0x2C4/0x2D0/0x34C/0x350/0x354` (count=1 each).
 
 ### Actionable insights
 
 - If we want to label low-health behavior, a targeted MemoryAccessMonitor on the unknown offsets during
   a low-health event should confirm which field drives the effect.
+
 - The small SFX set here may help label `quest_failed`/gameplay fail sounds; a slightly longer quest run
   would likely stabilize these IDs.
 
@@ -263,16 +288,19 @@ Short gameplay segment with one bonus pickup and a low-health event.
 
 - **Callsite format:** both scripts now emit `module+0xOFFSET` (e.g., `crimsonland.exe+0x1ec7c`),
   and `unmapped_calls.json` is now dominated by `grim.dll+0x...` entries.
+
 - **Auto-dump triggers:** `startup` (1), `bonus_apply` (1), `low_health` (1).
 - **Low-health snapshot:** health dropped to `-13.86` while `low_health_timer_f32` stayed at `100`.
 - **SFX evidence:** `quest_failed_screen_update` shows **1** (x17) + **4** (x1); `player_update`
   continues to emit **30/42/43**; `creature_update_all` emits **38**.
+
 - **Unknown-field tracker:** still only offsets `0x2BC/0x2C4/0x2D0/0x34C/0x350/0x354` (count=1 each).
 
 ### Actionable insights
 
 - If `unmapped_calls.json` should only track `crimsonland.exe` callsites, consider filtering out
   `grim.dll` entries now that callsites are module-qualified.
+
 - A slightly longer quest-fail capture should stabilize the sfx ID **1** mapping and confirm **4**.
 
 ## Session 6

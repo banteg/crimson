@@ -91,6 +91,7 @@ uv run python scripts/save_status.py set game.cfg --set quest_unlock_index=30 --
 ```
 
 Supported edits:
+
 - `quest_unlock_index`, `quest_unlock_index_full`, `game_sequence_id`
 - `weapon_usage.<slot>` (0–52; slot = weapon_id, 0 unused)
 - `quest_play.<index>` (0–90)

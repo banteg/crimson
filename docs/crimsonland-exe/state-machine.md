@@ -39,8 +39,10 @@ known state ids. Names are inferred from call sites and screen behavior.
 
 - `ui_elements_update_and_render` updates `ui_elements_timeline` (`DAT_00487248`). When it drops below `0`,
   it calls `FUN_004461c0` with `game_state_pending` (`DAT_00487274`) and then sets `game_state_pending` (`DAT_00487274`) = `0x19`.
+
 - Menu buttons set `game_state_pending` (`DAT_00487274`) = `9` (Survival/Rush) or `game_state_pending` (`DAT_00487274`) = `0x12`
   (Typ-o-Shooter), then clear `ui_transition_direction` (`DAT_0048724c`) to start the transition.
+
 - Quest completion sets `game_state_pending` (`DAT_00487274`) = `8` after the final spawn wave.
 - Player death sets `game_state_pending` (`DAT_00487274`) = `7` for non-quest modes or `0xc` for quests.
 - Perk selection uses a direct `FUN_004461c0(6)` instead of a queued transition.

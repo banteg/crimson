@@ -76,6 +76,7 @@ Score records:
 - Each submitted record is exactly `0x40` bytes.
 - Records are built via `FUN_0043aa90`, which copies the base high score record
   fields (name + metadata) and zeroes bytes `0x3c..0x3f`.
+
 - The client appends each record immediately after the name string.
 - Total payload length = `0x0b + name_len + (score_count * 0x40)`.
 
@@ -84,6 +85,7 @@ Selection logic:
 - Iterates the high score table (`DAT_00482b54` flags, `DAT_004c395c` count).
 - Skips entries where flag bit 0 is set and bit 1 is not set. (Flags live at
   record offset `0x44`; see `docs/detangling.md` for meaning.)
+
 - Calls `FUN_0043aa60` (illegal-score guard) per entry; on failure, logs
   "Detected a potential illegal score" and does not include that entry.
 

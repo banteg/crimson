@@ -14,9 +14,11 @@ Table fields:
 - `icon_frame` maps `icon_id` to `bonuses.png` grid=4 frames in
   `artifacts/atlas/frames/game/bonuses/grid4/frame_{icon_id:03d}.png` (when `icon_id >= 0`).
   Bonus id `3` uses `icon_id = -1` and renders the weapon icon from `ui_weapon_icons_texture`.
+
 - `description` comes from `bonus_meta_description + id * 0x14`, used for the bonus info strings.
 - `default_amount` comes from `bonus_meta_default_amount + id * 0x14`, used when `bonus_spawn_at` is called with
   `duration_override == -1`.
+
 - `enabled` comes from `bonus_meta_enabled + id * 0x14`; id `0` is cleared during init.
 
 | ID | Name | Description | icon_id | icon_frame | default_amount | Notes |

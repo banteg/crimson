@@ -15,6 +15,7 @@ and where to put work so we can track progress consistently.
 
 - `analysis/ghidra/raw/` contains raw Ghidra output and should be treated as
   read-only.
+
 - `rewrite/` is the canonical clean layer where the Zig rewrite lives.
 - `third_party/headers/` contains third-party headers (PNG/JPEG/zlib/ogg/vorbis),
   plus DirectX/DirectSound references for later.
@@ -28,6 +29,7 @@ and where to put work so we can track progress consistently.
 4. Extend `third_party/headers/` as types stabilize so future Ghidra regen
    improves the raw output (codec headers are already imported; DirectX/Win32
    headers will require a fuller Windows header set).
+
 5. Leave short evidence notes near implementations (function addresses, string
    refs, call sites) to keep provenance.
 

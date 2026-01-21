@@ -80,5 +80,6 @@ just ghidra-exe
 
 - Keep hooks narrow: use the Grim hot-window or limit targets in
   `scripts/frida/grim_hooks_targets.json` when tracing draw calls.
+
 - Turn on backtraces only when needed (`CONFIG.includeBacktrace = true`).
 - Use `watchPlayerOffset()` in the probe script to chase unknown struct fields.

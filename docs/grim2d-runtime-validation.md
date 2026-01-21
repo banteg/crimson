@@ -21,6 +21,7 @@ How to run (Frida hook script):
 1) Game path (this VM): `C:\Crimsonland\crimsonland.exe`.
 2) Copy `scripts/frida/grim_hooks.js` and `scripts/frida/grim_hooks_targets.json`
    into the VM shared drive (host path `~/utm/win11/share/`, mapped as `Z:\`).
+
 3) Optionally edit `grim_hooks_targets.json` to swap the target list.
 4) Launch the game, then attach by process name (recommended):
 
@@ -38,6 +39,7 @@ How to run (Frida hook script):
    ```
 
    If the process pauses on spawn, type `%resume` in the Frida REPL.
+
 6) Logs are written to `Z:\grim_hits.log` by default. If JSON logging is enabled
    (default in `grim_hooks_targets.json`), events also stream to `Z:\grim_hits.jsonl`.
 

@@ -91,6 +91,7 @@ Known uses:
 - `artifacts/assets/crimson/ui/ui_wicons.png` uses an **8×8** grid but selects **2×1**
   sub-rects. The `frame` argument is derived from the weapon table
   (`weapon_id * 2`) and is reused across HUD + menu renders.
+
 - Some UI paths call `grim_set_sub_rect` twice in a row to draw two adjacent
   slices from the same sheet (split-screen layouts).
 
@@ -102,6 +103,7 @@ Some effects bypass atlas slicing and write UVs directly.
   call `grim_set_uv_point` to force all U values to `0.625` and V to `0..0.25`,
   then draw a quad strip. This targets a thin vertical slice inside
   `projs.png`, so `projs/grid2/frame001` is further sub‑cut at runtime.
+
 - The same path later resets UVs with `grim_set_uv(0,0,1,1)`.
 - `grim_set_atlas_frame` itself only takes `(atlas_size, frame)` in `grim.dll`;
   any extra pointer args seen in the decompile are ignored.
@@ -133,6 +135,7 @@ The engine uses **two patterns**:
   - Uses **grid=2** for some effects (e.g. `+0x104(2, 0)` around `:16479`).
   - Several projectile/beam effects draw **repeated quads** along a vector
     using a single frame (segment tiling instead of unique frames).
+
   - One beam path calls `set_atlas_frame(4,2,<dir>,<dir>)` with extra vector
     pointers; this likely orients the UVs for directional beam segments.
 
@@ -144,6 +147,7 @@ The engine uses **two patterns**:
   - Uses **grid=8** for the main particle system (see `+0x104(8, …)` at `:9704`).
   - Uses **sprite table indices 0x10, 0x0e, 0x0d, 0x0c** for UI/overlay effects
     (calls at `:996?`, `:16217`, `:16854`, `:18788`, `:18824`). These indices map to **grid=4**.
+
   - Effects pool binds `particles.png` and uses the effect_id table above
     (`0x00..0x12`). Muzzle flash uses `effect_id 0x12` → grid 16, frame `0x26`
     (the sprite itself resembles a shell casing).
@@ -175,6 +179,7 @@ the exact grid2 index is still unclear from the decompile.
 - Enemy sheets (`artifacts/assets/crimson/game/zombie.png`, `artifacts/assets/crimson/game/lizard.png`,
   `artifacts/assets/crimson/game/alien.png`, `artifacts/assets/crimson/game/spider_sp1.png`,
   `artifacts/assets/crimson/game/spider_sp2.png`, `artifacts/assets/crimson/game/trooper.png`)
+
   - Drawn via **grid=8** (`+0x104(8, …)` in the enemy render path around `:9704`).
   - Per‑enemy base frame offsets are stored in the enemy data struct
     (e.g. `_DAT_00482760 = 0x20`, `_DAT_004827a4 = 0x10`, etc).
@@ -249,6 +254,7 @@ each frame.
 - `artifacts/assets/crimson/game/projs.png` (`projs`)
   - Direct grid calls: **4×4** indices `2`, `3`, `6` (plus one call with extra
     parameters using `grid=4, index=2`), and **2×2** index `0`.
+
   - Table index `0x10` → **4×4**.
 
 - `artifacts/assets/crimson/game/bonuses.png` (`bonuses`)
@@ -276,6 +282,7 @@ paths in `FUN_00418b60`:
   if the type table flag `(&DAT_00482768)[type * 0x44] & 1` is set. If the
   per‑creature flags include `0x10`, the frame offset shifts by `+0x20`
   (indices 32..63).
+
 - **8‑frame ping‑pong strip**: `frame = base + 0x10 + pingpong(floor(anim_phase))`
   where `base = *(int *)(&DAT_00482760 + type * 0x44)` and ping‑pong folds a
   0..15 phase into 0..7..0.
