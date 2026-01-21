@@ -28,6 +28,7 @@ from .console import (
 )
 from .entrypoint import DEFAULT_BASE_DIR
 from .raylib_app import run_view
+from .terrain_render import GroundRenderer
 from .views.types import View
 
 
@@ -162,7 +163,39 @@ MENU_PREP_TEXTURES: tuple[tuple[str, str], ...] = (
     ("ui_signCrimson", "ui/ui_signCrimson.jaz"),
     ("ui_menuItem", "ui/ui_menuItem.jaz"),
     ("ui_menuPanel", "ui/ui_menuPanel.jaz"),
+    ("ui_itemTexts", "ui/ui_itemTexts.jaz"),
 )
+
+MENU_LABEL_WIDTH = 124.0
+MENU_LABEL_HEIGHT = 30.0
+MENU_LABEL_ROW_HEIGHT = 32.0
+MENU_LABEL_BASE_X = -60.0
+MENU_LABEL_BASE_Y = 210.0
+MENU_LABEL_OFFSET_X = 270.0
+MENU_LABEL_OFFSET_Y = -38.0
+MENU_LABEL_STEP = 60.0
+MENU_ITEM_OFFSET_X = -72.0
+MENU_ITEM_OFFSET_Y = -60.0
+MENU_PANEL_WIDTH = 512.0
+MENU_PANEL_HEIGHT = 256.0
+MENU_PANEL_OFFSET_X = 20.0
+MENU_PANEL_OFFSET_Y = -82.0
+MENU_PANEL_BASE_X = -45.0
+MENU_PANEL_BASE_Y = 210.0
+MENU_SCALE_SMALL_THRESHOLD = 640
+MENU_SCALE_LARGE_MIN = 801
+MENU_SCALE_LARGE_MAX = 1024
+MENU_SCALE_SMALL = 0.8
+MENU_SCALE_LARGE = 1.2
+MENU_SCALE_SHIFT = 10.0
+
+MENU_SIGN_WIDTH = 573.44
+MENU_SIGN_HEIGHT = 143.36
+MENU_SIGN_OFFSET_X = -577.44
+MENU_SIGN_OFFSET_Y = -62.0
+MENU_SIGN_POS_Y = 70.0
+MENU_SIGN_POS_Y_SMALL = 60.0
+MENU_SIGN_POS_X_PAD = 4.0
 
 
 class BootView:
@@ -345,6 +378,9 @@ class BootView:
             play_music(self._state.audio, "crimson_theme")
         self._theme_started = True
 
+    def is_theme_started(self) -> bool:
+        return self._theme_started
+
     def _skip_triggered(self) -> bool:
         if rl.get_key_pressed() != 0:
             return True
@@ -475,6 +511,278 @@ class BootView:
             rl.draw_texture_v(esrb, rl.Vector2(esrb_x, esrb_y), tint)
 
 
+@dataclass(slots=True)
+class MenuAssets:
+    sign: rl.Texture2D | None
+    item: rl.Texture2D | None
+    panel: rl.Texture2D | None
+    labels: rl.Texture2D | None
+
+
+@dataclass(slots=True)
+class MenuEntry:
+    row: int
+    y: float
+
+
+class MenuView:
+    def __init__(self, state: GameState) -> None:
+        self._state = state
+        self._assets: MenuAssets | None = None
+        self._ground: GroundRenderer | None = None
+        self._menu_entries: list[MenuEntry] = []
+        self._selected_index = 0
+        self._full_version = False
+
+    def open(self) -> None:
+        cache = self._ensure_cache()
+        sign = cache.get_or_load("ui_signCrimson", "ui/ui_signCrimson.jaz").texture
+        item = cache.get_or_load("ui_menuItem", "ui/ui_menuItem.jaz").texture
+        panel = cache.get_or_load("ui_menuPanel", "ui/ui_menuPanel.jaz").texture
+        labels = cache.get_or_load("ui_itemTexts", "ui/ui_itemTexts.jaz").texture
+        self._assets = MenuAssets(sign=sign, item=item, panel=panel, labels=labels)
+        self._full_version = bool(self._state.config.data.get("full_version_flag", 0))
+        self._menu_entries = self._menu_entries_for_flags(
+            full_version=self._full_version,
+            mods_available=self._mods_available(),
+            other_games=self._other_games_enabled(),
+        )
+        self._selected_index = 0 if self._menu_entries else -1
+        self._init_ground()
+
+    def close(self) -> None:
+        if self._ground is not None and self._ground.render_target is not None:
+            rl.unload_render_texture(self._ground.render_target)
+        self._ground = None
+
+    def update(self, dt: float) -> None:
+        if self._state.audio is not None:
+            update_audio(self._state.audio)
+        if not self._menu_entries:
+            return
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_UP):
+            self._selected_index = (self._selected_index - 1) % len(self._menu_entries)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_DOWN):
+            self._selected_index = (self._selected_index + 1) % len(self._menu_entries)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
+            entry = self._menu_entries[self._selected_index]
+            self._state.console.log.log(
+                f"menu select: {self._selected_index} (row {entry.row})"
+            )
+            self._state.console.log.flush()
+
+    def draw(self) -> None:
+        rl.clear_background(rl.BLACK)
+        if self._ground is not None:
+            self._ground.draw(0.0, 0.0)
+        assets = self._assets
+        if assets is None:
+            return
+        ui_scale, ui_shift = self._menu_layout_scale()
+        screen_w = float(self._state.config.screen_width)
+        sign = assets.sign
+        if sign is not None:
+            sign_w = MENU_SIGN_WIDTH
+            sign_h = MENU_SIGN_HEIGHT
+            sign_pos_y = (
+                MENU_SIGN_POS_Y
+                if screen_w > MENU_SCALE_SMALL_THRESHOLD
+                else MENU_SIGN_POS_Y_SMALL
+            )
+            sign_x = screen_w + MENU_SIGN_POS_X_PAD + MENU_SIGN_OFFSET_X
+            sign_y = sign_pos_y + MENU_SIGN_OFFSET_Y
+            src = rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height))
+            dst = rl.Rectangle(sign_x, sign_y, sign_w, sign_h)
+            rl.draw_texture_pro(sign, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+        self._draw_menu_panel(ui_scale, ui_shift)
+        self._draw_menu_items(ui_scale, ui_shift)
+
+    def _ensure_cache(self) -> PaqTextureCache:
+        cache = self._state.texture_cache
+        if cache is None:
+            entries = load_paq_entries(self._state.assets_dir)
+            cache = PaqTextureCache(entries=entries, textures={})
+            self._state.texture_cache = cache
+        return cache
+
+    def _init_ground(self) -> None:
+        cache = self._state.texture_cache
+        if cache is None:
+            return
+        base = cache.texture("ter_q1_base")
+        if base is None:
+            return
+        overlay = cache.texture("ter_q1_tex1")
+        detail = overlay or base
+        self._ground = GroundRenderer(
+            texture=base,
+            overlay=overlay,
+            overlay_detail=detail,
+            width=1024,
+            height=1024,
+            texture_scale=self._state.config.texture_scale,
+            screen_width=float(self._state.config.screen_width),
+            screen_height=float(self._state.config.screen_height),
+        )
+        self._ground.generate(seed=self._state.rng.randrange(0, 10_000))
+
+    def _menu_layout_scale(self) -> tuple[float, float]:
+        width = int(self._state.config.screen_width)
+        if width <= MENU_SCALE_SMALL_THRESHOLD:
+            return MENU_SCALE_SMALL, MENU_SCALE_SHIFT
+        if MENU_SCALE_LARGE_MIN <= width <= MENU_SCALE_LARGE_MAX:
+            return MENU_SCALE_LARGE, MENU_SCALE_SHIFT
+        return 1.0, 0.0
+
+    def _menu_entries_for_flags(
+        self,
+        full_version: bool,
+        mods_available: bool,
+        other_games: bool,
+    ) -> list[MenuEntry]:
+        rows = self._menu_label_rows(full_version, other_games)
+        slot_ys = self._menu_slot_ys(other_games)
+        active = self._menu_slot_active(full_version, mods_available, other_games)
+        entries: list[MenuEntry] = []
+        for row, y, enabled in zip(rows, slot_ys, active, strict=False):
+            if not enabled:
+                continue
+            entries.append(MenuEntry(row=row, y=y))
+        return entries
+
+    @staticmethod
+    def _menu_label_rows(full_version: bool, other_games: bool) -> list[int]:
+        rows: list[int] = []
+        row = 0
+        for slot in range(6):
+            if slot == 0 and full_version:
+                row = 4
+            if not other_games and slot == 4:
+                row = 6
+            rows.append(row)
+            if slot == 0 and full_version:
+                row = 0
+            row += 1
+            if row == 4:
+                row += 1
+        return rows
+
+    @staticmethod
+    def _menu_slot_ys(other_games: bool) -> list[float]:
+        ys = [
+            MENU_LABEL_BASE_Y,
+            MENU_LABEL_BASE_Y + MENU_LABEL_STEP,
+            MENU_LABEL_BASE_Y + MENU_LABEL_STEP * 2.0,
+            MENU_LABEL_BASE_Y + MENU_LABEL_STEP * 3.0,
+            MENU_LABEL_BASE_Y + MENU_LABEL_STEP * 4.0,
+            MENU_LABEL_BASE_Y + MENU_LABEL_STEP * (5.0 if other_games else 4.0),
+        ]
+        return ys
+
+    @staticmethod
+    def _menu_slot_active(
+        full_version: bool,
+        mods_available: bool,
+        other_games: bool,
+    ) -> list[bool]:
+        show_top = (not full_version) or mods_available
+        return [
+            show_top,
+            True,
+            True,
+            True,
+            other_games,
+            True,
+        ]
+
+    def _draw_menu_items(self, ui_scale: float, ui_shift: float) -> None:
+        assets = self._assets
+        if assets is None or assets.labels is None or not self._menu_entries:
+            return
+        label_tex = assets.labels
+        label_w = MENU_LABEL_WIDTH * ui_scale
+        label_h = MENU_LABEL_HEIGHT * ui_scale
+        for entry in self._menu_entries:
+            row_base_y = entry.y
+            label_x = MENU_LABEL_BASE_X + MENU_LABEL_OFFSET_X * ui_scale + ui_shift
+            label_y = row_base_y + MENU_LABEL_OFFSET_Y * ui_scale + ui_shift
+            if assets.item is not None:
+                item_x = MENU_LABEL_BASE_X + MENU_ITEM_OFFSET_X * ui_scale + ui_shift
+                item_y = row_base_y + MENU_ITEM_OFFSET_Y * ui_scale + ui_shift
+                self._draw_menu_item_bg(assets.item, item_x, item_y, ui_scale)
+            src = rl.Rectangle(
+                0.0,
+                float(entry.row) * MENU_LABEL_ROW_HEIGHT,
+                float(label_tex.width),
+                MENU_LABEL_ROW_HEIGHT,
+            )
+            dst = rl.Rectangle(label_x, label_y, label_w, label_h)
+            rl.draw_texture_pro(label_tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+
+    @staticmethod
+    def _draw_menu_item_bg(
+        texture: rl.Texture2D,
+        x: float,
+        y: float,
+        ui_scale: float,
+    ) -> None:
+        bg_w = float(texture.width) * ui_scale
+        bg_h = float(texture.height) * ui_scale
+        src = rl.Rectangle(0.0, 0.0, float(texture.width), float(texture.height))
+        dst = rl.Rectangle(x, y, bg_w, bg_h)
+        rl.draw_texture_pro(texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+
+    def _draw_menu_panel(self, ui_scale: float, ui_shift: float) -> None:
+        assets = self._assets
+        if assets is None or assets.panel is None:
+            return
+        panel = assets.panel
+        panel_w = MENU_PANEL_WIDTH * ui_scale
+        panel_h = MENU_PANEL_HEIGHT * ui_scale
+        panel_x = MENU_PANEL_BASE_X + MENU_PANEL_OFFSET_X * ui_scale + ui_shift
+        panel_y = MENU_PANEL_BASE_Y + MENU_PANEL_OFFSET_Y * ui_scale + ui_shift
+        src = rl.Rectangle(0.0, 0.0, float(panel.width), float(panel.height))
+        dst = rl.Rectangle(panel_x, panel_y, panel_w, panel_h)
+        rl.draw_texture_pro(panel, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+
+    def _mods_available(self) -> bool:
+        mods_dir = self._state.base_dir / "mods"
+        if not mods_dir.exists():
+            return False
+        return any(mods_dir.glob("*.dll"))
+
+    def _other_games_enabled(self) -> bool:
+        # Original game checks a config string via grim_get_config_var(100).
+        return True
+
+
+class GameLoopView:
+    def __init__(self, state: GameState) -> None:
+        self._state = state
+        self._boot = BootView(state)
+        self._menu = MenuView(state)
+        self._active: View = self._boot
+        self._menu_active = False
+
+    def open(self) -> None:
+        self._boot.open()
+
+    def update(self, dt: float) -> None:
+        self._active.update(dt)
+        if not self._menu_active and self._boot.is_theme_started():
+            self._menu.open()
+            self._active = self._menu
+            self._menu_active = True
+
+    def draw(self) -> None:
+        self._active.draw()
+
+    def close(self) -> None:
+        if self._menu_active:
+            self._menu.close()
+        self._boot.close()
+
+
 def run_game(config: GameConfig) -> None:
     base_dir = config.base_dir
     base_dir.mkdir(parents=True, exist_ok=True)
@@ -512,7 +820,7 @@ def run_game(config: GameConfig) -> None:
         config_flags = 0
         if cfg.windowed_flag == 0:
             config_flags |= rl.ConfigFlags.FLAG_FULLSCREEN_MODE
-        view: View = BootView(state)
+        view: View = GameLoopView(state)
         run_view(
             view,
             width=width,
