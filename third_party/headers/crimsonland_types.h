@@ -113,4 +113,24 @@ typedef struct creature_t {
     float anim_phase;
 } creature_t;
 
+typedef struct projectile_t {
+    unsigned char active;
+    unsigned char _pad0[3];
+    float angle;
+    float pos_x;
+    float pos_y;
+    float origin_x;
+    float origin_y;
+    float vel_x;
+    float vel_y;
+    int type_id;
+    float life_timer;
+    float reserved;
+    float speed_scale;
+    float damage_pool;
+    float hit_radius;
+    float base_damage;
+    int owner_id;
+} projectile_t;
+
 #endif

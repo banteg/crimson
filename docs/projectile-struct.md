@@ -15,6 +15,32 @@ Notes:
 - Field arrays are labeled in the data map (e.g. `projectile_pos_x`, `projectile_type_id`,
   `projectile_life_timer`, `projectile_owner_id`) at `projectile_pool` + offsets.
 
+## Struct view (projectile_t)
+
+`projectile_pool` is typed as `projectile_t` (0x40 bytes).
+
+```c
+typedef struct projectile_t {
+    unsigned char active;
+    unsigned char _pad0[3];
+    float angle;
+    float pos_x;
+    float pos_y;
+    float origin_x;
+    float origin_y;
+    float vel_x;
+    float vel_y;
+    int type_id;
+    float life_timer;
+    float reserved;
+    float speed_scale;
+    float damage_pool;
+    float hit_radius;
+    float base_damage;
+    int owner_id;
+} projectile_t;
+```
+
 | Offset | Field | Evidence |
 | --- | --- | --- |
 | 0x00 | active (byte) | Set to `1` on spawn; cleared when lifetime expires in `projectile_update`. |

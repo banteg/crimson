@@ -2598,6 +2598,7 @@
       "address": "0x004926b8",
       "comment": "Projectile pool base (0x60 entries, stride 0x40)",
       "name": "projectile_pool",
+      "type": "projectile_t",
       "program": "crimsonland.exe"
     },
     {

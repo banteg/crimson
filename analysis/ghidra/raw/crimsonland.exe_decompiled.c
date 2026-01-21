@@ -6316,9 +6316,8 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
                                  owner_id);
         if (iVar6 != -1) {
           iVar11 = crt_rand();
-          (&projectile_speed_scale)[iVar6 * 0x10] =
-               ((float)(iVar11 % 0x32) * 0.01 + 0.5) *
-               (float)(&projectile_speed_scale)[iVar6 * 0x10];
+          (&projectile_pool)[iVar6].speed_scale =
+               ((float)(iVar11 % 0x32) * 0.01 + 0.5) * (&projectile_pool)[iVar6].speed_scale;
         }
         iVar4 = iVar4 + -1;
       } while (iVar4 != 0);
@@ -7005,7 +7004,7 @@ int * FUN_0040b5d0(void)
 {
   undefined4 *puVar1;
   float *pfVar2;
-  undefined1 *puVar3;
+  projectile_t *ppVar3;
   player_state_t *ppVar4;
   
   puVar1 = &bonus_pool;
@@ -7019,11 +7018,11 @@ int * FUN_0040b5d0(void)
     *pfVar2 = -1.0;
     pfVar2 = pfVar2 + 0x26;
   } while ((int)pfVar2 < 0x4aa35c);
-  puVar3 = &projectile_pool;
+  ppVar3 = &projectile_pool;
   do {
-    *puVar3 = 0;
-    puVar3 = puVar3 + 0x40;
-  } while ((int)puVar3 < 0x493eb8);
+    ppVar3->active = '\0';
+    ppVar3 = ppVar3 + 1;
+  } while ((int)ppVar3 < 0x493eb8);
   ppVar4 = &player_health;
   do {
     ppVar4[-1]._pad1[0] = '\0';
@@ -10591,11 +10590,12 @@ void gameplay_reset_state(void)
 {
   undefined4 *puVar1;
   uchar *puVar2;
-  undefined1 *puVar3;
-  int iVar4;
+  projectile_t *ppVar3;
+  undefined1 *puVar4;
   int iVar5;
-  int *piVar6;
+  int iVar6;
   int *piVar7;
+  int *piVar8;
   
   puVar1 = &bonus_hud_slot_y;
   DAT_0048727c = 0;
@@ -10695,7 +10695,7 @@ void gameplay_reset_state(void)
   perk_choices_dirty = 1;
   bonus_spawn_guard = 0;
   puVar1 = &DAT_0048708c;
-  for (iVar5 = 0x40; iVar5 != 0; iVar5 = iVar5 + -1) {
+  for (iVar6 = 0x40; iVar6 != 0; iVar6 = iVar6 + -1) {
     *puVar1 = 0;
     puVar1 = puVar1 + 1;
   }
@@ -10765,41 +10765,41 @@ void gameplay_reset_state(void)
     *puVar1 = 0;
     puVar1 = puVar1 + 7;
   } while ((int)puVar1 < 0x482b08);
-  puVar3 = &projectile_pool;
+  ppVar3 = &projectile_pool;
   do {
-    *puVar3 = 0;
-    puVar3 = puVar3 + 0x40;
-  } while ((int)puVar3 < 0x493eb8);
-  puVar3 = &sprite_effect_pool;
+    ppVar3->active = '\0';
+    ppVar3 = ppVar3 + 1;
+  } while ((int)ppVar3 < 0x493eb8);
+  puVar4 = &sprite_effect_pool;
   do {
-    *puVar3 = 0;
-    puVar3 = puVar3 + 0x2c;
-  } while ((int)puVar3 < 0x49aa20);
-  puVar3 = &secondary_projectile_pool;
+    *puVar4 = 0;
+    puVar4 = puVar4 + 0x2c;
+  } while ((int)puVar4 < 0x49aa20);
+  puVar4 = &secondary_projectile_pool;
   do {
-    *puVar3 = 0;
-    puVar3 = puVar3 + 0x2c;
-  } while ((int)puVar3 < 0x4965d8);
-  iVar5 = 0;
-  piVar6 = &creature_pool.target_player;
+    *puVar4 = 0;
+    puVar4 = puVar4 + 0x2c;
+  } while ((int)puVar4 < 0x4965d8);
+  iVar6 = 0;
+  piVar7 = &creature_pool.target_player;
   do {
-    iVar4 = _config_player_count;
-    piVar6[-0xe] = 0;
-    ((creature_t *)(piVar6 + -0x1c))->active = '\0';
-    if (iVar4 == 0) {
-      *(undefined1 *)piVar6 = 0;
+    iVar5 = _config_player_count;
+    piVar7[-0xe] = 0;
+    ((creature_t *)(piVar7 + -0x1c))->active = '\0';
+    if (iVar5 == 0) {
+      *(undefined1 *)piVar7 = 0;
     }
     else {
-      *(char *)piVar6 = (char)(iVar5 % iVar4);
+      *(char *)piVar7 = (char)(iVar6 % iVar5);
     }
-    *(uchar *)(piVar6 + -0x1a) = '\x01';
-    piVar6[7] = 0;
-    iVar4 = crt_rand();
-    piVar7 = piVar6 + 0x26;
-    iVar5 = iVar5 + 1;
-    piVar6[9] = (int)(float)(iVar4 % 0x1f);
-    piVar6 = piVar7;
-  } while ((int)piVar7 < 0x4aa3a8);
+    *(uchar *)(piVar7 + -0x1a) = '\x01';
+    piVar7[7] = 0;
+    iVar5 = crt_rand();
+    piVar8 = piVar7 + 0x26;
+    iVar6 = iVar6 + 1;
+    piVar7[9] = (int)(float)(iVar5 % 0x1f);
+    piVar7 = piVar8;
+  } while ((int)piVar8 < 0x4aa3a8);
   puVar1 = &creature_spawn_slot_owner;
   do {
     *puVar1 = 0;
@@ -12473,7 +12473,7 @@ LAB_0041600e:
           iVar9 = crt_rand();
           local_20 = (float)(iVar9 % 100);
           local_34 = (uchar *)((int)local_34 + -1);
-          (&projectile_speed_scale)[iVar14 * 0x10] = (float)(int)local_20 * 0.01 + 1.0;
+          (&projectile_pool)[iVar14].speed_scale = (float)(int)local_20 * 0.01 + 1.0;
         } while (local_34 != (uchar *)0x0);
         local_34 = (uchar *)0x0;
       }
@@ -12501,7 +12501,7 @@ LAB_0041600e:
           iVar9 = crt_rand();
           local_20 = (float)(iVar9 % 100);
           local_34 = (uchar *)((int)local_34 + -1);
-          (&projectile_speed_scale)[iVar14 * 0x10] = (float)(int)local_20 * 0.01 + 1.0;
+          (&projectile_pool)[iVar14].speed_scale = (float)(int)local_20 * 0.01 + 1.0;
         } while (local_34 != (uchar *)0x0);
         local_34 = (uchar *)0x0;
       }
@@ -12538,7 +12538,7 @@ LAB_0041600e:
           iVar9 = crt_rand();
           local_20 = (float)(iVar9 % 100);
           local_34 = (uchar *)((int)local_34 + -1);
-          (&projectile_speed_scale)[iVar14 * 0x10] = (float)(int)local_20 * 0.01 + 1.0;
+          (&projectile_pool)[iVar14].speed_scale = (float)(int)local_20 * 0.01 + 1.0;
         } while (local_34 != (uchar *)0x0);
         local_34 = (uchar *)0x0;
       }
@@ -12662,7 +12662,7 @@ LAB_0041600e:
           iVar9 = crt_rand();
           local_20 = (float)(iVar9 % 0x50);
           local_34 = (uchar *)((int)local_34 + -1);
-          (&projectile_speed_scale)[iVar14 * 0x10] = (float)(int)local_20 * 0.01 + 1.4;
+          (&projectile_pool)[iVar14].speed_scale = (float)(int)local_20 * 0.01 + 1.4;
         } while (local_34 != (uchar *)0x0);
         local_34 = (uchar *)0x0;
       }
@@ -12704,7 +12704,7 @@ LAB_0041600e:
           iVar9 = crt_rand();
           local_20 = (float)(iVar9 % 0x50);
           local_34 = (uchar *)((int)local_34 + -1);
-          (&projectile_speed_scale)[iVar14 * 0x10] = (float)(int)local_20 * 0.01 + 1.4;
+          (&projectile_pool)[iVar14].speed_scale = (float)(int)local_20 * 0.01 + 1.4;
         } while (local_34 != (uchar *)0x0);
         local_34 = (uchar *)0x0;
       }
@@ -12857,7 +12857,7 @@ LAB_0041600e:
           iVar9 = crt_rand();
           local_20 = (float)(iVar9 % 100);
           local_34 = (uchar *)((int)local_34 + -1);
-          (&projectile_speed_scale)[iVar14 * 0x10] = (float)(int)local_20 * 0.01 + 1.0;
+          (&projectile_pool)[iVar14].speed_scale = (float)(int)local_20 * 0.01 + 1.0;
         } while (local_34 != (uchar *)0x0);
         local_34 = (uchar *)0x0;
       }
@@ -18267,10 +18267,9 @@ LAB_0042037f:
 int __cdecl projectile_spawn(float *pos,float angle,int type_id,int owner_id)
 
 {
-  char *pcVar1;
+  projectile_t *ppVar1;
   int iVar2;
-  int iVar3;
-  float10 fVar4;
+  float10 fVar3;
   
   if (bonus_spawn_guard == '\0') {
     while (((((owner_id == -100 || (owner_id == -1)) || (owner_id == -2)) || (owner_id == -3)) &&
@@ -18280,60 +18279,59 @@ int __cdecl projectile_spawn(float *pos,float angle,int type_id,int owner_id)
     }
   }
   iVar2 = 0;
-  pcVar1 = &projectile_pool;
+  ppVar1 = &projectile_pool;
   do {
-    if (*pcVar1 == '\0') goto LAB_004204d7;
-    pcVar1 = pcVar1 + 0x40;
+    if (ppVar1->active == '\0') goto LAB_004204d7;
+    ppVar1 = ppVar1 + 1;
     iVar2 = iVar2 + 1;
-  } while ((int)pcVar1 < 0x493eb8);
+  } while ((int)ppVar1 < 0x493eb8);
   iVar2 = 0x5f;
 LAB_004204d7:
-  fVar4 = (float10)fcos((float10)angle);
-  iVar3 = iVar2 * 0x40;
-  (&projectile_owner_id)[iVar2 * 0x10] = owner_id;
-  (&projectile_pool)[iVar3] = 1;
-  (&projectile_base_damage)[iVar2 * 0x10] = (&weapon_table)[type_id].projectile_meta;
-  (&projectile_pos_x)[iVar2 * 0x10] = *pos;
-  (&projectile_pos_y)[iVar2 * 0x10] = pos[1];
-  (&projectile_origin_x)[iVar2 * 0x10] = *pos;
-  (&projectile_origin_y)[iVar2 * 0x10] = pos[1];
-  (&projectile_angle)[iVar2 * 0x10] = angle;
-  (&projectile_type_id)[iVar2 * 0x10] = type_id;
-  (&projectile_life_timer)[iVar2 * 0x10] = 0x3ecccccd;
-  *(undefined4 *)(&projectile_reserved + iVar3) = 0;
-  (&projectile_speed_scale)[iVar2 * 0x10] = 0x3f800000;
-  (&projectile_vel_x)[iVar2 * 0x10] = (float)(fVar4 * (float10)1.5);
-  fVar4 = (float10)fsin((float10)angle);
-  (&projectile_vel_y)[iVar2 * 0x10] = (float)(fVar4 * (float10)1.5);
+  fVar3 = (float10)fcos((float10)angle);
+  (&projectile_pool)[iVar2].owner_id = owner_id;
+  (&projectile_pool)[iVar2].active = '\x01';
+  (&projectile_pool)[iVar2].base_damage = (&weapon_table)[type_id].projectile_meta;
+  (&projectile_pool)[iVar2].pos_x = *pos;
+  (&projectile_pool)[iVar2].pos_y = pos[1];
+  (&projectile_pool)[iVar2].origin_x = *pos;
+  (&projectile_pool)[iVar2].origin_y = pos[1];
+  (&projectile_pool)[iVar2].angle = angle;
+  (&projectile_pool)[iVar2].type_id = type_id;
+  (&projectile_pool)[iVar2].life_timer = 0.4;
+  (&projectile_pool)[iVar2].reserved = 0.0;
+  (&projectile_pool)[iVar2].speed_scale = 1.0;
+  (&projectile_pool)[iVar2].vel_x = (float)(fVar3 * (float10)1.5);
+  fVar3 = (float10)fsin((float10)angle);
+  (&projectile_pool)[iVar2].vel_y = (float)(fVar3 * (float10)1.5);
   if (type_id == 0x16) {
-    (&projectile_hit_radius)[iVar2 * 0x10] = 0x40400000;
-    *(undefined4 *)(&projectile_damage_pool + iVar3) = 0x3f800000;
+    (&projectile_pool)[iVar2].hit_radius = 3.0;
+    (&projectile_pool)[iVar2].damage_pool = 1.0;
     return iVar2;
   }
   if (type_id == 0x15) {
-    (&projectile_hit_radius)[iVar2 * 0x10] = 0x40a00000;
-    *(undefined4 *)(&projectile_damage_pool + iVar3) = 0x3f800000;
+    (&projectile_pool)[iVar2].hit_radius = 5.0;
+    (&projectile_pool)[iVar2].damage_pool = 1.0;
     return iVar2;
   }
   if ((type_id == 0x17) || (type_id == 0x1c)) {
-    (&projectile_hit_radius)[iVar2 * 0x10] = 0x41200000;
+    (&projectile_pool)[iVar2].hit_radius = 10.0;
   }
   else {
-    (&projectile_hit_radius)[iVar2 * 0x10] = 0x3f800000;
+    (&projectile_pool)[iVar2].hit_radius = 1.0;
     if (type_id == 6) {
-      *(undefined4 *)(&projectile_damage_pool + iVar3) = 0x43960000;
+      (&projectile_pool)[iVar2].damage_pool = 300.0;
       return iVar2;
     }
     if (type_id == 0x2d) {
-      *(undefined4 *)(&projectile_damage_pool + iVar3) = 0x43700000;
+      (&projectile_pool)[iVar2].damage_pool = 240.0;
       return iVar2;
     }
     if (type_id == 0x19) {
-      *(undefined4 *)(&projectile_damage_pool + iVar3) = 0x42480000;
+      (&projectile_pool)[iVar2].damage_pool = 50.0;
       return iVar2;
     }
   }
-  *(undefined4 *)(&projectile_damage_pool + iVar3) = 0x3f800000;
+  (&projectile_pool)[iVar2].damage_pool = 1.0;
   return iVar2;
 }
 
@@ -18346,18 +18344,19 @@ LAB_004204d7:
 void projectile_reset_pools(void)
 
 {
-  undefined1 *puVar1;
+  projectile_t *ppVar1;
+  undefined1 *puVar2;
   
-  puVar1 = &projectile_pool;
+  ppVar1 = &projectile_pool;
   do {
-    *puVar1 = 0;
-    puVar1 = puVar1 + 0x40;
-  } while ((int)puVar1 < 0x493eb8);
-  puVar1 = &particle_pool;
+    ppVar1->active = '\0';
+    ppVar1 = ppVar1 + 1;
+  } while ((int)ppVar1 < 0x493eb8);
+  puVar2 = &particle_pool;
   do {
-    *puVar1 = 0;
-    puVar1 = puVar1 + 0x38;
-  } while ((int)puVar1 < 0x495ab8);
+    *puVar2 = 0;
+    puVar2 = puVar2 + 0x38;
+  } while ((int)puVar2 < 0x495ab8);
   return;
 }
 
@@ -18592,12 +18591,12 @@ void projectile_update(void)
   int iVar4;
   int iVar5;
   int iVar6;
-  int iVar7;
-  uint uVar8;
-  float fVar9;
-  int iVar10;
+  uint uVar7;
+  float fVar8;
+  int iVar9;
+  float *pfVar10;
   float *pfVar11;
-  float *pfVar12;
+  float10 fVar12;
   float10 fVar13;
   float10 fVar14;
   float10 fVar15;
@@ -18666,33 +18665,31 @@ void projectile_update(void)
   }
   local_e8 = 0;
   do {
-    iVar4 = local_e8 * 0x40;
-    if ((&projectile_pool)[iVar4] != '\0') {
-      if ((float)(&projectile_life_timer)[local_e8 * 0x10] <= 0.0) {
-        (&projectile_pool)[iVar4] = 0;
+    if ((&projectile_pool)[local_e8].active != '\0') {
+      if ((&projectile_pool)[local_e8].life_timer <= 0.0) {
+        (&projectile_pool)[local_e8].active = '\0';
       }
-      if (0.4 <= (float)(&projectile_life_timer)[local_e8 * 0x10]) {
-        pfVar11 = (float *)(&projectile_pos_x + local_e8 * 0x10);
-        if (((((float)(&projectile_pos_x)[local_e8 * 0x10] < -64.0) ||
-             ((float)(&projectile_pos_y)[local_e8 * 0x10] < -64.0)) ||
-            ((float)(terrain_texture_width + 0x40) < *pfVar11)) ||
-           ((float)(terrain_texture_height + 0x40) < (float)(&projectile_pos_y)[local_e8 * 0x10])) {
+      if (0.4 <= (&projectile_pool)[local_e8].life_timer) {
+        pfVar10 = &(&projectile_pool)[local_e8].pos_x;
+        if (((((&projectile_pool)[local_e8].pos_x < -64.0) ||
+             ((&projectile_pool)[local_e8].pos_y < -64.0)) ||
+            ((float)(terrain_texture_width + 0x40) < *pfVar10)) ||
+           ((float)(terrain_texture_height + 0x40) < (&projectile_pool)[local_e8].pos_y)) {
 LAB_004219ef:
-          fVar9 = (float)(&projectile_life_timer)[local_e8 * 0x10] - frame_dt;
+          fVar8 = (&projectile_pool)[local_e8].life_timer - frame_dt;
 LAB_004219f8:
-          (&projectile_life_timer)[local_e8 * 0x10] = fVar9;
+          (&projectile_pool)[local_e8].life_timer = fVar8;
         }
         else {
           lVar19 = __ftol();
           local_dc = (float)lVar19;
-          fVar13 = (float10)fcos((float10)(float)(&projectile_angle)[local_e8 * 0x10] -
-                                 (float10)1.5707964);
+          fVar17 = (float10)(&projectile_pool)[local_e8].angle - (float10)1.5707964;
+          fVar12 = (float10)fcos(fVar17);
+          fVar18 = (float10)frame_dt;
+          fVar13 = (float10)fsin(fVar17);
           fVar17 = (float10)frame_dt;
-          fVar14 = (float10)fsin((float10)(float)(&projectile_angle)[local_e8 * 0x10] -
-                                 (float10)1.5707964);
-          fVar16 = (float10)frame_dt;
-          iVar10 = perk_count_get(perk_id_barrel_greaser);
-          if ((iVar10 != 0) && ((int)(&projectile_owner_id)[local_e8 * 0x10] < 0)) {
+          iVar4 = perk_count_get(perk_id_barrel_greaser);
+          if ((iVar4 != 0) && ((&projectile_pool)[local_e8].owner_id < 0)) {
             lVar19 = __ftol();
             local_dc = (float)lVar19;
           }
@@ -18701,53 +18698,52 @@ LAB_004219f8:
           local_c4 = 0.0;
           if (0 < (int)local_dc) {
             do {
-              fVar9 = local_c4;
-              local_cc = (float)(fVar13 * fVar17 * (float10)20.0) *
-                         (float)(&projectile_speed_scale)[local_e8 * 0x10] * 3.0 + local_cc;
-              local_c8 = (float)(fVar14 * fVar16 * (float10)20.0) *
-                         (float)(&projectile_speed_scale)[local_e8 * 0x10] * 3.0 + local_c8;
+              fVar8 = local_c4;
+              local_cc = (float)(fVar12 * fVar18 * (float10)20.0) *
+                         (&projectile_pool)[local_e8].speed_scale * 3.0 + local_cc;
+              local_c8 = (float)(fVar13 * fVar17 * (float10)20.0) *
+                         (&projectile_pool)[local_e8].speed_scale * 3.0 + local_c8;
               if ((4.0 <= SQRT(local_c8 * local_c8 + local_cc * local_cc)) ||
                  ((int)local_dc <= (int)local_c4 + 3)) {
-                FUN_0041e270(pfVar11,&local_cc);
-                iVar10 = creature_find_in_radius
-                                   (pfVar11,(float)(&projectile_hit_radius)[local_e8 * 0x10],0);
-                if ((iVar10 == -1) || (iVar10 == (&projectile_owner_id)[local_e8 * 0x10])) {
+                FUN_0041e270(pfVar10,&local_cc);
+                iVar4 = creature_find_in_radius(pfVar10,(&projectile_pool)[local_e8].hit_radius,0);
+                if ((iVar4 == -1) || (iVar4 == (&projectile_pool)[local_e8].owner_id)) {
                   if (local_e8 != shock_chain_projectile_id) {
-                    if ((&projectile_owner_id)[local_e8 * 0x10] != -100) {
-                      iVar10 = player_find_in_radius
-                                         ((&projectile_owner_id)[local_e8 * 0x10],pfVar11,
-                                          (float)(&projectile_hit_radius)[local_e8 * 0x10]);
+                    if ((&projectile_pool)[local_e8].owner_id != -100) {
+                      iVar4 = player_find_in_radius
+                                        ((&projectile_pool)[local_e8].owner_id,pfVar10,
+                                         (&projectile_pool)[local_e8].hit_radius);
                     }
-                    if (iVar10 != -1) {
-                      (&projectile_life_timer)[local_e8 * 0x10] = 0x3e800000;
-                      if (*(float *)((&player_health)[iVar10]._pad0 + 0x2f4) <= 0.0) {
-                        *(float *)(&player_health)[iVar10]._pad0 =
-                             *(float *)(&player_health)[iVar10]._pad0 - 10.0;
+                    if (iVar4 != -1) {
+                      (&projectile_pool)[local_e8].life_timer = 0.25;
+                      if (*(float *)((&player_health)[iVar4]._pad0 + 0x2f4) <= 0.0) {
+                        *(float *)(&player_health)[iVar4]._pad0 =
+                             *(float *)(&player_health)[iVar4]._pad0 - 10.0;
                       }
                     }
                   }
                 }
                 else {
-                  iVar7 = perk_count_get(perk_id_poison_bullets);
-                  if ((iVar7 != 0) && (iVar7 = crt_rand(), ((byte)iVar7 & 7) == 1)) {
-                    (&creature_pool)[iVar10].flags = (&creature_pool)[iVar10].flags | 1;
+                  iVar9 = perk_count_get(perk_id_poison_bullets);
+                  if ((iVar9 != 0) && (iVar9 = crt_rand(), ((byte)iVar9 & 7) == 1)) {
+                    (&creature_pool)[iVar4].flags = (&creature_pool)[iVar4].flags | 1;
                   }
-                  if ((&projectile_type_id)[local_e8 * 0x10] == 0x19) {
-                    iVar7 = 8;
+                  if ((&projectile_pool)[local_e8].type_id == 0x19) {
+                    iVar9 = 8;
                     do {
-                      fVar9 = 0.0;
-                      uVar8 = crt_rand();
-                      effect_spawn_blood_splatter(pfVar11,(float)(uVar8 & 0xff) * 0.024543693,fVar9)
+                      fVar8 = 0.0;
+                      uVar7 = crt_rand();
+                      effect_spawn_blood_splatter(pfVar10,(float)(uVar7 & 0xff) * 0.024543693,fVar8)
                       ;
-                      iVar7 = iVar7 + -1;
-                    } while (iVar7 != 0);
+                      iVar9 = iVar9 + -1;
+                    } while (iVar9 != 0);
                   }
-                  else if ((&projectile_type_id)[local_e8 * 0x10] == 0x1d) {
-                    FUN_0042f3f0(pfVar11,26.0,4.2039e-45);
-                    projectile_spawn(pfVar11,(float)(&projectile_angle)[local_e8 * 0x10] - 1.0471976
-                                     ,0x1d,iVar10);
-                    projectile_spawn(pfVar11,(float)(&projectile_angle)[local_e8 * 0x10] + 1.0471976
-                                     ,0x1d,iVar10);
+                  else if ((&projectile_pool)[local_e8].type_id == 0x1d) {
+                    FUN_0042f3f0(pfVar10,26.0,4.2039e-45);
+                    projectile_spawn(pfVar10,(&projectile_pool)[local_e8].angle - 1.0471976,0x1d,
+                                     iVar4);
+                    projectile_spawn(pfVar10,(&projectile_pool)[local_e8].angle + 1.0471976,0x1d,
+                                     iVar4);
                   }
                   local_64 = 0x3f800000;
                   local_68 = 1.0;
@@ -18763,477 +18759,469 @@ LAB_004219f8:
                   _effect_template_half_width = 0x40800000;
                   _effect_template_half_height = 0x40800000;
                   if (config_fx_toggle == '\0') {
-                    iVar7 = perk_count_get(perk_id_bloody_mess_quick_learner);
-                    if (iVar7 == 0) {
+                    iVar9 = perk_count_get(perk_id_bloody_mess_quick_learner);
+                    if (iVar9 == 0) {
                       if (_bonus_freeze_timer <= 0.0) {
-                        iVar7 = 2;
+                        iVar9 = 2;
                         do {
                           effect_spawn_blood_splatter
-                                    (pfVar11,(float)(&projectile_angle)[local_e8 * 0x10] - 1.5707964
-                                     ,0.0);
-                          iVar5 = crt_rand();
-                          if (((byte)iVar5 & 7) == 2) {
+                                    (pfVar10,(&projectile_pool)[local_e8].angle - 1.5707964,0.0);
+                          iVar6 = crt_rand();
+                          if (((byte)iVar6 & 7) == 2) {
                             effect_spawn_blood_splatter
-                                      (pfVar11,((float)(&projectile_angle)[local_e8 * 0x10] -
-                                               1.5707964) + 3.1415927,0.0);
+                                      (pfVar10,((&projectile_pool)[local_e8].angle - 1.5707964) +
+                                               3.1415927,0.0);
                           }
-                          iVar7 = iVar7 + -1;
-                        } while (iVar7 != 0);
+                          iVar9 = iVar9 + -1;
+                        } while (iVar9 != 0);
                       }
                     }
                     else {
-                      iVar7 = 8;
+                      iVar9 = 8;
                       do {
-                        fVar9 = 0.0;
-                        uVar8 = crt_rand();
+                        fVar8 = 0.0;
+                        uVar7 = crt_rand();
                         effect_spawn_blood_splatter
-                                  (pfVar11,((float)(&projectile_angle)[local_e8 * 0x10] - 1.5707964)
-                                           + (float)(int)((uVar8 & 0x1f) - 0x10) * 0.0625,fVar9);
-                        iVar7 = iVar7 + -1;
-                      } while (iVar7 != 0);
+                                  (pfVar10,((&projectile_pool)[local_e8].angle - 1.5707964) +
+                                           (float)(int)((uVar7 & 0x1f) - 0x10) * 0.0625,fVar8);
+                        iVar9 = iVar9 + -1;
+                      } while (iVar9 != 0);
                       effect_spawn_blood_splatter
-                                (pfVar11,((float)(&projectile_angle)[local_e8 * 0x10] - 1.5707964) +
+                                (pfVar10,((&projectile_pool)[local_e8].angle - 1.5707964) +
                                          3.1415927,0.0);
                     }
                   }
-                  if ((&creature_pool)[iVar10].hitbox_size == 16.0) {
+                  if ((&creature_pool)[iVar4].hitbox_size == 16.0) {
                     highscore_record_shots_hit = highscore_record_shots_hit + 1;
                   }
-                  iVar7 = perk_count_get(perk_id_bloody_mess_quick_learner);
-                  if (iVar7 != 0) {
+                  iVar9 = perk_count_get(perk_id_bloody_mess_quick_learner);
+                  if (iVar9 != 0) {
                     local_d8 = 0x1e;
-                    iVar7 = -0x1e;
+                    iVar9 = -0x1e;
                     do {
-                      iVar5 = local_d8 - iVar7;
-                      iVar6 = crt_rand();
-                      local_58 = (float)(iVar6 % iVar5 + iVar7);
-                      iVar6 = crt_rand();
-                      local_20 = local_58 + (&creature_pool)[iVar10].pos_x;
-                      local_1c = (float)(iVar6 % iVar5 + iVar7) + (&creature_pool)[iVar10].pos_y;
+                      iVar6 = local_d8 - iVar9;
+                      iVar5 = crt_rand();
+                      local_58 = (float)(iVar5 % iVar6 + iVar9);
+                      iVar5 = crt_rand();
+                      local_20 = local_58 + (&creature_pool)[iVar4].pos_x;
+                      local_1c = (float)(iVar5 % iVar6 + iVar9) + (&creature_pool)[iVar4].pos_y;
                       fx_queue_add_random(&local_20);
-                      iVar6 = crt_rand();
-                      local_28 = (float)(iVar6 % iVar5 + iVar7);
-                      iVar6 = crt_rand();
-                      local_48 = local_28 + (&creature_pool)[iVar10].pos_x;
-                      local_44 = (float)(iVar6 % iVar5 + iVar7) + (&creature_pool)[iVar10].pos_y;
+                      iVar5 = crt_rand();
+                      local_28 = (float)(iVar5 % iVar6 + iVar9);
+                      iVar5 = crt_rand();
+                      local_48 = local_28 + (&creature_pool)[iVar4].pos_x;
+                      local_44 = (float)(iVar5 % iVar6 + iVar9) + (&creature_pool)[iVar4].pos_y;
                       fx_queue_add_random(&local_48);
-                      iVar7 = iVar7 + -10;
+                      iVar9 = iVar9 + -10;
                       local_d8 = local_d8 + 10;
-                    } while (-0x3c < iVar7);
+                    } while (-0x3c < iVar9);
                   }
-                  iVar7 = (&projectile_type_id)[local_e8 * 0x10];
-                  if (((iVar7 != 0x2d) && (iVar7 != 6)) && (iVar7 != 0x19)) {
-                    (&projectile_life_timer)[local_e8 * 0x10] = 0x3e800000;
-                    uVar8 = crt_rand();
-                    fVar15 = (float10)fcos((float10)(float)(&projectile_angle)[local_e8 * 0x10] -
-                                           (float10)1.5707964);
-                    *pfVar11 = (float)(fVar15 * (float10)(uVar8 & 3) + (float10)*pfVar11);
-                    fVar15 = (float10)fsin((float10)(float)(&projectile_angle)[local_e8 * 0x10] -
-                                           (float10)1.5707964);
-                    (&projectile_pos_y)[local_e8 * 0x10] =
-                         (float)(fVar15 * (float10)(uVar8 & 3) +
-                                (float10)(float)(&projectile_pos_y)[local_e8 * 0x10]);
+                  iVar9 = (&projectile_pool)[local_e8].type_id;
+                  if (((iVar9 != 0x2d) && (iVar9 != 6)) && (iVar9 != 0x19)) {
+                    (&projectile_pool)[local_e8].life_timer = 0.25;
+                    uVar7 = crt_rand();
+                    fVar14 = (float10)(&projectile_pool)[local_e8].angle - (float10)1.5707964;
+                    fVar15 = (float10)fcos(fVar14);
+                    *pfVar10 = (float)(fVar15 * (float10)(uVar7 & 3) + (float10)*pfVar10);
+                    fVar14 = (float10)fsin(fVar14);
+                    (&projectile_pool)[local_e8].pos_y =
+                         (float)(fVar14 * (float10)(uVar7 & 3) +
+                                (float10)(&projectile_pool)[local_e8].pos_y);
                   }
-                  fVar9 = SQRT(((float)(&projectile_origin_x)[local_e8 * 0x10] - *pfVar11) *
-                               ((float)(&projectile_origin_x)[local_e8 * 0x10] - *pfVar11) +
-                               ((float)(&projectile_origin_y)[local_e8 * 0x10] -
-                               (float)(&projectile_pos_y)[local_e8 * 0x10]) *
-                               ((float)(&projectile_origin_y)[local_e8 * 0x10] -
-                               (float)(&projectile_pos_y)[local_e8 * 0x10]));
-                  if (fVar9 < 50.0) {
-                    fVar9 = 50.0;
+                  fVar8 = (&projectile_pool)[local_e8].origin_x - *pfVar10;
+                  fVar20 = (&projectile_pool)[local_e8].origin_y -
+                           (&projectile_pool)[local_e8].pos_y;
+                  fVar8 = SQRT(fVar8 * fVar8 + fVar20 * fVar20);
+                  if (fVar8 < 50.0) {
+                    fVar8 = 50.0;
                   }
-                  iVar7 = (&projectile_type_id)[local_e8 * 0x10];
-                  fVar20 = (&weapon_table)[iVar7].damage_scale;
-                  if (iVar7 == 0x16) {
-                    FUN_0042f270(pfVar11,1.5,0.1);
-                    FUN_0042f540((int)pfVar11,0.8);
+                  iVar9 = (&projectile_pool)[local_e8].type_id;
+                  fVar20 = (&weapon_table)[iVar9].damage_scale;
+                  if (iVar9 == 0x16) {
+                    FUN_0042f270(pfVar10,1.5,0.1);
+                    FUN_0042f540((int)pfVar10,0.8);
                   }
-                  else if (iVar7 == 0x15) {
+                  else if (iVar9 == 0x15) {
                     if ((0 < shock_chain_links_left) && (local_e8 == shock_chain_projectile_id)) {
                       shock_chain_links_left = shock_chain_links_left + -1;
-                      iVar7 = creature_find_nearest(pfVar11,iVar10,100.0);
+                      iVar9 = creature_find_nearest(pfVar10,iVar4,100.0);
                       bonus_spawn_guard = 1;
-                      fVar15 = (float10)fpatan((float10)(&creature_pool)[iVar7].pos_y -
-                                               (float10)(&creature_pool)[iVar10].pos_y,
-                                               (float10)(&creature_pool)[iVar7].pos_x -
-                                               (float10)(&creature_pool)[iVar10].pos_x);
+                      fVar14 = (float10)fpatan((float10)(&creature_pool)[iVar9].pos_y -
+                                               (float10)(&creature_pool)[iVar4].pos_y,
+                                               (float10)(&creature_pool)[iVar9].pos_x -
+                                               (float10)(&creature_pool)[iVar4].pos_x);
                       shock_chain_projectile_id =
-                           projectile_spawn(pfVar11,(float)((fVar15 - (float10)1.5707964) -
-                                                           (float10)3.1415927),0x15,iVar10);
+                           projectile_spawn(pfVar10,(float)((fVar14 - (float10)1.5707964) -
+                                                           (float10)3.1415927),0x15,iVar4);
                       bonus_spawn_guard = 0;
                     }
-                    FUN_0042f270(pfVar11,1.2,0.4);
-                    FUN_0042f540((int)pfVar11,1.2);
+                    FUN_0042f270(pfVar10,1.2,0.4);
+                    FUN_0042f540((int)pfVar10,1.2);
                   }
-                  else if (iVar7 == 0x17) {
-                    FUN_0042f270(pfVar11,1.0,1.0);
-                    FUN_0042f540((int)pfVar11,2.2);
+                  else if (iVar9 == 0x17) {
+                    FUN_0042f270(pfVar10,1.0,1.0);
+                    FUN_0042f540((int)pfVar10,2.2);
                     sfx_play_panned(sfx_shockwave);
                   }
-                  else if (iVar7 == 0x1c) {
+                  else if (iVar9 == 0x1c) {
                     bonus_spawn_guard = 1;
                     local_e4 = 0;
-                    fVar3 = (&creature_pool)[iVar10].size * 0.5 + 1.0;
+                    fVar3 = (&creature_pool)[iVar4].size * 0.5 + 1.0;
                     do {
                       fVar1 = (float)((float10)local_e4 * (float10)0.5235988);
-                      fVar15 = (float10)fcos((float10)local_e4 * (float10)0.5235988);
-                      fVar18 = (float10)fsin((float10)fVar1);
-                      local_34 = (float)(fVar18 * (float10)fVar3);
-                      local_88 = (float)(fVar15 * (float10)fVar3 + (float10)*pfVar11);
-                      local_84 = local_34 + (float)(&projectile_pos_y)[local_e8 * 0x10];
+                      fVar14 = (float10)fcos((float10)local_e4 * (float10)0.5235988);
+                      fVar15 = (float10)fsin((float10)fVar1);
+                      local_34 = (float)(fVar15 * (float10)fVar3);
+                      local_88 = (float)(fVar14 * (float10)fVar3 + (float10)*pfVar10);
+                      local_84 = local_34 + (&projectile_pool)[local_e8].pos_y;
                       projectile_spawn(&local_88,fVar1,9,-100);
                       local_e4 = local_e4 + 1;
                     } while (local_e4 < 0xc);
                     bonus_spawn_guard = 0;
                     sfx_play_panned(sfx_explosion_medium);
                     sfx_play_panned(sfx_shockwave);
-                    FUN_0042f330(pfVar11,1.5,0x3f800000);
-                    FUN_0042f330(pfVar11,1.0,0x3f800000);
+                    FUN_0042f330(pfVar10,1.5,0x3f800000);
+                    FUN_0042f330(pfVar10,1.0,0x3f800000);
                   }
-                  else if (iVar7 == 0x18) {
-                    FUN_0042f080(pfVar11);
-                    fVar3 = (&creature_pool)[iVar10].size * 0.65;
-                    (&projectile_life_timer)[local_e8 * 0x10] = 0x3e800000;
-                    (&creature_pool)[iVar10].size = fVar3;
+                  else if (iVar9 == 0x18) {
+                    FUN_0042f080(pfVar10);
+                    fVar3 = (&creature_pool)[iVar4].size * 0.65;
+                    (&projectile_pool)[local_e8].life_timer = 0.25;
+                    (&creature_pool)[iVar4].size = fVar3;
                     if (fVar3 < 16.0) {
-                      creature_handle_death(iVar10,true);
+                      creature_handle_death(iVar4,true);
                     }
                   }
-                  else if (iVar7 == 0x13) {
+                  else if (iVar9 == 0x13) {
                     local_14 = local_c8 * 3.0;
-                    (&creature_pool)[iVar10].pos_x = local_cc * 3.0 + (&creature_pool)[iVar10].pos_x
-                    ;
-                    (&creature_pool)[iVar10].pos_y = local_14 + (&creature_pool)[iVar10].pos_y;
+                    (&creature_pool)[iVar4].pos_x = local_cc * 3.0 + (&creature_pool)[iVar4].pos_x;
+                    (&creature_pool)[iVar4].pos_y = local_14 + (&creature_pool)[iVar4].pos_y;
                   }
-                  else if (iVar7 == 0x29) {
-                    (&creature_pool)[iVar10].collision_flag = '\x01';
+                  else if (iVar9 == 0x29) {
+                    (&creature_pool)[iVar4].collision_flag = '\x01';
                   }
-                  fVar9 = ((100.0 / fVar9) * fVar20 * 30.0 + 10.0) * 0.95;
-                  if ((0.0 < fVar9) && (0.0 < (&creature_pool)[iVar10].health)) {
-                    fVar20 = *(float *)(&projectile_damage_pool + iVar4) - 1.0;
-                    *(float *)(&projectile_damage_pool + iVar4) = fVar20;
-                    fVar15 = (float10)fcos((float10)(float)(&projectile_angle)[local_e8 * 0x10] -
+                  fVar8 = ((100.0 / fVar8) * fVar20 * 30.0 + 10.0) * 0.95;
+                  if ((0.0 < fVar8) && (0.0 < (&creature_pool)[iVar4].health)) {
+                    fVar20 = (&projectile_pool)[local_e8].damage_pool - 1.0;
+                    (&projectile_pool)[local_e8].damage_pool = fVar20;
+                    fVar14 = (float10)fcos((float10)(&projectile_pool)[local_e8].angle -
                                            (float10)1.5707964);
+                    fVar15 = fVar14 * (float10)(&projectile_pool)[local_e8].speed_scale;
                     if (fVar20 <= 0.0) {
-                      local_98 = (float)(fVar15 * (float10)(float)(&projectile_speed_scale)
-                                                                  [local_e8 * 0x10]);
-                      local_94 = (float)(fVar15 * (float10)(float)(&projectile_speed_scale)
-                                                                  [local_e8 * 0x10]);
-                      creature_apply_damage(iVar10,fVar9,1,&local_98);
-                      if ((&projectile_life_timer)[local_e8 * 0x10] != 0x3e800000) {
-                        (&projectile_life_timer)[local_e8 * 0x10] = 0x3e800000;
+                      local_98 = (float)fVar15;
+                      local_94 = (float)(fVar14 * (float10)(&projectile_pool)[local_e8].speed_scale)
+                      ;
+                      creature_apply_damage(iVar4,fVar8,1,&local_98);
+                      if ((&projectile_pool)[local_e8].life_timer != 0.25) {
+                        (&projectile_pool)[local_e8].life_timer = 0.25;
                       }
                     }
                     else {
-                      local_78 = (float)(fVar15 * (float10)(float)(&projectile_speed_scale)
-                                                                  [local_e8 * 0x10]);
-                      local_74 = (float)(fVar15 * (float10)(float)(&projectile_speed_scale)
-                                                                  [local_e8 * 0x10]);
-                      creature_apply_damage(iVar10,fVar20,1,&local_78);
-                      *(float *)(&projectile_damage_pool + iVar4) =
-                           *(float *)(&projectile_damage_pool + iVar4) -
-                           (&creature_pool)[iVar10].health;
+                      local_78 = (float)fVar15;
+                      local_74 = (float)(fVar14 * (float10)(&projectile_pool)[local_e8].speed_scale)
+                      ;
+                      creature_apply_damage(iVar4,fVar20,1,&local_78);
+                      (&projectile_pool)[local_e8].damage_pool =
+                           (&projectile_pool)[local_e8].damage_pool - (&creature_pool)[iVar4].health
+                      ;
                     }
                   }
-                  if ((*(int *)(&projectile_damage_pool + iVar4) == 0x3f800000) &&
-                     (iVar7 = (&projectile_life_timer)[local_e8 * 0x10],
-                     *(undefined4 *)(&projectile_damage_pool + iVar4) = 0, iVar7 != 0x3e800000)) {
-                    (&projectile_life_timer)[local_e8 * 0x10] = 0x3e800000;
+                  if (((&projectile_pool)[local_e8].damage_pool == 1.0) &&
+                     (fVar8 = (&projectile_pool)[local_e8].life_timer,
+                     (&projectile_pool)[local_e8].damage_pool = 0.0, fVar8 != 0.25)) {
+                    (&projectile_pool)[local_e8].life_timer = 0.25;
                   }
-                  (&creature_pool)[iVar10].state_flag = '\x01';
+                  (&creature_pool)[iVar4].state_flag = '\x01';
                   crt_rand();
-                  if (((&projectile_type_id)[local_e8 * 0x10] == 6) ||
-                     ((&projectile_type_id)[local_e8 * 0x10] == 0x2d)) {
+                  if (((&projectile_pool)[local_e8].type_id == 6) ||
+                     ((&projectile_pool)[local_e8].type_id == 0x2d)) {
                     perk_count_get(perk_id_bloody_mess_quick_learner);
                     local_ec = 6;
                     do {
-                      iVar7 = crt_rand();
-                      fVar15 = (float10)(iVar7 % 100) * (float10)0.1;
-                      if ((float10)4.0 < fVar15) {
-                        iVar7 = crt_rand();
-                        fVar15 = (float10)(iVar7 % 0x5a + 10) * (float10)0.1;
+                      iVar9 = crt_rand();
+                      fVar14 = (float10)(iVar9 % 100) * (float10)0.1;
+                      if ((float10)4.0 < fVar14) {
+                        iVar9 = crt_rand();
+                        fVar14 = (float10)(iVar9 % 0x5a + 10) * (float10)0.1;
                       }
-                      if ((float10)7.0 < fVar15) {
-                        iVar7 = crt_rand();
-                        fVar15 = (float10)(iVar7 % 0x50 + 0x14) * (float10)0.1;
+                      if ((float10)7.0 < fVar14) {
+                        iVar9 = crt_rand();
+                        fVar14 = (float10)(iVar9 % 0x50 + 0x14) * (float10)0.1;
                       }
-                      fVar18 = (float10)fcos((float10)(float)(&projectile_angle)[local_e8 * 0x10] -
-                                             (float10)1.5707964);
+                      fVar15 = (float10)(&projectile_pool)[local_e8].angle - (float10)1.5707964;
+                      fVar16 = (float10)fcos(fVar15);
                       local_a8 = 0.0;
                       local_a4 = 0.0;
-                      fVar9 = (float)(fVar18 * fVar15 * (float10)20.0);
-                      fVar18 = (float10)fsin((float10)(float)(&projectile_angle)[local_e8 * 0x10] -
-                                             (float10)1.5707964);
-                      fVar20 = (float)(fVar18 * fVar15 * (float10)20.0);
-                      local_b0 = fVar9 + (&creature_pool)[iVar10].pos_x;
-                      local_ac = fVar20 + (&creature_pool)[iVar10].pos_y;
-                      vec2_add_inplace(iVar10,&local_b0,&local_a8);
+                      fVar8 = (float)(fVar16 * fVar14 * (float10)20.0);
+                      fVar15 = (float10)fsin(fVar15);
+                      fVar20 = (float)(fVar15 * fVar14 * (float10)20.0);
+                      local_b0 = fVar8 + (&creature_pool)[iVar4].pos_x;
+                      local_ac = fVar20 + (&creature_pool)[iVar4].pos_y;
+                      vec2_add_inplace(iVar4,&local_b0,&local_a8);
                       crt_rand();
                       if (0.0 < _bonus_freeze_timer) {
-                        local_a0 = fVar9 + *pfVar11;
-                        local_9c = fVar20 + (float)(&projectile_pos_y)[local_e8 * 0x10];
-                        iVar7 = crt_rand();
+                        local_a0 = fVar8 + *pfVar10;
+                        local_9c = fVar20 + (&projectile_pool)[local_e8].pos_y;
+                        iVar9 = crt_rand();
                         effect_spawn_freeze_shard
                                   (&local_a0,
-                                   ((float)(&projectile_angle)[local_e8 * 0x10] - 1.5707964) +
-                                   (float)(iVar7 % 100) * 0.01);
+                                   ((&projectile_pool)[local_e8].angle - 1.5707964) +
+                                   (float)(iVar9 % 100) * 0.01);
                       }
-                      local_b8 = fVar9 + (&creature_pool)[iVar10].pos_x;
-                      local_b4 = fVar20 + (&creature_pool)[iVar10].pos_y;
+                      local_b8 = fVar8 + (&creature_pool)[iVar4].pos_x;
+                      local_b4 = fVar20 + (&creature_pool)[iVar4].pos_y;
                       fx_queue_add_random(&local_b8);
                       local_ec = local_ec + -1;
                     } while (local_ec != 0);
                   }
                   else if (_bonus_freeze_timer <= 0.0) {
-                    pfVar12 = &(&creature_pool)[iVar10].pos_x;
-                    iVar7 = 3;
+                    pfVar11 = &(&creature_pool)[iVar4].pos_x;
+                    iVar9 = 3;
                     do {
-                      iVar5 = crt_rand();
-                      fVar18 = ((float10)(float)(&projectile_angle)[local_e8 * 0x10] -
-                               (float10)1.5707964) + (float10)(iVar5 % 0x14 + -10) * (float10)0.1;
-                      fVar15 = (float10)fcos(fVar18);
-                      fVar9 = (float)(fVar15 * (float10)20.0);
-                      fVar15 = (float10)fsin(fVar18);
-                      fVar20 = (float)(fVar15 * (float10)20.0);
-                      fx_queue_add_random(pfVar12);
+                      iVar6 = crt_rand();
+                      fVar15 = ((float10)(&projectile_pool)[local_e8].angle - (float10)1.5707964) +
+                               (float10)(iVar6 % 0x14 + -10) * (float10)0.1;
+                      fVar14 = (float10)fcos(fVar15);
+                      fVar8 = (float)(fVar14 * (float10)20.0);
+                      fVar14 = (float10)fsin(fVar15);
+                      fVar20 = (float)(fVar14 * (float10)20.0);
+                      fx_queue_add_random(pfVar11);
                       local_4c = fVar20 * 1.5;
-                      local_70 = fVar9 * 1.5 + *pfVar12;
-                      local_6c = local_4c + (&creature_pool)[iVar10].pos_y;
+                      local_70 = fVar8 * 1.5 + *pfVar11;
+                      local_6c = local_4c + (&creature_pool)[iVar4].pos_y;
                       fx_queue_add_random(&local_70);
                       local_3c = fVar20 + fVar20;
-                      local_80 = fVar9 + fVar9 + *pfVar12;
-                      local_7c = local_3c + (&creature_pool)[iVar10].pos_y;
+                      local_80 = fVar8 + fVar8 + *pfVar11;
+                      local_7c = local_3c + (&creature_pool)[iVar4].pos_y;
                       fx_queue_add_random(&local_80);
                       local_2c = fVar20 * 2.5;
-                      local_90 = fVar9 * 2.5 + *pfVar12;
-                      local_8c = local_2c + (&creature_pool)[iVar10].pos_y;
+                      local_90 = fVar8 * 2.5 + *pfVar11;
+                      local_8c = local_2c + (&creature_pool)[iVar4].pos_y;
                       fx_queue_add_random(&local_90);
-                      iVar7 = iVar7 + -1;
-                    } while (iVar7 != 0);
+                      iVar9 = iVar9 + -1;
+                    } while (iVar9 != 0);
                   }
                   else {
-                    iVar10 = crt_rand();
+                    iVar4 = crt_rand();
                     effect_spawn_freeze_shard
-                              (pfVar11,((float)(&projectile_angle)[local_e8 * 0x10] - 1.5707964) +
-                                       (float)(iVar10 % 100) * 0.01);
+                              (pfVar10,((&projectile_pool)[local_e8].angle - 1.5707964) +
+                                       (float)(iVar4 % 100) * 0.01);
                   }
                   if (((demo_mode_active == '\0') && (DAT_004cc8d4 == '\0')) &&
                      (_config_game_mode != 2)) {
                     sfx_play_exclusive(music_track_extra_0);
                   }
                   else {
-                    fVar9 = sfx_shock_hit_01;
-                    if ((&weapon_ammo_class)[(&projectile_type_id)[local_e8 * 0x10] * 0x1f] != 4) {
-                      iVar10 = crt_rand();
-                      fVar9 = (float)(iVar10 % 6 + sfx_bullet_hit_01);
+                    fVar8 = sfx_shock_hit_01;
+                    if ((&weapon_ammo_class)[(&projectile_pool)[local_e8].type_id * 0x1f] != 4) {
+                      iVar4 = crt_rand();
+                      fVar8 = (float)(iVar4 % 6 + sfx_bullet_hit_01);
                     }
-                    sfx_play_panned(fVar9);
+                    sfx_play_panned(fVar8);
                   }
-                  fVar9 = local_c4;
-                  if (*(float *)(&projectile_damage_pool + iVar4) <= 0.0) break;
+                  fVar8 = local_c4;
+                  if ((&projectile_pool)[local_e8].damage_pool <= 0.0) break;
                 }
                 local_c8 = 0.0;
                 local_cc = 0.0;
               }
-              local_c4 = (float)((int)fVar9 + 3);
+              local_c4 = (float)((int)fVar8 + 3);
             } while ((int)local_c4 < (int)local_dc);
           }
         }
       }
       else {
-        iVar4 = (&projectile_type_id)[local_e8 * 0x10];
+        iVar4 = (&projectile_pool)[local_e8].type_id;
         if ((iVar4 == 0x15) || (iVar4 == 0x16)) {
           if (local_e8 == shock_chain_projectile_id) {
             shock_chain_projectile_id = -1;
             shock_chain_links_left = 0;
           }
-          (&projectile_life_timer)[local_e8 * 0x10] =
-               (float)(&projectile_life_timer)[local_e8 * 0x10] - frame_dt;
+          (&projectile_pool)[local_e8].life_timer =
+               (&projectile_pool)[local_e8].life_timer - frame_dt;
           if (iVar4 == 0x15) {
             fVar20 = frame_dt * 100.0;
-            fVar9 = local_c0 * 88.0;
+            fVar8 = local_c0 * 88.0;
           }
           else {
             fVar20 = frame_dt * 40.0;
-            fVar9 = local_c0 * 60.0;
+            fVar8 = local_c0 * 60.0;
           }
         }
         else {
           if (iVar4 != 0x17) {
             if (iVar4 != 6) goto LAB_004219ef;
-            fVar9 = (float)(&projectile_life_timer)[local_e8 * 0x10] - frame_dt * 0.1;
+            fVar8 = (&projectile_pool)[local_e8].life_timer - frame_dt * 0.1;
             goto LAB_004219f8;
           }
-          (&projectile_life_timer)[local_e8 * 0x10] =
-               (float)(&projectile_life_timer)[local_e8 * 0x10] - frame_dt * 0.7;
+          (&projectile_pool)[local_e8].life_timer =
+               (&projectile_pool)[local_e8].life_timer - frame_dt * 0.7;
           fVar20 = frame_dt * 300.0;
-          fVar9 = local_c0 * 128.0;
+          fVar8 = local_c0 * 128.0;
         }
-        creatures_apply_radius_damage((float *)(&projectile_pos_x + local_e8 * 0x10),fVar9,fVar20,7)
-        ;
+        creatures_apply_radius_damage(&(&projectile_pool)[local_e8].pos_x,fVar8,fVar20,7);
       }
     }
     local_e8 = local_e8 + 1;
   } while (local_e8 < 0x60);
-  pfVar11 = (float *)&secondary_proj_vel_y;
+  pfVar10 = (float *)&secondary_proj_vel_y;
   do {
-    if (*(char *)(pfVar11 + -6) != '\0') {
-      if (pfVar11[1] == 4.2039e-45) {
+    if (*(char *)(pfVar10 + -6) != '\0') {
+      if (pfVar10[1] == 4.2039e-45) {
         camera_shake_pulses = 4;
-        fVar9 = frame_dt * 3.0 + pfVar11[-1];
-        pfVar11[-1] = fVar9;
-        if (1.0 < fVar9) {
+        fVar8 = frame_dt * 3.0 + pfVar10[-1];
+        pfVar10[-1] = fVar8;
+        if (1.0 < fVar8) {
           local_10[0] = 0.0;
           local_10[1] = 0.0;
           local_10[2] = 0.0;
           local_10[3] = 0.25;
-          fx_queue_add(0x10,pfVar11 + -3,*pfVar11 * 256.0,*pfVar11 * 256.0,0.0,local_10);
-          *(undefined1 *)(pfVar11 + -6) = 0;
+          fx_queue_add(0x10,pfVar10 + -3,*pfVar10 * 256.0,*pfVar10 * 256.0,0.0,local_10);
+          *(undefined1 *)(pfVar10 + -6) = 0;
         }
-        fVar9 = *pfVar11;
-        fVar20 = pfVar11[-1];
+        fVar8 = *pfVar10;
+        fVar20 = pfVar10[-1];
         iVar4 = 0;
-        pfVar12 = &creature_pool.pos_y;
+        pfVar11 = &creature_pool.pos_y;
         do {
-          if ((((creature_t *)(pfVar12 + -6))->active != '\0') && (0.0 < pfVar12[3])) {
-            fVar3 = pfVar12[-1] - pfVar11[-3];
-            fVar1 = *pfVar12 - pfVar11[-2];
-            if (SQRT(fVar3 * fVar3 + fVar1 * fVar1) < fVar9 * fVar20 * 80.0) {
+          if ((((creature_t *)(pfVar11 + -6))->active != '\0') && (0.0 < pfVar11[3])) {
+            fVar3 = pfVar11[-1] - pfVar10[-3];
+            fVar1 = *pfVar11 - pfVar10[-2];
+            if (SQRT(fVar3 * fVar3 + fVar1 * fVar1) < fVar8 * fVar20 * 80.0) {
               local_c0 = fVar3;
               local_bc = fVar1;
               thunk_FUN_00452f1d();
               local_c0 = local_c8 * 0.1;
               local_bc = local_c4 * 0.1;
-              creature_apply_damage(iVar4,frame_dt * *pfVar11 * 700.0,3,&local_c0);
-              if (pfVar12[3] <= 0.0) {
-                fx_queue_add_random(pfVar12 + -1);
-                fx_queue_add_random(pfVar12 + -1);
+              creature_apply_damage(iVar4,frame_dt * *pfVar10 * 700.0,3,&local_c0);
+              if (pfVar11[3] <= 0.0) {
+                fx_queue_add_random(pfVar11 + -1);
+                fx_queue_add_random(pfVar11 + -1);
                 creature_handle_death(iVar4,true);
               }
             }
           }
-          pfVar12 = pfVar12 + 0x26;
+          pfVar11 = pfVar11 + 0x26;
           iVar4 = iVar4 + 1;
-        } while ((int)pfVar12 < 0x4aa350);
+        } while ((int)pfVar11 < 0x4aa350);
       }
       else {
-        local_a0 = frame_dt * pfVar11[-1];
-        pfVar12 = pfVar11 + -3;
-        local_9c = frame_dt * *pfVar11;
-        FUN_0041e270(pfVar12,&local_a0);
-        fVar9 = pfVar11[1];
-        if (fVar9 == 1.4013e-45) {
-          if (SQRT(pfVar11[-1] * pfVar11[-1] + *pfVar11 * *pfVar11) < 500.0) {
-            fVar9 = 3.0;
+        local_a0 = frame_dt * pfVar10[-1];
+        pfVar11 = pfVar10 + -3;
+        local_9c = frame_dt * *pfVar10;
+        FUN_0041e270(pfVar11,&local_a0);
+        fVar8 = pfVar10[1];
+        if (fVar8 == 1.4013e-45) {
+          if (SQRT(pfVar10[-1] * pfVar10[-1] + *pfVar10 * *pfVar10) < 500.0) {
+            fVar8 = 3.0;
 LAB_00421c48:
-            fVar9 = frame_dt * fVar9 + 1.0;
-            pfVar11[-1] = fVar9 * pfVar11[-1];
-            *pfVar11 = fVar9 * *pfVar11;
+            fVar8 = frame_dt * fVar8 + 1.0;
+            pfVar10[-1] = fVar8 * pfVar10[-1];
+            *pfVar10 = fVar8 * *pfVar10;
           }
 LAB_00421c5a:
-          fVar9 = pfVar11[-4] - frame_dt;
+          fVar8 = pfVar10[-4] - frame_dt;
 LAB_00421d65:
-          pfVar11[-4] = fVar9;
+          pfVar10[-4] = fVar8;
         }
         else {
-          if (fVar9 == 5.60519e-45) {
-            if (SQRT(pfVar11[-1] * pfVar11[-1] + *pfVar11 * *pfVar11) < 600.0) {
-              fVar9 = 4.0;
+          if (fVar8 == 5.60519e-45) {
+            if (SQRT(pfVar10[-1] * pfVar10[-1] + *pfVar10 * *pfVar10) < 600.0) {
+              fVar8 = 4.0;
               goto LAB_00421c48;
             }
             goto LAB_00421c5a;
           }
-          if (fVar9 == 2.8026e-45) {
-            if ((&creature_pool)[(int)pfVar11[3]].active == '\0') {
-              fVar9 = (float)creature_find_nearest(pfVar12,-1,0.0);
-              pfVar11[3] = fVar9;
+          if (fVar8 == 2.8026e-45) {
+            if ((&creature_pool)[(int)pfVar10[3]].active == '\0') {
+              fVar8 = (float)creature_find_nearest(pfVar11,-1,0.0);
+              pfVar10[3] = fVar8;
             }
-            fVar17 = (float10)fpatan((float10)pfVar11[-2] -
-                                     (float10)(&creature_pool)[(int)pfVar11[3]].pos_y,
-                                     (float10)*pfVar12 -
-                                     (float10)(&creature_pool)[(int)pfVar11[3]].pos_x);
-            pfVar11[-5] = (float)(fVar17 - (float10)1.5707964);
-            fVar17 = (float10)fcos((fVar17 - (float10)1.5707964) - (float10)1.5707964);
-            pfVar11[-1] = (float)(fVar17 * (float10)frame_dt * (float10)800.0 + (float10)pfVar11[-1]
+            fVar18 = (float10)fpatan((float10)pfVar10[-2] -
+                                     (float10)(&creature_pool)[(int)pfVar10[3]].pos_y,
+                                     (float10)*pfVar11 -
+                                     (float10)(&creature_pool)[(int)pfVar10[3]].pos_x);
+            pfVar10[-5] = (float)(fVar18 - (float10)1.5707964);
+            fVar18 = (float10)fcos((fVar18 - (float10)1.5707964) - (float10)1.5707964);
+            pfVar10[-1] = (float)(fVar18 * (float10)frame_dt * (float10)800.0 + (float10)pfVar10[-1]
                                  );
-            fVar17 = (float10)fsin((float10)pfVar11[-5] - (float10)1.5707964);
-            *pfVar11 = (float)(fVar17 * (float10)frame_dt * (float10)800.0 + (float10)*pfVar11);
-            if (350.0 < SQRT(pfVar11[-1] * pfVar11[-1] + *pfVar11 * *pfVar11)) {
-              fVar17 = (float10)fcos((float10)pfVar11[-5] - (float10)1.5707964);
-              pfVar11[-1] = (float)((float10)pfVar11[-1] -
-                                   fVar17 * (float10)frame_dt * (float10)800.0);
-              fVar17 = (float10)fsin((float10)pfVar11[-5] - (float10)1.5707964);
-              *pfVar11 = (float)((float10)*pfVar11 - fVar17 * (float10)frame_dt * (float10)800.0);
+            fVar18 = (float10)fsin((float10)pfVar10[-5] - (float10)1.5707964);
+            *pfVar10 = (float)(fVar18 * (float10)frame_dt * (float10)800.0 + (float10)*pfVar10);
+            if (350.0 < SQRT(pfVar10[-1] * pfVar10[-1] + *pfVar10 * *pfVar10)) {
+              fVar18 = (float10)fcos((float10)pfVar10[-5] - (float10)1.5707964);
+              pfVar10[-1] = (float)((float10)pfVar10[-1] -
+                                   fVar18 * (float10)frame_dt * (float10)800.0);
+              fVar18 = (float10)fsin((float10)pfVar10[-5] - (float10)1.5707964);
+              *pfVar10 = (float)((float10)*pfVar10 - fVar18 * (float10)frame_dt * (float10)800.0);
             }
-            fVar9 = pfVar11[-4] - frame_dt * 0.5;
+            fVar8 = pfVar10[-4] - frame_dt * 0.5;
             goto LAB_00421d65;
           }
         }
-        local_c4 = *pfVar11;
-        fVar9 = pfVar11[2] - (ABS(local_c4) + ABS(pfVar11[-1])) * frame_dt * 0.01;
-        pfVar11[2] = fVar9;
-        if (fVar9 < 0.0) {
-          fVar17 = (float10)fcos((float10)pfVar11[-5] + (float10)1.5707964);
-          fStack_30 = (float)fVar17;
+        local_c4 = *pfVar10;
+        fVar8 = pfVar10[2] - (ABS(local_c4) + ABS(pfVar10[-1])) * frame_dt * 0.01;
+        pfVar10[2] = fVar8;
+        if (fVar8 < 0.0) {
+          fVar18 = (float10)fcos((float10)pfVar10[-5] + (float10)1.5707964);
+          fStack_30 = (float)fVar18;
           local_b0 = fStack_30 * 90.0;
-          local_ac = (float)(fVar17 * (float10)90.0);
-          fVar17 = (float10)fcos((float10)pfVar11[-5] - (float10)1.5707964);
-          fStack_40 = (float)fVar17;
-          fVar17 = (float10)fsin((float10)pfVar11[-5] - (float10)1.5707964);
+          local_ac = (float)(fVar18 * (float10)90.0);
+          fVar18 = (float10)fcos((float10)pfVar10[-5] - (float10)1.5707964);
+          fStack_40 = (float)fVar18;
+          fVar18 = (float10)fsin((float10)pfVar10[-5] - (float10)1.5707964);
           fStack_50 = fStack_40 * 9.0;
-          local_a8 = *pfVar12 - fStack_50;
-          local_a4 = (float)((float10)pfVar11[-2] - fVar17 * (float10)9.0);
+          local_a8 = *pfVar11 - fStack_50;
+          local_a4 = (float)((float10)pfVar10[-2] - fVar18 * (float10)9.0);
           iVar4 = fx_spawn_sprite(&local_a8,&local_b0,14.0);
-          pfVar11[2] = 0.06;
+          pfVar10[2] = 0.06;
           (&sprite_effect_color_a)[iVar4 * 0xb] = 0x3e800000;
         }
-        iVar4 = creature_find_in_radius(pfVar12,8.0,0);
+        iVar4 = creature_find_in_radius(pfVar11,8.0,0);
         if (iVar4 != -1) {
           if ((&creature_pool)[iVar4].hitbox_size == 16.0) {
             highscore_record_shots_hit = highscore_record_shots_hit + 1;
           }
           if (_bonus_freeze_timer <= 0.0) {
-            iVar10 = crt_rand();
-            fStack_18 = (float)(iVar10 % 0x14 + -10);
-            iVar10 = crt_rand();
+            iVar9 = crt_rand();
+            fStack_18 = (float)(iVar9 % 0x14 + -10);
+            iVar9 = crt_rand();
             local_90 = fStack_18 + (&creature_pool)[iVar4].pos_x;
-            local_8c = (float)(iVar10 % 0x14 + -10) + (&creature_pool)[iVar4].pos_y;
+            local_8c = (float)(iVar9 % 0x14 + -10) + (&creature_pool)[iVar4].pos_y;
             fx_queue_add_random(&local_90);
-            iVar10 = crt_rand();
-            fStack_38 = (float)(iVar10 % 0x14 + -10);
-            iVar10 = crt_rand();
+            iVar9 = crt_rand();
+            fStack_38 = (float)(iVar9 % 0x14 + -10);
+            iVar9 = crt_rand();
             local_80 = fStack_38 + (&creature_pool)[iVar4].pos_x;
-            local_7c = (float)(iVar10 % 0x14 + -10) + (&creature_pool)[iVar4].pos_y;
+            local_7c = (float)(iVar9 % 0x14 + -10) + (&creature_pool)[iVar4].pos_y;
             fx_queue_add_random(&local_80);
-            iVar10 = crt_rand();
-            local_28 = (float)(iVar10 % 0x14 + -10);
-            iVar10 = crt_rand();
+            iVar9 = crt_rand();
+            local_28 = (float)(iVar9 % 0x14 + -10);
+            iVar9 = crt_rand();
             local_70 = local_28 + (&creature_pool)[iVar4].pos_x;
-            local_6c = (float)(iVar10 % 0x14 + -10) + (&creature_pool)[iVar4].pos_y;
+            local_6c = (float)(iVar9 % 0x14 + -10) + (&creature_pool)[iVar4].pos_y;
             fx_queue_add_random(&local_70);
           }
           else {
             local_ec = 4;
             do {
-              iVar10 = crt_rand();
-              effect_spawn_freeze_shard(pfVar12,(float)(iVar10 % 0x264) * 0.01);
+              iVar9 = crt_rand();
+              effect_spawn_freeze_shard(pfVar11,(float)(iVar9 % 0x264) * 0.01);
               local_ec = local_ec + -1;
             } while (local_ec != 0);
           }
-          fVar9 = pfVar11[1];
+          fVar8 = pfVar10[1];
           local_dc = 150.0;
-          if (fVar9 == 1.4013e-45) {
-            local_dc = pfVar11[-4] * 50.0 + 500.0;
+          if (fVar8 == 1.4013e-45) {
+            local_dc = pfVar10[-4] * 50.0 + 500.0;
             if (2 < config_detail_preset) {
-              effect_spawn_explosion_burst(pfVar12,0.4);
+              effect_spawn_explosion_burst(pfVar11,0.4);
             }
           }
-          else if (fVar9 == 2.8026e-45) {
-            local_dc = pfVar11[-4] * 20.0 + 80.0;
+          else if (fVar8 == 2.8026e-45) {
+            local_dc = pfVar10[-4] * 20.0 + 80.0;
           }
-          else if (fVar9 == 5.60519e-45) {
-            local_dc = pfVar11[-4] * 20.0 + 40.0;
+          else if (fVar8 == 5.60519e-45) {
+            local_dc = pfVar10[-4] * 20.0 + 40.0;
           }
           if (((demo_mode_active == '\0') && (DAT_004cc8d4 == '\0')) && (_config_game_mode != 2)) {
             sfx_play_exclusive(music_track_extra_0);
@@ -19243,375 +19231,375 @@ LAB_00421d65:
           }
           local_94 = 1.0 / frame_dt;
           (&creature_pool)[iVar4].state_flag = '\x01';
-          local_98 = local_94 * pfVar11[-1];
-          local_94 = local_94 * *pfVar11;
+          local_98 = local_94 * pfVar10[-1];
+          local_94 = local_94 * *pfVar10;
           creature_apply_damage(iVar4,local_dc,3,&local_98);
           fVar20 = _bonus_freeze_timer;
-          fVar9 = pfVar11[1];
-          if (fVar9 == 1.4013e-45) {
-            pfVar11[1] = 4.2039e-45;
-            pfVar11[-1] = 0.0;
-            *pfVar11 = 1.0;
+          fVar8 = pfVar10[1];
+          if (fVar8 == 1.4013e-45) {
+            pfVar10[1] = 4.2039e-45;
+            pfVar10[-1] = 0.0;
+            *pfVar10 = 1.0;
             if (fVar20 <= 0.0) {
-              iVar10 = 0x14;
+              iVar9 = 0x14;
               do {
-                iVar7 = crt_rand();
-                fVar9 = (float)(iVar7 % 0x274) * 0.01;
-                iVar7 = crt_rand();
-                fVar17 = (float10)fcos((float10)fVar9);
-                local_58 = (float)(fVar17 * (float10)(iVar7 % 0x5a));
-                fVar17 = (float10)fsin((float10)fVar9);
+                iVar6 = crt_rand();
+                fVar8 = (float)(iVar6 % 0x274) * 0.01;
+                iVar6 = crt_rand();
+                fVar18 = (float10)fcos((float10)fVar8);
+                local_58 = (float)(fVar18 * (float10)(iVar6 % 0x5a));
+                fVar18 = (float10)fsin((float10)fVar8);
                 local_78 = local_58 + (&creature_pool)[iVar4].pos_x;
-                local_74 = (float)(fVar17 * (float10)(iVar7 % 0x5a) +
+                local_74 = (float)(fVar18 * (float10)(iVar6 % 0x5a) +
                                   (float10)(&creature_pool)[iVar4].pos_y);
                 fx_queue_add_random(&local_78);
-                iVar10 = iVar10 + -1;
-              } while (iVar10 != 0);
+                iVar9 = iVar9 + -1;
+              } while (iVar9 != 0);
             }
             else {
               iVar4 = 8;
               do {
-                iVar10 = crt_rand();
-                effect_spawn_freeze_shard(pfVar12,(float)(iVar10 % 0x264) * 0.01);
+                iVar9 = crt_rand();
+                effect_spawn_freeze_shard(pfVar11,(float)(iVar9 % 0x264) * 0.01);
                 iVar4 = iVar4 + -1;
               } while (iVar4 != 0);
             }
           }
-          else if (fVar9 == 2.8026e-45) {
-            pfVar11[1] = 4.2039e-45;
-            pfVar11[-1] = 0.0;
-            *pfVar11 = 0.35;
+          else if (fVar8 == 2.8026e-45) {
+            pfVar10[1] = 4.2039e-45;
+            pfVar10[-1] = 0.0;
+            *pfVar10 = 0.35;
             if (fVar20 <= 0.0) {
-              iVar10 = 10;
+              iVar9 = 10;
               do {
-                iVar7 = crt_rand();
-                fVar9 = (float)(iVar7 % 0x274) * 0.01;
-                uVar8 = crt_rand();
-                uVar8 = uVar8 & 0x8000003f;
-                if ((int)uVar8 < 0) {
-                  uVar8 = (uVar8 - 1 | 0xffffffc0) + 1;
+                iVar6 = crt_rand();
+                fVar8 = (float)(iVar6 % 0x274) * 0.01;
+                uVar7 = crt_rand();
+                uVar7 = uVar7 & 0x8000003f;
+                if ((int)uVar7 < 0) {
+                  uVar7 = (uVar7 - 1 | 0xffffffc0) + 1;
                 }
-                fVar17 = (float10)fcos((float10)fVar9);
-                fVar16 = (float10)fsin((float10)fVar9);
-                local_88 = (float)(fVar17 * (float10)(int)uVar8) + (&creature_pool)[iVar4].pos_x;
-                local_84 = (float)(fVar16 * (float10)(int)uVar8 +
+                fVar18 = (float10)fcos((float10)fVar8);
+                fVar17 = (float10)fsin((float10)fVar8);
+                local_88 = (float)(fVar18 * (float10)(int)uVar7) + (&creature_pool)[iVar4].pos_x;
+                local_84 = (float)(fVar17 * (float10)(int)uVar7 +
                                   (float10)(&creature_pool)[iVar4].pos_y);
                 fx_queue_add_random(&local_88);
-                iVar10 = iVar10 + -1;
-              } while (iVar10 != 0);
+                iVar9 = iVar9 + -1;
+              } while (iVar9 != 0);
             }
             else {
               iVar4 = 8;
               do {
-                iVar10 = crt_rand();
-                effect_spawn_freeze_shard(pfVar12,(float)(iVar10 % 0x264) * 0.01);
+                iVar9 = crt_rand();
+                effect_spawn_freeze_shard(pfVar11,(float)(iVar9 % 0x264) * 0.01);
                 iVar4 = iVar4 + -1;
               } while (iVar4 != 0);
             }
           }
-          else if (fVar9 == 5.60519e-45) {
-            pfVar11[1] = 4.2039e-45;
-            pfVar11[-1] = 0.0;
-            *pfVar11 = 0.25;
+          else if (fVar8 == 5.60519e-45) {
+            pfVar10[1] = 4.2039e-45;
+            pfVar10[-1] = 0.0;
+            *pfVar10 = 0.25;
             if (fVar20 <= 0.0) {
-              iVar10 = 3;
+              iVar9 = 3;
               do {
-                iVar7 = crt_rand();
-                fVar9 = (float)(iVar7 % 0x274) * 0.01;
-                iVar7 = crt_rand();
-                fVar17 = (float10)fcos((float10)fVar9);
-                fVar16 = (float10)fsin((float10)fVar9);
-                local_48 = (float)(fVar17 * (float10)(iVar7 % 0x2c)) + (&creature_pool)[iVar4].pos_x
+                iVar6 = crt_rand();
+                fVar8 = (float)(iVar6 % 0x274) * 0.01;
+                iVar6 = crt_rand();
+                fVar18 = (float10)fcos((float10)fVar8);
+                fVar17 = (float10)fsin((float10)fVar8);
+                local_48 = (float)(fVar18 * (float10)(iVar6 % 0x2c)) + (&creature_pool)[iVar4].pos_x
                 ;
-                local_44 = (float)(fVar16 * (float10)(iVar7 % 0x2c) +
+                local_44 = (float)(fVar17 * (float10)(iVar6 % 0x2c) +
                                   (float10)(&creature_pool)[iVar4].pos_y);
                 fx_queue_add_random(&local_48);
-                iVar10 = iVar10 + -1;
-              } while (iVar10 != 0);
+                iVar9 = iVar9 + -1;
+              } while (iVar9 != 0);
             }
             else {
-              iVar10 = 8;
+              iVar9 = 8;
               do {
-                iVar7 = crt_rand();
+                iVar6 = crt_rand();
                 effect_spawn_freeze_shard
-                          (&(&creature_pool)[iVar4].pos_x,(float)(iVar7 % 0x264) * 0.01);
-                iVar10 = iVar10 + -1;
-              } while (iVar10 != 0);
+                          (&(&creature_pool)[iVar4].pos_x,(float)(iVar6 % 0x264) * 0.01);
+                iVar9 = iVar9 + -1;
+              } while (iVar9 != 0);
             }
           }
           local_ec = 0;
           do {
             iVar4 = crt_rand();
-            fVar17 = (float10)(iVar4 % 800) * (float10)0.1;
-            fVar16 = (float10)fcos((float10)local_ec * (float10)0.62831855);
-            local_68 = (float)fVar16;
-            fVar16 = (float10)fsin((float10)local_ec * (float10)0.62831855);
-            local_20 = (float)(fVar17 * (float10)local_68);
-            local_1c = (float)(fVar16 * fVar17);
-            iVar4 = fx_spawn_sprite(pfVar12,&local_20,14.0);
+            fVar18 = (float10)(iVar4 % 800) * (float10)0.1;
+            fVar17 = (float10)fcos((float10)local_ec * (float10)0.62831855);
+            local_68 = (float)fVar17;
+            fVar17 = (float10)fsin((float10)local_ec * (float10)0.62831855);
+            local_20 = (float)(fVar18 * (float10)local_68);
+            local_1c = (float)(fVar17 * fVar18);
+            iVar4 = fx_spawn_sprite(pfVar11,&local_20,14.0);
             local_ec = local_ec + 1;
             (&sprite_effect_color_a)[iVar4 * 0xb] = 0x3ebd70a4;
           } while (local_ec < 10);
         }
-        if (pfVar11[-4] <= 0.0) {
-          pfVar11[1] = 4.2039e-45;
-          pfVar11[-1] = 0.0;
-          *pfVar11 = 0.5;
+        if (pfVar10[-4] <= 0.0) {
+          pfVar10[1] = 4.2039e-45;
+          pfVar10[-1] = 0.0;
+          *pfVar10 = 0.5;
         }
       }
     }
-    pfVar11 = pfVar11 + 0xb;
-  } while ((int)pfVar11 < 0x4965f0);
-  pfVar11 = (float *)&sprite_effect_pos_y;
+    pfVar10 = pfVar10 + 0xb;
+  } while ((int)pfVar10 < 0x4965f0);
+  pfVar10 = (float *)&sprite_effect_pos_y;
   do {
-    if (*(char *)(pfVar11 + -7) != '\0') {
-      local_68 = frame_dt * pfVar11[1];
-      fVar9 = frame_dt * pfVar11[2];
-      pfVar11[-1] = local_68 + pfVar11[-1];
-      *pfVar11 = fVar9 + *pfVar11;
-      pfVar11[-2] = frame_dt * 3.0 + pfVar11[-2];
-      fVar9 = pfVar11[-3] - frame_dt;
-      pfVar11[-3] = fVar9;
-      if (fVar9 <= 0.0) {
-        *(undefined1 *)(pfVar11 + -7) = 0;
+    if (*(char *)(pfVar10 + -7) != '\0') {
+      local_68 = frame_dt * pfVar10[1];
+      fVar8 = frame_dt * pfVar10[2];
+      pfVar10[-1] = local_68 + pfVar10[-1];
+      *pfVar10 = fVar8 + *pfVar10;
+      pfVar10[-2] = frame_dt * 3.0 + pfVar10[-2];
+      fVar8 = pfVar10[-3] - frame_dt;
+      pfVar10[-3] = fVar8;
+      if (fVar8 <= 0.0) {
+        *(undefined1 *)(pfVar10 + -7) = 0;
       }
-      pfVar11[3] = frame_dt * 60.0 + pfVar11[3];
+      pfVar10[3] = frame_dt * 60.0 + pfVar10[3];
     }
-    pfVar11 = pfVar11 + 0xb;
-  } while ((int)pfVar11 < 0x49aa3c);
+    pfVar10 = pfVar10 + 0xb;
+  } while ((int)pfVar10 < 0x49aa3c);
   local_e8 = 0;
-  pfVar11 = (float *)&particle_vel_y;
+  pfVar10 = (float *)&particle_vel_y;
   do {
-    if (*(char *)(pfVar11 + -4) != '\0') {
-      if (*(char *)(pfVar11 + 8) == '\b') {
-        pfVar11[5] = pfVar11[5] - frame_dt * 0.11;
-        pfVar11[7] = frame_dt * 5.0 + pfVar11[7];
-        if (*(char *)((int)pfVar11 + -0xf) != '\0') {
-          fVar9 = frame_dt * pfVar11[-1];
-          if (pfVar11[5] <= 0.15) {
-            fStack_40 = fVar9 * 0.55;
-            fVar20 = fStack_40 * pfVar11[5];
-            fVar3 = frame_dt * *pfVar11 * 0.55 * pfVar11[5];
+    if (*(char *)(pfVar10 + -4) != '\0') {
+      if (*(char *)(pfVar10 + 8) == '\b') {
+        pfVar10[5] = pfVar10[5] - frame_dt * 0.11;
+        pfVar10[7] = frame_dt * 5.0 + pfVar10[7];
+        if (*(char *)((int)pfVar10 + -0xf) != '\0') {
+          fVar8 = frame_dt * pfVar10[-1];
+          if (pfVar10[5] <= 0.15) {
+            fStack_40 = fVar8 * 0.55;
+            fVar20 = fStack_40 * pfVar10[5];
+            fVar3 = frame_dt * *pfVar10 * 0.55 * pfVar10[5];
             fStack_50 = fVar20;
-            fStack_30 = fVar9;
+            fStack_30 = fVar8;
             goto LAB_004226a3;
           }
-          local_b8 = fVar9 * pfVar11[5];
-          local_b4 = frame_dt * *pfVar11 * pfVar11[5];
-          local_68 = fVar9;
-          FUN_0041e270(pfVar11 + -3,&local_b8);
+          local_b8 = fVar8 * pfVar10[5];
+          local_b4 = frame_dt * *pfVar10 * pfVar10[5];
+          local_68 = fVar8;
+          FUN_0041e270(pfVar10 + -3,&local_b8);
         }
       }
       else {
-        pfVar11[5] = pfVar11[5] - frame_dt * 0.9;
-        pfVar11[7] = frame_dt + pfVar11[7];
-        fVar9 = frame_dt * pfVar11[-1];
-        if (pfVar11[5] <= 0.15) {
-          local_58 = fVar9 * 2.5;
+        pfVar10[5] = pfVar10[5] - frame_dt * 0.9;
+        pfVar10[7] = frame_dt + pfVar10[7];
+        fVar8 = frame_dt * pfVar10[-1];
+        if (pfVar10[5] <= 0.15) {
+          local_58 = fVar8 * 2.5;
           fVar20 = local_58 * 0.15;
-          fVar3 = frame_dt * *pfVar11 * 2.5 * 0.15;
+          fVar3 = frame_dt * *pfVar10 * 2.5 * 0.15;
           local_90 = fVar20;
-          local_28 = fVar9;
+          local_28 = fVar8;
 LAB_004226a3:
-          pfVar11[-3] = fVar20 + pfVar11[-3];
-          pfVar11[-2] = fVar3 + pfVar11[-2];
+          pfVar10[-3] = fVar20 + pfVar10[-3];
+          pfVar10[-2] = fVar3 + pfVar10[-2];
         }
         else {
-          fStack_38 = fVar9 * 2.5;
-          local_a0 = fStack_38 * pfVar11[5];
-          local_9c = frame_dt * *pfVar11 * 2.5 * pfVar11[5];
-          fStack_18 = fVar9;
-          FUN_0041e270(pfVar11 + -3,&local_a0);
+          fStack_38 = fVar8 * 2.5;
+          local_a0 = fStack_38 * pfVar10[5];
+          local_9c = frame_dt * *pfVar10 * 2.5 * pfVar10[5];
+          fStack_18 = fVar8;
+          FUN_0041e270(pfVar10 + -3,&local_a0);
         }
       }
-      cVar2 = *(char *)(pfVar11 + 8);
+      cVar2 = *(char *)(pfVar10 + 8);
       if (cVar2 == '\0') {
-        if (0.0 < pfVar11[5]) {
+        if (0.0 < pfVar10[5]) {
 LAB_00422767:
-          if (*(char *)((int)pfVar11 + -0xf) == '\x01') {
+          if (*(char *)((int)pfVar10 + -0xf) == '\x01') {
             if (cVar2 == '\0') {
               iVar4 = crt_rand();
-              fVar17 = (float10)(iVar4 % 100 + -0x32) * (float10)0.06 * (float10)pfVar11[5] *
+              fVar18 = (float10)(iVar4 % 100 + -0x32) * (float10)0.06 * (float10)pfVar10[5] *
                        (float10)frame_dt * (float10)1.96;
 LAB_00422821:
-              fVar9 = pfVar11[6];
-              pfVar11[6] = (float)((float10)fVar9 - fVar17);
-              fVar17 = (float10)fcos((float10)fVar9 - fVar17);
-              pfVar11[-1] = (float)(fVar17 * (float10)82.0);
-              fVar17 = (float10)fsin((float10)pfVar11[6]);
-              fVar17 = fVar17 * (float10)82.0;
+              fVar8 = pfVar10[6];
+              pfVar10[6] = (float)((float10)fVar8 - fVar18);
+              fVar18 = (float10)fcos((float10)fVar8 - fVar18);
+              pfVar10[-1] = (float)(fVar18 * (float10)82.0);
+              fVar18 = (float10)fsin((float10)pfVar10[6]);
+              fVar18 = fVar18 * (float10)82.0;
             }
             else {
               if (cVar2 != '\b') {
                 iVar4 = crt_rand();
-                fVar17 = (float10)(iVar4 % 100 + -0x32) * (float10)0.06 * (float10)pfVar11[5] *
+                fVar18 = (float10)(iVar4 % 100 + -0x32) * (float10)0.06 * (float10)pfVar10[5] *
                          (float10)frame_dt * (float10)1.1;
                 goto LAB_00422821;
               }
               iVar4 = crt_rand();
-              fVar17 = (float10)pfVar11[6] -
-                       (float10)(iVar4 % 100 + -0x32) * (float10)0.06 * (float10)pfVar11[5] *
+              fVar18 = (float10)pfVar10[6] -
+                       (float10)(iVar4 % 100 + -0x32) * (float10)0.06 * (float10)pfVar10[5] *
                        (float10)frame_dt * (float10)1.1;
-              pfVar11[6] = (float)fVar17;
-              fVar17 = (float10)fcos(fVar17);
-              pfVar11[-1] = (float)(fVar17 * (float10)62.0);
-              fVar17 = (float10)fsin((float10)pfVar11[6]);
-              fVar17 = fVar17 * (float10)62.0;
+              pfVar10[6] = (float)fVar18;
+              fVar18 = (float10)fcos(fVar18);
+              pfVar10[-1] = (float)(fVar18 * (float10)62.0);
+              fVar18 = (float10)fsin((float10)pfVar10[6]);
+              fVar18 = fVar18 * (float10)62.0;
             }
-            *pfVar11 = (float)fVar17;
+            *pfVar10 = (float)fVar18;
           }
-          if (pfVar11[5] <= 1.0) {
-            fVar9 = pfVar11[5];
+          if (pfVar10[5] <= 1.0) {
+            fVar8 = pfVar10[5];
           }
           else {
-            fVar9 = 1.0;
+            fVar8 = 1.0;
           }
-          pfVar11[4] = fVar9;
-          fVar9 = 1.0 - pfVar11[5] * 0.95;
-          pfVar11[1] = fVar9;
-          pfVar11[2] = fVar9;
-          if (*(char *)((int)pfVar11 + -0xf) != '\0') {
-            pfVar12 = pfVar11 + -3;
-            fVar9 = (float)creature_find_in_radius(pfVar12,pfVar11[5] * 8.0,0);
-            if (fVar9 != -NAN) {
-              *(undefined1 *)((int)pfVar11 + -0xf) = 0;
-              if (*(char *)(pfVar11 + 8) == '\b') {
-                fVar20 = (&creature_pool)[(int)fVar9].pos_y;
-                *pfVar12 = (&creature_pool)[(int)fVar9].pos_x;
-                pfVar11[-2] = fVar20;
-                pfVar11[-1] = 0.0;
-                *pfVar11 = 0.0;
-                (&creature_pool)[(int)fVar9].state_flag = '\0';
-                pfVar11[9] = fVar9;
+          pfVar10[4] = fVar8;
+          fVar8 = 1.0 - pfVar10[5] * 0.95;
+          pfVar10[1] = fVar8;
+          pfVar10[2] = fVar8;
+          if (*(char *)((int)pfVar10 + -0xf) != '\0') {
+            pfVar11 = pfVar10 + -3;
+            fVar8 = (float)creature_find_in_radius(pfVar11,pfVar10[5] * 8.0,0);
+            if (fVar8 != -NAN) {
+              *(undefined1 *)((int)pfVar10 + -0xf) = 0;
+              if (*(char *)(pfVar10 + 8) == '\b') {
+                fVar20 = (&creature_pool)[(int)fVar8].pos_y;
+                *pfVar11 = (&creature_pool)[(int)fVar8].pos_x;
+                pfVar10[-2] = fVar20;
+                pfVar10[-1] = 0.0;
+                *pfVar10 = 0.0;
+                (&creature_pool)[(int)fVar8].state_flag = '\0';
+                pfVar10[9] = fVar8;
               }
               else {
-                fVar20 = pfVar11[6];
+                fVar20 = pfVar10[6];
                 while (6.2831855 < fVar20) {
-                  fVar20 = pfVar11[6] - 6.2831855;
-                  pfVar11[6] = fVar20;
+                  fVar20 = pfVar10[6] - 6.2831855;
+                  pfVar10[6] = fVar20;
                 }
-                fVar20 = pfVar11[6];
+                fVar20 = pfVar10[6];
                 while (fVar20 < 0.0) {
-                  fVar20 = pfVar11[6] + 6.2831855;
-                  pfVar11[6] = fVar20;
+                  fVar20 = pfVar10[6] + 6.2831855;
+                  pfVar10[6] = fVar20;
                 }
-                local_80 = (float)((float10)frame_dt * (float10)pfVar11[-1]);
-                local_70 = *pfVar12 - local_80;
-                pfVar12 = &(&creature_pool)[(int)fVar9].pos_x;
-                local_98 = local_70 - *pfVar12;
-                fVar17 = (float10)fpatan(((float10)pfVar11[-2] -
-                                         (float10)frame_dt * (float10)*pfVar11) -
-                                         (float10)(&creature_pool)[(int)fVar9].pos_y,
+                local_80 = (float)((float10)frame_dt * (float10)pfVar10[-1]);
+                local_70 = *pfVar11 - local_80;
+                pfVar11 = &(&creature_pool)[(int)fVar8].pos_x;
+                local_98 = local_70 - *pfVar11;
+                fVar18 = (float10)fpatan(((float10)pfVar10[-2] -
+                                         (float10)frame_dt * (float10)*pfVar10) -
+                                         (float10)(&creature_pool)[(int)fVar8].pos_y,
                                          (float10)local_98);
-                if ((float10)6.2831855 < fVar17) {
+                if ((float10)6.2831855 < fVar18) {
                   do {
-                    fVar17 = fVar17 - (float10)6.2831855;
-                  } while ((float10)6.2831855 < fVar17);
+                    fVar18 = fVar18 - (float10)6.2831855;
+                  } while ((float10)6.2831855 < fVar18);
                 }
-                if (fVar17 < (float10)0.0) {
+                if (fVar18 < (float10)0.0) {
                   do {
-                    fVar17 = fVar17 + (float10)6.2831855;
-                  } while (fVar17 < (float10)0.0);
+                    fVar18 = fVar18 + (float10)6.2831855;
+                  } while (fVar18 < (float10)0.0);
                 }
-                if ((float10)pfVar11[6] <= fVar17) {
-                  fVar20 = pfVar11[6] + 1.2566371;
+                if ((float10)pfVar10[6] <= fVar18) {
+                  fVar20 = pfVar10[6] + 1.2566371;
                 }
                 else {
-                  fVar20 = pfVar11[6] - 1.2566371;
+                  fVar20 = pfVar10[6] - 1.2566371;
                 }
-                pfVar11[6] = fVar20;
-                fVar17 = (float10)fcos((float10)pfVar11[6]);
-                pfVar11[-1] = (float)(fVar17 * (float10)82.0);
-                fVar17 = (float10)fsin((float10)pfVar11[6]);
-                *pfVar11 = (float)(fVar17 * (float10)82.0);
+                pfVar10[6] = fVar20;
+                fVar18 = (float10)fcos((float10)pfVar10[6]);
+                pfVar10[-1] = (float)(fVar18 * (float10)82.0);
+                fVar18 = (float10)fsin((float10)pfVar10[6]);
+                *pfVar10 = (float)(fVar18 * (float10)82.0);
                 iVar4 = crt_rand();
-                (&creature_pool)[(int)fVar9].state_flag = '\x01';
+                (&creature_pool)[(int)fVar8].state_flag = '\x01';
                 local_b0 = 0.0;
                 local_ac = 0.0;
                 fVar20 = (float)(iVar4 % 10) * 0.1;
-                pfVar11[-1] = fVar20 * pfVar11[-1];
-                *pfVar11 = fVar20 * *pfVar11;
-                creature_apply_damage((int)fVar9,pfVar11[5] * 10.0,4,&local_b0);
-                if (1.6 < (&creature_pool)[(int)fVar9].tint_g + (&creature_pool)[(int)fVar9].tint_b
-                          + (&creature_pool)[(int)fVar9].tint_r) {
-                  fVar20 = 1.0 - pfVar11[5] * 0.01;
-                  (&creature_pool)[(int)fVar9].tint_r = fVar20 * (&creature_pool)[(int)fVar9].tint_r
+                pfVar10[-1] = fVar20 * pfVar10[-1];
+                *pfVar10 = fVar20 * *pfVar10;
+                creature_apply_damage((int)fVar8,pfVar10[5] * 10.0,4,&local_b0);
+                if (1.6 < (&creature_pool)[(int)fVar8].tint_g + (&creature_pool)[(int)fVar8].tint_b
+                          + (&creature_pool)[(int)fVar8].tint_r) {
+                  fVar20 = 1.0 - pfVar10[5] * 0.01;
+                  (&creature_pool)[(int)fVar8].tint_r = fVar20 * (&creature_pool)[(int)fVar8].tint_r
                   ;
-                  (&creature_pool)[(int)fVar9].tint_g = fVar20 * (&creature_pool)[(int)fVar9].tint_g
+                  (&creature_pool)[(int)fVar8].tint_g = fVar20 * (&creature_pool)[(int)fVar8].tint_g
                   ;
-                  (&creature_pool)[(int)fVar9].tint_b = fVar20 * (&creature_pool)[(int)fVar9].tint_b
+                  (&creature_pool)[(int)fVar8].tint_b = fVar20 * (&creature_pool)[(int)fVar8].tint_b
                   ;
-                  if (0.0 <= (&creature_pool)[(int)fVar9].tint_r) {
-                    if (1.0 < (&creature_pool)[(int)fVar9].tint_r) {
-                      (&creature_pool)[(int)fVar9].tint_r = 1.0;
+                  if (0.0 <= (&creature_pool)[(int)fVar8].tint_r) {
+                    if (1.0 < (&creature_pool)[(int)fVar8].tint_r) {
+                      (&creature_pool)[(int)fVar8].tint_r = 1.0;
                     }
                   }
                   else {
-                    (&creature_pool)[(int)fVar9].tint_r = 0.0;
+                    (&creature_pool)[(int)fVar8].tint_r = 0.0;
                   }
-                  if (0.0 <= (&creature_pool)[(int)fVar9].tint_g) {
-                    if (1.0 < (&creature_pool)[(int)fVar9].tint_g) {
-                      (&creature_pool)[(int)fVar9].tint_g = 1.0;
+                  if (0.0 <= (&creature_pool)[(int)fVar8].tint_g) {
+                    if (1.0 < (&creature_pool)[(int)fVar8].tint_g) {
+                      (&creature_pool)[(int)fVar8].tint_g = 1.0;
                     }
                   }
                   else {
-                    (&creature_pool)[(int)fVar9].tint_g = 0.0;
+                    (&creature_pool)[(int)fVar8].tint_g = 0.0;
                   }
-                  if (0.0 <= (&creature_pool)[(int)fVar9].tint_b) {
-                    if (1.0 < (&creature_pool)[(int)fVar9].tint_b) {
-                      (&creature_pool)[(int)fVar9].tint_b = 1.0;
+                  if (0.0 <= (&creature_pool)[(int)fVar8].tint_b) {
+                    if (1.0 < (&creature_pool)[(int)fVar8].tint_b) {
+                      (&creature_pool)[(int)fVar8].tint_b = 1.0;
                     }
                   }
                   else {
-                    (&creature_pool)[(int)fVar9].tint_b = 0.0;
+                    (&creature_pool)[(int)fVar8].tint_b = 0.0;
                   }
-                  if (0.0 <= (&creature_pool)[(int)fVar9].tint_a) {
-                    if (1.0 < (&creature_pool)[(int)fVar9].tint_a) {
-                      (&creature_pool)[(int)fVar9].tint_a = 1.0;
+                  if (0.0 <= (&creature_pool)[(int)fVar8].tint_a) {
+                    if (1.0 < (&creature_pool)[(int)fVar8].tint_a) {
+                      (&creature_pool)[(int)fVar8].tint_a = 1.0;
                     }
                   }
                   else {
-                    (&creature_pool)[(int)fVar9].tint_a = 0.0;
+                    (&creature_pool)[(int)fVar8].tint_a = 0.0;
                   }
                 }
                 if (local_e8 % 3 == 0) {
                   iVar4 = crt_rand();
-                  iVar10 = crt_rand();
-                  local_a4 = (float)(iVar10 % 0x3c + -0x1e);
+                  iVar9 = crt_rand();
+                  local_a4 = (float)(iVar9 % 0x3c + -0x1e);
                   local_a8 = (float)(iVar4 % 0x3c + -0x1e);
-                  iVar4 = fx_spawn_sprite(pfVar12,&local_a8,13.0);
+                  iVar4 = fx_spawn_sprite(pfVar11,&local_a8,13.0);
                   (&sprite_effect_color_a)[iVar4 * 0xb] = 0x3f333333;
                 }
-                fx_queue_add_random(pfVar12);
-                local_74 = *pfVar11;
+                fx_queue_add_random(pfVar11);
+                local_74 = *pfVar10;
                 local_84 = local_74 * frame_dt;
-                *pfVar12 = pfVar11[-1] * frame_dt + *pfVar12;
-                (&creature_pool)[(int)fVar9].pos_y = local_84 + (&creature_pool)[(int)fVar9].pos_y;
+                *pfVar11 = pfVar10[-1] * frame_dt + *pfVar11;
+                (&creature_pool)[(int)fVar8].pos_y = local_84 + (&creature_pool)[(int)fVar8].pos_y;
               }
             }
           }
         }
         else {
-          *(undefined1 *)(pfVar11 + -4) = 0;
+          *(undefined1 *)(pfVar10 + -4) = 0;
         }
       }
       else {
-        if (0.8 < pfVar11[5]) goto LAB_00422767;
-        *(undefined1 *)(pfVar11 + -4) = 0;
-        if ((*(char *)(pfVar11 + 8) == '\b') && (pfVar11[9] != -NAN)) {
-          if ((&creature_pool)[(int)pfVar11[9]].active != '\0') {
+        if (0.8 < pfVar10[5]) goto LAB_00422767;
+        *(undefined1 *)(pfVar10 + -4) = 0;
+        if ((*(char *)(pfVar10 + 8) == '\b') && (pfVar10[9] != -NAN)) {
+          if ((&creature_pool)[(int)pfVar10[9]].active != '\0') {
             iVar4 = crt_rand();
             sfx_play_panned(*(float *)(&creature_type_sfx_a0 +
-                                      (iVar4 % 3 + (&creature_pool)[(int)pfVar11[9]].type_id * 0x11)
+                                      (iVar4 % 3 + (&creature_pool)[(int)pfVar10[9]].type_id * 0x11)
                                       * 4));
           }
-          creature_handle_death((int)pfVar11[9],false);
+          creature_handle_death((int)pfVar10[9],false);
         }
       }
     }
-    pfVar11 = pfVar11 + 0xe;
+    pfVar10 = pfVar10 + 0xe;
     local_e8 = local_e8 + 1;
-    if (0x495ac7 < (int)pfVar11) {
+    if (0x495ac7 < (int)pfVar10) {
       return;
     }
   } while( true );
@@ -19627,16 +19615,17 @@ LAB_00422821:
 void projectile_render(void)
 
 {
-  float *pfVar1;
+  float *pos;
   float y2;
+  float fVar1;
   float fVar2;
-  float fVar3;
+  projectile_t *ppVar3;
   IGrim2D_vtbl *pIVar4;
-  float *pfVar5;
+  projectile_t *ppVar5;
   uchar *puVar6;
-  float *pfVar7;
-  char *pcVar8;
-  float *unaff_EDI;
+  projectile_t *ppVar7;
+  float *pfVar8;
+  projectile_t *unaff_EDI;
   int iVar9;
   float10 fVar10;
   float10 fVar11;
@@ -19656,10 +19645,9 @@ void projectile_render(void)
   int iVar24;
   float fVar25;
   float fVar26;
-  float *pfVar27;
-  float fVar28;
-  float *pfStack_198;
-  float *pfStack_194;
+  float fVar27;
+  projectile_t *ppStack_198;
+  projectile_t *ppStack_194;
   float fStack_190;
   float fStack_18c;
   float fStack_188;
@@ -19668,7 +19656,7 @@ void projectile_render(void)
   float fStack_178;
   float fStack_170;
   float fStack_15c;
-  float *pfStack_158;
+  projectile_t *ppStack_158;
   float fStack_12c;
   float fStack_128;
   float fStack_120;
@@ -19712,7 +19700,7 @@ void projectile_render(void)
           (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,2);
           (*grim_interface_ptr->vtable->grim_begin_batch)();
           (*grim_interface_ptr->vtable->grim_draw_quad_points)
-                    (fStack_15c,(float)pfStack_158,(float)fVar12 * 512.0,fStack_120,fStack_12c,
+                    (fStack_15c,(float)ppStack_158,(float)fVar12 * 512.0,fStack_120,fStack_12c,
                      fStack_128,fVar26 + (float)(fVar15 * (float10)1.1),
                      (float)((float10)(fVar25 + (float)(fVar13 * (float10)15.0)) + fVar10 +
                             fVar14 * (float10)1.1));
@@ -19724,23 +19712,23 @@ void projectile_render(void)
       puVar6 = puVar6 + 0x360;
     } while (iVar9 < _config_player_count);
   }
-  pfStack_198 = (float *)0x0;
+  ppStack_198 = (projectile_t *)0x0;
   (*grim_interface_ptr->vtable->grim_set_color_slot)(0,0.5,0.5,0.5,0.0);
   (*grim_interface_ptr->vtable->grim_set_color_slot)(1,0.5,0.5,0.5,0.0);
   fVar25 = 2.66247e-44;
   fVar26 = 7.00649e-45;
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
-  pfStack_158 = (float *)0x14;
+  ppStack_158 = (projectile_t *)0x14;
   fStack_184 = 6.078386e-39;
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,2);
-  pfVar7 = (float *)&projectile_vel_y;
+  pfVar8 = &projectile_pool.vel_y;
   do {
-    if ((*(char *)(pfVar7 + -7) != '\0') &&
-       ((fVar28 = pfVar7[1], (int)fVar28 < 8 || (fVar28 == 4.06377e-44)))) {
-      if (fVar28 == 0.0) {
-        *(undefined1 *)(pfVar7 + -7) = 0;
+    if ((((projectile_t *)(pfVar8 + -7))->active != '\0') &&
+       ((fVar27 = pfVar8[1], (int)fVar27 < 8 || (fVar27 == 4.06377e-44)))) {
+      if (fVar27 == 0.0) {
+        ((projectile_t *)(pfVar8 + -7))->active = '\0';
       }
-      fStack_4c = pfVar7[2];
+      fStack_4c = pfVar8[2];
       if (fStack_4c <= 1.0) {
         if (fStack_4c < 0.0) {
           fStack_4c = 0.0;
@@ -19751,74 +19739,74 @@ void projectile_render(void)
       }
       (*grim_interface_ptr->vtable->grim_set_color_slot)(2,0.5,0.5,0.5,fStack_4c * fStack_14);
       (*grim_interface_ptr->vtable->grim_set_color_slot)(3,0.5,0.5,0.5,fStack_4c * fStack_14);
-      fVar28 = pfVar7[1];
-      if (fVar28 == 2.8026e-45) {
-        fVar19 = (_camera_offset_x + pfVar7[-3]) - pfVar7[-1];
-        fVar28 = (_camera_offset_y + pfVar7[-2]) - *pfVar7;
-        fVar20 = _camera_offset_x + pfVar7[-3] + pfVar7[-1];
-        fVar18 = _camera_offset_y + pfVar7[-2] + *pfVar7;
-        fStack_34 = _camera_offset_y + pfVar7[-4];
-        fStack_188 = _camera_offset_x + pfVar7[-5] + pfVar7[-1];
-        fStack_184 = fStack_34 + *pfVar7;
-        pfStack_158 = (float *)((_camera_offset_x + pfVar7[-5]) - pfVar7[-1]);
-        pfVar5 = (float *)(fStack_34 - *pfVar7);
+      fVar27 = pfVar8[1];
+      if (fVar27 == 2.8026e-45) {
+        fVar19 = (_camera_offset_x + pfVar8[-3]) - pfVar8[-1];
+        fVar27 = (_camera_offset_y + pfVar8[-2]) - *pfVar8;
+        fVar20 = _camera_offset_x + pfVar8[-3] + pfVar8[-1];
+        fVar18 = _camera_offset_y + pfVar8[-2] + *pfVar8;
+        fStack_34 = _camera_offset_y + pfVar8[-4];
+        fStack_188 = _camera_offset_x + pfVar8[-5] + pfVar8[-1];
+        fStack_184 = fStack_34 + *pfVar8;
+        ppStack_158 = (projectile_t *)((_camera_offset_x + pfVar8[-5]) - pfVar8[-1]);
+        ppVar5 = (projectile_t *)(fStack_34 - *pfVar8);
         fStack_2c = fStack_34;
       }
-      else if (fVar28 == 1.4013e-45) {
-        fVar21 = pfVar7[-1] * 1.2;
-        fStack_18c = *pfVar7 * 1.2;
-        fStack_44 = _camera_offset_y + pfVar7[-2];
-        fVar19 = (_camera_offset_x + pfVar7[-3]) - fVar21;
-        fVar28 = fStack_44 - fStack_18c;
-        fVar20 = _camera_offset_x + pfVar7[-3] + fVar21;
+      else if (fVar27 == 1.4013e-45) {
+        fVar21 = pfVar8[-1] * 1.2;
+        fStack_18c = *pfVar8 * 1.2;
+        fStack_44 = _camera_offset_y + pfVar8[-2];
+        fVar19 = (_camera_offset_x + pfVar8[-3]) - fVar21;
+        fVar27 = fStack_44 - fStack_18c;
+        fVar20 = _camera_offset_x + pfVar8[-3] + fVar21;
         fVar18 = fStack_44 + fStack_18c;
-        fStack_190 = _camera_offset_x + pfVar7[-5];
-        fStack_74 = _camera_offset_y + pfVar7[-4];
+        fStack_190 = _camera_offset_x + pfVar8[-5];
+        fStack_74 = _camera_offset_y + pfVar8[-4];
         fStack_188 = fStack_190 + fVar21;
         fStack_184 = fStack_74 + fStack_18c;
-        pfStack_158 = (float *)(fStack_190 - fVar21);
-        pfVar5 = (float *)(fStack_74 - fStack_18c);
+        ppStack_158 = (projectile_t *)(fStack_190 - fVar21);
+        ppVar5 = (projectile_t *)(fStack_74 - fStack_18c);
       }
-      else if (fVar28 == 8.40779e-45) {
+      else if (fVar27 == 8.40779e-45) {
         (*grim_interface_ptr->vtable->grim_set_color_slot)(2,0.2,0.5,1.0,fStack_4c);
         (*grim_interface_ptr->vtable->grim_set_color_slot)(3,0.2,0.5,1.0,fStack_4c);
-        fStack_178 = pfVar7[-1] * 1.1;
-        fStack_18c = *pfVar7 * 1.1;
-        fStack_a4 = _camera_offset_y + pfVar7[-2];
-        fVar19 = (_camera_offset_x + pfVar7[-3]) - fStack_178;
-        fVar28 = fStack_a4 - fStack_18c;
-        fVar20 = _camera_offset_x + pfVar7[-3] + fStack_178;
+        fStack_178 = pfVar8[-1] * 1.1;
+        fStack_18c = *pfVar8 * 1.1;
+        fStack_a4 = _camera_offset_y + pfVar8[-2];
+        fVar19 = (_camera_offset_x + pfVar8[-3]) - fStack_178;
+        fVar27 = fStack_a4 - fStack_18c;
+        fVar20 = _camera_offset_x + pfVar8[-3] + fStack_178;
         fVar18 = fStack_a4 + fStack_18c;
-        fStack_190 = _camera_offset_x + pfVar7[-5];
+        fStack_190 = _camera_offset_x + pfVar8[-5];
         fStack_188 = fStack_190 + fStack_178;
-        fStack_184 = _camera_offset_y + pfVar7[-4] + fStack_18c;
-        unaff_EDI = (float *)(fStack_190 - fStack_178);
-        pfVar5 = (float *)((_camera_offset_y + pfVar7[-4]) - fStack_18c);
-        pfStack_158 = unaff_EDI;
+        fStack_184 = _camera_offset_y + pfVar8[-4] + fStack_18c;
+        unaff_EDI = (projectile_t *)(fStack_190 - fStack_178);
+        ppVar5 = (projectile_t *)((_camera_offset_y + pfVar8[-4]) - fStack_18c);
+        ppStack_158 = unaff_EDI;
         fStack_120 = fVar20;
       }
       else {
-        fVar21 = pfVar7[-1] * 0.7;
-        fStack_18c = *pfVar7 * 0.7;
-        fStack_8c = _camera_offset_y + pfVar7[-2];
-        fVar19 = (_camera_offset_x + pfVar7[-3]) - fVar21;
-        fVar28 = fStack_8c - fStack_18c;
-        fVar20 = _camera_offset_x + pfVar7[-3] + fVar21;
+        fVar21 = pfVar8[-1] * 0.7;
+        fStack_18c = *pfVar8 * 0.7;
+        fStack_8c = _camera_offset_y + pfVar8[-2];
+        fVar19 = (_camera_offset_x + pfVar8[-3]) - fVar21;
+        fVar27 = fStack_8c - fStack_18c;
+        fVar20 = _camera_offset_x + pfVar8[-3] + fVar21;
         fVar18 = fStack_8c + fStack_18c;
-        fStack_190 = _camera_offset_x + pfVar7[-5];
+        fStack_190 = _camera_offset_x + pfVar8[-5];
         fStack_188 = fStack_190 + fVar21;
-        fStack_184 = _camera_offset_y + pfVar7[-4] + fStack_18c;
-        pfStack_198 = (float *)(fStack_190 - fVar21);
-        pfVar5 = (float *)((_camera_offset_y + pfVar7[-4]) - fStack_18c);
-        pfStack_194 = pfVar5;
-        pfStack_158 = pfStack_198;
+        fStack_184 = _camera_offset_y + pfVar8[-4] + fStack_18c;
+        ppStack_198 = (projectile_t *)(fStack_190 - fVar21);
+        ppVar5 = (projectile_t *)((_camera_offset_y + pfVar8[-4]) - fStack_18c);
+        ppStack_194 = ppVar5;
+        ppStack_158 = ppStack_198;
       }
       (*grim_interface_ptr->vtable->grim_draw_quad_points)
-                (fVar19,fVar28,fVar20,fVar18,fStack_188,fStack_184,(float)pfStack_158,(float)pfVar5)
+                (fVar19,fVar27,fVar20,fVar18,fStack_188,fStack_184,(float)ppStack_158,(float)ppVar5)
       ;
     }
-    pfVar7 = pfVar7 + 0x10;
-  } while ((int)pfVar7 < 0x493ed4);
+    pfVar8 = pfVar8 + 0x10;
+  } while ((int)pfVar8 < 0x493ed4);
   (*grim_interface_ptr->vtable->grim_end_batch)();
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,2);
@@ -19829,28 +19817,28 @@ void projectile_render(void)
     fVar10 = ((float10)*(float *)((&player_health)[render_overlay_player_index]._pad0 + 0x2dc) -
              (float10)1.5707964) - (float10)0.150915;
     fVar11 = (float10)fcos(fVar10);
-    fVar28 = (float)(fVar11 * (float10)15.0);
+    fVar27 = (float)(fVar11 * (float10)15.0);
     fVar10 = (float10)fsin(fVar10);
-    unaff_EDI = (float *)(float)(fVar10 * (float10)15.0);
+    unaff_EDI = (projectile_t *)(float)(fVar10 * (float10)15.0);
     (*grim_interface_ptr->vtable->grim_set_color)
               (1.0,1.0,1.0,
                fStack_2c * *(float *)((&player_health)[render_overlay_player_index]._pad0 + 0x2d8));
     (*grim_interface_ptr->vtable->grim_begin_batch)();
     (*grim_interface_ptr->vtable->grim_draw_quad)
-              ((fVar28 + (float)(&player_pos_x)[render_overlay_player_index * 0xd8] +
+              ((fVar27 + (float)(&player_pos_x)[render_overlay_player_index * 0xd8] +
                _camera_offset_x) - 80.0,
                ((float)unaff_EDI + (float)(&player_pos_y)[render_overlay_player_index * 0xd8] +
                _camera_offset_y) - 80.0,160.0,160.0);
     (*grim_interface_ptr->vtable->grim_end_batch)();
   }
   (*grim_interface_ptr->vtable->grim_begin_batch)();
-  pfVar7 = (float *)&projectile_pos_y;
+  pfVar8 = &projectile_pool.pos_y;
   do {
-    if ((*(char *)(pfVar7 + -3) != '\0') &&
-       ((((fVar28 = pfVar7[5], fVar28 == 1.26117e-44 || (fVar28 == 1.54143e-44)) ||
-         (fVar28 == 3.64338e-44)) || ((fVar28 == 3.36312e-44 || (fVar28 == 3.92364e-44)))))) {
-      if (pfVar7[6] == 0.4) {
-        if (fVar28 == 1.26117e-44) {
+    if ((((projectile_t *)(pfVar8 + -3))->active != '\0') &&
+       ((((fVar27 = pfVar8[5], fVar27 == 1.26117e-44 || (fVar27 == 1.54143e-44)) ||
+         (fVar27 == 3.64338e-44)) || ((fVar27 == 3.36312e-44 || (fVar27 == 3.92364e-44)))))) {
+      if (pfVar8[6] == 0.4) {
+        if (fVar27 == 1.26117e-44) {
           uVar16 = __ftol();
           lVar17 = __ftol();
           iVar9 = (int)((longlong)
@@ -19859,37 +19847,37 @@ void projectile_render(void)
           if (8 < iVar9) {
             iVar9 = 8;
           }
-          fVar10 = (float10)fcos((float10)pfVar7[-2] + (float10)1.5707964);
-          fStack_190 = (float)(fVar10 * (float10)pfVar7[8] * (float10)2.5);
-          fVar10 = (float10)fsin((float10)pfVar7[-2] + (float10)1.5707964);
-          pfStack_158 = (float *)(float)(fVar10 * (float10)pfVar7[8] * (float10)2.5);
+          fVar10 = (float10)fcos((float10)pfVar8[-2] + (float10)1.5707964);
+          fStack_190 = (float)(fVar10 * (float10)pfVar8[8] * (float10)2.5);
+          fVar10 = (float10)fsin((float10)pfVar8[-2] + (float10)1.5707964);
+          ppStack_158 = (projectile_t *)(float)(fVar10 * (float10)pfVar8[8] * (float10)2.5);
           (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fStack_2c * 0.4);
           iVar24 = 0;
           if (0 < iVar9) {
             do {
               (*grim_interface_ptr->vtable->grim_draw_quad)
-                        (((float)iVar24 * fStack_190 + pfVar7[-1] + _camera_offset_x) - 11.0,
-                         ((float)iVar24 * (float)pfStack_158 + *pfVar7 + _camera_offset_y) - 11.0,
+                        (((float)iVar24 * fStack_190 + pfVar8[-1] + _camera_offset_x) - 11.0,
+                         ((float)iVar24 * (float)ppStack_158 + *pfVar8 + _camera_offset_y) - 11.0,
                          22.0,22.0);
               iVar24 = iVar24 + 1;
             } while (iVar24 < iVar9);
           }
           (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fStack_2c * 0.45);
           (*grim_interface_ptr->vtable->grim_draw_quad)
-                    ((_camera_offset_x + pfVar7[-1]) - 28.0,(_camera_offset_y + *pfVar7) - 28.0,56.0
+                    ((_camera_offset_x + pfVar8[-1]) - 28.0,(_camera_offset_y + *pfVar8) - 28.0,56.0
                      ,56.0);
-          fVar28 = fStack_2c * 0.3;
+          fVar27 = fStack_2c * 0.3;
           pIVar4 = grim_interface_ptr->vtable;
 LAB_00423cb4:
-          (*pIVar4->grim_set_color)(1.0,1.0,1.0,fVar28);
+          (*pIVar4->grim_set_color)(1.0,1.0,1.0,fVar27);
           if (config_fx_detail_flag1 != '\0') {
             (*grim_interface_ptr->vtable->grim_draw_quad)
-                      ((_camera_offset_x + pfVar7[-1]) - 128.0,(_camera_offset_y + *pfVar7) - 128.0,
+                      ((_camera_offset_x + pfVar8[-1]) - 128.0,(_camera_offset_y + *pfVar8) - 128.0,
                        256.0,256.0);
           }
         }
         else {
-          if (fVar28 == 1.54143e-44) {
+          if (fVar27 == 1.54143e-44) {
             uVar16 = __ftol();
             lVar17 = __ftol();
             iVar9 = (int)((longlong)
@@ -19898,32 +19886,32 @@ LAB_00423cb4:
             if (3 < iVar9) {
               iVar9 = 3;
             }
-            fVar10 = (float10)fcos((float10)pfVar7[-2] + (float10)1.5707964);
-            fStack_190 = (float)(fVar10 * (float10)pfVar7[8] * (float10)2.1);
-            fVar10 = (float10)fsin((float10)pfVar7[-2] + (float10)1.5707964);
-            pfStack_158 = (float *)(float)(fVar10 * (float10)pfVar7[8] * (float10)2.1);
+            fVar10 = (float10)fcos((float10)pfVar8[-2] + (float10)1.5707964);
+            fStack_190 = (float)(fVar10 * (float10)pfVar8[8] * (float10)2.1);
+            fVar10 = (float10)fsin((float10)pfVar8[-2] + (float10)1.5707964);
+            ppStack_158 = (projectile_t *)(float)(fVar10 * (float10)pfVar8[8] * (float10)2.1);
             (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fStack_2c * 0.4);
             iVar24 = 0;
             if (0 < iVar9) {
               do {
                 (*grim_interface_ptr->vtable->grim_draw_quad)
-                          (((float)iVar24 * fStack_190 + pfVar7[-1] + _camera_offset_x) - 6.0,
-                           ((float)iVar24 * (float)pfStack_158 + *pfVar7 + _camera_offset_y) - 6.0,
+                          (((float)iVar24 * fStack_190 + pfVar8[-1] + _camera_offset_x) - 6.0,
+                           ((float)iVar24 * (float)ppStack_158 + *pfVar8 + _camera_offset_y) - 6.0,
                            12.0,12.0);
                 iVar24 = iVar24 + 1;
               } while (iVar24 < iVar9);
             }
             (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar26);
             (*grim_interface_ptr->vtable->grim_draw_quad)
-                      ((_camera_offset_x + pfVar7[-1]) - 8.0,(_camera_offset_y + *pfVar7) - 8.0,16.0
+                      ((_camera_offset_x + pfVar8[-1]) - 8.0,(_camera_offset_y + *pfVar8) - 8.0,16.0
                        ,16.0);
             pIVar4 = grim_interface_ptr->vtable;
             fVar18 = 1.0;
-            fVar28 = 1.0;
+            fVar27 = 1.0;
             fVar19 = 1.0;
           }
           else {
-            if (fVar28 == 3.92364e-44) {
+            if (fVar27 == 3.92364e-44) {
               uVar16 = __ftol();
               lVar17 = __ftol();
               iVar9 = (int)((longlong)
@@ -19932,30 +19920,30 @@ LAB_00423cb4:
               if (0x12 < iVar9) {
                 iVar9 = 0x12;
               }
-              fVar10 = (float10)fcos((float10)pfVar7[-2] + (float10)1.5707964);
-              fStack_190 = (float)(fVar10 * (float10)pfVar7[8] * (float10)2.6);
-              fVar10 = (float10)fsin((float10)pfVar7[-2] + (float10)1.5707964);
-              pfStack_158 = (float *)(float)(fVar10 * (float10)pfVar7[8] * (float10)2.6);
-              fVar28 = fStack_2c * 0.4;
-              (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar28);
+              fVar10 = (float10)fcos((float10)pfVar8[-2] + (float10)1.5707964);
+              fStack_190 = (float)(fVar10 * (float10)pfVar8[8] * (float10)2.6);
+              fVar10 = (float10)fsin((float10)pfVar8[-2] + (float10)1.5707964);
+              ppStack_158 = (projectile_t *)(float)(fVar10 * (float10)pfVar8[8] * (float10)2.6);
+              fVar27 = fStack_2c * 0.4;
+              (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar27);
               iVar24 = 0;
               if (0 < iVar9) {
                 do {
                   (*grim_interface_ptr->vtable->grim_draw_quad)
-                            (((float)iVar24 * fStack_190 + pfVar7[-1] + _camera_offset_x) - 22.0,
-                             ((float)iVar24 * (float)pfStack_158 + *pfVar7 + _camera_offset_y) -
+                            (((float)iVar24 * fStack_190 + pfVar8[-1] + _camera_offset_x) - 22.0,
+                             ((float)iVar24 * (float)ppStack_158 + *pfVar8 + _camera_offset_y) -
                              22.0,44.0,44.0);
                   iVar24 = iVar24 + 1;
                 } while (iVar24 < iVar9);
               }
               (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fStack_2c * 0.45);
               (*grim_interface_ptr->vtable->grim_draw_quad)
-                        ((_camera_offset_x + pfVar7[-1]) - 42.0,(_camera_offset_y + *pfVar7) - 42.0,
+                        ((_camera_offset_x + pfVar8[-1]) - 42.0,(_camera_offset_y + *pfVar8) - 42.0,
                          84.0,84.0);
               pIVar4 = grim_interface_ptr->vtable;
               goto LAB_00423cb4;
             }
-            if (fVar28 == 3.64338e-44) {
+            if (fVar27 == 3.64338e-44) {
               uVar16 = __ftol();
               lVar17 = __ftol();
               iVar9 = (int)((longlong)
@@ -19964,31 +19952,31 @@ LAB_00423cb4:
               if (3 < iVar9) {
                 iVar9 = 3;
               }
-              fVar10 = (float10)fcos((float10)pfVar7[-2] + (float10)1.5707964);
-              fStack_190 = (float)(fVar10 * (float10)pfVar7[8] * (float10)2.1);
-              fVar10 = (float10)fsin((float10)pfVar7[-2] + (float10)1.5707964);
-              pfStack_158 = (float *)(float)(fVar10 * (float10)pfVar7[8] * (float10)2.1);
+              fVar10 = (float10)fcos((float10)pfVar8[-2] + (float10)1.5707964);
+              fStack_190 = (float)(fVar10 * (float10)pfVar8[8] * (float10)2.1);
+              fVar10 = (float10)fsin((float10)pfVar8[-2] + (float10)1.5707964);
+              ppStack_158 = (projectile_t *)(float)(fVar10 * (float10)pfVar8[8] * (float10)2.1);
               (*grim_interface_ptr->vtable->grim_set_color)(0.3,1.0,0.3,fStack_2c * 0.4);
               iVar24 = 0;
               if (0 < iVar9) {
                 do {
                   (*grim_interface_ptr->vtable->grim_draw_quad)
-                            (((float)iVar24 * fStack_190 + pfVar7[-1] + _camera_offset_x) - 6.0,
-                             ((float)iVar24 * (float)pfStack_158 + *pfVar7 + _camera_offset_y) - 6.0
+                            (((float)iVar24 * fStack_190 + pfVar8[-1] + _camera_offset_x) - 6.0,
+                             ((float)iVar24 * (float)ppStack_158 + *pfVar8 + _camera_offset_y) - 6.0
                              ,12.0,12.0);
                   iVar24 = iVar24 + 1;
                 } while (iVar24 < iVar9);
               }
               (*grim_interface_ptr->vtable->grim_set_color)(0.3,1.0,0.3,fVar26);
               (*grim_interface_ptr->vtable->grim_draw_quad)
-                        ((_camera_offset_x + pfVar7[-1]) - 8.0,(_camera_offset_y + *pfVar7) - 8.0,
+                        ((_camera_offset_x + pfVar8[-1]) - 8.0,(_camera_offset_y + *pfVar8) - 8.0,
                          16.0,16.0);
               pIVar4 = grim_interface_ptr->vtable;
               fVar18 = 0.3;
-              fVar28 = 1.0;
+              fVar27 = 1.0;
             }
             else {
-              if (fVar28 != 3.36312e-44) goto LAB_00424111;
+              if (fVar27 != 3.36312e-44) goto LAB_00424111;
               uVar16 = __ftol();
               lVar17 = __ftol();
               iVar9 = (int)((longlong)
@@ -19997,65 +19985,65 @@ LAB_00423cb4:
               if (3 < iVar9) {
                 iVar9 = 3;
               }
-              fVar10 = (float10)fcos((float10)pfVar7[-2] + (float10)1.5707964);
-              fStack_190 = (float)(fVar10 * (float10)pfVar7[8] * (float10)2.1);
-              fVar10 = (float10)fsin((float10)pfVar7[-2] + (float10)1.5707964);
-              pfStack_158 = (float *)(float)(fVar10 * (float10)pfVar7[8] * (float10)2.1);
+              fVar10 = (float10)fcos((float10)pfVar8[-2] + (float10)1.5707964);
+              fStack_190 = (float)(fVar10 * (float10)pfVar8[8] * (float10)2.1);
+              fVar10 = (float10)fsin((float10)pfVar8[-2] + (float10)1.5707964);
+              ppStack_158 = (projectile_t *)(float)(fVar10 * (float10)pfVar8[8] * (float10)2.1);
               (*grim_interface_ptr->vtable->grim_set_color)(0.3,0.3,1.0,fStack_2c * 0.4);
               iVar24 = 0;
               if (0 < iVar9) {
                 do {
                   (*grim_interface_ptr->vtable->grim_draw_quad)
-                            (((float)iVar24 * fStack_190 + pfVar7[-1] + _camera_offset_x) - 6.0,
-                             ((float)iVar24 * (float)pfStack_158 + *pfVar7 + _camera_offset_y) - 6.0
+                            (((float)iVar24 * fStack_190 + pfVar8[-1] + _camera_offset_x) - 6.0,
+                             ((float)iVar24 * (float)ppStack_158 + *pfVar8 + _camera_offset_y) - 6.0
                              ,12.0,12.0);
                   iVar24 = iVar24 + 1;
                 } while (iVar24 < iVar9);
               }
               (*grim_interface_ptr->vtable->grim_set_color)(0.3,0.3,1.0,fVar26);
               (*grim_interface_ptr->vtable->grim_draw_quad)
-                        ((_camera_offset_x + pfVar7[-1]) - 8.0,(_camera_offset_y + *pfVar7) - 8.0,
+                        ((_camera_offset_x + pfVar8[-1]) - 8.0,(_camera_offset_y + *pfVar8) - 8.0,
                          16.0,16.0);
               pIVar4 = grim_interface_ptr->vtable;
               fVar18 = 1.0;
-              fVar28 = 0.3;
+              fVar27 = 0.3;
             }
             fVar19 = 0.3;
           }
-          (*pIVar4->grim_set_color)(fVar19,fVar28,fVar18,fStack_2c * 0.15);
+          (*pIVar4->grim_set_color)(fVar19,fVar27,fVar18,fStack_2c * 0.15);
           if (config_fx_detail_flag1 != '\0') {
             fVar20 = 120.0;
             fVar19 = 120.0;
-            fVar28 = (_camera_offset_y + *pfVar7) - 60.0;
+            fVar27 = (_camera_offset_y + *pfVar8) - 60.0;
             pIVar4 = grim_interface_ptr->vtable;
-            fVar18 = (_camera_offset_x + pfVar7[-1]) - 60.0;
+            fVar18 = (_camera_offset_x + pfVar8[-1]) - 60.0;
             goto LAB_00424107;
           }
         }
       }
       else {
-        fVar28 = pfVar7[6] * 2.5;
-        if (fVar28 <= 1.0) {
-          if (fVar28 < 0.0) {
-            fVar28 = 0.0;
+        fVar27 = pfVar8[6] * 2.5;
+        if (fVar27 <= 1.0) {
+          if (fVar27 < 0.0) {
+            fVar27 = 0.0;
           }
         }
         else {
-          fVar28 = 1.0;
+          fVar27 = 1.0;
         }
-        (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar28 * fStack_2c);
+        (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar27 * fStack_2c);
         fVar20 = 56.0;
         fVar19 = 56.0;
-        fVar28 = (_camera_offset_y + *pfVar7) - 28.0;
+        fVar27 = (_camera_offset_y + *pfVar8) - 28.0;
         pIVar4 = grim_interface_ptr->vtable;
-        fVar18 = (_camera_offset_x + pfVar7[-1]) - 28.0;
+        fVar18 = (_camera_offset_x + pfVar8[-1]) - 28.0;
 LAB_00424107:
-        (*pIVar4->grim_draw_quad)(fVar18,fVar28,fVar19,fVar20);
+        (*pIVar4->grim_draw_quad)(fVar18,fVar27,fVar19,fVar20);
       }
     }
 LAB_00424111:
-    pfVar7 = pfVar7 + 0x10;
-  } while ((int)pfVar7 < 0x493ec4);
+    pfVar8 = pfVar8 + 0x10;
+  } while ((int)pfVar8 < 0x493ec4);
   (*grim_interface_ptr->vtable->grim_end_batch)();
   fVar26 = 1.0;
   iVar9 = perk_count_get(perk_id_ion_gun_master);
@@ -20064,19 +20052,19 @@ LAB_00424111:
   }
   (*grim_interface_ptr->vtable->grim_bind_texture)(projectile_texture,0);
   (*grim_interface_ptr->vtable->grim_begin_batch)();
-  fVar28 = 0.0;
-  pfVar7 = (float *)&projectile_origin_y;
+  fVar27 = 0.0;
+  pfVar8 = &projectile_pool.origin_y;
   fVar18 = fStack_2c;
   do {
-    pfVar5 = pfVar7 + -5;
-    pfVar27 = unaff_EDI;
-    if (*(char *)(pfVar7 + -5) != '\0') {
-      fVar19 = pfVar7[3];
+    ppVar5 = (projectile_t *)(pfVar8 + -5);
+    ppVar7 = unaff_EDI;
+    if (((projectile_t *)(pfVar8 + -5))->active != '\0') {
+      fVar19 = pfVar8[3];
       if (fVar19 == 2.66247e-44) {
-        if (pfVar7[4] == 0.4) {
-          fVar20 = SQRT((*pfVar7 - pfVar7[-2]) * (*pfVar7 - pfVar7[-2]) +
-                        (pfVar7[-1] - pfVar7[-3]) * (pfVar7[-1] - pfVar7[-3])) * 0.01;
-          (*grim_interface_ptr->vtable->grim_set_rotation)(pfVar7[-4]);
+        if (pfVar8[4] == 0.4) {
+          fVar20 = SQRT((*pfVar8 - pfVar8[-2]) * (*pfVar8 - pfVar8[-2]) +
+                        (pfVar8[-1] - pfVar8[-3]) * (pfVar8[-1] - pfVar8[-3])) * 0.01;
+          (*grim_interface_ptr->vtable->grim_set_rotation)(pfVar8[-4]);
           (*grim_interface_ptr->vtable->grim_set_atlas_frame)(2,0);
           (*grim_interface_ptr->vtable->grim_set_color)(0.1,0.6,0.2,fStack_2c * 0.7);
           fVar19 = fVar20 * 16.0;
@@ -20084,13 +20072,13 @@ LAB_00424111:
           fVar20 = fVar20 * 8.0;
 LAB_00424257:
           (*pIVar4->grim_draw_quad)
-                    ((_camera_offset_x + pfVar7[-3]) - fVar20,
-                     (_camera_offset_y + pfVar7[-2]) - fVar20,fVar19,fVar19);
+                    ((_camera_offset_x + pfVar8[-3]) - fVar20,
+                     (_camera_offset_y + pfVar8[-2]) - fVar20,fVar19,fVar19);
         }
         else {
-          (*grim_interface_ptr->vtable->grim_set_rotation)(pfVar7[-4]);
+          (*grim_interface_ptr->vtable->grim_set_rotation)(pfVar8[-4]);
           (*grim_interface_ptr->vtable->grim_set_atlas_frame)(2,0);
-          fVar19 = pfVar7[4] * 2.5;
+          fVar19 = pfVar8[4] * 2.5;
           if (fVar19 <= 1.0) {
             if (fVar19 < 0.0) {
               fVar19 = 0.0;
@@ -20101,18 +20089,18 @@ LAB_00424257:
           }
           (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar19 * fStack_2c);
           (*grim_interface_ptr->vtable->grim_draw_quad)
-                    ((_camera_offset_x + pfVar7[-3]) - 28.0,(_camera_offset_y + pfVar7[-2]) - 28.0,
+                    ((_camera_offset_x + pfVar8[-3]) - 28.0,(_camera_offset_y + pfVar8[-2]) - 28.0,
                      56.0,56.0);
         }
       }
       else if (fVar19 == 4.06377e-44) {
-        if (pfVar7[4] == 0.4) {
-          fVar19 = SQRT((*pfVar7 - pfVar7[-2]) * (*pfVar7 - pfVar7[-2]) +
-                        (pfVar7[-1] - pfVar7[-3]) * (pfVar7[-1] - pfVar7[-3]));
+        if (pfVar8[4] == 0.4) {
+          fVar19 = SQRT((*pfVar8 - pfVar8[-2]) * (*pfVar8 - pfVar8[-2]) +
+                        (pfVar8[-1] - pfVar8[-3]) * (pfVar8[-1] - pfVar8[-3]));
           if (20.0 < fVar19) {
             fVar19 = 20.0;
           }
-          (*grim_interface_ptr->vtable->grim_set_rotation)(pfVar7[-4]);
+          (*grim_interface_ptr->vtable->grim_set_rotation)(pfVar8[-4]);
           (*grim_interface_ptr->vtable->grim_set_atlas_frame)(4,3);
           fVar22 = 1.0;
           fVar21 = 1.0;
@@ -20126,14 +20114,14 @@ LAB_00424475:
         }
       }
       else if (fVar19 == 3.50325e-44) {
-        if (pfVar7[4] == 0.4) {
-          fVar19 = SQRT((*pfVar7 - pfVar7[-2]) * (*pfVar7 - pfVar7[-2]) +
-                        (pfVar7[-1] - pfVar7[-3]) * (pfVar7[-1] - pfVar7[-3]));
+        if (pfVar8[4] == 0.4) {
+          fVar19 = SQRT((*pfVar8 - pfVar8[-2]) * (*pfVar8 - pfVar8[-2]) +
+                        (pfVar8[-1] - pfVar8[-3]) * (pfVar8[-1] - pfVar8[-3]));
           if (20.0 < fVar19) {
             fVar19 = 20.0;
           }
           (*grim_interface_ptr->vtable->grim_set_rotation)
-                    ((float)(int)fVar28 * 0.1 - (float)quest_spawn_timeline * 0.1);
+                    ((float)(int)fVar27 * 0.1 - (float)quest_spawn_timeline * 0.1);
           (*grim_interface_ptr->vtable->grim_set_atlas_frame)(4,6);
           fVar22 = 0.8;
           fVar21 = 0.8;
@@ -20144,11 +20132,11 @@ LAB_00424475:
       }
       else if (((fVar19 == 3.08286e-44) || (fVar19 == 2.94273e-44)) ||
               ((fVar19 == 3.22299e-44 || (fVar19 == 6.30584e-44)))) {
-        pfVar5 = unaff_EDI;
-        if (pfVar7[4] == 0.4) {
+        ppVar5 = unaff_EDI;
+        if (pfVar8[4] == 0.4) {
           (*grim_interface_ptr->vtable->grim_set_atlas_frame)(2,2);
           thunk_FUN_00452f1d();
-          if (pfVar7[3] == 6.30584e-44) {
+          if (pfVar8[3] == 6.30584e-44) {
             (*grim_interface_ptr->vtable->grim_set_color)(1.0,0.6,0.1,fVar18);
           }
           else {
@@ -20156,52 +20144,52 @@ LAB_00424475:
           }
           (*grim_interface_ptr->vtable->grim_set_atlas_frame)(4,2);
           fVar18 = fVar25 * 16.0;
-          fVar19 = _camera_offset_x + pfVar7[-1];
-          fVar20 = _camera_offset_y + *pfVar7;
+          fVar19 = _camera_offset_x + pfVar8[-1];
+          fVar20 = _camera_offset_y + *pfVar8;
           if (fStack_170 <= 256.0) {
-            pfStack_198 = (float *)0x0;
+            ppStack_198 = (projectile_t *)0x0;
             fStack_100 = fStack_170;
           }
           else {
-            pfStack_198 = (float *)(fStack_170 - 256.0);
+            ppStack_198 = (projectile_t *)(fStack_170 - 256.0);
             fStack_100 = 256.0;
           }
-          pfVar1 = pfStack_198;
-          pfStack_158 = (float *)(fVar25 * 3.1);
-          if (9.0 < (float)pfStack_158) {
-            pfStack_158 = (float *)0x41100000;
+          ppVar3 = ppStack_198;
+          ppStack_158 = (projectile_t *)(fVar25 * 3.1);
+          if (9.0 < (float)ppStack_158) {
+            ppStack_158 = (projectile_t *)0x41100000;
           }
-          if ((float)pfStack_198 < fStack_170) {
+          if ((float)ppStack_198 < fStack_170) {
             fVar21 = fVar25 * 32.0;
             do {
-              if (pfVar7[3] == 6.30584e-44) {
+              if (pfVar8[3] == 6.30584e-44) {
                 (*grim_interface_ptr->vtable->grim_set_color)
                           (1.0,0.6,0.1,
-                           (((float)pfStack_198 - (float)pfVar1) / fStack_100) * fStack_34);
+                           (((float)ppStack_198 - (float)ppVar3) / fStack_100) * fStack_34);
               }
               else {
                 (*grim_interface_ptr->vtable->grim_set_color)
                           (0.5,0.6,1.0,
-                           (((float)pfStack_198 - (float)pfVar1) / fStack_100) * fStack_34);
+                           (((float)ppStack_198 - (float)ppVar3) / fStack_100) * fStack_34);
               }
               (*grim_interface_ptr->vtable->grim_draw_quad)
-                        (fStack_190 * (float)pfStack_198 + (fVar19 - fVar18),
-                         fStack_18c * (float)pfStack_198 + (fVar20 - fVar18),fVar21,fVar21);
-              pfStack_198 = (float *)((float)pfStack_158 + (float)pfStack_198);
-            } while ((float)pfStack_198 < fStack_170);
+                        (fStack_190 * (float)ppStack_198 + (fVar19 - fVar18),
+                         fStack_18c * (float)ppStack_198 + (fVar20 - fVar18),fVar21,fVar21);
+              ppStack_198 = (projectile_t *)((float)ppStack_158 + (float)ppStack_198);
+            } while ((float)ppStack_198 < fStack_170);
           }
-          (*grim_interface_ptr->vtable->grim_set_rotation)(unaff_EDI[1]);
+          (*grim_interface_ptr->vtable->grim_set_rotation)(unaff_EDI->angle);
           (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,0.7,fStack_34);
           (*grim_interface_ptr->vtable->grim_draw_quad)
-                    ((_camera_offset_x + unaff_EDI[2]) - fVar18,
-                     (_camera_offset_y + unaff_EDI[3]) - fVar18,fVar25 * 32.0,fVar25 * 32.0);
+                    ((_camera_offset_x + unaff_EDI->pos_x) - fVar18,
+                     (_camera_offset_y + unaff_EDI->pos_y) - fVar18,fVar25 * 32.0,fVar25 * 32.0);
           fVar18 = fStack_34;
         }
         else {
-          (*grim_interface_ptr->vtable->grim_set_rotation)(pfVar7[-4]);
+          (*grim_interface_ptr->vtable->grim_set_rotation)(pfVar8[-4]);
           (*grim_interface_ptr->vtable->grim_set_atlas_frame)(4,2);
           thunk_FUN_00452f1d();
-          fVar18 = pfVar7[3];
+          fVar18 = pfVar8[3];
           if (fVar18 == 3.08286e-44) {
             fVar25 = 1.05;
           }
@@ -20216,8 +20204,8 @@ LAB_00424475:
           }
           (*grim_interface_ptr->vtable->grim_set_atlas_frame)(4,2);
           fVar18 = fVar25 * 16.0;
-          fVar19 = (_camera_offset_x + pfVar7[-1]) - fVar18;
-          fVar20 = _camera_offset_y + *pfVar7;
+          fVar19 = (_camera_offset_x + pfVar8[-1]) - fVar18;
+          fVar20 = _camera_offset_y + *pfVar8;
           if (fStack_170 <= 256.0) {
             fVar21 = 0.0;
             fStack_f8 = fStack_170;
@@ -20234,15 +20222,15 @@ LAB_00424475:
             fVar22 = fVar25 * 32.0;
             fVar23 = fVar21;
             do {
-              if (pfVar7[3] == 6.30584e-44) {
+              if (pfVar8[3] == 6.30584e-44) {
                 (*grim_interface_ptr->vtable->grim_set_color)
                           (1.0,0.6,0.1,
-                           ((fVar23 - fVar21) / fStack_f8) * (float)pfStack_158 * fStack_34);
+                           ((fVar23 - fVar21) / fStack_f8) * (float)ppStack_158 * fStack_34);
               }
               else {
                 (*grim_interface_ptr->vtable->grim_set_color)
                           (0.5,0.6,1.0,
-                           ((fVar23 - fVar21) / fStack_f8) * (float)pfStack_158 * fStack_34);
+                           ((fVar23 - fVar21) / fStack_f8) * (float)ppStack_158 * fStack_34);
               }
               (*grim_interface_ptr->vtable->grim_draw_quad)
                         (fVar23 * fStack_190 + fVar19,fVar23 * fStack_18c + (fVar20 - fVar18),fVar22
@@ -20250,110 +20238,111 @@ LAB_00424475:
               fVar23 = fStack_180 + fVar23;
             } while (fVar23 < fStack_170);
           }
-          fVar18 = (float)pfStack_158 * fStack_34;
+          fVar18 = (float)ppStack_158 * fStack_34;
           (*grim_interface_ptr->vtable->grim_set_color)(0.5,0.6,1.0,fVar18);
-          pfVar1 = unaff_EDI + 2;
+          pos = &unaff_EDI->pos_x;
           (*grim_interface_ptr->vtable->grim_draw_quad)
-                    ((_camera_offset_x + *pfVar1) - 16.0,(_camera_offset_y + unaff_EDI[3]) - 16.0,
+                    ((_camera_offset_x + *pos) - 16.0,(_camera_offset_y + unaff_EDI->pos_y) - 16.0,
                      32.0,32.0);
           (*grim_interface_ptr->vtable->grim_set_color)(0.5,0.6,1.0,fVar18);
           fStack_170 = fVar25 * fStack_184 * 40.0;
           fVar18 = fStack_34;
-          if (unaff_EDI[8] != 6.30584e-44) {
-            iVar9 = creature_find_in_radius(pfVar1,fStack_170,1);
-            pfVar27 = pfStack_198;
-            while (pfStack_198 = pfVar27, fVar18 = fStack_34, pfVar27 = pfVar5, iVar9 != -1) {
+          if (unaff_EDI->type_id != 0x2d) {
+            iVar9 = creature_find_in_radius(pos,fStack_170,1);
+            ppVar7 = ppStack_198;
+            while (ppStack_198 = ppVar7, fVar18 = fStack_34, ppVar7 = ppVar5, iVar9 != -1) {
               (*grim_interface_ptr->vtable->grim_set_uv_point)(0,0.625,0.0);
               (*grim_interface_ptr->vtable->grim_set_uv_point)(1,0.625,0.25);
               (*grim_interface_ptr->vtable->grim_set_uv_point)(2,0.625,0.25);
               (*grim_interface_ptr->vtable->grim_set_uv_point)(3,0.625,0.0);
               thunk_FUN_00452f1d();
-              pfVar27 = (float *)-(float)pfStack_194;
-              fVar18 = (float)pfVar27 * fVar26;
-              fStack_a4 = fVar26 * (float)pfStack_198;
-              fVar28 = (_camera_offset_x + *pfVar1) - fVar18 * 10.0;
-              fVar23 = (_camera_offset_y + unaff_EDI[3]) - fStack_a4 * 10.0;
-              fVar22 = _camera_offset_x + *pfVar1 + fVar18 * 10.0;
-              fStack_18c = fStack_a4 * 10.0 + _camera_offset_y + unaff_EDI[3];
+              ppVar7 = (projectile_t *)-(float)ppStack_194;
+              fStack_18c = _camera_offset_y + unaff_EDI->pos_y;
+              fVar18 = (float)ppVar7 * fVar26;
+              fStack_a4 = fVar26 * (float)ppStack_198;
+              fVar27 = (_camera_offset_x + *pos) - fVar18 * 10.0;
+              fVar23 = fStack_18c - fStack_a4 * 10.0;
+              fVar22 = _camera_offset_x + *pos + fVar18 * 10.0;
+              fStack_18c = fStack_a4 * 10.0 + fStack_18c;
               fVar20 = _camera_offset_x + (&creature_pool)[iVar9].pos_x;
-              fVar2 = _camera_offset_y + (&creature_pool)[iVar9].pos_y;
+              fVar1 = _camera_offset_y + (&creature_pool)[iVar9].pos_y;
               fVar21 = fVar18 * 10.0 + fVar20;
-              y2 = fStack_a4 * 10.0 + fVar2;
+              y2 = fStack_a4 * 10.0 + fVar1;
               fVar20 = fVar20 - fVar18 * 10.0;
-              fVar2 = fVar2 - fStack_a4 * 10.0;
+              fVar1 = fVar1 - fStack_a4 * 10.0;
               (*grim_interface_ptr->vtable->grim_draw_quad_points)
-                        (fVar28,fVar23,fVar22,fStack_18c,fVar21,y2,fVar20,fVar2);
-              fVar18 = (float)pfVar27 * fVar26;
-              fVar3 = (float)pfStack_198 * fVar26;
-              pfVar5 = (float *)(fVar3 * 4.0 + y2);
-              fStack_8c = fVar3 * 4.0;
-              fVar28 = fVar28 - fVar18 * 4.0;
+                        (fVar27,fVar23,fVar22,fStack_18c,fVar21,y2,fVar20,fVar1);
+              fVar18 = (float)ppVar7 * fVar26;
+              fVar2 = (float)ppStack_198 * fVar26;
+              ppVar5 = (projectile_t *)(fVar2 * 4.0 + y2);
+              fStack_8c = fVar2 * 4.0;
+              fVar27 = fVar27 - fVar18 * 4.0;
               fStack_190 = fVar22 + fVar18 * 4.0;
-              fStack_18c = fVar3 * 4.0 + fStack_18c;
+              fStack_18c = fVar2 * 4.0 + fStack_18c;
               (*grim_interface_ptr->vtable->grim_draw_quad_points)
-                        (fVar28,fVar23 - fStack_8c,fStack_190,fStack_18c,fVar21 + fVar18 * 4.0,
-                         (float)pfVar5,fVar20 - fVar18 * 4.0,fVar2 - fVar3 * 4.0);
+                        (fVar27,fVar23 - fStack_8c,fStack_190,fStack_18c,fVar21 + fVar18 * 4.0,
+                         (float)ppVar5,fVar20 - fVar18 * 4.0,fVar1 - fVar2 * 4.0);
               (*grim_interface_ptr->vtable->grim_set_atlas_frame)(4,2);
               (*grim_interface_ptr->vtable->grim_draw_quad)
                         ((_camera_offset_x + (&creature_pool)[iVar9].pos_x) - fVar19,
                          (_camera_offset_y + (&creature_pool)[iVar9].pos_y) - fVar19,
-                         (float)pfStack_158,(float)pfStack_158);
-              iVar9 = creature_find_in_radius(pfVar1,fStack_178,iVar9 + 1);
-              pfStack_194 = pfStack_198;
+                         (float)ppStack_158,(float)ppStack_158);
+              iVar9 = creature_find_in_radius(pos,fStack_178,iVar9 + 1);
+              ppStack_194 = ppStack_198;
             }
           }
         }
       }
     }
-    pfVar7 = pfVar7 + 0x10;
-    fVar28 = (float)((int)fVar28 + 1);
-    unaff_EDI = pfVar27;
-  } while ((int)pfVar7 < 0x493ecc);
+    pfVar8 = pfVar8 + 0x10;
+    fVar27 = (float)((int)fVar27 + 1);
+    unaff_EDI = ppVar7;
+  } while ((int)pfVar8 < 0x493ecc);
   (*grim_interface_ptr->vtable->grim_end_batch)();
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,1);
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
   (*grim_interface_ptr->vtable->grim_begin_batch)();
   iVar9 = 0;
-  pfVar7 = (float *)&projectile_pos_y;
+  pfVar8 = &projectile_pool.pos_y;
   do {
-    if ((*(char *)(pfVar7 + -3) != '\0') && (pfVar7[5] == 5.74532e-44)) {
-      if (pfVar7[6] == 0.4) {
+    if ((((projectile_t *)(pfVar8 + -3))->active != '\0') && (pfVar8[5] == 5.74532e-44)) {
+      if (pfVar8[6] == 0.4) {
         (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar18);
         (*grim_interface_ptr->vtable->grim_draw_quad)
-                  ((_camera_offset_x + pfVar7[-1]) - 30.0,(_camera_offset_y + *pfVar7) - 30.0,60.0,
+                  ((_camera_offset_x + pfVar8[-1]) - 30.0,(_camera_offset_y + *pfVar8) - 30.0,60.0,
                    60.0);
-        fVar10 = (float10)fsin((float10)pfVar7[-2] + (float10)1.5707964);
-        fVar11 = (float10)fcos((float10)pfVar7[-2] + (float10)1.5707964);
+        fVar10 = (float10)fsin((float10)pfVar8[-2] + (float10)1.5707964);
+        fVar11 = (float10)fcos((float10)pfVar8[-2] + (float10)1.5707964);
         (*grim_interface_ptr->vtable->grim_draw_quad)
-                  ((float)((((float10)_camera_offset_x + (float10)pfVar7[-1]) - (float10)30.0) +
+                  ((float)((((float10)_camera_offset_x + (float10)pfVar8[-1]) - (float10)30.0) +
                           fVar11 * (float10)15.0),
-                   (float)((((float10)_camera_offset_y + (float10)*pfVar7) - (float10)30.0) +
+                   (float)((((float10)_camera_offset_y + (float10)*pfVar8) - (float10)30.0) +
                           fVar10 * (float10)15.0),60.0,60.0);
         fVar25 = (float)((float10)iVar9 + (float10)fStack_120);
         fVar10 = (float10)fcos((float10)iVar9 + (float10)fStack_120);
         fVar11 = (float10)fsin((float10)fVar25);
         (*grim_interface_ptr->vtable->grim_draw_quad)
                   ((float)(fVar10 * fVar10 +
-                          (((float10)_camera_offset_x + (float10)pfVar7[-1]) - (float10)31.0)),
-                   (float)((((float10)_camera_offset_y + (float10)*pfVar7) - (float10)31.0) +
+                          (((float10)_camera_offset_x + (float10)pfVar8[-1]) - (float10)31.0)),
+                   (float)((((float10)_camera_offset_y + (float10)*pfVar8) - (float10)31.0) +
                           fVar11 * (float10)11.0),52.0,52.0);
         fVar10 = (float10)fsin((float10)fVar25 + (float10)2.0943952);
         fVar26 = (float)fVar10;
         fVar10 = (float10)fcos((float10)fVar25 + (float10)2.0943952);
         (*grim_interface_ptr->vtable->grim_draw_quad)
-                  ((float)((((float10)_camera_offset_x + (float10)pfVar7[-1]) - (float10)31.0) +
+                  ((float)((((float10)_camera_offset_x + (float10)pfVar8[-1]) - (float10)31.0) +
                           fVar10 * (float10)10.0),
-                   fVar26 * 10.0 + ((_camera_offset_y + *pfVar7) - 31.0),62.0,62.0);
+                   fVar26 * 10.0 + ((_camera_offset_y + *pfVar8) - 31.0),62.0,62.0);
         fVar10 = (float10)fsin((float10)fVar25 + (float10)4.1887903);
         fVar11 = (float10)fcos((float10)fVar25 + (float10)4.1887903);
         (*grim_interface_ptr->vtable->grim_draw_quad)
-                  ((float)((((float10)_camera_offset_x + (float10)pfVar7[-1]) - (float10)31.0) +
+                  ((float)((((float10)_camera_offset_x + (float10)pfVar8[-1]) - (float10)31.0) +
                           fVar11 * (float10)10.0),
-                   (float)((((float10)_camera_offset_y + (float10)*pfVar7) - (float10)31.0) +
+                   (float)((((float10)_camera_offset_y + (float10)*pfVar8) - (float10)31.0) +
                           fVar10 * (float10)fVar26),62.0,62.0);
       }
       else {
-        fVar25 = pfVar7[6] * 2.5;
+        fVar25 = pfVar8[6] * 2.5;
         if (fVar25 <= 1.0) {
           if (fVar25 < 0.0) {
             fVar25 = 0.0;
@@ -20366,13 +20355,13 @@ LAB_00424475:
         fVar26 = fVar25 * 40.0 + 32.0;
         fVar25 = fVar25 * 20.0 + 16.0;
         (*grim_interface_ptr->vtable->grim_draw_quad)
-                  ((_camera_offset_x + pfVar7[-1]) - fVar25,(_camera_offset_y + *pfVar7) - fVar25,
+                  ((_camera_offset_x + pfVar8[-1]) - fVar25,(_camera_offset_y + *pfVar8) - fVar25,
                    fVar26,fVar26);
       }
     }
-    pfVar7 = pfVar7 + 0x10;
+    pfVar8 = pfVar8 + 0x10;
     iVar9 = iVar9 + 1;
-  } while ((int)pfVar7 < 0x493ec4);
+  } while ((int)pfVar8 < 0x493ec4);
   (*grim_interface_ptr->vtable->grim_end_batch)();
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
@@ -20381,17 +20370,16 @@ LAB_00424475:
   effect_select_texture(0xd);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar18);
   (*grim_interface_ptr->vtable->grim_begin_batch)();
-  pcVar8 = &projectile_pool;
+  ppVar7 = &projectile_pool;
   do {
-    if (((*pcVar8 != '\0') && (pfVar5[8] == 6.30584e-44)) && (*(int *)(pcVar8 + 0x24) == 0x3ecccccd)
-       ) {
-      (*grim_interface_ptr->vtable->grim_set_rotation)(*(float *)(pcVar8 + 4));
+    if (((ppVar7->active != '\0') && (ppVar5->type_id == 0x2d)) && (ppVar7->life_timer == 0.4)) {
+      (*grim_interface_ptr->vtable->grim_set_rotation)(ppVar7->angle);
       (*grim_interface_ptr->vtable->grim_draw_quad)
-                ((_camera_offset_x + *(float *)(pcVar8 + 8)) - 32.0,
-                 (_camera_offset_y + *(float *)(pcVar8 + 0xc)) - 32.0,64.0,64.0);
+                ((_camera_offset_x + ppVar7->pos_x) - 32.0,(_camera_offset_y + ppVar7->pos_y) - 32.0
+                 ,64.0,64.0);
     }
-    pcVar8 = pcVar8 + 0x40;
-  } while ((int)pcVar8 < 0x493eb8);
+    ppVar7 = ppVar7 + 1;
+  } while ((int)ppVar7 < 0x493eb8);
   (*grim_interface_ptr->vtable->grim_end_batch)();
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
@@ -20399,37 +20387,37 @@ LAB_00424475:
   (*grim_interface_ptr->vtable->grim_set_color)(0.8,0.8,0.8,fVar25);
   (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0049bb30,0);
   (*grim_interface_ptr->vtable->grim_begin_batch)();
-  pfVar7 = (float *)&projectile_pos_y;
+  pfVar8 = &projectile_pool.pos_y;
   do {
-    if (((*(char *)(pfVar7 + -3) != '\0') && (pfVar7[6] == 0.4)) &&
-       ((fVar26 = pfVar7[5], fVar26 != 1.26117e-44 &&
+    if (((((projectile_t *)(pfVar8 + -3))->active != '\0') && (pfVar8[6] == 0.4)) &&
+       ((fVar26 = pfVar8[5], fVar26 != 1.26117e-44 &&
         ((fVar26 != 1.54143e-44 && (fVar26 != 2.66247e-44)))))) {
-      (*grim_interface_ptr->vtable->grim_set_rotation)(pfVar7[-2]);
-      if (pfVar7[5] == 1.4013e-45) {
+      (*grim_interface_ptr->vtable->grim_set_rotation)(pfVar8[-2]);
+      if (pfVar8[5] == 1.4013e-45) {
         fVar19 = 6.0;
         fVar18 = 6.0;
         pIVar4 = grim_interface_ptr->vtable;
-        fVar28 = (_camera_offset_x + pfVar7[-1]) - 3.0;
-        fVar26 = (_camera_offset_y + *pfVar7) - 3.0;
+        fVar27 = (_camera_offset_x + pfVar8[-1]) - 3.0;
+        fVar26 = (_camera_offset_y + *pfVar8) - 3.0;
       }
-      else if (pfVar7[5] == 5.60519e-45) {
+      else if (pfVar8[5] == 5.60519e-45) {
         fVar19 = 8.0;
-        fVar28 = (_camera_offset_x + pfVar7[-1]) - 4.0;
+        fVar27 = (_camera_offset_x + pfVar8[-1]) - 4.0;
         pIVar4 = grim_interface_ptr->vtable;
         fVar18 = 8.0;
-        fVar26 = (_camera_offset_y + *pfVar7) - 4.0;
+        fVar26 = (_camera_offset_y + *pfVar8) - 4.0;
       }
       else {
         fVar19 = 4.0;
-        fVar28 = (_camera_offset_x + pfVar7[-1]) - 2.0;
+        fVar27 = (_camera_offset_x + pfVar8[-1]) - 2.0;
         pIVar4 = grim_interface_ptr->vtable;
         fVar18 = 4.0;
-        fVar26 = (_camera_offset_y + *pfVar7) - 2.0;
+        fVar26 = (_camera_offset_y + *pfVar8) - 2.0;
       }
-      (*pIVar4->grim_draw_quad)(fVar28,fVar26,fVar18,fVar19);
+      (*pIVar4->grim_draw_quad)(fVar27,fVar26,fVar18,fVar19);
     }
-    pfVar7 = pfVar7 + 0x10;
-  } while ((int)pfVar7 < 0x493ec4);
+    pfVar8 = pfVar8 + 0x10;
+  } while ((int)pfVar8 < 0x493ec4);
   (*grim_interface_ptr->vtable->grim_end_batch)();
   if (config_fx_detail_flag1 != '\0') {
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
@@ -20437,19 +20425,19 @@ LAB_00424475:
     (*grim_interface_ptr->vtable->grim_bind_texture)(particles_texture,0);
     effect_select_texture(0xd);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
-    pfVar7 = (float *)&secondary_proj_angle;
+    pfVar8 = (float *)&secondary_proj_angle;
     do {
-      if (*(char *)(pfVar7 + -1) != '\0') {
+      if (*(char *)(pfVar8 + -1) != '\0') {
         (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fStack_8c * 0.48);
-        fVar10 = (float10)fcos((float10)*pfVar7 - (float10)1.5707964);
-        fVar11 = (float10)fsin((float10)*pfVar7 - (float10)1.5707964);
+        fVar10 = (float10)fcos((float10)*pfVar8 - (float10)1.5707964);
+        fVar11 = (float10)fsin((float10)*pfVar8 - (float10)1.5707964);
         (*grim_interface_ptr->vtable->grim_draw_quad)
-                  (((_camera_offset_x + pfVar7[2]) - (float)fVar10 * 5.0) - 70.0,
-                   (float)(((float10)(_camera_offset_y + pfVar7[3]) - fVar11 * (float10)5.0) -
+                  (((_camera_offset_x + pfVar8[2]) - (float)fVar10 * 5.0) - 70.0,
+                   (float)(((float10)(_camera_offset_y + pfVar8[3]) - fVar11 * (float10)5.0) -
                           (float10)70.0),140.0,140.0);
       }
-      pfVar7 = pfVar7 + 0xb;
-    } while ((int)pfVar7 < 0x4965dc);
+      pfVar8 = pfVar8 + 0xb;
+    } while ((int)pfVar8 < 0x4965dc);
     (*grim_interface_ptr->vtable->grim_end_batch)();
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
   }
@@ -20459,30 +20447,30 @@ LAB_00424475:
   (*grim_interface_ptr->vtable->grim_bind_texture)(projectile_texture,0);
   (*grim_interface_ptr->vtable->grim_set_atlas_frame)(4,3);
   (*grim_interface_ptr->vtable->grim_begin_batch)();
-  pfVar7 = (float *)&secondary_proj_pos_y;
+  pfVar8 = (float *)&secondary_proj_pos_y;
   do {
-    if ((*(char *)(pfVar7 + -4) != '\0') && (pfVar7[3] != 4.2039e-45)) {
-      (*grim_interface_ptr->vtable->grim_set_rotation)(pfVar7[-3]);
-      fVar26 = pfVar7[3];
+    if ((*(char *)(pfVar8 + -4) != '\0') && (pfVar8[3] != 4.2039e-45)) {
+      (*grim_interface_ptr->vtable->grim_set_rotation)(pfVar8[-3]);
+      fVar26 = pfVar8[3];
       if (fVar26 == 1.4013e-45) {
-        fVar28 = (_camera_offset_x + pfVar7[-1]) - 7.0;
-        fVar26 = (_camera_offset_y + *pfVar7) - 7.0;
+        fVar27 = (_camera_offset_x + pfVar8[-1]) - 7.0;
+        fVar26 = (_camera_offset_y + *pfVar8) - 7.0;
         (*grim_interface_ptr->vtable->grim_set_color)(0.8,0.8,0.8,fVar25);
         fVar19 = 14.0;
         fVar18 = 14.0;
         pIVar4 = grim_interface_ptr->vtable;
 LAB_00425a07:
-        (*pIVar4->grim_draw_quad)(fVar28,fVar26,fVar18,fVar19);
+        (*pIVar4->grim_draw_quad)(fVar27,fVar26,fVar18,fVar19);
       }
       else if (fVar26 == 2.8026e-45) {
-        fVar28 = (_camera_offset_x + pfVar7[-1]) - 5.0;
-        fVar26 = (_camera_offset_y + *pfVar7) - 5.0;
+        fVar27 = (_camera_offset_x + pfVar8[-1]) - 5.0;
+        fVar26 = (_camera_offset_y + *pfVar8) - 5.0;
         (*grim_interface_ptr->vtable->grim_set_color)(0.8,0.8,0.8,fVar25);
-        (*grim_interface_ptr->vtable->grim_draw_quad)(fVar28,fVar26,10.0,10.0);
+        (*grim_interface_ptr->vtable->grim_draw_quad)(fVar27,fVar26,10.0,10.0);
       }
       else if (fVar26 == 5.60519e-45) {
-        fVar28 = (_camera_offset_x + pfVar7[-1]) - 4.0;
-        fVar26 = (_camera_offset_y + *pfVar7) - 4.0;
+        fVar27 = (_camera_offset_x + pfVar8[-1]) - 4.0;
+        fVar26 = (_camera_offset_y + *pfVar8) - 4.0;
         (*grim_interface_ptr->vtable->grim_set_color)(0.8,0.8,0.8,fVar25);
         fVar19 = 8.0;
         fVar18 = 8.0;
@@ -20490,8 +20478,8 @@ LAB_00425a07:
         goto LAB_00425a07;
       }
     }
-    pfVar7 = pfVar7 + 0xb;
-  } while ((int)pfVar7 < 0x4965e8);
+    pfVar8 = pfVar8 + 0xb;
+  } while ((int)pfVar8 < 0x4965e8);
   (*grim_interface_ptr->vtable->grim_end_batch)();
   if (config_fx_detail_flag1 != '\0') {
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
@@ -20499,45 +20487,45 @@ LAB_00425a07:
     (*grim_interface_ptr->vtable->grim_bind_texture)(particles_texture,0);
     effect_select_texture(0xd);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
-    pfVar7 = (float *)&secondary_proj_pos_y;
+    pfVar8 = (float *)&secondary_proj_pos_y;
     do {
-      if (*(char *)(pfVar7 + -4) != '\0') {
-        fVar25 = pfVar7[3];
+      if (*(char *)(pfVar8 + -4) != '\0') {
+        fVar25 = pfVar8[3];
         if (fVar25 == 5.60519e-45) {
           (*grim_interface_ptr->vtable->grim_set_color)(0.7,0.7,1.0,fStack_a4 * 0.158);
-          fVar28 = 30.0;
+          fVar27 = 30.0;
           fVar26 = 30.0;
-          fVar10 = (float10)fcos((float10)pfVar7[-3] - (float10)1.5707964);
+          fVar10 = (float10)fcos((float10)pfVar8[-3] - (float10)1.5707964);
           pIVar4 = grim_interface_ptr->vtable;
-          fVar11 = (float10)fsin((float10)pfVar7[-3] - (float10)1.5707964);
-          fVar25 = ((_camera_offset_x + pfVar7[-1]) - (float)fVar10 * 9.0) - 15.0;
-          fVar10 = ((float10)(_camera_offset_y + *pfVar7) - fVar11 * (float10)9.0) - (float10)15.0;
+          fVar11 = (float10)fsin((float10)pfVar8[-3] - (float10)1.5707964);
+          fVar25 = ((_camera_offset_x + pfVar8[-1]) - (float)fVar10 * 9.0) - 15.0;
+          fVar10 = ((float10)(_camera_offset_y + *pfVar8) - fVar11 * (float10)9.0) - (float10)15.0;
 LAB_00425d30:
-          (*pIVar4->grim_draw_quad)(fVar25,(float)fVar10,fVar26,fVar28);
+          (*pIVar4->grim_draw_quad)(fVar25,(float)fVar10,fVar26,fVar27);
         }
         else if (fVar25 == 1.4013e-45) {
           (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fStack_a4 * 0.68);
-          fVar10 = (float10)fcos((float10)pfVar7[-3] - (float10)1.5707964);
-          fVar11 = (float10)fsin((float10)pfVar7[-3] - (float10)1.5707964);
+          fVar10 = (float10)fcos((float10)pfVar8[-3] - (float10)1.5707964);
+          fVar11 = (float10)fsin((float10)pfVar8[-3] - (float10)1.5707964);
           (*grim_interface_ptr->vtable->grim_draw_quad)
-                    (((_camera_offset_x + pfVar7[-1]) - (float)fVar10 * 9.0) - 30.0,
-                     (float)(((float10)(_camera_offset_y + *pfVar7) - fVar11 * (float10)9.0) -
+                    (((_camera_offset_x + pfVar8[-1]) - (float)fVar10 * 9.0) - 30.0,
+                     (float)(((float10)(_camera_offset_y + *pfVar8) - fVar11 * (float10)9.0) -
                             (float10)30.0),60.0,60.0);
         }
         else if (fVar25 == 2.8026e-45) {
           (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fStack_a4 * 0.58);
-          fVar28 = 40.0;
+          fVar27 = 40.0;
           fVar26 = 40.0;
-          fVar10 = (float10)fcos((float10)pfVar7[-3] - (float10)1.5707964);
+          fVar10 = (float10)fcos((float10)pfVar8[-3] - (float10)1.5707964);
           pIVar4 = grim_interface_ptr->vtable;
-          fVar11 = (float10)fsin((float10)pfVar7[-3] - (float10)1.5707964);
-          fVar25 = ((_camera_offset_x + pfVar7[-1]) - (float)fVar10 * 9.0) - 20.0;
-          fVar10 = ((float10)(_camera_offset_y + *pfVar7) - fVar11 * (float10)9.0) - (float10)20.0;
+          fVar11 = (float10)fsin((float10)pfVar8[-3] - (float10)1.5707964);
+          fVar25 = ((_camera_offset_x + pfVar8[-1]) - (float)fVar10 * 9.0) - 20.0;
+          fVar10 = ((float10)(_camera_offset_y + *pfVar8) - fVar11 * (float10)9.0) - (float10)20.0;
           goto LAB_00425d30;
         }
       }
-      pfVar7 = pfVar7 + 0xb;
-    } while ((int)pfVar7 < 0x4965e8);
+      pfVar8 = pfVar8 + 0xb;
+    } while ((int)pfVar8 < 0x4965e8);
     (*grim_interface_ptr->vtable->grim_end_batch)();
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
   }
@@ -36170,7 +36158,7 @@ void __cdecl player_fire_weapon(char param_1,char param_2)
                                      owner_id);
             iVar10 = crt_rand();
             iVar7 = iVar7 + -1;
-            (&projectile_speed_scale)[iVar6 * 0x10] = (float)(iVar10 % 100) * 0.01 + 1.0;
+            (&projectile_pool)[iVar6].speed_scale = (float)(iVar10 % 100) * 0.01 + 1.0;
           } while (iVar7 != 0);
         }
         iVar7 = perk_id_sharpshooter;
