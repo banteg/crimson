@@ -10,7 +10,7 @@ const OUT_PATHS = [
 
 // grim.dll RVAs (1.9.93)
 const GRIM_RVAS = {
-    set_render_state: 0x06580,
+    set_config_var: 0x06580,
     set_color: 0x07f90,
     set_color_ptr: 0x08040,
     draw_text_mono: 0x092b0,
@@ -27,7 +27,7 @@ let last_scale = null;
 let logged_first = 0;
 
 const counts = {
-    set_render_state: 0,
+    set_config_var: 0,
     set_color: 0,
     set_color_ptr: 0,
     draw_text_mono: 0,
@@ -164,10 +164,10 @@ function attachOnce(name, addr, hookFn) {
     }
 }
 
-function hookSetRenderState(addr) {
+function hookSetConfigVar(addr) {
     Interceptor.attach(addr, {
         onEnter: function() {
-            counts.set_render_state += 1;
+            counts.set_config_var += 1;
             const sp = getStackPointer(this.context);
             if (sp === null) return;
             const state = safeReadI32(sp.add(4));
@@ -176,7 +176,7 @@ function hookSetRenderState(addr) {
             if (state === 0x18) {
                 const asFloat = safeReadFloat(sp.add(8));
                 last_scale = asFloat;
-                writeLine({ tag: "render_state", state: state, value: value, as_float: asFloat });
+                writeLine({ tag: "config_var", state: state, value: value, as_float: asFloat });
             }
         },
     });
@@ -320,7 +320,7 @@ function attachByRva() {
     const grimBase = normalizePtr(findModuleBase(GRIM_MODULE));
     if (!grimBase) return false;
 
-    attachOnce("set_render_state", grimBase.add(GRIM_RVAS.set_render_state), hookSetRenderState);
+    attachOnce("set_config_var", grimBase.add(GRIM_RVAS.set_config_var), hookSetConfigVar);
     attachOnce("set_color", grimBase.add(GRIM_RVAS.set_color), hookSetColor);
     attachOnce("set_color_ptr", grimBase.add(GRIM_RVAS.set_color_ptr), hookSetColorPtr);
     attachOnce("draw_text_mono", grimBase.add(GRIM_RVAS.draw_text_mono), hookDrawTextMono);
@@ -349,7 +349,7 @@ function attachByVtable() {
     }
     if (!vtable || vtable.isNull()) return false;
 
-    attachOnce("set_render_state(vtable)", vtable.add(0x20).readPointer(), hookSetRenderState);
+    attachOnce("set_config_var(vtable)", vtable.add(0x20).readPointer(), hookSetConfigVar);
     attachOnce("set_color(vtable)", vtable.add(0x114).readPointer(), hookSetColor);
     attachOnce("set_color_ptr(vtable)", vtable.add(0x110).readPointer(), hookSetColorPtr);
     attachOnce("draw_text_mono(vtable)", vtable.add(0x13c).readPointer(), hookDrawTextMono);

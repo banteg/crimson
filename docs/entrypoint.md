@@ -137,7 +137,7 @@ loaded. All callsites below are visible in
    - `config_sync_from_grim`, then `config_load_presets` again.
    - `grim_get_config_var` (`vtable +0x24`) reads texture scale, windowed flag,
      screen dimensions, and backend flags.
-   - `grim_set_render_state` (`vtable +0x20`) repeated while applying settings.
+   - `grim_set_config_var` (`vtable +0x20`) repeated while applying settings (config/state IDs include D3D render state values).
 7) Input + system init:
    - Logs: keyboard/mouse/joystick.
    - `grim_init_system` (`vtable +0x14`) → initializes D3D/input + loads

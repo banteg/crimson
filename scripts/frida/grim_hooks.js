@@ -72,11 +72,11 @@ const DEFAULT_CONFIG = {
       },
     },
 
-    grim_set_render_state: {
+    grim_set_config_var: {
       rva: "0x06580",
-      args: ["state:u32", "value:u32"],
+      args: ["id:u32", "value:u32"],
       state: {
-        render_state: { index: "state", value: "value" },
+        config_var: { index: "id", value: "value" },
       },
     },
 

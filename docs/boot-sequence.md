@@ -90,7 +90,7 @@ clear. The routine:
 From the assembly around `0x0042be90`:
 
 - `grim_clear_color(0, 0, 0, 1)` (vtable +0x2c).
-- `grim_set_render_state(0x15, 1)` (vtable +0x20).
+- `grim_set_config_var(0x15, 1)` (vtable +0x20; D3D filter/texture state ID).
 - `grim_set_color(1, 1, 1, alpha)` (vtable +0x114).
 - `grim_set_uv(0, 0, 1, 1)` (vtable +0x100).
 - `grim_set_rotation(0)` (vtable +0xfc).
@@ -221,11 +221,11 @@ Immediately after the splash textures are loaded in `crimsonland_main`
 the decompiler shows a short block of Grim2D vtable calls before input setup:
 
 - `grim_clear_color` (`vtable +0x2c`) called twice.
-- `grim_set_render_state` (`vtable +0x20`) called with several state/value pairs:
-  - state `0x36`, value `1` (exact meaning TBD).
+- `grim_set_config_var` (`vtable +0x20`) called with several id/value pairs:
+  - id `0x36`, value `1` (exact meaning TBD).
   - another call with `value = 1.0f` (seen on stack as `0x3f800000`).
 
-This block likely clears the screen and sets basic render state (blend, filtering,
+This block likely clears the screen and sets basic render/config state (blend, filtering,
 or color) before the first visible splash draw. The exact per-frame draw loop
 is still not obvious from the decompile; we need a callsite that renders
 `logo_esrb` / `loading` / `cl_logo` (or the texture manager drawing by name).

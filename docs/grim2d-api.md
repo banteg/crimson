@@ -70,12 +70,12 @@ We also generate an evidence appendix with callsite snippets:
 
 ## Top offsets by callsite count
 
-These are the most frequently used offsets (likely the core draw/state calls).
+These are the most frequently used offsets (likely the core draw/config calls).
 Use them to prioritize runtime validation and signature cleanup.
 
 | Offset | Name | Callsites | Unique funcs |
 | --- | --- | --- | --- |
-| `0x20` | `grim_set_render_state` | 206 | 35 |
+| `0x20` | `grim_set_config_var` | 206 | 35 |
 | `0x114` | `grim_set_color` | 203 | 37 |
 | `0x11c` | `grim_draw_quad` | 100 | 21 |
 | `0xf0` | `grim_end_batch` | 86 | 28 |
@@ -98,8 +98,8 @@ Use them to prioritize runtime validation and signature cleanup.
 
 Validation highlights (see the evidence appendix for snippets):
 
-- `grim_set_render_state` callsites pass `(state, value)` pairs like `(0x15, 2)` and `(0x18, 0x3f000000)`,
-  matching D3D-style render state usage.
+- `grim_set_config_var` callsites pass `(id, value)` pairs like `(0x15, 2)` and `(0x18, 0x3f000000)`;
+  some IDs map to D3D render/texture stage state, while others drive config side effects.
 - `grim_bind_texture` is called with `(handle, 0)` and followed by `grim_set_uv` + `grim_draw_quad`,
   consistent with binding stage 0 before drawing.
 - `grim_set_uv` receives literal `0/1` and atlas fractions (e.g. `0.0625`, `0.00390625`) before draws,
@@ -230,7 +230,7 @@ These offsets appear with keycodes or input-related values:
 | `0x14` | `init_system` | `bool init_system(void)` | high | returns success before game starts |
 | `0x18` | `shutdown` | `void shutdown(void)` | high | shutdown path before DLL release |
 | `0x1c` | `apply_settings` | `void apply_settings(void)` | high | calls FUN_10003c00 (apply settings) |
-| `0x20` | `set_render_state` | `void set_render_state(uint32_t state, uint32_t value)` | high | D3D-style render state usage |
+| `0x20` | `set_config_var` | `void set_config_var(uint32_t id, uint32_t value, ...)` | high | config/state dispatcher; some IDs map to D3D render/texture stage state |
 | `0x24` | `get_config_var` | `void get_config_var(uint32_t *out, int id)` | high | fills 4 dwords for config entry (`id` 0..0x7f) |
 | `0x28` | `get_error_text` | `const char * get_error_text(void)` | high | error string for MessageBox |
 | `0x2c` | `clear_color` | `void clear_color(float r, float g, float b, float a)` | high | packs RGBA into device clear color |

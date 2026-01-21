@@ -4692,9 +4692,9 @@
   {
     "program": "grim.dll",
     "address": "0x10006580",
-    "name": "grim_set_render_state",
-    "signature": "void grim_set_render_state(unsigned int state, unsigned int value)",
-    "comment": "Grim2D vtable 0x20 (provisional)"
+    "name": "grim_set_config_var",
+    "signature": "void grim_set_config_var(unsigned int id, unsigned int value)",
+    "comment": "Grim2D vtable 0x20: config/state dispatcher; updates config tables, some IDs map to D3D render/texture state; extra args for some IDs"
   },
   {
     "program": "grim.dll",

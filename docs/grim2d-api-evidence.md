@@ -175,12 +175,12 @@ grim.dll body:
 ```
 
 
-## 0x20 — grim_set_render_state @ 0x10006580
+## 0x20 — grim_set_config_var @ 0x10006580
 
-- Provisional name: `set_render_state` (high)
-- Guess: `void set_render_state(uint32_t state, uint32_t value)`
-- Notes: D3D-style SetRenderState usage
-- Ghidra signature: `void grim_set_render_state(unsigned int state, unsigned int value)`
+- Provisional name: `set_config_var` (high)
+- Guess: `void set_config_var(uint32_t id, uint32_t value, ...)`
+- Notes: config/state dispatcher; some IDs map to D3D render/texture stage state, others update config tables or trigger side effects
+- Ghidra signature: `void grim_set_config_var(unsigned int id, unsigned int value)`
 - Call sites: 206 (unique funcs: 35)
 - Sample calls: FUN_00401dd0:L754; FUN_00401dd0:L755; FUN_00401dd0:L847; FUN_00402d50:L1438; FUN_00402d50:L1460; FUN_004047c0:L3147; ui_render_keybind_help:L3373; ui_render_keybind_help:L3377
 - First callsite: FUN_00401dd0 (line 754)

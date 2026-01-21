@@ -10,7 +10,7 @@ const GRIM_RVAS = {
     get_texture_handle: 0x07740,
     load_texture: 0x076E0,
     bind_texture: 0x07830,
-    set_render_state: 0x06580,
+    set_config_var: 0x06580,
     set_color: 0x07f90,
     set_color_ptr: 0x08040,
     set_uv: 0x08350,
@@ -49,7 +49,7 @@ const counts = {
     get_texture_handle: 0,
     load_texture: 0,
     bind_texture: 0,
-    set_render_state: 0,
+    set_config_var: 0,
     set_color: 0,
     set_color_ptr: 0,
     set_uv: 0,
@@ -315,10 +315,10 @@ function hookBindTexture(addr) {
     });
 }
 
-function hookSetRenderState(addr) {
+function hookSetConfigVar(addr) {
     Interceptor.attach(addr, {
         onEnter: function() {
-            counts.set_render_state += 1;
+            counts.set_config_var += 1;
             const sp = getStackPointer(this.context);
             if (sp === null) return;
             const state = safeReadI32(sp.add(4));
@@ -329,7 +329,7 @@ function hookSetRenderState(addr) {
             }
             if (shouldLog() && state === 0x18) {
                 bumpEvent();
-                writeLine({ tag: "render_state", state: state, value: value, as_float: last_scale });
+                writeLine({ tag: "config_var", state: state, value: value, as_float: last_scale });
             }
         },
     });
@@ -474,7 +474,7 @@ function attachByRva(base) {
     attachOnce("get_texture_handle", base.add(GRIM_RVAS.get_texture_handle), hookGetTextureHandle);
     attachOnce("load_texture", base.add(GRIM_RVAS.load_texture), hookLoadTexture);
     attachOnce("bind_texture", base.add(GRIM_RVAS.bind_texture), hookBindTexture);
-    attachOnce("set_render_state", base.add(GRIM_RVAS.set_render_state), hookSetRenderState);
+    attachOnce("set_config_var", base.add(GRIM_RVAS.set_config_var), hookSetConfigVar);
     attachOnce("set_color", base.add(GRIM_RVAS.set_color), hookSetColor);
     attachOnce("set_color_ptr", base.add(GRIM_RVAS.set_color_ptr), hookSetColorPtr);
     attachOnce("set_uv", base.add(GRIM_RVAS.set_uv), hookSetUv);

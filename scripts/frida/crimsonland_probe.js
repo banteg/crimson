@@ -99,8 +99,8 @@ const CONFIG = {
     0x0EC: { name: 'grim_flush_batch', args: [] },
     0x0F0: { name: 'grim_end_batch', args: [] },
 
-    // Core draw/state calls are very hot; only log inside the hot-window.
-    0x020: { name: 'grim_set_render_state', args: ['i32', 'i32'], hot: true },
+    // Core draw/config calls are very hot; only log inside the hot-window.
+    0x020: { name: 'grim_set_config_var', args: ['i32', 'i32'], hot: true },
     0x114: { name: 'grim_set_color', args: ['f32','f32','f32','f32'], hot: true },
     0x11C: { name: 'grim_draw_quad', args: ['f32','f32','f32','f32'], hot: true },
   },
