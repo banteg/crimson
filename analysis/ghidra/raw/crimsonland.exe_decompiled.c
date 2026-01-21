@@ -3768,7 +3768,7 @@ void __cdecl perk_apply(int perk_id)
   int iVar4;
   uchar *puVar5;
   player_state_t *ppVar6;
-  char *pcVar7;
+  creature_t *pcVar7;
   int iVar8;
   bool bVar9;
   longlong lVar10;
@@ -3798,12 +3798,12 @@ void __cdecl perk_apply(int perk_id)
     bVar9 = false;
     pcVar7 = &creature_pool;
     do {
-      if ((((bVar9) && (*pcVar7 != '\0')) && (*(float *)(pcVar7 + 0x24) <= 500.0)) &&
-         ((pcVar7[0x8c] & 4U) == 0)) {
-        *pcVar7 = '\0';
-        effect_spawn_burst((float *)(pcVar7 + 0x14),4);
+      if ((((bVar9) && (pcVar7->active != '\0')) && (pcVar7->health <= 500.0)) &&
+         ((pcVar7->flags & 4) == 0)) {
+        pcVar7->active = '\0';
+        effect_spawn_burst(&pcVar7->pos_x,4);
       }
-      pcVar7 = pcVar7 + 0x98;
+      pcVar7 = pcVar7 + 1;
       bVar9 = (bool)(bVar9 ^ 1);
       iVar4 = _config_player_count;
     } while ((int)pcVar7 < 0x4aa338);
@@ -3836,9 +3836,9 @@ void __cdecl perk_apply(int perk_id)
         ppVar6 = ppVar6 + 1;
       } while (iVar8 != 0);
     }
-    pfVar3 = (float *)&creature_hitbox_size;
+    pfVar3 = &creature_pool.hitbox_size;
     do {
-      if (*(char *)(pfVar3 + -4) != '\0') {
+      if (((creature_t *)(pfVar3 + -4))->active != '\0') {
         *pfVar3 = *pfVar3 - frame_dt;
       }
       pfVar3 = pfVar3 + 0x26;
@@ -4583,11 +4583,11 @@ void perks_update_effects(void)
       }
       iVar4 = perk_count_get(perk_id_pyrokinetic);
       if (iVar4 != 0) {
-        fVar7 = (float)(&creature_collision_timer)[iVar2 * 0x26] - frame_dt;
-        (&creature_collision_timer)[iVar2 * 0x26] = fVar7;
+        fVar7 = (&creature_pool)[iVar2].collision_timer - frame_dt;
+        (&creature_pool)[iVar2].collision_timer = fVar7;
         if (fVar7 < 0.0) {
-          (&creature_collision_timer)[iVar2 * 0x26] = 0x3f000000;
-          pos = (float *)(&creature_pos_x + iVar2 * 0x26);
+          (&creature_pool)[iVar2].collision_timer = 0.5;
+          pos = &(&creature_pool)[iVar2].pos_x;
           puVar6 = &local_8;
           fVar7 = 0.8;
           local_8 = 0;
@@ -4649,17 +4649,16 @@ void perks_update_effects(void)
       render_overlay_player_index = 0;
       iVar2 = iVar2 % 0x17f;
       do {
-        if ((&creature_pool)[iVar2 * 0x98] != '\0') break;
+        if ((&creature_pool)[iVar2].active != '\0') break;
         iVar2 = crt_rand();
         iVar2 = iVar2 % 0x17f;
         render_overlay_player_index = render_overlay_player_index + 1;
       } while (render_overlay_player_index < 10);
       render_overlay_player_index = 0;
-      if ((&creature_pool)[iVar2 * 0x98] != '\0') {
+      if ((&creature_pool)[iVar2].active != '\0') {
         fVar7 = frame_dt * 20.0;
-        (&creature_health)[iVar2 * 0x26] = 0xbf800000;
-        (&creature_hitbox_size)[iVar2 * 0x26] = (float)(&creature_hitbox_size)[iVar2 * 0x26] - fVar7
-        ;
+        (&creature_pool)[iVar2].health = -1.0;
+        (&creature_pool)[iVar2].hitbox_size = (&creature_pool)[iVar2].hitbox_size - fVar7;
         lVar5 = __ftol();
         player_health._pad0._136_4_ = SUB84(lVar5,0);
         sfx_play_panned(sfx_trooper_inpain_01_alias_1);
@@ -4813,12 +4812,12 @@ void rush_mode_update(void)
       iVar1 = creature_spawn(&local_20,&local_10,2);
       local_18 = -64.0;
       fVar2 = (float10)fsin((float10)survival_elapsed_ms * (float10)0.001);
-      (&creature_ai_mode)[iVar1 * 0x26] = 8;
+      (&creature_pool)[iVar1].ai_mode = 8;
       local_14 = (float)((float10)terrain_texture_height * (float10)0.5 + fVar2 * (float10)256.0);
       iVar1 = creature_spawn(&local_18,&local_10,3);
-      (&creature_ai_mode)[iVar1 * 0x26] = 8;
-      *(uint *)(&creature_flags + iVar1 * 0x98) = *(uint *)(&creature_flags + iVar1 * 0x98) | 0x80;
-      (&creature_move_speed)[iVar1 * 0x26] = (float)(&creature_move_speed)[iVar1 * 0x26] * 1.4;
+      (&creature_pool)[iVar1].ai_mode = 8;
+      (&creature_pool)[iVar1].flags = (&creature_pool)[iVar1].flags | 0x80;
+      (&creature_pool)[iVar1].move_speed = (&creature_pool)[iVar1].move_speed * 1.4;
     }
     if ((demo_mode_active != '\0') && (DAT_004712f0 < quest_spawn_timeline)) {
       render_pass_mode = 0;
@@ -4837,245 +4836,248 @@ void rush_mode_update(void)
 void __cdecl survival_spawn_creature(float *pos)
 
 {
-  int iVar1;
+  float fVar1;
   float fVar2;
-  undefined4 uVar3;
+  int iVar3;
   int iVar4;
-  int iVar5;
-  uint uVar6;
-  float *pfVar7;
+  uint uVar5;
+  float *pfVar6;
   
-  iVar4 = creature_alloc_slot();
-  iVar1 = iVar4 * 0x98;
-  (&creature_pos_x)[iVar4 * 0x26] = *pos;
-  (&creature_pos_y)[iVar4 * 0x26] = pos[1];
-  (&creature_collision_flag)[iVar1] = 0;
-  (&creature_collision_timer)[iVar4 * 0x26] = 0;
-  (&creature_ai_mode)[iVar4 * 0x26] = 0;
-  iVar5 = crt_rand();
-  iVar5 = iVar5 % 10;
+  iVar3 = creature_alloc_slot();
+  (&creature_pool)[iVar3].pos_x = *pos;
+  (&creature_pool)[iVar3].pos_y = pos[1];
+  (&creature_pool)[iVar3].collision_flag = '\0';
+  (&creature_pool)[iVar3].collision_timer = 0.0;
+  (&creature_pool)[iVar3].ai_mode = 0;
+  iVar4 = crt_rand();
+  iVar4 = iVar4 % 10;
   if ((int)player_health._pad0._136_4_ < 12000) {
-    if (iVar5 < 9) {
-      (&creature_type_id)[iVar4 * 0x26] = 2;
+    if (iVar4 < 9) {
+      (&creature_pool)[iVar3].type_id = 2;
     }
     else {
-      (&creature_type_id)[iVar4 * 0x26] = 3;
+      (&creature_pool)[iVar3].type_id = 3;
     }
   }
   else if ((int)player_health._pad0._136_4_ < 25000) {
-    if (iVar5 < 4) {
-      (&creature_type_id)[iVar4 * 0x26] = 0;
+    if (iVar4 < 4) {
+      (&creature_pool)[iVar3].type_id = 0;
     }
     else {
-      (&creature_type_id)[iVar4 * 0x26] = 3;
+      (&creature_pool)[iVar3].type_id = 3;
     }
-    if (8 < iVar5) {
-      (&creature_type_id)[iVar4 * 0x26] = 2;
+    if (8 < iVar4) {
+      (&creature_pool)[iVar3].type_id = 2;
     }
   }
   else if ((int)player_health._pad0._136_4_ < 42000) {
-    if (iVar5 < 5) {
-      (&creature_type_id)[iVar4 * 0x26] = 2;
+    if (iVar4 < 5) {
+      (&creature_pool)[iVar3].type_id = 2;
     }
     else {
-      uVar6 = crt_rand();
-      uVar6 = uVar6 & 0x80000001;
-      if ((int)uVar6 < 0) {
-        uVar6 = (uVar6 - 1 | 0xfffffffe) + 1;
+      uVar5 = crt_rand();
+      uVar5 = uVar5 & 0x80000001;
+      if ((int)uVar5 < 0) {
+        uVar5 = (uVar5 - 1 | 0xfffffffe) + 1;
       }
-      (&creature_type_id)[iVar4 * 0x26] = uVar6 + 3;
+      (&creature_pool)[iVar3].type_id = uVar5 + 3;
     }
   }
   else if ((int)player_health._pad0._136_4_ < 50000) {
-    (&creature_type_id)[iVar4 * 0x26] = 2;
+    (&creature_pool)[iVar3].type_id = 2;
   }
   else if ((int)player_health._pad0._136_4_ < 90000) {
-    (&creature_type_id)[iVar4 * 0x26] = 4;
+    (&creature_pool)[iVar3].type_id = 4;
   }
   else {
     if (109999 < (int)player_health._pad0._136_4_) {
-      if (iVar5 < 6) {
-        (&creature_type_id)[iVar4 * 0x26] = 2;
+      if (iVar4 < 6) {
+        (&creature_pool)[iVar3].type_id = 2;
         goto LAB_00407611;
       }
-      if (iVar5 < 9) {
-        (&creature_type_id)[iVar4 * 0x26] = 4;
+      if (iVar4 < 9) {
+        (&creature_pool)[iVar3].type_id = 4;
         goto LAB_00407611;
       }
     }
-    (&creature_type_id)[iVar4 * 0x26] = 0;
+    (&creature_pool)[iVar3].type_id = 0;
   }
 LAB_00407611:
-  iVar5 = crt_rand();
-  if (((byte)iVar5 & 0x1f) == 2) {
-    (&creature_type_id)[iVar4 * 0x26] = 3;
+  iVar4 = crt_rand();
+  if (((byte)iVar4 & 0x1f) == 2) {
+    (&creature_pool)[iVar3].type_id = 3;
   }
-  iVar5 = crt_rand();
-  (&creature_pool)[iVar1] = 1;
-  (&creature_force_target)[iVar1] = 0;
-  (&creature_hitbox_size)[iVar4 * 0x26] = 0x41800000;
-  (&creature_vel_x)[iVar4 * 0x26] = 0;
-  (&creature_vel_y)[iVar4 * 0x26] = 0;
-  (&creature_size)[iVar4 * 0x26] = (float)(iVar5 % 0x14 + 0x2c);
-  iVar5 = crt_rand();
-  (&creature_heading)[iVar4 * 0x26] = (float)(iVar5 % 0x13a) * 0.01;
-  (&creature_move_speed)[iVar4 * 0x26] =
+  iVar4 = crt_rand();
+  (&creature_pool)[iVar3].active = '\x01';
+  *(undefined1 *)&(&creature_pool)[iVar3].force_target = 0;
+  (&creature_pool)[iVar3].hitbox_size = 16.0;
+  (&creature_pool)[iVar3].vel_x = 0.0;
+  (&creature_pool)[iVar3].vel_y = 0.0;
+  (&creature_pool)[iVar3].size = (float)(iVar4 % 0x14 + 0x2c);
+  iVar4 = crt_rand();
+  (&creature_pool)[iVar3].heading = (float)(iVar4 % 0x13a) * 0.01;
+  iVar4 = (&creature_pool)[iVar3].type_id;
+  (&creature_pool)[iVar3].move_speed =
        (float)((int)player_health._pad0._136_4_ / 4000) * 0.045 + 0.9;
-  if ((&creature_type_id)[iVar4 * 0x26] == 3) {
-    fVar2 = (float)(&creature_move_speed)[iVar4 * 0x26];
-    *(uint *)(&creature_flags + iVar1) = *(uint *)(&creature_flags + iVar1) | 0x80;
-    (&creature_move_speed)[iVar4 * 0x26] = fVar2 * 1.3;
+  if (iVar4 == 3) {
+    fVar1 = (&creature_pool)[iVar3].move_speed;
+    (&creature_pool)[iVar3].flags = (&creature_pool)[iVar3].flags | 0x80;
+    (&creature_pool)[iVar3].move_speed = fVar1 * 1.3;
   }
-  uVar6 = crt_rand();
-  (&creature_health)[iVar4 * 0x26] =
-       (float)(int)player_health._pad0._136_4_ * 0.00125 + (float)(uVar6 & 0xf) + 52.0;
-  if ((&creature_type_id)[iVar4 * 0x26] == 0) {
-    fVar2 = (float)(&creature_move_speed)[iVar4 * 0x26];
-    (&creature_move_speed)[iVar4 * 0x26] = fVar2 * 0.6;
-    if (fVar2 * 0.6 < 1.3) {
-      (&creature_move_speed)[iVar4 * 0x26] = 0x3fa66666;
+  uVar5 = crt_rand();
+  iVar4 = (&creature_pool)[iVar3].type_id;
+  (&creature_pool)[iVar3].health =
+       (float)(int)player_health._pad0._136_4_ * 0.00125 + (float)(uVar5 & 0xf) + 52.0;
+  if (iVar4 == 0) {
+    fVar1 = (&creature_pool)[iVar3].move_speed * 0.6;
+    (&creature_pool)[iVar3].move_speed = fVar1;
+    if (fVar1 < 1.3) {
+      (&creature_pool)[iVar3].move_speed = 1.3;
     }
-    (&creature_health)[iVar4 * 0x26] = (float)(&creature_health)[iVar4 * 0x26] * 1.5;
+    (&creature_pool)[iVar3].health = (&creature_pool)[iVar3].health * 1.5;
   }
-  if (3.5 < (float)(&creature_move_speed)[iVar4 * 0x26]) {
-    (&creature_move_speed)[iVar4 * 0x26] = 0x40600000;
+  if (3.5 < (&creature_pool)[iVar3].move_speed) {
+    (&creature_pool)[iVar3].move_speed = 3.5;
   }
-  (&creature_attack_cooldown)[iVar4 * 0x26] = 0;
-  (&creature_reward_value)[iVar4 * 0x26] = 0;
+  (&creature_pool)[iVar3].attack_cooldown = 0.0;
+  (&creature_pool)[iVar3].reward_value = 0.0;
   if ((int)player_health._pad0._136_4_ < 50000) {
-    (&creature_tint_r)[iVar4 * 0x26] =
+    (&creature_pool)[iVar3].tint_r =
          1.0 - 1.0 / ((float)((int)player_health._pad0._136_4_ / 1000) + 10.0);
-    iVar5 = crt_rand();
-    (&creature_tint_g)[iVar4 * 0x26] =
-         ((float)(iVar5 % 10) * 0.01 + 0.9) -
+    iVar4 = crt_rand();
+    (&creature_pool)[iVar3].tint_g =
+         ((float)(iVar4 % 10) * 0.01 + 0.9) -
          1.0 / ((float)((int)player_health._pad0._136_4_ / 10000) + 10.0);
-    iVar5 = crt_rand();
-    (&creature_tint_b)[iVar4 * 0x26] = (float)(iVar5 % 10) * 0.01 + 0.7;
+    iVar4 = crt_rand();
+    (&creature_pool)[iVar3].tint_b = (float)(iVar4 % 10) * 0.01 + 0.7;
   }
   else if ((int)player_health._pad0._136_4_ < 100000) {
-    (&creature_tint_r)[iVar4 * 0x26] =
+    (&creature_pool)[iVar3].tint_r =
          0.9 - 1.0 / ((float)((int)player_health._pad0._136_4_ / 1000) + 10.0);
-    iVar5 = crt_rand();
-    (&creature_tint_g)[iVar4 * 0x26] =
-         ((float)(iVar5 % 10) * 0.01 + 0.8) -
+    iVar4 = crt_rand();
+    (&creature_pool)[iVar3].tint_g =
+         ((float)(iVar4 % 10) * 0.01 + 0.8) -
          1.0 / ((float)((int)player_health._pad0._136_4_ / 10000) + 10.0);
-    iVar5 = crt_rand();
-    (&creature_tint_b)[iVar4 * 0x26] =
-         (float)(player_health._pad0._136_4_ + -50000) * 6e-06 + (float)(iVar5 % 10) * 0.01 + 0.7;
+    iVar4 = crt_rand();
+    (&creature_pool)[iVar3].tint_b =
+         (float)(player_health._pad0._136_4_ + -50000) * 6e-06 + (float)(iVar4 % 10) * 0.01 + 0.7;
   }
   else {
-    (&creature_tint_r)[iVar4 * 0x26] =
+    (&creature_pool)[iVar3].tint_r =
          1.0 - 1.0 / ((float)((int)player_health._pad0._136_4_ / 1000) + 10.0);
-    iVar5 = crt_rand();
-    (&creature_tint_g)[iVar4 * 0x26] =
-         ((float)(iVar5 % 10) * 0.01 + 0.9) -
+    iVar4 = crt_rand();
+    (&creature_pool)[iVar3].tint_g =
+         ((float)(iVar4 % 10) * 0.01 + 0.9) -
          1.0 / ((float)((int)player_health._pad0._136_4_ / 10000) + 10.0);
-    iVar5 = crt_rand();
-    fVar2 = ((float)(iVar5 % 10) * 0.01 + 1.0) -
+    iVar4 = crt_rand();
+    fVar1 = ((float)(iVar4 % 10) * 0.01 + 1.0) -
             (float)(player_health._pad0._136_4_ + -100000) * 3e-06;
-    (&creature_tint_b)[iVar4 * 0x26] = fVar2;
-    if (fVar2 < 0.5) {
-      (&creature_tint_b)[iVar4 * 0x26] = 0x3f000000;
+    (&creature_pool)[iVar3].tint_b = fVar1;
+    if (fVar1 < 0.5) {
+      (&creature_pool)[iVar3].tint_b = 0.5;
     }
   }
-  pfVar7 = (float *)(&creature_tint_r + iVar4 * 0x26);
-  (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-  (&creature_contact_damage)[iVar4 * 0x26] = (float)(&creature_size)[iVar4 * 0x26] * 0.0952381;
-  if ((float)(&creature_reward_value)[iVar4 * 0x26] == 0.0) {
-    iVar5 = crt_rand();
-    (&creature_reward_value)[iVar4 * 0x26] =
-         (float)(&creature_health)[iVar4 * 0x26] * 0.4 +
-         (float)(&creature_contact_damage)[iVar4 * 0x26] * 0.8 +
-         (float)(&creature_move_speed)[iVar4 * 0x26] * 5.0 + (float)(iVar5 % 10 + 10);
+  pfVar6 = &(&creature_pool)[iVar3].tint_r;
+  fVar1 = (&creature_pool)[iVar3].size;
+  (&creature_pool)[iVar3].tint_a = 1.0;
+  (&creature_pool)[iVar3].contact_damage = fVar1 * 0.0952381;
+  if ((&creature_pool)[iVar3].reward_value == 0.0) {
+    iVar4 = crt_rand();
+    (&creature_pool)[iVar3].reward_value =
+         (&creature_pool)[iVar3].health * 0.4 +
+         (&creature_pool)[iVar3].contact_damage * 0.8 +
+         (&creature_pool)[iVar3].move_speed * 5.0 + (float)(iVar4 % 10 + 10);
   }
-  iVar5 = crt_rand();
-  if (iVar5 % 0xb4 < 2) {
-    *pfVar7 = 0.9;
-    (&creature_health)[iVar4 * 0x26] = 0x42820000;
-    (&creature_tint_g)[iVar4 * 0x26] = 0x3ecccccd;
-    (&creature_reward_value)[iVar4 * 0x26] = 0x43a00000;
-    (&creature_tint_b)[iVar4 * 0x26] = 0x3ecccccd;
-    (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
+  iVar4 = crt_rand();
+  if (iVar4 % 0xb4 < 2) {
+    *pfVar6 = 0.9;
+    (&creature_pool)[iVar3].health = 65.0;
+    (&creature_pool)[iVar3].tint_g = 0.4;
+    (&creature_pool)[iVar3].reward_value = 320.0;
+    (&creature_pool)[iVar3].tint_b = 0.4;
+    (&creature_pool)[iVar3].tint_a = 1.0;
   }
   else {
-    iVar5 = crt_rand();
-    if (iVar5 % 0xf0 < 2) {
-      *pfVar7 = 0.4;
-      (&creature_health)[iVar4 * 0x26] = 0x42aa0000;
-      (&creature_tint_g)[iVar4 * 0x26] = 0x3f666666;
-      (&creature_reward_value)[iVar4 * 0x26] = 0x43d20000;
-      (&creature_tint_b)[iVar4 * 0x26] = 0x3ecccccd;
-      (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
+    iVar4 = crt_rand();
+    if (iVar4 % 0xf0 < 2) {
+      *pfVar6 = 0.4;
+      (&creature_pool)[iVar3].health = 85.0;
+      (&creature_pool)[iVar3].tint_g = 0.9;
+      (&creature_pool)[iVar3].reward_value = 420.0;
+      (&creature_pool)[iVar3].tint_b = 0.4;
+      (&creature_pool)[iVar3].tint_a = 1.0;
     }
     else {
-      iVar5 = crt_rand();
-      if (iVar5 % 0x168 < 2) {
-        *pfVar7 = 0.4;
-        (&creature_health)[iVar4 * 0x26] = 0x42fa0000;
-        (&creature_tint_g)[iVar4 * 0x26] = 0x3ecccccd;
-        (&creature_reward_value)[iVar4 * 0x26] = 0x44020000;
-        (&creature_tint_b)[iVar4 * 0x26] = 0x3f666666;
-        (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
+      iVar4 = crt_rand();
+      if (iVar4 % 0x168 < 2) {
+        *pfVar6 = 0.4;
+        (&creature_pool)[iVar3].health = 125.0;
+        (&creature_pool)[iVar3].tint_g = 0.4;
+        (&creature_pool)[iVar3].reward_value = 520.0;
+        (&creature_pool)[iVar3].tint_b = 0.9;
+        (&creature_pool)[iVar3].tint_a = 1.0;
       }
     }
   }
-  iVar5 = crt_rand();
-  if (iVar5 % 0x528 < 4) {
-    *pfVar7 = 0.84;
-    (&creature_health)[iVar4 * 0x26] = (float)(&creature_health)[iVar4 * 0x26] + 230.0;
-    (&creature_tint_g)[iVar4 * 0x26] = 0x3e75c28f;
-    (&creature_size)[iVar4 * 0x26] = 0x42a00000;
-    (&creature_tint_b)[iVar4 * 0x26] = 0x3f63d70a;
-    (&creature_reward_value)[iVar4 * 0x26] = 0x44160000;
-    (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
+  iVar4 = crt_rand();
+  if (iVar4 % 0x528 < 4) {
+    fVar1 = (&creature_pool)[iVar3].health;
+    *pfVar6 = 0.84;
+    (&creature_pool)[iVar3].health = fVar1 + 230.0;
+    (&creature_pool)[iVar3].tint_g = 0.24;
+    (&creature_pool)[iVar3].size = 80.0;
+    (&creature_pool)[iVar3].tint_b = 0.89;
+    (&creature_pool)[iVar3].reward_value = 600.0;
+    (&creature_pool)[iVar3].tint_a = 1.0;
   }
   else {
-    iVar5 = crt_rand();
-    if (iVar5 % 0x654 < 4) {
-      *pfVar7 = 0.94;
-      (&creature_health)[iVar4 * 0x26] = (float)(&creature_health)[iVar4 * 0x26] + 2230.0;
-      (&creature_tint_g)[iVar4 * 0x26] = 0x3f570a3d;
-      (&creature_size)[iVar4 * 0x26] = 0x42aa0000;
-      (&creature_tint_b)[iVar4 * 0x26] = 0x3e947ae1;
-      (&creature_reward_value)[iVar4 * 0x26] = 0x44610000;
-      (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
+    iVar4 = crt_rand();
+    if (iVar4 % 0x654 < 4) {
+      fVar1 = (&creature_pool)[iVar3].health;
+      *pfVar6 = 0.94;
+      (&creature_pool)[iVar3].health = fVar1 + 2230.0;
+      (&creature_pool)[iVar3].tint_g = 0.84;
+      (&creature_pool)[iVar3].size = 85.0;
+      (&creature_pool)[iVar3].tint_b = 0.29;
+      (&creature_pool)[iVar3].reward_value = 900.0;
+      (&creature_pool)[iVar3].tint_a = 1.0;
     }
   }
-  fVar2 = (float)(&creature_reward_value)[iVar4 * 0x26];
-  uVar3 = (&creature_health)[iVar4 * 0x26];
-  (&creature_state_flag)[iVar1] = 1;
-  (&creature_max_health)[iVar4 * 0x26] = uVar3;
-  (&creature_reward_value)[iVar4 * 0x26] = fVar2 * 0.8;
-  if (0.0 <= *pfVar7) {
-    if (1.0 < *pfVar7) {
-      *pfVar7 = 1.0;
-    }
-  }
-  else {
-    *pfVar7 = 0.0;
-  }
-  if (0.0 <= (float)(&creature_tint_g)[iVar4 * 0x26]) {
-    if (1.0 < (float)(&creature_tint_g)[iVar4 * 0x26]) {
-      (&creature_tint_g)[iVar4 * 0x26] = 0x3f800000;
+  fVar1 = (&creature_pool)[iVar3].reward_value;
+  fVar2 = (&creature_pool)[iVar3].health;
+  (&creature_pool)[iVar3].state_flag = '\x01';
+  (&creature_pool)[iVar3].max_health = fVar2;
+  (&creature_pool)[iVar3].reward_value = fVar1 * 0.8;
+  if (0.0 <= *pfVar6) {
+    if (1.0 < *pfVar6) {
+      *pfVar6 = 1.0;
     }
   }
   else {
-    (&creature_tint_g)[iVar4 * 0x26] = 0;
+    *pfVar6 = 0.0;
   }
-  if (0.0 <= (float)(&creature_tint_b)[iVar4 * 0x26]) {
-    if (1.0 < (float)(&creature_tint_b)[iVar4 * 0x26]) {
-      (&creature_tint_b)[iVar4 * 0x26] = 0x3f800000;
+  if (0.0 <= (&creature_pool)[iVar3].tint_g) {
+    if (1.0 < (&creature_pool)[iVar3].tint_g) {
+      (&creature_pool)[iVar3].tint_g = 1.0;
     }
   }
   else {
-    (&creature_tint_b)[iVar4 * 0x26] = 0;
+    (&creature_pool)[iVar3].tint_g = 0.0;
   }
-  if ((float)(&creature_tint_a)[iVar4 * 0x26] < 0.0) {
-    (&creature_tint_a)[iVar4 * 0x26] = 0;
+  if (0.0 <= (&creature_pool)[iVar3].tint_b) {
+    if (1.0 < (&creature_pool)[iVar3].tint_b) {
+      (&creature_pool)[iVar3].tint_b = 1.0;
+    }
+  }
+  else {
+    (&creature_pool)[iVar3].tint_b = 0.0;
+  }
+  if ((&creature_pool)[iVar3].tint_a < 0.0) {
+    (&creature_pool)[iVar3].tint_a = 0.0;
     return;
   }
-  if (1.0 < (float)(&creature_tint_a)[iVar4 * 0x26]) {
-    (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
+  if (1.0 < (&creature_pool)[iVar3].tint_a) {
+    (&creature_pool)[iVar3].tint_a = 1.0;
   }
   return;
 }
@@ -6076,28 +6078,29 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
 {
   player_state_t *ppVar1;
   float fVar2;
-  int iVar3;
-  uchar *puVar4;
-  int iVar5;
-  uint uVar6;
-  float *pfVar7;
-  char *pcVar8;
-  float10 fVar9;
-  int iVar10;
+  float fVar3;
+  int iVar4;
+  uchar *puVar5;
+  int iVar6;
+  uint uVar7;
+  float *pfVar8;
+  creature_t *pcVar9;
+  float10 fVar10;
+  int iVar11;
   int owner_id;
   float local_10 [4];
   
   sfx_play(sfx_ui_bonus);
   local_10[0] = 1.0;
-  iVar3 = perk_count_get(perk_id_bonus_economist);
-  if (iVar3 != 0) {
+  iVar4 = perk_count_get(perk_id_bonus_economist);
+  if (iVar4 != 0) {
     local_10[0] = 1.5;
   }
-  iVar3 = *bonus_entry;
-  if (iVar3 == 3) {
+  iVar4 = *bonus_entry;
+  if (iVar4 == 3) {
     weapon_assign_player(player_index,bonus_entry[6]);
   }
-  else if (iVar3 == 0xc) {
+  else if (iVar4 == 0xc) {
     ppVar1 = &player_health + player_index;
     if ((*(float *)(&player_health)[player_index]._pad0 < 100.0) &&
        (fVar2 = *(float *)ppVar1->_pad0 + 10.0, *(float *)ppVar1->_pad0 = fVar2, 100.0 < fVar2)) {
@@ -6107,23 +6110,23 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
       ppVar1->_pad0[3] = 'B';
     }
   }
-  else if (iVar3 == 9) {
+  else if (iVar4 == 9) {
     if (_bonus_reflex_boost_timer <= 0.0) {
       FUN_0041a810(DAT_00485484,DAT_0048548c,&bonus_reflex_boost_timer,0);
     }
     _bonus_reflex_boost_timer = (float)bonus_entry[6] * local_10[0] + _bonus_reflex_boost_timer;
     if (0 < _config_player_count) {
-      puVar4 = player_health._pad0 + 0x2a8;
-      iVar3 = _config_player_count;
+      puVar5 = player_health._pad0 + 0x2a8;
+      iVar4 = _config_player_count;
       do {
-        *(undefined4 *)puVar4 = *(undefined4 *)(puVar4 + -8);
-        puVar4[4] = '\0';
-        puVar4[5] = '\0';
-        puVar4[6] = '\0';
-        puVar4[7] = '\0';
-        puVar4 = puVar4 + 0x360;
-        iVar3 = iVar3 + -1;
-      } while (iVar3 != 0);
+        *(undefined4 *)puVar5 = *(undefined4 *)(puVar5 + -8);
+        puVar5[4] = '\0';
+        puVar5[5] = '\0';
+        puVar5[6] = '\0';
+        puVar5[7] = '\0';
+        puVar5 = puVar5 + 0x360;
+        iVar4 = iVar4 + -1;
+      } while (iVar4 != 0);
     }
     local_10[1] = 0.6;
     local_10[0] = 0.6;
@@ -6147,7 +6150,7 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
     effect_template_vel_x = 0.0;
     effect_template_vel_y = 0.0;
   }
-  else if (iVar3 == 4) {
+  else if (iVar4 == 4) {
     if (_bonus_weapon_power_up_timer <= 0.0) {
       FUN_0041a810(DAT_00485420,DAT_00485428,&bonus_weapon_power_up_timer,0);
     }
@@ -6171,7 +6174,7 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
     *(undefined4 *)((&player_health)[player_index]._pad0 + 0x2a8) =
          *(undefined4 *)((&player_health)[player_index]._pad0 + 0x2a0);
   }
-  else if (iVar3 == 0xd) {
+  else if (iVar4 == 0xd) {
     if (((float)player_health._pad0._752_4_ <= 0.0) && (player2_speed_bonus_timer <= 0.0)) {
       FUN_0041a810(DAT_004854d4,DAT_004854dc,0x490bc4,&player2_speed_bonus_timer);
     }
@@ -6179,26 +6182,26 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
          (float)bonus_entry[6] * local_10[0] +
          *(float *)((&player_health)[player_index]._pad0 + 0x2f0);
   }
-  else if (iVar3 == 0xb) {
+  else if (iVar4 == 0xb) {
     if (_bonus_freeze_timer <= 0.0) {
       FUN_0041a810(DAT_004854ac,DAT_004854b4,&bonus_freeze_timer,0);
     }
-    pfVar7 = (float *)&creature_pos_x;
+    pfVar8 = &creature_pool.pos_x;
     _bonus_freeze_timer = (float)bonus_entry[6] * local_10[0] + _bonus_freeze_timer;
     do {
-      if ((*(char *)(pfVar7 + -5) != '\0') && (pfVar7[4] <= 0.0)) {
-        iVar3 = 8;
+      if ((((creature_t *)(pfVar8 + -5))->active != '\0') && (pfVar8[4] <= 0.0)) {
+        iVar4 = 8;
         do {
-          iVar5 = crt_rand();
-          effect_spawn_freeze_shard(pfVar7,(float)(iVar5 % 0x264) * 0.01);
-          iVar3 = iVar3 + -1;
-        } while (iVar3 != 0);
-        iVar3 = crt_rand();
-        effect_spawn_freeze_shatter(pfVar7,(float)(iVar3 % 0x264) * 0.01);
-        *(undefined1 *)(pfVar7 + -5) = 0;
+          iVar6 = crt_rand();
+          effect_spawn_freeze_shard(pfVar8,(float)(iVar6 % 0x264) * 0.01);
+          iVar4 = iVar4 + -1;
+        } while (iVar4 != 0);
+        iVar4 = crt_rand();
+        effect_spawn_freeze_shatter(pfVar8,(float)(iVar4 % 0x264) * 0.01);
+        ((creature_t *)(pfVar8 + -5))->active = '\0';
       }
-      pfVar7 = pfVar7 + 0x26;
-    } while ((int)pfVar7 < 0x4aa34c);
+      pfVar8 = pfVar8 + 0x26;
+    } while ((int)pfVar8 < 0x4aa34c);
     local_10[0] = 0.3;
     local_10[1] = 0.5;
     local_10[2] = 0.8;
@@ -6222,7 +6225,7 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
     effect_template_vel_x = 0.0;
     effect_template_vel_y = 0.0;
   }
-  else if (iVar3 == 10) {
+  else if (iVar4 == 10) {
     if (((float)player_health._pad0._756_4_ <= 0.0) && (player2_shield_timer <= 0.0)) {
       FUN_0041a810(DAT_00485498,DAT_004854a0,0x490bc8,&player2_shield_timer);
     }
@@ -6230,43 +6233,42 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
          (float)bonus_entry[6] * local_10[0] +
          *(float *)((&player_health)[player_index]._pad0 + 0x2f4);
   }
-  else if (iVar3 == 7) {
+  else if (iVar4 == 7) {
     bonus_spawn_guard = 1;
     if (*(float *)(DAT_0048086c + 0xc) == 0.0) {
-      iVar3 = -100;
+      iVar4 = -100;
     }
     else {
-      iVar3 = -1 - player_index;
+      iVar4 = -1 - player_index;
     }
-    pfVar7 = (float *)(bonus_entry + 4);
+    pfVar8 = (float *)(bonus_entry + 4);
     shock_chain_links_left = 0x20;
-    iVar5 = creature_find_nearest(pfVar7,-1,0.0);
-    fVar9 = (float10)fpatan((float10)(float)(&creature_pos_y)[iVar5 * 0x26] -
-                            (float10)(float)bonus_entry[5],
-                            (float10)(float)(&creature_pos_x)[iVar5 * 0x26] - (float10)*pfVar7);
+    iVar6 = creature_find_nearest(pfVar8,-1,0.0);
+    fVar10 = (float10)fpatan((float10)(&creature_pool)[iVar6].pos_y - (float10)(float)bonus_entry[5]
+                             ,(float10)(&creature_pool)[iVar6].pos_x - (float10)*pfVar8);
     shock_chain_projectile_id =
-         projectile_spawn(pfVar7,(float)((fVar9 - (float10)1.5707964) - (float10)3.1415927),0x15,
-                          iVar3);
+         projectile_spawn(pfVar8,(float)((fVar10 - (float10)1.5707964) - (float10)3.1415927),0x15,
+                          iVar4);
     bonus_spawn_guard = 0;
     sfx_play_panned(sfx_shock_hit_01);
   }
-  else if (iVar3 == 8) {
+  else if (iVar4 == 8) {
     bonus_spawn_guard = 1;
     if (*(float *)(DAT_0048086c + 0xc) == 0.0) {
-      iVar3 = -100;
+      iVar4 = -100;
     }
     else {
-      iVar3 = -1 - player_index;
+      iVar4 = -1 - player_index;
     }
     player_index = 0;
     do {
-      projectile_spawn((float *)(bonus_entry + 4),(float)player_index * 0.3926991,9,iVar3);
+      projectile_spawn((float *)(bonus_entry + 4),(float)player_index * 0.3926991,9,iVar4);
       player_index = player_index + 1;
     } while (player_index < 0x10);
     bonus_spawn_guard = 0;
     sfx_play_panned(sfx_explosion_medium);
   }
-  else if (iVar3 == 0xe) {
+  else if (iVar4 == 0xe) {
     if (((float)player_health._pad0._760_4_ <= 0.0) && (player2_fire_bullets_timer <= 0.0)) {
       FUN_0041a810(DAT_004854e8,DAT_004854f0,0x490bcc,&player2_fire_bullets_timer);
     }
@@ -6290,71 +6292,69 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
     *(undefined4 *)((&player_health)[player_index]._pad0 + 0x2a8) =
          *(undefined4 *)((&player_health)[player_index]._pad0 + 0x2a0);
   }
-  else if (iVar3 == 2) {
+  else if (iVar4 == 2) {
     if (_bonus_energizer_timer <= 0.0) {
       FUN_0041a810(DAT_004853f8,DAT_00485400,&bonus_energizer_timer,0);
     }
     _bonus_energizer_timer = local_10[0] * 8.0 + _bonus_energizer_timer;
   }
-  else if (iVar3 == 6) {
+  else if (iVar4 == 6) {
     if (_bonus_double_xp_timer <= 0.0) {
       FUN_0041a810(DAT_00485448,DAT_00485450,&bonus_double_xp_timer,0);
     }
     _bonus_double_xp_timer = local_10[0] * 6.0 + _bonus_double_xp_timer;
   }
-  else if (iVar3 == 5) {
-    uVar6 = crt_rand();
-    iVar3 = (uVar6 & 3) + 4;
-    if (iVar3 != 0) {
+  else if (iVar4 == 5) {
+    uVar7 = crt_rand();
+    iVar4 = (uVar7 & 3) + 4;
+    if (iVar4 != 0) {
       do {
         owner_id = -100;
-        iVar10 = 1;
-        iVar5 = crt_rand();
-        iVar5 = projectile_spawn((float *)(bonus_entry + 4),(float)(iVar5 % 0x274) * 0.01,iVar10,
+        iVar11 = 1;
+        iVar6 = crt_rand();
+        iVar6 = projectile_spawn((float *)(bonus_entry + 4),(float)(iVar6 % 0x274) * 0.01,iVar11,
                                  owner_id);
-        if (iVar5 != -1) {
-          iVar10 = crt_rand();
-          (&projectile_speed_scale)[iVar5 * 0x10] =
-               ((float)(iVar10 % 0x32) * 0.01 + 0.5) *
-               (float)(&projectile_speed_scale)[iVar5 * 0x10];
+        if (iVar6 != -1) {
+          iVar11 = crt_rand();
+          (&projectile_speed_scale)[iVar6 * 0x10] =
+               ((float)(iVar11 % 0x32) * 0.01 + 0.5) *
+               (float)(&projectile_speed_scale)[iVar6 * 0x10];
         }
-        iVar3 = iVar3 + -1;
-      } while (iVar3 != 0);
+        iVar4 = iVar4 + -1;
+      } while (iVar4 != 0);
     }
-    iVar10 = -100;
-    iVar5 = 6;
-    pfVar7 = (float *)(bonus_entry + 4);
-    iVar3 = crt_rand();
-    projectile_spawn(pfVar7,(float)(iVar3 % 0x274) * 0.01,iVar5,iVar10);
-    iVar10 = -100;
-    iVar5 = 6;
-    iVar3 = crt_rand();
-    projectile_spawn(pfVar7,(float)(iVar3 % 0x274) * 0.01,iVar5,iVar10);
-    effect_spawn_explosion_burst(pfVar7,1.0);
+    iVar11 = -100;
+    iVar6 = 6;
+    pfVar8 = (float *)(bonus_entry + 4);
+    iVar4 = crt_rand();
+    projectile_spawn(pfVar8,(float)(iVar4 % 0x274) * 0.01,iVar6,iVar11);
+    iVar11 = -100;
+    iVar6 = 6;
+    iVar4 = crt_rand();
+    projectile_spawn(pfVar8,(float)(iVar4 % 0x274) * 0.01,iVar6,iVar11);
+    effect_spawn_explosion_burst(pfVar8,1.0);
     camera_shake_pulses = 0x14;
     _camera_shake_timer = 0x3e4ccccd;
     bonus_spawn_guard = 1;
-    iVar3 = 0;
-    pcVar8 = &creature_pool;
+    iVar4 = 0;
+    pcVar9 = &creature_pool;
     do {
-      if ((((*pcVar8 != '\0') && (ABS(*(float *)(pcVar8 + 0x14) - *pfVar7) <= 256.0)) &&
-          (ABS(*(float *)(pcVar8 + 0x18) - (float)bonus_entry[5]) <= 256.0)) &&
-         (fVar2 = 256.0 - SQRT((*(float *)(pcVar8 + 0x18) - (float)bonus_entry[5]) *
-                               (*(float *)(pcVar8 + 0x18) - (float)bonus_entry[5]) +
-                               (*(float *)(pcVar8 + 0x14) - *pfVar7) *
-                               (*(float *)(pcVar8 + 0x14) - *pfVar7)), 0.0 < fVar2)) {
+      if ((((pcVar9->active != '\0') && (ABS(pcVar9->pos_x - *pfVar8) <= 256.0)) &&
+          (ABS(pcVar9->pos_y - (float)bonus_entry[5]) <= 256.0)) &&
+         (fVar2 = pcVar9->pos_x - *pfVar8, fVar3 = pcVar9->pos_y - (float)bonus_entry[5],
+         fVar2 = 256.0 - SQRT(fVar3 * fVar3 + fVar2 * fVar2), 0.0 < fVar2)) {
         local_10[0] = 0.0;
         local_10[1] = 0.0;
-        creature_apply_damage(iVar3,fVar2 * 5.0,3,local_10);
+        creature_apply_damage(iVar4,fVar2 * 5.0,3,local_10);
       }
-      pcVar8 = pcVar8 + 0x98;
-      iVar3 = iVar3 + 1;
-    } while ((int)pcVar8 < 0x4aa338);
+      pcVar9 = pcVar9 + 1;
+      iVar4 = iVar4 + 1;
+    } while ((int)pcVar9 < 0x4aa338);
     bonus_spawn_guard = 0;
     sfx_play_panned(sfx_explosion_large);
     sfx_play_panned(sfx_shockwave);
   }
-  else if (iVar3 == 1) {
+  else if (iVar4 == 1) {
     player_health._pad0._136_4_ = player_health._pad0._136_4_ + bonus_entry[6];
   }
   local_10[0] = 0.4;
@@ -6370,26 +6370,26 @@ void __cdecl bonus_apply(int player_index,int *bonus_entry)
   _effect_template_half_width = 0x42000000;
   _effect_template_half_height = 0x42000000;
   if (*bonus_entry != 5) {
-    iVar3 = 0xc;
+    iVar4 = 0xc;
     do {
-      uVar6 = crt_rand();
-      _effect_template_rotation = (float)(uVar6 & 0x7f) * 0.049087387;
-      uVar6 = crt_rand();
-      uVar6 = uVar6 & 0x8000007f;
-      if ((int)uVar6 < 0) {
-        uVar6 = (uVar6 - 1 | 0xffffff80) + 1;
+      uVar7 = crt_rand();
+      _effect_template_rotation = (float)(uVar7 & 0x7f) * 0.049087387;
+      uVar7 = crt_rand();
+      uVar7 = uVar7 & 0x8000007f;
+      if ((int)uVar7 < 0) {
+        uVar7 = (uVar7 - 1 | 0xffffff80) + 1;
       }
-      effect_template_vel_x = (float)(int)(uVar6 - 0x40);
-      uVar6 = crt_rand();
-      uVar6 = uVar6 & 0x8000007f;
-      if ((int)uVar6 < 0) {
-        uVar6 = (uVar6 - 1 | 0xffffff80) + 1;
+      effect_template_vel_x = (float)(int)(uVar7 - 0x40);
+      uVar7 = crt_rand();
+      uVar7 = uVar7 & 0x8000007f;
+      if ((int)uVar7 < 0) {
+        uVar7 = (uVar7 - 1 | 0xffffff80) + 1;
       }
-      effect_template_vel_y = (float)(int)(uVar6 - 0x40);
+      effect_template_vel_y = (float)(int)(uVar7 - 0x40);
       _effect_template_scale_step = 0x3dcccccd;
       effect_spawn(0,(float *)(bonus_entry + 4));
-      iVar3 = iVar3 + -1;
-    } while (iVar3 != 0);
+      iVar4 = iVar4 + -1;
+    } while (iVar4 != 0);
   }
   return;
 }
@@ -7004,35 +7004,36 @@ int * FUN_0040b5d0(void)
 
 {
   undefined4 *puVar1;
-  undefined1 *puVar2;
-  player_state_t *ppVar3;
+  float *pfVar2;
+  undefined1 *puVar3;
+  player_state_t *ppVar4;
   
   puVar1 = &bonus_pool;
   do {
     *puVar1 = 0;
     puVar1 = puVar1 + 7;
   } while ((int)puVar1 < 0x482b08);
-  puVar1 = &creature_health;
+  pfVar2 = &creature_pool.health;
   do {
-    *(undefined1 *)(puVar1 + -9) = 0;
-    *puVar1 = 0xbf800000;
-    puVar1 = puVar1 + 0x26;
-  } while ((int)puVar1 < 0x4aa35c);
-  puVar2 = &projectile_pool;
+    ((creature_t *)(pfVar2 + -9))->active = '\0';
+    *pfVar2 = -1.0;
+    pfVar2 = pfVar2 + 0x26;
+  } while ((int)pfVar2 < 0x4aa35c);
+  puVar3 = &projectile_pool;
   do {
-    *puVar2 = 0;
-    puVar2 = puVar2 + 0x40;
-  } while ((int)puVar2 < 0x493eb8);
-  ppVar3 = &player_health;
+    *puVar3 = 0;
+    puVar3 = puVar3 + 0x40;
+  } while ((int)puVar3 < 0x493eb8);
+  ppVar4 = &player_health;
   do {
-    ppVar3[-1]._pad1[0] = '\0';
-    ppVar3->_pad0[0] = '\0';
-    ppVar3->_pad0[1] = '\0';
-    ppVar3->_pad0[2] = 0x80;
-    ppVar3->_pad0[3] = 0xbf;
-    ppVar3 = ppVar3 + 1;
-  } while ((int)ppVar3 < 0x490f94);
-  return (int *)ppVar3;
+    ppVar4[-1]._pad1[0] = '\0';
+    ppVar4->_pad0[0] = '\0';
+    ppVar4->_pad0[1] = '\0';
+    ppVar4->_pad0[2] = 0x80;
+    ppVar4->_pad0[3] = 0xbf;
+    ppVar4 = ppVar4 + 1;
+  } while ((int)ppVar4 < 0x490f94);
+  return (int *)ppVar4;
 }
 
 
@@ -10593,7 +10594,8 @@ void gameplay_reset_state(void)
   undefined1 *puVar3;
   int iVar4;
   int iVar5;
-  undefined1 *puVar6;
+  int *piVar6;
+  int *piVar7;
   
   puVar1 = &bonus_hud_slot_y;
   DAT_0048727c = 0;
@@ -10779,25 +10781,25 @@ void gameplay_reset_state(void)
     puVar3 = puVar3 + 0x2c;
   } while ((int)puVar3 < 0x4965d8);
   iVar5 = 0;
-  puVar3 = &creature_target_player;
+  piVar6 = &creature_pool.target_player;
   do {
     iVar4 = _config_player_count;
-    *(undefined4 *)(puVar3 + -0x38) = 0;
-    puVar3[-0x70] = 0;
+    piVar6[-0xe] = 0;
+    ((creature_t *)(piVar6 + -0x1c))->active = '\0';
     if (iVar4 == 0) {
-      *puVar3 = 0;
+      *(undefined1 *)piVar6 = 0;
     }
     else {
-      *puVar3 = (char)(iVar5 % iVar4);
+      *(char *)piVar6 = (char)(iVar5 % iVar4);
     }
-    puVar3[-0x68] = 1;
-    *(undefined4 *)(puVar3 + 0x1c) = 0;
+    *(uchar *)(piVar6 + -0x1a) = '\x01';
+    piVar6[7] = 0;
     iVar4 = crt_rand();
-    puVar6 = puVar3 + 0x98;
+    piVar7 = piVar6 + 0x26;
     iVar5 = iVar5 + 1;
-    *(float *)(puVar3 + 0x24) = (float)(iVar4 % 0x1f);
-    puVar3 = puVar6;
-  } while ((int)puVar6 < 0x4aa3a8);
+    piVar6[9] = (int)(float)(iVar4 % 0x1f);
+    piVar6 = piVar7;
+  } while ((int)piVar7 < 0x4aa3a8);
   puVar1 = &creature_spawn_slot_owner;
   do {
     *puVar1 = 0;
@@ -10944,7 +10946,7 @@ void player_update(void)
   int iVar9;
   int iVar10;
   float *pfVar11;
-  char *pcVar12;
+  creature_t *pcVar12;
   float fVar13;
   uchar *unaff_EBP;
   uint unaff_EDI;
@@ -11807,39 +11809,32 @@ LAB_004148a6:
       ppVar5->_pad0[0x2ff] = '\0';
     }
     iVar9 = *(int *)((&player_health)[iVar6]._pad0 + 0x2fc);
-    if (((&creature_pool)[iVar9 * 0x98] == '\0') || ((float)(&creature_health)[iVar9 * 0x26] <= 0.0)
-       ) {
+    if (((&creature_pool)[iVar9].active == '\0') || ((&creature_pool)[iVar9].health <= 0.0)) {
       pfVar21 = (float *)0x47c35000;
     }
     else {
-      pfVar21 = (float *)SQRT(((float)(&player_pos_y)[iVar6 * 0xd8] -
-                              (float)(&creature_pos_y)[iVar9 * 0x26]) *
-                              ((float)(&player_pos_y)[iVar6 * 0xd8] -
-                              (float)(&creature_pos_y)[iVar9 * 0x26]) +
-                              (*pfVar15 - (float)(&creature_pos_x)[iVar9 * 0x26]) *
-                              (*pfVar15 - (float)(&creature_pos_x)[iVar9 * 0x26]));
+      fVar2 = (float)(&player_pos_y)[iVar6 * 0xd8] - (&creature_pool)[iVar9].pos_y;
+      fVar13 = *pfVar15 - (&creature_pool)[iVar9].pos_x;
+      pfVar21 = (float *)SQRT(fVar2 * fVar2 + fVar13 * fVar13);
     }
     iVar9 = 0;
     pcVar12 = &creature_pool;
     do {
-      if (((*pcVar12 != '\0') && (0.0 < *(float *)(pcVar12 + 0x24))) &&
-         (local_30 = (float *)SQRT(((float)(&player_pos_y)[iVar6 * 0xd8] -
-                                   *(float *)(pcVar12 + 0x18)) *
-                                   ((float)(&player_pos_y)[iVar6 * 0xd8] -
-                                   *(float *)(pcVar12 + 0x18)) +
-                                   (*pfVar15 - *(float *)(pcVar12 + 0x14)) *
-                                   (*pfVar15 - *(float *)(pcVar12 + 0x14))),
+      if (((pcVar12->active != '\0') && (0.0 < pcVar12->health)) &&
+         (fVar13 = (float)(&player_pos_y)[iVar6 * 0xd8] - pcVar12->pos_y,
+         fVar2 = *pfVar15 - pcVar12->pos_x,
+         local_30 = (float *)SQRT(fVar13 * fVar13 + fVar2 * fVar2),
          (float)local_30 < (float)pfVar21 - 64.0)) {
         *(int *)((&player_health)[iVar6]._pad0 + 0x2fc) = iVar9;
         pfVar21 = local_30;
       }
-      pcVar12 = pcVar12 + 0x98;
+      pcVar12 = pcVar12 + 1;
       iVar9 = iVar9 + 1;
     } while ((int)pcVar12 < 0x4aa338);
     if (demo_mode_active == '\0') goto LAB_00413f2d;
 LAB_00414c7f:
     if ((*(int *)((&player_health)[iVar6]._pad0 + 0x2fc) < 0) ||
-       ((float)(&creature_health)[*(int *)((&player_health)[iVar6]._pad0 + 0x2fc) * 0x26] <= 0.0)) {
+       ((&creature_pool)[*(int *)((&player_health)[iVar6]._pad0 + 0x2fc)].health <= 0.0)) {
       fVar16 = (float10)fpatan((float10)(float)(&player_pos_y)[iVar6 * 0xd8] - (float10)512.0,
                                (float10)*pfVar15 - (float10)512.0);
       fVar16 = fVar16 + (float10)3.1415927;
@@ -11849,9 +11844,9 @@ LAB_00414c7f:
                ((float)(&player_pos_y)[iVar6 * 0xd8] - 512.0) +
                (*pfVar15 - 512.0) * (*pfVar15 - 512.0)) <= 300.0) {
         local_14 = (float)(&player_pos_y)[iVar6 * 0xd8] -
-                   (float)(&creature_pos_y)[*(int *)((&player_health)[iVar6]._pad0 + 0x2fc) * 0x26];
+                   (&creature_pool)[*(int *)((&player_health)[iVar6]._pad0 + 0x2fc)].pos_y;
         local_18 = *pfVar15 -
-                   (float)(&creature_pos_x)[*(int *)((&player_health)[iVar6]._pad0 + 0x2fc) * 0x26];
+                   (&creature_pool)[*(int *)((&player_health)[iVar6]._pad0 + 0x2fc)].pos_x;
       }
       else {
         local_14 = (float)(&player_pos_y)[iVar6 * 0xd8] - 512.0;
@@ -12166,9 +12161,9 @@ LAB_00414f2d:
   }
   else {
     puVar20 = (&player_health)[iVar6]._pad0 + 0x2c;
-    local_1c = (float)(&creature_pos_y)[*(int *)((&player_health)[iVar6]._pad0 + 0x2fc) * 0x26] -
+    local_1c = (&creature_pool)[*(int *)((&player_health)[iVar6]._pad0 + 0x2fc)].pos_y -
                *(float *)((&player_health)[iVar6]._pad0 + 0x30);
-    local_20 = (float)(&creature_pos_x)[*(int *)((&player_health)[iVar6]._pad0 + 0x2fc) * 0x26] -
+    local_20 = (&creature_pool)[*(int *)((&player_health)[iVar6]._pad0 + 0x2fc)].pos_x -
                *(float *)puVar20;
     local_38 = SQRT(local_1c * local_1c + local_20 * local_20);
     if (4.0 <= local_38) {
@@ -12181,8 +12176,8 @@ LAB_00414f2d:
     }
     else {
       iVar9 = *(int *)((&player_health)[iVar6]._pad0 + 0x2fc);
-      *(undefined4 *)puVar20 = (&creature_pos_x)[iVar9 * 0x26];
-      *(undefined4 *)((&player_health)[iVar6]._pad0 + 0x30) = (&creature_pos_y)[iVar9 * 0x26];
+      *(float *)puVar20 = (&creature_pool)[iVar9].pos_x;
+      *(float *)((&player_health)[iVar6]._pad0 + 0x30) = (&creature_pool)[iVar9].pos_y;
     }
   }
 LAB_0041572e:
@@ -13511,28 +13506,28 @@ void __cdecl creature_render_type(int type_id)
   float x;
   int iVar2;
   uint uVar3;
+  int frame;
   IGrim2D_vtbl *pIVar4;
   float *pfVar5;
-  undefined4 *puVar6;
-  int iVar7;
-  longlong lVar8;
+  int iVar6;
+  longlong lVar7;
   float afStack_34 [5];
   float fStack_20;
   float fStack_1c;
   float fStack_14;
   float fStack_10;
   
-  iVar7 = type_id * 0x44;
-  (*grim_interface_ptr->vtable->grim_bind_texture)(*(int *)(&creature_type_texture + iVar7),0);
+  iVar6 = type_id * 0x44;
+  (*grim_interface_ptr->vtable->grim_bind_texture)(*(int *)(&creature_type_texture + iVar6),0);
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
   if ((config_fx_detail_flag0 != '\0') &&
      (iVar2 = perk_count_get(perk_id_monster_vision), iVar2 == 0)) {
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,1);
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
-    pfVar5 = (float *)&creature_hitbox_size;
+    pfVar5 = &creature_pool.hitbox_size;
     do {
-      if ((*(char *)(pfVar5 + -4) != '\0') && (pfVar5[0x17] == (float)type_id)) {
+      if ((((creature_t *)(pfVar5 + -4))->active != '\0') && (pfVar5[0x17] == (float)type_id)) {
         fVar1 = pfVar5[0x1f];
         afStack_34[3] = pfVar5[0xb];
         afStack_34[4] = pfVar5[0xc];
@@ -13540,18 +13535,18 @@ void __cdecl creature_render_type(int type_id)
         fStack_1c = pfVar5[0xe] * 0.4;
         if ((((uint)fVar1 & 4) == 0) || (((uint)fVar1 & 0x40) != 0)) {
           if (16.0 <= *pfVar5) {
-            lVar8 = __ftol();
-            iVar2 = (int)lVar8;
-            if ((((&creature_type_anim_flags)[iVar7] & 1) != 0) && (0xf < iVar2)) {
+            lVar7 = __ftol();
+            iVar2 = (int)lVar7;
+            if ((((&creature_type_anim_flags)[iVar6] & 1) != 0) && (0xf < iVar2)) {
               iVar2 = 0x1f - iVar2;
             }
           }
           else if (0.0 <= *pfVar5) {
-            lVar8 = __ftol();
-            iVar2 = (int)lVar8;
+            lVar7 = __ftol();
+            iVar2 = (int)lVar7;
           }
           else {
-            iVar2 = *(int *)(&creature_type_base_frame + iVar7) + 0xf;
+            iVar2 = *(int *)(&creature_type_base_frame + iVar6) + 0xf;
             fStack_1c = *pfVar5 * 0.5 + fStack_1c;
             if (fStack_1c < 0.0) {
               fStack_1c = 0.0;
@@ -13563,8 +13558,8 @@ void __cdecl creature_render_type(int type_id)
           (*grim_interface_ptr->vtable->grim_set_atlas_frame)(8,iVar2);
         }
         else {
-          lVar8 = __ftol();
-          uVar3 = (uint)lVar8 & 0x8000000f;
+          lVar7 = __ftol();
+          uVar3 = (uint)lVar7 & 0x8000000f;
           if ((int)uVar3 < 0) {
             uVar3 = (uVar3 - 1 | 0xfffffff0) + 1;
           }
@@ -13572,7 +13567,7 @@ void __cdecl creature_render_type(int type_id)
             uVar3 = 0xf - uVar3;
           }
           (*grim_interface_ptr->vtable->grim_set_atlas_frame)
-                    (8,*(int *)(&creature_type_base_frame + iVar7) + 0x10 + uVar3);
+                    (8,*(int *)(&creature_type_base_frame + iVar6) + 0x10 + uVar3);
           if ((*pfVar5 < 0.0) && (fStack_1c = *pfVar5 * 0.1 + fStack_1c, fStack_1c < 0.0)) {
             fStack_1c = 0.0;
           }
@@ -13594,41 +13589,41 @@ void __cdecl creature_render_type(int type_id)
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
   (*grim_interface_ptr->vtable->grim_begin_batch)();
   if (_bonus_energizer_timer <= 0.0) {
-    puVar6 = &creature_anim_phase;
+    iVar2 = 0x49bfcc;
     do {
-      if ((*(char *)(puVar6 + -0x25) != '\0') && ((float)puVar6[-10] == fStack_14)) {
-        uVar3 = puVar6[-2];
-        afStack_34[3] = (float)puVar6[-0x16];
-        afStack_34[4] = (float)puVar6[-0x15];
-        fStack_20 = (float)puVar6[-0x14];
-        fStack_1c = (float)puVar6[-0x13];
+      if ((*(char *)(iVar2 + -0x94) != '\0') && (*(float *)(iVar2 + -0x28) == fStack_14)) {
+        uVar3 = *(uint *)(iVar2 + -8);
+        afStack_34[3] = *(float *)(iVar2 + -0x58);
+        afStack_34[4] = *(float *)(iVar2 + -0x54);
+        fStack_20 = *(float *)(iVar2 + -0x50);
+        fStack_1c = *(float *)(iVar2 + -0x4c);
         if (((uVar3 & 4) == 0) || ((uVar3 & 0x40) != 0)) {
-          if (16.0 <= (float)puVar6[-0x21]) {
-            lVar8 = __ftol();
-            iVar2 = (int)lVar8;
-            if ((((&creature_type_anim_flags)[iVar7] & 1) != 0) && (0xf < iVar2)) {
-              iVar2 = 0x1f - iVar2;
+          if (16.0 <= *(float *)(iVar2 + -0x84)) {
+            lVar7 = __ftol();
+            frame = (int)lVar7;
+            if ((((&creature_type_anim_flags)[iVar6] & 1) != 0) && (0xf < frame)) {
+              frame = 0x1f - frame;
             }
           }
-          else if (0.0 <= (float)puVar6[-0x21]) {
-            lVar8 = __ftol();
-            iVar2 = (int)lVar8;
+          else if (0.0 <= *(float *)(iVar2 + -0x84)) {
+            lVar7 = __ftol();
+            frame = (int)lVar7;
           }
           else {
-            iVar2 = *(int *)(&creature_type_base_frame + iVar7) + 0xf;
-            fStack_1c = (float)puVar6[-0x21] * 0.1 + fStack_1c;
+            frame = *(int *)(&creature_type_base_frame + iVar6) + 0xf;
+            fStack_1c = *(float *)(iVar2 + -0x84) * 0.1 + fStack_1c;
             if (fStack_1c < 0.0) {
               fStack_1c = 0.0;
             }
           }
           if ((uVar3 & 0x10) != 0) {
-            iVar2 = iVar2 + 0x20;
+            frame = frame + 0x20;
           }
-          (*grim_interface_ptr->vtable->grim_set_atlas_frame)(8,iVar2);
+          (*grim_interface_ptr->vtable->grim_set_atlas_frame)(8,frame);
         }
         else {
-          lVar8 = __ftol();
-          uVar3 = (uint)lVar8 & 0x8000000f;
+          lVar7 = __ftol();
+          uVar3 = (uint)lVar7 & 0x8000000f;
           if ((int)uVar3 < 0) {
             uVar3 = (uVar3 - 1 | 0xfffffff0) + 1;
           }
@@ -13636,31 +13631,32 @@ void __cdecl creature_render_type(int type_id)
             uVar3 = 0xf - uVar3;
           }
           (*grim_interface_ptr->vtable->grim_set_atlas_frame)
-                    (8,*(int *)(&creature_type_base_frame + iVar7) + 0x10 + uVar3);
-          if (((float)puVar6[-0x21] < 0.0) &&
-             (fStack_1c = (float)puVar6[-0x21] * 0.1 + fStack_1c, fStack_1c < 0.0)) {
+                    (8,*(int *)(&creature_type_base_frame + iVar6) + 0x10 + uVar3);
+          if ((*(float *)(iVar2 + -0x84) < 0.0) &&
+             (fStack_1c = *(float *)(iVar2 + -0x84) * 0.1 + fStack_1c, fStack_1c < 0.0)) {
             fStack_1c = 0.0;
           }
         }
         fStack_1c = fStack_1c * fStack_10;
         (*grim_interface_ptr->vtable->grim_set_color_ptr)(afStack_34 + 3);
-        (*grim_interface_ptr->vtable->grim_set_rotation)((float)puVar6[-0x1a] - 1.5707964);
+        (*grim_interface_ptr->vtable->grim_set_rotation)(*(float *)(iVar2 + -0x68) - 1.5707964);
+        fVar1 = *(float *)(iVar2 + -0x60) * 0.5;
         (*grim_interface_ptr->vtable->grim_draw_quad)
-                  ((_camera_offset_x + (float)puVar6[-0x20]) - (float)puVar6[-0x18] * 0.5,
-                   (_camera_offset_y + (float)puVar6[-0x1f]) - (float)puVar6[-0x18] * 0.5,
-                   (float)puVar6[-0x18],(float)puVar6[-0x18]);
-        if (((float)puVar6[-0x21] < -10.0) &&
-           (*(undefined1 *)(puVar6 + -0x25) = 0, (*(byte *)(puVar6 + -2) & 4) != 0)) {
-          (&creature_spawn_slot_owner)[puVar6[-7] * 6] = 0;
+                  ((_camera_offset_x + *(float *)(iVar2 + -0x80)) - fVar1,
+                   (_camera_offset_y + *(float *)(iVar2 + -0x7c)) - fVar1,*(float *)(iVar2 + -0x60),
+                   *(float *)(iVar2 + -0x60));
+        if ((*(float *)(iVar2 + -0x84) < -10.0) &&
+           (*(undefined1 *)(iVar2 + -0x94) = 0, (*(byte *)(iVar2 + -8) & 4) != 0)) {
+          (&creature_spawn_slot_owner)[*(int *)(iVar2 + -0x1c) * 6] = 0;
         }
       }
-      puVar6 = puVar6 + 0x26;
-    } while ((int)puVar6 < 0x4aa3cc);
+      iVar2 = iVar2 + 0x98;
+    } while (iVar2 < 0x4aa3cc);
   }
   else {
-    pfVar5 = (float *)&creature_max_health;
+    pfVar5 = &creature_pool.max_health;
     do {
-      if ((*(char *)(pfVar5 + -10) != '\0') && (pfVar5[0x11] == (float)type_id)) {
+      if ((((creature_t *)(pfVar5 + -10))->active != '\0') && (pfVar5[0x11] == (float)type_id)) {
         if (500.0 <= *pfVar5) {
           afStack_34[3] = pfVar5[5];
           afStack_34[4] = pfVar5[6];
@@ -13681,18 +13677,18 @@ void __cdecl creature_render_type(int type_id)
         fVar1 = pfVar5[0x19];
         if ((((uint)fVar1 & 4) == 0) || (((uint)fVar1 & 0x40) != 0)) {
           if (16.0 <= pfVar5[-6]) {
-            lVar8 = __ftol();
-            iVar2 = (int)lVar8;
-            if ((((&creature_type_anim_flags)[iVar7] & 1) != 0) && (0xf < iVar2)) {
+            lVar7 = __ftol();
+            iVar2 = (int)lVar7;
+            if ((((&creature_type_anim_flags)[iVar6] & 1) != 0) && (0xf < iVar2)) {
               iVar2 = 0x1f - iVar2;
             }
           }
           else if (0.0 <= pfVar5[-6]) {
-            lVar8 = __ftol();
-            iVar2 = (int)lVar8;
+            lVar7 = __ftol();
+            iVar2 = (int)lVar7;
           }
           else {
-            iVar2 = *(int *)(&creature_type_base_frame + iVar7) + 0xf;
+            iVar2 = *(int *)(&creature_type_base_frame + iVar6) + 0xf;
             fStack_1c = pfVar5[-6] * 0.1 + fStack_1c;
             if (fStack_1c < 0.0) {
               fStack_1c = 0.0;
@@ -13704,8 +13700,8 @@ void __cdecl creature_render_type(int type_id)
           (*grim_interface_ptr->vtable->grim_set_atlas_frame)(8,iVar2);
         }
         else {
-          lVar8 = __ftol();
-          uVar3 = (uint)lVar8 & 0x8000000f;
+          lVar7 = __ftol();
+          uVar3 = (uint)lVar7 & 0x8000000f;
           if ((int)uVar3 < 0) {
             uVar3 = (uVar3 - 1 | 0xfffffff0) + 1;
           }
@@ -13713,7 +13709,7 @@ void __cdecl creature_render_type(int type_id)
             uVar3 = 0xf - uVar3;
           }
           (*grim_interface_ptr->vtable->grim_set_atlas_frame)
-                    (8,*(int *)(&creature_type_base_frame + iVar7) + 0x10 + uVar3);
+                    (8,*(int *)(&creature_type_base_frame + iVar6) + 0x10 + uVar3);
           if ((pfVar5[-6] < 0.0) && (fStack_1c = pfVar5[-6] * 0.1 + fStack_1c, fStack_1c < 0.0)) {
             fStack_1c = 0.0;
           }
@@ -13726,7 +13722,8 @@ void __cdecl creature_render_type(int type_id)
                   ((_camera_offset_x + pfVar5[-5]) - pfVar5[3] * 0.5,afStack_34[0] - pfVar5[3] * 0.5
                    ,pfVar5[3],pfVar5[3]);
         if ((pfVar5[-6] < -10.0) &&
-           (*(undefined1 *)(pfVar5 + -10) = 0, ((uint)pfVar5[0x19] & 4) != 0)) {
+           (iVar2 = (int)pfVar5[0x19], ((creature_t *)(pfVar5 + -10))->active = '\0',
+           (iVar2 & 4) != 0)) {
           (&creature_spawn_slot_owner)[(int)pfVar5[0x14] * 6] = 0;
         }
       }
@@ -13741,9 +13738,10 @@ void __cdecl creature_render_type(int type_id)
     afStack_34[1] = 1.0;
     afStack_34[2] = 1.0;
     (*grim_interface_ptr->vtable->grim_begin_batch)();
-    pfVar5 = (float *)&creature_hitbox_size;
+    pfVar5 = &creature_pool.hitbox_size;
     do {
-      if (((*(char *)(pfVar5 + -4) != '\0') && (pfVar5[0x17] == fStack_20)) && (0.0 < pfVar5[10])) {
+      if (((((creature_t *)(pfVar5 + -4))->active != '\0') && (pfVar5[0x17] == fStack_20)) &&
+         (0.0 < pfVar5[10])) {
         afStack_34[3] = pfVar5[10] * 5.0;
         if (1.0 < afStack_34[3]) {
           afStack_34[3] = 1.0;
@@ -13751,9 +13749,9 @@ void __cdecl creature_render_type(int type_id)
         fVar1 = pfVar5[0x1f];
         if ((((uint)fVar1 & 4) == 0) || (((uint)fVar1 & 0x40) != 0)) {
           if (16.0 <= *pfVar5) {
-            lVar8 = __ftol();
-            iVar2 = (int)lVar8;
-            if ((((&creature_type_anim_flags)[iVar7] & 1) != 0) && (0xf < iVar2)) {
+            lVar7 = __ftol();
+            iVar2 = (int)lVar7;
+            if ((((&creature_type_anim_flags)[iVar6] & 1) != 0) && (0xf < iVar2)) {
               iVar2 = 0x1f - iVar2;
             }
             if (((uint)fVar1 & 0x10) != 0) {
@@ -13761,17 +13759,17 @@ void __cdecl creature_render_type(int type_id)
             }
           }
           else if (0.0 <= *pfVar5) {
-            lVar8 = __ftol();
-            iVar2 = (int)lVar8;
+            lVar7 = __ftol();
+            iVar2 = (int)lVar7;
           }
           else {
-            iVar2 = *(int *)(&creature_type_base_frame + iVar7) + 0xf;
+            iVar2 = *(int *)(&creature_type_base_frame + iVar6) + 0xf;
           }
           pIVar4 = grim_interface_ptr->vtable;
         }
         else {
-          lVar8 = __ftol();
-          uVar3 = (uint)lVar8 & 0x8000000f;
+          lVar7 = __ftol();
+          uVar3 = (uint)lVar7 & 0x8000000f;
           if ((int)uVar3 < 0) {
             uVar3 = (uVar3 - 1 | 0xfffffff0) + 1;
           }
@@ -13779,7 +13777,7 @@ void __cdecl creature_render_type(int type_id)
             uVar3 = 0xf - uVar3;
           }
           pIVar4 = grim_interface_ptr->vtable;
-          iVar2 = *(int *)(&creature_type_base_frame + iVar7) + 0x10 + uVar3;
+          iVar2 = *(int *)(&creature_type_base_frame + iVar6) + 0x10 + uVar3;
         }
         (*pIVar4->grim_set_atlas_frame)(8,iVar2);
         afStack_34[3] = afStack_34[3] * fStack_1c;
@@ -13823,9 +13821,9 @@ void creature_render_all(void)
     (*grim_interface_ptr->vtable->grim_set_color)(0.0,0.0,0.0,1.0);
     (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
-    pfVar2 = (float *)&creature_hitbox_size;
+    pfVar2 = &creature_pool.hitbox_size;
     do {
-      if (*(char *)(pfVar2 + -4) != '\0') {
+      if (((creature_t *)(pfVar2 + -4))->active != '\0') {
         iVar1 = perk_count_get(perk_id_monster_vision);
         if (iVar1 != 0) {
           if ((0.0 <= *pfVar2) || (fVar3 = (*pfVar2 + 10.0) * 0.1, 1.0 < fVar3)) {
@@ -13839,7 +13837,7 @@ void creature_render_all(void)
                     ((_camera_offset_x + pfVar2[1]) - 45.0,(_camera_offset_y + pfVar2[2]) - 45.0,
                      90.0,90.0);
         }
-        if (*(char *)((int)pfVar2 + -7) != '\0') {
+        if (*(uchar *)((int)pfVar2 + -7) != '\0') {
           if (0.0 <= *pfVar2) {
             fVar3 = 1.0;
           }
@@ -13895,9 +13893,9 @@ void creature_render_all(void)
       fVar4 = fVar4 * fVar3 * 0.7;
       (*grim_interface_ptr->vtable->grim_begin_batch)();
       iVar1 = 0;
-      pfVar2 = (float *)&creature_size;
+      pfVar2 = &creature_pool.size;
       do {
-        if (*(char *)(pfVar2 + -0xd) != '\0') {
+        if (((creature_t *)(pfVar2 + -0xd))->active != '\0') {
           (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar4);
           (*grim_interface_ptr->vtable->grim_set_rotation)((float)iVar1 * 0.01 + pfVar2[-2]);
           (*grim_interface_ptr->vtable->grim_draw_quad)
@@ -15111,9 +15109,8 @@ void hud_update_and_render(void)
     DAT_00487241 = 0;
   }
   if (DAT_00487268 != -1) {
-    local_14 = _camera_offset_y + (float)(&creature_pos_y)[DAT_00487268 * 0x26];
-    local_28 = (float)(&creature_health)[DAT_00487268 * 0x26] /
-               (float)(&creature_max_health)[DAT_00487268 * 0x26];
+    local_14 = _camera_offset_y + (&creature_pool)[DAT_00487268].pos_y;
+    local_28 = (&creature_pool)[DAT_00487268].health / (&creature_pool)[DAT_00487268].max_health;
     if (local_28 <= 1.0) {
       if (local_28 < 0.0) {
         local_28 = 0.0;
@@ -15126,7 +15123,7 @@ void hud_update_and_render(void)
     local_10 = (1.0 - local_28) * 0.9 + 0.1;
     local_4 = 0x3f333333;
     local_c = local_28 * 0.9 + 0.1;
-    local_20 = (_camera_offset_x + (float)(&creature_pos_x)[DAT_00487268 * 0x26]) - 32.0;
+    local_20 = (_camera_offset_x + (&creature_pool)[DAT_00487268].pos_x) - 32.0;
     local_1c = local_14 + 32.0;
     ui_draw_progress_bar(&local_20,64.0,local_28,&local_10);
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
@@ -16774,27 +16771,29 @@ void __cdecl creature_handle_death(int creature_id,bool keep_corpse)
 
 {
   float *pos;
-  char *pcVar1;
-  int iVar2;
-  uint uVar3;
-  int iVar4;
-  char *pcVar5;
-  undefined4 *puVar6;
-  longlong lVar7;
+  creature_t *pcVar1;
+  uchar uVar2;
+  uchar uVar3;
+  uchar uVar4;
+  int iVar5;
+  uint uVar6;
+  int iVar7;
+  creature_t *pcVar8;
+  creature_t *pcVar9;
+  longlong lVar10;
   
-  iVar2 = creature_id * 0x98;
-  pcVar1 = &creature_pool + iVar2;
-  if ((*(uint *)(&creature_flags + creature_id * 0x98) & 0x400) != 0) {
-    bonus_spawn_at((float *)(&creature_pos_x + creature_id * 0x26),
-                   (int)*(short *)(&creature_link_index + creature_id * 0x26),
-                   (int)*(short *)((int)&creature_link_index + iVar2 + 2));
+  pcVar1 = &creature_pool + creature_id;
+  if (((&creature_pool)[creature_id].flags & 0x400U) != 0) {
+    bonus_spawn_at(&(&creature_pool)[creature_id].pos_x,
+                   (int)(short)(&creature_pool)[creature_id].link_index,
+                   (int)*(short *)((int)&(&creature_pool)[creature_id].link_index + 2));
   }
   if (survival_recent_death_count < 6) {
     if (survival_recent_death_count < 3) {
-      *(undefined4 *)(&survival_recent_death_pos_x + survival_recent_death_count * 8) =
-           (&creature_pos_x)[creature_id * 0x26];
+      *(float *)(&survival_recent_death_pos_x + survival_recent_death_count * 8) =
+           (&creature_pool)[creature_id].pos_x;
       (&survival_recent_death_pos_y)[survival_recent_death_count * 2] =
-           (&creature_pos_y)[creature_id * 0x26];
+           (&creature_pool)[creature_id].pos_y;
     }
     survival_recent_death_count = survival_recent_death_count + 1;
     if (survival_recent_death_count == 3) {
@@ -16802,95 +16801,101 @@ void __cdecl creature_handle_death(int creature_id,bool keep_corpse)
       survival_reward_handout_enabled = 0;
     }
   }
-  if (*pcVar1 != '\0') {
-    if (((&creature_flags)[iVar2] & 4) != 0) {
-      (&creature_spawn_slot_owner)[(&creature_link_index)[creature_id * 0x26] * 6] = 0;
+  if (pcVar1->active != '\0') {
+    if (((&creature_pool)[creature_id].flags & 4) != 0) {
+      (&creature_spawn_slot_owner)[(&creature_pool)[creature_id].link_index * 6] = 0;
     }
-    if ((((&creature_flags)[iVar2] & 8) != 0) &&
-       (35.0 < (float)(&creature_size)[creature_id * 0x26])) {
-      iVar2 = creature_alloc_slot();
-      pcVar5 = pcVar1;
-      puVar6 = (undefined4 *)(&creature_pool + iVar2 * 0x98);
-      for (iVar4 = 0x26; iVar4 != 0; iVar4 = iVar4 + -1) {
-        *puVar6 = *(undefined4 *)pcVar5;
-        pcVar5 = pcVar5 + 4;
-        puVar6 = puVar6 + 1;
+    if ((((&creature_pool)[creature_id].flags & 8) != 0) &&
+       (35.0 < (&creature_pool)[creature_id].size)) {
+      iVar5 = creature_alloc_slot();
+      pcVar8 = pcVar1;
+      pcVar9 = &creature_pool + iVar5;
+      for (iVar7 = 0x26; iVar7 != 0; iVar7 = iVar7 + -1) {
+        uVar2 = pcVar8->_pad0[0];
+        uVar3 = pcVar8->_pad0[1];
+        uVar4 = pcVar8->_pad0[2];
+        pcVar9->active = pcVar8->active;
+        pcVar9->_pad0[0] = uVar2;
+        pcVar9->_pad0[1] = uVar3;
+        pcVar9->_pad0[2] = uVar4;
+        pcVar8 = (creature_t *)&pcVar8->phase_seed;
+        pcVar9 = (creature_t *)&pcVar9->phase_seed;
       }
-      uVar3 = crt_rand();
-      (&creature_phase_seed)[iVar2 * 0x26] = uVar3 & 0xff;
-      (&creature_heading)[iVar2 * 0x26] = (float)(&creature_heading)[creature_id * 0x26] - 1.5707964
-      ;
-      (&creature_health)[iVar2 * 0x26] = (float)(&creature_max_health)[creature_id * 0x26] * 0.25;
-      (&creature_reward_value)[iVar2 * 0x26] =
-           (float)(&creature_reward_value)[iVar2 * 0x26] * 0.6666667;
-      (&creature_size)[iVar2 * 0x26] = (float)(&creature_size)[iVar2 * 0x26] - 8.0;
-      (&creature_move_speed)[iVar2 * 0x26] = (float)(&creature_move_speed)[iVar2 * 0x26] + 0.1;
-      (&creature_contact_damage)[iVar2 * 0x26] =
-           (float)(&creature_contact_damage)[iVar2 * 0x26] * 0.7;
-      (&creature_hitbox_size)[iVar2 * 0x26] = 0x41800000;
-      iVar2 = creature_alloc_slot();
-      pcVar5 = pcVar1;
-      puVar6 = (undefined4 *)(&creature_pool + iVar2 * 0x98);
-      for (iVar4 = 0x26; iVar4 != 0; iVar4 = iVar4 + -1) {
-        *puVar6 = *(undefined4 *)pcVar5;
-        pcVar5 = pcVar5 + 4;
-        puVar6 = puVar6 + 1;
+      uVar6 = crt_rand();
+      (&creature_pool)[iVar5].phase_seed = (float)(uVar6 & 0xff);
+      (&creature_pool)[iVar5].heading = (&creature_pool)[creature_id].heading - 1.5707964;
+      (&creature_pool)[iVar5].health = (&creature_pool)[creature_id].max_health * 0.25;
+      (&creature_pool)[iVar5].reward_value = (&creature_pool)[iVar5].reward_value * 0.6666667;
+      (&creature_pool)[iVar5].size = (&creature_pool)[iVar5].size - 8.0;
+      (&creature_pool)[iVar5].move_speed = (&creature_pool)[iVar5].move_speed + 0.1;
+      (&creature_pool)[iVar5].contact_damage = (&creature_pool)[iVar5].contact_damage * 0.7;
+      (&creature_pool)[iVar5].hitbox_size = 16.0;
+      iVar5 = creature_alloc_slot();
+      pcVar8 = pcVar1;
+      pcVar9 = &creature_pool + iVar5;
+      for (iVar7 = 0x26; iVar7 != 0; iVar7 = iVar7 + -1) {
+        uVar2 = pcVar8->_pad0[0];
+        uVar3 = pcVar8->_pad0[1];
+        uVar4 = pcVar8->_pad0[2];
+        pcVar9->active = pcVar8->active;
+        pcVar9->_pad0[0] = uVar2;
+        pcVar9->_pad0[1] = uVar3;
+        pcVar9->_pad0[2] = uVar4;
+        pcVar8 = (creature_t *)&pcVar8->phase_seed;
+        pcVar9 = (creature_t *)&pcVar9->phase_seed;
       }
-      uVar3 = crt_rand();
-      (&creature_phase_seed)[iVar2 * 0x26] = uVar3 & 0xff;
-      (&creature_heading)[iVar2 * 0x26] = (float)(&creature_heading)[creature_id * 0x26] + 1.5707964
-      ;
-      (&creature_health)[iVar2 * 0x26] = (float)(&creature_max_health)[creature_id * 0x26] * 0.25;
-      (&creature_size)[iVar2 * 0x26] = (float)(&creature_size)[iVar2 * 0x26] - 8.0;
-      (&creature_move_speed)[iVar2 * 0x26] = (float)(&creature_move_speed)[iVar2 * 0x26] + 0.1;
-      (&creature_reward_value)[iVar2 * 0x26] =
-           (float)(&creature_reward_value)[iVar2 * 0x26] * 0.6666667;
-      (&creature_hitbox_size)[iVar2 * 0x26] = 0x41800000;
-      (&creature_contact_damage)[iVar2 * 0x26] =
-           (float)(&creature_contact_damage)[iVar2 * 0x26] * 0.7;
-      effect_spawn_burst((float *)(&creature_pos_x + creature_id * 0x26),8);
+      uVar6 = crt_rand();
+      (&creature_pool)[iVar5].phase_seed = (float)(uVar6 & 0xff);
+      (&creature_pool)[iVar5].heading = (&creature_pool)[creature_id].heading + 1.5707964;
+      (&creature_pool)[iVar5].health = (&creature_pool)[creature_id].max_health * 0.25;
+      (&creature_pool)[iVar5].size = (&creature_pool)[iVar5].size - 8.0;
+      (&creature_pool)[iVar5].move_speed = (&creature_pool)[iVar5].move_speed + 0.1;
+      (&creature_pool)[iVar5].reward_value = (&creature_pool)[iVar5].reward_value * 0.6666667;
+      (&creature_pool)[iVar5].hitbox_size = 16.0;
+      (&creature_pool)[iVar5].contact_damage = (&creature_pool)[iVar5].contact_damage * 0.7;
+      effect_spawn_burst(&(&creature_pool)[creature_id].pos_x,8);
     }
     if (keep_corpse) {
-      (&creature_hitbox_size)[creature_id * 0x26] =
-           (float)(&creature_hitbox_size)[creature_id * 0x26] - frame_dt;
+      (&creature_pool)[creature_id].hitbox_size =
+           (&creature_pool)[creature_id].hitbox_size - frame_dt;
     }
     else {
-      *pcVar1 = '\0';
+      pcVar1->active = '\0';
     }
-    iVar2 = perk_id_bloody_mess_quick_learner;
+    iVar5 = perk_id_bloody_mess_quick_learner;
     if (*(int *)(player_health._pad0 + perk_id_bloody_mess_quick_learner * 4 + 0x94) < 1) {
-      lVar7 = __ftol();
-      player_health._pad0._136_4_ = SUB84(lVar7,0);
+      lVar10 = __ftol();
+      player_health._pad0._136_4_ = SUB84(lVar10,0);
     }
     else {
-      lVar7 = __ftol();
-      player_health._pad0._136_4_ = player_health._pad0._136_4_ + (int)lVar7;
+      lVar10 = __ftol();
+      player_health._pad0._136_4_ = player_health._pad0._136_4_ + (int)lVar10;
     }
     if (0.0 < _bonus_double_xp_timer) {
-      if (*(int *)(player_health._pad0 + iVar2 * 4 + 0x94) < 1) {
-        lVar7 = __ftol();
-        player_health._pad0._136_4_ = SUB84(lVar7,0);
+      if (*(int *)(player_health._pad0 + iVar5 * 4 + 0x94) < 1) {
+        lVar10 = __ftol();
+        player_health._pad0._136_4_ = SUB84(lVar10,0);
       }
       else {
-        lVar7 = __ftol();
-        player_health._pad0._136_4_ = player_health._pad0._136_4_ + (int)lVar7;
+        lVar10 = __ftol();
+        player_health._pad0._136_4_ = player_health._pad0._136_4_ + (int)lVar10;
       }
     }
     if (bonus_spawn_guard == '\0') {
-      bonus_try_spawn_on_kill((float *)(&creature_pos_x + creature_id * 0x26));
+      bonus_try_spawn_on_kill(&(&creature_pool)[creature_id].pos_x);
     }
     if (0.0 < _bonus_freeze_timer) {
-      pos = (float *)(&creature_pos_x + creature_id * 0x26);
-      iVar2 = 8;
+      pos = &(&creature_pool)[creature_id].pos_x;
+      iVar5 = 8;
       do {
-        iVar4 = crt_rand();
-        effect_spawn_freeze_shard(pos,(float)(iVar4 % 0x264) * 0.01);
-        iVar2 = iVar2 + -1;
-      } while (iVar2 != 0);
-      iVar2 = crt_rand();
-      effect_spawn_freeze_shatter(pos,(float)(iVar2 % 0x264) * 0.01);
+        iVar7 = crt_rand();
+        effect_spawn_freeze_shard(pos,(float)(iVar7 % 0x264) * 0.01);
+        iVar5 = iVar5 + -1;
+      } while (iVar5 != 0);
+      iVar5 = crt_rand();
+      effect_spawn_freeze_shatter(pos,(float)(iVar5 % 0x264) * 0.01);
       creature_kill_count = creature_kill_count + 1;
-      *pcVar1 = '\0';
+      pcVar1->active = '\0';
       fx_queue_add_random(pos);
     }
   }
@@ -17792,10 +17797,9 @@ void * FUN_0041fc80(void)
   uint uVar5;
   undefined4 uVar6;
   int iVar7;
-  undefined1 *puVar8;
+  uchar *puVar8;
   uint uVar9;
-  uchar *puVar10;
-  bool bVar11;
+  bool bVar10;
   
   if (*(float *)(DAT_00480864 + 0xc) != 0.0) {
     console_printf(&console_log_queue,s___Reseting_players__00473e54);
@@ -17826,16 +17830,16 @@ void * FUN_0041fc80(void)
     (&player_pos_x)[uVar5 * 0xd8] = fVar2 * 0.5;
     (&player_pos_y)[uVar5 * 0xd8] = fVar3 * 0.5;
     uVar9 = uVar5 & 0x80000001;
-    bVar11 = uVar9 == 0;
+    bVar10 = uVar9 == 0;
     ppVar1 = &player_health + uVar5;
     ppVar1->_pad0[0] = '\0';
     ppVar1->_pad0[1] = '\0';
     ppVar1->_pad0[2] = 200;
     ppVar1->_pad0[3] = 'B';
     if ((int)uVar9 < 0) {
-      bVar11 = (uVar9 - 1 | 0xfffffffe) == 0xffffffff;
+      bVar10 = (uVar9 - 1 | 0xfffffffe) == 0xffffffff;
     }
-    if (bVar11) {
+    if (bVar10) {
       (&player_pos_x)[uVar5 * 0xd8] =
            (float)(int)(uVar5 * 0x50) + (float)(&player_pos_x)[uVar5 * 0xd8];
       (&player_pos_y)[uVar5 * 0xd8] =
@@ -17950,17 +17954,17 @@ void * FUN_0041fc80(void)
       ui_mouse_x = 0x43a00000;
       ui_mouse_y = 0x430c0000;
     }
-    puVar10 = (&player_health)[render_overlay_player_index]._pad0 + 0x94;
+    puVar8 = (&player_health)[render_overlay_player_index]._pad0 + 0x94;
     for (iVar7 = 0x80; iVar7 != 0; iVar7 = iVar7 + -1) {
-      puVar10[0] = '\0';
-      puVar10[1] = '\0';
-      puVar10[2] = '\0';
-      puVar10[3] = '\0';
-      puVar10 = puVar10 + 4;
+      puVar8[0] = '\0';
+      puVar8[1] = '\0';
+      puVar8[2] = '\0';
+      puVar8[3] = '\0';
+      puVar8 = puVar8 + 4;
     }
-    puVar8 = &creature_collision_flag;
+    puVar8 = &creature_pool.collision_flag;
     do {
-      *puVar8 = 0;
+      *puVar8 = '\0';
       puVar8 = puVar8 + 0x98;
     } while ((int)puVar8 < 0x4aa341);
     render_overlay_player_index = render_overlay_player_index + 1;
@@ -18070,42 +18074,41 @@ int __cdecl creature_find_nearest(float *pos,int exclude_id,float min_dist)
 {
   float fVar1;
   float fVar2;
-  char *pcVar3;
-  int iVar4;
+  float fVar3;
+  creature_t *pcVar4;
   int iVar5;
+  int iVar6;
   
   fVar1 = 1e+06;
-  iVar5 = 0;
+  iVar6 = 0;
   if (exclude_id == -1) {
-    iVar4 = 0;
-    pcVar3 = &creature_pool;
+    iVar5 = 0;
+    pcVar4 = &creature_pool;
     do {
-      if (((*pcVar3 != '\0') && (*(int *)(pcVar3 + 0x10) == 0x41800000)) &&
-         (fVar2 = SQRT((pos[1] - *(float *)(pcVar3 + 0x18)) * (pos[1] - *(float *)(pcVar3 + 0x18)) +
-                       (*pos - *(float *)(pcVar3 + 0x14)) * (*pos - *(float *)(pcVar3 + 0x14))),
-         fVar2 < fVar1)) {
-        iVar5 = iVar4;
+      if (((pcVar4->active != '\0') && (pcVar4->hitbox_size == 16.0)) &&
+         (fVar2 = *pos - pcVar4->pos_x, fVar3 = pos[1] - pcVar4->pos_y,
+         fVar2 = SQRT(fVar3 * fVar3 + fVar2 * fVar2), fVar2 < fVar1)) {
+        iVar6 = iVar5;
         fVar1 = fVar2;
       }
-      pcVar3 = pcVar3 + 0x98;
-      iVar4 = iVar4 + 1;
-    } while ((int)pcVar3 < 0x4aa338);
-    return iVar5;
+      pcVar4 = pcVar4 + 1;
+      iVar5 = iVar5 + 1;
+    } while ((int)pcVar4 < 0x4aa338);
+    return iVar6;
   }
-  iVar4 = 0;
-  pcVar3 = &creature_pool;
+  iVar5 = 0;
+  pcVar4 = &creature_pool;
   do {
-    if ((((*pcVar3 != '\0') && (iVar4 != exclude_id)) &&
-        (fVar2 = SQRT((*pos - *(float *)(pcVar3 + 0x14)) * (*pos - *(float *)(pcVar3 + 0x14)) +
-                      (pos[1] - *(float *)(pcVar3 + 0x18)) * (pos[1] - *(float *)(pcVar3 + 0x18))),
-        min_dist < fVar2)) && (fVar2 < fVar1)) {
-      iVar5 = iVar4;
+    if ((((pcVar4->active != '\0') && (iVar5 != exclude_id)) &&
+        (fVar2 = *pos - pcVar4->pos_x, fVar3 = pos[1] - pcVar4->pos_y,
+        fVar2 = SQRT(fVar2 * fVar2 + fVar3 * fVar3), min_dist < fVar2)) && (fVar2 < fVar1)) {
+      iVar6 = iVar5;
       fVar1 = fVar2;
     }
-    pcVar3 = pcVar3 + 0x98;
-    iVar4 = iVar4 + 1;
-  } while ((int)pcVar3 < 0x4aa338);
-  return iVar5;
+    pcVar4 = pcVar4 + 1;
+    iVar5 = iVar5 + 1;
+  } while ((int)pcVar4 < 0x4aa338);
+  return iVar6;
 }
 
 
@@ -18367,24 +18370,26 @@ void projectile_reset_pools(void)
 void __cdecl creatures_apply_radius_damage(float *pos,float radius,float damage,int damage_type)
 
 {
-  char *pcVar1;
+  float fVar1;
+  float fVar2;
+  creature_t *pcVar3;
   int creature_id;
   float local_8 [2];
   
   local_8[0] = 0.0;
   local_8[1] = 0.0;
   creature_id = 0;
-  pcVar1 = &creature_pool;
+  pcVar3 = &creature_pool;
   do {
-    if (((*pcVar1 != '\0') &&
-        (SQRT((*(float *)(pcVar1 + 0x18) - pos[1]) * (*(float *)(pcVar1 + 0x18) - pos[1]) +
-              (*(float *)(pcVar1 + 0x14) - *pos) * (*(float *)(pcVar1 + 0x14) - *pos)) - radius <
-         *(float *)(pcVar1 + 0x34) * 0.14285715 + 3.0)) && (5.0 < *(float *)(pcVar1 + 0x10))) {
+    if (((pcVar3->active != '\0') &&
+        (fVar1 = pcVar3->pos_x - *pos, fVar2 = pcVar3->pos_y - pos[1],
+        SQRT(fVar2 * fVar2 + fVar1 * fVar1) - radius < pcVar3->size * 0.14285715 + 3.0)) &&
+       (5.0 < pcVar3->hitbox_size)) {
       creature_apply_damage(creature_id,damage,damage_type,local_8);
     }
-    pcVar1 = pcVar1 + 0x98;
+    pcVar3 = pcVar3 + 1;
     creature_id = creature_id + 1;
-  } while ((int)pcVar1 < 0x4aa338);
+  } while ((int)pcVar3 < 0x4aa338);
   return;
 }
 
@@ -18397,23 +18402,25 @@ void __cdecl creatures_apply_radius_damage(float *pos,float radius,float damage,
 int __cdecl creature_find_in_radius(float *pos,float radius,int start_index)
 
 {
-  char *pcVar1;
+  float fVar1;
+  float fVar2;
+  creature_t *pcVar3;
   
   if (start_index < 0x180) {
-    pcVar1 = &creature_pool + start_index * 0x98;
+    pcVar3 = &creature_pool + start_index;
     do {
-      if (*pcVar1 != '\0') {
-        if (SQRT((*(float *)(pcVar1 + 0x18) - pos[1]) * (*(float *)(pcVar1 + 0x18) - pos[1]) +
-                 (*(float *)(pcVar1 + 0x14) - *pos) * (*(float *)(pcVar1 + 0x14) - *pos)) - radius <
-            *(float *)(pcVar1 + 0x34) * 0.14285715 + 3.0) {
-          if (5.0 < *(float *)(pcVar1 + 0x10)) {
+      if (pcVar3->active != '\0') {
+        fVar1 = pcVar3->pos_x - *pos;
+        fVar2 = pcVar3->pos_y - pos[1];
+        if (SQRT(fVar2 * fVar2 + fVar1 * fVar1) - radius < pcVar3->size * 0.14285715 + 3.0) {
+          if (5.0 < pcVar3->hitbox_size) {
             return start_index;
           }
         }
       }
-      pcVar1 = pcVar1 + 0x98;
+      pcVar3 = pcVar3 + 1;
       start_index = start_index + 1;
-    } while ((int)pcVar1 < 0x4aa338);
+    } while ((int)pcVar3 < 0x4aa338);
   }
   return -1;
 }
@@ -18470,7 +18477,7 @@ int __cdecl creature_apply_damage(int creature_id,float damage,int damage_type,f
   int iVar4;
   uchar *puVar5;
   
-  (&creature_hit_flash_timer)[creature_id * 0x26] = 0x3e4ccccd;
+  (&creature_pool)[creature_id].hit_flash_timer = 0.2;
   if (damage_type == 1) {
     iVar2 = perk_count_get(perk_id_uranium_filled_bullets);
     if (iVar2 != 0) {
@@ -18496,50 +18503,47 @@ int __cdecl creature_apply_damage(int creature_id,float damage,int damage_type,f
     if (iVar2 != 0) {
       damage = damage * 1.2;
     }
-    if (((&creature_flags)[creature_id * 0x98] & 4) == 0) {
+    if (((&creature_pool)[creature_id].flags & 4) == 0) {
       uVar3 = crt_rand();
       fVar1 = ((float)(int)((uVar3 & 0x7f) - 0x40) * 0.002) /
-              ((float)(&creature_size)[creature_id * 0x26] * 0.025);
+              ((&creature_pool)[creature_id].size * 0.025);
       if (1.5707964 < fVar1) {
         fVar1 = 1.5707964;
       }
-      (&creature_heading)[creature_id * 0x26] =
-           fVar1 + (float)(&creature_heading)[creature_id * 0x26];
+      (&creature_pool)[creature_id].heading = fVar1 + (&creature_pool)[creature_id].heading;
     }
   }
   else if ((damage_type == 7) && (iVar2 = perk_count_get(perk_id_ion_gun_master), iVar2 != 0)) {
     damage = damage * 1.2;
   }
-  if ((float)(&creature_health)[creature_id * 0x26] <= 0.0) {
-    (&creature_hitbox_size)[creature_id * 0x26] =
-         (float)(&creature_hitbox_size)[creature_id * 0x26] - frame_dt * 15.0;
+  if ((&creature_pool)[creature_id].health <= 0.0) {
+    (&creature_pool)[creature_id].hitbox_size =
+         (&creature_pool)[creature_id].hitbox_size - frame_dt * 15.0;
   }
   else {
     if ((damage_type == 4) && (iVar2 = perk_count_get(perk_id_pyromaniac), iVar2 != 0)) {
       damage = damage * 1.5;
       crt_rand();
     }
-    (&creature_health)[creature_id * 0x26] = (float)(&creature_health)[creature_id * 0x26] - damage;
-    (&creature_vel_x)[creature_id * 0x26] = (float)(&creature_vel_x)[creature_id * 0x26] - *impulse;
-    (&creature_vel_y)[creature_id * 0x26] =
-         (float)(&creature_vel_y)[creature_id * 0x26] - impulse[1];
-    if ((float)(&creature_health)[creature_id * 0x26] <= 0.0) {
-      (&creature_hitbox_size)[creature_id * 0x26] =
-           (float)(&creature_hitbox_size)[creature_id * 0x26] - frame_dt;
+    (&creature_pool)[creature_id].health = (&creature_pool)[creature_id].health - damage;
+    (&creature_pool)[creature_id].vel_x = (&creature_pool)[creature_id].vel_x - *impulse;
+    (&creature_pool)[creature_id].vel_y = (&creature_pool)[creature_id].vel_y - impulse[1];
+    if ((&creature_pool)[creature_id].health <= 0.0) {
+      (&creature_pool)[creature_id].hitbox_size =
+           (&creature_pool)[creature_id].hitbox_size - frame_dt;
       creature_handle_death(creature_id,true);
       fVar1 = impulse[1];
-      (&creature_vel_x)[creature_id * 0x26] =
-           (float)(&creature_vel_x)[creature_id * 0x26] - (*impulse + *impulse);
-      (&creature_vel_y)[creature_id * 0x26] =
-           (float)(&creature_vel_y)[creature_id * 0x26] - (fVar1 + fVar1);
-      if (((&creature_flags)[creature_id * 0x98] & 0x10) == 0) {
+      (&creature_pool)[creature_id].vel_x =
+           (&creature_pool)[creature_id].vel_x - (*impulse + *impulse);
+      (&creature_pool)[creature_id].vel_y = (&creature_pool)[creature_id].vel_y - (fVar1 + fVar1);
+      if (((&creature_pool)[creature_id].flags & 0x10) == 0) {
         uVar3 = crt_rand();
         uVar3 = uVar3 & 0x80000003;
         if ((int)uVar3 < 0) {
           uVar3 = (uVar3 - 1 | 0xfffffffc) + 1;
         }
         sfx_play_panned(*(float *)(&creature_type_sfx_a0 +
-                                  (uVar3 + (&creature_type_id)[creature_id * 0x26] * 0x11) * 4));
+                                  (uVar3 + (&creature_pool)[creature_id].type_id * 0x11) * 4));
       }
       else {
         _effect_template_color_r = 0x3f4ccccd;
@@ -18560,13 +18564,13 @@ int __cdecl creature_apply_damage(int creature_id,float damage,int damage_type,f
           effect_template_vel_y = (float)(int)((uVar3 & 0x7f) - 0x40);
           iVar4 = crt_rand();
           _effect_template_scale_step = (float)(iVar4 % 0x8c) * 0.01 + 0.3;
-          effect_spawn(0,(float *)(&creature_pos_x + creature_id * 0x26));
+          effect_spawn(0,&(&creature_pool)[creature_id].pos_x);
           iVar2 = iVar2 + -1;
         } while (iVar2 != 0);
       }
     }
   }
-  if (0.0 < (float)(&creature_health)[creature_id * 0x26]) {
+  if (0.0 < (&creature_pool)[creature_id].health) {
     return 0;
   }
   return 1;
@@ -18583,8 +18587,8 @@ void projectile_update(void)
 
 {
   float fVar1;
-  float fVar2;
-  char cVar3;
+  char cVar2;
+  float fVar3;
   int iVar4;
   int iVar5;
   int iVar6;
@@ -18726,8 +18730,7 @@ LAB_004219f8:
                 else {
                   iVar7 = perk_count_get(perk_id_poison_bullets);
                   if ((iVar7 != 0) && (iVar7 = crt_rand(), ((byte)iVar7 & 7) == 1)) {
-                    *(uint *)(&creature_flags + iVar10 * 0x98) =
-                         *(uint *)(&creature_flags + iVar10 * 0x98) | 1;
+                    (&creature_pool)[iVar10].flags = (&creature_pool)[iVar10].flags | 1;
                   }
                   if ((&projectile_type_id)[local_e8 * 0x10] == 0x19) {
                     iVar7 = 8;
@@ -18793,7 +18796,7 @@ LAB_004219f8:
                                          3.1415927,0.0);
                     }
                   }
-                  if ((&creature_hitbox_size)[iVar10 * 0x26] == 0x41800000) {
+                  if ((&creature_pool)[iVar10].hitbox_size == 16.0) {
                     highscore_record_shots_hit = highscore_record_shots_hit + 1;
                   }
                   iVar7 = perk_count_get(perk_id_bloody_mess_quick_learner);
@@ -18805,16 +18808,14 @@ LAB_004219f8:
                       iVar6 = crt_rand();
                       local_58 = (float)(iVar6 % iVar5 + iVar7);
                       iVar6 = crt_rand();
-                      local_20 = local_58 + (float)(&creature_pos_x)[iVar10 * 0x26];
-                      local_1c = (float)(iVar6 % iVar5 + iVar7) +
-                                 (float)(&creature_pos_y)[iVar10 * 0x26];
+                      local_20 = local_58 + (&creature_pool)[iVar10].pos_x;
+                      local_1c = (float)(iVar6 % iVar5 + iVar7) + (&creature_pool)[iVar10].pos_y;
                       fx_queue_add_random(&local_20);
                       iVar6 = crt_rand();
                       local_28 = (float)(iVar6 % iVar5 + iVar7);
                       iVar6 = crt_rand();
-                      local_48 = local_28 + (float)(&creature_pos_x)[iVar10 * 0x26];
-                      local_44 = (float)(iVar6 % iVar5 + iVar7) +
-                                 (float)(&creature_pos_y)[iVar10 * 0x26];
+                      local_48 = local_28 + (&creature_pool)[iVar10].pos_x;
+                      local_44 = (float)(iVar6 % iVar5 + iVar7) + (&creature_pool)[iVar10].pos_y;
                       fx_queue_add_random(&local_48);
                       iVar7 = iVar7 + -10;
                       local_d8 = local_d8 + 10;
@@ -18853,10 +18854,10 @@ LAB_004219f8:
                       shock_chain_links_left = shock_chain_links_left + -1;
                       iVar7 = creature_find_nearest(pfVar11,iVar10,100.0);
                       bonus_spawn_guard = 1;
-                      fVar15 = (float10)fpatan((float10)(float)(&creature_pos_y)[iVar7 * 0x26] -
-                                               (float10)(float)(&creature_pos_y)[iVar10 * 0x26],
-                                               (float10)(float)(&creature_pos_x)[iVar7 * 0x26] -
-                                               (float10)(float)(&creature_pos_x)[iVar10 * 0x26]);
+                      fVar15 = (float10)fpatan((float10)(&creature_pool)[iVar7].pos_y -
+                                               (float10)(&creature_pool)[iVar10].pos_y,
+                                               (float10)(&creature_pool)[iVar7].pos_x -
+                                               (float10)(&creature_pool)[iVar10].pos_x);
                       shock_chain_projectile_id =
                            projectile_spawn(pfVar11,(float)((fVar15 - (float10)1.5707964) -
                                                            (float10)3.1415927),0x15,iVar10);
@@ -18873,13 +18874,13 @@ LAB_004219f8:
                   else if (iVar7 == 0x1c) {
                     bonus_spawn_guard = 1;
                     local_e4 = 0;
-                    fVar2 = (float)(&creature_size)[iVar10 * 0x26] * 0.5 + 1.0;
+                    fVar3 = (&creature_pool)[iVar10].size * 0.5 + 1.0;
                     do {
                       fVar1 = (float)((float10)local_e4 * (float10)0.5235988);
                       fVar15 = (float10)fcos((float10)local_e4 * (float10)0.5235988);
                       fVar18 = (float10)fsin((float10)fVar1);
-                      local_34 = (float)(fVar18 * (float10)fVar2);
-                      local_88 = (float)(fVar15 * (float10)fVar2 + (float10)*pfVar11);
+                      local_34 = (float)(fVar18 * (float10)fVar3);
+                      local_88 = (float)(fVar15 * (float10)fVar3 + (float10)*pfVar11);
                       local_84 = local_34 + (float)(&projectile_pos_y)[local_e8 * 0x10];
                       projectile_spawn(&local_88,fVar1,9,-100);
                       local_e4 = local_e4 + 1;
@@ -18892,25 +18893,24 @@ LAB_004219f8:
                   }
                   else if (iVar7 == 0x18) {
                     FUN_0042f080(pfVar11);
-                    fVar2 = (float)(&creature_size)[iVar10 * 0x26];
+                    fVar3 = (&creature_pool)[iVar10].size * 0.65;
                     (&projectile_life_timer)[local_e8 * 0x10] = 0x3e800000;
-                    (&creature_size)[iVar10 * 0x26] = fVar2 * 0.65;
-                    if (fVar2 * 0.65 < 16.0) {
+                    (&creature_pool)[iVar10].size = fVar3;
+                    if (fVar3 < 16.0) {
                       creature_handle_death(iVar10,true);
                     }
                   }
                   else if (iVar7 == 0x13) {
                     local_14 = local_c8 * 3.0;
-                    (&creature_pos_x)[iVar10 * 0x26] =
-                         local_cc * 3.0 + (float)(&creature_pos_x)[iVar10 * 0x26];
-                    (&creature_pos_y)[iVar10 * 0x26] =
-                         local_14 + (float)(&creature_pos_y)[iVar10 * 0x26];
+                    (&creature_pool)[iVar10].pos_x = local_cc * 3.0 + (&creature_pool)[iVar10].pos_x
+                    ;
+                    (&creature_pool)[iVar10].pos_y = local_14 + (&creature_pool)[iVar10].pos_y;
                   }
                   else if (iVar7 == 0x29) {
-                    (&creature_collision_flag)[iVar10 * 0x98] = 1;
+                    (&creature_pool)[iVar10].collision_flag = '\x01';
                   }
                   fVar9 = ((100.0 / fVar9) * fVar20 * 30.0 + 10.0) * 0.95;
-                  if ((0.0 < fVar9) && (0.0 < (float)(&creature_health)[iVar10 * 0x26])) {
+                  if ((0.0 < fVar9) && (0.0 < (&creature_pool)[iVar10].health)) {
                     fVar20 = *(float *)(&projectile_damage_pool + iVar4) - 1.0;
                     *(float *)(&projectile_damage_pool + iVar4) = fVar20;
                     fVar15 = (float10)fcos((float10)(float)(&projectile_angle)[local_e8 * 0x10] -
@@ -18933,7 +18933,7 @@ LAB_004219f8:
                       creature_apply_damage(iVar10,fVar20,1,&local_78);
                       *(float *)(&projectile_damage_pool + iVar4) =
                            *(float *)(&projectile_damage_pool + iVar4) -
-                           (float)(&creature_health)[iVar10 * 0x26];
+                           (&creature_pool)[iVar10].health;
                     }
                   }
                   if ((*(int *)(&projectile_damage_pool + iVar4) == 0x3f800000) &&
@@ -18941,7 +18941,7 @@ LAB_004219f8:
                      *(undefined4 *)(&projectile_damage_pool + iVar4) = 0, iVar7 != 0x3e800000)) {
                     (&projectile_life_timer)[local_e8 * 0x10] = 0x3e800000;
                   }
-                  (&creature_state_flag)[iVar10 * 0x98] = 1;
+                  (&creature_pool)[iVar10].state_flag = '\x01';
                   crt_rand();
                   if (((&projectile_type_id)[local_e8 * 0x10] == 6) ||
                      ((&projectile_type_id)[local_e8 * 0x10] == 0x2d)) {
@@ -18966,8 +18966,8 @@ LAB_004219f8:
                       fVar18 = (float10)fsin((float10)(float)(&projectile_angle)[local_e8 * 0x10] -
                                              (float10)1.5707964);
                       fVar20 = (float)(fVar18 * fVar15 * (float10)20.0);
-                      local_b0 = fVar9 + (float)(&creature_pos_x)[iVar10 * 0x26];
-                      local_ac = fVar20 + (float)(&creature_pos_y)[iVar10 * 0x26];
+                      local_b0 = fVar9 + (&creature_pool)[iVar10].pos_x;
+                      local_ac = fVar20 + (&creature_pool)[iVar10].pos_y;
                       vec2_add_inplace(iVar10,&local_b0,&local_a8);
                       crt_rand();
                       if (0.0 < _bonus_freeze_timer) {
@@ -18979,14 +18979,14 @@ LAB_004219f8:
                                    ((float)(&projectile_angle)[local_e8 * 0x10] - 1.5707964) +
                                    (float)(iVar7 % 100) * 0.01);
                       }
-                      local_b8 = fVar9 + (float)(&creature_pos_x)[iVar10 * 0x26];
-                      local_b4 = fVar20 + (float)(&creature_pos_y)[iVar10 * 0x26];
+                      local_b8 = fVar9 + (&creature_pool)[iVar10].pos_x;
+                      local_b4 = fVar20 + (&creature_pool)[iVar10].pos_y;
                       fx_queue_add_random(&local_b8);
                       local_ec = local_ec + -1;
                     } while (local_ec != 0);
                   }
                   else if (_bonus_freeze_timer <= 0.0) {
-                    pfVar12 = (float *)(&creature_pos_x + iVar10 * 0x26);
+                    pfVar12 = &(&creature_pool)[iVar10].pos_x;
                     iVar7 = 3;
                     do {
                       iVar5 = crt_rand();
@@ -18999,15 +18999,15 @@ LAB_004219f8:
                       fx_queue_add_random(pfVar12);
                       local_4c = fVar20 * 1.5;
                       local_70 = fVar9 * 1.5 + *pfVar12;
-                      local_6c = local_4c + (float)(&creature_pos_y)[iVar10 * 0x26];
+                      local_6c = local_4c + (&creature_pool)[iVar10].pos_y;
                       fx_queue_add_random(&local_70);
                       local_3c = fVar20 + fVar20;
                       local_80 = fVar9 + fVar9 + *pfVar12;
-                      local_7c = local_3c + (float)(&creature_pos_y)[iVar10 * 0x26];
+                      local_7c = local_3c + (&creature_pool)[iVar10].pos_y;
                       fx_queue_add_random(&local_80);
                       local_2c = fVar20 * 2.5;
                       local_90 = fVar9 * 2.5 + *pfVar12;
-                      local_8c = local_2c + (float)(&creature_pos_y)[iVar10 * 0x26];
+                      local_8c = local_2c + (&creature_pool)[iVar10].pos_y;
                       fx_queue_add_random(&local_90);
                       iVar7 = iVar7 + -1;
                     } while (iVar7 != 0);
@@ -19094,13 +19094,13 @@ LAB_004219f8:
         fVar9 = *pfVar11;
         fVar20 = pfVar11[-1];
         iVar4 = 0;
-        pfVar12 = (float *)&creature_pos_y;
+        pfVar12 = &creature_pool.pos_y;
         do {
-          if ((*(char *)(pfVar12 + -6) != '\0') && (0.0 < pfVar12[3])) {
-            fVar2 = pfVar12[-1] - pfVar11[-3];
+          if ((((creature_t *)(pfVar12 + -6))->active != '\0') && (0.0 < pfVar12[3])) {
+            fVar3 = pfVar12[-1] - pfVar11[-3];
             fVar1 = *pfVar12 - pfVar11[-2];
-            if (SQRT(fVar2 * fVar2 + fVar1 * fVar1) < fVar9 * fVar20 * 80.0) {
-              local_c0 = fVar2;
+            if (SQRT(fVar3 * fVar3 + fVar1 * fVar1) < fVar9 * fVar20 * 80.0) {
+              local_c0 = fVar3;
               local_bc = fVar1;
               thunk_FUN_00452f1d();
               local_c0 = local_c8 * 0.1;
@@ -19145,14 +19145,14 @@ LAB_00421d65:
             goto LAB_00421c5a;
           }
           if (fVar9 == 2.8026e-45) {
-            if ((&creature_pool)[(int)pfVar11[3] * 0x98] == '\0') {
+            if ((&creature_pool)[(int)pfVar11[3]].active == '\0') {
               fVar9 = (float)creature_find_nearest(pfVar12,-1,0.0);
               pfVar11[3] = fVar9;
             }
             fVar17 = (float10)fpatan((float10)pfVar11[-2] -
-                                     (float10)(float)(&creature_pos_y)[(int)pfVar11[3] * 0x26],
+                                     (float10)(&creature_pool)[(int)pfVar11[3]].pos_y,
                                      (float10)*pfVar12 -
-                                     (float10)(float)(&creature_pos_x)[(int)pfVar11[3] * 0x26]);
+                                     (float10)(&creature_pool)[(int)pfVar11[3]].pos_x);
             pfVar11[-5] = (float)(fVar17 - (float10)1.5707964);
             fVar17 = (float10)fcos((fVar17 - (float10)1.5707964) - (float10)1.5707964);
             pfVar11[-1] = (float)(fVar17 * (float10)frame_dt * (float10)800.0 + (float10)pfVar11[-1]
@@ -19190,27 +19190,27 @@ LAB_00421d65:
         }
         iVar4 = creature_find_in_radius(pfVar12,8.0,0);
         if (iVar4 != -1) {
-          if ((&creature_hitbox_size)[iVar4 * 0x26] == 0x41800000) {
+          if ((&creature_pool)[iVar4].hitbox_size == 16.0) {
             highscore_record_shots_hit = highscore_record_shots_hit + 1;
           }
           if (_bonus_freeze_timer <= 0.0) {
             iVar10 = crt_rand();
             fStack_18 = (float)(iVar10 % 0x14 + -10);
             iVar10 = crt_rand();
-            local_90 = fStack_18 + (float)(&creature_pos_x)[iVar4 * 0x26];
-            local_8c = (float)(iVar10 % 0x14 + -10) + (float)(&creature_pos_y)[iVar4 * 0x26];
+            local_90 = fStack_18 + (&creature_pool)[iVar4].pos_x;
+            local_8c = (float)(iVar10 % 0x14 + -10) + (&creature_pool)[iVar4].pos_y;
             fx_queue_add_random(&local_90);
             iVar10 = crt_rand();
             fStack_38 = (float)(iVar10 % 0x14 + -10);
             iVar10 = crt_rand();
-            local_80 = fStack_38 + (float)(&creature_pos_x)[iVar4 * 0x26];
-            local_7c = (float)(iVar10 % 0x14 + -10) + (float)(&creature_pos_y)[iVar4 * 0x26];
+            local_80 = fStack_38 + (&creature_pool)[iVar4].pos_x;
+            local_7c = (float)(iVar10 % 0x14 + -10) + (&creature_pool)[iVar4].pos_y;
             fx_queue_add_random(&local_80);
             iVar10 = crt_rand();
             local_28 = (float)(iVar10 % 0x14 + -10);
             iVar10 = crt_rand();
-            local_70 = local_28 + (float)(&creature_pos_x)[iVar4 * 0x26];
-            local_6c = (float)(iVar10 % 0x14 + -10) + (float)(&creature_pos_y)[iVar4 * 0x26];
+            local_70 = local_28 + (&creature_pool)[iVar4].pos_x;
+            local_6c = (float)(iVar10 % 0x14 + -10) + (&creature_pool)[iVar4].pos_y;
             fx_queue_add_random(&local_70);
           }
           else {
@@ -19242,7 +19242,7 @@ LAB_00421d65:
             sfx_play_panned(sfx_explosion_medium);
           }
           local_94 = 1.0 / frame_dt;
-          (&creature_state_flag)[iVar4 * 0x98] = 1;
+          (&creature_pool)[iVar4].state_flag = '\x01';
           local_98 = local_94 * pfVar11[-1];
           local_94 = local_94 * *pfVar11;
           creature_apply_damage(iVar4,local_dc,3,&local_98);
@@ -19261,9 +19261,9 @@ LAB_00421d65:
                 fVar17 = (float10)fcos((float10)fVar9);
                 local_58 = (float)(fVar17 * (float10)(iVar7 % 0x5a));
                 fVar17 = (float10)fsin((float10)fVar9);
-                local_78 = local_58 + (float)(&creature_pos_x)[iVar4 * 0x26];
+                local_78 = local_58 + (&creature_pool)[iVar4].pos_x;
                 local_74 = (float)(fVar17 * (float10)(iVar7 % 0x5a) +
-                                  (float10)(float)(&creature_pos_y)[iVar4 * 0x26]);
+                                  (float10)(&creature_pool)[iVar4].pos_y);
                 fx_queue_add_random(&local_78);
                 iVar10 = iVar10 + -1;
               } while (iVar10 != 0);
@@ -19293,10 +19293,9 @@ LAB_00421d65:
                 }
                 fVar17 = (float10)fcos((float10)fVar9);
                 fVar16 = (float10)fsin((float10)fVar9);
-                local_88 = (float)(fVar17 * (float10)(int)uVar8) +
-                           (float)(&creature_pos_x)[iVar4 * 0x26];
+                local_88 = (float)(fVar17 * (float10)(int)uVar8) + (&creature_pool)[iVar4].pos_x;
                 local_84 = (float)(fVar16 * (float10)(int)uVar8 +
-                                  (float10)(float)(&creature_pos_y)[iVar4 * 0x26]);
+                                  (float10)(&creature_pool)[iVar4].pos_y);
                 fx_queue_add_random(&local_88);
                 iVar10 = iVar10 + -1;
               } while (iVar10 != 0);
@@ -19322,10 +19321,10 @@ LAB_00421d65:
                 iVar7 = crt_rand();
                 fVar17 = (float10)fcos((float10)fVar9);
                 fVar16 = (float10)fsin((float10)fVar9);
-                local_48 = (float)(fVar17 * (float10)(iVar7 % 0x2c)) +
-                           (float)(&creature_pos_x)[iVar4 * 0x26];
+                local_48 = (float)(fVar17 * (float10)(iVar7 % 0x2c)) + (&creature_pool)[iVar4].pos_x
+                ;
                 local_44 = (float)(fVar16 * (float10)(iVar7 % 0x2c) +
-                                  (float10)(float)(&creature_pos_y)[iVar4 * 0x26]);
+                                  (float10)(&creature_pool)[iVar4].pos_y);
                 fx_queue_add_random(&local_48);
                 iVar10 = iVar10 + -1;
               } while (iVar10 != 0);
@@ -19335,7 +19334,7 @@ LAB_00421d65:
               do {
                 iVar7 = crt_rand();
                 effect_spawn_freeze_shard
-                          ((float *)(&creature_pos_x + iVar4 * 0x26),(float)(iVar7 % 0x264) * 0.01);
+                          (&(&creature_pool)[iVar4].pos_x,(float)(iVar7 % 0x264) * 0.01);
                 iVar10 = iVar10 + -1;
               } while (iVar10 != 0);
             }
@@ -19392,7 +19391,7 @@ LAB_00421d65:
           if (pfVar11[5] <= 0.15) {
             fStack_40 = fVar9 * 0.55;
             fVar20 = fStack_40 * pfVar11[5];
-            fVar2 = frame_dt * *pfVar11 * 0.55 * pfVar11[5];
+            fVar3 = frame_dt * *pfVar11 * 0.55 * pfVar11[5];
             fStack_50 = fVar20;
             fStack_30 = fVar9;
             goto LAB_004226a3;
@@ -19410,12 +19409,12 @@ LAB_00421d65:
         if (pfVar11[5] <= 0.15) {
           local_58 = fVar9 * 2.5;
           fVar20 = local_58 * 0.15;
-          fVar2 = frame_dt * *pfVar11 * 2.5 * 0.15;
+          fVar3 = frame_dt * *pfVar11 * 2.5 * 0.15;
           local_90 = fVar20;
           local_28 = fVar9;
 LAB_004226a3:
           pfVar11[-3] = fVar20 + pfVar11[-3];
-          pfVar11[-2] = fVar2 + pfVar11[-2];
+          pfVar11[-2] = fVar3 + pfVar11[-2];
         }
         else {
           fStack_38 = fVar9 * 2.5;
@@ -19425,12 +19424,12 @@ LAB_004226a3:
           FUN_0041e270(pfVar11 + -3,&local_a0);
         }
       }
-      cVar3 = *(char *)(pfVar11 + 8);
-      if (cVar3 == '\0') {
+      cVar2 = *(char *)(pfVar11 + 8);
+      if (cVar2 == '\0') {
         if (0.0 < pfVar11[5]) {
 LAB_00422767:
           if (*(char *)((int)pfVar11 + -0xf) == '\x01') {
-            if (cVar3 == '\0') {
+            if (cVar2 == '\0') {
               iVar4 = crt_rand();
               fVar17 = (float10)(iVar4 % 100 + -0x32) * (float10)0.06 * (float10)pfVar11[5] *
                        (float10)frame_dt * (float10)1.96;
@@ -19443,7 +19442,7 @@ LAB_00422821:
               fVar17 = fVar17 * (float10)82.0;
             }
             else {
-              if (cVar3 != '\b') {
+              if (cVar2 != '\b') {
                 iVar4 = crt_rand();
                 fVar17 = (float10)(iVar4 % 100 + -0x32) * (float10)0.06 * (float10)pfVar11[5] *
                          (float10)frame_dt * (float10)1.1;
@@ -19477,12 +19476,12 @@ LAB_00422821:
             if (fVar9 != -NAN) {
               *(undefined1 *)((int)pfVar11 + -0xf) = 0;
               if (*(char *)(pfVar11 + 8) == '\b') {
-                fVar20 = (float)(&creature_pos_y)[(int)fVar9 * 0x26];
-                *pfVar12 = (float)(&creature_pos_x)[(int)fVar9 * 0x26];
+                fVar20 = (&creature_pool)[(int)fVar9].pos_y;
+                *pfVar12 = (&creature_pool)[(int)fVar9].pos_x;
                 pfVar11[-2] = fVar20;
                 pfVar11[-1] = 0.0;
                 *pfVar11 = 0.0;
-                (&creature_state_flag)[(int)fVar9 * 0x98] = 0;
+                (&creature_pool)[(int)fVar9].state_flag = '\0';
                 pfVar11[9] = fVar9;
               }
               else {
@@ -19498,11 +19497,11 @@ LAB_00422821:
                 }
                 local_80 = (float)((float10)frame_dt * (float10)pfVar11[-1]);
                 local_70 = *pfVar12 - local_80;
-                pfVar12 = (float *)(&creature_pos_x + (int)fVar9 * 0x26);
+                pfVar12 = &(&creature_pool)[(int)fVar9].pos_x;
                 local_98 = local_70 - *pfVar12;
                 fVar17 = (float10)fpatan(((float10)pfVar11[-2] -
                                          (float10)frame_dt * (float10)*pfVar11) -
-                                         (float10)(float)(&creature_pos_y)[(int)fVar9 * 0x26],
+                                         (float10)(&creature_pool)[(int)fVar9].pos_y,
                                          (float10)local_98);
                 if ((float10)6.2831855 < fVar17) {
                   do {
@@ -19526,54 +19525,53 @@ LAB_00422821:
                 fVar17 = (float10)fsin((float10)pfVar11[6]);
                 *pfVar11 = (float)(fVar17 * (float10)82.0);
                 iVar4 = crt_rand();
-                (&creature_state_flag)[(int)fVar9 * 0x98] = 1;
+                (&creature_pool)[(int)fVar9].state_flag = '\x01';
                 local_b0 = 0.0;
                 local_ac = 0.0;
                 fVar20 = (float)(iVar4 % 10) * 0.1;
                 pfVar11[-1] = fVar20 * pfVar11[-1];
                 *pfVar11 = fVar20 * *pfVar11;
                 creature_apply_damage((int)fVar9,pfVar11[5] * 10.0,4,&local_b0);
-                if (1.6 < (float)(&creature_tint_g)[(int)fVar9 * 0x26] +
-                          (float)(&creature_tint_b)[(int)fVar9 * 0x26] +
-                          (float)(&creature_tint_r)[(int)fVar9 * 0x26]) {
+                if (1.6 < (&creature_pool)[(int)fVar9].tint_g + (&creature_pool)[(int)fVar9].tint_b
+                          + (&creature_pool)[(int)fVar9].tint_r) {
                   fVar20 = 1.0 - pfVar11[5] * 0.01;
-                  (&creature_tint_r)[(int)fVar9 * 0x26] =
-                       fVar20 * (float)(&creature_tint_r)[(int)fVar9 * 0x26];
-                  (&creature_tint_g)[(int)fVar9 * 0x26] =
-                       fVar20 * (float)(&creature_tint_g)[(int)fVar9 * 0x26];
-                  (&creature_tint_b)[(int)fVar9 * 0x26] =
-                       fVar20 * (float)(&creature_tint_b)[(int)fVar9 * 0x26];
-                  if (0.0 <= (float)(&creature_tint_r)[(int)fVar9 * 0x26]) {
-                    if (1.0 < (float)(&creature_tint_r)[(int)fVar9 * 0x26]) {
-                      (&creature_tint_r)[(int)fVar9 * 0x26] = 0x3f800000;
+                  (&creature_pool)[(int)fVar9].tint_r = fVar20 * (&creature_pool)[(int)fVar9].tint_r
+                  ;
+                  (&creature_pool)[(int)fVar9].tint_g = fVar20 * (&creature_pool)[(int)fVar9].tint_g
+                  ;
+                  (&creature_pool)[(int)fVar9].tint_b = fVar20 * (&creature_pool)[(int)fVar9].tint_b
+                  ;
+                  if (0.0 <= (&creature_pool)[(int)fVar9].tint_r) {
+                    if (1.0 < (&creature_pool)[(int)fVar9].tint_r) {
+                      (&creature_pool)[(int)fVar9].tint_r = 1.0;
                     }
                   }
                   else {
-                    (&creature_tint_r)[(int)fVar9 * 0x26] = 0;
+                    (&creature_pool)[(int)fVar9].tint_r = 0.0;
                   }
-                  if (0.0 <= (float)(&creature_tint_g)[(int)fVar9 * 0x26]) {
-                    if (1.0 < (float)(&creature_tint_g)[(int)fVar9 * 0x26]) {
-                      (&creature_tint_g)[(int)fVar9 * 0x26] = 0x3f800000;
+                  if (0.0 <= (&creature_pool)[(int)fVar9].tint_g) {
+                    if (1.0 < (&creature_pool)[(int)fVar9].tint_g) {
+                      (&creature_pool)[(int)fVar9].tint_g = 1.0;
                     }
                   }
                   else {
-                    (&creature_tint_g)[(int)fVar9 * 0x26] = 0;
+                    (&creature_pool)[(int)fVar9].tint_g = 0.0;
                   }
-                  if (0.0 <= (float)(&creature_tint_b)[(int)fVar9 * 0x26]) {
-                    if (1.0 < (float)(&creature_tint_b)[(int)fVar9 * 0x26]) {
-                      (&creature_tint_b)[(int)fVar9 * 0x26] = 0x3f800000;
+                  if (0.0 <= (&creature_pool)[(int)fVar9].tint_b) {
+                    if (1.0 < (&creature_pool)[(int)fVar9].tint_b) {
+                      (&creature_pool)[(int)fVar9].tint_b = 1.0;
                     }
                   }
                   else {
-                    (&creature_tint_b)[(int)fVar9 * 0x26] = 0;
+                    (&creature_pool)[(int)fVar9].tint_b = 0.0;
                   }
-                  if (0.0 <= (float)(&creature_tint_a)[(int)fVar9 * 0x26]) {
-                    if (1.0 < (float)(&creature_tint_a)[(int)fVar9 * 0x26]) {
-                      (&creature_tint_a)[(int)fVar9 * 0x26] = 0x3f800000;
+                  if (0.0 <= (&creature_pool)[(int)fVar9].tint_a) {
+                    if (1.0 < (&creature_pool)[(int)fVar9].tint_a) {
+                      (&creature_pool)[(int)fVar9].tint_a = 1.0;
                     }
                   }
                   else {
-                    (&creature_tint_a)[(int)fVar9 * 0x26] = 0;
+                    (&creature_pool)[(int)fVar9].tint_a = 0.0;
                   }
                 }
                 if (local_e8 % 3 == 0) {
@@ -19588,8 +19586,7 @@ LAB_00422821:
                 local_74 = *pfVar11;
                 local_84 = local_74 * frame_dt;
                 *pfVar12 = pfVar11[-1] * frame_dt + *pfVar12;
-                (&creature_pos_y)[(int)fVar9 * 0x26] =
-                     local_84 + (float)(&creature_pos_y)[(int)fVar9 * 0x26];
+                (&creature_pool)[(int)fVar9].pos_y = local_84 + (&creature_pool)[(int)fVar9].pos_y;
               }
             }
           }
@@ -19602,11 +19599,11 @@ LAB_00422821:
         if (0.8 < pfVar11[5]) goto LAB_00422767;
         *(undefined1 *)(pfVar11 + -4) = 0;
         if ((*(char *)(pfVar11 + 8) == '\b') && (pfVar11[9] != -NAN)) {
-          if ((&creature_pool)[(int)pfVar11[9] * 0x98] != '\0') {
+          if ((&creature_pool)[(int)pfVar11[9]].active != '\0') {
             iVar4 = crt_rand();
             sfx_play_panned(*(float *)(&creature_type_sfx_a0 +
-                                      (iVar4 % 3 +
-                                      (&creature_type_id)[(int)pfVar11[9] * 0x26] * 0x11) * 4));
+                                      (iVar4 % 3 + (&creature_pool)[(int)pfVar11[9]].type_id * 0x11)
+                                      * 4));
           }
           creature_handle_death((int)pfVar11[9],false);
         }
@@ -19631,7 +19628,7 @@ void projectile_render(void)
 
 {
   float *pfVar1;
-  float y3;
+  float y2;
   float fVar2;
   float fVar3;
   IGrim2D_vtbl *pIVar4;
@@ -20275,29 +20272,31 @@ LAB_00424475:
               fVar18 = (float)pfVar27 * fVar26;
               fStack_a4 = fVar26 * (float)pfStack_198;
               fVar28 = (_camera_offset_x + *pfVar1) - fVar18 * 10.0;
-              fVar22 = (_camera_offset_y + unaff_EDI[3]) - fStack_a4 * 10.0;
-              fVar21 = _camera_offset_x + *pfVar1 + fVar18 * 10.0;
+              fVar23 = (_camera_offset_y + unaff_EDI[3]) - fStack_a4 * 10.0;
+              fVar22 = _camera_offset_x + *pfVar1 + fVar18 * 10.0;
               fStack_18c = fStack_a4 * 10.0 + _camera_offset_y + unaff_EDI[3];
-              fVar20 = fVar18 * 10.0 + _camera_offset_x + (float)(&creature_pos_x)[iVar9 * 0x26];
-              fVar23 = fStack_a4 * 10.0 + _camera_offset_y + (float)(&creature_pos_y)[iVar9 * 0x26];
-              fVar18 = (_camera_offset_x + (float)(&creature_pos_x)[iVar9 * 0x26]) - fVar18 * 10.0;
-              y3 = (_camera_offset_y + (float)(&creature_pos_y)[iVar9 * 0x26]) - fStack_a4 * 10.0;
+              fVar20 = _camera_offset_x + (&creature_pool)[iVar9].pos_x;
+              fVar2 = _camera_offset_y + (&creature_pool)[iVar9].pos_y;
+              fVar21 = fVar18 * 10.0 + fVar20;
+              y2 = fStack_a4 * 10.0 + fVar2;
+              fVar20 = fVar20 - fVar18 * 10.0;
+              fVar2 = fVar2 - fStack_a4 * 10.0;
               (*grim_interface_ptr->vtable->grim_draw_quad_points)
-                        (fVar28,fVar22,fVar21,fStack_18c,fVar20,fVar23,fVar18,y3);
-              fVar2 = (float)pfVar27 * fVar26;
+                        (fVar28,fVar23,fVar22,fStack_18c,fVar21,y2,fVar20,fVar2);
+              fVar18 = (float)pfVar27 * fVar26;
               fVar3 = (float)pfStack_198 * fVar26;
-              pfVar5 = (float *)(fVar3 * 4.0 + fVar23);
+              pfVar5 = (float *)(fVar3 * 4.0 + y2);
               fStack_8c = fVar3 * 4.0;
-              fVar28 = fVar28 - fVar2 * 4.0;
-              fStack_190 = fVar21 + fVar2 * 4.0;
+              fVar28 = fVar28 - fVar18 * 4.0;
+              fStack_190 = fVar22 + fVar18 * 4.0;
               fStack_18c = fVar3 * 4.0 + fStack_18c;
               (*grim_interface_ptr->vtable->grim_draw_quad_points)
-                        (fVar28,fVar22 - fStack_8c,fStack_190,fStack_18c,fVar20 + fVar2 * 4.0,
-                         (float)pfVar5,fVar18 - fVar2 * 4.0,y3 - fVar3 * 4.0);
+                        (fVar28,fVar23 - fStack_8c,fStack_190,fStack_18c,fVar21 + fVar18 * 4.0,
+                         (float)pfVar5,fVar20 - fVar18 * 4.0,fVar2 - fVar3 * 4.0);
               (*grim_interface_ptr->vtable->grim_set_atlas_frame)(4,2);
               (*grim_interface_ptr->vtable->grim_draw_quad)
-                        ((_camera_offset_x + (float)(&creature_pos_x)[iVar9 * 0x26]) - fVar19,
-                         (_camera_offset_y + (float)(&creature_pos_y)[iVar9 * 0x26]) - fVar19,
+                        ((_camera_offset_x + (&creature_pool)[iVar9].pos_x) - fVar19,
+                         (_camera_offset_y + (&creature_pool)[iVar9].pos_y) - fVar19,
                          (float)pfStack_158,(float)pfStack_158);
               iVar9 = creature_find_in_radius(pfVar1,fStack_178,iVar9 + 1);
               pfStack_194 = pfStack_198;
@@ -20552,31 +20551,32 @@ LAB_00425d30:
 int __cdecl FUN_00425d80(int param_1)
 
 {
-  char *pcVar1;
-  int iVar2;
+  float fVar1;
+  float fVar2;
+  creature_t *pcVar3;
+  int iVar4;
   
-  iVar2 = 0;
-  pcVar1 = &creature_pool;
+  iVar4 = 0;
+  pcVar3 = &creature_pool;
   do {
-    if (*pcVar1 != '\0') {
-      if (SQRT((*(float *)(pcVar1 + 0x18) - (float)(&creature_pos_y)[param_1 * 0x26]) *
-               (*(float *)(pcVar1 + 0x18) - (float)(&creature_pos_y)[param_1 * 0x26]) +
-               (*(float *)(pcVar1 + 0x14) - (float)(&creature_pos_x)[param_1 * 0x26]) *
-               (*(float *)(pcVar1 + 0x14) - (float)(&creature_pos_x)[param_1 * 0x26])) < 45.0) {
-        if (((&creature_collision_flag)[iVar2 * 0x98] != '\0') &&
-           ((float)(&creature_health)[param_1 * 0x26] < 150.0)) {
-          (&creature_collision_flag)[param_1 * 0x98] = 1;
+    if (pcVar3->active != '\0') {
+      fVar1 = pcVar3->pos_x - (&creature_pool)[param_1].pos_x;
+      fVar2 = pcVar3->pos_y - (&creature_pool)[param_1].pos_y;
+      if (SQRT(fVar2 * fVar2 + fVar1 * fVar1) < 45.0) {
+        if (((&creature_pool)[iVar4].collision_flag != '\0') &&
+           ((&creature_pool)[param_1].health < 150.0)) {
+          (&creature_pool)[param_1].collision_flag = '\x01';
         }
-        if (((&creature_collision_flag)[param_1 * 0x98] != '\0') &&
-           ((float)(&creature_health)[iVar2 * 0x26] < 150.0)) {
-          (&creature_collision_flag)[iVar2 * 0x98] = 1;
+        if (((&creature_pool)[param_1].collision_flag != '\0') &&
+           ((&creature_pool)[iVar4].health < 150.0)) {
+          (&creature_pool)[iVar4].collision_flag = '\x01';
         }
-        return iVar2;
+        return iVar4;
       }
     }
-    pcVar1 = pcVar1 + 0x98;
-    iVar2 = iVar2 + 1;
-  } while ((int)pcVar1 < 0x4aa338);
+    pcVar3 = pcVar3 + 1;
+    iVar4 = iVar4 + 1;
+  } while ((int)pcVar3 < 0x4aa338);
   return 0;
 }
 
@@ -20592,20 +20592,21 @@ void __cdecl player_take_damage(int player_index,float damage)
   player_state_t *ppVar1;
   float *pos;
   float fVar2;
-  bool bVar3;
-  int iVar4;
-  uint uVar5;
-  char *pcVar6;
-  bool bVar7;
+  float fVar3;
+  bool bVar4;
+  int iVar5;
+  uint uVar6;
+  creature_t *pcVar7;
+  bool bVar8;
   float local_c;
   float local_8 [2];
   
-  iVar4 = perk_count_get(perk_id_death_clock);
-  if (iVar4 != 0) {
+  iVar5 = perk_count_get(perk_id_death_clock);
+  if (iVar5 != 0) {
     return;
   }
-  iVar4 = perk_count_get(perk_id_tough_reloader);
-  if ((iVar4 != 0) && ((&player_health)[player_index]._pad0[0x2a4] != '\0')) {
+  iVar5 = perk_count_get(perk_id_tough_reloader);
+  if ((iVar5 != 0) && ((&player_health)[player_index]._pad0[0x2a4] != '\0')) {
     damage = damage * 0.5;
   }
   survival_reward_damage_seen = 1;
@@ -20614,35 +20615,35 @@ void __cdecl player_take_damage(int player_index,float damage)
     survival_reward_damage_seen = 1;
     return;
   }
-  bVar7 = (float)player_health._pad0._0_4_ <= 0.0;
-  iVar4 = perk_count_get(perk_id_thick_skinned);
-  if (iVar4 != 0) {
+  bVar8 = (float)player_health._pad0._0_4_ <= 0.0;
+  iVar5 = perk_count_get(perk_id_thick_skinned);
+  if (iVar5 != 0) {
     local_c = 0.666;
   }
-  bVar3 = false;
-  iVar4 = perk_count_get(perk_id_ninja);
-  if (iVar4 == 0) {
-    iVar4 = perk_count_get(perk_id_dodger);
-    if ((iVar4 != 0) && (iVar4 = crt_rand(), iVar4 % 5 == 0)) {
-      bVar3 = true;
+  bVar4 = false;
+  iVar5 = perk_count_get(perk_id_ninja);
+  if (iVar5 == 0) {
+    iVar5 = perk_count_get(perk_id_dodger);
+    if ((iVar5 != 0) && (iVar5 = crt_rand(), iVar5 % 5 == 0)) {
+      bVar4 = true;
       goto LAB_00425fa1;
     }
   }
   else {
-    iVar4 = crt_rand();
-    if (iVar4 % 3 == 0) {
-      bVar3 = true;
+    iVar5 = crt_rand();
+    if (iVar5 % 3 == 0) {
+      bVar4 = true;
       goto LAB_00425fa1;
     }
   }
-  iVar4 = perk_count_get(perk_id_highlander);
-  if (iVar4 == 0) {
+  iVar5 = perk_count_get(perk_id_highlander);
+  if (iVar5 == 0) {
     *(float *)(&player_health)[player_index]._pad0 =
          *(float *)(&player_health)[player_index]._pad0 - local_c * damage;
   }
   else {
-    iVar4 = crt_rand();
-    if (iVar4 % 10 == 0) {
+    iVar5 = crt_rand();
+    if (iVar5 % 10 == 0) {
       ppVar1 = &player_health + player_index;
       ppVar1->_pad0[0] = '\0';
       ppVar1->_pad0[1] = '\0';
@@ -20652,60 +20653,57 @@ void __cdecl player_take_damage(int player_index,float damage)
   }
 LAB_00425fa1:
   if (0.0 <= *(float *)(&player_health)[player_index]._pad0) {
-    iVar4 = crt_rand();
-    sfx_play_panned((float)(iVar4 % 3 + sfx_trooper_inpain_01));
-    if (bVar7) {
+    iVar5 = crt_rand();
+    sfx_play_panned((float)(iVar5 % 3 + sfx_trooper_inpain_01));
+    if (bVar8) {
       return;
     }
   }
   else {
     (&player_death_timer)[player_index * 0xd8] =
          (float)(&player_death_timer)[player_index * 0xd8] - frame_dt * 28.0;
-    if (bVar7) {
+    if (bVar8) {
       return;
     }
-    iVar4 = perk_count_get(perk_id_final_revenge);
-    if (iVar4 == 0) {
-      uVar5 = crt_rand();
-      uVar5 = uVar5 & 0x80000001;
-      if ((int)uVar5 < 0) {
-        uVar5 = (uVar5 - 1 | 0xfffffffe) + 1;
+    iVar5 = perk_count_get(perk_id_final_revenge);
+    if (iVar5 == 0) {
+      uVar6 = crt_rand();
+      uVar6 = uVar6 & 0x80000001;
+      if ((int)uVar6 < 0) {
+        uVar6 = (uVar6 - 1 | 0xfffffffe) + 1;
       }
-      sfx_play_panned((float)(uVar5 + sfx_trooper_die_01));
+      sfx_play_panned((float)(uVar6 + sfx_trooper_die_01));
     }
     else {
       pos = (float *)(&player_pos_x + player_index * 0xd8);
       effect_spawn_explosion_burst(pos,1.8);
       bonus_spawn_guard = 1;
-      iVar4 = 0;
-      pcVar6 = &creature_pool;
+      iVar5 = 0;
+      pcVar7 = &creature_pool;
       do {
-        if ((((*pcVar6 != '\0') && (ABS(*(float *)(pcVar6 + 0x14) - *pos) <= 512.0)) &&
-            (ABS(*(float *)(pcVar6 + 0x18) - (float)(&player_pos_y)[player_index * 0xd8]) <= 512.0))
-           && (fVar2 = 512.0 - SQRT((*(float *)(pcVar6 + 0x14) - *pos) *
-                                    (*(float *)(pcVar6 + 0x14) - *pos) +
-                                    (*(float *)(pcVar6 + 0x18) -
-                                    (float)(&player_pos_y)[player_index * 0xd8]) *
-                                    (*(float *)(pcVar6 + 0x18) -
-                                    (float)(&player_pos_y)[player_index * 0xd8])), 0.0 < fVar2)) {
+        if ((((pcVar7->active != '\0') && (ABS(pcVar7->pos_x - *pos) <= 512.0)) &&
+            (ABS(pcVar7->pos_y - (float)(&player_pos_y)[player_index * 0xd8]) <= 512.0)) &&
+           (fVar2 = pcVar7->pos_x - *pos,
+           fVar3 = pcVar7->pos_y - (float)(&player_pos_y)[player_index * 0xd8],
+           fVar2 = 512.0 - SQRT(fVar2 * fVar2 + fVar3 * fVar3), 0.0 < fVar2)) {
           local_8[0] = 0.0;
           local_8[1] = 0.0;
-          creature_apply_damage(iVar4,fVar2 * 5.0,3,local_8);
+          creature_apply_damage(iVar5,fVar2 * 5.0,3,local_8);
         }
-        pcVar6 = pcVar6 + 0x98;
-        iVar4 = iVar4 + 1;
-      } while ((int)pcVar6 < 0x4aa338);
+        pcVar7 = pcVar7 + 1;
+        iVar5 = iVar5 + 1;
+      } while ((int)pcVar7 < 0x4aa338);
       bonus_spawn_guard = 0;
       sfx_play_panned(sfx_explosion_large);
       sfx_play_panned(sfx_shockwave);
     }
   }
-  if (!bVar3) {
-    iVar4 = perk_count_get(perk_id_unstoppable);
-    if (iVar4 == 0) {
-      iVar4 = crt_rand();
+  if (!bVar4) {
+    iVar5 = perk_count_get(perk_id_unstoppable);
+    if (iVar5 == 0) {
+      iVar5 = crt_rand();
       *(float *)((&player_health)[player_index]._pad0 + 8) =
-           (float)(iVar4 % 100 + -0x32) * 0.04 +
+           (float)(iVar5 % 100 + -0x32) * 0.04 +
            *(float *)((&player_health)[player_index]._pad0 + 8);
       fVar2 = damage * 0.01 + *(float *)((&player_health)[player_index]._pad0 + 0x294);
       *(float *)((&player_health)[player_index]._pad0 + 0x294) = fVar2;
@@ -20718,7 +20716,7 @@ LAB_00425fa1:
       }
     }
     if ((*(float *)(&player_health)[player_index]._pad0 <= 20.0) &&
-       (iVar4 = crt_rand(), ((byte)iVar4 & 7) == 3)) {
+       (iVar5 = crt_rand(), ((byte)iVar5 & 7) == 3)) {
       ppVar1 = &player_health + player_index;
       ppVar1->_pad0[0x2ec] = '\0';
       ppVar1->_pad0[0x2ed] = '\0';
@@ -20740,21 +20738,22 @@ void creature_update_all(void)
 
 {
   float *pfVar1;
-  char *pcVar2;
+  uchar *puVar2;
   float *pfVar3;
-  char *pcVar4;
-  undefined4 uVar5;
-  int iVar6;
-  uint uVar7;
-  int iVar8;
-  char cVar9;
-  float10 fVar10;
+  int *piVar4;
+  float fVar5;
+  undefined4 uVar6;
+  int iVar7;
+  uint uVar8;
+  int iVar9;
+  char cVar10;
   float10 fVar11;
-  longlong lVar12;
-  float *pfVar13;
-  float fVar14;
-  float *pfVar15;
-  float fVar16;
+  float10 fVar12;
+  longlong lVar13;
+  float *pfVar14;
+  float fVar15;
+  float *pfVar16;
+  float fVar17;
   int local_7c;
   float local_78;
   float local_70;
@@ -20772,539 +20771,504 @@ void creature_update_all(void)
   creature_active_count = 0;
   local_7c = 0;
   do {
-    if ((&creature_pool)[local_7c * 0x98] != '\0') {
+    if ((&creature_pool)[local_7c].active != '\0') {
       creature_active_count = creature_active_count + 1;
-      if (0.0 < (float)(&creature_hit_flash_timer)[local_7c * 0x26]) {
-        (&creature_hit_flash_timer)[local_7c * 0x26] =
-             (float)(&creature_hit_flash_timer)[local_7c * 0x26] - frame_dt;
+      if (0.0 < (&creature_pool)[local_7c].hit_flash_timer) {
+        (&creature_pool)[local_7c].hit_flash_timer =
+             (&creature_pool)[local_7c].hit_flash_timer - frame_dt;
       }
       if (_bonus_freeze_timer <= 0.0) {
-        pfVar13 = (float *)(&creature_health + local_7c * 0x26);
-        if (((float)(&creature_health)[local_7c * 0x26] <= 0.0) &&
-           ((&creature_hitbox_size)[local_7c * 0x26] == 0x41800000)) {
-          (&creature_hitbox_size)[local_7c * 0x26] =
-               (float)(&creature_hitbox_size)[local_7c * 0x26] - frame_dt;
+        pfVar14 = &(&creature_pool)[local_7c].health;
+        if (((&creature_pool)[local_7c].health <= 0.0) &&
+           ((&creature_pool)[local_7c].hitbox_size == 16.0)) {
+          (&creature_pool)[local_7c].hitbox_size = (&creature_pool)[local_7c].hitbox_size - frame_dt
+          ;
         }
-        if ((*(uint *)(&creature_flags + local_7c * 0x98) & 2) == 0) {
-          if ((*(uint *)(&creature_flags + local_7c * 0x98) & 1) != 0) {
-            fVar16 = frame_dt * 60.0;
-            pfVar15 = local_50 + 2;
+        if (((&creature_pool)[local_7c].flags & 2U) == 0) {
+          if (((&creature_pool)[local_7c].flags & 1U) != 0) {
+            fVar17 = frame_dt * 60.0;
+            pfVar16 = local_50 + 2;
             local_50[2] = 0.0;
             local_50[3] = 0.0;
             goto LAB_0042634c;
           }
         }
         else {
-          fVar16 = frame_dt * 180.0;
-          pfVar15 = local_50;
+          fVar17 = frame_dt * 180.0;
+          pfVar16 = local_50;
           local_50[0] = 0.0;
           local_50[1] = 0.0;
 LAB_0042634c:
-          creature_apply_damage(local_7c,fVar16,0,pfVar15);
+          creature_apply_damage(local_7c,fVar17,0,pfVar16);
         }
-        if (((&creature_flags)[local_7c * 0x98] & 0x80) != 0) {
-          iVar6 = (&creature_link_index)[local_7c * 0x26];
-          if (iVar6 < 0) {
-            iVar6 = iVar6 + frame_dt_ms;
-            (&creature_link_index)[local_7c * 0x26] = iVar6;
-            if (-1 < iVar6) {
-              uVar7 = crt_rand();
-              (&creature_ai_mode)[local_7c * 0x26] = 7;
-              (&creature_link_index)[local_7c * 0x26] = (uVar7 & 0x1ff) + 500;
+        if (((&creature_pool)[local_7c].flags & 0x80) != 0) {
+          iVar7 = (&creature_pool)[local_7c].link_index;
+          if (iVar7 < 0) {
+            iVar7 = iVar7 + frame_dt_ms;
+            (&creature_pool)[local_7c].link_index = iVar7;
+            if (-1 < iVar7) {
+              uVar8 = crt_rand();
+              (&creature_pool)[local_7c].ai_mode = 7;
+              (&creature_pool)[local_7c].link_index = (uVar8 & 0x1ff) + 500;
             }
           }
           else {
-            iVar6 = iVar6 - frame_dt_ms;
-            (&creature_link_index)[local_7c * 0x26] = iVar6;
-            if (iVar6 < 1) {
-              uVar7 = crt_rand();
-              (&creature_link_index)[local_7c * 0x26] = -700 - (uVar7 & 0x3ff);
+            iVar7 = iVar7 - frame_dt_ms;
+            (&creature_pool)[local_7c].link_index = iVar7;
+            if (iVar7 < 1) {
+              uVar8 = crt_rand();
+              (&creature_pool)[local_7c].link_index = -700 - (uVar8 & 0x3ff);
             }
           }
         }
-        if ((*pfVar13 <= 0.0) && ((&creature_hitbox_size)[local_7c * 0x26] == 0x41800000)) {
-          (&creature_hitbox_size)[local_7c * 0x26] =
-               (float)(&creature_hitbox_size)[local_7c * 0x26] - frame_dt;
+        if ((*pfVar14 <= 0.0) && ((&creature_pool)[local_7c].hitbox_size == 16.0)) {
+          (&creature_pool)[local_7c].hitbox_size = (&creature_pool)[local_7c].hitbox_size - frame_dt
+          ;
         }
-        cVar9 = (&creature_target_player)[local_7c * 0x98];
-        iVar6 = (int)cVar9;
-        pfVar15 = (float *)(&creature_pos_x + local_7c * 0x26);
-        iVar8 = iVar6 * 0x360;
-        local_78 = SQRT(((&player_pos_y)[iVar6 * 0xd8] - (float)(&creature_pos_y)[local_7c * 0x26])
-                        * ((&player_pos_y)[iVar6 * 0xd8] - (float)(&creature_pos_y)[local_7c * 0x26]
-                          ) + ((&player_pos_x)[iVar6 * 0xd8] - *pfVar15) *
-                              ((&player_pos_x)[iVar6 * 0xd8] - *pfVar15));
+        cVar10 = (char)(&creature_pool)[local_7c].target_player;
+        iVar7 = (int)cVar10;
+        pfVar16 = &(&creature_pool)[local_7c].pos_x;
+        iVar9 = iVar7 * 0x360;
+        fVar17 = (&player_pos_y)[iVar7 * 0xd8] - (&creature_pool)[local_7c].pos_y;
+        local_78 = SQRT(fVar17 * fVar17 +
+                        ((&player_pos_x)[iVar7 * 0xd8] - *pfVar16) *
+                        ((&player_pos_x)[iVar7 * 0xd8] - *pfVar16));
         if (creature_update_tick % 0x46 != 0) {
           if (_config_player_count == 2) {
-            if ((0.0 < (float)(&player2_health)[iVar6 * -0xd8]) &&
-               (fVar16 = *(float *)((&player_health)[-iVar6]._pad1 + 0x14) - *pfVar15,
-               fVar14 = *(float *)((&player_health)[-iVar6]._pad1 + 0x18) -
-                        (float)(&creature_pos_y)[local_7c * 0x26],
-               local_6c = SQRT(fVar14 * fVar14 + fVar16 * fVar16), local_6c < local_78)) {
-              (&creature_target_player)[local_7c * 0x98] = '\x01' - cVar9;
+            if ((0.0 < (float)(&player2_health)[iVar7 * -0xd8]) &&
+               (fVar17 = *(float *)((&player_health)[-iVar7]._pad1 + 0x14) - *pfVar16,
+               fVar15 = *(float *)((&player_health)[-iVar7]._pad1 + 0x18) -
+                        (&creature_pool)[local_7c].pos_y,
+               local_6c = SQRT(fVar15 * fVar15 + fVar17 * fVar17), local_6c < local_78)) {
+              *(char *)&(&creature_pool)[local_7c].target_player = '\x01' - cVar10;
               local_78 = local_6c;
             }
           }
           else {
-            local_6c = SQRT((player_pos_y - (float)(&creature_pos_y)[local_7c * 0x26]) *
-                            (player_pos_y - (float)(&creature_pos_y)[local_7c * 0x26]) +
-                            (player_pos_x - *pfVar15) * (player_pos_x - *pfVar15));
+            fVar17 = player_pos_y - (&creature_pool)[local_7c].pos_y;
+            local_6c = SQRT(fVar17 * fVar17 + (player_pos_x - *pfVar16) * (player_pos_x - *pfVar16))
+            ;
           }
-          cVar9 = (&creature_target_player)[local_7c * 0x98];
-          iVar6 = (int)cVar9;
-          iVar8 = iVar6 * 0x360;
-          if (local_6c <
-              SQRT((player_pos_y -
-                   (float)(&creature_pos_y)[*(int *)((&player_health)[iVar6]._pad0 + 0x2fc) * 0x26])
-                   * (player_pos_y -
-                     (float)(&creature_pos_y)
-                            [*(int *)((&player_health)[iVar6]._pad0 + 0x2fc) * 0x26]) +
-                   (player_pos_x -
-                   (float)(&creature_pos_x)[*(int *)((&player_health)[iVar6]._pad0 + 0x2fc) * 0x26])
-                   * (player_pos_x -
-                     (float)(&creature_pos_x)
-                            [*(int *)((&player_health)[iVar6]._pad0 + 0x2fc) * 0x26]))) {
-            *(int *)((&player_health)[iVar6]._pad0 + 0x2fc) = local_7c;
+          cVar10 = (char)(&creature_pool)[local_7c].target_player;
+          iVar7 = (int)cVar10;
+          iVar9 = iVar7 * 0x360;
+          fVar17 = player_pos_x -
+                   (&creature_pool)[*(int *)((&player_health)[iVar7]._pad0 + 0x2fc)].pos_x;
+          fVar15 = player_pos_y -
+                   (&creature_pool)[*(int *)((&player_health)[iVar7]._pad0 + 0x2fc)].pos_y;
+          if (local_6c < SQRT(fVar15 * fVar15 + fVar17 * fVar17)) {
+            *(int *)((&player_health)[iVar7]._pad0 + 0x2fc) = local_7c;
           }
         }
-        if (*(float *)(player_health._pad0 + iVar8) <= 0.0) {
-          (&creature_target_player)[local_7c * 0x98] = '\x01' - cVar9;
+        if (*(float *)(player_health._pad0 + iVar9) <= 0.0) {
+          *(char *)&(&creature_pool)[local_7c].target_player = '\x01' - cVar10;
         }
-        pfVar1 = (float *)(&creature_hitbox_size + local_7c * 0x26);
-        if ((&creature_hitbox_size)[local_7c * 0x26] == 0x41800000) {
-          pcVar2 = &creature_collision_flag + local_7c * 0x98;
-          if ((&creature_collision_flag)[local_7c * 0x98] != '\0') {
-            fVar16 = (float)(&creature_collision_timer)[local_7c * 0x26] - frame_dt;
-            (&creature_collision_timer)[local_7c * 0x26] = fVar16;
-            if (fVar16 < 0.0) {
-              (&creature_state_flag)[local_7c * 0x98] = 1;
-              (&creature_collision_timer)[local_7c * 0x26] = fVar16 + 0.5;
-              fVar16 = *pfVar13;
-              *pfVar13 = fVar16 - 15.0;
-              if (fVar16 - 15.0 < 0.0) {
+        pfVar1 = &(&creature_pool)[local_7c].hitbox_size;
+        if ((&creature_pool)[local_7c].hitbox_size == 16.0) {
+          puVar2 = &(&creature_pool)[local_7c].collision_flag;
+          if ((&creature_pool)[local_7c].collision_flag != '\0') {
+            fVar17 = (&creature_pool)[local_7c].collision_timer - frame_dt;
+            (&creature_pool)[local_7c].collision_timer = fVar17;
+            if (fVar17 < 0.0) {
+              (&creature_pool)[local_7c].state_flag = '\x01';
+              (&creature_pool)[local_7c].collision_timer = fVar17 + 0.5;
+              fVar17 = *pfVar14;
+              *pfVar14 = fVar17 - 15.0;
+              if (fVar17 - 15.0 < 0.0) {
                 plaguebearer_infection_count = plaguebearer_infection_count + 1;
                 creature_handle_death(local_7c,true);
-                uVar7 = crt_rand();
-                uVar7 = uVar7 & 0x80000001;
-                if ((int)uVar7 < 0) {
-                  uVar7 = (uVar7 - 1 | 0xfffffffe) + 1;
+                uVar8 = crt_rand();
+                uVar8 = uVar8 & 0x80000001;
+                if ((int)uVar8 < 0) {
+                  uVar8 = (uVar8 - 1 | 0xfffffffe) + 1;
                 }
                 sfx_play_panned(*(float *)(&creature_type_sfx_b0 +
-                                          (uVar7 + (&creature_type_id)[local_7c * 0x26] * 0x11) * 4)
-                               );
+                                          (uVar8 + (&creature_pool)[local_7c].type_id * 0x11) * 4));
               }
-              fx_queue_add_random(pfVar15);
+              fx_queue_add_random(pfVar16);
             }
           }
-          uVar5 = player_health._pad0._744_4_;
-          iVar6 = (&creature_phase_seed)[local_7c * 0x26];
-          (&creature_force_target)[local_7c * 0x98] = 0;
+          uVar6 = player_health._pad0._744_4_;
+          fVar17 = (&creature_pool)[local_7c].phase_seed;
+          *(undefined1 *)&(&creature_pool)[local_7c].force_target = 0;
           local_70 = 1.0;
-          fVar16 = (float)iVar6 * 3.7 * 3.1415927;
-          if (local_7c != uVar5) {
-            iVar6 = (&creature_ai_mode)[local_7c * 0x26];
-            if (iVar6 == 0) {
-              iVar6 = (int)(char)(&creature_target_player)[local_7c * 0x98];
+          fVar17 = (float)(int)fVar17 * 3.7 * 3.1415927;
+          if (local_7c != uVar6) {
+            iVar7 = (&creature_pool)[local_7c].ai_mode;
+            if (iVar7 == 0) {
+              iVar7 = (int)(char)(&creature_pool)[local_7c].target_player;
               if (800.0 < local_78) {
 LAB_0042676e:
-                uVar5 = (&player_pos_y)[iVar6 * 0xd8];
-                (&creature_target_x)[local_7c * 0x26] = (&player_pos_x)[iVar6 * 0xd8];
-                (&creature_target_y)[local_7c * 0x26] = uVar5;
+                fVar15 = (&player_pos_y)[iVar7 * 0xd8];
+                (&creature_pool)[local_7c].target_x = (&player_pos_x)[iVar7 * 0xd8];
+                (&creature_pool)[local_7c].target_y = fVar15;
               }
               else {
-                fVar10 = (float10)fcos((float10)fVar16);
-                (&creature_target_x)[local_7c * 0x26] =
-                     (float)(fVar10 * (float10)local_78 * (float10)0.85 +
-                            (float10)(&player_pos_x)[iVar6 * 0xd8]);
-                fVar10 = (float10)fsin((float10)fVar16);
-                (&creature_target_y)[local_7c * 0x26] =
-                     (float)(fVar10 * (float10)local_78 * (float10)0.85 +
-                            (float10)(&player_pos_y)[iVar6 * 0xd8]);
+                fVar11 = (float10)fcos((float10)fVar17);
+                (&creature_pool)[local_7c].target_x =
+                     (float)(fVar11 * (float10)local_78 * (float10)0.85 +
+                            (float10)(&player_pos_x)[iVar7 * 0xd8]);
+                fVar11 = (float10)fsin((float10)fVar17);
+                (&creature_pool)[local_7c].target_y =
+                     (float)(fVar11 * (float10)local_78 * (float10)0.85 +
+                            (float10)(&player_pos_y)[iVar7 * 0xd8]);
               }
             }
-            else if (iVar6 == 8) {
-              fVar10 = (float10)fcos((float10)fVar16);
-              cVar9 = (&creature_target_player)[local_7c * 0x98];
-              (&creature_target_x)[local_7c * 0x26] =
-                   (float)(fVar10 * (float10)local_78 * (float10)0.9 +
-                          (float10)(&player_pos_x)[cVar9 * 0xd8]);
-              fVar10 = (float10)fsin((float10)fVar16);
-              (&creature_target_y)[local_7c * 0x26] =
-                   (float)(fVar10 * (float10)local_78 * (float10)0.9 +
-                          (float10)(&player_pos_y)[cVar9 * 0xd8]);
+            else if (iVar7 == 8) {
+              fVar11 = (float10)fcos((float10)fVar17);
+              iVar7 = (int)(char)(&creature_pool)[local_7c].target_player;
+              (&creature_pool)[local_7c].target_x =
+                   (float)(fVar11 * (float10)local_78 * (float10)0.9 +
+                          (float10)(&player_pos_x)[iVar7 * 0xd8]);
+              fVar11 = (float10)fsin((float10)fVar17);
+              (&creature_pool)[local_7c].target_y =
+                   (float)(fVar11 * (float10)local_78 * (float10)0.9 +
+                          (float10)(&player_pos_y)[iVar7 * 0xd8]);
             }
-            else if (iVar6 == 1) {
-              iVar6 = (int)(char)(&creature_target_player)[local_7c * 0x98];
+            else if (iVar7 == 1) {
+              iVar7 = (int)(char)(&creature_pool)[local_7c].target_player;
               if (800.0 < local_78) goto LAB_0042676e;
-              fVar10 = (float10)fcos((float10)fVar16);
-              (&creature_target_x)[local_7c * 0x26] =
-                   (float)(fVar10 * (float10)local_78 * (float10)0.55 +
-                          (float10)(&player_pos_x)[iVar6 * 0xd8]);
-              fVar10 = (float10)fsin((float10)fVar16);
-              (&creature_target_y)[local_7c * 0x26] =
-                   (float)(fVar10 * (float10)local_78 * (float10)0.55 +
-                          (float10)(&player_pos_y)[iVar6 * 0xd8]);
+              fVar11 = (float10)fcos((float10)fVar17);
+              (&creature_pool)[local_7c].target_x =
+                   (float)(fVar11 * (float10)local_78 * (float10)0.55 +
+                          (float10)(&player_pos_x)[iVar7 * 0xd8]);
+              fVar11 = (float10)fsin((float10)fVar17);
+              (&creature_pool)[local_7c].target_y =
+                   (float)(fVar11 * (float10)local_78 * (float10)0.55 +
+                          (float10)(&player_pos_y)[iVar7 * 0xd8]);
             }
-            else if (iVar6 == 3) {
-              iVar6 = (&creature_link_index)[local_7c * 0x26];
-              if ((float)(&creature_health)[iVar6 * 0x26] <= 0.0) {
-                (&creature_ai_mode)[local_7c * 0x26] = 0;
+            else if (iVar7 == 3) {
+              iVar7 = (&creature_pool)[local_7c].link_index;
+              if ((&creature_pool)[iVar7].health <= 0.0) {
+                (&creature_pool)[local_7c].ai_mode = 0;
               }
               else {
-                (&creature_target_x)[local_7c * 0x26] =
-                     (float)(&creature_pos_x)[iVar6 * 0x26] +
-                     (float)(&creature_target_offset_x)[local_7c * 0x26];
-                (&creature_target_y)[local_7c * 0x26] =
-                     (float)(&creature_pos_y)[iVar6 * 0x26] +
-                     (float)(&creature_target_offset_y)[local_7c * 0x26];
+                (&creature_pool)[local_7c].target_x =
+                     (&creature_pool)[iVar7].pos_x + (&creature_pool)[local_7c].target_offset_x;
+                (&creature_pool)[local_7c].target_y =
+                     (&creature_pool)[iVar7].pos_y + (&creature_pool)[local_7c].target_offset_y;
               }
             }
-            else if (iVar6 == 5) {
-              iVar6 = (&creature_link_index)[local_7c * 0x26];
-              if ((float)(&creature_health)[iVar6 * 0x26] <= 0.0) {
-                (&creature_ai_mode)[local_7c * 0x26] = 0;
+            else if (iVar7 == 5) {
+              iVar7 = (&creature_pool)[local_7c].link_index;
+              if ((&creature_pool)[iVar7].health <= 0.0) {
+                (&creature_pool)[local_7c].ai_mode = 0;
                 local_50[4] = 0.0;
                 local_50[5] = 0.0;
                 creature_apply_damage(local_7c,1000.0,1,local_50 + 4);
               }
               else {
-                (&creature_target_x)[local_7c * 0x26] =
-                     (float)(&creature_pos_x)[iVar6 * 0x26] +
-                     (float)(&creature_target_offset_x)[local_7c * 0x26];
-                (&creature_target_y)[local_7c * 0x26] =
-                     (float)(&creature_pos_y)[iVar6 * 0x26] +
-                     (float)(&creature_target_offset_y)[local_7c * 0x26];
-                fVar14 = SQRT(((float)(&creature_target_x)[local_7c * 0x26] - *pfVar15) *
-                              ((float)(&creature_target_x)[local_7c * 0x26] - *pfVar15) +
-                              ((float)(&creature_target_y)[local_7c * 0x26] -
-                              (float)(&creature_pos_y)[local_7c * 0x26]) *
-                              ((float)(&creature_target_y)[local_7c * 0x26] -
-                              (float)(&creature_pos_y)[local_7c * 0x26]));
-                if (fVar14 <= 64.0) {
-                  local_70 = fVar14 * 0.015625;
+                (&creature_pool)[local_7c].target_x =
+                     (&creature_pool)[iVar7].pos_x + (&creature_pool)[local_7c].target_offset_x;
+                (&creature_pool)[local_7c].target_y =
+                     (&creature_pool)[iVar7].pos_y + (&creature_pool)[local_7c].target_offset_y;
+                fVar15 = (&creature_pool)[local_7c].target_x - *pfVar16;
+                fVar5 = (&creature_pool)[local_7c].target_y - (&creature_pool)[local_7c].pos_y;
+                fVar15 = SQRT(fVar15 * fVar15 + fVar5 * fVar5);
+                if (fVar15 <= 64.0) {
+                  local_70 = fVar15 * 0.015625;
                 }
               }
             }
-            iVar6 = (&creature_ai_mode)[local_7c * 0x26];
-            if (iVar6 == 4) {
-              if ((float)(&creature_health)[(&creature_link_index)[local_7c * 0x26] * 0x26] <= 0.0)
-              {
-                (&creature_ai_mode)[local_7c * 0x26] = 0;
+            iVar7 = (&creature_pool)[local_7c].ai_mode;
+            if (iVar7 == 4) {
+              if ((&creature_pool)[(&creature_pool)[local_7c].link_index].health <= 0.0) {
+                (&creature_pool)[local_7c].ai_mode = 0;
                 local_50[6] = 0.0;
                 local_50[7] = 0.0;
                 creature_apply_damage(local_7c,1000.0,1,local_50 + 6);
               }
               else {
-                iVar6 = (int)(char)(&creature_target_player)[local_7c * 0x98];
+                iVar7 = (int)(char)(&creature_pool)[local_7c].target_player;
                 if (local_78 <= 800.0) {
-                  fVar10 = (float10)fcos((float10)fVar16);
-                  (&creature_target_x)[local_7c * 0x26] =
-                       (float)(fVar10 * (float10)local_78 * (float10)0.85 +
-                              (float10)(&player_pos_x)[iVar6 * 0xd8]);
-                  fVar10 = (float10)fsin((float10)fVar16);
-                  (&creature_target_y)[local_7c * 0x26] =
-                       (float)(fVar10 * (float10)local_78 * (float10)0.85 +
-                              (float10)(&player_pos_y)[iVar6 * 0xd8]);
+                  fVar11 = (float10)fcos((float10)fVar17);
+                  (&creature_pool)[local_7c].target_x =
+                       (float)(fVar11 * (float10)local_78 * (float10)0.85 +
+                              (float10)(&player_pos_x)[iVar7 * 0xd8]);
+                  fVar11 = (float10)fsin((float10)fVar17);
+                  (&creature_pool)[local_7c].target_y =
+                       (float)(fVar11 * (float10)local_78 * (float10)0.85 +
+                              (float10)(&player_pos_y)[iVar7 * 0xd8]);
                 }
                 else {
-                  uVar5 = (&player_pos_y)[iVar6 * 0xd8];
-                  (&creature_target_x)[local_7c * 0x26] = (&player_pos_x)[iVar6 * 0xd8];
-                  (&creature_target_y)[local_7c * 0x26] = uVar5;
+                  fVar17 = (&player_pos_y)[iVar7 * 0xd8];
+                  (&creature_pool)[local_7c].target_x = (&player_pos_x)[iVar7 * 0xd8];
+                  (&creature_pool)[local_7c].target_y = fVar17;
                 }
               }
             }
-            else if (iVar6 == 7) {
-              if (((*(uint *)(&creature_flags + local_7c * 0x98) & 0x80) == 0) ||
-                 ((int)(&creature_link_index)[local_7c * 0x26] < 1)) {
-                if (((float)(&creature_orbit_radius)[local_7c * 0x26] <= 0.0) ||
-                   ((*(uint *)(&creature_flags + local_7c * 0x98) & 0x80) != 0)) {
+            else if (iVar7 == 7) {
+              uVar8 = (&creature_pool)[local_7c].flags & 0x80;
+              if ((uVar8 == 0) || ((&creature_pool)[local_7c].link_index < 1)) {
+                if (((&creature_pool)[local_7c].orbit_radius <= 0.0) || (uVar8 != 0)) {
 LAB_00426ac8:
-                  (&creature_ai_mode)[local_7c * 0x26] = 0;
+                  (&creature_pool)[local_7c].ai_mode = 0;
                 }
                 else {
-                  fVar16 = (float)(&creature_orbit_radius)[local_7c * 0x26] - frame_dt;
-                  (&creature_target_x)[local_7c * 0x26] = *pfVar15;
-                  (&creature_target_y)[local_7c * 0x26] = (&creature_pos_y)[local_7c * 0x26];
-                  (&creature_orbit_radius)[local_7c * 0x26] = fVar16;
+                  fVar15 = (&creature_pool)[local_7c].orbit_radius - frame_dt;
+                  fVar17 = (&creature_pool)[local_7c].pos_y;
+                  (&creature_pool)[local_7c].target_x = *pfVar16;
+                  (&creature_pool)[local_7c].target_y = fVar17;
+                  (&creature_pool)[local_7c].orbit_radius = fVar15;
                 }
               }
               else {
-                (&creature_target_x)[local_7c * 0x26] = *pfVar15;
-                (&creature_target_y)[local_7c * 0x26] = (&creature_pos_y)[local_7c * 0x26];
+                fVar17 = (&creature_pool)[local_7c].pos_y;
+                (&creature_pool)[local_7c].target_x = *pfVar16;
+                (&creature_pool)[local_7c].target_y = fVar17;
               }
             }
-            else if (iVar6 == 6) {
-              iVar6 = (&creature_link_index)[local_7c * 0x26];
-              if ((float)(&creature_health)[iVar6 * 0x26] <= 0.0) goto LAB_00426ac8;
-              fVar10 = (float10)fcos((float10)(float)(&creature_orbit_angle)[local_7c * 0x26] +
-                                     (float10)(float)(&creature_heading)[local_7c * 0x26]);
-              (&creature_target_x)[local_7c * 0x26] =
-                   (float)(fVar10 * (float10)(float)(&creature_orbit_radius)[local_7c * 0x26] +
-                          (float10)(float)(&creature_pos_x)[iVar6 * 0x26]);
-              fVar10 = (float10)fsin((float10)(float)(&creature_orbit_angle)[local_7c * 0x26] +
-                                     (float10)(float)(&creature_heading)[local_7c * 0x26]);
-              (&creature_target_y)[local_7c * 0x26] =
-                   (float)(fVar10 * (float10)(float)(&creature_orbit_radius)[local_7c * 0x26] +
-                          (float10)(float)(&creature_pos_y)[iVar6 * 0x26]);
+            else if (iVar7 == 6) {
+              iVar7 = (&creature_pool)[local_7c].link_index;
+              if ((&creature_pool)[iVar7].health <= 0.0) goto LAB_00426ac8;
+              fVar11 = (float10)(&creature_pool)[local_7c].orbit_angle +
+                       (float10)(&creature_pool)[local_7c].heading;
+              fVar12 = (float10)fcos(fVar11);
+              (&creature_pool)[local_7c].target_x =
+                   (float)(fVar12 * (float10)(&creature_pool)[local_7c].orbit_radius +
+                          (float10)(&creature_pool)[iVar7].pos_x);
+              fVar11 = (float10)fsin(fVar11);
+              (&creature_pool)[local_7c].target_y =
+                   (float)(fVar11 * (float10)(&creature_pool)[local_7c].orbit_radius +
+                          (float10)(&creature_pool)[iVar7].pos_y);
             }
-            if (SQRT(((float)(&creature_target_x)[local_7c * 0x26] - *pfVar15) *
-                     ((float)(&creature_target_x)[local_7c * 0x26] - *pfVar15) +
-                     ((float)(&creature_target_y)[local_7c * 0x26] -
-                     (float)(&creature_pos_y)[local_7c * 0x26]) *
-                     ((float)(&creature_target_y)[local_7c * 0x26] -
-                     (float)(&creature_pos_y)[local_7c * 0x26])) < 40.0) {
-              (&creature_force_target)[local_7c * 0x98] = 1;
+            fVar17 = (&creature_pool)[local_7c].target_x - *pfVar16;
+            fVar15 = (&creature_pool)[local_7c].target_y - (&creature_pool)[local_7c].pos_y;
+            if (SQRT(fVar17 * fVar17 + fVar15 * fVar15) < 40.0) {
+              *(undefined1 *)&(&creature_pool)[local_7c].force_target = 1;
             }
-            if (400.0 < SQRT(((float)(&creature_target_x)[local_7c * 0x26] - *pfVar15) *
-                             ((float)(&creature_target_x)[local_7c * 0x26] - *pfVar15) +
-                             ((float)(&creature_target_y)[local_7c * 0x26] -
-                             (float)(&creature_pos_y)[local_7c * 0x26]) *
-                             ((float)(&creature_target_y)[local_7c * 0x26] -
-                             (float)(&creature_pos_y)[local_7c * 0x26]))) {
-              (&creature_force_target)[local_7c * 0x98] = 1;
+            fVar17 = (&creature_pool)[local_7c].target_x - *pfVar16;
+            fVar15 = (&creature_pool)[local_7c].target_y - (&creature_pool)[local_7c].pos_y;
+            if (400.0 < SQRT(fVar17 * fVar17 + fVar15 * fVar15)) {
+              *(undefined1 *)&(&creature_pool)[local_7c].force_target = 1;
             }
-            if (((&creature_force_target)[local_7c * 0x98] != '\0') ||
-               ((&creature_ai_mode)[local_7c * 0x26] == 2)) {
-              cVar9 = (&creature_target_player)[local_7c * 0x98];
-              (&creature_target_x)[local_7c * 0x26] = (&player_pos_x)[cVar9 * 0xd8];
-              (&creature_target_y)[local_7c * 0x26] = (&player_pos_y)[cVar9 * 0xd8];
+            if (((char)(&creature_pool)[local_7c].force_target != '\0') ||
+               ((&creature_pool)[local_7c].ai_mode == 2)) {
+              iVar7 = (int)(char)(&creature_pool)[local_7c].target_player;
+              (&creature_pool)[local_7c].target_x = (&player_pos_x)[iVar7 * 0xd8];
+              (&creature_pool)[local_7c].target_y = (&player_pos_y)[iVar7 * 0xd8];
             }
-            fVar10 = (float10)fpatan((float10)(float)(&creature_target_y)[local_7c * 0x26] -
-                                     (float10)(float)(&creature_pos_y)[local_7c * 0x26],
-                                     (float10)(float)(&creature_target_x)[local_7c * 0x26] -
-                                     (float10)*pfVar15);
-            (&creature_target_heading)[local_7c * 0x26] = (float)(fVar10 + (float10)1.5707964);
-            if (((0.0 < _bonus_energizer_timer) &&
-                ((float)(&creature_max_health)[local_7c * 0x26] < 500.0)) || (*pcVar2 != '\0')) {
-              (&creature_target_heading)[local_7c * 0x26] =
-                   (float)(fVar10 + (float10)1.5707964 + (float10)3.1415927);
+            fVar11 = (float10)fpatan((float10)(&creature_pool)[local_7c].target_y -
+                                     (float10)(&creature_pool)[local_7c].pos_y,
+                                     (float10)(&creature_pool)[local_7c].target_x -
+                                     (float10)*pfVar16);
+            (&creature_pool)[local_7c].target_heading = (float)(fVar11 + (float10)1.5707964);
+            if (((0.0 < _bonus_energizer_timer) && ((&creature_pool)[local_7c].max_health < 500.0))
+               || (*puVar2 != '\0')) {
+              (&creature_pool)[local_7c].target_heading =
+                   (float)(fVar11 + (float10)1.5707964 + (float10)3.1415927);
             }
-            uVar7 = *(uint *)(&creature_flags + local_7c * 0x98);
-            if ((uVar7 & 4) == 0) {
-              if ((&creature_ai_mode)[local_7c * 0x26] != 7) {
-                angle_approach((float *)(&creature_heading + local_7c * 0x26),
-                               (float)(&creature_target_heading)[local_7c * 0x26],
-                               (float)(&creature_move_speed)[local_7c * 0x26] * 0.33333334 * 4.0);
-                fVar10 = (float10)(float)(&creature_heading)[local_7c * 0x26] - (float10)1.5707964;
-                fVar11 = (float10)fcos(fVar10);
-                (&creature_vel_x)[local_7c * 0x26] =
+            uVar8 = (&creature_pool)[local_7c].flags;
+            if ((uVar8 & 4) == 0) {
+              if ((&creature_pool)[local_7c].ai_mode != 7) {
+                angle_approach(&(&creature_pool)[local_7c].heading,
+                               (&creature_pool)[local_7c].target_heading,
+                               (&creature_pool)[local_7c].move_speed * 0.33333334 * 4.0);
+                fVar11 = (float10)(&creature_pool)[local_7c].heading - (float10)1.5707964;
+                fVar12 = (float10)fcos(fVar11);
+                (&creature_pool)[local_7c].vel_x =
+                     (float)(fVar12 * (float10)frame_dt * (float10)local_70 *
+                             (float10)(&creature_pool)[local_7c].move_speed * (float10)30.0);
+                fVar11 = (float10)fsin(fVar11);
+                (&creature_pool)[local_7c].vel_y =
                      (float)(fVar11 * (float10)frame_dt * (float10)local_70 *
-                             (float10)(float)(&creature_move_speed)[local_7c * 0x26] * (float10)30.0
-                            );
-                fVar10 = (float10)fsin(fVar10);
-                (&creature_vel_y)[local_7c * 0x26] =
-                     (float)(fVar10 * (float10)frame_dt * (float10)local_70 *
-                             (float10)(float)(&creature_move_speed)[local_7c * 0x26] * (float10)30.0
-                            );
-                vec2_add_inplace(local_7c,pfVar15,(float *)(&creature_vel_x + local_7c * 0x26));
+                             (float10)(&creature_pool)[local_7c].move_speed * (float10)30.0);
+                vec2_add_inplace(local_7c,pfVar16,&(&creature_pool)[local_7c].vel_x);
               }
             }
             else {
-              if (*pfVar15 < (float)(&creature_size)[local_7c * 0x26]) {
-                *pfVar15 = (float)(&creature_size)[local_7c * 0x26];
+              if (*pfVar16 < (&creature_pool)[local_7c].size) {
+                *pfVar16 = (&creature_pool)[local_7c].size;
               }
-              if ((float)(&creature_pos_y)[local_7c * 0x26] <
-                  (float)(&creature_size)[local_7c * 0x26]) {
-                (&creature_pos_y)[local_7c * 0x26] = (&creature_size)[local_7c * 0x26];
+              if ((&creature_pool)[local_7c].pos_y < (&creature_pool)[local_7c].size) {
+                (&creature_pool)[local_7c].pos_y = (&creature_pool)[local_7c].size;
               }
-              fVar16 = 1024.0 - (float)(&creature_size)[local_7c * 0x26];
-              if (fVar16 < *pfVar15) {
-                *pfVar15 = fVar16;
+              fVar17 = 1024.0 - (&creature_pool)[local_7c].size;
+              if (fVar17 < *pfVar16) {
+                *pfVar16 = fVar17;
               }
-              if (fVar16 < (float)(&creature_pos_y)[local_7c * 0x26]) {
-                (&creature_pos_y)[local_7c * 0x26] = fVar16;
+              if (fVar17 < (&creature_pool)[local_7c].pos_y) {
+                (&creature_pool)[local_7c].pos_y = fVar17;
               }
-              if ((uVar7 & 0x40) == 0) {
-                (&creature_vel_y)[local_7c * 0x26] = 0;
-                (&creature_vel_x)[local_7c * 0x26] = 0;
+              if ((uVar8 & 0x40) == 0) {
+                (&creature_pool)[local_7c].vel_y = 0.0;
+                (&creature_pool)[local_7c].vel_x = 0.0;
               }
               else {
-                angle_approach((float *)(&creature_heading + local_7c * 0x26),
-                               (float)(&creature_target_heading)[local_7c * 0x26],
-                               (float)(&creature_move_speed)[local_7c * 0x26] * 0.33333334 * 4.0);
-                fVar10 = (float10)(float)(&creature_heading)[local_7c * 0x26] - (float10)1.5707964;
-                fVar11 = (float10)fcos(fVar10);
-                (&creature_vel_x)[local_7c * 0x26] =
+                angle_approach(&(&creature_pool)[local_7c].heading,
+                               (&creature_pool)[local_7c].target_heading,
+                               (&creature_pool)[local_7c].move_speed * 0.33333334 * 4.0);
+                fVar11 = (float10)(&creature_pool)[local_7c].heading - (float10)1.5707964;
+                fVar12 = (float10)fcos(fVar11);
+                (&creature_pool)[local_7c].vel_x =
+                     (float)(fVar12 * (float10)frame_dt * (float10)local_70 *
+                             (float10)(&creature_pool)[local_7c].move_speed * (float10)30.0);
+                fVar11 = (float10)fsin(fVar11);
+                (&creature_pool)[local_7c].vel_y =
                      (float)(fVar11 * (float10)frame_dt * (float10)local_70 *
-                             (float10)(float)(&creature_move_speed)[local_7c * 0x26] * (float10)30.0
-                            );
-                fVar10 = (float10)fsin(fVar10);
-                (&creature_vel_y)[local_7c * 0x26] =
-                     (float)(fVar10 * (float10)frame_dt * (float10)local_70 *
-                             (float10)(float)(&creature_move_speed)[local_7c * 0x26] * (float10)30.0
-                            );
-                vec2_add_inplace(local_7c,pfVar15,(float *)(&creature_vel_x + local_7c * 0x26));
+                             (float10)(&creature_pool)[local_7c].move_speed * (float10)30.0);
+                vec2_add_inplace(local_7c,pfVar16,&(&creature_pool)[local_7c].vel_x);
               }
-              iVar6 = (&creature_link_index)[local_7c * 0x26];
-              fVar16 = (float)(&creature_spawn_slot_timer)[iVar6 * 6] - frame_dt;
-              (&creature_spawn_slot_timer)[iVar6 * 6] = fVar16;
-              if (fVar16 < 0.0) {
-                (&creature_spawn_slot_timer)[iVar6 * 6] =
-                     fVar16 + (float)(&creature_spawn_slot_interval)[iVar6 * 6];
-                if ((int)(&creature_spawn_slot_count)[iVar6 * 6] <
-                    (int)(&creature_spawn_slot_limit)[iVar6 * 6]) {
-                  (&creature_spawn_slot_count)[iVar6 * 6] =
-                       (&creature_spawn_slot_count)[iVar6 * 6] + 1;
+              iVar7 = (&creature_pool)[local_7c].link_index;
+              fVar17 = (float)(&creature_spawn_slot_timer)[iVar7 * 6] - frame_dt;
+              (&creature_spawn_slot_timer)[iVar7 * 6] = fVar17;
+              if (fVar17 < 0.0) {
+                (&creature_spawn_slot_timer)[iVar7 * 6] =
+                     fVar17 + (float)(&creature_spawn_slot_interval)[iVar7 * 6];
+                if ((int)(&creature_spawn_slot_count)[iVar7 * 6] <
+                    (int)(&creature_spawn_slot_limit)[iVar7 * 6]) {
+                  (&creature_spawn_slot_count)[iVar7 * 6] =
+                       (&creature_spawn_slot_count)[iVar7 * 6] + 1;
                   creature_spawn_template
-                            (*(int *)(&creature_spawn_slot_template + iVar6 * 0x18),pfVar15,-100.0);
+                            (*(int *)(&creature_spawn_slot_template + iVar7 * 0x18),pfVar16,-100.0);
                 }
               }
             }
-            iVar6 = perk_count_get(perk_id_plaguebearer);
-            if ((iVar6 != 0) && (plaguebearer_infection_count < 0x3c)) {
+            iVar7 = perk_count_get(perk_id_plaguebearer);
+            if ((iVar7 != 0) && (plaguebearer_infection_count < 0x3c)) {
               FUN_00425d80(local_7c);
             }
-            if (((*(uint *)(&creature_flags + local_7c * 0x98) & 4) == 0) ||
-               ((*(uint *)(&creature_flags + local_7c * 0x98) & 0x40) != 0)) {
-              if ((&creature_ai_mode)[local_7c * 0x26] != 7) {
-                fVar16 = *(float *)(&creature_type_anim_rate +
-                                   (&creature_type_id)[local_7c * 0x26] * 0x44) *
-                         (float)(&creature_move_speed)[local_7c * 0x26] * frame_dt *
-                         (30.0 / (float)(&creature_size)[local_7c * 0x26]) * local_70 * 25.0 +
-                         (float)(&creature_anim_phase)[local_7c * 0x26];
-                (&creature_anim_phase)[local_7c * 0x26] = fVar16;
-                while (31.0 < fVar16) {
-                  fVar16 = (float)(&creature_anim_phase)[local_7c * 0x26] - 31.0;
-                  (&creature_anim_phase)[local_7c * 0x26] = fVar16;
+            fVar17 = 30.0 / (&creature_pool)[local_7c].size;
+            if ((((&creature_pool)[local_7c].flags & 4U) == 0) ||
+               (((&creature_pool)[local_7c].flags & 0x40U) != 0)) {
+              if ((&creature_pool)[local_7c].ai_mode != 7) {
+                fVar17 = *(float *)(&creature_type_anim_rate +
+                                   (&creature_pool)[local_7c].type_id * 0x44) *
+                         (&creature_pool)[local_7c].move_speed * frame_dt * fVar17 * local_70 * 25.0
+                         + (&creature_pool)[local_7c].anim_phase;
+                (&creature_pool)[local_7c].anim_phase = fVar17;
+                while (31.0 < fVar17) {
+                  fVar17 = (&creature_pool)[local_7c].anim_phase - 31.0;
+                  (&creature_pool)[local_7c].anim_phase = fVar17;
                 }
               }
             }
             else {
-              fVar16 = *(float *)(&creature_type_anim_rate +
-                                 (&creature_type_id)[local_7c * 0x26] * 0x44) *
-                       (float)(&creature_move_speed)[local_7c * 0x26] * frame_dt *
-                       (30.0 / (float)(&creature_size)[local_7c * 0x26]) * local_70 * 22.0 +
-                       (float)(&creature_anim_phase)[local_7c * 0x26];
-              (&creature_anim_phase)[local_7c * 0x26] = fVar16;
-              if (15.0 < fVar16) {
-                fVar16 = (float)(&creature_anim_phase)[local_7c * 0x26];
+              fVar17 = *(float *)(&creature_type_anim_rate +
+                                 (&creature_pool)[local_7c].type_id * 0x44) *
+                       (&creature_pool)[local_7c].move_speed * frame_dt * fVar17 * local_70 * 22.0 +
+                       (&creature_pool)[local_7c].anim_phase;
+              (&creature_pool)[local_7c].anim_phase = fVar17;
+              if (15.0 < fVar17) {
+                fVar17 = (&creature_pool)[local_7c].anim_phase;
                 do {
-                  fVar16 = fVar16 - 15.0;
-                } while (15.0 < fVar16);
-                (&creature_anim_phase)[local_7c * 0x26] = fVar16;
+                  fVar17 = fVar17 - 15.0;
+                } while (15.0 < fVar17);
+                (&creature_pool)[local_7c].anim_phase = fVar17;
               }
             }
-            pfVar3 = (float *)(&creature_attack_cooldown + local_7c * 0x26);
-            if ((float)(&creature_attack_cooldown)[local_7c * 0x26] <= 0.0) {
+            pfVar3 = &(&creature_pool)[local_7c].attack_cooldown;
+            if ((&creature_pool)[local_7c].attack_cooldown <= 0.0) {
               *pfVar3 = 0.0;
             }
             else {
               *pfVar3 = *pfVar3 - frame_dt;
             }
-            pcVar4 = &creature_target_player + local_7c * 0x98;
-            fVar16 = SQRT((*pfVar15 -
-                          (&player_pos_x)[(char)(&creature_target_player)[local_7c * 0x98] * 0xd8])
-                          * (*pfVar15 -
-                            (&player_pos_x)[(char)(&creature_target_player)[local_7c * 0x98] * 0xd8]
-                            ) + ((float)(&creature_pos_y)[local_7c * 0x26] -
-                                (&player_pos_y)
-                                [(char)(&creature_target_player)[local_7c * 0x98] * 0xd8]) *
-                                ((float)(&creature_pos_y)[local_7c * 0x26] -
-                                (&player_pos_y)
-                                [(char)(&creature_target_player)[local_7c * 0x98] * 0xd8]));
-            if ((((fVar16 < 100.0) && (iVar6 = perk_count_get(perk_id_radioactive), iVar6 != 0)) &&
-                (fVar14 = (float)(&creature_collision_timer)[local_7c * 0x26] - frame_dt * 1.5,
-                (&creature_collision_timer)[local_7c * 0x26] = fVar14, fVar14 < 0.0)) &&
-               (0.0 < *pfVar13)) {
-              (&creature_collision_timer)[local_7c * 0x26] = 0x3f000000;
-              (&creature_state_flag)[local_7c * 0x98] = 1;
-              fVar14 = *pfVar13 - (100.0 - fVar16) * 0.3;
-              *pfVar13 = fVar14;
-              if (fVar14 < 0.0) {
-                if ((&creature_type_id)[local_7c * 0x26] == 1) {
-                  *pfVar13 = 1.0;
+            iVar7 = (int)(char)(&creature_pool)[local_7c].target_player;
+            piVar4 = &(&creature_pool)[local_7c].target_player;
+            fVar17 = (&creature_pool)[local_7c].pos_y - (&player_pos_y)[iVar7 * 0xd8];
+            fVar17 = SQRT((*pfVar16 - (&player_pos_x)[iVar7 * 0xd8]) *
+                          (*pfVar16 - (&player_pos_x)[iVar7 * 0xd8]) + fVar17 * fVar17);
+            if ((((fVar17 < 100.0) && (iVar7 = perk_count_get(perk_id_radioactive), iVar7 != 0)) &&
+                (fVar15 = (&creature_pool)[local_7c].collision_timer - frame_dt * 1.5,
+                (&creature_pool)[local_7c].collision_timer = fVar15, fVar15 < 0.0)) &&
+               (0.0 < *pfVar14)) {
+              (&creature_pool)[local_7c].collision_timer = 0.5;
+              (&creature_pool)[local_7c].state_flag = '\x01';
+              fVar15 = *pfVar14 - (100.0 - fVar17) * 0.3;
+              *pfVar14 = fVar15;
+              if (fVar15 < 0.0) {
+                if ((&creature_pool)[local_7c].type_id == 1) {
+                  *pfVar14 = 1.0;
                 }
                 else {
-                  lVar12 = __ftol();
-                  player_health._pad0._136_4_ = SUB84(lVar12,0);
+                  lVar13 = __ftol();
+                  player_health._pad0._136_4_ = SUB84(lVar13,0);
                   *pfVar1 = *pfVar1 - frame_dt;
                 }
               }
-              fx_queue_add_random(pfVar15);
+              fx_queue_add_random(pfVar16);
             }
-            if (64.0 < fVar16) {
-              if ((((&creature_flags)[local_7c * 0x98] & 0x10) != 0) && (*pfVar3 <= 0.0)) {
-                projectile_spawn(pfVar15,(float)(&creature_heading)[local_7c * 0x26],9,local_7c);
-                fVar14 = sfx_shock_fire;
+            if (64.0 < fVar17) {
+              if ((((&creature_pool)[local_7c].flags & 0x10) != 0) && (*pfVar3 <= 0.0)) {
+                projectile_spawn(pfVar16,(&creature_pool)[local_7c].heading,9,local_7c);
+                fVar15 = sfx_shock_fire;
                 *pfVar3 = *pfVar3 + 1.0;
-                sfx_play_panned(fVar14);
+                sfx_play_panned(fVar15);
               }
-              if (((*(uint *)(&creature_flags + local_7c * 0x98) & 0x100) != 0) && (*pfVar3 <= 0.0))
-              {
-                projectile_spawn(pfVar15,(float)(&creature_heading)[local_7c * 0x26],
-                                 (&creature_orbit_radius)[local_7c * 0x26],local_7c);
-                uVar7 = crt_rand();
-                fVar14 = sfx_plasmaminigun_fire;
-                local_60 = (float)(uVar7 & 3);
-                *pfVar3 = (float)(int)local_60 * 0.1 +
-                          (float)(&creature_orbit_angle)[local_7c * 0x26] + *pfVar3;
-                sfx_play_panned(fVar14);
+              if ((((&creature_pool)[local_7c].flags & 0x100U) != 0) && (*pfVar3 <= 0.0)) {
+                projectile_spawn(pfVar16,(&creature_pool)[local_7c].heading,
+                                 (int)(&creature_pool)[local_7c].orbit_radius,local_7c);
+                uVar8 = crt_rand();
+                fVar15 = sfx_plasmaminigun_fire;
+                local_60 = (float)(uVar8 & 3);
+                *pfVar3 = (float)(int)local_60 * 0.1 + (&creature_pool)[local_7c].orbit_angle +
+                          *pfVar3;
+                sfx_play_panned(fVar15);
               }
             }
-            if (fVar16 < 20.0) {
-              *pfVar15 = *pfVar15 - (float)(&creature_vel_x)[local_7c * 0x26];
-              (&creature_pos_y)[local_7c * 0x26] =
-                   (float)(&creature_pos_y)[local_7c * 0x26] -
-                   (float)(&creature_vel_y)[local_7c * 0x26];
-              if (((float)(&creature_max_health)[local_7c * 0x26] < 380.0) &&
-                 (0.0 < _bonus_energizer_timer)) {
-                lVar12 = __ftol();
-                player_health._pad0._136_4_ = SUB84(lVar12,0);
-                effect_spawn_burst(pfVar15,6);
+            if (fVar17 < 20.0) {
+              *pfVar16 = *pfVar16 - (&creature_pool)[local_7c].vel_x;
+              (&creature_pool)[local_7c].pos_y =
+                   (&creature_pool)[local_7c].pos_y - (&creature_pool)[local_7c].vel_y;
+              if (((&creature_pool)[local_7c].max_health < 380.0) && (0.0 < _bonus_energizer_timer))
+              {
+                lVar13 = __ftol();
+                player_health._pad0._136_4_ = SUB84(lVar13,0);
+                effect_spawn_burst(pfVar16,6);
                 sfx_play_panned(sfx_ui_bonus);
                 bonus_spawn_guard = 1;
                 creature_handle_death(local_7c,false);
                 bonus_spawn_guard = 0;
               }
             }
-            if (16.0 < (float)(&creature_size)[local_7c * 0x26]) {
-              if (30.0 <= fVar16) goto LAB_004276d6;
-              if ((0.0 < *(float *)(&player_health)[*pcVar4]._pad0) &&
+            if (16.0 < (&creature_pool)[local_7c].size) {
+              if (30.0 <= fVar17) goto LAB_004276d6;
+              if ((0.0 < *(float *)(&player_health)[(char)*piVar4]._pad0) &&
                  (_bonus_energizer_timer <= 0.0)) {
                 if (*pfVar3 <= 0.0) {
-                  uVar7 = crt_rand();
-                  uVar7 = uVar7 & 0x80000001;
-                  if ((int)uVar7 < 0) {
-                    uVar7 = (uVar7 - 1 | 0xfffffffe) + 1;
+                  uVar8 = crt_rand();
+                  uVar8 = uVar8 & 0x80000001;
+                  if ((int)uVar8 < 0) {
+                    uVar8 = (uVar8 - 1 | 0xfffffffe) + 1;
                   }
                   sfx_play_panned(*(float *)(&creature_type_sfx_b0 +
-                                            (uVar7 + (&creature_type_id)[local_7c * 0x26] * 0x11) *
-                                            4));
-                  iVar6 = perk_count_get(perk_id_mr_melee);
-                  if (iVar6 != 0) {
+                                            (uVar8 + (&creature_pool)[local_7c].type_id * 0x11) * 4)
+                                 );
+                  iVar7 = perk_count_get(perk_id_mr_melee);
+                  if (iVar7 != 0) {
                     local_50[8] = 0.0;
                     local_50[9] = 0.0;
                     creature_apply_damage(local_7c,25.0,2,local_50 + 8);
                   }
-                  if (*(float *)((&player_health)[*pcVar4]._pad0 + 0x2f4) <= 0.0) {
-                    iVar6 = perk_count_get(perk_id_toxic_avenger);
-                    if (iVar6 == 0) {
-                      iVar6 = perk_count_get(perk_id_veins_of_poison);
-                      if (iVar6 == 0) goto LAB_0042733a;
-                      uVar7 = *(uint *)(&creature_flags + local_7c * 0x98) | 1;
+                  if (*(float *)((&player_health)[(char)*piVar4]._pad0 + 0x2f4) <= 0.0) {
+                    iVar7 = perk_count_get(perk_id_toxic_avenger);
+                    if (iVar7 == 0) {
+                      iVar7 = perk_count_get(perk_id_veins_of_poison);
+                      if (iVar7 == 0) goto LAB_0042733a;
+                      uVar8 = (&creature_pool)[local_7c].flags | 1;
                     }
                     else {
-                      uVar7 = *(uint *)(&creature_flags + local_7c * 0x98) | 3;
+                      uVar8 = (&creature_pool)[local_7c].flags | 3;
                     }
-                    *(uint *)(&creature_flags + local_7c * 0x98) = uVar7;
+                    (&creature_pool)[local_7c].flags = uVar8;
                   }
 LAB_0042733a:
-                  player_take_damage((int)*pcVar4,(float)(&creature_contact_damage)[local_7c * 0x26]
-                                    );
+                  player_take_damage((int)(char)*piVar4,(&creature_pool)[local_7c].contact_damage);
                   thunk_FUN_00452f1d();
-                  local_50[9] = (float)pcVar2 * 3.0 + (&player_pos_y)[*pcVar4 * 0xd8];
-                  local_50[8] = local_60 * 3.0 + (&player_pos_x)[*pcVar4 * 0xd8];
+                  local_50[9] = (float)puVar2 * 3.0 + (&player_pos_y)[(char)*piVar4 * 0xd8];
+                  local_50[8] = local_60 * 3.0 + (&player_pos_x)[(char)*piVar4 * 0xd8];
                   fx_queue_add_random(local_50 + 8);
                   *pfVar3 = *pfVar3 + 1.0;
                 }
-                if ((((&player_plaguebearer_active)[*pcVar4 * 0x360] != '\0') && (*pfVar13 < 150.0))
-                   && (plaguebearer_infection_count < 0x32)) {
-                  *pcVar2 = '\x01';
+                if ((((&player_plaguebearer_active)[(char)*piVar4 * 0x360] != '\0') &&
+                    (*pfVar14 < 150.0)) && (plaguebearer_infection_count < 0x32)) {
+                  *puVar2 = '\x01';
                 }
               }
             }
-            if ((fVar16 < 30.0) && ((float)(&creature_size)[local_7c * 0x26] <= 30.0)) {
-              *pfVar13 = 0.0;
+            if ((fVar17 < 30.0) && ((&creature_pool)[local_7c].size <= 30.0)) {
+              *pfVar14 = 0.0;
               *pfVar1 = *pfVar1 - frame_dt;
             }
           }
@@ -21313,84 +21277,81 @@ LAB_0042733a:
           *pfVar1 = *pfVar1 - frame_dt * 20.0;
         }
         else {
-          fVar16 = *pfVar1 - frame_dt * 28.0;
-          *pfVar1 = fVar16;
-          if (0.0 < fVar16) {
-            if (((*(uint *)(&creature_flags + local_7c * 0x98) & 4) == 0) ||
-               ((*(uint *)(&creature_flags + local_7c * 0x98) & 0x40) != 0)) {
-              fVar10 = (float10)fcos((float10)(float)(&creature_heading)[local_7c * 0x26] -
-                                     (float10)1.5707964);
-              (&creature_vel_x)[local_7c * 0x26] =
-                   (float)(fVar10 * (float10)fVar16 * (float10)frame_dt * (float10)9.0);
-              fVar10 = (float10)fsin((float10)(float)(&creature_heading)[local_7c * 0x26] -
-                                     (float10)1.5707964);
-              (&creature_vel_y)[local_7c * 0x26] =
-                   (float)(fVar10 * (float10)fVar16 * (float10)frame_dt * (float10)9.0);
-              *pfVar15 = *pfVar15 - (float)(&creature_vel_x)[local_7c * 0x26];
-              (&creature_pos_y)[local_7c * 0x26] =
-                   (float)(&creature_pos_y)[local_7c * 0x26] -
-                   (float)(&creature_vel_y)[local_7c * 0x26];
+          fVar17 = *pfVar1 - frame_dt * 28.0;
+          *pfVar1 = fVar17;
+          if (0.0 < fVar17) {
+            if ((((&creature_pool)[local_7c].flags & 4U) == 0) ||
+               (((&creature_pool)[local_7c].flags & 0x40U) != 0)) {
+              fVar11 = (float10)(&creature_pool)[local_7c].heading - (float10)1.5707964;
+              fVar12 = (float10)fcos(fVar11);
+              (&creature_pool)[local_7c].vel_x =
+                   (float)(fVar12 * (float10)fVar17 * (float10)frame_dt * (float10)9.0);
+              fVar11 = (float10)fsin(fVar11);
+              (&creature_pool)[local_7c].vel_y =
+                   (float)(fVar11 * (float10)fVar17 * (float10)frame_dt * (float10)9.0);
+              *pfVar16 = *pfVar16 - (&creature_pool)[local_7c].vel_x;
+              (&creature_pool)[local_7c].pos_y =
+                   (&creature_pool)[local_7c].pos_y - (&creature_pool)[local_7c].vel_y;
             }
             else {
-              (&creature_vel_x)[local_7c * 0x26] = 0;
-              (&creature_vel_y)[local_7c * 0x26] = 0;
+              (&creature_pool)[local_7c].vel_x = 0.0;
+              (&creature_pool)[local_7c].vel_y = 0.0;
             }
           }
           else {
             if (config_fx_toggle == '\0') {
-              if (((*(uint *)(&creature_flags + local_7c * 0x98) & 4) == 0) ||
-                 ((*(uint *)(&creature_flags + local_7c * 0x98) & 0x40) != 0)) {
-                local_8 = (float)(&creature_size)[local_7c * 0x26] * 0.5;
-                iVar6 = (&creature_type_id)[local_7c * 0x26];
-                fVar16 = (float)(&creature_size)[local_7c * 0x26];
-                fVar14 = (float)(&creature_heading)[local_7c * 0x26];
-                local_18 = *pfVar15 - local_8;
-                pfVar13 = &local_18;
-                local_14 = (float)(&creature_pos_y)[local_7c * 0x26] - local_8;
+              if ((((&creature_pool)[local_7c].flags & 4U) == 0) ||
+                 (((&creature_pool)[local_7c].flags & 0x40U) != 0)) {
+                local_8 = (&creature_pool)[local_7c].size * 0.5;
+                iVar7 = (&creature_pool)[local_7c].type_id;
+                fVar17 = (&creature_pool)[local_7c].size;
+                fVar15 = (&creature_pool)[local_7c].heading;
+                local_18 = *pfVar16 - local_8;
+                pfVar14 = &local_18;
+                local_14 = (&creature_pool)[local_7c].pos_y - local_8;
               }
               else {
-                local_10 = (float)(&creature_size)[local_7c * 0x26] * 0.5;
-                fVar16 = (float)(&creature_size)[local_7c * 0x26];
-                fVar14 = (float)(&creature_heading)[local_7c * 0x26];
-                iVar6 = 7;
-                local_20 = *pfVar15 - local_10;
-                pfVar13 = &local_20;
-                local_1c = (float)(&creature_pos_y)[local_7c * 0x26] - local_10;
+                local_10 = (&creature_pool)[local_7c].size * 0.5;
+                fVar17 = (&creature_pool)[local_7c].size;
+                fVar15 = (&creature_pool)[local_7c].heading;
+                iVar7 = 7;
+                local_20 = *pfVar16 - local_10;
+                pfVar14 = &local_20;
+                local_1c = (&creature_pool)[local_7c].pos_y - local_10;
               }
-              iVar6 = fx_queue_add_rotated
-                                (pfVar13,(float *)(&creature_tint_r + local_7c * 0x26),fVar14,fVar16
-                                 ,iVar6);
-              if ((char)iVar6 == '\0') {
+              iVar7 = fx_queue_add_rotated
+                                (pfVar14,&(&creature_pool)[local_7c].tint_r,fVar15,fVar17,iVar7);
+              if ((char)iVar7 == '\0') {
                 *pfVar1 = 0.001;
                 goto LAB_004276d6;
               }
             }
             creature_kill_count = creature_kill_count + 1;
-            if ((config_fx_toggle == '\0') && (((&creature_flags)[local_7c * 0x98] & 4) != 0)) {
-              iVar6 = 8;
+            if ((config_fx_toggle == '\0') && (((&creature_pool)[local_7c].flags & 4) != 0)) {
+              iVar7 = 8;
               do {
-                fVar16 = 0.0;
-                iVar8 = crt_rand();
-                effect_spawn_blood_splatter(pfVar15,(float)(iVar8 % 0x264) * 0.01,fVar16);
-                iVar6 = iVar6 + -1;
-              } while (iVar6 != 0);
-              iVar6 = 6;
+                fVar17 = 0.0;
+                iVar9 = crt_rand();
+                effect_spawn_blood_splatter(pfVar16,(float)(iVar9 % 0x264) * 0.01,fVar17);
+                iVar7 = iVar7 + -1;
+              } while (iVar7 != 0);
+              iVar7 = 6;
               do {
-                fVar16 = -0.07;
-                iVar8 = crt_rand();
-                effect_spawn_blood_splatter(pfVar15,(float)(iVar8 % 0x264) * 0.01,fVar16);
-                iVar6 = iVar6 + -1;
-              } while (iVar6 != 0);
-              iVar6 = 5;
+                fVar17 = -0.07;
+                iVar9 = crt_rand();
+                effect_spawn_blood_splatter(pfVar16,(float)(iVar9 % 0x264) * 0.01,fVar17);
+                iVar7 = iVar7 + -1;
+              } while (iVar7 != 0);
+              iVar7 = 5;
               do {
-                fVar16 = -0.12;
-                iVar8 = crt_rand();
-                effect_spawn_blood_splatter(pfVar15,(float)(iVar8 % 0x264) * 0.01,fVar16);
-                iVar6 = iVar6 + -1;
-              } while (iVar6 != 0);
+                fVar17 = -0.12;
+                iVar9 = crt_rand();
+                effect_spawn_blood_splatter(pfVar16,(float)(iVar9 % 0x264) * 0.01,fVar17);
+                iVar7 = iVar7 + -1;
+              } while (iVar7 != 0);
             }
             if (*(float *)(DAT_0048085c + 0xc) == 0.0) {
-              (&creature_pool)[local_7c * 0x98] = 0;
+              (&creature_pool)[local_7c].active = '\0';
             }
           }
         }
@@ -21683,23 +21644,27 @@ void fx_queue_render(void)
 int creature_alloc_slot(void)
 
 {
-  char *pcVar1;
+  creature_t *pcVar1;
   uint uVar2;
   int iVar3;
   
   iVar3 = 0;
   pcVar1 = &creature_pool;
   do {
-    if (*pcVar1 == '\0') {
-      *(undefined4 *)(&creature_flags + iVar3 * 0x98) = 0;
+    if (pcVar1->active == '\0') {
+      (&creature_pool)[iVar3].flags = 0;
       uVar2 = crt_rand();
-      (&creature_phase_seed)[iVar3 * 0x26] = uVar2 & 0x17f;
-      (&DAT_0049bfac)[iVar3 * 0x26] = 0;
-      (&creature_anim_phase)[iVar3 * 0x26] = 0;
+      (&creature_pool)[iVar3].phase_seed = (float)(uVar2 & 0x17f);
+      pcVar1 = &creature_pool + iVar3;
+      pcVar1->_pad3[0] = '\0';
+      pcVar1->_pad3[1] = '\0';
+      pcVar1->_pad3[2] = '\0';
+      pcVar1->_pad3[3] = '\0';
+      (&creature_pool)[iVar3].anim_phase = 0.0;
       creature_spawned_count = creature_spawned_count + 1;
       return iVar3;
     }
-    pcVar1 = pcVar1 + 0x98;
+    pcVar1 = pcVar1 + 1;
     iVar3 = iVar3 + 1;
   } while ((int)pcVar1 < 0x4aa338);
   if (*(float *)(DAT_00480864 + 0xc) != 0.0) {
@@ -21717,17 +21682,17 @@ int creature_alloc_slot(void)
 void * FUN_004281e0(void)
 
 {
-  byte *pbVar1;
+  int *piVar1;
   
-  pbVar1 = &creature_flags;
+  piVar1 = &creature_pool.flags;
   do {
-    pbVar1[-0x8c] = 0;
-    if ((*pbVar1 & 4) != 0) {
-      (&creature_spawn_slot_owner)[*(int *)(pbVar1 + -0x14) * 6] = 0;
+    ((creature_t *)(piVar1 + -0x23))->active = 0;
+    if ((*piVar1 & 4) != 0) {
+      (&creature_spawn_slot_owner)[piVar1[-5] * 6] = 0;
     }
-    pbVar1 = pbVar1 + 0x98;
-  } while ((int)pbVar1 < 0x4aa3c4);
-  return pbVar1;
+    piVar1 = piVar1 + 0x26;
+  } while ((int)piVar1 < 0x4aa3c4);
+  return piVar1;
 }
 
 
@@ -21739,15 +21704,15 @@ void * FUN_004281e0(void)
 uint creatures_none_active(void)
 
 {
-  char *pcVar1;
+  creature_t *pcVar1;
   
   pcVar1 = &creature_pool;
   do {
-    if (*pcVar1 != '\0') {
+    if (pcVar1->active != '\0') {
       creatures_any_active_flag = 0;
       return (uint)pcVar1 & 0xffffff00;
     }
-    pcVar1 = pcVar1 + 0x98;
+    pcVar1 = pcVar1 + 1;
   } while ((int)pcVar1 < 0x4aa338);
   creatures_any_active_flag = 1;
   return CONCAT31((int3)((uint)pcVar1 >> 8),1);
@@ -21763,40 +21728,41 @@ int __cdecl creature_spawn(float *pos,float *tint_rgba,int type_id)
 
 {
   float fVar1;
-  int iVar2;
+  float fVar2;
   int iVar3;
+  int iVar4;
   
-  iVar2 = creature_alloc_slot();
-  iVar3 = iVar2 * 0x98;
-  (&creature_pos_x)[iVar2 * 0x26] = *pos;
-  (&creature_pos_y)[iVar2 * 0x26] = pos[1];
-  (&creature_type_id)[iVar2 * 0x26] = type_id;
-  (&creature_ai_mode)[iVar2 * 0x26] = 0;
-  (&creature_collision_flag)[iVar3] = 0;
-  (&creature_collision_timer)[iVar2 * 0x26] = 0;
-  (&creature_pool)[iVar3] = 1;
-  (&creature_force_target)[iVar3] = 0;
-  (&creature_state_flag)[iVar3] = 1;
-  (&creature_hitbox_size)[iVar2 * 0x26] = 0x41800000;
+  iVar3 = creature_alloc_slot();
+  (&creature_pool)[iVar3].pos_x = *pos;
+  (&creature_pool)[iVar3].pos_y = pos[1];
+  (&creature_pool)[iVar3].type_id = type_id;
+  (&creature_pool)[iVar3].ai_mode = 0;
+  (&creature_pool)[iVar3].collision_flag = '\0';
+  (&creature_pool)[iVar3].collision_timer = 0.0;
+  (&creature_pool)[iVar3].active = '\x01';
+  *(undefined1 *)&(&creature_pool)[iVar3].force_target = 0;
+  (&creature_pool)[iVar3].state_flag = '\x01';
+  (&creature_pool)[iVar3].hitbox_size = 16.0;
   fVar1 = (float)survival_elapsed_ms;
-  (&creature_vel_x)[iVar2 * 0x26] = 0;
-  (&creature_vel_y)[iVar2 * 0x26] = 0;
-  (&creature_health)[iVar2 * 0x26] = fVar1 * 0.000100000005 + 10.0;
-  iVar3 = crt_rand();
-  (&creature_heading)[iVar2 * 0x26] = (float)(iVar3 % 0x13a) * 0.01;
-  (&creature_move_speed)[iVar2 * 0x26] = (float)survival_elapsed_ms * 1.0000001e-05 + 2.5;
-  iVar3 = crt_rand();
-  (&creature_attack_cooldown)[iVar2 * 0x26] = 0;
-  (&creature_reward_value)[iVar2 * 0x26] = (float)(iVar3 % 0x1e + 0x8c);
-  (&creature_tint_r)[iVar2 * 0x26] = *tint_rgba;
-  (&creature_tint_g)[iVar2 * 0x26] = tint_rgba[1];
-  (&creature_tint_b)[iVar2 * 0x26] = tint_rgba[2];
-  (&creature_tint_a)[iVar2 * 0x26] = tint_rgba[3];
-  fVar1 = (float)survival_elapsed_ms;
-  (&creature_contact_damage)[iVar2 * 0x26] = 0x40800000;
-  (&creature_max_health)[iVar2 * 0x26] = (&creature_health)[iVar2 * 0x26];
-  (&creature_size)[iVar2 * 0x26] = fVar1 * 1.0000001e-05 + 47.0;
-  return iVar2;
+  (&creature_pool)[iVar3].vel_x = 0.0;
+  (&creature_pool)[iVar3].vel_y = 0.0;
+  (&creature_pool)[iVar3].health = fVar1 * 0.000100000005 + 10.0;
+  iVar4 = crt_rand();
+  (&creature_pool)[iVar3].heading = (float)(iVar4 % 0x13a) * 0.01;
+  (&creature_pool)[iVar3].move_speed = (float)survival_elapsed_ms * 1.0000001e-05 + 2.5;
+  iVar4 = crt_rand();
+  (&creature_pool)[iVar3].attack_cooldown = 0.0;
+  (&creature_pool)[iVar3].reward_value = (float)(iVar4 % 0x1e + 0x8c);
+  (&creature_pool)[iVar3].tint_r = *tint_rgba;
+  (&creature_pool)[iVar3].tint_g = tint_rgba[1];
+  (&creature_pool)[iVar3].tint_b = tint_rgba[2];
+  fVar1 = (&creature_pool)[iVar3].health;
+  (&creature_pool)[iVar3].tint_a = tint_rgba[3];
+  fVar2 = (float)survival_elapsed_ms;
+  (&creature_pool)[iVar3].contact_damage = 4.0;
+  (&creature_pool)[iVar3].max_health = fVar1;
+  (&creature_pool)[iVar3].size = fVar2 * 1.0000001e-05 + 47.0;
+  return iVar3;
 }
 
 
@@ -22055,13 +22021,11 @@ void player_render_overlays(void)
         do {
           if ((0.25 < *(float *)(puVar7 + -0x288)) &&
              (iVar5 = *(int *)puVar7,
-             SQRT(((float)(&creature_pos_x)[iVar5 * 0x26] - *(float *)(puVar7 + -0x30c)) *
-                  ((float)(&creature_pos_x)[iVar5 * 0x26] - *(float *)(puVar7 + -0x30c)) +
-                  ((float)(&creature_pos_y)[iVar5 * 0x26] - *(float *)(puVar7 + -0x308)) *
-                  ((float)(&creature_pos_y)[iVar5 * 0x26] - *(float *)(puVar7 + -0x308))) <= 80.0))
-          {
-            fVar14 = (float)(&creature_pos_x)[iVar5 * 0x26] - *(float *)(puVar7 + -0x30c);
-            fVar17 = (float)(&creature_pos_y)[iVar5 * 0x26];
+             fVar17 = (&creature_pool)[iVar5].pos_x - *(float *)(puVar7 + -0x30c),
+             fVar11 = (&creature_pool)[iVar5].pos_y - *(float *)(puVar7 + -0x308),
+             SQRT(fVar17 * fVar17 + fVar11 * fVar11) <= 80.0)) {
+            fVar14 = (&creature_pool)[iVar5].pos_x - *(float *)(puVar7 + -0x30c);
+            fVar17 = (&creature_pool)[iVar5].pos_y;
             fVar11 = *(float *)(puVar7 + -0x308);
             thunk_FUN_00452f1d();
             fVar13 = (_camera_offset_x + *(float *)(puVar7 + -0x30c)) - 16.0;
@@ -25574,431 +25538,426 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
 {
   float fVar1;
   float fVar2;
-  float *pfVar3;
-  int iVar4;
-  int iVar5;
+  float fVar3;
+  float fVar4;
+  float *pfVar5;
   int iVar6;
-  uint uVar7;
+  int iVar7;
   int iVar8;
-  undefined1 *puVar9;
-  float10 fVar10;
+  uint uVar9;
+  creature_t *pcVar10;
   float10 fVar11;
+  float10 fVar12;
   int local_48;
-  undefined4 local_4;
+  float local_4;
   
-  pfVar3 = pos;
-  iVar4 = creature_alloc_slot();
+  pfVar5 = pos;
+  iVar6 = creature_alloc_slot();
   if (heading == -100.0) {
-    iVar5 = crt_rand();
-    heading = (float)(iVar5 % 0x274) * 0.01;
+    iVar7 = crt_rand();
+    heading = (float)(iVar7 % 0x274) * 0.01;
   }
-  iVar8 = iVar4 * 0x98;
-  puVar9 = &creature_pool + iVar8;
-  (&creature_ai_mode)[iVar4 * 0x26] = 0;
-  (&creature_pos_x)[iVar4 * 0x26] = *pos;
-  fVar2 = pos[1];
-  (&creature_vel_x)[iVar4 * 0x26] = 0;
-  (&creature_pos_y)[iVar4 * 0x26] = fVar2;
-  (&creature_collision_flag)[iVar8] = 0;
-  (&creature_collision_timer)[iVar4 * 0x26] = 0;
-  *puVar9 = 1;
-  (&creature_force_target)[iVar8] = 0;
-  (&creature_state_flag)[iVar8] = 1;
-  (&creature_hitbox_size)[iVar4 * 0x26] = 0x41800000;
-  (&creature_vel_y)[iVar4 * 0x26] = 0;
-  iVar5 = crt_rand();
-  (&creature_attack_cooldown)[iVar4 * 0x26] = 0;
-  (&creature_heading)[iVar4 * 0x26] = (float)(iVar5 % 0x13a) * 0.01;
+  pcVar10 = &creature_pool + iVar6;
+  (&creature_pool)[iVar6].ai_mode = 0;
+  (&creature_pool)[iVar6].pos_x = *pos;
+  fVar4 = pos[1];
+  (&creature_pool)[iVar6].vel_x = 0.0;
+  (&creature_pool)[iVar6].pos_y = fVar4;
+  (&creature_pool)[iVar6].collision_flag = '\0';
+  (&creature_pool)[iVar6].collision_timer = 0.0;
+  pcVar10->active = '\x01';
+  *(undefined1 *)&(&creature_pool)[iVar6].force_target = 0;
+  (&creature_pool)[iVar6].state_flag = '\x01';
+  (&creature_pool)[iVar6].hitbox_size = 16.0;
+  (&creature_pool)[iVar6].vel_y = 0.0;
+  iVar7 = crt_rand();
+  (&creature_pool)[iVar6].attack_cooldown = 0.0;
+  (&creature_pool)[iVar6].heading = (float)(iVar7 % 0x13a) * 0.01;
   if (template_id == 0x12) {
-    (&creature_tint_r)[iVar4 * 0x26] = 0x3f266666;
-    (&creature_type_id)[iVar4 * 0x26] = 2;
-    (&creature_tint_g)[iVar4 * 0x26] = 0x3f59999a;
-    (&creature_health)[iVar4 * 0x26] = 0x43480000;
-    (&creature_move_speed)[iVar4 * 0x26] = 0x400ccccd;
-    (&creature_tint_b)[iVar4 * 0x26] = 0x3f7851ec;
-    (&creature_reward_value)[iVar4 * 0x26] = 0x44160000;
-    (&creature_size)[iVar4 * 0x26] = 0x425c0000;
-    (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-    (&creature_contact_damage)[iVar4 * 0x26] = 0x41600000;
-    (&creature_max_health)[iVar4 * 0x26] = 0x43480000;
+    (&creature_pool)[iVar6].tint_r = 0.65;
+    (&creature_pool)[iVar6].type_id = 2;
+    (&creature_pool)[iVar6].tint_g = 0.85;
+    (&creature_pool)[iVar6].health = 200.0;
+    (&creature_pool)[iVar6].move_speed = 2.2;
+    (&creature_pool)[iVar6].tint_b = 0.97;
+    (&creature_pool)[iVar6].reward_value = 600.0;
+    (&creature_pool)[iVar6].size = 55.0;
+    (&creature_pool)[iVar6].tint_a = 1.0;
+    (&creature_pool)[iVar6].contact_damage = 14.0;
+    (&creature_pool)[iVar6].max_health = 200.0;
     pos = (float *)0x0;
     do {
-      iVar8 = creature_alloc_slot();
-      fVar10 = (float10)fcos((float10)(int)pos * (float10)0.7853982);
-      iVar5 = iVar8 * 0x98;
-      puVar9 = &creature_pool + iVar5;
-      (&creature_ai_mode)[iVar8 * 0x26] = 3;
-      (&creature_link_index)[iVar8 * 0x26] = iVar4;
-      (&creature_target_offset_x)[iVar8 * 0x26] = (float)(fVar10 * (float10)100.0);
-      fVar10 = (float10)fsin((float10)(int)pos * (float10)0.7853982);
-      (&creature_target_offset_y)[iVar8 * 0x26] = (float)(fVar10 * (float10)100.0);
-      (&creature_pos_x)[iVar8 * 0x26] = *pfVar3;
-      (&creature_pos_y)[iVar8 * 0x26] = pfVar3[1];
-      (&creature_vel_x)[iVar8 * 0x26] = 0;
-      (&creature_vel_y)[iVar8 * 0x26] = 0;
-      (&creature_collision_flag)[iVar5] = 0;
-      (&creature_tint_r)[iVar8 * 0x26] = 0x3ea3d70b;
-      (&creature_health)[iVar8 * 0x26] = 0x42200000;
-      (&creature_max_health)[iVar8 * 0x26] = 0x42200000;
-      (&creature_tint_g)[iVar8 * 0x26] = 0x3f16872c;
+      iVar7 = creature_alloc_slot();
+      fVar11 = (float10)fcos((float10)(int)pos * (float10)0.7853982);
+      pcVar10 = &creature_pool + iVar7;
+      (&creature_pool)[iVar7].ai_mode = 3;
+      (&creature_pool)[iVar7].link_index = iVar6;
+      (&creature_pool)[iVar7].target_offset_x = (float)(fVar11 * (float10)100.0);
+      fVar11 = (float10)fsin((float10)(int)pos * (float10)0.7853982);
+      (&creature_pool)[iVar7].target_offset_y = (float)(fVar11 * (float10)100.0);
+      (&creature_pool)[iVar7].pos_x = *pfVar5;
+      (&creature_pool)[iVar7].pos_y = pfVar5[1];
+      (&creature_pool)[iVar7].vel_x = 0.0;
+      (&creature_pool)[iVar7].vel_y = 0.0;
+      (&creature_pool)[iVar7].collision_flag = '\0';
+      (&creature_pool)[iVar7].tint_r = 0.32000002;
+      (&creature_pool)[iVar7].health = 40.0;
+      (&creature_pool)[iVar7].max_health = 40.0;
+      (&creature_pool)[iVar7].tint_g = 0.58800006;
       pos = (float *)((int)pos + 1);
-      (&creature_tint_b)[iVar8 * 0x26] = 0x3eda1cac;
-      (&creature_collision_timer)[iVar8 * 0x26] = 0;
-      *puVar9 = 1;
-      (&creature_state_flag)[iVar5] = 1;
-      (&creature_hitbox_size)[iVar8 * 0x26] = 0x41800000;
-      (&creature_attack_cooldown)[iVar8 * 0x26] = 0;
-      (&creature_type_id)[iVar8 * 0x26] = 2;
-      (&creature_move_speed)[iVar8 * 0x26] = 0x4019999a;
-      (&creature_reward_value)[iVar8 * 0x26] = 0x42700000;
-      (&creature_tint_a)[iVar8 * 0x26] = 0x3f800000;
-      (&creature_size)[iVar8 * 0x26] = 0x42480000;
-      (&creature_contact_damage)[iVar8 * 0x26] = 0x40800000;
+      (&creature_pool)[iVar7].tint_b = 0.426;
+      (&creature_pool)[iVar7].collision_timer = 0.0;
+      pcVar10->active = '\x01';
+      (&creature_pool)[iVar7].state_flag = '\x01';
+      (&creature_pool)[iVar7].hitbox_size = 16.0;
+      (&creature_pool)[iVar7].attack_cooldown = 0.0;
+      (&creature_pool)[iVar7].type_id = 2;
+      (&creature_pool)[iVar7].move_speed = 2.4;
+      (&creature_pool)[iVar7].reward_value = 60.0;
+      (&creature_pool)[iVar7].tint_a = 1.0;
+      (&creature_pool)[iVar7].size = 50.0;
+      (&creature_pool)[iVar7].contact_damage = 4.0;
     } while ((int)pos < 8);
   }
   else if (template_id == 0x19) {
-    (&creature_tint_r)[iVar4 * 0x26] = 0x3f733333;
-    (&creature_type_id)[iVar4 * 0x26] = 2;
-    (&creature_tint_g)[iVar4 * 0x26] = 0x3f0ccccd;
-    (&creature_health)[iVar4 * 0x26] = 0x42480000;
-    (&creature_move_speed)[iVar4 * 0x26] = 0x40733333;
-    (&creature_tint_b)[iVar4 * 0x26] = 0x3ebd70a4;
-    (&creature_reward_value)[iVar4 * 0x26] = 0x43960000;
-    (&creature_size)[iVar4 * 0x26] = 0x425c0000;
-    (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-    (&creature_contact_damage)[iVar4 * 0x26] = 0x42200000;
-    (&creature_max_health)[iVar4 * 0x26] = 0x42480000;
+    (&creature_pool)[iVar6].tint_r = 0.95;
+    (&creature_pool)[iVar6].type_id = 2;
+    (&creature_pool)[iVar6].tint_g = 0.55;
+    (&creature_pool)[iVar6].health = 50.0;
+    (&creature_pool)[iVar6].move_speed = 3.8;
+    (&creature_pool)[iVar6].tint_b = 0.37;
+    (&creature_pool)[iVar6].reward_value = 300.0;
+    (&creature_pool)[iVar6].size = 55.0;
+    (&creature_pool)[iVar6].tint_a = 1.0;
+    (&creature_pool)[iVar6].contact_damage = 40.0;
+    (&creature_pool)[iVar6].max_health = 50.0;
     pos = (float *)0x0;
     do {
-      iVar8 = creature_alloc_slot();
-      fVar10 = (float10)fcos((float10)(int)pos * (float10)1.2566371);
-      iVar5 = iVar8 * 0x98;
-      puVar9 = &creature_pool + iVar5;
-      (&creature_ai_mode)[iVar8 * 0x26] = 5;
-      (&creature_link_index)[iVar8 * 0x26] = iVar4;
-      (&creature_target_offset_x)[iVar8 * 0x26] = (float)(fVar10 * (float10)110.0);
-      fVar10 = (float10)fsin((float10)(int)pos * (float10)1.2566371);
-      (&creature_target_offset_y)[iVar8 * 0x26] = (float)(fVar10 * (float10)110.0);
-      fVar2 = *pfVar3;
-      fVar1 = pfVar3[1];
-      (&creature_vel_x)[iVar8 * 0x26] = 0;
-      (&creature_pos_x)[iVar8 * 0x26] = (float)(&creature_target_offset_x)[iVar8 * 0x26] + fVar2;
-      (&creature_vel_y)[iVar8 * 0x26] = 0;
-      (&creature_pos_y)[iVar8 * 0x26] = (float)(&creature_target_offset_y)[iVar8 * 0x26] + fVar1;
-      (&creature_health)[iVar8 * 0x26] = 0x435c0000;
-      (&creature_max_health)[iVar8 * 0x26] = 0x435c0000;
-      (&creature_tint_r)[iVar8 * 0x26] = 0x3f366666;
+      iVar7 = creature_alloc_slot();
+      fVar11 = (float10)fcos((float10)(int)pos * (float10)1.2566371);
+      pcVar10 = &creature_pool + iVar7;
+      (&creature_pool)[iVar7].ai_mode = 5;
+      (&creature_pool)[iVar7].link_index = iVar6;
+      (&creature_pool)[iVar7].target_offset_x = (float)(fVar11 * (float10)110.0);
+      fVar11 = (float10)fsin((float10)(int)pos * (float10)1.2566371);
+      (&creature_pool)[iVar7].target_offset_y = (float)(fVar11 * (float10)110.0);
+      fVar4 = (&creature_pool)[iVar7].target_offset_x;
+      fVar1 = *pfVar5;
+      fVar2 = (&creature_pool)[iVar7].target_offset_y;
+      fVar3 = pfVar5[1];
+      (&creature_pool)[iVar7].vel_x = 0.0;
+      (&creature_pool)[iVar7].pos_x = fVar4 + fVar1;
+      (&creature_pool)[iVar7].vel_y = 0.0;
+      (&creature_pool)[iVar7].pos_y = fVar2 + fVar3;
+      (&creature_pool)[iVar7].health = 220.0;
+      (&creature_pool)[iVar7].max_health = 220.0;
+      (&creature_pool)[iVar7].tint_r = 0.7125;
       pos = (float *)((int)pos + 1);
-      (&creature_tint_g)[iVar8 * 0x26] = 0x3ed33334;
-      (&creature_collision_flag)[iVar5] = 0;
-      (&creature_tint_b)[iVar8 * 0x26] = 0x3e8e147b;
-      (&creature_collision_timer)[iVar8 * 0x26] = 0;
-      *puVar9 = 1;
-      (&creature_state_flag)[iVar5] = 1;
-      (&creature_hitbox_size)[iVar8 * 0x26] = 0x41800000;
-      (&creature_attack_cooldown)[iVar8 * 0x26] = 0;
-      (&creature_type_id)[iVar8 * 0x26] = 2;
-      (&creature_move_speed)[iVar8 * 0x26] = 0x40733333;
-      (&creature_reward_value)[iVar8 * 0x26] = 0x42700000;
-      (&creature_tint_a)[iVar8 * 0x26] = 0x3f19999a;
-      (&creature_size)[iVar8 * 0x26] = 0x42480000;
-      (&creature_contact_damage)[iVar8 * 0x26] = 0x420c0000;
+      (&creature_pool)[iVar7].tint_g = 0.41250002;
+      (&creature_pool)[iVar7].collision_flag = '\0';
+      (&creature_pool)[iVar7].tint_b = 0.2775;
+      (&creature_pool)[iVar7].collision_timer = 0.0;
+      pcVar10->active = '\x01';
+      (&creature_pool)[iVar7].state_flag = '\x01';
+      (&creature_pool)[iVar7].hitbox_size = 16.0;
+      (&creature_pool)[iVar7].attack_cooldown = 0.0;
+      (&creature_pool)[iVar7].type_id = 2;
+      (&creature_pool)[iVar7].move_speed = 3.8;
+      (&creature_pool)[iVar7].reward_value = 60.0;
+      (&creature_pool)[iVar7].tint_a = 0.6;
+      (&creature_pool)[iVar7].size = 50.0;
+      (&creature_pool)[iVar7].contact_damage = 35.0;
     } while ((int)pos < 5);
   }
   else {
     if (template_id == 0x11) {
-      (&creature_type_id)[iVar4 * 0x26] = 1;
-      (&creature_pos_x)[iVar4 * 0x26] = *pos;
-      (&creature_pos_y)[iVar4 * 0x26] = pos[1];
-      (&creature_ai_mode)[iVar4 * 0x26] = 1;
-      (&creature_tint_r)[iVar4 * 0x26] = 0x3f7d70a4;
-      (&creature_tint_g)[iVar4 * 0x26] = 0x3f7d70a4;
-      (&creature_health)[iVar4 * 0x26] = 0x44bb8000;
-      (&creature_move_speed)[iVar4 * 0x26] = 0x40066666;
-      (&creature_tint_b)[iVar4 * 0x26] = 0x3e570a3d;
-      (&creature_reward_value)[iVar4 * 0x26] = 0x447a0000;
-      (&creature_size)[iVar4 * 0x26] = 0x428a0000;
-      (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-      (&creature_contact_damage)[iVar4 * 0x26] = 0x43160000;
-      (&creature_max_health)[iVar4 * 0x26] = 0x44bb8000;
+      (&creature_pool)[iVar6].type_id = 1;
+      (&creature_pool)[iVar6].pos_x = *pos;
+      (&creature_pool)[iVar6].pos_y = pos[1];
+      (&creature_pool)[iVar6].ai_mode = 1;
+      (&creature_pool)[iVar6].tint_r = 0.99;
+      (&creature_pool)[iVar6].tint_g = 0.99;
+      (&creature_pool)[iVar6].health = 1500.0;
+      (&creature_pool)[iVar6].move_speed = 2.1;
+      (&creature_pool)[iVar6].tint_b = 0.21;
+      (&creature_pool)[iVar6].reward_value = 1000.0;
+      (&creature_pool)[iVar6].size = 69.0;
+      (&creature_pool)[iVar6].tint_a = 1.0;
+      (&creature_pool)[iVar6].contact_damage = 150.0;
+      (&creature_pool)[iVar6].max_health = 1500.0;
       local_48 = 2;
       pos = (float *)0xffffff00;
-      iVar5 = iVar4;
+      iVar7 = iVar6;
       do {
-        iVar6 = creature_alloc_slot();
-        (&creature_target_offset_x)[iVar6 * 0x26] = (float)(int)pos;
-        iVar8 = iVar6 * 0x98;
-        puVar9 = &creature_pool + iVar8;
-        (&creature_ai_mode)[iVar6 * 0x26] = 3;
-        (&creature_link_index)[iVar6 * 0x26] = iVar5;
-        (&creature_target_offset_y)[iVar6 * 0x26] = 0xc3800000;
-        fVar10 = (float10)fcos((float10)local_48 * (float10)0.3926991);
-        fVar11 = (float10)fsin((float10)local_48 * (float10)0.3926991);
-        fVar2 = pfVar3[1];
-        (&creature_pos_x)[iVar6 * 0x26] = (float)fVar10 * 256.0 + *pfVar3;
-        (&creature_vel_x)[iVar6 * 0x26] = 0;
-        (&creature_tint_r)[iVar6 * 0x26] = 0x3f19999a;
-        (&creature_pos_y)[iVar6 * 0x26] = (float)(fVar11 * (float10)256.0 + (float10)fVar2);
-        (&creature_tint_g)[iVar6 * 0x26] = 0x3f19999a;
-        (&creature_vel_y)[iVar6 * 0x26] = 0;
-        (&creature_tint_b)[iVar6 * 0x26] = 0x3e9eb852;
-        (&creature_health)[iVar6 * 0x26] = 0x42700000;
-        (&creature_reward_value)[iVar6 * 0x26] = 0x42700000;
-        (&creature_max_health)[iVar6 * 0x26] = 0x42700000;
-        (&creature_tint_a)[iVar6 * 0x26] = 0x3f800000;
+        iVar8 = creature_alloc_slot();
+        (&creature_pool)[iVar8].target_offset_x = (float)(int)pos;
+        pcVar10 = &creature_pool + iVar8;
+        (&creature_pool)[iVar8].ai_mode = 3;
+        (&creature_pool)[iVar8].link_index = iVar7;
+        (&creature_pool)[iVar8].target_offset_y = -256.0;
+        fVar11 = (float10)fcos((float10)local_48 * (float10)0.3926991);
+        fVar12 = (float10)fsin((float10)local_48 * (float10)0.3926991);
+        fVar4 = pfVar5[1];
+        (&creature_pool)[iVar8].pos_x = (float)fVar11 * 256.0 + *pfVar5;
+        (&creature_pool)[iVar8].vel_x = 0.0;
+        (&creature_pool)[iVar8].tint_r = 0.6;
+        (&creature_pool)[iVar8].pos_y = (float)(fVar12 * (float10)256.0 + (float10)fVar4);
+        (&creature_pool)[iVar8].tint_g = 0.6;
+        (&creature_pool)[iVar8].vel_y = 0.0;
+        (&creature_pool)[iVar8].tint_b = 0.31;
+        (&creature_pool)[iVar8].health = 60.0;
+        (&creature_pool)[iVar8].reward_value = 60.0;
+        (&creature_pool)[iVar8].max_health = 60.0;
+        (&creature_pool)[iVar8].tint_a = 1.0;
         pos = pos + 0x10;
         local_48 = local_48 + 2;
-        (&creature_collision_flag)[iVar8] = 0;
-        (&creature_collision_timer)[iVar6 * 0x26] = 0;
-        *puVar9 = 1;
-        (&creature_state_flag)[iVar8] = 1;
-        (&creature_hitbox_size)[iVar6 * 0x26] = 0x41800000;
-        (&creature_attack_cooldown)[iVar6 * 0x26] = 0;
-        (&creature_type_id)[iVar6 * 0x26] = 1;
-        (&creature_move_speed)[iVar6 * 0x26] = 0x4019999a;
-        (&creature_size)[iVar6 * 0x26] = 0x42480000;
-        (&creature_contact_damage)[iVar6 * 0x26] = 0x41600000;
-        iVar5 = iVar6;
+        (&creature_pool)[iVar8].collision_flag = '\0';
+        (&creature_pool)[iVar8].collision_timer = 0.0;
+        pcVar10->active = '\x01';
+        (&creature_pool)[iVar8].state_flag = '\x01';
+        (&creature_pool)[iVar8].hitbox_size = 16.0;
+        (&creature_pool)[iVar8].attack_cooldown = 0.0;
+        (&creature_pool)[iVar8].type_id = 1;
+        (&creature_pool)[iVar8].move_speed = 2.4;
+        (&creature_pool)[iVar8].size = 50.0;
+        (&creature_pool)[iVar8].contact_damage = 14.0;
+        iVar7 = iVar8;
       } while ((int)pos < 0);
     }
     else {
       if (template_id != 0x13) {
         if (template_id == 0x14) {
-          (&creature_type_id)[iVar4 * 0x26] = 2;
-          (&creature_pos_x)[iVar4 * 0x26] = *pos;
-          (&creature_pos_y)[iVar4 * 0x26] = pos[1];
-          (&creature_ai_mode)[iVar4 * 0x26] = 2;
-          (&creature_tint_r)[iVar4 * 0x26] = 0x3f333333;
-          (&creature_tint_g)[iVar4 * 0x26] = 0x3f4ccccd;
-          (&creature_health)[iVar4 * 0x26] = 0x44bb8000;
-          (&creature_move_speed)[iVar4 * 0x26] = 0x40000000;
-          (&creature_tint_b)[iVar4 * 0x26] = 0x3e9eb852;
-          (&creature_reward_value)[iVar4 * 0x26] = 0x44160000;
-          (&creature_size)[iVar4 * 0x26] = 0x42480000;
-          (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-          (&creature_contact_damage)[iVar4 * 0x26] = 0x42200000;
-          (&creature_pos_x)[iVar4 * 0x26] = *pos;
-          (&creature_pos_y)[iVar4 * 0x26] = pos[1];
-          (&creature_max_health)[iVar4 * 0x26] = 0x44bb8000;
+          (&creature_pool)[iVar6].type_id = 2;
+          (&creature_pool)[iVar6].pos_x = *pos;
+          (&creature_pool)[iVar6].pos_y = pos[1];
+          (&creature_pool)[iVar6].ai_mode = 2;
+          (&creature_pool)[iVar6].tint_r = 0.7;
+          (&creature_pool)[iVar6].tint_g = 0.8;
+          (&creature_pool)[iVar6].health = 1500.0;
+          (&creature_pool)[iVar6].move_speed = 2.0;
+          (&creature_pool)[iVar6].tint_b = 0.31;
+          (&creature_pool)[iVar6].reward_value = 600.0;
+          (&creature_pool)[iVar6].size = 50.0;
+          (&creature_pool)[iVar6].tint_a = 1.0;
+          (&creature_pool)[iVar6].contact_damage = 40.0;
+          (&creature_pool)[iVar6].pos_x = *pos;
+          (&creature_pool)[iVar6].pos_y = pos[1];
+          (&creature_pool)[iVar6].max_health = 1500.0;
           local_48 = 0;
           do {
             pos = (float *)0x80;
             do {
-              iVar8 = creature_alloc_slot();
-              (&creature_target_offset_y)[iVar8 * 0x26] = (float)(int)pos;
-              iVar5 = iVar8 * 0x98;
-              puVar9 = &creature_pool + iVar5;
-              (&creature_ai_mode)[iVar8 * 0x26] = 5;
-              (&creature_heading)[iVar8 * 0x26] = 0;
-              (&creature_anim_phase)[iVar8 * 0x26] = 0;
-              (&creature_link_index)[iVar8 * 0x26] = iVar4;
-              (&creature_target_offset_x)[iVar8 * 0x26] = (float)local_48;
-              fVar2 = *pfVar3;
-              fVar1 = pfVar3[1];
-              (&creature_vel_x)[iVar8 * 0x26] = 0;
-              (&creature_pos_x)[iVar8 * 0x26] =
-                   fVar2 + (float)(&creature_target_offset_x)[iVar8 * 0x26];
-              (&creature_vel_y)[iVar8 * 0x26] = 0;
-              (&creature_pos_y)[iVar8 * 0x26] =
-                   (float)(&creature_target_offset_y)[iVar8 * 0x26] + fVar1;
-              (&creature_tint_r)[iVar8 * 0x26] = 0x3ecccccd;
-              (&creature_health)[iVar8 * 0x26] = 0x42200000;
-              (&creature_max_health)[iVar8 * 0x26] = 0x42200000;
-              (&creature_tint_g)[iVar8 * 0x26] = 0x3f333333;
+              iVar7 = creature_alloc_slot();
+              (&creature_pool)[iVar7].target_offset_y = (float)(int)pos;
+              pcVar10 = &creature_pool + iVar7;
+              (&creature_pool)[iVar7].ai_mode = 5;
+              (&creature_pool)[iVar7].heading = 0.0;
+              (&creature_pool)[iVar7].anim_phase = 0.0;
+              (&creature_pool)[iVar7].link_index = iVar6;
+              (&creature_pool)[iVar7].target_offset_x = (float)local_48;
+              fVar4 = *pfVar5;
+              fVar1 = (&creature_pool)[iVar7].target_offset_x;
+              fVar2 = (&creature_pool)[iVar7].target_offset_y;
+              fVar3 = pfVar5[1];
+              (&creature_pool)[iVar7].vel_x = 0.0;
+              (&creature_pool)[iVar7].pos_x = fVar4 + fVar1;
+              (&creature_pool)[iVar7].vel_y = 0.0;
+              (&creature_pool)[iVar7].pos_y = fVar2 + fVar3;
+              (&creature_pool)[iVar7].tint_r = 0.4;
+              (&creature_pool)[iVar7].health = 40.0;
+              (&creature_pool)[iVar7].max_health = 40.0;
+              (&creature_pool)[iVar7].tint_g = 0.7;
               pos = pos + 0x10;
-              (&creature_tint_b)[iVar8 * 0x26] = 0x3de147ae;
-              (&creature_collision_flag)[iVar5] = 0;
-              (&creature_collision_timer)[iVar8 * 0x26] = 0;
-              *puVar9 = 1;
-              (&creature_state_flag)[iVar5] = 1;
-              (&creature_hitbox_size)[iVar8 * 0x26] = 0x41800000;
-              (&creature_attack_cooldown)[iVar8 * 0x26] = 0;
-              (&creature_type_id)[iVar8 * 0x26] = 2;
-              (&creature_move_speed)[iVar8 * 0x26] = 0x40000000;
-              (&creature_reward_value)[iVar8 * 0x26] = 0x42700000;
-              (&creature_tint_a)[iVar8 * 0x26] = 0x3f800000;
-              (&creature_size)[iVar8 * 0x26] = 0x42480000;
-              (&creature_contact_damage)[iVar8 * 0x26] = 0x40800000;
+              (&creature_pool)[iVar7].tint_b = 0.11;
+              (&creature_pool)[iVar7].collision_flag = '\0';
+              (&creature_pool)[iVar7].collision_timer = 0.0;
+              pcVar10->active = '\x01';
+              (&creature_pool)[iVar7].state_flag = '\x01';
+              (&creature_pool)[iVar7].hitbox_size = 16.0;
+              (&creature_pool)[iVar7].attack_cooldown = 0.0;
+              (&creature_pool)[iVar7].type_id = 2;
+              (&creature_pool)[iVar7].move_speed = 2.0;
+              (&creature_pool)[iVar7].reward_value = 60.0;
+              (&creature_pool)[iVar7].tint_a = 1.0;
+              (&creature_pool)[iVar7].size = 50.0;
+              (&creature_pool)[iVar7].contact_damage = 4.0;
             } while ((int)pos < 0x101);
             local_48 = local_48 + -0x40;
           } while (-0x240 < local_48);
         }
         else if (template_id == 0x15) {
-          (&creature_type_id)[iVar4 * 0x26] = 2;
-          (&creature_pos_x)[iVar4 * 0x26] = *pos;
-          (&creature_pos_y)[iVar4 * 0x26] = pos[1];
-          (&creature_ai_mode)[iVar4 * 0x26] = 2;
-          (&creature_tint_r)[iVar4 * 0x26] = 0x3f800000;
-          (&creature_tint_g)[iVar4 * 0x26] = 0x3f800000;
-          (&creature_health)[iVar4 * 0x26] = 0x44bb8000;
-          (&creature_move_speed)[iVar4 * 0x26] = 0x40000000;
-          (&creature_tint_b)[iVar4 * 0x26] = 0x3f800000;
-          (&creature_reward_value)[iVar4 * 0x26] = 0x44160000;
-          (&creature_size)[iVar4 * 0x26] = 0x42700000;
-          (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-          (&creature_contact_damage)[iVar4 * 0x26] = 0x42200000;
-          (&creature_pos_x)[iVar4 * 0x26] = *pos;
-          (&creature_pos_y)[iVar4 * 0x26] = pos[1];
-          (&creature_max_health)[iVar4 * 0x26] = 0x44bb8000;
+          (&creature_pool)[iVar6].type_id = 2;
+          (&creature_pool)[iVar6].pos_x = *pos;
+          (&creature_pool)[iVar6].pos_y = pos[1];
+          (&creature_pool)[iVar6].ai_mode = 2;
+          (&creature_pool)[iVar6].tint_r = 1.0;
+          (&creature_pool)[iVar6].tint_g = 1.0;
+          (&creature_pool)[iVar6].health = 1500.0;
+          (&creature_pool)[iVar6].move_speed = 2.0;
+          (&creature_pool)[iVar6].tint_b = 1.0;
+          (&creature_pool)[iVar6].reward_value = 600.0;
+          (&creature_pool)[iVar6].size = 60.0;
+          (&creature_pool)[iVar6].tint_a = 1.0;
+          (&creature_pool)[iVar6].contact_damage = 40.0;
+          (&creature_pool)[iVar6].pos_x = *pos;
+          (&creature_pool)[iVar6].pos_y = pos[1];
+          (&creature_pool)[iVar6].max_health = 1500.0;
           local_48 = 0;
           do {
             pos = (float *)0x80;
             do {
-              iVar8 = creature_alloc_slot();
-              (&creature_target_offset_y)[iVar8 * 0x26] = (float)(int)pos;
-              iVar5 = iVar8 * 0x98;
-              puVar9 = &creature_pool + iVar5;
-              (&creature_ai_mode)[iVar8 * 0x26] = 4;
-              (&creature_heading)[iVar8 * 0x26] = 0;
-              (&creature_anim_phase)[iVar8 * 0x26] = 0;
-              (&creature_link_index)[iVar8 * 0x26] = iVar4;
-              (&creature_target_offset_x)[iVar8 * 0x26] = (float)local_48;
-              fVar2 = *pfVar3;
-              fVar1 = pfVar3[1];
-              (&creature_vel_x)[iVar8 * 0x26] = 0;
-              (&creature_pos_x)[iVar8 * 0x26] =
-                   fVar2 + (float)(&creature_target_offset_x)[iVar8 * 0x26];
-              (&creature_vel_y)[iVar8 * 0x26] = 0;
-              (&creature_pos_y)[iVar8 * 0x26] =
-                   (float)(&creature_target_offset_y)[iVar8 * 0x26] + fVar1;
-              (&creature_health)[iVar8 * 0x26] = 0x42200000;
-              (&creature_max_health)[iVar8 * 0x26] = 0x42200000;
-              (&creature_tint_r)[iVar8 * 0x26] = 0x3ecccccd;
+              iVar7 = creature_alloc_slot();
+              (&creature_pool)[iVar7].target_offset_y = (float)(int)pos;
+              pcVar10 = &creature_pool + iVar7;
+              (&creature_pool)[iVar7].ai_mode = 4;
+              (&creature_pool)[iVar7].heading = 0.0;
+              (&creature_pool)[iVar7].anim_phase = 0.0;
+              (&creature_pool)[iVar7].link_index = iVar6;
+              (&creature_pool)[iVar7].target_offset_x = (float)local_48;
+              fVar4 = *pfVar5;
+              fVar1 = (&creature_pool)[iVar7].target_offset_x;
+              fVar2 = (&creature_pool)[iVar7].target_offset_y;
+              fVar3 = pfVar5[1];
+              (&creature_pool)[iVar7].vel_x = 0.0;
+              (&creature_pool)[iVar7].pos_x = fVar4 + fVar1;
+              (&creature_pool)[iVar7].vel_y = 0.0;
+              (&creature_pool)[iVar7].pos_y = fVar2 + fVar3;
+              (&creature_pool)[iVar7].health = 40.0;
+              (&creature_pool)[iVar7].max_health = 40.0;
+              (&creature_pool)[iVar7].tint_r = 0.4;
               pos = pos + 0x10;
-              (&creature_tint_g)[iVar8 * 0x26] = 0x3f333333;
-              (&creature_collision_flag)[iVar5] = 0;
-              (&creature_tint_b)[iVar8 * 0x26] = 0x3de147ae;
-              (&creature_collision_timer)[iVar8 * 0x26] = 0;
-              *puVar9 = 1;
-              (&creature_state_flag)[iVar5] = 1;
-              (&creature_hitbox_size)[iVar8 * 0x26] = 0x41800000;
-              (&creature_attack_cooldown)[iVar8 * 0x26] = 0;
-              (&creature_type_id)[iVar8 * 0x26] = 2;
-              (&creature_move_speed)[iVar8 * 0x26] = 0x40000000;
-              (&creature_reward_value)[iVar8 * 0x26] = 0x42700000;
-              (&creature_tint_a)[iVar8 * 0x26] = 0x3f800000;
-              (&creature_size)[iVar8 * 0x26] = 0x42480000;
-              (&creature_contact_damage)[iVar8 * 0x26] = 0x40800000;
+              (&creature_pool)[iVar7].tint_g = 0.7;
+              (&creature_pool)[iVar7].collision_flag = '\0';
+              (&creature_pool)[iVar7].tint_b = 0.11;
+              (&creature_pool)[iVar7].collision_timer = 0.0;
+              pcVar10->active = '\x01';
+              (&creature_pool)[iVar7].state_flag = '\x01';
+              (&creature_pool)[iVar7].hitbox_size = 16.0;
+              (&creature_pool)[iVar7].attack_cooldown = 0.0;
+              (&creature_pool)[iVar7].type_id = 2;
+              (&creature_pool)[iVar7].move_speed = 2.0;
+              (&creature_pool)[iVar7].reward_value = 60.0;
+              (&creature_pool)[iVar7].tint_a = 1.0;
+              (&creature_pool)[iVar7].size = 50.0;
+              (&creature_pool)[iVar7].contact_damage = 4.0;
             } while ((int)pos < 0x101);
             local_48 = local_48 + -0x40;
           } while (-0x240 < local_48);
         }
         else if (template_id == 0x17) {
-          (&creature_type_id)[iVar4 * 0x26] = 3;
-          (&creature_pos_x)[iVar4 * 0x26] = *pos;
-          (&creature_pos_y)[iVar4 * 0x26] = pos[1];
-          (&creature_tint_r)[iVar4 * 0x26] = 0x3f800000;
-          (&creature_tint_g)[iVar4 * 0x26] = 0x3f800000;
-          (&creature_ai_mode)[iVar4 * 0x26] = 2;
-          (&creature_health)[iVar4 * 0x26] = 0x44bb8000;
-          (&creature_tint_b)[iVar4 * 0x26] = 0x3f800000;
-          (&creature_move_speed)[iVar4 * 0x26] = 0x40000000;
-          (&creature_reward_value)[iVar4 * 0x26] = 0x44160000;
-          (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-          (&creature_size)[iVar4 * 0x26] = 0x42700000;
-          (&creature_contact_damage)[iVar4 * 0x26] = 0x42200000;
-          (&creature_pos_x)[iVar4 * 0x26] = *pos;
-          (&creature_pos_y)[iVar4 * 0x26] = pos[1];
-          (&creature_max_health)[iVar4 * 0x26] = 0x44bb8000;
+          (&creature_pool)[iVar6].type_id = 3;
+          (&creature_pool)[iVar6].pos_x = *pos;
+          (&creature_pool)[iVar6].pos_y = pos[1];
+          (&creature_pool)[iVar6].tint_r = 1.0;
+          (&creature_pool)[iVar6].tint_g = 1.0;
+          (&creature_pool)[iVar6].ai_mode = 2;
+          (&creature_pool)[iVar6].health = 1500.0;
+          (&creature_pool)[iVar6].tint_b = 1.0;
+          (&creature_pool)[iVar6].move_speed = 2.0;
+          (&creature_pool)[iVar6].reward_value = 600.0;
+          (&creature_pool)[iVar6].tint_a = 1.0;
+          (&creature_pool)[iVar6].size = 60.0;
+          (&creature_pool)[iVar6].contact_damage = 40.0;
+          (&creature_pool)[iVar6].pos_x = *pos;
+          (&creature_pool)[iVar6].pos_y = pos[1];
+          (&creature_pool)[iVar6].max_health = 1500.0;
           local_48 = 0;
           do {
             pos = (float *)0x80;
             do {
-              iVar8 = creature_alloc_slot();
-              (&creature_target_offset_y)[iVar8 * 0x26] = (float)(int)pos;
-              iVar5 = iVar8 * 0x98;
-              puVar9 = &creature_pool + iVar5;
-              (&creature_ai_mode)[iVar8 * 0x26] = 4;
-              (&creature_heading)[iVar8 * 0x26] = 0;
-              (&creature_anim_phase)[iVar8 * 0x26] = 0;
-              (&creature_link_index)[iVar8 * 0x26] = iVar4;
-              (&creature_target_offset_x)[iVar8 * 0x26] = (float)local_48;
-              fVar2 = *pfVar3;
-              fVar1 = pfVar3[1];
-              (&creature_vel_x)[iVar8 * 0x26] = 0;
-              (&creature_pos_x)[iVar8 * 0x26] =
-                   (float)(&creature_target_offset_x)[iVar8 * 0x26] + fVar2;
-              (&creature_vel_y)[iVar8 * 0x26] = 0;
-              (&creature_pos_y)[iVar8 * 0x26] =
-                   (float)(&creature_target_offset_y)[iVar8 * 0x26] + fVar1;
-              (&creature_health)[iVar8 * 0x26] = 0x42200000;
-              (&creature_max_health)[iVar8 * 0x26] = 0x42200000;
-              (&creature_tint_r)[iVar8 * 0x26] = 0x3ecccccd;
+              iVar7 = creature_alloc_slot();
+              (&creature_pool)[iVar7].target_offset_y = (float)(int)pos;
+              pcVar10 = &creature_pool + iVar7;
+              (&creature_pool)[iVar7].ai_mode = 4;
+              (&creature_pool)[iVar7].heading = 0.0;
+              (&creature_pool)[iVar7].anim_phase = 0.0;
+              (&creature_pool)[iVar7].link_index = iVar6;
+              (&creature_pool)[iVar7].target_offset_x = (float)local_48;
+              fVar4 = (&creature_pool)[iVar7].target_offset_x;
+              fVar1 = *pfVar5;
+              fVar2 = (&creature_pool)[iVar7].target_offset_y;
+              fVar3 = pfVar5[1];
+              (&creature_pool)[iVar7].vel_x = 0.0;
+              (&creature_pool)[iVar7].pos_x = fVar4 + fVar1;
+              (&creature_pool)[iVar7].vel_y = 0.0;
+              (&creature_pool)[iVar7].pos_y = fVar2 + fVar3;
+              (&creature_pool)[iVar7].health = 40.0;
+              (&creature_pool)[iVar7].max_health = 40.0;
+              (&creature_pool)[iVar7].tint_r = 0.4;
               pos = pos + 0x10;
-              (&creature_tint_g)[iVar8 * 0x26] = 0x3f333333;
-              (&creature_collision_flag)[iVar5] = 0;
-              (&creature_tint_b)[iVar8 * 0x26] = 0x3de147ae;
-              (&creature_collision_timer)[iVar8 * 0x26] = 0;
-              *puVar9 = 1;
-              (&creature_state_flag)[iVar5] = 1;
-              (&creature_hitbox_size)[iVar8 * 0x26] = 0x41800000;
-              (&creature_attack_cooldown)[iVar8 * 0x26] = 0;
-              (&creature_type_id)[iVar8 * 0x26] = 3;
-              (&creature_move_speed)[iVar8 * 0x26] = 0x40000000;
-              (&creature_reward_value)[iVar8 * 0x26] = 0x42700000;
-              (&creature_tint_a)[iVar8 * 0x26] = 0x3f800000;
-              (&creature_size)[iVar8 * 0x26] = 0x42480000;
-              (&creature_contact_damage)[iVar8 * 0x26] = 0x40800000;
+              (&creature_pool)[iVar7].tint_g = 0.7;
+              (&creature_pool)[iVar7].collision_flag = '\0';
+              (&creature_pool)[iVar7].tint_b = 0.11;
+              (&creature_pool)[iVar7].collision_timer = 0.0;
+              pcVar10->active = '\x01';
+              (&creature_pool)[iVar7].state_flag = '\x01';
+              (&creature_pool)[iVar7].hitbox_size = 16.0;
+              (&creature_pool)[iVar7].attack_cooldown = 0.0;
+              (&creature_pool)[iVar7].type_id = 3;
+              (&creature_pool)[iVar7].move_speed = 2.0;
+              (&creature_pool)[iVar7].reward_value = 60.0;
+              (&creature_pool)[iVar7].tint_a = 1.0;
+              (&creature_pool)[iVar7].size = 50.0;
+              (&creature_pool)[iVar7].contact_damage = 4.0;
             } while ((int)pos < 0x101);
             local_48 = local_48 + -0x40;
           } while (-0x240 < local_48);
         }
         else if (template_id == 0x16) {
-          (&creature_type_id)[iVar4 * 0x26] = 1;
-          (&creature_pos_x)[iVar4 * 0x26] = *pos;
-          (&creature_pos_y)[iVar4 * 0x26] = pos[1];
-          (&creature_tint_r)[iVar4 * 0x26] = 0x3f800000;
-          (&creature_tint_g)[iVar4 * 0x26] = 0x3f800000;
-          (&creature_ai_mode)[iVar4 * 0x26] = 2;
-          (&creature_health)[iVar4 * 0x26] = 0x44bb8000;
-          (&creature_tint_b)[iVar4 * 0x26] = 0x3f800000;
-          (&creature_move_speed)[iVar4 * 0x26] = 0x40000000;
-          (&creature_reward_value)[iVar4 * 0x26] = 0x44160000;
-          (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-          (&creature_size)[iVar4 * 0x26] = 0x42800000;
-          (&creature_contact_damage)[iVar4 * 0x26] = 0x42200000;
-          (&creature_pos_x)[iVar4 * 0x26] = *pos;
-          (&creature_pos_y)[iVar4 * 0x26] = pos[1];
-          (&creature_max_health)[iVar4 * 0x26] = 0x44bb8000;
+          (&creature_pool)[iVar6].type_id = 1;
+          (&creature_pool)[iVar6].pos_x = *pos;
+          (&creature_pool)[iVar6].pos_y = pos[1];
+          (&creature_pool)[iVar6].tint_r = 1.0;
+          (&creature_pool)[iVar6].tint_g = 1.0;
+          (&creature_pool)[iVar6].ai_mode = 2;
+          (&creature_pool)[iVar6].health = 1500.0;
+          (&creature_pool)[iVar6].tint_b = 1.0;
+          (&creature_pool)[iVar6].move_speed = 2.0;
+          (&creature_pool)[iVar6].reward_value = 600.0;
+          (&creature_pool)[iVar6].tint_a = 1.0;
+          (&creature_pool)[iVar6].size = 64.0;
+          (&creature_pool)[iVar6].contact_damage = 40.0;
+          (&creature_pool)[iVar6].pos_x = *pos;
+          (&creature_pool)[iVar6].pos_y = pos[1];
+          (&creature_pool)[iVar6].max_health = 1500.0;
           local_48 = 0;
           do {
             pos = (float *)0x80;
             do {
-              iVar8 = creature_alloc_slot();
-              (&creature_target_offset_y)[iVar8 * 0x26] = (float)(int)pos;
-              iVar5 = iVar8 * 0x98;
-              puVar9 = &creature_pool + iVar5;
-              (&creature_ai_mode)[iVar8 * 0x26] = 4;
-              (&creature_heading)[iVar8 * 0x26] = 0;
-              (&creature_anim_phase)[iVar8 * 0x26] = 0;
-              (&creature_link_index)[iVar8 * 0x26] = iVar4;
-              (&creature_target_offset_x)[iVar8 * 0x26] = (float)local_48;
-              fVar2 = *pfVar3;
-              fVar1 = pfVar3[1];
-              (&creature_vel_x)[iVar8 * 0x26] = 0;
-              (&creature_pos_x)[iVar8 * 0x26] =
-                   (float)(&creature_target_offset_x)[iVar8 * 0x26] + fVar2;
-              (&creature_vel_y)[iVar8 * 0x26] = 0;
-              (&creature_pos_y)[iVar8 * 0x26] =
-                   (float)(&creature_target_offset_y)[iVar8 * 0x26] + fVar1;
-              (&creature_health)[iVar8 * 0x26] = 0x42200000;
-              (&creature_max_health)[iVar8 * 0x26] = 0x42200000;
-              (&creature_tint_r)[iVar8 * 0x26] = 0x3ecccccd;
+              iVar7 = creature_alloc_slot();
+              (&creature_pool)[iVar7].target_offset_y = (float)(int)pos;
+              pcVar10 = &creature_pool + iVar7;
+              (&creature_pool)[iVar7].ai_mode = 4;
+              (&creature_pool)[iVar7].heading = 0.0;
+              (&creature_pool)[iVar7].anim_phase = 0.0;
+              (&creature_pool)[iVar7].link_index = iVar6;
+              (&creature_pool)[iVar7].target_offset_x = (float)local_48;
+              fVar4 = (&creature_pool)[iVar7].target_offset_x;
+              fVar1 = *pfVar5;
+              fVar2 = (&creature_pool)[iVar7].target_offset_y;
+              fVar3 = pfVar5[1];
+              (&creature_pool)[iVar7].vel_x = 0.0;
+              (&creature_pool)[iVar7].pos_x = fVar4 + fVar1;
+              (&creature_pool)[iVar7].vel_y = 0.0;
+              (&creature_pool)[iVar7].pos_y = fVar2 + fVar3;
+              (&creature_pool)[iVar7].health = 40.0;
+              (&creature_pool)[iVar7].max_health = 40.0;
+              (&creature_pool)[iVar7].tint_r = 0.4;
               pos = pos + 0x10;
-              (&creature_tint_g)[iVar8 * 0x26] = 0x3f333333;
-              (&creature_collision_flag)[iVar5] = 0;
-              (&creature_tint_b)[iVar8 * 0x26] = 0x3de147ae;
-              (&creature_collision_timer)[iVar8 * 0x26] = 0;
-              *puVar9 = 1;
-              (&creature_state_flag)[iVar5] = 1;
-              (&creature_hitbox_size)[iVar8 * 0x26] = 0x41800000;
-              (&creature_attack_cooldown)[iVar8 * 0x26] = 0;
-              (&creature_type_id)[iVar8 * 0x26] = 1;
-              (&creature_move_speed)[iVar8 * 0x26] = 0x40000000;
-              (&creature_reward_value)[iVar8 * 0x26] = 0x42700000;
-              (&creature_tint_a)[iVar8 * 0x26] = 0x3f800000;
-              (&creature_size)[iVar8 * 0x26] = 0x42700000;
-              (&creature_contact_damage)[iVar8 * 0x26] = 0x40800000;
+              (&creature_pool)[iVar7].tint_g = 0.7;
+              (&creature_pool)[iVar7].collision_flag = '\0';
+              (&creature_pool)[iVar7].tint_b = 0.11;
+              (&creature_pool)[iVar7].collision_timer = 0.0;
+              pcVar10->active = '\x01';
+              (&creature_pool)[iVar7].state_flag = '\x01';
+              (&creature_pool)[iVar7].hitbox_size = 16.0;
+              (&creature_pool)[iVar7].attack_cooldown = 0.0;
+              (&creature_pool)[iVar7].type_id = 1;
+              (&creature_pool)[iVar7].move_speed = 2.0;
+              (&creature_pool)[iVar7].reward_value = 60.0;
+              (&creature_pool)[iVar7].tint_a = 1.0;
+              (&creature_pool)[iVar7].size = 60.0;
+              (&creature_pool)[iVar7].contact_damage = 4.0;
             } while ((int)pos < 0x101);
             local_48 = local_48 + -0x40;
           } while (-0x240 < local_48);
@@ -26006,1377 +25965,1343 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
         else {
           if (template_id != 0xf) {
             if (template_id == 0x18) {
-              (&creature_type_id)[iVar4 * 0x26] = 2;
-              (&creature_pos_x)[iVar4 * 0x26] = *pos;
-              fVar2 = pos[1];
-              (&creature_ai_mode)[iVar4 * 0x26] = 2;
-              (&creature_tint_r)[iVar4 * 0x26] = 0x3f333333;
-              (&creature_pos_y)[iVar4 * 0x26] = fVar2;
-              (&creature_tint_g)[iVar4 * 0x26] = 0x3f4ccccd;
-              (&creature_health)[iVar4 * 0x26] = 0x43fa0000;
-              (&creature_move_speed)[iVar4 * 0x26] = 0x40000000;
-              (&creature_tint_b)[iVar4 * 0x26] = 0x3e9eb852;
-              (&creature_reward_value)[iVar4 * 0x26] = 0x44160000;
-              (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-              (&creature_size)[iVar4 * 0x26] = 0x42200000;
-              (&creature_contact_damage)[iVar4 * 0x26] = 0x42200000;
-              (&creature_pos_x)[iVar4 * 0x26] = *pos;
-              (&creature_pos_y)[iVar4 * 0x26] = pos[1];
-              (&creature_max_health)[iVar4 * 0x26] = 0x43fa0000;
+              (&creature_pool)[iVar6].type_id = 2;
+              (&creature_pool)[iVar6].pos_x = *pos;
+              fVar4 = pos[1];
+              (&creature_pool)[iVar6].ai_mode = 2;
+              (&creature_pool)[iVar6].tint_r = 0.7;
+              (&creature_pool)[iVar6].pos_y = fVar4;
+              (&creature_pool)[iVar6].tint_g = 0.8;
+              (&creature_pool)[iVar6].health = 500.0;
+              (&creature_pool)[iVar6].move_speed = 2.0;
+              (&creature_pool)[iVar6].tint_b = 0.31;
+              (&creature_pool)[iVar6].reward_value = 600.0;
+              (&creature_pool)[iVar6].tint_a = 1.0;
+              (&creature_pool)[iVar6].size = 40.0;
+              (&creature_pool)[iVar6].contact_damage = 40.0;
+              (&creature_pool)[iVar6].pos_x = *pos;
+              (&creature_pool)[iVar6].pos_y = pos[1];
+              (&creature_pool)[iVar6].max_health = 500.0;
               local_48 = 0;
               do {
                 pos = (float *)0x80;
                 do {
-                  iVar8 = creature_alloc_slot();
-                  (&creature_target_offset_y)[iVar8 * 0x26] = (float)(int)pos;
-                  iVar5 = iVar8 * 0x98;
-                  puVar9 = &creature_pool + iVar5;
-                  (&creature_ai_mode)[iVar8 * 0x26] = 3;
-                  (&creature_heading)[iVar8 * 0x26] = 0;
-                  (&creature_anim_phase)[iVar8 * 0x26] = 0;
-                  (&creature_link_index)[iVar8 * 0x26] = iVar4;
-                  (&creature_target_offset_x)[iVar8 * 0x26] = (float)local_48;
-                  fVar2 = *pfVar3;
-                  fVar1 = pfVar3[1];
-                  (&creature_vel_x)[iVar8 * 0x26] = 0;
-                  (&creature_pos_x)[iVar8 * 0x26] =
-                       (float)(&creature_target_offset_x)[iVar8 * 0x26] + fVar2;
-                  (&creature_vel_y)[iVar8 * 0x26] = 0;
-                  (&creature_pos_y)[iVar8 * 0x26] =
-                       (float)(&creature_target_offset_y)[iVar8 * 0x26] + fVar1;
-                  (&creature_health)[iVar8 * 0x26] = 0x43820000;
-                  (&creature_max_health)[iVar8 * 0x26] = 0x43820000;
-                  (&creature_tint_r)[iVar8 * 0x26] = 0x3f366666;
+                  iVar7 = creature_alloc_slot();
+                  (&creature_pool)[iVar7].target_offset_y = (float)(int)pos;
+                  pcVar10 = &creature_pool + iVar7;
+                  (&creature_pool)[iVar7].ai_mode = 3;
+                  (&creature_pool)[iVar7].heading = 0.0;
+                  (&creature_pool)[iVar7].anim_phase = 0.0;
+                  (&creature_pool)[iVar7].link_index = iVar6;
+                  (&creature_pool)[iVar7].target_offset_x = (float)local_48;
+                  fVar4 = (&creature_pool)[iVar7].target_offset_x;
+                  fVar1 = *pfVar5;
+                  fVar2 = (&creature_pool)[iVar7].target_offset_y;
+                  fVar3 = pfVar5[1];
+                  (&creature_pool)[iVar7].vel_x = 0.0;
+                  (&creature_pool)[iVar7].pos_x = fVar4 + fVar1;
+                  (&creature_pool)[iVar7].vel_y = 0.0;
+                  (&creature_pool)[iVar7].pos_y = fVar2 + fVar3;
+                  (&creature_pool)[iVar7].health = 260.0;
+                  (&creature_pool)[iVar7].max_health = 260.0;
+                  (&creature_pool)[iVar7].tint_r = 0.7125;
                   pos = pos + 0x10;
-                  (&creature_tint_g)[iVar8 * 0x26] = 0x3ed33334;
-                  (&creature_collision_flag)[iVar5] = 0;
-                  (&creature_tint_b)[iVar8 * 0x26] = 0x3e8e147b;
-                  (&creature_collision_timer)[iVar8 * 0x26] = 0;
-                  *puVar9 = 1;
-                  (&creature_state_flag)[iVar5] = 1;
-                  (&creature_hitbox_size)[iVar8 * 0x26] = 0x41800000;
-                  (&creature_attack_cooldown)[iVar8 * 0x26] = 0;
-                  (&creature_type_id)[iVar8 * 0x26] = 2;
-                  (&creature_move_speed)[iVar8 * 0x26] = 0x40733333;
-                  (&creature_reward_value)[iVar8 * 0x26] = 0x42700000;
-                  (&creature_tint_a)[iVar8 * 0x26] = 0x3f19999a;
-                  (&creature_size)[iVar8 * 0x26] = 0x42480000;
-                  (&creature_contact_damage)[iVar8 * 0x26] = 0x420c0000;
+                  (&creature_pool)[iVar7].tint_g = 0.41250002;
+                  (&creature_pool)[iVar7].collision_flag = '\0';
+                  (&creature_pool)[iVar7].tint_b = 0.2775;
+                  (&creature_pool)[iVar7].collision_timer = 0.0;
+                  pcVar10->active = '\x01';
+                  (&creature_pool)[iVar7].state_flag = '\x01';
+                  (&creature_pool)[iVar7].hitbox_size = 16.0;
+                  (&creature_pool)[iVar7].attack_cooldown = 0.0;
+                  (&creature_pool)[iVar7].type_id = 2;
+                  (&creature_pool)[iVar7].move_speed = 3.8;
+                  (&creature_pool)[iVar7].reward_value = 60.0;
+                  (&creature_pool)[iVar7].tint_a = 0.6;
+                  (&creature_pool)[iVar7].size = 50.0;
+                  (&creature_pool)[iVar7].contact_damage = 35.0;
                 } while ((int)pos < 0x101);
                 local_48 = local_48 + -0x40;
               } while (-0x240 < local_48);
               goto LAB_004310b8;
             }
             if (template_id == 1) {
-              (&creature_type_id)[iVar4 * 0x26] = 4;
-              *(undefined4 *)(&creature_flags + iVar8) = 8;
-              (&creature_size)[iVar4 * 0x26] = 0x42a00000;
-              (&creature_health)[iVar4 * 0x26] = 0x43c80000;
-              (&creature_move_speed)[iVar4 * 0x26] = 0x40000000;
-              (&creature_reward_value)[iVar4 * 0x26] = 0x447a0000;
-              (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-              (&creature_tint_r)[iVar4 * 0x26] = 0x3f4ccccd;
-              (&creature_tint_g)[iVar4 * 0x26] = 0x3f333333;
-              (&creature_tint_b)[iVar4 * 0x26] = 0x3ecccccd;
-              (&creature_contact_damage)[iVar4 * 0x26] = 0x41880000;
+              (&creature_pool)[iVar6].type_id = 4;
+              (&creature_pool)[iVar6].flags = 8;
+              (&creature_pool)[iVar6].size = 80.0;
+              (&creature_pool)[iVar6].health = 400.0;
+              (&creature_pool)[iVar6].move_speed = 2.0;
+              (&creature_pool)[iVar6].reward_value = 1000.0;
+              (&creature_pool)[iVar6].tint_a = 1.0;
+              (&creature_pool)[iVar6].tint_r = 0.8;
+              (&creature_pool)[iVar6].tint_g = 0.7;
+              (&creature_pool)[iVar6].tint_b = 0.4;
+              (&creature_pool)[iVar6].contact_damage = 17.0;
               goto LAB_004310b8;
             }
             if (template_id == 10) {
-              (&creature_type_id)[iVar4 * 0x26] = 2;
-              *(undefined4 *)(&creature_flags + iVar8) = 4;
-              iVar5 = FUN_00430ad0();
-              (&creature_link_index)[iVar4 * 0x26] = iVar5;
-              (&creature_spawn_slot_timer)[iVar5 * 6] = 0x40000000;
-              (&creature_spawn_slot_count)[iVar5 * 6] = 0;
-              (&creature_spawn_slot_limit)[iVar5 * 6] = 100;
-              (&creature_spawn_slot_interval)[iVar5 * 6] = 0x40a00000;
-              *(undefined4 *)(&creature_spawn_slot_template + iVar5 * 0x18) = 0x32;
-              (&creature_spawn_slot_owner)[iVar5 * 6] = puVar9;
-              (&creature_size)[iVar4 * 0x26] = 0x425c0000;
-              (&creature_health)[iVar4 * 0x26] = 0x447a0000;
-              (&creature_move_speed)[iVar4 * 0x26] = 0x3fc00000;
-              (&creature_reward_value)[iVar4 * 0x26] = 0x453b8000;
-              (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-              (&creature_tint_r)[iVar4 * 0x26] = 0x3f4ccccd;
-              (&creature_tint_g)[iVar4 * 0x26] = 0x3f333333;
-              (&creature_tint_b)[iVar4 * 0x26] = 0x3ecccccd;
-              (&creature_contact_damage)[iVar4 * 0x26] = 0;
+              (&creature_pool)[iVar6].type_id = 2;
+              (&creature_pool)[iVar6].flags = 4;
+              iVar7 = FUN_00430ad0();
+              (&creature_pool)[iVar6].link_index = iVar7;
+              (&creature_spawn_slot_timer)[iVar7 * 6] = 0x40000000;
+              (&creature_spawn_slot_count)[iVar7 * 6] = 0;
+              (&creature_spawn_slot_limit)[iVar7 * 6] = 100;
+              (&creature_spawn_slot_interval)[iVar7 * 6] = 0x40a00000;
+              *(undefined4 *)(&creature_spawn_slot_template + iVar7 * 0x18) = 0x32;
+              (&creature_spawn_slot_owner)[iVar7 * 6] = pcVar10;
+              (&creature_pool)[iVar6].size = 55.0;
+              (&creature_pool)[iVar6].health = 1000.0;
+              (&creature_pool)[iVar6].move_speed = 1.5;
+              (&creature_pool)[iVar6].reward_value = 3000.0;
+              (&creature_pool)[iVar6].tint_a = 1.0;
+              (&creature_pool)[iVar6].tint_r = 0.8;
+              (&creature_pool)[iVar6].tint_g = 0.7;
+              (&creature_pool)[iVar6].tint_b = 0.4;
+              (&creature_pool)[iVar6].contact_damage = 0.0;
               goto LAB_004310b8;
             }
             if (template_id == 0xb) {
-              (&creature_type_id)[iVar4 * 0x26] = 2;
-              *(undefined4 *)(&creature_flags + iVar8) = 4;
-              iVar5 = FUN_00430ad0();
-              (&creature_link_index)[iVar4 * 0x26] = iVar5;
-              (&creature_spawn_slot_timer)[iVar5 * 6] = 0x40000000;
-              (&creature_spawn_slot_count)[iVar5 * 6] = 0;
-              (&creature_spawn_slot_limit)[iVar5 * 6] = 100;
-              (&creature_spawn_slot_interval)[iVar5 * 6] = 0x40c00000;
-              *(undefined4 *)(&creature_spawn_slot_template + iVar5 * 0x18) = 0x3c;
-              (&creature_spawn_slot_owner)[iVar5 * 6] = puVar9;
-              (&creature_size)[iVar4 * 0x26] = 0x42820000;
-              (&creature_health)[iVar4 * 0x26] = 0x455ac000;
-              (&creature_move_speed)[iVar4 * 0x26] = 0x3fc00000;
-              (&creature_reward_value)[iVar4 * 0x26] = 0x459c4000;
-              (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-              (&creature_tint_r)[iVar4 * 0x26] = 0x3f666666;
-              (&creature_tint_g)[iVar4 * 0x26] = 0x3dcccccd;
-              (&creature_tint_b)[iVar4 * 0x26] = 0x3dcccccd;
-              (&creature_contact_damage)[iVar4 * 0x26] = 0;
+              (&creature_pool)[iVar6].type_id = 2;
+              (&creature_pool)[iVar6].flags = 4;
+              iVar7 = FUN_00430ad0();
+              (&creature_pool)[iVar6].link_index = iVar7;
+              (&creature_spawn_slot_timer)[iVar7 * 6] = 0x40000000;
+              (&creature_spawn_slot_count)[iVar7 * 6] = 0;
+              (&creature_spawn_slot_limit)[iVar7 * 6] = 100;
+              (&creature_spawn_slot_interval)[iVar7 * 6] = 0x40c00000;
+              *(undefined4 *)(&creature_spawn_slot_template + iVar7 * 0x18) = 0x3c;
+              (&creature_spawn_slot_owner)[iVar7 * 6] = pcVar10;
+              (&creature_pool)[iVar6].size = 65.0;
+              (&creature_pool)[iVar6].health = 3500.0;
+              (&creature_pool)[iVar6].move_speed = 1.5;
+              (&creature_pool)[iVar6].reward_value = 5000.0;
+              (&creature_pool)[iVar6].tint_a = 1.0;
+              (&creature_pool)[iVar6].tint_r = 0.9;
+              (&creature_pool)[iVar6].tint_g = 0.1;
+              (&creature_pool)[iVar6].tint_b = 0.1;
+              (&creature_pool)[iVar6].contact_damage = 0.0;
               goto LAB_004310b8;
             }
             if (template_id == 0x10) {
-              (&creature_type_id)[iVar4 * 0x26] = 2;
-              *(undefined4 *)(&creature_flags + iVar8) = 4;
-              iVar5 = FUN_00430ad0();
-              (&creature_link_index)[iVar4 * 0x26] = iVar5;
-              (&creature_spawn_slot_timer)[iVar5 * 6] = 0x3fc00000;
-              (&creature_spawn_slot_count)[iVar5 * 6] = 0;
-              (&creature_spawn_slot_limit)[iVar5 * 6] = 100;
-              (&creature_spawn_slot_interval)[iVar5 * 6] = 0x40133333;
-              *(undefined4 *)(&creature_spawn_slot_template + iVar5 * 0x18) = 0x32;
-              (&creature_spawn_slot_owner)[iVar5 * 6] = puVar9;
-              (&creature_size)[iVar4 * 0x26] = 0x42000000;
-              (&creature_health)[iVar4 * 0x26] = 0x42480000;
-              (&creature_move_speed)[iVar4 * 0x26] = 0x40333333;
-              (&creature_reward_value)[iVar4 * 0x26] = 0x44480000;
+              (&creature_pool)[iVar6].type_id = 2;
+              (&creature_pool)[iVar6].flags = 4;
+              iVar7 = FUN_00430ad0();
+              (&creature_pool)[iVar6].link_index = iVar7;
+              (&creature_spawn_slot_timer)[iVar7 * 6] = 0x3fc00000;
+              (&creature_spawn_slot_count)[iVar7 * 6] = 0;
+              (&creature_spawn_slot_limit)[iVar7 * 6] = 100;
+              (&creature_spawn_slot_interval)[iVar7 * 6] = 0x40133333;
+              *(undefined4 *)(&creature_spawn_slot_template + iVar7 * 0x18) = 0x32;
+              (&creature_spawn_slot_owner)[iVar7 * 6] = pcVar10;
+              (&creature_pool)[iVar6].size = 32.0;
+              (&creature_pool)[iVar6].health = 50.0;
+              (&creature_pool)[iVar6].move_speed = 2.8;
+              (&creature_pool)[iVar6].reward_value = 800.0;
             }
             else {
               if (template_id == 0xe) {
-                (&creature_type_id)[iVar4 * 0x26] = 2;
-                *(undefined4 *)(&creature_flags + iVar8) = 4;
-                iVar5 = FUN_00430ad0();
-                (&creature_link_index)[iVar4 * 0x26] = iVar5;
+                (&creature_pool)[iVar6].type_id = 2;
+                (&creature_pool)[iVar6].flags = 4;
+                iVar7 = FUN_00430ad0();
+                (&creature_pool)[iVar6].link_index = iVar7;
                 pos = (float *)0x0;
-                (&creature_spawn_slot_timer)[iVar5 * 6] = 0x3fc00000;
-                (&creature_spawn_slot_count)[iVar5 * 6] = 0;
-                (&creature_spawn_slot_limit)[iVar5 * 6] = 0x40;
-                (&creature_spawn_slot_interval)[iVar5 * 6] = 0x3f866666;
-                *(undefined4 *)(&creature_spawn_slot_template + iVar5 * 0x18) = 0x1c;
-                (&creature_spawn_slot_owner)[iVar5 * 6] = puVar9;
-                (&creature_size)[iVar4 * 0x26] = 0x42000000;
-                (&creature_health)[iVar4 * 0x26] = 0x42480000;
-                (&creature_move_speed)[iVar4 * 0x26] = 0x40333333;
-                (&creature_reward_value)[iVar4 * 0x26] = 0x459c4000;
-                (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                (&creature_tint_r)[iVar4 * 0x26] = 0x3f666666;
-                (&creature_tint_g)[iVar4 * 0x26] = 0x3f4ccccd;
-                (&creature_tint_b)[iVar4 * 0x26] = 0x3ecccccd;
-                (&creature_contact_damage)[iVar4 * 0x26] = 0;
+                (&creature_spawn_slot_timer)[iVar7 * 6] = 0x3fc00000;
+                (&creature_spawn_slot_count)[iVar7 * 6] = 0;
+                (&creature_spawn_slot_limit)[iVar7 * 6] = 0x40;
+                (&creature_spawn_slot_interval)[iVar7 * 6] = 0x3f866666;
+                *(undefined4 *)(&creature_spawn_slot_template + iVar7 * 0x18) = 0x1c;
+                (&creature_spawn_slot_owner)[iVar7 * 6] = pcVar10;
+                (&creature_pool)[iVar6].size = 32.0;
+                (&creature_pool)[iVar6].health = 50.0;
+                (&creature_pool)[iVar6].move_speed = 2.8;
+                (&creature_pool)[iVar6].reward_value = 5000.0;
+                (&creature_pool)[iVar6].tint_a = 1.0;
+                (&creature_pool)[iVar6].tint_r = 0.9;
+                (&creature_pool)[iVar6].tint_g = 0.8;
+                (&creature_pool)[iVar6].tint_b = 0.4;
+                (&creature_pool)[iVar6].contact_damage = 0.0;
                 do {
-                  iVar8 = creature_alloc_slot();
-                  fVar10 = (float10)fcos((float10)(int)pos * (float10)0.2617994);
-                  iVar5 = iVar8 * 0x98;
-                  puVar9 = &creature_pool + iVar5;
-                  (&creature_ai_mode)[iVar8 * 0x26] = 3;
-                  (&creature_heading)[iVar8 * 0x26] = 0;
-                  (&creature_anim_phase)[iVar8 * 0x26] = 0;
-                  (&creature_link_index)[iVar8 * 0x26] = iVar4;
-                  (&creature_target_offset_x)[iVar8 * 0x26] = (float)(fVar10 * (float10)100.0);
-                  fVar10 = (float10)fsin((float10)(int)pos * (float10)0.2617994);
-                  (&creature_target_offset_y)[iVar8 * 0x26] = (float)(fVar10 * (float10)100.0);
-                  (&creature_pos_x)[iVar8 * 0x26] = *pfVar3;
-                  (&creature_pos_y)[iVar8 * 0x26] = pfVar3[1];
-                  (&creature_vel_x)[iVar8 * 0x26] = 0;
-                  (&creature_vel_y)[iVar8 * 0x26] = 0;
-                  (&creature_collision_flag)[iVar5] = 0;
-                  (&creature_tint_r)[iVar8 * 0x26] = 0x3f800000;
-                  (&creature_health)[iVar8 * 0x26] = 0x42200000;
-                  (&creature_max_health)[iVar8 * 0x26] = 0x42200000;
-                  (&creature_tint_g)[iVar8 * 0x26] = 0x3e99999a;
+                  iVar7 = creature_alloc_slot();
+                  fVar11 = (float10)fcos((float10)(int)pos * (float10)0.2617994);
+                  pcVar10 = &creature_pool + iVar7;
+                  (&creature_pool)[iVar7].ai_mode = 3;
+                  (&creature_pool)[iVar7].heading = 0.0;
+                  (&creature_pool)[iVar7].anim_phase = 0.0;
+                  (&creature_pool)[iVar7].link_index = iVar6;
+                  (&creature_pool)[iVar7].target_offset_x = (float)(fVar11 * (float10)100.0);
+                  fVar11 = (float10)fsin((float10)(int)pos * (float10)0.2617994);
+                  (&creature_pool)[iVar7].target_offset_y = (float)(fVar11 * (float10)100.0);
+                  (&creature_pool)[iVar7].pos_x = *pfVar5;
+                  (&creature_pool)[iVar7].pos_y = pfVar5[1];
+                  (&creature_pool)[iVar7].vel_x = 0.0;
+                  (&creature_pool)[iVar7].vel_y = 0.0;
+                  (&creature_pool)[iVar7].collision_flag = '\0';
+                  (&creature_pool)[iVar7].tint_r = 1.0;
+                  (&creature_pool)[iVar7].health = 40.0;
+                  (&creature_pool)[iVar7].max_health = 40.0;
+                  (&creature_pool)[iVar7].tint_g = 0.3;
                   pos = (float *)((int)pos + 1);
-                  (&creature_tint_b)[iVar8 * 0x26] = 0x3e99999a;
-                  (&creature_collision_timer)[iVar8 * 0x26] = 0;
-                  *puVar9 = 1;
-                  (&creature_state_flag)[iVar5] = 1;
-                  (&creature_hitbox_size)[iVar8 * 0x26] = 0x41800000;
-                  (&creature_attack_cooldown)[iVar8 * 0x26] = 0;
-                  (&creature_type_id)[iVar8 * 0x26] = 2;
-                  (&creature_move_speed)[iVar8 * 0x26] = 0x40800000;
-                  (&creature_reward_value)[iVar8 * 0x26] = 0x43af0000;
-                  (&creature_tint_a)[iVar8 * 0x26] = 0x3f800000;
-                  (&creature_size)[iVar8 * 0x26] = 0x420c0000;
-                  (&creature_contact_damage)[iVar8 * 0x26] = 0x41f00000;
+                  (&creature_pool)[iVar7].tint_b = 0.3;
+                  (&creature_pool)[iVar7].collision_timer = 0.0;
+                  pcVar10->active = '\x01';
+                  (&creature_pool)[iVar7].state_flag = '\x01';
+                  (&creature_pool)[iVar7].hitbox_size = 16.0;
+                  (&creature_pool)[iVar7].attack_cooldown = 0.0;
+                  (&creature_pool)[iVar7].type_id = 2;
+                  (&creature_pool)[iVar7].move_speed = 4.0;
+                  (&creature_pool)[iVar7].reward_value = 350.0;
+                  (&creature_pool)[iVar7].tint_a = 1.0;
+                  (&creature_pool)[iVar7].size = 35.0;
+                  (&creature_pool)[iVar7].contact_damage = 30.0;
                 } while ((int)pos < 0x18);
                 goto LAB_004310b8;
               }
               if (template_id == 0xc) {
-                (&creature_type_id)[iVar4 * 0x26] = 2;
-                *(undefined4 *)(&creature_flags + iVar8) = 4;
-                iVar5 = FUN_00430ad0();
-                (&creature_link_index)[iVar4 * 0x26] = iVar5;
-                (&creature_spawn_slot_timer)[iVar5 * 6] = 0x3fc00000;
-                (&creature_spawn_slot_count)[iVar5 * 6] = 0;
-                (&creature_spawn_slot_limit)[iVar5 * 6] = 100;
-                (&creature_spawn_slot_interval)[iVar5 * 6] = 0x40000000;
-                *(undefined4 *)(&creature_spawn_slot_template + iVar5 * 0x18) = 0x31;
-                (&creature_spawn_slot_owner)[iVar5 * 6] = puVar9;
-                (&creature_size)[iVar4 * 0x26] = 0x42000000;
-                (&creature_health)[iVar4 * 0x26] = 0x42480000;
-                (&creature_move_speed)[iVar4 * 0x26] = 0x40333333;
-                (&creature_reward_value)[iVar4 * 0x26] = 0x447a0000;
+                (&creature_pool)[iVar6].type_id = 2;
+                (&creature_pool)[iVar6].flags = 4;
+                iVar7 = FUN_00430ad0();
+                (&creature_pool)[iVar6].link_index = iVar7;
+                (&creature_spawn_slot_timer)[iVar7 * 6] = 0x3fc00000;
+                (&creature_spawn_slot_count)[iVar7 * 6] = 0;
+                (&creature_spawn_slot_limit)[iVar7 * 6] = 100;
+                (&creature_spawn_slot_interval)[iVar7 * 6] = 0x40000000;
+                *(undefined4 *)(&creature_spawn_slot_template + iVar7 * 0x18) = 0x31;
+                (&creature_spawn_slot_owner)[iVar7 * 6] = pcVar10;
+                (&creature_pool)[iVar6].size = 32.0;
+                (&creature_pool)[iVar6].health = 50.0;
+                (&creature_pool)[iVar6].move_speed = 2.8;
+                (&creature_pool)[iVar6].reward_value = 1000.0;
               }
               else {
                 if (template_id != 0xd) {
                   if (template_id == 9) {
-                    (&creature_type_id)[iVar4 * 0x26] = 2;
-                    *(undefined4 *)(&creature_flags + iVar8) = 4;
-                    iVar5 = FUN_00430ad0();
-                    (&creature_link_index)[iVar4 * 0x26] = iVar5;
-                    (&creature_spawn_slot_timer)[iVar5 * 6] = 0x3f800000;
-                    (&creature_spawn_slot_count)[iVar5 * 6] = 0;
-                    (&creature_spawn_slot_limit)[iVar5 * 6] = 0x10;
-                    (&creature_spawn_slot_interval)[iVar5 * 6] = 0x40000000;
-                    *(undefined4 *)(&creature_spawn_slot_template + iVar5 * 0x18) = 0x1d;
-                    (&creature_spawn_slot_owner)[iVar5 * 6] = puVar9;
-                    (&creature_size)[iVar4 * 0x26] = 0x42200000;
-                    (&creature_health)[iVar4 * 0x26] = 0x43e10000;
-                    (&creature_move_speed)[iVar4 * 0x26] = 0x40000000;
-                    (&creature_reward_value)[iVar4 * 0x26] = 0x447a0000;
-                    (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                    (&creature_tint_r)[iVar4 * 0x26] = 0x3f800000;
-                    (&creature_tint_g)[iVar4 * 0x26] = 0x3f800000;
-                    (&creature_tint_b)[iVar4 * 0x26] = 0x3f800000;
-                    (&creature_contact_damage)[iVar4 * 0x26] = 0;
+                    (&creature_pool)[iVar6].type_id = 2;
+                    (&creature_pool)[iVar6].flags = 4;
+                    iVar7 = FUN_00430ad0();
+                    (&creature_pool)[iVar6].link_index = iVar7;
+                    (&creature_spawn_slot_timer)[iVar7 * 6] = 0x3f800000;
+                    (&creature_spawn_slot_count)[iVar7 * 6] = 0;
+                    (&creature_spawn_slot_limit)[iVar7 * 6] = 0x10;
+                    (&creature_spawn_slot_interval)[iVar7 * 6] = 0x40000000;
+                    *(undefined4 *)(&creature_spawn_slot_template + iVar7 * 0x18) = 0x1d;
+                    (&creature_spawn_slot_owner)[iVar7 * 6] = pcVar10;
+                    (&creature_pool)[iVar6].size = 40.0;
+                    (&creature_pool)[iVar6].health = 450.0;
+                    (&creature_pool)[iVar6].move_speed = 2.0;
+                    (&creature_pool)[iVar6].reward_value = 1000.0;
+                    (&creature_pool)[iVar6].tint_a = 1.0;
+                    (&creature_pool)[iVar6].tint_r = 1.0;
+                    (&creature_pool)[iVar6].tint_g = 1.0;
+                    (&creature_pool)[iVar6].tint_b = 1.0;
+                    (&creature_pool)[iVar6].contact_damage = 0.0;
                     goto LAB_004310b8;
                   }
                   if (template_id == 7) {
-                    (&creature_type_id)[iVar4 * 0x26] = 2;
-                    *(undefined4 *)(&creature_flags + iVar8) = 4;
-                    iVar5 = FUN_00430ad0();
-                    (&creature_link_index)[iVar4 * 0x26] = iVar5;
-                    (&creature_spawn_slot_timer)[iVar5 * 6] = 0x3f800000;
-                    (&creature_spawn_slot_count)[iVar5 * 6] = 0;
-                    (&creature_spawn_slot_limit)[iVar5 * 6] = 100;
-                    (&creature_spawn_slot_interval)[iVar5 * 6] = 0x400ccccd;
+                    (&creature_pool)[iVar6].type_id = 2;
+                    (&creature_pool)[iVar6].flags = 4;
+                    iVar7 = FUN_00430ad0();
+                    (&creature_pool)[iVar6].link_index = iVar7;
+                    (&creature_spawn_slot_timer)[iVar7 * 6] = 0x3f800000;
+                    (&creature_spawn_slot_count)[iVar7 * 6] = 0;
+                    (&creature_spawn_slot_limit)[iVar7 * 6] = 100;
+                    (&creature_spawn_slot_interval)[iVar7 * 6] = 0x400ccccd;
                   }
                   else {
                     if (template_id != 8) {
                       if (template_id == 0x1a) {
-                        (&creature_type_id)[iVar4 * 0x26] = 2;
-                        (&creature_size)[iVar4 * 0x26] = 0x42480000;
-                        (&creature_ai_mode)[iVar4 * 0x26] = 1;
-                        (&creature_health)[iVar4 * 0x26] = 0x42480000;
-                        (&creature_move_speed)[iVar4 * 0x26] = 0x4019999a;
-                        (&creature_reward_value)[iVar4 * 0x26] = 0x42fa0000;
-                        (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                        iVar5 = crt_rand();
-                        fVar2 = (float)(iVar5 % 0x28);
+                        (&creature_pool)[iVar6].type_id = 2;
+                        (&creature_pool)[iVar6].size = 50.0;
+                        (&creature_pool)[iVar6].ai_mode = 1;
+                        (&creature_pool)[iVar6].health = 50.0;
+                        (&creature_pool)[iVar6].move_speed = 2.4;
+                        (&creature_pool)[iVar6].reward_value = 125.0;
+                        (&creature_pool)[iVar6].tint_a = 1.0;
+                        iVar7 = crt_rand();
+                        fVar4 = (float)(iVar7 % 0x28);
                       }
                       else if (template_id == 0x1b) {
-                        (&creature_type_id)[iVar4 * 0x26] = 3;
-                        (&creature_size)[iVar4 * 0x26] = 0x42480000;
-                        (&creature_ai_mode)[iVar4 * 0x26] = 1;
-                        (&creature_health)[iVar4 * 0x26] = 0x42200000;
-                        (&creature_move_speed)[iVar4 * 0x26] = 0x4019999a;
-                        (&creature_reward_value)[iVar4 * 0x26] = 0x42fa0000;
-                        (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                        iVar5 = crt_rand();
-                        fVar2 = (float)(iVar5 % 0x28);
+                        (&creature_pool)[iVar6].type_id = 3;
+                        (&creature_pool)[iVar6].size = 50.0;
+                        (&creature_pool)[iVar6].ai_mode = 1;
+                        (&creature_pool)[iVar6].health = 40.0;
+                        (&creature_pool)[iVar6].move_speed = 2.4;
+                        (&creature_pool)[iVar6].reward_value = 125.0;
+                        (&creature_pool)[iVar6].tint_a = 1.0;
+                        iVar7 = crt_rand();
+                        fVar4 = (float)(iVar7 % 0x28);
                       }
                       else {
                         if (template_id != 0x1c) {
                           if (template_id == 0x41) {
-                            (&creature_type_id)[iVar4 * 0x26] = 0;
-                            iVar5 = crt_rand();
-                            (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                            fVar2 = (float)(iVar5 % 0x1e + 0x28);
-                            (&creature_size)[iVar4 * 0x26] = fVar2;
-                            (&creature_health)[iVar4 * 0x26] = fVar2 * 1.1428572 + 10.0;
-                            (&creature_move_speed)[iVar4 * 0x26] = fVar2 * 0.0025 + 0.9;
-                            (&creature_reward_value)[iVar4 * 0x26] = fVar2 + fVar2 + 50.0;
-                            iVar5 = crt_rand();
-                            fVar2 = (float)(iVar5 % 0x28) * 0.01 + 0.6;
-                            (&creature_tint_r)[iVar4 * 0x26] = fVar2;
-                            (&creature_tint_g)[iVar4 * 0x26] = fVar2;
-                            (&creature_tint_b)[iVar4 * 0x26] = fVar2;
-                            iVar5 = crt_rand();
-                            (&creature_contact_damage)[iVar4 * 0x26] = (float)(iVar5 % 10) + 4.0;
+                            (&creature_pool)[iVar6].type_id = 0;
+                            iVar7 = crt_rand();
+                            (&creature_pool)[iVar6].tint_a = 1.0;
+                            fVar4 = (float)(iVar7 % 0x1e + 0x28);
+                            (&creature_pool)[iVar6].size = fVar4;
+                            (&creature_pool)[iVar6].health = fVar4 * 1.1428572 + 10.0;
+                            (&creature_pool)[iVar6].move_speed = fVar4 * 0.0025 + 0.9;
+                            (&creature_pool)[iVar6].reward_value = fVar4 + fVar4 + 50.0;
+                            iVar7 = crt_rand();
+                            fVar4 = (float)(iVar7 % 0x28) * 0.01 + 0.6;
+                            (&creature_pool)[iVar6].tint_r = fVar4;
+                            (&creature_pool)[iVar6].tint_g = fVar4;
+                            (&creature_pool)[iVar6].tint_b = fVar4;
+                            iVar7 = crt_rand();
+                            (&creature_pool)[iVar6].contact_damage = (float)(iVar7 % 10) + 4.0;
                             goto LAB_004310b8;
                           }
                           if (template_id == 0x31) {
-                            (&creature_type_id)[iVar4 * 0x26] = 1;
-                            iVar5 = crt_rand();
-                            fVar2 = (float)(iVar5 % 0x1e + 0x28);
-                            (&creature_size)[iVar4 * 0x26] = fVar2;
-                            (&creature_health)[iVar4 * 0x26] = fVar2 * 1.1428572 + 10.0;
-                            iVar5 = crt_rand();
-                            (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                            (&creature_move_speed)[iVar4 * 0x26] = (float)(iVar5 % 0x12) * 0.1 + 1.1
-                            ;
-                            (&creature_reward_value)[iVar4 * 0x26] =
-                                 (float)(&creature_size)[iVar4 * 0x26] +
-                                 (float)(&creature_size)[iVar4 * 0x26] + 50.0;
-                            iVar5 = crt_rand();
-                            (&creature_tint_b)[iVar4 * 0x26] = 0x3ec28f5c;
-                            fVar2 = (float)(iVar5 % 0x1e) * 0.01 + 0.6;
-                            (&creature_tint_r)[iVar4 * 0x26] = fVar2;
-                            (&creature_tint_g)[iVar4 * 0x26] = fVar2;
+                            (&creature_pool)[iVar6].type_id = 1;
+                            iVar7 = crt_rand();
+                            fVar4 = (float)(iVar7 % 0x1e + 0x28);
+                            (&creature_pool)[iVar6].size = fVar4;
+                            (&creature_pool)[iVar6].health = fVar4 * 1.1428572 + 10.0;
+                            iVar7 = crt_rand();
+                            (&creature_pool)[iVar6].tint_a = 1.0;
+                            (&creature_pool)[iVar6].move_speed = (float)(iVar7 % 0x12) * 0.1 + 1.1;
+                            (&creature_pool)[iVar6].reward_value =
+                                 (&creature_pool)[iVar6].size + (&creature_pool)[iVar6].size + 50.0;
+                            iVar7 = crt_rand();
+                            (&creature_pool)[iVar6].tint_b = 0.38;
+                            fVar4 = (float)(iVar7 % 0x1e) * 0.01 + 0.6;
+                            (&creature_pool)[iVar6].tint_r = fVar4;
+                            (&creature_pool)[iVar6].tint_g = fVar4;
                           }
                           else {
                             if (template_id != 0x32) {
                               if (template_id == 0x33) {
-                                (&creature_type_id)[iVar4 * 0x26] = 3;
-                                iVar5 = crt_rand();
-                                fVar2 = (float)(iVar5 % 0xf + 0x2d);
-                                (&creature_size)[iVar4 * 0x26] = fVar2;
-                                (&creature_health)[iVar4 * 0x26] = fVar2 * 1.1428572 + 20.0;
-                                iVar5 = crt_rand();
-                                (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                (&creature_move_speed)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x12) * 0.1 + 1.1;
-                                (&creature_reward_value)[iVar4 * 0x26] =
-                                     (float)(&creature_size)[iVar4 * 0x26] +
-                                     (float)(&creature_size)[iVar4 * 0x26] + 50.0;
-                                iVar5 = crt_rand();
-                                (&creature_tint_g)[iVar4 * 0x26] = 0x3f000000;
-                                (&creature_tint_b)[iVar4 * 0x26] = 0x3f000000;
-                                (&creature_tint_r)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x28) * 0.01 + 0.6;
-                                iVar5 = crt_rand();
-                                (&creature_contact_damage)[iVar4 * 0x26] = (float)(iVar5 % 10) + 4.0
-                                ;
+                                (&creature_pool)[iVar6].type_id = 3;
+                                iVar7 = crt_rand();
+                                fVar4 = (float)(iVar7 % 0xf + 0x2d);
+                                (&creature_pool)[iVar6].size = fVar4;
+                                (&creature_pool)[iVar6].health = fVar4 * 1.1428572 + 20.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_a = 1.0;
+                                (&creature_pool)[iVar6].move_speed =
+                                     (float)(iVar7 % 0x12) * 0.1 + 1.1;
+                                (&creature_pool)[iVar6].reward_value =
+                                     (&creature_pool)[iVar6].size + (&creature_pool)[iVar6].size +
+                                     50.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_g = 0.5;
+                                (&creature_pool)[iVar6].tint_b = 0.5;
+                                (&creature_pool)[iVar6].tint_r = (float)(iVar7 % 0x28) * 0.01 + 0.6;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].contact_damage = (float)(iVar7 % 10) + 4.0;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 0x34) {
-                                (&creature_type_id)[iVar4 * 0x26] = 3;
-                                iVar5 = crt_rand();
-                                fVar2 = (float)(iVar5 % 0x14 + 0x28);
-                                (&creature_size)[iVar4 * 0x26] = fVar2;
-                                (&creature_health)[iVar4 * 0x26] = fVar2 * 1.1428572 + 20.0;
-                                iVar5 = crt_rand();
-                                (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                (&creature_move_speed)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x12) * 0.1 + 1.1;
-                                (&creature_reward_value)[iVar4 * 0x26] =
-                                     (float)(&creature_size)[iVar4 * 0x26] +
-                                     (float)(&creature_size)[iVar4 * 0x26] + 50.0;
-                                iVar5 = crt_rand();
-                                (&creature_tint_r)[iVar4 * 0x26] = 0x3f000000;
-                                (&creature_tint_b)[iVar4 * 0x26] = 0x3f000000;
-                                (&creature_tint_g)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x28) * 0.01 + 0.6;
-                                iVar5 = crt_rand();
-                                (&creature_contact_damage)[iVar4 * 0x26] = (float)(iVar5 % 10) + 4.0
-                                ;
+                                (&creature_pool)[iVar6].type_id = 3;
+                                iVar7 = crt_rand();
+                                fVar4 = (float)(iVar7 % 0x14 + 0x28);
+                                (&creature_pool)[iVar6].size = fVar4;
+                                (&creature_pool)[iVar6].health = fVar4 * 1.1428572 + 20.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_a = 1.0;
+                                (&creature_pool)[iVar6].move_speed =
+                                     (float)(iVar7 % 0x12) * 0.1 + 1.1;
+                                (&creature_pool)[iVar6].reward_value =
+                                     (&creature_pool)[iVar6].size + (&creature_pool)[iVar6].size +
+                                     50.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_r = 0.5;
+                                (&creature_pool)[iVar6].tint_b = 0.5;
+                                (&creature_pool)[iVar6].tint_g = (float)(iVar7 % 0x28) * 0.01 + 0.6;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].contact_damage = (float)(iVar7 % 10) + 4.0;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 0x20) {
-                                (&creature_type_id)[iVar4 * 0x26] = 2;
-                                iVar5 = crt_rand();
-                                fVar2 = (float)(iVar5 % 0x1e + 0x28);
-                                (&creature_size)[iVar4 * 0x26] = fVar2;
-                                (&creature_health)[iVar4 * 0x26] = fVar2 * 1.1428572 + 20.0;
-                                iVar5 = crt_rand();
-                                (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                (&creature_tint_r)[iVar4 * 0x26] = 0x3e99999a;
-                                (&creature_move_speed)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x12) * 0.1 + 1.1;
-                                (&creature_reward_value)[iVar4 * 0x26] =
-                                     (float)(&creature_size)[iVar4 * 0x26] +
-                                     (float)(&creature_size)[iVar4 * 0x26] + 50.0;
-                                iVar5 = crt_rand();
-                                (&creature_tint_b)[iVar4 * 0x26] = 0x3e99999a;
-                                (&creature_tint_g)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x28) * 0.01 + 0.6;
-                                iVar5 = crt_rand();
-                                (&creature_contact_damage)[iVar4 * 0x26] = (float)(iVar5 % 10) + 4.0
-                                ;
+                                (&creature_pool)[iVar6].type_id = 2;
+                                iVar7 = crt_rand();
+                                fVar4 = (float)(iVar7 % 0x1e + 0x28);
+                                (&creature_pool)[iVar6].size = fVar4;
+                                (&creature_pool)[iVar6].health = fVar4 * 1.1428572 + 20.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_a = 1.0;
+                                (&creature_pool)[iVar6].tint_r = 0.3;
+                                (&creature_pool)[iVar6].move_speed =
+                                     (float)(iVar7 % 0x12) * 0.1 + 1.1;
+                                (&creature_pool)[iVar6].reward_value =
+                                     (&creature_pool)[iVar6].size + (&creature_pool)[iVar6].size +
+                                     50.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_b = 0.3;
+                                (&creature_pool)[iVar6].tint_g = (float)(iVar7 % 0x28) * 0.01 + 0.6;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].contact_damage = (float)(iVar7 % 10) + 4.0;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 3) {
-                                (&creature_type_id)[iVar4 * 0x26] = 3;
-                                iVar5 = crt_rand();
-                                fVar2 = (float)(iVar5 % 0xf + 0x26);
-                                (&creature_size)[iVar4 * 0x26] = fVar2;
-                                (&creature_health)[iVar4 * 0x26] = fVar2 * 1.1428572 + 20.0;
-                                iVar5 = crt_rand();
-                                (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                (&creature_tint_r)[iVar4 * 0x26] = 0x3f19999a;
-                                (&creature_tint_g)[iVar4 * 0x26] = 0x3f19999a;
-                                (&creature_move_speed)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x12) * 0.1 + 1.1;
-                                (&creature_reward_value)[iVar4 * 0x26] =
-                                     (float)(&creature_size)[iVar4 * 0x26] +
-                                     (float)(&creature_size)[iVar4 * 0x26] + 50.0;
-                                iVar5 = crt_rand();
-                                (&creature_tint_b)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x19) * 0.01 + 0.8;
-                                if (0.0 <= (float)(&creature_tint_r)[iVar4 * 0x26]) {
-                                  if (1.0 < (float)(&creature_tint_r)[iVar4 * 0x26]) {
-                                    (&creature_tint_r)[iVar4 * 0x26] = 0x3f800000;
+                                (&creature_pool)[iVar6].type_id = 3;
+                                iVar7 = crt_rand();
+                                fVar4 = (float)(iVar7 % 0xf + 0x26);
+                                (&creature_pool)[iVar6].size = fVar4;
+                                (&creature_pool)[iVar6].health = fVar4 * 1.1428572 + 20.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_a = 1.0;
+                                (&creature_pool)[iVar6].tint_r = 0.6;
+                                (&creature_pool)[iVar6].tint_g = 0.6;
+                                (&creature_pool)[iVar6].move_speed =
+                                     (float)(iVar7 % 0x12) * 0.1 + 1.1;
+                                (&creature_pool)[iVar6].reward_value =
+                                     (&creature_pool)[iVar6].size + (&creature_pool)[iVar6].size +
+                                     50.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_b = (float)(iVar7 % 0x19) * 0.01 + 0.8;
+                                if (0.0 <= (&creature_pool)[iVar6].tint_r) {
+                                  if (1.0 < (&creature_pool)[iVar6].tint_r) {
+                                    (&creature_pool)[iVar6].tint_r = 1.0;
                                   }
                                 }
                                 else {
-                                  (&creature_tint_r)[iVar4 * 0x26] = 0;
+                                  (&creature_pool)[iVar6].tint_r = 0.0;
                                 }
-                                if (0.0 <= (float)(&creature_tint_g)[iVar4 * 0x26]) {
-                                  if (1.0 < (float)(&creature_tint_g)[iVar4 * 0x26]) {
-                                    (&creature_tint_g)[iVar4 * 0x26] = 0x3f800000;
+                                if (0.0 <= (&creature_pool)[iVar6].tint_g) {
+                                  if (1.0 < (&creature_pool)[iVar6].tint_g) {
+                                    (&creature_pool)[iVar6].tint_g = 1.0;
                                   }
                                 }
                                 else {
-                                  (&creature_tint_g)[iVar4 * 0x26] = 0;
+                                  (&creature_pool)[iVar6].tint_g = 0.0;
                                 }
-                                if (0.0 <= (float)(&creature_tint_b)[iVar4 * 0x26]) {
-                                  if (1.0 < (float)(&creature_tint_b)[iVar4 * 0x26]) {
-                                    (&creature_tint_b)[iVar4 * 0x26] = 0x3f800000;
+                                if (0.0 <= (&creature_pool)[iVar6].tint_b) {
+                                  if (1.0 < (&creature_pool)[iVar6].tint_b) {
+                                    (&creature_pool)[iVar6].tint_b = 1.0;
                                   }
                                 }
                                 else {
-                                  (&creature_tint_b)[iVar4 * 0x26] = 0;
+                                  (&creature_pool)[iVar6].tint_b = 0.0;
                                 }
-                                if (0.0 <= (float)(&creature_tint_a)[iVar4 * 0x26]) {
-                                  if (1.0 < (float)(&creature_tint_a)[iVar4 * 0x26]) {
-                                    (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
+                                if (0.0 <= (&creature_pool)[iVar6].tint_a) {
+                                  if (1.0 < (&creature_pool)[iVar6].tint_a) {
+                                    (&creature_pool)[iVar6].tint_a = 1.0;
                                   }
                                 }
                                 else {
-                                  (&creature_tint_a)[iVar4 * 0x26] = 0;
+                                  (&creature_pool)[iVar6].tint_a = 0.0;
                                 }
-                                iVar5 = crt_rand();
-                                (&creature_contact_damage)[iVar4 * 0x26] = (float)(iVar5 % 10) + 4.0
-                                ;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].contact_damage = (float)(iVar7 % 10) + 4.0;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 5) {
-                                (&creature_type_id)[iVar4 * 0x26] = 4;
-                                iVar5 = crt_rand();
-                                fVar2 = (float)(iVar5 % 0xf + 0x26);
-                                (&creature_size)[iVar4 * 0x26] = fVar2;
-                                (&creature_health)[iVar4 * 0x26] = fVar2 * 1.1428572 + 20.0;
-                                iVar5 = crt_rand();
-                                (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                (&creature_tint_r)[iVar4 * 0x26] = 0x3f19999a;
-                                (&creature_tint_g)[iVar4 * 0x26] = 0x3f19999a;
-                                (&creature_move_speed)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x12) * 0.1 + 1.1;
-                                (&creature_reward_value)[iVar4 * 0x26] =
-                                     (float)(&creature_size)[iVar4 * 0x26] +
-                                     (float)(&creature_size)[iVar4 * 0x26] + 50.0;
-                                iVar5 = crt_rand();
-                                (&creature_tint_b)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x19) * 0.01 + 0.8;
-                                if (0.0 <= (float)(&creature_tint_r)[iVar4 * 0x26]) {
-                                  if (1.0 < (float)(&creature_tint_r)[iVar4 * 0x26]) {
-                                    (&creature_tint_r)[iVar4 * 0x26] = 0x3f800000;
+                                (&creature_pool)[iVar6].type_id = 4;
+                                iVar7 = crt_rand();
+                                fVar4 = (float)(iVar7 % 0xf + 0x26);
+                                (&creature_pool)[iVar6].size = fVar4;
+                                (&creature_pool)[iVar6].health = fVar4 * 1.1428572 + 20.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_a = 1.0;
+                                (&creature_pool)[iVar6].tint_r = 0.6;
+                                (&creature_pool)[iVar6].tint_g = 0.6;
+                                (&creature_pool)[iVar6].move_speed =
+                                     (float)(iVar7 % 0x12) * 0.1 + 1.1;
+                                (&creature_pool)[iVar6].reward_value =
+                                     (&creature_pool)[iVar6].size + (&creature_pool)[iVar6].size +
+                                     50.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_b = (float)(iVar7 % 0x19) * 0.01 + 0.8;
+                                if (0.0 <= (&creature_pool)[iVar6].tint_r) {
+                                  if (1.0 < (&creature_pool)[iVar6].tint_r) {
+                                    (&creature_pool)[iVar6].tint_r = 1.0;
                                   }
                                 }
                                 else {
-                                  (&creature_tint_r)[iVar4 * 0x26] = 0;
+                                  (&creature_pool)[iVar6].tint_r = 0.0;
                                 }
-                                if (0.0 <= (float)(&creature_tint_g)[iVar4 * 0x26]) {
-                                  if (1.0 < (float)(&creature_tint_g)[iVar4 * 0x26]) {
-                                    (&creature_tint_g)[iVar4 * 0x26] = 0x3f800000;
+                                if (0.0 <= (&creature_pool)[iVar6].tint_g) {
+                                  if (1.0 < (&creature_pool)[iVar6].tint_g) {
+                                    (&creature_pool)[iVar6].tint_g = 1.0;
                                   }
                                 }
                                 else {
-                                  (&creature_tint_g)[iVar4 * 0x26] = 0;
+                                  (&creature_pool)[iVar6].tint_g = 0.0;
                                 }
-                                if (0.0 <= (float)(&creature_tint_b)[iVar4 * 0x26]) {
-                                  if (1.0 < (float)(&creature_tint_b)[iVar4 * 0x26]) {
-                                    (&creature_tint_b)[iVar4 * 0x26] = 0x3f800000;
+                                if (0.0 <= (&creature_pool)[iVar6].tint_b) {
+                                  if (1.0 < (&creature_pool)[iVar6].tint_b) {
+                                    (&creature_pool)[iVar6].tint_b = 1.0;
                                   }
                                 }
                                 else {
-                                  (&creature_tint_b)[iVar4 * 0x26] = 0;
+                                  (&creature_pool)[iVar6].tint_b = 0.0;
                                 }
-                                if (0.0 <= (float)(&creature_tint_a)[iVar4 * 0x26]) {
-                                  if (1.0 < (float)(&creature_tint_a)[iVar4 * 0x26]) {
-                                    (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
+                                if (0.0 <= (&creature_pool)[iVar6].tint_a) {
+                                  if (1.0 < (&creature_pool)[iVar6].tint_a) {
+                                    (&creature_pool)[iVar6].tint_a = 1.0;
                                   }
                                 }
                                 else {
-                                  (&creature_tint_a)[iVar4 * 0x26] = 0;
+                                  (&creature_pool)[iVar6].tint_a = 0.0;
                                 }
-                                iVar5 = crt_rand();
-                                (&creature_contact_damage)[iVar4 * 0x26] = (float)(iVar5 % 10) + 4.0
-                                ;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].contact_damage = (float)(iVar7 % 10) + 4.0;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 4) {
-                                (&creature_type_id)[iVar4 * 0x26] = 1;
-                                iVar5 = crt_rand();
-                                fVar2 = (float)(iVar5 % 0xf + 0x26);
-                                (&creature_size)[iVar4 * 0x26] = fVar2;
-                                (&creature_health)[iVar4 * 0x26] = fVar2 * 1.1428572 + 20.0;
-                                iVar5 = crt_rand();
-                                (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                (&creature_tint_r)[iVar4 * 0x26] = 0x3f2b851f;
-                                (&creature_tint_g)[iVar4 * 0x26] = 0x3f2b851f;
-                                (&creature_tint_b)[iVar4 * 0x26] = 0x3f800000;
-                                (&creature_move_speed)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x12) * 0.1 + 1.1;
-                                (&creature_reward_value)[iVar4 * 0x26] =
-                                     (float)(&creature_size)[iVar4 * 0x26] +
-                                     (float)(&creature_size)[iVar4 * 0x26] + 50.0;
-                                iVar5 = crt_rand();
-                                (&creature_contact_damage)[iVar4 * 0x26] = (float)(iVar5 % 10) + 4.0
-                                ;
+                                (&creature_pool)[iVar6].type_id = 1;
+                                iVar7 = crt_rand();
+                                fVar4 = (float)(iVar7 % 0xf + 0x26);
+                                (&creature_pool)[iVar6].size = fVar4;
+                                (&creature_pool)[iVar6].health = fVar4 * 1.1428572 + 20.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_a = 1.0;
+                                (&creature_pool)[iVar6].tint_r = 0.67;
+                                (&creature_pool)[iVar6].tint_g = 0.67;
+                                (&creature_pool)[iVar6].tint_b = 1.0;
+                                (&creature_pool)[iVar6].move_speed =
+                                     (float)(iVar7 % 0x12) * 0.1 + 1.1;
+                                (&creature_pool)[iVar6].reward_value =
+                                     (&creature_pool)[iVar6].size + (&creature_pool)[iVar6].size +
+                                     50.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].contact_damage = (float)(iVar7 % 10) + 4.0;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 6) {
-                                (&creature_type_id)[iVar4 * 0x26] = 2;
-                                iVar5 = crt_rand();
-                                fVar2 = (float)(iVar5 % 0xf + 0x26);
-                                (&creature_size)[iVar4 * 0x26] = fVar2;
-                                (&creature_health)[iVar4 * 0x26] = fVar2 * 1.1428572 + 20.0;
-                                iVar5 = crt_rand();
-                                (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                (&creature_tint_r)[iVar4 * 0x26] = 0x3f19999a;
-                                (&creature_tint_g)[iVar4 * 0x26] = 0x3f19999a;
-                                (&creature_move_speed)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x12) * 0.1 + 1.1;
-                                (&creature_reward_value)[iVar4 * 0x26] =
-                                     (float)(&creature_size)[iVar4 * 0x26] +
-                                     (float)(&creature_size)[iVar4 * 0x26] + 50.0;
-                                iVar5 = crt_rand();
-                                (&creature_tint_b)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x19) * 0.01 + 0.8;
-                                if (0.0 <= (float)(&creature_tint_r)[iVar4 * 0x26]) {
-                                  if (1.0 < (float)(&creature_tint_r)[iVar4 * 0x26]) {
-                                    (&creature_tint_r)[iVar4 * 0x26] = 0x3f800000;
+                                (&creature_pool)[iVar6].type_id = 2;
+                                iVar7 = crt_rand();
+                                fVar4 = (float)(iVar7 % 0xf + 0x26);
+                                (&creature_pool)[iVar6].size = fVar4;
+                                (&creature_pool)[iVar6].health = fVar4 * 1.1428572 + 20.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_a = 1.0;
+                                (&creature_pool)[iVar6].tint_r = 0.6;
+                                (&creature_pool)[iVar6].tint_g = 0.6;
+                                (&creature_pool)[iVar6].move_speed =
+                                     (float)(iVar7 % 0x12) * 0.1 + 1.1;
+                                (&creature_pool)[iVar6].reward_value =
+                                     (&creature_pool)[iVar6].size + (&creature_pool)[iVar6].size +
+                                     50.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_b = (float)(iVar7 % 0x19) * 0.01 + 0.8;
+                                if (0.0 <= (&creature_pool)[iVar6].tint_r) {
+                                  if (1.0 < (&creature_pool)[iVar6].tint_r) {
+                                    (&creature_pool)[iVar6].tint_r = 1.0;
                                   }
                                 }
                                 else {
-                                  (&creature_tint_r)[iVar4 * 0x26] = 0;
+                                  (&creature_pool)[iVar6].tint_r = 0.0;
                                 }
-                                if (0.0 <= (float)(&creature_tint_g)[iVar4 * 0x26]) {
-                                  if (1.0 < (float)(&creature_tint_g)[iVar4 * 0x26]) {
-                                    (&creature_tint_g)[iVar4 * 0x26] = 0x3f800000;
+                                if (0.0 <= (&creature_pool)[iVar6].tint_g) {
+                                  if (1.0 < (&creature_pool)[iVar6].tint_g) {
+                                    (&creature_pool)[iVar6].tint_g = 1.0;
                                   }
                                 }
                                 else {
-                                  (&creature_tint_g)[iVar4 * 0x26] = 0;
+                                  (&creature_pool)[iVar6].tint_g = 0.0;
                                 }
-                                if (0.0 <= (float)(&creature_tint_b)[iVar4 * 0x26]) {
-                                  if (1.0 < (float)(&creature_tint_b)[iVar4 * 0x26]) {
-                                    (&creature_tint_b)[iVar4 * 0x26] = 0x3f800000;
+                                if (0.0 <= (&creature_pool)[iVar6].tint_b) {
+                                  if (1.0 < (&creature_pool)[iVar6].tint_b) {
+                                    (&creature_pool)[iVar6].tint_b = 1.0;
                                   }
                                 }
                                 else {
-                                  (&creature_tint_b)[iVar4 * 0x26] = 0;
+                                  (&creature_pool)[iVar6].tint_b = 0.0;
                                 }
-                                if (0.0 <= (float)(&creature_tint_a)[iVar4 * 0x26]) {
-                                  if (1.0 < (float)(&creature_tint_a)[iVar4 * 0x26]) {
-                                    (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
+                                if (0.0 <= (&creature_pool)[iVar6].tint_a) {
+                                  if (1.0 < (&creature_pool)[iVar6].tint_a) {
+                                    (&creature_pool)[iVar6].tint_a = 1.0;
                                   }
                                 }
                                 else {
-                                  (&creature_tint_a)[iVar4 * 0x26] = 0;
+                                  (&creature_pool)[iVar6].tint_a = 0.0;
                                 }
-                                iVar5 = crt_rand();
-                                (&creature_contact_damage)[iVar4 * 0x26] = (float)(iVar5 % 10) + 4.0
-                                ;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].contact_damage = (float)(iVar7 % 10) + 4.0;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 0x35) {
-                                (&creature_type_id)[iVar4 * 0x26] = 4;
-                                iVar5 = crt_rand();
-                                fVar2 = (float)(iVar5 % 10 + 0x1e);
-                                (&creature_size)[iVar4 * 0x26] = fVar2;
-                                (&creature_health)[iVar4 * 0x26] = fVar2 * 1.1428572 + 20.0;
-                                iVar5 = crt_rand();
-                                (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                (&creature_tint_b)[iVar4 * 0x26] = 0x3f4ccccd;
-                                (&creature_move_speed)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x12) * 0.1 + 1.1;
-                                (&creature_reward_value)[iVar4 * 0x26] =
-                                     (float)(&creature_size)[iVar4 * 0x26] +
-                                     (float)(&creature_size)[iVar4 * 0x26] + 50.0;
-                                iVar5 = crt_rand();
-                                (&creature_tint_r)[iVar4 * 0x26] = 0x3f4ccccd;
-                                (&creature_tint_g)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x14) * 0.01 + 0.8;
-                                iVar5 = crt_rand();
-                                (&creature_contact_damage)[iVar4 * 0x26] = (float)(iVar5 % 10) + 4.0
-                                ;
+                                (&creature_pool)[iVar6].type_id = 4;
+                                iVar7 = crt_rand();
+                                fVar4 = (float)(iVar7 % 10 + 0x1e);
+                                (&creature_pool)[iVar6].size = fVar4;
+                                (&creature_pool)[iVar6].health = fVar4 * 1.1428572 + 20.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_a = 1.0;
+                                (&creature_pool)[iVar6].tint_b = 0.8;
+                                (&creature_pool)[iVar6].move_speed =
+                                     (float)(iVar7 % 0x12) * 0.1 + 1.1;
+                                (&creature_pool)[iVar6].reward_value =
+                                     (&creature_pool)[iVar6].size + (&creature_pool)[iVar6].size +
+                                     50.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_r = 0.8;
+                                (&creature_pool)[iVar6].tint_g = (float)(iVar7 % 0x14) * 0.01 + 0.8;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].contact_damage = (float)(iVar7 % 10) + 4.0;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 0x2e) {
-                                (&creature_type_id)[iVar4 * 0x26] = 1;
-                                iVar5 = crt_rand();
-                                fVar2 = (float)(iVar5 % 0x1e + 0x28);
-                                (&creature_size)[iVar4 * 0x26] = fVar2;
-                                (&creature_health)[iVar4 * 0x26] = fVar2 * 1.1428572 + 20.0;
-                                iVar5 = crt_rand();
-                                (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                (&creature_move_speed)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x12) * 0.1 + 1.1;
-                                (&creature_reward_value)[iVar4 * 0x26] =
-                                     (float)(&creature_size)[iVar4 * 0x26] +
-                                     (float)(&creature_size)[iVar4 * 0x26] + 50.0;
-                                iVar5 = crt_rand();
-                                (&creature_tint_r)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x28) * 0.01 + 0.6;
-                                iVar5 = crt_rand();
-                                (&creature_tint_g)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x28) * 0.01 + 0.6;
-                                iVar5 = crt_rand();
-                                (&creature_tint_b)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x28) * 0.01 + 0.6;
-                                iVar5 = crt_rand();
-                                (&creature_contact_damage)[iVar4 * 0x26] = (float)(iVar5 % 10) + 4.0
-                                ;
+                                (&creature_pool)[iVar6].type_id = 1;
+                                iVar7 = crt_rand();
+                                fVar4 = (float)(iVar7 % 0x1e + 0x28);
+                                (&creature_pool)[iVar6].size = fVar4;
+                                (&creature_pool)[iVar6].health = fVar4 * 1.1428572 + 20.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_a = 1.0;
+                                (&creature_pool)[iVar6].move_speed =
+                                     (float)(iVar7 % 0x12) * 0.1 + 1.1;
+                                (&creature_pool)[iVar6].reward_value =
+                                     (&creature_pool)[iVar6].size + (&creature_pool)[iVar6].size +
+                                     50.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_r = (float)(iVar7 % 0x28) * 0.01 + 0.6;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_g = (float)(iVar7 % 0x28) * 0.01 + 0.6;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_b = (float)(iVar7 % 0x28) * 0.01 + 0.6;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].contact_damage = (float)(iVar7 % 10) + 4.0;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 0x36) {
-                                (&creature_type_id)[iVar4 * 0x26] = 2;
-                                (&creature_size)[iVar4 * 0x26] = 0x42480000;
-                                (&creature_ai_mode)[iVar4 * 0x26] = 7;
-                                (&creature_orbit_radius)[iVar4 * 0x26] = 0x3fc00000;
-                                (&creature_health)[iVar4 * 0x26] = 0x41200000;
-                                (&creature_move_speed)[iVar4 * 0x26] = 0x3fe66666;
-                                (&creature_reward_value)[iVar4 * 0x26] = 0x43160000;
-                                (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                iVar5 = crt_rand();
-                                (&creature_tint_g)[iVar4 * 0x26] = (float)(iVar5 % 5) * 0.01 + 0.65;
-                                (&creature_tint_r)[iVar4 * 0x26] = 0x3f266666;
-                                (&creature_tint_b)[iVar4 * 0x26] = 0x3f733333;
-                                (&creature_contact_damage)[iVar4 * 0x26] = 0x42200000;
+                                (&creature_pool)[iVar6].type_id = 2;
+                                (&creature_pool)[iVar6].size = 50.0;
+                                (&creature_pool)[iVar6].ai_mode = 7;
+                                (&creature_pool)[iVar6].orbit_radius = 1.5;
+                                (&creature_pool)[iVar6].health = 10.0;
+                                (&creature_pool)[iVar6].move_speed = 1.8;
+                                (&creature_pool)[iVar6].reward_value = 150.0;
+                                (&creature_pool)[iVar6].tint_a = 1.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_g = (float)(iVar7 % 5) * 0.01 + 0.65;
+                                (&creature_pool)[iVar6].tint_r = 0.65;
+                                (&creature_pool)[iVar6].tint_b = 0.95;
+                                (&creature_pool)[iVar6].contact_damage = 40.0;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 0x1d) {
-                                (&creature_type_id)[iVar4 * 0x26] = 2;
-                                iVar5 = crt_rand();
-                                fVar2 = (float)(iVar5 % 0x14 + 0x23);
-                                (&creature_size)[iVar4 * 0x26] = fVar2;
-                                (&creature_health)[iVar4 * 0x26] = fVar2 * 1.1428572 + 10.0;
-                                iVar5 = crt_rand();
-                                (&creature_move_speed)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0xf) * 0.1 + 1.1;
-                                iVar5 = crt_rand();
-                                (&creature_reward_value)[iVar4 * 0x26] = (float)(iVar5 % 100 + 0x32)
+                                (&creature_pool)[iVar6].type_id = 2;
+                                iVar7 = crt_rand();
+                                fVar4 = (float)(iVar7 % 0x14 + 0x23);
+                                (&creature_pool)[iVar6].size = fVar4;
+                                (&creature_pool)[iVar6].health = fVar4 * 1.1428572 + 10.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].move_speed =
+                                     (float)(iVar7 % 0xf) * 0.1 + 1.1;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].reward_value = (float)(iVar7 % 100 + 0x32);
+                                (&creature_pool)[iVar6].tint_a = 1.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_r = (float)(iVar7 % 0x32) * 0.001 + 0.6
                                 ;
-                                (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                iVar5 = crt_rand();
-                                (&creature_tint_r)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x32) * 0.001 + 0.6;
-                                iVar5 = crt_rand();
-                                (&creature_tint_g)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x32) * 0.01 + 0.5;
-                                iVar5 = crt_rand();
-                                (&creature_tint_b)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x32) * 0.001 + 0.6;
-                                iVar5 = crt_rand();
-                                (&creature_contact_damage)[iVar4 * 0x26] = (float)(iVar5 % 10) + 4.0
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_g = (float)(iVar7 % 0x32) * 0.01 + 0.5;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_b = (float)(iVar7 % 0x32) * 0.001 + 0.6
                                 ;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].contact_damage = (float)(iVar7 % 10) + 4.0;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 0x1e) {
-                                (&creature_type_id)[iVar4 * 0x26] = 2;
-                                iVar5 = crt_rand();
-                                fVar2 = (float)(iVar5 % 0x1e + 0x23);
-                                (&creature_size)[iVar4 * 0x26] = fVar2;
-                                (&creature_health)[iVar4 * 0x26] = fVar2 * 2.2857144 + 10.0;
-                                iVar5 = crt_rand();
-                                (&creature_move_speed)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x11) * 0.1 + 1.5;
-                                iVar5 = crt_rand();
-                                (&creature_reward_value)[iVar4 * 0x26] = (float)(iVar5 % 200 + 0x32)
+                                (&creature_pool)[iVar6].type_id = 2;
+                                iVar7 = crt_rand();
+                                fVar4 = (float)(iVar7 % 0x1e + 0x23);
+                                (&creature_pool)[iVar6].size = fVar4;
+                                (&creature_pool)[iVar6].health = fVar4 * 2.2857144 + 10.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].move_speed =
+                                     (float)(iVar7 % 0x11) * 0.1 + 1.5;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].reward_value = (float)(iVar7 % 200 + 0x32);
+                                (&creature_pool)[iVar6].tint_a = 1.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_r = (float)(iVar7 % 0x32) * 0.001 + 0.6
                                 ;
-                                (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                iVar5 = crt_rand();
-                                (&creature_tint_r)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x32) * 0.001 + 0.6;
-                                iVar5 = crt_rand();
-                                (&creature_tint_g)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x32) * 0.001 + 0.6;
-                                iVar5 = crt_rand();
-                                (&creature_tint_b)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x32) * 0.01 + 0.5;
-                                iVar5 = crt_rand();
-                                (&creature_contact_damage)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x1e) + 4.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_g = (float)(iVar7 % 0x32) * 0.001 + 0.6
+                                ;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_b = (float)(iVar7 % 0x32) * 0.01 + 0.5;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].contact_damage = (float)(iVar7 % 0x1e) + 4.0
+                                ;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 0x1f) {
-                                (&creature_type_id)[iVar4 * 0x26] = 2;
-                                iVar5 = crt_rand();
-                                fVar2 = (float)(iVar5 % 0x1e + 0x2d);
-                                (&creature_size)[iVar4 * 0x26] = fVar2;
-                                (&creature_health)[iVar4 * 0x26] = fVar2 * 3.7142856 + 30.0;
-                                iVar5 = crt_rand();
-                                (&creature_move_speed)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x15) * 0.1 + 1.6;
-                                iVar5 = crt_rand();
-                                (&creature_reward_value)[iVar4 * 0x26] = (float)(iVar5 % 200 + 0x50)
+                                (&creature_pool)[iVar6].type_id = 2;
+                                iVar7 = crt_rand();
+                                fVar4 = (float)(iVar7 % 0x1e + 0x2d);
+                                (&creature_pool)[iVar6].size = fVar4;
+                                (&creature_pool)[iVar6].health = fVar4 * 3.7142856 + 30.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].move_speed =
+                                     (float)(iVar7 % 0x15) * 0.1 + 1.6;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].reward_value = (float)(iVar7 % 200 + 0x50);
+                                (&creature_pool)[iVar6].tint_a = 1.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_r = (float)(iVar7 % 0x32) * 0.01 + 0.5;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_g = (float)(iVar7 % 0x32) * 0.001 + 0.6
                                 ;
-                                (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                iVar5 = crt_rand();
-                                (&creature_tint_r)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x32) * 0.01 + 0.5;
-                                iVar5 = crt_rand();
-                                (&creature_tint_g)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x32) * 0.001 + 0.6;
-                                iVar5 = crt_rand();
-                                (&creature_tint_b)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x32) * 0.001 + 0.6;
-                                iVar5 = crt_rand();
-                                (&creature_contact_damage)[iVar4 * 0x26] =
-                                     (float)(iVar5 % 0x23) + 8.0;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].tint_b = (float)(iVar7 % 0x32) * 0.001 + 0.6
+                                ;
+                                iVar7 = crt_rand();
+                                (&creature_pool)[iVar6].contact_damage = (float)(iVar7 % 0x23) + 8.0
+                                ;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 0x24) {
-                                (&creature_type_id)[iVar4 * 0x26] = 2;
-                                (&creature_health)[iVar4 * 0x26] = 0x41a00000;
-                                (&creature_move_speed)[iVar4 * 0x26] = 0x40000000;
-                                (&creature_reward_value)[iVar4 * 0x26] = 0x42dc0000;
-                                (&creature_tint_r)[iVar4 * 0x26] = 0x3dcccccd;
-                                (&creature_tint_g)[iVar4 * 0x26] = 0x3f333333;
-                                (&creature_tint_b)[iVar4 * 0x26] = 0x3de147ae;
-                                (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                (&creature_size)[iVar4 * 0x26] = 0x42480000;
-                                (&creature_contact_damage)[iVar4 * 0x26] = 0x40800000;
+                                (&creature_pool)[iVar6].type_id = 2;
+                                (&creature_pool)[iVar6].health = 20.0;
+                                (&creature_pool)[iVar6].move_speed = 2.0;
+                                (&creature_pool)[iVar6].reward_value = 110.0;
+                                (&creature_pool)[iVar6].tint_r = 0.1;
+                                (&creature_pool)[iVar6].tint_g = 0.7;
+                                (&creature_pool)[iVar6].tint_b = 0.11;
+                                (&creature_pool)[iVar6].tint_a = 1.0;
+                                (&creature_pool)[iVar6].size = 50.0;
+                                (&creature_pool)[iVar6].contact_damage = 4.0;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 0x25) {
-                                (&creature_type_id)[iVar4 * 0x26] = 2;
-                                (&creature_health)[iVar4 * 0x26] = 0x41c80000;
-                                (&creature_move_speed)[iVar4 * 0x26] = 0x40200000;
-                                (&creature_reward_value)[iVar4 * 0x26] = 0x42fa0000;
-                                (&creature_tint_r)[iVar4 * 0x26] = 0x3dcccccd;
-                                (&creature_tint_g)[iVar4 * 0x26] = 0x3f4ccccd;
-                                (&creature_tint_b)[iVar4 * 0x26] = 0x3de147ae;
-                                (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                (&creature_size)[iVar4 * 0x26] = 0x41f00000;
-                                (&creature_contact_damage)[iVar4 * 0x26] = 0x40400000;
+                                (&creature_pool)[iVar6].type_id = 2;
+                                (&creature_pool)[iVar6].health = 25.0;
+                                (&creature_pool)[iVar6].move_speed = 2.5;
+                                (&creature_pool)[iVar6].reward_value = 125.0;
+                                (&creature_pool)[iVar6].tint_r = 0.1;
+                                (&creature_pool)[iVar6].tint_g = 0.8;
+                                (&creature_pool)[iVar6].tint_b = 0.11;
+                                (&creature_pool)[iVar6].tint_a = 1.0;
+                                (&creature_pool)[iVar6].size = 30.0;
+                                (&creature_pool)[iVar6].contact_damage = 3.0;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 0x26) {
-                                (&creature_type_id)[iVar4 * 0x26] = 2;
-                                (&creature_health)[iVar4 * 0x26] = 0x42480000;
-                                (&creature_move_speed)[iVar4 * 0x26] = 0x400ccccd;
-                                (&creature_reward_value)[iVar4 * 0x26] = 0x42fa0000;
-                                (&creature_tint_r)[iVar4 * 0x26] = 0x3f19999a;
-                                (&creature_tint_g)[iVar4 * 0x26] = 0x3f4ccccd;
-                                (&creature_tint_b)[iVar4 * 0x26] = 0x3f19999a;
-                                (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                (&creature_size)[iVar4 * 0x26] = 0x42340000;
-                                (&creature_contact_damage)[iVar4 * 0x26] = 0x41200000;
+                                (&creature_pool)[iVar6].type_id = 2;
+                                (&creature_pool)[iVar6].health = 50.0;
+                                (&creature_pool)[iVar6].move_speed = 2.2;
+                                (&creature_pool)[iVar6].reward_value = 125.0;
+                                (&creature_pool)[iVar6].tint_r = 0.6;
+                                (&creature_pool)[iVar6].tint_g = 0.8;
+                                (&creature_pool)[iVar6].tint_b = 0.6;
+                                (&creature_pool)[iVar6].tint_a = 1.0;
+                                (&creature_pool)[iVar6].size = 45.0;
+                                (&creature_pool)[iVar6].contact_damage = 10.0;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 0x27) {
-                                (&creature_type_id)[iVar4 * 0x26] = 2;
-                                (&creature_health)[iVar4 * 0x26] = 0x42480000;
-                                (&creature_move_speed)[iVar4 * 0x26] = 0x40066666;
-                                *(undefined4 *)(&creature_flags + iVar8) = 0x400;
-                                (&creature_reward_value)[iVar4 * 0x26] = 0x42fa0000;
-                                (&creature_tint_r)[iVar4 * 0x26] = 0x3f800000;
-                                (&creature_tint_g)[iVar4 * 0x26] = 0x3f4ccccd;
-                                (&creature_tint_b)[iVar4 * 0x26] = 0x3dcccccd;
-                                (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                *(undefined2 *)(&creature_link_index + iVar4 * 0x26) = 3;
-                                *(undefined2 *)((int)&creature_link_index + iVar8 + 2) = 5;
-                                (&creature_size)[iVar4 * 0x26] = 0x42340000;
-                                (&creature_contact_damage)[iVar4 * 0x26] = 0x41200000;
+                                (&creature_pool)[iVar6].type_id = 2;
+                                (&creature_pool)[iVar6].health = 50.0;
+                                (&creature_pool)[iVar6].move_speed = 2.1;
+                                (&creature_pool)[iVar6].flags = 0x400;
+                                (&creature_pool)[iVar6].reward_value = 125.0;
+                                (&creature_pool)[iVar6].tint_r = 1.0;
+                                (&creature_pool)[iVar6].tint_g = 0.8;
+                                (&creature_pool)[iVar6].tint_b = 0.1;
+                                (&creature_pool)[iVar6].tint_a = 1.0;
+                                *(undefined2 *)&(&creature_pool)[iVar6].link_index = 3;
+                                *(undefined2 *)((int)&(&creature_pool)[iVar6].link_index + 2) = 5;
+                                (&creature_pool)[iVar6].size = 45.0;
+                                (&creature_pool)[iVar6].contact_damage = 10.0;
                                 goto LAB_004310b8;
                               }
                               if (template_id == 0x21) {
-                                (&creature_type_id)[iVar4 * 0x26] = 2;
-                                (&creature_health)[iVar4 * 0x26] = 0x42540000;
-                                (&creature_move_speed)[iVar4 * 0x26] = 0x3fd9999a;
-                                (&creature_reward_value)[iVar4 * 0x26] = 0x42f00000;
-                                (&creature_tint_r)[iVar4 * 0x26] = 0x3f333333;
-                                (&creature_tint_g)[iVar4 * 0x26] = 0x3dcccccd;
-                                (&creature_tint_b)[iVar4 * 0x26] = 0x3f028f5c;
-                                local_4 = 0x3f000000;
+                                (&creature_pool)[iVar6].type_id = 2;
+                                (&creature_pool)[iVar6].health = 53.0;
+                                (&creature_pool)[iVar6].move_speed = 1.7;
+                                (&creature_pool)[iVar6].reward_value = 120.0;
+                                (&creature_pool)[iVar6].tint_r = 0.7;
+                                (&creature_pool)[iVar6].tint_g = 0.1;
+                                (&creature_pool)[iVar6].tint_b = 0.51;
+                                local_4 = 0.5;
                               }
                               else {
                                 if (template_id == 0x22) {
-                                  (&creature_type_id)[iVar4 * 0x26] = 2;
-                                  (&creature_health)[iVar4 * 0x26] = 0x41c80000;
-                                  (&creature_move_speed)[iVar4 * 0x26] = 0x3fd9999a;
-                                  (&creature_reward_value)[iVar4 * 0x26] = 0x43160000;
-                                  (&creature_tint_r)[iVar4 * 0x26] = 0x3dcccccd;
-                                  (&creature_tint_g)[iVar4 * 0x26] = 0x3f333333;
-                                  (&creature_tint_b)[iVar4 * 0x26] = 0x3f028f5c;
-                                  (&creature_tint_a)[iVar4 * 0x26] = 0x3d4ccccd;
-                                  (&creature_size)[iVar4 * 0x26] = 0x42480000;
-                                  (&creature_contact_damage)[iVar4 * 0x26] = 0x41000000;
+                                  (&creature_pool)[iVar6].type_id = 2;
+                                  (&creature_pool)[iVar6].health = 25.0;
+                                  (&creature_pool)[iVar6].move_speed = 1.7;
+                                  (&creature_pool)[iVar6].reward_value = 150.0;
+                                  (&creature_pool)[iVar6].tint_r = 0.1;
+                                  (&creature_pool)[iVar6].tint_g = 0.7;
+                                  (&creature_pool)[iVar6].tint_b = 0.51;
+                                  (&creature_pool)[iVar6].tint_a = 0.05;
+                                  (&creature_pool)[iVar6].size = 50.0;
+                                  (&creature_pool)[iVar6].contact_damage = 8.0;
                                   goto LAB_004310b8;
                                 }
                                 if (template_id == 0x23) {
-                                  (&creature_type_id)[iVar4 * 0x26] = 2;
-                                  (&creature_health)[iVar4 * 0x26] = 0x40a00000;
-                                  (&creature_move_speed)[iVar4 * 0x26] = 0x3fd9999a;
-                                  (&creature_reward_value)[iVar4 * 0x26] = 0x43340000;
-                                  (&creature_tint_r)[iVar4 * 0x26] = 0x3dcccccd;
-                                  (&creature_tint_g)[iVar4 * 0x26] = 0x3f333333;
-                                  (&creature_tint_b)[iVar4 * 0x26] = 0x3f028f5c;
-                                  (&creature_tint_a)[iVar4 * 0x26] = 0x3d23d70a;
-                                  (&creature_size)[iVar4 * 0x26] = 0x42340000;
-                                  (&creature_contact_damage)[iVar4 * 0x26] = 0x41000000;
+                                  (&creature_pool)[iVar6].type_id = 2;
+                                  (&creature_pool)[iVar6].health = 5.0;
+                                  (&creature_pool)[iVar6].move_speed = 1.7;
+                                  (&creature_pool)[iVar6].reward_value = 180.0;
+                                  (&creature_pool)[iVar6].tint_r = 0.1;
+                                  (&creature_pool)[iVar6].tint_g = 0.7;
+                                  (&creature_pool)[iVar6].tint_b = 0.51;
+                                  (&creature_pool)[iVar6].tint_a = 0.04;
+                                  (&creature_pool)[iVar6].size = 45.0;
+                                  (&creature_pool)[iVar6].contact_damage = 8.0;
                                   goto LAB_004310b8;
                                 }
                                 if (template_id != 0x28) {
                                   if (template_id == 0x29) {
-                                    (&creature_type_id)[iVar4 * 0x26] = 2;
-                                    (&creature_health)[iVar4 * 0x26] = 0x44480000;
-                                    (&creature_move_speed)[iVar4 * 0x26] = 0x40200000;
-                                    (&creature_reward_value)[iVar4 * 0x26] = 0x43e10000;
-                                    (&creature_tint_r)[iVar4 * 0x26] = 0x3f4ccccd;
-                                    (&creature_tint_g)[iVar4 * 0x26] = 0x3f4ccccd;
-                                    (&creature_tint_b)[iVar4 * 0x26] = 0x3f4ccccd;
-                                    (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                    (&creature_size)[iVar4 * 0x26] = 0x428c0000;
-                                    (&creature_contact_damage)[iVar4 * 0x26] = 0x41a00000;
+                                    (&creature_pool)[iVar6].type_id = 2;
+                                    (&creature_pool)[iVar6].health = 800.0;
+                                    (&creature_pool)[iVar6].move_speed = 2.5;
+                                    (&creature_pool)[iVar6].reward_value = 450.0;
+                                    (&creature_pool)[iVar6].tint_r = 0.8;
+                                    (&creature_pool)[iVar6].tint_g = 0.8;
+                                    (&creature_pool)[iVar6].tint_b = 0.8;
+                                    (&creature_pool)[iVar6].tint_a = 1.0;
+                                    (&creature_pool)[iVar6].size = 70.0;
+                                    (&creature_pool)[iVar6].contact_damage = 20.0;
                                     goto LAB_004310b8;
                                   }
                                   if (template_id == 0x2a) {
-                                    (&creature_type_id)[iVar4 * 0x26] = 2;
-                                    (&creature_health)[iVar4 * 0x26] = 0x42480000;
-                                    (&creature_move_speed)[iVar4 * 0x26] = 0x40466666;
-                                    (&creature_reward_value)[iVar4 * 0x26] = 0x43960000;
-                                    (&creature_tint_r)[iVar4 * 0x26] = 0x3e99999a;
-                                    (&creature_tint_g)[iVar4 * 0x26] = 0x3e99999a;
-                                    (&creature_tint_b)[iVar4 * 0x26] = 0x3e99999a;
-                                    (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                    (&creature_size)[iVar4 * 0x26] = 0x42700000;
-                                    (&creature_contact_damage)[iVar4 * 0x26] = 0x41000000;
+                                    (&creature_pool)[iVar6].type_id = 2;
+                                    (&creature_pool)[iVar6].health = 50.0;
+                                    (&creature_pool)[iVar6].move_speed = 3.1;
+                                    (&creature_pool)[iVar6].reward_value = 300.0;
+                                    (&creature_pool)[iVar6].tint_r = 0.3;
+                                    (&creature_pool)[iVar6].tint_g = 0.3;
+                                    (&creature_pool)[iVar6].tint_b = 0.3;
+                                    (&creature_pool)[iVar6].tint_a = 1.0;
+                                    (&creature_pool)[iVar6].size = 60.0;
+                                    (&creature_pool)[iVar6].contact_damage = 8.0;
                                     goto LAB_004310b8;
                                   }
                                   if (template_id == 0x2b) {
-                                    (&creature_type_id)[iVar4 * 0x26] = 2;
-                                    (&creature_health)[iVar4 * 0x26] = 0x41f00000;
-                                    (&creature_move_speed)[iVar4 * 0x26] = 0x40666666;
-                                    (&creature_reward_value)[iVar4 * 0x26] = 0x43e10000;
-                                    (&creature_tint_r)[iVar4 * 0x26] = 0x3f800000;
-                                    (&creature_tint_g)[iVar4 * 0x26] = 0x3e99999a;
-                                    (&creature_tint_b)[iVar4 * 0x26] = 0x3e99999a;
+                                    (&creature_pool)[iVar6].type_id = 2;
+                                    (&creature_pool)[iVar6].health = 30.0;
+                                    (&creature_pool)[iVar6].move_speed = 3.6;
+                                    (&creature_pool)[iVar6].reward_value = 450.0;
+                                    (&creature_pool)[iVar6].tint_r = 1.0;
+                                    (&creature_pool)[iVar6].tint_g = 0.3;
+                                    (&creature_pool)[iVar6].tint_b = 0.3;
                                   }
                                   else {
                                     if (template_id == 0x2c) {
-                                      (&creature_type_id)[iVar4 * 0x26] = 2;
-                                      (&creature_health)[iVar4 * 0x26] = 0x456d8000;
-                                      (&creature_move_speed)[iVar4 * 0x26] = 0x40000000;
-                                      (&creature_reward_value)[iVar4 * 0x26] = 0x44bb8000;
-                                      (&creature_tint_r)[iVar4 * 0x26] = 0x3f59999a;
-                                      (&creature_tint_g)[iVar4 * 0x26] = 0x3e4ccccd;
-                                      (&creature_tint_b)[iVar4 * 0x26] = 0x3e4ccccd;
-                                      (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                      (&creature_size)[iVar4 * 0x26] = 0x42a00000;
-                                      (&creature_contact_damage)[iVar4 * 0x26] = 0x42200000;
+                                      (&creature_pool)[iVar6].type_id = 2;
+                                      (&creature_pool)[iVar6].health = 3800.0;
+                                      (&creature_pool)[iVar6].move_speed = 2.0;
+                                      (&creature_pool)[iVar6].reward_value = 1500.0;
+                                      (&creature_pool)[iVar6].tint_r = 0.85;
+                                      (&creature_pool)[iVar6].tint_g = 0.2;
+                                      (&creature_pool)[iVar6].tint_b = 0.2;
+                                      (&creature_pool)[iVar6].tint_a = 1.0;
+                                      (&creature_pool)[iVar6].size = 80.0;
+                                      (&creature_pool)[iVar6].contact_damage = 40.0;
                                       goto LAB_004310b8;
                                     }
                                     if (template_id == 0x2d) {
-                                      (&creature_type_id)[iVar4 * 0x26] = 2;
-                                      (&creature_health)[iVar4 * 0x26] = 0x42340000;
-                                      (&creature_move_speed)[iVar4 * 0x26] = 0x40466666;
-                                      (&creature_reward_value)[iVar4 * 0x26] = 0x43480000;
-                                      (&creature_tint_r)[iVar4 * 0x26] = 0;
-                                      (&creature_tint_g)[iVar4 * 0x26] = 0x3f666666;
-                                      (&creature_tint_b)[iVar4 * 0x26] = 0x3f4ccccd;
-                                      (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                      (&creature_size)[iVar4 * 0x26] = 0x42180000;
-                                      (&creature_contact_damage)[iVar4 * 0x26] = 0x40400000;
-                                      (&creature_ai_mode)[iVar4 * 0x26] = 2;
+                                      (&creature_pool)[iVar6].type_id = 2;
+                                      (&creature_pool)[iVar6].health = 45.0;
+                                      (&creature_pool)[iVar6].move_speed = 3.1;
+                                      (&creature_pool)[iVar6].reward_value = 200.0;
+                                      (&creature_pool)[iVar6].tint_r = 0.0;
+                                      (&creature_pool)[iVar6].tint_g = 0.9;
+                                      (&creature_pool)[iVar6].tint_b = 0.8;
+                                      (&creature_pool)[iVar6].tint_a = 1.0;
+                                      (&creature_pool)[iVar6].size = 38.0;
+                                      (&creature_pool)[iVar6].contact_damage = 3.0;
+                                      (&creature_pool)[iVar6].ai_mode = 2;
                                       goto LAB_004310b8;
                                     }
                                     if (template_id == 0x2f) {
-                                      (&creature_type_id)[iVar4 * 0x26] = 1;
-                                      (&creature_health)[iVar4 * 0x26] = 0x41a00000;
-                                      (&creature_move_speed)[iVar4 * 0x26] = 0x40200000;
-                                      (&creature_reward_value)[iVar4 * 0x26] = 0x43160000;
-                                      (&creature_tint_r)[iVar4 * 0x26] = 0x3f4ccccd;
-                                      (&creature_tint_g)[iVar4 * 0x26] = 0x3f4ccccd;
-                                      (&creature_tint_b)[iVar4 * 0x26] = 0x3f4ccccd;
-                                      (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                      (&creature_size)[iVar4 * 0x26] = 0x42340000;
-                                      (&creature_contact_damage)[iVar4 * 0x26] = 0x40800000;
+                                      (&creature_pool)[iVar6].type_id = 1;
+                                      (&creature_pool)[iVar6].health = 20.0;
+                                      (&creature_pool)[iVar6].move_speed = 2.5;
+                                      (&creature_pool)[iVar6].reward_value = 150.0;
+                                      (&creature_pool)[iVar6].tint_r = 0.8;
+                                      (&creature_pool)[iVar6].tint_g = 0.8;
+                                      (&creature_pool)[iVar6].tint_b = 0.8;
+                                      (&creature_pool)[iVar6].tint_a = 1.0;
+                                      (&creature_pool)[iVar6].size = 45.0;
+                                      (&creature_pool)[iVar6].contact_damage = 4.0;
                                       goto LAB_004310b8;
                                     }
                                     if (template_id == 0x30) {
-                                      (&creature_type_id)[iVar4 * 0x26] = 1;
-                                      (&creature_health)[iVar4 * 0x26] = 0x447a0000;
-                                      (&creature_move_speed)[iVar4 * 0x26] = 0x40000000;
-                                      (&creature_reward_value)[iVar4 * 0x26] = 0x43c80000;
-                                      (&creature_tint_r)[iVar4 * 0x26] = 0x3f666666;
-                                      (&creature_tint_g)[iVar4 * 0x26] = 0x3f4ccccd;
-                                      (&creature_tint_b)[iVar4 * 0x26] = 0x3dcccccd;
-                                      (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                      (&creature_size)[iVar4 * 0x26] = 0x42820000;
-                                      (&creature_contact_damage)[iVar4 * 0x26] = 0x41200000;
+                                      (&creature_pool)[iVar6].type_id = 1;
+                                      (&creature_pool)[iVar6].health = 1000.0;
+                                      (&creature_pool)[iVar6].move_speed = 2.0;
+                                      (&creature_pool)[iVar6].reward_value = 400.0;
+                                      (&creature_pool)[iVar6].tint_r = 0.9;
+                                      (&creature_pool)[iVar6].tint_g = 0.8;
+                                      (&creature_pool)[iVar6].tint_b = 0.1;
+                                      (&creature_pool)[iVar6].tint_a = 1.0;
+                                      (&creature_pool)[iVar6].size = 65.0;
+                                      (&creature_pool)[iVar6].contact_damage = 10.0;
                                       goto LAB_004310b8;
                                     }
                                     if (template_id == 0x3b) {
-                                      (&creature_type_id)[iVar4 * 0x26] = 3;
-                                      (&creature_health)[iVar4 * 0x26] = 0x44960000;
-                                      (&creature_move_speed)[iVar4 * 0x26] = 0x40000000;
-                                      (&creature_reward_value)[iVar4 * 0x26] = 0x457a0000;
-                                      (&creature_tint_r)[iVar4 * 0x26] = 0x3f666666;
-                                      (&creature_tint_g)[iVar4 * 0x26] = 0;
-                                      (&creature_tint_b)[iVar4 * 0x26] = 0;
-                                      (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                      (&creature_size)[iVar4 * 0x26] = 0x428c0000;
-                                      (&creature_contact_damage)[iVar4 * 0x26] = 0x41a00000;
+                                      (&creature_pool)[iVar6].type_id = 3;
+                                      (&creature_pool)[iVar6].health = 1200.0;
+                                      (&creature_pool)[iVar6].move_speed = 2.0;
+                                      (&creature_pool)[iVar6].reward_value = 4000.0;
+                                      (&creature_pool)[iVar6].tint_r = 0.9;
+                                      (&creature_pool)[iVar6].tint_g = 0.0;
+                                      (&creature_pool)[iVar6].tint_b = 0.0;
+                                      (&creature_pool)[iVar6].tint_a = 1.0;
+                                      (&creature_pool)[iVar6].size = 70.0;
+                                      (&creature_pool)[iVar6].contact_damage = 20.0;
                                       goto LAB_004310b8;
                                     }
                                     if (template_id == 0x3c) {
-                                      (&creature_type_id)[iVar4 * 0x26] = 3;
-                                      *(undefined4 *)(&creature_flags + iVar8) = 0x100;
-                                      (&creature_orbit_angle)[iVar4 * 0x26] = 0x3ecccccd;
-                                      (&creature_orbit_radius)[iVar4 * 0x26] = 0x1a;
-                                      (&creature_health)[iVar4 * 0x26] = 0x43480000;
-                                      (&creature_move_speed)[iVar4 * 0x26] = 0x40000000;
-                                      (&creature_reward_value)[iVar4 * 0x26] = 0x43480000;
-                                      (&creature_tint_r)[iVar4 * 0x26] = 0x3f666666;
-                                      (&creature_tint_g)[iVar4 * 0x26] = 0x3dcccccd;
-                                      (&creature_tint_b)[iVar4 * 0x26] = 0x3dcccccd;
-                                      (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                      (&creature_size)[iVar4 * 0x26] = 0x42200000;
-                                      (&creature_contact_damage)[iVar4 * 0x26] = 0x41a00000;
-                                      (&creature_ai_mode)[iVar4 * 0x26] = 2;
+                                      (&creature_pool)[iVar6].type_id = 3;
+                                      (&creature_pool)[iVar6].flags = 0x100;
+                                      (&creature_pool)[iVar6].orbit_angle = 0.4;
+                                      (&creature_pool)[iVar6].orbit_radius = 3.64338e-44;
+                                      (&creature_pool)[iVar6].health = 200.0;
+                                      (&creature_pool)[iVar6].move_speed = 2.0;
+                                      (&creature_pool)[iVar6].reward_value = 200.0;
+                                      (&creature_pool)[iVar6].tint_r = 0.9;
+                                      (&creature_pool)[iVar6].tint_g = 0.1;
+                                      (&creature_pool)[iVar6].tint_b = 0.1;
+                                      (&creature_pool)[iVar6].tint_a = 1.0;
+                                      (&creature_pool)[iVar6].size = 40.0;
+                                      (&creature_pool)[iVar6].contact_damage = 20.0;
+                                      (&creature_pool)[iVar6].ai_mode = 2;
                                       goto LAB_004310b8;
                                     }
                                     if (template_id == 0x3d) {
-                                      (&creature_type_id)[iVar4 * 0x26] = 3;
-                                      (&creature_health)[iVar4 * 0x26] = 0x428c0000;
-                                      (&creature_move_speed)[iVar4 * 0x26] = 0x40266666;
-                                      (&creature_reward_value)[iVar4 * 0x26] = 0x42f00000;
-                                      (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                      iVar5 = crt_rand();
-                                      fVar2 = (float)(iVar5 % 0x14) * 0.01 + 0.8;
-                                      (&creature_tint_r)[iVar4 * 0x26] = fVar2;
-                                      (&creature_tint_b)[iVar4 * 0x26] = fVar2;
-                                      (&creature_tint_g)[iVar4 * 0x26] = fVar2;
-                                      iVar5 = crt_rand();
-                                      fVar2 = (float)(iVar5 % 7 + 0x2d);
-                                      (&creature_size)[iVar4 * 0x26] = fVar2;
-                                      (&creature_contact_damage)[iVar4 * 0x26] = fVar2 * 0.22;
+                                      (&creature_pool)[iVar6].type_id = 3;
+                                      (&creature_pool)[iVar6].health = 70.0;
+                                      (&creature_pool)[iVar6].move_speed = 2.6;
+                                      (&creature_pool)[iVar6].reward_value = 120.0;
+                                      (&creature_pool)[iVar6].tint_a = 1.0;
+                                      iVar7 = crt_rand();
+                                      fVar4 = (float)(iVar7 % 0x14) * 0.01 + 0.8;
+                                      (&creature_pool)[iVar6].tint_r = fVar4;
+                                      (&creature_pool)[iVar6].tint_b = fVar4;
+                                      (&creature_pool)[iVar6].tint_g = fVar4;
+                                      iVar7 = crt_rand();
+                                      fVar4 = (float)(iVar7 % 7 + 0x2d);
+                                      (&creature_pool)[iVar6].size = fVar4;
+                                      (&creature_pool)[iVar6].contact_damage = fVar4 * 0.22;
                                       goto LAB_004310b8;
                                     }
                                     if (template_id == 0x3e) {
-                                      (&creature_type_id)[iVar4 * 0x26] = 3;
-                                      (&creature_health)[iVar4 * 0x26] = 0x447a0000;
-                                      (&creature_move_speed)[iVar4 * 0x26] = 0x40333333;
-                                      (&creature_reward_value)[iVar4 * 0x26] = 0x43fa0000;
-                                      (&creature_tint_r)[iVar4 * 0x26] = 0x3f800000;
-                                      (&creature_tint_g)[iVar4 * 0x26] = 0x3f800000;
-                                      (&creature_tint_b)[iVar4 * 0x26] = 0x3f800000;
-                                      (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                      (&creature_size)[iVar4 * 0x26] = 0x42800000;
-                                      (&creature_contact_damage)[iVar4 * 0x26] = 0x42200000;
+                                      (&creature_pool)[iVar6].type_id = 3;
+                                      (&creature_pool)[iVar6].health = 1000.0;
+                                      (&creature_pool)[iVar6].move_speed = 2.8;
+                                      (&creature_pool)[iVar6].reward_value = 500.0;
+                                      (&creature_pool)[iVar6].tint_r = 1.0;
+                                      (&creature_pool)[iVar6].tint_g = 1.0;
+                                      (&creature_pool)[iVar6].tint_b = 1.0;
+                                      (&creature_pool)[iVar6].tint_a = 1.0;
+                                      (&creature_pool)[iVar6].size = 64.0;
+                                      (&creature_pool)[iVar6].contact_damage = 40.0;
                                       goto LAB_004310b8;
                                     }
                                     if (template_id == 0) {
-                                      (&creature_type_id)[iVar4 * 0x26] = 0;
-                                      *(undefined4 *)(&creature_flags + iVar8) = 0x44;
-                                      (&creature_health)[iVar4 * 0x26] = 0x4604d000;
-                                      (&creature_move_speed)[iVar4 * 0x26] = 0x3fa66666;
-                                      (&creature_reward_value)[iVar4 * 0x26] = 0x45ce4000;
-                                      (&creature_tint_r)[iVar4 * 0x26] = 0x3f19999a;
-                                      (&creature_tint_g)[iVar4 * 0x26] = 0x3f19999a;
-                                      (&creature_tint_b)[iVar4 * 0x26] = 0x3f800000;
-                                      (&creature_tint_a)[iVar4 * 0x26] = 0x3f4ccccd;
-                                      (&creature_size)[iVar4 * 0x26] = 0x42800000;
-                                      (&creature_contact_damage)[iVar4 * 0x26] = 0x42480000;
-                                      iVar5 = FUN_00430ad0();
-                                      (&creature_link_index)[iVar4 * 0x26] = iVar5;
-                                      (&creature_spawn_slot_timer)[iVar5 * 6] = 0x3f800000;
-                                      (&creature_spawn_slot_count)[iVar5 * 6] = 0;
-                                      (&creature_spawn_slot_limit)[iVar5 * 6] = 0x32c;
-                                      (&creature_spawn_slot_interval)[iVar5 * 6] = 0x3f333333;
-                                      *(undefined4 *)(&creature_spawn_slot_template + iVar5 * 0x18)
+                                      (&creature_pool)[iVar6].type_id = 0;
+                                      (&creature_pool)[iVar6].flags = 0x44;
+                                      (&creature_pool)[iVar6].health = 8500.0;
+                                      (&creature_pool)[iVar6].move_speed = 1.3;
+                                      (&creature_pool)[iVar6].reward_value = 6600.0;
+                                      (&creature_pool)[iVar6].tint_r = 0.6;
+                                      (&creature_pool)[iVar6].tint_g = 0.6;
+                                      (&creature_pool)[iVar6].tint_b = 1.0;
+                                      (&creature_pool)[iVar6].tint_a = 0.8;
+                                      (&creature_pool)[iVar6].size = 64.0;
+                                      (&creature_pool)[iVar6].contact_damage = 50.0;
+                                      iVar7 = FUN_00430ad0();
+                                      (&creature_pool)[iVar6].link_index = iVar7;
+                                      (&creature_spawn_slot_timer)[iVar7 * 6] = 0x3f800000;
+                                      (&creature_spawn_slot_count)[iVar7 * 6] = 0;
+                                      (&creature_spawn_slot_limit)[iVar7 * 6] = 0x32c;
+                                      (&creature_spawn_slot_interval)[iVar7 * 6] = 0x3f333333;
+                                      *(undefined4 *)(&creature_spawn_slot_template + iVar7 * 0x18)
                                            = 0x41;
-                                      (&creature_spawn_slot_owner)[iVar5 * 6] = puVar9;
+                                      (&creature_spawn_slot_owner)[iVar7 * 6] = pcVar10;
                                       goto LAB_004310b8;
                                     }
                                     if (template_id == 0x38) {
-                                      (&creature_type_id)[iVar4 * 0x26] = 3;
-                                      *(undefined4 *)(&creature_flags + iVar8) = 0x80;
-                                      (&creature_link_index)[iVar4 * 0x26] = 0;
-                                      (&creature_health)[iVar4 * 0x26] = 0x42480000;
-                                      (&creature_move_speed)[iVar4 * 0x26] = 0x4099999a;
-                                      (&creature_reward_value)[iVar4 * 0x26] = 0x43d88000;
-                                      (&creature_tint_r)[iVar4 * 0x26] = 0x3f800000;
-                                      (&creature_tint_g)[iVar4 * 0x26] = 0x3f400000;
-                                      (&creature_tint_b)[iVar4 * 0x26] = 0x3dcccccd;
-                                      (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                      uVar7 = crt_rand();
-                                      uVar7 = uVar7 & 0x80000003;
-                                      if ((int)uVar7 < 0) {
-                                        uVar7 = (uVar7 - 1 | 0xfffffffc) + 1;
+                                      (&creature_pool)[iVar6].type_id = 3;
+                                      (&creature_pool)[iVar6].flags = 0x80;
+                                      (&creature_pool)[iVar6].link_index = 0;
+                                      (&creature_pool)[iVar6].health = 50.0;
+                                      (&creature_pool)[iVar6].move_speed = 4.8;
+                                      (&creature_pool)[iVar6].reward_value = 433.0;
+                                      (&creature_pool)[iVar6].tint_r = 1.0;
+                                      (&creature_pool)[iVar6].tint_g = 0.75;
+                                      (&creature_pool)[iVar6].tint_b = 0.1;
+                                      (&creature_pool)[iVar6].tint_a = 1.0;
+                                      uVar9 = crt_rand();
+                                      uVar9 = uVar9 & 0x80000003;
+                                      if ((int)uVar9 < 0) {
+                                        uVar9 = (uVar9 - 1 | 0xfffffffc) + 1;
                                       }
-                                      (&creature_size)[iVar4 * 0x26] = (float)(int)(uVar7 + 0x29);
-                                      (&creature_contact_damage)[iVar4 * 0x26] = 0x41200000;
+                                      (&creature_pool)[iVar6].size = (float)(int)(uVar9 + 0x29);
+                                      (&creature_pool)[iVar6].contact_damage = 10.0;
                                       goto LAB_004310b8;
                                     }
                                     if (template_id == 0x37) {
-                                      (&creature_type_id)[iVar4 * 0x26] = 4;
-                                      *(undefined4 *)(&creature_flags + iVar8) = 0x100;
-                                      (&creature_link_index)[iVar4 * 0x26] = 0;
-                                      (&creature_health)[iVar4 * 0x26] = 0x42480000;
-                                      (&creature_move_speed)[iVar4 * 0x26] = 0x404ccccd;
-                                      (&creature_reward_value)[iVar4 * 0x26] = 0x43d88000;
-                                      (&creature_tint_r)[iVar4 * 0x26] = 0x3f800000;
-                                      (&creature_tint_g)[iVar4 * 0x26] = 0x3f400000;
-                                      (&creature_tint_b)[iVar4 * 0x26] = 0x3dcccccd;
-                                      (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                      uVar7 = crt_rand();
-                                      uVar7 = uVar7 & 0x80000003;
-                                      if ((int)uVar7 < 0) {
-                                        uVar7 = (uVar7 - 1 | 0xfffffffc) + 1;
+                                      (&creature_pool)[iVar6].type_id = 4;
+                                      (&creature_pool)[iVar6].flags = 0x100;
+                                      (&creature_pool)[iVar6].link_index = 0;
+                                      (&creature_pool)[iVar6].health = 50.0;
+                                      (&creature_pool)[iVar6].move_speed = 3.2;
+                                      (&creature_pool)[iVar6].reward_value = 433.0;
+                                      (&creature_pool)[iVar6].tint_r = 1.0;
+                                      (&creature_pool)[iVar6].tint_g = 0.75;
+                                      (&creature_pool)[iVar6].tint_b = 0.1;
+                                      (&creature_pool)[iVar6].tint_a = 1.0;
+                                      uVar9 = crt_rand();
+                                      uVar9 = uVar9 & 0x80000003;
+                                      if ((int)uVar9 < 0) {
+                                        uVar9 = (uVar9 - 1 | 0xfffffffc) + 1;
                                       }
-                                      (&creature_size)[iVar4 * 0x26] = (float)(int)(uVar7 + 0x29);
-                                      (&creature_contact_damage)[iVar4 * 0x26] = 0x41200000;
+                                      (&creature_pool)[iVar6].size = (float)(int)(uVar9 + 0x29);
+                                      (&creature_pool)[iVar6].contact_damage = 10.0;
                                       goto LAB_004310b8;
                                     }
                                     if (template_id == 0x39) {
-                                      (&creature_type_id)[iVar4 * 0x26] = 3;
-                                      *(undefined4 *)(&creature_flags + iVar8) = 0x80;
-                                      (&creature_link_index)[iVar4 * 0x26] = 0;
-                                      (&creature_health)[iVar4 * 0x26] = 0x40800000;
-                                      (&creature_move_speed)[iVar4 * 0x26] = 0x4099999a;
-                                      (&creature_reward_value)[iVar4 * 0x26] = 0x42480000;
-                                      (&creature_tint_r)[iVar4 * 0x26] = 0x3f4ccccd;
-                                      (&creature_tint_g)[iVar4 * 0x26] = 0x3f266666;
-                                      (&creature_tint_b)[iVar4 * 0x26] = 0x3dcccccd;
-                                      (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                      uVar7 = crt_rand();
-                                      uVar7 = uVar7 & 0x80000003;
-                                      if ((int)uVar7 < 0) {
-                                        uVar7 = (uVar7 - 1 | 0xfffffffc) + 1;
+                                      (&creature_pool)[iVar6].type_id = 3;
+                                      (&creature_pool)[iVar6].flags = 0x80;
+                                      (&creature_pool)[iVar6].link_index = 0;
+                                      (&creature_pool)[iVar6].health = 4.0;
+                                      (&creature_pool)[iVar6].move_speed = 4.8;
+                                      (&creature_pool)[iVar6].reward_value = 50.0;
+                                      (&creature_pool)[iVar6].tint_r = 0.8;
+                                      (&creature_pool)[iVar6].tint_g = 0.65;
+                                      (&creature_pool)[iVar6].tint_b = 0.1;
+                                      (&creature_pool)[iVar6].tint_a = 1.0;
+                                      uVar9 = crt_rand();
+                                      uVar9 = uVar9 & 0x80000003;
+                                      if ((int)uVar9 < 0) {
+                                        uVar9 = (uVar9 - 1 | 0xfffffffc) + 1;
                                       }
-                                      (&creature_size)[iVar4 * 0x26] = (float)(int)(uVar7 + 0x1a);
-                                      (&creature_contact_damage)[iVar4 * 0x26] = 0x41200000;
+                                      (&creature_pool)[iVar6].size = (float)(int)(uVar9 + 0x1a);
+                                      (&creature_pool)[iVar6].contact_damage = 10.0;
                                       goto LAB_004310b8;
                                     }
                                     if (template_id == 0x3a) {
-                                      (&creature_type_id)[iVar4 * 0x26] = 3;
-                                      *(undefined4 *)(&creature_flags + iVar8) = 0x10;
-                                      (&creature_orbit_angle)[iVar4 * 0x26] = 0x3f666666;
-                                      (&creature_orbit_radius)[iVar4 * 0x26] = 9;
-                                      (&creature_health)[iVar4 * 0x26] = 0x458ca000;
-                                      (&creature_move_speed)[iVar4 * 0x26] = 0x40000000;
-                                      (&creature_reward_value)[iVar4 * 0x26] = 0x458ca000;
-                                      (&creature_tint_r)[iVar4 * 0x26] = 0x3f800000;
-                                      (&creature_tint_g)[iVar4 * 0x26] = 0x3f800000;
-                                      (&creature_tint_b)[iVar4 * 0x26] = 0x3f800000;
-                                      (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                      (&creature_size)[iVar4 * 0x26] = 0x42800000;
-                                      (&creature_contact_damage)[iVar4 * 0x26] = 0x42480000;
+                                      (&creature_pool)[iVar6].type_id = 3;
+                                      (&creature_pool)[iVar6].flags = 0x10;
+                                      (&creature_pool)[iVar6].orbit_angle = 0.9;
+                                      (&creature_pool)[iVar6].orbit_radius = 1.26117e-44;
+                                      (&creature_pool)[iVar6].health = 4500.0;
+                                      (&creature_pool)[iVar6].move_speed = 2.0;
+                                      (&creature_pool)[iVar6].reward_value = 4500.0;
+                                      (&creature_pool)[iVar6].tint_r = 1.0;
+                                      (&creature_pool)[iVar6].tint_g = 1.0;
+                                      (&creature_pool)[iVar6].tint_b = 1.0;
+                                      (&creature_pool)[iVar6].tint_a = 1.0;
+                                      (&creature_pool)[iVar6].size = 64.0;
+                                      (&creature_pool)[iVar6].contact_damage = 50.0;
                                       goto LAB_004310b8;
                                     }
                                     if (template_id != 0x3f) {
                                       if (template_id == 0x40) {
-                                        (&creature_type_id)[iVar4 * 0x26] = 3;
-                                        (&creature_health)[iVar4 * 0x26] = 0x428c0000;
-                                        (&creature_move_speed)[iVar4 * 0x26] = 0x400ccccd;
-                                        (&creature_reward_value)[iVar4 * 0x26] = 0x43200000;
-                                        (&creature_tint_r)[iVar4 * 0x26] = 0x3f000000;
-                                        (&creature_tint_g)[iVar4 * 0x26] = 0x3f19999a;
-                                        (&creature_tint_b)[iVar4 * 0x26] = 0x3f666666;
-                                        (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                        (&creature_size)[iVar4 * 0x26] = 0x42340000;
-                                        (&creature_contact_damage)[iVar4 * 0x26] = 0x40a00000;
+                                        (&creature_pool)[iVar6].type_id = 3;
+                                        (&creature_pool)[iVar6].health = 70.0;
+                                        (&creature_pool)[iVar6].move_speed = 2.2;
+                                        (&creature_pool)[iVar6].reward_value = 160.0;
+                                        (&creature_pool)[iVar6].tint_r = 0.5;
+                                        (&creature_pool)[iVar6].tint_g = 0.6;
+                                        (&creature_pool)[iVar6].tint_b = 0.9;
+                                        (&creature_pool)[iVar6].tint_a = 1.0;
+                                        (&creature_pool)[iVar6].size = 45.0;
+                                        (&creature_pool)[iVar6].contact_damage = 5.0;
                                         goto LAB_004310b8;
                                       }
                                       if (template_id == 0x42) {
-                                        (&creature_type_id)[iVar4 * 0x26] = 0;
-                                        (&creature_health)[iVar4 * 0x26] = 0x43480000;
-                                        (&creature_move_speed)[iVar4 * 0x26] = 0x3fd9999a;
-                                        (&creature_reward_value)[iVar4 * 0x26] = 0x43200000;
-                                        (&creature_tint_r)[iVar4 * 0x26] = 0x3f666666;
-                                        (&creature_tint_g)[iVar4 * 0x26] = 0x3f666666;
-                                        (&creature_tint_b)[iVar4 * 0x26] = 0x3f666666;
-                                        (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                        (&creature_size)[iVar4 * 0x26] = 0x42340000;
-                                        (&creature_contact_damage)[iVar4 * 0x26] = 0x41700000;
+                                        (&creature_pool)[iVar6].type_id = 0;
+                                        (&creature_pool)[iVar6].health = 200.0;
+                                        (&creature_pool)[iVar6].move_speed = 1.7;
+                                        (&creature_pool)[iVar6].reward_value = 160.0;
+                                        (&creature_pool)[iVar6].tint_r = 0.9;
+                                        (&creature_pool)[iVar6].tint_g = 0.9;
+                                        (&creature_pool)[iVar6].tint_b = 0.9;
+                                        (&creature_pool)[iVar6].tint_a = 1.0;
+                                        (&creature_pool)[iVar6].size = 45.0;
+                                        (&creature_pool)[iVar6].contact_damage = 15.0;
                                         goto LAB_004310b8;
                                       }
                                       if (template_id == 0x43) {
-                                        (&creature_type_id)[iVar4 * 0x26] = 0;
-                                        (&creature_health)[iVar4 * 0x26] = 0x44fa0000;
-                                        (&creature_move_speed)[iVar4 * 0x26] = 0x40066666;
-                                        (&creature_reward_value)[iVar4 * 0x26] = 0x43e60000;
-                                        (&creature_tint_r)[iVar4 * 0x26] = 0x3e4ccccd;
-                                        (&creature_tint_g)[iVar4 * 0x26] = 0x3f19999a;
-                                        (&creature_tint_b)[iVar4 * 0x26] = 0x3dcccccd;
-                                        (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                        (&creature_size)[iVar4 * 0x26] = 0x428c0000;
-                                        (&creature_contact_damage)[iVar4 * 0x26] = 0x41700000;
+                                        (&creature_pool)[iVar6].type_id = 0;
+                                        (&creature_pool)[iVar6].health = 2000.0;
+                                        (&creature_pool)[iVar6].move_speed = 2.1;
+                                        (&creature_pool)[iVar6].reward_value = 460.0;
+                                        (&creature_pool)[iVar6].tint_r = 0.2;
+                                        (&creature_pool)[iVar6].tint_g = 0.6;
+                                        (&creature_pool)[iVar6].tint_b = 0.1;
+                                        (&creature_pool)[iVar6].tint_a = 1.0;
+                                        (&creature_pool)[iVar6].size = 70.0;
+                                        (&creature_pool)[iVar6].contact_damage = 15.0;
                                         goto LAB_004310b8;
                                       }
                                       goto LAB_00431094;
                                     }
-                                    (&creature_type_id)[iVar4 * 0x26] = 3;
-                                    (&creature_health)[iVar4 * 0x26] = 0x43480000;
-                                    (&creature_move_speed)[iVar4 * 0x26] = 0x40133333;
-                                    (&creature_reward_value)[iVar4 * 0x26] = 0x43520000;
-                                    (&creature_tint_r)[iVar4 * 0x26] = 0x3f333333;
-                                    (&creature_tint_g)[iVar4 * 0x26] = 0x3ecccccd;
-                                    (&creature_tint_b)[iVar4 * 0x26] = 0x3dcccccd;
+                                    (&creature_pool)[iVar6].type_id = 3;
+                                    (&creature_pool)[iVar6].health = 200.0;
+                                    (&creature_pool)[iVar6].move_speed = 2.3;
+                                    (&creature_pool)[iVar6].reward_value = 210.0;
+                                    (&creature_pool)[iVar6].tint_r = 0.7;
+                                    (&creature_pool)[iVar6].tint_g = 0.4;
+                                    (&creature_pool)[iVar6].tint_b = 0.1;
                                   }
-                                  (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                                  (&creature_size)[iVar4 * 0x26] = 0x420c0000;
-                                  (&creature_contact_damage)[iVar4 * 0x26] = 0x41a00000;
+                                  (&creature_pool)[iVar6].tint_a = 1.0;
+                                  (&creature_pool)[iVar6].size = 35.0;
+                                  (&creature_pool)[iVar6].contact_damage = 20.0;
                                   goto LAB_004310b8;
                                 }
-                                (&creature_type_id)[iVar4 * 0x26] = 2;
-                                (&creature_health)[iVar4 * 0x26] = 0x42480000;
-                                (&creature_move_speed)[iVar4 * 0x26] = 0x3fd9999a;
-                                (&creature_reward_value)[iVar4 * 0x26] = 0x43160000;
-                                (&creature_tint_r)[iVar4 * 0x26] = 0x3f333333;
-                                local_4 = 0x3f800000;
-                                (&creature_tint_g)[iVar4 * 0x26] = 0x3dcccccd;
-                                (&creature_tint_b)[iVar4 * 0x26] = 0x3f028f5c;
+                                (&creature_pool)[iVar6].type_id = 2;
+                                (&creature_pool)[iVar6].health = 50.0;
+                                (&creature_pool)[iVar6].move_speed = 1.7;
+                                (&creature_pool)[iVar6].reward_value = 150.0;
+                                (&creature_pool)[iVar6].tint_r = 0.7;
+                                local_4 = 1.0;
+                                (&creature_pool)[iVar6].tint_g = 0.1;
+                                (&creature_pool)[iVar6].tint_b = 0.51;
                               }
-                              (&creature_tint_a)[iVar4 * 0x26] = local_4;
-                              (&creature_size)[iVar4 * 0x26] = 0x425c0000;
-                              (&creature_contact_damage)[iVar4 * 0x26] = 0x41000000;
+                              (&creature_pool)[iVar6].tint_a = local_4;
+                              (&creature_pool)[iVar6].size = 55.0;
+                              (&creature_pool)[iVar6].contact_damage = 8.0;
                               goto LAB_004310b8;
                             }
-                            (&creature_type_id)[iVar4 * 0x26] = 3;
-                            iVar5 = crt_rand();
-                            fVar2 = (float)(iVar5 % 0x19 + 0x28);
-                            (&creature_size)[iVar4 * 0x26] = fVar2;
-                            (&creature_health)[iVar4 * 0x26] = fVar2 + 10.0;
-                            iVar5 = crt_rand();
-                            (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                            (&creature_move_speed)[iVar4 * 0x26] = (float)(iVar5 % 0x11) * 0.1 + 1.1
-                            ;
-                            (&creature_reward_value)[iVar4 * 0x26] =
-                                 (float)(&creature_size)[iVar4 * 0x26] +
-                                 (float)(&creature_size)[iVar4 * 0x26] + 50.0;
-                            iVar5 = crt_rand();
-                            fVar2 = (float)(iVar5 % 0x28) * 0.01 + 0.6;
-                            (&creature_tint_r)[iVar4 * 0x26] = fVar2;
-                            (&creature_tint_g)[iVar4 * 0x26] = fVar2;
-                            (&creature_tint_b)[iVar4 * 0x26] = fVar2;
+                            (&creature_pool)[iVar6].type_id = 3;
+                            iVar7 = crt_rand();
+                            fVar4 = (float)(iVar7 % 0x19 + 0x28);
+                            (&creature_pool)[iVar6].size = fVar4;
+                            (&creature_pool)[iVar6].health = fVar4 + 10.0;
+                            iVar7 = crt_rand();
+                            (&creature_pool)[iVar6].tint_a = 1.0;
+                            (&creature_pool)[iVar6].move_speed = (float)(iVar7 % 0x11) * 0.1 + 1.1;
+                            (&creature_pool)[iVar6].reward_value =
+                                 (&creature_pool)[iVar6].size + (&creature_pool)[iVar6].size + 50.0;
+                            iVar7 = crt_rand();
+                            fVar4 = (float)(iVar7 % 0x28) * 0.01 + 0.6;
+                            (&creature_pool)[iVar6].tint_r = fVar4;
+                            (&creature_pool)[iVar6].tint_g = fVar4;
+                            (&creature_pool)[iVar6].tint_b = fVar4;
                           }
-                          (&creature_contact_damage)[iVar4 * 0x26] =
-                               (float)(&creature_size)[iVar4 * 0x26] * 0.14 + 4.0;
+                          (&creature_pool)[iVar6].contact_damage =
+                               (&creature_pool)[iVar6].size * 0.14 + 4.0;
                           goto LAB_004310b8;
                         }
-                        (&creature_type_id)[iVar4 * 0x26] = 1;
-                        (&creature_size)[iVar4 * 0x26] = 0x42480000;
-                        (&creature_ai_mode)[iVar4 * 0x26] = 1;
-                        (&creature_health)[iVar4 * 0x26] = 0x42480000;
-                        (&creature_move_speed)[iVar4 * 0x26] = 0x4019999a;
-                        (&creature_reward_value)[iVar4 * 0x26] = 0x42fa0000;
-                        (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                        iVar5 = crt_rand();
-                        fVar2 = (float)(iVar5 % 0x28);
+                        (&creature_pool)[iVar6].type_id = 1;
+                        (&creature_pool)[iVar6].size = 50.0;
+                        (&creature_pool)[iVar6].ai_mode = 1;
+                        (&creature_pool)[iVar6].health = 50.0;
+                        (&creature_pool)[iVar6].move_speed = 2.4;
+                        (&creature_pool)[iVar6].reward_value = 125.0;
+                        (&creature_pool)[iVar6].tint_a = 1.0;
+                        iVar7 = crt_rand();
+                        fVar4 = (float)(iVar7 % 0x28);
                       }
-                      fVar2 = fVar2 * 0.01 + 0.5;
-                      (&creature_tint_r)[iVar4 * 0x26] = fVar2;
-                      (&creature_tint_g)[iVar4 * 0x26] = fVar2;
-                      (&creature_tint_b)[iVar4 * 0x26] = 0x3f800000;
-                      (&creature_contact_damage)[iVar4 * 0x26] = 0x40a00000;
+                      fVar4 = fVar4 * 0.01 + 0.5;
+                      (&creature_pool)[iVar6].tint_r = fVar4;
+                      (&creature_pool)[iVar6].tint_g = fVar4;
+                      (&creature_pool)[iVar6].tint_b = 1.0;
+                      (&creature_pool)[iVar6].contact_damage = 5.0;
                       goto LAB_004310b8;
                     }
-                    (&creature_type_id)[iVar4 * 0x26] = 2;
-                    *(undefined4 *)(&creature_flags + iVar8) = 4;
-                    iVar5 = FUN_00430ad0();
-                    (&creature_link_index)[iVar4 * 0x26] = iVar5;
-                    (&creature_spawn_slot_timer)[iVar5 * 6] = 0x3f800000;
-                    (&creature_spawn_slot_count)[iVar5 * 6] = 0;
-                    (&creature_spawn_slot_limit)[iVar5 * 6] = 100;
-                    (&creature_spawn_slot_interval)[iVar5 * 6] = 0x40333333;
+                    (&creature_pool)[iVar6].type_id = 2;
+                    (&creature_pool)[iVar6].flags = 4;
+                    iVar7 = FUN_00430ad0();
+                    (&creature_pool)[iVar6].link_index = iVar7;
+                    (&creature_spawn_slot_timer)[iVar7 * 6] = 0x3f800000;
+                    (&creature_spawn_slot_count)[iVar7 * 6] = 0;
+                    (&creature_spawn_slot_limit)[iVar7 * 6] = 100;
+                    (&creature_spawn_slot_interval)[iVar7 * 6] = 0x40333333;
                   }
-                  *(undefined4 *)(&creature_spawn_slot_template + iVar5 * 0x18) = 0x1d;
-                  (&creature_spawn_slot_owner)[iVar5 * 6] = puVar9;
-                  (&creature_size)[iVar4 * 0x26] = 0x42480000;
-                  (&creature_health)[iVar4 * 0x26] = 0x447a0000;
-                  (&creature_move_speed)[iVar4 * 0x26] = 0x40000000;
-                  (&creature_reward_value)[iVar4 * 0x26] = 0x453b8000;
-                  (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-                  (&creature_tint_r)[iVar4 * 0x26] = 0x3f800000;
-                  (&creature_tint_g)[iVar4 * 0x26] = 0x3f800000;
-                  (&creature_tint_b)[iVar4 * 0x26] = 0x3f800000;
-                  (&creature_contact_damage)[iVar4 * 0x26] = 0;
+                  *(undefined4 *)(&creature_spawn_slot_template + iVar7 * 0x18) = 0x1d;
+                  (&creature_spawn_slot_owner)[iVar7 * 6] = pcVar10;
+                  (&creature_pool)[iVar6].size = 50.0;
+                  (&creature_pool)[iVar6].health = 1000.0;
+                  (&creature_pool)[iVar6].move_speed = 2.0;
+                  (&creature_pool)[iVar6].reward_value = 3000.0;
+                  (&creature_pool)[iVar6].tint_a = 1.0;
+                  (&creature_pool)[iVar6].tint_r = 1.0;
+                  (&creature_pool)[iVar6].tint_g = 1.0;
+                  (&creature_pool)[iVar6].tint_b = 1.0;
+                  (&creature_pool)[iVar6].contact_damage = 0.0;
                   goto LAB_004310b8;
                 }
-                (&creature_type_id)[iVar4 * 0x26] = 2;
-                *(undefined4 *)(&creature_flags + iVar8) = 4;
-                iVar5 = FUN_00430ad0();
-                (&creature_link_index)[iVar4 * 0x26] = iVar5;
-                (&creature_spawn_slot_timer)[iVar5 * 6] = 0x40000000;
-                (&creature_spawn_slot_count)[iVar5 * 6] = 0;
-                (&creature_spawn_slot_limit)[iVar5 * 6] = 100;
-                (&creature_spawn_slot_interval)[iVar5 * 6] = 0x40c00000;
-                *(undefined4 *)(&creature_spawn_slot_template + iVar5 * 0x18) = 0x31;
-                (&creature_spawn_slot_owner)[iVar5 * 6] = puVar9;
-                (&creature_size)[iVar4 * 0x26] = 0x42000000;
-                (&creature_health)[iVar4 * 0x26] = 0x42480000;
-                (&creature_move_speed)[iVar4 * 0x26] = 0x3fa66666;
-                (&creature_reward_value)[iVar4 * 0x26] = 0x447a0000;
+                (&creature_pool)[iVar6].type_id = 2;
+                (&creature_pool)[iVar6].flags = 4;
+                iVar7 = FUN_00430ad0();
+                (&creature_pool)[iVar6].link_index = iVar7;
+                (&creature_spawn_slot_timer)[iVar7 * 6] = 0x40000000;
+                (&creature_spawn_slot_count)[iVar7 * 6] = 0;
+                (&creature_spawn_slot_limit)[iVar7 * 6] = 100;
+                (&creature_spawn_slot_interval)[iVar7 * 6] = 0x40c00000;
+                *(undefined4 *)(&creature_spawn_slot_template + iVar7 * 0x18) = 0x31;
+                (&creature_spawn_slot_owner)[iVar7 * 6] = pcVar10;
+                (&creature_pool)[iVar6].size = 32.0;
+                (&creature_pool)[iVar6].health = 50.0;
+                (&creature_pool)[iVar6].move_speed = 1.3;
+                (&creature_pool)[iVar6].reward_value = 1000.0;
               }
             }
-            (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-            (&creature_tint_r)[iVar4 * 0x26] = 0x3f666666;
-            (&creature_tint_g)[iVar4 * 0x26] = 0x3f4ccccd;
-            (&creature_tint_b)[iVar4 * 0x26] = 0x3ecccccd;
-            (&creature_contact_damage)[iVar4 * 0x26] = 0;
+            (&creature_pool)[iVar6].tint_a = 1.0;
+            (&creature_pool)[iVar6].tint_r = 0.9;
+            (&creature_pool)[iVar6].tint_g = 0.8;
+            (&creature_pool)[iVar6].tint_b = 0.4;
+            (&creature_pool)[iVar6].contact_damage = 0.0;
             goto LAB_004310b8;
           }
-          (&creature_type_id)[iVar4 * 0x26] = 2;
-          (&creature_pos_x)[iVar4 * 0x26] = *pos;
-          (&creature_pos_y)[iVar4 * 0x26] = pos[1];
-          (&creature_type_id)[iVar4 * 0x26] = 2;
-          (&creature_tint_r)[iVar4 * 0x26] = 0x3f2a3d70;
-          (&creature_tint_g)[iVar4 * 0x26] = 0x3ec51eb8;
-          (&creature_ai_mode)[iVar4 * 0x26] = 0;
-          (&creature_health)[iVar4 * 0x26] = 0x41a00000;
-          (&creature_tint_b)[iVar4 * 0x26] = 0x3e849ba6;
-          (&creature_move_speed)[iVar4 * 0x26] = 0x4039999a;
-          (&creature_reward_value)[iVar4 * 0x26] = 0x42700000;
-          (&creature_tint_a)[iVar4 * 0x26] = 0x3f0f5c29;
-          (&creature_size)[iVar4 * 0x26] = 0x42480000;
-          (&creature_contact_damage)[iVar4 * 0x26] = 0x420c0000;
-          (&creature_max_health)[iVar4 * 0x26] = 0x41a00000;
+          (&creature_pool)[iVar6].type_id = 2;
+          (&creature_pool)[iVar6].pos_x = *pos;
+          (&creature_pool)[iVar6].pos_y = pos[1];
+          (&creature_pool)[iVar6].type_id = 2;
+          (&creature_pool)[iVar6].tint_r = 0.66499996;
+          (&creature_pool)[iVar6].tint_g = 0.385;
+          (&creature_pool)[iVar6].ai_mode = 0;
+          (&creature_pool)[iVar6].health = 20.0;
+          (&creature_pool)[iVar6].tint_b = 0.259;
+          (&creature_pool)[iVar6].move_speed = 2.9;
+          (&creature_pool)[iVar6].reward_value = 60.0;
+          (&creature_pool)[iVar6].tint_a = 0.56;
+          (&creature_pool)[iVar6].size = 50.0;
+          (&creature_pool)[iVar6].contact_damage = 35.0;
+          (&creature_pool)[iVar6].max_health = 20.0;
         }
         goto LAB_00431094;
       }
-      (&creature_type_id)[iVar4 * 0x26] = 2;
-      iVar5 = terrain_texture_height / 2;
-      (&creature_ai_mode)[iVar4 * 0x26] = 2;
-      (&creature_pos_x)[iVar4 * 0x26] = 0xc1200000;
-      fVar10 = (float10)fcos((float10)0.0);
-      (&creature_tint_r)[iVar4 * 0x26] = 0x3f19999a;
-      (&creature_pos_y)[iVar4 * 0x26] = (float)iVar5;
-      (&creature_tint_g)[iVar4 * 0x26] = 0x3f4ccccd;
-      (&creature_tint_b)[iVar4 * 0x26] = 0x3f68f5c3;
-      (&creature_health)[iVar4 * 0x26] = 0x43480000;
-      (&creature_move_speed)[iVar4 * 0x26] = 0x40000000;
-      (&creature_reward_value)[iVar4 * 0x26] = 0x44160000;
-      (&creature_tint_a)[iVar4 * 0x26] = 0x3f800000;
-      (&creature_size)[iVar4 * 0x26] = 0x42200000;
-      (&creature_contact_damage)[iVar4 * 0x26] = 0x41a00000;
+      (&creature_pool)[iVar6].type_id = 2;
+      iVar7 = terrain_texture_height / 2;
+      (&creature_pool)[iVar6].ai_mode = 2;
+      (&creature_pool)[iVar6].pos_x = -10.0;
+      fVar11 = (float10)fcos((float10)0.0);
+      (&creature_pool)[iVar6].tint_r = 0.6;
+      (&creature_pool)[iVar6].pos_y = (float)iVar7;
+      (&creature_pool)[iVar6].tint_g = 0.8;
+      (&creature_pool)[iVar6].tint_b = 0.91;
+      (&creature_pool)[iVar6].health = 200.0;
+      (&creature_pool)[iVar6].move_speed = 2.0;
+      (&creature_pool)[iVar6].reward_value = 600.0;
+      (&creature_pool)[iVar6].tint_a = 1.0;
+      (&creature_pool)[iVar6].size = 40.0;
+      (&creature_pool)[iVar6].contact_damage = 20.0;
       pos = (float *)0x2;
-      fVar11 = (float10)fsin((float10)0.0);
-      fVar2 = *pfVar3;
-      fVar1 = pfVar3[1];
-      (&creature_max_health)[iVar4 * 0x26] = 0x43480000;
-      (&creature_pos_x)[iVar4 * 0x26] = (float)(fVar10 * (float10)256.0 + (float10)fVar2);
-      (&creature_ai_mode)[iVar4 * 0x26] = 6;
-      (&creature_pos_y)[iVar4 * 0x26] = (float)fVar11 * 256.0 + fVar1;
-      iVar5 = iVar4;
+      fVar12 = (float10)fsin((float10)0.0);
+      fVar4 = *pfVar5;
+      fVar1 = pfVar5[1];
+      (&creature_pool)[iVar6].max_health = 200.0;
+      (&creature_pool)[iVar6].pos_x = (float)(fVar11 * (float10)256.0 + (float10)fVar4);
+      (&creature_pool)[iVar6].ai_mode = 6;
+      (&creature_pool)[iVar6].pos_y = (float)fVar12 * 256.0 + fVar1;
+      iVar7 = iVar6;
       do {
-        iVar6 = creature_alloc_slot();
-        fVar10 = (float10)fcos((float10)(int)pos * (float10)0.34906587);
-        iVar8 = iVar6 * 0x98;
-        puVar9 = &creature_pool + iVar8;
-        (&creature_ai_mode)[iVar6 * 0x26] = 6;
-        (&creature_link_index)[iVar6 * 0x26] = iVar5;
-        (&creature_orbit_angle)[iVar6 * 0x26] = 0x40490fdb;
-        (&creature_orbit_radius)[iVar6 * 0x26] = 0x41200000;
-        fVar11 = (float10)fsin((float10)(int)pos * (float10)0.34906587);
-        fVar2 = pfVar3[1];
-        (&creature_pos_x)[iVar6 * 0x26] = (float)fVar10 * 256.0 + *pfVar3;
-        (&creature_vel_x)[iVar6 * 0x26] = 0;
-        (&creature_health)[iVar6 * 0x26] = 0x42700000;
-        (&creature_pos_y)[iVar6 * 0x26] = (float)(fVar11 * (float10)256.0 + (float10)fVar2);
-        (&creature_vel_y)[iVar6 * 0x26] = 0;
-        (&creature_reward_value)[iVar6 * 0x26] = 0x42700000;
-        (&creature_max_health)[iVar6 * 0x26] = 0x42700000;
-        (&creature_tint_r)[iVar6 * 0x26] = 0x3ecccccd;
+        iVar8 = creature_alloc_slot();
+        fVar11 = (float10)fcos((float10)(int)pos * (float10)0.34906587);
+        pcVar10 = &creature_pool + iVar8;
+        (&creature_pool)[iVar8].ai_mode = 6;
+        (&creature_pool)[iVar8].link_index = iVar7;
+        (&creature_pool)[iVar8].orbit_angle = 3.1415927;
+        (&creature_pool)[iVar8].orbit_radius = 10.0;
+        fVar12 = (float10)fsin((float10)(int)pos * (float10)0.34906587);
+        fVar4 = pfVar5[1];
+        (&creature_pool)[iVar8].pos_x = (float)fVar11 * 256.0 + *pfVar5;
+        (&creature_pool)[iVar8].vel_x = 0.0;
+        (&creature_pool)[iVar8].health = 60.0;
+        (&creature_pool)[iVar8].pos_y = (float)(fVar12 * (float10)256.0 + (float10)fVar4);
+        (&creature_pool)[iVar8].vel_y = 0.0;
+        (&creature_pool)[iVar8].reward_value = 60.0;
+        (&creature_pool)[iVar8].max_health = 60.0;
+        (&creature_pool)[iVar8].tint_r = 0.4;
         pos = (float *)((int)pos + 2);
-        (&creature_tint_g)[iVar6 * 0x26] = 0x3f333333;
-        (&creature_collision_flag)[iVar8] = 0;
-        (&creature_tint_b)[iVar6 * 0x26] = 0x3de147ae;
-        (&creature_collision_timer)[iVar6 * 0x26] = 0;
-        *puVar9 = 1;
-        (&creature_tint_a)[iVar6 * 0x26] = 0x3f800000;
-        (&creature_state_flag)[iVar8] = 1;
-        (&creature_hitbox_size)[iVar6 * 0x26] = 0x41800000;
-        (&creature_attack_cooldown)[iVar6 * 0x26] = 0;
-        (&creature_type_id)[iVar6 * 0x26] = 2;
-        (&creature_move_speed)[iVar6 * 0x26] = 0x40000000;
-        (&creature_size)[iVar6 * 0x26] = 0x42480000;
-        (&creature_contact_damage)[iVar6 * 0x26] = 0x40800000;
-        iVar5 = iVar6;
+        (&creature_pool)[iVar8].tint_g = 0.7;
+        (&creature_pool)[iVar8].collision_flag = '\0';
+        (&creature_pool)[iVar8].tint_b = 0.11;
+        (&creature_pool)[iVar8].collision_timer = 0.0;
+        pcVar10->active = '\x01';
+        (&creature_pool)[iVar8].tint_a = 1.0;
+        (&creature_pool)[iVar8].state_flag = '\x01';
+        (&creature_pool)[iVar8].hitbox_size = 16.0;
+        (&creature_pool)[iVar8].attack_cooldown = 0.0;
+        (&creature_pool)[iVar8].type_id = 2;
+        (&creature_pool)[iVar8].move_speed = 2.0;
+        (&creature_pool)[iVar8].size = 50.0;
+        (&creature_pool)[iVar8].contact_damage = 4.0;
+        iVar7 = iVar8;
       } while ((int)pos < 0x16);
     }
-    (&creature_link_index)[iVar4 * 0x26] = iVar6;
+    (&creature_pool)[iVar6].link_index = iVar8;
   }
 LAB_00431094:
-  *(undefined4 *)(puVar9 + 0x6c) = 2;
-  *(undefined4 *)(puVar9 + 0x24) = 0x41a00000;
+  pcVar10->type_id = 2;
+  pcVar10->health = 20.0;
   console_printf(&console_log_queue,s_Unhandled_creatureType__00477758);
 LAB_004310b8:
-  if ((((demo_mode_active == '\0') && (0.0 < *(float *)(puVar9 + 0x14))) &&
-      (*(float *)(puVar9 + 0x14) < (float)terrain_texture_width)) &&
-     ((0.0 < *(float *)(puVar9 + 0x18) &&
-      (*(float *)(puVar9 + 0x18) < (float)terrain_texture_height)))) {
-    effect_spawn_burst((float *)(puVar9 + 0x14),8);
+  if ((((demo_mode_active == '\0') && (0.0 < pcVar10->pos_x)) &&
+      (pcVar10->pos_x < (float)terrain_texture_width)) &&
+     ((0.0 < pcVar10->pos_y && (pcVar10->pos_y < (float)terrain_texture_height)))) {
+    effect_spawn_burst(&pcVar10->pos_x,8);
   }
-  *(undefined4 *)(puVar9 + 0x28) = *(undefined4 *)(puVar9 + 0x24);
-  uVar7 = *(uint *)(puVar9 + 0x8c);
-  if ((((uVar7 & 0x10) == 0) && (*(int *)(puVar9 + 0x6c) == 3)) && ((uVar7 & 0x80) == 0)) {
-    *(uint *)(puVar9 + 0x8c) = uVar7 | 0x80;
-    *(undefined4 *)(puVar9 + 0x78) = 0;
-    *(float *)(puVar9 + 0x5c) = *(float *)(puVar9 + 0x5c) * 1.2;
+  pcVar10->max_health = pcVar10->health;
+  uVar9 = pcVar10->flags;
+  if ((((uVar9 & 0x10) == 0) && (pcVar10->type_id == 3)) && ((uVar9 & 0x80) == 0)) {
+    pcVar10->flags = uVar9 | 0x80;
+    pcVar10->link_index = 0;
+    pcVar10->move_speed = pcVar10->move_speed * 1.2;
   }
   if ((template_id == 0x38) && (config_hardcore != '\0')) {
-    *(float *)(puVar9 + 0x5c) = *(float *)(puVar9 + 0x5c) * 0.7;
+    pcVar10->move_speed = pcVar10->move_speed * 0.7;
   }
-  *(float *)(puVar9 + 0x2c) = heading;
+  pcVar10->heading = heading;
   if ((config_hardcore == '\0') &&
-     (((puVar9[0x8c] & 4) == 0 ||
-      ((&creature_spawn_slot_interval)[*(int *)(puVar9 + 0x78) * 6] =
-            (float)(&creature_spawn_slot_interval)[*(int *)(puVar9 + 0x78) * 6] + 0.2,
+     (((pcVar10->flags & 4) == 0 ||
+      ((&creature_spawn_slot_interval)[pcVar10->link_index * 6] =
+            (float)(&creature_spawn_slot_interval)[pcVar10->link_index * 6] + 0.2,
       config_hardcore == '\0')))) {
     if (0 < DAT_00487194) {
       switch(DAT_00487194) {
       case 1:
-        *(float *)(puVar9 + 100) = *(float *)(puVar9 + 100) * 0.9;
-        *(float *)(puVar9 + 0x5c) = *(float *)(puVar9 + 0x5c) * 0.95;
-        *(float *)(puVar9 + 0x58) = *(float *)(puVar9 + 0x58) * 0.95;
-        fVar2 = *(float *)(puVar9 + 0x24) * 0.95;
+        pcVar10->reward_value = pcVar10->reward_value * 0.9;
+        pcVar10->move_speed = pcVar10->move_speed * 0.95;
+        pcVar10->contact_damage = pcVar10->contact_damage * 0.95;
+        fVar4 = pcVar10->health * 0.95;
         break;
       case 2:
-        *(float *)(puVar9 + 100) = *(float *)(puVar9 + 100) * 0.85;
-        *(float *)(puVar9 + 0x5c) = *(float *)(puVar9 + 0x5c) * 0.9;
-        *(float *)(puVar9 + 0x58) = *(float *)(puVar9 + 0x58) * 0.9;
-        fVar2 = *(float *)(puVar9 + 0x24) * 0.9;
+        pcVar10->reward_value = pcVar10->reward_value * 0.85;
+        pcVar10->move_speed = pcVar10->move_speed * 0.9;
+        pcVar10->contact_damage = pcVar10->contact_damage * 0.9;
+        fVar4 = pcVar10->health * 0.9;
         break;
       case 3:
-        *(float *)(puVar9 + 100) = *(float *)(puVar9 + 100) * 0.85;
-        *(float *)(puVar9 + 0x5c) = *(float *)(puVar9 + 0x5c) * 0.8;
-        *(float *)(puVar9 + 0x58) = *(float *)(puVar9 + 0x58) * 0.8;
-        fVar2 = *(float *)(puVar9 + 0x24) * 0.8;
+        pcVar10->reward_value = pcVar10->reward_value * 0.85;
+        pcVar10->move_speed = pcVar10->move_speed * 0.8;
+        pcVar10->contact_damage = pcVar10->contact_damage * 0.8;
+        fVar4 = pcVar10->health * 0.8;
         break;
       case 4:
-        *(float *)(puVar9 + 100) = *(float *)(puVar9 + 100) * 0.8;
-        *(float *)(puVar9 + 0x5c) = *(float *)(puVar9 + 0x5c) * 0.7;
-        *(float *)(puVar9 + 0x58) = *(float *)(puVar9 + 0x58) * 0.7;
-        fVar2 = *(float *)(puVar9 + 0x24) * 0.7;
+        pcVar10->reward_value = pcVar10->reward_value * 0.8;
+        pcVar10->move_speed = pcVar10->move_speed * 0.7;
+        pcVar10->contact_damage = pcVar10->contact_damage * 0.7;
+        fVar4 = pcVar10->health * 0.7;
         break;
       default:
-        *(float *)(puVar9 + 100) = *(float *)(puVar9 + 100) * 0.8;
-        *(float *)(puVar9 + 0x5c) = *(float *)(puVar9 + 0x5c) * 0.6;
-        *(float *)(puVar9 + 0x58) = *(float *)(puVar9 + 0x58) * 0.5;
-        fVar2 = *(float *)(puVar9 + 0x24) * 0.5;
+        pcVar10->reward_value = pcVar10->reward_value * 0.8;
+        pcVar10->move_speed = pcVar10->move_speed * 0.6;
+        pcVar10->contact_damage = pcVar10->contact_damage * 0.5;
+        fVar4 = pcVar10->health * 0.5;
       }
-      *(float *)(puVar9 + 0x24) = fVar2;
-      if ((puVar9[0x8c] & 4) != 0) {
-        fVar2 = (float)DAT_00487194 * 0.35;
-        if (3.0 < fVar2) {
-          fVar2 = 3.0;
+      pcVar10->health = fVar4;
+      if ((pcVar10->flags & 4) != 0) {
+        fVar4 = (float)DAT_00487194 * 0.35;
+        if (3.0 < fVar4) {
+          fVar4 = 3.0;
         }
-        (&creature_spawn_slot_interval)[*(int *)(puVar9 + 0x78) * 6] =
-             fVar2 + (float)(&creature_spawn_slot_interval)[*(int *)(puVar9 + 0x78) * 6];
+        (&creature_spawn_slot_interval)[pcVar10->link_index * 6] =
+             fVar4 + (float)(&creature_spawn_slot_interval)[pcVar10->link_index * 6];
       }
     }
   }
   else {
     DAT_00487194 = 0;
-    *(float *)(puVar9 + 0x5c) = *(float *)(puVar9 + 0x5c) * 1.05;
-    *(float *)(puVar9 + 0x58) = *(float *)(puVar9 + 0x58) * 1.4;
-    *(float *)(puVar9 + 0x24) = *(float *)(puVar9 + 0x24) * 1.2;
-    if ((puVar9[0x8c] & 4) != 0) {
-      iVar4 = *(int *)(puVar9 + 0x78);
-      fVar2 = (float)(&creature_spawn_slot_interval)[iVar4 * 6];
-      (&creature_spawn_slot_interval)[iVar4 * 6] = fVar2 - 0.2;
-      if (fVar2 - 0.2 < 0.1) {
-        (&creature_spawn_slot_interval)[iVar4 * 6] = 0x3dcccccd;
-        return puVar9;
+    pcVar10->move_speed = pcVar10->move_speed * 1.05;
+    pcVar10->contact_damage = pcVar10->contact_damage * 1.4;
+    pcVar10->health = pcVar10->health * 1.2;
+    if ((pcVar10->flags & 4) != 0) {
+      iVar6 = pcVar10->link_index;
+      fVar4 = (float)(&creature_spawn_slot_interval)[iVar6 * 6];
+      (&creature_spawn_slot_interval)[iVar6 * 6] = fVar4 - 0.2;
+      if (fVar4 - 0.2 < 0.1) {
+        (&creature_spawn_slot_interval)[iVar6 * 6] = 0x3dcccccd;
+        return pcVar10;
       }
     }
   }
-  return puVar9;
+  return pcVar10;
 }
 
 
@@ -36054,44 +35979,42 @@ int __cdecl creature_spawn_tinted(float *pos,float *rgba,int type_id)
   float fVar2;
   int iVar3;
   int iVar4;
-  int iVar5;
   
   iVar3 = creature_alloc_slot();
-  iVar5 = iVar3 * 0x98;
-  (&creature_pos_x)[iVar3 * 0x26] = *pos;
-  (&creature_pos_y)[iVar3 * 0x26] = pos[1];
-  (&creature_pool)[iVar5] = 1;
-  (&creature_state_flag)[iVar5] = 1;
-  (&creature_vel_x)[iVar3 * 0x26] = 0;
-  (&creature_ai_mode)[iVar3 * 0x26] = 2;
-  (&creature_collision_flag)[iVar5] = 0;
-  (&creature_collision_timer)[iVar3 * 0x26] = 0;
-  (&creature_type_id)[iVar3 * 0x26] = type_id;
-  (&creature_force_target)[iVar5] = 0;
-  (&creature_hitbox_size)[iVar3 * 0x26] = 0x41800000;
-  (&creature_health)[iVar3 * 0x26] = 0x3f800000;
-  (&creature_vel_y)[iVar3 * 0x26] = 0;
+  (&creature_pool)[iVar3].pos_x = *pos;
+  (&creature_pool)[iVar3].pos_y = pos[1];
+  (&creature_pool)[iVar3].active = '\x01';
+  (&creature_pool)[iVar3].state_flag = '\x01';
+  (&creature_pool)[iVar3].vel_x = 0.0;
+  (&creature_pool)[iVar3].ai_mode = 2;
+  (&creature_pool)[iVar3].collision_flag = '\0';
+  (&creature_pool)[iVar3].collision_timer = 0.0;
+  (&creature_pool)[iVar3].type_id = type_id;
+  *(undefined1 *)&(&creature_pool)[iVar3].force_target = 0;
+  (&creature_pool)[iVar3].hitbox_size = 16.0;
+  (&creature_pool)[iVar3].health = 1.0;
+  (&creature_pool)[iVar3].vel_y = 0.0;
   iVar4 = crt_rand();
-  (&creature_move_speed)[iVar3 * 0x26] = 0x3fd9999a;
-  (&creature_reward_value)[iVar3 * 0x26] = 0x3f800000;
-  (&creature_attack_cooldown)[iVar3 * 0x26] = 0;
-  (&creature_heading)[iVar3 * 0x26] = (float)(iVar4 % 0x13a) * 0.01;
-  (&creature_tint_r)[iVar3 * 0x26] = *rgba;
-  (&creature_tint_g)[iVar3 * 0x26] = rgba[1];
-  (&creature_tint_b)[iVar3 * 0x26] = rgba[2];
-  (&creature_tint_a)[iVar3 * 0x26] = rgba[3];
+  (&creature_pool)[iVar3].move_speed = 1.7;
+  (&creature_pool)[iVar3].reward_value = 1.0;
+  (&creature_pool)[iVar3].attack_cooldown = 0.0;
+  (&creature_pool)[iVar3].heading = (float)(iVar4 % 0x13a) * 0.01;
+  (&creature_pool)[iVar3].tint_r = *rgba;
+  (&creature_pool)[iVar3].tint_g = rgba[1];
+  (&creature_pool)[iVar3].tint_b = rgba[2];
+  (&creature_pool)[iVar3].tint_a = rgba[3];
   iVar4 = crt_rand();
-  (&creature_contact_damage)[iVar3 * 0x26] = 0x42c80000;
-  (&creature_max_health)[iVar3 * 0x26] = (&creature_health)[iVar3 * 0x26];
+  (&creature_pool)[iVar3].contact_damage = 100.0;
+  (&creature_pool)[iVar3].max_health = (&creature_pool)[iVar3].health;
   fVar2 = (float)(iVar4 % 0x14) + 47.0;
-  (&creature_size)[iVar3 * 0x26] = fVar2;
+  (&creature_pool)[iVar3].size = fVar2;
   if ((type_id != 3) && (type_id != 4)) {
     return iVar3;
   }
-  fVar1 = (float)(&creature_move_speed)[iVar3 * 0x26];
-  *(uint *)(&creature_flags + iVar5) = *(uint *)(&creature_flags + iVar5) | 0x80;
-  (&creature_move_speed)[iVar3 * 0x26] = fVar1 * 1.2;
-  (&creature_size)[iVar3 * 0x26] = fVar2 * 0.8;
+  fVar1 = (&creature_pool)[iVar3].move_speed;
+  (&creature_pool)[iVar3].flags = (&creature_pool)[iVar3].flags | 0x80;
+  (&creature_pool)[iVar3].move_speed = fVar1 * 1.2;
+  (&creature_pool)[iVar3].size = fVar2 * 0.8;
   return iVar3;
 }
 
@@ -36571,14 +36494,14 @@ int __cdecl FUN_00445310(char *arg1,int arg2)
   int iVar3;
   byte *pbVar4;
   byte *pbVar5;
-  char *pcVar6;
+  creature_t *pcVar6;
   bool bVar7;
   
   iVar3 = 0;
   pbVar4 = &DAT_004d152c;
   pcVar6 = &creature_pool;
   do {
-    if ((*pcVar6 != '\0') && (pbVar2 = pbVar4, pbVar5 = (byte *)arg1, iVar3 != arg2)) {
+    if ((pcVar6->active != '\0') && (pbVar2 = pbVar4, pbVar5 = (byte *)arg1, iVar3 != arg2)) {
       do {
         bVar1 = *pbVar2;
         bVar7 = bVar1 < *pbVar5;
@@ -36600,7 +36523,7 @@ LAB_0044535a:
         return 0;
       }
     }
-    pcVar6 = pcVar6 + 0x98;
+    pcVar6 = pcVar6 + 1;
     iVar3 = iVar3 + 1;
     pbVar4 = pbVar4 + 0x40;
     if (0x4aa337 < (int)pcVar6) {
@@ -36727,7 +36650,7 @@ int __cdecl creature_find_by_name(char *name)
   int iVar4;
   byte *pbVar5;
   byte *pbVar6;
-  char *pcVar7;
+  creature_t *pcVar7;
   bool bVar8;
   
   iVar2 = 0;
@@ -36736,7 +36659,7 @@ int __cdecl creature_find_by_name(char *name)
   do {
     pbVar3 = pbVar5;
     pbVar6 = (byte *)name;
-    if (*pcVar7 != '\0') {
+    if (pcVar7->active != '\0') {
       do {
         bVar1 = *pbVar3;
         bVar8 = bVar1 < *pbVar6;
@@ -36758,7 +36681,7 @@ LAB_004455d4:
         return iVar2;
       }
     }
-    pcVar7 = pcVar7 + 0x98;
+    pcVar7 = pcVar7 + 1;
     iVar2 = iVar2 + 1;
     pbVar5 = pbVar5 + 0x40;
     if (0x4aa337 < (int)pcVar7) {
@@ -36797,9 +36720,9 @@ void creature_name_draw_labels(void)
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
   text = &DAT_004d152c;
-  pfVar2 = (float *)&creature_hitbox_size;
+  pfVar2 = &creature_pool.hitbox_size;
   do {
-    if (*(char *)(pfVar2 + -4) != '\0') {
+    if (((creature_t *)(pfVar2 + -4))->active != '\0') {
       iVar1 = (*grim_interface_ptr->vtable->grim_measure_text_width)(text);
       if ((0.0 <= *pfVar2) || (local_10 = (*pfVar2 + 10.0) * 0.1, 1.0 < local_10)) {
         local_10 = 1.0;
@@ -36906,8 +36829,8 @@ LAB_00445905:
     }
     else {
       local_30 = (float)CONCAT31(local_30._1_3_,1);
-      _DAT_004d7570 = (float)(&creature_pos_x)[iVar5 * 0x26];
-      _DAT_004d7574 = (&creature_pos_y)[iVar5 * 0x26];
+      _DAT_004d7570 = (&creature_pool)[iVar5].pos_x;
+      _DAT_004d7574 = (&creature_pool)[iVar5].pos_y;
       DAT_004d757c = DAT_004d757c + 1;
     }
     DAT_004d7588 = 0;

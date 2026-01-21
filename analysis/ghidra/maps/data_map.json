@@ -2958,6 +2958,7 @@
       "address": "0x0049bf38",
       "comment": "Creature pool base (0x180 entries, stride 0x98)",
       "name": "creature_pool",
+      "type": "creature_t",
       "program": "crimsonland.exe"
     },
     {

@@ -13,6 +13,56 @@ Pool facts:
 - Pool size: `0x180` entries.
 - Base address: `creature_pool` (`DAT_0049bf38`).
 
+## Struct view (creature_t)
+
+`creature_pool` is typed as `creature_t` (0x98 bytes).
+
+```c
+typedef struct creature_t {
+    unsigned char active;
+    unsigned char _pad0[3];
+    float phase_seed;
+    unsigned char state_flag;
+    unsigned char collision_flag;
+    unsigned char _pad1[2];
+    float collision_timer;
+    float hitbox_size;
+    float pos_x;
+    float pos_y;
+    float vel_x;
+    float vel_y;
+    float health;
+    float max_health;
+    float heading;
+    float target_heading;
+    float size;
+    float hit_flash_timer;
+    float tint_r;
+    float tint_g;
+    float tint_b;
+    float tint_a;
+    int force_target;
+    float target_x;
+    float target_y;
+    float contact_damage;
+    float move_speed;
+    float attack_cooldown;
+    float reward_value;
+    unsigned char _pad2[4];
+    int type_id;
+    int target_player;
+    unsigned char _pad3[4];
+    int link_index;
+    float target_offset_x;
+    float target_offset_y;
+    float orbit_angle;
+    float orbit_radius;
+    int flags;
+    int ai_mode;
+    float anim_phase;
+} creature_t;
+```
+
 Key helpers:
 
 - `creature_alloc_slot` (`FUN_00428140`) finds a free slot and seeds defaults.
