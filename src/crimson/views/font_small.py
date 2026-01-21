@@ -14,6 +14,10 @@ class SmallFontData:
     grid: int = 16
 
 
+SMALL_FONT_UV_BIAS_PX = 0.5
+SMALL_FONT_FILTER = rl.TEXTURE_FILTER_BILINEAR
+
+
 def load_small_font(assets_root: Path, missing_assets: list[str]) -> SmallFontData | None:
     widths_path = assets_root / "crimson" / "load" / "smallFnt.dat"
     atlas_path = assets_root / "crimson" / "load" / "smallWhite.png"
@@ -22,6 +26,7 @@ def load_small_font(assets_root: Path, missing_assets: list[str]) -> SmallFontDa
         return None
     widths = list(widths_path.read_bytes())
     texture = rl.load_texture(str(atlas_path))
+    rl.set_texture_filter(texture, SMALL_FONT_FILTER)
     return SmallFontData(widths=widths, texture=texture)
 
 
@@ -32,6 +37,7 @@ def draw_small_text(
     y_pos = y
     line_height = font.cell_size * scale
     origin = rl.Vector2(0.0, 0.0)
+    bias = SMALL_FONT_UV_BIAS_PX
     for value in text.encode("latin-1", errors="replace"):
         if value == 0x0A:
             x_pos = x
@@ -44,11 +50,13 @@ def draw_small_text(
             continue
         col = value % font.grid
         row = value // font.grid
+        src_w = max(float(width) - bias, 0.5)
+        src_h = max(float(font.cell_size) - bias, 0.5)
         src = rl.Rectangle(
-            float(col * font.cell_size),
-            float(row * font.cell_size),
-            float(width),
-            float(font.cell_size),
+            float(col * font.cell_size) + bias,
+            float(row * font.cell_size) + bias,
+            src_w,
+            src_h,
         )
         dst = rl.Rectangle(
             float(x_pos),
