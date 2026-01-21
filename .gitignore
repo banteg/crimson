@@ -9,6 +9,17 @@
 /analysis/binary_ninja/*.bndb
 .venv/
 .venv-dev/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
 screenshots/
 zig-cache/
 zig-out/

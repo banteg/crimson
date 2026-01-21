@@ -23,6 +23,9 @@ except Exception:  # pragma: no cover - only runs inside Binary Ninja
     bn = None
 
 
+_SEEDED_TYPES = False
+
+
 def _log_info(message: str) -> None:
     if bn and hasattr(bn, "log_info"):
         bn.log_info(message)
@@ -186,7 +189,315 @@ def _parse_type_string(bv, type_text: str):
     return None
 
 
+def _get_type_by_name(bv, name: str):
+    if hasattr(bv, "get_type_by_name"):
+        try:
+            return bv.get_type_by_name(name)
+        except Exception:
+            return None
+    types = getattr(bv, "types", None)
+    if isinstance(types, dict):
+        return types.get(name)
+    return None
+
+
+def _define_user_type(bv, name: str, type_obj) -> bool:
+    if not bn or type_obj is None:
+        return False
+    if hasattr(bv, "define_user_type"):
+        try:
+            bv.define_user_type(name, type_obj)
+            return True
+        except Exception:
+            return False
+    return False
+
+
+def _bn_void_ptr_type(bv):
+    if not bn:
+        return None
+    try:
+        if hasattr(bn.Type, "void") and hasattr(bn.Type, "pointer"):
+            return bn.Type.pointer(bv.arch, bn.Type.void())
+    except Exception:
+        pass
+    return None
+
+
+def _define_alias_type(bv, name: str, type_obj) -> bool:
+    if _get_type_by_name(bv, name) is not None:
+        return True
+    return _define_user_type(bv, name, type_obj)
+
+
+def _structure_builder_create():
+    if not bn:
+        return None
+    for candidate in ("StructureBuilder", "structure"):
+        builder = getattr(bn, candidate, None)
+        if builder is None:
+            continue
+        create = getattr(builder, "create", None)
+        if callable(create):
+            try:
+                return create()
+            except Exception:
+                continue
+    types_mod = getattr(bn, "types", None)
+    if types_mod is not None:
+        builder = getattr(types_mod, "StructureBuilder", None)
+        if builder is not None and callable(getattr(builder, "create", None)):
+            try:
+                return builder.create()
+            except Exception:
+                return None
+    return None
+
+
+def _type_structure(struct_builder):
+    if not bn or struct_builder is None:
+        return None
+    for attr in ("structure_type", "structure"):
+        ctor = getattr(bn.Type, attr, None)
+        if callable(ctor):
+            try:
+                return ctor(struct_builder)
+            except Exception:
+                continue
+    return None
+
+
+def _type_u8():
+    if not bn:
+        return None
+    try:
+        return bn.Type.int(1, False)
+    except Exception:
+        return None
+
+
+def _type_uint(bits: int):
+    if not bn:
+        return None
+    try:
+        return bn.Type.int(bits // 8, False)
+    except Exception:
+        return None
+
+
+def _type_sint(bits: int):
+    if not bn:
+        return None
+    try:
+        return bn.Type.int(bits // 8, True)
+    except Exception:
+        return None
+
+
+def _type_array(element_type, count: int):
+    if not bn:
+        return None
+    ctor = getattr(bn.Type, "array", None)
+    if callable(ctor):
+        try:
+            return ctor(element_type, count)
+        except Exception:
+            return None
+    return None
+
+
+def _define_opaque_struct_type(bv, name: str, size: int | None = None) -> bool:
+    if _get_type_by_name(bv, name) is not None:
+        return True
+    if not bn:
+        return False
+
+    sb = _structure_builder_create()
+    if sb is None:
+        return False
+
+    if size is not None:
+        try:
+            if hasattr(sb, "width"):
+                sb.width = int(size)
+        except Exception:
+            pass
+        try:
+            u8 = _type_u8()
+            arr = _type_array(u8, int(size)) if u8 is not None else None
+            append = getattr(sb, "append", None)
+            if callable(append) and arr is not None:
+                append(arr, "data")
+        except Exception:
+            pass
+
+    struct_type = _type_structure(sb)
+    if struct_type is None:
+        return False
+    return _define_user_type(bv, name, struct_type)
+
+
+def _seed_common_types(bv) -> None:
+    global _SEEDED_TYPES
+    if _SEEDED_TYPES or not bn:
+        return
+
+    # Numeric typedefs that commonly appear in Ghidra-derived signatures.
+    _define_alias_type(bv, "uint", _type_uint(32))
+    _define_alias_type(bv, "ushort", _type_uint(16))
+    _define_alias_type(bv, "uchar", _type_uint(8))
+    _define_alias_type(bv, "uInt", _type_uint(32))
+    _define_alias_type(bv, "uLong", _type_uint(32))
+    _define_alias_type(bv, "ulonglong", _type_uint(64))
+    _define_alias_type(bv, "byte", _type_uint(8))
+
+    _define_alias_type(bv, "undefined1", _type_uint(8))
+    _define_alias_type(bv, "undefined2", _type_uint(16))
+    _define_alias_type(bv, "undefined4", _type_uint(32))
+    _define_alias_type(bv, "undefined8", _type_uint(64))
+
+    # Common size types.
+    addr_bytes = getattr(getattr(bv, "arch", None), "address_size", None)
+    if isinstance(addr_bytes, int) and addr_bytes in (4, 8):
+        _define_alias_type(bv, "size_t", _type_uint(addr_bytes * 8))
+        _define_alias_type(bv, "ssize_t", _type_sint(addr_bytes * 8))
+        _define_alias_type(bv, "uintptr_t", _type_uint(addr_bytes * 8))
+        _define_alias_type(bv, "intptr_t", _type_sint(addr_bytes * 8))
+
+    # Opaque structs frequently used in signatures as pointer bases.
+    _define_opaque_struct_type(bv, "FILE")
+
+    _SEEDED_TYPES = True
+
+
+def _type_keywords() -> set[str]:
+    return {
+        "void",
+        "char",
+        "short",
+        "int",
+        "long",
+        "float",
+        "double",
+        "signed",
+        "unsigned",
+        "const",
+        "volatile",
+        "struct",
+        "union",
+        "enum",
+        "bool",
+        "_Bool",
+        "restrict",
+        "register",
+        "static",
+        "extern",
+        "inline",
+        "__int8",
+        "__int16",
+        "__int32",
+        "__int64",
+        "__cdecl",
+        "__stdcall",
+        "__fastcall",
+        "__thiscall",
+        "__vectorcall",
+        "__ptr64",
+        "__ptr32",
+        "__unaligned",
+        "__restrict",
+        "__w64",
+        "far",
+        "near",
+    }
+
+
+def _parse_hex_size_hint(comment: str) -> int | None:
+    import re
+
+    if not comment:
+        return None
+    patterns = [
+        r"\b0x([0-9a-fA-F]+)\s*-?\s*byte\b",
+        r"\b0x([0-9a-fA-F]+)\s+bytes?\b",
+        r"\bstride\s+0x([0-9a-fA-F]+)\b",
+    ]
+    for pat in patterns:
+        m = re.search(pat, comment)
+        if not m:
+            continue
+        try:
+            value = int(m.group(1), 16)
+        except Exception:
+            continue
+        if 0 < value <= 0x100000:
+            return value
+    return None
+
+
+def _ensure_types_for_decl(bv, decl: str) -> None:
+    import re
+
+    if not bn or not decl:
+        return
+
+    keywords = _type_keywords()
+
+    decl = decl.strip().rstrip(";")
+
+    ptr_base = set(re.findall(r"\b([A-Za-z_][A-Za-z0-9_]*)\b\s*\*", decl))
+    candidates: set[str] = set()
+
+    prefix, sep, suffix = decl.partition("(")
+    if sep:
+        # Remove function name from the return-type prefix (last identifier before '(').
+        m = re.search(r"\b([A-Za-z_][A-Za-z0-9_]*)\b\s*$", prefix.strip())
+        return_part = prefix[: m.start()] if m else prefix
+        candidates.update(re.findall(r"\b([A-Za-z_][A-Za-z0-9_]*)\b", return_part))
+
+        params = suffix.rsplit(")", 1)[0] if ")" in suffix else suffix
+        for param in [p.strip() for p in params.split(",") if p.strip()]:
+            if param == "void":
+                continue
+            ids = re.findall(r"[A-Za-z_][A-Za-z0-9_]*", param)
+            if not ids:
+                continue
+            idx = 0
+            while idx < len(ids) and ids[idx] in ("const", "volatile", "signed", "unsigned"):
+                idx += 1
+            if idx < len(ids) and ids[idx] in ("struct", "union", "enum"):
+                idx += 1
+            if idx < len(ids):
+                candidates.add(ids[idx])
+    else:
+        candidates.update(re.findall(r"\b([A-Za-z_][A-Za-z0-9_]*)\b", decl))
+
+    void_ptr = _bn_void_ptr_type(bv)
+
+    for name in sorted(candidates):
+        if name in keywords:
+            continue
+        if _get_type_by_name(bv, name) is not None:
+            continue
+
+        # Prefer opaque structs when used as pointer bases (e.g. FILE *).
+        if name in ptr_base:
+            _define_opaque_struct_type(bv, name)
+            continue
+
+        # Heuristic: many library typedefs are pointer-ish (png_structp, z_streamp, etc.).
+        if name.endswith("p") and void_ptr is not None:
+            _define_alias_type(bv, name, void_ptr)
+            continue
+
+        # Fallback: define unknown type names as void* aliases so signature parsing can proceed.
+        if void_ptr is not None:
+            _define_alias_type(bv, name, void_ptr)
+
+
 def _resolve_data_type(bv, type_text: str):
+    _seed_common_types(bv)
+
     parsed = _parse_type_string(bv, type_text)
     if parsed is not None:
         if isinstance(parsed, tuple):
@@ -204,9 +515,14 @@ def _resolve_data_type(bv, type_text: str):
 
 
 def _apply_function_signature(bv, func, signature: str) -> bool:
+    _seed_common_types(bv)
+
     parsed = _parse_type_string(bv, signature)
     if parsed is None:
-        return False
+        _ensure_types_for_decl(bv, signature)
+        parsed = _parse_type_string(bv, signature)
+        if parsed is None:
+            return False
     func_type = parsed[0] if isinstance(parsed, tuple) else parsed
     try:
         if hasattr(func, "set_user_type"):
@@ -422,6 +738,21 @@ def apply_data_map(bv, map_path: Path | None = None) -> dict[str, int]:
         type_text = row.get("type") or ""
         if type_text:
             data_type = _resolve_data_type(bv, type_text)
+            if data_type is None:
+                # Try to synthesize opaque types to reduce noisy warnings:
+                # - pointers: create opaque struct for the base
+                # - by-value: if comment includes a size hint, create an opaque struct of that size
+                base = type_text.replace("const ", "").strip()
+                if base.endswith("*"):
+                    base_name = base.rstrip("*").strip()
+                    if base_name and _get_type_by_name(bv, base_name) is None:
+                        _define_opaque_struct_type(bv, base_name)
+                        data_type = _resolve_data_type(bv, type_text)
+                else:
+                    size_hint = _parse_hex_size_hint(comment)
+                    if size_hint is not None and _get_type_by_name(bv, base) is None:
+                        _define_opaque_struct_type(bv, base, size=size_hint)
+                        data_type = _resolve_data_type(bv, type_text)
             if data_type is not None:
                 try:
                     if hasattr(bv, "define_user_data_var"):
@@ -433,7 +764,9 @@ def apply_data_map(bv, map_path: Path | None = None) -> dict[str, int]:
                 except Exception:
                     _log_warn(f"type apply failed for {name or '0x%08x' % addr} ({type_text})")
             else:
-                _log_warn(f"type not found for {name or '0x%08x' % addr}: {type_text}")
+                _log_warn(
+                    f"type not found for {name or '0x%08x' % addr}: {type_text} (no typedef/size hint available)"
+                )
 
         if changed:
             stats["applied"] += 1
