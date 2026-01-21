@@ -22,6 +22,34 @@ Note: the returned pointer is **not** the first field of the entry.
 There is a 4‑byte field at offset `-0x04` (`weapon_ammo_class` / `DAT_004d7a28`)
 that is indexed with the same stride.
 
+## Struct view (weapon_stats_t)
+
+`weapon_table` is typed as `weapon_stats_t` (0x7c bytes). The ammo class lives
+outside the struct at `weapon_ammo_class` (`-0x04` from the entry base).
+
+```c
+typedef struct weapon_stats_t {
+    char name[0x40];
+    unsigned char unlocked;
+    unsigned char _pad0[3];
+    int clip_size;
+    float shot_cooldown;
+    float reload_time;
+    float spread_heat;
+    unsigned char _pad1[4];
+    int shot_sfx_base_id;
+    int shot_sfx_variant_count;
+    int reload_sfx_id;
+    int hud_icon_id;
+    unsigned char flags;
+    unsigned char _pad2[3];
+    float projectile_meta;
+    float damage_scale;
+    int pellet_count;
+    unsigned char _pad3[4];
+} weapon_stats_t;
+```
+
 ## Offsets (relative to entry base)
 
 All offsets below are in **bytes**, relative to the pointer returned by

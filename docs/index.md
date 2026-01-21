@@ -17,6 +17,7 @@ Data map coverage: 19.65% (654 / 3328 symbols)
 - [Extraction pipeline](pipeline.md) — In progress
 - [Python executable spec](python-executable-spec.md) — Draft
 - [Weapon table](weapon-table.md) — In progress
+- [Audio entry struct](audio-entry.md) — Draft
 - [Progress metrics](metrics.md) — Tracking
 - [Work status model](work-status.md) — Draft
 - [Worklog](worklog.md) — Tracking

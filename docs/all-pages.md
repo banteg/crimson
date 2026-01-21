@@ -3,6 +3,7 @@
 This page is generated. Run `uv run python scripts/gen_all_pages.py` to update.
 
 - [Sprite atlas cutting (Crimsonland)](atlas.md)
+- [Audio entry struct (sfx_entry_t / music_entry_t)](audio-entry.md)
 - [Binary Analysis](binary-analysis.md)
 - [Bonus ID map](bonus-id-map.md)
 - [Boot / Loading Sequence](boot-sequence.md)

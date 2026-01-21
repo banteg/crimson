@@ -204,6 +204,9 @@ grim.dll_functions.json
 - `FUN_0043c590` -> `music_stream_fill`
   - Evidence: decodes Ogg data and writes the next streaming chunk.
 
+Audio entries are 0x84-byte `audio_entry_t` records; see [Audio entry struct](audio-entry.md)
+for the field layout used by `sfx_entry_table` and `music_entry_table`.
+
 ### Audio playback + streaming (high confidence)
 
 - `FUN_0043d3f0` -> `audio_update`
