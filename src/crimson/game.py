@@ -536,6 +536,8 @@ class MenuView:
         self._ground: GroundRenderer | None = None
         self._menu_entries: list[MenuEntry] = []
         self._selected_index = 0
+        self._focus_timer_ms = 0
+        self._hovered_index: int | None = None
         self._full_version = False
         self._timeline_ms = 0
         self._timeline_max_ms = 0
@@ -559,6 +561,8 @@ class MenuView:
             other_games=self._other_games_enabled(),
         )
         self._selected_index = 0 if self._menu_entries else -1
+        self._focus_timer_ms = 0
+        self._hovered_index = None
         self._timeline_ms = 0
         self._timeline_max_ms = self._menu_max_timeline_ms(
             full_version=self._full_version,
@@ -578,21 +582,30 @@ class MenuView:
         dt_ms = int(min(dt, 0.1) * 1000.0)
         if dt_ms > 0:
             self._timeline_ms = min(self._timeline_max_ms, self._timeline_ms + dt_ms)
+            self._focus_timer_ms = max(0, self._focus_timer_ms - dt_ms)
         if not self._menu_entries:
             return
-        hovered = self._hovered_entry_index()
-        if hovered is not None:
-            self._selected_index = hovered
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_UP):
-            self._selected_index = (self._selected_index - 1) % len(self._menu_entries)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_DOWN):
-            self._selected_index = (self._selected_index + 1) % len(self._menu_entries)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
-            entry = self._menu_entries[self._selected_index]
-            self._state.console.log.log(
-                f"menu select: {self._selected_index} (row {entry.row})"
+
+        self._hovered_index = self._hovered_entry_index()
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
+            reverse = rl.is_key_down(rl.KeyboardKey.KEY_LEFT_SHIFT) or rl.is_key_down(
+                rl.KeyboardKey.KEY_RIGHT_SHIFT
             )
-            self._state.console.log.flush()
+            delta = -1 if reverse else 1
+            self._selected_index = (self._selected_index + delta) % len(self._menu_entries)
+            self._focus_timer_ms = 1000
+
+        if (
+            rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
+            and 0 <= self._selected_index < len(self._menu_entries)
+        ):
+            entry = self._menu_entries[self._selected_index]
+            if self._menu_entry_enabled(entry):
+                self._state.console.log.log(
+                    f"menu select: {self._selected_index} (row {entry.row})"
+                )
+                self._state.console.log.flush()
         self._update_ready_timers(dt_ms)
         self._update_hover_amounts(dt_ms)
 
@@ -701,7 +714,7 @@ class MenuView:
         item_w = float(item.width)
         item_h = float(item.height)
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
-        for entry in self._menu_entries:
+        for idx, entry in enumerate(self._menu_entries):
             pos_x = self._menu_slot_pos_x(entry.slot)
             pos_y = entry.y
             angle_rad, slide_x = self._ui_element_anim(
@@ -739,7 +752,10 @@ class MenuView:
                 rotation_deg=rotation_deg,
                 tint=rl.WHITE,
             )
-            alpha = self._label_alpha(entry.hover_amount)
+            counter_value = entry.hover_amount
+            if idx == self._selected_index and self._focus_timer_ms > 0:
+                counter_value = self._focus_timer_ms
+            alpha = self._label_alpha(counter_value)
             tint = rl.Color(255, 255, 255, alpha)
             src = rl.Rectangle(
                 0.0,
@@ -815,8 +831,9 @@ class MenuView:
                 entry.ready_timer_ms = min(0x100, entry.ready_timer_ms + dt_ms)
 
     def _update_hover_amounts(self, dt_ms: int) -> None:
+        hovered_index = self._hovered_index
         for idx, entry in enumerate(self._menu_entries):
-            hover = idx == self._selected_index
+            hover = hovered_index is not None and idx == hovered_index
             if hover:
                 entry.hover_amount += dt_ms * 6
             else:

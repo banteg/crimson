@@ -21,6 +21,13 @@ In the main frame renderer, state `0` follows the "menu/world" render path:
 4. Perk prompt (usually inactive in menu).
 5. Cursor draw.
 
+## Keyboard navigation (state 0)
+
+Main-menu focus navigation is **Tab-based** (not arrow keys):
+
+- `Tab` cycles focus forward; `Shift+Tab` cycles focus backward (`ui_focus_update @ 0x0043d830`).
+- `Enter` activates the focused element (`ui_element_render @ 0x00446c40`), but only once the element is enabled (fully visible).
+
 ## UI element table and ordering
 
 UI elements live in a fixed pointer table:
