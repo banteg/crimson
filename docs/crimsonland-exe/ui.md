@@ -17,8 +17,10 @@ Responsibilities:
 - Clamps the timeline to the maximum active element value
   (`ui_elements_max_timeline`).
 
-- Iterates the UI element table `DAT_0048f208`..`DAT_0048f168`, calling
-  `FUN_00446900` and `ui_element_render` for each entry.
+- Iterates the UI element pointer table (`0x0048f168 .. 0x0048f20b`, 41 pointers)
+  **in reverse order** (from `ui_element_table_start` down to
+  `ui_element_table_end`), calling `ui_element_update` (`FUN_00446900`) and
+  `ui_element_render` for each entry.
 
 Helpers:
 
@@ -40,6 +42,13 @@ A common menu loop that:
 
 `ui_element_render` updates focus/click handling and draws a UI element's quads,
 colors, and textures. See [UI elements](../ui-elements.md) for struct details.
+
+## Main menu (state 0)
+
+The main menu is `game_state_id == 0` and is built from the shared UI element
+system (logo sign + `ui_menuItem` elements with overlay label atlas).
+
+- [Main menu (state 0)](main-menu.md)
 
 ## Button helpers
 
