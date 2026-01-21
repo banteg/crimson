@@ -15310,114 +15310,127 @@ int __cdecl dx_get_version(int *version,char *out,int out_len)
 
 /* FUN_0041cdb0 @ 0041cdb0 */
 
-/* WARNING: Removing unreachable block (ram,0x0041ce9f) */
-/* WARNING: Removing unreachable block (ram,0x0041cea7) */
-/* WARNING: Removing unreachable block (ram,0x0041cead) */
-/* WARNING: Removing unreachable block (ram,0x0041cf52) */
-/* WARNING: Removing unreachable block (ram,0x0041cf5a) */
-/* WARNING: Enum "tagCALLCONV": Some values do not have unique names */
+/* WARNING: Restarted to delay deadcode elimination for space: stack */
 
 int FUN_0041cdb0(void)
 
 {
-  HRESULT HVar1;
+  bool bVar1;
   HRESULT HVar2;
-  int iVar3;
-  char cVar4;
+  HRESULT HVar3;
+  int iVar4;
   int *unaff_EDI;
-  undefined4 uStack_74;
-  int *piVar5;
+  char cStack_84;
+  char cStack_83;
+  char cStack_82;
+  undefined4 uStack_80;
+  int **ppiVar5;
+  undefined4 uStack_70;
   wchar_t *pwStack_64;
-  wchar_t *pwStack_60;
-  undefined2 uVar6;
-  undefined4 uVar7;
-  undefined4 lpWideCharStr;
-  undefined2 uVar8;
-  undefined4 local_3c;
-  undefined4 uStack_38;
-  _union_2156 local_34;
-  undefined4 *puStack_24;
+  int **ppiStack_60;
+  int ***lpWideCharStr;
+  int *piVar6;
+  short sVar7;
+  int *piVar8;
+  int **ppiVar9;
+  int *local_3c;
+  int *piStack_38;
+  int **local_34 [2];
+  int *piStack_2c;
+  undefined4 *puStack_20;
   undefined4 local_10;
   undefined4 local_c;
   undefined4 local_8;
   undefined4 local_4;
   
-  HVar1 = CoInitialize((LPVOID)0x0);
-  local_34._0_4_ = (wchar_t *)0x0;
-  local_3c = (uint)(-1 < HVar1) << 0x18;
-  HVar2 = CoCreateInstance((IID *)&DAT_0046f5c8,(LPUNKNOWN)0x0,1,(IID *)&DAT_0046f5b8,
-                           (LPVOID *)&local_34);
-  if (HVar2 < 0) {
-    cVar4 = '\0';
+  bVar1 = false;
+  HVar2 = CoInitialize((LPVOID)0x0);
+  local_34[0] = (int **)0x0;
+  local_3c = (int *)((uint)(-1 < HVar2) << 0x18);
+  HVar3 = CoCreateInstance((IID *)&DAT_0046f5c8,(LPUNKNOWN)0x0,1,(IID *)&DAT_0046f5b8,local_34);
+  if (HVar3 < 0) {
+    cStack_84 = '\0';
   }
   else {
     local_10 = 0x10;
     local_c = 0x6f;
     local_8 = 0;
     local_4 = 0;
-    uVar7 = local_34._0_4_;
-    iVar3 = (**(code **)(*(int *)local_34._0_4_ + 0xc))();
-    if (-1 < iVar3) {
-      uStack_38 = (int *)0x0;
-      iVar3 = (**(code **)(*(int *)local_3c + 0x10))();
-      if (-1 < iVar3) {
-        lpWideCharStr = &stack0xffffffc0;
-        iVar3 = (**(code **)(iRam00000000 + 0x14))();
-        if (iVar3 < 0) {
-          cVar4 = (char)lpWideCharStr;
-          pwStack_60 = (wchar_t *)0x41cf96;
+    ppiVar9 = local_34[0];
+    iVar4 = (*(code *)(*local_34[0])[3])();
+    if (-1 < iVar4) {
+      piStack_38 = (int *)0x0;
+      iVar4 = (**(code **)(*local_3c + 0x10))();
+      if (-1 < iVar4) {
+        piVar8 = (int *)&stack0xffffffc0;
+        sVar7 = 0x392c;
+        piVar6 = piStack_38;
+        iVar4 = (**(code **)(*piStack_38 + 0x14))();
+        if (iVar4 < 0) {
+          cStack_84 = (char)piVar8;
+          ppiStack_60 = (int **)0x41cf96;
           (**(code **)(*unaff_EDI + 8))();
-          pwStack_60 = (wchar_t *)uVar7;
+          ppiStack_60 = ppiVar9;
           pwStack_64 = (wchar_t *)0x41cfa0;
-          (**(code **)(*(int *)pwStack_60 + 8))();
+          (*(code *)(*ppiStack_60)[2])();
         }
         else {
-          pwStack_60 = (wchar_t *)0x41ce7f;
-          pwStack_64 = (wchar_t *)uVar7;
-          VariantInit((VARIANTARG *)&local_34.field0);
-          pwStack_60 = u_dwDirectXVersionMajor_00473900;
-          uVar7 = pwStack_64;
-          (**(code **)(*(int *)pwStack_64 + 0x20))();
-          uVar8 = (undefined2)uVar7;
-          VariantClear((VARIANTARG *)&stack0xffffffc0);
-          piVar5 = (int *)&stack0xffffffc0;
-          uVar7 = uStack_38;
-          iVar3 = (**(code **)(*(int *)uStack_38 + 0x20))();
-          uVar6 = (undefined2)uVar7;
-          if (((-1 < iVar3) && (uVar8 == 0x13)) && (puStack_24 != (undefined4 *)0x0)) {
-            *puStack_24 = unaff_EDI;
-          }
-          VariantClear((VARIANTARG *)&stack0xffffffb4);
-          iVar3 = (**(code **)(*(int *)pwStack_64 + 0x20))
-                            (pwStack_64,u_szDirectXVersionLetter_004738a4,&stack0xffffffb4);
-          uStack_74 = uStack_38;
-          if (((-1 < iVar3) && (uVar6 == 8)) && ((LPCWCH)lpWideCharStr != (LPCWCH)0x0)) {
-            WideCharToMultiByte(0,0,(LPCWCH)lpWideCharStr,-1,(LPSTR)&pwStack_64,10,(LPCCH)0x0,
-                                (LPBOOL)0x0);
-            if ((undefined1 *)local_34._8_4_ != (undefined1 *)0x0) {
-              *(undefined1 *)local_34._8_4_ = pwStack_64._0_1_;
+          lpWideCharStr = local_34;
+          ppiStack_60 = (int **)0x41ce7f;
+          Ordinal_8();
+          ppiStack_60 = &piStack_38;
+          pwStack_64 = u_dwDirectXVersionMajor_00473900;
+          iVar4 = (**(code **)(*piVar8 + 0x20))();
+          if ((-1 < iVar4) && ((short)unaff_EDI == 0x13)) {
+            if (puStack_20 != (undefined4 *)0x0) {
+              *puStack_20 = local_3c;
             }
-            uStack_74._3_1_ = (undefined1)((uint)uStack_38 >> 0x18);
-            uStack_74._0_3_ = CONCAT12(1,(short)uStack_38);
+            bVar1 = true;
           }
-          VariantClear((VARIANTARG *)&stack0xffffffa8);
-          cVar4 = (char)uStack_74;
-          (**(code **)(u_dwDirectXVersionMinor_004738d4._0_4_ + 8))
-                    (u_dwDirectXVersionMinor_004738d4);
-          (**(code **)(*piVar5 + 8))(piVar5);
-          (**(code **)(*(int *)uStack_74 + 8))(uStack_74);
+          uStack_70 = (int *)&stack0xffffffbc;
+          Ordinal_9();
+          ppiVar5 = ppiStack_60;
+          iVar4 = (*(code *)(*ppiStack_60)[8])
+                            (ppiStack_60,u_dwDirectXVersionMinor_004738d4,&stack0xffffffb8);
+          if ((-1 < iVar4) && (sVar7 == 0x13)) {
+            if (piStack_2c != (int *)0x0) {
+              *piStack_2c = (int)ppiVar9;
+            }
+            uStack_70._0_2_ = CONCAT11(1,(CHAR)uStack_70);
+          }
+          Ordinal_9();
+          iVar4 = (**(code **)(*uStack_70 + 0x20))(uStack_70,u_szDirectXVersionLetter_004738a4);
+          uStack_80 = (int *)&stack0xffffffac;
+          if (((-1 < iVar4) && ((short)pwStack_64 == 8)) && (lpWideCharStr != (int ***)0x0)) {
+            WideCharToMultiByte(0,0,(LPCWCH)lpWideCharStr,-1,(LPSTR)&uStack_70,10,(LPCCH)0x0,
+                                (LPBOOL)0x0);
+            if (piStack_38 != (int *)0x0) {
+              *(CHAR *)piStack_38 = (CHAR)uStack_70;
+            }
+            uStack_80._3_1_ = (undefined1)((uint)&stack0xffffffac >> 0x18);
+            uStack_80._0_3_ = CONCAT12(1,(short)&stack0xffffffac);
+          }
+          Ordinal_9(&pwStack_64);
+          if (((!bVar1) || (cStack_83 = (char)((uint)&stack0xffffffa8 >> 8), cStack_83 == '\0')) ||
+             (cStack_82 = (char)((uint)&stack0xffffffa8 >> 0x10), cStack_84 = '\x01',
+             cStack_82 == '\0')) {
+            cStack_84 = (char)&stack0xffffffa8;
+          }
+          (**(code **)(*uStack_80 + 8))(uStack_80);
+          (*(code *)(*ppiVar5)[2])(ppiVar5);
+          (*(code *)piVar6[2])(&stack0xffffffa8);
         }
         goto LAB_0041cfb6;
       }
     }
-    cVar4 = (char)unaff_EDI;
-    (**(code **)(*(int *)local_3c + 8))();
+    cStack_84 = (char)unaff_EDI;
+    (**(code **)(*local_3c + 8))();
   }
 LAB_0041cfb6:
-  if (-1 < HVar1) {
+  if (-1 < HVar2) {
     CoUninitialize();
   }
-  return (-(uint)(cVar4 != '\0') & 0x7fffbffb) + 0x80004005;
+  return (-(uint)(cStack_84 != '\0') & 0x7fffbffb) + 0x80004005;
 }
 
 
@@ -32761,7 +32774,7 @@ void resource_close(void)
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 /* initializes DirectSound and the primary buffer */
 
-int __cdecl dsound_init(void *hwnd,uint coop_level)
+int dsound_init(void *hwnd,uint coop_level)
 
 {
   uint uVar1;
@@ -32769,41 +32782,59 @@ int __cdecl dsound_init(void *hwnd,uint coop_level)
   int iVar3;
   undefined4 *puVar4;
   int *piVar5;
+  undefined4 uStack_60;
   undefined4 uStack_54;
-  undefined4 auStack_30 [4];
-  undefined4 uStack_20;
-  short sStack_10;
-  ushort uStack_8;
+  uint uStack_50;
+  undefined4 uStack_4c;
+  int **ppiStack_48;
+  int *piStack_44;
+  undefined4 auStack_3c [4];
+  undefined4 uStack_2c;
+  short sStack_1c;
+  ushort uStack_14;
+  undefined4 uStack_8;
+  uint uStack_4;
   
   if (DAT_004c3964 != (int *)0x0) {
+    piStack_44 = DAT_004c3964;
+    ppiStack_48 = (int **)0x43bb05;
     (**(code **)(*DAT_004c3964 + 8))();
   }
+  piStack_44 = (int *)0x0;
+  ppiStack_48 = &DAT_004c3964;
+  uStack_4c = 0;
   DAT_004c3964 = (int *)0x0;
-  uVar1 = DirectSoundCreate8((LPCGUID)0x0,(LPDIRECTSOUND8 *)&DAT_004c3964,(LPUNKNOWN)0x0);
+  uStack_50 = 0x43bb17;
+  uVar1 = Ordinal_11();
   if ((int)uVar1 < 0) {
     return uVar1 & 0xffffff00;
   }
+  uStack_50 = uStack_4;
+  uStack_54 = uStack_8;
   uVar1 = (**(code **)(*DAT_004c3964 + 0x18))();
   if ((int)uVar1 < 0) {
     return uVar1 & 0xffffff00;
   }
-  puVar4 = auStack_30;
+  puVar4 = auStack_3c;
   for (iVar3 = 9; iVar3 != 0; iVar3 = iVar3 + -1) {
     *puVar4 = 0;
     puVar4 = puVar4 + 1;
   }
+  uStack_60 = 0;
   uStack_54 = 0;
-  auStack_30[0] = 0x24;
-  auStack_30[1] = 1;
-  auStack_30[2] = 0;
-  uStack_20 = 0;
-  uVar1 = (**(code **)(*DAT_004c3964 + 0xc))(DAT_004c3964,auStack_30);
+  auStack_3c[0] = 0x24;
+  auStack_3c[1] = 1;
+  auStack_3c[2] = 0;
+  uStack_2c = 0;
+  uVar1 = (**(code **)(*DAT_004c3964 + 0xc))(DAT_004c3964,auStack_3c);
   if ((int)uVar1 < 0) {
     return uVar1 & 0xffffff00;
   }
-  uStack_54 = CONCAT22(sStack_10,1);
-  piVar5 = &uStack_54;
-  uVar1 = (**(code **)(CONCAT22(uStack_8,(uStack_8 >> 3) * sStack_10) + 0x38))(&stack0xffffffb8);
+  uStack_60 = CONCAT22(sStack_1c,1);
+  uStack_54 = CONCAT22(uStack_14,(uStack_14 >> 3) * sStack_1c);
+  uStack_50 = uStack_50 & 0xffff0000;
+  piVar5 = &uStack_60;
+  uVar1 = (**(code **)(uStack_54 + 0x38))(&uStack_54);
   if ((int)uVar1 < 0) {
     return uVar1 & 0xffffff00;
   }
