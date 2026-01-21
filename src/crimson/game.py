@@ -578,8 +578,8 @@ class MenuView:
         assets = self._assets
         if assets is None:
             return
-        ui_scale, ui_shift = self._menu_layout_scale()
-        screen_w = float(self._state.config.screen_width)
+        screen_w = float(rl.get_screen_width())
+        ui_scale, ui_shift_x = self._menu_layout_scale(int(screen_w))
         sign = assets.sign
         if sign is not None:
             sign_w = MENU_SIGN_WIDTH
@@ -594,8 +594,8 @@ class MenuView:
             src = rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height))
             dst = rl.Rectangle(sign_x, sign_y, sign_w, sign_h)
             rl.draw_texture_pro(sign, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
-        self._draw_menu_panel(ui_scale, ui_shift)
-        self._draw_menu_items(ui_scale, ui_shift)
+        self._draw_menu_panel(ui_scale, ui_shift_x)
+        self._draw_menu_items(ui_scale, ui_shift_x)
 
     def _ensure_cache(self) -> PaqTextureCache:
         cache = self._state.texture_cache
@@ -621,18 +621,28 @@ class MenuView:
             width=1024,
             height=1024,
             texture_scale=self._state.config.texture_scale,
-            screen_width=float(self._state.config.screen_width),
-            screen_height=float(self._state.config.screen_height),
+            screen_width=None,
+            screen_height=None,
         )
         self._ground.generate(seed=self._state.rng.randrange(0, 10_000))
 
-    def _menu_layout_scale(self) -> tuple[float, float]:
-        width = int(self._state.config.screen_width)
+    def _menu_layout_scale(self, width: int) -> tuple[float, float]:
         if width <= MENU_SCALE_SMALL_THRESHOLD:
             return MENU_SCALE_SMALL, MENU_SCALE_SHIFT
         if MENU_SCALE_LARGE_MIN <= width <= MENU_SCALE_LARGE_MAX:
             return MENU_SCALE_LARGE, MENU_SCALE_SHIFT
         return 1.0, 0.0
+
+    @staticmethod
+    def _menu_transform_xy(
+        x: float, y: float, scale: float, shift_x: float
+    ) -> tuple[float, float]:
+        if scale != 1.0:
+            x *= scale
+            y *= scale
+        if shift_x != 0.0:
+            x += shift_x
+        return x, y
 
     def _menu_entries_for_flags(
         self,
@@ -703,12 +713,18 @@ class MenuView:
         label_w = MENU_LABEL_WIDTH * ui_scale
         label_h = MENU_LABEL_HEIGHT * ui_scale
         for entry in self._menu_entries:
-            row_base_y = entry.y
-            label_x = MENU_LABEL_BASE_X + MENU_LABEL_OFFSET_X * ui_scale + ui_shift
-            label_y = row_base_y + MENU_LABEL_OFFSET_Y * ui_scale + ui_shift
+            row_base_y0 = entry.y
+            label_x0 = MENU_LABEL_BASE_X + MENU_LABEL_OFFSET_X
+            label_y0 = row_base_y0 + MENU_LABEL_OFFSET_Y
+            label_x, label_y = self._menu_transform_xy(
+                label_x0, label_y0, ui_scale, ui_shift
+            )
             if assets.item is not None:
-                item_x = MENU_LABEL_BASE_X + MENU_ITEM_OFFSET_X * ui_scale + ui_shift
-                item_y = row_base_y + MENU_ITEM_OFFSET_Y * ui_scale + ui_shift
+                item_x0 = MENU_LABEL_BASE_X + MENU_ITEM_OFFSET_X
+                item_y0 = row_base_y0 + MENU_ITEM_OFFSET_Y
+                item_x, item_y = self._menu_transform_xy(
+                    item_x0, item_y0, ui_scale, ui_shift
+                )
                 self._draw_menu_item_bg(assets.item, item_x, item_y, ui_scale)
             src = rl.Rectangle(
                 0.0,
@@ -739,8 +755,11 @@ class MenuView:
         panel = assets.panel
         panel_w = MENU_PANEL_WIDTH * ui_scale
         panel_h = MENU_PANEL_HEIGHT * ui_scale
-        panel_x = MENU_PANEL_BASE_X + MENU_PANEL_OFFSET_X * ui_scale + ui_shift
-        panel_y = MENU_PANEL_BASE_Y + MENU_PANEL_OFFSET_Y * ui_scale + ui_shift
+        panel_x0 = MENU_PANEL_BASE_X + MENU_PANEL_OFFSET_X
+        panel_y0 = MENU_PANEL_BASE_Y + MENU_PANEL_OFFSET_Y
+        panel_x, panel_y = self._menu_transform_xy(
+            panel_x0, panel_y0, ui_scale, ui_shift
+        )
         src = rl.Rectangle(0.0, 0.0, float(panel.width), float(panel.height))
         dst = rl.Rectangle(panel_x, panel_y, panel_w, panel_h)
         rl.draw_texture_pro(panel, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)

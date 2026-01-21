@@ -84,12 +84,11 @@ class GroundRenderer:
         v0 = -cam_y / float(self.height)
         u1 = u0 + screen_w / float(self.width)
         v1 = v0 + screen_h / float(self.height)
-        src = rl.Rectangle(
-            u0 * float(target.texture.width),
-            v0 * float(target.texture.height),
-            (u1 - u0) * float(target.texture.width),
-            (v1 - v0) * float(target.texture.height),
-        )
+        src_x = u0 * float(target.texture.width)
+        src_y = v0 * float(target.texture.height)
+        src_w = (u1 - u0) * float(target.texture.width)
+        src_h = (v1 - v0) * float(target.texture.height)
+        src = rl.Rectangle(src_x, src_y + src_h, src_w, -src_h)
         dst = rl.Rectangle(0.0, 0.0, render_w, render_h)
         rl.draw_texture_pro(target.texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
