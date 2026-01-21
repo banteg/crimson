@@ -144,3 +144,7 @@ game-screenshot:
     nircmd win activate process crimsonland.exe
     sleep 1
     nircmd savescreenshotwin "screenshots\\screen.png"
+
+zip-decompile:
+    zip crimson.zip analysis/ghidra/raw/*.c analysis/binary_ninja/*.txt
+    open -R crimson.zip
