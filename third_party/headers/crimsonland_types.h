@@ -304,11 +304,22 @@ struct mod_api_t {
 };
 
 struct mod_api_vtbl_t {
-    void *pad0[7];
+    void (*api_log)(mod_api_t *self, const char *message);
+    void *(*api_find_cvar)(mod_api_t *self, const char *name);
+    void *pad0[5];
     void (*api_fn_0x1c)(mod_api_t *self, float a, float b, float c, float d);
-    void *pad1[21];
+    void *pad1[2];
+    int (*api_load_texture)(mod_api_t *self, const char *path);
+    void (*api_free_texture)(mod_api_t *self, int handle);
+    void *pad2[10];
+    int (*api_load_sound)(mod_api_t *self, const char *path);
+    void (*api_free_sound)(mod_api_t *self, int handle);
+    void *pad3[1];
+    int (*api_load_music)(mod_api_t *self, const char *path);
+    void (*api_free_music)(mod_api_t *self, int handle);
+    void *pad4[2];
     unsigned char (*api_key_query)(mod_api_t *self, int key);
-    void *pad2[3];
+    void *pad5[3];
     void (*api_exec_command)(mod_api_t *self, const char *command);
 };
 

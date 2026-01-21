@@ -78,7 +78,15 @@ within the mod DLLs. Known call sites:
 
 | Vtable offset | Signature (inferred) | Usage |
 | --- | --- | --- |
-| `0x1c` | `fn(self, float a, float b, float c, float d)` | `cl_nullmod` calls with zeros (likely a clear/color or render-state helper). |
+| `0x00` | `log(self, const char *msg)` | `cl_crimsonroks` logs init/shutdown banners and status strings. |
+| `0x04` | `find_cvar(self, const char *name)` | `cl_crimsonroks` queries `v_width` / `v_height` and reads `[ret+0x08]` for values. |
+| `0x1c` | `fn(self, float a, float b, float c, float d)` | `cl_nullmod` calls with zeros; likely a clear/color helper. |
+| `0x28` | `load_texture(self, const char *path)` | `cl_crimsonroks` loads `crimsonroks/<name>` textures and stores handles. |
+| `0x2c` | `free_texture(self, int handle)` | `cl_crimsonroks` releases texture handles during shutdown. |
+| `0x58` | `load_sound(self, const char *path)` | `cl_crimsonroks` loads `expl.ogg`, `hit.ogg`, `shoot.ogg`, `bonus.ogg`. |
+| `0x5c` | `free_sound(self, int handle)` | `cl_crimsonroks` frees SFX handles during shutdown. |
+| `0x64` | `load_music(self, const char *path)` | `cl_crimsonroks` loads `roks.ogg` for music. |
+| `0x68` | `free_music(self, int handle)` | `cl_crimsonroks` frees the music handle during shutdown. |
 | `0x74` | `key_query(self, int key)` | Both mods call with `0x3b`/`0x3c` (F1/F2) and branch on `al`. |
 | `0x84` | `exec_command(self, const char *cmd)` | Called with `"game_pause"` when the F1 path triggers. |
 
@@ -86,4 +94,4 @@ within the mod DLLs. Known call sites:
 
 - Meaning of `api_version` (always `3` in bundled mods) and the `flags` word at `+0x08`.
 - The rest of the 0x408-byte interface object and any additional vtable slots.
-- Precise semantics of the mod API vtable slots (0x1c/0x74/0x84) beyond the observed usage.
+- Precise semantics of the mod API vtable slots (0x1c and unknown gaps).
