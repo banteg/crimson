@@ -750,11 +750,6 @@
     "value": "It's an error to set both read_data_fn and write_data_fn in the "
   },
   {
-    "address": "0x1004E51D",
-    "type": "ascii",
-    "value": "PNG\r\n"
-  },
-  {
     "address": "0x1004E575",
     "type": "ascii",
     "value": "m[?%I"

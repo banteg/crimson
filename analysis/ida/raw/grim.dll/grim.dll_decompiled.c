@@ -56,11 +56,12 @@ void nullsub_19()
 // sub_10001140 @ 0x10001140
 char sub_10001140()
 {
-  dword_1005C8F8 = (int)aSystemNoFrameF;
+  grim_error_text = (int)aSystemNoFrameF;
   return 0;
 }
 
-// nullsub_1 @ 0x10001160
+// grim_noop @ 0x10001160
+// debug stub (no-op)
 void nullsub_1()
 {
   ;
@@ -116,11 +117,11 @@ INT_PTR __stdcall sub_10001170(HWND hDlg, UINT a2, WPARAM a3, LPARAM a4)
     dword_1005D80C = 1;
     DlgItem = GetDlgItem(hDlg, 1026);
     SendMessageA(DlgItem, 0x143u, 0, (LPARAM)aAutodetectSele);
-    if ( (*(int (__stdcall **)(int, WPARAM, int, int, _DWORD, int, int))(*(_DWORD *)dword_1005B2C4 + 40))(
-           dword_1005B2C4,
+    if ( (*(int (__stdcall **)(int, WPARAM, int, int, _DWORD, int, int))(*(_DWORD *)grim_d3d8_probe + 40))(
+           grim_d3d8_probe,
            wParam,
            1,
-           dword_1005A488,
+           grim_texture_format,
            0,
            3,
            21) >= 0 )
@@ -131,11 +132,11 @@ INT_PTR __stdcall sub_10001170(HWND hDlg, UINT a2, WPARAM a3, LPARAM a4)
       v15 = GetDlgItem(hDlg, 1026);
       SendMessageA(v15, 0x143u, 0, (LPARAM)a32BitA8r8g8b8H);
     }
-    if ( (*(int (__stdcall **)(int, WPARAM, int, int, _DWORD, int, int))(*(_DWORD *)dword_1005B2C4 + 40))(
-           dword_1005B2C4,
+    if ( (*(int (__stdcall **)(int, WPARAM, int, int, _DWORD, int, int))(*(_DWORD *)grim_d3d8_probe + 40))(
+           grim_d3d8_probe,
            wParam,
            1,
-           dword_1005A488,
+           grim_texture_format,
            0,
            3,
            29) >= 0 )
@@ -146,11 +147,11 @@ INT_PTR __stdcall sub_10001170(HWND hDlg, UINT a2, WPARAM a3, LPARAM a4)
       v17 = GetDlgItem(hDlg, 1026);
       SendMessageA(v17, 0x143u, 0, (LPARAM)a16BitA8r3g3b2);
     }
-    if ( (*(int (__stdcall **)(int, WPARAM, int, int, _DWORD, int, int))(*(_DWORD *)dword_1005B2C4 + 40))(
-           dword_1005B2C4,
+    if ( (*(int (__stdcall **)(int, WPARAM, int, int, _DWORD, int, int))(*(_DWORD *)grim_d3d8_probe + 40))(
+           grim_d3d8_probe,
            wParam,
            1,
-           dword_1005A488,
+           grim_texture_format,
            0,
            3,
            26) >= 0 )
@@ -161,11 +162,11 @@ INT_PTR __stdcall sub_10001170(HWND hDlg, UINT a2, WPARAM a3, LPARAM a4)
       v19 = GetDlgItem(hDlg, 1026);
       SendMessageA(v19, 0x143u, 0, (LPARAM)a16BitA4r4g4b4);
     }
-    if ( (*(int (__stdcall **)(int, WPARAM, int, int, _DWORD, int, int))(*(_DWORD *)dword_1005B2C4 + 40))(
-           dword_1005B2C4,
+    if ( (*(int (__stdcall **)(int, WPARAM, int, int, _DWORD, int, int))(*(_DWORD *)grim_d3d8_probe + 40))(
+           grim_d3d8_probe,
            wParam,
            1,
-           dword_1005A488,
+           grim_texture_format,
            0,
            3,
            861165636) >= 0 )
@@ -176,11 +177,11 @@ INT_PTR __stdcall sub_10001170(HWND hDlg, UINT a2, WPARAM a3, LPARAM a4)
       v21 = GetDlgItem(hDlg, 1026);
       SendMessageA(v21, 0x143u, 0, (LPARAM)aDxt3Compressed);
     }
-    if ( (*(int (__stdcall **)(int, WPARAM, int, int, _DWORD, int, int))(*(_DWORD *)dword_1005B2C4 + 40))(
-           dword_1005B2C4,
+    if ( (*(int (__stdcall **)(int, WPARAM, int, int, _DWORD, int, int))(*(_DWORD *)grim_d3d8_probe + 40))(
+           grim_d3d8_probe,
            wParam,
            1,
-           dword_1005A488,
+           grim_texture_format,
            0,
            3,
            894720068) >= 0 )
@@ -269,7 +270,7 @@ LABEL_33:
   v9 = GetDlgItem(hDlg, 1028);
   LOBYTE(dword_1005D108) = SendMessageA(v9, 0xF0u, 0, 0) != 0;
   v10 = GetDlgItem(hDlg, 1026);
-  dword_1005A56C = dword_1005BC18[SendMessageA(v10, 0x147u, 0, 0)];
+  grim_preferred_texture_format = dword_1005BC18[SendMessageA(v10, 0x147u, 0, 0)];
   v11 = GetDlgItem(hDlg, 1029);
   byte_1005D0B8 = SendMessageA(v11, 0xF0u, 0, 0) != 0;
   byte_1005D400 = 0;
@@ -325,18 +326,18 @@ int sub_10001710()
   v1 = 34;
   do
   {
-    dword_1005C418[v1++] = v0;
+    grim_config_blob[v1++] = v0;
     strcpy(v3, aDefault);
     ++v0;
     v3 += 27;
   }
   while ( v1 < 42 );
-  HIWORD(dword_1005C418[0]) = 0;
+  HIWORD(grim_config_blob[0]) = 0;
   memset(byte_1005C598, 0, 0x20u);
   strcpy(byte_1005C598, a10tons);
   dword_1005C49C = 1;
   dword_1005C498 = 0;
-  LOWORD(dword_1005C418[0]) = 0;
+  LOWORD(grim_config_blob[0]) = 0;
   byte_1005C884 = 0;
   byte_1005C878 = 1;
   dword_1005C5C0 = 0;
@@ -408,7 +409,7 @@ char sub_100019F0()
   v1 = v0;
   if ( v0 )
   {
-    fwrite(dword_1005C418, 0x480u, 1u, v0);
+    fwrite(grim_config_blob, 0x480u, 1u, v0);
     fclose(v1);
   }
   return 1;
@@ -431,7 +432,7 @@ char sub_10001A30()
   if ( ftell(v0) == 1152 )
   {
     fseek(v0, 0, 0);
-    fread(dword_1005C418, 0x480u, 1u, v0);
+    fread(grim_config_blob, 0x480u, 1u, v0);
     fclose(v0);
   }
   else
@@ -509,7 +510,7 @@ INT_PTR __stdcall DialogFunc(HWND hDlg, UINT a2, WPARAM a3, LPARAM a4)
             {
               if ( (_BYTE)dword_1005C48C )
               {
-                DialogBoxParamA(hInstance, (LPCSTR)0x8B, hDlg, DialogFunc, 0);
+                DialogBoxParamA(grim_module_handle, (LPCSTR)0x8B, hDlg, DialogFunc, 0);
               }
               else
               {
@@ -519,7 +520,7 @@ INT_PTR __stdcall DialogFunc(HWND hDlg, UINT a2, WPARAM a3, LPARAM a4)
             }
             else
             {
-              DialogBoxParamA(hInstance, (LPCSTR)0x8C, hDlg, DialogFunc, 0);
+              DialogBoxParamA(grim_module_handle, (LPCSTR)0x8C, hDlg, DialogFunc, 0);
             }
             if ( byte_1005C884 )
             {
@@ -635,8 +636,8 @@ LRESULT sub_10001E90()
   DlgItem = GetDlgItem(hDlg, 1005);
   SendMessageA(DlgItem, 0xF1u, v18, 0);
   byte_1005D400 = byte_1005D0C8;
-  byte_10053065 = (*(int (__stdcall **)(int, _DWORD, int, int, int, _DWORD))(*(_DWORD *)dword_1005B2C4 + 36))(
-                    dword_1005B2C4,
+  byte_10053065 = (*(int (__stdcall **)(int, _DWORD, int, int, int, _DWORD))(*(_DWORD *)grim_d3d8_probe + 36))(
+                    grim_d3d8_probe,
                     0,
                     1,
                     22,
@@ -712,7 +713,8 @@ LRESULT sub_10001E90()
   return SendMessageA(v16, 0x14Eu, v19, 0);
 }
 
-// sub_10002120 @ 0x10002120
+// grim_config_dialog_proc @ 0x10002120
+// dialog procedure for the Grim2D config UI
 INT_PTR __stdcall sub_10002120(HWND hDlg, UINT a2, WPARAM a3, LPARAM a4)
 {
   HWND v4; // eax
@@ -745,7 +747,7 @@ INT_PTR __stdcall sub_10002120(HWND hDlg, UINT a2, WPARAM a3, LPARAM a4)
 
   if ( a2 == 16 )
   {
-    byte_1005D3BC = 1;
+    grim_config_dialog_canceled = 1;
     EndDialog(hDlg, (unsigned __int16)a3);
     return 0;
   }
@@ -787,13 +789,13 @@ INT_PTR __stdcall sub_10002120(HWND hDlg, UINT a2, WPARAM a3, LPARAM a4)
           LOBYTE(v13) = v13 & 0xF0;
           dword_1005CE38 = v13 + 32;
           sprintf(lParam, "w: %d h %d bpp %d\n", dword_10053054, dword_10053058, (unsigned __int8)dword_1005B2B8);
-          byte_1005D3BC = 0;
+          grim_config_dialog_canceled = 0;
           v14 = GetDlgItem(hDlg, 1009);
           wParam = SendMessageA(v14, 0x147u, 0, 0);
           EndDialog(hDlg, (unsigned __int16)a3);
           return 0;
         case 1001:
-          byte_1005D3BC = 1;
+          grim_config_dialog_canceled = 1;
           EndDialog(hDlg, (unsigned __int16)a3);
           return 0;
         case 1009:
@@ -816,7 +818,7 @@ INT_PTR __stdcall sub_10002120(HWND hDlg, UINT a2, WPARAM a3, LPARAM a4)
           break;
         case 1019:
           if ( sub_10001A30() )
-            DialogBoxParamA(hInstance, (LPCSTR)0x89, hDlg, DialogFunc, 0);
+            DialogBoxParamA(grim_module_handle, (LPCSTR)0x89, hDlg, DialogFunc, 0);
           else
             MessageBoxA(hDlg, aUnableToLoadCo, aParentalLockPr, 0x40u);
           result = 0;
@@ -824,7 +826,7 @@ INT_PTR __stdcall sub_10002120(HWND hDlg, UINT a2, WPARAM a3, LPARAM a4)
         case 1020:
           v6 = GetDlgItem(hDlg, 1009);
           wParam = SendMessageA(v6, 0x147u, 0, 0);
-          DialogBoxParamA(hInstance, (LPCSTR)0x8A, hDlg, sub_10001170, 0);
+          DialogBoxParamA(grim_module_handle, (LPCSTR)0x8A, hDlg, sub_10001170, 0);
           result = 0;
           break;
         default:
@@ -842,13 +844,13 @@ INT_PTR __stdcall sub_10002120(HWND hDlg, UINT a2, WPARAM a3, LPARAM a4)
   SendMessageA(hDlg, 0x80u, 1u, ::lParam);
   SendMessageA(hDlg, 0x80u, 0, ::lParam);
   GetLocalTime(&SystemTime);
-  v17 = (*(int (__stdcall **)(int))(*(_DWORD *)dword_1005B2C4 + 16))(dword_1005B2C4);
+  v17 = (*(int (__stdcall **)(int))(*(_DWORD *)grim_d3d8_probe + 16))(grim_d3d8_probe);
   v18 = 0;
   byte_1005BDFC[256] = 0;
   for ( i = v17; v18 < i; ++v18 )
   {
-    (*(void (__stdcall **)(int, int, int, void *, int))(*(_DWORD *)dword_1005B2C4 + 20))(
-      dword_1005B2C4,
+    (*(void (__stdcall **)(int, int, int, void *, int))(*(_DWORD *)grim_d3d8_probe + 20))(
+      grim_d3d8_probe,
       v18,
       2,
       &unk_10059788,
@@ -858,14 +860,14 @@ INT_PTR __stdcall sub_10002120(HWND hDlg, UINT a2, WPARAM a3, LPARAM a4)
     else
       sprintf(Buffer, "%s (default)", &unk_10059988);
     v25 = 0;
-    if ( (*(int (__stdcall **)(int, int, int, int, int))(*(_DWORD *)dword_1005B2C4 + 36))(
-           dword_1005B2C4,
+    if ( (*(int (__stdcall **)(int, int, int, int, int))(*(_DWORD *)grim_d3d8_probe + 36))(
+           grim_d3d8_probe,
            v18,
            1,
            23,
            23) >= 0
-      || (*(int (__stdcall **)(int, int, int, int, int, _DWORD))(*(_DWORD *)dword_1005B2C4 + 36))(
-           dword_1005B2C4,
+      || (*(int (__stdcall **)(int, int, int, int, int, _DWORD))(*(_DWORD *)grim_d3d8_probe + 36))(
+           grim_d3d8_probe,
            v18,
            1,
            22,
@@ -889,14 +891,15 @@ INT_PTR __stdcall sub_10002120(HWND hDlg, UINT a2, WPARAM a3, LPARAM a4)
     SendMessageA(v22, 0x143u, 0, (LPARAM)aNoSupportedDis);
     if ( MessageBoxA(hDlg, aNoSupportedDis_0, aCrimsonland, 0x33u) != 6 )
     {
-      byte_1005D3BC = 1;
+      grim_config_dialog_canceled = 1;
       EndDialog(hDlg, (unsigned __int16)a3);
     }
   }
   return 1;
 }
 
-// sub_10002680 @ 0x10002680
+// grim_window_create @ 0x10002680
+// registers the window class and creates the main game window
 char sub_10002680()
 {
   CHAR *ModuleHandleA; // eax
@@ -934,11 +937,11 @@ char sub_10002680()
   {
     v2 = GetSystemMetrics(0) / 2;
     SystemMetrics = GetSystemMetrics(1);
-    Rect.right = v2 + ((unsigned int)dword_1005C400 >> 1);
+    Rect.right = v2 + ((unsigned int)grim_backbuffer_width >> 1);
     SystemMetrics /= 2;
-    Rect.left = v2 - ((unsigned int)dword_1005C400 >> 1);
-    Rect.top = SystemMetrics - ((unsigned int)dword_10059DC0 >> 1);
-    Rect.bottom = SystemMetrics + ((unsigned int)dword_10059DC0 >> 1);
+    Rect.left = v2 - ((unsigned int)grim_backbuffer_width >> 1);
+    Rect.top = SystemMetrics - ((unsigned int)grim_backbuffer_height >> 1);
+    Rect.bottom = SystemMetrics + ((unsigned int)grim_backbuffer_height >> 1);
     AdjustWindowRectEx(&Rect, 0xCB0000u, 0, 0x40000u);
     v10 = (HINSTANCE)lpModuleName;
     DesktopWindow = GetDesktopWindow();
@@ -976,13 +979,14 @@ char sub_10002680()
   }
   else
   {
-    dword_1005C8F8 = (int)aWinCouldNotCre;
-    sub_10002880();
+    grim_error_text = (int)aWinCouldNotCre;
+    grim_window_destroy();
     return 0;
   }
 }
 
-// sub_10002880 @ 0x10002880
+// grim_window_destroy @ 0x10002880
+// posts quit and destroys the main window
 BOOL sub_10002880()
 {
   HWND v0; // eax
@@ -999,7 +1003,8 @@ BOOL sub_10002880()
   return UnregisterClassA(stru_10059DC8.lpszClassName, stru_10059DC8.hInstance);
 }
 
-// sub_100028D0 @ 0x100028D0
+// grim_backup_textures @ 0x100028D0
+// backup texture surfaces before device reset
 char sub_100028D0()
 {
   int v1; // edi
@@ -1015,10 +1020,10 @@ char sub_100028D0()
   int v11; // [esp+4Ch] [ebp-8h]
   int v12; // [esp+50h] [ebp-4h]
 
-  nullsub_1();
+  grim_noop();
   if ( byte_1005D810 )
   {
-    nullsub_1();
+    grim_noop();
     if ( byte_1005D810 )
       return 1;
   }
@@ -1030,28 +1035,28 @@ LABEL_15:
     byte_1005D810 = 1;
     return 1;
   }
-  v2 = &dword_1005D404;
+  v2 = &grim_texture_slots;
   while ( 1 )
   {
     if ( !*v2 || !*((_BYTE *)*v2 + 8) )
       goto LABEL_14;
-    nullsub_1();
-    if ( (*(int (__stdcall **)(int, _DWORD, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 108))(
-           dword_10059DBC,
+    grim_noop();
+    if ( (*(int (__stdcall **)(int, _DWORD, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 108))(
+           grim_d3d_device,
            *((_DWORD *)*v2 + 3),
            *((_DWORD *)*v2 + 4),
-           dword_1005A488,
+           grim_texture_format,
            (int)*v2 + 20) < 0 )
     {
-      dword_1005C8F8 = (int)aD3dUnableToBac;
-      nullsub_1();
-      nullsub_1();
+      grim_error_text = (int)aD3dUnableToBac;
+      grim_noop();
+      grim_noop();
       return 0;
     }
     if ( (*(int (__stdcall **)(_DWORD, _DWORD, int *))(**((_DWORD **)*v2 + 1) + 60))(*((_DWORD *)*v2 + 1), 0, &v8) < 0 )
       break;
-    v3 = (*(int (__stdcall **)(int, int, _DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)dword_10059DBC + 112))(
-           dword_10059DBC,
+    v3 = (*(int (__stdcall **)(int, int, _DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)grim_d3d_device + 112))(
+           grim_d3d_device,
            v8,
            0,
            0,
@@ -1059,20 +1064,20 @@ LABEL_15:
            0);
     if ( v3 < 0 )
     {
-      v6 = (int)*(&dword_1005D404 + v1);
+      v6 = (int)*(&grim_texture_slots + v1);
       v7 = *(_DWORD *)(v6 + 20);
       if ( v7 && !(*(int (__stdcall **)(_DWORD))(*(_DWORD *)v7 + 8))(*(_DWORD *)(v6 + 20)) )
-        *((_DWORD *)*(&dword_1005D404 + v1) + 5) = 0;
+        *((_DWORD *)*(&grim_texture_slots + v1) + 5) = 0;
       if ( v8 && !(*(int (__stdcall **)(int))(*(_DWORD *)v8 + 8))(v8) )
         v8 = 0;
-      dword_1005C8F8 = (int)aD3dUnableToBac_1;
-      nullsub_1();
+      grim_error_text = (int)aD3dUnableToBac_1;
+      grim_noop();
       LOBYTE(v9) = 1;
       dword_1005D0F8 = v9;
       dword_1005D0FC = v10;
-      dword_1005D100 = v11;
-      dword_1005D104 = v12;
-      nullsub_1();
+      qword_1005D100 = v11;
+      MEMORY[0x1005D104] = v12;
+      grim_noop();
       return 0;
     }
     if ( v8 )
@@ -1086,17 +1091,18 @@ LABEL_14:
     if ( v1 > dword_1005305C )
       goto LABEL_15;
   }
-  v4 = (int)*(&dword_1005D404 + v1);
+  v4 = (int)*(&grim_texture_slots + v1);
   v5 = *(_DWORD *)(v4 + 20);
   if ( v5 && !(*(int (__stdcall **)(_DWORD))(*(_DWORD *)v5 + 8))(*(_DWORD *)(v4 + 20)) )
-    *((_DWORD *)*(&dword_1005D404 + v1) + 5) = 0;
-  dword_1005C8F8 = (int)aD3dUnableToBac_0;
-  nullsub_1();
-  nullsub_1();
+    *((_DWORD *)*(&grim_texture_slots + v1) + 5) = 0;
+  grim_error_text = (int)aD3dUnableToBac_0;
+  grim_noop();
+  grim_noop();
   return 0;
 }
 
-// sub_10002B40 @ 0x10002B40
+// grim_restore_textures @ 0x10002B40
+// restore texture surfaces after device reset
 char sub_10002B40()
 {
   int v1; // edi
@@ -1114,10 +1120,10 @@ char sub_10002B40()
 
   if ( byte_1005D804 )
     return 0;
-  nullsub_1();
+  grim_noop();
   if ( !byte_1005D810 )
   {
-    nullsub_1();
+    grim_noop();
     if ( !byte_1005D810 )
       return 0;
   }
@@ -1129,7 +1135,7 @@ LABEL_21:
     byte_1005D810 = 0;
     return 1;
   }
-  v2 = &dword_1005D404;
+  v2 = &grim_texture_slots;
   while ( 1 )
   {
     v3 = *v2;
@@ -1144,16 +1150,16 @@ LABEL_20:
     if ( v1 > dword_1005305C )
       goto LABEL_21;
   }
-  nullsub_1();
+  grim_noop();
   v4 = *((_DWORD *)*v2 + 1);
   if ( v4 && (*(int (__stdcall **)(int, _DWORD, int *))(*(_DWORD *)v4 + 60))(v4, 0, &v8) < 0 )
   {
-    dword_1005C8F8 = (int)aD3dUnableToRec;
-    nullsub_1();
+    grim_error_text = (int)aD3dUnableToRec;
+    grim_noop();
     return 0;
   }
-  if ( (*(int (__stdcall **)(int, _DWORD, _DWORD, _DWORD, int, _DWORD))(*(_DWORD *)dword_10059DBC + 112))(
-         dword_10059DBC,
+  if ( (*(int (__stdcall **)(int, _DWORD, _DWORD, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 112))(
+         grim_d3d_device,
          *((_DWORD *)*v2 + 5),
          0,
          0,
@@ -1172,18 +1178,18 @@ LABEL_20:
   }
   if ( v8 && !(*(int (__stdcall **)(int))(*(_DWORD *)v8 + 8))(v8) )
     v8 = 0;
-  v6 = (int)*(&dword_1005D404 + v1);
+  v6 = (int)*(&grim_texture_slots + v1);
   v7 = *(_DWORD *)(v6 + 20);
   if ( v7 && !(*(int (__stdcall **)(_DWORD))(*(_DWORD *)v7 + 8))(*(_DWORD *)(v6 + 20)) )
-    *((_DWORD *)*(&dword_1005D404 + v1) + 5) = 0;
+    *((_DWORD *)*(&grim_texture_slots + v1) + 5) = 0;
   LOBYTE(v9) = 1;
   dword_1005D0F8 = v9;
   byte_1005D810 = 0;
-  dword_1005C8F8 = (int)aD3dUnableToRes;
+  grim_error_text = (int)aD3dUnableToRes;
   dword_1005D0FC = v10;
-  dword_1005D100 = v11;
-  dword_1005D104 = v12;
-  nullsub_1();
+  qword_1005D100 = v11;
+  MEMORY[0x1005D104] = v12;
+  grim_noop();
   return 0;
 }
 
@@ -1207,15 +1213,21 @@ int sub_10002CF0()
   int v15; // [esp+24h] [ebp-8h]
   int v16; // [esp+28h] [ebp-4h]
 
-  nullsub_1();
-  if ( dword_1005A48C && !(*(int (__stdcall **)(int))(*(_DWORD *)dword_1005A48C + 8))(dword_1005A48C) )
-    dword_1005A48C = 0;
-  if ( dword_1005C900 && !(*(int (__stdcall **)(int))(*(_DWORD *)dword_1005C900 + 8))(dword_1005C900) )
-    dword_1005C900 = 0;
+  grim_noop();
+  if ( grim_render_target_surface
+    && !(*(int (__stdcall **)(int))(*(_DWORD *)grim_render_target_surface + 8))(grim_render_target_surface) )
+  {
+    grim_render_target_surface = 0;
+  }
+  if ( grim_backbuffer_surface
+    && !(*(int (__stdcall **)(int))(*(_DWORD *)grim_backbuffer_surface + 8))(grim_backbuffer_surface) )
+  {
+    grim_backbuffer_surface = 0;
+  }
   v0 = 0;
   if ( dword_1005305C >= 0 )
   {
-    v1 = &dword_1005D404;
+    v1 = &grim_texture_slots;
     do
     {
       v2 = *v1;
@@ -1236,22 +1248,22 @@ int sub_10002CF0()
     }
     while ( v0 <= dword_1005305C );
   }
-  while ( (*(int (__stdcall **)(int, int *))(*(_DWORD *)dword_10059DBC + 56))(dword_10059DBC, &dword_10059DF8) )
+  while ( (*(int (__stdcall **)(int, int *))(*(_DWORD *)grim_d3d_device + 56))(grim_d3d_device, &grim_present_width) )
   {
     ++dword_1005D808;
     Sleep(0x1F4u);
     if ( dword_1005D808 >= 4 )
     {
-      dword_1005C8F8 = (int)aD3dUnableToRes_0;
+      grim_error_text = (int)aD3dUnableToRes_0;
       if ( MessageBoxA(hWnd, aD3dUnableToRes_0, Caption, 5u) == 2 )
       {
-        nullsub_1();
+        grim_noop();
         return -2005530519;
       }
       v4 = 0;
       if ( dword_1005305C >= 0 )
       {
-        v5 = &dword_1005D404;
+        v5 = &grim_texture_slots;
         do
         {
           v6 = *v5;
@@ -1266,8 +1278,8 @@ int sub_10002CF0()
             LOBYTE(v13) = 1;
             dword_1005D0F8 = v13;
             dword_1005D0FC = v14;
-            dword_1005D100 = v15;
-            dword_1005D104 = v16;
+            qword_1005D100 = v15;
+            MEMORY[0x1005D104] = v16;
           }
           ++v4;
           ++v5;
@@ -1280,24 +1292,24 @@ int sub_10002CF0()
   v9 = 0;
   if ( dword_1005305C >= 0 )
   {
-    v10 = &dword_1005D404;
+    v10 = &grim_texture_slots;
     do
     {
       v11 = *v10;
       if ( *v10
         && v11[8]
-        && (*(int (__stdcall **)(int, _DWORD, _DWORD, int, int, int, _DWORD, _BYTE *))(*(_DWORD *)dword_10059DBC + 80))(
-             dword_10059DBC,
+        && (*(int (__stdcall **)(int, _DWORD, _DWORD, int, int, int, _DWORD, _BYTE *))(*(_DWORD *)grim_d3d_device + 80))(
+             grim_d3d_device,
              *((_DWORD *)v11 + 3),
              *((_DWORD *)v11 + 4),
              1,
              1,
-             dword_1005A488,
+             grim_texture_format,
              0,
              v11 + 4) < 0 )
       {
-        dword_1005C8F8 = (int)aD3dUnableToRec_0;
-        nullsub_1();
+        grim_error_text = (int)aD3dUnableToRec_0;
+        grim_noop();
         *((_DWORD *)*v10 + 1) = 0;
         Sleep(0xC8u);
       }
@@ -1306,14 +1318,15 @@ int sub_10002CF0()
     }
     while ( v9 <= dword_1005305C );
   }
-  if ( !sub_10002B40() )
-    nullsub_1();
-  nullsub_1();
+  if ( !grim_restore_textures() )
+    grim_noop();
+  grim_noop();
   dword_1005D808 = 0;
   return 0;
 }
 
-// sub_10002F60 @ 0x10002F60
+// FUN_10002f60 @ 0x10002F60
+// [binja] BOOL __fastcall sub_10002f60(void* arg1)
 int __thiscall sub_10002F60(HGDIOBJ *this)
 {
   int result; // eax
@@ -1327,7 +1340,8 @@ int __thiscall sub_10002F60(HGDIOBJ *this)
   return result;
 }
 
-// sub_10002F80 @ 0x10002F80
+// FUN_10002f80 @ 0x10002F80
+// [binja] uint32_t __fastcall sub_10002f80(void* arg1)
 char __thiscall sub_10002F80(int *this)
 {
   DWORD Time; // eax
@@ -1358,13 +1372,14 @@ char __thiscall sub_10002F80(int *this)
   }
 }
 
-// sub_10002FC0 @ 0x10002FC0
+// FUN_10002fc0 @ 0x10002FC0
+// [binja] int32_t __fastcall sub_10002fc0(char* arg1)
 char __thiscall sub_10002FC0(_DWORD *this)
 {
   LONG bottom; // eax
   struct tagRECT Rect; // [esp+Ch] [ebp-10h] BYREF
 
-  nullsub_1();
+  grim_noop();
   *(_BYTE *)this = 0;
   *(this + 1) = -1;
   *(this + 2) = 0;
@@ -1377,8 +1392,8 @@ char __thiscall sub_10002FC0(_DWORD *this)
   bottom = Rect.bottom;
   *(this + 4) = Rect.right;
   *(this + 3) = bottom;
-  *(this + 4) = dword_1005C400;
-  *(this + 3) = dword_10059DC0;
+  *(this + 4) = grim_backbuffer_width;
+  *(this + 3) = grim_backbuffer_height;
   memset(DstBuf, 0, 0x104u);
   getcwd(DstBuf, 260);
   LOBYTE(Rect.left) = 0;
@@ -1386,11 +1401,12 @@ char __thiscall sub_10002FC0(_DWORD *this)
   return 1;
 }
 
-// sub_10003090 @ 0x10003090
+// FUN_10003090 @ 0x10003090
+// [binja] int32_t sub_10003090()
 void __thiscall sub_10003090(int *this)
 {
-  if ( sub_10002F80(this) )
-    nullsub_1();
+  if ( FUN_10002f80(this) )
+    grim_noop();
 }
 
 // sub_100030B0 @ 0x100030B0
@@ -1420,21 +1436,27 @@ char sub_100030B0()
   int v22; // [esp+30h] [ebp-8h]
   int v23; // [esp+34h] [ebp-4h]
 
-  if ( !dword_10059DBC )
+  if ( !grim_d3d_device )
     return 0;
-  v0 = (*(int (__stdcall **)(int))(*(_DWORD *)dword_10059DBC + 12))(dword_10059DBC);
+  v0 = (*(int (__stdcall **)(int))(*(_DWORD *)grim_d3d_device + 12))(grim_d3d_device);
   byte_1005C898 = v0 == 0;
   if ( v0 != -2005530519 )
     return 1;
   Sleep(0x64u);
-  if ( dword_1005A48C && !(*(int (__stdcall **)(int))(*(_DWORD *)dword_1005A48C + 8))(dword_1005A48C) )
-    dword_1005A48C = 0;
-  if ( dword_1005C900 && !(*(int (__stdcall **)(int))(*(_DWORD *)dword_1005C900 + 8))(dword_1005C900) )
-    dword_1005C900 = 0;
+  if ( grim_render_target_surface
+    && !(*(int (__stdcall **)(int))(*(_DWORD *)grim_render_target_surface + 8))(grim_render_target_surface) )
+  {
+    grim_render_target_surface = 0;
+  }
+  if ( grim_backbuffer_surface
+    && !(*(int (__stdcall **)(int))(*(_DWORD *)grim_backbuffer_surface + 8))(grim_backbuffer_surface) )
+  {
+    grim_backbuffer_surface = 0;
+  }
   v1 = 0;
   if ( dword_1005305C >= 0 )
   {
-    v2 = &dword_1005D404;
+    v2 = &grim_texture_slots;
     do
     {
       v3 = *v2;
@@ -1455,7 +1477,7 @@ char sub_100030B0()
     }
     while ( v1 <= dword_1005305C );
   }
-  if ( (*(int (__stdcall **)(int, int *))(*(_DWORD *)dword_10059DBC + 56))(dword_10059DBC, &dword_10059DF8) )
+  if ( (*(int (__stdcall **)(int, int *))(*(_DWORD *)grim_d3d_device + 56))(grim_d3d_device, &grim_present_width) )
   {
     ++dword_1005D808;
     Sleep(0x1F4u);
@@ -1464,7 +1486,7 @@ char sub_100030B0()
       v10 = 0;
       if ( dword_1005305C < 0 )
         return 1;
-      v11 = &dword_1005D404;
+      v11 = &grim_texture_slots;
       do
       {
         v12 = *v11;
@@ -1479,8 +1501,8 @@ char sub_100030B0()
           LOBYTE(v20) = 1;
           dword_1005D0FC = v21;
           dword_1005D0F8 = v20;
-          dword_1005D100 = v22;
-          dword_1005D104 = v23;
+          qword_1005D100 = v22;
+          MEMORY[0x1005D104] = v23;
         }
         ++v10;
         ++v11;
@@ -1489,13 +1511,13 @@ char sub_100030B0()
     }
     if ( dword_1005D808 > 6 )
     {
-      dword_1005C8F8 = (int)aD3dUnableToRes_0;
+      grim_error_text = (int)aD3dUnableToRes_0;
       if ( MessageBoxA(hWnd, aD3dUnableToRes_0, Caption, 5u) != 2 )
       {
         v15 = 0;
         if ( dword_1005305C >= 0 )
         {
-          v16 = &dword_1005D404;
+          v16 = &grim_texture_slots;
           do
           {
             v17 = *v16;
@@ -1510,8 +1532,8 @@ char sub_100030B0()
               LOBYTE(v20) = 1;
               dword_1005D0FC = v21;
               dword_1005D0F8 = v20;
-              dword_1005D100 = v22;
-              dword_1005D104 = v23;
+              qword_1005D100 = v22;
+              MEMORY[0x1005D104] = v23;
             }
             ++v15;
             ++v16;
@@ -1528,34 +1550,34 @@ char sub_100030B0()
   v5 = 0;
   if ( dword_1005305C >= 0 )
   {
-    v6 = &dword_1005D404;
+    v6 = &grim_texture_slots;
     do
     {
       v7 = *v6;
       if ( *v6
         && v7[8]
-        && (*(int (__stdcall **)(int, _DWORD, _DWORD, int, int, int, _DWORD, _BYTE *))(*(_DWORD *)dword_10059DBC + 80))(
-             dword_10059DBC,
+        && (*(int (__stdcall **)(int, _DWORD, _DWORD, int, int, int, _DWORD, _BYTE *))(*(_DWORD *)grim_d3d_device + 80))(
+             grim_d3d_device,
              *((_DWORD *)v7 + 3),
              *((_DWORD *)v7 + 4),
              1,
              1,
-             dword_1005A488,
+             grim_texture_format,
              0,
              v7 + 4) < 0 )
       {
         v8 = *v6;
-        dword_1005C8F8 = (int)aD3dUnableToRec_0;
+        grim_error_text = (int)aD3dUnableToRec_0;
         v8[1] = 0;
-        nullsub_1();
-        nullsub_1();
+        grim_noop();
+        grim_noop();
       }
       ++v5;
       ++v6;
     }
     while ( v5 <= dword_1005305C );
   }
-  sub_10002B40();
+  grim_restore_textures();
   dword_1005D808 = 0;
   return 1;
 }
@@ -1567,7 +1589,7 @@ int __stdcall sub_100033B0(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
   int v5; // eax
   struct tagPAINTSTRUCT Paint; // [esp+Ch] [ebp-40h] BYREF
 
-  nullsub_1();
+  grim_noop();
   if ( byte_1005D804 )
   {
     switch ( Msg )
@@ -1580,18 +1602,18 @@ int __stdcall sub_100033B0(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
       case 6u:
         if ( !(_WORD)wParam || HIWORD(wParam) )
         {
-          nullsub_1();
+          grim_noop();
           (*(void (__stdcall **)(_DWORD))(**(_DWORD **)&String[508] + 32))(*(_DWORD *)&String[508]);
           (*(void (__stdcall **)(_DWORD))(**(_DWORD **)&String[772] + 32))(*(_DWORD *)&String[772]);
           byte_1005A470 = 1;
           dword_1005D3A8();
-          sub_100028D0();
+          grim_backup_textures();
           byte_1005C898 = 0;
           return 0;
         }
-        nullsub_1();
+        grim_noop();
         sub_100030B0();
-        if ( !dword_10059DBC )
+        if ( !grim_d3d_device )
           goto LABEL_12;
         goto LABEL_10;
       case 0xFu:
@@ -1605,28 +1627,28 @@ int __stdcall sub_100033B0(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM lParam)
       case 0x1Cu:
         if ( !wParam )
         {
-          nullsub_1();
+          grim_noop();
           (*(void (__stdcall **)(_DWORD))(**(_DWORD **)&String[508] + 32))(*(_DWORD *)&String[508]);
           (*(void (__stdcall **)(_DWORD))(**(_DWORD **)&String[772] + 32))(*(_DWORD *)&String[772]);
           byte_1005A470 = 1;
           if ( !byte_1005C898 )
             goto LABEL_41;
           dword_1005D3A8();
-          sub_100028D0();
+          grim_backup_textures();
           byte_1005C898 = 0;
           return 0;
         }
-        nullsub_1();
+        grim_noop();
         sub_100030B0();
         if ( !byte_1005C898 )
           goto LABEL_12;
 LABEL_10:
-        sub_10002B40();
+        grim_restore_textures();
         sub_10004520();
         break;
       case 0x1Fu:
-        nullsub_1();
-        sub_100028D0();
+        grim_noop();
+        grim_backup_textures();
         return DefWindowProcA(hWnd, Msg, wParam, lParam);
       default:
         return DefWindowProcA(hWnd, Msg, wParam, lParam);
@@ -1641,31 +1663,31 @@ LABEL_11:
     switch ( Msg )
     {
       case 0x201u:
-        if ( (_BYTE)dword_1005CC58 )
-          byte_1005A044 = 1;
+        if ( (_BYTE)grim_input_cached )
+          grim_mouse_button_cache = 1;
         return DefWindowProcA(hWnd, Msg, wParam, lParam);
       case 0x202u:
-        if ( (_BYTE)dword_1005CC58 )
-          byte_1005A044 = 0;
+        if ( (_BYTE)grim_input_cached )
+          grim_mouse_button_cache = 0;
         return DefWindowProcA(hWnd, Msg, wParam, lParam);
       case 0x204u:
-        if ( (_BYTE)dword_1005CC58 )
+        if ( (_BYTE)grim_input_cached )
           byte_1005A045 = 1;
         return DefWindowProcA(hWnd, Msg, wParam, lParam);
       case 0x205u:
-        if ( (_BYTE)dword_1005CC58 )
+        if ( (_BYTE)grim_input_cached )
           byte_1005A045 = 0;
         return DefWindowProcA(hWnd, Msg, wParam, lParam);
       case 0x207u:
-        if ( (_BYTE)dword_1005CC58 )
+        if ( (_BYTE)grim_input_cached )
           byte_1005A046 = 1;
         return DefWindowProcA(hWnd, Msg, wParam, lParam);
       case 0x208u:
-        if ( (_BYTE)dword_1005CC58 )
+        if ( (_BYTE)grim_input_cached )
           byte_1005A046 = 0;
         return DefWindowProcA(hWnd, Msg, wParam, lParam);
       case 0x20Au:
-        if ( (_BYTE)dword_1005CC58 )
+        if ( (_BYTE)grim_input_cached )
           flt_1005D3B8 = (float)SHIWORD(wParam);
         return DefWindowProcA(hWnd, Msg, wParam, lParam);
       case 0x231u:
@@ -1683,10 +1705,10 @@ LABEL_41:
   }
   else if ( Msg == 512 )
   {
-    if ( (_BYTE)dword_1005CC58 )
+    if ( (_BYTE)grim_input_cached )
     {
-      flt_1005B278 = (float)(__int16)lParam;
-      flt_1005B27C = (float)SHIWORD(lParam);
+      grim_mouse_x_cached = (float)(__int16)lParam;
+      grim_mouse_y_cached = (float)SHIWORD(lParam);
     }
     return DefWindowProcA(hWnd, Msg, wParam, lParam);
   }
@@ -1695,8 +1717,8 @@ LABEL_41:
     switch ( Msg )
     {
       case 0x1Fu:
-        nullsub_1();
-        sub_100028D0();
+        grim_noop();
+        grim_backup_textures();
         return DefWindowProcA(hWnd, Msg, wParam, lParam);
       case 0x102u:
         if ( (_BYTE)wParam != 0xA7 && (_BYTE)wParam != 9 )
@@ -1774,22 +1796,22 @@ LABEL_74:
         case 6u:
           if ( !(_WORD)wParam || HIWORD(wParam) )
           {
-            nullsub_1();
+            grim_noop();
             if ( !byte_1005C898 )
-              nullsub_1();
-            if ( dword_10059DBC )
+              grim_noop();
+            if ( grim_d3d_device )
             {
-              sub_100028D0();
+              grim_backup_textures();
               dword_1005D3A8();
             }
             (*(void (__stdcall **)(_DWORD))(**(_DWORD **)&String[508] + 32))(*(_DWORD *)&String[508]);
             (*(void (__stdcall **)(_DWORD))(**(_DWORD **)&String[772] + 32))(*(_DWORD *)&String[772]);
             goto LABEL_40;
           }
-          nullsub_1();
+          grim_noop();
           if ( !byte_1005C898 )
           {
-            nullsub_1();
+            grim_noop();
             if ( !byte_1005C898 )
             {
 LABEL_12:
@@ -1798,7 +1820,7 @@ LABEL_12:
               return 0;
             }
           }
-          sub_10002B40();
+          grim_restore_textures();
           sub_10004520();
           dword_10059770();
           break;
@@ -1813,10 +1835,10 @@ LABEL_19:
     }
     if ( wParam )
     {
-      nullsub_1();
-      if ( byte_1005C898 || (nullsub_1(), byte_1005C898) )
+      grim_noop();
+      if ( byte_1005C898 || (grim_noop(), byte_1005C898) )
       {
-        sub_10002B40();
+        grim_restore_textures();
         sub_10004520();
         dword_10059770();
         byte_1005D811 = 0;
@@ -1833,12 +1855,12 @@ LABEL_52:
     }
     else
     {
-      nullsub_1();
+      grim_noop();
       if ( !byte_1005C898 )
-        nullsub_1();
-      if ( dword_10059DBC )
+        grim_noop();
+      if ( grim_d3d_device )
       {
-        sub_100028D0();
+        grim_backup_textures();
         dword_1005D3A8();
       }
       (*(void (__stdcall **)(_DWORD))(**(_DWORD **)&String[508] + 32))(*(_DWORD *)&String[508]);
@@ -1867,7 +1889,7 @@ int sub_10003C00()
   sub_10004920();
   sub_10004970();
   sub_10004970();
-  sub_10002FC0(dword_1005BBD8);
+  FUN_10002fc0(dword_1005BBD8);
   SetFocus(hWnd);
   SetForegroundWindow(hWnd);
   if ( hWnd && Msg.message != 18 )
@@ -1883,15 +1905,15 @@ int sub_10003C00()
       {
         if ( !byte_1005D804 )
           sub_10004970();
-        if ( !byte_1005D820 && !byte_1005D804 && byte_1005C898 && !byte_1005A470 )
+        if ( !grim_paused_flag && !byte_1005D804 && byte_1005C898 && !byte_1005A470 )
         {
           if ( (_BYTE)dword_1005CC38 )
           {
-            sub_1000A4A0();
+            grim_keyboard_poll();
             v0 = &flt_1005A058;
             do
             {
-              v1 = *v0 - flt_10059768;
+              v1 = *v0 - grim_frame_dt;
               *v0 = v1;
               if ( v1 < 0.0 )
                 *v0 = 0.0;
@@ -1899,34 +1921,34 @@ int sub_10003C00()
             }
             while ( (int)v0 < (int)&ElementSize );
           }
-          sub_1000A2B0();
+          grim_joystick_poll();
           dword_1005CF14 = (int)&String[8];
-          if ( !(_BYTE)dword_1005CC58 )
+          if ( !(_BYTE)grim_input_cached )
           {
-            flt_1005B278 = *(float *)&String[796];
-            flt_1005B27C = *(float *)&String[800];
-            sub_1000A670();
+            grim_mouse_x_cached = *(float *)&String[796];
+            grim_mouse_y_cached = *(float *)&String[800];
+            grim_mouse_poll();
           }
         }
         byte_1005C898 = 0;
         if ( byte_1005D804 )
         {
           byte_1005A470 = 1;
-          sub_10003090((int *)dword_1005BBD8);
+          FUN_10003090((int *)dword_1005BBD8);
         }
         if ( byte_1005A470 )
         {
           if ( !byte_1005D804 )
             Sleep(0x32u);
         }
-        else if ( !byte_1005D804 && dword_10059DBC )
+        else if ( !byte_1005D804 && grim_d3d_device )
         {
-          v2 = (*(int (__stdcall **)(int))(*(_DWORD *)dword_10059DBC + 12))(dword_10059DBC);
+          v2 = (*(int (__stdcall **)(int))(*(_DWORD *)grim_d3d_device + 12))(grim_d3d_device);
           byte_1005C898 = v2 == 0;
           if ( v2 )
           {
             Sleep(0x1F4u);
-            v3 = (*(int (__stdcall **)(int))(*(_DWORD *)dword_10059DBC + 12))(dword_10059DBC);
+            v3 = (*(int (__stdcall **)(int))(*(_DWORD *)grim_d3d_device + 12))(grim_d3d_device);
             byte_1005C898 = v3 == 0;
             if ( v3 == -2005530519 && sub_10002CF0() == -2005530519 )
               break;
@@ -1942,9 +1964,9 @@ int sub_10003C00()
               break;
             if ( dword_1005D3B4 )
               (*(void (__thiscall **)(int))(*(_DWORD *)dword_1005D3B4 + 20))(dword_1005D3B4);
-            if ( !byte_1005D3BD )
-              (*(void (__stdcall **)(int, _DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)dword_10059DBC + 60))(
-                dword_10059DBC,
+            if ( !grim_render_disabled )
+              (*(void (__stdcall **)(int, _DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)grim_d3d_device + 60))(
+                grim_d3d_device,
                 0,
                 0,
                 0,
@@ -1956,14 +1978,15 @@ int sub_10003C00()
     while ( Msg.message != 18 );
   }
   timeEndPeriod(1u);
-  sub_10003080(dword_1005BBD8);
-  if ( (_BYTE)dword_1005CC58 )
+  j_FUN_10002f60(dword_1005BBD8);
+  if ( (_BYTE)grim_input_cached )
     ShowCursor(1);
-  sub_10002880();
+  grim_window_destroy();
   return 0;
 }
 
-// sub_10003E60 @ 0x10003E60
+// grim_d3d_init @ 0x10003E60
+// creates the Direct3D8 interface, configures display mode, and opens the window
 char sub_10003E60()
 {
   int v0; // eax
@@ -1984,36 +2007,36 @@ char sub_10003E60()
   char Str[556]; // [esp+230h] [ebp-22Ch] BYREF
 
   byte_1005C898 = 0;
-  dword_1005C8FC = 0;
-  dword_10059DBC = 0;
+  grim_d3d8 = 0;
+  grim_d3d_device = 0;
   dword_1005B2B4 = 1;
   if ( (_BYTE)dword_1005CEC8 == 1 )
     dword_1005B2B4 = 2;
   v0 = Direct3DCreate8(220);
-  dword_1005C8FC = v0;
+  grim_d3d8 = v0;
   if ( !v0 )
   {
-    dword_1005C8F8 = (int)Text;
+    grim_error_text = (int)Text;
     return 0;
   }
   (*(void (__stdcall **)(int, WPARAM, int, void *))(*(_DWORD *)v0 + 52))(v0, wParam, dword_1005B2B4, &unk_1005A498);
   v2 = 0;
-  (*(void (__stdcall **)(int, WPARAM, int, _BYTE *))(*(_DWORD *)dword_1005C8FC + 20))(dword_1005C8FC, wParam, 2, v14);
+  (*(void (__stdcall **)(int, WPARAM, int, _BYTE *))(*(_DWORD *)grim_d3d8 + 20))(grim_d3d8, wParam, 2, v14);
   v3 = strchr(Str, 86);
   if ( v3 && v3[1] == 111 && v3[2] == 111 && v3[3] == 100 && v3[4] == 111 && v3[5] == 111 )
     v2 = v3[6] == 51;
-  if ( (*(int (__stdcall **)(int, _DWORD, _BYTE *))(*(_DWORD *)dword_1005C8FC + 32))(dword_1005C8FC, 0, v12) >= 0 )
+  if ( (*(int (__stdcall **)(int, _DWORD, _BYTE *))(*(_DWORD *)grim_d3d8 + 32))(grim_d3d8, 0, v12) >= 0 )
   {
-    result = sub_10002680();
+    result = grim_window_create();
     if ( !result )
       return result;
-    memset(&dword_10059DF8, 0, 0x34u);
+    memset(&grim_present_width, 0, 0x34u);
     dword_10059E04 = dword_1005CEB8;
     if ( (_BYTE)dword_1005CC08 == 1 )
     {
       dword_10059E14 = 1;
       dword_10059E0C = 1;
-      dword_1005A488 = v13;
+      grim_texture_format = v13;
     }
     else
     {
@@ -2022,9 +2045,9 @@ char sub_10003E60()
       dword_10059E0C = v2 + 1;
       dword_10059E28 = 0x80000000;
     }
-    dword_10059DFC = dword_10059DC0;
-    dword_10059DF8 = dword_1005C400;
-    dword_10059E00 = dword_1005A488;
+    grim_present_height = grim_backbuffer_height;
+    grim_present_width = grim_backbuffer_width;
+    dword_10059E00 = grim_texture_format;
     dword_10059E08 = 0;
     dword_10059E20 = 1;
     dword_10059E18 = byte_1005CED8 != 0;
@@ -2032,75 +2055,75 @@ char sub_10003E60()
     dword_10059E10 = dword_1005D3FC;
     if ( !dword_1005D3FC )
       dword_10059E10 = (int)hWnd;
-    if ( (*(int (__stdcall **)(int, WPARAM, int, HWND, int, int *, int *))(*(_DWORD *)dword_1005C8FC + 60))(
-           dword_1005C8FC,
+    if ( (*(int (__stdcall **)(int, WPARAM, int, HWND, int, int *, int *))(*(_DWORD *)grim_d3d8 + 60))(
+           grim_d3d8,
            wParam,
            dword_1005B2B4,
            hWnd,
            32,
-           &dword_10059DF8,
-           &dword_10059DBC) < 0 )
+           &grim_present_width,
+           &grim_d3d_device) < 0 )
     {
-      dword_1005C8F8 = (int)aD3dCouldNotSet;
+      grim_error_text = (int)aD3dCouldNotSet;
       MessageBoxA(0, aD3dCouldNotSet, Caption, 0);
       sub_10004280();
-      sub_10002880();
+      grim_window_destroy();
       return 0;
     }
-    (*(void (__stdcall **)(int, WPARAM, int, void *))(*(_DWORD *)dword_1005C8FC + 52))(
-      dword_1005C8FC,
+    (*(void (__stdcall **)(int, WPARAM, int, void *))(*(_DWORD *)grim_d3d8 + 52))(
+      grim_d3d8,
       wParam,
       dword_1005B2B4,
       &unk_1005A498);
     if ( !(unsigned __int8)sub_10004350() )
     {
       sub_10004280();
-      sub_10002880();
+      grim_window_destroy();
       return 0;
     }
-    memset(&dword_1005D404, 0, 0x400u);
-    if ( dword_1005A56C )
+    memset(&grim_texture_slots, 0, 0x400u);
+    if ( grim_preferred_texture_format )
     {
-      if ( (unsigned __int8)sub_100047F0(dword_1005A56C) )
+      if ( (unsigned __int8)grim_is_texture_format_supported(grim_preferred_texture_format) )
       {
-        if ( dword_1005A56C )
+        if ( grim_preferred_texture_format )
         {
 LABEL_33:
           sub_10004520();
-          ResourceA = FindResourceA(hInstance, (LPCSTR)0x6F, (LPCSTR)0xA);
-          Resource = LoadResource(hInstance, ResourceA);
+          ResourceA = FindResourceA(grim_module_handle, (LPCSTR)0x6F, (LPCSTR)0xA);
+          Resource = LoadResource(grim_module_handle, ResourceA);
           v6 = LockResource(Resource);
-          v7 = SizeofResource(hInstance, ResourceA);
-          if ( (int)sub_1000CB5C(
-                      dword_10059DBC,
+          v7 = SizeofResource(grim_module_handle, ResourceA);
+          if ( (int)FUN_1000cb5c(
+                      grim_d3d_device,
                       v6,
                       v7,
                       -1,
                       -1,
                       1,
                       0,
-                      dword_1005A56C,
+                      grim_preferred_texture_format,
                       1,
                       -1,
                       -1,
                       0,
                       0,
                       0,
-                      &dword_1005D3EC) >= 0 )
+                      &grim_font_texture) >= 0 )
           {
-            v8 = FindResourceA(hInstance, (LPCSTR)0x71, (LPCSTR)0xA);
-            v9 = LoadResource(hInstance, v8);
+            v8 = FindResourceA(grim_module_handle, (LPCSTR)0x71, (LPCSTR)0xA);
+            v9 = LoadResource(grim_module_handle, v8);
             v10 = LockResource(v9);
-            v11 = SizeofResource(hInstance, v8);
-            if ( (int)sub_1000CB5C(
-                        dword_10059DBC,
+            v11 = SizeofResource(grim_module_handle, v8);
+            if ( (int)FUN_1000cb5c(
+                        grim_d3d_device,
                         v10,
                         v11,
                         -1,
                         -1,
                         1,
                         0,
-                        dword_1005A56C,
+                        grim_preferred_texture_format,
                         1,
                         -1,
                         -1,
@@ -2109,44 +2132,44 @@ LABEL_33:
                         0,
                         &dword_1005D3F0) >= 0 )
             {
-              dword_1005C900 = 0;
-              dword_1005A48C = 0;
-              dword_1005D094 = dword_1005C8FC;
-              dword_1005D0A4 = dword_10059DBC;
+              grim_backbuffer_surface = 0;
+              grim_render_target_surface = 0;
+              dword_1005D094 = grim_d3d8;
+              dword_1005D0A4 = grim_d3d_device;
               byte_1005C898 = 1;
               return 1;
             }
             else
             {
-              dword_1005C8F8 = (int)aD3dUnableToLoa_0;
+              grim_error_text = (int)aD3dUnableToLoa_0;
               return 0;
             }
           }
           else
           {
-            dword_1005C8F8 = (int)aD3dUnableToLoa;
+            grim_error_text = (int)aD3dUnableToLoa;
             return 0;
           }
         }
       }
       else
       {
-        dword_1005A56C = 0;
+        grim_preferred_texture_format = 0;
       }
     }
-    if ( !(unsigned __int8)sub_10004830() )
+    if ( !(unsigned __int8)grim_select_texture_format() )
     {
-      dword_1005C8F8 = (int)aD3dCouldNotFin;
+      grim_error_text = (int)aD3dCouldNotFin;
       sub_10004280();
-      sub_10002880();
+      grim_window_destroy();
     }
     goto LABEL_33;
   }
-  dword_1005C8F8 = (int)aD3dErrorGettin;
-  if ( dword_1005C8FC )
+  grim_error_text = (int)aD3dErrorGettin;
+  if ( grim_d3d8 )
   {
-    if ( !(*(int (__stdcall **)(int))(*(_DWORD *)dword_1005C8FC + 8))(dword_1005C8FC) )
-      dword_1005C8FC = 0;
+    if ( !(*(int (__stdcall **)(int))(*(_DWORD *)grim_d3d8 + 8))(grim_d3d8) )
+      grim_d3d8 = 0;
   }
   return 0;
 }
@@ -2158,21 +2181,27 @@ int sub_10004280()
   void *v1; // esi
   int result; // eax
 
-  if ( dword_1005C900 && !(*(int (__stdcall **)(int))(*(_DWORD *)dword_1005C900 + 8))(dword_1005C900) )
-    dword_1005C900 = 0;
-  if ( dword_1005A48C && !(*(int (__stdcall **)(int))(*(_DWORD *)dword_1005A48C + 8))(dword_1005A48C) )
-    dword_1005A48C = 0;
-  if ( dword_1005D3EC && !(*(int (__stdcall **)(int))(*(_DWORD *)dword_1005D3EC + 8))(dword_1005D3EC) )
-    dword_1005D3EC = 0;
+  if ( grim_backbuffer_surface
+    && !(*(int (__stdcall **)(int))(*(_DWORD *)grim_backbuffer_surface + 8))(grim_backbuffer_surface) )
+  {
+    grim_backbuffer_surface = 0;
+  }
+  if ( grim_render_target_surface
+    && !(*(int (__stdcall **)(int))(*(_DWORD *)grim_render_target_surface + 8))(grim_render_target_surface) )
+  {
+    grim_render_target_surface = 0;
+  }
+  if ( grim_font_texture && !(*(int (__stdcall **)(int))(*(_DWORD *)grim_font_texture + 8))(grim_font_texture) )
+    grim_font_texture = 0;
   if ( dword_1005D3F0 && !(*(int (__stdcall **)(int))(*(_DWORD *)dword_1005D3F0 + 8))(dword_1005D3F0) )
     dword_1005D3F0 = 0;
-  v0 = &dword_1005D404;
+  v0 = &grim_texture_slots;
   do
   {
     v1 = *v0;
     if ( *v0 )
     {
-      sub_10004AB0(*v0);
+      grim_texture_release(*v0);
       operator delete(v1);
       *v0 = 0;
     }
@@ -2180,13 +2209,13 @@ int sub_10004280()
   }
   while ( (int)v0 < (int)&byte_1005D804 );
   sub_100044E0();
-  if ( dword_10059DBC )
-    (*(void (__stdcall **)(int))(*(_DWORD *)dword_10059DBC + 8))(dword_10059DBC);
-  result = dword_1005C8FC;
-  dword_10059DBC = 0;
-  if ( dword_1005C8FC )
-    result = (*(int (__stdcall **)(int))(*(_DWORD *)dword_1005C8FC + 8))(dword_1005C8FC);
-  dword_1005C8FC = 0;
+  if ( grim_d3d_device )
+    (*(void (__stdcall **)(int))(*(_DWORD *)grim_d3d_device + 8))(grim_d3d_device);
+  result = grim_d3d8;
+  grim_d3d_device = 0;
+  if ( grim_d3d8 )
+    result = (*(int (__stdcall **)(int))(*(_DWORD *)grim_d3d8 + 8))(grim_d3d8);
+  grim_d3d8 = 0;
   return result;
 }
 
@@ -2197,18 +2226,18 @@ char sub_10004350()
   __int16 v2; // cx
   __int16 v3; // di
 
-  dword_1005976C = 256;
-  if ( (*(int (__stdcall **)(int, int, int, _DWORD, int, int *))(*(_DWORD *)dword_10059DBC + 92))(
-         dword_10059DBC,
+  grim_vertex_capacity = 256;
+  if ( (*(int (__stdcall **)(int, int, int, _DWORD, int, int *))(*(_DWORD *)grim_d3d_device + 92))(
+         grim_d3d_device,
          7168,
          536,
          0,
          2,
-         &dword_10059E2C) >= 0 )
+         &grim_vertex_buffer) >= 0 )
   {
-    if ( (*(int (__stdcall **)(int, int, int, int, int, int *))(*(_DWORD *)dword_10059DBC + 96))(
-           dword_10059DBC,
-           12 * dword_1005976C,
+    if ( (*(int (__stdcall **)(int, int, int, int, int, int *))(*(_DWORD *)grim_d3d_device + 96))(
+           grim_d3d_device,
+           12 * grim_vertex_capacity,
            536,
            101,
            2,
@@ -2221,7 +2250,7 @@ char sub_10004350()
              &dword_1005B2C0,
              0x2000) >= 0 )
       {
-        if ( dword_1005976C )
+        if ( grim_vertex_capacity )
         {
           v1 = 2;
           do
@@ -2242,15 +2271,15 @@ char sub_10004350()
             *(_WORD *)dword_1005B2C0 = v2;
             dword_1005B2C0 += 2;
           }
-          while ( (unsigned __int16)(v1 - 2) < (unsigned int)dword_1005976C );
+          while ( (unsigned __int16)(v1 - 2) < (unsigned int)grim_vertex_capacity );
         }
         (*(void (__stdcall **)(int))(*(_DWORD *)dword_10059BB8 + 48))(dword_10059BB8);
-        (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 332))(
-          dword_10059DBC,
+        (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 332))(
+          grim_d3d_device,
           0,
-          dword_10059E2C,
+          grim_vertex_buffer,
           28);
-        (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)dword_10059DBC + 340))(dword_10059DBC, dword_10059BB8, 0);
+        (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)grim_d3d_device + 340))(grim_d3d_device, dword_10059BB8, 0);
         return 1;
       }
       else
@@ -2261,14 +2290,14 @@ char sub_10004350()
     }
     else
     {
-      dword_1005C8F8 = (int)aD3dInternalCou_0;
+      grim_error_text = (int)aD3dInternalCou_0;
       sub_100044E0();
       return 0;
     }
   }
   else
   {
-    dword_1005C8F8 = (int)aD3dInternalCou;
+    grim_error_text = (int)aD3dInternalCou;
     return 0;
   }
 }
@@ -2278,10 +2307,10 @@ int sub_100044E0()
 {
   int result; // eax
 
-  if ( dword_10059E2C )
-    (*(void (__stdcall **)(int))(*(_DWORD *)dword_10059E2C + 8))(dword_10059E2C);
+  if ( grim_vertex_buffer )
+    (*(void (__stdcall **)(int))(*(_DWORD *)grim_vertex_buffer + 8))(grim_vertex_buffer);
   result = dword_10059BB8;
-  dword_10059E2C = 0;
+  grim_vertex_buffer = 0;
   if ( dword_10059BB8 )
     result = (*(int (__stdcall **)(int))(*(_DWORD *)dword_10059BB8 + 8))(dword_10059BB8);
   dword_10059BB8 = 0;
@@ -2291,112 +2320,114 @@ int sub_100044E0()
 // sub_10004520 @ 0x10004520
 int sub_10004520()
 {
-  (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)dword_10059DBC + 200))(dword_10059DBC, 137, 0);
-  (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)dword_10059DBC + 200))(dword_10059DBC, 29, 0);
-  (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)dword_10059DBC + 200))(dword_10059DBC, 7, 0);
-  (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)dword_10059DBC + 200))(dword_10059DBC, 14, 0);
-  (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)dword_10059DBC + 200))(dword_10059DBC, 28, 0);
-  (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)dword_10059DBC + 200))(dword_10059DBC, 143, 0);
-  (*(void (__stdcall **)(int, int, int))(*(_DWORD *)dword_10059DBC + 200))(dword_10059DBC, 22, 1);
-  (*(void (__stdcall **)(int, int, int))(*(_DWORD *)dword_10059DBC + 200))(dword_10059DBC, 9, 2);
-  (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)dword_10059DBC + 200))(
-    dword_10059DBC,
+  (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)grim_d3d_device + 200))(grim_d3d_device, 137, 0);
+  (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)grim_d3d_device + 200))(grim_d3d_device, 29, 0);
+  (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)grim_d3d_device + 200))(grim_d3d_device, 7, 0);
+  (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)grim_d3d_device + 200))(grim_d3d_device, 14, 0);
+  (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)grim_d3d_device + 200))(grim_d3d_device, 28, 0);
+  (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)grim_d3d_device + 200))(grim_d3d_device, 143, 0);
+  (*(void (__stdcall **)(int, int, int))(*(_DWORD *)grim_d3d_device + 200))(grim_d3d_device, 22, 1);
+  (*(void (__stdcall **)(int, int, int))(*(_DWORD *)grim_d3d_device + 200))(grim_d3d_device, 9, 2);
+  (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)grim_d3d_device + 200))(
+    grim_d3d_device,
     26,
     (unsigned __int8)dword_1005D108);
-  (*(void (__stdcall **)(int, int, int))(*(_DWORD *)dword_10059DBC + 200))(dword_10059DBC, 15, 1);
-  (*(void (__stdcall **)(int, int, int))(*(_DWORD *)dword_10059DBC + 200))(dword_10059DBC, 25, 7);
-  (*(void (__stdcall **)(int, int, int))(*(_DWORD *)dword_10059DBC + 200))(dword_10059DBC, 24, 4);
-  (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 17, 2);
-  (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 16, 2);
-  (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 18, 0);
-  (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 1, 4);
-  (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 2, 2);
-  (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 3, 0);
-  (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 4, 4);
-  (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 5, 2);
-  (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 6, 0);
-  (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 1, 1);
-  (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 4, 1);
-  (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 11, 0);
-  (*(void (__stdcall **)(int, int, int, _DWORD))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 11, 0);
-  (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)dword_10059DBC + 200))(dword_10059DBC, 128, 0);
-  (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)dword_10059DBC + 200))(dword_10059DBC, 129, 0);
-  (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)dword_10059DBC + 200))(dword_10059DBC, 130, 0);
-  (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)dword_10059DBC + 200))(dword_10059DBC, 131, 0);
-  (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 332))(
-    dword_10059DBC,
+  (*(void (__stdcall **)(int, int, int))(*(_DWORD *)grim_d3d_device + 200))(grim_d3d_device, 15, 1);
+  (*(void (__stdcall **)(int, int, int))(*(_DWORD *)grim_d3d_device + 200))(grim_d3d_device, 25, 7);
+  (*(void (__stdcall **)(int, int, int))(*(_DWORD *)grim_d3d_device + 200))(grim_d3d_device, 24, 4);
+  (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 17, 2);
+  (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 16, 2);
+  (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 18, 0);
+  (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 4);
+  (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 2, 2);
+  (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 3, 0);
+  (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 4);
+  (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 5, 2);
+  (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 6, 0);
+  (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 1, 1);
+  (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 4, 1);
+  (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 11, 0);
+  (*(void (__stdcall **)(int, int, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 11, 0);
+  (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)grim_d3d_device + 200))(grim_d3d_device, 128, 0);
+  (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)grim_d3d_device + 200))(grim_d3d_device, 129, 0);
+  (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)grim_d3d_device + 200))(grim_d3d_device, 130, 0);
+  (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)grim_d3d_device + 200))(grim_d3d_device, 131, 0);
+  (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 332))(
+    grim_d3d_device,
     0,
-    dword_10059E2C,
+    grim_vertex_buffer,
     28);
-  (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)dword_10059DBC + 340))(dword_10059DBC, dword_10059BB8, 0);
-  (*(void (__stdcall **)(int, int))(*(_DWORD *)dword_10059DBC + 304))(dword_10059DBC, 324);
-  (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)dword_10059DBC + 200))(
-    dword_10059DBC,
+  (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)grim_d3d_device + 340))(grim_d3d_device, dword_10059BB8, 0);
+  (*(void (__stdcall **)(int, int))(*(_DWORD *)grim_d3d_device + 304))(grim_d3d_device, 324);
+  (*(void (__stdcall **)(int, int, _DWORD))(*(_DWORD *)grim_d3d_device + 200))(
+    grim_d3d_device,
     27,
     (unsigned __int8)dword_1005CCA8);
-  (*(void (__stdcall **)(int, int, int))(*(_DWORD *)dword_10059DBC + 200))(dword_10059DBC, 19, dword_1005CCB8);
-  return (*(int (__stdcall **)(int, int, int))(*(_DWORD *)dword_10059DBC + 200))(dword_10059DBC, 20, dword_1005CCC8);
+  (*(void (__stdcall **)(int, int, int))(*(_DWORD *)grim_d3d_device + 200))(grim_d3d_device, 19, dword_1005CCB8);
+  return (*(int (__stdcall **)(int, int, int))(*(_DWORD *)grim_d3d_device + 200))(grim_d3d_device, 20, dword_1005CCC8);
 }
 
-// sub_100047F0 @ 0x100047F0
+// grim_is_texture_format_supported @ 0x100047F0
+// checks device support for a texture format
 bool __cdecl sub_100047F0(int a1)
 {
-  return (*(int (__stdcall **)(int, WPARAM, int, int, _DWORD, int, int))(*(_DWORD *)dword_1005C8FC + 40))(
-           dword_1005C8FC,
+  return (*(int (__stdcall **)(int, WPARAM, int, int, _DWORD, int, int))(*(_DWORD *)grim_d3d8 + 40))(
+           grim_d3d8,
            wParam,
            dword_1005B2B4,
-           dword_1005A488,
+           grim_texture_format,
            0,
            3,
            a1) >= 0;
 }
 
-// sub_10004830 @ 0x10004830
+// grim_select_texture_format @ 0x10004830
+// chooses the first supported texture format
 char sub_10004830()
 {
-  if ( sub_100047F0(21) )
+  if ( grim_is_texture_format_supported(21) )
   {
-    dword_1005A56C = 21;
+    grim_preferred_texture_format = 21;
     return 1;
   }
-  else if ( sub_100047F0(861165636) )
+  else if ( grim_is_texture_format_supported(861165636) )
   {
-    dword_1005A56C = 861165636;
+    grim_preferred_texture_format = 861165636;
     return 1;
   }
-  else if ( sub_100047F0(26) )
+  else if ( grim_is_texture_format_supported(26) )
   {
-    dword_1005A56C = 26;
+    grim_preferred_texture_format = 26;
     return 1;
   }
-  else if ( sub_100047F0(25) )
+  else if ( grim_is_texture_format_supported(25) )
   {
-    dword_1005A56C = 25;
+    grim_preferred_texture_format = 25;
     return 1;
   }
-  else if ( sub_100047F0(20) )
+  else if ( grim_is_texture_format_supported(20) )
   {
-    dword_1005A56C = 20;
+    grim_preferred_texture_format = 20;
     return 1;
   }
-  else if ( sub_100047F0(22) )
+  else if ( grim_is_texture_format_supported(22) )
   {
-    dword_1005A56C = 22;
+    grim_preferred_texture_format = 22;
     return 1;
   }
-  else if ( sub_100047F0(20) )
+  else if ( grim_is_texture_format_supported(20) )
   {
-    dword_1005A56C = 20;
+    grim_preferred_texture_format = 20;
     return 1;
   }
-  else if ( sub_100047F0(23) )
+  else if ( grim_is_texture_format_supported(23) )
   {
-    dword_1005A56C = 23;
+    grim_preferred_texture_format = 23;
     return 1;
   }
   else
   {
-    dword_1005C8F8 = (int)aD3dNoSupported;
+    grim_error_text = (int)aD3dNoSupported;
     return 0;
   }
 }
@@ -2406,9 +2437,9 @@ MMRESULT sub_10004920()
 {
   dword_1005D3B0 = 981668463;
   dword_1005BAD4 = timeGetTime();
-  dword_1005B2BC = 0;
-  flt_10059768 = 0.0;
-  dword_1005A054 = 0;
+  grim_fps = 0;
+  grim_frame_dt = 0.0;
+  grim_time_ms = 0;
   dword_10059DC4 = dword_1005BAD4;
   dword_1005BAD0 = dword_1005BAD4;
   byte_1005A470 = 0;
@@ -2433,15 +2464,15 @@ int sub_10004970()
   while ( (unsigned int)(dword_1005BAD0 - dword_10059DC4) <= 1 );
   if ( byte_1005A470 )
   {
-    flt_10059768 = 0.0;
+    grim_frame_dt = 0.0;
     dword_1005BAD4 += v0;
   }
   else
   {
-    dword_1005A054 += v0;
+    grim_time_ms += v0;
     ++dword_1005D814;
     dword_1005D818 += v0;
-    flt_10059768 = (double)(unsigned int)v0 * *(float *)&dword_1005D3B0;
+    grim_frame_dt = (double)(unsigned int)v0 * *(float *)&dword_1005D3B0;
   }
   result = dword_1005D818;
   if ( (unsigned int)dword_1005D818 > 0x1F4 )
@@ -2452,12 +2483,13 @@ int sub_10004970()
     v4 = (unsigned int)dword_1005D818;
     result = dword_1005D818 - 500;
     dword_1005D818 -= 500;
-    *(float *)&dword_1005B2BC = v2 / ((double)v4 * *(float *)&dword_1005D3B0);
+    *(float *)&grim_fps = v2 / ((double)v4 * *(float *)&dword_1005D3B0);
   }
   return result;
 }
 
-// sub_10004A50 @ 0x10004A50
+// grim_texture_init @ 0x10004A50
+// allocates/copies texture name and zeroes fields
 char **__thiscall sub_10004A50(char **this, const char *a2)
 {
   char *v3; // edx
@@ -2471,7 +2503,8 @@ char **__thiscall sub_10004A50(char **this, const char *a2)
   return this;
 }
 
-// sub_10004AB0 @ 0x10004AB0
+// grim_texture_release @ 0x10004AB0
+// releases COM objects and frees texture name
 void __thiscall sub_10004AB0(void **this)
 {
   int v2; // eax
@@ -2513,7 +2546,8 @@ bool __cdecl sub_10004B00(const char *a1, const char *a2)
   return result;
 }
 
-// sub_10004B70 @ 0x10004B70
+// FUN_10004b70 @ 0x10004B70
+// [binja] char* sub_10004b70(char* arg1, void** arg2, int32_t* arg3, int32_t* arg4)
 char *__cdecl sub_10004B70(int a1, int a2, unsigned int *a3, unsigned int *a4, unsigned int *a5)
 {
   int *v5; // eax
@@ -2559,10 +2593,10 @@ char *__cdecl sub_10004B70(int a1, int a2, unsigned int *a3, unsigned int *a4, u
   char v46[4]; // [esp+29Ch] [ebp-10h] BYREF
   int v47; // [esp+2A8h] [ebp-4h]
 
-  Iostream_init::Iostream_init((Iostream_init *)v46);
+  FUN_1000a810((Iostream_init *)v46);
   v47 = 0;
   v45 = 0;
-  v5 = (int *)sub_1000A880(a1, v37);
+  v5 = (int *)FUN_1000a880(a1, v37);
   v43 = v5;
   *a4 = 0;
   *a5 = 0;
@@ -2593,7 +2627,7 @@ char *__cdecl sub_10004B70(int a1, int a2, unsigned int *a3, unsigned int *a4, u
     sub_10009B20(v32);
 LABEL_7:
     v47 = -1;
-    nullsub_1();
+    grim_noop();
     return 0;
   }
   v9 = a4;
@@ -2691,7 +2725,7 @@ LABEL_7:
   if ( v20 )
     operator delete(v20);
   v47 = -1;
-  nullsub_1();
+  grim_noop();
   return v18;
 }
 
@@ -2706,7 +2740,8 @@ void __cdecl __noreturn sub_10004E90(int *a1)
   longjmp((int *)(v1 + 132), 1);
 }
 
-// sub_10004EC0 @ 0x10004EC0
+// grim_texture_load_file @ 0x10004EC0
+// loads texture data from file path
 char __thiscall sub_10004EC0(_DWORD *this, char *FileName)
 {
   int v4; // eax
@@ -2762,12 +2797,27 @@ char __thiscall sub_10004EC0(_DWORD *this, char *FileName)
       fread(v6, v7, 1u, v9);
       fclose(v9);
     }
-    v10 = sub_10004B70((int)v6, v7, &v19, &v16, &v18);
+    v10 = FUN_10004b70((int)v6, v7, &v19, &v16, &v18);
     if ( v10
       && (v11 = v17,
           v17[3] = v16,
           v11[4] = v18,
-          (int)sub_1000CB5C(dword_10059DBC, v10, v19, -1, -1, 1, 0, dword_1005A56C, 1, -1, -1, 0, &v20, 0, v5) < 0) )
+          (int)FUN_1000cb5c(
+                 grim_d3d_device,
+                 v10,
+                 v19,
+                 -1,
+                 -1,
+                 1,
+                 0,
+                 grim_preferred_texture_format,
+                 1,
+                 -1,
+                 -1,
+                 0,
+                 &v20,
+                 0,
+                 v5) < 0) )
     {
       *v5 = 0;
       return 0;
@@ -2780,7 +2830,22 @@ char __thiscall sub_10004EC0(_DWORD *this, char *FileName)
   else if ( byte_1005BC14 && v15 )
   {
     v12 = sub_10005B80(FileName);
-    if ( (int)sub_1000CB5C(dword_10059DBC, v6, v12, -1, -1, 1, 0, dword_1005A56C, 1, -1, -1, 0, &v20, 0, this + 1) >= 0 )
+    if ( (int)FUN_1000cb5c(
+                grim_d3d_device,
+                v6,
+                v12,
+                -1,
+                -1,
+                1,
+                0,
+                grim_preferred_texture_format,
+                1,
+                -1,
+                -1,
+                0,
+                &v20,
+                0,
+                this + 1) >= 0 )
     {
       v13 = v21;
       *(this + 3) = v20;
@@ -2793,14 +2858,14 @@ char __thiscall sub_10004EC0(_DWORD *this, char *FileName)
       return 0;
     }
   }
-  else if ( sub_1000CB9C(
-              dword_10059DBC,
+  else if ( FUN_1000cb9c(
+              grim_d3d_device,
               (LPCWCH)FileName,
               -1,
               -1,
               1,
               0,
-              dword_1005A56C,
+              grim_preferred_texture_format,
               1,
               -1,
               -1,
@@ -2821,13 +2886,15 @@ char __thiscall sub_10004EC0(_DWORD *this, char *FileName)
   }
 }
 
-// sub_10005110 @ 0x10005110
+// grim_texture_name_equals @ 0x10005110
+// compares stored texture name
 bool __thiscall sub_10005110(const char **this, const char *a2)
 {
   return *this && a2 && strcmp(*this, a2) == 0;
 }
 
-// sub_10005170 @ 0x10005170
+// grim_find_texture_by_name @ 0x10005170
+// returns texture handle index for name
 int __cdecl sub_10005170(const char *a1)
 {
   int v1; // esi
@@ -2836,7 +2903,7 @@ int __cdecl sub_10005170(const char *a1)
   v1 = 0;
   if ( dword_1005305C + 1 <= 0 )
     return -1;
-  for ( i = (const char ***)&dword_1005D404; !*i || !sub_10005110(*i, a1); ++i )
+  for ( i = (const char ***)&grim_texture_slots; !*i || !grim_texture_name_equals(*i, a1); ++i )
   {
     if ( ++v1 >= dword_1005305C + 1 )
       return -1;
@@ -2844,14 +2911,15 @@ int __cdecl sub_10005170(const char *a1)
   return v1;
 }
 
-// sub_100051C0 @ 0x100051C0
+// grim_find_free_texture_slot @ 0x100051C0
+// finds the first free texture slot
 int sub_100051C0()
 {
   int result; // eax
   void **v1; // ecx
 
   result = 0;
-  v1 = &dword_1005D404;
+  v1 = &grim_texture_slots;
   while ( *v1 )
   {
     ++v1;
@@ -2862,7 +2930,8 @@ int sub_100051C0()
   return result;
 }
 
-// sub_100051E0 @ 0x100051E0
+// grim_load_texture_internal @ 0x100051E0
+// allocates texture slot and loads file
 char __cdecl sub_100051E0(const char *a1, char *FileName)
 {
   int v2; // edi
@@ -2870,33 +2939,33 @@ char __cdecl sub_100051E0(const char *a1, char *FileName)
   char **v5; // esi
   int v6; // eax
 
-  v2 = sub_100051C0();
+  v2 = grim_find_free_texture_slot();
   if ( v2 == -1 )
   {
-    dword_1005C8F8 = (int)aAllTextureSlot;
+    grim_error_text = (int)aAllTextureSlot;
     return 0;
   }
-  else if ( sub_10005170(a1) == -1 )
+  else if ( grim_find_texture_by_name(a1) == -1 )
   {
     v4 = (char **)operator new(0x18u);
     if ( v4 )
-      v5 = sub_10004A50(v4, a1);
+      v5 = grim_texture_init(v4, a1);
     else
       v5 = 0;
-    if ( sub_10004EC0(v5, FileName) )
+    if ( grim_texture_load_file(v5, FileName) )
     {
       v6 = dword_1005305C;
-      *(&dword_1005D404 + v2) = v5;
+      *(&grim_texture_slots + v2) = v5;
       if ( v2 > v6 )
         dword_1005305C = v2;
       return 1;
     }
     else
     {
-      dword_1005C8F8 = (int)aD3dCouldNotLoa;
+      grim_error_text = (int)aD3dCouldNotLoa;
       if ( v5 )
       {
-        sub_10004AB0((void **)v5);
+        grim_texture_release((void **)v5);
         operator delete(v5);
       }
       return 0;
@@ -2904,7 +2973,7 @@ char __cdecl sub_100051E0(const char *a1, char *FileName)
   }
   else
   {
-    dword_1005C8F8 = (int)aD3dTextureSlot;
+    grim_error_text = (int)aD3dTextureSlot;
     return 0;
   }
 }
@@ -2955,12 +3024,12 @@ float *sub_100052F0()
   __int64 v40; // [esp+18h] [ebp-8h]
 
   dword_1005A47C = 0;
-  dword_1005CB8C = 0;
+  grim_config_var1_table = 0;
   dword_1005A480 = 0;
-  dword_1005CB88 = 0;
-  dword_1005CB90 = 0;
-  dword_1005CB94 = 0;
-  qmemcpy(&unk_1005CB98, &dword_1005CB88, 0x7F0u);
+  grim_config_var0_table = 0;
+  grim_config_var2_table = 0;
+  grim_config_var3_table = 0;
+  qmemcpy(&unk_1005CB98, &grim_config_var0_table, 0x7F0u);
   dword_1005A484 = 0;
   dword_1005A478 = 0;
   dword_1005CE5C = v39;
@@ -3003,7 +3072,7 @@ float *sub_100052F0()
   dword_1005CEBC = v39;
   qword_1005CEC0 = v40;
   LOBYTE(v33) = 0;
-  dword_1005CC58 = v33;
+  grim_input_cached = v33;
   dword_1005CC5C = v39;
   dword_1005CC68 = v1;
   qword_1005CC60 = v40;
@@ -3017,7 +3086,7 @@ float *sub_100052F0()
   dword_1005D118 = 1065353216;
   dword_1005D11C = v39;
   qword_1005D120 = v40;
-  dword_1005CCF8 = 1065353216;
+  grim_font_texture_bound = 1065353216;
   dword_1005CCFC = v39;
   qword_1005CD00 = v40;
   dword_1005CD08 = 1065353216;
@@ -3038,31 +3107,31 @@ float *sub_100052F0()
   qword_1005CCD0 = v40;
   dword_1005B288 = 1056964608;
   dword_1005B28C = 1065353216;
-  dword_1005B294 = 0;
-  dword_1005B298 = 1065353216;
+  grim_uv_v0 = 0;
+  grim_uv_u1 = 1065353216;
   dword_1005D138 = 1120403456;
   dword_1005D148 = 0;
   dword_1005D158 = 0;
-  dword_1005C8F8 = (int)String;
+  grim_error_text = (int)String;
   byte_1005D3AC = 0;
   byte_1005BC14 = 0;
   dword_1005A670 = 0;
   ElementSize = 0;
-  dword_1005C400 = 640;
-  dword_10059DC0 = 480;
-  dword_1005A488 = 23;
-  dword_1005A56C = 0;
+  grim_backbuffer_width = 640;
+  grim_backbuffer_height = 480;
+  grim_texture_format = 23;
+  grim_preferred_texture_format = 0;
   hWnd = 0;
-  dword_1005BC04 = -1;
-  dword_1005BC10 = -1;
+  grim_color_slot0 = -1;
+  grim_color_slot3 = -1;
   dword_1005BC0C = -1;
   dword_1005BC08 = -1;
-  dword_1005B290 = 0;
-  dword_1005B29C = 0;
+  grim_uv_u0 = 0;
+  grim_uv_v1 = 0;
   dword_1005B2A0 = 1065353216;
   dword_1005B2A4 = 1065353216;
   dword_1005B2A8 = 0;
-  dword_1005C8E8 = 0;
+  grim_mouse_button_latch = 0;
   dword_1005B2AC = 1065353216;
   dword_1005C8EC = 0;
   lpWindowName = strcpy((char *)operator new(strlen(aGrimNoTitle) + 1), aGrimNoTitle);
@@ -3072,9 +3141,9 @@ float *sub_100052F0()
   dword_1005D3A8 = (int (*)(void))std::codecvt_base::do_always_noconv;
   dword_1005CC94 = (int)strdup(String);
   v2 = 0;
-  memset(&byte_1005BAD8, 0, 0x100u);
+  memset(&grim_font2_glyph_widths, 0, 0x100u);
   v28 = 0;
-  v3 = &dword_1005B2CC;
+  v3 = &grim_font2_uv_v;
   do
   {
     v4 = 0;
@@ -3094,10 +3163,10 @@ float *sub_100052F0()
   }
   while ( v2 < 16 );
   v7 = 0;
-  memset(&dword_1005BC78, 0, 0x40u);
+  memset(&grim_subrect_ptr_table, 0, 0x40u);
   do
   {
-    byte_1005A570[v7] = v7;
+    grim_font2_char_map[v7] = v7;
     ++v7;
   }
   while ( v7 < 256 );
@@ -3108,10 +3177,10 @@ float *sub_100052F0()
   byte_1005A646 = -42;
   byte_1005A635 = -59;
   byte_1005A655 = -27;
-  dword_1005BC80 = (int)&unk_1005D388;
-  dword_1005BC88 = (int)&unk_1005CB08;
-  dword_1005BC98 = (int)&unk_1005C908;
-  dword_1005BCB8 = (int)&unk_1005A678;
+  grim_subrect_ptr0 = (int)&grim_subrect_table_0;
+  grim_subrect_ptr1 = (int)&grim_subrect_table_1;
+  grim_subrect_ptr2 = (int)&grim_subrect_table_2;
+  grim_subrect_ptr3 = (int)&grim_subrect_table;
   v29 = 0;
   v9 = (float *)&unk_1005D38C;
   do
@@ -3268,7 +3337,8 @@ int __cdecl sub_10005B80(const char *a1)
   return *(_DWORD *)((char *)dword_1005A670 + v2 + v1);
 }
 
-// sub_10005C20 @ 0x10005C20
+// grim_set_key_char_buffer @ 0x10005C20
+// Grim2D vtable 0x54 (provisional): set input character ring buffer
 void *__stdcall sub_10005C20(void *a1, void *a2, int a3)
 {
   off_10053048 = a1;
@@ -3277,7 +3347,8 @@ void *__stdcall sub_10005C20(void *a1, void *a2, int a3)
   return a1;
 }
 
-// sub_10005C40 @ 0x10005C40
+// grim_get_key_char @ 0x10005C40
+// Grim2D vtable 0x50 (provisional)
 int sub_10005C40()
 {
   int v0; // edx
@@ -3305,35 +3376,38 @@ int sub_10005C40()
   return result;
 }
 
-// sub_10005C90 @ 0x10005C90
+// grim_set_paused @ 0x10005C90
+// Grim2D vtable 0x4 (provisional): pause game tick update
 char __stdcall sub_10005C90(char a1)
 {
-  byte_1005D820 = a1;
+  grim_paused_flag = a1;
   return a1;
 }
 
-// sub_10005CA0 @ 0x10005CA0
+// grim_get_version @ 0x10005CA0
+// Grim2D vtable 0x8 (provisional): engine version constant
 double sub_10005CA0()
 {
   return 1.21;
 }
 
-// sub_10005CB0 @ 0x10005CB0
+// grim_check_device @ 0x10005CB0
+// Grim2D vtable 0xc: device creation test
 char __userpurge sub_10005CB0@<al>(int a1, const WCHAR *lpWideCharStr)
 {
   int v3; // [esp+1Ch] [ebp-4h] BYREF
   int retaddr; // [esp+20h] [ebp+0h]
 
   v3 = 0;
-  if ( (*(int (__stdcall **)(int, int, int, int, int *))(*(_DWORD *)dword_10059DBC + 108))(
-         dword_10059DBC,
-         dword_10059DF8,
-         dword_10059DFC,
+  if ( (*(int (__stdcall **)(int, int, int, int, int *))(*(_DWORD *)grim_d3d_device + 108))(
+         grim_d3d_device,
+         grim_present_width,
+         grim_present_height,
          21,
          &v3) < 0 )
     return 0;
-  if ( (*(int (__stdcall **)(int, int, int))(*(_DWORD *)dword_10059DBC + 120))(dword_10059DBC, v3, v3) < 0
-    || sub_1000AE52(lpWideCharStr, 0, retaddr, 0, 0) < 0 )
+  if ( (*(int (__stdcall **)(int, int, int))(*(_DWORD *)grim_d3d_device + 120))(grim_d3d_device, v3, v3) < 0
+    || FUN_1000ae52(lpWideCharStr, 0, retaddr, 0, 0) < 0 )
   {
     (*(void (__cdecl **)(int))(*(_DWORD *)retaddr + 8))(retaddr);
     return 0;
@@ -3345,7 +3419,8 @@ char __userpurge sub_10005CB0@<al>(int a1, const WCHAR *lpWideCharStr)
   }
 }
 
-// sub_10005D40 @ 0x10005D40
+// grim_apply_config @ 0x10005D40
+// Grim2D vtable 0x10: opens D3D config dialog and applies settings
 bool __thiscall sub_10005D40(void *this)
 {
   int v2; // eax
@@ -3380,16 +3455,16 @@ bool __thiscall sub_10005D40(void *this)
   int v32; // [esp-4h] [ebp-8h]
 
   if ( !lParam )
-    lParam = (LPARAM)LoadIconA(hInstance, (LPCSTR)0x72);
-  byte_1005D3BC = 0;
+    lParam = (LPARAM)LoadIconA(grim_module_handle, (LPCSTR)0x72);
+  grim_config_dialog_canceled = 0;
   v2 = Direct3DCreate8(220);
-  dword_1005B2C4 = v2;
+  grim_d3d8_probe = v2;
   if ( v2 )
   {
     (*(void (__stdcall **)(int, _DWORD, int, void *))(*(_DWORD *)v2 + 52))(v2, 0, 1, &unk_1005A498);
-    DialogBoxParamA(hInstance, (LPCSTR)0x74, 0, sub_10002120, 0);
-    (*(void (__stdcall **)(int))(*(_DWORD *)dword_1005B2C4 + 8))(dword_1005B2C4);
-    if ( !byte_1005D3BC )
+    DialogBoxParamA(grim_module_handle, (LPCSTR)0x74, 0, grim_config_dialog_proc, 0);
+    (*(void (__stdcall **)(int))(*(_DWORD *)grim_d3d8_probe + 8))(grim_d3d8_probe);
+    if ( !grim_config_dialog_canceled )
     {
       LOBYTE(v4) = byte_1005D400;
       (*(void (__thiscall **)(void *, int, int, int, int, int))(*(_DWORD *)this + 32))(this, 84, v4, v9, v17, v25);
@@ -3420,17 +3495,18 @@ bool __thiscall sub_10005D40(void *this)
         v24,
         v32);
     }
-    return byte_1005D3BC == 0;
+    return grim_config_dialog_canceled == 0;
   }
   else
   {
-    dword_1005C8F8 = (int)Text;
+    grim_error_text = (int)Text;
     MessageBoxA(0, Text, Caption, 0);
     return 0;
   }
 }
 
-// sub_10005EB0 @ 0x10005EB0
+// grim_init_system @ 0x10005EB0
+// Grim2D vtable 0x14: Grim2D init; returns success
 char __thiscall sub_10005EB0(void *this)
 {
   char result; // al
@@ -3441,16 +3517,16 @@ char __thiscall sub_10005EB0(void *this)
 
   memset(DstBuf, 0, 0x104u);
   getcwd(DstBuf, 260);
-  result = sub_10003E60();
+  result = grim_d3d_init();
   if ( result )
   {
-    if ( (_BYTE)dword_1005CC48 != 1 || (_BYTE)dword_1005CC58 || (unsigned __int8)sub_1000A5A0(hWnd) )
+    if ( (_BYTE)dword_1005CC48 != 1 || (_BYTE)grim_input_cached || (unsigned __int8)grim_mouse_init(hWnd) )
     {
-      if ( (_BYTE)dword_1005CC38 != 1 || (unsigned __int8)sub_1000A390(hWnd) )
+      if ( (_BYTE)dword_1005CC38 != 1 || (unsigned __int8)grim_keyboard_init(hWnd) )
       {
-        if ( (_BYTE)dword_1005CC68 == 1 && !(unsigned __int8)sub_1000A1C0(hWnd) )
+        if ( (_BYTE)dword_1005CC68 == 1 && !(unsigned __int8)grim_joystick_init(hWnd) )
         {
-          dword_1005C8F8 = (int)aDi8CouldNotIni_1;
+          grim_error_text = (int)aDi8CouldNotIni_1;
           LOBYTE(dword_1005CC68) = 0;
         }
         sub_10004920();
@@ -3466,43 +3542,45 @@ char __thiscall sub_10005EB0(void *this)
           aCrimsonPaq);
         v3 = sub_10005AE0(aLoadSmallfntDa);
         if ( v3 )
-          qmemcpy(&byte_1005BAD8, v3, 0x100u);
+          qmemcpy(&grim_font2_glyph_widths, v3, 0x100u);
         return 1;
       }
       else
       {
-        dword_1005C8F8 = (int)aDi8CouldNotIni_0;
-        sub_1000A7D0();
-        sub_1000A550();
+        grim_error_text = (int)aDi8CouldNotIni_0;
+        grim_mouse_shutdown();
+        grim_keyboard_shutdown();
         sub_10004280();
-        sub_10002880();
+        grim_window_destroy();
         return 0;
       }
     }
     else
     {
-      dword_1005C8F8 = (int)aDi8CouldNotIni;
-      sub_1000A7D0();
+      grim_error_text = (int)aDi8CouldNotIni;
+      grim_mouse_shutdown();
       sub_10004280();
-      sub_10002880();
+      grim_window_destroy();
       return 0;
     }
   }
   return result;
 }
 
-// sub_10005FF0 @ 0x10005FF0
+// grim_shutdown @ 0x10005FF0
+// Grim2D vtable 0x18 (provisional): Grim2D shutdown
 BOOL sub_10005FF0()
 {
   sub_10005A40(String);
-  sub_1000A7D0();
-  sub_1000A550();
+  grim_mouse_shutdown();
+  grim_keyboard_shutdown();
   sub_1000A330();
   sub_10004280();
-  return sub_10002880();
+  return grim_window_destroy();
 }
 
-// sub_10006020 @ 0x10006020
+// grim_apply_settings @ 0x10006020
+// Grim2D vtable 0x1c: apply Grim2D settings after config load
 char sub_10006020()
 {
   sub_10003C00();
@@ -3517,88 +3595,88 @@ char __cdecl sub_10006030(int a1)
   switch ( a1 )
   {
     case 0:
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 1, 3);
-      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 3, 0);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 4, 3);
-      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 6, 0);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 1, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 4, 1);
+      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 3);
+      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 3, 0);
+      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 3);
+      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 6, 0);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 1, 1);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 4, 1);
       result = 1;
       break;
     case 1:
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 1, 4);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 2, 2);
-      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 3, 0);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 4, 4);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 5, 2);
-      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 6, 0);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 1, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 4, 1);
+      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 4);
+      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 2, 2);
+      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 3, 0);
+      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 4);
+      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 5, 2);
+      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 6, 0);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 1, 1);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 4, 1);
       result = 1;
       break;
     case 2:
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 1, 4);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 2, 2);
-      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 3, 0);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 4, 4);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 5, 2);
-      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 6, 0);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 1, 4);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 2, 2);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 3, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 4, 4);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 5, 2);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 6, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 2, 1, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 2, 4, 1);
+      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 4);
+      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 2, 2);
+      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 3, 0);
+      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 4);
+      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 5, 2);
+      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 6, 0);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 1, 4);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 2, 2);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 3, 1);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 4, 4);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 5, 2);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 6, 1);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 2, 1, 1);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 2, 4, 1);
       result = 1;
       break;
     case 3:
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 1, 7);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 2, 2);
-      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 3, 0);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 4, 7);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 5, 2);
-      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 6, 0);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 1, 4);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 2, 2);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 3, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 4, 4);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 5, 2);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 6, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 2, 1, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 2, 4, 1);
+      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 7);
+      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 2, 2);
+      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 3, 0);
+      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 7);
+      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 5, 2);
+      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 6, 0);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 1, 4);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 2, 2);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 3, 1);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 4, 4);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 5, 2);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 6, 1);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 2, 1, 1);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 2, 4, 1);
       result = 1;
       break;
     case 4:
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 1, 24);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 2, 2);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 3, 3);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 5, 2);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 4, 2);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 1, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 4, 1);
+      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 24);
+      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 2, 2);
+      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 3, 3);
+      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 5, 2);
+      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 2);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 1, 1);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 4, 1);
       result = 1;
       break;
     case 5:
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 1, 24);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 2, 2);
-      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 3, 0);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 4, 2);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 1, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 4, 1);
+      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 24);
+      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 2, 2);
+      (*(void (__stdcall **)(int, _DWORD, int, _DWORD))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 3, 0);
+      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 2);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 1, 1);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 4, 1);
       result = 1;
       break;
     case 6:
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 1, 2);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 2, 2);
-      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 4, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 1, 24);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 2, 2);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 3, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 1, 4, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 2, 1, 1);
-      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 2, 4, 1);
+      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 2);
+      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 2, 2);
+      (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 1);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 1, 24);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 2, 2);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 3, 1);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 1, 4, 1);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 2, 1, 1);
+      (*(void (__stdcall **)(int, int, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 2, 4, 1);
       result = 1;
       break;
     default:
@@ -3608,7 +3686,8 @@ char __cdecl sub_10006030(int a1)
   return result;
 }
 
-// sub_10006580 @ 0x10006580
+// grim_set_config_var @ 0x10006580
+// Grim2D vtable 0x20: config/state dispatcher; updates config tables, some IDs map to D3D render/texture state; extra args for some IDs
 char __stdcall sub_10006580(int a1, int a2, float a3, float a4, char *String)
 {
   unsigned int v5; // eax
@@ -3640,60 +3719,60 @@ char __stdcall sub_10006580(int a1, int a2, float a3, float a4, char *String)
       lpWindowName = (LPCSTR)operator new(strlen(String) + 1);
       v5 = strlen(String) + 1;
       qmemcpy((void *)lpWindowName, String, v5);
-      dword_1005CB94[4 * a1] = (int)lpWindowName;
+      grim_config_var3_table[4 * a1] = (int)lpWindowName;
       return v5;
     case 11:
     case 12:
     case 14:
     case 66:
-      LOBYTE(dword_1005CB88[4 * a1]) = a2;
+      LOBYTE(grim_config_var0_table[4 * a1]) = a2;
       return v5;
     case 13:
-      LOBYTE(dword_1005CB88[4 * a1]) = a2;
-      LOBYTE(v5) = dword_1005CC58;
-      if ( (_BYTE)dword_1005CC58 )
+      LOBYTE(grim_config_var0_table[4 * a1]) = a2;
+      LOBYTE(v5) = grim_input_cached;
+      if ( (_BYTE)grim_input_cached )
         LOBYTE(dword_1005CC48) = 1;
       return v5;
     case 16:
       if ( !strcmp(String, ::String) )
       {
-        if ( dword_1005CB94[4 * a1] )
-          operator delete((void *)dword_1005CB94[4 * a1]);
+        if ( grim_config_var3_table[4 * a1] )
+          operator delete((void *)grim_config_var3_table[4 * a1]);
         dword_1005CC94 = (int)strdup(::String);
         byte_1005BC14 = 0;
       }
       byte_1005BC14 = sub_10005A40(String);
-      if ( dword_1005CB94[4 * a1] )
-        operator delete((void *)dword_1005CB94[4 * a1]);
-      dword_1005CB94[4 * a1] = (int)strdup(String);
+      if ( grim_config_var3_table[4 * a1] )
+        operator delete((void *)grim_config_var3_table[4 * a1]);
+      grim_config_var3_table[4 * a1] = (int)strdup(String);
       LOBYTE(v5) = byte_1005BC14;
-      LOBYTE(dword_1005CB88[4 * a1]) = byte_1005BC14;
+      LOBYTE(grim_config_var0_table[4 * a1]) = byte_1005BC14;
       return v5;
     case 18:
-      LOBYTE(v5) = dword_1005CB88[4 * a1];
+      LOBYTE(v5) = grim_config_var0_table[4 * a1];
       if ( (_BYTE)v5 != (_BYTE)a2 )
       {
-        LOBYTE(v5) = (*(int (__stdcall **)(int, int, _DWORD))(*(_DWORD *)dword_10059DBC + 200))(
-                       dword_10059DBC,
+        LOBYTE(v5) = (*(int (__stdcall **)(int, int, _DWORD))(*(_DWORD *)grim_d3d_device + 200))(
+                       grim_d3d_device,
                        27,
                        (unsigned __int8)a2);
-        LOBYTE(dword_1005CB88[4 * a1]) = a2;
+        LOBYTE(grim_config_var0_table[4 * a1]) = a2;
       }
       return v5;
     case 19:
-      v5 = dword_1005CB88[4 * a1];
+      v5 = grim_config_var0_table[4 * a1];
       if ( v5 != a2 )
       {
-        LOBYTE(v5) = (*(int (__stdcall **)(int, int, int))(*(_DWORD *)dword_10059DBC + 200))(dword_10059DBC, 19, a2);
-        dword_1005CB88[4 * a1] = a2;
+        LOBYTE(v5) = (*(int (__stdcall **)(int, int, int))(*(_DWORD *)grim_d3d_device + 200))(grim_d3d_device, 19, a2);
+        grim_config_var0_table[4 * a1] = a2;
       }
       return v5;
     case 20:
-      v5 = dword_1005CB88[4 * a1];
+      v5 = grim_config_var0_table[4 * a1];
       if ( v5 != a2 )
       {
-        LOBYTE(v5) = (*(int (__stdcall **)(int, int, int))(*(_DWORD *)dword_10059DBC + 200))(dword_10059DBC, 20, a2);
-        dword_1005CB88[4 * a1] = a2;
+        LOBYTE(v5) = (*(int (__stdcall **)(int, int, int))(*(_DWORD *)grim_d3d_device + 200))(grim_d3d_device, 20, a2);
+        grim_config_var0_table[4 * a1] = a2;
       }
       return v5;
     case 21:
@@ -3703,31 +3782,31 @@ char __stdcall sub_10006580(int a1, int a2, float a3, float a4, char *String)
         goto LABEL_44;
       if ( a2 == 3 )
       {
-        if ( dword_1005CB88[4 * a1] != 3 )
-          (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 21, 3);
+        if ( grim_config_var0_table[4 * a1] != 3 )
+          (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 21, 3);
 LABEL_44:
-        if ( dword_1005CB88[4 * a1] == 3 )
-          (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 21, 1);
-        (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 17, a2);
-        LOBYTE(v5) = (*(int (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(
-                       dword_10059DBC,
+        if ( grim_config_var0_table[4 * a1] == 3 )
+          (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 21, 1);
+        (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 17, a2);
+        LOBYTE(v5) = (*(int (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(
+                       grim_d3d_device,
                        0,
                        16,
                        a2);
-        dword_1005CB88[4 * a1] = a2;
+        grim_config_var0_table[4 * a1] = a2;
       }
       return v5;
     case 26:
       LOBYTE(v5) = sub_10006030(a2);
       if ( (_BYTE)v5 )
       {
-        v6 = &dword_1005CB88[4 * a1];
+        v6 = &grim_config_var0_table[4 * a1];
         *v6 = a2;
         goto LABEL_50;
       }
       return v5;
     case 27:
-      v7 = &dword_1005CB88[4 * a1];
+      v7 = &grim_config_var0_table[4 * a1];
       *v7 = a2;
       *((float *)v7 + 1) = a3;
       *((float *)v7 + 2) = a4;
@@ -3735,7 +3814,7 @@ LABEL_44:
       HIWORD(v14) = (unsigned __int8)(__int64)(*(float *)&a2 * 127.0 + 128.0);
       BYTE1(v14) = (__int64)(a3 * 127.0 + 128.0);
       LOBYTE(v14) = (__int64)(a4 * 127.0 + 128.0);
-      LOBYTE(v5) = (*(int (__stdcall **)(int, int, int))(*(_DWORD *)dword_10059DBC + 200))(dword_10059DBC, 60, v14);
+      LOBYTE(v5) = (*(int (__stdcall **)(int, int, int))(*(_DWORD *)grim_d3d_device + 200))(grim_d3d_device, 60, v14);
       return v5;
     case 28:
       v8 = 0;
@@ -3761,8 +3840,8 @@ LABEL_44:
         v15 = v8;
       }
       while ( v8 < 256 );
-      (*(void (__stdcall **)(int, int, _BYTE *))(*(_DWORD *)dword_10059DBC + 72))(dword_10059DBC, 1, v16);
-      v11 = &dword_1005CB88[4 * a1];
+      (*(void (__stdcall **)(int, int, _BYTE *))(*(_DWORD *)grim_d3d_device + 72))(grim_d3d_device, 1, v16);
+      v11 = &grim_config_var0_table[4 * a1];
       *v11 = a2;
       *((float *)v11 + 1) = a3;
       *((float *)v11 + 2) = a4;
@@ -3770,37 +3849,37 @@ LABEL_44:
       LOBYTE(v5) = (_BYTE)String;
       return v5;
     case 41:
-      dword_1005C400 = a2;
-      dword_1005CB88[4 * a1] = a2;
+      grim_backbuffer_width = a2;
+      grim_config_var0_table[4 * a1] = a2;
       LOBYTE(v5) = a2;
       return v5;
     case 42:
-      dword_10059DC0 = a2;
-      dword_1005CB88[4 * a1] = a2;
+      grim_backbuffer_height = a2;
+      grim_config_var0_table[4 * a1] = a2;
       LOBYTE(v5) = a2;
       return v5;
     case 43:
-      dword_1005CB88[4 * a1] = a2;
-      dword_1005A488 = (a2 != 32) + 22;
+      grim_config_var0_table[4 * a1] = a2;
+      grim_texture_format = (a2 != 32) + 22;
       LOBYTE(v5) = a2;
       return v5;
     case 45:
       dword_1005977C = (int (*)(void))String;
       return v5;
     case 52:
-      LOBYTE(dword_1005CB88[4 * a1]) = a2;
+      LOBYTE(grim_config_var0_table[4 * a1]) = a2;
       LOBYTE(v5) = a2;
       return v5;
     case 54:
-      LOBYTE(v5) = (*(int (__stdcall **)(int, _DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)dword_10059DBC + 60))(
-                     dword_10059DBC,
+      LOBYTE(v5) = (*(int (__stdcall **)(int, _DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)grim_d3d_device + 60))(
+                     grim_d3d_device,
                      0,
                      0,
                      0,
                      0);
       return v5;
     case 82:
-      v12 = &dword_1005CB88[4 * a1];
+      v12 = &grim_config_var0_table[4 * a1];
       *v12 = a2;
       *((float *)v12 + 1) = a3;
       *((float *)v12 + 2) = a4;
@@ -3809,11 +3888,11 @@ LABEL_44:
       LOBYTE(v5) = (_BYTE)String;
       return v5;
     case 85:
-      byte_1005D3BD = a2;
+      grim_render_disabled = a2;
       LOBYTE(v5) = a2;
       return v5;
     default:
-      v6 = &dword_1005CB88[4 * a1];
+      v6 = &grim_config_var0_table[4 * a1];
       *v6 = a2;
 LABEL_50:
       *((float *)v6 + 1) = a3;
@@ -3824,7 +3903,8 @@ LABEL_50:
   }
 }
 
-// sub_10006C30 @ 0x10006C30
+// grim_get_config_var @ 0x10006C30
+// Grim2D vtable 0x24 (provisional): fills 4 dwords for config entry (id 0..0x7f)
 int *__stdcall sub_10006C30(int *a1, unsigned int a2)
 {
   int *v2; // ecx
@@ -3839,7 +3919,7 @@ int *__stdcall sub_10006C30(int *a1, unsigned int a2)
   }
   else
   {
-    v2 = &dword_1005CB88[4 * a2];
+    v2 = &grim_config_var0_table[4 * a2];
     *a1 = *v2;
     a1[1] = v2[1];
     a1[2] = v2[2];
@@ -3848,25 +3928,27 @@ int *__stdcall sub_10006C30(int *a1, unsigned int a2)
   }
 }
 
-// sub_10006CA0 @ 0x10006CA0
+// grim_get_error_text @ 0x10006CA0
+// Grim2D vtable 0x28: error string for MessageBox
 int sub_10006CA0()
 {
-  return dword_1005C8F8;
+  return grim_error_text;
 }
 
-// sub_10006CB0 @ 0x10006CB0
+// grim_clear_color @ 0x10006CB0
+// Grim2D vtable 0x2c: packs RGBA into device clear color
 char __stdcall sub_10006CB0(float a1, float a2, float a3, float a4)
 {
   char result; // al
 
-  result = byte_1005D3BD;
-  if ( !byte_1005D3BD )
+  result = grim_render_disabled;
+  if ( !grim_render_disabled )
   {
     result = byte_1005C898;
     if ( byte_1005C898 )
-      return (*(int (__stdcall **)(int, _DWORD, _DWORD, int, unsigned int, _DWORD, _DWORD))(*(_DWORD *)dword_10059DBC
+      return (*(int (__stdcall **)(int, _DWORD, _DWORD, int, unsigned int, _DWORD, _DWORD))(*(_DWORD *)grim_d3d_device
                                                                                           + 144))(
-               dword_10059DBC,
+               grim_d3d_device,
                0,
                0,
                1,
@@ -3879,72 +3961,83 @@ char __stdcall sub_10006CB0(float a1, float a2, float a3, float a4)
   return result;
 }
 
-// sub_10006D50 @ 0x10006D50
+// grim_set_render_target @ 0x10006D50
+// Grim2D vtable 0x30 (provisional): set render target; -1 resets
 char __stdcall sub_10006D50(int a1)
 {
   int v2; // [esp-Ch] [ebp-14h]
 
-  if ( byte_1005D3BD )
+  if ( grim_render_disabled )
     return 1;
   if ( a1 < 0 )
   {
-    if ( dword_1005C900 )
+    if ( grim_backbuffer_surface )
     {
-      if ( dword_1005A48C )
-        (*(void (__stdcall **)(int))(*(_DWORD *)dword_1005A48C + 8))(dword_1005A48C);
-      dword_1005A48C = 0;
-      if ( (*(int (__stdcall **)(int, int, _DWORD))(*(_DWORD *)dword_10059DBC + 124))(dword_10059DBC, dword_1005C900, 0) < 0 )
+      if ( grim_render_target_surface )
+        (*(void (__stdcall **)(int))(*(_DWORD *)grim_render_target_surface + 8))(grim_render_target_surface);
+      grim_render_target_surface = 0;
+      if ( (*(int (__stdcall **)(int, int, _DWORD))(*(_DWORD *)grim_d3d_device + 124))(
+             grim_d3d_device,
+             grim_backbuffer_surface,
+             0) < 0 )
         return 0;
-      if ( dword_1005C900 )
-        (*(void (__stdcall **)(int))(*(_DWORD *)dword_1005C900 + 8))(dword_1005C900);
-      dword_1005C900 = 0;
+      if ( grim_backbuffer_surface )
+        (*(void (__stdcall **)(int))(*(_DWORD *)grim_backbuffer_surface + 8))(grim_backbuffer_surface);
+      grim_backbuffer_surface = 0;
     }
     return 1;
   }
-  if ( dword_1005A48C )
+  if ( grim_render_target_surface )
   {
-    (*(void (__stdcall **)(int))(*(_DWORD *)dword_1005A48C + 8))(dword_1005A48C);
-    dword_1005A48C = 0;
+    (*(void (__stdcall **)(int))(*(_DWORD *)grim_render_target_surface + 8))(grim_render_target_surface);
+    grim_render_target_surface = 0;
   }
-  if ( !dword_1005C900 )
-    (*(void (__stdcall **)(int, int *))(*(_DWORD *)dword_10059DBC + 128))(dword_10059DBC, &dword_1005C900);
-  v2 = *((_DWORD *)*(&dword_1005D404 + a1) + 1);
-  if ( (*(int (__stdcall **)(int, _DWORD, int *))(*(_DWORD *)v2 + 60))(v2, 0, &dword_1005A48C) < 0 )
+  if ( !grim_backbuffer_surface )
+    (*(void (__stdcall **)(int, int *))(*(_DWORD *)grim_d3d_device + 128))(grim_d3d_device, &grim_backbuffer_surface);
+  v2 = *((_DWORD *)*(&grim_texture_slots + a1) + 1);
+  if ( (*(int (__stdcall **)(int, _DWORD, int *))(*(_DWORD *)v2 + 60))(v2, 0, &grim_render_target_surface) < 0 )
     return 0;
-  if ( (*(int (__stdcall **)(int, int, _DWORD))(*(_DWORD *)dword_10059DBC + 124))(dword_10059DBC, dword_1005A48C, 0) >= 0 )
+  if ( (*(int (__stdcall **)(int, int, _DWORD))(*(_DWORD *)grim_d3d_device + 124))(
+         grim_d3d_device,
+         grim_render_target_surface,
+         0) >= 0 )
     return 1;
-  if ( dword_1005A48C )
-    (*(void (__stdcall **)(int))(*(_DWORD *)dword_1005A48C + 8))(dword_1005A48C);
-  dword_1005A48C = 0;
+  if ( grim_render_target_surface )
+    (*(void (__stdcall **)(int))(*(_DWORD *)grim_render_target_surface + 8))(grim_render_target_surface);
+  grim_render_target_surface = 0;
   return 0;
 }
 
-// sub_10006E40 @ 0x10006E40
+// grim_get_time_ms @ 0x10006E40
+// Grim2D vtable 0x34: accumulated time (ms)
 int sub_10006E40()
 {
-  return dword_1005A054;
+  return grim_time_ms;
 }
 
-// sub_10006E50 @ 0x10006E50
+// grim_set_time_ms @ 0x10006E50
+// Grim2D vtable 0x38: set accumulated time
 int __stdcall sub_10006E50(int a1)
 {
-  dword_1005A054 = a1;
+  grim_time_ms = a1;
   return a1;
 }
 
-// sub_10006E60 @ 0x10006E60
+// grim_get_frame_dt @ 0x10006E60
+// Grim2D vtable 0x3c: clamped frame delta
 double sub_10006E60()
 {
-  if ( flt_10059768 <= 0.1 )
-    return flt_10059768;
+  if ( grim_frame_dt <= 0.1 )
+    return grim_frame_dt;
   else
     return 0.1;
 }
 
-// sub_10006E90 @ 0x10006E90
+// grim_get_fps @ 0x10006E90
+// Grim2D vtable 0x40: frames per second
 double sub_10006E90()
 {
-  return *(float *)&dword_1005B2BC;
+  return *(float *)&grim_fps;
 }
 
 // sub_10006EA0 @ 0x10006EA0
@@ -3955,7 +4048,8 @@ BOOL sub_10006EA0()
 
   v1 = *(float *)&dword_1005D158;
   v2 = *(float *)&dword_1005D138;
-  return -v2 > (double)(*(int (__thiscall **)(int))(*(_DWORD *)dword_1005D81C + 156))(dword_1005D81C) - v1;
+  return -v2 > (double)(*(int (__thiscall **)(int))(*(_DWORD *)grim_interface_instance + 156))(grim_interface_instance)
+             - v1;
 }
 
 // sub_10006EF0 @ 0x10006EF0
@@ -3966,7 +4060,7 @@ BOOL sub_10006EF0()
 
   v1 = *(float *)&dword_1005D158;
   v2 = *(float *)&dword_1005D138;
-  return (double)(*(int (__thiscall **)(int))(*(_DWORD *)dword_1005D81C + 156))(dword_1005D81C) - v1 > v2;
+  return (double)(*(int (__thiscall **)(int))(*(_DWORD *)grim_interface_instance + 156))(grim_interface_instance) - v1 > v2;
 }
 
 // sub_10006F40 @ 0x10006F40
@@ -3977,7 +4071,8 @@ BOOL sub_10006F40()
 
   v1 = *(float *)&dword_1005D148;
   v2 = *(float *)&dword_1005D138;
-  return -v2 > (double)(*(int (__thiscall **)(int))(*(_DWORD *)dword_1005D81C + 152))(dword_1005D81C) - v1;
+  return -v2 > (double)(*(int (__thiscall **)(int))(*(_DWORD *)grim_interface_instance + 152))(grim_interface_instance)
+             - v1;
 }
 
 // sub_10006F90 @ 0x10006F90
@@ -3988,10 +4083,11 @@ BOOL sub_10006F90()
 
   v1 = *(float *)&dword_1005D148;
   v2 = *(float *)&dword_1005D138;
-  return (double)(*(int (__thiscall **)(int))(*(_DWORD *)dword_1005D81C + 152))(dword_1005D81C) - v1 > v2;
+  return (double)(*(int (__thiscall **)(int))(*(_DWORD *)grim_interface_instance + 152))(grim_interface_instance) - v1 > v2;
 }
 
-// sub_10006FE0 @ 0x10006FE0
+// grim_is_key_active @ 0x10006FE0
+// Grim2D vtable 0x80: routes key/mouse/joystick IDs
 char __thiscall sub_10006FE0(void *this, int a2)
 {
   int i; // eax
@@ -4075,7 +4171,8 @@ char __thiscall sub_10006FE0(void *this, int a2)
   return 0;
 }
 
-// sub_100071B0 @ 0x100071B0
+// grim_get_config_float @ 0x100071B0
+// Grim2D vtable 0x84: config float lookup (scaled)
 double __thiscall sub_100071B0(void *this, int a2)
 {
   double result; // st7
@@ -4126,39 +4223,45 @@ double __thiscall sub_100071B0(void *this, int a2)
   return result;
 }
 
-// sub_100072C0 @ 0x100072C0
+// grim_get_slot_float @ 0x100072C0
+// Grim2D vtable 0x88 (provisional): float slot accessor
 double __stdcall sub_100072C0(int a1)
 {
   return *(float *)&byte_1005BDFC[4 * a1 + 772];
 }
 
-// sub_100072D0 @ 0x100072D0
+// grim_get_slot_int @ 0x100072D0
+// Grim2D vtable 0x8c (provisional): int slot accessor
 int __stdcall sub_100072D0(int a1)
 {
   return *(_DWORD *)&byte_1005BDFC[4 * a1 + 260];
 }
 
-// sub_100072E0 @ 0x100072E0
+// grim_set_slot_float @ 0x100072E0
+// Grim2D vtable 0x90 (provisional): float slot setter
 int __stdcall sub_100072E0(int a1, float a2)
 {
   *(float *)&byte_1005BDFC[4 * a1 + 772] = a2;
   return a1;
 }
 
-// sub_10007300 @ 0x10007300
+// grim_set_slot_int @ 0x10007300
+// Grim2D vtable 0x94 (provisional): int slot setter
 int __stdcall sub_10007300(int a1, int a2)
 {
   *(_DWORD *)&byte_1005BDFC[4 * a1 + 260] = a2;
   return a2;
 }
 
-// sub_10007320 @ 0x10007320
+// grim_is_key_down @ 0x10007320
+// Grim2D vtable 0x44 (provisional)
 int __stdcall sub_10007320(int a1)
 {
-  return sub_1000A370(a1);
+  return grim_keyboard_key_down(a1);
 }
 
-// sub_10007330 @ 0x10007330
+// grim_flush_input @ 0x10007330
+// Grim2D vtable 0x4c (provisional): clear buffered input/device state
 int sub_10007330()
 {
   int v0; // esi
@@ -4184,12 +4287,13 @@ int sub_10007330()
   return 0;
 }
 
-// sub_10007390 @ 0x10007390
+// grim_was_key_pressed @ 0x10007390
+// Grim2D vtable 0x48 (provisional)
 char __stdcall sub_10007390(int a1)
 {
   double v1; // st7
 
-  if ( !(unsigned __int8)sub_1000A370(a1) )
+  if ( !(unsigned __int8)grim_keyboard_key_down(a1) )
   {
     flt_1005A058[(unsigned __int8)a1] = 0.0;
     DstBuf[(unsigned __int8)a1 + 264] = 1;
@@ -4205,130 +4309,146 @@ char __stdcall sub_10007390(int a1)
   return 1;
 }
 
-// sub_10007410 @ 0x10007410
+// grim_is_mouse_button_down @ 0x10007410
+// Grim2D vtable 0x58: cached mouse button state or poll
 char __stdcall sub_10007410(int a1)
 {
-  if ( (_BYTE)dword_1005CC58 )
-    return byte_1005A044[a1];
+  if ( (_BYTE)grim_input_cached )
+    return grim_mouse_button_cache[a1];
   else
-    return sub_1000A590(a1);
+    return grim_mouse_button_down(a1);
 }
 
-// sub_10007440 @ 0x10007440
+// grim_was_mouse_button_pressed @ 0x10007440
+// Grim2D vtable 0x5c (provisional): edge-triggered mouse button
 char __userpurge sub_10007440@<al>(int a1@<ecx>, int a2@<edi>, int a3)
 {
   char v4; // dl
   bool v6; // bl
 
-  if ( (_BYTE)dword_1005CC58 )
+  if ( (_BYTE)grim_input_cached )
   {
-    v4 = byte_1005A044[a3];
-    if ( v4 && *((_BYTE *)&dword_1005C8E8 + a3) )
+    v4 = grim_mouse_button_cache[a3];
+    if ( v4 && *((_BYTE *)&grim_mouse_button_latch + a3) )
     {
-      *((_BYTE *)&dword_1005C8E8 + a3) = v4 == 0;
+      *((_BYTE *)&grim_mouse_button_latch + a3) = v4 == 0;
       return 1;
     }
     else
     {
-      *((_BYTE *)&dword_1005C8E8 + a3) = v4 == 0;
+      *((_BYTE *)&grim_mouse_button_latch + a3) = v4 == 0;
       return 0;
     }
   }
   else
   {
     v6 = (*(unsigned __int8 (__thiscall **)(int, int, int))(*(_DWORD *)a1 + 88))(a1, a3, a2)
-      && *((_BYTE *)&dword_1005C8E8 + a3);
-    *((_BYTE *)&dword_1005C8E8 + a3) = (*(unsigned __int8 (__thiscall **)(int))(*(_DWORD *)a1 + 88))(a1) == 0;
+      && *((_BYTE *)&grim_mouse_button_latch + a3);
+    *((_BYTE *)&grim_mouse_button_latch + a3) = (*(unsigned __int8 (__thiscall **)(int))(*(_DWORD *)a1 + 88))(a1) == 0;
     return v6;
   }
 }
 
-// sub_100074D0 @ 0x100074D0
+// grim_get_mouse_dx @ 0x100074D0
+// Grim2D vtable 0x70: cached mouse delta X
 double sub_100074D0()
 {
   return *(float *)&String[808];
 }
 
-// sub_100074E0 @ 0x100074E0
+// grim_get_mouse_dy @ 0x100074E0
+// Grim2D vtable 0x74: cached mouse delta Y
 double sub_100074E0()
 {
   return *(float *)&String[812];
 }
 
-// sub_100074F0 @ 0x100074F0
+// grim_get_mouse_dx_indexed @ 0x100074F0
+// Grim2D vtable 0x78: alias of get_mouse_dx
 int __thiscall sub_100074F0(void *this, int a2)
 {
   return (*(int (__thiscall **)(void *))(*(_DWORD *)this + 112))(this);
 }
 
-// sub_10007500 @ 0x10007500
+// grim_get_mouse_dy_indexed @ 0x10007500
+// Grim2D vtable 0x7c: alias of get_mouse_dy
 int __thiscall sub_10007500(void *this, int a2)
 {
   return (*(int (__thiscall **)(void *))(*(_DWORD *)this + 116))(this);
 }
 
-// sub_10007510 @ 0x10007510
+// grim_get_mouse_x @ 0x10007510
+// Grim2D vtable 0x68: cached mouse X position
 double sub_10007510()
 {
-  return flt_1005B278;
+  return grim_mouse_x_cached;
 }
 
-// sub_10007520 @ 0x10007520
+// grim_get_mouse_y @ 0x10007520
+// Grim2D vtable 0x6c: cached mouse Y position
 double sub_10007520()
 {
-  return flt_1005B27C;
+  return grim_mouse_y_cached;
 }
 
-// sub_10007530 @ 0x10007530
+// grim_set_mouse_pos @ 0x10007530
+// Grim2D vtable 0x64: set cached mouse position
 int __stdcall sub_10007530(float a1, float a2)
 {
   *(float *)&String[796] = a1;
   *(float *)&String[800] = a2;
-  flt_1005B278 = a1;
-  flt_1005B27C = a2;
+  grim_mouse_x_cached = a1;
+  grim_mouse_y_cached = a2;
   return LODWORD(a2);
 }
 
-// sub_10007560 @ 0x10007560
+// grim_get_mouse_wheel_delta @ 0x10007560
+// Grim2D vtable 0x60 (provisional)
 double sub_10007560()
 {
-  if ( (_BYTE)dword_1005CC58 )
+  if ( (_BYTE)grim_input_cached )
     return flt_1005D3B8;
   else
     return *(float *)&String[816];
 }
 
-// sub_10007580 @ 0x10007580
+// grim_get_joystick_x @ 0x10007580
+// Grim2D vtable 0x98 (provisional): joystick axis X
 int sub_10007580()
 {
   return *(_DWORD *)&String[8];
 }
 
-// sub_10007590 @ 0x10007590
+// grim_get_joystick_y @ 0x10007590
+// Grim2D vtable 0x9c (provisional): joystick axis Y
 int sub_10007590()
 {
   return *(_DWORD *)&String[12];
 }
 
-// sub_100075A0 @ 0x100075A0
+// grim_get_joystick_z @ 0x100075A0
+// Grim2D vtable 0xa0 (provisional): joystick axis Z
 int sub_100075A0()
 {
   return *(_DWORD *)&String[16];
 }
 
-// sub_100075B0 @ 0x100075B0
+// grim_get_joystick_pov @ 0x100075B0
+// Grim2D vtable 0xa4 (provisional): joystick POV hat value
 int __stdcall sub_100075B0(int a1)
 {
   return *(_DWORD *)&String[4 * a1 + 40];
 }
 
-// sub_100075C0 @ 0x100075C0
+// grim_is_joystick_button_down @ 0x100075C0
+// Grim2D vtable 0xa8 (provisional): joystick button state
 int __stdcall sub_100075C0(int a1)
 {
   return sub_1000A310(a1);
 }
 
-// sub_100075D0 @ 0x100075D0
+// grim_create_texture @ 0x100075D0
+// Grim2D vtable 0xac: create blank texture in a free slot
 char __stdcall sub_100075D0(const char *a1, int a2, int a3)
 {
   int v3; // esi
@@ -4337,84 +4457,89 @@ char __stdcall sub_100075D0(const char *a1, int a2, int a3)
   char *v7; // edx
   _DWORD v8[4]; // [esp+20h] [ebp-10h] BYREF
 
-  v3 = sub_100051C0();
+  v3 = grim_find_free_texture_slot();
   if ( v3 < 0 )
     return 0;
-  if ( (*(int (__stdcall **)(int, int, int, int, int, int, _DWORD, _DWORD *))(*(_DWORD *)dword_10059DBC + 80))(
-         dword_10059DBC,
+  if ( (*(int (__stdcall **)(int, int, int, int, int, int, _DWORD, _DWORD *))(*(_DWORD *)grim_d3d_device + 80))(
+         grim_d3d_device,
          a2,
          a3,
          1,
          1,
-         dword_1005A488,
+         grim_texture_format,
          0,
          v8) >= 0 )
   {
     v5 = (char **)operator new(0x18u);
     v8[3] = 0;
     if ( v5 )
-      v6 = sub_10004A50(v5, a1);
+      v6 = grim_texture_init(v5, a1);
     else
       v6 = 0;
     v7 = (char *)v8[0];
-    *(&dword_1005D404 + v3) = v6;
+    *(&grim_texture_slots + v3) = v6;
     v6[1] = v7;
-    *((_BYTE *)*(&dword_1005D404 + v3) + 8) = 1;
-    *((_DWORD *)*(&dword_1005D404 + v3) + 3) = a2;
-    *((_DWORD *)*(&dword_1005D404 + v3) + 4) = a3;
+    *((_BYTE *)*(&grim_texture_slots + v3) + 8) = 1;
+    *((_DWORD *)*(&grim_texture_slots + v3) + 3) = a2;
+    *((_DWORD *)*(&grim_texture_slots + v3) + 4) = a3;
     if ( v3 > dword_1005305C )
       dword_1005305C = v3;
     return 1;
   }
   else
   {
-    dword_1005C8F8 = (int)aD3dCouldNotCre;
+    grim_error_text = (int)aD3dCouldNotCre;
     return 0;
   }
 }
 
-// sub_100076E0 @ 0x100076E0
+// grim_load_texture @ 0x100076E0
+// Grim2D vtable 0xb4 (provisional)
 char __stdcall sub_100076E0(const char *a1, char *FileName)
 {
-  return sub_100051E0(a1, FileName);
+  return grim_load_texture_internal(a1, FileName);
 }
 
-// sub_10007700 @ 0x10007700
+// grim_destroy_texture @ 0x10007700
+// Grim2D vtable 0xbc (provisional): release texture handle
 void __stdcall sub_10007700(int a1)
 {
   void *v1; // esi
   int v2; // eax
   bool v3; // zf
 
-  v1 = *(&dword_1005D404 + a1);
+  v1 = *(&grim_texture_slots + a1);
   if ( v1 )
   {
-    sub_10004AB0((void **)*(&dword_1005D404 + a1));
+    grim_texture_release((void **)*(&grim_texture_slots + a1));
     operator delete(v1);
     v2 = dword_1005305C;
     v3 = a1 == dword_1005305C;
-    *(&dword_1005D404 + a1) = 0;
+    *(&grim_texture_slots + a1) = 0;
     if ( v3 )
       dword_1005305C = v2 - 1;
   }
 }
 
-// sub_10007740 @ 0x10007740
+// grim_get_texture_handle @ 0x10007740
+// Grim2D vtable 0xc0: lookup texture handle by name
 int __stdcall sub_10007740(const char *a1)
 {
-  return sub_10005170(a1);
+  return grim_find_texture_by_name(a1);
 }
 
-// sub_10007750 @ 0x10007750
+// grim_validate_texture @ 0x10007750
+// Grim2D vtable 0xb8: validate texture handle/device
 bool __stdcall sub_10007750(int a1, LPCWCH lpWideCharStr)
 {
   int v2; // eax
 
-  v2 = (int)*(&dword_1005D404 + a1);
-  return v2 && sub_1000C1E8(lpWideCharStr, 2, *(_DWORD *)(v2 + 4), 0) >= 0;
+  v2 = (int)*(&grim_texture_slots + a1);
+  return v2 && FUN_1000c1e8(lpWideCharStr, 2, *(_DWORD *)(v2 + 4), 0) >= 0;
 }
 
-// sub_10007790 @ 0x10007790
+// grim_recreate_texture @ 0x10007790
+// Grim2D vtable 0xb0: recreate D3D texture surface
 char __stdcall sub_10007790(int a1)
 {
   int v1; // esi
@@ -4422,16 +4547,24 @@ char __stdcall sub_10007790(int a1)
   int v4; // [esp-4h] [ebp-8h]
 
   v1 = a1;
-  v2 = (int)*(&dword_1005D404 + a1);
+  v2 = (int)*(&grim_texture_slots + a1);
   if ( !v2 )
     return 0;
-  if ( (int)sub_1000B297(dword_10059DBC, *(_DWORD *)(v2 + 12), *(_DWORD *)(v2 + 16), 1, 0, dword_1005A56C, 1, &a1) < 0 )
+  if ( (int)FUN_1000b297(
+              grim_d3d_device,
+              *(_DWORD *)(v2 + 12),
+              *(_DWORD *)(v2 + 16),
+              1,
+              0,
+              grim_preferred_texture_format,
+              1,
+              &a1) < 0 )
     return 0;
-  if ( sub_1000B3FE(a1, *((_DWORD *)*(&dword_1005D404 + v1) + 1), 0, 0, 16, 1.0) >= 0 )
+  if ( FUN_1000b3fe(a1, *((_DWORD *)*(&grim_texture_slots + v1) + 1), 0, 0, 16, 1.0) >= 0 )
   {
-    v4 = *((_DWORD *)*(&dword_1005D404 + v1) + 1);
+    v4 = *((_DWORD *)*(&grim_texture_slots + v1) + 1);
     (*(void (__stdcall **)(int))(*(_DWORD *)v4 + 8))(v4);
-    *((_DWORD *)*(&dword_1005D404 + v1) + 1) = a1;
+    *((_DWORD *)*(&grim_texture_slots + v1) + 1) = a1;
     return 1;
   }
   else
@@ -4441,7 +4574,8 @@ char __stdcall sub_10007790(int a1)
   }
 }
 
-// sub_10007830 @ 0x10007830
+// grim_bind_texture @ 0x10007830
+// Grim2D vtable 0xc4: bind texture handle to stage
 void __stdcall sub_10007830(int a1, int a2)
 {
   int v2; // eax
@@ -4449,20 +4583,21 @@ void __stdcall sub_10007830(int a1, int a2)
 
   if ( a1 >= 0 )
   {
-    v2 = (int)*(&dword_1005D404 + a1);
+    v2 = (int)*(&grim_texture_slots + a1);
     if ( v2 )
     {
       v3 = *(_DWORD *)(v2 + 4);
       if ( v3 )
       {
-        (*(void (__stdcall **)(int, int, int))(*(_DWORD *)dword_10059DBC + 244))(dword_10059DBC, a2, v3);
-        dword_10053060 = a1;
+        (*(void (__stdcall **)(int, int, int))(*(_DWORD *)grim_d3d_device + 244))(grim_d3d_device, a2, v3);
+        grim_bound_texture_handle = a1;
       }
     }
   }
 }
 
-// sub_10007870 @ 0x10007870
+// grim_draw_fullscreen_quad @ 0x10007870
+// Grim2D vtable 0xc8: full-screen quad with current texture
 int __thiscall sub_10007870(void *this, int a2)
 {
   float v4; // [esp+4h] [ebp-14h]
@@ -4470,8 +4605,8 @@ int __thiscall sub_10007870(void *this, int a2)
 
   (*(void (__thiscall **)(void *, _DWORD))(*(_DWORD *)this + 252))(this, 0);
   (*(void (__thiscall **)(void *))(*(_DWORD *)this + 232))(this);
-  v5 = (float)(unsigned int)dword_10059DC0;
-  v4 = (float)(unsigned int)dword_1005C400;
+  v5 = (float)(unsigned int)grim_backbuffer_height;
+  v4 = (float)(unsigned int)grim_backbuffer_width;
   (*(void (__thiscall **)(void *, _DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)this + 284))(
     this,
     0,
@@ -4481,25 +4616,27 @@ int __thiscall sub_10007870(void *this, int a2)
   return (*(int (__thiscall **)(void *))(*(_DWORD *)this + 240))(this);
 }
 
-// sub_100078E0 @ 0x100078E0
+// grim_draw_rect_filled @ 0x100078E0
+// Grim2D vtable 0xd0: UI panel fill/quad
 void __thiscall sub_100078E0(void *this, _DWORD *a2, int a3, int a4, int a5)
 {
   if ( *(float *)(a5 + 12) > 0.0 )
   {
-    (*(void (__stdcall **)(int, _DWORD, _DWORD))(*(_DWORD *)dword_10059DBC + 244))(dword_10059DBC, 0, 0);
-    (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 1, 3);
-    (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 4, 3);
+    (*(void (__stdcall **)(int, _DWORD, _DWORD))(*(_DWORD *)grim_d3d_device + 244))(grim_d3d_device, 0, 0);
+    (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 3);
+    (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 3);
     (*(void (__thiscall **)(void *, int))(*(_DWORD *)this + 272))(this, a5);
     (*(void (__thiscall **)(void *, _DWORD))(*(_DWORD *)this + 252))(this, 0);
     (*(void (__thiscall **)(void *))(*(_DWORD *)this + 232))(this);
     (*(void (__thiscall **)(void *, _DWORD, _DWORD, int, int))(*(_DWORD *)this + 284))(this, *a2, a2[1], a3, a4);
     (*(void (__thiscall **)(void *))(*(_DWORD *)this + 240))(this);
-    (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 1, 4);
-    (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 4, 4);
+    (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 4);
+    (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 4);
   }
 }
 
-// sub_100079B0 @ 0x100079B0
+// grim_draw_fullscreen_color @ 0x100079B0
+// Grim2D vtable 0xcc: fullscreen color/fade overlay
 void __thiscall sub_100079B0(void *this, int a2, int a3, int a4, float a5)
 {
   float v6; // [esp+40h] [ebp-14h]
@@ -4507,14 +4644,14 @@ void __thiscall sub_100079B0(void *this, int a2, int a3, int a4, float a5)
 
   if ( a5 > 0.0 )
   {
-    (*(void (__stdcall **)(int, _DWORD, _DWORD))(*(_DWORD *)dword_10059DBC + 244))(dword_10059DBC, 0, 0);
-    (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 1, 3);
-    (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 4, 3);
+    (*(void (__stdcall **)(int, _DWORD, _DWORD))(*(_DWORD *)grim_d3d_device + 244))(grim_d3d_device, 0, 0);
+    (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 3);
+    (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 3);
     (*(void (__thiscall **)(void *, int, int, int, _DWORD))(*(_DWORD *)this + 276))(this, a2, a3, a4, LODWORD(a5));
     (*(void (__thiscall **)(void *, _DWORD))(*(_DWORD *)this + 252))(this, 0);
     (*(void (__thiscall **)(void *))(*(_DWORD *)this + 232))(this);
-    v7 = (float)(unsigned int)dword_10059DC0;
-    v6 = (float)(unsigned int)dword_1005C400;
+    v7 = (float)(unsigned int)grim_backbuffer_height;
+    v6 = (float)(unsigned int)grim_backbuffer_width;
     (*(void (__thiscall **)(void *, _DWORD, _DWORD, _DWORD, _DWORD))(*(_DWORD *)this + 284))(
       this,
       0,
@@ -4522,74 +4659,77 @@ void __thiscall sub_100079B0(void *this, int a2, int a3, int a4, float a5)
       LODWORD(v6),
       LODWORD(v7));
     (*(void (__thiscall **)(void *))(*(_DWORD *)this + 240))(this);
-    (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 1, 4);
-    (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 4, 4);
+    (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 4);
+    (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 4);
   }
 }
 
-// sub_10007AC0 @ 0x10007AC0
+// grim_begin_batch @ 0x10007AC0
+// Grim2D vtable 0xe8 (provisional): begin draw batch
 char sub_10007AC0()
 {
   int v0; // eax
 
-  LOBYTE(v0) = byte_1005D3BD;
-  if ( !byte_1005D3BD )
+  LOBYTE(v0) = grim_render_disabled;
+  if ( !grim_render_disabled )
   {
-    LOBYTE(v0) = byte_1005D3F4;
-    if ( !byte_1005D3F4 )
+    LOBYTE(v0) = grim_batch_active;
+    if ( !grim_batch_active )
     {
       LOBYTE(v0) = byte_1005C898;
-      byte_1005D3F4 = 1;
+      grim_batch_active = 1;
       if ( byte_1005C898 )
       {
-        (*(void (__stdcall **)(int))(*(_DWORD *)dword_10059DBC + 136))(dword_10059DBC);
-        v0 = (*(int (__stdcall **)(int, _DWORD, _DWORD, int *, int))(*(_DWORD *)dword_10059E2C + 44))(
-               dword_10059E2C,
+        (*(void (__stdcall **)(int))(*(_DWORD *)grim_d3d_device + 136))(grim_d3d_device);
+        v0 = (*(int (__stdcall **)(int, _DWORD, _DWORD, int *, int))(*(_DWORD *)grim_vertex_buffer + 44))(
+               grim_vertex_buffer,
                0,
                0,
-               &dword_10059E34,
+               &grim_vertex_write_ptr,
                10240);
         if ( v0 < 0 )
           byte_1005C898 = 0;
-        LOWORD(dword_1005C8DC) = 0;
+        LOWORD(grim_vertex_count) = 0;
       }
     }
   }
   return v0;
 }
 
-// sub_10007B20 @ 0x10007B20
+// grim_end_batch @ 0x10007B20
+// Grim2D vtable 0xf0 (provisional): end draw batch/flush
 char sub_10007B20()
 {
   char result; // al
 
-  result = byte_1005D3BD;
-  if ( !byte_1005D3BD )
+  result = grim_render_disabled;
+  if ( !grim_render_disabled )
   {
-    result = byte_1005D3F4;
-    if ( byte_1005D3F4 )
+    result = grim_batch_active;
+    if ( grim_batch_active )
     {
-      (*(void (__stdcall **)(int))(*(_DWORD *)dword_10059E2C + 48))(dword_10059E2C);
+      (*(void (__stdcall **)(int))(*(_DWORD *)grim_vertex_buffer + 48))(grim_vertex_buffer);
       result = byte_1005C898;
       if ( byte_1005C898 )
       {
-        if ( (_WORD)dword_1005C8DC )
-          (*(void (__stdcall **)(int, int, _DWORD, _DWORD, _DWORD, int))(*(_DWORD *)dword_10059DBC + 284))(
-            dword_10059DBC,
+        if ( (_WORD)grim_vertex_count )
+          (*(void (__stdcall **)(int, int, _DWORD, _DWORD, _DWORD, int))(*(_DWORD *)grim_d3d_device + 284))(
+            grim_d3d_device,
             4,
             0,
-            (unsigned __int16)dword_1005C8DC,
+            (unsigned __int16)grim_vertex_count,
             0,
-            (unsigned __int16)dword_1005C8DC >> 1);
-        result = (*(int (__stdcall **)(int))(*(_DWORD *)dword_10059DBC + 140))(dword_10059DBC);
-        byte_1005D3F4 = 0;
+            (unsigned __int16)grim_vertex_count >> 1);
+        result = (*(int (__stdcall **)(int))(*(_DWORD *)grim_d3d_device + 140))(grim_d3d_device);
+        grim_batch_active = 0;
       }
     }
   }
   return result;
 }
 
-// sub_10007B90 @ 0x10007B90
+// grim_draw_circle_filled @ 0x10007B90
+// Grim2D vtable 0xd8 (provisional): triangle fan circle fill
 char __userpurge sub_10007B90@<al>(int a1@<edi>, int a2, float a3, float a4, float a5)
 {
   char result; // al
@@ -4600,35 +4740,35 @@ char __userpurge sub_10007B90@<al>(int a1@<edi>, int a2, float a3, float a4, flo
   int v10; // [esp+28h] [ebp-20h]
   _BYTE v11[24]; // [esp+30h] [ebp-18h] BYREF
 
-  result = byte_1005D3F4;
-  if ( !byte_1005D3F4 )
+  result = grim_batch_active;
+  if ( !grim_batch_active )
   {
     result = byte_1005C898;
-    byte_1005D3F4 = 1;
+    grim_batch_active = 1;
     if ( byte_1005C898 )
     {
-      (*(void (__stdcall **)(int))(*(_DWORD *)dword_10059DBC + 136))(dword_10059DBC);
-      if ( (*(int (__stdcall **)(int, _DWORD, _DWORD, int *, int))(*(_DWORD *)dword_10059E2C + 44))(
-             dword_10059E2C,
+      (*(void (__stdcall **)(int))(*(_DWORD *)grim_d3d_device + 136))(grim_d3d_device);
+      if ( (*(int (__stdcall **)(int, _DWORD, _DWORD, int *, int))(*(_DWORD *)grim_vertex_buffer + 44))(
+             grim_vertex_buffer,
              0,
              0,
-             &dword_10059E34,
+             &grim_vertex_write_ptr,
              10240) < 0 )
         byte_1005C898 = 0;
       *(_DWORD *)&v11[4] = dword_1005B288;
-      *(_DWORD *)&v11[16] = dword_1005B290;
-      LOWORD(dword_1005C8DC) = 0;
+      *(_DWORD *)&v11[16] = grim_uv_u0;
+      LOWORD(grim_vertex_count) = 0;
       *(_DWORD *)&v11[8] = dword_1005B28C;
-      *(_DWORD *)&v11[12] = dword_1005BC04;
-      v6 = *(_DWORD *)dword_10059DBC;
-      *(_DWORD *)&v11[20] = dword_1005B294;
-      (*(void (__stdcall **)(int, _DWORD, _DWORD, int))(v6 + 244))(dword_10059DBC, 0, 0, a1);
+      *(_DWORD *)&v11[12] = grim_color_slot0;
+      v6 = *(_DWORD *)grim_d3d_device;
+      *(_DWORD *)&v11[20] = grim_uv_v0;
+      (*(void (__stdcall **)(int, _DWORD, _DWORD, int))(v6 + 244))(grim_d3d_device, 0, 0, a1);
       *(float *)&v11[4] = a4;
       *(float *)v11 = a3;
       v7 = a5 * 0.125 + 12.0;
-      qmemcpy((void *)dword_10059E34, v11, 0x1Cu);
-      LOWORD(dword_1005C8DC) = dword_1005C8DC + 1;
-      dword_10059E34 += 28;
+      qmemcpy((void *)grim_vertex_write_ptr, v11, 0x1Cu);
+      LOWORD(grim_vertex_count) = grim_vertex_count + 1;
+      grim_vertex_write_ptr += 28;
       v8 = (__int64)v7;
       HIDWORD(v8) = 0;
       v10 = 0;
@@ -4639,32 +4779,33 @@ char __userpurge sub_10007B90@<al>(int a1@<edi>, int a2, float a3, float a4, flo
           v9 = (double)v10 * 6.2831855 / (double)(int)(__int64)v7;
           *(float *)v11 = cos(v9) * a5 + a3;
           *(float *)&v11[4] = sin(v9) * a5 + a4;
-          qmemcpy((void *)dword_10059E34, v11, 0x1Cu);
-          LOWORD(dword_1005C8DC) = dword_1005C8DC + 1;
+          qmemcpy((void *)grim_vertex_write_ptr, v11, 0x1Cu);
+          LOWORD(grim_vertex_count) = grim_vertex_count + 1;
           ++HIDWORD(v8);
-          dword_10059E34 += 28;
+          grim_vertex_write_ptr += 28;
           v10 = HIDWORD(v8);
         }
         while ( SHIDWORD(v8) <= (int)v8 );
       }
-      (*(void (__cdecl **)(int))(*(_DWORD *)dword_10059E2C + 48))(dword_10059E2C);
+      (*(void (__cdecl **)(int))(*(_DWORD *)grim_vertex_buffer + 48))(grim_vertex_buffer);
       result = byte_1005C898;
       if ( byte_1005C898 )
       {
-        (*(void (__stdcall **)(int, int, _DWORD, int))(*(_DWORD *)dword_10059DBC + 280))(
-          dword_10059DBC,
+        (*(void (__stdcall **)(int, int, _DWORD, int))(*(_DWORD *)grim_d3d_device + 280))(
+          grim_d3d_device,
           6,
           0,
-          (unsigned __int16)dword_1005C8DC - 2);
-        result = (*(int (__stdcall **)(int))(*(_DWORD *)dword_10059DBC + 140))(dword_10059DBC);
-        byte_1005D3F4 = 0;
+          (unsigned __int16)grim_vertex_count - 2);
+        result = (*(int (__stdcall **)(int))(*(_DWORD *)grim_d3d_device + 140))(grim_d3d_device);
+        grim_batch_active = 0;
       }
     }
   }
   return result;
 }
 
-// sub_10007D40 @ 0x10007D40
+// grim_draw_circle_outline @ 0x10007D40
+// Grim2D vtable 0xdc (provisional): triangle strip ring/outline
 char __stdcall sub_10007D40(float a1, float a2, float a3)
 {
   char result; // al
@@ -4677,27 +4818,27 @@ char __stdcall sub_10007D40(float a1, float a2, float a3)
   float v10; // [esp+18h] [ebp-24h]
   float v11[7]; // [esp+20h] [ebp-1Ch] BYREF
 
-  result = byte_1005D3F4;
-  if ( !byte_1005D3F4 )
+  result = grim_batch_active;
+  if ( !grim_batch_active )
   {
     result = byte_1005C898;
-    byte_1005D3F4 = 1;
+    grim_batch_active = 1;
     if ( byte_1005C898 )
     {
-      (*(void (__stdcall **)(int))(*(_DWORD *)dword_10059DBC + 136))(dword_10059DBC);
-      if ( (*(int (__stdcall **)(int, _DWORD, _DWORD, int *, int))(*(_DWORD *)dword_10059E2C + 44))(
-             dword_10059E2C,
+      (*(void (__stdcall **)(int))(*(_DWORD *)grim_d3d_device + 136))(grim_d3d_device);
+      if ( (*(int (__stdcall **)(int, _DWORD, _DWORD, int *, int))(*(_DWORD *)grim_vertex_buffer + 44))(
+             grim_vertex_buffer,
              0,
              0,
-             &dword_10059E34,
+             &grim_vertex_write_ptr,
              10240) < 0 )
         byte_1005C898 = 0;
       LODWORD(v11[2]) = dword_1005B288;
       LODWORD(v11[3]) = dword_1005B28C;
-      LOWORD(dword_1005C8DC) = 0;
-      LODWORD(v11[4]) = dword_1005BC04;
-      LODWORD(v11[5]) = dword_1005B290;
-      LODWORD(v11[6]) = dword_1005B294;
+      LOWORD(grim_vertex_count) = 0;
+      LODWORD(v11[4]) = grim_color_slot0;
+      LODWORD(v11[5]) = grim_uv_u0;
+      LODWORD(v11[6]) = grim_uv_v0;
       v4 = (__int64)(a3 * 0.2 + 14.0);
       HIDWORD(v4) = 0;
       v9 = 0;
@@ -4713,31 +4854,31 @@ char __stdcall sub_10007D40(float a1, float a2, float a3)
           v11[0] = v7 * a3 + a1;
           v8 = sin(v6);
           v11[1] = v8 * a3 + a2;
-          qmemcpy((void *)dword_10059E34, v11, 0x1Cu);
+          qmemcpy((void *)grim_vertex_write_ptr, v11, 0x1Cu);
           v11[0] = v5 * v10 + a1;
-          LOWORD(dword_1005C8DC) = dword_1005C8DC + 1;
+          LOWORD(grim_vertex_count) = grim_vertex_count + 1;
           v11[1] = v5 * v8 + a2;
-          dword_10059E34 += 28;
+          grim_vertex_write_ptr += 28;
           v11[6] = 1.0;
-          qmemcpy((void *)dword_10059E34, v11, 0x1Cu);
-          LOWORD(dword_1005C8DC) = dword_1005C8DC + 1;
+          qmemcpy((void *)grim_vertex_write_ptr, v11, 0x1Cu);
+          LOWORD(grim_vertex_count) = grim_vertex_count + 1;
           ++HIDWORD(v4);
-          dword_10059E34 += 28;
+          grim_vertex_write_ptr += 28;
           v9 = HIDWORD(v4);
         }
         while ( SHIDWORD(v4) <= (int)v4 );
       }
-      (*(void (__stdcall **)(int))(*(_DWORD *)dword_10059E2C + 48))(dword_10059E2C);
+      (*(void (__stdcall **)(int))(*(_DWORD *)grim_vertex_buffer + 48))(grim_vertex_buffer);
       result = byte_1005C898;
       if ( byte_1005C898 )
       {
-        (*(void (__stdcall **)(int, int, _DWORD, int))(*(_DWORD *)dword_10059DBC + 280))(
-          dword_10059DBC,
+        (*(void (__stdcall **)(int, int, _DWORD, int))(*(_DWORD *)grim_d3d_device + 280))(
+          grim_d3d_device,
           5,
           0,
-          (unsigned __int16)dword_1005C8DC - 2);
-        result = (*(int (__stdcall **)(int))(*(_DWORD *)dword_10059DBC + 140))(dword_10059DBC);
-        byte_1005D3F4 = 0;
+          (unsigned __int16)grim_vertex_count - 2);
+        result = (*(int (__stdcall **)(int))(*(_DWORD *)grim_d3d_device + 140))(grim_d3d_device);
+        grim_batch_active = 0;
       }
     }
   }
@@ -4750,23 +4891,25 @@ void nullsub_20()
   ;
 }
 
-// sub_10007F30 @ 0x10007F30
+// grim_set_rotation @ 0x10007F30
+// Grim2D vtable 0xfc: precompute sin/cos (+45deg) for rotation matrix
 int __stdcall sub_10007F30(int a1)
 {
   long double v1; // st7
 
   v1 = *(float *)&a1 + 0.78539819;
-  dword_10059E30 = a1;
-  flt_1005C8E4 = cos(v1);
-  dword_1005A460 = LODWORD(flt_1005C8E4);
-  dword_1005A46C = LODWORD(flt_1005C8E4);
+  grim_rotation_radians = a1;
+  grim_rotation_cos = cos(v1);
+  dword_1005A460 = LODWORD(grim_rotation_cos);
+  dword_1005A46C = LODWORD(grim_rotation_cos);
   *(float *)&DstBuf[260] = sin(v1);
   flt_1005A468 = -*(float *)&DstBuf[260];
   dword_1005A464 = *(_DWORD *)&DstBuf[260];
-  return LODWORD(flt_1005C8E4);
+  return LODWORD(grim_rotation_cos);
 }
 
-// sub_10007F90 @ 0x10007F90
+// grim_set_color @ 0x10007F90
+// Grim2D vtable 0x114 (provisional)
 int __stdcall sub_10007F90(float a1, float a2, float a3, float a4)
 {
   double v4; // st7
@@ -4783,16 +4926,17 @@ int __stdcall sub_10007F90(float a1, float a2, float a3, float a4)
     v4 = 1.0;
   }
   result = (unsigned __int8)(__int64)(a3 * 255.0);
-  dword_1005BC04 = result
-                 | (((unsigned __int8)(__int64)(a2 * 255.0)
-                   | ((((unsigned int)(__int64)(v4 * 255.0) << 8) | (unsigned __int8)(__int64)(a1 * 255.0)) << 8)) << 8);
-  dword_1005BC10 = dword_1005BC04;
-  dword_1005BC0C = dword_1005BC04;
-  dword_1005BC08 = dword_1005BC04;
+  grim_color_slot0 = result
+                   | (((unsigned __int8)(__int64)(a2 * 255.0)
+                     | ((((unsigned int)(__int64)(v4 * 255.0) << 8) | (unsigned __int8)(__int64)(a1 * 255.0)) << 8)) << 8);
+  grim_color_slot3 = grim_color_slot0;
+  dword_1005BC0C = grim_color_slot0;
+  dword_1005BC08 = grim_color_slot0;
   return result;
 }
 
-// sub_10008040 @ 0x10008040
+// grim_set_color_ptr @ 0x10008040
+// Grim2D vtable 0x110: set color from float[4]
 int __stdcall sub_10008040(float *a1)
 {
   double v2; // st7
@@ -4803,14 +4947,15 @@ int __stdcall sub_10008040(float *a1)
   BYTE2(v4) = (__int64)v2;
   BYTE1(v4) = (__int64)(a1[1] * 255.0);
   LOBYTE(v4) = (__int64)(a1[2] * 255.0);
-  dword_1005BC04 = v4;
-  dword_1005BC10 = v4;
+  grim_color_slot0 = v4;
+  grim_color_slot3 = v4;
   dword_1005BC0C = v4;
   dword_1005BC08 = v4;
   return v4;
 }
 
-// sub_100080B0 @ 0x100080B0
+// grim_draw_line @ 0x100080B0
+// Grim2D vtable 0xe0 (provisional): builds line quad from endpoints
 int __thiscall sub_100080B0(void *this, float *a2, float *a3, float a4)
 {
   double v5; // st7
@@ -4820,13 +4965,13 @@ int __thiscall sub_100080B0(void *this, float *a2, float *a3, float a4)
     byte_10059BB4 |= 1u;
     atexit(nullsub_5);
   }
-  flt_1005A490 = *a3 - *a2;
-  flt_1005A494 = a3[1] - a2[1];
-  sub_1000CC39(&flt_1005A490, &flt_1005A490);
-  v5 = flt_1005A494 * a4;
-  flt_1005A490 = v5;
-  flt_1005A494 = v5 * a4;
-  return (*(int (__thiscall **)(void *, float *, float *, float *))(*(_DWORD *)this + 228))(this, a2, a3, &flt_1005A490);
+  grim_line_dx = *a3 - *a2;
+  grim_line_dy = a3[1] - a2[1];
+  sub_1000CC39(&grim_line_dx, &grim_line_dx);
+  v5 = grim_line_dy * a4;
+  grim_line_dx = v5;
+  grim_line_dy = v5 * a4;
+  return (*(int (__thiscall **)(void *, float *, float *, float *))(*(_DWORD *)this + 228))(this, a2, a3, &grim_line_dx);
 }
 
 // nullsub_5 @ 0x10008140
@@ -4835,7 +4980,8 @@ void __cdecl nullsub_5()
   ;
 }
 
-// sub_10008150 @ 0x10008150
+// grim_draw_line_quad @ 0x10008150
+// Grim2D vtable 0xe4 (provisional): line quad from endpoints + half-width vector
 int __thiscall sub_10008150(void *this, float *a2, float *a3, float *a4)
 {
   float v5; // [esp+0h] [ebp-28h]
@@ -4866,16 +5012,18 @@ int __thiscall sub_10008150(void *this, float *a2, float *a3, float *a4)
            LODWORD(v12));
 }
 
-// sub_100081C0 @ 0x100081C0
+// grim_set_color_slot @ 0x100081C0
+// Grim2D vtable 0x118 (provisional): set color slot
 int __stdcall sub_100081C0(int a1, float a2, float a3, float a4, float a5)
 {
-  dword_1005BC04[a1] = (unsigned __int8)(__int64)(a4 * 255.0)
-                     | (((unsigned __int8)(__int64)(a3 * 255.0)
-                       | ((((unsigned int)(__int64)(a5 * 255.0) << 8) | (unsigned __int8)(__int64)(a2 * 255.0)) << 8)) << 8);
+  grim_color_slot0[a1] = (unsigned __int8)(__int64)(a4 * 255.0)
+                       | (((unsigned __int8)(__int64)(a3 * 255.0)
+                         | ((((unsigned int)(__int64)(a5 * 255.0) << 8) | (unsigned __int8)(__int64)(a2 * 255.0)) << 8)) << 8);
   return a1;
 }
 
-// sub_10008230 @ 0x10008230
+// grim_set_atlas_frame @ 0x10008230
+// Grim2D vtable 0x104 (provisional)
 int __stdcall sub_10008230(int a1, int a2)
 {
   double v2; // st7
@@ -4883,20 +5031,21 @@ int __stdcall sub_10008230(int a1, int a2)
   int v5; // [esp+4h] [ebp-4h]
 
   v2 = 1.0 / (double)a1;
-  v3 = dword_1005BC78[a1];
+  v3 = grim_subrect_ptr_table[a1];
   v5 = *(int *)(v3 + 8 * a2 + 4);
   dword_1005B2A8 = *(_DWORD *)(v3 + 8 * a2);
-  dword_1005B29C = v5;
-  dword_1005B290 = dword_1005B2A8;
-  dword_1005B294 = v5;
-  *(float *)&dword_1005B298 = *(float *)&dword_1005B2A8 + v2;
-  dword_1005B2A0 = dword_1005B298;
+  grim_uv_v1 = v5;
+  grim_uv_u0 = dword_1005B2A8;
+  grim_uv_v0 = v5;
+  *(float *)&grim_uv_u1 = *(float *)&dword_1005B2A8 + v2;
+  dword_1005B2A0 = grim_uv_u1;
   *(float *)&dword_1005B2A4 = *(float *)&v5 + v2;
   *(float *)&dword_1005B2AC = *(float *)&v5 + v2;
   return dword_1005B2A8;
 }
 
-// sub_100082C0 @ 0x100082C0
+// grim_set_sub_rect @ 0x100082C0
+// Grim2D vtable 0x108: atlas sub-rect from grid table
 int __stdcall sub_100082C0(int a1, int a2, int a3, int a4)
 {
   double v4; // st7
@@ -4904,26 +5053,27 @@ int __stdcall sub_100082C0(int a1, int a2, int a3, int a4)
   int v7; // [esp+4h] [ebp-4h]
 
   v4 = 1.0 / (double)a1;
-  v5 = dword_1005BC78[a1];
+  v5 = grim_subrect_ptr_table[a1];
   v7 = *(int *)(v5 + 8 * a4 + 4);
   dword_1005B2A8 = *(_DWORD *)(v5 + 8 * a4);
-  dword_1005B29C = v7;
-  dword_1005B290 = dword_1005B2A8;
-  dword_1005B294 = v7;
-  *(float *)&dword_1005B298 = (double)a2 * v4 + *(float *)&dword_1005B2A8;
-  dword_1005B2A0 = dword_1005B298;
+  grim_uv_v1 = v7;
+  grim_uv_u0 = dword_1005B2A8;
+  grim_uv_v0 = v7;
+  *(float *)&grim_uv_u1 = (double)a2 * v4 + *(float *)&dword_1005B2A8;
+  dword_1005B2A0 = grim_uv_u1;
   *(float *)&dword_1005B2A4 = v4 * (double)a3 + *(float *)&v7;
   dword_1005B2AC = dword_1005B2A4;
   return dword_1005B2A8;
 }
 
-// sub_10008350 @ 0x10008350
+// grim_set_uv @ 0x10008350
+// Grim2D vtable 0x100 (provisional)
 int __stdcall sub_10008350(int a1, int a2, int a3, int a4)
 {
-  dword_1005B290 = a1;
-  dword_1005B294 = a2;
-  dword_1005B298 = a3;
-  dword_1005B29C = a2;
+  grim_uv_u0 = a1;
+  grim_uv_v0 = a2;
+  grim_uv_u1 = a3;
+  grim_uv_v1 = a2;
   dword_1005B2A0 = a3;
   dword_1005B2A4 = a4;
   dword_1005B2A8 = a1;
@@ -4931,80 +5081,84 @@ int __stdcall sub_10008350(int a1, int a2, int a3, int a4)
   return a1;
 }
 
-// sub_100083A0 @ 0x100083A0
+// grim_set_uv_point @ 0x100083A0
+// Grim2D vtable 0x10c: set UV point
 int __stdcall sub_100083A0(int a1, int a2, int a3)
 {
-  dword_1005B290[2 * a1] = a2;
-  dword_1005B294[2 * a1] = a3;
+  grim_uv_u0[2 * a1] = a2;
+  grim_uv_v0[2 * a1] = a3;
   return a1;
 }
 
-// sub_100083C0 @ 0x100083C0
+// grim_flush_batch @ 0x100083C0
+// Grim2D vtable 0xec: flush batch when vertex buffer fills
 char sub_100083C0()
 {
   int v0; // eax
 
-  LOBYTE(v0) = byte_1005D3BD;
-  if ( !byte_1005D3BD )
+  LOBYTE(v0) = grim_render_disabled;
+  if ( !grim_render_disabled )
   {
-    LOBYTE(v0) = byte_1005D3F4;
-    if ( byte_1005D3F4 )
+    LOBYTE(v0) = grim_batch_active;
+    if ( grim_batch_active )
     {
-      (*(void (__stdcall **)(int))(*(_DWORD *)dword_10059E2C + 48))(dword_10059E2C);
-      (*(void (__stdcall **)(int, int, _DWORD, _DWORD, _DWORD, int))(*(_DWORD *)dword_10059DBC + 284))(
-        dword_10059DBC,
+      (*(void (__stdcall **)(int))(*(_DWORD *)grim_vertex_buffer + 48))(grim_vertex_buffer);
+      (*(void (__stdcall **)(int, int, _DWORD, _DWORD, _DWORD, int))(*(_DWORD *)grim_d3d_device + 284))(
+        grim_d3d_device,
         4,
         0,
-        (unsigned __int16)dword_1005C8DC,
+        (unsigned __int16)grim_vertex_count,
         0,
-        (unsigned __int16)dword_1005C8DC >> 1);
-      v0 = (*(int (__stdcall **)(int, _DWORD, _DWORD, int *, int))(*(_DWORD *)dword_10059E2C + 44))(
-             dword_10059E2C,
+        (unsigned __int16)grim_vertex_count >> 1);
+      v0 = (*(int (__stdcall **)(int, _DWORD, _DWORD, int *, int))(*(_DWORD *)grim_vertex_buffer + 44))(
+             grim_vertex_buffer,
              0,
              0,
-             &dword_10059E34,
+             &grim_vertex_write_ptr,
              10240);
       if ( v0 >= 0 )
-        LOWORD(dword_1005C8DC) = 0;
+        LOWORD(grim_vertex_count) = 0;
     }
   }
   return v0;
 }
 
-// sub_10008430 @ 0x10008430
+// grim_submit_vertices_offset_color @ 0x10008430
+// Grim2D vtable 0x130: translate + apply color
 char __thiscall sub_10008430(void *this, const void *a2, int a3, float *a4, _DWORD *a5)
 {
   char result; // al
   int v6; // edx
   int v7; // eax
 
-  result = byte_1005D3BD;
-  if ( !byte_1005D3BD )
+  result = grim_render_disabled;
+  if ( !grim_render_disabled )
   {
-    qmemcpy((void *)dword_10059E34, a2, 4 * ((unsigned int)(28 * a3) >> 2));
+    qmemcpy((void *)grim_vertex_write_ptr, a2, 4 * ((unsigned int)(28 * a3) >> 2));
     if ( a3 > 0 )
     {
       v6 = a3;
       do
       {
-        v7 = dword_10059E34;
-        *(float *)dword_10059E34 = *a4 + *(float *)dword_10059E34;
+        v7 = grim_vertex_write_ptr;
+        *(float *)grim_vertex_write_ptr = *a4 + *(float *)grim_vertex_write_ptr;
         *(float *)(v7 + 4) = a4[1] + *(float *)(v7 + 4);
-        *(_DWORD *)(dword_10059E34 + 16) = *a5;
+        *(_DWORD *)(grim_vertex_write_ptr + 16) = *a5;
         --v6;
-        dword_10059E34 += 28;
+        grim_vertex_write_ptr += 28;
       }
       while ( v6 );
     }
-    LOWORD(dword_1005C8DC) = a3 + dword_1005C8DC;
-    result = dword_1005976C;
-    if ( (unsigned __int16)dword_1005C8DC >= (unsigned int)dword_1005976C )
+    LOWORD(grim_vertex_count) = a3 + grim_vertex_count;
+    result = grim_vertex_capacity;
+    if ( (unsigned __int16)grim_vertex_count >= (unsigned int)grim_vertex_capacity )
       return (*(int (__thiscall **)(void *))(*(_DWORD *)this + 236))(this);
   }
   return result;
 }
 
-// sub_100084E0 @ 0x100084E0
+// grim_submit_vertices_transform_color @ 0x100084E0
+// Grim2D vtable 0x134: rotate + translate + apply color
 int __thiscall sub_100084E0(void *this, const void *a2, int a3, float *a4, float *a5, _DWORD *a6)
 {
   int result; // eax
@@ -5014,36 +5168,38 @@ int __thiscall sub_100084E0(void *this, const void *a2, int a3, float *a4, float
   int v10; // eax
 
   result = (int)this;
-  if ( !byte_1005D3BD )
+  if ( !grim_render_disabled )
   {
-    qmemcpy((void *)dword_10059E34, a2, 4 * ((unsigned int)(28 * a3) >> 2));
+    qmemcpy((void *)grim_vertex_write_ptr, a2, 4 * ((unsigned int)(28 * a3) >> 2));
     if ( a3 > 0 )
     {
       v7 = a3;
       do
       {
-        v8 = (float *)dword_10059E34;
-        v9 = *(float *)(dword_10059E34 + 4) * a5[1] + *(float *)dword_10059E34 * *a5;
-        *(float *)(dword_10059E34 + 4) = *(float *)(dword_10059E34 + 4) * a5[3] + *(float *)dword_10059E34 * a5[2];
+        v8 = (float *)grim_vertex_write_ptr;
+        v9 = *(float *)(grim_vertex_write_ptr + 4) * a5[1] + *(float *)grim_vertex_write_ptr * *a5;
+        *(float *)(grim_vertex_write_ptr + 4) = *(float *)(grim_vertex_write_ptr + 4) * a5[3]
+                                              + *(float *)grim_vertex_write_ptr * a5[2];
         *v8 = v9;
-        v10 = dword_10059E34;
-        *(float *)dword_10059E34 = *a4 + *(float *)dword_10059E34;
+        v10 = grim_vertex_write_ptr;
+        *(float *)grim_vertex_write_ptr = *a4 + *(float *)grim_vertex_write_ptr;
         *(float *)(v10 + 4) = a4[1] + *(float *)(v10 + 4);
-        *(_DWORD *)(dword_10059E34 + 16) = *a6;
+        *(_DWORD *)(grim_vertex_write_ptr + 16) = *a6;
         --v7;
-        dword_10059E34 += 28;
+        grim_vertex_write_ptr += 28;
       }
       while ( v7 );
       result = (int)this;
     }
-    LOWORD(dword_1005C8DC) = a3 + dword_1005C8DC;
-    if ( (unsigned __int16)dword_1005C8DC >= (unsigned int)dword_1005976C )
+    LOWORD(grim_vertex_count) = a3 + grim_vertex_count;
+    if ( (unsigned __int16)grim_vertex_count >= (unsigned int)grim_vertex_capacity )
       return (*(int (__thiscall **)(int))(*(_DWORD *)result + 236))(result);
   }
   return result;
 }
 
-// sub_100085C0 @ 0x100085C0
+// grim_submit_vertices_transform @ 0x100085C0
+// Grim2D vtable 0x128: copy verts, rotate, translate
 char __thiscall sub_100085C0(void *this, const void *a2, int a3, float *a4, float *a5)
 {
   char result; // al
@@ -5052,74 +5208,78 @@ char __thiscall sub_100085C0(void *this, const void *a2, int a3, float *a4, floa
   double v8; // st7
   int v9; // eax
 
-  result = byte_1005D3BD;
-  if ( !byte_1005D3BD )
+  result = grim_render_disabled;
+  if ( !grim_render_disabled )
   {
-    qmemcpy((void *)dword_10059E34, a2, 4 * ((unsigned int)(28 * a3) >> 2));
+    qmemcpy((void *)grim_vertex_write_ptr, a2, 4 * ((unsigned int)(28 * a3) >> 2));
     if ( a3 > 0 )
     {
       v6 = a3;
       do
       {
-        v7 = (float *)dword_10059E34;
-        v8 = *(float *)(dword_10059E34 + 4) * a5[1] + *a5 * *(float *)dword_10059E34;
-        *(float *)(dword_10059E34 + 4) = *(float *)(dword_10059E34 + 4) * a5[3] + *(float *)dword_10059E34 * a5[2];
+        v7 = (float *)grim_vertex_write_ptr;
+        v8 = *(float *)(grim_vertex_write_ptr + 4) * a5[1] + *a5 * *(float *)grim_vertex_write_ptr;
+        *(float *)(grim_vertex_write_ptr + 4) = *(float *)(grim_vertex_write_ptr + 4) * a5[3]
+                                              + *(float *)grim_vertex_write_ptr * a5[2];
         *v7 = v8;
-        v9 = dword_10059E34;
-        *(float *)dword_10059E34 = *a4 + *(float *)dword_10059E34;
+        v9 = grim_vertex_write_ptr;
+        *(float *)grim_vertex_write_ptr = *a4 + *(float *)grim_vertex_write_ptr;
         *(float *)(v9 + 4) = a4[1] + *(float *)(v9 + 4);
         --v6;
-        dword_10059E34 += 28;
+        grim_vertex_write_ptr += 28;
       }
       while ( v6 );
     }
-    LOWORD(dword_1005C8DC) = a3 + dword_1005C8DC;
-    result = dword_1005976C;
-    if ( (unsigned __int16)dword_1005C8DC >= (unsigned int)dword_1005976C )
+    LOWORD(grim_vertex_count) = a3 + grim_vertex_count;
+    result = grim_vertex_capacity;
+    if ( (unsigned __int16)grim_vertex_count >= (unsigned int)grim_vertex_capacity )
       return (*(int (__thiscall **)(void *))(*(_DWORD *)this + 236))(this);
   }
   return result;
 }
 
-// sub_10008680 @ 0x10008680
+// grim_submit_vertices_offset @ 0x10008680
+// Grim2D vtable 0x12c: copy verts, translate
 char __thiscall sub_10008680(void *this, const void *a2, int a3, float *a4)
 {
   char result; // al
   int v5; // edx
   int v6; // eax
 
-  result = byte_1005D3BD;
-  if ( !byte_1005D3BD )
+  result = grim_render_disabled;
+  if ( !grim_render_disabled )
   {
-    qmemcpy((void *)dword_10059E34, a2, 4 * ((unsigned int)(28 * a3) >> 2));
+    qmemcpy((void *)grim_vertex_write_ptr, a2, 4 * ((unsigned int)(28 * a3) >> 2));
     if ( a3 > 0 )
     {
       v5 = a3;
       do
       {
-        v6 = dword_10059E34;
-        *(float *)dword_10059E34 = *(float *)dword_10059E34 + *a4;
+        v6 = grim_vertex_write_ptr;
+        *(float *)grim_vertex_write_ptr = *(float *)grim_vertex_write_ptr + *a4;
         *(float *)(v6 + 4) = a4[1] + *(float *)(v6 + 4);
         --v5;
-        dword_10059E34 += 28;
+        grim_vertex_write_ptr += 28;
       }
       while ( v5 );
     }
-    LOWORD(dword_1005C8DC) = a3 + dword_1005C8DC;
-    result = dword_1005976C;
-    if ( (unsigned __int16)dword_1005C8DC >= (unsigned int)dword_1005976C )
+    LOWORD(grim_vertex_count) = a3 + grim_vertex_count;
+    result = grim_vertex_capacity;
+    if ( (unsigned __int16)grim_vertex_count >= (unsigned int)grim_vertex_capacity )
       return (*(int (__thiscall **)(void *))(*(_DWORD *)this + 236))(this);
   }
   return result;
 }
 
-// sub_10008720 @ 0x10008720
+// grim_draw_quad_xy @ 0x10008720
+// Grim2D vtable 0x120: draw quad from xy pointer
 int __thiscall sub_10008720(void *this, _DWORD *a2, int a3, int a4)
 {
   return (*(int (__thiscall **)(void *, _DWORD, _DWORD, int, int))(*(_DWORD *)this + 284))(this, *a2, a2[1], a3, a4);
 }
 
-// sub_10008750 @ 0x10008750
+// grim_draw_quad_rotated_matrix @ 0x10008750
+// Grim2D vtable 0x124 (provisional): quad with rotation matrix
 char __thiscall sub_10008750(void *this, float a2, float a3, float a4, float a5)
 {
   char result; // al
@@ -5146,15 +5306,15 @@ char __thiscall sub_10008750(void *this, float a2, float a3, float a4, float a5)
   float v27; // [esp+34h] [ebp+8h]
   float v28; // [esp+38h] [ebp+Ch]
 
-  result = byte_1005D3BD;
-  if ( !byte_1005D3BD )
+  result = grim_render_disabled;
+  if ( !grim_render_disabled )
   {
     result = byte_1005C898;
     if ( byte_1005C898 )
     {
-      if ( !byte_1005D3F4 )
+      if ( !grim_batch_active )
         (*(void (__thiscall **)(void *))(*(_DWORD *)this + 232))(this);
-      if ( *(float *)&dword_10059E30 == 0.0 )
+      if ( *(float *)&grim_rotation_radians == 0.0 )
       {
         v14 = a2;
         v15 = a3;
@@ -5190,48 +5350,49 @@ char __thiscall sub_10008750(void *this, float a2, float a3, float a4, float a5)
         v21 = v24 + v12;
         v22 = v13 + *(float *)&dword_1005A46C * v11 + flt_1005A468 * v28;
       }
-      *(float *)dword_10059E34 = v14;
-      *(float *)(dword_10059E34 + 4) = v15;
-      *(_DWORD *)(dword_10059E34 + 8) = dword_1005B288;
-      *(_DWORD *)(dword_10059E34 + 12) = dword_1005B28C;
-      *(_DWORD *)(dword_10059E34 + 16) = dword_1005BC04[0];
-      *(_DWORD *)(dword_10059E34 + 20) = dword_1005B290[0];
-      *(_DWORD *)(dword_10059E34 + 24) = dword_1005B294[0];
-      dword_10059E34 += 28;
-      *(float *)dword_10059E34 = v16;
-      *(float *)(dword_10059E34 + 4) = v18;
-      *(_DWORD *)(dword_10059E34 + 8) = dword_1005B288;
-      *(_DWORD *)(dword_10059E34 + 12) = dword_1005B28C;
-      *(_DWORD *)(dword_10059E34 + 16) = dword_1005BC08;
-      *(_DWORD *)(dword_10059E34 + 20) = dword_1005B298;
-      *(_DWORD *)(dword_10059E34 + 24) = dword_1005B29C;
-      dword_10059E34 += 28;
-      *(float *)dword_10059E34 = v19;
-      *(float *)(dword_10059E34 + 4) = v20;
-      *(_DWORD *)(dword_10059E34 + 8) = dword_1005B288;
-      *(_DWORD *)(dword_10059E34 + 12) = dword_1005B28C;
-      *(_DWORD *)(dword_10059E34 + 16) = dword_1005BC0C;
-      *(_DWORD *)(dword_10059E34 + 20) = dword_1005B2A0;
-      *(_DWORD *)(dword_10059E34 + 24) = dword_1005B2A4;
-      dword_10059E34 += 28;
-      *(float *)dword_10059E34 = v21;
-      *(float *)(dword_10059E34 + 4) = v22;
-      *(_DWORD *)(dword_10059E34 + 8) = dword_1005B288;
-      *(_DWORD *)(dword_10059E34 + 12) = dword_1005B28C;
-      *(_DWORD *)(dword_10059E34 + 16) = dword_1005BC10;
-      *(_DWORD *)(dword_10059E34 + 20) = dword_1005B2A8;
-      *(_DWORD *)(dword_10059E34 + 24) = dword_1005B2AC;
-      LOWORD(dword_1005C8DC) = dword_1005C8DC + 4;
-      dword_10059E34 += 28;
-      result = dword_1005976C;
-      if ( (unsigned __int16)dword_1005C8DC >= (unsigned int)dword_1005976C )
+      *(float *)grim_vertex_write_ptr = v14;
+      *(float *)(grim_vertex_write_ptr + 4) = v15;
+      *(_DWORD *)(grim_vertex_write_ptr + 8) = dword_1005B288;
+      *(_DWORD *)(grim_vertex_write_ptr + 12) = dword_1005B28C;
+      *(_DWORD *)(grim_vertex_write_ptr + 16) = grim_color_slot0[0];
+      *(_DWORD *)(grim_vertex_write_ptr + 20) = grim_uv_u0[0];
+      *(_DWORD *)(grim_vertex_write_ptr + 24) = grim_uv_v0[0];
+      grim_vertex_write_ptr += 28;
+      *(float *)grim_vertex_write_ptr = v16;
+      *(float *)(grim_vertex_write_ptr + 4) = v18;
+      *(_DWORD *)(grim_vertex_write_ptr + 8) = dword_1005B288;
+      *(_DWORD *)(grim_vertex_write_ptr + 12) = dword_1005B28C;
+      *(_DWORD *)(grim_vertex_write_ptr + 16) = dword_1005BC08;
+      *(_DWORD *)(grim_vertex_write_ptr + 20) = grim_uv_u1;
+      *(_DWORD *)(grim_vertex_write_ptr + 24) = grim_uv_v1;
+      grim_vertex_write_ptr += 28;
+      *(float *)grim_vertex_write_ptr = v19;
+      *(float *)(grim_vertex_write_ptr + 4) = v20;
+      *(_DWORD *)(grim_vertex_write_ptr + 8) = dword_1005B288;
+      *(_DWORD *)(grim_vertex_write_ptr + 12) = dword_1005B28C;
+      *(_DWORD *)(grim_vertex_write_ptr + 16) = dword_1005BC0C;
+      *(_DWORD *)(grim_vertex_write_ptr + 20) = dword_1005B2A0;
+      *(_DWORD *)(grim_vertex_write_ptr + 24) = dword_1005B2A4;
+      grim_vertex_write_ptr += 28;
+      *(float *)grim_vertex_write_ptr = v21;
+      *(float *)(grim_vertex_write_ptr + 4) = v22;
+      *(_DWORD *)(grim_vertex_write_ptr + 8) = dword_1005B288;
+      *(_DWORD *)(grim_vertex_write_ptr + 12) = dword_1005B28C;
+      *(_DWORD *)(grim_vertex_write_ptr + 16) = grim_color_slot3;
+      *(_DWORD *)(grim_vertex_write_ptr + 20) = dword_1005B2A8;
+      *(_DWORD *)(grim_vertex_write_ptr + 24) = dword_1005B2AC;
+      LOWORD(grim_vertex_count) = grim_vertex_count + 4;
+      grim_vertex_write_ptr += 28;
+      result = grim_vertex_capacity;
+      if ( (unsigned __int16)grim_vertex_count >= (unsigned int)grim_vertex_capacity )
         return (*(int (__thiscall **)(void *))(*(_DWORD *)this + 236))(this);
     }
   }
   return result;
 }
 
-// sub_10008B10 @ 0x10008B10
+// grim_draw_quad @ 0x10008B10
+// Grim2D vtable 0x11c (provisional)
 char __thiscall sub_10008B10(void *this, float a2, float a3, float a4, float a5)
 {
   char result; // al
@@ -5252,15 +5413,15 @@ char __thiscall sub_10008B10(void *this, float a2, float a3, float a4, float a5)
   int v21; // [esp+30h] [ebp+4h]
   float v22; // [esp+30h] [ebp+4h]
 
-  result = byte_1005D3BD;
-  if ( !byte_1005D3BD )
+  result = grim_render_disabled;
+  if ( !grim_render_disabled )
   {
     result = byte_1005C898;
     if ( byte_1005C898 )
     {
-      if ( !byte_1005D3F4 )
+      if ( !grim_batch_active )
         (*(void (__thiscall **)(void *))(*(_DWORD *)this + 232))(this);
-      if ( *(float *)&dword_10059E30 == 0.0 )
+      if ( *(float *)&grim_rotation_radians == 0.0 )
       {
         v12 = a2;
         v13 = a3;
@@ -5281,7 +5442,7 @@ char __thiscall sub_10008B10(void *this, float a2, float a3, float a4, float a5)
             * ((1.5 - v9 * 0.5 * COERCE_FLOAT(1597463007 - (v21 >> 1)) * COERCE_FLOAT(1597463007 - (v21 >> 1)))
              * COERCE_FLOAT(1597463007 - (v21 >> 1)))
             * 0.5;
-        v22 = flt_1005C8E4 * v10;
+        v22 = grim_rotation_cos * v10;
         v11 = v10 * *(float *)&DstBuf[260];
         v12 = v8 - v22;
         v13 = v20 - v11;
@@ -5292,99 +5453,102 @@ char __thiscall sub_10008B10(void *this, float a2, float a3, float a4, float a5)
         v18 = v8 - v11;
         v7 = v20 + v22;
       }
-      *(float *)dword_10059E34 = v12;
+      *(float *)grim_vertex_write_ptr = v12;
       v19 = v7;
-      *(float *)(dword_10059E34 + 4) = v13;
-      *(_DWORD *)(dword_10059E34 + 8) = dword_1005B288;
-      *(_DWORD *)(dword_10059E34 + 12) = dword_1005B28C;
-      *(_DWORD *)(dword_10059E34 + 16) = dword_1005BC04[0];
-      *(_DWORD *)(dword_10059E34 + 20) = dword_1005B290[0];
-      *(_DWORD *)(dword_10059E34 + 24) = dword_1005B294[0];
-      dword_10059E34 += 28;
-      *(float *)dword_10059E34 = v14;
-      *(float *)(dword_10059E34 + 4) = v15;
-      *(_DWORD *)(dword_10059E34 + 8) = dword_1005B288;
-      *(_DWORD *)(dword_10059E34 + 12) = dword_1005B28C;
-      *(_DWORD *)(dword_10059E34 + 16) = dword_1005BC08;
-      *(_DWORD *)(dword_10059E34 + 20) = dword_1005B298;
-      *(_DWORD *)(dword_10059E34 + 24) = dword_1005B29C;
-      dword_10059E34 += 28;
-      *(float *)dword_10059E34 = v16;
-      *(float *)(dword_10059E34 + 4) = v17;
-      *(_DWORD *)(dword_10059E34 + 8) = dword_1005B288;
-      *(_DWORD *)(dword_10059E34 + 12) = dword_1005B28C;
-      *(_DWORD *)(dword_10059E34 + 16) = dword_1005BC0C;
-      *(_DWORD *)(dword_10059E34 + 20) = dword_1005B2A0;
-      *(_DWORD *)(dword_10059E34 + 24) = dword_1005B2A4;
-      dword_10059E34 += 28;
-      *(float *)dword_10059E34 = v18;
-      *(float *)(dword_10059E34 + 4) = v19;
-      *(_DWORD *)(dword_10059E34 + 8) = dword_1005B288;
-      *(_DWORD *)(dword_10059E34 + 12) = dword_1005B28C;
-      *(_DWORD *)(dword_10059E34 + 16) = dword_1005BC10;
-      *(_DWORD *)(dword_10059E34 + 20) = dword_1005B2A8;
-      *(_DWORD *)(dword_10059E34 + 24) = dword_1005B2AC;
-      LOWORD(dword_1005C8DC) = dword_1005C8DC + 4;
-      dword_10059E34 += 28;
-      result = dword_1005976C;
-      if ( (unsigned __int16)dword_1005C8DC >= (unsigned int)dword_1005976C )
+      *(float *)(grim_vertex_write_ptr + 4) = v13;
+      *(_DWORD *)(grim_vertex_write_ptr + 8) = dword_1005B288;
+      *(_DWORD *)(grim_vertex_write_ptr + 12) = dword_1005B28C;
+      *(_DWORD *)(grim_vertex_write_ptr + 16) = grim_color_slot0[0];
+      *(_DWORD *)(grim_vertex_write_ptr + 20) = grim_uv_u0[0];
+      *(_DWORD *)(grim_vertex_write_ptr + 24) = grim_uv_v0[0];
+      grim_vertex_write_ptr += 28;
+      *(float *)grim_vertex_write_ptr = v14;
+      *(float *)(grim_vertex_write_ptr + 4) = v15;
+      *(_DWORD *)(grim_vertex_write_ptr + 8) = dword_1005B288;
+      *(_DWORD *)(grim_vertex_write_ptr + 12) = dword_1005B28C;
+      *(_DWORD *)(grim_vertex_write_ptr + 16) = dword_1005BC08;
+      *(_DWORD *)(grim_vertex_write_ptr + 20) = grim_uv_u1;
+      *(_DWORD *)(grim_vertex_write_ptr + 24) = grim_uv_v1;
+      grim_vertex_write_ptr += 28;
+      *(float *)grim_vertex_write_ptr = v16;
+      *(float *)(grim_vertex_write_ptr + 4) = v17;
+      *(_DWORD *)(grim_vertex_write_ptr + 8) = dword_1005B288;
+      *(_DWORD *)(grim_vertex_write_ptr + 12) = dword_1005B28C;
+      *(_DWORD *)(grim_vertex_write_ptr + 16) = dword_1005BC0C;
+      *(_DWORD *)(grim_vertex_write_ptr + 20) = dword_1005B2A0;
+      *(_DWORD *)(grim_vertex_write_ptr + 24) = dword_1005B2A4;
+      grim_vertex_write_ptr += 28;
+      *(float *)grim_vertex_write_ptr = v18;
+      *(float *)(grim_vertex_write_ptr + 4) = v19;
+      *(_DWORD *)(grim_vertex_write_ptr + 8) = dword_1005B288;
+      *(_DWORD *)(grim_vertex_write_ptr + 12) = dword_1005B28C;
+      *(_DWORD *)(grim_vertex_write_ptr + 16) = grim_color_slot3;
+      *(_DWORD *)(grim_vertex_write_ptr + 20) = dword_1005B2A8;
+      *(_DWORD *)(grim_vertex_write_ptr + 24) = dword_1005B2AC;
+      LOWORD(grim_vertex_count) = grim_vertex_count + 4;
+      grim_vertex_write_ptr += 28;
+      result = grim_vertex_capacity;
+      if ( (unsigned __int16)grim_vertex_count >= (unsigned int)grim_vertex_capacity )
         return (*(int (__thiscall **)(void *))(*(_DWORD *)this + 236))(this);
     }
   }
   return result;
 }
 
-// sub_10008E30 @ 0x10008E30
+// grim_submit_vertex_raw @ 0x10008E30
+// Grim2D vtable 0xf4: push 1 raw vertex (7 floats)
 char __thiscall sub_10008E30(void *this, const void *a2)
 {
   char result; // al
 
-  result = byte_1005D3BD;
-  if ( !byte_1005D3BD )
+  result = grim_render_disabled;
+  if ( !grim_render_disabled )
   {
     result = byte_1005C898;
     if ( byte_1005C898 )
     {
-      if ( !byte_1005D3F4 )
+      if ( !grim_batch_active )
         (*(void (__thiscall **)(void *))(*(_DWORD *)this + 232))(this);
-      qmemcpy((void *)dword_10059E34, a2, 0x1Cu);
-      result = dword_1005976C;
-      LOWORD(dword_1005C8DC) = dword_1005C8DC + 1;
-      dword_10059E34 += 28;
-      if ( (unsigned __int16)dword_1005C8DC >= (unsigned int)dword_1005976C )
+      qmemcpy((void *)grim_vertex_write_ptr, a2, 0x1Cu);
+      result = grim_vertex_capacity;
+      LOWORD(grim_vertex_count) = grim_vertex_count + 1;
+      grim_vertex_write_ptr += 28;
+      if ( (unsigned __int16)grim_vertex_count >= (unsigned int)grim_vertex_capacity )
         return (*(int (__thiscall **)(void *))(*(_DWORD *)this + 236))(this);
     }
   }
   return result;
 }
 
-// sub_10008EB0 @ 0x10008EB0
+// grim_submit_quad_raw @ 0x10008EB0
+// Grim2D vtable 0xf8: push 4 raw vertices (28 floats)
 int __thiscall sub_10008EB0(void *this, const void *a2)
 {
   int result; // eax
 
   result = (int)this;
-  if ( !byte_1005D3BD )
+  if ( !grim_render_disabled )
   {
-    qmemcpy((void *)dword_10059E34, a2, 0x70u);
-    LOWORD(dword_1005C8DC) = dword_1005C8DC + 4;
-    dword_10059E34 += 112;
-    if ( (unsigned __int16)dword_1005C8DC >= (unsigned int)dword_1005976C )
+    qmemcpy((void *)grim_vertex_write_ptr, a2, 0x70u);
+    LOWORD(grim_vertex_count) = grim_vertex_count + 4;
+    grim_vertex_write_ptr += 112;
+    if ( (unsigned __int16)grim_vertex_count >= (unsigned int)grim_vertex_capacity )
       return (*(int (__thiscall **)(void *))(*(_DWORD *)this + 236))(this);
   }
   return result;
 }
 
-// sub_10008F10 @ 0x10008F10
+// grim_draw_rect_outline @ 0x10008F10
+// Grim2D vtable 0xd4: UI panel outline/frame (4 edge quads)
 int __thiscall sub_10008F10(void *this, float *a2, int a3, float a4)
 {
   float v6; // [esp+60h] [ebp-1Ch]
   float v7; // [esp+64h] [ebp-18h]
   float v8; // [esp+68h] [ebp-14h]
 
-  (*(void (__stdcall **)(int, _DWORD, _DWORD))(*(_DWORD *)dword_10059DBC + 244))(dword_10059DBC, 0, 0);
-  (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 1, 3);
-  (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 4, 3);
+  (*(void (__stdcall **)(int, _DWORD, _DWORD))(*(_DWORD *)grim_d3d_device + 244))(grim_d3d_device, 0, 0);
+  (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 3);
+  (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 3);
   (*(void (__thiscall **)(void *, _DWORD))(*(_DWORD *)this + 252))(this, 0);
   (*(void (__thiscall **)(void *))(*(_DWORD *)this + 232))(this);
   if ( a4 == 1.0 )
@@ -5436,65 +5600,67 @@ int __thiscall sub_10008F10(void *this, float *a2, int a3, float a4)
       LODWORD(a4));
   }
   (*(void (__thiscall **)(void *))(*(_DWORD *)this + 240))(this);
-  (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 1, 4);
-  return (*(int (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)dword_10059DBC + 252))(dword_10059DBC, 0, 4, 4);
+  (*(void (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 1, 4);
+  return (*(int (__stdcall **)(int, _DWORD, int, int))(*(_DWORD *)grim_d3d_device + 252))(grim_d3d_device, 0, 4, 4);
 }
 
-// sub_10009080 @ 0x10009080
+// grim_draw_quad_points @ 0x10009080
+// Grim2D vtable 0x138 (provisional): push quad using 4 points
 char __thiscall sub_10009080(void *this, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9)
 {
   char result; // al
 
-  result = byte_1005D3BD;
-  if ( !byte_1005D3BD )
+  result = grim_render_disabled;
+  if ( !grim_render_disabled )
   {
     result = byte_1005C898;
     if ( byte_1005C898 )
     {
-      if ( !byte_1005D3F4 )
+      if ( !grim_batch_active )
         (*(void (__thiscall **)(void *))(*(_DWORD *)this + 232))(this);
-      *(_DWORD *)dword_10059E34 = a2;
-      *(_DWORD *)(dword_10059E34 + 4) = a3;
-      *(_DWORD *)(dword_10059E34 + 8) = dword_1005B288;
-      *(_DWORD *)(dword_10059E34 + 12) = dword_1005B28C;
-      *(_DWORD *)(dword_10059E34 + 16) = dword_1005BC04[0];
-      *(_DWORD *)(dword_10059E34 + 20) = dword_1005B290[0];
-      *(_DWORD *)(dword_10059E34 + 24) = dword_1005B294[0];
-      dword_10059E34 += 28;
-      *(_DWORD *)dword_10059E34 = a4;
-      *(_DWORD *)(dword_10059E34 + 4) = a5;
-      *(_DWORD *)(dword_10059E34 + 8) = dword_1005B288;
-      *(_DWORD *)(dword_10059E34 + 12) = dword_1005B28C;
-      *(_DWORD *)(dword_10059E34 + 16) = dword_1005BC08;
-      *(_DWORD *)(dword_10059E34 + 20) = dword_1005B298;
-      *(_DWORD *)(dword_10059E34 + 24) = dword_1005B29C;
-      dword_10059E34 += 28;
-      *(_DWORD *)dword_10059E34 = a6;
-      *(_DWORD *)(dword_10059E34 + 4) = a7;
-      *(_DWORD *)(dword_10059E34 + 8) = dword_1005B288;
-      *(_DWORD *)(dword_10059E34 + 12) = dword_1005B28C;
-      *(_DWORD *)(dword_10059E34 + 16) = dword_1005BC0C;
-      *(_DWORD *)(dword_10059E34 + 20) = dword_1005B2A0;
-      *(_DWORD *)(dword_10059E34 + 24) = dword_1005B2A4;
-      dword_10059E34 += 28;
-      *(_DWORD *)dword_10059E34 = a8;
-      *(_DWORD *)(dword_10059E34 + 4) = a9;
-      *(_DWORD *)(dword_10059E34 + 8) = dword_1005B288;
-      *(_DWORD *)(dword_10059E34 + 12) = dword_1005B28C;
-      *(_DWORD *)(dword_10059E34 + 16) = dword_1005BC10;
-      *(_DWORD *)(dword_10059E34 + 20) = dword_1005B2A8;
-      *(_DWORD *)(dword_10059E34 + 24) = dword_1005B2AC;
-      LOWORD(dword_1005C8DC) = dword_1005C8DC + 4;
-      result = dword_1005C8DC;
-      dword_10059E34 += 28;
-      if ( (unsigned __int16)dword_1005C8DC >= (unsigned int)dword_1005976C )
+      *(_DWORD *)grim_vertex_write_ptr = a2;
+      *(_DWORD *)(grim_vertex_write_ptr + 4) = a3;
+      *(_DWORD *)(grim_vertex_write_ptr + 8) = dword_1005B288;
+      *(_DWORD *)(grim_vertex_write_ptr + 12) = dword_1005B28C;
+      *(_DWORD *)(grim_vertex_write_ptr + 16) = grim_color_slot0[0];
+      *(_DWORD *)(grim_vertex_write_ptr + 20) = grim_uv_u0[0];
+      *(_DWORD *)(grim_vertex_write_ptr + 24) = grim_uv_v0[0];
+      grim_vertex_write_ptr += 28;
+      *(_DWORD *)grim_vertex_write_ptr = a4;
+      *(_DWORD *)(grim_vertex_write_ptr + 4) = a5;
+      *(_DWORD *)(grim_vertex_write_ptr + 8) = dword_1005B288;
+      *(_DWORD *)(grim_vertex_write_ptr + 12) = dword_1005B28C;
+      *(_DWORD *)(grim_vertex_write_ptr + 16) = dword_1005BC08;
+      *(_DWORD *)(grim_vertex_write_ptr + 20) = grim_uv_u1;
+      *(_DWORD *)(grim_vertex_write_ptr + 24) = grim_uv_v1;
+      grim_vertex_write_ptr += 28;
+      *(_DWORD *)grim_vertex_write_ptr = a6;
+      *(_DWORD *)(grim_vertex_write_ptr + 4) = a7;
+      *(_DWORD *)(grim_vertex_write_ptr + 8) = dword_1005B288;
+      *(_DWORD *)(grim_vertex_write_ptr + 12) = dword_1005B28C;
+      *(_DWORD *)(grim_vertex_write_ptr + 16) = dword_1005BC0C;
+      *(_DWORD *)(grim_vertex_write_ptr + 20) = dword_1005B2A0;
+      *(_DWORD *)(grim_vertex_write_ptr + 24) = dword_1005B2A4;
+      grim_vertex_write_ptr += 28;
+      *(_DWORD *)grim_vertex_write_ptr = a8;
+      *(_DWORD *)(grim_vertex_write_ptr + 4) = a9;
+      *(_DWORD *)(grim_vertex_write_ptr + 8) = dword_1005B288;
+      *(_DWORD *)(grim_vertex_write_ptr + 12) = dword_1005B28C;
+      *(_DWORD *)(grim_vertex_write_ptr + 16) = grim_color_slot3;
+      *(_DWORD *)(grim_vertex_write_ptr + 20) = dword_1005B2A8;
+      *(_DWORD *)(grim_vertex_write_ptr + 24) = dword_1005B2AC;
+      LOWORD(grim_vertex_count) = grim_vertex_count + 4;
+      result = grim_vertex_count;
+      grim_vertex_write_ptr += 28;
+      if ( (unsigned __int16)grim_vertex_count >= (unsigned int)grim_vertex_capacity )
         return (*(int (__thiscall **)(void *))(*(_DWORD *)this + 236))(this);
     }
   }
   return result;
 }
 
-// sub_100092B0 @ 0x100092B0
+// grim_draw_text_mono @ 0x100092B0
+// Grim2D vtable 0x13c: fixed 16px mono text
 char __userpurge sub_100092B0@<al>(int *a1@<ecx>, float a2@<ebp>, float a3@<edi>, float a4, int a5, const char *a6)
 {
   char result; // al
@@ -5528,14 +5694,17 @@ char __userpurge sub_100092B0@<al>(int *a1@<ecx>, float a2@<ebp>, float a3@<edi>
   float retaddr; // [esp+98h] [ebp+0h]
   char v39; // [esp+A0h] [ebp+8h]
 
-  result = byte_1005D3BD;
-  if ( !byte_1005D3BD )
+  result = grim_render_disabled;
+  if ( !grim_render_disabled )
   {
     v8 = a6;
     if ( a6 )
     {
-      if ( !(_BYTE)dword_1005CCF8 )
-        (*(void (__stdcall **)(int, _DWORD, int))(*(_DWORD *)dword_10059DBC + 244))(dword_10059DBC, 0, dword_1005D3EC);
+      if ( !(_BYTE)grim_font_texture_bound )
+        (*(void (__stdcall **)(int, _DWORD, int))(*(_DWORD *)grim_d3d_device + 244))(
+          grim_d3d_device,
+          0,
+          grim_font_texture);
       v20 = *(float *)&dword_1005CD08;
       v9 = a4;
       *(float *)&v22 = a4;
@@ -5609,12 +5778,12 @@ char __userpurge sub_100092B0@<al>(int *a1@<ecx>, float a2@<ebp>, float a3@<edi>
                 *(float *)&v22 = *(float *)&v22 + v19;
                 v9 = *(float *)&v22;
               }
-              v36 = *(float *)&dword_1005B2C8[2 * v12] + 0.0625;
-              v37 = dword_1005B2CC[2 * v12] + 0.0625;
+              v36 = *(float *)&grim_font2_uv_u[2 * v12] + 0.0625;
+              v37 = grim_font2_uv_v[2 * v12] + 0.0625;
               (*(void (__thiscall **)(int *, int, int, _DWORD, _DWORD, float, float, float, float))(*a1 + 256))(
                 a1,
-                dword_1005B2C8[2 * v12],
-                LODWORD(dword_1005B2CC[2 * v12]),
+                grim_font2_uv_u[2 * v12],
+                LODWORD(grim_font2_uv_v[2 * v12]),
                 LODWORD(v36),
                 LODWORD(v37),
                 COERCE_FLOAT(LODWORD(a3)),
@@ -5703,7 +5872,8 @@ LABEL_22:
   return result;
 }
 
-// sub_100096C0 @ 0x100096C0
+// grim_measure_text_width @ 0x100096C0
+// Grim2D vtable 0x14c: small font width metric (handles newlines)
 int __stdcall sub_100096C0(const char *a1)
 {
   int result; // eax
@@ -5729,7 +5899,7 @@ int __stdcall sub_100096C0(const char *a1)
       }
       else
       {
-        v2 += (unsigned __int8)byte_1005BAD8[(unsigned __int8)byte_1005A570[(unsigned __int8)a1[v4]]];
+        v2 += (unsigned __int8)grim_font2_glyph_widths[(unsigned __int8)grim_font2_char_map[(unsigned __int8)a1[v4]]];
       }
       ++v4;
     }
@@ -5740,7 +5910,8 @@ int __stdcall sub_100096C0(const char *a1)
   return result;
 }
 
-// sub_10009730 @ 0x10009730
+// grim_draw_text_small @ 0x10009730
+// Grim2D vtable 0x144: small font draw (GRIM_Font2)
 char __thiscall sub_10009730(void *this, float a2, float a3, const char *a4)
 {
   int v4; // eax
@@ -5762,17 +5933,17 @@ char __thiscall sub_10009730(void *this, float a2, float a3, const char *a4)
   float v23; // [esp+6Ch] [ebp+8h]
   int v24; // [esp+70h] [ebp+Ch]
 
-  LOBYTE(v4) = byte_1005D3BD;
-  if ( !byte_1005D3BD )
+  LOBYTE(v4) = grim_render_disabled;
+  if ( !grim_render_disabled )
   {
     if ( a4 )
     {
       v21 = (float)(__int64)a2;
-      v4 = dword_10053070;
+      v4 = grim_font2_texture_handle;
       v22 = (float)(__int64)a3;
-      if ( dword_10053070 != -1
+      if ( grim_font2_texture_handle != -1
         || (v4 = (*(int (__thiscall **)(void *, char *))(*(_DWORD *)this + 192))(this, aGrimFont2),
-            dword_10053070 = v4,
+            grim_font2_texture_handle = v4,
             v4 != -1) )
       {
         (*(void (__thiscall **)(void *, int, _DWORD))(*(_DWORD *)this + 196))(this, v4, 0);
@@ -5786,7 +5957,7 @@ char __thiscall sub_10009730(void *this, float a2, float a3, const char *a4)
         v7 = strlen(a4) + 1;
         for ( i = 0; i < (int)(v7 - 1); ++i )
         {
-          v9 = (unsigned __int8)byte_1005A570[(unsigned __int8)a4[i]];
+          v9 = (unsigned __int8)grim_font2_char_map[(unsigned __int8)a4[i]];
           if ( a4[i] == 10 )
           {
             v14 = v21;
@@ -5794,9 +5965,9 @@ char __thiscall sub_10009730(void *this, float a2, float a3, const char *a4)
           }
           else
           {
-            v23 = (float)(unsigned __int8)byte_1005BAD8[v9];
-            v16 = *(float *)&dword_1005B2C8[2 * v9] + 0.001953125;
-            v17 = dword_1005B2CC[2 * v9] + 0.001953125;
+            v23 = (float)(unsigned __int8)grim_font2_glyph_widths[v9];
+            v16 = *(float *)&grim_font2_uv_u[2 * v9] + 0.001953125;
+            v17 = grim_font2_uv_v[2 * v9] + 0.001953125;
             v20 = v17 + 0.0625;
             v18 = v23 * 0.00390625 + v16 - 0.001953125;
             v19 = v20 - 0.001953125;
@@ -5829,24 +6000,26 @@ char __thiscall sub_10009730(void *this, float a2, float a3, const char *a4)
   return v4;
 }
 
-// sub_10009940 @ 0x10009940
+// grim_draw_text_mono_fmt @ 0x10009940
+// Grim2D vtable 0x140: printf-style wrapper around draw_text_mono
 int sub_10009940(int a1, int a2, int a3, char *Format, ...)
 {
   va_list va; // [esp+14h] [ebp+14h] BYREF
 
   va_start(va, Format);
-  vsprintf(Buffer, Format, va);
-  return (*(int (__thiscall **)(int, int, int, char *))(*(_DWORD *)a1 + 316))(a1, a2, a3, Buffer);
+  vsprintf(grim_printf_buffer, Format, va);
+  return (*(int (__thiscall **)(int, int, int, char *))(*(_DWORD *)a1 + 316))(a1, a2, a3, grim_printf_buffer);
 }
 
-// sub_10009980 @ 0x10009980
+// grim_draw_text_small_fmt @ 0x10009980
+// Grim2D vtable 0x148: formatted small-font text (vsprintf + vtable 0x144)
 int sub_10009980(int a1, int a2, int a3, char *Format, ...)
 {
   va_list va; // [esp+14h] [ebp+14h] BYREF
 
   va_start(va, Format);
-  vsprintf(byte_1005B078, Format, va);
-  return (*(int (__thiscall **)(int, int, int, char *))(*(_DWORD *)a1 + 324))(a1, a2, a3, byte_1005B078);
+  vsprintf(grim_printf_buffer_alt, Format, va);
+  return (*(int (__thiscall **)(int, int, int, char *))(*(_DWORD *)a1 + 324))(a1, a2, a3, grim_printf_buffer_alt);
 }
 
 // GRIM__GetInterface @ 0x100099C0
@@ -5856,7 +6029,7 @@ _DWORD *GRIM__GetInterface()
   _DWORD *result; // eax
 
   v0 = Direct3DCreate8(220);
-  dword_1005B2C4 = v0;
+  grim_d3d8_probe = v0;
   if ( v0 )
   {
     (*(void (__stdcall **)(int))(*(_DWORD *)v0 + 8))(v0);
@@ -5864,30 +6037,31 @@ _DWORD *GRIM__GetInterface()
     result = operator new(4u);
     if ( result )
     {
-      *result = &off_1004C238;
-      dword_1005D81C = (int)result;
+      *result = &grim_interface_vtable;
+      grim_interface_instance = (int)result;
     }
     else
     {
-      dword_1005D81C = 0;
+      grim_interface_instance = 0;
       return 0;
     }
   }
   else
   {
-    dword_1005C8F8 = (int)Text;
+    grim_error_text = (int)Text;
     MessageBoxA(0, Text, Caption, 0);
     return 0;
   }
   return result;
 }
 
-// _DllMain@12 @ 0x10009A20
+// FUN_10009a20 @ 0x10009A20
+// [binja] int32_t __stdcall sub_10009a20(HINSTANCE arg1, int32_t arg2)
 BOOL __stdcall DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
   if ( fdwReason == 1 )
   {
-    hInstance = hinstDLL;
+    grim_module_handle = hinstDLL;
     lParam = (LPARAM)LoadIconA(hinstDLL, (LPCSTR)0x72);
   }
   return 1;
@@ -5920,7 +6094,7 @@ int __cdecl sub_10009A50(_DWORD *a1, int a2, int a3)
   memset(a1, 0, 0x1A8u);
   *a1 = v3;
   *((_BYTE *)a1 + 12) = 1;
-  sub_1003D0D0(a1);
+  FUN_1003d0d0(a1);
   a1[2] = 0;
   a1[5] = 0;
   a1[36] = 0;
@@ -6374,7 +6548,8 @@ BOOL __stdcall sub_1000A150(int a1, int a2)
   return result;
 }
 
-// sub_1000A1C0 @ 0x1000A1C0
+// grim_joystick_init @ 0x1000A1C0
+// initializes DirectInput joystick device and acquires it
 char __cdecl sub_1000A1C0(int a1)
 {
   int v1; // eax
@@ -6417,11 +6592,12 @@ char __cdecl sub_1000A1C0(int a1)
     if ( *(_DWORD *)&String[284] )
       (*(void (__stdcall **)(_DWORD))(**(_DWORD **)&String[284] + 28))(*(_DWORD *)&String[284]);
   }
-  sub_1000A2B0();
+  grim_joystick_poll();
   return 1;
 }
 
-// sub_1000A2B0 @ 0x1000A2B0
+// grim_joystick_poll @ 0x1000A2B0
+// polls the joystick device and updates cached state
 bool sub_1000A2B0()
 {
   bool v0; // sf
@@ -6469,13 +6645,15 @@ int sub_1000A330()
   return result;
 }
 
-// sub_1000A370 @ 0x1000A370
+// grim_keyboard_key_down @ 0x1000A370
+// reads the cached key state array
 char __cdecl sub_1000A370(unsigned __int8 a1)
 {
   return (unsigned __int8)String[a1 + 512] >> 7;
 }
 
-// sub_1000A390 @ 0x1000A390
+// grim_keyboard_init @ 0x1000A390
+// initializes DirectInput keyboard device and acquires it
 char __cdecl sub_1000A390(int a1)
 {
   int v1; // eax
@@ -6512,11 +6690,12 @@ char __cdecl sub_1000A390(int a1)
     if ( *(_DWORD *)&String[508] )
       (*(void (__stdcall **)(_DWORD))(**(_DWORD **)&String[508] + 28))(*(_DWORD *)&String[508]);
   }
-  sub_1000A4A0();
+  grim_keyboard_poll();
   return 1;
 }
 
-// sub_1000A4A0 @ 0x1000A4A0
+// grim_keyboard_poll @ 0x1000A4A0
+// polls the keyboard device and updates cached key state
 char __fastcall sub_1000A4A0(int a1)
 {
   int v1; // eax
@@ -6569,7 +6748,8 @@ char __fastcall sub_1000A4A0(int a1)
   return 1;
 }
 
-// sub_1000A550 @ 0x1000A550
+// grim_keyboard_shutdown @ 0x1000A550
+// releases DirectInput keyboard objects
 int sub_1000A550()
 {
   int result; // eax
@@ -6589,13 +6769,15 @@ int sub_1000A550()
   return result;
 }
 
-// sub_1000A590 @ 0x1000A590
+// grim_mouse_button_down @ 0x1000A590
+// reads the cached mouse button state
 char __cdecl sub_1000A590(int a1)
 {
   return (unsigned __int8)String[a1 + 788] >> 7;
 }
 
-// sub_1000A5A0 @ 0x1000A5A0
+// grim_mouse_init @ 0x1000A5A0
+// initializes DirectInput mouse device and acquires it
 char sub_1000A5A0()
 {
   HWND v0; // esi
@@ -6627,11 +6809,12 @@ char sub_1000A5A0()
     if ( *(_DWORD *)&String[772] )
       (*(void (__stdcall **)(_DWORD))(**(_DWORD **)&String[772] + 28))(*(_DWORD *)&String[772]);
   }
-  sub_1000A670();
+  grim_mouse_poll();
   return 1;
 }
 
-// sub_1000A670 @ 0x1000A670
+// grim_mouse_poll @ 0x1000A670
+// polls the mouse device and updates cached position/delta
 char sub_1000A670()
 {
   int v0; // esi
@@ -6673,7 +6856,7 @@ char sub_1000A670()
         goto LABEL_8;
     }
     if ( v0 > 2 )
-      nullsub_1();
+      grim_noop();
     *(float *)&String[796] = *(float *)&String[796] + *(float *)&String[808];
     *(float *)&String[800] = *(float *)&String[800] + *(float *)&String[812];
     *(float *)&String[804] = *(float *)&String[804] + *(float *)&String[816];
@@ -6687,7 +6870,8 @@ LABEL_8:
   return 1;
 }
 
-// sub_1000A7D0 @ 0x1000A7D0
+// grim_mouse_shutdown @ 0x1000A7D0
+// releases DirectInput mouse objects
 int sub_1000A7D0()
 {
   int result; // eax
@@ -6713,7 +6897,8 @@ bool __cdecl sub_1000A820(unsigned int a1)
   return a1 > 2;
 }
 
-// sub_1000A840 @ 0x1000A840
+// FUN_1000a840 @ 0x1000A840
+// [binja] bool __stdcall sub_1000a840(int32_t* arg1, uint32_t arg2, int32_t arg3, int32_t arg4)
 bool __stdcall sub_1000A840(_DWORD *a1, unsigned int a2, int a3, int a4)
 {
   unsigned int v4; // esi
@@ -6730,7 +6915,8 @@ bool __stdcall sub_1000A840(_DWORD *a1, unsigned int a2, int a3, int a4)
   return !sub_1000A820(v6);
 }
 
-// sub_1000A880 @ 0x1000A880
+// FUN_1000a880 @ 0x1000A880
+// [binja] char* __stdcall sub_1000a880(char* arg1, uint32_t* arg2)
 int __stdcall sub_1000A880(int a1, unsigned int *a2)
 {
   int v3; // esi
@@ -6744,11 +6930,12 @@ int __stdcall sub_1000A880(int a1, unsigned int *a2)
   v4 = *(_DWORD *)(a1 + 5);
   *a2 = v4;
   a1 = 0;
-  sub_1000A840(&a1, v4, v5, v3);
+  FUN_1000a840(&a1, v4, v5, v3);
   return a1;
 }
 
-// sub_1000AAA6 @ 0x1000AAA6
+// grim_format_info_lookup @ 0x1000AAA6
+// returns pointer to the D3D format descriptor entry (fallbacks to default)
 _DWORD *__cdecl sub_1000AAA6(int a1)
 {
   _DWORD *result; // eax
@@ -6765,7 +6952,8 @@ _DWORD *__cdecl sub_1000AAA6(int a1)
   return result;
 }
 
-// sub_1000AACA @ 0x1000AACA
+// FUN_1000aaca @ 0x1000AACA
+// [binja] int32_t __fastcall sub_1000aaca(void* arg1, int32_t arg2)
 unsigned int __fastcall sub_1000AACA(int a1, int a2)
 {
   unsigned int result; // eax
@@ -6834,7 +7022,7 @@ int __cdecl sub_1000AB3F(int *a1, int a2, int a3)
     v8 = *v3;
     if ( !v8 )
       return *v5;
-    v6 = sub_1000AAA6(v8);
+    v6 = grim_format_info_lookup(v8);
     if ( *v6 )
     {
       if ( v6[1] != 1 || a2 )
@@ -6845,7 +7033,7 @@ LABEL_11:
   }
   if ( *(_DWORD *)a3 != *v6 )
   {
-    v7 = sub_1000AACA(a3, (int)v6);
+    v7 = FUN_1000aaca(a3, (int)v6);
     if ( v7 != -1 && v7 <= v4 && (v7 != v4 || v6[2] < v5[2]) )
     {
       v4 = v7;
@@ -6869,7 +7057,7 @@ int __cdecl sub_1000ABAD(int a1, int a2, int a3, _DWORD *a4)
   int v12; // [esp+F0h] [ebp-4h] BYREF
 
   v12 = 0;
-  sub_100101F5(1);
+  grim_d3d_debug_set_mute(1);
   if ( a1 )
   {
     (*(void (__stdcall **)(int, int *))(*(_DWORD *)a1 + 24))(a1, &v12);
@@ -6901,7 +7089,7 @@ int __cdecl sub_1000ABAD(int a1, int a2, int a3, _DWORD *a4)
         }
         if ( v6[8] )
         {
-          v7 = sub_1000AACA((int)a4, (int)v6);
+          v7 = FUN_1000aaca((int)a4, (int)v6);
           if ( v7 != -1 && v7 <= v4 && (v7 != v4 || v6[2] < v5[2]) )
           {
             v4 = v7;
@@ -6918,7 +7106,7 @@ int __cdecl sub_1000ABAD(int a1, int a2, int a3, _DWORD *a4)
     (*(void (__stdcall **)(int))(*(_DWORD *)v12 + 8))(v12);
     v12 = 0;
   }
-  sub_100101F5(0);
+  grim_d3d_debug_set_mute(0);
   return *v5;
 }
 
@@ -6939,7 +7127,8 @@ int __cdecl sub_1000AC8F(int a1)
   return a1;
 }
 
-// sub_1000ACC0 @ 0x1000ACC0
+// FUN_1000acc0 @ 0x1000ACC0
+// [binja] int32_t __stdcall sub_1000acc0(int32_t* arg1, int32_t arg2, int32_t* arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7, int32_t* arg8, int32_t arg9, int32_t arg10)
 int __stdcall sub_1000ACC0(int a1, int a2, int a3, int a4, int a5, int a6, int a7, _DWORD *a8, int a9, int a10)
 {
   int v10; // ebx
@@ -6953,8 +7142,8 @@ int __stdcall sub_1000ACC0(int a1, int a2, int a3, int a4, int a5, int a6, int a
   _BYTE v19[16]; // [esp+9Ch] [ebp+34h] BYREF
   _BYTE v20[12]; // [esp+ACh] [ebp+44h] BYREF
 
-  sub_1001284C(v20);
-  sub_10016121(v19);
+  FUN_1001284c(v20);
+  FUN_10016121(v19);
   v10 = 0;
   if ( a1 )
   {
@@ -6962,7 +7151,7 @@ int __stdcall sub_1000ACC0(int a1, int a2, int a3, int a4, int a5, int a6, int a
     {
       if ( a9 == -1 )
         a9 = 524292;
-      v11 = sub_100161BB(v13, a1, a2, a3, 0, 0);
+      v11 = FUN_100161bb(v13, a1, a2, a3, 0, 0);
       if ( v11 < 0 )
         goto LABEL_10;
       v14[1] = a5;
@@ -6978,7 +7167,7 @@ int __stdcall sub_1000ACC0(int a1, int a2, int a3, int a4, int a5, int a6, int a
       qmemcpy(v16, v15, sizeof(v16));
       v17 = a10;
       v18 = a7;
-      v11 = sub_10016007(v13, v14, a9);
+      v11 = FUN_10016007(v13, v14, a9);
       if ( v11 < 0 )
 LABEL_10:
         v10 = v11;
@@ -6992,12 +7181,13 @@ LABEL_10:
   {
     v10 = -2005530516;
   }
-  sub_100161B6(v19);
-  sub_10012856(v20);
+  FUN_100161b6(v19);
+  FUN_10012856(v20);
   return v10;
 }
 
-// sub_1000AD9F @ 0x1000AD9F
+// FUN_1000ad9f @ 0x1000AD9F
+// [binja] int32_t sub_1000ad9f(int32_t arg1, int32_t arg2, int32_t* arg3, int32_t arg4, int32_t* arg5, int32_t* arg6)
 int __cdecl sub_1000AD9F(LPCWCH lpWideCharStr, int a2, int a3, int a4, int a5, LPSTR lpMultiByteStr)
 {
   int v6; // esi
@@ -7007,14 +7197,14 @@ int __cdecl sub_1000AD9F(LPCWCH lpWideCharStr, int a2, int a3, int a4, int a5, L
   _BYTE v11[16]; // [esp+A8h] [ebp-1Ch] BYREF
   int v12; // [esp+C0h] [ebp-4h]
 
-  sub_10010285(v10);
+  FUN_10010285(v10);
   v12 = 0;
-  sub_10016121(v11);
+  FUN_10016121(v11);
   LOBYTE(v12) = 1;
   if ( lpWideCharStr && a3 )
   {
-    v7 = sub_100161BB(v9, a3, a4, a5, 0, 1);
-    if ( v7 < 0 || (v7 = sub_10010313(v9), v7 < 0) || (v7 = sub_1001237E(lpWideCharStr, a2, lpMultiByteStr), v7 < 0) )
+    v7 = FUN_100161bb(v9, a3, a4, a5, 0, 1);
+    if ( v7 < 0 || (v7 = FUN_10010313(v9), v7 < 0) || (v7 = FUN_1001237e(lpWideCharStr, a2, lpMultiByteStr), v7 < 0) )
       v6 = v7;
     else
       v6 = 0;
@@ -7024,9 +7214,9 @@ int __cdecl sub_1000AD9F(LPCWCH lpWideCharStr, int a2, int a3, int a4, int a5, L
     v6 = -2005530516;
   }
   LOBYTE(v12) = 0;
-  sub_100161B6(v11);
+  FUN_100161b6(v11);
   v12 = -1;
-  sub_1001029E(v10);
+  FUN_1001029e(v10);
   return v6;
 }
 
@@ -7036,13 +7226,15 @@ void *__thiscall sub_1000AE4F(void *this)
   return this;
 }
 
-// sub_1000AE52 @ 0x1000AE52
+// FUN_1000ae52 @ 0x1000AE52
+// [binja] int32_t __stdcall sub_1000ae52(int32_t arg1, int32_t arg2, int32_t* arg3, int32_t arg4, int32_t* arg5)
 int __stdcall sub_1000AE52(LPCWCH lpWideCharStr, int a2, int a3, int a4, int a5)
 {
-  return sub_1000AD9F(lpWideCharStr, a2, a3, a4, a5, 0);
+  return FUN_1000ad9f(lpWideCharStr, a2, a3, a4, a5, 0);
 }
 
-// sub_1000AE72 @ 0x1000AE72
+// FUN_1000ae72 @ 0x1000AE72
+// [binja] int32_t __stdcall sub_1000ae72(int32_t* arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7, int32_t arg8, int32_t arg9, int32_t arg10, int32_t arg11)
 int __stdcall sub_1000AE72(
         int a1,
         int a2,
@@ -7067,13 +7259,13 @@ int __stdcall sub_1000AE72(
   _BYTE v20[12]; // [esp+9Ch] [ebp+3Ch] BYREF
   _BYTE v21[4]; // [esp+A8h] [ebp+48h] BYREF
 
-  sub_1001284C(v20);
-  sub_1001619A(v21);
+  FUN_1001284c(v20);
+  FUN_1001619a(v21);
   if ( a1 && a4 && a9 )
   {
     if ( a10 == -1 )
       a10 = 524292;
-    v12 = sub_100165D3(v14, a1, a2, a3, 0, 0);
+    v12 = FUN_100165d3(v14, a1, a2, a3, 0, 0);
     if ( v12 < 0 )
       goto LABEL_8;
     v15[1] = a5;
@@ -7084,7 +7276,7 @@ int __stdcall sub_1000AE72(
     qmemcpy(v17, a9, sizeof(v17));
     v18 = a11;
     v19 = a8;
-    v12 = sub_10016007(v14, v15, a10);
+    v12 = FUN_10016007(v14, v15, a10);
     if ( v12 < 0 )
 LABEL_8:
       v11 = v12;
@@ -7095,8 +7287,8 @@ LABEL_8:
   {
     v11 = -2005530516;
   }
-  sub_100165CE(v21);
-  sub_10012856(v20);
+  j_FUN_100161a0(v21);
+  FUN_10012856(v20);
   return v11;
 }
 
@@ -7160,7 +7352,7 @@ int __usercall sub_1000AF45@<eax>(
   }
   else
   {
-    v12 = sub_1000AAA6(v37);
+    v12 = grim_format_info_lookup(v37);
     v37 = sub_1000ABAD(a2, v10, a9, v12);
     if ( !v37 )
       return -2005530518;
@@ -7350,7 +7542,8 @@ LABEL_75:
   return 0;
 }
 
-// sub_1000B26F @ 0x1000B26F
+// FUN_1000b26f @ 0x1000B26F
+// [binja] int32_t __stdcall sub_1000b26f(int32_t** arg1, int32_t* arg2, int32_t* arg3, int32_t* arg4, int32_t arg5, int32_t arg6, int32_t arg7)
 int __stdcall sub_1000B26F(
         int a1,
         unsigned int *a2,
@@ -7363,7 +7556,8 @@ int __stdcall sub_1000B26F(
   return sub_1000AF45(a5, a1, a2, a3, 0, a4, a6, a7, 3);
 }
 
-// sub_1000B297 @ 0x1000B297
+// FUN_1000b297 @ 0x1000B297
+// [binja] int32_t __stdcall sub_1000b297(int32_t** arg1, int32_t arg2, int32_t arg3, int32_t arg4)
 int __stdcall sub_1000B297(int a1, int a2, int a3, int a4, int a5, int a6, unsigned int a7, int a8)
 {
   int result; // eax
@@ -7374,7 +7568,7 @@ int __stdcall sub_1000B297(int a1, int a2, int a3, int a4, int a5, int a6, unsig
   v9 = a5;
   if ( a5 == -1 )
     v9 = 0;
-  result = sub_1000B26F(a1, (unsigned int *)&a2, (unsigned int *)&a3, (unsigned int *)&a4, v9, &a6, a7);
+  result = FUN_1000b26f(a1, (unsigned int *)&a2, (unsigned int *)&a3, (unsigned int *)&a4, v9, &a6, a7);
   if ( result >= 0 )
   {
     result = (*(int (__stdcall **)(int, int, int, int, int, int, unsigned int, int))(*(_DWORD *)a1 + 80))(
@@ -7397,14 +7591,14 @@ char *__thiscall sub_1000B2FD(char *this, char a2)
 {
   if ( (a2 & 2) != 0 )
   {
-    `eh vector destructor iterator'(this, 0x10u, *((_DWORD *)this - 1), sub_100161B6);
+    FUN_1004b5cf(this, 0x10u, *((_DWORD *)this - 1), FUN_100161b6);
     if ( (a2 & 1) != 0 )
       operator delete(this - 4);
     return this - 4;
   }
   else
   {
-    sub_100161B6(this);
+    FUN_100161b6(this);
     if ( (a2 & 1) != 0 )
       operator delete(this);
     return this;
@@ -7416,14 +7610,14 @@ char *__thiscall sub_1000B348(char *this, char a2)
 {
   if ( (a2 & 2) != 0 )
   {
-    `eh vector destructor iterator'(this, 4u, *((_DWORD *)this - 1), sub_100165CE);
+    FUN_1004b5cf(this, 4u, *((_DWORD *)this - 1), j_FUN_100161a0);
     if ( (a2 & 1) != 0 )
       operator delete(this - 4);
     return this - 4;
   }
   else
   {
-    sub_100165CE(this);
+    j_FUN_100161a0(this);
     if ( (a2 & 1) != 0 )
       operator delete(this);
     return this;
@@ -7476,7 +7670,8 @@ double __usercall sub_1000B3B5@<st0>(float *a1@<eax>, int a2@<ecx>)
   return 0.0;
 }
 
-// sub_1000B3FE @ 0x1000B3FE
+// FUN_1000b3fe @ 0x1000B3FE
+// [binja] int32_t __stdcall sub_1000b3fe(int32_t* arg1, int32_t* arg2, int32_t arg3, int32_t arg4, float arg5)
 int __userpurge sub_1000B3FE@<eax>(int a1@<esi>, int a2, int a3, int a4, int a5, int a6, float a7)
 {
   int v7; // ebx
@@ -7590,8 +7785,8 @@ int __userpurge sub_1000B3FE@<eax>(int a1@<esi>, int a2, int a3, int a4, int a5,
   v102 = 0;
   v110 = 0;
   v109 = 0;
-  sub_10016121(v83);
-  sub_10016121(v82);
+  FUN_10016121(v83);
+  FUN_10016121(v82);
   if ( a2 )
   {
     if ( !a3 )
@@ -7614,7 +7809,7 @@ int __userpurge sub_1000B3FE@<eax>(int a1@<esi>, int a2, int a3, int a4, int a5,
       v7 = -2147467259;
       goto LABEL_119;
     }
-    if ( (v9 = sub_1000AAA6(v93[0]), v10 = sub_1000AAA6(v81[0]), !*v9)
+    if ( (v9 = grim_format_info_lookup(v93[0]), v10 = grim_format_info_lookup(v81[0]), !*v9)
       || !*v10
       || (v11 = v9[1], v11 > 2) && v11 != 4
       || v10[1]
@@ -7697,11 +7892,11 @@ LABEL_118:
           {
             (*(void (__stdcall **)(int, int, int *))(*(_DWORD *)a2 + 60))(a2, v112, &v109);
             (*(void (__stdcall **)(int, int, int *))(*(_DWORD *)a3 + 60))(a3, v112, &v110);
-            v27 = v112 ? sub_100161BB(v79, v109, 0, 0, 0, 0) : sub_100161BB(v79, v109, 0, 0, 0, 0x20000);
+            v27 = v112 ? FUN_100161bb(v79, v109, 0, 0, 0, 0) : FUN_100161bb(v79, v109, 0, 0, 0, 0x20000);
             v7 = v27;
             if ( v27 < 0 )
               break;
-            v28 = a2 == a3 ? sub_100161BB(v80, v110, 0, 0, 0, 65537) : sub_100161BB(v80, v110, 0, 0, 0, 1);
+            v28 = a2 == a3 ? FUN_100161bb(v80, v110, 0, 0, 0, 65537) : FUN_100161bb(v80, v110, 0, 0, 0, 1);
             v7 = v28;
             if ( v28 < 0 )
               break;
@@ -7711,9 +7906,9 @@ LABEL_118:
             v7 = (*(int (__stdcall **)(int, int, int *))(*(_DWORD *)a3 + 56))(a3, v112, v93);
             if ( v7 < 0 )
               break;
-            v29 = sub_1001B50C(v80);
+            v29 = grim_pixel_format_create(v80);
             v104 = v29;
-            v30 = sub_1001B50C(v79);
+            v30 = grim_pixel_format_create(v79);
             v31 = (void (__thiscall ***)(_DWORD, int))v30;
             v102 = (void (__thiscall ***)(_DWORD, int))v30;
             if ( !v29 || !v30 )
@@ -7960,12 +8155,13 @@ LABEL_109:
     v7 = -2005530516;
   }
 LABEL_119:
-  sub_100161B6(v82);
-  sub_100161B6(v83);
+  FUN_100161b6(v82);
+  FUN_100161b6(v83);
   return v7;
 }
 
-// sub_1000BBFC @ 0x1000BBFC
+// FUN_1000bbfc @ 0x1000BBFC
+// [binja] int32_t __stdcall sub_1000bbfc(int32_t* arg1, int32_t* arg2, int32_t* arg3, int32_t* arg4, int32_t* arg5, int32_t arg6, int32_t arg7)
 int __stdcall sub_1000BBFC(int a1, const void *a2, int *a3, int a4, const void *a5, int *a6, int a7, int a8)
 {
   int v8; // esi
@@ -7991,7 +8187,7 @@ int __stdcall sub_1000BBFC(int a1, const void *a2, int *a3, int a4, const void *
   int v29; // [esp+98h] [ebp+50h]
   int v30; // [esp+9Ch] [ebp+54h]
 
-  sub_10016121(v22);
+  FUN_10016121(v22);
   if ( a1 )
   {
     v9 = a4;
@@ -8039,7 +8235,7 @@ int __stdcall sub_1000BBFC(int a1, const void *a2, int *a3, int a4, const void *
         if ( v10 - v27 == v12 - v23 && v30 - v28 == v11 - v24 )
         {
           (*(void (__stdcall **)(int, int *))(*(_DWORD *)v9 + 12))(v9, &a4);
-          sub_100101F5(1);
+          grim_d3d_debug_set_mute(1);
           v13 = (*(int (__stdcall **)(int, int, int *, int, int, int *))(*(_DWORD *)a4 + 112))(
                   a4,
                   v9,
@@ -8047,7 +8243,7 @@ int __stdcall sub_1000BBFC(int a1, const void *a2, int *a3, int a4, const void *
                   1,
                   a1,
                   &v27);
-          sub_100101F5(0);
+          grim_d3d_debug_set_mute(0);
           (*(void (__stdcall **)(int))(*(_DWORD *)a4 + 8))(a4);
           if ( v13 >= 0 )
             goto LABEL_25;
@@ -8056,9 +8252,9 @@ int __stdcall sub_1000BBFC(int a1, const void *a2, int *a3, int a4, const void *
       v14 = 1;
       if ( a1 == v9 )
         v14 = 65537;
-      v15 = sub_100161BB(v17, v9, a5, a6, 0, v14);
+      v15 = FUN_100161bb(v17, v9, a5, a6, 0, v14);
       if ( v15 >= 0
-        && (v15 = sub_1000ACC0(a1, (int)a2, (int)a3, v17[0], v17[1], v17[2], (int)a5, v18, a7, a8), v15 >= 0) )
+        && (v15 = FUN_1000acc0(a1, (int)a2, (int)a3, v17[0], v17[1], v17[2], (int)a5, v18, a7, a8), v15 >= 0) )
       {
 LABEL_25:
         v8 = 0;
@@ -8077,11 +8273,12 @@ LABEL_25:
   {
     v8 = -2005530516;
   }
-  sub_100161B6(v22);
+  FUN_100161b6(v22);
   return v8;
 }
 
-// sub_1000BDA2 @ 0x1000BDA2
+// FUN_1000bda2 @ 0x1000BDA2
+// [binja] int32_t __stdcall sub_1000bda2(int32_t* arg1, int32_t arg2, int32_t arg3, int32_t* arg4, int32_t arg5, int32_t arg6, int32_t arg7, int32_t arg8)
 int __stdcall sub_1000BDA2(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8)
 {
   int v8; // esi
@@ -8091,22 +8288,22 @@ int __stdcall sub_1000BDA2(int a1, int a2, int a3, int a4, int a5, int a6, int a
   _BYTE v13[36]; // [esp+2Ch] [ebp-28h] BYREF
   _BYTE v14[4]; // [esp+50h] [ebp-4h] BYREF
 
-  sub_1001619A(v14);
+  FUN_1001619a(v14);
   v8 = 0;
   if ( a1 && a4 )
   {
     v9 = 1;
     if ( a1 == a4 )
       v9 = 65537;
-    v10 = sub_100165D3(v12, a4, a5, a6, 0, v9);
-    if ( v10 < 0 || (v10 = sub_1000AE72(a1, a2, a3, v12[0], v12[1], v12[2], v12[3], a5, v13, a7, a8), v10 < 0) )
+    v10 = FUN_100165d3(v12, a4, a5, a6, 0, v9);
+    if ( v10 < 0 || (v10 = FUN_1000ae72(a1, a2, a3, v12[0], v12[1], v12[2], v12[3], a5, v13, a7, a8), v10 < 0) )
       v8 = v10;
   }
   else
   {
     v8 = -2005530516;
   }
-  sub_100165CE(v14);
+  j_FUN_100161a0(v14);
   return v8;
 }
 
@@ -8159,7 +8356,7 @@ int __cdecl sub_1000BE28(LPCWCH lpWideCharStr, int a2, int a3, LPSTR lpMultiByte
   int v48; // [esp+E4h] [ebp-4h]
 
   v5 = v4;
-  sub_10010285(v33);
+  FUN_10010285(v33);
   v48 = 0;
   if ( !lpWideCharStr || !v5 )
   {
@@ -8212,7 +8409,7 @@ LABEL_19:
             v41 = v16;
             LOBYTE(v48) = 3;
             if ( v16 )
-              v17 = sub_10010285(v16);
+              v17 = FUN_10010285(v16);
             else
               v17 = 0;
             LOBYTE(v48) = 0;
@@ -8232,7 +8429,7 @@ LABEL_19:
                 v34 = v21;
                 LOBYTE(v48) = 4;
                 if ( v21 )
-                  v22 = (void *)sub_10010285(v21);
+                  v22 = (void *)FUN_10010285(v21);
                 else
                   v22 = 0;
                 LOBYTE(v48) = 0;
@@ -8267,19 +8464,19 @@ LABEL_48:
               {
                 case 3:
 LABEL_52:
-                  v26 = sub_100161BB(v32, *((_DWORD *)v46 + v23), a3, 0, 0, 1);
+                  v26 = FUN_100161bb(v32, *((_DWORD *)v46 + v23), a3, 0, 0, 1);
 LABEL_53:
                   v47 = v26;
                   break;
                 case 4:
-                  v26 = sub_100165D3(v32, *((_DWORD *)v45 + v23), a3, 0, 0, 1);
+                  v26 = FUN_100165d3(v32, *((_DWORD *)v45 + v23), a3, 0, 0, 1);
                   goto LABEL_53;
                 case 5:
                   goto LABEL_52;
               }
               if ( v47 < 0 )
                 goto LABEL_60;
-              v47 = sub_10010313(v32);
+              v47 = FUN_10010313(v32);
               if ( v47 < 0 )
                 goto LABEL_60;
               if ( ++v15 >= v43 )
@@ -8294,7 +8491,7 @@ LABEL_57:
         }
         while ( v44 < v39 );
       }
-      v47 = sub_1001237E(lpWideCharStr, a2, lpMultiByteStr);
+      v47 = FUN_1001237e(lpWideCharStr, a2, lpMultiByteStr);
       if ( v47 >= 0 )
         v47 = 0;
       goto LABEL_60;
@@ -8307,7 +8504,7 @@ LABEL_13:
     {
       v10 = v11 + 1;
       *v11 = v9;
-      `eh vector constructor iterator'(v11 + 1, 0x10u, v9, sub_10016121, sub_100161B6);
+      FUN_1004b6c3(v11 + 1, 0x10u, v9, FUN_10016121, FUN_100161b6);
     }
     LOBYTE(v48) = 0;
     v40 = v10;
@@ -8333,7 +8530,7 @@ LABEL_18:
   {
     v19 = v18 + 1;
     *v18 = v9;
-    `eh vector constructor iterator'(v18 + 1, 4u, v9, sub_1001619A, sub_100165CE);
+    FUN_1004b6c3(v18 + 1, 4u, v9, FUN_1001619a, j_FUN_100161a0);
   }
   else
   {
@@ -8400,17 +8597,19 @@ LABEL_60:
   v6 = v47;
 LABEL_77:
   v48 = -1;
-  sub_1001029E(v33);
+  FUN_1001029e(v33);
   return v6;
 }
 
-// sub_1000C1E8 @ 0x1000C1E8
+// FUN_1000c1e8 @ 0x1000C1E8
+// [binja] void* __stdcall sub_1000c1e8(int32_t arg1, int32_t arg2, int32_t* arg3, int32_t arg4)
 int __stdcall sub_1000C1E8(LPCWCH lpWideCharStr, int a2, int a3, int a4)
 {
   return sub_1000BE28(lpWideCharStr, a2, a4, 0);
 }
 
-// sub_1000C205 @ 0x1000C205
+// FUN_1000c205 @ 0x1000C205
+// [binja] int32_t __stdcall sub_1000c205(int32_t* arg1, int32_t* arg2, int32_t arg3, int32_t arg4)
 int __stdcall sub_1000C205(int a1, const void *a2, unsigned int a3, int a4)
 {
   int v4; // esi
@@ -8550,12 +8749,12 @@ LABEL_49:
       {
         case 3:
 LABEL_53:
-          v14 = sub_1000BBFC(v30, a2, 0, a1, a2, 0, a4, 0);
+          v14 = FUN_1000bbfc(v30, a2, 0, a1, a2, 0, a4, 0);
 LABEL_54:
           v8 = v14;
           break;
         case 4:
-          v14 = sub_1000BDA2(v28, (int)a2, 0, v29, (int)a2, 0, a4, 0);
+          v14 = FUN_1000bda2(v28, (int)a2, 0, v29, (int)a2, 0, a4, 0);
           goto LABEL_54;
         case 5:
           goto LABEL_53;
@@ -8626,7 +8825,8 @@ LABEL_75:
   return v8;
 }
 
-// sub_1000C4E9 @ 0x1000C4E9
+// FUN_1000c4e9 @ 0x1000C4E9
+// [binja] int32_t sub_1000c4e9(int32_t** arg1, void* arg2, int32_t* arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7, int32_t arg8, void* arg9, int32_t arg10, int32_t arg11, int32_t** arg12)
 int __cdecl sub_1000C4E9(
         int a1,
         int a2,
@@ -8695,7 +8895,7 @@ int __cdecl sub_1000C4E9(
   int v64; // [esp+4D4h] [ebp-4h]
 
   v17 = a14;
-  sub_10010285(v46);
+  FUN_10010285(v46);
   v64 = 0;
   v61 = 0;
   v62 = 0;
@@ -8708,7 +8908,7 @@ int __cdecl sub_1000C4E9(
   }
   if ( !v17 && a16 == -1 )
     v17 = &v44;
-  v19 = sub_10012677(a2, a3, v17, 1);
+  v19 = FUN_10012677(a2, a3, v17, 1);
   if ( v19 < 0 )
   {
     v18 = v19;
@@ -8764,7 +8964,7 @@ LABEL_20:
     v22 = v46[0];
     if ( a13 )
     {
-      v23 = sub_1000AAA6(v46[0]);
+      v23 = grim_format_info_lookup(v46[0]);
       if ( v23[1] <= 2u && !v23[4] )
       {
         qmemcpy(v45, v23, sizeof(v45));
@@ -8953,13 +9153,13 @@ LABEL_97:
             {
               if ( a16 == 4 )
               {
-                v37 = sub_1000AE72(v61, (int)a15, 0, v34[1], *v34, v34[12], v34[13], (int)v43, v34 + 6, a11, a13);
+                v37 = FUN_1000ae72(v61, (int)a15, 0, v34[1], *v34, v34[12], v34[13], (int)v43, v34 + 6, a11, a13);
                 goto LABEL_102;
               }
               if ( a16 != 5 )
                 goto LABEL_103;
             }
-            v37 = sub_1000ACC0(v62, (int)a15, 0, v34[1], *v34, v34[12], (int)v43, v34 + 6, a11, a13);
+            v37 = FUN_1000acc0(v62, (int)a15, 0, v34[1], *v34, v34[12], (int)v43, v34 + 6, a11, a13);
 LABEL_102:
             v18 = v37;
 LABEL_103:
@@ -9013,12 +9213,12 @@ LABEL_121:
         {
           case 3:
 LABEL_125:
-            v40 = sub_1000ACC0(v62, (int)a15, 0, v34[1], *v34, v34[12], (int)v43, v34 + 6, a11, a13);
+            v40 = FUN_1000acc0(v62, (int)a15, 0, v34[1], *v34, v34[12], (int)v43, v34 + 6, a11, a13);
 LABEL_126:
             v18 = v40;
             break;
           case 4:
-            v40 = sub_1000AE72(v61, (int)a15, 0, v34[1], *v34, v34[12], v34[13], (int)v43, v34 + 6, a11, a13);
+            v40 = FUN_1000ae72(v61, (int)a15, 0, v34[1], *v34, v34[12], v34[13], (int)v43, v34 + 6, a11, a13);
             goto LABEL_126;
           case 5:
             goto LABEL_125;
@@ -9042,7 +9242,7 @@ LABEL_126:
       goto LABEL_119;
     }
 LABEL_134:
-    if ( !v55 || v58 >= a7 || (v18 = sub_1000C205(v33, v43, v58 - 1, a12), v18 >= 0) )
+    if ( !v55 || v58 >= a7 || (v18 = FUN_1000c205(v33, v43, v58 - 1, a12), v18 >= 0) )
     {
       if ( !v54 || (v18 = (*(int (__stdcall **)(int, int, int))(*(_DWORD *)a1 + 116))(a1, v59, v60), v18 >= 0) )
       {
@@ -9076,11 +9276,12 @@ LABEL_140:
   }
 LABEL_148:
   v64 = -1;
-  sub_1001029E(v46);
+  FUN_1001029e(v46);
   return v18;
 }
 
-// sub_1000CB5C @ 0x1000CB5C
+// FUN_1000cb5c @ 0x1000CB5C
+// [binja] int32_t __stdcall sub_1000cb5c(int32_t** arg1, void* arg2, int32_t* arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7, void* arg8, int32_t arg9, int32_t arg10, int32_t** arg11, int32_t arg12, int32_t arg13, int32_t arg14, int32_t arg15)
 int __stdcall sub_1000CB5C(
         int a1,
         int a2,
@@ -9098,10 +9299,11 @@ int __stdcall sub_1000CB5C(
         void *a14,
         int *a15)
 {
-  return sub_1000C4E9(a1, a2, a3, a4, a5, 1, a6, a7, a8, a9, a10, a11, a12, a13, a14, 3, a15);
+  return FUN_1000c4e9(a1, a2, a3, a4, a5, 1, a6, a7, a8, a9, a10, a11, a12, a13, a14, 3, a15);
 }
 
-// sub_1000CB9C @ 0x1000CB9C
+// FUN_1000cb9c @ 0x1000CB9C
+// [binja] int32_t __stdcall sub_1000cb9c(int32_t** arg1, int32_t* arg2, int32_t arg3, int32_t arg4, int32_t arg5, int32_t arg6, void* arg7, int32_t arg8, int32_t arg9, int32_t** arg10, int32_t arg11, int32_t arg12, int32_t arg13, int32_t arg14)
 int __stdcall sub_1000CB9C(
         int a1,
         LPCWCH lpWideCharStr,
@@ -9124,16 +9326,17 @@ int __stdcall sub_1000CB9C(
   int v18; // [esp+Ch] [ebp-8h]
   int v19; // [esp+10h] [ebp-4h]
 
-  sub_1001BCA5(v17);
-  v14 = sub_1001BCB7(lpWideCharStr, 0);
+  FUN_1001bca5(v17);
+  v14 = FUN_1001bcb7(lpWideCharStr, 0);
   if ( v14 >= 0 )
-    v14 = sub_1000CB5C(a1, v18, v19, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
+    v14 = FUN_1000cb5c(a1, v18, v19, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14);
   v15 = v14;
-  sub_1001BED2(v17);
+  FUN_1001bed2(v17);
   return v15;
 }
 
-// sub_1000CBFF @ 0x1000CBFF
+// float_near_equal @ 0x1000CBFF
+// returns 1 when |a-b| < 1.1920929e-07 (FLT_EPSILON)
 BOOL __cdecl sub_1000CBFF(float a1, float a2)
 {
   double v2; // st7
@@ -9145,18 +9348,20 @@ BOOL __cdecl sub_1000CBFF(float a1, float a2)
 // sub_1000CC2C @ 0x1000CC2C
 int sub_1000CC2C()
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053D10();
 }
 
-// sub_1000CC3F @ 0x1000CC3F
+// FUN_1000cc3f @ 0x1000CC3F
+// [binja] int32_t __stdcall sub_1000cc3f(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)
 int __stdcall sub_1000CC3F(int a1, int a2, int a3, int a4, int a5, float a6)
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053C9C(a1, a2, a3, a4, a5, a6);
 }
 
-// sub_1000CC69 @ 0x1000CC69
+// FUN_1000cc69 @ 0x1000CC69
+// [binja] float* __stdcall sub_1000cc69(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)
 float *__stdcall sub_1000CC69(float *a1, float *a2, float *a3, float *a4, float *a5, float a6)
 {
   double v6; // st7
@@ -9177,14 +9382,16 @@ float *__stdcall sub_1000CC69(float *a1, float *a2, float *a3, float *a4, float 
   return a1;
 }
 
-// sub_1000CCF7 @ 0x1000CCF7
+// FUN_1000ccf7 @ 0x1000CCF7
+// [binja] int32_t __stdcall sub_1000ccf7(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)
 int __stdcall sub_1000CCF7(int a1, int a2, int a3, int a4, int a5, float a6)
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053D14(a1, a2, a3, a4, a5, a6);
 }
 
-// sub_1000CD21 @ 0x1000CD21
+// FUN_1000cd21 @ 0x1000CD21
+// [binja] float* __stdcall sub_1000cd21(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)
 float *__stdcall sub_1000CD21(float *a1, float *a2, float *a3, float *a4, float *a5, float a6)
 {
   double v6; // st7
@@ -9205,14 +9412,16 @@ float *__stdcall sub_1000CD21(float *a1, float *a2, float *a3, float *a4, float 
   return a1;
 }
 
-// sub_1000CDD0 @ 0x1000CDD0
+// FUN_1000cdd0 @ 0x1000CDD0
+// [binja] int32_t __stdcall sub_1000cdd0(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, float arg5, float arg6)
 int __stdcall sub_1000CDD0(int a1, int a2, int a3, int a4, float a5, float a6)
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053D18(a1, a2, a3, a4, a5, a6);
 }
 
-// sub_1000CDFF @ 0x1000CDFF
+// FUN_1000cdff @ 0x1000CDFF
+// [binja] float* __stdcall sub_1000cdff(float* arg1, float* arg2, float* arg3, float* arg4, float arg5, float arg6)
 float *__stdcall sub_1000CDFF(float *a1, float *a2, float *a3, float *a4, float a5, float a6)
 {
   *a1 = (*a3 - *a2) * a5 + (*a4 - *a2) * a6 + *a2;
@@ -9223,25 +9432,26 @@ float *__stdcall sub_1000CDFF(float *a1, float *a2, float *a3, float *a4, float 
 // sub_1000CE42 @ 0x1000CE42
 int sub_1000CE42()
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053C58();
 }
 
 // sub_1000CE69 @ 0x1000CE69
 int sub_1000CE69()
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053C74();
 }
 
 // sub_1000CE7C @ 0x1000CE7C
 int __stdcall sub_1000CE7C(int a1, int a2, int a3, int a4, int a5, float a6)
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053D1C(a1, a2, a3, a4, a5, a6);
 }
 
-// sub_1000CEA6 @ 0x1000CEA6
+// FUN_1000cea6 @ 0x1000CEA6
+// [binja] float* __stdcall sub_1000cea6(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)
 float *__stdcall sub_1000CEA6(float *a1, float *a2, float *a3, float *a4, float *a5, float a6)
 {
   double v6; // st7
@@ -9263,14 +9473,16 @@ float *__stdcall sub_1000CEA6(float *a1, float *a2, float *a3, float *a4, float 
   return a1;
 }
 
-// sub_1000CF54 @ 0x1000CF54
+// FUN_1000cf54 @ 0x1000CF54
+// [binja] int32_t __stdcall sub_1000cf54(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)
 int __stdcall sub_1000CF54(int a1, int a2, int a3, int a4, int a5, float a6)
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053D20(a1, a2, a3, a4, a5, a6);
 }
 
-// sub_1000CF7E @ 0x1000CF7E
+// FUN_1000cf7e @ 0x1000CF7E
+// [binja] float* __stdcall sub_1000cf7e(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)
 float *__stdcall sub_1000CF7E(float *a1, float *a2, float *a3, float *a4, float *a5, float a6)
 {
   double v6; // st7
@@ -9292,14 +9504,16 @@ float *__stdcall sub_1000CF7E(float *a1, float *a2, float *a3, float *a4, float 
   return a1;
 }
 
-// sub_1000D04F @ 0x1000D04F
+// FUN_1000d04f @ 0x1000D04F
+// [binja] int32_t __stdcall sub_1000d04f(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, float arg5, float arg6)
 int __stdcall sub_1000D04F(int a1, int a2, int a3, int a4, float a5, float a6)
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053D24(a1, a2, a3, a4, a5, a6);
 }
 
-// sub_1000D07E @ 0x1000D07E
+// FUN_1000d07e @ 0x1000D07E
+// [binja] float* __stdcall sub_1000d07e(float* arg1, float* arg2, float* arg3, float* arg4, float arg5, float arg6)
 float *__stdcall sub_1000D07E(float *a1, float *a2, float *a3, float *a4, float a5, float a6)
 {
   *a1 = (*a3 - *a2) * a5 + (*a4 - *a2) * a6 + *a2;
@@ -9330,7 +9544,7 @@ float *__stdcall sub_1000D0E8(float *a1, float *a2, float *a3)
 // sub_1000D173 @ 0x1000D173
 int sub_1000D173()
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053C80();
 }
 
@@ -9353,14 +9567,14 @@ float *__stdcall sub_1000D193(float *a1, float *a2, float *a3)
 // sub_1000D1F9 @ 0x1000D1F9
 int sub_1000D1F9()
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053C90();
 }
 
 // sub_1000D20A @ 0x1000D20A
 int sub_1000D20A()
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053C94();
 }
 
@@ -9406,11 +9620,12 @@ float *__stdcall sub_1000D228(float *a1, float *a2, float *a3, float *a4)
 // sub_1000D325 @ 0x1000D325
 int __stdcall sub_1000D325(int a1, int a2, int a3, int a4, int a5, float a6)
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053D28(a1, a2, a3, a4, a5, a6);
 }
 
-// sub_1000D34F @ 0x1000D34F
+// FUN_1000d34f @ 0x1000D34F
+// [binja] float* __stdcall sub_1000d34f(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)
 float *__stdcall sub_1000D34F(float *a1, float *a2, float *a3, float *a4, float *a5, float a6)
 {
   double v6; // st7
@@ -9439,14 +9654,16 @@ float *__stdcall sub_1000D34F(float *a1, float *a2, float *a3, float *a4, float 
   return a1;
 }
 
-// sub_1000D420 @ 0x1000D420
+// FUN_1000d420 @ 0x1000D420
+// [binja] int32_t __stdcall sub_1000d420(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)
 int __stdcall sub_1000D420(int a1, int a2, int a3, int a4, int a5, float a6)
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053D2C(a1, a2, a3, a4, a5, a6);
 }
 
-// sub_1000D44A @ 0x1000D44A
+// FUN_1000d44a @ 0x1000D44A
+// [binja] float* __stdcall sub_1000d44a(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)
 float *__stdcall sub_1000D44A(float *a1, float *a2, float *a3, float *a4, float *a5, float a6)
 {
   double v6; // st7
@@ -9469,14 +9686,16 @@ float *__stdcall sub_1000D44A(float *a1, float *a2, float *a3, float *a4, float 
   return a1;
 }
 
-// sub_1000D53D @ 0x1000D53D
+// FUN_1000d53d @ 0x1000D53D
+// [binja] int32_t __stdcall sub_1000d53d(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, float arg5, float arg6)
 int __stdcall sub_1000D53D(int a1, int a2, int a3, int a4, float a5, float a6)
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053D30(a1, a2, a3, a4, a5, a6);
 }
 
-// sub_1000D56C @ 0x1000D56C
+// FUN_1000d56c @ 0x1000D56C
+// [binja] float* __stdcall sub_1000d56c(float* arg1, float* arg2, float* arg3, float* arg4, float arg5, float arg6)
 float *__stdcall sub_1000D56C(float *a1, float *a2, float *a3, float *a4, float a5, float a6)
 {
   *a1 = (*a3 - *a2) * a5 + (*a4 - *a2) * a6 + *a2;
@@ -9530,7 +9749,7 @@ double __stdcall sub_1000D69C(float *a1)
 // sub_1000D766 @ 0x1000D766
 int sub_1000D766()
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053C64();
 }
 
@@ -9568,7 +9787,7 @@ float *__stdcall sub_1000D779(float *a1, float *a2, float *a3)
 // sub_1000D9AF @ 0x1000D9AF
 int sub_1000D9AF()
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053CEC();
 }
 
@@ -9646,7 +9865,7 @@ float *__stdcall sub_1000DA3C(float *a1, float *a2, float *a3)
 // sub_1000DC72 @ 0x1000DC72
 int sub_1000DC72()
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053CA0();
 }
 
@@ -9799,10 +10018,11 @@ int __stdcall sub_1000DC85(float *a1, float *a2, float *a3)
   return result;
 }
 
-// sub_1000E012 @ 0x1000E012
+// FUN_1000e012 @ 0x1000E012
+// [binja] int32_t __stdcall sub_1000e012(float arg1, float arg2, float arg3)
 int __stdcall sub_1000E012(int a1, float a2, float a3, float a4)
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053CDC(a1, a2, a3, a4);
 }
 
@@ -9828,10 +10048,11 @@ int __stdcall sub_1000E040(int a1, int a2, int a3, int a4)
   return a1;
 }
 
-// sub_1000E09C @ 0x1000E09C
+// FUN_1000e09c @ 0x1000E09C
+// [binja] int32_t __stdcall sub_1000e09c(float arg1, float arg2, float arg3)
 int __stdcall sub_1000E09C(int a1, float a2, float a3, float a4)
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053CC0(a1, a2, a3, a4);
 }
 
@@ -9857,14 +10078,16 @@ int __stdcall sub_1000E0CA(int a1, int a2, int a3, int a4)
   return a1;
 }
 
-// sub_1000E126 @ 0x1000E126
+// FUN_1000e126 @ 0x1000E126
+// [binja] int32_t __stdcall sub_1000e126(float arg1)
 int __stdcall sub_1000E126(int a1, float a2)
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053CD0(a1, a2);
 }
 
-// sub_1000E142 @ 0x1000E142
+// FUN_1000e142 @ 0x1000E142
+// [binja] float* __stdcall sub_1000e142(float* arg1, float arg2)
 float *__stdcall sub_1000E142(float *a1, float a2)
 {
   float v3; // [esp+8h] [ebp-8h]
@@ -9891,14 +10114,16 @@ float *__stdcall sub_1000E142(float *a1, float a2)
   return a1;
 }
 
-// sub_1000E1BC @ 0x1000E1BC
+// FUN_1000e1bc @ 0x1000E1BC
+// [binja] int32_t __stdcall sub_1000e1bc(float arg1)
 int __stdcall sub_1000E1BC(int a1, float a2)
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053CD4(a1, a2);
 }
 
-// sub_1000E1D8 @ 0x1000E1D8
+// FUN_1000e1d8 @ 0x1000E1D8
+// [binja] float* __stdcall sub_1000e1d8(float* arg1, float arg2)
 float *__stdcall sub_1000E1D8(float *a1, float a2)
 {
   float v3; // [esp+8h] [ebp-8h]
@@ -9925,14 +10150,16 @@ float *__stdcall sub_1000E1D8(float *a1, float a2)
   return a1;
 }
 
-// sub_1000E253 @ 0x1000E253
+// FUN_1000e253 @ 0x1000E253
+// [binja] int32_t __stdcall sub_1000e253(float arg1)
 int __stdcall sub_1000E253(int a1, float a2)
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053CD8(a1, a2);
 }
 
-// sub_1000E26F @ 0x1000E26F
+// FUN_1000e26f @ 0x1000E26F
+// [binja] float* __stdcall sub_1000e26f(float* arg1, float arg2)
 float *__stdcall sub_1000E26F(float *a1, float a2)
 {
   float v3; // [esp+8h] [ebp-8h]
@@ -9959,14 +10186,16 @@ float *__stdcall sub_1000E26F(float *a1, float a2)
   return a1;
 }
 
-// sub_1000E2EB @ 0x1000E2EB
+// FUN_1000e2eb @ 0x1000E2EB
+// [binja] int32_t __stdcall sub_1000e2eb(int32_t arg1, float arg2)
 int __stdcall sub_1000E2EB(int a1, int a2, float a3)
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053D00(a1, a2, a3);
 }
 
-// sub_1000E30B @ 0x1000E30B
+// FUN_1000e30b @ 0x1000E30B
+// [binja] float* __stdcall sub_1000e30b(float* arg1, float arg2, float arg3)
 float *__stdcall sub_1000E30B(float *a1, float *a2, float a3)
 {
   double v4; // st7
@@ -10027,7 +10256,7 @@ float *__stdcall sub_1000E30B(float *a1, float *a2, float a3)
 // sub_1000E40D @ 0x1000E40D
 int sub_1000E40D()
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053CF0();
 }
 
@@ -10084,28 +10313,31 @@ float *__stdcall sub_1000E420(float *a1, float *a2)
   return result;
 }
 
-// sub_1000E502 @ 0x1000E502
+// FUN_1000e502 @ 0x1000E502
+// [binja] int32_t __stdcall sub_1000e502(float arg1, float arg2, float arg3)
 int __stdcall sub_1000E502(int a1, float a2, float a3, float a4)
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053CF8(a1, a2, a3, a4);
 }
 
 // sub_1000E530 @ 0x1000E530
 int sub_1000E530()
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053CF4();
 }
 
-// sub_1000E541 @ 0x1000E541
+// FUN_1000e541 @ 0x1000E541
+// [binja] int32_t __stdcall sub_1000e541(int32_t arg1, float arg2, int32_t arg3, int32_t arg4, int32_t arg5)
 int __stdcall sub_1000E541(int a1, float a2, int a3, int a4, int a5)
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053CFC(a1, a2, a3, a4, a5);
 }
 
-// sub_1000E568 @ 0x1000E568
+// FUN_1000e568 @ 0x1000E568
+// [binja] float* __stdcall sub_1000e568(float* arg1, float arg2, float* arg3, int32_t arg4, float* arg5)
 float *__stdcall sub_1000E568(float *a1, float a2, float *a3, int a4, float *a5)
 {
   int v6; // [esp+0h] [ebp-50h]
@@ -10276,14 +10508,16 @@ float *__stdcall sub_1000E71F(float *a1, float *a2)
   return result;
 }
 
-// sub_1000E853 @ 0x1000E853
+// FUN_1000e853 @ 0x1000E853
+// [binja] int32_t __stdcall sub_1000e853(int32_t arg1, float arg2)
 int __stdcall sub_1000E853(int a1, int a2, float a3)
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053CCC(a1, a2, a3);
 }
 
-// sub_1000E873 @ 0x1000E873
+// FUN_1000e873 @ 0x1000E873
+// [binja] float* __stdcall sub_1000e873(float arg1, float arg2, float arg3)
 float *__stdcall sub_1000E873(float *a1, int a2, float a3)
 {
   float v5[3]; // [esp+0h] [ebp-14h] BYREF
@@ -10302,10 +10536,11 @@ float *__stdcall sub_1000E873(float *a1, int a2, float a3)
   return a1;
 }
 
-// sub_1000E8CF @ 0x1000E8CF
+// FUN_1000e8cf @ 0x1000E8CF
+// [binja] int32_t __stdcall sub_1000e8cf(float arg1, float arg2, float arg3)
 int __stdcall sub_1000E8CF(int a1, float a2, float a3, float a4)
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053CBC(a1, a2, a3, a4);
 }
 
@@ -10349,7 +10584,7 @@ float *__stdcall sub_1000E903(float *a1, float a2, float a3, float a4)
 // sub_1000E9DC @ 0x1000E9DC
 int sub_1000E9DC()
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053CA4();
 }
 
@@ -10383,7 +10618,7 @@ float *__stdcall sub_1000EA92(float *a1, float *a2)
 
   v2 = a2;
   v8 = *a2 * *a2 + a2[1] * a2[1] + a2[2] * a2[2] + a2[3] * a2[3];
-  if ( sub_1000CBFF(v8, 1.0) )
+  if ( float_near_equal(v8, 1.0) )
   {
     result = a1;
     if ( a1 == v2 )
@@ -10418,7 +10653,7 @@ LABEL_3:
 // sub_1000EB4B @ 0x1000EB4B
 int sub_1000EB4B()
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053D08();
 }
 
@@ -10444,7 +10679,7 @@ float *__stdcall sub_1000EB5E(float *a1, float *a2)
   a1[1] = -a2[1];
   a1[2] = -a2[2];
   a1[3] = a2[3];
-  if ( !sub_1000CBFF(v7, 1.0) )
+  if ( !float_near_equal(v7, 1.0) )
   {
     v4 = 1.0 / v7;
     *v3 = v4 * *v3;
@@ -10474,7 +10709,7 @@ float *__stdcall sub_1000EC18(float *a1, float *a2)
   }
   v3 = acos(a2[3]);
   v7 = sin(v3);
-  v4 = !sub_1000CBFF(v7, 0.0);
+  v4 = !float_near_equal(v7, 0.0);
   result = a1;
   if ( !v4 )
   {
@@ -10505,7 +10740,7 @@ float *__stdcall sub_1000EC9C(float *a1, float *a2)
   v5 = sqrt(*a2 * *a2 + a2[1] * a2[1] + a2[2] * a2[2]);
   a1[3] = cos(v5);
   v6 = sin(v5);
-  if ( sub_1000CBFF(v6, 0.0) )
+  if ( float_near_equal(v6, 0.0) )
   {
     if ( a1 != v2 )
     {
@@ -10524,10 +10759,11 @@ float *__stdcall sub_1000EC9C(float *a1, float *a2)
   return a1;
 }
 
-// sub_1000ED37 @ 0x1000ED37
+// FUN_1000ed37 @ 0x1000ED37
+// [binja] int32_t __stdcall sub_1000ed37(int32_t arg1, int32_t arg2, float arg3)
 int __stdcall sub_1000ED37(int a1, int a2, int a3, float a4)
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053CE4(a1, a2, a3, a4);
 }
 
@@ -10573,42 +10809,45 @@ float *__stdcall sub_1000ED61(float *a1, float *a2, float *a3, float a4)
   return a1;
 }
 
-// sub_1000EE44 @ 0x1000EE44
+// FUN_1000ee44 @ 0x1000EE44
+// [binja] int32_t __stdcall sub_1000ee44(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)
 int __stdcall sub_1000EE44(int a1, int a2, int a3, int a4, int a5, float a6)
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053D04(a1, a2, a3, a4, a5, a6);
 }
 
-// sub_1000EE6E @ 0x1000EE6E
+// FUN_1000ee6e @ 0x1000EE6E
+// [binja] int32_t __stdcall sub_1000ee6e(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)
 int __stdcall sub_1000EE6E(int a1, int a2, int a3, int a4, int a5, float a6)
 {
   float v7; // [esp+0h] [ebp-24h]
   int v8[4]; // [esp+4h] [ebp-20h] BYREF
   int v9[4]; // [esp+14h] [ebp-10h] BYREF
 
-  sub_1000ED5B((int)v8, a2, a5, a6);
-  sub_1000ED5B((int)v9, a3, a4, a6);
+  j_FUN_1000ed37((int)v8, a2, a5, a6);
+  j_FUN_1000ed37((int)v9, a3, a4, a6);
   v7 = (1.0 - a6) * a6 + (1.0 - a6) * a6;
-  sub_1000ED5B(a1, (int)v8, (int)v9, v7);
+  j_FUN_1000ed37(a1, (int)v8, (int)v9, v7);
   return a1;
 }
 
 // sub_1000EEC5 @ 0x1000EEC5
 int sub_1000EEC5()
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053D0C();
 }
 
 // sub_1000EED6 @ 0x1000EED6
 int __stdcall sub_1000EED6(int a1, int a2, int a3, int a4, float a5, float a6)
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053CE8(a1, a2, a3, a4, a5, a6);
 }
 
-// sub_1000EF05 @ 0x1000EF05
+// FUN_1000ef05 @ 0x1000EF05
+// [binja] int32_t* __stdcall sub_1000ef05(int32_t* arg1, int32_t* arg2, int32_t arg3, int32_t arg4, float arg5, float arg6)
 _DWORD *__stdcall sub_1000EF05(_DWORD *a1, _DWORD *a2, int a3, int a4, float a5, float a6)
 {
   float v7; // [esp+4h] [ebp-28h]
@@ -10617,7 +10856,7 @@ _DWORD *__stdcall sub_1000EF05(_DWORD *a1, _DWORD *a2, int a3, int a4, float a5,
   float v10; // [esp+44h] [ebp+18h]
 
   v10 = a5 + a6;
-  if ( sub_1000CBFF(v10, 0.0) )
+  if ( float_near_equal(v10, 0.0) )
   {
     if ( a1 != a2 )
     {
@@ -10629,10 +10868,10 @@ _DWORD *__stdcall sub_1000EF05(_DWORD *a1, _DWORD *a2, int a3, int a4, float a5,
   }
   else
   {
-    sub_1000ED5B((int)v8, (int)a2, a3, v10);
-    sub_1000ED5B((int)v9, (int)a2, a4, v10);
+    j_FUN_1000ed37((int)v8, (int)a2, a3, v10);
+    j_FUN_1000ed37((int)v9, (int)a2, a4, v10);
     v7 = a6 / v10;
-    sub_1000ED5B((int)a1, (int)v8, (int)v9, v7);
+    j_FUN_1000ed37((int)a1, (int)v8, (int)v9, v7);
   }
   return a1;
 }
@@ -10640,7 +10879,7 @@ _DWORD *__stdcall sub_1000EF05(_DWORD *a1, _DWORD *a2, int a3, int a4, float a5,
 // sub_1000EF90 @ 0x1000EF90
 int sub_1000EF90()
 {
-  sub_1001C188(1u);
+  grim_select_renderer_backend(1u);
   return off_10053CAC();
 }
 
@@ -10654,7 +10893,7 @@ float *__stdcall sub_1000EFA3(float *a1, float *a2)
   float v7; // [esp+18h] [ebp+Ch]
 
   v7 = *a2 * *a2 + a2[1] * a2[1] + a2[2] * a2[2];
-  if ( sub_1000CBFF(v7, 1.0) )
+  if ( float_near_equal(v7, 1.0) )
   {
     result = a1;
     if ( a1 != a2 )
@@ -10768,7 +11007,8 @@ float *__stdcall sub_1000F1F7(float *a1, float *a2, float *a3)
   return a1;
 }
 
-// sub_1000F296 @ 0x1000F296
+// FUN_1000f296 @ 0x1000F296
+// [binja] int32_t* __stdcall sub_1000f296(int32_t* arg1, float arg2)
 float *__stdcall sub_1000F296(float *a1, float *a2)
 {
   float *v2; // ecx
@@ -10781,7 +11021,7 @@ float *__stdcall sub_1000F296(float *a1, float *a2)
   float v9; // [esp+1Ch] [ebp+Ch]
 
   v9 = *a2 * *a2 + a2[1] * a2[1];
-  if ( sub_1000CBFF(v9, 1.0) )
+  if ( float_near_equal(v9, 1.0) )
   {
     result = a1;
     if ( a1 == v2 )
@@ -10808,7 +11048,8 @@ LABEL_4:
   return result;
 }
 
-// sub_1000F323 @ 0x1000F323
+// FUN_1000f323 @ 0x1000F323
+// [binja] float* __stdcall sub_1000f323(float* arg1, float* arg2, float* arg3)
 float *__stdcall sub_1000F323(float *a1, float *a2, float *a3)
 {
   float v4; // [esp+8h] [ebp-10h]
@@ -10827,7 +11068,8 @@ float *__stdcall sub_1000F323(float *a1, float *a2, float *a3)
   return a1;
 }
 
-// sub_1000F38E @ 0x1000F38E
+// FUN_1000f38e @ 0x1000F38E
+// [binja] float* __stdcall sub_1000f38e(float* arg1, float* arg2, float* arg3)
 float *__stdcall sub_1000F38E(float *a1, float *a2, float *a3)
 {
   double v3; // st6
@@ -10842,7 +11084,7 @@ float *__stdcall sub_1000F38E(float *a1, float *a2, float *a3)
   *a1 = *a2 * *a3 + a2[1] * a3[4] + a3[12];
   a1[1] = v3;
   v8 = v4;
-  v5 = !sub_1000CBFF(v8, 1.0);
+  v5 = !float_near_equal(v8, 1.0);
   result = a1;
   if ( v5 )
   {
@@ -10853,7 +11095,8 @@ float *__stdcall sub_1000F38E(float *a1, float *a2, float *a3)
   return result;
 }
 
-// sub_1000F40E @ 0x1000F40E
+// FUN_1000f40e @ 0x1000F40E
+// [binja] float* __stdcall sub_1000f40e(float* arg1, float* arg2, float* arg3)
 float *__stdcall sub_1000F40E(float *a1, float *a2, float *a3)
 {
   double v3; // st7
@@ -10870,7 +11113,8 @@ float *__stdcall sub_1000F40E(float *a1, float *a2, float *a3)
   return a1;
 }
 
-// sub_1000F44A @ 0x1000F44A
+// FUN_1000f44a @ 0x1000F44A
+// [binja] float* __stdcall sub_1000f44a(float* arg1, float arg2)
 float *__stdcall sub_1000F44A(float *a1, float *a2)
 {
   float *v2; // esi
@@ -10883,7 +11127,7 @@ float *__stdcall sub_1000F44A(float *a1, float *a2)
 
   v2 = a2;
   v8 = *a2 * *a2 + a2[1] * a2[1] + a2[2] * a2[2];
-  if ( sub_1000CBFF(v8, 1.0) )
+  if ( float_near_equal(v8, 1.0) )
   {
     result = a1;
     if ( a1 == v2 )
@@ -10912,7 +11156,8 @@ LABEL_3:
   return result;
 }
 
-// sub_1000F4EA @ 0x1000F4EA
+// FUN_1000f4ea @ 0x1000F4EA
+// [binja] float* __stdcall sub_1000f4ea(float* arg1, float* arg2, float* arg3)
 float *__stdcall sub_1000F4EA(float *a1, float *a2, float *a3)
 {
   double v3; // st5
@@ -10930,7 +11175,7 @@ float *__stdcall sub_1000F4EA(float *a1, float *a2, float *a3)
   a1[1] = v3;
   a1[2] = v4;
   v9 = v5;
-  v6 = !sub_1000CBFF(v9, 1.0);
+  v6 = !float_near_equal(v9, 1.0);
   result = a1;
   if ( v6 )
   {
@@ -10942,7 +11187,8 @@ float *__stdcall sub_1000F4EA(float *a1, float *a2, float *a3)
   return result;
 }
 
-// sub_1000F5A9 @ 0x1000F5A9
+// FUN_1000f5a9 @ 0x1000F5A9
+// [binja] float* __stdcall sub_1000f5a9(float* arg1, int32_t arg2, int32_t* arg3, int32_t* arg4, int32_t* arg5, int32_t* arg6)
 float *__stdcall sub_1000F5A9(float *a1, int a2, int a3, float *a4, float *a5, float *a6)
 {
   float *v6; // esi
@@ -11080,7 +11326,8 @@ LABEL_11:
   return a1;
 }
 
-// sub_1000F8DC @ 0x1000F8DC
+// FUN_1000f8dc @ 0x1000F8DC
+// [binja] float* __stdcall sub_1000f8dc(float* arg1, float arg2)
 float *__stdcall sub_1000F8DC(float *a1, float *a2)
 {
   float *v2; // esi
@@ -11093,7 +11340,7 @@ float *__stdcall sub_1000F8DC(float *a1, float *a2)
 
   v2 = a2;
   v8 = *a2 * *a2 + a2[1] * a2[1] + a2[2] * a2[2] + a2[3] * a2[3];
-  if ( sub_1000CBFF(v8, 1.0) )
+  if ( float_near_equal(v8, 1.0) )
   {
     result = a1;
     if ( a1 == v2 )
@@ -11125,17 +11372,19 @@ LABEL_3:
   return result;
 }
 
-// sub_1000F995 @ 0x1000F995
+// FUN_1000f995 @ 0x1000F995
+// [binja] int32_t __stdcall sub_1000f995(int32_t arg1, float arg2, float arg3, float arg4)
 int __stdcall sub_1000F995(int a1, float a2, float a3, float a4)
 {
   int v5[4]; // [esp+Ch] [ebp-10h] BYREF
 
-  sub_1000E8FD((int)v5, a2, a3, a4);
+  j_FUN_1000e8cf((int)v5, a2, a3, a4);
   ((void (__stdcall *)(int, int *))sub_1000E41A)(a1, v5);
   return a1;
 }
 
-// sub_1000F9CE @ 0x1000F9CE
+// FUN_1000f9ce @ 0x1000F9CE
+// [binja] float* __stdcall sub_1000f9ce(float* arg1, float* arg2, void* arg3, int32_t* arg4, float* arg5, int32_t arg6, float* arg7)
 float *__stdcall sub_1000F9CE(float *a1, float *a2, int a3, float *a4, float *a5, int a6, float *a7)
 {
   float v7; // ecx
@@ -11283,7 +11532,8 @@ float *__stdcall sub_1000F9CE(float *a1, float *a2, int a3, float *a4, float *a5
   return v9;
 }
 
-// sub_1000FC82 @ 0x1000FC82
+// FUN_1000fc82 @ 0x1000FC82
+// [binja] float* __stdcall sub_1000fc82(float* arg1, float* arg2, int32_t arg3)
 float *__stdcall sub_1000FC82(float *a1, float *a2, int a3)
 {
   double v4; // st7
@@ -11325,7 +11575,8 @@ float *__stdcall sub_1000FC82(float *a1, float *a2, int a3)
   return a1;
 }
 
-// sub_1000FD5C @ 0x1000FD5C
+// FUN_1000fd5c @ 0x1000FD5C
+// [binja] float* __stdcall sub_1000fd5c(float* arg1, float arg2)
 float *__stdcall sub_1000FD5C(float *a1, int a2)
 {
   double v2; // st7
@@ -11524,7 +11775,8 @@ int __stdcall sub_1000FE1B(float *a1, float *a2, float *a3, float *a4, float *a5
   return result;
 }
 
-// sub_100101F5 @ 0x100101F5
+// grim_d3d_debug_set_mute @ 0x100101F5
+// loads DebugSetMute from d3d8/d3d8d and toggles D3D debug output
 HMODULE __cdecl sub_100101F5(int a1)
 {
   HMODULE LibraryA; // eax
@@ -11564,7 +11816,8 @@ LABEL_10:
   return (HMODULE)dword_1005DB60();
 }
 
-// sub_10010285 @ 0x10010285
+// FUN_10010285 @ 0x10010285
+// [binja] int32_t* __fastcall sub_10010285(int32_t* arg1)
 _DWORD *__thiscall sub_10010285(_DWORD *this)
 {
   *this = 0;
@@ -11577,7 +11830,8 @@ _DWORD *__thiscall sub_10010285(_DWORD *this)
   return this;
 }
 
-// sub_1001029E @ 0x1001029E
+// FUN_1001029e @ 0x1001029E
+// [binja] int32_t __fastcall sub_1001029e(void* arg1)
 void __thiscall sub_1001029E(int this)
 {
   void *v2; // edi
@@ -11590,27 +11844,29 @@ void __thiscall sub_1001029E(int this)
   v2 = *(void **)(this + 76);
   if ( v2 )
   {
-    sub_1001029E(*(_DWORD *)(this + 76));
+    FUN_1001029e(*(_DWORD *)(this + 76));
     operator delete(v2);
   }
   v3 = *(void **)(this + 80);
   if ( v3 )
   {
-    sub_1001029E(v3);
+    FUN_1001029e(v3);
     operator delete(v3);
   }
 }
 
-// sub_100102F7 @ 0x100102F7
+// FUN_100102f7 @ 0x100102F7
+// [binja] void* __thiscall sub_100102f7(void* arg1, char arg2)
 void *__thiscall sub_100102F7(void *this, char a2)
 {
-  sub_1001029E((int)this);
+  FUN_1001029e((int)this);
   if ( (a2 & 1) != 0 )
     operator delete(this);
   return this;
 }
 
-// sub_10010313 @ 0x10010313
+// FUN_10010313 @ 0x10010313
+// [binja] int32_t __thiscall sub_10010313(int32_t* arg1, int32_t* arg2)
 int __thiscall sub_10010313(char *this, _DWORD *a2)
 {
   _DWORD *v3; // edx
@@ -11656,7 +11912,8 @@ LABEL_16:
   return 0;
 }
 
-// sub_100103D6 @ 0x100103D6
+// FUN_100103d6 @ 0x100103D6
+// [binja] int32_t __thiscall sub_100103d6(int32_t* arg1, void* arg2, void* arg3)
 int __thiscall sub_100103D6(int *this, int a2, unsigned int a3)
 {
   int *v3; // esi
@@ -12162,7 +12419,8 @@ LABEL_77:
   return -2147467263;
 }
 
-// sub_10010AEC @ 0x10010AEC
+// FUN_10010aec @ 0x10010AEC
+// [binja] int32_t __thiscall sub_10010aec(int32_t* arg1, HANDLE arg2)
 int __thiscall sub_10010AEC(int *this, HANDLE hFile, DWORD NumberOfBytesWritten)
 {
   int v4; // eax
@@ -12352,7 +12610,8 @@ _DWORD *__cdecl sub_10010E02(int a1, int a2)
   return result;
 }
 
-// sub_10010E13 @ 0x10010E13
+// FUN_10010e13 @ 0x10010E13
+// [binja] int32_t __thiscall sub_10010e13(int32_t* arg1, int32_t arg2, int32_t arg3)
 int __thiscall sub_10010E13(_DWORD *this, int a2, int a3)
 {
   int v3; // esi
@@ -12478,7 +12737,8 @@ LABEL_25:
   return v3;
 }
 
-// sub_10011083 @ 0x10011083
+// FUN_10011083 @ 0x10011083
+// [binja] int32_t __thiscall sub_10011083(int32_t* arg1, void* arg2, int32_t arg3)
 int __thiscall sub_10011083(int *this, unsigned __int8 *a2, unsigned int a3)
 {
   int *v3; // esi
@@ -12809,7 +13069,8 @@ LABEL_80:
   return -2147467259;
 }
 
-// sub_1001152A @ 0x1001152A
+// FUN_1001152a @ 0x1001152A
+// [binja] int32_t __thiscall sub_1001152a(int32_t* arg1, char* arg2, int32_t arg3)
 unsigned int __thiscall sub_1001152A(_DWORD *this, _BYTE *a2, unsigned int a3)
 {
   _BYTE *v5; // edi
@@ -12979,7 +13240,7 @@ unsigned int __cdecl sub_100117B0(jmp_buf Buf, void *a2, unsigned int a3)
 
   v3 = Buf[21];
   if ( a3 > *(_DWORD *)(v3 + 4) )
-    sub_1001E114(Buf, (int)"read error");
+    png_error(Buf, (int)"read error");
   qmemcpy(a2, *(const void **)v3, a3);
   *(_DWORD *)v3 += a3;
   *(_DWORD *)(v3 + 4) -= a3;
@@ -12992,7 +13253,8 @@ void __cdecl __noreturn sub_100117F3(jmp_buf Buf)
   longjmp(Buf, 1);
 }
 
-// sub_100117FF @ 0x100117FF
+// FUN_100117ff @ 0x100117FF
+// [binja] int32_t __thiscall sub_100117ff(int32_t* arg1, void* arg2, void* arg3)
 int __thiscall sub_100117FF(int *this, int a2, int a3)
 {
   int *v3; // eax
@@ -13056,7 +13318,7 @@ int __thiscall sub_100117FF(int *this, int a2, int a3)
   v51 = 0;
   if ( sub_100204E3(a2, 0, a3) )
     return -2147467259;
-  v3 = (int *)sub_1001E191("1.0.5", 0, sub_100117F3, nullsub_2);
+  v3 = (int *)png_create_read_struct("1.0.5", 0, sub_100117F3, nullsub_2);
   Buf = v3;
   if ( !v3 )
     goto LABEL_86;
@@ -13067,9 +13329,9 @@ int __thiscall sub_100117FF(int *this, int a2, int a3)
   {
     v42[0] = a2;
     v42[1] = a3;
-    sub_100204A4(Buf, v42, sub_100117B0);
-    sub_1001E294(Buf, v56);
-    sub_1001EA59(Buf, v56, &v46, &v52, &v49, &v47, 0, 0, 0);
+    FUN_100204a4(Buf, v42, sub_100117B0);
+    FUN_1001e294(Buf, v56);
+    FUN_1001ea59(Buf, v56, &v46, &v52, &v49, &v47, 0, 0, 0);
     v4 = v45;
     if ( v47 )
     {
@@ -13158,7 +13420,7 @@ int __thiscall sub_100117FF(int *this, int a2, int a3)
       sub_1001EC11(Buf, 255, 1);
       *v4 = 22;
     }
-    sub_1001E407(Buf, v56);
+    FUN_1001e407(Buf, v56);
     v8 = *v4;
     if ( *v4 > 51 )
     {
@@ -13223,7 +13485,7 @@ LABEL_86:
               }
               for ( i = 0; i < v52; ++i )
                 *((_DWORD *)v51 + i) = v4[1] + i * v4[12];
-              sub_1001E7CE(Buf, (int)v51);
+              FUN_1001e7ce(Buf, (int)v51);
               if ( *v4 == 41 )
               {
                 v48 = 0;
@@ -13327,7 +13589,8 @@ LABEL_97:
   return v14;
 }
 
-// sub_10011D95 @ 0x10011D95
+// FUN_10011d95 @ 0x10011D95
+// [binja] int32_t __thiscall sub_10011d95(int32_t* arg1, uint32_t arg2, int32_t* arg3)
 int __thiscall sub_10011D95(_DWORD *this, int a2, unsigned int a3)
 {
   _DWORD *v3; // ebx
@@ -13425,7 +13688,7 @@ int __thiscall sub_10011D95(_DWORD *this, int a2, unsigned int a3)
   v23 = v9;
   if ( v9 )
   {
-    v10 = sub_1000AAA6(v9);
+    v10 = grim_format_info_lookup(v9);
     v21 = v10;
     if ( *(char *)(a2 + 10) >= 0 )
       v3[17] = 2 * (v27 == 6) + 3;
@@ -13448,7 +13711,7 @@ LABEL_43:
         {
           v15 = operator new(0x54u);
           if ( v15 )
-            v12 = sub_10010285(v15);
+            v12 = FUN_10010285(v15);
           else
             v12 = 0;
           if ( !v12 )
@@ -13465,7 +13728,7 @@ LABEL_43:
             {
               v16 = operator new(0x54u);
               if ( v16 )
-                v17 = sub_10010285(v16);
+                v17 = FUN_10010285(v16);
               else
                 v17 = 0;
               if ( !v17 )
@@ -13554,7 +13817,8 @@ LABEL_84:
   return -2147467259;
 }
 
-// sub_100120D6 @ 0x100120D6
+// FUN_100120d6 @ 0x100120D6
+// [binja] int32_t __thiscall sub_100120d6(int32_t* arg1, HANDLE arg2)
 int __thiscall sub_100120D6(int *this, HANDLE hFile)
 {
   int *i; // eax
@@ -13600,7 +13864,7 @@ int __thiscall sub_100120D6(int *this, HANDLE hFile)
   }
   if ( !*v5 )
     return -2147467259;
-  v24 = sub_1000AAA6(*this);
+  v24 = grim_format_info_lookup(*this);
   v22 = v24[2] >> 3;
   Buffer = 542327876;
   WriteFile(hFile, &Buffer, 4u, &NumberOfBytesWritten, 0);
@@ -13708,7 +13972,8 @@ LABEL_40:
   return 0;
 }
 
-// sub_1001237E @ 0x1001237E
+// FUN_1001237e @ 0x1001237E
+// [binja] int32_t __thiscall sub_1001237e(int32_t* arg1, int32_t arg2, int32_t arg3, int32_t* arg4)
 int __thiscall sub_1001237E(int *this, LPCWCH lpWideCharStr, int a3, LPSTR lpMultiByteStr)
 {
   int *v4; // esi
@@ -13746,7 +14011,7 @@ int __thiscall sub_1001237E(int *this, LPCWCH lpWideCharStr, int a3, LPSTR lpMul
 
   v4 = this;
   v31 = this;
-  sub_1001BCA5(hFile);
+  FUN_1001bca5(hFile);
   v5 = a3;
   v36 = 0;
   if ( !a3 )
@@ -13779,7 +14044,7 @@ LABEL_7:
   }
   v6 = (int *)&unk_10053E40;
 LABEL_8:
-  v7 = sub_1000AAA6(*v4);
+  v7 = grim_format_info_lookup(*v4);
   v8 = sub_1000AB3F(v6, v4[2], (int)v7);
   v9 = v8;
   v32 = v8;
@@ -13788,7 +14053,7 @@ LABEL_8:
   if ( v8 == *v4 )
   {
 LABEL_21:
-    v13 = sub_1001BDC7(lpWideCharStr, lpMultiByteStr);
+    v13 = FUN_1001bdc7(lpWideCharStr, lpMultiByteStr);
     if ( v13 < 0 )
     {
 LABEL_22:
@@ -13799,7 +14064,7 @@ LABEL_22:
     {
       if ( v5 == 4 )
       {
-        v13 = sub_100120D6(v4, hFile[0]);
+        v13 = FUN_100120d6(v4, hFile[0]);
       }
       else
       {
@@ -13808,12 +14073,12 @@ LABEL_22:
           v13 = -2147467263;
           goto LABEL_22;
         }
-        v13 = sub_10010AEC(v4, hFile[0], 0);
+        v13 = FUN_10010aec(v4, hFile[0], 0);
       }
     }
     else
     {
-      v13 = sub_10010AEC(v4, hFile[0], 1u);
+      v13 = FUN_10010aec(v4, hFile[0], 1u);
     }
     if ( v13 >= 0 )
     {
@@ -13822,9 +14087,9 @@ LABEL_22:
     }
     goto LABEL_22;
   }
-  sub_1001284C(v30);
+  FUN_1001284c(v30);
   LOBYTE(v36) = 1;
-  v10 = sub_1000AAA6(v9)[2] >> 3;
+  v10 = grim_format_info_lookup(v9)[2] >> 3;
   v35 = v10;
   v34 = v4;
   while ( 1 )
@@ -13837,7 +14102,7 @@ LABEL_19:
     if ( !v34 )
     {
       LOBYTE(v36) = 0;
-      sub_10012856(v30);
+      FUN_10012856(v30);
       goto LABEL_21;
     }
   }
@@ -13847,7 +14112,7 @@ LABEL_19:
     if ( !v33 )
     {
       LOBYTE(v36) = 0;
-      sub_10012856(v30);
+      FUN_10012856(v30);
       v12 = -2147024882;
       goto LABEL_37;
     }
@@ -13874,7 +14139,7 @@ LABEL_19:
     v27 = 0;
     v26 = 1;
     v28 = v11[2];
-    v12 = sub_10016007(v21, v15, 524289);
+    v12 = FUN_10016007(v21, v15, 524289);
     if ( v12 < 0 )
       break;
     if ( v11[1] && v11[14] )
@@ -13899,23 +14164,25 @@ LABEL_19:
   }
   operator delete(v33);
   LOBYTE(v36) = 0;
-  sub_10012856(v30);
+  FUN_10012856(v30);
 LABEL_37:
   v36 = -1;
-  sub_1001BED2(hFile);
+  FUN_1001bed2(hFile);
   return v12;
 }
 
-// sub_10012647 @ 0x10012647
+// FUN_10012647 @ 0x10012647
+// [binja] int32_t __stdcall sub_10012647(int16_t* arg1, void* arg2)
 int __thiscall sub_10012647(int *this, int a2, unsigned int a3)
 {
   if ( a3 >= 0xE && *(_WORD *)a2 == 19778 && *(_DWORD *)(a2 + 2) <= a3 )
-    return sub_100103D6(this, a2 + 14, a3 - 14);
+    return FUN_100103d6(this, a2 + 14, a3 - 14);
   else
     return -2147467259;
 }
 
-// sub_10012677 @ 0x10012677
+// FUN_10012677 @ 0x10012677
+// [binja] int32_t __thiscall sub_10012677(int32_t* arg1, void* arg2, int32_t* arg3, int32_t* arg4, int32_t arg5)
 int __thiscall sub_10012677(int this, unsigned __int8 *a2, unsigned int a3, _DWORD *a4, int a5)
 {
   int v5; // ebx
@@ -13952,42 +14219,42 @@ int __thiscall sub_10012677(int this, unsigned __int8 *a2, unsigned int a3, _DWO
     *(_DWORD *)(this + 68) = 3;
     if ( !v7 )
     {
-      v13 = sub_10012647((int *)this, (int)a2, a3);
+      v13 = FUN_10012647((int *)this, (int)a2, a3);
       goto LABEL_16;
     }
     v8 = v7 - 1;
     if ( !v8 )
     {
-      v13 = sub_10010E13((_DWORD *)this, (int)a2, a3);
+      v13 = FUN_10010e13((_DWORD *)this, (int)a2, a3);
       goto LABEL_16;
     }
     v9 = v8 - 1;
     if ( !v9 )
     {
-      v13 = sub_10011083((int *)this, a2, a3);
+      v13 = FUN_10011083((int *)this, a2, a3);
       goto LABEL_16;
     }
     v10 = v9 - 1;
     if ( !v10 )
     {
-      v13 = sub_100117FF((int *)this, (int)a2, a3);
+      v13 = FUN_100117ff((int *)this, (int)a2, a3);
       goto LABEL_16;
     }
     v11 = v10 - 1;
     if ( !v11 )
     {
-      v13 = sub_10011D95((_DWORD *)this, (int)a2, a3);
+      v13 = FUN_10011d95((_DWORD *)this, (int)a2, a3);
       goto LABEL_16;
     }
     v12 = v11 - 1;
     if ( !v12 )
     {
-      v13 = sub_1001152A((_DWORD *)this, a2, a3);
+      v13 = FUN_1001152a((_DWORD *)this, a2, a3);
       goto LABEL_16;
     }
     if ( v12 == 1 )
     {
-      v13 = sub_100103D6((int *)this, (int)a2, a3);
+      v13 = FUN_100103d6((int *)this, (int)a2, a3);
 LABEL_16:
       v5 = v13;
     }
@@ -13999,10 +14266,10 @@ LABEL_16:
       operator delete(*(void **)(this + 8));
     v14 = *(void **)(this + 76);
     if ( v14 )
-      sub_100102F7(v14, 1);
+      FUN_100102f7(v14, 1);
     v15 = *(void **)(this + 80);
     if ( v15 )
-      sub_100102F7(v15, 1);
+      FUN_100102f7(v15, 1);
     v16 = (unsigned int)++v22 < 7;
     *(_DWORD *)(this + 4) = 0;
     *(_DWORD *)(this + 8) = 0;
@@ -14051,7 +14318,8 @@ LABEL_16:
   return 0;
 }
 
-// sub_1001284C @ 0x1001284C
+// FUN_1001284c @ 0x1001284C
+// [binja] int32_t* __fastcall sub_1001284c(int32_t* arg1)
 _DWORD *__thiscall sub_1001284C(_DWORD *this)
 {
   *(this + 1) = 0;
@@ -14059,7 +14327,8 @@ _DWORD *__thiscall sub_1001284C(_DWORD *this)
   return this;
 }
 
-// sub_10012856 @ 0x10012856
+// FUN_10012856 @ 0x10012856
+// [binja] void __fastcall sub_10012856(int32_t* arg1)
 int __thiscall sub_10012856(_DWORD *this)
 {
   int (__thiscall ***v2)(_DWORD, int); // ecx
@@ -14239,12 +14508,13 @@ LABEL_34:
   return 0;
 }
 
-// sub_10012B47 @ 0x10012B47
+// FUN_10012b47 @ 0x10012B47
+// [binja] int32_t* __thiscall sub_10012b47(int32_t* arg1, char arg2)
 void **__thiscall sub_10012B47(void **this, char a2)
 {
   if ( (a2 & 2) != 0 )
   {
-    `eh vector destructor iterator'(
+    FUN_1004b5cf(
       this,
       0xCu,
       (int)*(this - 1),
@@ -14262,7 +14532,8 @@ void **__thiscall sub_10012B47(void **this, char a2)
   }
 }
 
-// sub_10012B93 @ 0x10012B93
+// FUN_10012b93 @ 0x10012B93
+// [binja] int32_t __fastcall sub_10012b93(int32_t* arg1)
 int __thiscall sub_10012B93(unsigned int *this)
 {
   unsigned int v2; // edi
@@ -14347,7 +14618,7 @@ int __thiscall sub_10012B93(unsigned int *this)
     {
       *v5 = v4;
       v38 = (void **)(v5 + 1);
-      `eh vector constructor iterator'(
+      FUN_1004b6c3(
         v5 + 1,
         0xCu,
         v4,
@@ -14539,7 +14810,7 @@ LABEL_54:
     v32 = -2147467259;
   }
   if ( v37 )
-    sub_10012B47(v37, 3);
+    FUN_10012b47(v37, 3);
   operator delete(v52);
   operator delete(v51);
   operator delete(v45);
@@ -14548,7 +14819,8 @@ LABEL_54:
   return v32;
 }
 
-// sub_10013007 @ 0x10013007
+// FUN_10013007 @ 0x10013007
+// [binja] int32_t __fastcall sub_10013007(int32_t* arg1)
 int __thiscall sub_10013007(_DWORD *this)
 {
   _DWORD *v1; // edi
@@ -14701,7 +14973,8 @@ int __cdecl sub_10013195(unsigned int *a1, unsigned int a2, int a3, int a4, int 
   return 0;
 }
 
-// sub_100132BB @ 0x100132BB
+// FUN_100132bb @ 0x100132BB
+// [binja] int32_t __fastcall sub_100132bb(int32_t* arg1)
 int sub_100132BB()
 {
   return off_10054390();
@@ -14871,13 +15144,15 @@ int sub_10013522()
   return v0();
 }
 
-// sub_10013551 @ 0x10013551
+// FUN_10013551 @ 0x10013551
+// [binja] int32_t __fastcall sub_10013551(int32_t* arg1)
 int sub_10013551()
 {
   return off_10054394();
 }
 
-// sub_10013582 @ 0x10013582
+// FUN_10013582 @ 0x10013582
+// [binja] int32_t __fastcall sub_10013582(int32_t* arg1)
 int __fastcall sub_10013582(_DWORD *a1)
 {
   int v1; // esi
@@ -14948,7 +15223,8 @@ int __fastcall sub_10013582(_DWORD *a1)
   return 0;
 }
 
-// sub_100136D2 @ 0x100136D2
+// FUN_100136d2 @ 0x100136D2
+// [binja] int32_t __fastcall sub_100136d2(int32_t* arg1)
 int __fastcall sub_100136D2(_DWORD *a1)
 {
   int v1; // eax
@@ -15015,7 +15291,8 @@ int __fastcall sub_100136D2(_DWORD *a1)
   return 0;
 }
 
-// sub_100137F6 @ 0x100137F6
+// FUN_100137f6 @ 0x100137F6
+// [binja] int32_t __fastcall sub_100137f6(int32_t* arg1)
 int __fastcall sub_100137F6(_DWORD *a1)
 {
   int v1; // esi
@@ -15084,7 +15361,8 @@ int __fastcall sub_100137F6(_DWORD *a1)
   return 0;
 }
 
-// sub_10013945 @ 0x10013945
+// FUN_10013945 @ 0x10013945
+// [binja] int32_t __fastcall sub_10013945(int32_t* arg1)
 int __fastcall sub_10013945(_DWORD *a1)
 {
   int v1; // esi
@@ -15155,7 +15433,8 @@ int __fastcall sub_10013945(_DWORD *a1)
   return 0;
 }
 
-// sub_10013A98 @ 0x10013A98
+// FUN_10013a98 @ 0x10013A98
+// [binja] int32_t __fastcall sub_10013a98(int32_t* arg1)
 int __fastcall sub_10013A98(_DWORD *a1)
 {
   int v1; // edx
@@ -15234,7 +15513,8 @@ int __fastcall sub_10013A98(_DWORD *a1)
   return 0;
 }
 
-// sub_10013BD7 @ 0x10013BD7
+// FUN_10013bd7 @ 0x10013BD7
+// [binja] int32_t __fastcall sub_10013bd7(int32_t* arg1)
 int __thiscall sub_10013BD7(_DWORD *this)
 {
   _BYTE *v1; // ebx
@@ -15289,7 +15569,8 @@ int __thiscall sub_10013BD7(_DWORD *this)
   return 0;
 }
 
-// sub_10013C72 @ 0x10013C72
+// FUN_10013c72 @ 0x10013C72
+// [binja] int32_t __fastcall sub_10013c72(int32_t* arg1)
 int __fastcall sub_10013C72(_DWORD *a1)
 {
   int v1; // edx
@@ -15382,7 +15663,8 @@ int __fastcall sub_10013C72(_DWORD *a1)
   return 0;
 }
 
-// sub_10013DBE @ 0x10013DBE
+// FUN_10013dbe @ 0x10013DBE
+// [binja] int32_t __fastcall sub_10013dbe(int32_t* arg1)
 int __fastcall sub_10013DBE(_DWORD *a1)
 {
   _WORD *v1; // ebp
@@ -15459,7 +15741,8 @@ int __fastcall sub_10013DBE(_DWORD *a1)
   return 0;
 }
 
-// sub_10013EDF @ 0x10013EDF
+// FUN_10013edf @ 0x10013EDF
+// [binja] int32_t __fastcall sub_10013edf(int32_t* arg1)
 int __fastcall sub_10013EDF(_DWORD *a1)
 {
   int v1; // edx
@@ -15552,7 +15835,8 @@ int __fastcall sub_10013EDF(_DWORD *a1)
   return 0;
 }
 
-// sub_1001402B @ 0x1001402B
+// FUN_1001402b @ 0x1001402B
+// [binja] int32_t __fastcall sub_1001402b(int32_t* arg1)
 int __fastcall sub_1001402B(_DWORD *a1)
 {
   int v1; // edx
@@ -15631,7 +15915,8 @@ int __fastcall sub_1001402B(_DWORD *a1)
   return 0;
 }
 
-// sub_1001416A @ 0x1001416A
+// FUN_1001416a @ 0x1001416A
+// [binja] int32_t __fastcall sub_1001416a(int32_t* arg1)
 int __thiscall sub_1001416A(_DWORD *this)
 {
   _DWORD *v1; // ebx
@@ -15658,7 +15943,7 @@ int __thiscall sub_1001416A(_DWORD *this)
   if ( v7 != v3[1047] || v2[1048] != v3[1048] )
     return -2147467259;
   if ( !v2[3] )
-    return sub_10013007(v1);
+    return FUN_10013007(v1);
   if ( v2[5] && v2 + 12 != v3 + 12 && memcmp(v2 + 12, v3 + 12, 0x400u) )
     return -2147467259;
   v10 = 0;
@@ -15686,7 +15971,8 @@ int __thiscall sub_1001416A(_DWORD *this)
   return 0;
 }
 
-// sub_100142A2 @ 0x100142A2
+// FUN_100142a2 @ 0x100142A2
+// [binja] int32_t __fastcall sub_100142a2(int32_t* arg1)
 int __thiscall sub_100142A2(_DWORD *this)
 {
   _DWORD *v2; // eax
@@ -15743,7 +16029,8 @@ int __thiscall sub_100142A2(_DWORD *this)
   return 0;
 }
 
-// sub_10014393 @ 0x10014393
+// FUN_10014393 @ 0x10014393
+// [binja] int32_t __fastcall sub_10014393(int32_t* arg1)
 int __thiscall sub_10014393(_DWORD *this)
 {
   _DWORD *v3; // eax
@@ -15867,7 +16154,8 @@ int __thiscall sub_10014393(_DWORD *this)
   }
 }
 
-// sub_10014595 @ 0x10014595
+// FUN_10014595 @ 0x10014595
+// [binja] int32_t __fastcall sub_10014595(int32_t* arg1)
 int __thiscall sub_10014595(_DWORD *this)
 {
   int v3; // edi
@@ -15993,7 +16281,8 @@ int __thiscall sub_10014595(_DWORD *this)
   }
 }
 
-// sub_10014799 @ 0x10014799
+// FUN_10014799 @ 0x10014799
+// [binja] int32_t __fastcall sub_10014799(int32_t* arg1)
 int __usercall sub_10014799@<eax>(_DWORD *a1@<ecx>, int a2@<edi>, float *a3@<esi>)
 {
   _DWORD *v5; // ecx
@@ -16089,25 +16378,25 @@ int __usercall sub_10014799@<eax>(_DWORD *a1@<ecx>, int a2@<edi>, float *a3@<esi
       switch ( v12 )
       {
         case 21:
-          v13 = sub_100132BB();
+          v13 = FUN_100132bb();
           goto LABEL_42;
         case 22:
-          v13 = sub_10013551();
+          v13 = FUN_10013551();
           goto LABEL_42;
         case 23:
-          v13 = sub_10013582(a1);
+          v13 = FUN_10013582(a1);
           goto LABEL_42;
         case 24:
-          v13 = sub_100136D2(a1);
+          v13 = FUN_100136d2(a1);
           goto LABEL_42;
         case 25:
-          v13 = sub_100137F6(a1);
+          v13 = FUN_100137f6(a1);
           goto LABEL_42;
         case 26:
-          v13 = sub_10013945(a1);
+          v13 = FUN_10013945(a1);
           goto LABEL_42;
         case 27:
-          v13 = sub_10013A98(a1);
+          v13 = FUN_10013a98(a1);
           goto LABEL_42;
         default:
           goto LABEL_44;
@@ -16118,7 +16407,7 @@ int __usercall sub_10014799@<eax>(_DWORD *a1@<ecx>, int a2@<edi>, float *a3@<esi
   v14 = v12 - 29;
   if ( !v14 )
   {
-    v13 = sub_10013C72(a1);
+    v13 = FUN_10013c72(a1);
 LABEL_42:
     if ( v13 >= 0 )
       return 0;
@@ -16127,7 +16416,7 @@ LABEL_42:
   v15 = v14 - 1;
   if ( !v15 )
   {
-    v13 = sub_10013DBE(a1);
+    v13 = FUN_10013dbe(a1);
     goto LABEL_42;
   }
   v16 = v15 - 10;
@@ -16140,18 +16429,18 @@ LABEL_42:
       if ( !v18 )
       {
 LABEL_39:
-        v13 = sub_10013BD7(a1);
+        v13 = FUN_10013bd7(a1);
         goto LABEL_42;
       }
       v19 = v18 - 1;
       if ( !v19 )
       {
-        v13 = sub_10013EDF(a1);
+        v13 = FUN_10013edf(a1);
         goto LABEL_42;
       }
       if ( v19 == 1 )
       {
-        v13 = sub_1001402B(a1);
+        v13 = FUN_1001402b(a1);
         goto LABEL_42;
       }
     }
@@ -16282,7 +16571,8 @@ LABEL_44:
   return v28;
 }
 
-// sub_10014BBC @ 0x10014BBC
+// FUN_10014bbc @ 0x10014BBC
+// [binja] int32_t __fastcall sub_10014bbc(int32_t* arg1)
 int __usercall sub_10014BBC@<eax>(_DWORD *a1@<ecx>, unsigned int a2@<edi>, float *a3@<esi>)
 {
   _DWORD *v5; // ecx
@@ -16615,7 +16905,8 @@ int *__usercall sub_1001504E@<eax>(unsigned int a1@<ebx>, unsigned int a2@<edi>,
   return result;
 }
 
-// sub_1001514E @ 0x1001514E
+// FUN_1001514e @ 0x1001514E
+// [binja] int32_t __fastcall sub_1001514e(int32_t* arg1)
 int __thiscall sub_1001514E(_DWORD *this)
 {
   _DWORD *v1; // esi
@@ -16837,7 +17128,8 @@ LABEL_27:
   return v29;
 }
 
-// sub_10015534 @ 0x10015534
+// FUN_10015534 @ 0x10015534
+// [binja] int32_t __fastcall sub_10015534(int32_t* arg1)
 int __thiscall sub_10015534(_DWORD *this)
 {
   _DWORD *v1; // esi
@@ -17210,7 +17502,8 @@ LABEL_31:
   return v45;
 }
 
-// sub_10015C65 @ 0x10015C65
+// FUN_10015c65 @ 0x10015C65
+// [binja] int32_t __fastcall sub_10015c65(int32_t* arg1)
 int __thiscall sub_10015C65(_DWORD *this)
 {
   int v2; // edx
@@ -17285,7 +17578,7 @@ int __thiscall sub_10015C65(_DWORD *this)
     {
       *v7 = v6;
       v42 = (void **)(v7 + 1);
-      `eh vector constructor iterator'(
+      FUN_1004b6c3(
         v7 + 1,
         0xCu,
         v6,
@@ -17462,7 +17755,7 @@ LABEL_47:
     v33 = -2147467259;
   }
   if ( v41 )
-    sub_10012B47(v41, 3);
+    FUN_10012b47(v41, 3);
   operator delete(v47);
   operator delete(v40);
   operator delete(v38);
@@ -17470,7 +17763,8 @@ LABEL_47:
   return v33;
 }
 
-// sub_10016007 @ 0x10016007
+// FUN_10016007 @ 0x10016007
+// [binja] int32_t __thiscall sub_10016007(int32_t* arg1, void*** arg2, void*** arg3, int32_t arg4)
 int __userpurge sub_10016007@<eax>(int *a1@<ecx>, unsigned int a2@<edi>, _DWORD *a3, void *a4, int a5)
 {
   int v6; // eax
@@ -17484,27 +17778,27 @@ int __userpurge sub_10016007@<eax>(int *a1@<ecx>, unsigned int a2@<edi>, _DWORD 
   if ( !(_WORD)a5 || (unsigned __int16)a5 > 5u || (a5 & 0xFFF00000) != 0 )
     return -2005530516;
   a3[16] = a5 & 0x80000;
-  v6 = sub_1001B50C(a3);
+  v6 = grim_pixel_format_create(a3);
   a1[1] = v6;
   if ( !v6 )
     goto LABEL_18;
-  v7 = sub_1001B50C(a4);
+  v7 = grim_pixel_format_create(a4);
   *a1 = v7;
   if ( !v7 )
     goto LABEL_18;
-  v8 = sub_10017361(v7);
+  v8 = FUN_10017361(v7);
   if ( v8 >= 0 )
   {
-    if ( sub_1001416A(a1) >= 0
-      || sub_100142A2(a1) >= 0
-      || sub_10014393(a1) >= 0
-      || sub_10014595(a1) >= 0
-      || sub_10014799(a1, a2, (float *)a1) >= 0
-      || sub_10014BBC(a1, a2, (float *)a1) >= 0
-      || sub_1001514E(a1) >= 0
-      || sub_10015534(a1) >= 0
-      || sub_10015C65(a1) >= 0
-      || sub_10012B93((unsigned int *)a1) >= 0 )
+    if ( FUN_1001416a(a1) >= 0
+      || FUN_100142a2(a1) >= 0
+      || FUN_10014393(a1) >= 0
+      || FUN_10014595(a1) >= 0
+      || FUN_10014799(a1, a2, (float *)a1) >= 0
+      || FUN_10014bbc(a1, a2, (float *)a1) >= 0
+      || FUN_1001514e(a1) >= 0
+      || FUN_10015534(a1) >= 0
+      || FUN_10015c65(a1) >= 0
+      || FUN_10012b93((unsigned int *)a1) >= 0 )
     {
       v8 = 0;
       goto LABEL_19;
@@ -17527,7 +17821,8 @@ LABEL_19:
   return v8;
 }
 
-// sub_10016121 @ 0x10016121
+// FUN_10016121 @ 0x10016121
+// [binja] int32_t* __fastcall sub_10016121(int32_t* arg1)
 void __thiscall sub_10016121(_DWORD *this)
 {
   *this = 0;
@@ -17536,7 +17831,8 @@ void __thiscall sub_10016121(_DWORD *this)
   *(this + 3) = 0;
 }
 
-// sub_10016131 @ 0x10016131
+// FUN_10016131 @ 0x10016131
+// [binja] int32_t __fastcall sub_10016131(char* arg1)
 int __thiscall sub_10016131(_DWORD *this)
 {
   int v2; // eax
@@ -17579,13 +17875,15 @@ int __thiscall sub_10016131(_DWORD *this)
   return 0;
 }
 
-// sub_1001619A @ 0x1001619A
+// FUN_1001619a @ 0x1001619A
+// [binja] int32_t* __fastcall sub_1001619a(int32_t* arg1)
 void __thiscall sub_1001619A(_DWORD *this)
 {
   *this = 0;
 }
 
-// sub_100161A0 @ 0x100161A0
+// FUN_100161a0 @ 0x100161A0
+// [binja] int32_t __fastcall sub_100161a0(int32_t* arg1)
 int __thiscall sub_100161A0(_DWORD *this)
 {
   if ( *this )
@@ -17594,7 +17892,8 @@ int __thiscall sub_100161A0(_DWORD *this)
   return 0;
 }
 
-// sub_100161BB @ 0x100161BB
+// FUN_100161bb @ 0x100161BB
+// [binja] int32_t __thiscall sub_100161bb(char* arg1, int32_t* arg2, int32_t* arg3, int32_t arg4, int32_t* arg5, int32_t arg6, int32_t arg7)
 int __thiscall sub_100161BB(_DWORD *this, _DWORD *a2, _DWORD *a3, int a4, int *a5, int a6, int a7)
 {
   int result; // eax
@@ -17638,7 +17937,7 @@ int __thiscall sub_100161BB(_DWORD *this, _DWORD *a2, _DWORD *a3, int a4, int *a
   int v45; // [esp+80h] [ebp+14h]
 
   v39 = this;
-  sub_10016131(this);
+  FUN_10016131(this);
   (*(void (__stdcall **)(_DWORD *, int *))(*a3 + 32))(a3, &v25);
   if ( a5 )
   {
@@ -17666,7 +17965,7 @@ int __thiscall sub_100161BB(_DWORD *this, _DWORD *a2, _DWORD *a3, int a4, int *a
   {
     if ( v27 || (v26 & 0x200) != 0 )
       goto LABEL_38;
-    sub_100101F5(1);
+    grim_d3d_debug_set_mute(1);
     if ( (*(int (__stdcall **)(_DWORD *, void *, int *))(*a3 + 28))(a3, &unk_1004E544, &v40) < 0 )
     {
       v26 = a3[4];
@@ -17681,7 +17980,7 @@ int __thiscall sub_100161BB(_DWORD *this, _DWORD *a2, _DWORD *a3, int a4, int *a
         v40 = 0;
       }
     }
-    sub_100101F5(0);
+    grim_d3d_debug_set_mute(0);
     if ( !v44 )
     {
 LABEL_38:
@@ -17732,7 +18031,7 @@ LABEL_39:
           v13 |= 0x2000u;
           goto LABEL_84;
         }
-        sub_100101F5(1);
+        grim_d3d_debug_set_mute(1);
         if ( (*(int (__stdcall **)(_DWORD *, void *, int *))(*a3 + 28))(a3, &unk_1004E534, &v42) >= 0 )
         {
           if ( (*(int (__stdcall **)(int))(*(_DWORD *)v42 + 52))(v42) == 1 )
@@ -17746,7 +18045,7 @@ LABEL_39:
             v42 = 0;
           }
         }
-        sub_100101F5(0);
+        grim_d3d_debug_set_mute(0);
       }
       if ( !v45 )
         goto LABEL_84;
@@ -17858,7 +18157,8 @@ LABEL_77:
   return result;
 }
 
-// sub_100165D3 @ 0x100165D3
+// FUN_100165d3 @ 0x100165D3
+// [binja] int32_t __thiscall sub_100165d3(int32_t* arg1, int32_t* arg2, int32_t* arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7)
 int __thiscall sub_100165D3(_DWORD *this, _DWORD *a2, int a3, int a4, const void *a5, int a6, int a7)
 {
   bool v7; // zf
@@ -17889,7 +18189,7 @@ int __thiscall sub_100165D3(_DWORD *this, _DWORD *a2, int a3, int a4, const void
   v7 = *this == 0;
   v27 = this;
   if ( !v7 )
-    sub_100161A0(this);
+    FUN_100161a0(this);
   (*(void (__stdcall **)(int, int *))(*(_DWORD *)a3 + 32))(a3, &v18);
   if ( a5 )
   {
@@ -17932,7 +18232,7 @@ int __thiscall sub_100165D3(_DWORD *this, _DWORD *a2, int a3, int a4, const void
       v11 |= 0x2000u;
       goto LABEL_65;
     }
-    sub_100101F5(1);
+    grim_d3d_debug_set_mute(1);
     if ( (*(int (__stdcall **)(int, void *, int *))(*(_DWORD *)a3 + 28))(a3, &unk_1004E524, &v29) >= 0 )
     {
       if ( (*(int (__stdcall **)(int))(*(_DWORD *)v29 + 52))(v29) == 1 )
@@ -17947,7 +18247,7 @@ int __thiscall sub_100165D3(_DWORD *this, _DWORD *a2, int a3, int a4, const void
         v29 = 0;
       }
     }
-    sub_100101F5(0);
+    grim_d3d_debug_set_mute(0);
   }
   if ( !v30 )
     goto LABEL_65;
@@ -18043,7 +18343,8 @@ LABEL_70:
   return result;
 }
 
-// sub_1001692E @ 0x1001692E
+// grim_vertex_space_converter_destroy @ 0x1001692E
+// frees the converted vertex buffer at this+0x104c
 void __thiscall sub_1001692E(_DWORD *this)
 {
   void *v1; // [esp-4h] [ebp-4h]
@@ -18059,7 +18360,8 @@ void __stdcall nullsub_6(int a1, int a2, int a3)
   ;
 }
 
-// sub_10016944 @ 0x10016944
+// grim_convert_vertex_space @ 0x10016944
+// converts vec4 coordinates between space modes (1/2/3), writes to this+0x104c, returns the output buffer
 int __thiscall sub_10016944(_DWORD *this, int a2)
 {
   unsigned int v2; // esi
@@ -18231,7 +18533,8 @@ void nullsub_3()
   ;
 }
 
-// sub_10016C3C @ 0x10016C3C
+// FUN_10016c3c @ 0x10016C3C
+// [binja] int32_t __fastcall sub_10016c3c(void*** arg1)
 void __thiscall sub_10016C3C(int this)
 {
   unsigned int v2; // ebx
@@ -18256,10 +18559,11 @@ void __thiscall sub_10016C3C(int this)
   }
   operator delete(*(void **)(this + 4280));
   operator delete(*(void **)(this + 4288));
-  sub_1001692E((_DWORD *)this);
+  grim_vertex_space_converter_destroy((_DWORD *)this);
 }
 
-// sub_10016CDC @ 0x10016CDC
+// grim_pixel_format_write_dxt_cache @ 0x10016CDC
+// writes RGBA floats into the DXT block cache and encodes when block data is complete
 void __thiscall sub_10016CDC(int this, int a2, int a3, int a4)
 {
   unsigned int v5; // esi
@@ -18384,7 +18688,7 @@ void __thiscall sub_10016CDC(int this, int a2, int a3, int a4)
     }
   }
   if ( *(_DWORD *)(this + 4168) )
-    a4 = sub_10016944((_DWORD *)this, a4);
+    a4 = grim_convert_vertex_space((_DWORD *)this, a4);
   v16 = *(_DWORD *)(this + 4144) - *(_DWORD *)(this + 4236);
   v17 = v16 + *(_DWORD *)(this + 4184);
   v18 = (v5 - *(_DWORD *)(this + 4240)) & 3;
@@ -18483,7 +18787,8 @@ void __thiscall sub_10016CDC(int this, int a2, int a3, int a4)
   }
 }
 
-// sub_100170D6 @ 0x100170D6
+// fpu_set_round_trunc @ 0x100170D6
+// sets x87 rounding mode to truncate; saves control word in DAT_1005db6c
 int sub_100170D6()
 {
   int v1; // [esp+0h] [ebp-8h]
@@ -18492,7 +18797,8 @@ int sub_100170D6()
   return v1;
 }
 
-// sub_100170F9 @ 0x100170F9
+// grim_pixel_format_init @ 0x100170F9
+// initializes format descriptor, bytes-per-pixel, palette expansion, and coordinate mode
 float *__thiscall sub_100170F9(float *this, float *a2, unsigned int a3, int a4)
 {
   unsigned int v5; // esi
@@ -18615,16 +18921,18 @@ float *__thiscall sub_100170F9(float *this, float *a2, unsigned int a3, int a4)
   return this;
 }
 
-// sub_10017345 @ 0x10017345
+// FUN_10017345 @ 0x10017345
+// [binja] void*** __thiscall sub_10017345(void*** arg1, char arg2)
 _DWORD *__thiscall sub_10017345(_DWORD *this, char a2)
 {
-  sub_1001692E(this);
+  grim_vertex_space_converter_destroy(this);
   if ( (a2 & 1) != 0 )
     operator delete(this);
   return this;
 }
 
-// sub_10017361 @ 0x10017361
+// FUN_10017361 @ 0x10017361
+// [binja] int32_t __thiscall sub_10017361(void* arg1, void* arg2)
 int __thiscall sub_10017361(int *this, int a2)
 {
   int v3; // edi
@@ -18649,7 +18957,8 @@ int __thiscall sub_10017361(int *this, int a2)
   return 0;
 }
 
-// sub_100173DC @ 0x100173DC
+// FUN_100173dc @ 0x100173DC
+// [binja] int32_t __fastcall sub_100173dc(int32_t* arg1)
 int __thiscall sub_100173DC(_DWORD *this)
 {
   int v2; // eax
@@ -18686,7 +18995,7 @@ int __thiscall sub_100173DC(_DWORD *this)
     *(this + 1042) = 1;
     v13 = v5;
     *(this + 1043) = this + 7;
-    sub_10016944(this, (int)(this + 7));
+    grim_convert_vertex_space(this, (int)(this + 7));
     *(this + 1042) = v14;
     *(this + 1043) = v13;
   }
@@ -18701,7 +19010,8 @@ int __thiscall sub_100173DC(_DWORD *this)
   return result;
 }
 
-// sub_100174A8 @ 0x100174A8
+// grim_apply_color_key @ 0x100174A8
+// zeroes RGBA pixels that match the current color key
 void __thiscall sub_100174A8(int this, unsigned int a2)
 {
   float *v2; // edx
@@ -18730,7 +19040,8 @@ void __thiscall sub_100174A8(int this, unsigned int a2)
   }
 }
 
-// sub_10017518 @ 0x10017518
+// FUN_10017518 @ 0x10017518
+// [binja] int16_t __thiscall sub_10017518(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_10017518(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
@@ -18747,12 +19058,12 @@ int __thiscall sub_10017518(_DWORD *this, char a2, char a3, int a4)
   v14 = this;
   if ( *(this + 1042) )
   {
-    v4 = sub_10016944(this, a4);
+    v4 = grim_convert_vertex_space(this, a4);
     this = v14;
     a4 = v4;
   }
   v5 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   v7 = 0;
   for ( i = 0; i < v14[1046]; v7 += 16 )
   {
@@ -18769,7 +19080,8 @@ int __thiscall sub_10017518(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_10017604 @ 0x10017604
+// FUN_10017604 @ 0x10017604
+// [binja] int16_t __thiscall sub_10017604(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_10017604(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
@@ -18790,12 +19102,12 @@ int __thiscall sub_10017604(_DWORD *this, char a2, char a3, int a4)
   v18 = this;
   if ( *(this + 1042) )
   {
-    v4 = sub_10016944(this, a4);
+    v4 = grim_convert_vertex_space(this, a4);
     this = v18;
     a4 = v4;
   }
   v5 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   v7 = 0;
   if ( v18[1046] )
   {
@@ -18819,7 +19131,8 @@ int __thiscall sub_10017604(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_10017727 @ 0x10017727
+// FUN_10017727 @ 0x10017727
+// [binja] int16_t __thiscall sub_10017727(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_10017727(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
@@ -18838,12 +19151,12 @@ int __thiscall sub_10017727(_DWORD *this, char a2, char a3, int a4)
   v16 = this;
   if ( *(this + 1042) )
   {
-    v4 = sub_10016944(this, a4);
+    v4 = grim_convert_vertex_space(this, a4);
     this = v16;
     a4 = v4;
   }
   v5 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   v7 = 0;
   if ( v16[1046] )
   {
@@ -18865,7 +19178,8 @@ int __thiscall sub_10017727(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_10017828 @ 0x10017828
+// FUN_10017828 @ 0x10017828
+// [binja] int16_t __thiscall sub_10017828(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_10017828(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
@@ -18884,12 +19198,12 @@ int __thiscall sub_10017828(_DWORD *this, char a2, char a3, int a4)
   v16 = this;
   if ( *(this + 1042) )
   {
-    v4 = sub_10016944(this, a4);
+    v4 = grim_convert_vertex_space(this, a4);
     this = v16;
     a4 = v4;
   }
   v5 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   v7 = 0;
   if ( v16[1046] )
   {
@@ -18911,7 +19225,8 @@ int __thiscall sub_10017828(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_10017929 @ 0x10017929
+// FUN_10017929 @ 0x10017929
+// [binja] int16_t __thiscall sub_10017929(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_10017929(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
@@ -18930,12 +19245,12 @@ int __thiscall sub_10017929(_DWORD *this, char a2, char a3, int a4)
   v16 = this;
   if ( *(this + 1042) )
   {
-    v4 = sub_10016944(this, a4);
+    v4 = grim_convert_vertex_space(this, a4);
     this = v16;
     a4 = v4;
   }
   v5 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   v7 = 0;
   if ( v16[1046] )
   {
@@ -18957,7 +19272,8 @@ int __thiscall sub_10017929(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_10017A2A @ 0x10017A2A
+// FUN_10017a2a @ 0x10017A2A
+// [binja] int16_t __thiscall sub_10017a2a(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_10017A2A(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
@@ -18978,12 +19294,12 @@ int __thiscall sub_10017A2A(_DWORD *this, char a2, char a3, int a4)
   v18 = this;
   if ( *(this + 1042) )
   {
-    v4 = sub_10016944(this, a4);
+    v4 = grim_convert_vertex_space(this, a4);
     this = v18;
     a4 = v4;
   }
   v5 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   v7 = 0;
   if ( v18[1046] )
   {
@@ -19007,7 +19323,8 @@ int __thiscall sub_10017A2A(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_10017B47 @ 0x10017B47
+// FUN_10017b47 @ 0x10017B47
+// [binja] int16_t __thiscall sub_10017b47(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_10017B47(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
@@ -19028,12 +19345,12 @@ int __thiscall sub_10017B47(_DWORD *this, char a2, char a3, int a4)
   v18 = this;
   if ( *(this + 1042) )
   {
-    v4 = sub_10016944(this, a4);
+    v4 = grim_convert_vertex_space(this, a4);
     this = v18;
     a4 = v4;
   }
   v5 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   v7 = 0;
   if ( v18[1046] )
   {
@@ -19057,7 +19374,8 @@ int __thiscall sub_10017B47(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_10017C6A @ 0x10017C6A
+// FUN_10017c6a @ 0x10017C6A
+// [binja] int16_t __thiscall sub_10017c6a(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_10017C6A(_DWORD *this, char a2, char a3, int a4)
 {
   unsigned int v4; // edi
@@ -19077,12 +19395,12 @@ int __thiscall sub_10017C6A(_DWORD *this, char a2, char a3, int a4)
   v16 = this;
   if ( *(this + 1042) )
   {
-    v5 = sub_10016944(this, a4);
+    v5 = grim_convert_vertex_space(this, a4);
     this = v16;
     a4 = v5;
   }
   v6 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   if ( v16[1046] )
   {
     v8 = 0;
@@ -19103,7 +19421,8 @@ int __thiscall sub_10017C6A(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_10017D68 @ 0x10017D68
+// FUN_10017d68 @ 0x10017D68
+// [binja] int16_t __thiscall sub_10017d68(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_10017D68(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // edi
@@ -19118,12 +19437,12 @@ int __thiscall sub_10017D68(_DWORD *this, char a2, char a3, int a4)
   v11 = this;
   if ( *(this + 1042) )
   {
-    v5 = sub_10016944(this, a4);
+    v5 = grim_convert_vertex_space(this, a4);
     this = v11;
     a4 = v5;
   }
   v6 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   for ( i = 0; i < v11[1046]; v4 += 16 )
   {
     v10 = *(float *)(v6 + 4 * (i & 3)) + *(float *)(v4 + a4 + 12) * 255.0;
@@ -19133,7 +19452,8 @@ int __thiscall sub_10017D68(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_10017E11 @ 0x10017E11
+// FUN_10017e11 @ 0x10017E11
+// [binja] int16_t __thiscall sub_10017e11(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_10017E11(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
@@ -19154,12 +19474,12 @@ int __thiscall sub_10017E11(_DWORD *this, char a2, char a3, int a4)
   v18 = this;
   if ( *(this + 1042) )
   {
-    v4 = sub_10016944(this, a4);
+    v4 = grim_convert_vertex_space(this, a4);
     this = v18;
     a4 = v4;
   }
   v5 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   v7 = 0;
   if ( v18[1046] )
   {
@@ -19183,7 +19503,8 @@ int __thiscall sub_10017E11(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_10017F34 @ 0x10017F34
+// FUN_10017f34 @ 0x10017F34
+// [binja] int16_t __thiscall sub_10017f34(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_10017F34(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
@@ -19202,12 +19523,12 @@ int __thiscall sub_10017F34(_DWORD *this, char a2, char a3, int a4)
   v16 = this;
   if ( *(this + 1042) )
   {
-    v4 = sub_10016944(this, a4);
+    v4 = grim_convert_vertex_space(this, a4);
     this = v16;
     a4 = v4;
   }
   v5 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   v7 = 0;
   if ( v16[1046] )
   {
@@ -19229,7 +19550,8 @@ int __thiscall sub_10017F34(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_10018035 @ 0x10018035
+// FUN_10018035 @ 0x10018035
+// [binja] int16_t __thiscall sub_10018035(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_10018035(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
@@ -19250,12 +19572,12 @@ int __thiscall sub_10018035(_DWORD *this, char a2, char a3, int a4)
   v18 = this;
   if ( *(this + 1042) )
   {
-    v4 = sub_10016944(this, a4);
+    v4 = grim_convert_vertex_space(this, a4);
     this = v18;
     a4 = v4;
   }
   v5 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   v7 = 0;
   if ( v18[1046] )
   {
@@ -19279,7 +19601,8 @@ int __thiscall sub_10018035(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_10018158 @ 0x10018158
+// FUN_10018158 @ 0x10018158
+// [binja] int16_t __thiscall sub_10018158(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_10018158(_DWORD *this, char a2, char a3, int a4)
 {
   unsigned int v4; // edi
@@ -19295,12 +19618,12 @@ int __thiscall sub_10018158(_DWORD *this, char a2, char a3, int a4)
   v12 = this;
   if ( *(this + 1042) )
   {
-    v5 = sub_10016944(this, a4);
+    v5 = grim_convert_vertex_space(this, a4);
     this = v12;
     a4 = v5;
   }
   v6 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   if ( v12[1046] )
   {
     v8 = 0;
@@ -19317,7 +19640,8 @@ int __thiscall sub_10018158(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_10018228 @ 0x10018228
+// FUN_10018228 @ 0x10018228
+// [binja] int16_t __thiscall sub_10018228(void* arg1, int32_t arg2, int32_t arg3, float* arg4)
 int __thiscall sub_10018228(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
@@ -19338,12 +19662,12 @@ int __thiscall sub_10018228(_DWORD *this, char a2, char a3, int a4)
   v19 = this;
   if ( *(this + 1042) )
   {
-    v4 = sub_10016944(this, a4);
+    v4 = grim_convert_vertex_space(this, a4);
     this = v19;
     a4 = v4;
   }
   v5 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   v7 = v19;
   v8 = 0;
   if ( v19[1046] )
@@ -19376,7 +19700,8 @@ int __thiscall sub_10018228(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_10018340 @ 0x10018340
+// FUN_10018340 @ 0x10018340
+// [binja] void* __thiscall sub_10018340(void* arg1, void* arg2, float arg3, void* arg4)
 int __thiscall sub_10018340(float *this, int a2, int a3, int a4)
 {
   int result; // eax
@@ -19394,7 +19719,7 @@ int __thiscall sub_10018340(float *this, int a2, int a3, int a4)
   unsigned int v16; // [esp+18h] [ebp+10h]
 
   if ( *((_DWORD *)this + 1042) )
-    result = sub_10016944(this, a4);
+    result = grim_convert_vertex_space(this, a4);
   else
     result = a4;
   v5 = (_BYTE *)(*((_DWORD *)this + 6) + a3 * *((_DWORD *)this + 1045) + a2 * *((_DWORD *)this + 1044));
@@ -19433,7 +19758,8 @@ int __thiscall sub_10018340(float *this, int a2, int a3, int a4)
   return result;
 }
 
-// sub_10018405 @ 0x10018405
+// FUN_10018405 @ 0x10018405
+// [binja] int16_t __thiscall sub_10018405(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_10018405(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // edi
@@ -19448,12 +19774,12 @@ int __thiscall sub_10018405(_DWORD *this, char a2, char a3, int a4)
   v11 = this;
   if ( *(this + 1042) )
   {
-    v5 = sub_10016944(this, a4);
+    v5 = grim_convert_vertex_space(this, a4);
     this = v11;
     a4 = v5;
   }
   v6 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   for ( i = 0; i < v11[1046]; v4 += 16 )
   {
     v10 = (*(float *)(v4 + a4 + 8) * 0.072099999
@@ -19467,7 +19793,8 @@ int __thiscall sub_10018405(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_100184CA @ 0x100184CA
+// FUN_100184ca @ 0x100184CA
+// [binja] int16_t __thiscall sub_100184ca(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_100184CA(_DWORD *this, char a2, char a3, int a4)
 {
   unsigned int v4; // edi
@@ -19484,12 +19811,12 @@ int __thiscall sub_100184CA(_DWORD *this, char a2, char a3, int a4)
   v13 = this;
   if ( *(this + 1042) )
   {
-    v5 = sub_10016944(this, a4);
+    v5 = grim_convert_vertex_space(this, a4);
     this = v13;
     a4 = v5;
   }
   v6 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   if ( v13[1046] )
   {
     v8 = 0;
@@ -19512,7 +19839,8 @@ int __thiscall sub_100184CA(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_100185C0 @ 0x100185C0
+// FUN_100185c0 @ 0x100185C0
+// [binja] int16_t __thiscall sub_100185c0(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_100185C0(_DWORD *this, char a2, char a3, int a4)
 {
   unsigned int v4; // edi
@@ -19528,12 +19856,12 @@ int __thiscall sub_100185C0(_DWORD *this, char a2, char a3, int a4)
   v12 = this;
   if ( *(this + 1042) )
   {
-    v5 = sub_10016944(this, a4);
+    v5 = grim_convert_vertex_space(this, a4);
     this = v12;
     a4 = v5;
   }
   v6 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   if ( v12[1046] )
   {
     v8 = 0;
@@ -19554,7 +19882,8 @@ int __thiscall sub_100185C0(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_100186AB @ 0x100186AB
+// FUN_100186ab @ 0x100186AB
+// [binja] int16_t __thiscall sub_100186ab(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_100186AB(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
@@ -19570,12 +19899,12 @@ int __thiscall sub_100186AB(_DWORD *this, char a2, char a3, int a4)
   v13 = this;
   if ( *(this + 1042) )
   {
-    v4 = sub_10016944(this, a4);
+    v4 = grim_convert_vertex_space(this, a4);
     this = v13;
     a4 = v4;
   }
   v5 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   v7 = 0;
   if ( v13[1046] )
   {
@@ -19595,7 +19924,8 @@ int __thiscall sub_100186AB(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_10018780 @ 0x10018780
+// FUN_10018780 @ 0x10018780
+// [binja] int16_t __thiscall sub_10018780(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_10018780(_DWORD *this, char a2, char a3, int a4)
 {
   unsigned int v4; // ebx
@@ -19615,12 +19945,12 @@ int __thiscall sub_10018780(_DWORD *this, char a2, char a3, int a4)
   v16 = this;
   if ( *(this + 1042) )
   {
-    v5 = sub_10016944(this, a4);
+    v5 = grim_convert_vertex_space(this, a4);
     this = v16;
     a4 = v5;
   }
   v14 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   if ( v16[1046] )
   {
     v7 = 0;
@@ -19641,7 +19971,8 @@ int __thiscall sub_10018780(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_10018885 @ 0x10018885
+// FUN_10018885 @ 0x10018885
+// [binja] int16_t __thiscall sub_10018885(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_10018885(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
@@ -19661,12 +19992,12 @@ int __thiscall sub_10018885(_DWORD *this, char a2, char a3, int a4)
   v17 = this;
   if ( *(this + 1042) )
   {
-    v4 = sub_10016944(this, a4);
+    v4 = grim_convert_vertex_space(this, a4);
     this = v17;
     a4 = v4;
   }
   v15 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   v6 = 0;
   if ( v17[1046] )
   {
@@ -19690,7 +20021,8 @@ int __thiscall sub_10018885(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_10018990 @ 0x10018990
+// FUN_10018990 @ 0x10018990
+// [binja] int16_t __thiscall sub_10018990(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_10018990(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
@@ -19711,12 +20043,12 @@ int __thiscall sub_10018990(_DWORD *this, char a2, char a3, int a4)
   v18 = this;
   if ( *(this + 1042) )
   {
-    v4 = sub_10016944(this, a4);
+    v4 = grim_convert_vertex_space(this, a4);
     this = v18;
     a4 = v4;
   }
   v15 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   v17 = 0;
   if ( v18[1046] )
   {
@@ -19740,7 +20072,8 @@ int __thiscall sub_10018990(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_10018ACA @ 0x10018ACA
+// FUN_10018aca @ 0x10018ACA
+// [binja] int16_t __thiscall sub_10018aca(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_10018ACA(_DWORD *this, char a2, char a3, int a4)
 {
   unsigned int v4; // ebx
@@ -19756,12 +20089,12 @@ int __thiscall sub_10018ACA(_DWORD *this, char a2, char a3, int a4)
   v12 = this;
   if ( *(this + 1042) )
   {
-    v5 = sub_10016944(this, a4);
+    v5 = grim_convert_vertex_space(this, a4);
     this = v12;
     a4 = v5;
   }
   v6 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   if ( v12[1046] )
   {
     v8 = 0;
@@ -19778,7 +20111,8 @@ int __thiscall sub_10018ACA(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_10018BA0 @ 0x10018BA0
+// FUN_10018ba0 @ 0x10018BA0
+// [binja] int16_t __thiscall sub_10018ba0(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_10018BA0(_DWORD *this, char a2, char a3, int a4)
 {
   unsigned int v4; // ebx
@@ -19798,12 +20132,12 @@ int __thiscall sub_10018BA0(_DWORD *this, char a2, char a3, int a4)
   v16 = this;
   if ( *(this + 1042) )
   {
-    v5 = sub_10016944(this, a4);
+    v5 = grim_convert_vertex_space(this, a4);
     this = v16;
     a4 = v5;
   }
   v14 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   if ( v16[1046] )
   {
     v7 = 0;
@@ -19824,7 +20158,8 @@ int __thiscall sub_10018BA0(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_10018CAA @ 0x10018CAA
+// FUN_10018caa @ 0x10018CAA
+// [binja] int16_t __thiscall sub_10018caa(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_10018CAA(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
@@ -19845,12 +20180,12 @@ int __thiscall sub_10018CAA(_DWORD *this, char a2, char a3, int a4)
   v18 = this;
   if ( *(this + 1042) )
   {
-    v4 = sub_10016944(this, a4);
+    v4 = grim_convert_vertex_space(this, a4);
     this = v18;
     a4 = v4;
   }
   v15 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   v17 = 0;
   if ( v18[1046] )
   {
@@ -19874,7 +20209,8 @@ int __thiscall sub_10018CAA(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_10018DE0 @ 0x10018DE0
+// FUN_10018de0 @ 0x10018DE0
+// [binja] int16_t __thiscall sub_10018de0(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_10018DE0(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // edi
@@ -19889,12 +20225,12 @@ int __thiscall sub_10018DE0(_DWORD *this, char a2, char a3, int a4)
   v11 = this;
   if ( *(this + 1042) )
   {
-    v5 = sub_10016944(this, a4);
+    v5 = grim_convert_vertex_space(this, a4);
     this = v11;
     a4 = v5;
   }
   v6 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   for ( i = 0; i < v11[1046]; v4 += 16 )
   {
     v10 = (*(float *)(v4 + a4 + 8) * 0.072099999
@@ -19908,7 +20244,8 @@ int __thiscall sub_10018DE0(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_10018EA7 @ 0x10018EA7
+// FUN_10018ea7 @ 0x10018EA7
+// [binja] int16_t __thiscall sub_10018ea7(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_10018EA7(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // edi
@@ -19923,12 +20260,12 @@ int __thiscall sub_10018EA7(_DWORD *this, char a2, char a3, int a4)
   v11 = this;
   if ( *(this + 1042) )
   {
-    v5 = sub_10016944(this, a4);
+    v5 = grim_convert_vertex_space(this, a4);
     this = v11;
     a4 = v5;
   }
   v6 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   for ( i = 0; i < v11[1046]; v4 += 16 )
   {
     v10 = (*(float *)(v4 + a4 + 8) * 0.072099999
@@ -19942,7 +20279,8 @@ int __thiscall sub_10018EA7(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_10018F6E @ 0x10018F6E
+// FUN_10018f6e @ 0x10018F6E
+// [binja] int16_t __thiscall sub_10018f6e(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_10018F6E(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
@@ -19957,12 +20295,12 @@ int __thiscall sub_10018F6E(_DWORD *this, char a2, char a3, int a4)
   v12 = this;
   if ( *(this + 1042) )
   {
-    v4 = sub_10016944(this, a4);
+    v4 = grim_convert_vertex_space(this, a4);
     this = v12;
     a4 = v4;
   }
   v5 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   v7 = 0;
   if ( v12[1046] )
   {
@@ -19984,7 +20322,8 @@ int __thiscall sub_10018F6E(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_1001905C @ 0x1001905C
+// FUN_1001905c @ 0x1001905C
+// [binja] int16_t __thiscall sub_1001905c(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_1001905C(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
@@ -20001,12 +20340,12 @@ int __thiscall sub_1001905C(_DWORD *this, char a2, char a3, int a4)
   v14 = this;
   if ( *(this + 1042) )
   {
-    v4 = sub_10016944(this, a4);
+    v4 = grim_convert_vertex_space(this, a4);
     this = v14;
     a4 = v4;
   }
   v5 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   v7 = 0;
   if ( v14[1046] )
   {
@@ -20029,7 +20368,8 @@ int __thiscall sub_1001905C(_DWORD *this, char a2, char a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_1001914B @ 0x1001914B
+// FUN_1001914b @ 0x1001914B
+// [binja] int16_t __thiscall sub_1001914b(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
 int __thiscall sub_1001914B(_DWORD *this, int a2, int a3, int a4)
 {
   int v4; // eax
@@ -20051,13 +20391,13 @@ int __thiscall sub_1001914B(_DWORD *this, int a2, int a3, int a4)
   v19 = this;
   if ( *(this + 1042) )
   {
-    v4 = sub_10016944(this, a4);
+    v4 = grim_convert_vertex_space(this, a4);
     this = v19;
     a4 = v4;
   }
   v5 = (_QWORD *)(*(this + 6) + a3 * *(this + 1045) + a2 * *(this + 1044));
   v16 = *(this + 11) + 4 * ((a3 & 3) + 8 * (a2 & 3));
-  sub_100170D6();
+  fpu_set_round_trunc();
   v18 = 0;
   if ( v19[1046] )
   {
@@ -20082,7 +20422,8 @@ int __thiscall sub_1001914B(_DWORD *this, int a2, int a3, int a4)
   return dword_1005DB6C;
 }
 
-// sub_100192A7 @ 0x100192A7
+// FUN_100192a7 @ 0x100192A7
+// [binja] void* __thiscall sub_100192a7(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
 void __thiscall sub_100192A7(_DWORD *this, int a2, int a3, float *a4)
 {
   unsigned __int8 *v4; // eax
@@ -20100,10 +20441,11 @@ void __thiscall sub_100192A7(_DWORD *this, int a2, int a3, float *a4)
     *(a4 - 2) = (double)v7 * 0.0039215689;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_10019333 @ 0x10019333
+// FUN_10019333 @ 0x10019333
+// [binja] int32_t* __thiscall sub_10019333(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
 void __thiscall sub_10019333(_DWORD *this, int a2, int a3, float *a4)
 {
   unsigned int v4; // eax
@@ -20121,10 +20463,11 @@ void __thiscall sub_10019333(_DWORD *this, int a2, int a3, float *a4)
     *(a4 - 2) = v7 * 0.0039215689;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_100193D9 @ 0x100193D9
+// FUN_100193d9 @ 0x100193D9
+// [binja] void* __thiscall sub_100193d9(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
 void __thiscall sub_100193D9(_DWORD *this, int a2, int a3, float *a4)
 {
   unsigned int v4; // eax
@@ -20142,10 +20485,11 @@ void __thiscall sub_100193D9(_DWORD *this, int a2, int a3, float *a4)
     *(a4 - 2) = v7 * 0.0039215689;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_10019475 @ 0x10019475
+// FUN_10019475 @ 0x10019475
+// [binja] int16_t* __thiscall sub_10019475(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
 void __thiscall sub_10019475(_DWORD *this, int a2, int a3, float *a4)
 {
   _WORD *v5; // eax
@@ -20162,10 +20506,11 @@ void __thiscall sub_10019475(_DWORD *this, int a2, int a3, float *a4)
     *(a4 - 2) = (double)v7 * 0.032258064;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_1001951A @ 0x1001951A
+// FUN_1001951a @ 0x1001951A
+// [binja] int16_t* __thiscall sub_1001951a(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
 void __thiscall sub_1001951A(_DWORD *this, int a2, int a3, float *a4)
 {
   _BYTE *v5; // eax
@@ -20183,10 +20528,11 @@ void __thiscall sub_1001951A(_DWORD *this, int a2, int a3, float *a4)
     *(a4 - 2) = (double)v7 * 0.032258064;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_100195BC @ 0x100195BC
+// FUN_100195bc @ 0x100195BC
+// [binja] int16_t* __thiscall sub_100195bc(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
 void __thiscall sub_100195BC(_DWORD *this, int a2, int a3, float *a4)
 {
   _BYTE *v5; // eax
@@ -20204,10 +20550,11 @@ void __thiscall sub_100195BC(_DWORD *this, int a2, int a3, float *a4)
     v5 += 2;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_1001966C @ 0x1001966C
+// FUN_1001966c @ 0x1001966C
+// [binja] void* __thiscall sub_1001966c(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
 void __thiscall sub_1001966C(_DWORD *this, int a2, int a3, float *a4)
 {
   _BYTE *v5; // eax
@@ -20225,10 +20572,11 @@ void __thiscall sub_1001966C(_DWORD *this, int a2, int a3, float *a4)
     v5 += 2;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_1001971B @ 0x1001971B
+// FUN_1001971b @ 0x1001971B
+// [binja] int32_t* __thiscall sub_1001971b(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
 void __thiscall sub_1001971B(_DWORD *this, int a2, int a3, float *a4)
 {
   _DWORD *v4; // eax
@@ -20245,10 +20593,11 @@ void __thiscall sub_1001971B(_DWORD *this, int a2, int a3, float *a4)
     a4 += 4;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_100197F1 @ 0x100197F1
+// FUN_100197f1 @ 0x100197F1
+// [binja] int32_t* __thiscall sub_100197f1(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
 void __thiscall sub_100197F1(_DWORD *this, int a2, int a3, float *a4)
 {
   _DWORD *v4; // eax
@@ -20265,10 +20614,11 @@ void __thiscall sub_100197F1(_DWORD *this, int a2, int a3, float *a4)
     *(a4 - 2) = 1.0;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_10019883 @ 0x10019883
+// FUN_10019883 @ 0x10019883
+// [binja] char* __thiscall sub_10019883(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
 void __thiscall sub_10019883(_DWORD *this, int a2, int a3, float *a4)
 {
   _BYTE *v5; // eax
@@ -20285,10 +20635,11 @@ void __thiscall sub_10019883(_DWORD *this, int a2, int a3, float *a4)
     *(a4 - 2) = (double)v7 * 0.33333334;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_10019925 @ 0x10019925
+// FUN_10019925 @ 0x10019925
+// [binja] char* __thiscall sub_10019925(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
 void __thiscall sub_10019925(_DWORD *this, int a2, int a3, float *a4)
 {
   unsigned __int8 *v4; // eax
@@ -20305,10 +20656,11 @@ void __thiscall sub_10019925(_DWORD *this, int a2, int a3, float *a4)
     v7 = *v4++;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_10019997 @ 0x10019997
+// FUN_10019997 @ 0x10019997
+// [binja] char* __thiscall sub_10019997(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
 void __thiscall sub_10019997(_DWORD *this, int a2, int a3, float *a4)
 {
   _BYTE *v5; // eax
@@ -20326,10 +20678,11 @@ void __thiscall sub_10019997(_DWORD *this, int a2, int a3, float *a4)
     *(a4 - 2) = (double)v7 * 0.33333334;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_10019A49 @ 0x10019A49
+// FUN_10019a49 @ 0x10019A49
+// [binja] void* __thiscall sub_10019a49(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
 void __thiscall sub_10019A49(_DWORD *this, int a2, int a3, float *a4)
 {
   _BYTE *v5; // eax
@@ -20347,10 +20700,11 @@ void __thiscall sub_10019A49(_DWORD *this, int a2, int a3, float *a4)
     *(a4 - 2) = (double)v7 * 0.06666667;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_10019AE8 @ 0x10019AE8
+// FUN_10019ae8 @ 0x10019AE8
+// [binja] char* __thiscall sub_10019ae8(void* arg1, void* arg2, int32_t arg3, uint32_t arg4)
 void __thiscall sub_10019AE8(_DWORD *this, int a2, int a3, float *a4)
 {
   unsigned __int8 *v4; // eax
@@ -20373,7 +20727,7 @@ void __thiscall sub_10019AE8(_DWORD *this, int a2, int a3, float *a4)
     v4 += 2;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
 // sub_10019B6F @ 0x10019B6F
@@ -20396,10 +20750,11 @@ void __thiscall sub_10019B6F(_DWORD *this, int a2, int a3, _DWORD *a4)
     a4 += 4;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_10019BD3 @ 0x10019BD3
+// FUN_10019bd3 @ 0x10019BD3
+// [binja] char* __thiscall sub_10019bd3(void* arg1, int32_t arg2, int32_t arg3, uint32_t arg4)
 void __thiscall sub_10019BD3(_DWORD *this, int a2, int a3, float *a4)
 {
   unsigned __int8 *v4; // eax
@@ -20418,10 +20773,11 @@ void __thiscall sub_10019BD3(_DWORD *this, int a2, int a3, float *a4)
     a4 += 4;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_10019C41 @ 0x10019C41
+// FUN_10019c41 @ 0x10019C41
+// [binja] char* __thiscall sub_10019c41(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
 void __thiscall sub_10019C41(_DWORD *this, int a2, int a3, float *a4)
 {
   unsigned __int8 *v5; // eax
@@ -20441,10 +20797,11 @@ void __thiscall sub_10019C41(_DWORD *this, int a2, int a3, float *a4)
     a4 += 4;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_10019CCA @ 0x10019CCA
+// FUN_10019cca @ 0x10019CCA
+// [binja] char* __thiscall sub_10019cca(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
 void __thiscall sub_10019CCA(_DWORD *this, int a2, int a3, float *a4)
 {
   _BYTE *v5; // eax
@@ -20463,10 +20820,11 @@ void __thiscall sub_10019CCA(_DWORD *this, int a2, int a3, float *a4)
     a4 += 4;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_10019D53 @ 0x10019D53
+// FUN_10019d53 @ 0x10019D53
+// [binja] char* __thiscall sub_10019d53(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
 void __thiscall sub_10019D53(_DWORD *this, int a2, int a3, float *a4)
 {
   char *v4; // eax
@@ -20484,10 +20842,11 @@ void __thiscall sub_10019D53(_DWORD *this, int a2, int a3, float *a4)
     *(a4 - 2) = 0.0;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_10019DD5 @ 0x10019DD5
+// FUN_10019dd5 @ 0x10019DD5
+// [binja] char* __thiscall sub_10019dd5(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
 void __thiscall sub_10019DD5(_DWORD *this, int a2, int a3, float *a4)
 {
   _BYTE *v5; // eax
@@ -20507,10 +20866,11 @@ void __thiscall sub_10019DD5(_DWORD *this, int a2, int a3, float *a4)
     v5 += 2;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_10019E86 @ 0x10019E86
+// FUN_10019e86 @ 0x10019E86
+// [binja] char* __thiscall sub_10019e86(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
 void __thiscall sub_10019E86(_DWORD *this, int a2, int a3, float *a4)
 {
   char *v4; // eax
@@ -20528,10 +20888,11 @@ void __thiscall sub_10019E86(_DWORD *this, int a2, int a3, float *a4)
     *(a4 - 2) = 0.0;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_10019F17 @ 0x10019F17
+// FUN_10019f17 @ 0x10019F17
+// [binja] char* __thiscall sub_10019f17(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
 void __thiscall sub_10019F17(_DWORD *this, int a2, int a3, float *a4)
 {
   char *v4; // eax
@@ -20549,10 +20910,11 @@ void __thiscall sub_10019F17(_DWORD *this, int a2, int a3, float *a4)
     *(a4 - 2) = (double)*(v4 - 2) * 0.0078125;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_10019FAE @ 0x10019FAE
+// FUN_10019fae @ 0x10019FAE
+// [binja] int16_t* __thiscall sub_10019fae(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
 void __thiscall sub_10019FAE(_DWORD *this, int a2, int a3, float *a4)
 {
   __int16 *v4; // eax
@@ -20570,10 +20932,11 @@ void __thiscall sub_10019FAE(_DWORD *this, int a2, int a3, float *a4)
     *(a4 - 2) = 0.0;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_1001A031 @ 0x1001A031
+// FUN_1001a031 @ 0x1001A031
+// [binja] int32_t* __thiscall sub_1001a031(void* arg1, uint32_t arg2, int32_t arg3, int32_t arg4)
 void __thiscall sub_1001A031(_DWORD *this, int a2, int a3, float *a4)
 {
   _DWORD *v4; // eax
@@ -20594,10 +20957,11 @@ void __thiscall sub_1001A031(_DWORD *this, int a2, int a3, float *a4)
     *(a4 - 2) = (double)v7 * 0.0009765625;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_1001A0EB @ 0x1001A0EB
+// FUN_1001a0eb @ 0x1001A0EB
+// [binja] int32_t* __thiscall sub_1001a0eb(void* arg1, uint32_t arg2, int32_t arg3, int32_t arg4)
 void __thiscall sub_1001A0EB(_DWORD *this, int a2, int a3, float *a4)
 {
   _DWORD *v4; // eax
@@ -20618,10 +20982,11 @@ void __thiscall sub_1001A0EB(_DWORD *this, int a2, int a3, float *a4)
     a4 += 4;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_1001A1BE @ 0x1001A1BE
+// FUN_1001a1be @ 0x1001A1BE
+// [binja] int16_t* __thiscall sub_1001a1be(void* arg1, int32_t arg2, int32_t arg3, uint32_t arg4)
 void __thiscall sub_1001A1BE(_DWORD *this, int a2, int a3, float *a4)
 {
   unsigned __int16 *v4; // eax
@@ -20640,10 +21005,11 @@ void __thiscall sub_1001A1BE(_DWORD *this, int a2, int a3, float *a4)
     a4 += 4;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_1001A22E @ 0x1001A22E
+// FUN_1001a22e @ 0x1001A22E
+// [binja] int32_t* __thiscall sub_1001a22e(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
 void __thiscall sub_1001A22E(_DWORD *this, int a2, int a3, float *a4)
 {
   _DWORD *v4; // eax
@@ -20660,10 +21026,11 @@ void __thiscall sub_1001A22E(_DWORD *this, int a2, int a3, float *a4)
     a4 += 4;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_1001A2BC @ 0x1001A2BC
+// FUN_1001a2bc @ 0x1001A2BC
+// [binja] void* __thiscall sub_1001a2bc(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
 void __thiscall sub_1001A2BC(_DWORD *this, int a2, int a3, float *a4)
 {
   unsigned __int16 *v4; // eax
@@ -20681,10 +21048,11 @@ void __thiscall sub_1001A2BC(_DWORD *this, int a2, int a3, float *a4)
     *(a4 - 2) = (double)v7 * 0.000015259022;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_1001A348 @ 0x1001A348
+// FUN_1001a348 @ 0x1001A348
+// [binja] uint32_t __thiscall sub_1001a348(uint32_t arg1, uint32_t arg2, int32_t arg3, uint32_t arg4)
 void __thiscall sub_1001A348(_DWORD *this, int a2, int a3, float *a4)
 {
   _DWORD *v4; // esi
@@ -20702,18 +21070,20 @@ void __thiscall sub_1001A348(_DWORD *this, int a2, int a3, float *a4)
     *(a4 - 2) = (double)v7 * 0.000015259022;
   }
   if ( *(this + 4) )
-    sub_100174A8((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
+    grim_apply_color_key((int)this, (unsigned int)&a4[-4 * *(this + 1046)]);
 }
 
-// sub_1001A428 @ 0x1001A428
+// grim_pixel_format_ctor_r8g8b8 @ 0x1001A428
+// pixel format ctor for D3DFMT_R8G8B8
 float *__thiscall sub_1001A428(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 0x18u, 1);
+  grim_pixel_format_init(this, a2, 0x18u, 1);
   *(_DWORD *)this = &off_1004CB6C;
   return this;
 }
 
-// sub_1001A444 @ 0x1001A444
+// grim_pixel_format_init_yuv @ 0x1001A444
+// initializes packed YUV (UYVY/YUY2) cache state and allocates RGB float cache
 int __thiscall sub_1001A444(int this, int a2)
 {
   unsigned int v3; // ecx
@@ -20722,7 +21092,7 @@ int __thiscall sub_1001A444(int this, int a2)
   void *v6; // eax
   void *v8; // [esp+10h] [ebp-10h]
 
-  sub_100170F9((float *)this, (float *)a2, 0, 1);
+  grim_pixel_format_init((float *)this, (float *)a2, 0, 1);
   v3 = *(_DWORD *)(this + 4144) & 0xFFFFFFFE;
   v4 = ((*(_DWORD *)(this + 4152) + 1) & 0xFFFFFFFE) - v3;
   *(_DWORD *)(this + 4216) = (*(_DWORD *)(this + 4152) + 1) & 0xFFFFFFFE;
@@ -20762,31 +21132,35 @@ int __thiscall sub_1001A444(int this, int a2)
   return this;
 }
 
-// sub_1001A53C @ 0x1001A53C
+// grim_pixel_format_ctor_a8r8g8b8 @ 0x1001A53C
+// pixel format ctor for D3DFMT_A8R8G8B8
 float *__thiscall sub_1001A53C(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 0x20u, 1);
+  grim_pixel_format_init(this, a2, 0x20u, 1);
   *(_DWORD *)this = &off_1004CB8C;
   return this;
 }
 
-// sub_1001A558 @ 0x1001A558
+// grim_pixel_format_ctor_x8r8g8b8 @ 0x1001A558
+// pixel format ctor for D3DFMT_X8R8G8B8
 float *__thiscall sub_1001A558(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 0x20u, 1);
+  grim_pixel_format_init(this, a2, 0x20u, 1);
   *(_DWORD *)this = &off_1004CB9C;
   return this;
 }
 
-// sub_1001A579 @ 0x1001A579
+// grim_pixel_format_ctor_r5g6b5 @ 0x1001A579
+// pixel format ctor for D3DFMT_R5G6B5
 float *__thiscall sub_1001A579(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 0x10u, 1);
+  grim_pixel_format_init(this, a2, 0x10u, 1);
   *(_DWORD *)this = &off_1004CBAC;
   return this;
 }
 
-// sub_1001A595 @ 0x1001A595
+// grim_pixel_format_flush_yuv_cache @ 0x1001A595
+// flushes cached YUV<->RGB conversions back into packed 16-bit storage
 int __fastcall sub_1001A595(_DWORD *a1)
 {
   unsigned int v1; // edx
@@ -20878,23 +21252,26 @@ int __fastcall sub_1001A595(_DWORD *a1)
   return 0;
 }
 
-// sub_1001A781 @ 0x1001A781
+// grim_pixel_format_ctor_x1r5g5b5 @ 0x1001A781
+// pixel format ctor for D3DFMT_X1R5G5B5
 float *__thiscall sub_1001A781(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 0x10u, 1);
+  grim_pixel_format_init(this, a2, 0x10u, 1);
   *(_DWORD *)this = &off_1004CBDC;
   return this;
 }
 
-// sub_1001A79D @ 0x1001A79D
+// grim_pixel_format_ctor_a1r5g5b5 @ 0x1001A79D
+// pixel format ctor for D3DFMT_A1R5G5B5
 float *__thiscall sub_1001A79D(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 0x10u, 1);
+  grim_pixel_format_init(this, a2, 0x10u, 1);
   *(_DWORD *)this = &off_1004CBEC;
   return this;
 }
 
-// sub_1001A7B9 @ 0x1001A7B9
+// grim_pixel_format_load_yuv_cache @ 0x1001A7B9
+// loads packed YUV pixels into float cache and converts to RGB
 int __thiscall sub_1001A7B9(int this, unsigned int a2, unsigned int a3, int a4)
 {
   int result; // eax
@@ -20941,7 +21318,7 @@ int __thiscall sub_1001A7B9(int this, unsigned int a2, unsigned int a3, int a4)
     || a3 < *(_DWORD *)(this + 4224)
     || a3 >= *(_DWORD *)(this + 4228) )
   {
-    result = sub_1001A595((_DWORD *)this);
+    result = grim_pixel_format_flush_yuv_cache((_DWORD *)this);
     if ( result < 0 )
       return result;
     *(_DWORD *)(this + 4220) = a2 + 1;
@@ -21067,54 +21444,64 @@ int __thiscall sub_1001A7B9(int this, unsigned int a2, unsigned int a3, int a4)
   return 0;
 }
 
-// sub_1001AA8A @ 0x1001AA8A
+// grim_pixel_format_ctor_a4r4g4b4 @ 0x1001AA8A
+// pixel format ctor for D3DFMT_A4R4G4B4
 float *__thiscall sub_1001AA8A(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 0x10u, 1);
+  grim_pixel_format_init(this, a2, 0x10u, 1);
   *(_DWORD *)this = &off_1004CC10;
   return this;
 }
 
-// sub_1001AAA6 @ 0x1001AAA6
+// grim_pixel_format_ctor_r3g3b2 @ 0x1001AAA6
+// pixel format ctor for D3DFMT_R3G3B2
 float *__thiscall sub_1001AAA6(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 8u, 1);
+  grim_pixel_format_init(this, a2, 8u, 1);
   *(_DWORD *)this = &off_1004CC20;
   return this;
 }
 
-// sub_1001AAC2 @ 0x1001AAC2
+// grim_pixel_format_ctor_a8 @ 0x1001AAC2
+// pixel format ctor for D3DFMT_A8
 float *__thiscall sub_1001AAC2(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 8u, 1);
+  grim_pixel_format_init(this, a2, 8u, 1);
   *(_DWORD *)this = &off_1004CC30;
   return this;
 }
 
-// sub_1001AADE @ 0x1001AADE
+// grim_pixel_format_ctor_a8r3g3b2 @ 0x1001AADE
+// pixel format ctor for D3DFMT_A8R3G3B2
 float *__thiscall sub_1001AADE(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 0x10u, 1);
+  grim_pixel_format_init(this, a2, 0x10u, 1);
   *(_DWORD *)this = &off_1004CC40;
   return this;
 }
 
-// sub_1001AAFA @ 0x1001AAFA
+// grim_pixel_format_ctor_x4r4g4b4 @ 0x1001AAFA
+// pixel format ctor for D3DFMT_X4R4G4B4
 float *__thiscall sub_1001AAFA(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 0x10u, 1);
+  grim_pixel_format_init(this, a2, 0x10u, 1);
   *(_DWORD *)this = &off_1004CC50;
   return this;
 }
 
-// sub_1001AB16 @ 0x1001AB16
+// grim_pixel_format_write_yuv_cache @ 0x1001AB16
+// loads YUV cache for coords, copies RGBA floats into cache, marks dirty for flush
 signed int __thiscall sub_1001AB16(_DWORD *this, int a2, int a3, const void *a4)
 {
   signed int result; // eax
 
   if ( *(this + 1042) )
-    a4 = (const void *)sub_10016944(this, (int)a4);
-  result = sub_1001A7B9((int)this, *(this + 1037) + a2, *(this + 1040) + a3, *(this + 1058) != *(this + 1046));
+    a4 = (const void *)grim_convert_vertex_space(this, (int)a4);
+  result = grim_pixel_format_load_yuv_cache(
+             (int)this,
+             *(this + 1037) + a2,
+             *(this + 1040) + a3,
+             *(this + 1058) != *(this + 1046));
   if ( result >= 0 )
   {
     result = 16 * *(this + 1046);
@@ -21124,10 +21511,11 @@ signed int __thiscall sub_1001AB16(_DWORD *this, int a2, int a3, const void *a4)
   return result;
 }
 
-// sub_1001ABA3 @ 0x1001ABA3
+// grim_pixel_format_ctor_a2b10g10r10 @ 0x1001ABA3
+// pixel format ctor for D3DFMT_A2B10G10R10
 float *__thiscall sub_1001ABA3(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 0x20u, 1);
+  grim_pixel_format_init(this, a2, 0x20u, 1);
   *(_DWORD *)this = &off_1004CC60;
   return this;
 }
@@ -21135,23 +21523,25 @@ float *__thiscall sub_1001ABA3(float *this, float *a2)
 // sub_1001ABBF @ 0x1001ABBF
 void __thiscall sub_1001ABBF(_DWORD *this, int a2, int a3, void *a4)
 {
-  if ( sub_1001A7B9((int)this, *(this + 1037) + a2, *(this + 1040) + a3, 1) >= 0 )
+  if ( grim_pixel_format_load_yuv_cache((int)this, *(this + 1037) + a2, *(this + 1040) + a3, 1) >= 0 )
   {
     qmemcpy(a4, (const void *)(*(this + 1051) + 16 * (*(this + 1036) - *(this + 1052))), 16 * *(this + 1046));
     if ( *(this + 4) )
-      sub_100174A8((int)this, (unsigned int)a4);
+      grim_apply_color_key((int)this, (unsigned int)a4);
   }
 }
 
-// sub_1001AC2E @ 0x1001AC2E
+// grim_pixel_format_ctor_g16r16 @ 0x1001AC2E
+// pixel format ctor for D3DFMT_G16R16
 float *__thiscall sub_1001AC2E(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 0x20u, 1);
+  grim_pixel_format_init(this, a2, 0x20u, 1);
   *(_DWORD *)this = &off_1004CC70;
   return this;
 }
 
-// sub_1001AC4A @ 0x1001AC4A
+// grim_pixel_format_init_dxt @ 0x1001AC4A
+// initializes DXT block-compressed pixel format (DXT1..DXT5)
 int __thiscall sub_1001AC4A(int this, int a2)
 {
   BOOL v3; // eax
@@ -21165,7 +21555,7 @@ int __thiscall sub_1001AC4A(int this, int a2)
   int v11; // edx
   int v12; // edx
 
-  sub_100170F9((float *)this, (float *)a2, 0, 1);
+  grim_pixel_format_init((float *)this, (float *)a2, 0, 1);
   *(_DWORD *)this = &off_1004CAF8;
   if ( *(_DWORD *)(a2 + 24) == 1 )
   {
@@ -21199,27 +21589,27 @@ int __thiscall sub_1001AC4A(int this, int a2)
     case 827611204:
       *(_DWORD *)(this + 4224) = 8;
       *(_DWORD *)(this + 4232) = sub_10021B96;
-      *(_DWORD *)(this + 4228) = sub_10021899;
+      *(_DWORD *)(this + 4228) = grim_dxt1_decode_color_block;
       break;
     case 844388420:
       *(_DWORD *)(this + 4224) = 16;
-      *(_DWORD *)(this + 4232) = sub_1002215A;
-      *(_DWORD *)(this + 4228) = sub_10022114;
+      *(_DWORD *)(this + 4232) = grim_dxt2_encode_block;
+      *(_DWORD *)(this + 4228) = grim_dxt2_decode_block;
       break;
     case 861165636:
       *(_DWORD *)(this + 4224) = 16;
-      *(_DWORD *)(this + 4232) = sub_10021BAE;
-      *(_DWORD *)(this + 4228) = sub_100219D7;
+      *(_DWORD *)(this + 4232) = grim_dxt3_encode_block;
+      *(_DWORD *)(this + 4228) = grim_dxt3_decode_block;
       break;
     case 877942852:
       *(_DWORD *)(this + 4224) = 16;
-      *(_DWORD *)(this + 4232) = sub_1002218E;
-      *(_DWORD *)(this + 4228) = sub_10022137;
+      *(_DWORD *)(this + 4232) = grim_dxt4_encode_block;
+      *(_DWORD *)(this + 4228) = grim_dxt4_decode_block;
       break;
     case 894720068:
       *(_DWORD *)(this + 4224) = 16;
-      *(_DWORD *)(this + 4232) = sub_10021CC2;
-      *(_DWORD *)(this + 4228) = sub_10021A5A;
+      *(_DWORD *)(this + 4232) = grim_dxt5_encode_block;
+      *(_DWORD *)(this + 4228) = grim_dxt5_decode_block;
       break;
   }
   v5 = *(_DWORD *)(this + 4160);
@@ -21249,65 +21639,73 @@ int __thiscall sub_1001AC4A(int this, int a2)
   return this;
 }
 
-// sub_1001AE3C @ 0x1001AE3C
+// grim_pixel_format_ctor_a8p8 @ 0x1001AE3C
+// pixel format ctor for D3DFMT_A8P8
 float *__thiscall sub_1001AE3C(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 0x10u, 1);
+  grim_pixel_format_init(this, a2, 0x10u, 1);
   *(_DWORD *)this = &off_1004CC80;
   return this;
 }
 
-// sub_1001AE58 @ 0x1001AE58
+// FUN_1001ae58 @ 0x1001AE58
+// [binja] void*** __thiscall sub_1001ae58(void*** arg1, char arg2)
 _DWORD *__thiscall sub_1001AE58(_DWORD *this, char a2)
 {
-  sub_1001A574(this);
+  j_grim_vertex_space_converter_destroy(this);
   if ( (a2 & 1) != 0 )
     operator delete(this);
   return this;
 }
 
-// sub_1001AE74 @ 0x1001AE74
+// grim_pixel_format_ctor_p8 @ 0x1001AE74
+// pixel format ctor for D3DFMT_P8
 float *__thiscall sub_1001AE74(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 8u, 1);
+  grim_pixel_format_init(this, a2, 8u, 1);
   *(_DWORD *)this = &off_1004CC90;
   return this;
 }
 
-// sub_1001AE90 @ 0x1001AE90
+// grim_pixel_format_ctor_l8 @ 0x1001AE90
+// pixel format ctor for D3DFMT_L8
 float *__thiscall sub_1001AE90(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 8u, 1);
+  grim_pixel_format_init(this, a2, 8u, 1);
   *(_DWORD *)this = &off_1004CCA0;
   return this;
 }
 
-// sub_1001AEAC @ 0x1001AEAC
+// grim_pixel_format_ctor_a8l8 @ 0x1001AEAC
+// pixel format ctor for D3DFMT_A8L8
 float *__thiscall sub_1001AEAC(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 0x10u, 1);
+  grim_pixel_format_init(this, a2, 0x10u, 1);
   *(_DWORD *)this = &off_1004CCB0;
   return this;
 }
 
-// sub_1001AEC8 @ 0x1001AEC8
+// FUN_1001aec8 @ 0x1001AEC8
+// [binja] void*** __thiscall sub_1001aec8(void*** arg1, char arg2)
 void *__thiscall sub_1001AEC8(void *this, char a2)
 {
-  sub_10016C3C((int)this);
+  FUN_10016c3c((int)this);
   if ( (a2 & 1) != 0 )
     operator delete(this);
   return this;
 }
 
-// sub_1001AEE4 @ 0x1001AEE4
+// grim_pixel_format_ctor_a4l4 @ 0x1001AEE4
+// pixel format ctor for D3DFMT_A4L4
 float *__thiscall sub_1001AEE4(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 8u, 1);
+  grim_pixel_format_init(this, a2, 8u, 1);
   *(_DWORD *)this = &off_1004CCC0;
   return this;
 }
 
-// sub_1001AF00 @ 0x1001AF00
+// FUN_1001af00 @ 0x1001AF00
+// [binja] void* __fastcall sub_1001af00(void* arg1)
 int __thiscall sub_1001AF00(int this)
 {
   int v1; // eax
@@ -21335,79 +21733,89 @@ int __thiscall sub_1001AF00(int this)
   return this;
 }
 
-// sub_1001B001 @ 0x1001B001
+// grim_pixel_format_ctor_v8u8 @ 0x1001B001
+// pixel format ctor for D3DFMT_V8U8
 float *__thiscall sub_1001B001(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 0x10u, 2);
+  grim_pixel_format_init(this, a2, 0x10u, 2);
   *(_DWORD *)this = &off_1004CCD0;
   return this;
 }
 
-// sub_1001B01D @ 0x1001B01D
+// grim_pixel_format_ctor_l6v5u5 @ 0x1001B01D
+// pixel format ctor for D3DFMT_L6V5U5
 float *__thiscall sub_1001B01D(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 0x10u, 2);
+  grim_pixel_format_init(this, a2, 0x10u, 2);
   *(_DWORD *)this = &off_1004CCE0;
   return this;
 }
 
-// sub_1001B039 @ 0x1001B039
+// grim_pixel_format_ctor_x8l8v8u8 @ 0x1001B039
+// pixel format ctor for D3DFMT_X8L8V8U8
 float *__thiscall sub_1001B039(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 0x20u, 2);
+  grim_pixel_format_init(this, a2, 0x20u, 2);
   *(_DWORD *)this = &off_1004CCF0;
   return this;
 }
 
-// sub_1001B055 @ 0x1001B055
+// grim_pixel_format_ctor_q8w8v8u8 @ 0x1001B055
+// pixel format ctor for D3DFMT_Q8W8V8U8
 float *__thiscall sub_1001B055(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 0x20u, 3);
+  grim_pixel_format_init(this, a2, 0x20u, 3);
   *(_DWORD *)this = &off_1004CD00;
   return this;
 }
 
-// sub_1001B071 @ 0x1001B071
+// grim_pixel_format_ctor_v16u16 @ 0x1001B071
+// pixel format ctor for D3DFMT_V16U16
 float *__thiscall sub_1001B071(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 0x20u, 2);
+  grim_pixel_format_init(this, a2, 0x20u, 2);
   *(_DWORD *)this = &off_1004CD10;
   return this;
 }
 
-// sub_1001B08D @ 0x1001B08D
+// grim_pixel_format_ctor_w11v11u10 @ 0x1001B08D
+// pixel format ctor for D3DFMT_W11V11U10
 float *__thiscall sub_1001B08D(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 0x20u, 2);
+  grim_pixel_format_init(this, a2, 0x20u, 2);
   *(_DWORD *)this = &off_1004CD20;
   return this;
 }
 
-// sub_1001B0A9 @ 0x1001B0A9
+// grim_pixel_format_ctor_a2w10v10u10 @ 0x1001B0A9
+// pixel format ctor for D3DFMT_A2W10V10U10
 float *__thiscall sub_1001B0A9(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 0x20u, 2);
+  grim_pixel_format_init(this, a2, 0x20u, 2);
   *(_DWORD *)this = &off_1004CD30;
   return this;
 }
 
-// sub_1001B0C5 @ 0x1001B0C5
+// grim_pixel_format_ctor_d16_lockable @ 0x1001B0C5
+// pixel format ctor for D3DFMT_D16_LOCKABLE
 float *__thiscall sub_1001B0C5(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 0x10u, 1);
+  grim_pixel_format_init(this, a2, 0x10u, 1);
   *(_DWORD *)this = &off_1004CD40;
   return this;
 }
 
-// sub_1001B0E1 @ 0x1001B0E1
+// grim_pixel_format_ctor_l16 @ 0x1001B0E1
+// pixel format ctor for FourCC L16 (16-bit luminance)
 float *__thiscall sub_1001B0E1(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 0x10u, 1);
+  grim_pixel_format_init(this, a2, 0x10u, 1);
   *(_DWORD *)this = &off_1004CD50;
   return this;
 }
 
-// sub_1001B0FD @ 0x1001B0FD
+// grim_pixel_format_read_dxt_cache @ 0x1001B0FD
+// decodes DXT blocks into cache on demand and copies RGBA floats to output (color key aware)
 unsigned int __thiscall sub_1001B0FD(unsigned int this, int a2, int a3, float *a4)
 {
   int v4; // esi
@@ -21486,7 +21894,7 @@ unsigned int __thiscall sub_1001B0FD(unsigned int this, int a2, int a3, float *a
   }
   if ( *(_DWORD *)(this + 16) )
   {
-    sub_100170D6();
+    fpu_set_round_trunc();
     while ( (unsigned int)a4 < v14 )
     {
       v18 = *a4 * 31.0 + 0.5;
@@ -21519,106 +21927,119 @@ unsigned int __thiscall sub_1001B0FD(unsigned int this, int a2, int a3, float *a
   return result;
 }
 
-// sub_1001B3A6 @ 0x1001B3A6
+// grim_pixel_format_ctor_al16 @ 0x1001B3A6
+// pixel format ctor for FourCC AL16
 float *__thiscall sub_1001B3A6(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 0x20u, 1);
+  grim_pixel_format_init(this, a2, 0x20u, 1);
   *(_DWORD *)this = &off_1004CD60;
   return this;
 }
 
-// sub_1001B3C2 @ 0x1001B3C2
+// grim_pixel_format_ctor_r16 @ 0x1001B3C2
+// pixel format ctor for FourCC R16
 float *__thiscall sub_1001B3C2(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 0x30u, 1);
+  grim_pixel_format_init(this, a2, 0x30u, 1);
   *(_DWORD *)this = &off_1004CD70;
   return this;
 }
 
-// sub_1001B3DE @ 0x1001B3DE
+// grim_pixel_format_ctor_ar16 @ 0x1001B3DE
+// pixel format ctor for FourCC AR16
 float *__thiscall sub_1001B3DE(float *this, float *a2)
 {
-  sub_100170F9(this, a2, 0x40u, 1);
+  grim_pixel_format_init(this, a2, 0x40u, 1);
   *(_DWORD *)this = &off_1004CD80;
   return this;
 }
 
-// sub_1001B3FA @ 0x1001B3FA
+// grim_pixel_format_ctor_dxt1 @ 0x1001B3FA
+// pixel format ctor for FourCC DXT1
 _DWORD *__thiscall sub_1001B3FA(_DWORD *this, int a2)
 {
-  sub_1001AC4A((int)this, a2);
+  grim_pixel_format_init_dxt((int)this, a2);
   *this = &off_1004CD90;
   return this;
 }
 
-// sub_1001B412 @ 0x1001B412
+// grim_pixel_format_ctor_dxt2 @ 0x1001B412
+// pixel format ctor for FourCC DXT2
 _DWORD *__thiscall sub_1001B412(_DWORD *this, int a2)
 {
-  sub_1001AC4A((int)this, a2);
+  grim_pixel_format_init_dxt((int)this, a2);
   *this = &off_1004CDA0;
   return this;
 }
 
-// sub_1001B42A @ 0x1001B42A
+// grim_pixel_format_ctor_dxt3 @ 0x1001B42A
+// pixel format ctor for FourCC DXT3
 _DWORD *__thiscall sub_1001B42A(_DWORD *this, int a2)
 {
-  sub_1001AC4A((int)this, a2);
+  grim_pixel_format_init_dxt((int)this, a2);
   *this = &off_1004CDB0;
   return this;
 }
 
-// sub_1001B442 @ 0x1001B442
+// grim_pixel_format_ctor_dxt4 @ 0x1001B442
+// pixel format ctor for FourCC DXT4
 _DWORD *__thiscall sub_1001B442(_DWORD *this, int a2)
 {
-  sub_1001AC4A((int)this, a2);
+  grim_pixel_format_init_dxt((int)this, a2);
   *this = &off_1004CDC0;
   return this;
 }
 
-// sub_1001B45A @ 0x1001B45A
+// grim_pixel_format_ctor_dxt5 @ 0x1001B45A
+// pixel format ctor for FourCC DXT5
 _DWORD *__thiscall sub_1001B45A(_DWORD *this, int a2)
 {
-  sub_1001AC4A((int)this, a2);
+  grim_pixel_format_init_dxt((int)this, a2);
   *this = &off_1004CDD0;
   return this;
 }
 
-// sub_1001B472 @ 0x1001B472
+// FUN_1001b472 @ 0x1001B472
+// [binja] void*** __thiscall sub_1001b472(void*** arg1, char arg2)
 void *__thiscall sub_1001B472(void *this, char a2)
 {
-  sub_1001B48E((int)this);
+  j_FUN_10016c3c((int)this);
   if ( (a2 & 1) != 0 )
     operator delete(this);
   return this;
 }
 
-// sub_1001B493 @ 0x1001B493
+// FUN_1001b493 @ 0x1001B493
+// [binja] int32_t __fastcall sub_1001b493(void*** arg1)
 void __thiscall sub_1001B493(int this)
 {
   *(_DWORD *)this = &off_1004CB7C;
-  sub_1001A595((_DWORD *)this);
+  grim_pixel_format_flush_yuv_cache((_DWORD *)this);
   if ( *(_DWORD *)(this + 4204) )
     operator delete(*(void **)(this + 4204));
-  sub_1001692E((_DWORD *)this);
+  grim_vertex_space_converter_destroy((_DWORD *)this);
 }
 
-// sub_1001B4DC @ 0x1001B4DC
+// grim_pixel_format_ctor_uyvy @ 0x1001B4DC
+// pixel format ctor for FourCC UYVY
 _DWORD *__thiscall sub_1001B4DC(_DWORD *this, int a2)
 {
-  sub_1001A444((int)this, a2);
+  grim_pixel_format_init_yuv((int)this, a2);
   *this = &off_1004CDE0;
   return this;
 }
 
-// sub_1001B4F4 @ 0x1001B4F4
+// grim_pixel_format_ctor_yuy2 @ 0x1001B4F4
+// pixel format ctor for FourCC YUY2
 _DWORD *__thiscall sub_1001B4F4(_DWORD *this, int a2)
 {
-  sub_1001A444((int)this, a2);
+  grim_pixel_format_init_yuv((int)this, a2);
   *this = &off_1004CDF0;
   return this;
 }
 
-// sub_1001B50C @ 0x1001B50C
+// grim_pixel_format_create @ 0x1001B50C
+// factory: picks pixel format implementation from FourCC/D3DFORMAT
 _DWORD *__cdecl sub_1001B50C(float *a1)
 {
   int v1; // eax
@@ -21694,7 +22115,7 @@ _DWORD *__cdecl sub_1001B50C(float *a1)
             v49 = operator new(0x109Cu);
             if ( v49 )
             {
-              v4 = sub_1001B4DC(v49, (int)a1);
+              v4 = grim_pixel_format_ctor_uyvy(v49, (int)a1);
               goto LABEL_105;
             }
           }
@@ -21703,7 +22124,7 @@ _DWORD *__cdecl sub_1001B50C(float *a1)
             v50 = (float *)operator new(0x106Cu);
             if ( v50 )
             {
-              v4 = sub_1001B3DE(v50, a1);
+              v4 = grim_pixel_format_ctor_ar16(v50, a1);
               goto LABEL_105;
             }
           }
@@ -21713,7 +22134,7 @@ _DWORD *__cdecl sub_1001B50C(float *a1)
           v51 = (float *)operator new(0x106Cu);
           if ( v51 )
           {
-            v4 = sub_1001B3C2(v51, a1);
+            v4 = grim_pixel_format_ctor_r16(v51, a1);
             goto LABEL_105;
           }
         }
@@ -21723,7 +22144,7 @@ _DWORD *__cdecl sub_1001B50C(float *a1)
         v52 = (float *)operator new(0x106Cu);
         if ( v52 )
         {
-          v4 = sub_1001B3A6(v52, a1);
+          v4 = grim_pixel_format_ctor_al16(v52, a1);
           goto LABEL_105;
         }
       }
@@ -21736,7 +22157,7 @@ _DWORD *__cdecl sub_1001B50C(float *a1)
           v45 = (float *)operator new(0x106Cu);
           if ( v45 )
           {
-            v4 = sub_1001B0E1(v45, a1);
+            v4 = grim_pixel_format_ctor_l16(v45, a1);
             goto LABEL_105;
           }
           break;
@@ -21744,7 +22165,7 @@ _DWORD *__cdecl sub_1001B50C(float *a1)
           v44 = operator new(0x10C4u);
           if ( v44 )
           {
-            v4 = sub_1001B412(v44, (int)a1);
+            v4 = grim_pixel_format_ctor_dxt2(v44, (int)a1);
             goto LABEL_105;
           }
           break;
@@ -21752,7 +22173,7 @@ _DWORD *__cdecl sub_1001B50C(float *a1)
           v43 = operator new(0x109Cu);
           if ( v43 )
           {
-            v4 = sub_1001B4F4(v43, (int)a1);
+            v4 = grim_pixel_format_ctor_yuy2(v43, (int)a1);
             goto LABEL_105;
           }
           break;
@@ -21760,7 +22181,7 @@ _DWORD *__cdecl sub_1001B50C(float *a1)
           v42 = operator new(0x10C4u);
           if ( v42 )
           {
-            v4 = sub_1001B42A(v42, (int)a1);
+            v4 = grim_pixel_format_ctor_dxt3(v42, (int)a1);
             goto LABEL_105;
           }
           break;
@@ -21768,7 +22189,7 @@ _DWORD *__cdecl sub_1001B50C(float *a1)
           v41 = operator new(0x10C4u);
           if ( v41 )
           {
-            v4 = sub_1001B442(v41, (int)a1);
+            v4 = grim_pixel_format_ctor_dxt4(v41, (int)a1);
             goto LABEL_105;
           }
           break;
@@ -21776,7 +22197,7 @@ _DWORD *__cdecl sub_1001B50C(float *a1)
           v40 = operator new(0x10C4u);
           if ( v40 )
           {
-            v4 = sub_1001B45A(v40, (int)a1);
+            v4 = grim_pixel_format_ctor_dxt5(v40, (int)a1);
             goto LABEL_105;
           }
           break;
@@ -21791,7 +22212,7 @@ _DWORD *__cdecl sub_1001B50C(float *a1)
     v39 = operator new(0x10C4u);
     if ( v39 )
     {
-      v4 = sub_1001B3FA(v39, (int)a1);
+      v4 = grim_pixel_format_ctor_dxt1(v39, (int)a1);
       goto LABEL_105;
     }
     goto LABEL_104;
@@ -21817,7 +22238,7 @@ _DWORD *__cdecl sub_1001B50C(float *a1)
               v34 = (float *)operator new(0x106Cu);
               if ( v34 )
               {
-                v4 = sub_1001B0C5(v34, a1);
+                v4 = grim_pixel_format_ctor_d16_lockable(v34, a1);
                 goto LABEL_105;
               }
             }
@@ -21826,7 +22247,7 @@ _DWORD *__cdecl sub_1001B50C(float *a1)
               v35 = (float *)operator new(0x106Cu);
               if ( v35 )
               {
-                v4 = sub_1001B0A9(v35, a1);
+                v4 = grim_pixel_format_ctor_a2w10v10u10(v35, a1);
                 goto LABEL_105;
               }
             }
@@ -21836,7 +22257,7 @@ _DWORD *__cdecl sub_1001B50C(float *a1)
             v36 = (float *)operator new(0x106Cu);
             if ( v36 )
             {
-              v4 = sub_1001B08D(v36, a1);
+              v4 = grim_pixel_format_ctor_w11v11u10(v36, a1);
               goto LABEL_105;
             }
           }
@@ -21846,7 +22267,7 @@ _DWORD *__cdecl sub_1001B50C(float *a1)
           v37 = (float *)operator new(0x106Cu);
           if ( v37 )
           {
-            v4 = sub_1001B071(v37, a1);
+            v4 = grim_pixel_format_ctor_v16u16(v37, a1);
             goto LABEL_105;
           }
         }
@@ -21856,7 +22277,7 @@ _DWORD *__cdecl sub_1001B50C(float *a1)
         v38 = (float *)operator new(0x106Cu);
         if ( v38 )
         {
-          v4 = sub_1001B055(v38, a1);
+          v4 = grim_pixel_format_ctor_q8w8v8u8(v38, a1);
           goto LABEL_105;
         }
       }
@@ -21866,7 +22287,7 @@ _DWORD *__cdecl sub_1001B50C(float *a1)
       v29 = (float *)operator new(0x106Cu);
       if ( v29 )
       {
-        v4 = sub_1001B039(v29, a1);
+        v4 = grim_pixel_format_ctor_x8l8v8u8(v29, a1);
         goto LABEL_105;
       }
     }
@@ -21892,7 +22313,7 @@ _DWORD *__cdecl sub_1001B50C(float *a1)
                 v23 = (float *)operator new(0x106Cu);
                 if ( v23 )
                 {
-                  v4 = sub_1001B01D(v23, a1);
+                  v4 = grim_pixel_format_ctor_l6v5u5(v23, a1);
                   goto LABEL_105;
                 }
               }
@@ -21901,7 +22322,7 @@ _DWORD *__cdecl sub_1001B50C(float *a1)
                 v24 = (float *)operator new(0x106Cu);
                 if ( v24 )
                 {
-                  v4 = sub_1001B001(v24, a1);
+                  v4 = grim_pixel_format_ctor_v8u8(v24, a1);
                   goto LABEL_105;
                 }
               }
@@ -21911,7 +22332,7 @@ _DWORD *__cdecl sub_1001B50C(float *a1)
               v25 = (float *)operator new(0x106Cu);
               if ( v25 )
               {
-                v4 = sub_1001AEE4(v25, a1);
+                v4 = grim_pixel_format_ctor_a4l4(v25, a1);
                 goto LABEL_105;
               }
             }
@@ -21921,7 +22342,7 @@ _DWORD *__cdecl sub_1001B50C(float *a1)
             v26 = (float *)operator new(0x106Cu);
             if ( v26 )
             {
-              v4 = sub_1001AEAC(v26, a1);
+              v4 = grim_pixel_format_ctor_a8l8(v26, a1);
               goto LABEL_105;
             }
           }
@@ -21931,7 +22352,7 @@ _DWORD *__cdecl sub_1001B50C(float *a1)
           v27 = (float *)operator new(0x106Cu);
           if ( v27 )
           {
-            v4 = sub_1001AE90(v27, a1);
+            v4 = grim_pixel_format_ctor_l8(v27, a1);
             goto LABEL_105;
           }
         }
@@ -21941,7 +22362,7 @@ _DWORD *__cdecl sub_1001B50C(float *a1)
         v28 = (float *)operator new(0x106Cu);
         if ( v28 )
         {
-          v4 = sub_1001AE74(v28, a1);
+          v4 = grim_pixel_format_ctor_p8(v28, a1);
           goto LABEL_105;
         }
       }
@@ -21955,7 +22376,7 @@ LABEL_104:
     v17 = (float *)operator new(0x106Cu);
     if ( v17 )
     {
-      v4 = sub_1001AE3C(v17, a1);
+      v4 = grim_pixel_format_ctor_a8p8(v17, a1);
 LABEL_105:
       v2 = v4;
       if ( v4 && v4[4] )
@@ -21970,79 +22391,79 @@ LABEL_105:
       v3 = (float *)operator new(0x106Cu);
       if ( !v3 )
         goto LABEL_104;
-      v4 = sub_1001A428(v3, a1);
+      v4 = grim_pixel_format_ctor_r8g8b8(v3, a1);
       goto LABEL_105;
     case 21:
       v5 = (float *)operator new(0x106Cu);
       if ( !v5 )
         goto LABEL_104;
-      v4 = sub_1001A53C(v5, a1);
+      v4 = grim_pixel_format_ctor_a8r8g8b8(v5, a1);
       goto LABEL_105;
     case 22:
       v6 = (float *)operator new(0x106Cu);
       if ( !v6 )
         goto LABEL_104;
-      v4 = sub_1001A558(v6, a1);
+      v4 = grim_pixel_format_ctor_x8r8g8b8(v6, a1);
       goto LABEL_105;
     case 23:
       v7 = (float *)operator new(0x106Cu);
       if ( !v7 )
         goto LABEL_104;
-      v4 = sub_1001A579(v7, a1);
+      v4 = grim_pixel_format_ctor_r5g6b5(v7, a1);
       goto LABEL_105;
     case 24:
       v8 = (float *)operator new(0x106Cu);
       if ( !v8 )
         goto LABEL_104;
-      v4 = sub_1001A781(v8, a1);
+      v4 = grim_pixel_format_ctor_x1r5g5b5(v8, a1);
       goto LABEL_105;
     case 25:
       v9 = (float *)operator new(0x106Cu);
       if ( !v9 )
         goto LABEL_104;
-      v4 = sub_1001A79D(v9, a1);
+      v4 = grim_pixel_format_ctor_a1r5g5b5(v9, a1);
       goto LABEL_105;
     case 26:
       v10 = (float *)operator new(0x106Cu);
       if ( !v10 )
         goto LABEL_104;
-      v4 = sub_1001AA8A(v10, a1);
+      v4 = grim_pixel_format_ctor_a4r4g4b4(v10, a1);
       goto LABEL_105;
     case 27:
       v11 = (float *)operator new(0x106Cu);
       if ( !v11 )
         goto LABEL_104;
-      v4 = sub_1001AAA6(v11, a1);
+      v4 = grim_pixel_format_ctor_r3g3b2(v11, a1);
       goto LABEL_105;
     case 28:
       v12 = (float *)operator new(0x106Cu);
       if ( !v12 )
         goto LABEL_104;
-      v4 = sub_1001AAC2(v12, a1);
+      v4 = grim_pixel_format_ctor_a8(v12, a1);
       goto LABEL_105;
     case 29:
       v13 = (float *)operator new(0x106Cu);
       if ( !v13 )
         goto LABEL_104;
-      v4 = sub_1001AADE(v13, a1);
+      v4 = grim_pixel_format_ctor_a8r3g3b2(v13, a1);
       goto LABEL_105;
     case 30:
       v14 = (float *)operator new(0x106Cu);
       if ( !v14 )
         goto LABEL_104;
-      v4 = sub_1001AAFA(v14, a1);
+      v4 = grim_pixel_format_ctor_x4r4g4b4(v14, a1);
       goto LABEL_105;
     case 31:
       v15 = (float *)operator new(0x106Cu);
       if ( !v15 )
         goto LABEL_104;
-      v4 = sub_1001ABA3(v15, a1);
+      v4 = grim_pixel_format_ctor_a2b10g10r10(v15, a1);
       goto LABEL_105;
     case 34:
       v16 = (float *)operator new(0x106Cu);
       if ( !v16 )
         goto LABEL_104;
-      v4 = sub_1001AC2E(v16, a1);
+      v4 = grim_pixel_format_ctor_g16r16(v16, a1);
       goto LABEL_105;
     default:
       return v2;
@@ -22050,16 +22471,18 @@ LABEL_105:
   return v2;
 }
 
-// sub_1001BC84 @ 0x1001BC84
+// FUN_1001bc84 @ 0x1001BC84
+// [binja] void*** __thiscall sub_1001bc84(void*** arg1, char arg2)
 void *__thiscall sub_1001BC84(void *this, char a2)
 {
-  sub_1001BCA0((int)this);
+  j_FUN_1001b493((int)this);
   if ( (a2 & 1) != 0 )
     operator delete(this);
   return this;
 }
 
-// sub_1001BCA5 @ 0x1001BCA5
+// FUN_1001bca5 @ 0x1001BCA5
+// [binja] int32_t* __fastcall sub_1001bca5(int32_t* arg1)
 _DWORD *__thiscall sub_1001BCA5(_DWORD *this)
 {
   *this = -1;
@@ -22069,7 +22492,8 @@ _DWORD *__thiscall sub_1001BCA5(_DWORD *this)
   return this;
 }
 
-// sub_1001BCB7 @ 0x1001BCB7
+// FUN_1001bcb7 @ 0x1001BCB7
+// [binja] int32_t __thiscall sub_1001bcb7(int32_t* arg1, int32_t* arg2, int32_t* arg3)
 int __thiscall sub_1001BCB7(int this, LPCWCH lpWideCharStr, LPSTR lpMultiByteStr)
 {
   void *v5; // esp
@@ -22122,7 +22546,8 @@ LABEL_8:
   return -2005529767;
 }
 
-// sub_1001BDC7 @ 0x1001BDC7
+// FUN_1001bdc7 @ 0x1001BDC7
+// [binja] int32_t __thiscall sub_1001bdc7(void** arg1, int32_t arg2, int32_t* arg3)
 int __thiscall sub_1001BDC7(_DWORD *this, LPCWCH lpWideCharStr, LPSTR lpMultiByteStr)
 {
   const WCHAR *v3; // ebx
@@ -22164,7 +22589,8 @@ LABEL_8:
   return -2005529767;
 }
 
-// sub_1001BED2 @ 0x1001BED2
+// FUN_1001bed2 @ 0x1001BED2
+// [binja] void __fastcall sub_1001bed2(int32_t* arg1)
 void __thiscall sub_1001BED2(int this)
 {
   const void *v2; // eax
@@ -22211,7 +22637,8 @@ BOOL __cdecl sub_1001BEDD(int a1, LPCSTR lpValueName, LPBYTE lpData, DWORD cbDat
   return result;
 }
 
-// sub_1001BF39 @ 0x1001BF39
+// FUN_1001bf39 @ 0x1001BF39
+// [binja] int32_t __fastcall sub_1001bf39(int32_t arg1)
 BOOL sub_1001BF39()
 {
   _EAX = 1;
@@ -22241,7 +22668,7 @@ int sub_1001BF5E()
   if ( dword_10054498 < 0 )
   {
     dword_10054498 = 0;
-    if ( sub_1001BF39() )
+    if ( FUN_1001bf39() )
     {
       _m_empty();
       dword_10054498 = 1;
@@ -22250,7 +22677,8 @@ int sub_1001BF5E()
   return dword_10054498;
 }
 
-// sub_1001BFF7 @ 0x1001BFF7
+// FUN_1001bff7 @ 0x1001BFF7
+// [binja] int32_t __fastcall sub_1001bff7(int32_t arg1)
 BOOL sub_1001BFF7()
 {
   int v11; // [esp+Ch] [ebp-4h]
@@ -22267,7 +22695,8 @@ BOOL sub_1001BFF7()
   return v11;
 }
 
-// sub_1001C02F @ 0x1001C02F
+// FUN_1001c02f @ 0x1001C02F
+// [binja] int32_t __fastcall sub_1001c02f(int32_t arg1)
 int sub_1001C02F()
 {
   _DWORD v11[7]; // [esp-Ch] [ebp-48h] BYREF
@@ -22336,21 +22765,22 @@ LABEL_11:
     if ( ProcessorFeature != 6 )
     {
       if ( ProcessorFeature == 7 )
-        return sub_1001BFF7();
+        return FUN_1001bff7();
       if ( ProcessorFeature != 10 || v4 )
         return 0;
-      return sub_1001C02F() & 8;
+      return FUN_1001c02f() & 8;
     }
     if ( !v4 )
-      return sub_1001C02F() & 4;
+      return FUN_1001c02f() & 4;
     return 0;
   }
   if ( ProcessorFeature != 10 )
     return IsProcessorFeaturePresent(ProcessorFeature);
-  return sub_1001C02F() & 8;
+  return FUN_1001c02f() & 8;
 }
 
-// sub_1001C188 @ 0x1001C188
+// grim_select_renderer_backend @ 0x1001C188
+// copies the render backend vtable and selects D3DX/alt paths based on config
 int __stdcall sub_1001C188(int Data)
 {
   if ( Data )
@@ -22437,7 +22867,7 @@ int __cdecl sub_1001C265(_DWORD *a1, int a2, int a3)
   result = sub_10023139(a1);
   if ( byte_100554E8 == 2 )
   {
-    result = sub_10022C2F();
+    result = FUN_10022c2f();
     byte_100554E8 = result;
   }
   a1[4] = 200;
@@ -24684,7 +25114,8 @@ _DWORD *__cdecl sub_1001E0FA(_DWORD *a1, int a2, int a3, int a4)
   return a1;
 }
 
-// sub_1001E114 @ 0x1001E114
+// png_error @ 0x1001E114
+// png error handler: call error_fn then longjmp
 void __cdecl __noreturn sub_1001E114(jmp_buf Buf, int a2)
 {
   void (__cdecl *v2)(int *__attribute__((__org_typedef(jmp_buf))), int); // eax
@@ -24695,7 +25126,8 @@ void __cdecl __noreturn sub_1001E114(jmp_buf Buf, int a2)
   longjmp(Buf, 1);
 }
 
-// sub_1001E132 @ 0x1001E132
+// png_warning @ 0x1001E132
+// png warning handler: call warning_fn
 int (__cdecl *__cdecl sub_1001E132(int a1, int a2))(int, int)
 {
   int (__cdecl *result)(int, int); // eax
@@ -24706,25 +25138,26 @@ int (__cdecl *__cdecl sub_1001E132(int a1, int a2))(int, int)
   return result;
 }
 
-// sub_1001E147 @ 0x1001E147
+// FUN_1001e147 @ 0x1001E147
 void __cdecl __noreturn sub_1001E147(jmp_buf Buf, const void *a2)
 {
   int v2[20]; // [esp+0h] [ebp-50h] BYREF
 
   sub_1001E073((int)Buf, a2);
-  sub_1001E114(Buf, (int)v2);
+  png_error(Buf, (int)v2);
 }
 
-// sub_1001E16C @ 0x1001E16C
+// FUN_1001e16c @ 0x1001E16C
 int (__cdecl *__cdecl sub_1001E16C(int a1, const void *a2))(int, int)
 {
   _BYTE v3[80]; // [esp+0h] [ebp-50h] BYREF
 
   sub_1001E073(a1, a2);
-  return sub_1001E132(a1, (int)v3);
+  return png_warning(a1, (int)v3);
 }
 
-// sub_1001E191 @ 0x1001E191
+// png_create_read_struct @ 0x1001E191
+// allocates png_struct, initializes zlib stream, checks version; error_fn/warn_fn are png_error_ptr callbacks
 jmp_buf __cdecl sub_1001E191(_BYTE *a1, int a2, int a3, int a4)
 {
   int *v4; // eax
@@ -24738,32 +25171,32 @@ jmp_buf __cdecl sub_1001E191(_BYTE *a1, int a2, int a3, int a4)
     return 0;
   if ( setjmp3(v4, 0, v7) )
   {
-    sub_10024777((int)Buf, (void *)Buf[39]);
-    sub_10024734(Buf);
+    png_free((int)Buf, (void *)Buf[39]);
+    png_free_ptr(Buf);
     return 0;
   }
   sub_1001E0FA(Buf, a2, a3, a4);
   if ( !a1 || *a1 != 49 )
-    sub_1001E114(Buf, (int)"Incompatible libpng version in application and library");
+    png_error(Buf, (int)"Incompatible libpng version in application and library");
   Buf[40] = 0x2000;
-  Buf[39] = sub_10024741(Buf, 0x2000u);
-  Buf[33] = (int)sub_1002052B;
-  Buf[34] = (int)sub_1002057E;
+  Buf[39] = png_malloc(Buf, 0x2000u);
+  Buf[33] = (int)FUN_1002052b;
+  Buf[34] = (int)png_free_thunk;
   Buf[35] = (int)Buf;
-  v6 = sub_10024374(Buf + 25, "1.1.3", 56);
+  v6 = inflateInit_(Buf + 25, "1.1.3", 56);
   if ( v6 == -6 )
-    sub_1001E114(Buf, (int)"zlib version error");
+    png_error(Buf, (int)"zlib version error");
   if ( v6 == -4 || v6 == -2 )
-    sub_1001E114(Buf, (int)"zlib memory error");
+    png_error(Buf, (int)"zlib memory error");
   if ( v6 )
-    sub_1001E114(Buf, (int)"Unknown zlib error");
+    png_error(Buf, (int)"Unknown zlib error");
   Buf[28] = Buf[39];
   Buf[29] = Buf[40];
-  sub_100204A4(Buf, 0, 0);
+  FUN_100204a4(Buf, 0, 0);
   return Buf;
 }
 
-// sub_1001E294 @ 0x1001E294
+// FUN_1001e294 @ 0x1001E294
 int __cdecl sub_1001E294(jmp_buf Buf, int a2)
 {
   int *__attribute__((__org_typedef(jmp_buf))) v2; // esi
@@ -24781,7 +25214,7 @@ int __cdecl sub_1001E294(jmp_buf Buf, int a2)
   {
     v4 = v3;
     v5 = 8 - v3;
-    sub_1002047C(Buf, v3 + a2 + 32, v5);
+    png_read_data(Buf, v3 + a2 + 32, v5);
     v9 = a2 + 32;
     *((_BYTE *)v2 + 284) = 8;
     if ( sub_100204E3(v9, v4, v5) )
@@ -24789,9 +25222,9 @@ int __cdecl sub_1001E294(jmp_buf Buf, int a2)
       if ( v4 < 4 )
       {
         if ( sub_100204E3(a2 + 32, v4, v5 - 4) )
-          sub_1001E114(v2, (int)"Not a PNG file");
+          png_error(v2, (int)"Not a PNG file");
       }
-      sub_1001E114(v2, (int)"PNG file corrupted by ASCII conversion");
+      png_error(v2, (int)"PNG file corrupted by ASCII conversion");
     }
   }
   v6 = v2 + 67;
@@ -24803,60 +25236,60 @@ int __cdecl sub_1001E294(jmp_buf Buf, int a2)
       {
         while ( 1 )
         {
-          sub_1002047C(v2, (int)&Buf, 4);
-          v7 = sub_100247E4(&Buf);
-          sub_10020583(v2);
-          sub_10024807(v2, (int)(v2 + 67), 4);
+          png_read_data(v2, (int)&Buf, 4);
+          v7 = png_get_uint_32(&Buf);
+          png_reset_crc(v2);
+          png_crc_read(v2, (int)(v2 + 67), 4);
           if ( *v6 != *(_DWORD *)"IHDR" )
             break;
-          sub_10025163(v2, a2, v7);
+          FUN_10025163(v2, a2, v7);
         }
         if ( *v6 != *(_DWORD *)"PLTE" )
           break;
-        sub_10025359(v2, a2, v7);
+        FUN_10025359(v2, a2, v7);
       }
       if ( *v6 != *(_DWORD *)"IEND" )
         break;
-      sub_10025483(v2, a2, v7);
+      FUN_10025483(v2, a2, v7);
     }
     if ( *v6 == *(_DWORD *)"IDAT" )
       break;
     if ( *v6 == *(_DWORD *)"gAMA" )
     {
-      sub_100254CD(v2, a2, v7);
+      FUN_100254cd(v2, a2, v7);
     }
     else if ( *v6 == *(_DWORD *)"sRGB" )
     {
-      sub_100255D8(v2, a2, v7);
+      FUN_100255d8(v2, a2, v7);
     }
     else if ( *v6 == *(_DWORD *)"tRNS" )
     {
-      sub_100256C7(v2, a2, v7);
+      FUN_100256c7(v2, a2, v7);
     }
     else
     {
-      sub_1002587E(v2, a2, v7);
+      FUN_1002587e(v2, a2, v7);
     }
   }
   result = v2[22];
   if ( (result & 1) == 0 )
-    sub_1001E114(v2, (int)"Missing IHDR before IDAT");
+    png_error(v2, (int)"Missing IHDR before IDAT");
   if ( *((_BYTE *)v2 + 278) == 3 && (result & 2) == 0 )
-    sub_1001E114(v2, (int)"Missing PLTE before IDAT");
+    png_error(v2, (int)"Missing PLTE before IDAT");
   v2[22] |= 4u;
   v2[63] = v7;
   return result;
 }
 
-// sub_1001E407 @ 0x1001E407
+// FUN_1001e407 @ 0x1001E407
 int __cdecl sub_1001E407(jmp_buf Buf, int a2)
 {
   if ( (Buf[23] & 0x40) == 0 )
-    sub_10024F3B(Buf);
+    FUN_10024f3b(Buf);
   return sub_1001ED89(Buf, a2);
 }
 
-// sub_1001E427 @ 0x1001E427
+// FUN_1001e427 @ 0x1001E427
 int (__cdecl *__cdecl sub_1001E427(jmp_buf Buf, int a2, int a3))(jmp_buf, int, _DWORD)
 {
   int *__attribute__((__org_typedef(jmp_buf))) v3; // esi
@@ -24878,7 +25311,7 @@ int (__cdecl *__cdecl sub_1001E427(jmp_buf Buf, int a2, int a3))(jmp_buf, int, _
 
   v3 = Buf;
   if ( (Buf[23] & 0x40) == 0 )
-    sub_10024F3B(Buf);
+    FUN_10024f3b(Buf);
   if ( !*((_BYTE *)v3 + 275) || (v3[24] & 2) == 0 )
     goto LABEL_36;
   switch ( *((_BYTE *)v3 + 276) )
@@ -24940,7 +25373,7 @@ LABEL_34:
   }
 LABEL_36:
   if ( (v3[22] & 4) == 0 )
-    sub_1001E114(v3, (int)"Invalid attempt to read row data");
+    png_error(v3, (int)"Invalid attempt to read row data");
   v3[28] = v3[55];
   v3[29] = v3[51];
   while ( 1 )
@@ -24949,13 +25382,13 @@ LABEL_36:
     {
       while ( !v3[63] )
       {
-        sub_100250D7(v3, 0);
-        sub_1002047C(v3, (int)&Buf, 4);
-        v3[63] = sub_100247E4(&Buf);
-        sub_10020583(v3);
-        sub_10024807(v3, (int)(v3 + 67), 4);
+        png_crc_finish(v3, 0);
+        png_read_data(v3, (int)&Buf, 4);
+        v3[63] = png_get_uint_32(&Buf);
+        png_reset_crc(v3);
+        png_crc_read(v3, (int)(v3 + 67), 4);
         if ( v3[67] != *(_DWORD *)"IDAT" )
-          sub_1001E114(v3, (int)"Not enough image data");
+          png_error(v3, (int)"Not enough image data");
       }
       v8 = v3[40];
       v9 = v3[63];
@@ -24964,10 +25397,10 @@ LABEL_36:
       v3[25] = v10;
       if ( v8 > v9 )
         v3[26] = v9;
-      sub_10024807(v3, v10, v3[26]);
+      png_crc_read(v3, v10, v3[26]);
       v3[63] -= v3[26];
     }
-    v11 = sub_1002438B(v3 + 25, 1);
+    v11 = inflate(v3 + 25, 1);
     if ( v11 == 1 )
       break;
     if ( v11 )
@@ -24975,13 +25408,13 @@ LABEL_36:
       v12 = (const char *)v3[31];
       if ( !v12 )
         v12 = "Decompression error";
-      sub_1001E114(v3, (int)v12);
+      png_error(v3, (int)v12);
     }
     if ( !v3[29] )
       goto LABEL_59;
   }
   if ( v3[29] || v3[26] || v3[63] )
-    sub_1001E114(v3, (int)"Extra compressed data");
+    png_error(v3, (int)"Extra compressed data");
   v3[22] |= 8u;
   v3[23] |= 0x20u;
 LABEL_59:
@@ -24996,10 +25429,10 @@ LABEL_59:
   v3[60] = v15;
   v17 = (unsigned __int8 *)v3[55];
   v3[61] = v16 >> 3;
-  sub_10024DC0(v3, v3 + 60, v17 + 1, v3[54] + 1, *v17);
-  sub_10024790(v3, v3[54], v3[55], v3[50] + 1);
+  FUN_10024dc0(v3, v3 + 60, v17 + 1, v3[54] + 1, *v17);
+  FUN_10024790(v3, v3[54], v3[55], v3[50] + 1);
   if ( v3[24] )
-    sub_10020149(v3);
+    FUN_10020149(v3);
   if ( *((_BYTE *)v3 + 275) && (v3[24] & 2) != 0 )
   {
     v18 = *((_BYTE *)v3 + 276);
@@ -25027,7 +25460,7 @@ LABEL_59:
   return result;
 }
 
-// sub_1001E7CE @ 0x1001E7CE
+// FUN_1001e7ce @ 0x1001E7CE
 int (__cdecl *__cdecl sub_1001E7CE(jmp_buf Buf, int *a2))(jmp_buf, int, _DWORD)
 {
   int (__cdecl *result)(int *__attribute__((__org_typedef(jmp_buf))), int, _DWORD); // eax
@@ -25050,7 +25483,7 @@ int (__cdecl *__cdecl sub_1001E7CE(jmp_buf Buf, int *a2))(jmp_buf, int, _DWORD)
         Bufa = (int *)v4;
         do
         {
-          result = sub_1001E427(Buf, *v5++, 0);
+          result = FUN_1001e427(Buf, *v5++, 0);
           Bufa = (int *)((char *)Bufa - 1);
         }
         while ( Bufa );
@@ -25062,7 +25495,7 @@ int (__cdecl *__cdecl sub_1001E7CE(jmp_buf Buf, int *a2))(jmp_buf, int, _DWORD)
   return result;
 }
 
-// sub_1001E81B @ 0x1001E81B
+// FUN_1001e81b @ 0x1001E81B
 int __cdecl sub_1001E81B(int a1, int a2, int a3)
 {
   int v3; // edi
@@ -25074,31 +25507,31 @@ int __cdecl sub_1001E81B(int a1, int a2, int a3)
 
   v3 = 0;
   if ( a2 )
-    sub_100205DA(a1, a2);
+    FUN_100205da(a1, a2);
   if ( a3 )
-    sub_100205DA(a1, a3);
-  sub_10024777(a1, *(void **)(a1 + 156));
-  sub_10024777(a1, *(void **)(a1 + 220));
-  sub_10024777(a1, *(void **)(a1 + 216));
-  sub_10024777(a1, *(void **)(a1 + 372));
-  sub_10024777(a1, *(void **)(a1 + 376));
-  sub_10024777(a1, *(void **)(a1 + 312));
+    FUN_100205da(a1, a3);
+  png_free(a1, *(void **)(a1 + 156));
+  png_free(a1, *(void **)(a1 + 220));
+  png_free(a1, *(void **)(a1 + 216));
+  png_free(a1, *(void **)(a1 + 372));
+  png_free(a1, *(void **)(a1 + 376));
+  png_free(a1, *(void **)(a1 + 312));
   if ( (*(_BYTE *)(a1 + 93) & 0x10) != 0 )
-    sub_1002057E(a1, *(void **)(a1 + 260));
+    png_free_thunk(a1, *(void **)(a1 + 260));
   if ( (*(_BYTE *)(a1 + 93) & 0x20) != 0 )
-    sub_10024777(a1, *(void **)(a1 + 348));
+    png_free(a1, *(void **)(a1 + 348));
   if ( *(_DWORD *)(a1 + 324) )
   {
     v4 = 1 << (8 - *(_BYTE *)(a1 + 300));
     if ( v4 > 0 )
     {
       do
-        sub_10024777(a1, *(void **)(*(_DWORD *)(a1 + 324) + 4 * v3++));
+        png_free(a1, *(void **)(*(_DWORD *)(a1 + 324) + 4 * v3++));
       while ( v3 < v4 );
     }
-    sub_10024777(a1, *(void **)(a1 + 324));
+    png_free(a1, *(void **)(a1 + 324));
   }
-  sub_10024251(a1 + 100);
+  inflateEnd(a1 + 100);
   result = *(_DWORD *)(a1 + 72);
   v6 = *(_DWORD *)(a1 + 64);
   qmemcpy(v8, (const void *)a1, sizeof(v8));
@@ -25136,20 +25569,20 @@ int __cdecl sub_1001E93E(int *a1, int *a2, int *a3)
     v5 = *a3;
   }
   if ( v6 )
-    result = sub_1001E81B(v6, v4, v5);
+    result = FUN_1001e81b(v6, v4, v5);
   if ( v4 )
   {
-    result = sub_10024734(v4);
+    result = png_free_ptr(v4);
     *a2 = 0;
   }
   if ( v5 )
   {
-    result = sub_10024734(v5);
+    result = png_free_ptr(v5);
     *a3 = 0;
   }
   if ( v6 )
   {
-    sub_10024734(v6);
+    png_free_ptr(v6);
     *a1 = 0;
     return (int)a1;
   }
@@ -25208,7 +25641,7 @@ int __cdecl sub_1001EA2E(int a1, int a2, _DWORD *a3)
   return result;
 }
 
-// sub_1001EA59 @ 0x1001EA59
+// FUN_1001ea59 @ 0x1001EA59
 int __cdecl sub_1001EA59(
         int a1,
         int a2,
@@ -25241,7 +25674,7 @@ int __cdecl sub_1001EA59(
   if ( (*a6 & 4) != 0 )
     ++v9;
   if ( *a3 > 0x7FFFFFFFu / ((v9 * *a5 + 7) >> 3) )
-    sub_1001E132(a1, (int)"Width too large for libpng to process image data.");
+    png_warning(a1, (int)"Width too large for libpng to process image data.");
   return 1;
 }
 
@@ -27008,7 +27441,7 @@ LABEL_7:
   return result;
 }
 
-// sub_1001FD2D @ 0x1001FD2D
+// FUN_1001fd2d @ 0x1001FD2D
 void __cdecl sub_1001FD2D(jmp_buf Buf)
 {
   long double v2; // st7
@@ -27071,7 +27504,7 @@ void __cdecl sub_1001FD2D(jmp_buf Buf)
         v8 = 1.0;
       else
         v8 = 1.0 / (*((float *)Buf + 77) * *((float *)Buf + 76));
-      v9 = sub_10024741(Buf, 4 * v7);
+      v9 = png_malloc(Buf, 4 * v7);
       v10 = (Buf[24] & 0x480) == 0;
       Buf[81] = v9;
       Bufb = 0;
@@ -27081,7 +27514,7 @@ void __cdecl sub_1001FD2D(jmp_buf Buf)
         {
           do
           {
-            *(_DWORD *)(Buf[81] + 4 * (_DWORD)Bufb) = sub_10024741(Buf, 0x200u);
+            *(_DWORD *)(Buf[81] + 4 * (_DWORD)Bufb) = png_malloc(Buf, 0x200u);
             v16 = 0;
             v22 = (unsigned int)((_DWORD)Bufb * dword_100544A0[v23]) >> 4;
             do
@@ -27103,7 +27536,7 @@ void __cdecl sub_1001FD2D(jmp_buf Buf)
         {
           do
           {
-            v11 = sub_10024741(Buf, 0x200u);
+            v11 = png_malloc(Buf, 0x200u);
             v12 = Bufb;
             Bufb = (int *)((char *)Bufb + 1);
             *(_DWORD *)(Buf[81] + 4 * (_DWORD)v12) = v11;
@@ -27142,7 +27575,7 @@ void __cdecl sub_1001FD2D(jmp_buf Buf)
         v2 = 1.0;
       else
         v2 = 1.0 / (*((float *)Buf + 77) * *((float *)Buf + 76));
-      v3 = sub_10024741(Buf, 0x100u);
+      v3 = png_malloc(Buf, 0x100u);
       Bufa = 0;
       Buf[78] = v3;
       do
@@ -27157,7 +27590,7 @@ void __cdecl sub_1001FD2D(jmp_buf Buf)
   }
 }
 
-// sub_10020036 @ 0x10020036
+// FUN_10020036 @ 0x10020036
 void __cdecl sub_10020036(jmp_buf Buf)
 {
   int v2; // edi
@@ -27175,7 +27608,7 @@ void __cdecl sub_10020036(jmp_buf Buf)
   v2 = *((unsigned __int8 *)Buf + 278);
   if ( (Buf[24] & 0x602000) != 0 )
   {
-    sub_1001FD2D(Buf);
+    FUN_1001fd2d(Buf);
     if ( v2 == 3 )
     {
       v3 = *((unsigned __int16 *)Buf + 132);
@@ -27225,11 +27658,11 @@ void __cdecl sub_10020036(jmp_buf Buf)
   }
 }
 
-// sub_10020149 @ 0x10020149
+// FUN_10020149 @ 0x10020149
 void __cdecl sub_10020149(jmp_buf Buf)
 {
   if ( !Buf[55] )
-    sub_1001E114(Buf, (int)"NULL row buffer");
+    png_error(Buf, (int)"NULL row buffer");
   if ( (*((_BYTE *)Buf + 97) & 0x10) != 0 )
   {
     if ( *((_BYTE *)Buf + 248) == 3 )
@@ -27253,7 +27686,7 @@ void __cdecl sub_10020149(jmp_buf Buf)
   {
     sub_1001FC1F(Buf + 60, (char *)(Buf[55] + 1), Buf[93], Buf[94]);
     if ( !Buf[61] )
-      sub_1001E114(Buf, (int)"png_do_dither returned rowbytes=0");
+      png_error(Buf, (int)"png_do_dither returned rowbytes=0");
   }
   if ( (Buf[24] & 8) != 0 )
     sub_1001EF84(Buf + 60, (_BYTE *)(Buf[55] + 1), (unsigned __int8 *)Buf + 341);
@@ -27280,7 +27713,7 @@ void __cdecl sub_10020301(int a1, int a2, double a3)
   }
 }
 
-// sub_1002031C @ 0x1002031C
+// FUN_1002031c @ 0x1002031C
 void __cdecl sub_1002031C(int a1, int a2, unsigned int a3, int a4, char a5, char a6, char a7, char a8, char a9)
 {
   unsigned __int8 v9; // al
@@ -27308,7 +27741,7 @@ void __cdecl sub_1002031C(int a1, int a2, unsigned int a3, int a4, char a5, char
     }
     else
     {
-      sub_1001E132(a1, (int)"Width too large to process image data; rowbytes will overflow.");
+      png_warning(a1, (int)"Width too large to process image data; rowbytes will overflow.");
       *(_DWORD *)(a2 + 12) = 0;
     }
   }
@@ -27374,18 +27807,19 @@ void __cdecl sub_10020435(int a1, int a2, int a3, int a4, int a5)
   }
 }
 
-// sub_1002047C @ 0x1002047C
+// png_read_data @ 0x1002047C
+// png read callback wrapper (errors if NULL)
 int __cdecl sub_1002047C(jmp_buf Buf, int a2, int a3)
 {
   int (__cdecl *v3)(int *__attribute__((__org_typedef(jmp_buf))), int, int); // eax
 
   v3 = (int (__cdecl *)(int *__attribute__((__org_typedef(jmp_buf))), int, int))Buf[20];
   if ( !v3 )
-    sub_1001E114(Buf, (int)"Call to NULL read function");
+    png_error(Buf, (int)"Call to NULL read function");
   return v3(Buf, a2, a3);
 }
 
-// sub_100204A4 @ 0x100204A4
+// FUN_100204a4 @ 0x100204A4
 int (__cdecl *__cdecl sub_100204A4(_DWORD *a1, int a2, int (__cdecl *a3)(int, int)))(int, int)
 {
   bool v3; // zf
@@ -27398,8 +27832,8 @@ int (__cdecl *__cdecl sub_100204A4(_DWORD *a1, int a2, int (__cdecl *a3)(int, in
   if ( !v3 )
   {
     a1[19] = 0;
-    sub_1001E132((int)a1, (int)"It's an error to set both read_data_fn and write_data_fn in the ");
-    result = sub_1001E132((int)a1, (int)"same structure.  Resetting write_data_fn to NULL.");
+    png_warning((int)a1, (int)"It's an error to set both read_data_fn and write_data_fn in the ");
+    result = png_warning((int)a1, (int)"same structure.  Resetting write_data_fn to NULL.");
   }
   a1[72] = 0;
   return result;
@@ -27427,7 +27861,7 @@ int __cdecl sub_100204E3(int a1, unsigned int a2, unsigned int a3)
   return memcmp((const char *)(a1 + a2), &byte_1004E51C[a2], v3);
 }
 
-// sub_1002052B @ 0x1002052B
+// FUN_1002052b @ 0x1002052B
 char *__cdecl sub_1002052B(jmp_buf Buf, int a2, int a3)
 {
   unsigned int v3; // esi
@@ -27437,7 +27871,7 @@ char *__cdecl sub_1002052B(jmp_buf Buf, int a2, int a3)
   unsigned int v7; // ecx
 
   v3 = a3 * a2;
-  v4 = (char *)sub_10024741(Buf, a3 * a2);
+  v4 = (char *)png_malloc(Buf, a3 * a2);
   result = 0;
   if ( v4 )
   {
@@ -27458,7 +27892,8 @@ char *__cdecl sub_1002052B(jmp_buf Buf, int a2, int a3)
   return result;
 }
 
-// sub_10020583 @ 0x10020583
+// png_reset_crc @ 0x10020583
+// reset png CRC state
 int __cdecl sub_10020583(int a1)
 {
   int result; // eax
@@ -27468,7 +27903,8 @@ int __cdecl sub_10020583(int a1)
   return result;
 }
 
-// sub_100205DA @ 0x100205DA
+// FUN_100205da @ 0x100205DA
+// [binja] void sub_100205da(int32_t arg1)
 int __cdecl sub_100205DA(int a1, void *a2)
 {
   memset(a2, 0, 0x40u);
@@ -27488,7 +27924,8 @@ void *__cdecl sub_100205E8(int a1)
   return v2;
 }
 
-// sub_1002060E @ 0x1002060E
+// grim_dxt_decode_rgb565 @ 0x1002060E
+// unpacks RGB565 into RGBA floats (alpha=1)
 float *__usercall sub_1002060E@<eax>(float *result@<eax>, unsigned int a2@<ecx>)
 {
   *result = (double)((unsigned __int16)a2 >> 11) * 0.032258064;
@@ -27498,7 +27935,8 @@ float *__usercall sub_1002060E@<eax>(float *result@<eax>, unsigned int a2@<ecx>)
   return result;
 }
 
-// sub_1002065A @ 0x1002065A
+// grim_dxt_unpremultiply_rgba_block @ 0x1002065A
+// divides rgb by alpha for a 4x4 RGBA block
 int __fastcall sub_1002065A(float *a1)
 {
   int v1; // edx
@@ -27545,7 +27983,8 @@ LABEL_15:
   return 0;
 }
 
-// sub_100206D8 @ 0x100206D8
+// grim_dxt_premultiply_rgba_block @ 0x100206D8
+// multiplies rgb by alpha for a 4x4 RGBA block
 int __usercall sub_100206D8@<eax>(float *a1@<eax>, float *a2@<ecx>)
 {
   int v2; // edx
@@ -27576,7 +28015,8 @@ int sub_10020708()
   return v1;
 }
 
-// sub_1002072B @ 0x1002072B
+// grim_dxt_pack_rgb565 @ 0x1002072B
+// clamps rgb floats and packs into RGB565
 int __thiscall sub_1002072B(float *this)
 {
   double v1; // st6
@@ -27641,7 +28081,8 @@ LABEL_19:
   return (int)v10 | (32 * (v4 | ((int)v11 << 6)));
 }
 
-// sub_10020825 @ 0x10020825
+// grim_dxt5_optimize_alpha_endpoints @ 0x10020825
+// iteratively chooses DXT5 alpha endpoints for 6/8-alpha modes
 float *__cdecl sub_10020825(float *a1, float *a2, int a3, unsigned int a4)
 {
   unsigned int v4; // esi
@@ -27680,13 +28121,13 @@ float *__cdecl sub_10020825(float *a1, float *a2, int a3, unsigned int a4)
   v4 = a4;
   if ( a4 == 6 )
   {
-    v5 = (float *)&unk_1004E5B4;
-    v30 = &unk_1004E59C;
+    v5 = (float *)&grim_dxt5_alpha_weights_min_6;
+    v30 = &grim_dxt5_alpha_weights_max_6;
   }
   else
   {
-    v5 = (float *)&unk_1004E57C;
-    v30 = &unk_1004E55C;
+    v5 = (float *)&grim_dxt5_alpha_weights_min_8;
+    v30 = &grim_dxt5_alpha_weights_max_8;
   }
   v6 = 0;
   v36 = 1.0;
@@ -27829,7 +28270,8 @@ LABEL_38:
   return a2;
 }
 
-// sub_10020B2A @ 0x10020B2A
+// grim_dxt1_optimize_color_endpoints @ 0x10020B2A
+// optimizes DXT1 color endpoints for 3- or 4-color mode
 float *__cdecl sub_10020B2A(float *a1, float *a2, int a3, int a4)
 {
   double v4; // st7
@@ -27913,13 +28355,13 @@ float *__cdecl sub_10020B2A(float *a1, float *a2, int a3, int a4)
 
   if ( a4 == 3 )
   {
-    v61 = (float *)&unk_1004E600;
-    v62 = &unk_1004E5F4;
+    v61 = (float *)&grim_dxt1_color_weights_min_3;
+    v62 = &grim_dxt1_color_weights_max_3;
   }
   else
   {
-    v61 = (float *)&unk_1004E5E4;
-    v62 = &unk_1004E5D4;
+    v61 = (float *)&grim_dxt1_color_weights_min_4;
+    v62 = &grim_dxt1_color_weights_max_4;
   }
   v77 = 0.0;
   v4 = 0.0;
@@ -28143,7 +28585,8 @@ LABEL_19:
   return result;
 }
 
-// sub_10021095 @ 0x10021095
+// grim_dxt1_encode_color_block @ 0x10021095
+// encodes a 4x4 RGBA block into a DXT1 color block (supports 1-bit alpha mode)
 int __usercall sub_10021095@<eax>(float *a1@<eax>, int a2, int a3)
 {
   int v4; // esi
@@ -28347,16 +28790,16 @@ int __usercall sub_10021095@<eax>(float *a1@<eax>, int a2, int a3)
       break;
     v8 = v57;
   }
-  sub_10020B2A(&v80, &v90, (int)&v43, v94);
+  grim_dxt1_optimize_color_endpoints(&v80, &v90, (int)&v43, v94);
   v47 = v80 * flt_100544D0;
   v48 = v81 * flt_100544D4;
   v49 = v82 * flt_100544D8;
   v84 = v90 * flt_100544D0;
   v85 = v91 * flt_100544D4;
   v86 = v92 * flt_100544D8;
-  *(float *)&v17 = COERCE_FLOAT(sub_1002072B(&v47));
+  *(float *)&v17 = COERCE_FLOAT(grim_dxt_pack_rgb565(&v47));
   v88 = *(float *)&v17;
-  v18 = sub_1002072B(&v84);
+  v18 = grim_dxt_pack_rgb565(&v84);
   v19 = v18;
   v87 = (char *)v18;
   if ( v94 == 4 && (_WORD)v17 == (_WORD)v18 )
@@ -28367,8 +28810,8 @@ int __usercall sub_10021095@<eax>(float *a1@<eax>, int a2, int a3)
   }
   else
   {
-    sub_1002060E(&v47, v17);
-    sub_1002060E(&v84, v19);
+    grim_dxt_decode_rgb565(&v47, v17);
+    grim_dxt_decode_rgb565(&v84, v19);
     v80 = v47 * flt_100544C0;
     v81 = v48 * flt_100544C4;
     v82 = v49 * flt_100544C8;
@@ -28403,7 +28846,7 @@ int __usercall sub_10021095@<eax>(float *a1@<eax>, int a2, int a3)
     v22 = v64 - v60;
     if ( v94 == 3 )
     {
-      v89 = COERCE_FLOAT(&unk_1004E620);
+      v89 = COERCE_FLOAT(&grim_dxt1_index_map_3color);
       v68 = 0.5 * v22 + v60;
       v23 = v65 - v61;
       v69 = v23 * 0.5 + v61;
@@ -28414,7 +28857,7 @@ int __usercall sub_10021095@<eax>(float *a1@<eax>, int a2, int a3)
     }
     else
     {
-      v89 = COERCE_FLOAT(&unk_1004E610);
+      v89 = COERCE_FLOAT(&grim_dxt1_index_map_4color);
       v68 = 0.33333334 * v22 + v60;
       v23 = v65 - v61;
       v69 = 0.33333334 * v23 + v61;
@@ -28522,7 +28965,8 @@ int __usercall sub_10021095@<eax>(float *a1@<eax>, int a2, int a3)
   return 0;
 }
 
-// sub_10021899 @ 0x10021899
+// grim_dxt1_decode_color_block @ 0x10021899
+// decodes a DXT1 color block into 16 RGBA floats
 int __cdecl sub_10021899(float *a1, unsigned __int16 *a2)
 {
   unsigned __int16 v3; // si
@@ -28560,9 +29004,9 @@ int __cdecl sub_10021899(float *a1, unsigned __int16 *a2)
   float v37; // [esp+70h] [ebp+Ch]
 
   v3 = *a2;
-  sub_1002060E(&v15, *a2);
+  grim_dxt_decode_rgb565(&v15, *a2);
   v4 = a2[1];
-  sub_1002060E(&v19, v4);
+  grim_dxt_decode_rgb565(&v19, v4);
   if ( v3 > (unsigned __int16)v4 )
   {
     v5 = v19 - v15;
@@ -28614,7 +29058,8 @@ int __cdecl sub_10021899(float *a1, unsigned __int16 *a2)
   return 0;
 }
 
-// sub_100219D7 @ 0x100219D7
+// grim_dxt3_decode_block @ 0x100219D7
+// decodes a DXT3 block (explicit alpha + DXT1 color) to RGBA floats
 int __cdecl sub_100219D7(float *a1, unsigned __int16 *a2)
 {
   int result; // eax
@@ -28627,7 +29072,7 @@ int __cdecl sub_100219D7(float *a1, unsigned __int16 *a2)
   float *v9; // eax
   double v10; // st6
 
-  result = sub_10021899(a1, a2 + 4);
+  result = grim_dxt1_decode_color_block(a1, a2 + 4);
   if ( result >= 0 )
   {
     v3 = *(_DWORD *)a2;
@@ -28659,7 +29104,8 @@ int __cdecl sub_100219D7(float *a1, unsigned __int16 *a2)
   return result;
 }
 
-// sub_10021A5A @ 0x10021A5A
+// grim_dxt5_decode_block @ 0x10021A5A
+// decodes a DXT5 block (interpolated alpha + DXT1 color) to RGBA floats
 int __cdecl sub_10021A5A(float *a1, unsigned __int16 *a2)
 {
   int result; // eax
@@ -28684,7 +29130,7 @@ int __cdecl sub_10021A5A(float *a1, unsigned __int16 *a2)
   float v21; // [esp+20h] [ebp-8h]
   float v22; // [esp+24h] [ebp-4h]
 
-  result = sub_10021899(a1, a2 + 4);
+  result = grim_dxt1_decode_color_block(a1, a2 + 4);
   if ( result >= 0 )
   {
     v3 = *(_BYTE *)a2;
@@ -28743,13 +29189,14 @@ int __cdecl sub_10021B96(int a1, float *a2)
 {
   int result; // eax
 
-  result = sub_10021095(a2, a1, 1);
+  result = grim_dxt1_encode_color_block(a2, a1, 1);
   if ( result >= 0 )
     return 0;
   return result;
 }
 
-// sub_10021BAE @ 0x10021BAE
+// grim_dxt3_encode_block @ 0x10021BAE
+// encodes a 4x4 RGBA block into DXT3 (explicit alpha + DXT1 color)
 int __cdecl sub_10021BAE(_DWORD *a1, float *a2)
 {
   unsigned int v3; // edx
@@ -28799,10 +29246,11 @@ int __cdecl sub_10021BAE(_DWORD *a1, float *a2)
     v15 += 4;
   }
   while ( v16 < 0x10 );
-  return sub_10021095(a2, (int)(a1 + 2), 0);
+  return grim_dxt1_encode_color_block(a2, (int)(a1 + 2), 0);
 }
 
-// sub_10021CC2 @ 0x10021CC2
+// grim_dxt5_encode_block @ 0x10021CC2
+// encodes a 4x4 RGBA block into DXT5 (interpolated alpha + DXT1 color)
 int __cdecl sub_10021CC2(float a1, int a2)
 {
   float *v2; // ebx
@@ -28894,7 +29342,7 @@ int __cdecl sub_10021CC2(float a1, int a2)
   while ( v3 < 0x10 );
   v48 = dword_1005DB70;
   v12 = a1;
-  result = sub_10021095((float *)a2, LODWORD(a1) + 8, 0);
+  result = grim_dxt1_encode_color_block((float *)a2, LODWORD(a1) + 8, 0);
   if ( result < 0 )
     return result;
   if ( 1.0 == v47 )
@@ -28916,7 +29364,7 @@ LABEL_24:
     v14 = 8;
     a2 = 8;
   }
-  sub_10020825((float *)&v48, &a1, (int)v36, v14);
+  grim_dxt5_optimize_alpha_endpoints((float *)&v48, &a1, (int)v36, v14);
   sub_10020708();
   *(float *)&v48 = *(float *)&v48 * 255.0 + 0.5;
   LODWORD(v45) = (int)*(float *)&v48;
@@ -28944,7 +29392,7 @@ LABEL_24:
       a1 = *(float *)&i;
       v23 = (double)i++ * v38;
     }
-    v45 = COERCE_FLOAT(&unk_1004E63C);
+    v45 = COERCE_FLOAT(&grim_dxt5_alpha_index_map_8);
   }
   else
   {
@@ -28958,7 +29406,7 @@ LABEL_24:
       a1 = *(float *)&j;
       v20 = (double)j++ * v38;
     }
-    v45 = COERCE_FLOAT(&unk_1004E65C);
+    v45 = COERCE_FLOAT(&grim_dxt5_alpha_index_map_6);
     v39 = 0.0;
     v40 = 1.0;
   }
@@ -29046,47 +29494,64 @@ LABEL_58:
   return 0;
 }
 
-// sub_10022114 @ 0x10022114
+// grim_dxt2_decode_block @ 0x10022114
 int __cdecl sub_10022114(float *a1, unsigned __int16 *a2)
 {
   int result; // eax
 
-  result = sub_100219D7(a1, a2);
+  result = grim_dxt3_decode_block(a1, a2);
   if ( result >= 0 )
   {
-    result = sub_1002065A(a1);
+    result = grim_dxt_unpremultiply_rgba_block(a1);
     if ( result >= 0 )
       return 0;
   }
   return result;
 }
 
-// sub_1002215A @ 0x1002215A
+// grim_dxt4_decode_block @ 0x10022137
+int __cdecl grim_dxt4_decode_block(float *a1, unsigned __int16 *a2)
+{
+  int result; // eax
+
+  result = grim_dxt5_decode_block(a1, a2);
+  if ( result >= 0 )
+  {
+    result = grim_dxt_unpremultiply_rgba_block(a1);
+    if ( result >= 0 )
+      return 0;
+  }
+  return result;
+}
+
+// grim_dxt2_encode_block @ 0x1002215A
+// premultiplies RGBA and encodes a DXT3-style block (DXT2)
 int __cdecl sub_1002215A(_DWORD *a1, float *a2)
 {
   int result; // eax
   float v3[64]; // [esp+0h] [ebp-100h] BYREF
 
-  result = sub_100206D8(a2, v3);
+  result = grim_dxt_premultiply_rgba_block(a2, v3);
   if ( result >= 0 )
   {
-    result = sub_10021BAE(a1, v3);
+    result = grim_dxt3_encode_block(a1, v3);
     if ( result >= 0 )
       return 0;
   }
   return result;
 }
 
-// sub_1002218E @ 0x1002218E
+// grim_dxt4_encode_block @ 0x1002218E
+// premultiplies RGBA and encodes a DXT5-style block (DXT4)
 int __cdecl sub_1002218E(float a1, float *a2)
 {
   int result; // eax
   float v3[64]; // [esp+0h] [ebp-100h] BYREF
 
-  result = sub_100206D8(a2, v3);
+  result = grim_dxt_premultiply_rgba_block(a2, v3);
   if ( result >= 0 )
   {
-    result = sub_10021CC2(a1, (int)v3);
+    result = grim_dxt5_encode_block(a1, (int)v3);
     if ( result >= 0 )
       return 0;
   }
@@ -29094,81 +29559,83 @@ int __cdecl sub_1002218E(float a1, float *a2)
 }
 
 // sub_100221D0 @ 0x100221D0
-_DWORD *__cdecl sub_100221D0(_DWORD *a1)
+__m128 *(__stdcall **__cdecl sub_100221D0(
+        __m128 *(__stdcall **a1)(__m128 *, unsigned int *, __m128 *)))(__m128 *, unsigned int *, __m128 *)
 {
-  a1[28] = sub_10026970;
+  a1[28] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026970;
   *a1 = sub_10025C00;
-  a1[13] = sub_100266F0;
-  a1[27] = sub_100267E0;
-  a1[11] = sub_100278B0;
-  a1[48] = sub_100265D0;
-  a1[47] = sub_100261F0;
-  a1[17] = sub_10026490;
-  a1[54] = sub_10026580;
-  a1[53] = sub_10026280;
-  a1[52] = sub_100263F0;
-  a1[51] = sub_10026520;
-  a1[50] = sub_10026130;
-  a1[49] = sub_10026330;
-  a1[18] = sub_100272D0;
-  a1[22] = sub_10026630;
-  a1[25] = sub_10026D10;
-  a1[24] = sub_10026BF0;
-  a1[19] = sub_10026A50;
-  a1[44] = sub_10026B80;
-  a1[20] = sub_10026AE0;
-  a1[16] = sub_10025FE0;
-  a1[21] = sub_10025F00;
-  a1[8] = sub_10026090;
-  a1[7] = sub_10025E30;
-  a1[10] = sub_10026F60;
-  a1[9] = sub_10025C40;
-  a1[6] = sub_10026DE0;
-  a1[5] = sub_10025CA0;
-  a1[4] = sub_10027590;
-  a1[3] = sub_10025CE0;
-  a1[2] = sub_10027060;
-  a1[1] = sub_10026EA0;
+  a1[13] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100266F0;
+  a1[27] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100267E0;
+  a1[11] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100278B0;
+  a1[48] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100265D0;
+  a1[47] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100261F0;
+  a1[17] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026490;
+  a1[54] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026580;
+  a1[53] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026280;
+  a1[52] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100263F0;
+  a1[51] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026520;
+  a1[50] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026130;
+  a1[49] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026330;
+  a1[18] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100272D0;
+  a1[22] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026630;
+  a1[25] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026D10;
+  a1[24] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026BF0;
+  a1[19] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026A50;
+  a1[44] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026B80;
+  a1[20] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026AE0;
+  a1[16] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10025FE0;
+  a1[21] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10025F00;
+  a1[8] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026090;
+  a1[7] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10025E30;
+  a1[10] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026F60;
+  a1[9] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10025C40;
+  a1[6] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026DE0;
+  a1[5] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10025CA0;
+  a1[4] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10027590;
+  a1[3] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10025CE0;
+  a1[2] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10027060;
+  a1[1] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026EA0;
   return a1;
 }
 
 // sub_100222E0 @ 0x100222E0
-_DWORD *__cdecl sub_100222E0(_DWORD *a1)
+__m128 *(__stdcall **__cdecl sub_100222E0(
+        __m128 *(__stdcall **a1)(__m128 *, unsigned int *, __m128 *)))(__m128 *, unsigned int *, __m128 *)
 {
-  a1[28] = sub_10027C00;
+  a1[28] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10027C00;
   *a1 = sub_10025C00;
-  a1[13] = sub_10027980;
-  a1[27] = sub_10027A70;
-  a1[11] = sub_100278B0;
-  a1[48] = sub_100265D0;
-  a1[47] = sub_100261F0;
-  a1[17] = sub_10026490;
-  a1[54] = sub_10026580;
-  a1[53] = sub_10026280;
-  a1[52] = sub_100263F0;
-  a1[51] = sub_10026520;
-  a1[50] = sub_10026130;
-  a1[49] = sub_10026330;
-  a1[18] = sub_100272D0;
-  a1[22] = sub_10026630;
-  a1[25] = sub_10027E00;
-  a1[24] = sub_10027CE0;
-  a1[31] = sub_10027820;
-  a1[30] = sub_100277A0;
-  a1[19] = sub_10026A50;
-  a1[20] = sub_10026AE0;
-  a1[16] = sub_100276F0;
-  a1[21] = sub_100271F0;
-  a1[8] = sub_10026090;
-  a1[7] = sub_10027120;
-  a1[10] = sub_10026F60;
-  a1[9] = sub_10025C40;
-  a1[6] = sub_10026DE0;
-  a1[5] = sub_10025CA0;
-  a1[4] = sub_10027590;
-  a1[3] = sub_10025CE0;
-  a1[2] = sub_10027060;
-  a1[1] = sub_10026EA0;
+  a1[13] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10027980;
+  a1[27] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10027A70;
+  a1[11] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100278B0;
+  a1[48] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100265D0;
+  a1[47] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100261F0;
+  a1[17] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026490;
+  a1[54] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026580;
+  a1[53] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026280;
+  a1[52] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100263F0;
+  a1[51] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026520;
+  a1[50] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026130;
+  a1[49] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026330;
+  a1[18] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100272D0;
+  a1[22] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026630;
+  a1[25] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10027E00;
+  a1[24] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10027CE0;
+  a1[31] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10027820;
+  a1[30] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100277A0;
+  a1[19] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026A50;
+  a1[20] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026AE0;
+  a1[16] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100276F0;
+  a1[21] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100271F0;
+  a1[8] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026090;
+  a1[7] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10027120;
+  a1[10] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026F60;
+  a1[9] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10025C40;
+  a1[6] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026DE0;
+  a1[5] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10025CA0;
+  a1[4] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10027590;
+  a1[3] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10025CE0;
+  a1[2] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10027060;
+  a1[1] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026EA0;
   return a1;
 }
 
@@ -29214,7 +29681,7 @@ int sub_100223F0()
 }
 
 // sub_100224C5 @ 0x100224C5
-int __cdecl sub_100224C5(_DWORD *a1)
+int __cdecl sub_100224C5(__m64 *(__stdcall **a1)(__m64 *, __m64 *, __m64 *))
 {
   int result; // eax
 
@@ -29227,64 +29694,64 @@ int __cdecl sub_100224C5(_DWORD *a1)
     a1[3] = sub_1002943A;
     a1[5] = sub_1002DCFD;
     a1[6] = sub_1002D25B;
-    a1[7] = sub_1002D2C2;
-    a1[8] = sub_1002DFEB;
+    a1[7] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002D2C2;
+    a1[8] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002DFEB;
     a1[9] = sub_1002DD36;
     a1[10] = sub_1002D7A2;
-    a1[11] = sub_1002966C;
+    a1[11] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002966C;
     a1[12] = sub_1002E393;
-    a1[13] = sub_1002E3D6;
-    a1[14] = sub_1002D7A7;
-    a1[15] = sub_1002D92F;
-    a1[16] = sub_1002E04A;
-    a1[17] = sub_1002DD9A;
-    a1[18] = sub_1002D1CE;
+    a1[13] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002E3D6;
+    a1[14] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002D7A7;
+    a1[15] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002D92F;
+    a1[16] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002E04A;
+    a1[17] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002DD9A;
+    a1[18] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002D1CE;
     a1[19] = sub_10027ED0;
-    a1[20] = sub_10027F69;
-    a1[21] = sub_1002E578;
-    a1[22] = sub_1002E4BA;
-    a1[23] = sub_10027FC6;
-    a1[24] = sub_10028079;
-    a1[25] = &sub_100284AA;
-    a1[26] = sub_1002973B;
-    a1[27] = sub_1002978B;
-    a1[28] = sub_10029876;
-    a1[29] = sub_1002856F;
-    a1[30] = sub_10029952;
-    a1[31] = sub_100299B5;
-    a1[32] = sub_10029A13;
-    a1[33] = sub_10029A6C;
+    a1[20] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10027F69;
+    a1[21] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002E578;
+    a1[22] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002E4BA;
+    a1[23] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10027FC6;
+    a1[24] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10028079;
+    a1[25] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_100284AA;
+    a1[26] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002973B;
+    a1[27] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002978B;
+    a1[28] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10029876;
+    a1[29] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002856F;
+    a1[30] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10029952;
+    a1[31] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_100299B5;
+    a1[32] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10029A13;
+    a1[33] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10029A6C;
     a1[34] = sub_1002E5DC;
-    a1[35] = sub_100285DB;
-    a1[36] = sub_10028712;
-    a1[37] = sub_10029AB3;
-    a1[38] = sub_10029B5B;
-    a1[39] = sub_10029CE2;
-    a1[40] = &sub_1002AE7A;
-    a1[41] = sub_1002B01F;
-    a1[42] = sub_1002B553;
-    a1[43] = sub_1002879F;
-    a1[44] = sub_10028831;
-    a1[54] = sub_1002E17C;
-    a1[51] = sub_1002D321;
-    a1[48] = sub_1002DE32;
-    a1[46] = sub_1002DE7B;
-    a1[52] = sub_1002E1ED;
-    a1[49] = sub_1002D392;
-    a1[55] = sub_10028895;
-    a1[56] = sub_1002893C;
-    a1[53] = sub_1002E2B5;
-    a1[47] = sub_1002DEBE;
-    a1[50] = sub_1002D466;
+    a1[35] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_100285DB;
+    a1[36] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10028712;
+    a1[37] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10029AB3;
+    a1[38] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10029B5B;
+    a1[39] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10029CE2;
+    a1[40] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002AE7A;
+    a1[41] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002B01F;
+    a1[42] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002B553;
+    a1[43] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002879F;
+    a1[44] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10028831;
+    a1[54] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002E17C;
+    a1[51] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002D321;
+    a1[48] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002DE32;
+    a1[46] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002DE7B;
+    a1[52] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002E1ED;
+    a1[49] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002D392;
+    a1[55] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10028895;
+    a1[56] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002893C;
+    a1[53] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002E2B5;
+    a1[47] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002DEBE;
+    a1[50] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002D466;
     a1[4] = sub_1002CAA2;
-    a1[45] = sub_100289E1;
+    a1[45] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_100289E1;
     if ( (result & 0x100) != 0 && (result & 0x200) != 0 )
     {
-      a1[15] = sub_1002DB55;
-      a1[18] = sub_1002C7C0;
-      a1[38] = sub_10029C2D;
-      a1[39] = sub_1002B66C;
-      a1[24] = sub_10028295;
+      a1[15] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002DB55;
+      a1[18] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002C7C0;
+      a1[38] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10029C2D;
+      a1[39] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002B66C;
+      a1[24] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10028295;
     }
   }
   return result;
@@ -29318,7 +29785,56 @@ float *__stdcall sub_10022754(float *a1, float *a2, float *a3)
   return a1;
 }
 
-// sub_1002290C @ 0x1002290C
+// sub_10022789 @ 0x10022789
+float *__stdcall sub_10022789(float *a1, float *a2, float *a3)
+{
+  double v3; // st5
+  double v4; // st6
+  double v5; // st7
+
+  v3 = *a2 * a3[1] + a2[1] * a3[5] + a2[2] * a3[9] + a3[13];
+  v4 = *a2 * a3[2] + a2[1] * a3[6] + a2[2] * a3[10] + a3[14];
+  v5 = *a2 * a3[3] + a2[1] * a3[7] + a2[2] * a3[11] + a3[15];
+  *a1 = *a2 * *a3 + a2[1] * a3[4] + a2[2] * a3[8] + a3[12];
+  a1[1] = v3;
+  a1[2] = v4;
+  a1[3] = v5;
+  return a1;
+}
+
+// sub_10022814 @ 0x10022814
+float *__stdcall sub_10022814(float *a1, float *a2, float *a3)
+{
+  double v3; // st6
+  double v4; // st7
+
+  v3 = *a2 * a3[1] + a2[1] * a3[5] + a2[2] * a3[9];
+  v4 = *a2 * a3[2] + a2[1] * a3[6] + a2[2] * a3[10];
+  *a1 = *a2 * *a3 + a2[1] * a3[4] + a2[2] * a3[8];
+  a1[1] = v3;
+  a1[2] = v4;
+  return a1;
+}
+
+// sub_10022873 @ 0x10022873
+float *__stdcall sub_10022873(float *a1, float *a2, float *a3)
+{
+  double v3; // st5
+  double v4; // st6
+  double v5; // st7
+
+  v3 = *a2 * a3[1] + a2[1] * a3[5] + a2[2] * a3[9] + a2[3] * a3[13];
+  v4 = *a2 * a3[2] + a2[1] * a3[6] + a2[2] * a3[10] + a2[3] * a3[14];
+  v5 = *a2 * a3[3] + a2[1] * a3[7] + a2[2] * a3[11] + a2[3] * a3[15];
+  *a1 = *a2 * *a3 + a2[1] * a3[4] + a2[2] * a3[8] + a2[3] * a3[12];
+  a1[1] = v3;
+  a1[2] = v4;
+  a1[3] = v5;
+  return a1;
+}
+
+// FUN_1002290c @ 0x1002290C
+// [binja] float* __stdcall sub_1002290c(float* arg1, float* arg2)
 float *__stdcall sub_1002290C(float *a1, float *a2)
 {
   float v8; // [esp+4h] [ebp-8h]
@@ -29395,7 +29911,8 @@ float *__stdcall sub_1002290C(float *a1, float *a2)
   return a1;
 }
 
-// sub_100229D6 @ 0x100229D6
+// FUN_100229d6 @ 0x100229D6
+// [binja] int32_t __stdcall sub_100229d6(int32_t arg1, int32_t arg2, void* arg3)
 _BYTE *__stdcall sub_100229D6(_BYTE *a1, _BYTE *a2, _BYTE *a3)
 {
   _BYTE *result; // eax
@@ -29513,7 +30030,8 @@ _BYTE *__stdcall sub_100229D6(_BYTE *a1, _BYTE *a2, _BYTE *a3)
   return result;
 }
 
-// sub_10022AB9 @ 0x10022AB9
+// FUN_10022ab9 @ 0x10022AB9
+// [binja] void* __stdcall sub_10022ab9(void* arg1, int32_t arg2, int32_t arg3)
 char *__stdcall sub_10022AB9(char *a1, char *a2, char *a3)
 {
   char *v3; // eax
@@ -29587,13 +30105,13 @@ float *(__stdcall **__cdecl sub_10022B47(
         float *(__stdcall **a1)(float *a1, float *a2, float *a3)))(float *a1, float *a2, float *a3)
 {
   *a1 = sub_100226EB;
-  a1[1] = (float *(__stdcall *)(float *, float *, float *))sub_10022789;
-  a1[2] = (float *(__stdcall *)(float *, float *, float *))sub_10022873;
-  a1[3] = (float *(__stdcall *)(float *, float *, float *))sub_100229D6;
-  a1[4] = (float *(__stdcall *)(float *, float *, float *))sub_10022AB9;
+  a1[1] = sub_10022789;
+  a1[2] = sub_10022873;
+  a1[3] = (float *(__stdcall *)(float *, float *, float *))FUN_100229d6;
+  a1[4] = (float *(__stdcall *)(float *, float *, float *))FUN_10022ab9;
   a1[5] = sub_10022754;
-  a1[6] = (float *(__stdcall *)(float *, float *, float *))sub_10022814;
-  a1[7] = (float *(__stdcall *)(float *, float *, float *))sub_1002290C;
+  a1[6] = sub_10022814;
+  a1[7] = (float *(__stdcall *)(float *, float *, float *))FUN_1002290c;
   return a1;
 }
 
@@ -29638,14 +30156,16 @@ int __cdecl sub_10022BF2(const void *a1, void *a2, int a3)
   return a3 << 7;
 }
 
-// sub_10022C14 @ 0x10022C14
+// memzero @ 0x10022C14
+// zero-fill helper (memset to 0)
 int __cdecl sub_10022C14(void *a1, unsigned int a2)
 {
   memset(a1, 0, a2);
   return 0;
 }
 
-// sub_10022C2F @ 0x10022C2F
+// FUN_10022c2f @ 0x10022C2F
+// [binja] int32_t __fastcall sub_10022c2f(int32_t arg1)
 unsigned int sub_10022C2F()
 {
   unsigned int v0; // kr00_4
@@ -30016,7 +30536,8 @@ int __usercall sub_1002317A@<eax>(int a1@<eax>, int a2@<edx>)
   return (**(int (__cdecl ***)(int))a1)(a1);
 }
 
-// sub_1002318F @ 0x1002318F
+// FUN_1002318f @ 0x1002318F
+// [binja] void* sub_1002318f(int32_t* arg1, int32_t* arg2, int32_t* arg3)
 int __cdecl sub_1002318F(_DWORD *a1, unsigned int a2, unsigned int a3)
 {
   unsigned int v3; // ebx
@@ -30066,7 +30587,7 @@ LABEL_11:
       v7 = 1000000000 - v6;
     while ( 1 )
     {
-      v5 = (_DWORD *)sub_1002E65A((int)a1, v7 + v6);
+      v5 = (_DWORD *)FUN_1002e65a((int)a1, v7 + v6);
       if ( v5 )
         break;
       v7 >>= 1;
@@ -30088,7 +30609,8 @@ LABEL_11:
   return (int)v5 + v9 + 16;
 }
 
-// sub_1002328B @ 0x1002328B
+// FUN_1002328b @ 0x1002328B
+// [binja] void* sub_1002328b(uint32_t arg1, int32_t arg2, int32_t arg3)
 _DWORD *__cdecl sub_1002328B(_DWORD *a1, unsigned int a2, unsigned int a3)
 {
   int v3; // ebx
@@ -30109,7 +30631,7 @@ _DWORD *__cdecl sub_1002328B(_DWORD *a1, unsigned int a2, unsigned int a3)
     *(_DWORD *)(*a1 + 24) = a2;
     (*(void (__cdecl **)(_DWORD *))*a1)(a1);
   }
-  v5 = (_DWORD *)sub_1002E65A((int)a1, v4 + 16);
+  v5 = (_DWORD *)FUN_1002e65a((int)a1, v4 + 16);
   if ( !v5 )
     sub_1002317A((int)a1, 4);
   *(_DWORD *)(v3 + 72) += v4 + 16;
@@ -30143,12 +30665,12 @@ int __cdecl sub_10023319(_DWORD *a1, unsigned int a2, unsigned int a3, unsigned 
     v5 = a4;
   *(_DWORD *)(v4 + 76) = v5;
   v7 = 0;
-  v11 = sub_1002318F(a1, a2, 4 * a4);
+  v11 = FUN_1002318f(a1, a2, 4 * a4);
   while ( v7 < a4 )
   {
     if ( v5 >= a4 - v7 )
       v5 = a4 - v7;
-    v8 = sub_1002328B(a1, a2, a3 * v5);
+    v8 = FUN_1002328b(a1, a2, a3 * v5);
     if ( v5 )
     {
       v9 = v5;
@@ -30186,12 +30708,12 @@ int __cdecl sub_100233AB(_DWORD *a1, unsigned int a2, int a3, signed int a4)
     v5 = a4;
   *(_DWORD *)(v4 + 76) = v5;
   v7 = 0;
-  v11 = sub_1002318F(a1, a2, 4 * a4);
+  v11 = FUN_1002318f(a1, a2, 4 * a4);
   while ( v7 < a4 )
   {
     if ( v5 >= a4 - v7 )
       v5 = a4 - v7;
-    v8 = sub_1002328B(a1, a2, (a3 * v5) << 7);
+    v8 = FUN_1002328b(a1, a2, (a3 * v5) << 7);
     if ( v5 )
     {
       v9 = v5;
@@ -30208,7 +30730,8 @@ int __cdecl sub_100233AB(_DWORD *a1, unsigned int a2, int a3, signed int a4)
   return v11;
 }
 
-// sub_10023449 @ 0x10023449
+// FUN_10023449 @ 0x10023449
+// [binja] void* sub_10023449(int32_t* arg1, int32_t* arg2, char arg3, int32_t arg4, int32_t arg5, int32_t arg6)
 int __cdecl sub_10023449(_DWORD *a1, unsigned int a2, char a3, int a4, int a5, int a6)
 {
   int v6; // esi
@@ -30221,7 +30744,7 @@ int __cdecl sub_10023449(_DWORD *a1, unsigned int a2, char a3, int a4, int a5, i
     *(_DWORD *)(*a1 + 24) = a2;
     (*(void (__cdecl **)(_DWORD *))*a1)(a1);
   }
-  result = sub_1002318F(a1, a2, 0x78u);
+  result = FUN_1002318f(a1, a2, 0x78u);
   *(_DWORD *)result = 0;
   *(_DWORD *)(result + 4) = a5;
   *(_DWORD *)(result + 8) = a4;
@@ -30233,7 +30756,8 @@ int __cdecl sub_10023449(_DWORD *a1, unsigned int a2, char a3, int a4, int a5, i
   return result;
 }
 
-// sub_100234AA @ 0x100234AA
+// FUN_100234aa @ 0x100234AA
+// [binja] void* sub_100234aa(int32_t* arg1, int32_t* arg2, char arg3, int32_t arg4, int32_t arg5, int32_t arg6)
 int __cdecl sub_100234AA(_DWORD *a1, unsigned int a2, char a3, int a4, int a5, int a6)
 {
   int v6; // esi
@@ -30246,7 +30770,7 @@ int __cdecl sub_100234AA(_DWORD *a1, unsigned int a2, char a3, int a4, int a5, i
     *(_DWORD *)(*a1 + 24) = a2;
     (*(void (__cdecl **)(_DWORD *))*a1)(a1);
   }
-  result = sub_1002318F(a1, a2, 0x78u);
+  result = FUN_1002318f(a1, a2, 0x78u);
   *(_DWORD *)result = 0;
   *(_DWORD *)(result + 4) = a5;
   *(_DWORD *)(result + 8) = a4;
@@ -30301,7 +30825,7 @@ int __cdecl sub_1002350B(_DWORD *a1)
   }
   if ( v3 > 0 )
   {
-    result = sub_1002E670(a1, v3, v4);
+    result = FUN_1002e670(a1, v3, v4);
     if ( result < v4 )
     {
       result /= v3;
@@ -30534,7 +31058,7 @@ int __cdecl sub_1002379D(int a1, int a2, unsigned int a3, unsigned int a4, char 
       v12 = v10 - v11;
       v13 = v5 - v11;
       while ( v12 < v13 )
-        sub_10022C14(*(void **)(*(_DWORD *)a2 + 4 * v12++), v15);
+        memzero(*(void **)(*(_DWORD *)a2 + 4 * v12++), v15);
     }
     else
     {
@@ -30620,7 +31144,7 @@ int __cdecl sub_100238BB(int a1, int a2, unsigned int a3, unsigned int a4, char 
       v12 = v9 - v10;
       v15 = v14 - v10;
       while ( v12 < v15 )
-        sub_10022C14(*(void **)(*(_DWORD *)a2 + 4 * v12++), v11);
+        memzero(*(void **)(*(_DWORD *)a2 + 4 * v12++), v11);
     }
     else
     {
@@ -30691,7 +31215,7 @@ _DWORD *__cdecl sub_100239DE(_DWORD *a1, unsigned int a2)
     {
       v7 = (_DWORD *)*v6;
       v8 = v6[2] + v6[1] + 16;
-      sub_1002E665((int)a1, v6);
+      zcfree((int)a1, v6);
       v3[18] -= v8;
       v6 = v7;
     }
@@ -30707,7 +31231,7 @@ _DWORD *__cdecl sub_100239DE(_DWORD *a1, unsigned int a2)
     {
       v11 = (_DWORD *)*result;
       v12 = result[2] + result[1] + 16;
-      sub_1002E665((int)a1, result);
+      zcfree((int)a1, result);
       v3[18] -= v12;
       result = v11;
     }
@@ -30723,7 +31247,7 @@ void __cdecl sub_10023ABF(int a1)
 
   for ( i = 1; i >= 0; --i )
     sub_100239DE((_DWORD *)a1, i);
-  sub_1002E665(a1, *(void **)(a1 + 4));
+  zcfree(a1, *(void **)(a1 + 4));
   *(_DWORD *)(a1 + 4) = 0;
   nullsub_3();
 }
@@ -30738,15 +31262,15 @@ _DWORD *__cdecl sub_10023AEF(_DWORD *a1)
 
   a1[1] = 0;
   v1 = sub_1002E689(a1);
-  result = (_DWORD *)sub_1002E65A((int)a1, 0x50u);
+  result = (_DWORD *)FUN_1002e65a((int)a1, 0x50u);
   if ( result )
   {
-    *result = sub_1002318F;
-    result[1] = sub_1002328B;
+    *result = FUN_1002318f;
+    result[1] = FUN_1002328b;
     result[2] = sub_10023319;
     result[3] = sub_100233AB;
-    result[4] = sub_10023449;
-    result[5] = sub_100234AA;
+    result[4] = FUN_10023449;
+    result[5] = FUN_100234aa;
     result[6] = sub_1002350B;
     result[7] = sub_1002379D;
     result[8] = sub_100238BB;
@@ -30821,7 +31345,8 @@ int __cdecl sub_10023BFC(int a1)
   return result;
 }
 
-// sub_10023C18 @ 0x10023C18
+// FUN_10023c18 @ 0x10023C18
+// [binja] int32_t __fastcall sub_10023c18(int32_t arg1, void* arg2)
 char __fastcall sub_10023C18(int a1, int a2)
 {
   _DWORD *v2; // ecx
@@ -30991,7 +31516,7 @@ LABEL_27:
   else
     v15 = *(_DWORD *)(a1 + 100);
   *(_DWORD *)(a1 + 104) = v15;
-  LOBYTE(v16) = sub_10023C18(v14, a1);
+  LOBYTE(v16) = FUN_10023c18(v14, a1);
   if ( (_BYTE)v16 )
   {
     v16 = *(_DWORD *)(a1 + 272);
@@ -31044,7 +31569,7 @@ int __usercall sub_10023EE7@<eax>(int a1@<esi>)
   sub_10023C89(v7);
   sub_10023E78(a1);
   *(_DWORD *)(v1 + 12) = 0;
-  *(_BYTE *)(v1 + 16) = sub_10023C18(v2, a1);
+  *(_BYTE *)(v1 + 16) = FUN_10023c18(v2, a1);
   *(_DWORD *)(v1 + 20) = 0;
   *(_DWORD *)(v1 + 24) = 0;
   v3 = *(_BYTE *)(a1 + 74);
@@ -31242,7 +31767,8 @@ int __cdecl sub_100241E2(int a1)
   return sub_10023EE7(a1);
 }
 
-// sub_10024212 @ 0x10024212
+// inflateReset @ 0x10024212
+// zlib: reset inflate state
 int __cdecl sub_10024212(_DWORD *a1)
 {
   _DWORD *v1; // ecx
@@ -31256,11 +31782,12 @@ int __cdecl sub_10024212(_DWORD *a1)
   a1[2] = 0;
   a1[6] = 0;
   *v1 = v1[3] != 0 ? 7 : 0;
-  sub_10033F0B(*(_DWORD *)(a1[7] + 20), a1, 0);
+  inflate_blocks_reset(*(_DWORD *)(a1[7] + 20), a1, 0);
   return 0;
 }
 
-// sub_10024251 @ 0x10024251
+// inflateEnd @ 0x10024251
+// zlib: free inflate state
 int __cdecl sub_10024251(_DWORD *a1)
 {
   int v1; // eax
@@ -31273,13 +31800,14 @@ int __cdecl sub_10024251(_DWORD *a1)
     return -2;
   v2 = *(_DWORD *)(v1 + 20);
   if ( v2 )
-    sub_1003479E(v2, a1);
+    inflate_blocks_free(v2, a1);
   ((void (__cdecl *)(_DWORD, _DWORD))a1[9])(a1[10], a1[7]);
   a1[7] = 0;
   return 0;
 }
 
-// sub_1002428F @ 0x1002428F
+// inflateInit2_ @ 0x1002428F
+// zlib: init inflate with window bits
 int __cdecl sub_1002428F(_DWORD *a1, int a2, _BYTE *a3, int a4)
 {
   bool v4; // zf
@@ -31296,11 +31824,11 @@ int __cdecl sub_1002428F(_DWORD *a1, int a2, _BYTE *a3, int a4)
   a1[6] = 0;
   if ( v4 )
   {
-    a1[8] = sub_100348EB;
+    a1[8] = zcalloc;
     a1[10] = 0;
   }
   if ( !a1[9] )
-    a1[9] = sub_1002E665;
+    a1[9] = zcfree;
   v5 = ((int (__cdecl *)(_DWORD, int, int))a1[8])(a1[10], 1, 24);
   a1[7] = v5;
   if ( v5 )
@@ -31320,28 +31848,30 @@ int __cdecl sub_1002428F(_DWORD *a1, int a2, _BYTE *a3, int a4)
     else
     {
       *(_DWORD *)(a1[7] + 16) = v6;
-      *(_DWORD *)(a1[7] + 20) = sub_10033F76(a1, *(_DWORD *)(a1[7] + 12) == 0 ? sub_100347D2 : 0, 1 << v6);
+      *(_DWORD *)(a1[7] + 20) = inflate_blocks_new(a1, *(_DWORD *)(a1[7] + 12) == 0 ? adler32 : 0, 1 << v6);
       if ( *(_DWORD *)(a1[7] + 20) )
       {
-        sub_10024212(a1);
+        inflateReset(a1);
         return 0;
       }
       v10 = -4;
     }
     v7 = v10;
-    sub_10024251(a1);
+    inflateEnd(a1);
     return v7;
   }
   return -4;
 }
 
-// sub_10024374 @ 0x10024374
+// inflateInit_ @ 0x10024374
+// zlib: init inflate (wrapper for inflateInit2_)
 int __cdecl sub_10024374(_DWORD *a1, _BYTE *a2, int a3)
 {
-  return sub_1002428F(a1, 15, a2, a3);
+  return inflateInit2_(a1, 15, a2, a3);
 }
 
-// sub_1002438B @ 0x1002438B
+// inflate @ 0x1002438B
+// zlib: inflate compressed data
 int __cdecl sub_1002438B(unsigned __int8 **a1, int a2)
 {
   int v2; // ebx
@@ -31520,7 +32050,7 @@ LABEL_37:
         *((_DWORD *)v39 + 1) = 0;
         return -2;
       case 7:
-        v12 = sub_10034003(*((_DWORD *)a1[7] + 5), a1, v4);
+        v12 = inflate_blocks(*((_DWORD *)a1[7] + 5), a1, v4);
         v4 = v12;
         if ( v12 == -3 )
         {
@@ -31533,7 +32063,7 @@ LABEL_37:
         if ( v4 != 1 )
           return v4;
         v4 = v2;
-        sub_10033F0B(*((_DWORD *)a1[7] + 5), a1, a1[7] + 4);
+        inflate_blocks_reset(*((_DWORD *)a1[7] + 5), a1, a1[7] + 4);
         v13 = a1[7];
         if ( *((_DWORD *)v13 + 3) )
         {
@@ -31636,14 +32166,16 @@ void *__cdecl sub_100246F2(int a1)
   return v2;
 }
 
-// sub_10024734 @ 0x10024734
+// png_free_ptr @ 0x10024734
+// free wrapper for png allocations
 void __cdecl sub_10024734(void *Block)
 {
   if ( Block )
     free(Block);
 }
 
-// sub_10024741 @ 0x10024741
+// png_malloc @ 0x10024741
+// png malloc wrapper (errors on OOM)
 void *__cdecl sub_10024741(jmp_buf Buf, size_t Size)
 {
   void *result; // eax
@@ -31652,11 +32184,12 @@ void *__cdecl sub_10024741(jmp_buf Buf, size_t Size)
     return 0;
   result = malloc(Size);
   if ( !result )
-    sub_1001E114(Buf, (int)"Out of Memory");
+    png_error(Buf, (int)"Out of Memory");
   return result;
 }
 
-// sub_10024777 @ 0x10024777
+// png_free @ 0x10024777
+// png free callback wrapper
 void __cdecl sub_10024777(int a1, void *Block)
 {
   if ( a1 )
@@ -31666,14 +32199,16 @@ void __cdecl sub_10024777(int a1, void *Block)
   }
 }
 
-// sub_10024790 @ 0x10024790
+// FUN_10024790 @ 0x10024790
+// [binja] int32_t sub_10024790(int32_t arg1, int32_t arg2, int32_t arg3)
 void *__cdecl sub_10024790(int a1, void *a2, const void *a3, unsigned int a4)
 {
   qmemcpy(a2, a3, a4);
   return a2;
 }
 
-// sub_100247B3 @ 0x100247B3
+// FUN_100247b3 @ 0x100247B3
+// [binja] int32_t sub_100247b3(int32_t arg1, char arg2, int32_t arg3)
 char *__usercall sub_100247B3@<eax>(int a1@<ebx>, int a2, char *a3, char a4, unsigned int a5)
 {
   int v5; // eax
@@ -31687,18 +32222,20 @@ char *__usercall sub_100247B3@<eax>(int a1@<ebx>, int a2, char *a3, char a4, uns
   return a3;
 }
 
-// sub_100247E4 @ 0x100247E4
+// png_get_uint_32 @ 0x100247E4
+// read big-endian 32-bit value
 int __cdecl sub_100247E4(unsigned __int8 *a1)
 {
   return a1[3] + ((a1[2] + ((a1[1] + (*a1 << 8)) << 8)) << 8);
 }
 
-// sub_10024807 @ 0x10024807
+// png_crc_read @ 0x10024807
+// read PNG chunk data and update CRC
 jmp_buf __cdecl sub_10024807(jmp_buf Buf, int a2, int a3)
 {
   int *__attribute__((__org_typedef(jmp_buf))) result; // eax
 
-  sub_1002047C(Buf, a2, a3);
+  png_read_data(Buf, a2, a3);
   result = Buf;
   if ( (Buf[67] & 0x20) == 0 )
   {
@@ -31715,7 +32252,8 @@ LABEL_5:
   return result;
 }
 
-// sub_10024821 @ 0x10024821
+// png_crc_error @ 0x10024821
+// read stored CRC and compare with computed
 BOOL __cdecl sub_10024821(jmp_buf Buf)
 {
   int *__attribute__((__org_typedef(jmp_buf))) v1; // esi
@@ -31734,11 +32272,12 @@ BOOL __cdecl sub_10024821(jmp_buf Buf)
   }
   v2 = 0;
 LABEL_6:
-  sub_1002047C(Buf, (int)&Buf, 4);
-  return v2 && sub_100247E4((unsigned __int8 *)&Buf) != v1[64];
+  png_read_data(Buf, (int)&Buf, 4);
+  return v2 && png_get_uint_32((unsigned __int8 *)&Buf) != v1[64];
 }
 
-// sub_1002487F @ 0x1002487F
+// png_check_chunk_name @ 0x1002487F
+// validate PNG chunk type characters
 unsigned __int8 __cdecl sub_1002487F(jmp_buf Buf, unsigned __int8 *a2)
 {
   unsigned __int8 v2; // al
@@ -31760,7 +32299,7 @@ unsigned __int8 __cdecl sub_1002487F(jmp_buf Buf, unsigned __int8 *a2)
     || result > 0x7Au
     || result > 0x5Au && result < 0x61u )
   {
-    sub_1001E147(Buf, "invalid chunk type");
+    FUN_1001e147(Buf, "invalid chunk type");
   }
   return result;
 }
@@ -32173,7 +32712,7 @@ void __cdecl sub_10024AF7(int *a1, int a2, int a3)
   }
 }
 
-// sub_10024DC0 @ 0x10024DC0
+// FUN_10024dc0 @ 0x10024DC0
 char __cdecl sub_10024DC0(int a1, int a2, _BYTE *a3, unsigned __int8 *a4, int a5)
 {
   unsigned int v5; // eax
@@ -32304,7 +32843,7 @@ char __cdecl sub_10024DC0(int a1, int a2, _BYTE *a3, unsigned __int8 *a4, int a5
         }
         break;
       default:
-        sub_1001E132(a1, (int)"Ignoring bad adaptive filter type");
+        png_warning(a1, (int)"Ignoring bad adaptive filter type");
         *a3 = 0;
         LOBYTE(v5) = (_BYTE)a3;
         break;
@@ -32313,7 +32852,7 @@ char __cdecl sub_10024DC0(int a1, int a2, _BYTE *a3, unsigned __int8 *a4, int a5
   return v5;
 }
 
-// sub_10024F3B @ 0x10024F3B
+// FUN_10024f3b @ 0x10024F3B
 char *__cdecl sub_10024F3B(jmp_buf Buf)
 {
   unsigned int v1; // eax
@@ -32331,7 +32870,7 @@ char *__cdecl sub_10024F3B(jmp_buf Buf)
   unsigned int v13; // [esp-14h] [ebp-1Ch]
 
   Buf[26] = 0;
-  sub_10020036(Buf);
+  FUN_10020036(Buf);
   v1 = Buf[47];
   if ( *((_BYTE *)Buf + 275) )
   {
@@ -32398,36 +32937,37 @@ char *__cdecl sub_10024F3B(jmp_buf Buf)
     v6 = 32;
   }
 LABEL_28:
-  Buf[55] = (int)sub_10024741(Buf, ((v6 * ((v2 + 7) & 0xFFFFFFF8) + 7) >> 3) + ((v6 + 7) >> 3) + 1);
-  v11 = (char *)sub_10024741(Buf, Buf[50] + 1);
+  Buf[55] = (int)png_malloc(Buf, ((v6 * ((v2 + 7) & 0xFFFFFFF8) + 7) >> 3) + ((v6 + 7) >> 3) + 1);
+  v11 = (char *)png_malloc(Buf, Buf[50] + 1);
   v13 = Buf[50] + 1;
   Buf[54] = (int)v11;
-  result = sub_100247B3(v7, (int)Buf, v11, 0, v13);
+  result = FUN_100247b3(v7, (int)Buf, v11, 0, v13);
   Buf[23] |= 0x40u;
   return result;
 }
 
-// sub_100250D7 @ 0x100250D7
+// png_crc_finish @ 0x100250D7
+// read remaining chunk bytes and check CRC
 int __cdecl sub_100250D7(jmp_buf Buf, unsigned int a2)
 {
   unsigned int i; // edi
 
   for ( i = Buf[40]; a2 > i; a2 -= i )
-    sub_10024807(Buf, Buf[39], Buf[40]);
+    png_crc_read(Buf, Buf[39], Buf[40]);
   if ( a2 )
-    sub_10024807(Buf, Buf[39], a2);
-  if ( !sub_10024821(Buf) )
+    png_crc_read(Buf, Buf[39], a2);
+  if ( !png_crc_error(Buf) )
     return 0;
   if ( ((Buf[67] & 0x20) == 0 || (*((_BYTE *)Buf + 93) & 2) != 0)
     && ((Buf[67] & 0x20) != 0 || (*((_BYTE *)Buf + 93) & 4) == 0) )
   {
-    sub_1001E147(Buf, "CRC error");
+    FUN_1001e147(Buf, "CRC error");
   }
-  sub_1001E16C((int)Buf, "CRC error");
+  FUN_1001e16c((int)Buf, "CRC error");
   return 1;
 }
 
-// sub_10025163 @ 0x10025163
+// FUN_10025163 @ 0x10025163
 void __cdecl sub_10025163(jmp_buf Buf, int a2, int a3)
 {
   signed int v4; // edi
@@ -32451,14 +32991,14 @@ void __cdecl sub_10025163(jmp_buf Buf, int a2, int a3)
   char v22; // [esp+38h] [ebp+10h]
 
   if ( Buf[22] )
-    sub_1001E114(Buf, (int)"Out of place IHDR");
+    png_error(Buf, (int)"Out of place IHDR");
   if ( a3 != 13 )
-    sub_1001E114(Buf, (int)"Invalid IHDR chunk");
+    png_error(Buf, (int)"Invalid IHDR chunk");
   Buf[22] |= 1u;
-  sub_10024807(Buf, (int)&v11, 13);
-  sub_100250D7(Buf, 0);
-  v4 = sub_100247E4((unsigned __int8 *)&v11);
-  v5 = sub_100247E4(v12);
+  png_crc_read(Buf, (int)&v11, 13);
+  png_crc_finish(Buf, 0);
+  v4 = png_get_uint_32((unsigned __int8 *)&v11);
+  v5 = png_get_uint_32(v12);
   v6 = v13;
   Bufa = (int *)v5;
   v22 = v14;
@@ -32466,19 +33006,19 @@ void __cdecl sub_10025163(jmp_buf Buf, int a2, int a3)
   v19 = v16;
   v20 = v17;
   if ( v4 <= 0 || v5 <= 0 )
-    sub_1001E114(Buf, (int)"Invalid image size in IHDR");
+    png_error(Buf, (int)"Invalid image size in IHDR");
   if ( v13 != 1 && v13 != 2 && v13 != 4 && v13 != 8 && v13 != 16 )
-    sub_1001E114(Buf, (int)"Invalid bit depth in IHDR");
+    png_error(Buf, (int)"Invalid bit depth in IHDR");
   if ( v14 == 1 || v14 == 5 || v14 > 6u )
-    sub_1001E114(Buf, (int)"Invalid color type in IHDR");
+    png_error(Buf, (int)"Invalid color type in IHDR");
   if ( v14 == 3 && v13 > 8u || (v14 == 2 || v14 == 4 || v14 == 6) && v13 < 8u )
-    sub_1001E114(Buf, (int)"Invalid color type/bit depth combination in IHDR");
+    png_error(Buf, (int)"Invalid color type/bit depth combination in IHDR");
   if ( v20 >= 2 )
-    sub_1001E114(Buf, (int)"Unknown interlace method in IHDR");
+    png_error(Buf, (int)"Unknown interlace method in IHDR");
   if ( v18 )
-    sub_1001E114(Buf, (int)"Unknown compression method in IHDR");
+    png_error(Buf, (int)"Unknown compression method in IHDR");
   if ( v19 )
-    sub_1001E114(Buf, (int)"Unknown filter method in IHDR");
+    png_error(Buf, (int)"Unknown filter method in IHDR");
   *((_BYTE *)Buf + 275) = v20;
   Buf[46] = v4;
   Buf[47] = v5;
@@ -32508,10 +33048,10 @@ LABEL_39:
   *((_BYTE *)Buf + 281) = v7;
   v8 = v20;
   Buf[50] = (v4 * (unsigned int)v7 + 7) >> 3;
-  sub_1002031C((int)Buf, a2, v4, (int)Bufa, v6, v22, v8, v9, v10);
+  FUN_1002031c((int)Buf, a2, v4, (int)Bufa, v6, v22, v8, v9, v10);
 }
 
-// sub_10025359 @ 0x10025359
+// FUN_10025359 @ 0x10025359
 void __cdecl sub_10025359(jmp_buf Buf, int a2, int a3)
 {
   int *__attribute__((__org_typedef(jmp_buf))) v3; // esi
@@ -32528,27 +33068,27 @@ void __cdecl sub_10025359(jmp_buf Buf, int a2, int a3)
   v3 = Buf;
   v4 = Buf[22];
   if ( (v4 & 1) == 0 )
-    sub_1001E114(Buf, (int)"Missing IHDR before PLTE");
+    png_error(Buf, (int)"Missing IHDR before PLTE");
   if ( (v4 & 4) != 0 )
   {
-    sub_1001E132((int)Buf, (int)"Invalid PLTE after IDAT");
+    png_warning((int)Buf, (int)"Invalid PLTE after IDAT");
 LABEL_10:
-    sub_100250D7(v3, a3);
+    png_crc_finish(v3, a3);
     return;
   }
   if ( (v4 & 2) != 0 )
-    sub_1001E114(Buf, (int)"Duplicate PLTE chunk");
+    png_error(Buf, (int)"Duplicate PLTE chunk");
   v5 = a3 % 3u;
   Buf[22] |= 2u;
   if ( v5 )
   {
     if ( *((_BYTE *)v3 + 278) == 3 )
-      sub_1001E114(v3, (int)"Invalid palette chunk");
-    sub_1001E132((int)v3, (int)"Invalid palette chunk");
+      png_error(v3, (int)"Invalid palette chunk");
+    png_warning((int)v3, (int)"Invalid palette chunk");
     goto LABEL_10;
   }
   v6 = a3 / 3;
-  v7 = sub_1002052B(v3, a3 / 3, 3);
+  v7 = FUN_1002052b(v3, a3 / 3, 3);
   *((_BYTE *)v3 + 93) |= 0x10u;
   v11 = (int)v7;
   if ( v6 > 0 )
@@ -32557,7 +33097,7 @@ LABEL_10:
     v12 = v6;
     do
     {
-      sub_10024807(v3, (int)&Buf, 3);
+      png_crc_read(v3, (int)&Buf, 3);
       *((_WORD *)v8 - 1) = (_WORD)Buf;
       *v8 = BYTE2(Buf);
       v8 += 3;
@@ -32565,7 +33105,7 @@ LABEL_10:
     }
     while ( v12 );
   }
-  sub_100250D7(v3, 0);
+  png_crc_finish(v3, 0);
   v9 = a2;
   v10 = a2;
   v3[65] = v11;
@@ -32576,26 +33116,26 @@ LABEL_10:
     && (*(_BYTE *)(v9 + 8) & 0x10) != 0
     && *((_WORD *)v3 + 133) > *((_WORD *)v3 + 132) )
   {
-    sub_1001E132((int)v3, (int)"Truncating incorrect tRNS chunk length");
+    png_warning((int)v3, (int)"Truncating incorrect tRNS chunk length");
     *((_WORD *)v3 + 133) = *((_WORD *)v3 + 132);
   }
 }
 
-// sub_10025483 @ 0x10025483
+// FUN_10025483 @ 0x10025483
 int __cdecl sub_10025483(jmp_buf Buf, int a2, unsigned int a3)
 {
   int v3; // eax
 
   v3 = Buf[22];
   if ( (v3 & 1) == 0 || (v3 & 4) == 0 )
-    sub_1001E114(Buf, (int)"No image in file");
+    png_error(Buf, (int)"No image in file");
   Buf[22] |= 0x18u;
   if ( a3 )
-    sub_1001E132((int)Buf, (int)"Incorrect IEND chunk length");
-  return sub_100250D7(Buf, a3);
+    png_warning((int)Buf, (int)"Incorrect IEND chunk length");
+  return png_crc_finish(Buf, a3);
 }
 
-// sub_100254CD @ 0x100254CD
+// FUN_100254cd @ 0x100254CD
 void __cdecl sub_100254CD(jmp_buf Buf, int a2, unsigned int a3)
 {
   int *__attribute__((__org_typedef(jmp_buf))) v3; // esi
@@ -32609,41 +33149,41 @@ void __cdecl sub_100254CD(jmp_buf Buf, int a2, unsigned int a3)
   v4 = Buf[22];
   v5 = a2;
   if ( (v4 & 1) == 0 )
-    sub_1001E114(Buf, (int)"Missing IHDR before gAMA");
+    png_error(Buf, (int)"Missing IHDR before gAMA");
   if ( (v4 & 4) != 0 )
   {
-    sub_1001E132((int)Buf, (int)"Invalid gAMA after IDAT");
+    png_warning((int)Buf, (int)"Invalid gAMA after IDAT");
     goto LABEL_5;
   }
   if ( (v4 & 2) != 0 )
   {
-    sub_1001E132((int)Buf, (int)"Out of place gAMA chunk");
+    png_warning((int)Buf, (int)"Out of place gAMA chunk");
   }
   else if ( a2 )
   {
     v6 = *(_DWORD *)(a2 + 8);
     if ( (v6 & 1) != 0 && (v6 & 0x800) == 0 )
     {
-      sub_1001E132((int)Buf, (int)"Duplicate gAMA chunk");
+      png_warning((int)Buf, (int)"Duplicate gAMA chunk");
       goto LABEL_5;
     }
   }
   if ( a3 != 4 )
   {
-    sub_1001E132((int)v3, (int)"Incorrect gAMA chunk length");
+    png_warning((int)v3, (int)"Incorrect gAMA chunk length");
 LABEL_5:
-    sub_100250D7(v3, a3);
+    png_crc_finish(v3, a3);
     return;
   }
-  sub_10024807(v3, (int)&Buf, 4);
-  if ( !sub_100250D7(v3, 0) )
+  png_crc_read(v3, (int)&Buf, 4);
+  if ( !png_crc_finish(v3, 0) )
   {
-    v7 = sub_100247E4((unsigned __int8 *)&Buf);
+    v7 = png_get_uint_32((unsigned __int8 *)&Buf);
     if ( v7 )
     {
       if ( (*(_DWORD *)(v5 + 8) & 0x800) != 0 && fabs((double)(unsigned int)v7 - 45455.0) > 500.0 )
       {
-        sub_1001E132((int)v3, (int)"Ignoring incorrect gAMA value when sRGB is also present");
+        png_warning((int)v3, (int)"Ignoring incorrect gAMA value when sRGB is also present");
       }
       else
       {
@@ -32655,7 +33195,7 @@ LABEL_5:
   }
 }
 
-// sub_100255D8 @ 0x100255D8
+// FUN_100255d8 @ 0x100255D8
 void __cdecl sub_100255D8(jmp_buf Buf, unsigned int a2, unsigned int a3)
 {
   int *__attribute__((__org_typedef(jmp_buf))) v3; // esi
@@ -32665,46 +33205,46 @@ void __cdecl sub_100255D8(jmp_buf Buf, unsigned int a2, unsigned int a3)
   v3 = Buf;
   v4 = Buf[22];
   if ( (v4 & 1) == 0 )
-    sub_1001E114(Buf, (int)"Missing IHDR before sRGB");
+    png_error(Buf, (int)"Missing IHDR before sRGB");
   if ( (v4 & 4) != 0 )
   {
-    sub_1001E132((int)Buf, (int)"Invalid sRGB after IDAT");
+    png_warning((int)Buf, (int)"Invalid sRGB after IDAT");
     goto LABEL_5;
   }
   if ( (v4 & 2) != 0 )
   {
-    sub_1001E132((int)Buf, (int)"Out of place sRGB chunk");
+    png_warning((int)Buf, (int)"Out of place sRGB chunk");
   }
   else if ( a2 && (*(_BYTE *)(a2 + 9) & 8) != 0 )
   {
-    sub_1001E132((int)Buf, (int)"Duplicate sRGB chunk");
+    png_warning((int)Buf, (int)"Duplicate sRGB chunk");
     goto LABEL_5;
   }
   if ( a3 != 1 )
   {
-    sub_1001E132((int)v3, (int)"Incorrect sRGB chunk length");
+    png_warning((int)v3, (int)"Incorrect sRGB chunk length");
 LABEL_5:
-    sub_100250D7(v3, a3);
+    png_crc_finish(v3, a3);
     return;
   }
-  sub_10024807(v3, (int)&Buf + 3, 1);
-  if ( !sub_100250D7(v3, 0) )
+  png_crc_read(v3, (int)&Buf + 3, 1);
+  if ( !png_crc_finish(v3, 0) )
   {
     v5 = HIBYTE(Buf);
     if ( HIBYTE(Buf) < 4u )
     {
       if ( (*(_BYTE *)(a2 + 8) & 1) != 0 && fabs(*((float *)v3 + 76) * 100000.0 + 0.5 - 45455.0) > 500.0 )
-        sub_1001E132((int)v3, (int)"Ignoring incorrect gAMA value when sRGB is also present");
+        png_warning((int)v3, (int)"Ignoring incorrect gAMA value when sRGB is also present");
       sub_100203FC((int)v3, __SPAIR64__(v5, a2));
     }
     else
     {
-      sub_1001E132((int)v3, (int)"Unknown sRGB intent");
+      png_warning((int)v3, (int)"Unknown sRGB intent");
     }
   }
 }
 
-// sub_100256C7 @ 0x100256C7
+// FUN_100256c7 @ 0x100256C7
 void __cdecl sub_100256C7(jmp_buf Buf, int a2, size_t Size)
 {
   int v3; // eax
@@ -32722,17 +33262,17 @@ void __cdecl sub_100256C7(jmp_buf Buf, int a2, size_t Size)
 
   v3 = Buf[22];
   if ( (v3 & 1) == 0 )
-    sub_1001E114(Buf, (int)"Missing IHDR before tRNS");
+    png_error(Buf, (int)"Missing IHDR before tRNS");
   if ( (v3 & 4) != 0 )
   {
-    sub_1001E132((int)Buf, (int)"Invalid tRNS after IDAT");
+    png_warning((int)Buf, (int)"Invalid tRNS after IDAT");
 LABEL_13:
-    sub_100250D7(Buf, Size);
+    png_crc_finish(Buf, Size);
     return;
   }
   if ( a2 && (*(_BYTE *)(a2 + 8) & 0x10) != 0 )
   {
-    sub_1001E132((int)Buf, (int)"Duplicate tRNS chunk");
+    png_warning((int)Buf, (int)"Duplicate tRNS chunk");
     goto LABEL_13;
   }
   v4 = *((_BYTE *)Buf + 278);
@@ -32742,25 +33282,25 @@ LABEL_13:
     {
       if ( Size > *((unsigned __int16 *)Buf + 132) )
       {
-        sub_1001E132((int)Buf, (int)"Incorrect tRNS chunk length");
-        sub_100250D7(Buf, Size);
+        png_warning((int)Buf, (int)"Incorrect tRNS chunk length");
+        png_crc_finish(Buf, Size);
         return;
       }
     }
     else
     {
-      sub_1001E132((int)Buf, (int)"Missing PLTE before tRNS");
+      png_warning((int)Buf, (int)"Missing PLTE before tRNS");
     }
     if ( !Size )
     {
-      sub_1001E132((int)Buf, (int)"Zero length tRNS chunk");
-      sub_100250D7(Buf, 0);
+      png_warning((int)Buf, (int)"Zero length tRNS chunk");
+      png_crc_finish(Buf, 0);
       return;
     }
-    v5 = sub_10024741(Buf, Size);
+    v5 = png_malloc(Buf, Size);
     *((_BYTE *)Buf + 93) |= 0x20u;
     Buf[87] = (int)v5;
-    sub_10024807(Buf, (int)v5, Size);
+    png_crc_read(Buf, (int)v5, Size);
     *((_WORD *)Buf + 133) = Size;
     goto LABEL_25;
   }
@@ -32768,24 +33308,24 @@ LABEL_13:
   {
     if ( v4 )
     {
-      sub_1001E132((int)Buf, (int)"tRNS chunk not allowed with alpha channel");
+      png_warning((int)Buf, (int)"tRNS chunk not allowed with alpha channel");
       goto LABEL_28;
     }
     if ( Size == 2 )
     {
-      sub_10024807(Buf, (int)&v9, 2);
+      png_crc_read(Buf, (int)&v9, 2);
       *((_WORD *)Buf + 180) = v10 + (v9 << 8);
       goto LABEL_24;
     }
 LABEL_22:
-    sub_1001E132((int)Buf, (int)"Incorrect tRNS chunk length");
+    png_warning((int)Buf, (int)"Incorrect tRNS chunk length");
 LABEL_28:
-    sub_100250D7(Buf, Size);
+    png_crc_finish(Buf, Size);
     return;
   }
   if ( Size != 6 )
     goto LABEL_22;
-  sub_10024807(Buf, (int)&v9, 6);
+  png_crc_read(Buf, (int)&v9, 6);
   v6 = v12;
   *((_WORD *)Buf + 177) = v10 + (v9 << 8);
   v7 = v6 + (v11 << 8);
@@ -32795,22 +33335,22 @@ LABEL_28:
 LABEL_24:
   *((_WORD *)Buf + 133) = 1;
 LABEL_25:
-  if ( !sub_100250D7(Buf, 0) )
+  if ( !png_crc_finish(Buf, 0) )
     sub_10020435((int)Buf, a2, Buf[87], *((unsigned __int16 *)Buf + 133), (int)(Buf + 88));
 }
 
-// sub_1002587E @ 0x1002587E
+// FUN_1002587e @ 0x1002587E
 int __cdecl sub_1002587E(jmp_buf Buf, int a2, unsigned int a3)
 {
   int v3; // eax
 
-  sub_1002487F(Buf, (unsigned __int8 *)Buf + 268);
+  png_check_chunk_name(Buf, (unsigned __int8 *)Buf + 268);
   if ( (Buf[67] & 0x20) == 0 )
-    sub_1001E147(Buf, "unknown critical chunk");
+    FUN_1001e147(Buf, "unknown critical chunk");
   v3 = Buf[22];
   if ( (v3 & 4) != 0 )
     Buf[22] = v3 | 8;
-  return sub_100250D7(Buf, a3);
+  return png_crc_finish(Buf, a3);
 }
 
 // sub_100258C8 @ 0x100258C8
@@ -32836,7 +33376,7 @@ int __usercall sub_100258C8@<eax>(int a1@<ebx>, jmp_buf Buf)
     if ( *((_BYTE *)v2 + 275) )
     {
       *(_DWORD *)result = 0;
-      sub_100247B3(a1, (int)v2, (char *)v2[54], 0, v2[50] + 1);
+      FUN_100247b3(a1, (int)v2, (char *)v2[54], 0, v2[50] + 1);
       while ( 1 )
       {
         v4 = ++*((_BYTE *)v2 + 276);
@@ -32868,13 +33408,13 @@ int __usercall sub_100258C8@<eax>(int a1@<ebx>, jmp_buf Buf)
         {
           while ( !v2[63] )
           {
-            sub_100250D7(v2, 0);
-            sub_1002047C(v2, (int)&v12, 4);
-            v2[63] = sub_100247E4((unsigned __int8 *)&v12);
-            sub_10020583((int)v2);
-            sub_10024807(v2, (int)(v2 + 67), 4);
+            png_crc_finish(v2, 0);
+            png_read_data(v2, (int)&v12, 4);
+            v2[63] = png_get_uint_32((unsigned __int8 *)&v12);
+            png_reset_crc((int)v2);
+            png_crc_read(v2, (int)(v2 + 67), 4);
             if ( v2[67] != *(_DWORD *)"IDAT" )
-              sub_1001E114(v2, (int)"Not enough image data");
+              png_error(v2, (int)"Not enough image data");
           }
           v7 = v2[40];
           v8 = v2[63];
@@ -32883,10 +33423,10 @@ int __usercall sub_100258C8@<eax>(int a1@<ebx>, jmp_buf Buf)
           v2[25] = v9;
           if ( v7 > v8 )
             v2[26] = v8;
-          sub_10024807(v2, v9, v2[26]);
+          png_crc_read(v2, v9, v2[26]);
           v2[63] -= v2[26];
         }
-        v10 = sub_1002438B((unsigned __int8 **)v2 + 25, 1);
+        v10 = inflate((unsigned __int8 **)v2 + 25, 1);
         if ( v10 == 1 )
           break;
         if ( v10 )
@@ -32894,20 +33434,20 @@ int __usercall sub_100258C8@<eax>(int a1@<ebx>, jmp_buf Buf)
           v11 = (const char *)v2[31];
           if ( !v11 )
             v11 = "Decompression Error";
-          sub_1001E114(v2, (int)v11);
+          png_error(v2, (int)v11);
         }
         if ( !v2[29] )
-          sub_1001E114(v2, (int)"Extra compressed data");
+          png_error(v2, (int)"Extra compressed data");
       }
       if ( !v2[29] || v2[26] || v2[63] )
-        sub_1001E114(v2, (int)"Extra compressed data");
+        png_error(v2, (int)"Extra compressed data");
       v2[22] |= 8u;
       v2[23] |= 0x20u;
       v2[29] = 0;
     }
     if ( v2[63] || v2[26] )
-      sub_1001E114(v2, (int)"Extra compression data");
-    result = sub_10024212(v2 + 25);
+      png_error(v2, (int)"Extra compression data");
+    result = inflateReset(v2 + 25);
     v2[22] |= 8u;
   }
   return result;
@@ -34838,7 +35378,7 @@ __m64 *__stdcall sub_10027ED0(__m64 *a1, __m64 *a2, __m64 *a3)
   __m64 v4; // mm1
   __m64 v6; // mm6
   __m64 v7; // mm7
-  __m64 v8; // mm4
+  unsigned __int64 v8; // mm4
   __m64 v9; // mm6
   __m64 v10; // mm5
   __m64 v11; // mm3
@@ -34847,13 +35387,15 @@ __m64 *__stdcall sub_10027ED0(__m64 *a1, __m64 *a2, __m64 *a3)
   v4 = a2[1];
   v6 = _m_punpckldq(_m_punpckhdq((__m64)a3->m64_u64, (__m64)a3->m64_u64), (__m64)a3->m64_u64);
   v7 = _m_punpckldq(_m_punpckhdq(v3, v3), v3);
-  v8 = _m_pfacc(
-         _m_pfsub(_m_pfmul(v6, v4), _m_pfmul(_m_pxor(v7, (__m64)0x80000000LL), (__m64)a2->m64_u64)),
-         _m_pfadd(_m_pxor(_m_pfmul((__m64)a3->m64_u64, v4), (__m64)0x80000000LL), _m_pfmul(v3, (__m64)a2->m64_u64)));
+  v8 = (unsigned __int64)_m_pfacc(
+                           _m_pfsub(_m_pfmul(v6, v4), _m_pfmul(_m_pxor(v7, (__m64)0x80000000LL), (__m64)a2->m64_u64)),
+                           _m_pfadd(
+                             _m_pxor(_m_pfmul((__m64)a3->m64_u64, v4), (__m64)0x80000000LL),
+                             _m_pfmul(v3, (__m64)a2->m64_u64)));
   v9 = _m_pfmul(_m_pxor(v6, (__m64)0x80000000LL), (__m64)a2->m64_u64);
   v10 = _m_pxor(v3, (__m64)0x80000000LL);
   v11 = _m_pfmul((__m64)a3->m64_u64, (__m64)a2->m64_u64);
-  a1->m64_u64 = (unsigned __int64)v8;
+  a1->m64_u64 = v8;
   a1[1].m64_u64 = (unsigned __int64)_m_pfacc(_m_pfadd(v9, _m_pfmul(v7, v4)), _m_pfsub(_m_pfmul(v10, v4), v11));
   _m_femms();
   return a1;
@@ -39023,7 +39565,7 @@ __m64 *__stdcall sub_1002D1CE(__m64 *a1, _DWORD *a2, __m64 *a3)
 // sub_1002D1EA @ 0x1002D1EA
 __m64 *__stdcall sub_1002D1EA(__m64 *a1, __m64 *a2, __m64 *a3)
 {
-  __m64 m64_u64; // mm1
+  unsigned __int64 m64_u64; // mm1
   __m64 v4; // mm0
   __m64 v5; // mm2
   __m64 v6; // mm4
@@ -39031,10 +39573,10 @@ __m64 *__stdcall sub_1002D1EA(__m64 *a1, __m64 *a2, __m64 *a3)
   __m64 v8; // mm3
 
   _m_femms();
-  m64_u64 = (__m64)a2->m64_u64;
-  v4 = _m_punpckldq(m64_u64, m64_u64);
+  m64_u64 = a2->m64_u64;
+  v4 = _m_punpckldq((__m64)m64_u64, (__m64)m64_u64);
   v5 = _mm_cvtsi32_si64(a2[1].m64_u32[0]);
-  v6 = _m_punpckhdq(m64_u64, m64_u64);
+  v6 = _m_punpckhdq((__m64)m64_u64, (__m64)m64_u64);
   v7 = _m_punpckldq(v5, v5);
   v8 = _m_pfadd(_m_pfadd(_m_pfmul(v4, a3[1]), a3[7]), _m_pfadd(_m_pfmul(v6, a3[3]), _m_pfmul(v7, a3[5])));
   a1->m64_u64 = (unsigned __int64)_m_pfadd(
@@ -39048,7 +39590,7 @@ __m64 *__stdcall sub_1002D1EA(__m64 *a1, __m64 *a2, __m64 *a3)
 // sub_1002D25B @ 0x1002D25B
 __m64 *__stdcall sub_1002D25B(__m64 *a1, __m64 *a2, __m64 *a3)
 {
-  __m64 m64_u64; // mm1
+  unsigned __int64 m64_u64; // mm1
   __m64 v4; // mm0
   __m64 v5; // mm2
   __m64 v6; // mm4
@@ -39056,10 +39598,10 @@ __m64 *__stdcall sub_1002D25B(__m64 *a1, __m64 *a2, __m64 *a3)
   __m64 v8; // mm3
 
   _m_femms();
-  m64_u64 = (__m64)a2->m64_u64;
-  v4 = _m_punpckldq(m64_u64, m64_u64);
+  m64_u64 = a2->m64_u64;
+  v4 = _m_punpckldq((__m64)m64_u64, (__m64)m64_u64);
   v5 = _mm_cvtsi32_si64(a2[1].m64_u32[0]);
-  v6 = _m_punpckhdq(m64_u64, m64_u64);
+  v6 = _m_punpckhdq((__m64)m64_u64, (__m64)m64_u64);
   v7 = _m_punpckldq(v5, v5);
   v8 = _m_pfadd(_m_pfmul(v4, a3[1]), _m_pfadd(_m_pfmul(v6, a3[3]), _m_pfmul(v7, a3[5])));
   a1->m64_u64 = (unsigned __int64)_m_pfadd(
@@ -39675,15 +40217,15 @@ LABEL_11:
 // sub_1002DCA8 @ 0x1002DCA8
 __m64 *__stdcall sub_1002DCA8(__m64 *a1, __m64 *a2, __m64 *a3)
 {
-  __m64 m64_u64; // mm1
+  unsigned __int64 m64_u64; // mm1
   __m64 v4; // mm0
   __m64 v5; // mm4
   __m64 v6; // mm3
 
   _m_femms();
-  m64_u64 = (__m64)a2->m64_u64;
-  v4 = _m_punpckldq(m64_u64, m64_u64);
-  v5 = _m_punpckhdq(m64_u64, m64_u64);
+  m64_u64 = a2->m64_u64;
+  v4 = _m_punpckldq((__m64)m64_u64, (__m64)m64_u64);
+  v5 = _m_punpckhdq((__m64)m64_u64, (__m64)m64_u64);
   v6 = _m_pfadd(_m_pfadd(_m_pfmul(v4, a3[1]), a3[7]), _m_pfmul(v5, a3[3]));
   a1->m64_u64 = (unsigned __int64)_m_pfadd(_m_pfadd(_m_pfmul(v4, (__m64)a3->m64_u64), a3[6]), _m_pfmul(v5, a3[2]));
   a1[1].m64_u64 = (unsigned __int64)v6;
@@ -39705,7 +40247,7 @@ __m64 *__stdcall sub_1002DCFD(__m64 *a1, __m64 *a2, __m64 *a3)
 // sub_1002DD36 @ 0x1002DD36
 __m64 *__stdcall sub_1002DD36(__m64 *a1, __m64 *a2, __m64 *a3)
 {
-  __m64 m64_u64; // mm1
+  unsigned __int64 m64_u64; // mm1
   __m64 v4; // mm0
   __m64 v5; // mm4
   __m64 v6; // mm1
@@ -39714,9 +40256,9 @@ __m64 *__stdcall sub_1002DD36(__m64 *a1, __m64 *a2, __m64 *a3)
   __m64 v9; // mm4
 
   _m_femms();
-  m64_u64 = (__m64)a2->m64_u64;
-  v4 = _m_punpckldq(m64_u64, m64_u64);
-  v5 = _m_punpckhdq(m64_u64, m64_u64);
+  m64_u64 = a2->m64_u64;
+  v4 = _m_punpckldq((__m64)m64_u64, (__m64)m64_u64);
+  v5 = _m_punpckhdq((__m64)m64_u64, (__m64)m64_u64);
   v6 = _m_pfmul(v5, a3[2]);
   v7 = _m_pfadd(_m_pfadd(_m_pfmul(v4, a3[1]), a3[7]), _m_pfmul(v5, a3[3]));
   v8 = _m_punpckhdq(v7, v7);
@@ -39842,7 +40384,7 @@ __m64 *__stdcall sub_1002DEBE(__m64 *a1, __m64 *a2, __m64 *a3, __m64 *a4, __m64 
 // sub_1002DF69 @ 0x1002DF69
 __m64 *__stdcall sub_1002DF69(__m64 *a1, __m64 *a2, __m64 *a3)
 {
-  __m64 m64_u64; // mm1
+  unsigned __int64 m64_u64; // mm1
   __m64 v4; // mm0
   __m64 v5; // mm3
   __m64 v6; // mm5
@@ -39851,10 +40393,10 @@ __m64 *__stdcall sub_1002DF69(__m64 *a1, __m64 *a2, __m64 *a3)
   __m64 v9; // mm4
 
   _m_femms();
-  m64_u64 = (__m64)a2->m64_u64;
-  v4 = _m_punpckldq(m64_u64, m64_u64);
+  m64_u64 = a2->m64_u64;
+  v4 = _m_punpckldq((__m64)m64_u64, (__m64)m64_u64);
   v5 = a2[1];
-  v6 = _m_punpckhdq(m64_u64, m64_u64);
+  v6 = _m_punpckhdq((__m64)m64_u64, (__m64)m64_u64);
   v7 = _m_punpckldq(v5, v5);
   v8 = _m_punpckhdq(v5, v5);
   v9 = _m_pfadd(_m_pfadd(_m_pfmul(v4, a3[1]), _m_pfmul(v6, a3[3])), _m_pfadd(_m_pfmul(v7, a3[5]), _m_pfmul(v8, a3[7])));
@@ -40108,7 +40650,7 @@ __m64 *__stdcall sub_1002E3D6(__m64 *a1, __m64 *a2, __m64 *a3, __m64 *a4)
   __m64 v15; // mm4
   __m64 v16; // mm5
   __m64 v17; // mm6
-  __m64 v19; // mm4
+  unsigned __int64 v19; // mm4
   __m64 v20; // mm5
   __m64 v21; // mm0
 
@@ -40131,10 +40673,10 @@ __m64 *__stdcall sub_1002E3D6(__m64 *a1, __m64 *a2, __m64 *a3, __m64 *a4)
   v15 = _m_pfrsqrt(v14);
   v16 = _m_pfcmpgt(v14, (__m64)0x80000000800000LL);
   v17 = _m_pfrcpit2(_m_pfrsqit1(v14, _m_pfmul(v15, v15)), v15);
-  v19 = _m_pfmul(_m_pand(v9, v16), v17);
+  v19 = (unsigned __int64)_m_pfmul(_m_pand(v9, v16), v17);
   v20 = _m_pfmul(_m_pand(v11, v16), v17);
-  v21 = _m_pfmul(v19, (__m64)a2->m64_u64);
-  a1->m64_u64 = (unsigned __int64)v19;
+  v21 = _m_pfmul((__m64)v19, (__m64)a2->m64_u64);
+  a1->m64_u64 = v19;
   a1[1].m64_u64 = (unsigned __int64)_m_pxor(
                                       _m_punpckldq(v20, _m_pfadd(_m_pfacc(v21, v21), _m_pfmul(v20, v4))),
                                       (__m64)0x8000000000000000uLL);
@@ -40234,19 +40776,22 @@ __m64 *__stdcall sub_1002E5DC(__m64 *a1, __m64 *a2, __m64 *a3)
   return a1;
 }
 
-// sub_1002E65A @ 0x1002E65A
+// FUN_1002e65a @ 0x1002E65A
+// [binja] int32_t sub_1002e65a(uint32_t arg1)
 void *__cdecl sub_1002E65A(int a1, size_t Size)
 {
   return malloc(Size);
 }
 
-// sub_1002E665 @ 0x1002E665
+// zcfree @ 0x1002E665
+// zlib (internal): default free wrapper
 void __cdecl sub_1002E665(int a1, void *Block)
 {
   free(Block);
 }
 
-// sub_1002E670 @ 0x1002E670
+// FUN_1002e670 @ 0x1002E670
+// [binja] int32_t sub_1002e670(int32_t arg1) __pure
 int __cdecl sub_1002E670(int a1, int a2, int a3)
 {
   return a3;
@@ -40746,7 +41291,8 @@ int __cdecl sub_1002EBCA(int a1, char a2)
   return result;
 }
 
-// sub_1002EC9D @ 0x1002EC9D
+// FUN_1002ec9d @ 0x1002EC9D
+// [binja] void* __fastcall sub_1002ec9d(void* arg1)
 _DWORD *__thiscall sub_1002EC9D(_DWORD *this)
 {
   _DWORD *result; // eax
@@ -40778,7 +41324,7 @@ _DWORD *__thiscall sub_1002EC9D(_DWORD *this)
 _DWORD *__cdecl sub_1002ECDC(_DWORD *a1)
 {
   a1[32] = 0;
-  return sub_1002EC9D(a1);
+  return FUN_1002ec9d(a1);
 }
 
 // sub_1002ECEC @ 0x1002ECEC
@@ -40826,7 +41372,7 @@ int __cdecl sub_1002ECEC(_DWORD *a1, int a2)
       }
       else
       {
-        sub_1002EC9D(a1);
+        FUN_1002ec9d(a1);
         return 3;
       }
     }
@@ -40839,7 +41385,7 @@ LABEL_24:
   }
   while ( 1 )
   {
-    sub_10022C14(*(void **)(v3 + 32), a1[79] << 7);
+    memzero(*(void **)(v3 + 32), a1[79] << 7);
     if ( !(*(unsigned __int8 (__cdecl **)(_DWORD *, int))(a1[101] + 4))(a1, v3 + 32) )
       break;
     v6 = 0;
@@ -40972,7 +41518,7 @@ int __cdecl sub_1002EEC9(_DWORD *a1)
       }
       else
       {
-        sub_1002EC9D(a1);
+        FUN_1002ec9d(a1);
         return 3;
       }
     }
@@ -43394,7 +43940,8 @@ int __cdecl sub_10031013(int a1, int a2, int a3, int a4, int a5, _DWORD *a6, int
   return result;
 }
 
-// sub_10031078 @ 0x10031078
+// FUN_10031078 @ 0x10031078
+// [binja] int32_t sub_10031078(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t* arg5)
 unsigned int __cdecl sub_10031078(_DWORD *a1, int a2, int a3, int a4, int a5, _DWORD *a6)
 {
   _DWORD *v7; // esi
@@ -43433,7 +43980,8 @@ unsigned int __cdecl sub_10031078(_DWORD *a1, int a2, int a3, int a4, int a5, _D
   return result;
 }
 
-// sub_10031108 @ 0x10031108
+// FUN_10031108 @ 0x10031108
+// [binja] int32_t sub_10031108(void* arg1, int32_t arg2, int32_t* arg3, int32_t arg4)
 unsigned int __cdecl sub_10031108(_DWORD *a1, int a2, int a3, int a4, int a5, _DWORD *a6, int a7)
 {
   _DWORD *v7; // esi
@@ -43478,7 +44026,7 @@ int __cdecl sub_10031194(int a1, int a2)
         *(_DWORD *)(*(_DWORD *)a1 + 20) = 4;
         result = (**(int (__cdecl ***)(int))a1)(a1);
       }
-      v3[1] = sub_10031108;
+      v3[1] = FUN_10031108;
     }
     else if ( a2 == 3 )
     {
@@ -43487,7 +44035,7 @@ int __cdecl sub_10031194(int a1, int a2)
         *(_DWORD *)(*(_DWORD *)a1 + 20) = 4;
         result = (**(int (__cdecl ***)(int))a1)(a1);
       }
-      v3[1] = sub_10031078;
+      v3[1] = FUN_10031078;
     }
     else
     {
@@ -43575,7 +44123,8 @@ int __cdecl sub_100312BD(_DWORD *a1)
   return result;
 }
 
-// sub_100312D7 @ 0x100312D7
+// FUN_100312d7 @ 0x100312D7
+// [binja] int32_t* sub_100312d7(void* arg1, int32_t arg2, int32_t* arg3, int32_t arg4, int32_t* arg5, int32_t arg6)
 _DWORD *__cdecl sub_100312D7(_DWORD *a1, int a2, _DWORD *a3, int a4, int a5, _DWORD *a6, int a7)
 {
   int v8; // esi
@@ -43708,7 +44257,8 @@ const void **__cdecl sub_100313B0(unsigned int *a1, int a2, char **a3, int *a4)
   return result;
 }
 
-// sub_1003148D @ 0x1003148D
+// FUN_1003148d @ 0x1003148D
+// [binja] int32_t* sub_1003148d(int32_t* arg1, int32_t arg2, int32_t* arg3)
 _BYTE ***__cdecl sub_1003148D(int a1, int a2, int a3, _BYTE ***a4)
 {
   _BYTE ***result; // eax
@@ -43755,7 +44305,8 @@ _BYTE ***__cdecl sub_1003148D(int a1, int a2, int a3, _BYTE ***a4)
   return result;
 }
 
-// sub_100314E4 @ 0x100314E4
+// FUN_100314e4 @ 0x100314E4
+// [binja] int32_t* sub_100314e4(void* arg1, int32_t* arg2, int32_t* arg3)
 const void **__cdecl sub_100314E4(int a1, int a2, char **a3, int *a4)
 {
   const void **result; // eax
@@ -43964,7 +44515,7 @@ int __cdecl sub_100316F9(int a1)
   *(_DWORD *)(a1 + 412) = result;
   *(_BYTE *)(result + 8) = 0;
   *(_DWORD *)result = sub_100312BD;
-  *(_DWORD *)(result + 4) = sub_100312D7;
+  *(_DWORD *)(result + 4) = FUN_100312d7;
   v14 = result;
   if ( *(_BYTE *)(a1 + 264) )
   {
@@ -43997,7 +44548,7 @@ int __cdecl sub_100316F9(int a1)
               if ( v18 && *(_DWORD *)(v5 + 4) > 2u )
                 *v4 = sub_1003154E;
               else
-                *v4 = sub_1003148D;
+                *v4 = FUN_1003148d;
 LABEL_30:
               v12 = *(_DWORD *)(a1 + 272);
               v9 = *(_DWORD *)(a1 + 4);
@@ -44016,7 +44567,7 @@ LABEL_30:
               }
               else
               {
-                *v4 = sub_100314E4;
+                *v4 = FUN_100314e4;
               }
               goto LABEL_30;
             }
@@ -44676,7 +45227,8 @@ const void **__cdecl sub_1003206A(int a1, int a2, _DWORD *a3, int a4, int a5, _D
   return result;
 }
 
-// sub_10032110 @ 0x10032110
+// FUN_10032110 @ 0x10032110
+// [binja] int32_t sub_10032110(void* arg1, int32_t arg2, int32_t* arg3, int32_t arg4, int32_t* arg5)
 int __cdecl sub_10032110(int a1, int a2, _DWORD *a3, int a4, int a5, _DWORD *a6)
 {
   int result; // eax
@@ -44918,13 +45470,14 @@ int __cdecl sub_1003247D(int a1)
   else
   {
     *(_DWORD *)(v1 + 32) = 0;
-    *(_DWORD *)(v1 + 4) = sub_10032110;
+    *(_DWORD *)(v1 + 4) = FUN_10032110;
     *(_DWORD *)(v1 + 12) = sub_10032141;
   }
   return sub_10031FA5(a1);
 }
 
-// sub_100324F2 @ 0x100324F2
+// FUN_100324f2 @ 0x100324F2
+// [binja] int16_t* sub_100324f2(int16_t* arg1, int16_t* arg2, int32_t arg3)
 _WORD *__cdecl sub_100324F2(int a1, _WORD *a2, int a3, int a4)
 {
   _WORD *result; // eax
@@ -46132,7 +46685,7 @@ int __cdecl sub_100332E1(_DWORD *a1, char a2)
     a1[19] = 2;
   if ( a2 )
   {
-    *(_DWORD *)(v4 + 4) = sub_100324F2;
+    *(_DWORD *)(v4 + 4) = FUN_100324f2;
     *(_DWORD *)(v4 + 8) = sub_100332BF;
     *(_BYTE *)(v4 + 28) = 1;
   }
@@ -46162,7 +46715,7 @@ int __cdecl sub_100332E1(_DWORD *a1, char a2)
       v7 = 6 * (a1[23] + 2);
       if ( !*(_DWORD *)(v4 + 32) )
         *(_DWORD *)(v4 + 32) = (*(int (__cdecl **)(_DWORD *, int, unsigned int))(a1[1] + 4))(a1, 1, v7);
-      result = sub_10022C14(*(void **)(v4 + 32), v7);
+      result = memzero(*(void **)(v4 + 32), v7);
       if ( !*(_DWORD *)(v4 + 40) )
         result = sub_1003322F((int)a1);
       *(_BYTE *)(v4 + 36) = 0;
@@ -46171,7 +46724,7 @@ int __cdecl sub_100332E1(_DWORD *a1, char a2)
   if ( *(_BYTE *)(v4 + 28) )
   {
     for ( i = 0; i < 32; ++i )
-      result = sub_10022C14(*(void **)(v9 + 4 * i), 0x1000u);
+      result = memzero(*(void **)(v9 + 4 * i), 0x1000u);
     *(_BYTE *)(v4 + 28) = 0;
   }
   return result;
@@ -46746,7 +47299,7 @@ int __cdecl sub_10033A02(_DWORD *a1, int a2, void **a3, int a4)
     v18 = a4;
     do
     {
-      sub_10022C14(*v6, v21);
+      memzero(*v6, v21);
       v8 = v4[12];
       v24 = 0;
       v14 = v8;
@@ -46914,7 +47467,7 @@ char __cdecl sub_10033BEC(_DWORD *a1, int a2, void **a3, int a4)
     v22 = a4;
     do
     {
-      sub_10022C14(*v32, v28);
+      memzero(*v32, v28);
       v31 = 0;
       if ( v30 > 0 )
       {
@@ -47038,7 +47591,7 @@ void __cdecl sub_10033DA6(_DWORD *a1)
         v6 = 0;
         for ( i = 2 * a1[23] + 4; v6 < a1[25]; ++v4 )
         {
-          sub_10022C14(*v4, i);
+          memzero(*v4, i);
           ++v6;
         }
       }
@@ -47111,7 +47664,8 @@ int __cdecl sub_10033E84(_DWORD *a1)
   return result;
 }
 
-// sub_10033F0B @ 0x10033F0B
+// inflate_blocks_reset @ 0x10033F0B
+// zlib (internal): reset inflate blocks state
 int (__cdecl *__cdecl sub_10033F0B(_DWORD *a1, int a2, _DWORD *a3))(_DWORD, _DWORD, _DWORD)
 {
   int v3; // eax
@@ -47122,7 +47676,7 @@ int (__cdecl *__cdecl sub_10033F0B(_DWORD *a1, int a2, _DWORD *a3))(_DWORD, _DWO
   if ( *a1 == 4 || *a1 == 5 )
     (*(void (__cdecl **)(_DWORD, _DWORD))(a2 + 36))(*(_DWORD *)(a2 + 40), a1[3]);
   if ( *a1 == 6 )
-    sub_10036919(a1[1], a2);
+    inflate_codes_free(a1[1], a2);
   v3 = a1[10];
   a1[13] = v3;
   a1[12] = v3;
@@ -47139,7 +47693,8 @@ int (__cdecl *__cdecl sub_10033F0B(_DWORD *a1, int a2, _DWORD *a3))(_DWORD, _DWO
   return result;
 }
 
-// sub_10033F76 @ 0x10033F76
+// inflate_blocks_new @ 0x10033F76
+// zlib (internal): allocate inflate blocks state
 _DWORD *__cdecl sub_10033F76(int a1, int a2, int a3)
 {
   _DWORD *v3; // edi
@@ -47163,7 +47718,7 @@ _DWORD *__cdecl sub_10033F76(int a1, int a2, int a3)
     *v3 = 0;
     v3[11] = a3 + v6;
     v3[14] = a2;
-    sub_10033F0B(v3, a1, 0);
+    inflate_blocks_reset(v3, a1, 0);
     return v3;
   }
   else
@@ -47174,7 +47729,8 @@ _DWORD *__cdecl sub_10033F76(int a1, int a2, int a3)
   }
 }
 
-// sub_10034003 @ 0x10034003
+// inflate_blocks @ 0x10034003
+// zlib (internal): process inflate blocks
 int __cdecl sub_10034003(int *a1, int *a2, int a3)
 {
   unsigned int v4; // ecx
@@ -47326,7 +47882,7 @@ int __cdecl sub_10034003(int *a1, int *a2, int a3)
           goto LABEL_7;
         }
         sub_10036E31(&v74, &v75, &v76, &v77);
-        v19 = sub_10036381(v74, v75, v76, v77, v5);
+        v19 = inflate_codes_new(v74, v75, v76, v77, v5);
         a1[1] = v19;
         if ( !v19 )
           goto LABEL_120;
@@ -47363,7 +47919,7 @@ LABEL_8:
 LABEL_9:
             *v5 = (int)v7;
             a1[13] = v11;
-            return sub_10036E60(a1, v5, v70);
+            return inflate_flush(a1, v5, v70);
           }
           break;
         }
@@ -47407,7 +47963,7 @@ LABEL_5:
                 (v80 = v8) == 0) )
           {
             a1[13] = (int)v81;
-            v27 = sub_10036E60(a1, v5, a3);
+            v27 = inflate_flush(a1, v5, a3);
             v28 = a1[12];
             v86 = v27;
             v81 = (char *)a1[13];
@@ -47539,7 +48095,7 @@ LABEL_71:
         v68 = a1[9];
         v67 = a1[3];
         a1[4] = 7;
-        v80 = sub_10036CAF(v67, a1 + 4, a1 + 5, v68, v5);
+        v80 = inflate_trees_bits(v67, a1 + 4, a1 + 5, v68, v5);
         if ( v80 )
         {
           ((void (__cdecl *)(int, int))v5[9])(v5[10], a1[3]);
@@ -47609,7 +48165,7 @@ LABEL_115:
               v63 = v81;
               *v5 = (int)v7;
               a1[13] = (int)v63;
-              return sub_10036E60(a1, v5, -3);
+              return inflate_flush(a1, v5, -3);
             }
             if ( v73 == 16 )
             {
@@ -47642,7 +48198,7 @@ LABEL_115:
         v66 = a1[3];
         v78 = 9;
         v79 = 6;
-        v54 = sub_10036D2E((v53 & 0x1F) + 257, ((v53 >> 5) & 0x1F) + 1, v66, &v78, &v79, &v71, &v72, v69, v5);
+        v54 = inflate_trees_dynamic((v53 & 0x1F) + 257, ((v53 >> 5) & 0x1F) + 1, v66, &v78, &v79, &v71, &v72, v69, v5);
         v65 = a1[3];
         v80 = v54;
         ((void (__cdecl *)(int, int))v5[9])(v5[10], v65);
@@ -47651,7 +48207,7 @@ LABEL_115:
           v61 = v80 == -3;
           goto LABEL_117;
         }
-        v55 = sub_10036381(v78, v79, v71, v72, v5);
+        v55 = inflate_codes_new(v78, v79, v71, v72, v5);
         if ( !v55 )
         {
 LABEL_120:
@@ -47668,11 +48224,11 @@ LABEL_101:
         v56 = v81;
         *v5 = (int)v7;
         a1[13] = (int)v56;
-        v57 = sub_100363B5(a1, v5, a3);
+        v57 = inflate_codes(a1, v5, a3);
         if ( v57 != 1 )
-          return sub_10036E60(a1, v5, v57);
+          return inflate_flush(a1, v5, v57);
         a3 = 0;
-        sub_10036919(a1[1], v5);
+        inflate_codes_free(a1[1], v5);
         v7 = (unsigned __int8 *)*v5;
         v82 = v5[1];
         v83 = a1[8];
@@ -47695,7 +48251,7 @@ LABEL_101:
         *a1 = 7;
 LABEL_122:
         a1[13] = (int)v81;
-        v57 = sub_10036E60(a1, v5, a3);
+        v57 = inflate_flush(a1, v5, a3);
         v61 = a1[12] == a1[13];
         v81 = (char *)a1[13];
         if ( v61 )
@@ -47712,7 +48268,7 @@ LABEL_126:
         *v5 = (int)v7;
         v5[2] += (int)v64;
         a1[13] = (int)v81;
-        return sub_10036E60(a1, v5, v57);
+        return inflate_flush(a1, v5, v57);
       case 4:
         goto LABEL_71;
       case 5:
@@ -47731,17 +48287,19 @@ LABEL_126:
   }
 }
 
-// sub_1003479E @ 0x1003479E
+// inflate_blocks_free @ 0x1003479E
+// zlib (internal): free inflate blocks state
 int __cdecl sub_1003479E(_DWORD *a1, int a2)
 {
-  sub_10033F0B(a1, a2, 0);
+  inflate_blocks_reset(a1, a2, 0);
   (*(void (__cdecl **)(_DWORD, _DWORD))(a2 + 36))(*(_DWORD *)(a2 + 40), a1[10]);
   (*(void (__cdecl **)(_DWORD, _DWORD))(a2 + 36))(*(_DWORD *)(a2 + 40), a1[9]);
   (*(void (__cdecl **)(_DWORD, _DWORD *))(a2 + 36))(*(_DWORD *)(a2 + 40), a1);
   return 0;
 }
 
-// sub_100347D2 @ 0x100347D2
+// adler32 @ 0x100347D2
+// zlib: adler32 checksum
 int __cdecl sub_100347D2(unsigned int a1, unsigned __int8 *a2, unsigned int a3)
 {
   unsigned __int8 *v3; // ecx
@@ -47844,7 +48402,8 @@ int __cdecl sub_100347D2(unsigned int a1, unsigned __int8 *a2, unsigned int a3)
   return v4 | (v5 << 16);
 }
 
-// sub_100348EB @ 0x100348EB
+// zcalloc @ 0x100348EB
+// zlib (internal): default alloc wrapper (calloc)
 void *__cdecl sub_100348EB(int a1, size_t Count, size_t Size)
 {
   return calloc(Count, Size);
@@ -48575,7 +49134,8 @@ char __cdecl sub_10035FA0(int a1, int a2, __int16 *a3, int a4, int a5)
   return result;
 }
 
-// sub_10036381 @ 0x10036381
+// inflate_codes_new @ 0x10036381
+// zlib (internal): allocate codes state
 int __cdecl sub_10036381(char a1, char a2, int a3, int a4, int a5)
 {
   int result; // eax
@@ -48592,7 +49152,8 @@ int __cdecl sub_10036381(char a1, char a2, int a3, int a4, int a5)
   return result;
 }
 
-// sub_100363B5 @ 0x100363B5
+// inflate_codes @ 0x100363B5
+// zlib (internal): decode codes
 int __cdecl sub_100363B5(_DWORD *a1, _DWORD *a2, int a3)
 {
   _BYTE *v5; // edx
@@ -48867,7 +49428,7 @@ LABEL_45:
           }
         }
         a1[13] = v5;
-        v26 = sub_10036E60(a1, a2, a3);
+        v26 = inflate_flush(a1, a2, a3);
         v5 = (_BYTE *)a1[13];
         v50 = v26;
         v27 = a1[12];
@@ -48912,7 +49473,7 @@ LABEL_86:
         a2[2] += v34;
 LABEL_87:
         a1[13] = v5;
-        return sub_10036E60(a1, a2, v38);
+        return inflate_flush(a1, a2, v38);
       case 5:
         goto LABEL_41;
       case 6:
@@ -48923,7 +49484,7 @@ LABEL_87:
             || ((v5 = (_BYTE *)a1[10], v30 >= v29) ? (v8 = a1[11] - v30) : (v8 = v29 - v30 - 1), !v8) )
           {
             a1[13] = v5;
-            v31 = sub_10036E60(a1, a2, a3);
+            v31 = inflate_flush(a1, a2, a3);
             v5 = (_BYTE *)a1[13];
             v50 = v31;
             v32 = a1[12];
@@ -48962,7 +49523,7 @@ LABEL_87:
           --v47;
         }
         a1[13] = v5;
-        v36 = sub_10036E60(a1, a2, a3);
+        v36 = inflate_flush(a1, a2, a3);
         v5 = (_BYTE *)a1[13];
         if ( (_BYTE *)a1[12] != v5 )
         {
@@ -48990,13 +49551,15 @@ LABEL_98:
   }
 }
 
-// sub_10036919 @ 0x10036919
+// inflate_codes_free @ 0x10036919
+// zlib (internal): free codes state
 int __cdecl sub_10036919(int a1, int a2)
 {
   return (*(int (__cdecl **)(_DWORD, int))(a2 + 36))(*(_DWORD *)(a2 + 40), a1);
 }
 
-// sub_1003692A @ 0x1003692A
+// huft_build @ 0x1003692A
+// zlib (internal): build Huffman decoding tables
 int __usercall sub_1003692A@<eax>(
         unsigned int *a1@<eax>,
         _DWORD *a2,
@@ -49332,7 +49895,8 @@ LABEL_50:
   return 0;
 }
 
-// sub_10036CAF @ 0x10036CAF
+// inflate_trees_bits @ 0x10036CAF
+// zlib (internal): build bit length Huffman tree
 int __cdecl sub_10036CAF(_DWORD *a1, unsigned int *a2, _DWORD *a3, int a4, int a5)
 {
   unsigned int *v6; // eax
@@ -49346,7 +49910,7 @@ int __cdecl sub_10036CAF(_DWORD *a1, unsigned int *a2, _DWORD *a3, int a4, int a
   v11 = v6;
   if ( !v6 )
     return -4;
-  v8 = sub_1003692A(a2, a1, 0x13u, 0x13u, 0, 0, a3, a4, &v10, v6);
+  v8 = huft_build(a2, a1, 0x13u, 0x13u, 0, 0, a3, a4, &v10, v6);
   v9 = v8;
   if ( v8 == -3 )
   {
@@ -49361,7 +49925,8 @@ int __cdecl sub_10036CAF(_DWORD *a1, unsigned int *a2, _DWORD *a3, int a4, int a
   return v9;
 }
 
-// sub_10036D2E @ 0x10036D2E
+// inflate_trees_dynamic @ 0x10036D2E
+// zlib (internal): build dynamic Huffman trees
 int __cdecl sub_10036D2E(
         unsigned int a1,
         unsigned int a2,
@@ -49384,7 +49949,7 @@ int __cdecl sub_10036D2E(
   v15 = v10;
   if ( !v10 )
     return -4;
-  v12 = sub_1003692A(a4, a3, a1, 0x101u, (int)&unk_1004F868, (int)&unk_1004F8E8, a6, a8, &v14, v10);
+  v12 = huft_build(a4, a3, a1, 0x101u, (int)&unk_1004F868, (int)&unk_1004F8E8, a6, a8, &v14, v10);
   if ( v12 )
   {
     if ( v12 == -3 )
@@ -49400,7 +49965,7 @@ LABEL_18:
   }
   if ( !*a4 )
     goto LABEL_18;
-  v12 = sub_1003692A(a5, &a3[a1], a2, 0, (int)&unk_1004F968, (int)&unk_1004F9E0, a7, a8, &v14, v15);
+  v12 = huft_build(a5, &a3[a1], a2, 0, (int)&unk_1004F968, (int)&unk_1004F9E0, a7, a8, &v14, v15);
   if ( v12 )
   {
     switch ( v12 )
@@ -49442,7 +50007,8 @@ int __cdecl sub_10036E31(_DWORD *a1, _DWORD *a2, _DWORD *a3, _DWORD *a4)
   return 0;
 }
 
-// sub_10036E60 @ 0x10036E60
+// inflate_flush @ 0x10036E60
+// zlib (internal): flush pending output
 int __cdecl sub_10036E60(_DWORD *a1, _DWORD *a2, int a3)
 {
   char *v4; // edx
@@ -51314,6 +51880,13 @@ _DWORD *__cdecl sub_1003AB10(_DWORD *a1)
   a1[31] = 0;
   a1[32] = 0;
   return a1;
+}
+
+// sub_1003AB60 @ 0x1003AB60
+int __cdecl sub_1003AB60(int a1)
+{
+  (*(void (__cdecl **)(int))(*(_DWORD *)a1 + 8))(a1);
+  return sub_1003DD30(a1);
 }
 
 // sub_1003AB80 @ 0x1003AB80
@@ -53619,6 +54192,32 @@ LABEL_15:
   return 0;
 }
 
+// sub_1003D000 @ 0x1003D000
+char __cdecl sub_1003D000(_DWORD *a1)
+{
+  char result; // al
+  int v2; // eax
+
+  if ( a1[94] || (result = sub_1003B660(a1)) != 0 )
+  {
+    v2 = *(_DWORD *)(a1[100] + 84);
+    if ( a1[94] == v2 + 208 )
+    {
+      *(_DWORD *)(*a1 + 20) = 97;
+      *(_DWORD *)(*a1 + 24) = *(_DWORD *)(a1[100] + 84);
+      (*(void (__cdecl **)(_DWORD *, int))(*a1 + 4))(a1, 3);
+      a1[94] = 0;
+LABEL_5:
+      *(_DWORD *)(a1[100] + 84) = ((unsigned __int8)*(_DWORD *)(a1[100] + 84) + 1) & 7;
+      return 1;
+    }
+    result = (*(int (__cdecl **)(_DWORD *, int))(a1[5] + 20))(a1, v2);
+    if ( result )
+      goto LABEL_5;
+  }
+  return result;
+}
+
 // sub_1003D090 @ 0x1003D090
 int __cdecl sub_1003D090(_DWORD *a1)
 {
@@ -53636,7 +54235,8 @@ int __cdecl sub_1003D090(_DWORD *a1)
   return result;
 }
 
-// sub_1003D0D0 @ 0x1003D0D0
+// FUN_1003d0d0 @ 0x1003D0D0
+// [binja] char* __fastcall sub_1003d0d0(int32_t arg1)
 const char *__cdecl sub_1003D0D0(_DWORD *a1)
 {
   _DWORD *v1; // edi
@@ -53654,7 +54254,7 @@ const char *__cdecl sub_1003D0D0(_DWORD *a1)
   v2 = operator new(0x50u);
   if ( !v2 )
   {
-    nullsub_1();
+    grim_noop();
     *(_DWORD *)(*v1 + 20) = 53;
     *(_DWORD *)(*v1 + 24) = 0;
     (*(void (__cdecl **)(_DWORD *, _DWORD *))*v1)(v1, v1);
@@ -54015,7 +54615,7 @@ int __cdecl sub_1003D660(_DWORD *a1)
   }
   if ( v3 > 0 )
   {
-    result = sub_1003E530(a1, v3, i);
+    result = FUN_1003e530(a1, v3, i);
     if ( result < i )
     {
       result /= v3;
@@ -54103,7 +54703,7 @@ int __cdecl sub_1003D7E0(int a1, int a2, unsigned int a3, unsigned int a4, char 
     }
     if ( *(_BYTE *)(a2 + 33) )
     {
-      sub_1003D930(a1, a2, 1);
+      FUN_1003d930(a1, a2, 1);
       *(_BYTE *)(a2 + 33) = 0;
     }
     if ( a3 <= *(_DWORD *)(a2 + 24) )
@@ -54117,7 +54717,7 @@ int __cdecl sub_1003D7E0(int a1, int a2, unsigned int a3, unsigned int a4, char 
     {
       *(_DWORD *)(a2 + 24) = a3;
     }
-    sub_1003D930(a1, a2, 0);
+    FUN_1003d930(a1, a2, 0);
   }
   v8 = *(_DWORD *)(a2 + 28);
   if ( v8 >= v5 )
@@ -54156,7 +54756,8 @@ LABEL_28:
   return *(_DWORD *)a2 + 4 * (a3 - *(_DWORD *)(a2 + 24));
 }
 
-// sub_1003D930 @ 0x1003D930
+// FUN_1003d930 @ 0x1003D930
+// [binja] int32_t sub_1003d930(int32_t* arg1)
 int __cdecl sub_1003D930(int a1, int a2, char a3)
 {
   int v4; // ebp
@@ -54240,7 +54841,7 @@ int __cdecl sub_1003D9D0(int a1, int a2, unsigned int a3, unsigned int a4, char 
     }
     if ( *(_BYTE *)(a2 + 33) )
     {
-      sub_1003DB20(a1, a2, 1);
+      FUN_1003db20(a1, a2, 1);
       *(_BYTE *)(a2 + 33) = 0;
     }
     if ( a3 <= *(_DWORD *)(a2 + 24) )
@@ -54254,7 +54855,7 @@ int __cdecl sub_1003D9D0(int a1, int a2, unsigned int a3, unsigned int a4, char 
     {
       *(_DWORD *)(a2 + 24) = a3;
     }
-    sub_1003DB20(a1, a2, 0);
+    FUN_1003db20(a1, a2, 0);
   }
   v8 = *(_DWORD *)(a2 + 28);
   if ( v8 >= v5 )
@@ -54293,7 +54894,8 @@ LABEL_28:
   return *(_DWORD *)a2 + 4 * (a3 - *(_DWORD *)(a2 + 24));
 }
 
-// sub_1003DB20 @ 0x1003DB20
+// FUN_1003db20 @ 0x1003DB20
+// [binja] int32_t sub_1003db20(int32_t arg1)
 int __cdecl sub_1003DB20(int a1, int a2, char a3)
 {
   int result; // eax
@@ -54436,7 +55038,7 @@ void __cdecl sub_1003DCC0(int a1)
     sub_1003DBC0((_DWORD *)a1, i);
   operator delete(*(void **)(a1 + 4));
   *(_DWORD *)(a1 + 4) = 0;
-  nullsub_1();
+  grim_noop();
 }
 
 // sub_1003DD00 @ 0x1003DD00
@@ -54932,7 +55534,8 @@ int __cdecl sub_1003E510(void *a1, unsigned int a2)
   return 0;
 }
 
-// sub_1003E530 @ 0x1003E530
+// FUN_1003e530 @ 0x1003E530
+// [binja] int32_t sub_1003e530(int32_t arg1) __pure
 int __cdecl sub_1003E530(int a1, int a2, int a3)
 {
   return a3;
@@ -58329,9 +58932,9 @@ int __cdecl sub_100418E0(int a1, int a2)
       if ( !v3[2] )
       {
         *(_DWORD *)(*(_DWORD *)a1 + 20) = 4;
-        result = (**(int (***)(void))a1)();
+        result = (**(int (__cdecl ***)(int))a1)(a1);
       }
-      v3[1] = sub_10041B00;
+      v3[1] = FUN_10041b00;
       v3[6] = 0;
       v3[5] = 0;
     }
@@ -58340,16 +58943,16 @@ int __cdecl sub_100418E0(int a1, int a2)
       if ( !v3[2] )
       {
         *(_DWORD *)(*(_DWORD *)a1 + 20) = 4;
-        result = (**(int (***)(void))a1)();
+        result = (**(int (__cdecl ***)(int))a1)(a1);
       }
-      v3[1] = sub_10041A60;
+      v3[1] = FUN_10041a60;
       v3[6] = 0;
       v3[5] = 0;
     }
     else
     {
       *(_DWORD *)(*(_DWORD *)a1 + 20) = 4;
-      result = (**(int (***)(void))a1)();
+      result = (**(int (__cdecl ***)(int))a1)(a1);
       v3[6] = 0;
       v3[5] = 0;
     }
@@ -58362,7 +58965,12 @@ int __cdecl sub_100418E0(int a1, int a2)
       v3[1] = sub_100419E0;
       if ( !v4 )
       {
-        result = (*(int (**)(void))(*(_DWORD *)(a1 + 4) + 28))();
+        result = (*(int (__cdecl **)(int, _DWORD, _DWORD, _DWORD, int))(*(_DWORD *)(a1 + 4) + 28))(
+                   a1,
+                   v3[2],
+                   0,
+                   v3[4],
+                   1);
         v3[3] = result;
         v3[6] = 0;
         v3[5] = 0;
@@ -58412,7 +59020,8 @@ int __cdecl sub_100419E0(int a1, int a2, int a3, int a4, int a5, _DWORD *a6, int
   return result;
 }
 
-// sub_10041A60 @ 0x10041A60
+// FUN_10041a60 @ 0x10041A60
+// [binja] int32_t sub_10041a60(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4, void** arg5)
 unsigned int __cdecl sub_10041A60(_DWORD *a1, int a2, int a3, int a4, int a5, _DWORD *a6)
 {
   _DWORD *v7; // esi
@@ -58451,7 +59060,8 @@ unsigned int __cdecl sub_10041A60(_DWORD *a1, int a2, int a3, int a4, int a5, _D
   return result;
 }
 
-// sub_10041B00 @ 0x10041B00
+// FUN_10041b00 @ 0x10041B00
+// [binja] int32_t sub_10041b00(void* arg1, int32_t arg2, int32_t* arg3, int32_t arg4)
 unsigned int __cdecl sub_10041B00(_DWORD *a1, int a2, int a3, int a4, int a5, _DWORD *a6, int a7)
 {
   _DWORD *v7; // esi
@@ -61381,7 +61991,7 @@ int __cdecl sub_10044450(_DWORD *a1, void *a2)
     v13 = 0;
     if ( v2 > 0 )
     {
-      v14 = (signed int *)&unk_10050950;
+      v14 = (signed int *)&dbl_10050950;
       while ( 1 )
       {
         v10 = a1[10] == 2 ? *v14 : v9;
@@ -64002,11 +64612,11 @@ int __cdecl sub_10047440(_DWORD *a1, int a2, _BYTE *a3, int a4)
   a1[6] = 0;
   if ( !v5 )
   {
-    a1[8] = sub_10047A00;
+    a1[8] = FUN_10047a00;
     a1[10] = 0;
   }
   if ( !a1[9] )
-    a1[9] = sub_10047A20;
+    a1[9] = FUN_10047a20;
   v6 = ((int (__cdecl *)(_DWORD, int, int))a1[8])(a1[10], 1, 24);
   a1[7] = v6;
   if ( !v6 )
@@ -64345,7 +64955,15 @@ LABEL_31:
   }
 }
 
-// sub_10047A20 @ 0x10047A20
+// FUN_10047a00 @ 0x10047A00
+// [binja] int32_t sub_10047a00(uint32_t arg1, uint32_t arg2)
+void *__cdecl FUN_10047a00(int a1, size_t Count, size_t Size)
+{
+  return calloc(Count, Size);
+}
+
+// FUN_10047a20 @ 0x10047A20
+// [binja] int32_t sub_10047a20(int32_t arg1)
 void __cdecl sub_10047A20(int a1, void *Block)
 {
   free(Block);
@@ -66189,7 +66807,7 @@ LABEL_12:
               v107 = v8 >> 3 >> v13;
               continue;
             case 1:
-              sub_1004B0B0(&v116, &v115, &v114, &v113);
+              inflate_trees_fixed(&v116, &v115, &v114, &v113);
               v14 = sub_1004A190(v116, v115, v114, v113, a2);
               a1[1] = v14;
               if ( v14 )
@@ -67781,7 +68399,8 @@ LABEL_20:
   return v12;
 }
 
-// sub_1004B0B0 @ 0x1004B0B0
+// inflate_trees_fixed @ 0x1004B0B0
+// zlib (internal): return fixed Huffman trees
 int __cdecl sub_1004B0B0(_DWORD *a1, _DWORD *a2, _DWORD *a3, _DWORD *a4)
 {
   *a1 = dword_10058410;
