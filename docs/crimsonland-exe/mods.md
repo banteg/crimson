@@ -59,9 +59,30 @@ offset `0x00`. The exe drives the vtable and pokes a few flags directly.
 | `0x08` | `flags` | Cursor/visibility flags (low byte) | Exe checks `(char)plugin_interface_ptr[2]` to decide whether to draw the cursor. |
 | `0x24` | `request_exit` | Exit/request flag byte | Exe sets byte `+0x24` when leaving or pausing the plugin flow. |
 
+### Mod interface vtable (3 slots)
+
+The bundled mods use a 3-entry vtable. The update slot returns a byte that
+drives whether the exe keeps the mod active.
+
+| Slot | Meaning | Evidence |
+| --- | --- | --- |
+| `0` | `on_enter` / init | Both mods cache the context pointer and set `flags` byte `+0x08` to `1`. |
+| `1` | `on_exit` / shutdown | Both mods call internal cleanup helpers and return. |
+| `2` | `on_update(frame_dt_ms)` | Returns `0` to exit (exe closes the plugin). Used to poll keys and issue `"game_pause"`. |
+
+### Mod API context (DAT_00481a80)
+
+The context pointer passed at `+0x04` is treated as a vtable-based API from
+within the mod DLLs. Known call sites:
+
+| Vtable offset | Signature (inferred) | Usage |
+| --- | --- | --- |
+| `0x1c` | `fn(self, float a, float b, float c, float d)` | `cl_nullmod` calls with zeros (likely a clear/color or render-state helper). |
+| `0x74` | `key_query(self, int key)` | Both mods call with `0x3b`/`0x3c` (F1/F2) and branch on `al`. |
+| `0x84` | `exec_command(self, const char *cmd)` | Called with `"game_pause"` when the F1 path triggers. |
+
 ## Open questions
 
 - Meaning of `api_version` (always `3` in bundled mods) and the `flags` word at `+0x08`.
 - The rest of the 0x408-byte interface object and any additional vtable slots.
-- The mod context pointer written at `+4` likely points to a global mod table
-  (current mod name/metadata), but no other static xrefs yet.
+- Precise semantics of the mod API vtable slots (0x1c/0x74/0x84) beyond the observed usage.

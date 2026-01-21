@@ -7073,13 +7073,15 @@ int * FUN_0040b5d0(void)
 void FUN_0040b630(void)
 
 {
-  char cVar1;
+  uchar uVar1;
+  mod_interface_t *unaff_EBX;
+  mod_interface_t *unaff_retaddr;
   
   if (plugin_interface_ptr == (mod_interface_t *)0x0) {
     game_state_pending = 0x14;
-    ui_transition_direction = 0;
+    ui_transition_direction = '\0';
     ui_elements_update_and_render();
-    DAT_00471304 = 1;
+    DAT_00471304 = '\x01';
     return;
   }
   if ((game_state_id == 0x16) && (DAT_00471304 != '\0')) {
@@ -7087,14 +7089,14 @@ void FUN_0040b630(void)
     DAT_004824d1 = '\0';
     sfx_mute_all(music_track_extra_0);
     FUN_0040b5d0();
-    (**plugin_interface_ptr->vtable)();
+    (*plugin_interface_ptr->vtable->on_enter)(unaff_EBX);
     *(undefined1 *)((int)&plugin_interface_ptr->flags + 1) = 0;
   }
   else {
-    cVar1 = (*plugin_interface_ptr->vtable[2])(frame_dt_ms);
-    if (cVar1 == '\0') {
+    uVar1 = (*plugin_interface_ptr->vtable->on_update)(frame_dt_ms,(int)unaff_EBX);
+    if (uVar1 == '\0') {
       DAT_004824d1 = '\0';
-      (*plugin_interface_ptr->vtable[1])();
+      (*plugin_interface_ptr->vtable->on_exit)(unaff_retaddr);
       sfx_mute_all(music_track_extra_0);
       plugin_interface_ptr = (mod_interface_t *)0x0;
       FreeLibrary(DAT_004824d8);
@@ -8464,7 +8466,7 @@ void * mod_load_mod(void)
     console_printf(&console_log_queue,s_CMOD__bad_CMOD_GetMod_function_00473008);
   }
   else {
-    *(undefined **)((int)pvVar2 + 4) = &DAT_00481a80;
+    *(mod_api_t **)((int)pvVar2 + 4) = &mod_api_context;
   }
   console_printf(&console_log_queue,s_CMOD_GetMod_ok_00472ff8);
   return pvVar2;

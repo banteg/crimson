@@ -294,14 +294,38 @@ typedef struct mod_info_t {
     unsigned int api_version;
 } mod_info_t;
 
-typedef struct mod_interface_t {
-    void **vtable;
-    void *context;
+typedef struct mod_api_vtbl_t mod_api_vtbl_t;
+typedef struct mod_api_t mod_api_t;
+typedef struct mod_interface_t mod_interface_t;
+typedef struct mod_interface_vtbl_t mod_interface_vtbl_t;
+
+struct mod_api_t {
+    mod_api_vtbl_t *vtable;
+};
+
+struct mod_api_vtbl_t {
+    void *pad0[7];
+    void (*api_fn_0x1c)(mod_api_t *self, float a, float b, float c, float d);
+    void *pad1[21];
+    unsigned char (*api_key_query)(mod_api_t *self, int key);
+    void *pad2[3];
+    void (*api_exec_command)(mod_api_t *self, const char *command);
+};
+
+struct mod_interface_vtbl_t {
+    void (*on_enter)(mod_interface_t *self);
+    void (*on_exit)(mod_interface_t *self);
+    unsigned char (*on_update)(mod_interface_t *self, int frame_dt_ms);
+};
+
+struct mod_interface_t {
+    mod_interface_vtbl_t *vtable;
+    mod_api_t *context;
     unsigned int flags;
     unsigned char reserved0[0x18];
     unsigned char request_exit;
     unsigned char reserved1[0x3e3];
-} mod_interface_t;
+};
 
 typedef struct highscore_record_t {
     char player_name[0x20];

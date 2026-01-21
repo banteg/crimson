@@ -1053,6 +1053,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00481a80",
+      "comment": "Mod API context passed to CMOD plugins (vtable-based).",
+      "name": "mod_api_context",
+      "type": "mod_api_t",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x00481bc0",
       "comment": "Credits secret UI button state for Back (ui_button_update target).",
       "name": "credits_secret_back_button",
