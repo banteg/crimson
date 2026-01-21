@@ -4344,7 +4344,7 @@
       "address": "0x004c4250",
       "comment": "Music entry table (track slots, stride 0x84).",
       "name": "music_entry_table",
-      "type": "music_channel_t",
+      "type": "music_entry_t",
       "program": "crimsonland.exe"
     },
     {
@@ -4357,6 +4357,7 @@
       "address": "0x004c84d0",
       "comment": "SFX entry table base (iterated by sfx_release_all).",
       "name": "sfx_entry_table",
+      "type": "sfx_entry_t",
       "program": "crimsonland.exe"
     },
     {
