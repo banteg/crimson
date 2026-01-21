@@ -1065,9 +1065,17 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00481c88",
+      "comment": "Mod info block copied from CMOD_GetInfo (0x48 bytes).",
+      "name": "mod_info_block",
+      "type": "mod_info_t",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x004824d4",
       "comment": "Modal/plugin interface pointer used when game_state_id == 0x16.",
       "name": "plugin_interface_ptr",
+      "type": "mod_interface_t *",
       "program": "crimsonland.exe"
     },
     {

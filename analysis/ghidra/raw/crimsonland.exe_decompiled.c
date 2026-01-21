@@ -7075,7 +7075,7 @@ void FUN_0040b630(void)
 {
   char cVar1;
   
-  if (plugin_interface_ptr == (int *)0x0) {
+  if (plugin_interface_ptr == (mod_interface_t *)0x0) {
     game_state_pending = 0x14;
     ui_transition_direction = 0;
     ui_elements_update_and_render();
@@ -7087,16 +7087,16 @@ void FUN_0040b630(void)
     DAT_004824d1 = '\0';
     sfx_mute_all(music_track_extra_0);
     FUN_0040b5d0();
-    (**(code **)*plugin_interface_ptr)();
-    *(undefined1 *)((int)plugin_interface_ptr + 9) = 0;
+    (**plugin_interface_ptr->vtable)();
+    *(undefined1 *)((int)&plugin_interface_ptr->flags + 1) = 0;
   }
   else {
-    cVar1 = (**(code **)(*plugin_interface_ptr + 8))(frame_dt_ms);
+    cVar1 = (*plugin_interface_ptr->vtable[2])(frame_dt_ms);
     if (cVar1 == '\0') {
       DAT_004824d1 = '\0';
-      (**(code **)(*plugin_interface_ptr + 4))();
+      (*plugin_interface_ptr->vtable[1])();
       sfx_mute_all(music_track_extra_0);
-      plugin_interface_ptr = (int *)0x0;
+      plugin_interface_ptr = (mod_interface_t *)0x0;
       FreeLibrary(DAT_004824d8);
       DAT_004824d8 = (HMODULE)0x0;
       DAT_00471304 = '\x01';
@@ -7109,8 +7109,8 @@ void FUN_0040b630(void)
   }
   ui_elements_update_and_render();
   if (((ui_transition_direction == '\0') && (game_state_id == 0x16)) ||
-     ((plugin_interface_ptr != (int *)0x0 &&
-      ((DAT_004824d1 != '\0' && ((char)plugin_interface_ptr[2] != '\0')))))) {
+     ((plugin_interface_ptr != (mod_interface_t *)0x0 &&
+      ((DAT_004824d1 != '\0' && ((char)plugin_interface_ptr->flags != '\0')))))) {
     ui_cursor_render();
   }
   return;
@@ -7694,8 +7694,8 @@ LAB_0040c8a0:
      ((game_state_id == 9 || ((game_state_id == 0x16 || (game_state_id == 0x12)))))) {
     ui_transition_direction = 0;
     game_state_pending = 5;
-    if (plugin_interface_ptr != 0) {
-      *(undefined1 *)(plugin_interface_ptr + 9) = 1;
+    if (plugin_interface_ptr != (mod_interface_t *)0x0) {
+      *(undefined1 *)((int)&plugin_interface_ptr->flags + 1) = 1;
     }
   }
   if (DAT_00471308 == 0xffffffff) {
@@ -8354,8 +8354,8 @@ LAB_0040e6c7:
     iVar3 = 0;
 LAB_0040e6cc:
     if (iVar3 == 0) {
-      if (plugin_interface_ptr != 0) {
-        *(undefined1 *)(plugin_interface_ptr + 9) = 1;
+      if (plugin_interface_ptr != (mod_interface_t *)0x0) {
+        *(undefined1 *)((int)&plugin_interface_ptr->flags + 1) = 1;
       }
       ui_transition_direction = 0;
       game_state_pending = 5;
@@ -8368,7 +8368,6 @@ LAB_0040e6cc:
 
 /* mod_load_info @ 0040e700 */
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* loads mods\%s, calls CMOD_GetInfo, copies the info struct to DAT_00481c88, and returns it */
 
 void * mod_load_info(void)
@@ -8377,7 +8376,8 @@ void * mod_load_info(void)
   FARPROC pFVar1;
   undefined4 *puVar2;
   int iVar3;
-  undefined4 *puVar4;
+  char *pcVar4;
+  mod_info_t *pmVar5;
   char local_200 [512];
   
   crt_sprintf(local_200,s_mods__s_00472f58);
@@ -8391,17 +8391,23 @@ void * mod_load_info(void)
   if (pFVar1 != (FARPROC)0x0) {
     if ((DAT_004819c8 & 1) == 0) {
       DAT_004819c8 = DAT_004819c8 | 1;
-      _DAT_00481cc8 = 0x3f800000;
-      _DAT_00481ccc = 3;
-      puVar2 = &DAT_00481c88;
+      mod_info_block.version = 1.0;
+      mod_info_block.api_version = 3;
+      pmVar5 = &mod_info_block;
       for (iVar3 = 8; iVar3 != 0; iVar3 = iVar3 + -1) {
-        *puVar2 = 0;
-        puVar2 = puVar2 + 1;
+        pmVar5->name[0] = '\0';
+        pmVar5->name[1] = '\0';
+        pmVar5->name[2] = '\0';
+        pmVar5->name[3] = '\0';
+        pmVar5 = (mod_info_t *)(pmVar5->name + 4);
       }
-      puVar2 = &DAT_00481ca8;
+      pcVar4 = mod_info_block.author;
       for (iVar3 = 8; iVar3 != 0; iVar3 = iVar3 + -1) {
-        *puVar2 = 0;
-        puVar2 = puVar2 + 1;
+        pcVar4[0] = '\0';
+        pcVar4[1] = '\0';
+        pcVar4[2] = '\0';
+        pcVar4[3] = '\0';
+        pcVar4 = pcVar4 + 4;
       }
       crt_atexit(&DAT_0040e850);
     }
@@ -8410,16 +8416,16 @@ void * mod_load_info(void)
       console_printf(&console_log_queue,s_CMOD__bad_CMOD_GetInfo_function_00472f84);
     }
     else {
-      puVar4 = &DAT_00481c88;
+      pmVar5 = &mod_info_block;
       for (iVar3 = 0x12; iVar3 != 0; iVar3 = iVar3 + -1) {
-        *puVar4 = *puVar2;
+        *(undefined4 *)pmVar5->name = *puVar2;
         puVar2 = puVar2 + 1;
-        puVar4 = puVar4 + 1;
+        pmVar5 = (mod_info_t *)(pmVar5->name + 4);
       }
     }
     FreeLibrary(DAT_004824d8);
-    console_printf(&console_log_queue,s_CMOD__mod_enum___s__00472f6c,&DAT_00481c88);
-    return &DAT_00481c88;
+    console_printf(&console_log_queue,s_CMOD__mod_enum___s__00472f6c,&mod_info_block);
+    return &mod_info_block;
   }
   console_printf(&console_log_queue,s_CMOD_GetInfo_failed__00472fa8);
   FreeLibrary(DAT_004824d8);

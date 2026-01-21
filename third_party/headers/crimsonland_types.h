@@ -287,6 +287,22 @@ typedef struct game_status_t {
     unsigned char reserved0[0x10];
 } game_status_t;
 
+typedef struct mod_info_t {
+    char name[0x20];
+    char author[0x20];
+    float version;
+    unsigned int api_version;
+} mod_info_t;
+
+typedef struct mod_interface_t {
+    void **vtable;
+    void *context;
+    unsigned int flags;
+    unsigned char reserved0[0x18];
+    unsigned char request_exit;
+    unsigned char reserved1[0x3e3];
+} mod_interface_t;
+
 typedef struct highscore_record_t {
     char player_name[0x20];
     unsigned int survival_elapsed_ms;
