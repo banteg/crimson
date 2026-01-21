@@ -123,7 +123,7 @@ TEXTURE_LOAD_STAGES: dict[int, tuple[tuple[str, str], ...]] = {
         ("ui_clockPointer", "ui/ui_clockPointer.jaz"),
     ),
     8: (
-        ("game_muzzleFlash", "game/muzzleFlash.jaz"),
+        ("game\\muzzleFlash.jaz", "game/muzzleFlash.jaz"),
         ("ui_dropOn", "ui/ui_dropDownOn.jaz"),
         ("ui_dropOff", "ui/ui_dropDownOff.jaz"),
     ),
@@ -543,9 +543,9 @@ class MenuView:
         self._menu_screen_width = 0
 
     def open(self) -> None:
-        screen_w = float(rl.get_screen_width())
-        self._menu_screen_width = int(screen_w)
-        self._widescreen_y_shift = self._menu_widescreen_y_shift(screen_w)
+        layout_w = float(self._state.config.screen_width)
+        self._menu_screen_width = int(layout_w)
+        self._widescreen_y_shift = self._menu_widescreen_y_shift(layout_w)
         cache = self._ensure_cache()
         sign = cache.get_or_load("ui_signCrimson", "ui/ui_signCrimson.jaz").texture
         item = cache.get_or_load("ui_menuItem", "ui/ui_menuItem.jaz").texture
@@ -603,8 +603,8 @@ class MenuView:
         assets = self._assets
         if assets is None:
             return
-        self._draw_menu_sign()
         self._draw_menu_items()
+        self._draw_menu_sign()
 
     def _ensure_cache(self) -> PaqTextureCache:
         cache = self._state.texture_cache
@@ -630,8 +630,8 @@ class MenuView:
             width=1024,
             height=1024,
             texture_scale=self._state.config.texture_scale,
-            screen_width=None,
-            screen_height=None,
+            screen_width=float(self._state.config.screen_width),
+            screen_height=float(self._state.config.screen_height),
         )
         self._ground.generate(seed=self._state.rng.randrange(0, 10_000))
 
@@ -744,7 +744,7 @@ class MenuView:
             src = rl.Rectangle(
                 0.0,
                 float(entry.row) * MENU_LABEL_ROW_HEIGHT,
-                float(label_tex.width),
+                MENU_LABEL_WIDTH,
                 MENU_LABEL_ROW_HEIGHT,
             )
             label_offset_x = MENU_LABEL_OFFSET_X * item_scale
@@ -827,7 +827,7 @@ class MenuView:
         return 100 + (counter_value * 155) // 1000
 
     def _menu_entry_enabled(self, entry: MenuEntry) -> bool:
-        return self._timeline_ms >= self._menu_slot_end_ms(entry.slot)
+        return self._timeline_ms >= self._menu_slot_start_ms(entry.slot)
 
     @staticmethod
     def _menu_widescreen_y_shift(screen_w: float) -> float:
@@ -868,12 +868,13 @@ class MenuView:
 
     @staticmethod
     def _menu_slot_start_ms(slot: int) -> int:
-        # ui_menu_layout_init: element 1 gets +100ms; slots are elements 2..7
-        return (slot + 2) * 100
+        # ui_menu_layout_init: start_time_ms is the fully-visible time.
+        return (slot + 2) * 100 + 300
 
     @classmethod
     def _menu_slot_end_ms(cls, slot: int) -> int:
-        return cls._menu_slot_start_ms(slot) + 300
+        # ui_menu_layout_init: end_time_ms is the fully-hidden time.
+        return (slot + 2) * 100
 
     @staticmethod
     def _menu_max_timeline_ms(
@@ -896,19 +897,19 @@ class MenuView:
         end_ms: int,
         width: float,
     ) -> tuple[float, float]:
-        # Matches ui_element_update: angle lerps pi/2 -> 0, offset lerps +/-width -> 0.
+        # Matches ui_element_update: angle lerps pi/2 -> 0 over [end_ms, start_ms].
         # Direction flag (element+0x314) appears to be 0 for main menu elements.
-        if end_ms <= start_ms or width <= 0.0:
+        if start_ms <= end_ms or width <= 0.0:
             return 0.0, 0.0
         t = self._timeline_ms
-        if t < start_ms:
+        if t < end_ms:
             angle = 1.5707964
             offset_x = -abs(width)
-        elif t < end_ms:
-            elapsed = t - start_ms
-            span = float(end_ms - start_ms)
+        elif t < start_ms:
+            elapsed = t - end_ms
+            span = float(start_ms - end_ms)
             p = float(elapsed) / span
-            angle = 1.5707964 - (float(elapsed) * 1.5707964) / span
+            angle = 1.5707964 * (1.0 - p)
             offset_x = -((1.0 - p) * abs(width))
         else:
             angle = 0.0
@@ -933,7 +934,7 @@ class MenuView:
         assets = self._assets
         if assets is None or assets.sign is None:
             return
-        screen_w = float(rl.get_screen_width())
+        screen_w = float(self._state.config.screen_width)
         scale, shift_x = self._sign_layout_scale(int(screen_w))
         pos_x = screen_w + MENU_SIGN_POS_X_PAD
         pos_y = (
@@ -947,8 +948,8 @@ class MenuView:
         offset_y = MENU_SIGN_OFFSET_Y * scale
         angle_rad, slide_x = self._ui_element_anim(
             index=0,
-            start_ms=0,
-            end_ms=300,
+            start_ms=300,
+            end_ms=0,
             width=sign_w,
         )
         _ = slide_x  # slide is ignored for render_mode==0 (transform) elements

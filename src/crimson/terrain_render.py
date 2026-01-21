@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
-import random
+import os
 
 import pyray as rl
 
@@ -17,8 +17,21 @@ TERRAIN_DETAIL_TINT = rl.Color(178, 178, 178, 153)
 TERRAIN_DENSITY_BASE = 800
 TERRAIN_DENSITY_OVERLAY = 0x23
 TERRAIN_DENSITY_DETAIL = 0x0F
-TERRAIN_DENSITY_DIV = 0x2000
+TERRAIN_DENSITY_DIV = 0x80000
 TERRAIN_ROTATION_MAX = 0x13A
+CRT_RAND_MULT = 214013
+CRT_RAND_INC = 2531011
+
+
+class CrtRand:
+    def __init__(self, seed: int | None) -> None:
+        if seed is None:
+            seed = int.from_bytes(os.urandom(4), "little")
+        self._state = seed & 0xFFFFFFFF
+
+    def rand(self) -> int:
+        self._state = (self._state * CRT_RAND_MULT + CRT_RAND_INC) & 0xFFFFFFFF
+        return (self._state >> 16) & 0x7FFF
 
 
 @dataclass(slots=True)
@@ -50,7 +63,7 @@ class GroundRenderer:
         self.create_render_target()
         if self.render_target is None:
             return
-        rng = random.Random(seed)
+        rng = CrtRand(seed)
         rl.begin_texture_mode(self.render_target)
         rl.clear_background(TERRAIN_CLEAR_COLOR)
         self._scatter_texture(
@@ -71,10 +84,10 @@ class GroundRenderer:
         target = self.render_target
         if target is None:
             return
-        render_w = float(rl.get_render_width())
-        render_h = float(rl.get_render_height())
-        screen_w = float(self.screen_width or render_w)
-        screen_h = float(self.screen_height or render_h)
+        out_w = float(rl.get_screen_width())
+        out_h = float(rl.get_screen_height())
+        screen_w = float(self.screen_width or out_w)
+        screen_h = float(self.screen_height or out_h)
         if screen_w > self.width:
             screen_w = float(self.width)
         if screen_h > self.height:
@@ -89,18 +102,20 @@ class GroundRenderer:
         src_w = (u1 - u0) * float(target.texture.width)
         src_h = (v1 - v0) * float(target.texture.height)
         src = rl.Rectangle(src_x, src_y + src_h, src_w, -src_h)
-        dst = rl.Rectangle(0.0, 0.0, render_w, render_h)
+        dst = rl.Rectangle(0.0, 0.0, out_w, out_h)
         rl.draw_texture_pro(target.texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
     def _scatter_texture(
         self,
         texture: rl.Texture,
         tint: rl.Color,
-        rng: random.Random,
+        rng: CrtRand,
         density: int,
     ) -> None:
         area = self.width * self.height
-        count = max(1, (area * density) // TERRAIN_DENSITY_DIV)
+        count = (area * density) // TERRAIN_DENSITY_DIV
+        if count <= 0:
+            return
         inv_scale = 1.0 / self._normalized_texture_scale()
         size = TERRAIN_PATCH_SIZE * inv_scale
         src = rl.Rectangle(0.0, 0.0, float(texture.width), float(texture.height))
@@ -108,9 +123,9 @@ class GroundRenderer:
         span_w = self.width + int(TERRAIN_PATCH_OVERSCAN * 2)
         span_h = self.height + int(TERRAIN_PATCH_OVERSCAN * 2)
         for _ in range(count):
-            x = (rng.randrange(0, max(1, span_w)) - TERRAIN_PATCH_OVERSCAN) * inv_scale
-            y = (rng.randrange(0, max(1, span_h)) - TERRAIN_PATCH_OVERSCAN) * inv_scale
-            angle = (rng.randrange(0, TERRAIN_ROTATION_MAX) * 0.01) % math.tau
+            angle = ((rng.rand() % TERRAIN_ROTATION_MAX) * 0.01) % math.tau
+            x = ((rng.rand() % span_w) - TERRAIN_PATCH_OVERSCAN) * inv_scale
+            y = ((rng.rand() % span_h) - TERRAIN_PATCH_OVERSCAN) * inv_scale
             dst = rl.Rectangle(float(x), float(y), size, size)
             rl.draw_texture_pro(
                 texture, src, dst, origin, math.degrees(angle), tint
