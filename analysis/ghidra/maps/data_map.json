@@ -1775,12 +1775,14 @@
       "address": "0x0048f168",
       "comment": "UI element table end pointer (iterated by ui_elements_update_and_render).",
       "name": "ui_element_table_end",
+      "type": "ui_element_t *",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x0048f208",
       "comment": "UI element table start pointer (iterated by ui_elements_update_and_render).",
       "name": "ui_element_table_start",
+      "type": "ui_element_t *",
       "program": "crimsonland.exe"
     },
     {

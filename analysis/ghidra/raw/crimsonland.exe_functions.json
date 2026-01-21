@@ -877,14 +877,14 @@
   {
     "name": "ui_element_set_rect",
     "address": "00419ba0",
-    "signature": "void ui_element_set_rect(void * element, float width, float height, float * offset)",
+    "signature": "void ui_element_set_rect(ui_element_t * element, float width, float height, float * offset)",
     "external": false,
     "calls": []
   },
   {
     "name": "ui_element_load",
     "address": "00419d00",
-    "signature": "void ui_element_load(void * element, char * jaz_path)",
+    "signature": "void ui_element_load(ui_element_t * element, char * jaz_path)",
     "external": false,
     "calls": ["console_printf"]
   },
@@ -2774,14 +2774,14 @@
   {
     "name": "ui_element_update",
     "address": "00446900",
-    "signature": "void ui_element_update(void * element)",
+    "signature": "void ui_element_update(ui_element_t * element)",
     "external": false,
     "calls": ["FUN_00446150", "input_primary_just_pressed", "sfx_play"]
   },
   {
     "name": "ui_element_render",
     "address": "00446c40",
-    "signature": "void ui_element_render(void * element)",
+    "signature": "void ui_element_render(ui_element_t * element)",
     "external": false,
     "calls": ["ui_focus_update"]
   },

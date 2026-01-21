@@ -21,6 +21,41 @@ partial.
 - Optional click callback.
 - Optional numeric counter text.
 
+UI elements are referenced via a fixed table of pointers from
+`ui_element_table_end` (`0x0048f168`) through `ui_element_table_start`
+(`0x0048f208`), for a total of 40 entries.
+
+## Struct view (ui_element_t)
+
+```c
+typedef struct ui_element_t {
+    unsigned char active;
+    unsigned char enabled;
+    unsigned char _pad0[0x16];
+    float pos_x;
+    float pos_y;
+    unsigned char _pad1[0x14];
+    void (*on_activate)(void);
+    unsigned char _pad2[4];
+    float quad0[14];
+    float quad1[14];
+    float quad2[14];
+    unsigned char _pad3[0x38];
+    int texture_handle;
+    int quad_mode;
+    unsigned char _pad4[0xe0];
+    int counter_id;
+    unsigned char _pad5[0xf0];
+    int counter_value;
+    int counter_timer;
+    float render_scale;
+    float rot_m00;
+    float rot_m01;
+    float rot_m10;
+    float rot_m11;
+} ui_element_t;
+```
+
 ## Known fields (partial)
 
 Offsets below are relative to the UI element base pointer.

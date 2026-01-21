@@ -216,4 +216,31 @@ typedef struct effect_entry_t {
     float quad_data[29];
 } effect_entry_t;
 
+typedef struct ui_element_t {
+    unsigned char active;
+    unsigned char enabled;
+    unsigned char _pad0[0x16];
+    float pos_x;
+    float pos_y;
+    unsigned char _pad1[0x14];
+    void (*on_activate)(void);
+    unsigned char _pad2[4];
+    float quad0[14];
+    float quad1[14];
+    float quad2[14];
+    unsigned char _pad3[0x38];
+    int texture_handle;
+    int quad_mode;
+    unsigned char _pad4[0xe0];
+    int counter_id;
+    unsigned char _pad5[0xf0];
+    int counter_value;
+    int counter_timer;
+    float render_scale;
+    float rot_m00;
+    float rot_m01;
+    float rot_m10;
+    float rot_m11;
+} ui_element_t;
+
 #endif

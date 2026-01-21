@@ -829,14 +829,14 @@
     "program": "crimsonland.exe",
     "address": "0x00419ba0",
     "name": "ui_element_set_rect",
-    "signature": "void ui_element_set_rect(void *element, float width, float height, float *offset)",
+    "signature": "void ui_element_set_rect(ui_element_t *element, float width, float height, float *offset)",
     "comment": "sets element quad vertices/UVs for a size and offset"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00419d00",
     "name": "ui_element_load",
-    "signature": "void ui_element_load(void *element, char *jaz_path)",
+    "signature": "void ui_element_load(ui_element_t *element, char *jaz_path)",
     "comment": "loads a UI element JAZ asset and logs failures"
   },
   {
@@ -2609,14 +2609,14 @@
     "program": "crimsonland.exe",
     "address": "0x00446900",
     "name": "ui_element_update",
-    "signature": "void ui_element_update(void *element)",
+    "signature": "void ui_element_update(ui_element_t *element)",
     "comment": "updates hover/click/animation for a UI element and fires callbacks"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00446c40",
     "name": "ui_element_render",
-    "signature": "void ui_element_render(void *element)",
+    "signature": "void ui_element_render(ui_element_t *element)",
     "comment": "updates focus/click handling and renders a UI element"
   },
   {
