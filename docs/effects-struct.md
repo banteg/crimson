@@ -19,6 +19,29 @@ Spawn helpers:
 - `FUN_00420130` -> `fx_spawn_particle` (fast variant, speed ~90)
 - `FUN_00420240` -> `fx_spawn_particle_slow` (slow variant, speed ~30)
 
+### Struct view (particle_t)
+
+```c
+typedef struct particle_t {
+    unsigned char active;
+    unsigned char render_flag;
+    unsigned char _pad0[2];
+    float pos_x;
+    float pos_y;
+    float vel_x;
+    float vel_y;
+    float scale_x;
+    float scale_y;
+    float scale_z;
+    float age;
+    float intensity;
+    float angle;
+    float spin;
+    int style_id;
+    int target_id;
+} particle_t;
+```
+
 Layout (partial):
 
 | Offset | Field | Evidence |
@@ -58,6 +81,24 @@ Field arrays are labeled in the data map (e.g. `secondary_proj_pos_x`,
 Spawn helper:
 
 - `FUN_00420360` -> `fx_spawn_secondary_projectile`
+
+### Struct view (secondary_projectile_t)
+
+```c
+typedef struct secondary_projectile_t {
+    unsigned char active;
+    unsigned char _pad0[3];
+    float angle;
+    float speed;
+    float pos_x;
+    float pos_y;
+    float vel_x;
+    float vel_y;
+    int type_id;
+    float lifetime;
+    int target_id;
+} secondary_projectile_t;
+```
 
 Layout (partial):
 
@@ -101,6 +142,23 @@ at `fx_queue` + offsets.
 This queue is written by `fx_queue_add` (`FUN_0041e840`) and rendered (then
 cleared) by `fx_queue_render` once per frame.
 
+### Struct view (fx_queue_entry_t)
+
+```c
+typedef struct fx_queue_entry_t {
+    int effect_id;
+    float rotation;
+    float pos_x;
+    float pos_y;
+    float height;
+    float width;
+    float color_r;
+    float color_g;
+    float color_b;
+    float color_a;
+} fx_queue_entry_t;
+```
+
 Layout (struct view of the SoA block):
 
 | Offset | Field | Evidence |
@@ -124,6 +182,31 @@ Notes:
   (effect ids `3..7`) with randomized grayscale color and size; it uses the
   `fx_queue_random_color_*` scratch RGBA globals.
 - `fx_queue_add` clamps the queue length to `0x7f` if the caller overflows it.
+
+## Sprite effect pool (`sprite_effect_pool` / `DAT_00496820`)
+
+Entry size: `0x2c` bytes. Pool size: `0x180` entries (looping to `0x49aa20`).
+
+### Struct view (sprite_effect_t)
+
+```c
+typedef struct sprite_effect_t {
+    int active;
+    float color_r;
+    float color_g;
+    float color_b;
+    float color_a;
+    float rotation;
+    float pos_x;
+    float pos_y;
+    float vel_x;
+    float vel_y;
+    float scale;
+} sprite_effect_t;
+```
+
+Field arrays are labeled in the data map (e.g. `sprite_effect_color_r`,
+`sprite_effect_pos_x`, `sprite_effect_scale`) at `sprite_effect_pool` + offsets.
 
 ## Rotated FX queue (`fx_queue_rotated` / `DAT_004aaf3c`)
 
@@ -168,6 +251,33 @@ Spawn/update helpers:
   selected atlas frame.
 - `effects_update` (`FUN_0042e710`) advances timers/velocities and frees expired entries.
 - `effects_render` (`FUN_0042e820`) draws active entries.
+
+### Struct view (effect_entry_t)
+
+```c
+typedef struct effect_entry_t {
+    float pos_x;
+    float pos_y;
+    unsigned char effect_id;
+    unsigned char _pad0[3];
+    float vel_x;
+    float vel_y;
+    float rotation;
+    float scale;
+    float half_width;
+    float half_height;
+    float age;
+    float lifetime;
+    int flags;
+    float color_r;
+    float color_g;
+    float color_b;
+    float color_a;
+    float rotation_step;
+    float scale_step;
+    float quad_data[29];
+} effect_entry_t;
+```
 
 Layout (partial):
 

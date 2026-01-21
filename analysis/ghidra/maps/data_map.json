@@ -2538,6 +2538,7 @@
       "address": "0x004912b8",
       "comment": "FX queue base (0x80 entries, stride 0x28)",
       "name": "fx_queue",
+      "type": "fx_queue_entry_t",
       "program": "crimsonland.exe"
     },
     {
@@ -2695,6 +2696,7 @@
       "address": "0x00493eb8",
       "comment": "Particle pool base (0x80 entries, stride 0x38)",
       "name": "particle_pool",
+      "type": "particle_t",
       "program": "crimsonland.exe"
     },
     {
@@ -2797,6 +2799,7 @@
       "address": "0x00495ad8",
       "comment": "Secondary projectile pool base (0x40 entries, stride 0x2c)",
       "name": "secondary_projectile_pool",
+      "type": "secondary_projectile_t",
       "program": "crimsonland.exe"
     },
     {
@@ -2863,6 +2866,7 @@
       "address": "0x00496820",
       "comment": "Sprite effect pool base (stride 0x2c)",
       "name": "sprite_effect_pool",
+      "type": "sprite_effect_t",
       "program": "crimsonland.exe"
     },
     {
@@ -3332,6 +3336,7 @@
       "address": "0x004ab330",
       "comment": "Effect pool pos_x (stride 0xbc bytes)",
       "name": "effect_pool_pos_x",
+      "type": "effect_entry_t",
       "program": "crimsonland.exe"
     },
     {

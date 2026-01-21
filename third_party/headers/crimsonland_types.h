@@ -133,4 +133,87 @@ typedef struct projectile_t {
     int owner_id;
 } projectile_t;
 
+typedef struct particle_t {
+    unsigned char active;
+    unsigned char render_flag;
+    unsigned char _pad0[2];
+    float pos_x;
+    float pos_y;
+    float vel_x;
+    float vel_y;
+    float scale_x;
+    float scale_y;
+    float scale_z;
+    float age;
+    float intensity;
+    float angle;
+    float spin;
+    int style_id;
+    int target_id;
+} particle_t;
+
+typedef struct secondary_projectile_t {
+    unsigned char active;
+    unsigned char _pad0[3];
+    float angle;
+    float speed;
+    float pos_x;
+    float pos_y;
+    float vel_x;
+    float vel_y;
+    int type_id;
+    float lifetime;
+    int target_id;
+} secondary_projectile_t;
+
+typedef struct fx_queue_entry_t {
+    int effect_id;
+    float rotation;
+    float pos_x;
+    float pos_y;
+    float height;
+    float width;
+    float color_r;
+    float color_g;
+    float color_b;
+    float color_a;
+} fx_queue_entry_t;
+
+typedef struct sprite_effect_t {
+    int active;
+    float color_r;
+    float color_g;
+    float color_b;
+    float color_a;
+    float rotation;
+    float pos_x;
+    float pos_y;
+    float vel_x;
+    float vel_y;
+    float scale;
+} sprite_effect_t;
+
+typedef struct effect_entry_t {
+    float pos_x;
+    float pos_y;
+    unsigned char effect_id;
+    unsigned char _pad0[3];
+    float vel_x;
+    float vel_y;
+    float rotation;
+    float scale;
+    float half_width;
+    float half_height;
+    float age;
+    float lifetime;
+    int flags;
+    float color_r;
+    float color_g;
+    float color_b;
+    float color_a;
+    float rotation_step;
+    float scale_step;
+    float quad_data[29];
+} effect_entry_t;
+
 #endif
