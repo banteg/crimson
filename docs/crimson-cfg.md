@@ -14,6 +14,43 @@ Crimsonland executable. It is **not** the save/status file (that is `game.cfg`).
 - Size: **0x480 bytes** (1152 bytes).
 - Endianness: little-endian for integer/float fields.
 
+## Struct view (crimson_cfg_t)
+
+`config_blob` (`DAT_00480348`) is typed as `crimson_cfg_t`:
+
+```c
+typedef struct crimson_cfg_t {
+    unsigned char reserved0[0x0a8];
+    char saved_names[8][27];
+    char player_name[32];
+    int player_name_length;
+    unsigned char reserved1[0x14];
+    int display_bpp;
+    int screen_width;
+    int screen_height;
+    int windowed;
+    int keybinds_p1[13];
+    unsigned char reserved2[0x0c];
+    int keybinds_p2[13];
+    unsigned char reserved3[0x0c];
+    unsigned char reserved4[0x200];
+    unsigned char hardcore;
+    unsigned char full_version;
+    unsigned char reserved5[2];
+    int perk_prompt_counter;
+    unsigned char reserved6[0x14];
+    float sfx_volume;
+    float music_volume;
+    unsigned char fx_toggle;
+    unsigned char score_load_gate;
+    unsigned char reserved7[2];
+    int detail_preset;
+    unsigned char reserved8[4];
+    int key_pick_perk;
+    int key_reload;
+} crimson_cfg_t;
+```
+
 Observed file:
 
 - `game_bins/crimsonland/1.9.93-gog/crimson.cfg`

@@ -243,4 +243,48 @@ typedef struct ui_element_t {
     float rot_m11;
 } ui_element_t;
 
+typedef struct crimson_cfg_t {
+    unsigned char reserved0[0x0a8];
+    char saved_names[8][27];
+    char player_name[32];
+    int player_name_length;
+    unsigned char reserved1[0x14];
+    int display_bpp;
+    int screen_width;
+    int screen_height;
+    int windowed;
+    int keybinds_p1[13];
+    unsigned char reserved2[0x0c];
+    int keybinds_p2[13];
+    unsigned char reserved3[0x0c];
+    unsigned char reserved4[0x200];
+    unsigned char hardcore;
+    unsigned char full_version;
+    unsigned char reserved5[2];
+    int perk_prompt_counter;
+    unsigned char reserved6[0x14];
+    float sfx_volume;
+    float music_volume;
+    unsigned char fx_toggle;
+    unsigned char score_load_gate;
+    unsigned char reserved7[2];
+    int detail_preset;
+    unsigned char reserved8[4];
+    int key_pick_perk;
+    int key_reload;
+} crimson_cfg_t;
+
+typedef struct game_status_t {
+    unsigned short quest_unlock_index;
+    unsigned short quest_unlock_index_full;
+    unsigned int weapon_usage_counts[53];
+    unsigned int quest_play_counts[91];
+    unsigned int mode_play_survival;
+    unsigned int mode_play_rush;
+    unsigned int mode_play_typo;
+    unsigned int mode_play_other;
+    unsigned int game_sequence_id;
+    unsigned char reserved0[0x10];
+} game_status_t;
+
 #endif

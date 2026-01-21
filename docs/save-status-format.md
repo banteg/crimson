@@ -15,6 +15,25 @@ links the editor script in `scripts/save_status.py`.
 - **Payload:** first `0x268` bytes (`game_status_blob`).
 - **Checksum:** final 4 bytes, little‑endian `u32`.
 
+## Struct view (game_status_t)
+
+`game_status_blob` (`DAT_00485540`) is typed as `game_status_t`:
+
+```c
+typedef struct game_status_t {
+    unsigned short quest_unlock_index;
+    unsigned short quest_unlock_index_full;
+    unsigned int weapon_usage_counts[53];
+    unsigned int quest_play_counts[91];
+    unsigned int mode_play_survival;
+    unsigned int mode_play_rush;
+    unsigned int mode_play_typo;
+    unsigned int mode_play_other;
+    unsigned int game_sequence_id;
+    unsigned char reserved0[0x10];
+} game_status_t;
+```
+
 ## Obfuscation
 
 Each payload byte is transformed on save using a byte index polynomial and a constant add.

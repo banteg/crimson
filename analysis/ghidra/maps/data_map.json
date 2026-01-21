@@ -322,6 +322,7 @@
       "address": "0x00480348",
       "comment": "crimson.cfg blob (0x480 bytes)",
       "name": "config_blob",
+      "type": "crimson_cfg_t",
       "program": "crimsonland.exe"
     },
     {
@@ -1355,6 +1356,7 @@
       "address": "0x00485540",
       "comment": "Status file blob (0x268 bytes). Header stores quest_unlock_index (low u16) + quest_unlock_index_full (high u16).",
       "name": "game_status_blob",
+      "type": "game_status_t",
       "program": "crimsonland.exe"
     },
     {
@@ -4810,6 +4812,7 @@
       "address": "0x1005c418",
       "comment": "Raw crimson_cfg config blob (0x480 bytes read/write).",
       "name": "grim_config_blob",
+      "type": "crimson_cfg_t",
       "program": "grim.dll"
     },
     {
