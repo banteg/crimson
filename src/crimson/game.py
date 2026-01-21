@@ -715,8 +715,8 @@ class MenuView:
             offset_x = MENU_ITEM_OFFSET_X * item_scale
             offset_y = MENU_ITEM_OFFSET_Y * item_scale - local_y_shift
             dst = rl.Rectangle(
-                pos_x + offset_x,
-                pos_y + offset_y,
+                pos_x,
+                pos_y,
                 item_w * item_scale,
                 item_h * item_scale,
             )
@@ -750,8 +750,8 @@ class MenuView:
             label_offset_x = MENU_LABEL_OFFSET_X * item_scale
             label_offset_y = MENU_LABEL_OFFSET_Y * item_scale - local_y_shift
             label_dst = rl.Rectangle(
-                pos_x + label_offset_x,
-                pos_y + label_offset_y,
+                pos_x,
+                pos_y,
                 MENU_LABEL_WIDTH * item_scale,
                 MENU_LABEL_HEIGHT * item_scale,
             )
@@ -957,7 +957,7 @@ class MenuView:
         self._draw_ui_quad(
             texture=sign,
             src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-            dst=rl.Rectangle(pos_x + offset_x, pos_y + offset_y, sign_w, sign_h),
+            dst=rl.Rectangle(pos_x, pos_y, sign_w, sign_h),
             origin=rl.Vector2(-offset_x, -offset_y),
             rotation_deg=math.degrees(angle_rad),
             tint=rl.WHITE,
