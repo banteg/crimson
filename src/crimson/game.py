@@ -526,7 +526,7 @@ class MenuEntry:
     row: int
     y: float
     hover_amount: int = 0
-    time_since_ready_ms: int = 0x100
+    ready_timer_ms: int = -1
 
 
 class MenuView:
@@ -764,8 +764,8 @@ class MenuView:
                 rotation_deg=rotation_deg,
                 tint=tint,
             )
-            if self._menu_entry_enabled(entry) and entry.time_since_ready_ms < 0x100:
-                glow_alpha = 0xFF - (entry.time_since_ready_ms // 2)
+            if self._menu_entry_enabled(entry) and 0 <= entry.ready_timer_ms < 0x100:
+                glow_alpha = 0xFF - (entry.ready_timer_ms // 2)
                 rl.begin_blend_mode(rl.BLEND_ADDITIVE)
                 self._draw_ui_quad(
                     texture=label_tex,
@@ -803,14 +803,16 @@ class MenuView:
         return None
 
     def _update_ready_timers(self, dt_ms: int) -> None:
-        for idx, entry in enumerate(self._menu_entries):
+        for entry in self._menu_entries:
             enabled = self._menu_entry_enabled(entry)
-            if enabled and entry.time_since_ready_ms == 0x100:
-                entry.time_since_ready_ms = 0
-            if enabled and entry.time_since_ready_ms < 0x100:
-                entry.time_since_ready_ms = min(0x100, entry.time_since_ready_ms + dt_ms)
             if not enabled:
-                entry.time_since_ready_ms = 0x100
+                entry.ready_timer_ms = -1
+                continue
+
+            if entry.ready_timer_ms < 0:
+                entry.ready_timer_ms = 0
+            if entry.ready_timer_ms < 0x100:
+                entry.ready_timer_ms = min(0x100, entry.ready_timer_ms + dt_ms)
 
     def _update_hover_amounts(self, dt_ms: int) -> None:
         for idx, entry in enumerate(self._menu_entries):
