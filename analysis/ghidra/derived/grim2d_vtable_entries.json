@@ -68,7 +68,7 @@
     "offset_hex": "0x20",
     "offset_dec": 32,
     "func_addr": "0x10006580",
-    "func_name": "grim_set_render_state",
+    "func_name": "grim_set_config_var",
     "section": ".text"
   },
   {

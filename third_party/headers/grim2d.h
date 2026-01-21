@@ -18,7 +18,7 @@ struct IGrim2D_vtbl {
     /* 0x014 */ int (*grim_init_system)(void);
     /* 0x018 */ void (*grim_shutdown)(void);
     /* 0x01c */ void (*grim_apply_settings)(void);
-    /* 0x020 */ void (*grim_set_render_state)(unsigned int state, unsigned int value);
+    /* 0x020 */ void (*grim_set_config_var)(unsigned int id, unsigned int value);
     /* 0x024 */ void (*grim_get_config_var)(unsigned int * out, int id);
     /* 0x028 */ char * (*grim_get_error_text)(void);
     /* 0x02c */ void (*grim_clear_color)(float r, float g, float b, float a);

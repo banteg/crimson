@@ -1089,8 +1089,8 @@ int __fastcall FUN_00401dd0(void *arg1)
     local_18 = local_18 - 4.0;
     (*grim_interface_ptr->vtable->grim_draw_rect_filled)(&local_1c,screen_width_f,4.0);
     (*grim_interface_ptr->vtable->grim_end_batch)(puVar9,puVar10);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,2);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f000000);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
     (*grim_interface_ptr->vtable->grim_set_color)
               (1.0,1.0,1.0,
                (((float)*(int *)((int)arg1 + 0x18) + *(float *)((int)arg1 + 0x1c)) /
@@ -1183,7 +1183,7 @@ LAB_004021ca:
                 ((float)(DAT_0047ea54 << 3) + 26.0,
                  (float)((iVar3 + 1) * 0x10) + *(float *)((int)arg1 + 0x1c) + 2.0,&DAT_004712b8);
     }
-    iVar3 = (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,2);
+    iVar3 = (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
   }
   return iVar3;
 }
@@ -1818,7 +1818,7 @@ int FUN_00402d50(void)
   float fStack_28;
   float fStack_24;
   
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f000000);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
   fStack_24 = (float)(config_screen_width / 2 + -0x6e);
   fStack_28 = (float)(config_screen_height / 2 + -0x1e);
   (*grim_interface_ptr->vtable->grim_draw_rect_filled)(&fStack_24,220.0,60.0);
@@ -1832,7 +1832,7 @@ int FUN_00402d50(void)
   iVar2 = (*pIVar1->grim_measure_text_width)(s_Please_wait____00471444);
   uVar3 = 0x402ead;
   (*pIVar1->grim_draw_text_small)((float)(config_screen_width / 2 - iVar2 / 2),y,text);
-  iVar2 = (*grim_interface_ptr->vtable->grim_set_render_state)
+  iVar2 = (*grim_interface_ptr->vtable->grim_set_config_var)
                     (0x36,CONCAT31((int3)((uint)uVar3 >> 8),1));
   return iVar2;
 }
@@ -3480,7 +3480,7 @@ void __cdecl demo_trial_overlay_render(float *xy,float alpha)
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
             ((float)grim_interface_ptr,*xy + 131.0,(char *)(xy[1] + 9.0));
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,(float)xy);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f000000);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
   y = *xy + 26.0;
   pcVar6 = (char *)(xy[1] + 80.0);
   iVar2 = FUN_0041df50();
@@ -3669,11 +3669,11 @@ void __cdecl ui_render_keybind_help(float *xy,float alpha)
   (*grim_interface_ptr->vtable->grim_draw_rect_filled)(xy,512.0,256.0);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.0);
   (*grim_interface_ptr->vtable->grim_draw_rect_outline)(xy,512.0,256.0);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f4ccccd);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f4ccccd);
   (*grim_interface_ptr->vtable->grim_draw_text_mono_fmt)
             ((int *)grim_interface_ptr,*xy + 16.0,xy[1] + 16.0,s_key_info_00471ffc);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.0);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f000000);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
   y = *xy + 32.0;
   pcVar5 = (char *)(xy[1] + 50.0);
   fVar6 = y;
@@ -4121,7 +4121,7 @@ void perk_selection_screen_update(void)
   }
   local_c = local_c - 28.0;
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f000000);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
   (*grim_interface_ptr->vtable->grim_draw_text_small)
             (local_18 + 16.0,local_14,
              *(char **)(&perk_desc_table + (&perk_choice_ids)[DAT_0048089c] * 0x14));
@@ -4190,7 +4190,7 @@ void ui_draw_clock_gauge(void)
   int unaff_EDI;
   float in_stack_00000004;
   
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,1);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
   (*grim_interface_ptr->vtable->grim_bind_texture)(ui_clock_table_texture,0);
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,in_stack_00000004);
@@ -4198,7 +4198,7 @@ void ui_draw_clock_gauge(void)
   (*grim_interface_ptr->vtable->grim_begin_batch)();
   (*grim_interface_ptr->vtable->grim_draw_quad)((float)unaff_ESI,(float)unaff_EBX,32.0,32.0);
   (*grim_interface_ptr->vtable->grim_end_batch)();
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,2);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
   (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7cc,0);
   (*grim_interface_ptr->vtable->grim_begin_batch)();
   (*grim_interface_ptr->vtable->grim_set_rotation)((float)(unaff_EDI / 1000) * 0.10471976);
@@ -4253,7 +4253,7 @@ int FUN_00406350(void)
   if (DAT_00487234 == -1) {
     DAT_00487234 = 0;
   }
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f4ccccd);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f4ccccd);
   if (config_hardcore == '\0') {
     fmt = s_Congratulations__004722c8;
   }
@@ -4263,7 +4263,7 @@ int FUN_00406350(void)
   (*grim_interface_ptr->vtable->grim_draw_text_mono_fmt)((int *)grim_interface_ptr,x,y,fmt);
   fVar3 = fVar3 + 32.0;
   fVar2 = fVar2 - 8.0;
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f000000);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
   if (config_hardcore == '\0') {
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)((float)grim_interface_ptr,y,unaff_EBX);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
@@ -6372,8 +6372,8 @@ void ui_render_aim_indicators(void)
       DAT_00480340 = DAT_00480340 | 2;
       crt_atexit(&DAT_0040aa90);
     }
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
     render_overlay_player_index = 0;
     iVar2 = _config_player_count;
     if (0 < _config_player_count) {
@@ -7035,7 +7035,7 @@ void demo_purchase_screen_update(void)
   }
   fVar16 = 1.0;
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fStack_20);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f4ccccd);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f4ccccd);
   text = &DAT_0047f4d8;
   if (DAT_00480890 == '\0') {
     if (quest_spawn_timeline == 0) {
@@ -7089,7 +7089,7 @@ void demo_purchase_screen_update(void)
     lVar9 = __ftol();
     ui_draw_textured_quad(config_screen_width / 2 + -0x100,(int)lVar9,iVar15,iVar11,iVar5);
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f19999a);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f19999a);
     fVar12 = (float)(config_screen_height / 2 + -0x68);
     lVar9 = __ftol();
     x = (float)(int)lVar9;
@@ -7278,7 +7278,7 @@ void console_hotkey_update(void)
       }
       terrain_generate(&quest_selected_meta + (uVar6 + uVar5 * 10) * 0x2c);
     }
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x57,(uint)in_stack_ffffffc0 & 0xffffff00);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x57,(uint)in_stack_ffffffc0 & 0xffffff00);
   }
   iVar2 = game_is_full_version();
   if (((char)iVar2 == '\0') && (10 < quest_unlock_index)) {
@@ -7473,16 +7473,16 @@ LAB_0040c8a0:
     }
   }
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,2.0,1.0);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f000000);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.6);
   fVar8 = 3.36312e-44;
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3ecccccd);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3ecccccd);
   iVar2 = game_is_full_version();
   if ((char)iVar2 == '\0') {
     fVar8 = 0.3;
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,0.3,0.3,0.6);
   }
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3ee66666);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3ee66666);
   if (*(float *)(DAT_00480868 + 0xc) != 0.0) {
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.6);
     (*grim_interface_ptr->vtable->grim_get_fps)();
@@ -8431,16 +8431,16 @@ void credits_secret_alien_zookeeper_update(void)
   fStack_28 = fStack_30;
   fStack_24 = fStack_2c;
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f4ccccd);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f4ccccd);
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
             ((float)grim_interface_ptr,fStack_3c,(char *)(fStack_38 - 14.0));
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3ee66666);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3ee66666);
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
             ((float)grim_interface_ptr,fStack_3c + 12.0,(char *)(fStack_38 + 10.0));
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
             ((float)grim_interface_ptr,fStack_30 + 18.0,(char *)(fStack_2c + 23.0));
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.8);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3ed70a3d);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3ed70a3d);
   credits_secret_anim_time_ms = credits_secret_anim_time_ms + frame_dt_ms;
   if (0 < credits_secret_timer_ms) {
     credits_secret_timer_ms = credits_secret_timer_ms - frame_dt_ms;
@@ -8599,7 +8599,7 @@ LAB_0040fae2:
       (*grim_interface_ptr->vtable->grim_end_batch)();
       if (credits_secret_timer_ms == 0) {
         (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
-        (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f800000);
+        (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f800000);
         fVar7 = (float10)fcos((float10)credits_secret_anim_time_ms * (float10)0.005);
         if ((float10)0.0 < fVar7) {
           (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
@@ -12828,11 +12828,11 @@ void ui_draw_textured_quad(int texture_id,int x,int y,int w,int h)
   iVar2 = 0x3f800000;
   iVar1 = 0x3f800000;
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,1);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
   (*grim_interface_ptr->vtable->grim_draw_quad)
             ((float)iVar1,(float)iVar2,(float)unaff_retaddr,(float)texture_id);
   (*grim_interface_ptr->vtable->grim_end_batch)();
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,2);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
   return;
 }
 
@@ -12860,12 +12860,12 @@ void __cdecl terrain_generate(void *desc)
     terrain_render_target = (float)(&DAT_0048f548)[*(int *)((int)desc + 0x10)];
     return;
   }
-  (*grim_interface_ptr->vtable->grim_set_render_state)
+  (*grim_interface_ptr->vtable->grim_set_config_var)
             (0x12,CONCAT31((int3)((uint)in_stack_ffffffcc >> 8),1));
   fVar5 = 2.66247e-44;
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,1);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_set_render_target)((int)terrain_render_target);
   (*grim_interface_ptr->vtable->grim_clear_color)(0.24705882,0.21960784,0.09803922,1.0);
@@ -12928,13 +12928,13 @@ void __cdecl terrain_generate(void *desc)
   (*grim_interface_ptr->vtable->grim_end_batch)();
   _camera_offset_x = 0;
   _camera_offset_y = 0;
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,1);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,2);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,1);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
   (*grim_interface_ptr->vtable->grim_set_render_target)(-1);
   return;
 }
@@ -12992,12 +12992,12 @@ void terrain_generate_random(void)
   _camera_offset_y = 0;
   _camera_offset_x = 0;
   if (terrain_texture_failed == '\0') {
-    (*grim_interface_ptr->vtable->grim_set_render_state)
+    (*grim_interface_ptr->vtable->grim_set_config_var)
               (0x12,CONCAT31((int3)((uint)in_stack_ffffffbc >> 8),1));
     fVar5 = 2.66247e-44;
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,1);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
     (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
     (*grim_interface_ptr->vtable->grim_set_render_target)(terrain_render_target);
     (*grim_interface_ptr->vtable->grim_clear_color)(0.24705882,0.21960784,0.09803922,1.0);
@@ -13060,13 +13060,13 @@ void terrain_generate_random(void)
     (*grim_interface_ptr->vtable->grim_end_batch)();
     _camera_offset_x = 0;
     _camera_offset_y = 0;
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,1);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,2);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,1);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
     (*grim_interface_ptr->vtable->grim_set_render_target)(-1);
     if (*(float *)(DAT_00480864 + 0xc) != 0.0) {
       console_printf(&console_log_queue,s_____Generated_terrain__0047377a + 2);
@@ -13097,11 +13097,11 @@ void terrain_render(void)
   int iStack_20;
   
   if (*(int *)(DAT_00480858 + 0xc) == 0x40000000) {
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,1);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
   }
   if (terrain_texture_failed != '\0') {
     (*grim_interface_ptr->vtable->grim_bind_texture)(terrain_render_target,0);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x12,in_stack_ffffffcc & 0xffffff00);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x12,in_stack_ffffffcc & 0xffffff00);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
     (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
@@ -13133,8 +13133,8 @@ void terrain_render(void)
                        8) + 1);
     }
     (*grim_interface_ptr->vtable->grim_end_batch)();
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,2);
-    (*grim_interface_ptr->vtable->grim_set_render_state)
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
+    (*grim_interface_ptr->vtable->grim_set_config_var)
               (0x12,CONCAT31((int3)((uint)in_stack_ffffffb4 >> 8),1));
     return;
   }
@@ -13147,7 +13147,7 @@ void terrain_render(void)
             (u0,v0,(float)config_screen_width / (float)terrain_texture_width + u0,
              (float)config_screen_height / (float)terrain_texture_height + v0);
   (*grim_interface_ptr->vtable->grim_draw_fullscreen_quad)(0);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,2);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
   return;
 }
 
@@ -13181,8 +13181,8 @@ void __cdecl creature_render_type(int type_id)
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
   if ((config_fx_detail_flag0 != '\0') &&
      (iVar2 = perk_count_get(perk_id_monster_vision), iVar2 == 0)) {
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,1);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,1);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
     pfVar5 = (float *)&creature_hitbox_size;
     do {
@@ -13244,8 +13244,8 @@ void __cdecl creature_render_type(int type_id)
     } while ((int)pfVar5 < 0x4aa348);
     (*grim_interface_ptr->vtable->grim_end_batch)();
   }
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
   (*grim_interface_ptr->vtable->grim_begin_batch)();
   if (_bonus_energizer_timer <= 0.0) {
     puVar6 = &creature_anim_phase;
@@ -13389,7 +13389,7 @@ void __cdecl creature_render_type(int type_id)
   }
   (*grim_interface_ptr->vtable->grim_end_batch)();
   if (config_fx_toggle != '\0') {
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,2);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,2);
     afStack_34[0] = 1.0;
     afStack_34[3] = 1.0;
     afStack_34[1] = 1.0;
@@ -13447,7 +13447,7 @@ void __cdecl creature_render_type(int type_id)
       pfVar5 = pfVar5 + 0x26;
     } while ((int)pfVar5 < 0x4aa348);
     (*grim_interface_ptr->vtable->grim_end_batch)();
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
   }
   return;
 }
@@ -13470,8 +13470,8 @@ void creature_render_all(void)
   if ((((0.0 < ui_transition_alpha) && (game_state_id != 0x14)) && (game_state_id != 0x16)) &&
      ((game_state_prev != 0x14 && (game_state_prev != 0x16)))) {
     fVar4 = 7.00649e-45;
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
     (*grim_interface_ptr->vtable->grim_bind_texture)(particles_texture,0);
     effect_select_texture(0x10);
     (*grim_interface_ptr->vtable->grim_set_color)(0.0,0.0,0.0,1.0);
@@ -13528,8 +13528,8 @@ void creature_render_all(void)
     creature_render_type(1);
     if (0.0 < _bonus_freeze_timer) {
       fVar3 = 7.00649e-45;
-      (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-      (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+      (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+      (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
       (*grim_interface_ptr->vtable->grim_bind_texture)(particles_texture,0);
       effect_select_texture(0xe);
       (*grim_interface_ptr->vtable->grim_set_color)(0.0,0.0,0.0,1.0);
@@ -13562,8 +13562,8 @@ void creature_render_all(void)
         iVar1 = iVar1 + 1;
       } while ((int)pfVar2 < 0x4aa36c);
       (*grim_interface_ptr->vtable->grim_end_batch)();
-      (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-      (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+      (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+      (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
     }
     (*grim_interface_ptr->vtable->grim_set_color)(0.0,1.0,1.0,1.0);
   }
@@ -13792,8 +13792,8 @@ void ui_cursor_render(void)
   
   _DAT_004902e8 = frame_dt + _DAT_004902e8;
   _DAT_004902ec = frame_dt * 1.1 + _DAT_004902ec;
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,2);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,2);
   (*grim_interface_ptr->vtable->grim_bind_texture)(particles_texture,0);
   effect_select_texture(0xd);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
@@ -13808,8 +13808,8 @@ void ui_cursor_render(void)
   (*grim_interface_ptr->vtable->grim_draw_quad)
             ((ui_mouse_x - 64.0) + 16.0,(ui_mouse_y - 64.0) + 16.0,128.0,128.0);
   (*grim_interface_ptr->vtable->grim_end_batch)();
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
   (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f798,0);
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
@@ -13835,8 +13835,8 @@ void ui_render_aim_enhancement(void)
   _DAT_004902f0 = frame_dt + _DAT_004902f0;
   _DAT_004902f4 = frame_dt * 0.6 + _DAT_004902f4;
   pfVar1 = (float *)0x5;
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,2);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,2);
   (*grim_interface_ptr->vtable->grim_bind_texture)(particles_texture,0);
   effect_select_texture(0xd);
   if (1.0 < *(float *)(DAT_0048087c + 0xc)) {
@@ -13849,8 +13849,8 @@ void ui_render_aim_enhancement(void)
   (*grim_interface_ptr->vtable->grim_begin_batch)();
   (*grim_interface_ptr->vtable->grim_draw_quad)(*pfVar1 - 32.0,pfVar1[1] - 32.0,64.0,64.0);
   (*grim_interface_ptr->vtable->grim_end_batch)();
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
   (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f79c,0);
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,*(float *)(DAT_0048087c + 0xc));
@@ -13875,7 +13875,7 @@ void ui_elements_update_and_render(void)
   float10 fVar3;
   float10 fVar4;
   
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,2);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
   if (console_open_flag == '\0') {
     iVar1 = frame_dt_ms;
     if (ui_transition_direction == '\0') {
@@ -13918,7 +13918,7 @@ void ui_elements_update_and_render(void)
       DAT_0047ea50 = 1;
     }
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f000000);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
   }
   return;
 }
@@ -14212,7 +14212,7 @@ void ui_render_hud(void)
   
   fStack_4c = 6.032119e-39;
   (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,1);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fStack_8 * 0.7);
   fVar19 = 0.0;
@@ -14226,7 +14226,7 @@ void ui_render_hud(void)
   (*grim_interface_ptr->vtable->grim_draw_quad)(0.0,0.0,512.0,64.0);
   (*grim_interface_ptr->vtable->grim_end_batch)();
   if (DAT_004871b0 != '\0') {
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,2);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
     if (_config_player_count == 1) {
       fStack_1c = 21.0;
     }
@@ -14281,7 +14281,7 @@ void ui_render_hud(void)
               ((float)((float10)27.0 - fVar8),(float)fVar10,(float)fVar9,(float)fVar9);
     (*grim_interface_ptr->vtable->grim_end_batch)();
   }
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,1);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
   if (DAT_004871b1 != '\0') {
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fStack_14 * 0.8);
     (*grim_interface_ptr->vtable->grim_bind_texture)(ui_weapon_icons_texture,0);
@@ -14309,7 +14309,7 @@ void ui_render_hud(void)
     (*grim_interface_ptr->vtable->grim_end_batch)();
     (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
   }
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,2);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
   if (DAT_004871b0 != '\0') {
     (*grim_interface_ptr->vtable->grim_bind_texture)((int)DAT_0048f7c0,0);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
@@ -14411,7 +14411,7 @@ void ui_render_hud(void)
         (*grim_interface_ptr->vtable->grim_end_batch)();
         if (iVar2 < (int)lVar11) {
           (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fStack_4c);
-          (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f000000);
+          (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
           unaff_EDI = (float)(iVar6 * 6);
           (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
                     ((float)grim_interface_ptr,(float)(int)unaff_EDI + unaff_EBX + 8.0,
@@ -14424,11 +14424,11 @@ void ui_render_hud(void)
   fVar19 = fStack_4c;
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fStack_4c);
   fVar17 = 2.94273e-44;
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,1);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,2);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
   iVar2 = 0x4e;
   if (DAT_004871b3 != '\0') {
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,1);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
     (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7c4,0);
     (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
     (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
@@ -14452,7 +14452,7 @@ void ui_render_hud(void)
     fVar12 = fVar18 + 2.0;
     (*grim_interface_ptr->vtable->grim_draw_quad)(fVar12,78.0,32.0,32.0);
     (*grim_interface_ptr->vtable->grim_end_batch)();
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,2);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar15);
     (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7cc,0);
     (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
@@ -14461,10 +14461,10 @@ void ui_render_hud(void)
               ((float)(quest_spawn_timeline / 1000) * 0.10471976);
     (*grim_interface_ptr->vtable->grim_draw_quad)(fVar12,78.0,32.0,32.0);
     (*grim_interface_ptr->vtable->grim_end_batch)();
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f000000);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               ((float)grim_interface_ptr,fVar18 + 32.0,(char *)0x42ac0000);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3ee66666);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3ee66666);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               ((float)grim_interface_ptr,18.0,(char *)0x42f40000);
     if ((DAT_0048f528 & 1) == 0) {
@@ -14529,7 +14529,7 @@ LAB_0041bdf8:
       if (config_screen_width < 0x281) {
         value = 0x3f400000;
       }
-      (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,value);
+      (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,value);
       fVar15 = (float)(int)fStack_50;
       fStack_50 = (float)(config_screen_height / 2 + -0x20);
       (*grim_interface_ptr->vtable->grim_draw_text_mono)
@@ -14537,7 +14537,7 @@ LAB_0041bdf8:
                  *(char **)(&quest_meta_name +
                            (_quest_stage_minor + -0xb + _quest_stage_major * 10) * 0x2c));
       fVar13 = fVar13 - 0.2;
-      (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,(uint)fVar13);
+      (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,(uint)fVar13);
       (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar13 * 0.5);
       if (10 < _quest_stage_minor) {
         _quest_stage_major = _quest_stage_major + 1;
@@ -14562,7 +14562,7 @@ LAB_0041bdf8:
       if (((499 < DAT_00487088) && (0x5db < DAT_00487088)) && (DAT_00487088 < 0x9c4)) {
         unaff_EDI = (float)(2000 - DAT_00487088);
       }
-      (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f800000);
+      (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f800000);
       fVar18 = (float)DAT_00487088 * 0.0004 * 0.13 + 0.95;
       (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar17 * unaff_EDI);
       (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7a0,0);
@@ -14575,7 +14575,7 @@ LAB_0041bdf8:
     }
   }
   if (DAT_004871b4 != '\0') {
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,1);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
     (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,unaff_EDI * 0.9);
     (*grim_interface_ptr->vtable->grim_bind_texture)(ui_clock_table_texture,0);
@@ -14584,7 +14584,7 @@ LAB_0041bdf8:
     (*grim_interface_ptr->vtable->grim_begin_batch)();
     (*grim_interface_ptr->vtable->grim_draw_quad)(220.0,2.0,32.0,32.0);
     (*grim_interface_ptr->vtable->grim_end_batch)();
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,2);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,unaff_EDI * 0.9);
     (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7cc,0);
     (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
@@ -14593,9 +14593,9 @@ LAB_0041bdf8:
               ((float)(survival_elapsed_ms / 1000) * 0.10471976);
     (*grim_interface_ptr->vtable->grim_draw_quad)(220.0,2.0,32.0,32.0);
     (*grim_interface_ptr->vtable->grim_end_batch)();
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f000000);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar19);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f000000);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
               ((float)grim_interface_ptr,255.0,(char *)0x41200000);
   }
@@ -14641,7 +14641,7 @@ LAB_0041c5bf:
     if (survival_xp_smoothed < player_experience) goto LAB_0041c5bf;
   }
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fStack_50 * 0.9);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f000000);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
             ((float)grim_interface_ptr,4.0,(char *)(float)(int)fVar19);
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
@@ -14667,7 +14667,7 @@ LAB_0041c5bf:
   unaff_EDI = (float)((1000 - (int)lVar11) - iVar7);
   ui_draw_progress_bar(&fStack_50,54.0,(float)(extraout_ST0_02 / (float10)(int)unaff_EDI),rgba);
 LAB_0041c783:
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,1);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
   iVar2 = 0;
   do {
     bonus_hud_slot_update_and_render((float *)&stack0xffffffac,iVar2);
@@ -14713,7 +14713,7 @@ LAB_0041c783:
         (*grim_interface_ptr->vtable->grim_begin_batch)();
         (*grim_interface_ptr->vtable->grim_draw_quad)(105.0,(float)iVar16,60.0,30.0);
         (*grim_interface_ptr->vtable->grim_end_batch)();
-        (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f000000);
+        (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
         (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar19);
         (*grim_interface_ptr->vtable->grim_draw_text_small)
                   (8.0,(float)iVar7,
@@ -14727,7 +14727,7 @@ LAB_0041c783:
       render_overlay_player_index = render_overlay_player_index + 1;
     } while (render_overlay_player_index < _config_player_count);
   }
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,2);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
   render_overlay_player_index = 0;
   return;
 }
@@ -16985,16 +16985,16 @@ uint config_load_presets(void)
     puVar7 = puVar7 + 0xd8;
     puVar5 = puVar6;
   } while ((int)puVar6 < 0x4805c0);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x59,config_texture_scale);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x59,config_texture_scale);
   if (unaff_DI == '\0') {
-    (*grim_interface_ptr->vtable->grim_set_render_state)
+    (*grim_interface_ptr->vtable->grim_set_config_var)
               (0x54,CONCAT31((int3)((uint)puVar9 >> 8),DAT_004807b6));
-    (*grim_interface_ptr->vtable->grim_set_render_state)
+    (*grim_interface_ptr->vtable->grim_set_config_var)
               (8,CONCAT31((int3)((uint)in_stack_ffffffd0 >> 8),config_windowed));
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x2b,config_display_bpp);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x29,config_screen_width);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x2a,config_screen_height);
-    (*grim_interface_ptr->vtable->grim_set_render_state)
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x2b,config_display_bpp);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x29,config_screen_width);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x2a,config_screen_height);
+    (*grim_interface_ptr->vtable->grim_set_config_var)
               (0x53,CONCAT31((int3)((uint)in_stack_ffffffa0 >> 8),config_blob));
   }
   uVar4 = 0xffffffff;
@@ -19260,7 +19260,7 @@ void projectile_render(void)
         fStack_120 = (float)((float10)(float)(fVar10 * (float10)512.0 + (float10)pfVar6[-0xbb]) +
                              (float10)_camera_offset_x + fVar13 * (float10)1.1);
         if (0 < (int)(&player_perk_counts)[perk_id_sharpshooter]) {
-          (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,2);
+          (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,2);
           (*grim_interface_ptr->vtable->grim_begin_batch)();
           (*grim_interface_ptr->vtable->grim_draw_quad_points)
                     (fStack_15c,(float)pfStack_158,(float)fVar11 * 512.0,fStack_120,fStack_12c,
@@ -19268,7 +19268,7 @@ void projectile_render(void)
                      (float)((float10)(fVar24 + (float)(fVar12 * (float10)15.0)) + fVar9 +
                             fVar13 * (float10)1.1));
           (*grim_interface_ptr->vtable->grim_end_batch)();
-          (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+          (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
         }
       }
       iVar8 = iVar8 + 1;
@@ -19280,10 +19280,10 @@ void projectile_render(void)
   (*grim_interface_ptr->vtable->grim_set_color_slot)(1,0.5,0.5,0.5,0.0);
   fVar24 = 2.66247e-44;
   fVar25 = 7.00649e-45;
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
   pfStack_158 = (float *)0x14;
   fStack_184 = 6.078386e-39;
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,2);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,2);
   pfVar6 = (float *)&projectile_vel_y;
   do {
     if ((*(char *)(pfVar6 + -7) != '\0') &&
@@ -19371,8 +19371,8 @@ void projectile_render(void)
     pfVar6 = pfVar6 + 0x10;
   } while ((int)pfVar6 < 0x493ed4);
   (*grim_interface_ptr->vtable->grim_end_batch)();
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,2);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,2);
   (*grim_interface_ptr->vtable->grim_bind_texture)(particles_texture,0);
   effect_select_texture(0xd);
   (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
@@ -19859,8 +19859,8 @@ LAB_00424475:
     unaff_EDI = pfVar26;
   } while ((int)pfVar6 < 0x493ecc);
   (*grim_interface_ptr->vtable->grim_end_batch)();
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,1);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,1);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
   (*grim_interface_ptr->vtable->grim_begin_batch)();
   iVar8 = 0;
   pfVar6 = (float *)&projectile_pos_y;
@@ -19924,8 +19924,8 @@ LAB_00424475:
   } while ((int)pfVar6 < 0x493ec4);
   (*grim_interface_ptr->vtable->grim_end_batch)();
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,2);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,2);
   (*grim_interface_ptr->vtable->grim_bind_texture)(particles_texture,0);
   effect_select_texture(0xd);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar17);
@@ -19942,8 +19942,8 @@ LAB_00424475:
     pcVar7 = pcVar7 + 0x40;
   } while ((int)pcVar7 < 0x493eb8);
   (*grim_interface_ptr->vtable->grim_end_batch)();
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
   fVar24 = fStack_74 * 0.9;
   (*grim_interface_ptr->vtable->grim_set_color)(0.8,0.8,0.8,fVar24);
   (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0049bb30,0);
@@ -19981,8 +19981,8 @@ LAB_00424475:
   } while ((int)pfVar6 < 0x493ec4);
   (*grim_interface_ptr->vtable->grim_end_batch)();
   if (config_fx_detail_flag1 != '\0') {
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,2);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,2);
     (*grim_interface_ptr->vtable->grim_bind_texture)(particles_texture,0);
     effect_select_texture(0xd);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
@@ -20000,10 +20000,10 @@ LAB_00424475:
       pfVar6 = pfVar6 + 0xb;
     } while ((int)pfVar6 < 0x4965dc);
     (*grim_interface_ptr->vtable->grim_end_batch)();
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
   }
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
   (*grim_interface_ptr->vtable->grim_set_color)(0.8,0.8,0.8,fVar24);
   (*grim_interface_ptr->vtable->grim_bind_texture)(projectile_texture,0);
   (*grim_interface_ptr->vtable->grim_set_atlas_frame)(4,3);
@@ -20043,8 +20043,8 @@ LAB_00425a07:
   } while ((int)pfVar6 < 0x4965e8);
   (*grim_interface_ptr->vtable->grim_end_batch)();
   if (config_fx_detail_flag1 != '\0') {
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,2);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,2);
     (*grim_interface_ptr->vtable->grim_bind_texture)(particles_texture,0);
     effect_select_texture(0xd);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
@@ -20088,7 +20088,7 @@ LAB_00425d30:
       pfVar6 = pfVar6 + 0xb;
     } while ((int)pfVar6 < 0x4965e8);
     (*grim_interface_ptr->vtable->grim_end_batch)();
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
   }
   return;
 }
@@ -21078,9 +21078,9 @@ void fx_queue_render(void)
         fVar7 = 0.0;
         fVar6 = (float)bodyset_texture;
         (*grim_interface_ptr->vtable->grim_bind_texture)(bodyset_texture,0);
-        (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,1);
+        (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,1);
         fVar5 = 2.8026e-44;
-        (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+        (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
         (*grim_interface_ptr->vtable->grim_begin_batch)();
         iVar3 = 0;
         if (0 < fx_queue_rotated) {
@@ -21110,8 +21110,8 @@ void fx_queue_render(void)
         }
         fVar6 = 6.106934e-39;
         (*grim_interface_ptr->vtable->grim_end_batch)();
-        (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-        (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+        (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+        (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
         (*grim_interface_ptr->vtable->grim_begin_batch)();
         iVar3 = 0;
         if (0 < fx_queue_rotated) {
@@ -21146,8 +21146,8 @@ void fx_queue_render(void)
   }
   else if (0 < fx_queue_rotated) {
     (*grim_interface_ptr->vtable->grim_bind_texture)(bodyset_texture,0);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,1);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,1);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
     iVar3 = 0;
     if (0 < fx_queue_rotated) {
@@ -21177,8 +21177,8 @@ void fx_queue_render(void)
       } while (iVar3 < fx_queue_rotated);
     }
     (*grim_interface_ptr->vtable->grim_end_batch)();
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
     iVar3 = 0;
     if (0 < fx_queue_rotated) {
@@ -21369,8 +21369,8 @@ void player_render_overlays(void)
   fVar16 = 6.10849e-39;
   iVar4 = perk_count_get(perk_id_radioactive);
   if (iVar4 != 0) {
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,2);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,2);
     (*grim_interface_ptr->vtable->grim_bind_texture)((int)particles_texture,0);
     effect_select_texture(0x10);
     fVar8 = (float10)fsin((float10)_DAT_0047ea4c);
@@ -21389,8 +21389,8 @@ void player_render_overlays(void)
   fVar17 = 0.0;
   fVar16 = DAT_0048287c;
   (*grim_interface_ptr->vtable->grim_bind_texture)((int)DAT_0048287c,0);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,1);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,1);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
   iVar4 = render_overlay_player_index;
   if (0.0 < (float)(&player_health)[render_overlay_player_index * 0xd8]) {
     lVar10 = __ftol();
@@ -21443,8 +21443,8 @@ void player_render_overlays(void)
     fVar12 = DAT_0048287c;
     (*grim_interface_ptr->vtable->grim_bind_texture)((int)DAT_0048287c,0);
     fVar11 = 2.66247e-44;
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar12);
     (*grim_interface_ptr->vtable->grim_set_rotation)
@@ -21488,8 +21488,8 @@ void player_render_overlays(void)
     (*grim_interface_ptr->vtable->grim_draw_quad)(DAT_004965d8,DAT_004965dc,fVar12,fVar12);
     (*grim_interface_ptr->vtable->grim_end_batch)();
     if (0.0 < (float)(&player_shield_timer)[render_overlay_player_index * 0xd8]) {
-      (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-      (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,2);
+      (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+      (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,2);
       (*grim_interface_ptr->vtable->grim_bind_texture)((int)particles_texture,0);
       effect_select_texture(2);
       fVar8 = (float10)fsin((float10)_DAT_0047ea4c);
@@ -21531,7 +21531,7 @@ void player_render_overlays(void)
                  (fVar14 + (float)(&player_pos_y)[render_overlay_player_index * 0xd8] +
                  _camera_offset_y) - fVar16,fVar11,fVar11);
       (*grim_interface_ptr->vtable->grim_end_batch)();
-      (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+      (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
     }
     if ((*(byte *)(&DAT_004d7a94 + (&player_weapon_id)[render_overlay_player_index * 0xd8] * 0x1f) &
         8) == 0) {
@@ -21541,8 +21541,8 @@ void player_render_overlays(void)
            (float10)1.5707964);
       fVar17 = DAT_0048f7e0;
       (*grim_interface_ptr->vtable->grim_bind_texture)((int)DAT_0048f7e0,0);
-      (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,2);
-      (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,2);
+      (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,2);
+      (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,2);
       (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
       fVar16 = (float)(&player_muzzle_flash_alpha)[render_overlay_player_index * 0xd8] * 0.8;
       if (1.0 < fVar16) {
@@ -21579,8 +21579,8 @@ void player_render_overlays(void)
     fVar16 = 6.113938e-39;
     iVar4 = perk_count_get(DAT_004c2bcc);
     if (iVar4 != 0) {
-      (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-      (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,2);
+      (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+      (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,2);
       (*grim_interface_ptr->vtable->grim_bind_texture)(projectile_texture,0);
       (*grim_interface_ptr->vtable->grim_set_atlas_frame)(4,2);
       (*grim_interface_ptr->vtable->grim_begin_batch)();
@@ -21617,8 +21617,8 @@ void player_render_overlays(void)
       }
       (*grim_interface_ptr->vtable->grim_end_batch)();
     }
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
     return;
   }
   if (0.0 <= (float)(&player_death_timer)[render_overlay_player_index * 0xd8]) {
@@ -21645,8 +21645,8 @@ void player_render_overlays(void)
   (*grim_interface_ptr->vtable->grim_draw_quad)(DAT_004965d8 + 1.0,DAT_004965dc + 1.0,fVar16,fVar16)
   ;
   (*grim_interface_ptr->vtable->grim_end_batch)();
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
   if (_config_player_count == 1) {
     fVar12 = 1.0;
     pIVar6 = grim_interface_ptr->vtable;
@@ -21737,11 +21737,11 @@ void bonus_render(void)
     fStack_50 = 6.115153e-39;
     (*grim_interface_ptr->vtable->grim_bind_texture)(particles_texture,0);
     effect_select_texture(0x10);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
     fVar14 = 2.8026e-45;
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,2);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,2);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
     (*grim_interface_ptr->vtable->grim_bind_texture)((int)bonus_texture,0);
     (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
     fStack_50 = 1.0;
@@ -21887,7 +21887,7 @@ void bonus_render(void)
       iVar12 = iVar12 + 1;
     } while ((int)pfVar6 < 0x482b10);
     (*grim_interface_ptr->vtable->grim_end_batch)();
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f000000);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
     if (0 < _config_player_count) {
       pfVar6 = (float *)&player_aim_x;
@@ -21933,8 +21933,8 @@ LAB_00429df8:
       } while (iVar5 < _config_player_count);
     }
     if (config_fx_detail_flag1 != '\0') {
-      (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-      (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,2);
+      (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+      (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,2);
       (*grim_interface_ptr->vtable->grim_bind_texture)(particles_texture,0);
       effect_select_texture(0xd);
       (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
@@ -21967,10 +21967,10 @@ LAB_00429df8:
         uVar8 = uVar8 + 1;
       } while ((int)pcVar7 < 0x495ae8);
       (*grim_interface_ptr->vtable->grim_end_batch)();
-      (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+      (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
     }
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,2);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,2);
     (*grim_interface_ptr->vtable->grim_bind_texture)(particles_texture,0);
     effect_select_texture(0xc);
     (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
@@ -22015,9 +22015,9 @@ LAB_00429df8:
       pcVar7 = pcVar7 + 0x38;
     } while ((int)pcVar7 < 0x495ae8);
     (*grim_interface_ptr->vtable->grim_end_batch)();
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,2);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,2);
     (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
     (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
     (*grim_interface_ptr->vtable->grim_begin_batch)();
@@ -22038,10 +22038,10 @@ LAB_00429df8:
       pfVar6 = pfVar6 + 0xb;
     } while ((int)pfVar6 < 0x4965ec);
     (*grim_interface_ptr->vtable->grim_end_batch)();
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
     if (config_fx_detail_flag2 != '\0') {
-      (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-      (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+      (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+      (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
       (*grim_interface_ptr->vtable->grim_bind_texture)(particles_texture,0);
       (*grim_interface_ptr->vtable->grim_set_uv)
                 (DAT_00491248,DAT_0049124c,DAT_00491248 + 0.25,DAT_0049124c + 0.25);
@@ -22459,11 +22459,11 @@ void game_startup_init_prelude(void)
   undefined4 in_stack_ffffffe0;
   
   DAT_004aaee4 = strdup_malloc(&DAT_0047f4d8);
-  (*grim_interface_ptr->vtable->grim_set_render_state)
+  (*grim_interface_ptr->vtable->grim_set_config_var)
             (0x12,CONCAT31((int3)((uint)in_stack_ffffffe0 >> 8),1));
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
   pHStack_40 = (HKEY)0x42b0e7;
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
   effect_uv_tables_init();
   console_flush_log(&console_log_queue,filename);
   pHStack_40 = (HKEY)0x42b10a;
@@ -22487,7 +22487,7 @@ LAB_0042b17a:
   DAT_004aaed8 = 0;
   pHStack_40 = (HKEY)0x42b190;
   console_printf(&console_log_queue,s_Unloaded_resource_paq_00474630);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x10,in_stack_ffffffbc);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x10,in_stack_ffffffbc);
   seed = ZEXT24(qpc_timestamp_scratch);
   QueryPerformanceCounter((LARGE_INTEGER *)&stack0xffffffc8);
   crt_srand(seed);
@@ -22588,7 +22588,7 @@ LAB_0042b35f:
         return;
       }
       if (14.0 < _DAT_004aaf90) {
-        (*grim_interface_ptr->vtable->grim_set_render_state)(0x2d,(uint)in_stack_ffffffd8);
+        (*grim_interface_ptr->vtable->grim_set_config_var)(0x2d,(uint)in_stack_ffffffd8);
         pIVar4 = grim_interface_ptr->vtable;
         iVar2 = (*pIVar4->grim_get_texture_handle)(s_splashReflexive_00474714);
         (*pIVar4->grim_destroy_texture)(iVar2);
@@ -22633,7 +22633,7 @@ LAB_0042b35f:
           sfx_play_exclusive(music_track_intro_id);
         }
         _DAT_004aaf90 = frame_dt * 1.1 + _DAT_004aaf90;
-        (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,1);
+        (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
         _DAT_004aaf90 = _DAT_004aaf90 - 2.0;
         if (DAT_004aaf94 != '\0') {
           if ((_DAT_004aaf90 < 1.0) ||
@@ -22752,7 +22752,7 @@ LAB_0042bc9a:
           (*pIVar4->grim_draw_quad)(x,fVar6,512.0,fVar8);
         }
         _DAT_004aaf90 = _DAT_004aaf90 + 2.0;
-        (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,2);
+        (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
         (*grim_interface_ptr->vtable->grim_end_batch)();
         audio_update();
       }
@@ -22809,7 +22809,7 @@ LAB_0042bd39:
 LAB_0042bea6:
   pcVar7 = (char *)0x0;
   (*grim_interface_ptr->vtable->grim_clear_color)(0.0,0.0,0.0,1.0);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,1);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
   fVar8 = _DAT_004aaf90 + _DAT_004aaf90;
   if (fVar8 <= 1.0) {
     if (fVar8 < 0.0) {
@@ -22858,7 +22858,7 @@ LAB_0042bea6:
               ((float)grim_interface_ptr,screen_width_f * 0.5 - 246.0,
                (char *)(_DAT_00471144 * 0.5 + 45.0));
   }
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,2);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
   DAT_00496604 = (float)pcVar7 * 0.7;
   (*grim_interface_ptr->vtable->grim_set_color_ptr)((float *)&DAT_004965f8);
   (*grim_interface_ptr->vtable->grim_draw_rect_outline)
@@ -23121,13 +23121,13 @@ int crimsonland_main(void)
     pcVar5 = extraout_EDX_02;
   }
   console_flush_log(&console_log_queue,pcVar5);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x2d,uVar2);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(5,in_stack_fffffbb4);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(6,in_stack_fffffba8);
-  (*grim_interface_ptr->vtable->grim_set_render_state)
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x2d,uVar2);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(5,in_stack_fffffbb4);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(6,in_stack_fffffba8);
+  (*grim_interface_ptr->vtable->grim_set_config_var)
             (0x42,CONCAT31((int3)((uint)in_stack_fffffb9c >> 8),1));
   console_printf(&console_log_queue,s____setting_system_states_00474a84);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(7,in_stack_fffffb90);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(7,in_stack_fffffb90);
   piVar8 = (int *)(*grim_interface_ptr->vtable->grim_get_config_var)((uint *)&stack0xfffffba8,0x29);
   config_screen_width = *piVar8;
   piVar8 = (int *)(*grim_interface_ptr->vtable->grim_get_config_var)((uint *)&stack0xfffffba8,0x2a);
@@ -23141,13 +23141,13 @@ int crimsonland_main(void)
     console_printf(&console_log_queue,s____selected_windowed_mode__windo_004749f8);
   }
   DAT_004aaeda = config_music_disabled;
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0xb,CONCAT31((int3)((uint)pcVar5 >> 8),1));
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0xb,CONCAT31((int3)((uint)pcVar5 >> 8),1));
   console_printf(&console_log_queue,s____using_keyboard_004749bc);
-  (*grim_interface_ptr->vtable->grim_set_render_state)
+  (*grim_interface_ptr->vtable->grim_set_config_var)
             (0xc,CONCAT31((int3)((uint)in_stack_fffffb78 >> 8),1));
   pcVar5 = (char *)0x42cc6a;
   console_printf(&console_log_queue,s____using_mouse_004749ac);
-  (*grim_interface_ptr->vtable->grim_set_render_state)
+  (*grim_interface_ptr->vtable->grim_set_config_var)
             (0xe,CONCAT31((int3)((uint)in_stack_fffffb6c >> 8),1));
   console_printf(&console_log_queue,s____using_joystick_00474998);
   console_printf(&console_log_queue,s____initiating_Grim_system_0047497c);
@@ -23162,13 +23162,13 @@ int crimsonland_main(void)
     return 0;
   }
   console_exec_line(&console_log_queue,s_exec_autoexec_txt_00474944,pcVar5);
-  (*grim_interface_ptr->vtable->grim_set_render_state)
+  (*grim_interface_ptr->vtable->grim_set_config_var)
             (0x12,CONCAT31((int3)((uint)in_stack_fffffb60 >> 8),1));
   uStack_4b4 = 0x42cd31;
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
   pcVar5 = (char *)0x42cd49;
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f800000);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f800000);
   screen_width_f = (float)config_screen_width;
   _DAT_00471144 = (float)config_screen_height;
   pvVar9 = console_register_cvar(&console_log_queue,s_v_width_00474938,&DAT_00474940,pcVar5);
@@ -23176,7 +23176,7 @@ int crimsonland_main(void)
   pvVar9 = console_register_cvar(&console_log_queue,s_v_height_00474928,&DAT_00474934,pcVar5);
   *(float *)((int)pvVar9 + 0xc) = (float)config_screen_height;
   init_audio_and_terrain();
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x10,in_stack_fffffb30);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x10,in_stack_fffffb30);
   console_printf(&console_log_queue,s_Set_resource_paq_to__crimson_paq_004748f8);
   texture_get_or_load(s_backplasma_0047296c,s_load_backplasma_jaz_004748e4);
   texture_get_or_load(s_mockup_00472964,s_load_mockup_jaz_004748d4);
@@ -23186,10 +23186,10 @@ int crimsonland_main(void)
   key = (HKEY)0x0;
   uVar16 = 0;
   (*grim_interface_ptr->vtable->grim_clear_color)(0.0,0.0,0.0,1.0);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x36,CONCAT31((int3)((uint)uVar16 >> 8),1));
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x36,CONCAT31((int3)((uint)uVar16 >> 8),1));
   uVar16 = 0;
   (*grim_interface_ptr->vtable->grim_clear_color)(0.0,0.0,0.0,1.0);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x36,CONCAT31((int3)((uint)uVar16 >> 8),1));
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x36,CONCAT31((int3)((uint)uVar16 >> 8),1));
   (*grim_interface_ptr->vtable->grim_clear_color)(0.0,0.0,0.0,1.0);
   uVar2 = DAT_00473a30;
   _key_char_count = 0;
@@ -23629,8 +23629,8 @@ void effects_render(void)
   float fStack_30;
   float fStack_2c;
   
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
   (*grim_interface_ptr->vtable->grim_bind_texture)((int)particles_texture,0);
   (*grim_interface_ptr->vtable->grim_begin_batch)();
   puVar1 = &effect_pool_color_g;
@@ -23652,7 +23652,7 @@ void effects_render(void)
     puVar1 = puVar1 + 0x2f;
   } while ((int)puVar1 < 0x4c2b64);
   (*grim_interface_ptr->vtable->grim_end_batch)();
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,2);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,2);
   (*grim_interface_ptr->vtable->grim_begin_batch)();
   puVar1 = &effect_pool_color_g;
   do {
@@ -23673,7 +23673,7 @@ void effects_render(void)
     puVar1 = puVar1 + 0x2f;
   } while ((int)puVar1 < 0x4c2b64);
   (*grim_interface_ptr->vtable->grim_end_batch)();
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
   return;
 }
 
@@ -33921,7 +33921,7 @@ int __cdecl ui_checkbox_update(float *xy,char *checkbox)
       ((checkbox[2] != '\0' && (iVar3 = input_primary_just_pressed(), (char)iVar3 != '\0')))))) {
     *checkbox = *checkbox == '\0';
   }
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,1);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_begin_batch)();
   (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
@@ -33929,8 +33929,8 @@ int __cdecl ui_checkbox_update(float *xy,char *checkbox)
   (*grim_interface_ptr->vtable->grim_draw_quad)(*xy,y,16.0,16.0);
   uVar6 = (undefined1)((uint)y >> 0x18);
   (*grim_interface_ptr->vtable->grim_end_batch)();
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,2);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f000000);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
   if (checkbox[2] == '\0') {
     uVar5 = (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,0.7);
   }
@@ -34407,13 +34407,13 @@ int __cdecl ui_button_update(float *xy,int *button)
     (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_00478674,0);
   }
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,(float)button[4]);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,1);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_begin_batch)();
   (*grim_interface_ptr->vtable->grim_draw_quad)(*xy_00,xy_00[1],fStack_c,32.0);
   (*grim_interface_ptr->vtable->grim_end_batch)();
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,2);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f000000);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
   if ((char)button[1] == '\0') {
     fVar7 = (float)button[4] * 0.7;
   }
@@ -34521,7 +34521,7 @@ int __cdecl ui_text_input_update(float *xy,int *input_state)
   fStack_8 = 0.0;
   uStack_4 = 0x3f800000;
   (*grim_interface_ptr->vtable->grim_draw_rect_filled)(&local_18,(float)iVar6 - 2.0,16.0);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f000000);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
   iVar6 = 0;
   fStack_8 = (fStack_8 - 8.0) - 2.0;
   while( true ) {
@@ -34684,14 +34684,14 @@ int __cdecl ui_list_widget_update(float *xy,char *list)
   }
   iVar3 = (*pIVar4->grim_get_texture_handle)(xy_01);
   (*pIVar4->grim_bind_texture)(iVar3,(int)stage);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,1);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_begin_batch)();
   (*grim_interface_ptr->vtable->grim_draw_quad)
             (((fStack_14 + *xy_00) - 16.0) - 1.0,xy_00[1],16.0,16.0);
   (*grim_interface_ptr->vtable->grim_end_batch)();
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,2);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
   iVar3 = -2;
   if (*list != '\0') {
     lVar6 = __ftol();
@@ -34996,7 +34996,7 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
     fVar12 = 0.0;
     fVar11 = (float)ui_weapon_icons_texture;
     (*grim_interface_ptr->vtable->grim_bind_texture)(ui_weapon_icons_texture,0);
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,1);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
     (*grim_interface_ptr->vtable->grim_set_sub_rect)
               (8,2,1,(&effect_subrect_frame_table)[(uint)*(byte *)((int)fVar2 + 0x2b) * 0x1f] << 1);
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar8);
@@ -35008,7 +35008,7 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
     lVar9 = __ftol();
     (*pIVar7->grim_draw_quad)((float)(int)lVar9,fVar10,fVar3,h);
     (*grim_interface_ptr->vtable->grim_end_batch)();
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,2);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
     if ((((ui_mouse_x <= fVar12) || (fVar12 + 64.0 <= ui_mouse_x)) ||
         (ui_mouse_y <= (float)unaff_retaddr)) || ((float)unaff_retaddr + 32.0 <= ui_mouse_y)) {
       _DAT_004d1208 = _DAT_004d1208 - (frame_dt + frame_dt);
@@ -36087,7 +36087,7 @@ void creature_name_draw_labels(void)
   local_8 = 0;
   local_4 = 0x3f800000;
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f000000);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
   text = &DAT_004d152c;
   pfVar2 = (float *)&creature_hitbox_size;
   do {
@@ -36346,7 +36346,7 @@ LAB_00445905:
   perk_prompt_update_and_render();
   hud_update_and_render();
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,1);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
   (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7c4,0);
   (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
@@ -36354,8 +36354,8 @@ LAB_00445905:
   (*grim_interface_ptr->vtable->grim_begin_batch)();
   (*grim_interface_ptr->vtable->grim_draw_quad)(-1.0,fStack_20 - 16.0,182.0,53.0);
   (*grim_interface_ptr->vtable->grim_end_batch)();
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,2);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x18,0x3f000000);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f000000);
   pcVar6 = (char *)(unaff_ESI + 1.0);
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)((float)grim_interface_ptr,6.0,pcVar6);
   fVar13 = 1.0;
@@ -36997,7 +36997,7 @@ void __cdecl ui_element_render(void *element)
     return;
   }
   if ((*(float *)((int)element + 0x300) == 0.0) && (*(float *)(DAT_0048088c + 0xc) != 0.0)) {
-    (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,1);
+    (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
   }
   if ((*(int *)((int)element + 0x34) != 0) && (element != &DAT_0048f20c)) {
     iVar3 = ui_focus_update((int)element);
@@ -37037,13 +37037,13 @@ void __cdecl ui_element_render(void *element)
     }
   }
   fStack_50 = 6.28412e-39;
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
   if (*(int *)((int)element + 0x11c) != -1) {
     (*grim_interface_ptr->vtable->grim_bind_texture)(*(int *)((int)element + 0x11c),0);
     if (*(int *)((int)element + 4) == 0) {
       if (config_fx_detail_flag0 != '\0') {
-        (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,1);
+        (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,1);
         (*grim_interface_ptr->vtable->grim_begin_batch)();
         fStack_50 = *(float *)((int)element + 0x18) + 7.0;
         pfVar1 = (float *)((int)element + 0x304);
@@ -37059,7 +37059,7 @@ void __cdecl ui_element_render(void *element)
         }
         (*grim_interface_ptr->vtable->grim_end_batch)();
       }
-      (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
+      (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
       (*grim_interface_ptr->vtable->grim_begin_batch)();
       matrix = (float *)((int)element + 0x304);
       pfVar1 = (float *)((int)element + 0x18);
@@ -37075,7 +37075,7 @@ void __cdecl ui_element_render(void *element)
     else {
       if (*(int *)((int)element + 4) != 1) goto LAB_00447154;
       if (config_fx_detail_flag0 != '\0') {
-        (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,1);
+        (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,1);
         (*grim_interface_ptr->vtable->grim_begin_batch)();
         fStack_50 = *(float *)((int)element + 0x18) + 7.0 + *(float *)((int)element + 8);
         (*grim_interface_ptr->vtable->grim_submit_vertices_offset_color)
@@ -37090,7 +37090,7 @@ void __cdecl ui_element_render(void *element)
         }
         (*grim_interface_ptr->vtable->grim_end_batch)();
       }
-      (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
+      (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
       (*grim_interface_ptr->vtable->grim_begin_batch)();
       fStack_50 = *(float *)((int)element + 8) + *(float *)((int)element + 0x18);
       (*grim_interface_ptr->vtable->grim_submit_vertices_offset)
@@ -37121,8 +37121,8 @@ LAB_00447154:
     }
     (*grim_interface_ptr->vtable->grim_end_batch)();
   }
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,2);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,2);
   if ((-1 < *(int *)((int)element + 0x2fc)) && (*(int *)((int)element + 0x2fc) < 0x100)) {
     iVar3 = 4;
     pcVar5 = (char *)((int)element + 0x21f);
@@ -37142,12 +37142,12 @@ LAB_00447154:
                (float *)&stack0xffffffb4);
     (*grim_interface_ptr->vtable->grim_end_batch)();
   }
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x13,5);
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x14,6);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
   if (*(code **)((int)element + 0x38) != (code *)0x0) {
     (**(code **)((int)element + 0x38))();
   }
-  (*grim_interface_ptr->vtable->grim_set_render_state)(0x15,2);
+  (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
   return;
 }
 

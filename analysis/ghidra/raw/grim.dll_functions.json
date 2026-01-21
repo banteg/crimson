@@ -350,9 +350,9 @@
     "calls": []
   },
   {
-    "name": "grim_set_render_state",
+    "name": "grim_set_config_var",
     "address": "10006580",
-    "signature": "void grim_set_render_state(uint state, uint value)",
+    "signature": "void grim_set_config_var(uint id, uint value)",
     "external": false,
     "calls": ["FUN_10005a40", "FUN_10006030", "_strdup", "ftol", "operator_delete", "operator_new"]
   },

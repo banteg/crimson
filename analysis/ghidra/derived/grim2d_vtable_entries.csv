@@ -7,7 +7,7 @@ index,offset_hex,offset_dec,func_addr,func_name,section
 5,0x14,20,0x10005eb0,grim_init_system,.text
 6,0x18,24,0x10005ff0,grim_shutdown,.text
 7,0x1c,28,0x10006020,grim_apply_settings,.text
-8,0x20,32,0x10006580,grim_set_render_state,.text
+8,0x20,32,0x10006580,grim_set_config_var,.text
 9,0x24,36,0x10006c30,grim_get_config_var,.text
 10,0x28,40,0x10006ca0,grim_get_error_text,.text
 11,0x2c,44,0x10006cb0,grim_clear_color,.text

@@ -3101,14 +3101,15 @@ uint __cdecl FUN_10006030(uint param_1)
 
 
 
-/* grim_set_render_state @ 10006580 */
+/* grim_set_config_var @ 10006580 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
-/* Grim2D vtable 0x20 (provisional) */
+/* Grim2D vtable 0x20: config/state dispatcher; updates config tables, some IDs map to D3D
+   render/texture state; extra args for some IDs */
 
-void grim_set_render_state(uint state,uint value)
+void grim_set_config_var(uint id,uint value)
 
 {
   byte bVar1;
@@ -3132,7 +3133,7 @@ void grim_set_render_state(uint state,uint value)
   byte *in_stack_00000014;
   D3DGAMMARAMP DStack_600;
   
-  switch(state) {
+  switch(id) {
   case 5:
     DAT_1005d3a8 = in_stack_00000014;
     return;
@@ -3174,20 +3175,20 @@ void grim_set_render_state(uint state,uint value)
       pbVar13 = pbVar13 + 1;
       pbVar15 = pbVar15 + 1;
     }
-    *(byte **)(&grim_config_var3_table + state * 0x10) = DAT_1005bac8;
+    *(byte **)(&grim_config_var3_table + id * 0x10) = DAT_1005bac8;
     return;
   default:
-    puVar11 = &grim_config_var0_table + state * 4;
+    puVar11 = &grim_config_var0_table + id * 4;
     *puVar11 = value;
     goto LAB_10006b54;
   case 0xb:
   case 0xc:
   case 0xe:
   case 0x42:
-    *(char *)(&grim_config_var0_table + state * 4) = (char)value;
+    *(char *)(&grim_config_var0_table + id * 4) = (char)value;
     return;
   case 0xd:
-    *(char *)(&grim_config_var0_table + state * 4) = (char)value;
+    *(char *)(&grim_config_var0_table + id * 4) = (char)value;
     if (grim_input_cached != '\0') {
       DAT_1005cc48 = 1;
       return;
@@ -3214,40 +3215,40 @@ LAB_10006882:
     iVar14 = 0;
 LAB_10006887:
     if (iVar14 == 0) {
-      if (*(void **)(&grim_config_var3_table + state * 0x10) != (void *)0x0) {
-        operator_delete(*(void **)(&grim_config_var3_table + state * 0x10));
+      if (*(void **)(&grim_config_var3_table + id * 0x10) != (void *)0x0) {
+        operator_delete(*(void **)(&grim_config_var3_table + id * 0x10));
       }
       _DAT_1005cc94 = _strdup(&DAT_1005d828);
       DAT_1005bc14 = 0;
     }
     uVar6 = FUN_10005a40((char *)in_stack_00000014);
     DAT_1005bc14 = (undefined1)uVar6;
-    if (*(void **)(&grim_config_var3_table + state * 0x10) != (void *)0x0) {
-      operator_delete(*(void **)(&grim_config_var3_table + state * 0x10));
+    if (*(void **)(&grim_config_var3_table + id * 0x10) != (void *)0x0) {
+      operator_delete(*(void **)(&grim_config_var3_table + id * 0x10));
     }
     pcVar8 = _strdup((char *)in_stack_00000014);
-    *(char **)(&grim_config_var3_table + state * 0x10) = pcVar8;
-    *(undefined1 *)(&grim_config_var0_table + state * 4) = DAT_1005bc14;
+    *(char **)(&grim_config_var3_table + id * 0x10) = pcVar8;
+    *(undefined1 *)(&grim_config_var0_table + id * 4) = DAT_1005bc14;
     return;
   case 0x12:
-    if (*(char *)(&grim_config_var0_table + state * 4) != (char)value) {
+    if (*(char *)(&grim_config_var0_table + id * 4) != (char)value) {
       (*grim_d3d_device->lpVtbl->SetRenderState)
                 (grim_d3d_device,D3DRS_ALPHABLENDENABLE,value & 0xff);
-      *(char *)(&grim_config_var0_table + state * 4) = (char)value;
+      *(char *)(&grim_config_var0_table + id * 4) = (char)value;
       return;
     }
     break;
   case 0x13:
-    if ((&grim_config_var0_table)[state * 4] != value) {
+    if ((&grim_config_var0_table)[id * 4] != value) {
       (*grim_d3d_device->lpVtbl->SetRenderState)(grim_d3d_device,D3DRS_SRCBLEND,value);
-      (&grim_config_var0_table)[state * 4] = value;
+      (&grim_config_var0_table)[id * 4] = value;
       return;
     }
     break;
   case 0x14:
-    if ((&grim_config_var0_table)[state * 4] != value) {
+    if ((&grim_config_var0_table)[id * 4] != value) {
       (*grim_d3d_device->lpVtbl->SetRenderState)(grim_d3d_device,D3DRS_DESTBLEND,value);
-      (&grim_config_var0_table)[state * 4] = value;
+      (&grim_config_var0_table)[id * 4] = value;
       return;
     }
     break;
@@ -3257,17 +3258,17 @@ LAB_10006887:
         if (value != 3) {
           return;
         }
-        if ((&grim_config_var0_table)[state * 4] != 3) {
+        if ((&grim_config_var0_table)[id * 4] != 3) {
           (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_MAXANISOTROPY,3)
           ;
         }
       }
-      if ((&grim_config_var0_table)[state * 4] == 3) {
+      if ((&grim_config_var0_table)[id * 4] == 3) {
         (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_MAXANISOTROPY,1);
       }
       (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_MINFILTER,value);
       (*grim_d3d_device->lpVtbl->SetTextureStageState)(grim_d3d_device,0,D3DTSS_MAGFILTER,value);
-      (&grim_config_var0_table)[state * 4] = value;
+      (&grim_config_var0_table)[id * 4] = value;
       return;
     }
     break;
@@ -3276,7 +3277,7 @@ LAB_10006887:
     if ((char)uVar6 == '\0') {
       return;
     }
-    puVar11 = &grim_config_var0_table + state * 4;
+    puVar11 = &grim_config_var0_table + id * 4;
     *puVar11 = value;
 LAB_10006b54:
     puVar11[1] = in_stack_0000000c;
@@ -3284,10 +3285,10 @@ LAB_10006b54:
     puVar11[3] = (uint)in_stack_00000014;
     break;
   case 0x1b:
-    (&grim_config_var0_table)[state * 4] = value;
-    (&grim_config_var1_table)[state * 4] = in_stack_0000000c;
-    *(uint *)(&grim_config_var2_table + state * 0x10) = in_stack_00000010;
-    *(byte **)(&grim_config_var3_table + state * 0x10) = in_stack_00000014;
+    (&grim_config_var0_table)[id * 4] = value;
+    (&grim_config_var1_table)[id * 4] = in_stack_0000000c;
+    *(uint *)(&grim_config_var2_table + id * 0x10) = in_stack_00000010;
+    *(byte **)(&grim_config_var3_table + id * 0x10) = in_stack_00000014;
     uVar2 = ftol();
     uVar3 = ftol();
     uVar4 = ftol();
@@ -3315,38 +3316,38 @@ LAB_10006b54:
       pWVar12 = pWVar12 + 1;
     } while (iVar14 < 0x100);
     (*grim_d3d_device->lpVtbl->SetGammaRamp)(grim_d3d_device,1,&DStack_600);
-    (&grim_config_var0_table)[state * 4] = value;
-    (&grim_config_var1_table)[state * 4] = in_stack_0000000c;
-    *(uint *)(&grim_config_var2_table + state * 0x10) = in_stack_00000010;
-    *(byte **)(&grim_config_var3_table + state * 0x10) = in_stack_00000014;
+    (&grim_config_var0_table)[id * 4] = value;
+    (&grim_config_var1_table)[id * 4] = in_stack_0000000c;
+    *(uint *)(&grim_config_var2_table + id * 0x10) = in_stack_00000010;
+    *(byte **)(&grim_config_var3_table + id * 0x10) = in_stack_00000014;
     return;
   case 0x29:
     grim_backbuffer_width = value;
-    (&grim_config_var0_table)[state * 4] = value;
+    (&grim_config_var0_table)[id * 4] = value;
     return;
   case 0x2a:
     grim_backbuffer_height = value;
-    (&grim_config_var0_table)[state * 4] = value;
+    (&grim_config_var0_table)[id * 4] = value;
     return;
   case 0x2b:
-    (&grim_config_var0_table)[state * 4] = value;
+    (&grim_config_var0_table)[id * 4] = value;
     grim_texture_format = (value != 0x20) + 0x16;
     return;
   case 0x2d:
     DAT_1005977c = in_stack_00000014;
     return;
   case 0x34:
-    *(char *)(&grim_config_var0_table + state * 4) = (char)value;
+    *(char *)(&grim_config_var0_table + id * 4) = (char)value;
     return;
   case 0x36:
     (*grim_d3d_device->lpVtbl->Present)
               (grim_d3d_device,(RECT *)0x0,(RECT *)0x0,(HWND)0x0,(RGNDATA *)0x0);
     return;
   case 0x52:
-    (&grim_config_var0_table)[state * 4] = value;
-    (&grim_config_var1_table)[state * 4] = in_stack_0000000c;
-    *(uint *)(&grim_config_var2_table + state * 0x10) = in_stack_00000010;
-    *(byte **)(&grim_config_var3_table + state * 0x10) = in_stack_00000014;
+    (&grim_config_var0_table)[id * 4] = value;
+    (&grim_config_var1_table)[id * 4] = in_stack_0000000c;
+    *(uint *)(&grim_config_var2_table + id * 0x10) = in_stack_00000010;
+    *(byte **)(&grim_config_var3_table + id * 0x10) = in_stack_00000014;
     DAT_1005d3fc = *(undefined4 *)in_stack_00000014;
     return;
   case 0x55:

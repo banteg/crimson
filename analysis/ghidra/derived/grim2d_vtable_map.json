@@ -152,12 +152,12 @@
     ],
     "func_addr": "0x10006580",
     "section": ".text",
-    "func_name": "grim_set_render_state",
+    "func_name": "grim_set_config_var",
     "func_size": 1534,
     "calling_convention": "unknown",
     "return_type": "void",
     "param_count": 2,
-    "signature": "void grim_set_render_state(uint state, uint value)",
+    "signature": "void grim_set_config_var(uint id, uint value)",
     "source_type": "DEFAULT"
   },
   {
