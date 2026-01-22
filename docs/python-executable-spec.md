@@ -4,9 +4,6 @@ tags:
 ---
 
 # Python executable spec
-
-**Status:** Draft
-
 This page defines the CLI entry points and stable command contracts for the
 Python tooling in this repo. The goal is to keep automation consistent even as
 internals evolve.

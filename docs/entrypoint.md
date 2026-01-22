@@ -4,9 +4,6 @@ tags:
 ---
 
 # Entrypoint trace
-
-**Status:** In progress
-
 This page captures a top-down call trace starting at the PE entrypoint so we
 can hang names and subsystems off a stable boot sequence.
 
@@ -14,8 +11,6 @@ can hang names and subsystems off a stable boot sequence.
 
 - PE entrypoint VA: `0x00463026`
 - Ghidra function: `entry` (`entry @ 00463026`)
-
-
 ## Regenerate trace
 
 ```

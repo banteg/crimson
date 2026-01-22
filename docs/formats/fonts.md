@@ -4,9 +4,6 @@ tags:
 ---
 
 # Fonts
-
-**Status:** Draft
-
 Crimsonland ships two bitmap fonts:
 
 - **Small font** (`smallFnt.dat` + `smallWhite.png`): variable-width, 16x16 atlas, used by `grim_draw_text_small`. [static]

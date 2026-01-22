@@ -4,9 +4,6 @@ tags:
 ---
 
 # Gameplay glue
-
-**Status:** Draft
-
 This page captures high-level gameplay glue that is not already covered by the
 standalone data tables.
 

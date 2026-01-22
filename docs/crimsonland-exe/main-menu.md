@@ -4,9 +4,6 @@ tags:
 ---
 
 # Main menu (state 0)
-
-**Status:** Draft
-
 This page documents the classic Crimsonland.exe **main menu** (game state `0`)
 from decompiled code (Ghidra + Binary Ninja cross-checks). The goal is a
 faithful reimplementation: same layout math, timings, and render passes.

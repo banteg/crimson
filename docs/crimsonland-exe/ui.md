@@ -4,9 +4,6 @@ tags:
 ---
 
 # UI and menus
-
-**Status:** Draft
-
 This page groups UI element logic, menu loops, and transition helpers.
 
 ## UI element timeline (ui_elements_update_and_render / FUN_0041a530)

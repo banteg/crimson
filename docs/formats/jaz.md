@@ -4,9 +4,6 @@ tags:
 ---
 
 # JAZ texture format
-
-**Status:** Completed
-
 JAZ wraps a JPEG color image with a run-length encoded alpha channel.
 The file begins with a small header followed by a zlib stream.
 

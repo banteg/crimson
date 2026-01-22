@@ -4,9 +4,6 @@ tags:
 ---
 
 # Quest builders
-
-**Status:** High confidence (runtime-validated 2026-01-19)
-
 This document lists the quest builder pointer assigned to each quest in
 `quest_database_init` (`FUN_00439230`). Builder symbols are defined in
 `analysis/ghidra/maps/name_map.json`.

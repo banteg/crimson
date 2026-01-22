@@ -4,9 +4,6 @@ tags:
 ---
 
 # Weapon table (weapon_table_init)
-
-**Status:** In progress
-
 Weapon stats are initialized in `weapon_table_init` (`FUN_004519b0`) and stored
 in a fixed‑stride table. The accessor `weapon_table_entry` (`FUN_0041fc60`)
 returns a pointer to the name buffer at the start of each entry:

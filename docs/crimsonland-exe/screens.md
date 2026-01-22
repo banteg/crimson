@@ -4,9 +4,6 @@ tags:
 ---
 
 # Screens and flows
-
-**Status:** Draft
-
 This page groups full-screen or modal flows that have their own update loops.
 
 ## Game over / high score entry (game_over_screen_update)

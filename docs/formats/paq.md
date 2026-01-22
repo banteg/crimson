@@ -4,9 +4,6 @@ tags:
 ---
 
 # PAQ archive format
-
-**Status:** Completed
-
 PAQ is the simple container format used by Crimsonland.
 It is a flat stream with no central directory; entries are read sequentially
 until EOF.

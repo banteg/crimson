@@ -4,9 +4,6 @@ tags:
 ---
 
 # Detangling notes
-
-**Status:** In progress
-
 This page tracks high-value functions to name and the evidence gathered so far.
 Use the hotspot script to refresh the lists when the decompile is regenerated.
 
@@ -116,8 +113,6 @@ grim.dll_functions.json
 
 - `FUN_004027b0` -> `console_command_autocomplete`
   - Evidence: same as `console_cvar_autocomplete`, but over the command list.
-
-
 ### UI element timeline + transitions (high confidence)
 
 - `FUN_0041a530` -> `ui_elements_update_and_render`
@@ -229,8 +224,6 @@ for the field layout used by `sfx_entry_table` and `music_entry_table`.
   - Evidence: stops playback for all voices in the entry (used on suspend/mute).
 - `FUN_0043bfa0` -> `sfx_entry_set_volume`
   - Evidence: applies volume changes across active voices.
-
-
 ### Input primary action (high confidence)
 
 - `FUN_00446030` -> `input_primary_just_pressed`
@@ -451,8 +444,6 @@ Grim key‑click helper (vtable `+0x48` → grim_was_key_pressed (`FUN_10007390`
 Grim misc getter (vtable `+0xa4` → grim_get_joystick_pov (`FUN_100075b0`)):
 
 - Returns `*(DAT_1005d850 + index*4)`; only index 0 observed in `crimsonland.exe` (`FUN_0041e8d0/1e8f0`).
-
-
 ### High score record (0x48 bytes) — name 0x00..0x1f
 
 The record begins with the player name (copied from config on load and compared
@@ -461,8 +452,6 @@ by `highscore_record_equals`).
 | Offset | Address | Meaning | Evidence |
 | --- | --- | --- | --- |
 | `0x00` | `DAT_00487040` | Player name (NUL‑terminated, 0x20 bytes) | Copied from config `player_name` on load; compared in `highscore_record_equals`. |
-
-
 ### High score record (0x48 bytes) — metadata 0x20..0x37
 
 The high score record embeds run metadata used for duplicate detection and ranking. These
@@ -483,8 +472,6 @@ fields are compared in `highscore_record_equals` before a score can replace an e
 Bytes `0x38..0x3f` are currently unknown. The online submit path zeroes `0x3c..0x3f`
 in the 0x40-byte record copies (`FUN_0043aa90`), suggesting those bytes are not
 required for leaderboard uploads.
-
-
 ### High score record (0x48 bytes) — tail bytes 0x40..0x47
 
 Score entries are 0x48 bytes (`DAT_00482b10` array, `DAT_00487040` active record). The
@@ -668,8 +655,6 @@ Init timing note:
 
 - `FUN_00452ef0` -> `float_near_equal`
   - Evidence: returns 1 when `|a-b| < 1.1920929e-07` (FLT_EPSILON) and guards against NaNs.
-
-
 ### Texture loading helpers (high confidence)
 
 - `FUN_0042a670` -> `texture_get_or_load`
@@ -678,8 +663,6 @@ Init timing note:
 
 - `FUN_0042a700` -> `texture_get_or_load_alt`
   - Evidence: identical body to `texture_get_or_load`; primary callers pass `.jaz` assets.
-
-
 ### CRT errno accessors (high confidence)
 
 - `FUN_00465d93` -> `crt_errno_ptr` (`_errno`-style accessor)
@@ -696,8 +679,6 @@ Init timing note:
     - crt_write_nolock (`FUN_004656b7`) (WriteFile) and crt_read_nolock (`FUN_00466064`) (ReadFile) call `crt_dosmaperr` after
       `GetLastError()` for non-trivial errors.
     - crt_lseek_nolock (`FUN_0046645e`) (SetFilePointer) maps `GetLastError()` through `crt_dosmaperr`.
-
-
 ### CRT lock/unlock helpers (high confidence)
 
 - `FUN_0046586b` -> `crt_lock`
@@ -714,8 +695,6 @@ Init timing note:
   - Evidence: initializes per-file handle critical sections and enters the lock.
 - `FUN_0046ad57` -> `crt_unlock_fh`
   - Evidence: leaves the per-file handle critical section.
-
-
 ### CRT ctype helpers (high confidence)
 
 - `FUN_00463c74` -> `crt_isctype`
@@ -726,8 +705,6 @@ Init timing note:
   - Evidence: calls `crt_isctype` with mask `0x103` (alpha/upper/lower).
 - `FUN_00462ffe` -> `crt_isspace`
   - Evidence: calls `crt_isctype` with mask `0x8` (space).
-
-
 ### CRT exit/stdio helpers (high confidence)
 
 - `FUN_00460d08` -> `crt_onexit`
@@ -785,8 +762,6 @@ Init timing note:
 - `FUN_0046dd16` -> `crt_chsize`
   - Evidence: uses `crt_lseek_nolock` to get size, truncates via `SetEndOfFile` or extends by
     writing zero-filled blocks, then restores the file offset.
-
-
 ### Grim/libpng helpers (high confidence)
 
 - `FUN_1001e114` -> `png_error`
@@ -813,8 +788,6 @@ Init timing note:
   - Evidence: validates 4-letter chunk type and errors on invalid characters.
 - `FUN_100250d7` -> `png_crc_finish`
   - Evidence: consumes remaining chunk bytes, checks CRC, and raises error/warning.
-
-
 ### Grim pixel/format helpers (high confidence)
 
 - `FUN_1000aaa6` -> `grim_format_info_lookup`
@@ -824,8 +797,6 @@ Init timing note:
 - `FUN_100174a8` -> `grim_apply_color_key`
   - Evidence: iterates RGBA float pixels and zeroes those that match the current color key
     (`this+0x1c..0x28`), used after converting pixel buffers.
-
-
 ### Audio SFX helpers (medium confidence)
 
 - `FUN_0043d120` -> `sfx_play`
@@ -884,14 +855,10 @@ Init timing note:
   - Evidence: iterates `DAT_004c4250` entries and calls `sfx_release_entry`.
 - `FUN_0043d110` -> `audio_shutdown_all`
   - Evidence: calls `sfx_release_all`, `music_release_all`, and the audio backend shutdown helper.
-
-
 ### Global var access (medium confidence)
 
 - `FUN_0042fcf0` -> `perk_count_get`
   - Evidence: returns `(&player_perk_counts)[perk_id]` (`DAT_00490968`) directly; used to track perk picks and gating.
-
-
 ### Save/load helpers (medium confidence)
 
 - `FUN_0042a980` -> `reg_read_dword_default`
@@ -907,8 +874,6 @@ Init timing note:
 - `FUN_00412c10` -> `game_load_status`
   - Evidence: loads the status file, validates checksum/size, and regenerates it on failure;
     logs `GAME_LoadStatus ...`.
-
-
 ### Effect spawn helper (medium confidence)
 
 - `FUN_0042de80` -> `effect_init_entry`
@@ -945,8 +910,6 @@ Init timing note:
 - `FUN_0042ee00` -> `effect_spawn_freeze_shatter`
   - Evidence: spawns four `effect_id 0xe` bursts at 90° offsets plus extra `effect_spawn_freeze_shard`
     calls.
-
-
 ### Perk database + selection (medium confidence)
 
 - `FUN_0042fd90` -> `perks_init_database`
@@ -998,8 +961,6 @@ Init timing note:
 
   - `perk_choices_dirty` (`DAT_00486fb0`) is set after perk selection and on reset, then cleared the
     first time `perks_generate_choices` runs before switching to state `6`.
-
-
 ### Tutorial prompt (medium confidence)
 
 - `FUN_00408530` -> `tutorial_prompt_dialog`
@@ -1012,8 +973,6 @@ Init timing note:
   - `alpha` comes from `tutorial_timeline_update` (0..1), controls the prompt fade, and is used
     to scale the button visuals; the decompiler currently shows it as a `char` because the call
     site passes `SUB41` of a float.
-
-
 ### Tutorial timeline (medium confidence)
 
 - `FUN_00408990` -> `tutorial_timeline_update`
@@ -1126,8 +1085,6 @@ Button struct (size `0x18`, used by `DAT_0047f5f8` / `DAT_00480250` / `DAT_00480
 - `FUN_00439230` -> `quest_database_init`
   - Evidence: populates the quest metadata table (`DAT_00484730`) with names, durations, and builder
     function pointers.
-
-
 ### Creature table (partial)
 
 - `FUN_00428140` -> `creature_alloc_slot`
@@ -1160,8 +1117,6 @@ Button struct (size `0x18`, used by `DAT_0047f5f8` / `DAT_00480250` / `DAT_00480
   | 0x94 | anim phase | accumulates and wraps (31/15) to drive sprite animation timing. |
 
 See [Creature struct](structs/creature.md) for the expanded field map and cross-links.
-
-
 ### Projectile pool (partial)
 
 - `FUN_00420440` -> `projectile_spawn`
@@ -1197,8 +1152,6 @@ See [Creature struct](structs/creature.md) for the expanded field map and cross-
   | 0x3c | owner id | Used to skip the shooter in hit tests. |
 
 See [Projectile struct](structs/projectile.md) for the expanded field map and notes.
-
-
 ### Effects pools (medium confidence)
 
 - `FUN_00420130` -> `fx_spawn_particle`
@@ -1216,8 +1169,6 @@ See [Projectile struct](structs/projectile.md) for the expanded field map and no
     velocity, tint, and a scalar parameter used by the renderer.
 
 - Layouts and fields are tracked in [Effects pools](structs/effects.md).
-
-
 ### Bonus / pickup pool (medium confidence)
 
 - `FUN_0041f580` -> `bonus_alloc_slot`
@@ -1254,8 +1205,6 @@ See [Projectile struct](structs/projectile.md) for the expanded field map and no
   | 0x10 | pos_x (`bonus_pos_x`) | set on spawn; used for distance checks. |
   | 0x14 | pos_y (`bonus_pos_y`) | set on spawn; used for distance checks. |
   | 0x18 | amount/duration (`bonus_amount`) | used by `bonus_apply` when applying certain bonus types. |
-
-
 ### Game mode selector (partial)
 
 - `_DAT_00480360` holds the current game mode. See [Game mode map](game-mode-map.md) for the observed
@@ -1263,8 +1212,6 @@ See [Projectile struct](structs/projectile.md) for the expanded field map and no
 
 - `FUN_00412960` -> `game_mode_label`
   - Evidence: returns a label string based on `_DAT_00480360` (Survival, Quests, Typ-o-Shooter, etc.).
-
-
 ### Survival mode (partial)
 
 - `FUN_00407cd0` -> `survival_update`

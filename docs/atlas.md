@@ -4,9 +4,6 @@ tags:
 ---
 
 # Sprite atlas cutting (Crimsonland)
-
-**Status:** In progress
-
 This is based on the decompiled engine in `analysis/ghidra/raw/crimsonland.exe_decompiled.c`.
 The engine does **not** load atlas metadata from disk; all slicing is hard‑coded.
 
@@ -33,22 +30,16 @@ This effectively insets the right/bottom edge by 2 pixels to avoid bleeding.
 Atlas cells are still laid out on full grid boundaries; the clamp just shrinks
 the per‑effect UV rect stored in the effect pool. Runtime capture shows
 `set_atlas_frame` on `particles.png` always emits full‑cell UVs (step = 1/grid).
-
-
 The renderer later uses these tables to build quads:
 
 - `u0 = table[idx].u`, `v0 = table[idx].v`
 - `u1 = u0 + step`, `v1 = v0 + step`
-
-
 ## Sprite table (engine‑hardcoded)
 
 `effect_select_texture` (`FUN_0042e0a0`) reads a table at **VA 0x004755F0**.
 Each entry is `(cell_code, group_id)`; `cell_code` maps to grid size:
 
 - `0x80 → 2`, `0x40 → 4`, `0x20 → 8`, `0x10 → 16`.
-
-
 Extracted table (effect_id → size code + frame index):
 
 | effect_id | size code | grid | frame |
@@ -173,8 +164,6 @@ the exact grid2 index is still unclear from the decompile.
   - Drawn via **grid=8** (`+0x104(8, …)` in the enemy render path around `:9704`).
   - Per‑enemy base frame offsets are stored in the enemy data struct
     (e.g. `_DAT_00482760 = 0x20`, `_DAT_004827a4 = 0x10`, etc).
-
-
 ## Replicating the atlas cutting
 
 `src/crimson/atlas.py` provides the same slicing math used by the engine:
@@ -185,8 +174,6 @@ the exact grid2 index is still unclear from the decompile.
 - `rect_for_index(width, height, grid, index)`
 - `slice_index(image, grid, index)`
 - `slice_grid(image, grid)`
-
-
 This is sufficient to reproduce the engine’s sprite cuts for any of the
 uniform grids (2/4/8/16).
 

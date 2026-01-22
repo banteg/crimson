@@ -4,9 +4,6 @@ tags:
 ---
 
 # UI elements
-
-**Status:** Draft
-
 This page documents the UI element struct used by `ui_element_render` and the
 menu/button helpers. The layout is inferred from the decompile and is still
 partial.

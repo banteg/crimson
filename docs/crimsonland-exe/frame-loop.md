@@ -4,9 +4,6 @@ tags:
 ---
 
 # Frame loop (gameplay)
-
-**Status:** Draft
-
 This page summarizes the main gameplay frame loop in `gameplay_update_and_render` (state `9`).
 Other states have their own loops but reuse the same render pass (`gameplay_render_world`, `FUN_00405960`).
 

@@ -4,9 +4,6 @@ tags:
 ---
 
 # Extraction pipeline
-
-**Status:** In progress
-
 The extractor walks the `game_bins/` directory, finds all `.paq` archives, and
 writes files under `artifacts/assets/{paq_name}/...` while applying a couple of format
 conversions.
@@ -22,8 +19,6 @@ uv run paq extract game_bins/crimsonland/1.9.93-gog artifacts/assets
 - `.jaz` → decode and save a single composite PNG (RGB + alpha).
 - `.tga` → convert to PNG.
 - everything else → write as raw bytes.
-
-
 The extractor normalizes path separators and rejects `.`/`..` segments to
 avoid directory traversal.
 

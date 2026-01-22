@@ -4,9 +4,6 @@ tags:
 ---
 
 # Rendering pipeline
-
-**Status:** Draft
-
 This page summarizes the primary render paths in `crimsonland.exe`.
 
 ## Render dispatcher (FUN_00406af0)

@@ -4,9 +4,6 @@ tags:
 ---
 
 # State machine
-
-**Status:** Draft
-
 This page tracks the main runtime state flags in `crimsonland.exe` and the
 known state ids. Names are inferred from call sites and screen behavior.
 
