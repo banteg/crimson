@@ -31,6 +31,14 @@ In a separate terminal (or a second run), attach the probe script:
 frida -n crimsonland.exe -l C:\share\frida\crimsonland_probe.js
 ```
 
+Just shortcut (Windows VM):
+
+```text
+just frida-attach script=scripts\\frida\\crimsonland_probe.js
+```
+
+Optional overrides: `process=crimsonland.exe` and `CRIMSON_FRIDA_DIR`.
+
 Default logs written by the scripts:
 
 - `C:\share\frida\grim_hits.jsonl`
