@@ -162,10 +162,10 @@ public class ExportAll extends GhidraScript {
                 // Get calls
                 java.util.Set<Function> calls = func.getCalledFunctions(monitor);
                 List<Function> callsSorted = sortFunctionsByNameAndAddress(calls);
+                writer.println("    \"calls_total\": " + callsSorted.size() + ",");
                 writer.print("    \"calls\": [");
                 int callIdx = 0;
                 for (Function calledFunc : callsSorted) {
-                    if (callIdx >= 20) break;
                     if (callIdx > 0) writer.print(", ");
                     writer.print("\"" + escapeJson(calledFunc.getName()) + "\"");
                     callIdx++;

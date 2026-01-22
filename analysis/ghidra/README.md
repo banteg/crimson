@@ -51,7 +51,7 @@ Override the Windows repo path if needed:
 CRIMSON_WIN_REPO=/mnt/c/dev/crimson just ghidra-sync
 ```
 
-   Override the game directory when needed:
+Override the game directory when needed:
 
    ```bash
    just game_dir=game_bins/crimsonland/1.9.93-gog ghidra-exe

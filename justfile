@@ -50,6 +50,18 @@ entrypoint-trace:
 function-hotspots:
     uv run python scripts/function_hotspots.py --top 12 --only-fun
 
+angr-trial-exe:
+    uv run --no-project --isolated --python 3.12 --with angr \
+      python scripts/angr_trial.py \
+      --binary {{game_dir}}/crimsonland.exe \
+      --ghidra-functions analysis/ghidra/raw/crimsonland.exe_functions.json
+
+angr-trial-grim:
+    uv run --no-project --isolated --python 3.12 --with angr \
+      python scripts/angr_trial.py \
+      --binary {{game_dir}}/grim.dll \
+      --ghidra-functions analysis/ghidra/raw/grim.dll_functions.json
+
 save-status *args:
     uv run python scripts/save_status.py {{args}}
 
