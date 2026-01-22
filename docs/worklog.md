@@ -11,10 +11,6 @@ Reverse-chronological log of notable repo changes, grouped by day.
 - Added Frida probes for quest title colors and atlas UV selection, plus supporting docs.
 - Added screenshot capture for all views (hotkey `P`, saves to `screenshots/`).
 
-## Notes
-
-- “Console” in the classic game refers to both the on-screen tilde console and the `console.log` file; for reimplementation we’re starting with file/stdout logging only.
-
 ## 2026-01-19
 
 - Implemented quest builders for tiers 1–5, quest metadata, and a CLI for quest dumps.
