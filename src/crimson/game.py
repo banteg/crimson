@@ -676,11 +676,11 @@ class MenuView:
         return entries
 
     @staticmethod
-    def _menu_label_rows(full_version: bool, other_games: bool) -> list[int]:
+    def _menu_label_rows(_full_version: bool, other_games: bool) -> list[int]:
         # Label atlas rows in ui_itemTexts.jaz:
-        #   0 BUY NOW, 1 PLAY GAME, 2 OPTIONS, 3 STATISTICS, 4 MODS,
+        #   0 BUY NOW (unused in rewrite), 1 PLAY GAME, 2 OPTIONS, 3 STATISTICS, 4 MODS,
         #   5 OTHER GAMES, 6 QUIT, 7 BACK
-        top = 4 if full_version else 0
+        top = 4
         slot4 = 5 if other_games else 7
         return [top, 1, 2, 3, slot4, 6]
 
@@ -698,11 +698,11 @@ class MenuView:
 
     @staticmethod
     def _menu_slot_active(
-        full_version: bool,
+        _full_version: bool,
         mods_available: bool,
         other_games: bool,
     ) -> list[bool]:
-        show_top = (not full_version) or mods_available
+        show_top = mods_available
         return [
             show_top,
             True,
@@ -901,10 +901,10 @@ class MenuView:
 
     @staticmethod
     def _menu_max_timeline_ms(
-        full_version: bool, mods_available: bool, other_games: bool
+        _full_version: bool, mods_available: bool, other_games: bool
     ) -> int:
         max_ms = 300  # sign element at index 0
-        show_top = (not full_version) or mods_available
+        show_top = mods_available
         slot_active = [show_top, True, True, True, other_games, True]
         for slot, active in enumerate(slot_active):
             if not active:
