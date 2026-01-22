@@ -20,6 +20,7 @@ Reverse engineering and rewriting Crimsonland v1.9.93 in Python + raylib.
 
 - [Rewrite overview](rewrite/index.md)
 - [Rewrite tech tree](rewrite/tech-tree.md)
+- [Terrain (rewrite)](rewrite/terrain.md)
 
 ## Crimsonland.exe
 

@@ -30,7 +30,8 @@ it unlocks for parity. Goal: 100% replication of game logic.
 
 ## Rendering + debug views
 
-- [x] Terrain generator + renderer -> Unlocks: ground parity and quest previews.
+- [x] Terrain render-target + procedural stamping -> Unlocks: ground parity and quest previews.
+- [ ] Terrain decal baking (fx_queue_render parity) -> Unlocks: baked blood/scorch/corpses on ground.
 - [x] Creature animation preview -> Unlocks: sprite timing validation.
 - [x] Sprite/particle/bonus/weapon atlas previews -> Unlocks: asset alignment.
 - [x] UI + font previews -> Unlocks: HUD/menu layout checks.

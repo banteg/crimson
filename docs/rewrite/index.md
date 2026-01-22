@@ -29,7 +29,7 @@ Code lives in `src/crimson/` and is exercised via the `crimson` CLI.
 
 - PAQ archive reader and JAZ decoder (Construct-based).
 - Texture cache from `crimson.paq` with JAZ/TGA/JPG loaders.
-- Terrain renderer (scatter-stamp generation + camera clamp).
+- Terrain renderer (render-target generation + UV scroll draw; decal baking helpers).
 - Raylib view runner with screenshot capture (P key).
 
 ### Data tables + content
@@ -58,6 +58,10 @@ Available via `uv run crimson view <name>`:
 - `wicons` (weapon icon preview)
 - `ui` (UI texture preview)
 - `particles` (particle atlas preview)
+
+See also:
+
+- [Terrain (rewrite)](terrain.md)
 
 ## Known gaps (short list)
 

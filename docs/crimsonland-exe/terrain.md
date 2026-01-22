@@ -749,6 +749,15 @@ If you’re rebuilding from scratch, you need these components:
 
 ---
 
+## 14) Rewrite mapping (Python + raylib)
+
+The reference rewrite models this pipeline in:
+
+- `src/crimson/terrain_render.py` (generation, decal baking helpers, and screen blit)
+- `docs/rewrite/terrain.md` (rewrite-specific notes and TODOs)
+
+---
+
 If you want, I can also output **drop-in C/C++ code** (engine-agnostic) for:
 
 * the exact PRNG,
