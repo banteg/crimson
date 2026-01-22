@@ -36,7 +36,7 @@ The rewrite exposes the same mechanism via two helpers:
     - a normal alpha blend color pass
   - Applies the exe’s small alignment tweaks (`-0.5` shift and `offset = terrain_scale/512`) and rotation offset (`rotation - pi/2`).
 
-## Terrain filter (“terrainFilter”)
+## Terrain filter ("terrainFilter")
 
 The exe optionally forces point sampling when blitting terrain to the screen if
 `terrainFilter == 2.0`.
@@ -44,6 +44,32 @@ The exe optionally forces point sampling when blitting terrain to the screen if
 The rewrite mirrors this via `GroundRenderer.terrain_filter`:
 
 - `terrain_filter == 2.0` → temporary point sampling for the terrain blit only.
+
+## Blend mode when drawing to screen
+
+During terrain generation, stamps are drawn with alpha blending enabled
+(`SRC_ALPHA / ONE_MINUS_SRC_ALPHA`). This affects not just the RGB channels but
+also the **alpha channel** of the render target:
+
+```
+result_alpha = src_alpha * src_alpha + dst_alpha * (1 - src_alpha)
+```
+
+After many semi-transparent stamps (tint alpha 0.9 or 0.6), the RT's alpha drifts
+below 1.0 in places. If the terrain RT were then drawn to the backbuffer with
+standard alpha blending, those pixels would appear semi-transparent.
+
+**Fix**: When drawing the terrain RT to the screen, use a custom blend mode that
+fully replaces pixels (ignoring source alpha):
+
+```python
+rl.begin_blend_mode(rl.BLEND_CUSTOM)
+rl.rl_set_blend_factors(rl.RL_ONE, rl.RL_ZERO, rl.RL_FUNC_ADD)
+# ... draw terrain quad ...
+rl.end_blend_mode()
+```
+
+This ensures terrain is always drawn opaque, matching the original game's behavior.
 
 ## Next step
 

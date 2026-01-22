@@ -261,7 +261,11 @@ y = ( (crt_rand() % (1024+128)) - 64 ) * inv_scale;
 
 ```c
 count = (terrain_texture_width * terrain_texture_height * 0x320) >> 19;
-// = (1024*1024*800) >> 19 = 1600
+// Example (1024x1024): (1024*1024*800) >> 19 = 1600
+//
+// Runtime evidence (Frida, 2026-01-23, `analysis/frida/raw/terrain_trace_rt2.jsonl`):
+// observed 1600 stamps in the main-menu generator (`terrain_generate_random`),
+// return address `0x418493` (call at `0x41848d`).
 ```
 
 > **Evidence (Binary Ninja @ 0x417cef):**
@@ -279,7 +283,12 @@ count = (terrain_texture_width * terrain_texture_height * 0x320) >> 19;
 * Count:
 
 ```c
-count = (1024*1024*0x23) >> 19 = (1024*1024*35) >> 19 ≈ 70
+count = (terrain_texture_width * terrain_texture_height * 0x23) >> 19;
+// Example (1024x1024): (1024*1024*35) >> 19 = 70
+//
+// Runtime evidence (Frida, 2026-01-23, `analysis/frida/raw/terrain_trace_rt2.jsonl`):
+// observed 70 stamps in the main-menu generator (`terrain_generate_random`),
+// return address `0x4185f0` (call at `0x4185ea`).
 ```
 
 ---
@@ -291,13 +300,34 @@ count = (1024*1024*0x23) >> 19 = (1024*1024*35) >> 19 ≈ 70
 * Count:
 
 ```c
-count = (1024*1024*0x0f) >> 19 = (1024*1024*15) >> 19 ≈ 30
+count = (terrain_texture_width * terrain_texture_height * 0x0f) >> 19;
+// Example (1024x1024): (1024*1024*15) >> 19 = 30
+//
+// Runtime evidence (Frida, 2026-01-23, `analysis/frida/raw/terrain_trace_rt2.jsonl`):
+// observed 30 stamps in the main-menu generator (`terrain_generate_random`),
+// return address `0x41874d` (call at `0x418747`).
 ```
 
 > **Note:** Layer 3 uses `tex2_index` which in the default/random case
 > points to the **base texture** (same as layer 1), not the overlay texture.
 
 ---
+
+### 7.3.1 Runtime validation: procedural stamp counts (Frida)
+
+In `analysis/frida/raw/terrain_trace_rt2.jsonl` we captured the full procedural
+generation pass (three consecutive `set_render_target(0)` sessions). Per pass:
+
+- 1600 stamps @ callsite `0x418493` (layer 1), texture `ter\\ter_q1_base.jaz`, color `(0.7,0.7,0.7,0.9)`
+- 70 stamps @ callsite `0x4185f0` (layer 2), texture `ter\\ter_q1_tex1.jaz`,  color `(0.7,0.7,0.7,0.9)`
+- 30 stamps @ callsite `0x41874d` (layer 3), texture `ter\\ter_q1_base.jaz`, color `(0.7,0.7,0.7,0.6)`
+
+Each stamp is a 128×128 quad with `x/y ∈ [-64 .. 1087]` (matching the static
+range and the intentional overdraw at edges).
+
+Important for interpreting traces: Grim’s `draw_quad_xy` (vtable `0x120`)
+immediately calls `draw_quad` (vtable `0x11c`), so you will see **two draw
+events per stamp** if you hook both. Count stamps by `draw_quad_xy`.
 
 ### 7.4 The exact inner stamp loop
 
@@ -308,7 +338,7 @@ For each layer:
 
   * compute random `rotation, x, y`
   * `grim_set_rotation(rotation)`
-  * `grim_draw_quad(x, y, stamp_size, stamp_size)`
+  * `grim_draw_quad_xy(&xy, stamp_size, stamp_size)` (vtable `0x120`)
 * `grim_end_batch()`
 
 Important: **x,y are the quad’s top-left**, not center.
@@ -335,6 +365,10 @@ There is also a weird “toggle” where it sets srcblend to `1` then back to `5
 ## 8) Dynamic terrain decals baked each frame — `fx_queue_render @ 00427920`
 
 This is part of the terrain pipeline because decals are rendered **into** the terrain render target *before* terrain is drawn to screen.
+
+Runtime evidence (Frida, 2026-01-23, `analysis/frida/raw/terrain_trace_rt2.jsonl`):
+after the procedural pass, we observed 29 render-target sessions (`set_render_target(0)` → draw → `set_render_target(-1)`)
+with 332 total stamped quads, mostly `game\\particles.jaz` (326) plus a few `bodyset` draws (6).
 
 ### 8.1 When it runs (render order)
 

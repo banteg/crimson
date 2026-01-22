@@ -222,7 +222,12 @@ class GroundRenderer:
         dst = rl.Rectangle(0.0, 0.0, out_w, out_h)
         if self.terrain_filter == 2.0:
             rl.set_texture_filter(target.texture, rl.TEXTURE_FILTER_POINT)
+        # Disable alpha blending when drawing terrain to screen - the render target's
+        # alpha channel may be < 1.0 after stamp blending, but terrain should be opaque.
+        rl.begin_blend_mode(rl.BLEND_CUSTOM)
+        rl.rl_set_blend_factors(rl.RL_ONE, rl.RL_ZERO, rl.RL_FUNC_ADD)
         rl.draw_texture_pro(target.texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+        rl.end_blend_mode()
         if self.terrain_filter == 2.0:
             rl.set_texture_filter(target.texture, rl.TEXTURE_FILTER_BILINEAR)
 
