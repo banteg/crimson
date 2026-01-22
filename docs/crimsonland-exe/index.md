@@ -19,6 +19,7 @@ Sections:
 - [UI and menus](ui.md)
 - [Main menu (state 0)](main-menu.md)
 - [Screens and flows](screens.md)
+- [Demo / attract mode](demo-mode.md)
 - [Online scores](online-scores.md)
 - [Mods](mods.md)
 - [Gameplay glue](gameplay.md)
