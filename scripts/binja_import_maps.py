@@ -24,6 +24,7 @@ except Exception:  # pragma: no cover - only runs inside Binary Ninja
 
 
 _SEEDED_TYPES = False
+_SEEDED_REPO_HEADERS = False
 
 
 def _log_info(message: str) -> None:
@@ -213,6 +214,27 @@ def _define_user_type(bv, name: str, type_obj) -> bool:
     return False
 
 
+def _undefine_user_type(bv, name) -> bool:
+    for attr in ("undefine_user_type", "undefine_type", "remove_user_type"):
+        fn = getattr(bv, attr, None)
+        if not callable(fn):
+            continue
+        try:
+            fn(name)
+            return True
+        except Exception:
+            continue
+    return False
+
+
+def _define_or_replace_user_type(bv, name, type_obj) -> bool:
+    if _define_user_type(bv, name, type_obj):
+        return True
+    if _undefine_user_type(bv, name):
+        return _define_user_type(bv, name, type_obj)
+    return False
+
+
 def _bn_void_ptr_type(bv):
     if not bn:
         return None
@@ -306,41 +328,195 @@ def _type_array(element_type, count: int):
     return None
 
 
+def _type_width(type_obj) -> int | None:
+    if type_obj is None:
+        return None
+    for attr in ("width", "size"):
+        try:
+            value = getattr(type_obj, attr, None)
+        except Exception:
+            continue
+        if isinstance(value, int):
+            return value
+    return None
+
+
 def _define_opaque_struct_type(bv, name: str, size: int | None = None) -> bool:
-    if _get_type_by_name(bv, name) is not None:
-        return True
+    existing = _get_type_by_name(bv, name)
+    if existing is not None:
+        width = _type_width(existing)
+        if width is None or width > 0:
+            return True
     if not bn:
         return False
+
+    if size is None:
+        # Clang treats empty structs as 1 byte; Binja's 0-byte structs cause noisy conversion warnings.
+        size = 1
 
     sb = _structure_builder_create()
     if sb is None:
         return False
 
     if size is not None:
+        width_set = False
         try:
             if hasattr(sb, "width"):
                 sb.width = int(size)
+                width_set = True
         except Exception:
             pass
-        try:
-            u8 = _type_u8()
-            arr = _type_array(u8, int(size)) if u8 is not None else None
-            append = getattr(sb, "append", None)
-            if callable(append) and arr is not None:
-                append(arr, "data")
-        except Exception:
-            pass
+        if not width_set:
+            # Older APIs may not expose StructureBuilder.width; fall back to a dummy field so
+            # the resulting type has a stable non-zero size.
+            try:
+                u8 = _type_u8()
+                arr = _type_array(u8, int(size)) if u8 is not None else None
+                append = getattr(sb, "append", None)
+                if callable(append) and arr is not None:
+                    append(arr, "_opaque")
+            except Exception:
+                pass
 
     struct_type = _type_structure(sb)
     if struct_type is None:
         return False
+    if existing is not None:
+        return _define_or_replace_user_type(bv, name, struct_type)
     return _define_user_type(bv, name, struct_type)
+
+
+def _parse_types_from_source(bv, source: str, *, filename: str | None = None, include_dirs: list[str] | None = None):
+    if not bn:
+        return None
+
+    platform = getattr(bv, "platform", None)
+
+    candidates = []
+    if hasattr(bv, "parse_types_from_source"):
+        candidates.append(("bv.parse_types_from_source", bv.parse_types_from_source))
+    if hasattr(bn, "parse_types_from_source"):
+        candidates.append(("bn.parse_types_from_source", bn.parse_types_from_source))
+
+    last_exc: Exception | None = None
+    for _, fn in candidates:
+        call_variants: list[tuple[tuple, dict]] = [
+            ((source,), {}),
+            ((source,), {"filename": filename} if filename else {}),
+            ((source,), {"platform": platform} if platform else {}),
+            ((source,), {k: v for k, v in (("filename", filename), ("platform", platform)) if v is not None}),
+        ]
+        if include_dirs:
+            call_variants.extend(
+                [
+                    ((source,), {"include_dirs": include_dirs}),
+                    ((source,), {"filename": filename, "include_dirs": include_dirs} if filename else {"include_dirs": include_dirs}),
+                    (
+                        (source,),
+                        {k: v for k, v in (("filename", filename), ("platform", platform), ("include_dirs", include_dirs)) if v is not None},
+                    ),
+                ]
+            )
+        if filename:
+            call_variants.append(((source, filename), {}))
+        if platform and filename:
+            call_variants.append(((source, filename, platform), {}))
+
+        for args, kwargs in call_variants:
+            try:
+                return fn(*args, **kwargs)
+            except Exception as exc:
+                last_exc = exc
+                continue
+
+    if last_exc is not None:
+        _log_warn(f"type header parse failed: {last_exc}")
+    return None
+
+
+def _extract_parsed_types(parsed) -> dict:
+    if parsed is None:
+        return {}
+    if isinstance(parsed, tuple) and parsed and isinstance(parsed[0], dict):
+        return parsed[0]
+    types = getattr(parsed, "types", None)
+    if isinstance(types, dict):
+        return types
+    return {}
+
+
+def _seed_repo_headers(bv) -> None:
+    global _SEEDED_REPO_HEADERS
+    if _SEEDED_REPO_HEADERS or not bn:
+        return
+
+    env_value = os.getenv("CRIMSON_BINJA_SEED_HEADERS", "").strip().lower()
+    if env_value in {"0", "false", "no", "off"}:
+        _SEEDED_REPO_HEADERS = True
+        return
+
+    header_list = os.getenv("CRIMSON_BINJA_TYPE_HEADERS", "").strip()
+    header_paths: list[Path] = []
+    if header_list:
+        for item in header_list.split(os.pathsep):
+            item = item.strip()
+            if not item:
+                continue
+            header_paths.append(Path(item).expanduser())
+    else:
+        repo_root = _find_repo_root(bv)
+        if repo_root is not None:
+            header_paths.extend(
+                [
+                    repo_root / "third_party" / "headers" / "crimsonland_ida_types.h",
+                    repo_root / "third_party" / "headers" / "crimsonland_types.h",
+                ]
+            )
+
+    include_dirs = []
+    repo_root = _find_repo_root(bv)
+    if repo_root is not None:
+        include_dirs.append(str(repo_root / "third_party" / "headers"))
+
+    seeded_total = 0
+    for header_path in header_paths:
+        if not header_path.exists():
+            continue
+        try:
+            source = header_path.read_text(encoding="utf-8", errors="replace")
+        except Exception as exc:
+            _log_warn(f"failed to read header {header_path}: {exc}")
+            continue
+
+        parsed = _parse_types_from_source(bv, source, filename=str(header_path), include_dirs=include_dirs)
+        types = _extract_parsed_types(parsed)
+        if not types:
+            continue
+
+        for name, type_obj in types.items():
+            name_str = str(name)
+            if not name_str:
+                continue
+            existing = _get_type_by_name(bv, name_str)
+            if existing is not None:
+                existing_width = _type_width(existing)
+                if existing_width is None or existing_width > 0:
+                    continue
+            if _define_or_replace_user_type(bv, name, type_obj):
+                seeded_total += 1
+
+    if seeded_total:
+        _log_info(f"Seeded {seeded_total} typedef(s)/struct(s) from repo headers")
+
+    _SEEDED_REPO_HEADERS = True
 
 
 def _seed_common_types(bv) -> None:
     global _SEEDED_TYPES
     if _SEEDED_TYPES or not bn:
         return
+
+    _seed_repo_headers(bv)
 
     # Numeric typedefs that commonly appear in Ghidra-derived signatures.
     _define_alias_type(bv, "uint", _type_uint(32))
@@ -410,6 +586,69 @@ def _type_keywords() -> set[str]:
         "far",
         "near",
     }
+
+
+def _sanitize_signature(signature: str) -> str:
+    # Ghidra-derived signatures sometimes use C++ keywords for parameter names (e.g. `this`).
+    # Binja's parser may treat these as reserved depending on the language mode.
+    try:
+        import re
+
+        return re.sub(r"\bthis\b", "self", signature)
+    except Exception:
+        return signature
+
+
+def _split_params(param_text: str) -> list[str]:
+    parts: list[str] = []
+    depth = 0
+    start = 0
+    for idx, ch in enumerate(param_text):
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth = max(0, depth - 1)
+        elif ch == "," and depth == 0:
+            parts.append(param_text[start:idx].strip())
+            start = idx + 1
+    tail = param_text[start:].strip()
+    if tail:
+        parts.append(tail)
+    return parts
+
+
+def _strip_param_names(signature: str) -> str:
+    try:
+        import re
+
+        prefix, sep, rest = signature.partition("(")
+        if not sep:
+            return signature
+        params, sep2, suffix = rest.rpartition(")")
+        if not sep2:
+            return signature
+
+        keywords = _type_keywords()
+        new_params: list[str] = []
+        for param in _split_params(params):
+            p = param.strip()
+            if not p or p in {"void", "..."}:
+                new_params.append(p)
+                continue
+
+            # Remove names from function pointer params: `void (*cmd)(void)` -> `void (*)(void)`
+            p = re.sub(r"\(\s*\*\s*[A-Za-z_][A-Za-z0-9_]*\s*\)", "(*)", p)
+
+            ids = re.findall(r"[A-Za-z_][A-Za-z0-9_]*", p)
+            if len(ids) >= 2 and ids[-1] not in keywords:
+                if not (len(ids) == 2 and ids[0] in {"struct", "union", "enum"}):
+                    p = re.sub(rf"\b{re.escape(ids[-1])}\b\s*$", "", p).rstrip()
+
+            new_params.append(p)
+
+        return f"{prefix}({', '.join(new_params)}){suffix}"
+    except Exception:
+        return signature
 
 
 def _parse_hex_size_hint(comment: str) -> int | None:
@@ -517,10 +756,16 @@ def _resolve_data_type(bv, type_text: str):
 def _apply_function_signature(bv, func, signature: str) -> bool:
     _seed_common_types(bv)
 
+    signature = _sanitize_signature(signature)
     parsed = _parse_type_string(bv, signature)
     if parsed is None:
         _ensure_types_for_decl(bv, signature)
         parsed = _parse_type_string(bv, signature)
+        if parsed is None:
+            stripped = _strip_param_names(signature)
+            if stripped != signature:
+                _ensure_types_for_decl(bv, stripped)
+                parsed = _parse_type_string(bv, stripped)
         if parsed is None:
             return False
     func_type = parsed[0] if isinstance(parsed, tuple) else parsed
