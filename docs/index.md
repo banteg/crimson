@@ -10,20 +10,20 @@ Reverse engineering and rewriting Crimsonland v1.9.93 in Python + raylib.
 
 ## Analysis
 
-- [Binary Analysis](binary-analysis.md) — Tracking
-- [Entrypoint trace](entrypoint.md) — In progress
-- [Boot / Loading Sequence](boot-sequence.md) — In progress
-- [Detangling notes](detangling.md) — In progress
-- [Progress metrics](metrics.md) — Tracking
+- [Binary Analysis](binary-analysis.md)
+- [Entrypoint trace](entrypoint.md)
+- [Boot / Loading Sequence](boot-sequence.md)
+- [Detangling notes](detangling.md)
+- [Progress metrics](metrics.md)
 
 ## Rewrite (Python + raylib)
 
-- [Rewrite overview](rewrite/index.md) — Draft
-- [Rewrite tech tree](rewrite/tech-tree.md) — Tracking
+- [Rewrite overview](rewrite/index.md)
+- [Rewrite tech tree](rewrite/tech-tree.md)
 
 ## Crimsonland.exe
 
-- [Crimsonland.exe overview (by concern)](crimsonland-exe/index.md) — Draft
+- [Crimsonland.exe overview (by concern)](crimsonland-exe/index.md)
 - [State machine](crimsonland-exe/state-machine.md)
 - [Frame loop](crimsonland-exe/frame-loop.md)
 - [Gameplay glue](crimsonland-exe/gameplay.md)
@@ -38,59 +38,59 @@ Reverse engineering and rewriting Crimsonland v1.9.93 in Python + raylib.
 
 ## Formats & pipeline
 
-- [Formats overview](formats/index.md) — Completed
-- [PAQ archives](formats/paq.md) — Completed
-- [JAZ textures](formats/jaz.md) — Completed
-- [Fonts](formats/fonts.md) — Draft
-- [Sprite atlas cutting](atlas.md) — In progress
-- [Extraction pipeline](pipeline.md) — In progress
-- [Python executable spec](python-executable-spec.md) — Draft
-- [Save/status file (game.cfg)](save-status-format.md) — Draft
-- [Config blob (crimson.cfg)](crimson-cfg.md) — Draft
+- [Formats overview](formats/index.md)
+- [PAQ archives](formats/paq.md)
+- [JAZ textures](formats/jaz.md)
+- [Fonts](formats/fonts.md)
+- [Sprite atlas cutting](atlas.md)
+- [Extraction pipeline](pipeline.md)
+- [Python executable spec](python-executable-spec.md)
+- [Save/status file (game.cfg)](save-status-format.md)
+- [Config blob (crimson.cfg)](crimson-cfg.md)
 
 ## Data tables & IDs
 
-- [Weapon table](weapon-table.md) — In progress
-- [Weapon ID map](weapon-id-map.md) — Draft
-- [UI weapon icons](ui-weapon-icons.md) — Tracking
-- [Perk ID map](perk-id-map.md) — Draft
-- [Bonus ID map](bonus-id-map.md) — Draft
-- [Game mode map](game-mode-map.md) — Draft
-- [Quest builders](quest-builders.md) — High confidence
-- [Audio](audio.md) — Tracking
+- [Weapon table](weapon-table.md)
+- [Weapon ID map](weapon-id-map.md)
+- [UI weapon icons](ui-weapon-icons.md)
+- [Perk ID map](perk-id-map.md)
+- [Bonus ID map](bonus-id-map.md)
+- [Game mode map](game-mode-map.md)
+- [Quest builders](quest-builders.md)
+- [Audio](audio.md)
 
 ## Structs & pools
 
-- [Structs overview](structs/index.md) — Draft
-- [Player struct](structs/player.md) — Draft
-- [Creature struct](structs/creature.md) — Draft
-- [Projectile struct](structs/projectile.md) — Draft
-- [Effects pools](structs/effects.md) — Draft
+- [Structs overview](structs/index.md)
+- [Player struct](structs/player.md)
+- [Creature struct](structs/creature.md)
+- [Projectile struct](structs/projectile.md)
+- [Effects pools](structs/effects.md)
 
 ## Grim2D
 
-- [Grim2D overview](grim2d/index.md) — Draft
-- [Grim2D API vtable](grim2d/api.md) — Draft
-- [Grim2D API evidence](grim2d/api-evidence.md) — Draft
-- [Grim2D runtime validation](grim2d/runtime-validation.md) — Tracking
+- [Grim2D overview](grim2d/index.md)
+- [Grim2D API vtable](grim2d/api.md)
+- [Grim2D API evidence](grim2d/api-evidence.md)
+- [Grim2D runtime validation](grim2d/runtime-validation.md)
 
 ## Runtime tooling
 
-- [Frida](frida/index.md) — In progress
-- [WinDbg / CDB](windbg/index.md) — In progress
+- [Frida](frida/index.md)
+- [WinDbg / CDB](windbg/index.md)
 
 ## Gameplay notes
 
-- [UI elements](ui-elements.md) — Draft
-- [In-game console](console.md) — Draft
-- [Secrets](secrets/index.md) — Draft
+- [UI elements](ui-elements.md)
+- [In-game console](console.md)
+- [Secrets](secrets/index.md)
 
 ## Tracking & meta
 
-- [Work status model](work-status.md) — Draft
-- [Worklog](worklog.md) — Tracking
-- [Build provenance and hashes](provenance.md) — Tracking
-- [Third-party libraries](third-party-libs.md) — Tracking
+- [Work status model](work-status.md)
+- [Worklog](worklog.md)
+- [Build provenance and hashes](provenance.md)
+- [Third-party libraries](third-party-libs.md)
 
 ## Cheatsheets
 
