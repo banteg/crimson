@@ -3,15 +3,33 @@
 // Logs creature_spawn_template calls with heading vs. nearest player angle.
 //
 // Usage (attach):
-//   frida -n crimsonland.exe -l Z:\spawn_heading_probe.js
+//   frida -n crimsonland.exe -l C:\share\frida\spawn_heading_probe.js
 // Usage (spawn):
-//   frida -f "C:\\Crimsonland\\crimsonland.exe" -l Z:\spawn_heading_probe.js
+//   frida -f "C:\\Crimsonland\\crimsonland.exe" -l C:\share\frida\spawn_heading_probe.js
 //   # then in REPL: %resume
+
+const DEFAULT_LOG_DIR = 'C:\\share\\frida';
+
+function getLogDir() {
+  try {
+    return Process.env.CRIMSON_FRIDA_DIR || DEFAULT_LOG_DIR;
+  } catch (_) {
+    return DEFAULT_LOG_DIR;
+  }
+}
+
+function joinPath(base, leaf) {
+  if (!base) return leaf;
+  const sep = base.endsWith('\\') || base.endsWith('/') ? '' : '\\';
+  return base + sep + leaf;
+}
+
+const LOG_DIR = getLogDir();
 
 const CONFIG = {
   exeName: 'crimsonland.exe',
   linkBase: ptr('0x00400000'),
-  logPath: 'Z:\\crimsonland_spawn_heading.jsonl',
+  logPath: joinPath(LOG_DIR, 'crimsonland_spawn_heading.jsonl'),
   logMode: 'append', // append | truncate
   logToConsole: true,
   maxEvents: 0, // 0 = unlimited

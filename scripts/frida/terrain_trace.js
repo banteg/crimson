@@ -1,10 +1,28 @@
 "use strict";
 
+const DEFAULT_LOG_DIR = "C:\\share\\frida";
+
+function getLogDir() {
+    try {
+        return Process.env.CRIMSON_FRIDA_DIR || DEFAULT_LOG_DIR;
+    } catch (_) {
+        return DEFAULT_LOG_DIR;
+    }
+}
+
+function joinPath(base, leaf) {
+    if (!base) return leaf;
+    const sep = base.endsWith("\\") || base.endsWith("/") ? "" : "\\";
+    return base + sep + leaf;
+}
+
+const LOG_DIR = getLogDir();
+
 const GAME_MODULE = "crimsonland.exe";
 const GRIM_MODULE = "grim.dll";
 
 const OUT_PATHS = [
-    "Z:\\terrain_trace.jsonl",
+    joinPath(LOG_DIR, "terrain_trace.jsonl"),
 ];
 
 const EXE_RVAS = {

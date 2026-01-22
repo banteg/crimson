@@ -3,10 +3,28 @@
 // Logs the quest entry count for "The Spanking Of The Dead" builder.
 //
 // Usage (attach):
-//   frida -n crimsonland.exe -l Z:\\quest_spanking_count.js
+//   frida -n crimsonland.exe -l C:\\share\\frida\\quest_spanking_count.js
 // Usage (spawn):
-//   frida -f "C:\\Crimsonland\\crimsonland.exe" -l Z:\\quest_spanking_count.js
+//   frida -f "C:\\Crimsonland\\crimsonland.exe" -l C:\\share\\frida\\quest_spanking_count.js
 //   # then in REPL: %resume
+
+const DEFAULT_LOG_DIR = 'C:\\share\\frida';
+
+function getLogDir() {
+  try {
+    return Process.env.CRIMSON_FRIDA_DIR || DEFAULT_LOG_DIR;
+  } catch (_) {
+    return DEFAULT_LOG_DIR;
+  }
+}
+
+function joinPath(base, leaf) {
+  if (!base) return leaf;
+  const sep = base.endsWith('\\') || base.endsWith('/') ? '' : '\\';
+  return base + sep + leaf;
+}
+
+const LOG_DIR = getLogDir();
 
 const CONFIG = {
   exeName: 'crimsonland.exe',
@@ -15,7 +33,7 @@ const CONFIG = {
     name: 'quest_build_the_spanking_of_the_dead',
     va: 0x004358a0,
   },
-  logPath: 'Z:\\crimsonland_quest_counts.jsonl',
+  logPath: joinPath(LOG_DIR, 'crimsonland_quest_counts.jsonl'),
   logMode: 'append', // append | truncate
   logToConsole: true,
   stopAfterFirst: true,

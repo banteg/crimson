@@ -20,13 +20,15 @@ How to run (Frida hook script):
 
 1) Game path (this VM): `C:\Crimsonland\crimsonland.exe`.
 2) Copy `scripts/frida/grim_hooks.js` and `scripts/frida/grim_hooks_targets.json`
-   into the VM shared drive (host path `~/utm/win11/share/`, mapped as `Z:\`).
+   into the VM share `C:\share\frida` (host path `~/utm/win11/share/frida/`).
+   Optional: set `CRIMSON_FRIDA_DIR` to change the log directory or
+   `CRIMSON_FRIDA_CONFIG` to point at a different `grim_hooks_targets.json`.
 
 3) Optionally edit `grim_hooks_targets.json` to swap the target list.
 4) Launch the game, then attach by process name (recommended):
 
    ```text
-   frida -n crimsonland.exe -l Z:\grim_hooks.js
+   frida -n crimsonland.exe -l C:\share\frida\grim_hooks.js
    ```
 
    Spawned runs on Win11 ARM64 caused empty textures and a crash before the main menu
@@ -35,20 +37,20 @@ How to run (Frida hook script):
 5) To capture the very beginning, spawn instead of attach:
 
    ```text
-   frida -f "C:\Crimsonland\crimsonland.exe" -l Z:\grim_hooks.js
+   frida -f "C:\Crimsonland\crimsonland.exe" -l C:\share\frida\grim_hooks.js
    ```
 
    If the process pauses on spawn, type `%resume` in the Frida REPL.
 
-6) Logs are written to `Z:\grim_hits.log` by default. If JSON logging is enabled
-   (default in `grim_hooks_targets.json`), events also stream to `Z:\grim_hits.jsonl`.
+6) Logs are written to `C:\share\frida\grim_hits.log` by default. If JSON logging is enabled
+   (default in `grim_hooks_targets.json`), events also stream to `C:\share\frida\grim_hits.jsonl`.
 
 Artifacts:
 
 - Hook script: `scripts/frida/grim_hooks.js`
 - Target list: `scripts/frida/grim_hooks_targets.json`
-- Log: `Z:\grim_hits.log`
-- JSONL log: `Z:\grim_hits.jsonl`
+- Log: `C:\share\frida\grim_hits.log`
+- JSONL log: `C:\share\frida\grim_hits.jsonl`
 - `grim.dll` base at runtime: `0x0A990000`
 
 Observed hits (counts at end of run):

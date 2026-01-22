@@ -1,8 +1,8 @@
 {
   "options": {
     "module": "grim.dll",
-    "out_path": "Z:\\grim_hits.log",
-    "json_path": "Z:\\grim_hits.jsonl",
+    "out_path": "C:\\share\\frida\\grim_hits.log",
+    "json_path": "C:\\share\\frida\\grim_hits.jsonl",
     "log_json": true,
     "console_log": false,
     "log_mode": "truncate",

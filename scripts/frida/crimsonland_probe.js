@@ -9,16 +9,34 @@
 //   outside the current "known" map.
 //
 // Usage (attach):
-//   frida -p <pid> -l Z:\\crimsonland_probe.js
+//   frida -p <pid> -l C:\\share\\frida\\crimsonland_probe.js
 // Usage (spawn early):
-//   frida -f "C:\\Crimsonland\\crimsonland.exe" -l Z:\\crimsonland_probe.js
+//   frida -f "C:\\Crimsonland\\crimsonland.exe" -l C:\\share\\frida\\crimsonland_probe.js
 //   # then in REPL: %resume
 //
-// Tip: edit CONFIG.logPath to a writable location in the VM.
+// Tip: set CRIMSON_FRIDA_DIR to control log output (default C:\\share\\frida).
+
+const DEFAULT_LOG_DIR = 'C:\\share\\frida';
+
+function getLogDir() {
+  try {
+    return Process.env.CRIMSON_FRIDA_DIR || DEFAULT_LOG_DIR;
+  } catch (_) {
+    return DEFAULT_LOG_DIR;
+  }
+}
+
+function joinPath(base, leaf) {
+  if (!base) return leaf;
+  const sep = base.endsWith('\\') || base.endsWith('/') ? '' : '\\';
+  return base + sep + leaf;
+}
+
+const LOG_DIR = getLogDir();
 
 const CONFIG = {
   // Where to write JSONL logs. If opening fails, we fall back to console-only.
-  logPath: 'Z:\\crimsonland_frida_hits.jsonl',
+  logPath: joinPath(LOG_DIR, 'crimsonland_frida_hits.jsonl'),
   logMode: 'truncate', // truncate | append
 
   // If true, also send() every event to the host.

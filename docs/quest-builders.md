@@ -132,7 +132,7 @@ including creature labels from `src/crimson/spawn_templates.py`.
 
 - The Spanking Of The Dead (5.2) uses 132 (0x84) entries; validated on 2026-01-19
   with `scripts/frida/quest_spanking_count.js`, which writes to
-  `Z:\crimsonland_quest_counts.jsonl` (copied into `artifacts/frida/share/`).
+  `C:\share\frida\crimsonland_quest_counts.jsonl` (copied into `artifacts/frida/share/`).
 
 - Runtime quest-build capture on 2026-01-19 (`scripts/frida/quest_build_dump.js`,
   output summarized in `analysis/frida/quest_builds_summary.json`) matches the Python

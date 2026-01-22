@@ -11,7 +11,9 @@ and `analysis/ghidra/maps/data_map.json` after review.
 
 ## 1) Collect runtime logs
 
-Copy the scripts into the VM share (host path `~/utm/win11/share/`, mapped as `Z:\`):
+Copy the scripts into the VM share `C:\share\frida` (WSL path `/mnt/c/share/frida`).
+You can override the output directory with `CRIMSON_FRIDA_DIR`. For `grim_hooks.js`,
+set `CRIMSON_FRIDA_CONFIG` to point at a different `grim_hooks_targets.json`.
 
 - `scripts/frida/grim_hooks.js`
 - `scripts/frida/grim_hooks_targets.json`
@@ -20,19 +22,19 @@ Copy the scripts into the VM share (host path `~/utm/win11/share/`, mapped as `Z
 Attach by process name (spawn caused empty textures + crash on 2026-01-18):
 
 ```text
-frida -n crimsonland.exe -l Z:\grim_hooks.js
+frida -n crimsonland.exe -l C:\share\frida\grim_hooks.js
 ```
 
 In a separate terminal (or a second run), attach the probe script:
 
 ```text
-frida -n crimsonland.exe -l Z:\crimsonland_probe.js
+frida -n crimsonland.exe -l C:\share\frida\crimsonland_probe.js
 ```
 
 Default logs written by the scripts:
 
-- `Z:\grim_hits.jsonl`
-- `Z:\crimsonland_frida_hits.jsonl`
+- `C:\share\frida\grim_hits.jsonl`
+- `C:\share\frida\crimsonland_frida_hits.jsonl`
 
 ## 2) Copy logs into the repo
 
@@ -40,8 +42,8 @@ Store raw logs under `analysis/frida/raw/`:
 
 ```bash
 mkdir -p analysis/frida/raw
-cp /Users/banteg/utm/win11/share/grim_hits.jsonl analysis/frida/raw/
-cp /Users/banteg/utm/win11/share/crimsonland_frida_hits.jsonl analysis/frida/raw/
+cp /mnt/c/share/frida/grim_hits.jsonl analysis/frida/raw/
+cp /mnt/c/share/frida/crimsonland_frida_hits.jsonl analysis/frida/raw/
 ```
 
 ## 3) Reduce logs into evidence

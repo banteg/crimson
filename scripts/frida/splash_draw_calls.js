@@ -1,9 +1,27 @@
 "use strict";
 
+const DEFAULT_LOG_DIR = "C:\\share\\frida";
+
+function getLogDir() {
+    try {
+        return Process.env.CRIMSON_FRIDA_DIR || DEFAULT_LOG_DIR;
+    } catch (_) {
+        return DEFAULT_LOG_DIR;
+    }
+}
+
+function joinPath(base, leaf) {
+    if (!base) return leaf;
+    const sep = base.endsWith("\\") || base.endsWith("/") ? "" : "\\";
+    return base + sep + leaf;
+}
+
+const LOG_DIR = getLogDir();
+
 const GRIM_MODULE = "grim.dll";
 
 const OUT_PATHS = [
-    "Z:\\splash_draw_calls.jsonl",
+    joinPath(LOG_DIR, "splash_draw_calls.jsonl"),
 ];
 
 const GRIM_RVAS = {

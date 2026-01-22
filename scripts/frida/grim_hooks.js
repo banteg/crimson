@@ -1,12 +1,36 @@
 'use strict';
 
-const CONFIG_PATH = "Z:\\grim_hooks_targets.json";
+const DEFAULT_LOG_DIR = "C:\\share\\frida";
+
+function getEnv(name) {
+  try {
+    return Process.env[name];
+  } catch (_) {
+    return null;
+  }
+}
+
+function joinPath(base, leaf) {
+  if (!base) return leaf;
+  const sep = base.endsWith("\\") || base.endsWith("/") ? "" : "\\";
+  return base + sep + leaf;
+}
+
+const LOG_DIR_OVERRIDE = getEnv("CRIMSON_FRIDA_DIR");
+const LOG_DIR = LOG_DIR_OVERRIDE || DEFAULT_LOG_DIR;
+
+function applyLogDir(path, fallbackName) {
+  const name = path ? path.split(/[\\/]/).pop() : fallbackName;
+  return joinPath(LOG_DIR, name);
+}
+
+const CONFIG_PATH = getEnv("CRIMSON_FRIDA_CONFIG") || joinPath(LOG_DIR, "grim_hooks_targets.json");
 
 const DEFAULT_CONFIG = {
   options: {
     module: "grim.dll",
-    out_path: "Z:\\grim_hits.log",
-    json_path: "Z:\\grim_hits.jsonl",
+    out_path: joinPath(LOG_DIR, "grim_hits.log"),
+    json_path: joinPath(LOG_DIR, "grim_hits.jsonl"),
     log_json: true,
     console_log: false,
     log_mode: "truncate",
@@ -536,6 +560,13 @@ function summarizeCounts(countsMap, limit) {
 
 const config = loadConfig(CONFIG_PATH);
 const options = config.options;
+if (LOG_DIR_OVERRIDE) {
+  options.out_path = applyLogDir(options.out_path, "grim_hits.log");
+  options.json_path = applyLogDir(options.json_path, "grim_hits.jsonl");
+} else {
+  if (!options.out_path) options.out_path = applyLogDir(null, "grim_hits.log");
+  if (!options.json_path) options.json_path = applyLogDir(null, "grim_hits.jsonl");
+}
 const targets = config.targets;
 const moduleName = options.module;
 const traceDefaults = options.trace || { mode: "callsite", first: 1, callsite_limit: 3 };

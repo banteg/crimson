@@ -2,6 +2,24 @@
 
 // Unlocks/cycles secret weapons for Player 0.
 
+const DEFAULT_LOG_DIR = 'C:\\share\\frida';
+
+function getLogDir() {
+  try {
+    return Process.env.CRIMSON_FRIDA_DIR || DEFAULT_LOG_DIR;
+  } catch (_) {
+    return DEFAULT_LOG_DIR;
+  }
+}
+
+function joinPath(base, leaf) {
+  if (!base) return leaf;
+  const sep = base.endsWith('\\') || base.endsWith('/') ? '' : '\\';
+  return base + sep + leaf;
+}
+
+const LOG_DIR = getLogDir();
+
 const CONFIG = {
   // Secret weapon IDs to cycle through (in-code ids; 0 is dummy/none)
   // 33: RayGun
@@ -15,7 +33,7 @@ const CONFIG = {
   // 53: Nuke Launcher
   secretWeaponIds: [33, 41, 42, 43, 44, 50, 51, 52, 53],
   cycleIntervalMs: 5000,
-  logPath: 'Z:\\crimsonland_unlock_secrets.jsonl',
+  logPath: joinPath(LOG_DIR, 'crimsonland_unlock_secrets.jsonl'),
 };
 
 const LINK_BASE = {

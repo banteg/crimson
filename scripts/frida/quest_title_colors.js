@@ -1,11 +1,29 @@
 "use strict";
 
+const DEFAULT_LOG_DIR = "C:\\share\\frida";
+
+function getLogDir() {
+    try {
+        return Process.env.CRIMSON_FRIDA_DIR || DEFAULT_LOG_DIR;
+    } catch (_) {
+        return DEFAULT_LOG_DIR;
+    }
+}
+
+function joinPath(base, leaf) {
+    if (!base) return leaf;
+    const sep = base.endsWith("\\") || base.endsWith("/") ? "" : "\\";
+    return base + sep + leaf;
+}
+
+const LOG_DIR = getLogDir();
+
 const GRIM_MODULE = "grim.dll";
 const EXE_MODULE = "crimsonland.exe";
 const EXE_GRIM_INTERFACE_RVA = 0x8083c;
 
 const OUT_PATHS = [
-    "Z:\\quest_title_colors.jsonl",
+    joinPath(LOG_DIR, "quest_title_colors.jsonl"),
 ];
 
 // grim.dll RVAs (1.9.93)

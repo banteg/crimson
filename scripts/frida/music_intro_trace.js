@@ -4,15 +4,33 @@
 // sfx_play_exclusive / sfx_mute_all calls.
 //
 // Usage (attach):
-//   frida -n crimsonland.exe -l Z:\music_intro_trace.js
+//   frida -n crimsonland.exe -l C:\share\frida\music_intro_trace.js
 // Usage (spawn):
-//   frida -f "C:\\Crimsonland\\crimsonland.exe" -l Z:\music_intro_trace.js
+//   frida -f "C:\\Crimsonland\\crimsonland.exe" -l C:\share\frida\music_intro_trace.js
 //   # then in REPL: %resume
+
+const DEFAULT_LOG_DIR = 'C:\\share\\frida';
+
+function getLogDir() {
+  try {
+    return Process.env.CRIMSON_FRIDA_DIR || DEFAULT_LOG_DIR;
+  } catch (_) {
+    return DEFAULT_LOG_DIR;
+  }
+}
+
+function joinPath(base, leaf) {
+  if (!base) return leaf;
+  const sep = base.endsWith('\\') || base.endsWith('/') ? '' : '\\';
+  return base + sep + leaf;
+}
+
+const LOG_DIR = getLogDir();
 
 const CONFIG = {
   exeName: 'crimsonland.exe',
   linkBase: ptr('0x00400000'),
-  logPaths: ['Z:\\music_intro_trace.jsonl'],
+  logPaths: [joinPath(LOG_DIR, 'music_intro_trace.jsonl')],
   logToConsole: true,
   maxFrames: 12,
 };

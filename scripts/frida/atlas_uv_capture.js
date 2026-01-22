@@ -4,10 +4,28 @@
 // Focus: particles atlas cutting (grid8 vs grid16, clamps, manual UVs).
 //
 // Usage (attach):
-//   frida -n crimsonland.exe -l Z:\atlas_uv_capture.js
+//   frida -n crimsonland.exe -l C:\share\frida\atlas_uv_capture.js
 // Usage (spawn):
-//   frida -f "C:\\Crimsonland\\crimsonland.exe" -l Z:\atlas_uv_capture.js
+//   frida -f "C:\\Crimsonland\\crimsonland.exe" -l C:\share\frida\atlas_uv_capture.js
 //   # then in REPL: %resume
+
+const DEFAULT_LOG_DIR = 'C:\\share\\frida';
+
+function getLogDir() {
+  try {
+    return Process.env.CRIMSON_FRIDA_DIR || DEFAULT_LOG_DIR;
+  } catch (_) {
+    return DEFAULT_LOG_DIR;
+  }
+}
+
+function joinPath(base, leaf) {
+  if (!base) return leaf;
+  const sep = base.endsWith('\\') || base.endsWith('/') ? '' : '\\';
+  return base + sep + leaf;
+}
+
+const LOG_DIR = getLogDir();
 
 const CONFIG = {
   exeName: 'crimsonland.exe',
@@ -15,7 +33,7 @@ const CONFIG = {
   exeLinkBase: ptr('0x00400000'),
   grimLinkBase: ptr('0x10000000'),
 
-  logPath: 'Z:\\crimsonland_atlas_uv.jsonl',
+  logPath: joinPath(LOG_DIR, 'crimsonland_atlas_uv.jsonl'),
   logMode: 'append', // append | truncate
   logToConsole: false,
 

@@ -3,15 +3,33 @@
 // Logs quest builder metadata + spawn entries whenever a quest builder runs.
 //
 // Usage (attach):
-//   frida -n crimsonland.exe -l Z:\quest_build_dump.js
+//   frida -n crimsonland.exe -l C:\share\frida\quest_build_dump.js
 // Usage (spawn):
-//   frida -f "C:\\Crimsonland\\crimsonland.exe" -l Z:\quest_build_dump.js
+//   frida -f "C:\\Crimsonland\\crimsonland.exe" -l C:\share\frida\quest_build_dump.js
 //   # then in REPL: %resume
+
+const DEFAULT_LOG_DIR = 'C:\\share\\frida';
+
+function getLogDir() {
+  try {
+    return Process.env.CRIMSON_FRIDA_DIR || DEFAULT_LOG_DIR;
+  } catch (_) {
+    return DEFAULT_LOG_DIR;
+  }
+}
+
+function joinPath(base, leaf) {
+  if (!base) return leaf;
+  const sep = base.endsWith('\\') || base.endsWith('/') ? '' : '\\';
+  return base + sep + leaf;
+}
+
+const LOG_DIR = getLogDir();
 
 const CONFIG = {
   exeName: 'crimsonland.exe',
   linkBase: ptr('0x00400000'),
-  logPath: 'Z:\\crimsonland_quest_builds.jsonl',
+  logPath: joinPath(LOG_DIR, 'crimsonland_quest_builds.jsonl'),
   logMode: 'append', // append | truncate
   logToConsole: true,
   dumpEntries: true,

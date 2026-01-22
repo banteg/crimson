@@ -6,7 +6,7 @@
 // and capture arguments/returns in one pass while running mods.
 //
 // Usage (attach):
-//   frida -n crimsonland.exe -l Z:\\mod_api_probe.js
+//   frida -n crimsonland.exe -l C:\\share\\frida\\mod_api_probe.js
 //
 // Recommended runtime flow:
 //   - Start Crimsonland normally.
@@ -15,8 +15,26 @@
 //
 // Output: JSONL written to CONFIG.logPath.
 
+const DEFAULT_LOG_DIR = 'C:\\share\\frida';
+
+function getLogDir() {
+  try {
+    return Process.env.CRIMSON_FRIDA_DIR || DEFAULT_LOG_DIR;
+  } catch (_) {
+    return DEFAULT_LOG_DIR;
+  }
+}
+
+function joinPath(base, leaf) {
+  if (!base) return leaf;
+  const sep = base.endsWith('\\') || base.endsWith('/') ? '' : '\\';
+  return base + sep + leaf;
+}
+
+const LOG_DIR = getLogDir();
+
 const CONFIG = {
-  logPath: 'Z:\\crimsonland_mod_api.jsonl',
+  logPath: joinPath(LOG_DIR, 'crimsonland_mod_api.jsonl'),
   logMode: 'truncate', // truncate | append
   logToConsole: false,
   sendToHost: false,

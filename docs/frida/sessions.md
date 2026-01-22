@@ -7,7 +7,7 @@ Use this format to capture what we wanted, what actually happened, and what we l
 - **Date:**
 - **Build / platform:**
 - **Scripts:** `grim_hooks.js`, `crimsonland_probe.js`
-- **Attach method:** `frida -n crimsonland.exe -l Z:\...`
+- **Attach method:** `frida -n crimsonland.exe -l C:\share\frida\...`
 - **Artifacts:** JSONL logs + reducer outputs
 
 ### Wants (pre-run)
@@ -36,7 +36,7 @@ Timeline of what happened and when (relative timestamps are fine).
 - **Date:** 2026-01-18
 - **Build / platform:** Win11 ARM64 (UTM), Crimsonland v1.9.93
 - **Scripts:** `grim_hooks.js`, `crimsonland_probe.js`
-- **Attach method:** `frida -n crimsonland.exe -l Z:\...`
+- **Attach method:** `frida -n crimsonland.exe -l C:\share\frida\...`
 - **Artifacts:** `analysis/frida/raw/*.jsonl`, `analysis/frida/*summary*.json`
 
 ### Wants (pre-run)
@@ -149,7 +149,7 @@ Based on the video provided, here is the timeline of events.
 - **Date:** 2026-01-18
 - **Build / platform:** Win11 ARM64 (UTM), Crimsonland v1.9.93
 - **Scripts:** `grim_hooks.js`, `crimsonland_probe.js`
-- **Attach method:** `frida -n crimsonland.exe -l Z:\grim_hooks.js` + `frida -n crimsonland.exe -l Z:\crimsonland_probe.js`
+- **Attach method:** `frida -n crimsonland.exe -l C:\share\frida\grim_hooks.js` + `frida -n crimsonland.exe -l C:\share\frida\crimsonland_probe.js`
 - **Artifacts:** `analysis/frida/raw/*.jsonl`, `analysis/frida/*summary*.json`
 
 ### Wants (pre-run)
@@ -193,7 +193,7 @@ Short run to main menu only (no gameplay). Both hooks attached; the game stayed 
 - **Date:** 2026-01-18
 - **Build / platform:** Win11 ARM64 (UTM), Crimsonland v1.9.93
 - **Scripts:** `grim_hooks.js`, `crimsonland_probe.js`
-- **Attach method:** `frida -n crimsonland.exe -l Z:\grim_hooks.js` + `frida -n crimsonland.exe -l Z:\crimsonland_probe.js`
+- **Attach method:** `frida -n crimsonland.exe -l C:\share\frida\grim_hooks.js` + `frida -n crimsonland.exe -l C:\share\frida\crimsonland_probe.js`
 - **Artifacts:** `analysis/frida/raw/*.jsonl`, `analysis/frida/*summary*.json`
 
 ### Wants (pre-run)
@@ -237,7 +237,7 @@ Single Quest run (one level), then quest results screen. Both hooks attached for
 - **Date:** 2026-01-18
 - **Build / platform:** Win11 ARM64 (UTM), Crimsonland v1.9.93
 - **Scripts:** `grim_hooks.js`, `crimsonland_probe.js`
-- **Attach method:** `frida -n crimsonland.exe -l Z:\grim_hooks.js` + `frida -n crimsonland.exe -l Z:\crimsonland_probe.js`
+- **Attach method:** `frida -n crimsonland.exe -l C:\share\frida\grim_hooks.js` + `frida -n crimsonland.exe -l C:\share\frida\crimsonland_probe.js`
 - **Artifacts:** `analysis/frida/raw/*.jsonl`, `analysis/frida/*summary*.json`
 
 ### Wants (pre-run)
@@ -273,7 +273,7 @@ Short session with a small amount of gameplay. One bonus pickup, then low-health
 - **Date:** 2026-01-18
 - **Build / platform:** Win11 ARM64 (UTM), Crimsonland v1.9.93
 - **Scripts:** `grim_hooks.js`, `crimsonland_probe.js`
-- **Attach method:** `frida -n crimsonland.exe -l Z:\grim_hooks.js` + `frida -n crimsonland.exe -l Z:\crimsonland_probe.js`
+- **Attach method:** `frida -n crimsonland.exe -l C:\share\frida\grim_hooks.js` + `frida -n crimsonland.exe -l C:\share\frida\crimsonland_probe.js`
 - **Artifacts:** `analysis/frida/raw/*.jsonl`, `analysis/frida/*summary*.json`
 
 ### Wants (pre-run)
@@ -308,7 +308,7 @@ Short gameplay segment with one bonus pickup and a low-health event.
 - **Date:** 2026-01-18
 - **Build / platform:** Win11 ARM64 (UTM), Crimsonland v1.9.93
 - **Scripts:** `grim_hooks.js`, `crimsonland_probe.js`
-- **Attach method:** `frida -n crimsonland.exe -l Z:\grim_hooks.js` + `frida -n crimsonland.exe -l Z:\crimsonland_probe.js`
+- **Attach method:** `frida -n crimsonland.exe -l C:\share\frida\grim_hooks.js` + `frida -n crimsonland.exe -l C:\share\frida\crimsonland_probe.js`
 - **Artifacts:** `analysis/frida/raw/*.jsonl`, `analysis/frida/*summary*.json`
 
 ### Wants (pre-run)
