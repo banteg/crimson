@@ -63,7 +63,6 @@ class GroundView:
         self._quests: list[QuestDefinition] = []
         self._quest_index = 0
         self._decal_rng = CrtRand(0xC0FFEE)
-        self._terrain_step = 5
         self._terrain_seed: int | None = None
 
     def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
@@ -122,22 +121,6 @@ class GroundView:
 
     def update(self, dt: float) -> None:
         speed = 240.0
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_ONE):
-            self._terrain_step = 1
-            self._regenerate_terrain()
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_TWO):
-            self._terrain_step = 2
-            self._regenerate_terrain()
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_THREE):
-            self._terrain_step = 3
-            self._regenerate_terrain()
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_FOUR):
-            self._terrain_step = 4
-            self._regenerate_terrain()
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_FIVE):
-            self._terrain_step = 5
-            self._regenerate_terrain()
-
         if rl.is_key_down(rl.KeyboardKey.KEY_A):
             self._camera_x += speed * dt
         if rl.is_key_down(rl.KeyboardKey.KEY_D):
@@ -152,10 +135,7 @@ class GroundView:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT):
             self._quest_index = (self._quest_index + 1) % max(1, len(self._quests))
             self._apply_quest()
-        if (
-            self._terrain_step == 5
-            and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
-        ):
+        if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
             self._stamp_blood()
 
     def draw(self) -> None:
@@ -168,15 +148,8 @@ class GroundView:
             self._draw_ui_text("Ground renderer not initialized.", 24, 24, UI_ERROR_COLOR)
             return
         self._renderer.draw(self._camera_x, self._camera_y)
-        step_label = {
-            1: "clear",
-            2: "+base stamps",
-            3: "+overlay stamps",
-            4: "+detail stamps",
-            5: "+decals",
-        }.get(self._terrain_step, "unknown")
         self._draw_ui_text(
-            f"1-5: step ({step_label})  Left/Right: change level  WASD: pan  LMB: stamp blood (step 5)",
+            "Left/Right: change level  WASD: pan  LMB: stamp blood",
             24,
             24,
             UI_TEXT_COLOR,
@@ -184,7 +157,7 @@ class GroundView:
         )
         if self._assets is not None and self._assets.particles is None:
             self._draw_ui_text(
-                "Note: game/particles.png missing; stamping is disabled.",
+                "Note: game/particles.png missing; blood stamping disabled.",
                 24,
                 44,
                 UI_HINT_COLOR,
@@ -251,21 +224,11 @@ class GroundView:
         self._terrain_seed = self._quest_seed(quest.level)
         self._regenerate_terrain(reset_camera=True)
 
-    def _layers_for_step(self, step: int) -> int:
-        if step <= 1:
-            return 0
-        if step == 2:
-            return 1
-        if step == 3:
-            return 2
-        return 3
-
     def _regenerate_terrain(self, *, reset_camera: bool = False) -> None:
         renderer = self._renderer
         if renderer is None:
             return
-        layers = self._layers_for_step(self._terrain_step)
-        renderer.generate_partial(seed=self._terrain_seed, layers=layers)
+        renderer.generate_partial(seed=self._terrain_seed, layers=3)
         if reset_camera:
             self._camera_x = 0.0
             self._camera_y = 0.0
