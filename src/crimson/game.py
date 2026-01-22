@@ -7,6 +7,7 @@ import datetime as dt
 import faulthandler
 import math
 import random
+import shutil
 import traceback
 
 import pyray as rl
@@ -152,6 +153,9 @@ LOGO_REF_HOLD_END = 10.0
 LOGO_REF_OUT_END = 11.0
 DEBUG_LOADING_HOLD_ENV = "CRIMSON_DEBUG_LOADING_HOLD_SECONDS"
 DEMO_MODE_ENV = "CRIMSON_IS_DEMO"
+CRIMSON_PAQ_NAME = "crimson.paq"
+MUSIC_PAQ_NAME = "music.paq"
+SFX_PAQ_NAME = "sfx.paq"
 
 
 def _debug_loading_hold_seconds() -> float:
@@ -1043,6 +1047,82 @@ class GameLoopView:
         self._boot.close()
 
 
+def _score_assets_dir(path: Path) -> tuple[int, str]:
+    score = 0
+    if (path / CRIMSON_PAQ_NAME).is_file():
+        score += 10
+    if (path / MUSIC_PAQ_NAME).is_file():
+        score += 5
+    if (path / SFX_PAQ_NAME).is_file():
+        score += 1
+    return score, path.name
+
+
+def _auto_detect_game_assets_dir() -> Path | None:
+    try:
+        repo_root = Path(__file__).resolve().parents[2]
+    except Exception:
+        repo_root = Path.cwd()
+
+    root = repo_root / "game_bins" / "crimsonland"
+    if not root.is_dir():
+        return None
+
+    best: Path | None = None
+    best_key: tuple[int, str] | None = None
+    for candidate in root.iterdir():
+        if not candidate.is_dir():
+            continue
+        key = _score_assets_dir(candidate)
+        if key[0] == 0:
+            continue
+        if best is None or (best_key is not None and key > best_key):
+            best = candidate
+            best_key = key
+    return best
+
+
+def _copy_missing_assets(assets_dir: Path, console: ConsoleState) -> None:
+    assets_dir.mkdir(parents=True, exist_ok=True)
+
+    wanted = (CRIMSON_PAQ_NAME, MUSIC_PAQ_NAME, SFX_PAQ_NAME)
+    missing = [name for name in wanted if not (assets_dir / name).is_file()]
+    if not missing:
+        return
+
+    source_dir = _auto_detect_game_assets_dir()
+    if source_dir is None:
+        console.log.log(f"assets: missing {', '.join(missing)}")
+        console.log.log("assets: no game_bins source found for auto-copy")
+        return
+
+    for name in missing:
+        src = source_dir / name
+        dst = assets_dir / name
+        if dst.is_file():
+            continue
+        if not src.is_file():
+            console.log.log(f"assets: missing {name} (source missing)")
+            continue
+        try:
+            if src.resolve() == dst.resolve():
+                continue
+        except Exception:
+            pass
+        try:
+            shutil.copy2(src, dst)
+        except Exception as exc:
+            console.log.log(f"assets: failed to copy {name}: {exc}")
+            continue
+        console.log.log(f"assets: copied {name} from {source_dir}")
+
+
+def _resolve_assets_dir(config: GameConfig) -> Path:
+    if config.assets_dir is not None:
+        return config.assets_dir
+    return config.base_dir
+
+
 def run_game(config: GameConfig) -> None:
     base_dir = config.base_dir
     base_dir.mkdir(parents=True, exist_ok=True)
@@ -1055,7 +1135,7 @@ def run_game(config: GameConfig) -> None:
     height = cfg.screen_height if config.height is None else config.height
     rng = random.Random(config.seed)
     console = create_console(base_dir)
-    assets_dir = config.assets_dir if config.assets_dir is not None else base_dir
+    assets_dir = _resolve_assets_dir(config)
     try:
         register_boot_commands(console)
         register_core_cvars(console, width, height)
@@ -1063,6 +1143,12 @@ def run_game(config: GameConfig) -> None:
         console.log.log(
             f"config: {cfg.screen_width}x{cfg.screen_height} windowed={cfg.windowed_flag}"
         )
+        console.log.log(f"assets: {assets_dir}")
+        _copy_missing_assets(assets_dir, console)
+        if not (assets_dir / CRIMSON_PAQ_NAME).is_file():
+            console.log.log(f"assets: missing {CRIMSON_PAQ_NAME} (textures will not load)")
+        if not (assets_dir / MUSIC_PAQ_NAME).is_file():
+            console.log.log(f"assets: missing {MUSIC_PAQ_NAME}")
         console.log.log(f"commands: {len(console.commands)} registered")
         console.log.log(f"cvars: {len(console.cvars)} registered")
         console.exec_line("exec autoexec.txt")

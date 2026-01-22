@@ -8,7 +8,7 @@ Code lives in `src/crimson/` and is exercised via the `crimson` CLI.
 
 ## How to run (current)
 
-- `uv run crimson game` (boot + splash/logo + menu scaffold)
+- `uv run crimson game` (boot + splash/logo + menu scaffold; auto-copies missing `.paq` assets from `game_bins/`)
 - `uv run crimson view <name>` (debug views)
 - `uv run crimson quests 1.1` (quest spawn dump)
 - `uv run crimson entrypoint` (print boot plan)
