@@ -156,11 +156,27 @@ def _basename(path):
     return os.path.basename(path).lower()
 
 
+def _ida_parse_decl_flags():
+    # Prefer silent parsing in batch runs if the constant exists.
+    return int(getattr(ida_typeinf, "PT_SIL", 0) or 0) | int(getattr(ida_typeinf, "PT_SILENT", 0) or 0)
+
+
+def _normalize_signature(signature):
+    sig = (signature or "").replace("\r", "").strip()
+    if not sig:
+        return ""
+    # IDA's parser expects a full C declaration terminated with ';'.
+    if not sig.endswith(";"):
+        sig += ";"
+    return sig
+
+
 def _apply_type_signature(ea, signature):
-    if not signature:
+    sig = _normalize_signature(signature)
+    if not sig:
         return False
     tinfo = ida_typeinf.tinfo_t()
-    ok = ida_typeinf.parse_decl(tinfo, None, signature, 0)
+    ok = ida_typeinf.parse_decl(tinfo, None, sig, _ida_parse_decl_flags())
     if not ok:
         return False
     try:
