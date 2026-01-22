@@ -1,6 +1,13 @@
 {
   "entries": [
     {
+      "address": "0x0046f3e4",
+      "comment": "Mod API vtable used by mod_api_context (clAPI_t virtuals; see cl_mod_sdk_v1/ClMod.h).",
+      "name": "mod_api_vtable",
+      "program": "crimsonland.exe",
+      "type": "mod_api_vtbl_t"
+    },
+    {
       "address": "0x00471140",
       "comment": "Float screen width used for UI/layout (set from config_screen_width).",
       "name": "screen_width_f",

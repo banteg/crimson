@@ -576,17 +576,283 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0040dfa0",
+    "name": "mod_api_init",
+    "signature": "void mod_api_init(void)",
+    "comment": "initializes the mod API context (writes mod_api_context.vtable = &mod_api_vtable at 0x0046f3e4; see cl_mod_sdk_v1/ClMod.h)",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0040e000",
-    "name": "FUN_0040e000",
-    "signature": "int FUN_0040e000(char *arg1)",
-    "comment": "[binja] int32_t sub_40e000(char* arg1)"
+    "name": "mod_api_core_printf",
+    "signature": "void mod_api_core_printf(const char *fmt, ...)",
+    "comment": "mod API vtable 0x00: clAPI_t::CORE_Printf (writes to OutputDebugStringA)",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e040",
+    "name": "mod_api_core_get_var",
+    "signature": "mod_var_t * mod_api_core_get_var(const char *id)",
+    "comment": "mod API vtable 0x04: clAPI_t::CORE_GetVar (returns a 3-pointer var_t view: id/stringValue/floatValue)",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e080",
+    "name": "mod_api_core_del_var",
+    "signature": "unsigned char mod_api_core_del_var(const char *id)",
+    "comment": "mod API vtable 0x08: clAPI_t::CORE_DelVar",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e0a0",
+    "name": "mod_api_core_execute",
+    "signature": "void mod_api_core_execute(const char *string)",
+    "comment": "mod API vtable 0x0c: clAPI_t::CORE_Execute",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e0c0",
+    "name": "mod_api_core_add_command",
+    "signature": "void mod_api_core_add_command(const char *id, void (*cmd)(void))",
+    "comment": "mod API vtable 0x10: clAPI_t::CORE_AddCommand",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e0e0",
+    "name": "mod_api_core_del_command",
+    "signature": "unsigned char mod_api_core_del_command(const char *id)",
+    "comment": "mod API vtable 0x14: clAPI_t::CORE_DelCommand",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e100",
+    "name": "mod_api_core_get_extension",
+    "signature": "void * mod_api_core_get_extension(const char *ext)",
+    "comment": "mod API vtable 0x18: clAPI_t::CORE_GetExtension (handles \"grimgfx\", \"grimsfx\", \"IDirect3D8\")",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e1f0",
+    "name": "mod_api_gfx_clear",
+    "signature": "void mod_api_gfx_clear(float r, float g, float b, float a)",
+    "comment": "mod API vtable 0x1c: clAPI_t::GFX_Clear (bridges to grim_clear_color)",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e220",
+    "name": "mod_api_gfx_get_string_width",
+    "signature": "int mod_api_gfx_get_string_width(const char *string)",
+    "comment": "mod API vtable 0x20: clAPI_t::GFX_GetStringWidth (bridges to grim_measure_text_width)",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e240",
+    "name": "mod_api_gfx_printf",
+    "signature": "void mod_api_gfx_printf(float x, float y, const char *fmt, ...)",
+    "comment": "mod API vtable 0x24: clAPI_t::GFX_Printf",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e280",
+    "name": "mod_api_gfx_load_texture",
+    "signature": "int mod_api_gfx_load_texture(const char *filename)",
+    "comment": "mod API vtable 0x28: clAPI_t::GFX_LoadTexture (loads under mods\\\\ and prefixes CLM_)",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e2e0",
+    "name": "mod_api_gfx_free_texture",
+    "signature": "unsigned char mod_api_gfx_free_texture(int texId)",
+    "comment": "mod API vtable 0x2c: clAPI_t::GFX_FreeTexture (bridges to grim_destroy_texture)",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e300",
+    "name": "mod_api_gfx_set_texture",
+    "signature": "void mod_api_gfx_set_texture(int texId)",
+    "comment": "mod API vtable 0x30: clAPI_t::GFX_SetTexture (bridges to grim_bind_texture(handle, 0))",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e320",
+    "name": "mod_api_gfx_set_color",
+    "signature": "void mod_api_gfx_set_color(float r, float g, float b, float a)",
+    "comment": "mod API vtable 0x3c: clAPI_t::GFX_SetColor (bridges to grim_set_color)",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e350",
+    "name": "mod_api_gfx_set_subset",
+    "signature": "void mod_api_gfx_set_subset(float x1, float y1, float x2, float y2)",
+    "comment": "mod API vtable 0x40: clAPI_t::GFX_SetSubset (bridges to grim_set_uv)",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e380",
+    "name": "mod_api_gfx_set_texture_filter",
+    "signature": "void mod_api_gfx_set_texture_filter(int filter)",
+    "comment": "mod API vtable 0x34: clAPI_t::GFX_SetTextureFilter (bridges to grim_set_config_var(21, filter))",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e3a0",
+    "name": "mod_api_gfx_set_blend_mode",
+    "signature": "void mod_api_gfx_set_blend_mode(int src, int dst)",
+    "comment": "mod API vtable 0x38: clAPI_t::GFX_SetBlendMode (bridges to grim_set_config_var(19, src) and (20, dst))",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e3e0",
+    "name": "mod_api_gfx_begin",
+    "signature": "void mod_api_gfx_begin(void)",
+    "comment": "mod API vtable 0x44: clAPI_t::GFX_Begin (bridges to grim_begin_batch)",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e400",
+    "name": "mod_api_gfx_end",
+    "signature": "void mod_api_gfx_end(void)",
+    "comment": "mod API vtable 0x48: clAPI_t::GFX_End (bridges to grim_end_batch)",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e420",
+    "name": "mod_api_gfx_quad",
+    "signature": "void mod_api_gfx_quad(float x, float y, float w, float h)",
+    "comment": "mod API vtable 0x4c: clAPI_t::GFX_Quad (bridges to grim_draw_quad)",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e470",
+    "name": "mod_api_gfx_quad_rot",
+    "signature": "void mod_api_gfx_quad_rot(float x, float y, float w, float h, float a)",
+    "comment": "mod API vtable 0x50: clAPI_t::GFX_QuadRot",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e4c0",
+    "name": "mod_api_gfx_draw_quads",
+    "signature": "void mod_api_gfx_draw_quads(mod_vertex2_t *v, int numQuads)",
+    "comment": "mod API vtable 0x54: clAPI_t::GFX_DrawQuads",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e530",
+    "name": "mod_api_sfx_load_sample",
+    "signature": "int mod_api_sfx_load_sample(const char *filename)",
+    "comment": "mod API vtable 0x58: clAPI_t::SFX_LoadSample (loads under mods\\\\)",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e560",
+    "name": "mod_api_sfx_free_sample",
+    "signature": "unsigned char mod_api_sfx_free_sample(int sfxId)",
+    "comment": "mod API vtable 0x5c: clAPI_t::SFX_FreeSample",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e570",
+    "name": "mod_api_sfx_play_sample",
+    "signature": "void mod_api_sfx_play_sample(int sfxId, float pan, float volume)",
+    "comment": "mod API vtable 0x60: clAPI_t::SFX_PlaySample",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e5b0",
+    "name": "mod_api_sfx_load_tune",
+    "signature": "int mod_api_sfx_load_tune(const char *filename)",
+    "comment": "mod API vtable 0x64: clAPI_t::SFX_LoadTune (loads under mods\\\\)",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e5e0",
+    "name": "mod_api_sfx_free_tune",
+    "signature": "unsigned char mod_api_sfx_free_tune(int tuneId)",
+    "comment": "mod API vtable 0x68: clAPI_t::SFX_FreeTune",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e5f0",
+    "name": "mod_api_sfx_play_tune",
+    "signature": "void mod_api_sfx_play_tune(int tuneId)",
+    "comment": "mod API vtable 0x6c: clAPI_t::SFX_PlayTune",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e600",
+    "name": "mod_api_sfx_stop_tune",
+    "signature": "void mod_api_sfx_stop_tune(int tuneId)",
+    "comment": "mod API vtable 0x70: clAPI_t::SFX_StopTune",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e610",
+    "name": "mod_api_inp_get_pressed_char",
+    "signature": "char mod_api_inp_get_pressed_char(void)",
+    "comment": "mod API vtable 0x7c: clAPI_t::INP_GetPressedChar (bridges to grim_get_key_char)",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e620",
+    "name": "mod_api_inp_get_analog",
+    "signature": "float mod_api_inp_get_analog(int key)",
+    "comment": "mod API vtable 0x78: clAPI_t::INP_GetAnalog",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e660",
+    "name": "mod_api_inp_key_down",
+    "signature": "unsigned char mod_api_inp_key_down(int key)",
+    "comment": "mod API vtable 0x74: clAPI_t::INP_KeyDown (uses grim_is_key_active)",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0040e680",
+    "name": "mod_api_inp_get_key_name",
+    "signature": "char * mod_api_inp_get_key_name(int key)",
+    "comment": "mod API vtable 0x80: clAPI_t::INP_GetKeyName",
+    "create": true
   },
   {
     "program": "crimsonland.exe",
     "address": "0x0040e690",
-    "name": "FUN_0040e690",
-    "signature": "void FUN_0040e690(char *arg1)",
-    "comment": "[binja] void __stdcall sub_40e690(char* arg1)"
+    "name": "mod_api_cl_enter_menu",
+    "signature": "void mod_api_cl_enter_menu(const char *menu)",
+    "comment": "mod API vtable 0x84: clAPI_t::CL_EnterMenu (only handles \"game_pause\")",
+    "create": true
   },
   {
     "program": "crimsonland.exe",

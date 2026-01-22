@@ -291,8 +291,42 @@ typedef struct mod_info_t {
     char name[0x20];
     char author[0x20];
     float version;
-    unsigned int api_version;
+    unsigned int usesApiVersion;
 } mod_info_t;
+
+typedef struct mod_var_t {
+    char *id;
+    char *stringValue;
+    float *floatValue;
+} mod_var_t;
+
+typedef struct mod_vec2_t {
+    float x;
+    float y;
+} mod_vec2_t;
+
+typedef struct mod_vertex2_t {
+    mod_vec2_t pos;
+    mod_vec2_t zrhw;
+    unsigned int col;
+    mod_vec2_t tex;
+} mod_vertex2_t;
+
+typedef struct mod_key_config_t {
+    int up[2];
+    int down[2];
+    int left[2];
+    int right[2];
+    int fire[2];
+    int torsoLeft[2];
+    int torsoRight[2];
+    int joyAimAxisX[2];
+    int joyAimAxisY[2];
+    int joyMoveAxisX[2];
+    int joyMoveAxisY[2];
+    int levelUp;
+    int reload;
+} mod_key_config_t;
 
 typedef struct mod_api_vtbl_t mod_api_vtbl_t;
 typedef struct mod_api_t mod_api_t;
@@ -301,41 +335,68 @@ typedef struct mod_interface_vtbl_t mod_interface_vtbl_t;
 
 struct mod_api_t {
     mod_api_vtbl_t *vtable;
+    int version;
+    mod_key_config_t keyConfig;
 };
 
 struct mod_api_vtbl_t {
-    void (*api_log)(mod_api_t *self, const char *message);
-    void *(*api_find_cvar)(mod_api_t *self, const char *name);
-    void *pad0[5];
-    void (*api_fn_0x1c)(mod_api_t *self, float a, float b, float c, float d);
-    void *pad1[2];
-    int (*api_load_texture)(mod_api_t *self, const char *path);
-    void (*api_free_texture)(mod_api_t *self, int handle);
-    void *pad2[10];
-    int (*api_load_sound)(mod_api_t *self, const char *path);
-    void (*api_free_sound)(mod_api_t *self, int handle);
-    void *pad3[1];
-    int (*api_load_music)(mod_api_t *self, const char *path);
-    void (*api_free_music)(mod_api_t *self, int handle);
-    void *pad4[2];
-    unsigned char (*api_key_query)(mod_api_t *self, int key);
-    void *pad5[3];
-    void (*api_exec_command)(mod_api_t *self, const char *command);
+    void (*CORE_Printf)(mod_api_t *self, const char *fmt, ...);
+    mod_var_t *(*CORE_GetVar)(mod_api_t *self, const char *id);
+    unsigned char (*CORE_DelVar)(mod_api_t *self, const char *id);
+    void (*CORE_Execute)(mod_api_t *self, const char *string);
+    void (*CORE_AddCommand)(mod_api_t *self, const char *id, void (*cmd)(void));
+    unsigned char (*CORE_DelCommand)(mod_api_t *self, const char *id);
+    void *(*CORE_GetExtension)(mod_api_t *self, const char *ext);
+    void (*GFX_Clear)(mod_api_t *self, float r, float g, float b, float a);
+    int (*GFX_GetStringWidth)(mod_api_t *self, const char *string);
+    void (*GFX_Printf)(mod_api_t *self, float x, float y, const char *fmt, ...);
+    int (*GFX_LoadTexture)(mod_api_t *self, const char *filename);
+    unsigned char (*GFX_FreeTexture)(mod_api_t *self, int texId);
+    void (*GFX_SetTexture)(mod_api_t *self, int texId);
+    void (*GFX_SetTextureFilter)(mod_api_t *self, int filter);
+    void (*GFX_SetBlendMode)(mod_api_t *self, int src, int dst);
+    void (*GFX_SetColor)(mod_api_t *self, float r, float g, float b, float a);
+    void (*GFX_SetSubset)(mod_api_t *self, float x1, float y1, float x2, float y2);
+    void (*GFX_Begin)(mod_api_t *self);
+    void (*GFX_End)(mod_api_t *self);
+    void (*GFX_Quad)(mod_api_t *self, float x, float y, float w, float h);
+    void (*GFX_QuadRot)(mod_api_t *self, float x, float y, float w, float h, float a);
+    void (*GFX_DrawQuads)(mod_api_t *self, mod_vertex2_t *v, int numQuads);
+    int (*SFX_LoadSample)(mod_api_t *self, const char *filename);
+    unsigned char (*SFX_FreeSample)(mod_api_t *self, int sfxId);
+    void (*SFX_PlaySample)(mod_api_t *self, int sfxId, float pan, float volume);
+    int (*SFX_LoadTune)(mod_api_t *self, const char *filename);
+    unsigned char (*SFX_FreeTune)(mod_api_t *self, int tuneId);
+    void (*SFX_PlayTune)(mod_api_t *self, int tuneId);
+    void (*SFX_StopTune)(mod_api_t *self, int tuneId);
+    unsigned char (*INP_KeyDown)(mod_api_t *self, int key);
+    float (*INP_GetAnalog)(mod_api_t *self, int key);
+    char (*INP_GetPressedChar)(mod_api_t *self);
+    char *(*INP_GetKeyName)(mod_api_t *self, int key);
+    void (*CL_EnterMenu)(mod_api_t *self, const char *menu);
 };
 
 struct mod_interface_vtbl_t {
-    void (*on_enter)(mod_interface_t *self);
-    void (*on_exit)(mod_interface_t *self);
-    unsigned char (*on_update)(mod_interface_t *self, int frame_dt_ms);
+    unsigned char (*Init)(mod_interface_t *self);
+    void (*Shutdown)(mod_interface_t *self);
+    unsigned char (*Frame)(mod_interface_t *self, int frame_dt_ms);
 };
+
+typedef union mod_parms_t {
+    int reserved[256];
+    struct {
+        unsigned char drawMouseCursor;
+        unsigned char onPause;
+        unsigned char reserved0[0x1a];
+        unsigned char request_exit;
+        unsigned char reserved1[0x3e3];
+    } fields;
+} mod_parms_t;
 
 struct mod_interface_t {
     mod_interface_vtbl_t *vtable;
-    mod_api_t *context;
-    unsigned int flags;
-    unsigned char reserved0[0x18];
-    unsigned char request_exit;
-    unsigned char reserved1[0x3e3];
+    mod_api_t *cl;
+    mod_parms_t parms;
 };
 
 typedef struct highscore_record_t {
