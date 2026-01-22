@@ -18,7 +18,7 @@ TERRAIN_DETAIL_TINT = rl.Color(178, 178, 178, 153)
 TERRAIN_DENSITY_BASE = 800
 TERRAIN_DENSITY_OVERLAY = 0x23
 TERRAIN_DENSITY_DETAIL = 0x0F
-TERRAIN_DENSITY_SHIFT = 13
+TERRAIN_DENSITY_SHIFT = 19
 TERRAIN_ROTATION_MAX = 0x13A
 TERRAIN_TILE_SIZE = 256
 CRT_RAND_MULT = 214013
@@ -125,11 +125,10 @@ class GroundRenderer:
                 self.overlay, TERRAIN_OVERLAY_TINT, rng, TERRAIN_DENSITY_OVERLAY
             )
         if layers >= 3:
-            detail = self.overlay_detail or self.overlay
-            if detail is not None:
-                self._scatter_texture(
-                    detail, TERRAIN_DETAIL_TINT, rng, TERRAIN_DENSITY_DETAIL
-                )
+            # Original uses base texture for detail pass, not overlay
+            self._scatter_texture(
+                self.texture, TERRAIN_DETAIL_TINT, rng, TERRAIN_DENSITY_DETAIL
+            )
         rl.end_texture_mode()
         self._set_stamp_filters(point=False)
 
