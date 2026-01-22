@@ -318,9 +318,9 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00403370",
-    "name": "FUN_00403370",
-    "signature": "int FUN_00403370(void)",
-    "comment": "[binja] int32_t sub_403370()"
+    "name": "demo_purchase_interstitial_begin",
+    "signature": "void demo_purchase_interstitial_begin(void)",
+    "comment": "demo setup: activates the purchase/upsell interstitial (sets demo_time_limit_ms=10000 and demo_purchase_screen_active=1)"
   },
   {
     "program": "crimsonland.exe",

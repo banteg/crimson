@@ -74,6 +74,12 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004712f0",
+      "comment": "Demo/attract mode time limit in ms (used with quest_spawn_timeline to cycle demo variants and the upsell overlay).",
+      "name": "demo_time_limit_ms",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x004712fc",
       "comment": "Tutorial hint index used for secondary prompt overlay (increments when bonus object deactivates).",
       "name": "tutorial_hint_index",
@@ -940,6 +946,24 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00480851",
+      "comment": "Shareware/demo latch used to prevent repeated quit-redirect behavior; also set when opening the purchase URL.",
+      "name": "shareware_offer_seen_latch",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00480890",
+      "comment": "Demo purchase/upsell screen active flag; when set gameplay updates are skipped in state 9 and only the overlay renders.",
+      "name": "demo_purchase_screen_active",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00480894",
+      "comment": "Demo variant index (0..5) used by demo_mode_start to cycle demo setup variants (mod 6).",
+      "name": "demo_variant_index",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x004808a8",
       "comment": "Tutorial repeat spawn counter (stage 5 creature/bonus loop).",
       "name": "tutorial_repeat_spawn_count",
@@ -967,6 +991,12 @@
       "address": "0x004808b9",
       "comment": "Cached mouse button 0 state (from grim_is_mouse_button_down).",
       "name": "mouse_button_down",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004808bc",
+      "comment": "Demo upsell message index used by demo_purchase_screen_update to rotate the \"Want more...\" line (mod 5).",
+      "name": "demo_upsell_message_index",
       "program": "crimsonland.exe"
     },
     {
