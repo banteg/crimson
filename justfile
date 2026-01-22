@@ -31,9 +31,6 @@ font-sample:
     uv run paq font --assets-dir {{assets_dir}} --out artifacts/fonts/small_font_sample.png
 
 # Docs
-docs-all-pages:
-    uv run python scripts/gen_all_pages.py
-
 docs-map-progress:
     uv run python scripts/update_map_progress_docs.py
 
