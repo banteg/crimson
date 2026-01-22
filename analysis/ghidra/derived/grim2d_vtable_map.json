@@ -1574,8 +1574,8 @@
     "func_size": 52,
     "calling_convention": "unknown",
     "return_type": "void",
-    "param_count": 4,
-    "signature": "void grim_draw_text_mono_fmt(int * self, float x, float y, char * fmt)",
+    "param_count": 5,
+    "signature": "void grim_draw_text_mono_fmt(IGrim2D * self, float x, float y, char * fmt, ...)",
     "source_type": "DEFAULT"
   },
   {
@@ -1624,8 +1624,8 @@
     "func_size": 52,
     "calling_convention": "unknown",
     "return_type": "void",
-    "param_count": 3,
-    "signature": "void grim_draw_text_small_fmt(float x, float y, char * fmt)",
+    "param_count": 5,
+    "signature": "void grim_draw_text_small_fmt(IGrim2D * self, float x, float y, char * fmt, ...)",
     "source_type": "DEFAULT"
   },
   {

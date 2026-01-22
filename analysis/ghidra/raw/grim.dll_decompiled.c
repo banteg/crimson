@@ -409,7 +409,7 @@ LAB_10002631:
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* registers the window class and creates the main game window */
 
-int grim_window_create(void)
+BOOL grim_window_create(void)
 
 {
   HWND hWndParent;
@@ -417,8 +417,8 @@ int grim_window_create(void)
   int nWidth;
   int iVar1;
   int iVar2;
-  uint extraout_EAX;
-  WINBOOL WVar3;
+  uint uVar3;
+  WINBOOL WVar4;
   DWORD dwExStyle;
   DWORD dwStyle;
   HMENU hMenu;
@@ -477,15 +477,15 @@ int grim_window_create(void)
                                  nHeight,hWndParent,hMenu,hInstance,lpParam);
   if (DAT_1005d3f8 == (HWND)0x0) {
     grim_error_text = s_WIN__Could_not_create_the_main_w_100535b4;
-    grim_window_destroy();
-    return extraout_EAX & 0xffffff00;
+    uVar3 = grim_window_destroy();
+    return uVar3 & 0xffffff00;
   }
   ShowWindow(DAT_1005d3f8,1);
   UpdateWindow(DAT_1005d3f8);
   SetFocus(DAT_1005d3f8);
   ShowWindow(DAT_1005d3f8,1);
-  WVar3 = UpdateWindow(DAT_1005d3f8);
-  return CONCAT31((int3)((uint)WVar3 >> 8),1);
+  WVar4 = UpdateWindow(DAT_1005d3f8);
+  return CONCAT31((int3)((uint)WVar4 >> 8),1);
 }
 
 
@@ -494,9 +494,11 @@ int grim_window_create(void)
 
 /* posts quit and destroys the main window */
 
-void grim_window_destroy(void)
+BOOL grim_window_destroy(void)
 
 {
+  WINBOOL WVar1;
+  
   PostQuitMessage(0);
   if (DAT_1005d3f8 != (HWND)0x0) {
     DestroyWindow(DAT_1005d3f8);
@@ -504,8 +506,8 @@ void grim_window_destroy(void)
   if (DAT_1005d3fc != 0) {
     DestroyWindow(DAT_1005d3f8);
   }
-  UnregisterClassA(DAT_10059df0,DAT_10059ddc);
-  return;
+  WVar1 = UnregisterClassA(DAT_10059df0,DAT_10059ddc);
+  return WVar1;
 }
 
 
@@ -1251,15 +1253,14 @@ int grim_d3d_init(void)
   char *pcVar2;
   HRESULT HVar3;
   uint uVar4;
-  int iVar5;
-  uint extraout_EAX;
+  BOOL BVar5;
   undefined4 uVar6;
-  uint extraout_EAX_00;
   HRSRC pHVar7;
   HGLOBAL pvVar8;
   LPVOID pvVar9;
   int *piVar10;
-  undefined4 *puVar11;
+  int iVar11;
+  undefined4 *puVar12;
   D3DDISPLAYMODE DStack_43c;
   D3DADAPTER_IDENTIFIER8 DStack_42c;
   
@@ -1294,15 +1295,15 @@ int grim_d3d_init(void)
     }
     return uVar4 & 0xffffff00;
   }
-  iVar5 = grim_window_create();
+  BVar5 = grim_window_create();
   uVar6 = DAT_1005ceb8;
-  if ((char)iVar5 == '\0') {
-    return iVar5;
+  if ((char)BVar5 == '\0') {
+    return BVar5;
   }
-  puVar11 = &grim_present_width;
-  for (iVar5 = 0xd; iVar5 != 0; iVar5 = iVar5 + -1) {
-    *puVar11 = 0;
-    puVar11 = puVar11 + 1;
+  puVar12 = &grim_present_width;
+  for (iVar11 = 0xd; iVar11 != 0; iVar11 = iVar11 + -1) {
+    *puVar12 = 0;
+    puVar12 = puVar12 + 1;
   }
   _DAT_10059e04 = uVar6;
   if (DAT_1005cc08 != '\x01') {
@@ -1333,31 +1334,31 @@ int grim_d3d_init(void)
     grim_error_text = s_D3D__Could_not_set_the_requested_10053a04;
     MessageBoxA((HWND)0x0,s_D3D__Could_not_set_the_requested_10053a04,&DAT_10053824,0);
     FUN_10004280();
-    grim_window_destroy();
-    return extraout_EAX & 0xffffff00;
+    uVar4 = grim_window_destroy();
+    return uVar4 & 0xffffff00;
   }
   (*grim_d3d8->lpVtbl->GetDeviceCaps)(grim_d3d8,DAT_1005d3e8,DAT_1005b2b4,(D3DCAPS8 *)&DAT_1005a498)
   ;
   uVar6 = FUN_10004350();
   if ((char)uVar6 == '\0') {
     FUN_10004280();
-    grim_window_destroy();
-    return extraout_EAX_00 & 0xffffff00;
+    uVar4 = grim_window_destroy();
+    return uVar4 & 0xffffff00;
   }
-  puVar11 = &grim_texture_slots;
-  for (iVar5 = 0x100; iVar5 != 0; iVar5 = iVar5 + -1) {
-    *puVar11 = 0;
-    puVar11 = puVar11 + 1;
+  puVar12 = &grim_texture_slots;
+  for (iVar11 = 0x100; iVar11 != 0; iVar11 = iVar11 + -1) {
+    *puVar12 = 0;
+    puVar12 = puVar12 + 1;
   }
   if (grim_preferred_texture_format != (void *)0x0) {
-    iVar5 = grim_is_texture_format_supported((uint)grim_preferred_texture_format);
-    if ((char)iVar5 == '\0') {
+    iVar11 = grim_is_texture_format_supported((uint)grim_preferred_texture_format);
+    if ((char)iVar11 == '\0') {
       grim_preferred_texture_format = (void *)0x0;
     }
     else if (grim_preferred_texture_format != (void *)0x0) goto LAB_10004142;
   }
-  iVar5 = grim_select_texture_format();
-  if ((char)iVar5 == '\0') {
+  iVar11 = grim_select_texture_format();
+  if ((char)iVar11 == '\0') {
     grim_error_text = s_D3D__Could_not_find_any_compatib_100539d0;
     FUN_10004280();
     grim_window_destroy();
@@ -2907,48 +2908,47 @@ int grim_apply_config(void)
 int __fastcall grim_init_system(void)
 
 {
-  uint extraout_EAX;
-  uint extraout_EAX_00;
-  undefined4 *puVar1;
+  uint uVar1;
+  undefined4 *puVar2;
   int *in_ECX;
-  int iVar2;
-  undefined4 *puVar3;
+  int iVar3;
   undefined4 *puVar4;
+  undefined4 *puVar5;
   
-  puVar1 = &DAT_10059e3c;
-  for (iVar2 = 0x41; iVar2 != 0; iVar2 = iVar2 + -1) {
-    *puVar1 = 0;
-    puVar1 = puVar1 + 1;
+  puVar2 = &DAT_10059e3c;
+  for (iVar3 = 0x41; iVar3 != 0; iVar3 = iVar3 + -1) {
+    *puVar2 = 0;
+    puVar2 = puVar2 + 1;
   }
   _getcwd((char *)&DAT_10059e3c,0x104);
-  iVar2 = grim_d3d_init();
-  if ((char)iVar2 == '\0') {
-    return iVar2;
+  iVar3 = grim_d3d_init();
+  if ((char)iVar3 == '\0') {
+    return iVar3;
   }
   if ((DAT_1005cc48 == '\x01') && (grim_input_cached == '\0')) {
-    iVar2 = grim_mouse_init();
-    if ((char)iVar2 == '\0') {
+    iVar3 = grim_mouse_init();
+    if ((char)iVar3 == '\0') {
       grim_error_text = s_DI8__Could_not_initialize_mouse__10053bf4;
       grim_mouse_shutdown();
       FUN_10004280();
-      grim_window_destroy();
-      return extraout_EAX & 0xffffff00;
+      uVar1 = grim_window_destroy();
+      return uVar1 & 0xffffff00;
     }
   }
   if (DAT_1005cc38 == '\x01') {
-    iVar2 = grim_keyboard_init(DAT_1005d3f8);
-    if ((char)iVar2 == '\0') {
+    iVar3 = grim_keyboard_init(DAT_1005d3f8);
+    if ((char)iVar3 == '\0') {
       grim_error_text = s_DI8__Could_not_initialize_keyboa_10053bd0;
       grim_mouse_shutdown();
       grim_keyboard_shutdown();
       FUN_10004280();
-      grim_window_destroy();
-      return extraout_EAX_00 & 0xffffff00;
+      uVar1 = grim_window_destroy();
+      return uVar1 & 0xffffff00;
     }
   }
   if (DAT_1005cc68 == '\x01') {
-    iVar2 = grim_joystick_init(DAT_1005d3f8);
-    if ((char)iVar2 == '\0') {
+    iVar3 = grim_joystick_init(DAT_1005d3f8);
+    if ((char)iVar3 == '\0') {
       grim_error_text = s_DI8__Could_not_initialize_joysti_10053bac;
       DAT_1005cc68 = '\0';
     }
@@ -2958,17 +2958,17 @@ int __fastcall grim_init_system(void)
   (**(code **)(*in_ECX + 0x20))(0x15,2);
   _DAT_1005d0b4 = &DAT_1005d3f8;
   (**(code **)(*in_ECX + 0x20))(0x10);
-  puVar1 = (undefined4 *)FUN_10005ae0((byte *)s_load_smallFnt_dat_10053b8c);
-  if (puVar1 != (undefined4 *)0x0) {
-    puVar3 = puVar1;
-    puVar4 = &grim_font2_glyph_widths;
-    for (iVar2 = 0x40; iVar2 != 0; iVar2 = iVar2 + -1) {
-      *puVar4 = *puVar3;
-      puVar3 = puVar3 + 1;
+  puVar2 = (undefined4 *)FUN_10005ae0((byte *)s_load_smallFnt_dat_10053b8c);
+  if (puVar2 != (undefined4 *)0x0) {
+    puVar4 = puVar2;
+    puVar5 = &grim_font2_glyph_widths;
+    for (iVar3 = 0x40; iVar3 != 0; iVar3 = iVar3 + -1) {
+      *puVar5 = *puVar4;
       puVar4 = puVar4 + 1;
+      puVar5 = puVar5 + 1;
     }
   }
-  return CONCAT31((int3)((uint)puVar1 >> 8),1);
+  return CONCAT31((int3)((uint)puVar2 >> 8),1);
 }
 
 
@@ -5796,13 +5796,13 @@ void grim_draw_text_small(float x,float y,char *text)
 /* grim_draw_text_mono_fmt @ 10009940 */
 
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x140: printf-style wrapper around draw_text_mono */
+/* Grim2D vtable 0x140: printf-style wrapper around draw_text_mono (cdecl varargs, explicit self) */
 
-void grim_draw_text_mono_fmt(int *self,float x,float y,char *fmt)
+void grim_draw_text_mono_fmt(IGrim2D *self,float x,float y,char *fmt,...)
 
 {
   vsprintf(&grim_printf_buffer,fmt,&stack0x00000014);
-  (**(code **)(*self + 0x13c))(x,y,&grim_printf_buffer);
+  (*self->vtable->grim_draw_text_mono)(x,y,&grim_printf_buffer);
   return;
 }
 
@@ -5811,15 +5811,14 @@ void grim_draw_text_mono_fmt(int *self,float x,float y,char *fmt)
 /* grim_draw_text_small_fmt @ 10009980 */
 
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
-/* Grim2D vtable 0x148: formatted small-font text (vsprintf + vtable 0x144) */
+/* Grim2D vtable 0x148: formatted small-font text (cdecl varargs, explicit self; vsprintf + vtable
+   0x144) */
 
-void grim_draw_text_small_fmt(float x,float y,char *fmt)
+void grim_draw_text_small_fmt(IGrim2D *self,float x,float y,char *fmt,...)
 
 {
-  char *in_stack_00000010;
-  
-  vsprintf(&grim_printf_buffer_alt,in_stack_00000010,&stack0x00000014);
-  (**(code **)(*(int *)x + 0x144))(y,fmt,&grim_printf_buffer_alt);
+  vsprintf(&grim_printf_buffer_alt,fmt,&stack0x00000014);
+  (*self->vtable->grim_draw_text_small)(x,y,&grim_printf_buffer_alt);
   return;
 }
 
@@ -5828,8 +5827,9 @@ void grim_draw_text_small_fmt(float x,float y,char *fmt)
 /* GRIM__GetInterface @ 100099c0 */
 
 /* WARNING: Enum "_D3DFORMAT": Some values do not have unique names */
+/* export: constructs (singleton) Grim2D interface instance backed by grim_interface_vtable */
 
-undefined4 * GRIM__GetInterface(void)
+IGrim2D * GRIM__GetInterface(void)
 
 {
                     /* 0x99c0  1  GRIM__GetInterface */
@@ -5837,7 +5837,7 @@ undefined4 * GRIM__GetInterface(void)
   if (grim_d3d8_probe == (IDirect3D8 *)0x0) {
     grim_error_text = s_D3D__Could_not_init_DirectX_8_1__10053a60;
     MessageBoxA((HWND)0x0,s_D3D__Could_not_init_DirectX_8_1__10053a60,&DAT_10053824,0);
-    return (undefined4 *)0x0;
+    return (IGrim2D *)0x0;
   }
   (*grim_d3d8_probe->lpVtbl->Release)(grim_d3d8_probe);
   FUN_100052f0();
@@ -5847,21 +5847,21 @@ undefined4 * GRIM__GetInterface(void)
     return grim_interface_instance;
   }
   grim_interface_instance = (IGrim2D *)0x0;
-  return (undefined4 *)0x0;
+  return (IGrim2D *)0x0;
 }
 
 
 
-/* FUN_10009a20 @ 10009a20 */
+/* DllMain @ 10009a20 */
 
-/* [binja] int32_t __stdcall sub_10009a20(HINSTANCE arg1, int32_t arg2) */
+/* DLL entrypoint (process attach): caches module handle and loads dialog icon */
 
-int FUN_10009a20(HINSTANCE arg1,int arg2)
+BOOL DllMain(HINSTANCE hinstDLL,DWORD fdwReason,LPVOID lpvReserved)
 
 {
-  if (arg2 == 1) {
-    grim_module_handle = arg1;
-    DAT_10059778 = LoadIconA((HINSTANCE)arg1,(LPCSTR)0x72);
+  if (fdwReason == 1) {
+    grim_module_handle = hinstDLL;
+    DAT_10059778 = LoadIconA((HINSTANCE)hinstDLL,(LPCSTR)0x72);
   }
   return 1;
 }
@@ -6881,41 +6881,41 @@ int entry(HINSTANCE arg1,int arg2,int arg3)
 
 {
   int iVar1;
-  int iVar2;
+  BOOL BVar2;
   int iVar3;
   
   iVar1 = arg2;
-  iVar2 = DAT_1005db5c;
+  iVar3 = DAT_1005db5c;
   if (arg2 != 0) {
     if ((arg2 != 1) && (arg2 != 2)) goto LAB_1000aa31;
-    if ((DAT_1005dbc4 != (code *)0x0) && (iVar2 = (*DAT_1005dbc4)(arg1,arg2,arg3), iVar2 == 0)) {
+    if ((DAT_1005dbc4 != (code *)0x0) && (iVar3 = (*DAT_1005dbc4)(arg1,arg2,arg3), iVar3 == 0)) {
       return 0;
     }
-    iVar2 = FUN_1000a93e((int)arg1);
+    iVar3 = FUN_1000a93e((int)arg1);
   }
-  if (iVar2 == 0) {
+  if (iVar3 == 0) {
     return 0;
   }
 LAB_1000aa31:
-  iVar2 = FUN_10009a20(arg1,arg2);
+  BVar2 = DllMain(arg1,arg2,(LPVOID)arg3);
   if (arg2 == 1) {
-    if (iVar2 != 0) {
-      return iVar2;
+    if (BVar2 != 0) {
+      return BVar2;
     }
     FUN_1000a93e((int)arg1);
   }
   if ((arg2 != 0) && (arg2 != 3)) {
-    return iVar2;
+    return BVar2;
   }
   iVar3 = FUN_1000a93e((int)arg1);
-  arg2 = iVar2;
+  arg2 = BVar2;
   if (iVar3 == 0) {
     arg2 = 0;
   }
   if (arg2 != 0) {
     if (DAT_1005dbc4 != (code *)0x0) {
-      iVar2 = (*DAT_1005dbc4)(arg1,iVar1,arg3);
-      return iVar2;
+      iVar3 = (*DAT_1005dbc4)(arg1,iVar1,arg3);
+      return iVar3;
     }
     return arg2;
   }

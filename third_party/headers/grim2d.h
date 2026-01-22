@@ -90,9 +90,9 @@ struct IGrim2D_vtbl {
     /* 0x134 */ void (*grim_submit_vertices_transform_color)(float * verts, int count, float * offset, float * matrix, float * color);
     /* 0x138 */ void (*grim_draw_quad_points)(float x0, float y0, float x1, float y1, float x2, float y2, float x3, float y3);
     /* 0x13c */ void (*grim_draw_text_mono)(float x, float y, char * text);
-    /* 0x140 */ void (*grim_draw_text_mono_fmt)(int * self, float x, float y, char * fmt);
+    /* 0x140 */ void (*grim_draw_text_mono_fmt)(IGrim2D * self, float x, float y, char * fmt, ...);
     /* 0x144 */ void (*grim_draw_text_small)(float x, float y, char * text);
-    /* 0x148 */ void (*grim_draw_text_small_fmt)(float x, float y, char * fmt);
+    /* 0x148 */ void (*grim_draw_text_small_fmt)(IGrim2D * self, float x, float y, char * fmt, ...);
     /* 0x14c */ int (*grim_measure_text_width)(char * text);
 };
 

@@ -42,7 +42,7 @@
   {
     "name": "grim_window_create",
     "address": "10002680",
-    "signature": "int grim_window_create(void)",
+    "signature": "BOOL grim_window_create(void)",
     "external": false,
     "calls_total": 12,
     "calls": ["AdjustWindowRectEx", "CreateWindowExA", "GetDesktopWindow", "GetModuleHandleA", "GetStockObject", "GetSystemMetrics", "LoadCursorA", "RegisterClassExA", "SetFocus", "ShowWindow", "UpdateWindow", "grim_window_destroy"]
@@ -50,7 +50,7 @@
   {
     "name": "grim_window_destroy",
     "address": "10002880",
-    "signature": "void grim_window_destroy(void)",
+    "signature": "BOOL grim_window_destroy(void)",
     "external": false,
     "calls_total": 3,
     "calls": ["DestroyWindow", "PostQuitMessage", "UnregisterClassA"]
@@ -1010,7 +1010,7 @@
   {
     "name": "grim_draw_text_mono_fmt",
     "address": "10009940",
-    "signature": "void grim_draw_text_mono_fmt(int * self, float x, float y, char * fmt)",
+    "signature": "void grim_draw_text_mono_fmt(IGrim2D * self, float x, float y, char * fmt, ...)",
     "external": false,
     "calls_total": 1,
     "calls": ["vsprintf"]
@@ -1018,7 +1018,7 @@
   {
     "name": "grim_draw_text_small_fmt",
     "address": "10009980",
-    "signature": "void grim_draw_text_small_fmt(float x, float y, char * fmt)",
+    "signature": "void grim_draw_text_small_fmt(IGrim2D * self, float x, float y, char * fmt, ...)",
     "external": false,
     "calls_total": 1,
     "calls": ["vsprintf"]
@@ -1026,15 +1026,15 @@
   {
     "name": "GRIM__GetInterface",
     "address": "100099c0",
-    "signature": "undefined4 * GRIM__GetInterface(void)",
+    "signature": "IGrim2D * GRIM__GetInterface(void)",
     "external": false,
     "calls_total": 4,
     "calls": ["Direct3DCreate8", "FUN_100052f0", "MessageBoxA", "operator_new"]
   },
   {
-    "name": "FUN_10009a20",
+    "name": "DllMain",
     "address": "10009a20",
-    "signature": "int FUN_10009a20(HINSTANCE arg1, int arg2)",
+    "signature": "BOOL DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -1317,7 +1317,7 @@
     "signature": "int entry(HINSTANCE arg1, int arg2, int arg3)",
     "external": false,
     "calls_total": 2,
-    "calls": ["FUN_10009a20", "FUN_1000a93e"]
+    "calls": ["DllMain", "FUN_1000a93e"]
   },
   {
     "name": "__dllonexit",

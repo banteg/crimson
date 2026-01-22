@@ -66,7 +66,7 @@
     "program": "crimsonland.exe",
     "address": "0x004011f0",
     "name": "console_log_node_free",
-    "signature": "void * console_log_node_free(void *node, char free_self)",
+    "signature": "void console_log_node_free(char free_self)",
     "comment": "frees a console log node (text + next chain) and optionally frees the node"
   },
   {
@@ -143,21 +143,21 @@
     "program": "crimsonland.exe",
     "address": "0x004017a0",
     "name": "console_push_line",
-    "signature": "void console_push_line(void *console_state, char *line)",
+    "signature": "char console_push_line(char *line)",
     "comment": "pushes line into console queue"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00401870",
     "name": "console_printf",
-    "signature": "int console_printf(void *console_state, char *fmt, ...)",
+    "signature": "char console_printf(void *console_state, char *fmt, ...)",
     "comment": "formats then pushes line"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004018b0",
     "name": "console_set_open",
-    "signature": "void console_set_open(void *console_state, char open)",
+    "signature": "void console_set_open(char open)",
     "comment": "sets console_open_flag (console_state+0x28) and console_input_enabled (0x0047f4d4); flushes input via Grim2D vtable +0x4c"
   },
   {
@@ -171,7 +171,7 @@
     "program": "crimsonland.exe",
     "address": "0x00401940",
     "name": "console_exec_line",
-    "signature": "void console_exec_line(void *console_state, char *line)",
+    "signature": "char console_exec_line(char *line)",
     "comment": "executes a console command or cvar assignment from a line"
   },
   {
@@ -192,28 +192,28 @@
     "program": "crimsonland.exe",
     "address": "0x00402350",
     "name": "console_register_cvar",
-    "signature": "void * console_register_cvar(void *console_state, char *name, char *value)",
+    "signature": "void * console_register_cvar(char *name, char *value)",
     "comment": "registers or updates a console cvar entry (stores string + float value)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00402480",
     "name": "console_cvar_find",
-    "signature": "void * console_cvar_find(void *console_state, char *name)",
+    "signature": "void * console_cvar_find(char *name)",
     "comment": "finds a cvar entry by name"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004024e0",
     "name": "console_cvar_unregister",
-    "signature": "int console_cvar_unregister(void *console_state, char *name)",
+    "signature": "char console_cvar_unregister(char *name)",
     "comment": "removes a cvar entry by name"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00402530",
     "name": "console_command_unregister",
-    "signature": "int console_command_unregister(void *console_state, char *name)",
+    "signature": "char console_command_unregister(char *name)",
     "comment": "removes a console command entry by name"
   },
   {
@@ -227,28 +227,28 @@
     "program": "crimsonland.exe",
     "address": "0x00402630",
     "name": "console_cvar_autocomplete",
-    "signature": "char * console_cvar_autocomplete(void *console_state, char *prefix)",
+    "signature": "char * console_cvar_autocomplete(char *prefix)",
     "comment": "returns exact or prefix-matched cvar name"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004026e0",
     "name": "console_register_command",
-    "signature": "void console_register_command(void *console_state, char *name, void *handler)",
+    "signature": "void console_register_command(char *name, void *handler)",
     "comment": "registers a console command and handler"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00402750",
     "name": "console_command_find",
-    "signature": "void * console_command_find(void *console_state, char *name)",
+    "signature": "void * console_command_find(char *name)",
     "comment": "finds a console command entry by name"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004027b0",
     "name": "console_command_autocomplete",
-    "signature": "char * console_command_autocomplete(void *console_state, char *prefix)",
+    "signature": "char * console_command_autocomplete(char *prefix)",
     "comment": "returns exact or prefix-matched command name"
   },
   {
@@ -4609,14 +4609,14 @@
     "program": "grim.dll",
     "address": "0x10002680",
     "name": "grim_window_create",
-    "signature": "int grim_window_create(void)",
+    "signature": "BOOL grim_window_create(void)",
     "comment": "registers the window class and creates the main game window"
   },
   {
     "program": "grim.dll",
     "address": "0x10002880",
     "name": "grim_window_destroy",
-    "signature": "void grim_window_destroy(void)",
+    "signature": "BOOL grim_window_destroy(void)",
     "comment": "posts quit and destroys the main window"
   },
   {
@@ -5321,22 +5321,29 @@
     "program": "grim.dll",
     "address": "0x10009940",
     "name": "grim_draw_text_mono_fmt",
-    "signature": "void grim_draw_text_mono_fmt(int *self, float x, float y, char *fmt)",
-    "comment": "Grim2D vtable 0x140: printf-style wrapper around draw_text_mono"
+    "signature": "void grim_draw_text_mono_fmt(IGrim2D *self, float x, float y, char *fmt, ...)",
+    "comment": "Grim2D vtable 0x140: printf-style wrapper around draw_text_mono (cdecl varargs, explicit self)"
   },
   {
     "program": "grim.dll",
     "address": "0x10009980",
     "name": "grim_draw_text_small_fmt",
-    "signature": "void grim_draw_text_small_fmt(float x, float y, char *fmt)",
-    "comment": "Grim2D vtable 0x148: formatted small-font text (vsprintf + vtable 0x144)"
+    "signature": "void grim_draw_text_small_fmt(IGrim2D *self, float x, float y, char *fmt, ...)",
+    "comment": "Grim2D vtable 0x148: formatted small-font text (cdecl varargs, explicit self; vsprintf + vtable 0x144)"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x100099c0",
+    "name": "GRIM__GetInterface",
+    "signature": "IGrim2D * GRIM__GetInterface(void)",
+    "comment": "export: constructs (singleton) Grim2D interface instance backed by grim_interface_vtable"
   },
   {
     "program": "grim.dll",
     "address": "0x10009a20",
-    "name": "FUN_10009a20",
-    "signature": "int FUN_10009a20(HINSTANCE arg1, int arg2)",
-    "comment": "[binja] int32_t __stdcall sub_10009a20(HINSTANCE arg1, int32_t arg2)",
+    "name": "DllMain",
+    "signature": "BOOL DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)",
+    "comment": "DLL entrypoint (process attach): caches module handle and loads dialog icon",
     "create": false
   },
   {
