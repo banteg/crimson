@@ -28,7 +28,7 @@ Code lives in `src/crimson/` and is exercised via the `crimson` CLI.
 - Company logo sequence (10tons / Reflexive) with skip behavior.
 - Intro/theme music handoff.
 - Main menu layout + animation scaffold (tab/enter selection logging).
-- Demo/attract-mode scaffold (variants + simple sprite anim phases).
+- Demo/attract-mode scaffold (variants + simple sprite anim phases; **purchase/upsell screen is out of scope**).
 
 ### Assets + rendering
 
@@ -70,6 +70,7 @@ Available via `uv run crimson view <name>`:
 - No save/status integration in runtime flow yet.
 - SFX playback (non-music) is not wired.
 - Mode loops (Survival/Rush/Quest) are not implemented.
+- Demo purchase/upsell screen is intentionally skipped (storefront defunct).
 
 ## Roadmap
 

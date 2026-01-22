@@ -95,7 +95,7 @@ The relevant table indices are:
 | ---: | --- | --- |
 | 0 | `DAT_00487290` | Logo sign (`ui_signCrimson`) |
 | 1 | `DAT_004875a8` | Unused/mystery (participates in layout adjustments) |
-| 2 | `DAT_00488208` | Top item: `BUY NOW` (demo) or `MODS` (full) |
+| 2 | `DAT_00488208` | Top item: `BUY NOW` (demo) or `MODS` (full). **Rewrite note:** `BUY NOW` is out of scope. |
 | 3 | `DAT_004878c0` | `PLAY GAME` |
 | 4 | `DAT_00487bd8` | `OPTIONS` |
 | 5 | `DAT_00487ef0` | `STATISTICS` |
@@ -196,7 +196,7 @@ The menu labels are an 8-row atlas (row height = `1/8 = 0.125` in UV space):
 
 | Row | Label |
 | ---: | --- |
-| 0 | BUY NOW |
+| 0 | BUY NOW *(out of scope for rewrite)* |
 | 1 | PLAY GAME |
 | 2 | OPTIONS |
 | 3 | STATISTICS |

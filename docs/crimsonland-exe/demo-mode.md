@@ -15,7 +15,8 @@ The demo loop is useful for reimplementation because it exercises:
 - Gameplay state `9` (creatures/projectiles/players) without needing menu work.
 - A deterministic set of setup variants (`demo_setup_variant_*`).
 - A self-contained “upsell” overlay that drives a timer and transitions back to
-  menu state `0`.
+  menu state `0` (classic behavior; **out of scope for our rewrite**, since the
+  storefront is defunct).
 
 ## Entry points
 
@@ -59,7 +60,9 @@ In the per-frame dispatcher:
 
 This is why the demo cycle includes a “purchase interstitial” variant: it flips
 `demo_purchase_screen_active` to suppress gameplay and show only the upsell
-screen for a fixed time.
+screen for a fixed time. **In the rewrite, the interstitial + upsell overlay
+are intentionally skipped**; the loop cycles gameplay variants and returns to
+menu.
 
 ### Timing: `quest_spawn_timeline` + `demo_time_limit_ms`
 
@@ -163,7 +166,13 @@ The variants are small, deterministic setup functions that:
 - `demo_time_limit_ms = 10000`
 - `demo_purchase_screen_active = 1` (so the main loop skips gameplay and only renders the upsell overlay)
 
+**Rewrite note:** Out of scope (storefront defunct). The rewrite omits this
+variant and the upsell overlay entirely.
+
 ## Upsell overlay (`demo_purchase_screen_update` / `0x0040b740`)
+
+**Rewrite note:** Out of scope (storefront defunct). We only implement the demo
+loop; no purchase screen or "Buy Now" flow.
 
 This runs whenever `demo_mode_active != 0`:
 
