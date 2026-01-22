@@ -62,7 +62,7 @@ char sub_10001140()
 
 // grim_noop @ 0x10001160
 // debug stub (no-op)
-void nullsub_1()
+void grim_noop()
 {
   ;
 }
@@ -715,7 +715,7 @@ LRESULT sub_10001E90()
 
 // grim_config_dialog_proc @ 0x10002120
 // dialog procedure for the Grim2D config UI
-INT_PTR __stdcall sub_10002120(HWND hDlg, UINT a2, WPARAM a3, LPARAM a4)
+INT_PTR __stdcall grim_config_dialog_proc(HWND hDlg, UINT a2, WPARAM a3, LPARAM a4)
 {
   HWND v4; // eax
   INT_PTR result; // eax
@@ -900,7 +900,7 @@ INT_PTR __stdcall sub_10002120(HWND hDlg, UINT a2, WPARAM a3, LPARAM a4)
 
 // grim_window_create @ 0x10002680
 // registers the window class and creates the main game window
-char sub_10002680()
+char grim_window_create()
 {
   CHAR *ModuleHandleA; // eax
   HWND Window; // eax
@@ -987,7 +987,7 @@ char sub_10002680()
 
 // grim_window_destroy @ 0x10002880
 // posts quit and destroys the main window
-BOOL sub_10002880()
+BOOL grim_window_destroy()
 {
   HWND v0; // eax
 
@@ -1005,7 +1005,7 @@ BOOL sub_10002880()
 
 // grim_backup_textures @ 0x100028D0
 // backup texture surfaces before device reset
-char sub_100028D0()
+char grim_backup_textures()
 {
   int v1; // edi
   void **v2; // esi
@@ -1075,8 +1075,8 @@ LABEL_15:
       LOBYTE(v9) = 1;
       dword_1005D0F8 = v9;
       dword_1005D0FC = v10;
-      qword_1005D100 = v11;
-      MEMORY[0x1005D104] = v12;
+      dword_1005D100 = v11;
+      dword_1005D104 = v12;
       grim_noop();
       return 0;
     }
@@ -1103,7 +1103,7 @@ LABEL_14:
 
 // grim_restore_textures @ 0x10002B40
 // restore texture surfaces after device reset
-char sub_10002B40()
+char grim_restore_textures()
 {
   int v1; // edi
   void **v2; // esi
@@ -1187,8 +1187,8 @@ LABEL_20:
   byte_1005D810 = 0;
   grim_error_text = (int)aD3dUnableToRes;
   dword_1005D0FC = v10;
-  qword_1005D100 = v11;
-  MEMORY[0x1005D104] = v12;
+  dword_1005D100 = v11;
+  dword_1005D104 = v12;
   grim_noop();
   return 0;
 }
@@ -1278,8 +1278,8 @@ int sub_10002CF0()
             LOBYTE(v13) = 1;
             dword_1005D0F8 = v13;
             dword_1005D0FC = v14;
-            qword_1005D100 = v15;
-            MEMORY[0x1005D104] = v16;
+            dword_1005D100 = v15;
+            dword_1005D104 = v16;
           }
           ++v4;
           ++v5;
@@ -1327,7 +1327,7 @@ int sub_10002CF0()
 
 // FUN_10002f60 @ 0x10002F60
 // [binja] BOOL __fastcall sub_10002f60(void* arg1)
-int __thiscall sub_10002F60(HGDIOBJ *this)
+int __thiscall FUN_10002f60(HGDIOBJ *this)
 {
   int result; // eax
 
@@ -1342,7 +1342,7 @@ int __thiscall sub_10002F60(HGDIOBJ *this)
 
 // FUN_10002f80 @ 0x10002F80
 // [binja] uint32_t __fastcall sub_10002f80(void* arg1)
-char __thiscall sub_10002F80(int *this)
+char __thiscall FUN_10002f80(int *this)
 {
   DWORD Time; // eax
   int v3; // edx
@@ -1374,7 +1374,7 @@ char __thiscall sub_10002F80(int *this)
 
 // FUN_10002fc0 @ 0x10002FC0
 // [binja] int32_t __fastcall sub_10002fc0(char* arg1)
-char __thiscall sub_10002FC0(_DWORD *this)
+char __thiscall FUN_10002fc0(_DWORD *this)
 {
   LONG bottom; // eax
   struct tagRECT Rect; // [esp+Ch] [ebp-10h] BYREF
@@ -1403,7 +1403,7 @@ char __thiscall sub_10002FC0(_DWORD *this)
 
 // FUN_10003090 @ 0x10003090
 // [binja] int32_t sub_10003090()
-void __thiscall sub_10003090(int *this)
+void __thiscall FUN_10003090(int *this)
 {
   if ( FUN_10002f80(this) )
     grim_noop();
@@ -1501,8 +1501,8 @@ char sub_100030B0()
           LOBYTE(v20) = 1;
           dword_1005D0FC = v21;
           dword_1005D0F8 = v20;
-          qword_1005D100 = v22;
-          MEMORY[0x1005D104] = v23;
+          dword_1005D100 = v22;
+          dword_1005D104 = v23;
         }
         ++v10;
         ++v11;
@@ -1532,8 +1532,8 @@ char sub_100030B0()
               LOBYTE(v20) = 1;
               dword_1005D0FC = v21;
               dword_1005D0F8 = v20;
-              qword_1005D100 = v22;
-              MEMORY[0x1005D104] = v23;
+              dword_1005D100 = v22;
+              dword_1005D104 = v23;
             }
             ++v15;
             ++v16;
@@ -1987,7 +1987,7 @@ int sub_10003C00()
 
 // grim_d3d_init @ 0x10003E60
 // creates the Direct3D8 interface, configures display mode, and opens the window
-char sub_10003E60()
+char grim_d3d_init()
 {
   int v0; // eax
   char result; // al
@@ -2369,7 +2369,7 @@ int sub_10004520()
 
 // grim_is_texture_format_supported @ 0x100047F0
 // checks device support for a texture format
-bool __cdecl sub_100047F0(int a1)
+bool __cdecl grim_is_texture_format_supported(int a1)
 {
   return (*(int (__stdcall **)(int, WPARAM, int, int, _DWORD, int, int))(*(_DWORD *)grim_d3d8 + 40))(
            grim_d3d8,
@@ -2383,7 +2383,7 @@ bool __cdecl sub_100047F0(int a1)
 
 // grim_select_texture_format @ 0x10004830
 // chooses the first supported texture format
-char sub_10004830()
+char grim_select_texture_format()
 {
   if ( grim_is_texture_format_supported(21) )
   {
@@ -2490,7 +2490,7 @@ int sub_10004970()
 
 // grim_texture_init @ 0x10004A50
 // allocates/copies texture name and zeroes fields
-char **__thiscall sub_10004A50(char **this, const char *a2)
+char **__thiscall grim_texture_init(char **this, const char *a2)
 {
   char *v3; // edx
 
@@ -2505,7 +2505,7 @@ char **__thiscall sub_10004A50(char **this, const char *a2)
 
 // grim_texture_release @ 0x10004AB0
 // releases COM objects and frees texture name
-void __thiscall sub_10004AB0(void **this)
+void __thiscall grim_texture_release(void **this)
 {
   int v2; // eax
   int v3; // eax
@@ -2548,7 +2548,7 @@ bool __cdecl sub_10004B00(const char *a1, const char *a2)
 
 // FUN_10004b70 @ 0x10004B70
 // [binja] char* sub_10004b70(char* arg1, void** arg2, int32_t* arg3, int32_t* arg4)
-char *__cdecl sub_10004B70(int a1, int a2, unsigned int *a3, unsigned int *a4, unsigned int *a5)
+char *__cdecl FUN_10004b70(int a1, int a2, unsigned int *a3, unsigned int *a4, unsigned int *a5)
 {
   int *v5; // eax
   int v6; // edx
@@ -2742,7 +2742,7 @@ void __cdecl __noreturn sub_10004E90(int *a1)
 
 // grim_texture_load_file @ 0x10004EC0
 // loads texture data from file path
-char __thiscall sub_10004EC0(_DWORD *this, char *FileName)
+char __thiscall grim_texture_load_file(_DWORD *this, char *FileName)
 {
   int v4; // eax
   _DWORD *v5; // ebx
@@ -2888,14 +2888,14 @@ char __thiscall sub_10004EC0(_DWORD *this, char *FileName)
 
 // grim_texture_name_equals @ 0x10005110
 // compares stored texture name
-bool __thiscall sub_10005110(const char **this, const char *a2)
+bool __thiscall grim_texture_name_equals(const char **this, const char *a2)
 {
   return *this && a2 && strcmp(*this, a2) == 0;
 }
 
 // grim_find_texture_by_name @ 0x10005170
 // returns texture handle index for name
-int __cdecl sub_10005170(const char *a1)
+int __cdecl grim_find_texture_by_name(const char *a1)
 {
   int v1; // esi
   const char ***i; // edi
@@ -2913,7 +2913,7 @@ int __cdecl sub_10005170(const char *a1)
 
 // grim_find_free_texture_slot @ 0x100051C0
 // finds the first free texture slot
-int sub_100051C0()
+int grim_find_free_texture_slot()
 {
   int result; // eax
   void **v1; // ecx
@@ -2932,15 +2932,15 @@ int sub_100051C0()
 
 // grim_load_texture_internal @ 0x100051E0
 // allocates texture slot and loads file
-char __cdecl sub_100051E0(const char *a1, char *FileName)
+char __cdecl grim_load_texture_internal(const char *a1, char *FileName)
 {
-  int v2; // edi
+  int free_texture_slot; // edi
   char **v4; // eax
   char **v5; // esi
   int v6; // eax
 
-  v2 = grim_find_free_texture_slot();
-  if ( v2 == -1 )
+  free_texture_slot = grim_find_free_texture_slot();
+  if ( free_texture_slot == -1 )
   {
     grim_error_text = (int)aAllTextureSlot;
     return 0;
@@ -2955,9 +2955,9 @@ char __cdecl sub_100051E0(const char *a1, char *FileName)
     if ( grim_texture_load_file(v5, FileName) )
     {
       v6 = dword_1005305C;
-      *(&grim_texture_slots + v2) = v5;
-      if ( v2 > v6 )
-        dword_1005305C = v2;
+      *(&grim_texture_slots + free_texture_slot) = v5;
+      if ( free_texture_slot > v6 )
+        dword_1005305C = free_texture_slot;
       return 1;
     }
     else
@@ -3339,7 +3339,7 @@ int __cdecl sub_10005B80(const char *a1)
 
 // grim_set_key_char_buffer @ 0x10005C20
 // Grim2D vtable 0x54 (provisional): set input character ring buffer
-void *__stdcall sub_10005C20(void *a1, void *a2, int a3)
+void *__stdcall grim_set_key_char_buffer(void *a1, void *a2, int a3)
 {
   off_10053048 = a1;
   off_1005304C = a2;
@@ -3349,7 +3349,7 @@ void *__stdcall sub_10005C20(void *a1, void *a2, int a3)
 
 // grim_get_key_char @ 0x10005C40
 // Grim2D vtable 0x50 (provisional)
-int sub_10005C40()
+int grim_get_key_char()
 {
   int v0; // edx
   int result; // eax
@@ -3378,7 +3378,7 @@ int sub_10005C40()
 
 // grim_set_paused @ 0x10005C90
 // Grim2D vtable 0x4 (provisional): pause game tick update
-char __stdcall sub_10005C90(char a1)
+char __stdcall grim_set_paused(char a1)
 {
   grim_paused_flag = a1;
   return a1;
@@ -3386,14 +3386,14 @@ char __stdcall sub_10005C90(char a1)
 
 // grim_get_version @ 0x10005CA0
 // Grim2D vtable 0x8 (provisional): engine version constant
-double sub_10005CA0()
+double grim_get_version()
 {
   return 1.21;
 }
 
 // grim_check_device @ 0x10005CB0
 // Grim2D vtable 0xc: device creation test
-char __userpurge sub_10005CB0@<al>(int a1, const WCHAR *lpWideCharStr)
+char __userpurge grim_check_device@<al>(int a1, const WCHAR *lpWideCharStr)
 {
   int v3; // [esp+1Ch] [ebp-4h] BYREF
   int retaddr; // [esp+20h] [ebp+0h]
@@ -3421,7 +3421,7 @@ char __userpurge sub_10005CB0@<al>(int a1, const WCHAR *lpWideCharStr)
 
 // grim_apply_config @ 0x10005D40
 // Grim2D vtable 0x10: opens D3D config dialog and applies settings
-bool __thiscall sub_10005D40(void *this)
+bool __thiscall grim_apply_config(void *this)
 {
   int v2; // eax
   int v4; // [esp-10h] [ebp-14h]
@@ -3507,7 +3507,7 @@ bool __thiscall sub_10005D40(void *this)
 
 // grim_init_system @ 0x10005EB0
 // Grim2D vtable 0x14: Grim2D init; returns success
-char __thiscall sub_10005EB0(void *this)
+char __thiscall grim_init_system(void *this)
 {
   char result; // al
   char *v3; // eax
@@ -3569,7 +3569,7 @@ char __thiscall sub_10005EB0(void *this)
 
 // grim_shutdown @ 0x10005FF0
 // Grim2D vtable 0x18 (provisional): Grim2D shutdown
-BOOL sub_10005FF0()
+BOOL grim_shutdown()
 {
   sub_10005A40(String);
   grim_mouse_shutdown();
@@ -3581,7 +3581,7 @@ BOOL sub_10005FF0()
 
 // grim_apply_settings @ 0x10006020
 // Grim2D vtable 0x1c: apply Grim2D settings after config load
-char sub_10006020()
+char grim_apply_settings()
 {
   sub_10003C00();
   return 1;
@@ -3688,7 +3688,7 @@ char __cdecl sub_10006030(int a1)
 
 // grim_set_config_var @ 0x10006580
 // Grim2D vtable 0x20: config/state dispatcher; updates config tables, some IDs map to D3D render/texture state; extra args for some IDs
-char __stdcall sub_10006580(int a1, int a2, float a3, float a4, char *String)
+char __stdcall grim_set_config_var(int a1, int a2, float a3, float a4, char *String)
 {
   unsigned int v5; // eax
   int *v6; // ebx
@@ -3905,7 +3905,7 @@ LABEL_50:
 
 // grim_get_config_var @ 0x10006C30
 // Grim2D vtable 0x24 (provisional): fills 4 dwords for config entry (id 0..0x7f)
-int *__stdcall sub_10006C30(int *a1, unsigned int a2)
+int *__stdcall grim_get_config_var(int *a1, unsigned int a2)
 {
   int *v2; // ecx
 
@@ -3930,14 +3930,14 @@ int *__stdcall sub_10006C30(int *a1, unsigned int a2)
 
 // grim_get_error_text @ 0x10006CA0
 // Grim2D vtable 0x28: error string for MessageBox
-int sub_10006CA0()
+int grim_get_error_text()
 {
   return grim_error_text;
 }
 
 // grim_clear_color @ 0x10006CB0
 // Grim2D vtable 0x2c: packs RGBA into device clear color
-char __stdcall sub_10006CB0(float a1, float a2, float a3, float a4)
+char __stdcall grim_clear_color(float a1, float a2, float a3, float a4)
 {
   char result; // al
 
@@ -3963,7 +3963,7 @@ char __stdcall sub_10006CB0(float a1, float a2, float a3, float a4)
 
 // grim_set_render_target @ 0x10006D50
 // Grim2D vtable 0x30 (provisional): set render target; -1 resets
-char __stdcall sub_10006D50(int a1)
+char __stdcall grim_set_render_target(int a1)
 {
   int v2; // [esp-Ch] [ebp-14h]
 
@@ -4010,14 +4010,14 @@ char __stdcall sub_10006D50(int a1)
 
 // grim_get_time_ms @ 0x10006E40
 // Grim2D vtable 0x34: accumulated time (ms)
-int sub_10006E40()
+int grim_get_time_ms()
 {
   return grim_time_ms;
 }
 
 // grim_set_time_ms @ 0x10006E50
 // Grim2D vtable 0x38: set accumulated time
-int __stdcall sub_10006E50(int a1)
+int __stdcall grim_set_time_ms(int a1)
 {
   grim_time_ms = a1;
   return a1;
@@ -4025,7 +4025,7 @@ int __stdcall sub_10006E50(int a1)
 
 // grim_get_frame_dt @ 0x10006E60
 // Grim2D vtable 0x3c: clamped frame delta
-double sub_10006E60()
+double grim_get_frame_dt()
 {
   if ( grim_frame_dt <= 0.1 )
     return grim_frame_dt;
@@ -4035,7 +4035,7 @@ double sub_10006E60()
 
 // grim_get_fps @ 0x10006E90
 // Grim2D vtable 0x40: frames per second
-double sub_10006E90()
+double grim_get_fps()
 {
   return *(float *)&grim_fps;
 }
@@ -4088,7 +4088,7 @@ BOOL sub_10006F90()
 
 // grim_is_key_active @ 0x10006FE0
 // Grim2D vtable 0x80: routes key/mouse/joystick IDs
-char __thiscall sub_10006FE0(void *this, int a2)
+char __thiscall grim_is_key_active(void *this, int a2)
 {
   int i; // eax
   double v4; // st7
@@ -4173,7 +4173,7 @@ char __thiscall sub_10006FE0(void *this, int a2)
 
 // grim_get_config_float @ 0x100071B0
 // Grim2D vtable 0x84: config float lookup (scaled)
-double __thiscall sub_100071B0(void *this, int a2)
+double __thiscall grim_get_config_float(void *this, int a2)
 {
   double result; // st7
   int v3; // esi
@@ -4225,21 +4225,21 @@ double __thiscall sub_100071B0(void *this, int a2)
 
 // grim_get_slot_float @ 0x100072C0
 // Grim2D vtable 0x88 (provisional): float slot accessor
-double __stdcall sub_100072C0(int a1)
+double __stdcall grim_get_slot_float(int a1)
 {
   return *(float *)&byte_1005BDFC[4 * a1 + 772];
 }
 
 // grim_get_slot_int @ 0x100072D0
 // Grim2D vtable 0x8c (provisional): int slot accessor
-int __stdcall sub_100072D0(int a1)
+int __stdcall grim_get_slot_int(int a1)
 {
   return *(_DWORD *)&byte_1005BDFC[4 * a1 + 260];
 }
 
 // grim_set_slot_float @ 0x100072E0
 // Grim2D vtable 0x90 (provisional): float slot setter
-int __stdcall sub_100072E0(int a1, float a2)
+int __stdcall grim_set_slot_float(int a1, float a2)
 {
   *(float *)&byte_1005BDFC[4 * a1 + 772] = a2;
   return a1;
@@ -4247,7 +4247,7 @@ int __stdcall sub_100072E0(int a1, float a2)
 
 // grim_set_slot_int @ 0x10007300
 // Grim2D vtable 0x94 (provisional): int slot setter
-int __stdcall sub_10007300(int a1, int a2)
+int __stdcall grim_set_slot_int(int a1, int a2)
 {
   *(_DWORD *)&byte_1005BDFC[4 * a1 + 260] = a2;
   return a2;
@@ -4255,14 +4255,14 @@ int __stdcall sub_10007300(int a1, int a2)
 
 // grim_is_key_down @ 0x10007320
 // Grim2D vtable 0x44 (provisional)
-int __stdcall sub_10007320(int a1)
+int __stdcall grim_is_key_down(int a1)
 {
   return grim_keyboard_key_down(a1);
 }
 
 // grim_flush_input @ 0x10007330
 // Grim2D vtable 0x4c (provisional): clear buffered input/device state
-int sub_10007330()
+int grim_flush_input()
 {
   int v0; // esi
   int v1; // eax
@@ -4289,7 +4289,7 @@ int sub_10007330()
 
 // grim_was_key_pressed @ 0x10007390
 // Grim2D vtable 0x48 (provisional)
-char __stdcall sub_10007390(int a1)
+char __stdcall grim_was_key_pressed(int a1)
 {
   double v1; // st7
 
@@ -4311,7 +4311,7 @@ char __stdcall sub_10007390(int a1)
 
 // grim_is_mouse_button_down @ 0x10007410
 // Grim2D vtable 0x58: cached mouse button state or poll
-char __stdcall sub_10007410(int a1)
+char __stdcall grim_is_mouse_button_down(int a1)
 {
   if ( (_BYTE)grim_input_cached )
     return grim_mouse_button_cache[a1];
@@ -4321,7 +4321,7 @@ char __stdcall sub_10007410(int a1)
 
 // grim_was_mouse_button_pressed @ 0x10007440
 // Grim2D vtable 0x5c (provisional): edge-triggered mouse button
-char __userpurge sub_10007440@<al>(int a1@<ecx>, int a2@<edi>, int a3)
+char __userpurge grim_was_mouse_button_pressed@<al>(int a1@<ecx>, int a2@<edi>, int a3)
 {
   char v4; // dl
   bool v6; // bl
@@ -4351,49 +4351,49 @@ char __userpurge sub_10007440@<al>(int a1@<ecx>, int a2@<edi>, int a3)
 
 // grim_get_mouse_dx @ 0x100074D0
 // Grim2D vtable 0x70: cached mouse delta X
-double sub_100074D0()
+double grim_get_mouse_dx()
 {
   return *(float *)&String[808];
 }
 
 // grim_get_mouse_dy @ 0x100074E0
 // Grim2D vtable 0x74: cached mouse delta Y
-double sub_100074E0()
+double grim_get_mouse_dy()
 {
   return *(float *)&String[812];
 }
 
 // grim_get_mouse_dx_indexed @ 0x100074F0
 // Grim2D vtable 0x78: alias of get_mouse_dx
-int __thiscall sub_100074F0(void *this, int a2)
+int __thiscall grim_get_mouse_dx_indexed(void *this, int a2)
 {
   return (*(int (__thiscall **)(void *))(*(_DWORD *)this + 112))(this);
 }
 
 // grim_get_mouse_dy_indexed @ 0x10007500
 // Grim2D vtable 0x7c: alias of get_mouse_dy
-int __thiscall sub_10007500(void *this, int a2)
+int __thiscall grim_get_mouse_dy_indexed(void *this, int a2)
 {
   return (*(int (__thiscall **)(void *))(*(_DWORD *)this + 116))(this);
 }
 
 // grim_get_mouse_x @ 0x10007510
 // Grim2D vtable 0x68: cached mouse X position
-double sub_10007510()
+double grim_get_mouse_x()
 {
   return grim_mouse_x_cached;
 }
 
 // grim_get_mouse_y @ 0x10007520
 // Grim2D vtable 0x6c: cached mouse Y position
-double sub_10007520()
+double grim_get_mouse_y()
 {
   return grim_mouse_y_cached;
 }
 
 // grim_set_mouse_pos @ 0x10007530
 // Grim2D vtable 0x64: set cached mouse position
-int __stdcall sub_10007530(float a1, float a2)
+int __stdcall grim_set_mouse_pos(float a1, float a2)
 {
   *(float *)&String[796] = a1;
   *(float *)&String[800] = a2;
@@ -4404,7 +4404,7 @@ int __stdcall sub_10007530(float a1, float a2)
 
 // grim_get_mouse_wheel_delta @ 0x10007560
 // Grim2D vtable 0x60 (provisional)
-double sub_10007560()
+double grim_get_mouse_wheel_delta()
 {
   if ( (_BYTE)grim_input_cached )
     return flt_1005D3B8;
@@ -4414,51 +4414,51 @@ double sub_10007560()
 
 // grim_get_joystick_x @ 0x10007580
 // Grim2D vtable 0x98 (provisional): joystick axis X
-int sub_10007580()
+int grim_get_joystick_x()
 {
   return *(_DWORD *)&String[8];
 }
 
 // grim_get_joystick_y @ 0x10007590
 // Grim2D vtable 0x9c (provisional): joystick axis Y
-int sub_10007590()
+int grim_get_joystick_y()
 {
   return *(_DWORD *)&String[12];
 }
 
 // grim_get_joystick_z @ 0x100075A0
 // Grim2D vtable 0xa0 (provisional): joystick axis Z
-int sub_100075A0()
+int grim_get_joystick_z()
 {
   return *(_DWORD *)&String[16];
 }
 
 // grim_get_joystick_pov @ 0x100075B0
 // Grim2D vtable 0xa4 (provisional): joystick POV hat value
-int __stdcall sub_100075B0(int a1)
+int __stdcall grim_get_joystick_pov(int a1)
 {
   return *(_DWORD *)&String[4 * a1 + 40];
 }
 
 // grim_is_joystick_button_down @ 0x100075C0
 // Grim2D vtable 0xa8 (provisional): joystick button state
-int __stdcall sub_100075C0(int a1)
+int __stdcall grim_is_joystick_button_down(int a1)
 {
   return sub_1000A310(a1);
 }
 
 // grim_create_texture @ 0x100075D0
 // Grim2D vtable 0xac: create blank texture in a free slot
-char __stdcall sub_100075D0(const char *a1, int a2, int a3)
+char __stdcall grim_create_texture(const char *a1, int a2, int a3)
 {
-  int v3; // esi
+  int free_texture_slot; // esi
   char **v5; // eax
   char **v6; // eax
   char *v7; // edx
   _DWORD v8[4]; // [esp+20h] [ebp-10h] BYREF
 
-  v3 = grim_find_free_texture_slot();
-  if ( v3 < 0 )
+  free_texture_slot = grim_find_free_texture_slot();
+  if ( free_texture_slot < 0 )
     return 0;
   if ( (*(int (__stdcall **)(int, int, int, int, int, int, _DWORD, _DWORD *))(*(_DWORD *)grim_d3d_device + 80))(
          grim_d3d_device,
@@ -4477,13 +4477,13 @@ char __stdcall sub_100075D0(const char *a1, int a2, int a3)
     else
       v6 = 0;
     v7 = (char *)v8[0];
-    *(&grim_texture_slots + v3) = v6;
+    *(&grim_texture_slots + free_texture_slot) = v6;
     v6[1] = v7;
-    *((_BYTE *)*(&grim_texture_slots + v3) + 8) = 1;
-    *((_DWORD *)*(&grim_texture_slots + v3) + 3) = a2;
-    *((_DWORD *)*(&grim_texture_slots + v3) + 4) = a3;
-    if ( v3 > dword_1005305C )
-      dword_1005305C = v3;
+    *((_BYTE *)*(&grim_texture_slots + free_texture_slot) + 8) = 1;
+    *((_DWORD *)*(&grim_texture_slots + free_texture_slot) + 3) = a2;
+    *((_DWORD *)*(&grim_texture_slots + free_texture_slot) + 4) = a3;
+    if ( free_texture_slot > dword_1005305C )
+      dword_1005305C = free_texture_slot;
     return 1;
   }
   else
@@ -4495,14 +4495,14 @@ char __stdcall sub_100075D0(const char *a1, int a2, int a3)
 
 // grim_load_texture @ 0x100076E0
 // Grim2D vtable 0xb4 (provisional)
-char __stdcall sub_100076E0(const char *a1, char *FileName)
+char __stdcall grim_load_texture(const char *a1, char *FileName)
 {
   return grim_load_texture_internal(a1, FileName);
 }
 
 // grim_destroy_texture @ 0x10007700
 // Grim2D vtable 0xbc (provisional): release texture handle
-void __stdcall sub_10007700(int a1)
+void __stdcall grim_destroy_texture(int a1)
 {
   void *v1; // esi
   int v2; // eax
@@ -4523,14 +4523,14 @@ void __stdcall sub_10007700(int a1)
 
 // grim_get_texture_handle @ 0x10007740
 // Grim2D vtable 0xc0: lookup texture handle by name
-int __stdcall sub_10007740(const char *a1)
+int __stdcall grim_get_texture_handle(const char *a1)
 {
   return grim_find_texture_by_name(a1);
 }
 
 // grim_validate_texture @ 0x10007750
 // Grim2D vtable 0xb8: validate texture handle/device
-bool __stdcall sub_10007750(int a1, LPCWCH lpWideCharStr)
+bool __stdcall grim_validate_texture(int a1, LPCWCH lpWideCharStr)
 {
   int v2; // eax
 
@@ -4540,7 +4540,7 @@ bool __stdcall sub_10007750(int a1, LPCWCH lpWideCharStr)
 
 // grim_recreate_texture @ 0x10007790
 // Grim2D vtable 0xb0: recreate D3D texture surface
-char __stdcall sub_10007790(int a1)
+char __stdcall grim_recreate_texture(int a1)
 {
   int v1; // esi
   int v2; // eax
@@ -4576,7 +4576,7 @@ char __stdcall sub_10007790(int a1)
 
 // grim_bind_texture @ 0x10007830
 // Grim2D vtable 0xc4: bind texture handle to stage
-void __stdcall sub_10007830(int a1, int a2)
+void __stdcall grim_bind_texture(int a1, int a2)
 {
   int v2; // eax
   int v3; // eax
@@ -4598,7 +4598,7 @@ void __stdcall sub_10007830(int a1, int a2)
 
 // grim_draw_fullscreen_quad @ 0x10007870
 // Grim2D vtable 0xc8: full-screen quad with current texture
-int __thiscall sub_10007870(void *this, int a2)
+int __thiscall grim_draw_fullscreen_quad(void *this, int a2)
 {
   float v4; // [esp+4h] [ebp-14h]
   float v5; // [esp+8h] [ebp-10h]
@@ -4618,7 +4618,7 @@ int __thiscall sub_10007870(void *this, int a2)
 
 // grim_draw_rect_filled @ 0x100078E0
 // Grim2D vtable 0xd0: UI panel fill/quad
-void __thiscall sub_100078E0(void *this, _DWORD *a2, int a3, int a4, int a5)
+void __thiscall grim_draw_rect_filled(void *this, _DWORD *a2, int a3, int a4, int a5)
 {
   if ( *(float *)(a5 + 12) > 0.0 )
   {
@@ -4637,7 +4637,7 @@ void __thiscall sub_100078E0(void *this, _DWORD *a2, int a3, int a4, int a5)
 
 // grim_draw_fullscreen_color @ 0x100079B0
 // Grim2D vtable 0xcc: fullscreen color/fade overlay
-void __thiscall sub_100079B0(void *this, int a2, int a3, int a4, float a5)
+void __thiscall grim_draw_fullscreen_color(void *this, int a2, int a3, int a4, float a5)
 {
   float v6; // [esp+40h] [ebp-14h]
   float v7; // [esp+44h] [ebp-10h]
@@ -4666,7 +4666,7 @@ void __thiscall sub_100079B0(void *this, int a2, int a3, int a4, float a5)
 
 // grim_begin_batch @ 0x10007AC0
 // Grim2D vtable 0xe8 (provisional): begin draw batch
-char sub_10007AC0()
+char grim_begin_batch()
 {
   int v0; // eax
 
@@ -4698,7 +4698,7 @@ char sub_10007AC0()
 
 // grim_end_batch @ 0x10007B20
 // Grim2D vtable 0xf0 (provisional): end draw batch/flush
-char sub_10007B20()
+char grim_end_batch()
 {
   char result; // al
 
@@ -4730,7 +4730,7 @@ char sub_10007B20()
 
 // grim_draw_circle_filled @ 0x10007B90
 // Grim2D vtable 0xd8 (provisional): triangle fan circle fill
-char __userpurge sub_10007B90@<al>(int a1@<edi>, int a2, float a3, float a4, float a5)
+char __userpurge grim_draw_circle_filled@<al>(int a1@<edi>, int a2, float a3, float a4, float a5)
 {
   char result; // al
   int v6; // edx
@@ -4806,7 +4806,7 @@ char __userpurge sub_10007B90@<al>(int a1@<edi>, int a2, float a3, float a4, flo
 
 // grim_draw_circle_outline @ 0x10007D40
 // Grim2D vtable 0xdc (provisional): triangle strip ring/outline
-char __stdcall sub_10007D40(float a1, float a2, float a3)
+char __stdcall grim_draw_circle_outline(float a1, float a2, float a3)
 {
   char result; // al
   __int64 v4; // rax
@@ -4893,7 +4893,7 @@ void nullsub_20()
 
 // grim_set_rotation @ 0x10007F30
 // Grim2D vtable 0xfc: precompute sin/cos (+45deg) for rotation matrix
-int __stdcall sub_10007F30(int a1)
+int __stdcall grim_set_rotation(int a1)
 {
   long double v1; // st7
 
@@ -4910,7 +4910,7 @@ int __stdcall sub_10007F30(int a1)
 
 // grim_set_color @ 0x10007F90
 // Grim2D vtable 0x114 (provisional)
-int __stdcall sub_10007F90(float a1, float a2, float a3, float a4)
+int __stdcall grim_set_color(float a1, float a2, float a3, float a4)
 {
   double v4; // st7
   int result; // eax
@@ -4937,7 +4937,7 @@ int __stdcall sub_10007F90(float a1, float a2, float a3, float a4)
 
 // grim_set_color_ptr @ 0x10008040
 // Grim2D vtable 0x110: set color from float[4]
-int __stdcall sub_10008040(float *a1)
+int __stdcall grim_set_color_ptr(float *a1)
 {
   double v2; // st7
   int v4; // [esp+8h] [ebp+4h]
@@ -4956,7 +4956,7 @@ int __stdcall sub_10008040(float *a1)
 
 // grim_draw_line @ 0x100080B0
 // Grim2D vtable 0xe0 (provisional): builds line quad from endpoints
-int __thiscall sub_100080B0(void *this, float *a2, float *a3, float a4)
+int __thiscall grim_draw_line(void *this, float *a2, float *a3, float a4)
 {
   double v5; // st7
 
@@ -4982,7 +4982,7 @@ void __cdecl nullsub_5()
 
 // grim_draw_line_quad @ 0x10008150
 // Grim2D vtable 0xe4 (provisional): line quad from endpoints + half-width vector
-int __thiscall sub_10008150(void *this, float *a2, float *a3, float *a4)
+int __thiscall grim_draw_line_quad(void *this, float *a2, float *a3, float *a4)
 {
   float v5; // [esp+0h] [ebp-28h]
   float v6; // [esp+4h] [ebp-24h]
@@ -5014,7 +5014,7 @@ int __thiscall sub_10008150(void *this, float *a2, float *a3, float *a4)
 
 // grim_set_color_slot @ 0x100081C0
 // Grim2D vtable 0x118 (provisional): set color slot
-int __stdcall sub_100081C0(int a1, float a2, float a3, float a4, float a5)
+int __stdcall grim_set_color_slot(int a1, float a2, float a3, float a4, float a5)
 {
   grim_color_slot0[a1] = (unsigned __int8)(__int64)(a4 * 255.0)
                        | (((unsigned __int8)(__int64)(a3 * 255.0)
@@ -5024,7 +5024,7 @@ int __stdcall sub_100081C0(int a1, float a2, float a3, float a4, float a5)
 
 // grim_set_atlas_frame @ 0x10008230
 // Grim2D vtable 0x104 (provisional)
-int __stdcall sub_10008230(int a1, int a2)
+int __stdcall grim_set_atlas_frame(int a1, int a2)
 {
   double v2; // st7
   int v3; // edx
@@ -5046,7 +5046,7 @@ int __stdcall sub_10008230(int a1, int a2)
 
 // grim_set_sub_rect @ 0x100082C0
 // Grim2D vtable 0x108: atlas sub-rect from grid table
-int __stdcall sub_100082C0(int a1, int a2, int a3, int a4)
+int __stdcall grim_set_sub_rect(int a1, int a2, int a3, int a4)
 {
   double v4; // st7
   int v5; // edx
@@ -5068,7 +5068,7 @@ int __stdcall sub_100082C0(int a1, int a2, int a3, int a4)
 
 // grim_set_uv @ 0x10008350
 // Grim2D vtable 0x100 (provisional)
-int __stdcall sub_10008350(int a1, int a2, int a3, int a4)
+int __stdcall grim_set_uv(int a1, int a2, int a3, int a4)
 {
   grim_uv_u0 = a1;
   grim_uv_v0 = a2;
@@ -5083,7 +5083,7 @@ int __stdcall sub_10008350(int a1, int a2, int a3, int a4)
 
 // grim_set_uv_point @ 0x100083A0
 // Grim2D vtable 0x10c: set UV point
-int __stdcall sub_100083A0(int a1, int a2, int a3)
+int __stdcall grim_set_uv_point(int a1, int a2, int a3)
 {
   grim_uv_u0[2 * a1] = a2;
   grim_uv_v0[2 * a1] = a3;
@@ -5092,7 +5092,7 @@ int __stdcall sub_100083A0(int a1, int a2, int a3)
 
 // grim_flush_batch @ 0x100083C0
 // Grim2D vtable 0xec: flush batch when vertex buffer fills
-char sub_100083C0()
+char grim_flush_batch()
 {
   int v0; // eax
 
@@ -5125,7 +5125,7 @@ char sub_100083C0()
 
 // grim_submit_vertices_offset_color @ 0x10008430
 // Grim2D vtable 0x130: translate + apply color
-char __thiscall sub_10008430(void *this, const void *a2, int a3, float *a4, _DWORD *a5)
+char __thiscall grim_submit_vertices_offset_color(void *this, const void *a2, int a3, float *a4, _DWORD *a5)
 {
   char result; // al
   int v6; // edx
@@ -5159,7 +5159,13 @@ char __thiscall sub_10008430(void *this, const void *a2, int a3, float *a4, _DWO
 
 // grim_submit_vertices_transform_color @ 0x100084E0
 // Grim2D vtable 0x134: rotate + translate + apply color
-int __thiscall sub_100084E0(void *this, const void *a2, int a3, float *a4, float *a5, _DWORD *a6)
+int __thiscall grim_submit_vertices_transform_color(
+        void *this,
+        const void *a2,
+        int a3,
+        float *a4,
+        float *a5,
+        _DWORD *a6)
 {
   int result; // eax
   int v7; // esi
@@ -5200,7 +5206,7 @@ int __thiscall sub_100084E0(void *this, const void *a2, int a3, float *a4, float
 
 // grim_submit_vertices_transform @ 0x100085C0
 // Grim2D vtable 0x128: copy verts, rotate, translate
-char __thiscall sub_100085C0(void *this, const void *a2, int a3, float *a4, float *a5)
+char __thiscall grim_submit_vertices_transform(void *this, const void *a2, int a3, float *a4, float *a5)
 {
   char result; // al
   int v6; // esi
@@ -5240,7 +5246,7 @@ char __thiscall sub_100085C0(void *this, const void *a2, int a3, float *a4, floa
 
 // grim_submit_vertices_offset @ 0x10008680
 // Grim2D vtable 0x12c: copy verts, translate
-char __thiscall sub_10008680(void *this, const void *a2, int a3, float *a4)
+char __thiscall grim_submit_vertices_offset(void *this, const void *a2, int a3, float *a4)
 {
   char result; // al
   int v5; // edx
@@ -5273,14 +5279,14 @@ char __thiscall sub_10008680(void *this, const void *a2, int a3, float *a4)
 
 // grim_draw_quad_xy @ 0x10008720
 // Grim2D vtable 0x120: draw quad from xy pointer
-int __thiscall sub_10008720(void *this, _DWORD *a2, int a3, int a4)
+int __thiscall grim_draw_quad_xy(void *this, _DWORD *a2, int a3, int a4)
 {
   return (*(int (__thiscall **)(void *, _DWORD, _DWORD, int, int))(*(_DWORD *)this + 284))(this, *a2, a2[1], a3, a4);
 }
 
 // grim_draw_quad_rotated_matrix @ 0x10008750
 // Grim2D vtable 0x124 (provisional): quad with rotation matrix
-char __thiscall sub_10008750(void *this, float a2, float a3, float a4, float a5)
+char __thiscall grim_draw_quad_rotated_matrix(void *this, float a2, float a3, float a4, float a5)
 {
   char result; // al
   double v7; // st7
@@ -5393,7 +5399,7 @@ char __thiscall sub_10008750(void *this, float a2, float a3, float a4, float a5)
 
 // grim_draw_quad @ 0x10008B10
 // Grim2D vtable 0x11c (provisional)
-char __thiscall sub_10008B10(void *this, float a2, float a3, float a4, float a5)
+char __thiscall grim_draw_quad(void *this, float a2, float a3, float a4, float a5)
 {
   char result; // al
   double v7; // st7
@@ -5497,7 +5503,7 @@ char __thiscall sub_10008B10(void *this, float a2, float a3, float a4, float a5)
 
 // grim_submit_vertex_raw @ 0x10008E30
 // Grim2D vtable 0xf4: push 1 raw vertex (7 floats)
-char __thiscall sub_10008E30(void *this, const void *a2)
+char __thiscall grim_submit_vertex_raw(void *this, const void *a2)
 {
   char result; // al
 
@@ -5522,7 +5528,7 @@ char __thiscall sub_10008E30(void *this, const void *a2)
 
 // grim_submit_quad_raw @ 0x10008EB0
 // Grim2D vtable 0xf8: push 4 raw vertices (28 floats)
-int __thiscall sub_10008EB0(void *this, const void *a2)
+int __thiscall grim_submit_quad_raw(void *this, const void *a2)
 {
   int result; // eax
 
@@ -5540,7 +5546,7 @@ int __thiscall sub_10008EB0(void *this, const void *a2)
 
 // grim_draw_rect_outline @ 0x10008F10
 // Grim2D vtable 0xd4: UI panel outline/frame (4 edge quads)
-int __thiscall sub_10008F10(void *this, float *a2, int a3, float a4)
+int __thiscall grim_draw_rect_outline(void *this, float *a2, int a3, float a4)
 {
   float v6; // [esp+60h] [ebp-1Ch]
   float v7; // [esp+64h] [ebp-18h]
@@ -5606,7 +5612,7 @@ int __thiscall sub_10008F10(void *this, float *a2, int a3, float a4)
 
 // grim_draw_quad_points @ 0x10009080
 // Grim2D vtable 0x138 (provisional): push quad using 4 points
-char __thiscall sub_10009080(void *this, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9)
+char __thiscall grim_draw_quad_points(void *this, int a2, int a3, int a4, int a5, int a6, int a7, int a8, int a9)
 {
   char result; // al
 
@@ -5661,7 +5667,13 @@ char __thiscall sub_10009080(void *this, int a2, int a3, int a4, int a5, int a6,
 
 // grim_draw_text_mono @ 0x100092B0
 // Grim2D vtable 0x13c: fixed 16px mono text
-char __userpurge sub_100092B0@<al>(int *a1@<ecx>, float a2@<ebp>, float a3@<edi>, float a4, int a5, const char *a6)
+char __userpurge grim_draw_text_mono@<al>(
+        int *a1@<ecx>,
+        float a2@<ebp>,
+        float a3@<edi>,
+        float a4,
+        int a5,
+        const char *a6)
 {
   char result; // al
   const char *v8; // ebx
@@ -5874,7 +5886,7 @@ LABEL_22:
 
 // grim_measure_text_width @ 0x100096C0
 // Grim2D vtable 0x14c: small font width metric (handles newlines)
-int __stdcall sub_100096C0(const char *a1)
+int __stdcall grim_measure_text_width(const char *a1)
 {
   int result; // eax
   int v2; // esi
@@ -5912,7 +5924,7 @@ int __stdcall sub_100096C0(const char *a1)
 
 // grim_draw_text_small @ 0x10009730
 // Grim2D vtable 0x144: small font draw (GRIM_Font2)
-char __thiscall sub_10009730(void *this, float a2, float a3, const char *a4)
+char __thiscall grim_draw_text_small(void *this, float a2, float a3, const char *a4)
 {
   int v4; // eax
   unsigned int v7; // kr04_4
@@ -6002,7 +6014,7 @@ char __thiscall sub_10009730(void *this, float a2, float a3, const char *a4)
 
 // grim_draw_text_mono_fmt @ 0x10009940
 // Grim2D vtable 0x140: printf-style wrapper around draw_text_mono
-int sub_10009940(int a1, int a2, int a3, char *Format, ...)
+int grim_draw_text_mono_fmt(int a1, int a2, int a3, char *Format, ...)
 {
   va_list va; // [esp+14h] [ebp+14h] BYREF
 
@@ -6013,7 +6025,7 @@ int sub_10009940(int a1, int a2, int a3, char *Format, ...)
 
 // grim_draw_text_small_fmt @ 0x10009980
 // Grim2D vtable 0x148: formatted small-font text (vsprintf + vtable 0x144)
-int sub_10009980(int a1, int a2, int a3, char *Format, ...)
+int grim_draw_text_small_fmt(int a1, int a2, int a3, char *Format, ...)
 {
   va_list va; // [esp+14h] [ebp+14h] BYREF
 
@@ -6057,7 +6069,7 @@ _DWORD *GRIM__GetInterface()
 
 // FUN_10009a20 @ 0x10009A20
 // [binja] int32_t __stdcall sub_10009a20(HINSTANCE arg1, int32_t arg2)
-BOOL __stdcall DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
+BOOL __stdcall FUN_10009a20(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
   if ( fdwReason == 1 )
   {
@@ -6550,7 +6562,7 @@ BOOL __stdcall sub_1000A150(int a1, int a2)
 
 // grim_joystick_init @ 0x1000A1C0
 // initializes DirectInput joystick device and acquires it
-char __cdecl sub_1000A1C0(int a1)
+char __cdecl grim_joystick_init(int a1)
 {
   int v1; // eax
   HMODULE ModuleHandleA; // eax
@@ -6598,7 +6610,7 @@ char __cdecl sub_1000A1C0(int a1)
 
 // grim_joystick_poll @ 0x1000A2B0
 // polls the joystick device and updates cached state
-bool sub_1000A2B0()
+bool grim_joystick_poll()
 {
   bool v0; // sf
   int v1; // edx
@@ -6647,14 +6659,14 @@ int sub_1000A330()
 
 // grim_keyboard_key_down @ 0x1000A370
 // reads the cached key state array
-char __cdecl sub_1000A370(unsigned __int8 a1)
+char __cdecl grim_keyboard_key_down(unsigned __int8 a1)
 {
   return (unsigned __int8)String[a1 + 512] >> 7;
 }
 
 // grim_keyboard_init @ 0x1000A390
 // initializes DirectInput keyboard device and acquires it
-char __cdecl sub_1000A390(int a1)
+char __cdecl grim_keyboard_init(int a1)
 {
   int v1; // eax
   HMODULE ModuleHandleA; // eax
@@ -6696,7 +6708,7 @@ char __cdecl sub_1000A390(int a1)
 
 // grim_keyboard_poll @ 0x1000A4A0
 // polls the keyboard device and updates cached key state
-char __fastcall sub_1000A4A0(int a1)
+char __fastcall grim_keyboard_poll(int a1)
 {
   int v1; // eax
   int v2; // ecx
@@ -6750,7 +6762,7 @@ char __fastcall sub_1000A4A0(int a1)
 
 // grim_keyboard_shutdown @ 0x1000A550
 // releases DirectInput keyboard objects
-int sub_1000A550()
+int grim_keyboard_shutdown()
 {
   int result; // eax
 
@@ -6771,14 +6783,14 @@ int sub_1000A550()
 
 // grim_mouse_button_down @ 0x1000A590
 // reads the cached mouse button state
-char __cdecl sub_1000A590(int a1)
+char __cdecl grim_mouse_button_down(int a1)
 {
   return (unsigned __int8)String[a1 + 788] >> 7;
 }
 
 // grim_mouse_init @ 0x1000A5A0
 // initializes DirectInput mouse device and acquires it
-char sub_1000A5A0()
+char grim_mouse_init()
 {
   HWND v0; // esi
   int v1; // eax
@@ -6815,7 +6827,7 @@ char sub_1000A5A0()
 
 // grim_mouse_poll @ 0x1000A670
 // polls the mouse device and updates cached position/delta
-char sub_1000A670()
+char grim_mouse_poll()
 {
   int v0; // esi
   int v1; // eax
@@ -6872,7 +6884,7 @@ LABEL_8:
 
 // grim_mouse_shutdown @ 0x1000A7D0
 // releases DirectInput mouse objects
-int sub_1000A7D0()
+int grim_mouse_shutdown()
 {
   int result; // eax
 
@@ -6899,7 +6911,7 @@ bool __cdecl sub_1000A820(unsigned int a1)
 
 // FUN_1000a840 @ 0x1000A840
 // [binja] bool __stdcall sub_1000a840(int32_t* arg1, uint32_t arg2, int32_t arg3, int32_t arg4)
-bool __stdcall sub_1000A840(_DWORD *a1, unsigned int a2, int a3, int a4)
+bool __stdcall FUN_1000a840(_DWORD *a1, unsigned int a2, int a3, int a4)
 {
   unsigned int v4; // esi
   void *v5; // eax
@@ -6917,7 +6929,7 @@ bool __stdcall sub_1000A840(_DWORD *a1, unsigned int a2, int a3, int a4)
 
 // FUN_1000a880 @ 0x1000A880
 // [binja] char* __stdcall sub_1000a880(char* arg1, uint32_t* arg2)
-int __stdcall sub_1000A880(int a1, unsigned int *a2)
+int __stdcall FUN_1000a880(int a1, unsigned int *a2)
 {
   int v3; // esi
   unsigned int v4; // [esp-14h] [ebp-14h]
@@ -6936,7 +6948,7 @@ int __stdcall sub_1000A880(int a1, unsigned int *a2)
 
 // grim_format_info_lookup @ 0x1000AAA6
 // returns pointer to the D3D format descriptor entry (fallbacks to default)
-_DWORD *__cdecl sub_1000AAA6(int a1)
+_DWORD *__cdecl grim_format_info_lookup(int a1)
 {
   _DWORD *result; // eax
 
@@ -6954,7 +6966,7 @@ _DWORD *__cdecl sub_1000AAA6(int a1)
 
 // FUN_1000aaca @ 0x1000AACA
 // [binja] int32_t __fastcall sub_1000aaca(void* arg1, int32_t arg2)
-unsigned int __fastcall sub_1000AACA(int a1, int a2)
+unsigned int __fastcall FUN_1000aaca(int a1, int a2)
 {
   unsigned int result; // eax
   unsigned int *v3; // esi
@@ -7129,7 +7141,7 @@ int __cdecl sub_1000AC8F(int a1)
 
 // FUN_1000acc0 @ 0x1000ACC0
 // [binja] int32_t __stdcall sub_1000acc0(int32_t* arg1, int32_t arg2, int32_t* arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7, int32_t* arg8, int32_t arg9, int32_t arg10)
-int __stdcall sub_1000ACC0(int a1, int a2, int a3, int a4, int a5, int a6, int a7, _DWORD *a8, int a9, int a10)
+int __stdcall FUN_1000acc0(int a1, int a2, int a3, int a4, int a5, int a6, int a7, _DWORD *a8, int a9, int a10)
 {
   int v10; // ebx
   int v11; // eax
@@ -7188,7 +7200,7 @@ LABEL_10:
 
 // FUN_1000ad9f @ 0x1000AD9F
 // [binja] int32_t sub_1000ad9f(int32_t arg1, int32_t arg2, int32_t* arg3, int32_t arg4, int32_t* arg5, int32_t* arg6)
-int __cdecl sub_1000AD9F(LPCWCH lpWideCharStr, int a2, int a3, int a4, int a5, LPSTR lpMultiByteStr)
+int __cdecl FUN_1000ad9f(LPCWCH lpWideCharStr, int a2, int a3, int a4, int a5, LPSTR lpMultiByteStr)
 {
   int v6; // esi
   int v7; // eax
@@ -7228,14 +7240,14 @@ void *__thiscall sub_1000AE4F(void *this)
 
 // FUN_1000ae52 @ 0x1000AE52
 // [binja] int32_t __stdcall sub_1000ae52(int32_t arg1, int32_t arg2, int32_t* arg3, int32_t arg4, int32_t* arg5)
-int __stdcall sub_1000AE52(LPCWCH lpWideCharStr, int a2, int a3, int a4, int a5)
+int __stdcall FUN_1000ae52(LPCWCH lpWideCharStr, int a2, int a3, int a4, int a5)
 {
   return FUN_1000ad9f(lpWideCharStr, a2, a3, a4, a5, 0);
 }
 
 // FUN_1000ae72 @ 0x1000AE72
 // [binja] int32_t __stdcall sub_1000ae72(int32_t* arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7, int32_t arg8, int32_t arg9, int32_t arg10, int32_t arg11)
-int __stdcall sub_1000AE72(
+int __stdcall FUN_1000ae72(
         int a1,
         int a2,
         int a3,
@@ -7544,7 +7556,7 @@ LABEL_75:
 
 // FUN_1000b26f @ 0x1000B26F
 // [binja] int32_t __stdcall sub_1000b26f(int32_t** arg1, int32_t* arg2, int32_t* arg3, int32_t* arg4, int32_t arg5, int32_t arg6, int32_t arg7)
-int __stdcall sub_1000B26F(
+int __stdcall FUN_1000b26f(
         int a1,
         unsigned int *a2,
         unsigned int *a3,
@@ -7558,7 +7570,7 @@ int __stdcall sub_1000B26F(
 
 // FUN_1000b297 @ 0x1000B297
 // [binja] int32_t __stdcall sub_1000b297(int32_t** arg1, int32_t arg2, int32_t arg3, int32_t arg4)
-int __stdcall sub_1000B297(int a1, int a2, int a3, int a4, int a5, int a6, unsigned int a7, int a8)
+int __stdcall FUN_1000b297(int a1, int a2, int a3, int a4, int a5, int a6, unsigned int a7, int a8)
 {
   int result; // eax
   int v9; // edi
@@ -7672,7 +7684,7 @@ double __usercall sub_1000B3B5@<st0>(float *a1@<eax>, int a2@<ecx>)
 
 // FUN_1000b3fe @ 0x1000B3FE
 // [binja] int32_t __stdcall sub_1000b3fe(int32_t* arg1, int32_t* arg2, int32_t arg3, int32_t arg4, float arg5)
-int __userpurge sub_1000B3FE@<eax>(int a1@<esi>, int a2, int a3, int a4, int a5, int a6, float a7)
+int __userpurge FUN_1000b3fe@<eax>(int a1@<esi>, int a2, int a3, int a4, int a5, int a6, float a7)
 {
   int v7; // ebx
   unsigned int v8; // eax
@@ -8162,7 +8174,7 @@ LABEL_119:
 
 // FUN_1000bbfc @ 0x1000BBFC
 // [binja] int32_t __stdcall sub_1000bbfc(int32_t* arg1, int32_t* arg2, int32_t* arg3, int32_t* arg4, int32_t* arg5, int32_t arg6, int32_t arg7)
-int __stdcall sub_1000BBFC(int a1, const void *a2, int *a3, int a4, const void *a5, int *a6, int a7, int a8)
+int __stdcall FUN_1000bbfc(int a1, const void *a2, int *a3, int a4, const void *a5, int *a6, int a7, int a8)
 {
   int v8; // esi
   int v9; // ebx
@@ -8279,7 +8291,7 @@ LABEL_25:
 
 // FUN_1000bda2 @ 0x1000BDA2
 // [binja] int32_t __stdcall sub_1000bda2(int32_t* arg1, int32_t arg2, int32_t arg3, int32_t* arg4, int32_t arg5, int32_t arg6, int32_t arg7, int32_t arg8)
-int __stdcall sub_1000BDA2(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8)
+int __stdcall FUN_1000bda2(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8)
 {
   int v8; // esi
   int v9; // eax
@@ -8603,14 +8615,14 @@ LABEL_77:
 
 // FUN_1000c1e8 @ 0x1000C1E8
 // [binja] void* __stdcall sub_1000c1e8(int32_t arg1, int32_t arg2, int32_t* arg3, int32_t arg4)
-int __stdcall sub_1000C1E8(LPCWCH lpWideCharStr, int a2, int a3, int a4)
+int __stdcall FUN_1000c1e8(LPCWCH lpWideCharStr, int a2, int a3, int a4)
 {
   return sub_1000BE28(lpWideCharStr, a2, a4, 0);
 }
 
 // FUN_1000c205 @ 0x1000C205
 // [binja] int32_t __stdcall sub_1000c205(int32_t* arg1, int32_t* arg2, int32_t arg3, int32_t arg4)
-int __stdcall sub_1000C205(int a1, const void *a2, unsigned int a3, int a4)
+int __stdcall FUN_1000c205(int a1, const void *a2, unsigned int a3, int a4)
 {
   int v4; // esi
   int v6; // eax
@@ -8827,7 +8839,7 @@ LABEL_75:
 
 // FUN_1000c4e9 @ 0x1000C4E9
 // [binja] int32_t sub_1000c4e9(int32_t** arg1, void* arg2, int32_t* arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7, int32_t arg8, void* arg9, int32_t arg10, int32_t arg11, int32_t** arg12)
-int __cdecl sub_1000C4E9(
+int __cdecl FUN_1000c4e9(
         int a1,
         int a2,
         int a3,
@@ -9282,7 +9294,7 @@ LABEL_148:
 
 // FUN_1000cb5c @ 0x1000CB5C
 // [binja] int32_t __stdcall sub_1000cb5c(int32_t** arg1, void* arg2, int32_t* arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7, void* arg8, int32_t arg9, int32_t arg10, int32_t** arg11, int32_t arg12, int32_t arg13, int32_t arg14, int32_t arg15)
-int __stdcall sub_1000CB5C(
+int __stdcall FUN_1000cb5c(
         int a1,
         int a2,
         int a3,
@@ -9304,7 +9316,7 @@ int __stdcall sub_1000CB5C(
 
 // FUN_1000cb9c @ 0x1000CB9C
 // [binja] int32_t __stdcall sub_1000cb9c(int32_t** arg1, int32_t* arg2, int32_t arg3, int32_t arg4, int32_t arg5, int32_t arg6, void* arg7, int32_t arg8, int32_t arg9, int32_t** arg10, int32_t arg11, int32_t arg12, int32_t arg13, int32_t arg14)
-int __stdcall sub_1000CB9C(
+int __stdcall FUN_1000cb9c(
         int a1,
         LPCWCH lpWideCharStr,
         int a3,
@@ -9337,7 +9349,7 @@ int __stdcall sub_1000CB9C(
 
 // float_near_equal @ 0x1000CBFF
 // returns 1 when |a-b| < 1.1920929e-07 (FLT_EPSILON)
-BOOL __cdecl sub_1000CBFF(float a1, float a2)
+BOOL __cdecl float_near_equal(float a1, float a2)
 {
   double v2; // st7
 
@@ -9354,7 +9366,7 @@ int sub_1000CC2C()
 
 // FUN_1000cc3f @ 0x1000CC3F
 // [binja] int32_t __stdcall sub_1000cc3f(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)
-int __stdcall sub_1000CC3F(int a1, int a2, int a3, int a4, int a5, float a6)
+int __stdcall FUN_1000cc3f(int a1, int a2, int a3, int a4, int a5, float a6)
 {
   grim_select_renderer_backend(1u);
   return off_10053C9C(a1, a2, a3, a4, a5, a6);
@@ -9362,7 +9374,7 @@ int __stdcall sub_1000CC3F(int a1, int a2, int a3, int a4, int a5, float a6)
 
 // FUN_1000cc69 @ 0x1000CC69
 // [binja] float* __stdcall sub_1000cc69(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)
-float *__stdcall sub_1000CC69(float *a1, float *a2, float *a3, float *a4, float *a5, float a6)
+float *__stdcall FUN_1000cc69(float *a1, float *a2, float *a3, float *a4, float *a5, float a6)
 {
   double v6; // st7
   double v8; // st6
@@ -9384,7 +9396,7 @@ float *__stdcall sub_1000CC69(float *a1, float *a2, float *a3, float *a4, float 
 
 // FUN_1000ccf7 @ 0x1000CCF7
 // [binja] int32_t __stdcall sub_1000ccf7(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)
-int __stdcall sub_1000CCF7(int a1, int a2, int a3, int a4, int a5, float a6)
+int __stdcall FUN_1000ccf7(int a1, int a2, int a3, int a4, int a5, float a6)
 {
   grim_select_renderer_backend(1u);
   return off_10053D14(a1, a2, a3, a4, a5, a6);
@@ -9392,7 +9404,7 @@ int __stdcall sub_1000CCF7(int a1, int a2, int a3, int a4, int a5, float a6)
 
 // FUN_1000cd21 @ 0x1000CD21
 // [binja] float* __stdcall sub_1000cd21(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)
-float *__stdcall sub_1000CD21(float *a1, float *a2, float *a3, float *a4, float *a5, float a6)
+float *__stdcall FUN_1000cd21(float *a1, float *a2, float *a3, float *a4, float *a5, float a6)
 {
   double v6; // st7
   double v8; // st6
@@ -9414,7 +9426,7 @@ float *__stdcall sub_1000CD21(float *a1, float *a2, float *a3, float *a4, float 
 
 // FUN_1000cdd0 @ 0x1000CDD0
 // [binja] int32_t __stdcall sub_1000cdd0(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, float arg5, float arg6)
-int __stdcall sub_1000CDD0(int a1, int a2, int a3, int a4, float a5, float a6)
+int __stdcall FUN_1000cdd0(int a1, int a2, int a3, int a4, float a5, float a6)
 {
   grim_select_renderer_backend(1u);
   return off_10053D18(a1, a2, a3, a4, a5, a6);
@@ -9422,7 +9434,7 @@ int __stdcall sub_1000CDD0(int a1, int a2, int a3, int a4, float a5, float a6)
 
 // FUN_1000cdff @ 0x1000CDFF
 // [binja] float* __stdcall sub_1000cdff(float* arg1, float* arg2, float* arg3, float* arg4, float arg5, float arg6)
-float *__stdcall sub_1000CDFF(float *a1, float *a2, float *a3, float *a4, float a5, float a6)
+float *__stdcall FUN_1000cdff(float *a1, float *a2, float *a3, float *a4, float a5, float a6)
 {
   *a1 = (*a3 - *a2) * a5 + (*a4 - *a2) * a6 + *a2;
   a1[1] = (a3[1] - a2[1]) * a5 + (a4[1] - a2[1]) * a6 + a2[1];
@@ -9452,7 +9464,7 @@ int __stdcall sub_1000CE7C(int a1, int a2, int a3, int a4, int a5, float a6)
 
 // FUN_1000cea6 @ 0x1000CEA6
 // [binja] float* __stdcall sub_1000cea6(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)
-float *__stdcall sub_1000CEA6(float *a1, float *a2, float *a3, float *a4, float *a5, float a6)
+float *__stdcall FUN_1000cea6(float *a1, float *a2, float *a3, float *a4, float *a5, float a6)
 {
   double v6; // st7
   double v8; // st6
@@ -9475,7 +9487,7 @@ float *__stdcall sub_1000CEA6(float *a1, float *a2, float *a3, float *a4, float 
 
 // FUN_1000cf54 @ 0x1000CF54
 // [binja] int32_t __stdcall sub_1000cf54(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)
-int __stdcall sub_1000CF54(int a1, int a2, int a3, int a4, int a5, float a6)
+int __stdcall FUN_1000cf54(int a1, int a2, int a3, int a4, int a5, float a6)
 {
   grim_select_renderer_backend(1u);
   return off_10053D20(a1, a2, a3, a4, a5, a6);
@@ -9483,7 +9495,7 @@ int __stdcall sub_1000CF54(int a1, int a2, int a3, int a4, int a5, float a6)
 
 // FUN_1000cf7e @ 0x1000CF7E
 // [binja] float* __stdcall sub_1000cf7e(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)
-float *__stdcall sub_1000CF7E(float *a1, float *a2, float *a3, float *a4, float *a5, float a6)
+float *__stdcall FUN_1000cf7e(float *a1, float *a2, float *a3, float *a4, float *a5, float a6)
 {
   double v6; // st7
   double v8; // st6
@@ -9506,7 +9518,7 @@ float *__stdcall sub_1000CF7E(float *a1, float *a2, float *a3, float *a4, float 
 
 // FUN_1000d04f @ 0x1000D04F
 // [binja] int32_t __stdcall sub_1000d04f(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, float arg5, float arg6)
-int __stdcall sub_1000D04F(int a1, int a2, int a3, int a4, float a5, float a6)
+int __stdcall FUN_1000d04f(int a1, int a2, int a3, int a4, float a5, float a6)
 {
   grim_select_renderer_backend(1u);
   return off_10053D24(a1, a2, a3, a4, a5, a6);
@@ -9514,7 +9526,7 @@ int __stdcall sub_1000D04F(int a1, int a2, int a3, int a4, float a5, float a6)
 
 // FUN_1000d07e @ 0x1000D07E
 // [binja] float* __stdcall sub_1000d07e(float* arg1, float* arg2, float* arg3, float* arg4, float arg5, float arg6)
-float *__stdcall sub_1000D07E(float *a1, float *a2, float *a3, float *a4, float a5, float a6)
+float *__stdcall FUN_1000d07e(float *a1, float *a2, float *a3, float *a4, float a5, float a6)
 {
   *a1 = (*a3 - *a2) * a5 + (*a4 - *a2) * a6 + *a2;
   a1[1] = (a3[1] - a2[1]) * a5 + (a4[1] - a2[1]) * a6 + a2[1];
@@ -9626,7 +9638,7 @@ int __stdcall sub_1000D325(int a1, int a2, int a3, int a4, int a5, float a6)
 
 // FUN_1000d34f @ 0x1000D34F
 // [binja] float* __stdcall sub_1000d34f(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)
-float *__stdcall sub_1000D34F(float *a1, float *a2, float *a3, float *a4, float *a5, float a6)
+float *__stdcall FUN_1000d34f(float *a1, float *a2, float *a3, float *a4, float *a5, float a6)
 {
   double v6; // st7
   double v8; // st6
@@ -9656,7 +9668,7 @@ float *__stdcall sub_1000D34F(float *a1, float *a2, float *a3, float *a4, float 
 
 // FUN_1000d420 @ 0x1000D420
 // [binja] int32_t __stdcall sub_1000d420(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)
-int __stdcall sub_1000D420(int a1, int a2, int a3, int a4, int a5, float a6)
+int __stdcall FUN_1000d420(int a1, int a2, int a3, int a4, int a5, float a6)
 {
   grim_select_renderer_backend(1u);
   return off_10053D2C(a1, a2, a3, a4, a5, a6);
@@ -9664,7 +9676,7 @@ int __stdcall sub_1000D420(int a1, int a2, int a3, int a4, int a5, float a6)
 
 // FUN_1000d44a @ 0x1000D44A
 // [binja] float* __stdcall sub_1000d44a(float* arg1, float* arg2, float* arg3, float* arg4, float* arg5, float arg6)
-float *__stdcall sub_1000D44A(float *a1, float *a2, float *a3, float *a4, float *a5, float a6)
+float *__stdcall FUN_1000d44a(float *a1, float *a2, float *a3, float *a4, float *a5, float a6)
 {
   double v6; // st7
   double v8; // st6
@@ -9688,7 +9700,7 @@ float *__stdcall sub_1000D44A(float *a1, float *a2, float *a3, float *a4, float 
 
 // FUN_1000d53d @ 0x1000D53D
 // [binja] int32_t __stdcall sub_1000d53d(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, float arg5, float arg6)
-int __stdcall sub_1000D53D(int a1, int a2, int a3, int a4, float a5, float a6)
+int __stdcall FUN_1000d53d(int a1, int a2, int a3, int a4, float a5, float a6)
 {
   grim_select_renderer_backend(1u);
   return off_10053D30(a1, a2, a3, a4, a5, a6);
@@ -9696,7 +9708,7 @@ int __stdcall sub_1000D53D(int a1, int a2, int a3, int a4, float a5, float a6)
 
 // FUN_1000d56c @ 0x1000D56C
 // [binja] float* __stdcall sub_1000d56c(float* arg1, float* arg2, float* arg3, float* arg4, float arg5, float arg6)
-float *__stdcall sub_1000D56C(float *a1, float *a2, float *a3, float *a4, float a5, float a6)
+float *__stdcall FUN_1000d56c(float *a1, float *a2, float *a3, float *a4, float a5, float a6)
 {
   *a1 = (*a3 - *a2) * a5 + (*a4 - *a2) * a6 + *a2;
   a1[1] = (a3[1] - a2[1]) * a5 + (a4[1] - a2[1]) * a6 + a2[1];
@@ -10020,7 +10032,7 @@ int __stdcall sub_1000DC85(float *a1, float *a2, float *a3)
 
 // FUN_1000e012 @ 0x1000E012
 // [binja] int32_t __stdcall sub_1000e012(float arg1, float arg2, float arg3)
-int __stdcall sub_1000E012(int a1, float a2, float a3, float a4)
+int __stdcall FUN_1000e012(int a1, float a2, float a3, float a4)
 {
   grim_select_renderer_backend(1u);
   return off_10053CDC(a1, a2, a3, a4);
@@ -10050,7 +10062,7 @@ int __stdcall sub_1000E040(int a1, int a2, int a3, int a4)
 
 // FUN_1000e09c @ 0x1000E09C
 // [binja] int32_t __stdcall sub_1000e09c(float arg1, float arg2, float arg3)
-int __stdcall sub_1000E09C(int a1, float a2, float a3, float a4)
+int __stdcall FUN_1000e09c(int a1, float a2, float a3, float a4)
 {
   grim_select_renderer_backend(1u);
   return off_10053CC0(a1, a2, a3, a4);
@@ -10080,7 +10092,7 @@ int __stdcall sub_1000E0CA(int a1, int a2, int a3, int a4)
 
 // FUN_1000e126 @ 0x1000E126
 // [binja] int32_t __stdcall sub_1000e126(float arg1)
-int __stdcall sub_1000E126(int a1, float a2)
+int __stdcall FUN_1000e126(int a1, float a2)
 {
   grim_select_renderer_backend(1u);
   return off_10053CD0(a1, a2);
@@ -10088,7 +10100,7 @@ int __stdcall sub_1000E126(int a1, float a2)
 
 // FUN_1000e142 @ 0x1000E142
 // [binja] float* __stdcall sub_1000e142(float* arg1, float arg2)
-float *__stdcall sub_1000E142(float *a1, float a2)
+float *__stdcall FUN_1000e142(float *a1, float a2)
 {
   float v3; // [esp+8h] [ebp-8h]
   float v4; // [esp+Ch] [ebp-4h]
@@ -10116,7 +10128,7 @@ float *__stdcall sub_1000E142(float *a1, float a2)
 
 // FUN_1000e1bc @ 0x1000E1BC
 // [binja] int32_t __stdcall sub_1000e1bc(float arg1)
-int __stdcall sub_1000E1BC(int a1, float a2)
+int __stdcall FUN_1000e1bc(int a1, float a2)
 {
   grim_select_renderer_backend(1u);
   return off_10053CD4(a1, a2);
@@ -10124,7 +10136,7 @@ int __stdcall sub_1000E1BC(int a1, float a2)
 
 // FUN_1000e1d8 @ 0x1000E1D8
 // [binja] float* __stdcall sub_1000e1d8(float* arg1, float arg2)
-float *__stdcall sub_1000E1D8(float *a1, float a2)
+float *__stdcall FUN_1000e1d8(float *a1, float a2)
 {
   float v3; // [esp+8h] [ebp-8h]
   float v4; // [esp+Ch] [ebp-4h]
@@ -10152,7 +10164,7 @@ float *__stdcall sub_1000E1D8(float *a1, float a2)
 
 // FUN_1000e253 @ 0x1000E253
 // [binja] int32_t __stdcall sub_1000e253(float arg1)
-int __stdcall sub_1000E253(int a1, float a2)
+int __stdcall FUN_1000e253(int a1, float a2)
 {
   grim_select_renderer_backend(1u);
   return off_10053CD8(a1, a2);
@@ -10160,7 +10172,7 @@ int __stdcall sub_1000E253(int a1, float a2)
 
 // FUN_1000e26f @ 0x1000E26F
 // [binja] float* __stdcall sub_1000e26f(float* arg1, float arg2)
-float *__stdcall sub_1000E26F(float *a1, float a2)
+float *__stdcall FUN_1000e26f(float *a1, float a2)
 {
   float v3; // [esp+8h] [ebp-8h]
   float v4; // [esp+Ch] [ebp-4h]
@@ -10188,7 +10200,7 @@ float *__stdcall sub_1000E26F(float *a1, float a2)
 
 // FUN_1000e2eb @ 0x1000E2EB
 // [binja] int32_t __stdcall sub_1000e2eb(int32_t arg1, float arg2)
-int __stdcall sub_1000E2EB(int a1, int a2, float a3)
+int __stdcall FUN_1000e2eb(int a1, int a2, float a3)
 {
   grim_select_renderer_backend(1u);
   return off_10053D00(a1, a2, a3);
@@ -10196,7 +10208,7 @@ int __stdcall sub_1000E2EB(int a1, int a2, float a3)
 
 // FUN_1000e30b @ 0x1000E30B
 // [binja] float* __stdcall sub_1000e30b(float* arg1, float arg2, float arg3)
-float *__stdcall sub_1000E30B(float *a1, float *a2, float a3)
+float *__stdcall FUN_1000e30b(float *a1, float *a2, float a3)
 {
   double v4; // st7
   double v5; // st6
@@ -10315,7 +10327,7 @@ float *__stdcall sub_1000E420(float *a1, float *a2)
 
 // FUN_1000e502 @ 0x1000E502
 // [binja] int32_t __stdcall sub_1000e502(float arg1, float arg2, float arg3)
-int __stdcall sub_1000E502(int a1, float a2, float a3, float a4)
+int __stdcall FUN_1000e502(int a1, float a2, float a3, float a4)
 {
   grim_select_renderer_backend(1u);
   return off_10053CF8(a1, a2, a3, a4);
@@ -10330,7 +10342,7 @@ int sub_1000E530()
 
 // FUN_1000e541 @ 0x1000E541
 // [binja] int32_t __stdcall sub_1000e541(int32_t arg1, float arg2, int32_t arg3, int32_t arg4, int32_t arg5)
-int __stdcall sub_1000E541(int a1, float a2, int a3, int a4, int a5)
+int __stdcall FUN_1000e541(int a1, float a2, int a3, int a4, int a5)
 {
   grim_select_renderer_backend(1u);
   return off_10053CFC(a1, a2, a3, a4, a5);
@@ -10338,7 +10350,7 @@ int __stdcall sub_1000E541(int a1, float a2, int a3, int a4, int a5)
 
 // FUN_1000e568 @ 0x1000E568
 // [binja] float* __stdcall sub_1000e568(float* arg1, float arg2, float* arg3, int32_t arg4, float* arg5)
-float *__stdcall sub_1000E568(float *a1, float a2, float *a3, int a4, float *a5)
+float *__stdcall FUN_1000e568(float *a1, float a2, float *a3, int a4, float *a5)
 {
   int v6; // [esp+0h] [ebp-50h]
   int v7; // [esp+4h] [ebp-4Ch]
@@ -10510,7 +10522,7 @@ float *__stdcall sub_1000E71F(float *a1, float *a2)
 
 // FUN_1000e853 @ 0x1000E853
 // [binja] int32_t __stdcall sub_1000e853(int32_t arg1, float arg2)
-int __stdcall sub_1000E853(int a1, int a2, float a3)
+int __stdcall FUN_1000e853(int a1, int a2, float a3)
 {
   grim_select_renderer_backend(1u);
   return off_10053CCC(a1, a2, a3);
@@ -10518,7 +10530,7 @@ int __stdcall sub_1000E853(int a1, int a2, float a3)
 
 // FUN_1000e873 @ 0x1000E873
 // [binja] float* __stdcall sub_1000e873(float arg1, float arg2, float arg3)
-float *__stdcall sub_1000E873(float *a1, int a2, float a3)
+float *__stdcall FUN_1000e873(float *a1, int a2, float a3)
 {
   float v5[3]; // [esp+0h] [ebp-14h] BYREF
   float *v6; // [esp+10h] [ebp-4h]
@@ -10538,7 +10550,7 @@ float *__stdcall sub_1000E873(float *a1, int a2, float a3)
 
 // FUN_1000e8cf @ 0x1000E8CF
 // [binja] int32_t __stdcall sub_1000e8cf(float arg1, float arg2, float arg3)
-int __stdcall sub_1000E8CF(int a1, float a2, float a3, float a4)
+int __stdcall FUN_1000e8cf(int a1, float a2, float a3, float a4)
 {
   grim_select_renderer_backend(1u);
   return off_10053CBC(a1, a2, a3, a4);
@@ -10761,7 +10773,7 @@ float *__stdcall sub_1000EC9C(float *a1, float *a2)
 
 // FUN_1000ed37 @ 0x1000ED37
 // [binja] int32_t __stdcall sub_1000ed37(int32_t arg1, int32_t arg2, float arg3)
-int __stdcall sub_1000ED37(int a1, int a2, int a3, float a4)
+int __stdcall FUN_1000ed37(int a1, int a2, int a3, float a4)
 {
   grim_select_renderer_backend(1u);
   return off_10053CE4(a1, a2, a3, a4);
@@ -10811,7 +10823,7 @@ float *__stdcall sub_1000ED61(float *a1, float *a2, float *a3, float a4)
 
 // FUN_1000ee44 @ 0x1000EE44
 // [binja] int32_t __stdcall sub_1000ee44(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)
-int __stdcall sub_1000EE44(int a1, int a2, int a3, int a4, int a5, float a6)
+int __stdcall FUN_1000ee44(int a1, int a2, int a3, int a4, int a5, float a6)
 {
   grim_select_renderer_backend(1u);
   return off_10053D04(a1, a2, a3, a4, a5, a6);
@@ -10819,7 +10831,7 @@ int __stdcall sub_1000EE44(int a1, int a2, int a3, int a4, int a5, float a6)
 
 // FUN_1000ee6e @ 0x1000EE6E
 // [binja] int32_t __stdcall sub_1000ee6e(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t arg5, float arg6)
-int __stdcall sub_1000EE6E(int a1, int a2, int a3, int a4, int a5, float a6)
+int __stdcall FUN_1000ee6e(int a1, int a2, int a3, int a4, int a5, float a6)
 {
   float v7; // [esp+0h] [ebp-24h]
   int v8[4]; // [esp+4h] [ebp-20h] BYREF
@@ -10848,7 +10860,7 @@ int __stdcall sub_1000EED6(int a1, int a2, int a3, int a4, float a5, float a6)
 
 // FUN_1000ef05 @ 0x1000EF05
 // [binja] int32_t* __stdcall sub_1000ef05(int32_t* arg1, int32_t* arg2, int32_t arg3, int32_t arg4, float arg5, float arg6)
-_DWORD *__stdcall sub_1000EF05(_DWORD *a1, _DWORD *a2, int a3, int a4, float a5, float a6)
+_DWORD *__stdcall FUN_1000ef05(_DWORD *a1, _DWORD *a2, int a3, int a4, float a5, float a6)
 {
   float v7; // [esp+4h] [ebp-28h]
   int v8[4]; // [esp+Ch] [ebp-20h] BYREF
@@ -11009,7 +11021,7 @@ float *__stdcall sub_1000F1F7(float *a1, float *a2, float *a3)
 
 // FUN_1000f296 @ 0x1000F296
 // [binja] int32_t* __stdcall sub_1000f296(int32_t* arg1, float arg2)
-float *__stdcall sub_1000F296(float *a1, float *a2)
+float *__stdcall FUN_1000f296(float *a1, float *a2)
 {
   float *v2; // ecx
   float *result; // eax
@@ -11050,7 +11062,7 @@ LABEL_4:
 
 // FUN_1000f323 @ 0x1000F323
 // [binja] float* __stdcall sub_1000f323(float* arg1, float* arg2, float* arg3)
-float *__stdcall sub_1000F323(float *a1, float *a2, float *a3)
+float *__stdcall FUN_1000f323(float *a1, float *a2, float *a3)
 {
   float v4; // [esp+8h] [ebp-10h]
   float v5; // [esp+Ch] [ebp-Ch]
@@ -11070,7 +11082,7 @@ float *__stdcall sub_1000F323(float *a1, float *a2, float *a3)
 
 // FUN_1000f38e @ 0x1000F38E
 // [binja] float* __stdcall sub_1000f38e(float* arg1, float* arg2, float* arg3)
-float *__stdcall sub_1000F38E(float *a1, float *a2, float *a3)
+float *__stdcall FUN_1000f38e(float *a1, float *a2, float *a3)
 {
   double v3; // st6
   double v4; // st7
@@ -11097,7 +11109,7 @@ float *__stdcall sub_1000F38E(float *a1, float *a2, float *a3)
 
 // FUN_1000f40e @ 0x1000F40E
 // [binja] float* __stdcall sub_1000f40e(float* arg1, float* arg2, float* arg3)
-float *__stdcall sub_1000F40E(float *a1, float *a2, float *a3)
+float *__stdcall FUN_1000f40e(float *a1, float *a2, float *a3)
 {
   double v3; // st7
   double v4; // st6
@@ -11115,7 +11127,7 @@ float *__stdcall sub_1000F40E(float *a1, float *a2, float *a3)
 
 // FUN_1000f44a @ 0x1000F44A
 // [binja] float* __stdcall sub_1000f44a(float* arg1, float arg2)
-float *__stdcall sub_1000F44A(float *a1, float *a2)
+float *__stdcall FUN_1000f44a(float *a1, float *a2)
 {
   float *v2; // esi
   float *result; // eax
@@ -11158,7 +11170,7 @@ LABEL_3:
 
 // FUN_1000f4ea @ 0x1000F4EA
 // [binja] float* __stdcall sub_1000f4ea(float* arg1, float* arg2, float* arg3)
-float *__stdcall sub_1000F4EA(float *a1, float *a2, float *a3)
+float *__stdcall FUN_1000f4ea(float *a1, float *a2, float *a3)
 {
   double v3; // st5
   double v4; // st6
@@ -11189,7 +11201,7 @@ float *__stdcall sub_1000F4EA(float *a1, float *a2, float *a3)
 
 // FUN_1000f5a9 @ 0x1000F5A9
 // [binja] float* __stdcall sub_1000f5a9(float* arg1, int32_t arg2, int32_t* arg3, int32_t* arg4, int32_t* arg5, int32_t* arg6)
-float *__stdcall sub_1000F5A9(float *a1, int a2, int a3, float *a4, float *a5, float *a6)
+float *__stdcall FUN_1000f5a9(float *a1, int a2, int a3, float *a4, float *a5, float *a6)
 {
   float *v6; // esi
   float *v8; // [esp-4h] [ebp-54h]
@@ -11328,7 +11340,7 @@ LABEL_11:
 
 // FUN_1000f8dc @ 0x1000F8DC
 // [binja] float* __stdcall sub_1000f8dc(float* arg1, float arg2)
-float *__stdcall sub_1000F8DC(float *a1, float *a2)
+float *__stdcall FUN_1000f8dc(float *a1, float *a2)
 {
   float *v2; // esi
   float *result; // eax
@@ -11374,7 +11386,7 @@ LABEL_3:
 
 // FUN_1000f995 @ 0x1000F995
 // [binja] int32_t __stdcall sub_1000f995(int32_t arg1, float arg2, float arg3, float arg4)
-int __stdcall sub_1000F995(int a1, float a2, float a3, float a4)
+int __stdcall FUN_1000f995(int a1, float a2, float a3, float a4)
 {
   int v5[4]; // [esp+Ch] [ebp-10h] BYREF
 
@@ -11385,7 +11397,7 @@ int __stdcall sub_1000F995(int a1, float a2, float a3, float a4)
 
 // FUN_1000f9ce @ 0x1000F9CE
 // [binja] float* __stdcall sub_1000f9ce(float* arg1, float* arg2, void* arg3, int32_t* arg4, float* arg5, int32_t arg6, float* arg7)
-float *__stdcall sub_1000F9CE(float *a1, float *a2, int a3, float *a4, float *a5, int a6, float *a7)
+float *__stdcall FUN_1000f9ce(float *a1, float *a2, int a3, float *a4, float *a5, int a6, float *a7)
 {
   float v7; // ecx
   int v8; // ecx
@@ -11534,7 +11546,7 @@ float *__stdcall sub_1000F9CE(float *a1, float *a2, int a3, float *a4, float *a5
 
 // FUN_1000fc82 @ 0x1000FC82
 // [binja] float* __stdcall sub_1000fc82(float* arg1, float* arg2, int32_t arg3)
-float *__stdcall sub_1000FC82(float *a1, float *a2, int a3)
+float *__stdcall FUN_1000fc82(float *a1, float *a2, int a3)
 {
   double v4; // st7
   double v5; // st6
@@ -11577,7 +11589,7 @@ float *__stdcall sub_1000FC82(float *a1, float *a2, int a3)
 
 // FUN_1000fd5c @ 0x1000FD5C
 // [binja] float* __stdcall sub_1000fd5c(float* arg1, float arg2)
-float *__stdcall sub_1000FD5C(float *a1, int a2)
+float *__stdcall FUN_1000fd5c(float *a1, int a2)
 {
   double v2; // st7
   double v4; // st6
@@ -11777,7 +11789,7 @@ int __stdcall sub_1000FE1B(float *a1, float *a2, float *a3, float *a4, float *a5
 
 // grim_d3d_debug_set_mute @ 0x100101F5
 // loads DebugSetMute from d3d8/d3d8d and toggles D3D debug output
-HMODULE __cdecl sub_100101F5(int a1)
+HMODULE __cdecl grim_d3d_debug_set_mute(int a1)
 {
   HMODULE LibraryA; // eax
   HMODULE result; // eax
@@ -11818,7 +11830,7 @@ LABEL_10:
 
 // FUN_10010285 @ 0x10010285
 // [binja] int32_t* __fastcall sub_10010285(int32_t* arg1)
-_DWORD *__thiscall sub_10010285(_DWORD *this)
+_DWORD *__thiscall FUN_10010285(_DWORD *this)
 {
   *this = 0;
   *(this + 1) = 0;
@@ -11832,7 +11844,7 @@ _DWORD *__thiscall sub_10010285(_DWORD *this)
 
 // FUN_1001029e @ 0x1001029E
 // [binja] int32_t __fastcall sub_1001029e(void* arg1)
-void __thiscall sub_1001029E(int this)
+void __thiscall FUN_1001029e(int this)
 {
   void *v2; // edi
   void *v3; // esi
@@ -11857,7 +11869,7 @@ void __thiscall sub_1001029E(int this)
 
 // FUN_100102f7 @ 0x100102F7
 // [binja] void* __thiscall sub_100102f7(void* arg1, char arg2)
-void *__thiscall sub_100102F7(void *this, char a2)
+void *__thiscall FUN_100102f7(void *this, char a2)
 {
   FUN_1001029e((int)this);
   if ( (a2 & 1) != 0 )
@@ -11867,7 +11879,7 @@ void *__thiscall sub_100102F7(void *this, char a2)
 
 // FUN_10010313 @ 0x10010313
 // [binja] int32_t __thiscall sub_10010313(int32_t* arg1, int32_t* arg2)
-int __thiscall sub_10010313(char *this, _DWORD *a2)
+int __thiscall FUN_10010313(char *this, _DWORD *a2)
 {
   _DWORD *v3; // edx
   void *v4; // eax
@@ -11914,7 +11926,7 @@ LABEL_16:
 
 // FUN_100103d6 @ 0x100103D6
 // [binja] int32_t __thiscall sub_100103d6(int32_t* arg1, void* arg2, void* arg3)
-int __thiscall sub_100103D6(int *this, int a2, unsigned int a3)
+int __thiscall FUN_100103d6(int *this, int a2, unsigned int a3)
 {
   int *v3; // esi
   int v5; // edi
@@ -12421,7 +12433,7 @@ LABEL_77:
 
 // FUN_10010aec @ 0x10010AEC
 // [binja] int32_t __thiscall sub_10010aec(int32_t* arg1, HANDLE arg2)
-int __thiscall sub_10010AEC(int *this, HANDLE hFile, DWORD NumberOfBytesWritten)
+int __thiscall FUN_10010aec(int *this, HANDLE hFile, DWORD NumberOfBytesWritten)
 {
   int v4; // eax
   bool v5; // zf
@@ -12612,7 +12624,7 @@ _DWORD *__cdecl sub_10010E02(int a1, int a2)
 
 // FUN_10010e13 @ 0x10010E13
 // [binja] int32_t __thiscall sub_10010e13(int32_t* arg1, int32_t arg2, int32_t arg3)
-int __thiscall sub_10010E13(_DWORD *this, int a2, int a3)
+int __thiscall FUN_10010e13(_DWORD *this, int a2, int a3)
 {
   int v3; // esi
   _DWORD *v4; // eax
@@ -12739,7 +12751,7 @@ LABEL_25:
 
 // FUN_10011083 @ 0x10011083
 // [binja] int32_t __thiscall sub_10011083(int32_t* arg1, void* arg2, int32_t arg3)
-int __thiscall sub_10011083(int *this, unsigned __int8 *a2, unsigned int a3)
+int __thiscall FUN_10011083(int *this, unsigned __int8 *a2, unsigned int a3)
 {
   int *v3; // esi
   unsigned __int8 v6; // cl
@@ -13071,7 +13083,7 @@ LABEL_80:
 
 // FUN_1001152a @ 0x1001152A
 // [binja] int32_t __thiscall sub_1001152a(int32_t* arg1, char* arg2, int32_t arg3)
-unsigned int __thiscall sub_1001152A(_DWORD *this, _BYTE *a2, unsigned int a3)
+unsigned int __thiscall FUN_1001152a(_DWORD *this, _BYTE *a2, unsigned int a3)
 {
   _BYTE *v5; // edi
   bool v6; // zf
@@ -13255,7 +13267,7 @@ void __cdecl __noreturn sub_100117F3(jmp_buf Buf)
 
 // FUN_100117ff @ 0x100117FF
 // [binja] int32_t __thiscall sub_100117ff(int32_t* arg1, void* arg2, void* arg3)
-int __thiscall sub_100117FF(int *this, int a2, int a3)
+int __thiscall FUN_100117ff(int *this, int a2, int a3)
 {
   int *v3; // eax
   int *v4; // esi
@@ -13591,7 +13603,7 @@ LABEL_97:
 
 // FUN_10011d95 @ 0x10011D95
 // [binja] int32_t __thiscall sub_10011d95(int32_t* arg1, uint32_t arg2, int32_t* arg3)
-int __thiscall sub_10011D95(_DWORD *this, int a2, unsigned int a3)
+int __thiscall FUN_10011d95(_DWORD *this, int a2, unsigned int a3)
 {
   _DWORD *v3; // ebx
   int v5; // eax
@@ -13819,7 +13831,7 @@ LABEL_84:
 
 // FUN_100120d6 @ 0x100120D6
 // [binja] int32_t __thiscall sub_100120d6(int32_t* arg1, HANDLE arg2)
-int __thiscall sub_100120D6(int *this, HANDLE hFile)
+int __thiscall FUN_100120d6(int *this, HANDLE hFile)
 {
   int *i; // eax
   int v4; // eax
@@ -13974,7 +13986,7 @@ LABEL_40:
 
 // FUN_1001237e @ 0x1001237E
 // [binja] int32_t __thiscall sub_1001237e(int32_t* arg1, int32_t arg2, int32_t arg3, int32_t* arg4)
-int __thiscall sub_1001237E(int *this, LPCWCH lpWideCharStr, int a3, LPSTR lpMultiByteStr)
+int __thiscall FUN_1001237e(int *this, LPCWCH lpWideCharStr, int a3, LPSTR lpMultiByteStr)
 {
   int *v4; // esi
   int v5; // edi
@@ -14173,7 +14185,7 @@ LABEL_37:
 
 // FUN_10012647 @ 0x10012647
 // [binja] int32_t __stdcall sub_10012647(int16_t* arg1, void* arg2)
-int __thiscall sub_10012647(int *this, int a2, unsigned int a3)
+int __thiscall FUN_10012647(int *this, int a2, unsigned int a3)
 {
   if ( a3 >= 0xE && *(_WORD *)a2 == 19778 && *(_DWORD *)(a2 + 2) <= a3 )
     return FUN_100103d6(this, a2 + 14, a3 - 14);
@@ -14183,7 +14195,7 @@ int __thiscall sub_10012647(int *this, int a2, unsigned int a3)
 
 // FUN_10012677 @ 0x10012677
 // [binja] int32_t __thiscall sub_10012677(int32_t* arg1, void* arg2, int32_t* arg3, int32_t* arg4, int32_t arg5)
-int __thiscall sub_10012677(int this, unsigned __int8 *a2, unsigned int a3, _DWORD *a4, int a5)
+int __thiscall FUN_10012677(int this, unsigned __int8 *a2, unsigned int a3, _DWORD *a4, int a5)
 {
   int v5; // ebx
   int v7; // eax
@@ -14320,7 +14332,7 @@ LABEL_16:
 
 // FUN_1001284c @ 0x1001284C
 // [binja] int32_t* __fastcall sub_1001284c(int32_t* arg1)
-_DWORD *__thiscall sub_1001284C(_DWORD *this)
+_DWORD *__thiscall FUN_1001284c(_DWORD *this)
 {
   *(this + 1) = 0;
   *this = 0;
@@ -14329,7 +14341,7 @@ _DWORD *__thiscall sub_1001284C(_DWORD *this)
 
 // FUN_10012856 @ 0x10012856
 // [binja] void __fastcall sub_10012856(int32_t* arg1)
-int __thiscall sub_10012856(_DWORD *this)
+int __thiscall FUN_10012856(_DWORD *this)
 {
   int (__thiscall ***v2)(_DWORD, int); // ecx
   int result; // eax
@@ -14510,7 +14522,7 @@ LABEL_34:
 
 // FUN_10012b47 @ 0x10012B47
 // [binja] int32_t* __thiscall sub_10012b47(int32_t* arg1, char arg2)
-void **__thiscall sub_10012B47(void **this, char a2)
+void **__thiscall FUN_10012b47(void **this, char a2)
 {
   if ( (a2 & 2) != 0 )
   {
@@ -14534,7 +14546,7 @@ void **__thiscall sub_10012B47(void **this, char a2)
 
 // FUN_10012b93 @ 0x10012B93
 // [binja] int32_t __fastcall sub_10012b93(int32_t* arg1)
-int __thiscall sub_10012B93(unsigned int *this)
+int __thiscall FUN_10012b93(unsigned int *this)
 {
   unsigned int v2; // edi
   BOOL v3; // edi
@@ -14821,7 +14833,7 @@ LABEL_54:
 
 // FUN_10013007 @ 0x10013007
 // [binja] int32_t __fastcall sub_10013007(int32_t* arg1)
-int __thiscall sub_10013007(_DWORD *this)
+int __thiscall FUN_10013007(_DWORD *this)
 {
   _DWORD *v1; // edi
   unsigned int v2; // esi
@@ -14975,7 +14987,7 @@ int __cdecl sub_10013195(unsigned int *a1, unsigned int a2, int a3, int a4, int 
 
 // FUN_100132bb @ 0x100132BB
 // [binja] int32_t __fastcall sub_100132bb(int32_t* arg1)
-int sub_100132BB()
+int FUN_100132bb()
 {
   return off_10054390();
 }
@@ -15146,14 +15158,14 @@ int sub_10013522()
 
 // FUN_10013551 @ 0x10013551
 // [binja] int32_t __fastcall sub_10013551(int32_t* arg1)
-int sub_10013551()
+int FUN_10013551()
 {
   return off_10054394();
 }
 
 // FUN_10013582 @ 0x10013582
 // [binja] int32_t __fastcall sub_10013582(int32_t* arg1)
-int __fastcall sub_10013582(_DWORD *a1)
+int __fastcall FUN_10013582(_DWORD *a1)
 {
   int v1; // esi
   int v2; // edi
@@ -15225,7 +15237,7 @@ int __fastcall sub_10013582(_DWORD *a1)
 
 // FUN_100136d2 @ 0x100136D2
 // [binja] int32_t __fastcall sub_100136d2(int32_t* arg1)
-int __fastcall sub_100136D2(_DWORD *a1)
+int __fastcall FUN_100136d2(_DWORD *a1)
 {
   int v1; // eax
   int v2; // ebx
@@ -15293,7 +15305,7 @@ int __fastcall sub_100136D2(_DWORD *a1)
 
 // FUN_100137f6 @ 0x100137F6
 // [binja] int32_t __fastcall sub_100137f6(int32_t* arg1)
-int __fastcall sub_100137F6(_DWORD *a1)
+int __fastcall FUN_100137f6(_DWORD *a1)
 {
   int v1; // esi
   char *v2; // edx
@@ -15363,7 +15375,7 @@ int __fastcall sub_100137F6(_DWORD *a1)
 
 // FUN_10013945 @ 0x10013945
 // [binja] int32_t __fastcall sub_10013945(int32_t* arg1)
-int __fastcall sub_10013945(_DWORD *a1)
+int __fastcall FUN_10013945(_DWORD *a1)
 {
   int v1; // esi
   int v2; // edi
@@ -15435,7 +15447,7 @@ int __fastcall sub_10013945(_DWORD *a1)
 
 // FUN_10013a98 @ 0x10013A98
 // [binja] int32_t __fastcall sub_10013a98(int32_t* arg1)
-int __fastcall sub_10013A98(_DWORD *a1)
+int __fastcall FUN_10013a98(_DWORD *a1)
 {
   int v1; // edx
   _BYTE *v2; // ebp
@@ -15515,7 +15527,7 @@ int __fastcall sub_10013A98(_DWORD *a1)
 
 // FUN_10013bd7 @ 0x10013BD7
 // [binja] int32_t __fastcall sub_10013bd7(int32_t* arg1)
-int __thiscall sub_10013BD7(_DWORD *this)
+int __thiscall FUN_10013bd7(_DWORD *this)
 {
   _BYTE *v1; // ebx
   int v2; // eax
@@ -15571,7 +15583,7 @@ int __thiscall sub_10013BD7(_DWORD *this)
 
 // FUN_10013c72 @ 0x10013C72
 // [binja] int32_t __fastcall sub_10013c72(int32_t* arg1)
-int __fastcall sub_10013C72(_DWORD *a1)
+int __fastcall FUN_10013c72(_DWORD *a1)
 {
   int v1; // edx
   int v2; // ebp
@@ -15665,7 +15677,7 @@ int __fastcall sub_10013C72(_DWORD *a1)
 
 // FUN_10013dbe @ 0x10013DBE
 // [binja] int32_t __fastcall sub_10013dbe(int32_t* arg1)
-int __fastcall sub_10013DBE(_DWORD *a1)
+int __fastcall FUN_10013dbe(_DWORD *a1)
 {
   _WORD *v1; // ebp
   int v2; // eax
@@ -15743,7 +15755,7 @@ int __fastcall sub_10013DBE(_DWORD *a1)
 
 // FUN_10013edf @ 0x10013EDF
 // [binja] int32_t __fastcall sub_10013edf(int32_t* arg1)
-int __fastcall sub_10013EDF(_DWORD *a1)
+int __fastcall FUN_10013edf(_DWORD *a1)
 {
   int v1; // edx
   int v2; // ebp
@@ -15837,7 +15849,7 @@ int __fastcall sub_10013EDF(_DWORD *a1)
 
 // FUN_1001402b @ 0x1001402B
 // [binja] int32_t __fastcall sub_1001402b(int32_t* arg1)
-int __fastcall sub_1001402B(_DWORD *a1)
+int __fastcall FUN_1001402b(_DWORD *a1)
 {
   int v1; // edx
   _BYTE *v2; // ebp
@@ -15917,7 +15929,7 @@ int __fastcall sub_1001402B(_DWORD *a1)
 
 // FUN_1001416a @ 0x1001416A
 // [binja] int32_t __fastcall sub_1001416a(int32_t* arg1)
-int __thiscall sub_1001416A(_DWORD *this)
+int __thiscall FUN_1001416a(_DWORD *this)
 {
   _DWORD *v1; // ebx
   _DWORD *v2; // eax
@@ -15973,7 +15985,7 @@ int __thiscall sub_1001416A(_DWORD *this)
 
 // FUN_100142a2 @ 0x100142A2
 // [binja] int32_t __fastcall sub_100142a2(int32_t* arg1)
-int __thiscall sub_100142A2(_DWORD *this)
+int __thiscall FUN_100142a2(_DWORD *this)
 {
   _DWORD *v2; // eax
   _DWORD *v3; // ecx
@@ -16031,7 +16043,7 @@ int __thiscall sub_100142A2(_DWORD *this)
 
 // FUN_10014393 @ 0x10014393
 // [binja] int32_t __fastcall sub_10014393(int32_t* arg1)
-int __thiscall sub_10014393(_DWORD *this)
+int __thiscall FUN_10014393(_DWORD *this)
 {
   _DWORD *v3; // eax
   _DWORD *v4; // ecx
@@ -16156,7 +16168,7 @@ int __thiscall sub_10014393(_DWORD *this)
 
 // FUN_10014595 @ 0x10014595
 // [binja] int32_t __fastcall sub_10014595(int32_t* arg1)
-int __thiscall sub_10014595(_DWORD *this)
+int __thiscall FUN_10014595(_DWORD *this)
 {
   int v3; // edi
   char *v4; // eax
@@ -16283,7 +16295,7 @@ int __thiscall sub_10014595(_DWORD *this)
 
 // FUN_10014799 @ 0x10014799
 // [binja] int32_t __fastcall sub_10014799(int32_t* arg1)
-int __usercall sub_10014799@<eax>(_DWORD *a1@<ecx>, int a2@<edi>, float *a3@<esi>)
+int __usercall FUN_10014799@<eax>(_DWORD *a1@<ecx>, int a2@<edi>, float *a3@<esi>)
 {
   _DWORD *v5; // ecx
   unsigned int v6; // eax
@@ -16573,7 +16585,7 @@ LABEL_44:
 
 // FUN_10014bbc @ 0x10014BBC
 // [binja] int32_t __fastcall sub_10014bbc(int32_t* arg1)
-int __usercall sub_10014BBC@<eax>(_DWORD *a1@<ecx>, unsigned int a2@<edi>, float *a3@<esi>)
+int __usercall FUN_10014bbc@<eax>(_DWORD *a1@<ecx>, unsigned int a2@<edi>, float *a3@<esi>)
 {
   _DWORD *v5; // ecx
   unsigned int v6; // eax
@@ -16907,7 +16919,7 @@ int *__usercall sub_1001504E@<eax>(unsigned int a1@<ebx>, unsigned int a2@<edi>,
 
 // FUN_1001514e @ 0x1001514E
 // [binja] int32_t __fastcall sub_1001514e(int32_t* arg1)
-int __thiscall sub_1001514E(_DWORD *this)
+int __thiscall FUN_1001514e(_DWORD *this)
 {
   _DWORD *v1; // esi
   int v2; // eax
@@ -17130,7 +17142,7 @@ LABEL_27:
 
 // FUN_10015534 @ 0x10015534
 // [binja] int32_t __fastcall sub_10015534(int32_t* arg1)
-int __thiscall sub_10015534(_DWORD *this)
+int __thiscall FUN_10015534(_DWORD *this)
 {
   _DWORD *v1; // esi
   int v2; // eax
@@ -17504,7 +17516,7 @@ LABEL_31:
 
 // FUN_10015c65 @ 0x10015C65
 // [binja] int32_t __fastcall sub_10015c65(int32_t* arg1)
-int __thiscall sub_10015C65(_DWORD *this)
+int __thiscall FUN_10015c65(_DWORD *this)
 {
   int v2; // edx
   BOOL v3; // edi
@@ -17765,7 +17777,7 @@ LABEL_47:
 
 // FUN_10016007 @ 0x10016007
 // [binja] int32_t __thiscall sub_10016007(int32_t* arg1, void*** arg2, void*** arg3, int32_t arg4)
-int __userpurge sub_10016007@<eax>(int *a1@<ecx>, unsigned int a2@<edi>, _DWORD *a3, void *a4, int a5)
+int __userpurge FUN_10016007@<eax>(int *a1@<ecx>, unsigned int a2@<edi>, _DWORD *a3, void *a4, int a5)
 {
   int v6; // eax
   int v7; // eax
@@ -17823,7 +17835,7 @@ LABEL_19:
 
 // FUN_10016121 @ 0x10016121
 // [binja] int32_t* __fastcall sub_10016121(int32_t* arg1)
-void __thiscall sub_10016121(_DWORD *this)
+void __thiscall FUN_10016121(_DWORD *this)
 {
   *this = 0;
   *(this + 1) = 0;
@@ -17833,7 +17845,7 @@ void __thiscall sub_10016121(_DWORD *this)
 
 // FUN_10016131 @ 0x10016131
 // [binja] int32_t __fastcall sub_10016131(char* arg1)
-int __thiscall sub_10016131(_DWORD *this)
+int __thiscall FUN_10016131(_DWORD *this)
 {
   int v2; // eax
   int v3; // edx
@@ -17877,14 +17889,14 @@ int __thiscall sub_10016131(_DWORD *this)
 
 // FUN_1001619a @ 0x1001619A
 // [binja] int32_t* __fastcall sub_1001619a(int32_t* arg1)
-void __thiscall sub_1001619A(_DWORD *this)
+void __thiscall FUN_1001619a(_DWORD *this)
 {
   *this = 0;
 }
 
 // FUN_100161a0 @ 0x100161A0
 // [binja] int32_t __fastcall sub_100161a0(int32_t* arg1)
-int __thiscall sub_100161A0(_DWORD *this)
+int __thiscall FUN_100161a0(_DWORD *this)
 {
   if ( *this )
     (*(void (__stdcall **)(_DWORD))(*(_DWORD *)*this + 40))(*this);
@@ -17894,7 +17906,7 @@ int __thiscall sub_100161A0(_DWORD *this)
 
 // FUN_100161bb @ 0x100161BB
 // [binja] int32_t __thiscall sub_100161bb(char* arg1, int32_t* arg2, int32_t* arg3, int32_t arg4, int32_t* arg5, int32_t arg6, int32_t arg7)
-int __thiscall sub_100161BB(_DWORD *this, _DWORD *a2, _DWORD *a3, int a4, int *a5, int a6, int a7)
+int __thiscall FUN_100161bb(_DWORD *this, _DWORD *a2, _DWORD *a3, int a4, int *a5, int a6, int a7)
 {
   int result; // eax
   unsigned int v8; // ebx
@@ -18159,7 +18171,7 @@ LABEL_77:
 
 // FUN_100165d3 @ 0x100165D3
 // [binja] int32_t __thiscall sub_100165d3(int32_t* arg1, int32_t* arg2, int32_t* arg3, int32_t arg4, int32_t arg5, int32_t arg6, int32_t arg7)
-int __thiscall sub_100165D3(_DWORD *this, _DWORD *a2, int a3, int a4, const void *a5, int a6, int a7)
+int __thiscall FUN_100165d3(_DWORD *this, _DWORD *a2, int a3, int a4, const void *a5, int a6, int a7)
 {
   bool v7; // zf
   unsigned int v8; // ebx
@@ -18345,7 +18357,7 @@ LABEL_70:
 
 // grim_vertex_space_converter_destroy @ 0x1001692E
 // frees the converted vertex buffer at this+0x104c
-void __thiscall sub_1001692E(_DWORD *this)
+void __thiscall grim_vertex_space_converter_destroy(_DWORD *this)
 {
   void *v1; // [esp-4h] [ebp-4h]
 
@@ -18362,7 +18374,7 @@ void __stdcall nullsub_6(int a1, int a2, int a3)
 
 // grim_convert_vertex_space @ 0x10016944
 // converts vec4 coordinates between space modes (1/2/3), writes to this+0x104c, returns the output buffer
-int __thiscall sub_10016944(_DWORD *this, int a2)
+int __thiscall grim_convert_vertex_space(_DWORD *this, int a2)
 {
   unsigned int v2; // esi
   int v3; // edx
@@ -18535,7 +18547,7 @@ void nullsub_3()
 
 // FUN_10016c3c @ 0x10016C3C
 // [binja] int32_t __fastcall sub_10016c3c(void*** arg1)
-void __thiscall sub_10016C3C(int this)
+void __thiscall FUN_10016c3c(int this)
 {
   unsigned int v2; // ebx
   unsigned int j; // edi
@@ -18564,7 +18576,7 @@ void __thiscall sub_10016C3C(int this)
 
 // grim_pixel_format_write_dxt_cache @ 0x10016CDC
 // writes RGBA floats into the DXT block cache and encodes when block data is complete
-void __thiscall sub_10016CDC(int this, int a2, int a3, int a4)
+void __thiscall grim_pixel_format_write_dxt_cache(int this, int a2, int a3, int a4)
 {
   unsigned int v5; // esi
   void *v6; // edi
@@ -18789,7 +18801,7 @@ void __thiscall sub_10016CDC(int this, int a2, int a3, int a4)
 
 // fpu_set_round_trunc @ 0x100170D6
 // sets x87 rounding mode to truncate; saves control word in DAT_1005db6c
-int sub_100170D6()
+int fpu_set_round_trunc()
 {
   int v1; // [esp+0h] [ebp-8h]
 
@@ -18799,7 +18811,7 @@ int sub_100170D6()
 
 // grim_pixel_format_init @ 0x100170F9
 // initializes format descriptor, bytes-per-pixel, palette expansion, and coordinate mode
-float *__thiscall sub_100170F9(float *this, float *a2, unsigned int a3, int a4)
+float *__thiscall grim_pixel_format_init(float *this, float *a2, unsigned int a3, int a4)
 {
   unsigned int v5; // esi
   void *v6; // ecx
@@ -18923,7 +18935,7 @@ float *__thiscall sub_100170F9(float *this, float *a2, unsigned int a3, int a4)
 
 // FUN_10017345 @ 0x10017345
 // [binja] void*** __thiscall sub_10017345(void*** arg1, char arg2)
-_DWORD *__thiscall sub_10017345(_DWORD *this, char a2)
+_DWORD *__thiscall FUN_10017345(_DWORD *this, char a2)
 {
   grim_vertex_space_converter_destroy(this);
   if ( (a2 & 1) != 0 )
@@ -18933,7 +18945,7 @@ _DWORD *__thiscall sub_10017345(_DWORD *this, char a2)
 
 // FUN_10017361 @ 0x10017361
 // [binja] int32_t __thiscall sub_10017361(void* arg1, void* arg2)
-int __thiscall sub_10017361(int *this, int a2)
+int __thiscall FUN_10017361(int *this, int a2)
 {
   int v3; // edi
   void *v4; // ebx
@@ -18959,7 +18971,7 @@ int __thiscall sub_10017361(int *this, int a2)
 
 // FUN_100173dc @ 0x100173DC
 // [binja] int32_t __fastcall sub_100173dc(int32_t* arg1)
-int __thiscall sub_100173DC(_DWORD *this)
+int __thiscall FUN_100173dc(_DWORD *this)
 {
   int v2; // eax
   int v3; // ecx
@@ -19012,7 +19024,7 @@ int __thiscall sub_100173DC(_DWORD *this)
 
 // grim_apply_color_key @ 0x100174A8
 // zeroes RGBA pixels that match the current color key
-void __thiscall sub_100174A8(int this, unsigned int a2)
+void __thiscall grim_apply_color_key(int this, unsigned int a2)
 {
   float *v2; // edx
   unsigned int v3; // esi
@@ -19042,7 +19054,7 @@ void __thiscall sub_100174A8(int this, unsigned int a2)
 
 // FUN_10017518 @ 0x10017518
 // [binja] int16_t __thiscall sub_10017518(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_10017518(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_10017518(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
   int v5; // edi
@@ -19082,7 +19094,7 @@ int __thiscall sub_10017518(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_10017604 @ 0x10017604
 // [binja] int16_t __thiscall sub_10017604(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_10017604(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_10017604(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
   int v5; // edi
@@ -19133,7 +19145,7 @@ int __thiscall sub_10017604(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_10017727 @ 0x10017727
 // [binja] int16_t __thiscall sub_10017727(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_10017727(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_10017727(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
   int v5; // edi
@@ -19180,7 +19192,7 @@ int __thiscall sub_10017727(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_10017828 @ 0x10017828
 // [binja] int16_t __thiscall sub_10017828(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_10017828(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_10017828(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
   int v5; // edi
@@ -19227,7 +19239,7 @@ int __thiscall sub_10017828(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_10017929 @ 0x10017929
 // [binja] int16_t __thiscall sub_10017929(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_10017929(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_10017929(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
   int v5; // edi
@@ -19274,7 +19286,7 @@ int __thiscall sub_10017929(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_10017a2a @ 0x10017A2A
 // [binja] int16_t __thiscall sub_10017a2a(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_10017A2A(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_10017a2a(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
   int v5; // edi
@@ -19325,7 +19337,7 @@ int __thiscall sub_10017A2A(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_10017b47 @ 0x10017B47
 // [binja] int16_t __thiscall sub_10017b47(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_10017B47(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_10017b47(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
   int v5; // edi
@@ -19376,7 +19388,7 @@ int __thiscall sub_10017B47(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_10017c6a @ 0x10017C6A
 // [binja] int16_t __thiscall sub_10017c6a(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_10017C6A(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_10017c6a(_DWORD *this, char a2, char a3, int a4)
 {
   unsigned int v4; // edi
   int v5; // eax
@@ -19423,7 +19435,7 @@ int __thiscall sub_10017C6A(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_10017d68 @ 0x10017D68
 // [binja] int16_t __thiscall sub_10017d68(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_10017D68(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_10017d68(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // edi
   int v5; // eax
@@ -19454,7 +19466,7 @@ int __thiscall sub_10017D68(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_10017e11 @ 0x10017E11
 // [binja] int16_t __thiscall sub_10017e11(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_10017E11(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_10017e11(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
   int v5; // edi
@@ -19505,7 +19517,7 @@ int __thiscall sub_10017E11(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_10017f34 @ 0x10017F34
 // [binja] int16_t __thiscall sub_10017f34(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_10017F34(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_10017f34(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
   int v5; // edi
@@ -19552,7 +19564,7 @@ int __thiscall sub_10017F34(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_10018035 @ 0x10018035
 // [binja] int16_t __thiscall sub_10018035(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_10018035(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_10018035(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
   int v5; // edi
@@ -19603,7 +19615,7 @@ int __thiscall sub_10018035(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_10018158 @ 0x10018158
 // [binja] int16_t __thiscall sub_10018158(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_10018158(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_10018158(_DWORD *this, char a2, char a3, int a4)
 {
   unsigned int v4; // edi
   int v5; // eax
@@ -19642,7 +19654,7 @@ int __thiscall sub_10018158(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_10018228 @ 0x10018228
 // [binja] int16_t __thiscall sub_10018228(void* arg1, int32_t arg2, int32_t arg3, float* arg4)
-int __thiscall sub_10018228(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_10018228(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
   int v5; // ebx
@@ -19702,7 +19714,7 @@ int __thiscall sub_10018228(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_10018340 @ 0x10018340
 // [binja] void* __thiscall sub_10018340(void* arg1, void* arg2, float arg3, void* arg4)
-int __thiscall sub_10018340(float *this, int a2, int a3, int a4)
+int __thiscall FUN_10018340(float *this, int a2, int a3, int a4)
 {
   int result; // eax
   _BYTE *v5; // edx
@@ -19760,7 +19772,7 @@ int __thiscall sub_10018340(float *this, int a2, int a3, int a4)
 
 // FUN_10018405 @ 0x10018405
 // [binja] int16_t __thiscall sub_10018405(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_10018405(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_10018405(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // edi
   int v5; // eax
@@ -19795,7 +19807,7 @@ int __thiscall sub_10018405(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_100184ca @ 0x100184CA
 // [binja] int16_t __thiscall sub_100184ca(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_100184CA(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_100184ca(_DWORD *this, char a2, char a3, int a4)
 {
   unsigned int v4; // edi
   int v5; // eax
@@ -19841,7 +19853,7 @@ int __thiscall sub_100184CA(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_100185c0 @ 0x100185C0
 // [binja] int16_t __thiscall sub_100185c0(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_100185C0(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_100185c0(_DWORD *this, char a2, char a3, int a4)
 {
   unsigned int v4; // edi
   int v5; // eax
@@ -19884,7 +19896,7 @@ int __thiscall sub_100185C0(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_100186ab @ 0x100186AB
 // [binja] int16_t __thiscall sub_100186ab(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_100186AB(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_100186ab(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
   int v5; // edi
@@ -19926,7 +19938,7 @@ int __thiscall sub_100186AB(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_10018780 @ 0x10018780
 // [binja] int16_t __thiscall sub_10018780(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_10018780(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_10018780(_DWORD *this, char a2, char a3, int a4)
 {
   unsigned int v4; // ebx
   int v5; // eax
@@ -19973,7 +19985,7 @@ int __thiscall sub_10018780(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_10018885 @ 0x10018885
 // [binja] int16_t __thiscall sub_10018885(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_10018885(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_10018885(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
   int *v5; // edx
@@ -20023,7 +20035,7 @@ int __thiscall sub_10018885(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_10018990 @ 0x10018990
 // [binja] int16_t __thiscall sub_10018990(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_10018990(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_10018990(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
   int *v5; // edx
@@ -20074,7 +20086,7 @@ int __thiscall sub_10018990(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_10018aca @ 0x10018ACA
 // [binja] int16_t __thiscall sub_10018aca(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_10018ACA(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_10018aca(_DWORD *this, char a2, char a3, int a4)
 {
   unsigned int v4; // ebx
   int v5; // eax
@@ -20113,7 +20125,7 @@ int __thiscall sub_10018ACA(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_10018ba0 @ 0x10018BA0
 // [binja] int16_t __thiscall sub_10018ba0(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_10018BA0(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_10018ba0(_DWORD *this, char a2, char a3, int a4)
 {
   unsigned int v4; // ebx
   int v5; // eax
@@ -20160,7 +20172,7 @@ int __thiscall sub_10018BA0(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_10018caa @ 0x10018CAA
 // [binja] int16_t __thiscall sub_10018caa(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_10018CAA(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_10018caa(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
   int *v5; // edx
@@ -20211,7 +20223,7 @@ int __thiscall sub_10018CAA(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_10018de0 @ 0x10018DE0
 // [binja] int16_t __thiscall sub_10018de0(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_10018DE0(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_10018de0(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // edi
   int v5; // eax
@@ -20246,7 +20258,7 @@ int __thiscall sub_10018DE0(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_10018ea7 @ 0x10018EA7
 // [binja] int16_t __thiscall sub_10018ea7(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_10018EA7(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_10018ea7(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // edi
   int v5; // eax
@@ -20281,7 +20293,7 @@ int __thiscall sub_10018EA7(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_10018f6e @ 0x10018F6E
 // [binja] int16_t __thiscall sub_10018f6e(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_10018F6E(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_10018f6e(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
   int v5; // edi
@@ -20324,7 +20336,7 @@ int __thiscall sub_10018F6E(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_1001905c @ 0x1001905C
 // [binja] int16_t __thiscall sub_1001905c(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_1001905C(_DWORD *this, char a2, char a3, int a4)
+int __thiscall FUN_1001905c(_DWORD *this, char a2, char a3, int a4)
 {
   int v4; // eax
   int v5; // edi
@@ -20370,7 +20382,7 @@ int __thiscall sub_1001905C(_DWORD *this, char a2, char a3, int a4)
 
 // FUN_1001914b @ 0x1001914B
 // [binja] int16_t __thiscall sub_1001914b(void* arg1, int32_t arg2, int32_t arg3, void* arg4)
-int __thiscall sub_1001914B(_DWORD *this, int a2, int a3, int a4)
+int __thiscall FUN_1001914b(_DWORD *this, int a2, int a3, int a4)
 {
   int v4; // eax
   _QWORD *v5; // esi
@@ -20424,7 +20436,7 @@ int __thiscall sub_1001914B(_DWORD *this, int a2, int a3, int a4)
 
 // FUN_100192a7 @ 0x100192A7
 // [binja] void* __thiscall sub_100192a7(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
-void __thiscall sub_100192A7(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_100192a7(_DWORD *this, int a2, int a3, float *a4)
 {
   unsigned __int8 *v4; // eax
   unsigned __int8 *i; // esi
@@ -20446,7 +20458,7 @@ void __thiscall sub_100192A7(_DWORD *this, int a2, int a3, float *a4)
 
 // FUN_10019333 @ 0x10019333
 // [binja] int32_t* __thiscall sub_10019333(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
-void __thiscall sub_10019333(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_10019333(_DWORD *this, int a2, int a3, float *a4)
 {
   unsigned int v4; // eax
   unsigned int i; // esi
@@ -20468,7 +20480,7 @@ void __thiscall sub_10019333(_DWORD *this, int a2, int a3, float *a4)
 
 // FUN_100193d9 @ 0x100193D9
 // [binja] void* __thiscall sub_100193d9(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
-void __thiscall sub_100193D9(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_100193d9(_DWORD *this, int a2, int a3, float *a4)
 {
   unsigned int v4; // eax
   unsigned int i; // esi
@@ -20490,7 +20502,7 @@ void __thiscall sub_100193D9(_DWORD *this, int a2, int a3, float *a4)
 
 // FUN_10019475 @ 0x10019475
 // [binja] int16_t* __thiscall sub_10019475(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
-void __thiscall sub_10019475(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_10019475(_DWORD *this, int a2, int a3, float *a4)
 {
   _WORD *v5; // eax
   _WORD *i; // edi
@@ -20511,7 +20523,7 @@ void __thiscall sub_10019475(_DWORD *this, int a2, int a3, float *a4)
 
 // FUN_1001951a @ 0x1001951A
 // [binja] int16_t* __thiscall sub_1001951a(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
-void __thiscall sub_1001951A(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_1001951a(_DWORD *this, int a2, int a3, float *a4)
 {
   _BYTE *v5; // eax
   _BYTE *i; // edi
@@ -20533,7 +20545,7 @@ void __thiscall sub_1001951A(_DWORD *this, int a2, int a3, float *a4)
 
 // FUN_100195bc @ 0x100195BC
 // [binja] int16_t* __thiscall sub_100195bc(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
-void __thiscall sub_100195BC(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_100195bc(_DWORD *this, int a2, int a3, float *a4)
 {
   _BYTE *v5; // eax
   _BYTE *i; // edi
@@ -20555,7 +20567,7 @@ void __thiscall sub_100195BC(_DWORD *this, int a2, int a3, float *a4)
 
 // FUN_1001966c @ 0x1001966C
 // [binja] void* __thiscall sub_1001966c(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
-void __thiscall sub_1001966C(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_1001966c(_DWORD *this, int a2, int a3, float *a4)
 {
   _BYTE *v5; // eax
   _BYTE *i; // edi
@@ -20577,7 +20589,7 @@ void __thiscall sub_1001966C(_DWORD *this, int a2, int a3, float *a4)
 
 // FUN_1001971b @ 0x1001971B
 // [binja] int32_t* __thiscall sub_1001971b(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
-void __thiscall sub_1001971B(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_1001971b(_DWORD *this, int a2, int a3, float *a4)
 {
   _DWORD *v4; // eax
   _DWORD *i; // edi
@@ -20598,7 +20610,7 @@ void __thiscall sub_1001971B(_DWORD *this, int a2, int a3, float *a4)
 
 // FUN_100197f1 @ 0x100197F1
 // [binja] int32_t* __thiscall sub_100197f1(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
-void __thiscall sub_100197F1(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_100197f1(_DWORD *this, int a2, int a3, float *a4)
 {
   _DWORD *v4; // eax
   _DWORD *i; // esi
@@ -20619,7 +20631,7 @@ void __thiscall sub_100197F1(_DWORD *this, int a2, int a3, float *a4)
 
 // FUN_10019883 @ 0x10019883
 // [binja] char* __thiscall sub_10019883(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
-void __thiscall sub_10019883(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_10019883(_DWORD *this, int a2, int a3, float *a4)
 {
   _BYTE *v5; // eax
   _BYTE *i; // edi
@@ -20640,7 +20652,7 @@ void __thiscall sub_10019883(_DWORD *this, int a2, int a3, float *a4)
 
 // FUN_10019925 @ 0x10019925
 // [binja] char* __thiscall sub_10019925(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
-void __thiscall sub_10019925(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_10019925(_DWORD *this, int a2, int a3, float *a4)
 {
   unsigned __int8 *v4; // eax
   unsigned __int8 *i; // esi
@@ -20661,7 +20673,7 @@ void __thiscall sub_10019925(_DWORD *this, int a2, int a3, float *a4)
 
 // FUN_10019997 @ 0x10019997
 // [binja] char* __thiscall sub_10019997(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
-void __thiscall sub_10019997(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_10019997(_DWORD *this, int a2, int a3, float *a4)
 {
   _BYTE *v5; // eax
   _BYTE *i; // edi
@@ -20683,7 +20695,7 @@ void __thiscall sub_10019997(_DWORD *this, int a2, int a3, float *a4)
 
 // FUN_10019a49 @ 0x10019A49
 // [binja] void* __thiscall sub_10019a49(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
-void __thiscall sub_10019A49(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_10019a49(_DWORD *this, int a2, int a3, float *a4)
 {
   _BYTE *v5; // eax
   _BYTE *i; // edi
@@ -20705,7 +20717,7 @@ void __thiscall sub_10019A49(_DWORD *this, int a2, int a3, float *a4)
 
 // FUN_10019ae8 @ 0x10019AE8
 // [binja] char* __thiscall sub_10019ae8(void* arg1, void* arg2, int32_t arg3, uint32_t arg4)
-void __thiscall sub_10019AE8(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_10019ae8(_DWORD *this, int a2, int a3, float *a4)
 {
   unsigned __int8 *v4; // eax
   float *v6; // edi
@@ -20755,7 +20767,7 @@ void __thiscall sub_10019B6F(_DWORD *this, int a2, int a3, _DWORD *a4)
 
 // FUN_10019bd3 @ 0x10019BD3
 // [binja] char* __thiscall sub_10019bd3(void* arg1, int32_t arg2, int32_t arg3, uint32_t arg4)
-void __thiscall sub_10019BD3(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_10019bd3(_DWORD *this, int a2, int a3, float *a4)
 {
   unsigned __int8 *v4; // eax
   unsigned __int8 *i; // esi
@@ -20778,7 +20790,7 @@ void __thiscall sub_10019BD3(_DWORD *this, int a2, int a3, float *a4)
 
 // FUN_10019c41 @ 0x10019C41
 // [binja] char* __thiscall sub_10019c41(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
-void __thiscall sub_10019C41(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_10019c41(_DWORD *this, int a2, int a3, float *a4)
 {
   unsigned __int8 *v5; // eax
   unsigned __int8 *i; // edi
@@ -20802,7 +20814,7 @@ void __thiscall sub_10019C41(_DWORD *this, int a2, int a3, float *a4)
 
 // FUN_10019cca @ 0x10019CCA
 // [binja] char* __thiscall sub_10019cca(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
-void __thiscall sub_10019CCA(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_10019cca(_DWORD *this, int a2, int a3, float *a4)
 {
   _BYTE *v5; // eax
   _BYTE *i; // edi
@@ -20825,7 +20837,7 @@ void __thiscall sub_10019CCA(_DWORD *this, int a2, int a3, float *a4)
 
 // FUN_10019d53 @ 0x10019D53
 // [binja] char* __thiscall sub_10019d53(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
-void __thiscall sub_10019D53(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_10019d53(_DWORD *this, int a2, int a3, float *a4)
 {
   char *v4; // eax
   char *i; // esi
@@ -20847,7 +20859,7 @@ void __thiscall sub_10019D53(_DWORD *this, int a2, int a3, float *a4)
 
 // FUN_10019dd5 @ 0x10019DD5
 // [binja] char* __thiscall sub_10019dd5(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
-void __thiscall sub_10019DD5(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_10019dd5(_DWORD *this, int a2, int a3, float *a4)
 {
   _BYTE *v5; // eax
   _BYTE *i; // edi
@@ -20871,7 +20883,7 @@ void __thiscall sub_10019DD5(_DWORD *this, int a2, int a3, float *a4)
 
 // FUN_10019e86 @ 0x10019E86
 // [binja] char* __thiscall sub_10019e86(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
-void __thiscall sub_10019E86(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_10019e86(_DWORD *this, int a2, int a3, float *a4)
 {
   char *v4; // eax
   char *i; // esi
@@ -20893,7 +20905,7 @@ void __thiscall sub_10019E86(_DWORD *this, int a2, int a3, float *a4)
 
 // FUN_10019f17 @ 0x10019F17
 // [binja] char* __thiscall sub_10019f17(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
-void __thiscall sub_10019F17(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_10019f17(_DWORD *this, int a2, int a3, float *a4)
 {
   char *v4; // eax
   char *i; // esi
@@ -20915,7 +20927,7 @@ void __thiscall sub_10019F17(_DWORD *this, int a2, int a3, float *a4)
 
 // FUN_10019fae @ 0x10019FAE
 // [binja] int16_t* __thiscall sub_10019fae(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
-void __thiscall sub_10019FAE(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_10019fae(_DWORD *this, int a2, int a3, float *a4)
 {
   __int16 *v4; // eax
   __int16 *i; // esi
@@ -20937,7 +20949,7 @@ void __thiscall sub_10019FAE(_DWORD *this, int a2, int a3, float *a4)
 
 // FUN_1001a031 @ 0x1001A031
 // [binja] int32_t* __thiscall sub_1001a031(void* arg1, uint32_t arg2, int32_t arg3, int32_t arg4)
-void __thiscall sub_1001A031(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_1001a031(_DWORD *this, int a2, int a3, float *a4)
 {
   _DWORD *v4; // eax
   _DWORD *i; // ebx
@@ -20962,7 +20974,7 @@ void __thiscall sub_1001A031(_DWORD *this, int a2, int a3, float *a4)
 
 // FUN_1001a0eb @ 0x1001A0EB
 // [binja] int32_t* __thiscall sub_1001a0eb(void* arg1, uint32_t arg2, int32_t arg3, int32_t arg4)
-void __thiscall sub_1001A0EB(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_1001a0eb(_DWORD *this, int a2, int a3, float *a4)
 {
   _DWORD *v4; // eax
   _DWORD *i; // ebx
@@ -20987,7 +20999,7 @@ void __thiscall sub_1001A0EB(_DWORD *this, int a2, int a3, float *a4)
 
 // FUN_1001a1be @ 0x1001A1BE
 // [binja] int16_t* __thiscall sub_1001a1be(void* arg1, int32_t arg2, int32_t arg3, uint32_t arg4)
-void __thiscall sub_1001A1BE(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_1001a1be(_DWORD *this, int a2, int a3, float *a4)
 {
   unsigned __int16 *v4; // eax
   unsigned __int16 *i; // esi
@@ -21010,7 +21022,7 @@ void __thiscall sub_1001A1BE(_DWORD *this, int a2, int a3, float *a4)
 
 // FUN_1001a22e @ 0x1001A22E
 // [binja] int32_t* __thiscall sub_1001a22e(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
-void __thiscall sub_1001A22E(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_1001a22e(_DWORD *this, int a2, int a3, float *a4)
 {
   _DWORD *v4; // eax
   _DWORD *i; // esi
@@ -21031,7 +21043,7 @@ void __thiscall sub_1001A22E(_DWORD *this, int a2, int a3, float *a4)
 
 // FUN_1001a2bc @ 0x1001A2BC
 // [binja] void* __thiscall sub_1001a2bc(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4)
-void __thiscall sub_1001A2BC(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_1001a2bc(_DWORD *this, int a2, int a3, float *a4)
 {
   unsigned __int16 *v4; // eax
   unsigned __int16 *i; // esi
@@ -21053,7 +21065,7 @@ void __thiscall sub_1001A2BC(_DWORD *this, int a2, int a3, float *a4)
 
 // FUN_1001a348 @ 0x1001A348
 // [binja] uint32_t __thiscall sub_1001a348(uint32_t arg1, uint32_t arg2, int32_t arg3, uint32_t arg4)
-void __thiscall sub_1001A348(_DWORD *this, int a2, int a3, float *a4)
+void __thiscall FUN_1001a348(_DWORD *this, int a2, int a3, float *a4)
 {
   _DWORD *v4; // esi
   _DWORD *i; // [esp+14h] [ebp+8h]
@@ -21075,7 +21087,7 @@ void __thiscall sub_1001A348(_DWORD *this, int a2, int a3, float *a4)
 
 // grim_pixel_format_ctor_r8g8b8 @ 0x1001A428
 // pixel format ctor for D3DFMT_R8G8B8
-float *__thiscall sub_1001A428(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_r8g8b8(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 0x18u, 1);
   *(_DWORD *)this = &off_1004CB6C;
@@ -21084,7 +21096,7 @@ float *__thiscall sub_1001A428(float *this, float *a2)
 
 // grim_pixel_format_init_yuv @ 0x1001A444
 // initializes packed YUV (UYVY/YUY2) cache state and allocates RGB float cache
-int __thiscall sub_1001A444(int this, int a2)
+int __thiscall grim_pixel_format_init_yuv(int this, int a2)
 {
   unsigned int v3; // ecx
   int v4; // ebx
@@ -21134,7 +21146,7 @@ int __thiscall sub_1001A444(int this, int a2)
 
 // grim_pixel_format_ctor_a8r8g8b8 @ 0x1001A53C
 // pixel format ctor for D3DFMT_A8R8G8B8
-float *__thiscall sub_1001A53C(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_a8r8g8b8(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 0x20u, 1);
   *(_DWORD *)this = &off_1004CB8C;
@@ -21143,7 +21155,7 @@ float *__thiscall sub_1001A53C(float *this, float *a2)
 
 // grim_pixel_format_ctor_x8r8g8b8 @ 0x1001A558
 // pixel format ctor for D3DFMT_X8R8G8B8
-float *__thiscall sub_1001A558(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_x8r8g8b8(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 0x20u, 1);
   *(_DWORD *)this = &off_1004CB9C;
@@ -21152,7 +21164,7 @@ float *__thiscall sub_1001A558(float *this, float *a2)
 
 // grim_pixel_format_ctor_r5g6b5 @ 0x1001A579
 // pixel format ctor for D3DFMT_R5G6B5
-float *__thiscall sub_1001A579(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_r5g6b5(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 0x10u, 1);
   *(_DWORD *)this = &off_1004CBAC;
@@ -21161,7 +21173,7 @@ float *__thiscall sub_1001A579(float *this, float *a2)
 
 // grim_pixel_format_flush_yuv_cache @ 0x1001A595
 // flushes cached YUV<->RGB conversions back into packed 16-bit storage
-int __fastcall sub_1001A595(_DWORD *a1)
+int __fastcall grim_pixel_format_flush_yuv_cache(_DWORD *a1)
 {
   unsigned int v1; // edx
   float *v2; // eax
@@ -21254,7 +21266,7 @@ int __fastcall sub_1001A595(_DWORD *a1)
 
 // grim_pixel_format_ctor_x1r5g5b5 @ 0x1001A781
 // pixel format ctor for D3DFMT_X1R5G5B5
-float *__thiscall sub_1001A781(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_x1r5g5b5(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 0x10u, 1);
   *(_DWORD *)this = &off_1004CBDC;
@@ -21263,7 +21275,7 @@ float *__thiscall sub_1001A781(float *this, float *a2)
 
 // grim_pixel_format_ctor_a1r5g5b5 @ 0x1001A79D
 // pixel format ctor for D3DFMT_A1R5G5B5
-float *__thiscall sub_1001A79D(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_a1r5g5b5(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 0x10u, 1);
   *(_DWORD *)this = &off_1004CBEC;
@@ -21272,7 +21284,7 @@ float *__thiscall sub_1001A79D(float *this, float *a2)
 
 // grim_pixel_format_load_yuv_cache @ 0x1001A7B9
 // loads packed YUV pixels into float cache and converts to RGB
-int __thiscall sub_1001A7B9(int this, unsigned int a2, unsigned int a3, int a4)
+int __thiscall grim_pixel_format_load_yuv_cache(int this, unsigned int a2, unsigned int a3, int a4)
 {
   int result; // eax
   unsigned int v6; // eax
@@ -21446,7 +21458,7 @@ int __thiscall sub_1001A7B9(int this, unsigned int a2, unsigned int a3, int a4)
 
 // grim_pixel_format_ctor_a4r4g4b4 @ 0x1001AA8A
 // pixel format ctor for D3DFMT_A4R4G4B4
-float *__thiscall sub_1001AA8A(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_a4r4g4b4(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 0x10u, 1);
   *(_DWORD *)this = &off_1004CC10;
@@ -21455,7 +21467,7 @@ float *__thiscall sub_1001AA8A(float *this, float *a2)
 
 // grim_pixel_format_ctor_r3g3b2 @ 0x1001AAA6
 // pixel format ctor for D3DFMT_R3G3B2
-float *__thiscall sub_1001AAA6(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_r3g3b2(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 8u, 1);
   *(_DWORD *)this = &off_1004CC20;
@@ -21464,7 +21476,7 @@ float *__thiscall sub_1001AAA6(float *this, float *a2)
 
 // grim_pixel_format_ctor_a8 @ 0x1001AAC2
 // pixel format ctor for D3DFMT_A8
-float *__thiscall sub_1001AAC2(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_a8(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 8u, 1);
   *(_DWORD *)this = &off_1004CC30;
@@ -21473,7 +21485,7 @@ float *__thiscall sub_1001AAC2(float *this, float *a2)
 
 // grim_pixel_format_ctor_a8r3g3b2 @ 0x1001AADE
 // pixel format ctor for D3DFMT_A8R3G3B2
-float *__thiscall sub_1001AADE(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_a8r3g3b2(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 0x10u, 1);
   *(_DWORD *)this = &off_1004CC40;
@@ -21482,7 +21494,7 @@ float *__thiscall sub_1001AADE(float *this, float *a2)
 
 // grim_pixel_format_ctor_x4r4g4b4 @ 0x1001AAFA
 // pixel format ctor for D3DFMT_X4R4G4B4
-float *__thiscall sub_1001AAFA(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_x4r4g4b4(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 0x10u, 1);
   *(_DWORD *)this = &off_1004CC50;
@@ -21491,7 +21503,7 @@ float *__thiscall sub_1001AAFA(float *this, float *a2)
 
 // grim_pixel_format_write_yuv_cache @ 0x1001AB16
 // loads YUV cache for coords, copies RGBA floats into cache, marks dirty for flush
-signed int __thiscall sub_1001AB16(_DWORD *this, int a2, int a3, const void *a4)
+signed int __thiscall grim_pixel_format_write_yuv_cache(_DWORD *this, int a2, int a3, const void *a4)
 {
   signed int result; // eax
 
@@ -21513,7 +21525,7 @@ signed int __thiscall sub_1001AB16(_DWORD *this, int a2, int a3, const void *a4)
 
 // grim_pixel_format_ctor_a2b10g10r10 @ 0x1001ABA3
 // pixel format ctor for D3DFMT_A2B10G10R10
-float *__thiscall sub_1001ABA3(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_a2b10g10r10(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 0x20u, 1);
   *(_DWORD *)this = &off_1004CC60;
@@ -21533,7 +21545,7 @@ void __thiscall sub_1001ABBF(_DWORD *this, int a2, int a3, void *a4)
 
 // grim_pixel_format_ctor_g16r16 @ 0x1001AC2E
 // pixel format ctor for D3DFMT_G16R16
-float *__thiscall sub_1001AC2E(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_g16r16(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 0x20u, 1);
   *(_DWORD *)this = &off_1004CC70;
@@ -21542,7 +21554,7 @@ float *__thiscall sub_1001AC2E(float *this, float *a2)
 
 // grim_pixel_format_init_dxt @ 0x1001AC4A
 // initializes DXT block-compressed pixel format (DXT1..DXT5)
-int __thiscall sub_1001AC4A(int this, int a2)
+int __thiscall grim_pixel_format_init_dxt(int this, int a2)
 {
   BOOL v3; // eax
   int v4; // eax
@@ -21641,7 +21653,7 @@ int __thiscall sub_1001AC4A(int this, int a2)
 
 // grim_pixel_format_ctor_a8p8 @ 0x1001AE3C
 // pixel format ctor for D3DFMT_A8P8
-float *__thiscall sub_1001AE3C(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_a8p8(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 0x10u, 1);
   *(_DWORD *)this = &off_1004CC80;
@@ -21650,7 +21662,7 @@ float *__thiscall sub_1001AE3C(float *this, float *a2)
 
 // FUN_1001ae58 @ 0x1001AE58
 // [binja] void*** __thiscall sub_1001ae58(void*** arg1, char arg2)
-_DWORD *__thiscall sub_1001AE58(_DWORD *this, char a2)
+_DWORD *__thiscall FUN_1001ae58(_DWORD *this, char a2)
 {
   j_grim_vertex_space_converter_destroy(this);
   if ( (a2 & 1) != 0 )
@@ -21660,7 +21672,7 @@ _DWORD *__thiscall sub_1001AE58(_DWORD *this, char a2)
 
 // grim_pixel_format_ctor_p8 @ 0x1001AE74
 // pixel format ctor for D3DFMT_P8
-float *__thiscall sub_1001AE74(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_p8(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 8u, 1);
   *(_DWORD *)this = &off_1004CC90;
@@ -21669,7 +21681,7 @@ float *__thiscall sub_1001AE74(float *this, float *a2)
 
 // grim_pixel_format_ctor_l8 @ 0x1001AE90
 // pixel format ctor for D3DFMT_L8
-float *__thiscall sub_1001AE90(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_l8(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 8u, 1);
   *(_DWORD *)this = &off_1004CCA0;
@@ -21678,7 +21690,7 @@ float *__thiscall sub_1001AE90(float *this, float *a2)
 
 // grim_pixel_format_ctor_a8l8 @ 0x1001AEAC
 // pixel format ctor for D3DFMT_A8L8
-float *__thiscall sub_1001AEAC(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_a8l8(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 0x10u, 1);
   *(_DWORD *)this = &off_1004CCB0;
@@ -21687,7 +21699,7 @@ float *__thiscall sub_1001AEAC(float *this, float *a2)
 
 // FUN_1001aec8 @ 0x1001AEC8
 // [binja] void*** __thiscall sub_1001aec8(void*** arg1, char arg2)
-void *__thiscall sub_1001AEC8(void *this, char a2)
+void *__thiscall FUN_1001aec8(void *this, char a2)
 {
   FUN_10016c3c((int)this);
   if ( (a2 & 1) != 0 )
@@ -21697,7 +21709,7 @@ void *__thiscall sub_1001AEC8(void *this, char a2)
 
 // grim_pixel_format_ctor_a4l4 @ 0x1001AEE4
 // pixel format ctor for D3DFMT_A4L4
-float *__thiscall sub_1001AEE4(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_a4l4(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 8u, 1);
   *(_DWORD *)this = &off_1004CCC0;
@@ -21706,7 +21718,7 @@ float *__thiscall sub_1001AEE4(float *this, float *a2)
 
 // FUN_1001af00 @ 0x1001AF00
 // [binja] void* __fastcall sub_1001af00(void* arg1)
-int __thiscall sub_1001AF00(int this)
+int __thiscall FUN_1001af00(int this)
 {
   int v1; // eax
   double v2; // st7
@@ -21735,7 +21747,7 @@ int __thiscall sub_1001AF00(int this)
 
 // grim_pixel_format_ctor_v8u8 @ 0x1001B001
 // pixel format ctor for D3DFMT_V8U8
-float *__thiscall sub_1001B001(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_v8u8(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 0x10u, 2);
   *(_DWORD *)this = &off_1004CCD0;
@@ -21744,7 +21756,7 @@ float *__thiscall sub_1001B001(float *this, float *a2)
 
 // grim_pixel_format_ctor_l6v5u5 @ 0x1001B01D
 // pixel format ctor for D3DFMT_L6V5U5
-float *__thiscall sub_1001B01D(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_l6v5u5(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 0x10u, 2);
   *(_DWORD *)this = &off_1004CCE0;
@@ -21753,7 +21765,7 @@ float *__thiscall sub_1001B01D(float *this, float *a2)
 
 // grim_pixel_format_ctor_x8l8v8u8 @ 0x1001B039
 // pixel format ctor for D3DFMT_X8L8V8U8
-float *__thiscall sub_1001B039(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_x8l8v8u8(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 0x20u, 2);
   *(_DWORD *)this = &off_1004CCF0;
@@ -21762,7 +21774,7 @@ float *__thiscall sub_1001B039(float *this, float *a2)
 
 // grim_pixel_format_ctor_q8w8v8u8 @ 0x1001B055
 // pixel format ctor for D3DFMT_Q8W8V8U8
-float *__thiscall sub_1001B055(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_q8w8v8u8(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 0x20u, 3);
   *(_DWORD *)this = &off_1004CD00;
@@ -21771,7 +21783,7 @@ float *__thiscall sub_1001B055(float *this, float *a2)
 
 // grim_pixel_format_ctor_v16u16 @ 0x1001B071
 // pixel format ctor for D3DFMT_V16U16
-float *__thiscall sub_1001B071(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_v16u16(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 0x20u, 2);
   *(_DWORD *)this = &off_1004CD10;
@@ -21780,7 +21792,7 @@ float *__thiscall sub_1001B071(float *this, float *a2)
 
 // grim_pixel_format_ctor_w11v11u10 @ 0x1001B08D
 // pixel format ctor for D3DFMT_W11V11U10
-float *__thiscall sub_1001B08D(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_w11v11u10(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 0x20u, 2);
   *(_DWORD *)this = &off_1004CD20;
@@ -21789,7 +21801,7 @@ float *__thiscall sub_1001B08D(float *this, float *a2)
 
 // grim_pixel_format_ctor_a2w10v10u10 @ 0x1001B0A9
 // pixel format ctor for D3DFMT_A2W10V10U10
-float *__thiscall sub_1001B0A9(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_a2w10v10u10(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 0x20u, 2);
   *(_DWORD *)this = &off_1004CD30;
@@ -21798,7 +21810,7 @@ float *__thiscall sub_1001B0A9(float *this, float *a2)
 
 // grim_pixel_format_ctor_d16_lockable @ 0x1001B0C5
 // pixel format ctor for D3DFMT_D16_LOCKABLE
-float *__thiscall sub_1001B0C5(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_d16_lockable(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 0x10u, 1);
   *(_DWORD *)this = &off_1004CD40;
@@ -21807,7 +21819,7 @@ float *__thiscall sub_1001B0C5(float *this, float *a2)
 
 // grim_pixel_format_ctor_l16 @ 0x1001B0E1
 // pixel format ctor for FourCC L16 (16-bit luminance)
-float *__thiscall sub_1001B0E1(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_l16(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 0x10u, 1);
   *(_DWORD *)this = &off_1004CD50;
@@ -21816,7 +21828,7 @@ float *__thiscall sub_1001B0E1(float *this, float *a2)
 
 // grim_pixel_format_read_dxt_cache @ 0x1001B0FD
 // decodes DXT blocks into cache on demand and copies RGBA floats to output (color key aware)
-unsigned int __thiscall sub_1001B0FD(unsigned int this, int a2, int a3, float *a4)
+unsigned int __thiscall grim_pixel_format_read_dxt_cache(unsigned int this, int a2, int a3, float *a4)
 {
   int v4; // esi
   void *v5; // eax
@@ -21929,7 +21941,7 @@ unsigned int __thiscall sub_1001B0FD(unsigned int this, int a2, int a3, float *a
 
 // grim_pixel_format_ctor_al16 @ 0x1001B3A6
 // pixel format ctor for FourCC AL16
-float *__thiscall sub_1001B3A6(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_al16(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 0x20u, 1);
   *(_DWORD *)this = &off_1004CD60;
@@ -21938,7 +21950,7 @@ float *__thiscall sub_1001B3A6(float *this, float *a2)
 
 // grim_pixel_format_ctor_r16 @ 0x1001B3C2
 // pixel format ctor for FourCC R16
-float *__thiscall sub_1001B3C2(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_r16(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 0x30u, 1);
   *(_DWORD *)this = &off_1004CD70;
@@ -21947,7 +21959,7 @@ float *__thiscall sub_1001B3C2(float *this, float *a2)
 
 // grim_pixel_format_ctor_ar16 @ 0x1001B3DE
 // pixel format ctor for FourCC AR16
-float *__thiscall sub_1001B3DE(float *this, float *a2)
+float *__thiscall grim_pixel_format_ctor_ar16(float *this, float *a2)
 {
   grim_pixel_format_init(this, a2, 0x40u, 1);
   *(_DWORD *)this = &off_1004CD80;
@@ -21956,7 +21968,7 @@ float *__thiscall sub_1001B3DE(float *this, float *a2)
 
 // grim_pixel_format_ctor_dxt1 @ 0x1001B3FA
 // pixel format ctor for FourCC DXT1
-_DWORD *__thiscall sub_1001B3FA(_DWORD *this, int a2)
+_DWORD *__thiscall grim_pixel_format_ctor_dxt1(_DWORD *this, int a2)
 {
   grim_pixel_format_init_dxt((int)this, a2);
   *this = &off_1004CD90;
@@ -21965,7 +21977,7 @@ _DWORD *__thiscall sub_1001B3FA(_DWORD *this, int a2)
 
 // grim_pixel_format_ctor_dxt2 @ 0x1001B412
 // pixel format ctor for FourCC DXT2
-_DWORD *__thiscall sub_1001B412(_DWORD *this, int a2)
+_DWORD *__thiscall grim_pixel_format_ctor_dxt2(_DWORD *this, int a2)
 {
   grim_pixel_format_init_dxt((int)this, a2);
   *this = &off_1004CDA0;
@@ -21974,7 +21986,7 @@ _DWORD *__thiscall sub_1001B412(_DWORD *this, int a2)
 
 // grim_pixel_format_ctor_dxt3 @ 0x1001B42A
 // pixel format ctor for FourCC DXT3
-_DWORD *__thiscall sub_1001B42A(_DWORD *this, int a2)
+_DWORD *__thiscall grim_pixel_format_ctor_dxt3(_DWORD *this, int a2)
 {
   grim_pixel_format_init_dxt((int)this, a2);
   *this = &off_1004CDB0;
@@ -21983,7 +21995,7 @@ _DWORD *__thiscall sub_1001B42A(_DWORD *this, int a2)
 
 // grim_pixel_format_ctor_dxt4 @ 0x1001B442
 // pixel format ctor for FourCC DXT4
-_DWORD *__thiscall sub_1001B442(_DWORD *this, int a2)
+_DWORD *__thiscall grim_pixel_format_ctor_dxt4(_DWORD *this, int a2)
 {
   grim_pixel_format_init_dxt((int)this, a2);
   *this = &off_1004CDC0;
@@ -21992,7 +22004,7 @@ _DWORD *__thiscall sub_1001B442(_DWORD *this, int a2)
 
 // grim_pixel_format_ctor_dxt5 @ 0x1001B45A
 // pixel format ctor for FourCC DXT5
-_DWORD *__thiscall sub_1001B45A(_DWORD *this, int a2)
+_DWORD *__thiscall grim_pixel_format_ctor_dxt5(_DWORD *this, int a2)
 {
   grim_pixel_format_init_dxt((int)this, a2);
   *this = &off_1004CDD0;
@@ -22001,7 +22013,7 @@ _DWORD *__thiscall sub_1001B45A(_DWORD *this, int a2)
 
 // FUN_1001b472 @ 0x1001B472
 // [binja] void*** __thiscall sub_1001b472(void*** arg1, char arg2)
-void *__thiscall sub_1001B472(void *this, char a2)
+void *__thiscall FUN_1001b472(void *this, char a2)
 {
   j_FUN_10016c3c((int)this);
   if ( (a2 & 1) != 0 )
@@ -22011,7 +22023,7 @@ void *__thiscall sub_1001B472(void *this, char a2)
 
 // FUN_1001b493 @ 0x1001B493
 // [binja] int32_t __fastcall sub_1001b493(void*** arg1)
-void __thiscall sub_1001B493(int this)
+void __thiscall FUN_1001b493(int this)
 {
   *(_DWORD *)this = &off_1004CB7C;
   grim_pixel_format_flush_yuv_cache((_DWORD *)this);
@@ -22022,7 +22034,7 @@ void __thiscall sub_1001B493(int this)
 
 // grim_pixel_format_ctor_uyvy @ 0x1001B4DC
 // pixel format ctor for FourCC UYVY
-_DWORD *__thiscall sub_1001B4DC(_DWORD *this, int a2)
+_DWORD *__thiscall grim_pixel_format_ctor_uyvy(_DWORD *this, int a2)
 {
   grim_pixel_format_init_yuv((int)this, a2);
   *this = &off_1004CDE0;
@@ -22031,7 +22043,7 @@ _DWORD *__thiscall sub_1001B4DC(_DWORD *this, int a2)
 
 // grim_pixel_format_ctor_yuy2 @ 0x1001B4F4
 // pixel format ctor for FourCC YUY2
-_DWORD *__thiscall sub_1001B4F4(_DWORD *this, int a2)
+_DWORD *__thiscall grim_pixel_format_ctor_yuy2(_DWORD *this, int a2)
 {
   grim_pixel_format_init_yuv((int)this, a2);
   *this = &off_1004CDF0;
@@ -22040,7 +22052,7 @@ _DWORD *__thiscall sub_1001B4F4(_DWORD *this, int a2)
 
 // grim_pixel_format_create @ 0x1001B50C
 // factory: picks pixel format implementation from FourCC/D3DFORMAT
-_DWORD *__cdecl sub_1001B50C(float *a1)
+_DWORD *__cdecl grim_pixel_format_create(float *a1)
 {
   int v1; // eax
   _DWORD *v2; // esi
@@ -22473,7 +22485,7 @@ LABEL_105:
 
 // FUN_1001bc84 @ 0x1001BC84
 // [binja] void*** __thiscall sub_1001bc84(void*** arg1, char arg2)
-void *__thiscall sub_1001BC84(void *this, char a2)
+void *__thiscall FUN_1001bc84(void *this, char a2)
 {
   j_FUN_1001b493((int)this);
   if ( (a2 & 1) != 0 )
@@ -22483,7 +22495,7 @@ void *__thiscall sub_1001BC84(void *this, char a2)
 
 // FUN_1001bca5 @ 0x1001BCA5
 // [binja] int32_t* __fastcall sub_1001bca5(int32_t* arg1)
-_DWORD *__thiscall sub_1001BCA5(_DWORD *this)
+_DWORD *__thiscall FUN_1001bca5(_DWORD *this)
 {
   *this = -1;
   *(this + 1) = -1;
@@ -22494,7 +22506,7 @@ _DWORD *__thiscall sub_1001BCA5(_DWORD *this)
 
 // FUN_1001bcb7 @ 0x1001BCB7
 // [binja] int32_t __thiscall sub_1001bcb7(int32_t* arg1, int32_t* arg2, int32_t* arg3)
-int __thiscall sub_1001BCB7(int this, LPCWCH lpWideCharStr, LPSTR lpMultiByteStr)
+int __thiscall FUN_1001bcb7(int this, LPCWCH lpWideCharStr, LPSTR lpMultiByteStr)
 {
   void *v5; // esp
   HANDLE FileW; // eax
@@ -22548,7 +22560,7 @@ LABEL_8:
 
 // FUN_1001bdc7 @ 0x1001BDC7
 // [binja] int32_t __thiscall sub_1001bdc7(void** arg1, int32_t arg2, int32_t* arg3)
-int __thiscall sub_1001BDC7(_DWORD *this, LPCWCH lpWideCharStr, LPSTR lpMultiByteStr)
+int __thiscall FUN_1001bdc7(_DWORD *this, LPCWCH lpWideCharStr, LPSTR lpMultiByteStr)
 {
   const WCHAR *v3; // ebx
   _DWORD *v4; // edi
@@ -22591,7 +22603,7 @@ LABEL_8:
 
 // FUN_1001bed2 @ 0x1001BED2
 // [binja] void __fastcall sub_1001bed2(int32_t* arg1)
-void __thiscall sub_1001BED2(int this)
+void __thiscall FUN_1001bed2(int this)
 {
   const void *v2; // eax
 
@@ -22639,7 +22651,7 @@ BOOL __cdecl sub_1001BEDD(int a1, LPCSTR lpValueName, LPBYTE lpData, DWORD cbDat
 
 // FUN_1001bf39 @ 0x1001BF39
 // [binja] int32_t __fastcall sub_1001bf39(int32_t arg1)
-BOOL sub_1001BF39()
+BOOL FUN_1001bf39()
 {
   _EAX = 1;
   __asm { cpuid }
@@ -22679,7 +22691,7 @@ int sub_1001BF5E()
 
 // FUN_1001bff7 @ 0x1001BFF7
 // [binja] int32_t __fastcall sub_1001bff7(int32_t arg1)
-BOOL sub_1001BFF7()
+BOOL FUN_1001bff7()
 {
   int v11; // [esp+Ch] [ebp-4h]
 
@@ -22697,7 +22709,7 @@ BOOL sub_1001BFF7()
 
 // FUN_1001c02f @ 0x1001C02F
 // [binja] int32_t __fastcall sub_1001c02f(int32_t arg1)
-int sub_1001C02F()
+int FUN_1001c02f()
 {
   _DWORD v11[7]; // [esp-Ch] [ebp-48h] BYREF
   int v12; // [esp+10h] [ebp-2Ch]
@@ -22781,7 +22793,7 @@ LABEL_11:
 
 // grim_select_renderer_backend @ 0x1001C188
 // copies the render backend vtable and selects D3DX/alt paths based on config
-int __stdcall sub_1001C188(int Data)
+int __stdcall grim_select_renderer_backend(int Data)
 {
   if ( Data )
   {
@@ -25116,7 +25128,7 @@ _DWORD *__cdecl sub_1001E0FA(_DWORD *a1, int a2, int a3, int a4)
 
 // png_error @ 0x1001E114
 // png error handler: call error_fn then longjmp
-void __cdecl __noreturn sub_1001E114(jmp_buf Buf, int a2)
+void __cdecl __noreturn png_error(jmp_buf Buf, int a2)
 {
   void (__cdecl *v2)(int *__attribute__((__org_typedef(jmp_buf))), int); // eax
 
@@ -25128,7 +25140,7 @@ void __cdecl __noreturn sub_1001E114(jmp_buf Buf, int a2)
 
 // png_warning @ 0x1001E132
 // png warning handler: call warning_fn
-int (__cdecl *__cdecl sub_1001E132(int a1, int a2))(int, int)
+int (__cdecl *__cdecl png_warning(int a1, int a2))(int, int)
 {
   int (__cdecl *result)(int, int); // eax
 
@@ -25139,7 +25151,7 @@ int (__cdecl *__cdecl sub_1001E132(int a1, int a2))(int, int)
 }
 
 // FUN_1001e147 @ 0x1001E147
-void __cdecl __noreturn sub_1001E147(jmp_buf Buf, const void *a2)
+void __cdecl __noreturn FUN_1001e147(jmp_buf Buf, const void *a2)
 {
   int v2[20]; // [esp+0h] [ebp-50h] BYREF
 
@@ -25148,7 +25160,7 @@ void __cdecl __noreturn sub_1001E147(jmp_buf Buf, const void *a2)
 }
 
 // FUN_1001e16c @ 0x1001E16C
-int (__cdecl *__cdecl sub_1001E16C(int a1, const void *a2))(int, int)
+int (__cdecl *__cdecl FUN_1001e16c(int a1, const void *a2))(int, int)
 {
   _BYTE v3[80]; // [esp+0h] [ebp-50h] BYREF
 
@@ -25158,7 +25170,7 @@ int (__cdecl *__cdecl sub_1001E16C(int a1, const void *a2))(int, int)
 
 // png_create_read_struct @ 0x1001E191
 // allocates png_struct, initializes zlib stream, checks version; error_fn/warn_fn are png_error_ptr callbacks
-jmp_buf __cdecl sub_1001E191(_BYTE *a1, int a2, int a3, int a4)
+jmp_buf __cdecl png_create_read_struct(_BYTE *a1, int a2, int a3, int a4)
 {
   int *v4; // eax
   int v6; // eax
@@ -25197,14 +25209,14 @@ jmp_buf __cdecl sub_1001E191(_BYTE *a1, int a2, int a3, int a4)
 }
 
 // FUN_1001e294 @ 0x1001E294
-int __cdecl sub_1001E294(jmp_buf Buf, int a2)
+int __cdecl FUN_1001e294(jmp_buf Buf, int a2)
 {
   int *__attribute__((__org_typedef(jmp_buf))) v2; // esi
   unsigned __int8 v3; // al
   unsigned int v4; // ebx
   int v5; // edi
   _DWORD *v6; // ebx
-  size_t v7; // edi
+  size_t uint_32; // edi
   int result; // eax
   int v9; // [esp-18h] [ebp-24h]
 
@@ -25237,38 +25249,38 @@ int __cdecl sub_1001E294(jmp_buf Buf, int a2)
         while ( 1 )
         {
           png_read_data(v2, (int)&Buf, 4);
-          v7 = png_get_uint_32(&Buf);
+          uint_32 = png_get_uint_32(&Buf);
           png_reset_crc(v2);
           png_crc_read(v2, (int)(v2 + 67), 4);
           if ( *v6 != *(_DWORD *)"IHDR" )
             break;
-          FUN_10025163(v2, a2, v7);
+          FUN_10025163(v2, a2, uint_32);
         }
         if ( *v6 != *(_DWORD *)"PLTE" )
           break;
-        FUN_10025359(v2, a2, v7);
+        FUN_10025359(v2, a2, uint_32);
       }
       if ( *v6 != *(_DWORD *)"IEND" )
         break;
-      FUN_10025483(v2, a2, v7);
+      FUN_10025483(v2, a2, uint_32);
     }
     if ( *v6 == *(_DWORD *)"IDAT" )
       break;
     if ( *v6 == *(_DWORD *)"gAMA" )
     {
-      FUN_100254cd(v2, a2, v7);
+      FUN_100254cd(v2, a2, uint_32);
     }
     else if ( *v6 == *(_DWORD *)"sRGB" )
     {
-      FUN_100255d8(v2, a2, v7);
+      FUN_100255d8(v2, a2, uint_32);
     }
     else if ( *v6 == *(_DWORD *)"tRNS" )
     {
-      FUN_100256c7(v2, a2, v7);
+      FUN_100256c7(v2, a2, uint_32);
     }
     else
     {
-      FUN_1002587e(v2, a2, v7);
+      FUN_1002587e(v2, a2, uint_32);
     }
   }
   result = v2[22];
@@ -25277,12 +25289,12 @@ int __cdecl sub_1001E294(jmp_buf Buf, int a2)
   if ( *((_BYTE *)v2 + 278) == 3 && (result & 2) == 0 )
     png_error(v2, (int)"Missing PLTE before IDAT");
   v2[22] |= 4u;
-  v2[63] = v7;
+  v2[63] = uint_32;
   return result;
 }
 
 // FUN_1001e407 @ 0x1001E407
-int __cdecl sub_1001E407(jmp_buf Buf, int a2)
+int __cdecl FUN_1001e407(jmp_buf Buf, int a2)
 {
   if ( (Buf[23] & 0x40) == 0 )
     FUN_10024f3b(Buf);
@@ -25290,7 +25302,7 @@ int __cdecl sub_1001E407(jmp_buf Buf, int a2)
 }
 
 // FUN_1001e427 @ 0x1001E427
-int (__cdecl *__cdecl sub_1001E427(jmp_buf Buf, int a2, int a3))(jmp_buf, int, _DWORD)
+int (__cdecl *__cdecl FUN_1001e427(jmp_buf Buf, int a2, int a3))(jmp_buf, int, _DWORD)
 {
   int *__attribute__((__org_typedef(jmp_buf))) v3; // esi
   int (__cdecl *result)(int *__attribute__((__org_typedef(jmp_buf))), int, _DWORD); // eax
@@ -25461,7 +25473,7 @@ LABEL_59:
 }
 
 // FUN_1001e7ce @ 0x1001E7CE
-int (__cdecl *__cdecl sub_1001E7CE(jmp_buf Buf, int *a2))(jmp_buf, int, _DWORD)
+int (__cdecl *__cdecl FUN_1001e7ce(jmp_buf Buf, int *a2))(jmp_buf, int, _DWORD)
 {
   int (__cdecl *result)(int *__attribute__((__org_typedef(jmp_buf))), int, _DWORD); // eax
   int v4; // edi
@@ -25496,7 +25508,7 @@ int (__cdecl *__cdecl sub_1001E7CE(jmp_buf Buf, int *a2))(jmp_buf, int, _DWORD)
 }
 
 // FUN_1001e81b @ 0x1001E81B
-int __cdecl sub_1001E81B(int a1, int a2, int a3)
+int __cdecl FUN_1001e81b(int a1, int a2, int a3)
 {
   int v3; // edi
   int v4; // esi
@@ -25642,7 +25654,7 @@ int __cdecl sub_1001EA2E(int a1, int a2, _DWORD *a3)
 }
 
 // FUN_1001ea59 @ 0x1001EA59
-int __cdecl sub_1001EA59(
+int __cdecl FUN_1001ea59(
         int a1,
         int a2,
         unsigned int *a3,
@@ -27442,7 +27454,7 @@ LABEL_7:
 }
 
 // FUN_1001fd2d @ 0x1001FD2D
-void __cdecl sub_1001FD2D(jmp_buf Buf)
+void __cdecl FUN_1001fd2d(jmp_buf Buf)
 {
   long double v2; // st7
   int v3; // eax
@@ -27591,7 +27603,7 @@ void __cdecl sub_1001FD2D(jmp_buf Buf)
 }
 
 // FUN_10020036 @ 0x10020036
-void __cdecl sub_10020036(jmp_buf Buf)
+void __cdecl FUN_10020036(jmp_buf Buf)
 {
   int v2; // edi
   int v3; // ecx
@@ -27659,7 +27671,7 @@ void __cdecl sub_10020036(jmp_buf Buf)
 }
 
 // FUN_10020149 @ 0x10020149
-void __cdecl sub_10020149(jmp_buf Buf)
+void __cdecl FUN_10020149(jmp_buf Buf)
 {
   if ( !Buf[55] )
     png_error(Buf, (int)"NULL row buffer");
@@ -27714,7 +27726,7 @@ void __cdecl sub_10020301(int a1, int a2, double a3)
 }
 
 // FUN_1002031c @ 0x1002031C
-void __cdecl sub_1002031C(int a1, int a2, unsigned int a3, int a4, char a5, char a6, char a7, char a8, char a9)
+void __cdecl FUN_1002031c(int a1, int a2, unsigned int a3, int a4, char a5, char a6, char a7, char a8, char a9)
 {
   unsigned __int8 v9; // al
 
@@ -27809,7 +27821,7 @@ void __cdecl sub_10020435(int a1, int a2, int a3, int a4, int a5)
 
 // png_read_data @ 0x1002047C
 // png read callback wrapper (errors if NULL)
-int __cdecl sub_1002047C(jmp_buf Buf, int a2, int a3)
+int __cdecl png_read_data(jmp_buf Buf, int a2, int a3)
 {
   int (__cdecl *v3)(int *__attribute__((__org_typedef(jmp_buf))), int, int); // eax
 
@@ -27820,7 +27832,7 @@ int __cdecl sub_1002047C(jmp_buf Buf, int a2, int a3)
 }
 
 // FUN_100204a4 @ 0x100204A4
-int (__cdecl *__cdecl sub_100204A4(_DWORD *a1, int a2, int (__cdecl *a3)(int, int)))(int, int)
+int (__cdecl *__cdecl FUN_100204a4(_DWORD *a1, int a2, int (__cdecl *a3)(int, int)))(int, int)
 {
   bool v3; // zf
   int (__cdecl *result)(int, int); // eax
@@ -27862,7 +27874,7 @@ int __cdecl sub_100204E3(int a1, unsigned int a2, unsigned int a3)
 }
 
 // FUN_1002052b @ 0x1002052B
-char *__cdecl sub_1002052B(jmp_buf Buf, int a2, int a3)
+char *__cdecl FUN_1002052b(jmp_buf Buf, int a2, int a3)
 {
   unsigned int v3; // esi
   char *v4; // edx
@@ -27894,7 +27906,7 @@ char *__cdecl sub_1002052B(jmp_buf Buf, int a2, int a3)
 
 // png_reset_crc @ 0x10020583
 // reset png CRC state
-int __cdecl sub_10020583(int a1)
+int __cdecl png_reset_crc(int a1)
 {
   int result; // eax
 
@@ -27905,7 +27917,7 @@ int __cdecl sub_10020583(int a1)
 
 // FUN_100205da @ 0x100205DA
 // [binja] void sub_100205da(int32_t arg1)
-int __cdecl sub_100205DA(int a1, void *a2)
+int __cdecl FUN_100205da(int a1, void *a2)
 {
   memset(a2, 0, 0x40u);
   return 0;
@@ -27926,7 +27938,7 @@ void *__cdecl sub_100205E8(int a1)
 
 // grim_dxt_decode_rgb565 @ 0x1002060E
 // unpacks RGB565 into RGBA floats (alpha=1)
-float *__usercall sub_1002060E@<eax>(float *result@<eax>, unsigned int a2@<ecx>)
+float *__usercall grim_dxt_decode_rgb565@<eax>(float *result@<eax>, unsigned int a2@<ecx>)
 {
   *result = (double)((unsigned __int16)a2 >> 11) * 0.032258064;
   result[1] = (double)((a2 >> 5) & 0x3F) * 0.015873017;
@@ -27937,7 +27949,7 @@ float *__usercall sub_1002060E@<eax>(float *result@<eax>, unsigned int a2@<ecx>)
 
 // grim_dxt_unpremultiply_rgba_block @ 0x1002065A
 // divides rgb by alpha for a 4x4 RGBA block
-int __fastcall sub_1002065A(float *a1)
+int __fastcall grim_dxt_unpremultiply_rgba_block(float *a1)
 {
   int v1; // edx
   double v2; // st7
@@ -27985,7 +27997,7 @@ LABEL_15:
 
 // grim_dxt_premultiply_rgba_block @ 0x100206D8
 // multiplies rgb by alpha for a 4x4 RGBA block
-int __usercall sub_100206D8@<eax>(float *a1@<eax>, float *a2@<ecx>)
+int __usercall grim_dxt_premultiply_rgba_block@<eax>(float *a1@<eax>, float *a2@<ecx>)
 {
   int v2; // edx
   double v3; // st7
@@ -28017,7 +28029,7 @@ int sub_10020708()
 
 // grim_dxt_pack_rgb565 @ 0x1002072B
 // clamps rgb floats and packs into RGB565
-int __thiscall sub_1002072B(float *this)
+int __thiscall grim_dxt_pack_rgb565(float *this)
 {
   double v1; // st6
   double v2; // st6
@@ -28083,7 +28095,7 @@ LABEL_19:
 
 // grim_dxt5_optimize_alpha_endpoints @ 0x10020825
 // iteratively chooses DXT5 alpha endpoints for 6/8-alpha modes
-float *__cdecl sub_10020825(float *a1, float *a2, int a3, unsigned int a4)
+float *__cdecl grim_dxt5_optimize_alpha_endpoints(float *a1, float *a2, int a3, unsigned int a4)
 {
   unsigned int v4; // esi
   float *v5; // ebx
@@ -28272,7 +28284,7 @@ LABEL_38:
 
 // grim_dxt1_optimize_color_endpoints @ 0x10020B2A
 // optimizes DXT1 color endpoints for 3- or 4-color mode
-float *__cdecl sub_10020B2A(float *a1, float *a2, int a3, int a4)
+float *__cdecl grim_dxt1_optimize_color_endpoints(float *a1, float *a2, int a3, int a4)
 {
   double v4; // st7
   float *v5; // ecx
@@ -28587,7 +28599,7 @@ LABEL_19:
 
 // grim_dxt1_encode_color_block @ 0x10021095
 // encodes a 4x4 RGBA block into a DXT1 color block (supports 1-bit alpha mode)
-int __usercall sub_10021095@<eax>(float *a1@<eax>, int a2, int a3)
+int __usercall grim_dxt1_encode_color_block@<eax>(float *a1@<eax>, int a2, int a3)
 {
   int v4; // esi
   float *v5; // ecx
@@ -28967,7 +28979,7 @@ int __usercall sub_10021095@<eax>(float *a1@<eax>, int a2, int a3)
 
 // grim_dxt1_decode_color_block @ 0x10021899
 // decodes a DXT1 color block into 16 RGBA floats
-int __cdecl sub_10021899(float *a1, unsigned __int16 *a2)
+int __cdecl grim_dxt1_decode_color_block(float *a1, unsigned __int16 *a2)
 {
   unsigned __int16 v3; // si
   unsigned int v4; // edi
@@ -29060,7 +29072,7 @@ int __cdecl sub_10021899(float *a1, unsigned __int16 *a2)
 
 // grim_dxt3_decode_block @ 0x100219D7
 // decodes a DXT3 block (explicit alpha + DXT1 color) to RGBA floats
-int __cdecl sub_100219D7(float *a1, unsigned __int16 *a2)
+int __cdecl grim_dxt3_decode_block(float *a1, unsigned __int16 *a2)
 {
   int result; // eax
   unsigned int v3; // ecx
@@ -29106,7 +29118,7 @@ int __cdecl sub_100219D7(float *a1, unsigned __int16 *a2)
 
 // grim_dxt5_decode_block @ 0x10021A5A
 // decodes a DXT5 block (interpolated alpha + DXT1 color) to RGBA floats
-int __cdecl sub_10021A5A(float *a1, unsigned __int16 *a2)
+int __cdecl grim_dxt5_decode_block(float *a1, unsigned __int16 *a2)
 {
   int result; // eax
   unsigned __int8 v3; // al
@@ -29197,7 +29209,7 @@ int __cdecl sub_10021B96(int a1, float *a2)
 
 // grim_dxt3_encode_block @ 0x10021BAE
 // encodes a 4x4 RGBA block into DXT3 (explicit alpha + DXT1 color)
-int __cdecl sub_10021BAE(_DWORD *a1, float *a2)
+int __cdecl grim_dxt3_encode_block(_DWORD *a1, float *a2)
 {
   unsigned int v3; // edx
   double v4; // st7
@@ -29251,7 +29263,7 @@ int __cdecl sub_10021BAE(_DWORD *a1, float *a2)
 
 // grim_dxt5_encode_block @ 0x10021CC2
 // encodes a 4x4 RGBA block into DXT5 (interpolated alpha + DXT1 color)
-int __cdecl sub_10021CC2(float a1, int a2)
+int __cdecl grim_dxt5_encode_block(float a1, int a2)
 {
   float *v2; // ebx
   unsigned int v3; // edx
@@ -29495,7 +29507,7 @@ LABEL_58:
 }
 
 // grim_dxt2_decode_block @ 0x10022114
-int __cdecl sub_10022114(float *a1, unsigned __int16 *a2)
+int __cdecl grim_dxt2_decode_block(float *a1, unsigned __int16 *a2)
 {
   int result; // eax
 
@@ -29509,24 +29521,9 @@ int __cdecl sub_10022114(float *a1, unsigned __int16 *a2)
   return result;
 }
 
-// grim_dxt4_decode_block @ 0x10022137
-int __cdecl grim_dxt4_decode_block(float *a1, unsigned __int16 *a2)
-{
-  int result; // eax
-
-  result = grim_dxt5_decode_block(a1, a2);
-  if ( result >= 0 )
-  {
-    result = grim_dxt_unpremultiply_rgba_block(a1);
-    if ( result >= 0 )
-      return 0;
-  }
-  return result;
-}
-
 // grim_dxt2_encode_block @ 0x1002215A
 // premultiplies RGBA and encodes a DXT3-style block (DXT2)
-int __cdecl sub_1002215A(_DWORD *a1, float *a2)
+int __cdecl grim_dxt2_encode_block(_DWORD *a1, float *a2)
 {
   int result; // eax
   float v3[64]; // [esp+0h] [ebp-100h] BYREF
@@ -29543,7 +29540,7 @@ int __cdecl sub_1002215A(_DWORD *a1, float *a2)
 
 // grim_dxt4_encode_block @ 0x1002218E
 // premultiplies RGBA and encodes a DXT5-style block (DXT4)
-int __cdecl sub_1002218E(float a1, float *a2)
+int __cdecl grim_dxt4_encode_block(float a1, float *a2)
 {
   int result; // eax
   float v3[64]; // [esp+0h] [ebp-100h] BYREF
@@ -29559,83 +29556,81 @@ int __cdecl sub_1002218E(float a1, float *a2)
 }
 
 // sub_100221D0 @ 0x100221D0
-__m128 *(__stdcall **__cdecl sub_100221D0(
-        __m128 *(__stdcall **a1)(__m128 *, unsigned int *, __m128 *)))(__m128 *, unsigned int *, __m128 *)
+_DWORD *__cdecl sub_100221D0(_DWORD *a1)
 {
-  a1[28] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026970;
+  a1[28] = sub_10026970;
   *a1 = sub_10025C00;
-  a1[13] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100266F0;
-  a1[27] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100267E0;
-  a1[11] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100278B0;
-  a1[48] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100265D0;
-  a1[47] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100261F0;
-  a1[17] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026490;
-  a1[54] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026580;
-  a1[53] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026280;
-  a1[52] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100263F0;
-  a1[51] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026520;
-  a1[50] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026130;
-  a1[49] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026330;
-  a1[18] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100272D0;
-  a1[22] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026630;
-  a1[25] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026D10;
-  a1[24] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026BF0;
-  a1[19] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026A50;
-  a1[44] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026B80;
-  a1[20] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026AE0;
-  a1[16] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10025FE0;
-  a1[21] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10025F00;
-  a1[8] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026090;
-  a1[7] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10025E30;
-  a1[10] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026F60;
-  a1[9] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10025C40;
-  a1[6] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026DE0;
-  a1[5] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10025CA0;
-  a1[4] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10027590;
-  a1[3] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10025CE0;
-  a1[2] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10027060;
-  a1[1] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026EA0;
+  a1[13] = sub_100266F0;
+  a1[27] = sub_100267E0;
+  a1[11] = sub_100278B0;
+  a1[48] = sub_100265D0;
+  a1[47] = sub_100261F0;
+  a1[17] = sub_10026490;
+  a1[54] = sub_10026580;
+  a1[53] = sub_10026280;
+  a1[52] = sub_100263F0;
+  a1[51] = sub_10026520;
+  a1[50] = sub_10026130;
+  a1[49] = sub_10026330;
+  a1[18] = sub_100272D0;
+  a1[22] = sub_10026630;
+  a1[25] = sub_10026D10;
+  a1[24] = sub_10026BF0;
+  a1[19] = sub_10026A50;
+  a1[44] = sub_10026B80;
+  a1[20] = sub_10026AE0;
+  a1[16] = sub_10025FE0;
+  a1[21] = sub_10025F00;
+  a1[8] = sub_10026090;
+  a1[7] = sub_10025E30;
+  a1[10] = sub_10026F60;
+  a1[9] = sub_10025C40;
+  a1[6] = sub_10026DE0;
+  a1[5] = sub_10025CA0;
+  a1[4] = sub_10027590;
+  a1[3] = sub_10025CE0;
+  a1[2] = sub_10027060;
+  a1[1] = sub_10026EA0;
   return a1;
 }
 
 // sub_100222E0 @ 0x100222E0
-__m128 *(__stdcall **__cdecl sub_100222E0(
-        __m128 *(__stdcall **a1)(__m128 *, unsigned int *, __m128 *)))(__m128 *, unsigned int *, __m128 *)
+_DWORD *__cdecl sub_100222E0(_DWORD *a1)
 {
-  a1[28] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10027C00;
+  a1[28] = sub_10027C00;
   *a1 = sub_10025C00;
-  a1[13] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10027980;
-  a1[27] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10027A70;
-  a1[11] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100278B0;
-  a1[48] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100265D0;
-  a1[47] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100261F0;
-  a1[17] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026490;
-  a1[54] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026580;
-  a1[53] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026280;
-  a1[52] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100263F0;
-  a1[51] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026520;
-  a1[50] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026130;
-  a1[49] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026330;
-  a1[18] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100272D0;
-  a1[22] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026630;
-  a1[25] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10027E00;
-  a1[24] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10027CE0;
-  a1[31] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10027820;
-  a1[30] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100277A0;
-  a1[19] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026A50;
-  a1[20] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026AE0;
-  a1[16] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100276F0;
-  a1[21] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_100271F0;
-  a1[8] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026090;
-  a1[7] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10027120;
-  a1[10] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026F60;
-  a1[9] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10025C40;
-  a1[6] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026DE0;
-  a1[5] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10025CA0;
-  a1[4] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10027590;
-  a1[3] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10025CE0;
-  a1[2] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10027060;
-  a1[1] = (__m128 *(__stdcall *)(__m128 *, unsigned int *, __m128 *))sub_10026EA0;
+  a1[13] = sub_10027980;
+  a1[27] = sub_10027A70;
+  a1[11] = sub_100278B0;
+  a1[48] = sub_100265D0;
+  a1[47] = sub_100261F0;
+  a1[17] = sub_10026490;
+  a1[54] = sub_10026580;
+  a1[53] = sub_10026280;
+  a1[52] = sub_100263F0;
+  a1[51] = sub_10026520;
+  a1[50] = sub_10026130;
+  a1[49] = sub_10026330;
+  a1[18] = sub_100272D0;
+  a1[22] = sub_10026630;
+  a1[25] = sub_10027E00;
+  a1[24] = sub_10027CE0;
+  a1[31] = sub_10027820;
+  a1[30] = sub_100277A0;
+  a1[19] = sub_10026A50;
+  a1[20] = sub_10026AE0;
+  a1[16] = sub_100276F0;
+  a1[21] = sub_100271F0;
+  a1[8] = sub_10026090;
+  a1[7] = sub_10027120;
+  a1[10] = sub_10026F60;
+  a1[9] = sub_10025C40;
+  a1[6] = sub_10026DE0;
+  a1[5] = sub_10025CA0;
+  a1[4] = sub_10027590;
+  a1[3] = sub_10025CE0;
+  a1[2] = sub_10027060;
+  a1[1] = sub_10026EA0;
   return a1;
 }
 
@@ -29681,7 +29676,7 @@ int sub_100223F0()
 }
 
 // sub_100224C5 @ 0x100224C5
-int __cdecl sub_100224C5(__m64 *(__stdcall **a1)(__m64 *, __m64 *, __m64 *))
+int __cdecl sub_100224C5(_DWORD *a1)
 {
   int result; // eax
 
@@ -29694,64 +29689,64 @@ int __cdecl sub_100224C5(__m64 *(__stdcall **a1)(__m64 *, __m64 *, __m64 *))
     a1[3] = sub_1002943A;
     a1[5] = sub_1002DCFD;
     a1[6] = sub_1002D25B;
-    a1[7] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002D2C2;
-    a1[8] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002DFEB;
+    a1[7] = sub_1002D2C2;
+    a1[8] = sub_1002DFEB;
     a1[9] = sub_1002DD36;
     a1[10] = sub_1002D7A2;
-    a1[11] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002966C;
+    a1[11] = sub_1002966C;
     a1[12] = sub_1002E393;
-    a1[13] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002E3D6;
-    a1[14] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002D7A7;
-    a1[15] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002D92F;
-    a1[16] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002E04A;
-    a1[17] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002DD9A;
-    a1[18] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002D1CE;
+    a1[13] = sub_1002E3D6;
+    a1[14] = sub_1002D7A7;
+    a1[15] = sub_1002D92F;
+    a1[16] = sub_1002E04A;
+    a1[17] = sub_1002DD9A;
+    a1[18] = sub_1002D1CE;
     a1[19] = sub_10027ED0;
-    a1[20] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10027F69;
-    a1[21] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002E578;
-    a1[22] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002E4BA;
-    a1[23] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10027FC6;
-    a1[24] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10028079;
-    a1[25] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_100284AA;
-    a1[26] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002973B;
-    a1[27] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002978B;
-    a1[28] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10029876;
-    a1[29] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002856F;
-    a1[30] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10029952;
-    a1[31] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_100299B5;
-    a1[32] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10029A13;
-    a1[33] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10029A6C;
+    a1[20] = sub_10027F69;
+    a1[21] = sub_1002E578;
+    a1[22] = sub_1002E4BA;
+    a1[23] = sub_10027FC6;
+    a1[24] = sub_10028079;
+    a1[25] = &sub_100284AA;
+    a1[26] = sub_1002973B;
+    a1[27] = sub_1002978B;
+    a1[28] = sub_10029876;
+    a1[29] = sub_1002856F;
+    a1[30] = sub_10029952;
+    a1[31] = sub_100299B5;
+    a1[32] = sub_10029A13;
+    a1[33] = sub_10029A6C;
     a1[34] = sub_1002E5DC;
-    a1[35] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_100285DB;
-    a1[36] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10028712;
-    a1[37] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10029AB3;
-    a1[38] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10029B5B;
-    a1[39] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10029CE2;
-    a1[40] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002AE7A;
-    a1[41] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002B01F;
-    a1[42] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002B553;
-    a1[43] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002879F;
-    a1[44] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10028831;
-    a1[54] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002E17C;
-    a1[51] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002D321;
-    a1[48] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002DE32;
-    a1[46] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002DE7B;
-    a1[52] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002E1ED;
-    a1[49] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002D392;
-    a1[55] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10028895;
-    a1[56] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002893C;
-    a1[53] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002E2B5;
-    a1[47] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002DEBE;
-    a1[50] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002D466;
+    a1[35] = sub_100285DB;
+    a1[36] = sub_10028712;
+    a1[37] = sub_10029AB3;
+    a1[38] = sub_10029B5B;
+    a1[39] = sub_10029CE2;
+    a1[40] = &sub_1002AE7A;
+    a1[41] = sub_1002B01F;
+    a1[42] = sub_1002B553;
+    a1[43] = sub_1002879F;
+    a1[44] = sub_10028831;
+    a1[54] = sub_1002E17C;
+    a1[51] = sub_1002D321;
+    a1[48] = sub_1002DE32;
+    a1[46] = sub_1002DE7B;
+    a1[52] = sub_1002E1ED;
+    a1[49] = sub_1002D392;
+    a1[55] = sub_10028895;
+    a1[56] = sub_1002893C;
+    a1[53] = sub_1002E2B5;
+    a1[47] = sub_1002DEBE;
+    a1[50] = sub_1002D466;
     a1[4] = sub_1002CAA2;
-    a1[45] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_100289E1;
+    a1[45] = sub_100289E1;
     if ( (result & 0x100) != 0 && (result & 0x200) != 0 )
     {
-      a1[15] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002DB55;
-      a1[18] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002C7C0;
-      a1[38] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10029C2D;
-      a1[39] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_1002B66C;
-      a1[24] = (__m64 *(__stdcall *)(__m64 *, __m64 *, __m64 *))sub_10028295;
+      a1[15] = sub_1002DB55;
+      a1[18] = sub_1002C7C0;
+      a1[38] = sub_10029C2D;
+      a1[39] = sub_1002B66C;
+      a1[24] = sub_10028295;
     }
   }
   return result;
@@ -29785,57 +29780,9 @@ float *__stdcall sub_10022754(float *a1, float *a2, float *a3)
   return a1;
 }
 
-// sub_10022789 @ 0x10022789
-float *__stdcall sub_10022789(float *a1, float *a2, float *a3)
-{
-  double v3; // st5
-  double v4; // st6
-  double v5; // st7
-
-  v3 = *a2 * a3[1] + a2[1] * a3[5] + a2[2] * a3[9] + a3[13];
-  v4 = *a2 * a3[2] + a2[1] * a3[6] + a2[2] * a3[10] + a3[14];
-  v5 = *a2 * a3[3] + a2[1] * a3[7] + a2[2] * a3[11] + a3[15];
-  *a1 = *a2 * *a3 + a2[1] * a3[4] + a2[2] * a3[8] + a3[12];
-  a1[1] = v3;
-  a1[2] = v4;
-  a1[3] = v5;
-  return a1;
-}
-
-// sub_10022814 @ 0x10022814
-float *__stdcall sub_10022814(float *a1, float *a2, float *a3)
-{
-  double v3; // st6
-  double v4; // st7
-
-  v3 = *a2 * a3[1] + a2[1] * a3[5] + a2[2] * a3[9];
-  v4 = *a2 * a3[2] + a2[1] * a3[6] + a2[2] * a3[10];
-  *a1 = *a2 * *a3 + a2[1] * a3[4] + a2[2] * a3[8];
-  a1[1] = v3;
-  a1[2] = v4;
-  return a1;
-}
-
-// sub_10022873 @ 0x10022873
-float *__stdcall sub_10022873(float *a1, float *a2, float *a3)
-{
-  double v3; // st5
-  double v4; // st6
-  double v5; // st7
-
-  v3 = *a2 * a3[1] + a2[1] * a3[5] + a2[2] * a3[9] + a2[3] * a3[13];
-  v4 = *a2 * a3[2] + a2[1] * a3[6] + a2[2] * a3[10] + a2[3] * a3[14];
-  v5 = *a2 * a3[3] + a2[1] * a3[7] + a2[2] * a3[11] + a2[3] * a3[15];
-  *a1 = *a2 * *a3 + a2[1] * a3[4] + a2[2] * a3[8] + a2[3] * a3[12];
-  a1[1] = v3;
-  a1[2] = v4;
-  a1[3] = v5;
-  return a1;
-}
-
 // FUN_1002290c @ 0x1002290C
 // [binja] float* __stdcall sub_1002290c(float* arg1, float* arg2)
-float *__stdcall sub_1002290C(float *a1, float *a2)
+float *__stdcall FUN_1002290c(float *a1, float *a2)
 {
   float v8; // [esp+4h] [ebp-8h]
   float v9; // [esp+8h] [ebp-4h]
@@ -29913,7 +29860,7 @@ float *__stdcall sub_1002290C(float *a1, float *a2)
 
 // FUN_100229d6 @ 0x100229D6
 // [binja] int32_t __stdcall sub_100229d6(int32_t arg1, int32_t arg2, void* arg3)
-_BYTE *__stdcall sub_100229D6(_BYTE *a1, _BYTE *a2, _BYTE *a3)
+_BYTE *__stdcall FUN_100229d6(_BYTE *a1, _BYTE *a2, _BYTE *a3)
 {
   _BYTE *result; // eax
   _BYTE *v4; // ebx
@@ -30032,7 +29979,7 @@ _BYTE *__stdcall sub_100229D6(_BYTE *a1, _BYTE *a2, _BYTE *a3)
 
 // FUN_10022ab9 @ 0x10022AB9
 // [binja] void* __stdcall sub_10022ab9(void* arg1, int32_t arg2, int32_t arg3)
-char *__stdcall sub_10022AB9(char *a1, char *a2, char *a3)
+char *__stdcall FUN_10022ab9(char *a1, char *a2, char *a3)
 {
   char *v3; // eax
   int v6; // edi
@@ -30105,12 +30052,12 @@ float *(__stdcall **__cdecl sub_10022B47(
         float *(__stdcall **a1)(float *a1, float *a2, float *a3)))(float *a1, float *a2, float *a3)
 {
   *a1 = sub_100226EB;
-  a1[1] = sub_10022789;
-  a1[2] = sub_10022873;
+  a1[1] = (float *(__stdcall *)(float *, float *, float *))sub_10022789;
+  a1[2] = (float *(__stdcall *)(float *, float *, float *))sub_10022873;
   a1[3] = (float *(__stdcall *)(float *, float *, float *))FUN_100229d6;
   a1[4] = (float *(__stdcall *)(float *, float *, float *))FUN_10022ab9;
   a1[5] = sub_10022754;
-  a1[6] = sub_10022814;
+  a1[6] = (float *(__stdcall *)(float *, float *, float *))sub_10022814;
   a1[7] = (float *(__stdcall *)(float *, float *, float *))FUN_1002290c;
   return a1;
 }
@@ -30158,7 +30105,7 @@ int __cdecl sub_10022BF2(const void *a1, void *a2, int a3)
 
 // memzero @ 0x10022C14
 // zero-fill helper (memset to 0)
-int __cdecl sub_10022C14(void *a1, unsigned int a2)
+int __cdecl memzero(void *a1, unsigned int a2)
 {
   memset(a1, 0, a2);
   return 0;
@@ -30166,7 +30113,7 @@ int __cdecl sub_10022C14(void *a1, unsigned int a2)
 
 // FUN_10022c2f @ 0x10022C2F
 // [binja] int32_t __fastcall sub_10022c2f(int32_t arg1)
-unsigned int sub_10022C2F()
+unsigned int FUN_10022c2f()
 {
   unsigned int v0; // kr00_4
   unsigned int v1; // kr04_4
@@ -30538,7 +30485,7 @@ int __usercall sub_1002317A@<eax>(int a1@<eax>, int a2@<edx>)
 
 // FUN_1002318f @ 0x1002318F
 // [binja] void* sub_1002318f(int32_t* arg1, int32_t* arg2, int32_t* arg3)
-int __cdecl sub_1002318F(_DWORD *a1, unsigned int a2, unsigned int a3)
+int __cdecl FUN_1002318f(_DWORD *a1, unsigned int a2, unsigned int a3)
 {
   unsigned int v3; // ebx
   _DWORD *v5; // eax
@@ -30611,7 +30558,7 @@ LABEL_11:
 
 // FUN_1002328b @ 0x1002328B
 // [binja] void* sub_1002328b(uint32_t arg1, int32_t arg2, int32_t arg3)
-_DWORD *__cdecl sub_1002328B(_DWORD *a1, unsigned int a2, unsigned int a3)
+_DWORD *__cdecl FUN_1002328b(_DWORD *a1, unsigned int a2, unsigned int a3)
 {
   int v3; // ebx
   unsigned int v4; // edi
@@ -30732,7 +30679,7 @@ int __cdecl sub_100233AB(_DWORD *a1, unsigned int a2, int a3, signed int a4)
 
 // FUN_10023449 @ 0x10023449
 // [binja] void* sub_10023449(int32_t* arg1, int32_t* arg2, char arg3, int32_t arg4, int32_t arg5, int32_t arg6)
-int __cdecl sub_10023449(_DWORD *a1, unsigned int a2, char a3, int a4, int a5, int a6)
+int __cdecl FUN_10023449(_DWORD *a1, unsigned int a2, char a3, int a4, int a5, int a6)
 {
   int v6; // esi
   int result; // eax
@@ -30758,7 +30705,7 @@ int __cdecl sub_10023449(_DWORD *a1, unsigned int a2, char a3, int a4, int a5, i
 
 // FUN_100234aa @ 0x100234AA
 // [binja] void* sub_100234aa(int32_t* arg1, int32_t* arg2, char arg3, int32_t arg4, int32_t arg5, int32_t arg6)
-int __cdecl sub_100234AA(_DWORD *a1, unsigned int a2, char a3, int a4, int a5, int a6)
+int __cdecl FUN_100234aa(_DWORD *a1, unsigned int a2, char a3, int a4, int a5, int a6)
 {
   int v6; // esi
   int result; // eax
@@ -31347,7 +31294,7 @@ int __cdecl sub_10023BFC(int a1)
 
 // FUN_10023c18 @ 0x10023C18
 // [binja] int32_t __fastcall sub_10023c18(int32_t arg1, void* arg2)
-char __fastcall sub_10023C18(int a1, int a2)
+char __fastcall FUN_10023c18(int a1, int a2)
 {
   _DWORD *v2; // ecx
   char result; // al
@@ -31769,7 +31716,7 @@ int __cdecl sub_100241E2(int a1)
 
 // inflateReset @ 0x10024212
 // zlib: reset inflate state
-int __cdecl sub_10024212(_DWORD *a1)
+int __cdecl inflateReset(_DWORD *a1)
 {
   _DWORD *v1; // ecx
 
@@ -31788,7 +31735,7 @@ int __cdecl sub_10024212(_DWORD *a1)
 
 // inflateEnd @ 0x10024251
 // zlib: free inflate state
-int __cdecl sub_10024251(_DWORD *a1)
+int __cdecl inflateEnd(_DWORD *a1)
 {
   int v1; // eax
   int v2; // eax
@@ -31808,7 +31755,7 @@ int __cdecl sub_10024251(_DWORD *a1)
 
 // inflateInit2_ @ 0x1002428F
 // zlib: init inflate with window bits
-int __cdecl sub_1002428F(_DWORD *a1, int a2, _BYTE *a3, int a4)
+int __cdecl inflateInit2_(_DWORD *a1, int a2, _BYTE *a3, int a4)
 {
   bool v4; // zf
   int v5; // eax
@@ -31865,14 +31812,14 @@ int __cdecl sub_1002428F(_DWORD *a1, int a2, _BYTE *a3, int a4)
 
 // inflateInit_ @ 0x10024374
 // zlib: init inflate (wrapper for inflateInit2_)
-int __cdecl sub_10024374(_DWORD *a1, _BYTE *a2, int a3)
+int __cdecl inflateInit_(_DWORD *a1, _BYTE *a2, int a3)
 {
   return inflateInit2_(a1, 15, a2, a3);
 }
 
 // inflate @ 0x1002438B
 // zlib: inflate compressed data
-int __cdecl sub_1002438B(unsigned __int8 **a1, int a2)
+int __cdecl inflate(unsigned __int8 **a1, int a2)
 {
   int v2; // ebx
   unsigned __int8 *v3; // eax
@@ -32168,7 +32115,7 @@ void *__cdecl sub_100246F2(int a1)
 
 // png_free_ptr @ 0x10024734
 // free wrapper for png allocations
-void __cdecl sub_10024734(void *Block)
+void __cdecl png_free_ptr(void *Block)
 {
   if ( Block )
     free(Block);
@@ -32176,7 +32123,7 @@ void __cdecl sub_10024734(void *Block)
 
 // png_malloc @ 0x10024741
 // png malloc wrapper (errors on OOM)
-void *__cdecl sub_10024741(jmp_buf Buf, size_t Size)
+void *__cdecl png_malloc(jmp_buf Buf, size_t Size)
 {
   void *result; // eax
 
@@ -32190,7 +32137,7 @@ void *__cdecl sub_10024741(jmp_buf Buf, size_t Size)
 
 // png_free @ 0x10024777
 // png free callback wrapper
-void __cdecl sub_10024777(int a1, void *Block)
+void __cdecl png_free(int a1, void *Block)
 {
   if ( a1 )
   {
@@ -32201,7 +32148,7 @@ void __cdecl sub_10024777(int a1, void *Block)
 
 // FUN_10024790 @ 0x10024790
 // [binja] int32_t sub_10024790(int32_t arg1, int32_t arg2, int32_t arg3)
-void *__cdecl sub_10024790(int a1, void *a2, const void *a3, unsigned int a4)
+void *__cdecl FUN_10024790(int a1, void *a2, const void *a3, unsigned int a4)
 {
   qmemcpy(a2, a3, a4);
   return a2;
@@ -32209,7 +32156,7 @@ void *__cdecl sub_10024790(int a1, void *a2, const void *a3, unsigned int a4)
 
 // FUN_100247b3 @ 0x100247B3
 // [binja] int32_t sub_100247b3(int32_t arg1, char arg2, int32_t arg3)
-char *__usercall sub_100247B3@<eax>(int a1@<ebx>, int a2, char *a3, char a4, unsigned int a5)
+char *__usercall FUN_100247b3@<eax>(int a1@<ebx>, int a2, char *a3, char a4, unsigned int a5)
 {
   int v5; // eax
 
@@ -32224,14 +32171,14 @@ char *__usercall sub_100247B3@<eax>(int a1@<ebx>, int a2, char *a3, char a4, uns
 
 // png_get_uint_32 @ 0x100247E4
 // read big-endian 32-bit value
-int __cdecl sub_100247E4(unsigned __int8 *a1)
+int __cdecl png_get_uint_32(unsigned __int8 *a1)
 {
   return a1[3] + ((a1[2] + ((a1[1] + (*a1 << 8)) << 8)) << 8);
 }
 
 // png_crc_read @ 0x10024807
 // read PNG chunk data and update CRC
-jmp_buf __cdecl sub_10024807(jmp_buf Buf, int a2, int a3)
+jmp_buf __cdecl png_crc_read(jmp_buf Buf, int a2, int a3)
 {
   int *__attribute__((__org_typedef(jmp_buf))) result; // eax
 
@@ -32254,7 +32201,7 @@ LABEL_5:
 
 // png_crc_error @ 0x10024821
 // read stored CRC and compare with computed
-BOOL __cdecl sub_10024821(jmp_buf Buf)
+BOOL __cdecl png_crc_error(jmp_buf Buf)
 {
   int *__attribute__((__org_typedef(jmp_buf))) v1; // esi
   int v2; // edi
@@ -32278,7 +32225,7 @@ LABEL_6:
 
 // png_check_chunk_name @ 0x1002487F
 // validate PNG chunk type characters
-unsigned __int8 __cdecl sub_1002487F(jmp_buf Buf, unsigned __int8 *a2)
+unsigned __int8 __cdecl png_check_chunk_name(jmp_buf Buf, unsigned __int8 *a2)
 {
   unsigned __int8 v2; // al
   unsigned __int8 v3; // al
@@ -32713,7 +32660,7 @@ void __cdecl sub_10024AF7(int *a1, int a2, int a3)
 }
 
 // FUN_10024dc0 @ 0x10024DC0
-char __cdecl sub_10024DC0(int a1, int a2, _BYTE *a3, unsigned __int8 *a4, int a5)
+char __cdecl FUN_10024dc0(int a1, int a2, _BYTE *a3, unsigned __int8 *a4, int a5)
 {
   unsigned int v5; // eax
   _BYTE *v6; // edx
@@ -32853,7 +32800,7 @@ char __cdecl sub_10024DC0(int a1, int a2, _BYTE *a3, unsigned __int8 *a4, int a5
 }
 
 // FUN_10024f3b @ 0x10024F3B
-char *__cdecl sub_10024F3B(jmp_buf Buf)
+char *__cdecl FUN_10024f3b(jmp_buf Buf)
 {
   unsigned int v1; // eax
   int v2; // edi
@@ -32948,7 +32895,7 @@ LABEL_28:
 
 // png_crc_finish @ 0x100250D7
 // read remaining chunk bytes and check CRC
-int __cdecl sub_100250D7(jmp_buf Buf, unsigned int a2)
+int __cdecl png_crc_finish(jmp_buf Buf, unsigned int a2)
 {
   unsigned int i; // edi
 
@@ -32968,9 +32915,9 @@ int __cdecl sub_100250D7(jmp_buf Buf, unsigned int a2)
 }
 
 // FUN_10025163 @ 0x10025163
-void __cdecl sub_10025163(jmp_buf Buf, int a2, int a3)
+void __cdecl FUN_10025163(jmp_buf Buf, int a2, int a3)
 {
-  signed int v4; // edi
+  signed int uint_32; // edi
   int v5; // eax
   char v6; // bl
   unsigned __int8 v7; // al
@@ -32997,7 +32944,7 @@ void __cdecl sub_10025163(jmp_buf Buf, int a2, int a3)
   Buf[22] |= 1u;
   png_crc_read(Buf, (int)&v11, 13);
   png_crc_finish(Buf, 0);
-  v4 = png_get_uint_32((unsigned __int8 *)&v11);
+  uint_32 = png_get_uint_32((unsigned __int8 *)&v11);
   v5 = png_get_uint_32(v12);
   v6 = v13;
   Bufa = (int *)v5;
@@ -33005,7 +32952,7 @@ void __cdecl sub_10025163(jmp_buf Buf, int a2, int a3)
   v18 = v15;
   v19 = v16;
   v20 = v17;
-  if ( v4 <= 0 || v5 <= 0 )
+  if ( uint_32 <= 0 || v5 <= 0 )
     png_error(Buf, (int)"Invalid image size in IHDR");
   if ( v13 != 1 && v13 != 2 && v13 != 4 && v13 != 8 && v13 != 16 )
     png_error(Buf, (int)"Invalid bit depth in IHDR");
@@ -33020,7 +32967,7 @@ void __cdecl sub_10025163(jmp_buf Buf, int a2, int a3)
   if ( v19 )
     png_error(Buf, (int)"Unknown filter method in IHDR");
   *((_BYTE *)Buf + 275) = v20;
-  Buf[46] = v4;
+  Buf[46] = uint_32;
   Buf[47] = v5;
   *((_BYTE *)Buf + 279) = v6;
   *((_BYTE *)Buf + 278) = v22;
@@ -33047,12 +32994,12 @@ LABEL_39:
   v9 = v18;
   *((_BYTE *)Buf + 281) = v7;
   v8 = v20;
-  Buf[50] = (v4 * (unsigned int)v7 + 7) >> 3;
-  FUN_1002031c((int)Buf, a2, v4, (int)Bufa, v6, v22, v8, v9, v10);
+  Buf[50] = (uint_32 * (unsigned int)v7 + 7) >> 3;
+  FUN_1002031c((int)Buf, a2, uint_32, (int)Bufa, v6, v22, v8, v9, v10);
 }
 
 // FUN_10025359 @ 0x10025359
-void __cdecl sub_10025359(jmp_buf Buf, int a2, int a3)
+void __cdecl FUN_10025359(jmp_buf Buf, int a2, int a3)
 {
   int *__attribute__((__org_typedef(jmp_buf))) v3; // esi
   int v4; // eax
@@ -33122,7 +33069,7 @@ LABEL_10:
 }
 
 // FUN_10025483 @ 0x10025483
-int __cdecl sub_10025483(jmp_buf Buf, int a2, unsigned int a3)
+int __cdecl FUN_10025483(jmp_buf Buf, int a2, unsigned int a3)
 {
   int v3; // eax
 
@@ -33136,13 +33083,13 @@ int __cdecl sub_10025483(jmp_buf Buf, int a2, unsigned int a3)
 }
 
 // FUN_100254cd @ 0x100254CD
-void __cdecl sub_100254CD(jmp_buf Buf, int a2, unsigned int a3)
+void __cdecl FUN_100254cd(jmp_buf Buf, int a2, unsigned int a3)
 {
   int *__attribute__((__org_typedef(jmp_buf))) v3; // esi
   int v4; // eax
   int v5; // edi
   int v6; // eax
-  int v7; // eax
+  int uint_32; // eax
   double v8; // st7
 
   v3 = Buf;
@@ -33178,16 +33125,16 @@ LABEL_5:
   png_crc_read(v3, (int)&Buf, 4);
   if ( !png_crc_finish(v3, 0) )
   {
-    v7 = png_get_uint_32((unsigned __int8 *)&Buf);
-    if ( v7 )
+    uint_32 = png_get_uint_32((unsigned __int8 *)&Buf);
+    if ( uint_32 )
     {
-      if ( (*(_DWORD *)(v5 + 8) & 0x800) != 0 && fabs((double)(unsigned int)v7 - 45455.0) > 500.0 )
+      if ( (*(_DWORD *)(v5 + 8) & 0x800) != 0 && fabs((double)(unsigned int)uint_32 - 45455.0) > 500.0 )
       {
         png_warning((int)v3, (int)"Ignoring incorrect gAMA value when sRGB is also present");
       }
       else
       {
-        v8 = (double)(unsigned int)v7 * 0.0000099999997;
+        v8 = (double)(unsigned int)uint_32 * 0.0000099999997;
         *((float *)v3 + 76) = v8;
         sub_10020301((int)v3, v5, v8);
       }
@@ -33196,7 +33143,7 @@ LABEL_5:
 }
 
 // FUN_100255d8 @ 0x100255D8
-void __cdecl sub_100255D8(jmp_buf Buf, unsigned int a2, unsigned int a3)
+void __cdecl FUN_100255d8(jmp_buf Buf, unsigned int a2, unsigned int a3)
 {
   int *__attribute__((__org_typedef(jmp_buf))) v3; // esi
   int v4; // eax
@@ -33245,7 +33192,7 @@ LABEL_5:
 }
 
 // FUN_100256c7 @ 0x100256C7
-void __cdecl sub_100256C7(jmp_buf Buf, int a2, size_t Size)
+void __cdecl FUN_100256c7(jmp_buf Buf, int a2, size_t Size)
 {
   int v3; // eax
   char v4; // al
@@ -33340,7 +33287,7 @@ LABEL_25:
 }
 
 // FUN_1002587e @ 0x1002587E
-int __cdecl sub_1002587E(jmp_buf Buf, int a2, unsigned int a3)
+int __cdecl FUN_1002587e(jmp_buf Buf, int a2, unsigned int a3)
 {
   int v3; // eax
 
@@ -35378,7 +35325,7 @@ __m64 *__stdcall sub_10027ED0(__m64 *a1, __m64 *a2, __m64 *a3)
   __m64 v4; // mm1
   __m64 v6; // mm6
   __m64 v7; // mm7
-  unsigned __int64 v8; // mm4
+  __m64 v8; // mm4
   __m64 v9; // mm6
   __m64 v10; // mm5
   __m64 v11; // mm3
@@ -35387,15 +35334,13 @@ __m64 *__stdcall sub_10027ED0(__m64 *a1, __m64 *a2, __m64 *a3)
   v4 = a2[1];
   v6 = _m_punpckldq(_m_punpckhdq((__m64)a3->m64_u64, (__m64)a3->m64_u64), (__m64)a3->m64_u64);
   v7 = _m_punpckldq(_m_punpckhdq(v3, v3), v3);
-  v8 = (unsigned __int64)_m_pfacc(
-                           _m_pfsub(_m_pfmul(v6, v4), _m_pfmul(_m_pxor(v7, (__m64)0x80000000LL), (__m64)a2->m64_u64)),
-                           _m_pfadd(
-                             _m_pxor(_m_pfmul((__m64)a3->m64_u64, v4), (__m64)0x80000000LL),
-                             _m_pfmul(v3, (__m64)a2->m64_u64)));
+  v8 = _m_pfacc(
+         _m_pfsub(_m_pfmul(v6, v4), _m_pfmul(_m_pxor(v7, (__m64)0x80000000LL), (__m64)a2->m64_u64)),
+         _m_pfadd(_m_pxor(_m_pfmul((__m64)a3->m64_u64, v4), (__m64)0x80000000LL), _m_pfmul(v3, (__m64)a2->m64_u64)));
   v9 = _m_pfmul(_m_pxor(v6, (__m64)0x80000000LL), (__m64)a2->m64_u64);
   v10 = _m_pxor(v3, (__m64)0x80000000LL);
   v11 = _m_pfmul((__m64)a3->m64_u64, (__m64)a2->m64_u64);
-  a1->m64_u64 = v8;
+  a1->m64_u64 = (unsigned __int64)v8;
   a1[1].m64_u64 = (unsigned __int64)_m_pfacc(_m_pfadd(v9, _m_pfmul(v7, v4)), _m_pfsub(_m_pfmul(v10, v4), v11));
   _m_femms();
   return a1;
@@ -39565,7 +39510,7 @@ __m64 *__stdcall sub_1002D1CE(__m64 *a1, _DWORD *a2, __m64 *a3)
 // sub_1002D1EA @ 0x1002D1EA
 __m64 *__stdcall sub_1002D1EA(__m64 *a1, __m64 *a2, __m64 *a3)
 {
-  unsigned __int64 m64_u64; // mm1
+  __m64 m64_u64; // mm1
   __m64 v4; // mm0
   __m64 v5; // mm2
   __m64 v6; // mm4
@@ -39573,10 +39518,10 @@ __m64 *__stdcall sub_1002D1EA(__m64 *a1, __m64 *a2, __m64 *a3)
   __m64 v8; // mm3
 
   _m_femms();
-  m64_u64 = a2->m64_u64;
-  v4 = _m_punpckldq((__m64)m64_u64, (__m64)m64_u64);
+  m64_u64 = (__m64)a2->m64_u64;
+  v4 = _m_punpckldq(m64_u64, m64_u64);
   v5 = _mm_cvtsi32_si64(a2[1].m64_u32[0]);
-  v6 = _m_punpckhdq((__m64)m64_u64, (__m64)m64_u64);
+  v6 = _m_punpckhdq(m64_u64, m64_u64);
   v7 = _m_punpckldq(v5, v5);
   v8 = _m_pfadd(_m_pfadd(_m_pfmul(v4, a3[1]), a3[7]), _m_pfadd(_m_pfmul(v6, a3[3]), _m_pfmul(v7, a3[5])));
   a1->m64_u64 = (unsigned __int64)_m_pfadd(
@@ -39590,7 +39535,7 @@ __m64 *__stdcall sub_1002D1EA(__m64 *a1, __m64 *a2, __m64 *a3)
 // sub_1002D25B @ 0x1002D25B
 __m64 *__stdcall sub_1002D25B(__m64 *a1, __m64 *a2, __m64 *a3)
 {
-  unsigned __int64 m64_u64; // mm1
+  __m64 m64_u64; // mm1
   __m64 v4; // mm0
   __m64 v5; // mm2
   __m64 v6; // mm4
@@ -39598,10 +39543,10 @@ __m64 *__stdcall sub_1002D25B(__m64 *a1, __m64 *a2, __m64 *a3)
   __m64 v8; // mm3
 
   _m_femms();
-  m64_u64 = a2->m64_u64;
-  v4 = _m_punpckldq((__m64)m64_u64, (__m64)m64_u64);
+  m64_u64 = (__m64)a2->m64_u64;
+  v4 = _m_punpckldq(m64_u64, m64_u64);
   v5 = _mm_cvtsi32_si64(a2[1].m64_u32[0]);
-  v6 = _m_punpckhdq((__m64)m64_u64, (__m64)m64_u64);
+  v6 = _m_punpckhdq(m64_u64, m64_u64);
   v7 = _m_punpckldq(v5, v5);
   v8 = _m_pfadd(_m_pfmul(v4, a3[1]), _m_pfadd(_m_pfmul(v6, a3[3]), _m_pfmul(v7, a3[5])));
   a1->m64_u64 = (unsigned __int64)_m_pfadd(
@@ -40217,15 +40162,15 @@ LABEL_11:
 // sub_1002DCA8 @ 0x1002DCA8
 __m64 *__stdcall sub_1002DCA8(__m64 *a1, __m64 *a2, __m64 *a3)
 {
-  unsigned __int64 m64_u64; // mm1
+  __m64 m64_u64; // mm1
   __m64 v4; // mm0
   __m64 v5; // mm4
   __m64 v6; // mm3
 
   _m_femms();
-  m64_u64 = a2->m64_u64;
-  v4 = _m_punpckldq((__m64)m64_u64, (__m64)m64_u64);
-  v5 = _m_punpckhdq((__m64)m64_u64, (__m64)m64_u64);
+  m64_u64 = (__m64)a2->m64_u64;
+  v4 = _m_punpckldq(m64_u64, m64_u64);
+  v5 = _m_punpckhdq(m64_u64, m64_u64);
   v6 = _m_pfadd(_m_pfadd(_m_pfmul(v4, a3[1]), a3[7]), _m_pfmul(v5, a3[3]));
   a1->m64_u64 = (unsigned __int64)_m_pfadd(_m_pfadd(_m_pfmul(v4, (__m64)a3->m64_u64), a3[6]), _m_pfmul(v5, a3[2]));
   a1[1].m64_u64 = (unsigned __int64)v6;
@@ -40247,7 +40192,7 @@ __m64 *__stdcall sub_1002DCFD(__m64 *a1, __m64 *a2, __m64 *a3)
 // sub_1002DD36 @ 0x1002DD36
 __m64 *__stdcall sub_1002DD36(__m64 *a1, __m64 *a2, __m64 *a3)
 {
-  unsigned __int64 m64_u64; // mm1
+  __m64 m64_u64; // mm1
   __m64 v4; // mm0
   __m64 v5; // mm4
   __m64 v6; // mm1
@@ -40256,9 +40201,9 @@ __m64 *__stdcall sub_1002DD36(__m64 *a1, __m64 *a2, __m64 *a3)
   __m64 v9; // mm4
 
   _m_femms();
-  m64_u64 = a2->m64_u64;
-  v4 = _m_punpckldq((__m64)m64_u64, (__m64)m64_u64);
-  v5 = _m_punpckhdq((__m64)m64_u64, (__m64)m64_u64);
+  m64_u64 = (__m64)a2->m64_u64;
+  v4 = _m_punpckldq(m64_u64, m64_u64);
+  v5 = _m_punpckhdq(m64_u64, m64_u64);
   v6 = _m_pfmul(v5, a3[2]);
   v7 = _m_pfadd(_m_pfadd(_m_pfmul(v4, a3[1]), a3[7]), _m_pfmul(v5, a3[3]));
   v8 = _m_punpckhdq(v7, v7);
@@ -40384,7 +40329,7 @@ __m64 *__stdcall sub_1002DEBE(__m64 *a1, __m64 *a2, __m64 *a3, __m64 *a4, __m64 
 // sub_1002DF69 @ 0x1002DF69
 __m64 *__stdcall sub_1002DF69(__m64 *a1, __m64 *a2, __m64 *a3)
 {
-  unsigned __int64 m64_u64; // mm1
+  __m64 m64_u64; // mm1
   __m64 v4; // mm0
   __m64 v5; // mm3
   __m64 v6; // mm5
@@ -40393,10 +40338,10 @@ __m64 *__stdcall sub_1002DF69(__m64 *a1, __m64 *a2, __m64 *a3)
   __m64 v9; // mm4
 
   _m_femms();
-  m64_u64 = a2->m64_u64;
-  v4 = _m_punpckldq((__m64)m64_u64, (__m64)m64_u64);
+  m64_u64 = (__m64)a2->m64_u64;
+  v4 = _m_punpckldq(m64_u64, m64_u64);
   v5 = a2[1];
-  v6 = _m_punpckhdq((__m64)m64_u64, (__m64)m64_u64);
+  v6 = _m_punpckhdq(m64_u64, m64_u64);
   v7 = _m_punpckldq(v5, v5);
   v8 = _m_punpckhdq(v5, v5);
   v9 = _m_pfadd(_m_pfadd(_m_pfmul(v4, a3[1]), _m_pfmul(v6, a3[3])), _m_pfadd(_m_pfmul(v7, a3[5]), _m_pfmul(v8, a3[7])));
@@ -40650,7 +40595,7 @@ __m64 *__stdcall sub_1002E3D6(__m64 *a1, __m64 *a2, __m64 *a3, __m64 *a4)
   __m64 v15; // mm4
   __m64 v16; // mm5
   __m64 v17; // mm6
-  unsigned __int64 v19; // mm4
+  __m64 v19; // mm4
   __m64 v20; // mm5
   __m64 v21; // mm0
 
@@ -40673,10 +40618,10 @@ __m64 *__stdcall sub_1002E3D6(__m64 *a1, __m64 *a2, __m64 *a3, __m64 *a4)
   v15 = _m_pfrsqrt(v14);
   v16 = _m_pfcmpgt(v14, (__m64)0x80000000800000LL);
   v17 = _m_pfrcpit2(_m_pfrsqit1(v14, _m_pfmul(v15, v15)), v15);
-  v19 = (unsigned __int64)_m_pfmul(_m_pand(v9, v16), v17);
+  v19 = _m_pfmul(_m_pand(v9, v16), v17);
   v20 = _m_pfmul(_m_pand(v11, v16), v17);
-  v21 = _m_pfmul((__m64)v19, (__m64)a2->m64_u64);
-  a1->m64_u64 = v19;
+  v21 = _m_pfmul(v19, (__m64)a2->m64_u64);
+  a1->m64_u64 = (unsigned __int64)v19;
   a1[1].m64_u64 = (unsigned __int64)_m_pxor(
                                       _m_punpckldq(v20, _m_pfadd(_m_pfacc(v21, v21), _m_pfmul(v20, v4))),
                                       (__m64)0x8000000000000000uLL);
@@ -40778,21 +40723,21 @@ __m64 *__stdcall sub_1002E5DC(__m64 *a1, __m64 *a2, __m64 *a3)
 
 // FUN_1002e65a @ 0x1002E65A
 // [binja] int32_t sub_1002e65a(uint32_t arg1)
-void *__cdecl sub_1002E65A(int a1, size_t Size)
+void *__cdecl FUN_1002e65a(int a1, size_t Size)
 {
   return malloc(Size);
 }
 
 // zcfree @ 0x1002E665
 // zlib (internal): default free wrapper
-void __cdecl sub_1002E665(int a1, void *Block)
+void __cdecl zcfree(int a1, void *Block)
 {
   free(Block);
 }
 
 // FUN_1002e670 @ 0x1002E670
 // [binja] int32_t sub_1002e670(int32_t arg1) __pure
-int __cdecl sub_1002E670(int a1, int a2, int a3)
+int __cdecl FUN_1002e670(int a1, int a2, int a3)
 {
   return a3;
 }
@@ -41293,7 +41238,7 @@ int __cdecl sub_1002EBCA(int a1, char a2)
 
 // FUN_1002ec9d @ 0x1002EC9D
 // [binja] void* __fastcall sub_1002ec9d(void* arg1)
-_DWORD *__thiscall sub_1002EC9D(_DWORD *this)
+_DWORD *__thiscall FUN_1002ec9d(_DWORD *this)
 {
   _DWORD *result; // eax
   bool v2; // cf
@@ -43942,7 +43887,7 @@ int __cdecl sub_10031013(int a1, int a2, int a3, int a4, int a5, _DWORD *a6, int
 
 // FUN_10031078 @ 0x10031078
 // [binja] int32_t sub_10031078(int32_t arg1, int32_t arg2, int32_t arg3, int32_t arg4, int32_t* arg5)
-unsigned int __cdecl sub_10031078(_DWORD *a1, int a2, int a3, int a4, int a5, _DWORD *a6)
+unsigned int __cdecl FUN_10031078(_DWORD *a1, int a2, int a3, int a4, int a5, _DWORD *a6)
 {
   _DWORD *v7; // esi
   unsigned int *v8; // edi
@@ -43982,7 +43927,7 @@ unsigned int __cdecl sub_10031078(_DWORD *a1, int a2, int a3, int a4, int a5, _D
 
 // FUN_10031108 @ 0x10031108
 // [binja] int32_t sub_10031108(void* arg1, int32_t arg2, int32_t* arg3, int32_t arg4)
-unsigned int __cdecl sub_10031108(_DWORD *a1, int a2, int a3, int a4, int a5, _DWORD *a6, int a7)
+unsigned int __cdecl FUN_10031108(_DWORD *a1, int a2, int a3, int a4, int a5, _DWORD *a6, int a7)
 {
   _DWORD *v7; // esi
   unsigned int v8; // edi
@@ -44125,7 +44070,7 @@ int __cdecl sub_100312BD(_DWORD *a1)
 
 // FUN_100312d7 @ 0x100312D7
 // [binja] int32_t* sub_100312d7(void* arg1, int32_t arg2, int32_t* arg3, int32_t arg4, int32_t* arg5, int32_t arg6)
-_DWORD *__cdecl sub_100312D7(_DWORD *a1, int a2, _DWORD *a3, int a4, int a5, _DWORD *a6, int a7)
+_DWORD *__cdecl FUN_100312d7(_DWORD *a1, int a2, _DWORD *a3, int a4, int a5, _DWORD *a6, int a7)
 {
   int v8; // esi
   int v9; // edi
@@ -44259,7 +44204,7 @@ const void **__cdecl sub_100313B0(unsigned int *a1, int a2, char **a3, int *a4)
 
 // FUN_1003148d @ 0x1003148D
 // [binja] int32_t* sub_1003148d(int32_t* arg1, int32_t arg2, int32_t* arg3)
-_BYTE ***__cdecl sub_1003148D(int a1, int a2, int a3, _BYTE ***a4)
+_BYTE ***__cdecl FUN_1003148d(int a1, int a2, int a3, _BYTE ***a4)
 {
   _BYTE ***result; // eax
   _BYTE **v6; // esi
@@ -44307,7 +44252,7 @@ _BYTE ***__cdecl sub_1003148D(int a1, int a2, int a3, _BYTE ***a4)
 
 // FUN_100314e4 @ 0x100314E4
 // [binja] int32_t* sub_100314e4(void* arg1, int32_t* arg2, int32_t* arg3)
-const void **__cdecl sub_100314E4(int a1, int a2, char **a3, int *a4)
+const void **__cdecl FUN_100314e4(int a1, int a2, char **a3, int *a4)
 {
   const void **result; // eax
   int v5; // ebx
@@ -45229,7 +45174,7 @@ const void **__cdecl sub_1003206A(int a1, int a2, _DWORD *a3, int a4, int a5, _D
 
 // FUN_10032110 @ 0x10032110
 // [binja] int32_t sub_10032110(void* arg1, int32_t arg2, int32_t* arg3, int32_t arg4, int32_t* arg5)
-int __cdecl sub_10032110(int a1, int a2, _DWORD *a3, int a4, int a5, _DWORD *a6)
+int __cdecl FUN_10032110(int a1, int a2, _DWORD *a3, int a4, int a5, _DWORD *a6)
 {
   int result; // eax
 
@@ -45478,7 +45423,7 @@ int __cdecl sub_1003247D(int a1)
 
 // FUN_100324f2 @ 0x100324F2
 // [binja] int16_t* sub_100324f2(int16_t* arg1, int16_t* arg2, int32_t arg3)
-_WORD *__cdecl sub_100324F2(int a1, _WORD *a2, int a3, int a4)
+_WORD *__cdecl FUN_100324f2(int a1, _WORD *a2, int a3, int a4)
 {
   _WORD *result; // eax
   int v5; // ebx
@@ -47666,7 +47611,7 @@ int __cdecl sub_10033E84(_DWORD *a1)
 
 // inflate_blocks_reset @ 0x10033F0B
 // zlib (internal): reset inflate blocks state
-int (__cdecl *__cdecl sub_10033F0B(_DWORD *a1, int a2, _DWORD *a3))(_DWORD, _DWORD, _DWORD)
+int (__cdecl *__cdecl inflate_blocks_reset(_DWORD *a1, int a2, _DWORD *a3))(_DWORD, _DWORD, _DWORD)
 {
   int v3; // eax
   int (__cdecl *result)(_DWORD, _DWORD, _DWORD); // eax
@@ -47695,7 +47640,7 @@ int (__cdecl *__cdecl sub_10033F0B(_DWORD *a1, int a2, _DWORD *a3))(_DWORD, _DWO
 
 // inflate_blocks_new @ 0x10033F76
 // zlib (internal): allocate inflate blocks state
-_DWORD *__cdecl sub_10033F76(int a1, int a2, int a3)
+_DWORD *__cdecl inflate_blocks_new(int a1, int a2, int a3)
 {
   _DWORD *v3; // edi
   int v4; // eax
@@ -47731,7 +47676,7 @@ _DWORD *__cdecl sub_10033F76(int a1, int a2, int a3)
 
 // inflate_blocks @ 0x10034003
 // zlib (internal): process inflate blocks
-int __cdecl sub_10034003(int *a1, int *a2, int a3)
+int __cdecl inflate_blocks(int *a1, int *a2, int a3)
 {
   unsigned int v4; // ecx
   int *v5; // esi
@@ -48289,7 +48234,7 @@ LABEL_126:
 
 // inflate_blocks_free @ 0x1003479E
 // zlib (internal): free inflate blocks state
-int __cdecl sub_1003479E(_DWORD *a1, int a2)
+int __cdecl inflate_blocks_free(_DWORD *a1, int a2)
 {
   inflate_blocks_reset(a1, a2, 0);
   (*(void (__cdecl **)(_DWORD, _DWORD))(a2 + 36))(*(_DWORD *)(a2 + 40), a1[10]);
@@ -48300,7 +48245,7 @@ int __cdecl sub_1003479E(_DWORD *a1, int a2)
 
 // adler32 @ 0x100347D2
 // zlib: adler32 checksum
-int __cdecl sub_100347D2(unsigned int a1, unsigned __int8 *a2, unsigned int a3)
+int __cdecl adler32(unsigned int a1, unsigned __int8 *a2, unsigned int a3)
 {
   unsigned __int8 *v3; // ecx
   unsigned int v4; // esi
@@ -48404,7 +48349,7 @@ int __cdecl sub_100347D2(unsigned int a1, unsigned __int8 *a2, unsigned int a3)
 
 // zcalloc @ 0x100348EB
 // zlib (internal): default alloc wrapper (calloc)
-void *__cdecl sub_100348EB(int a1, size_t Count, size_t Size)
+void *__cdecl zcalloc(int a1, size_t Count, size_t Size)
 {
   return calloc(Count, Size);
 }
@@ -49136,7 +49081,7 @@ char __cdecl sub_10035FA0(int a1, int a2, __int16 *a3, int a4, int a5)
 
 // inflate_codes_new @ 0x10036381
 // zlib (internal): allocate codes state
-int __cdecl sub_10036381(char a1, char a2, int a3, int a4, int a5)
+int __cdecl inflate_codes_new(char a1, char a2, int a3, int a4, int a5)
 {
   int result; // eax
 
@@ -49154,7 +49099,7 @@ int __cdecl sub_10036381(char a1, char a2, int a3, int a4, int a5)
 
 // inflate_codes @ 0x100363B5
 // zlib (internal): decode codes
-int __cdecl sub_100363B5(_DWORD *a1, _DWORD *a2, int a3)
+int __cdecl inflate_codes(_DWORD *a1, _DWORD *a2, int a3)
 {
   _BYTE *v5; // edx
   int v6; // ebx
@@ -49553,14 +49498,14 @@ LABEL_98:
 
 // inflate_codes_free @ 0x10036919
 // zlib (internal): free codes state
-int __cdecl sub_10036919(int a1, int a2)
+int __cdecl inflate_codes_free(int a1, int a2)
 {
   return (*(int (__cdecl **)(_DWORD, int))(a2 + 36))(*(_DWORD *)(a2 + 40), a1);
 }
 
 // huft_build @ 0x1003692A
 // zlib (internal): build Huffman decoding tables
-int __usercall sub_1003692A@<eax>(
+int __usercall huft_build@<eax>(
         unsigned int *a1@<eax>,
         _DWORD *a2,
         unsigned int a3,
@@ -49897,7 +49842,7 @@ LABEL_50:
 
 // inflate_trees_bits @ 0x10036CAF
 // zlib (internal): build bit length Huffman tree
-int __cdecl sub_10036CAF(_DWORD *a1, unsigned int *a2, _DWORD *a3, int a4, int a5)
+int __cdecl inflate_trees_bits(_DWORD *a1, unsigned int *a2, _DWORD *a3, int a4, int a5)
 {
   unsigned int *v6; // eax
   int v8; // eax
@@ -49927,7 +49872,7 @@ int __cdecl sub_10036CAF(_DWORD *a1, unsigned int *a2, _DWORD *a3, int a4, int a
 
 // inflate_trees_dynamic @ 0x10036D2E
 // zlib (internal): build dynamic Huffman trees
-int __cdecl sub_10036D2E(
+int __cdecl inflate_trees_dynamic(
         unsigned int a1,
         unsigned int a2,
         _DWORD *a3,
@@ -50009,7 +49954,7 @@ int __cdecl sub_10036E31(_DWORD *a1, _DWORD *a2, _DWORD *a3, _DWORD *a4)
 
 // inflate_flush @ 0x10036E60
 // zlib (internal): flush pending output
-int __cdecl sub_10036E60(_DWORD *a1, _DWORD *a2, int a3)
+int __cdecl inflate_flush(_DWORD *a1, _DWORD *a2, int a3)
 {
   char *v4; // edx
   unsigned int v5; // edi
@@ -51880,13 +51825,6 @@ _DWORD *__cdecl sub_1003AB10(_DWORD *a1)
   a1[31] = 0;
   a1[32] = 0;
   return a1;
-}
-
-// sub_1003AB60 @ 0x1003AB60
-int __cdecl sub_1003AB60(int a1)
-{
-  (*(void (__cdecl **)(int))(*(_DWORD *)a1 + 8))(a1);
-  return sub_1003DD30(a1);
 }
 
 // sub_1003AB80 @ 0x1003AB80
@@ -54192,32 +54130,6 @@ LABEL_15:
   return 0;
 }
 
-// sub_1003D000 @ 0x1003D000
-char __cdecl sub_1003D000(_DWORD *a1)
-{
-  char result; // al
-  int v2; // eax
-
-  if ( a1[94] || (result = sub_1003B660(a1)) != 0 )
-  {
-    v2 = *(_DWORD *)(a1[100] + 84);
-    if ( a1[94] == v2 + 208 )
-    {
-      *(_DWORD *)(*a1 + 20) = 97;
-      *(_DWORD *)(*a1 + 24) = *(_DWORD *)(a1[100] + 84);
-      (*(void (__cdecl **)(_DWORD *, int))(*a1 + 4))(a1, 3);
-      a1[94] = 0;
-LABEL_5:
-      *(_DWORD *)(a1[100] + 84) = ((unsigned __int8)*(_DWORD *)(a1[100] + 84) + 1) & 7;
-      return 1;
-    }
-    result = (*(int (__cdecl **)(_DWORD *, int))(a1[5] + 20))(a1, v2);
-    if ( result )
-      goto LABEL_5;
-  }
-  return result;
-}
-
 // sub_1003D090 @ 0x1003D090
 int __cdecl sub_1003D090(_DWORD *a1)
 {
@@ -54237,7 +54149,7 @@ int __cdecl sub_1003D090(_DWORD *a1)
 
 // FUN_1003d0d0 @ 0x1003D0D0
 // [binja] char* __fastcall sub_1003d0d0(int32_t arg1)
-const char *__cdecl sub_1003D0D0(_DWORD *a1)
+const char *__cdecl FUN_1003d0d0(_DWORD *a1)
 {
   _DWORD *v1; // edi
   _DWORD *v2; // esi
@@ -54758,7 +54670,7 @@ LABEL_28:
 
 // FUN_1003d930 @ 0x1003D930
 // [binja] int32_t sub_1003d930(int32_t* arg1)
-int __cdecl sub_1003D930(int a1, int a2, char a3)
+int __cdecl FUN_1003d930(int a1, int a2, char a3)
 {
   int v4; // ebp
   int result; // eax
@@ -54896,7 +54808,7 @@ LABEL_28:
 
 // FUN_1003db20 @ 0x1003DB20
 // [binja] int32_t sub_1003db20(int32_t arg1)
-int __cdecl sub_1003DB20(int a1, int a2, char a3)
+int __cdecl FUN_1003db20(int a1, int a2, char a3)
 {
   int result; // eax
   int v5; // ebp
@@ -55536,7 +55448,7 @@ int __cdecl sub_1003E510(void *a1, unsigned int a2)
 
 // FUN_1003e530 @ 0x1003E530
 // [binja] int32_t sub_1003e530(int32_t arg1) __pure
-int __cdecl sub_1003E530(int a1, int a2, int a3)
+int __cdecl FUN_1003e530(int a1, int a2, int a3)
 {
   return a3;
 }
@@ -58932,7 +58844,7 @@ int __cdecl sub_100418E0(int a1, int a2)
       if ( !v3[2] )
       {
         *(_DWORD *)(*(_DWORD *)a1 + 20) = 4;
-        result = (**(int (__cdecl ***)(int))a1)(a1);
+        result = (**(int (***)(void))a1)();
       }
       v3[1] = FUN_10041b00;
       v3[6] = 0;
@@ -58943,7 +58855,7 @@ int __cdecl sub_100418E0(int a1, int a2)
       if ( !v3[2] )
       {
         *(_DWORD *)(*(_DWORD *)a1 + 20) = 4;
-        result = (**(int (__cdecl ***)(int))a1)(a1);
+        result = (**(int (***)(void))a1)();
       }
       v3[1] = FUN_10041a60;
       v3[6] = 0;
@@ -58952,7 +58864,7 @@ int __cdecl sub_100418E0(int a1, int a2)
     else
     {
       *(_DWORD *)(*(_DWORD *)a1 + 20) = 4;
-      result = (**(int (__cdecl ***)(int))a1)(a1);
+      result = (**(int (***)(void))a1)();
       v3[6] = 0;
       v3[5] = 0;
     }
@@ -58965,12 +58877,7 @@ int __cdecl sub_100418E0(int a1, int a2)
       v3[1] = sub_100419E0;
       if ( !v4 )
       {
-        result = (*(int (__cdecl **)(int, _DWORD, _DWORD, _DWORD, int))(*(_DWORD *)(a1 + 4) + 28))(
-                   a1,
-                   v3[2],
-                   0,
-                   v3[4],
-                   1);
+        result = (*(int (**)(void))(*(_DWORD *)(a1 + 4) + 28))();
         v3[3] = result;
         v3[6] = 0;
         v3[5] = 0;
@@ -59022,7 +58929,7 @@ int __cdecl sub_100419E0(int a1, int a2, int a3, int a4, int a5, _DWORD *a6, int
 
 // FUN_10041a60 @ 0x10041A60
 // [binja] int32_t sub_10041a60(void* arg1, int32_t arg2, int32_t arg3, int32_t arg4, void** arg5)
-unsigned int __cdecl sub_10041A60(_DWORD *a1, int a2, int a3, int a4, int a5, _DWORD *a6)
+unsigned int __cdecl FUN_10041a60(_DWORD *a1, int a2, int a3, int a4, int a5, _DWORD *a6)
 {
   _DWORD *v7; // esi
   unsigned int *v8; // ebx
@@ -59062,7 +58969,7 @@ unsigned int __cdecl sub_10041A60(_DWORD *a1, int a2, int a3, int a4, int a5, _D
 
 // FUN_10041b00 @ 0x10041B00
 // [binja] int32_t sub_10041b00(void* arg1, int32_t arg2, int32_t* arg3, int32_t arg4)
-unsigned int __cdecl sub_10041B00(_DWORD *a1, int a2, int a3, int a4, int a5, _DWORD *a6, int a7)
+unsigned int __cdecl FUN_10041b00(_DWORD *a1, int a2, int a3, int a4, int a5, _DWORD *a6, int a7)
 {
   _DWORD *v7; // esi
   unsigned int v8; // edi
@@ -61991,7 +61898,7 @@ int __cdecl sub_10044450(_DWORD *a1, void *a2)
     v13 = 0;
     if ( v2 > 0 )
     {
-      v14 = (signed int *)&dbl_10050950;
+      v14 = (signed int *)&unk_10050950;
       while ( 1 )
       {
         v10 = a1[10] == 2 ? *v14 : v9;
@@ -64955,16 +64862,9 @@ LABEL_31:
   }
 }
 
-// FUN_10047a00 @ 0x10047A00
-// [binja] int32_t sub_10047a00(uint32_t arg1, uint32_t arg2)
-void *__cdecl FUN_10047a00(int a1, size_t Count, size_t Size)
-{
-  return calloc(Count, Size);
-}
-
 // FUN_10047a20 @ 0x10047A20
 // [binja] int32_t sub_10047a20(int32_t arg1)
-void __cdecl sub_10047A20(int a1, void *Block)
+void __cdecl FUN_10047a20(int a1, void *Block)
 {
   free(Block);
 }
@@ -68401,7 +68301,7 @@ LABEL_20:
 
 // inflate_trees_fixed @ 0x1004B0B0
 // zlib (internal): return fixed Huffman trees
-int __cdecl sub_1004B0B0(_DWORD *a1, _DWORD *a2, _DWORD *a3, _DWORD *a4)
+int __cdecl inflate_trees_fixed(_DWORD *a1, _DWORD *a2, _DWORD *a3, _DWORD *a4)
 {
   *a1 = dword_10058410;
   *a2 = dword_10058414;

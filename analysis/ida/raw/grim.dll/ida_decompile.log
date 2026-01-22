@@ -3142,4 +3142,982 @@ to determine if it is read-only.
 1004B220: restored pseudocode from idb
 IDA decompile complete: C:\dev\crimson\analysis\ida\raw\grim.dll\grim.dll_decompiled.c
 Flushing buffers, please wait...ok
+Unloading IDP module C:\Program Files\IDA Professional 9.2\procs\pc.dll...Database C:\dev\crimson\game_bins\crimsonland\1.9.93-gog\grim.dll.i64 already exists.
+Do you want to overwrite it? -> ~L~oad existing
+
+  bytes   pages size description
+--------- ----- ---- --------------------------------------------
+  1712128   209 8192 allocating memory for b-tree...
+  1482752   181 8192 allocating memory for virtual array...
+   262144    32 8192 allocating memory for name pointers...
+-----------------------------------------------------------------
+  3457024            total memory allocated
+
+Loading processor module C:\Program Files\IDA Professional 9.2\procs\pc.dll for metapc...OK
+Loading type libraries...
+Autoanalysis subsystem has been initialized.
+Database for file 'grim.dll' has been loaded.
+Hex-Rays Decompiler plugin has been loaded (v9.2.0.250908)
+  The hotkeys are F5: decompile, Ctrl-F5: decompile all.
+
+  Please check the Edit/Plugins menu for more information.
+Hex-rays version 9.2.0.250908 has been detected, gooMBA plugin ready to use
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: undefined4
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: undefined4
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: z_streamp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: z_streamp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: z_streamp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: z_streamp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: z_streamp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_uint_32
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: png_structp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: voidpf
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: z_streamp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: z_streamp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: z_streamp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: z_streamp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: uLong
+Bad declaration. See the message window for details. -> OK
+Syntax error near: voidpf
+Bad declaration. See the message window for details. -> OK
+Syntax error near: uInt
+Bad declaration. See the message window for details. -> OK
+Syntax error near: z_streamp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: z_streamp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: uInt
+Bad declaration. See the message window for details. -> OK
+Syntax error near: uInt
+Bad declaration. See the message window for details. -> OK
+Syntax error near: uInt
+Bad declaration. See the message window for details. -> OK
+Syntax error near: z_streamp
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: uInt
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+Syntax error near: <END>
+Bad declaration. See the message window for details. -> OK
+The decompiler assumes that the segment '.idata' is read-only because of its NAME.
+All data references to the segment will be replaced by constant values.
+This may lead to drastic changes in the decompiler output.
+If the segment is not read-only, please change the segment NAME.
+
+In general, the decompiler checks the segment permissions, class, and name
+to determine if it is read-only.
+ -> OK
+The decompiler assumes that the segment '.rdata' is read-only because of its NAME.
+All data references to the segment will be replaced by constant values.
+This may lead to drastic changes in the decompiler output.
+If the segment is not read-only, please change the segment NAME.
+
+In general, the decompiler checks the segment permissions, class, and name
+to determine if it is read-only.
+ -> OK
+IDA decompile complete: C:\dev\crimson\analysis\ida\raw\grim.dll\grim.dll_decompiled.c
+Flushing buffers, please wait...ok
 Unloading IDP module C:\Program Files\IDA Professional 9.2\procs\pc.dll...

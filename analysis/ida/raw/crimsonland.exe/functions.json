@@ -167,7 +167,7 @@
     "external": false,
     "library": false,
     "name": "console_cmd_extend",
-    "signature": "",
+    "signature": "__int64()",
     "size": 17,
     "thunk": false
   },
@@ -233,7 +233,7 @@
     "external": false,
     "library": false,
     "name": "console_cmd_set",
-    "signature": "",
+    "signature": "char()",
     "size": 77,
     "thunk": false
   },
@@ -4832,7 +4832,7 @@
     "external": false,
     "library": false,
     "name": "console_cmd_load_texture",
-    "signature": "",
+    "signature": "char()",
     "size": 60,
     "thunk": false
   },
@@ -4863,7 +4863,7 @@
     "external": false,
     "library": false,
     "name": "console_cmd_tell_time_survived",
-    "signature": "",
+    "signature": "char()",
     "size": 37,
     "thunk": false
   },
@@ -6396,7 +6396,7 @@
     "external": false,
     "library": false,
     "name": "sub_43AED0",
-    "signature": "",
+    "signature": "int __cdecl(int, int)",
     "size": 32,
     "thunk": false
   },
@@ -6407,7 +6407,7 @@
     "external": false,
     "library": false,
     "name": "sub_43AEF0",
-    "signature": "",
+    "signature": "int __cdecl(int, int)",
     "size": 53,
     "thunk": false
   },
@@ -8285,7 +8285,7 @@
     "external": false,
     "library": false,
     "name": "sub_447450",
-    "signature": "",
+    "signature": "char()",
     "size": 61,
     "thunk": false
   },
@@ -8296,7 +8296,7 @@
     "external": false,
     "library": false,
     "name": "sub_447490",
-    "signature": "",
+    "signature": "int()",
     "size": 67,
     "thunk": false
   },
@@ -10365,7 +10365,7 @@
     "external": false,
     "library": false,
     "name": "sub_4567B0",
-    "signature": "_DWORD *__cdecl(_DWORD *)",
+    "signature": "__m128 *(__stdcall **__cdecl(__m128 *(__stdcall **)(__m128 *, unsigned int *, __m128 *)))(__m128 *, unsigned int *, __m128 *)",
     "size": 262,
     "thunk": false
   },
@@ -10376,7 +10376,7 @@
     "external": false,
     "library": false,
     "name": "sub_4568C0",
-    "signature": "_DWORD *__cdecl(_DWORD *)",
+    "signature": "__m128 *(__stdcall **__cdecl(__m128 *(__stdcall **)(__m128 *, unsigned int *, __m128 *)))(__m128 *, unsigned int *, __m128 *)",
     "size": 266,
     "thunk": false
   },
@@ -10400,7 +10400,7 @@
     "external": false,
     "library": false,
     "name": "sub_456AA5",
-    "signature": "int __cdecl(_DWORD *)",
+    "signature": "int __cdecl(__m64 *(__stdcall **)(__m64 *, __m64 *, __m64 *))",
     "size": 550,
     "thunk": false
   },
@@ -10433,7 +10433,7 @@
     "external": false,
     "library": false,
     "name": "sub_456D69",
-    "signature": "",
+    "signature": "float *__stdcall(float *, float *, float *)",
     "size": 139,
     "thunk": false
   },
@@ -10444,7 +10444,7 @@
     "external": false,
     "library": false,
     "name": "sub_456DF4",
-    "signature": "",
+    "signature": "float *__stdcall(float *, float *, float *)",
     "size": 95,
     "thunk": false
   },
@@ -10455,7 +10455,7 @@
     "external": false,
     "library": false,
     "name": "sub_456E53",
-    "signature": "",
+    "signature": "float *__stdcall(float *, float *, float *)",
     "size": 153,
     "thunk": false
   },
