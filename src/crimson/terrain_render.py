@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
 from dataclasses import dataclass
 import math
 import os
+from typing import Iterator
 from typing import Iterable, Sequence
 
 import pyray as rl
@@ -23,6 +25,35 @@ TERRAIN_ROTATION_MAX = 0x13A
 TERRAIN_TILE_SIZE = 256
 CRT_RAND_MULT = 214013
 CRT_RAND_INC = 2531011
+
+
+@contextmanager
+def _blend_custom(src_factor: int, dst_factor: int, blend_equation: int) -> Iterator[None]:
+    rl.begin_blend_mode(rl.BLEND_CUSTOM)
+    rl.rl_set_blend_factors(src_factor, dst_factor, blend_equation)
+    try:
+        yield
+    finally:
+        rl.end_blend_mode()
+
+
+@contextmanager
+def _blend_custom_separate(
+    src_rgb: int,
+    dst_rgb: int,
+    src_alpha: int,
+    dst_alpha: int,
+    eq_rgb: int,
+    eq_alpha: int,
+) -> Iterator[None]:
+    rl.begin_blend_mode(rl.BLEND_CUSTOM_SEPARATE)
+    rl.rl_set_blend_factors_separate(
+        src_rgb, dst_rgb, src_alpha, dst_alpha, eq_rgb, eq_alpha
+    )
+    try:
+        yield
+    finally:
+        rl.end_blend_mode()
 
 
 class CrtRand:
@@ -118,29 +149,27 @@ class GroundRenderer:
         rl.clear_background(TERRAIN_CLEAR_COLOR)
         # Keep the ground RT alpha at 1.0 like the original exe (which typically uses
         # an XRGB render target). We still alpha-blend RGB, but preserve destination A.
-        rl.begin_blend_mode(rl.BLEND_CUSTOM_SEPARATE)
-        rl.rl_set_blend_factors_separate(
+        with _blend_custom_separate(
             rl.RL_SRC_ALPHA,
             rl.RL_ONE_MINUS_SRC_ALPHA,
             rl.RL_ZERO,
             rl.RL_ONE,
             rl.RL_FUNC_ADD,
             rl.RL_FUNC_ADD,
-        )
-        if layers >= 1:
-            self._scatter_texture(
-                self.texture, TERRAIN_BASE_TINT, rng, TERRAIN_DENSITY_BASE
-            )
-        if layers >= 2 and self.overlay is not None:
-            self._scatter_texture(
-                self.overlay, TERRAIN_OVERLAY_TINT, rng, TERRAIN_DENSITY_OVERLAY
-            )
-        if layers >= 3:
-            # Original uses base texture for detail pass, not overlay
-            self._scatter_texture(
-                self.texture, TERRAIN_DETAIL_TINT, rng, TERRAIN_DENSITY_DETAIL
-            )
-        rl.end_blend_mode()
+        ):
+            if layers >= 1:
+                self._scatter_texture(
+                    self.texture, TERRAIN_BASE_TINT, rng, TERRAIN_DENSITY_BASE
+                )
+            if layers >= 2 and self.overlay is not None:
+                self._scatter_texture(
+                    self.overlay, TERRAIN_OVERLAY_TINT, rng, TERRAIN_DENSITY_OVERLAY
+                )
+            if layers >= 3:
+                # Original uses base texture for detail pass, not overlay
+                self._scatter_texture(
+                    self.texture, TERRAIN_DETAIL_TINT, rng, TERRAIN_DENSITY_DETAIL
+                )
         rl.end_texture_mode()
         self._set_stamp_filters(point=False)
 
@@ -157,38 +186,36 @@ class GroundRenderer:
         self._set_texture_filters(textures, point=True)
 
         rl.begin_texture_mode(self.render_target)
-        rl.begin_blend_mode(rl.BLEND_CUSTOM_SEPARATE)
-        rl.rl_set_blend_factors_separate(
+        with _blend_custom_separate(
             rl.RL_SRC_ALPHA,
             rl.RL_ONE_MINUS_SRC_ALPHA,
             rl.RL_ZERO,
             rl.RL_ONE,
             rl.RL_FUNC_ADD,
             rl.RL_FUNC_ADD,
-        )
-        for decal in decals:
-            x = decal.x
-            y = decal.y
-            w = decal.width
-            h = decal.height
-            if decal.centered:
-                x -= w * 0.5
-                y -= h * 0.5
-            x *= inv_scale
-            y *= inv_scale
-            w *= inv_scale
-            h *= inv_scale
-            dst = rl.Rectangle(x, y, w, h)
-            origin = rl.Vector2(w * 0.5, h * 0.5)
-            rl.draw_texture_pro(
-                decal.texture,
-                decal.src,
-                dst,
-                origin,
-                math.degrees(decal.rotation_rad),
-                decal.tint,
-            )
-        rl.end_blend_mode()
+        ):
+            for decal in decals:
+                x = decal.x
+                y = decal.y
+                w = decal.width
+                h = decal.height
+                if decal.centered:
+                    x -= w * 0.5
+                    y -= h * 0.5
+                x *= inv_scale
+                y *= inv_scale
+                w *= inv_scale
+                h *= inv_scale
+                dst = rl.Rectangle(x, y, w, h)
+                origin = rl.Vector2(w * 0.5, h * 0.5)
+                rl.draw_texture_pro(
+                    decal.texture,
+                    decal.src,
+                    dst,
+                    origin,
+                    math.degrees(decal.rotation_rad),
+                    decal.tint,
+                )
         rl.end_texture_mode()
 
         self._set_texture_filters(textures, point=False)
@@ -246,10 +273,10 @@ class GroundRenderer:
             rl.set_texture_filter(target.texture, rl.TEXTURE_FILTER_POINT)
         # Disable alpha blending when drawing terrain to screen - the render target's
         # alpha channel may be < 1.0 after stamp blending, but terrain should be opaque.
-        rl.begin_blend_mode(rl.BLEND_CUSTOM)
-        rl.rl_set_blend_factors(rl.RL_ONE, rl.RL_ZERO, rl.RL_FUNC_ADD)
-        rl.draw_texture_pro(target.texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
-        rl.end_blend_mode()
+        with _blend_custom(rl.RL_ONE, rl.RL_ZERO, rl.RL_FUNC_ADD):
+            rl.draw_texture_pro(
+                target.texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE
+            )
         if self.terrain_filter == 2.0:
             rl.set_texture_filter(target.texture, rl.TEXTURE_FILTER_BILINEAR)
 
@@ -409,37 +436,35 @@ class GroundRenderer:
         inv_scale: float,
         offset: float,
     ) -> None:
-        rl.begin_blend_mode(rl.BLEND_CUSTOM_SEPARATE)
-        rl.rl_set_blend_factors_separate(
+        with _blend_custom_separate(
             rl.RL_ZERO,
             rl.RL_ONE_MINUS_SRC_ALPHA,
             rl.RL_ZERO,
             rl.RL_ONE,
             rl.RL_FUNC_ADD,
             rl.RL_FUNC_ADD,
-        )
-        for decal in decals:
-            src = self._corpse_src(bodyset_texture, decal.bodyset_frame)
-            size = decal.size * inv_scale * 1.064
-            x = (decal.top_left_x - 0.5) * inv_scale - offset
-            y = (decal.top_left_y - 0.5) * inv_scale - offset
-            dst = rl.Rectangle(x, y, size, size)
-            origin = rl.Vector2(size * 0.5, size * 0.5)
-            tint = rl.Color(
-                decal.tint.r,
-                decal.tint.g,
-                decal.tint.b,
-                int(decal.tint.a * 0.5),
-            )
-            rl.draw_texture_pro(
-                bodyset_texture,
-                src,
-                dst,
-                origin,
-                math.degrees(decal.rotation_rad - (math.pi * 0.5)),
-                tint,
-            )
-        rl.end_blend_mode()
+        ):
+            for decal in decals:
+                src = self._corpse_src(bodyset_texture, decal.bodyset_frame)
+                size = decal.size * inv_scale * 1.064
+                x = (decal.top_left_x - 0.5) * inv_scale - offset
+                y = (decal.top_left_y - 0.5) * inv_scale - offset
+                dst = rl.Rectangle(x, y, size, size)
+                origin = rl.Vector2(size * 0.5, size * 0.5)
+                tint = rl.Color(
+                    decal.tint.r,
+                    decal.tint.g,
+                    decal.tint.b,
+                    int(decal.tint.a * 0.5),
+                )
+                rl.draw_texture_pro(
+                    bodyset_texture,
+                    src,
+                    dst,
+                    origin,
+                    math.degrees(decal.rotation_rad - (math.pi * 0.5)),
+                    tint,
+                )
 
     def _draw_corpse_color_pass(
         self,
@@ -448,28 +473,26 @@ class GroundRenderer:
         inv_scale: float,
         offset: float,
     ) -> None:
-        rl.begin_blend_mode(rl.BLEND_CUSTOM_SEPARATE)
-        rl.rl_set_blend_factors_separate(
+        with _blend_custom_separate(
             rl.RL_SRC_ALPHA,
             rl.RL_ONE_MINUS_SRC_ALPHA,
             rl.RL_ZERO,
             rl.RL_ONE,
             rl.RL_FUNC_ADD,
             rl.RL_FUNC_ADD,
-        )
-        for decal in decals:
-            src = self._corpse_src(bodyset_texture, decal.bodyset_frame)
-            size = decal.size * inv_scale
-            x = decal.top_left_x * inv_scale - offset
-            y = decal.top_left_y * inv_scale - offset
-            dst = rl.Rectangle(x, y, size, size)
-            origin = rl.Vector2(size * 0.5, size * 0.5)
-            rl.draw_texture_pro(
-                bodyset_texture,
-                src,
-                dst,
-                origin,
-                math.degrees(decal.rotation_rad - (math.pi * 0.5)),
-                decal.tint,
-            )
-        rl.end_blend_mode()
+        ):
+            for decal in decals:
+                src = self._corpse_src(bodyset_texture, decal.bodyset_frame)
+                size = decal.size * inv_scale
+                x = decal.top_left_x * inv_scale - offset
+                y = decal.top_left_y * inv_scale - offset
+                dst = rl.Rectangle(x, y, size, size)
+                origin = rl.Vector2(size * 0.5, size * 0.5)
+                rl.draw_texture_pro(
+                    bodyset_texture,
+                    src,
+                    dst,
+                    origin,
+                    math.degrees(decal.rotation_rad - (math.pi * 0.5)),
+                    decal.tint,
+                )
