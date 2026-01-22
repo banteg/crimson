@@ -180,8 +180,8 @@ def cmd_quests(
 @app.command("view")
 def cmd_view(
     name: str = typer.Argument(..., help="view name (e.g. empty)"),
-    width: int = typer.Option(1280, help="window width"),
-    height: int = typer.Option(720, help="window height"),
+    width: int = typer.Option(1024, help="window width"),
+    height: int = typer.Option(768, help="window height"),
     fps: int = typer.Option(60, help="target fps"),
     assets_dir: Path = typer.Option(
         Path("artifacts") / "assets", help="assets root (default: ./artifacts/assets)"
