@@ -17,30 +17,9 @@ except Exception:  # pragma: no cover - handled at runtime in IDA
 
 _FAILED_SIGNATURES = set()
 
-_TYPEDEF_PRELUDE = """
-typedef unsigned char byte;
-typedef unsigned char undefined1;
-typedef unsigned int undefined4;
-typedef unsigned int uint;
-typedef unsigned char Byte;
-typedef Byte *Bytef;
-typedef unsigned int uInt;
-typedef unsigned long uLong;
-typedef uLong uLongf;
-typedef void *voidp;
-typedef void *voidpf;
-typedef struct z_stream_s { int _dummy; } z_stream;
-typedef z_stream *z_streamp;
-typedef unsigned char png_byte;
-typedef unsigned short png_uint_16;
-typedef unsigned int png_uint_32;
-typedef int png_int_32;
-typedef void *png_voidp;
-typedef png_byte *png_bytep;
-typedef struct png_struct_def { int _dummy; } png_struct;
-typedef png_struct *png_structp;
-typedef struct IGrim2D { int _dummy; } IGrim2D;
-""".strip()
+_SHARED_HEADER_PATH = os.path.normpath(
+    os.path.join(os.path.dirname(__file__), "..", "third_party", "headers", "crimsonland_ida_types.h")
+)
 
 _TYPE_REPLACEMENTS = {
     "IGrim2D": "void",
@@ -109,8 +88,18 @@ def _rewrite_signature(signature):
     return "".join(parts)
 
 
+def _load_shared_header():
+    try:
+        with open(_SHARED_HEADER_PATH, "r", encoding="utf-8") as f:
+            lines = [line for line in f if not line.lstrip().startswith("#")]
+        return "".join(lines).strip()
+    except Exception:
+        return ""
+
+
 def _install_typedefs():
-    if not _TYPEDEF_PRELUDE:
+    type_text = _load_shared_header()
+    if not type_text:
         return
     flags = _ida_parse_decl_flags()
     til = ida_typeinf.get_idati() if hasattr(ida_typeinf, "get_idati") else None
@@ -119,18 +108,18 @@ def _install_typedefs():
     parsed = False
     if parse_types2:
         try:
-            parse_types2(til, _TYPEDEF_PRELUDE + "\n", flags)
+            parse_types2(til, type_text + "\n", flags)
             parsed = True
         except Exception:
             parsed = False
     if not parsed and parse_types:
         try:
-            parse_types(til, _TYPEDEF_PRELUDE + "\n", flags)
+            parse_types(til, type_text + "\n", flags)
             parsed = True
         except Exception:
             parsed = False
     if not parsed:
-        for line in _TYPEDEF_PRELUDE.splitlines():
+        for line in type_text.splitlines():
             decl = line.strip()
             if not decl:
                 continue
