@@ -2059,7 +2059,7 @@ void demo_setup_variant_0(void)
   config_blob.reserved0[0x15] = '\0';
   config_blob.reserved0[0x16] = '\0';
   config_blob.reserved0[0x17] = '\0';
-  DAT_004712f0 = 4000;
+  demo_time_limit_ms = 4000;
   uVar2 = 0;
   local_1c = 0x100;
   do {
@@ -2117,7 +2117,7 @@ void demo_setup_variant_2(void)
   config_blob.reserved0[0x15] = '\0';
   config_blob.reserved0[0x16] = '\0';
   config_blob.reserved0[0x17] = '\0';
-  DAT_004712f0 = 5000;
+  demo_time_limit_ms = 5000;
   uVar2 = 0;
   local_28 = 0x80;
   do {
@@ -2168,7 +2168,7 @@ void demo_setup_variant_1(void)
   config_blob.reserved0[0x16] = '\0';
   config_blob.reserved0[0x17] = '\0';
   terrain_generate(&DAT_00484914);
-  DAT_004712f0 = 5000;
+  demo_time_limit_ms = 5000;
   iVar3 = 0;
   do {
     iVar1 = crt_rand();
@@ -2223,7 +2223,7 @@ void demo_setup_variant_3(void)
   config_blob.reserved0[0x16] = '\0';
   config_blob.reserved0[0x17] = '\0';
   terrain_generate(&quest_selected_meta);
-  DAT_004712f0 = 4000;
+  demo_time_limit_ms = 4000;
   iVar3 = 0;
   do {
     iVar1 = crt_rand();
@@ -2248,18 +2248,17 @@ void demo_setup_variant_3(void)
 
 
 
-/* FUN_00403370 @ 00403370 */
+/* demo_purchase_interstitial_begin @ 00403370 */
 
-/* [binja] int32_t sub_403370() */
+/* demo setup: activates the purchase/upsell interstitial (sets demo_time_limit_ms=10000 and
+   demo_purchase_screen_active=1) */
 
-int FUN_00403370(void)
+void demo_purchase_interstitial_begin(void)
 
 {
-  int in_EAX;
-  
-  DAT_004712f0 = 10000;
-  DAT_00480890 = 1;
-  return in_EAX;
+  demo_time_limit_ms = 10000;
+  demo_purchase_screen_active = 1;
+  return;
 }
 
 
@@ -2276,35 +2275,35 @@ int demo_mode_start(void)
   if (game_state_id != 9) {
     game_state_set(9);
   }
-  DAT_00480890 = 0;
+  demo_purchase_screen_active = 0;
   demo_mode_active = 1;
   gameplay_reset_state();
   config_blob.reserved0[0x18] = '\x01';
   config_blob.reserved0[0x19] = '\0';
   config_blob.reserved0[0x1a] = '\0';
   config_blob.reserved0[0x1b] = '\0';
-  if (DAT_00480894 == 0) {
+  if (demo_variant_index == 0) {
     demo_setup_variant_0();
   }
-  else if (DAT_00480894 == 1) {
+  else if (demo_variant_index == 1) {
     demo_setup_variant_1();
   }
-  else if (DAT_00480894 == 2) {
+  else if (demo_variant_index == 2) {
     demo_setup_variant_2();
   }
-  else if (DAT_00480894 == 3) {
+  else if (demo_variant_index == 3) {
     demo_setup_variant_3();
   }
-  else if (DAT_00480894 == 4) {
+  else if (demo_variant_index == 4) {
     demo_setup_variant_0();
   }
   else {
-    FUN_00403370();
+    demo_purchase_interstitial_begin();
   }
-  iVar1 = DAT_00480894 + 1;
+  iVar1 = demo_variant_index + 1;
   quest_spawn_timeline = 0;
   DAT_0048702c = 0;
-  DAT_00480894 = iVar1 % 6;
+  demo_variant_index = iVar1 % 6;
   return iVar1 / 6;
 }
 
@@ -3871,7 +3870,7 @@ LAB_00404ee5:
   _DAT_0047f610 = s_Already_paid_00471b5c;
   iVar3 = ui_button_update((float *)&stack0xfffffecc,(int *)&ui_button_table_a);
   if ((char)iVar3 != '\0') {
-    DAT_00480851 = 1;
+    shareware_offer_seen_latch = 1;
     DAT_0047ea50 = 1;
     ShellExecuteA((HWND)0x0,&DAT_00471b38,s_http___buy_crimsonland_com_00471b40,(LPCSTR)0x0,
                   (LPCSTR)0x0,1);
@@ -5065,7 +5064,7 @@ void rush_mode_update(void)
       (&creature_pool)[iVar1].flags = (&creature_pool)[iVar1].flags | 0x80;
       (&creature_pool)[iVar1].move_speed = (&creature_pool)[iVar1].move_speed * 1.4;
     }
-    if ((demo_mode_active != '\0') && (DAT_004712f0 < quest_spawn_timeline)) {
+    if ((demo_mode_active != '\0') && (demo_time_limit_ms < quest_spawn_timeline)) {
       render_pass_mode = 0;
       demo_mode_start();
     }
@@ -5369,7 +5368,7 @@ void survival_update(void)
   }
   quest_spawn_timeline = quest_spawn_timeline + frame_dt_ms;
   if (demo_mode_active != '\0') {
-    if (quest_spawn_timeline <= DAT_004712f0) {
+    if (quest_spawn_timeline <= demo_time_limit_ms) {
       return;
     }
     render_pass_mode = 0;
@@ -7399,12 +7398,12 @@ void demo_purchase_screen_update(void)
     ui_cursor_render();
     return;
   }
-  if ((DAT_00480890 == '\0') &&
+  if ((demo_purchase_screen_active == '\0') &&
      (((iVar6 = input_primary_just_pressed(), (char)iVar6 != '\0' ||
        (iVar6 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(1), (char)iVar6 != '\0')) ||
       (iVar6 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x39), (char)iVar6 != '\0')))) {
-    DAT_00480890 = '\x01';
-    DAT_004712f0 = 16000;
+    demo_purchase_screen_active = '\x01';
+    demo_time_limit_ms = 16000;
   }
   if ((DAT_00480320 & 1) == 0) {
     DAT_00480320 = DAT_00480320 | 1;
@@ -7439,30 +7438,30 @@ void demo_purchase_screen_update(void)
   if (fVar5 < 20.0) {
     fStack_20 = fVar5 * 0.05;
   }
-  if (DAT_004712f0 + -500 < quest_spawn_timeline) {
-    iStack_1c = DAT_004712f0 - quest_spawn_timeline;
+  if (demo_time_limit_ms + -500 < quest_spawn_timeline) {
+    iStack_1c = demo_time_limit_ms - quest_spawn_timeline;
     fStack_20 = (float)iStack_1c * 0.002;
   }
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fStack_20);
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f4ccccd);
   text = &DAT_0047f4d8;
-  if (DAT_00480890 == '\0') {
+  if (demo_purchase_screen_active == '\0') {
     if (quest_spawn_timeline == 0) {
-      DAT_004808bc = (DAT_004808bc + 1) % 5;
+      demo_upsell_message_index = (demo_upsell_message_index + 1) % 5;
     }
-    if (DAT_004808bc == 0) {
+    if (demo_upsell_message_index == 0) {
       text = s_Want_more_Levels__00472780;
     }
-    else if (DAT_004808bc == 1) {
+    else if (demo_upsell_message_index == 1) {
       text = s_Want_more_Weapons__0047276c;
     }
-    else if (DAT_004808bc == 2) {
+    else if (demo_upsell_message_index == 2) {
       text = s_Want_more_Perks__00472758;
     }
-    else if (DAT_004808bc == 3) {
+    else if (demo_upsell_message_index == 3) {
       text = s_Want_unlimited_Play_time__0047273c;
     }
-    else if (DAT_004808bc == 4) {
+    else if (demo_upsell_message_index == 4) {
       text = s_Want_to_post_your_high_scores__0047271c;
     }
   }
@@ -7556,7 +7555,7 @@ void demo_purchase_screen_update(void)
     fStack_20 = (float)(config_blob.screen_height / 2 + 0x66) + fStack_28 + 50.0;
     iVar6 = ui_button_update(&fStack_24,(int *)&DAT_0047f678);
     if ((char)iVar6 != '\0') {
-      DAT_00480851 = '\x01';
+      shareware_offer_seen_latch = '\x01';
       DAT_0047ea50 = 1;
       ShellExecuteA((HWND)0x0,&DAT_00471b38,s_http___buy_crimsonland_com_00471b40,(LPCSTR)0x0,
                     (LPCSTR)0x0,1);
@@ -7567,13 +7566,13 @@ void demo_purchase_screen_update(void)
     fStack_20 = (float)(int)unaff_EBP + fStack_28 + 90.0;
     iVar6 = ui_button_update(&fStack_24,(int *)&DAT_004802b0);
     if ((char)iVar6 != '\0') {
-      if (DAT_00480851 != '\0') {
+      if (shareware_offer_seen_latch != '\0') {
         DAT_0047ea50 = 1;
       }
       ui_transition_direction = '\0';
       game_state_pending = 0;
       demo_mode_active = 1;
-      if (DAT_00480851 != '\0') {
+      if (shareware_offer_seen_latch != '\0') {
         demo_mode_active = 1;
         ui_transition_direction = '\0';
         game_state_pending = 0;
@@ -7586,11 +7585,11 @@ void demo_purchase_screen_update(void)
       return;
     }
     quest_spawn_timeline = quest_spawn_timeline + frame_dt_ms;
-    if (DAT_004712f0 < quest_spawn_timeline) {
+    if (demo_time_limit_ms < quest_spawn_timeline) {
       render_pass_mode = 0;
       demo_mode_start();
     }
-    if (DAT_00480890 != '\0') goto LAB_0040c103;
+    if (demo_purchase_screen_active != '\0') goto LAB_0040c103;
   }
   uVar7 = 0xffffffff;
   pcVar8 = text;
@@ -7605,7 +7604,7 @@ void demo_purchase_screen_update(void)
   fStack_14 = 0.0;
   fVar1 = (float)(~uVar7 - 1) * 12.8;
   fStack_24 = 60.0;
-  fVar4 = ((float)quest_spawn_timeline / (float)DAT_004712f0) * fVar1;
+  fVar4 = ((float)quest_spawn_timeline / (float)demo_time_limit_ms) * fVar1;
   fStack_10 = fVar5 * 0.5;
   fStack_28 = unaff_ESI + 50.0;
   fStack_20 = fStack_28 - 4.0;
@@ -7678,7 +7677,7 @@ void console_hotkey_update(void)
   iVar2 = game_is_full_version();
   if ((char)iVar2 != '\0') {
     _DAT_0048823c = &LAB_00447350;
-    DAT_00480851 = '\0';
+    shareware_offer_seen_latch = '\0';
   }
   if ((DAT_00486faa == '\0') && (iVar2 = game_is_full_version(), (char)iVar2 != '\0')) {
     DAT_004875c4 = DAT_004875c4 + 60.0;
@@ -7858,7 +7857,7 @@ LAB_0040c71b:
     FUN_0040b630();
   }
   else if (game_state_id == 9) {
-    if (DAT_00480890 == '\0') {
+    if (demo_purchase_screen_active == '\0') {
       gameplay_update_and_render();
     }
     else {
@@ -7896,7 +7895,7 @@ LAB_0040c8a0:
       FUN_00406350();
     }
     else {
-      DAT_00480890 = '\0';
+      demo_purchase_screen_active = '\0';
       FUN_00406af0();
     }
   }
@@ -7990,7 +7989,7 @@ LAB_0040cd20:
       fVar9 = fVar9 * fVar9;
       if (game_state_prev == 0x18) {
         fVar9 = 1.0 - fVar9;
-        DAT_00480890 = '\0';
+        demo_purchase_screen_active = '\0';
       }
       if (0.0 <= fVar9) {
         if (1.0 < fVar9) {
@@ -8041,7 +8040,7 @@ LAB_0040cd14:
     config_sync_from_grim();
     return;
   }
-  if (DAT_00480851 != '\0') {
+  if (shareware_offer_seen_latch != '\0') {
     return;
   }
   iVar2 = game_is_full_version();
@@ -8055,7 +8054,7 @@ LAB_0040cd14:
   sfx_mute_all(music_track_intro_id);
   sfx_play_exclusive(music_track_shortie_monk_id);
   DAT_0047ea50 = '\0';
-  DAT_00480851 = '\x01';
+  shareware_offer_seen_latch = '\x01';
 LAB_0040cf06:
   if (DAT_004d7a24 != '\0') {
     DAT_004d7a24 = '\0';

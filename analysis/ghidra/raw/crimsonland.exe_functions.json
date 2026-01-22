@@ -360,9 +360,9 @@
     "calls": ["creature_spawn_template", "crt_rand", "terrain_generate", "weapon_assign_player"]
   },
   {
-    "name": "FUN_00403370",
+    "name": "demo_purchase_interstitial_begin",
     "address": "00403370",
-    "signature": "int FUN_00403370(void)",
+    "signature": "void demo_purchase_interstitial_begin(void)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -373,7 +373,7 @@
     "signature": "int demo_mode_start(void)",
     "external": false,
     "calls_total": 7,
-    "calls": ["FUN_00403370", "demo_setup_variant_0", "demo_setup_variant_1", "demo_setup_variant_2", "demo_setup_variant_3", "game_state_set", "gameplay_reset_state"]
+    "calls": ["demo_purchase_interstitial_begin", "demo_setup_variant_0", "demo_setup_variant_1", "demo_setup_variant_2", "demo_setup_variant_3", "game_state_set", "gameplay_reset_state"]
   },
   {
     "name": "FUN_00403430",
