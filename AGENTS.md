@@ -147,6 +147,16 @@ Typical:
 just ghidra-exe
 ```
 
+If Windows is the primary workspace and Ghidra runs in WSL, prefer:
+
+```bash
+just ghidra-sync
+```
+
+This runs `ghidra-exe` + `ghidra-grim` in WSL, syncs `analysis/ghidra/raw/` and
+`analysis/ghidra/derived/` back to the Windows repo, and cleans WSL outputs so
+future `git pull` stays clean.
+
 5) Update docs when behavior is understood
 
 - Put the *story* in `docs/` and keep maps as the structured index.

@@ -32,6 +32,25 @@ External inputs:
    just ghidra-grim
    ```
 
+## WSL regen + Windows sync
+
+If the primary workspace is on Windows and Ghidra runs in WSL, use the sync
+helper so outputs land in the Windows repo without leaving WSL dirty:
+
+```bash
+just ghidra-sync
+```
+
+This runs `ghidra-exe` and `ghidra-grim` in WSL, copies
+`analysis/ghidra/raw/` and `analysis/ghidra/derived/` back to Windows, then
+cleans the WSL outputs so `git pull` remains clean.
+
+Override the Windows repo path if needed:
+
+```bash
+CRIMSON_WIN_REPO=/mnt/c/dev/crimson just ghidra-sync
+```
+
    Override the game directory when needed:
 
    ```bash
