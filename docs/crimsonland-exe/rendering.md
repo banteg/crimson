@@ -1,3 +1,8 @@
+---
+tags:
+  - status-draft
+---
+
 # Rendering pipeline
 
 **Status:** Draft

@@ -1,3 +1,8 @@
+---
+tags:
+  - status-draft
+---
+
 # State machine
 
 **Status:** Draft

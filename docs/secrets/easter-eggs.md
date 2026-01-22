@@ -3,9 +3,9 @@ tags:
   - status-draft
 ---
 
-# Secrets and unlocks (draft)
+# Easter eggs and puzzles
 
-This page tracks hidden unlock conditions and Easter eggs (Secret Path, secret weapons, etc.) so we can
+This page tracks hidden unlock conditions and Easter eggs (Secret Path, AlienZooKeeper, etc.) so we can
 wire save editing and runtime validation around concrete logic instead of rumor or string hints alone.
 
 ## Current status

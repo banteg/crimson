@@ -1,3 +1,8 @@
+---
+tags:
+  - status-draft
+---
+
 # UI and menus
 
 **Status:** Draft

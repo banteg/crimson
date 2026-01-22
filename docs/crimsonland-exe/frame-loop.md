@@ -1,3 +1,8 @@
+---
+tags:
+  - status-draft
+---
+
 # Frame loop (gameplay)
 
 **Status:** Draft

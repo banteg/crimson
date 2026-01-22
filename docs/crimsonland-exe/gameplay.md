@@ -1,3 +1,8 @@
+---
+tags:
+  - status-draft
+---
+
 # Gameplay glue
 
 **Status:** Draft

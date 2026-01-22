@@ -1,3 +1,8 @@
+---
+tags:
+  - status-tracking
+---
+
 # Grim2D runtime validation notes
 
 This doc tracks runtime validation sessions for the Grim2D vtable.

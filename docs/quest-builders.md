@@ -1,3 +1,8 @@
+---
+tags:
+  - status-completed
+---
+
 # Quest builders
 
 **Status:** High confidence (runtime-validated 2026-01-19)

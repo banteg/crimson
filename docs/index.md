@@ -38,6 +38,7 @@ Reverse engineering and rewriting Crimsonland v1.9.93 in Python + raylib.
 
 ## Formats & pipeline
 
+- [Formats overview](formats/index.md) — Completed
 - [PAQ archives](formats/paq.md) — Completed
 - [JAZ textures](formats/jaz.md) — Completed
 - [Fonts](formats/fonts.md) — Draft
@@ -51,7 +52,7 @@ Reverse engineering and rewriting Crimsonland v1.9.93 in Python + raylib.
 
 - [Weapon table](weapon-table.md) — In progress
 - [Weapon ID map](weapon-id-map.md) — Draft
-- [UI weapon icon atlas](ui-wicons-map.md) — Tracking
+- [UI weapon icons](ui-weapon-icons.md) — Tracking
 - [Perk ID map](perk-id-map.md) — Draft
 - [Bonus ID map](bonus-id-map.md) — Draft
 - [Game mode map](game-mode-map.md) — Draft
@@ -82,8 +83,7 @@ Reverse engineering and rewriting Crimsonland v1.9.93 in Python + raylib.
 
 - [UI elements](ui-elements.md) — Draft
 - [In-game console](console.md) — Draft
-- [Secrets and unlocks](secrets.md) — Draft
-- [Secret Weapon Candidates](secret-weapon-candidates.md) — Draft
+- [Secrets](secrets/index.md) — Draft
 
 ## Tracking & meta
 
@@ -91,7 +91,6 @@ Reverse engineering and rewriting Crimsonland v1.9.93 in Python + raylib.
 - [Worklog](worklog.md) — Tracking
 - [Build provenance and hashes](provenance.md) — Tracking
 - [Third-party libraries](third-party-libs.md) — Tracking
-- [Refactor attempt](refactor.md) — Planned
 
 ## Cheatsheets
 

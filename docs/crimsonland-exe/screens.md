@@ -1,3 +1,8 @@
+---
+tags:
+  - status-draft
+---
+
 # Screens and flows
 
 **Status:** Draft
