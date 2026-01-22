@@ -8,45 +8,15 @@ Overall naming coverage: 36.4% (648 / 1779 functions named or inferred).
 Data map coverage: 19.65% (654 / 3328 symbols)
 <!-- data-map-coverage:end -->
 
-## Overview and boot
+## Analysis
 
 - [Binary Analysis](binary-analysis.md) — Tracking
 - [Entrypoint trace](entrypoint.md) — In progress
 - [Boot / Loading Sequence](boot-sequence.md) — In progress
+- [Detangling notes](detangling.md) — In progress
+- [Progress metrics](metrics.md) — Tracking
 
-## Formats and pipeline
-
-- [PAQ archives](formats/paq.md) — Completed
-- [JAZ textures](formats/jaz.md) — Completed
-- [Fonts](formats/fonts.md) — Draft
-- [Sprite atlas cutting](atlas.md) — In progress
-- [Extraction pipeline](pipeline.md) — In progress
-- [Python executable spec](python-executable-spec.md) — Draft
-- [Save/status file (game.cfg)](save-status-format.md) — Draft
-- [Config blob (crimson.cfg)](crimson-cfg.md) — Draft
-
-## Data tables and IDs
-
-- [Weapon table](weapon-table.md) — In progress
-- [Weapon ID map](weapon-id-map.md) — Draft
-- [UI weapon icon atlas](ui-wicons-map.md) — Tracking
-- [Perk ID map](perk-id-map.md) — Draft
-- [Bonus ID map](bonus-id-map.md) — Draft
-- [SFX ID map](sfx-id-map.md) — Tracking
-- [SFX usage](sfx-usage.md) — Tracking
-- [SFX labels](sfx-labels.md) — Tracking
-- [Game mode map](game-mode-map.md) — Draft
-- [Quest builders](quest-builders.md) — High confidence
-
-## Structs and pools
-
-- [Player struct](player-struct.md) — Draft
-- [Creature struct](creature-struct.md) — Draft
-- [Projectile struct](projectile-struct.md) — Draft
-- [Effects pools](effects-struct.md) — Draft
-- [Audio entry struct](audio-entry.md) — Draft
-
-## Crimsonland.exe subsystems
+## Crimsonland.exe
 
 - [Crimsonland.exe overview (by concern)](crimsonland-exe/index.md) — Draft
 - [State machine](crimsonland-exe/state-machine.md)
@@ -61,6 +31,38 @@ Data map coverage: 19.65% (654 / 3328 symbols)
 - [Mods (CMOD plugins)](crimsonland-exe/mods.md)
 - [Terrain pipeline](crimsonland-exe/terrain.md)
 
+## Formats & pipeline
+
+- [PAQ archives](formats/paq.md) — Completed
+- [JAZ textures](formats/jaz.md) — Completed
+- [Fonts](formats/fonts.md) — Draft
+- [Sprite atlas cutting](atlas.md) — In progress
+- [Extraction pipeline](pipeline.md) — In progress
+- [Python executable spec](python-executable-spec.md) — Draft
+- [Save/status file (game.cfg)](save-status-format.md) — Draft
+- [Config blob (crimson.cfg)](crimson-cfg.md) — Draft
+
+## Data tables & IDs
+
+- [Weapon table](weapon-table.md) — In progress
+- [Weapon ID map](weapon-id-map.md) — Draft
+- [UI weapon icon atlas](ui-wicons-map.md) — Tracking
+- [Perk ID map](perk-id-map.md) — Draft
+- [Bonus ID map](bonus-id-map.md) — Draft
+- [Game mode map](game-mode-map.md) — Draft
+- [Quest builders](quest-builders.md) — High confidence
+- [SFX ID map](sfx-id-map.md) — Tracking
+- [SFX usage](sfx-usage.md) — Tracking
+- [SFX labels](sfx-labels.md) — Tracking
+
+## Structs & pools
+
+- [Player struct](player-struct.md) — Draft
+- [Creature struct](creature-struct.md) — Draft
+- [Projectile struct](projectile-struct.md) — Draft
+- [Effects pools](effects-struct.md) — Draft
+- [Audio entry struct](audio-entry.md) — Draft
+
 ## Grim2D
 
 - [Grim2D overview](grim2d-overview.md) — Draft
@@ -74,6 +76,13 @@ Data map coverage: 19.65% (654 / 3328 symbols)
 - [Frida sessions](frida/sessions.md) — Template
 - [WinDbg / CDB workflow](windbg.md) — In progress
 
+## Gameplay notes
+
+- [UI elements](ui-elements.md) — Draft
+- [In-game console](console.md) — Draft
+- [Secrets and unlocks](secrets.md) — Draft
+- [Secret Weapon Candidates](secret-weapon-candidates.md) — Draft
+
 ## Cheatsheets
 
 - [Frida GumJS cheatsheet](cheatsheets/frida.md)
@@ -81,17 +90,8 @@ Data map coverage: 19.65% (654 / 3328 symbols)
 - [Zensical.org Markdown cheat sheet](cheatsheets/zensical.md)
 - [Zig 0.15 cheatsheet](cheatsheets/zig.md)
 
-## Gameplay notes and secrets
+## Tracking & meta
 
-- [UI elements](ui-elements.md) — Draft
-- [In-game console](console.md) — Draft
-- [Secrets and unlocks](secrets.md) — Draft
-- [Secret Weapon Candidates](secret-weapon-candidates.md) — Draft
-- [Detangling notes](detangling.md) — In progress
-
-## Tracking and meta
-
-- [Progress metrics](metrics.md) — Tracking
 - [Work status model](work-status.md) — Draft
 - [Worklog](worklog.md) — Tracking
 - [Build provenance and hashes](provenance.md) — Tracking
