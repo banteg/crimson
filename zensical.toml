@@ -14,6 +14,10 @@ nav = [
     { "Detangling notes" = "detangling.md" },
     { "Progress metrics" = "metrics.md" },
   ]},
+  { "Rewrite (Python + raylib)" = [
+    { "Overview" = "rewrite/index.md" },
+    { "Tech tree" = "rewrite/tech-tree.md" },
+  ]},
   { "Crimsonland.exe" = [
     { "Overview" = "crimsonland-exe/index.md" },
     { "State machine" = "crimsonland-exe/state-machine.md" },

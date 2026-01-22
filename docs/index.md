@@ -18,6 +18,11 @@ decompiled Crimsonland v1.9.93 executable and game data.
 - [Detangling notes](detangling.md) — In progress
 - [Progress metrics](metrics.md) — Tracking
 
+## Rewrite (Python + raylib)
+
+- [Rewrite overview](rewrite/index.md) — Draft
+- [Rewrite tech tree](rewrite/tech-tree.md) — Tracking
+
 ## Crimsonland.exe
 
 - [Crimsonland.exe overview (by concern)](crimsonland-exe/index.md) — Draft
