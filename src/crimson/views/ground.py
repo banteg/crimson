@@ -23,9 +23,12 @@ UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 QUEST_TITLE_ALPHA = 1.0
 QUEST_NUMBER_ALPHA_RATIO = 0.5
 QUEST_NUMBER_SCALE_DELTA = 0.2
-QUEST_NUMBER_Y_OFFSET_BASE = 4.048
-QUEST_NUMBER_Y_OFFSET_REF_SCALE = 0.75
-QUEST_NUMBER_X_OFFSET_BASE = 46.72
+# Game X formula: strlen * number_scale * 8.0 + number_scale * 32.0 + 4.0
+QUEST_NUMBER_HALF_ADVANCE = 8.0
+QUEST_NUMBER_BASE_GAP = 32.0
+QUEST_NUMBER_FIXED_OFFSET = 4.0
+# Game Y formula: number_y = title_y + number_scale * 7.36
+QUEST_NUMBER_Y_MULTIPLIER = 7.36
 
 
 @dataclass(slots=True)
@@ -363,13 +366,17 @@ class GroundView:
         title_width = len(title) * font.advance * title_scale
         center_x = rl.get_screen_width() / 2.0
         title_x = center_x - (title_width / 2.0)
-        number_x = title_x - (QUEST_NUMBER_X_OFFSET_BASE * title_scale)
+        # Game formula: x = title_x - (strlen * scale * 8) - (scale * 32) - 4
+        number_x = (
+            title_x
+            - (len(number) * number_scale * QUEST_NUMBER_HALF_ADVANCE)
+            - (number_scale * QUEST_NUMBER_BASE_GAP)
+            - QUEST_NUMBER_FIXED_OFFSET
+        )
 
         title_y = (rl.get_screen_height() / 2.0) - 32.0
-        number_y = title_y + (
-            QUEST_NUMBER_Y_OFFSET_BASE
-            * (title_scale / QUEST_NUMBER_Y_OFFSET_REF_SCALE)
-        )
+        # Game formula: y = title_y + number_scale * 7.36
+        number_y = title_y + (number_scale * QUEST_NUMBER_Y_MULTIPLIER)
 
         title_color = rl.Color(255, 255, 255, int(255 * QUEST_TITLE_ALPHA))
         number_color = rl.Color(
