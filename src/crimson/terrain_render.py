@@ -105,6 +105,10 @@ class GroundRenderer:
             self.render_target = None
 
     def generate(self, seed: int | None = None) -> None:
+        self.generate_partial(seed=seed, layers=3)
+
+    def generate_partial(self, seed: int | None = None, *, layers: int) -> None:
+        layers = max(0, min(int(layers), 3))
         self.create_render_target()
         if self.render_target is None:
             return
@@ -112,18 +116,20 @@ class GroundRenderer:
         self._set_stamp_filters(point=True)
         rl.begin_texture_mode(self.render_target)
         rl.clear_background(TERRAIN_CLEAR_COLOR)
-        self._scatter_texture(
-            self.texture, TERRAIN_BASE_TINT, rng, TERRAIN_DENSITY_BASE
-        )
-        if self.overlay is not None:
+        if layers >= 1:
+            self._scatter_texture(
+                self.texture, TERRAIN_BASE_TINT, rng, TERRAIN_DENSITY_BASE
+            )
+        if layers >= 2 and self.overlay is not None:
             self._scatter_texture(
                 self.overlay, TERRAIN_OVERLAY_TINT, rng, TERRAIN_DENSITY_OVERLAY
             )
-        detail = self.overlay_detail or self.overlay
-        if detail is not None:
-            self._scatter_texture(
-                detail, TERRAIN_DETAIL_TINT, rng, TERRAIN_DENSITY_DETAIL
-            )
+        if layers >= 3:
+            detail = self.overlay_detail or self.overlay
+            if detail is not None:
+                self._scatter_texture(
+                    detail, TERRAIN_DETAIL_TINT, rng, TERRAIN_DENSITY_DETAIL
+                )
         rl.end_texture_mode()
         self._set_stamp_filters(point=False)
 
