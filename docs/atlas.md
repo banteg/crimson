@@ -108,16 +108,6 @@ Some effects bypass atlas slicing and write UVs directly.
 - `grim_set_atlas_frame` itself only takes `(atlas_size, frame)` in `grim.dll`;
   any extra pointer args seen in the decompile are ignored.
 
-### UV debug (grid2 frame 1)
-
-`grim_set_uv_point` uses `u=0.625`, `v=0..0.25`, which lands inside the
-top‑right grid2 cell. The overlays below show the sub‑slice used for beam
-effects.
-
-![projs.png grid2 overlay](images/projs_grid2_uv_debug.png)
-
-![projs.png grid2 cell 1 overlay](images/projs_grid2_cell1_uv_debug.png)
-
 ## How slicing is used in practice
 
 The engine uses **two patterns**:

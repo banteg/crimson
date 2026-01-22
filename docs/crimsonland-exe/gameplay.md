@@ -19,7 +19,7 @@ standalone data tables.
 
 These are the most important per-player arrays that bridge weapons, perks, and
 bonuses (stride `0xd8`, base `player_health` / `DAT_004908d4`). See
-[Player struct](../player-struct.md) for offsets and related fields.
+[Player struct](../structs/player.md) for offsets and related fields.
 
 | Offset | Symbol | Meaning | Source / Notes |
 | --- | --- | --- | --- |
@@ -121,8 +121,8 @@ shot cooldown (`player_shot_cooldown` / `DAT_00490b84`) at 1.5x speed.
 See the data tables for concrete values:
 
 - [Weapon table](../weapon-table.md)
-- [Projectile struct](../projectile-struct.md)
-- [Effects pools](../effects-struct.md)
+- [Projectile struct](../structs/projectile.md)
+- [Effects pools](../structs/effects.md)
 - [Perk ID map](../perk-id-map.md)
 - [Bonus ID map](../bonus-id-map.md)
 

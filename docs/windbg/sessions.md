@@ -1,68 +1,8 @@
-# WinDbg / CDB workflow
+# WinDbg sessions
 
-## Remote server setup (works reliably)
+## Session 1 (2026-01-18) - credits secret
 
-Just shortcuts (Windows):
-
-```
-just windbg-server
-just windbg-client
-just windbg-tail
-```
-
-Notes:
-
-- `just windbg-client` uses `-bonc`, so you must `g` after attaching.
-- Client output is **not** persisted by the server; if the client session drops, logs are lost.
-- The server logs to `C:\Crimsonland\windbg.log` (overwritten on each server start, ASCII/ANSI).
-- The server should be started by the user. Codex only connects as a client to run commands,
-  and we inspect the server log file to see captured output.
-
-- `just windbg-tail` prints any new log lines since the last read and remembers its position
-  in `C:\Crimsonland\windbg.log.pos`.
-
-- The tail script decodes ASCII by default and switches to UTF-16 if a BOM is present.
-
-## Workflows
-
-### User workflow (server owner)
-
-1) Start the server (once, long-lived):
-
-```
-just windbg-server
-```
-
-2) Keep it running. The user does not need to connect a client or tail the log.
-
-### Agent workflow (short-lived reconnects)
-
-1) The user starts the server and keeps it running. The agent never starts a server.
-
-2) On every agent reconnect, catch up first:
-
-```
-just windbg-tail
-```
-
-3) Then connect and run the agent commands:
-
-```
-just windbg-client
-```
-
-4) Resume the game (`g`) if needed, and disconnect the client (Ctrl+B).
-
-Notes:
-
-- The log is written by the server (`-logo`), so it survives client drops but resets on server restart.
-- The tail script reads only new bytes from `C:\Crimsonland\windbg.log`.
-
-## Sessions
-
-### Session 1 (2026-01-18) - credits secret
-
-#### Wishlist
+### Wishlist
 
 Yes, WinDbg is a great way to recover the "missing pointer" when Ghidra's call graph
 does not show a direct xref. You can catch the function at runtime, inspect who called
@@ -124,7 +64,7 @@ Why this helps
 
 If you want, I can translate the WinDbg outputs into specific name-map updates once you capture a hit.
 
-#### Captured
+### Captured
 
 **Target:** `crimsonland.exe+0x40f400` (absolute `0x0040f400`)
 
@@ -175,16 +115,16 @@ At `esp=0x0019f8fc`:
 1 2 4 1 4 4
 ```
 
-#### Interpretation
+### Interpretation
 
 - `0x0040f400` is confirmed live and receives a 6x6 int board at `0x004819ec`.
 - The return address `0x0040fe59` is inside the credits secret update loop and gates UI init for globals near `0x00481bc0..0x00481bd5`.
 - The globals touched in the snippet align with credits secret state (selection index, timer, score, flags), now mapped in `data_map.json`.
 - Remaining gap: record `*out_idx` and `*out_dir` to confirm orientation encoding.
 
-### Session 2 (2026-01-19) - credits secret
+## Session 2 (2026-01-19) - credits secret
 
-#### Wishlist
+### Wishlist
 
 - Log `*out_idx` and `*out_dir` after calls to `0x0040f400` (match-3 finder), for both hit and miss cases.
 - Dump globals each visit to `0x0040f4f0`: `0x00472ef0`, `0x004824e4`, `0x004824e8`, `0x004824ec`, `0x00481c10`.
@@ -192,7 +132,7 @@ At `esp=0x0019f8fc`:
 - Break on writes to `0x00472ef0` to capture selection/swap flow (EIP + regs + stack).
 - Grab a call stack the first time `0x0040f4f0` runs to confirm the caller chain.
 
-#### Captured
+### Captured
 
 **Match-3 finder `0x0040f400`**
 
@@ -261,22 +201,22 @@ At `esp=0x0019f8fc`:
 - Per-frame update chain repeats:
   - `... -> crimsonland+0x4732a -> crimsonland+0x46bd7 -> crimsonland+0x1a64d -> crimsonland+0x6b2e -> grim...`
 
-#### Interpretation
+### Interpretation
 
 - `0x0040f400` confirmed: `out_idx/out_dir` are non-zero on success and zero on miss.
 - `0x004824e4` is the countdown timer; `0x004824e8` tracks a paired value in the same update block.
 - The flashing Reset/Back hover effect correlates with `0x004824e4 < 0x100`.
 - `out_dir` encodes orientation only (0 = vertical, 1 = horizontal); no absolute direction.
-- Still missing: exact “timer zero / dying sound” callsite; likely triggered by a different state flag or audio hook.
+- Still missing: exact "timer zero / dying sound" callsite; likely triggered by a different state flag or audio hook.
 
-### Session 3 (2026-01-19) - credits screen / Secret button unlock
+## Session 3 (2026-01-19) - credits screen / Secret button unlock
 
-#### Goal
+### Goal
 
 Capture the exact unlock point for the **Secret** button on the credits screen and dump the injected
 secret lines.
 
-#### Breakpoint
+### Breakpoint
 
 One-shot write watch on the unlock flag:
 
@@ -284,7 +224,7 @@ One-shot write watch on the unlock flag:
 ba w1 crimsonland+0x811c4 ".printf \"[credits] Secret unlock write (DAT_004811c4)\\n\"; k; r; dd crimsonland+0x811c4 L1; dd crimsonland+0x811bc L1; dd crimsonland+0x80980 L40; gc"
 ```
 
-#### Captured
+### Captured
 
 - **Hit location:** `EIP=0x0040dda7` (`credits_screen_update` + `0x5a7`)
 - **Instruction:** `mov edx, dword ptr [crimsonland+0x80984 + eax*8]`
@@ -292,7 +232,7 @@ ba w1 crimsonland+0x811c4 ".printf \"[credits] Secret unlock write (DAT_004811c4
 - **Unlock flag:** `DAT_004811c4 = 1`
 - **Secret base index:** `DAT_004811bc = 0x54`
 
-#### Secret line table dump
+### Secret line table dump
 
 The credits line table lives at `0x00480980` and is a pair array: `ptr, flags`.
 The secret lines begin at index `0x54`, so the injected block starts at:
@@ -315,19 +255,19 @@ Dumped strings (all flags `0x00000004`):
 Additional dump at `0x00480c70` (index `0x5E` onward) was zeroed, indicating no further injected
 lines beyond `0x5D`.
 
-#### Interpretation
+### Interpretation
 
 - The Secret button unlock is driven by the **credits line scan** in `credits_screen_update`, not by
   a separate hidden state. Once all required lines are flagged, `DAT_004811c4` is set and the secret
   lines are injected at index `0x54`.
 
-### Session 4 (2026-01-19) - console tilde hotkey
+## Session 4 (2026-01-19) - console tilde hotkey
 
-#### Goal
+### Goal
 
 Identify the runtime path that toggles the in-game console when pressing `~`.
 
-#### Breakpoints
+### Breakpoints
 
 ```
 ba w1 crimsonland+0x7eec8 ".printf \"[console] open_flag write\\n\"; k; r; u @eip L12; dd crimsonland+0x7eec8 L1; gc"
@@ -335,7 +275,7 @@ ba w4 crimsonland+0x7f4d4 ".printf \"[console] 0x7f4d4 write\\n\"; k; r; u @eip 
 bp crimsonland+0x18b0 ".printf \"[console] console_set_open\\n\"; k; r; dd @esp L4; gc"
 ```
 
-#### Captured
+### Captured
 
 - **Callsite:** `0x0040c39a` calls `console_set_open` (`0x004018b0`) when `~` is pressed.
 - **Call stack:** `0x0040c39a -> 0x004018b0 -> DINPUT8!CDIDev_GetDeviceState -> grim...`
@@ -354,25 +294,25 @@ bp crimsonland+0x18b0 ".printf \"[console] console_set_open\\n\"; k; r; dd @esp 
 004018c7 c20400          ret     4
 ```
 
-#### Interpretation
+### Interpretation
 
 - The tilde hotkey **calls `console_set_open`**, not a direct flag write.
 - The remaining task is to identify the function containing `0x0040c39a` and the
   specific key check (likely `DIK_GRAVE = 0x29`).
 
-### Session 5 (2026-01-19) - console hotkey check (DIK_GRAVE)
+## Session 5 (2026-01-19) - console hotkey check (DIK_GRAVE)
 
-#### Goal
+### Goal
 
 Capture the actual key check that gates the console toggle.
 
-#### Breakpoint
+### Breakpoint
 
 ```
 bp /1 crimsonland+0xc39a ".printf \"[console] hotkey callsite 0x0040c39a\\n\"; r; k; u @eip-40 L80; dd @esp L8; gc"
 ```
 
-#### Captured
+### Captured
 
 Disassembly confirms the check and toggle sequence:
 
@@ -422,7 +362,7 @@ Additional hotkey in the same block:
 0040c3ae ff5248          call    dword ptr [edx+48h]
 ```
 
-#### Interpretation
+### Interpretation
 
 - The tilde hotkey uses **Grim2D key polling** (`vtable +0x48`) with `DIK_GRAVE (0x29)`.
 - The toggle is explicit: if `console_open_flag` is 0, it passes 1 to `console_set_open`; otherwise 0.
@@ -431,19 +371,19 @@ Additional hotkey in the same block:
 - The block is gated by `audio_suspend_flag` (`0x004aaf84`); when non-zero, it calls `audio_resume_all`
   (`0x0042a5f0`) and returns early.
 
-### Session 6 (2026-01-19) - console hotkey function entry
+## Session 6 (2026-01-19) - console hotkey function entry
 
-#### Goal
+### Goal
 
 Find the true function entry that contains the hotkey block at `0x0040c360`.
 
-#### Breakpoint
+### Breakpoint
 
 ```
 bp 0x0040c1c0 ".printf \"[console] entry 0x0040c1c0\\n\"; kb; u @eip L40; gc"
 ```
 
-#### Captured
+### Captured
 
 - **Entry hit:** `0x0040c1c0`
 - **Stack (unwind warning):** call chain passes through Grim (`grim+0x3def`, `grim+0x6025`) and a
@@ -460,7 +400,7 @@ bp 0x0040c1c0 ".printf \"[console] entry 0x0040c1c0\\n\"; kb; u @eip L40; gc"
 0040c1cd ff503c          call    dword ptr [eax+3Ch]
 ```
 
-#### Interpretation
+### Interpretation
 
 - The hotkey block (`0x0040c360`) and its callsite (`0x0040c39a`) live inside a larger per‑frame
   input/update function that starts at `0x0040c1c0`.

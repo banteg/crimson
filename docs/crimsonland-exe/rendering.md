@@ -76,6 +76,6 @@ states like `0x14/0x16`) and `ui_transition_alpha` (`DAT_00487278`) (transition 
 See also:
 
 - [Sprite atlas cutting](../atlas.md)
-- [Creature struct](../creature-struct.md)
-- [Projectile struct](../projectile-struct.md)
-- [Effects pools](../effects-struct.md)
+- [Creature struct](../structs/creature.md)
+- [Projectile struct](../structs/projectile.md)
+- [Effects pools](../structs/effects.md)

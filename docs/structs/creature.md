@@ -164,7 +164,7 @@ Notes:
 
 Related notes:
 
-- See [Detangling notes](detangling.md) for helper naming and other pool context.
+- See [Detangling notes](../detangling.md) for helper naming and other pool context.
 - The pool is updated in `creature_update_all`; use that routine for new field discoveries.
 - On death, `creature_update_all` queues a rotated sprite via `fx_queue_add_rotated`
   using the creature tint and size. The `effect_id` is usually the creature `type_id`,

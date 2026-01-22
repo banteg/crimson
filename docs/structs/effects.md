@@ -142,7 +142,7 @@ at `fx_queue` + offsets.
 This queue is written by `fx_queue_add` (`FUN_0041e840`) and rendered (then
 cleared) by `fx_queue_render` once per frame.
 
-See also: [Terrain pipeline](crimsonland-exe/terrain.md) for the render-target
+See also: [Terrain pipeline](../crimsonland-exe/terrain.md) for the render-target
 baking details (blend modes, scaling, and corpse two-pass behavior).
 
 ### Struct view (fx_queue_entry_t)
@@ -239,7 +239,7 @@ Notes:
 
 - `fx_queue_render` binds `bodyset_texture` (`DAT_0048f7dc`) and maps `effect_id`
   through the creature type table: `frame = *(int *)(&DAT_00482764 + effect_id * 0x44)`.
-  That offset is the per‑type `corpse frame` (see `docs/creature-struct.md`),
+  That offset is the per‑type `corpse frame` (see `creature.md`),
   and the frame is converted to UVs via the 4x atlas tables (`effect_uv4_u` / `effect_uv4_v`).
 
 - The rotated queue is drawn in two passes: the first uses half alpha and a

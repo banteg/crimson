@@ -116,14 +116,14 @@ Non-projectile weapon paths (player_update):
 | `0x13` | Pulse Gun | `fx_spawn_secondary_projectile` type `4` | Uses the secondary projectile pool. |
 | `0x2b` | Rainbow Gun | `fx_spawn_particle_slow` | Particle-only path. |
 
-See [Effects pools](effects-struct.md) for secondary projectile type behaviors and particle style ids.
+See [Effects pools](effects.md) for secondary projectile type behaviors and particle style ids.
 
 ## Rendering notes
 
 `projectile_render` uses `type_id` to select atlas frames in
-`artifacts/assets/crimson/game/projs.png`. See [Sprite atlas cutting](atlas.md) for the
+`artifacts/assets/crimson/game/projs.png`. See [Sprite atlas cutting](../atlas.md) for the
 current frame mapping table.
 
 Some beam/chain effects override UVs with `grim_set_uv_point` to draw a thin
 strip from inside `projs.png` (see the atlas notes for the grid2 sub-cut).
-The overlays in [Sprite atlas cutting](atlas.md) show the exact UV slice.
+The overlays in [Sprite atlas cutting](../atlas.md) show the exact UV slice.

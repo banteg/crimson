@@ -111,7 +111,7 @@ All offsets below are in **bytes**, relative to the pointer returned by
   `0x12`, Pulse Gun `0x13`, Rainbow Gun `0x2b`).
 
 - Secondary projectile type behavior and particle style ids are tracked in
-  [Effects pools](effects-struct.md).
+  [Effects pools](structs/effects.md).
 
 - The alt-weapon swap stores per-player runtime state in parallel arrays:
   `player_alt_weapon_id` (`DAT_00490b8c`), `player_alt_clip_size` (`DAT_00490b90`),

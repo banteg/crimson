@@ -1,7 +1,6 @@
 # Crimsonland reverse engineering notes
 
-This site tracks the file formats and asset pipeline we have verified from the
-decompiled Crimsonland v1.9.93 executable and game data.
+Reverse engineering and rewriting Crimsonland v1.9.93 in Python + raylib.
 
 !!! abstract "Current state"
     The rewrite boots to a working menu with terrain rendering, music playback, and
@@ -57,30 +56,27 @@ decompiled Crimsonland v1.9.93 executable and game data.
 - [Bonus ID map](bonus-id-map.md) — Draft
 - [Game mode map](game-mode-map.md) — Draft
 - [Quest builders](quest-builders.md) — High confidence
-- [SFX ID map](sfx-id-map.md) — Tracking
-- [SFX usage](sfx-usage.md) — Tracking
-- [SFX labels](sfx-labels.md) — Tracking
+- [Audio](audio.md) — Tracking
 
 ## Structs & pools
 
-- [Player struct](player-struct.md) — Draft
-- [Creature struct](creature-struct.md) — Draft
-- [Projectile struct](projectile-struct.md) — Draft
-- [Effects pools](effects-struct.md) — Draft
-- [Audio entry struct](audio-entry.md) — Draft
+- [Structs overview](structs/index.md) — Draft
+- [Player struct](structs/player.md) — Draft
+- [Creature struct](structs/creature.md) — Draft
+- [Projectile struct](structs/projectile.md) — Draft
+- [Effects pools](structs/effects.md) — Draft
 
 ## Grim2D
 
-- [Grim2D overview](grim2d-overview.md) — Draft
-- [Grim2D API vtable](grim2d-api.md) — Draft
-- [Grim2D API evidence](grim2d-api-evidence.md) — Draft
-- [Grim2D runtime validation notes](grim2d-runtime-validation.md) — Tracking
+- [Grim2D overview](grim2d/index.md) — Draft
+- [Grim2D API vtable](grim2d/api.md) — Draft
+- [Grim2D API evidence](grim2d/api-evidence.md) — Draft
+- [Grim2D runtime validation](grim2d/runtime-validation.md) — Tracking
 
 ## Runtime tooling
 
-- [Frida workflow](frida-workflow.md) — In progress
-- [Frida sessions](frida/sessions.md) — Template
-- [WinDbg / CDB workflow](windbg.md) — In progress
+- [Frida](frida/index.md) — In progress
+- [WinDbg / CDB](windbg/index.md) — In progress
 
 ## Gameplay notes
 
@@ -89,13 +85,6 @@ decompiled Crimsonland v1.9.93 executable and game data.
 - [Secrets and unlocks](secrets.md) — Draft
 - [Secret Weapon Candidates](secret-weapon-candidates.md) — Draft
 
-## Cheatsheets
-
-- [Frida GumJS cheatsheet](cheatsheets/frida.md)
-- [raylib (Python) cheatsheet](cheatsheets/raylib.md)
-- [Zensical.org Markdown cheat sheet](cheatsheets/zensical.md)
-- [Zig 0.15 cheatsheet](cheatsheets/zig.md)
-
 ## Tracking & meta
 
 - [Work status model](work-status.md) — Draft
@@ -103,3 +92,10 @@ decompiled Crimsonland v1.9.93 executable and game data.
 - [Build provenance and hashes](provenance.md) — Tracking
 - [Third-party libraries](third-party-libs.md) — Tracking
 - [Refactor attempt](refactor.md) — Planned
+
+## Cheatsheets
+
+- [Frida GumJS](cheatsheets/frida.md)
+- [raylib (Python)](cheatsheets/raylib.md)
+- [Zensical Markdown](cheatsheets/zensical.md)
+- [Zig 0.15](cheatsheets/zig.md)

@@ -29,11 +29,11 @@ Legend:
 | Boot & startup | in-progress | both | TBD | entrypoint.md, boot-sequence.md |
 | Formats (PAQ/JAZ/Fonts) | mixed | format | spec | formats/*.md |
 | Asset pipeline | in-progress | static | TBD | pipeline.md |
-| Grim2D | draft | runtime | TBD | grim2d-overview.md, grim2d-runtime-validation.md |
+| Grim2D | draft | runtime | TBD | grim2d/index.md, grim2d/runtime-validation.md |
 | Weapons / perks / bonuses | in-progress | both | TBD | weapon-table.md, perk-id-map.md, bonus-id-map.md |
 | Quests | validated | runtime | spec | quest-builders.md |
 | UI & menus | draft | static | TBD | crimsonland-exe/ui.md, ui-elements.md |
-| Audio / SFX | in-progress | static | TBD | sfx-id-map.md, sfx-usage.md, audio-entry.md |
+| Audio / SFX | in-progress | static | TBD | audio.md |
 | Save / config | draft | static | TBD | save-status-format.md, crimson-cfg.md |
 | Secrets / minigames | draft | runtime | TBD | secrets.md |
 

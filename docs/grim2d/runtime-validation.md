@@ -1,7 +1,7 @@
 # Grim2D runtime validation notes
 
 This doc tracks runtime validation sessions for the Grim2D vtable.
-For the end-to-end Frida workflow, see [Frida workflow](frida-workflow.md).
+For the end-to-end Frida workflow, see [Frida workflow](../frida/workflow.md).
 
 ## 2026-01-18 (Win11 ARM, UTM, Frida)
 

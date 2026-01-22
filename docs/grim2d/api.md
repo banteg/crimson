@@ -17,7 +17,7 @@ We created functions at vtable entry addresses via
 `grim.dll_functions.json` to capture those entry names. The latest vtable JSON
 exports now include 84 entry points created from the vtable.
 
-For a high-level summary, see [Grim2D overview](grim2d-overview.md).
+For a high-level summary, see [Grim2D overview](index.md).
 
 ## Extraction artifact
 
@@ -45,7 +45,7 @@ data, not executable pointers.
 
 We also generate an evidence appendix with callsite snippets:
 
-- [Grim2D API evidence](grim2d-api-evidence.md)
+- [Grim2D API evidence](api-evidence.md)
 
 
 ## Internal helpers (non-vtable)
@@ -176,7 +176,7 @@ Offsets below have no callsites in `crimsonland.exe` or only a handful (1–3).
 They are still part of the vtable, but most evidence is from `grim.dll` bodies.
 Good targets for runtime validation or further callsite hunting.
 
-Runtime validation notes live in `docs/grim2d-runtime-validation.md`.
+Runtime validation notes live in `runtime-validation.md`.
 
 ### Zero callsites in `crimsonland.exe` (grim.dll-only evidence)
 

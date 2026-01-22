@@ -212,7 +212,7 @@ grim.dll_functions.json
 - `FUN_0043c590` -> `music_stream_fill`
   - Evidence: decodes Ogg data and writes the next streaming chunk.
 
-Audio entries are 0x84-byte `audio_entry_t` records; see [Audio entry struct](audio-entry.md)
+Audio entries are 0x84-byte `audio_entry_t` records; see [Audio](audio.md)
 for the field layout used by `sfx_entry_table` and `music_entry_table`.
 
 ### Audio playback + streaming (high confidence)
@@ -861,9 +861,7 @@ Init timing note:
 
 - `FUN_0043caa0` -> `audio_init_sfx`
   - Evidence: loads `sfx.paq` and registers the sound effect ids.
-  - See [SFX ID map](sfx-id-map.md) for the extracted id-to-file mapping.
-  - See [SFX usage](sfx-usage.md) for the most referenced SFX ids in the decompiled code.
-  - See [SFX label suggestions](sfx-labels.md) for suggested data labels (ApplyDataMap applies data labels).
+  - See [Audio](audio.md) for SFX IDs, usage hotspots, and data labels.
 - `FUN_0043c740` -> `sfx_load_sample`
   - Evidence: allocates a free slot in `DAT_004c84e4`, loads `.ogg`/`.wav` data, and returns the
     sample id.
@@ -1161,7 +1159,7 @@ Button struct (size `0x18`, used by `DAT_0047f5f8` / `DAT_00480250` / `DAT_00480
   | 0x90 | AI mode | selects movement pattern (cases 0/1/3/4/5/6/7/8 in update loop). |
   | 0x94 | anim phase | accumulates and wraps (31/15) to drive sprite animation timing. |
 
-See [Creature struct](creature-struct.md) for the expanded field map and cross-links.
+See [Creature struct](structs/creature.md) for the expanded field map and cross-links.
 
 
 ### Projectile pool (partial)
@@ -1198,7 +1196,7 @@ See [Creature struct](creature-struct.md) for the expanded field map and cross-l
   | 0x34 | hit radius | Used for creature collision checks. |
   | 0x3c | owner id | Used to skip the shooter in hit tests. |
 
-See [Projectile struct](projectile-struct.md) for the expanded field map and notes.
+See [Projectile struct](structs/projectile.md) for the expanded field map and notes.
 
 
 ### Effects pools (medium confidence)
@@ -1217,7 +1215,7 @@ See [Projectile struct](projectile-struct.md) for the expanded field map and not
   - Evidence: allocates a `0x2c`-byte entry in `sprite_effect_pool` (`DAT_00496820`) with position,
     velocity, tint, and a scalar parameter used by the renderer.
 
-- Layouts and fields are tracked in [Effects pools](effects-struct.md).
+- Layouts and fields are tracked in [Effects pools](structs/effects.md).
 
 
 ### Bonus / pickup pool (medium confidence)

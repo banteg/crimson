@@ -24,6 +24,12 @@ At a high level, Grim2D provides:
 - Input/config/time helpers: keyboard/mouse/joystick queries, config floats,
   and timing values used by the game loop.
 
+## Related docs
+
+- [API vtable](api.md)
+- [API evidence](api-evidence.md)
+- [Runtime validation](runtime-validation.md)
+
 ## Data map highlights (grim.dll)
 
 High-confidence globals from the grim.dll decompilation:
