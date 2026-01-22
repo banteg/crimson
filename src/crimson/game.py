@@ -27,6 +27,7 @@ from .console import (
     register_boot_commands,
     register_core_cvars,
 )
+from .demo import DemoView
 from .entrypoint import DEFAULT_BASE_DIR
 from .raylib_app import run_view
 from .terrain_render import GroundRenderer
@@ -50,6 +51,7 @@ class GameState:
     rng: random.Random
     config: CrimsonConfig
     console: ConsoleState
+    demo_enabled: bool
     logos: LogoAssets | None
     texture_cache: PaqTextureCache | None
     audio: AudioState | None
@@ -149,6 +151,7 @@ LOGO_REF_IN_END = 8.0
 LOGO_REF_HOLD_END = 10.0
 LOGO_REF_OUT_END = 11.0
 DEBUG_LOADING_HOLD_ENV = "CRIMSON_DEBUG_LOADING_HOLD_SECONDS"
+DEMO_MODE_ENV = "CRIMSON_IS_DEMO"
 
 
 def _debug_loading_hold_seconds() -> float:
@@ -159,6 +162,11 @@ def _debug_loading_hold_seconds() -> float:
         return max(0.0, float(raw))
     except ValueError:
         return 0.0
+
+
+def _demo_mode_enabled() -> bool:
+    raw = os.getenv(DEMO_MODE_ENV, "").strip().lower()
+    return raw in {"1", "true", "yes", "on"}
 
 MENU_PREP_TEXTURES: tuple[tuple[str, str], ...] = (
     ("ui_signCrimson", "ui/ui_signCrimson.jaz"),
@@ -376,7 +384,8 @@ class BootView:
             return
         if self._state.audio is not None:
             stop_music(self._state.audio)
-            play_music(self._state.audio, "crimson_theme")
+            theme = "crimsonquest" if self._state.demo_enabled else "crimson_theme"
+            play_music(self._state.audio, theme)
         self._theme_started = True
 
     def is_theme_started(self) -> bool:
@@ -990,8 +999,10 @@ class GameLoopView:
     def __init__(self, state: GameState) -> None:
         self._state = state
         self._boot = BootView(state)
+        self._demo = DemoView(state)
         self._menu = MenuView(state)
         self._active: View = self._boot
+        self._demo_active = False
         self._menu_active = False
 
     def open(self) -> None:
@@ -999,7 +1010,24 @@ class GameLoopView:
 
     def update(self, dt: float) -> None:
         self._active.update(dt)
-        if not self._menu_active and self._boot.is_theme_started():
+        if (
+            (not self._demo_active)
+            and (not self._menu_active)
+            and self._state.demo_enabled
+            and self._boot.is_theme_started()
+        ):
+            self._demo.open()
+            self._active = self._demo
+            self._demo_active = True
+            return
+        if self._demo_active and not self._menu_active and self._demo.is_finished():
+            self._demo.close()
+            self._demo_active = False
+            self._menu.open()
+            self._active = self._menu
+            self._menu_active = True
+            return
+        if (not self._demo_active) and (not self._menu_active) and self._boot.is_theme_started():
             self._menu.open()
             self._active = self._menu
             self._menu_active = True
@@ -1010,6 +1038,8 @@ class GameLoopView:
     def close(self) -> None:
         if self._menu_active:
             self._menu.close()
+        if self._demo_active:
+            self._demo.close()
         self._boot.close()
 
 
@@ -1043,6 +1073,7 @@ def run_game(config: GameConfig) -> None:
             rng=rng,
             config=cfg,
             console=console,
+            demo_enabled=_demo_mode_enabled(),
             logos=None,
             texture_cache=None,
             audio=None,
