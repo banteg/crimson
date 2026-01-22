@@ -3560,13 +3560,13 @@ undefined4 FUN_10006ea0(void)
 
 {
   float fVar1;
-  float fVar2;
-  int iVar3;
+  int iVar2;
+  float unaff_retaddr;
+  IGrim2D *in_stack_fffffff4;
   
-  fVar2 = DAT_1005d158;
   fVar1 = DAT_1005d138;
-  iVar3 = (*grim_interface_instance->vtable->grim_get_joystick_y)();
-  if ((float)iVar3 - fVar2 < -fVar1) {
+  iVar2 = (*grim_interface_instance->vtable->grim_get_joystick_y)(in_stack_fffffff4);
+  if ((float)iVar2 - fVar1 < -unaff_retaddr) {
     return 1;
   }
   return 0;
@@ -3580,13 +3580,13 @@ undefined4 FUN_10006ef0(void)
 
 {
   float fVar1;
-  float fVar2;
-  int iVar3;
+  int iVar2;
+  float unaff_retaddr;
+  IGrim2D *in_stack_fffffff4;
   
-  fVar2 = DAT_1005d158;
   fVar1 = DAT_1005d138;
-  iVar3 = (*grim_interface_instance->vtable->grim_get_joystick_y)();
-  if (fVar1 < (float)iVar3 - fVar2) {
+  iVar2 = (*grim_interface_instance->vtable->grim_get_joystick_y)(in_stack_fffffff4);
+  if (unaff_retaddr < (float)iVar2 - fVar1) {
     return 1;
   }
   return 0;
@@ -3600,13 +3600,13 @@ undefined4 FUN_10006f40(void)
 
 {
   float fVar1;
-  float fVar2;
-  int iVar3;
+  int iVar2;
+  float unaff_retaddr;
+  IGrim2D *in_stack_fffffff4;
   
-  fVar2 = DAT_1005d148;
   fVar1 = DAT_1005d138;
-  iVar3 = (*grim_interface_instance->vtable->grim_get_joystick_x)();
-  if ((float)iVar3 - fVar2 < -fVar1) {
+  iVar2 = (*grim_interface_instance->vtable->grim_get_joystick_x)(in_stack_fffffff4);
+  if ((float)iVar2 - fVar1 < -unaff_retaddr) {
     return 1;
   }
   return 0;
@@ -3620,13 +3620,13 @@ undefined4 FUN_10006f90(void)
 
 {
   float fVar1;
-  float fVar2;
-  int iVar3;
+  int iVar2;
+  float unaff_retaddr;
+  IGrim2D *in_stack_fffffff4;
   
-  fVar2 = DAT_1005d148;
   fVar1 = DAT_1005d138;
-  iVar3 = (*grim_interface_instance->vtable->grim_get_joystick_x)();
-  if (fVar1 < (float)iVar3 - fVar2) {
+  iVar2 = (*grim_interface_instance->vtable->grim_get_joystick_x)(in_stack_fffffff4);
+  if (unaff_retaddr < (float)iVar2 - fVar1) {
     return 1;
   }
   return 0;
@@ -5801,8 +5801,10 @@ void grim_draw_text_small(float x,float y,char *text)
 void grim_draw_text_mono_fmt(IGrim2D *self,float x,float y,char *fmt,...)
 
 {
+  char *unaff_retaddr;
+  
   vsprintf(&grim_printf_buffer,fmt,&stack0x00000014);
-  (*self->vtable->grim_draw_text_mono)(x,y,&grim_printf_buffer);
+  (*self->vtable->grim_draw_text_mono)((IGrim2D *)x,y,2.636403e-29,unaff_retaddr);
   return;
 }
 
@@ -5817,8 +5819,10 @@ void grim_draw_text_mono_fmt(IGrim2D *self,float x,float y,char *fmt,...)
 void grim_draw_text_small_fmt(IGrim2D *self,float x,float y,char *fmt,...)
 
 {
+  char *unaff_retaddr;
+  
   vsprintf(&grim_printf_buffer_alt,fmt,&stack0x00000014);
-  (*self->vtable->grim_draw_text_small)(x,y,&grim_printf_buffer_alt);
+  (*self->vtable->grim_draw_text_small)((IGrim2D *)x,y,2.6365572e-29,unaff_retaddr);
   return;
 }
 

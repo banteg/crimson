@@ -19,6 +19,8 @@ Interesting Functions and Patterns
   input_key_name @ 004036d0
   ui_render_keybind_help @ 00405160
   console_hotkey_update @ 0040c1c0
+  mod_api_inp_key_down @ 0040e660
+  mod_api_inp_get_key_name @ 0040e680
   input_any_key_pressed @ 00446000
 
 [TOKEN related]
@@ -86,6 +88,7 @@ Interesting Functions and Patterns
 [EXEC related]
   console_cmd_exec @ 00401250
   console_exec_line @ 00401940
+  mod_api_core_execute @ 0040e0a0
 
 [SYSTEM related]
   sfx_system_init @ 0043cf90
@@ -114,6 +117,9 @@ Interesting Functions and Patterns
 
 [FREE related]
   console_log_node_free @ 004011f0
+  mod_api_gfx_free_texture @ 0040e2e0
+  mod_api_sfx_free_sample @ 0040e560
+  mod_api_sfx_free_tune @ 0040e5e0
   effect_free @ 0042e080
   effect_spawn_freeze_shard @ 0042ec80
   effect_spawn_freeze_shatter @ 0042ee00
@@ -146,9 +152,12 @@ Interesting Functions and Patterns
   console_log_node_free @ 004011f0
   console_flush_log @ 00402860
   tutorial_prompt_dialog @ 00408530
+  mod_api_inp_get_analog @ 0040e620
 
 [PRINT related]
   console_printf @ 00401870
+  mod_api_core_printf @ 0040e000
+  mod_api_gfx_printf @ 0040e240
   crt_vsprintf @ 00461089
   crt_sprintf @ 004616e7
   crt_snprintf @ 00461e4a

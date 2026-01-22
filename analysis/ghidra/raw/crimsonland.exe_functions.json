@@ -664,33 +664,281 @@
     "calls": ["FUN_00446140", "__ftol", "_strchr", "credits_build_lines", "credits_line_clear_flag", "crt_atexit", "crt_free", "input_primary_just_pressed", "sfx_play", "strdup_malloc", "ui_button_update", "ui_mouse_inside_rect"]
   },
   {
-    "name": "FUN_0040e000",
+    "name": "mod_api_init",
+    "address": "0040dfa0",
+    "signature": "void mod_api_init(void)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
+    "name": "mod_api_core_printf",
     "address": "0040e000",
-    "signature": "int FUN_0040e000(char * arg1)",
+    "signature": "undefined mod_api_core_printf(byte * param_1)",
     "external": false,
     "calls_total": 2,
     "calls": ["OutputDebugStringA", "crt_vsprintf"]
   },
   {
-    "name": "FUN_0040e040",
+    "name": "mod_api_core_get_var",
     "address": "0040e040",
-    "signature": "undefined4 * FUN_0040e040(uint * param_1)",
+    "signature": "undefined4 * mod_api_core_get_var(uint * param_1)",
     "external": false,
     "calls_total": 2,
     "calls": ["console_cvar_find", "console_register_cvar"]
   },
   {
-    "name": "FUN_0040e570",
+    "name": "mod_api_core_del_var",
+    "address": "0040e080",
+    "signature": "undefined mod_api_core_del_var()",
+    "external": false,
+    "calls_total": 1,
+    "calls": ["console_cvar_unregister"]
+  },
+  {
+    "name": "mod_api_core_execute",
+    "address": "0040e0a0",
+    "signature": "undefined mod_api_core_execute()",
+    "external": false,
+    "calls_total": 1,
+    "calls": ["console_exec_line"]
+  },
+  {
+    "name": "mod_api_core_add_command",
+    "address": "0040e0c0",
+    "signature": "undefined mod_api_core_add_command()",
+    "external": false,
+    "calls_total": 1,
+    "calls": ["console_register_command"]
+  },
+  {
+    "name": "mod_api_core_del_command",
+    "address": "0040e0e0",
+    "signature": "undefined mod_api_core_del_command()",
+    "external": false,
+    "calls_total": 1,
+    "calls": ["console_command_unregister"]
+  },
+  {
+    "name": "mod_api_core_get_extension",
+    "address": "0040e100",
+    "signature": "undefined mod_api_core_get_extension()",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
+    "name": "mod_api_gfx_clear",
+    "address": "0040e1f0",
+    "signature": "void mod_api_gfx_clear(float r, float g, float b, float a)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
+    "name": "mod_api_gfx_get_string_width",
+    "address": "0040e220",
+    "signature": "undefined mod_api_gfx_get_string_width()",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
+    "name": "mod_api_gfx_printf",
+    "address": "0040e240",
+    "signature": "undefined mod_api_gfx_printf()",
+    "external": false,
+    "calls_total": 1,
+    "calls": ["crt_vsprintf"]
+  },
+  {
+    "name": "mod_api_gfx_load_texture",
+    "address": "0040e280",
+    "signature": "undefined mod_api_gfx_load_texture()",
+    "external": false,
+    "calls_total": 2,
+    "calls": ["crt_sprintf", "texture_get_or_load"]
+  },
+  {
+    "name": "mod_api_gfx_free_texture",
+    "address": "0040e2e0",
+    "signature": "uchar mod_api_gfx_free_texture(int texId)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
+    "name": "mod_api_gfx_set_texture",
+    "address": "0040e300",
+    "signature": "void mod_api_gfx_set_texture(int texId)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
+    "name": "mod_api_gfx_set_color",
+    "address": "0040e320",
+    "signature": "void mod_api_gfx_set_color(float r, float g, float b, float a)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
+    "name": "mod_api_gfx_set_subset",
+    "address": "0040e350",
+    "signature": "void mod_api_gfx_set_subset(float x1, float y1, float x2, float y2)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
+    "name": "mod_api_gfx_set_texture_filter",
+    "address": "0040e380",
+    "signature": "void mod_api_gfx_set_texture_filter(int filter)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
+    "name": "mod_api_gfx_set_blend_mode",
+    "address": "0040e3a0",
+    "signature": "void mod_api_gfx_set_blend_mode(int src, int dst)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
+    "name": "mod_api_gfx_begin",
+    "address": "0040e3e0",
+    "signature": "void mod_api_gfx_begin(void)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
+    "name": "mod_api_gfx_end",
+    "address": "0040e400",
+    "signature": "void mod_api_gfx_end(void)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
+    "name": "mod_api_gfx_quad",
+    "address": "0040e420",
+    "signature": "void mod_api_gfx_quad(float x, float y, float w, float h)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
+    "name": "mod_api_gfx_quad_rot",
+    "address": "0040e470",
+    "signature": "void mod_api_gfx_quad_rot(float x, float y, float w, float h, float a)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
+    "name": "mod_api_gfx_draw_quads",
+    "address": "0040e4c0",
+    "signature": "void mod_api_gfx_draw_quads(mod_vertex2_t * v, int numQuads)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
+    "name": "mod_api_sfx_load_sample",
+    "address": "0040e530",
+    "signature": "undefined mod_api_sfx_load_sample()",
+    "external": false,
+    "calls_total": 2,
+    "calls": ["crt_sprintf", "sfx_load_sample"]
+  },
+  {
+    "name": "mod_api_sfx_free_sample",
+    "address": "0040e560",
+    "signature": "uchar mod_api_sfx_free_sample(int sfxId)",
+    "external": false,
+    "calls_total": 1,
+    "calls": ["sfx_release_sample"]
+  },
+  {
+    "name": "mod_api_sfx_play_sample",
     "address": "0040e570",
-    "signature": "undefined FUN_0040e570(float param_1)",
+    "signature": "void mod_api_sfx_play_sample(int sfxId, float pan, float volume)",
     "external": false,
     "calls_total": 1,
     "calls": ["sfx_play_panned"]
   },
   {
-    "name": "FUN_0040e690",
+    "name": "mod_api_sfx_load_tune",
+    "address": "0040e5b0",
+    "signature": "undefined mod_api_sfx_load_tune()",
+    "external": false,
+    "calls_total": 2,
+    "calls": ["crt_sprintf", "music_load_track"]
+  },
+  {
+    "name": "mod_api_sfx_free_tune",
+    "address": "0040e5e0",
+    "signature": "uchar mod_api_sfx_free_tune(int tuneId)",
+    "external": false,
+    "calls_total": 1,
+    "calls": ["music_release_track"]
+  },
+  {
+    "name": "mod_api_sfx_play_tune",
+    "address": "0040e5f0",
+    "signature": "void mod_api_sfx_play_tune(int tuneId)",
+    "external": false,
+    "calls_total": 1,
+    "calls": ["sfx_play_exclusive"]
+  },
+  {
+    "name": "mod_api_sfx_stop_tune",
+    "address": "0040e600",
+    "signature": "void mod_api_sfx_stop_tune(int tuneId)",
+    "external": false,
+    "calls_total": 1,
+    "calls": ["sfx_mute_all"]
+  },
+  {
+    "name": "mod_api_inp_get_pressed_char",
+    "address": "0040e610",
+    "signature": "char mod_api_inp_get_pressed_char(void)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
+    "name": "mod_api_inp_get_analog",
+    "address": "0040e620",
+    "signature": "float mod_api_inp_get_analog(int key)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
+    "name": "mod_api_inp_key_down",
+    "address": "0040e660",
+    "signature": "uchar mod_api_inp_key_down(int key)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
+    "name": "mod_api_inp_get_key_name",
+    "address": "0040e680",
+    "signature": "char * mod_api_inp_get_key_name(int key)",
+    "external": false,
+    "calls_total": 1,
+    "calls": ["input_key_name"]
+  },
+  {
+    "name": "mod_api_cl_enter_menu",
     "address": "0040e690",
-    "signature": "void FUN_0040e690(char * arg1)",
+    "signature": "undefined mod_api_cl_enter_menu(byte * param_1)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -1109,7 +1357,7 @@
     "signature": "int FUN_0041cdb0(void)",
     "external": false,
     "calls_total": 6,
-    "calls": ["CoCreateInstance", "CoInitialize", "CoUninitialize", "Ordinal_8", "Ordinal_9", "WideCharToMultiByte"]
+    "calls": ["CoCreateInstance", "CoInitialize", "CoUninitialize", "VariantClear", "VariantInit", "WideCharToMultiByte"]
   },
   {
     "name": "FUN_0041cfe0",
@@ -2637,7 +2885,7 @@
     "signature": "int dsound_init(void * hwnd, uint coop_level)",
     "external": false,
     "calls_total": 1,
-    "calls": ["Ordinal_11"]
+    "calls": ["DirectSoundCreate8"]
   },
   {
     "name": "dsound_shutdown",
@@ -7096,9 +7344,9 @@
     "calls": []
   },
   {
-    "name": "Ordinal_11",
+    "name": "DirectSoundCreate8",
     "address": "0046e962",
-    "signature": "undefined Ordinal_11()",
+    "signature": "HRESULT DirectSoundCreate8(LPCGUID lpGUID, LPDIRECTSOUND8 * ppDS8, LPUNKNOWN pUnkOuter)",
     "external": false,
     "calls_total": 0,
     "calls": []
