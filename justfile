@@ -182,5 +182,5 @@ game-screenshot:
     nircmd savescreenshotwin "screenshots\\screen.png"
 
 zip-decompile:
-    zip crimson.zip analysis/ghidra/raw/*.c analysis/binary_ninja/*.txt
+    zip -r crimson.zip analysis/ghidra/raw/*.c analysis/binary_ninja/*.txt analysis/ida/raw/*/*.c scripts src docs
     open -R crimson.zip
