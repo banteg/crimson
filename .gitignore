@@ -26,6 +26,6 @@ zig-cache/
 zig-out/
 /tools/zig/
 .DS_Store
-
+.mcp.json
 .gemini/
 gha-creds-*.json
