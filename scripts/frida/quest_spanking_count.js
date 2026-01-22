@@ -4,9 +4,7 @@
 //
 // Usage (attach):
 //   frida -n crimsonland.exe -l C:\\share\\frida\\quest_spanking_count.js
-// Usage (spawn):
-//   frida -f "C:\\Crimsonland\\crimsonland.exe" -l C:\\share\\frida\\quest_spanking_count.js
-//   # then in REPL: %resume
+// Attach only: spawning via frida -f is unstable on this VM.
 
 const DEFAULT_LOG_DIR = 'C:\\share\\frida';
 

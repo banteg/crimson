@@ -141,12 +141,6 @@ frida-attach script="scripts\\frida\\crimsonland_probe.js" process="crimsonland.
     frida -n {{process}} -l {{script}}
 
 [windows]
-frida-spawn script="scripts\\frida\\crimsonland_probe.js" exe="C:\\Crimsonland\\crimsonland.exe":
-    $env:CRIMSON_FRIDA_DIR = if ($env:CRIMSON_FRIDA_DIR) { $env:CRIMSON_FRIDA_DIR } else { "C:\share\frida" }
-    New-Item -ItemType Directory -Force -Path $env:CRIMSON_FRIDA_DIR | Out-Null
-    frida -f "{{exe}}" -l {{script}}
-
-[windows]
 frida-unlock-secrets:
     frida -n crimsonland.exe -l scripts\\frida\\unlock_secrets.js
 

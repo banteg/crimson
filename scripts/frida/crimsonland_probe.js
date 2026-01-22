@@ -10,9 +10,7 @@
 //
 // Usage (attach):
 //   frida -p <pid> -l C:\\share\\frida\\crimsonland_probe.js
-// Usage (spawn early):
-//   frida -f "C:\\Crimsonland\\crimsonland.exe" -l C:\\share\\frida\\crimsonland_probe.js
-//   # then in REPL: %resume
+// Attach only: spawning via frida -f is unstable on this VM.
 //
 // Tip: set CRIMSON_FRIDA_DIR to control log output (default C:\\share\\frida).
 

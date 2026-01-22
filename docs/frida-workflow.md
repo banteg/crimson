@@ -19,7 +19,7 @@ set `CRIMSON_FRIDA_CONFIG` to point at a different `grim_hooks_targets.json`.
 - `scripts/frida/grim_hooks_targets.json`
 - `scripts/frida/crimsonland_probe.js`
 
-Attach by process name (spawn caused empty textures + crash on 2026-01-18):
+Attach by process name (required; spawn caused empty textures + crash on 2026-01-18):
 
 ```text
 frida -n crimsonland.exe -l C:\share\frida\grim_hooks.js

@@ -25,24 +25,16 @@ How to run (Frida hook script):
    `CRIMSON_FRIDA_CONFIG` to point at a different `grim_hooks_targets.json`.
 
 3) Optionally edit `grim_hooks_targets.json` to swap the target list.
-4) Launch the game, then attach by process name (recommended):
+4) Launch the game, then attach by process name (required; spawn is unstable on this VM):
 
    ```text
    frida -n crimsonland.exe -l C:\share\frida\grim_hooks.js
    ```
 
    Spawned runs on Win11 ARM64 caused empty textures and a crash before the main menu
-   (observed 2026-01-18), so attach is preferred.
+   (observed 2026-01-18), so attach is required.
 
-5) To capture the very beginning, spawn instead of attach:
-
-   ```text
-   frida -f "C:\Crimsonland\crimsonland.exe" -l C:\share\frida\grim_hooks.js
-   ```
-
-   If the process pauses on spawn, type `%resume` in the Frida REPL.
-
-6) Logs are written to `C:\share\frida\grim_hits.log` by default. If JSON logging is enabled
+5) Logs are written to `C:\share\frida\grim_hits.log` by default. If JSON logging is enabled
    (default in `grim_hooks_targets.json`), events also stream to `C:\share\frida\grim_hits.jsonl`.
 
 Artifacts:

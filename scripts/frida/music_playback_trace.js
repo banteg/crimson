@@ -2,8 +2,7 @@
 
 // Usage:
 //   frida -n crimsonland.exe -l C:\share\frida\music_playback_trace.js
-//   frida -f "C:\\Crimsonland\\crimsonland.exe" -l C:\share\frida\music_playback_trace.js
-//   # then in REPL: %resume
+// Attach only: spawning via frida -f is unstable on this VM.
 
 const DEFAULT_LOG_DIR = 'C:\\share\\frida';
 
