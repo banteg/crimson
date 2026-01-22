@@ -4,6 +4,7 @@ site_dir = "_site"
 
 site_description = "Reverse engineering notes for Crimsonland assets and formats."
 site_author = "banteg"
+extra_css = ["stylesheets/extra.css"]
 
 nav = [
   { "Home" = "index.md" },
@@ -98,6 +99,7 @@ generator = false
 
 [project.theme]
 language = "en"
+logo = "images/reaper-silhouette.svg"
 
 features = [
     "content.code.copy",
@@ -117,5 +119,3 @@ scheme = "slate"
 toggle.icon = "lucide/moon"
 toggle.name = "Switch to light mode"
 
-[project.theme.icon]
-logo = "lucide/flask-conical"
