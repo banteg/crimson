@@ -253,16 +253,22 @@ y = ( (crt_rand() % (1024+128)) - 64 ) * inv_scale;
 
 ---
 
-### Layer 1 (the “heavy” layer)
+### Layer 1 (the "heavy" layer)
 
 * Bind texture: `terrain_textures[ desc->tex0_index ]`
 * Set vertex color: `(0.7, 0.7, 0.7, 0.9)`
 * Stamp count:
 
 ```c
-count = (terrain_texture_width * terrain_texture_height * 0x320) >> 13;
-// = (1024*1024*800) >> 13 = 102400
+count = (terrain_texture_width * terrain_texture_height * 0x320) >> 19;
+// = (1024*1024*800) >> 19 = 1600
 ```
+
+> **Evidence (Binary Ninja @ 0x417cef):**
+> ```c
+> edx_7:eax_14 = sx.q(terrain_texture_height * terrain_texture_width * 0x320)
+> if ((eax_14 + (edx_7 & 0x7ffff)) s>> 0x13 s> 0)  // 0x13 = 19
+> ```
 
 ---
 
@@ -273,7 +279,7 @@ count = (terrain_texture_width * terrain_texture_height * 0x320) >> 13;
 * Count:
 
 ```c
-count = (1024*1024*0x23) >> 13 = (1024*1024*35) >> 13 = 4480
+count = (1024*1024*0x23) >> 19 = (1024*1024*35) >> 19 ≈ 70
 ```
 
 ---
@@ -285,8 +291,11 @@ count = (1024*1024*0x23) >> 13 = (1024*1024*35) >> 13 = 4480
 * Count:
 
 ```c
-count = (1024*1024*0x0f) >> 13 = (1024*1024*15) >> 13 = 1920
+count = (1024*1024*0x0f) >> 19 = (1024*1024*15) >> 19 ≈ 30
 ```
+
+> **Note:** Layer 3 uses `tex2_index` which in the default/random case
+> points to the **base texture** (same as layer 1), not the overlay texture.
 
 ---
 
