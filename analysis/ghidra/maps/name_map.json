@@ -1090,7 +1090,7 @@
     "address": "0x004188a0",
     "name": "terrain_render",
     "signature": "void terrain_render(void)",
-    "comment": "renders the terrain layer from terrain_render_target; tiles fallback when texture missing"
+    "comment": "renders the terrain layer from terrain_render_target (ground RT) with UV scrolling; honors cv_terrainFilter (point filter when value==2.0); tiles fallback when texture missing"
   },
   {
     "program": "crimsonland.exe",
@@ -1496,7 +1496,7 @@
     "address": "0x00427920",
     "name": "fx_queue_render",
     "signature": "void fx_queue_render(void)",
-    "comment": "renders DAT_004aaf18/DAT_004aaf3c queues and clears them"
+    "comment": "bakes FX queues (DAT_004aaf18/DAT_004aaf3c) into the ground render target (terrain_render_target) and clears them"
   },
   {
     "program": "crimsonland.exe",

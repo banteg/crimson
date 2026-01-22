@@ -952,6 +952,97 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00480854",
+      "comment": "Core cvar handle for cv_silentloads (registered by register_core_cvars).",
+      "name": "cv_silentloads",
+      "program": "crimsonland.exe",
+      "type": "void *"
+    },
+    {
+      "address": "0x00480858",
+      "comment": "Core cvar handle for cv_terrainFilter (registered by register_core_cvars). Used by terrain_render to optionally force point filtering when value==2.0.",
+      "name": "cv_terrainFilter",
+      "program": "crimsonland.exe",
+      "type": "void *"
+    },
+    {
+      "address": "0x0048085c",
+      "comment": "Core cvar handle for cv_bodiesFade (registered by register_core_cvars).",
+      "name": "cv_bodiesFade",
+      "program": "crimsonland.exe",
+      "type": "void *"
+    },
+    {
+      "address": "0x00480860",
+      "comment": "Core cvar handle for cv_terrainBodiesTransparency (registered by register_core_cvars). Used by fx_queue_add_rotated/fx_queue_render for corpse decals baked into terrain.",
+      "name": "cv_terrainBodiesTransparency",
+      "program": "crimsonland.exe",
+      "type": "void *"
+    },
+    {
+      "address": "0x00480864",
+      "comment": "Core cvar handle for cv_verbose (registered by register_core_cvars).",
+      "name": "cv_verbose",
+      "program": "crimsonland.exe",
+      "type": "void *"
+    },
+    {
+      "address": "0x00480868",
+      "comment": "Core cvar handle for cv_showFPS (registered by register_core_cvars).",
+      "name": "cv_showFPS",
+      "program": "crimsonland.exe",
+      "type": "void *"
+    },
+    {
+      "address": "0x0048086c",
+      "comment": "Core cvar handle for cv_friendlyFire (registered by register_core_cvars).",
+      "name": "cv_friendlyFire",
+      "program": "crimsonland.exe",
+      "type": "void *"
+    },
+    {
+      "address": "0x00480870",
+      "comment": "Core cvar handle for cv_uiTransparency (registered by register_core_cvars).",
+      "name": "cv_uiTransparency",
+      "program": "crimsonland.exe",
+      "type": "void *"
+    },
+    {
+      "address": "0x00480874",
+      "comment": "Core cvar handle for cv_enableMousePointAndClickMovement (registered by register_core_cvars).",
+      "name": "cv_enableMousePointAndClickMovement",
+      "program": "crimsonland.exe",
+      "type": "void *"
+    },
+    {
+      "address": "0x00480878",
+      "comment": "Core cvar handle for cv_uiSmallIndicators (registered by register_core_cvars).",
+      "name": "cv_uiSmallIndicators",
+      "program": "crimsonland.exe",
+      "type": "void *"
+    },
+    {
+      "address": "0x0048087c",
+      "comment": "Core cvar handle for cv_aimEnhancementFade (registered by register_core_cvars).",
+      "name": "cv_aimEnhancementFade",
+      "program": "crimsonland.exe",
+      "type": "void *"
+    },
+    {
+      "address": "0x00480880",
+      "comment": "Core cvar handle for cv_padAimDistMul (registered by register_core_cvars).",
+      "name": "cv_padAimDistMul",
+      "program": "crimsonland.exe",
+      "type": "void *"
+    },
+    {
+      "address": "0x0048088c",
+      "comment": "Core cvar handle for cv_uiPointFilterPanels (registered by register_core_cvars).",
+      "name": "cv_uiPointFilterPanels",
+      "program": "crimsonland.exe",
+      "type": "void *"
+    },
+    {
       "address": "0x00480890",
       "comment": "Demo purchase/upsell screen active flag; when set gameplay updates are skipped in state 9 and only the overlay renders.",
       "name": "demo_purchase_screen_active",
