@@ -905,8 +905,9 @@ class MenuView:
 
     @staticmethod
     def _menu_max_timeline_ms(
-        _full_version: bool, mods_available: bool, other_games: bool
+        full_version: bool, mods_available: bool, other_games: bool
     ) -> int:
+        del full_version
         max_ms = 300  # sign element at index 0
         show_top = mods_available
         slot_active = [show_top, True, True, True, other_games, True]

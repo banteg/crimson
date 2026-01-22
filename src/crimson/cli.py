@@ -223,7 +223,7 @@ def cmd_game(
     ),
     assets_dir: Path | None = typer.Option(
         None,
-        help="assets root (default: base-dir)",
+        help="assets root (default: base-dir; missing .paq copied from game_bins/)",
     ),
 ) -> None:
     """Run the reimplementation entrypoint."""
