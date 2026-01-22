@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 import os
+from typing import Iterable, Sequence
 
 import pyray as rl
 
@@ -36,6 +37,29 @@ class CrtRand:
 
 
 @dataclass(slots=True)
+class GroundDecal:
+    texture: rl.Texture
+    src: rl.Rectangle
+    x: float
+    y: float
+    width: float
+    height: float
+    rotation_rad: float = 0.0
+    tint: rl.Color = rl.WHITE
+    centered: bool = True
+
+
+@dataclass(slots=True)
+class GroundCorpseDecal:
+    bodyset_frame: int
+    top_left_x: float
+    top_left_y: float
+    size: float
+    rotation_rad: float
+    tint: rl.Color = rl.WHITE
+
+
+@dataclass(slots=True)
 class GroundRenderer:
     texture: rl.Texture
     width: int = TERRAIN_TEXTURE_SIZE
@@ -47,7 +71,7 @@ class GroundRenderer:
     overlay: rl.Texture | None = None
     overlay_detail: rl.Texture | None = None
     tile: rl.Texture | None = None
-    display_filter: int = 2
+    terrain_filter: float = 1.0
     render_target: rl.RenderTexture | None = None
 
     def create_render_target(self) -> None:
@@ -103,6 +127,69 @@ class GroundRenderer:
         rl.end_texture_mode()
         self._set_stamp_filters(point=False)
 
+    def bake_decals(self, decals: Sequence[GroundDecal]) -> bool:
+        if not decals:
+            return False
+
+        self.create_render_target()
+        if self.render_target is None:
+            return False
+
+        inv_scale = 1.0 / self._normalized_texture_scale()
+        textures = self._unique_textures([decal.texture for decal in decals])
+        self._set_texture_filters(textures, point=True)
+
+        rl.begin_texture_mode(self.render_target)
+        for decal in decals:
+            x = decal.x
+            y = decal.y
+            w = decal.width
+            h = decal.height
+            if decal.centered:
+                x -= w * 0.5
+                y -= h * 0.5
+            x *= inv_scale
+            y *= inv_scale
+            w *= inv_scale
+            h *= inv_scale
+            dst = rl.Rectangle(x, y, w, h)
+            origin = rl.Vector2(w * 0.5, h * 0.5)
+            rl.draw_texture_pro(
+                decal.texture,
+                decal.src,
+                dst,
+                origin,
+                math.degrees(decal.rotation_rad),
+                decal.tint,
+            )
+        rl.end_texture_mode()
+
+        self._set_texture_filters(textures, point=False)
+        return True
+
+    def bake_corpse_decals(
+        self, bodyset_texture: rl.Texture, decals: Sequence[GroundCorpseDecal]
+    ) -> bool:
+        if not decals:
+            return False
+
+        self.create_render_target()
+        if self.render_target is None:
+            return False
+
+        scale = self._normalized_texture_scale()
+        inv_scale = 1.0 / scale
+        offset = 2.0 * scale / float(self.width)
+        self._set_texture_filters((bodyset_texture,), point=True)
+
+        rl.begin_texture_mode(self.render_target)
+        self._draw_corpse_shadow_pass(bodyset_texture, decals, inv_scale, offset)
+        self._draw_corpse_color_pass(bodyset_texture, decals, inv_scale, offset)
+        rl.end_texture_mode()
+
+        self._set_texture_filters((bodyset_texture,), point=False)
+        return True
+
     def draw(self, camera_x: float, camera_y: float) -> None:
         if self.render_target is None:
             self._draw_fallback(camera_x, camera_y)
@@ -128,10 +215,10 @@ class GroundRenderer:
         src_h = (v1 - v0) * float(target.texture.height)
         src = rl.Rectangle(src_x, src_y, src_w, -src_h)
         dst = rl.Rectangle(0.0, 0.0, out_w, out_h)
-        if self.display_filter == 1:
+        if self.terrain_filter == 2.0:
             rl.set_texture_filter(target.texture, rl.TEXTURE_FILTER_POINT)
         rl.draw_texture_pro(target.texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
-        if self.display_filter == 1:
+        if self.terrain_filter == 2.0:
             rl.set_texture_filter(target.texture, rl.TEXTURE_FILTER_BILINEAR)
 
     def _scatter_texture(
@@ -248,8 +335,92 @@ class GroundRenderer:
         return scale
 
     def _set_stamp_filters(self, *, point: bool) -> None:
+        self._set_texture_filters(
+            (self.texture, self.overlay, self.overlay_detail),
+            point=point,
+        )
+
+    @staticmethod
+    def _unique_textures(textures: Iterable[rl.Texture]) -> list[rl.Texture]:
+        unique: list[rl.Texture] = []
+        seen: set[int] = set()
+        for texture in textures:
+            texture_id = int(getattr(texture, "id", 0))
+            if texture_id <= 0 or texture_id in seen:
+                continue
+            seen.add(texture_id)
+            unique.append(texture)
+        return unique
+
+    @staticmethod
+    def _set_texture_filters(textures: Iterable[rl.Texture | None], *, point: bool) -> None:
         mode = rl.TEXTURE_FILTER_POINT if point else rl.TEXTURE_FILTER_BILINEAR
-        for texture in (self.texture, self.overlay, self.overlay_detail):
+        for texture in textures:
             if texture is None:
                 continue
+            if int(getattr(texture, "id", 0)) <= 0:
+                continue
             rl.set_texture_filter(texture, mode)
+
+    def _corpse_src(self, bodyset_texture: rl.Texture, frame: int) -> rl.Rectangle:
+        frame = int(frame) & 0xF
+        cell_w = float(bodyset_texture.width) * 0.25
+        cell_h = float(bodyset_texture.height) * 0.25
+        col = frame & 3
+        row = frame >> 2
+        return rl.Rectangle(cell_w * float(col), cell_h * float(row), cell_w, cell_h)
+
+    def _draw_corpse_shadow_pass(
+        self,
+        bodyset_texture: rl.Texture,
+        decals: Sequence[GroundCorpseDecal],
+        inv_scale: float,
+        offset: float,
+    ) -> None:
+        rl.begin_blend_mode(rl.BLEND_CUSTOM)
+        rl.rl_set_blend_factors(rl.RL_ZERO, rl.RL_ONE_MINUS_SRC_ALPHA, rl.RL_FUNC_ADD)
+        for decal in decals:
+            src = self._corpse_src(bodyset_texture, decal.bodyset_frame)
+            size = decal.size * inv_scale * 1.064
+            x = (decal.top_left_x - 0.5) * inv_scale - offset
+            y = (decal.top_left_y - 0.5) * inv_scale - offset
+            dst = rl.Rectangle(x, y, size, size)
+            origin = rl.Vector2(size * 0.5, size * 0.5)
+            tint = rl.Color(
+                decal.tint.r,
+                decal.tint.g,
+                decal.tint.b,
+                int(decal.tint.a * 0.5),
+            )
+            rl.draw_texture_pro(
+                bodyset_texture,
+                src,
+                dst,
+                origin,
+                math.degrees(decal.rotation_rad - (math.pi * 0.5)),
+                tint,
+            )
+        rl.end_blend_mode()
+
+    def _draw_corpse_color_pass(
+        self,
+        bodyset_texture: rl.Texture,
+        decals: Sequence[GroundCorpseDecal],
+        inv_scale: float,
+        offset: float,
+    ) -> None:
+        for decal in decals:
+            src = self._corpse_src(bodyset_texture, decal.bodyset_frame)
+            size = decal.size * inv_scale
+            x = decal.top_left_x * inv_scale - offset
+            y = decal.top_left_y * inv_scale - offset
+            dst = rl.Rectangle(x, y, size, size)
+            origin = rl.Vector2(size * 0.5, size * 0.5)
+            rl.draw_texture_pro(
+                bodyset_texture,
+                src,
+                dst,
+                origin,
+                math.degrees(decal.rotation_rad - (math.pi * 0.5)),
+                decal.tint,
+            )
