@@ -127,9 +127,9 @@ def default_crimson_cfg_data() -> dict:
     config.data["unknown_08"] = 8
     config.texture_scale = 1.0
     config.screen_bpp = 32
-    config.screen_width = 800
-    config.screen_height = 600
-    config.windowed_flag = 0
+    config.screen_width = 1024
+    config.screen_height = 768
+    config.windowed_flag = 1
     config.data["player_count"] = 1
     config.data["game_mode"] = 1
     config.data["full_version_flag"] = 1
