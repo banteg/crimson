@@ -3,10 +3,12 @@
 This site tracks the file formats and asset pipeline we have verified from the
 decompiled Crimsonland v1.9.93 executable and game data.
 
-Overall naming coverage: 36.4% (648 / 1779 functions named or inferred).
-<!-- data-map-coverage:start -->
-Data map coverage: 19.65% (654 / 3328 symbols)
-<!-- data-map-coverage:end -->
+!!! note "Metrics snapshot"
+    - Goal focus: evidence-backed understanding + rewrite parity (see [metrics](metrics.md)).
+    - High-confidence: Quests (runtime-validated); PAQ/JAZ formats (format evidence).
+    - Grim2D has runtime hits, but the subsystem is still draft.
+    - Rewrite readiness: specs for PAQ/JAZ/Quest builders; tests and parity are TBD.
+    - Known rewrite deltas: none recorded yet.
 
 ## Analysis
 
