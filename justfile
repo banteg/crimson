@@ -1,5 +1,5 @@
 set shell := ["bash", "-uc"]
-set windows-shell := ["pwsh", "-NoLogo", "-Command"]
+set windows-shell := ["powershell", "-NoLogo", "-Command"]
 
 version := "1.9.93-gog"
 game_dir := "game_bins/crimsonland/" + version
@@ -90,6 +90,10 @@ ghidra-grim:
       -o analysis/ghidra/raw \
       {{game_dir}}/grim.dll
 
+[unix]
+ghidra-sync *args:
+    bash scripts/ghidra_sync.sh {{args}}
+
 # PE metadata
 pe-info target="crimsonland.exe":
     rabin2 -I {{game_dir}}/{{target}}
@@ -129,6 +133,10 @@ frida-quest-spanking-count:
 [windows]
 frida-quest-build-dump:
     frida -n crimsonland.exe -l scripts\\frida\\quest_build_dump.js
+
+[windows]
+ghidra-sync:
+    wsl -e bash -lc "cd ~/dev/crimson && just ghidra-sync"
 
 [unix]
 frida-copy-share:
