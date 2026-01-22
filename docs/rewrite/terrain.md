@@ -48,19 +48,31 @@ The rewrite mirrors this via `GroundRenderer.terrain_filter`:
 ## Blend mode when drawing to screen
 
 During terrain generation, stamps are drawn with alpha blending enabled
-(`SRC_ALPHA / ONE_MINUS_SRC_ALPHA`). This affects not just the RGB channels but
-also the **alpha channel** of the render target:
+(`SRC_ALPHA / ONE_MINUS_SRC_ALPHA`). On an RGBA render target, this affects not
+just RGB, but also the **alpha channel**:
 
 ```
 result_alpha = src_alpha * src_alpha + dst_alpha * (1 - src_alpha)
 ```
 
-After many semi-transparent stamps (tint alpha 0.9 or 0.6), the RT's alpha drifts
-below 1.0 in places. If the terrain RT were then drawn to the backbuffer with
-standard alpha blending, those pixels would appear semi-transparent.
+In the original exe, the `"ground"` render target is typically created in an
+XRGB format (no alpha), so this drift never matters. In the rewrite, the RT is
+RGBA, so we ensure the ground RT alpha stays at 1.0 by **preserving destination
+alpha** while stamping:
 
-**Fix**: When drawing the terrain RT to the screen, use a custom blend mode that
-fully replaces pixels (ignoring source alpha):
+```python
+rl.begin_blend_mode(rl.BLEND_CUSTOM_SEPARATE)
+rl.rl_set_blend_factors_separate(
+    rl.RL_SRC_ALPHA, rl.RL_ONE_MINUS_SRC_ALPHA,  # RGB
+    rl.RL_ZERO, rl.RL_ONE,                       # A (keep dst alpha)
+    rl.RL_FUNC_ADD, rl.RL_FUNC_ADD,
+)
+# ... stamp decals/strokes into the RT ...
+rl.end_blend_mode()
+```
+
+Additionally, when drawing the terrain RT to the screen, we use a custom blend
+mode that fully replaces pixels (ignoring source alpha):
 
 ```python
 rl.begin_blend_mode(rl.BLEND_CUSTOM)
