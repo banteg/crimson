@@ -22,4 +22,6 @@ dev = [
 ]
 
 [tool.ruff]
+
+[tool.ruff.lint]
 extend-ignore = ["E402"]
