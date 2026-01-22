@@ -296,6 +296,14 @@
     "calls": ["crt_fclose", "crt_fflush", "crt_fopen", "crt_fwrite", "game_build_path"]
   },
   {
+    "name": "config_init_defaults",
+    "address": "004028f0",
+    "signature": "int config_init_defaults(void)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
     "name": "game_build_path",
     "address": "00402bd0",
     "signature": "char * game_build_path(char * filename)",
@@ -456,9 +464,9 @@
     "calls": ["__ftol", "crt_atexit", "gameplay_render_world", "perk_apply", "perk_prompt_update_and_render", "sfx_play", "ui_button_update", "ui_cursor_render", "ui_draw_textured_quad", "ui_elements_update_and_render", "ui_menu_item_update"]
   },
   {
-    "name": "FUN_00406180",
+    "name": "format_ordinal",
     "address": "00406180",
-    "signature": "undefined * FUN_00406180(void)",
+    "signature": "char * format_ordinal(int n)",
     "external": false,
     "calls_total": 1,
     "calls": ["crt_sprintf"]
@@ -2448,6 +2456,30 @@
     "calls": ["GetLocalTime", "crt_fwrite", "crt_rand", "highscore_date_checksum"]
   },
   {
+    "name": "highscore_compare_survival_score_desc",
+    "address": "0043aeb0",
+    "signature": "undefined highscore_compare_survival_score_desc()",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
+    "name": "highscore_compare_rush_field32_desc",
+    "address": "0043aed0",
+    "signature": "undefined highscore_compare_rush_field32_desc()",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
+    "name": "highscore_compare_quest_field32_asc_nonzero_first",
+    "address": "0043aef0",
+    "signature": "undefined highscore_compare_quest_field32_asc_nonzero_first()",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
     "name": "highscore_find_name_entry",
     "address": "0043af30",
     "signature": "byte * highscore_find_name_entry(byte * record, int count)",
@@ -3013,7 +3045,7 @@
     "signature": "void ui_text_input_render(void * input_state, float y, float alpha)",
     "external": false,
     "calls_total": 7,
-    "calls": ["FUN_00406180", "FUN_004411c0", "FUN_00441220", "FUN_00441270", "__ftol", "crt_sprintf", "ui_draw_clock_gauge"]
+    "calls": ["FUN_004411c0", "FUN_00441220", "FUN_00441270", "__ftol", "crt_sprintf", "format_ordinal", "ui_draw_clock_gauge"]
   },
   {
     "name": "ui_update_notice_update",

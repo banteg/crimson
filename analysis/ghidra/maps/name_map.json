@@ -260,6 +260,14 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x004028f0",
+    "name": "config_init_defaults",
+    "signature": "int config_init_defaults(void)",
+    "comment": "initializes default config globals, key bindings, and name slots",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00402bd0",
     "name": "game_build_path",
     "signature": "char * game_build_path(char *filename)",
@@ -397,6 +405,13 @@
     "name": "perk_selection_screen_update",
     "signature": "void perk_selection_screen_update(void)",
     "comment": "perk selection screen: list choices, preview text, and selection handling"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00406180",
+    "name": "format_ordinal",
+    "signature": "char * format_ordinal(int n)",
+    "comment": "formats an integer as an English ordinal (e.g. 1st/2nd/3rd/4th) into a global scratch buffer"
   },
   {
     "program": "crimsonland.exe",
@@ -2023,6 +2038,30 @@
     "name": "highscore_write_record",
     "signature": "void highscore_write_record(byte *record, FILE *fp)",
     "comment": "writes a high score record with date + checksum"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043aeb0",
+    "name": "highscore_compare_survival_score_desc",
+    "signature": "int highscore_compare_survival_score_desc(const void *a, const void *b)",
+    "comment": "qsort comparator used by highscore_load_table() for survival mode; sorts descending by dword at offset 0x24",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043aed0",
+    "name": "highscore_compare_rush_field32_desc",
+    "signature": "int highscore_compare_rush_field32_desc(const void *a, const void *b)",
+    "comment": "qsort comparator used by highscore_load_table() for rush mode; sorts descending by dword at offset 0x20",
+    "create": true
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x0043aef0",
+    "name": "highscore_compare_quest_field32_asc_nonzero_first",
+    "signature": "int highscore_compare_quest_field32_asc_nonzero_first(const void *a, const void *b)",
+    "comment": "qsort comparator used by highscore_load_table() for quest mode; sorts ascending by dword at offset 0x20, treating 0 as \"missing\" (sorted last)",
+    "create": true
   },
   {
     "program": "crimsonland.exe",

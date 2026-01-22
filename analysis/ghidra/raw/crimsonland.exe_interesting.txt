@@ -2,6 +2,8 @@ Interesting Functions and Patterns
 ===================================
 
 [DES related]
+  highscore_compare_survival_score_desc @ 0043aeb0
+  highscore_compare_rush_field32_desc @ 0043aed0
   sfx_update_mute_fades @ 0043d5b0
 
 [SHA related]
