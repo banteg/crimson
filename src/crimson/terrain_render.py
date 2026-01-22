@@ -116,6 +116,17 @@ class GroundRenderer:
         self._set_stamp_filters(point=True)
         rl.begin_texture_mode(self.render_target)
         rl.clear_background(TERRAIN_CLEAR_COLOR)
+        # Keep the ground RT alpha at 1.0 like the original exe (which typically uses
+        # an XRGB render target). We still alpha-blend RGB, but preserve destination A.
+        rl.begin_blend_mode(rl.BLEND_CUSTOM_SEPARATE)
+        rl.rl_set_blend_factors_separate(
+            rl.RL_SRC_ALPHA,
+            rl.RL_ONE_MINUS_SRC_ALPHA,
+            rl.RL_ZERO,
+            rl.RL_ONE,
+            rl.RL_FUNC_ADD,
+            rl.RL_FUNC_ADD,
+        )
         if layers >= 1:
             self._scatter_texture(
                 self.texture, TERRAIN_BASE_TINT, rng, TERRAIN_DENSITY_BASE
@@ -129,6 +140,7 @@ class GroundRenderer:
             self._scatter_texture(
                 self.texture, TERRAIN_DETAIL_TINT, rng, TERRAIN_DENSITY_DETAIL
             )
+        rl.end_blend_mode()
         rl.end_texture_mode()
         self._set_stamp_filters(point=False)
 
@@ -145,6 +157,15 @@ class GroundRenderer:
         self._set_texture_filters(textures, point=True)
 
         rl.begin_texture_mode(self.render_target)
+        rl.begin_blend_mode(rl.BLEND_CUSTOM_SEPARATE)
+        rl.rl_set_blend_factors_separate(
+            rl.RL_SRC_ALPHA,
+            rl.RL_ONE_MINUS_SRC_ALPHA,
+            rl.RL_ZERO,
+            rl.RL_ONE,
+            rl.RL_FUNC_ADD,
+            rl.RL_FUNC_ADD,
+        )
         for decal in decals:
             x = decal.x
             y = decal.y
@@ -167,6 +188,7 @@ class GroundRenderer:
                 math.degrees(decal.rotation_rad),
                 decal.tint,
             )
+        rl.end_blend_mode()
         rl.end_texture_mode()
 
         self._set_texture_filters(textures, point=False)
@@ -387,8 +409,15 @@ class GroundRenderer:
         inv_scale: float,
         offset: float,
     ) -> None:
-        rl.begin_blend_mode(rl.BLEND_CUSTOM)
-        rl.rl_set_blend_factors(rl.RL_ZERO, rl.RL_ONE_MINUS_SRC_ALPHA, rl.RL_FUNC_ADD)
+        rl.begin_blend_mode(rl.BLEND_CUSTOM_SEPARATE)
+        rl.rl_set_blend_factors_separate(
+            rl.RL_ZERO,
+            rl.RL_ONE_MINUS_SRC_ALPHA,
+            rl.RL_ZERO,
+            rl.RL_ONE,
+            rl.RL_FUNC_ADD,
+            rl.RL_FUNC_ADD,
+        )
         for decal in decals:
             src = self._corpse_src(bodyset_texture, decal.bodyset_frame)
             size = decal.size * inv_scale * 1.064
@@ -419,6 +448,15 @@ class GroundRenderer:
         inv_scale: float,
         offset: float,
     ) -> None:
+        rl.begin_blend_mode(rl.BLEND_CUSTOM_SEPARATE)
+        rl.rl_set_blend_factors_separate(
+            rl.RL_SRC_ALPHA,
+            rl.RL_ONE_MINUS_SRC_ALPHA,
+            rl.RL_ZERO,
+            rl.RL_ONE,
+            rl.RL_FUNC_ADD,
+            rl.RL_FUNC_ADD,
+        )
         for decal in decals:
             src = self._corpse_src(bodyset_texture, decal.bodyset_frame)
             size = decal.size * inv_scale
@@ -434,3 +472,4 @@ class GroundRenderer:
                 math.degrees(decal.rotation_rad - (math.pi * 0.5)),
                 decal.tint,
             )
+        rl.end_blend_mode()
