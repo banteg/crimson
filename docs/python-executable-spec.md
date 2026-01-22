@@ -1,6 +1,6 @@
 ---
 tags:
-  - status-draft
+  - status-scoping
 ---
 
 # Python executable spec

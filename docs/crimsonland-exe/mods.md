@@ -1,6 +1,6 @@
 ---
 tags:
-  - status-draft
+  - status-analysis
 ---
 
 # Mods (CMOD plugins)

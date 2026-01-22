@@ -1,6 +1,6 @@
 ---
 tags:
-  - status-draft
+  - status-analysis
 ---
 
 # Grim2D overview

@@ -1,6 +1,6 @@
 ---
 tags:
-  - status-draft
+  - status-analysis
 ---
 
 # Frame loop (gameplay)

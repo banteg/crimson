@@ -1,6 +1,6 @@
 ---
 tags:
-  - status-draft
+  - status-analysis
 ---
 
 # Online high scores (WinINet protocol)

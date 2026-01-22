@@ -1,6 +1,6 @@
 ---
 tags:
-  - status-draft
+  - status-analysis
 ---
 
 # Creature struct (creature_pool / DAT_0049bf38)

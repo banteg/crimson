@@ -1,6 +1,6 @@
 ---
 tags:
-  - status-completed
+  - status-parity
 ---
 
 # JAZ texture format

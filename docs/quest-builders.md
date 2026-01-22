@@ -1,6 +1,6 @@
 ---
 tags:
-  - status-completed
+  - status-parity
 ---
 
 # Quest builders

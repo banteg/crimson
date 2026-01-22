@@ -1,8 +1,3 @@
----
-tags:
-  - status-tracking
----
-
 # Rewrite tech tree (Python + raylib)
 
 Checkboxes are status for the Python + raylib rewrite. Each item includes what

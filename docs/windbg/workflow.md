@@ -1,8 +1,3 @@
----
-tags:
-  - status-in-progress
----
-
 # WinDbg / CDB workflow
 
 ## Remote server setup (works reliably)

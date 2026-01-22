@@ -1,8 +1,3 @@
----
-tags:
-  - status-tracking
----
-
 # Worklog
 
 Reverse-chronological log of notable repo changes, grouped by day.

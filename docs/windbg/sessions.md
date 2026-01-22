@@ -1,8 +1,3 @@
----
-tags:
-  - status-tracking
----
-
 # WinDbg sessions
 
 ## Session 1 (2026-01-18) - credits secret

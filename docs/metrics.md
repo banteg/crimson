@@ -1,63 +1,35 @@
----
-tags:
-  - status-tracking
----
+# Progress metrics
 
-# Progress metrics (goal-oriented)
+This page tracks progress toward 100% fidelity with the original game.
 
-**Status:** Tracking
+## Feature parity dashboard
 
-This page tracks progress toward two goals:
+Legend: ✅ complete · 🚧 in progress · ⬜ not started
 
-1) Evidence-backed understanding of the original game.
-2) An idiomatic rewrite with known behavior parity.
+| Feature | Scoping | Analysis | Validation | Parity | Notes |
+|---------|:-------:|:--------:|:----------:|:------:|-------|
+| Formats (PAQ/JAZ) | ✅ | ✅ | ✅ | ✅ | Full extraction & conversion pipeline working. |
+| Quest Logic | ✅ | ✅ | ✅ | ✅ | All 50 builders dumped, validated, and mirrored in Python. |
+| Terrain | ✅ | ✅ | ✅ | 🚧 | Rendering logic validated; baking pipeline in progress. |
+| Boot Sequence | ✅ | ✅ | ✅ | 🚧 | Logos, loading steps, and music handoff implemented. |
+| Menu System | ✅ | ✅ | 🚧 | ⬜ | State 0 scaffolded; transitions/layout need polish. |
+| Weapons | ✅ | ✅ | 🚧 | ⬜ | Table structure known; projectile logic pending. |
+| Creatures | ✅ | ✅ | 🚧 | ⬜ | Spawn templates mapped; AI behavior still in analysis. |
+| Player | ✅ | ✅ | 🚧 | ⬜ | Input & movement mapped; state struct partially validated. |
+| Grim2D | ✅ | ✅ | ✅ | ⬜ | Vtable mapped & validated; implementation deferred. |
+| Save/Config | ✅ | ✅ | ⬜ | ⬜ | File formats reversed; editor tools built. |
 
-## How to update
+## Status definitions
 
-- Update after a Ghidra regen, runtime capture, or rewrite milestone.
-- Prefer evidence-linked notes over raw percentages.
+See [Work status model](work-status.md) for the full lifecycle:
 
-## Subsystem status (primary dashboard)
+1. **Scoping** — We know it exists; location identified
+2. **Analysis** — Static analysis complete; logic mapped in Ghidra
+3. **Validation** — Runtime-confirmed via Frida/WinDbg
+4. **Parity** — Reimplemented in Python; matches original exactly
 
-Legend:
-- **Understanding:** draft / in-progress / validated / mixed
-- **Evidence:** static / runtime / both / format
-- **Rewrite:** spec / prototype / parity / tested / TBD
+## Known behavior deltas
 
-| Subsystem | Understanding | Evidence | Rewrite | Notes |
-| --- | --- | --- | --- | --- |
-| Boot & startup | in-progress | both | TBD | entrypoint.md, boot-sequence.md |
-| Formats (PAQ/JAZ/Fonts) | mixed | format | spec | formats/*.md |
-| Asset pipeline | in-progress | static | TBD | pipeline.md |
-| Grim2D | draft | runtime | TBD | grim2d/index.md, grim2d/runtime-validation.md |
-| Weapons / perks / bonuses | in-progress | both | TBD | weapon-table.md, perk-id-map.md, bonus-id-map.md |
-| Quests | validated | runtime | spec | quest-builders.md |
-| UI & menus | draft | static | TBD | crimsonland-exe/ui.md, ui-elements.md |
-| Audio / SFX | in-progress | static | TBD | audio.md |
-| Save / config | draft | static | TBD | save-status-format.md, crimson-cfg.md |
-| Secrets / minigames | draft | runtime | TBD | secrets.md |
+Intentional divergences from the original:
 
-## Evidence pipeline (per cycle)
-
-| Metric | Current | Source |
-| --- | --- | --- |
-| New runtime captures | TBD | analysis/frida/raw/, artifacts/frida/share/ |
-| Facts promoted into maps | TBD | analysis/ghidra/maps/* (git diff) |
-| Docs updated with evidence links | TBD | docs/ |
-| Top unknowns reduced | TBD | docs/detangling.md, docs/work-status.md |
-
-## Rewrite readiness (specs + tests)
-
-| Spec | Status | Tests | Parity | Notes |
-| --- | --- | --- | --- | --- |
-| PAQ reader | spec | TBD | TBD | formats/paq.md |
-| JAZ decode | spec | TBD | TBD | formats/jaz.md |
-| Fonts | draft | TBD | TBD | formats/fonts.md |
-| Weapon table | in-progress | TBD | TBD | weapon-table.md |
-| Quest builders | validated | TBD | TBD | quest-builders.md |
-| Save/status | draft | TBD | TBD | save-status-format.md |
-| Config blob | draft | TBD | TBD | crimson-cfg.md |
-
-## Known behavior deltas (rewrite vs original)
-
-- None recorded yet. Add entries here when the rewrite intentionally diverges.
+- None recorded yet.

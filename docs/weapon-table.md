@@ -1,6 +1,6 @@
 ---
 tags:
-  - status-in-progress
+  - status-analysis
 ---
 
 # Weapon table (weapon_table_init)

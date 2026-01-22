@@ -1,8 +1,3 @@
----
-tags:
-  - status-draft
----
-
 # Rewrite (Python + raylib)
 
 Goal: 100% parity with the classic game logic. For now the active rewrite is a

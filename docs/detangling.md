@@ -1,6 +1,6 @@
 ---
 tags:
-  - status-in-progress
+  - status-analysis
 ---
 
 # Detangling notes

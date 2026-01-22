@@ -1,6 +1,6 @@
 ---
 tags:
-  - status-in-progress
+  - status-validation
 ---
 
 # Sprite atlas cutting (Crimsonland)

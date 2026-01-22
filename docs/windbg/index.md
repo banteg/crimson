@@ -1,8 +1,3 @@
----
-tags:
-  - status-in-progress
----
-
 # WinDbg / CDB tooling
 
 Runtime debugging for evidence collection using WinDbg/CDB.

@@ -1,8 +1,3 @@
----
-tags:
-  - status-in-progress
----
-
 # Frida tooling
 
 Runtime instrumentation for evidence collection using Frida.

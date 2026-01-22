@@ -1,6 +1,6 @@
 ---
 tags:
-  - status-tracking
+  - status-analysis
 ---
 
 # UI weapon icon atlas (ui_wicons.png)

@@ -1,8 +1,3 @@
----
-tags:
-  - status-tracking
----
-
 # Third-party libraries
 
 This page tracks third-party libraries referenced by the Crimsonland binaries

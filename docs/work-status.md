@@ -1,79 +1,55 @@
----
-tags:
-  - status-draft
----
-
 # Work status model
 
-This page defines how we track document maturity and how we mark evidence for
-individual claims. The goal is to make "where we are" explicit and to clarify
-what is backed by static analysis, runtime validation, or the Python reference
-implementation.
+This page defines how we track maturity and evidence. The status reflects the
+lifecycle of a feature from "we know it exists" to "we have reimplemented it
+with 100% fidelity."
 
-## Page status ladder
+## Status lifecycle
 
-Use these statuses in `docs/index.md` (and any doc header that includes a
-status line).
+Use these tags in the front matter (e.g., `tags: [status-analysis]`) and in
+summary tables.
 
-| Status | Meaning | Exit criteria |
-| --- | --- | --- |
-| Planned | Topic is scoped but not yet documented. | We have a starter doc or tracking notes. |
-| Tracking | Raw notes + pointers to evidence; structure is loose. | Core sections exist and at least some claims are tagged. |
-| Draft | Structured doc with sections; gaps and TODOs called out. | Major sections filled and evidence tags used for key claims. |
-| In progress | Actively validating; most claims tagged and gaps shrinking. | Remaining gaps are small or isolated; runtime/static coverage is solid. |
-| Completed | Stable and validated; changes are incremental. | Key claims are tagged; open questions are resolved or explicitly deferred. |
-
-## Zensical page tags
-
-We mirror the status ladder into Zensical page tags (front matter `tags:`) so
-status can be filtered in the site UI.
-
-Tag names:
-
-- `status-planned`
-- `status-tracking`
-- `status-draft`
-- `status-in-progress`
-- `status-completed`
+| # | Status | Tag | Meaning | Exit Criteria |
+|---|--------|-----|---------|---------------|
+| 1 | **Scoping** | `status-scoping` | Mapping. We know this feature/struct exists but haven't deep-dived. | High-level role identified; file/memory location known. |
+| 2 | **Analysis** | `status-analysis` | Static. We are actively decompiling and mapping logic in Ghidra. | Logic flow understood; variables named; data tables extracted. |
+| 3 | **Validation** | `status-validation` | Runtime. We are using Frida/WinDbg/logs to prove the static analysis is correct. | Runtime values captured; edge cases confirmed; unknowns resolved. |
+| 4 | **Parity** | `status-parity` | Implementation. The feature is rewritten in Python and matches the original exactly. | Visuals and logic are indistinguishable from the reference. |
 
 Example front matter:
 
-```
+```yaml
 ---
 tags:
-  - status-draft
+  - status-analysis
 ---
 ```
 
-## Evidence tags for claims
+## Evidence tags
 
-Use inline tags in bullets/paragraphs to mark the source of truth for each
-claim. Combine tags when multiple kinds of evidence exist (e.g., `[static+runtime]`).
+Use these inline to mark the source of truth for specific claims.
 
-| Tag | Meaning | Typical sources |
-| --- | --- | --- |
-| `[hypothesis]` | Hypothesis / inferred (no direct evidence yet). | Educated guess, pattern matching. |
-| `[static]` | Static confirmed. | Decompiled code, data maps, string refs. |
-| `[runtime]` | Runtime verified. | Frida/Windbg traces, live logs, capture artifacts. |
-| `[python]` | Python reference implementation. | `src/crimson/` builders, parsers, tables. |
+| Tag | Source | Usage |
+|-----|--------|-------|
+| `[static]` | Decompilation | "The code says X." (Ghidra, strings, data maps) |
+| `[runtime]` | Instrumentation | "The debugger showed X." (Frida, WinDbg, logs) |
+| `[python]` | Rewrite | "Our code implements X." (Source code, data tables) |
+| `[parity]` | Verification | "Our output matches the original." (Side-by-side comparison) |
 
-### Suggested lock-in rules
+## Usage rules
 
-These are guidelines for when a claim feels "locked in":
+- **Docs reflect the original**: Documentation pages describe the reference
+  binary. Use `[static]` and `[runtime]` tags here.
 
-- Behavior claims: `[static+runtime]` (static + runtime).
-- Data tables/ids: `[static+python]` (static + reference implementation).
-- End-to-end reimplementation: `[python+runtime]` (Python output matches runtime capture).
+- **Code reflects the docs**: The Python implementation should be derived from
+  the documentation.
 
-## Usage pattern
+- **Promotion**: A page moves from Analysis to Validation when we stop guessing
+  and start measuring. It moves to Parity only when the rewrite is complete and
+  verified.
 
-Example claim list using tags:
+- **Reference pages**: Pages like worklog, sessions, and cheatsheets don't need
+  a status tag — they're raw material, not feature documentation.
 
-- `[static]` `creature_spawn_template` assigns `template_id` to `creature_type_id`.
-- `[runtime]` Quest builder 5.2 emits 132 entries in runtime capture.
-- `[static+python]` Spawn ids mapped to creature names in `src/crimson/spawn_templates.py`.
-
-## Notes
-
-- Keep tags short and visible. Prefer `[static]`, `[runtime]`, `[python]` in-line over long prose.
-- If a claim changes status, update the tag rather than rewriting the claim.
+- **Regression**: If new evidence contradicts a claim, demote the tag/status
+  accordingly.
