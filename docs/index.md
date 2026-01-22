@@ -3,12 +3,11 @@
 This site tracks the file formats and asset pipeline we have verified from the
 decompiled Crimsonland v1.9.93 executable and game data.
 
-!!! note "Metrics snapshot"
-    - Goal focus: evidence-backed understanding + rewrite parity (see [metrics](metrics.md)).
-    - High-confidence: Quests (runtime-validated); PAQ/JAZ formats (format evidence).
-    - Grim2D has runtime hits, but the subsystem is still draft.
-    - Rewrite readiness: specs for PAQ/JAZ/Quest builders; tests and parity are TBD.
-    - Known rewrite deltas: none recorded yet.
+!!! abstract "Current state"
+    The rewrite boots to a working menu with terrain rendering, music playback, and
+    demo/attract mode scaffolding. All 50 quest builders are runtime-validated and
+    mirrored in Python. Asset pipeline (PAQ/JAZ) is complete. Next milestone:
+    player input + weapon firing to unlock the gameplay loop.
 
 ## Analysis
 
