@@ -53,13 +53,13 @@ typedef struct weapon_stats_t {
 ## Offsets (relative to entry base)
 
 All offsets below are in **bytes**, relative to the pointer returned by
-`FUN_0041fc60`.
+`weapon_table_entry` (`FUN_0041fc60`).
 
 | Offset | Type  | Meaning | Evidence |
 | ------ | ----- | ------- | -------- |
 | `-0x04` | int | Ammo class / HUD indicator | Used to choose `ui_ui_ind*` icons in the HUD: `0=bullet`, `1=fire`, `2=rocket`, else electric. |
 | `0x00` | char[0x40] | Weapon name | String is copied inline during `weapon_table_init` and rendered in the HUD weapon list via `FUN_0041c4b0`. |
-| `0x40` | byte | Unlocked/available flag | `FUN_00452e40` clears the table then marks unlocked weapons; `FUN_00452cd0` skips entries with `0`. |
+| `0x40` | byte | Unlocked/available flag | `weapon_refresh_available` (`FUN_00452e40`) clears the table then marks unlocked weapons; `weapon_pick_random_available` (`FUN_00452cd0`) skips entries with `0`. |
 | `0x44` | int | Clip size | Copied into `player_clip_size` (`DAT_00490b74`) on weapon swap and used to reset `player_ammo` (`DAT_00490b7c`). |
 | `0x48` | float | Shot cooldown | Copied into `player_shot_cooldown` (`DAT_00490b84`) after firing in `player_fire_weapon`. |
 | `0x4c` | float | Reload time | Loaded into `player_reload_timer` (`DAT_00490b80`) in `player_start_reload` (scaled by perks). |
@@ -99,7 +99,7 @@ All offsets below are in **bytes**, relative to the pointer returned by
   (`ui_ui_indElectric.jaz`).
 
 - Flag bits (offset `0x68`): `0x1` spawn muzzle flash / shot burst effect
-  (`FUN_0042e120(0x12, ...)`), `0x4` use the smaller crosshair size, `0x8` hide
+  (`effect_spawn`, `FUN_0042e120(0x12, ...)`), `0x4` use the smaller crosshair size, `0x8` hide
   the crosshair entirely.
 
 - Pellet count (offset `0x74`, `weapon_projectile_pellet_count`) is used by the Fire Bullets bonus
@@ -123,5 +123,5 @@ All offsets below are in **bytes**, relative to the pointer returned by
   `weapon_projectile_damage_scale`) keyed by projectile type ids in `projectile_spawn` and
   `projectile_update`.
 
-- Many fields are only written in `FUN_004519b0`; only a subset are referenced
+- Many fields are only written in `weapon_table_init` (`FUN_004519b0`); only a subset are referenced
   by symbol elsewhere (reload/spread/sfx/flags/damage).

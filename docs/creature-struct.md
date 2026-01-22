@@ -80,16 +80,16 @@ Field map (medium confidence):
 | `0x09` | collision flag | `creature_collision_flag` | set when two creatures are within 45 units; drives periodic contact damage ticks. |
 | `0x0c` | collision timer | `creature_collision_timer` | decremented when collision flag is set; when it wraps, applies damage. |
 | `0x10` | hitbox size | `creature_hitbox_size` | set to `16.0` on spawn; used as a sentinel in contact-damage logic. |
-| `0x14` | pos_x | `creature_pos_x` | written by `FUN_00428240`; used in distance tests/targeting. |
-| `0x18` | pos_y | `creature_pos_y` | written by `FUN_00428240`; used in distance tests/targeting. |
-| `0x1c` | vel_x | `creature_vel_x` | computed from heading/speed and passed to `FUN_0041e400`. |
-| `0x20` | vel_y | `creature_vel_y` | computed from heading/speed and passed to `FUN_0041e400`. |
+| `0x14` | pos_x | `creature_pos_x` | written by `creature_spawn` (`FUN_00428240`); used in distance tests/targeting. |
+| `0x18` | pos_y | `creature_pos_y` | written by `creature_spawn` (`FUN_00428240`); used in distance tests/targeting. |
+| `0x1c` | vel_x | `creature_vel_x` | computed from heading/speed and passed to `vec2_add_inplace` (`FUN_0041e400`). |
+| `0x20` | vel_y | `creature_vel_y` | computed from heading/speed and passed to `vec2_add_inplace` (`FUN_0041e400`). |
 | `0x24` | health | `creature_health` | used as alive check (`> 0`) and perk kill logic. |
 | `0x28` | max_health | `creature_max_health` | set from health on spawn; clones use `max_health * 0.25`. |
 | `0x2c` | heading (radians) | `creature_heading` | set on spawn; eased toward desired heading each frame. |
 | `0x30` | desired heading | `creature_target_heading` | computed from target position each frame. |
-| `0x34` | size/radius | `creature_size` | used in collision tests (`FUN_00420600`) and speed scaling. |
-| `0x38` | hit flash timer | `creature_hit_flash_timer` | decremented each frame; set by `FUN_004207c0` on damage. |
+| `0x34` | size/radius | `creature_size` | used in collision tests (`creatures_apply_radius_damage`, `FUN_00420600`) and speed scaling. |
+| `0x38` | hit flash timer | `creature_hit_flash_timer` | decremented each frame; set by `creature_apply_damage` (`FUN_004207c0`) on damage. |
 | `0x3c` | tint_r | `creature_tint_r` | set from spawn color parameter; modified by difficulty scaling. |
 | `0x40` | tint_g | `creature_tint_g` | set from spawn color parameter; modified by difficulty scaling. |
 | `0x44` | tint_b | `creature_tint_b` | set from spawn color parameter; modified by difficulty scaling. |
@@ -97,7 +97,7 @@ Field map (medium confidence):
 | `0x4c` | force-target flag | `creature_force_target` | set when target is too near/far; snaps target position to player. |
 | `0x50` | target_x | `creature_target_x` | derived from player/formation/linked enemy. |
 | `0x54` | target_y | `creature_target_y` | derived from player/formation/linked enemy. |
-| `0x58` | contact damage | `creature_contact_damage` | Passed to `FUN_00425e50` on player contact; seeded as `size * 0.0952381` in `FUN_00407611`. |
+| `0x58` | contact damage | `creature_contact_damage` | Passed to `player_take_damage` (`FUN_00425e50`) on player contact; seeded as `size * 0.0952381` in `FUN_00407611`. |
 | `0x5c` | move speed | `creature_move_speed` | Per-type speed scalar used to compute velocity; seeded to `0.9..` range in `FUN_00407611`. |
 | `0x60` | attack cooldown | `creature_attack_cooldown` | Decremented each frame; gates projectile spawns. |
 | `0x64` | reward value | `creature_reward_value` | Seeded from health/contact/speed (`health * 0.4 + contact * 0.8 + speed * 5 + rand(10..19)`), then scaled by `0.8` in the spawner. |
@@ -148,7 +148,7 @@ inside `creature_update_all`. These notes are medium-confidence.
 | `1` | Tight orbit toward player; same as mode 0 but scale `0.55`. | Same logic with scale 0.55. |
 | `2` | Force direct chase; target is forced to player when mode == 2. | `mode == 2` triggers target override to player. |
 | `3` | Linked follower; target = linked creature position + per-creature offset (`DAT_0049bfb4/b8`). | Uses `DAT_0049bfb0` as link index; clears mode if target dead. |
-| `4` | Linked guard; if link alive, target around player like mode 0; if link dead, mode clears and a damage helper is called. | Clears mode and calls `FUN_004207c0` when link is dead. |
+| `4` | Linked guard; if link alive, target around player like mode 0; if link dead, mode clears and a damage helper is called. | Clears mode and calls `creature_apply_damage` (`FUN_004207c0`) when link is dead. |
 | `5` | Tethered follower; target = link + offset; movement scale shrinks when very close (`dist * 0.015625`). | Computes `local_70` from distance to target and clamps in 0..1 range. |
 | `6` | Orbit around linked creature; target = link + `cos/sin(angle + heading) * radius`. | Uses `DAT_0049bfc0` (radius) and `DAT_0049bfbc` (angle). |
 | `7` | Hold/linger; target = current position while a timer runs. | Uses `DAT_0049bfc0` as countdown; clears mode when expired. |
@@ -174,17 +174,17 @@ Related notes:
 - Animation phase (`0x94`) is incremented by a per-type rate stored at
   `&DAT_0048275c + type_id * 0x44` and wraps at **31** for the primary strip or **15**
   for the short ping‑pong strip. The renderer then selects a frame index for the 8×8
-  atlas (see `FUN_00418b60`).
+  atlas (see `creature_render_type` / `FUN_00418b60`).
 
 - `creature_update_all` scales the animation step by movement speed, size, and a
   local scale factor (tether/orbit cases), using `rate * speed * dt * (30/size)`
   multiplied by **25** (long strip) or **22** (short strip) before wrapping.
 
-- Flags `0x4` and `0x40` influence sprite selection in `FUN_00418b60`:
+- Flags `0x4` and `0x40` influence sprite selection in `creature_render_type` (`FUN_00418b60`):
   `0x4` selects the short 8‑frame ping‑pong strip and `0x40` forces the long strip
   even when `0x4` is set.
 
-- `FUN_00418b60` computes the short strip frame as
+- `creature_render_type` (`FUN_00418b60`) computes the short strip frame as
   `frame = base + 0x10 + ping_pong(int(phase) & 0xf)`, where `ping_pong` mirrors
   indices `> 7` to `0xf - idx`. The long strip uses `frame = base + int(phase)`
   (mirrored to `0x1f - frame` when `type_flags & 1` and `frame > 0x0f`), with
@@ -217,11 +217,11 @@ Field map (partial):
 | Offset | Field | Evidence |
 | --- | --- | --- |
 | 0x00 | sprite texture handle | `creature_type_texture`; bound in `creature_render_type` via `grim_bind_texture`. |
-| 0x04 | sfx bank A [0] | `creature_type_sfx_a0`; `FUN_004207c0` chooses `uVar3 = rand() & 3` and calls `FUN_0043d260` on `&creature_type_sfx_a0 + (uVar3 + type_id * 0x11) * 4`. |
+| 0x04 | sfx bank A [0] | `creature_type_sfx_a0`; `creature_apply_damage` (`FUN_004207c0`) chooses `uVar3 = rand() & 3` and calls `sfx_play_panned` (`FUN_0043d260`) on `&creature_type_sfx_a0 + (uVar3 + type_id * 0x11) * 4`. |
 | 0x08 | sfx bank A [1] | `creature_type_sfx_a1`; same selection as above. |
 | 0x0c | sfx bank A [2] | `creature_type_sfx_a2`; same selection as above; also used by chain-kill paths. |
 | 0x10 | sfx bank A [3] | `creature_type_sfx_a3`; same selection as above (the 0..3 range proves this slot is live). |
-| 0x14 | sfx bank B [0] | `creature_type_sfx_b0`; contact-damage removal path picks `uVar7 = rand() & 1` and calls `FUN_0043d260` on `&creature_type_sfx_b0 + (uVar7 + type_id * 0x11) * 4`. |
+| 0x14 | sfx bank B [0] | `creature_type_sfx_b0`; contact-damage removal path picks `uVar7 = rand() & 1` and calls `sfx_play_panned` (`FUN_0043d260`) on `&creature_type_sfx_b0 + (uVar7 + type_id * 0x11) * 4`. |
 | 0x18 | sfx bank B [1] | `creature_type_sfx_b1`; same selection as above (second slot in the 0..1 range). |
 | 0x20 | unknown (const 1.0) | Set to `1.0` for every type in the init routine; no reads found in the decompiled output. |
 | 0x34 | anim rate | `creature_type_anim_rate`; multiplies animation step in `creature_update_all` (drives `anim phase`). |
@@ -331,29 +331,30 @@ Notes:
 
 - The table is mirrored into `src/crimson/spawn_templates.py` for Python usage.
 - Flags `0x4` and `0x40` are the only bits with confirmed animation effects.
-- Flag `0x8` triggers the split‑on‑death behavior (see `FUN_0041e910`).
-- Flag `0x400` calls `FUN_0041f5b0` on death (spawns a bonus entry using two 16‑bit
+- Flag `0x8` triggers the split‑on‑death behavior (see `creature_handle_death`, `FUN_0041e910`).
+- Flag `0x400` calls `bonus_spawn_at` (`FUN_0041f5b0`) on death (spawns a bonus entry using two 16‑bit
   values from `&DAT_0049bfb0`).
 
 ## Spawn id sources (call sites)
 
 `template_id` is supplied by a mix of scripted spawners and data tables:
 
-- `FUN_00402ed0`, `FUN_00402fe0`, `FUN_004030f0`, `FUN_00403250`: mode setup
-  helpers called from `FUN_00403390` (hard‑coded spawn ids like `0x34`, `0x35`,
+- `demo_setup_variant_0` (`FUN_00402ed0`), `demo_setup_variant_2` (`FUN_00402fe0`),
+  `demo_setup_variant_1` (`FUN_004030f0`), `demo_setup_variant_3` (`FUN_00403250`):
+  mode setup helpers called from `demo_mode_start` (`FUN_00403390`) (hard‑coded spawn ids like `0x34`, `0x35`,
   `0x38`, `0x41`, `0x24`, `0x25`).
 
 - `survival_update` (`FUN_00407cd0`): milestone spawns using `0x12`, `0x2b`,
   `0x2c`, `0x35`, `0x38`, `0x3a`, `0x3c`, and `1`.
 
-- Tutorial timeline (`FUN_00408990`): scripted spawns using `0x24`, `0x26`,
+- Tutorial timeline (`tutorial_timeline_update`, `FUN_00408990`): scripted spawns using `0x24`, `0x26`,
   `0x27`, `0x28`, `0x40`.
 
 - Quest/timeline spawner (`quest_spawn_timeline_update`, `FUN_00434250`): pulls spawn ids from the
   table at `DAT_004857a8` (`pfVar4[3]`) with counts in `pfVar4[5]`.
 
 - AI subspawns (`creature_update_all`): periodic spawns using `&DAT_00484fe4 + iVar6 * 0x18`,
-  which is seeded for some template ids inside `FUN_00430af0`.
+  which is seeded for some template ids inside `creature_spawn_template` (`FUN_00430af0`).
 
 ## Quest spawn table (DAT_004857a8)
 

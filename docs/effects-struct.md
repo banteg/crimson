@@ -422,7 +422,7 @@ Known entries (extracted from `crimsonland.exe` at `effect_id_size_code`):
 
 | effect_id | Call sites | Notes |
 | --- | --- | --- |
-| `0` | `bonus_spawn_at`, `FUN_0042ef60`, `FUN_0042f080`, `FUN_0042f3f0`, `FUN_0042f540`, `effect_spawn_explosion_burst`, `FUN_004207c0` | Generic burst/spark effects (used for bonus pickup and explosions). |
+| `0` | `bonus_spawn_at`, `effect_spawn_burst` (`FUN_0042ef60`), `FUN_0042f080`, `FUN_0042f3f0`, `FUN_0042f540`, `effect_spawn_explosion_burst`, `creature_apply_damage` (`FUN_004207c0`) | Generic burst/spark effects (used for bonus pickup and explosions). |
 | `1` | `bonus_apply` (Reflex Boost/Freeze), `FUN_0042f080`, `FUN_0042f270`, `FUN_0042f330`, `effect_spawn_explosion_burst` | Power-up ring/halo style effects. |
 | `7` | `effect_spawn_blood_splatter` | Blood splatter burst used by hit effects. |
 | `8..10` | `effect_spawn_freeze_shard` | Randomized variant picks (`iVar3 % 3 + 8`). |
@@ -440,7 +440,7 @@ These helpers primarily configure `effect_template_vel_x` and then call `effect_
 | `effect_spawn_blood_splatter` | `7` | Spawns two bursts with randomized direction/size; used in projectile/chain effects. |
 | `effect_spawn_freeze_shard` | `8..10` | Picks a random variant (`iVar3 % 3 + 8`); used by freeze/shatter logic. |
 | `effect_spawn_freeze_shatter` | `0xe`, `8..10` | Four-way burst (`0xe`) plus additional `effect_spawn_freeze_shard` calls. |
-| `FUN_0042ef60` | `0` | Generic burst loop with randomized velocity. |
+| `effect_spawn_burst` (`FUN_0042ef60`) | `0` | Generic burst loop with randomized velocity. |
 | `FUN_0042f080` | `1`, `0` | Ring + burst combo used for power-up visuals. |
 | `FUN_0042f270` | `1` | Single ring burst. |
 | `FUN_0042f330` | `1` | Single ring burst with different color/alpha defaults. |
@@ -458,7 +458,7 @@ Field arrays are labeled in the data map (e.g. `sprite_effect_pos_x`,
 
 Spawn helper:
 
-- `FUN_0041fbb0` -> `fx_spawn_sprite`
+- `fx_spawn_sprite` (`FUN_0041fbb0`)
 
 Layout (partial):
 
@@ -486,6 +486,6 @@ Common color overrides (callers mutate the RGBA fields after spawning):
 
 | Override | Fields | Notes |
 | --- | --- | --- |
-| dim spark | `color_r/g/b = 0.5`, `color_a = 0.25` | Used by projectile detonation sparks (`FUN_00420b90`). |
-| soft burst | `color_a = 0.37` | Used by radial burst loops (`FUN_00420b90`). |
-| mid alpha | `color_a = 0.7` | Used by periodic spark spawns (`FUN_00420b90`). |
+| dim spark | `color_r/g/b = 0.5`, `color_a = 0.25` | Used by projectile detonation sparks (`projectile_update`, `FUN_00420b90`). |
+| soft burst | `color_a = 0.37` | Used by radial burst loops (`projectile_update`, `FUN_00420b90`). |
+| mid alpha | `color_a = 0.7` | Used by periodic spark spawns (`projectile_update`, `FUN_00420b90`). |

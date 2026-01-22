@@ -11,7 +11,7 @@ Responsibilities:
 - Updates the global transition timeline `ui_elements_timeline` (`DAT_00487248`) using `DAT_00480844`.
   Direction is controlled by `ui_transition_direction` (`DAT_0048724c`) (0 = countdown, nonzero = count up).
 
-- When the timeline goes below zero, it calls `FUN_004461c0` with `game_state_pending` (`DAT_00487274`) to
+- When the timeline goes below zero, it calls `game_state_set` (`FUN_004461c0`) with `game_state_pending` (`DAT_00487274`) to
   switch state and then sets `game_state_pending` (`DAT_00487274`) = `0x19` (idle).
 
 - Clamps the timeline to the maximum active element value
@@ -34,11 +34,11 @@ Helpers:
 
 A common menu loop that:
 
-1) Calls the gameplay render pass (`FUN_00405960`).
+1) Calls the gameplay render pass (`gameplay_render_world`, `FUN_00405960`).
 2) Runs `ui_elements_update_and_render`.
 3) Draws menu content and buttons (`ui_button_update`).
 
-## UI element render (FUN_00446c40)
+## UI element render (ui_element_render / FUN_00446c40)
 
 `ui_element_render` updates focus/click handling and draws a UI element's quads,
 colors, and textures. See [UI elements](../ui-elements.md) for struct details.

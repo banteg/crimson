@@ -133,6 +133,6 @@ Mode-specific updates are dispatched from the main frame loop:
 - Survival: `survival_update` (`FUN_00407cd0`)
 - Rush: `rush_mode_update`
 - Quests: `quest_mode_update`
-- Typ-o-Shooter: separate loop (`FUN_004457c0`, state `0x12`)
+- Typ-o-Shooter: separate loop (`survival_gameplay_update_and_render`, `FUN_004457c0`, state `0x12`)
 
 See [Game mode map](../game-mode-map.md) for mode ids.

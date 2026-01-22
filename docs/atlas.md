@@ -43,7 +43,7 @@ The renderer later uses these tables to build quads:
 
 ## Sprite table (engine‑hardcoded)
 
-`FUN_0042e0a0` reads a table at **VA 0x004755F0**.
+`effect_select_texture` (`FUN_0042e0a0`) reads a table at **VA 0x004755F0**.
 Each entry is `(cell_code, group_id)`; `cell_code` maps to grid size:
 
 - `0x80 → 2`, `0x40 → 4`, `0x20 → 8`, `0x10 → 16`.
@@ -125,7 +125,7 @@ The engine uses **two patterns**:
 1) **Direct grid selection**: calls the renderer with an explicit grid size
    (`+0x104` with first arg = 2/4/8) and a frame index.
 
-2) **Sprite table selection**: calls `FUN_0042e0a0(index)` which looks up the
+2) **Sprite table selection**: calls `effect_select_texture` (`FUN_0042e0a0`, `index`) which looks up the
    grid size from the table above and passes that to the renderer.
 
 ### Known assets and grids
@@ -239,7 +239,7 @@ indices for a grid.
 
 The notes below come from scanning `analysis/ghidra/raw/crimsonland.exe_decompiled.c`
 for texture binds (`+0xc4`) followed by atlas selection (`+0x104` or
-`FUN_0042e0a0`). Use:
+`effect_select_texture` (`FUN_0042e0a0`). Use:
 
 ```bash
 uv run python scripts/atlas_scan.py --output-json artifacts/atlas/atlas_usage.json
@@ -276,7 +276,7 @@ each frame.
 ## Enemy animation slices (grid 8)
 
 Enemies are rendered from 8×8 sheets (`+0x104(8, frame)`) with two selection
-paths in `FUN_00418b60`:
+paths in `creature_render_type` (`FUN_00418b60`):
 
 - **32‑frame strip**: `frame = floor(anim_phase)` (0..31), optionally mirrored
   if the type table flag `(&DAT_00482768)[type * 0x44] & 1` is set. If the
@@ -287,7 +287,7 @@ paths in `FUN_00418b60`:
   where `base = *(int *)(&DAT_00482760 + type * 0x44)` and ping‑pong folds a
   0..15 phase into 0..7..0.
 
-Examples from the type init table (`FUN_00412dc0`):
+Examples from the type init table (`gameplay_reset_state`, `FUN_00412dc0`):
 
 - Zombie: base `0x20`
 - Lizard: base `0x10`
@@ -295,7 +295,7 @@ Examples from the type init table (`FUN_00412dc0`):
 - Alien: base `0x20`
 
 The animation phase itself lives at creature offset `0x94` and is advanced in
-`FUN_00426220` using a per‑type rate (`&DAT_0048275c + type * 0x44`).
+`creature_update_all` (`FUN_00426220`) using a per‑type rate (`&DAT_0048275c + type * 0x44`).
 
 These sheets often pack **multiple animations** for the same type (long strip
 plus short ping‑pong strip), and in some cases **multiple type variants** share
@@ -304,7 +304,7 @@ one sheet by selecting different base offsets.
 ### Enemy type table (DAT_00482728)
 
 The render helper indexes a 0x44‑byte type table starting at `DAT_00482728`.
-Known entries from `FUN_00412dc0`:
+Known entries from `gameplay_reset_state` (`FUN_00412dc0`):
 
 | Type id | Texture | Base (short strip) | Anim rate (hex) | Mirror flag | Notes |
 | --- | --- | --- | --- | --- | --- |
@@ -313,12 +313,12 @@ Known entries from `FUN_00412dc0`:
 | 2 | `alien.png` | `0x20` | `0x3faccccd` | 0 | alt strip via creature flag `0x10` |
 | 3 | `spider_sp1.png` | `0x10` | `0x3fc00000` | 1 | mirror flag set (`DAT_00482834 = 1`) |
 | 4 | `spider_sp2.png` | `0x10` | `0x3fc00000` | 1 | mirror flag set (`DAT_00482878 = 1`) |
-| 5 | `trooper.png` | unknown | unknown | unknown | not initialized in `FUN_00412dc0` |
+| 5 | `trooper.png` | unknown | unknown | unknown | not initialized in `gameplay_reset_state` (`FUN_00412dc0`) |
 
 ### Creature flags that select animation strips
 
-Creature flags are written in the spawn helper `FUN_00430af0` and control which
-strip is used in `FUN_00418b60`.
+Creature flags are written in the spawn helper `creature_spawn_template` (`FUN_00430af0`) and control which
+strip is used in `creature_render_type` (`FUN_00418b60`).
 
 Examples:
 

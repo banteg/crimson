@@ -26,53 +26,53 @@ uv run python scripts/entrypoint_trace.py --depth 2 --skip-external
 
 ```
 - entry -> crt_mt_init, crt_io_init, crt_build_argv, FUN_00463153, crt_exit, crt_build_environ, crt_skip_program_name, crt_heap_init ...
-  - crt_mt_init -> crt_init_locks, FUN_004654a5, FUN_004667ac
+  - crt_mt_init -> crt_init_locks, crt_init_thread_data (FUN_004654a5), crt_calloc (FUN_004667ac)
   - crt_io_init -> __amsg_exit, _malloc
-  - crt_build_argv -> __amsg_exit, _malloc, FUN_0046d5c7, crt_parse_cmdline
+  - crt_build_argv -> __amsg_exit, _malloc, crt_mbcs_init (FUN_0046d5c7), crt_parse_cmdline
   - FUN_00463153 -> crt_runtime_error_banner, crt_report_runtime_error
   - crt_exit -> crt_doexit
-  - crt_build_environ -> _strlen, __amsg_exit, FUN_00465c30, crt_free_base, _malloc, FUN_0046d5c7
-  - crt_skip_program_name -> FUN_0046d1ad, FUN_0046d5c7
+  - crt_build_environ -> _strlen, __amsg_exit, crt_strcpy (FUN_00465c30), crt_free_base, _malloc, crt_mbcs_init (FUN_0046d5c7)
+  - crt_skip_program_name -> FUN_0046d1ad, crt_mbcs_init (FUN_0046d5c7)
   - crt_heap_init -> crt_sbh_init, crt_sbh_create_region, crt_heap_select
-  - crt_get_environment_strings -> crt_free_base, _malloc, FUN_004658f0
+  - crt_get_environment_strings -> crt_free_base, _malloc, crt_bufcpy (FUN_004658f0)
   - crt_exception_filter -> FUN_00466a27, crt_get_thread_data
-  - crimsonland_main -> FUN_00461739, texture_get_or_load, FUN_0046248e, audio_shutdown_all, reg_write_dword, crt_free, game_load_status, console_flush_log ...
+  - crimsonland_main -> crt_srand (FUN_00461739), texture_get_or_load, crt_getcwd (FUN_0046248e), audio_shutdown_all, reg_write_dword, crt_free, game_load_status, console_flush_log ...
   - crt_run_initializers -> FUN_00460cb8, crt_call_fn_range
     - crt_init_locks
-    - FUN_004654a5
-    - FUN_004667ac -> crt_sbh_alloc_units, FUN_00466845, FUN_004668ce, FUN_00467e47, crt_lock, crt_sbh_alloc, _memset
+    - crt_init_thread_data (FUN_004654a5)
+    - crt_calloc (FUN_004667ac) -> crt_sbh_alloc_units, FUN_00466845, FUN_004668ce, crt_call_new_handler (FUN_00467e47), crt_lock, crt_sbh_alloc, _memset
     - __amsg_exit -> crt_runtime_error_banner, __exit, crt_report_runtime_error
     - _malloc -> __nh_malloc
-    - FUN_0046d5c7 -> FUN_0046d1ef
+    - crt_mbcs_init (FUN_0046d5c7) -> crt_setmbcp (FUN_0046d1ef)
     - crt_parse_cmdline
     - crt_runtime_error_banner -> crt_report_runtime_error
-    - crt_report_runtime_error -> FUN_00465c40, FUN_0046d5e3, _strlen, _strncpy, FUN_00465c30
+    - crt_report_runtime_error -> crt_strcat (FUN_00465c40), FUN_0046d5e3, _strlen, _strncpy, crt_strcpy (FUN_00465c30)
     - crt_doexit -> crt_exit_unlock, crt_exit_lock, crt_call_fn_range
     - _strlen
-    - FUN_00465c30
-    - crt_free_base -> FUN_0046262b, FUN_004679d6, FUN_00466c7b, crt_lock, FUN_00467a2d, FUN_00462683, FUN_00466ca6
+    - crt_strcpy (FUN_00465c30)
+    - crt_free_base -> FUN_0046262b, crt_sbh_find_block (FUN_004679d6), crt_sbh_find_region (FUN_00466c7b), crt_lock, FUN_00467a2d, FUN_00462683, FUN_00466ca6
     - FUN_0046d1ad -> FUN_0046d1be
     - crt_sbh_init
     - crt_sbh_create_region -> _memset
-    - crt_heap_select -> FUN_0046cda0, _strchr, _strncmp, FUN_0046cdcf, FUN_00466a61, _strstr
-    - FUN_004658f0
+    - crt_heap_select -> crt_chkstk (FUN_0046cda0), _strchr, _strncmp, crt_strtol_l (FUN_0046cdcf), FUN_00466a61, _strstr
+    - crt_bufcpy (FUN_004658f0)
     - FUN_00466a27
-    - crt_get_thread_data -> __amsg_exit, FUN_004654a5, FUN_004667ac
-    - FUN_00461739 -> crt_get_thread_data
+    - crt_get_thread_data -> __amsg_exit, crt_init_thread_data (FUN_004654a5), crt_calloc (FUN_004667ac)
+    - crt_srand (FUN_00461739) -> crt_get_thread_data
     - texture_get_or_load -> console_printf
-    - FUN_0046248e -> crt_unlock, crt_lock, FUN_004624b5
-    - audio_shutdown_all -> sfx_release_all, FUN_0043bc20, music_release_all
+    - crt_getcwd (FUN_0046248e) -> crt_unlock, crt_lock, crt_getdcwd (FUN_004624b5)
+    - audio_shutdown_all -> sfx_release_all, dsound_shutdown (FUN_0043bc20), music_release_all
     - reg_write_dword
     - crt_free -> crt_free_base
-    - game_load_status -> FUN_00402bd0, game_sequence_load, FUN_0046103f, FUN_00461d91, FUN_00461c0e, crt_fclose, game_save_status, console_printf ...
-    - console_flush_log -> FUN_00461448, FUN_00402bd0, FUN_0046103f, crt_fclose, FUN_004615ae
-    - dx_get_version -> FUN_0041cfe0, FUN_00461e9b, FUN_0041cdb0, FUN_00461e4a
+    - game_load_status -> game_build_path (FUN_00402bd0), game_sequence_load, crt_fopen (FUN_0046103f), crt_fseek (FUN_00461d91), crt_ftell (FUN_00461c0e), crt_fclose, game_save_status, console_printf ...
+    - console_flush_log -> crt_fflush (FUN_00461448), game_build_path (FUN_00402bd0), crt_fopen (FUN_0046103f), crt_fclose, crt_fwrite (FUN_004615ae)
+    - dx_get_version -> FUN_0041cfe0, crt_tolower (FUN_00461e9b), FUN_0041cdb0, crt_snprintf (FUN_00461e4a)
     - HlinkNavigateString
     - Direct3DCreate8
-    - FUN_004623b2 -> FUN_00465da5
+    - FUN_004623b2 -> crt_mktime (FUN_00465da5)
     - console_register_command -> operator_new, strdup_malloc
     - grim_load_interface
-    - FUN_00402350 -> crt_free, operator_new, strdup_malloc, FUN_00402480, FUN_004610da
+    - console_register_cvar (FUN_00402350) -> crt_free, operator_new, strdup_malloc, console_cvar_find (FUN_00402480), crt_atof_l (FUN_004610da)
     - FUN_00460cb8 -> FUN_00463737, FUN_00460cd0, FUN_004636e7
     - crt_call_fn_range
 ```

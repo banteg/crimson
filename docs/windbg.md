@@ -98,7 +98,7 @@ u poi(@esp) L20
 ```
 
 3) Inspect the arguments (board pointer + outputs)
-The signature looks like: FUN_0040f400(int *board, int *out_idx, char *out_dir)
+The signature looks like: credits_secret_match3_find (`FUN_0040f400`) (int *board, int *out_idx, char *out_dir)
 
 ```
 dd @esp+4 L3      ; args

@@ -3,7 +3,7 @@
 **Status:** Draft
 
 This page summarizes the main gameplay frame loop in `gameplay_update_and_render` (state `9`).
-Other states have their own loops but reuse the same render pass (`FUN_00405960`).
+Other states have their own loops but reuse the same render pass (`gameplay_render_world`, `FUN_00405960`).
 
 ## Gating flags
 
@@ -32,9 +32,9 @@ Other states have their own loops but reuse the same render pass (`FUN_00405960`
    - Quests: `quest_mode_update`
 7) Powerup timers and global time (`DAT_00487060`) advance when not paused.
 8) Camera + shake update (`camera_update`).
-9) Gameplay render pass (`FUN_00405960`).
+9) Gameplay render pass (`gameplay_render_world`, `FUN_00405960`).
 10) Tutorial timeline if `_DAT_00480360 == 8` (`tutorial_timeline_update`).
-11) Perk prompt handling (`FUN_00403550`) and perk selection transition.
+11) Perk prompt handling (`perk_prompt_update_and_render`, `FUN_00403550`) and perk selection transition.
     - `perk_prompt_timer` (`DAT_0048f524`) ramps 0..200 when perks are pending; it feeds the prompt
       alpha and transform matrix (`perk_prompt_transform_*` at `DAT_0048f510..DAT_0048f51c`).
     - `perk_prompt_hover_active` (`DAT_0048f500`) + `perk_prompt_pulse` (`DAT_0048f504`) drive the
@@ -72,4 +72,4 @@ transition timeline completes.
 ## Perk selection transition
 
 When the level-up prompt is active and the primary action is pressed, the loop
-calls `perks_generate_choices()` and switches state via `FUN_004461c0(6)`.
+calls `perks_generate_choices()` and switches state via `game_state_set` (`FUN_004461c0(6)`).
