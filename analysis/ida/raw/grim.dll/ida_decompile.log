@@ -1,13 +1,14 @@
+
 Database C:\dev\crimson\game_bins\crimsonland\1.9.93-gog\grim.dll.i64 already exists.
 Do you want to overwrite it? -> ~L~oad existing
 
   bytes   pages size description
 --------- ----- ---- --------------------------------------------
-  1638400   200 8192 allocating memory for b-tree...
+  9207808  1124 8192 allocating memory for b-tree...
   1482752   181 8192 allocating memory for virtual array...
    262144    32 8192 allocating memory for name pointers...
 -----------------------------------------------------------------
-  3383296            total memory allocated
+ 10952704            total memory allocated
 
 Loading processor module C:\Program Files\IDA Professional 9.2\procs\pc.dll for metapc...OK
 Loading type libraries...
@@ -18,984 +19,6 @@ Hex-Rays Decompiler plugin has been loaded (v9.2.0.250908)
 
   Please check the Edit/Plugins menu for more information.
 Hex-rays version 9.2.0.250908 has been detected, gooMBA plugin ready to use
-The decompiler assumes that the segment '.idata' is read-only because of its NAME.
-All data references to the segment will be replaced by constant values.
-This may lead to drastic changes in the decompiler output.
-If the segment is not read-only, please change the segment NAME.
-
-In general, the decompiler checks the segment permissions, class, and name
-to determine if it is read-only.
- -> OK
-The decompiler assumes that the segment '.rdata' is read-only because of its NAME.
-All data references to the segment will be replaced by constant values.
-This may lead to drastic changes in the decompiler output.
-If the segment is not read-only, please change the segment NAME.
-
-In general, the decompiler checks the segment permissions, class, and name
-to determine if it is read-only.
- -> OK
-IDA decompile complete: C:\dev\crimson\analysis\ida\raw\grim.dll\grim.dll_decompiled.c
-Flushing buffers, please wait...ok
-Unloading IDP module C:\Program Files\IDA Professional 9.2\procs\pc.dll...Database C:\dev\crimson\game_bins\crimsonland\1.9.93-gog\grim.dll.i64 already exists.
-Do you want to overwrite it? -> ~L~oad existing
-
-  bytes   pages size description
---------- ----- ---- --------------------------------------------
-  9158656  1118 8192 allocating memory for b-tree...
-  1482752   181 8192 allocating memory for virtual array...
-   262144    32 8192 allocating memory for name pointers...
------------------------------------------------------------------
- 10903552            total memory allocated
-
-Loading processor module C:\Program Files\IDA Professional 9.2\procs\pc.dll for metapc...OK
-Loading type libraries...
-Autoanalysis subsystem has been initialized.
-Database for file 'grim.dll' has been loaded.
-Hex-Rays Decompiler plugin has been loaded (v9.2.0.250908)
-  The hotkeys are F5: decompile, Ctrl-F5: decompile all.
-
-  Please check the Edit/Plugins menu for more information.
-Hex-rays version 9.2.0.250908 has been detected, gooMBA plugin ready to use
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: undefined4
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: undefined4
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: z_streamp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: z_streamp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: z_streamp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: z_streamp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: z_streamp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_uint_32
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: voidpf
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: z_streamp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: z_streamp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: z_streamp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: z_streamp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: uLong
-Bad declaration. See the message window for details. -> OK
-Syntax error near: voidpf
-Bad declaration. See the message window for details. -> OK
-Syntax error near: uInt
-Bad declaration. See the message window for details. -> OK
-Syntax error near: z_streamp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: z_streamp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: uInt
-Bad declaration. See the message window for details. -> OK
-Syntax error near: uInt
-Bad declaration. See the message window for details. -> OK
-Syntax error near: uInt
-Bad declaration. See the message window for details. -> OK
-Syntax error near: z_streamp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: uInt
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
 10001030: restored microcode from idb
 10001030: restored pseudocode from idb
 10001050: restored microcode from idb
@@ -1016,8 +39,6 @@ Bad declaration. See the message window for details. -> OK
 10001130: restored pseudocode from idb
 10001140: restored microcode from idb
 10001140: restored pseudocode from idb
-10001160: restored microcode from idb
-10001160: restored pseudocode from idb
 10001170: restored microcode from idb
 10001170: restored pseudocode from idb
 10001710: restored microcode from idb
@@ -1030,70 +51,42 @@ Bad declaration. See the message window for details. -> OK
 10001AD0: restored pseudocode from idb
 10001E90: restored microcode from idb
 10001E90: restored pseudocode from idb
-10002120: restored microcode from idb
-10002120: restored pseudocode from idb
-10002680: restored microcode from idb
-10002680: restored pseudocode from idb
-10002880: restored microcode from idb
-10002880: restored pseudocode from idb
-100028D0: restored microcode from idb
-100028D0: restored pseudocode from idb
-10002B40: restored microcode from idb
-10002B40: restored pseudocode from idb
+The decompiler assumes that the segment '.idata' is read-only because of its NAME.
+All data references to the segment will be replaced by constant values.
+This may lead to drastic changes in the decompiler output.
+If the segment is not read-only, please change the segment NAME.
+
+In general, the decompiler checks the segment permissions, class, and name
+to determine if it is read-only.
+ -> OK
 10002CF0: restored microcode from idb
 10002CF0: restored pseudocode from idb
-10002F60: restored microcode from idb
-10002F60: restored pseudocode from idb
-10002F80: restored microcode from idb
-10002F80: restored pseudocode from idb
-10002FC0: restored microcode from idb
-10002FC0: restored pseudocode from idb
-10003090: restored microcode from idb
-10003090: restored pseudocode from idb
 100030B0: restored microcode from idb
 100030B0: restored pseudocode from idb
 100033B0: restored microcode from idb
 100033B0: restored pseudocode from idb
-10003C00: restored microcode from idb
-10003C00: restored pseudocode from idb
-10003E60: restored microcode from idb
-10003E60: restored pseudocode from idb
-10004280: restored microcode from idb
-10004280: restored pseudocode from idb
+The decompiler assumes that the segment '.rdata' is read-only because of its NAME.
+All data references to the segment will be replaced by constant values.
+This may lead to drastic changes in the decompiler output.
+If the segment is not read-only, please change the segment NAME.
+
+In general, the decompiler checks the segment permissions, class, and name
+to determine if it is read-only.
+ -> OK
 10004350: restored microcode from idb
 10004350: restored pseudocode from idb
 100044E0: restored microcode from idb
 100044E0: restored pseudocode from idb
 10004520: restored microcode from idb
 10004520: restored pseudocode from idb
-100047F0: restored microcode from idb
-100047F0: restored pseudocode from idb
-10004830: restored microcode from idb
-10004830: restored pseudocode from idb
 10004920: restored microcode from idb
 10004920: restored pseudocode from idb
 10004970: restored microcode from idb
 10004970: restored pseudocode from idb
-10004A50: restored microcode from idb
-10004A50: restored pseudocode from idb
-10004AB0: restored microcode from idb
-10004AB0: restored pseudocode from idb
 10004B00: restored microcode from idb
 10004B00: restored pseudocode from idb
-10004B70: restored microcode from idb
-10004B70: restored pseudocode from idb
 10004E90: restored microcode from idb
 10004E90: restored pseudocode from idb
-10004EC0: restored microcode from idb
-10004EC0: restored pseudocode from idb
-10005110: restored microcode from idb
-10005110: restored pseudocode from idb
-10005170: restored microcode from idb
-10005170: restored pseudocode from idb
-100051C0: restored microcode from idb
-100051C0: restored pseudocode from idb
-100051E0: restored microcode from idb
-100051E0: restored pseudocode from idb
 100052F0: restored microcode from idb
 100052F0: restored pseudocode from idb
 10005A40: restored microcode from idb
@@ -1102,44 +95,8 @@ Bad declaration. See the message window for details. -> OK
 10005AE0: restored pseudocode from idb
 10005B80: restored microcode from idb
 10005B80: restored pseudocode from idb
-10005C20: restored microcode from idb
-10005C20: restored pseudocode from idb
-10005C40: restored microcode from idb
-10005C40: restored pseudocode from idb
-10005C90: restored microcode from idb
-10005C90: restored pseudocode from idb
-10005CA0: restored microcode from idb
-10005CA0: restored pseudocode from idb
-10005CB0: restored microcode from idb
-10005CB0: restored pseudocode from idb
-10005D40: restored microcode from idb
-10005D40: restored pseudocode from idb
-10005EB0: restored microcode from idb
-10005EB0: restored pseudocode from idb
-10005FF0: restored microcode from idb
-10005FF0: restored pseudocode from idb
-10006020: restored microcode from idb
-10006020: restored pseudocode from idb
 10006030: restored microcode from idb
 10006030: restored pseudocode from idb
-10006580: restored microcode from idb
-10006580: restored pseudocode from idb
-10006C30: restored microcode from idb
-10006C30: restored pseudocode from idb
-10006CA0: restored microcode from idb
-10006CA0: restored pseudocode from idb
-10006CB0: restored microcode from idb
-10006CB0: restored pseudocode from idb
-10006D50: restored microcode from idb
-10006D50: restored pseudocode from idb
-10006E40: restored microcode from idb
-10006E40: restored pseudocode from idb
-10006E50: restored microcode from idb
-10006E50: restored pseudocode from idb
-10006E60: restored microcode from idb
-10006E60: restored pseudocode from idb
-10006E90: restored microcode from idb
-10006E90: restored pseudocode from idb
 10006EA0: restored microcode from idb
 10006EA0: restored pseudocode from idb
 10006EF0: restored microcode from idb
@@ -1148,144 +105,10 @@ Bad declaration. See the message window for details. -> OK
 10006F40: restored pseudocode from idb
 10006F90: restored microcode from idb
 10006F90: restored pseudocode from idb
-10006FE0: restored microcode from idb
-10006FE0: restored pseudocode from idb
-100071B0: restored microcode from idb
-100071B0: restored pseudocode from idb
-100072C0: restored microcode from idb
-100072C0: restored pseudocode from idb
-100072D0: restored microcode from idb
-100072D0: restored pseudocode from idb
-100072E0: restored microcode from idb
-100072E0: restored pseudocode from idb
-10007300: restored microcode from idb
-10007300: restored pseudocode from idb
-10007320: restored microcode from idb
-10007320: restored pseudocode from idb
-10007330: restored microcode from idb
-10007330: restored pseudocode from idb
-10007390: restored microcode from idb
-10007390: restored pseudocode from idb
-10007410: restored microcode from idb
-10007410: restored pseudocode from idb
-10007440: restored microcode from idb
-10007440: restored pseudocode from idb
-100074D0: restored microcode from idb
-100074D0: restored pseudocode from idb
-100074E0: restored microcode from idb
-100074E0: restored pseudocode from idb
-100074F0: restored microcode from idb
-100074F0: restored pseudocode from idb
-10007500: restored microcode from idb
-10007500: restored pseudocode from idb
-10007510: restored microcode from idb
-10007510: restored pseudocode from idb
-10007520: restored microcode from idb
-10007520: restored pseudocode from idb
-10007530: restored microcode from idb
-10007530: restored pseudocode from idb
-10007560: restored microcode from idb
-10007560: restored pseudocode from idb
-10007580: restored microcode from idb
-10007580: restored pseudocode from idb
-10007590: restored microcode from idb
-10007590: restored pseudocode from idb
-100075A0: restored microcode from idb
-100075A0: restored pseudocode from idb
-100075B0: restored microcode from idb
-100075B0: restored pseudocode from idb
-100075C0: restored microcode from idb
-100075C0: restored pseudocode from idb
-100075D0: restored microcode from idb
-100075D0: restored pseudocode from idb
-100076E0: restored microcode from idb
-100076E0: restored pseudocode from idb
-10007700: restored microcode from idb
-10007700: restored pseudocode from idb
-10007740: restored microcode from idb
-10007740: restored pseudocode from idb
-10007750: restored microcode from idb
-10007750: restored pseudocode from idb
-10007790: restored microcode from idb
-10007790: restored pseudocode from idb
-10007830: restored microcode from idb
-10007830: restored pseudocode from idb
-10007870: restored microcode from idb
-10007870: restored pseudocode from idb
-100078E0: restored microcode from idb
-100078E0: restored pseudocode from idb
-100079B0: restored microcode from idb
-100079B0: restored pseudocode from idb
-10007AC0: restored microcode from idb
-10007AC0: restored pseudocode from idb
-10007B20: restored microcode from idb
-10007B20: restored pseudocode from idb
-10007B90: restored microcode from idb
-10007B90: restored pseudocode from idb
-10007D40: restored microcode from idb
-10007D40: restored pseudocode from idb
 10007F20: restored microcode from idb
 10007F20: restored pseudocode from idb
-10007F30: restored microcode from idb
-10007F30: restored pseudocode from idb
-10007F90: restored microcode from idb
-10007F90: restored pseudocode from idb
-10008040: restored microcode from idb
-10008040: restored pseudocode from idb
-100080B0: restored microcode from idb
-100080B0: restored pseudocode from idb
 10008140: restored microcode from idb
 10008140: restored pseudocode from idb
-10008150: restored microcode from idb
-10008150: restored pseudocode from idb
-100081C0: restored microcode from idb
-100081C0: restored pseudocode from idb
-10008230: restored microcode from idb
-10008230: restored pseudocode from idb
-100082C0: restored microcode from idb
-100082C0: restored pseudocode from idb
-10008350: restored microcode from idb
-10008350: restored pseudocode from idb
-100083A0: restored microcode from idb
-100083A0: restored pseudocode from idb
-100083C0: restored microcode from idb
-100083C0: restored pseudocode from idb
-10008430: restored microcode from idb
-10008430: restored pseudocode from idb
-100084E0: restored microcode from idb
-100084E0: restored pseudocode from idb
-100085C0: restored microcode from idb
-100085C0: restored pseudocode from idb
-10008680: restored microcode from idb
-10008680: restored pseudocode from idb
-10008720: restored microcode from idb
-10008720: restored pseudocode from idb
-10008750: restored microcode from idb
-10008750: restored pseudocode from idb
-10008B10: restored microcode from idb
-10008B10: restored pseudocode from idb
-10008E30: restored microcode from idb
-10008E30: restored pseudocode from idb
-10008EB0: restored microcode from idb
-10008EB0: restored pseudocode from idb
-10008F10: restored microcode from idb
-10008F10: restored pseudocode from idb
-10009080: restored microcode from idb
-10009080: restored pseudocode from idb
-100092B0: restored microcode from idb
-100092B0: restored pseudocode from idb
-100096C0: restored microcode from idb
-100096C0: restored pseudocode from idb
-10009730: restored microcode from idb
-10009730: restored pseudocode from idb
-10009940: restored microcode from idb
-10009940: restored pseudocode from idb
-10009980: restored microcode from idb
-10009980: restored pseudocode from idb
-100099C0: restored microcode from idb
-100099C0: restored pseudocode from idb
-10009A20: restored microcode from idb
-10009A20: restored pseudocode from idb
 10009A50: restored microcode from idb
 10009A50: restored pseudocode from idb
 10009B20: restored microcode from idb
@@ -1308,120 +131,32 @@ Bad declaration. See the message window for details. -> OK
 1000A110: restored pseudocode from idb
 1000A150: restored microcode from idb
 1000A150: restored pseudocode from idb
-1000A1C0: restored microcode from idb
-1000A1C0: restored pseudocode from idb
-1000A2B0: restored microcode from idb
-1000A2B0: restored pseudocode from idb
 1000A310: restored microcode from idb
 1000A310: restored pseudocode from idb
 1000A330: restored microcode from idb
 1000A330: restored pseudocode from idb
-1000A370: restored microcode from idb
-1000A370: restored pseudocode from idb
-1000A390: restored microcode from idb
-1000A390: restored pseudocode from idb
-1000A4A0: restored microcode from idb
-1000A4A0: restored pseudocode from idb
-1000A550: restored microcode from idb
-1000A550: restored pseudocode from idb
-1000A590: restored microcode from idb
-1000A590: restored pseudocode from idb
-1000A5A0: restored microcode from idb
-1000A5A0: restored pseudocode from idb
-1000A670: restored microcode from idb
-1000A670: restored pseudocode from idb
-1000A7D0: restored microcode from idb
-1000A7D0: restored pseudocode from idb
 1000A820: restored microcode from idb
 1000A820: restored pseudocode from idb
-1000A840: restored microcode from idb
-1000A840: restored pseudocode from idb
-1000A880: restored microcode from idb
-1000A880: restored pseudocode from idb
-1000AAA6: restored microcode from idb
-1000AAA6: restored pseudocode from idb
-1000AACA: restored microcode from idb
-1000AACA: restored pseudocode from idb
 1000AB3F: restored microcode from idb
 1000AB3F: restored pseudocode from idb
-1000ABAD: restored microcode from idb
-1000ABAD: restored pseudocode from idb
 1000AC8F: restored microcode from idb
 1000AC8F: restored pseudocode from idb
-1000ACC0: restored microcode from idb
-1000ACC0: restored pseudocode from idb
-1000AD9F: restored microcode from idb
-1000AD9F: restored pseudocode from idb
 1000AE4F: restored microcode from idb
 1000AE4F: restored pseudocode from idb
-1000AE52: restored microcode from idb
-1000AE52: restored pseudocode from idb
-1000AE72: restored microcode from idb
-1000AE72: restored pseudocode from idb
 1000AF45: restored microcode from idb
 1000AF45: restored pseudocode from idb
-1000B26F: restored microcode from idb
-1000B26F: restored pseudocode from idb
-1000B297: restored microcode from idb
-1000B297: restored pseudocode from idb
-1000B2FD: restored microcode from idb
-1000B2FD: restored pseudocode from idb
-1000B348: restored microcode from idb
-1000B348: restored pseudocode from idb
 1000B393: restored microcode from idb
 1000B393: restored pseudocode from idb
 1000B3B5: restored microcode from idb
 1000B3B5: restored pseudocode from idb
-1000B3FE: restored microcode from idb
-1000B3FE: restored pseudocode from idb
-1000BBFC: restored microcode from idb
-1000BBFC: restored pseudocode from idb
-1000BDA2: restored microcode from idb
-1000BDA2: restored pseudocode from idb
-1000BE28: restored microcode from idb
-1000BE28: restored pseudocode from idb
-1000C1E8: restored microcode from idb
-1000C1E8: restored pseudocode from idb
-1000C205: restored microcode from idb
-1000C205: restored pseudocode from idb
-1000C4E9: restored microcode from idb
-1000C4E9: restored pseudocode from idb
-1000CB5C: restored microcode from idb
-1000CB5C: restored pseudocode from idb
-1000CB9C: restored microcode from idb
-1000CB9C: restored pseudocode from idb
-1000CBFF: restored microcode from idb
-1000CBFF: restored pseudocode from idb
 1000CC2C: restored microcode from idb
 1000CC2C: restored pseudocode from idb
-1000CC3F: restored microcode from idb
-1000CC3F: restored pseudocode from idb
-1000CC69: restored microcode from idb
-1000CC69: restored pseudocode from idb
-1000CCF7: restored microcode from idb
-1000CCF7: restored pseudocode from idb
-1000CD21: restored microcode from idb
-1000CD21: restored pseudocode from idb
-1000CDD0: restored microcode from idb
-1000CDD0: restored pseudocode from idb
-1000CDFF: restored microcode from idb
-1000CDFF: restored pseudocode from idb
 1000CE42: restored microcode from idb
 1000CE42: restored pseudocode from idb
 1000CE69: restored microcode from idb
 1000CE69: restored pseudocode from idb
 1000CE7C: restored microcode from idb
 1000CE7C: restored pseudocode from idb
-1000CEA6: restored microcode from idb
-1000CEA6: restored pseudocode from idb
-1000CF54: restored microcode from idb
-1000CF54: restored pseudocode from idb
-1000CF7E: restored microcode from idb
-1000CF7E: restored pseudocode from idb
-1000D04F: restored microcode from idb
-1000D04F: restored pseudocode from idb
-1000D07E: restored microcode from idb
-1000D07E: restored pseudocode from idb
 1000D0E8: restored microcode from idb
 1000D0E8: restored pseudocode from idb
 1000D173: restored microcode from idb
@@ -1436,16 +171,6 @@ Bad declaration. See the message window for details. -> OK
 1000D228: restored pseudocode from idb
 1000D325: restored microcode from idb
 1000D325: restored pseudocode from idb
-1000D34F: restored microcode from idb
-1000D34F: restored pseudocode from idb
-1000D420: restored microcode from idb
-1000D420: restored pseudocode from idb
-1000D44A: restored microcode from idb
-1000D44A: restored pseudocode from idb
-1000D53D: restored microcode from idb
-1000D53D: restored pseudocode from idb
-1000D56C: restored microcode from idb
-1000D56C: restored pseudocode from idb
 1000D5F0: restored microcode from idb
 1000D5F0: restored pseudocode from idb
 1000D69C: restored microcode from idb
@@ -1464,52 +189,20 @@ Bad declaration. See the message window for details. -> OK
 1000DC72: restored pseudocode from idb
 1000DC85: restored microcode from idb
 1000DC85: restored pseudocode from idb
-1000E012: restored microcode from idb
-1000E012: restored pseudocode from idb
 1000E040: restored microcode from idb
 1000E040: restored pseudocode from idb
-1000E09C: restored microcode from idb
-1000E09C: restored pseudocode from idb
 1000E0CA: restored microcode from idb
 1000E0CA: restored pseudocode from idb
-1000E126: restored microcode from idb
-1000E126: restored pseudocode from idb
-1000E142: restored microcode from idb
-1000E142: restored pseudocode from idb
-1000E1BC: restored microcode from idb
-1000E1BC: restored pseudocode from idb
-1000E1D8: restored microcode from idb
-1000E1D8: restored pseudocode from idb
-1000E253: restored microcode from idb
-1000E253: restored pseudocode from idb
-1000E26F: restored microcode from idb
-1000E26F: restored pseudocode from idb
-1000E2EB: restored microcode from idb
-1000E2EB: restored pseudocode from idb
-1000E30B: restored microcode from idb
-1000E30B: restored pseudocode from idb
 1000E40D: restored microcode from idb
 1000E40D: restored pseudocode from idb
 1000E420: restored microcode from idb
 1000E420: restored pseudocode from idb
-1000E502: restored microcode from idb
-1000E502: restored pseudocode from idb
 1000E530: restored microcode from idb
 1000E530: restored pseudocode from idb
-1000E541: restored microcode from idb
-1000E541: restored pseudocode from idb
-1000E568: restored microcode from idb
-1000E568: restored pseudocode from idb
 1000E675: restored microcode from idb
 1000E675: restored pseudocode from idb
 1000E71F: restored microcode from idb
 1000E71F: restored pseudocode from idb
-1000E853: restored microcode from idb
-1000E853: restored pseudocode from idb
-1000E873: restored microcode from idb
-1000E873: restored pseudocode from idb
-1000E8CF: restored microcode from idb
-1000E8CF: restored pseudocode from idb
 1000E903: restored microcode from idb
 1000E903: restored pseudocode from idb
 1000E9DC: restored microcode from idb
@@ -1526,20 +219,12 @@ Bad declaration. See the message window for details. -> OK
 1000EC18: restored pseudocode from idb
 1000EC9C: restored microcode from idb
 1000EC9C: restored pseudocode from idb
-1000ED37: restored microcode from idb
-1000ED37: restored pseudocode from idb
 1000ED61: restored microcode from idb
 1000ED61: restored pseudocode from idb
-1000EE44: restored microcode from idb
-1000EE44: restored pseudocode from idb
-1000EE6E: restored microcode from idb
-1000EE6E: restored pseudocode from idb
 1000EEC5: restored microcode from idb
 1000EEC5: restored pseudocode from idb
 1000EED6: restored microcode from idb
 1000EED6: restored pseudocode from idb
-1000EF05: restored microcode from idb
-1000EF05: restored pseudocode from idb
 1000EF90: restored microcode from idb
 1000EF90: restored pseudocode from idb
 1000EFA3: restored microcode from idb
@@ -1552,48 +237,10 @@ Bad declaration. See the message window for details. -> OK
 1000F148: restored pseudocode from idb
 1000F1F7: restored microcode from idb
 1000F1F7: restored pseudocode from idb
-1000F296: restored microcode from idb
-1000F296: restored pseudocode from idb
-1000F323: restored microcode from idb
-1000F323: restored pseudocode from idb
-1000F38E: restored microcode from idb
-1000F38E: restored pseudocode from idb
-1000F40E: restored microcode from idb
-1000F40E: restored pseudocode from idb
-1000F44A: restored microcode from idb
-1000F44A: restored pseudocode from idb
-1000F4EA: restored microcode from idb
-1000F4EA: restored pseudocode from idb
-1000F5A9: restored microcode from idb
-1000F5A9: restored pseudocode from idb
 1000F736: restored microcode from idb
 1000F736: restored pseudocode from idb
-1000F8DC: restored microcode from idb
-1000F8DC: restored pseudocode from idb
-1000F995: restored microcode from idb
-1000F995: restored pseudocode from idb
-1000F9CE: restored microcode from idb
-1000F9CE: restored pseudocode from idb
-1000FC82: restored microcode from idb
-1000FC82: restored pseudocode from idb
-1000FD5C: restored microcode from idb
-1000FD5C: restored pseudocode from idb
 1000FE1B: restored microcode from idb
 1000FE1B: restored pseudocode from idb
-100101F5: restored microcode from idb
-100101F5: restored pseudocode from idb
-10010285: restored microcode from idb
-10010285: restored pseudocode from idb
-1001029E: restored microcode from idb
-1001029E: restored pseudocode from idb
-100102F7: restored microcode from idb
-100102F7: restored pseudocode from idb
-10010313: restored microcode from idb
-10010313: restored pseudocode from idb
-100103D6: restored microcode from idb
-100103D6: restored pseudocode from idb
-10010AEC: restored microcode from idb
-10010AEC: restored pseudocode from idb
 10010DD0: restored microcode from idb
 10010DD0: restored pseudocode from idb
 10010DEC: restored microcode from idb
@@ -1602,44 +249,12 @@ Bad declaration. See the message window for details. -> OK
 10010DED: restored pseudocode from idb
 10010E02: restored microcode from idb
 10010E02: restored pseudocode from idb
-10010E13: restored microcode from idb
-10010E13: restored pseudocode from idb
-10011083: restored microcode from idb
-10011083: restored pseudocode from idb
-1001152A: restored microcode from idb
-1001152A: restored pseudocode from idb
-100117B0: restored microcode from idb
-100117B0: restored pseudocode from idb
 100117F3: restored microcode from idb
 100117F3: restored pseudocode from idb
-100117FF: restored microcode from idb
-100117FF: restored pseudocode from idb
-10011D95: restored microcode from idb
-10011D95: restored pseudocode from idb
-100120D6: restored microcode from idb
-100120D6: restored pseudocode from idb
-1001237E: restored microcode from idb
-1001237E: restored pseudocode from idb
-10012647: restored microcode from idb
-10012647: restored pseudocode from idb
-10012677: restored microcode from idb
-10012677: restored pseudocode from idb
-1001284C: restored microcode from idb
-1001284C: restored pseudocode from idb
-10012856: restored microcode from idb
-10012856: restored pseudocode from idb
 1001288A: restored microcode from idb
 1001288A: restored pseudocode from idb
-10012B47: restored microcode from idb
-10012B47: restored pseudocode from idb
-10012B93: restored microcode from idb
-10012B93: restored pseudocode from idb
-10013007: restored microcode from idb
-10013007: restored pseudocode from idb
 10013195: restored microcode from idb
 10013195: restored pseudocode from idb
-100132BB: restored microcode from idb
-100132BB: restored pseudocode from idb
 100132EC: restored microcode from idb
 100132EC: restored pseudocode from idb
 100133D4: restored microcode from idb
@@ -1648,330 +263,16 @@ Bad declaration. See the message window for details. -> OK
 100134EA: restored pseudocode from idb
 10013522: restored microcode from idb
 10013522: restored pseudocode from idb
-10013551: restored microcode from idb
-10013551: restored pseudocode from idb
-10013582: restored microcode from idb
-10013582: restored pseudocode from idb
-100136D2: restored microcode from idb
-100136D2: restored pseudocode from idb
-100137F6: restored microcode from idb
-100137F6: restored pseudocode from idb
-10013945: restored microcode from idb
-10013945: restored pseudocode from idb
-10013A98: restored microcode from idb
-10013A98: restored pseudocode from idb
-10013BD7: restored microcode from idb
-10013BD7: restored pseudocode from idb
-10013C72: restored microcode from idb
-10013C72: restored pseudocode from idb
-10013DBE: restored microcode from idb
-10013DBE: restored pseudocode from idb
-10013EDF: restored microcode from idb
-10013EDF: restored pseudocode from idb
-1001402B: restored microcode from idb
-1001402B: restored pseudocode from idb
-1001416A: restored microcode from idb
-1001416A: restored pseudocode from idb
-100142A2: restored microcode from idb
-100142A2: restored pseudocode from idb
-10014393: restored microcode from idb
-10014393: restored pseudocode from idb
-10014595: restored microcode from idb
-10014595: restored pseudocode from idb
-10014799: restored microcode from idb
-10014799: restored pseudocode from idb
-10014BBC: restored microcode from idb
-10014BBC: restored pseudocode from idb
 1001504E: restored microcode from idb
 1001504E: restored pseudocode from idb
-1001514E: restored microcode from idb
-1001514E: restored pseudocode from idb
-10015534: restored microcode from idb
-10015534: restored pseudocode from idb
-10015C65: restored microcode from idb
-10015C65: restored pseudocode from idb
-10016007: restored microcode from idb
-10016007: restored pseudocode from idb
-10016121: restored microcode from idb
-10016121: restored pseudocode from idb
-10016131: restored microcode from idb
-10016131: restored pseudocode from idb
-1001619A: restored microcode from idb
-1001619A: restored pseudocode from idb
-100161A0: restored microcode from idb
-100161A0: restored pseudocode from idb
-100161BB: restored microcode from idb
-100161BB: restored pseudocode from idb
-100165D3: restored microcode from idb
-100165D3: restored pseudocode from idb
-1001692E: restored microcode from idb
-1001692E: restored pseudocode from idb
 10016941: restored microcode from idb
 10016941: restored pseudocode from idb
-10016944: restored microcode from idb
-10016944: restored pseudocode from idb
 10016C3B: restored microcode from idb
 10016C3B: restored pseudocode from idb
-10016C3C: restored microcode from idb
-10016C3C: restored pseudocode from idb
-10016CDC: restored microcode from idb
-10016CDC: restored pseudocode from idb
-100170D6: restored microcode from idb
-100170D6: restored pseudocode from idb
-100170F9: restored microcode from idb
-100170F9: restored pseudocode from idb
-10017345: restored microcode from idb
-10017345: restored pseudocode from idb
-10017361: restored microcode from idb
-10017361: restored pseudocode from idb
-100173DC: restored microcode from idb
-100173DC: restored pseudocode from idb
-100174A8: restored microcode from idb
-100174A8: restored pseudocode from idb
-10017518: restored microcode from idb
-10017518: restored pseudocode from idb
-10017604: restored microcode from idb
-10017604: restored pseudocode from idb
-10017727: restored microcode from idb
-10017727: restored pseudocode from idb
-10017828: restored microcode from idb
-10017828: restored pseudocode from idb
-10017929: restored microcode from idb
-10017929: restored pseudocode from idb
-10017A2A: restored microcode from idb
-10017A2A: restored pseudocode from idb
-10017B47: restored microcode from idb
-10017B47: restored pseudocode from idb
-10017C6A: restored microcode from idb
-10017C6A: restored pseudocode from idb
-10017D68: restored microcode from idb
-10017D68: restored pseudocode from idb
-10017E11: restored microcode from idb
-10017E11: restored pseudocode from idb
-10017F34: restored microcode from idb
-10017F34: restored pseudocode from idb
-10018035: restored microcode from idb
-10018035: restored pseudocode from idb
-10018158: restored microcode from idb
-10018158: restored pseudocode from idb
-10018228: restored microcode from idb
-10018228: restored pseudocode from idb
-10018340: restored microcode from idb
-10018340: restored pseudocode from idb
-10018405: restored microcode from idb
-10018405: restored pseudocode from idb
-100184CA: restored microcode from idb
-100184CA: restored pseudocode from idb
-100185C0: restored microcode from idb
-100185C0: restored pseudocode from idb
-100186AB: restored microcode from idb
-100186AB: restored pseudocode from idb
-10018780: restored microcode from idb
-10018780: restored pseudocode from idb
-10018885: restored microcode from idb
-10018885: restored pseudocode from idb
-10018990: restored microcode from idb
-10018990: restored pseudocode from idb
-10018ACA: restored microcode from idb
-10018ACA: restored pseudocode from idb
-10018BA0: restored microcode from idb
-10018BA0: restored pseudocode from idb
-10018CAA: restored microcode from idb
-10018CAA: restored pseudocode from idb
-10018DE0: restored microcode from idb
-10018DE0: restored pseudocode from idb
-10018EA7: restored microcode from idb
-10018EA7: restored pseudocode from idb
-10018F6E: restored microcode from idb
-10018F6E: restored pseudocode from idb
-1001905C: restored microcode from idb
-1001905C: restored pseudocode from idb
-1001914B: restored microcode from idb
-1001914B: restored pseudocode from idb
-100192A7: restored microcode from idb
-100192A7: restored pseudocode from idb
-10019333: restored microcode from idb
-10019333: restored pseudocode from idb
-100193D9: restored microcode from idb
-100193D9: restored pseudocode from idb
-10019475: restored microcode from idb
-10019475: restored pseudocode from idb
-1001951A: restored microcode from idb
-1001951A: restored pseudocode from idb
-100195BC: restored microcode from idb
-100195BC: restored pseudocode from idb
-1001966C: restored microcode from idb
-1001966C: restored pseudocode from idb
-1001971B: restored microcode from idb
-1001971B: restored pseudocode from idb
-100197F1: restored microcode from idb
-100197F1: restored pseudocode from idb
-10019883: restored microcode from idb
-10019883: restored pseudocode from idb
-10019925: restored microcode from idb
-10019925: restored pseudocode from idb
-10019997: restored microcode from idb
-10019997: restored pseudocode from idb
-10019A49: restored microcode from idb
-10019A49: restored pseudocode from idb
-10019AE8: restored microcode from idb
-10019AE8: restored pseudocode from idb
 10019B6F: restored microcode from idb
 10019B6F: restored pseudocode from idb
-10019BD3: restored microcode from idb
-10019BD3: restored pseudocode from idb
-10019C41: restored microcode from idb
-10019C41: restored pseudocode from idb
-10019CCA: restored microcode from idb
-10019CCA: restored pseudocode from idb
-10019D53: restored microcode from idb
-10019D53: restored pseudocode from idb
-10019DD5: restored microcode from idb
-10019DD5: restored pseudocode from idb
-10019E86: restored microcode from idb
-10019E86: restored pseudocode from idb
-10019F17: restored microcode from idb
-10019F17: restored pseudocode from idb
-10019FAE: restored microcode from idb
-10019FAE: restored pseudocode from idb
-1001A031: restored microcode from idb
-1001A031: restored pseudocode from idb
-1001A0EB: restored microcode from idb
-1001A0EB: restored pseudocode from idb
-1001A1BE: restored microcode from idb
-1001A1BE: restored pseudocode from idb
-1001A22E: restored microcode from idb
-1001A22E: restored pseudocode from idb
-1001A2BC: restored microcode from idb
-1001A2BC: restored pseudocode from idb
-1001A348: restored microcode from idb
-1001A348: restored pseudocode from idb
-1001A428: restored microcode from idb
-1001A428: restored pseudocode from idb
-1001A444: restored microcode from idb
-1001A444: restored pseudocode from idb
-1001A53C: restored microcode from idb
-1001A53C: restored pseudocode from idb
-1001A558: restored microcode from idb
-1001A558: restored pseudocode from idb
-1001A579: restored microcode from idb
-1001A579: restored pseudocode from idb
-1001A595: restored microcode from idb
-1001A595: restored pseudocode from idb
-1001A781: restored microcode from idb
-1001A781: restored pseudocode from idb
-1001A79D: restored microcode from idb
-1001A79D: restored pseudocode from idb
-1001A7B9: restored microcode from idb
-1001A7B9: restored pseudocode from idb
-1001AA8A: restored microcode from idb
-1001AA8A: restored pseudocode from idb
-1001AAA6: restored microcode from idb
-1001AAA6: restored pseudocode from idb
-1001AAC2: restored microcode from idb
-1001AAC2: restored pseudocode from idb
-1001AADE: restored microcode from idb
-1001AADE: restored pseudocode from idb
-1001AAFA: restored microcode from idb
-1001AAFA: restored pseudocode from idb
-1001AB16: restored microcode from idb
-1001AB16: restored pseudocode from idb
-1001ABA3: restored microcode from idb
-1001ABA3: restored pseudocode from idb
-1001ABBF: restored microcode from idb
-1001ABBF: restored pseudocode from idb
-1001AC2E: restored microcode from idb
-1001AC2E: restored pseudocode from idb
-1001AC4A: restored microcode from idb
-1001AC4A: restored pseudocode from idb
-1001AE3C: restored microcode from idb
-1001AE3C: restored pseudocode from idb
-1001AE58: restored microcode from idb
-1001AE58: restored pseudocode from idb
-1001AE74: restored microcode from idb
-1001AE74: restored pseudocode from idb
-1001AE90: restored microcode from idb
-1001AE90: restored pseudocode from idb
-1001AEAC: restored microcode from idb
-1001AEAC: restored pseudocode from idb
-1001AEC8: restored microcode from idb
-1001AEC8: restored pseudocode from idb
-1001AEE4: restored microcode from idb
-1001AEE4: restored pseudocode from idb
-1001AF00: restored microcode from idb
-1001AF00: restored pseudocode from idb
-1001B001: restored microcode from idb
-1001B001: restored pseudocode from idb
-1001B01D: restored microcode from idb
-1001B01D: restored pseudocode from idb
-1001B039: restored microcode from idb
-1001B039: restored pseudocode from idb
-1001B055: restored microcode from idb
-1001B055: restored pseudocode from idb
-1001B071: restored microcode from idb
-1001B071: restored pseudocode from idb
-1001B08D: restored microcode from idb
-1001B08D: restored pseudocode from idb
-1001B0A9: restored microcode from idb
-1001B0A9: restored pseudocode from idb
-1001B0C5: restored microcode from idb
-1001B0C5: restored pseudocode from idb
-1001B0E1: restored microcode from idb
-1001B0E1: restored pseudocode from idb
-1001B0FD: restored microcode from idb
-1001B0FD: restored pseudocode from idb
-1001B3A6: restored microcode from idb
-1001B3A6: restored pseudocode from idb
-1001B3C2: restored microcode from idb
-1001B3C2: restored pseudocode from idb
-1001B3DE: restored microcode from idb
-1001B3DE: restored pseudocode from idb
-1001B3FA: restored microcode from idb
-1001B3FA: restored pseudocode from idb
-1001B412: restored microcode from idb
-1001B412: restored pseudocode from idb
-1001B42A: restored microcode from idb
-1001B42A: restored pseudocode from idb
-1001B442: restored microcode from idb
-1001B442: restored pseudocode from idb
-1001B45A: restored microcode from idb
-1001B45A: restored pseudocode from idb
-1001B472: restored microcode from idb
-1001B472: restored pseudocode from idb
-1001B493: restored microcode from idb
-1001B493: restored pseudocode from idb
-1001B4DC: restored microcode from idb
-1001B4DC: restored pseudocode from idb
-1001B4F4: restored microcode from idb
-1001B4F4: restored pseudocode from idb
-1001B50C: restored microcode from idb
-1001B50C: restored pseudocode from idb
-1001BC84: restored microcode from idb
-1001BC84: restored pseudocode from idb
-1001BCA5: restored microcode from idb
-1001BCA5: restored pseudocode from idb
-1001BCB7: restored microcode from idb
-1001BCB7: restored pseudocode from idb
-1001BDC7: restored microcode from idb
-1001BDC7: restored pseudocode from idb
-1001BED2: restored microcode from idb
-1001BED2: restored pseudocode from idb
 1001BEDD: restored microcode from idb
 1001BEDD: restored pseudocode from idb
-1001BF39: restored microcode from idb
-1001BF39: restored pseudocode from idb
-1001BF5E: restored microcode from idb
-1001BF5E: restored pseudocode from idb
-1001BFF7: restored microcode from idb
-1001BFF7: restored pseudocode from idb
-1001C02F: restored microcode from idb
-1001C02F: restored pseudocode from idb
-1001C0D4: restored microcode from idb
-1001C0D4: restored pseudocode from idb
-1001C188: restored microcode from idb
-1001C188: restored pseudocode from idb
-1001C265: restored microcode from idb
-1001C265: restored pseudocode from idb
 1001C32A: restored microcode from idb
 1001C32A: restored pseudocode from idb
 1001C49D: restored microcode from idb
@@ -2036,34 +337,6 @@ Bad declaration. See the message window for details. -> OK
 1001E073: restored pseudocode from idb
 1001E0FA: restored microcode from idb
 1001E0FA: restored pseudocode from idb
-1001E114: restored microcode from idb
-1001E114: restored pseudocode from idb
-1001E132: restored microcode from idb
-1001E132: restored pseudocode from idb
-1001E147: restored microcode from idb
-1001E147: restored pseudocode from idb
-1001E16C: restored microcode from idb
-1001E16C: restored pseudocode from idb
-1001E191: restored microcode from idb
-1001E191: restored pseudocode from idb
-1001E294: restored microcode from idb
-1001E294: restored pseudocode from idb
-The decompiler assumes that the segment '.rdata' is read-only because of its NAME.
-All data references to the segment will be replaced by constant values.
-This may lead to drastic changes in the decompiler output.
-If the segment is not read-only, please change the segment NAME.
-
-In general, the decompiler checks the segment permissions, class, and name
-to determine if it is read-only.
- -> OK
-1001E407: restored microcode from idb
-1001E407: restored pseudocode from idb
-1001E427: restored microcode from idb
-1001E427: restored pseudocode from idb
-1001E7CE: restored microcode from idb
-1001E7CE: restored pseudocode from idb
-1001E81B: restored microcode from idb
-1001E81B: restored pseudocode from idb
 1001E93E: restored microcode from idb
 1001E93E: restored pseudocode from idb
 1001E9BF: restored microcode from idb
@@ -2076,8 +349,6 @@ to determine if it is read-only.
 1001EA05: restored pseudocode from idb
 1001EA2E: restored microcode from idb
 1001EA2E: restored pseudocode from idb
-1001EA59: restored microcode from idb
-1001EA59: restored pseudocode from idb
 1001EB2A: restored microcode from idb
 1001EB2A: restored pseudocode from idb
 1001EB5D: restored microcode from idb
@@ -2118,16 +389,8 @@ to determine if it is read-only.
 1001F8CD: restored pseudocode from idb
 1001FC1F: restored microcode from idb
 1001FC1F: restored pseudocode from idb
-1001FD2D: restored microcode from idb
-1001FD2D: restored pseudocode from idb
-10020036: restored microcode from idb
-10020036: restored pseudocode from idb
-10020149: restored microcode from idb
-10020149: restored pseudocode from idb
 10020301: restored microcode from idb
 10020301: restored pseudocode from idb
-1002031C: restored microcode from idb
-1002031C: restored pseudocode from idb
 100203BD: restored microcode from idb
 100203BD: restored pseudocode from idb
 100203E1: restored microcode from idb
@@ -2136,66 +399,38 @@ to determine if it is read-only.
 100203FC: restored pseudocode from idb
 10020435: restored microcode from idb
 10020435: restored pseudocode from idb
-1002047C: restored microcode from idb
-1002047C: restored pseudocode from idb
-100204A4: restored microcode from idb
-100204A4: restored pseudocode from idb
 100204E3: restored microcode from idb
 100204E3: restored pseudocode from idb
-1002052B: restored microcode from idb
-1002052B: restored pseudocode from idb
-10020583: restored microcode from idb
-10020583: restored pseudocode from idb
-100205DA: restored microcode from idb
-100205DA: restored pseudocode from idb
 100205E8: restored microcode from idb
 100205E8: restored pseudocode from idb
-1002060E: restored microcode from idb
-1002060E: restored pseudocode from idb
-1002065A: restored microcode from idb
-1002065A: restored pseudocode from idb
-100206D8: restored microcode from idb
-100206D8: restored pseudocode from idb
 10020708: restored microcode from idb
 10020708: restored pseudocode from idb
-1002072B: restored microcode from idb
-1002072B: restored pseudocode from idb
-10020825: restored microcode from idb
-10020825: restored pseudocode from idb
-10020B2A: restored microcode from idb
-10020B2A: restored pseudocode from idb
-10021095: restored microcode from idb
-10021095: restored pseudocode from idb
-10021899: restored microcode from idb
-10021899: restored pseudocode from idb
-100219D7: restored microcode from idb
-100219D7: restored pseudocode from idb
-10021A5A: restored microcode from idb
-10021A5A: restored pseudocode from idb
 10021B96: restored microcode from idb
 10021B96: restored pseudocode from idb
-10021BAE: restored microcode from idb
-10021BAE: restored pseudocode from idb
-10021CC2: restored microcode from idb
-10021CC2: restored pseudocode from idb
 10022114: restored microcode from idb
 10022114: restored pseudocode from idb
-1002215A: restored microcode from idb
-1002215A: restored pseudocode from idb
-1002218E: restored microcode from idb
-1002218E: restored pseudocode from idb
+10022137: restored microcode from idb
+10022137: restored pseudocode from idb
+100221D0: restored microcode from idb
+100221D0: restored pseudocode from idb
+100222E0: restored microcode from idb
+100222E0: restored pseudocode from idb
 100223F0: restored microcode from idb
 100223F0: restored pseudocode from idb
+100224C5: restored microcode from idb
+100224C5: restored pseudocode from idb
 100226EB: restored microcode from idb
 100226EB: restored pseudocode from idb
 10022754: restored microcode from idb
 10022754: restored pseudocode from idb
-1002290C: restored microcode from idb
-1002290C: restored pseudocode from idb
-100229D6: restored microcode from idb
-100229D6: restored pseudocode from idb
-10022AB9: restored microcode from idb
-10022AB9: restored pseudocode from idb
+10022789: restored microcode from idb
+10022789: restored pseudocode from idb
+10022814: restored microcode from idb
+10022814: restored pseudocode from idb
+10022873: restored microcode from idb
+10022873: restored pseudocode from idb
+10022B47: restored microcode from idb
+10022B47: restored pseudocode from idb
 10022B83: restored microcode from idb
 10022B83: restored pseudocode from idb
 10022B93: restored microcode from idb
@@ -2204,10 +439,6 @@ to determine if it is read-only.
 10022BAB: restored pseudocode from idb
 10022BF2: restored microcode from idb
 10022BF2: restored pseudocode from idb
-10022C14: restored microcode from idb
-10022C14: restored pseudocode from idb
-10022C2F: restored microcode from idb
-10022C2F: restored pseudocode from idb
 10022C61: restored microcode from idb
 10022C61: restored pseudocode from idb
 10022E1C: restored microcode from idb
@@ -2226,18 +457,10 @@ to determine if it is read-only.
 10023139: restored pseudocode from idb
 1002317A: restored microcode from idb
 1002317A: restored pseudocode from idb
-1002318F: restored microcode from idb
-1002318F: restored pseudocode from idb
-1002328B: restored microcode from idb
-1002328B: restored pseudocode from idb
 10023319: restored microcode from idb
 10023319: restored pseudocode from idb
 100233AB: restored microcode from idb
 100233AB: restored pseudocode from idb
-10023449: restored microcode from idb
-10023449: restored pseudocode from idb
-100234AA: restored microcode from idb
-100234AA: restored pseudocode from idb
 1002350B: restored microcode from idb
 1002350B: restored pseudocode from idb
 1002368A: restored microcode from idb
@@ -2262,76 +485,20 @@ to determine if it is read-only.
 10023BE0: restored pseudocode from idb
 10023BFC: restored microcode from idb
 10023BFC: restored pseudocode from idb
-10023C18: restored microcode from idb
-10023C18: restored pseudocode from idb
-10023C89: restored microcode from idb
-10023C89: restored pseudocode from idb
 10023E78: restored microcode from idb
 10023E78: restored pseudocode from idb
-10023EE7: restored microcode from idb
-10023EE7: restored pseudocode from idb
 10024094: restored microcode from idb
 10024094: restored pseudocode from idb
 100241C1: restored microcode from idb
 100241C1: restored pseudocode from idb
 100241E2: restored microcode from idb
 100241E2: restored pseudocode from idb
-10024212: restored microcode from idb
-10024212: restored pseudocode from idb
-10024251: restored microcode from idb
-10024251: restored pseudocode from idb
-1002428F: restored microcode from idb
-1002428F: restored pseudocode from idb
-10024374: restored microcode from idb
-10024374: restored pseudocode from idb
-1002438B: restored microcode from idb
-1002438B: restored pseudocode from idb
 100246F2: restored microcode from idb
 100246F2: restored pseudocode from idb
-10024734: restored microcode from idb
-10024734: restored pseudocode from idb
-10024741: restored microcode from idb
-10024741: restored pseudocode from idb
-10024777: restored microcode from idb
-10024777: restored pseudocode from idb
-10024790: restored microcode from idb
-10024790: restored pseudocode from idb
-100247B3: restored microcode from idb
-100247B3: restored pseudocode from idb
-100247E4: restored microcode from idb
-100247E4: restored pseudocode from idb
-10024807: restored microcode from idb
-10024807: restored pseudocode from idb
-10024821: restored microcode from idb
-10024821: restored pseudocode from idb
-1002487F: restored microcode from idb
-1002487F: restored pseudocode from idb
 100248E1: restored microcode from idb
 100248E1: restored pseudocode from idb
 10024AF7: restored microcode from idb
 10024AF7: restored pseudocode from idb
-10024DC0: restored microcode from idb
-10024DC0: restored pseudocode from idb
-10024F3B: restored microcode from idb
-10024F3B: restored pseudocode from idb
-100250D7: restored microcode from idb
-100250D7: restored pseudocode from idb
-10025163: restored microcode from idb
-10025163: restored pseudocode from idb
-10025359: restored microcode from idb
-10025359: restored pseudocode from idb
-10025483: restored microcode from idb
-10025483: restored pseudocode from idb
-100254CD: restored microcode from idb
-100254CD: restored pseudocode from idb
-100255D8: restored microcode from idb
-100255D8: restored pseudocode from idb
-100256C7: restored microcode from idb
-100256C7: restored pseudocode from idb
-1002587E: restored microcode from idb
-1002587E: restored pseudocode from idb
-100258C8: restored microcode from idb
-100258C8: restored pseudocode from idb
 10025AEC: restored microcode from idb
 10025AEC: restored pseudocode from idb
 10025C00: restored microcode from idb
@@ -2340,12 +507,20 @@ to determine if it is read-only.
 10025C40: restored pseudocode from idb
 10025CA0: restored microcode from idb
 10025CA0: restored pseudocode from idb
+10025CE0: restored microcode from idb
+10025CE0: restored pseudocode from idb
 10025CEE: restored microcode from idb
 10025CEE: restored pseudocode from idb
+10025E30: restored microcode from idb
+10025E30: restored pseudocode from idb
 10025E3E: restored microcode from idb
 10025E3E: restored pseudocode from idb
+10025F00: restored microcode from idb
+10025F00: restored pseudocode from idb
 10025F0E: restored microcode from idb
 10025F0E: restored pseudocode from idb
+10025FE0: restored microcode from idb
+10025FE0: restored pseudocode from idb
 10025FEE: restored microcode from idb
 10025FEE: restored pseudocode from idb
 10026090: restored microcode from idb
@@ -2370,56 +545,102 @@ to determine if it is read-only.
 100265D0: restored pseudocode from idb
 10026630: restored microcode from idb
 10026630: restored pseudocode from idb
+100266F0: restored microcode from idb
+100266F0: restored pseudocode from idb
 100266FE: restored microcode from idb
 100266FE: restored pseudocode from idb
+100267E0: restored microcode from idb
+100267E0: restored pseudocode from idb
 100267EE: restored microcode from idb
 100267EE: restored pseudocode from idb
+10026970: restored microcode from idb
+10026970: restored pseudocode from idb
 1002697E: restored microcode from idb
 1002697E: restored pseudocode from idb
 10026A50: restored microcode from idb
 10026A50: restored pseudocode from idb
 10026AE0: restored microcode from idb
 10026AE0: restored pseudocode from idb
+10026B80: restored microcode from idb
+10026B80: restored pseudocode from idb
 10026B8E: restored microcode from idb
 10026B8E: restored pseudocode from idb
 10026BF0: restored microcode from idb
 10026BF0: restored pseudocode from idb
+10026D10: restored microcode from idb
+10026D10: restored pseudocode from idb
 10026D1E: restored microcode from idb
 10026D1E: restored pseudocode from idb
+10026DE0: restored microcode from idb
+10026DE0: restored pseudocode from idb
 10026DEE: restored microcode from idb
 10026DEE: restored pseudocode from idb
+10026EA0: restored microcode from idb
+10026EA0: restored pseudocode from idb
 10026EAE: restored microcode from idb
 10026EAE: restored pseudocode from idb
+10026F60: restored microcode from idb
+10026F60: restored pseudocode from idb
 10026F6E: restored microcode from idb
 10026F6E: restored pseudocode from idb
+10027060: restored microcode from idb
+10027060: restored pseudocode from idb
 1002706E: restored microcode from idb
 1002706E: restored pseudocode from idb
+10027120: restored microcode from idb
+10027120: restored pseudocode from idb
 1002712E: restored microcode from idb
 1002712E: restored pseudocode from idb
+100271F0: restored microcode from idb
+100271F0: restored pseudocode from idb
 100271FE: restored microcode from idb
 100271FE: restored pseudocode from idb
+100272D0: restored microcode from idb
+100272D0: restored pseudocode from idb
 100272DE: restored microcode from idb
 100272DE: restored pseudocode from idb
+10027590: restored microcode from idb
+10027590: restored pseudocode from idb
 1002759E: restored microcode from idb
 1002759E: restored pseudocode from idb
+100276F0: restored microcode from idb
+100276F0: restored pseudocode from idb
 100276FE: restored microcode from idb
 100276FE: restored pseudocode from idb
+100277A0: restored microcode from idb
+100277A0: restored pseudocode from idb
 100277AE: restored microcode from idb
 100277AE: restored pseudocode from idb
+10027820: restored microcode from idb
+10027820: restored pseudocode from idb
 1002782E: restored microcode from idb
 1002782E: restored pseudocode from idb
+100278B0: restored microcode from idb
+100278B0: restored pseudocode from idb
 100278BE: restored microcode from idb
 100278BE: restored pseudocode from idb
+10027980: restored microcode from idb
+10027980: restored pseudocode from idb
 1002798E: restored microcode from idb
 1002798E: restored pseudocode from idb
+10027A70: restored microcode from idb
+10027A70: restored pseudocode from idb
 10027A7E: restored microcode from idb
 10027A7E: restored pseudocode from idb
+10027C00: restored microcode from idb
+10027C00: restored pseudocode from idb
 10027C0E: restored microcode from idb
 10027C0E: restored pseudocode from idb
 10027CE0: restored microcode from idb
 10027CE0: restored pseudocode from idb
+10027E00: restored microcode from idb
+10027E00: restored pseudocode from idb
 10027E0E: restored microcode from idb
 10027E0E: restored pseudocode from idb
+10027ED0: restored microcode from idb
+10027ED0: restored pseudocode from idb
+10027F69: restored microcode from idb
+10027F69: restored pseudocode from idb
 10027FC6: restored microcode from idb
 10027FC6: restored pseudocode from idb
 10028079: restored microcode from idb
@@ -2488,6 +709,10 @@ to determine if it is read-only.
 1002CE9A: restored pseudocode from idb
 1002D1CE: restored microcode from idb
 1002D1CE: restored pseudocode from idb
+1002D1EA: restored microcode from idb
+1002D1EA: restored pseudocode from idb
+1002D25B: restored microcode from idb
+1002D25B: restored pseudocode from idb
 1002D2C2: restored microcode from idb
 1002D2C2: restored pseudocode from idb
 1002D321: restored microcode from idb
@@ -2506,6 +731,24 @@ to determine if it is read-only.
 1002D92F: restored pseudocode from idb
 1002DB55: restored microcode from idb
 1002DB55: restored pseudocode from idb
+1002DCA8: restored microcode from idb
+1002DCA8: restored pseudocode from idb
+1002DCFD: restored microcode from idb
+1002DCFD: restored pseudocode from idb
+1002DD36: restored microcode from idb
+1002DD36: restored pseudocode from idb
+1002DD9A: restored microcode from idb
+1002DD9A: restored pseudocode from idb
+1002DE32: restored microcode from idb
+1002DE32: restored pseudocode from idb
+1002DE7B: restored microcode from idb
+1002DE7B: restored pseudocode from idb
+1002DEBE: restored microcode from idb
+1002DEBE: restored pseudocode from idb
+1002DF69: restored microcode from idb
+1002DF69: restored pseudocode from idb
+1002DFEB: restored microcode from idb
+1002DFEB: restored pseudocode from idb
 1002E04A: restored microcode from idb
 1002E04A: restored pseudocode from idb
 1002E17C: restored microcode from idb
@@ -2514,16 +757,16 @@ to determine if it is read-only.
 1002E1ED: restored pseudocode from idb
 1002E2B5: restored microcode from idb
 1002E2B5: restored pseudocode from idb
+1002E393: restored microcode from idb
+1002E393: restored pseudocode from idb
+1002E3D6: restored microcode from idb
+1002E3D6: restored pseudocode from idb
+1002E4BA: restored microcode from idb
+1002E4BA: restored pseudocode from idb
 1002E578: restored microcode from idb
 1002E578: restored pseudocode from idb
 1002E5DC: restored microcode from idb
 1002E5DC: restored pseudocode from idb
-1002E65A: restored microcode from idb
-1002E65A: restored pseudocode from idb
-1002E665: restored microcode from idb
-1002E665: restored pseudocode from idb
-1002E670: restored microcode from idb
-1002E670: restored pseudocode from idb
 1002E675: restored microcode from idb
 1002E675: restored pseudocode from idb
 1002E689: restored microcode from idb
@@ -2546,8 +789,6 @@ to determine if it is read-only.
 1002EB62: restored pseudocode from idb
 1002EBCA: restored microcode from idb
 1002EBCA: restored pseudocode from idb
-1002EC9D: restored microcode from idb
-1002EC9D: restored pseudocode from idb
 1002ECDC: restored microcode from idb
 1002ECDC: restored pseudocode from idb
 1002ECEC: restored microcode from idb
@@ -2600,28 +841,18 @@ to determine if it is read-only.
 10030F9F: restored pseudocode from idb
 10031013: restored microcode from idb
 10031013: restored pseudocode from idb
-10031078: restored microcode from idb
-10031078: restored pseudocode from idb
-10031108: restored microcode from idb
-10031108: restored pseudocode from idb
 10031194: restored microcode from idb
 10031194: restored pseudocode from idb
 1003123A: restored microcode from idb
 1003123A: restored pseudocode from idb
 100312BD: restored microcode from idb
 100312BD: restored pseudocode from idb
-100312D7: restored microcode from idb
-100312D7: restored pseudocode from idb
 1003139D: restored microcode from idb
 1003139D: restored pseudocode from idb
 100313A8: restored microcode from idb
 100313A8: restored pseudocode from idb
 100313B0: restored microcode from idb
 100313B0: restored pseudocode from idb
-1003148D: restored microcode from idb
-1003148D: restored pseudocode from idb
-100314E4: restored microcode from idb
-100314E4: restored pseudocode from idb
 1003154E: restored microcode from idb
 1003154E: restored pseudocode from idb
 100315F2: restored microcode from idb
@@ -2648,16 +879,12 @@ to determine if it is read-only.
 10032055: restored pseudocode from idb
 1003206A: restored microcode from idb
 1003206A: restored pseudocode from idb
-10032110: restored microcode from idb
-10032110: restored pseudocode from idb
 10032141: restored microcode from idb
 10032141: restored pseudocode from idb
 10032297: restored microcode from idb
 10032297: restored pseudocode from idb
 1003247D: restored microcode from idb
 1003247D: restored pseudocode from idb
-100324F2: restored microcode from idb
-100324F2: restored pseudocode from idb
 1003255E: restored microcode from idb
 1003255E: restored pseudocode from idb
 10032896: restored microcode from idb
@@ -2712,18 +939,6 @@ to determine if it is read-only.
 10033E70: restored pseudocode from idb
 10033E84: restored microcode from idb
 10033E84: restored pseudocode from idb
-10033F0B: restored microcode from idb
-10033F0B: restored pseudocode from idb
-10033F76: restored microcode from idb
-10033F76: restored pseudocode from idb
-10034003: restored microcode from idb
-10034003: restored pseudocode from idb
-1003479E: restored microcode from idb
-1003479E: restored pseudocode from idb
-100347D2: restored microcode from idb
-100347D2: restored pseudocode from idb
-100348EB: restored microcode from idb
-100348EB: restored pseudocode from idb
 10034900: restored microcode from idb
 10034900: restored pseudocode from idb
 10034AF0: restored microcode from idb
@@ -2752,22 +967,8 @@ to determine if it is read-only.
 10035F54: restored pseudocode from idb
 10035FA0: restored microcode from idb
 10035FA0: restored pseudocode from idb
-10036381: restored microcode from idb
-10036381: restored pseudocode from idb
-100363B5: restored microcode from idb
-100363B5: restored pseudocode from idb
-10036919: restored microcode from idb
-10036919: restored pseudocode from idb
-1003692A: restored microcode from idb
-1003692A: restored pseudocode from idb
-10036CAF: restored microcode from idb
-10036CAF: restored pseudocode from idb
-10036D2E: restored microcode from idb
-10036D2E: restored pseudocode from idb
 10036E31: restored microcode from idb
 10036E31: restored pseudocode from idb
-10036E60: restored microcode from idb
-10036E60: restored pseudocode from idb
 10036F75: restored microcode from idb
 10036F75: restored pseudocode from idb
 100373D7: restored microcode from idb
@@ -2798,6 +999,8 @@ to determine if it is read-only.
 1003AB00: restored pseudocode from idb
 1003AB10: restored microcode from idb
 1003AB10: restored pseudocode from idb
+1003AB60: restored microcode from idb
+1003AB60: restored pseudocode from idb
 1003AB80: restored microcode from idb
 1003AB80: restored pseudocode from idb
 1003ABC0: restored microcode from idb
@@ -2842,10 +1045,10 @@ to determine if it is read-only.
 1003CCA0: restored pseudocode from idb
 1003CF10: restored microcode from idb
 1003CF10: restored pseudocode from idb
+1003D000: restored microcode from idb
+1003D000: restored pseudocode from idb
 1003D090: restored microcode from idb
 1003D090: restored pseudocode from idb
-1003D0D0: restored microcode from idb
-1003D0D0: restored pseudocode from idb
 1003D210: restored microcode from idb
 1003D210: restored pseudocode from idb
 1003D360: restored microcode from idb
@@ -2862,12 +1065,8 @@ to determine if it is read-only.
 1003D660: restored pseudocode from idb
 1003D7E0: restored microcode from idb
 1003D7E0: restored pseudocode from idb
-1003D930: restored microcode from idb
-1003D930: restored pseudocode from idb
 1003D9D0: restored microcode from idb
 1003D9D0: restored pseudocode from idb
-1003DB20: restored microcode from idb
-1003DB20: restored pseudocode from idb
 1003DBC0: restored microcode from idb
 1003DBC0: restored pseudocode from idb
 1003DCC0: restored microcode from idb
@@ -2900,8 +1099,6 @@ to determine if it is read-only.
 1003E4E0: restored pseudocode from idb
 1003E510: restored microcode from idb
 1003E510: restored pseudocode from idb
-1003E530: restored microcode from idb
-1003E530: restored pseudocode from idb
 1003E540: restored microcode from idb
 1003E540: restored pseudocode from idb
 1003E560: restored microcode from idb
@@ -2962,12 +1159,10 @@ to determine if it is read-only.
 10041610: restored pseudocode from idb
 10041850: restored microcode from idb
 10041850: restored pseudocode from idb
+100418E0: restored microcode from idb
+100418E0: restored pseudocode from idb
 100419E0: restored microcode from idb
 100419E0: restored pseudocode from idb
-10041A60: restored microcode from idb
-10041A60: restored pseudocode from idb
-10041B00: restored microcode from idb
-10041B00: restored pseudocode from idb
 10041BA0: restored microcode from idb
 10041BA0: restored pseudocode from idb
 10041DA0: restored microcode from idb
@@ -3066,6 +1261,8 @@ to determine if it is read-only.
 10045D90: restored pseudocode from idb
 10046190: restored microcode from idb
 10046190: restored pseudocode from idb
+100463C0: restored microcode from idb
+100463C0: restored pseudocode from idb
 10046400: restored microcode from idb
 10046400: restored pseudocode from idb
 100464A0: restored microcode from idb
@@ -3086,16 +1283,6 @@ to determine if it is read-only.
 100475B0: restored pseudocode from idb
 100475D0: restored microcode from idb
 100475D0: restored pseudocode from idb
-The decompiler assumes that the segment '.idata' is read-only because of its NAME.
-All data references to the segment will be replaced by constant values.
-This may lead to drastic changes in the decompiler output.
-If the segment is not read-only, please change the segment NAME.
-
-In general, the decompiler checks the segment permissions, class, and name
-to determine if it is read-only.
- -> OK
-10047A20: restored microcode from idb
-10047A20: restored pseudocode from idb
 10047A30: restored microcode from idb
 10047A30: restored pseudocode from idb
 10047B90: restored microcode from idb
@@ -3134,990 +1321,10 @@ to determine if it is read-only.
 1004AA50: restored pseudocode from idb
 1004AF20: restored microcode from idb
 1004AF20: restored pseudocode from idb
-1004B0B0: restored microcode from idb
-1004B0B0: restored pseudocode from idb
 1004B0E0: restored microcode from idb
 1004B0E0: restored pseudocode from idb
 1004B220: restored microcode from idb
 1004B220: restored pseudocode from idb
-IDA decompile complete: C:\dev\crimson\analysis\ida\raw\grim.dll\grim.dll_decompiled.c
-Flushing buffers, please wait...ok
-Unloading IDP module C:\Program Files\IDA Professional 9.2\procs\pc.dll...Database C:\dev\crimson\game_bins\crimsonland\1.9.93-gog\grim.dll.i64 already exists.
-Do you want to overwrite it? -> ~L~oad existing
-
-  bytes   pages size description
---------- ----- ---- --------------------------------------------
-  1712128   209 8192 allocating memory for b-tree...
-  1482752   181 8192 allocating memory for virtual array...
-   262144    32 8192 allocating memory for name pointers...
------------------------------------------------------------------
-  3457024            total memory allocated
-
-Loading processor module C:\Program Files\IDA Professional 9.2\procs\pc.dll for metapc...OK
-Loading type libraries...
-Autoanalysis subsystem has been initialized.
-Database for file 'grim.dll' has been loaded.
-Hex-Rays Decompiler plugin has been loaded (v9.2.0.250908)
-  The hotkeys are F5: decompile, Ctrl-F5: decompile all.
-
-  Please check the Edit/Plugins menu for more information.
-Hex-rays version 9.2.0.250908 has been detected, gooMBA plugin ready to use
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: undefined4
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: undefined4
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: z_streamp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: z_streamp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: z_streamp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: z_streamp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: z_streamp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_uint_32
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: png_structp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: voidpf
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: z_streamp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: z_streamp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: z_streamp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: z_streamp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: uLong
-Bad declaration. See the message window for details. -> OK
-Syntax error near: voidpf
-Bad declaration. See the message window for details. -> OK
-Syntax error near: uInt
-Bad declaration. See the message window for details. -> OK
-Syntax error near: z_streamp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: z_streamp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: uInt
-Bad declaration. See the message window for details. -> OK
-Syntax error near: uInt
-Bad declaration. See the message window for details. -> OK
-Syntax error near: uInt
-Bad declaration. See the message window for details. -> OK
-Syntax error near: z_streamp
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: uInt
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-Syntax error near: <END>
-Bad declaration. See the message window for details. -> OK
-The decompiler assumes that the segment '.idata' is read-only because of its NAME.
-All data references to the segment will be replaced by constant values.
-This may lead to drastic changes in the decompiler output.
-If the segment is not read-only, please change the segment NAME.
-
-In general, the decompiler checks the segment permissions, class, and name
-to determine if it is read-only.
- -> OK
-The decompiler assumes that the segment '.rdata' is read-only because of its NAME.
-All data references to the segment will be replaced by constant values.
-This may lead to drastic changes in the decompiler output.
-If the segment is not read-only, please change the segment NAME.
-
-In general, the decompiler checks the segment permissions, class, and name
-to determine if it is read-only.
- -> OK
 IDA decompile complete: C:\dev\crimson\analysis\ida\raw\grim.dll\grim.dll_decompiled.c
 Flushing buffers, please wait...ok
 Unloading IDP module C:\Program Files\IDA Professional 9.2\procs\pc.dll...

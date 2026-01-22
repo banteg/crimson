@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import sys
 
 import idaapi
@@ -13,6 +14,58 @@ try:
 except Exception:  # pragma: no cover - handled at runtime in IDA
     ida_hexrays = None
     ida_lines = None
+
+_FAILED_SIGNATURES = set()
+
+_TYPEDEF_PRELUDE = """
+typedef unsigned char byte;
+typedef unsigned char undefined1;
+typedef unsigned int undefined4;
+typedef unsigned int uint;
+typedef unsigned char Byte;
+typedef Byte *Bytef;
+typedef unsigned int uInt;
+typedef unsigned long uLong;
+typedef uLong uLongf;
+typedef void *voidp;
+typedef void *voidpf;
+typedef struct z_stream_s { int _dummy; } z_stream;
+typedef z_stream *z_streamp;
+typedef unsigned char png_byte;
+typedef unsigned short png_uint_16;
+typedef unsigned int png_uint_32;
+typedef int png_int_32;
+typedef void *png_voidp;
+typedef png_byte *png_bytep;
+typedef struct png_struct_def { int _dummy; } png_struct;
+typedef png_struct *png_structp;
+typedef struct IGrim2D { int _dummy; } IGrim2D;
+""".strip()
+
+_TYPE_REPLACEMENTS = {
+    "IGrim2D": "void",
+    "Byte": "unsigned char",
+    "Bytef": "unsigned char *",
+    "byte": "unsigned char",
+    "png_bytep": "unsigned char *",
+    "png_structp": "void *",
+    "png_uint_32": "unsigned int",
+    "png_voidp": "void *",
+    "uInt": "unsigned int",
+    "uLong": "unsigned long",
+    "uLongf": "unsigned long",
+    "uint": "unsigned int",
+    "undefined1": "unsigned char",
+    "undefined4": "unsigned int",
+    "voidp": "void *",
+    "voidpf": "void *",
+    "z_streamp": "void *",
+}
+
+
+
+def _ea_hex(ea):
+    return "0x%08X" % ea
 
 
 def _get_argv():
@@ -44,17 +97,79 @@ def _normalize_signature(signature):
     return sig
 
 
+def _rewrite_signature(signature):
+    if not _TYPE_REPLACEMENTS:
+        return signature
+    parts = re.split(r"([A-Za-z_][A-Za-z0-9_]*)", signature)
+    for i in range(1, len(parts), 2):
+        token = parts[i]
+        replacement = _TYPE_REPLACEMENTS.get(token)
+        if replacement:
+            parts[i] = replacement
+    return "".join(parts)
+
+
+def _install_typedefs():
+    if not _TYPEDEF_PRELUDE:
+        return
+    flags = _ida_parse_decl_flags()
+    til = ida_typeinf.get_idati() if hasattr(ida_typeinf, "get_idati") else None
+    parse_types2 = getattr(ida_typeinf, "parse_types2", None)
+    parse_types = getattr(ida_typeinf, "parse_types", None)
+    parsed = False
+    if parse_types2:
+        try:
+            parse_types2(til, _TYPEDEF_PRELUDE + "\n", flags)
+            parsed = True
+        except Exception:
+            parsed = False
+    if not parsed and parse_types:
+        try:
+            parse_types(til, _TYPEDEF_PRELUDE + "\n", flags)
+            parsed = True
+        except Exception:
+            parsed = False
+    if not parsed:
+        for line in _TYPEDEF_PRELUDE.splitlines():
+            decl = line.strip()
+            if not decl:
+                continue
+            tinfo = ida_typeinf.tinfo_t()
+            ida_typeinf.parse_decl(tinfo, None, decl, flags)
+
+
+def _log_parse_failure(ea, sig, reason, rewritten=None):
+    if sig in _FAILED_SIGNATURES:
+        return
+    _FAILED_SIGNATURES.add(sig)
+    name = idc.get_name(ea) or ""
+    print("parse_decl failed (%s): %s @ %s" % (reason, name, _ea_hex(ea)))
+    print("  signature:", sig)
+    if rewritten and rewritten != sig:
+        print("  rewritten:", rewritten)
+
+
 def _apply_type_signature(ea, signature):
     sig = _normalize_signature(signature)
     if not sig:
         return False
+    flags = _ida_parse_decl_flags()
     tinfo = ida_typeinf.tinfo_t()
-    ok = ida_typeinf.parse_decl(tinfo, None, sig, _ida_parse_decl_flags())
+    ok = ida_typeinf.parse_decl(tinfo, None, sig, flags)
     if not ok:
-        return False
+        rewritten = _rewrite_signature(sig)
+        if rewritten != sig:
+            tinfo = ida_typeinf.tinfo_t()
+            ok = ida_typeinf.parse_decl(tinfo, None, rewritten, flags)
+            if ok:
+                sig = rewritten
+        if not ok:
+            _log_parse_failure(ea, sig, "parse_decl", rewritten)
+            return False
     try:
         ida_typeinf.apply_tinfo(ea, tinfo, ida_typeinf.TINFO_DEFINITE)
     except Exception:
+        _log_parse_failure(ea, sig, "apply_tinfo")
         return False
     return True
 
@@ -129,6 +244,7 @@ def main():
     program_name = _basename(idaapi.get_input_file_path())
     name_map = argv[2] if len(argv) > 2 else ""
     data_map = argv[3] if len(argv) > 3 else ""
+    _install_typedefs()
     _apply_name_map(name_map, program_name)
     _apply_data_map(data_map, program_name)
 
