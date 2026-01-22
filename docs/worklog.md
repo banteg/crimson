@@ -2,13 +2,34 @@
 
 Reverse-chronological log of notable repo changes, grouped by day.
 
+## 2026-01-22
+
+- Added IDA headless export/decompile flow, applied Ghidra maps during exports, and normalized signature parsing/typedef handling.
+- Regenerated Ghidra and Binary Ninja exports (including full call graph) with updated Grim2D format wrapper signatures.
+- Added a decompile signature diff tool and zipped additional analysis artifacts.
+- Mapped the mod SDK API and documented the demo/attract mode loop, plus demo-mode scaffolding and labeled globals.
+- Improved Frida workflows (attach-only enforcement, configurable log paths, shortcut docs).
+- Reworked docs/nav structure, metrics snapshot, status lifecycle, and assorted reference alignments.
+
+## 2026-01-21
+
+- Mapped and expanded mod API structs/vtables, highscore/mod info structs, and additional Ghidra data maps (creatures, projectiles, effects, UI, config/save).
+- Updated Grim2D exports and vtable naming, plus Binary Ninja map/import workflows and exports.
+- Improved menu and terrain rendering parity (layout, scaling, pivot, sampling, glow pass, hover state, flicker fixes).
+- Documented menu state0 and terrain pipeline, and added audio/weapon struct docs.
+- Added Frida mod API probe and tooling docs, plus zensical cheatsheet/markdown fixer.
+- Added a `just zip decompile` command.
+
 ## 2026-01-20
 
-- Added entrypoint boot plan scaffolding and a `crimson game` step-1 runner.
-- Documented `crimson.cfg` and added a Construct-based loader/writer.
-- Added/expanded Raylib debug views (sprites, terrain, particles, UI, fonts) and quest title layout matching.
-- Added a ground demo view that renders per-quest terrain (level switching + title overlay).
-- Added Frida probes for quest title colors and atlas UV selection, plus supporting docs.
+- Added entrypoint/boot pipeline scaffolding (`crimson game` step-1 runner), boot logs, cvars/console command wiring, and splash/logo timing improvements.
+- Documented `crimson.cfg` and added loaders/inspectors, defaults alignment, and keybind/name slot docs.
+- Added/expanded Raylib debug views (sprites, terrain, particles, UI, fonts) plus atlas/terrain/particle/icon previews and quest title layout matching.
+- Added a quest-driven ground demo view and aligned ground/terrain rendering to config sizing.
+- Improved font handling (mono font behavior, filtering, grid alignment, quest title/number positioning) with supporting docs.
+- Added Frida probes/scripts for quest title colors, atlas UV selection, and boot music, with docs and hook fixes.
+- Updated Ghidra/Binja exports/signatures and added the IGrim2D type header and safe signatures.
+- Added bonus/perk code tables, creature type enum, and online high score protocol notes.
 - Added screenshot capture for all views (hotkey `P`, saves to `screenshots/`).
 
 ## 2026-01-19
