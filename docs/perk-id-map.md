@@ -5,8 +5,8 @@ tags:
 
 # Perk ID map
 
-Derived from `FUN_0042fd90` (perk database init). IDs are stored in `DAT_004c2b**`/`DAT_004c2c**`
-constants; names and descriptions are filled via `FUN_0042fd00`.
+Derived from `perks_init_database` (`FUN_0042fd90`, perk database init). IDs are stored in
+`DAT_004c2b**`/`DAT_004c2c**` constants; names and descriptions are filled via `FUN_0042fd00`.
 
 Notes:
 

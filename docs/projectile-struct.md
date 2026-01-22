@@ -71,7 +71,8 @@ Related tables:
 
 - `projectile_pool + 0x30` (`DAT_004926e8`) acts like a shared damage pool for
   piercing projectiles: it is decremented on hit and, if still positive, passed
-  into `FUN_004207c0` as the damage value before subtracting the target's health.
+  into `creature_apply_damage` (`FUN_004207c0`) as the damage value before
+  subtracting the target's health.
 
 Spawn notes:
 

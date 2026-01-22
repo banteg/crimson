@@ -5,9 +5,9 @@ tags:
 
 # SFX ID map
 
-Derived from `audio_init_sfx` (`FUN_0043caa0`). `FUN_0043c740` returns the SFX id
-for each `.ogg` file and stores it in a global variable. Alias entries are direct copies
-of another id in the same init function.
+Derived from `audio_init_sfx` (`FUN_0043caa0`). `sfx_load_sample` (`FUN_0043c740`) returns
+the SFX id for each `.ogg` file and stores it in a global variable. Alias entries are
+direct copies of another id in the same init function.
 
 | Var | File |
 | -- | -- |

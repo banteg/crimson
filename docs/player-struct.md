@@ -15,8 +15,8 @@ Pool facts:
 - Access pattern: `field_base + player_index * 0x360` (disassembly often shows
   `player_index * 0xd8` because the base pointer is typed as `float*`/`u32*`).
 
-- Input bindings live in a `player_input_t` sub-struct at offset `0x308`
-  (13 dwords / 0x34 bytes).
+- Input bindings (keys + axes) live in a `player_input_t` sub-struct at offset
+  `0x308` (13 dwords / 0x34 bytes).
 
 - Player 2 constants appear as base + `0x360` (e.g. `player2_health` at `DAT_00490c34`).
 - Some high-confidence fields live before `player_health` (negative offsets).
@@ -90,6 +90,15 @@ High-confidence fields (partial):
 | `0x2fc` | auto-aim target | `player_auto_target` | Stores the nearest creature index for auto-aim modes. |
 | `0x300` | move target x | `player_move_target_x` | Cached target position for click/assist movement mode. |
 | `0x304` | move target y | `player_move_target_y` | Cached target position for click/assist movement mode. |
+| `0x308` | move key (forward) | `player_move_key_forward` | Primary movement key binding. |
+| `0x30c` | move key (backward) | `player_move_key_backward` | Primary movement key binding. |
+| `0x310` | turn key (left) | `player_turn_key_left` | Primary turn/rotate key binding. |
+| `0x314` | turn key (right) | `player_turn_key_right` | Primary turn/rotate key binding. |
+| `0x318` | fire key | `player_fire_key` | Primary fire key binding. |
+| `0x31c` | keybind reserved 0 | `player_key_reserved_0` | Copied from config; no callsites yet. |
+| `0x320` | keybind reserved 1 | `player_key_reserved_1` | Copied from config; no callsites yet. |
+| `0x324` | aim key (left) | `player_aim_key_left` | Aim-rotate key binding. |
+| `0x328` | aim key (right) | `player_aim_key_right` | Aim-rotate key binding. |
 | `0x32c` | aim axis x binding | `player_axis_aim_x` | Axis binding read via input API for aim stick. |
 | `0x330` | aim axis y binding | `player_axis_aim_y` | Axis binding read via input API for aim stick. |
 | `0x334` | move axis x binding | `player_axis_move_x` | Axis binding read via input API for movement stick. |
@@ -97,13 +106,10 @@ High-confidence fields (partial):
 
 ## Candidate / unknown offsets
 
-Runtime probe flagged the following offsets as frequently changing but not yet mapped:
-
-| Offset | Observed values | Notes |
-| --- | --- | --- |
-| `0x34c` | `16.0` | Tail region, likely gameplay state. |
-| `0x350` | `432.0` | Tail region, likely gameplay state. |
-| `0x354` | `432.0` | Tail region, likely gameplay state. |
+The runtime probe flagged offsets `0x34c/0x350/0x354` as frequently changing.
+Those line up with player 2's *pre-base* fields (`player2_death_timer`,
+`player2_pos_x`, `player2_pos_y`) at `player_health + 0x360 - 0x14/0x10/0x0c`, so
+they are no longer considered unknown.
 
 ## Defense state (summary)
 
