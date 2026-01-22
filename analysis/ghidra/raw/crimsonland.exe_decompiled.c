@@ -155,7 +155,6 @@ void console_clear_log(void)
 
 {
   undefined4 *ptr;
-  char unaff_DI;
   
   ptr = console_log_head;
   if (console_log_head != (undefined4 *)0x0) {
@@ -164,7 +163,7 @@ void console_clear_log(void)
     }
     *ptr = 0;
     if ((void *)ptr[1] != (void *)0x0) {
-      console_log_node_free((void *)ptr[1],(void *)0x1,unaff_DI);
+      console_log_node_free((void *)ptr[1],'\x01');
     }
     ptr[1] = 0;
     crt_free(ptr);
@@ -181,23 +180,21 @@ void console_clear_log(void)
 
 /* frees a console log node (text + next chain) and optionally frees the node */
 
-void * __thiscall console_log_node_free(void *this,void *node,char free_self)
+void __thiscall console_log_node_free(void *this,char free_self)
 
 {
-  char unaff_SI;
-  
   if (*(void **)this != (void *)0x0) {
     crt_free(*(void **)this);
   }
   *(undefined4 *)this = 0;
   if (*(void **)((int)this + 4) != (void *)0x0) {
-    console_log_node_free(*(void **)((int)this + 4),(void *)0x1,unaff_SI);
+    console_log_node_free(*(void **)((int)this + 4),'\x01');
   }
   *(undefined4 *)((int)this + 4) = 0;
-  if (((uint)node & 1) != 0) {
+  if ((free_self & 1U) != 0) {
     crt_free(this);
   }
-  return this;
+  return;
 }
 
 
@@ -226,7 +223,6 @@ void console_cmd_exec(void)
 {
   FILE *fp;
   char *pcVar1;
-  char *unaff_ESI;
   
   if (DAT_0047f4cc != 2) {
     console_printf(&console_log_queue,s_exec_<script>_0047118c);
@@ -244,7 +240,7 @@ void console_cmd_exec(void)
       DAT_0047ea47 = 0;
       if ((((DAT_0047e848 != '/') && (DAT_0047e849 != '/')) && (DAT_0047e848 != '\n')) &&
          ((DAT_0047e848 != '\0' && (DAT_0047e848 != '#')))) {
-        console_exec_line(&console_log_queue,&DAT_0047e848,unaff_ESI);
+        console_exec_line(&console_log_queue,&DAT_0047e848);
       }
       pcVar1 = FUN_00460fac(&DAT_0047e848,0x1ff,(int *)fp);
     }
@@ -428,13 +424,12 @@ void console_cmd_set(void)
 
 {
   undefined4 *puVar1;
-  char *unaff_retaddr;
   
   if (DAT_0047f4cc != 3) {
     console_printf(&console_log_queue,s_set_<var>_<value>_004711e4);
     return;
   }
-  puVar1 = console_register_cvar(&console_log_queue,DAT_0047ea64,DAT_0047ea68,unaff_retaddr);
+  puVar1 = console_register_cvar(&console_log_queue,DAT_0047ea64,DAT_0047ea68);
   console_printf(&console_log_queue,s___s__set_to___s__004711d0,*puVar1,puVar1[4]);
   return;
 }
@@ -451,7 +446,6 @@ int * __fastcall console_init(int *console_state)
 {
   undefined4 *puVar1;
   char *pcVar2;
-  char *unaff_EDI;
   
   *(undefined1 *)(console_state + 3) = 1;
   console_state[6] = 300;
@@ -479,23 +473,21 @@ int * __fastcall console_init(int *console_state)
   pcVar2 = strdup_malloc(&DAT_00471260);
   *(char **)(*console_state + 0x10) = pcVar2;
   *(undefined4 *)(*console_state + 0x14) = 1;
-  DAT_0047f4d0 = console_register_cvar
-                           (console_state,s_con_monoFont_0047124c,&DAT_0047125c,unaff_EDI);
+  DAT_0047f4d0 = console_register_cvar(console_state,s_con_monoFont_0047124c,&DAT_0047125c);
   DAT_0047eaa0 = 0;
   _DAT_0047eaa4 = 0;
   _DAT_0047eaa8 = 0;
   _DAT_0047eaac = 0;
   DAT_0047f4cc = 0;
-  console_register_command(console_state,console_cmd_cmdlist,(char *)console_cmdlist,unaff_EDI);
-  console_register_command(console_state,&console_cmd_vars,(char *)console_vars,unaff_EDI);
-  console_register_command(console_state,&console_cmd_echo,(char *)console_echo,unaff_EDI);
-  console_register_command(console_state,&console_cmd_set,(char *)console_cmd_set,unaff_EDI);
-  console_register_command(console_state,&console_cmd_quit,(char *)console_cmd_quit,unaff_EDI);
-  console_register_command(console_state,console_cmd_clear,(char *)console_clear_log,unaff_EDI);
-  console_register_command(console_state,console_cmd_extend,(char *)console_cmd_extend,unaff_EDI);
-  console_register_command
-            (console_state,console_cmd_minimize,(char *)console_cmd_minimize,unaff_EDI);
-  console_register_command(console_state,&console_cmd_exec,(char *)console_cmd_exec,unaff_EDI);
+  console_register_command(console_state,console_cmd_cmdlist,console_cmdlist);
+  console_register_command(console_state,&console_cmd_vars,console_vars);
+  console_register_command(console_state,&console_cmd_echo,console_echo);
+  console_register_command(console_state,&console_cmd_set,console_cmd_set);
+  console_register_command(console_state,&console_cmd_quit,console_cmd_quit);
+  console_register_command(console_state,console_cmd_clear,console_clear_log);
+  console_register_command(console_state,console_cmd_extend,console_cmd_extend);
+  console_register_command(console_state,console_cmd_minimize,console_cmd_minimize);
+  console_register_command(console_state,&console_cmd_exec,console_cmd_exec);
   puVar1 = operator_new(8);
   if (puVar1 == (undefined4 *)0x0) {
     puVar1 = (undefined4 *)0x0;
@@ -521,7 +513,6 @@ void __fastcall FUN_004016e0(int *arg1)
 
 {
   undefined4 *puVar1;
-  char unaff_DI;
   
   puVar1 = (undefined4 *)arg1[2];
   if (puVar1 != (undefined4 *)0x0) {
@@ -530,7 +521,7 @@ void __fastcall FUN_004016e0(int *arg1)
     }
     *puVar1 = 0;
     if ((void *)puVar1[1] != (void *)0x0) {
-      console_log_node_free((void *)puVar1[1],(void *)0x1,unaff_DI);
+      console_log_node_free((void *)puVar1[1],'\x01');
     }
     puVar1[1] = 0;
     crt_free(puVar1);
@@ -561,7 +552,7 @@ void __fastcall FUN_004016e0(int *arg1)
     }
     *puVar1 = 0;
     if ((void *)puVar1[1] != (void *)0x0) {
-      console_log_node_free((void *)puVar1[1],(void *)0x1,unaff_DI);
+      console_log_node_free((void *)puVar1[1],'\x01');
     }
     puVar1[1] = 0;
     crt_free(puVar1);
@@ -576,7 +567,7 @@ void __fastcall FUN_004016e0(int *arg1)
 
 /* pushes line into console queue */
 
-void __thiscall console_push_line(void *this,void *console_state,char *line)
+char __thiscall console_push_line(void *this,char *line)
 
 {
   int iVar1;
@@ -584,9 +575,10 @@ void __thiscall console_push_line(void *this,void *console_state,char *line)
   int iVar3;
   undefined4 *puVar4;
   char *pcVar5;
-  char unaff_DI;
+  uint uVar6;
   
-  if (*(char *)((int)this + 0xc) != '\0') {
+  uVar6 = (uint)*(byte *)((int)this + 0xc);
+  if (*(byte *)((int)this + 0xc) != 0) {
     if (*(int *)((int)this + 0x20) == 0x1000) {
       iVar1 = *(int *)(*(int *)((int)this + 8) + 4);
       iVar2 = *(int *)(iVar1 + 4);
@@ -603,7 +595,7 @@ void __thiscall console_push_line(void *this,void *console_state,char *line)
         }
         *puVar4 = 0;
         if ((void *)puVar4[1] != (void *)0x0) {
-          console_log_node_free((void *)puVar4[1],(void *)0x1,unaff_DI);
+          console_log_node_free((void *)puVar4[1],'\x01');
         }
         puVar4[1] = 0;
         crt_free(puVar4);
@@ -619,13 +611,14 @@ void __thiscall console_push_line(void *this,void *console_state,char *line)
       puVar4[1] = 0;
       *puVar4 = 0;
     }
-    pcVar5 = strdup_malloc(console_state);
+    pcVar5 = strdup_malloc(line);
     *puVar4 = pcVar5;
     puVar4[1] = *(undefined4 *)((int)this + 8);
+    uVar6 = *(int *)((int)this + 0x20) + 1;
     *(undefined4 **)((int)this + 8) = puVar4;
-    *(int *)((int)this + 0x20) = *(int *)((int)this + 0x20) + 1;
+    *(uint *)((int)this + 0x20) = uVar6;
   }
-  return;
+  return (char)uVar6;
 }
 
 
@@ -634,21 +627,17 @@ void __thiscall console_push_line(void *this,void *console_state,char *line)
 
 /* formats then pushes line */
 
-int __cdecl console_printf(void *console_state,char *fmt,...)
+char __cdecl console_printf(void *console_state,char *fmt,...)
 
 {
-  undefined4 in_EAX;
-  int iVar1;
-  int extraout_EAX;
-  char *unaff_ESI;
+  char cVar1;
   
-  iVar1 = CONCAT31((int3)((uint)in_EAX >> 8),*(char *)((int)console_state + 0xc));
+  cVar1 = '\0';
   if (*(char *)((int)console_state + 0xc) != '\0') {
     crt_vsprintf(&DAT_0047f2cc,fmt,&stack0x0000000c);
-    console_push_line(console_state,&DAT_0047f2cc,unaff_ESI);
-    iVar1 = extraout_EAX;
+    cVar1 = console_push_line(console_state,&DAT_0047f2cc);
   }
-  return iVar1;
+  return cVar1;
 }
 
 
@@ -658,11 +647,11 @@ int __cdecl console_printf(void *console_state,char *fmt,...)
 /* sets console_open_flag (console_state+0x28) and console_input_enabled (0x0047f4d4); flushes input
    via Grim2D vtable +0x4c */
 
-void __thiscall console_set_open(void *this,void *console_state,char open)
+void __thiscall console_set_open(void *this,char open)
 
 {
-  *(undefined1 *)((int)this + 0x28) = console_state._0_1_;
-  console_input_enabled = console_state._0_1_;
+  *(char *)((int)this + 0x28) = open;
+  console_input_enabled = open;
   (*grim_interface_ptr->vtable->grim_flush_input)();
   return;
 }
@@ -744,50 +733,51 @@ void __fastcall console_history_apply(int console_state)
 
 /* executes a console command or cvar assignment from a line */
 
-void __thiscall console_exec_line(void *this,void *console_state,char *line)
+char __thiscall console_exec_line(void *this,char *line)
 
 {
-  undefined4 *puVar1;
-  void *pvVar2;
-  char *pcVar3;
-  char *unaff_EDI;
-  double dVar4;
+  char cVar1;
+  undefined4 *puVar2;
+  void *pvVar3;
+  char *pcVar4;
+  double dVar5;
   char *str;
   
-  console_tokenize_line(console_state);
+  console_tokenize_line(line);
   if (DAT_0047f4cc != 0) {
-    puVar1 = console_cvar_find(this,DAT_0047ea60,unaff_EDI);
-    pvVar2 = console_command_find(this,DAT_0047ea60,unaff_EDI);
-    if (puVar1 == (undefined4 *)0x0) {
-      if (pvVar2 == (void *)0x0) {
-        console_printf(this,s_Unknown_command___s__0047126c);
-        return;
+    puVar2 = console_cvar_find(this,DAT_0047ea60);
+    pvVar3 = console_command_find(this,DAT_0047ea60);
+    if (puVar2 == (undefined4 *)0x0) {
+      if (pvVar3 == (void *)0x0) {
+        cVar1 = console_printf(this,s_Unknown_command___s__0047126c);
+        return cVar1;
       }
-      (**(code **)((int)pvVar2 + 8))();
-      return;
+      cVar1 = (**(code **)((int)pvVar3 + 8))();
+      return cVar1;
     }
     if (DAT_0047f4cc == 2) {
-      if ((void *)puVar1[4] != (void *)0x0) {
-        crt_free((void *)puVar1[4]);
+      if ((void *)puVar2[4] != (void *)0x0) {
+        crt_free((void *)puVar2[4]);
       }
-      puVar1[4] = 0;
+      puVar2[4] = 0;
       str = DAT_0047ea64;
-      pcVar3 = strdup_malloc(DAT_0047ea64);
-      puVar1[4] = pcVar3;
-      dVar4 = crt_atof_l(DAT_0047ea64,DAT_0047ea64,str);
-      puVar1[3] = (float)dVar4;
+      pcVar4 = strdup_malloc(DAT_0047ea64);
+      puVar2[4] = pcVar4;
+      dVar5 = crt_atof_l(DAT_0047ea64,DAT_0047ea64,str);
+      puVar2[3] = (float)dVar5;
       if (*(char *)((int)this + 0xc) != '\0') {
-        console_printf(this,s___s__set_to___s____ff__00471298,*puVar1,puVar1[4],(double)(float)dVar4
-                      );
-        return;
+        cVar1 = console_printf(this,s___s__set_to___s____ff__00471298,*puVar2,puVar2[4],
+                               (double)(float)dVar5);
+        return cVar1;
       }
     }
     else if (*(char *)((int)this + 0xc) != '\0') {
-      console_printf(this,s___s__is___s____ff__00471284,*puVar1,puVar1[4],(double)(float)puVar1[3]);
-      return;
+      cVar1 = console_printf(this,s___s__is___s____ff__00471284,*puVar2,puVar2[4],
+                             (double)(float)puVar2[3]);
+      return cVar1;
     }
   }
-  return;
+  return '\0';
 }
 
 
@@ -810,7 +800,6 @@ void __fastcall console_update(int console_state)
   uint uVar8;
   byte *pbVar9;
   char *pcVar10;
-  char *unaff_EDI;
   char *pcVar11;
   bool bVar12;
   float10 fVar13;
@@ -923,10 +912,10 @@ LAB_00401b24:
     pcVar4 = console_input_buffer();
     console_tokenize_line(pcVar4);
     pcVar4 = console_input_buffer();
-    pcVar4 = console_cvar_autocomplete((void *)console_state,pcVar4,unaff_EDI);
+    pcVar4 = console_cvar_autocomplete((void *)console_state,pcVar4);
     if (pcVar4 == (char *)0x0) {
       pcVar4 = console_input_buffer();
-      pcVar4 = console_command_autocomplete((void *)console_state,pcVar4,unaff_EDI);
+      pcVar4 = console_command_autocomplete((void *)console_state,pcVar4);
       if (pcVar4 == (char *)0x0) goto LAB_00401cb5;
     }
     uVar7 = 0xffffffff;
@@ -1005,7 +994,7 @@ LAB_00401cf6:
   pcVar4 = console_input_buffer();
   console_printf(&console_log_queue,s_>__s_004712b0,pcVar4);
   pcVar4 = console_input_buffer();
-  console_exec_line((void *)console_state,pcVar4,unaff_EDI);
+  console_exec_line((void *)console_state,pcVar4);
   console_input_clear();
   (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x1c);
   return;
@@ -1194,7 +1183,7 @@ LAB_004021ca:
 
 /* registers or updates a console cvar entry (stores string + float value) */
 
-void * __thiscall console_register_cvar(void *this,void *console_state,char *name,char *value)
+void * __thiscall console_register_cvar(void *this,char *name,char *value)
 
 {
   int iVar1;
@@ -1204,19 +1193,18 @@ void * __thiscall console_register_cvar(void *this,void *console_state,char *nam
   undefined4 *puVar5;
   char *pcVar6;
   void *this_00;
-  char *unaff_EDI;
   double dVar7;
   
-  pvVar3 = console_cvar_find(this,console_state,unaff_EDI);
+  pvVar3 = console_cvar_find(this,name);
   if (pvVar3 != (void *)0x0) {
     if (*(void **)((int)pvVar3 + 0x10) != (void *)0x0) {
       crt_free(*(void **)((int)pvVar3 + 0x10));
     }
     *(undefined4 *)((int)pvVar3 + 0x10) = 0;
-    pcVar6 = name;
-    pcVar4 = strdup_malloc(name);
+    pcVar6 = value;
+    pcVar4 = strdup_malloc(value);
     *(char **)((int)pvVar3 + 0x10) = pcVar4;
-    dVar7 = crt_atof_l(this_00,name,pcVar6);
+    dVar7 = crt_atof_l(this_00,value,pcVar6);
     *(float *)((int)pvVar3 + 0xc) = (float)dVar7;
     return pvVar3;
   }
@@ -1230,7 +1218,7 @@ void * __thiscall console_register_cvar(void *this,void *console_state,char *nam
       puVar5[6] = 0;
       puVar5[7] = 0;
       puVar5[8] = 0;
-      pcVar6 = strdup_malloc(console_state);
+      pcVar6 = strdup_malloc(name);
       *puVar5 = pcVar6;
       puVar5[1] = 0;
       puVar5[2] = 0;
@@ -1239,11 +1227,11 @@ void * __thiscall console_register_cvar(void *this,void *console_state,char *nam
       puVar5[5] = 0;
     }
     *(undefined4 **)this = puVar5;
-    pcVar6 = name;
-    pcVar4 = strdup_malloc(name);
+    pcVar6 = value;
+    pcVar4 = strdup_malloc(value);
     pvVar3 = *(void **)this;
     *(char **)((int)pvVar3 + 0x10) = pcVar4;
-    dVar7 = crt_atof_l(pvVar3,name,pcVar6);
+    dVar7 = crt_atof_l(pvVar3,value,pcVar6);
     *(float *)(*(int *)this + 0xc) = (float)dVar7;
     return *(void **)this;
   }
@@ -1258,7 +1246,7 @@ void * __thiscall console_register_cvar(void *this,void *console_state,char *nam
     puVar5[6] = 0;
     puVar5[7] = 0;
     puVar5[8] = 0;
-    pcVar6 = strdup_malloc(console_state);
+    pcVar6 = strdup_malloc(name);
     *puVar5 = pcVar6;
     puVar5[1] = 0;
     puVar5[2] = 0;
@@ -1267,11 +1255,11 @@ void * __thiscall console_register_cvar(void *this,void *console_state,char *nam
     puVar5[5] = 0;
   }
   *(undefined4 **)(iVar1 + 4) = puVar5;
-  pcVar6 = name;
-  pcVar4 = strdup_malloc(name);
+  pcVar6 = value;
+  pcVar4 = strdup_malloc(value);
   pvVar3 = *(void **)(iVar1 + 4);
   *(char **)((int)pvVar3 + 0x10) = pcVar4;
-  dVar7 = crt_atof_l(pvVar3,name,pcVar6);
+  dVar7 = crt_atof_l(pvVar3,value,pcVar6);
   *(float *)(*(int *)(iVar1 + 4) + 0xc) = (float)dVar7;
   return *(void **)(iVar1 + 4);
 }
@@ -1282,7 +1270,7 @@ void * __thiscall console_register_cvar(void *this,void *console_state,char *nam
 
 /* finds a cvar entry by name */
 
-void * __thiscall console_cvar_find(void *this,void *console_state,char *name)
+void * __thiscall console_cvar_find(void *this,char *name)
 
 {
   byte bVar1;
@@ -1298,7 +1286,7 @@ void * __thiscall console_cvar_find(void *this,void *console_state,char *name)
       return (void *)0x0;
     }
     pbVar5 = (byte *)*puVar2;
-    pbVar3 = console_state;
+    pbVar3 = (byte *)name;
     do {
       bVar1 = *pbVar3;
       bVar6 = bVar1 < *pbVar5;
@@ -1329,34 +1317,29 @@ LAB_004024bf:
 
 /* removes a cvar entry by name */
 
-int __thiscall console_cvar_unregister(void *this,void *console_state,char *name)
+char __thiscall console_cvar_unregister(void *this,char *name)
 
 {
   void *pvVar1;
-  undefined4 uVar2;
+  void *pvVar2;
   void *pvVar3;
-  void *pvVar4;
-  uint3 uVar5;
-  char *unaff_ESI;
   
-  pvVar4 = console_cvar_find(this,console_state,unaff_ESI);
-  uVar5 = (uint3)((uint)pvVar4 >> 8);
-  if (pvVar4 != (void *)0x0) {
+  pvVar3 = console_cvar_find(this,name);
+  if (pvVar3 != (void *)0x0) {
     pvVar1 = *(void **)this;
-    if (pvVar4 == pvVar1) {
+    if (pvVar3 == pvVar1) {
       *(undefined4 *)this = *(undefined4 *)((int)pvVar1 + 4);
-      return CONCAT31(uVar5,1);
+      return '\x01';
     }
-    while (pvVar3 = pvVar1, pvVar3 != (void *)0x0) {
-      pvVar1 = *(void **)((int)pvVar3 + 4);
-      if (*(void **)((int)pvVar3 + 4) == pvVar4) {
-        uVar2 = *(undefined4 *)(*(int *)((int)pvVar3 + 4) + 4);
-        *(undefined4 *)((int)pvVar3 + 4) = uVar2;
-        return CONCAT31((int3)((uint)uVar2 >> 8),1);
+    while (pvVar2 = pvVar1, pvVar2 != (void *)0x0) {
+      pvVar1 = *(void **)((int)pvVar2 + 4);
+      if (*(void **)((int)pvVar2 + 4) == pvVar3) {
+        *(undefined4 *)((int)pvVar2 + 4) = *(undefined4 *)(*(int *)((int)pvVar2 + 4) + 4);
+        return '\x01';
       }
     }
   }
-  return (uint)uVar5 << 8;
+  return '\0';
 }
 
 
@@ -1365,34 +1348,29 @@ int __thiscall console_cvar_unregister(void *this,void *console_state,char *name
 
 /* removes a console command entry by name */
 
-int __thiscall console_command_unregister(void *this,void *console_state,char *name)
+char __thiscall console_command_unregister(void *this,char *name)
 
 {
   void *pvVar1;
-  undefined4 uVar2;
+  void *pvVar2;
   void *pvVar3;
-  void *pvVar4;
-  uint3 uVar5;
-  char *unaff_ESI;
   
-  pvVar4 = console_command_find(this,console_state,unaff_ESI);
-  uVar5 = (uint3)((uint)pvVar4 >> 8);
-  if (pvVar4 != (void *)0x0) {
+  pvVar3 = console_command_find(this,name);
+  if (pvVar3 != (void *)0x0) {
     pvVar1 = *(void **)((int)this + 4);
-    if (pvVar4 == pvVar1) {
+    if (pvVar3 == pvVar1) {
       *(undefined4 *)((int)this + 4) = *(undefined4 *)((int)pvVar1 + 4);
-      return CONCAT31(uVar5,1);
+      return '\x01';
     }
-    while (pvVar3 = pvVar1, pvVar3 != (void *)0x0) {
-      pvVar1 = *(void **)((int)pvVar3 + 4);
-      if (*(void **)((int)pvVar3 + 4) == pvVar4) {
-        uVar2 = *(undefined4 *)(*(int *)((int)pvVar3 + 4) + 4);
-        *(undefined4 *)((int)pvVar3 + 4) = uVar2;
-        return CONCAT31((int3)((uint)uVar2 >> 8),1);
+    while (pvVar2 = pvVar1, pvVar2 != (void *)0x0) {
+      pvVar1 = *(void **)((int)pvVar2 + 4);
+      if (*(void **)((int)pvVar2 + 4) == pvVar3) {
+        *(undefined4 *)((int)pvVar2 + 4) = *(undefined4 *)(*(int *)((int)pvVar2 + 4) + 4);
+        return '\x01';
       }
     }
   }
-  return (uint)uVar5 << 8;
+  return '\0';
 }
 
 
@@ -1470,7 +1448,7 @@ void console_tokenize_line(char *line)
 
 /* returns exact or prefix-matched cvar name */
 
-char * __thiscall console_cvar_autocomplete(void *this,void *console_state,char *prefix)
+char * __thiscall console_cvar_autocomplete(void *this,char *prefix)
 
 {
   char cVar1;
@@ -1485,7 +1463,7 @@ char * __thiscall console_cvar_autocomplete(void *this,void *console_state,char 
   bool bVar10;
   
   uVar6 = 0xffffffff;
-  pcVar9 = console_state;
+  pcVar9 = prefix;
   do {
     if (uVar6 == 0) break;
     uVar6 = uVar6 - 1;
@@ -1496,7 +1474,7 @@ char * __thiscall console_cvar_autocomplete(void *this,void *console_state,char 
     puVar8 = *(undefined4 **)this;
     for (puVar3 = puVar8; puVar3 != (undefined4 *)0x0; puVar3 = (undefined4 *)puVar3[1]) {
       pbVar7 = (byte *)*puVar3;
-      pbVar4 = console_state;
+      pbVar4 = (byte *)prefix;
       do {
         bVar2 = *pbVar4;
         bVar10 = bVar2 < *pbVar7;
@@ -1520,7 +1498,7 @@ LAB_00402683:
     }
     if (puVar8 != (undefined4 *)0x0) {
       do {
-        iVar5 = _strncmp(console_state,(char *)*puVar8,~uVar6 - 1);
+        iVar5 = _strncmp(prefix,(char *)*puVar8,~uVar6 - 1);
         if (iVar5 == 0) {
           return (char *)*puVar8;
         }
@@ -1538,7 +1516,7 @@ LAB_00402683:
 
 /* registers a console command and handler */
 
-void __thiscall console_register_command(void *this,void *console_state,char *name,void *handler)
+void __thiscall console_register_command(void *this,char *name,void *handler)
 
 {
   int iVar1;
@@ -1551,12 +1529,12 @@ void __thiscall console_register_command(void *this,void *console_state,char *na
     puVar3 = (undefined4 *)0x0;
   }
   else {
-    pcVar4 = strdup_malloc(console_state);
+    pcVar4 = strdup_malloc(name);
     *puVar3 = pcVar4;
     puVar3[1] = 0;
     puVar3[2] = 0;
   }
-  puVar3[2] = name;
+  puVar3[2] = handler;
   iVar1 = *(int *)((int)this + 4);
   if (iVar1 != 0) {
     for (iVar2 = *(int *)(iVar1 + 4); iVar2 != 0; iVar2 = *(int *)(iVar2 + 4)) {
@@ -1575,7 +1553,7 @@ void __thiscall console_register_command(void *this,void *console_state,char *na
 
 /* finds a console command entry by name */
 
-void * __thiscall console_command_find(void *this,void *console_state,char *name)
+void * __thiscall console_command_find(void *this,char *name)
 
 {
   byte bVar1;
@@ -1591,7 +1569,7 @@ void * __thiscall console_command_find(void *this,void *console_state,char *name
       return (void *)0x0;
     }
     pbVar5 = (byte *)*puVar2;
-    pbVar3 = console_state;
+    pbVar3 = (byte *)name;
     do {
       bVar1 = *pbVar3;
       bVar6 = bVar1 < *pbVar5;
@@ -1622,7 +1600,7 @@ LAB_00402790:
 
 /* returns exact or prefix-matched command name */
 
-char * __thiscall console_command_autocomplete(void *this,void *console_state,char *prefix)
+char * __thiscall console_command_autocomplete(void *this,char *prefix)
 
 {
   char cVar1;
@@ -1637,7 +1615,7 @@ char * __thiscall console_command_autocomplete(void *this,void *console_state,ch
   bool bVar10;
   
   uVar6 = 0xffffffff;
-  pcVar9 = console_state;
+  pcVar9 = prefix;
   do {
     if (uVar6 == 0) break;
     uVar6 = uVar6 - 1;
@@ -1648,7 +1626,7 @@ char * __thiscall console_command_autocomplete(void *this,void *console_state,ch
     puVar8 = *(undefined4 **)((int)this + 4);
     for (puVar3 = puVar8; puVar3 != (undefined4 *)0x0; puVar3 = (undefined4 *)puVar3[1]) {
       pbVar7 = (byte *)*puVar3;
-      pbVar4 = console_state;
+      pbVar4 = (byte *)prefix;
       do {
         bVar2 = *pbVar4;
         bVar10 = bVar2 < *pbVar7;
@@ -1672,7 +1650,7 @@ LAB_00402804:
     }
     if (puVar8 != (undefined4 *)0x0) {
       do {
-        iVar5 = _strncmp(console_state,(char *)*puVar8,~uVar6 - 1);
+        iVar5 = _strncmp(prefix,(char *)*puVar8,~uVar6 - 1);
         if (iVar5 == 0) {
           return (char *)*puVar8;
         }
@@ -1998,45 +1976,29 @@ char * game_build_path(char *filename)
 void register_core_cvars(void)
 
 {
-  char *unaff_retaddr;
-  
-  DAT_00480854 = console_register_cvar
-                           (&console_log_queue,s_cv_silentloads_00471434,&DAT_0047125c,unaff_retaddr
-                           );
-  DAT_00480858 = console_register_cvar
-                           (&console_log_queue,s_cv_terrainFilter_00471420,&DAT_0047125c,
-                            unaff_retaddr);
-  DAT_0048085c = console_register_cvar
-                           (&console_log_queue,s_cv_bodiesFade_00471410,&DAT_0047125c,unaff_retaddr)
+  DAT_00480854 = console_register_cvar(&console_log_queue,s_cv_silentloads_00471434,&DAT_0047125c);
+  DAT_00480858 = console_register_cvar(&console_log_queue,s_cv_terrainFilter_00471420,&DAT_0047125c)
   ;
+  DAT_0048085c = console_register_cvar(&console_log_queue,s_cv_bodiesFade_00471410,&DAT_0047125c);
   DAT_00480870 = console_register_cvar
-                           (&console_log_queue,s_cv_uiTransparency_004713fc,&DAT_0047125c,
-                            unaff_retaddr);
+                           (&console_log_queue,s_cv_uiTransparency_004713fc,&DAT_0047125c);
   DAT_0048088c = console_register_cvar
-                           (&console_log_queue,s_cv_uiPointFilterPanels_004713e0,&DAT_004713f8,
-                            unaff_retaddr);
+                           (&console_log_queue,s_cv_uiPointFilterPanels_004713e0,&DAT_004713f8);
   DAT_00480874 = console_register_cvar
                            (&console_log_queue,s_cv_enableMousePointAndClickMovem_004713bc,
-                            &DAT_004713f8,unaff_retaddr);
-  DAT_00480864 = console_register_cvar
-                           (&console_log_queue,s_cv_verbose_004713b0,&DAT_004713f8,unaff_retaddr);
+                            &DAT_004713f8);
+  DAT_00480864 = console_register_cvar(&console_log_queue,s_cv_verbose_004713b0,&DAT_004713f8);
   DAT_00480860 = console_register_cvar
                            (&console_log_queue,s_cv_terrainBodiesTransparency_00471390,&DAT_004713f8
-                            ,unaff_retaddr);
+                           );
   DAT_00480878 = console_register_cvar
-                           (&console_log_queue,s_cv_uiSmallIndicators_00471378,&DAT_004713f8,
-                            unaff_retaddr);
+                           (&console_log_queue,s_cv_uiSmallIndicators_00471378,&DAT_004713f8);
   DAT_0048087c = console_register_cvar
-                           (&console_log_queue,s_cv_aimEnhancementFade_00471360,&DAT_00471260,
-                            unaff_retaddr);
-  DAT_0048086c = console_register_cvar
-                           (&console_log_queue,s_cv_friendlyFire_00471350,&DAT_004713f8,
-                            unaff_retaddr);
-  DAT_00480868 = console_register_cvar
-                           (&console_log_queue,s_cv_showFPS_00471344,&DAT_004713f8,unaff_retaddr);
-  DAT_00480880 = console_register_cvar
-                           (&console_log_queue,s_cv_padAimDistMul_0047132c,&DAT_00471340,
-                            unaff_retaddr);
+                           (&console_log_queue,s_cv_aimEnhancementFade_00471360,&DAT_00471260);
+  DAT_0048086c = console_register_cvar(&console_log_queue,s_cv_friendlyFire_00471350,&DAT_004713f8);
+  DAT_00480868 = console_register_cvar(&console_log_queue,s_cv_showFPS_00471344,&DAT_004713f8);
+  DAT_00480880 = console_register_cvar(&console_log_queue,s_cv_padAimDistMul_0047132c,&DAT_00471340)
+  ;
   return;
 }
 
@@ -2388,7 +2350,7 @@ int __cdecl ui_mouse_inside_rect(float *xy,int h,int w)
 int game_core_init(void)
 
 {
-  int iVar1;
+  undefined3 extraout_var;
   
   console_printf(&console_log_queue,s_GDI_initializing_UI_elements__00471468);
   quest_database_init();
@@ -2397,8 +2359,8 @@ int game_core_init(void)
   bonus_metadata_init();
   render_pass_mode = 0;
   game_state_set(0);
-  iVar1 = console_printf(&console_log_queue,s_Core_Init_done__00471454);
-  return CONCAT31((int3)((uint)iVar1 >> 8),1);
+  console_printf(&console_log_queue,s_Core_Init_done__00471454);
+  return CONCAT31(extraout_var,1);
 }
 
 
@@ -7682,7 +7644,6 @@ void console_hotkey_update(void)
   float *pfVar4;
   undefined4 uVar5;
   uint uVar6;
-  char unaff_SI;
   uint uVar7;
   float10 extraout_ST0;
   float10 extraout_ST0_00;
@@ -7757,8 +7718,7 @@ void console_hotkey_update(void)
   DAT_00480848 = DAT_00480848 + frame_dt_ms;
   iVar2 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x29);
   if ((char)iVar2 != '\0') {
-    console_set_open(&console_log_queue,
-                     (void *)CONCAT31((int3)((uint)iVar2 >> 8),console_open_flag == '\0'),unaff_SI);
+    console_set_open(&console_log_queue,console_open_flag == '\0');
   }
   console_update(0x47eea0);
   iVar2 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x58);
@@ -8583,11 +8543,10 @@ undefined4 * FUN_0040e040(uint *param_1)
 
 {
   undefined4 *puVar1;
-  char *unaff_ESI;
   
-  puVar1 = console_cvar_find(&console_log_queue,param_1,unaff_ESI);
+  puVar1 = console_cvar_find(&console_log_queue,(char *)param_1);
   if (puVar1 == (undefined4 *)0x0) {
-    puVar1 = console_register_cvar(&console_log_queue,param_1,&DAT_0047125c,unaff_ESI);
+    puVar1 = console_register_cvar(&console_log_queue,(char *)param_1,&DAT_0047125c);
   }
   puVar1[8] = puVar1 + 3;
   puVar1[6] = *puVar1;
@@ -22907,6 +22866,7 @@ int audio_resume_all(void)
 {
   float fVar1;
   int iVar2;
+  uint3 extraout_var;
   
   audio_resume_channels();
   fVar1 = *(float *)(DAT_00480864 + 0xc);
@@ -22914,7 +22874,8 @@ int audio_resume_all(void)
                    (ushort)(fVar1 < 0.0) << 8 | (ushort)NAN(fVar1) << 10 |
                    (ushort)(fVar1 == 0.0) << 0xe);
   if ((fVar1 == 0.0) == 0) {
-    iVar2 = console_printf(&console_log_queue,s_<___Restored_00473e94);
+    console_printf(&console_log_queue,s_<___Restored_00473e94);
+    iVar2 = (uint)extraout_var << 8;
   }
   audio_suspend_flag = 0;
   return CONCAT31((int3)((uint)iVar2 >> 8),1);
@@ -23495,7 +23456,6 @@ void game_startup_init(void)
   undefined4 uVar2;
   int iVar3;
   uint uVar4;
-  char unaff_DI;
   IGrim2D_vtbl *pIVar5;
   float10 extraout_ST0;
   longlong lVar6;
@@ -23503,7 +23463,6 @@ void game_startup_init(void)
   float fVar7;
   char *pcVar8;
   float fVar9;
-  float fVar10;
   
   (*grim_interface_ptr->vtable->grim_get_frame_dt)();
   frame_dt = (float)extraout_ST0;
@@ -23597,9 +23556,7 @@ LAB_0042b35f:
       if (DAT_004aaed9 != '\0') goto LAB_0042bd39;
       iVar3 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x29);
       if ((char)iVar3 != '\0') {
-        console_set_open(&console_log_queue,
-                         (void *)CONCAT31((int3)((uint)iVar3 >> 8),console_open_flag == '\0'),
-                         unaff_DI);
+        console_set_open(&console_log_queue,console_open_flag == '\0');
       }
       _DAT_0047ea4c = _DAT_0047ea4c + frame_dt;
       _DAT_0047ea48 = frame_dt;
@@ -23651,40 +23608,37 @@ LAB_0042ba4c:
           if (7.0 < _DAT_004aaf90) {
             if (8.0 <= _DAT_004aaf90) goto LAB_0042bb08;
             (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,(_DAT_004aaf90 - 6.0) - 1.0);
-            fVar10 = (float)iVar3;
             pIVar5 = grim_interface_ptr->vtable;
-            fVar7 = (float)(int)(config_blob.screen_height / 2 - uVar4 / 2);
-            fVar9 = (float)(config_blob.screen_width / 2 + -0x100);
+            fVar9 = (float)(int)(config_blob.screen_height / 2 - uVar4 / 2);
+            fVar7 = (float)(config_blob.screen_width / 2 + -0x100);
             goto LAB_0042bc9a;
           }
           if (8.0 <= _DAT_004aaf90) {
 LAB_0042bb08:
             if (10.0 <= _DAT_004aaf90) goto LAB_0042bbaa;
             (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
-            fVar10 = (float)iVar3;
             pIVar5 = grim_interface_ptr->vtable;
-            fVar7 = (float)(int)(config_blob.screen_height / 2 - uVar4 / 2);
-            fVar9 = (float)(config_blob.screen_width / 2 + -0x100);
+            fVar9 = (float)(int)(config_blob.screen_height / 2 - uVar4 / 2);
+            fVar7 = (float)(config_blob.screen_width / 2 + -0x100);
             goto LAB_0042bc9a;
           }
           if (10.0 <= _DAT_004aaf90) {
 LAB_0042bbaa:
             if (_DAT_004aaf90 < 11.0) {
-              fVar10 = 1.0 - ((_DAT_004aaf90 - 6.0) - 4.0);
-              if (0.0 <= fVar10) {
-                if (1.0 < fVar10) {
-                  fVar10 = 1.0;
+              fVar9 = 1.0 - ((_DAT_004aaf90 - 6.0) - 4.0);
+              if (0.0 <= fVar9) {
+                if (1.0 < fVar9) {
+                  fVar9 = 1.0;
                 }
               }
               else {
-                fVar10 = 0.0;
+                fVar9 = 0.0;
               }
-              (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar10);
-              (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar10);
-              fVar10 = (float)iVar3;
+              (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar9);
+              (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar9);
               pIVar5 = grim_interface_ptr->vtable;
-              fVar7 = (float)(int)(config_blob.screen_height / 2 - uVar4 / 2);
-              fVar9 = (float)(config_blob.screen_width / 2 + -0x100);
+              fVar9 = (float)(int)(config_blob.screen_height / 2 - uVar4 / 2);
+              fVar7 = (float)(config_blob.screen_width / 2 + -0x100);
               goto LAB_0042bc9a;
             }
           }
@@ -23695,38 +23649,35 @@ LAB_0042b8d9:
             if (4.0 <= _DAT_004aaf90) {
 LAB_0042b97b:
               if (5.0 <= _DAT_004aaf90) goto LAB_0042ba4c;
-              fVar10 = 1.0 - (_DAT_004aaf90 - 4.0);
-              if (0.0 <= fVar10) {
-                if (1.0 < fVar10) {
-                  fVar10 = 1.0;
+              fVar9 = 1.0 - (_DAT_004aaf90 - 4.0);
+              if (0.0 <= fVar9) {
+                if (1.0 < fVar9) {
+                  fVar9 = 1.0;
                 }
               }
               else {
-                fVar10 = 0.0;
+                fVar9 = 0.0;
               }
-              (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar10);
-              fVar10 = (float)iVar3;
+              (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar9);
               pIVar5 = grim_interface_ptr->vtable;
-              fVar7 = (float)(int)(config_blob.screen_height / 2 - uVar4 / 2);
-              fVar9 = (float)(config_blob.screen_width / 2 + -0x100);
+              fVar9 = (float)(int)(config_blob.screen_height / 2 - uVar4 / 2);
+              fVar7 = (float)(config_blob.screen_width / 2 + -0x100);
             }
             else {
               (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
-              fVar10 = (float)iVar3;
               pIVar5 = grim_interface_ptr->vtable;
-              fVar7 = (float)(int)(config_blob.screen_height / 2 - uVar4 / 2);
-              fVar9 = (float)(config_blob.screen_width / 2 + -0x100);
+              fVar9 = (float)(int)(config_blob.screen_height / 2 - uVar4 / 2);
+              fVar7 = (float)(config_blob.screen_width / 2 + -0x100);
             }
           }
           else {
             (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,_DAT_004aaf90 - 1.0);
-            fVar10 = (float)iVar3;
             pIVar5 = grim_interface_ptr->vtable;
-            fVar7 = (float)(int)(config_blob.screen_height / 2 - uVar4 / 2);
-            fVar9 = (float)(config_blob.screen_width / 2 + -0x100);
+            fVar9 = (float)(int)(config_blob.screen_height / 2 - uVar4 / 2);
+            fVar7 = (float)(config_blob.screen_width / 2 + -0x100);
           }
 LAB_0042bc9a:
-          (*pIVar5->grim_draw_quad)(fVar9,fVar7,512.0,fVar10);
+          (*pIVar5->grim_draw_quad)(fVar7,fVar9,512.0,(float)iVar3);
         }
         _DAT_004aaf90 = _DAT_004aaf90 + 2.0;
         (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
@@ -23788,17 +23739,16 @@ LAB_0042bea6:
   fVar7 = 0.0;
   (*grim_interface_ptr->vtable->grim_clear_color)(0.0,0.0,0.0,1.0);
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,1);
-  fVar10 = _DAT_004aaf90 + _DAT_004aaf90;
-  if (fVar10 <= 1.0) {
-    if (fVar10 < 0.0) {
-      fVar10 = 0.0;
+  fVar9 = _DAT_004aaf90 + _DAT_004aaf90;
+  if (fVar9 <= 1.0) {
+    if (fVar9 < 0.0) {
+      fVar9 = 0.0;
     }
   }
   else {
-    fVar10 = 1.0;
+    fVar9 = 1.0;
   }
-  fVar9 = fVar10;
-  (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar10);
+  (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar9);
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
   iVar1 = 0;
@@ -23825,7 +23775,7 @@ LAB_0042bea6:
   (*grim_interface_ptr->vtable->grim_draw_quad)
             (screen_width_f * 0.5 - 256.0,_DAT_00471144 * 0.5 - 32.0,512.0,64.0);
   (*grim_interface_ptr->vtable->grim_end_batch)();
-  (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar10);
+  (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar9);
   if (*(float *)(DAT_00480854 + 0xc) == 0.0) {
     (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,fVar9 * 0.7);
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
@@ -23972,7 +23922,6 @@ int crimsonland_main(void)
   char *extraout_EDX_05;
   char *extraout_EDX_06;
   char *extraout_EDX_07;
-  void *unaff_EDI;
   undefined4 *puVar14;
   LPCCH pCVar15;
   undefined4 uVar16;
@@ -24034,28 +23983,19 @@ int crimsonland_main(void)
   console_printf(&console_log_queue,s_Game_base_path____s__00474ca0);
   console_flush_log(&console_log_queue,filename_00);
   config_ensure_file();
+  console_register_command(&console_log_queue,s_setGammaRamp_00474c90,console_cmd_set_gamma_ramp);
   console_register_command
-            (&console_log_queue,s_setGammaRamp_00474c90,(char *)console_cmd_set_gamma_ramp,unaff_EDI
-            );
+            (&console_log_queue,s_snd_addGameTune_00474c80,console_cmd_snd_add_game_tune);
   console_register_command
-            (&console_log_queue,s_snd_addGameTune_00474c80,(char *)console_cmd_snd_add_game_tune,
-             unaff_EDI);
+            (&console_log_queue,s_generateterrain_00474c70,console_cmd_generate_terrain);
   console_register_command
-            (&console_log_queue,s_generateterrain_00474c70,(char *)console_cmd_generate_terrain,
-             unaff_EDI);
+            (&console_log_queue,s_telltimesurvived_00474c5c,console_cmd_tell_time_survived);
   console_register_command
-            (&console_log_queue,s_telltimesurvived_00474c5c,(char *)console_cmd_tell_time_survived,
-             unaff_EDI);
+            (&console_log_queue,s_setresourcepaq_00474c4c,console_cmd_set_resource_paq);
+  console_register_command(&console_log_queue,s_loadtexture_00474c40,console_cmd_load_texture);
+  console_register_command(&console_log_queue,s_openurl_00474c38,console_cmd_open_url);
   console_register_command
-            (&console_log_queue,s_setresourcepaq_00474c4c,(char *)console_cmd_set_resource_paq,
-             unaff_EDI);
-  console_register_command
-            (&console_log_queue,s_loadtexture_00474c40,(char *)console_cmd_load_texture,unaff_EDI);
-  console_register_command
-            (&console_log_queue,s_openurl_00474c38,(char *)console_cmd_open_url,unaff_EDI);
-  console_register_command
-            (&console_log_queue,s_sndfreqadjustment_00474c24,(char *)console_cmd_snd_freq_adjustment
-             ,unaff_EDI);
+            (&console_log_queue,s_sndfreqadjustment_00474c24,console_cmd_snd_freq_adjustment);
   puVar14 = &DAT_004852d0;
   for (iVar3 = 0x3f; iVar3 != 0; iVar3 = iVar3 + -1) {
     *puVar14 = 0;
@@ -24205,7 +24145,6 @@ int crimsonland_main(void)
   console_printf(&console_log_queue,s____using_keyboard_004749bc);
   (*grim_interface_ptr->vtable->grim_set_config_var)
             (0xc,CONCAT31((int3)((uint)in_stack_fffffb78 >> 8),1));
-  pcVar5 = (char *)0x42cc6a;
   console_printf(&console_log_queue,s____using_mouse_004749ac);
   (*grim_interface_ptr->vtable->grim_set_config_var)
             (0xe,CONCAT31((int3)((uint)in_stack_fffffb6c >> 8),1));
@@ -24221,19 +24160,18 @@ int crimsonland_main(void)
     (*grim_interface_ptr->vtable->grim_release)();
     return 0;
   }
-  console_exec_line(&console_log_queue,s_exec_autoexec_txt_00474944,pcVar5);
+  console_exec_line(&console_log_queue,s_exec_autoexec_txt_00474944);
   (*grim_interface_ptr->vtable->grim_set_config_var)
             (0x12,CONCAT31((int3)((uint)in_stack_fffffb60 >> 8),1));
   uStack_4b4 = 0x42cd31;
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x13,5);
-  pcVar5 = (char *)0x42cd49;
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x14,6);
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x18,0x3f800000);
   screen_width_f = (float)config_blob.screen_width;
   _DAT_00471144 = (float)config_blob.screen_height;
-  pvVar9 = console_register_cvar(&console_log_queue,s_v_width_00474938,&DAT_00474940,pcVar5);
+  pvVar9 = console_register_cvar(&console_log_queue,s_v_width_00474938,&DAT_00474940);
   *(float *)((int)pvVar9 + 0xc) = (float)config_blob.screen_width;
-  pvVar9 = console_register_cvar(&console_log_queue,s_v_height_00474928,&DAT_00474934,pcVar5);
+  pvVar9 = console_register_cvar(&console_log_queue,s_v_height_00474928,&DAT_00474934);
   *(float *)((int)pvVar9 + 0xc) = (float)config_blob.screen_height;
   init_audio_and_terrain();
   (*grim_interface_ptr->vtable->grim_set_config_var)(0x10,in_stack_fffffb30);
@@ -31860,10 +31798,12 @@ undefined4 FUN_0043aa60(void)
 
 {
   int iVar1;
+  uint3 extraout_var;
   
   iVar1 = game_is_full_version();
   if ((char)iVar1 == '\0') {
-    iVar1 = console_printf(&console_log_queue,s___Potentially_illegal_score_dete_00477b16 + 2);
+    console_printf(&console_log_queue,s___Potentially_illegal_score_dete_00477b16 + 2);
+    iVar1 = (uint)extraout_var << 8;
   }
   return CONCAT31((int3)((uint)iVar1 >> 8),1);
 }
@@ -34125,7 +34065,6 @@ void audio_init_music(void)
 {
   int iVar1;
   undefined4 *puVar2;
-  char *unaff_retaddr;
   char *fmt;
   
   if ((config_blob.reserved0[0] == '\0') && (config_blob.reserved0[1] == '\0')) {
@@ -34150,7 +34089,7 @@ void audio_init_music(void)
     console_printf(&console_log_queue,fmt);
     music_track_intro_id = music_load_track(s_music_intro_ogg_00477e74);
     music_track_shortie_monk_id = music_load_track(s_music_shortie_monk_ogg_00477e5c);
-    console_exec_line(&console_log_queue,s_exec_music_game_tunes_txt_00477e40,unaff_retaddr);
+    console_exec_line(&console_log_queue,s_exec_music_game_tunes_txt_00477e40);
     music_track_crimson_theme_id = music_load_track(s_music_crimson_theme_ogg_00477e28);
     music_track_crimsonquest_id = music_load_track(s_music_crimsonquest_ogg_00477e10);
     music_track_extra_0 = music_track_crimsonquest_id + 1;
@@ -34288,21 +34227,23 @@ int sfx_system_init(void)
   undefined4 in_EAX;
   HWND hwnd;
   int iVar1;
+  uint3 extraout_var;
+  undefined3 extraout_var_00;
   undefined4 *puVar2;
-  uint uVar3;
+  uint coop_level;
   
   if (config_blob.reserved0[0] != '\0') {
     return CONCAT31((int3)((uint)in_EAX >> 8),1);
   }
   console_printf(&console_log_queue,s_Initializing_Grim_SFX_sound_syst_004785c8);
-  uVar3 = 2;
+  coop_level = 2;
   hwnd = GetForegroundWindow();
-  iVar1 = dsound_init(hwnd,uVar3);
+  iVar1 = dsound_init(hwnd,coop_level);
   if ((char)iVar1 == '\0') {
-    uVar3 = console_printf(&console_log_queue,s____FAILED__unable_to_init_Grim_S_00478590);
+    console_printf(&console_log_queue,s____FAILED__unable_to_init_Grim_S_00478590);
     config_blob.reserved0[0] = '\x01';
     config_blob.reserved0[1] = '\x01';
-    return uVar3 & 0xffffff00;
+    return (uint)extraout_var << 8;
   }
   console_printf(&console_log_queue,s____init_44100_Hz_16_bit_ok_00478574);
   console_printf(&console_log_queue,s____using_DirectSound_output_00478554);
@@ -34318,8 +34259,8 @@ int sfx_system_init(void)
     *puVar2 = 0;
     puVar2 = puVar2 + 1;
   }
-  iVar1 = console_printf(&console_log_queue,s_Init_Grim_SFX_done_004784fc);
-  return CONCAT31((int3)((uint)iVar1 >> 8),1);
+  console_printf(&console_log_queue,s_Init_Grim_SFX_done_004784fc);
+  return CONCAT31(extraout_var_00,1);
 }
 
 
@@ -38529,11 +38470,12 @@ float * __thiscall FUN_0044ecf0(void *this,float *arg1,float *arg2,float *arg3)
 char * __cdecl FUN_0044faa0(char *arg1)
 
 {
-  char *pcVar1;
+  char cVar1;
+  undefined3 extraout_var;
   
   if (arg1 == (char *)0x0) {
-    pcVar1 = (char *)console_printf(&console_log_queue,s_____Elem____NULL__0047928c);
-    return pcVar1;
+    cVar1 = console_printf(&console_log_queue,s_____Elem____NULL__0047928c);
+    return (char *)CONCAT31(extraout_var,cVar1);
   }
   arg1[0x11c] = -1;
   arg1[0x11d] = -1;

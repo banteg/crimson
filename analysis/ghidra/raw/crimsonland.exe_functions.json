@@ -74,7 +74,7 @@
   {
     "name": "console_log_node_free",
     "address": "004011f0",
-    "signature": "void * console_log_node_free(void * this, void * node, char free_self)",
+    "signature": "void console_log_node_free(void * this, char free_self)",
     "external": false,
     "calls_total": 2,
     "calls": ["console_log_node_free", "crt_free"]
@@ -162,7 +162,7 @@
   {
     "name": "console_push_line",
     "address": "004017a0",
-    "signature": "void console_push_line(void * this, void * console_state, char * line)",
+    "signature": "char console_push_line(void * this, char * line)",
     "external": false,
     "calls_total": 4,
     "calls": ["console_log_node_free", "crt_free", "operator_new", "strdup_malloc"]
@@ -170,7 +170,7 @@
   {
     "name": "console_printf",
     "address": "00401870",
-    "signature": "int console_printf(void * console_state, char * fmt, ...)",
+    "signature": "char console_printf(void * console_state, char * fmt, ...)",
     "external": false,
     "calls_total": 2,
     "calls": ["console_push_line", "crt_vsprintf"]
@@ -178,7 +178,7 @@
   {
     "name": "console_set_open",
     "address": "004018b0",
-    "signature": "void console_set_open(void * this, void * console_state, char open)",
+    "signature": "void console_set_open(void * this, char open)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -194,7 +194,7 @@
   {
     "name": "console_exec_line",
     "address": "00401940",
-    "signature": "void console_exec_line(void * this, void * console_state, char * line)",
+    "signature": "char console_exec_line(void * this, char * line)",
     "external": false,
     "calls_total": 7,
     "calls": ["console_command_find", "console_cvar_find", "console_printf", "console_tokenize_line", "crt_atof_l", "crt_free", "strdup_malloc"]
@@ -218,7 +218,7 @@
   {
     "name": "console_register_cvar",
     "address": "00402350",
-    "signature": "void * console_register_cvar(void * this, void * console_state, char * name, char * value)",
+    "signature": "void * console_register_cvar(void * this, char * name, char * value)",
     "external": false,
     "calls_total": 5,
     "calls": ["console_cvar_find", "crt_atof_l", "crt_free", "operator_new", "strdup_malloc"]
@@ -226,7 +226,7 @@
   {
     "name": "console_cvar_find",
     "address": "00402480",
-    "signature": "void * console_cvar_find(void * this, void * console_state, char * name)",
+    "signature": "void * console_cvar_find(void * this, char * name)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -234,7 +234,7 @@
   {
     "name": "console_cvar_unregister",
     "address": "004024e0",
-    "signature": "int console_cvar_unregister(void * this, void * console_state, char * name)",
+    "signature": "char console_cvar_unregister(void * this, char * name)",
     "external": false,
     "calls_total": 1,
     "calls": ["console_cvar_find"]
@@ -242,7 +242,7 @@
   {
     "name": "console_command_unregister",
     "address": "00402530",
-    "signature": "int console_command_unregister(void * this, void * console_state, char * name)",
+    "signature": "char console_command_unregister(void * this, char * name)",
     "external": false,
     "calls_total": 1,
     "calls": ["console_command_find"]
@@ -258,7 +258,7 @@
   {
     "name": "console_cvar_autocomplete",
     "address": "00402630",
-    "signature": "char * console_cvar_autocomplete(void * this, void * console_state, char * prefix)",
+    "signature": "char * console_cvar_autocomplete(void * this, char * prefix)",
     "external": false,
     "calls_total": 1,
     "calls": ["_strncmp"]
@@ -266,7 +266,7 @@
   {
     "name": "console_register_command",
     "address": "004026e0",
-    "signature": "void console_register_command(void * this, void * console_state, char * name, void * handler)",
+    "signature": "void console_register_command(void * this, char * name, void * handler)",
     "external": false,
     "calls_total": 2,
     "calls": ["operator_new", "strdup_malloc"]
@@ -274,7 +274,7 @@
   {
     "name": "console_command_find",
     "address": "00402750",
-    "signature": "void * console_command_find(void * this, void * console_state, char * name)",
+    "signature": "void * console_command_find(void * this, char * name)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -282,7 +282,7 @@
   {
     "name": "console_command_autocomplete",
     "address": "004027b0",
-    "signature": "char * console_command_autocomplete(void * this, void * console_state, char * prefix)",
+    "signature": "char * console_command_autocomplete(void * this, char * prefix)",
     "external": false,
     "calls_total": 1,
     "calls": ["_strncmp"]
