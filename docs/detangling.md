@@ -71,11 +71,11 @@ grim.dll_functions.json
 ### Logging / console queue (high confidence)
 
 - `FUN_0046e8f4` -> `strdup_malloc`
-  - Evidence: `strlen` + `malloc` + copy (`FUN_00465c30`) pattern.
+  - Evidence: `strlen` + `malloc` + copy (crt_strcpy (`FUN_00465c30`)) pattern.
 - `FUN_004017a0` -> `console_push_line`
   - Evidence: pushes strdup’d strings into a list, caps at 0x1000 entries.
 - `FUN_00401870` -> `console_printf`
-  - Evidence: formats strings (uses `FUN_00461089`) then pushes into the console queue; callsites include `Unknown command`/CMOD logs.
+  - Evidence: formats strings (uses crt_vsprintf (`FUN_00461089`)) then pushes into the console queue; callsites include `Unknown command`/CMOD logs.
 - `FUN_00402350` -> `console_register_cvar`
   - Evidence: searches existing entry by name, allocates a 0x24 entry when missing, strdup’s name/value, parses float via `crt_atof_l`, and is used by `register_core_cvars` with `cv_*` strings.
 - `FUN_00401940` -> `console_exec_line`
@@ -122,8 +122,8 @@ grim.dll_functions.json
 
 - `FUN_0041a530` -> `ui_elements_update_and_render`
   - Evidence: advances a global timeline (`ui_elements_timeline` (`DAT_00487248`)) based on `DAT_00480844`, clamps to
-    `ui_elements_max_timeline`, triggers screen transitions via `FUN_004461c0`, and iterates
-    `DAT_0048f208`..`DAT_0048f168` calling `FUN_00446900` + `ui_element_render`.
+    `ui_elements_max_timeline`, triggers screen transitions via game_state_set (`FUN_004461c0`), and iterates
+    `DAT_0048f208`..`DAT_0048f168` calling ui_element_update (`FUN_00446900`) + `ui_element_render`.
 
 - `FUN_00446170` -> `ui_elements_reset_state`
   - Evidence: clears the element active flag (`*(char *)element`) and zeroes the per-element
@@ -338,17 +338,17 @@ Config edit path status:
 - `config_load_presets` reads the 0x480‑byte config blob from disk into `DAT_00480348`
   and then copies the keybind table (`DAT_00480540`) into the per-player runtime slots.
 
-- `FUN_0041ec60` seeds defaults in a local 0x480 blob, optionally reads a 0x480‑byte
+- config_sync_from_grim (`FUN_0041ec60`) seeds defaults in a local 0x480 blob, optionally reads a 0x480‑byte
   config from `DAT_00472998`, copies the string field at offset `0x74` and the flag
   at offset `0x46c` into globals (`DAT_004803bc`, `DAT_004807b4`), then writes the
   global blob (`DAT_00480348`, size `0x480`) using mode `DAT_00473668` (`"wb"`).
 
-- `FUN_0041f130` is a fallback path that writes the same `DAT_00480348` blob using
+- config_ensure_file (`FUN_0041f130`) is a fallback path that writes the same `DAT_00480348` blob using
   mode `DAT_00473668` (`"wb"`) when the `DAT_00472998` config file is missing.
 
 - File evidence: `game_bins/crimsonland/1.9.93-gog/crimson.cfg` is exactly `0x480` bytes; `game_bins/crimsonland/1.9.93-gog/game.cfg` is not
   (likely a save/progress file). `DAT_00472998` is `"rb"`; the filename is supplied
-  by `FUN_00402bd0` (`"%s\\%s"`).
+  by game_build_path (`FUN_00402bd0`) (`"%s\\%s"`).
 
 Config blob layout (partial, 0x480 bytes, base `DAT_00480348`):
 
@@ -359,45 +359,45 @@ Config blob layout (partial, 0x480 bytes, base `DAT_00480348`):
 | `0x02` | `DAT_0048034a` | `u8` | `0` | High‑score date validation mode: `1` = year+month, `2` = computed date checksum + year, `3` = day+month+year. |
 | `0x03` | `DAT_0048034b` | `u8` | `0` | High‑score duplicate handling: `1` = replace existing entry with same name (via `highscore_find_name_entry`). |
 | `0x04` | `DAT_0048034c` | `u8[2]` | `1,1` | Per‑player HUD indicator toggle (gates the second indicator draw pass). |
-| `0x08` | `DAT_00480350` | `u32` | `8` | Unknown; value comes from a stack temp in `FUN_0041ec60` (used to query Grim config), no global xrefs. |
+| `0x08` | `DAT_00480350` | `u32` | `8` | Unknown; value comes from a stack temp in config_sync_from_grim (`FUN_0041ec60`) (used to query Grim config), no global xrefs. |
 | `0x0e` | `DAT_00480356` | `u8` | `0/1` | FX detail toggle (set by `DAT_004807b8`). |
 | `0x10` | `DAT_00480358` | `u8` | `0/1` | FX detail toggle (set by `DAT_004807b8`). |
 | `0x11` | `DAT_00480359` | `u8` | `0/1` | FX detail toggle (set by `DAT_004807b8`). |
 | `0x14` | `DAT_0048035c` | `u32` | `1/2` | Player count (loop bound in most per‑player logic). |
 | `0x18` | `DAT_00480360` | `u32` | `1..8` | Game mode/state selector (values `1/2/3/4/8` observed). |
 | `0x1c` | `DAT_00480364` | `u8[?]` | `0` | Per‑player mode flag (value `4` triggers alternate HUD draw). |
-| `0x44` | `DAT_0048038c` | `u32` | `0` | Unknown (defaulted in `FUN_0041ec60`, no xrefs). |
-| `0x48` | `DAT_00480390` | `u32` | `0` | Unknown (defaulted in `FUN_0041ec60`, no xrefs). |
-| `0x6c` | `DAT_004803b4` | `u32` | `0` | Unknown (defaulted in `FUN_0041ec60`, no xrefs). |
+| `0x44` | `DAT_0048038c` | `u32` | `0` | Unknown (defaulted in config_sync_from_grim (`FUN_0041ec60`), no xrefs). |
+| `0x48` | `DAT_00480390` | `u32` | `0` | Unknown (defaulted in config_sync_from_grim (`FUN_0041ec60`), no xrefs). |
+| `0x6c` | `DAT_004803b4` | `u32` | `0` | Unknown (defaulted in config_sync_from_grim (`FUN_0041ec60`), no xrefs). |
 | `0x70` | `DAT_004803b8` | `float` | `1.0` (clamped `0.5..4.0`) | Texture/terrain scale factor (used when creating ground texture). |
-| `0x74` | `DAT_004803bc` | `char[12]` | empty string | Copied from config in `FUN_0041ec60`; only explicit consumer so far. |
+| `0x74` | `DAT_004803bc` | `char[12]` | empty string | Copied from config in config_sync_from_grim (`FUN_0041ec60`); only explicit consumer so far. |
 | `0x80` | `DAT_004803c8` | `u32` | `0` | Selected name slot (0..7) for the saved‑name list. |
 | `0x84` | `DAT_004803cc` | `u32` | `1` | Saved‑name count / insert index. |
-| `0x88` | `DAT_004803d0` | `u32[8]` | `0..7` | Saved‑name order table (seeded in `FUN_0041ec60`); no xrefs in the decompile, likely unused. |
+| `0x88` | `DAT_004803d0` | `u32[8]` | `0..7` | Saved‑name order table (seeded in config_sync_from_grim (`FUN_0041ec60`)); no xrefs in the decompile, likely unused. |
 | `0xa8` | `DAT_004803f0` | `char[0xd8]` | `"default"` x8 | 8 saved names, 0x1b bytes each (`DAT_0048040b` is entry 2). |
 | `0x180` | `DAT_004804c8` | `char[36]` | `DAT_00471314` | Player name (copied to runtime `DAT_00487040` on load). |
 | `0x1a0` | `DAT_004804e8` | `u32` | `DAT_004871e8` | Player name length (mirrored to runtime on load; config value is overwritten). |
-| `0x1a4` | `DAT_004804ec` | `u32` | `100` | Seeded in `FUN_0041ec60`; no xrefs yet. |
-| `0x1a8` | `DAT_004804f0` | `u32` | `0` | Unknown (defaulted in `FUN_0041ec60`, no xrefs). |
-| `0x1ac` | `DAT_004804f4` | `u32` | `0` | Unknown (defaulted in `FUN_0041ec60`, no xrefs). |
-| `0x1b0` | `DAT_004804f8` | `u32` | `9000` | Compared to Grim vtable `+0xa4` (`FUN_100075b0`) in `FUN_0041e8f0`; returns `DAT_1005d850[index]` (index 0 here), no callsites, likely dead. |
-| `0x1b4` | `DAT_004804fc` | `u32` | `27000` | Compared to Grim vtable `+0xa4` (`FUN_100075b0`) in `FUN_0041e8d0`; returns `DAT_1005d850[index]` (index 0 here), no callsites, likely dead. |
+| `0x1a4` | `DAT_004804ec` | `u32` | `100` | Seeded in config_sync_from_grim (`FUN_0041ec60`); no xrefs yet. |
+| `0x1a8` | `DAT_004804f0` | `u32` | `0` | Unknown (defaulted in config_sync_from_grim (`FUN_0041ec60`), no xrefs). |
+| `0x1ac` | `DAT_004804f4` | `u32` | `0` | Unknown (defaulted in config_sync_from_grim (`FUN_0041ec60`), no xrefs). |
+| `0x1b0` | `DAT_004804f8` | `u32` | `9000` | Compared to Grim vtable `+0xa4` (grim_get_joystick_pov (`FUN_100075b0`)) in `FUN_0041e8f0`; returns `DAT_1005d850[index]` (index 0 here), no callsites, likely dead. |
+| `0x1b4` | `DAT_004804fc` | `u32` | `27000` | Compared to Grim vtable `+0xa4` (grim_get_joystick_pov (`FUN_100075b0`)) in `FUN_0041e8d0`; returns `DAT_1005d850[index]` (index 0 here), no callsites, likely dead. |
 | `0x1b8` | `DAT_00480500` | `u32` | `32` | Likely display color depth (bits‑per‑pixel); set alongside width/height via config id `0x2b` (inference from defaults and file). |
 | `0x1bc` | `DAT_00480504` | `u32` | `800` | Screen width. |
 | `0x1c0` | `DAT_00480508` | `u32` | `600` | Screen height. |
 | `0x1c4` | `DAT_0048050c` | `u8` | `0` | Windowed flag (`0` = fullscreen). |
 | `0x1c8` | `DAT_00480510` | `u32[0x20]` | see below | Keybind blocks (2 × 16 dwords; indices `0..12` copied). |
 | `0x1f8` | `DAT_00480540` | `u32*` | alias | Points at `&DAT_00480510[12]` (used for the copy loop). |
-| `0x440` | `DAT_00480788` | `u32` | `0` | Unknown (defaulted in `FUN_0041ec60`, no xrefs). |
-| `0x444` | `DAT_0048078c` | `u32` | `0` | Unknown (defaulted in `FUN_0041ec60`, no xrefs). |
+| `0x440` | `DAT_00480788` | `u32` | `0` | Unknown (defaulted in config_sync_from_grim (`FUN_0041ec60`), no xrefs). |
+| `0x444` | `DAT_0048078c` | `u32` | `0` | Unknown (defaulted in config_sync_from_grim (`FUN_0041ec60`), no xrefs). |
 | `0x448` | `DAT_00480790` | `u8` | `0` | Hardcore flag (`0` normal, `1` hardcore). |
 | `0x449` | `DAT_00480791` | `u8` | `1` | Full‑version/unlimited flag (gates quest logic and UI strings). |
 | `0x44c` | `DAT_00480794` | `u32` | `0` | Perk prompt counter (`0..0x32`, increments on each prompt). |
-| `0x450` | `DAT_00480798` | `u32` | `1` | Unknown (defaulted in `FUN_0041ec60`, no xrefs). |
-| `0x460` | `DAT_004807a8` | `u32` | `1` | Unknown (defaulted in `FUN_0041ec60`, no xrefs). |
+| `0x450` | `DAT_00480798` | `u32` | `1` | Unknown (defaulted in config_sync_from_grim (`FUN_0041ec60`), no xrefs). |
+| `0x460` | `DAT_004807a8` | `u32` | `1` | Unknown (defaulted in config_sync_from_grim (`FUN_0041ec60`), no xrefs). |
 | `0x464` | `DAT_004807ac` | `float` | `?` | SFX volume multiplier. |
 | `0x468` | `DAT_004807b0` | `float` | `?` | Music volume multiplier. |
-| `0x46c` | `DAT_004807b4` | `u8` | `0` | FX toggle (gore/particle path; copied from config; `FUN_0041f130` forces `1` when cfg missing). |
+| `0x46c` | `DAT_004807b4` | `u8` | `0` | FX toggle (gore/particle path; copied from config; config_ensure_file (`FUN_0041f130`) forces `1` when cfg missing). |
 | `0x46d` | `DAT_004807b5` | `u8` | `0` | Score load gating flag (used with `DAT_0048034a`). |
 | `0x46e` | `DAT_004807b6` | `u8` | `?` | Config bool applied via Grim id `0x54` (unknown). |
 | `0x470` | `DAT_004807b8` | `u32` | `?` | Detail preset (drives `DAT_00480356/58/59`). |
@@ -436,7 +436,7 @@ Keybind block layout (`DAT_00480510`, 2 × 16 dwords, indices `0..12` copied int
 | `14` | `0x17e` | `0x17e` | Unused/reserved. |
 | `15` | `0x17e` | `0x17e` | Unused/reserved. |
 
-Grim input query (partial, vtable `+0x80` → `FUN_10006fe0` in `grim.dll`):
+Grim input query (partial, vtable `+0x80` → grim_is_key_active (`FUN_10006fe0`) in `grim.dll`):
 
 - `code < 0x100`: DirectInput keyboard state (raw DIK).
 - `0x100..0x104`: mouse buttons `0..4` (via Grim `+0x58`).
@@ -444,11 +444,11 @@ Grim input query (partial, vtable `+0x80` → `FUN_10006fe0` in `grim.dll`):
 - `0x13f..0x155`: analog axes (reads `DAT_1005d830/834/838/83c/840/844`, thresholded).
 - `0x16d..0x17b`: joystick POV/axis queries via `DAT_1005d3b4` (if device present).
 
-Grim key‑click helper (vtable `+0x48` → `FUN_10007390`):
+Grim key‑click helper (vtable `+0x48` → grim_was_key_pressed (`FUN_10007390`)):
 
-- Uses `FUN_1000a370` (keyboard state byte) plus per‑key timers; returns 1 on a new press edge.
+- Uses grim_keyboard_key_down (`FUN_1000a370`) (keyboard state byte) plus per‑key timers; returns 1 on a new press edge.
 
-Grim misc getter (vtable `+0xa4` → `FUN_100075b0`):
+Grim misc getter (vtable `+0xa4` → grim_get_joystick_pov (`FUN_100075b0`)):
 
 - Returns `*(DAT_1005d850 + index*4)`; only index 0 observed in `crimsonland.exe` (`FUN_0041e8d0/1e8f0`).
 
@@ -691,11 +691,11 @@ Init timing note:
     via the error table at `DAT_0047b7c0`.
 
   - File I/O wrappers set these directly on failure:
-    - `FUN_004655bf` (FlushFileBuffers) stores `GetLastError()` in `*FUN_00465d9c` and sets
-      `*FUN_00465d93 = 9` (EBADF).
-    - `FUN_004656b7` (WriteFile) and `FUN_00466064` (ReadFile) call `crt_dosmaperr` after
+    - crt_commit (`FUN_004655bf`) (FlushFileBuffers) stores `GetLastError()` in `*crt_doserrno_ptr (`FUN_00465d9c`) and sets
+      `*crt_errno_ptr (`FUN_00465d93`) = 9` (EBADF).
+    - crt_write_nolock (`FUN_004656b7`) (WriteFile) and crt_read_nolock (`FUN_00466064`) (ReadFile) call `crt_dosmaperr` after
       `GetLastError()` for non-trivial errors.
-    - `FUN_0046645e` (SetFilePointer) maps `GetLastError()` through `crt_dosmaperr`.
+    - crt_lseek_nolock (`FUN_0046645e`) (SetFilePointer) maps `GetLastError()` through `crt_dosmaperr`.
 
 
 ### CRT lock/unlock helpers (high confidence)
@@ -732,12 +732,12 @@ Init timing note:
 
 - `FUN_00460d08` -> `crt_onexit`
   - Evidence: takes exit callback, grows onexit table (`DAT_004db4f4`/`DAT_004db4f0`) via
-    `FUN_004626aa`, stores pointer, and wraps with `crt_exit_lock`/`crt_exit_unlock`.
+    crt_realloc (`FUN_004626aa`), stores pointer, and wraps with `crt_exit_lock`/`crt_exit_unlock`.
 
 - `FUN_00460d86` -> `crt_atexit`
   - Evidence: calls `crt_onexit` and returns `0` on success, `-1` on failure.
 - `FUN_00460dc7` -> `crt_free`
-  - Evidence: thin wrapper around `FUN_004625c1` (CRT heap free).
+  - Evidence: thin wrapper around crt_free_base (`FUN_004625c1`) (CRT heap free).
 - `FUN_004625c1` -> `crt_free_base`
   - Evidence: checks heap mode (`DAT_004da3a8`), locks heap, frees via small-block helpers, and
     falls back to `HeapFree`.
@@ -747,7 +747,7 @@ Init timing note:
     clears `_flag`.
 
 - `FUN_0046100e` -> `crt_fsopen`
-  - Evidence: parses mode string, passes share flag to `FUN_0046adbd`, populates `FILE` fields.
+  - Evidence: parses mode string, passes share flag to crt_sopen (`FUN_0046adbd`), populates `FILE` fields.
 - `FUN_0046103f` -> `crt_fopen`
   - Evidence: forwards to `crt_fsopen` with share mode `0x40` (`_SH_DENYNO`).
 - `FUN_004615ae` -> `crt_fwrite`
@@ -763,7 +763,7 @@ Init timing note:
 - `FUN_00461dbd` -> `crt_fseek_nolock`
   - Evidence: validates stream flags, flushes, and seeks via `crt_lseek`.
 - `FUN_004616e7` -> `crt_sprintf`
-  - Evidence: uses CRT output core `FUN_00464380` with an unbounded count (`0x7fffffff`) and
+  - Evidence: uses CRT output core crt_output (`FUN_00464380`) with an unbounded count (`0x7fffffff`) and
     terminates with `\0` on success.
 
 - `FUN_00464268` -> `crt_flsbuf`
@@ -830,8 +830,8 @@ Init timing note:
 
 - `FUN_0043d120` -> `sfx_play`
   - Evidence: validates entry in `DAT_004c84e4`, checks cooldown `DAT_004c3c80`, sets sample rate
-    via `bonus_reflex_boost_timer` into `DAT_00477d28`, chooses a voice (`FUN_0043be60`), calls vtable +0x40
-    with pan 0, then sets volume with `FUN_0043bfa0`.
+    via `bonus_reflex_boost_timer` into `DAT_00477d28`, chooses a voice (sfx_entry_start_playback (`FUN_0043be60`)), calls vtable +0x40
+    with pan 0, then sets volume with sfx_entry_set_volume (`FUN_0043bfa0`).
 
 - `FUN_0043d260` -> `sfx_play_panned`
   - Evidence: same as `sfx_play`, but converts an FPU value to pan (`__ftol`), clamps to
@@ -849,7 +849,7 @@ Init timing note:
 
 - `FUN_0043d5b0` -> `sfx_update_mute_fades`
   - Evidence: ramps per-id volume toward `DAT_004807b0` when unmuted and fades to zero when muted,
-    stopping voices via `FUN_0043bf60`.
+    stopping voices via sfx_entry_stop (`FUN_0043bf60`).
 
 - `FUN_0043c9c0` -> `audio_init_music`
   - Evidence: loads `music.paq`, logs status, and registers track ids:
@@ -1033,11 +1033,11 @@ Init timing note:
     - Stage 0: after `DAT_00486fdc > 6000` and `DAT_00486fe0 == -1`, clears `DAT_004808a8`,
       resets `DAT_004712fc`, and sets `DAT_00486fe0 = -1000`.
     - Stage 1: waits for any movement key active (`grim_is_key_active` via vtable +0x80),
-      then spawns bonus pickups (`FUN_0042ef60`) and sets `DAT_00486fe0 = -1000`.
+      then spawns bonus pickups (effect_spawn_burst (`FUN_0042ef60`)) and sets `DAT_00486fe0 = -1000`.
     - Stage 2: waits until all 16 bonus slots in `bonus_pool` (`DAT_00482948`) clear, then sets
       `DAT_00486fe0 = -1000`.
     - Stage 3: waits for input in `player_fire_key` (`DAT_00490bec`) key slots, spawns arrow markers
-      (`FUN_00430af0`), then sets `DAT_00486fe0 = -1000`.
+      (creature_spawn_template (`FUN_00430af0`)), then sets `DAT_00486fe0 = -1000`.
     - Stage 4: waits for `creatures_none_active()`, spawns arrow markers, sets `DAT_00486fdc = 1000`,
       then sets `DAT_00486fe0 = -1000`.
     - Stage 5: increments `DAT_004808a8` on repeated `creatures_none_active()` events, spawns markers/bonuses,
@@ -1074,7 +1074,7 @@ Init timing note:
     - Evidence: scans the creature table at `DAT_0049bf38` for any active entries, sets `DAT_0048700c`,
       and returns low byte `1` only when the table is empty.
 
-  - Stage index wraps to 0 when `DAT_00486fd8` reaches 9; counters are initialized in `FUN_00412dc0`
+  - Stage index wraps to 0 when `DAT_00486fd8` reaches 9; counters are initialized in gameplay_reset_state (`FUN_00412dc0`)
     (`DAT_00486fd8 = -1`, `DAT_00486fe0 = -1000`) and reset by `tutorial_prompt_dialog`.
 
 ### UI button helpers (medium confidence)
@@ -1115,7 +1115,7 @@ Button struct (size `0x18`, used by `DAT_0047f5f8` / `DAT_00480250` / `DAT_00480
 
 - `FUN_00434250` -> `quest_spawn_timeline_update`
   - Evidence: walks the quest spawn table (`DAT_004857a8`, count `DAT_00482b08`), checks trigger
-    time vs `DAT_00486fd0`, and spawns each entry with `FUN_00430af0` using a 0x28 spacing offset.
+    time vs `DAT_00486fd0`, and spawns each entry with creature_spawn_template (`FUN_00430af0`) using a 0x28 spacing offset.
 
 - `FUN_00434220` -> `quest_spawn_table_empty`
   - Evidence: returns 1 when all spawn entries have been cleared (no pending spawns).
@@ -1141,20 +1141,20 @@ Button struct (size `0x18`, used by `DAT_0047f5f8` / `DAT_00480250` / `DAT_00480
   | Offset | Field | Evidence |
   | --- | --- | --- |
   | 0x00 | active (byte) | checked for zero in most creature loops; set to `1` on spawn, cleared on death. |
-  | 0x14 | pos_x | set in `FUN_00428240`, used in distance checks and targeting. |
-  | 0x18 | pos_y | set in `FUN_00428240`, used in distance checks and targeting. |
-  | 0x1c | vel_x | computed from heading/speed and passed to `FUN_0041e400` for movement. |
-  | 0x20 | vel_y | computed from heading/speed and passed to `FUN_0041e400` for movement. |
+  | 0x14 | pos_x | set in creature_spawn (`FUN_00428240`), used in distance checks and targeting. |
+  | 0x18 | pos_y | set in creature_spawn (`FUN_00428240`), used in distance checks and targeting. |
+  | 0x1c | vel_x | computed from heading/speed and passed to vec2_add_inplace (`FUN_0041e400`) for movement. |
+  | 0x20 | vel_y | computed from heading/speed and passed to vec2_add_inplace (`FUN_0041e400`) for movement. |
   | 0x24 | health | checked as `> 0` for valid targets and in perk kill logic (`<= 500`). |
   | 0x28 | max_health | set from `health` on spawn; used when splitting (clone health is `max_health * 0.25`). |
-  | 0x2c | heading (radians) | set from `rand % 0x13a * 0.01` on spawn; eased toward desired heading via `FUN_0041f430`. |
+  | 0x2c | heading (radians) | set from `rand % 0x13a * 0.01` on spawn; eased toward desired heading via angle_approach (`FUN_0041f430`). |
   | 0x30 | desired heading | computed from target position and stored each frame. |
-  | 0x34 | collision radius (?) | used in collision tests in `FUN_00420600`. |
-  | 0x38 | hit flash timer | decremented each frame; set by `FUN_004207c0` on damage. |
+  | 0x34 | collision radius (?) | used in collision tests in creatures_apply_radius_damage (`FUN_00420600`). |
+  | 0x38 | hit flash timer | decremented each frame; set by creature_apply_damage (`FUN_004207c0`) on damage. |
   | 0x50 | target_x | target position derived from player/formation/linked enemy. |
   | 0x54 | target_y | target position derived from player/formation/linked enemy. |
   | 0x60 | attack cooldown | decremented each frame; gates projectile spawns for some flags. |
-  | 0x6c | type id (spawn param) | written from `param_3` in `FUN_00428240`. |
+  | 0x6c | type id (spawn param) | written from `param_3` in creature_spawn (`FUN_00428240`). |
   | 0x70 | target player index | toggled between players based on distance; indexes player pos arrays. |
   | 0x78 | link index / state timer | used as linked creature index in several AI modes; also incremented as a timer when `0x80` flag is set. |
   | 0x8c | flags | bit tests `0x4/0x8/0x400` guard behaviors in update/split logic. |
@@ -1179,7 +1179,7 @@ See [Creature struct](creature-struct.md) for the expanded field map and cross-l
     `particle_pool` (`DAT_00493eb8`, `0x38` stride).
 
 - `FUN_00420600` -> `creatures_apply_radius_damage`
-  - Evidence: loops active creatures, checks distance vs radius + size, and calls `FUN_004207c0`.
+  - Evidence: loops active creatures, checks distance vs radius + size, and calls creature_apply_damage (`FUN_004207c0`).
 - `FUN_004206a0` -> `creature_find_in_radius`
   - Evidence: returns the first creature index within `radius` starting at `start_index` (or `-1`).
 - `FUN_00420730` -> `player_find_in_radius`
@@ -1228,7 +1228,7 @@ See [Projectile struct](projectile-struct.md) for the expanded field map and not
 
 - `FUN_0041f5b0` -> `bonus_spawn_at`
   - Evidence: clamps position to arena bounds, writes entry fields (type, lifetime, size, position,
-    duration override), and spawns a pickup effect via `FUN_0042e120`.
+    duration override), and spawns a pickup effect via effect_spawn (`FUN_0042e120`).
 
 - `FUN_0040a320` -> `bonus_update`
   - Evidence: decrements bonus lifetimes, checks player proximity, calls `bonus_apply` on pickup,
@@ -1242,7 +1242,7 @@ See [Projectile struct](projectile-struct.md) for the expanded field map and not
   - Evidence: returns a formatted label string for bonus entries (weapon/score cases use a formatter).
 - `FUN_00409890` -> `bonus_apply`
   - Evidence: applies bonus effects based on entry type (`param_2[0]`), spawns effects via
-    `FUN_0042e120`, and plays bonus SFX (`FUN_0043d260`).
+    effect_spawn (`FUN_0042e120`), and plays bonus SFX (sfx_play_panned (`FUN_0043d260`)).
 
 - See [Bonus ID map](bonus-id-map.md) for the id-to-name table and default amounts.
 - Layout (entry size `0x1c`, base `bonus_pool` (`DAT_00482948`), 16 entries):
