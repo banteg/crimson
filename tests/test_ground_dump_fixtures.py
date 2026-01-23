@@ -114,6 +114,9 @@ def terrain_textures(raylib_context) -> dict[int, TextureAsset]:
 def _export_render_target(target: rl.RenderTexture, out_path: Path) -> None:
     image = rl.load_image_from_texture(target.texture)
     try:
+        # OpenGL render textures are stored flipped; convert to top-left origin so
+        # dumps compare 1:1 with the original D3D8 render target captures.
+        rl.image_flip_vertical(image)
         rl.export_image(image, str(out_path))
     finally:
         rl.unload_image(image)

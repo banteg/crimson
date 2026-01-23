@@ -338,7 +338,9 @@ class GroundRenderer:
             # IMPORTANT: The exe consumes RNG as rotation, then Y, then X.
             y = ((rng.rand() % span_h) - TERRAIN_PATCH_OVERSCAN) * inv_scale
             x = ((rng.rand() % span_w) - TERRAIN_PATCH_OVERSCAN) * inv_scale
-            dst = rl.Rectangle(float(x), float(y), size, size)
+            # raylib's DrawTexturePro positions the quad by the *origin point*,
+            # while the original engine uses x/y as the quad top-left.
+            dst = rl.Rectangle(float(x + size * 0.5), float(y + size * 0.5), size, size)
             rl.draw_texture_pro(texture, src, dst, origin, math.degrees(angle), tint)
 
     def _clamp_camera(self, camera_x: float, camera_y: float, screen_w: float, screen_h: float) -> tuple[float, float]:
