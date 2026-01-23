@@ -125,6 +125,9 @@ def default_crimson_cfg_data() -> dict:
     config = CrimsonConfig(path=Path("<memory>"), data=data)
     config.data["hud_indicators"] = b"\x01\x01"
     config.data["unknown_08"] = 8
+    config.data["fx_detail_0"] = 1
+    config.data["fx_detail_1"] = 1
+    config.data["fx_detail_2"] = 1
     config.texture_scale = 1.0
     config.screen_bpp = 32
     config.screen_width = 1024
@@ -136,6 +139,7 @@ def default_crimson_cfg_data() -> dict:
     config.data["fx_toggle"] = 1
     config.data["sfx_volume"] = 1.0
     config.data["music_volume"] = 1.0
+    config.data["detail_preset"] = 5
     config.data["selected_name_slot"] = 0
     config.data["saved_name_index"] = 1
     config.data["unknown_1a4"] = 100
@@ -202,7 +206,19 @@ def ensure_crimson_cfg(base_dir: Path) -> CrimsonConfig:
         if len(data) != CRIMSON_CFG_SIZE:
             raise ValueError(f"{path} has unexpected size {len(data)} (expected {CRIMSON_CFG_SIZE})")
         parsed = CRIMSON_CFG_STRUCT.parse(data)
-        return CrimsonConfig(path=path, data=parsed)
+        config = CrimsonConfig(path=path, data=parsed)
+        if (
+            int(config.data.get("detail_preset", 0)) == 0
+            and int(config.data.get("fx_detail_0", 0)) == 0
+            and int(config.data.get("fx_detail_1", 0)) == 0
+            and int(config.data.get("fx_detail_2", 0)) == 0
+        ):
+            config.data["fx_detail_0"] = 1
+            config.data["fx_detail_1"] = 1
+            config.data["fx_detail_2"] = 1
+            config.data["detail_preset"] = 5
+            config.save()
+        return config
     parsed = default_crimson_cfg_data()
     config = CrimsonConfig(path=path, data=parsed)
     config.save()
