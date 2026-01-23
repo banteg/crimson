@@ -33,7 +33,7 @@ CLI entrypoint | `src/crimson/cli.py` | `src/crimson/cli.py` | Stays in game pac
 Entrypoint boot plan | `src/crimson/entrypoint.py` | `src/crimson/entrypoint.py` | Game flow + asset staging.
 Main game flow | `src/crimson/game.py`, `src/crimson/demo.py` | `src/crimson/*` | State machine + demo flow.
 Quests | `src/crimson/quests/*` | `src/crimson/quests/*` | Game content.
-Data tables (Python) | `src/crimson/weapons.py`, `src/crimson/perks.py`, `src/crimson/bonuses.py`, `src/crimson/spawn_templates.py` | `src/crimson/*` (or `src/crimson/data/*`) | Keep tables/enums in Python (no JSON move).
+Data tables (Python) | `src/crimson/weapons.py`, `src/crimson/perks.py`, `src/crimson/bonuses.py`, `src/crimson/creatures/spawn_templates.py` | `src/crimson/*` (or `src/crimson/data/*`) | Keep tables/enums in Python (no JSON move).
 Debug views | `src/crimson/views/*` | `src/crimson/views/*` | Tooling/debug; may call `grim` drawing helpers.
 
 ## Prefix map (decomp → rewrite)

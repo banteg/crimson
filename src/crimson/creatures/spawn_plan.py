@@ -4,7 +4,7 @@ from dataclasses import dataclass
 import math
 import struct
 
-from .crand import Crand
+from ..crand import Crand
 from .spawn_templates import CreatureFlags, CreatureTypeId
 
 

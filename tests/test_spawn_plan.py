@@ -3,8 +3,8 @@ from __future__ import annotations
 import math
 
 from crimson.crand import Crand
-from crimson.spawn_plan import SpawnEnv, build_spawn_plan
-from crimson.spawn_templates import CreatureFlags, CreatureTypeId
+from crimson.creatures.spawn_plan import SpawnEnv, build_spawn_plan
+from crimson.creatures.spawn_templates import CreatureFlags, CreatureTypeId
 
 
 def _step_msvcrt(state: int, n: int) -> int:

@@ -13,7 +13,7 @@ from grim.assets import PaqTextureCache, load_paq_entries
 from grim.config import CrimsonConfig
 from grim.terrain_render import GroundRenderer
 
-from .spawn_templates import CreatureFlags, CreatureTypeId, SPAWN_ID_TO_TEMPLATE
+from .creatures.spawn_templates import CreatureFlags, CreatureTypeId, SPAWN_ID_TO_TEMPLATE
 from .weapons import WEAPON_TABLE
 
 

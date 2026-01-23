@@ -96,7 +96,7 @@ textures (`ter/fb_q1..q4.jaz`) and only `Terrain A` is used.
 ## Builder notes (known implementations)
 
 The builders below have explicit function bodies in the current Ghidra export.
-Spawn ids include mapped creature names from `src/crimson/spawn_templates.py`.
+Spawn ids include mapped creature names from `src/crimson/creatures/spawn_templates.py`.
 
 - `quest_build_fallback` (`0x004343e0`): two spawn entries at x = -50, y = terrain_height * 0.5
   with spawn id `0x40` (spider_sp1), trigger times `500` / `5000`, and counts `10` / `0x14`.
@@ -128,7 +128,7 @@ Spawn ids include mapped creature names from `src/crimson/spawn_templates.py`.
 Spawn scripts are captured as code in `src/crimson/quests/` (Tier 1 in
 `src/crimson/quests/tier1.py`, Tier 2 in `src/crimson/quests/tier2.py`). Use the
 CLI (`crimson quests <level>`) to print the resolved entries for a given quest,
-including creature labels from `src/crimson/spawn_templates.py`.
+including creature labels from `src/crimson/creatures/spawn_templates.py`.
 
 ## Validation notes
 
@@ -147,7 +147,7 @@ including creature labels from `src/crimson/spawn_templates.py`.
 
 - Quest spawn ids (`spawn_id`) are interpreted by `creature_spawn_template` (`FUN_00430af0`), which is
   an algorithm (it can spawn formations, configure spawn slots, and applies difficulty/hardcore tail
-  modifiers). For human-readable labels we use the partial index in `src/crimson/spawn_templates.py`.
+  modifiers). For human-readable labels we use the partial index in `src/crimson/creatures/spawn_templates.py`.
 
 ## Open questions
 
