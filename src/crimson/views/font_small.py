@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pyray as rl
 
+from grim.assets import PaqTextureCache, load_paq_entries
+
 
 @dataclass(frozen=True, slots=True)
 class SmallFontData:
@@ -19,13 +21,30 @@ SMALL_FONT_FILTER = rl.TEXTURE_FILTER_BILINEAR
 
 
 def load_small_font(assets_root: Path, missing_assets: list[str]) -> SmallFontData:
+    # Prefer crimson.paq (runtime source-of-truth), but fall back to extracted
+    # assets when present for development convenience.
+    paq_path = assets_root / "crimson.paq"
+    if paq_path.is_file():
+        try:
+            entries = load_paq_entries(assets_root)
+            widths_data = entries.get("load/smallFnt.dat")
+            if widths_data is not None:
+                cache = PaqTextureCache(entries=entries, textures={})
+                texture_asset = cache.get_or_load("smallWhite", "load/smallWhite.tga")
+                if texture_asset.texture is not None:
+                    rl.set_texture_filter(texture_asset.texture, SMALL_FONT_FILTER)
+                    return SmallFontData(widths=list(widths_data), texture=texture_asset.texture)
+        except Exception:
+            pass
+
     widths_path = assets_root / "crimson" / "load" / "smallFnt.dat"
-    atlas_path = assets_root / "crimson" / "load" / "smallWhite.png"
-    if not widths_path.is_file() or not atlas_path.is_file():
+    atlas_png = assets_root / "crimson" / "load" / "smallWhite.png"
+    atlas_tga = assets_root / "crimson" / "load" / "smallWhite.tga"
+    if not widths_path.is_file() or (not atlas_png.is_file() and not atlas_tga.is_file()):
         missing_assets.append("small font assets")
-        raise FileNotFoundError(f"Missing small font assets: {widths_path} or {atlas_path}")
+        raise FileNotFoundError(f"Missing small font assets: {widths_path} and {atlas_png} or {atlas_tga}")
     widths = list(widths_path.read_bytes())
-    texture = rl.load_texture(str(atlas_path))
+    texture = rl.load_texture(str(atlas_png if atlas_png.is_file() else atlas_tga))
     rl.set_texture_filter(texture, SMALL_FONT_FILTER)
     return SmallFontData(widths=widths, texture=texture)
 

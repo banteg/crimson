@@ -23,29 +23,34 @@ class GrimMonoFont:
 
 
 def load_grim_mono_font(assets_root: Path, missing_assets: list[str]) -> GrimMonoFont:
-    # Prefer extracted assets when present, but fall back to crimson.paq since
-    # the runtime "game" command only requires the PAQ archives.
+    # Prefer crimson.paq (runtime source-of-truth), but fall back to extracted
+    # assets when present for development convenience.
+    paq_path = assets_root / "crimson.paq"
+
     atlas_png = assets_root / "crimson" / "load" / "default_font_courier.png"
     atlas_tga = assets_root / "crimson" / "load" / "default_font_courier.tga"
 
-    texture: rl.Texture
-    if atlas_png.is_file():
-        texture = rl.load_texture(str(atlas_png))
-    elif atlas_tga.is_file():
-        texture = rl.load_texture(str(atlas_tga))
-    else:
+    texture: rl.Texture | None = None
+    if paq_path.is_file():
         try:
             entries = load_paq_entries(assets_root)
             cache = PaqTextureCache(entries=entries, textures={})
             texture_asset = cache.get_or_load("default_font_courier", "load/default_font_courier.tga")
-            if texture_asset.texture is None:
-                raise FileNotFoundError("PAQ returned no texture")
             texture = texture_asset.texture
-        except Exception as exc:
+        except Exception:
+            texture = None
+
+    if texture is None:
+        if atlas_png.is_file():
+            texture = rl.load_texture(str(atlas_png))
+        elif atlas_tga.is_file():
+            texture = rl.load_texture(str(atlas_tga))
+        else:
             missing_assets.append("load/default_font_courier.tga")
             raise FileNotFoundError(
-                "Missing grim mono font (expected extracted file or load/default_font_courier.tga in crimson.paq)"
-            ) from exc
+                "Missing grim mono font (expected load/default_font_courier.tga in crimson.paq "
+                "or extracted crimson/load/default_font_courier.(png|tga))"
+            )
 
     rl.set_texture_filter(texture, GRIM_MONO_TEXTURE_FILTER)
     grid = 16
