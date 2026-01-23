@@ -188,6 +188,8 @@ class DemoView:
     def update(self, dt: float) -> None:
         if self._state.audio is not None:
             update_audio(self._state.audio)
+        if self._ground is not None:
+            self._ground.process_pending()
         if self._finished:
             return
         if self._skip_triggered():
@@ -299,7 +301,7 @@ class DemoView:
             self._ground.texture_scale = self._state.config.texture_scale
             self._ground.screen_width = float(self._state.config.screen_width)
             self._ground.screen_height = float(self._state.config.screen_height)
-        self._ground.generate(seed=self._state.rng.randrange(0, 10_000))
+        self._ground.schedule_generate(seed=self._state.rng.randrange(0, 10_000), layers=3)
 
     def _wrap_pos(self, x: float, y: float) -> tuple[float, float]:
         return (x % WORLD_SIZE, y % WORLD_SIZE)

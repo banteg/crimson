@@ -592,6 +592,8 @@ class MenuView:
     def update(self, dt: float) -> None:
         if self._state.audio is not None:
             update_audio(self._state.audio)
+        if self._ground is not None:
+            self._ground.process_pending()
         dt_ms = int(min(dt, 0.1) * 1000.0)
         if dt_ms > 0:
             self._timeline_ms = min(self._timeline_max_ms, self._timeline_ms + dt_ms)
@@ -659,7 +661,7 @@ class MenuView:
             screen_width=float(self._state.config.screen_width),
             screen_height=float(self._state.config.screen_height),
         )
-        self._ground.generate(seed=self._state.rng.randrange(0, 10_000))
+        self._ground.schedule_generate(seed=self._state.rng.randrange(0, 10_000), layers=3)
 
     def _menu_entries_for_flags(
         self,

@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import math
 import os
 from typing import Iterator
 from typing import Iterable, Sequence
 
 import pyray as rl
-
 
 TERRAIN_TEXTURE_SIZE = 1024
 TERRAIN_PATCH_SIZE = 128.0
@@ -22,7 +21,6 @@ TERRAIN_DENSITY_OVERLAY = 0x23
 TERRAIN_DENSITY_DETAIL = 0x0F
 TERRAIN_DENSITY_SHIFT = 19
 TERRAIN_ROTATION_MAX = 0x13A
-TERRAIN_TILE_SIZE = 256
 CRT_RAND_MULT = 214013
 CRT_RAND_INC = 2531011
 
@@ -101,15 +99,48 @@ class GroundRenderer:
     screen_height: float | None = None
     overlay: rl.Texture | None = None
     overlay_detail: rl.Texture | None = None
-    tile: rl.Texture | None = None
     terrain_filter: float = 1.0
     render_target: rl.RenderTexture | None = None
+    _render_target_ready: bool = field(default=False, init=False, repr=False)
+    _pending_generate: bool = field(default=False, init=False, repr=False)
+    _pending_generate_seed: int | None = field(default=None, init=False, repr=False)
+    _pending_generate_layers: int = field(default=3, init=False, repr=False)
+    _render_target_warmup_passes: int = field(default=0, init=False, repr=False)
+
+    def process_pending(self) -> None:
+        # Bound the amount of work per tick. Typical warmup sequence:
+        #   1) create RT
+        #   2) first fill (may be black/uninitialized on some platforms)
+        #   3) warmup retry fill
+        steps = 0
+        while self._pending_generate and steps < 4:
+            steps += 1
+            if self.render_target is None:
+                self.create_render_target()
+                continue
+
+            seed = self._pending_generate_seed
+            layers = self._pending_generate_layers
+            self._pending_generate = False
+            self.generate_partial(seed=seed, layers=layers)
+            if self.render_target is None and not self.texture_failed:
+                self._pending_generate = True
+                continue
+
+            if self._render_target_warmup_passes > 0:
+                self._render_target_warmup_passes -= 1
+                # On some platforms/drivers the first draw into a new RT can come out as
+                # black/uninitialized (all-zero). Retry once before marking it ready.
+                self._render_target_ready = False
+                self._pending_generate = True
+                continue
 
     def create_render_target(self) -> None:
         if self.texture_failed:
             if self.render_target is not None:
                 rl.unload_render_texture(self.render_target)
                 self.render_target = None
+            self._render_target_ready = False
             return
 
         scale = self.texture_scale
@@ -134,9 +165,15 @@ class GroundRenderer:
         if self.render_target is not None:
             rl.unload_render_texture(self.render_target)
             self.render_target = None
+        self._render_target_ready = False
 
     def generate(self, seed: int | None = None) -> None:
         self.generate_partial(seed=seed, layers=3)
+
+    def schedule_generate(self, seed: int | None = None, *, layers: int = 3) -> None:
+        self._pending_generate_seed = seed
+        self._pending_generate_layers = max(0, min(int(layers), 3))
+        self._pending_generate = True
 
     def generate_partial(self, seed: int | None = None, *, layers: int) -> None:
         layers = max(0, min(int(layers), 3))
@@ -172,6 +209,7 @@ class GroundRenderer:
                 )
         rl.end_texture_mode()
         self._set_stamp_filters(point=False)
+        self._render_target_ready = True
 
     def bake_decals(self, decals: Sequence[GroundDecal]) -> bool:
         if not decals:
@@ -219,6 +257,7 @@ class GroundRenderer:
         rl.end_texture_mode()
 
         self._set_texture_filters(textures, point=False)
+        self._render_target_ready = True
         return True
 
     def bake_corpse_decals(
@@ -242,11 +281,18 @@ class GroundRenderer:
         rl.end_texture_mode()
 
         self._set_texture_filters((bodyset_texture,), point=False)
+        self._render_target_ready = True
         return True
 
     def draw(self, camera_x: float, camera_y: float) -> None:
-        if self.render_target is None:
-            self._draw_fallback(camera_x, camera_y)
+        if self.render_target is None or not self._render_target_ready:
+            rl.draw_rectangle(
+                0,
+                0,
+                rl.get_screen_width(),
+                rl.get_screen_height(),
+                TERRAIN_CLEAR_COLOR,
+            )
             return
 
         target = self.render_target
@@ -306,36 +352,6 @@ class GroundRenderer:
                 texture, src, dst, origin, math.degrees(angle), tint
             )
 
-    def _draw_fallback(self, camera_x: float, camera_y: float) -> None:
-        tile = self.tile or self.texture
-        out_w = float(rl.get_screen_width())
-        out_h = float(rl.get_screen_height())
-        screen_w = float(self.screen_width or out_w)
-        screen_h = float(self.screen_height or out_h)
-        if screen_w > self.width:
-            screen_w = float(self.width)
-        if screen_h > self.height:
-            screen_h = float(self.height)
-
-        cam_x, cam_y = self._clamp_camera(camera_x, camera_y, screen_w, screen_h)
-        scale_x = out_w / screen_w if screen_w > 0 else 1.0
-        scale_y = out_h / screen_h if screen_h > 0 else 1.0
-        tiles_x = (self.width >> 8) + 1
-        tiles_y = (self.height >> 8) + 1
-        src = rl.Rectangle(0.0, 0.0, float(tile.width), float(tile.height))
-        origin = rl.Vector2(0.0, 0.0)
-        for ty in range(tiles_y):
-            for tx in range(tiles_x):
-                x = (float(tx * TERRAIN_TILE_SIZE) + cam_x) * scale_x
-                y = (float(ty * TERRAIN_TILE_SIZE) + cam_y) * scale_y
-                dst = rl.Rectangle(
-                    x,
-                    y,
-                    float(TERRAIN_TILE_SIZE) * scale_x,
-                    float(TERRAIN_TILE_SIZE) * scale_y,
-                )
-                rl.draw_texture_pro(tile, src, dst, origin, 0.0, rl.WHITE)
-
     def _clamp_camera(
         self, camera_x: float, camera_y: float, screen_w: float, screen_h: float
     ) -> tuple[float, float]:
@@ -360,6 +376,7 @@ class GroundRenderer:
                 return True
             rl.unload_render_texture(self.render_target)
             self.render_target = None
+            self._render_target_ready = False
 
         try:
             candidate = rl.load_render_texture(render_w, render_h)
@@ -378,6 +395,8 @@ class GroundRenderer:
             return False
 
         self.render_target = candidate
+        self._render_target_ready = False
+        self._render_target_warmup_passes = 1
         rl.set_texture_filter(self.render_target.texture, rl.TEXTURE_FILTER_BILINEAR)
         rl.set_texture_wrap(self.render_target.texture, rl.TEXTURE_WRAP_CLAMP)
         return True

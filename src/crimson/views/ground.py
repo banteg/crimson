@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import math
 from pathlib import Path
 
 import pyray as rl
@@ -9,7 +8,7 @@ import pyray as rl
 from ..config import ensure_crimson_cfg
 from ..quests import all_quests
 from ..quests.types import QuestDefinition
-from ..terrain_render import CrtRand, GroundDecal, GroundRenderer
+from ..terrain_render import GroundRenderer
 from .font_grim_mono import GrimMonoFont, load_grim_mono_font
 from .font_small import SmallFontData, draw_small_text, load_small_font
 from .quest_title_overlay import draw_quest_title_overlay
@@ -26,8 +25,6 @@ UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 @dataclass(slots=True)
 class GroundAssets:
     textures: dict[int, rl.Texture]
-    particles: rl.Texture | None = None
-    bodyset: rl.Texture | None = None
 
 
 TERRAIN_TEXTURES: list[tuple[int, str]] = [
@@ -54,7 +51,6 @@ class GroundView:
         self._camera_y = 0.0
         self._quests: list[QuestDefinition] = []
         self._quest_index = 0
-        self._decal_rng = CrtRand(0xC0FFEE)
         self._terrain_seed: int | None = None
 
     def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
@@ -81,9 +77,7 @@ class GroundView:
                 self._missing_assets.append(rel_path)
                 continue
             textures[terrain_id] = rl.load_texture(str(path))
-        particles = self._load_optional_texture("game/particles.png", record_missing=False)
-        bodyset = self._load_optional_texture("game/bodyset.png", record_missing=False)
-        self._assets = GroundAssets(textures=textures, particles=particles, bodyset=bodyset)
+        self._assets = GroundAssets(textures=textures)
         self._quests = all_quests()
         texture_scale, screen_w, screen_h = self._load_runtime_config()
         if self._renderer is not None:
@@ -97,10 +91,6 @@ class GroundView:
         if self._assets is not None:
             for texture in self._assets.textures.values():
                 rl.unload_texture(texture)
-            if self._assets.particles is not None:
-                rl.unload_texture(self._assets.particles)
-            if self._assets.bodyset is not None:
-                rl.unload_texture(self._assets.bodyset)
             self._assets = None
         if self._renderer is not None and self._renderer.render_target is not None:
             rl.unload_render_texture(self._renderer.render_target)
@@ -127,8 +117,8 @@ class GroundView:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT):
             self._quest_index = (self._quest_index + 1) % max(1, len(self._quests))
             self._apply_quest()
-        if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
-            self._stamp_blood()
+        if self._renderer is not None:
+            self._renderer.process_pending()
 
     def draw(self) -> None:
         rl.clear_background(rl.Color(12, 12, 14, 255))
@@ -141,20 +131,12 @@ class GroundView:
             return
         self._renderer.draw(self._camera_x, self._camera_y)
         self._draw_ui_text(
-            "Left/Right: change level  WASD: pan  LMB: stamp blood",
+            "Left/Right: change level  WASD: pan",
             24,
             24,
             UI_TEXT_COLOR,
             scale=0.9,
         )
-        if self._assets is not None and self._assets.particles is None:
-            self._draw_ui_text(
-                "Note: game/particles.png missing; blood stamping disabled.",
-                24,
-                44,
-                UI_HINT_COLOR,
-                scale=0.8,
-            )
         self._draw_quest_title_overlay()
 
     def _resolve_asset(self, rel_path: str) -> Path | None:
@@ -165,16 +147,6 @@ class GroundView:
         if legacy.is_file():
             return legacy
         return None
-
-    def _load_optional_texture(
-        self, rel_path: str, *, record_missing: bool
-    ) -> rl.Texture | None:
-        path = self._resolve_asset(rel_path)
-        if path is None:
-            if record_missing:
-                self._missing_assets.append(rel_path)
-            return None
-        return rl.load_texture(str(path))
 
     def _load_runtime_config(self) -> tuple[float, float | None, float | None]:
         runtime_dir = Path("artifacts") / "runtime"
@@ -220,83 +192,10 @@ class GroundView:
         renderer = self._renderer
         if renderer is None:
             return
-        renderer.generate_partial(seed=self._terrain_seed, layers=3)
+        renderer.schedule_generate(seed=self._terrain_seed, layers=3)
         if reset_camera:
             self._camera_x = 0.0
             self._camera_y = 0.0
-
-    def _mouse_world_pos(self) -> tuple[float, float] | None:
-        renderer = self._renderer
-        if renderer is None:
-            return None
-
-        out_w = float(rl.get_screen_width())
-        out_h = float(rl.get_screen_height())
-        if out_w <= 0.0 or out_h <= 0.0:
-            return None
-
-        screen_w = float(renderer.screen_width or out_w)
-        screen_h = float(renderer.screen_height or out_h)
-        screen_w = min(screen_w, float(renderer.width))
-        screen_h = min(screen_h, float(renderer.height))
-
-        cam_x, cam_y = renderer._clamp_camera(self._camera_x, self._camera_y, screen_w, screen_h)
-        mouse = rl.get_mouse_position()
-        x = (float(mouse.x) / out_w) * screen_w - cam_x
-        y = (float(mouse.y) / out_h) * screen_h - cam_y
-        x = max(0.0, min(x, float(renderer.width)))
-        y = max(0.0, min(y, float(renderer.height)))
-        return x, y
-
-    @staticmethod
-    def _atlas_src(texture: rl.Texture, *, grid: int, frame: int) -> rl.Rectangle:
-        uv_step = {
-            2: 0.4921875,
-            4: 0.2421875,
-            8: 0.1171875,
-            16: 0.0546875,
-        }.get(grid, 1.0 / float(grid))
-        cell_w = float(texture.width) / float(grid)
-        cell_h = float(texture.height) / float(grid)
-        sample_w = float(texture.width) * uv_step
-        sample_h = float(texture.height) * uv_step
-        inset_x = (cell_w - sample_w) * 0.5
-        inset_y = (cell_h - sample_h) * 0.5
-        col = frame % grid
-        row = frame // grid
-        return rl.Rectangle(
-            cell_w * float(col) + inset_x,
-            cell_h * float(row) + inset_y,
-            sample_w,
-            sample_h,
-        )
-
-    def _stamp_blood(self) -> None:
-        assets = self._assets
-        renderer = self._renderer
-        if assets is None or renderer is None or assets.particles is None:
-            return
-        pos = self._mouse_world_pos()
-        if pos is None:
-            return
-        x, y = pos
-
-        texture = assets.particles
-        # Matches the exe: particles 8x8 atlas, blood effect is frame 5.
-        src = self._atlas_src(texture, grid=8, frame=5)
-        angle = ((self._decal_rng.rand() % 0x13A) * 0.01) % math.tau
-        decal = GroundDecal(
-            texture=texture,
-            src=src,
-            x=x,
-            y=y,
-            width=64.0,
-            height=64.0,
-            rotation_rad=angle,
-            tint=rl.WHITE,
-            centered=True,
-        )
-        renderer.bake_decals([decal])
 
     def _quest_seed(self, level: str) -> int:
         tier_text, quest_text = level.split(".", 1)
