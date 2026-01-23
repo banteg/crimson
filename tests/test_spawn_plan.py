@@ -821,6 +821,167 @@ def test_spawn_plan_template_15_spawns_grid_children() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 83)
 
 
+def test_spawn_plan_template_16_spawns_grid_children() -> None:
+    rng = Crand(0xBEEF)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,  # avoid effect noise
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x16, (100.0, 200.0), 0.0, rng, env)
+
+    assert len(plan.creatures) == 82
+    assert plan.primary == 81
+    assert plan.spawn_slots == ()
+
+    parent = plan.creatures[0]
+    assert parent.type_id == CreatureTypeId.LIZARD
+    assert parent.ai_mode == 2
+    assert parent.health == 1500.0
+    assert parent.max_health == 1500.0
+    assert parent.move_speed == 2.0
+    assert parent.reward_value == 600.0
+    assert parent.size == 64.0
+    assert parent.contact_damage == 40.0
+    assert (parent.tint_r, parent.tint_g, parent.tint_b, parent.tint_a) == (1.0, 1.0, 1.0, 1.0)
+
+    for idx, child in enumerate(plan.creatures[1:], start=0):
+        x_offset = float(-64 * (idx // 9))
+        y_offset = float(0x80 + 0x10 * (idx % 9))
+        expected_type = CreatureTypeId.ALIEN if idx == 80 else CreatureTypeId.LIZARD
+        assert child.type_id == expected_type
+        assert child.ai_mode == 4
+        assert child.ai_link_parent == 0
+        assert child.target_offset_x == x_offset
+        assert child.target_offset_y == y_offset
+        assert child.pos_x == 100.0 + x_offset
+        assert child.pos_y == 200.0 + y_offset
+
+        expected_health = 20.0 if idx == 80 else 40.0
+        assert child.health == expected_health
+        assert child.max_health == expected_health
+        assert child.move_speed == 2.0
+        assert child.reward_value == 60.0
+        assert child.size == 60.0
+        assert child.contact_damage == 4.0
+        assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (0.4, 0.7, 0.11, 1.0)
+
+    # Rand consumption:
+    # - base alloc: 1
+    # - base init random heading: 1
+    # - 81 child allocs: 81
+    assert rng.state == _step_msvcrt(0xBEEF, 83)
+
+
+def test_spawn_plan_template_17_spawns_grid_children() -> None:
+    rng = Crand(0xBEEF)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,  # avoid effect noise
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x17, (100.0, 200.0), 0.0, rng, env)
+
+    assert len(plan.creatures) == 82
+    assert plan.primary == 81
+    assert plan.spawn_slots == ()
+
+    parent = plan.creatures[0]
+    assert parent.type_id == CreatureTypeId.SPIDER_SP1
+    assert parent.ai_mode == 2
+    assert parent.health == 1500.0
+    assert parent.max_health == 1500.0
+    assert parent.move_speed == 2.0
+    assert parent.reward_value == 600.0
+    assert parent.size == 60.0
+    assert parent.contact_damage == 40.0
+    assert (parent.tint_r, parent.tint_g, parent.tint_b, parent.tint_a) == (1.0, 1.0, 1.0, 1.0)
+
+    for idx, child in enumerate(plan.creatures[1:], start=0):
+        x_offset = float(-64 * (idx // 9))
+        y_offset = float(0x80 + 0x10 * (idx % 9))
+        expected_type = CreatureTypeId.ALIEN if idx == 80 else CreatureTypeId.SPIDER_SP1
+        assert child.type_id == expected_type
+        assert child.ai_mode == 4
+        assert child.ai_link_parent == 0
+        assert child.target_offset_x == x_offset
+        assert child.target_offset_y == y_offset
+        assert child.pos_x == 100.0 + x_offset
+        assert child.pos_y == 200.0 + y_offset
+
+        expected_health = 20.0 if idx == 80 else 40.0
+        assert child.health == expected_health
+        assert child.max_health == expected_health
+        assert child.move_speed == 2.0
+        assert child.reward_value == 60.0
+        assert child.size == 50.0
+        assert child.contact_damage == 4.0
+        assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (0.4, 0.7, 0.11, 1.0)
+
+    # Rand consumption:
+    # - base alloc: 1
+    # - base init random heading: 1
+    # - 81 child allocs: 81
+    assert rng.state == _step_msvcrt(0xBEEF, 83)
+
+
+def test_spawn_plan_template_18_spawns_grid_children() -> None:
+    rng = Crand(0xBEEF)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,  # avoid effect noise
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x18, (100.0, 200.0), 0.0, rng, env)
+
+    assert len(plan.creatures) == 82
+    assert plan.primary == 81
+    assert plan.spawn_slots == ()
+
+    parent = plan.creatures[0]
+    assert parent.type_id == CreatureTypeId.ALIEN
+    assert parent.ai_mode == 2
+    assert parent.health == 500.0
+    assert parent.max_health == 500.0
+    assert parent.move_speed == 2.0
+    assert parent.reward_value == 600.0
+    assert parent.size == 40.0
+    assert parent.contact_damage == 40.0
+    assert (parent.tint_r, parent.tint_g, parent.tint_b, parent.tint_a) == (0.7, 0.8, 0.31, 1.0)
+
+    for idx, child in enumerate(plan.creatures[1:], start=0):
+        x_offset = float(-64 * (idx // 9))
+        y_offset = float(0x80 + 0x10 * (idx % 9))
+        assert child.type_id == CreatureTypeId.ALIEN
+        assert child.ai_mode == 3
+        assert child.ai_link_parent == 0
+        assert child.target_offset_x == x_offset
+        assert child.target_offset_y == y_offset
+        assert child.pos_x == 100.0 + x_offset
+        assert child.pos_y == 200.0 + y_offset
+
+        expected_health = 20.0 if idx == 80 else 260.0
+        assert child.health == expected_health
+        assert child.max_health == expected_health
+        assert child.move_speed == 3.8
+        assert child.reward_value == 60.0
+        assert child.size == 50.0
+        assert child.contact_damage == 35.0
+        assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (0.7125, 0.41250002, 0.2775, 0.6)
+
+    # Rand consumption:
+    # - base alloc: 1
+    # - base init random heading: 1
+    # - 81 child allocs: 81
+    assert rng.state == _step_msvcrt(0xBEEF, 83)
+
+
 def test_spawn_plan_template_19_spawns_formation_children() -> None:
     rng = Crand(0xBEEF)
     env = SpawnEnv(
