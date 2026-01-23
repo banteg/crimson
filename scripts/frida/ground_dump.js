@@ -6,11 +6,9 @@
  * Usage:
  *   frida -n crimsonland.exe -l ground_dump.js
  *
- * Commands (via Frida REPL):
- *   rpc.exports.dump()          - Dump ground texture on next terrain_render() (safe)
- *   rpc.exports.dumpNow()       - Best-effort immediate dump
- *   rpc.exports.dumpOnGenerate() - Dump after next terrain_generate
- *   rpc.exports.status()        - Show current state
+ * Behavior:
+ *   Automatically dumps the "ground" render-target texture after every
+ *   `terrain_generate()` call (i.e. whenever a new level terrain is created).
  *
  * Output:
  *   Writes raw BGRA pixel data to C:\share\frida\ground_dump_<timestamp>.raw
@@ -165,8 +163,6 @@ let attached = false;
 
 let currentRenderTarget = -1;  // -1 = backbuffer
 let terrainRtHandle = null;
-let dumpPending = false;
-let dumpOnNextGenerate = false;
 let dumpCount = 0;
 
 // RNG seed tracking
@@ -631,9 +627,12 @@ function dumpGroundTexture() {
         return { success: false, error: "file write failed: " + e };
     }
 
+    dumpCount += 1;
+
     // Log dump metadata to JSONL
     writeLine({
         tag: "dump",
+        dump_index: dumpCount,
         raw_path: rawPath,
         seed_srand: lastSrandSeed,
         seed_at_generate: seedAtGenerate,
@@ -649,8 +648,6 @@ function dumpGroundTexture() {
         globals: globals,
         convert_cmd: "magick -size " + desc.width + "x" + desc.height + " -depth 8 BGRA:" + rawPath + " ground.png",
     });
-
-    dumpCount++;
 
     return {
         success: true,
@@ -742,34 +739,12 @@ function hookTerrainGenerate() {
         },
         onLeave: function (retval) {
             writeLine({ tag: "terrain_generate_exit" });
-            if (dumpOnNextGenerate) {
-                dumpOnNextGenerate = false;
-                // Run the dump from this hooked thread to avoid D3D thread-affinity issues.
-                try {
-                    dumpGroundTexture();
-                } catch (e) {
-                    writeLine({ tag: "dump_error", error: "dump after terrain_generate failed: " + String(e) });
-                }
-            }
-        },
-    });
-}
-
-// Hook terrain_render so manual dumps can run on the render thread.
-function hookTerrainRender() {
-    if (!exeBase) return;
-
-    const addr = exeBase.add(EXE_RVAS.terrain_render);
-    writeLine({ tag: "attach", name: "terrain_render", addr: addr.toString() });
-
-    Interceptor.attach(addr, {
-        onEnter: function (args) {
-            if (!dumpPending) return;
-            dumpPending = false;
+            // Always dump: every `terrain_generate()` call corresponds to a new terrain texture.
+            // Run the dump from this hooked thread to avoid D3D thread-affinity issues.
             try {
                 dumpGroundTexture();
             } catch (e) {
-                writeLine({ tag: "dump_error", error: "dump pending (terrain_render) failed: " + String(e) });
+                writeLine({ tag: "dump_error", error: "auto-dump after terrain_generate failed: " + String(e) });
             }
         },
     });
@@ -853,66 +828,14 @@ function finishInit() {
 
     hookSrand();
     hookTerrainGenerate();
-    hookTerrainRender();
     hookSetRenderTarget();
 
     const globals = readTerrainGlobals();
     writeLine({ tag: "terrain_state", globals: globals });
 
     attached = true;
-    writeLine({ tag: "ready", commands: ["dump()", "dumpNow()", "dumpOnGenerate()", "seed()", "status()"] });
+    writeLine({ tag: "ready", auto_dump: true });
 }
-
-// RPC exports for interactive use
-rpc.exports = {
-    dump: function () {
-        // Schedule on the next `terrain_render()` invocation so we run on the render thread.
-        dumpPending = true;
-        writeLine({ tag: "dump_pending", trigger: "terrain_render" });
-        return { pending: true };
-    },
-
-    dumpNow: function () {
-        // Best-effort immediate dump (may be less reliable on some D3D8 setups).
-        return dumpGroundTexture();
-    },
-
-    dumpOnGenerate: function () {
-        dumpOnNextGenerate = true;
-        writeLine({ tag: "dump_pending", trigger: "terrain_generate" });
-        return { pending: true };
-    },
-
-    status: function () {
-        return {
-            attached: attached,
-            exeBase: exeBase ? exeBase.toString() : null,
-            grimBase: grimBase ? grimBase.toString() : null,
-            d3dDevice: d3dDevice ? d3dDevice.toString() : null,
-            currentRenderTarget: currentRenderTarget,
-            terrainRtHandle: terrainRtHandle,
-            dumpCount: dumpCount,
-            globals: readTerrainGlobals(),
-            lastTerrainGenerate: lastTerrainGenerateInfo,
-        };
-    },
-
-    findDevice: function () {
-        d3dDevice = findD3DDevice();
-        return d3dDevice ? d3dDevice.toString() : null;
-    },
-
-    seed: function () {
-        return {
-            lastSrandSeed: lastSrandSeed,
-            seedAtGenerate: seedAtGenerate,
-        };
-    },
-
-    dumpWithSeed: function () {
-        return dumpGroundTexture();
-    },
-};
 
 // Start
 writeLine({ tag: "start", arch: Process.arch, pointer_size: Process.pointerSize });
