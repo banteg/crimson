@@ -1483,6 +1483,47 @@ def test_spawn_plan_template_3b_is_constant_and_tail_enables_ai7_timer() -> None
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
+def test_spawn_plan_template_3d_is_randomized_and_tail_enables_ai7_timer() -> None:
+    seed = 0xBEEF
+    rng = Crand(seed)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,  # avoid effect noise
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x3D, (100.0, 200.0), 0.0, rng, env)
+
+    state = seed
+    state, _ = _msvcrt_rand(state)  # alloc phase_seed
+    state, _ = _msvcrt_rand(state)  # base init random heading
+    state, r_tint = _msvcrt_rand(state)
+    expected_tint = float(r_tint % 20) * 0.01 + 0.8
+    state, r_size = _msvcrt_rand(state)
+    expected_size = float(r_size % 7 + 45)
+    expected_contact = expected_size * 0.22
+
+    assert plan.primary == 0
+    assert len(plan.creatures) == 1
+    assert plan.spawn_slots == ()
+
+    c = plan.creatures[0]
+    assert c.type_id == CreatureTypeId.SPIDER_SP1
+    assert c.flags == CreatureFlags.AI7_LINK_TIMER
+    assert c.ai_timer == 0
+    assert c.health == 70.0
+    assert c.max_health == 70.0
+    assert math.isclose(c.move_speed or 0.0, 2.6 * 1.2, abs_tol=1e-9)
+    assert c.reward_value == 120.0
+    assert c.size == expected_size
+    assert math.isclose(c.contact_damage or 0.0, expected_contact, abs_tol=1e-9)
+    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (expected_tint, expected_tint, expected_tint, 1.0)
+    assert c.heading == 0.0
+
+    assert rng.state == _step_msvcrt(seed, 4)
+
+
 def test_spawn_plan_template_3e_is_constant_and_tail_enables_ai7_timer() -> None:
     rng = Crand(0xBEEF)
     env = SpawnEnv(
@@ -1509,6 +1550,37 @@ def test_spawn_plan_template_3e_is_constant_and_tail_enables_ai7_timer() -> None
     assert c.size == 64.0
     assert c.contact_damage == 40.0
     assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (1.0, 1.0, 1.0, 1.0)
+    assert c.heading == 0.0
+
+    assert rng.state == _step_msvcrt(0xBEEF, 2)
+
+
+def test_spawn_plan_template_40_is_constant_and_tail_enables_ai7_timer() -> None:
+    rng = Crand(0xBEEF)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,  # avoid effect noise
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x40, (100.0, 200.0), 0.0, rng, env)
+
+    assert plan.primary == 0
+    assert len(plan.creatures) == 1
+    assert plan.spawn_slots == ()
+
+    c = plan.creatures[0]
+    assert c.type_id == CreatureTypeId.SPIDER_SP1
+    assert c.flags == CreatureFlags.AI7_LINK_TIMER
+    assert c.ai_timer == 0
+    assert c.health == 70.0
+    assert c.max_health == 70.0
+    assert math.isclose(c.move_speed or 0.0, 2.2 * 1.2, abs_tol=1e-9)
+    assert c.reward_value == 160.0
+    assert c.size == 45.0
+    assert c.contact_damage == 5.0
+    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.5, 0.6, 0.9, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
