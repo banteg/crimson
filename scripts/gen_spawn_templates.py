@@ -1,162 +1,39 @@
 from __future__ import annotations
 
-import re
+import sys
 from pathlib import Path
 
 
-DECOMP_PATH = Path("analysis/ghidra/raw/crimsonland.exe_decompiled.c")
-DOC_PATH = Path("docs/creature-struct.md")
-CODE_PATH = Path("src/crimson/spawn_templates.py")
+DOC_PATH = Path("docs/structs/creature.md")
 
 START_MARKER = "<!-- spawn-templates:start -->"
 END_MARKER = "<!-- spawn-templates:end -->"
 
-TYPE_ID_TO_NAME = {
-    0: "zombie",
-    1: "lizard",
-    2: "alien",
-    3: "spider_sp1",
-    4: "spider_sp2",
-    5: "trooper",
-}
 
-FLAG_DEFS: tuple[tuple[str, int, str], ...] = (
-    ("SELF_DAMAGE_TICK", 0x1, "periodic self-damage tick (dt * 60)"),
-    ("SELF_DAMAGE_TICK_STRONG", 0x2, "stronger self-damage tick (dt * 180)"),
-    ("ANIM_PING_PONG", 0x4, "short ping-pong strip"),
-    ("SPLIT_ON_DEATH", 0x8, "split-on-death behavior"),
-    ("RANGED_ATTACK_SHOCK", 0x10, "ranged attack using projectile type 9"),
-    ("ANIM_LONG_STRIP", 0x40, "force long animation strip"),
-    ("AI7_LINK_TIMER", 0x80, "uses link index as timer for AI mode 7"),
-    ("RANGED_ATTACK_VARIANT", 0x100, "ranged attack using orbit_radius as projectile type"),
-    ("BONUS_ON_DEATH", 0x400, "spawns bonus on death"),
-)
-
-ANIM_NOTES = {
-    0x4: "short strip (ping-pong)",
-    0x40: "long strip",
-    0x44: "long strip (0x40 overrides 0x4)",
-}
+def _repo_import() -> None:
+    # Add `src/` to sys.path so we can import `crimson.*` from the repo root.
+    repo_root = Path(__file__).resolve().parents[1]
+    sys.path.insert(0, str(repo_root / "src"))
 
 
-def extract_function(text: str, label: str) -> str:
-    idx = text.find(label)
-    if idx == -1:
-        raise SystemExit(f"function label not found: {label}")
-    rest = text[idx + 1 :]
-    m = re.search(r"^/\\* .* @ [0-9A-Fa-f]{8} \\*/", rest, re.MULTILINE)
-    end = len(text) if m is None else idx + 1 + m.start()
-    return text[idx:end]
+def _format_flags(flags: object | None) -> str:
+    if flags is None:
+        return ""
+    # flags is an IntFlag; render as a single hex value (this matches existing docs style).
+    return f"0x{int(flags):x}"
 
 
-def extract_first_function(text: str, labels: tuple[str, ...]) -> str:
-    for label in labels:
-        if label in text:
-            return extract_function(text, label)
-    joined = ", ".join(labels)
-    raise SystemExit(f"function label not found: {joined}")
+def _replace_block(text: str, replacement: str) -> str:
+    if START_MARKER not in text or END_MARKER not in text:
+        raise SystemExit(f"spawn template markers not found in {DOC_PATH}")
+    before, rest = text.split(START_MARKER, 1)
+    _, after = rest.split(END_MARKER, 1)
+    return f"{before}{START_MARKER}\n{replacement}{END_MARKER}{after}"
 
 
-def build_case_map(block: str) -> dict[str, dict[str, str | None]]:
-    case_re = re.compile(r"\bif \((?:param_1|template_id) == ([^\)]+)\)")
-    negated_re = re.compile(r"\bif \((?:param_1|template_id) != ([^\)]+)\)")
-    assign_type_re = re.compile(
-        r"\((?:\&DAT_0049bfa4|\&creature_type_id)\)\[iVar4 \* 0x26\] = ([^;]+);"
-    )
-    assign_flags_re = re.compile(
-        r"\*\((?:undefined4|uint) \*\)\((?:\&DAT_0049bfc4|\&creature_flags) \+ iVar8\) = ([^;]+);"
-    )
-
-    cases: dict[str, dict[str, list[str]]] = {}
-    pending: str | None = None
-    pending_negated: str | None = None
-    pending_else: str | None = None
-    active: list[tuple[str, int]] = []
-    negated_active: list[tuple[str, int]] = []
-    depth = 0
-
-    for line in block.splitlines():
-        stripped = line.strip()
-        m = case_re.search(stripped)
-        if m:
-            val = m.group(1).strip()
-            if "{" in stripped:
-                active.append((val, depth + 1))
-            else:
-                pending = val
-        m_negated = negated_re.search(stripped)
-        if m_negated:
-            val = m_negated.group(1).strip()
-            if "{" in stripped:
-                negated_active.append((val, depth + 1))
-            else:
-                pending_negated = val
-        if pending and "{" in stripped:
-            active.append((pending, depth + 1))
-            pending = None
-        if pending_negated and "{" in stripped:
-            negated_active.append((pending_negated, depth + 1))
-            pending_negated = None
-        if pending_else and "{" in stripped:
-            active.append((pending_else, depth + 1))
-            pending_else = None
-
-        is_else = "else" in stripped and "else if" not in stripped
-        if is_else:
-            for idx in range(len(negated_active) - 1, -1, -1):
-                case_val, case_depth = negated_active[idx]
-                if case_depth == depth:
-                    negated_active.pop(idx)
-                    if "{" in stripped:
-                        active.append((case_val, depth))
-                    else:
-                        pending_else = case_val
-                    break
-
-        if active:
-            mt = assign_type_re.search(stripped)
-            if mt:
-                val_assign = mt.group(1).strip()
-                for case_val, _ in active:
-                    entry = cases.setdefault(case_val, {"type": [], "flags": []})
-                    entry["type"].append(val_assign)
-            mf = assign_flags_re.search(stripped)
-            if mf:
-                val_assign = mf.group(1).strip()
-                for case_val, _ in active:
-                    entry = cases.setdefault(case_val, {"type": [], "flags": []})
-                    entry["flags"].append(val_assign)
-
-        depth += stripped.count("{")
-        depth -= stripped.count("}")
-        active = [(v, d) for (v, d) in active if depth >= d]
-        negated_active = [(v, d) for (v, d) in negated_active if depth >= d]
-
-    summary: dict[str, dict[str, str | None]] = {}
-    for key, val in cases.items():
-        summary[key] = {
-            "type": val["type"][-1] if val["type"] else None,
-            "flags": val["flags"][-1] if val["flags"] else None,
-        }
-    return summary
-
-
-def _parse_int(value: str | None) -> int | None:
-    if value is None or value == "":
-        return None
-    try:
-        return int(value, 0)
-    except ValueError:
-        return None
-
-
-def format_table(case_map: dict[str, dict[str, str | None]]) -> str:
-
-    def sort_key(val: str) -> int:
-        try:
-            return int(val, 0)
-        except ValueError:
-            return 1_000_000
+def _render_table() -> str:
+    _repo_import()
+    from crimson.spawn_templates import SPAWN_TEMPLATES  # noqa: PLC0415
 
     lines = [
         "Generated by `uv run python scripts/gen_spawn_templates.py`.",
@@ -164,160 +41,23 @@ def format_table(case_map: dict[str, dict[str, str | None]]) -> str:
         "| Spawn id (template_id) | Type id | Creature | Flags (creature_flags) | Anim note |",
         "| --- | --- | --- | --- | --- |",
     ]
-
-    for key in sorted(case_map, key=sort_key):
-        entry = case_map[key]
-        try:
-            key_disp = hex(int(key, 0))
-        except ValueError:
-            key_disp = key
-        type_id = entry["type"] or ""
-        flags = entry["flags"] or ""
-        type_val = _parse_int(type_id)
-        creature = TYPE_ID_TO_NAME.get(type_val, "") if type_val is not None else ""
-        flags_val = _parse_int(flags)
-        note = ANIM_NOTES.get(flags_val, "")
-        flags_disp = flags
-        if flags_val is not None:
-            flags_disp = hex(flags_val)
-        lines.append(f"| `{key_disp}` | `{type_id}` | `{creature}` | `{flags_disp}` | {note} |")
-
-    lines.append("")
-    lines.append("")
-    return "\n".join(lines)
-
-
-def render_code(case_map: dict[str, dict[str, str | None]]) -> str:
-    def enum_member_name(name: str) -> str:
-        cleaned = re.sub(r"[^A-Za-z0-9]+", "_", name).strip("_")
-        return cleaned.upper() or "UNKNOWN"
-
-    def format_flags(flags: int | None) -> str:
-        if flags is None:
-            return "None"
-        remaining = flags
-        parts: list[str] = []
-        for name, value, _ in FLAG_DEFS:
-            if remaining & value:
-                parts.append(f"CreatureFlags.{name}")
-                remaining &= ~value
-        if not parts and remaining:
-            return f"CreatureFlags({remaining:#x})"
-        if remaining:
-            parts.append(f"CreatureFlags({remaining:#x})")
-        return " | ".join(parts)
-
-    def sort_key(val: str) -> int:
-        try:
-            return int(val, 0)
-        except ValueError:
-            return 1_000_000
-
-    lines = [
-        "from __future__ import annotations",
-        "",
-        "# Generated by `uv run python scripts/gen_spawn_templates.py`.",
-        "\"\"\"Spawn template ids extracted from creature_spawn_template (FUN_00430af0).\"\"\"",
-        "",
-        "from dataclasses import dataclass",
-        "from enum import IntEnum, IntFlag",
-        "",
-        "",
-        "class CreatureTypeId(IntEnum):",
-    ]
-
-    for type_id, name in sorted(TYPE_ID_TO_NAME.items()):
-        lines.append(f"    {enum_member_name(name)} = {type_id}")
-
-    lines.extend(
-        [
-            "",
-            "",
-            "class CreatureFlags(IntFlag):",
-        ]
-    )
-
-    for name, value, comment in FLAG_DEFS:
-        lines.append(f"    {name} = 0x{value:02x}  # {comment}")
-
-    lines.extend(
-        [
-            "",
-            "",
-        "@dataclass(frozen=True, slots=True)",
-        "class SpawnTemplate:",
-        "    spawn_id: int",
-        "    type_id: CreatureTypeId | None",
-        "    flags: CreatureFlags | None",
-        "    creature: str | None",
-        "    anim_note: str | None",
-        "",
-        f"TYPE_ID_TO_NAME = {TYPE_ID_TO_NAME!r}",
-        "",
-        "SPAWN_TEMPLATES = [",
-        ]
-    )
-
-    for key in sorted(case_map, key=sort_key):
-        entry = case_map[key]
-        spawn_id = _parse_int(key)
-        type_id = _parse_int(entry.get("type"))
-        flags = _parse_int(entry.get("flags"))
-        creature = TYPE_ID_TO_NAME.get(type_id) if type_id is not None else None
-        anim_note = ANIM_NOTES.get(flags)
-        spawn_part = f"spawn_id=0x{spawn_id:02x}" if spawn_id is not None else "spawn_id=None"
-        if type_id is None:
-            type_expr = "None"
-        elif type_id in TYPE_ID_TO_NAME:
-            type_expr = f"CreatureTypeId.{enum_member_name(TYPE_ID_TO_NAME[type_id])}"
-        else:
-            type_expr = repr(type_id)
+    for entry in sorted(SPAWN_TEMPLATES, key=lambda t: t.spawn_id):
+        type_id = "" if entry.type_id is None else str(int(entry.type_id))
+        creature = "" if entry.creature is None else entry.creature
+        anim_note = "" if entry.anim_note is None else entry.anim_note
         lines.append(
-            "    SpawnTemplate("
-            f"{spawn_part}, type_id={type_expr}, flags={format_flags(flags)}, "
-            f"creature={creature!r}, anim_note={anim_note!r}),"
+            f"| `0x{entry.spawn_id:x}` | `{type_id}` | `{creature}` | `{_format_flags(entry.flags)}` | {anim_note} |"
         )
-
-    lines.extend(
-        [
-            "]",
-            "",
-            "SPAWN_ID_TO_TEMPLATE = {entry.spawn_id: entry for entry in SPAWN_TEMPLATES}",
-            "",
-            "",
-            "def spawn_id_label(spawn_id: int) -> str:",
-            "    entry = SPAWN_ID_TO_TEMPLATE.get(spawn_id)",
-            "    if entry is None or entry.creature is None:",
-            "        return \"unknown\"",
-            "    return entry.creature",
-            "",
-        ]
-    )
+    lines.append("")
     return "\n".join(lines)
 
 
-def replace_block(text: str, replacement: str) -> str:
-    if START_MARKER not in text or END_MARKER not in text:
-        raise SystemExit("spawn template markers not found in docs/creature-struct.md")
-    before, rest = text.split(START_MARKER, 1)
-    _, after = rest.split(END_MARKER, 1)
-    return f"{before}{START_MARKER}\n{replacement}{END_MARKER}{after}"
-
-
-def main() -> int:
-    text = DECOMP_PATH.read_text(encoding="utf-8")
-    block = extract_first_function(text, ("/* creature_spawn_template", "/* FUN_00430af0"))
-    case_map = build_case_map(block)
-    replacement = format_table(case_map)
-
-    doc = DOC_PATH.read_text(encoding="utf-8")
-    updated = replace_block(doc, replacement)
-    DOC_PATH.write_text(updated, encoding="utf-8")
-
-    code = render_code(case_map)
-    CODE_PATH.write_text(code, encoding="utf-8")
-    return 0
+def main() -> None:
+    doc_text = DOC_PATH.read_text(encoding="utf-8")
+    new_block = _render_table()
+    DOC_PATH.write_text(_replace_block(doc_text, new_block), encoding="utf-8")
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    main()
+
