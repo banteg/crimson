@@ -340,20 +340,23 @@ class DemoView:
             return
 
         small = self._ensure_small_font()
-        purchase_tex = self._ensure_cache().get_or_load("ui_button_purchase", "ui/ui_button_82x32.jaz").texture
-        maybe_tex = self._ensure_cache().get_or_load("ui_button_maybe", "ui/ui_button_145x32.jaz").texture
+        # ui_button_update uses the medium (145px wide) button sprite here (the per-button
+        # "small" flag at +0x14 is 0 for both purchase/maybe-later globals).
+        button_tex = self._ensure_cache().get_or_load("ui_button_md", "ui/ui_button_145x32.jaz").texture
 
-        if purchase_tex is None or maybe_tex is None:
+        if button_tex is None:
             return
 
         w = float(self._state.config.screen_width)
         h = float(self._state.config.screen_height)
         wide_shift = self._purchase_var_28_2()
         button_x = w / 2.0 + 128.0
-        button_base_y = h / 2.0 + 102.0 + wide_shift * 0.300000012 + 50.0
+        button_base_y = h / 2.0 + 102.0 + wide_shift * 0.300000012
+        purchase_y = button_base_y + 50.0
+        maybe_y = button_base_y + 90.0
 
-        purchase_rect = rl.Rectangle(button_x, button_base_y, float(purchase_tex.width), float(purchase_tex.height))
-        maybe_rect = rl.Rectangle(button_x, button_base_y + 90.0, float(maybe_tex.width), float(maybe_tex.height))
+        purchase_rect = rl.Rectangle(button_x, purchase_y, float(button_tex.width), float(button_tex.height))
+        maybe_rect = rl.Rectangle(button_x, maybe_y, float(button_tex.width), float(button_tex.height))
 
         mouse = rl.get_mouse_position()
         if (
@@ -498,13 +501,14 @@ class DemoView:
 
         # Buttons on the right.
         cache = self._ensure_cache()
-        purchase_tex = cache.get_or_load("ui_button_purchase", "ui/ui_button_82x32.jaz").texture
-        maybe_tex = cache.get_or_load("ui_button_maybe", "ui/ui_button_145x32.jaz").texture
-        if purchase_tex is None or maybe_tex is None:
+        button_tex = cache.get_or_load("ui_button_md", "ui/ui_button_145x32.jaz").texture
+        if button_tex is None:
             return
 
         button_x = screen_w / 2.0 + 128.0
-        button_base_y = screen_h / 2.0 + 102.0 + wide_shift * 0.300000012 + 50.0
+        button_base_y = screen_h / 2.0 + 102.0 + wide_shift * 0.300000012
+        purchase_y = button_base_y + 50.0
+        maybe_y = button_base_y + 90.0
         mouse = rl.get_mouse_position()
 
         def draw_button(texture: rl.Texture2D, label: str, x: float, y0: float) -> None:
@@ -520,8 +524,8 @@ class DemoView:
             alpha = 1.0 if hovered else 0.699999988
             draw_small_text(small, label, text_x, text_y, label_scale, rl.Color(255, 255, 255, int(255 * alpha)))
 
-        draw_button(purchase_tex, "Purchase", button_x, button_base_y)
-        draw_button(maybe_tex, "Maybe later", button_x, button_base_y + 90.0)
+        draw_button(button_tex, "Purchase", button_x, purchase_y)
+        draw_button(button_tex, "Maybe later", button_x, maybe_y)
 
     def _advance_anim_phase(self, dt: float) -> None:
         for creature in self._creatures:
