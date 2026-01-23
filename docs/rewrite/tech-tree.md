@@ -24,7 +24,7 @@ it unlocks for parity. Goal: 100% replication of game logic.
 - [x] Panel menu slide animation (panel + BACK) -> Unlocks: Play/Options/etc screen frame parity.
 - [x] Menu sign shadow pass (fx_detail) -> Unlocks: exact menu draw-pass parity.
 - [x] Demo/attract scaffold -> Unlocks: idle flow and animation sanity checks.
-- [ ] Demo loop parity (idle trigger + variant sequencing + restart rules) -> Unlocks: title-screen behavior parity.
+- [x] Demo loop parity (idle trigger + variant sequencing + restart rules) -> Unlocks: title-screen behavior parity.
 - [x] Demo upsell overlay (demo builds) -> Unlocks: shareware messaging parity.
 - [ ] Demo trial overlay (demo builds) -> Unlocks: trial messaging parity.
 - [x] Demo purchase screen flow (demo builds) -> Unlocks: upsell UI parity.

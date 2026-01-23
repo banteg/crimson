@@ -263,6 +263,9 @@ MENU_SIGN_POS_Y = 70.0
 MENU_SIGN_POS_Y_SMALL = 60.0
 MENU_SIGN_POS_X_PAD = 4.0
 
+# TODO: confirm the exact idle threshold from the original demo build.
+MENU_DEMO_IDLE_START_MS = 30_000
+
 PANEL_POS_X = -45.0
 PANEL_POS_Y = 210.0
 PANEL_BACK_POS_X = -55.0
@@ -591,6 +594,9 @@ class MenuView:
         self._full_version = False
         self._timeline_ms = 0
         self._timeline_max_ms = 0
+        self._idle_ms = 0
+        self._last_mouse_x = 0.0
+        self._last_mouse_y = 0.0
         self._widescreen_y_shift = 0.0
         self._menu_screen_width = 0
         self._closing = False
@@ -617,6 +623,10 @@ class MenuView:
         self._focus_timer_ms = 0
         self._hovered_index = None
         self._timeline_ms = 0
+        self._idle_ms = 0
+        mouse = rl.get_mouse_position()
+        self._last_mouse_x = float(mouse.x)
+        self._last_mouse_y = float(mouse.y)
         self._closing = False
         self._close_action = None
         self._pending_action = None
@@ -644,6 +654,27 @@ class MenuView:
                     self._pending_action = self._close_action
                     self._close_action = None
             return
+
+        if dt_ms > 0:
+            mouse = rl.get_mouse_position()
+            mouse_x = float(mouse.x)
+            mouse_y = float(mouse.y)
+            mouse_moved = (mouse_x != self._last_mouse_x) or (mouse_y != self._last_mouse_y)
+            if mouse_moved:
+                self._last_mouse_x = mouse_x
+                self._last_mouse_y = mouse_y
+
+            any_key = rl.get_key_pressed() != 0
+            any_click = (
+                rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
+                or rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_RIGHT)
+                or rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_MIDDLE)
+            )
+
+            if any_key or any_click or mouse_moved:
+                self._idle_ms = 0
+            else:
+                self._idle_ms += dt_ms
 
         if dt_ms > 0:
             self._timeline_ms = min(self._timeline_max_ms, self._timeline_ms + dt_ms)
@@ -678,6 +709,14 @@ class MenuView:
 
         if activated_index is not None:
             self._activate_menu_entry(activated_index)
+        if (
+            (not self._closing)
+            and self._pending_action is None
+            and self._state.demo_enabled
+            and self._timeline_ms >= self._timeline_max_ms
+            and self._idle_ms >= MENU_DEMO_IDLE_START_MS
+        ):
+            self._begin_close_transition("start_demo")
         self._update_ready_timers(dt_ms)
         self._update_hover_amounts(dt_ms)
 
@@ -1494,6 +1533,13 @@ class GameLoopView:
             action = self._menu.take_action()
             if action == "quit_app":
                 self._state.quit_requested = True
+                return
+            if action == "start_demo":
+                self._menu.close()
+                self._menu_active = False
+                self._demo.open()
+                self._active = self._demo
+                self._demo_active = True
                 return
             if action == "quit_after_demo":
                 self._menu.close()

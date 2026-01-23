@@ -44,8 +44,8 @@ Intentional divergences from the original:
 Legend: ✅ complete · 🚧 in progress · ⬜ not started
 
 - ✅ Identify spawn ids used by demo variants (0x24, 0x25, 0x34, 0x35, 0x38, 0x41) and port to spawn-plan rewrite.
-- ⬜ Fix demo loop sequencing to match `demo_mode_start` (variant index modulo 6, purchase interstitial timing, restart rules).
-- ⬜ Add menu idle timer trigger (attract starts after inactivity; resets on input).
+- ✅ Fix demo loop sequencing to match `demo_mode_start` (variant index modulo 6, purchase interstitial timing, restart rules).
+- ✅ Add menu idle timer trigger (attract starts after inactivity; resets on input).
 - ✅ Implement demo upsell overlay (upsell "Want more ..." message + progress bar).
 - ⬜ Implement `demo_trial_overlay_render` for demo builds (trial messaging + timing).
 - ✅ Implement full `demo_purchase_screen_update` purchase screen UI.
