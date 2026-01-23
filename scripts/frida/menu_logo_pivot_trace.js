@@ -314,7 +314,8 @@ function hookUiElementUpdate(addr) {
                 end_time_ms: safeReadI32(this.elem.add(0x14)),
                 enable_byte: safeReadU8(this.elem.add(0x0)),
                 clicked_byte: safeReadU8(this.elem.add(0x1)),
-                render_mode: safeReadU8(this.elem.add(0x2)),
+                update_disabled: safeReadU8(this.elem.add(0x2)),
+                render_mode: safeReadI32(this.elem.add(0x4)),
                 transform: tr,
                 globals: g,
             });

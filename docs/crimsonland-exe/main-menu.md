@@ -75,9 +75,9 @@ Animation note:
 - It uses the same default `start_time_ms=300` / `end_time_ms=0` window as other UI elements,
   but it is **locked** to a steady 0° pose during normal menu navigation.
 - When `ui_elements_timeline` overshoots `ui_elements_max_timeline()` and is clamped, `ui_elements_update_and_render`
-  writes `1` to `ui_signCrimson + 0x2` (absolute `0x00487292`). When this byte is `1`, `ui_element_update` early-returns
+  writes `1` to `ui_sign_crimson_update_disabled` (absolute `0x00487292`). When this byte is `1`, `ui_element_update` early-returns
   and the sign does **not** pivot during transitions to Play Game / Options / etc.
-- The quit callback (`sub_447450`) clears `0x00487292` back to `0`, allowing the sign to pivot out during the last
+- The quit callback (`ui_menu_main_click_quit @ 0x00447450`) clears `0x00487292` back to `0`, allowing the sign to pivot out during the last
   `300ms` of the close.
 - When `fx_detail` is enabled (`config_blob.reserved0[0xe] != 0`), `ui_element_render` also draws a
   shadow pass with `+7,+7` offset and tint `0x44444444` using the same transform (rotation matrix).
@@ -85,11 +85,11 @@ Animation note:
 Runtime verification (Frida):
 
 - Script: `scripts/frida/menu_logo_pivot_trace.js`
-- Output: `C:\share\frida\menu_logo_pivot_trace.jsonl` (copied into repo as `analysis/frida/raw/menu_logo_pivot_trace.jsonl`)
+- Output: `C:\share\frida\menu_logo_pivot_trace.jsonl` (raw logs are gitignored; see `analysis/frida/menu_logo_pivot_trace_summary.json` for this run)
 - Logs `logo_update` / `logo_render` while `ui_elements_timeline <= 350` (or when the logo angle is non-zero).
 - Observed:
-  - Play / Options: `logo_update.render_mode == 1` and `angle_deg == 0` for the whole close (no pivot).
-  - Quit: `logo_update.render_mode == 0` and `angle_deg` ramps from `0` to `-90` as `timeline` goes `299 -> 0`.
+  - Play / Options: `logo_update.update_disabled == 1` and `angle_deg == 0` for the whole close (no pivot).
+  - Quit: `logo_update.update_disabled == 0` and `angle_deg` ramps from `0` to `-90` as `timeline` goes `299 -> 0`.
 
 ### `ui_menuItem.jaz` (menu item button)
 
@@ -112,9 +112,9 @@ This is **not used in state 0** (but used by other menus/screens):
 Panel-based screens (e.g. Play Game, Options) use the panel template plus a single
 `BACK` menu item, but **they do not rotate in** like the main-menu items.
 
-In `ui_menu_layout_init` these elements have `render_mode = 1` (offset mode), so
+In `ui_menu_layout_init` these elements have `render_mode = 1` (element+0x4 == 1, offset mode), so
 `ui_element_render` draws them using `pos + offset_xy` instead of the rotation matrix.
-`ui_element_update` animates the X offset from `±abs(width)` to `0` over the default
+`ui_element_update` animates the X offset from `+/-abs(width)` to `0` over the default
 `[end_time_ms .. start_time_ms] = [0 .. 300]` ms window.
 
 Known positions (before widescreen shift):
@@ -270,7 +270,10 @@ Important behavior:
 
 ## Animation (`ui_element_update @ 0x00446900`)
 
-Menu items use `render_mode == 0` ("transform") and animate via rotation:
+Menu items use `render_mode == 0` (element+0x4 == 0, "transform") and animate via rotation:
+
+Note: `element+0x2` is an update-disable flag; when non-zero `ui_element_update` returns immediately
+(used to lock the logo sign during menu navigation).
 
 - Fully hidden: `angle = ±pi/2`
 - Fully visible: `angle = 0`
@@ -287,7 +290,7 @@ m11 = cos(angle)
 ```
 
 `slide_x` is computed for all elements, but is only used when
-`render_mode == 1` ("offset"). For main menu items (`render_mode == 0`) it is
+`render_mode == 1` (element+0x4 == 1, "offset"). For main menu items (`render_mode == 0`) it is
 ignored by the render path.
 
 ## Hit testing bounds (`FUN_0044fb50 @ 0x0044fb50`)

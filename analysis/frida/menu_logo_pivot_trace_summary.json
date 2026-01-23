@@ -16,7 +16,7 @@
       "logo_dirs": [
         0
       ],
-      "logo_render_modes": [
+      "logo_update_disabled_values": [
         1
       ],
       "logo_timeline_max": 349,
@@ -41,7 +41,7 @@
       "logo_dirs": [
         0
       ],
-      "logo_render_modes": [
+      "logo_update_disabled_values": [
         1
       ],
       "logo_timeline_max": 350,
@@ -66,7 +66,7 @@
       "logo_dirs": [
         0
       ],
-      "logo_render_modes": [
+      "logo_update_disabled_values": [
         0
       ],
       "logo_timeline_max": 349,
@@ -84,7 +84,7 @@
       "angle_deg_min": -90.00000250447806,
       "count": 99,
       "dir": 0,
-      "render_mode": 0,
+      "update_disabled": 0,
       "state_id": 0,
       "state_pending": 10,
       "timeline_max": 299,
@@ -96,7 +96,7 @@
       "angle_deg_min": -88.79999965227,
       "count": 97,
       "dir": 1,
-      "render_mode": 0,
+      "update_disabled": 0,
       "state_id": 0,
       "state_pending": 0,
       "timeline_max": 299,
@@ -108,7 +108,7 @@
       "angle_deg_min": -90.00000250447806,
       "count": 1,
       "dir": 1,
-      "render_mode": 0,
+      "update_disabled": 0,
       "state_id": 10,
       "state_pending": 25,
       "timeline_max": 0,
@@ -116,7 +116,7 @@
     }
   ],
   "notes": {
-    "logo_lock_byte": "ui_signCrimson + 0x2 (absolute 0x00487292 in this build)",
+    "logo_lock_byte": "ui_sign_crimson_update_disabled (0x00487292 in this build)",
     "observed_behavior": "Play/Options keep logo locked (no pivot); Quit clears lock and pivots out; initial boot pivots in before lock is set."
   },
   "script": "scripts/frida/menu_logo_pivot_trace.js",

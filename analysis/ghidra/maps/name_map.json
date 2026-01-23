@@ -2926,6 +2926,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00447370",
+    "name": "ui_menu_main_click_options",
+    "signature": "void ui_menu_main_click_options(void)",
+    "comment": "main menu OPTIONS click callback (sets ui_transition_direction=0 and game_state_pending=2)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x004473e0",
     "name": "FUN_004473e0",
     "signature": "int FUN_004473e0(void)",
@@ -2933,10 +2940,24 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00447400",
+    "name": "ui_menu_main_click_play_game",
+    "signature": "void ui_menu_main_click_play_game(void)",
+    "comment": "main menu PLAY GAME click callback (sets ui_transition_direction=0 and game_state_pending=1)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00447420",
     "name": "FUN_00447420",
     "signature": "int FUN_00447420(void)",
     "comment": "[binja] int32_t sub_447420()"
+  },
+  {
+    "program": "crimsonland.exe",
+    "address": "0x00447450",
+    "name": "ui_menu_main_click_quit",
+    "signature": "void ui_menu_main_click_quit(void)",
+    "comment": "main menu QUIT click callback (clears ui_sign_crimson_update_disabled, sets ui_transition_direction=0, game_state_pending=10, mutes music)"
   },
   {
     "program": "crimsonland.exe",

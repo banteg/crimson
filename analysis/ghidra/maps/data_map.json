@@ -1919,6 +1919,18 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00487290",
+      "comment": "Main menu logo sign UI element (ui_signCrimson).",
+      "name": "ui_sign_crimson",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00487292",
+      "comment": "Logo sign update-disable lock (ui_sign_crimson + 0x2). When nonzero, ui_element_update early-returns so the sign stays at 0deg. Set by ui_elements_update_and_render when timeline is clamped; cleared by ui_menu_main_click_quit so the sign can pivot out on quit.",
+      "name": "ui_sign_crimson_update_disabled",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x0048f168",
       "comment": "UI element table end pointer (iterated by ui_elements_update_and_render).",
       "name": "ui_element_table_end",
