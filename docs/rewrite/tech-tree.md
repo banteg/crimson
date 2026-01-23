@@ -20,6 +20,9 @@ it unlocks for parity. Goal: 100% replication of game logic.
 - [x] Intro/theme music playback -> Unlocks: boot/menu audio parity.
 - [x] Main menu layout + animation scaffold -> Unlocks: menu navigation work.
 - [x] Demo/attract scaffold -> Unlocks: idle flow and animation sanity checks.
+- [ ] Demo loop parity (idle trigger + variant sequencing + restart rules) -> Unlocks: title-screen behavior parity.
+- [ ] Demo purchase screen flow (demo builds) -> Unlocks: upsell UI parity.
+- [ ] Demo trial overlay (demo builds) -> Unlocks: trial messaging parity.
 
 ## Data tables + content
 
@@ -42,6 +45,7 @@ it unlocks for parity. Goal: 100% replication of game logic.
 - [ ] Weapon firing + reload timers -> Unlocks: combat timing parity.
 - [ ] Projectile system (spawn/update/collide) -> Unlocks: damage + FX.
 - [ ] Creature updates + spawners -> Unlocks: enemy waves in modes.
+- [ ] Replace DemoView toy simulation with real gameplay systems -> Unlocks: reuse gameplay loop for attract mode.
 - [ ] Bonus/perk application logic -> Unlocks: timers + power-up effects.
 - [ ] HUD overlay (health/ammo/bonuses) -> Unlocks: in-game UI parity.
 - [ ] SFX playback (non-music) -> Unlocks: gameplay/audio feedback.

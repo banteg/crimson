@@ -13,6 +13,7 @@ Legend: ✅ complete · 🚧 in progress · ⬜ not started
 | Terrain | ✅ | ✅ | ✅ | 🚧 | Rendering logic validated; baking pipeline in progress. |
 | Boot Sequence | ✅ | ✅ | ✅ | 🚧 | Logos, loading steps, and music handoff implemented. |
 | Menu System | ✅ | ✅ | 🚧 | ⬜ | State 0 scaffolded; transitions/layout need polish. |
+| Demo / attract loop | ✅ | 🚧 | ⬜ | ⬜ | Variants + spawn ids identified; purchase/idle/loop behavior still stubbed. |
 | Weapons | ✅ | ✅ | 🚧 | ⬜ | Table structure known; projectile logic pending. |
 | Creatures: structs | ✅ | 🚧 | ⬜ | ⬜ | Creature pool field map is medium-confidence; needs more xrefs + runtime checks. |
 | Creatures: spawning | ✅ | 🚧 | ⬜ | ⬜ | Spawn templates are an algorithm (formations/spawn slots/tail mods); plan rewrite started. |
@@ -37,3 +38,14 @@ See [Work status model](work-status.md) for the full lifecycle:
 Intentional divergences from the original:
 
 - None recorded yet.
+
+## Demo / attract loop tasks (rewrite)
+
+Legend: ✅ complete · 🚧 in progress · ⬜ not started
+
+- ✅ Identify spawn ids used by demo variants (0x24, 0x25, 0x34, 0x35, 0x38, 0x41) and port to spawn-plan rewrite.
+- ⬜ Fix demo loop sequencing to match `demo_mode_start` (variant index modulo 6, purchase interstitial timing, restart rules).
+- ⬜ Add menu idle timer trigger (attract starts after inactivity; resets on input).
+- ⬜ Implement `demo_purchase_screen_update` UI (upsell messages, buttons, cursor, timeouts) for demo builds.
+- ⬜ Implement `demo_trial_overlay_render` for demo builds (trial messaging + timing).
+- ⬜ Replace DemoView toy simulation with real gameplay systems (creature alloc/update, weapons/projectiles, collision/damage, terrain bounds).
