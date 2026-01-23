@@ -172,9 +172,9 @@ ida-decompile-grim:
 [unix]
 frida-copy-share:
     mkdir -p {{frida_share_dir}}
-    for f in {{share_dir}}/*.jsonl; do \
+    for f in {{share_dir}}/*; do \
         [ -e "$f" ] || continue; \
-        cp -v "$f" {{frida_share_dir}}/; \
+        cp -av "$f" {{frida_share_dir}}/; \
     done
 
 # Screenshots
