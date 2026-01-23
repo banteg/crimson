@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 
 from ..perks import PerkId
+from .helpers import center_point, ring_points
 from .registry import register_quest
 from .types import QuestContext, SpawnEntry
 
@@ -304,16 +305,15 @@ def build_5_8_monster_blues(ctx: QuestContext) -> list[SpawnEntry]:
 def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
 
-    for idx in range(8):
-        angle = idx * 0.7853982
-        x = math.cos(angle) * 128.0 + 512.0
-        y = math.sin(angle) * 128.0 + 512.0
+    center_x, center_y = center_point(ctx.width, ctx.height)
+    for x, y, angle in ring_points(
+        center_x, center_y, 128.0, 8, step=0.7853982
+    ):
         entries.append(SpawnEntry(x, y, angle, SPAWN_ID_64, 2000, 1))
 
-    for idx in range(12):
-        angle = idx * 0.5235988
-        x = math.cos(angle) * 178.0 + 512.0
-        y = math.sin(angle) * 178.0 + 512.0
+    for x, y, angle in ring_points(
+        center_x, center_y, 178.0, 12, step=0.5235988
+    ):
         entries.append(SpawnEntry(x, y, angle, SPAWN_ID_64, 8000, 1))
 
     trigger = 13000

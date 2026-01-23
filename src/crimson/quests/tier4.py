@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import math
-
 from ..perks import PerkId
+from .helpers import center_point, edge_midpoints, ring_points
 from .registry import register_quest
 from .types import QuestContext, SpawnEntry
 
@@ -29,14 +28,14 @@ SPAWN_ID_65 = 0x41
 )
 def build_4_1_major_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
+    edges = edge_midpoints(ctx.width)
     trigger = 4000
-    half_w = ctx.width // 2
     for offset in range(0, 0x5DC, 0xF):
         entries.append(
-            SpawnEntry(ctx.width + 64.0, float(half_w), 0.0, SPAWN_ID_32, trigger, 2)
+            SpawnEntry(*edges.right, 0.0, SPAWN_ID_32, trigger, 2)
         )
         entries.append(
-            SpawnEntry(float(half_w), -64.0, 0.0, SPAWN_ID_32, trigger, 2)
+            SpawnEntry(*edges.top, 0.0, SPAWN_ID_32, trigger, 2)
         )
         trigger += 2000 - offset
         if trigger < 1000:
@@ -53,13 +52,13 @@ def build_4_1_major_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
 )
 def build_4_2_zombie_time(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
+    edges = edge_midpoints(ctx.width)
     trigger = 1500
-    half_w = ctx.width // 2
     while trigger < 0x17CDC:
         entries.append(
-            SpawnEntry(ctx.width + 64.0, float(half_w), 0.0, SPAWN_ID_65, trigger, 8)
+            SpawnEntry(*edges.right, 0.0, SPAWN_ID_65, trigger, 8)
         )
-        entries.append(SpawnEntry(-64.0, float(half_w), 0.0, SPAWN_ID_65, trigger, 8))
+        entries.append(SpawnEntry(*edges.left, 0.0, SPAWN_ID_65, trigger, 8))
         trigger += 8000
     return entries
 
@@ -73,14 +72,14 @@ def build_4_2_zombie_time(ctx: QuestContext) -> list[SpawnEntry]:
 )
 def build_4_3_lizard_zombie_pact(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
+    edges = edge_midpoints(ctx.width)
     trigger = 1500
-    half_w = ctx.width // 2
     wave = 0
     while trigger < 0x1BB5C:
         entries.append(
-            SpawnEntry(ctx.width + 64.0, float(half_w), 0.0, SPAWN_ID_65, trigger, 6)
+            SpawnEntry(*edges.right, 0.0, SPAWN_ID_65, trigger, 6)
         )
-        entries.append(SpawnEntry(-64.0, float(half_w), 0.0, SPAWN_ID_65, trigger, 6))
+        entries.append(SpawnEntry(*edges.left, 0.0, SPAWN_ID_65, trigger, 6))
         if wave % 5 == 0:
             idx = wave // 5
             entries.append(
@@ -103,19 +102,19 @@ def build_4_3_lizard_zombie_pact(ctx: QuestContext) -> list[SpawnEntry]:
 )
 def build_4_4_the_collaboration(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
+    edges = edge_midpoints(ctx.width)
     trigger = 1500
-    half_w = ctx.width // 2
     wave = 0
     while trigger < 0x2B55C:
         count = int(wave * 0.8 + 7)
         entries.append(
-            SpawnEntry(ctx.width + 64.0, float(half_w), 0.0, SPAWN_ID_26, trigger, count)
+            SpawnEntry(*edges.right, 0.0, SPAWN_ID_26, trigger, count)
         )
         entries.append(
-            SpawnEntry(float(half_w), ctx.width + 64.0, 0.0, SPAWN_ID_27, trigger, count)
+            SpawnEntry(*edges.bottom, 0.0, SPAWN_ID_27, trigger, count)
         )
-        entries.append(SpawnEntry(-64.0, float(half_w), 0.0, SPAWN_ID_28, trigger, count))
-        entries.append(SpawnEntry(float(half_w), -64.0, 0.0, SPAWN_ID_65, trigger, count))
+        entries.append(SpawnEntry(*edges.left, 0.0, SPAWN_ID_28, trigger, count))
+        entries.append(SpawnEntry(*edges.top, 0.0, SPAWN_ID_65, trigger, count))
         trigger += 11000
         wave += 1
     return entries
@@ -130,16 +129,17 @@ def build_4_4_the_collaboration(ctx: QuestContext) -> list[SpawnEntry]:
 )
 def build_4_5_the_massacre(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
+    edges = edge_midpoints(ctx.width)
+    edges_wide = edge_midpoints(ctx.width, offset=128.0)
     trigger = 1500
-    half_w = ctx.width // 2
     wave = 0
     while trigger < 0x1656C:
         entries.append(
-            SpawnEntry(ctx.width + 64.0, float(half_w), 0.0, SPAWN_ID_65, trigger, wave + 3)
+            SpawnEntry(*edges.right, 0.0, SPAWN_ID_65, trigger, wave + 3)
         )
         if wave % 2 == 0:
             entries.append(
-                SpawnEntry(ctx.width + 128.0, float(half_w), 0.0, SPAWN_ID_43, trigger, wave + 1)
+                SpawnEntry(*edges_wide.right, 0.0, SPAWN_ID_43, trigger, wave + 1)
             )
         trigger += 5000
         wave += 1
@@ -246,42 +246,37 @@ def build_4_6_the_unblitzkrieg(ctx: QuestContext) -> list[SpawnEntry]:
 def build_4_7_gauntlet(ctx: QuestContext, full_version: bool = True) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     player_count = ctx.player_count + (4 if full_version else 0)
+    center_x, center_y = center_point(ctx.width, ctx.height)
+    edges = edge_midpoints(ctx.width)
 
     ring_count = player_count + 9
     if ring_count > 0:
         trigger = 0
-        for idx in range(ring_count):
-            angle = (idx * math.tau) / ring_count
-            x = math.cos(angle) * 158.0 + 512.0
-            y = math.sin(angle) * 158.0 + 512.0
+        for x, y, _angle in ring_points(center_x, center_y, 158.0, ring_count):
             entries.append(SpawnEntry(x, y, 0.0, SPAWN_ID_10, trigger, 1))
             trigger += 200
 
     if ring_count > 0:
         trigger = 4000
         for count in range(2, ring_count + 2):
-            half_w = ctx.width // 2
             entries.append(
-                SpawnEntry(ctx.width + 64.0, float(half_w), 0.0, SPAWN_ID_65, trigger, count)
+                SpawnEntry(*edges.right, 0.0, SPAWN_ID_65, trigger, count)
             )
             entries.append(
-                SpawnEntry(-64.0, float(half_w), 0.0, SPAWN_ID_65, trigger, count)
+                SpawnEntry(*edges.left, 0.0, SPAWN_ID_65, trigger, count)
             )
             entries.append(
-                SpawnEntry(float(half_w), ctx.width + 64.0, 0.0, SPAWN_ID_65, trigger, count)
+                SpawnEntry(*edges.bottom, 0.0, SPAWN_ID_65, trigger, count)
             )
             entries.append(
-                SpawnEntry(float(half_w), -64.0, 0.0, SPAWN_ID_65, trigger, count)
+                SpawnEntry(*edges.top, 0.0, SPAWN_ID_65, trigger, count)
             )
             trigger += 5500
 
     outer_count = player_count + 0x11
     if outer_count > 0:
         trigger = 42500
-        for idx in range(outer_count):
-            angle = (idx * math.tau) / outer_count
-            x = math.cos(angle) * 258.0 + 512.0
-            y = math.sin(angle) * 258.0 + 512.0
+        for x, y, _angle in ring_points(center_x, center_y, 258.0, outer_count):
             entries.append(SpawnEntry(x, y, 0.0, SPAWN_ID_10, trigger, 1))
             trigger += 500
     return entries
@@ -370,11 +365,11 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
         SpawnEntry(896.0, 896.0, 0.0, SPAWN_ID_60, 12000, 1),
     ]
 
+    center_x, center_y = center_point(ctx.width, ctx.height)
+    edges_wide = edge_midpoints(ctx.width, ctx.height, offset=128.0)
+
     trigger = 13000
-    for idx in range(6):
-        angle = idx * 1.0471976
-        x = math.cos(angle) * 80.0 + 512.0
-        y = math.sin(angle) * 80.0 + 512.0
+    for x, y, _angle in ring_points(center_x, center_y, 80.0, 6, step=1.0471976):
         entries.append(SpawnEntry(x, y, 0.0, SPAWN_ID_7, trigger, 1))
         trigger += 300
 
@@ -384,26 +379,24 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
     y = 0x100
     toggle = False
     while y < 0x300:
-        x = 1152.0 if toggle else -128.0
+        x = edges_wide.right[0] if toggle else edges_wide.left[0]
         entries.append(SpawnEntry(x, float(y), 0.0, SPAWN_ID_60, trigger, 2))
         trigger += 1000
         toggle = not toggle
         y += 0x80
 
     trigger = 43000
-    for idx in range(6):
-        angle = idx * 1.0471976 + 0.5235988
-        x = math.cos(angle) * 80.0 + 512.0
-        y = math.sin(angle) * 80.0 + 512.0
+    for x, y, _angle in ring_points(
+        center_x, center_y, 80.0, 6, step=1.0471976, start=0.5235988
+    ):
         entries.append(SpawnEntry(x, y, 0.0, SPAWN_ID_7, trigger, 1))
         trigger += 300
 
     if full_version:
         trigger = 62800
-        for idx in range(12):
-            angle = (idx + 1) * 0.5235988
-            x = math.cos(angle) * 180.0 + 512.0
-            y = math.sin(angle) * 180.0 + 512.0
+        for x, y, _angle in ring_points(
+            center_x, center_y, 180.0, 12, step=0.5235988, start=0.5235988
+        ):
             entries.append(SpawnEntry(x, y, 0.0, SPAWN_ID_7, trigger, 1))
             trigger += 500
 
@@ -411,7 +404,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
     y = 0x100
     toggle = False
     while y < 0x300:
-        x = 1152.0 if toggle else -128.0
+        x = edges_wide.right[0] if toggle else edges_wide.left[0]
         entries.append(SpawnEntry(x, float(y), 0.0, SPAWN_ID_60, trigger, 2))
         trigger += 1000
         toggle = not toggle

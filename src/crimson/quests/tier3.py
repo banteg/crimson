@@ -4,6 +4,15 @@ import math
 import random
 
 from ..perks import PerkId
+from .helpers import (
+    center_point,
+    edge_midpoints,
+    line_points_x,
+    line_points_y,
+    radial_points,
+    random_angle,
+    ring_points,
+)
 from .registry import register_quest
 from .types import QuestContext, SpawnEntry
 
@@ -33,10 +42,11 @@ SPAWN_ID_64 = 0x40
     builder_address=0x00438050,
 )
 def build_3_1_the_blighting(ctx: QuestContext) -> list[SpawnEntry]:
-    half_w = ctx.width // 2
+    edges = edge_midpoints(ctx.width)
+    edges_wide = edge_midpoints(ctx.width, offset=128.0)
     entries = [
-        SpawnEntry(ctx.width + 128.0, float(half_w), 0.0, SPAWN_ID_43, 1500, 2),
-        SpawnEntry(-128.0, float(half_w), 0.0, SPAWN_ID_43, 1500, 2),
+        SpawnEntry(*edges_wide.right, 0.0, SPAWN_ID_43, 1500, 2),
+        SpawnEntry(*edges_wide.left, 0.0, SPAWN_ID_43, 1500, 2),
         SpawnEntry(896.0, 128.0, 0.0, SPAWN_ID_7, 2000, 1),
         SpawnEntry(128.0, 128.0, 0.0, SPAWN_ID_7, 2000, 1),
         SpawnEntry(128.0, 896.0, 0.0, SPAWN_ID_7, 2000, 1),
@@ -46,27 +56,27 @@ def build_3_1_the_blighting(ctx: QuestContext) -> list[SpawnEntry]:
     trigger = 4000
     for wave in range(8):
         if wave in (2, 4):
-            entries.append(SpawnEntry(-128.0, float(half_w), 0.0, SPAWN_ID_43, trigger, 4))
+            entries.append(SpawnEntry(*edges_wide.left, 0.0, SPAWN_ID_43, trigger, 4))
         if wave in (3, 5):
-            entries.append(SpawnEntry(1152.0, float(half_w), 0.0, SPAWN_ID_43, trigger, 4))
+            entries.append(SpawnEntry(*edges_wide.right, 0.0, SPAWN_ID_43, trigger, 4))
         spawn_id = SPAWN_ID_26 if wave % 2 == 0 else SPAWN_ID_28
         edge = wave % 5
         if edge == 0:
             entries.append(
-                SpawnEntry(ctx.width + 64.0, float(half_w), 0.0, spawn_id, trigger, 12)
+                SpawnEntry(*edges.right, 0.0, spawn_id, trigger, 12)
             )
             trigger += 15000
         elif edge == 1:
-            entries.append(SpawnEntry(-64.0, float(half_w), 0.0, spawn_id, trigger, 12))
+            entries.append(SpawnEntry(*edges.left, 0.0, spawn_id, trigger, 12))
             trigger += 15000
         elif edge == 2:
             entries.append(
-                SpawnEntry(float(half_w), ctx.width + 64.0, 0.0, spawn_id, trigger, 12)
+                SpawnEntry(*edges.bottom, 0.0, spawn_id, trigger, 12)
             )
             trigger += 15000
         elif edge == 3:
             entries.append(
-                SpawnEntry(float(half_w), -64.0, 0.0, spawn_id, trigger, 12)
+                SpawnEntry(*edges.top, 0.0, spawn_id, trigger, 12)
             )
             trigger += 15000
         trigger += 1000
@@ -81,18 +91,17 @@ def build_3_1_the_blighting(ctx: QuestContext) -> list[SpawnEntry]:
     builder_address=0x00437710,
 )
 def build_3_2_lizard_kings(ctx: QuestContext) -> list[SpawnEntry]:
+    center_x, center_y = center_point(ctx.width, ctx.height)
     entries = [
         SpawnEntry(1152.0, 512.0, 0.0, SPAWN_ID_17, 1500, 1),
         SpawnEntry(-128.0, 512.0, 0.0, SPAWN_ID_17, 1500, 1),
         SpawnEntry(1152.0, 896.0, 0.0, SPAWN_ID_17, 1500, 1),
     ]
     trigger = 1500
-    for idx in range(28):
-        angle = idx * 0.34906587
-        x = math.cos(angle) * 256.0 + 512.0
-        y = math.sin(angle) * 256.0 + 512.0
-        heading = -angle
-        entries.append(SpawnEntry(x, y, heading, SPAWN_ID_49, trigger, 1))
+    for x, y, angle in ring_points(
+        center_x, center_y, 256.0, 28, step=0.34906587
+    ):
+        entries.append(SpawnEntry(x, y, -angle, SPAWN_ID_49, trigger, 1))
         trigger += 900
     return entries
 
@@ -108,6 +117,7 @@ def build_3_3_the_killing(
     ctx: QuestContext, rng: random.Random | None = None
 ) -> list[SpawnEntry]:
     rng = rng or random.Random()
+    edges = edge_midpoints(ctx.width)
     entries: list[SpawnEntry] = []
     trigger = 2000
     for wave in range(10):
@@ -124,16 +134,16 @@ def build_3_3_the_killing(
         edge = wave % 5
         if edge == 0:
             entries.append(
-                SpawnEntry(ctx.width + 64.0, ctx.width / 2, 0.0, spawn_id, trigger, 12)
+                SpawnEntry(*edges.right, 0.0, spawn_id, trigger, 12)
             )
         elif edge == 1:
-            entries.append(SpawnEntry(-64.0, ctx.width / 2, 0.0, spawn_id, trigger, 12))
+            entries.append(SpawnEntry(*edges.left, 0.0, spawn_id, trigger, 12))
         elif edge == 2:
             entries.append(
-                SpawnEntry(ctx.width / 2, ctx.width + 64.0, 0.0, spawn_id, trigger, 12)
+                SpawnEntry(*edges.bottom, 0.0, spawn_id, trigger, 12)
             )
         elif edge == 3:
-            entries.append(SpawnEntry(ctx.width / 2, -64.0, 0.0, spawn_id, trigger, 12))
+            entries.append(SpawnEntry(*edges.top, 0.0, spawn_id, trigger, 12))
         else:
             for offset in (0, 1000, 2000):
                 x = rng.randrange(0x300) + 0x80
@@ -152,14 +162,13 @@ def build_3_3_the_killing(
     builder_address=0x00435a30,
 )
 def build_3_4_hidden_evil(ctx: QuestContext) -> list[SpawnEntry]:
-    half_w = ctx.width // 2
-    edge_h = ctx.height + 64
+    edges = edge_midpoints(ctx.width, ctx.height)
     return [
-        SpawnEntry(float(half_w), float(edge_h), 0.0, SPAWN_ID_33, 500, 50),
-        SpawnEntry(float(half_w), float(edge_h), 0.0, SPAWN_ID_34, 15000, 30),
-        SpawnEntry(float(half_w), float(edge_h), 0.0, SPAWN_ID_35, 25000, 20),
-        SpawnEntry(float(half_w), float(edge_h), 0.0, SPAWN_ID_35, 30000, 30),
-        SpawnEntry(float(half_w), float(edge_h), 0.0, SPAWN_ID_34, 35000, 30),
+        SpawnEntry(*edges.bottom, 0.0, SPAWN_ID_33, 500, 50),
+        SpawnEntry(*edges.bottom, 0.0, SPAWN_ID_34, 15000, 30),
+        SpawnEntry(*edges.bottom, 0.0, SPAWN_ID_35, 25000, 20),
+        SpawnEntry(*edges.bottom, 0.0, SPAWN_ID_35, 30000, 30),
+        SpawnEntry(*edges.bottom, 0.0, SPAWN_ID_34, 35000, 30),
     ]
 
 @register_quest(
@@ -173,22 +182,16 @@ def build_3_4_hidden_evil(ctx: QuestContext) -> list[SpawnEntry]:
 def build_3_5_surrounded_by_reptiles(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     trigger = 1000
-    offset = 0
-    while trigger < 5000:
-        y = offset * 0.2 + 256.0
+    for _x, y in line_points_y(256.0, 102.4, 5, 256.0):
         entries.append(SpawnEntry(256.0, y, 0.0, SPAWN_ID_13, trigger, 1))
         entries.append(SpawnEntry(768.0, y, 0.0, SPAWN_ID_13, trigger, 1))
         trigger += 800
-        offset += 0x200
 
     trigger = 8000
-    offset = 0
-    while trigger < 12000:
-        x = offset * 0.2 + 256.0
+    for x, _y in line_points_x(256.0, 102.4, 5, 256.0):
         entries.append(SpawnEntry(x, 256.0, 0.0, SPAWN_ID_13, trigger, 1))
         entries.append(SpawnEntry(x, 768.0, 0.0, SPAWN_ID_13, trigger, 1))
         trigger += 800
-        offset += 0x200
     return entries
 
 @register_quest(
@@ -201,15 +204,15 @@ def build_3_5_surrounded_by_reptiles(ctx: QuestContext) -> list[SpawnEntry]:
 )
 def build_3_6_the_lizquidation(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    half_w = ctx.width // 2
+    edges = edge_midpoints(ctx.width)
     trigger = 1500
     for wave in range(10):
         count = wave + 6
-        entries.append(SpawnEntry(ctx.width + 64.0, float(half_w), 0.0, SPAWN_ID_46, trigger, count))
-        entries.append(SpawnEntry(-64.0, float(half_w), 0.0, SPAWN_ID_46, trigger, count))
+        entries.append(SpawnEntry(*edges.right, 0.0, SPAWN_ID_46, trigger, count))
+        entries.append(SpawnEntry(*edges.left, 0.0, SPAWN_ID_46, trigger, count))
         if wave == 4:
             entries.append(
-                SpawnEntry(ctx.width + 128.0, float(half_w), 0.0, SPAWN_ID_43, 1500, 2)
+                SpawnEntry(ctx.width + 128.0, edges.right[1], 0.0, SPAWN_ID_43, 1500, 2)
             )
         trigger += 8000
     return entries
@@ -223,19 +226,20 @@ def build_3_6_the_lizquidation(ctx: QuestContext) -> list[SpawnEntry]:
     builder_address=0x004390d0,
 )
 def build_3_7_spiders_inc(ctx: QuestContext) -> list[SpawnEntry]:
-    half_w = ctx.width // 2
+    edges = edge_midpoints(ctx.width)
+    center_x, _center_y = center_point(ctx.width, ctx.height)
     entries = [
-        SpawnEntry(float(half_w), ctx.width + 64.0, 0.0, SPAWN_ID_56, 500, 1),
-        SpawnEntry(float(half_w + 64), ctx.width + 64.0, 0.0, SPAWN_ID_56, 500, 1),
-        SpawnEntry(float(half_w), -64.0, 0.0, SPAWN_ID_64, 500, 4),
+        SpawnEntry(*edges.bottom, 0.0, SPAWN_ID_56, 500, 1),
+        SpawnEntry(center_x + 64.0, edges.bottom[1], 0.0, SPAWN_ID_56, 500, 1),
+        SpawnEntry(*edges.top, 0.0, SPAWN_ID_64, 500, 4),
     ]
 
     trigger = 17000
     step_count = 0
     while trigger < 107000:
         count = step_count // 2 + 3
-        entries.append(SpawnEntry(float(half_w), ctx.width + 64.0, 0.0, SPAWN_ID_56, trigger, count))
-        entries.append(SpawnEntry(float(half_w), -64.0, 0.0, SPAWN_ID_56, trigger, count))
+        entries.append(SpawnEntry(*edges.bottom, 0.0, SPAWN_ID_56, trigger, count))
+        entries.append(SpawnEntry(*edges.top, 0.0, SPAWN_ID_56, trigger, count))
         trigger += 6000
         step_count += 1
     return entries
@@ -250,11 +254,11 @@ def build_3_7_spiders_inc(ctx: QuestContext) -> list[SpawnEntry]:
 )
 def build_3_8_lizard_raze(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
-    half_w = ctx.width // 2
+    edges = edge_midpoints(ctx.width)
     trigger = 1500
     while trigger < 91500:
-        entries.append(SpawnEntry(ctx.width + 64.0, float(half_w), 0.0, SPAWN_ID_46, trigger, 6))
-        entries.append(SpawnEntry(-64.0, float(half_w), 0.0, SPAWN_ID_46, trigger, 6))
+        entries.append(SpawnEntry(*edges.right, 0.0, SPAWN_ID_46, trigger, 6))
+        entries.append(SpawnEntry(*edges.left, 0.0, SPAWN_ID_46, trigger, 6))
         trigger += 6000
     entries.extend(
         [
@@ -276,18 +280,13 @@ def build_3_8_lizard_raze(ctx: QuestContext) -> list[SpawnEntry]:
 def build_3_9_deja_vu(ctx: QuestContext, rng: random.Random | None = None) -> list[SpawnEntry]:
     rng = rng or random.Random()
     entries: list[SpawnEntry] = []
+    center_x, center_y = center_point(ctx.width, ctx.height)
     trigger = 2000
     step = 2000
     while step > 560:
-        angle = (rng.randrange(0x264)) * 0.01
-        cos_a = math.cos(angle)
-        sin_a = math.sin(angle)
-        radius = 0x54
-        while radius < 0xFC:
-            x = radius * cos_a + 512.0
-            y = radius * sin_a + 512.0
+        angle = random_angle(rng)
+        for x, y in radial_points(center_x, center_y, angle, 0x54, 0xFC, 0x2A):
             entries.append(SpawnEntry(x, y, 0.0, SPAWN_ID_13, trigger, 1))
-            radius += 0x2A
         trigger += step
         step -= 0x50
     return entries
