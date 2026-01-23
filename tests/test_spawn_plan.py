@@ -1268,6 +1268,152 @@ def test_spawn_plan_template_28_is_constant() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
+def test_spawn_plan_template_29_is_constant() -> None:
+    rng = Crand(0xBEEF)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,  # avoid effect noise
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x29, (100.0, 200.0), 0.0, rng, env)
+
+    assert plan.primary == 0
+    assert len(plan.creatures) == 1
+    assert plan.spawn_slots == ()
+
+    c = plan.creatures[0]
+    assert c.type_id == CreatureTypeId.ALIEN
+    assert c.health == 800.0
+    assert c.max_health == 800.0
+    assert c.move_speed == 2.5
+    assert c.reward_value == 450.0
+    assert c.size == 70.0
+    assert c.contact_damage == 20.0
+    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.8, 0.8, 0.8, 1.0)
+    assert c.heading == 0.0
+
+    assert rng.state == _step_msvcrt(0xBEEF, 2)
+
+
+def test_spawn_plan_template_2a_is_constant() -> None:
+    rng = Crand(0xBEEF)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,  # avoid effect noise
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x2A, (100.0, 200.0), 0.0, rng, env)
+
+    assert plan.primary == 0
+    assert len(plan.creatures) == 1
+    assert plan.spawn_slots == ()
+
+    c = plan.creatures[0]
+    assert c.type_id == CreatureTypeId.ALIEN
+    assert c.health == 50.0
+    assert c.max_health == 50.0
+    assert c.move_speed == 3.1
+    assert c.reward_value == 300.0
+    assert c.size == 60.0
+    assert c.contact_damage == 8.0
+    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.3, 0.3, 0.3, 1.0)
+    assert c.heading == 0.0
+
+    assert rng.state == _step_msvcrt(0xBEEF, 2)
+
+
+def test_spawn_plan_template_2b_is_constant() -> None:
+    rng = Crand(0xBEEF)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,  # avoid effect noise
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x2B, (100.0, 200.0), 0.0, rng, env)
+
+    assert plan.primary == 0
+    assert len(plan.creatures) == 1
+    assert plan.spawn_slots == ()
+
+    c = plan.creatures[0]
+    assert c.type_id == CreatureTypeId.ALIEN
+    assert c.health == 30.0
+    assert c.max_health == 30.0
+    assert c.move_speed == 3.6
+    assert c.reward_value == 450.0
+    assert c.size == 35.0
+    assert c.contact_damage == 20.0
+    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (1.0, 0.3, 0.3, 1.0)
+    assert c.heading == 0.0
+
+    assert rng.state == _step_msvcrt(0xBEEF, 2)
+
+
+def test_spawn_plan_template_2c_is_constant() -> None:
+    rng = Crand(0xBEEF)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,  # avoid effect noise
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x2C, (100.0, 200.0), 0.0, rng, env)
+
+    assert plan.primary == 0
+    assert len(plan.creatures) == 1
+    assert plan.spawn_slots == ()
+
+    c = plan.creatures[0]
+    assert c.type_id == CreatureTypeId.ALIEN
+    assert c.health == 3800.0
+    assert c.max_health == 3800.0
+    assert c.move_speed == 2.0
+    assert c.reward_value == 1500.0
+    assert c.size == 80.0
+    assert c.contact_damage == 40.0
+    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.85, 0.2, 0.2, 1.0)
+    assert c.heading == 0.0
+
+    assert rng.state == _step_msvcrt(0xBEEF, 2)
+
+
+def test_spawn_plan_template_2d_is_constant() -> None:
+    rng = Crand(0xBEEF)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,  # avoid effect noise
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x2D, (100.0, 200.0), 0.0, rng, env)
+
+    assert plan.primary == 0
+    assert len(plan.creatures) == 1
+    assert plan.spawn_slots == ()
+
+    c = plan.creatures[0]
+    assert c.type_id == CreatureTypeId.ALIEN
+    assert c.ai_mode == 2
+    assert c.health == 45.0
+    assert c.max_health == 45.0
+    assert c.move_speed == 3.1
+    assert c.reward_value == 200.0
+    assert c.size == 38.0
+    assert c.contact_damage == 3.0
+    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.0, 0.9, 0.8, 1.0)
+    assert c.heading == 0.0
+
+    assert rng.state == _step_msvcrt(0xBEEF, 2)
+
+
 def test_spawn_plan_template_34_is_randomized_and_tail_enables_ai7_timer() -> None:
     seed = 0xBEEF
     rng = Crand(seed)
