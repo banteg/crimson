@@ -10,6 +10,7 @@ from ..spawn_templates import (
     SPAWN_TEMPLATES,
     SpawnTemplate,
 )
+from ..creature_anim import creature_anim_advance_phase, creature_anim_select_frame
 from .font_small import SmallFontData, draw_small_text, load_small_font
 from .registry import register_view
 from grim.view import View, ViewContext
@@ -48,6 +49,12 @@ class CreatureAnimationView:
         ]
         self._index = 0
         self._phase = 0.0
+        self._move_speed = 2.0
+        self._size = 50.0
+        self._local_scale = 1.0
+        self._paused = False
+        self._last_dt = 0.0
+        self._last_step = 0.0
 
     def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
         if self._small is not None:
@@ -93,13 +100,27 @@ class CreatureAnimationView:
             self._small = None
 
     def update(self, dt: float) -> None:
+        self._last_dt = dt
+        if self._paused:
+            self._last_step = 0.0
+            return
         template = self._current_template()
         if template is None or template.type_id is None:
             return
         info = TYPE_ANIM.get(template.type_id)
         if info is None:
             return
-        self._phase += info.anim_rate * dt * 60.0
+        flags = template.flags or CreatureFlags(0)
+        self._phase, self._last_step = creature_anim_advance_phase(
+            self._phase,
+            anim_rate=info.anim_rate,
+            move_speed=self._move_speed,
+            dt=dt,
+            size=self._size,
+            local_scale=self._local_scale,
+            flags=flags,
+            ai_mode=0,
+        )
 
     def _current_template(self) -> SpawnTemplate | None:
         if not self._templates:
@@ -117,22 +138,22 @@ class CreatureAnimationView:
             self._advance_template(1)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT):
             self._advance_template(-1)
-
-    def _select_frame(self, template: SpawnTemplate, info: TypeAnimInfo) -> tuple[int, bool, str]:
-        flags = template.flags or CreatureFlags(0)
-        long_strip = not (flags & CreatureFlags.ANIM_PING_PONG) or (flags & CreatureFlags.ANIM_LONG_STRIP)
-        if long_strip:
-            base_frame = int(self._phase) % 32
-            frame = base_frame
-            if flags & CreatureFlags.RANGED_ATTACK_SHOCK:
-                frame += 0x20
-            mirror = info.mirror and base_frame >= 16
-            return frame, mirror, "long"
-        phase = int(self._phase) % 16
-        if phase >= 8:
-            phase = 15 - phase
-        frame = info.base + 0x10 + phase
-        return frame, False, "ping-pong"
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_UP):
+            self._move_speed = min(10.0, self._move_speed + 0.1)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_DOWN):
+            self._move_speed = max(0.0, self._move_speed - 0.1)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_UP):
+            self._size = min(200.0, self._size + 1.0)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_DOWN):
+            self._size = max(1.0, self._size - 1.0)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT_BRACKET):
+            self._local_scale = min(1.0, self._local_scale + 0.05)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT_BRACKET):
+            self._local_scale = max(0.0, self._local_scale - 0.05)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE):
+            self._paused = not self._paused
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_R):
+            self._phase = 0.0
 
     def draw(self) -> None:
         rl.clear_background(rl.Color(12, 12, 14, 255))
@@ -158,7 +179,12 @@ class CreatureAnimationView:
             self._draw_ui_text("Missing anim info.", 24, 24, UI_TEXT_COLOR)
             return
 
-        frame, mirror, mode = self._select_frame(template, info)
+        frame, mirror_applied, mode = creature_anim_select_frame(
+            self._phase,
+            base_frame=info.base,
+            mirror_long=info.mirror,
+            flags=template.flags or CreatureFlags(0),
+        )
         grid = 8
         cell = texture.width / grid
         row = frame // grid
@@ -167,7 +193,10 @@ class CreatureAnimationView:
         margin = 24
         title = f"{template.creature} (spawn 0x{template.spawn_id:02x})"
         self._draw_ui_text(title, margin, margin, UI_TEXT_COLOR)
-        hint = "Left/Right: spawn template"
+        hint = (
+            "Left/Right: spawn template  Up/Down: move_speed  PgUp/PgDn: size  "
+            "[/]: local scale  Space: pause  R: reset"
+        )
         self._draw_ui_text(hint, margin, margin + self._ui_line_height() + 6, UI_HINT_COLOR)
 
         sheet_scale = min(
@@ -205,9 +234,6 @@ class CreatureAnimationView:
             float(cell),
         )
         dst_frame = rl.Rectangle(float(preview_x), float(preview_y), float(preview_size), float(preview_size))
-        if mirror:
-            dst_frame.x += dst_frame.width
-            dst_frame.width = -dst_frame.width
         rl.draw_texture_pro(texture, src_frame, dst_frame, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
         info_lines = [
@@ -215,8 +241,13 @@ class CreatureAnimationView:
             f"flags={int(template.flags or 0):#x}",
             f"mode={mode}",
             f"frame=0x{frame:02x}",
-            f"phase={self._phase:.2f}",
-            f"mirror={'yes' if mirror else 'no'}",
+            f"phase={self._phase:.6f}",
+            f"move_speed={self._move_speed:.2f}",
+            f"size={self._size:.1f}",
+            f"local_scale={self._local_scale:.2f}",
+            f"dt={self._last_dt:.4f}s  step={self._last_step:.6f}",
+            f"mirror_applied={'yes' if mirror_applied else 'no'}",
+            f"paused={'yes' if self._paused else 'no'}",
         ]
         y = int(preview_y + preview_size + 16)
         for line in info_lines:
