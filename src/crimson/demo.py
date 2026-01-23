@@ -14,6 +14,7 @@ from grim.config import CrimsonConfig
 from grim.terrain_render import GroundRenderer
 
 from .creatures.spawn import CreatureFlags, CreatureTypeId, SPAWN_ID_TO_TEMPLATE
+from .views.font_grim_mono import GrimMonoFont, draw_grim_mono_text, load_grim_mono_font
 from .weapons import WEAPON_TABLE
 
 
@@ -170,13 +171,15 @@ class DemoView:
         self._beams: list[DemoBeam] = []
         self._explosions: list[DemoExplosion] = []
         self._variant_index = 0
-        self._variant_elapsed = 0.0
         self._variant_duration = 0.0
+        self._variant_elapsed_ms = 0
+        self._variant_duration_ms = 0
         self._finished = False
         self._camera_x = 0.0
         self._camera_y = 0.0
         self._upsell_message_index = 0
         self._upsell_pulse_ms = 0
+        self._upsell_font: GrimMonoFont | None = None
 
     def open(self) -> None:
         self._finished = False
@@ -189,6 +192,9 @@ class DemoView:
         if self._ground is not None and self._ground.render_target is not None:
             rl.unload_render_texture(self._ground.render_target)
         self._ground = None
+        if self._upsell_font is not None:
+            rl.unload_texture(self._upsell_font.texture)
+            self._upsell_font = None
         self._creatures.clear()
         self._players.clear()
         self._projectiles.clear()
@@ -209,11 +215,16 @@ class DemoView:
             self._finished = True
             return
         frame_dt = min(dt, 0.1)
-        self._upsell_pulse_ms += int(frame_dt * 1000.0)
-        self._variant_elapsed += frame_dt
+        frame_dt_ms = int(frame_dt * 1000.0)
+        self._upsell_pulse_ms += frame_dt_ms
+        if frame_dt_ms > 0 and _DEMO_UPSELL_MESSAGES and self._variant_elapsed_ms == 0:
+            # demo_purchase_screen_update increments demo_upsell_message_index when the
+            # timeline resets (quest_spawn_timeline == 0).
+            self._upsell_message_index = (self._upsell_message_index + 1) % len(_DEMO_UPSELL_MESSAGES)
+        self._variant_elapsed_ms += frame_dt_ms
         self._update_sim(frame_dt)
         self._advance_anim_phase(frame_dt)
-        if self._variant_elapsed < self._variant_duration:
+        if self._variant_elapsed_ms < self._variant_duration_ms:
             return
         next_variant = self._variant_index + 1
         if next_variant >= DEMO_VARIANT_COUNT:
@@ -264,9 +275,7 @@ class DemoView:
 
     def _start_variant(self, index: int) -> None:
         self._variant_index = index
-        self._variant_elapsed = 0.0
-        if _DEMO_UPSELL_MESSAGES:
-            self._upsell_message_index = (self._upsell_message_index + 1) % len(_DEMO_UPSELL_MESSAGES)
+        self._variant_elapsed_ms = 0
         self._creatures.clear()
         self._players.clear()
         self._projectiles.clear()
@@ -283,6 +292,7 @@ class DemoView:
             self._setup_variant_3()
         else:
             self._setup_variant_0()
+        self._variant_duration_ms = int(self._variant_duration * 1000.0)
 
     def _apply_variant_ground(self, index: int) -> None:
         cache = self._ensure_cache()
@@ -601,12 +611,19 @@ class DemoView:
             return
         title = f"DEMO MODE  ({self._variant_index + 1}/{DEMO_VARIANT_COUNT})"
         hint = "Press any key / click to skip"
-        remaining = max(0.0, self._variant_duration - self._variant_elapsed)
+        remaining = max(0.0, self._variant_duration - (self._variant_elapsed_ms / 1000.0))
         weapons = ", ".join(f"P{p.index + 1}:{_weapon_name(p.weapon_id)}" for p in self._players)
         detail = f"{weapons}  —  next in {remaining:0.1f}s"
         rl.draw_text(title, 16, 12, 20, rl.Color(240, 240, 240, 255))
         rl.draw_text(detail, 16, 36, 16, rl.Color(180, 180, 190, 255))
         rl.draw_text(hint, 16, 56, 16, rl.Color(140, 140, 150, 255))
+
+    def _ensure_upsell_font(self) -> GrimMonoFont:
+        if self._upsell_font is not None:
+            return self._upsell_font
+        missing_assets: list[str] = []
+        self._upsell_font = load_grim_mono_font(self._state.assets_dir, missing_assets)
+        return self._upsell_font
 
     def _draw_demo_upsell_overlay(self) -> None:
         # Modeled after the shareware "Want more ..." overlay in demo_purchase_screen_update
@@ -614,44 +631,48 @@ class DemoView:
         if not _DEMO_UPSELL_MESSAGES:
             return
 
-        elapsed_ms = self._variant_elapsed * 1000.0
-        limit_ms = self._variant_duration * 1000.0
-        alpha = 1.0
-        if elapsed_ms < 1250.0:
-            alpha = elapsed_ms / 1250.0
-        if limit_ms - elapsed_ms < 500.0:
-            alpha = max(0.0, (limit_ms - elapsed_ms) / 500.0)
-
-        pulse = float(self._upsell_pulse_ms % 1000) / 1000.0 * (math.pi * 2.0)
-        pulse = math.sin(pulse)
-        pulse = pulse * pulse
-
+        font = self._ensure_upsell_font()
         msg = _DEMO_UPSELL_MESSAGES[self._upsell_message_index]
-        font_size = 16
-        x = 50
-        y = 60
-        text_w = rl.measure_text(msg, font_size)
 
-        pad = 8
-        bg_alpha = int(_clamp(alpha * 0.5, 0.0, 1.0) * 255.0)
-        bar_alpha = int(_clamp(alpha * 0.8, 0.0, 1.0) * 255.0)
-        txt_alpha = int(_clamp(alpha * (0.75 + 0.25 * pulse), 0.0, 1.0) * 255.0)
+        timeline_ms = self._variant_elapsed_ms
+        limit_ms = self._variant_duration_ms
+        var_2c = float(timeline_ms) * 0.0160000008
 
-        rect_x = x - pad
-        rect_y = y - pad
-        rect_w = text_w + pad * 2
-        rect_h = font_size + pad * 2 + 6
+        alpha = 1.0
+        if var_2c < 20.0:
+            alpha = var_2c * 0.0500000007
+        if timeline_ms > limit_ms - 500:
+            alpha = float(limit_ms - timeline_ms) * 0.00200000009
+        alpha = _clamp(alpha, 0.0, 1.0)
 
-        rl.draw_rectangle(rect_x, rect_y, rect_w, rect_h, rl.Color(0, 0, 0, bg_alpha))
-        rl.draw_text(msg, x, y, font_size, rl.Color(240, 240, 240, txt_alpha))
+        scale = 0.8
+        text_w = float(len(msg)) * 12.8000002
+
+        text_x = 50.0
+        text_y = var_2c + 50.0
+        bg_x = 60.0
+        bg_y = text_y - 4.0
+        bar_x = 64.0
+        bar_y = var_2c + 72.0
+
+        bg_alpha = int(round(_clamp(alpha * 0.5, 0.0, 1.0) * 255.0))
+        bar_alpha = int(round(_clamp(alpha * 0.8, 0.0, 1.0) * 255.0))
+        txt_alpha = int(round(_clamp(alpha, 0.0, 1.0) * 255.0))
+
+        rl.draw_rectangle_rec(
+            rl.Rectangle(bg_x, bg_y, text_w + 12.0, 30.0),
+            rl.Color(0, 0, 0, bg_alpha),
+        )
 
         progress = 0.0
-        if self._variant_duration > 1e-6:
-            progress = _clamp(self._variant_elapsed / self._variant_duration, 0.0, 1.0)
-        bar_w = int(round(float(text_w) * progress))
-        bar_y = y + font_size + 2
-        rl.draw_rectangle(x, bar_y, text_w, 3, rl.Color(0, 0, 0, bg_alpha))
-        rl.draw_rectangle(x, bar_y, bar_w, 3, rl.Color(128, 60, 60, bar_alpha))
+        if limit_ms > 0:
+            progress = _clamp(float(timeline_ms) / float(limit_ms), 0.0, 1.0)
+        rl.draw_rectangle_rec(
+            rl.Rectangle(bar_x, bar_y, text_w * progress, 3.0),
+            rl.Color(128, 26, 26, bar_alpha),
+        )
+
+        draw_grim_mono_text(font, msg, text_x, text_y, scale, rl.Color(255, 255, 255, txt_alpha))
 
     def _creature_hp(self, type_id: CreatureTypeId | None) -> float:
         if type_id == CreatureTypeId.ZOMBIE:
