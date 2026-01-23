@@ -183,9 +183,9 @@ SPAWN_TEMPLATES = [
     SpawnTemplate(
         spawn_id=0x0F,
         type_id=CreatureTypeId.ALIEN,
-        flags=CreatureFlags.ANIM_PING_PONG,
+        flags=None,
         creature="alien",
-        anim_note="short strip (ping-pong)",
+        anim_note=None,
     ),
     SpawnTemplate(
         spawn_id=0x10,
@@ -564,8 +564,8 @@ def spawn_id_label(spawn_id: int) -> str:
 
 
 # Keep these in sync with `build_spawn_plan` and `tests/test_spawn_plan.py`.
-SPAWN_IDS_PORTED = frozenset({0x00, 0x01, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x10, 0x11, 0x12, 0x19, 0x24, 0x25, 0x34, 0x35, 0x38, 0x41})
-SPAWN_IDS_VERIFIED = frozenset({0x00, 0x01, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x10, 0x11, 0x12, 0x19, 0x24, 0x25, 0x34, 0x35, 0x38, 0x41})
+SPAWN_IDS_PORTED = frozenset({0x00, 0x01, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x19, 0x1A, 0x1B, 0x1C, 0x24, 0x25, 0x34, 0x35, 0x38, 0x41})
+SPAWN_IDS_VERIFIED = frozenset({0x00, 0x01, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x19, 0x1A, 0x1B, 0x1C, 0x24, 0x25, 0x34, 0x35, 0x38, 0x41})
 
 
 def _f32(u32: int) -> float:
@@ -1121,6 +1121,19 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
             creatures.append(child)
 
         primary_idx = len(creatures) - 1
+    elif template_id == 0x0F:
+        c = creatures[0]
+        c.type_id = CreatureTypeId.ALIEN
+        c.tint_r = _f32(0x3F2A3D70)
+        c.tint_g = _f32(0x3EC51EB8)
+        c.tint_b = _f32(0x3E849BA6)
+        c.tint_a = _f32(0x3F0F5C29)
+        c.health = 20.0
+        c.move_speed = _f32(0x4039999A)
+        c.reward_value = 60.0
+        c.size = 50.0
+        c.contact_damage = 35.0
+        primary_idx = 0
     elif template_id == 0x11:
         parent = creatures[0]
         parent.type_id = CreatureTypeId.LIZARD
@@ -1243,6 +1256,30 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
 
         primary_idx = len(creatures) - 1
         _apply_unhandled_creature_type_fallback(creatures, primary_idx)
+    elif template_id in (0x1A, 0x1B, 0x1C):
+        c = creatures[0]
+        c.ai_mode = 1
+        c.size = 50.0
+        c.move_speed = 2.4
+        c.reward_value = 125.0
+        c.tint_a = 1.0
+
+        if template_id == 0x1A:
+            c.type_id = CreatureTypeId.ALIEN
+            c.health = 50.0
+        elif template_id == 0x1B:
+            c.type_id = CreatureTypeId.SPIDER_SP1
+            c.health = 40.0
+        else:
+            c.type_id = CreatureTypeId.LIZARD
+            c.health = 50.0
+
+        tint = float(rng.rand() % 40) * 0.01 + 0.5
+        c.tint_r = tint
+        c.tint_g = tint
+        c.tint_b = 1.0
+        c.contact_damage = 5.0
+        primary_idx = 0
     # Demo (attract-mode) templates.
     elif template_id == 0x24:
         c = creatures[0]
