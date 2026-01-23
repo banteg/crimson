@@ -1695,6 +1695,37 @@ def test_spawn_plan_template_3e_is_constant_and_tail_enables_ai7_timer() -> None
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
+def test_spawn_plan_template_3f_is_constant_and_tail_enables_ai7_timer() -> None:
+    rng = Crand(0xBEEF)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,  # avoid effect noise
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x3F, (100.0, 200.0), 0.0, rng, env)
+
+    assert plan.primary == 0
+    assert len(plan.creatures) == 1
+    assert plan.spawn_slots == ()
+
+    c = plan.creatures[0]
+    assert c.type_id == CreatureTypeId.SPIDER_SP1
+    assert c.flags == CreatureFlags.AI7_LINK_TIMER
+    assert c.ai_timer == 0
+    assert c.health == 200.0
+    assert c.max_health == 200.0
+    assert (c.move_speed or 0.0) == pytest.approx(2.3 * 1.2, abs=1e-9)
+    assert c.reward_value == 210.0
+    assert c.size == 35.0
+    assert c.contact_damage == 20.0
+    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.7, 0.4, 0.1, 1.0)
+    assert c.heading == 0.0
+
+    assert rng.state == _step_msvcrt(0xBEEF, 2)
+
+
 def test_spawn_plan_template_40_is_constant_and_tail_enables_ai7_timer() -> None:
     rng = Crand(0xBEEF)
     env = SpawnEnv(
@@ -1772,6 +1803,66 @@ def test_spawn_plan_template_41_is_randomized() -> None:
     assert c.heading == expected_heading
 
     assert rng.state == _step_msvcrt(seed, 6)
+
+
+def test_spawn_plan_template_42_is_constant() -> None:
+    rng = Crand(0xBEEF)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,  # avoid effect noise
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x42, (100.0, 200.0), 0.0, rng, env)
+
+    assert plan.primary == 0
+    assert len(plan.creatures) == 1
+    assert plan.spawn_slots == ()
+
+    c = plan.creatures[0]
+    assert c.type_id == CreatureTypeId.ZOMBIE
+    assert c.flags == CreatureFlags(0)
+    assert c.health == 200.0
+    assert c.max_health == 200.0
+    assert c.move_speed == 1.7
+    assert c.reward_value == 160.0
+    assert c.size == 45.0
+    assert c.contact_damage == 15.0
+    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.9, 0.9, 0.9, 1.0)
+    assert c.heading == 0.0
+
+    assert rng.state == _step_msvcrt(0xBEEF, 2)
+
+
+def test_spawn_plan_template_43_is_constant() -> None:
+    rng = Crand(0xBEEF)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,  # avoid effect noise
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x43, (100.0, 200.0), 0.0, rng, env)
+
+    assert plan.primary == 0
+    assert len(plan.creatures) == 1
+    assert plan.spawn_slots == ()
+
+    c = plan.creatures[0]
+    assert c.type_id == CreatureTypeId.ZOMBIE
+    assert c.flags == CreatureFlags(0)
+    assert c.health == 2000.0
+    assert c.max_health == 2000.0
+    assert c.move_speed == 2.1
+    assert c.reward_value == 460.0
+    assert c.size == 70.0
+    assert c.contact_damage == 15.0
+    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.2, 0.6, 0.1, 1.0)
+    assert c.heading == 0.0
+
+    assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
 def test_spawn_plan_template_0e_spawns_ring_children_and_has_spawn_slot() -> None:
