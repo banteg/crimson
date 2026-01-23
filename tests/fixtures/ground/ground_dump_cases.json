@@ -1,38 +1,62 @@
 [
   {
-    "fixture": "ground_dump_1769179871524.png",
-    "raw": "ground_dump_1769179871524.raw",
-    "seed": 2784243953,
-    "seed_srand": 2784243953,
-    "width": 1024,
+    "desc_ptr": "0x484acc",
+    "fixture": "ground_dump_1769186478091.png",
     "height": 1024,
-    "tex0_index": 0,
-    "tex1_index": 1,
-    "tex2_index": 0,
-    "desc_ptr": "0x484730"
+    "raw": "ground_dump_1769186478091.raw",
+    "seed": 1161017375,
+    "seed_srand": 264603998,
+    "tex0_index": 4,
+    "tex1_index": 5,
+    "tex2_index": 4,
+    "width": 1024
   },
   {
-    "fixture": "ground_dump_1769179880529.png",
-    "raw": "ground_dump_1769179880529.raw",
-    "seed": 2784243953,
-    "seed_srand": 2784243953,
-    "width": 1024,
+    "desc_ptr": "0x484c84",
+    "fixture": "ground_dump_1769186491365.png",
     "height": 1024,
-    "tex0_index": 2,
-    "tex1_index": 3,
-    "tex2_index": 2,
-    "desc_ptr": "0x484914"
-  },
-  {
-    "fixture": "ground_dump_1769179880552.png",
-    "raw": "ground_dump_1769179880552.raw",
-    "seed": 2784243953,
-    "seed_srand": 2784243953,
-    "width": 1024,
-    "height": 1024,
+    "raw": "ground_dump_1769186491365.raw",
+    "seed": 3817571863,
+    "seed_srand": 264603998,
     "tex0_index": 6,
     "tex1_index": 7,
     "tex2_index": 6,
-    "desc_ptr": "0x484c58"
+    "width": 1024
+  },
+  {
+    "desc_ptr": "0x484730",
+    "fixture": "ground_dump_1769186491847.png",
+    "height": 1024,
+    "raw": "ground_dump_1769186491847.raw",
+    "seed": 2007634058,
+    "seed_srand": 264603998,
+    "tex0_index": 0,
+    "tex1_index": 1,
+    "tex2_index": 0,
+    "width": 1024
+  },
+  {
+    "desc_ptr": "0x484acc",
+    "fixture": "ground_dump_1769186501976.png",
+    "height": 1024,
+    "raw": "ground_dump_1769186501976.raw",
+    "seed": 793469579,
+    "seed_srand": 264603998,
+    "tex0_index": 4,
+    "tex1_index": 5,
+    "tex2_index": 4,
+    "width": 1024
+  },
+  {
+    "desc_ptr": "0x484c58",
+    "fixture": "ground_dump_1769186502447.png",
+    "height": 1024,
+    "raw": "ground_dump_1769186502447.raw",
+    "seed": 2111448814,
+    "seed_srand": 264603998,
+    "tex0_index": 6,
+    "tex1_index": 7,
+    "tex2_index": 6,
+    "width": 1024
   }
 ]
