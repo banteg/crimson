@@ -564,8 +564,8 @@ def spawn_id_label(spawn_id: int) -> str:
 
 
 # Keep these in sync with `build_spawn_plan` and `tests/test_spawn_plan.py`.
-SPAWN_IDS_PORTED = frozenset({0x01, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x10, 0x11, 0x12, 0x19, 0x24, 0x25, 0x34, 0x35, 0x38, 0x41})
-SPAWN_IDS_VERIFIED = frozenset({0x01, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x10, 0x11, 0x12, 0x19, 0x24, 0x25, 0x34, 0x35, 0x38, 0x41})
+SPAWN_IDS_PORTED = frozenset({0x00, 0x01, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x10, 0x11, 0x12, 0x19, 0x24, 0x25, 0x34, 0x35, 0x38, 0x41})
+SPAWN_IDS_VERIFIED = frozenset({0x00, 0x01, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x10, 0x11, 0x12, 0x19, 0x24, 0x25, 0x34, 0x35, 0x38, 0x41})
 
 
 def _f32(u32: int) -> float:
@@ -749,6 +749,11 @@ def _apply_tail(
         if c.health is not None:
             c.health *= 1.2
 
+        if has_spawn_slot and (int(c.flags) & int(CreatureFlags.ANIM_PING_PONG)) != 0:
+            plan_spawn_slots[c.spawn_slot].interval = max(
+                _f32(0x3DCCCCCD),
+                plan_spawn_slots[c.spawn_slot].interval - 0.2,
+            )
 def _apply_unhandled_creature_type_fallback(plan_creatures: list[CreatureInit], primary_idx: int) -> None:
     # Some template paths jump to the "Unhandled creatureType.\n" debug block in the original,
     # which forcibly overwrites `type_id` and `health` on the *current* creature pointer.
@@ -782,11 +787,33 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
     # Base initialization always consumes one rand() for a transient heading value.
     creatures[0].heading = float(rng.rand() % 0x13A) * 0.01
 
-    # Template-specific init. We start with a small, representative batch:
-    # - template 1: simple (no children/spawn slot)
-    # - template 0x0A: spawn-slot spawner
-    # - template 0x12: formation spawner (immediate children)
-    if template_id == 1:
+    if template_id == 0x00:
+        c = creatures[0]
+        c.type_id = CreatureTypeId.ZOMBIE
+        c.flags = CreatureFlags.ANIM_PING_PONG | CreatureFlags.ANIM_LONG_STRIP
+        slot_idx = len(spawn_slots)
+        c.spawn_slot = slot_idx
+        spawn_slots.append(
+            SpawnSlotInit(
+                owner_creature=0,
+                timer=_f32(0x3F800000),  # 1.0
+                count=0,
+                limit=0x32C,
+                interval=_f32(0x3F333333),
+                child_template_id=0x41,
+            )
+        )
+        c.size = 64.0
+        c.health = 8500.0
+        c.move_speed = 1.3
+        c.reward_value = 6600.0
+        c.tint_r = 0.6
+        c.tint_g = 0.6
+        c.tint_b = 1.0
+        c.tint_a = 0.8
+        c.contact_damage = 50.0
+        primary_idx = 0
+    elif template_id == 1:
         c = creatures[0]
         c.type_id = CreatureTypeId.SPIDER_SP2
         c.flags = CreatureFlags.SPLIT_ON_DEATH
@@ -799,6 +826,65 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.tint_g = 0.7
         c.tint_b = 0.4
         c.contact_damage = 17.0
+        primary_idx = 0
+    elif template_id == 0x03:
+        c = creatures[0]
+        c.type_id = CreatureTypeId.SPIDER_SP1
+        size = float(rng.rand() % 0xF + 0x26)
+        c.size = size
+        c.health = size * 1.1428572 + 20.0
+        c.tint_a = 1.0
+        c.tint_r = 0.6
+        c.tint_g = 0.6
+        c.move_speed = float(rng.rand() % 0x12) * 0.1 + 1.1
+        c.reward_value = size + size + 50.0
+        tint_b = float(rng.rand() % 0x19) * 0.01 + 0.8
+        c.tint_b = min(max(tint_b, 0.0), 1.0)
+        c.contact_damage = float(rng.rand() % 10) + 4.0
+        primary_idx = 0
+    elif template_id == 0x04:
+        c = creatures[0]
+        c.type_id = CreatureTypeId.LIZARD
+        size = float(rng.rand() % 0xF + 0x26)
+        c.size = size
+        c.health = size * 1.1428572 + 20.0
+        c.tint_a = 1.0
+        c.tint_r = 0.67
+        c.tint_g = 0.67
+        c.tint_b = 1.0
+        c.move_speed = float(rng.rand() % 0x12) * 0.1 + 1.1
+        c.reward_value = size + size + 50.0
+        c.contact_damage = float(rng.rand() % 10) + 4.0
+        primary_idx = 0
+    elif template_id == 0x05:
+        c = creatures[0]
+        c.type_id = CreatureTypeId.SPIDER_SP2
+        size = float(rng.rand() % 0xF + 0x26)
+        c.size = size
+        c.health = size * 1.1428572 + 20.0
+        c.tint_a = 1.0
+        c.tint_r = 0.6
+        c.tint_g = 0.6
+        c.move_speed = float(rng.rand() % 0x12) * 0.1 + 1.1
+        c.reward_value = size + size + 50.0
+        tint_b = float(rng.rand() % 0x19) * 0.01 + 0.8
+        c.tint_b = min(max(tint_b, 0.0), 1.0)
+        c.contact_damage = float(rng.rand() % 10) + 4.0
+        primary_idx = 0
+    elif template_id == 0x06:
+        c = creatures[0]
+        c.type_id = CreatureTypeId.ALIEN
+        size = float(rng.rand() % 0xF + 0x26)
+        c.size = size
+        c.health = size * 1.1428572 + 20.0
+        c.tint_a = 1.0
+        c.tint_r = 0.6
+        c.tint_g = 0.6
+        c.move_speed = float(rng.rand() % 0x12) * 0.1 + 1.1
+        c.reward_value = size + size + 50.0
+        tint_b = float(rng.rand() % 0x19) * 0.01 + 0.8
+        c.tint_b = min(max(tint_b, 0.0), 1.0)
+        c.contact_damage = float(rng.rand() % 10) + 4.0
         primary_idx = 0
     elif template_id in (0x07, 0x08):
         c = creatures[0]
