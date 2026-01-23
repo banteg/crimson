@@ -40,14 +40,22 @@ def main() -> int:
     p.add_argument("--jsonl", type=Path, default=Path(r"C:\share\frida\ground_dump.jsonl"))
     p.add_argument("--fixtures-dir", type=Path, default=Path("tests/fixtures/ground"))
     p.add_argument("--cases-out", type=Path, default=Path("tests/fixtures/ground/ground_dump_cases.json"))
+    p.add_argument(
+        "--keep-last",
+        type=int,
+        default=3,
+        help="Keep only the last N dump events (0 = keep all).",
+    )
     args = p.parse_args()
 
     events = _load_events(args.jsonl)
 
+    dump_events = [ev for ev in events if ev.get("tag") == "dump"]
+    if args.keep_last and args.keep_last > 0:
+        dump_events = dump_events[-args.keep_last :]
+
     cases: list[dict] = []
-    for ev in events:
-        if ev.get("tag") != "dump":
-            continue
+    for ev in dump_events:
         tg = ev.get("terrain_generate") or {}
         indices = tg.get("indices") or {}
 

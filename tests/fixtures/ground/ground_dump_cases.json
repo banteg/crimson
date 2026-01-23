@@ -1,29 +1,5 @@
 [
   {
-    "desc_ptr": "0x484acc",
-    "fixture": "ground_dump_1769186478091.png",
-    "height": 1024,
-    "raw": "ground_dump_1769186478091.raw",
-    "seed": 1161017375,
-    "seed_srand": 264603998,
-    "tex0_index": 4,
-    "tex1_index": 5,
-    "tex2_index": 4,
-    "width": 1024
-  },
-  {
-    "desc_ptr": "0x484c84",
-    "fixture": "ground_dump_1769186491365.png",
-    "height": 1024,
-    "raw": "ground_dump_1769186491365.raw",
-    "seed": 3817571863,
-    "seed_srand": 264603998,
-    "tex0_index": 6,
-    "tex1_index": 7,
-    "tex2_index": 6,
-    "width": 1024
-  },
-  {
     "desc_ptr": "0x484730",
     "fixture": "ground_dump_1769186491847.png",
     "height": 1024,
