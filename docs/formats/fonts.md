@@ -59,11 +59,13 @@ A small bias of 1/512 is applied to the U/V values in code to reduce bleeding.
 ### Behavior
 
 - **Advance**: `16 * scale` (fixed). [static]
+- **Cursor origin**: `x` is treated as a cursor origin; the renderer **advances X before drawing** each glyph by `16 * scale` (except when the 0xA7 control code marks the next glyph as “no pre-advance”). [static]
 - **Line height**: `28 * scale` (newline step). [static]
 - **Draw size**: `32 * scale` width x `32 * scale` height. [static]
+- **Baseline quirk**: Most glyph quads are drawn at `y + 1.0` (literal +1px, not scaled). [static]
 - **Visual effect**: Characters are drawn at 2x the size of their horizontal spacing, creating a dense, tall appearance (effective 1:2 aspect ratio relative to the grid). [static]
 - **UVs**: 16x16 table (`grim_font2_uv_u/v`), indexed directly by byte value (`grim_font2_char_map` is identity). [static]
-- **Special codes**: Handles 0xA7, 0xE4, 0xE5, 0xF6 and `\n`. [static]
+- **Special codes**: 0xA7 (skip pre-advance for next glyph), plus 0xE4/0xE5/0xF6 and `\n`. [static]
 
 ### Quest title overlay (runtime evidence)
 

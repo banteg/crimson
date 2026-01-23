@@ -46,8 +46,11 @@ def draw_grim_mono_text(
 ) -> None:
     x_pos = x
     y_pos = y
+    advance = font.advance * scale
+    draw_size = GRIM_MONO_DRAW_SIZE * scale
     line_height = GRIM_MONO_LINE_HEIGHT * scale
     origin = rl.Vector2(0.0, 0.0)
+    skip_advance = False
     for value in text.encode("latin-1", errors="replace"):
         if value == 0x0A:
             x_pos = x
@@ -55,6 +58,15 @@ def draw_grim_mono_text(
             continue
         if value == 0x0D:
             continue
+        if value == 0xA7:
+            skip_advance = True
+            continue
+
+        if skip_advance:
+            skip_advance = False
+        else:
+            x_pos += advance
+
         col = value % font.grid
         row = value // font.grid
         src = rl.Rectangle(
@@ -65,12 +77,11 @@ def draw_grim_mono_text(
         )
         dst = rl.Rectangle(
             float(x_pos),
-            float(y_pos),
-            float(GRIM_MONO_DRAW_SIZE * scale),
-            float(GRIM_MONO_DRAW_SIZE * scale),
+            float(y_pos + 1.0),
+            float(draw_size),
+            float(draw_size),
         )
         rl.draw_texture_pro(font.texture, src, dst, origin, 0.0, color)
-        x_pos += font.advance * scale
 
 
 def measure_grim_mono_text_height(font: GrimMonoFont, text: str, scale: float) -> float:
