@@ -719,7 +719,7 @@ class MenuView:
         self._close_action = action
 
     def _begin_quit_transition(self) -> None:
-        self._begin_close_transition("restart_demo" if self._state.demo_enabled else "quit_app")
+        self._begin_close_transition("quit_after_demo" if self._state.demo_enabled else "quit_app")
 
     def _ensure_cache(self) -> PaqTextureCache:
         cache = self._state.texture_cache
@@ -1419,6 +1419,7 @@ class GameLoopView:
         self._active: View = self._boot
         self._demo_active = False
         self._menu_active = False
+        self._quit_after_demo = False
 
     def open(self) -> None:
         self._boot.open()
@@ -1442,9 +1443,10 @@ class GameLoopView:
             if action == "quit_app":
                 self._state.quit_requested = True
                 return
-            if action == "restart_demo":
+            if action == "quit_after_demo":
                 self._menu.close()
                 self._menu_active = False
+                self._quit_after_demo = True
                 self._demo.open()
                 self._active = self._demo
                 self._demo_active = True
@@ -1472,6 +1474,10 @@ class GameLoopView:
         if self._demo_active and not self._menu_active and self._demo.is_finished():
             self._demo.close()
             self._demo_active = False
+            if self._quit_after_demo:
+                self._quit_after_demo = False
+                self._state.quit_requested = True
+                return
             ensure_menu_ground(self._state, regenerate=True)
             self._menu.open()
             self._active = self._menu
