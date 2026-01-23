@@ -5,6 +5,8 @@ import math
 import random
 from typing import Iterator
 
+from .types import SpawnEntry
+
 
 @dataclass(frozen=True, slots=True)
 class EdgePoints:
@@ -20,9 +22,7 @@ def center_point(width: float, height: float | None = None) -> tuple[float, floa
     return float(width) / 2.0, float(height) / 2.0
 
 
-def edge_midpoints(
-    width: float, height: float | None = None, offset: float = 64.0
-) -> EdgePoints:
+def edge_midpoints(width: float, height: float | None = None, offset: float = 64.0) -> EdgePoints:
     if height is None:
         height = width
     cx, cy = center_point(width, height)
@@ -34,9 +34,7 @@ def edge_midpoints(
     )
 
 
-def corner_points(
-    width: float, height: float | None = None, offset: float = 64.0
-) -> tuple[tuple[float, float], ...]:
+def corner_points(width: float, height: float | None = None, offset: float = 64.0) -> tuple[tuple[float, float], ...]:
     if height is None:
         height = width
     return (
@@ -47,9 +45,7 @@ def corner_points(
     )
 
 
-def iter_angles(
-    count: int, *, step: float | None = None, start: float = 0.0
-) -> Iterator[float]:
+def iter_angles(count: int, *, step: float | None = None, start: float = 0.0) -> Iterator[float]:
     if count <= 0:
         return iter(())
     if step is None:
@@ -98,21 +94,53 @@ def radial_points(
         radius += radius_step
 
 
-def heading_from_center(
-    x: float, y: float, center_x: float, center_y: float
-) -> float:
+def heading_from_center(x: float, y: float, center_x: float, center_y: float) -> float:
     return math.atan2(y - center_y, x - center_x) - (math.pi / 2.0)
 
 
-def line_points_x(
-    start: float, step: float, count: int, y: float
-) -> Iterator[tuple[float, float]]:
+def line_points_x(start: float, step: float, count: int, y: float) -> Iterator[tuple[float, float]]:
     for idx in range(count):
         yield start + float(idx) * step, y
 
 
-def line_points_y(
-    start: float, step: float, count: int, x: float
-) -> Iterator[tuple[float, float]]:
+def line_points_y(start: float, step: float, count: int, x: float) -> Iterator[tuple[float, float]]:
     for idx in range(count):
         yield x, start + float(idx) * step
+
+
+def spawn(
+    *,
+    x: float,
+    y: float,
+    heading: float = 0.0,
+    spawn_id: int,
+    trigger_ms: int,
+    count: int,
+) -> SpawnEntry:
+    return SpawnEntry(
+        x=x,
+        y=y,
+        heading=heading,
+        spawn_id=spawn_id,
+        trigger_ms=trigger_ms,
+        count=count,
+    )
+
+
+def spawn_at(
+    point: tuple[float, float],
+    *,
+    heading: float = 0.0,
+    spawn_id: int,
+    trigger_ms: int,
+    count: int,
+) -> SpawnEntry:
+    x, y = point
+    return spawn(
+        x=x,
+        y=y,
+        heading=heading,
+        spawn_id=spawn_id,
+        trigger_ms=trigger_ms,
+        count=count,
+    )

@@ -10,6 +10,8 @@ from .helpers import (
     line_points_x,
     random_angle,
     radial_points,
+    spawn,
+    spawn_at,
 )
 from .registry import register_quest
 from .types import QuestContext, SpawnEntry
@@ -40,7 +42,7 @@ SPAWN_ID_65 = 0x41
     time_limit_ms=300000,
     start_weapon_id=1,
     unlock_perk_id=PerkId.BONUS_ECONOMIST,
-    builder_address=0x004375a0,
+    builder_address=0x004375A0,
 )
 def build_2_1_everred_pastures(ctx: QuestContext) -> list[SpawnEntry]:
     edges = edge_midpoints(ctx.width)
@@ -48,13 +50,61 @@ def build_2_1_everred_pastures(ctx: QuestContext) -> list[SpawnEntry]:
     for wave in range(1, 9):
         trigger = (wave - 1) * 13000 + 1500
         count = wave
-        entries.append(SpawnEntry(*edges.right, 0.0, SPAWN_ID_50, trigger, count))
-        entries.append(SpawnEntry(*edges.left, 0.0, SPAWN_ID_51, trigger, count))
-        entries.append(SpawnEntry(*edges.bottom, 0.0, SPAWN_ID_52, trigger, count))
-        entries.append(SpawnEntry(*edges.top, 0.0, SPAWN_ID_53, trigger, count))
+        entries.append(
+            spawn_at(
+                edges.right,
+                heading=0.0,
+                spawn_id=SPAWN_ID_50,
+                trigger_ms=trigger,
+                count=count,
+            )
+        )
+        entries.append(
+            spawn_at(
+                edges.left,
+                heading=0.0,
+                spawn_id=SPAWN_ID_51,
+                trigger_ms=trigger,
+                count=count,
+            )
+        )
+        entries.append(
+            spawn_at(
+                edges.bottom,
+                heading=0.0,
+                spawn_id=SPAWN_ID_52,
+                trigger_ms=trigger,
+                count=count,
+            )
+        )
+        entries.append(
+            spawn_at(
+                edges.top,
+                heading=0.0,
+                spawn_id=SPAWN_ID_53,
+                trigger_ms=trigger,
+                count=count,
+            )
+        )
         if wave == 4:
-            entries.append(SpawnEntry(*edges.top, 0.0, SPAWN_ID_27, 40500, 8))
-            entries.append(SpawnEntry(*edges.bottom, 0.0, SPAWN_ID_27, 40500, 8))
+            entries.append(
+                spawn_at(
+                    edges.top,
+                    heading=0.0,
+                    spawn_id=SPAWN_ID_27,
+                    trigger_ms=40500,
+                    count=8,
+                )
+            )
+            entries.append(
+                spawn_at(
+                    edges.bottom,
+                    heading=0.0,
+                    spawn_id=SPAWN_ID_27,
+                    trigger_ms=40500,
+                    count=8,
+                )
+            )
     return entries
 
 
@@ -64,21 +114,98 @@ def build_2_1_everred_pastures(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=300000,
     start_weapon_id=1,
     unlock_weapon_id=0x09,
-    builder_address=0x00436d70,
+    builder_address=0x00436D70,
 )
 def build_2_2_spider_spawns(ctx: QuestContext) -> list[SpawnEntry]:
     return [
-        SpawnEntry(128.0, 128.0, 0.0, SPAWN_ID_16, 1500, 1),
-        SpawnEntry(896.0, 896.0, 0.0, SPAWN_ID_16, 1500, 1),
-        SpawnEntry(896.0, 128.0, 0.0, SPAWN_ID_16, 1500, 1),
-        SpawnEntry(128.0, 896.0, 0.0, SPAWN_ID_16, 1500, 1),
-        SpawnEntry(-64.0, 512.0, 0.0, SPAWN_ID_56, 3000, 2),
-        SpawnEntry(512.0, 512.0, 0.0, SPAWN_ID_10, 18000, 1),
-        SpawnEntry(448.0, 448.0, 0.0, SPAWN_ID_16, 20500, 1),
-        SpawnEntry(576.0, 448.0, 0.0, SPAWN_ID_16, 26000, 1),
-        SpawnEntry(1088.0, 512.0, 0.0, SPAWN_ID_56, 21000, 2),
-        SpawnEntry(576.0, 576.0, 0.0, SPAWN_ID_16, 31500, 1),
-        SpawnEntry(448.0, 576.0, 0.0, SPAWN_ID_16, 22000, 1),
+        spawn(
+            x=128.0,
+            y=128.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_16,
+            trigger_ms=1500,
+            count=1,
+        ),
+        spawn(
+            x=896.0,
+            y=896.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_16,
+            trigger_ms=1500,
+            count=1,
+        ),
+        spawn(
+            x=896.0,
+            y=128.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_16,
+            trigger_ms=1500,
+            count=1,
+        ),
+        spawn(
+            x=128.0,
+            y=896.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_16,
+            trigger_ms=1500,
+            count=1,
+        ),
+        spawn(
+            x=-64.0,
+            y=512.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_56,
+            trigger_ms=3000,
+            count=2,
+        ),
+        spawn(
+            x=512.0,
+            y=512.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_10,
+            trigger_ms=18000,
+            count=1,
+        ),
+        spawn(
+            x=448.0,
+            y=448.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_16,
+            trigger_ms=20500,
+            count=1,
+        ),
+        spawn(
+            x=576.0,
+            y=448.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_16,
+            trigger_ms=26000,
+            count=1,
+        ),
+        spawn(
+            x=1088.0,
+            y=512.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_56,
+            trigger_ms=21000,
+            count=2,
+        ),
+        spawn(
+            x=576.0,
+            y=576.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_16,
+            trigger_ms=31500,
+            count=1,
+        ),
+        spawn(
+            x=448.0,
+            y=576.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_16,
+            trigger_ms=22000,
+            count=1,
+        ),
     ]
 
 
@@ -95,16 +222,43 @@ def build_2_3_arachnoid_farm(ctx: QuestContext) -> list[SpawnEntry]:
     if ctx.player_count + 4 >= 0:
         trigger = 500
         for x, y in line_points_x(256.0, 102.4, ctx.player_count + 4, 256.0):
-            entries.append(SpawnEntry(x, y, 0.0, SPAWN_ID_10, trigger, 1))
+            entries.append(
+                spawn(
+                    x=x,
+                    y=y,
+                    heading=0.0,
+                    spawn_id=SPAWN_ID_10,
+                    trigger_ms=trigger,
+                    count=1,
+                )
+            )
             trigger += 500
         trigger = 10500
         for x, y in line_points_x(256.0, 102.4, ctx.player_count + 4, 768.0):
-            entries.append(SpawnEntry(x, y, 0.0, SPAWN_ID_10, trigger, 1))
+            entries.append(
+                spawn(
+                    x=x,
+                    y=y,
+                    heading=0.0,
+                    spawn_id=SPAWN_ID_10,
+                    trigger_ms=trigger,
+                    count=1,
+                )
+            )
             trigger += 500
     if ctx.player_count + 7 >= 0:
         trigger = 40500
         for x, y in line_points_x(256.0, 64.0, ctx.player_count + 7, 512.0):
-            entries.append(SpawnEntry(x, y, 0.0, SPAWN_ID_16, trigger, 1))
+            entries.append(
+                spawn(
+                    x=x,
+                    y=y,
+                    heading=0.0,
+                    spawn_id=SPAWN_ID_16,
+                    trigger_ms=trigger,
+                    count=1,
+                )
+            )
             trigger += 3500
     return entries
 
@@ -115,7 +269,7 @@ def build_2_3_arachnoid_farm(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=240000,
     start_weapon_id=1,
     unlock_weapon_id=0x15,
-    builder_address=0x00436ee0,
+    builder_address=0x00436EE0,
 )
 def build_2_4_two_fronts(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
@@ -123,16 +277,68 @@ def build_2_4_two_fronts(ctx: QuestContext) -> list[SpawnEntry]:
     for wave in range(0, 40):
         trigger_a = wave * 2000 + 1000
         trigger_b = (wave * 5 + 5) * 400
-        entries.append(SpawnEntry(*edges.right, 0.0, SPAWN_ID_26, trigger_a, 1))
-        entries.append(SpawnEntry(*edges.left, 0.0, SPAWN_ID_27, trigger_b, 1))
+        entries.append(
+            spawn_at(
+                edges.right,
+                heading=0.0,
+                spawn_id=SPAWN_ID_26,
+                trigger_ms=trigger_a,
+                count=1,
+            )
+        )
+        entries.append(
+            spawn_at(
+                edges.left,
+                heading=0.0,
+                spawn_id=SPAWN_ID_27,
+                trigger_ms=trigger_b,
+                count=1,
+            )
+        )
         if wave in (10, 20):
             trigger = wave * 2000 + 2500
-            entries.append(SpawnEntry(256.0, 256.0, 0.0, SPAWN_ID_10, trigger, 1))
-            entries.append(SpawnEntry(768.0, 768.0, 0.0, SPAWN_ID_7, trigger, 1))
+            entries.append(
+                spawn(
+                    x=256.0,
+                    y=256.0,
+                    heading=0.0,
+                    spawn_id=SPAWN_ID_10,
+                    trigger_ms=trigger,
+                    count=1,
+                )
+            )
+            entries.append(
+                spawn(
+                    x=768.0,
+                    y=768.0,
+                    heading=0.0,
+                    spawn_id=SPAWN_ID_7,
+                    trigger_ms=trigger,
+                    count=1,
+                )
+            )
         if wave == 30:
             trigger = 62500
-            entries.append(SpawnEntry(768.0, 256.0, 0.0, SPAWN_ID_10, trigger, 1))
-            entries.append(SpawnEntry(256.0, 768.0, 0.0, SPAWN_ID_7, trigger, 1))
+            entries.append(
+                spawn(
+                    x=768.0,
+                    y=256.0,
+                    heading=0.0,
+                    spawn_id=SPAWN_ID_10,
+                    trigger_ms=trigger,
+                    count=1,
+                )
+            )
+            entries.append(
+                spawn(
+                    x=256.0,
+                    y=768.0,
+                    heading=0.0,
+                    spawn_id=SPAWN_ID_7,
+                    trigger_ms=trigger,
+                    count=1,
+                )
+            )
     return entries
 
 
@@ -154,7 +360,16 @@ def build_2_5_sweep_stakes(ctx: QuestContext, rng: random.Random | None = None) 
         angle = random_angle(rng)
         for x, y in radial_points(center_x, center_y, angle, 0x54, 0xFC, 0x2A):
             heading = heading_from_center(x, y, center_x, center_y)
-            entries.append(SpawnEntry(x, y, heading, SPAWN_ID_54, trigger, 1))
+            entries.append(
+                spawn(
+                    x=x,
+                    y=y,
+                    heading=heading,
+                    spawn_id=SPAWN_ID_54,
+                    trigger_ms=trigger,
+                    count=1,
+                )
+            )
         trigger += max(step, 600)
         step -= 0x50
     return entries
@@ -166,7 +381,7 @@ def build_2_5_sweep_stakes(ctx: QuestContext, rng: random.Random | None = None) 
     time_limit_ms=180000,
     start_weapon_id=1,
     unlock_weapon_id=0x07,
-    builder_address=0x004374a0,
+    builder_address=0x004374A0,
 )
 def build_2_6_evil_zombies_at_large(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
@@ -174,10 +389,42 @@ def build_2_6_evil_zombies_at_large(ctx: QuestContext) -> list[SpawnEntry]:
     trigger = 1500
     count = 4
     while count <= 13:
-        entries.append(SpawnEntry(*edges.right, 0.0, SPAWN_ID_65, trigger, count))
-        entries.append(SpawnEntry(*edges.left, 0.0, SPAWN_ID_65, trigger, count))
-        entries.append(SpawnEntry(*edges.bottom, 0.0, SPAWN_ID_65, trigger, count))
-        entries.append(SpawnEntry(*edges.top, 0.0, SPAWN_ID_65, trigger, count))
+        entries.append(
+            spawn_at(
+                edges.right,
+                heading=0.0,
+                spawn_id=SPAWN_ID_65,
+                trigger_ms=trigger,
+                count=count,
+            )
+        )
+        entries.append(
+            spawn_at(
+                edges.left,
+                heading=0.0,
+                spawn_id=SPAWN_ID_65,
+                trigger_ms=trigger,
+                count=count,
+            )
+        )
+        entries.append(
+            spawn_at(
+                edges.bottom,
+                heading=0.0,
+                spawn_id=SPAWN_ID_65,
+                trigger_ms=trigger,
+                count=count,
+            )
+        )
+        entries.append(
+            spawn_at(
+                edges.top,
+                heading=0.0,
+                spawn_id=SPAWN_ID_65,
+                trigger_ms=trigger,
+                count=count,
+            )
+        )
         trigger += 5500
         count += 1
     return entries
@@ -197,7 +444,7 @@ def build_2_7_survival_of_the_fastest(ctx: QuestContext) -> list[SpawnEntry]:
     def set_entry(idx: int, x: float, y: float, spawn_id: int, trigger: int, count: int) -> None:
         if idx < 0 or idx >= len(entries):
             return
-        entries[idx] = SpawnEntry(x, y, 0.0, spawn_id, trigger, count)
+        entries[idx] = spawn(x=x, y=y, heading=0.0, spawn_id=spawn_id, trigger_ms=trigger, count=count)
 
     # Loop 1: x from 256 to <688, step 72
     trigger = 500
@@ -254,14 +501,42 @@ def build_2_7_survival_of_the_fastest(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=180000,
     start_weapon_id=1,
     unlock_weapon_id=0x04,
-    builder_address=0x00437ba0,
+    builder_address=0x00437BA0,
 )
 def build_2_8_land_of_lizards(ctx: QuestContext) -> list[SpawnEntry]:
     return [
-        SpawnEntry(256.0, 256.0, 0.0, SPAWN_ID_14, 2000, 1),
-        SpawnEntry(768.0, 256.0, 0.0, SPAWN_ID_14, 12000, 1),
-        SpawnEntry(256.0, 768.0, 0.0, SPAWN_ID_14, 22000, 1),
-        SpawnEntry(768.0, 768.0, 0.0, SPAWN_ID_14, 32000, 1),
+        spawn(
+            x=256.0,
+            y=256.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_14,
+            trigger_ms=2000,
+            count=1,
+        ),
+        spawn(
+            x=768.0,
+            y=256.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_14,
+            trigger_ms=12000,
+            count=1,
+        ),
+        spawn(
+            x=256.0,
+            y=768.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_14,
+            trigger_ms=22000,
+            count=1,
+        ),
+        spawn(
+            x=768.0,
+            y=768.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_14,
+            trigger_ms=32000,
+            count=1,
+        ),
     ]
 
 
@@ -276,18 +551,43 @@ def build_2_8_land_of_lizards(ctx: QuestContext) -> list[SpawnEntry]:
 def build_2_9_ghost_patrols(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
     edges = edge_midpoints(ctx.width, ctx.height, offset=128.0)
-    entries.append(SpawnEntry(*edges.right, 0.0, SPAWN_ID_43, 1500, 2))
+    entries.append(spawn_at(edges.right, heading=0.0, spawn_id=SPAWN_ID_43, trigger_ms=1500, count=2))
     trigger = 2500
     for i in range(12):
         x = edges.left[0] if i % 2 == 0 else edges.right[0]
-        entries.append(SpawnEntry(x, edges.left[1], 0.0, SPAWN_ID_25, trigger, 1))
+        entries.append(
+            spawn(
+                x=x,
+                y=edges.left[1],
+                heading=0.0,
+                spawn_id=SPAWN_ID_25,
+                trigger_ms=trigger,
+                count=1,
+            )
+        )
         trigger += 2500
     loop_count = 12
     entries.append(
-        SpawnEntry(-264.0, edges.left[1], 0.0, SPAWN_ID_43, (loop_count - 1) * 2500, 1)
+        spawn(
+            x=-264.0,
+            y=edges.left[1],
+            heading=0.0,
+            spawn_id=SPAWN_ID_43,
+            trigger_ms=(loop_count - 1) * 2500,
+            count=1,
+        )
     )
     special_trigger = (5 * loop_count + 15) * 500
-    entries.append(SpawnEntry(edges.left[0], edges.left[1], 0.0, SPAWN_ID_24, special_trigger, 1))
+    entries.append(
+        spawn(
+            x=edges.left[0],
+            y=edges.left[1],
+            heading=0.0,
+            spawn_id=SPAWN_ID_24,
+            trigger_ms=special_trigger,
+            count=1,
+        )
+    )
     return entries
 
 
@@ -297,19 +597,60 @@ def build_2_9_ghost_patrols(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=360000,
     start_weapon_id=1,
     unlock_weapon_id=0x0B,
-    builder_address=0x004373c0,
+    builder_address=0x004373C0,
 )
 def build_2_10_spideroids(ctx: QuestContext, full_version: bool = True) -> list[SpawnEntry]:
     entries = [
-        SpawnEntry(1088.0, 512.0, 0.0, SPAWN_ID_1, 1000, 1),
-        SpawnEntry(-64.0, 512.0, 0.0, SPAWN_ID_1, 3000, 1),
-        SpawnEntry(1088.0, 256.0, 0.0, SPAWN_ID_1, 6000, 1),
+        spawn(
+            x=1088.0,
+            y=512.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_1,
+            trigger_ms=1000,
+            count=1,
+        ),
+        spawn(x=-64.0, y=512.0, heading=0.0, spawn_id=SPAWN_ID_1, trigger_ms=3000, count=1),
+        spawn(
+            x=1088.0,
+            y=256.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_1,
+            trigger_ms=6000,
+            count=1,
+        ),
     ]
     if full_version:
-        entries.append(SpawnEntry(1088.0, 762.0, 0.0, SPAWN_ID_1, 9000, 1))
-        entries.append(SpawnEntry(512.0, 1088.0, 0.0, SPAWN_ID_1, 9000, 1))
+        entries.append(
+            spawn(
+                x=1088.0,
+                y=762.0,
+                heading=0.0,
+                spawn_id=SPAWN_ID_1,
+                trigger_ms=9000,
+                count=1,
+            )
+        )
+        entries.append(
+            spawn(
+                x=512.0,
+                y=1088.0,
+                heading=0.0,
+                spawn_id=SPAWN_ID_1,
+                trigger_ms=9000,
+                count=1,
+            )
+        )
     if ctx.player_count >= 2 or full_version:
-        entries.append(SpawnEntry(-64.0, 762.0, 0.0, SPAWN_ID_1, 9000, 1))
+        entries.append(
+            spawn(
+                x=-64.0,
+                y=762.0,
+                heading=0.0,
+                spawn_id=SPAWN_ID_1,
+                trigger_ms=9000,
+                count=1,
+            )
+        )
     return entries
 
 

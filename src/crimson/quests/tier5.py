@@ -3,7 +3,11 @@ from __future__ import annotations
 import math
 
 from ..perks import PerkId
-from .helpers import center_point, ring_points
+from .helpers import (
+    center_point,
+    ring_points,
+    spawn,
+)
 from .registry import register_quest
 from .types import QuestContext, SpawnEntry
 
@@ -34,6 +38,7 @@ SPAWN_ID_65 = 0x41
 SPAWN_ID_66 = 0x42
 SPAWN_ID_67 = 0x43
 
+
 @register_quest(
     level="5.1",
     title="The Beating",
@@ -44,45 +49,94 @@ SPAWN_ID_67 = 0x43
 )
 def build_5_1_the_beating(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
-        SpawnEntry(256.0, 256.0, 0.0, SPAWN_ID_39, 500, 1),
-        SpawnEntry(ctx.width + 32.0, float(ctx.height // 2), 0.0, SPAWN_ID_41, 8000, 3),
+        spawn(x=256.0, y=256.0, heading=0.0, spawn_id=SPAWN_ID_39, trigger_ms=500, count=1),
+        spawn(
+            x=ctx.width + 32.0,
+            y=float(ctx.height // 2),
+            heading=0.0,
+            spawn_id=SPAWN_ID_41,
+            trigger_ms=8000,
+            count=3,
+        ),
     ]
 
     trigger = 10000
     x_offset = 0x40
     for _ in range(8):
         entries.append(
-            SpawnEntry(float(ctx.width + x_offset), float(ctx.height // 2), 0.0, SPAWN_ID_37, trigger, 8)
+            spawn(
+                x=float(ctx.width + x_offset),
+                y=float(ctx.height // 2),
+                heading=0.0,
+                spawn_id=SPAWN_ID_37,
+                trigger_ms=trigger,
+                count=8,
+            )
         )
         trigger += 100
         x_offset += 0x20
 
     entries.append(
-        SpawnEntry(-32.0, float(ctx.height // 2), 0.0, SPAWN_ID_41, 18000, 3)
+        spawn(
+            x=-32.0,
+            y=float(ctx.height // 2),
+            heading=0.0,
+            spawn_id=SPAWN_ID_41,
+            trigger_ms=18000,
+            count=3,
+        )
     )
 
     trigger = 20000
     x = -64
     for _ in range(8):
-        entries.append(SpawnEntry(float(x), float(ctx.height // 2), 0.0, SPAWN_ID_37, trigger, 8))
+        entries.append(
+            spawn(
+                x=float(x),
+                y=float(ctx.height // 2),
+                heading=0.0,
+                spawn_id=SPAWN_ID_37,
+                trigger_ms=trigger,
+                count=8,
+            )
+        )
         trigger += 100
         x -= 32
 
     trigger = 40000
     y = -64
     for _ in range(6):
-        entries.append(SpawnEntry(float(ctx.width // 2), float(y), 0.0, SPAWN_ID_15, trigger, 4))
+        entries.append(
+            spawn(
+                x=float(ctx.width // 2),
+                y=float(y),
+                heading=0.0,
+                spawn_id=SPAWN_ID_15,
+                trigger_ms=trigger,
+                count=4,
+            )
+        )
         trigger += 100
         y -= 42
 
     trigger = 40000
     y = ctx.width + 0x2C
     for _ in range(6):
-        entries.append(SpawnEntry(float(ctx.width // 2), float(y), 0.0, SPAWN_ID_18, trigger, 2))
+        entries.append(
+            spawn(
+                x=float(ctx.width // 2),
+                y=float(y),
+                heading=0.0,
+                spawn_id=SPAWN_ID_18,
+                trigger_ms=trigger,
+                count=2,
+            )
+        )
         trigger += 100
         y += 0x20
 
     return entries
+
 
 @register_quest(
     level="5.2",
@@ -90,12 +144,12 @@ def build_5_1_the_beating(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=480000,
     start_weapon_id=1,
     unlock_perk_id=PerkId.DEATH_CLOCK,
-    builder_address=0x004358a0,
+    builder_address=0x004358A0,
 )
 def build_5_2_the_spanking_of_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
-        SpawnEntry(256.0, 512.0, 0.0, SPAWN_ID_39, 500, 1),
-        SpawnEntry(768.0, 512.0, 0.0, SPAWN_ID_39, 500, 1),
+        spawn(x=256.0, y=512.0, heading=0.0, spawn_id=SPAWN_ID_39, trigger_ms=500, count=1),
+        spawn(x=768.0, y=512.0, heading=0.0, spawn_id=SPAWN_ID_39, trigger_ms=500, count=1),
     ]
 
     trigger = 5000
@@ -105,14 +159,42 @@ def build_5_2_the_spanking_of_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
         radius = 512.0 - step_index * 3.8
         x = math.cos(angle) * radius + 512.0
         y = math.sin(angle) * radius + 512.0
-        entries.append(SpawnEntry(x, y, angle, SPAWN_ID_65, trigger, 1))
+        entries.append(
+            spawn(
+                x=x,
+                y=y,
+                heading=angle,
+                spawn_id=SPAWN_ID_65,
+                trigger_ms=trigger,
+                count=1,
+            )
+        )
         trigger += 300
         step_index += 1
 
     offset = step_index * 300
-    entries.append(SpawnEntry(1280.0, 512.0, 0.0, SPAWN_ID_66, offset + 10000, 16))
-    entries.append(SpawnEntry(-256.0, 512.0, 0.0, SPAWN_ID_66, offset + 20000, 16))
+    entries.append(
+        spawn(
+            x=1280.0,
+            y=512.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_66,
+            trigger_ms=offset + 10000,
+            count=16,
+        )
+    )
+    entries.append(
+        spawn(
+            x=-256.0,
+            y=512.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_66,
+            trigger_ms=offset + 20000,
+            count=16,
+        )
+    )
     return entries
+
 
 @register_quest(
     level="5.3",
@@ -120,18 +202,34 @@ def build_5_2_the_spanking_of_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=480000,
     start_weapon_id=1,
     unlock_perk_id=PerkId.MY_FAVOURITE_WEAPON,
-    builder_address=0x004352d0,
+    builder_address=0x004352D0,
 )
 def build_5_3_the_fortress(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
-        SpawnEntry(-50.0, float(ctx.height // 2), 0.0, SPAWN_ID_64, 100, 6),
+        spawn(
+            x=-50.0,
+            y=float(ctx.height // 2),
+            heading=0.0,
+            spawn_id=SPAWN_ID_64,
+            trigger_ms=100,
+            count=6,
+        ),
     ]
 
     trigger = 1100
     y_seed = 0x200
     while trigger < 0x14B4:
         y = y_seed * 0.125 + 256.0
-        entries.append(SpawnEntry(768.0, float(y), 0.0, SPAWN_ID_9, trigger, 1))
+        entries.append(
+            spawn(
+                x=768.0,
+                y=float(y),
+                heading=0.0,
+                spawn_id=SPAWN_ID_9,
+                trigger_ms=trigger,
+                count=1,
+            )
+        )
         trigger += 600
         y_seed += 0x200
 
@@ -143,12 +241,22 @@ def build_5_3_the_fortress(ctx: QuestContext) -> list[SpawnEntry]:
             if row != 1 or x_seed not in (0x480, 0x600):
                 x = x_seed * 0.16666667 + 256.0
                 y = 512.0 - (row * 0x180) * 0.16666667
-                entries.append(SpawnEntry(float(x), float(y), 0.0, SPAWN_ID_10, trigger, 1))
+                entries.append(
+                    spawn(
+                        x=float(x),
+                        y=float(y),
+                        heading=0.0,
+                        spawn_id=SPAWN_ID_10,
+                        trigger_ms=trigger,
+                        count=1,
+                    )
+                )
                 trigger += 600
                 entry_count += 1
         x_seed += 0x180
 
     return entries
+
 
 @register_quest(
     level="5.4",
@@ -160,24 +268,75 @@ def build_5_3_the_fortress(ctx: QuestContext) -> list[SpawnEntry]:
 )
 def build_5_4_the_gang_wars(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
-        SpawnEntry(-150.0, float(ctx.height // 2), 0.0, SPAWN_ID_18, 100, 1),
-        SpawnEntry(1174.0, float(ctx.height // 2), 0.0, SPAWN_ID_18, 2500, 1),
+        spawn(
+            x=-150.0,
+            y=float(ctx.height // 2),
+            heading=0.0,
+            spawn_id=SPAWN_ID_18,
+            trigger_ms=100,
+            count=1,
+        ),
+        spawn(
+            x=1174.0,
+            y=float(ctx.height // 2),
+            heading=0.0,
+            spawn_id=SPAWN_ID_18,
+            trigger_ms=2500,
+            count=1,
+        ),
     ]
 
     trigger = 5500
     for _ in range(10):
-        entries.append(SpawnEntry(1174.0, float(ctx.height // 2), 0.0, SPAWN_ID_18, trigger, 2))
+        entries.append(
+            spawn(
+                x=1174.0,
+                y=float(ctx.height // 2),
+                heading=0.0,
+                spawn_id=SPAWN_ID_18,
+                trigger_ms=trigger,
+                count=2,
+            )
+        )
         trigger += 4000
 
-    entries.append(SpawnEntry(512.0, 1152.0, 0.0, SPAWN_ID_19, 50500, 1))
+    entries.append(
+        spawn(
+            x=512.0,
+            y=1152.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_19,
+            trigger_ms=50500,
+            count=1,
+        )
+    )
 
     trigger = 59500
     while trigger < 0x184AC:
-        entries.append(SpawnEntry(-150.0, float(ctx.height // 2), 0.0, SPAWN_ID_18, trigger, 2))
+        entries.append(
+            spawn(
+                x=-150.0,
+                y=float(ctx.height // 2),
+                heading=0.0,
+                spawn_id=SPAWN_ID_18,
+                trigger_ms=trigger,
+                count=2,
+            )
+        )
         trigger += 4000
 
-    entries.append(SpawnEntry(512.0, 1152.0, 0.0, SPAWN_ID_19, 107500, 3))
+    entries.append(
+        spawn(
+            x=512.0,
+            y=1152.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_19,
+            trigger_ms=107500,
+            count=3,
+        )
+    )
     return entries
+
 
 @register_quest(
     level="5.5",
@@ -185,11 +344,18 @@ def build_5_4_the_gang_wars(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=480000,
     start_weapon_id=1,
     unlock_perk_id=PerkId.BANDAGE,
-    builder_address=0x00434f00,
+    builder_address=0x00434F00,
 )
 def build_5_5_knee_deep_in_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
-        SpawnEntry(-50.0, float(ctx.height * 0.5), 0.0, SPAWN_ID_67, 100, 1),
+        spawn(
+            x=-50.0,
+            y=float(ctx.height * 0.5),
+            heading=0.0,
+            spawn_id=SPAWN_ID_67,
+            trigger_ms=100,
+            count=1,
+        ),
     ]
 
     trigger = 500
@@ -197,32 +363,75 @@ def build_5_5_knee_deep_in_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
     while trigger < 0x178F4:
         if wave % 8 == 0:
             entries.append(
-                SpawnEntry(-50.0, float(ctx.height * 0.5), 0.0, SPAWN_ID_67, trigger - 2, 1)
+                spawn(
+                    x=-50.0,
+                    y=float(ctx.height * 0.5),
+                    heading=0.0,
+                    spawn_id=SPAWN_ID_67,
+                    trigger_ms=trigger - 2,
+                    count=1,
+                )
             )
         count = 2 if wave > 0x20 else 1
         entries.append(
-            SpawnEntry(-50.0, float(ctx.height * 0.5), 0.0, SPAWN_ID_65, trigger, count)
+            spawn(
+                x=-50.0,
+                y=float(ctx.height * 0.5),
+                heading=0.0,
+                spawn_id=SPAWN_ID_65,
+                trigger_ms=trigger,
+                count=count,
+            )
         )
         if trigger > 0x30D4:
             entries.append(
-                SpawnEntry(-50.0, float(ctx.height * 0.5 + 158.0), 0.0, SPAWN_ID_65, trigger + 500, 1)
+                spawn(
+                    x=-50.0,
+                    y=float(ctx.height * 0.5 + 158.0),
+                    heading=0.0,
+                    spawn_id=SPAWN_ID_65,
+                    trigger_ms=trigger + 500,
+                    count=1,
+                )
             )
         if trigger > 0x5FB4:
             entries.append(
-                SpawnEntry(-50.0, float(ctx.height * 0.5 - 158.0), 0.0, SPAWN_ID_65, trigger + 1000, 1)
+                spawn(
+                    x=-50.0,
+                    y=float(ctx.height * 0.5 - 158.0),
+                    heading=0.0,
+                    spawn_id=SPAWN_ID_65,
+                    trigger_ms=trigger + 1000,
+                    count=1,
+                )
             )
         if trigger > 0x8E94:
             entries.append(
-                SpawnEntry(-50.0, float(ctx.height * 0.5 - 258.0), 0.0, SPAWN_ID_66, trigger + 0x514, 1)
+                spawn(
+                    x=-50.0,
+                    y=float(ctx.height * 0.5 - 258.0),
+                    heading=0.0,
+                    spawn_id=SPAWN_ID_66,
+                    trigger_ms=trigger + 0x514,
+                    count=1,
+                )
             )
         if trigger > 0xBD74:
             entries.append(
-                SpawnEntry(-50.0, float(ctx.height * 0.5 + 258.0), 0.0, SPAWN_ID_66, trigger + 300, 1)
+                spawn(
+                    x=-50.0,
+                    y=float(ctx.height * 0.5 + 258.0),
+                    heading=0.0,
+                    spawn_id=SPAWN_ID_66,
+                    trigger_ms=trigger + 300,
+                    count=1,
+                )
             )
         trigger += 0x5DC
         wave += 1
 
     return entries
+
 
 @register_quest(
     level="5.6",
@@ -234,36 +443,157 @@ def build_5_5_knee_deep_in_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
 )
 def build_5_6_cross_fire(ctx: QuestContext) -> list[SpawnEntry]:
     return [
-        SpawnEntry(1074.0, float(ctx.height * 0.5), 0.0, SPAWN_ID_64, 100, 6),
-        SpawnEntry(-40.0, 512.0, 0.0, SPAWN_ID_60, 5500, 4),
-        SpawnEntry(-40.0, 512.0, 0.0, SPAWN_ID_60, 15500, 6),
-        SpawnEntry(512.0, 512.0, 0.0, SPAWN_ID_1, 18500, 2),
-        SpawnEntry(-100.0, 512.0, 0.0, SPAWN_ID_60, 25500, 8),
-        SpawnEntry(512.0, 1152.0, 0.0, SPAWN_ID_64, 26000, 6),
-        SpawnEntry(512.0, -128.0, 0.0, SPAWN_ID_64, 26000, 6),
+        spawn(
+            x=1074.0,
+            y=float(ctx.height * 0.5),
+            heading=0.0,
+            spawn_id=SPAWN_ID_64,
+            trigger_ms=100,
+            count=6,
+        ),
+        spawn(
+            x=-40.0,
+            y=512.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_60,
+            trigger_ms=5500,
+            count=4,
+        ),
+        spawn(
+            x=-40.0,
+            y=512.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_60,
+            trigger_ms=15500,
+            count=6,
+        ),
+        spawn(
+            x=512.0,
+            y=512.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_1,
+            trigger_ms=18500,
+            count=2,
+        ),
+        spawn(
+            x=-100.0,
+            y=512.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_60,
+            trigger_ms=25500,
+            count=8,
+        ),
+        spawn(
+            x=512.0,
+            y=1152.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_64,
+            trigger_ms=26000,
+            count=6,
+        ),
+        spawn(
+            x=512.0,
+            y=-128.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_64,
+            trigger_ms=26000,
+            count=6,
+        ),
     ]
+
 
 @register_quest(
     level="5.7",
     title="Army of Three",
     time_limit_ms=480000,
     start_weapon_id=1,
-    builder_address=0x00434ca0,
+    builder_address=0x00434CA0,
 )
 def build_5_7_army_of_three(ctx: QuestContext) -> list[SpawnEntry]:
     return [
-        SpawnEntry(-64.0, 256.0, 0.0, SPAWN_ID_21, 500, 1),
-        SpawnEntry(-64.0, 512.0, 0.0, SPAWN_ID_21, 5500, 1),
-        SpawnEntry(-64.0, 768.0, 0.0, SPAWN_ID_21, 15000, 1),
-        SpawnEntry(-64.0, 768.0, 0.0, SPAWN_ID_23, 19500, 1),
-        SpawnEntry(-64.0, 512.0, 0.0, SPAWN_ID_23, 22500, 1),
-        SpawnEntry(-64.0, 256.0, 0.0, SPAWN_ID_23, 26500, 1),
-        SpawnEntry(-64.0, 256.0, 0.0, SPAWN_ID_22, 35500, 1),
-        SpawnEntry(-64.0, 512.0, 0.0, SPAWN_ID_22, 39500, 1),
-        SpawnEntry(-64.0, 768.0, 0.0, SPAWN_ID_22, 42500, 1),
-        SpawnEntry(512.0, 1152.0, 0.0, SPAWN_ID_21, 52500, 3),
-        SpawnEntry(512.0, -256.0, 0.0, SPAWN_ID_23, 56500, 3),
+        spawn(x=-64.0, y=256.0, heading=0.0, spawn_id=SPAWN_ID_21, trigger_ms=500, count=1),
+        spawn(
+            x=-64.0,
+            y=512.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_21,
+            trigger_ms=5500,
+            count=1,
+        ),
+        spawn(
+            x=-64.0,
+            y=768.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_21,
+            trigger_ms=15000,
+            count=1,
+        ),
+        spawn(
+            x=-64.0,
+            y=768.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_23,
+            trigger_ms=19500,
+            count=1,
+        ),
+        spawn(
+            x=-64.0,
+            y=512.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_23,
+            trigger_ms=22500,
+            count=1,
+        ),
+        spawn(
+            x=-64.0,
+            y=256.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_23,
+            trigger_ms=26500,
+            count=1,
+        ),
+        spawn(
+            x=-64.0,
+            y=256.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_22,
+            trigger_ms=35500,
+            count=1,
+        ),
+        spawn(
+            x=-64.0,
+            y=512.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_22,
+            trigger_ms=39500,
+            count=1,
+        ),
+        spawn(
+            x=-64.0,
+            y=768.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_22,
+            trigger_ms=42500,
+            count=1,
+        ),
+        spawn(
+            x=512.0,
+            y=1152.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_21,
+            trigger_ms=52500,
+            count=3,
+        ),
+        spawn(
+            x=512.0,
+            y=-256.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_23,
+            trigger_ms=56500,
+            count=3,
+        ),
     ]
+
 
 @register_quest(
     level="5.8",
@@ -275,10 +605,38 @@ def build_5_7_army_of_three(ctx: QuestContext) -> list[SpawnEntry]:
 )
 def build_5_8_monster_blues(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
-        SpawnEntry(-50.0, float(ctx.height * 0.5), 0.0, SPAWN_ID_4, 500, 10),
-        SpawnEntry(1074.0, float(ctx.height * 0.5), 0.0, SPAWN_ID_6, 7500, 10),
-        SpawnEntry(512.0, 1088.0, 0.0, SPAWN_ID_3, 17500, 12),
-        SpawnEntry(512.0, -64.0, 0.0, SPAWN_ID_3, 17500, 12),
+        spawn(
+            x=-50.0,
+            y=float(ctx.height * 0.5),
+            heading=0.0,
+            spawn_id=SPAWN_ID_4,
+            trigger_ms=500,
+            count=10,
+        ),
+        spawn(
+            x=1074.0,
+            y=float(ctx.height * 0.5),
+            heading=0.0,
+            spawn_id=SPAWN_ID_6,
+            trigger_ms=7500,
+            count=10,
+        ),
+        spawn(
+            x=512.0,
+            y=1088.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_3,
+            trigger_ms=17500,
+            count=12,
+        ),
+        spawn(
+            x=512.0,
+            y=-64.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_3,
+            trigger_ms=17500,
+            count=12,
+        ),
     ]
 
     trigger = 27500
@@ -290,9 +648,19 @@ def build_5_8_monster_blues(ctx: QuestContext) -> list[SpawnEntry]:
         else:
             spawn_id = SPAWN_ID_5
         count = idx // 8 + 2
-        entries.append(SpawnEntry(-64.0, 512.0, 0.0, spawn_id, trigger, count))
+        entries.append(
+            spawn(
+                x=-64.0,
+                y=512.0,
+                heading=0.0,
+                spawn_id=spawn_id,
+                trigger_ms=trigger,
+                count=count,
+            )
+        )
         trigger += 900
     return entries
+
 
 @register_quest(
     level="5.9",
@@ -306,15 +674,11 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
 
     center_x, center_y = center_point(ctx.width, ctx.height)
-    for x, y, angle in ring_points(
-        center_x, center_y, 128.0, 8, step=0.7853982
-    ):
-        entries.append(SpawnEntry(x, y, angle, SPAWN_ID_64, 2000, 1))
+    for x, y, angle in ring_points(center_x, center_y, 128.0, 8, step=0.7853982):
+        entries.append(spawn(x=x, y=y, heading=angle, spawn_id=SPAWN_ID_64, trigger_ms=2000, count=1))
 
-    for x, y, angle in ring_points(
-        center_x, center_y, 178.0, 12, step=0.5235988
-    ):
-        entries.append(SpawnEntry(x, y, angle, SPAWN_ID_64, 8000, 1))
+    for x, y, angle in ring_points(center_x, center_y, 178.0, 12, step=0.5235988):
+        entries.append(spawn(x=x, y=y, heading=angle, spawn_id=SPAWN_ID_64, trigger_ms=8000, count=1))
 
     trigger = 13000
     wave = 0
@@ -322,10 +686,38 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
         count = wave // 8 + 1
         entries.extend(
             [
-                SpawnEntry(-64.0, -64.0, 1.0471976, SPAWN_ID_28, trigger, count),
-                SpawnEntry(1088.0, -64.0, -1.0471976, SPAWN_ID_28, trigger, count),
-                SpawnEntry(-64.0, 1088.0, -1.0471976, SPAWN_ID_28, trigger, count),
-                SpawnEntry(1088.0, 1088.0, 3.926991, SPAWN_ID_28, trigger, count),
+                spawn(
+                    x=-64.0,
+                    y=-64.0,
+                    heading=1.0471976,
+                    spawn_id=SPAWN_ID_28,
+                    trigger_ms=trigger,
+                    count=count,
+                ),
+                spawn(
+                    x=1088.0,
+                    y=-64.0,
+                    heading=-1.0471976,
+                    spawn_id=SPAWN_ID_28,
+                    trigger_ms=trigger,
+                    count=count,
+                ),
+                spawn(
+                    x=-64.0,
+                    y=1088.0,
+                    heading=-1.0471976,
+                    spawn_id=SPAWN_ID_28,
+                    trigger_ms=trigger,
+                    count=count,
+                ),
+                spawn(
+                    x=1088.0,
+                    y=1088.0,
+                    heading=3.926991,
+                    spawn_id=SPAWN_ID_28,
+                    trigger_ms=trigger,
+                    count=count,
+                ),
             ]
         )
         trigger += 800
@@ -335,23 +727,78 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
     base_left = (last_wave + 0x97 + wave * 4) * 0xA0
     for idx in range(6):
         y = idx * 85.333336 + 256.0
-        entries.append(SpawnEntry(64.0, y, 0.0, SPAWN_ID_10, base_left, 1))
+        entries.append(
+            spawn(
+                x=64.0,
+                y=y,
+                heading=0.0,
+                spawn_id=SPAWN_ID_10,
+                trigger_ms=base_left,
+                count=1,
+            )
+        )
         base_left += 100
 
     base_right = wave * 800 + 25000
     for idx in range(6):
         y = idx * 85.333336 + 256.0
-        entries.append(SpawnEntry(960.0, y, 0.0, SPAWN_ID_10, base_right, 1))
+        entries.append(
+            spawn(
+                x=960.0,
+                y=y,
+                heading=0.0,
+                spawn_id=SPAWN_ID_10,
+                trigger_ms=base_right,
+                count=1,
+            )
+        )
         base_right += 100
 
     base_mid = (last_wave + 0xB0 + wave * 4) * 0xA0
-    entries.append(SpawnEntry(512.0, 256.0, math.pi, SPAWN_ID_11, base_mid, 1))
-    entries.append(SpawnEntry(512.0, 768.0, math.pi, SPAWN_ID_11, base_mid, 1))
+    entries.append(
+        spawn(
+            x=512.0,
+            y=256.0,
+            heading=math.pi,
+            spawn_id=SPAWN_ID_11,
+            trigger_ms=base_mid,
+            count=1,
+        )
+    )
+    entries.append(
+        spawn(
+            x=512.0,
+            y=768.0,
+            heading=math.pi,
+            spawn_id=SPAWN_ID_11,
+            trigger_ms=base_mid,
+            count=1,
+        )
+    )
 
     base_vertical = wave * 800 + 0x6F54
-    entries.append(SpawnEntry(512.0, 1088.0, 3.926991, SPAWN_ID_28, base_vertical, 8))
-    entries.append(SpawnEntry(512.0, -64.0, 3.926991, SPAWN_ID_28, base_vertical, 8))
+    entries.append(
+        spawn(
+            x=512.0,
+            y=1088.0,
+            heading=3.926991,
+            spawn_id=SPAWN_ID_28,
+            trigger_ms=base_vertical,
+            count=8,
+        )
+    )
+    entries.append(
+        spawn(
+            x=512.0,
+            y=-64.0,
+            heading=3.926991,
+            spawn_id=SPAWN_ID_28,
+            trigger_ms=base_vertical,
+            count=8,
+        )
+    )
     return entries
+
 
 @register_quest(
     level="5.10",
@@ -359,23 +806,93 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=480000,
     start_weapon_id=1,
     unlock_weapon_id=0x1C,
-    builder_address=0x004349c0,
+    builder_address=0x004349C0,
 )
 def build_5_10_the_gathering(ctx: QuestContext) -> list[SpawnEntry]:
     return [
-        SpawnEntry(256.0, 512.0, 0.0, SPAWN_ID_1, 500, 1),
-        SpawnEntry(768.0, 512.0, 0.0, SPAWN_ID_1, 9500, 2),
-        SpawnEntry(256.0, 512.0, 0.0, SPAWN_ID_58, 15500, 2),
-        SpawnEntry(768.0, 512.0, 0.0, SPAWN_ID_58, 24500, 2),
-        SpawnEntry(256.0, 512.0, 0.0, SPAWN_ID_0, 30500, 2),
-        SpawnEntry(768.0, 512.0, 0.0, SPAWN_ID_0, 39500, 2),
-        SpawnEntry(64.0, 64.0, 0.0, SPAWN_ID_60, 54500, 2),
-        SpawnEntry(960.0, 64.0, 0.0, SPAWN_ID_60, 54500, 1),
-        SpawnEntry(64.0, 960.0, 0.0, SPAWN_ID_60, 54500, 2),
-        SpawnEntry(960.0, 960.0, 0.0, SPAWN_ID_60, 54500, 1),
-        SpawnEntry(-128.0, 512.0, 0.0, SPAWN_ID_58, 90500, 6),
-        SpawnEntry(1152.0, 512.0, 0.0, SPAWN_ID_1, 99500, 4),
-        SpawnEntry(1152.0, 512.0, 0.0, SPAWN_ID_1, 109500, 2),
+        spawn(x=256.0, y=512.0, heading=0.0, spawn_id=SPAWN_ID_1, trigger_ms=500, count=1),
+        spawn(x=768.0, y=512.0, heading=0.0, spawn_id=SPAWN_ID_1, trigger_ms=9500, count=2),
+        spawn(
+            x=256.0,
+            y=512.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_58,
+            trigger_ms=15500,
+            count=2,
+        ),
+        spawn(
+            x=768.0,
+            y=512.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_58,
+            trigger_ms=24500,
+            count=2,
+        ),
+        spawn(
+            x=256.0,
+            y=512.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_0,
+            trigger_ms=30500,
+            count=2,
+        ),
+        spawn(
+            x=768.0,
+            y=512.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_0,
+            trigger_ms=39500,
+            count=2,
+        ),
+        spawn(x=64.0, y=64.0, heading=0.0, spawn_id=SPAWN_ID_60, trigger_ms=54500, count=2),
+        spawn(
+            x=960.0,
+            y=64.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_60,
+            trigger_ms=54500,
+            count=1,
+        ),
+        spawn(
+            x=64.0,
+            y=960.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_60,
+            trigger_ms=54500,
+            count=2,
+        ),
+        spawn(
+            x=960.0,
+            y=960.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_60,
+            trigger_ms=54500,
+            count=1,
+        ),
+        spawn(
+            x=-128.0,
+            y=512.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_58,
+            trigger_ms=90500,
+            count=6,
+        ),
+        spawn(
+            x=1152.0,
+            y=512.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_1,
+            trigger_ms=99500,
+            count=4,
+        ),
+        spawn(
+            x=1152.0,
+            y=512.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_1,
+            trigger_ms=109500,
+            count=2,
+        ),
     ]
 
 

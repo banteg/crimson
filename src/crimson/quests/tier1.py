@@ -4,7 +4,15 @@ import math
 import random
 
 from ..perks import PerkId
-from .helpers import center_point, corner_points, edge_midpoints, heading_from_center, random_angle
+from .helpers import (
+    center_point,
+    corner_points,
+    edge_midpoints,
+    heading_from_center,
+    random_angle,
+    spawn,
+    spawn_at,
+)
 from .registry import register_quest
 from .types import QuestContext, SpawnEntry
 
@@ -29,16 +37,16 @@ SPAWN_ID_64 = 0x40
     time_limit_ms=120000,
     start_weapon_id=1,
     unlock_weapon_id=0x02,
-    builder_address=0x00435bd0,
+    builder_address=0x00435BD0,
 )
 def build_1_1_land_hostile(ctx: QuestContext) -> list[SpawnEntry]:
     edges = edge_midpoints(ctx.width, ctx.height)
     top_left, top_right, bottom_left, _bottom_right = corner_points(ctx.width, ctx.height)
     return [
-        SpawnEntry(*edges.bottom, 0.0, SPAWN_ID_38, 500, 1),
-        SpawnEntry(*bottom_left, 0.0, SPAWN_ID_38, 2500, 2),
-        SpawnEntry(*top_left, 0.0, SPAWN_ID_38, 6500, 3),
-        SpawnEntry(*top_right, 0.0, SPAWN_ID_38, 11500, 4),
+        spawn_at(edges.bottom, heading=0.0, spawn_id=SPAWN_ID_38, trigger_ms=500, count=1),
+        spawn_at(bottom_left, heading=0.0, spawn_id=SPAWN_ID_38, trigger_ms=2500, count=2),
+        spawn_at(top_left, heading=0.0, spawn_id=SPAWN_ID_38, trigger_ms=6500, count=3),
+        spawn_at(top_right, heading=0.0, spawn_id=SPAWN_ID_38, trigger_ms=11500, count=4),
     ]
 
 
@@ -48,29 +56,71 @@ def build_1_1_land_hostile(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=120000,
     start_weapon_id=1,
     unlock_weapon_id=0x03,
-    builder_address=0x00435cc0,
+    builder_address=0x00435CC0,
 )
 def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
     center_x, center_y = center_point(ctx.width, ctx.height)
     edges = edge_midpoints(ctx.width, ctx.height)
     entries = [
-        SpawnEntry(256.0, 256.0, 0.0, SPAWN_ID_38, 1000, 2),
-        SpawnEntry(256.0, 128.0, 0.0, SPAWN_ID_38, 1700, 2),
+        spawn(
+            x=256.0,
+            y=256.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_38,
+            trigger_ms=1000,
+            count=2,
+        ),
+        spawn(
+            x=256.0,
+            y=128.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_38,
+            trigger_ms=1700,
+            count=2,
+        ),
     ]
     for i in range(2, 18):
         trigger = (i * 5 - 10) * 720
-        entries.append(SpawnEntry(*edges.right, 0.0, SPAWN_ID_38, trigger, 1))
+        entries.append(
+            spawn_at(
+                edges.right,
+                heading=0.0,
+                spawn_id=SPAWN_ID_38,
+                trigger_ms=trigger,
+                count=1,
+            )
+        )
         if i > 6:
             entries.append(
-                SpawnEntry(edges.right[0], center_y - 256.0, 0.0, SPAWN_ID_38, trigger, 1)
+                spawn(
+                    x=edges.right[0],
+                    y=center_y - 256.0,
+                    heading=0.0,
+                    spawn_id=SPAWN_ID_38,
+                    trigger_ms=trigger,
+                    count=1,
+                )
             )
         if i == 13:
             entries.append(
-                SpawnEntry(*edges.bottom, 0.0, SPAWN_ID_41, 39600, 1)
+                spawn_at(
+                    edges.bottom,
+                    heading=0.0,
+                    spawn_id=SPAWN_ID_41,
+                    trigger_ms=39600,
+                    count=1,
+                )
             )
         if i > 10:
             entries.append(
-                SpawnEntry(edges.left[0], center_y + 256.0, 0.0, SPAWN_ID_38, trigger, 1)
+                spawn(
+                    x=edges.left[0],
+                    y=center_y + 256.0,
+                    heading=0.0,
+                    spawn_id=SPAWN_ID_38,
+                    trigger_ms=trigger,
+                    count=1,
+                )
             )
     return entries
 
@@ -81,11 +131,9 @@ def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=65000,
     start_weapon_id=1,
     unlock_perk_id=PerkId.URANIUM_FILLED_BULLETS,
-    builder_address=0x00437a00,
+    builder_address=0x00437A00,
 )
-def build_1_3_target_practice(
-    ctx: QuestContext, rng: random.Random | None = None
-) -> list[SpawnEntry]:
+def build_1_3_target_practice(ctx: QuestContext, rng: random.Random | None = None) -> list[SpawnEntry]:
     rng = rng or random.Random()
     center_x, center_y = center_point(ctx.width, ctx.height)
     entries: list[SpawnEntry] = []
@@ -97,7 +145,16 @@ def build_1_3_target_practice(
         x = math.cos(angle) * radius + center_x
         y = math.sin(angle) * radius + center_y
         heading = heading_from_center(x, y, center_x, center_y)
-        entries.append(SpawnEntry(x, y, heading, SPAWN_ID_54, trigger, 1))
+        entries.append(
+            spawn(
+                x=x,
+                y=y,
+                heading=heading,
+                spawn_id=SPAWN_ID_54,
+                trigger_ms=trigger,
+                count=1,
+            )
+        )
         trigger += max(step, 1100)
         step -= 50
         if step <= 500:
@@ -111,7 +168,7 @@ def build_1_3_target_practice(
     time_limit_ms=300000,
     start_weapon_id=1,
     unlock_weapon_id=0x08,
-    builder_address=0x00437e10,
+    builder_address=0x00437E10,
 )
 def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = []
@@ -126,15 +183,55 @@ def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
         else:
             spawn_id = SPAWN_ID_38
         trigger = i * step - 5000
-        entries.append(SpawnEntry(*edges.bottom, 0.0, spawn_id, trigger, 1))
+        entries.append(
+            spawn_at(
+                edges.bottom,
+                heading=0.0,
+                spawn_id=spawn_id,
+                trigger_ms=trigger,
+                count=1,
+            )
+        )
         if i > 4:
-            entries.append(SpawnEntry(*top_left, 0.0, SPAWN_ID_38, trigger, 1))
+            entries.append(
+                spawn_at(
+                    top_left,
+                    heading=0.0,
+                    spawn_id=SPAWN_ID_38,
+                    trigger_ms=trigger,
+                    count=1,
+                )
+            )
         if i > 10:
-            entries.append(SpawnEntry(*top_right, 0.0, SPAWN_ID_38, trigger, 1))
+            entries.append(
+                spawn_at(
+                    top_right,
+                    heading=0.0,
+                    spawn_id=SPAWN_ID_38,
+                    trigger_ms=trigger,
+                    count=1,
+                )
+            )
         if i == 10:
             burst_trigger = (step * 5 - 2500) * 2
-            entries.append(SpawnEntry(*edges.right, 0.0, SPAWN_ID_41, burst_trigger, 1))
-            entries.append(SpawnEntry(*edges.left, 0.0, SPAWN_ID_41, burst_trigger, 1))
+            entries.append(
+                spawn_at(
+                    edges.right,
+                    heading=0.0,
+                    spawn_id=SPAWN_ID_41,
+                    trigger_ms=burst_trigger,
+                    count=1,
+                )
+            )
+            entries.append(
+                spawn_at(
+                    edges.left,
+                    heading=0.0,
+                    spawn_id=SPAWN_ID_41,
+                    trigger_ms=burst_trigger,
+                    count=1,
+                )
+            )
         step = max(step - 50, 1800)
     return entries
 
@@ -149,11 +246,32 @@ def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
 )
 def build_1_5_alien_dens(ctx: QuestContext) -> list[SpawnEntry]:
     return [
-        SpawnEntry(256.0, 256.0, 0.0, SPAWN_ID_8, 1500, 1),
-        SpawnEntry(768.0, 768.0, 0.0, SPAWN_ID_8, 1500, 1),
-        SpawnEntry(512.0, 512.0, 0.0, SPAWN_ID_8, 23500, ctx.player_count),
-        SpawnEntry(256.0, 768.0, 0.0, SPAWN_ID_8, 38500, 1),
-        SpawnEntry(768.0, 256.0, 0.0, SPAWN_ID_8, 38500, 1),
+        spawn(x=256.0, y=256.0, heading=0.0, spawn_id=SPAWN_ID_8, trigger_ms=1500, count=1),
+        spawn(x=768.0, y=768.0, heading=0.0, spawn_id=SPAWN_ID_8, trigger_ms=1500, count=1),
+        spawn(
+            x=512.0,
+            y=512.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_8,
+            trigger_ms=23500,
+            count=ctx.player_count,
+        ),
+        spawn(
+            x=256.0,
+            y=768.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_8,
+            trigger_ms=38500,
+            count=1,
+        ),
+        spawn(
+            x=768.0,
+            y=256.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_8,
+            trigger_ms=38500,
+            count=1,
+        ),
     ]
 
 
@@ -165,9 +283,7 @@ def build_1_5_alien_dens(ctx: QuestContext) -> list[SpawnEntry]:
     unlock_weapon_id=0x05,
     builder_address=0x00436350,
 )
-def build_1_6_the_random_factor(
-    ctx: QuestContext, rng: random.Random | None = None
-) -> list[SpawnEntry]:
+def build_1_6_the_random_factor(ctx: QuestContext, rng: random.Random | None = None) -> list[SpawnEntry]:
     rng = rng or random.Random()
     entries: list[SpawnEntry] = []
     center_x, center_y = center_point(ctx.width, ctx.height)
@@ -175,20 +291,32 @@ def build_1_6_the_random_factor(
     trigger = 1500
     while trigger < 101500:
         entries.append(
-            SpawnEntry(*edges.right, 0.0, SPAWN_ID_29, trigger, ctx.player_count * 2 + 4)
+            spawn_at(
+                edges.right,
+                heading=0.0,
+                spawn_id=SPAWN_ID_29,
+                trigger_ms=trigger,
+                count=ctx.player_count * 2 + 4,
+            )
         )
         entries.append(
-            SpawnEntry(*edges.left, 0.0, SPAWN_ID_29, trigger + 200, 6)
+            spawn_at(
+                edges.left,
+                heading=0.0,
+                spawn_id=SPAWN_ID_29,
+                trigger_ms=trigger + 200,
+                count=6,
+            )
         )
         if rng.randrange(5) == 3:
             entries.append(
-                SpawnEntry(
-                    center_x,
-                    edges.bottom[1],
-                    0.0,
-                    SPAWN_ID_41,
-                    trigger,
-                    ctx.player_count,
+                spawn(
+                    x=center_x,
+                    y=edges.bottom[1],
+                    heading=0.0,
+                    spawn_id=SPAWN_ID_41,
+                    trigger_ms=trigger,
+                    count=ctx.player_count,
                 )
             )
         trigger += 10000
@@ -209,7 +337,13 @@ def build_1_7_spider_wave_syndrome(ctx: QuestContext) -> list[SpawnEntry]:
     trigger = 1500
     while trigger < 100500:
         entries.append(
-            SpawnEntry(*edges.left, 0.0, SPAWN_ID_64, trigger, ctx.player_count * 2 + 6)
+            spawn_at(
+                edges.left,
+                heading=0.0,
+                spawn_id=SPAWN_ID_64,
+                trigger_ms=trigger,
+                count=ctx.player_count * 2 + 6,
+            )
         )
         trigger += 5500
     return entries
@@ -221,26 +355,96 @@ def build_1_7_spider_wave_syndrome(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=180000,
     start_weapon_id=1,
     unlock_weapon_id=0x06,
-    builder_address=0x00435ea0,
+    builder_address=0x00435EA0,
 )
 def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
     entries = [
-        SpawnEntry(-256.0, 256.0, 0.0, SPAWN_ID_18, 1500, 1),
-        SpawnEntry(-256.0, 768.0, 0.0, SPAWN_ID_18, 2500, 1),
-        SpawnEntry(768.0, -256.0, 0.0, SPAWN_ID_18, 5500, 1),
-        SpawnEntry(768.0, 1280.0, 0.0, SPAWN_ID_18, 8500, 1),
-        SpawnEntry(1280.0, 1280.0, 0.0, SPAWN_ID_18, 14500, 1),
-        SpawnEntry(1280.0, 768.0, 0.0, SPAWN_ID_18, 18500, 1),
-        SpawnEntry(-256.0, 256.0, 0.0, SPAWN_ID_18, 25000, 1),
-        SpawnEntry(-256.0, 768.0, 0.0, SPAWN_ID_18, 30000, 1),
+        spawn(
+            x=-256.0,
+            y=256.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_18,
+            trigger_ms=1500,
+            count=1,
+        ),
+        spawn(
+            x=-256.0,
+            y=768.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_18,
+            trigger_ms=2500,
+            count=1,
+        ),
+        spawn(
+            x=768.0,
+            y=-256.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_18,
+            trigger_ms=5500,
+            count=1,
+        ),
+        spawn(
+            x=768.0,
+            y=1280.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_18,
+            trigger_ms=8500,
+            count=1,
+        ),
+        spawn(
+            x=1280.0,
+            y=1280.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_18,
+            trigger_ms=14500,
+            count=1,
+        ),
+        spawn(
+            x=1280.0,
+            y=768.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_18,
+            trigger_ms=18500,
+            count=1,
+        ),
+        spawn(
+            x=-256.0,
+            y=256.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_18,
+            trigger_ms=25000,
+            count=1,
+        ),
+        spawn(
+            x=-256.0,
+            y=768.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_18,
+            trigger_ms=30000,
+            count=1,
+        ),
     ]
     trigger = 36200
     while trigger < 83000:
         entries.append(
-            SpawnEntry(-64.0, -64.0, 0.0, SPAWN_ID_38, trigger - 400, 1)
+            spawn(
+                x=-64.0,
+                y=-64.0,
+                heading=0.0,
+                spawn_id=SPAWN_ID_38,
+                trigger_ms=trigger - 400,
+                count=1,
+            )
         )
         entries.append(
-            SpawnEntry(ctx.width + 64.0, ctx.height + 64.0, 0.0, SPAWN_ID_38, trigger, 1)
+            spawn(
+                x=ctx.width + 64.0,
+                y=ctx.height + 64.0,
+                heading=0.0,
+                spawn_id=SPAWN_ID_38,
+                trigger_ms=trigger,
+                count=1,
+            )
         )
         trigger += 1800
     return entries
@@ -252,24 +456,101 @@ def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
     time_limit_ms=240000,
     start_weapon_id=1,
     unlock_perk_id=PerkId.HOT_TEMPERED,
-    builder_address=0x004364a0,
+    builder_address=0x004364A0,
 )
 def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:
     center_x, _center_y = center_point(ctx.width, ctx.height)
     edges = edge_midpoints(ctx.width, ctx.height)
     entries = [
-        SpawnEntry(center_x, edges.bottom[1], 0.0, SPAWN_ID_29, 1500, ctx.player_count * 2 + 6),
-        SpawnEntry(256.0, 256.0, 0.0, SPAWN_ID_9, 8000, 1),
-        SpawnEntry(512.0, 512.0, 0.0, SPAWN_ID_9, 13000, 1),
-        SpawnEntry(768.0, 768.0, 0.0, SPAWN_ID_9, 18000, 1),
-        SpawnEntry(center_x, edges.bottom[1], 0.0, SPAWN_ID_29, 25000, ctx.player_count * 2 + 6),
-        SpawnEntry(center_x, edges.bottom[1], 0.0, SPAWN_ID_29, 39000, ctx.player_count * 3 + 3),
-        SpawnEntry(384.0, 512.0, 0.0, SPAWN_ID_9, 41100, 1),
-        SpawnEntry(640.0, 512.0, 0.0, SPAWN_ID_9, 42100, 1),
-        SpawnEntry(512.0, 640.0, 0.0, SPAWN_ID_9, 43100, 1),
-        SpawnEntry(512.0, 512.0, 0.0, SPAWN_ID_8, 44100, 1),
-        SpawnEntry(center_x, edges.bottom[1], 0.0, SPAWN_ID_30, 50000, ctx.player_count * 2 + 5),
-        SpawnEntry(center_x, edges.bottom[1], 0.0, SPAWN_ID_31, 55000, ctx.player_count * 2 + 2),
+        spawn(
+            x=center_x,
+            y=edges.bottom[1],
+            heading=0.0,
+            spawn_id=SPAWN_ID_29,
+            trigger_ms=1500,
+            count=ctx.player_count * 2 + 6,
+        ),
+        spawn(x=256.0, y=256.0, heading=0.0, spawn_id=SPAWN_ID_9, trigger_ms=8000, count=1),
+        spawn(
+            x=512.0,
+            y=512.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_9,
+            trigger_ms=13000,
+            count=1,
+        ),
+        spawn(
+            x=768.0,
+            y=768.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_9,
+            trigger_ms=18000,
+            count=1,
+        ),
+        spawn(
+            x=center_x,
+            y=edges.bottom[1],
+            heading=0.0,
+            spawn_id=SPAWN_ID_29,
+            trigger_ms=25000,
+            count=ctx.player_count * 2 + 6,
+        ),
+        spawn(
+            x=center_x,
+            y=edges.bottom[1],
+            heading=0.0,
+            spawn_id=SPAWN_ID_29,
+            trigger_ms=39000,
+            count=ctx.player_count * 3 + 3,
+        ),
+        spawn(
+            x=384.0,
+            y=512.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_9,
+            trigger_ms=41100,
+            count=1,
+        ),
+        spawn(
+            x=640.0,
+            y=512.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_9,
+            trigger_ms=42100,
+            count=1,
+        ),
+        spawn(
+            x=512.0,
+            y=640.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_9,
+            trigger_ms=43100,
+            count=1,
+        ),
+        spawn(
+            x=512.0,
+            y=512.0,
+            heading=0.0,
+            spawn_id=SPAWN_ID_8,
+            trigger_ms=44100,
+            count=1,
+        ),
+        spawn(
+            x=center_x,
+            y=edges.bottom[1],
+            heading=0.0,
+            spawn_id=SPAWN_ID_30,
+            trigger_ms=50000,
+            count=ctx.player_count * 2 + 5,
+        ),
+        spawn(
+            x=center_x,
+            y=edges.bottom[1],
+            heading=0.0,
+            spawn_id=SPAWN_ID_31,
+            trigger_ms=55000,
+            count=ctx.player_count * 2 + 2,
+        ),
     ]
     return entries
 
@@ -284,24 +565,53 @@ def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:
 )
 def build_1_10_8_legged_terror(ctx: QuestContext) -> list[SpawnEntry]:
     entries = [
-        SpawnEntry(float(ctx.width - 256), float(ctx.width // 2), 0.0, SPAWN_ID_58, 1000, 1)
+        spawn(
+            x=float(ctx.width - 256),
+            y=float(ctx.width // 2),
+            heading=0.0,
+            spawn_id=SPAWN_ID_58,
+            trigger_ms=1000,
+            count=1,
+        )
     ]
-    top_left, top_right, bottom_left, bottom_right = corner_points(
-        ctx.width, ctx.height, offset=25.0
-    )
+    top_left, top_right, bottom_left, bottom_right = corner_points(ctx.width, ctx.height, offset=25.0)
     trigger = 6000
     while trigger < 36800:
         entries.append(
-            SpawnEntry(*top_left, 0.0, SPAWN_ID_61, trigger, ctx.player_count)
+            spawn_at(
+                top_left,
+                heading=0.0,
+                spawn_id=SPAWN_ID_61,
+                trigger_ms=trigger,
+                count=ctx.player_count,
+            )
         )
         entries.append(
-            SpawnEntry(*top_right, 0.0, SPAWN_ID_61, trigger, 1)
+            spawn_at(
+                top_right,
+                heading=0.0,
+                spawn_id=SPAWN_ID_61,
+                trigger_ms=trigger,
+                count=1,
+            )
         )
         entries.append(
-            SpawnEntry(*bottom_left, 0.0, SPAWN_ID_61, trigger, ctx.player_count)
+            spawn_at(
+                bottom_left,
+                heading=0.0,
+                spawn_id=SPAWN_ID_61,
+                trigger_ms=trigger,
+                count=ctx.player_count,
+            )
         )
         entries.append(
-            SpawnEntry(*bottom_right, 0.0, SPAWN_ID_61, trigger, 1)
+            spawn_at(
+                bottom_right,
+                heading=0.0,
+                spawn_id=SPAWN_ID_61,
+                trigger_ms=trigger,
+                count=1,
+            )
         )
         trigger += 2200
     return entries

@@ -11,7 +11,7 @@ class QuestContext:
     player_count: int
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True, slots=True, kw_only=True)
 class SpawnEntry:
     x: float
     y: float
