@@ -220,6 +220,13 @@ MENU_SIGN_POS_Y = 70.0
 MENU_SIGN_POS_Y_SMALL = 60.0
 MENU_SIGN_POS_X_PAD = 4.0
 
+PANEL_POS_X = -45.0
+PANEL_POS_Y = 210.0
+PANEL_BACK_POS_X = -55.0
+PANEL_BACK_POS_Y = 430.0
+PANEL_TIMELINE_START_MS = 300
+PANEL_TIMELINE_END_MS = 0
+
 
 class BootView:
     def __init__(self, state: GameState) -> None:
@@ -544,7 +551,6 @@ class MenuView:
         self._widescreen_y_shift = 0.0
         self._menu_screen_width = 0
         self._closing = False
-        self._close_hold_ms = 0
         self._close_action: str | None = None
         self._pending_action: str | None = None
 
@@ -569,7 +575,6 @@ class MenuView:
         self._hovered_index = None
         self._timeline_ms = 0
         self._closing = False
-        self._close_hold_ms = 0
         self._close_action = None
         self._pending_action = None
         self._timeline_max_ms = self._menu_max_timeline_ms(
@@ -591,18 +596,12 @@ class MenuView:
             self._ground.process_pending()
         dt_ms = int(min(dt, 0.1) * 1000.0)
         if self._closing:
-            if dt_ms > 0:
-                if self._timeline_ms > 0:
-                    self._timeline_ms = max(0, self._timeline_ms - dt_ms)
-                    self._focus_timer_ms = max(0, self._focus_timer_ms - dt_ms)
-                    if self._timeline_ms == 0:
-                        # Ensure at least one fully-faded frame before we commit the action.
-                        self._close_hold_ms = max(self._close_hold_ms, 1)
-                elif self._close_hold_ms > 0:
-                    self._close_hold_ms = max(0, self._close_hold_ms - dt_ms)
-                    if self._close_hold_ms == 0 and self._close_action is not None and self._pending_action is None:
-                        self._pending_action = self._close_action
-                        self._close_action = None
+            if dt_ms > 0 and self._pending_action is None:
+                self._timeline_ms -= dt_ms
+                self._focus_timer_ms = max(0, self._focus_timer_ms - dt_ms)
+                if self._timeline_ms < 0 and self._close_action is not None:
+                    self._pending_action = self._close_action
+                    self._close_action = None
             return
 
         if dt_ms > 0:
@@ -648,8 +647,6 @@ class MenuView:
             return
         self._draw_menu_items()
         self._draw_menu_sign()
-        if self._closing:
-            self._draw_quit_fade()
 
     def take_action(self) -> str | None:
         action = self._pending_action
@@ -679,21 +676,10 @@ class MenuView:
         if self._closing:
             return
         self._closing = True
-        self._close_hold_ms = 0
         self._close_action = action
 
     def _begin_quit_transition(self) -> None:
         self._begin_close_transition("restart_demo" if self._state.demo_enabled else "quit_app")
-
-    def _draw_quit_fade(self) -> None:
-        max_ms = max(1, self._timeline_max_ms)
-        alpha = 1.0 - float(self._timeline_ms) / float(max_ms)
-        if alpha <= 0.0:
-            return
-        if alpha > 1.0:
-            alpha = 1.0
-        tint = rl.Color(0, 0, 0, int(round(alpha * 255.0)))
-        rl.draw_rectangle(0, 0, rl.get_screen_width(), rl.get_screen_height(), tint)
 
     def _ensure_cache(self) -> PaqTextureCache:
         cache = self._state.texture_cache
@@ -1069,7 +1055,6 @@ class PanelMenuView:
         self._timeline_ms = 0
         self._timeline_max_ms = 0
         self._closing = False
-        self._close_hold_ms = 0
         self._close_action: str | None = None
         self._pending_action: str | None = None
 
@@ -1083,12 +1068,11 @@ class PanelMenuView:
         panel = cache.get_or_load("ui_menuPanel", "ui/ui_menuPanel.jaz").texture
         labels = cache.get_or_load("ui_itemTexts", "ui/ui_itemTexts.jaz").texture
         self._assets = MenuAssets(sign=sign, item=item, panel=panel, labels=labels)
-        self._entry = MenuEntry(slot=0, row=MENU_LABEL_ROW_BACK, y=MENU_LABEL_BASE_Y + MENU_LABEL_STEP * 4.0)
+        self._entry = MenuEntry(slot=0, row=MENU_LABEL_ROW_BACK, y=PANEL_BACK_POS_Y)
         self._hovered = False
         self._timeline_ms = 0
-        self._timeline_max_ms = max(300, MenuView._menu_slot_start_ms(0))
+        self._timeline_max_ms = PANEL_TIMELINE_START_MS
         self._closing = False
-        self._close_hold_ms = 0
         self._close_action = None
         self._pending_action = None
         self._init_ground()
@@ -1105,16 +1089,11 @@ class PanelMenuView:
             self._ground.process_pending()
         dt_ms = int(min(dt, 0.1) * 1000.0)
         if self._closing:
-            if dt_ms > 0:
-                if self._timeline_ms > 0:
-                    self._timeline_ms = max(0, self._timeline_ms - dt_ms)
-                    if self._timeline_ms == 0:
-                        self._close_hold_ms = max(self._close_hold_ms, 1)
-                elif self._close_hold_ms > 0:
-                    self._close_hold_ms = max(0, self._close_hold_ms - dt_ms)
-                    if self._close_hold_ms == 0 and self._close_action is not None and self._pending_action is None:
-                        self._pending_action = self._close_action
-                        self._close_action = None
+            if dt_ms > 0 and self._pending_action is None:
+                self._timeline_ms -= dt_ms
+                if self._timeline_ms < 0 and self._close_action is not None:
+                    self._pending_action = self._close_action
+                    self._close_action = None
             return
 
         if dt_ms > 0:
@@ -1156,7 +1135,6 @@ class PanelMenuView:
         self._draw_entry(entry)
         self._draw_sign()
         self._draw_title_text()
-        self._draw_fade()
 
     def take_action(self) -> str | None:
         action = self._pending_action
@@ -1176,7 +1154,6 @@ class PanelMenuView:
         if self._closing:
             return
         self._closing = True
-        self._close_hold_ms = 0
         self._close_action = action
 
     def _ensure_cache(self) -> PaqTextureCache:
@@ -1213,22 +1190,40 @@ class PanelMenuView:
         if assets is None or assets.panel is None:
             return
         panel = assets.panel
-        panel_w = float(panel.width)
-        panel_h = float(panel.height)
+        panel_w = MENU_PANEL_WIDTH
+        panel_h = MENU_PANEL_HEIGHT
+        angle_rad, slide_x = MenuView._ui_element_anim(
+            self,
+            index=1,
+            start_ms=PANEL_TIMELINE_START_MS,
+            end_ms=PANEL_TIMELINE_END_MS,
+            width=panel_w,
+        )
+        _ = slide_x
         item_scale, _local_y_shift = self._menu_item_scale(0)
         dst = rl.Rectangle(
-            MENU_PANEL_BASE_X,
-            MENU_PANEL_BASE_Y + self._widescreen_y_shift,
+            PANEL_POS_X,
+            PANEL_POS_Y + self._widescreen_y_shift,
             panel_w * item_scale,
             panel_h * item_scale,
         )
         origin = rl.Vector2(-(MENU_PANEL_OFFSET_X * item_scale), -(MENU_PANEL_OFFSET_Y * item_scale))
+        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        if fx_detail:
+            MenuView._draw_ui_quad(
+                texture=panel,
+                src=rl.Rectangle(0.0, 0.0, float(panel.width), float(panel.height)),
+                dst=rl.Rectangle(dst.x + 7.0, dst.y + 7.0, dst.width, dst.height),
+                origin=origin,
+                rotation_deg=math.degrees(angle_rad),
+                tint=rl.Color(0x44, 0x44, 0x44, 0x44),
+            )
         MenuView._draw_ui_quad(
             texture=panel,
-            src=rl.Rectangle(0.0, 0.0, panel_w, panel_h),
+            src=rl.Rectangle(0.0, 0.0, float(panel.width), float(panel.height)),
             dst=dst,
             origin=origin,
-            rotation_deg=0.0,
+            rotation_deg=math.degrees(angle_rad),
             tint=rl.WHITE,
         )
 
@@ -1242,13 +1237,13 @@ class PanelMenuView:
         label_tex = assets.labels
         item_w = float(item.width)
         item_h = float(item.height)
-        pos_x = MenuView._menu_slot_pos_x(entry.slot)
+        pos_x = PANEL_BACK_POS_X
         pos_y = entry.y + self._widescreen_y_shift
         angle_rad, slide_x = MenuView._ui_element_anim(
             self,
-            index=entry.slot + 2,
-            start_ms=MenuView._menu_slot_start_ms(entry.slot),
-            end_ms=MenuView._menu_slot_end_ms(entry.slot),
+            index=2,
+            start_ms=PANEL_TIMELINE_START_MS,
+            end_ms=PANEL_TIMELINE_END_MS,
             width=item_w,
         )
         _ = slide_x
@@ -1263,6 +1258,16 @@ class PanelMenuView:
         )
         origin = rl.Vector2(-offset_x, -offset_y)
         rotation_deg = math.degrees(angle_rad)
+        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        if fx_detail:
+            MenuView._draw_ui_quad(
+                texture=item,
+                src=rl.Rectangle(0.0, 0.0, item_w, item_h),
+                dst=rl.Rectangle(dst.x + 7.0, dst.y + 7.0, dst.width, dst.height),
+                origin=origin,
+                rotation_deg=rotation_deg,
+                tint=rl.Color(0x44, 0x44, 0x44, 0x44),
+            )
         MenuView._draw_ui_quad(
             texture=item,
             src=rl.Rectangle(0.0, 0.0, item_w, item_h),
@@ -1338,18 +1343,8 @@ class PanelMenuView:
             tint=rl.WHITE,
         )
 
-    def _draw_fade(self) -> None:
-        max_ms = max(1, self._timeline_max_ms)
-        alpha = 1.0 - float(self._timeline_ms) / float(max_ms)
-        if alpha <= 0.0:
-            return
-        if alpha > 1.0:
-            alpha = 1.0
-        tint = rl.Color(0, 0, 0, int(round(alpha * 255.0)))
-        rl.draw_rectangle(0, 0, rl.get_screen_width(), rl.get_screen_height(), tint)
-
     def _entry_enabled(self, entry: MenuEntry) -> bool:
-        return self._timeline_ms >= MenuView._menu_slot_start_ms(entry.slot)
+        return self._timeline_ms >= PANEL_TIMELINE_START_MS
 
     def _hovered_entry(self, entry: MenuEntry) -> bool:
         left, top, right, bottom = self._menu_item_bounds(entry)
@@ -1376,7 +1371,7 @@ class PanelMenuView:
         y2 = (MENU_ITEM_OFFSET_Y + item_h) * item_scale - local_y_shift
         w = x2 - x0
         h = y2 - y0
-        pos_x = MenuView._menu_slot_pos_x(entry.slot)
+        pos_x = PANEL_BACK_POS_X
         pos_y = entry.y + self._widescreen_y_shift
         left = pos_x + x0 + w * 0.54
         top = pos_y + y0 + h * 0.28
