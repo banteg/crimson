@@ -32,8 +32,8 @@ Renders the post-mission summary and buttons:
 - Full-screen upsell flow.
 - Renders the feature list, shows the logo/mockup, and opens the purchase URL
   when the user clicks "Purchase".
-- **Rewrite note:** Out of scope (storefront defunct). The rewrite keeps the
-  demo loop but skips the purchase screen entirely.
+- **Rewrite note:** implemented in the Python rewrite for parity (the purchase
+  URL is legacy).
 
 ## Demo trial overlay (demo_trial_overlay_render / FUN_004047c0)
 

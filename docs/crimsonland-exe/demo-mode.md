@@ -14,9 +14,9 @@ The demo loop is useful for reimplementation because it exercises:
 
 - Gameplay state `9` (creatures/projectiles/players) without needing menu work.
 - A deterministic set of setup variants (`demo_setup_variant_*`).
-- A self-contained “upsell” overlay that drives a timer and transitions back to
-  menu state `0` (classic behavior; **out of scope for our rewrite**, since the
-  storefront is defunct).
+- A self-contained “upsell” overlay + purchase screen (`demo_purchase_screen_update`)
+  that drives its own timer and can transition back to menu state `0`.
+  **Rewrite note:** we implement this screen for parity (the purchase URL is legacy).
 
 ## Entry points
 
@@ -60,9 +60,11 @@ In the per-frame dispatcher:
 
 This is why the demo cycle includes a “purchase interstitial” variant: it flips
 `demo_purchase_screen_active` to suppress gameplay and show only the upsell
-screen for a fixed time. **In the rewrite, the interstitial + upsell overlay
-are intentionally skipped**; the loop cycles gameplay variants and returns to
-menu.
+screen for a fixed time.
+
+**Rewrite note:** the Python rewrite implements the overlay + purchase screen
+rendering, but still differs in sequencing (no automatic “variant 5” interstitial
+yet; we trigger the purchase screen on input).
 
 ### Timing: `quest_spawn_timeline` + `demo_time_limit_ms`
 
@@ -164,15 +166,15 @@ The variants are small, deterministic setup functions that:
 ### Variant 5 — purchase interstitial — `demo_purchase_interstitial_begin` (`0x00403370`)
 
 - `demo_time_limit_ms = 10000`
-- `demo_purchase_screen_active = 1` (so the main loop skips gameplay and only renders the upsell overlay)
+- `demo_purchase_screen_active = 1` (suppresses gameplay and renders the full-screen purchase UI)
 
-**Rewrite note:** Out of scope (storefront defunct). The rewrite omits this
-variant and the upsell overlay entirely.
+**Rewrite note:** the Python rewrite implements the purchase UI, but does not
+yet auto-enter this interstitial variant.
 
 ## Upsell overlay (`demo_purchase_screen_update` / `0x0040b740`)
 
-**Rewrite note:** Out of scope (storefront defunct). We only implement the demo
-loop; no purchase screen or "Buy Now" flow.
+**Rewrite note:** implemented in `src/crimson/demo.py` for parity. The purchase
+URL is legacy; we open it best-effort.
 
 This runs whenever `demo_mode_active != 0`:
 

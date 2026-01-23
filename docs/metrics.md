@@ -13,7 +13,7 @@ Legend: ✅ complete · 🚧 in progress · ⬜ not started
 | Terrain | ✅ | ✅ | ✅ | 🚧 | Rendering logic validated; baking pipeline in progress. |
 | Boot Sequence | ✅ | ✅ | ✅ | 🚧 | Logos, loading steps, and music handoff implemented. |
 | Menu System | ✅ | ✅ | 🚧 | 🚧 | State 0: quit wired; panel/back positions + slide animation match; terrain stable across menu screens; sign shadow pass matches when fx_detail is enabled. |
-| Demo / attract loop | ✅ | 🚧 | ⬜ | ⬜ | Variants + spawn ids identified; upsell overlay implemented; purchase/idle/loop behavior still stubbed. |
+| Demo / attract loop | ✅ | 🚧 | ⬜ | ⬜ | Variants + spawn ids identified; upsell overlay + purchase screen implemented; sequencing/idle trigger still stubbed. |
 | Weapons | ✅ | ✅ | 🚧 | ⬜ | Table structure known; projectile logic pending. |
 | Creatures: structs | ✅ | 🚧 | ⬜ | ⬜ | Creature pool field map is medium-confidence; needs more xrefs + runtime checks. |
 | Creatures: spawning | ✅ | 🚧 | ⬜ | ⬜ | Spawn templates are an algorithm (formations/spawn slots/tail mods); plan rewrite started. |
@@ -48,5 +48,5 @@ Legend: ✅ complete · 🚧 in progress · ⬜ not started
 - ⬜ Add menu idle timer trigger (attract starts after inactivity; resets on input).
 - ✅ Implement demo upsell overlay (upsell "Want more ..." message + progress bar).
 - ⬜ Implement `demo_trial_overlay_render` for demo builds (trial messaging + timing).
-- ⬜ Implement full `demo_purchase_screen_update` purchase screen UI (deprioritized).
+- ✅ Implement full `demo_purchase_screen_update` purchase screen UI.
 - ⬜ Replace DemoView toy simulation with real gameplay systems (creature alloc/update, weapons/projectiles, collision/damage, terrain bounds).
