@@ -330,11 +330,14 @@ class GroundRenderer:
         src = rl.Rectangle(0.0, 0.0, float(texture.width), float(texture.height))
         origin = rl.Vector2(size * 0.5, size * 0.5)
         span_w = self.width + int(TERRAIN_PATCH_OVERSCAN * 2)
-        span_h = self.height + int(TERRAIN_PATCH_OVERSCAN * 2)
+        # The original exe uses `terrain_texture_width` for both axes. Terrain is
+        # square (1024x1024) so this is equivalent, but keep it for parity.
+        span_h = span_w
         for _ in range(count):
             angle = ((rng.rand() % TERRAIN_ROTATION_MAX) * 0.01) % math.tau
-            x = ((rng.rand() % span_w) - TERRAIN_PATCH_OVERSCAN) * inv_scale
+            # IMPORTANT: The exe consumes RNG as rotation, then Y, then X.
             y = ((rng.rand() % span_h) - TERRAIN_PATCH_OVERSCAN) * inv_scale
+            x = ((rng.rand() % span_w) - TERRAIN_PATCH_OVERSCAN) * inv_scale
             dst = rl.Rectangle(float(x), float(y), size, size)
             rl.draw_texture_pro(texture, src, dst, origin, math.degrees(angle), tint)
 
