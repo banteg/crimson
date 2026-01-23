@@ -74,6 +74,8 @@ Animation note:
   forces its rotation angle negative (clockwise) during timeline transitions.
 - It uses the same default `start_time_ms=300` / `end_time_ms=0` window as other UI elements,
   so it pivots in/out whenever a menu state transition occurs (state `0` ↔ `1`/`2` etc).
+- When `fx_detail` is enabled (`config_blob.reserved0[0xe] != 0`), `ui_element_render` also draws a
+  shadow pass with `+7,+7` offset and tint `0x44444444` using the same transform (rotation matrix).
 
 ### `ui_menuItem.jaz` (menu item button)
 

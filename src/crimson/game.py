@@ -1045,6 +1045,16 @@ class MenuView:
         )
         _ = slide_x  # slide is ignored for render_mode==0 (transform) elements
         sign = assets.sign
+        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        if fx_detail:
+            self._draw_ui_quad(
+                texture=sign,
+                src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
+                dst=rl.Rectangle(pos_x + 7.0, pos_y + 7.0, sign_w, sign_h),
+                origin=rl.Vector2(-offset_x, -offset_y),
+                rotation_deg=math.degrees(angle_rad),
+                tint=rl.Color(0x44, 0x44, 0x44, 0x44),
+            )
         self._draw_ui_quad(
             texture=sign,
             src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
@@ -1348,6 +1358,16 @@ class PanelMenuView:
         )
         _ = slide_x
         sign = assets.sign
+        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        if fx_detail:
+            MenuView._draw_ui_quad(
+                texture=sign,
+                src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
+                dst=rl.Rectangle(pos_x + 7.0, pos_y + 7.0, sign_w, sign_h),
+                origin=rl.Vector2(-offset_x, -offset_y),
+                rotation_deg=math.degrees(angle_rad),
+                tint=rl.Color(0x44, 0x44, 0x44, 0x44),
+            )
         MenuView._draw_ui_quad(
             texture=sign,
             src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
