@@ -4,6 +4,7 @@ from dataclasses import dataclass
 import json
 import os
 from pathlib import Path
+import shutil
 import sys
 
 from PIL import Image, ImageChops, ImageStat
@@ -28,6 +29,18 @@ TEXTURE_PATHS = {
     6: "ter/ter_q4_base.jaz",
     7: "ter/ter_q4_tex1.jaz",
 }
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_ARTIFACTS_DIR = REPO_ROOT / "artifacts" / "tests" / "ground_dumps"
+
+
+def _artifacts_dir() -> Path:
+    # Persist outputs in-repo (gitignored) so failures are easy to inspect.
+    override = os.environ.get("CRIMSON_TEST_ARTIFACTS_DIR")
+    if override:
+        return Path(override)
+    return DEFAULT_ARTIFACTS_DIR
 
 
 @dataclass(frozen=True)
@@ -114,10 +127,14 @@ def _diff_summary(expected: Image.Image, actual: Image.Image) -> tuple[int, floa
     return int(max_delta), float(mean_delta)
 
 
-def test_ground_dumps_match_fixtures(terrain_textures: dict[int, TextureAsset], tmp_path: Path) -> None:
+def test_ground_dumps_match_fixtures(terrain_textures: dict[int, TextureAsset]) -> None:
     cases = _load_cases()
     if not cases:
         pytest.skip("missing ground dump fixtures")
+    out_root = _artifacts_dir()
+    out_root.mkdir(parents=True, exist_ok=True)
+
+    failures: list[str] = []
     for case in cases:
         fixture_path = FIXTURE_DIR / case.fixture
         if not fixture_path.exists():
@@ -139,19 +156,66 @@ def test_ground_dumps_match_fixtures(terrain_textures: dict[int, TextureAsset], 
             if not renderer._pending_generate:
                 break
         assert renderer.render_target is not None
-        generated_path = tmp_path / f"ground_{case.seed}.png"
-        _export_render_target(renderer.render_target, generated_path)
+
+        case_dir = out_root / Path(case.fixture).stem
+        case_dir.mkdir(parents=True, exist_ok=True)
+        expected_out = case_dir / "expected.png"
+        actual_out = case_dir / "actual.png"
+        diff_out = case_dir / "diff.png"
+        meta_out = case_dir / "meta.json"
+
+        # Always save the generated output for easy visual inspection.
+        _export_render_target(renderer.render_target, actual_out)
         rl.unload_render_texture(renderer.render_target)
         renderer.render_target = None
 
         expected = Image.open(fixture_path).convert("RGBA")
-        actual = Image.open(generated_path).convert("RGBA")
+        actual = Image.open(actual_out).convert("RGBA")
         assert actual.size == expected.size
         max_delta, mean_delta = _diff_summary(expected, actual)
+
+        # Keep a copy of the expected fixture next to the output for side-by-side viewing.
+        try:
+            shutil.copyfile(fixture_path, expected_out)
+        except OSError:
+            # If copying fails for any reason, still allow the test to proceed.
+            pass
+
         if max_delta:
-            diff_path = tmp_path / f"ground_{case.seed}_diff.png"
-            ImageChops.difference(expected, actual).save(diff_path)
-            pytest.fail(
-                f"fixture mismatch for seed={case.seed} "
-                f"(max_delta={max_delta}, mean_delta={mean_delta:.3f}); diff={diff_path}"
+            ImageChops.difference(expected, actual).save(diff_out)
+            meta_out.write_text(
+                json.dumps(
+                    {
+                        "fixture": case.fixture,
+                        "seed": case.seed,
+                        "width": case.width,
+                        "height": case.height,
+                        "tex0_index": case.tex0_index,
+                        "tex1_index": case.tex1_index,
+                        "tex2_index": case.tex2_index,
+                        "max_delta": max_delta,
+                        "mean_delta": mean_delta,
+                        "expected": str(expected_out),
+                        "actual": str(actual_out),
+                        "diff": str(diff_out),
+                    },
+                    indent=2,
+                    sort_keys=True,
+                )
+                + "\n",
+                encoding="utf-8",
             )
+            failures.append(
+                f"fixture mismatch for {case.fixture} seed={case.seed} "
+                f"(max_delta={max_delta}, mean_delta={mean_delta:.3f}); out={case_dir}"
+            )
+        else:
+            # Avoid stale artifacts from previous failing runs.
+            for p in (diff_out, meta_out):
+                try:
+                    p.unlink()
+                except FileNotFoundError:
+                    pass
+
+    if failures:
+        pytest.fail("\n".join(failures))
