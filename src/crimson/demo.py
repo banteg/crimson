@@ -38,11 +38,11 @@ _DEMO_PURCHASE_FEATURES_TITLE = "Full version features:"
 _DEMO_PURCHASE_FEATURE_LINES: tuple[tuple[str, float], ...] = (
     ("-Unlimited Play Time in three thrilling Game Modes!", 22.0),
     ("-The varied weapon arsenal consisting of over 20 unique", 17.0),
-    (" weapons that allow you to deal death with plasma, lead,", 17.0),
-    (" fire and electricity!", 22.0),
+    ("  weapons that allow you to deal death with plasma, lead,", 17.0),
+    ("  fire and electricity!", 22.0),
     ("-Over 40 game altering Perks!", 22.0),
     ("-40 insane Levels that give you", 18.0),
-    (" hours of intense and fun gameplay!", 22.0),
+    ("  hours of intense and fun gameplay!", 22.0),
     ("-The ability to post your high scores online!", 44.0),
 )
 _DEMO_PURCHASE_FOOTER = "Purchasing the game is very easy and secure."
