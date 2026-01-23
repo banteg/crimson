@@ -24,7 +24,8 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - Company logo sequence (10tons / Reflexive) with skip behavior.
 - Intro/theme music handoff.
 - Main menu layout + animation scaffold (tab/enter selection logging).
-- Demo/attract-mode scaffold (variants + simple sprite anim phases; **purchase/upsell screen is out of scope**).
+- Menu terrain persists between screens (no regen on Options/Stats/etc navigation).
+- Demo/attract-mode scaffold (variants + simple sprite anim phases; upsell overlay only; purchase screen is out of scope).
 
 ### Assets + rendering
 
@@ -71,7 +72,7 @@ See also:
 - No save/status integration in runtime flow yet.
 - SFX playback (non-music) is not wired.
 - Mode loops (Survival/Rush/Quest) are not implemented.
-- Demo purchase/upsell screen is intentionally skipped (storefront defunct).
+- Demo purchase screen is intentionally skipped (storefront defunct).
 
 ## Roadmap
 

@@ -18,6 +18,20 @@ In the main frame renderer, state `0` follows the "menu/world" render path:
 4. Perk prompt (usually inactive in menu).
 5. Cursor draw.
 
+## Terrain regeneration notes
+
+The main menu does **not** regenerate terrain when you navigate between menu screens
+(Options/Statistics/etc). State `0` just renders whatever terrain texture is already
+active.
+
+Terrain generation is triggered elsewhere:
+
+- Startup: `game_startup_init_prelude` calls `terrain_generate_random()`.
+- Demo → Menu: `ui_elements_update_and_render` calls `terrain_generate_random()` when
+  `demo_mode_active != 0` and `game_state_pending == 0`, right before `game_state_set(0)`.
+- Debug: `console_hotkey_update` checks config var `0x57` and calls `terrain_generate_random()`
+  (or `terrain_generate(desc)` in quest mode), then clears the config var.
+
 ## Keyboard navigation (state 0)
 
 Main-menu focus navigation is **Tab-based** (not arrow keys):

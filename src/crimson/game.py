@@ -57,7 +57,49 @@ class GameState:
     logos: LogoAssets | None
     texture_cache: PaqTextureCache | None
     audio: AudioState | None
+    menu_ground: GroundRenderer | None = None
     quit_requested: bool = False
+
+
+def ensure_menu_ground(state: GameState, *, regenerate: bool = False) -> GroundRenderer | None:
+    cache = state.texture_cache
+    if cache is None:
+        return None
+    base = cache.texture("ter_q1_base")
+    if base is None:
+        return None
+    overlay = cache.texture("ter_q1_tex1")
+    detail = overlay or base
+    ground = state.menu_ground
+    screen_width = float(state.config.screen_width)
+    screen_height = float(state.config.screen_height)
+    texture_scale = float(state.config.texture_scale)
+    if ground is None:
+        ground = GroundRenderer(
+            texture=base,
+            overlay=overlay,
+            overlay_detail=detail,
+            width=1024,
+            height=1024,
+            texture_scale=texture_scale,
+            screen_width=screen_width,
+            screen_height=screen_height,
+        )
+        state.menu_ground = ground
+        regenerate = True
+    else:
+        scale_changed = abs(float(ground.texture_scale) - texture_scale) > 1e-6
+        ground.texture = base
+        ground.overlay = overlay
+        ground.overlay_detail = detail
+        ground.texture_scale = texture_scale
+        ground.screen_width = screen_width
+        ground.screen_height = screen_height
+        if scale_changed:
+            regenerate = True
+    if regenerate:
+        ground.schedule_generate(seed=state.rng.randrange(0, 10_000), layers=3)
+    return ground
 
 
 TEXTURE_LOAD_STAGES: dict[int, tuple[tuple[str, str], ...]] = {
@@ -585,8 +627,6 @@ class MenuView:
         self._init_ground()
 
     def close(self) -> None:
-        if self._ground is not None and self._ground.render_target is not None:
-            rl.unload_render_texture(self._ground.render_target)
         self._ground = None
 
     def update(self, dt: float) -> None:
@@ -690,25 +730,7 @@ class MenuView:
         return cache
 
     def _init_ground(self) -> None:
-        cache = self._state.texture_cache
-        if cache is None:
-            return
-        base = cache.texture("ter_q1_base")
-        if base is None:
-            return
-        overlay = cache.texture("ter_q1_tex1")
-        detail = overlay or base
-        self._ground = GroundRenderer(
-            texture=base,
-            overlay=overlay,
-            overlay_detail=detail,
-            width=1024,
-            height=1024,
-            texture_scale=self._state.config.texture_scale,
-            screen_width=float(self._state.config.screen_width),
-            screen_height=float(self._state.config.screen_height),
-        )
-        self._ground.schedule_generate(seed=self._state.rng.randrange(0, 10_000), layers=3)
+        self._ground = ensure_menu_ground(self._state)
 
     def _menu_entries_for_flags(
         self,
@@ -1078,8 +1100,6 @@ class PanelMenuView:
         self._init_ground()
 
     def close(self) -> None:
-        if self._ground is not None and self._ground.render_target is not None:
-            rl.unload_render_texture(self._ground.render_target)
         self._ground = None
 
     def update(self, dt: float) -> None:
@@ -1165,25 +1185,7 @@ class PanelMenuView:
         return cache
 
     def _init_ground(self) -> None:
-        cache = self._state.texture_cache
-        if cache is None:
-            return
-        base = cache.texture("ter_q1_base")
-        if base is None:
-            return
-        overlay = cache.texture("ter_q1_tex1")
-        detail = overlay or base
-        self._ground = GroundRenderer(
-            texture=base,
-            overlay=overlay,
-            overlay_detail=detail,
-            width=1024,
-            height=1024,
-            texture_scale=self._state.config.texture_scale,
-            screen_width=float(self._state.config.screen_width),
-            screen_height=float(self._state.config.screen_height),
-        )
-        self._ground.schedule_generate(seed=self._state.rng.randrange(0, 10_000), layers=3)
+        self._ground = ensure_menu_ground(self._state)
 
     def _draw_panel(self) -> None:
         assets = self._assets
@@ -1470,6 +1472,7 @@ class GameLoopView:
         if self._demo_active and not self._menu_active and self._demo.is_finished():
             self._demo.close()
             self._demo_active = False
+            ensure_menu_ground(self._state, regenerate=True)
             self._menu.open()
             self._active = self._menu
             self._menu_active = True
@@ -1489,6 +1492,9 @@ class GameLoopView:
             self._front_active.close()
         if self._demo_active:
             self._demo.close()
+        if self._state.menu_ground is not None and self._state.menu_ground.render_target is not None:
+            rl.unload_render_texture(self._state.menu_ground.render_target)
+            self._state.menu_ground.render_target = None
         self._boot.close()
 
 
