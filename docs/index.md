@@ -64,9 +64,16 @@ Reverse engineering and rewriting Crimsonland v1.9.93 in Python + raylib.
 
 - [Structs overview](structs/index.md)
 - [Player struct](structs/player.md)
-- [Creature struct](structs/creature.md)
+- [Creature pool struct](creatures/struct.md)
 - [Projectile struct](structs/projectile.md)
 - [Effects pools](structs/effects.md)
+
+## Creatures
+
+- [Creatures overview](creatures/index.md)
+- [Spawning (templates)](creatures/spawning.md)
+- [Animations](creatures/animations.md)
+- [AI](creatures/ai.md)
 
 ## Grim2D
 

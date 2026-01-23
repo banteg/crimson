@@ -1116,7 +1116,7 @@ Button struct (size `0x18`, used by `DAT_0047f5f8` / `DAT_00480250` / `DAT_00480
   | 0x90 | AI mode | selects movement pattern (cases 0/1/3/4/5/6/7/8 in update loop). |
   | 0x94 | anim phase | accumulates and wraps (31/15) to drive sprite animation timing. |
 
-See [Creature struct](structs/creature.md) for the expanded field map and cross-links.
+See [Creature pool struct](creatures/struct.md) for the expanded field map and cross-links.
 ### Projectile pool (partial)
 
 - `FUN_00420440` -> `projectile_spawn`

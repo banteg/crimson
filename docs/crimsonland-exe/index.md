@@ -20,14 +20,14 @@ Sections:
 - [Online scores](online-scores.md)
 - [Mods](mods.md)
 - [Gameplay glue](gameplay.md)
-- [Creature spawning (templates)](creature-spawning.md)
+- [Creature spawning (templates)](../creatures/spawning.md)
 
 Related references:
 
 - [Weapon table](../weapon-table.md)
 - [Perk ID map](../perk-id-map.md)
 - [Bonus ID map](../bonus-id-map.md)
-- [Creature struct](../structs/creature.md)
+- [Creature pool struct](../creatures/struct.md)
 - [Projectile struct](../structs/projectile.md)
 - [Effects pools](../structs/effects.md)
 - [Detangling notes](../detangling.md)

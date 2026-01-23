@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 
-DOC_PATH = Path("docs/structs/creature.md")
+DOC_PATH = Path("docs/creatures/spawning.md")
 
 START_MARKER = "<!-- spawn-templates:start -->"
 END_MARKER = "<!-- spawn-templates:end -->"
@@ -60,4 +60,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

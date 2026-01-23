@@ -3,7 +3,7 @@ from __future__ import annotations
 """Spawn template ids extracted from creature_spawn_template (FUN_00430af0).
 
 Hand-maintained (promoted from static analysis). Run `uv run python scripts/gen_spawn_templates.py`
-to regenerate the docs table in `docs/structs/creature.md`.
+to regenerate the docs table in `docs/creatures/spawning.md`.
 """
 
 from dataclasses import dataclass

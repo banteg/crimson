@@ -14,7 +14,11 @@ Legend: ✅ complete · 🚧 in progress · ⬜ not started
 | Boot Sequence | ✅ | ✅ | ✅ | 🚧 | Logos, loading steps, and music handoff implemented. |
 | Menu System | ✅ | ✅ | 🚧 | ⬜ | State 0 scaffolded; transitions/layout need polish. |
 | Weapons | ✅ | ✅ | 🚧 | ⬜ | Table structure known; projectile logic pending. |
-| Creatures | ✅ | ✅ | 🚧 | ⬜ | Spawn templates mapped; AI behavior still in analysis. |
+| Creatures: structs | ✅ | 🚧 | ⬜ | ⬜ | Creature pool field map is medium-confidence; needs more xrefs + runtime checks. |
+| Creatures: spawning | ✅ | 🚧 | ⬜ | ⬜ | Spawn templates are an algorithm (formations/spawn slots/tail mods); plan rewrite started. |
+| Creatures: animations | ✅ | 🚧 | ⬜ | ⬜ | Atlas/frame selection understood at a high level; parity tuning in progress. |
+| Creatures: AI | ✅ | 🚧 | ⬜ | ⬜ | AI modes partially mapped; needs runtime evidence and edge cases. |
+| Creatures: other | ✅ | ⬜ | ⬜ | ⬜ | Attacks, damage/death, loot/bonuses, and audio behaviors still being scoped. |
 | Player | ✅ | ✅ | 🚧 | ⬜ | Input & movement mapped; state struct partially validated. |
 | Grim2D | ✅ | ✅ | ✅ | ⬜ | Vtable mapped & validated; implementation deferred. |
 | Save/Config | ✅ | ✅ | ⬜ | ⬜ | File formats reversed; editor tools built. |
