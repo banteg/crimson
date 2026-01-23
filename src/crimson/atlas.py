@@ -67,9 +67,7 @@ def uv_for_index(grid: int, index: int) -> tuple[float, float, float, float]:
     return u0, v0, u1, v1
 
 
-def rect_for_index(
-    width: int, height: int, grid: int, index: int
-) -> tuple[int, int, int, int]:
+def rect_for_index(width: int, height: int, grid: int, index: int) -> tuple[int, int, int, int]:
     row = index // grid
     col = index % grid
     cell_w = width // grid
@@ -90,7 +88,5 @@ def slice_grid(image: Image.Image, grid: int) -> list[Image.Image]:
     return frames
 
 
-def slice_by_indices(
-    image: Image.Image, grid: int, indices: Iterable[int]
-) -> list[Image.Image]:
+def slice_by_indices(image: Image.Image, grid: int, indices: Iterable[int]) -> list[Image.Image]:
     return [slice_index(image, grid, idx) for idx in indices]

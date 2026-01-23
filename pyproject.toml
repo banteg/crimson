@@ -24,6 +24,22 @@ dev = [
 ]
 
 [tool.ruff]
+line-length = 120
 
 [tool.ruff.lint]
 extend-ignore = ["E402"]
+
+[tool.ty]
+[[tool.ty.overrides]]
+include = [
+    "src/grim/**/*.py",
+    "src/crimson/views/**/*.py",
+    "src/crimson/game.py",
+    "src/crimson/demo.py",
+]
+[tool.ty.overrides.rules]
+"unresolved-attribute" = "ignore"
+"invalid-argument-type" = "ignore"
+"invalid-assignment" = "ignore"
+"invalid-return-type" = "ignore"
+"possibly-missing-attribute" = "ignore"

@@ -200,9 +200,7 @@ def ensure_crimson_cfg(base_dir: Path) -> CrimsonConfig:
     if path.exists():
         data = path.read_bytes()
         if len(data) != CRIMSON_CFG_SIZE:
-            raise ValueError(
-                f"{path} has unexpected size {len(data)} (expected {CRIMSON_CFG_SIZE})"
-            )
+            raise ValueError(f"{path} has unexpected size {len(data)} (expected {CRIMSON_CFG_SIZE})")
         parsed = CRIMSON_CFG_STRUCT.parse(data)
         return CrimsonConfig(path=path, data=parsed)
     parsed = default_crimson_cfg_data()
@@ -214,8 +212,6 @@ def ensure_crimson_cfg(base_dir: Path) -> CrimsonConfig:
 def load_crimson_cfg(path: Path) -> CrimsonConfig:
     data = path.read_bytes()
     if len(data) != CRIMSON_CFG_SIZE:
-        raise ValueError(
-            f"{path} has unexpected size {len(data)} (expected {CRIMSON_CFG_SIZE})"
-        )
+        raise ValueError(f"{path} has unexpected size {len(data)} (expected {CRIMSON_CFG_SIZE})")
     parsed = CRIMSON_CFG_STRUCT.parse(data)
     return CrimsonConfig(path=path, data=parsed)

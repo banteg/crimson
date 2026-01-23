@@ -60,9 +60,7 @@ class SmallFont:
     grid: int = GRID_SIZE
     cell_size: int = CELL_SIZE
 
-    def glyph_rect(
-        self, idx: int, width: int | None = None
-    ) -> tuple[int, int, int, int]:
+    def glyph_rect(self, idx: int, width: int | None = None) -> tuple[int, int, int, int]:
         if not 0 <= idx < WIDTH_TABLE_SIZE:
             raise ValueError(f"glyph index out of range: {idx}")
         row = idx // self.grid
@@ -133,9 +131,7 @@ class SmallFont:
                 glyph_w = max(int(round(width * scale)), 1)
                 glyph_h = max(line_height, 1)
                 if scale != 1.0:
-                    glyph = glyph.resize(
-                        (glyph_w, glyph_h), resample=Image.Resampling.NEAREST
-                    )
+                    glyph = glyph.resize((glyph_w, glyph_h), resample=Image.Resampling.NEAREST)
                 if color != (255, 255, 255, 255):
                     glyph = _apply_tint(glyph, color)
                 output.alpha_composite(glyph, dest=(x_px, y))

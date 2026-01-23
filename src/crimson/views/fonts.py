@@ -45,7 +45,12 @@ class FontView:
         return int(20 * scale)
 
     def _draw_ui_text(
-        self, text: str, x: float, y: float, color: rl.Color, scale: float = UI_TEXT_SCALE
+        self,
+        text: str,
+        x: float,
+        y: float,
+        color: rl.Color,
+        scale: float = UI_TEXT_SCALE,
     ) -> None:
         if self._small is not None:
             draw_small_text(self._small, text, x, y, scale, color)
@@ -82,17 +87,8 @@ class FontView:
         self._draw_ui_text("Small font", 24, y, UI_TEXT_COLOR)
         y += self._ui_line_height() + 12
         if self._small is not None:
-            draw_small_text(
-                self._small, self._sample, 24, y, SMALL_SAMPLE_SCALE, rl.WHITE
-            )
-            y += (
-                int(
-                    measure_small_text_height(
-                        self._small, self._sample, SMALL_SAMPLE_SCALE
-                    )
-                )
-                + 40
-            )
+            draw_small_text(self._small, self._sample, 24, y, SMALL_SAMPLE_SCALE, rl.WHITE)
+            y += int(measure_small_text_height(self._small, self._sample, SMALL_SAMPLE_SCALE)) + 40
 
         self._draw_ui_text("Grim2D mono font", 24, y, UI_TEXT_COLOR)
         y += self._ui_line_height() + 12
@@ -100,17 +96,8 @@ class FontView:
             self._draw_ui_text(f"Filter: {GRIM_MONO_FILTER_NAME}", 24, y, UI_TEXT_COLOR)
             y += self._ui_line_height(0.9) + 6
             mono_scale = quest_title_base_scale(rl.get_screen_width())
-            draw_grim_mono_text(
-                self._grim_mono, self._sample, 24, y, mono_scale, rl.WHITE
-            )
-            y += (
-                int(
-                    measure_grim_mono_text_height(
-                        self._grim_mono, self._sample, mono_scale
-                    )
-                )
-                + 20
-            )
+            draw_grim_mono_text(self._grim_mono, self._sample, 24, y, mono_scale, rl.WHITE)
+            y += int(measure_grim_mono_text_height(self._grim_mono, self._sample, mono_scale)) + 20
 
         self._draw_quest_title_overlay()
 

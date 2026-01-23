@@ -94,9 +94,7 @@ def _load_texture_from_bytes(data: bytes, fmt: str) -> rl.Texture2D:
     return texture
 
 
-def _load_texture_asset_from_bytes(
-    name: str, rel_path: str, data: bytes | None
-) -> TextureAsset:
+def _load_texture_asset_from_bytes(name: str, rel_path: str, data: bytes | None) -> TextureAsset:
     if data is None:
         raise FileNotFoundError(f"Missing asset data: {rel_path}")
     if rel_path.lower().endswith(".jaz"):
@@ -129,25 +127,21 @@ def _load_texture_asset_from_bytes(
     return TextureAsset(name=name, rel_path=rel_path, texture=None)
 
 
-def load_logo_assets(
-    assets_dir: Path, *, entries: dict[str, bytes] | None = None
-) -> LogoAssets:
+def load_logo_assets(assets_dir: Path, *, entries: dict[str, bytes] | None = None) -> LogoAssets:
     if entries is None:
         entries = load_paq_entries(assets_dir)
     return LogoAssets(
         backplasma=_load_texture_asset_from_bytes(
             "backplasma", "load/backplasma.jaz", entries.get("load/backplasma.jaz")
         ),
-        mockup=_load_texture_asset_from_bytes(
-            "mockup", "load/mockup.jaz", entries.get("load/mockup.jaz")
-        ),
+        mockup=_load_texture_asset_from_bytes("mockup", "load/mockup.jaz", entries.get("load/mockup.jaz")),
         logo_esrb=_load_texture_asset_from_bytes(
             "logo_esrb", "load/esrb_mature.jaz", entries.get("load/esrb_mature.jaz")
         ),
-        loading=_load_texture_asset_from_bytes(
-            "loading", "load/loading.jaz", entries.get("load/loading.jaz")
-        ),
+        loading=_load_texture_asset_from_bytes("loading", "load/loading.jaz", entries.get("load/loading.jaz")),
         cl_logo=_load_texture_asset_from_bytes(
-            "cl_logo", "load/logo_crimsonland.tga", entries.get("load/logo_crimsonland.tga")
+            "cl_logo",
+            "load/logo_crimsonland.tga",
+            entries.get("load/logo_crimsonland.tga"),
         ),
     )

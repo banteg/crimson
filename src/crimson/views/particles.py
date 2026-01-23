@@ -93,7 +93,12 @@ class ParticleView:
         return int(20 * scale)
 
     def _draw_ui_text(
-        self, text: str, x: float, y: float, color: rl.Color, scale: float = UI_TEXT_SCALE
+        self,
+        text: str,
+        x: float,
+        y: float,
+        color: rl.Color,
+        scale: float = UI_TEXT_SCALE,
     ) -> None:
         if self._small is not None:
             draw_small_text(self._small, text, x, y, scale, color)
@@ -263,9 +268,7 @@ class ParticleView:
             info_y += self._ui_line_height() + 12
 
         if hovered_index is not None:
-            self._draw_ui_text(
-                f"frame {hovered_index:02d}", info_x, info_y, UI_TEXT_COLOR
-            )
+            self._draw_ui_text(f"frame {hovered_index:02d}", info_x, info_y, UI_TEXT_COLOR)
             info_y += self._ui_line_height() + 6
             entries = known_frames.get(hovered_index, [])
             if entries:

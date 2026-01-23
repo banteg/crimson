@@ -80,10 +80,7 @@ BOOT_STEPS: tuple[BootStep, ...] = (
     BootStep(
         key="logo_assets",
         title="Load logo/splash textures",
-        trace=(
-            "texture_get_or_load: backplasma, mockup, logo_esrb, "
-            "loading, cl_logo"
-        ),
+        trace=("texture_get_or_load: backplasma, mockup, logo_esrb, loading, cl_logo"),
         needs=("asset_loader", "jaz_tga_decoder", "texture_cache"),
     ),
     BootStep(

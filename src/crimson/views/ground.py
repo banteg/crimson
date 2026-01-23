@@ -59,7 +59,12 @@ class GroundView:
         return int(20 * scale)
 
     def _draw_ui_text(
-        self, text: str, x: float, y: float, color: rl.Color, scale: float = UI_TEXT_SCALE
+        self,
+        text: str,
+        x: float,
+        y: float,
+        color: rl.Color,
+        scale: float = UI_TEXT_SCALE,
     ) -> None:
         if self._small is not None:
             draw_small_text(self._small, text, x, y, scale, color)
@@ -78,9 +83,7 @@ class GroundView:
                 continue
             textures[terrain_id] = rl.load_texture(str(path))
         if self._missing_assets:
-            raise FileNotFoundError(
-                f"Missing ground assets: {', '.join(self._missing_assets)}"
-            )
+            raise FileNotFoundError(f"Missing ground assets: {', '.join(self._missing_assets)}")
         self._assets = GroundAssets(textures=textures)
         self._quests = all_quests()
         texture_scale, screen_w, screen_h = self._load_runtime_config()
@@ -150,7 +153,11 @@ class GroundView:
         if runtime_dir.is_dir():
             try:
                 cfg = ensure_crimson_cfg(runtime_dir)
-                return cfg.texture_scale, float(cfg.screen_width), float(cfg.screen_height)
+                return (
+                    cfg.texture_scale,
+                    float(cfg.screen_width),
+                    float(cfg.screen_height),
+                )
             except Exception:
                 return 1.0, None, None
         return 1.0, None, None

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
 
 import pyray as rl
 
@@ -12,6 +11,7 @@ from grim.view import View, ViewContext
 UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
+
 
 @dataclass(frozen=True, slots=True)
 class TerrainTexture:
@@ -49,7 +49,12 @@ class TerrainView:
         return int(20 * scale)
 
     def _draw_ui_text(
-        self, text: str, x: float, y: float, color: rl.Color, scale: float = UI_TEXT_SCALE
+        self,
+        text: str,
+        x: float,
+        y: float,
+        color: rl.Color,
+        scale: float = UI_TEXT_SCALE,
     ) -> None:
         if self._small is not None:
             draw_small_text(self._small, text, x, y, scale, color)
@@ -66,13 +71,9 @@ class TerrainView:
                 self._missing_assets.append(rel_path)
                 continue
             texture = rl.load_texture(str(path))
-            self._textures.append(
-                TerrainTexture(terrain_id=terrain_id, name=name, texture=texture)
-            )
+            self._textures.append(TerrainTexture(terrain_id=terrain_id, name=name, texture=texture))
         if self._missing_assets:
-            raise FileNotFoundError(
-                f"Missing terrain assets: {', '.join(self._missing_assets)}"
-            )
+            raise FileNotFoundError(f"Missing terrain assets: {', '.join(self._missing_assets)}")
 
     def close(self) -> None:
         for entry in self._textures:

@@ -23,18 +23,14 @@ def load_small_font(assets_root: Path, missing_assets: list[str]) -> SmallFontDa
     atlas_path = assets_root / "crimson" / "load" / "smallWhite.png"
     if not widths_path.is_file() or not atlas_path.is_file():
         missing_assets.append("small font assets")
-        raise FileNotFoundError(
-            f"Missing small font assets: {widths_path} or {atlas_path}"
-        )
+        raise FileNotFoundError(f"Missing small font assets: {widths_path} or {atlas_path}")
     widths = list(widths_path.read_bytes())
     texture = rl.load_texture(str(atlas_path))
     rl.set_texture_filter(texture, SMALL_FONT_FILTER)
     return SmallFontData(widths=widths, texture=texture)
 
 
-def draw_small_text(
-    font: SmallFontData, text: str, x: float, y: float, scale: float, color: rl.Color
-) -> None:
+def draw_small_text(font: SmallFontData, text: str, x: float, y: float, scale: float, color: rl.Color) -> None:
     x_pos = x
     y_pos = y
     line_height = font.cell_size * scale

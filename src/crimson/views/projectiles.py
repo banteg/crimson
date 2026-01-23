@@ -60,7 +60,12 @@ class ProjectileView:
         return int(20 * scale)
 
     def _draw_ui_text(
-        self, text: str, x: float, y: float, color: rl.Color, scale: float = UI_TEXT_SCALE
+        self,
+        text: str,
+        x: float,
+        y: float,
+        color: rl.Color,
+        scale: float = UI_TEXT_SCALE,
     ) -> None:
         if self._small is not None:
             draw_small_text(self._small, text, x, y, scale, color)
@@ -184,9 +189,7 @@ class ProjectileView:
         info_y += self._ui_line_height() + 12
 
         if hovered_index is not None:
-            self._draw_ui_text(
-                f"frame {hovered_index:02d}", info_x, info_y, UI_TEXT_COLOR
-            )
+            self._draw_ui_text(f"frame {hovered_index:02d}", info_x, info_y, UI_TEXT_COLOR)
             info_y += self._ui_line_height() + 6
             entries = known_frames.get(hovered_index, [])
             if entries:
@@ -207,12 +210,8 @@ class ProjectileView:
         info_y += self._ui_line_height() + 6
         for frame_index in sorted(known_frames.keys()):
             entries = known_frames[frame_index]
-            labels = ", ".join(
-                f"0x{entry.type_id:02x} {entry.label}" for entry in entries
-            )
-            self._draw_ui_text(
-                f"{frame_index:02d}: {labels}", info_x, info_y, UI_HINT_COLOR
-            )
+            labels = ", ".join(f"0x{entry.type_id:02x} {entry.label}" for entry in entries)
+            self._draw_ui_text(f"{frame_index:02d}: {labels}", info_x, info_y, UI_HINT_COLOR)
             info_y += self._ui_line_height() + 4
 
 

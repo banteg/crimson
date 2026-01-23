@@ -45,9 +45,7 @@ def _blend_custom_separate(
     eq_alpha: int,
 ) -> Iterator[None]:
     rl.begin_blend_mode(rl.BLEND_CUSTOM_SEPARATE)
-    rl.rl_set_blend_factors_separate(
-        src_rgb, dst_rgb, src_alpha, dst_alpha, eq_rgb, eq_alpha
-    )
+    rl.rl_set_blend_factors_separate(src_rgb, dst_rgb, src_alpha, dst_alpha, eq_rgb, eq_alpha)
     try:
         yield
     finally:
@@ -195,18 +193,12 @@ class GroundRenderer:
             rl.RL_FUNC_ADD,
         ):
             if layers >= 1:
-                self._scatter_texture(
-                    self.texture, TERRAIN_BASE_TINT, rng, TERRAIN_DENSITY_BASE
-                )
+                self._scatter_texture(self.texture, TERRAIN_BASE_TINT, rng, TERRAIN_DENSITY_BASE)
             if layers >= 2 and self.overlay is not None:
-                self._scatter_texture(
-                    self.overlay, TERRAIN_OVERLAY_TINT, rng, TERRAIN_DENSITY_OVERLAY
-                )
+                self._scatter_texture(self.overlay, TERRAIN_OVERLAY_TINT, rng, TERRAIN_DENSITY_OVERLAY)
             if layers >= 3:
                 # Original uses base texture for detail pass, not overlay
-                self._scatter_texture(
-                    self.texture, TERRAIN_DETAIL_TINT, rng, TERRAIN_DENSITY_DETAIL
-                )
+                self._scatter_texture(self.texture, TERRAIN_DETAIL_TINT, rng, TERRAIN_DENSITY_DETAIL)
         rl.end_texture_mode()
         self._set_stamp_filters(point=False)
         self._render_target_ready = True
@@ -260,9 +252,7 @@ class GroundRenderer:
         self._render_target_ready = True
         return True
 
-    def bake_corpse_decals(
-        self, bodyset_texture: rl.Texture, decals: Sequence[GroundCorpseDecal]
-    ) -> bool:
+    def bake_corpse_decals(self, bodyset_texture: rl.Texture, decals: Sequence[GroundCorpseDecal]) -> bool:
         if not decals:
             return False
 
@@ -320,9 +310,7 @@ class GroundRenderer:
         # Disable alpha blending when drawing terrain to screen - the render target's
         # alpha channel may be < 1.0 after stamp blending, but terrain should be opaque.
         with _blend_custom(rl.RL_ONE, rl.RL_ZERO, rl.RL_FUNC_ADD):
-            rl.draw_texture_pro(
-                target.texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE
-            )
+            rl.draw_texture_pro(target.texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
         if self.terrain_filter == 2.0:
             rl.set_texture_filter(target.texture, rl.TEXTURE_FILTER_BILINEAR)
 
@@ -348,13 +336,9 @@ class GroundRenderer:
             x = ((rng.rand() % span_w) - TERRAIN_PATCH_OVERSCAN) * inv_scale
             y = ((rng.rand() % span_h) - TERRAIN_PATCH_OVERSCAN) * inv_scale
             dst = rl.Rectangle(float(x), float(y), size, size)
-            rl.draw_texture_pro(
-                texture, src, dst, origin, math.degrees(angle), tint
-            )
+            rl.draw_texture_pro(texture, src, dst, origin, math.degrees(angle), tint)
 
-    def _clamp_camera(
-        self, camera_x: float, camera_y: float, screen_w: float, screen_h: float
-    ) -> tuple[float, float]:
+    def _clamp_camera(self, camera_x: float, camera_y: float, screen_w: float, screen_h: float) -> tuple[float, float]:
         min_x = screen_w - float(self.width)
         min_y = screen_h - float(self.height)
         if camera_x < min_x:
@@ -369,10 +353,7 @@ class GroundRenderer:
 
     def _ensure_render_target(self, render_w: int, render_h: int) -> bool:
         if self.render_target is not None:
-            if (
-                self.render_target.texture.width == render_w
-                and self.render_target.texture.height == render_h
-            ):
+            if self.render_target.texture.width == render_w and self.render_target.texture.height == render_h:
                 return True
             rl.unload_render_texture(self.render_target)
             self.render_target = None

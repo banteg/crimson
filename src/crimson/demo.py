@@ -272,12 +272,45 @@ class DemoView:
     def _apply_variant_ground(self, index: int) -> None:
         cache = self._ensure_cache()
         terrain = {
-            0: ("ter_q1_base", "ter_q1_tex1", "ter/ter_q1_base.jaz", "ter/ter_q1_tex1.jaz"),
-            1: ("ter_q2_base", "ter_q2_tex1", "ter/ter_q2_base.jaz", "ter/ter_q2_tex1.jaz"),
-            2: ("ter_q3_base", "ter_q3_tex1", "ter/ter_q3_base.jaz", "ter/ter_q3_tex1.jaz"),
-            3: ("ter_q4_base", "ter_q4_tex1", "ter/ter_q4_base.jaz", "ter/ter_q4_tex1.jaz"),
-            4: ("ter_q1_base", "ter_q1_tex1", "ter/ter_q1_base.jaz", "ter/ter_q1_tex1.jaz"),
-        }.get(index, ("ter_q1_base", "ter_q1_tex1", "ter/ter_q1_base.jaz", "ter/ter_q1_tex1.jaz"))
+            0: (
+                "ter_q1_base",
+                "ter_q1_tex1",
+                "ter/ter_q1_base.jaz",
+                "ter/ter_q1_tex1.jaz",
+            ),
+            1: (
+                "ter_q2_base",
+                "ter_q2_tex1",
+                "ter/ter_q2_base.jaz",
+                "ter/ter_q2_tex1.jaz",
+            ),
+            2: (
+                "ter_q3_base",
+                "ter_q3_tex1",
+                "ter/ter_q3_base.jaz",
+                "ter/ter_q3_tex1.jaz",
+            ),
+            3: (
+                "ter_q4_base",
+                "ter_q4_tex1",
+                "ter/ter_q4_base.jaz",
+                "ter/ter_q4_tex1.jaz",
+            ),
+            4: (
+                "ter_q1_base",
+                "ter_q1_tex1",
+                "ter/ter_q1_base.jaz",
+                "ter/ter_q1_tex1.jaz",
+            ),
+        }.get(
+            index,
+            (
+                "ter_q1_base",
+                "ter_q1_tex1",
+                "ter/ter_q1_base.jaz",
+                "ter/ter_q1_tex1.jaz",
+            ),
+        )
         base_key, overlay_key, base_path, overlay_path = terrain
         base = cache.get_or_load(base_key, base_path).texture
         if base is None:
@@ -412,9 +445,7 @@ class DemoView:
         if info is None:
             return 0, False
         flags = template.flags or CreatureFlags(0)
-        long_strip = not (flags & CreatureFlags.ANIM_PING_PONG) or (
-            flags & CreatureFlags.ANIM_LONG_STRIP
-        )
+        long_strip = not (flags & CreatureFlags.ANIM_PING_PONG) or (flags & CreatureFlags.ANIM_LONG_STRIP)
         if long_strip:
             base_frame = int(phase) % 32
             frame = base_frame
@@ -457,11 +488,7 @@ class DemoView:
             radius = fx.max_radius * _clamp(t, 0.0, 1.0)
             sx, sy = self._world_to_screen(fx.x, fx.y)
             alpha = int((1.0 - _clamp(t, 0.0, 1.0)) * 180.0)
-            color = (
-                rl.Color(255, 180, 100, alpha)
-                if fx.kind == "rocket"
-                else rl.Color(200, 120, 255, alpha)
-            )
+            color = rl.Color(255, 180, 100, alpha) if fx.kind == "rocket" else rl.Color(200, 120, 255, alpha)
             rl.draw_circle_lines(int(sx), int(sy), max(1.0, radius * scale), color)
 
     def _draw_entities(self) -> None:
@@ -524,9 +551,7 @@ class DemoView:
         info = _TYPE_ANIM.get(type_id)
         if info is None:
             return
-        long_strip = not (flags & CreatureFlags.ANIM_PING_PONG) or (
-            flags & CreatureFlags.ANIM_LONG_STRIP
-        )
+        long_strip = not (flags & CreatureFlags.ANIM_PING_PONG) or (flags & CreatureFlags.ANIM_LONG_STRIP)
         if long_strip:
             base_frame = int(phase) % 32
             frame = base_frame
@@ -559,9 +584,7 @@ class DemoView:
         title = f"DEMO MODE  ({self._variant_index + 1}/{DEMO_VARIANT_COUNT})"
         hint = "Press any key / click to skip"
         remaining = max(0.0, self._variant_duration - self._variant_elapsed)
-        weapons = ", ".join(
-            f"P{p.index + 1}:{_weapon_name(p.weapon_id)}" for p in self._players
-        )
+        weapons = ", ".join(f"P{p.index + 1}:{_weapon_name(p.weapon_id)}" for p in self._players)
         detail = f"{weapons}  —  next in {remaining:0.1f}s"
         rl.draw_text(title, 16, 12, 20, rl.Color(240, 240, 240, 255))
         rl.draw_text(detail, 16, 36, 16, rl.Color(180, 180, 190, 255))
@@ -659,9 +682,7 @@ class DemoView:
             dy = target.y - creature.y
             nx, ny, _ = _normalize(dx, dy)
             template = SPAWN_ID_TO_TEMPLATE.get(creature.spawn_id)
-            speed = self._creature_speed(
-                template.type_id if template is not None else None
-            )
+            speed = self._creature_speed(template.type_id if template is not None else None)
             creature.vx = nx * speed
             creature.vy = ny * speed
             creature.x = _clamp(creature.x + creature.vx * dt, 0.0, WORLD_SIZE)
@@ -698,11 +719,7 @@ class DemoView:
             player.reload_timer = max(0.0, player.reload_timer - dt)
 
             player.target_creature = self._select_player_target(player)
-            target = (
-                self._creatures[player.target_creature]
-                if player.target_creature is not None
-                else None
-            )
+            target = self._creatures[player.target_creature] if player.target_creature is not None else None
             if target is not None and target.hp > 0.0:
                 dx = target.x - player.x
                 dy = target.y - player.y

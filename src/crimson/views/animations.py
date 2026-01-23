@@ -4,7 +4,12 @@ from dataclasses import dataclass
 
 import pyray as rl
 
-from ..spawn_templates import CreatureFlags, CreatureTypeId, SPAWN_TEMPLATES, SpawnTemplate
+from ..spawn_templates import (
+    CreatureFlags,
+    CreatureTypeId,
+    SPAWN_TEMPLATES,
+    SpawnTemplate,
+)
 from .font_small import SmallFontData, draw_small_text, load_small_font
 from .registry import register_view
 from grim.view import View, ViewContext
@@ -13,6 +18,7 @@ UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
+
 
 @dataclass(frozen=True, slots=True)
 class TypeAnimInfo:
@@ -38,9 +44,7 @@ class CreatureAnimationView:
         self._textures: dict[str, rl.Texture] = {}
         self._small: SmallFontData | None = None
         self._templates: list[SpawnTemplate] = [
-            entry
-            for entry in SPAWN_TEMPLATES
-            if entry.type_id is not None and entry.creature is not None
+            entry for entry in SPAWN_TEMPLATES if entry.type_id is not None and entry.creature is not None
         ]
         self._index = 0
         self._phase = 0.0
@@ -51,7 +55,12 @@ class CreatureAnimationView:
         return int(20 * scale)
 
     def _draw_ui_text(
-        self, text: str, x: float, y: float, color: rl.Color, scale: float = UI_TEXT_SCALE
+        self,
+        text: str,
+        x: float,
+        y: float,
+        color: rl.Color,
+        scale: float = UI_TEXT_SCALE,
     ) -> None:
         if self._small is not None:
             draw_small_text(self._small, text, x, y, scale, color)
@@ -73,9 +82,7 @@ class CreatureAnimationView:
                 continue
             self._textures[entry.creature] = rl.load_texture(str(path))
         if self._missing_assets:
-            raise FileNotFoundError(
-                f"Missing creature textures: {', '.join(self._missing_assets)}"
-            )
+            raise FileNotFoundError(f"Missing creature textures: {', '.join(self._missing_assets)}")
 
     def close(self) -> None:
         for texture in self._textures.values():
@@ -111,13 +118,9 @@ class CreatureAnimationView:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT):
             self._advance_template(-1)
 
-    def _select_frame(
-        self, template: SpawnTemplate, info: TypeAnimInfo
-    ) -> tuple[int, bool, str]:
+    def _select_frame(self, template: SpawnTemplate, info: TypeAnimInfo) -> tuple[int, bool, str]:
         flags = template.flags or CreatureFlags(0)
-        long_strip = not (flags & CreatureFlags.ANIM_PING_PONG) or (
-            flags & CreatureFlags.ANIM_LONG_STRIP
-        )
+        long_strip = not (flags & CreatureFlags.ANIM_PING_PONG) or (flags & CreatureFlags.ANIM_LONG_STRIP)
         if long_strip:
             base_frame = int(self._phase) % 32
             frame = base_frame

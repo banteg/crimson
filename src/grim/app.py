@@ -39,11 +39,7 @@ def run_view(
     open_fn = getattr(view, "open", None)
     if callable(open_fn):
         open_fn()
-    screenshot_dir = (
-        SCREENSHOT_DIR
-        if SCREENSHOT_DIR.is_absolute()
-        else Path.cwd() / SCREENSHOT_DIR
-    )
+    screenshot_dir = SCREENSHOT_DIR if SCREENSHOT_DIR.is_absolute() else Path.cwd() / SCREENSHOT_DIR
     screenshot_index = _next_screenshot_index(screenshot_dir)
     while not rl.window_should_close():
         dt = rl.get_frame_time()
@@ -73,6 +69,7 @@ def run_window(
     fps: int = 60,
 ) -> None:
     """Open a minimal Raylib window for the reference implementation."""
+
     class _EmptyView:
         def update(self, dt: float) -> None:
             return None

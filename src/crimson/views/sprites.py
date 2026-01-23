@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
 
 import pyray as rl
 
@@ -13,6 +12,7 @@ UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
+
 
 @dataclass(frozen=True, slots=True)
 class SpriteSheetSpec:
@@ -57,7 +57,12 @@ class SpriteSheetView:
         return int(20 * scale)
 
     def _draw_ui_text(
-        self, text: str, x: float, y: float, color: rl.Color, scale: float = UI_TEXT_SCALE
+        self,
+        text: str,
+        x: float,
+        y: float,
+        color: rl.Color,
+        scale: float = UI_TEXT_SCALE,
     ) -> None:
         if self._small is not None:
             draw_small_text(self._small, text, x, y, scale, color)
@@ -74,13 +79,9 @@ class SpriteSheetView:
                 self._missing_assets.append(spec.rel_path)
                 continue
             texture = rl.load_texture(str(path))
-            self._sheets.append(
-                SpriteSheet(name=spec.name, texture=texture, grids=spec.grids)
-            )
+            self._sheets.append(SpriteSheet(name=spec.name, texture=texture, grids=spec.grids))
         if self._missing_assets:
-            raise FileNotFoundError(
-                f"Missing sprite assets: {', '.join(self._missing_assets)}"
-            )
+            raise FileNotFoundError(f"Missing sprite assets: {', '.join(self._missing_assets)}")
 
     def close(self) -> None:
         for sheet in self._sheets:

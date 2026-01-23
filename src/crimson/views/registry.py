@@ -27,10 +27,7 @@ def register_view(name: str, title: str) -> Callable[[Callable[..., View]], Call
 
 
 def all_views() -> list[ViewDefinition]:
-    return [
-        _VIEW_REGISTRY[name]
-        for name in sorted(_VIEW_REGISTRY.keys(), key=str.casefold)
-    ]
+    return [_VIEW_REGISTRY[name] for name in sorted(_VIEW_REGISTRY.keys(), key=str.casefold)]
 
 
 def view_by_name(name: str) -> ViewDefinition | None:

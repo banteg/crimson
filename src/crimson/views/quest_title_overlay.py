@@ -41,11 +41,7 @@ class QuestTitleOverlayLayout:
 
 
 def quest_title_base_scale(screen_width: int) -> float:
-    return (
-        QUEST_TITLE_SCALE_SMALL
-        if screen_width <= QUEST_TITLE_SCALE_THRESHOLD_PX
-        else QUEST_TITLE_SCALE_LARGE
-    )
+    return QUEST_TITLE_SCALE_SMALL if screen_width <= QUEST_TITLE_SCALE_THRESHOLD_PX else QUEST_TITLE_SCALE_LARGE
 
 
 def quest_number_scale(title_scale: float) -> float:
@@ -98,13 +94,9 @@ def draw_quest_title_overlay(font: GrimMonoFont, title: str, number: str) -> Non
     )
 
     title_color = rl.Color(255, 255, 255, int(255 * QUEST_TITLE_ALPHA))
-    number_color = rl.Color(
-        255, 255, 255, int(255 * QUEST_TITLE_ALPHA * QUEST_NUMBER_ALPHA_RATIO)
-    )
+    number_color = rl.Color(255, 255, 255, int(255 * QUEST_TITLE_ALPHA * QUEST_NUMBER_ALPHA_RATIO))
 
-    draw_grim_mono_text(
-        font, title, layout.title_x, layout.title_y, layout.title_scale, title_color
-    )
+    draw_grim_mono_text(font, title, layout.title_x, layout.title_y, layout.title_scale, title_color)
     draw_grim_mono_text(
         font,
         number,

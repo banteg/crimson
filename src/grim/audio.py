@@ -29,9 +29,7 @@ class AudioState:
     volume: float
 
 
-def init_audio_state(
-    config: CrimsonConfig, assets_dir: Path, console: ConsoleState
-) -> AudioState:
+def init_audio_state(config: CrimsonConfig, assets_dir: Path, console: ConsoleState) -> AudioState:
     music_disabled = int(config.data.get("music_disable", 0)) != 0
     sound_disabled = int(config.data.get("sound_disable", 0)) != 0
     volume = float(config.data.get("music_volume", 1.0))
@@ -51,9 +49,7 @@ def init_audio_state(
     return state
 
 
-def load_music_tracks(
-    state: AudioState, assets_dir: Path, console: ConsoleState
-) -> None:
+def load_music_tracks(state: AudioState, assets_dir: Path, console: ConsoleState) -> None:
     if not state.ready:
         return
     paq_path = assets_dir / MUSIC_PAK_NAME

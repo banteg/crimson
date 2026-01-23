@@ -76,12 +76,8 @@ def cmd_extract(game_dir: Path, assets_dir: Path) -> None:
 
 @app.command("entrypoint")
 def cmd_entrypoint(
-    base_dir: Path | None = typer.Option(
-        None, help="base path for runtime files (default: artifacts/runtime)"
-    ),
-    assets_dir: Path | None = typer.Option(
-        None, help="assets root (default: artifacts/assets)"
-    ),
+    base_dir: Path | None = typer.Option(None, help="base path for runtime files (default: artifacts/runtime)"),
+    assets_dir: Path | None = typer.Option(None, help="assets root (default: artifacts/assets)"),
 ) -> None:
     """Print the planned entrypoint boot sequence."""
     from .entrypoint import (
@@ -100,9 +96,7 @@ def cmd_entrypoint(
     typer.echo(format_entrypoint_plan(plan))
 
 
-def _call_builder(
-    builder, ctx: QuestContext, rng: random.Random | None
-) -> list[SpawnEntry]:
+def _call_builder(builder, ctx: QuestContext, rng: random.Random | None) -> list[SpawnEntry]:
     params = inspect.signature(builder).parameters
     if "rng" in params:
         return builder(ctx, rng=rng)
@@ -133,11 +127,7 @@ def _format_id_list(values: tuple[int, ...] | None) -> str:
 
 
 def _format_meta(quest: QuestDefinition) -> list[str]:
-    builder_addr = (
-        f"0x{quest.builder_address:08x}"
-        if quest.builder_address is not None
-        else "unknown"
-    )
+    builder_addr = f"0x{quest.builder_address:08x}" if quest.builder_address is not None else "unknown"
     terrain_ids = _format_id_list(quest.terrain_ids)
     return [
         f"time_limit_ms={quest.time_limit_ms}",
@@ -183,9 +173,7 @@ def cmd_view(
     width: int = typer.Option(1024, help="window width"),
     height: int = typer.Option(768, help="window height"),
     fps: int = typer.Option(60, help="target fps"),
-    assets_dir: Path = typer.Option(
-        Path("artifacts") / "assets", help="assets root (default: ./artifacts/assets)"
-    ),
+    assets_dir: Path = typer.Option(Path("artifacts") / "assets", help="assets root (default: ./artifacts/assets)"),
 ) -> None:
     """Launch a Raylib debug view."""
     from grim.app import run_view
@@ -209,12 +197,8 @@ def cmd_view(
 
 @app.command("game")
 def cmd_game(
-    width: int | None = typer.Option(
-        None, help="window width (default: use crimson.cfg)"
-    ),
-    height: int | None = typer.Option(
-        None, help="window height (default: use crimson.cfg)"
-    ),
+    width: int | None = typer.Option(None, help="window width (default: use crimson.cfg)"),
+    height: int | None = typer.Option(None, help="window height (default: use crimson.cfg)"),
     fps: int = typer.Option(60, help="target fps"),
     seed: int | None = typer.Option(None, help="rng seed"),
     base_dir: Path = typer.Option(
@@ -242,9 +226,7 @@ def cmd_game(
 
 @app.command("config")
 def cmd_config(
-    path: Path | None = typer.Option(
-        None, help="path to crimson.cfg (default: base-dir/crimson.cfg)"
-    ),
+    path: Path | None = typer.Option(None, help="path to crimson.cfg (default: base-dir/crimson.cfg)"),
     base_dir: Path = typer.Option(
         Path("artifacts") / "runtime",
         help="base path for runtime files (default: artifacts/runtime)",

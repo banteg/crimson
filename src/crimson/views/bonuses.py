@@ -29,10 +29,7 @@ def _build_icon_groups() -> dict[int, BonusIconGroup]:
         if entry.icon_id is None or entry.icon_id < 0:
             continue
         grouped.setdefault(entry.icon_id, []).append(entry)
-    return {
-        icon_id: BonusIconGroup(icon_id=icon_id, bonuses=tuple(entries))
-        for icon_id, entries in grouped.items()
-    }
+    return {icon_id: BonusIconGroup(icon_id=icon_id, bonuses=tuple(entries)) for icon_id, entries in grouped.items()}
 
 
 BONUS_ICON_GROUPS = _build_icon_groups()
@@ -55,7 +52,12 @@ class BonusIconView:
         return int(20 * scale)
 
     def _draw_ui_text(
-        self, text: str, x: float, y: float, color: rl.Color, scale: float = UI_TEXT_SCALE
+        self,
+        text: str,
+        x: float,
+        y: float,
+        color: rl.Color,
+        scale: float = UI_TEXT_SCALE,
     ) -> None:
         if self._small is not None:
             draw_small_text(self._small, text, x, y, scale, color)
@@ -152,9 +154,7 @@ class BonusIconView:
 
         if hovered_index is not None:
             group = BONUS_ICON_GROUPS.get(hovered_index)
-            self._draw_ui_text(
-                f"icon_id {hovered_index}", info_x, info_y, UI_TEXT_COLOR
-            )
+            self._draw_ui_text(f"icon_id {hovered_index}", info_x, info_y, UI_TEXT_COLOR)
             info_y += self._ui_line_height() + 6
             if group is None:
                 self._draw_ui_text("no bonus mapping", info_x, info_y, UI_HINT_COLOR)
@@ -192,9 +192,7 @@ class BonusIconView:
                         weapon_name = weapon.name
                         break
             name_label = f" ({weapon_name})" if weapon_name else ""
-            weapon_label = (
-                f"icon_id = -1 → ui_wicons (default weapon {weapon_id}{name_label})"
-            )
+            weapon_label = f"icon_id = -1 → ui_wicons (default weapon {weapon_id}{name_label})"
             self._draw_ui_text(weapon_label, info_x, info_y, UI_HINT_COLOR)
 
 

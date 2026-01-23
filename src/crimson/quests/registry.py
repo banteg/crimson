@@ -34,10 +34,7 @@ def register_quest(
         )
         existing = _QUESTS.get(quest.level)
         if existing is not None:
-            raise ValueError(
-                "duplicate quest level "
-                f"{quest.level}: {existing.builder.__name__} vs {builder.__name__}"
-            )
+            raise ValueError(f"duplicate quest level {quest.level}: {existing.builder.__name__} vs {builder.__name__}")
         _QUESTS[quest.level] = quest
         return builder
 

@@ -20,9 +20,7 @@ class GrimMonoFont:
     advance: float = GRIM_MONO_ADVANCE
 
 
-def load_grim_mono_font(
-    assets_root: Path, missing_assets: list[str]
-) -> GrimMonoFont:
+def load_grim_mono_font(assets_root: Path, missing_assets: list[str]) -> GrimMonoFont:
     atlas_path = assets_root / "crimson" / "load" / "default_font_courier.png"
     if not atlas_path.is_file():
         missing_assets.append("default_font_courier.png")
@@ -41,9 +39,7 @@ def load_grim_mono_font(
     )
 
 
-def draw_grim_mono_text(
-    font: GrimMonoFont, text: str, x: float, y: float, scale: float, color: rl.Color
-) -> None:
+def draw_grim_mono_text(font: GrimMonoFont, text: str, x: float, y: float, scale: float, color: rl.Color) -> None:
     x_pos = x
     y_pos = y
     advance = font.advance * scale

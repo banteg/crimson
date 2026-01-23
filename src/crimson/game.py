@@ -173,6 +173,7 @@ def _demo_mode_enabled() -> bool:
     raw = os.getenv(DEMO_MODE_ENV, "").strip().lower()
     return raw in {"1", "true", "yes", "on"}
 
+
 MENU_PREP_TEXTURES: tuple[tuple[str, str], ...] = (
     ("ui_signCrimson", "ui/ui_signCrimson.jaz"),
     ("ui_menuItem", "ui/ui_menuItem.jaz"),
@@ -247,15 +248,9 @@ class BootView:
             return
         for name, rel_path in COMPANY_LOGOS.items():
             cache.get_or_load(name, rel_path)
-        loaded = sum(
-            1
-            for name in COMPANY_LOGOS
-            if cache.get(name) and cache.get(name).texture is not None
-        )
+        loaded = sum(1 for name in COMPANY_LOGOS if cache.get(name) and cache.get(name).texture is not None)
         if COMPANY_LOGOS:
-            self._state.console.log.log(
-                f"company logos loaded: {loaded}/{len(COMPANY_LOGOS)}"
-            )
+            self._state.console.log.log(f"company logos loaded: {loaded}/{len(COMPANY_LOGOS)}")
             self._state.console.log.flush()
         self._company_logos_loaded = True
 
@@ -267,15 +262,9 @@ class BootView:
             return
         for name, rel_path in MENU_PREP_TEXTURES:
             cache.get_or_load(name, rel_path)
-        loaded = sum(
-            1
-            for name, _rel in MENU_PREP_TEXTURES
-            if cache.get(name) and cache.get(name).texture is not None
-        )
+        loaded = sum(1 for name, _rel in MENU_PREP_TEXTURES if cache.get(name) and cache.get(name).texture is not None)
         if MENU_PREP_TEXTURES:
-            self._state.console.log.log(
-                f"menu textures loaded: {loaded}/{len(MENU_PREP_TEXTURES)}"
-            )
+            self._state.console.log.log(f"menu textures loaded: {loaded}/{len(MENU_PREP_TEXTURES)}")
             self._state.console.log.flush()
         self._menu_prepped = True
 
@@ -283,16 +272,12 @@ class BootView:
         if self._state.logos is None:
             entries = load_paq_entries(self._state.assets_dir)
             logos = load_logo_assets(self._state.assets_dir, entries=entries)
-            self._state.console.log.log(
-                f"logo assets: {logos.loaded_count()}/{len(logos.all())} loaded"
-            )
+            self._state.console.log.log(f"logo assets: {logos.loaded_count()}/{len(logos.all())} loaded")
             self._state.console.log.flush()
             self._state.logos = logos
             self._state.texture_cache = PaqTextureCache(entries=entries, textures={})
         if self._state.audio is None:
-            self._state.audio = init_audio_state(
-                self._state.config, self._state.assets_dir, self._state.console
-            )
+            self._state.audio = init_audio_state(self._state.config, self._state.assets_dir, self._state.console)
 
     def update(self, dt: float) -> None:
         frame_dt = min(dt, 0.1)
@@ -310,9 +295,7 @@ class BootView:
                     if self._state.texture_cache is not None:
                         loaded = self._state.texture_cache.loaded_count()
                         total = len(self._state.texture_cache.textures)
-                        self._state.console.log.log(
-                            f"boot textures loaded: {loaded}/{total}"
-                        )
+                        self._state.console.log.log(f"boot textures loaded: {loaded}/{total}")
                         self._state.console.log.flush()
                     self._load_company_logos()
                     self._prepare_menu_assets()
@@ -327,9 +310,7 @@ class BootView:
                 if self._boot_time < 0.5:
                     self._boot_time = min(0.5, self._boot_time + frame_dt)
                     return
-                self._loading_hold_remaining = max(
-                    0.0, self._loading_hold_remaining - frame_dt
-                )
+                self._loading_hold_remaining = max(0.0, self._loading_hold_remaining - frame_dt)
                 return
             self._boot_time -= frame_dt
             if self._boot_time <= 0.0:
@@ -357,10 +338,7 @@ class BootView:
         self._boot_time += frame_dt * LOGO_TIME_SCALE
         t = self._boot_time - LOGO_TIME_OFFSET
         if self._logo_skip:
-            if t < LOGO_10_IN_START or (
-                LOGO_10_OUT_END <= t
-                and (t < LOGO_REF_IN_START or LOGO_REF_OUT_END <= t)
-            ):
+            if t < LOGO_10_IN_START or (LOGO_10_OUT_END <= t and (t < LOGO_REF_IN_START or LOGO_REF_OUT_END <= t)):
                 t = LOGO_SKIP_JUMP
             else:
                 t += frame_dt * LOGO_SKIP_ACCEL
@@ -605,22 +583,15 @@ class MenuView:
         self._hovered_index = self._hovered_entry_index()
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
-            reverse = rl.is_key_down(rl.KeyboardKey.KEY_LEFT_SHIFT) or rl.is_key_down(
-                rl.KeyboardKey.KEY_RIGHT_SHIFT
-            )
+            reverse = rl.is_key_down(rl.KeyboardKey.KEY_LEFT_SHIFT) or rl.is_key_down(rl.KeyboardKey.KEY_RIGHT_SHIFT)
             delta = -1 if reverse else 1
             self._selected_index = (self._selected_index + delta) % len(self._menu_entries)
             self._focus_timer_ms = 1000
 
-        if (
-            rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER)
-            and 0 <= self._selected_index < len(self._menu_entries)
-        ):
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) and 0 <= self._selected_index < len(self._menu_entries):
             entry = self._menu_entries[self._selected_index]
             if self._menu_entry_enabled(entry):
-                self._state.console.log.log(
-                    f"menu select: {self._selected_index} (row {entry.row})"
-                )
+                self._state.console.log.log(f"menu select: {self._selected_index} (row {entry.row})")
                 self._state.console.log.flush()
         self._update_ready_timers(dt_ms)
         self._update_hover_amounts(dt_ms)
@@ -674,9 +645,7 @@ class MenuView:
         slot_ys = self._menu_slot_ys(other_games, self._widescreen_y_shift)
         active = self._menu_slot_active(full_version, mods_available, other_games)
         entries: list[MenuEntry] = []
-        for slot, (row, y, enabled) in enumerate(
-            zip(rows, slot_ys, active, strict=False)
-        ):
+        for slot, (row, y, enabled) in enumerate(zip(rows, slot_ys, active, strict=False)):
             if not enabled:
                 continue
             entries.append(MenuEntry(slot=slot, row=row, y=y))
@@ -907,9 +876,7 @@ class MenuView:
         return (slot + 2) * 100
 
     @staticmethod
-    def _menu_max_timeline_ms(
-        full_version: bool, mods_available: bool, other_games: bool
-    ) -> int:
+    def _menu_max_timeline_ms(full_version: bool, mods_available: bool, other_games: bool) -> int:
         del full_version
         max_ms = 300  # sign element at index 0
         show_top = mods_available
@@ -968,11 +935,7 @@ class MenuView:
         screen_w = float(self._state.config.screen_width)
         scale, shift_x = self._sign_layout_scale(int(screen_w))
         pos_x = screen_w + MENU_SIGN_POS_X_PAD
-        pos_y = (
-            MENU_SIGN_POS_Y
-            if screen_w > MENU_SCALE_SMALL_THRESHOLD
-            else MENU_SIGN_POS_Y_SMALL
-        )
+        pos_y = MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL
         sign_w = MENU_SIGN_WIDTH * scale
         sign_h = MENU_SIGN_HEIGHT * scale
         offset_x = MENU_SIGN_OFFSET_X * scale + shift_x
@@ -1098,9 +1061,7 @@ def _copy_missing_assets(assets_dir: Path, console: ConsoleState) -> None:
     if source_dir is None:
         console.log.log(f"assets: missing {', '.join(missing)}")
         console.log.log("assets: no game_bins source found for auto-copy")
-        raise FileNotFoundError(
-            f"Missing assets: {', '.join(missing)} (no game_bins source found)"
-        )
+        raise FileNotFoundError(f"Missing assets: {', '.join(missing)} (no game_bins source found)")
 
     still_missing: list[str] = []
     for name in missing:
@@ -1125,9 +1086,7 @@ def _copy_missing_assets(assets_dir: Path, console: ConsoleState) -> None:
             continue
         console.log.log(f"assets: copied {name} from {source_dir}")
     if still_missing:
-        raise FileNotFoundError(
-            f"Missing assets after copy: {', '.join(still_missing)}"
-        )
+        raise FileNotFoundError(f"Missing assets after copy: {', '.join(still_missing)}")
 
 
 def _resolve_assets_dir(config: GameConfig) -> Path:
@@ -1153,9 +1112,7 @@ def run_game(config: GameConfig) -> None:
         register_boot_commands(console)
         register_core_cvars(console, width, height)
         console.log.log("crimson: boot start")
-        console.log.log(
-            f"config: {cfg.screen_width}x{cfg.screen_height} windowed={cfg.windowed_flag}"
-        )
+        console.log.log(f"config: {cfg.screen_width}x{cfg.screen_height} windowed={cfg.windowed_flag}")
         console.log.log(f"assets: {assets_dir}")
         _copy_missing_assets(assets_dir, console)
         if not (assets_dir / CRIMSON_PAQ_NAME).is_file():
