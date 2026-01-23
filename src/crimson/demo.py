@@ -15,6 +15,7 @@ from grim.terrain_render import GroundRenderer
 
 from .creatures.spawn import CreatureFlags, CreatureTypeId, SPAWN_ID_TO_TEMPLATE
 from .views.font_grim_mono import GrimMonoFont, draw_grim_mono_text, load_grim_mono_font
+from .views.font_small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from .weapons import WEAPON_TABLE
 
 
@@ -28,6 +29,23 @@ _DEMO_UPSELL_MESSAGES: tuple[str, ...] = (
     "Want unlimited Play time?",
     "Want to post your high scores?",
 )
+
+DEMO_PURCHASE_URL = "http://buy.crimsonland.com"
+DEMO_PURCHASE_SCREEN_LIMIT_MS = 16_000
+
+_DEMO_PURCHASE_TITLE = "Upgrade to the full version of Crimsonland Today!"
+_DEMO_PURCHASE_FEATURES_TITLE = "Full version features:"
+_DEMO_PURCHASE_FEATURE_LINES: tuple[tuple[str, float], ...] = (
+    ("-Unlimited Play Time in three thrilling Game Modes!", 22.0),
+    ("-The varied weapon arsenal consisting of over 20 unique", 17.0),
+    (" weapons that allow you to deal death with plasma, lead,", 17.0),
+    (" fire and electricity!", 22.0),
+    ("-Over 40 game altering Perks!", 22.0),
+    ("-40 insane Levels that give you", 18.0),
+    (" hours of intense and fun gameplay!", 22.0),
+    ("-The ability to post your high scores online!", 44.0),
+)
+_DEMO_PURCHASE_FOOTER = "Purchasing the game is very easy and secure."
 
 
 class DemoState(Protocol):
@@ -180,11 +198,20 @@ class DemoView:
         self._upsell_message_index = 0
         self._upsell_pulse_ms = 0
         self._upsell_font: GrimMonoFont | None = None
+        self._small_font: SmallFontData | None = None
+        self._purchase_active = False
+        self._purchase_timeline_ms = 0
+        self._purchase_limit_ms = 0
+        self._purchase_url_opened = False
 
     def open(self) -> None:
         self._finished = False
         self._upsell_message_index = 0
         self._upsell_pulse_ms = 0
+        self._purchase_active = False
+        self._purchase_timeline_ms = 0
+        self._purchase_limit_ms = 0
+        self._purchase_url_opened = False
         self._variant_index = 0
         self._start_variant(0)
 
@@ -195,6 +222,9 @@ class DemoView:
         if self._upsell_font is not None:
             rl.unload_texture(self._upsell_font.texture)
             self._upsell_font = None
+        if self._small_font is not None:
+            rl.unload_texture(self._small_font.texture)
+            self._small_font = None
         self._creatures.clear()
         self._players.clear()
         self._projectiles.clear()
@@ -211,12 +241,33 @@ class DemoView:
             self._ground.process_pending()
         if self._finished:
             return
+        frame_dt = min(dt, 0.1)
+        frame_dt_ms = int(frame_dt * 1000.0)
+
+        if self._purchase_active:
+            if frame_dt_ms <= 0:
+                return
+            self._purchase_timeline_ms += frame_dt_ms
+            self._upsell_pulse_ms += frame_dt_ms
+            self._update_purchase_screen()
+            if self._purchase_timeline_ms > self._purchase_limit_ms:
+                # demo_purchase_screen_update restarts the demo once the purchase screen
+                # timer exceeds demo_time_limit_ms.
+                self._purchase_active = False
+                self._purchase_timeline_ms = 0
+                self._purchase_limit_ms = 0
+                next_variant = (self._variant_index + 1) % DEMO_VARIANT_COUNT
+                self._start_variant(next_variant)
+            return
+
+        if getattr(self._state, "demo_enabled", False) and self._purchase_screen_triggered():
+            self._begin_purchase_screen(DEMO_PURCHASE_SCREEN_LIMIT_MS)
+            return
+
         if self._skip_triggered():
             self._finished = True
             return
-        frame_dt = min(dt, 0.1)
-        frame_dt_ms = int(frame_dt * 1000.0)
-        self._upsell_pulse_ms += frame_dt_ms
+
         if frame_dt_ms > 0 and _DEMO_UPSELL_MESSAGES and self._variant_elapsed_ms == 0:
             # demo_purchase_screen_update increments demo_upsell_message_index when the
             # timeline resets (quest_spawn_timeline == 0).
@@ -233,6 +284,9 @@ class DemoView:
         self._start_variant(next_variant)
 
     def draw(self) -> None:
+        if self._purchase_active:
+            self._draw_purchase_screen()
+            return
         rl.clear_background(rl.BLACK)
         if self._ground is not None:
             self._ground.draw(self._camera_x, self._camera_y)
@@ -248,6 +302,179 @@ class DemoView:
         if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT):
             return True
         return False
+
+    def _purchase_screen_triggered(self) -> bool:
+        if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
+            return True
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+            return True
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE):
+            return True
+        return False
+
+    def _begin_purchase_screen(self, limit_ms: int) -> None:
+        self._purchase_active = True
+        self._purchase_timeline_ms = 0
+        self._purchase_limit_ms = max(0, int(limit_ms))
+        self._purchase_url_opened = False
+
+    def _ensure_small_font(self) -> SmallFontData:
+        if self._small_font is not None:
+            return self._small_font
+        missing_assets: list[str] = []
+        self._small_font = load_small_font(self._state.assets_dir, missing_assets)
+        return self._small_font
+
+    def _purchase_var_28_2(self) -> float:
+        screen_w = int(self._state.config.screen_width)
+        if screen_w == 0x320:  # 800
+            return 64.0
+        if screen_w == 0x400:  # 1024
+            return 128.0
+        return 0.0
+
+    def _update_purchase_screen(self) -> None:
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+            self._purchase_active = False
+            self._finished = True
+            return
+
+        small = self._ensure_small_font()
+        purchase_tex = self._ensure_cache().get_or_load("ui_button_purchase", "ui/ui_button_82x32.jaz").texture
+        maybe_tex = self._ensure_cache().get_or_load("ui_button_maybe", "ui/ui_button_145x32.jaz").texture
+
+        if purchase_tex is None or maybe_tex is None:
+            return
+
+        w = float(self._state.config.screen_width)
+        h = float(self._state.config.screen_height)
+        wide_shift = self._purchase_var_28_2()
+        button_x = w / 2.0 + 128.0
+        button_base_y = h / 2.0 + 102.0 + wide_shift * 0.300000012 + 50.0
+
+        purchase_rect = rl.Rectangle(button_x, button_base_y, float(purchase_tex.width), float(purchase_tex.height))
+        maybe_rect = rl.Rectangle(button_x, button_base_y + 90.0, float(maybe_tex.width), float(maybe_tex.height))
+
+        mouse = rl.get_mouse_position()
+        if (
+            purchase_rect.x <= mouse.x <= purchase_rect.x + purchase_rect.width
+            and purchase_rect.y <= mouse.y <= purchase_rect.y + purchase_rect.height
+            and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        ):
+            self._purchase_url_opened = True
+            try:
+                import webbrowser
+
+                webbrowser.open(DEMO_PURCHASE_URL)
+            except Exception:
+                pass
+
+        if (
+            maybe_rect.x <= mouse.x <= maybe_rect.x + maybe_rect.width
+            and maybe_rect.y <= mouse.y <= maybe_rect.y + maybe_rect.height
+            and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
+        ):
+            self._purchase_active = False
+            self._finished = True
+            return
+
+        # Keyboard activation for convenience; original uses UI mouse.
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
+            self._purchase_url_opened = True
+            try:
+                import webbrowser
+
+                webbrowser.open(DEMO_PURCHASE_URL)
+            except Exception:
+                pass
+
+        # Keep small referenced to avoid unused warnings if this method grows.
+        _ = small
+
+    def _draw_purchase_screen(self) -> None:
+        rl.clear_background(rl.BLACK)
+
+        logos = getattr(self._state, "logos", None)
+        if logos is None or logos.backplasma.texture is None:
+            return
+        backplasma = logos.backplasma.texture
+
+        pulse_t = float(self._upsell_pulse_ms % 1000) / 1000.0
+        pulse = math.sin(pulse_t * (math.pi * 2.0))
+        pulse = pulse * pulse
+
+        screen_w = float(self._state.config.screen_width)
+        screen_h = float(self._state.config.screen_height)
+
+        # First-pass approximation of the Grim2D backplasma batch: rotate a full-screen quad
+        # and modulate alpha based on the same sin^2 pulse used by the original.
+        angle = pulse_t * 360.0
+        origin = rl.Vector2(screen_w / 2.0, screen_h / 2.0)
+        src = rl.Rectangle(0.0, 0.0, float(backplasma.width), float(backplasma.height))
+        dst = rl.Rectangle(0.0, 0.0, screen_w, screen_h)
+        rl.draw_texture_pro(backplasma, src, dst, origin, angle, rl.Color(255, 255, 255, int(255 * 0.75)))
+
+        wide_shift = self._purchase_var_28_2()
+
+        # Mockup and logo textures.
+        if logos.mockup.texture is not None:
+            mockup = logos.mockup.texture
+            x = screen_w / 2.0 - 128.0 + wide_shift
+            y = screen_h / 2.0 - 140.0
+            dst = rl.Rectangle(x, y, 512.0, 256.0)
+            src = rl.Rectangle(0.0, 0.0, float(mockup.width), float(mockup.height))
+            rl.draw_texture_pro(mockup, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+
+        if logos.cl_logo.texture is not None:
+            cl_logo = logos.cl_logo.texture
+            x = screen_w / 2.0 - 256.0
+            y = screen_h / 2.0 - 200.0 - wide_shift * 0.400000006
+            dst = rl.Rectangle(x, y, 512.0, 64.0)
+            src = rl.Rectangle(0.0, 0.0, float(cl_logo.width), float(cl_logo.height))
+            rl.draw_texture_pro(cl_logo, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+
+        # Text block uses the small font at scale 0.6 in the original.
+        small = self._ensure_small_font()
+        text_scale = 0.6
+        x_text = screen_w / 2.0 - 296.0 - wide_shift * 0.800000012
+        y = screen_h / 2.0 - 104.0
+        color = rl.Color(255, 255, 255, 255)
+        draw_small_text(small, _DEMO_PURCHASE_TITLE, x_text, y, text_scale, color)
+        y += 28.0
+        draw_small_text(small, _DEMO_PURCHASE_FEATURES_TITLE, x_text, y, text_scale, color)
+
+        underline_w = measure_small_text_width(small, _DEMO_PURCHASE_FEATURES_TITLE, text_scale)
+        rl.draw_rectangle_rec(rl.Rectangle(x_text, y + 15.0, underline_w, 2.0), rl.Color(255, 255, 255, 160))
+
+        y += 22.0
+        x_list = x_text + 8.0
+        for line, delta_y in _DEMO_PURCHASE_FEATURE_LINES:
+            draw_small_text(small, line, x_list, y, text_scale, color)
+            y += delta_y
+        draw_small_text(small, _DEMO_PURCHASE_FOOTER, x_text, y, text_scale, color)
+
+        # Buttons on the right.
+        cache = self._ensure_cache()
+        purchase_tex = cache.get_or_load("ui_button_purchase", "ui/ui_button_82x32.jaz").texture
+        maybe_tex = cache.get_or_load("ui_button_maybe", "ui/ui_button_145x32.jaz").texture
+        if purchase_tex is None or maybe_tex is None:
+            return
+
+        button_x = screen_w / 2.0 + 128.0
+        button_base_y = screen_h / 2.0 + 102.0 + wide_shift * 0.300000012 + 50.0
+        mouse = rl.get_mouse_position()
+
+        def draw_button(texture: rl.Texture2D, label: str, x: float, y0: float) -> None:
+            hovered = x <= mouse.x <= x + texture.width and y0 <= mouse.y <= y0 + texture.height
+            tint = rl.Color(255, 255, 255, 255) if hovered else rl.Color(220, 220, 220, 255)
+            rl.draw_texture(texture, int(x), int(y0), tint)
+            text_w = measure_small_text_width(small, label, text_scale)
+            text_x = x + (float(texture.width) - text_w) / 2.0
+            text_y = y0 + (float(texture.height) - (small.cell_size * text_scale)) / 2.0
+            draw_small_text(small, label, text_x, text_y, text_scale, rl.Color(10, 10, 10, 255))
+
+        draw_button(purchase_tex, "Purchase", button_x, button_base_y)
+        draw_button(maybe_tex, "Maybe later", button_x, button_base_y + 90.0)
 
     def _advance_anim_phase(self, dt: float) -> None:
         for creature in self._creatures:

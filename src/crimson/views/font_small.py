@@ -88,3 +88,22 @@ def draw_small_text(font: SmallFontData, text: str, x: float, y: float, scale: f
 def measure_small_text_height(font: SmallFontData, text: str, scale: float) -> float:
     line_count = text.count("\n") + 1
     return font.cell_size * scale * line_count
+
+
+def measure_small_text_width(font: SmallFontData, text: str, scale: float) -> float:
+    """Return the maximum line width for `text` when rendered with `draw_small_text`."""
+    x = 0.0
+    best = 0.0
+    for value in text.encode("latin-1", errors="replace"):
+        if value == 0x0A:
+            best = max(best, x)
+            x = 0.0
+            continue
+        if value == 0x0D:
+            continue
+        width = font.widths[value]
+        if width <= 0:
+            continue
+        x += float(width) * scale
+    best = max(best, x)
+    return best
