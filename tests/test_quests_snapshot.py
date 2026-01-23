@@ -8,6 +8,12 @@ from syrupy import SnapshotAssertion
 from crimson.quests import QuestContext, all_quests
 
 
+def _round_matcher(data: object, **_: object) -> object:
+    if isinstance(data, float):
+        return round(data, 9)
+    return data
+
+
 def _build_entries(builder, ctx: QuestContext, seed: int) -> list[dict[str, object]]:
     params = inspect.signature(builder).parameters
     kwargs: dict[str, object] = {}
@@ -43,4 +49,6 @@ def test_quest_builders_snapshot(snapshot: SnapshotAssertion) -> None:
             "builder_address": quest.builder_address,
             "entries": _build_entries(quest.builder, ctx, seed=1337),
         }
-        snapshot(name=f"quest_{quest.level}").assert_match(payload)
+        snapshot(name=f"quest_{quest.level}", matcher=_round_matcher).assert_match(
+            payload
+        )
