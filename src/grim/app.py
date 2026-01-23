@@ -22,6 +22,13 @@ def _next_screenshot_index(directory: Path) -> int:
     return max_index + 1
 
 
+def _view_should_close(view: View) -> bool:
+    should_close = getattr(view, "should_close", None)
+    if callable(should_close):
+        return bool(should_close())
+    return bool(getattr(view, "close_requested", False))
+
+
 def run_view(
     view: View,
     *,
@@ -48,6 +55,8 @@ def run_view(
         rl.begin_drawing()
         view.draw()
         rl.end_drawing()
+        if _view_should_close(view):
+            break
         if take_screenshot:
             screenshot_dir.mkdir(parents=True, exist_ok=True)
             filename = f"{screenshot_index:05d}.png"

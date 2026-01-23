@@ -57,6 +57,7 @@ class GameState:
     logos: LogoAssets | None
     texture_cache: PaqTextureCache | None
     audio: AudioState | None
+    quit_requested: bool = False
 
 
 TEXTURE_LOAD_STAGES: dict[int, tuple[tuple[str, str], ...]] = {
@@ -184,6 +185,7 @@ MENU_PREP_TEXTURES: tuple[tuple[str, str], ...] = (
 MENU_LABEL_WIDTH = 124.0
 MENU_LABEL_HEIGHT = 30.0
 MENU_LABEL_ROW_HEIGHT = 32.0
+MENU_LABEL_ROW_QUIT = 6
 MENU_LABEL_BASE_X = -60.0
 MENU_LABEL_BASE_Y = 210.0
 MENU_LABEL_OFFSET_X = 270.0
@@ -535,6 +537,10 @@ class MenuView:
         self._timeline_max_ms = 0
         self._widescreen_y_shift = 0.0
         self._menu_screen_width = 0
+        self._closing = False
+        self._close_hold_ms = 0
+        self._close_action: str | None = None
+        self._pending_action: str | None = None
 
     def open(self) -> None:
         layout_w = float(self._state.config.screen_width)
@@ -556,6 +562,10 @@ class MenuView:
         self._focus_timer_ms = 0
         self._hovered_index = None
         self._timeline_ms = 0
+        self._closing = False
+        self._close_hold_ms = 0
+        self._close_action = None
+        self._pending_action = None
         self._timeline_max_ms = self._menu_max_timeline_ms(
             full_version=self._full_version,
             mods_available=self._mods_available(),
@@ -574,6 +584,21 @@ class MenuView:
         if self._ground is not None:
             self._ground.process_pending()
         dt_ms = int(min(dt, 0.1) * 1000.0)
+        if self._closing:
+            if dt_ms > 0:
+                if self._timeline_ms > 0:
+                    self._timeline_ms = max(0, self._timeline_ms - dt_ms)
+                    self._focus_timer_ms = max(0, self._focus_timer_ms - dt_ms)
+                    if self._timeline_ms == 0:
+                        # Ensure at least one fully-faded frame before we commit the action.
+                        self._close_hold_ms = max(self._close_hold_ms, 1)
+                elif self._close_hold_ms > 0:
+                    self._close_hold_ms = max(0, self._close_hold_ms - dt_ms)
+                    if self._close_hold_ms == 0 and self._close_action is not None and self._pending_action is None:
+                        self._pending_action = self._close_action
+                        self._close_action = None
+            return
+
         if dt_ms > 0:
             self._timeline_ms = min(self._timeline_max_ms, self._timeline_ms + dt_ms)
             self._focus_timer_ms = max(0, self._focus_timer_ms - dt_ms)
@@ -588,11 +613,23 @@ class MenuView:
             self._selected_index = (self._selected_index + delta) % len(self._menu_entries)
             self._focus_timer_ms = 1000
 
+        activated_index: int | None = None
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) and 0 <= self._selected_index < len(self._menu_entries):
             entry = self._menu_entries[self._selected_index]
             if self._menu_entry_enabled(entry):
-                self._state.console.log.log(f"menu select: {self._selected_index} (row {entry.row})")
-                self._state.console.log.flush()
+                activated_index = self._selected_index
+
+        if activated_index is None and self._hovered_index is not None:
+            if rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
+                hovered = self._hovered_index
+                entry = self._menu_entries[hovered]
+                if self._menu_entry_enabled(entry):
+                    self._selected_index = hovered
+                    self._focus_timer_ms = 1000
+                    activated_index = hovered
+
+        if activated_index is not None:
+            self._activate_menu_entry(activated_index)
         self._update_ready_timers(dt_ms)
         self._update_hover_amounts(dt_ms)
 
@@ -605,6 +642,39 @@ class MenuView:
             return
         self._draw_menu_items()
         self._draw_menu_sign()
+        if self._closing:
+            self._draw_quit_fade()
+
+    def take_action(self) -> str | None:
+        action = self._pending_action
+        self._pending_action = None
+        return action
+
+    def _activate_menu_entry(self, index: int) -> None:
+        if not (0 <= index < len(self._menu_entries)):
+            return
+        entry = self._menu_entries[index]
+        self._state.console.log.log(f"menu select: {index} (row {entry.row})")
+        self._state.console.log.flush()
+        if entry.row == MENU_LABEL_ROW_QUIT:
+            self._begin_quit_transition()
+
+    def _begin_quit_transition(self) -> None:
+        if self._closing:
+            return
+        self._closing = True
+        self._close_hold_ms = 0
+        self._close_action = "restart_demo" if self._state.demo_enabled else "quit_app"
+
+    def _draw_quit_fade(self) -> None:
+        max_ms = max(1, self._timeline_max_ms)
+        alpha = 1.0 - float(self._timeline_ms) / float(max_ms)
+        if alpha <= 0.0:
+            return
+        if alpha > 1.0:
+            alpha = 1.0
+        tint = rl.Color(0, 0, 0, int(round(alpha * 255.0)))
+        rl.draw_rectangle(0, 0, rl.get_screen_width(), rl.get_screen_height(), tint)
 
     def _ensure_cache(self) -> PaqTextureCache:
         cache = self._state.texture_cache
@@ -979,8 +1049,23 @@ class GameLoopView:
     def open(self) -> None:
         self._boot.open()
 
+    def should_close(self) -> bool:
+        return self._state.quit_requested
+
     def update(self, dt: float) -> None:
         self._active.update(dt)
+        if self._menu_active:
+            action = self._menu.take_action()
+            if action == "quit_app":
+                self._state.quit_requested = True
+                return
+            if action == "restart_demo":
+                self._menu.close()
+                self._menu_active = False
+                self._demo.open()
+                self._active = self._demo
+                self._demo_active = True
+                return
         if (
             (not self._demo_active)
             and (not self._menu_active)
