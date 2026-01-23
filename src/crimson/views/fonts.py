@@ -20,7 +20,7 @@ from .quest_title_overlay import (
     quest_title_base_scale,
 )
 from .registry import register_view
-from .types import View, ViewContext
+from grim.view import View, ViewContext
 
 SMALL_SAMPLE_SCALE = 1.0
 UI_TEXT_SCALE = 1.0

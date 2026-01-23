@@ -12,7 +12,7 @@ import traceback
 
 import pyray as rl
 
-from .audio import (
+from grim.audio import (
     AudioState,
     init_audio_state,
     play_music,
@@ -20,19 +20,20 @@ from .audio import (
     update_audio,
     shutdown_audio,
 )
-from .assets import LogoAssets, PaqTextureCache, load_logo_assets, load_paq_entries
-from .config import CrimsonConfig, ensure_crimson_cfg
-from .console import (
+from grim.assets import LogoAssets, PaqTextureCache, load_logo_assets, load_paq_entries
+from grim.config import CrimsonConfig, ensure_crimson_cfg
+from grim.console import (
     ConsoleState,
     create_console,
     register_boot_commands,
     register_core_cvars,
 )
+from grim.app import run_view
+from grim.terrain_render import GroundRenderer
+from grim.view import View
+
 from .demo import DemoView
 from .entrypoint import DEFAULT_BASE_DIR
-from .raylib_app import run_view
-from .terrain_render import GroundRenderer
-from .views.types import View
 
 
 @dataclass(frozen=True, slots=True)

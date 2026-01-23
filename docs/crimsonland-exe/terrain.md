@@ -796,7 +796,7 @@ If you’re rebuilding from scratch, you need these components:
 
 The reference rewrite models this pipeline in:
 
-- `src/crimson/terrain_render.py` (generation, decal baking helpers, and screen blit)
+- `src/grim/terrain_render.py` (generation, decal baking helpers, and screen blit)
 - `docs/rewrite/terrain.md` (rewrite-specific notes and TODOs)
 
 ---

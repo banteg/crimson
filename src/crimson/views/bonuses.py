@@ -8,7 +8,7 @@ from ..bonuses import BONUS_TABLE, BonusMeta
 from ..weapons import WEAPON_TABLE
 from .font_small import SmallFontData, draw_small_text, load_small_font
 from .registry import register_view
-from .types import View, ViewContext
+from grim.view import View, ViewContext
 
 UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)

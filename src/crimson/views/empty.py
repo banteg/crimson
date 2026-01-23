@@ -3,7 +3,7 @@ from __future__ import annotations
 import pyray as rl
 
 from .registry import register_view
-from .types import View
+from grim.view import View
 
 
 class EmptyView:

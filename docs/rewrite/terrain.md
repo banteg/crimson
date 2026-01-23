@@ -13,7 +13,7 @@ terrain pipeline (see also: `docs/crimsonland-exe/terrain.md`).
 
 ## Where this lives in the rewrite
 
-Implementation: `src/crimson/terrain_render.py`
+Implementation: `src/grim/terrain_render.py`
 
 - `GroundRenderer.create_render_target()` creates/resizes the RT (`1024/texture_scale`).
 - `GroundRenderer.generate(seed=...)` stamps the 3 procedural layers into the RT.

@@ -8,11 +8,12 @@ from typing import Protocol
 
 import pyray as rl
 
-from .audio import AudioState, update_audio
-from .assets import PaqTextureCache, load_paq_entries
-from .config import CrimsonConfig
+from grim.audio import AudioState, update_audio
+from grim.assets import PaqTextureCache, load_paq_entries
+from grim.config import CrimsonConfig
+from grim.terrain_render import GroundRenderer
+
 from .spawn_templates import CreatureFlags, CreatureTypeId, SPAWN_ID_TO_TEMPLATE
-from .terrain_render import GroundRenderer
 from .weapons import WEAPON_TABLE
 
 

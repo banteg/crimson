@@ -4,7 +4,8 @@ Goal: 100% parity with the classic game logic. For now the active rewrite is a
 Python + raylib reference implementation that we can iterate quickly while
 keeping close links to static/runtime evidence.
 
-Code lives in `src/crimson/` and is exercised via the `crimson` CLI.
+Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
+`crimson` CLI.
 
 ## How to run (current)
 
@@ -61,6 +62,7 @@ Available via `uv run crimson view <name>`:
 
 See also:
 
+- [Module map (Grim vs Crimson)](module-map.md)
 - [Terrain (rewrite)](terrain.md)
 
 ## Known gaps (short list)

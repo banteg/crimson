@@ -25,6 +25,6 @@ avoid directory traversal.
 ## Implementation
 
 - CLI: `src/crimson/cli.py`
-- PAQ parser: `src/crimson/paq.py`
-- JAZ decoder: `src/crimson/jaz.py`
+- PAQ parser: `src/grim/paq.py`
+- JAZ decoder: `src/grim/jaz.py`
 - Atlas slicing helpers: `src/crimson/atlas.py`

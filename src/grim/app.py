@@ -5,7 +5,7 @@ import shutil
 
 import pyray as rl
 
-from .views.types import View
+from .view import View
 
 SCREENSHOT_DIR = Path("screenshots")
 SCREENSHOT_KEY = rl.KeyboardKey.KEY_P
@@ -73,6 +73,11 @@ def run_window(
     fps: int = 60,
 ) -> None:
     """Open a minimal Raylib window for the reference implementation."""
-    from .views.empty import EmptyView
+    class _EmptyView:
+        def update(self, dt: float) -> None:
+            return None
 
-    run_view(EmptyView(), width=width, height=height, title=title, fps=fps)
+        def draw(self) -> None:
+            rl.clear_background(rl.BLACK)
+
+    run_view(_EmptyView(), width=width, height=height, title=title, fps=fps)

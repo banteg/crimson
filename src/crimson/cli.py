@@ -9,7 +9,7 @@ from pathlib import Path
 import typer
 from PIL import Image
 
-from . import jaz, paq
+from grim import jaz, paq
 from .quests import all_quests
 from .quests.types import QuestContext, QuestDefinition, SpawnEntry
 from .spawn_templates import spawn_id_label
@@ -188,9 +188,9 @@ def cmd_view(
     ),
 ) -> None:
     """Launch a Raylib debug view."""
-    from .raylib_app import run_view
+    from grim.app import run_view
+    from grim.view import ViewContext
     from .views import all_views, view_by_name
-    from .views.types import ViewContext
 
     view_def = view_by_name(name)
     if view_def is None:
@@ -251,7 +251,7 @@ def cmd_config(
     ),
 ) -> None:
     """Inspect crimson.cfg configuration values."""
-    from .config import CRIMSON_CFG_NAME, CRIMSON_CFG_STRUCT, load_crimson_cfg
+    from grim.config import CRIMSON_CFG_NAME, CRIMSON_CFG_STRUCT, load_crimson_cfg
 
     cfg_path = path if path is not None else base_dir / CRIMSON_CFG_NAME
     config = load_crimson_cfg(cfg_path)

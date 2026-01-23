@@ -5,15 +5,15 @@ from pathlib import Path
 
 import pyray as rl
 
-from ..config import ensure_crimson_cfg
+from grim.config import ensure_crimson_cfg
+from grim.terrain_render import GroundRenderer
 from ..quests import all_quests
 from ..quests.types import QuestDefinition
-from ..terrain_render import GroundRenderer
 from .font_grim_mono import GrimMonoFont, load_grim_mono_font
 from .font_small import SmallFontData, draw_small_text, load_small_font
 from .quest_title_overlay import draw_quest_title_overlay
 from .registry import register_view
-from .types import View, ViewContext
+from grim.view import View, ViewContext
 
 
 UI_TEXT_SCALE = 1.0
