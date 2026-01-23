@@ -81,6 +81,8 @@ const EXE_RVAS = {
     terrain_generate: 0x17b80,
     terrain_render: 0x188a0,
     grim_interface_ptr: 0x8083c,
+    // From `analysis/ghidra/maps/name_map.json` (crt_get_thread_data @ 0x004654b8).
+    crt_get_thread_data: 0x654b8,
     // From `analysis/ghidra/maps/name_map.json` (crt_srand @ 0x00461739).
     crt_srand: 0x61739,
     // From `analysis/ghidra/maps/name_map.json` (crt_rand @ 0x00461746).
@@ -104,6 +106,8 @@ const GRIM_VTABLE_OFFSETS = {
 
 // Grim internal RVAs
 const GRIM_RVAS = {
+    // Grim2D vtable config/state dispatcher (see `analysis/ghidra/raw/grim.dll_decompiled.c`).
+    set_config_var: 0x06580,
     set_render_target: 0x06d50,
     get_texture_handle: 0x07740,
     bind_texture: 0x07830,
@@ -176,8 +180,13 @@ let dumpCount = 0;
 
 // RNG seed tracking
 let lastSrandSeed = null;
-let seedAtGenerate = null;
+// The actual per-thread RNG state used by terrain generation (ptd[5]).
+// NOTE: This is often *not* equal to the last srand seed, because code may call
+// crt_rand() between crt_srand() and terrain_generate().
+let rngStateEnter = null;
+let rngStateExit = null;
 let lastTerrainGenerateInfo = null;
+let crtGetThreadDataFn = null;
 
 // Terrain stamp tracing (for byte-for-byte validation)
 let terrainGenIndex = 0;
@@ -197,7 +206,7 @@ let currentRotation = null; // radians
 
 let randCallsInGenerate = 0;
 let randExtraInGenerate = 0;
-let randPhase = 0; // 0=rot, 1=x, 2=y, 3=ready
+let randPhase = 0; // 0=rot, 1=y, 2=x, 3=ready
 let pendingRand = { rot: null, x: null, y: null };
 let randDesyncCount = 0;
 
@@ -265,6 +274,23 @@ function safeReadCString(ptrVal) {
         } catch (e2) {}
     }
     return null;
+}
+
+function readCrtRngState() {
+    try {
+        if (!exeBase) return null;
+        if (!crtGetThreadDataFn) {
+            const addr = exeBase.add(EXE_RVAS.crt_get_thread_data);
+            crtGetThreadDataFn = new NativeFunction(addr, "pointer", []);
+        }
+        const ptd = crtGetThreadDataFn();
+        if (!ptd || ptd.isNull()) return null;
+        const statePtr = ptd.add(5 * 4);
+        if (!isReadable(statePtr)) return null;
+        return statePtr.readU32();
+    } catch (e) {
+        return null;
+    }
 }
 
 function findModuleBase(name) {
@@ -700,7 +726,8 @@ function dumpGroundTexture() {
         dump_index: dumpCount,
         raw_path: rawPath,
         seed_srand: lastSrandSeed,
-        seed_at_generate: seedAtGenerate,
+        rng_state_enter: rngStateEnter,
+        rng_state_exit: rngStateExit,
         terrain_generate: lastTerrainGenerateInfo,
         width: desc.width,
         height: desc.height,
@@ -720,7 +747,7 @@ function dumpGroundTexture() {
         width: desc.width,
         height: desc.height,
         format: desc.format,
-        seed: seedAtGenerate,
+        seed: rngStateEnter,
         lastSrandSeed: lastSrandSeed,
     };
 }
@@ -786,10 +813,11 @@ function hookCrtRand() {
                 pendingRand.rot = value;
                 randPhase = 1;
             } else if (randPhase === 1) {
-                pendingRand.x = value;
+                // IMPORTANT: The exe consumes RNG as rotation, then Y, then X.
+                pendingRand.y = value;
                 randPhase = 2;
             } else if (randPhase === 2) {
-                pendingRand.y = value;
+                pendingRand.x = value;
                 randPhase = 3;
             } else {
                 randExtraInGenerate += 1;
@@ -812,6 +840,27 @@ function hookTerrainStampTracing() {
         if (sp === null) return null;
         return safeReadFloat(sp.add(offset));
     }
+
+    // Config vars (blend state, filtering, etc). Useful for verifying parity.
+    // See: `analysis/ghidra/raw/grim.dll_decompiled.c` (grim_set_config_var).
+    Interceptor.attach(grimBase.add(GRIM_RVAS.set_config_var), {
+        onEnter: function () {
+            if (!isTerrainGenerateThread(this.threadId)) return;
+            const id = readI32FromStack(this, 4);
+            const value = readI32FromStack(this, 8);
+            if (id === null || value === null) return;
+            const idU = id >>> 0;
+            const valueU = value >>> 0;
+            writeLine({
+                tag: "terrain_config_var",
+                gen_index: terrainGenIndex,
+                id: idU,
+                id_hex: "0x" + idU.toString(16),
+                value: valueU,
+                value_hex: "0x" + valueU.toString(16),
+            });
+        },
+    });
 
     // Bind texture (handle, stage)
     Interceptor.attach(grimBase.add(GRIM_RVAS.bind_texture), {
@@ -941,8 +990,8 @@ function hookTerrainStampTracing() {
             stampIndexInBatch += 1;
 
             const rotRand = pendingRand.rot;
-            const xRand = pendingRand.x;
             const yRand = pendingRand.y;
+            const xRand = pendingRand.x;
             const haveTriplet = randPhase === 3 && rotRand !== null && xRand !== null && yRand !== null;
             if (!haveTriplet) {
                 randDesyncCount += 1;
@@ -974,8 +1023,8 @@ function hookTerrainStampTracing() {
                 h: h,
                 rotation: currentRotation,
                 rand_rot: rotRand,
-                rand_x: xRand,
                 rand_y: yRand,
+                rand_x: xRand,
                 expected: Object.keys(expected).length ? expected : null,
             });
 
@@ -1021,8 +1070,11 @@ function hookTerrainGenerate() {
                 invScaleAtGenerate = 1.0 / globals.config_texture_scale;
             }
 
-            // Capture the seed at the moment terrain_generate is called
-            seedAtGenerate = lastSrandSeed;
+            // Capture the actual per-thread RNG state used by terrain generation.
+            // This is more stable than `lastSrandSeed`, since the game may call
+            // crt_rand() between crt_srand() and terrain_generate().
+            rngStateEnter = readCrtRngState();
+            rngStateExit = null;
             const desc = args[0];
             const indices = desc && !desc.isNull() ? {
                 tex0_index: safeReadI32(desc.add(0x10)),
@@ -1033,8 +1085,10 @@ function hookTerrainGenerate() {
             lastTerrainGenerateInfo = {
                 desc: desc ? desc.toString() : null,
                 indices: indices,
-                seed: seedAtGenerate,
-                seed_hex: seedAtGenerate !== null ? "0x" + seedAtGenerate.toString(16) : null,
+                seed_srand: lastSrandSeed,
+                seed_srand_hex: lastSrandSeed !== null ? "0x" + lastSrandSeed.toString(16) : null,
+                seed: rngStateEnter,
+                seed_hex: rngStateEnter !== null ? "0x" + rngStateEnter.toString(16) : null,
                 gen_index: terrainGenIndex,
                 thread_id: terrainGenerateThreadId,
                 terrain_scale: terrainScaleAtGenerate,
@@ -1045,6 +1099,7 @@ function hookTerrainGenerate() {
             });
         },
         onLeave: function (retval) {
+            rngStateExit = readCrtRngState();
             writeLine({
                 tag: "terrain_generate_exit",
                 gen_index: terrainGenIndex,
@@ -1054,6 +1109,8 @@ function hookTerrainGenerate() {
                 rand_calls: randCallsInGenerate,
                 rand_extra: randExtraInGenerate,
                 rand_desync: randDesyncCount,
+                rng_state_exit: rngStateExit,
+                rng_state_exit_hex: rngStateExit !== null ? "0x" + rngStateExit.toString(16) : null,
             });
 
             inTerrainGenerate = false;
