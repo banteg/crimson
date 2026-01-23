@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from crimson.creatures.anim import creature_anim_advance_phase, creature_anim_select_frame
-from crimson.creatures.spawn_templates import CreatureFlags
+from crimson.creatures.spawn import CreatureFlags
 
 
 def test_creature_anim_advance_phase_long_strip_matches_formula() -> None:

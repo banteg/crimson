@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import struct
 
-from .spawn_templates import CreatureFlags
+from .spawn import CreatureFlags
 
 
 def _f32(value: float) -> float:
@@ -155,4 +155,3 @@ def creature_anim_select_frame(
         idx = 0x0F - idx
     frame = base_frame + 0x10 + idx
     return frame, False, "ping-pong"
-

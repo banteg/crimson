@@ -12,7 +12,7 @@ from PIL import Image
 from grim import jaz, paq
 from .quests import all_quests
 from .quests.types import QuestContext, QuestDefinition, SpawnEntry
-from .creatures.spawn_templates import spawn_id_label
+from .creatures.spawn import spawn_id_label
 
 
 app = typer.Typer(add_completion=False)

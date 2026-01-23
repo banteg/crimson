@@ -5,4 +5,4 @@ from __future__ import annotations
 This package will grow as we port `creature_*` logic from the original binary.
 """
 
-__all__ = ["anim", "spawn_plan", "spawn_templates"]
+__all__ = ["anim", "spawn"]
