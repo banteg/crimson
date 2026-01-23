@@ -1,0 +1,124 @@
+{
+  "events": 5545,
+  "menu_clicks": [
+    {
+      "click_globals": {
+        "dir": 1,
+        "state_id": 0,
+        "state_pending": 25,
+        "timeline": 900
+      },
+      "click_line": 1958,
+      "click_ts": 1769205276329,
+      "logo_angle_deg_first": 0.0,
+      "logo_angle_deg_last": 0.0,
+      "logo_angle_deg_max_abs": 0.0,
+      "logo_dirs": [
+        0
+      ],
+      "logo_render_modes": [
+        1
+      ],
+      "logo_timeline_max": 349,
+      "logo_timeline_min": 0,
+      "logo_update_count": 124,
+      "next_game_state_set_line": 2331,
+      "next_state": 2,
+      "which": "cb_main_menu_options"
+    },
+    {
+      "click_globals": {
+        "dir": 1,
+        "state_id": 0,
+        "state_pending": 25,
+        "timeline": 900
+      },
+      "click_line": 3344,
+      "click_ts": 1769205279301,
+      "logo_angle_deg_first": 0.0,
+      "logo_angle_deg_last": 0.0,
+      "logo_angle_deg_max_abs": 0.0,
+      "logo_dirs": [
+        0
+      ],
+      "logo_render_modes": [
+        1
+      ],
+      "logo_timeline_max": 350,
+      "logo_timeline_min": 1,
+      "logo_update_count": 120,
+      "next_game_state_set_line": 3706,
+      "next_state": 1,
+      "which": "cb_main_menu_play"
+    },
+    {
+      "click_globals": {
+        "dir": 1,
+        "state_id": 0,
+        "state_pending": 25,
+        "timeline": 900
+      },
+      "click_line": 5190,
+      "click_ts": 1769205283623,
+      "logo_angle_deg_first": 0.0,
+      "logo_angle_deg_last": -90.00000250447806,
+      "logo_angle_deg_max_abs": 90.00000250447806,
+      "logo_dirs": [
+        0
+      ],
+      "logo_render_modes": [
+        0
+      ],
+      "logo_timeline_max": 349,
+      "logo_timeline_min": 0,
+      "logo_update_count": 117,
+      "next_game_state_set_line": 5543,
+      "next_state": 10,
+      "which": "cb_main_menu_quit"
+    }
+  ],
+  "nonzero_logo_angle_groups": [
+    {
+      "angle_deg_max": -0.2999955792553742,
+      "angle_deg_max_abs": 90.00000250447806,
+      "angle_deg_min": -90.00000250447806,
+      "count": 99,
+      "dir": 0,
+      "render_mode": 0,
+      "state_id": 0,
+      "state_pending": 10,
+      "timeline_max": 299,
+      "timeline_min": 0
+    },
+    {
+      "angle_deg_max": -0.2999955792553742,
+      "angle_deg_max_abs": 88.79999965227,
+      "angle_deg_min": -88.79999965227,
+      "count": 97,
+      "dir": 1,
+      "render_mode": 0,
+      "state_id": 0,
+      "state_pending": 0,
+      "timeline_max": 299,
+      "timeline_min": 4
+    },
+    {
+      "angle_deg_max": -90.00000250447806,
+      "angle_deg_max_abs": 90.00000250447806,
+      "angle_deg_min": -90.00000250447806,
+      "count": 1,
+      "dir": 1,
+      "render_mode": 0,
+      "state_id": 10,
+      "state_pending": 25,
+      "timeline_max": 0,
+      "timeline_min": 0
+    }
+  ],
+  "notes": {
+    "logo_lock_byte": "ui_signCrimson + 0x2 (absolute 0x00487292 in this build)",
+    "observed_behavior": "Play/Options keep logo locked (no pivot); Quit clears lock and pivots out; initial boot pivots in before lock is set."
+  },
+  "script": "scripts/frida/menu_logo_pivot_trace.js",
+  "source_log": "analysis\\frida\\raw\\menu_logo_pivot_trace.jsonl"
+}

@@ -58,6 +58,7 @@ class GameState:
     texture_cache: PaqTextureCache | None
     audio: AudioState | None
     menu_ground: GroundRenderer | None = None
+    menu_sign_locked: bool = False
     quit_requested: bool = False
 
 
@@ -647,6 +648,8 @@ class MenuView:
         if dt_ms > 0:
             self._timeline_ms = min(self._timeline_max_ms, self._timeline_ms + dt_ms)
             self._focus_timer_ms = max(0, self._focus_timer_ms - dt_ms)
+            if self._timeline_ms >= self._timeline_max_ms:
+                self._state.menu_sign_locked = True
         if not self._menu_entries:
             return
 
@@ -719,6 +722,7 @@ class MenuView:
         self._close_action = action
 
     def _begin_quit_transition(self) -> None:
+        self._state.menu_sign_locked = False
         self._begin_close_transition("quit_after_demo" if self._state.demo_enabled else "quit_app")
 
     def _ensure_cache(self) -> PaqTextureCache:
@@ -1037,13 +1041,16 @@ class MenuView:
         sign_h = MENU_SIGN_HEIGHT * scale
         offset_x = MENU_SIGN_OFFSET_X * scale + shift_x
         offset_y = MENU_SIGN_OFFSET_Y * scale
-        angle_rad, slide_x = self._ui_element_anim(
-            index=0,
-            start_ms=300,
-            end_ms=0,
-            width=sign_w,
-        )
-        _ = slide_x  # slide is ignored for render_mode==0 (transform) elements
+        rotation_deg = 0.0
+        if not self._state.menu_sign_locked:
+            angle_rad, slide_x = self._ui_element_anim(
+                index=0,
+                start_ms=300,
+                end_ms=0,
+                width=sign_w,
+            )
+            _ = slide_x  # slide is ignored for render_mode==0 (transform) elements
+            rotation_deg = math.degrees(angle_rad)
         sign = assets.sign
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
         if fx_detail:
@@ -1052,7 +1059,7 @@ class MenuView:
                 src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
                 dst=rl.Rectangle(pos_x + 7.0, pos_y + 7.0, sign_w, sign_h),
                 origin=rl.Vector2(-offset_x, -offset_y),
-                rotation_deg=math.degrees(angle_rad),
+                rotation_deg=rotation_deg,
                 tint=rl.Color(0x44, 0x44, 0x44, 0x44),
             )
         self._draw_ui_quad(
@@ -1060,7 +1067,7 @@ class MenuView:
             src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
             dst=rl.Rectangle(pos_x, pos_y, sign_w, sign_h),
             origin=rl.Vector2(-offset_x, -offset_y),
-            rotation_deg=math.degrees(angle_rad),
+            rotation_deg=rotation_deg,
             tint=rl.WHITE,
         )
 
@@ -1142,6 +1149,8 @@ class PanelMenuView:
 
         if dt_ms > 0:
             self._timeline_ms = min(self._timeline_max_ms, self._timeline_ms + dt_ms)
+            if self._timeline_ms >= self._timeline_max_ms:
+                self._state.menu_sign_locked = True
 
         entry = self._entry
         if entry is None:
@@ -1349,14 +1358,17 @@ class PanelMenuView:
         sign_h = MENU_SIGN_HEIGHT * scale
         offset_x = MENU_SIGN_OFFSET_X * scale + shift_x
         offset_y = MENU_SIGN_OFFSET_Y * scale
-        angle_rad, slide_x = MenuView._ui_element_anim(
-            self,
-            index=0,
-            start_ms=300,
-            end_ms=0,
-            width=sign_w,
-        )
-        _ = slide_x
+        rotation_deg = 0.0
+        if not self._state.menu_sign_locked:
+            angle_rad, slide_x = MenuView._ui_element_anim(
+                self,
+                index=0,
+                start_ms=300,
+                end_ms=0,
+                width=sign_w,
+            )
+            _ = slide_x
+            rotation_deg = math.degrees(angle_rad)
         sign = assets.sign
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
         if fx_detail:
@@ -1365,7 +1377,7 @@ class PanelMenuView:
                 src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
                 dst=rl.Rectangle(pos_x + 7.0, pos_y + 7.0, sign_w, sign_h),
                 origin=rl.Vector2(-offset_x, -offset_y),
-                rotation_deg=math.degrees(angle_rad),
+                rotation_deg=rotation_deg,
                 tint=rl.Color(0x44, 0x44, 0x44, 0x44),
             )
         MenuView._draw_ui_quad(
@@ -1373,7 +1385,7 @@ class PanelMenuView:
             src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
             dst=rl.Rectangle(pos_x, pos_y, sign_w, sign_h),
             origin=rl.Vector2(-offset_x, -offset_y),
-            rotation_deg=math.degrees(angle_rad),
+            rotation_deg=rotation_deg,
             tint=rl.WHITE,
         )
 

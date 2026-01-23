@@ -73,23 +73,23 @@ Animation note:
 - The logo sign is UI element table index `0` (`sub_446150` returns 0), so `ui_element_update`
   forces its rotation angle negative (clockwise) during timeline transitions.
 - It uses the same default `start_time_ms=300` / `end_time_ms=0` window as other UI elements,
-  so it pivots in/out whenever a menu state transition occurs (state `0` ↔ `1`/`2` etc).
+  but it is **locked** to a steady 0° pose during normal menu navigation.
+- When `ui_elements_timeline` overshoots `ui_elements_max_timeline()` and is clamped, `ui_elements_update_and_render`
+  writes `1` to `ui_signCrimson + 0x2` (absolute `0x00487292`). When this byte is `1`, `ui_element_update` early-returns
+  and the sign does **not** pivot during transitions to Play Game / Options / etc.
+- The quit callback (`sub_447450`) clears `0x00487292` back to `0`, allowing the sign to pivot out during the last
+  `300ms` of the close.
 - When `fx_detail` is enabled (`config_blob.reserved0[0xe] != 0`), `ui_element_render` also draws a
   shadow pass with `+7,+7` offset and tint `0x44444444` using the same transform (rotation matrix).
 
 Runtime verification (Frida):
 
 - Script: `scripts/frida/menu_logo_pivot_trace.js`
-- Output: `C:\share\frida\menu_logo_pivot_trace.jsonl` (also prints to console)
-- It only logs `logo_update` / `logo_render` while `ui_elements_timeline <= 350` (or when the logo angle is non-zero),
-  which is the window where the logo pivot should happen.
-
-Expected timeline behavior (from `ui_elements_update_and_render`):
-
-- Menu button callbacks set `ui_transition_direction = 0` (closing) and set `game_state_pending`.
-- `ui_elements_timeline` counts down from `ui_elements_max_timeline()` (~1000 in state `0`) to `0`.
-- The logo uses `start_time_ms=300` / `end_time_ms=0`, so its angle stays at `0` until the last `300ms`
-  of the close; then it rotates clockwise (negative angle) as `timeline` approaches `0`.
+- Output: `C:\share\frida\menu_logo_pivot_trace.jsonl` (copied into repo as `analysis/frida/raw/menu_logo_pivot_trace.jsonl`)
+- Logs `logo_update` / `logo_render` while `ui_elements_timeline <= 350` (or when the logo angle is non-zero).
+- Observed:
+  - Play / Options: `logo_update.render_mode == 1` and `angle_deg == 0` for the whole close (no pivot).
+  - Quit: `logo_update.render_mode == 0` and `angle_deg` ramps from `0` to `-90` as `timeline` goes `299 -> 0`.
 
 ### `ui_menuItem.jaz` (menu item button)
 
