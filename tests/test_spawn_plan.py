@@ -1374,6 +1374,81 @@ def test_spawn_plan_template_35_is_randomized() -> None:
     assert rng.state == _step_msvcrt(seed, 7)
 
 
+def test_spawn_plan_template_36_is_randomized_tint() -> None:
+    seed = 0xBEEF
+    rng = Crand(seed)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,  # avoid effect noise
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x36, (100.0, 200.0), 0.0, rng, env)
+
+    state = seed
+    state, _ = _msvcrt_rand(state)  # alloc phase_seed
+    state, _ = _msvcrt_rand(state)  # base init random heading
+    state, r_tint_g = _msvcrt_rand(state)
+    expected_tint_g = float(r_tint_g % 5) * 0.01 + 0.65
+
+    assert plan.primary == 0
+    assert len(plan.creatures) == 1
+    assert plan.spawn_slots == ()
+
+    c = plan.creatures[0]
+    assert c.type_id == CreatureTypeId.ALIEN
+    assert c.ai_mode == 7
+    assert c.orbit_radius == 1.5
+    assert c.size == 50.0
+    assert c.health == 10.0
+    assert c.max_health == 10.0
+    assert c.move_speed == 1.8
+    assert c.reward_value == 150.0
+    assert c.contact_damage == 40.0
+    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.65, expected_tint_g, 0.95, 1.0)
+    assert c.heading == 0.0
+
+    assert rng.state == _step_msvcrt(seed, 3)
+
+
+def test_spawn_plan_template_37_is_randomized() -> None:
+    seed = 0xBEEF
+    rng = Crand(seed)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,  # avoid effect noise
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x37, (100.0, 200.0), 0.0, rng, env)
+
+    state = seed
+    state, _ = _msvcrt_rand(state)  # alloc phase_seed
+    state, _ = _msvcrt_rand(state)  # base init random heading
+    state, r_size = _msvcrt_rand(state)
+    expected_size = float((r_size & 3) + 0x29)
+
+    assert plan.primary == 0
+    assert len(plan.creatures) == 1
+    assert plan.spawn_slots == ()
+
+    c = plan.creatures[0]
+    assert c.type_id == CreatureTypeId.SPIDER_SP2
+    assert c.flags == CreatureFlags.RANGED_ATTACK_VARIANT
+    assert c.size == expected_size
+    assert c.health == 50.0
+    assert c.max_health == 50.0
+    assert c.move_speed == 3.2
+    assert c.reward_value == 433.0
+    assert c.contact_damage == 10.0
+    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (1.0, 0.75, 0.1, 1.0)
+    assert c.heading == 0.0
+
+    assert rng.state == _step_msvcrt(seed, 3)
+
+
 def test_spawn_plan_template_38_is_randomized_and_has_ai7_timer_flag() -> None:
     seed = 0xBEEF
     rng = Crand(seed)
