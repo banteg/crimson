@@ -185,7 +185,13 @@ MENU_PREP_TEXTURES: tuple[tuple[str, str], ...] = (
 MENU_LABEL_WIDTH = 124.0
 MENU_LABEL_HEIGHT = 30.0
 MENU_LABEL_ROW_HEIGHT = 32.0
+MENU_LABEL_ROW_PLAY_GAME = 1
+MENU_LABEL_ROW_OPTIONS = 2
+MENU_LABEL_ROW_STATISTICS = 3
+MENU_LABEL_ROW_MODS = 4
+MENU_LABEL_ROW_OTHER_GAMES = 5
 MENU_LABEL_ROW_QUIT = 6
+MENU_LABEL_ROW_BACK = 7
 MENU_LABEL_BASE_X = -60.0
 MENU_LABEL_BASE_Y = 210.0
 MENU_LABEL_OFFSET_X = 270.0
@@ -658,13 +664,26 @@ class MenuView:
         self._state.console.log.flush()
         if entry.row == MENU_LABEL_ROW_QUIT:
             self._begin_quit_transition()
+        elif entry.row == MENU_LABEL_ROW_PLAY_GAME:
+            self._begin_close_transition("open_play_game")
+        elif entry.row == MENU_LABEL_ROW_OPTIONS:
+            self._begin_close_transition("open_options")
+        elif entry.row == MENU_LABEL_ROW_STATISTICS:
+            self._begin_close_transition("open_statistics")
+        elif entry.row == MENU_LABEL_ROW_MODS:
+            self._begin_close_transition("open_mods")
+        elif entry.row == MENU_LABEL_ROW_OTHER_GAMES:
+            self._begin_close_transition("open_other_games")
 
-    def _begin_quit_transition(self) -> None:
+    def _begin_close_transition(self, action: str) -> None:
         if self._closing:
             return
         self._closing = True
         self._close_hold_ms = 0
-        self._close_action = "restart_demo" if self._state.demo_enabled else "quit_app"
+        self._close_action = action
+
+    def _begin_quit_transition(self) -> None:
+        self._begin_close_transition("restart_demo" if self._state.demo_enabled else "quit_app")
 
     def _draw_quit_fade(self) -> None:
         max_ms = max(1, self._timeline_max_ms)
@@ -1036,12 +1055,370 @@ class MenuView:
         return 1.0, 0.0
 
 
+class PanelMenuView:
+    def __init__(self, state: GameState, *, title: str, body: str | None = None) -> None:
+        self._state = state
+        self._title = title
+        self._body_lines = (body or "").splitlines()
+        self._assets: MenuAssets | None = None
+        self._ground: GroundRenderer | None = None
+        self._entry: MenuEntry | None = None
+        self._hovered = False
+        self._menu_screen_width = 0
+        self._widescreen_y_shift = 0.0
+        self._timeline_ms = 0
+        self._timeline_max_ms = 0
+        self._closing = False
+        self._close_hold_ms = 0
+        self._close_action: str | None = None
+        self._pending_action: str | None = None
+
+    def open(self) -> None:
+        layout_w = float(self._state.config.screen_width)
+        self._menu_screen_width = int(layout_w)
+        self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
+        cache = self._ensure_cache()
+        sign = cache.get_or_load("ui_signCrimson", "ui/ui_signCrimson.jaz").texture
+        item = cache.get_or_load("ui_menuItem", "ui/ui_menuItem.jaz").texture
+        panel = cache.get_or_load("ui_menuPanel", "ui/ui_menuPanel.jaz").texture
+        labels = cache.get_or_load("ui_itemTexts", "ui/ui_itemTexts.jaz").texture
+        self._assets = MenuAssets(sign=sign, item=item, panel=panel, labels=labels)
+        self._entry = MenuEntry(slot=0, row=MENU_LABEL_ROW_BACK, y=MENU_LABEL_BASE_Y + MENU_LABEL_STEP * 4.0)
+        self._hovered = False
+        self._timeline_ms = 0
+        self._timeline_max_ms = max(300, MenuView._menu_slot_start_ms(0))
+        self._closing = False
+        self._close_hold_ms = 0
+        self._close_action = None
+        self._pending_action = None
+        self._init_ground()
+
+    def close(self) -> None:
+        if self._ground is not None and self._ground.render_target is not None:
+            rl.unload_render_texture(self._ground.render_target)
+        self._ground = None
+
+    def update(self, dt: float) -> None:
+        if self._state.audio is not None:
+            update_audio(self._state.audio)
+        if self._ground is not None:
+            self._ground.process_pending()
+        dt_ms = int(min(dt, 0.1) * 1000.0)
+        if self._closing:
+            if dt_ms > 0:
+                if self._timeline_ms > 0:
+                    self._timeline_ms = max(0, self._timeline_ms - dt_ms)
+                    if self._timeline_ms == 0:
+                        self._close_hold_ms = max(self._close_hold_ms, 1)
+                elif self._close_hold_ms > 0:
+                    self._close_hold_ms = max(0, self._close_hold_ms - dt_ms)
+                    if self._close_hold_ms == 0 and self._close_action is not None and self._pending_action is None:
+                        self._pending_action = self._close_action
+                        self._close_action = None
+            return
+
+        if dt_ms > 0:
+            self._timeline_ms = min(self._timeline_max_ms, self._timeline_ms + dt_ms)
+
+        entry = self._entry
+        if entry is None:
+            return
+
+        enabled = self._entry_enabled(entry)
+        hovered = enabled and self._hovered_entry(entry)
+        self._hovered = hovered
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE) and enabled:
+            self._begin_close_transition("back_to_menu")
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER) and enabled:
+            self._begin_close_transition("back_to_menu")
+        if enabled and hovered and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
+            self._begin_close_transition("back_to_menu")
+
+        if hovered:
+            entry.hover_amount += dt_ms * 6
+        else:
+            entry.hover_amount -= dt_ms * 2
+        entry.hover_amount = max(0, min(1000, entry.hover_amount))
+
+        if entry.ready_timer_ms < 0x100:
+            entry.ready_timer_ms = min(0x100, entry.ready_timer_ms + dt_ms)
+
+    def draw(self) -> None:
+        rl.clear_background(rl.BLACK)
+        if self._ground is not None:
+            self._ground.draw(0.0, 0.0)
+        assets = self._assets
+        entry = self._entry
+        if assets is None or entry is None:
+            return
+        self._draw_panel()
+        self._draw_entry(entry)
+        self._draw_sign()
+        self._draw_title_text()
+        self._draw_fade()
+
+    def take_action(self) -> str | None:
+        action = self._pending_action
+        self._pending_action = None
+        return action
+
+    def _draw_title_text(self) -> None:
+        x = 32
+        y = 140
+        rl.draw_text(self._title, x, y, 28, rl.Color(235, 235, 235, 255))
+        y += 34
+        for line in self._body_lines:
+            rl.draw_text(line, x, y, 18, rl.Color(190, 190, 200, 255))
+            y += 22
+
+    def _begin_close_transition(self, action: str) -> None:
+        if self._closing:
+            return
+        self._closing = True
+        self._close_hold_ms = 0
+        self._close_action = action
+
+    def _ensure_cache(self) -> PaqTextureCache:
+        cache = self._state.texture_cache
+        if cache is None:
+            entries = load_paq_entries(self._state.assets_dir)
+            cache = PaqTextureCache(entries=entries, textures={})
+            self._state.texture_cache = cache
+        return cache
+
+    def _init_ground(self) -> None:
+        cache = self._state.texture_cache
+        if cache is None:
+            return
+        base = cache.texture("ter_q1_base")
+        if base is None:
+            return
+        overlay = cache.texture("ter_q1_tex1")
+        detail = overlay or base
+        self._ground = GroundRenderer(
+            texture=base,
+            overlay=overlay,
+            overlay_detail=detail,
+            width=1024,
+            height=1024,
+            texture_scale=self._state.config.texture_scale,
+            screen_width=float(self._state.config.screen_width),
+            screen_height=float(self._state.config.screen_height),
+        )
+        self._ground.schedule_generate(seed=self._state.rng.randrange(0, 10_000), layers=3)
+
+    def _draw_panel(self) -> None:
+        assets = self._assets
+        if assets is None or assets.panel is None:
+            return
+        panel = assets.panel
+        panel_w = float(panel.width)
+        panel_h = float(panel.height)
+        item_scale, _local_y_shift = self._menu_item_scale(0)
+        dst = rl.Rectangle(
+            MENU_PANEL_BASE_X,
+            MENU_PANEL_BASE_Y + self._widescreen_y_shift,
+            panel_w * item_scale,
+            panel_h * item_scale,
+        )
+        origin = rl.Vector2(-(MENU_PANEL_OFFSET_X * item_scale), -(MENU_PANEL_OFFSET_Y * item_scale))
+        MenuView._draw_ui_quad(
+            texture=panel,
+            src=rl.Rectangle(0.0, 0.0, panel_w, panel_h),
+            dst=dst,
+            origin=origin,
+            rotation_deg=0.0,
+            tint=rl.WHITE,
+        )
+
+    def _draw_entry(self, entry: MenuEntry) -> None:
+        assets = self._assets
+        if assets is None or assets.labels is None:
+            return
+        item = assets.item
+        if item is None:
+            return
+        label_tex = assets.labels
+        item_w = float(item.width)
+        item_h = float(item.height)
+        pos_x = MenuView._menu_slot_pos_x(entry.slot)
+        pos_y = entry.y + self._widescreen_y_shift
+        angle_rad, slide_x = MenuView._ui_element_anim(
+            self,
+            index=entry.slot + 2,
+            start_ms=MenuView._menu_slot_start_ms(entry.slot),
+            end_ms=MenuView._menu_slot_end_ms(entry.slot),
+            width=item_w,
+        )
+        _ = slide_x
+        item_scale, local_y_shift = self._menu_item_scale(entry.slot)
+        offset_x = MENU_ITEM_OFFSET_X * item_scale
+        offset_y = MENU_ITEM_OFFSET_Y * item_scale - local_y_shift
+        dst = rl.Rectangle(
+            pos_x,
+            pos_y,
+            item_w * item_scale,
+            item_h * item_scale,
+        )
+        origin = rl.Vector2(-offset_x, -offset_y)
+        rotation_deg = math.degrees(angle_rad)
+        MenuView._draw_ui_quad(
+            texture=item,
+            src=rl.Rectangle(0.0, 0.0, item_w, item_h),
+            dst=dst,
+            origin=origin,
+            rotation_deg=rotation_deg,
+            tint=rl.WHITE,
+        )
+        alpha = MenuView._label_alpha(entry.hover_amount)
+        tint = rl.Color(255, 255, 255, alpha)
+        src = rl.Rectangle(
+            0.0,
+            float(entry.row) * MENU_LABEL_ROW_HEIGHT,
+            MENU_LABEL_WIDTH,
+            MENU_LABEL_ROW_HEIGHT,
+        )
+        label_offset_x = MENU_LABEL_OFFSET_X * item_scale
+        label_offset_y = MENU_LABEL_OFFSET_Y * item_scale - local_y_shift
+        label_dst = rl.Rectangle(
+            pos_x,
+            pos_y,
+            MENU_LABEL_WIDTH * item_scale,
+            MENU_LABEL_HEIGHT * item_scale,
+        )
+        label_origin = rl.Vector2(-label_offset_x, -label_offset_y)
+        MenuView._draw_ui_quad(
+            texture=label_tex,
+            src=src,
+            dst=label_dst,
+            origin=label_origin,
+            rotation_deg=rotation_deg,
+            tint=tint,
+        )
+        if self._entry_enabled(entry):
+            rl.begin_blend_mode(rl.BLEND_ADDITIVE)
+            MenuView._draw_ui_quad(
+                texture=label_tex,
+                src=src,
+                dst=label_dst,
+                origin=label_origin,
+                rotation_deg=rotation_deg,
+                tint=rl.Color(255, 255, 255, alpha),
+            )
+            rl.end_blend_mode()
+
+    def _draw_sign(self) -> None:
+        assets = self._assets
+        if assets is None or assets.sign is None:
+            return
+        screen_w = float(self._state.config.screen_width)
+        scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
+        pos_x = screen_w + MENU_SIGN_POS_X_PAD
+        pos_y = MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL
+        sign_w = MENU_SIGN_WIDTH * scale
+        sign_h = MENU_SIGN_HEIGHT * scale
+        offset_x = MENU_SIGN_OFFSET_X * scale + shift_x
+        offset_y = MENU_SIGN_OFFSET_Y * scale
+        angle_rad, slide_x = MenuView._ui_element_anim(
+            self,
+            index=0,
+            start_ms=300,
+            end_ms=0,
+            width=sign_w,
+        )
+        _ = slide_x
+        sign = assets.sign
+        MenuView._draw_ui_quad(
+            texture=sign,
+            src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
+            dst=rl.Rectangle(pos_x, pos_y, sign_w, sign_h),
+            origin=rl.Vector2(-offset_x, -offset_y),
+            rotation_deg=math.degrees(angle_rad),
+            tint=rl.WHITE,
+        )
+
+    def _draw_fade(self) -> None:
+        max_ms = max(1, self._timeline_max_ms)
+        alpha = 1.0 - float(self._timeline_ms) / float(max_ms)
+        if alpha <= 0.0:
+            return
+        if alpha > 1.0:
+            alpha = 1.0
+        tint = rl.Color(0, 0, 0, int(round(alpha * 255.0)))
+        rl.draw_rectangle(0, 0, rl.get_screen_width(), rl.get_screen_height(), tint)
+
+    def _entry_enabled(self, entry: MenuEntry) -> bool:
+        return self._timeline_ms >= MenuView._menu_slot_start_ms(entry.slot)
+
+    def _hovered_entry(self, entry: MenuEntry) -> bool:
+        left, top, right, bottom = self._menu_item_bounds(entry)
+        mouse = rl.get_mouse_position()
+        mouse_x = float(mouse.x)
+        mouse_y = float(mouse.y)
+        return left <= mouse_x <= right and top <= mouse_y <= bottom
+
+    def _menu_item_scale(self, slot: int) -> tuple[float, float]:
+        if self._menu_screen_width < 641:
+            return 0.9, float(slot) * 11.0
+        return 1.0, 0.0
+
+    def _menu_item_bounds(self, entry: MenuEntry) -> tuple[float, float, float, float]:
+        assets = self._assets
+        if assets is None or assets.item is None:
+            return (0.0, 0.0, 0.0, 0.0)
+        item_w = float(assets.item.width)
+        item_h = float(assets.item.height)
+        item_scale, local_y_shift = self._menu_item_scale(entry.slot)
+        x0 = MENU_ITEM_OFFSET_X * item_scale
+        y0 = MENU_ITEM_OFFSET_Y * item_scale - local_y_shift
+        x2 = (MENU_ITEM_OFFSET_X + item_w) * item_scale
+        y2 = (MENU_ITEM_OFFSET_Y + item_h) * item_scale - local_y_shift
+        w = x2 - x0
+        h = y2 - y0
+        pos_x = MenuView._menu_slot_pos_x(entry.slot)
+        pos_y = entry.y + self._widescreen_y_shift
+        left = pos_x + x0 + w * 0.54
+        top = pos_y + y0 + h * 0.28
+        right = pos_x + x2 - w * 0.05
+        bottom = pos_y + y2 - h * 0.10
+        return left, top, right, bottom
+
+
 class GameLoopView:
     def __init__(self, state: GameState) -> None:
         self._state = state
         self._boot = BootView(state)
         self._demo = DemoView(state)
         self._menu = MenuView(state)
+        self._front_views: dict[str, PanelMenuView] = {
+            "open_play_game": PanelMenuView(
+                state,
+                title="Play Game",
+                body="Mode selection + gameplay loop are not implemented yet.",
+            ),
+            "open_options": PanelMenuView(
+                state,
+                title="Options",
+                body="Option widgets are not implemented yet.",
+            ),
+            "open_statistics": PanelMenuView(
+                state,
+                title="Statistics",
+                body="Stats persistence + display are not implemented yet.",
+            ),
+            "open_mods": PanelMenuView(
+                state,
+                title="Mods",
+                body="Mod loader is not implemented yet.",
+            ),
+            "open_other_games": PanelMenuView(
+                state,
+                title="Other games",
+                body="This menu is out of scope for the rewrite.",
+            ),
+        }
+        self._front_active: PanelMenuView | None = None
         self._active: View = self._boot
         self._demo_active = False
         self._menu_active = False
@@ -1054,6 +1431,15 @@ class GameLoopView:
 
     def update(self, dt: float) -> None:
         self._active.update(dt)
+        if self._front_active is not None:
+            action = self._front_active.take_action()
+            if action == "back_to_menu":
+                self._front_active.close()
+                self._front_active = None
+                self._menu.open()
+                self._active = self._menu
+                self._menu_active = True
+                return
         if self._menu_active:
             action = self._menu.take_action()
             if action == "quit_app":
@@ -1066,9 +1452,19 @@ class GameLoopView:
                 self._active = self._demo
                 self._demo_active = True
                 return
+            if action is not None:
+                view = self._front_views.get(action)
+                if view is not None:
+                    self._menu.close()
+                    self._menu_active = False
+                    view.open()
+                    self._front_active = view
+                    self._active = view
+                    return
         if (
             (not self._demo_active)
             and (not self._menu_active)
+            and self._front_active is None
             and self._state.demo_enabled
             and self._boot.is_theme_started()
         ):
@@ -1083,7 +1479,7 @@ class GameLoopView:
             self._active = self._menu
             self._menu_active = True
             return
-        if (not self._demo_active) and (not self._menu_active) and self._boot.is_theme_started():
+        if (not self._demo_active) and (not self._menu_active) and self._front_active is None and self._boot.is_theme_started():
             self._menu.open()
             self._active = self._menu
             self._menu_active = True
@@ -1094,6 +1490,8 @@ class GameLoopView:
     def close(self) -> None:
         if self._menu_active:
             self._menu.close()
+        if self._front_active is not None:
+            self._front_active.close()
         if self._demo_active:
             self._demo.close()
         self._boot.close()

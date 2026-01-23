@@ -12,7 +12,7 @@ Legend: ✅ complete · 🚧 in progress · ⬜ not started
 | Quest Logic | ✅ | ✅ | ✅ | ✅ | All 50 builders dumped, validated, and mirrored in Python. |
 | Terrain | ✅ | ✅ | ✅ | 🚧 | Rendering logic validated; baking pipeline in progress. |
 | Boot Sequence | ✅ | ✅ | ✅ | 🚧 | Logos, loading steps, and music handoff implemented. |
-| Menu System | ✅ | ✅ | 🚧 | ⬜ | State 0 scaffolded; transitions/layout need polish. |
+| Menu System | ✅ | ✅ | 🚧 | 🚧 | State 0: quit wired; other entries route to placeholder screens. |
 | Demo / attract loop | ✅ | 🚧 | ⬜ | ⬜ | Variants + spawn ids identified; purchase/idle/loop behavior still stubbed. |
 | Weapons | ✅ | ✅ | 🚧 | ⬜ | Table structure known; projectile logic pending. |
 | Creatures: structs | ✅ | 🚧 | ⬜ | ⬜ | Creature pool field map is medium-confidence; needs more xrefs + runtime checks. |

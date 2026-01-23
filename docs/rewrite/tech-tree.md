@@ -19,6 +19,7 @@ it unlocks for parity. Goal: 100% replication of game logic.
 - [x] Company logo sequence + skip -> Unlocks: intro flow parity.
 - [x] Intro/theme music playback -> Unlocks: boot/menu audio parity.
 - [x] Main menu layout + animation scaffold -> Unlocks: menu navigation work.
+- [x] Main menu buttons wired (Play/Options/Stats/Mods/Quit) -> Unlocks: front-end screen plumbing.
 - [x] Demo/attract scaffold -> Unlocks: idle flow and animation sanity checks.
 - [ ] Demo loop parity (idle trigger + variant sequencing + restart rules) -> Unlocks: title-screen behavior parity.
 - [ ] Demo purchase screen flow (demo builds) -> Unlocks: upsell UI parity.
@@ -41,6 +42,7 @@ it unlocks for parity. Goal: 100% replication of game logic.
 
 ## Next (short term)
 
+- [ ] Options screen widgets (fx/audio/windowed toggles) -> Unlocks: config editing parity.
 - [ ] Player input + movement state -> Unlocks: controllable gameplay loop.
 - [ ] Weapon firing + reload timers -> Unlocks: combat timing parity.
 - [ ] Projectile system (spawn/update/collide) -> Unlocks: damage + FX.
