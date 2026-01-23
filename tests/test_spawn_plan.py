@@ -1477,7 +1477,7 @@ def test_spawn_plan_template_3b_is_constant_and_tail_enables_ai7_timer() -> None
     assert c.reward_value == 4000.0
     assert c.size == 70.0
     assert c.contact_damage == 20.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.7, 0.0, 0.0, 1.0)
+    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.9, 0.0, 0.0, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)

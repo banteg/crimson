@@ -1504,7 +1504,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.health = 1200.0
         c.move_speed = 2.0
         c.reward_value = 4000.0
-        c.tint_r = 0.7
+        c.tint_r = 0.9
         c.tint_g = 0.0
         c.tint_b = 0.0
         c.tint_a = 1.0
