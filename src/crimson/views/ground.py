@@ -134,13 +134,6 @@ class GroundView:
             self._draw_ui_text("Ground renderer not initialized.", 24, 24, UI_ERROR_COLOR)
             return
         self._renderer.draw(self._camera_x, self._camera_y)
-        self._draw_ui_text(
-            "Left/Right: change level  WASD: pan",
-            24,
-            24,
-            UI_TEXT_COLOR,
-            scale=0.9,
-        )
         self._draw_quest_title_overlay()
 
     def _resolve_asset(self, rel_path: str) -> Path | None:
