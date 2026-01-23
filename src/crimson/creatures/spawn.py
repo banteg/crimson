@@ -10,6 +10,8 @@ This module combines:
 Note: in the original game, `creature_spawn_template` is an algorithm (formations,
 spawn slots, tail modifiers), so the spawn-id index here is only used for labeling
 and debug UIs.
+
+See also: `docs/creatures/spawn_plan.md` (porting model / invariants).
 """
 
 from dataclasses import dataclass

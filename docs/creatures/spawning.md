@@ -12,6 +12,8 @@ It is not a static struct/table: it always performs base creature initialization
 template switch, may allocate additional creatures and/or spawn-slot entries, and then applies
 shared tail modifiers (difficulty/hardcore, demo gating, etc).
 
+For the pure, unit-testable model we use while porting templates, see: [`spawn_plan.md`](spawn_plan.md).
+
 ## Inputs
 
 - `template_id` (aka `param_1`): spawn id used by quest tables and other spawners.
