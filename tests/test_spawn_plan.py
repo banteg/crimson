@@ -1526,6 +1526,152 @@ def test_spawn_plan_template_30_is_constant() -> None:
     assert rng.state == _step_msvcrt(0xBEEF, 2)
 
 
+def test_spawn_plan_template_31_is_randomized() -> None:
+    seed = 0xBEEF
+    rng = Crand(seed)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,  # avoid effect noise
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x31, (100.0, 200.0), 0.0, rng, env)
+
+    assert plan.primary == 0
+    assert len(plan.creatures) == 1
+    assert plan.spawn_slots == ()
+
+    state = seed
+    state, _ = _msvcrt_rand(state)  # alloc phase_seed
+    state, _ = _msvcrt_rand(state)  # base init random heading (overwritten)
+
+    state, r_size = _msvcrt_rand(state)
+    expected_size = float(r_size % 0x1E + 0x28)
+    expected_health = expected_size * 1.1428572 + 10.0
+
+    state, r_speed = _msvcrt_rand(state)
+    expected_speed = float(r_speed % 0x12) * 0.1 + 1.1
+    expected_reward = expected_size + expected_size + 50.0
+
+    state, r_tint = _msvcrt_rand(state)
+    expected_tint = float(r_tint % 0x1E) * 0.01 + 0.6
+
+    expected_contact = expected_size * 0.14 + 4.0
+
+    c = plan.creatures[0]
+    assert c.type_id == CreatureTypeId.LIZARD
+    assert c.size == expected_size
+    assert c.health == expected_health
+    assert c.max_health == expected_health
+    assert c.move_speed == expected_speed
+    assert c.reward_value == expected_reward
+    assert c.contact_damage == expected_contact
+    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (expected_tint, expected_tint, 0.38, 1.0)
+    assert c.heading == 0.0
+
+    assert rng.state == _step_msvcrt(seed, 5)
+
+
+def test_spawn_plan_template_32_is_randomized_and_tail_enables_ai7_timer() -> None:
+    seed = 0xBEEF
+    rng = Crand(seed)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,  # avoid effect noise
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x32, (100.0, 200.0), 0.0, rng, env)
+
+    assert plan.primary == 0
+    assert len(plan.creatures) == 1
+    assert plan.spawn_slots == ()
+
+    state = seed
+    state, _ = _msvcrt_rand(state)  # alloc phase_seed
+    state, _ = _msvcrt_rand(state)  # base init random heading (overwritten)
+
+    state, r_size = _msvcrt_rand(state)
+    expected_size = float(r_size % 0x19 + 0x28)
+    expected_health = expected_size + 10.0
+
+    state, r_speed = _msvcrt_rand(state)
+    expected_speed_pre_tail = float(r_speed % 0x11) * 0.1 + 1.1
+    expected_reward = expected_size + expected_size + 50.0
+
+    state, r_tint = _msvcrt_rand(state)
+    expected_tint = float(r_tint % 0x28) * 0.01 + 0.6
+
+    expected_contact = expected_size * 0.14 + 4.0
+
+    c = plan.creatures[0]
+    assert c.type_id == CreatureTypeId.SPIDER_SP1
+    assert c.flags == CreatureFlags.AI7_LINK_TIMER
+    assert c.ai_timer == 0
+    assert c.size == expected_size
+    assert c.health == expected_health
+    assert c.max_health == expected_health
+    assert (c.move_speed or 0.0) == pytest.approx(expected_speed_pre_tail * 1.2, abs=1e-9)
+    assert c.reward_value == expected_reward
+    assert c.contact_damage == expected_contact
+    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (expected_tint, expected_tint, expected_tint, 1.0)
+    assert c.heading == 0.0
+
+    assert rng.state == _step_msvcrt(seed, 5)
+
+
+def test_spawn_plan_template_33_is_randomized_and_tail_enables_ai7_timer() -> None:
+    seed = 0xBEEF
+    rng = Crand(seed)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,  # avoid effect noise
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x33, (100.0, 200.0), 0.0, rng, env)
+
+    assert plan.primary == 0
+    assert len(plan.creatures) == 1
+    assert plan.spawn_slots == ()
+
+    state = seed
+    state, _ = _msvcrt_rand(state)  # alloc phase_seed
+    state, _ = _msvcrt_rand(state)  # base init random heading (overwritten)
+
+    state, r_size = _msvcrt_rand(state)
+    expected_size = float(r_size % 0xF + 0x2D)
+    expected_health = expected_size * 1.1428572 + 20.0
+
+    state, r_speed = _msvcrt_rand(state)
+    expected_speed_pre_tail = float(r_speed % 0x12) * 0.1 + 1.1
+    expected_reward = expected_size + expected_size + 50.0
+
+    state, r_tint = _msvcrt_rand(state)
+    expected_tint_r = float(r_tint % 0x28) * 0.01 + 0.6
+
+    state, r_contact = _msvcrt_rand(state)
+    expected_contact = float(r_contact % 10) + 4.0
+
+    c = plan.creatures[0]
+    assert c.type_id == CreatureTypeId.SPIDER_SP1
+    assert c.flags == CreatureFlags.AI7_LINK_TIMER
+    assert c.ai_timer == 0
+    assert c.size == expected_size
+    assert c.health == expected_health
+    assert c.max_health == expected_health
+    assert (c.move_speed or 0.0) == pytest.approx(expected_speed_pre_tail * 1.2, abs=1e-9)
+    assert c.reward_value == expected_reward
+    assert c.contact_damage == expected_contact
+    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (expected_tint_r, 0.5, 0.5, 1.0)
+    assert c.heading == 0.0
+
+    assert rng.state == _step_msvcrt(seed, 6)
+
+
 def test_spawn_plan_template_34_is_randomized_and_tail_enables_ai7_timer() -> None:
     seed = 0xBEEF
     rng = Crand(seed)
