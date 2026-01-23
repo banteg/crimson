@@ -55,6 +55,8 @@ TYPE_ID_TO_NAME = {
     5: "trooper",
 }
 
+# For many template ids, tint/size/move_speed are randomized or derived from other fields.
+# We only fill them in when the game uses fixed constants (and keep the rest as `None`).
 SPAWN_TEMPLATES = [
     SpawnTemplate(
         spawn_id=0x00,
@@ -62,6 +64,12 @@ SPAWN_TEMPLATES = [
         flags=CreatureFlags.ANIM_PING_PONG | CreatureFlags.ANIM_LONG_STRIP,
         creature="zombie",
         anim_note="long strip (0x40 overrides 0x4)",
+        tint_r=0.6,
+        tint_g=0.6,
+        tint_b=1.0,
+        tint_a=0.8,
+        size=64.0,
+        move_speed=1.3,
     ),
     SpawnTemplate(
         spawn_id=0x01,
@@ -69,6 +77,12 @@ SPAWN_TEMPLATES = [
         flags=CreatureFlags.SPLIT_ON_DEATH,
         creature="spider_sp2",
         anim_note=None,
+        tint_r=0.8,
+        tint_g=0.7,
+        tint_b=0.4,
+        tint_a=1.0,
+        size=80.0,
+        move_speed=2.0,
     ),
     SpawnTemplate(
         spawn_id=0x03,

@@ -55,6 +55,7 @@ class CreatureAnimationView:
         self._paused = False
         self._last_dt = 0.0
         self._last_step = 0.0
+        self._apply_template_defaults()
 
     def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
         if self._small is not None:
@@ -132,6 +133,14 @@ class CreatureAnimationView:
             return
         self._index = (self._index + delta) % len(self._templates)
         self._phase = 0.0
+        self._apply_template_defaults()
+
+    def _apply_template_defaults(self) -> None:
+        template = self._current_template()
+        if template is None:
+            return
+        self._move_speed = template.move_speed if template.move_speed is not None else 2.0
+        self._size = template.size if template.size is not None else 50.0
 
     def _handle_input(self) -> None:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT):
@@ -234,7 +243,17 @@ class CreatureAnimationView:
             float(cell),
         )
         dst_frame = rl.Rectangle(float(preview_x), float(preview_y), float(preview_size), float(preview_size))
-        rl.draw_texture_pro(texture, src_frame, dst_frame, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+        tint_r = template.tint_r if template.tint_r is not None else 1.0
+        tint_g = template.tint_g if template.tint_g is not None else 1.0
+        tint_b = template.tint_b if template.tint_b is not None else 1.0
+        tint_a = template.tint_a if template.tint_a is not None else 1.0
+        tint = rl.Color(
+            max(0, min(255, int(tint_r * 255))),
+            max(0, min(255, int(tint_g * 255))),
+            max(0, min(255, int(tint_b * 255))),
+            max(0, min(255, int(tint_a * 255))),
+        )
+        rl.draw_texture_pro(texture, src_frame, dst_frame, rl.Vector2(0.0, 0.0), 0.0, tint)
 
         info_lines = [
             f"type_id={template.type_id.name}",
@@ -242,6 +261,9 @@ class CreatureAnimationView:
             f"mode={mode}",
             f"frame=0x{frame:02x}",
             f"phase={self._phase:.6f}",
+            f"template.move_speed={template.move_speed!r}",
+            f"template.size={template.size!r}",
+            f"template.tint=({template.tint_r!r}, {template.tint_g!r}, {template.tint_b!r}, {template.tint_a!r})",
             f"move_speed={self._move_speed:.2f}",
             f"size={self._size:.1f}",
             f"local_scale={self._local_scale:.2f}",
