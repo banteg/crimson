@@ -20,6 +20,14 @@ from .weapons import WEAPON_TABLE
 WORLD_SIZE = 1024.0
 DEMO_VARIANT_COUNT = 5
 
+_DEMO_UPSELL_MESSAGES: tuple[str, ...] = (
+    "Want more Levels?",
+    "Want more Weapons?",
+    "Want more Perks?",
+    "Want unlimited Play time?",
+    "Want to post your high scores?",
+)
+
 
 class DemoState(Protocol):
     assets_dir: Path
@@ -167,9 +175,13 @@ class DemoView:
         self._finished = False
         self._camera_x = 0.0
         self._camera_y = 0.0
+        self._upsell_message_index = 0
+        self._upsell_pulse_ms = 0
 
     def open(self) -> None:
         self._finished = False
+        self._upsell_message_index = 0
+        self._upsell_pulse_ms = 0
         self._variant_index = 0
         self._start_variant(0)
 
@@ -197,6 +209,7 @@ class DemoView:
             self._finished = True
             return
         frame_dt = min(dt, 0.1)
+        self._upsell_pulse_ms += int(frame_dt * 1000.0)
         self._variant_elapsed += frame_dt
         self._update_sim(frame_dt)
         self._advance_anim_phase(frame_dt)
@@ -252,6 +265,8 @@ class DemoView:
     def _start_variant(self, index: int) -> None:
         self._variant_index = index
         self._variant_elapsed = 0.0
+        if _DEMO_UPSELL_MESSAGES:
+            self._upsell_message_index = (self._upsell_message_index + 1) % len(_DEMO_UPSELL_MESSAGES)
         self._creatures.clear()
         self._players.clear()
         self._projectiles.clear()
@@ -581,6 +596,9 @@ class DemoView:
         rl.draw_texture_pro(texture, src, dst, origin, 0.0, tint)
 
     def _draw_overlay(self) -> None:
+        if getattr(self._state, "demo_enabled", False):
+            self._draw_demo_upsell_overlay()
+            return
         title = f"DEMO MODE  ({self._variant_index + 1}/{DEMO_VARIANT_COUNT})"
         hint = "Press any key / click to skip"
         remaining = max(0.0, self._variant_duration - self._variant_elapsed)
@@ -589,6 +607,51 @@ class DemoView:
         rl.draw_text(title, 16, 12, 20, rl.Color(240, 240, 240, 255))
         rl.draw_text(detail, 16, 36, 16, rl.Color(180, 180, 190, 255))
         rl.draw_text(hint, 16, 56, 16, rl.Color(140, 140, 150, 255))
+
+    def _draw_demo_upsell_overlay(self) -> None:
+        # Modeled after the shareware "Want more ..." overlay in demo_purchase_screen_update
+        # (crimsonland.exe 0x0040B740), but without the purchase screen.
+        if not _DEMO_UPSELL_MESSAGES:
+            return
+
+        elapsed_ms = self._variant_elapsed * 1000.0
+        limit_ms = self._variant_duration * 1000.0
+        alpha = 1.0
+        if elapsed_ms < 1250.0:
+            alpha = elapsed_ms / 1250.0
+        if limit_ms - elapsed_ms < 500.0:
+            alpha = max(0.0, (limit_ms - elapsed_ms) / 500.0)
+
+        pulse = float(self._upsell_pulse_ms % 1000) / 1000.0 * (math.pi * 2.0)
+        pulse = math.sin(pulse)
+        pulse = pulse * pulse
+
+        msg = _DEMO_UPSELL_MESSAGES[self._upsell_message_index]
+        font_size = 16
+        x = 50
+        y = 60
+        text_w = rl.measure_text(msg, font_size)
+
+        pad = 8
+        bg_alpha = int(_clamp(alpha * 0.5, 0.0, 1.0) * 255.0)
+        bar_alpha = int(_clamp(alpha * 0.8, 0.0, 1.0) * 255.0)
+        txt_alpha = int(_clamp(alpha * (0.75 + 0.25 * pulse), 0.0, 1.0) * 255.0)
+
+        rect_x = x - pad
+        rect_y = y - pad
+        rect_w = text_w + pad * 2
+        rect_h = font_size + pad * 2 + 6
+
+        rl.draw_rectangle(rect_x, rect_y, rect_w, rect_h, rl.Color(0, 0, 0, bg_alpha))
+        rl.draw_text(msg, x, y, font_size, rl.Color(240, 240, 240, txt_alpha))
+
+        progress = 0.0
+        if self._variant_duration > 1e-6:
+            progress = _clamp(self._variant_elapsed / self._variant_duration, 0.0, 1.0)
+        bar_w = int(round(float(text_w) * progress))
+        bar_y = y + font_size + 2
+        rl.draw_rectangle(x, bar_y, text_w, 3, rl.Color(0, 0, 0, bg_alpha))
+        rl.draw_rectangle(x, bar_y, bar_w, 3, rl.Color(128, 60, 60, bar_alpha))
 
     def _creature_hp(self, type_id: CreatureTypeId | None) -> float:
         if type_id == CreatureTypeId.ZOMBIE:

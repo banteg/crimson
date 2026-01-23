@@ -22,8 +22,9 @@ it unlocks for parity. Goal: 100% replication of game logic.
 - [x] Main menu buttons wired (Play/Options/Stats/Mods/Quit) -> Unlocks: front-end screen plumbing.
 - [x] Demo/attract scaffold -> Unlocks: idle flow and animation sanity checks.
 - [ ] Demo loop parity (idle trigger + variant sequencing + restart rules) -> Unlocks: title-screen behavior parity.
-- [ ] Demo purchase screen flow (demo builds) -> Unlocks: upsell UI parity.
+- [ ] Demo upsell overlay (demo builds) -> Unlocks: shareware messaging parity.
 - [ ] Demo trial overlay (demo builds) -> Unlocks: trial messaging parity.
+- [ ] Demo purchase screen flow (demo builds, deprioritized) -> Unlocks: upsell UI parity.
 
 ## Data tables + content
 
