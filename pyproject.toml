@@ -18,6 +18,8 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "pytest>=9.0.2",
+    "syrupy>=5.0.0",
     "zensical>=0.0.16",
 ]
 
