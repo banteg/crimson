@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pyray as rl
 
+from grim.assets import PaqTextureCache, load_paq_entries
+
 GRIM_MONO_ADVANCE = 16.0
 GRIM_MONO_DRAW_SIZE = 32.0
 GRIM_MONO_LINE_HEIGHT = 28.0
@@ -21,11 +23,30 @@ class GrimMonoFont:
 
 
 def load_grim_mono_font(assets_root: Path, missing_assets: list[str]) -> GrimMonoFont:
-    atlas_path = assets_root / "crimson" / "load" / "default_font_courier.png"
-    if not atlas_path.is_file():
-        missing_assets.append("default_font_courier.png")
-        raise FileNotFoundError(f"Missing grim mono font: {atlas_path}")
-    texture = rl.load_texture(str(atlas_path))
+    # Prefer extracted assets when present, but fall back to crimson.paq since
+    # the runtime "game" command only requires the PAQ archives.
+    atlas_png = assets_root / "crimson" / "load" / "default_font_courier.png"
+    atlas_tga = assets_root / "crimson" / "load" / "default_font_courier.tga"
+
+    texture: rl.Texture
+    if atlas_png.is_file():
+        texture = rl.load_texture(str(atlas_png))
+    elif atlas_tga.is_file():
+        texture = rl.load_texture(str(atlas_tga))
+    else:
+        try:
+            entries = load_paq_entries(assets_root)
+            cache = PaqTextureCache(entries=entries, textures={})
+            texture_asset = cache.get_or_load("default_font_courier", "load/default_font_courier.tga")
+            if texture_asset.texture is None:
+                raise FileNotFoundError("PAQ returned no texture")
+            texture = texture_asset.texture
+        except Exception as exc:
+            missing_assets.append("load/default_font_courier.tga")
+            raise FileNotFoundError(
+                "Missing grim mono font (expected extracted file or load/default_font_courier.tga in crimson.paq)"
+            ) from exc
+
     rl.set_texture_filter(texture, GRIM_MONO_TEXTURE_FILTER)
     grid = 16
     cell_width = texture.width / grid
