@@ -364,19 +364,19 @@
     },
     {
       "address": "0x00480356",
-      "comment": "Config: FX detail flag (set by config_detail_preset).",
+      "comment": "Config: FX detail flag0 (enables extra shadow-ish passes; e.g. ui_element_render + creature_render_type). Set by config_apply_detail_preset.",
       "name": "config_fx_detail_flag0",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x00480358",
-      "comment": "Config: FX detail flag (set by config_detail_preset).",
+      "comment": "Config: FX detail flag1 (enables heavier FX in some render paths; e.g. projectile_render/bonus_render). Set by config_apply_detail_preset.",
       "name": "config_fx_detail_flag1",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x00480359",
-      "comment": "Config: FX detail flag (set by config_detail_preset).",
+      "comment": "Config: FX detail flag2 (additional FX tier toggle; observed gating an extra sprite_effect_pool render pass in bonus_render). Set by config_apply_detail_preset.",
       "name": "config_fx_detail_flag2",
       "program": "crimsonland.exe"
     },
@@ -898,7 +898,7 @@
     },
     {
       "address": "0x004807b8",
-      "comment": "Config: detail preset driving FX detail flags.",
+      "comment": "Config: Graphics detail preset (1..5); applied by config_apply_detail_preset to config_fx_detail_flag0/1/2.",
       "name": "config_detail_preset",
       "program": "crimsonland.exe"
     },

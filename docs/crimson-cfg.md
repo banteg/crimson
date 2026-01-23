@@ -89,7 +89,7 @@ the blob start.
 
 | Offset | Size | Default | Name | Description |
 | --- | --- | --- | --- | --- |
-| `0x000` | 0xA8 | - | Unused/Reserved? | Initial area, seems mostly zeroed/unused. |
+| `0x000` | 0xA8 | - | Header / mixed fields | Not all unused; contains multiple small config fields (see below for known offsets). |
 | `0x0A8` | 216 | `"default"` x8 | `config_saved_names` | 8 saved names (player name cache), 27 bytes each. |
 | `0x180` | 32 | `10tons` | `config_player_name` | Current player name (char[32] or similar?). |
 | `0x1A0` | 4 | `0` | `config_player_name_length` | Length of player name. |
@@ -110,14 +110,41 @@ the blob start.
 | `0x450` | 28 | - | Unused? | Gap. |
 | `0x464` | 4 | `1.0` | `config_sfx_volume` | SFX Volume (float). |
 | `0x468` | 4 | `1.0` | `config_music_volume` | Music Volume (float). |
-| `0x46C` | 1 | `0` | `config_fx_toggle` | FX Detail toggle. |
+| `0x46C` | 1 | `0` | `config_fx_toggle` | FX toggle (gore/particle/effects paths). Separate from the `config_fx_detail_flag*` trio. |
 | `0x46D` | 1 | `0` | `config_score_load_gate` | Score loading flag. |
 | `0x46E` | 2 | - | Unused? | Alignment. |
-| `0x470` | 4 | - | `config_detail_preset` | Detail preset index. |
+| `0x470` | 4 | `5` | `config_detail_preset` | Graphics detail preset (1..5). Drives `config_fx_detail_flag*` via `config_apply_detail_preset` (`0x00447580`). |
 | `0x474` | 4 | - | Unused? | Gap. |
 | `0x478` | 4 | - | `config_key_pick_perk` | Keybind: Pick Perk. |
 | `0x47C` | 4 | - | `config_key_reload` | Keybind: Reload. |
 | `0x480` | - | - | End | End of file. |
+
+## FX detail flags (0x0E / 0x10 / 0x11)
+
+These three bytes live inside the `0x000..0x0A7` “header/mixed” region of the blob:
+
+| Offset | Size | Name | Meaning (observed in decompile) |
+| --- | --- | --- | --- |
+| `0x0E` | 1 | `config_fx_detail_flag0` | Enables extra shadow-ish passes (e.g. `ui_element_render` draws the +7,+7 shadow when nonzero; also used in creature rendering). |
+| `0x10` | 1 | `config_fx_detail_flag1` | Enables heavier FX in some render paths (notably extra large quads in `projectile_render`; also used in `bonus_render`). |
+| `0x11` | 1 | `config_fx_detail_flag2` | Additional FX tier toggle (currently only observed in `bonus_render`, gating an extra `sprite_effect_pool` render pass). |
+
+### How `config_detail_preset` maps to the flags
+
+`config_apply_detail_preset` (`0x00447580`) applies the “Graphics detail” preset to these flags:
+
+| `config_detail_preset` | `flag0` (`0x0E`) | `flag1` (`0x10`) | `flag2` (`0x11`) |
+| --- | --- | --- | --- |
+| 1 | 0 | 0 | 0 |
+| 2 | 0 | 0 | *unchanged* |
+| 3 | 1 | 1 | 1 |
+| 4 | 1 | 1 | 1 |
+| 5 | 1 | 1 | 1 |
+
+Notes:
+
+- The options UI clamps `config_detail_preset` to 1..5, then calls `config_apply_detail_preset` (`sub_4475d0` at `0x004475d0`).
+- Default init (`config_init_defaults` at `0x004028f0`) sets `flag0/1/2` to 1 and `config_detail_preset` to 5.
 
 ## Keybind Block Structure
 

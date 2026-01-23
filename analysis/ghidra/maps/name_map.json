@@ -2941,9 +2941,9 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00447580",
-    "name": "FUN_00447580",
-    "signature": "int FUN_00447580(void)",
-    "comment": "[binja] int32_t sub_447580()"
+    "name": "config_apply_detail_preset",
+    "signature": "void config_apply_detail_preset(void)",
+    "comment": "Applies config_detail_preset (\"Graphics detail\" 1..5) to the config_fx_detail_flag0/1/2 bytes."
   },
   {
     "program": "crimsonland.exe",
