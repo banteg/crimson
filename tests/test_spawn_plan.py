@@ -45,6 +45,116 @@ def test_spawn_plan_template_1_is_constant() -> None:
     assert rng.state == _step_msvcrt(0x1234, 2)
 
 
+def test_spawn_plan_template_07_has_spawn_slot_and_non_hardcore_interval_bump() -> None:
+    rng = Crand(0)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=False,
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x07, (100.0, 200.0), 0.0, rng, env)
+
+    assert plan.primary == 0
+    assert len(plan.creatures) == 1
+    assert len(plan.spawn_slots) == 1
+
+    c = plan.creatures[0]
+    assert c.type_id == CreatureTypeId.ALIEN
+    assert c.flags == CreatureFlags.ANIM_PING_PONG
+    assert c.spawn_slot == 0
+    assert c.health == 1000.0
+    assert c.max_health == 1000.0
+    assert c.move_speed == 2.0
+    assert c.reward_value == 3000.0
+    assert c.size == 50.0
+    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (1.0, 1.0, 1.0, 1.0)
+    assert c.contact_damage == 0.0
+
+    slot = plan.spawn_slots[0]
+    assert slot.timer == 1.0
+    assert slot.limit == 100
+    assert slot.child_template_id == 0x1D
+    # 0x400ccccd (float32) + 0.2 tail bump.
+    assert math.isclose(slot.interval, 2.400000047683716, abs_tol=1e-9)
+
+    assert rng.state == _step_msvcrt(0, 2)
+
+
+def test_spawn_plan_template_08_has_spawn_slot_and_non_hardcore_interval_bump() -> None:
+    rng = Crand(0)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=False,
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x08, (100.0, 200.0), 0.0, rng, env)
+
+    assert plan.primary == 0
+    assert len(plan.creatures) == 1
+    assert len(plan.spawn_slots) == 1
+
+    c = plan.creatures[0]
+    assert c.type_id == CreatureTypeId.ALIEN
+    assert c.flags == CreatureFlags.ANIM_PING_PONG
+    assert c.spawn_slot == 0
+    assert c.health == 1000.0
+    assert c.max_health == 1000.0
+    assert c.move_speed == 2.0
+    assert c.reward_value == 3000.0
+    assert c.size == 50.0
+    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (1.0, 1.0, 1.0, 1.0)
+    assert c.contact_damage == 0.0
+
+    slot = plan.spawn_slots[0]
+    assert slot.timer == 1.0
+    assert slot.limit == 100
+    assert slot.child_template_id == 0x1D
+    # 0x40333333 (float32) + 0.2 tail bump.
+    assert math.isclose(slot.interval, 2.999999952316284, abs_tol=1e-9)
+
+    assert rng.state == _step_msvcrt(0, 2)
+
+
+def test_spawn_plan_template_09_has_spawn_slot_and_non_hardcore_interval_bump() -> None:
+    rng = Crand(0)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=False,
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x09, (100.0, 200.0), 0.0, rng, env)
+
+    assert plan.primary == 0
+    assert len(plan.creatures) == 1
+    assert len(plan.spawn_slots) == 1
+
+    c = plan.creatures[0]
+    assert c.type_id == CreatureTypeId.ALIEN
+    assert c.flags == CreatureFlags.ANIM_PING_PONG
+    assert c.spawn_slot == 0
+    assert c.health == 450.0
+    assert c.max_health == 450.0
+    assert c.move_speed == 2.0
+    assert c.reward_value == 1000.0
+    assert c.size == 40.0
+    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (1.0, 1.0, 1.0, 1.0)
+    assert c.contact_damage == 0.0
+
+    slot = plan.spawn_slots[0]
+    assert slot.timer == 1.0
+    assert slot.limit == 0x10
+    assert slot.child_template_id == 0x1D
+    assert slot.interval == 2.2
+
+    assert rng.state == _step_msvcrt(0, 2)
+
+
 def test_spawn_plan_template_0a_has_spawn_slot_and_non_hardcore_interval_bump() -> None:
     rng = Crand(0)
     env = SpawnEnv(
@@ -114,6 +224,78 @@ def test_spawn_plan_template_0b_has_spawn_slot_and_non_hardcore_interval_bump() 
     assert slot.timer == 2.0
     assert slot.limit == 100
     assert slot.child_template_id == 0x3C
+    assert slot.interval == 6.2
+
+    assert rng.state == _step_msvcrt(0, 2)
+
+
+def test_spawn_plan_template_0c_has_spawn_slot_and_non_hardcore_interval_bump() -> None:
+    rng = Crand(0)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=False,
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x0C, (100.0, 200.0), 0.0, rng, env)
+
+    assert plan.primary == 0
+    assert len(plan.creatures) == 1
+    assert len(plan.spawn_slots) == 1
+
+    c = plan.creatures[0]
+    assert c.type_id == CreatureTypeId.ALIEN
+    assert c.flags == CreatureFlags.ANIM_PING_PONG
+    assert c.spawn_slot == 0
+    assert c.health == 50.0
+    assert c.max_health == 50.0
+    assert c.move_speed == 2.8
+    assert c.reward_value == 1000.0
+    assert c.size == 32.0
+    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.9, 0.8, 0.4, 1.0)
+    assert c.contact_damage == 0.0
+
+    slot = plan.spawn_slots[0]
+    assert slot.timer == 1.5
+    assert slot.limit == 100
+    assert slot.child_template_id == 0x31
+    assert slot.interval == 2.2
+
+    assert rng.state == _step_msvcrt(0, 2)
+
+
+def test_spawn_plan_template_0d_has_spawn_slot_and_non_hardcore_interval_bump() -> None:
+    rng = Crand(0)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=False,
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x0D, (100.0, 200.0), 0.0, rng, env)
+
+    assert plan.primary == 0
+    assert len(plan.creatures) == 1
+    assert len(plan.spawn_slots) == 1
+
+    c = plan.creatures[0]
+    assert c.type_id == CreatureTypeId.ALIEN
+    assert c.flags == CreatureFlags.ANIM_PING_PONG
+    assert c.spawn_slot == 0
+    assert c.health == 50.0
+    assert c.max_health == 50.0
+    assert c.move_speed == 1.3
+    assert c.reward_value == 1000.0
+    assert c.size == 32.0
+    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.9, 0.8, 0.4, 1.0)
+    assert c.contact_damage == 0.0
+
+    slot = plan.spawn_slots[0]
+    assert slot.timer == 2.0
+    assert slot.limit == 100
+    assert slot.child_template_id == 0x31
     assert slot.interval == 6.2
 
     assert rng.state == _step_msvcrt(0, 2)

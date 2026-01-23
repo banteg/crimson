@@ -562,8 +562,8 @@ def spawn_id_label(spawn_id: int) -> str:
 
 
 # Keep these in sync with `build_spawn_plan` and `tests/test_spawn_plan.py`.
-SPAWN_IDS_PORTED = frozenset({0x01, 0x0A, 0x0B, 0x10, 0x12, 0x19})
-SPAWN_IDS_VERIFIED = frozenset({0x01, 0x0A, 0x0B, 0x10, 0x12, 0x19})
+SPAWN_IDS_PORTED = frozenset({0x01, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x10, 0x12, 0x19})
+SPAWN_IDS_VERIFIED = frozenset({0x01, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x10, 0x12, 0x19})
 
 
 def _f32(u32: int) -> float:
@@ -792,6 +792,59 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.tint_b = 0.4
         c.contact_damage = 17.0
         primary_idx = 0
+    elif template_id in (0x07, 0x08):
+        c = creatures[0]
+        c.type_id = CreatureTypeId.ALIEN
+        c.flags = CreatureFlags.ANIM_PING_PONG
+        slot_idx = len(spawn_slots)
+        c.spawn_slot = slot_idx
+        interval = _f32(0x400CCCCD) if template_id == 0x07 else _f32(0x40333333)
+        spawn_slots.append(
+            SpawnSlotInit(
+                owner_creature=0,
+                timer=_f32(0x3F800000),  # 1.0
+                count=0,
+                limit=100,
+                interval=interval,
+                child_template_id=0x1D,
+            )
+        )
+        c.size = 50.0
+        c.health = 1000.0
+        c.move_speed = 2.0
+        c.reward_value = 3000.0
+        c.tint_a = 1.0
+        c.tint_r = 1.0
+        c.tint_g = 1.0
+        c.tint_b = 1.0
+        c.contact_damage = 0.0
+        primary_idx = 0
+    elif template_id == 0x09:
+        c = creatures[0]
+        c.type_id = CreatureTypeId.ALIEN
+        c.flags = CreatureFlags.ANIM_PING_PONG
+        slot_idx = len(spawn_slots)
+        c.spawn_slot = slot_idx
+        spawn_slots.append(
+            SpawnSlotInit(
+                owner_creature=0,
+                timer=_f32(0x3F800000),  # 1.0
+                count=0,
+                limit=0x10,
+                interval=2.0,
+                child_template_id=0x1D,
+            )
+        )
+        c.size = 40.0
+        c.health = 450.0
+        c.move_speed = 2.0
+        c.reward_value = 1000.0
+        c.tint_a = 1.0
+        c.tint_r = 1.0
+        c.tint_g = 1.0
+        c.tint_b = 1.0
+        c.contact_damage = 0.0
+        primary_idx = 0
     elif template_id == 0x0A:
         c = creatures[0]
         c.type_id = CreatureTypeId.ALIEN
@@ -842,6 +895,60 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.tint_r = 0.9
         c.tint_g = 0.1
         c.tint_b = 0.1
+        c.contact_damage = 0.0
+        primary_idx = 0
+    elif template_id == 0x0C:
+        c = creatures[0]
+        c.type_id = CreatureTypeId.ALIEN
+        c.flags = CreatureFlags.ANIM_PING_PONG
+        slot_idx = len(spawn_slots)
+        c.spawn_slot = slot_idx
+        spawn_slots.append(
+            SpawnSlotInit(
+                owner_creature=0,
+                timer=_f32(0x3FC00000),  # 1.5
+                count=0,
+                limit=100,
+                interval=2.0,
+                child_template_id=0x31,
+            )
+        )
+        c.size = 32.0
+        c.health = 50.0
+        c.move_speed = 2.8
+        c.reward_value = 1000.0
+        # Shared "alien spawner" tail for this branch sets these (before LAB_004310b8).
+        c.tint_a = 1.0
+        c.tint_r = 0.9
+        c.tint_g = 0.8
+        c.tint_b = 0.4
+        c.contact_damage = 0.0
+        primary_idx = 0
+    elif template_id == 0x0D:
+        c = creatures[0]
+        c.type_id = CreatureTypeId.ALIEN
+        c.flags = CreatureFlags.ANIM_PING_PONG
+        slot_idx = len(spawn_slots)
+        c.spawn_slot = slot_idx
+        spawn_slots.append(
+            SpawnSlotInit(
+                owner_creature=0,
+                timer=2.0,
+                count=0,
+                limit=100,
+                interval=6.0,
+                child_template_id=0x31,
+            )
+        )
+        c.size = 32.0
+        c.health = 50.0
+        c.move_speed = 1.3
+        c.reward_value = 1000.0
+        # Shared "alien spawner" tail for this branch sets these (before LAB_004310b8).
+        c.tint_a = 1.0
+        c.tint_r = 0.9
+        c.tint_g = 0.8
+        c.tint_b = 0.4
         c.contact_damage = 0.0
         primary_idx = 0
     elif template_id == 0x10:
