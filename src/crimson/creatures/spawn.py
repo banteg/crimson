@@ -564,8 +564,8 @@ def spawn_id_label(spawn_id: int) -> str:
 
 
 # Keep these in sync with `build_spawn_plan` and `tests/test_spawn_plan.py`.
-SPAWN_IDS_PORTED = frozenset({0x00, 0x01, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x19, 0x1A, 0x1B, 0x1C, 0x24, 0x25, 0x34, 0x35, 0x38, 0x41})
-SPAWN_IDS_VERIFIED = frozenset({0x00, 0x01, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x19, 0x1A, 0x1B, 0x1C, 0x24, 0x25, 0x34, 0x35, 0x38, 0x41})
+SPAWN_IDS_PORTED = frozenset({0x00, 0x01, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x24, 0x25, 0x34, 0x35, 0x38, 0x41})
+SPAWN_IDS_VERIFIED = frozenset({0x00, 0x01, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x24, 0x25, 0x34, 0x35, 0x38, 0x41})
 
 
 def _f32(u32: int) -> float:
@@ -1279,6 +1279,62 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.tint_g = tint
         c.tint_b = 1.0
         c.contact_damage = 5.0
+        primary_idx = 0
+    elif template_id == 0x1D:
+        c = creatures[0]
+        c.type_id = CreatureTypeId.ALIEN
+        size = float(rng.rand() % 20 + 35)
+        c.size = size
+        c.health = size * 1.1428572 + 10.0
+        c.move_speed = float(rng.rand() % 15) * 0.1 + 1.1
+        c.reward_value = float(rng.rand() % 100 + 50)
+        c.tint_a = 1.0
+        c.tint_r = float(rng.rand() % 50) * 0.001 + 0.60000002
+        c.tint_g = float(rng.rand() % 50) * 0.0099999998 + 0.5
+        c.tint_b = float(rng.rand() % 50) * 0.001 + 0.60000002
+        c.contact_damage = float(rng.rand() % 10) + 4.0
+        primary_idx = 0
+    elif template_id == 0x1E:
+        c = creatures[0]
+        c.type_id = CreatureTypeId.ALIEN
+        size = float(rng.rand() % 30 + 35)
+        c.size = size
+        c.health = size * 2.2857144 + 10.0
+        c.move_speed = float(rng.rand() % 17) * 0.1 + 1.5
+        c.reward_value = float(rng.rand() % 200 + 50)
+        c.tint_a = 1.0
+        c.tint_r = float(rng.rand() % 50) * 0.001 + 0.60000002
+        c.tint_g = float(rng.rand() % 50) * 0.001 + 0.60000002
+        c.tint_b = float(rng.rand() % 50) * 0.0099999998 + 0.5
+        c.contact_damage = float(rng.rand() % 30) + 4.0
+        primary_idx = 0
+    elif template_id == 0x1F:
+        c = creatures[0]
+        c.type_id = CreatureTypeId.ALIEN
+        size = float(rng.rand() % 30 + 45)
+        c.size = size
+        c.health = size * 3.7142856 + 30.0
+        c.move_speed = float(rng.rand() % 21) * 0.1 + 1.6
+        c.reward_value = float(rng.rand() % 200 + 80)
+        c.tint_a = 1.0
+        c.tint_r = float(rng.rand() % 50) * 0.0099999998 + 0.5
+        c.tint_g = float(rng.rand() % 50) * 0.001 + 0.60000002
+        c.tint_b = float(rng.rand() % 50) * 0.001 + 0.60000002
+        c.contact_damage = float(rng.rand() % 35) + 8.0
+        primary_idx = 0
+    elif template_id == 0x20:
+        c = creatures[0]
+        c.type_id = CreatureTypeId.ALIEN
+        size = float(rng.rand() % 30 + 40)
+        c.size = size
+        c.health = size * 1.1428572 + 20.0
+        c.tint_a = 1.0
+        c.tint_r = _f32(0x3E99999A)
+        c.move_speed = float(rng.rand() % 18) * 0.1 + 1.1
+        c.reward_value = size + size + 50.0
+        c.tint_b = _f32(0x3E99999A)
+        c.tint_g = float(rng.rand() % 40) * 0.0099999998 + 0.60000002
+        c.contact_damage = float(rng.rand() % 10) + 4.0
         primary_idx = 0
     # Demo (attract-mode) templates.
     elif template_id == 0x24:
