@@ -1207,7 +1207,7 @@ def test_spawn_plan_template_26_is_constant() -> None:
     assert c.reward_value == 125.0
     assert c.size == 45.0
     assert c.contact_damage == 10.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.62, 0.7, 0.62, 1.0)
+    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.6, 0.8, 0.6, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -1237,7 +1237,7 @@ def test_spawn_plan_template_27_is_constant() -> None:
     assert c.reward_value == 125.0
     assert c.size == 45.0
     assert c.contact_damage == 10.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (1.0, 0.7, 0.1, 1.0)
+    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (1.0, 0.8, 0.1, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
