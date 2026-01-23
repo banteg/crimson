@@ -564,8 +564,8 @@ def spawn_id_label(spawn_id: int) -> str:
 
 
 # Keep these in sync with `build_spawn_plan` and `tests/test_spawn_plan.py`.
-SPAWN_IDS_PORTED = frozenset({0x01, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x10, 0x12, 0x19})
-SPAWN_IDS_VERIFIED = frozenset({0x01, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x10, 0x12, 0x19})
+SPAWN_IDS_PORTED = frozenset({0x01, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x10, 0x11, 0x12, 0x19})
+SPAWN_IDS_VERIFIED = frozenset({0x01, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x10, 0x11, 0x12, 0x19})
 
 
 def _f32(u32: int) -> float:
@@ -620,7 +620,8 @@ class CreatureInit:
     tint_a: float | None = None
 
     # AI link semantics:
-    # - For formation children (ai_mode 3/5/...), `ai_link_parent` references the parent creature.
+    # - For most formations (ai_mode 3/5/...), `ai_link_parent` references another creature index
+    #   (typically the parent or previous element in the chain).
     # - For AI7 timer mode (flag 0x80), `ai_timer` is written into link_index.
     ai_link_parent: int | None = None
     ai_timer: int | None = None
@@ -748,8 +749,17 @@ def _apply_tail(
         if c.health is not None:
             c.health *= 1.2
 
-        if has_spawn_slot and (int(c.flags) & int(CreatureFlags.ANIM_PING_PONG)) != 0:
-            plan_spawn_slots[c.spawn_slot].interval = max(0.1, plan_spawn_slots[c.spawn_slot].interval - 0.2)
+    if has_spawn_slot and (int(c.flags) & int(CreatureFlags.ANIM_PING_PONG)) != 0:
+        plan_spawn_slots[c.spawn_slot].interval = max(0.1, plan_spawn_slots[c.spawn_slot].interval - 0.2)
+
+
+def _apply_unhandled_creature_type_fallback(plan_creatures: list[CreatureInit], primary_idx: int) -> None:
+    # Some template paths jump to the "Unhandled creatureType.\n" debug block in the original,
+    # which forcibly overwrites `type_id` and `health` on the *current* creature pointer.
+    # See artifacts/creature_spawn_template/binja-hlil.txt (label_431099).
+    c = plan_creatures[primary_idx]
+    c.type_id = CreatureTypeId.ALIEN
+    c.health = 20.0
 
 
 def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float, rng: Crand, env: SpawnEnv) -> SpawnPlan:
@@ -980,6 +990,101 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.tint_b = 0.4
         c.contact_damage = 0.0
         primary_idx = 0
+    elif template_id == 0x0E:
+        parent = creatures[0]
+        parent.type_id = CreatureTypeId.ALIEN
+        parent.flags = CreatureFlags.ANIM_PING_PONG
+        slot_idx = len(spawn_slots)
+        parent.spawn_slot = slot_idx
+        spawn_slots.append(
+            SpawnSlotInit(
+                owner_creature=0,
+                timer=_f32(0x3FC00000),  # 1.5
+                count=0,
+                limit=0x40,
+                interval=_f32(0x3F866666),
+                child_template_id=0x1C,
+            )
+        )
+        parent.size = 32.0
+        parent.health = 50.0
+        parent.move_speed = 2.8
+        parent.reward_value = 5000.0
+        parent.tint_a = 1.0
+        parent.tint_r = 0.9
+        parent.tint_g = 0.8
+        parent.tint_b = 0.4
+        parent.contact_damage = 0.0
+
+        for i in range(0x18):
+            child = _alloc_creature(template_id, pos_x, pos_y, rng)
+            child.ai_mode = 3
+            child.ai_link_parent = 0
+            child.heading = 0.0
+            child.phase_seed = 0.0  # template overwrites anim_phase to 0.0
+            angle = float(i) * 0.2617994
+            child.target_offset_x = float(math.cos(angle) * 100.0)
+            child.target_offset_y = float(math.sin(angle) * 100.0)
+            child.tint_r = 1.0
+            child.tint_g = 0.3
+            child.tint_b = 0.3
+            child.tint_a = 1.0
+            child.health = 40.0
+            child.max_health = 40.0
+            child.type_id = CreatureTypeId.ALIEN
+            child.move_speed = 4.0
+            child.reward_value = 350.0
+            child.size = 35.0
+            child.contact_damage = 30.0
+            creatures.append(child)
+
+        primary_idx = len(creatures) - 1
+    elif template_id == 0x11:
+        parent = creatures[0]
+        parent.type_id = CreatureTypeId.LIZARD
+        parent.ai_mode = 1
+        parent.tint_r = 0.99
+        parent.tint_g = 0.99
+        parent.tint_b = 0.21
+        parent.tint_a = 1.0
+        parent.health = 1500.0
+        parent.max_health = 1500.0
+        parent.move_speed = 2.1
+        parent.reward_value = 1000.0
+        parent.size = 69.0
+        parent.contact_damage = 150.0
+
+        # Spawns a linked chain of 4 children (link points to previous). The original also sets
+        # the base creature's link_index to the last child after the loop.
+        chain_prev = 0
+        local_48 = 2
+        for i in range(4):
+            child = _alloc_creature(template_id, pos_x, pos_y, rng)
+            child.ai_mode = 3
+            child.ai_link_parent = chain_prev
+            child.target_offset_x = -256.0 + float(i) * 64.0
+            child.target_offset_y = -256.0
+            angle = float(local_48) * 0.3926991
+            child.pos_x = float(math.cos(angle) * 256.0 + pos_x)
+            child.pos_y = float(math.sin(angle) * 256.0 + pos_y)
+            child.tint_r = 0.6
+            child.tint_g = 0.6
+            child.tint_b = 0.31
+            child.tint_a = 1.0
+            child.health = 60.0
+            child.max_health = 60.0
+            child.reward_value = 60.0
+            child.type_id = CreatureTypeId.LIZARD
+            child.move_speed = 2.4
+            child.size = 50.0
+            child.contact_damage = 14.0
+            creatures.append(child)
+            chain_prev = len(creatures) - 1
+            local_48 += 2
+
+        parent.ai_link_parent = chain_prev
+        primary_idx = chain_prev
+        _apply_unhandled_creature_type_fallback(creatures, primary_idx)
     elif template_id == 0x12:
         parent = creatures[0]
         parent.type_id = CreatureTypeId.ALIEN
@@ -1017,6 +1122,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
 
         # The original function returns the last allocated creature pointer.
         primary_idx = len(creatures) - 1
+        _apply_unhandled_creature_type_fallback(creatures, primary_idx)
     elif template_id == 0x19:
         parent = creatures[0]
         parent.type_id = CreatureTypeId.ALIEN
@@ -1054,6 +1160,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
             creatures.append(child)
 
         primary_idx = len(creatures) - 1
+        _apply_unhandled_creature_type_fallback(creatures, primary_idx)
     else:
         raise NotImplementedError(f"spawn plan not implemented for template_id=0x{template_id:x}")
 

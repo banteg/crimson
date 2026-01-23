@@ -363,8 +363,11 @@ def test_spawn_plan_template_12_spawns_formation_children() -> None:
         assert child.type_id == CreatureTypeId.ALIEN
         assert child.ai_mode == 3
         assert child.ai_link_parent == 0
-        assert child.health == 40.0
-        assert child.max_health == 40.0
+        # The original falls through a debug "Unhandled creatureType.\n" block, overwriting
+        # the return creature's health to 20.0 (primary == last child).
+        expected_health = 20.0 if i == 7 else 40.0
+        assert child.health == expected_health
+        assert child.max_health == expected_health
         assert child.move_speed == 2.4
         assert child.size == 50.0
         assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (0.32000002, 0.58800006, 0.426, 1.0)
@@ -407,8 +410,9 @@ def test_spawn_plan_template_19_spawns_formation_children() -> None:
         assert child.type_id == CreatureTypeId.ALIEN
         assert child.ai_mode == 5
         assert child.ai_link_parent == 0
-        assert child.health == 220.0
-        assert child.max_health == 220.0
+        expected_health = 20.0 if i == 4 else 220.0
+        assert child.health == expected_health
+        assert child.max_health == expected_health
         assert child.move_speed == 3.8
         assert child.size == 50.0
         assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (0.7125, 0.41250002, 0.2775, 0.6)
@@ -424,3 +428,118 @@ def test_spawn_plan_template_19_spawns_formation_children() -> None:
     # - base init random heading: 1
     # - 5 child allocs: 5
     assert rng.state == _step_msvcrt(0xBEEF, 7)
+
+
+def test_spawn_plan_template_0e_spawns_ring_children_and_has_spawn_slot() -> None:
+    rng = Crand(0xBEEF)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,  # avoid effect noise
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x0E, (100.0, 200.0), 0.0, rng, env)
+
+    assert len(plan.creatures) == 25
+    assert plan.primary == 24
+    assert len(plan.spawn_slots) == 1
+
+    parent = plan.creatures[0]
+    assert parent.type_id == CreatureTypeId.ALIEN
+    assert parent.flags == CreatureFlags.ANIM_PING_PONG
+    assert parent.spawn_slot == 0
+    assert parent.health == 50.0
+    assert parent.max_health is None  # tail applies to the last ring child
+    assert parent.move_speed == 2.8
+    assert parent.reward_value == 5000.0
+    assert parent.size == 32.0
+    assert (parent.tint_r, parent.tint_g, parent.tint_b, parent.tint_a) == (0.9, 0.8, 0.4, 1.0)
+    assert parent.contact_damage == 0.0
+
+    slot = plan.spawn_slots[0]
+    assert slot.timer == 1.5
+    assert slot.count == 0
+    assert slot.limit == 0x40
+    assert slot.child_template_id == 0x1C
+    assert math.isclose(slot.interval, 1.0499999523162842, abs_tol=1e-9)
+
+    for i, child in enumerate(plan.creatures[1:], start=0):
+        assert child.type_id == CreatureTypeId.ALIEN
+        assert child.ai_mode == 3
+        assert child.ai_link_parent == 0
+        assert child.pos_x == 100.0
+        assert child.pos_y == 200.0
+        assert child.phase_seed == 0.0
+        assert child.health == 40.0
+        assert child.max_health == 40.0
+        assert child.move_speed == 4.0
+        assert child.size == 35.0
+        assert child.contact_damage == 30.0
+        assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (1.0, 0.3, 0.3, 1.0)
+
+        angle = float(i) * 0.2617994
+        assert math.isclose(child.target_offset_x or 0.0, math.cos(angle) * 100.0, abs_tol=1e-4)
+        assert math.isclose(child.target_offset_y or 0.0, math.sin(angle) * 100.0, abs_tol=1e-4)
+
+    # Rand consumption:
+    # - base alloc: 1
+    # - base init random heading: 1
+    # - 24 child allocs: 24
+    assert rng.state == _step_msvcrt(0xBEEF, 26)
+
+
+def test_spawn_plan_template_11_spawns_chain_children_and_falls_into_unhandled_override() -> None:
+    rng = Crand(0xBEEF)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,  # avoid effect noise
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x11, (100.0, 200.0), 0.0, rng, env)
+
+    assert len(plan.creatures) == 5
+    assert plan.primary == 4
+    assert plan.spawn_slots == ()
+
+    parent = plan.creatures[0]
+    assert parent.type_id == CreatureTypeId.LIZARD
+    assert parent.ai_mode == 1
+    assert parent.health == 1500.0
+    assert parent.max_health == 1500.0
+    assert parent.move_speed == 2.1
+    assert parent.reward_value == 1000.0
+    assert parent.size == 69.0
+    assert (parent.tint_r, parent.tint_g, parent.tint_b, parent.tint_a) == (0.99, 0.99, 0.21, 1.0)
+    assert parent.contact_damage == 150.0
+    assert parent.ai_link_parent == 4
+
+    offset_xs = (-256.0, -192.0, -128.0, -64.0)
+    for i, child in enumerate(plan.creatures[1:], start=0):
+        assert child.ai_mode == 3
+        assert child.ai_link_parent == i
+        assert child.target_offset_x == offset_xs[i]
+        assert child.target_offset_y == -256.0
+        assert child.reward_value == 60.0
+        assert child.move_speed == 2.4
+        assert child.size == 50.0
+        assert child.contact_damage == 14.0
+        assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (0.6, 0.6, 0.31, 1.0)
+
+        angle = float(2 + 2 * i) * 0.3926991
+        assert math.isclose(child.pos_x, 100.0 + math.cos(angle) * 256.0, abs_tol=1e-4)
+        assert math.isclose(child.pos_y, 200.0 + math.sin(angle) * 256.0, abs_tol=1e-4)
+
+    # The original falls into the "Unhandled creatureType.\n" block after the loop, which overwrites
+    # the return creature (last child).
+    assert plan.creatures[4].type_id == CreatureTypeId.ALIEN
+    assert plan.creatures[4].health == 20.0
+    assert plan.creatures[4].max_health == 20.0
+
+    # Rand consumption:
+    # - base alloc: 1
+    # - base init random heading: 1
+    # - 4 child allocs: 4
+    assert rng.state == _step_msvcrt(0xBEEF, 6)
