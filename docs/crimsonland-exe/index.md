@@ -20,6 +20,7 @@ Sections:
 - [Online scores](online-scores.md)
 - [Mods](mods.md)
 - [Gameplay glue](gameplay.md)
+- [Creature spawning (templates)](creature-spawning.md)
 
 Related references:
 

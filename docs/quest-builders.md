@@ -145,8 +145,9 @@ including creature labels from `src/crimson/spawn_templates.py`.
   do not explicitly write headings, so treat heading as undefined unless the quest
   explicitly sets it.
 
-- Spawn template ids are now mapped to creature types via `creature_spawn_template`,
-  exported in `src/crimson/spawn_templates.py`.
+- Quest spawn ids (`spawn_id`) are interpreted by `creature_spawn_template` (`FUN_00430af0`), which is
+  an algorithm (it can spawn formations, configure spawn slots, and applies difficulty/hardcore tail
+  modifiers). For human-readable labels we use the partial index in `src/crimson/spawn_templates.py`.
 
 ## Open questions
 
