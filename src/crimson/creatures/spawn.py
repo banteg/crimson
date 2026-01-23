@@ -564,8 +564,8 @@ def spawn_id_label(spawn_id: int) -> str:
 
 
 # Keep these in sync with `build_spawn_plan` and `tests/test_spawn_plan.py`.
-SPAWN_IDS_PORTED = frozenset({0x01, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x10, 0x11, 0x12, 0x19})
-SPAWN_IDS_VERIFIED = frozenset({0x01, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x10, 0x11, 0x12, 0x19})
+SPAWN_IDS_PORTED = frozenset({0x01, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x10, 0x11, 0x12, 0x19, 0x24, 0x25, 0x34, 0x35, 0x38, 0x41})
+SPAWN_IDS_VERIFIED = frozenset({0x01, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x10, 0x11, 0x12, 0x19, 0x24, 0x25, 0x34, 0x35, 0x38, 0x41})
 
 
 def _f32(u32: int) -> float:
@@ -1161,6 +1161,88 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
 
         primary_idx = len(creatures) - 1
         _apply_unhandled_creature_type_fallback(creatures, primary_idx)
+    # Demo (attract-mode) templates.
+    elif template_id == 0x24:
+        c = creatures[0]
+        c.type_id = CreatureTypeId.ALIEN
+        c.health = 20.0
+        c.move_speed = 2.0
+        c.reward_value = 110.0
+        c.tint_r = 0.1
+        c.tint_g = 0.7
+        c.tint_b = 0.11
+        c.tint_a = 1.0
+        c.size = 50.0
+        c.contact_damage = 4.0
+        primary_idx = 0
+    elif template_id == 0x25:
+        c = creatures[0]
+        c.type_id = CreatureTypeId.ALIEN
+        c.health = 25.0
+        c.move_speed = 2.5
+        c.reward_value = 125.0
+        c.tint_r = 0.1
+        c.tint_g = 0.8
+        c.tint_b = 0.11
+        c.tint_a = 1.0
+        c.size = 30.0
+        c.contact_damage = 3.0
+        primary_idx = 0
+    elif template_id == 0x34:
+        c = creatures[0]
+        c.type_id = CreatureTypeId.SPIDER_SP1
+        c.size = float(rng.rand() % 0x14 + 0x28)
+        c.health = float((c.size or 0.0) * 1.1428572 + 20.0)
+        c.tint_a = 1.0
+        c.move_speed = float(rng.rand() % 0x12) * 0.1 + 1.1
+        c.reward_value = float((c.size or 0.0) + (c.size or 0.0) + 50.0)
+        c.tint_r = 0.5
+        c.tint_b = 0.5
+        c.tint_g = float(rng.rand() % 0x28) * 0.01 + 0.6
+        c.contact_damage = float(rng.rand() % 10) + 4.0
+        primary_idx = 0
+    elif template_id == 0x35:
+        c = creatures[0]
+        c.type_id = CreatureTypeId.SPIDER_SP2
+        c.size = float(rng.rand() % 10 + 0x1E)
+        c.health = float((c.size or 0.0) * 1.1428572 + 20.0)
+        c.tint_a = 1.0
+        c.tint_b = 0.8
+        c.move_speed = float(rng.rand() % 0x12) * 0.1 + 1.1
+        c.reward_value = float((c.size or 0.0) + (c.size or 0.0) + 50.0)
+        c.tint_r = 0.8
+        c.tint_g = float(rng.rand() % 0x14) * 0.01 + 0.8
+        c.contact_damage = float(rng.rand() % 10) + 4.0
+        primary_idx = 0
+    elif template_id == 0x38:
+        c = creatures[0]
+        c.type_id = CreatureTypeId.SPIDER_SP1
+        c.flags = CreatureFlags.AI7_LINK_TIMER
+        c.ai_timer = 0
+        c.health = 50.0
+        c.move_speed = 4.8
+        c.reward_value = 433.0
+        c.tint_r = 1.0
+        c.tint_g = 0.75
+        c.tint_b = 0.1
+        c.tint_a = 1.0
+        c.size = float((rng.rand() & 3) + 0x29)
+        c.contact_damage = 10.0
+        primary_idx = 0
+    elif template_id == 0x41:
+        c = creatures[0]
+        c.type_id = CreatureTypeId.ZOMBIE
+        c.tint_a = 1.0
+        c.size = float(rng.rand() % 0x1E + 0x28)
+        c.health = float((c.size or 0.0) * 1.1428572 + 10.0)
+        c.move_speed = float((c.size or 0.0) * 0.0025 + 0.9)
+        c.reward_value = float((c.size or 0.0) + (c.size or 0.0) + 50.0)
+        tint = float(rng.rand() % 0x28) * 0.01 + 0.6
+        c.tint_r = tint
+        c.tint_g = tint
+        c.tint_b = tint
+        c.contact_damage = float(rng.rand() % 10) + 4.0
+        primary_idx = 0
     else:
         raise NotImplementedError(f"spawn plan not implemented for template_id=0x{template_id:x}")
 
