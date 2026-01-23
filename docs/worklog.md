@@ -26,6 +26,7 @@ Reverse-chronological log of notable repo changes, grouped by day.
 - Added IDA headless export/decompile flow, applied Ghidra maps during exports, and normalized signature parsing/typedef handling.
 - Regenerated Ghidra and Binary Ninja exports (including full call graph) with updated Grim2D format wrapper signatures.
 - Added a decompile signature diff tool and zipped additional analysis artifacts.
+- Added a WSL Ghidra sync helper and documented the cross-OS `ghidra-sync` workflow.
 - Mapped the mod SDK API and documented the demo/attract mode loop, plus demo-mode scaffolding and labeled globals.
 - Improved Frida workflows (attach-only enforcement, configurable log paths, shortcut docs).
 - Reworked docs/nav structure, metrics snapshot, status lifecycle, and assorted reference alignments.
@@ -33,18 +34,18 @@ Reverse-chronological log of notable repo changes, grouped by day.
 ## 2026-01-21
 
 - Mapped and expanded mod API structs/vtables, highscore/mod info structs, and additional Ghidra data maps (creatures, projectiles, effects, UI, config/save).
-- Updated Grim2D exports and vtable naming, plus Binary Ninja map/import workflows and exports.
+- Updated Grim2D exports and vtable naming, plus Binary Ninja map/import workflows and Ghidra name-map function creation.
 - Improved menu and terrain rendering parity (layout, scaling, pivot, sampling, glow pass, hover state, flicker fixes).
+- Added a quest-driven ground preview and aligned ground rendering with config sizing.
 - Documented menu state0 and terrain pipeline, and added audio/weapon struct docs.
 - Added Frida mod API probe and tooling docs, plus zensical cheatsheet/markdown fixer.
 - Added a `just zip decompile` command.
 
 ## 2026-01-20
 
-- Added entrypoint/boot pipeline scaffolding (`crimson game` step-1 runner), boot logs, cvars/console command wiring, and splash/logo timing improvements.
+- Added entrypoint/boot pipeline scaffolding (`crimson game` step-1 runner), boot logs/crash-to-file, cvars/console command wiring, and splash/logo timing improvements.
 - Documented `crimson.cfg` and added loaders/inspectors, defaults alignment, and keybind/name slot docs.
 - Added/expanded Raylib debug views (sprites, terrain, particles, UI, fonts) plus atlas/terrain/particle/icon previews and quest title layout matching.
-- Added a quest-driven ground demo view and aligned ground/terrain rendering to config sizing.
 - Improved font handling (mono font behavior, filtering, grid alignment, quest title/number positioning) with supporting docs.
 - Added Frida probes/scripts for quest title colors, atlas UV selection, and boot music, with docs and hook fixes.
 - Updated Ghidra/Binja exports/signatures and added the IGrim2D type header and safe signatures.
@@ -56,14 +57,15 @@ Reverse-chronological log of notable repo changes, grouped by day.
 - Implemented quest builders for tiers 1–5, quest metadata, and a CLI for quest dumps.
 - Added Frida tooling for quest build analysis and runtime probes (mode bytes, counts, logs).
 - Documented console hotkey/secrets flow and updated Ghidra maps/exports accordingly.
-- Expanded WinDbg workflow docs and justfile recipes for runtime sessions.
+- Added a CDB bridge for interactive sessions and expanded WinDbg workflow docs/justfile recipes for runtime sessions.
 - Updated detangling notes for config flags and hardcore/full-version behavior.
 
 ## 2026-01-18
 
 - Large Ghidra naming/mapping passes across Grim2D, audio, assets, CRT, and gameplay helpers.
+- Synced third-party headers and documented version evidence (DirectX/DirectInput, libpng+zlib, ogg/vorbis).
 - Built out Frida workflow: hooks, logging, reducers, session templates, and evidence summaries.
-- Investigated secrets/credits paths and added CDB bridge tooling for interactive debugging.
+- Investigated secrets/credits paths (credits screen mapping, credits-flag probes/watchers, evidence summaries).
 - Added a `game.cfg` (save/status) editor tool.
 - Expanded Grim2D API evidence and runtime validation docs.
 
@@ -78,6 +80,7 @@ Reverse-chronological log of notable repo changes, grouped by day.
 ## 2026-01-16
 
 - Initialized the repo and extraction pipeline (PAQ/JAZ via Construct) with docs.
+- Added an initial small-font renderer and weapons table parsing module, with supporting format notes.
 - Added atlas slicing helpers and sprite atlas documentation.
 - Established entrypoint tracing, detangling notes, and Ghidra name-map workflows.
 - Added early Grim2D mapping docs and metrics tracking.
