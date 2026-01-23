@@ -13,6 +13,7 @@ set `CRIMSON_FRIDA_CONFIG` to point at a different `grim_hooks_targets.json`.
 - `scripts/frida/grim_hooks.js`
 - `scripts/frida/grim_hooks_targets.json`
 - `scripts/frida/crimsonland_probe.js`
+- `scripts/frida/menu_logo_pivot_trace.js`
 
 Attach by process name (required; spawn caused empty textures + crash on 2026-01-18):
 
@@ -24,6 +25,12 @@ In a separate terminal (or a second run), attach the probe script:
 
 ```text
 frida -n crimsonland.exe -l C:\share\frida\crimsonland_probe.js
+```
+
+Menu logo rotation trace (focused, JSONL to `menu_logo_pivot_trace.jsonl`):
+
+```text
+frida -n crimsonland.exe -l C:\share\frida\menu_logo_pivot_trace.js
 ```
 
 Just shortcut (Windows VM):
