@@ -64,8 +64,11 @@ def layout_quest_title_overlay(
     number_scale = quest_number_scale(title_scale)
 
     title_width = len(title) * font_advance * title_scale
-    title_x = (screen_width / 2.0) - (title_width / 2.0)
-    title_y = (screen_height / 2.0) - QUEST_TITLE_Y_OFFSET
+    # The game uses integer division for screen center (width/2, height/2) before converting to float.
+    center_x = float(int(screen_width) // 2)
+    center_y = float(int(screen_height) // 2)
+    title_x = center_x - (title_width / 2.0)
+    title_y = center_y - QUEST_TITLE_Y_OFFSET
 
     number_x = (
         title_x
