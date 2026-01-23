@@ -68,6 +68,13 @@ Menu UI templates are loaded once and then copied into per-screen elements.
 The quad lives mostly in **negative X**, so placing the element at
 `pos_x = screen_width + 4` anchors it to the right.
 
+Animation note:
+
+- The logo sign is UI element table index `0` (`sub_446150` returns 0), so `ui_element_update`
+  forces its rotation angle negative (clockwise) during timeline transitions.
+- It uses the same default `start_time_ms=300` / `end_time_ms=0` window as other UI elements,
+  so it pivots in/out whenever a menu state transition occurs (state `0` ↔ `1`/`2` etc).
+
 ### `ui_menuItem.jaz` (menu item button)
 
 - `width = 512.0`
