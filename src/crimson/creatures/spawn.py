@@ -17,7 +17,6 @@ See also: `docs/creatures/spawn_plan.md` (porting model / invariants).
 from dataclasses import dataclass
 from enum import IntEnum, IntFlag
 import math
-import struct
 
 from ..crand import Crand
 
@@ -564,13 +563,8 @@ def spawn_id_label(spawn_id: int) -> str:
 
 
 # Keep these in sync with `build_spawn_plan` and `tests/test_spawn_plan.py`.
-SPAWN_IDS_PORTED = frozenset({0x00, 0x01, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3B, 0x3D, 0x3E, 0x40, 0x41})
-SPAWN_IDS_VERIFIED = frozenset({0x00, 0x01, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3B, 0x3D, 0x3E, 0x40, 0x41})
-
-
-def _f32(u32: int) -> float:
-    """Decode a float32 constant expressed as a u32 hex literal in decompiles."""
-    return struct.unpack("<f", struct.pack("<I", u32 & 0xFFFFFFFF))[0]
+SPAWN_IDS_PORTED = frozenset({0x00, 0x01, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x40, 0x41})
+SPAWN_IDS_VERIFIED = frozenset({0x00, 0x01, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x40, 0x41})
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -621,6 +615,7 @@ class CreatureInit:
 
     orbit_angle: float | None = None
     orbit_radius: float | None = None
+    ranged_projectile_type: int | None = None
 
     # AI link semantics:
     # - For most formations (ai_mode 3/5/...), `ai_link_parent` references another creature index
@@ -754,7 +749,7 @@ def _apply_tail(
 
         if has_spawn_slot and (int(c.flags) & int(CreatureFlags.ANIM_PING_PONG)) != 0:
             plan_spawn_slots[c.spawn_slot].interval = max(
-                _f32(0x3DCCCCCD),
+                0.1,
                 plan_spawn_slots[c.spawn_slot].interval - 0.2,
             )
 def _apply_unhandled_creature_type_fallback(plan_creatures: list[CreatureInit], primary_idx: int) -> None:
@@ -799,10 +794,10 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         spawn_slots.append(
             SpawnSlotInit(
                 owner_creature=0,
-                timer=_f32(0x3F800000),  # 1.0
+                timer=1.0,
                 count=0,
                 limit=0x32C,
-                interval=_f32(0x3F333333),
+                interval=0.7,
                 child_template_id=0x41,
             )
         )
@@ -895,11 +890,11 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.flags = CreatureFlags.ANIM_PING_PONG
         slot_idx = len(spawn_slots)
         c.spawn_slot = slot_idx
-        interval = _f32(0x400CCCCD) if template_id == 0x07 else _f32(0x40333333)
+        interval = 2.2 if template_id == 0x07 else 2.8
         spawn_slots.append(
             SpawnSlotInit(
                 owner_creature=0,
-                timer=_f32(0x3F800000),  # 1.0
+                timer=1.0,
                 count=0,
                 limit=100,
                 interval=interval,
@@ -925,7 +920,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         spawn_slots.append(
             SpawnSlotInit(
                 owner_creature=0,
-                timer=_f32(0x3F800000),  # 1.0
+                timer=1.0,
                 count=0,
                 limit=0x10,
                 interval=2.0,
@@ -1003,7 +998,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         spawn_slots.append(
             SpawnSlotInit(
                 owner_creature=0,
-                timer=_f32(0x3FC00000),  # 1.5
+                timer=1.5,
                 count=0,
                 limit=100,
                 interval=2.0,
@@ -1057,10 +1052,10 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         spawn_slots.append(
             SpawnSlotInit(
                 owner_creature=0,
-                timer=_f32(0x3FC00000),  # 1.5
+                timer=1.5,
                 count=0,
                 limit=100,
-                interval=_f32(0x40133333),  # ~2.3
+                interval=2.3,
                 child_template_id=0x32,
             )
         )
@@ -1084,10 +1079,10 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         spawn_slots.append(
             SpawnSlotInit(
                 owner_creature=0,
-                timer=_f32(0x3FC00000),  # 1.5
+                timer=1.5,
                 count=0,
                 limit=0x40,
-                interval=_f32(0x3F866666),
+                interval=1.05,
                 child_template_id=0x1C,
             )
         )
@@ -1530,6 +1525,22 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.size = float(rng.rand() % 4 + 26)
         c.contact_damage = 10.0
         primary_idx = 0
+    elif template_id == 0x3A:
+        c = creatures[0]
+        c.type_id = CreatureTypeId.SPIDER_SP1
+        c.flags = CreatureFlags.RANGED_ATTACK_SHOCK
+        c.orbit_angle = 0.9
+        c.ranged_projectile_type = 9
+        c.health = 4500.0
+        c.move_speed = 2.0
+        c.reward_value = 4500.0
+        c.tint_r = 1.0
+        c.tint_g = 1.0
+        c.tint_b = 1.0
+        c.tint_a = 1.0
+        c.size = 64.0
+        c.contact_damage = 50.0
+        primary_idx = 0
     elif template_id == 0x3B:
         c = creatures[0]
         c.type_id = CreatureTypeId.SPIDER_SP1
@@ -1542,6 +1553,23 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.tint_a = 1.0
         c.size = 70.0
         c.contact_damage = 20.0
+        primary_idx = 0
+    elif template_id == 0x3C:
+        c = creatures[0]
+        c.type_id = CreatureTypeId.SPIDER_SP1
+        c.flags = CreatureFlags.RANGED_ATTACK_VARIANT
+        c.orbit_angle = 0.4
+        c.ranged_projectile_type = 26
+        c.health = 200.0
+        c.move_speed = 2.0
+        c.reward_value = 200.0
+        c.tint_r = 0.9
+        c.tint_g = 0.1
+        c.tint_b = 0.1
+        c.tint_a = 1.0
+        c.size = 40.0
+        c.contact_damage = 20.0
+        c.ai_mode = 2
         primary_idx = 0
     elif template_id == 0x3D:
         c = creatures[0]

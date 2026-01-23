@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import math
-import struct
+
+import pytest
 
 from crimson.crand import Crand
 from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, SpawnEnv, build_spawn_plan
@@ -17,10 +18,6 @@ def _msvcrt_rand(state: int) -> tuple[int, int]:
     """Return (new_state, rand_output) for MSVCRT rand()."""
     state = (state * 0x343FD + 0x269EC3) & 0xFFFFFFFF
     return state, (state >> 16) & 0x7FFF
-
-
-def _f32(u32: int) -> float:
-    return struct.unpack("<f", struct.pack("<I", u32 & 0xFFFFFFFF))[0]
 
 
 def test_spawn_plan_template_00_has_spawn_slot_and_non_hardcore_interval_bump() -> None:
@@ -57,7 +54,7 @@ def test_spawn_plan_template_00_has_spawn_slot_and_non_hardcore_interval_bump() 
     assert slot.count == 0
     assert slot.limit == 0x32C
     assert slot.child_template_id == 0x41
-    assert math.isclose(slot.interval, _f32(0x3F333333) + 0.2, abs_tol=1e-9)
+    assert slot.interval == pytest.approx(0.9, abs=1e-9)
 
     assert rng.state == _step_msvcrt(0, 2)
 
@@ -142,7 +139,7 @@ def test_spawn_plan_template_03_is_randomized_and_tail_enables_ai7_timer() -> No
     assert c.reward_value == expected_reward
     assert c.contact_damage == expected_contact
     assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.6, 0.6, expected_tint_b, 1.0)
-    assert math.isclose(c.move_speed or 0.0, expected_speed_pre_tail * 1.2, abs_tol=1e-9)
+    assert (c.move_speed or 0.0) == pytest.approx(expected_speed_pre_tail * 1.2, abs=1e-9)
     assert c.heading == expected_heading
 
     assert rng.state == _step_msvcrt(seed, 7)
@@ -322,8 +319,8 @@ def test_spawn_plan_template_07_has_spawn_slot_and_non_hardcore_interval_bump() 
     assert slot.timer == 1.0
     assert slot.limit == 100
     assert slot.child_template_id == 0x1D
-    # 0x400ccccd (float32) + 0.2 tail bump.
-    assert math.isclose(slot.interval, 2.400000047683716, abs_tol=1e-9)
+    # 2.2 + 0.2 tail bump.
+    assert slot.interval == pytest.approx(2.4, abs=1e-9)
 
     assert rng.state == _step_msvcrt(0, 2)
 
@@ -359,8 +356,8 @@ def test_spawn_plan_template_08_has_spawn_slot_and_non_hardcore_interval_bump() 
     assert slot.timer == 1.0
     assert slot.limit == 100
     assert slot.child_template_id == 0x1D
-    # 0x40333333 (float32) + 0.2 tail bump.
-    assert math.isclose(slot.interval, 2.999999952316284, abs_tol=1e-9)
+    # 2.8 + 0.2 tail bump.
+    assert slot.interval == 3.0
 
     assert rng.state == _step_msvcrt(0, 2)
 
@@ -607,9 +604,8 @@ def test_spawn_plan_template_10_has_spawn_slot_and_non_hardcore_interval_bump() 
     assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.9, 0.8, 0.4, 1.0)
     assert c.contact_damage == 0.0
 
-    # 0x40133333 (float32) + 0.2 tail bump.
     slot = plan.spawn_slots[0]
-    assert math.isclose(slot.interval, 2.499999952316284, abs_tol=1e-9)
+    assert slot.interval == 2.5
     assert slot.child_template_id == 0x32
 
     assert rng.state == _step_msvcrt(0, 2)
@@ -653,8 +649,8 @@ def test_spawn_plan_template_12_spawns_formation_children() -> None:
         assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (0.32000002, 0.58800006, 0.426, 1.0)
 
         angle = float(i) * 0.7853982
-        assert math.isclose(child.target_offset_x or 0.0, math.cos(angle) * 100.0, abs_tol=1e-4)
-        assert math.isclose(child.target_offset_y or 0.0, math.sin(angle) * 100.0, abs_tol=1e-4)
+        assert (child.target_offset_x or 0.0) == pytest.approx(math.cos(angle) * 100.0, abs=1e-4)
+        assert (child.target_offset_y or 0.0) == pytest.approx(math.sin(angle) * 100.0, abs=1e-4)
 
     # Rand consumption:
     # - base alloc: 1
@@ -698,10 +694,10 @@ def test_spawn_plan_template_19_spawns_formation_children() -> None:
         assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (0.7125, 0.41250002, 0.2775, 0.6)
 
         angle = float(i) * 1.2566371
-        assert math.isclose(child.target_offset_x or 0.0, math.cos(angle) * 110.0, abs_tol=1e-4)
-        assert math.isclose(child.target_offset_y or 0.0, math.sin(angle) * 110.0, abs_tol=1e-4)
-        assert math.isclose(child.pos_x, 100.0 + (child.target_offset_x or 0.0), abs_tol=1e-4)
-        assert math.isclose(child.pos_y, 200.0 + (child.target_offset_y or 0.0), abs_tol=1e-4)
+        assert (child.target_offset_x or 0.0) == pytest.approx(math.cos(angle) * 110.0, abs=1e-4)
+        assert (child.target_offset_y or 0.0) == pytest.approx(math.sin(angle) * 110.0, abs=1e-4)
+        assert child.pos_x == pytest.approx(100.0 + (child.target_offset_x or 0.0), abs=1e-4)
+        assert child.pos_y == pytest.approx(200.0 + (child.target_offset_y or 0.0), abs=1e-4)
 
     # Rand consumption:
     # - base alloc: 1
@@ -777,7 +773,7 @@ def test_spawn_plan_template_1b_is_randomized_tint_and_tail_enables_ai7_timer() 
     assert c.size == 50.0
     assert c.health == 40.0
     assert c.max_health == 40.0
-    assert math.isclose(c.move_speed or 0.0, 2.4 * 1.2, abs_tol=1e-9)
+    assert (c.move_speed or 0.0) == pytest.approx(2.4 * 1.2, abs=1e-9)
     assert c.reward_value == 125.0
     assert c.contact_damage == 5.0
     assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (expected_tint, expected_tint, 1.0, 1.0)
@@ -1318,7 +1314,7 @@ def test_spawn_plan_template_34_is_randomized_and_tail_enables_ai7_timer() -> No
     assert c.reward_value == expected_reward
     assert c.contact_damage == expected_contact
     assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.5, expected_tint_g, 0.5, 1.0)
-    assert math.isclose(c.move_speed or 0.0, expected_speed_pre_tail * 1.2, abs_tol=1e-9)
+    assert (c.move_speed or 0.0) == pytest.approx(expected_speed_pre_tail * 1.2, abs=1e-9)
     assert c.heading == expected_heading
 
     assert rng.state == _step_msvcrt(seed, 7)
@@ -1365,7 +1361,7 @@ def test_spawn_plan_template_35_is_randomized() -> None:
     assert c.size == expected_size
     assert c.health == expected_health
     assert c.max_health == expected_health
-    assert math.isclose(c.move_speed or 0.0, expected_speed, abs_tol=1e-9)
+    assert (c.move_speed or 0.0) == pytest.approx(expected_speed, abs=1e-9)
     assert c.reward_value == expected_reward
     assert c.contact_damage == expected_contact
     assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.8, expected_tint_g, 0.8, 1.0)
@@ -1527,6 +1523,40 @@ def test_spawn_plan_template_39_is_randomized_and_has_ai7_timer_flag() -> None:
     assert rng.state == _step_msvcrt(seed, 3)
 
 
+def test_spawn_plan_template_3a_is_constant_and_has_ranged_shock_flag() -> None:
+    rng = Crand(0xBEEF)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,  # avoid effect noise
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x3A, (100.0, 200.0), 0.0, rng, env)
+
+    assert plan.primary == 0
+    assert len(plan.creatures) == 1
+    assert plan.spawn_slots == ()
+
+    c = plan.creatures[0]
+    assert c.type_id == CreatureTypeId.SPIDER_SP1
+    assert c.flags == CreatureFlags.RANGED_ATTACK_SHOCK
+    assert c.orbit_angle == 0.9
+    assert c.orbit_radius is None
+    assert c.ranged_projectile_type == 9
+    assert c.ai_timer is None
+    assert c.health == 4500.0
+    assert c.max_health == 4500.0
+    assert c.move_speed == 2.0
+    assert c.reward_value == 4500.0
+    assert c.size == 64.0
+    assert c.contact_damage == 50.0
+    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (1.0, 1.0, 1.0, 1.0)
+    assert c.heading == 0.0
+
+    assert rng.state == _step_msvcrt(0xBEEF, 2)
+
+
 def test_spawn_plan_template_3b_is_constant_and_tail_enables_ai7_timer() -> None:
     rng = Crand(0xBEEF)
     env = SpawnEnv(
@@ -1548,11 +1578,46 @@ def test_spawn_plan_template_3b_is_constant_and_tail_enables_ai7_timer() -> None
     assert c.ai_timer == 0
     assert c.health == 1200.0
     assert c.max_health == 1200.0
-    assert math.isclose(c.move_speed or 0.0, 2.0 * 1.2, abs_tol=1e-9)
+    assert (c.move_speed or 0.0) == pytest.approx(2.0 * 1.2, abs=1e-9)
     assert c.reward_value == 4000.0
     assert c.size == 70.0
     assert c.contact_damage == 20.0
     assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.9, 0.0, 0.0, 1.0)
+    assert c.heading == 0.0
+
+    assert rng.state == _step_msvcrt(0xBEEF, 2)
+
+
+def test_spawn_plan_template_3c_is_constant_and_tail_enables_ai7_timer() -> None:
+    rng = Crand(0xBEEF)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,  # avoid effect noise
+        hardcore=False,
+        difficulty_level=0,
+    )
+    plan = build_spawn_plan(0x3C, (100.0, 200.0), 0.0, rng, env)
+
+    assert plan.primary == 0
+    assert len(plan.creatures) == 1
+    assert plan.spawn_slots == ()
+
+    c = plan.creatures[0]
+    assert c.type_id == CreatureTypeId.SPIDER_SP1
+    assert c.flags == (CreatureFlags.RANGED_ATTACK_VARIANT | CreatureFlags.AI7_LINK_TIMER)
+    assert c.ai_timer == 0
+    assert c.ai_mode == 2
+    assert c.orbit_angle == 0.4
+    assert c.orbit_radius is None
+    assert c.ranged_projectile_type == 26
+    assert c.health == 200.0
+    assert c.max_health == 200.0
+    assert (c.move_speed or 0.0) == pytest.approx(2.0 * 1.2, abs=1e-9)
+    assert c.reward_value == 200.0
+    assert c.size == 40.0
+    assert c.contact_damage == 20.0
+    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.9, 0.1, 0.1, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -1589,10 +1654,10 @@ def test_spawn_plan_template_3d_is_randomized_and_tail_enables_ai7_timer() -> No
     assert c.ai_timer == 0
     assert c.health == 70.0
     assert c.max_health == 70.0
-    assert math.isclose(c.move_speed or 0.0, 2.6 * 1.2, abs_tol=1e-9)
+    assert (c.move_speed or 0.0) == pytest.approx(2.6 * 1.2, abs=1e-9)
     assert c.reward_value == 120.0
     assert c.size == expected_size
-    assert math.isclose(c.contact_damage or 0.0, expected_contact, abs_tol=1e-9)
+    assert (c.contact_damage or 0.0) == pytest.approx(expected_contact, abs=1e-9)
     assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (expected_tint, expected_tint, expected_tint, 1.0)
     assert c.heading == 0.0
 
@@ -1620,7 +1685,7 @@ def test_spawn_plan_template_3e_is_constant_and_tail_enables_ai7_timer() -> None
     assert c.ai_timer == 0
     assert c.health == 1000.0
     assert c.max_health == 1000.0
-    assert math.isclose(c.move_speed or 0.0, 2.8 * 1.2, abs_tol=1e-9)
+    assert (c.move_speed or 0.0) == pytest.approx(2.8 * 1.2, abs=1e-9)
     assert c.reward_value == 500.0
     assert c.size == 64.0
     assert c.contact_damage == 40.0
@@ -1651,7 +1716,7 @@ def test_spawn_plan_template_40_is_constant_and_tail_enables_ai7_timer() -> None
     assert c.ai_timer == 0
     assert c.health == 70.0
     assert c.max_health == 70.0
-    assert math.isclose(c.move_speed or 0.0, 2.2 * 1.2, abs_tol=1e-9)
+    assert (c.move_speed or 0.0) == pytest.approx(2.2 * 1.2, abs=1e-9)
     assert c.reward_value == 160.0
     assert c.size == 45.0
     assert c.contact_damage == 5.0
@@ -1741,7 +1806,7 @@ def test_spawn_plan_template_0e_spawns_ring_children_and_has_spawn_slot() -> Non
     assert slot.count == 0
     assert slot.limit == 0x40
     assert slot.child_template_id == 0x1C
-    assert math.isclose(slot.interval, 1.0499999523162842, abs_tol=1e-9)
+    assert slot.interval == 1.05
 
     for i, child in enumerate(plan.creatures[1:], start=0):
         assert child.type_id == CreatureTypeId.ALIEN
@@ -1758,8 +1823,8 @@ def test_spawn_plan_template_0e_spawns_ring_children_and_has_spawn_slot() -> Non
         assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (1.0, 0.3, 0.3, 1.0)
 
         angle = float(i) * 0.2617994
-        assert math.isclose(child.target_offset_x or 0.0, math.cos(angle) * 100.0, abs_tol=1e-4)
-        assert math.isclose(child.target_offset_y or 0.0, math.sin(angle) * 100.0, abs_tol=1e-4)
+        assert (child.target_offset_x or 0.0) == pytest.approx(math.cos(angle) * 100.0, abs=1e-4)
+        assert (child.target_offset_y or 0.0) == pytest.approx(math.sin(angle) * 100.0, abs=1e-4)
 
     # Rand consumption:
     # - base alloc: 1
@@ -1808,8 +1873,8 @@ def test_spawn_plan_template_11_spawns_chain_children_and_falls_into_unhandled_o
         assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (0.6, 0.6, 0.31, 1.0)
 
         angle = float(2 + 2 * i) * 0.3926991
-        assert math.isclose(child.pos_x, 100.0 + math.cos(angle) * 256.0, abs_tol=1e-4)
-        assert math.isclose(child.pos_y, 200.0 + math.sin(angle) * 256.0, abs_tol=1e-4)
+        assert child.pos_x == pytest.approx(100.0 + math.cos(angle) * 256.0, abs=1e-4)
+        assert child.pos_y == pytest.approx(200.0 + math.sin(angle) * 256.0, abs=1e-4)
 
     # The original falls into the "Unhandled creatureType.\n" block after the loop, which overwrites
     # the return creature (last child).

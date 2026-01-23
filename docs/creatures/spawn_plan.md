@@ -42,9 +42,8 @@ in the plan are treated as implicit defaults for the purposes of porting.
    (e.g. the early random heading that gets overwritten by the final `heading` argument).
 3. Return pointer semantics matter: templates that allocate extra creatures may return the **last allocated**
    creature, not the base creature. The tail applies to that returned pointer. We model this with `SpawnPlan.primary`.
-4. All stored numeric fields in the original are float32/uint32. For bit-level fidelity:
-   - decode float32 constants from decompiles when they appear as hex (see `_f32()` in `src/crimson/creatures/spawn.py`)
-   - round at store points when/if needed (Python floats are 64-bit)
+4. The original uses float32/uint32 fields. In the port we prefer readable float literals (rounding away obvious
+   float32 noise), but keep bit-level reinterpretation explicit when it carries semantics (e.g. packed ints).
 
 ## Porting workflow (repo conventions)
 
