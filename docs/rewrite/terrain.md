@@ -19,6 +19,26 @@ Implementation: `src/grim/terrain_render.py`
 - `GroundRenderer.generate(seed=...)` stamps the 3 procedural layers into the RT.
 - `GroundRenderer.draw(camera_x, camera_y)` draws the RT to the screen using UV scrolling.
 
+## Ground dump fixtures (parity test)
+
+We captured **ground render-target dumps** via Frida and use the PNGs as
+fixtures to ensure the rewrite produces identical output for the same seed and
+terrain texture indices.
+
+- Fixtures: `tests/fixtures/ground/ground_dump_*.png` + `tests/fixtures/ground/ground_dump_cases.json`
+- Test: `tests/test_ground_dump_fixtures.py`
+
+Run the test:
+
+```bash
+uv run pytest tests/test_ground_dump_fixtures.py
+```
+
+Notes:
+
+- Requires a display (raylib); the test skips if `DISPLAY` / `WAYLAND_DISPLAY` is missing.
+- Requires game assets at `game_bins/crimsonland/1.9.93-gog/crimson.paq`.
+
 ## Decal baking (what was missing)
 
 The exe’s “persistent gore” works because it is drawn **into the ground render

@@ -1,0 +1,38 @@
+[
+  {
+    "fixture": "ground_dump_1769179871524.png",
+    "raw": "ground_dump_1769179871524.raw",
+    "seed": 2784243953,
+    "seed_srand": 2784243953,
+    "width": 1024,
+    "height": 1024,
+    "tex0_index": 0,
+    "tex1_index": 1,
+    "tex2_index": 0,
+    "desc_ptr": "0x484730"
+  },
+  {
+    "fixture": "ground_dump_1769179880529.png",
+    "raw": "ground_dump_1769179880529.raw",
+    "seed": 2784243953,
+    "seed_srand": 2784243953,
+    "width": 1024,
+    "height": 1024,
+    "tex0_index": 2,
+    "tex1_index": 3,
+    "tex2_index": 2,
+    "desc_ptr": "0x484914"
+  },
+  {
+    "fixture": "ground_dump_1769179880552.png",
+    "raw": "ground_dump_1769179880552.raw",
+    "seed": 2784243953,
+    "seed_srand": 2784243953,
+    "width": 1024,
+    "height": 1024,
+    "tex0_index": 6,
+    "tex1_index": 7,
+    "tex2_index": 6,
+    "desc_ptr": "0x484c58"
+  }
+]
