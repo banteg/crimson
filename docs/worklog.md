@@ -2,6 +2,25 @@
 
 Reverse-chronological log of notable repo changes, grouped by day.
 
+## 2026-01-24
+
+- Added a demo upsell purchase screen, aligned `demo_mode_start` sequencing, and improved purchase-screen copy/layout/backplasma to match the original.
+- Matched menu slide animations and sign shadow pass, and kept the logo sign static between menu screens.
+- Fixed small-font rendering to be pixel-perfect.
+- Documented `fx_detail` flags/preset mapping and enabled `fx_detail` shadows by default.
+- Added Frida tracing for menu logo pivot behavior.
+- Named additional menu/logo-related callbacks in Ghidra and regenerated exports.
+
+## 2026-01-23
+
+- Ported creature spawning: spawn-plan builder/templates, spawn-id checklist, creature spawning docs, and a `crimson.creatures` package refactor.
+- Improved terrain/ground parity: fixed density shift, stamp pivot/orientation, RNG consumption ordering, alpha handling, and first-frame black ground; added partial generation steps and decal baking helpers.
+- Expanded Frida terrain tooling (stamp draw tracing, RNG-state capture, auto-dump on generate) and improved VM share file syncing.
+- Added/expanded ground dump and quest builder tests (parity fixtures, stamp triplets, diff persistence, and snapshot rounding).
+- Refactored engine/views helpers and aligned quest title/level UI overlays.
+- Improved font fallbacks/accuracy by preferring PAQ fonts and matching Grim2D mono glyph positioning.
+- Advanced demo/menu work with a teaser gameplay sim, upsell overlay, placeholder menu screens, panel layout fixes, terrain stability across menus, and animated quit/exit behavior.
+
 ## 2026-01-22
 
 - Added IDA headless export/decompile flow, applied Ghidra maps during exports, and normalized signature parsing/typedef handling.
