@@ -10,8 +10,9 @@ from ..config import ensure_crimson_cfg
 from ..quests import all_quests
 from ..quests.types import QuestDefinition
 from ..terrain_render import CrtRand, GroundDecal, GroundRenderer
-from .font_grim_mono import GrimMonoFont, draw_grim_mono_text, load_grim_mono_font
+from .font_grim_mono import GrimMonoFont, load_grim_mono_font
 from .font_small import SmallFontData, draw_small_text, load_small_font
+from .quest_title_overlay import draw_quest_title_overlay
 from .registry import register_view
 from .types import View, ViewContext
 
@@ -20,15 +21,6 @@ UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
-QUEST_TITLE_ALPHA = 1.0
-QUEST_NUMBER_ALPHA_RATIO = 0.5
-QUEST_NUMBER_SCALE_DELTA = 0.2
-# Game X formula: strlen * number_scale * 8.0 + number_scale * 32.0 + 4.0
-QUEST_NUMBER_HALF_ADVANCE = 8.0
-QUEST_NUMBER_BASE_GAP = 32.0
-QUEST_NUMBER_FIXED_OFFSET = 4.0
-# Game Y formula: number_y = title_y + number_scale * 7.36
-QUEST_NUMBER_Y_MULTIPLIER = 7.36
 
 
 @dataclass(slots=True)
@@ -313,41 +305,11 @@ class GroundView:
         except ValueError:
             return sum(ord(ch) for ch in level)
 
-    def _quest_title_scale(self) -> float:
-        return 0.75 if rl.get_screen_width() <= 640 else 0.8
-
     def _draw_quest_title_overlay(self) -> None:
         if self._grim_mono is None or not self._quests:
             return
         quest = self._quests[self._quest_index]
-        font = self._grim_mono
-        title = quest.title
-        number = quest.level
-        title_scale = self._quest_title_scale()
-        number_scale = max(0.0, title_scale - QUEST_NUMBER_SCALE_DELTA)
-
-        title_width = len(title) * font.advance * title_scale
-        center_x = rl.get_screen_width() / 2.0
-        title_x = center_x - (title_width / 2.0)
-        # Game formula: x = title_x - (strlen * scale * 8) - (scale * 32) - 4
-        number_x = (
-            title_x
-            - (len(number) * number_scale * QUEST_NUMBER_HALF_ADVANCE)
-            - (number_scale * QUEST_NUMBER_BASE_GAP)
-            - QUEST_NUMBER_FIXED_OFFSET
-        )
-
-        title_y = (rl.get_screen_height() / 2.0) - 32.0
-        # Game formula: y = title_y + number_scale * 7.36
-        number_y = title_y + (number_scale * QUEST_NUMBER_Y_MULTIPLIER)
-
-        title_color = rl.Color(255, 255, 255, int(255 * QUEST_TITLE_ALPHA))
-        number_color = rl.Color(
-            255, 255, 255, int(255 * QUEST_TITLE_ALPHA * QUEST_NUMBER_ALPHA_RATIO)
-        )
-
-        draw_grim_mono_text(font, title, title_x, title_y, title_scale, title_color)
-        draw_grim_mono_text(font, number, number_x, number_y, number_scale, number_color)
+        draw_quest_title_overlay(self._grim_mono, quest.title, quest.level)
 
 
 @register_view("ground", "Ground texture")

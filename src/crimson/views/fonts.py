@@ -15,6 +15,10 @@ from .font_small import (
     load_small_font,
     measure_small_text_height,
 )
+from .quest_title_overlay import (
+    draw_quest_title_overlay,
+    quest_title_base_scale,
+)
 from .registry import register_view
 from .types import View, ViewContext
 
@@ -22,17 +26,6 @@ SMALL_SAMPLE_SCALE = 1.0
 UI_TEXT_SCALE = 1.0
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
-QUEST_TITLE_ALPHA = 1.0
-QUEST_NUMBER_ALPHA_RATIO = 0.5
-QUEST_NUMBER_SCALE_DELTA = 0.2
-# Game X formula: strlen * number_scale * 8.0 + number_scale * 32.0 + 4.0
-# where 8.0 = advance/2, 32.0 = base gap, 4.0 = fixed offset
-QUEST_NUMBER_HALF_ADVANCE = 8.0  # half of GRIM_MONO_ADVANCE (16/2)
-QUEST_NUMBER_BASE_GAP = 32.0
-QUEST_NUMBER_FIXED_OFFSET = 4.0
-# Game Y formula: number_y = title_y + number_scale * (23.36 - 16.0)
-# where 23.36 is constant at 0x46f5a0, 16.0 is font advance at 0x46f230
-QUEST_NUMBER_Y_MULTIPLIER = 7.36  # 23.36 - 16.0
 
 GRIM_MONO_FILTER_NAME = "Bilinear"
 GRIM_MONO_FILTER_VALUE = rl.TEXTURE_FILTER_BILINEAR
@@ -106,7 +99,7 @@ class FontView:
         if self._grim_mono is not None:
             self._draw_ui_text(f"Filter: {GRIM_MONO_FILTER_NAME}", 24, y, UI_TEXT_COLOR)
             y += self._ui_line_height(0.9) + 6
-            mono_scale = self._quest_title_scale()
+            mono_scale = quest_title_base_scale(rl.get_screen_width())
             draw_grim_mono_text(
                 self._grim_mono, self._sample, 24, y, mono_scale, rl.WHITE
             )
@@ -121,41 +114,10 @@ class FontView:
 
         self._draw_quest_title_overlay()
 
-    def _quest_title_scale(self) -> float:
-        return 0.75 if rl.get_screen_width() <= 640 else 0.8
-
     def _draw_quest_title_overlay(self) -> None:
         if self._grim_mono is None:
             return
-        font = self._grim_mono
-        title = "Land Hostile"
-        number = "1.10"
-        title_scale = self._quest_title_scale()
-        number_scale = max(0.0, title_scale - QUEST_NUMBER_SCALE_DELTA)
-
-        title_width = len(title) * font.advance * title_scale
-
-        center_x = rl.get_screen_width() / 2.0
-        title_x = center_x - (title_width / 2.0)
-        # Game formula: x = title_x - (strlen * scale * 8) - (scale * 32) - 4
-        number_x = (
-            title_x
-            - (len(number) * number_scale * QUEST_NUMBER_HALF_ADVANCE)
-            - (number_scale * QUEST_NUMBER_BASE_GAP)
-            - QUEST_NUMBER_FIXED_OFFSET
-        )
-
-        title_y = (rl.get_screen_height() / 2.0) - 32.0
-        # Game formula: y = title_y + number_scale * (23.36 - 16.0)
-        number_y = title_y + (number_scale * QUEST_NUMBER_Y_MULTIPLIER)
-
-        title_color = rl.Color(255, 255, 255, int(255 * QUEST_TITLE_ALPHA))
-        number_color = rl.Color(
-            255, 255, 255, int(255 * QUEST_TITLE_ALPHA * QUEST_NUMBER_ALPHA_RATIO)
-        )
-
-        draw_grim_mono_text(font, title, title_x, title_y, title_scale, title_color)
-        draw_grim_mono_text(font, number, number_x, number_y, number_scale, number_color)
+        draw_quest_title_overlay(self._grim_mono, "Land Hostile", "1.10")
 
 
 @register_view("fonts", "Font preview")
