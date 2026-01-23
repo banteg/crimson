@@ -62,9 +62,9 @@ This is why the demo cycle includes a “purchase interstitial” variant: it fl
 `demo_purchase_screen_active` to suppress gameplay and show only the upsell
 screen for a fixed time.
 
-**Rewrite note:** the Python rewrite implements the overlay + purchase screen
-rendering, but still differs in sequencing (no automatic “variant 5” interstitial
-yet; we trigger the purchase screen on input).
+**Rewrite note:** the Python rewrite matches the modulo-6 sequencing, including
+the automatic “variant 5” purchase interstitial. The purchase screen can also be
+triggered on input (LMB / Esc / Space), matching the original shareware behavior.
 
 ### Timing: `quest_spawn_timeline` + `demo_time_limit_ms`
 
@@ -168,8 +168,8 @@ The variants are small, deterministic setup functions that:
 - `demo_time_limit_ms = 10000`
 - `demo_purchase_screen_active = 1` (suppresses gameplay and renders the full-screen purchase UI)
 
-**Rewrite note:** the Python rewrite implements the purchase UI, but does not
-yet auto-enter this interstitial variant.
+**Rewrite note:** the Python rewrite implements the purchase UI and auto-enters
+this interstitial variant.
 
 ## Upsell overlay (`demo_purchase_screen_update` / `0x0040b740`)
 

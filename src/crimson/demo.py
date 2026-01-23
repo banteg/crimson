@@ -20,7 +20,7 @@ from .weapons import WEAPON_TABLE
 
 
 WORLD_SIZE = 1024.0
-DEMO_VARIANT_COUNT = 5
+DEMO_VARIANT_COUNT = 6
 
 _DEMO_UPSELL_MESSAGES: tuple[str, ...] = (
     "Want more Levels?",
@@ -32,17 +32,18 @@ _DEMO_UPSELL_MESSAGES: tuple[str, ...] = (
 
 DEMO_PURCHASE_URL = "http://buy.crimsonland.com"
 DEMO_PURCHASE_SCREEN_LIMIT_MS = 16_000
+DEMO_PURCHASE_INTERSTITIAL_LIMIT_MS = 10_000
 
 _DEMO_PURCHASE_TITLE = "Upgrade to the full version of Crimsonland Today!"
 _DEMO_PURCHASE_FEATURES_TITLE = "Full version features:"
 _DEMO_PURCHASE_FEATURE_LINES: tuple[tuple[str, float], ...] = (
     ("-Unlimited Play Time in three thrilling Game Modes!", 22.0),
     ("-The varied weapon arsenal consisting of over 20 unique", 17.0),
-    ("  weapons that allow you to deal death with plasma, lead,", 17.0),
-    ("  fire and electricity!", 22.0),
+    (" weapons that allow you to deal death with plasma, lead,", 17.0),
+    (" fire and electricity!", 22.0),
     ("-Over 40 game altering Perks!", 22.0),
     ("-40 insane Levels that give you", 18.0),
-    ("  hours of intense and fun gameplay!", 22.0),
+    (" hours of intense and fun gameplay!", 22.0),
     ("-The ability to post your high scores online!", 44.0),
 )
 _DEMO_PURCHASE_FOOTER = "Purchasing the game is very easy and secure."
@@ -189,9 +190,9 @@ class DemoView:
         self._beams: list[DemoBeam] = []
         self._explosions: list[DemoExplosion] = []
         self._variant_index = 0
-        self._variant_duration = 0.0
-        self._variant_elapsed_ms = 0
-        self._variant_duration_ms = 0
+        self._demo_variant_index = 0
+        self._quest_spawn_timeline_ms = 0
+        self._demo_time_limit_ms = 0
         self._finished = False
         self._camera_x = 0.0
         self._camera_y = 0.0
@@ -200,8 +201,6 @@ class DemoView:
         self._upsell_font: GrimMonoFont | None = None
         self._small_font: SmallFontData | None = None
         self._purchase_active = False
-        self._purchase_timeline_ms = 0
-        self._purchase_limit_ms = 0
         self._purchase_url_opened = False
 
     def open(self) -> None:
@@ -209,11 +208,12 @@ class DemoView:
         self._upsell_message_index = 0
         self._upsell_pulse_ms = 0
         self._purchase_active = False
-        self._purchase_timeline_ms = 0
-        self._purchase_limit_ms = 0
         self._purchase_url_opened = False
         self._variant_index = 0
-        self._start_variant(0)
+        self._demo_variant_index = 0
+        self._quest_spawn_timeline_ms = 0
+        self._demo_time_limit_ms = 0
+        self._demo_mode_start()
 
     def close(self) -> None:
         if self._ground is not None and self._ground.render_target is not None:
@@ -243,45 +243,31 @@ class DemoView:
             return
         frame_dt = min(dt, 0.1)
         frame_dt_ms = int(frame_dt * 1000.0)
-
-        if self._purchase_active:
-            if frame_dt_ms <= 0:
-                return
-            self._purchase_timeline_ms += frame_dt_ms
-            self._upsell_pulse_ms += frame_dt_ms
-            self._update_purchase_screen()
-            if self._purchase_timeline_ms > self._purchase_limit_ms:
-                # demo_purchase_screen_update restarts the demo once the purchase screen
-                # timer exceeds demo_time_limit_ms.
-                self._purchase_active = False
-                self._purchase_timeline_ms = 0
-                self._purchase_limit_ms = 0
-                next_variant = (self._variant_index + 1) % DEMO_VARIANT_COUNT
-                self._start_variant(next_variant)
+        if frame_dt_ms <= 0:
             return
 
-        if getattr(self._state, "demo_enabled", False) and self._purchase_screen_triggered():
-            self._begin_purchase_screen(DEMO_PURCHASE_SCREEN_LIMIT_MS)
+        if (not self._purchase_active) and getattr(self._state, "demo_enabled", False) and self._purchase_screen_triggered():
+            self._begin_purchase_screen(DEMO_PURCHASE_SCREEN_LIMIT_MS, reset_timeline=False)
+
+        if self._purchase_active:
+            self._upsell_pulse_ms += frame_dt_ms
+            self._update_purchase_screen()
+            self._quest_spawn_timeline_ms += frame_dt_ms
+            if self._quest_spawn_timeline_ms > self._demo_time_limit_ms:
+                # demo_purchase_screen_update restarts the demo once the purchase screen
+                # timer exceeds demo_time_limit_ms.
+                self._demo_mode_start()
             return
 
         if self._skip_triggered():
             self._finished = True
             return
 
-        if frame_dt_ms > 0 and _DEMO_UPSELL_MESSAGES and self._variant_elapsed_ms == 0:
-            # demo_purchase_screen_update increments demo_upsell_message_index when the
-            # timeline resets (quest_spawn_timeline == 0).
-            self._upsell_message_index = (self._upsell_message_index + 1) % len(_DEMO_UPSELL_MESSAGES)
-        self._variant_elapsed_ms += frame_dt_ms
+        self._quest_spawn_timeline_ms += frame_dt_ms
         self._update_sim(frame_dt)
         self._advance_anim_phase(frame_dt)
-        if self._variant_elapsed_ms < self._variant_duration_ms:
-            return
-        next_variant = self._variant_index + 1
-        if next_variant >= DEMO_VARIANT_COUNT:
-            self._finished = True
-            return
-        self._start_variant(next_variant)
+        if self._quest_spawn_timeline_ms > self._demo_time_limit_ms:
+            self._demo_mode_start()
 
     def draw(self) -> None:
         if self._purchase_active:
@@ -312,10 +298,11 @@ class DemoView:
             return True
         return False
 
-    def _begin_purchase_screen(self, limit_ms: int) -> None:
+    def _begin_purchase_screen(self, limit_ms: int, *, reset_timeline: bool) -> None:
         self._purchase_active = True
-        self._purchase_timeline_ms = 0
-        self._purchase_limit_ms = max(0, int(limit_ms))
+        if reset_timeline:
+            self._quest_spawn_timeline_ms = 0
+        self._demo_time_limit_ms = max(0, int(limit_ms))
         self._purchase_url_opened = False
 
     def _ensure_small_font(self) -> SmallFontData:
@@ -414,8 +401,8 @@ class DemoView:
         #   - UV: 0..0.5 (top-left quarter of the backplasma atlas)
         #   - per-corner color slots, with a pulsing alpha/color at bottom-right
         #   - global fade-in (0..1250ms) + fade-out (last 500ms)
-        timeline_ms = max(0, int(self._purchase_timeline_ms))
-        limit_ms = max(0, int(self._purchase_limit_ms))
+        timeline_ms = max(0, int(self._quest_spawn_timeline_ms))
+        limit_ms = max(0, int(self._demo_time_limit_ms))
         fade = 1.0
         ramp = float(timeline_ms) * 0.0160000008
         if ramp < 20.0:
@@ -551,28 +538,47 @@ class DemoView:
         self._state.texture_cache = cache
         return cache
 
-    def _start_variant(self, index: int) -> None:
+    def _demo_mode_start(self) -> None:
+        index = self._demo_variant_index
+        self._demo_variant_index = (index + 1) % DEMO_VARIANT_COUNT
         self._variant_index = index
-        self._variant_elapsed_ms = 0
+        self._quest_spawn_timeline_ms = 0
+        self._demo_time_limit_ms = 0
+        self._purchase_active = False
+        self._purchase_url_opened = False
+
         self._creatures.clear()
         self._players.clear()
         self._projectiles.clear()
         self._beams.clear()
         self._explosions.clear()
-        self._apply_variant_ground(index)
         if index == 0:
+            self._apply_variant_ground(0)
             self._setup_variant_0()
         elif index == 1:
+            self._apply_variant_ground(1)
             self._setup_variant_1()
         elif index == 2:
+            self._apply_variant_ground(2)
             self._setup_variant_2()
         elif index == 3:
+            self._apply_variant_ground(3)
             self._setup_variant_3()
-        else:
+        elif index == 4:
+            self._apply_variant_ground(4)
             self._setup_variant_0()
-        self._variant_duration_ms = int(self._variant_duration * 1000.0)
+        else:
+            # demo_purchase_interstitial_begin
+            self._begin_purchase_screen(DEMO_PURCHASE_INTERSTITIAL_LIMIT_MS, reset_timeline=True)
+
+        # demo_purchase_screen_update increments demo_upsell_message_index when the
+        # timeline resets (quest_spawn_timeline == 0) and the purchase screen is inactive.
+        if (not self._purchase_active) and _DEMO_UPSELL_MESSAGES:
+            self._upsell_message_index = (self._upsell_message_index + 1) % len(_DEMO_UPSELL_MESSAGES)
 
     def _apply_variant_ground(self, index: int) -> None:
+        if index == 5:
+            return
         cache = self._ensure_cache()
         terrain = {
             0: (
@@ -650,7 +656,7 @@ class DemoView:
         self._creatures.append(DemoCreature(spawn_id=spawn_id, x=x, y=y, hp=hp))
 
     def _setup_variant_0(self) -> None:
-        self._variant_duration = 4.0
+        self._demo_time_limit_ms = 4000
         weapon_id = 11
         self._players = [
             DemoPlayer(index=0, x=448.0, y=384.0, weapon_id=weapon_id),
@@ -666,7 +672,7 @@ class DemoView:
             i += 1
 
     def _setup_variant_1(self) -> None:
-        self._variant_duration = 5.0
+        self._demo_time_limit_ms = 5000
         weapon_id = 5
         self._players = [
             DemoPlayer(index=0, x=490.0, y=448.0, weapon_id=weapon_id),
@@ -682,7 +688,7 @@ class DemoView:
                 self._spawn(0x35, x2, y2)
 
     def _setup_variant_2(self) -> None:
-        self._variant_duration = 5.0
+        self._demo_time_limit_ms = 5000
         weapon_id = 21
         self._players = [DemoPlayer(index=0, x=512.0, y=512.0, weapon_id=weapon_id)]
         y = 128
@@ -697,7 +703,7 @@ class DemoView:
             i += 1
 
     def _setup_variant_3(self) -> None:
-        self._variant_duration = 4.0
+        self._demo_time_limit_ms = 4000
         weapon_id = 18
         self._players = [DemoPlayer(index=0, x=512.0, y=512.0, weapon_id=weapon_id)]
         for idx in range(20):
@@ -889,7 +895,7 @@ class DemoView:
             return
         title = f"DEMO MODE  ({self._variant_index + 1}/{DEMO_VARIANT_COUNT})"
         hint = "Press any key / click to skip"
-        remaining = max(0.0, self._variant_duration - (self._variant_elapsed_ms / 1000.0))
+        remaining = max(0.0, float(self._demo_time_limit_ms - self._quest_spawn_timeline_ms) / 1000.0)
         weapons = ", ".join(f"P{p.index + 1}:{_weapon_name(p.weapon_id)}" for p in self._players)
         detail = f"{weapons}  —  next in {remaining:0.1f}s"
         rl.draw_text(title, 16, 12, 20, rl.Color(240, 240, 240, 255))
@@ -912,8 +918,8 @@ class DemoView:
         font = self._ensure_upsell_font()
         msg = _DEMO_UPSELL_MESSAGES[self._upsell_message_index]
 
-        timeline_ms = self._variant_elapsed_ms
-        limit_ms = self._variant_duration_ms
+        timeline_ms = self._quest_spawn_timeline_ms
+        limit_ms = self._demo_time_limit_ms
         var_2c = float(timeline_ms) * 0.0160000008
 
         alpha = 1.0
