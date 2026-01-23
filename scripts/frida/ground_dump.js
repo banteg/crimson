@@ -106,6 +106,15 @@ const GRIM_VTABLE_OFFSETS = {
 const GRIM_RVAS = {
     set_render_target: 0x06d50,
     get_texture_handle: 0x07740,
+    bind_texture: 0x07830,
+    begin_batch: 0x07ac0,
+    end_batch: 0x07b20,
+    set_rotation: 0x07f30,
+    set_color: 0x07f90,
+    set_color_slot: 0x081c0,
+    set_uv: 0x08350,
+    draw_quad_xy: 0x08720,
+    draw_quad: 0x08b10,
 };
 
 // D3D8 vtable offsets (IDirect3DDevice8)
@@ -170,6 +179,31 @@ let lastSrandSeed = null;
 let seedAtGenerate = null;
 let lastTerrainGenerateInfo = null;
 
+// Terrain stamp tracing (for byte-for-byte validation)
+let terrainGenIndex = 0;
+let inTerrainGenerate = false;
+let terrainGenerateThreadId = null;
+
+let batchIndex = -1;
+let stampIndex = 0;
+let stampIndexInBatch = 0;
+
+let currentBoundTexture0 = null;
+let currentBoundTexture0Name = null;
+let currentUv = null; // {u0,v0,u1,v1}
+let currentColor = null; // {r,g,b,a}
+let currentColorSlots = [null, null, null, null]; // per-corner RGBA
+let currentRotation = null; // radians
+
+let randCallsInGenerate = 0;
+let randExtraInGenerate = 0;
+let randPhase = 0; // 0=rot, 1=x, 2=y, 3=ready
+let pendingRand = { rot: null, x: null, y: null };
+let randDesyncCount = 0;
+
+let terrainScaleAtGenerate = null;
+let invScaleAtGenerate = null;
+
 // Helpers
 function log(msg) {
     writeLine({ tag: "log", msg: msg });
@@ -220,6 +254,19 @@ function safeReadFloat(ptrVal) {
     }
 }
 
+function safeReadCString(ptrVal) {
+    try {
+        if (!ptrVal || ptrVal.isNull()) return null;
+        if (!isReadable(ptrVal)) return null;
+        return ptrVal.readCString();
+    } catch (e) {
+        try {
+            if (ptrVal && !ptrVal.isNull() && isReadable(ptrVal)) return ptrVal.readUtf8String();
+        } catch (e2) {}
+    }
+    return null;
+}
+
 function findModuleBase(name) {
     try {
         const mod = Process.findModuleByName(name);
@@ -258,6 +305,16 @@ const GRIM_DATA_RVAS = {
     backbuffer_surface: 0x5c900,    // IDirect3DSurface8* cached backbuffer surface
     texture_slots: 0x5d404,         // Texture slot table (array of texture struct pointers)
 };
+
+function getStackPointer(ctx) {
+    if (ctx.esp !== undefined) return ctx.esp;
+    if (ctx.sp !== undefined) return ctx.sp;
+    return null;
+}
+
+function isTerrainGenerateThread(threadId) {
+    return inTerrainGenerate && terrainGenerateThreadId !== null && threadId === terrainGenerateThreadId;
+}
 
 // Find the D3D8 device pointer from grim.dll internals
 function findD3DDevice() {
@@ -470,6 +527,14 @@ function getGrimTextureEntryPtr(handle) {
     const entryPtr = safeReadPointer(slotAddr);
     if (!entryPtr || entryPtr.isNull()) return null;
     return entryPtr;
+}
+
+function getGrimTextureName(handle) {
+    const entryPtr = getGrimTextureEntryPtr(handle);
+    if (!entryPtr) return null;
+    const namePtr = safeReadPointer(entryPtr);
+    if (!namePtr || namePtr.isNull()) return null;
+    return safeReadCString(namePtr);
 }
 
 function getGrimTextureD3DTexturePtr(entryPtr) {
@@ -708,6 +773,219 @@ function hookSrand() {
     writeLine({ tag: "warning", msg: "Could not find crt_srand/srand to hook" });
 }
 
+function hookCrtRand() {
+    if (!exeBase) return;
+    const addr = exeBase.add(EXE_RVAS.crt_rand);
+    writeLine({ tag: "attach", name: "crt_rand", addr: addr.toString() });
+    Interceptor.attach(addr, {
+        onLeave: function (retval) {
+            if (!isTerrainGenerateThread(this.threadId)) return;
+            const value = retval ? retval.toInt32() : 0;
+            randCallsInGenerate += 1;
+            if (randPhase === 0) {
+                pendingRand.rot = value;
+                randPhase = 1;
+            } else if (randPhase === 1) {
+                pendingRand.x = value;
+                randPhase = 2;
+            } else if (randPhase === 2) {
+                pendingRand.y = value;
+                randPhase = 3;
+            } else {
+                randExtraInGenerate += 1;
+            }
+        },
+    });
+}
+
+function hookTerrainStampTracing() {
+    if (!grimBase) return;
+
+    function readI32FromStack(invocation, offset) {
+        const sp = getStackPointer(invocation.context);
+        if (sp === null) return null;
+        return safeReadI32(sp.add(offset));
+    }
+
+    function readF32FromStack(invocation, offset) {
+        const sp = getStackPointer(invocation.context);
+        if (sp === null) return null;
+        return safeReadFloat(sp.add(offset));
+    }
+
+    // Bind texture (handle, stage)
+    Interceptor.attach(grimBase.add(GRIM_RVAS.bind_texture), {
+        onEnter: function () {
+            if (!isTerrainGenerateThread(this.threadId)) return;
+            const handle = readI32FromStack(this, 4);
+            const stage = readI32FromStack(this, 8);
+            if (handle === null || stage === null) return;
+            if (stage === 0) {
+                currentBoundTexture0 = handle;
+                currentBoundTexture0Name = getGrimTextureName(handle);
+            }
+            writeLine({
+                tag: "terrain_bind_texture",
+                gen_index: terrainGenIndex,
+                batch_index: batchIndex,
+                handle: handle,
+                stage: stage,
+                name: stage === 0 ? (currentBoundTexture0Name || null) : null,
+            });
+        },
+    });
+
+    // UV (u0,v0,u1,v1)
+    Interceptor.attach(grimBase.add(GRIM_RVAS.set_uv), {
+        onEnter: function () {
+            if (!isTerrainGenerateThread(this.threadId)) return;
+            const u0 = readF32FromStack(this, 4);
+            const v0 = readF32FromStack(this, 8);
+            const u1 = readF32FromStack(this, 12);
+            const v1 = readF32FromStack(this, 16);
+            if (u0 === null || v0 === null || u1 === null || v1 === null) return;
+            currentUv = { u0: u0, v0: v0, u1: u1, v1: v1 };
+        },
+    });
+
+    // Color (r,g,b,a) - sets all corners
+    Interceptor.attach(grimBase.add(GRIM_RVAS.set_color), {
+        onEnter: function () {
+            if (!isTerrainGenerateThread(this.threadId)) return;
+            const r = readF32FromStack(this, 4);
+            const g = readF32FromStack(this, 8);
+            const b = readF32FromStack(this, 12);
+            const a = readF32FromStack(this, 16);
+            if (r === null || g === null || b === null || a === null) return;
+            currentColor = { r: r, g: g, b: b, a: a };
+        },
+    });
+
+    // Per-corner color slot (index, r,g,b,a)
+    Interceptor.attach(grimBase.add(GRIM_RVAS.set_color_slot), {
+        onEnter: function () {
+            if (!isTerrainGenerateThread(this.threadId)) return;
+            const idx = readI32FromStack(this, 4);
+            const r = readF32FromStack(this, 8);
+            const g = readF32FromStack(this, 12);
+            const b = readF32FromStack(this, 16);
+            const a = readF32FromStack(this, 20);
+            if (idx === null || r === null || g === null || b === null || a === null) return;
+            if (idx >= 0 && idx < currentColorSlots.length) {
+                currentColorSlots[idx] = { r: r, g: g, b: b, a: a };
+            }
+        },
+    });
+
+    // Batch boundaries (helpful to split 3 layers)
+    Interceptor.attach(grimBase.add(GRIM_RVAS.begin_batch), {
+        onEnter: function () {
+            if (!isTerrainGenerateThread(this.threadId)) return;
+            batchIndex += 1;
+            stampIndexInBatch = 0;
+            // Resync the rand triplet parser at known boundaries.
+            randPhase = 0;
+            pendingRand = { rot: null, x: null, y: null };
+            writeLine({
+                tag: "terrain_batch_begin",
+                gen_index: terrainGenIndex,
+                batch_index: batchIndex,
+                texture0: currentBoundTexture0,
+                texture0_name: currentBoundTexture0Name || null,
+                uv: currentUv,
+                color: currentColor,
+                color_slots: currentColorSlots.some((c) => c !== null) ? currentColorSlots : null,
+            });
+        },
+    });
+
+    Interceptor.attach(grimBase.add(GRIM_RVAS.end_batch), {
+        onEnter: function () {
+            if (!isTerrainGenerateThread(this.threadId)) return;
+            writeLine({
+                tag: "terrain_batch_end",
+                gen_index: terrainGenIndex,
+                batch_index: batchIndex,
+                stamps: stampIndexInBatch,
+            });
+        },
+    });
+
+    // Rotation per stamp
+    Interceptor.attach(grimBase.add(GRIM_RVAS.set_rotation), {
+        onEnter: function () {
+            if (!isTerrainGenerateThread(this.threadId)) return;
+            const radians = readF32FromStack(this, 4);
+            if (radians === null) return;
+            currentRotation = radians;
+        },
+    });
+
+    // The core stamp draw (x,y provided via pointer)
+    Interceptor.attach(grimBase.add(GRIM_RVAS.draw_quad_xy), {
+        onEnter: function () {
+            if (!isTerrainGenerateThread(this.threadId)) return;
+            const sp = getStackPointer(this.context);
+            if (sp === null) return;
+
+            const xyPtr = safeReadPointer(sp.add(4));
+            const w = safeReadFloat(sp.add(8));
+            const h = safeReadFloat(sp.add(12));
+            if (!xyPtr || xyPtr.isNull() || w === null || h === null) return;
+
+            const x = safeReadFloat(xyPtr);
+            const y = safeReadFloat(xyPtr.add(4));
+            if (x === null || y === null) return;
+
+            stampIndex += 1;
+            stampIndexInBatch += 1;
+
+            const rotRand = pendingRand.rot;
+            const xRand = pendingRand.x;
+            const yRand = pendingRand.y;
+            const haveTriplet = randPhase === 3 && rotRand !== null && xRand !== null && yRand !== null;
+            if (!haveTriplet) {
+                randDesyncCount += 1;
+            }
+
+            // Derived expectations (useful for diagnosing RNG/order mismatches).
+            const expected = {};
+            if (haveTriplet && invScaleAtGenerate !== null) {
+                const range = 1024 + 128;
+                expected.rotation = ((rotRand % 314) * 0.01);
+                expected.x = ((xRand % range) - 64) * invScaleAtGenerate;
+                expected.y = ((yRand % range) - 64) * invScaleAtGenerate;
+                expected.dx = x - expected.x;
+                expected.dy = y - expected.y;
+                expected.drot = currentRotation !== null ? (currentRotation - expected.rotation) : null;
+            }
+
+            writeLine({
+                tag: "terrain_stamp",
+                gen_index: terrainGenIndex,
+                batch_index: batchIndex,
+                stamp_index: stampIndex,
+                stamp_in_batch: stampIndexInBatch,
+                texture0: currentBoundTexture0,
+                texture0_name: currentBoundTexture0Name || null,
+                x: x,
+                y: y,
+                w: w,
+                h: h,
+                rotation: currentRotation,
+                rand_rot: rotRand,
+                rand_x: xRand,
+                rand_y: yRand,
+                expected: Object.keys(expected).length ? expected : null,
+            });
+
+            // Prepare for next stamp.
+            randPhase = 0;
+            pendingRand = { rot: null, x: null, y: null };
+        },
+    });
+}
+
 // Hook terrain_generate to dump after generation completes
 function hookTerrainGenerate() {
     if (!exeBase) return;
@@ -717,6 +995,32 @@ function hookTerrainGenerate() {
 
     Interceptor.attach(addr, {
         onEnter: function (args) {
+            terrainGenIndex += 1;
+            inTerrainGenerate = true;
+            terrainGenerateThreadId = this.threadId;
+            batchIndex = -1;
+            stampIndex = 0;
+            stampIndexInBatch = 0;
+            currentBoundTexture0 = null;
+            currentBoundTexture0Name = null;
+            currentUv = null;
+            currentColor = null;
+            currentColorSlots = [null, null, null, null];
+            currentRotation = null;
+            randCallsInGenerate = 0;
+            randExtraInGenerate = 0;
+            randPhase = 0;
+            pendingRand = { rot: null, x: null, y: null };
+            randDesyncCount = 0;
+            terrainScaleAtGenerate = null;
+            invScaleAtGenerate = null;
+
+            const globals = readTerrainGlobals();
+            if (globals && globals.config_texture_scale) {
+                terrainScaleAtGenerate = globals.config_texture_scale;
+                invScaleAtGenerate = 1.0 / globals.config_texture_scale;
+            }
+
             // Capture the seed at the moment terrain_generate is called
             seedAtGenerate = lastSrandSeed;
             const desc = args[0];
@@ -731,6 +1035,9 @@ function hookTerrainGenerate() {
                 indices: indices,
                 seed: seedAtGenerate,
                 seed_hex: seedAtGenerate !== null ? "0x" + seedAtGenerate.toString(16) : null,
+                gen_index: terrainGenIndex,
+                thread_id: terrainGenerateThreadId,
+                terrain_scale: terrainScaleAtGenerate,
             };
             writeLine({
                 tag: "terrain_generate_enter",
@@ -738,7 +1045,20 @@ function hookTerrainGenerate() {
             });
         },
         onLeave: function (retval) {
-            writeLine({ tag: "terrain_generate_exit" });
+            writeLine({
+                tag: "terrain_generate_exit",
+                gen_index: terrainGenIndex,
+                thread_id: terrainGenerateThreadId,
+                stamps: stampIndex,
+                batches: batchIndex + 1,
+                rand_calls: randCallsInGenerate,
+                rand_extra: randExtraInGenerate,
+                rand_desync: randDesyncCount,
+            });
+
+            inTerrainGenerate = false;
+            terrainGenerateThreadId = null;
+
             // Always dump: every `terrain_generate()` call corresponds to a new terrain texture.
             // Run the dump from this hooked thread to avoid D3D thread-affinity issues.
             try {
@@ -827,6 +1147,8 @@ function finishInit() {
     });
 
     hookSrand();
+    hookCrtRand();
+    hookTerrainStampTracing();
     hookTerrainGenerate();
     hookSetRenderTarget();
 
