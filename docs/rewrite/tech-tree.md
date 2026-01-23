@@ -21,6 +21,7 @@ it unlocks for parity. Goal: 100% replication of game logic.
 - [x] Main menu layout + animation scaffold -> Unlocks: menu navigation work.
 - [x] Main menu buttons wired (Play/Options/Stats/Mods/Quit) -> Unlocks: front-end screen plumbing.
 - [x] Menu terrain persistence (no regen between screens) -> Unlocks: menu navigation fidelity.
+- [x] Panel menu slide animation (panel + BACK) -> Unlocks: Play/Options/etc screen frame parity.
 - [x] Demo/attract scaffold -> Unlocks: idle flow and animation sanity checks.
 - [ ] Demo loop parity (idle trigger + variant sequencing + restart rules) -> Unlocks: title-screen behavior parity.
 - [x] Demo upsell overlay (demo builds) -> Unlocks: shareware messaging parity.

@@ -1064,10 +1064,24 @@ class MenuView:
 
 
 class PanelMenuView:
-    def __init__(self, state: GameState, *, title: str, body: str | None = None) -> None:
+    def __init__(
+        self,
+        state: GameState,
+        *,
+        title: str,
+        body: str | None = None,
+        panel_pos_x: float = PANEL_POS_X,
+        panel_pos_y: float = PANEL_POS_Y,
+        back_pos_x: float = PANEL_BACK_POS_X,
+        back_pos_y: float = PANEL_BACK_POS_Y,
+    ) -> None:
         self._state = state
         self._title = title
         self._body_lines = (body or "").splitlines()
+        self._panel_pos_x = panel_pos_x
+        self._panel_pos_y = panel_pos_y
+        self._back_pos_x = back_pos_x
+        self._back_pos_y = back_pos_y
         self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
         self._entry: MenuEntry | None = None
@@ -1090,7 +1104,7 @@ class PanelMenuView:
         panel = cache.get_or_load("ui_menuPanel", "ui/ui_menuPanel.jaz").texture
         labels = cache.get_or_load("ui_itemTexts", "ui/ui_itemTexts.jaz").texture
         self._assets = MenuAssets(sign=sign, item=item, panel=panel, labels=labels)
-        self._entry = MenuEntry(slot=0, row=MENU_LABEL_ROW_BACK, y=PANEL_BACK_POS_Y)
+        self._entry = MenuEntry(slot=0, row=MENU_LABEL_ROW_BACK, y=self._back_pos_y)
         self._hovered = False
         self._timeline_ms = 0
         self._timeline_max_ms = PANEL_TIMELINE_START_MS
@@ -1194,18 +1208,17 @@ class PanelMenuView:
         panel = assets.panel
         panel_w = MENU_PANEL_WIDTH
         panel_h = MENU_PANEL_HEIGHT
-        angle_rad, slide_x = MenuView._ui_element_anim(
+        _angle_rad, slide_x = MenuView._ui_element_anim(
             self,
             index=1,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
-            width=panel_w,
+            width=panel_w * self._menu_item_scale(0)[0],
         )
-        _ = slide_x
         item_scale, _local_y_shift = self._menu_item_scale(0)
         dst = rl.Rectangle(
-            PANEL_POS_X,
-            PANEL_POS_Y + self._widescreen_y_shift,
+            self._panel_pos_x + slide_x,
+            self._panel_pos_y + self._widescreen_y_shift,
             panel_w * item_scale,
             panel_h * item_scale,
         )
@@ -1217,7 +1230,7 @@ class PanelMenuView:
                 src=rl.Rectangle(0.0, 0.0, float(panel.width), float(panel.height)),
                 dst=rl.Rectangle(dst.x + 7.0, dst.y + 7.0, dst.width, dst.height),
                 origin=origin,
-                rotation_deg=math.degrees(angle_rad),
+                rotation_deg=0.0,
                 tint=rl.Color(0x44, 0x44, 0x44, 0x44),
             )
         MenuView._draw_ui_quad(
@@ -1225,7 +1238,7 @@ class PanelMenuView:
             src=rl.Rectangle(0.0, 0.0, float(panel.width), float(panel.height)),
             dst=dst,
             origin=origin,
-            rotation_deg=math.degrees(angle_rad),
+            rotation_deg=0.0,
             tint=rl.WHITE,
         )
 
@@ -1239,16 +1252,16 @@ class PanelMenuView:
         label_tex = assets.labels
         item_w = float(item.width)
         item_h = float(item.height)
-        pos_x = PANEL_BACK_POS_X
+        pos_x = self._back_pos_x
         pos_y = entry.y + self._widescreen_y_shift
-        angle_rad, slide_x = MenuView._ui_element_anim(
+        _angle_rad, slide_x = MenuView._ui_element_anim(
             self,
             index=2,
             start_ms=PANEL_TIMELINE_START_MS,
             end_ms=PANEL_TIMELINE_END_MS,
-            width=item_w,
+            width=item_w * self._menu_item_scale(entry.slot)[0],
         )
-        _ = slide_x
+        pos_x += slide_x
         item_scale, local_y_shift = self._menu_item_scale(entry.slot)
         offset_x = MENU_ITEM_OFFSET_X * item_scale
         offset_y = MENU_ITEM_OFFSET_Y * item_scale - local_y_shift
@@ -1259,7 +1272,6 @@ class PanelMenuView:
             item_h * item_scale,
         )
         origin = rl.Vector2(-offset_x, -offset_y)
-        rotation_deg = math.degrees(angle_rad)
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
         if fx_detail:
             MenuView._draw_ui_quad(
@@ -1267,7 +1279,7 @@ class PanelMenuView:
                 src=rl.Rectangle(0.0, 0.0, item_w, item_h),
                 dst=rl.Rectangle(dst.x + 7.0, dst.y + 7.0, dst.width, dst.height),
                 origin=origin,
-                rotation_deg=rotation_deg,
+                rotation_deg=0.0,
                 tint=rl.Color(0x44, 0x44, 0x44, 0x44),
             )
         MenuView._draw_ui_quad(
@@ -1275,7 +1287,7 @@ class PanelMenuView:
             src=rl.Rectangle(0.0, 0.0, item_w, item_h),
             dst=dst,
             origin=origin,
-            rotation_deg=rotation_deg,
+            rotation_deg=0.0,
             tint=rl.WHITE,
         )
         alpha = MenuView._label_alpha(entry.hover_amount)
@@ -1300,7 +1312,7 @@ class PanelMenuView:
             src=src,
             dst=label_dst,
             origin=label_origin,
-            rotation_deg=rotation_deg,
+            rotation_deg=0.0,
             tint=tint,
         )
         if self._entry_enabled(entry):
@@ -1310,7 +1322,7 @@ class PanelMenuView:
                 src=src,
                 dst=label_dst,
                 origin=label_origin,
-                rotation_deg=rotation_deg,
+                rotation_deg=0.0,
                 tint=rl.Color(255, 255, 255, alpha),
             )
             rl.end_blend_mode()
@@ -1373,7 +1385,14 @@ class PanelMenuView:
         y2 = (MENU_ITEM_OFFSET_Y + item_h) * item_scale - local_y_shift
         w = x2 - x0
         h = y2 - y0
-        pos_x = PANEL_BACK_POS_X
+        _angle_rad, slide_x = MenuView._ui_element_anim(
+            self,
+            index=2,
+            start_ms=PANEL_TIMELINE_START_MS,
+            end_ms=PANEL_TIMELINE_END_MS,
+            width=item_w * item_scale,
+        )
+        pos_x = self._back_pos_x + slide_x
         pos_y = entry.y + self._widescreen_y_shift
         left = pos_x + x0 + w * 0.54
         top = pos_y + y0 + h * 0.28
@@ -1393,6 +1412,7 @@ class GameLoopView:
                 state,
                 title="Play Game",
                 body="Mode selection + gameplay loop are not implemented yet.",
+                back_pos_y=462.0,
             ),
             "open_options": PanelMenuView(
                 state,

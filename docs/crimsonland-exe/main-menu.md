@@ -84,6 +84,25 @@ This is **not used in state 0** (but used by other menus/screens):
 - `height = 256.0`
 - `offset = (20.0, -82.0)`
 
+### Panel screen animation (Play Game / Options)
+
+Panel-based screens (e.g. Play Game, Options) use the panel template plus a single
+`BACK` menu item, but **they do not rotate in** like the main-menu items.
+
+In `ui_menu_layout_init` these elements have `render_mode = 1` (offset mode), so
+`ui_element_render` draws them using `pos + offset_xy` instead of the rotation matrix.
+`ui_element_update` animates the X offset from `±abs(width)` to `0` over the default
+`[end_time_ms .. start_time_ms] = [0 .. 300]` ms window.
+
+Known positions (before widescreen shift):
+
+- Play Game (state `1`, screen update `sub_44ed80`):
+  - panel: `(-45, 210)`
+  - back: `(-55, 462)`
+- Options (state `2`, screen update `sub_4475d0`):
+  - panel: `(-45, 210)`
+  - back: `(-55, 430)`
+
 ### Label overlay rect (inside `ui_menuItem`)
 
 Each menu item has an overlay quad (later given UVs into `ui_itemTexts`):
