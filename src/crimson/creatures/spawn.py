@@ -210,9 +210,9 @@ SPAWN_TEMPLATES = [
     SpawnTemplate(
         spawn_id=0x13,
         type_id=CreatureTypeId.ALIEN,
-        flags=CreatureFlags.ANIM_PING_PONG,
+        flags=None,
         creature="alien",
-        anim_note="short strip (ping-pong)",
+        anim_note=None,
     ),
     SpawnTemplate(
         spawn_id=0x14,
@@ -563,8 +563,8 @@ def spawn_id_label(spawn_id: int) -> str:
 
 
 # Keep these in sync with `build_spawn_plan` and `tests/test_spawn_plan.py`.
-SPAWN_IDS_PORTED = frozenset({0x00, 0x01, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F, 0x40, 0x41, 0x42, 0x43})
-SPAWN_IDS_VERIFIED = frozenset({0x00, 0x01, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F, 0x40, 0x41, 0x42, 0x43})
+SPAWN_IDS_PORTED = frozenset({0x00, 0x01, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F, 0x40, 0x41, 0x42, 0x43})
+SPAWN_IDS_VERIFIED = frozenset({0x00, 0x01, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F, 0x40, 0x41, 0x42, 0x43})
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -1214,6 +1214,128 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
             creatures.append(child)
 
         # The original function returns the last allocated creature pointer.
+        primary_idx = len(creatures) - 1
+        _apply_unhandled_creature_type_fallback(creatures, primary_idx)
+    elif template_id == 0x13:
+        parent = creatures[0]
+        parent.type_id = CreatureTypeId.ALIEN
+        parent.ai_mode = 6
+        parent.pos_x = pos_x + 256.0
+        parent.pos_y = pos_y
+        parent.tint_r = 0.6
+        parent.tint_g = 0.8
+        parent.tint_b = 0.91
+        parent.tint_a = 1.0
+        parent.health = 200.0
+        parent.max_health = 200.0
+        parent.move_speed = 2.0
+        parent.reward_value = 600.0
+        parent.size = 40.0
+        parent.contact_damage = 20.0
+
+        chain_prev = 0
+        for i in range(2, 0x16, 2):
+            child = _alloc_creature(template_id, pos_x, pos_y, rng)
+            child.ai_mode = 6
+            child.ai_link_parent = chain_prev
+            child.orbit_angle = 3.1415927
+            child.orbit_radius = 10.0
+            angle = float(i) * 0.34906587
+            child.pos_x = float(math.cos(angle) * 256.0 + pos_x)
+            child.pos_y = float(math.sin(angle) * 256.0 + pos_y)
+            child.tint_r = 0.4
+            child.tint_g = 0.7
+            child.tint_b = 0.11
+            child.tint_a = 1.0
+            child.health = 60.0
+            child.max_health = 60.0
+            child.type_id = CreatureTypeId.ALIEN
+            child.move_speed = 2.0
+            child.reward_value = 60.0
+            child.size = 50.0
+            child.contact_damage = 4.0
+            creatures.append(child)
+            chain_prev = len(creatures) - 1
+
+        parent.ai_link_parent = chain_prev
+        primary_idx = len(creatures) - 1
+        _apply_unhandled_creature_type_fallback(creatures, primary_idx)
+    elif template_id == 0x14:
+        parent = creatures[0]
+        parent.type_id = CreatureTypeId.ALIEN
+        parent.ai_mode = 2
+        parent.tint_r = 0.7
+        parent.tint_g = 0.8
+        parent.tint_b = 0.31
+        parent.tint_a = 1.0
+        parent.health = 1500.0
+        parent.max_health = 1500.0
+        parent.move_speed = 2.0
+        parent.reward_value = 600.0
+        parent.size = 50.0
+        parent.contact_damage = 40.0
+
+        for x_offset in range(0, -0x240, -0x40):
+            for y_offset in range(0x80, 0x101, 0x10):
+                child = _alloc_creature(template_id, pos_x, pos_y, rng)
+                child.ai_mode = 5
+                child.ai_link_parent = 0
+                child.target_offset_x = float(x_offset)
+                child.target_offset_y = float(y_offset)
+                child.pos_x = float(pos_x + x_offset)
+                child.pos_y = float(pos_y + y_offset)
+                child.tint_r = 0.4
+                child.tint_g = 0.7
+                child.tint_b = 0.11
+                child.tint_a = 1.0
+                child.health = 40.0
+                child.max_health = 40.0
+                child.type_id = CreatureTypeId.ALIEN
+                child.move_speed = 2.0
+                child.reward_value = 60.0
+                child.size = 50.0
+                child.contact_damage = 4.0
+                creatures.append(child)
+
+        primary_idx = len(creatures) - 1
+        _apply_unhandled_creature_type_fallback(creatures, primary_idx)
+    elif template_id == 0x15:
+        parent = creatures[0]
+        parent.type_id = CreatureTypeId.ALIEN
+        parent.ai_mode = 2
+        parent.tint_r = 1.0
+        parent.tint_g = 1.0
+        parent.tint_b = 1.0
+        parent.tint_a = 1.0
+        parent.health = 1500.0
+        parent.max_health = 1500.0
+        parent.move_speed = 2.0
+        parent.reward_value = 600.0
+        parent.size = 60.0
+        parent.contact_damage = 40.0
+
+        for x_offset in range(0, -0x240, -0x40):
+            for y_offset in range(0x80, 0x101, 0x10):
+                child = _alloc_creature(template_id, pos_x, pos_y, rng)
+                child.ai_mode = 4
+                child.ai_link_parent = 0
+                child.target_offset_x = float(x_offset)
+                child.target_offset_y = float(y_offset)
+                child.pos_x = float(pos_x + x_offset)
+                child.pos_y = float(pos_y + y_offset)
+                child.tint_r = 0.4
+                child.tint_g = 0.7
+                child.tint_b = 0.11
+                child.tint_a = 1.0
+                child.health = 40.0
+                child.max_health = 40.0
+                child.type_id = CreatureTypeId.ALIEN
+                child.move_speed = 2.0
+                child.reward_value = 60.0
+                child.size = 50.0
+                child.contact_damage = 4.0
+                creatures.append(child)
+
         primary_idx = len(creatures) - 1
         _apply_unhandled_creature_type_fallback(creatures, primary_idx)
     elif template_id == 0x19:
