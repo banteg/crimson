@@ -2,9 +2,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import math
+import struct
 
 from .crand import Crand
 from .spawn_templates import CreatureFlags, CreatureTypeId
+
+
+def _f32(u32: int) -> float:
+    """Decode a float32 constant expressed as a u32 hex literal in decompiles."""
+    return struct.unpack("<f", struct.pack("<I", u32 & 0xFFFFFFFF))[0]
 
 
 @dataclass(frozen=True, slots=True, kw_only=True)
@@ -254,6 +260,59 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.tint_b = 0.4
         c.contact_damage = 0.0
         primary_idx = 0
+    elif template_id == 0x0B:
+        c = creatures[0]
+        c.type_id = CreatureTypeId.ALIEN
+        c.flags = CreatureFlags.ANIM_PING_PONG
+        slot_idx = len(spawn_slots)
+        c.spawn_slot = slot_idx
+        spawn_slots.append(
+            SpawnSlotInit(
+                owner_creature=0,
+                timer=2.0,
+                count=0,
+                limit=100,
+                interval=6.0,
+                child_template_id=0x3C,
+            )
+        )
+        c.size = 65.0
+        c.health = 3500.0
+        c.move_speed = 1.5
+        c.reward_value = 5000.0
+        c.tint_a = 1.0
+        c.tint_r = 0.9
+        c.tint_g = 0.1
+        c.tint_b = 0.1
+        c.contact_damage = 0.0
+        primary_idx = 0
+    elif template_id == 0x10:
+        c = creatures[0]
+        c.type_id = CreatureTypeId.ALIEN
+        c.flags = CreatureFlags.ANIM_PING_PONG
+        slot_idx = len(spawn_slots)
+        c.spawn_slot = slot_idx
+        spawn_slots.append(
+            SpawnSlotInit(
+                owner_creature=0,
+                timer=_f32(0x3FC00000),  # 1.5
+                count=0,
+                limit=100,
+                interval=_f32(0x40133333),  # ~2.3
+                child_template_id=0x32,
+            )
+        )
+        c.size = 32.0
+        c.health = 50.0
+        c.move_speed = 2.8
+        c.reward_value = 800.0
+        # Shared "alien spawner" tail for this branch sets these (before LAB_004310b8).
+        c.tint_a = 1.0
+        c.tint_r = 0.9
+        c.tint_g = 0.8
+        c.tint_b = 0.4
+        c.contact_damage = 0.0
+        primary_idx = 0
     elif template_id == 0x12:
         parent = creatures[0]
         parent.type_id = CreatureTypeId.ALIEN
@@ -291,6 +350,43 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
 
         # The original function returns the last allocated creature pointer.
         primary_idx = len(creatures) - 1
+    elif template_id == 0x19:
+        parent = creatures[0]
+        parent.type_id = CreatureTypeId.ALIEN
+        parent.tint_r = 0.95
+        parent.tint_g = 0.55
+        parent.tint_b = 0.37
+        parent.tint_a = 1.0
+        parent.health = 50.0
+        parent.max_health = 50.0
+        parent.move_speed = 3.8
+        parent.reward_value = 300.0
+        parent.size = 55.0
+        parent.contact_damage = 40.0
+
+        for i in range(5):
+            child = _alloc_creature(template_id, pos_x, pos_y, rng)
+            child.ai_mode = 5
+            child.ai_link_parent = 0
+            angle = float(i) * 1.2566371
+            child.target_offset_x = float(math.cos(angle) * 110.0)
+            child.target_offset_y = float(math.sin(angle) * 110.0)
+            child.pos_x = pos_x + (child.target_offset_x or 0.0)
+            child.pos_y = pos_y + (child.target_offset_y or 0.0)
+            child.tint_r = 0.7125
+            child.tint_g = 0.41250002
+            child.tint_b = 0.2775
+            child.tint_a = 0.6
+            child.health = 220.0
+            child.max_health = 220.0
+            child.type_id = CreatureTypeId.ALIEN
+            child.move_speed = 3.8
+            child.reward_value = 60.0
+            child.size = 50.0
+            child.contact_damage = 35.0
+            creatures.append(child)
+
+        primary_idx = len(creatures) - 1
     else:
         raise NotImplementedError(f"spawn plan not implemented for template_id=0x{template_id:x}")
 
@@ -309,4 +405,3 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         effects=tuple(effects),
         primary=primary_idx,
     )
-
