@@ -406,13 +406,56 @@ class DemoView:
         screen_w = float(self._state.config.screen_width)
         screen_h = float(self._state.config.screen_height)
 
-        # First-pass approximation of the Grim2D backplasma batch: rotate a full-screen quad
-        # and modulate alpha based on the same sin^2 pulse used by the original.
-        angle = pulse_t * 360.0
-        origin = rl.Vector2(screen_w / 2.0, screen_h / 2.0)
-        src = rl.Rectangle(0.0, 0.0, float(backplasma.width), float(backplasma.height))
-        dst = rl.Rectangle(0.0, 0.0, screen_w, screen_h)
-        rl.draw_texture_pro(backplasma, src, dst, origin, angle, rl.Color(255, 255, 255, int(255 * 0.75)))
+        # demo_purchase_screen_update @ 0x0040b985:
+        #   - full-screen quad
+        #   - UV: 0..0.5 (top-left quarter of the backplasma atlas)
+        #   - per-corner color slots, with a pulsing alpha/color at bottom-right
+        #   - global fade-in (0..1250ms) + fade-out (last 500ms)
+        timeline_ms = max(0, int(self._purchase_timeline_ms))
+        limit_ms = max(0, int(self._purchase_limit_ms))
+        fade = 1.0
+        ramp = float(timeline_ms) * 0.0160000008
+        if ramp < 20.0:
+            fade = ramp * 0.0500000007  # == timeline_ms / 1250.0
+        if limit_ms > 0 and timeline_ms > limit_ms - 0x1F4:
+            fade = float(limit_ms - timeline_ms) * 0.00200000009
+        fade = _clamp(fade, 0.0, 1.0)
+
+        def _to_u8(value: float) -> int:
+            return int(_clamp(value, 0.0, 1.0) * 255.0 + 0.5)
+
+        c0 = rl.Color(_to_u8(0.0), _to_u8(0.0), _to_u8(0.0), _to_u8(1.0 * fade))
+        c1 = rl.Color(_to_u8(0.0), _to_u8(0.0), _to_u8(0.300000012), _to_u8(1.0 * fade))
+        c2 = rl.Color(
+            _to_u8(0.0),
+            _to_u8(0.400000006),
+            _to_u8(pulse * 0.550000012),
+            _to_u8(pulse * fade),
+        )
+        c3 = rl.Color(_to_u8(0.0), _to_u8(0.400000006), _to_u8(0.400000006), _to_u8(1.0 * fade))
+
+        rl.begin_blend_mode(rl.BLEND_ALPHA)
+        rl.rl_set_texture(backplasma.id)
+        rl.rl_begin(rl.RL_QUADS)
+        # TL
+        rl.rl_color4ub(c0.r, c0.g, c0.b, c0.a)
+        rl.rl_tex_coord2f(0.0, 0.0)
+        rl.rl_vertex2f(0.0, 0.0)
+        # TR
+        rl.rl_color4ub(c1.r, c1.g, c1.b, c1.a)
+        rl.rl_tex_coord2f(0.5, 0.0)
+        rl.rl_vertex2f(screen_w, 0.0)
+        # BR
+        rl.rl_color4ub(c2.r, c2.g, c2.b, c2.a)
+        rl.rl_tex_coord2f(0.5, 0.5)
+        rl.rl_vertex2f(screen_w, screen_h)
+        # BL
+        rl.rl_color4ub(c3.r, c3.g, c3.b, c3.a)
+        rl.rl_tex_coord2f(0.0, 0.5)
+        rl.rl_vertex2f(0.0, screen_h)
+        rl.rl_end()
+        rl.rl_set_texture(0)
+        rl.end_blend_mode()
 
         wide_shift = self._purchase_var_28_2()
 
@@ -468,10 +511,14 @@ class DemoView:
             hovered = x <= mouse.x <= x + texture.width and y0 <= mouse.y <= y0 + texture.height
             tint = rl.Color(255, 255, 255, 255) if hovered else rl.Color(220, 220, 220, 255)
             rl.draw_texture(texture, int(x), int(y0), tint)
-            text_w = measure_small_text_width(small, label, text_scale)
-            text_x = x + (float(texture.width) - text_w) / 2.0
-            text_y = y0 + (float(texture.height) - (small.cell_size * text_scale)) / 2.0
-            draw_small_text(small, label, text_x, text_y, text_scale, rl.Color(10, 10, 10, 255))
+            # ui_button_update sets config 0x18 to 0.5 for button labels and uses a
+            # fixed y offset of +10px from the button top.
+            label_scale = 0.5
+            text_w = measure_small_text_width(small, label, label_scale)
+            text_x = x + float(texture.width) * 0.5 - text_w * 0.5 + 1.0
+            text_y = y0 + 10.0
+            alpha = 1.0 if hovered else 0.699999988
+            draw_small_text(small, label, text_x, text_y, label_scale, rl.Color(255, 255, 255, int(255 * alpha)))
 
         draw_button(purchase_tex, "Purchase", button_x, button_base_y)
         draw_button(maybe_tex, "Maybe later", button_x, button_base_y + 90.0)
