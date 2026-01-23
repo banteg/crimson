@@ -1097,8 +1097,11 @@ def _copy_missing_assets(assets_dir: Path, console: ConsoleState) -> None:
     if source_dir is None:
         console.log.log(f"assets: missing {', '.join(missing)}")
         console.log.log("assets: no game_bins source found for auto-copy")
-        return
+        raise FileNotFoundError(
+            f"Missing assets: {', '.join(missing)} (no game_bins source found)"
+        )
 
+    still_missing: list[str] = []
     for name in missing:
         src = source_dir / name
         dst = assets_dir / name
@@ -1106,6 +1109,7 @@ def _copy_missing_assets(assets_dir: Path, console: ConsoleState) -> None:
             continue
         if not src.is_file():
             console.log.log(f"assets: missing {name} (source missing)")
+            still_missing.append(name)
             continue
         try:
             if src.resolve() == dst.resolve():
@@ -1116,8 +1120,13 @@ def _copy_missing_assets(assets_dir: Path, console: ConsoleState) -> None:
             shutil.copy2(src, dst)
         except Exception as exc:
             console.log.log(f"assets: failed to copy {name}: {exc}")
+            still_missing.append(name)
             continue
         console.log.log(f"assets: copied {name} from {source_dir}")
+    if still_missing:
+        raise FileNotFoundError(
+            f"Missing assets after copy: {', '.join(still_missing)}"
+        )
 
 
 def _resolve_assets_dir(config: GameConfig) -> Path:

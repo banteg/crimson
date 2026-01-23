@@ -22,11 +22,11 @@ class GrimMonoFont:
 
 def load_grim_mono_font(
     assets_root: Path, missing_assets: list[str]
-) -> GrimMonoFont | None:
+) -> GrimMonoFont:
     atlas_path = assets_root / "crimson" / "load" / "default_font_courier.png"
     if not atlas_path.is_file():
         missing_assets.append("default_font_courier.png")
-        return None
+        raise FileNotFoundError(f"Missing grim mono font: {atlas_path}")
     texture = rl.load_texture(str(atlas_path))
     rl.set_texture_filter(texture, GRIM_MONO_TEXTURE_FILTER)
     grid = 16

@@ -69,6 +69,10 @@ class TerrainView:
             self._textures.append(
                 TerrainTexture(terrain_id=terrain_id, name=name, texture=texture)
             )
+        if self._missing_assets:
+            raise FileNotFoundError(
+                f"Missing terrain assets: {', '.join(self._missing_assets)}"
+            )
 
     def close(self) -> None:
         for entry in self._textures:

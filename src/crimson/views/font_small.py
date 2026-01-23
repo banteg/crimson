@@ -18,12 +18,14 @@ SMALL_FONT_UV_BIAS_PX = 0.5
 SMALL_FONT_FILTER = rl.TEXTURE_FILTER_BILINEAR
 
 
-def load_small_font(assets_root: Path, missing_assets: list[str]) -> SmallFontData | None:
+def load_small_font(assets_root: Path, missing_assets: list[str]) -> SmallFontData:
     widths_path = assets_root / "crimson" / "load" / "smallFnt.dat"
     atlas_path = assets_root / "crimson" / "load" / "smallWhite.png"
     if not widths_path.is_file() or not atlas_path.is_file():
         missing_assets.append("small font assets")
-        return None
+        raise FileNotFoundError(
+            f"Missing small font assets: {widths_path} or {atlas_path}"
+        )
     widths = list(widths_path.read_bytes())
     texture = rl.load_texture(str(atlas_path))
     rl.set_texture_filter(texture, SMALL_FONT_FILTER)

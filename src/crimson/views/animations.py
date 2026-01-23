@@ -72,6 +72,10 @@ class CreatureAnimationView:
                 self._missing_assets.append(str(path))
                 continue
             self._textures[entry.creature] = rl.load_texture(str(path))
+        if self._missing_assets:
+            raise FileNotFoundError(
+                f"Missing creature textures: {', '.join(self._missing_assets)}"
+            )
 
     def close(self) -> None:
         for texture in self._textures.values():

@@ -64,7 +64,7 @@ class WeaponIconView:
         path = self._assets_root / "crimson" / "ui" / "ui_wicons.png"
         if not path.is_file():
             self._missing_assets.append("ui/ui_wicons.png")
-            return
+            raise FileNotFoundError(f"Missing asset: {path}")
         self._texture = rl.load_texture(str(path))
 
     def close(self) -> None:

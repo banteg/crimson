@@ -68,7 +68,7 @@ class BonusIconView:
         path = self._assets_root / "crimson" / "game" / "bonuses.png"
         if not path.is_file():
             self._missing_assets.append("game/bonuses.png")
-            return
+            raise FileNotFoundError(f"Missing asset: {path}")
         self._texture = rl.load_texture(str(path))
 
     def close(self) -> None:

@@ -106,7 +106,7 @@ class ParticleView:
         path = self._assets_root / "crimson" / "game" / "particles.png"
         if not path.is_file():
             self._missing_assets.append("game/particles.png")
-            return
+            raise FileNotFoundError(f"Missing asset: {path}")
         self._texture = rl.load_texture(str(path))
 
     def close(self) -> None:

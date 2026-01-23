@@ -73,7 +73,7 @@ class ProjectileView:
         path = self._assets_root / "crimson" / "game" / "projs.png"
         if not path.is_file():
             self._missing_assets.append("game/projs.png")
-            return
+            raise FileNotFoundError(f"Missing asset: {path}")
         self._texture = rl.load_texture(str(path))
 
     def close(self) -> None:

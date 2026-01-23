@@ -48,7 +48,7 @@ class UiTextureView:
         ui_dir = self._assets_root / "crimson" / "ui"
         if not ui_dir.is_dir():
             self._missing_assets.append("ui/")
-            return
+            raise FileNotFoundError(f"Missing UI assets directory: {ui_dir}")
         for path in sorted(ui_dir.glob("*.png")):
             texture = rl.load_texture(str(path))
             self._textures.append(UiTexture(name=path.name, texture=texture))

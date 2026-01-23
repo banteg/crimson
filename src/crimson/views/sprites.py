@@ -77,6 +77,10 @@ class SpriteSheetView:
             self._sheets.append(
                 SpriteSheet(name=spec.name, texture=texture, grids=spec.grids)
             )
+        if self._missing_assets:
+            raise FileNotFoundError(
+                f"Missing sprite assets: {', '.join(self._missing_assets)}"
+            )
 
     def close(self) -> None:
         for sheet in self._sheets:

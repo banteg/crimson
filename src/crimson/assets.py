@@ -80,7 +80,7 @@ def load_paq_entries(assets_dir: Path) -> dict[str, bytes]:
     paq_path = assets_dir / PAQ_NAME
     entries: dict[str, bytes] = {}
     if not paq_path.exists():
-        return entries
+        raise FileNotFoundError(f"Missing PAQ archive: {paq_path}")
     for name, data in paq.iter_entries(paq_path):
         entries[name.replace("\\", "/")] = data
     return entries
@@ -98,7 +98,7 @@ def _load_texture_asset_from_bytes(
     name: str, rel_path: str, data: bytes | None
 ) -> TextureAsset:
     if data is None:
-        return TextureAsset(name=name, rel_path=rel_path, texture=None)
+        raise FileNotFoundError(f"Missing asset data: {rel_path}")
     if rel_path.lower().endswith(".jaz"):
         jaz_image = jaz.decode_jaz_bytes(data)
         buf = io.BytesIO()

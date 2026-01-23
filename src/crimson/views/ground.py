@@ -77,6 +77,10 @@ class GroundView:
                 self._missing_assets.append(rel_path)
                 continue
             textures[terrain_id] = rl.load_texture(str(path))
+        if self._missing_assets:
+            raise FileNotFoundError(
+                f"Missing ground assets: {', '.join(self._missing_assets)}"
+            )
         self._assets = GroundAssets(textures=textures)
         self._quests = all_quests()
         texture_scale, screen_w, screen_h = self._load_runtime_config()
