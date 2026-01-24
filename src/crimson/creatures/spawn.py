@@ -2366,13 +2366,11 @@ def apply_alien_spawner(ctx: PlanBuilder, spec: AlienSpawnerSpec) -> None:
     c.reward_value = spec.reward_value
     apply_tint(c, spec.tint)
     c.contact_damage = 0.0
-    ctx.primary = 0
 
 
 def apply_constant_spawn(ctx: PlanBuilder, spec: ConstantSpawnSpec) -> None:
     c = ctx.base
     apply_constant_template(c, spec)
-    ctx.primary = 0
 
 
 def apply_grid_formation(ctx: PlanBuilder, spec: GridFormationSpec) -> None:
@@ -2425,7 +2423,6 @@ def template_00_zombie_boss_spawner(ctx: PlanBuilder) -> None:
     c.reward_value = 6600.0
     apply_tint(c, (0.6, 0.6, 1.0, 0.8))
     c.contact_damage = 50.0
-    ctx.primary = 0
 
 
 BASIC_RANDOM_TYPE_IDS: dict[int, CreatureTypeId] = {
@@ -2445,7 +2442,6 @@ def template_03_05_06_basic_random(ctx: PlanBuilder) -> None:
     tint_b = randf(ctx.rng, 25, 0.01, 0.8)
     apply_tint(c, (0.6, 0.6, clamp01(tint_b), 1.0))
     c.contact_damage = randf(ctx.rng, 10, 1.0, 4.0)
-    ctx.primary = 0
 
 
 @register_template(SpawnId.LIZARD_RANDOM_04)
@@ -2457,7 +2453,6 @@ def template_04_lizard_random(ctx: PlanBuilder) -> None:
     apply_tint(c, (0.67, 0.67, 1.0, 1.0))
     apply_random_move_speed(c, ctx.rng, 18, 0.1, 1.1)
     c.contact_damage = randf(ctx.rng, 10, 1.0, 4.0)
-    ctx.primary = 0
 
 
 @register_template(SpawnId.ALIEN_SPAWNER_RING_24_0E)
@@ -2611,7 +2606,6 @@ def template_1a_1b_1c_ai1_blue_tint(ctx: PlanBuilder) -> None:
     tint = float(ctx.rng.rand() % 40) * 0.01 + 0.5
     apply_tint(c, (tint, tint, 1.0, 1.0))
     c.contact_damage = 5.0
-    ctx.primary = 0
 
 
 @register_template(SpawnId.ALIEN_RANDOM_1D)
@@ -2632,7 +2626,6 @@ def template_1d_alien_random(ctx: PlanBuilder) -> None:
         ),
     )
     c.contact_damage = randf(ctx.rng, 10, 1.0, 4.0)
-    ctx.primary = 0
 
 
 @register_template(SpawnId.ALIEN_RANDOM_1E)
@@ -2653,7 +2646,6 @@ def template_1e_alien_random(ctx: PlanBuilder) -> None:
         ),
     )
     c.contact_damage = randf(ctx.rng, 30, 1.0, 4.0)
-    ctx.primary = 0
 
 
 @register_template(SpawnId.ALIEN_RANDOM_1F)
@@ -2674,7 +2666,6 @@ def template_1f_alien_random(ctx: PlanBuilder) -> None:
         ),
     )
     c.contact_damage = randf(ctx.rng, 35, 1.0, 8.0)
-    ctx.primary = 0
 
 
 @register_template(SpawnId.ALIEN_RANDOM_GREEN_20)
@@ -2687,7 +2678,6 @@ def template_20_alien_random_green(ctx: PlanBuilder) -> None:
     tint_g = randf(ctx.rng, 40, 0.01, 0.6)
     apply_tint(c, (0.3, tint_g, 0.3, 1.0))
     c.contact_damage = randf(ctx.rng, 10, 1.0, 4.0)
-    ctx.primary = 0
 
 
 @register_template(SpawnId.LIZARD_RANDOM_2E)
@@ -2707,7 +2697,6 @@ def template_2e_lizard_random(ctx: PlanBuilder) -> None:
         ),
     )
     c.contact_damage = randf(ctx.rng, 10, 1.0, 4.0)
-    ctx.primary = 0
 
 
 @register_template(SpawnId.LIZARD_RANDOM_31)
@@ -2720,7 +2709,6 @@ def template_31_lizard_random(ctx: PlanBuilder) -> None:
     tint = randf(ctx.rng, 30, 0.01, 0.6)
     apply_tint(c, (tint, tint, 0.38, 1.0))
     c.contact_damage = size * 0.14 + 4.0
-    ctx.primary = 0
 
 
 @register_template(SpawnId.SPIDER_SP1_RANDOM_32)
@@ -2733,7 +2721,6 @@ def template_32_spider_sp1_random(ctx: PlanBuilder) -> None:
     tint = randf(ctx.rng, 40, 0.01, 0.6)
     apply_tint(c, (tint, tint, tint, 1.0))
     c.contact_damage = size * 0.14 + 4.0
-    ctx.primary = 0
 
 
 @register_template(SpawnId.SPIDER_SP1_RANDOM_RED_33)
@@ -2745,7 +2732,6 @@ def template_33_spider_sp1_random_red(ctx: PlanBuilder) -> None:
     apply_random_move_speed(c, ctx.rng, 18, 0.1, 1.1)
     apply_tint(c, (randf(ctx.rng, 40, 0.01, 0.6), 0.5, 0.5, 1.0))
     c.contact_damage = randf(ctx.rng, 10, 1.0, 4.0)
-    ctx.primary = 0
 
 
 @register_template(SpawnId.SPIDER_SP1_RANDOM_GREEN_34)
@@ -2757,7 +2743,6 @@ def template_34_spider_sp1_random_green(ctx: PlanBuilder) -> None:
     apply_random_move_speed(c, ctx.rng, 18, 0.1, 1.1)
     apply_tint(c, (0.5, randf(ctx.rng, 40, 0.01, 0.6), 0.5, 1.0))
     c.contact_damage = randf(ctx.rng, 10, 1.0, 4.0)
-    ctx.primary = 0
 
 
 @register_template(SpawnId.SPIDER_SP2_RANDOM_35)
@@ -2769,7 +2754,6 @@ def template_35_spider_sp2_random(ctx: PlanBuilder) -> None:
     apply_random_move_speed(c, ctx.rng, 18, 0.1, 1.1)
     apply_tint(c, (0.8, randf(ctx.rng, 20, 0.01, 0.8), 0.8, 1.0))
     c.contact_damage = randf(ctx.rng, 10, 1.0, 4.0)
-    ctx.primary = 0
 
 
 @register_template(SpawnId.ALIEN_AI7_ORBITER_36)
@@ -2785,7 +2769,6 @@ def template_36_alien_ai7_orbiter(ctx: PlanBuilder) -> None:
     tint_g = float(ctx.rng.rand() % 5) * 0.01 + 0.65
     apply_tint(c, (0.65, tint_g, 0.95, 1.0))
     c.contact_damage = 40.0
-    ctx.primary = 0
 
 
 @register_template(SpawnId.SPIDER_SP2_RANGED_VARIANT_37)
@@ -2799,7 +2782,6 @@ def template_37_spider_sp2_ranged_variant(ctx: PlanBuilder) -> None:
     apply_tint(c, (1.0, 0.75, 0.1, 1.0))
     c.size = float((ctx.rng.rand() & 3) + 41)
     c.contact_damage = 10.0
-    ctx.primary = 0
 
 
 @register_template(SpawnId.SPIDER_SP1_AI7_TIMER_38)
@@ -2814,7 +2796,6 @@ def template_38_spider_sp1_ai7_timer(ctx: PlanBuilder) -> None:
     apply_tint(c, (1.0, 0.75, 0.1, 1.0))
     c.size = float((ctx.rng.rand() & 3) + 41)
     c.contact_damage = 10.0
-    ctx.primary = 0
 
 
 @register_template(SpawnId.SPIDER_SP1_AI7_TIMER_WEAK_39)
@@ -2829,7 +2810,6 @@ def template_39_spider_sp1_ai7_timer_weak(ctx: PlanBuilder) -> None:
     apply_tint(c, (0.8, 0.65, 0.1, 1.0))
     c.size = float(ctx.rng.rand() % 4 + 26)
     c.contact_damage = 10.0
-    ctx.primary = 0
 
 
 @register_template(SpawnId.SPIDER_SP1_RANDOM_3D)
@@ -2844,7 +2824,6 @@ def template_3d_spider_sp1_random(ctx: PlanBuilder) -> None:
     size = float(ctx.rng.rand() % 7 + 45)
     c.size = size
     c.contact_damage = size * 0.22
-    ctx.primary = 0
 
 
 @register_template(SpawnId.ZOMBIE_RANDOM_41)
@@ -2857,7 +2836,6 @@ def template_41_zombie_random(ctx: PlanBuilder) -> None:
     tint = randf(ctx.rng, 40, 0.01, 0.6)
     apply_tint(c, (tint, tint, tint, 1.0))
     c.contact_damage = randf(ctx.rng, 10, 1.0, 4.0)
-    ctx.primary = 0
 
 
 def build_spawn_plan(
