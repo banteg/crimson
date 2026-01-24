@@ -265,7 +265,9 @@ Notes:
   `tick_survival_wave_spawns`, `build_survival_spawn_creature`.
 
 - Tutorial timeline (`tutorial_timeline_update`, `FUN_00408990`): scripted spawns using `0x24`, `0x26`,
-  `0x27`, `0x28`, `0x40`.
+  `0x27`, `0x28`, `0x40`. Python models: `build_tutorial_stage3_fire_spawns`,
+  `build_tutorial_stage4_clear_spawns`, `build_tutorial_stage5_repeat_spawns`,
+  `build_tutorial_stage6_perks_done_spawns`.
 
 - Quest/timeline spawner (`quest_spawn_timeline_update`, `FUN_00434250`): pulls spawn ids from the
   table at `DAT_004857a8` (`pfVar4[3]`) with counts in `pfVar4[5]`.
@@ -313,4 +315,8 @@ Notes:
 - Survival mode (pure models): `src/crimson/creatures/spawn.py`
   - `advance_survival_spawn_stage`, `tick_survival_wave_spawns`, `build_survival_spawn_creature`
   - Tests: `tests/test_survival_milestones.py`, `tests/test_survival_wave.py`, `tests/test_survival_spawn.py`
+- Tutorial timeline (pure models): `src/crimson/creatures/spawn.py`
+  - `build_tutorial_stage3_fire_spawns`, `build_tutorial_stage4_clear_spawns`,
+    `build_tutorial_stage5_repeat_spawns`, `build_tutorial_stage6_perks_done_spawns`
+  - Tests: `tests/test_tutorial_timeline_spawns.py`
 - MSVCRT-compatible RNG for deterministic replays: `src/crimson/crand.py`
