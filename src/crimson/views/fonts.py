@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import pyray as rl
-
-from ..grim2d.font import DEFAULT_SAMPLE
 from .quest_title_overlay import (
     draw_quest_title_overlay,
     quest_title_base_scale,
@@ -21,6 +19,10 @@ from grim.fonts.small import (
     measure_small_text_height,
 )
 from grim.view import View, ViewContext
+
+DEFAULT_SAMPLE = """CRIMSONLAND
+The quick brown fox jumps over the lazy dog.
+0123456789 !@#$%^&*()[]{}<>?/\\"""
 
 SMALL_SAMPLE_SCALE = 1.0
 UI_TEXT_SCALE = 1.0
