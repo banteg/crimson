@@ -2,175 +2,68 @@ from __future__ import annotations
 
 import argparse
 import json
-import struct
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
-BLOB_SIZE = 0x268
-FILE_SIZE = BLOB_SIZE + 4
-
-OFFSET_QUEST_UNLOCK = 0x0
-OFFSET_WEAPON_USAGE = 0x4
-WEAPON_USAGE_COUNT = 53
-OFFSET_QUEST_PLAY_COUNTS = 0xD8
-OFFSET_MODE_PLAY_COUNTS = 0x244
-OFFSET_GAME_SEQUENCE_ID = 0x254
-
-# Quest play count length inferred from known trailing fields in the blob.
-QUEST_PLAY_COUNT = (OFFSET_MODE_PLAY_COUNTS - OFFSET_QUEST_PLAY_COUNTS) // 4
-
-MODE_COUNT_ORDER = (
-    ("survival", OFFSET_MODE_PLAY_COUNTS),
-    ("rush", OFFSET_MODE_PLAY_COUNTS + 4),
-    ("typo", OFFSET_MODE_PLAY_COUNTS + 8),
-    ("other", OFFSET_MODE_PLAY_COUNTS + 12),
+from crimson.save_status import (
+    BLOB_SIZE,
+    MODE_COUNT_ORDER,
+    QUEST_PLAY_COUNT,
+    WEAPON_USAGE_COUNT,
+    build_status_blob,
+    load_status,
+    parse_status_blob,
+    save_status,
 )
 
 
-@dataclass
-class StatusBlob:
-    decoded: bytearray
-    checksum: int
-    checksum_expected: int
-
-    @property
-    def checksum_valid(self) -> bool:
-        return (self.checksum & 0xFFFFFFFF) == (self.checksum_expected & 0xFFFFFFFF)
-
-
-def to_s8(value: int) -> int:
-    value &= 0xFF
-    return value - 0x100 if value & 0x80 else value
-
-
-def index_poly(idx: int) -> int:
-    i = to_s8(idx)
-    return ((i * 7 + 0x0F) * i + 0x03) * i
-
-
-def decode_blob(encoded: bytes) -> bytearray:
-    if len(encoded) != BLOB_SIZE:
-        raise ValueError(f"decoded blob must be {BLOB_SIZE:#x} bytes, got {len(encoded):#x}")
-    decoded = bytearray(encoded)
-    for i in range(BLOB_SIZE):
-        decoded[i] = (decoded[i] - 0x6F - index_poly(i)) & 0xFF
-    return decoded
-
-
-def encode_blob(decoded: bytes) -> bytes:
-    if len(decoded) != BLOB_SIZE:
-        raise ValueError(f"decoded blob must be {BLOB_SIZE:#x} bytes, got {len(decoded):#x}")
-    encoded = bytearray(decoded)
-    for i in range(BLOB_SIZE):
-        encoded[i] = (encoded[i] + 0x6F + index_poly(i)) & 0xFF
-    return bytes(encoded)
-
-
-def compute_checksum(decoded: bytes) -> int:
-    acc = 0
-    u = 0
-    for i, b in enumerate(decoded):
-        c = to_s8(b)
-        i_var5 = (c * 7 + i) * c + u
-        acc = (acc + 0x0D + i_var5) & 0xFFFFFFFF
-        u += 0x6F
-    return acc
-
-
-def load_status(path: Path) -> StatusBlob:
-    data = path.read_bytes()
-    if len(data) != FILE_SIZE:
-        raise ValueError(f"expected {FILE_SIZE:#x} bytes, got {len(data):#x}")
-    encoded = data[:BLOB_SIZE]
-    stored_checksum = struct.unpack_from("<I", data, BLOB_SIZE)[0]
-    decoded = decode_blob(encoded)
-    computed = compute_checksum(decoded)
-    return StatusBlob(decoded=decoded, checksum=stored_checksum, checksum_expected=computed)
-
-
-def save_status(path: Path, decoded: bytes) -> None:
-    checksum = compute_checksum(decoded)
-    encoded = encode_blob(decoded)
-    payload = encoded + struct.pack("<I", checksum)
-    path.write_bytes(payload)
-
-
-def read_u16(data: bytes, offset: int) -> int:
-    return struct.unpack_from("<H", data, offset)[0]
-
-
-def write_u16(buf: bytearray, offset: int, value: int) -> None:
-    struct.pack_into("<H", buf, offset, value & 0xFFFF)
-
-
-def read_u32(data: bytes, offset: int) -> int:
-    return struct.unpack_from("<I", data, offset)[0]
-
-
-def write_u32(buf: bytearray, offset: int, value: int) -> None:
-    struct.pack_into("<I", buf, offset, value & 0xFFFFFFFF)
-
-
 def extract_fields(decoded: bytes) -> dict:
-    quest_unlock_index = read_u16(decoded, OFFSET_QUEST_UNLOCK)
-    quest_unlock_index_full = read_u16(decoded, OFFSET_QUEST_UNLOCK + 2)
-    weapon_usage = list(
-        struct.unpack_from("<" + "I" * WEAPON_USAGE_COUNT, decoded, OFFSET_WEAPON_USAGE)
-    )
-    quest_play_counts = list(
-        struct.unpack_from("<" + "I" * QUEST_PLAY_COUNT, decoded, OFFSET_QUEST_PLAY_COUNTS)
-    )
-    mode_counts = {
-        name: read_u32(decoded, offset) for name, offset in MODE_COUNT_ORDER
-    }
-    game_sequence_id = read_u32(decoded, OFFSET_GAME_SEQUENCE_ID)
-    tail_offset = OFFSET_GAME_SEQUENCE_ID + 4
-    unknown_tail = decoded[tail_offset:]
+    data = parse_status_blob(decoded)
+    mode_counts = {name: int(data[field]) for name, field in MODE_COUNT_ORDER}
+    weapon_usage = [int(value) for value in data["weapon_usage_counts"]]
+    quest_play_counts = [int(value) for value in data["quest_play_counts"]]
+    unknown_tail = bytes(data["unknown_tail"])
     return {
-        "quest_unlock_index": quest_unlock_index,
-        "quest_unlock_index_full": quest_unlock_index_full,
+        "quest_unlock_index": int(data["quest_unlock_index"]),
+        "quest_unlock_index_full": int(data["quest_unlock_index_full"]),
         "weapon_usage_counts": weapon_usage,
         "quest_play_counts": quest_play_counts,
         "mode_play_counts": mode_counts,
-        "game_sequence_id": game_sequence_id,
+        "game_sequence_id": int(data["game_sequence_id"]),
         "unknown_tail_hex": unknown_tail.hex(),
     }
 
 
-def apply_updates(decoded: bytearray, updates: dict) -> None:
+def apply_updates(data: dict, updates: dict) -> None:
     if "quest_unlock_index" in updates:
-        write_u16(decoded, OFFSET_QUEST_UNLOCK, int(updates["quest_unlock_index"]))
+        data["quest_unlock_index"] = int(updates["quest_unlock_index"]) & 0xFFFF
     if "quest_unlock_index_full" in updates:
-        write_u16(decoded, OFFSET_QUEST_UNLOCK + 2, int(updates["quest_unlock_index_full"]))
+        data["quest_unlock_index_full"] = int(updates["quest_unlock_index_full"]) & 0xFFFF
     if "game_sequence_id" in updates:
-        write_u32(decoded, OFFSET_GAME_SEQUENCE_ID, int(updates["game_sequence_id"]))
+        data["game_sequence_id"] = int(updates["game_sequence_id"]) & 0xFFFFFFFF
 
     weapon_updates = updates.get("weapon_usage_counts", {})
     for key, value in weapon_updates.items():
         idx = int(key)
         if not (0 <= idx < WEAPON_USAGE_COUNT):
             raise ValueError(f"weapon_usage index out of range: {idx}")
-        write_u32(decoded, OFFSET_WEAPON_USAGE + idx * 4, int(value))
+        data["weapon_usage_counts"][idx] = int(value) & 0xFFFFFFFF
 
     quest_updates = updates.get("quest_play_counts", {})
     for key, value in quest_updates.items():
         idx = int(key)
         if not (0 <= idx < QUEST_PLAY_COUNT):
             raise ValueError(f"quest_play_counts index out of range: {idx}")
-        write_u32(decoded, OFFSET_QUEST_PLAY_COUNTS + idx * 4, int(value))
+        data["quest_play_counts"][idx] = int(value) & 0xFFFFFFFF
 
     mode_updates = updates.get("mode_play_counts", {})
+    mode_fields = {name: field for name, field in MODE_COUNT_ORDER}
     for key, value in mode_updates.items():
         key = str(key)
-        matched = False
-        for name, offset in MODE_COUNT_ORDER:
-            if key == name:
-                write_u32(decoded, offset, int(value))
-                matched = True
-                break
-        if not matched:
+        field = mode_fields.get(key)
+        if field is None:
             raise ValueError(f"unknown mode_play_counts key: {key}")
+        data[field] = int(value) & 0xFFFFFFFF
 
 
 def parse_kv_pairs(pairs: Iterable[str]) -> dict:
@@ -267,10 +160,10 @@ def cmd_set(args: argparse.Namespace) -> int:
         updates.update(parse_kv_pairs(args.set))
     if not updates:
         raise SystemExit("no updates provided")
-    decoded = blob.decoded
-    apply_updates(decoded, updates)
+    data = parse_status_blob(blob.decoded)
+    apply_updates(data, updates)
     out_path = args.out or args.path
-    save_status(out_path, decoded)
+    save_status(out_path, build_status_blob(data))
     return 0
 
 

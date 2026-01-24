@@ -34,6 +34,7 @@ from grim.view import View
 
 from .demo import DemoView
 from .entrypoint import DEFAULT_BASE_DIR
+from .save_status import MODE_COUNT_ORDER, GameStatus, ensure_game_status
 
 
 @dataclass(frozen=True, slots=True)
@@ -52,6 +53,7 @@ class GameState:
     assets_dir: Path
     rng: random.Random
     config: CrimsonConfig
+    status: GameStatus
     console: ConsoleState
     demo_enabled: bool
     logos: LogoAssets | None
@@ -1472,6 +1474,39 @@ class PanelMenuView:
         return left, top, right, bottom
 
 
+class StatisticsMenuView(PanelMenuView):
+    def __init__(self, state: GameState) -> None:
+        super().__init__(state, title="Statistics")
+
+    def open(self) -> None:
+        status = self._state.status
+        mode_counts = {
+            name: status.mode_play_count(name) for name, _offset in MODE_COUNT_ORDER
+        }
+        checksum_text = "unknown"
+        try:
+            from .save_status import load_status
+
+            blob = load_status(status.path)
+            ok = "ok" if blob.checksum_valid else "BAD"
+            checksum_text = f"0x{blob.checksum:08x} ({ok})"
+        except Exception as exc:
+            checksum_text = f"error: {type(exc).__name__}"
+        self._body_lines = [
+            f"Quest unlock: {status.quest_unlock_index} (full {status.quest_unlock_index_full})",
+            f"Game sequence id: {status.game_sequence_id}",
+            (
+                "Mode plays: "
+                f"surv={mode_counts['survival']}  "
+                f"rush={mode_counts['rush']}  "
+                f"typo={mode_counts['typo']}  "
+                f"other={mode_counts['other']}"
+            ),
+            f"Checksum: {checksum_text}",
+        ]
+        super().open()
+
+
 class GameLoopView:
     def __init__(self, state: GameState) -> None:
         self._state = state
@@ -1490,11 +1525,7 @@ class GameLoopView:
                 title="Options",
                 body="Option widgets are not implemented yet.",
             ),
-            "open_statistics": PanelMenuView(
-                state,
-                title="Statistics",
-                body="Stats persistence + display are not implemented yet.",
-            ),
+            "open_statistics": StatisticsMenuView(state),
             "open_mods": PanelMenuView(
                 state,
                 title="Mods",
@@ -1695,12 +1726,15 @@ def run_game(config: GameConfig) -> None:
     height = cfg.screen_height if config.height is None else config.height
     rng = random.Random(config.seed)
     console = create_console(base_dir)
+    status = ensure_game_status(base_dir)
     assets_dir = _resolve_assets_dir(config)
+    state: GameState | None = None
     try:
         register_boot_commands(console)
         register_core_cvars(console, width, height)
         console.log.log("crimson: boot start")
         console.log.log(f"config: {cfg.screen_width}x{cfg.screen_height} windowed={cfg.windowed_flag}")
+        console.log.log(f"status: {status.path.name} loaded")
         console.log.log(f"assets: {assets_dir}")
         _copy_missing_assets(assets_dir, console)
         if not (assets_dir / CRIMSON_PAQ_NAME).is_file():
@@ -1716,6 +1750,7 @@ def run_game(config: GameConfig) -> None:
             assets_dir=assets_dir,
             rng=rng,
             config=cfg,
+            status=status,
             console=console,
             demo_enabled=_demo_mode_enabled(),
             logos=None,
@@ -1734,6 +1769,8 @@ def run_game(config: GameConfig) -> None:
             fps=config.fps,
             config_flags=config_flags,
         )
+        if state is not None:
+            state.status.save_if_dirty()
     except Exception:
         crash_file.write("python exception:\n")
         crash_file.write(traceback.format_exc())
