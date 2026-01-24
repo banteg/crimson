@@ -4,6 +4,7 @@ __all__ = [
     "atlas",
     "bonuses",
     "creatures",
+    "gameplay",
     "effects",
     "effects_atlas",
     "perks",
