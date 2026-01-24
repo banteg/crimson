@@ -1263,6 +1263,7 @@ def _apply_unhandled_creature_type_fallback(plan_creatures: list[CreatureInit], 
     # Some template paths jump to the "Unhandled creatureType.\n" debug block in the original,
     # which forcibly overwrites `type_id` and `health` on the *current* creature pointer.
     # See artifacts/creature_spawn_template/binja-hlil.txt (label_431099).
+    # Notably: templates 0x11..0x17 and 0x19 (see also artifacts/creature_spawn_template/ghidra.c LAB_00431094).
     c = plan_creatures[primary_idx]
     c.type_id = CreatureTypeId.ALIEN
     c.health = 20.0

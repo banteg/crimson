@@ -44,6 +44,9 @@ in the plan are treated as implicit defaults for the purposes of porting.
    creature, not the base creature. The tail applies to that returned pointer. We model this with `SpawnPlan.primary`.
 4. The original uses float32/uint32 fields. In the port we prefer readable float literals (rounding away obvious
    float32 noise), but keep bit-level reinterpretation explicit when it carries semantics (e.g. packed ints).
+5. Some template paths fall through to a debug "Unhandled creatureType.\n" block (`label_431099` / `LAB_00431094`)
+   that overwrites the *returned* creature's `type_id` to `alien` and its `health` to `20.0`. We model this with
+   `_apply_unhandled_creature_type_fallback` (notably for templates `0x11..0x17` and `0x19`).
 
 ## Porting workflow (repo conventions)
 
