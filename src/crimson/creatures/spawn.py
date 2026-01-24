@@ -900,6 +900,33 @@ class ConstantSpawnSpec:
 
 
 CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
+    0x21: ConstantSpawnSpec(
+        type_id=CreatureTypeId.ALIEN,
+        health=53.0,
+        move_speed=1.7,
+        reward_value=120.0,
+        tint=(0.7, 0.1, 0.51, 0.5),
+        size=55.0,
+        contact_damage=8.0,
+    ),
+    0x22: ConstantSpawnSpec(
+        type_id=CreatureTypeId.ALIEN,
+        health=25.0,
+        move_speed=1.7,
+        reward_value=150.0,
+        tint=(0.1, 0.7, 0.51, 0.05),
+        size=50.0,
+        contact_damage=8.0,
+    ),
+    0x23: ConstantSpawnSpec(
+        type_id=CreatureTypeId.ALIEN,
+        health=5.0,
+        move_speed=1.7,
+        reward_value=180.0,
+        tint=(0.1, 0.7, 0.51, 0.04),
+        size=45.0,
+        contact_damage=8.0,
+    ),
     0x24: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
         health=20.0,
@@ -2499,45 +2526,6 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.tint_b = 0.3
         c.tint_g = float(rng.rand() % 40) * 0.01 + 0.6
         c.contact_damage = float(rng.rand() % 10) + 4.0
-        primary_idx = 0
-    elif template_id == 0x21:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ALIEN
-        c.health = 53.0
-        c.move_speed = 1.7
-        c.reward_value = 120.0
-        c.tint_r = 0.7
-        c.tint_g = 0.1
-        c.tint_b = 0.51
-        c.tint_a = 0.5
-        c.size = 55.0
-        c.contact_damage = 8.0
-        primary_idx = 0
-    elif template_id == 0x22:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ALIEN
-        c.health = 25.0
-        c.move_speed = 1.7
-        c.reward_value = 150.0
-        c.tint_r = 0.1
-        c.tint_g = 0.7
-        c.tint_b = 0.51
-        c.tint_a = 0.05
-        c.size = 50.0
-        c.contact_damage = 8.0
-        primary_idx = 0
-    elif template_id == 0x23:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ALIEN
-        c.health = 5.0
-        c.move_speed = 1.7
-        c.reward_value = 180.0
-        c.tint_r = 0.1
-        c.tint_g = 0.7
-        c.tint_b = 0.51
-        c.tint_a = 0.04
-        c.size = 45.0
-        c.contact_damage = 8.0
         primary_idx = 0
     # Constant single-creature templates (includes demo/attract-mode ids).
     elif template_id in CONSTANT_SPAWN_TEMPLATES:
