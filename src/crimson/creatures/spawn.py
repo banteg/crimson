@@ -912,6 +912,118 @@ def tick_survival_wave_spawns(
     return spawn_cooldown, tuple(spawns)
 
 
+@dataclass(frozen=True, slots=True)
+class SpawnTemplateCall:
+    template_id: int
+    pos: tuple[float, float]
+    heading: float
+
+
+def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int, tuple[SpawnTemplateCall, ...]]:
+    """Return scripted survival spawns for the current stage (aka `survival_update` milestones).
+
+    Modeled after `survival_update` (crimsonland.exe 0x00407cd0) stage 0..10 gate checks.
+    """
+    stage = int(stage)
+    level = int(player_level)
+
+    spawns: list[SpawnTemplateCall] = []
+    heading = float(math.pi)
+
+    while True:
+        if stage == 0:
+            if level < 5:
+                break
+            stage = 1
+            spawns.append(SpawnTemplateCall(template_id=0x12, pos=(-164.0, 512.0), heading=heading))
+            spawns.append(SpawnTemplateCall(template_id=0x12, pos=(1188.0, 512.0), heading=heading))
+            continue
+
+        if stage == 1:
+            if level < 9:
+                break
+            stage = 2
+            spawns.append(SpawnTemplateCall(template_id=0x2C, pos=(1088.0, 512.0), heading=heading))
+            continue
+
+        if stage == 2:
+            if level < 0xB:
+                break
+            stage = 3
+            step = 128.0 / 3.0
+            for i in range(0xC):
+                spawns.append(SpawnTemplateCall(template_id=0x35, pos=(1088.0, float(i) * step + 256.0), heading=heading))
+            continue
+
+        if stage == 3:
+            if level < 0xD:
+                break
+            stage = 4
+            for i in range(4):
+                spawns.append(SpawnTemplateCall(template_id=0x2B, pos=(1088.0, float(i) * 64.0 + 384.0), heading=heading))
+            continue
+
+        if stage == 4:
+            if level < 0xF:
+                break
+            stage = 5
+            for i in range(4):
+                spawns.append(SpawnTemplateCall(template_id=0x38, pos=(1088.0, float(i) * 64.0 + 384.0), heading=heading))
+            for i in range(4):
+                spawns.append(SpawnTemplateCall(template_id=0x38, pos=(-64.0, float(i) * 64.0 + 384.0), heading=heading))
+            continue
+
+        if stage == 5:
+            if level < 0x11:
+                break
+            stage = 6
+            spawns.append(SpawnTemplateCall(template_id=0x3A, pos=(1088.0, 512.0), heading=heading))
+            continue
+
+        if stage == 6:
+            if level < 0x13:
+                break
+            stage = 7
+            spawns.append(SpawnTemplateCall(template_id=1, pos=(640.0, 512.0), heading=heading))
+            continue
+
+        if stage == 7:
+            if level < 0x15:
+                break
+            stage = 8
+            spawns.append(SpawnTemplateCall(template_id=1, pos=(384.0, 256.0), heading=heading))
+            spawns.append(SpawnTemplateCall(template_id=1, pos=(640.0, 768.0), heading=heading))
+            continue
+
+        if stage == 8:
+            if level < 0x1A:
+                break
+            stage = 9
+            for i in range(4):
+                spawns.append(SpawnTemplateCall(template_id=0x3C, pos=(1088.0, float(i) * 64.0 + 384.0), heading=heading))
+            for i in range(4):
+                spawns.append(SpawnTemplateCall(template_id=0x3C, pos=(-64.0, float(i) * 64.0 + 384.0), heading=heading))
+            continue
+
+        if stage == 9:
+            if level <= 0x1F:
+                break
+            stage = 10
+            spawns.append(SpawnTemplateCall(template_id=0x3A, pos=(1088.0, 512.0), heading=heading))
+            spawns.append(SpawnTemplateCall(template_id=0x3A, pos=(-64.0, 512.0), heading=heading))
+            for i in range(4):
+                spawns.append(SpawnTemplateCall(template_id=0x3C, pos=(float(i) * 64.0 + 384.0, -64.0), heading=heading))
+            for i in range(4):
+                spawns.append(
+                    SpawnTemplateCall(template_id=0x3C, pos=(float(i) * 64.0 + 384.0, 1088.0), heading=heading)
+                )
+            continue
+
+        break
+
+    return stage, tuple(spawns)
+
+
 def _apply_tail(
     template_id: int,
     plan_creatures: list[CreatureInit],
