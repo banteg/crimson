@@ -749,10 +749,6 @@ def _apply_tail(
         if c.health is not None:
             c.health *= 1.2
 
-    if has_spawn_slot and (int(c.flags) & int(CreatureFlags.ANIM_PING_PONG)) != 0:
-        plan_spawn_slots[c.spawn_slot].interval = max(0.1, plan_spawn_slots[c.spawn_slot].interval - 0.2)
-
-
 def _apply_unhandled_creature_type_fallback(plan_creatures: list[CreatureInit], primary_idx: int) -> None:
     # Some template paths jump to the "Unhandled creatureType.\n" debug block in the original,
     # which forcibly overwrites `type_id` and `health` on the *current* creature pointer.
