@@ -17,7 +17,7 @@ test *args:
     uv run pytest {{args}}
 
 test-cov *args:
-    uv run pytest --cov=crimson --cov-report=term-missing --cov-report=html --cov-report=xml {{args}}
+    uv run pytest --cov-report=html --cov-report=xml {{args}}
 
 # Assets
 extract:

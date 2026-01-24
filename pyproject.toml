@@ -30,6 +30,12 @@ line-length = 120
 [tool.ruff.lint]
 extend-ignore = ["E402"]
 
+[tool.pytest.ini_options]
+addopts = [
+    "--cov=crimson",
+    "--cov-report=term-missing",
+]
+
 [tool.coverage.run]
 branch = true
 source = ["crimson"]
