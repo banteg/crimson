@@ -1024,6 +1024,80 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
     return stage, tuple(spawns)
 
 
+def build_rush_mode_spawn_creature(
+    pos: tuple[float, float],
+    tint_rgba: tuple[float, float, float, float],
+    rng: Crand,
+    *,
+    type_id: int,
+    survival_elapsed_ms: int,
+) -> CreatureInit:
+    """Pure model of `creature_spawn` (0x00428240) as used by `rush_mode_update` (0x004072b0)."""
+    pos_x, pos_y = pos
+    elapsed_ms = int(survival_elapsed_ms)
+
+    c = _alloc_creature(-1, pos_x, pos_y, rng)
+    c.type_id = CreatureTypeId(type_id)
+    c.ai_mode = 0
+
+    c.health = float(elapsed_ms) * 0.000100000005 + 10.0
+    c.heading = float(rng.rand() % 0x13A) * 0.01
+    c.move_speed = float(elapsed_ms) * 1.0000001e-05 + 2.5
+    c.reward_value = float(rng.rand() % 0x1E + 0x8C)
+
+    c.tint_r, c.tint_g, c.tint_b, c.tint_a = tint_rgba
+    c.contact_damage = 4.0
+
+    if c.health is not None:
+        c.max_health = c.health
+    c.size = float(elapsed_ms) * 1.0000001e-05 + 47.0
+
+    return c
+
+
+def tick_rush_mode_spawns(
+    spawn_cooldown: float,
+    frame_dt_ms: float,
+    rng: Crand,
+    *,
+    player_count: int,
+    survival_elapsed_ms: int,
+    terrain_width: float,
+    terrain_height: float,
+) -> tuple[float, tuple[CreatureInit, ...]]:
+    """Advance rush-mode edge wave spawning (pure model of `rush_mode_update` / 0x004072b0)."""
+    spawn_cooldown -= float(player_count) * frame_dt_ms
+
+    spawns: list[CreatureInit] = []
+    while spawn_cooldown < 0.0:
+        spawn_cooldown += 250.0
+
+        t = float(int(float(survival_elapsed_ms) + 1.0))
+        tint_r = _clamp01(t * 8.333333e-06 + 0.3)
+        tint_g = _clamp01(t * 10000.0 + 0.3)
+        tint_b = _clamp01(math.sin(t * 0.000100000005) + 0.3)
+        tint_a = 1.0
+        tint = (tint_r, tint_g, tint_b, tint_a)
+
+        elapsed_ms = int(survival_elapsed_ms)
+        theta = float(elapsed_ms) * 0.001
+        spawn_right = (terrain_width + 64.0, terrain_height * 0.5 + math.cos(theta) * 256.0)
+        spawn_left = (-64.0, terrain_height * 0.5 + math.sin(theta) * 256.0)
+
+        c = build_rush_mode_spawn_creature(spawn_right, tint, rng, type_id=2, survival_elapsed_ms=elapsed_ms)
+        c.ai_mode = 8
+        spawns.append(c)
+
+        c = build_rush_mode_spawn_creature(spawn_left, tint, rng, type_id=3, survival_elapsed_ms=elapsed_ms)
+        c.ai_mode = 8
+        c.flags |= CreatureFlags.AI7_LINK_TIMER
+        if c.move_speed is not None:
+            c.move_speed *= 1.4
+        spawns.append(c)
+
+    return spawn_cooldown, tuple(spawns)
+
+
 def build_tutorial_stage3_fire_spawns() -> tuple[SpawnTemplateCall, ...]:
     """Spawn pack triggered by the stage-3 fire-key transition in `tutorial_timeline_update` (0x00408990)."""
     heading = float(math.pi)
