@@ -22,7 +22,7 @@ from grim.view import View, ViewContext
 
 BASE_POS = (512.0, 512.0)
 
-UI_TEXT_SCALE = 0.6
+UI_TEXT_SCALE = 1
 UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
 UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
@@ -95,7 +95,7 @@ class SpawnPlanView:
 
     def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
         if self._small is not None:
-            return int(self._small.cell_size * scale * 2.0)
+            return int(self._small.cell_size * scale)
         return int(20 * scale)
 
     def _draw_ui_text(
