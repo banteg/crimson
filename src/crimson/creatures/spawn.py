@@ -899,6 +899,20 @@ class ConstantSpawnSpec:
     bonus_duration_override: int | None = None
 
 
+@dataclass(frozen=True, slots=True)
+class FormationChildSpec:
+    type_id: CreatureTypeId
+    health: float
+    move_speed: float
+    reward_value: float
+    size: float
+    contact_damage: float
+    tint: tuple[float, float, float, float]
+    max_health: float | None = None
+    orbit_angle: float | None = None
+    orbit_radius: float | None = None
+
+
 CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
     0x21: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
@@ -1264,6 +1278,21 @@ def apply_constant_template(c: CreatureInit, spec: ConstantSpawnSpec) -> None:
         c.bonus_duration_override = spec.bonus_duration_override
 
 
+def apply_child_spec(child: CreatureInit, spec: FormationChildSpec) -> None:
+    child.type_id = spec.type_id
+    child.health = spec.health
+    child.max_health = spec.max_health if spec.max_health is not None else spec.health
+    child.move_speed = spec.move_speed
+    child.reward_value = spec.reward_value
+    child.size = spec.size
+    child.contact_damage = spec.contact_damage
+    child.tint_r, child.tint_g, child.tint_b, child.tint_a = spec.tint
+    if spec.orbit_angle is not None:
+        child.orbit_angle = spec.orbit_angle
+    if spec.orbit_radius is not None:
+        child.orbit_radius = spec.orbit_radius
+
+
 def randf(rng: Crand, mod: int, scale: float, base: float) -> float:
     return float(rng.rand() % mod) * scale + base
 
@@ -1287,6 +1316,95 @@ def apply_random_move_speed(c: CreatureInit, rng: Crand, mod: int, scale: float,
 
 def apply_size_move_speed(c: CreatureInit, size: float, scale: float, base: float) -> None:
     c.move_speed = size * scale + base
+
+
+def spawn_ring_children(
+    creatures: list[CreatureInit],
+    template_id: int,
+    pos_x: float,
+    pos_y: float,
+    rng: Crand,
+    *,
+    count: int,
+    angle_step: float,
+    radius: float,
+    ai_mode: int,
+    child_spec: FormationChildSpec,
+    link_parent: int = 0,
+    set_position: bool = False,
+    heading_override: float | None = None,
+) -> int:
+    last_idx = -1
+    for i in range(count):
+        child = _alloc_creature(template_id, pos_x, pos_y, rng)
+        child.ai_mode = ai_mode
+        child.ai_link_parent = link_parent
+        angle = float(i) * angle_step
+        child.target_offset_x = float(math.cos(angle) * radius)
+        child.target_offset_y = float(math.sin(angle) * radius)
+        if set_position:
+            child.pos_x = pos_x + (child.target_offset_x or 0.0)
+            child.pos_y = pos_y + (child.target_offset_y or 0.0)
+        if heading_override is not None:
+            child.heading = heading_override
+        apply_child_spec(child, child_spec)
+        creatures.append(child)
+        last_idx = len(creatures) - 1
+    return last_idx
+
+
+def spawn_grid_children(
+    creatures: list[CreatureInit],
+    template_id: int,
+    pos_x: float,
+    pos_y: float,
+    rng: Crand,
+    *,
+    x_range: range,
+    y_range: range,
+    ai_mode: int,
+    child_spec: FormationChildSpec,
+    link_parent: int = 0,
+) -> int:
+    last_idx = -1
+    for x_offset in x_range:
+        for y_offset in y_range:
+            child = _alloc_creature(template_id, pos_x, pos_y, rng)
+            child.ai_mode = ai_mode
+            child.ai_link_parent = link_parent
+            child.target_offset_x = float(x_offset)
+            child.target_offset_y = float(y_offset)
+            child.pos_x = float(pos_x + x_offset)
+            child.pos_y = float(pos_y + y_offset)
+            apply_child_spec(child, child_spec)
+            creatures.append(child)
+            last_idx = len(creatures) - 1
+    return last_idx
+
+
+def spawn_chain_children(
+    creatures: list[CreatureInit],
+    template_id: int,
+    pos_x: float,
+    pos_y: float,
+    rng: Crand,
+    *,
+    count: int,
+    ai_mode: int,
+    child_spec: FormationChildSpec,
+    setup_child,
+    link_parent_start: int = 0,
+) -> int:
+    chain_prev = link_parent_start
+    for idx in range(count):
+        child = _alloc_creature(template_id, pos_x, pos_y, rng)
+        child.ai_mode = ai_mode
+        child.ai_link_parent = chain_prev
+        setup_child(child, idx)
+        apply_child_spec(child, child_spec)
+        creatures.append(child)
+        chain_prev = len(creatures) - 1
+    return chain_prev
 
 
 def tick_spawn_slot(slot: SpawnSlotInit, frame_dt: float) -> int | None:
@@ -2077,28 +2195,28 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         parent.tint_b = 0.4
         parent.contact_damage = 0.0
 
-        for i in range(0x18):
-            child = _alloc_creature(template_id, pos_x, pos_y, rng)
-            child.ai_mode = 3
-            child.ai_link_parent = 0
-            child.heading = 0.0
-            angle = float(i) * (math.pi / 12.0)
-            child.target_offset_x = float(math.cos(angle) * 100.0)
-            child.target_offset_y = float(math.sin(angle) * 100.0)
-            child.tint_r = 1.0
-            child.tint_g = 0.3
-            child.tint_b = 0.3
-            child.tint_a = 1.0
-            child.health = 40.0
-            child.max_health = 40.0
-            child.type_id = CreatureTypeId.ALIEN
-            child.move_speed = 4.0
-            child.reward_value = 350.0
-            child.size = 35.0
-            child.contact_damage = 30.0
-            creatures.append(child)
-
-        primary_idx = len(creatures) - 1
+        child_spec = FormationChildSpec(
+            type_id=CreatureTypeId.ALIEN,
+            health=40.0,
+            move_speed=4.0,
+            reward_value=350.0,
+            size=35.0,
+            contact_damage=30.0,
+            tint=(1.0, 0.3, 0.3, 1.0),
+        )
+        primary_idx = spawn_ring_children(
+            creatures,
+            template_id,
+            pos_x,
+            pos_y,
+            rng,
+            count=0x18,
+            angle_step=math.pi / 12.0,
+            radius=100.0,
+            ai_mode=3,
+            child_spec=child_spec,
+            heading_override=0.0,
+        )
     elif template_id == 0x0F:
         c = creatures[0]
         c.type_id = CreatureTypeId.ALIEN
@@ -2129,31 +2247,37 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
 
         # Spawns a linked chain of 4 children (link points to previous). The original also sets
         # the base creature's link_index to the last child after the loop.
-        chain_prev = 0
+        child_spec = FormationChildSpec(
+            type_id=CreatureTypeId.LIZARD,
+            health=60.0,
+            move_speed=2.4,
+            reward_value=60.0,
+            size=50.0,
+            contact_damage=14.0,
+            tint=(0.6, 0.6, 0.31, 1.0),
+        )
         local_48 = 2
-        for i in range(4):
-            child = _alloc_creature(template_id, pos_x, pos_y, rng)
-            child.ai_mode = 3
-            child.ai_link_parent = chain_prev
-            child.target_offset_x = -256.0 + float(i) * 64.0
+
+        def setup_child(child: CreatureInit, idx: int) -> None:
+            nonlocal local_48
+            child.target_offset_x = -256.0 + float(idx) * 64.0
             child.target_offset_y = -256.0
             angle = float(local_48) * (math.pi / 8.0)
             child.pos_x = float(math.cos(angle) * 256.0 + pos_x)
             child.pos_y = float(math.sin(angle) * 256.0 + pos_y)
-            child.tint_r = 0.6
-            child.tint_g = 0.6
-            child.tint_b = 0.31
-            child.tint_a = 1.0
-            child.health = 60.0
-            child.max_health = 60.0
-            child.reward_value = 60.0
-            child.type_id = CreatureTypeId.LIZARD
-            child.move_speed = 2.4
-            child.size = 50.0
-            child.contact_damage = 14.0
-            creatures.append(child)
-            chain_prev = len(creatures) - 1
             local_48 += 2
+
+        chain_prev = spawn_chain_children(
+            creatures,
+            template_id,
+            pos_x,
+            pos_y,
+            rng,
+            count=4,
+            ai_mode=3,
+            child_spec=child_spec,
+            setup_child=setup_child,
+        )
 
         parent.ai_link_parent = chain_prev
         primary_idx = chain_prev
@@ -2173,28 +2297,29 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         parent.contact_damage = 14.0
 
         # Spawns 8 linked orbiters in a ring (step ~= pi/4).
-        for i in range(8):
-            child = _alloc_creature(template_id, pos_x, pos_y, rng)
-            child.ai_mode = 3
-            child.ai_link_parent = 0
-            angle = float(i) * (math.pi / 4.0)
-            child.target_offset_x = float(math.cos(angle) * 100.0)
-            child.target_offset_y = float(math.sin(angle) * 100.0)
-            child.tint_r = 0.32
-            child.tint_g = 0.588
-            child.tint_b = 0.426
-            child.tint_a = 1.0
-            child.health = 40.0
-            child.max_health = 40.0
-            child.type_id = CreatureTypeId.ALIEN
-            child.move_speed = 2.4
-            child.reward_value = 60.0
-            child.size = 50.0
-            child.contact_damage = 4.0
-            creatures.append(child)
+        child_spec = FormationChildSpec(
+            type_id=CreatureTypeId.ALIEN,
+            health=40.0,
+            move_speed=2.4,
+            reward_value=60.0,
+            size=50.0,
+            contact_damage=4.0,
+            tint=(0.32, 0.588, 0.426, 1.0),
+        )
+        primary_idx = spawn_ring_children(
+            creatures,
+            template_id,
+            pos_x,
+            pos_y,
+            rng,
+            count=8,
+            angle_step=math.pi / 4.0,
+            radius=100.0,
+            ai_mode=3,
+            child_spec=child_spec,
+        )
 
         # The original function returns the last allocated creature pointer.
-        primary_idx = len(creatures) - 1
         _apply_unhandled_creature_type_fallback(creatures, primary_idx)
     elif template_id == 0x13:
         parent = creatures[0]
@@ -2213,32 +2338,38 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         parent.size = 40.0
         parent.contact_damage = 20.0
 
-        chain_prev = 0
-        for i in range(2, 0x16, 2):
-            child = _alloc_creature(template_id, pos_x, pos_y, rng)
-            child.ai_mode = 6
-            child.ai_link_parent = chain_prev
-            child.orbit_angle = math.pi
-            child.orbit_radius = 10.0
-            angle = float(i) * math.radians(20.0)
+        child_spec = FormationChildSpec(
+            type_id=CreatureTypeId.ALIEN,
+            health=60.0,
+            move_speed=2.0,
+            reward_value=60.0,
+            size=50.0,
+            contact_damage=4.0,
+            tint=(0.4, 0.7, 0.11, 1.0),
+            orbit_angle=math.pi,
+            orbit_radius=10.0,
+        )
+
+        def setup_child(child: CreatureInit, idx: int) -> None:
+            angle_idx = 2 + idx * 2
+            angle = float(angle_idx) * math.radians(20.0)
             child.pos_x = float(math.cos(angle) * 256.0 + pos_x)
             child.pos_y = float(math.sin(angle) * 256.0 + pos_y)
-            child.tint_r = 0.4
-            child.tint_g = 0.7
-            child.tint_b = 0.11
-            child.tint_a = 1.0
-            child.health = 60.0
-            child.max_health = 60.0
-            child.type_id = CreatureTypeId.ALIEN
-            child.move_speed = 2.0
-            child.reward_value = 60.0
-            child.size = 50.0
-            child.contact_damage = 4.0
-            creatures.append(child)
-            chain_prev = len(creatures) - 1
+
+        chain_prev = spawn_chain_children(
+            creatures,
+            template_id,
+            pos_x,
+            pos_y,
+            rng,
+            count=10,
+            ai_mode=6,
+            child_spec=child_spec,
+            setup_child=setup_child,
+        )
 
         parent.ai_link_parent = chain_prev
-        primary_idx = len(creatures) - 1
+        primary_idx = chain_prev
         _apply_unhandled_creature_type_fallback(creatures, primary_idx)
     elif template_id == 0x14:
         parent = creatures[0]
@@ -2255,29 +2386,26 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         parent.size = 50.0
         parent.contact_damage = 40.0
 
-        for x_offset in range(0, -0x240, -0x40):
-            for y_offset in range(0x80, 0x101, 0x10):
-                child = _alloc_creature(template_id, pos_x, pos_y, rng)
-                child.ai_mode = 5
-                child.ai_link_parent = 0
-                child.target_offset_x = float(x_offset)
-                child.target_offset_y = float(y_offset)
-                child.pos_x = float(pos_x + x_offset)
-                child.pos_y = float(pos_y + y_offset)
-                child.tint_r = 0.4
-                child.tint_g = 0.7
-                child.tint_b = 0.11
-                child.tint_a = 1.0
-                child.health = 40.0
-                child.max_health = 40.0
-                child.type_id = CreatureTypeId.ALIEN
-                child.move_speed = 2.0
-                child.reward_value = 60.0
-                child.size = 50.0
-                child.contact_damage = 4.0
-                creatures.append(child)
-
-        primary_idx = len(creatures) - 1
+        child_spec = FormationChildSpec(
+            type_id=CreatureTypeId.ALIEN,
+            health=40.0,
+            move_speed=2.0,
+            reward_value=60.0,
+            size=50.0,
+            contact_damage=4.0,
+            tint=(0.4, 0.7, 0.11, 1.0),
+        )
+        primary_idx = spawn_grid_children(
+            creatures,
+            template_id,
+            pos_x,
+            pos_y,
+            rng,
+            x_range=range(0, -0x240, -0x40),
+            y_range=range(0x80, 0x101, 0x10),
+            ai_mode=5,
+            child_spec=child_spec,
+        )
         _apply_unhandled_creature_type_fallback(creatures, primary_idx)
     elif template_id == 0x15:
         parent = creatures[0]
@@ -2294,29 +2422,26 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         parent.size = 60.0
         parent.contact_damage = 40.0
 
-        for x_offset in range(0, -0x240, -0x40):
-            for y_offset in range(0x80, 0x101, 0x10):
-                child = _alloc_creature(template_id, pos_x, pos_y, rng)
-                child.ai_mode = 4
-                child.ai_link_parent = 0
-                child.target_offset_x = float(x_offset)
-                child.target_offset_y = float(y_offset)
-                child.pos_x = float(pos_x + x_offset)
-                child.pos_y = float(pos_y + y_offset)
-                child.tint_r = 0.4
-                child.tint_g = 0.7
-                child.tint_b = 0.11
-                child.tint_a = 1.0
-                child.health = 40.0
-                child.max_health = 40.0
-                child.type_id = CreatureTypeId.ALIEN
-                child.move_speed = 2.0
-                child.reward_value = 60.0
-                child.size = 50.0
-                child.contact_damage = 4.0
-                creatures.append(child)
-
-        primary_idx = len(creatures) - 1
+        child_spec = FormationChildSpec(
+            type_id=CreatureTypeId.ALIEN,
+            health=40.0,
+            move_speed=2.0,
+            reward_value=60.0,
+            size=50.0,
+            contact_damage=4.0,
+            tint=(0.4, 0.7, 0.11, 1.0),
+        )
+        primary_idx = spawn_grid_children(
+            creatures,
+            template_id,
+            pos_x,
+            pos_y,
+            rng,
+            x_range=range(0, -0x240, -0x40),
+            y_range=range(0x80, 0x101, 0x10),
+            ai_mode=4,
+            child_spec=child_spec,
+        )
         _apply_unhandled_creature_type_fallback(creatures, primary_idx)
     elif template_id == 0x16:
         parent = creatures[0]
@@ -2333,29 +2458,26 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         parent.size = 64.0
         parent.contact_damage = 40.0
 
-        for x_offset in range(0, -0x240, -0x40):
-            for y_offset in range(0x80, 0x101, 0x10):
-                child = _alloc_creature(template_id, pos_x, pos_y, rng)
-                child.ai_mode = 4
-                child.ai_link_parent = 0
-                child.target_offset_x = float(x_offset)
-                child.target_offset_y = float(y_offset)
-                child.pos_x = float(pos_x + x_offset)
-                child.pos_y = float(pos_y + y_offset)
-                child.tint_r = 0.4
-                child.tint_g = 0.7
-                child.tint_b = 0.11
-                child.tint_a = 1.0
-                child.health = 40.0
-                child.max_health = 40.0
-                child.type_id = CreatureTypeId.LIZARD
-                child.move_speed = 2.0
-                child.reward_value = 60.0
-                child.size = 60.0
-                child.contact_damage = 4.0
-                creatures.append(child)
-
-        primary_idx = len(creatures) - 1
+        child_spec = FormationChildSpec(
+            type_id=CreatureTypeId.LIZARD,
+            health=40.0,
+            move_speed=2.0,
+            reward_value=60.0,
+            size=60.0,
+            contact_damage=4.0,
+            tint=(0.4, 0.7, 0.11, 1.0),
+        )
+        primary_idx = spawn_grid_children(
+            creatures,
+            template_id,
+            pos_x,
+            pos_y,
+            rng,
+            x_range=range(0, -0x240, -0x40),
+            y_range=range(0x80, 0x101, 0x10),
+            ai_mode=4,
+            child_spec=child_spec,
+        )
         _apply_unhandled_creature_type_fallback(creatures, primary_idx)
     elif template_id == 0x17:
         parent = creatures[0]
@@ -2372,29 +2494,26 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         parent.size = 60.0
         parent.contact_damage = 40.0
 
-        for x_offset in range(0, -0x240, -0x40):
-            for y_offset in range(0x80, 0x101, 0x10):
-                child = _alloc_creature(template_id, pos_x, pos_y, rng)
-                child.ai_mode = 4
-                child.ai_link_parent = 0
-                child.target_offset_x = float(x_offset)
-                child.target_offset_y = float(y_offset)
-                child.pos_x = float(pos_x + x_offset)
-                child.pos_y = float(pos_y + y_offset)
-                child.tint_r = 0.4
-                child.tint_g = 0.7
-                child.tint_b = 0.11
-                child.tint_a = 1.0
-                child.health = 40.0
-                child.max_health = 40.0
-                child.type_id = CreatureTypeId.SPIDER_SP1
-                child.move_speed = 2.0
-                child.reward_value = 60.0
-                child.size = 50.0
-                child.contact_damage = 4.0
-                creatures.append(child)
-
-        primary_idx = len(creatures) - 1
+        child_spec = FormationChildSpec(
+            type_id=CreatureTypeId.SPIDER_SP1,
+            health=40.0,
+            move_speed=2.0,
+            reward_value=60.0,
+            size=50.0,
+            contact_damage=4.0,
+            tint=(0.4, 0.7, 0.11, 1.0),
+        )
+        primary_idx = spawn_grid_children(
+            creatures,
+            template_id,
+            pos_x,
+            pos_y,
+            rng,
+            x_range=range(0, -0x240, -0x40),
+            y_range=range(0x80, 0x101, 0x10),
+            ai_mode=4,
+            child_spec=child_spec,
+        )
         _apply_unhandled_creature_type_fallback(creatures, primary_idx)
     elif template_id == 0x18:
         parent = creatures[0]
@@ -2411,29 +2530,26 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         parent.size = 40.0
         parent.contact_damage = 40.0
 
-        for x_offset in range(0, -0x240, -0x40):
-            for y_offset in range(0x80, 0x101, 0x10):
-                child = _alloc_creature(template_id, pos_x, pos_y, rng)
-                child.ai_mode = 3
-                child.ai_link_parent = 0
-                child.target_offset_x = float(x_offset)
-                child.target_offset_y = float(y_offset)
-                child.pos_x = float(pos_x + x_offset)
-                child.pos_y = float(pos_y + y_offset)
-                child.tint_r = 0.7125
-                child.tint_g = 0.4125
-                child.tint_b = 0.2775
-                child.tint_a = 0.6
-                child.health = 260.0
-                child.max_health = 260.0
-                child.type_id = CreatureTypeId.ALIEN
-                child.move_speed = 3.8
-                child.reward_value = 60.0
-                child.size = 50.0
-                child.contact_damage = 35.0
-                creatures.append(child)
-
-        primary_idx = len(creatures) - 1
+        child_spec = FormationChildSpec(
+            type_id=CreatureTypeId.ALIEN,
+            health=260.0,
+            move_speed=3.8,
+            reward_value=60.0,
+            size=50.0,
+            contact_damage=35.0,
+            tint=(0.7125, 0.4125, 0.2775, 0.6),
+        )
+        primary_idx = spawn_grid_children(
+            creatures,
+            template_id,
+            pos_x,
+            pos_y,
+            rng,
+            x_range=range(0, -0x240, -0x40),
+            y_range=range(0x80, 0x101, 0x10),
+            ai_mode=3,
+            child_spec=child_spec,
+        )
     elif template_id == 0x19:
         parent = creatures[0]
         parent.type_id = CreatureTypeId.ALIEN
@@ -2448,29 +2564,28 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         parent.size = 55.0
         parent.contact_damage = 40.0
 
-        for i in range(5):
-            child = _alloc_creature(template_id, pos_x, pos_y, rng)
-            child.ai_mode = 5
-            child.ai_link_parent = 0
-            angle = float(i) * (math.tau / 5.0)
-            child.target_offset_x = float(math.cos(angle) * 110.0)
-            child.target_offset_y = float(math.sin(angle) * 110.0)
-            child.pos_x = pos_x + (child.target_offset_x or 0.0)
-            child.pos_y = pos_y + (child.target_offset_y or 0.0)
-            child.tint_r = 0.7125
-            child.tint_g = 0.4125
-            child.tint_b = 0.2775
-            child.tint_a = 0.6
-            child.health = 220.0
-            child.max_health = 220.0
-            child.type_id = CreatureTypeId.ALIEN
-            child.move_speed = 3.8
-            child.reward_value = 60.0
-            child.size = 50.0
-            child.contact_damage = 35.0
-            creatures.append(child)
-
-        primary_idx = len(creatures) - 1
+        child_spec = FormationChildSpec(
+            type_id=CreatureTypeId.ALIEN,
+            health=220.0,
+            move_speed=3.8,
+            reward_value=60.0,
+            size=50.0,
+            contact_damage=35.0,
+            tint=(0.7125, 0.4125, 0.2775, 0.6),
+        )
+        primary_idx = spawn_ring_children(
+            creatures,
+            template_id,
+            pos_x,
+            pos_y,
+            rng,
+            count=5,
+            angle_step=math.tau / 5.0,
+            radius=110.0,
+            ai_mode=5,
+            child_spec=child_spec,
+            set_position=True,
+        )
         _apply_unhandled_creature_type_fallback(creatures, primary_idx)
     elif template_id in (0x1A, 0x1B, 0x1C):
         c = creatures[0]
