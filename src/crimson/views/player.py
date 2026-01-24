@@ -172,25 +172,23 @@ class PlayerSandboxView:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_T):
             self._toggle_perk(PerkId.ALTERNATE_WEAPON)
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_F1):
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_Z):
             bonus_apply(self._state, self._player, BonusId.WEAPON_POWER_UP)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_F2):
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_X):
             bonus_apply(self._state, self._player, BonusId.SHIELD)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_F3):
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_C):
             bonus_apply(self._state, self._player, BonusId.SPEED)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_F4):
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_V):
             bonus_apply(self._state, self._player, BonusId.FIRE_BULLETS)
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_F5):
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_B):
             bonus_apply(self._state, self._player, BonusId.FIREBLAST, origin=self._player)
 
-        if rl.is_key_pressed(rl.KeyboardKey.KEY_R):
-            # Use reload key as a demo-friendly "reset timers" shortcut when holding shift.
-            if rl.is_key_down(rl.KeyboardKey.KEY_LEFT_SHIFT) or rl.is_key_down(rl.KeyboardKey.KEY_RIGHT_SHIFT):
-                self._state.bonuses.weapon_power_up = 0.0
-                self._player.shield_timer = 0.0
-                self._player.speed_bonus_timer = 0.0
-                self._player.fire_bullets_timer = 0.0
-                bonus_hud_update(self._state, [self._player])
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE):
+            self._state.bonuses.weapon_power_up = 0.0
+            self._player.shield_timer = 0.0
+            self._player.speed_bonus_timer = 0.0
+            self._player.fire_bullets_timer = 0.0
+            bonus_hud_update(self._state, [self._player])
 
     def _camera_world_to_screen(self, x: float, y: float) -> tuple[float, float]:
         return self._camera_x + x, self._camera_y + y
@@ -355,7 +353,7 @@ class PlayerSandboxView:
             UI_HINT_COLOR,
         )
         y += line + 4
-        self._draw_ui_text("F1 PowerUp  F2 Shield  F3 Speed  F4 FireBullets  F5 Fireblast  Shift+R clear bonuses", x, y, UI_HINT_COLOR)
+        self._draw_ui_text("Z PowerUp  X Shield  C Speed  V FireBullets  B Fireblast  Backspace clear bonuses", x, y, UI_HINT_COLOR)
         y += line + 10
 
         active_perks = []
