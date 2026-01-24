@@ -19,6 +19,7 @@ build-backend = "uv_build"
 [dependency-groups]
 dev = [
     "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
     "syrupy>=5.0.0",
     "zensical>=0.0.16",
 ]
@@ -28,3 +29,17 @@ line-length = 120
 
 [tool.ruff.lint]
 extend-ignore = ["E402"]
+
+[tool.coverage.run]
+branch = true
+source = ["crimson"]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]

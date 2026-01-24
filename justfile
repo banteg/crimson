@@ -12,6 +12,13 @@ frida_share_dir := "artifacts/frida/share"
 default:
     @just --list
 
+# Tests
+test *args:
+    uv run pytest {{args}}
+
+test-cov *args:
+    uv run pytest --cov=crimson --cov-report=term-missing --cov-report=html --cov-report=xml {{args}}
+
 # Assets
 extract:
     uv run paq extract {{game_dir}} {{assets_dir}}
