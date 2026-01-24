@@ -28,6 +28,8 @@ const CONFIG = {
   logCalls: false,
   autoStartDemo: false,
   autoStartDelayMs: 1200,
+  keepConfigPatched: true,
+  keepConfigIntervalMs: 1000,
   logPath: joinPath(LOG_DIR, 'demo_shareware.jsonl'),
 };
 
@@ -40,6 +42,7 @@ const LINK_BASE = {
 const ADDR = {
   game_is_full_version: 0x0041df40,
   demo_mode_start: 0x00403390,
+  config_full_version: 0x00480791,
 };
 
 let LOG = { file: null, ok: false };
@@ -96,6 +99,32 @@ function resolveDemoStart() {
   return true;
 }
 
+function readConfigFullVersion() {
+  const addr = exePtr(ADDR.config_full_version);
+  if (!addr) return null;
+  try {
+    return addr.readU8();
+  } catch (_) {
+    return null;
+  }
+}
+
+function writeConfigFullVersion(value) {
+  const addr = exePtr(ADDR.config_full_version);
+  if (!addr) {
+    writeLog({ event: 'config_full_version_error', error: 'addr_unavailable' });
+    return false;
+  }
+  try {
+    addr.writeU8(value & 0xff);
+    writeLog({ event: 'config_full_version_set', value: value, addr: addr.toString() });
+    return true;
+  } catch (e) {
+    writeLog({ event: 'config_full_version_error', error: String(e) });
+    return false;
+  }
+}
+
 function maybeStartDemo() {
   if (!CONFIG.autoStartDemo) return;
   if (!resolveDemoStart()) {
@@ -114,25 +143,51 @@ function patchSharewareGate() {
   const addr = exePtr(ADDR.game_is_full_version);
   if (!addr) {
     writeLog({ event: 'error', error: 'module_or_address_unavailable' });
+    writeConfigFullVersion(CONFIG.forceValue);
     return;
   }
 
-  Interceptor.replace(
-    addr,
-    new NativeCallback(function () {
-      callCount += 1;
-      if (CONFIG.logCalls) {
-        writeLog({ event: 'call', count: callCount, ret: CONFIG.forceValue });
-      }
-      return CONFIG.forceValue;
-    }, 'int', [])
-  );
+  let hooked = false;
+  try {
+    Interceptor.replace(
+      addr,
+      new NativeCallback(function () {
+        callCount += 1;
+        if (CONFIG.logCalls) {
+          writeLog({ event: 'call', count: callCount, ret: CONFIG.forceValue });
+        }
+        return CONFIG.forceValue;
+      }, 'int', [])
+    );
+    hooked = true;
+    writeLog({
+      event: 'patched',
+      addr: addr.toString(),
+      force_value: CONFIG.forceValue,
+    });
+  } catch (e) {
+    writeLog({
+      event: 'patch_error',
+      addr: addr.toString(),
+      error: String(e),
+    });
+  }
 
-  writeLog({
-    event: 'patched',
-    addr: addr.toString(),
-    force_value: CONFIG.forceValue,
-  });
+  if (!hooked) {
+    writeConfigFullVersion(CONFIG.forceValue);
+  } else {
+    // Keep config in sync too; some code reads the flag directly.
+    writeConfigFullVersion(CONFIG.forceValue);
+  }
+
+  if (CONFIG.keepConfigPatched) {
+    setInterval(() => {
+      const current = readConfigFullVersion();
+      if (current !== null && current !== (CONFIG.forceValue & 0xff)) {
+        writeConfigFullVersion(CONFIG.forceValue);
+      }
+    }, CONFIG.keepConfigIntervalMs);
+  }
 
   if (CONFIG.autoStartDemo) {
     setTimeout(maybeStartDemo, CONFIG.autoStartDelayMs);
