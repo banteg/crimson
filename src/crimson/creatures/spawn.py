@@ -2364,7 +2364,7 @@ def apply_alien_spawner(ctx: PlanBuilder, spec: AlienSpawnerSpec) -> None:
     c.health = spec.health
     c.move_speed = spec.move_speed
     c.reward_value = spec.reward_value
-    c.tint = spec.tint
+    apply_tint(c, spec.tint)
     c.contact_damage = 0.0
     ctx.primary = 0
 
@@ -2880,17 +2880,16 @@ def build_spawn_plan(
     template_id = int(template_id)
     ctx, final_heading = PlanBuilder.start(template_id, pos, heading, rng, env)
 
-    builder = TEMPLATE_BUILDERS.get(template_id)
-    if builder is not None:
+    if builder := TEMPLATE_BUILDERS.get(template_id):
         builder(ctx)
-    elif template_id in ALIEN_SPAWNER_TEMPLATES:
-        apply_alien_spawner(ctx, ALIEN_SPAWNER_TEMPLATES[template_id])
-    elif template_id in GRID_FORMATIONS:
-        apply_grid_formation(ctx, GRID_FORMATIONS[template_id])
-    elif template_id in RING_FORMATIONS:
-        apply_ring_formation(ctx, RING_FORMATIONS[template_id])
-    elif template_id in CONSTANT_SPAWN_TEMPLATES:
-        apply_constant_spawn(ctx, CONSTANT_SPAWN_TEMPLATES[template_id])
+    elif spec := ALIEN_SPAWNER_TEMPLATES.get(template_id):
+        apply_alien_spawner(ctx, spec)
+    elif spec := GRID_FORMATIONS.get(template_id):
+        apply_grid_formation(ctx, spec)
+    elif spec := RING_FORMATIONS.get(template_id):
+        apply_ring_formation(ctx, spec)
+    elif spec := CONSTANT_SPAWN_TEMPLATES.get(template_id):
+        apply_constant_spawn(ctx, spec)
     else:
         raise NotImplementedError(f"spawn plan not implemented for template_id=0x{template_id:x}")
 
