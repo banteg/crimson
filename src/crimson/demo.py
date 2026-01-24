@@ -749,30 +749,7 @@ class DemoView:
             difficulty_level=0,
         )
 
-        try:
-            plan = build_spawn_plan(spawn_id, (x, y), heading, self._spawn_rng, env)
-        except NotImplementedError:
-            template = SPAWN_ID_TO_TEMPLATE.get(spawn_id)
-            type_id = template.type_id if template is not None else None
-            flags = template.flags or CreatureFlags(0) if template is not None else CreatureFlags(0)
-            hp = self._creature_hp(type_id)
-            move_speed = self._creature_speed(type_id) / 30.0
-            self._creatures.append(
-                DemoCreature(
-                    spawn_id=spawn_id,
-                    x=x,
-                    y=y,
-                    hp=hp,
-                    size=18.0,
-                    move_speed=move_speed,
-                    type_id=type_id,
-                    flags=flags,
-                    heading=heading,
-                    phase_seed=float(self._spawn_rng.rand() & 0x17F),
-                    anim_phase=0.0,
-                )
-            )
-            return
+        plan = build_spawn_plan(spawn_id, (x, y), heading, self._spawn_rng, env)
 
         creature_base = len(self._creatures)
         slot_base = len(self._spawn_slots)
