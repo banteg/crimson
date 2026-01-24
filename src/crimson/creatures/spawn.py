@@ -649,6 +649,28 @@ class SpawnPlan:
     primary: int
 
 
+def tick_spawn_slot(slot: SpawnSlotInit, frame_dt: float) -> int | None:
+    """Advance a spawn slot timer by `frame_dt`, returning a spawned template id if triggered.
+
+    Modeled after `creature_update_all`'s spawn-slot tick:
+      timer -= dt
+      if timer < 0:
+        timer += interval
+        if count < limit:
+          count += 1
+          spawn child_template_id
+
+    Note: the original only adds `interval` once (no loop), so large dt can keep the timer negative.
+    """
+    slot.timer -= frame_dt
+    if slot.timer < 0.0:
+        slot.timer += slot.interval
+        if slot.count < slot.limit:
+            slot.count += 1
+            return slot.child_template_id
+    return None
+
+
 def _alloc_creature(template_id: int, pos_x: float, pos_y: float, rng: Crand) -> CreatureInit:
     # creature_alloc_slot():
     # - clears flags
