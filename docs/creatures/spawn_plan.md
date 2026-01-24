@@ -54,7 +54,7 @@ in the plan are treated as implicit defaults for the purposes of porting.
 
 ## Debug tooling
 
-- Visualize a single template as points/links: `uv run crimson view spawn-plan`
+- Visualize a single template as points/links: `uv run crimson view spawn-plan` (Space: run/pause spawn-slot sim, Backspace: reset)
 - Show per-entry allocation totals for a quest script: `uv run crimson quests 1.1 --show-plan`
 
 ## Spawn slot ticking (runtime)
