@@ -1792,9 +1792,9 @@ def build_rush_mode_spawn_creature(
     c.type_id = CreatureTypeId(type_id)
     c.ai_mode = 0
 
-    c.health = float(elapsed_ms) * 0.000100000005 + 10.0
+    c.health = float(elapsed_ms) * 1e-4 + 10.0
     c.heading = float(rng.rand() % 314) * 0.01
-    c.move_speed = float(elapsed_ms) * 1.0000001e-05 + 2.5
+    c.move_speed = float(elapsed_ms) * 1e-5 + 2.5
     c.reward_value = float(rng.rand() % 30 + 140)
 
     c.tint_r, c.tint_g, c.tint_b, c.tint_a = tint_rgba
@@ -1802,7 +1802,7 @@ def build_rush_mode_spawn_creature(
 
     if c.health is not None:
         c.max_health = c.health
-    c.size = float(elapsed_ms) * 1.0000001e-05 + 47.0
+    c.size = float(elapsed_ms) * 1e-5 + 47.0
 
     return c
 
@@ -1825,9 +1825,9 @@ def tick_rush_mode_spawns(
         spawn_cooldown += 250.0
 
         t = float(int(float(survival_elapsed_ms) + 1.0))
-        tint_r = _clamp01(t * 8.333333e-06 + 0.3)
+        tint_r = _clamp01(t * (1.0 / 120000.0) + 0.3)
         tint_g = _clamp01(t * 10000.0 + 0.3)
-        tint_b = _clamp01(math.sin(t * 0.000100000005) + 0.3)
+        tint_b = _clamp01(math.sin(t * 1e-4) + 0.3)
         tint_a = 1.0
         tint = (tint_r, tint_g, tint_b, tint_a)
 
