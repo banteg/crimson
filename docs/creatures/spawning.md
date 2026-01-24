@@ -275,7 +275,8 @@ Notes:
 
 - Quest/timeline spawner (`quest_spawn_timeline_update`, `FUN_00434250`): pulls spawn ids from the
   table at `DAT_004857a8` (`pfVar4[3]`) with counts in `pfVar4[5]`. Python model:
-  `crimson.quests.timeline.tick_quest_spawn_timeline`.
+  `crimson.quests.timeline.tick_quest_spawn_timeline` (see also `tick_quest_mode_spawns` for the
+  `quest_mode_update` gating).
 
 - AI subspawns (`creature_update_all`): periodic spawns using `&DAT_00484fe4 + iVar6 * 0x18`,
   which is seeded for some template ids inside `creature_spawn_template` (`FUN_00430af0`).
@@ -328,6 +329,6 @@ Notes:
     `build_tutorial_stage5_repeat_spawns`, `build_tutorial_stage6_perks_done_spawns`
   - Tests: `tests/test_tutorial_timeline_spawns.py`
 - Quest timeline (pure model): `src/crimson/quests/timeline.py`
-  - `tick_quest_spawn_timeline`
-  - Tests: `tests/test_quest_spawn_timeline.py`
+  - `tick_quest_spawn_timeline`, `tick_quest_mode_spawns`, `quest_spawn_table_empty`
+  - Tests: `tests/test_quest_spawn_timeline.py`, `tests/test_quest_mode_spawns.py`
 - MSVCRT-compatible RNG for deterministic replays: `src/crimson/crand.py`
