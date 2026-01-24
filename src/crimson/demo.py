@@ -14,6 +14,7 @@ from grim.config import CrimsonConfig
 from grim.terrain_render import GroundRenderer
 
 from .crand import Crand
+from .creatures.ai import creature_ai7_tick_link_timer, creature_ai_update_target
 from .creatures.anim import creature_anim_advance_phase, creature_anim_select_frame
 from .creatures.spawn import (
     CreatureFlags,
@@ -123,6 +124,8 @@ class DemoCreature:
     link_index: int = 0
     target_offset_x: float | None = None
     target_offset_y: float | None = None
+    orbit_angle: float = 0.0
+    orbit_radius: float = 0.0
 
 
 @dataclass(slots=True)
@@ -761,6 +764,10 @@ class DemoView:
                 link_index = creature_base + int(entry.ai_link_parent)
             elif entry.spawn_slot is not None:
                 link_index = slot_base + int(entry.spawn_slot)
+            orbit_angle = float(entry.orbit_angle or 0.0)
+            orbit_radius = float(entry.orbit_radius or 0.0)
+            if (entry.ranged_projectile_type is not None) and (entry.flags & CreatureFlags.RANGED_ATTACK_VARIANT):
+                orbit_radius = float(entry.ranged_projectile_type)
             self._creatures.append(
                 DemoCreature(
                     spawn_id=entry.origin_template_id,
@@ -779,6 +786,8 @@ class DemoView:
                     link_index=link_index,
                     target_offset_x=entry.target_offset_x,
                     target_offset_y=entry.target_offset_y,
+                    orbit_angle=orbit_angle,
+                    orbit_radius=orbit_radius,
                 )
             )
 
@@ -1224,17 +1233,7 @@ class DemoView:
             if move_speed <= 0.0:
                 move_speed = self._creature_speed(type_id) / 30.0
 
-            # creature_update_all: AI7 link-timer behavior (flag 0x80).
-            if creature.flags & CreatureFlags.AI7_LINK_TIMER:
-                if creature.link_index < 0:
-                    creature.link_index += dt_ms
-                    if creature.link_index >= 0:
-                        creature.ai_mode = 7
-                        creature.link_index = (self._crand.rand() & 0x1FF) + 500
-                else:
-                    creature.link_index -= dt_ms
-                    if creature.link_index < 1:
-                        creature.link_index = -700 - (self._crand.rand() & 0x3FF)
+            creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rand=self._crand.rand)
 
             target_idx = self._nearest_player_index(creature.x, creature.y)
             creature.target_player = target_idx
@@ -1243,75 +1242,20 @@ class DemoView:
                 creature.vy = 0.0
                 continue
             target = self._players[target_idx]
+            ai = creature_ai_update_target(
+                creature,
+                player_x=target.x,
+                player_y=target.y,
+                creatures=self._creatures,
+                dt=dt,
+            )
+            creature.move_scale = ai.move_scale
+            if ai.self_damage is not None:
+                creature.hp -= ai.self_damage
+                if creature.hp <= 0.0:
+                    continue
 
-            dx = target.x - creature.x
-            dy = target.y - creature.y
-            dist_to_player = math.hypot(dx, dy)
-
-            orbit_angle = float(int(creature.phase_seed)) * 3.7 * math.pi
-            local_scale = 1.0
-            creature.force_target = 0
-
-            ai_mode = creature.ai_mode
-            if ai_mode == 7 and (creature.flags & CreatureFlags.AI7_LINK_TIMER) and creature.link_index < 1:
-                ai_mode = 0
-                creature.ai_mode = 0
-
-            if ai_mode == 0:
-                if dist_to_player > 800.0:
-                    creature.target_x = target.x
-                    creature.target_y = target.y
-                else:
-                    creature.target_x = target.x + math.cos(orbit_angle) * dist_to_player * 0.85
-                    creature.target_y = target.y + math.sin(orbit_angle) * dist_to_player * 0.85
-            elif ai_mode == 1:
-                if dist_to_player > 800.0:
-                    creature.target_x = target.x
-                    creature.target_y = target.y
-                else:
-                    creature.target_x = target.x + math.cos(orbit_angle) * dist_to_player * 0.55
-                    creature.target_y = target.y + math.sin(orbit_angle) * dist_to_player * 0.55
-            elif ai_mode == 8:
-                creature.target_x = target.x + math.cos(orbit_angle) * dist_to_player * 0.9
-                creature.target_y = target.y + math.sin(orbit_angle) * dist_to_player * 0.9
-            elif ai_mode == 3:
-                link = creature.link_index
-                if 0 <= link < len(self._creatures) and self._creatures[link].hp > 0.0:
-                    creature.target_x = self._creatures[link].x + float(creature.target_offset_x or 0.0)
-                    creature.target_y = self._creatures[link].y + float(creature.target_offset_y or 0.0)
-                else:
-                    creature.ai_mode = 0
-                    creature.target_x = target.x
-                    creature.target_y = target.y
-            elif ai_mode == 5:
-                link = creature.link_index
-                if 0 <= link < len(self._creatures) and self._creatures[link].hp > 0.0:
-                    creature.target_x = self._creatures[link].x + float(creature.target_offset_x or 0.0)
-                    creature.target_y = self._creatures[link].y + float(creature.target_offset_y or 0.0)
-                    dist_to_target = math.hypot(creature.target_x - creature.x, creature.target_y - creature.y)
-                    if dist_to_target <= 64.0:
-                        local_scale = dist_to_target * 0.015625
-                else:
-                    creature.ai_mode = 0
-                    creature.target_x = target.x
-                    creature.target_y = target.y
-            elif ai_mode == 7:
-                creature.target_x = creature.x
-                creature.target_y = creature.y
-            else:
-                creature.target_x = target.x
-                creature.target_y = target.y
-
-            dist_to_target = math.hypot(creature.target_x - creature.x, creature.target_y - creature.y)
-            if dist_to_target < 40.0 or dist_to_target > 400.0:
-                creature.force_target = 1
-            if creature.force_target or creature.ai_mode == 2:
-                creature.target_x = target.x
-                creature.target_y = target.y
-
-            creature.target_heading = math.atan2(creature.target_y - creature.y, creature.target_x - creature.x) + math.pi / 2.0
             if creature.ai_mode == 7:
-                creature.move_scale = local_scale
                 creature.vx = 0.0
                 creature.vy = 0.0
                 continue
@@ -1322,9 +1266,8 @@ class DemoView:
             speed = move_speed * 30.0
             direction_x = math.cos(creature.heading - math.pi / 2.0)
             direction_y = math.sin(creature.heading - math.pi / 2.0)
-            creature.vx = direction_x * dt * local_scale * speed
-            creature.vy = direction_y * dt * local_scale * speed
-            creature.move_scale = local_scale
+            creature.vx = direction_x * dt * creature.move_scale * speed
+            creature.vy = direction_y * dt * creature.move_scale * speed
 
             radius = max(0.0, creature.size)
             creature.x = _clamp(creature.x + creature.vx, radius, WORLD_SIZE - radius)

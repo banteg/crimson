@@ -28,13 +28,12 @@ inside `creature_update_all`. These notes are medium-confidence.
 | `2` | Force direct chase; target is forced to player when mode == 2. | `mode == 2` triggers target override to player. |
 | `3` | Linked follower; target = linked creature position + per-creature offset. | Uses `link_index` as link; clears mode if target dead. |
 | `4` | Linked guard; if link alive, target around player like mode 0; if link dead, mode clears and a damage helper is called. | Clears mode and calls `creature_apply_damage` (`FUN_004207c0`) when link is dead. |
-| `5` | Tethered follower; target = link + offset; movement scale shrinks when very close (`dist * 0.015625`). | Computes a local scale from distance to target and clamps it. |
+| `5` | Tethered follower; target = link + offset; movement scale shrinks when very close (`dist * 0.015625`). If link dies, mode clears and a damage helper is called. | Computes a local scale from distance to target and clamps it; calls `creature_apply_damage(..., 1000.0, ...)` when link is dead. |
 | `6` | Orbit around linked creature; target = link + `cos/sin(angle + heading) * radius`. | Uses per-creature orbit angle/radius fields. |
-| `7` | Hold/linger; target = current position while a timer runs. | Uses `link_index` as a countdown (requires flag `0x80`). |
+| `7` | Hold/linger; target = current position while a timer runs. | Two variants: with flag `0x80` uses `link_index` as a countdown; otherwise uses `orbit_radius` as a float countdown. When the timer expires, mode resets to `0`. |
 | `8` | Wide orbit toward player; same as mode 0 but scale `0.9`. | Same logic with scale 0.9. |
 
 Notes:
 
 - Linked modes use `link_index` as the linked creature index and `target_offset_x/y` as the per-creature offset.
-- Mode `7` interacts with the `0x80` flag (AI7 link/timer); if either guard fails, the mode resets to `0`.
-
+- Mode `7` interacts with the `0x80` flag (AI7 link/timer); when `0x80` is not set, the hold timer lives in `orbit_radius`.
