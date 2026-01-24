@@ -913,6 +913,25 @@ class RingFormationSpec:
 
 
 CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
+    SpawnId.SPIDER_SP2_SPLITTER_01: ConstantSpawnSpec(
+        type_id=CreatureTypeId.SPIDER_SP2,
+        health=400.0,
+        move_speed=2.0,
+        reward_value=1000.0,
+        tint=(0.8, 0.7, 0.4, 1.0),
+        size=80.0,
+        contact_damage=17.0,
+        flags=CreatureFlags.SPLIT_ON_DEATH,
+    ),
+    SpawnId.ALIEN_CONST_BROWN_TRANSPARENT_0F: ConstantSpawnSpec(
+        type_id=CreatureTypeId.ALIEN,
+        health=20.0,
+        move_speed=2.9,
+        reward_value=60.0,
+        tint=(0.665, 0.385, 0.259, 0.56),
+        size=50.0,
+        contact_damage=35.0,
+    ),
     SpawnId.ALIEN_CONST_PURPLE_GHOST_21: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
         health=53.0,
@@ -2409,29 +2428,17 @@ def template_00_zombie_boss_spawner(ctx: PlanBuilder) -> None:
     ctx.primary = 0
 
 
-@register_template(SpawnId.SPIDER_SP2_SPLITTER_01)
-def template_01_spider_sp2_splitter(ctx: PlanBuilder) -> None:
-    c = ctx.base
-    c.type_id = CreatureTypeId.SPIDER_SP2
-    c.flags = CreatureFlags.SPLIT_ON_DEATH
-    c.size = 80.0
-    c.health = 400.0
-    c.move_speed = 2.0
-    c.reward_value = 1000.0
-    apply_tint(c, (0.8, 0.7, 0.4, 1.0))
-    c.contact_damage = 17.0
-    ctx.primary = 0
+BASIC_RANDOM_TYPE_IDS: dict[int, CreatureTypeId] = {
+    SpawnId.SPIDER_SP1_RANDOM_03: CreatureTypeId.SPIDER_SP1,
+    SpawnId.SPIDER_SP2_RANDOM_05: CreatureTypeId.SPIDER_SP2,
+    SpawnId.ALIEN_RANDOM_06: CreatureTypeId.ALIEN,
+}
 
 
 @register_template(SpawnId.SPIDER_SP1_RANDOM_03, SpawnId.SPIDER_SP2_RANDOM_05, SpawnId.ALIEN_RANDOM_06)
 def template_03_05_06_basic_random(ctx: PlanBuilder) -> None:
     c = ctx.base
-    if ctx.template_id == SpawnId.SPIDER_SP1_RANDOM_03:
-        c.type_id = CreatureTypeId.SPIDER_SP1
-    elif ctx.template_id == SpawnId.SPIDER_SP2_RANDOM_05:
-        c.type_id = CreatureTypeId.SPIDER_SP2
-    else:
-        c.type_id = CreatureTypeId.ALIEN
+    c.type_id = BASIC_RANDOM_TYPE_IDS[ctx.template_id]
     size = randf(ctx.rng, 15, 1.0, 38.0)
     apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
     apply_random_move_speed(c, ctx.rng, 18, 0.1, 1.1)
@@ -2489,19 +2496,6 @@ def template_0e_alien_spawner_ring_24(ctx: PlanBuilder) -> None:
         child_spec=child_spec,
         heading_override=0.0,
     )
-
-
-@register_template(SpawnId.ALIEN_CONST_BROWN_TRANSPARENT_0F)
-def template_0f_alien_const_brown_transparent(ctx: PlanBuilder) -> None:
-    c = ctx.base
-    c.type_id = CreatureTypeId.ALIEN
-    apply_tint(c, (0.665, 0.385, 0.259, 0.56))
-    c.health = 20.0
-    c.move_speed = 2.9
-    c.reward_value = 60.0
-    c.size = 50.0
-    c.contact_damage = 35.0
-    ctx.primary = 0
 
 
 @register_template(SpawnId.FORMATION_CHAIN_LIZARD_4_11)
@@ -2690,14 +2684,12 @@ def template_1f_alien_random(ctx: PlanBuilder) -> None:
 def template_20_alien_random_green(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ALIEN
-    size = float(ctx.rng.rand() % 30 + 40)
-    c.size = size
-    c.health = size * (8.0 / 7.0) + 20.0
-    c.move_speed = float(ctx.rng.rand() % 18) * 0.1 + 1.1
-    c.reward_value = size + size + 50.0
-    tint_g = float(ctx.rng.rand() % 40) * 0.01 + 0.6
+    size = randf(ctx.rng, 30, 1.0, 40.0)
+    apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
+    apply_random_move_speed(c, ctx.rng, 18, 0.1, 1.1)
+    tint_g = randf(ctx.rng, 40, 0.01, 0.6)
     apply_tint(c, (0.3, tint_g, 0.3, 1.0))
-    c.contact_damage = float(ctx.rng.rand() % 10) + 4.0
+    c.contact_damage = randf(ctx.rng, 10, 1.0, 4.0)
     ctx.primary = 0
 
 
