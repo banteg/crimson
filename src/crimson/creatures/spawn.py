@@ -170,14 +170,7 @@ class SpawnTemplate:
     move_speed: float | None = None
 
 
-TYPE_ID_TO_NAME = {
-    0: "zombie",
-    1: "lizard",
-    2: "alien",
-    3: "spider_sp1",
-    4: "spider_sp2",
-    5: "trooper",
-}
+TYPE_ID_TO_NAME = {type_id.value: type_id.name.lower() for type_id in CreatureTypeId}
 
 # For many template ids, tint/size/move_speed are randomized or derived from other fields.
 # We only fill them in when the game uses fixed constants (and keep the rest as `None`).
@@ -768,7 +761,7 @@ class AlienSpawnerSpec:
     health: float
     move_speed: float
     reward_value: float
-    tint: tuple[float, float, float, float]
+    tint: TintRGBA
 
 
 ALIEN_SPAWNER_TEMPLATES: dict[int, AlienSpawnerSpec] = {
@@ -869,7 +862,7 @@ class ConstantSpawnSpec:
     health: float
     move_speed: float
     reward_value: float
-    tint: tuple[float, float, float, float]
+    tint: TintRGBA
     size: float
     contact_damage: float
     flags: CreatureFlags = CreatureFlags(0)
@@ -889,7 +882,7 @@ class FormationChildSpec:
     reward_value: float
     size: float
     contact_damage: float
-    tint: tuple[float, float, float, float]
+    tint: TintRGBA
     max_health: float | None = None
     orbit_angle: float | None = None
     orbit_radius: float | None = None
@@ -1255,14 +1248,11 @@ GRID_FORMATIONS: dict[int, GridFormationSpec] = {
 }
 
 
-def spawn_id_label(spawn_id: int) -> str:
-    entry = SPAWN_ID_TO_TEMPLATE.get(spawn_id)
+def spawn_id_label(spawn_id: SupportsInt) -> str:
+    entry = SPAWN_ID_TO_TEMPLATE.get(int(spawn_id))
     if entry is None or entry.creature is None:
         return "unknown"
     return entry.creature
-
-
-
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class SpawnEnv:
@@ -1528,7 +1518,7 @@ def spawn_chain_children(
     count: int,
     ai_mode: int,
     child_spec: FormationChildSpec,
-    setup_child,
+    setup_child: Callable[[CreatureInit, int], None],
     link_parent_start: int = 0,
 ) -> int:
     chain_prev = link_parent_start
@@ -1657,10 +1647,10 @@ TemplateFn = Callable[[PlanBuilder], None]
 TEMPLATE_BUILDERS: dict[int, TemplateFn] = {}
 
 
-def register_template(*template_ids: int) -> Callable[[TemplateFn], TemplateFn]:
+def register_template(*template_ids: SupportsInt) -> Callable[[TemplateFn], TemplateFn]:
     def decorator(fn: TemplateFn) -> TemplateFn:
         for template_id in template_ids:
-            TEMPLATE_BUILDERS[template_id] = fn
+            TEMPLATE_BUILDERS[int(template_id)] = fn
         return fn
 
     return decorator
@@ -2191,8 +2181,7 @@ def apply_tail(
     # Spider_sp1 "AI7 timer" auto-enable (applies to the *return* creature).
     if (
         c.type_id == CreatureTypeId.SPIDER_SP1
-        and (int(c.flags) & 0x10) == 0
-        and (int(c.flags) & 0x80) == 0
+        and not (c.flags & (CreatureFlags.RANGED_ATTACK_SHOCK | CreatureFlags.AI7_LINK_TIMER))
     ):
         c.flags |= CreatureFlags.AI7_LINK_TIMER
         c.ai_link_parent = None
@@ -2213,7 +2202,7 @@ def apply_tail(
     if not env.hardcore:
         # This is written as a short-circuit expression in the original:
         # for flag 0x4 creatures, always bump their spawn-slot interval by +0.2 in non-hardcore.
-        if (int(c.flags) & int(CreatureFlags.HAS_SPAWN_SLOT)) != 0 and has_spawn_slot:
+        if (c.flags & CreatureFlags.HAS_SPAWN_SLOT) and has_spawn_slot:
             plan_spawn_slots[c.spawn_slot].interval += 0.2
 
         if env.difficulty_level > 0:
@@ -2245,7 +2234,7 @@ def apply_tail(
                     c.contact_damage *= 0.5
                     c.health *= 0.5
 
-            if has_spawn_slot and (int(c.flags) & int(CreatureFlags.HAS_SPAWN_SLOT)) != 0:
+            if has_spawn_slot and (c.flags & CreatureFlags.HAS_SPAWN_SLOT):
                 plan_spawn_slots[c.spawn_slot].interval += min(3.0, float(d) * 0.35)
     else:
         # In hardcore: difficulty level is forcibly cleared (global), and creature stats are buffed.
@@ -2256,7 +2245,7 @@ def apply_tail(
         if c.health is not None:
             c.health *= 1.2
 
-        if has_spawn_slot and (int(c.flags) & int(CreatureFlags.HAS_SPAWN_SLOT)) != 0:
+        if has_spawn_slot and (c.flags & CreatureFlags.HAS_SPAWN_SLOT):
             plan_spawn_slots[c.spawn_slot].interval = max(
                 0.1,
                 plan_spawn_slots[c.spawn_slot].interval - 0.2,
