@@ -45,7 +45,7 @@ typedef struct crimson_cfg_t {
     unsigned char score_load_gate;
     unsigned char reserved7[2];
     int detail_preset;
-    unsigned char reserved8[4];
+    float mouse_sensitivity;
     int key_pick_perk;
     int key_reload;
 } crimson_cfg_t;
@@ -114,7 +114,7 @@ the blob start.
 | `0x46D` | 1 | `0` | `config_score_load_gate` | Score loading flag. |
 | `0x46E` | 2 | - | Unused? | Alignment. |
 | `0x470` | 4 | `5` | `config_detail_preset` | Graphics detail preset (1..5). Drives `config_fx_detail_flag*` via `config_apply_detail_preset` (`0x00447580`). |
-| `0x474` | 4 | - | Unused? | Gap. |
+| `0x474` | 4 | - | `config_mouse_sensitivity` | Mouse sensitivity (float; options slider clamps 0.1..1.0). |
 | `0x478` | 4 | - | `config_key_pick_perk` | Keybind: Pick Perk. |
 | `0x47C` | 4 | - | `config_key_reload` | Keybind: Reload. |
 | `0x480` | - | - | End | End of file. |

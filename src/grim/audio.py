@@ -83,6 +83,12 @@ def set_sfx_volume(state: AudioState | None, volume: float) -> None:
     sfx.set_sfx_volume(state.sfx, volume)
 
 
+def set_music_volume(state: AudioState | None, volume: float) -> None:
+    if state is None:
+        return
+    music.set_music_volume(state.music, volume)
+
+
 def update_audio(state: AudioState) -> None:
     music.update_music(state.music)
 

@@ -65,7 +65,7 @@ CRIMSON_CFG_STRUCT = Struct(
     "unknown_46e" / Byte,
     "unknown_46f" / Byte,
     "detail_preset" / Int32ul,
-    "unknown_474" / Bytes(4),
+    "mouse_sensitivity" / Float32l,
     "keybind_pick_perk" / Int32ul,
     "keybind_reload" / Int32ul,
 )
@@ -140,6 +140,7 @@ def default_crimson_cfg_data() -> dict:
     config.data["sfx_volume"] = 1.0
     config.data["music_volume"] = 1.0
     config.data["detail_preset"] = 5
+    config.data["mouse_sensitivity"] = 1.0
     config.data["selected_name_slot"] = 0
     config.data["saved_name_index"] = 1
     config.data["unknown_1a4"] = 100
@@ -231,3 +232,26 @@ def load_crimson_cfg(path: Path) -> CrimsonConfig:
         raise ValueError(f"{path} has unexpected size {len(data)} (expected {CRIMSON_CFG_SIZE})")
     parsed = CRIMSON_CFG_STRUCT.parse(data)
     return CrimsonConfig(path=path, data=parsed)
+
+
+def apply_detail_preset(config: CrimsonConfig, preset: int | None = None) -> int:
+    if preset is None:
+        preset = int(config.data.get("detail_preset", 0))
+    preset = int(preset)
+    if preset < 1:
+        preset = 1
+    if preset > 5:
+        preset = 5
+    config.data["detail_preset"] = preset
+    if preset <= 1:
+        config.data["fx_detail_0"] = 0
+        config.data["fx_detail_1"] = 0
+        config.data["fx_detail_2"] = 0
+    elif preset == 2:
+        config.data["fx_detail_0"] = 0
+        config.data["fx_detail_1"] = 0
+    else:
+        config.data["fx_detail_0"] = 1
+        config.data["fx_detail_1"] = 1
+        config.data["fx_detail_2"] = 1
+    return preset

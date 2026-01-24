@@ -214,6 +214,22 @@ def update_music(state: MusicState) -> None:
     rl.update_music_stream(music)
 
 
+def set_music_volume(state: MusicState, volume: float) -> None:
+    volume = float(volume)
+    if volume < 0.0:
+        volume = 0.0
+    if volume > 1.0:
+        volume = 1.0
+    state.volume = volume
+    if not state.ready or not state.enabled:
+        return
+    for music in state.tracks.values():
+        try:
+            rl.set_music_volume(music, state.volume)
+        except Exception:
+            pass
+
+
 def shutdown_music(state: MusicState) -> None:
     if not state.ready:
         return
