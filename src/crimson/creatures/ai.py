@@ -18,16 +18,16 @@ __all__ = [
 ]
 
 
-class _PositionLike(Protocol):
+class PositionLike(Protocol):
     x: float
     y: float
 
 
-class _CreatureLinkLike(_PositionLike, Protocol):
+class CreatureLinkLike(PositionLike, Protocol):
     hp: float
 
 
-class _CreatureAIStateLike(_CreatureLinkLike, Protocol):
+class CreatureAIStateLike(CreatureLinkLike, Protocol):
     flags: CreatureFlags
     ai_mode: int
     link_index: int
@@ -50,7 +50,7 @@ class CreatureAIUpdate:
     self_damage: float | None = None
 
 
-def creature_ai7_tick_link_timer(creature: _CreatureAIStateLike, *, dt_ms: int, rand: Callable[[], int]) -> None:
+def creature_ai7_tick_link_timer(creature: CreatureAIStateLike, *, dt_ms: int, rand: Callable[[], int]) -> None:
     """Update AI7's link-index timer behavior (flag 0x80).
 
     In the original, this runs regardless of the current ai_mode; when the timer
@@ -72,18 +72,18 @@ def creature_ai7_tick_link_timer(creature: _CreatureAIStateLike, *, dt_ms: int, 
         creature.link_index = -700 - (rand() & 0x3FF)
 
 
-def _resolve_live_link(creatures: Sequence[_CreatureLinkLike], link_index: int) -> _CreatureLinkLike | None:
+def resolve_live_link(creatures: Sequence[CreatureLinkLike], link_index: int) -> CreatureLinkLike | None:
     if 0 <= link_index < len(creatures) and creatures[link_index].hp > 0.0:
         return creatures[link_index]
     return None
 
 
 def creature_ai_update_target(
-    creature: _CreatureAIStateLike,
+    creature: CreatureAIStateLike,
     *,
     player_x: float,
     player_y: float,
-    creatures: Sequence[_CreatureLinkLike],
+    creatures: Sequence[CreatureLinkLike],
     dt: float,
 ) -> CreatureAIUpdate:
     """Compute the target position + heading for one creature.
@@ -125,14 +125,14 @@ def creature_ai_update_target(
             creature.target_x = player_x + math.cos(orbit_phase) * dist_to_player * 0.55
             creature.target_y = player_y + math.sin(orbit_phase) * dist_to_player * 0.55
     elif ai_mode == 3:
-        link = _resolve_live_link(creatures, creature.link_index)
+        link = resolve_live_link(creatures, creature.link_index)
         if link is not None:
             creature.target_x = link.x + float(creature.target_offset_x or 0.0)
             creature.target_y = link.y + float(creature.target_offset_y or 0.0)
         else:
             creature.ai_mode = 0
     elif ai_mode == 5:
-        link = _resolve_live_link(creatures, creature.link_index)
+        link = resolve_live_link(creatures, creature.link_index)
         if link is not None:
             creature.target_x = link.x + float(creature.target_offset_x or 0.0)
             creature.target_y = link.y + float(creature.target_offset_y or 0.0)
@@ -145,7 +145,7 @@ def creature_ai_update_target(
 
     ai_mode = creature.ai_mode
     if ai_mode == 4:
-        link = _resolve_live_link(creatures, creature.link_index)
+        link = resolve_live_link(creatures, creature.link_index)
         if link is None:
             creature.ai_mode = 0
             self_damage = 1000.0
@@ -166,7 +166,7 @@ def creature_ai_update_target(
         else:
             creature.ai_mode = 0
     elif ai_mode == 6:
-        link = _resolve_live_link(creatures, creature.link_index)
+        link = resolve_live_link(creatures, creature.link_index)
         if link is None:
             creature.ai_mode = 0
         else:
@@ -184,4 +184,3 @@ def creature_ai_update_target(
 
     creature.target_heading = math.atan2(creature.target_y - creature.y, creature.target_x - creature.x) + math.pi / 2.0
     return CreatureAIUpdate(move_scale=move_scale, self_damage=self_damage)
-
