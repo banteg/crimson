@@ -76,12 +76,23 @@ _TYPE_ANIM: dict[CreatureTypeId, _AnimInfo] = {
     CreatureTypeId.TROOPER: _AnimInfo(base=0x00, anim_rate=1.0, mirror=False),
 }
 
+_TYPE_ASSET: dict[CreatureTypeId, str] = {
+    CreatureTypeId.ZOMBIE: "zombie",
+    CreatureTypeId.LIZARD: "lizard",
+    CreatureTypeId.ALIEN: "alien",
+    CreatureTypeId.SPIDER_SP1: "spider_sp1",
+    CreatureTypeId.SPIDER_SP2: "spider_sp2",
+    CreatureTypeId.TROOPER: "trooper",
+}
+
 
 @dataclass(slots=True)
 class DemoCreature:
     spawn_id: int
     x: float
     y: float
+    type_id: CreatureTypeId | None = None
+    flags: CreatureFlags = CreatureFlags(0)
     vx: float = 0.0
     vy: float = 0.0
     hp: float = 10.0
@@ -245,6 +256,7 @@ class DemoView:
         self._small_font: SmallFontData | None = None
         self._purchase_active = False
         self._purchase_url_opened = False
+        self._spawn_rng = Crand(0)
 
     def open(self) -> None:
         self._finished = False
@@ -604,6 +616,7 @@ class DemoView:
         self._demo_time_limit_ms = 0
         self._purchase_active = False
         self._purchase_url_opened = False
+        self._spawn_rng.srand(self._state.rng.randrange(0, 0x1_0000_0000))
 
         self._creatures.clear()
         self._players.clear()
@@ -786,7 +799,7 @@ class DemoView:
                     link_index=link_index,
                     target_offset_x=entry.target_offset_x,
                     target_offset_y=entry.target_offset_y,
-                )
+                    )
             )
 
     def _reset_player_weapon_state(self) -> None:
@@ -986,16 +999,18 @@ class DemoView:
                 )
 
         for creature in self._creatures:
-            template = SPAWN_ID_TO_TEMPLATE.get(creature.spawn_id)
-            if template is None or template.creature is None or template.type_id is None:
+            type_id = creature.type_id
+            if type_id is None:
                 continue
-            texture = cache.texture(template.creature)
+            asset = _TYPE_ASSET.get(type_id)
+            if asset is None:
+                continue
+            texture = cache.texture(asset)
             if texture is None:
-                rel_path = f"game/{template.creature}.jaz"
-                texture = cache.get_or_load(template.creature, rel_path).texture
+                rel_path = f"game/{asset}.jaz"
+                texture = cache.get_or_load(asset, rel_path).texture
             if texture is None:
                 continue
-            type_id = creature.type_id or template.type_id
             flags = creature.flags
 
             def _to_u8(value: float) -> int:
@@ -1019,7 +1034,7 @@ class DemoView:
                 scale_x,
                 scale_y,
                 tint=tint,
-                size_scale=_clamp((creature.size or 64.0) / 64.0, 0.25, 2.0),
+                size_scale=_clamp(creature.size / 64.0, 0.25, 2.0),
             )
 
     def _draw_sprite(
