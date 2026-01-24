@@ -18,11 +18,7 @@ class SmallFontData:
 
 SMALL_FONT_UV_BIAS_PX = 0.5
 SMALL_FONT_FILTER = rl.TEXTURE_FILTER_POINT
-# Grim's "small font" is a 16px atlas (16x16 cells) but is rendered through
-# Grim2D quads sized as if the cell was 32px, scaled by config var 0x18.
-# Net effect: our `scale` matches the original config value and we multiply
-# pixel sizes by 2.0 to match on-screen size.
-SMALL_FONT_RENDER_SCALE = 2.0
+SMALL_FONT_RENDER_SCALE = 1.0
 
 
 def load_small_font(assets_root: Path, missing_assets: list[str]) -> SmallFontData:
