@@ -22,6 +22,7 @@ from .creatures.spawn import (
     SpawnEnv,
     SpawnSlotInit,
     build_spawn_plan,
+    resolve_tint,
     tick_spawn_slot,
 )
 from .projectiles import ProjectilePool, SecondaryProjectilePool
@@ -109,10 +110,7 @@ class DemoCreature:
     move_scale: float = 1.0
     type_id: CreatureTypeId | None = None
     flags: CreatureFlags = CreatureFlags(0)
-    tint_r: float | None = None
-    tint_g: float | None = None
-    tint_b: float | None = None
-    tint_a: float | None = None
+    tint: tuple[float | None, float | None, float | None, float | None] | None = None
     heading: float = 0.0
     phase_seed: float = 0.0
     anim_phase: float = 0.0
@@ -803,10 +801,7 @@ class DemoView:
                     move_speed=move_speed,
                     type_id=type_id,
                     flags=entry.flags,
-                    tint_r=entry.tint_r,
-                    tint_g=entry.tint_g,
-                    tint_b=entry.tint_b,
-                    tint_a=entry.tint_a,
+                    tint=entry.tint,
                     heading=entry.heading,
                     phase_seed=entry.phase_seed,
                     anim_phase=0.0,
@@ -1044,12 +1039,13 @@ class DemoView:
                 return int(_clamp(value, 0.0, 1.0) * 255.0 + 0.5)
 
             tint = rl.WHITE
-            if any(v is not None for v in (creature.tint_r, creature.tint_g, creature.tint_b, creature.tint_a)):
+            if creature.tint is not None and any(v is not None for v in creature.tint):
+                tint_r, tint_g, tint_b, tint_a = resolve_tint(creature.tint)
                 tint = rl.Color(
-                    _to_u8(creature.tint_r if creature.tint_r is not None else 1.0),
-                    _to_u8(creature.tint_g if creature.tint_g is not None else 1.0),
-                    _to_u8(creature.tint_b if creature.tint_b is not None else 1.0),
-                    _to_u8(creature.tint_a if creature.tint_a is not None else 1.0),
+                    _to_u8(tint_r),
+                    _to_u8(tint_g),
+                    _to_u8(tint_b),
+                    _to_u8(tint_a),
                 )
             self._draw_sprite(
                 texture,

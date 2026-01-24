@@ -44,11 +44,15 @@ __all__ = [
     "build_tutorial_stage4_clear_spawns",
     "build_tutorial_stage5_repeat_spawns",
     "build_tutorial_stage6_perks_done_spawns",
+    "resolve_tint",
     "spawn_id_label",
     "tick_rush_mode_spawns",
     "tick_spawn_slot",
     "tick_survival_wave_spawns",
 ]
+
+Tint = tuple[float | None, float | None, float | None, float | None]
+TintRGBA = tuple[float, float, float, float]
 
 
 class CreatureTypeId(IntEnum):
@@ -161,10 +165,7 @@ class SpawnTemplate:
     flags: CreatureFlags | None
     creature: str | None
     anim_note: str | None
-    tint_r: float | None = None
-    tint_g: float | None = None
-    tint_b: float | None = None
-    tint_a: float | None = None
+    tint: Tint | None = None
     size: float | None = None
     move_speed: float | None = None
 
@@ -187,10 +188,7 @@ SPAWN_TEMPLATES = [
         flags=CreatureFlags.ANIM_PING_PONG | CreatureFlags.ANIM_LONG_STRIP,
         creature="zombie",
         anim_note="long strip (0x40 overrides 0x4)",
-        tint_r=0.6,
-        tint_g=0.6,
-        tint_b=1.0,
-        tint_a=0.8,
+        tint=(0.6, 0.6, 1.0, 0.8),
         size=64.0,
         move_speed=1.3,
     ),
@@ -200,10 +198,7 @@ SPAWN_TEMPLATES = [
         flags=CreatureFlags.SPLIT_ON_DEATH,
         creature="spider_sp2",
         anim_note=None,
-        tint_r=0.8,
-        tint_g=0.7,
-        tint_b=0.4,
-        tint_a=1.0,
+        tint=(0.8, 0.7, 0.4, 1.0),
         size=80.0,
         move_speed=2.0,
     ),
@@ -241,10 +236,7 @@ SPAWN_TEMPLATES = [
         flags=CreatureFlags.ANIM_PING_PONG,
         creature="alien",
         anim_note="short strip (ping-pong)",
-        tint_r=1.0,
-        tint_g=1.0,
-        tint_b=1.0,
-        tint_a=1.0,
+        tint=(1.0, 1.0, 1.0, 1.0),
         size=50.0,
         move_speed=2.0,
     ),
@@ -254,10 +246,7 @@ SPAWN_TEMPLATES = [
         flags=CreatureFlags.ANIM_PING_PONG,
         creature="alien",
         anim_note="short strip (ping-pong)",
-        tint_r=1.0,
-        tint_g=1.0,
-        tint_b=1.0,
-        tint_a=1.0,
+        tint=(1.0, 1.0, 1.0, 1.0),
         size=50.0,
         move_speed=2.0,
     ),
@@ -267,10 +256,7 @@ SPAWN_TEMPLATES = [
         flags=CreatureFlags.ANIM_PING_PONG,
         creature="alien",
         anim_note="short strip (ping-pong)",
-        tint_r=1.0,
-        tint_g=1.0,
-        tint_b=1.0,
-        tint_a=1.0,
+        tint=(1.0, 1.0, 1.0, 1.0),
         size=40.0,
         move_speed=2.0,
     ),
@@ -280,10 +266,7 @@ SPAWN_TEMPLATES = [
         flags=CreatureFlags.ANIM_PING_PONG,
         creature="alien",
         anim_note="short strip (ping-pong)",
-        tint_r=0.8,
-        tint_g=0.7,
-        tint_b=0.4,
-        tint_a=1.0,
+        tint=(0.8, 0.7, 0.4, 1.0),
         size=55.0,
         move_speed=1.5,
     ),
@@ -293,10 +276,7 @@ SPAWN_TEMPLATES = [
         flags=CreatureFlags.ANIM_PING_PONG,
         creature="alien",
         anim_note="short strip (ping-pong)",
-        tint_r=0.9,
-        tint_g=0.1,
-        tint_b=0.1,
-        tint_a=1.0,
+        tint=(0.9, 0.1, 0.1, 1.0),
         size=65.0,
         move_speed=1.5,
     ),
@@ -306,10 +286,7 @@ SPAWN_TEMPLATES = [
         flags=CreatureFlags.ANIM_PING_PONG,
         creature="alien",
         anim_note="short strip (ping-pong)",
-        tint_r=0.9,
-        tint_g=0.8,
-        tint_b=0.4,
-        tint_a=1.0,
+        tint=(0.9, 0.8, 0.4, 1.0),
         size=32.0,
         move_speed=2.8,
     ),
@@ -319,10 +296,7 @@ SPAWN_TEMPLATES = [
         flags=CreatureFlags.ANIM_PING_PONG,
         creature="alien",
         anim_note="short strip (ping-pong)",
-        tint_r=0.9,
-        tint_g=0.8,
-        tint_b=0.4,
-        tint_a=1.0,
+        tint=(0.9, 0.8, 0.4, 1.0),
         size=32.0,
         move_speed=1.3,
     ),
@@ -332,10 +306,7 @@ SPAWN_TEMPLATES = [
         flags=CreatureFlags.ANIM_PING_PONG,
         creature="alien",
         anim_note="short strip (ping-pong)",
-        tint_r=0.9,
-        tint_g=0.8,
-        tint_b=0.4,
-        tint_a=1.0,
+        tint=(0.9, 0.8, 0.4, 1.0),
         size=32.0,
         move_speed=2.8,
     ),
@@ -345,10 +316,7 @@ SPAWN_TEMPLATES = [
         flags=None,
         creature="alien",
         anim_note=None,
-        tint_r=0.665,
-        tint_g=0.385,
-        tint_b=0.259,
-        tint_a=0.56,
+        tint=(0.665, 0.385, 0.259, 0.56),
         size=50.0,
         move_speed=2.9,
     ),
@@ -358,10 +326,7 @@ SPAWN_TEMPLATES = [
         flags=CreatureFlags.ANIM_PING_PONG,
         creature="alien",
         anim_note="short strip (ping-pong)",
-        tint_r=0.9,
-        tint_g=0.8,
-        tint_b=0.4,
-        tint_a=1.0,
+        tint=(0.9, 0.8, 0.4, 1.0),
         size=32.0,
         move_speed=2.8,
     ),
@@ -504,10 +469,7 @@ SPAWN_TEMPLATES = [
         flags=None,
         creature="alien",
         anim_note=None,
-        tint_r=0.1,
-        tint_g=0.7,
-        tint_b=0.11,
-        tint_a=1.0,
+        tint=(0.1, 0.7, 0.11, 1.0),
         size=50.0,
         move_speed=2.0,
     ),
@@ -517,10 +479,7 @@ SPAWN_TEMPLATES = [
         flags=None,
         creature="alien",
         anim_note=None,
-        tint_r=0.1,
-        tint_g=0.8,
-        tint_b=0.11,
-        tint_a=1.0,
+        tint=(0.1, 0.8, 0.11, 1.0),
         size=30.0,
         move_speed=2.5,
     ),
@@ -530,10 +489,7 @@ SPAWN_TEMPLATES = [
         flags=None,
         creature="alien",
         anim_note=None,
-        tint_r=0.6,
-        tint_g=0.8,
-        tint_b=0.6,
-        tint_a=1.0,
+        tint=(0.6, 0.8, 0.6, 1.0),
         size=45.0,
         move_speed=2.2,
     ),
@@ -543,10 +499,7 @@ SPAWN_TEMPLATES = [
         flags=CreatureFlags.BONUS_ON_DEATH,
         creature="alien",
         anim_note="bonus_id=WEAPON (3), duration_override=5 (packed in link_index)",
-        tint_r=1.0,
-        tint_g=0.8,
-        tint_b=0.1,
-        tint_a=1.0,
+        tint=(1.0, 0.8, 0.1, 1.0),
         size=45.0,
         move_speed=2.1,
     ),
@@ -556,10 +509,7 @@ SPAWN_TEMPLATES = [
         flags=None,
         creature="alien",
         anim_note=None,
-        tint_r=0.7,
-        tint_g=0.1,
-        tint_b=0.51,
-        tint_a=1.0,
+        tint=(0.7, 0.1, 0.51, 1.0),
         size=55.0,
         move_speed=1.7,
     ),
@@ -569,10 +519,7 @@ SPAWN_TEMPLATES = [
         flags=None,
         creature="alien",
         anim_note=None,
-        tint_r=0.8,
-        tint_g=0.8,
-        tint_b=0.8,
-        tint_a=1.0,
+        tint=(0.8, 0.8, 0.8, 1.0),
         size=70.0,
         move_speed=2.5,
     ),
@@ -582,10 +529,7 @@ SPAWN_TEMPLATES = [
         flags=None,
         creature="alien",
         anim_note=None,
-        tint_r=0.3,
-        tint_g=0.3,
-        tint_b=0.3,
-        tint_a=1.0,
+        tint=(0.3, 0.3, 0.3, 1.0),
         size=60.0,
         move_speed=3.1,
     ),
@@ -595,10 +539,7 @@ SPAWN_TEMPLATES = [
         flags=None,
         creature="alien",
         anim_note=None,
-        tint_r=1.0,
-        tint_g=0.3,
-        tint_b=0.3,
-        tint_a=1.0,
+        tint=(1.0, 0.3, 0.3, 1.0),
         size=35.0,
         move_speed=3.6,
     ),
@@ -608,10 +549,7 @@ SPAWN_TEMPLATES = [
         flags=None,
         creature="alien",
         anim_note=None,
-        tint_r=0.85,
-        tint_g=0.2,
-        tint_b=0.2,
-        tint_a=1.0,
+        tint=(0.85, 0.2, 0.2, 1.0),
         size=80.0,
         move_speed=2.0,
     ),
@@ -621,10 +559,7 @@ SPAWN_TEMPLATES = [
         flags=None,
         creature="alien",
         anim_note=None,
-        tint_r=0.0,
-        tint_g=0.9,
-        tint_b=0.8,
-        tint_a=1.0,
+        tint=(0.0, 0.9, 0.8, 1.0),
         size=38.0,
         move_speed=3.1,
     ),
@@ -690,9 +625,7 @@ SPAWN_TEMPLATES = [
         flags=None,
         creature="alien",
         anim_note=None,
-        tint_r=0.65,
-        tint_b=0.95,
-        tint_a=1.0,
+        tint=(0.65, None, 0.95, 1.0),
         size=50.0,
         move_speed=1.8,
     ),
@@ -702,10 +635,7 @@ SPAWN_TEMPLATES = [
         flags=CreatureFlags.RANGED_ATTACK_VARIANT,
         creature="spider_sp2",
         anim_note=None,
-        tint_r=1.0,
-        tint_g=0.75,
-        tint_b=0.1,
-        tint_a=1.0,
+        tint=(1.0, 0.75, 0.1, 1.0),
         move_speed=3.2,
     ),
     SpawnTemplate(
@@ -714,10 +644,7 @@ SPAWN_TEMPLATES = [
         flags=CreatureFlags.AI7_LINK_TIMER,
         creature="spider_sp1",
         anim_note=None,
-        tint_r=1.0,
-        tint_g=0.75,
-        tint_b=0.1,
-        tint_a=1.0,
+        tint=(1.0, 0.75, 0.1, 1.0),
         move_speed=4.8,
     ),
     SpawnTemplate(
@@ -726,10 +653,7 @@ SPAWN_TEMPLATES = [
         flags=CreatureFlags.AI7_LINK_TIMER,
         creature="spider_sp1",
         anim_note=None,
-        tint_r=0.8,
-        tint_g=0.65,
-        tint_b=0.1,
-        tint_a=1.0,
+        tint=(0.8, 0.65, 0.1, 1.0),
         move_speed=4.8,
     ),
     SpawnTemplate(
@@ -738,10 +662,7 @@ SPAWN_TEMPLATES = [
         flags=CreatureFlags.RANGED_ATTACK_SHOCK,
         creature="spider_sp1",
         anim_note="projectile_type=9",
-        tint_r=1.0,
-        tint_g=1.0,
-        tint_b=1.0,
-        tint_a=1.0,
+        tint=(1.0, 1.0, 1.0, 1.0),
         size=64.0,
         move_speed=2.0,
     ),
@@ -751,10 +672,7 @@ SPAWN_TEMPLATES = [
         flags=None,
         creature="spider_sp1",
         anim_note=None,
-        tint_r=0.9,
-        tint_g=0.0,
-        tint_b=0.0,
-        tint_a=1.0,
+        tint=(0.9, 0.0, 0.0, 1.0),
         size=70.0,
         move_speed=2.0,
     ),
@@ -764,10 +682,7 @@ SPAWN_TEMPLATES = [
         flags=CreatureFlags.RANGED_ATTACK_VARIANT,
         creature="spider_sp1",
         anim_note="projectile_type=26 (packed in orbit_radius)",
-        tint_r=0.9,
-        tint_g=0.1,
-        tint_b=0.1,
-        tint_a=1.0,
+        tint=(0.9, 0.1, 0.1, 1.0),
         size=40.0,
         move_speed=2.0,
     ),
@@ -777,7 +692,7 @@ SPAWN_TEMPLATES = [
         flags=None,
         creature="spider_sp1",
         anim_note=None,
-        tint_a=1.0,
+        tint=(None, None, None, 1.0),
         move_speed=2.6,
     ),
     SpawnTemplate(
@@ -786,10 +701,7 @@ SPAWN_TEMPLATES = [
         flags=None,
         creature="spider_sp1",
         anim_note=None,
-        tint_r=1.0,
-        tint_g=1.0,
-        tint_b=1.0,
-        tint_a=1.0,
+        tint=(1.0, 1.0, 1.0, 1.0),
         size=64.0,
         move_speed=2.8,
     ),
@@ -799,10 +711,7 @@ SPAWN_TEMPLATES = [
         flags=None,
         creature="spider_sp1",
         anim_note=None,
-        tint_r=0.7,
-        tint_g=0.4,
-        tint_b=0.1,
-        tint_a=1.0,
+        tint=(0.7, 0.4, 0.1, 1.0),
         size=35.0,
         move_speed=2.3,
     ),
@@ -812,10 +721,7 @@ SPAWN_TEMPLATES = [
         flags=None,
         creature="spider_sp1",
         anim_note=None,
-        tint_r=0.5,
-        tint_g=0.6,
-        tint_b=0.9,
-        tint_a=1.0,
+        tint=(0.5, 0.6, 0.9, 1.0),
         size=45.0,
         move_speed=2.2,
     ),
@@ -825,7 +731,7 @@ SPAWN_TEMPLATES = [
         flags=None,
         creature="zombie",
         anim_note=None,
-        tint_a=1.0,
+        tint=(None, None, None, 1.0),
     ),
     SpawnTemplate(
         spawn_id=SpawnId.ZOMBIE_CONST_GREY_42,
@@ -833,10 +739,7 @@ SPAWN_TEMPLATES = [
         flags=None,
         creature="zombie",
         anim_note=None,
-        tint_r=0.9,
-        tint_g=0.9,
-        tint_b=0.9,
-        tint_a=1.0,
+        tint=(0.9, 0.9, 0.9, 1.0),
         size=45.0,
         move_speed=1.7,
     ),
@@ -846,10 +749,7 @@ SPAWN_TEMPLATES = [
         flags=None,
         creature="zombie",
         anim_note=None,
-        tint_r=0.2,
-        tint_g=0.6,
-        tint_b=0.1,
-        tint_a=1.0,
+        tint=(0.2, 0.6, 0.1, 1.0),
         size=70.0,
         move_speed=2.1,
     ),
@@ -1405,10 +1305,7 @@ class CreatureInit:
     size: float | None = None
     contact_damage: float | None = None
 
-    tint_r: float | None = None
-    tint_g: float | None = None
-    tint_b: float | None = None
-    tint_a: float | None = None
+    tint: Tint | None = None
 
     orbit_angle: float | None = None
     orbit_radius: float | None = None
@@ -1495,8 +1392,21 @@ def apply_constant_template(c: CreatureInit, spec: ConstantSpawnSpec) -> None:
         c.bonus_duration_override = spec.bonus_duration_override
 
 
-def apply_tint(c: CreatureInit, tint: tuple[float, float, float, float]) -> None:
-    c.tint_r, c.tint_g, c.tint_b, c.tint_a = tint
+def apply_tint(c: CreatureInit, tint: TintRGBA) -> None:
+    c.tint = tint
+
+
+def resolve_tint(tint: Tint | None) -> TintRGBA:
+    """Resolve a partial/optional tint into concrete RGBA multipliers."""
+    if tint is None:
+        return (1.0, 1.0, 1.0, 1.0)
+    tint_r, tint_g, tint_b, tint_a = tint
+    return (
+        1.0 if tint_r is None else tint_r,
+        1.0 if tint_g is None else tint_g,
+        1.0 if tint_b is None else tint_b,
+        1.0 if tint_a is None else tint_a,
+    )
 
 
 def apply_child_spec(child: CreatureInit, spec: FormationChildSpec) -> None:
@@ -1867,24 +1777,25 @@ def build_survival_spawn_creature(pos: tuple[float, float], rng: Crand, *, playe
     c.move_speed = move_speed
     c.health = health
     c.reward_value = 0.0
-    c.tint_a = 1.0
 
     # Tint based on player_experience thresholds.
+    tint_a = 1.0
     if xp < 50_000:
-        c.tint_r = 1.0 - 1.0 / (float(xp // 1000) + 10.0)
-        c.tint_g = float(rng.rand() % 10) * 0.01 + 0.9 - 1.0 / (float(xp // 10000) + 10.0)
-        c.tint_b = float(rng.rand() % 10) * 0.01 + 0.7
+        tint_r = 1.0 - 1.0 / (float(xp // 1000) + 10.0)
+        tint_g = float(rng.rand() % 10) * 0.01 + 0.9 - 1.0 / (float(xp // 10000) + 10.0)
+        tint_b = float(rng.rand() % 10) * 0.01 + 0.7
     elif xp < 100_000:
-        c.tint_r = 0.9 - 1.0 / (float(xp // 1000) + 10.0)
-        c.tint_g = float(rng.rand() % 10) * 0.01 + 0.8 - 1.0 / (float(xp // 10000) + 10.0)
-        c.tint_b = float(xp - 50_000) * 6e-06 + float(rng.rand() % 10) * 0.01 + 0.7
+        tint_r = 0.9 - 1.0 / (float(xp // 1000) + 10.0)
+        tint_g = float(rng.rand() % 10) * 0.01 + 0.8 - 1.0 / (float(xp // 10000) + 10.0)
+        tint_b = float(xp - 50_000) * 6e-06 + float(rng.rand() % 10) * 0.01 + 0.7
     else:
-        c.tint_r = 1.0 - 1.0 / (float(xp // 1000) + 10.0)
-        c.tint_g = float(rng.rand() % 10) * 0.01 + 0.9 - 1.0 / (float(xp // 10000) + 10.0)
+        tint_r = 1.0 - 1.0 / (float(xp // 1000) + 10.0)
+        tint_g = float(rng.rand() % 10) * 0.01 + 0.9 - 1.0 / (float(xp // 10000) + 10.0)
         tint_b = float(rng.rand() % 10) * 0.01 + 1.0 - float(xp - 100_000) * 3e-06
         if tint_b < 0.5:
             tint_b = 0.5
-        c.tint_b = tint_b
+
+    c.tint = (tint_r, tint_g, tint_b, tint_a)
 
     # contact_damage = size * 0.0952381
     c.contact_damage = float(c.size or 0.0) * (2.0 / 21.0)
@@ -1931,14 +1842,14 @@ def build_survival_spawn_creature(pos: tuple[float, float], rng: Crand, *, playe
     if c.reward_value is not None:
         c.reward_value *= 0.8
 
-    if c.tint_r is not None:
-        c.tint_r = clamp01(c.tint_r)
-    if c.tint_g is not None:
-        c.tint_g = clamp01(c.tint_g)
-    if c.tint_b is not None:
-        c.tint_b = clamp01(c.tint_b)
-    if c.tint_a is not None:
-        c.tint_a = clamp01(c.tint_a)
+    if c.tint is not None:
+        tint_r, tint_g, tint_b, tint_a = c.tint
+        c.tint = (
+            clamp01(tint_r) if tint_r is not None else None,
+            clamp01(tint_g) if tint_g is not None else None,
+            clamp01(tint_b) if tint_b is not None else None,
+            clamp01(tint_a) if tint_a is not None else None,
+        )
 
     return c
 
@@ -2118,7 +2029,7 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
 
 def build_rush_mode_spawn_creature(
     pos: tuple[float, float],
-    tint_rgba: tuple[float, float, float, float],
+    tint_rgba: TintRGBA,
     rng: Crand,
     *,
     type_id: int,
@@ -2137,7 +2048,7 @@ def build_rush_mode_spawn_creature(
     c.move_speed = float(elapsed_ms) * 1e-5 + 2.5
     c.reward_value = float(rng.rand() % 30 + 140)
 
-    c.tint_r, c.tint_g, c.tint_b, c.tint_a = tint_rgba
+    c.tint = tint_rgba
     c.contact_damage = 4.0
 
     if c.health is not None:
@@ -2377,7 +2288,7 @@ def apply_alien_spawner(ctx: PlanBuilder, spec: AlienSpawnerSpec) -> None:
     c.health = spec.health
     c.move_speed = spec.move_speed
     c.reward_value = spec.reward_value
-    c.tint_r, c.tint_g, c.tint_b, c.tint_a = spec.tint
+    c.tint = spec.tint
     c.contact_damage = 0.0
     ctx.primary = 0
 

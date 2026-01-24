@@ -52,7 +52,7 @@ def test_spawn_plan_template_00_has_spawn_slot_and_non_hardcore_interval_bump() 
     assert c.move_speed == 1.3
     assert c.reward_value == 6600.0
     assert c.contact_damage == 50.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.6, 0.6, 1.0, 0.8)
+    assert c.tint == (0.6, 0.6, 1.0, 0.8)
     assert c.heading == 0.0
 
     slot = plan.spawn_slots[0]
@@ -90,7 +90,7 @@ def test_spawn_plan_template_1_is_constant() -> None:
     assert c.move_speed == 2.0
     assert c.reward_value == 1000.0
     assert c.contact_damage == 17.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.8, 0.7, 0.4, 1.0)
+    assert c.tint == (0.8, 0.7, 0.4, 1.0)
     assert c.heading == 0.0
 
     # Rand consumption:
@@ -145,7 +145,7 @@ def test_spawn_plan_template_03_is_randomized_and_tail_enables_ai7_timer() -> No
     assert c.max_health == expected_health
     assert c.reward_value == expected_reward
     assert c.contact_damage == expected_contact
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.6, 0.6, expected_tint_b, 1.0)
+    assert c.tint == (0.6, 0.6, expected_tint_b, 1.0)
     assert (c.move_speed or 0.0) == pytest.approx(expected_speed_pre_tail * 1.2, abs=1e-9)
     assert c.heading == expected_heading
 
@@ -191,7 +191,7 @@ def test_spawn_plan_template_04_is_randomized() -> None:
     assert c.move_speed == expected_speed
     assert c.reward_value == expected_reward
     assert c.contact_damage == expected_contact
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.67, 0.67, 1.0, 1.0)
+    assert c.tint == (0.67, 0.67, 1.0, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(seed, 5)
@@ -240,7 +240,7 @@ def test_spawn_plan_template_05_is_randomized() -> None:
     assert c.move_speed == expected_speed
     assert c.reward_value == expected_reward
     assert c.contact_damage == expected_contact
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.6, 0.6, expected_tint_b, 1.0)
+    assert c.tint == (0.6, 0.6, expected_tint_b, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(seed, 6)
@@ -289,7 +289,7 @@ def test_spawn_plan_template_06_is_randomized() -> None:
     assert c.move_speed == expected_speed
     assert c.reward_value == expected_reward
     assert c.contact_damage == expected_contact
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.6, 0.6, expected_tint_b, 1.0)
+    assert c.tint == (0.6, 0.6, expected_tint_b, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(seed, 6)
@@ -319,7 +319,7 @@ def test_spawn_plan_template_07_has_spawn_slot_and_non_hardcore_interval_bump() 
     assert c.move_speed == 2.0
     assert c.reward_value == 3000.0
     assert c.size == 50.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (1.0, 1.0, 1.0, 1.0)
+    assert c.tint == (1.0, 1.0, 1.0, 1.0)
     assert c.contact_damage == 0.0
 
     slot = plan.spawn_slots[0]
@@ -356,7 +356,7 @@ def test_spawn_plan_template_08_has_spawn_slot_and_non_hardcore_interval_bump() 
     assert c.move_speed == 2.0
     assert c.reward_value == 3000.0
     assert c.size == 50.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (1.0, 1.0, 1.0, 1.0)
+    assert c.tint == (1.0, 1.0, 1.0, 1.0)
     assert c.contact_damage == 0.0
 
     slot = plan.spawn_slots[0]
@@ -393,7 +393,7 @@ def test_spawn_plan_template_09_has_spawn_slot_and_non_hardcore_interval_bump() 
     assert c.move_speed == 2.0
     assert c.reward_value == 1000.0
     assert c.size == 40.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (1.0, 1.0, 1.0, 1.0)
+    assert c.tint == (1.0, 1.0, 1.0, 1.0)
     assert c.contact_damage == 0.0
 
     slot = plan.spawn_slots[0]
@@ -428,7 +428,7 @@ def test_spawn_plan_template_0a_has_spawn_slot_and_non_hardcore_interval_bump() 
     assert c.max_health == 1000.0
     assert c.move_speed == 1.5
     assert c.size == 55.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.8, 0.7, 0.4, 1.0)
+    assert c.tint == (0.8, 0.7, 0.4, 1.0)
     assert c.contact_damage == 0.0
 
     slot = plan.spawn_slots[0]
@@ -467,7 +467,7 @@ def test_spawn_plan_template_0b_has_spawn_slot_and_non_hardcore_interval_bump() 
     assert c.max_health == 3500.0
     assert c.move_speed == 1.5
     assert c.size == 65.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.9, 0.1, 0.1, 1.0)
+    assert c.tint == (0.9, 0.1, 0.1, 1.0)
     assert c.contact_damage == 0.0
 
     slot = plan.spawn_slots[0]
@@ -503,7 +503,7 @@ def test_spawn_plan_template_0c_has_spawn_slot_and_non_hardcore_interval_bump() 
     assert c.move_speed == 2.8
     assert c.reward_value == 1000.0
     assert c.size == 32.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.9, 0.8, 0.4, 1.0)
+    assert c.tint == (0.9, 0.8, 0.4, 1.0)
     assert c.contact_damage == 0.0
 
     slot = plan.spawn_slots[0]
@@ -539,7 +539,7 @@ def test_spawn_plan_template_0d_has_spawn_slot_and_non_hardcore_interval_bump() 
     assert c.move_speed == 1.3
     assert c.reward_value == 1000.0
     assert c.size == 32.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.9, 0.8, 0.4, 1.0)
+    assert c.tint == (0.9, 0.8, 0.4, 1.0)
     assert c.contact_damage == 0.0
 
     slot = plan.spawn_slots[0]
@@ -574,7 +574,7 @@ def test_spawn_plan_template_0f_is_constant() -> None:
     assert c.reward_value == 60.0
     assert c.size == 50.0
     assert c.contact_damage == 35.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (
+    assert c.tint == (
         0.665,
         0.385,
         0.259,
@@ -608,7 +608,7 @@ def test_spawn_plan_template_10_has_spawn_slot_and_non_hardcore_interval_bump() 
     assert c.max_health == 50.0
     assert c.move_speed == 2.8
     assert c.size == 32.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.9, 0.8, 0.4, 1.0)
+    assert c.tint == (0.9, 0.8, 0.4, 1.0)
     assert c.contact_damage == 0.0
 
     slot = plan.spawn_slots[0]
@@ -639,7 +639,7 @@ def test_spawn_plan_template_12_spawns_formation_children() -> None:
     assert parent.max_health == 200.0
     assert parent.move_speed == 2.2
     assert parent.size == 55.0
-    assert (parent.tint_r, parent.tint_g, parent.tint_b, parent.tint_a) == (0.65, 0.85, 0.97, 1.0)
+    assert parent.tint == (0.65, 0.85, 0.97, 1.0)
 
     # Children are linked orbiters in a ring.
     for i, child in enumerate(plan.creatures[1:], start=0):
@@ -653,7 +653,7 @@ def test_spawn_plan_template_12_spawns_formation_children() -> None:
         assert child.max_health == expected_health
         assert child.move_speed == 2.4
         assert child.size == 50.0
-        assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (0.32, 0.588, 0.426, 1.0)
+        assert child.tint == (0.32, 0.588, 0.426, 1.0)
 
         angle = float(i) * (math.pi / 4.0)
         assert (child.target_offset_x or 0.0) == pytest.approx(math.cos(angle) * 100.0, abs=1e-4)
@@ -693,7 +693,7 @@ def test_spawn_plan_template_13_spawns_ring_children_and_links_parent() -> None:
     assert parent.reward_value == 600.0
     assert parent.size == 40.0
     assert parent.contact_damage == 20.0
-    assert (parent.tint_r, parent.tint_g, parent.tint_b, parent.tint_a) == (0.6, 0.8, 0.91, 1.0)
+    assert parent.tint == (0.6, 0.8, 0.91, 1.0)
 
     for i, child in enumerate(plan.creatures[1:], start=0):
         assert child.type_id == CreatureTypeId.ALIEN
@@ -709,7 +709,7 @@ def test_spawn_plan_template_13_spawns_ring_children_and_links_parent() -> None:
         assert child.reward_value == 60.0
         assert child.size == 50.0
         assert child.contact_damage == 4.0
-        assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (0.4, 0.7, 0.11, 1.0)
+        assert child.tint == (0.4, 0.7, 0.11, 1.0)
 
         angle = float(2 + 2 * i) * math.radians(20.0)
         assert child.pos_x == pytest.approx(100.0 + math.cos(angle) * 256.0, abs=1e-4)
@@ -746,7 +746,7 @@ def test_spawn_plan_template_14_spawns_grid_children() -> None:
     assert parent.reward_value == 600.0
     assert parent.size == 50.0
     assert parent.contact_damage == 40.0
-    assert (parent.tint_r, parent.tint_g, parent.tint_b, parent.tint_a) == (0.7, 0.8, 0.31, 1.0)
+    assert parent.tint == (0.7, 0.8, 0.31, 1.0)
 
     for idx, child in enumerate(plan.creatures[1:], start=0):
         x_offset = float(-64 * (idx // 9))
@@ -766,7 +766,7 @@ def test_spawn_plan_template_14_spawns_grid_children() -> None:
         assert child.reward_value == 60.0
         assert child.size == 50.0
         assert child.contact_damage == 4.0
-        assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (0.4, 0.7, 0.11, 1.0)
+        assert child.tint == (0.4, 0.7, 0.11, 1.0)
 
     # Rand consumption:
     # - base alloc: 1
@@ -799,7 +799,7 @@ def test_spawn_plan_template_15_spawns_grid_children() -> None:
     assert parent.reward_value == 600.0
     assert parent.size == 60.0
     assert parent.contact_damage == 40.0
-    assert (parent.tint_r, parent.tint_g, parent.tint_b, parent.tint_a) == (1.0, 1.0, 1.0, 1.0)
+    assert parent.tint == (1.0, 1.0, 1.0, 1.0)
 
     for idx, child in enumerate(plan.creatures[1:], start=0):
         x_offset = float(-64 * (idx // 9))
@@ -819,7 +819,7 @@ def test_spawn_plan_template_15_spawns_grid_children() -> None:
         assert child.reward_value == 60.0
         assert child.size == 50.0
         assert child.contact_damage == 4.0
-        assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (0.4, 0.7, 0.11, 1.0)
+        assert child.tint == (0.4, 0.7, 0.11, 1.0)
 
     # Rand consumption:
     # - base alloc: 1
@@ -852,7 +852,7 @@ def test_spawn_plan_template_16_spawns_grid_children() -> None:
     assert parent.reward_value == 600.0
     assert parent.size == 64.0
     assert parent.contact_damage == 40.0
-    assert (parent.tint_r, parent.tint_g, parent.tint_b, parent.tint_a) == (1.0, 1.0, 1.0, 1.0)
+    assert parent.tint == (1.0, 1.0, 1.0, 1.0)
 
     for idx, child in enumerate(plan.creatures[1:], start=0):
         x_offset = float(-64 * (idx // 9))
@@ -873,7 +873,7 @@ def test_spawn_plan_template_16_spawns_grid_children() -> None:
         assert child.reward_value == 60.0
         assert child.size == 60.0
         assert child.contact_damage == 4.0
-        assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (0.4, 0.7, 0.11, 1.0)
+        assert child.tint == (0.4, 0.7, 0.11, 1.0)
 
     # Rand consumption:
     # - base alloc: 1
@@ -906,7 +906,7 @@ def test_spawn_plan_template_17_spawns_grid_children() -> None:
     assert parent.reward_value == 600.0
     assert parent.size == 60.0
     assert parent.contact_damage == 40.0
-    assert (parent.tint_r, parent.tint_g, parent.tint_b, parent.tint_a) == (1.0, 1.0, 1.0, 1.0)
+    assert parent.tint == (1.0, 1.0, 1.0, 1.0)
 
     for idx, child in enumerate(plan.creatures[1:], start=0):
         x_offset = float(-64 * (idx // 9))
@@ -927,7 +927,7 @@ def test_spawn_plan_template_17_spawns_grid_children() -> None:
         assert child.reward_value == 60.0
         assert child.size == 50.0
         assert child.contact_damage == 4.0
-        assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (0.4, 0.7, 0.11, 1.0)
+        assert child.tint == (0.4, 0.7, 0.11, 1.0)
 
     # Rand consumption:
     # - base alloc: 1
@@ -960,7 +960,7 @@ def test_spawn_plan_template_18_spawns_grid_children() -> None:
     assert parent.reward_value == 600.0
     assert parent.size == 40.0
     assert parent.contact_damage == 40.0
-    assert (parent.tint_r, parent.tint_g, parent.tint_b, parent.tint_a) == (0.7, 0.8, 0.31, 1.0)
+    assert parent.tint == (0.7, 0.8, 0.31, 1.0)
 
     for idx, child in enumerate(plan.creatures[1:], start=0):
         x_offset = float(-64 * (idx // 9))
@@ -980,7 +980,7 @@ def test_spawn_plan_template_18_spawns_grid_children() -> None:
         assert child.reward_value == 60.0
         assert child.size == 50.0
         assert child.contact_damage == 35.0
-        assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (0.7125, 0.4125, 0.2775, 0.6)
+        assert child.tint == (0.7125, 0.4125, 0.2775, 0.6)
 
     # Rand consumption:
     # - base alloc: 1
@@ -1010,7 +1010,7 @@ def test_spawn_plan_template_19_spawns_formation_children() -> None:
     assert parent.max_health == 50.0
     assert parent.move_speed == 3.8
     assert parent.size == 55.0
-    assert (parent.tint_r, parent.tint_g, parent.tint_b, parent.tint_a) == (0.95, 0.55, 0.37, 1.0)
+    assert parent.tint == (0.95, 0.55, 0.37, 1.0)
 
     for i, child in enumerate(plan.creatures[1:], start=0):
         assert child.type_id == CreatureTypeId.ALIEN
@@ -1021,7 +1021,7 @@ def test_spawn_plan_template_19_spawns_formation_children() -> None:
         assert child.max_health == expected_health
         assert child.move_speed == 3.8
         assert child.size == 50.0
-        assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (0.7125, 0.4125, 0.2775, 0.6)
+        assert child.tint == (0.7125, 0.4125, 0.2775, 0.6)
 
         angle = float(i) * (math.tau / 5.0)
         assert (child.target_offset_x or 0.0) == pytest.approx(math.cos(angle) * 110.0, abs=1e-4)
@@ -1067,7 +1067,7 @@ def test_spawn_plan_template_1a_is_randomized_tint() -> None:
     assert c.move_speed == 2.4
     assert c.reward_value == 125.0
     assert c.contact_damage == 5.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (expected_tint, expected_tint, 1.0, 1.0)
+    assert c.tint == (expected_tint, expected_tint, 1.0, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(seed, 3)
@@ -1106,7 +1106,7 @@ def test_spawn_plan_template_1b_is_randomized_tint_and_tail_enables_ai7_timer() 
     assert (c.move_speed or 0.0) == pytest.approx(2.4 * 1.2, abs=1e-9)
     assert c.reward_value == 125.0
     assert c.contact_damage == 5.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (expected_tint, expected_tint, 1.0, 1.0)
+    assert c.tint == (expected_tint, expected_tint, 1.0, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(seed, 3)
@@ -1143,7 +1143,7 @@ def test_spawn_plan_template_1c_is_randomized_tint() -> None:
     assert c.move_speed == 2.4
     assert c.reward_value == 125.0
     assert c.contact_damage == 5.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (expected_tint, expected_tint, 1.0, 1.0)
+    assert c.tint == (expected_tint, expected_tint, 1.0, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(seed, 3)
@@ -1199,7 +1199,7 @@ def test_spawn_plan_template_1d_is_randomized() -> None:
     assert c.move_speed == expected_speed
     assert c.reward_value == expected_reward
     assert c.contact_damage == expected_contact
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (expected_tint_r, expected_tint_g, expected_tint_b, 1.0)
+    assert c.tint == (expected_tint_r, expected_tint_g, expected_tint_b, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(seed, 9)
@@ -1255,7 +1255,7 @@ def test_spawn_plan_template_1e_is_randomized() -> None:
     assert c.move_speed == expected_speed
     assert c.reward_value == expected_reward
     assert c.contact_damage == expected_contact
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (expected_tint_r, expected_tint_g, expected_tint_b, 1.0)
+    assert c.tint == (expected_tint_r, expected_tint_g, expected_tint_b, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(seed, 9)
@@ -1311,7 +1311,7 @@ def test_spawn_plan_template_1f_is_randomized() -> None:
     assert c.move_speed == expected_speed
     assert c.reward_value == expected_reward
     assert c.contact_damage == expected_contact
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (expected_tint_r, expected_tint_g, expected_tint_b, 1.0)
+    assert c.tint == (expected_tint_r, expected_tint_g, expected_tint_b, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(seed, 9)
@@ -1359,7 +1359,7 @@ def test_spawn_plan_template_20_is_randomized() -> None:
     assert c.move_speed == expected_speed
     assert c.reward_value == expected_reward
     assert c.contact_damage == expected_contact
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.3, expected_tint_g, 0.3, 1.0)
+    assert c.tint == (0.3, expected_tint_g, 0.3, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(seed, 6)
@@ -1388,7 +1388,7 @@ def test_spawn_plan_template_21_is_constant() -> None:
     assert c.reward_value == 120.0
     assert c.size == 55.0
     assert c.contact_damage == 8.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.7, 0.1, 0.51, 0.5)
+    assert c.tint == (0.7, 0.1, 0.51, 0.5)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -1417,7 +1417,7 @@ def test_spawn_plan_template_22_is_constant() -> None:
     assert c.reward_value == 150.0
     assert c.size == 50.0
     assert c.contact_damage == 8.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.1, 0.7, 0.51, 0.05)
+    assert c.tint == (0.1, 0.7, 0.51, 0.05)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -1446,7 +1446,7 @@ def test_spawn_plan_template_23_is_constant() -> None:
     assert c.reward_value == 180.0
     assert c.size == 45.0
     assert c.contact_damage == 8.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.1, 0.7, 0.51, 0.04)
+    assert c.tint == (0.1, 0.7, 0.51, 0.04)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -1475,7 +1475,7 @@ def test_spawn_plan_template_24_is_constant() -> None:
     assert c.reward_value == 110.0
     assert c.size == 50.0
     assert c.contact_damage == 4.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.1, 0.7, 0.11, 1.0)
+    assert c.tint == (0.1, 0.7, 0.11, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -1504,7 +1504,7 @@ def test_spawn_plan_template_25_is_constant() -> None:
     assert c.reward_value == 125.0
     assert c.size == 30.0
     assert c.contact_damage == 3.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.1, 0.8, 0.11, 1.0)
+    assert c.tint == (0.1, 0.8, 0.11, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -1533,7 +1533,7 @@ def test_spawn_plan_template_26_is_constant() -> None:
     assert c.reward_value == 125.0
     assert c.size == 45.0
     assert c.contact_damage == 10.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.6, 0.8, 0.6, 1.0)
+    assert c.tint == (0.6, 0.8, 0.6, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -1565,7 +1565,7 @@ def test_spawn_plan_template_27_is_constant() -> None:
     assert c.reward_value == 125.0
     assert c.size == 45.0
     assert c.contact_damage == 10.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (1.0, 0.8, 0.1, 1.0)
+    assert c.tint == (1.0, 0.8, 0.1, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -1594,7 +1594,7 @@ def test_spawn_plan_template_28_is_constant() -> None:
     assert c.reward_value == 150.0
     assert c.size == 55.0
     assert c.contact_damage == 8.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.7, 0.1, 0.51, 1.0)
+    assert c.tint == (0.7, 0.1, 0.51, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -1623,7 +1623,7 @@ def test_spawn_plan_template_29_is_constant() -> None:
     assert c.reward_value == 450.0
     assert c.size == 70.0
     assert c.contact_damage == 20.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.8, 0.8, 0.8, 1.0)
+    assert c.tint == (0.8, 0.8, 0.8, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -1652,7 +1652,7 @@ def test_spawn_plan_template_2a_is_constant() -> None:
     assert c.reward_value == 300.0
     assert c.size == 60.0
     assert c.contact_damage == 8.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.3, 0.3, 0.3, 1.0)
+    assert c.tint == (0.3, 0.3, 0.3, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -1681,7 +1681,7 @@ def test_spawn_plan_template_2b_is_constant() -> None:
     assert c.reward_value == 450.0
     assert c.size == 35.0
     assert c.contact_damage == 20.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (1.0, 0.3, 0.3, 1.0)
+    assert c.tint == (1.0, 0.3, 0.3, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -1710,7 +1710,7 @@ def test_spawn_plan_template_2c_is_constant() -> None:
     assert c.reward_value == 1500.0
     assert c.size == 80.0
     assert c.contact_damage == 40.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.85, 0.2, 0.2, 1.0)
+    assert c.tint == (0.85, 0.2, 0.2, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -1740,7 +1740,7 @@ def test_spawn_plan_template_2d_is_constant() -> None:
     assert c.reward_value == 200.0
     assert c.size == 38.0
     assert c.contact_damage == 3.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.0, 0.9, 0.8, 1.0)
+    assert c.tint == (0.0, 0.9, 0.8, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -1794,7 +1794,7 @@ def test_spawn_plan_template_2e_is_randomized() -> None:
     assert c.move_speed == expected_speed
     assert c.reward_value == expected_reward
     assert c.contact_damage == expected_contact
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (expected_tint_r, expected_tint_g, expected_tint_b, 1.0)
+    assert c.tint == (expected_tint_r, expected_tint_g, expected_tint_b, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(seed, 8)
@@ -1823,7 +1823,7 @@ def test_spawn_plan_template_2f_is_constant() -> None:
     assert c.reward_value == 150.0
     assert c.size == 45.0
     assert c.contact_damage == 4.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.8, 0.8, 0.8, 1.0)
+    assert c.tint == (0.8, 0.8, 0.8, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -1852,7 +1852,7 @@ def test_spawn_plan_template_30_is_constant() -> None:
     assert c.reward_value == 400.0
     assert c.size == 65.0
     assert c.contact_damage == 10.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.9, 0.8, 0.1, 1.0)
+    assert c.tint == (0.9, 0.8, 0.1, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -1899,7 +1899,7 @@ def test_spawn_plan_template_31_is_randomized() -> None:
     assert c.move_speed == expected_speed
     assert c.reward_value == expected_reward
     assert c.contact_damage == expected_contact
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (expected_tint, expected_tint, 0.38, 1.0)
+    assert c.tint == (expected_tint, expected_tint, 0.38, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(seed, 5)
@@ -1948,7 +1948,7 @@ def test_spawn_plan_template_32_is_randomized_and_tail_enables_ai7_timer() -> No
     assert (c.move_speed or 0.0) == pytest.approx(expected_speed_pre_tail * 1.2, abs=1e-9)
     assert c.reward_value == expected_reward
     assert c.contact_damage == expected_contact
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (expected_tint, expected_tint, expected_tint, 1.0)
+    assert c.tint == (expected_tint, expected_tint, expected_tint, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(seed, 5)
@@ -1998,7 +1998,7 @@ def test_spawn_plan_template_33_is_randomized_and_tail_enables_ai7_timer() -> No
     assert (c.move_speed or 0.0) == pytest.approx(expected_speed_pre_tail * 1.2, abs=1e-9)
     assert c.reward_value == expected_reward
     assert c.contact_damage == expected_contact
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (expected_tint_r, 0.5, 0.5, 1.0)
+    assert c.tint == (expected_tint_r, 0.5, 0.5, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(seed, 6)
@@ -2049,7 +2049,7 @@ def test_spawn_plan_template_34_is_randomized_and_tail_enables_ai7_timer() -> No
     assert c.max_health == expected_health
     assert c.reward_value == expected_reward
     assert c.contact_damage == expected_contact
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.5, expected_tint_g, 0.5, 1.0)
+    assert c.tint == (0.5, expected_tint_g, 0.5, 1.0)
     assert (c.move_speed or 0.0) == pytest.approx(expected_speed_pre_tail * 1.2, abs=1e-9)
     assert c.heading == expected_heading
 
@@ -2100,7 +2100,7 @@ def test_spawn_plan_template_35_is_randomized() -> None:
     assert (c.move_speed or 0.0) == pytest.approx(expected_speed, abs=1e-9)
     assert c.reward_value == expected_reward
     assert c.contact_damage == expected_contact
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.8, expected_tint_g, 0.8, 1.0)
+    assert c.tint == (0.8, expected_tint_g, 0.8, 1.0)
     assert c.heading == expected_heading
 
     assert rng.state == _step_msvcrt(seed, 7)
@@ -2138,7 +2138,7 @@ def test_spawn_plan_template_36_is_randomized_tint() -> None:
     assert c.move_speed == 1.8
     assert c.reward_value == 150.0
     assert c.contact_damage == 40.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.65, expected_tint_g, 0.95, 1.0)
+    assert c.tint == (0.65, expected_tint_g, 0.95, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(seed, 3)
@@ -2175,7 +2175,7 @@ def test_spawn_plan_template_37_is_randomized() -> None:
     assert c.move_speed == 3.2
     assert c.reward_value == 433.0
     assert c.contact_damage == 10.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (1.0, 0.75, 0.1, 1.0)
+    assert c.tint == (1.0, 0.75, 0.1, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(seed, 3)
@@ -2215,7 +2215,7 @@ def test_spawn_plan_template_38_is_randomized_and_has_ai7_timer_flag() -> None:
     assert c.move_speed == 4.8
     assert c.reward_value == 433.0
     assert c.contact_damage == 10.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (1.0, 0.75, 0.1, 1.0)
+    assert c.tint == (1.0, 0.75, 0.1, 1.0)
     assert c.heading == expected_heading
 
     assert rng.state == _step_msvcrt(seed, 4)
@@ -2253,7 +2253,7 @@ def test_spawn_plan_template_39_is_randomized_and_has_ai7_timer_flag() -> None:
     assert c.move_speed == 4.8
     assert c.reward_value == 50.0
     assert c.contact_damage == 10.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.8, 0.65, 0.1, 1.0)
+    assert c.tint == (0.8, 0.65, 0.1, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(seed, 3)
@@ -2287,7 +2287,7 @@ def test_spawn_plan_template_3a_is_constant_and_has_ranged_shock_flag() -> None:
     assert c.reward_value == 4500.0
     assert c.size == 64.0
     assert c.contact_damage == 50.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (1.0, 1.0, 1.0, 1.0)
+    assert c.tint == (1.0, 1.0, 1.0, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -2318,7 +2318,7 @@ def test_spawn_plan_template_3b_is_constant_and_tail_enables_ai7_timer() -> None
     assert c.reward_value == 4000.0
     assert c.size == 70.0
     assert c.contact_damage == 20.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.9, 0.0, 0.0, 1.0)
+    assert c.tint == (0.9, 0.0, 0.0, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -2353,7 +2353,7 @@ def test_spawn_plan_template_3c_is_constant_and_tail_enables_ai7_timer() -> None
     assert c.reward_value == 200.0
     assert c.size == 40.0
     assert c.contact_damage == 20.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.9, 0.1, 0.1, 1.0)
+    assert c.tint == (0.9, 0.1, 0.1, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -2394,7 +2394,7 @@ def test_spawn_plan_template_3d_is_randomized_and_tail_enables_ai7_timer() -> No
     assert c.reward_value == 120.0
     assert c.size == expected_size
     assert (c.contact_damage or 0.0) == pytest.approx(expected_contact, abs=1e-9)
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (expected_tint, expected_tint, expected_tint, 1.0)
+    assert c.tint == (expected_tint, expected_tint, expected_tint, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(seed, 4)
@@ -2425,7 +2425,7 @@ def test_spawn_plan_template_3e_is_constant_and_tail_enables_ai7_timer() -> None
     assert c.reward_value == 500.0
     assert c.size == 64.0
     assert c.contact_damage == 40.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (1.0, 1.0, 1.0, 1.0)
+    assert c.tint == (1.0, 1.0, 1.0, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -2456,7 +2456,7 @@ def test_spawn_plan_template_3f_is_constant_and_tail_enables_ai7_timer() -> None
     assert c.reward_value == 210.0
     assert c.size == 35.0
     assert c.contact_damage == 20.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.7, 0.4, 0.1, 1.0)
+    assert c.tint == (0.7, 0.4, 0.1, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -2487,7 +2487,7 @@ def test_spawn_plan_template_40_is_constant_and_tail_enables_ai7_timer() -> None
     assert c.reward_value == 160.0
     assert c.size == 45.0
     assert c.contact_damage == 5.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.5, 0.6, 0.9, 1.0)
+    assert c.tint == (0.5, 0.6, 0.9, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -2535,7 +2535,7 @@ def test_spawn_plan_template_41_is_randomized() -> None:
     assert c.move_speed == expected_speed
     assert c.reward_value == expected_reward
     assert c.contact_damage == expected_contact
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (expected_tint, expected_tint, expected_tint, 1.0)
+    assert c.tint == (expected_tint, expected_tint, expected_tint, 1.0)
     assert c.heading == expected_heading
 
     assert rng.state == _step_msvcrt(seed, 6)
@@ -2565,7 +2565,7 @@ def test_spawn_plan_template_42_is_constant() -> None:
     assert c.reward_value == 160.0
     assert c.size == 45.0
     assert c.contact_damage == 15.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.9, 0.9, 0.9, 1.0)
+    assert c.tint == (0.9, 0.9, 0.9, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -2595,7 +2595,7 @@ def test_spawn_plan_template_43_is_constant() -> None:
     assert c.reward_value == 460.0
     assert c.size == 70.0
     assert c.contact_damage == 15.0
-    assert (c.tint_r, c.tint_g, c.tint_b, c.tint_a) == (0.2, 0.6, 0.1, 1.0)
+    assert c.tint == (0.2, 0.6, 0.1, 1.0)
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(0xBEEF, 2)
@@ -2625,7 +2625,7 @@ def test_spawn_plan_template_0e_spawns_ring_children_and_has_spawn_slot() -> Non
     assert parent.move_speed == 2.8
     assert parent.reward_value == 5000.0
     assert parent.size == 32.0
-    assert (parent.tint_r, parent.tint_g, parent.tint_b, parent.tint_a) == (0.9, 0.8, 0.4, 1.0)
+    assert parent.tint == (0.9, 0.8, 0.4, 1.0)
     assert parent.contact_damage == 0.0
 
     slot = plan.spawn_slots[0]
@@ -2652,7 +2652,7 @@ def test_spawn_plan_template_0e_spawns_ring_children_and_has_spawn_slot() -> Non
         assert child.move_speed == 4.0
         assert child.size == 35.0
         assert child.contact_damage == 30.0
-        assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (1.0, 0.3, 0.3, 1.0)
+        assert child.tint == (1.0, 0.3, 0.3, 1.0)
 
         angle = float(i) * (math.pi / 12.0)
         assert (child.target_offset_x or 0.0) == pytest.approx(math.cos(angle) * 100.0, abs=1e-4)
@@ -2688,7 +2688,7 @@ def test_spawn_plan_template_11_spawns_chain_children_and_falls_into_unhandled_o
     assert parent.move_speed == 2.1
     assert parent.reward_value == 1000.0
     assert parent.size == 69.0
-    assert (parent.tint_r, parent.tint_g, parent.tint_b, parent.tint_a) == (0.99, 0.99, 0.21, 1.0)
+    assert parent.tint == (0.99, 0.99, 0.21, 1.0)
     assert parent.contact_damage == 150.0
     assert parent.ai_link_parent == 4
 
@@ -2702,7 +2702,7 @@ def test_spawn_plan_template_11_spawns_chain_children_and_falls_into_unhandled_o
         assert child.move_speed == 2.4
         assert child.size == 50.0
         assert child.contact_damage == 14.0
-        assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (0.6, 0.6, 0.31, 1.0)
+        assert child.tint == (0.6, 0.6, 0.31, 1.0)
 
         angle = float(2 + 2 * i) * (math.pi / 8.0)
         assert child.pos_x == pytest.approx(100.0 + math.cos(angle) * 256.0, abs=1e-4)

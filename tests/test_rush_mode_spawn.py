@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+
 import pytest
 
 from crimson.crand import Crand
@@ -49,10 +51,10 @@ def test_tick_rush_mode_spawns_triggers_two_creatures() -> None:
     assert alien.move_speed == pytest.approx(2.5, abs=1e-9)
     assert alien.reward_value == pytest.approx(144.0, abs=1e-9)
     assert alien.size == pytest.approx(47.0, abs=1e-9)
-    assert alien.tint_r == pytest.approx(0.300008333333, abs=1e-9)
-    assert alien.tint_g == pytest.approx(1.0, abs=1e-12)
-    assert alien.tint_b == pytest.approx(0.30010000000483333, abs=1e-9)
-    assert alien.tint_a == pytest.approx(1.0, abs=1e-12)
+    expected_tint_r = 0.3 + 1.0 / 120000.0
+    expected_tint_g = 1.0  # clamp01(0.3 + 10000.0)
+    expected_tint_b = 0.3 + math.sin(1e-4)
+    assert alien.tint == pytest.approx((expected_tint_r, expected_tint_g, expected_tint_b, 1.0), abs=1e-9)
 
     assert spider.type_id == CreatureTypeId.SPIDER_SP1
     assert spider.ai_mode == 8
@@ -63,10 +65,7 @@ def test_tick_rush_mode_spawns_triggers_two_creatures() -> None:
     assert spider.move_speed == pytest.approx(3.5, abs=1e-9)
     assert spider.reward_value == pytest.approx(144.0, abs=1e-9)
     assert spider.size == pytest.approx(47.0, abs=1e-9)
-    assert spider.tint_r == pytest.approx(0.300008333333, abs=1e-9)
-    assert spider.tint_g == pytest.approx(1.0, abs=1e-12)
-    assert spider.tint_b == pytest.approx(0.30010000000483333, abs=1e-9)
-    assert spider.tint_a == pytest.approx(1.0, abs=1e-12)
+    assert spider.tint == pytest.approx((expected_tint_r, expected_tint_g, expected_tint_b, 1.0), abs=1e-9)
 
     assert rng.state == 0x3D6C1037
 
@@ -94,4 +93,3 @@ def test_tick_rush_mode_spawns_loops_when_cooldown_is_very_negative() -> None:
         CreatureTypeId.SPIDER_SP1,
     ]
     assert rng.state == 0xAEA69ED3
-

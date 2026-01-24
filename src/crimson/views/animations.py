@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import pyray as rl
 
 from ..creatures.anim import creature_anim_advance_phase, creature_anim_select_frame
-from ..creatures.spawn import CreatureFlags, CreatureTypeId, SPAWN_TEMPLATES, SpawnTemplate
+from ..creatures.spawn import CreatureFlags, CreatureTypeId, SPAWN_TEMPLATES, SpawnTemplate, resolve_tint
 from .font_small import SmallFontData, draw_small_text, load_small_font
 from .registry import register_view
 from grim.view import View, ViewContext
@@ -238,10 +238,7 @@ class CreatureAnimationView:
             float(cell),
         )
         dst_frame = rl.Rectangle(float(preview_x), float(preview_y), float(preview_size), float(preview_size))
-        tint_r = template.tint_r if template.tint_r is not None else 1.0
-        tint_g = template.tint_g if template.tint_g is not None else 1.0
-        tint_b = template.tint_b if template.tint_b is not None else 1.0
-        tint_a = template.tint_a if template.tint_a is not None else 1.0
+        tint_r, tint_g, tint_b, tint_a = resolve_tint(template.tint)
         tint = rl.Color(
             max(0, min(255, int(tint_r * 255))),
             max(0, min(255, int(tint_g * 255))),
@@ -258,7 +255,7 @@ class CreatureAnimationView:
             f"phase={self._phase:.6f}",
             f"template.move_speed={template.move_speed!r}",
             f"template.size={template.size!r}",
-            f"template.tint=({template.tint_r!r}, {template.tint_g!r}, {template.tint_b!r}, {template.tint_a!r})",
+            f"template.tint={template.tint!r}",
             f"move_speed={self._move_speed:.2f}",
             f"size={self._size:.1f}",
             f"local_scale={self._local_scale:.2f}",

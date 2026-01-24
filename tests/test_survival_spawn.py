@@ -22,10 +22,7 @@ def test_survival_spawn_creature_baseline_seed1_xp0() -> None:
     assert c.contact_damage == pytest.approx(4.19047619047619, abs=1e-9)
     assert c.reward_value == pytest.approx(36.36190476190476, abs=1e-9)
 
-    assert c.tint_r == pytest.approx(0.9, abs=1e-9)
-    assert c.tint_g == pytest.approx(0.88, abs=1e-9)
-    assert c.tint_b == pytest.approx(0.78, abs=1e-9)
-    assert c.tint_a == pytest.approx(1.0, abs=1e-9)
+    assert c.tint == pytest.approx((0.9, 0.88, 0.78, 1.0), abs=1e-9)
 
     assert rng.state == 0xC1BBB05F
 
@@ -104,10 +101,6 @@ def test_survival_spawn_creature_rare_variants(
     assert c.max_health == pytest.approx(expected_health, abs=1e-9)
     assert c.reward_value == pytest.approx(expected_reward_value, abs=1e-9)
 
-    assert c.tint_r == pytest.approx(expected_tint_r, abs=1e-9)
-    assert c.tint_g == pytest.approx(expected_tint_g, abs=1e-9)
-    assert c.tint_b == pytest.approx(expected_tint_b, abs=1e-9)
-    assert c.tint_a == pytest.approx(1.0, abs=1e-9)
+    assert c.tint == pytest.approx((expected_tint_r, expected_tint_g, expected_tint_b, 1.0), abs=1e-9)
 
     assert rng.state == expected_rng_state
-
