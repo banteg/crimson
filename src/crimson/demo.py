@@ -15,7 +15,15 @@ from grim.terrain_render import GroundRenderer
 
 from .crand import Crand
 from .creatures.anim import creature_anim_advance_phase, creature_anim_select_frame
-from .creatures.spawn import CreatureFlags, CreatureTypeId, SPAWN_ID_TO_TEMPLATE, SpawnEnv, build_spawn_plan
+from .creatures.spawn import (
+    CreatureFlags,
+    CreatureTypeId,
+    SPAWN_ID_TO_TEMPLATE,
+    SpawnEnv,
+    SpawnSlotInit,
+    build_spawn_plan,
+    tick_spawn_slot,
+)
 from .projectiles import ProjectilePool, SecondaryProjectilePool
 from .views.font_grim_mono import GrimMonoFont, draw_grim_mono_text, load_grim_mono_font
 from .views.font_small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
@@ -237,6 +245,7 @@ class DemoView:
         self._ground: GroundRenderer | None = None
         self._crand = Crand(0)
         self._creatures: list[DemoCreature] = []
+        self._spawn_slots: list[SpawnSlotInit] = []
         self._players: list[DemoPlayer] = []
         self._projectile_pool = ProjectilePool()
         self._secondary_projectile_pool = SecondaryProjectilePool()
@@ -283,6 +292,7 @@ class DemoView:
             rl.unload_texture(self._small_font.texture)
             self._small_font = None
         self._creatures.clear()
+        self._spawn_slots.clear()
         self._players.clear()
         self._projectile_pool.reset()
         self._secondary_projectile_pool.reset()
@@ -619,6 +629,7 @@ class DemoView:
         self._spawn_rng.srand(self._state.rng.randrange(0, 0x1_0000_0000))
 
         self._creatures.clear()
+        self._spawn_slots.clear()
         self._players.clear()
         self._projectile_pool.reset()
         self._secondary_projectile_pool.reset()
@@ -730,7 +741,7 @@ class DemoView:
     def _crand_float01(self) -> float:
         return float(self._crand.rand()) / 32767.0
 
-    def _spawn(self, spawn_id: int, x: float, y: float, *, heading: float) -> None:
+    def _spawn(self, spawn_id: int, x: float, y: float, *, heading: float = 0.0) -> None:
         x, y = self._wrap_pos(x, y)
         env = SpawnEnv(
             terrain_width=WORLD_SIZE,
@@ -741,7 +752,7 @@ class DemoView:
         )
 
         try:
-            plan = build_spawn_plan(spawn_id, (x, y), heading, self._crand, env)
+            plan = build_spawn_plan(spawn_id, (x, y), heading, self._spawn_rng, env)
         except NotImplementedError:
             template = SPAWN_ID_TO_TEMPLATE.get(spawn_id)
             type_id = template.type_id if template is not None else None
@@ -758,11 +769,15 @@ class DemoView:
                     move_speed=move_speed,
                     type_id=type_id,
                     flags=flags,
-                    phase_seed=float(self._crand.rand() & 0x17F),
+                    heading=heading,
+                    phase_seed=float(self._spawn_rng.rand() & 0x17F),
                     anim_phase=0.0,
                 )
             )
             return
+
+        creature_base = len(self._creatures)
+        slot_base = len(self._spawn_slots)
 
         for entry in plan.creatures:
             cx, cy = self._wrap_pos(entry.pos_x, entry.pos_y)
@@ -775,9 +790,9 @@ class DemoView:
             if entry.ai_timer is not None:
                 link_index = int(entry.ai_timer)
             elif entry.ai_link_parent is not None:
-                link_index = int(entry.ai_link_parent)
+                link_index = creature_base + int(entry.ai_link_parent)
             elif entry.spawn_slot is not None:
-                link_index = int(entry.spawn_slot)
+                link_index = slot_base + int(entry.spawn_slot)
             self._creatures.append(
                 DemoCreature(
                     spawn_id=entry.origin_template_id,
@@ -799,7 +814,19 @@ class DemoView:
                     link_index=link_index,
                     target_offset_x=entry.target_offset_x,
                     target_offset_y=entry.target_offset_y,
-                    )
+                )
+            )
+
+        for slot in plan.spawn_slots:
+            self._spawn_slots.append(
+                SpawnSlotInit(
+                    owner_creature=creature_base + slot.owner_creature,
+                    timer=slot.timer,
+                    count=slot.count,
+                    limit=slot.limit,
+                    interval=slot.interval,
+                    child_template_id=slot.child_template_id,
+                )
             )
 
     def _reset_player_weapon_state(self) -> None:
@@ -1166,6 +1193,7 @@ class DemoView:
     def _update_sim(self, dt: float, dt_ms: int) -> None:
         self._bonus_weapon_power_up_timer = max(0.0, self._bonus_weapon_power_up_timer - dt)
         self._update_creatures(dt, dt_ms)
+        self._update_spawn_slots(dt)
         self._update_projectiles(dt)
         self._update_players(dt)
         self._update_fx(dt)
@@ -1192,6 +1220,28 @@ class DemoView:
                 best_idx = idx
                 best_dist = d
         return best_idx
+
+    def _update_spawn_slots(self, dt: float) -> None:
+        if not self._spawn_slots:
+            return
+
+        spawn_events: list[tuple[int, float, float]] = []
+        slot_count = len(self._spawn_slots)
+        for slot_idx in range(slot_count):
+            slot = self._spawn_slots[slot_idx]
+            owner_idx = slot.owner_creature
+            if not (0 <= owner_idx < len(self._creatures)):
+                continue
+            owner = self._creatures[owner_idx]
+            if owner.hp <= 0.0:
+                continue
+            child_template_id = tick_spawn_slot(slot, dt)
+            if child_template_id is None:
+                continue
+            spawn_events.append((child_template_id, owner.x, owner.y))
+
+        for child_template_id, x, y in spawn_events:
+            self._spawn(child_template_id, x, y, heading=-100.0)
 
     def _update_creatures(self, dt: float, dt_ms: int) -> None:
         if not self._creatures or not self._players:
