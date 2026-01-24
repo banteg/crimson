@@ -1128,6 +1128,10 @@ def build_tutorial_stage5_repeat_spawns(repeat_spawn_count: int) -> tuple[SpawnT
 
     `repeat_spawn_count` is the incremented counter value (1..7). When it reaches 8, the tutorial
     transitions instead of spawning more creatures.
+
+    Note: the original also stores the returned creature pointer from template `0x27` in
+    `tutorial_hint_bonus_ptr` and rewrites its packed bonus args (`link_index` low/high 16-bit fields)
+    depending on `repeat_spawn_count`. This helper only reproduces the `creature_spawn_template` calls.
     """
     n = int(repeat_spawn_count)
     if n < 1 or 8 <= n:
