@@ -15,6 +15,7 @@ def _register_builtin_views() -> None:
     from . import wicons as _wicons  # noqa: F401
     from . import ui as _ui  # noqa: F401
     from . import particles as _particles  # noqa: F401
+    from . import spawn_plan as _spawn_plan  # noqa: F401
 
 
 _register_builtin_views()
