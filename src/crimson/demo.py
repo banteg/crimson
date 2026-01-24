@@ -8,7 +8,7 @@ from typing import Protocol
 
 import pyray as rl
 
-from grim.audio import AudioState, update_audio
+from grim.audio import AudioState, play_sfx, update_audio
 from grim.assets import PaqTextureCache, load_paq_entries
 from grim.config import CrimsonConfig
 from grim.terrain_render import GroundRenderer
@@ -28,6 +28,7 @@ from .creatures.spawn import (
 )
 from .projectiles import ProjectilePool, SecondaryProjectilePool
 from .weapons import WEAPON_BY_ID, WEAPON_TABLE, Weapon
+from .weapon_sfx import resolve_weapon_sfx_ref
 from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text, load_grim_mono_font
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 
@@ -1375,6 +1376,7 @@ class DemoView:
                 reload_time *= 0.6
             player.reload_timer_max = max(0.0, reload_time)
             player.reload_timer = player.reload_timer_max
+            play_sfx(self._state.audio, resolve_weapon_sfx_ref(weapon.reload_sound), rng=self._state.rng)
             return
 
         shot_cooldown = float(getattr(weapon, "fire_rate", 0.0) or 0.0)
@@ -1390,6 +1392,8 @@ class DemoView:
 
         muzzle_x = player.x + player.aim_x * 16.0
         muzzle_y = player.y + player.aim_y * 16.0
+
+        play_sfx(self._state.audio, resolve_weapon_sfx_ref(weapon.fire_sound), rng=self._state.rng)
 
         if player.weapon_id in {5, 11, 21}:
             meta = float(getattr(weapon, "projectile_type", 0.0) or 0.0)
@@ -1418,6 +1422,7 @@ class DemoView:
                 reload_time *= 0.6
             player.reload_timer_max = max(0.0, reload_time)
             player.reload_timer = player.reload_timer_max
+            play_sfx(self._state.audio, resolve_weapon_sfx_ref(weapon.reload_sound), rng=self._state.rng)
 
     def _update_projectiles(self, dt: float) -> None:
         damage_scale_by_type: dict[int, float] = {}
