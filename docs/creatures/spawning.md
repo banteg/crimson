@@ -6,7 +6,8 @@ tags:
 # Creature spawning (creature_spawn_template / FUN_00430af0)
 
 `creature_spawn_template(template_id, pos_xy, heading)` is the primary translation layer from
-"spawn ids" (quests/survival/demo scripts) to initialized `creature_t` entries.
+"spawn ids" (quests, tutorial timelines, and other scripted spawners) to initialized `creature_t`
+entries.
 
 It is not a static struct/table: it always performs base creature initialization, runs a large
 template switch, may allocate additional creatures and/or spawn-slot entries, and then applies
@@ -258,7 +259,9 @@ Notes:
   `0x38`, `0x41`, `0x24`, `0x25`).
 
 - `survival_update` (`FUN_00407cd0`): milestone spawns using `0x12`, `0x2b`,
-  `0x2c`, `0x35`, `0x38`, `0x3a`, `0x3c`, and `1`.
+  `0x2c`, `0x35`, `0x38`, `0x3a`, `0x3c`, and `1`. Regular enemy waves are spawned via
+  `survival_spawn_creature` (`FUN_00407510`), which selects type/stats based on
+  `player_experience` (not a spawn id).
 
 - Tutorial timeline (`tutorial_timeline_update`, `FUN_00408990`): scripted spawns using `0x24`, `0x26`,
   `0x27`, `0x28`, `0x40`.
@@ -306,4 +309,5 @@ Notes:
   - `artifacts/creature_spawn_template/binja-hlil.txt`
 - Creature pool + spawn-slot fields: `docs/creatures/struct.md`
 - Rewrite model (pure plan builder): `src/crimson/creatures/spawn.py`
+- Survival wave spawns (pure model): `src/crimson/creatures/spawn.py` (`build_survival_spawn_creature`)
 - MSVCRT-compatible RNG for deterministic replays: `src/crimson/crand.py`
