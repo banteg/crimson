@@ -1264,6 +1264,31 @@ def apply_constant_template(c: CreatureInit, spec: ConstantSpawnSpec) -> None:
         c.bonus_duration_override = spec.bonus_duration_override
 
 
+def randf(rng: Crand, mod: int, scale: float, base: float) -> float:
+    return float(rng.rand() % mod) * scale + base
+
+
+def apply_size_health_reward(
+    c: CreatureInit,
+    size: float,
+    *,
+    health_scale: float,
+    health_add: float,
+    reward_add: float = 50.0,
+) -> None:
+    c.size = size
+    c.health = size * health_scale + health_add
+    c.reward_value = size + size + reward_add
+
+
+def apply_random_move_speed(c: CreatureInit, rng: Crand, mod: int, scale: float, base: float) -> None:
+    c.move_speed = randf(rng, mod, scale, base)
+
+
+def apply_size_move_speed(c: CreatureInit, size: float, scale: float, base: float) -> None:
+    c.move_speed = size * scale + base
+
+
 def tick_spawn_slot(slot: SpawnSlotInit, frame_dt: float) -> int | None:
     """Advance a spawn slot timer by `frame_dt`, returning a spawned template id if triggered.
 
@@ -2535,27 +2560,23 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
     elif template_id == 0x2E:
         c = creatures[0]
         c.type_id = CreatureTypeId.LIZARD
-        size = float(rng.rand() % 0x1E + 0x28)
-        c.size = size
-        c.health = size * (8.0 / 7.0) + 20.0
+        size = randf(rng, 0x1E, 1.0, 0x28)
+        apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
         c.tint_a = 1.0
-        c.move_speed = float(rng.rand() % 0x12) * 0.1 + 1.1
-        c.reward_value = size + size + 50.0
-        c.tint_r = float(rng.rand() % 0x28) * 0.01 + 0.6
-        c.tint_g = float(rng.rand() % 0x28) * 0.01 + 0.6
-        c.tint_b = float(rng.rand() % 0x28) * 0.01 + 0.6
-        c.contact_damage = float(rng.rand() % 10) + 4.0
+        apply_random_move_speed(c, rng, 0x12, 0.1, 1.1)
+        c.tint_r = randf(rng, 0x28, 0.01, 0.6)
+        c.tint_g = randf(rng, 0x28, 0.01, 0.6)
+        c.tint_b = randf(rng, 0x28, 0.01, 0.6)
+        c.contact_damage = randf(rng, 10, 1.0, 4.0)
         primary_idx = 0
     elif template_id == 0x31:
         c = creatures[0]
         c.type_id = CreatureTypeId.LIZARD
-        size = float(rng.rand() % 0x1E + 0x28)
-        c.size = size
-        c.health = size * (8.0 / 7.0) + 10.0
+        size = randf(rng, 0x1E, 1.0, 0x28)
+        apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=10.0)
         c.tint_a = 1.0
-        c.move_speed = float(rng.rand() % 0x12) * 0.1 + 1.1
-        c.reward_value = size + size + 50.0
-        tint = float(rng.rand() % 0x1E) * 0.01 + 0.6
+        apply_random_move_speed(c, rng, 0x12, 0.1, 1.1)
+        tint = randf(rng, 0x1E, 0.01, 0.6)
         c.tint_r = tint
         c.tint_g = tint
         c.tint_b = 0.38
@@ -2564,13 +2585,11 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
     elif template_id == 0x32:
         c = creatures[0]
         c.type_id = CreatureTypeId.SPIDER_SP1
-        size = float(rng.rand() % 0x19 + 0x28)
-        c.size = size
-        c.health = size + 10.0
+        size = randf(rng, 0x19, 1.0, 0x28)
+        apply_size_health_reward(c, size, health_scale=1.0, health_add=10.0)
         c.tint_a = 1.0
-        c.move_speed = float(rng.rand() % 0x11) * 0.1 + 1.1
-        c.reward_value = size + size + 50.0
-        tint = float(rng.rand() % 0x28) * 0.01 + 0.6
+        apply_random_move_speed(c, rng, 0x11, 0.1, 1.1)
+        tint = randf(rng, 0x28, 0.01, 0.6)
         c.tint_r = tint
         c.tint_g = tint
         c.tint_b = tint
@@ -2579,42 +2598,38 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
     elif template_id == 0x33:
         c = creatures[0]
         c.type_id = CreatureTypeId.SPIDER_SP1
-        size = float(rng.rand() % 0xF + 0x2D)
-        c.size = size
-        c.health = size * (8.0 / 7.0) + 20.0
+        size = randf(rng, 0xF, 1.0, 0x2D)
+        apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
         c.tint_a = 1.0
-        c.move_speed = float(rng.rand() % 0x12) * 0.1 + 1.1
-        c.reward_value = size + size + 50.0
+        apply_random_move_speed(c, rng, 0x12, 0.1, 1.1)
         c.tint_g = 0.5
         c.tint_b = 0.5
-        c.tint_r = float(rng.rand() % 0x28) * 0.01 + 0.6
-        c.contact_damage = float(rng.rand() % 10) + 4.0
+        c.tint_r = randf(rng, 0x28, 0.01, 0.6)
+        c.contact_damage = randf(rng, 10, 1.0, 4.0)
         primary_idx = 0
     elif template_id == 0x34:
         c = creatures[0]
         c.type_id = CreatureTypeId.SPIDER_SP1
-        c.size = float(rng.rand() % 0x14 + 0x28)
-        c.health = float((c.size or 0.0) * (8.0 / 7.0) + 20.0)
+        size = randf(rng, 0x14, 1.0, 0x28)
+        apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
         c.tint_a = 1.0
-        c.move_speed = float(rng.rand() % 0x12) * 0.1 + 1.1
-        c.reward_value = float((c.size or 0.0) + (c.size or 0.0) + 50.0)
+        apply_random_move_speed(c, rng, 0x12, 0.1, 1.1)
         c.tint_r = 0.5
         c.tint_b = 0.5
-        c.tint_g = float(rng.rand() % 0x28) * 0.01 + 0.6
-        c.contact_damage = float(rng.rand() % 10) + 4.0
+        c.tint_g = randf(rng, 0x28, 0.01, 0.6)
+        c.contact_damage = randf(rng, 10, 1.0, 4.0)
         primary_idx = 0
     elif template_id == 0x35:
         c = creatures[0]
         c.type_id = CreatureTypeId.SPIDER_SP2
-        c.size = float(rng.rand() % 10 + 0x1E)
-        c.health = float((c.size or 0.0) * (8.0 / 7.0) + 20.0)
+        size = randf(rng, 10, 1.0, 0x1E)
+        apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
         c.tint_a = 1.0
         c.tint_b = 0.8
-        c.move_speed = float(rng.rand() % 0x12) * 0.1 + 1.1
-        c.reward_value = float((c.size or 0.0) + (c.size or 0.0) + 50.0)
+        apply_random_move_speed(c, rng, 0x12, 0.1, 1.1)
         c.tint_r = 0.8
-        c.tint_g = float(rng.rand() % 0x14) * 0.01 + 0.8
-        c.contact_damage = float(rng.rand() % 10) + 4.0
+        c.tint_g = randf(rng, 0x14, 0.01, 0.8)
+        c.contact_damage = randf(rng, 10, 1.0, 4.0)
         primary_idx = 0
     elif template_id == 0x36:
         c = creatures[0]
@@ -2694,15 +2709,14 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c = creatures[0]
         c.type_id = CreatureTypeId.ZOMBIE
         c.tint_a = 1.0
-        c.size = float(rng.rand() % 0x1E + 0x28)
-        c.health = float((c.size or 0.0) * (8.0 / 7.0) + 10.0)
-        c.move_speed = float((c.size or 0.0) * 0.0025 + 0.9)
-        c.reward_value = float((c.size or 0.0) + (c.size or 0.0) + 50.0)
-        tint = float(rng.rand() % 0x28) * 0.01 + 0.6
+        size = randf(rng, 0x1E, 1.0, 0x28)
+        apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=10.0)
+        apply_size_move_speed(c, size, 0.0025, 0.9)
+        tint = randf(rng, 0x28, 0.01, 0.6)
         c.tint_r = tint
         c.tint_g = tint
         c.tint_b = tint
-        c.contact_damage = float(rng.rand() % 10) + 4.0
+        c.contact_damage = randf(rng, 10, 1.0, 4.0)
         primary_idx = 0
     else:
         raise NotImplementedError(f"spawn plan not implemented for template_id=0x{template_id:x}")
