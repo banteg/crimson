@@ -138,3 +138,11 @@ Alias entries are direct copies of another id in the init function.
 | _DAT_004c4000 | DAT_004c3f00 | sfx_trooper_inpain_01_alias_0 |
 | DAT_004c4004 | DAT_004c3f00 | sfx_trooper_inpain_01_alias_1 |
 | _DAT_004c4008 | DAT_004c3f00 | sfx_trooper_inpain_01_alias_2 |
+
+## Unreferenced entries (in sfx.paq)
+
+These files exist in `sfx.paq`, but are not loaded by `audio_init_sfx` in 1.9.93:
+
+- `flamer_fire_start.ogg`
+- `trooper_die_04.ogg`
+- `trooper_inPain_04.ogg`

@@ -13,6 +13,7 @@ __all__ = [
     "music",
     "paq",
     "sfx",
+    "sfx_map",
     "terrain_render",
     "view",
 ]

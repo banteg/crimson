@@ -9,15 +9,11 @@ import pyray as rl
 
 from .console import ConsoleState
 from . import paq
+from . import sfx_map
 
 
 SFX_PAK_NAME = "sfx.paq"
 DEFAULT_VOICE_COUNT = 4
-
-SFX_KEY_ALIASES: dict[str, str] = {
-    "sfx_autorifle_reload_alt": "sfx_autorifle_reload",
-    "sfx_shock_fire_alt": "sfx_shock_fire",
-}
 
 
 @dataclass(slots=True)
@@ -120,7 +116,11 @@ def load_sfx_index(state: SfxState, assets_dir: Path, console: ConsoleState) -> 
 
         state.directory = sfx_dir
         state.entries.clear()
+        available = set(entry_names)
         state.key_to_entry = {_derive_sfx_key(name): name for name in entry_names}
+        for key, name in sfx_map.SFX_ENTRY_BY_KEY.items():
+            if name in available:
+                state.key_to_entry[key] = name
         state.variants = _build_variants(state.key_to_entry.keys())
         console.log.log(f"audio: sfx indexed {len(entry_names)} files from {sfx_dir}")
         console.log.flush()
@@ -134,29 +134,27 @@ def load_sfx_index(state: SfxState, assets_dir: Path, console: ConsoleState) -> 
         entries[name.replace("\\", "/")] = data
     state.directory = None
     state.entries = entries
+    available = set(entries.keys())
     state.key_to_entry = {_derive_sfx_key(name): name for name in entries.keys()}
+    for key, name in sfx_map.SFX_ENTRY_BY_KEY.items():
+        if name in available:
+            state.key_to_entry[key] = name
     state.variants = _build_variants(state.key_to_entry.keys())
     console.log.log(f"audio: sfx indexed {len(entries)} entries from {SFX_PAK_NAME}")
     console.log.flush()
 
 
 def _normalize_sfx_key(state: SfxState, key: str) -> str | None:
+    key = key.strip().lstrip("_")
+    if not key:
+        return None
+    key = sfx_map.SFX_KEY_ALIASES.get(key, key)
+    if "_alias_" in key:
+        key = key.split("_alias_", 1)[0]
     if key in state.key_to_entry:
         return key
-    if key.startswith("_"):
-        stripped = key.lstrip("_")
-        if stripped in state.key_to_entry:
-            return stripped
-        key = stripped
-    alias = SFX_KEY_ALIASES.get(key)
-    if alias and alias in state.key_to_entry:
-        return alias
     if key.endswith("_alt"):
         cand = key[: -len("_alt")]
-        if cand in state.key_to_entry:
-            return cand
-    if "_alias_" in key:
-        cand = key.split("_alias_", 1)[0]
         if cand in state.key_to_entry:
             return cand
     return None
@@ -226,6 +224,21 @@ def play_sfx(
     rl.play_sound(sample.acquire_voice())
 
 
+def sfx_key_for_id(sfx_id: int) -> str | None:
+    if sfx_id < 0:
+        return None
+    if sfx_id >= len(sfx_map.SFX_KEY_BY_ID):
+        return None
+    return sfx_map.SFX_KEY_BY_ID[sfx_id]
+
+
+def play_sfx_id(state: SfxState | None, sfx_id: int, *, rng: random.Random | None = None) -> None:
+    key = sfx_key_for_id(int(sfx_id))
+    if key is None:
+        return
+    play_sfx(state, key, rng=rng, allow_variants=False)
+
+
 def set_sfx_volume(state: SfxState | None, volume: float) -> None:
     if state is None:
         return
@@ -261,4 +274,3 @@ def shutdown_sfx(state: SfxState) -> None:
     state.variants.clear()
     state.missing_keys.clear()
     state.directory = None
-
