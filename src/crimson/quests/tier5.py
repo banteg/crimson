@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 
 from ..perks import PerkId
+from ..creatures.spawn import SpawnId
 from .helpers import (
     center_point,
     ring_points,
@@ -10,33 +11,6 @@ from .helpers import (
 )
 from .registry import register_quest
 from .types import QuestContext, SpawnEntry
-
-SPAWN_ID_0 = 0x00
-SPAWN_ID_1 = 0x01
-SPAWN_ID_3 = 0x03
-SPAWN_ID_4 = 0x04
-SPAWN_ID_5 = 0x05
-SPAWN_ID_6 = 0x06
-SPAWN_ID_9 = 0x09
-SPAWN_ID_10 = 0x0A
-SPAWN_ID_11 = 0x0B
-SPAWN_ID_14 = 0x0E
-SPAWN_ID_15 = 0x0F
-SPAWN_ID_18 = 0x12
-SPAWN_ID_19 = 0x13
-SPAWN_ID_21 = 0x15
-SPAWN_ID_22 = 0x16
-SPAWN_ID_23 = 0x17
-SPAWN_ID_28 = 0x1C
-SPAWN_ID_37 = 0x25
-SPAWN_ID_39 = 0x27
-SPAWN_ID_41 = 0x29
-SPAWN_ID_58 = 0x3A
-SPAWN_ID_60 = 0x3C
-SPAWN_ID_64 = 0x40
-SPAWN_ID_65 = 0x41
-SPAWN_ID_66 = 0x42
-SPAWN_ID_67 = 0x43
 
 
 @register_quest(
@@ -49,12 +23,12 @@ SPAWN_ID_67 = 0x43
 )
 def build_5_1_the_beating(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
-        spawn(x=256.0, y=256.0, heading=0.0, spawn_id=SPAWN_ID_39, trigger_ms=500, count=1),
+        spawn(x=256.0, y=256.0, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_WEAPON_BONUS_27, trigger_ms=500, count=1),
         spawn(
             x=ctx.width + 32.0,
             y=float(ctx.height // 2),
             heading=0.0,
-            spawn_id=SPAWN_ID_41,
+            spawn_id=SpawnId.ALIEN_CONST_GREY_BRUTE_29,
             trigger_ms=8000,
             count=3,
         ),
@@ -68,7 +42,7 @@ def build_5_1_the_beating(ctx: QuestContext) -> list[SpawnEntry]:
                 x=float(ctx.width + x_offset),
                 y=float(ctx.height // 2),
                 heading=0.0,
-                spawn_id=SPAWN_ID_37,
+                spawn_id=SpawnId.ALIEN_CONST_GREEN_SMALL_25,
                 trigger_ms=trigger,
                 count=8,
             )
@@ -81,7 +55,7 @@ def build_5_1_the_beating(ctx: QuestContext) -> list[SpawnEntry]:
             x=-32.0,
             y=float(ctx.height // 2),
             heading=0.0,
-            spawn_id=SPAWN_ID_41,
+            spawn_id=SpawnId.ALIEN_CONST_GREY_BRUTE_29,
             trigger_ms=18000,
             count=3,
         )
@@ -95,7 +69,7 @@ def build_5_1_the_beating(ctx: QuestContext) -> list[SpawnEntry]:
                 x=float(x),
                 y=float(ctx.height // 2),
                 heading=0.0,
-                spawn_id=SPAWN_ID_37,
+                spawn_id=SpawnId.ALIEN_CONST_GREEN_SMALL_25,
                 trigger_ms=trigger,
                 count=8,
             )
@@ -111,7 +85,7 @@ def build_5_1_the_beating(ctx: QuestContext) -> list[SpawnEntry]:
                 x=float(ctx.width // 2),
                 y=float(y),
                 heading=0.0,
-                spawn_id=SPAWN_ID_15,
+                spawn_id=SpawnId.ALIEN_CONST_BROWN_TRANSPARENT_0F,
                 trigger_ms=trigger,
                 count=4,
             )
@@ -127,7 +101,7 @@ def build_5_1_the_beating(ctx: QuestContext) -> list[SpawnEntry]:
                 x=float(ctx.width // 2),
                 y=float(y),
                 heading=0.0,
-                spawn_id=SPAWN_ID_18,
+                spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
                 trigger_ms=trigger,
                 count=2,
             )
@@ -148,8 +122,8 @@ def build_5_1_the_beating(ctx: QuestContext) -> list[SpawnEntry]:
 )
 def build_5_2_the_spanking_of_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
     entries: list[SpawnEntry] = [
-        spawn(x=256.0, y=512.0, heading=0.0, spawn_id=SPAWN_ID_39, trigger_ms=500, count=1),
-        spawn(x=768.0, y=512.0, heading=0.0, spawn_id=SPAWN_ID_39, trigger_ms=500, count=1),
+        spawn(x=256.0, y=512.0, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_WEAPON_BONUS_27, trigger_ms=500, count=1),
+        spawn(x=768.0, y=512.0, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_WEAPON_BONUS_27, trigger_ms=500, count=1),
     ]
 
     trigger = 5000
@@ -164,7 +138,7 @@ def build_5_2_the_spanking_of_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
                 x=x,
                 y=y,
                 heading=angle,
-                spawn_id=SPAWN_ID_65,
+                spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                 trigger_ms=trigger,
                 count=1,
             )
@@ -178,7 +152,7 @@ def build_5_2_the_spanking_of_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
             x=1280.0,
             y=512.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_66,
+            spawn_id=SpawnId.ZOMBIE_CONST_GREY_42,
             trigger_ms=offset + 10000,
             count=16,
         )
@@ -188,7 +162,7 @@ def build_5_2_the_spanking_of_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
             x=-256.0,
             y=512.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_66,
+            spawn_id=SpawnId.ZOMBIE_CONST_GREY_42,
             trigger_ms=offset + 20000,
             count=16,
         )
@@ -210,7 +184,7 @@ def build_5_3_the_fortress(ctx: QuestContext) -> list[SpawnEntry]:
             x=-50.0,
             y=float(ctx.height // 2),
             heading=0.0,
-            spawn_id=SPAWN_ID_64,
+            spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40,
             trigger_ms=100,
             count=6,
         ),
@@ -225,7 +199,7 @@ def build_5_3_the_fortress(ctx: QuestContext) -> list[SpawnEntry]:
                 x=768.0,
                 y=float(y),
                 heading=0.0,
-                spawn_id=SPAWN_ID_9,
+                spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
                 trigger_ms=trigger,
                 count=1,
             )
@@ -246,7 +220,7 @@ def build_5_3_the_fortress(ctx: QuestContext) -> list[SpawnEntry]:
                         x=float(x),
                         y=float(y),
                         heading=0.0,
-                        spawn_id=SPAWN_ID_10,
+                        spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
                         trigger_ms=trigger,
                         count=1,
                     )
@@ -272,7 +246,7 @@ def build_5_4_the_gang_wars(ctx: QuestContext) -> list[SpawnEntry]:
             x=-150.0,
             y=float(ctx.height // 2),
             heading=0.0,
-            spawn_id=SPAWN_ID_18,
+            spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
             trigger_ms=100,
             count=1,
         ),
@@ -280,7 +254,7 @@ def build_5_4_the_gang_wars(ctx: QuestContext) -> list[SpawnEntry]:
             x=1174.0,
             y=float(ctx.height // 2),
             heading=0.0,
-            spawn_id=SPAWN_ID_18,
+            spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
             trigger_ms=2500,
             count=1,
         ),
@@ -293,7 +267,7 @@ def build_5_4_the_gang_wars(ctx: QuestContext) -> list[SpawnEntry]:
                 x=1174.0,
                 y=float(ctx.height // 2),
                 heading=0.0,
-                spawn_id=SPAWN_ID_18,
+                spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
                 trigger_ms=trigger,
                 count=2,
             )
@@ -305,7 +279,7 @@ def build_5_4_the_gang_wars(ctx: QuestContext) -> list[SpawnEntry]:
             x=512.0,
             y=1152.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_19,
+            spawn_id=SpawnId.FORMATION_CHAIN_ALIEN_10_13,
             trigger_ms=50500,
             count=1,
         )
@@ -318,7 +292,7 @@ def build_5_4_the_gang_wars(ctx: QuestContext) -> list[SpawnEntry]:
                 x=-150.0,
                 y=float(ctx.height // 2),
                 heading=0.0,
-                spawn_id=SPAWN_ID_18,
+                spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
                 trigger_ms=trigger,
                 count=2,
             )
@@ -330,7 +304,7 @@ def build_5_4_the_gang_wars(ctx: QuestContext) -> list[SpawnEntry]:
             x=512.0,
             y=1152.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_19,
+            spawn_id=SpawnId.FORMATION_CHAIN_ALIEN_10_13,
             trigger_ms=107500,
             count=3,
         )
@@ -352,7 +326,7 @@ def build_5_5_knee_deep_in_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
             x=-50.0,
             y=float(ctx.height * 0.5),
             heading=0.0,
-            spawn_id=SPAWN_ID_67,
+            spawn_id=SpawnId.ZOMBIE_CONST_GREEN_BRUTE_43,
             trigger_ms=100,
             count=1,
         ),
@@ -367,7 +341,7 @@ def build_5_5_knee_deep_in_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
                     x=-50.0,
                     y=float(ctx.height * 0.5),
                     heading=0.0,
-                    spawn_id=SPAWN_ID_67,
+                    spawn_id=SpawnId.ZOMBIE_CONST_GREEN_BRUTE_43,
                     trigger_ms=trigger - 2,
                     count=1,
                 )
@@ -378,7 +352,7 @@ def build_5_5_knee_deep_in_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
                 x=-50.0,
                 y=float(ctx.height * 0.5),
                 heading=0.0,
-                spawn_id=SPAWN_ID_65,
+                spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                 trigger_ms=trigger,
                 count=count,
             )
@@ -389,7 +363,7 @@ def build_5_5_knee_deep_in_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
                     x=-50.0,
                     y=float(ctx.height * 0.5 + 158.0),
                     heading=0.0,
-                    spawn_id=SPAWN_ID_65,
+                    spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                     trigger_ms=trigger + 500,
                     count=1,
                 )
@@ -400,7 +374,7 @@ def build_5_5_knee_deep_in_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
                     x=-50.0,
                     y=float(ctx.height * 0.5 - 158.0),
                     heading=0.0,
-                    spawn_id=SPAWN_ID_65,
+                    spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                     trigger_ms=trigger + 1000,
                     count=1,
                 )
@@ -411,7 +385,7 @@ def build_5_5_knee_deep_in_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
                     x=-50.0,
                     y=float(ctx.height * 0.5 - 258.0),
                     heading=0.0,
-                    spawn_id=SPAWN_ID_66,
+                    spawn_id=SpawnId.ZOMBIE_CONST_GREY_42,
                     trigger_ms=trigger + 0x514,
                     count=1,
                 )
@@ -422,7 +396,7 @@ def build_5_5_knee_deep_in_the_dead(ctx: QuestContext) -> list[SpawnEntry]:
                     x=-50.0,
                     y=float(ctx.height * 0.5 + 258.0),
                     heading=0.0,
-                    spawn_id=SPAWN_ID_66,
+                    spawn_id=SpawnId.ZOMBIE_CONST_GREY_42,
                     trigger_ms=trigger + 300,
                     count=1,
                 )
@@ -447,7 +421,7 @@ def build_5_6_cross_fire(ctx: QuestContext) -> list[SpawnEntry]:
             x=1074.0,
             y=float(ctx.height * 0.5),
             heading=0.0,
-            spawn_id=SPAWN_ID_64,
+            spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40,
             trigger_ms=100,
             count=6,
         ),
@@ -455,7 +429,7 @@ def build_5_6_cross_fire(ctx: QuestContext) -> list[SpawnEntry]:
             x=-40.0,
             y=512.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_60,
+            spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
             trigger_ms=5500,
             count=4,
         ),
@@ -463,7 +437,7 @@ def build_5_6_cross_fire(ctx: QuestContext) -> list[SpawnEntry]:
             x=-40.0,
             y=512.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_60,
+            spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
             trigger_ms=15500,
             count=6,
         ),
@@ -471,7 +445,7 @@ def build_5_6_cross_fire(ctx: QuestContext) -> list[SpawnEntry]:
             x=512.0,
             y=512.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_1,
+            spawn_id=SpawnId.SPIDER_SP2_SPLITTER_01,
             trigger_ms=18500,
             count=2,
         ),
@@ -479,7 +453,7 @@ def build_5_6_cross_fire(ctx: QuestContext) -> list[SpawnEntry]:
             x=-100.0,
             y=512.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_60,
+            spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
             trigger_ms=25500,
             count=8,
         ),
@@ -487,7 +461,7 @@ def build_5_6_cross_fire(ctx: QuestContext) -> list[SpawnEntry]:
             x=512.0,
             y=1152.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_64,
+            spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40,
             trigger_ms=26000,
             count=6,
         ),
@@ -495,7 +469,7 @@ def build_5_6_cross_fire(ctx: QuestContext) -> list[SpawnEntry]:
             x=512.0,
             y=-128.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_64,
+            spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40,
             trigger_ms=26000,
             count=6,
         ),
@@ -511,12 +485,12 @@ def build_5_6_cross_fire(ctx: QuestContext) -> list[SpawnEntry]:
 )
 def build_5_7_army_of_three(ctx: QuestContext) -> list[SpawnEntry]:
     return [
-        spawn(x=-64.0, y=256.0, heading=0.0, spawn_id=SPAWN_ID_21, trigger_ms=500, count=1),
+        spawn(x=-64.0, y=256.0, heading=0.0, spawn_id=SpawnId.FORMATION_GRID_ALIEN_WHITE_15, trigger_ms=500, count=1),
         spawn(
             x=-64.0,
             y=512.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_21,
+            spawn_id=SpawnId.FORMATION_GRID_ALIEN_WHITE_15,
             trigger_ms=5500,
             count=1,
         ),
@@ -524,7 +498,7 @@ def build_5_7_army_of_three(ctx: QuestContext) -> list[SpawnEntry]:
             x=-64.0,
             y=768.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_21,
+            spawn_id=SpawnId.FORMATION_GRID_ALIEN_WHITE_15,
             trigger_ms=15000,
             count=1,
         ),
@@ -532,7 +506,7 @@ def build_5_7_army_of_three(ctx: QuestContext) -> list[SpawnEntry]:
             x=-64.0,
             y=768.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_23,
+            spawn_id=SpawnId.FORMATION_GRID_SPIDER_SP1_WHITE_17,
             trigger_ms=19500,
             count=1,
         ),
@@ -540,7 +514,7 @@ def build_5_7_army_of_three(ctx: QuestContext) -> list[SpawnEntry]:
             x=-64.0,
             y=512.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_23,
+            spawn_id=SpawnId.FORMATION_GRID_SPIDER_SP1_WHITE_17,
             trigger_ms=22500,
             count=1,
         ),
@@ -548,7 +522,7 @@ def build_5_7_army_of_three(ctx: QuestContext) -> list[SpawnEntry]:
             x=-64.0,
             y=256.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_23,
+            spawn_id=SpawnId.FORMATION_GRID_SPIDER_SP1_WHITE_17,
             trigger_ms=26500,
             count=1,
         ),
@@ -556,7 +530,7 @@ def build_5_7_army_of_three(ctx: QuestContext) -> list[SpawnEntry]:
             x=-64.0,
             y=256.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_22,
+            spawn_id=SpawnId.FORMATION_GRID_LIZARD_WHITE_16,
             trigger_ms=35500,
             count=1,
         ),
@@ -564,7 +538,7 @@ def build_5_7_army_of_three(ctx: QuestContext) -> list[SpawnEntry]:
             x=-64.0,
             y=512.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_22,
+            spawn_id=SpawnId.FORMATION_GRID_LIZARD_WHITE_16,
             trigger_ms=39500,
             count=1,
         ),
@@ -572,7 +546,7 @@ def build_5_7_army_of_three(ctx: QuestContext) -> list[SpawnEntry]:
             x=-64.0,
             y=768.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_22,
+            spawn_id=SpawnId.FORMATION_GRID_LIZARD_WHITE_16,
             trigger_ms=42500,
             count=1,
         ),
@@ -580,7 +554,7 @@ def build_5_7_army_of_three(ctx: QuestContext) -> list[SpawnEntry]:
             x=512.0,
             y=1152.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_21,
+            spawn_id=SpawnId.FORMATION_GRID_ALIEN_WHITE_15,
             trigger_ms=52500,
             count=3,
         ),
@@ -588,7 +562,7 @@ def build_5_7_army_of_three(ctx: QuestContext) -> list[SpawnEntry]:
             x=512.0,
             y=-256.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_23,
+            spawn_id=SpawnId.FORMATION_GRID_SPIDER_SP1_WHITE_17,
             trigger_ms=56500,
             count=3,
         ),
@@ -609,7 +583,7 @@ def build_5_8_monster_blues(ctx: QuestContext) -> list[SpawnEntry]:
             x=-50.0,
             y=float(ctx.height * 0.5),
             heading=0.0,
-            spawn_id=SPAWN_ID_4,
+            spawn_id=SpawnId.LIZARD_RANDOM_04,
             trigger_ms=500,
             count=10,
         ),
@@ -617,7 +591,7 @@ def build_5_8_monster_blues(ctx: QuestContext) -> list[SpawnEntry]:
             x=1074.0,
             y=float(ctx.height * 0.5),
             heading=0.0,
-            spawn_id=SPAWN_ID_6,
+            spawn_id=SpawnId.ALIEN_RANDOM_06,
             trigger_ms=7500,
             count=10,
         ),
@@ -625,7 +599,7 @@ def build_5_8_monster_blues(ctx: QuestContext) -> list[SpawnEntry]:
             x=512.0,
             y=1088.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_3,
+            spawn_id=SpawnId.SPIDER_SP1_RANDOM_03,
             trigger_ms=17500,
             count=12,
         ),
@@ -633,7 +607,7 @@ def build_5_8_monster_blues(ctx: QuestContext) -> list[SpawnEntry]:
             x=512.0,
             y=-64.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_3,
+            spawn_id=SpawnId.SPIDER_SP1_RANDOM_03,
             trigger_ms=17500,
             count=12,
         ),
@@ -642,11 +616,11 @@ def build_5_8_monster_blues(ctx: QuestContext) -> list[SpawnEntry]:
     trigger = 27500
     for idx in range(0x40):
         if idx % 4 == 0:
-            spawn_id = SPAWN_ID_6
+            spawn_id = SpawnId.ALIEN_RANDOM_06
         elif idx % 4 == 1:
-            spawn_id = SPAWN_ID_3
+            spawn_id = SpawnId.SPIDER_SP1_RANDOM_03
         else:
-            spawn_id = SPAWN_ID_5
+            spawn_id = SpawnId.SPIDER_SP2_RANDOM_05
         count = idx // 8 + 2
         entries.append(
             spawn(
@@ -675,10 +649,10 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
 
     center_x, center_y = center_point(ctx.width, ctx.height)
     for x, y, angle in ring_points(center_x, center_y, 128.0, 8, step=0.7853982):
-        entries.append(spawn(x=x, y=y, heading=angle, spawn_id=SPAWN_ID_64, trigger_ms=2000, count=1))
+        entries.append(spawn(x=x, y=y, heading=angle, spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40, trigger_ms=2000, count=1))
 
     for x, y, angle in ring_points(center_x, center_y, 178.0, 12, step=0.5235988):
-        entries.append(spawn(x=x, y=y, heading=angle, spawn_id=SPAWN_ID_64, trigger_ms=8000, count=1))
+        entries.append(spawn(x=x, y=y, heading=angle, spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40, trigger_ms=8000, count=1))
 
     trigger = 13000
     wave = 0
@@ -690,7 +664,7 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
                     x=-64.0,
                     y=-64.0,
                     heading=1.0471976,
-                    spawn_id=SPAWN_ID_28,
+                    spawn_id=SpawnId.AI1_LIZARD_BLUE_TINT_1C,
                     trigger_ms=trigger,
                     count=count,
                 ),
@@ -698,7 +672,7 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
                     x=1088.0,
                     y=-64.0,
                     heading=-1.0471976,
-                    spawn_id=SPAWN_ID_28,
+                    spawn_id=SpawnId.AI1_LIZARD_BLUE_TINT_1C,
                     trigger_ms=trigger,
                     count=count,
                 ),
@@ -706,7 +680,7 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
                     x=-64.0,
                     y=1088.0,
                     heading=-1.0471976,
-                    spawn_id=SPAWN_ID_28,
+                    spawn_id=SpawnId.AI1_LIZARD_BLUE_TINT_1C,
                     trigger_ms=trigger,
                     count=count,
                 ),
@@ -714,7 +688,7 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
                     x=1088.0,
                     y=1088.0,
                     heading=3.926991,
-                    spawn_id=SPAWN_ID_28,
+                    spawn_id=SpawnId.AI1_LIZARD_BLUE_TINT_1C,
                     trigger_ms=trigger,
                     count=count,
                 ),
@@ -732,7 +706,7 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
                 x=64.0,
                 y=y,
                 heading=0.0,
-                spawn_id=SPAWN_ID_10,
+                spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
                 trigger_ms=base_left,
                 count=1,
             )
@@ -747,7 +721,7 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
                 x=960.0,
                 y=y,
                 heading=0.0,
-                spawn_id=SPAWN_ID_10,
+                spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
                 trigger_ms=base_right,
                 count=1,
             )
@@ -760,7 +734,7 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
             x=512.0,
             y=256.0,
             heading=math.pi,
-            spawn_id=SPAWN_ID_11,
+            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_3C_SLOW_0B,
             trigger_ms=base_mid,
             count=1,
         )
@@ -770,7 +744,7 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
             x=512.0,
             y=768.0,
             heading=math.pi,
-            spawn_id=SPAWN_ID_11,
+            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_3C_SLOW_0B,
             trigger_ms=base_mid,
             count=1,
         )
@@ -782,7 +756,7 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
             x=512.0,
             y=1088.0,
             heading=3.926991,
-            spawn_id=SPAWN_ID_28,
+            spawn_id=SpawnId.AI1_LIZARD_BLUE_TINT_1C,
             trigger_ms=base_vertical,
             count=8,
         )
@@ -792,7 +766,7 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
             x=512.0,
             y=-64.0,
             heading=3.926991,
-            spawn_id=SPAWN_ID_28,
+            spawn_id=SpawnId.AI1_LIZARD_BLUE_TINT_1C,
             trigger_ms=base_vertical,
             count=8,
         )
@@ -810,13 +784,13 @@ def build_5_9_nagolipoli(ctx: QuestContext) -> list[SpawnEntry]:
 )
 def build_5_10_the_gathering(ctx: QuestContext) -> list[SpawnEntry]:
     return [
-        spawn(x=256.0, y=512.0, heading=0.0, spawn_id=SPAWN_ID_1, trigger_ms=500, count=1),
-        spawn(x=768.0, y=512.0, heading=0.0, spawn_id=SPAWN_ID_1, trigger_ms=9500, count=2),
+        spawn(x=256.0, y=512.0, heading=0.0, spawn_id=SpawnId.SPIDER_SP2_SPLITTER_01, trigger_ms=500, count=1),
+        spawn(x=768.0, y=512.0, heading=0.0, spawn_id=SpawnId.SPIDER_SP2_SPLITTER_01, trigger_ms=9500, count=2),
         spawn(
             x=256.0,
             y=512.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_58,
+            spawn_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A,
             trigger_ms=15500,
             count=2,
         ),
@@ -824,7 +798,7 @@ def build_5_10_the_gathering(ctx: QuestContext) -> list[SpawnEntry]:
             x=768.0,
             y=512.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_58,
+            spawn_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A,
             trigger_ms=24500,
             count=2,
         ),
@@ -832,7 +806,7 @@ def build_5_10_the_gathering(ctx: QuestContext) -> list[SpawnEntry]:
             x=256.0,
             y=512.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_0,
+            spawn_id=SpawnId.ZOMBIE_BOSS_SPAWNER_00,
             trigger_ms=30500,
             count=2,
         ),
@@ -840,16 +814,16 @@ def build_5_10_the_gathering(ctx: QuestContext) -> list[SpawnEntry]:
             x=768.0,
             y=512.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_0,
+            spawn_id=SpawnId.ZOMBIE_BOSS_SPAWNER_00,
             trigger_ms=39500,
             count=2,
         ),
-        spawn(x=64.0, y=64.0, heading=0.0, spawn_id=SPAWN_ID_60, trigger_ms=54500, count=2),
+        spawn(x=64.0, y=64.0, heading=0.0, spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C, trigger_ms=54500, count=2),
         spawn(
             x=960.0,
             y=64.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_60,
+            spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
             trigger_ms=54500,
             count=1,
         ),
@@ -857,7 +831,7 @@ def build_5_10_the_gathering(ctx: QuestContext) -> list[SpawnEntry]:
             x=64.0,
             y=960.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_60,
+            spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
             trigger_ms=54500,
             count=2,
         ),
@@ -865,7 +839,7 @@ def build_5_10_the_gathering(ctx: QuestContext) -> list[SpawnEntry]:
             x=960.0,
             y=960.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_60,
+            spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
             trigger_ms=54500,
             count=1,
         ),
@@ -873,7 +847,7 @@ def build_5_10_the_gathering(ctx: QuestContext) -> list[SpawnEntry]:
             x=-128.0,
             y=512.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_58,
+            spawn_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A,
             trigger_ms=90500,
             count=6,
         ),
@@ -881,7 +855,7 @@ def build_5_10_the_gathering(ctx: QuestContext) -> list[SpawnEntry]:
             x=1152.0,
             y=512.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_1,
+            spawn_id=SpawnId.SPIDER_SP2_SPLITTER_01,
             trigger_ms=99500,
             count=4,
         ),
@@ -889,7 +863,7 @@ def build_5_10_the_gathering(ctx: QuestContext) -> list[SpawnEntry]:
             x=1152.0,
             y=512.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_1,
+            spawn_id=SpawnId.SPIDER_SP2_SPLITTER_01,
             trigger_ms=109500,
             count=2,
         ),

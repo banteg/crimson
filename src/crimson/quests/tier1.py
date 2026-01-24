@@ -4,6 +4,7 @@ import math
 import random
 
 from ..perks import PerkId
+from ..creatures.spawn import SpawnId
 from .helpers import (
     center_point,
     corner_points,
@@ -15,20 +16,6 @@ from .helpers import (
 )
 from .registry import register_quest
 from .types import QuestContext, SpawnEntry
-
-SPAWN_ID_8 = 0x08
-SPAWN_ID_9 = 0x09
-SPAWN_ID_18 = 0x12
-SPAWN_ID_26 = 0x1A
-SPAWN_ID_29 = 0x1D
-SPAWN_ID_30 = 0x1E
-SPAWN_ID_31 = 0x1F
-SPAWN_ID_38 = 0x26
-SPAWN_ID_41 = 0x29
-SPAWN_ID_54 = 0x36
-SPAWN_ID_58 = 0x3A
-SPAWN_ID_61 = 0x3D
-SPAWN_ID_64 = 0x40
 
 
 @register_quest(
@@ -43,10 +30,10 @@ def build_1_1_land_hostile(ctx: QuestContext) -> list[SpawnEntry]:
     edges = edge_midpoints(ctx.width, ctx.height)
     top_left, top_right, bottom_left, _bottom_right = corner_points(ctx.width, ctx.height)
     return [
-        spawn_at(edges.bottom, heading=0.0, spawn_id=SPAWN_ID_38, trigger_ms=500, count=1),
-        spawn_at(bottom_left, heading=0.0, spawn_id=SPAWN_ID_38, trigger_ms=2500, count=2),
-        spawn_at(top_left, heading=0.0, spawn_id=SPAWN_ID_38, trigger_ms=6500, count=3),
-        spawn_at(top_right, heading=0.0, spawn_id=SPAWN_ID_38, trigger_ms=11500, count=4),
+        spawn_at(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26, trigger_ms=500, count=1),
+        spawn_at(bottom_left, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26, trigger_ms=2500, count=2),
+        spawn_at(top_left, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26, trigger_ms=6500, count=3),
+        spawn_at(top_right, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26, trigger_ms=11500, count=4),
     ]
 
 
@@ -66,7 +53,7 @@ def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
             x=256.0,
             y=256.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_38,
+            spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
             trigger_ms=1000,
             count=2,
         ),
@@ -74,7 +61,7 @@ def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
             x=256.0,
             y=128.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_38,
+            spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
             trigger_ms=1700,
             count=2,
         ),
@@ -85,7 +72,7 @@ def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_at(
                 edges.right,
                 heading=0.0,
-                spawn_id=SPAWN_ID_38,
+                spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
                 trigger_ms=trigger,
                 count=1,
             )
@@ -96,7 +83,7 @@ def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
                     x=edges.right[0],
                     y=center_y - 256.0,
                     heading=0.0,
-                    spawn_id=SPAWN_ID_38,
+                    spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
                     trigger_ms=trigger,
                     count=1,
                 )
@@ -106,7 +93,7 @@ def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_at(
                     edges.bottom,
                     heading=0.0,
-                    spawn_id=SPAWN_ID_41,
+                    spawn_id=SpawnId.ALIEN_CONST_GREY_BRUTE_29,
                     trigger_ms=39600,
                     count=1,
                 )
@@ -117,7 +104,7 @@ def build_1_2_minor_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
                     x=edges.left[0],
                     y=center_y + 256.0,
                     heading=0.0,
-                    spawn_id=SPAWN_ID_38,
+                    spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
                     trigger_ms=trigger,
                     count=1,
                 )
@@ -150,7 +137,7 @@ def build_1_3_target_practice(ctx: QuestContext, rng: random.Random | None = Non
                 x=x,
                 y=y,
                 heading=heading,
-                spawn_id=SPAWN_ID_54,
+                spawn_id=SpawnId.ALIEN_AI7_ORBITER_36,
                 trigger_ms=trigger,
                 count=1,
             )
@@ -177,11 +164,11 @@ def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
     step = 2500
     for i in range(2, 22):
         if i < 5:
-            spawn_id = SPAWN_ID_38
+            spawn_id = SpawnId.ALIEN_CONST_PALE_GREEN_26
         elif i < 10:
-            spawn_id = SPAWN_ID_26
+            spawn_id = SpawnId.AI1_ALIEN_BLUE_TINT_1A
         else:
-            spawn_id = SPAWN_ID_38
+            spawn_id = SpawnId.ALIEN_CONST_PALE_GREEN_26
         trigger = i * step - 5000
         entries.append(
             spawn_at(
@@ -197,7 +184,7 @@ def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_at(
                     top_left,
                     heading=0.0,
-                    spawn_id=SPAWN_ID_38,
+                    spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
                     trigger_ms=trigger,
                     count=1,
                 )
@@ -207,7 +194,7 @@ def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_at(
                     top_right,
                     heading=0.0,
-                    spawn_id=SPAWN_ID_38,
+                    spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
                     trigger_ms=trigger,
                     count=1,
                 )
@@ -218,7 +205,7 @@ def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_at(
                     edges.right,
                     heading=0.0,
-                    spawn_id=SPAWN_ID_41,
+                    spawn_id=SpawnId.ALIEN_CONST_GREY_BRUTE_29,
                     trigger_ms=burst_trigger,
                     count=1,
                 )
@@ -227,7 +214,7 @@ def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_at(
                     edges.left,
                     heading=0.0,
-                    spawn_id=SPAWN_ID_41,
+                    spawn_id=SpawnId.ALIEN_CONST_GREY_BRUTE_29,
                     trigger_ms=burst_trigger,
                     count=1,
                 )
@@ -246,13 +233,13 @@ def build_1_4_frontline_assault(ctx: QuestContext) -> list[SpawnEntry]:
 )
 def build_1_5_alien_dens(ctx: QuestContext) -> list[SpawnEntry]:
     return [
-        spawn(x=256.0, y=256.0, heading=0.0, spawn_id=SPAWN_ID_8, trigger_ms=1500, count=1),
-        spawn(x=768.0, y=768.0, heading=0.0, spawn_id=SPAWN_ID_8, trigger_ms=1500, count=1),
+        spawn(x=256.0, y=256.0, heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08, trigger_ms=1500, count=1),
+        spawn(x=768.0, y=768.0, heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08, trigger_ms=1500, count=1),
         spawn(
             x=512.0,
             y=512.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_8,
+            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08,
             trigger_ms=23500,
             count=ctx.player_count,
         ),
@@ -260,7 +247,7 @@ def build_1_5_alien_dens(ctx: QuestContext) -> list[SpawnEntry]:
             x=256.0,
             y=768.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_8,
+            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08,
             trigger_ms=38500,
             count=1,
         ),
@@ -268,7 +255,7 @@ def build_1_5_alien_dens(ctx: QuestContext) -> list[SpawnEntry]:
             x=768.0,
             y=256.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_8,
+            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08,
             trigger_ms=38500,
             count=1,
         ),
@@ -294,7 +281,7 @@ def build_1_6_the_random_factor(ctx: QuestContext, rng: random.Random | None = N
             spawn_at(
                 edges.right,
                 heading=0.0,
-                spawn_id=SPAWN_ID_29,
+                spawn_id=SpawnId.ALIEN_RANDOM_1D,
                 trigger_ms=trigger,
                 count=ctx.player_count * 2 + 4,
             )
@@ -303,7 +290,7 @@ def build_1_6_the_random_factor(ctx: QuestContext, rng: random.Random | None = N
             spawn_at(
                 edges.left,
                 heading=0.0,
-                spawn_id=SPAWN_ID_29,
+                spawn_id=SpawnId.ALIEN_RANDOM_1D,
                 trigger_ms=trigger + 200,
                 count=6,
             )
@@ -314,7 +301,7 @@ def build_1_6_the_random_factor(ctx: QuestContext, rng: random.Random | None = N
                     x=center_x,
                     y=edges.bottom[1],
                     heading=0.0,
-                    spawn_id=SPAWN_ID_41,
+                    spawn_id=SpawnId.ALIEN_CONST_GREY_BRUTE_29,
                     trigger_ms=trigger,
                     count=ctx.player_count,
                 )
@@ -340,7 +327,7 @@ def build_1_7_spider_wave_syndrome(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_at(
                 edges.left,
                 heading=0.0,
-                spawn_id=SPAWN_ID_64,
+                spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40,
                 trigger_ms=trigger,
                 count=ctx.player_count * 2 + 6,
             )
@@ -363,7 +350,7 @@ def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
             x=-256.0,
             y=256.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_18,
+            spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
             trigger_ms=1500,
             count=1,
         ),
@@ -371,7 +358,7 @@ def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
             x=-256.0,
             y=768.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_18,
+            spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
             trigger_ms=2500,
             count=1,
         ),
@@ -379,7 +366,7 @@ def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
             x=768.0,
             y=-256.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_18,
+            spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
             trigger_ms=5500,
             count=1,
         ),
@@ -387,7 +374,7 @@ def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
             x=768.0,
             y=1280.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_18,
+            spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
             trigger_ms=8500,
             count=1,
         ),
@@ -395,7 +382,7 @@ def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
             x=1280.0,
             y=1280.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_18,
+            spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
             trigger_ms=14500,
             count=1,
         ),
@@ -403,7 +390,7 @@ def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
             x=1280.0,
             y=768.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_18,
+            spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
             trigger_ms=18500,
             count=1,
         ),
@@ -411,7 +398,7 @@ def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
             x=-256.0,
             y=256.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_18,
+            spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
             trigger_ms=25000,
             count=1,
         ),
@@ -419,7 +406,7 @@ def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
             x=-256.0,
             y=768.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_18,
+            spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
             trigger_ms=30000,
             count=1,
         ),
@@ -431,7 +418,7 @@ def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
                 x=-64.0,
                 y=-64.0,
                 heading=0.0,
-                spawn_id=SPAWN_ID_38,
+                spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
                 trigger_ms=trigger - 400,
                 count=1,
             )
@@ -441,7 +428,7 @@ def build_1_8_alien_squads(ctx: QuestContext) -> list[SpawnEntry]:
                 x=ctx.width + 64.0,
                 y=ctx.height + 64.0,
                 heading=0.0,
-                spawn_id=SPAWN_ID_38,
+                spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
                 trigger_ms=trigger,
                 count=1,
             )
@@ -466,16 +453,16 @@ def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:
             x=center_x,
             y=edges.bottom[1],
             heading=0.0,
-            spawn_id=SPAWN_ID_29,
+            spawn_id=SpawnId.ALIEN_RANDOM_1D,
             trigger_ms=1500,
             count=ctx.player_count * 2 + 6,
         ),
-        spawn(x=256.0, y=256.0, heading=0.0, spawn_id=SPAWN_ID_9, trigger_ms=8000, count=1),
+        spawn(x=256.0, y=256.0, heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09, trigger_ms=8000, count=1),
         spawn(
             x=512.0,
             y=512.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_9,
+            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
             trigger_ms=13000,
             count=1,
         ),
@@ -483,7 +470,7 @@ def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:
             x=768.0,
             y=768.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_9,
+            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
             trigger_ms=18000,
             count=1,
         ),
@@ -491,7 +478,7 @@ def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:
             x=center_x,
             y=edges.bottom[1],
             heading=0.0,
-            spawn_id=SPAWN_ID_29,
+            spawn_id=SpawnId.ALIEN_RANDOM_1D,
             trigger_ms=25000,
             count=ctx.player_count * 2 + 6,
         ),
@@ -499,7 +486,7 @@ def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:
             x=center_x,
             y=edges.bottom[1],
             heading=0.0,
-            spawn_id=SPAWN_ID_29,
+            spawn_id=SpawnId.ALIEN_RANDOM_1D,
             trigger_ms=39000,
             count=ctx.player_count * 3 + 3,
         ),
@@ -507,7 +494,7 @@ def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:
             x=384.0,
             y=512.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_9,
+            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
             trigger_ms=41100,
             count=1,
         ),
@@ -515,7 +502,7 @@ def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:
             x=640.0,
             y=512.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_9,
+            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
             trigger_ms=42100,
             count=1,
         ),
@@ -523,7 +510,7 @@ def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:
             x=512.0,
             y=640.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_9,
+            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
             trigger_ms=43100,
             count=1,
         ),
@@ -531,7 +518,7 @@ def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:
             x=512.0,
             y=512.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_8,
+            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08,
             trigger_ms=44100,
             count=1,
         ),
@@ -539,7 +526,7 @@ def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:
             x=center_x,
             y=edges.bottom[1],
             heading=0.0,
-            spawn_id=SPAWN_ID_30,
+            spawn_id=SpawnId.ALIEN_RANDOM_1E,
             trigger_ms=50000,
             count=ctx.player_count * 2 + 5,
         ),
@@ -547,7 +534,7 @@ def build_1_9_nesting_grounds(ctx: QuestContext) -> list[SpawnEntry]:
             x=center_x,
             y=edges.bottom[1],
             heading=0.0,
-            spawn_id=SPAWN_ID_31,
+            spawn_id=SpawnId.ALIEN_RANDOM_1F,
             trigger_ms=55000,
             count=ctx.player_count * 2 + 2,
         ),
@@ -569,7 +556,7 @@ def build_1_10_8_legged_terror(ctx: QuestContext) -> list[SpawnEntry]:
             x=float(ctx.width - 256),
             y=float(ctx.width // 2),
             heading=0.0,
-            spawn_id=SPAWN_ID_58,
+            spawn_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A,
             trigger_ms=1000,
             count=1,
         )
@@ -581,7 +568,7 @@ def build_1_10_8_legged_terror(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_at(
                 top_left,
                 heading=0.0,
-                spawn_id=SPAWN_ID_61,
+                spawn_id=SpawnId.SPIDER_SP1_RANDOM_3D,
                 trigger_ms=trigger,
                 count=ctx.player_count,
             )
@@ -590,7 +577,7 @@ def build_1_10_8_legged_terror(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_at(
                 top_right,
                 heading=0.0,
-                spawn_id=SPAWN_ID_61,
+                spawn_id=SpawnId.SPIDER_SP1_RANDOM_3D,
                 trigger_ms=trigger,
                 count=1,
             )
@@ -599,7 +586,7 @@ def build_1_10_8_legged_terror(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_at(
                 bottom_left,
                 heading=0.0,
-                spawn_id=SPAWN_ID_61,
+                spawn_id=SpawnId.SPIDER_SP1_RANDOM_3D,
                 trigger_ms=trigger,
                 count=ctx.player_count,
             )
@@ -608,7 +595,7 @@ def build_1_10_8_legged_terror(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_at(
                 bottom_right,
                 heading=0.0,
-                spawn_id=SPAWN_ID_61,
+                spawn_id=SpawnId.SPIDER_SP1_RANDOM_3D,
                 trigger_ms=trigger,
                 count=1,
             )

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from ..perks import PerkId
+from ..creatures.spawn import SpawnId
 from .helpers import (
     center_point,
     edge_midpoints,
@@ -10,19 +11,6 @@ from .helpers import (
 )
 from .registry import register_quest
 from .types import QuestContext, SpawnEntry
-
-SPAWN_ID_7 = 0x07
-SPAWN_ID_10 = 0x0A
-SPAWN_ID_11 = 0x0B
-SPAWN_ID_12 = 0x0C
-SPAWN_ID_13 = 0x0D
-SPAWN_ID_26 = 0x1A
-SPAWN_ID_27 = 0x1B
-SPAWN_ID_28 = 0x1C
-SPAWN_ID_32 = 0x20
-SPAWN_ID_43 = 0x2B
-SPAWN_ID_60 = 0x3C
-SPAWN_ID_65 = 0x41
 
 
 @register_quest(
@@ -42,7 +30,7 @@ def build_4_1_major_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_at(
                 edges.right,
                 heading=0.0,
-                spawn_id=SPAWN_ID_32,
+                spawn_id=SpawnId.ALIEN_RANDOM_GREEN_20,
                 trigger_ms=trigger,
                 count=2,
             )
@@ -51,7 +39,7 @@ def build_4_1_major_alien_breach(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_at(
                 edges.top,
                 heading=0.0,
-                spawn_id=SPAWN_ID_32,
+                spawn_id=SpawnId.ALIEN_RANDOM_GREEN_20,
                 trigger_ms=trigger,
                 count=2,
             )
@@ -79,7 +67,7 @@ def build_4_2_zombie_time(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_at(
                 edges.right,
                 heading=0.0,
-                spawn_id=SPAWN_ID_65,
+                spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                 trigger_ms=trigger,
                 count=8,
             )
@@ -88,7 +76,7 @@ def build_4_2_zombie_time(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_at(
                 edges.left,
                 heading=0.0,
-                spawn_id=SPAWN_ID_65,
+                spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                 trigger_ms=trigger,
                 count=8,
             )
@@ -115,7 +103,7 @@ def build_4_3_lizard_zombie_pact(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_at(
                 edges.right,
                 heading=0.0,
-                spawn_id=SPAWN_ID_65,
+                spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                 trigger_ms=trigger,
                 count=6,
             )
@@ -124,7 +112,7 @@ def build_4_3_lizard_zombie_pact(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_at(
                 edges.left,
                 heading=0.0,
-                spawn_id=SPAWN_ID_65,
+                spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                 trigger_ms=trigger,
                 count=6,
             )
@@ -136,7 +124,7 @@ def build_4_3_lizard_zombie_pact(ctx: QuestContext) -> list[SpawnEntry]:
                     x=356.0,
                     y=float(idx * 0xB4 + 0x100),
                     heading=0.0,
-                    spawn_id=SPAWN_ID_12,
+                    spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_FAST_0C,
                     trigger_ms=trigger,
                     count=idx + 1,
                 )
@@ -146,7 +134,7 @@ def build_4_3_lizard_zombie_pact(ctx: QuestContext) -> list[SpawnEntry]:
                     x=356.0,
                     y=float(idx * 0xB4 + 0x180),
                     heading=0.0,
-                    spawn_id=SPAWN_ID_12,
+                    spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_FAST_0C,
                     trigger_ms=trigger,
                     count=idx + 2,
                 )
@@ -175,7 +163,7 @@ def build_4_4_the_collaboration(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_at(
                 edges.right,
                 heading=0.0,
-                spawn_id=SPAWN_ID_26,
+                spawn_id=SpawnId.AI1_ALIEN_BLUE_TINT_1A,
                 trigger_ms=trigger,
                 count=count,
             )
@@ -184,7 +172,7 @@ def build_4_4_the_collaboration(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_at(
                 edges.bottom,
                 heading=0.0,
-                spawn_id=SPAWN_ID_27,
+                spawn_id=SpawnId.AI1_SPIDER_SP1_BLUE_TINT_1B,
                 trigger_ms=trigger,
                 count=count,
             )
@@ -193,7 +181,7 @@ def build_4_4_the_collaboration(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_at(
                 edges.left,
                 heading=0.0,
-                spawn_id=SPAWN_ID_28,
+                spawn_id=SpawnId.AI1_LIZARD_BLUE_TINT_1C,
                 trigger_ms=trigger,
                 count=count,
             )
@@ -202,7 +190,7 @@ def build_4_4_the_collaboration(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_at(
                 edges.top,
                 heading=0.0,
-                spawn_id=SPAWN_ID_65,
+                spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                 trigger_ms=trigger,
                 count=count,
             )
@@ -231,7 +219,7 @@ def build_4_5_the_massacre(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_at(
                 edges.right,
                 heading=0.0,
-                spawn_id=SPAWN_ID_65,
+                spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                 trigger_ms=trigger,
                 count=wave + 3,
             )
@@ -241,7 +229,7 @@ def build_4_5_the_massacre(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_at(
                     edges_wide.right,
                     heading=0.0,
-                    spawn_id=SPAWN_ID_43,
+                    spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
                     trigger_ms=trigger,
                     count=wave + 1,
                 )
@@ -261,7 +249,7 @@ def build_4_5_the_massacre(ctx: QuestContext) -> list[SpawnEntry]:
 )
 def build_4_6_the_unblitzkrieg(ctx: QuestContext) -> list[SpawnEntry]:
     def spawn_id_for(toggle: bool) -> int:
-        return SPAWN_ID_13 if toggle else SPAWN_ID_7
+        return SpawnId.ALIEN_SPAWNER_CHILD_31_SLOW_0D if toggle else SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07
 
     entries: list[SpawnEntry] = []
     trigger = 500
@@ -305,7 +293,7 @@ def build_4_6_the_unblitzkrieg(ctx: QuestContext) -> list[SpawnEntry]:
             x=512.0,
             y=512.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_7,
+            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
             trigger_ms=trigger,
             count=1,
         )
@@ -444,7 +432,7 @@ def build_4_7_gauntlet(ctx: QuestContext, full_version: bool = True) -> list[Spa
                     x=x,
                     y=y,
                     heading=0.0,
-                    spawn_id=SPAWN_ID_10,
+                    spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
                     trigger_ms=trigger,
                     count=1,
                 )
@@ -458,7 +446,7 @@ def build_4_7_gauntlet(ctx: QuestContext, full_version: bool = True) -> list[Spa
                 spawn_at(
                     edges.right,
                     heading=0.0,
-                    spawn_id=SPAWN_ID_65,
+                    spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                     trigger_ms=trigger,
                     count=count,
                 )
@@ -467,7 +455,7 @@ def build_4_7_gauntlet(ctx: QuestContext, full_version: bool = True) -> list[Spa
                 spawn_at(
                     edges.left,
                     heading=0.0,
-                    spawn_id=SPAWN_ID_65,
+                    spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                     trigger_ms=trigger,
                     count=count,
                 )
@@ -476,7 +464,7 @@ def build_4_7_gauntlet(ctx: QuestContext, full_version: bool = True) -> list[Spa
                 spawn_at(
                     edges.bottom,
                     heading=0.0,
-                    spawn_id=SPAWN_ID_65,
+                    spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                     trigger_ms=trigger,
                     count=count,
                 )
@@ -485,7 +473,7 @@ def build_4_7_gauntlet(ctx: QuestContext, full_version: bool = True) -> list[Spa
                 spawn_at(
                     edges.top,
                     heading=0.0,
-                    spawn_id=SPAWN_ID_65,
+                    spawn_id=SpawnId.ZOMBIE_RANDOM_41,
                     trigger_ms=trigger,
                     count=count,
                 )
@@ -501,7 +489,7 @@ def build_4_7_gauntlet(ctx: QuestContext, full_version: bool = True) -> list[Spa
                     x=x,
                     y=y,
                     heading=0.0,
-                    spawn_id=SPAWN_ID_10,
+                    spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
                     trigger_ms=trigger,
                     count=1,
                 )
@@ -536,7 +524,7 @@ def build_4_8_syntax_terror(ctx: QuestContext, full_version: bool = True) -> lis
                         x=float(x),
                         y=float(y),
                         heading=0.0,
-                        spawn_id=SPAWN_ID_7,
+                        spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
                         trigger_ms=trigger,
                         count=1,
                     )
@@ -565,7 +553,7 @@ def build_4_9_the_annihilation(ctx: QuestContext) -> list[SpawnEntry]:
             x=128.0,
             y=float(half_w),
             heading=0.0,
-            spawn_id=SPAWN_ID_43,
+            spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
             trigger_ms=500,
             count=2,
         )
@@ -576,7 +564,7 @@ def build_4_9_the_annihilation(ctx: QuestContext) -> list[SpawnEntry]:
     for idx in range(12):
         y = float(i_var5 // 12 + 0x80)
         x = 832.0 if idx % 2 == 0 else 896.0
-        entries.append(spawn(x=x, y=y, heading=0.0, spawn_id=SPAWN_ID_7, trigger_ms=trigger, count=1))
+        entries.append(spawn(x=x, y=y, heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=trigger, count=1))
         trigger += 500
         i_var5 += 0x300
 
@@ -586,7 +574,7 @@ def build_4_9_the_annihilation(ctx: QuestContext) -> list[SpawnEntry]:
     for _ in range(12):
         y = float(i_var5 // 12 + 0x80)
         x = 832.0 if toggle else 896.0
-        entries.append(spawn(x=x, y=y, heading=0.0, spawn_id=SPAWN_ID_7, trigger_ms=trigger, count=1))
+        entries.append(spawn(x=x, y=y, heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=trigger, count=1))
         trigger += 300
         toggle = not toggle
         i_var5 += 0x300
@@ -607,7 +595,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
             x=128.0,
             y=128.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_60,
+            spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
             trigger_ms=3000,
             count=1,
         ),
@@ -615,7 +603,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
             x=896.0,
             y=128.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_60,
+            spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
             trigger_ms=6000,
             count=1,
         ),
@@ -623,7 +611,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
             x=128.0,
             y=896.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_60,
+            spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
             trigger_ms=9000,
             count=1,
         ),
@@ -631,7 +619,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
             x=896.0,
             y=896.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_60,
+            spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
             trigger_ms=12000,
             count=1,
         ),
@@ -642,7 +630,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
 
     trigger = 13000
     for x, y, _angle in ring_points(center_x, center_y, 80.0, 6, step=1.0471976):
-        entries.append(spawn(x=x, y=y, heading=0.0, spawn_id=SPAWN_ID_7, trigger_ms=trigger, count=1))
+        entries.append(spawn(x=x, y=y, heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=trigger, count=1))
         trigger += 300
 
     entries.append(
@@ -650,7 +638,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
             x=512.0,
             y=512.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_11,
+            spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_3C_SLOW_0B,
             trigger_ms=trigger,
             count=1,
         )
@@ -666,7 +654,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
                 x=x,
                 y=float(y),
                 heading=0.0,
-                spawn_id=SPAWN_ID_60,
+                spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
                 trigger_ms=trigger,
                 count=2,
             )
@@ -677,7 +665,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
 
     trigger = 43000
     for x, y, _angle in ring_points(center_x, center_y, 80.0, 6, step=1.0471976, start=0.5235988):
-        entries.append(spawn(x=x, y=y, heading=0.0, spawn_id=SPAWN_ID_7, trigger_ms=trigger, count=1))
+        entries.append(spawn(x=x, y=y, heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=trigger, count=1))
         trigger += 300
 
     if full_version:
@@ -688,7 +676,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
                     x=x,
                     y=y,
                     heading=0.0,
-                    spawn_id=SPAWN_ID_7,
+                    spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
                     trigger_ms=trigger,
                     count=1,
                 )
@@ -705,7 +693,7 @@ def build_4_10_the_end_of_all(ctx: QuestContext, full_version: bool = True) -> l
                 x=x,
                 y=float(y),
                 heading=0.0,
-                spawn_id=SPAWN_ID_60,
+                spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
                 trigger_ms=trigger,
                 count=2,
             )

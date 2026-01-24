@@ -3,6 +3,7 @@ from __future__ import annotations
 import random
 
 from ..perks import PerkId
+from ..creatures.spawn import SpawnId
 from .helpers import (
     center_point,
     edge_midpoints,
@@ -16,23 +17,6 @@ from .helpers import (
 )
 from .registry import register_quest
 from .types import QuestContext, SpawnEntry
-
-SPAWN_ID_0 = 0x00
-SPAWN_ID_7 = 0x07
-SPAWN_ID_12 = 0x0C
-SPAWN_ID_13 = 0x0D
-SPAWN_ID_17 = 0x11
-SPAWN_ID_26 = 0x1A
-SPAWN_ID_27 = 0x1B
-SPAWN_ID_28 = 0x1C
-SPAWN_ID_33 = 0x21
-SPAWN_ID_34 = 0x22
-SPAWN_ID_35 = 0x23
-SPAWN_ID_43 = 0x2B
-SPAWN_ID_46 = 0x2E
-SPAWN_ID_49 = 0x31
-SPAWN_ID_56 = 0x38
-SPAWN_ID_64 = 0x40
 
 
 @register_quest(
@@ -50,15 +34,15 @@ def build_3_1_the_blighting(ctx: QuestContext) -> list[SpawnEntry]:
         spawn_at(
             edges_wide.right,
             heading=0.0,
-            spawn_id=SPAWN_ID_43,
+            spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
             trigger_ms=1500,
             count=2,
         ),
-        spawn_at(edges_wide.left, heading=0.0, spawn_id=SPAWN_ID_43, trigger_ms=1500, count=2),
-        spawn(x=896.0, y=128.0, heading=0.0, spawn_id=SPAWN_ID_7, trigger_ms=2000, count=1),
-        spawn(x=128.0, y=128.0, heading=0.0, spawn_id=SPAWN_ID_7, trigger_ms=2000, count=1),
-        spawn(x=128.0, y=896.0, heading=0.0, spawn_id=SPAWN_ID_7, trigger_ms=2000, count=1),
-        spawn(x=896.0, y=896.0, heading=0.0, spawn_id=SPAWN_ID_7, trigger_ms=2000, count=1),
+        spawn_at(edges_wide.left, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B, trigger_ms=1500, count=2),
+        spawn(x=896.0, y=128.0, heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=2000, count=1),
+        spawn(x=128.0, y=128.0, heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=2000, count=1),
+        spawn(x=128.0, y=896.0, heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=2000, count=1),
+        spawn(x=896.0, y=896.0, heading=0.0, spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07, trigger_ms=2000, count=1),
     ]
 
     trigger = 4000
@@ -68,7 +52,7 @@ def build_3_1_the_blighting(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_at(
                     edges_wide.left,
                     heading=0.0,
-                    spawn_id=SPAWN_ID_43,
+                    spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
                     trigger_ms=trigger,
                     count=4,
                 )
@@ -78,12 +62,12 @@ def build_3_1_the_blighting(ctx: QuestContext) -> list[SpawnEntry]:
                 spawn_at(
                     edges_wide.right,
                     heading=0.0,
-                    spawn_id=SPAWN_ID_43,
+                    spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
                     trigger_ms=trigger,
                     count=4,
                 )
             )
-        spawn_id = SPAWN_ID_26 if wave % 2 == 0 else SPAWN_ID_28
+        spawn_id = SpawnId.AI1_ALIEN_BLUE_TINT_1A if wave % 2 == 0 else SpawnId.AI1_LIZARD_BLUE_TINT_1C
         edge = wave % 5
         if edge == 0:
             entries.append(
@@ -148,7 +132,7 @@ def build_3_2_lizard_kings(ctx: QuestContext) -> list[SpawnEntry]:
             x=1152.0,
             y=512.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_17,
+            spawn_id=SpawnId.FORMATION_CHAIN_LIZARD_4_11,
             trigger_ms=1500,
             count=1,
         ),
@@ -156,7 +140,7 @@ def build_3_2_lizard_kings(ctx: QuestContext) -> list[SpawnEntry]:
             x=-128.0,
             y=512.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_17,
+            spawn_id=SpawnId.FORMATION_CHAIN_LIZARD_4_11,
             trigger_ms=1500,
             count=1,
         ),
@@ -164,7 +148,7 @@ def build_3_2_lizard_kings(ctx: QuestContext) -> list[SpawnEntry]:
             x=1152.0,
             y=896.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_17,
+            spawn_id=SpawnId.FORMATION_CHAIN_LIZARD_4_11,
             trigger_ms=1500,
             count=1,
         ),
@@ -176,7 +160,7 @@ def build_3_2_lizard_kings(ctx: QuestContext) -> list[SpawnEntry]:
                 x=x,
                 y=y,
                 heading=-angle,
-                spawn_id=SPAWN_ID_49,
+                spawn_id=SpawnId.LIZARD_RANDOM_31,
                 trigger_ms=trigger,
                 count=1,
             )
@@ -203,11 +187,11 @@ def build_3_3_the_killing(ctx: QuestContext, rng: random.Random | None = None) -
         rng.randrange(0x8000)
         spawn_cycle = wave % 3
         if spawn_cycle == 0:
-            spawn_id = SPAWN_ID_26
+            spawn_id = SpawnId.AI1_ALIEN_BLUE_TINT_1A
         elif spawn_cycle == 1:
-            spawn_id = SPAWN_ID_27
+            spawn_id = SpawnId.AI1_SPIDER_SP1_BLUE_TINT_1B
         else:
-            spawn_id = SPAWN_ID_28
+            spawn_id = SpawnId.AI1_LIZARD_BLUE_TINT_1C
 
         edge = wave % 5
         if edge == 0:
@@ -259,7 +243,7 @@ def build_3_3_the_killing(ctx: QuestContext, rng: random.Random | None = None) -
                         x=float(x),
                         y=float(y),
                         heading=0.0,
-                        spawn_id=SPAWN_ID_7,
+                        spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
                         trigger_ms=trigger + offset,
                         count=3,
                     )
@@ -280,11 +264,11 @@ def build_3_3_the_killing(ctx: QuestContext, rng: random.Random | None = None) -
 def build_3_4_hidden_evil(ctx: QuestContext) -> list[SpawnEntry]:
     edges = edge_midpoints(ctx.width, ctx.height)
     return [
-        spawn_at(edges.bottom, heading=0.0, spawn_id=SPAWN_ID_33, trigger_ms=500, count=50),
-        spawn_at(edges.bottom, heading=0.0, spawn_id=SPAWN_ID_34, trigger_ms=15000, count=30),
-        spawn_at(edges.bottom, heading=0.0, spawn_id=SPAWN_ID_35, trigger_ms=25000, count=20),
-        spawn_at(edges.bottom, heading=0.0, spawn_id=SPAWN_ID_35, trigger_ms=30000, count=30),
-        spawn_at(edges.bottom, heading=0.0, spawn_id=SPAWN_ID_34, trigger_ms=35000, count=30),
+        spawn_at(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_PURPLE_GHOST_21, trigger_ms=500, count=50),
+        spawn_at(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_GREEN_GHOST_22, trigger_ms=15000, count=30),
+        spawn_at(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_GREEN_GHOST_SMALL_23, trigger_ms=25000, count=20),
+        spawn_at(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_GREEN_GHOST_SMALL_23, trigger_ms=30000, count=30),
+        spawn_at(edges.bottom, heading=0.0, spawn_id=SpawnId.ALIEN_CONST_GREEN_GHOST_22, trigger_ms=35000, count=30),
     ]
 
 
@@ -305,7 +289,7 @@ def build_3_5_surrounded_by_reptiles(ctx: QuestContext) -> list[SpawnEntry]:
                 x=256.0,
                 y=y,
                 heading=0.0,
-                spawn_id=SPAWN_ID_13,
+                spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_SLOW_0D,
                 trigger_ms=trigger,
                 count=1,
             )
@@ -315,7 +299,7 @@ def build_3_5_surrounded_by_reptiles(ctx: QuestContext) -> list[SpawnEntry]:
                 x=768.0,
                 y=y,
                 heading=0.0,
-                spawn_id=SPAWN_ID_13,
+                spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_SLOW_0D,
                 trigger_ms=trigger,
                 count=1,
             )
@@ -329,7 +313,7 @@ def build_3_5_surrounded_by_reptiles(ctx: QuestContext) -> list[SpawnEntry]:
                 x=x,
                 y=256.0,
                 heading=0.0,
-                spawn_id=SPAWN_ID_13,
+                spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_SLOW_0D,
                 trigger_ms=trigger,
                 count=1,
             )
@@ -339,7 +323,7 @@ def build_3_5_surrounded_by_reptiles(ctx: QuestContext) -> list[SpawnEntry]:
                 x=x,
                 y=768.0,
                 heading=0.0,
-                spawn_id=SPAWN_ID_13,
+                spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_SLOW_0D,
                 trigger_ms=trigger,
                 count=1,
             )
@@ -366,7 +350,7 @@ def build_3_6_the_lizquidation(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_at(
                 edges.right,
                 heading=0.0,
-                spawn_id=SPAWN_ID_46,
+                spawn_id=SpawnId.LIZARD_RANDOM_2E,
                 trigger_ms=trigger,
                 count=count,
             )
@@ -375,7 +359,7 @@ def build_3_6_the_lizquidation(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_at(
                 edges.left,
                 heading=0.0,
-                spawn_id=SPAWN_ID_46,
+                spawn_id=SpawnId.LIZARD_RANDOM_2E,
                 trigger_ms=trigger,
                 count=count,
             )
@@ -386,7 +370,7 @@ def build_3_6_the_lizquidation(ctx: QuestContext) -> list[SpawnEntry]:
                     x=ctx.width + 128.0,
                     y=edges.right[1],
                     heading=0.0,
-                    spawn_id=SPAWN_ID_43,
+                    spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
                     trigger_ms=1500,
                     count=2,
                 )
@@ -407,16 +391,16 @@ def build_3_7_spiders_inc(ctx: QuestContext) -> list[SpawnEntry]:
     edges = edge_midpoints(ctx.width)
     center_x, _center_y = center_point(ctx.width, ctx.height)
     entries = [
-        spawn_at(edges.bottom, heading=0.0, spawn_id=SPAWN_ID_56, trigger_ms=500, count=1),
+        spawn_at(edges.bottom, heading=0.0, spawn_id=SpawnId.SPIDER_SP1_AI7_TIMER_38, trigger_ms=500, count=1),
         spawn(
             x=center_x + 64.0,
             y=edges.bottom[1],
             heading=0.0,
-            spawn_id=SPAWN_ID_56,
+            spawn_id=SpawnId.SPIDER_SP1_AI7_TIMER_38,
             trigger_ms=500,
             count=1,
         ),
-        spawn_at(edges.top, heading=0.0, spawn_id=SPAWN_ID_64, trigger_ms=500, count=4),
+        spawn_at(edges.top, heading=0.0, spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40, trigger_ms=500, count=4),
     ]
 
     trigger = 17000
@@ -427,7 +411,7 @@ def build_3_7_spiders_inc(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_at(
                 edges.bottom,
                 heading=0.0,
-                spawn_id=SPAWN_ID_56,
+                spawn_id=SpawnId.SPIDER_SP1_AI7_TIMER_38,
                 trigger_ms=trigger,
                 count=count,
             )
@@ -436,7 +420,7 @@ def build_3_7_spiders_inc(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_at(
                 edges.top,
                 heading=0.0,
-                spawn_id=SPAWN_ID_56,
+                spawn_id=SpawnId.SPIDER_SP1_AI7_TIMER_38,
                 trigger_ms=trigger,
                 count=count,
             )
@@ -463,7 +447,7 @@ def build_3_8_lizard_raze(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_at(
                 edges.right,
                 heading=0.0,
-                spawn_id=SPAWN_ID_46,
+                spawn_id=SpawnId.LIZARD_RANDOM_2E,
                 trigger_ms=trigger,
                 count=6,
             )
@@ -472,7 +456,7 @@ def build_3_8_lizard_raze(ctx: QuestContext) -> list[SpawnEntry]:
             spawn_at(
                 edges.left,
                 heading=0.0,
-                spawn_id=SPAWN_ID_46,
+                spawn_id=SpawnId.LIZARD_RANDOM_2E,
                 trigger_ms=trigger,
                 count=6,
             )
@@ -484,7 +468,7 @@ def build_3_8_lizard_raze(ctx: QuestContext) -> list[SpawnEntry]:
                 x=128.0,
                 y=256.0,
                 heading=0.0,
-                spawn_id=SPAWN_ID_12,
+                spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_FAST_0C,
                 trigger_ms=10000,
                 count=1,
             ),
@@ -492,7 +476,7 @@ def build_3_8_lizard_raze(ctx: QuestContext) -> list[SpawnEntry]:
                 x=128.0,
                 y=384.0,
                 heading=0.0,
-                spawn_id=SPAWN_ID_12,
+                spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_FAST_0C,
                 trigger_ms=10000,
                 count=1,
             ),
@@ -500,7 +484,7 @@ def build_3_8_lizard_raze(ctx: QuestContext) -> list[SpawnEntry]:
                 x=128.0,
                 y=512.0,
                 heading=0.0,
-                spawn_id=SPAWN_ID_12,
+                spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_FAST_0C,
                 trigger_ms=10000,
                 count=1,
             ),
@@ -531,7 +515,7 @@ def build_3_9_deja_vu(ctx: QuestContext, rng: random.Random | None = None) -> li
                     x=x,
                     y=y,
                     heading=0.0,
-                    spawn_id=SPAWN_ID_13,
+                    spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_SLOW_0D,
                     trigger_ms=trigger,
                     count=1,
                 )
@@ -555,16 +539,16 @@ def build_3_10_zombie_masters(ctx: QuestContext) -> list[SpawnEntry]:
             x=256.0,
             y=256.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_0,
+            spawn_id=SpawnId.ZOMBIE_BOSS_SPAWNER_00,
             trigger_ms=1000,
             count=ctx.player_count,
         ),
-        spawn(x=512.0, y=256.0, heading=0.0, spawn_id=SPAWN_ID_0, trigger_ms=6000, count=1),
+        spawn(x=512.0, y=256.0, heading=0.0, spawn_id=SpawnId.ZOMBIE_BOSS_SPAWNER_00, trigger_ms=6000, count=1),
         spawn(
             x=768.0,
             y=256.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_0,
+            spawn_id=SpawnId.ZOMBIE_BOSS_SPAWNER_00,
             trigger_ms=14000,
             count=ctx.player_count,
         ),
@@ -572,7 +556,7 @@ def build_3_10_zombie_masters(ctx: QuestContext) -> list[SpawnEntry]:
             x=768.0,
             y=768.0,
             heading=0.0,
-            spawn_id=SPAWN_ID_0,
+            spawn_id=SpawnId.ZOMBIE_BOSS_SPAWNER_00,
             trigger_ms=18000,
             count=1,
         ),
