@@ -17,6 +17,7 @@ See also: `docs/creatures/spawn_plan.md` (porting model / invariants).
 from dataclasses import dataclass
 from enum import IntEnum, IntFlag
 import math
+from typing import Callable, SupportsInt
 
 from ..bonuses import BonusId
 from ..crand import Crand
@@ -62,6 +63,7 @@ class CreatureFlags(IntFlag):
     SELF_DAMAGE_TICK = 0x01  # periodic self-damage tick (dt * 60)
     SELF_DAMAGE_TICK_STRONG = 0x02  # stronger periodic self-damage tick (dt * 180)
     ANIM_PING_PONG = 0x04  # short ping-pong strip
+    HAS_SPAWN_SLOT = 0x04  # alias: link_index interpreted as spawn slot index
     SPLIT_ON_DEATH = 0x08  # split-on-death behavior
     RANGED_ATTACK_SHOCK = 0x10  # ranged attack using projectile type 9
     ANIM_LONG_STRIP = 0x40  # force long animation strip
@@ -911,6 +913,17 @@ class FormationChildSpec:
     orbit_radius: float | None = None
 
 
+@dataclass(frozen=True, slots=True)
+class GridFormationSpec:
+    parent: ConstantSpawnSpec
+    child_ai_mode: int
+    child_spec: FormationChildSpec
+    x_range: range
+    y_range: range
+    apply_fallback: bool = False
+    set_parent_max_health: bool = True
+
+
 CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
     0x21: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
@@ -1132,6 +1145,133 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
     ),
 }
 
+GRID_FORMATIONS: dict[int, GridFormationSpec] = {
+    0x14: GridFormationSpec(
+        parent=ConstantSpawnSpec(
+            type_id=CreatureTypeId.ALIEN,
+            health=1500.0,
+            move_speed=2.0,
+            reward_value=600.0,
+            tint=(0.7, 0.8, 0.31, 1.0),
+            size=50.0,
+            contact_damage=40.0,
+            ai_mode=2,
+        ),
+        child_ai_mode=5,
+        child_spec=FormationChildSpec(
+            type_id=CreatureTypeId.ALIEN,
+            health=40.0,
+            move_speed=2.0,
+            reward_value=60.0,
+            size=50.0,
+            contact_damage=4.0,
+            tint=(0.4, 0.7, 0.11, 1.0),
+        ),
+        x_range=range(0, -576, -64),
+        y_range=range(128, 257, 16),
+        apply_fallback=True,
+    ),
+    0x15: GridFormationSpec(
+        parent=ConstantSpawnSpec(
+            type_id=CreatureTypeId.ALIEN,
+            health=1500.0,
+            move_speed=2.0,
+            reward_value=600.0,
+            tint=(1.0, 1.0, 1.0, 1.0),
+            size=60.0,
+            contact_damage=40.0,
+            ai_mode=2,
+        ),
+        child_ai_mode=4,
+        child_spec=FormationChildSpec(
+            type_id=CreatureTypeId.ALIEN,
+            health=40.0,
+            move_speed=2.0,
+            reward_value=60.0,
+            size=50.0,
+            contact_damage=4.0,
+            tint=(0.4, 0.7, 0.11, 1.0),
+        ),
+        x_range=range(0, -576, -64),
+        y_range=range(128, 257, 16),
+        apply_fallback=True,
+    ),
+    0x16: GridFormationSpec(
+        parent=ConstantSpawnSpec(
+            type_id=CreatureTypeId.LIZARD,
+            health=1500.0,
+            move_speed=2.0,
+            reward_value=600.0,
+            tint=(1.0, 1.0, 1.0, 1.0),
+            size=64.0,
+            contact_damage=40.0,
+            ai_mode=2,
+        ),
+        child_ai_mode=4,
+        child_spec=FormationChildSpec(
+            type_id=CreatureTypeId.LIZARD,
+            health=40.0,
+            move_speed=2.0,
+            reward_value=60.0,
+            size=60.0,
+            contact_damage=4.0,
+            tint=(0.4, 0.7, 0.11, 1.0),
+        ),
+        x_range=range(0, -576, -64),
+        y_range=range(128, 257, 16),
+        apply_fallback=True,
+    ),
+    0x17: GridFormationSpec(
+        parent=ConstantSpawnSpec(
+            type_id=CreatureTypeId.SPIDER_SP1,
+            health=1500.0,
+            move_speed=2.0,
+            reward_value=600.0,
+            tint=(1.0, 1.0, 1.0, 1.0),
+            size=60.0,
+            contact_damage=40.0,
+            ai_mode=2,
+        ),
+        child_ai_mode=4,
+        child_spec=FormationChildSpec(
+            type_id=CreatureTypeId.SPIDER_SP1,
+            health=40.0,
+            move_speed=2.0,
+            reward_value=60.0,
+            size=50.0,
+            contact_damage=4.0,
+            tint=(0.4, 0.7, 0.11, 1.0),
+        ),
+        x_range=range(0, -576, -64),
+        y_range=range(128, 257, 16),
+        apply_fallback=True,
+    ),
+    0x18: GridFormationSpec(
+        parent=ConstantSpawnSpec(
+            type_id=CreatureTypeId.ALIEN,
+            health=500.0,
+            move_speed=2.0,
+            reward_value=600.0,
+            tint=(0.7, 0.8, 0.31, 1.0),
+            size=40.0,
+            contact_damage=40.0,
+            ai_mode=2,
+        ),
+        child_ai_mode=3,
+        child_spec=FormationChildSpec(
+            type_id=CreatureTypeId.ALIEN,
+            health=260.0,
+            move_speed=3.8,
+            reward_value=60.0,
+            size=50.0,
+            contact_damage=35.0,
+            tint=(0.7125, 0.4125, 0.2775, 0.6),
+        ),
+        x_range=range(0, -576, -64),
+        y_range=range(128, 257, 16),
+    ),
+}
+
 
 def spawn_id_label(spawn_id: int) -> str:
     entry = SPAWN_ID_TO_TEMPLATE.get(spawn_id)
@@ -1202,7 +1342,7 @@ class CreatureInit:
     target_offset_x: float | None = None
     target_offset_y: float | None = None
 
-    # Spawn slot reference (stored in link_index in the original when flags include 0x4).
+    # Spawn slot reference (stored in link_index in the original when flags include HAS_SPAWN_SLOT).
     spawn_slot: int | None = None
 
     # BONUS_ON_DEATH uses link_index low/high 16-bit fields for bonus spawn args.
@@ -1409,6 +1549,129 @@ def spawn_chain_children(
         creatures.append(child)
         chain_prev = len(creatures) - 1
     return chain_prev
+
+
+@dataclass(slots=True)
+class PlanBuilder:
+    template_id: int
+    pos_x: float
+    pos_y: float
+    rng: Crand
+    env: SpawnEnv
+    creatures: list[CreatureInit]
+    spawn_slots: list[SpawnSlotInit]
+    effects: list[BurstEffect]
+    primary: int = 0
+
+    @classmethod
+    def start(
+        cls,
+        template_id: int,
+        pos: tuple[float, float],
+        heading: float,
+        rng: Crand,
+        env: SpawnEnv,
+    ) -> tuple["PlanBuilder", float]:
+        pos_x, pos_y = pos
+
+        # creature_alloc_slot() for the base creature.
+        creatures: list[CreatureInit] = [_alloc_creature(template_id, pos_x, pos_y, rng)]
+        spawn_slots: list[SpawnSlotInit] = []
+        effects: list[BurstEffect] = []
+
+        # `heading == -100.0` uses a randomized heading.
+        final_heading = heading
+        if final_heading == -100.0:
+            final_heading = float(rng.rand() % 628) * 0.01
+
+        # Base initialization always consumes one rand() for a transient heading value.
+        creatures[0].heading = float(rng.rand() % 314) * 0.01
+
+        return cls(
+            template_id=template_id,
+            pos_x=pos_x,
+            pos_y=pos_y,
+            rng=rng,
+            env=env,
+            creatures=creatures,
+            spawn_slots=spawn_slots,
+            effects=effects,
+            primary=0,
+        ), final_heading
+
+    @property
+    def base(self) -> CreatureInit:
+        return self.creatures[0]
+
+    def add_slot(self, *, owner: int, timer: float, limit: int, interval: float, child: SupportsInt) -> int:
+        return add_spawn_slot(
+            self.spawn_slots,
+            owner_creature=owner,
+            timer=timer,
+            limit=limit,
+            interval=interval,
+            child_template_id=int(child),
+        )
+
+    def ring_children(self, **kwargs) -> int:
+        return spawn_ring_children(
+            self.creatures,
+            self.template_id,
+            self.pos_x,
+            self.pos_y,
+            self.rng,
+            **kwargs,
+        )
+
+    def grid_children(self, **kwargs) -> int:
+        return spawn_grid_children(
+            self.creatures,
+            self.template_id,
+            self.pos_x,
+            self.pos_y,
+            self.rng,
+            **kwargs,
+        )
+
+    def chain_children(self, **kwargs) -> int:
+        return spawn_chain_children(
+            self.creatures,
+            self.template_id,
+            self.pos_x,
+            self.pos_y,
+            self.rng,
+            **kwargs,
+        )
+
+    def finish(self, final_heading: float) -> SpawnPlan:
+        _apply_tail(
+            template_id=self.template_id,
+            plan_creatures=self.creatures,
+            plan_spawn_slots=self.spawn_slots,
+            plan_effects=self.effects,
+            primary_idx=self.primary,
+            final_heading=final_heading,
+            env=self.env,
+        )
+        return SpawnPlan(
+            creatures=tuple(self.creatures),
+            spawn_slots=tuple(self.spawn_slots),
+            effects=tuple(self.effects),
+            primary=self.primary,
+        )
+
+
+TemplateFn = Callable[[PlanBuilder], None]
+TEMPLATE_BUILDERS: dict[int, TemplateFn] = {}
+
+
+def register_template(*template_ids: int) -> Callable[[TemplateFn], TemplateFn]:
+    def decorator(fn: TemplateFn) -> TemplateFn:
+        for template_id in template_ids:
+            TEMPLATE_BUILDERS[template_id] = fn
+        return fn
+
+    return decorator
 
 
 def tick_spawn_slot(slot: SpawnSlotInit, frame_dt: float) -> int | None:
@@ -1957,7 +2220,7 @@ def _apply_tail(
     if not env.hardcore:
         # This is written as a short-circuit expression in the original:
         # for flag 0x4 creatures, always bump their spawn-slot interval by +0.2 in non-hardcore.
-        if (int(c.flags) & int(CreatureFlags.ANIM_PING_PONG)) != 0 and has_spawn_slot:
+        if (int(c.flags) & int(CreatureFlags.HAS_SPAWN_SLOT)) != 0 and has_spawn_slot:
             plan_spawn_slots[c.spawn_slot].interval += 0.2
 
         if env.difficulty_level > 0:
@@ -1989,7 +2252,7 @@ def _apply_tail(
                     c.contact_damage *= 0.5
                     c.health *= 0.5
 
-            if has_spawn_slot and (int(c.flags) & int(CreatureFlags.ANIM_PING_PONG)) != 0:
+            if has_spawn_slot and (int(c.flags) & int(CreatureFlags.HAS_SPAWN_SLOT)) != 0:
                 plan_spawn_slots[c.spawn_slot].interval += min(3.0, float(d) * 0.35)
     else:
         # In hardcore: difficulty level is forcibly cleared (global), and creature stats are buffed.
@@ -2000,11 +2263,13 @@ def _apply_tail(
         if c.health is not None:
             c.health *= 1.2
 
-        if has_spawn_slot and (int(c.flags) & int(CreatureFlags.ANIM_PING_PONG)) != 0:
+        if has_spawn_slot and (int(c.flags) & int(CreatureFlags.HAS_SPAWN_SLOT)) != 0:
             plan_spawn_slots[c.spawn_slot].interval = max(
                 0.1,
                 plan_spawn_slots[c.spawn_slot].interval - 0.2,
             )
+
+
 def _apply_unhandled_creature_type_fallback(plan_creatures: list[CreatureInit], primary_idx: int) -> None:
     # Some template paths jump to the "Unhandled creatureType.\n" debug block in the original,
     # which forcibly overwrites `type_id` and `health` on the *current* creature pointer.
@@ -2015,7 +2280,604 @@ def _apply_unhandled_creature_type_fallback(plan_creatures: list[CreatureInit], 
     c.health = 20.0
 
 
-def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float, rng: Crand, env: SpawnEnv) -> SpawnPlan:
+def _apply_alien_spawner(ctx: PlanBuilder, spec: AlienSpawnerSpec) -> None:
+    c = ctx.base
+    c.type_id = CreatureTypeId.ALIEN
+    c.flags = CreatureFlags.ANIM_PING_PONG
+    c.spawn_slot = ctx.add_slot(
+        owner=0,
+        timer=spec.timer,
+        limit=spec.limit,
+        interval=spec.interval,
+        child=spec.child_template_id,
+    )
+    c.size = spec.size
+    c.health = spec.health
+    c.move_speed = spec.move_speed
+    c.reward_value = spec.reward_value
+    c.tint_r, c.tint_g, c.tint_b, c.tint_a = spec.tint
+    c.contact_damage = 0.0
+    ctx.primary = 0
+
+
+def _apply_constant_spawn(ctx: PlanBuilder, spec: ConstantSpawnSpec) -> None:
+    c = ctx.base
+    apply_constant_template(c, spec)
+    ctx.primary = 0
+
+
+def _apply_grid_formation(ctx: PlanBuilder, spec: GridFormationSpec) -> None:
+    parent = ctx.base
+    apply_constant_template(parent, spec.parent)
+    if spec.set_parent_max_health and parent.health is not None:
+        parent.max_health = parent.health
+    ctx.primary = ctx.grid_children(
+        x_range=spec.x_range,
+        y_range=spec.y_range,
+        ai_mode=spec.child_ai_mode,
+        child_spec=spec.child_spec,
+    )
+    if spec.apply_fallback:
+        _apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
+
+
+@register_template(0x00)
+def _t00(ctx: PlanBuilder) -> None:
+    c = ctx.base
+    c.type_id = CreatureTypeId.ZOMBIE
+    c.flags = CreatureFlags.ANIM_PING_PONG | CreatureFlags.ANIM_LONG_STRIP
+    c.spawn_slot = ctx.add_slot(
+        owner=0,
+        timer=1.0,
+        limit=812,
+        interval=0.7,
+        child=0x41,
+    )
+    c.size = 64.0
+    c.health = 8500.0
+    c.move_speed = 1.3
+    c.reward_value = 6600.0
+    apply_tint(c, (0.6, 0.6, 1.0, 0.8))
+    c.contact_damage = 50.0
+    ctx.primary = 0
+
+
+@register_template(0x01)
+def _t01(ctx: PlanBuilder) -> None:
+    c = ctx.base
+    c.type_id = CreatureTypeId.SPIDER_SP2
+    c.flags = CreatureFlags.SPLIT_ON_DEATH
+    c.size = 80.0
+    c.health = 400.0
+    c.move_speed = 2.0
+    c.reward_value = 1000.0
+    apply_tint(c, (0.8, 0.7, 0.4, 1.0))
+    c.contact_damage = 17.0
+    ctx.primary = 0
+
+
+@register_template(0x03, 0x05, 0x06)
+def _t03_05_06(ctx: PlanBuilder) -> None:
+    c = ctx.base
+    if ctx.template_id == 0x03:
+        c.type_id = CreatureTypeId.SPIDER_SP1
+    elif ctx.template_id == 0x05:
+        c.type_id = CreatureTypeId.SPIDER_SP2
+    else:
+        c.type_id = CreatureTypeId.ALIEN
+    size = randf(ctx.rng, 15, 1.0, 38.0)
+    apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
+    apply_random_move_speed(c, ctx.rng, 18, 0.1, 1.1)
+    tint_b = randf(ctx.rng, 25, 0.01, 0.8)
+    apply_tint(c, (0.6, 0.6, _clamp01(tint_b), 1.0))
+    c.contact_damage = randf(ctx.rng, 10, 1.0, 4.0)
+    ctx.primary = 0
+
+
+@register_template(0x04)
+def _t04(ctx: PlanBuilder) -> None:
+    c = ctx.base
+    c.type_id = CreatureTypeId.LIZARD
+    size = randf(ctx.rng, 15, 1.0, 38.0)
+    apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
+    apply_tint(c, (0.67, 0.67, 1.0, 1.0))
+    apply_random_move_speed(c, ctx.rng, 18, 0.1, 1.1)
+    c.contact_damage = randf(ctx.rng, 10, 1.0, 4.0)
+    ctx.primary = 0
+
+
+@register_template(0x0E)
+def _t0e(ctx: PlanBuilder) -> None:
+    parent = ctx.base
+    parent.type_id = CreatureTypeId.ALIEN
+    parent.flags = CreatureFlags.ANIM_PING_PONG
+    parent.spawn_slot = ctx.add_slot(
+        owner=0,
+        timer=1.5,
+        limit=64,
+        interval=1.05,
+        child=0x1C,
+    )
+    parent.size = 32.0
+    parent.health = 50.0
+    parent.move_speed = 2.8
+    parent.reward_value = 5000.0
+    apply_tint(parent, (0.9, 0.8, 0.4, 1.0))
+    parent.contact_damage = 0.0
+
+    child_spec = FormationChildSpec(
+        type_id=CreatureTypeId.ALIEN,
+        health=40.0,
+        move_speed=4.0,
+        reward_value=350.0,
+        size=35.0,
+        contact_damage=30.0,
+        tint=(1.0, 0.3, 0.3, 1.0),
+    )
+    ctx.primary = ctx.ring_children(
+        count=24,
+        angle_step=math.pi / 12.0,
+        radius=100.0,
+        ai_mode=3,
+        child_spec=child_spec,
+        heading_override=0.0,
+    )
+
+
+@register_template(0x0F)
+def _t0f(ctx: PlanBuilder) -> None:
+    c = ctx.base
+    c.type_id = CreatureTypeId.ALIEN
+    apply_tint(c, (0.665, 0.385, 0.259, 0.56))
+    c.health = 20.0
+    c.move_speed = 2.9
+    c.reward_value = 60.0
+    c.size = 50.0
+    c.contact_damage = 35.0
+    ctx.primary = 0
+
+
+@register_template(0x11)
+def _t11(ctx: PlanBuilder) -> None:
+    parent = ctx.base
+    parent.type_id = CreatureTypeId.LIZARD
+    parent.ai_mode = 1
+    apply_tint(parent, (0.99, 0.99, 0.21, 1.0))
+    parent.health = 1500.0
+    parent.max_health = 1500.0
+    parent.move_speed = 2.1
+    parent.reward_value = 1000.0
+    parent.size = 69.0
+    parent.contact_damage = 150.0
+
+    # Spawns a linked chain of 4 children (link points to previous). The original also sets
+    # the base creature's link_index to the last child after the loop.
+    child_spec = FormationChildSpec(
+        type_id=CreatureTypeId.LIZARD,
+        health=60.0,
+        move_speed=2.4,
+        reward_value=60.0,
+        size=50.0,
+        contact_damage=14.0,
+        tint=(0.6, 0.6, 0.31, 1.0),
+    )
+    pos_x = ctx.pos_x
+    pos_y = ctx.pos_y
+    local_48 = 2
+
+    def setup_child(child: CreatureInit, idx: int) -> None:
+        nonlocal local_48
+        child.target_offset_x = -256.0 + float(idx) * 64.0
+        child.target_offset_y = -256.0
+        angle = float(local_48) * (math.pi / 8.0)
+        child.pos_x = float(math.cos(angle) * 256.0 + pos_x)
+        child.pos_y = float(math.sin(angle) * 256.0 + pos_y)
+        local_48 += 2
+
+    chain_prev = ctx.chain_children(
+        count=4,
+        ai_mode=3,
+        child_spec=child_spec,
+        setup_child=setup_child,
+    )
+
+    parent.ai_link_parent = chain_prev
+    ctx.primary = chain_prev
+    _apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
+
+
+@register_template(0x12)
+def _t12(ctx: PlanBuilder) -> None:
+    parent = ctx.base
+    parent.type_id = CreatureTypeId.ALIEN
+    apply_tint(parent, (0.65, 0.85, 0.97, 1.0))
+    parent.health = 200.0
+    parent.max_health = 200.0
+    parent.move_speed = 2.2
+    parent.reward_value = 600.0
+    parent.size = 55.0
+    parent.contact_damage = 14.0
+
+    # Spawns 8 linked orbiters in a ring (step ~= pi/4).
+    child_spec = FormationChildSpec(
+        type_id=CreatureTypeId.ALIEN,
+        health=40.0,
+        move_speed=2.4,
+        reward_value=60.0,
+        size=50.0,
+        contact_damage=4.0,
+        tint=(0.32, 0.588, 0.426, 1.0),
+    )
+    ctx.primary = ctx.ring_children(
+        count=8,
+        angle_step=math.pi / 4.0,
+        radius=100.0,
+        ai_mode=3,
+        child_spec=child_spec,
+    )
+
+    # The original function returns the last allocated creature pointer.
+    _apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
+
+
+@register_template(0x13)
+def _t13(ctx: PlanBuilder) -> None:
+    parent = ctx.base
+    parent.type_id = CreatureTypeId.ALIEN
+    parent.ai_mode = 6
+    parent.pos_x = ctx.pos_x + 256.0
+    parent.pos_y = ctx.pos_y
+    apply_tint(parent, (0.6, 0.8, 0.91, 1.0))
+    parent.health = 200.0
+    parent.max_health = 200.0
+    parent.move_speed = 2.0
+    parent.reward_value = 600.0
+    parent.size = 40.0
+    parent.contact_damage = 20.0
+
+    child_spec = FormationChildSpec(
+        type_id=CreatureTypeId.ALIEN,
+        health=60.0,
+        move_speed=2.0,
+        reward_value=60.0,
+        size=50.0,
+        contact_damage=4.0,
+        tint=(0.4, 0.7, 0.11, 1.0),
+        orbit_angle=math.pi,
+        orbit_radius=10.0,
+    )
+    pos_x = ctx.pos_x
+    pos_y = ctx.pos_y
+
+    def setup_child(child: CreatureInit, idx: int) -> None:
+        angle_idx = 2 + idx * 2
+        angle = float(angle_idx) * math.radians(20.0)
+        child.pos_x = float(math.cos(angle) * 256.0 + pos_x)
+        child.pos_y = float(math.sin(angle) * 256.0 + pos_y)
+
+    chain_prev = ctx.chain_children(
+        count=10,
+        ai_mode=6,
+        child_spec=child_spec,
+        setup_child=setup_child,
+    )
+
+    parent.ai_link_parent = chain_prev
+    ctx.primary = chain_prev
+    _apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
+
+
+@register_template(0x19)
+def _t19(ctx: PlanBuilder) -> None:
+    parent = ctx.base
+    parent.type_id = CreatureTypeId.ALIEN
+    apply_tint(parent, (0.95, 0.55, 0.37, 1.0))
+    parent.health = 50.0
+    parent.max_health = 50.0
+    parent.move_speed = 3.8
+    parent.reward_value = 300.0
+    parent.size = 55.0
+    parent.contact_damage = 40.0
+
+    child_spec = FormationChildSpec(
+        type_id=CreatureTypeId.ALIEN,
+        health=220.0,
+        move_speed=3.8,
+        reward_value=60.0,
+        size=50.0,
+        contact_damage=35.0,
+        tint=(0.7125, 0.4125, 0.2775, 0.6),
+    )
+    ctx.primary = ctx.ring_children(
+        count=5,
+        angle_step=math.tau / 5.0,
+        radius=110.0,
+        ai_mode=5,
+        child_spec=child_spec,
+        set_position=True,
+    )
+    _apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
+
+
+@register_template(0x1A, 0x1B, 0x1C)
+def _t1a_1b_1c(ctx: PlanBuilder) -> None:
+    c = ctx.base
+    c.ai_mode = 1
+    c.size = 50.0
+    c.move_speed = 2.4
+    c.reward_value = 125.0
+
+    if ctx.template_id == 0x1A:
+        c.type_id = CreatureTypeId.ALIEN
+        c.health = 50.0
+    elif ctx.template_id == 0x1B:
+        c.type_id = CreatureTypeId.SPIDER_SP1
+        c.health = 40.0
+    else:
+        c.type_id = CreatureTypeId.LIZARD
+        c.health = 50.0
+
+    tint = float(ctx.rng.rand() % 40) * 0.01 + 0.5
+    apply_tint(c, (tint, tint, 1.0, 1.0))
+    c.contact_damage = 5.0
+    ctx.primary = 0
+
+
+@register_template(0x1D)
+def _t1d(ctx: PlanBuilder) -> None:
+    c = ctx.base
+    c.type_id = CreatureTypeId.ALIEN
+    size = randf(ctx.rng, 20, 1.0, 35.0)
+    apply_size_health(c, size, health_scale=8.0 / 7.0, health_add=10.0)
+    apply_random_move_speed(c, ctx.rng, 15, 0.1, 1.1)
+    c.reward_value = randf(ctx.rng, 100, 1.0, 50.0)
+    apply_tint(
+        c,
+        (
+            randf(ctx.rng, 50, 0.001, 0.6),
+            randf(ctx.rng, 50, 0.01, 0.5),
+            randf(ctx.rng, 50, 0.001, 0.6),
+            1.0,
+        ),
+    )
+    c.contact_damage = randf(ctx.rng, 10, 1.0, 4.0)
+    ctx.primary = 0
+
+
+@register_template(0x1E)
+def _t1e(ctx: PlanBuilder) -> None:
+    c = ctx.base
+    c.type_id = CreatureTypeId.ALIEN
+    size = randf(ctx.rng, 30, 1.0, 35.0)
+    apply_size_health(c, size, health_scale=16.0 / 7.0, health_add=10.0)
+    apply_random_move_speed(c, ctx.rng, 17, 0.1, 1.5)
+    c.reward_value = randf(ctx.rng, 200, 1.0, 50.0)
+    apply_tint(
+        c,
+        (
+            randf(ctx.rng, 50, 0.001, 0.6),
+            randf(ctx.rng, 50, 0.001, 0.6),
+            randf(ctx.rng, 50, 0.01, 0.5),
+            1.0,
+        ),
+    )
+    c.contact_damage = randf(ctx.rng, 30, 1.0, 4.0)
+    ctx.primary = 0
+
+
+@register_template(0x1F)
+def _t1f(ctx: PlanBuilder) -> None:
+    c = ctx.base
+    c.type_id = CreatureTypeId.ALIEN
+    size = randf(ctx.rng, 30, 1.0, 45.0)
+    apply_size_health(c, size, health_scale=26.0 / 7.0, health_add=30.0)
+    apply_random_move_speed(c, ctx.rng, 21, 0.1, 1.6)
+    c.reward_value = randf(ctx.rng, 200, 1.0, 80.0)
+    apply_tint(
+        c,
+        (
+            randf(ctx.rng, 50, 0.01, 0.5),
+            randf(ctx.rng, 50, 0.001, 0.6),
+            randf(ctx.rng, 50, 0.001, 0.6),
+            1.0,
+        ),
+    )
+    c.contact_damage = randf(ctx.rng, 35, 1.0, 8.0)
+    ctx.primary = 0
+
+
+@register_template(0x20)
+def _t20(ctx: PlanBuilder) -> None:
+    c = ctx.base
+    c.type_id = CreatureTypeId.ALIEN
+    size = float(ctx.rng.rand() % 30 + 40)
+    c.size = size
+    c.health = size * (8.0 / 7.0) + 20.0
+    c.move_speed = float(ctx.rng.rand() % 18) * 0.1 + 1.1
+    c.reward_value = size + size + 50.0
+    tint_g = float(ctx.rng.rand() % 40) * 0.01 + 0.6
+    apply_tint(c, (0.3, tint_g, 0.3, 1.0))
+    c.contact_damage = float(ctx.rng.rand() % 10) + 4.0
+    ctx.primary = 0
+
+
+@register_template(0x2E)
+def _t2e(ctx: PlanBuilder) -> None:
+    c = ctx.base
+    c.type_id = CreatureTypeId.LIZARD
+    size = randf(ctx.rng, 30, 1.0, 40.0)
+    apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
+    apply_random_move_speed(c, ctx.rng, 18, 0.1, 1.1)
+    apply_tint(
+        c,
+        (
+            randf(ctx.rng, 40, 0.01, 0.6),
+            randf(ctx.rng, 40, 0.01, 0.6),
+            randf(ctx.rng, 40, 0.01, 0.6),
+            1.0,
+        ),
+    )
+    c.contact_damage = randf(ctx.rng, 10, 1.0, 4.0)
+    ctx.primary = 0
+
+
+@register_template(0x31)
+def _t31(ctx: PlanBuilder) -> None:
+    c = ctx.base
+    c.type_id = CreatureTypeId.LIZARD
+    size = randf(ctx.rng, 30, 1.0, 40.0)
+    apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=10.0)
+    apply_random_move_speed(c, ctx.rng, 18, 0.1, 1.1)
+    tint = randf(ctx.rng, 30, 0.01, 0.6)
+    apply_tint(c, (tint, tint, 0.38, 1.0))
+    c.contact_damage = size * 0.14 + 4.0
+    ctx.primary = 0
+
+
+@register_template(0x32)
+def _t32(ctx: PlanBuilder) -> None:
+    c = ctx.base
+    c.type_id = CreatureTypeId.SPIDER_SP1
+    size = randf(ctx.rng, 25, 1.0, 40.0)
+    apply_size_health_reward(c, size, health_scale=1.0, health_add=10.0)
+    apply_random_move_speed(c, ctx.rng, 17, 0.1, 1.1)
+    tint = randf(ctx.rng, 40, 0.01, 0.6)
+    apply_tint(c, (tint, tint, tint, 1.0))
+    c.contact_damage = size * 0.14 + 4.0
+    ctx.primary = 0
+
+
+@register_template(0x33)
+def _t33(ctx: PlanBuilder) -> None:
+    c = ctx.base
+    c.type_id = CreatureTypeId.SPIDER_SP1
+    size = randf(ctx.rng, 15, 1.0, 45.0)
+    apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
+    apply_random_move_speed(c, ctx.rng, 18, 0.1, 1.1)
+    apply_tint(c, (randf(ctx.rng, 40, 0.01, 0.6), 0.5, 0.5, 1.0))
+    c.contact_damage = randf(ctx.rng, 10, 1.0, 4.0)
+    ctx.primary = 0
+
+
+@register_template(0x34)
+def _t34(ctx: PlanBuilder) -> None:
+    c = ctx.base
+    c.type_id = CreatureTypeId.SPIDER_SP1
+    size = randf(ctx.rng, 20, 1.0, 40.0)
+    apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
+    apply_random_move_speed(c, ctx.rng, 18, 0.1, 1.1)
+    apply_tint(c, (0.5, randf(ctx.rng, 40, 0.01, 0.6), 0.5, 1.0))
+    c.contact_damage = randf(ctx.rng, 10, 1.0, 4.0)
+    ctx.primary = 0
+
+
+@register_template(0x35)
+def _t35(ctx: PlanBuilder) -> None:
+    c = ctx.base
+    c.type_id = CreatureTypeId.SPIDER_SP2
+    size = randf(ctx.rng, 10, 1.0, 30.0)
+    apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
+    apply_random_move_speed(c, ctx.rng, 18, 0.1, 1.1)
+    apply_tint(c, (0.8, randf(ctx.rng, 20, 0.01, 0.8), 0.8, 1.0))
+    c.contact_damage = randf(ctx.rng, 10, 1.0, 4.0)
+    ctx.primary = 0
+
+
+@register_template(0x36)
+def _t36(ctx: PlanBuilder) -> None:
+    c = ctx.base
+    c.type_id = CreatureTypeId.ALIEN
+    c.size = 50.0
+    c.ai_mode = 7
+    c.orbit_radius = 1.5
+    c.health = 10.0
+    c.move_speed = 1.8
+    c.reward_value = 150.0
+    tint_g = float(ctx.rng.rand() % 5) * 0.01 + 0.65
+    apply_tint(c, (0.65, tint_g, 0.95, 1.0))
+    c.contact_damage = 40.0
+    ctx.primary = 0
+
+
+@register_template(0x37)
+def _t37(ctx: PlanBuilder) -> None:
+    c = ctx.base
+    c.type_id = CreatureTypeId.SPIDER_SP2
+    c.flags = CreatureFlags.RANGED_ATTACK_VARIANT
+    c.health = 50.0
+    c.move_speed = 3.2
+    c.reward_value = 433.0
+    apply_tint(c, (1.0, 0.75, 0.1, 1.0))
+    c.size = float((ctx.rng.rand() & 3) + 41)
+    c.contact_damage = 10.0
+    ctx.primary = 0
+
+
+@register_template(0x38)
+def _t38(ctx: PlanBuilder) -> None:
+    c = ctx.base
+    c.type_id = CreatureTypeId.SPIDER_SP1
+    c.flags = CreatureFlags.AI7_LINK_TIMER
+    c.ai_timer = 0
+    c.health = 50.0
+    c.move_speed = 4.8
+    c.reward_value = 433.0
+    apply_tint(c, (1.0, 0.75, 0.1, 1.0))
+    c.size = float((ctx.rng.rand() & 3) + 41)
+    c.contact_damage = 10.0
+    ctx.primary = 0
+
+
+@register_template(0x39)
+def _t39(ctx: PlanBuilder) -> None:
+    c = ctx.base
+    c.type_id = CreatureTypeId.SPIDER_SP1
+    c.flags = CreatureFlags.AI7_LINK_TIMER
+    c.ai_timer = 0
+    c.health = 4.0
+    c.move_speed = 4.8
+    c.reward_value = 50.0
+    apply_tint(c, (0.8, 0.65, 0.1, 1.0))
+    c.size = float(ctx.rng.rand() % 4 + 26)
+    c.contact_damage = 10.0
+    ctx.primary = 0
+
+
+@register_template(0x3D)
+def _t3d(ctx: PlanBuilder) -> None:
+    c = ctx.base
+    c.type_id = CreatureTypeId.SPIDER_SP1
+    c.health = 70.0
+    c.move_speed = 2.6
+    c.reward_value = 120.0
+    tint = float(ctx.rng.rand() % 20) * 0.01 + 0.8
+    apply_tint(c, (tint, tint, tint, 1.0))
+    size = float(ctx.rng.rand() % 7 + 45)
+    c.size = size
+    c.contact_damage = size * 0.22
+    ctx.primary = 0
+
+
+@register_template(0x41)
+def _t41(ctx: PlanBuilder) -> None:
+    c = ctx.base
+    c.type_id = CreatureTypeId.ZOMBIE
+    size = randf(ctx.rng, 30, 1.0, 40.0)
+    apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=10.0)
+    apply_size_move_speed(c, size, 0.0025, 0.9)
+    tint = randf(ctx.rng, 40, 0.01, 0.6)
+    apply_tint(c, (tint, tint, tint, 1.0))
+    c.contact_damage = randf(ctx.rng, 10, 1.0, 4.0)
+    ctx.primary = 0
+
+
+def build_spawn_plan(
+    template_id: SupportsInt,
+    pos: tuple[float, float],
+    heading: float,
+    rng: Crand,
+    env: SpawnEnv,
+) -> SpawnPlan:
     """Pure plan builder modeled after `creature_spawn_template` (0x00430AF0).
 
     The plan lists:
@@ -2023,718 +2885,19 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
       - any spawn-slot configurations (deferred child spawns)
       - side-effects like burst FX
     """
-    pos_x, pos_y = pos
+    template_id = int(template_id)
+    ctx, final_heading = PlanBuilder.start(template_id, pos, heading, rng, env)
 
-    # creature_alloc_slot() for the base creature.
-    creatures: list[CreatureInit] = [_alloc_creature(template_id, pos_x, pos_y, rng)]
-    spawn_slots: list[SpawnSlotInit] = []
-    effects: list[BurstEffect] = []
-    primary_idx = 0
-
-    # `heading == -100.0` uses a randomized heading.
-    final_heading = heading
-    if final_heading == -100.0:
-        final_heading = float(rng.rand() % 628) * 0.01
-
-    # Base initialization always consumes one rand() for a transient heading value.
-    creatures[0].heading = float(rng.rand() % 314) * 0.01
-
-    if template_id == 0x00:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ZOMBIE
-        c.flags = CreatureFlags.ANIM_PING_PONG | CreatureFlags.ANIM_LONG_STRIP
-        c.spawn_slot = add_spawn_slot(
-            spawn_slots,
-            owner_creature=0,
-            timer=1.0,
-            limit=812,
-            interval=0.7,
-            child_template_id=0x41,
-        )
-        c.size = 64.0
-        c.health = 8500.0
-        c.move_speed = 1.3
-        c.reward_value = 6600.0
-        apply_tint(c, (0.6, 0.6, 1.0, 0.8))
-        c.contact_damage = 50.0
-        primary_idx = 0
-    elif template_id == 1:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.SPIDER_SP2
-        c.flags = CreatureFlags.SPLIT_ON_DEATH
-        c.size = 80.0
-        c.health = 400.0
-        c.move_speed = 2.0
-        c.reward_value = 1000.0
-        apply_tint(c, (0.8, 0.7, 0.4, 1.0))
-        c.contact_damage = 17.0
-        primary_idx = 0
-    elif template_id in (0x03, 0x05, 0x06):
-        c = creatures[0]
-        if template_id == 0x03:
-            c.type_id = CreatureTypeId.SPIDER_SP1
-        elif template_id == 0x05:
-            c.type_id = CreatureTypeId.SPIDER_SP2
-        else:
-            c.type_id = CreatureTypeId.ALIEN
-        size = randf(rng, 15, 1.0, 38.0)
-        apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
-        apply_random_move_speed(c, rng, 18, 0.1, 1.1)
-        tint_b = randf(rng, 25, 0.01, 0.8)
-        apply_tint(c, (0.6, 0.6, _clamp01(tint_b), 1.0))
-        c.contact_damage = randf(rng, 10, 1.0, 4.0)
-        primary_idx = 0
-    elif template_id == 0x04:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.LIZARD
-        size = randf(rng, 15, 1.0, 38.0)
-        apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
-        apply_tint(c, (0.67, 0.67, 1.0, 1.0))
-        apply_random_move_speed(c, rng, 18, 0.1, 1.1)
-        c.contact_damage = randf(rng, 10, 1.0, 4.0)
-        primary_idx = 0
+    builder = TEMPLATE_BUILDERS.get(template_id)
+    if builder is not None:
+        builder(ctx)
     elif template_id in ALIEN_SPAWNER_TEMPLATES:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ALIEN
-        c.flags = CreatureFlags.ANIM_PING_PONG
-        spec = ALIEN_SPAWNER_TEMPLATES[template_id]
-        c.spawn_slot = add_spawn_slot(
-            spawn_slots,
-            owner_creature=0,
-            timer=spec.timer,
-            limit=spec.limit,
-            interval=spec.interval,
-            child_template_id=spec.child_template_id,
-        )
-        c.size = spec.size
-        c.health = spec.health
-        c.move_speed = spec.move_speed
-        c.reward_value = spec.reward_value
-        c.tint_r, c.tint_g, c.tint_b, c.tint_a = spec.tint
-        c.contact_damage = 0.0
-        primary_idx = 0
-    elif template_id == 0x0E:
-        parent = creatures[0]
-        parent.type_id = CreatureTypeId.ALIEN
-        parent.flags = CreatureFlags.ANIM_PING_PONG
-        parent.spawn_slot = add_spawn_slot(
-            spawn_slots,
-            owner_creature=0,
-            timer=1.5,
-            limit=64,
-            interval=1.05,
-            child_template_id=0x1C,
-        )
-        parent.size = 32.0
-        parent.health = 50.0
-        parent.move_speed = 2.8
-        parent.reward_value = 5000.0
-        apply_tint(parent, (0.9, 0.8, 0.4, 1.0))
-        parent.contact_damage = 0.0
-
-        child_spec = FormationChildSpec(
-            type_id=CreatureTypeId.ALIEN,
-            health=40.0,
-            move_speed=4.0,
-            reward_value=350.0,
-            size=35.0,
-            contact_damage=30.0,
-            tint=(1.0, 0.3, 0.3, 1.0),
-        )
-        primary_idx = spawn_ring_children(
-            creatures,
-            template_id,
-            pos_x,
-            pos_y,
-            rng,
-            count=24,
-            angle_step=math.pi / 12.0,
-            radius=100.0,
-            ai_mode=3,
-            child_spec=child_spec,
-            heading_override=0.0,
-        )
-    elif template_id == 0x0F:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ALIEN
-        apply_tint(c, (0.665, 0.385, 0.259, 0.56))
-        c.health = 20.0
-        c.move_speed = 2.9
-        c.reward_value = 60.0
-        c.size = 50.0
-        c.contact_damage = 35.0
-        primary_idx = 0
-    elif template_id == 0x11:
-        parent = creatures[0]
-        parent.type_id = CreatureTypeId.LIZARD
-        parent.ai_mode = 1
-        apply_tint(parent, (0.99, 0.99, 0.21, 1.0))
-        parent.health = 1500.0
-        parent.max_health = 1500.0
-        parent.move_speed = 2.1
-        parent.reward_value = 1000.0
-        parent.size = 69.0
-        parent.contact_damage = 150.0
-
-        # Spawns a linked chain of 4 children (link points to previous). The original also sets
-        # the base creature's link_index to the last child after the loop.
-        child_spec = FormationChildSpec(
-            type_id=CreatureTypeId.LIZARD,
-            health=60.0,
-            move_speed=2.4,
-            reward_value=60.0,
-            size=50.0,
-            contact_damage=14.0,
-            tint=(0.6, 0.6, 0.31, 1.0),
-        )
-        local_48 = 2
-
-        def setup_child(child: CreatureInit, idx: int) -> None:
-            nonlocal local_48
-            child.target_offset_x = -256.0 + float(idx) * 64.0
-            child.target_offset_y = -256.0
-            angle = float(local_48) * (math.pi / 8.0)
-            child.pos_x = float(math.cos(angle) * 256.0 + pos_x)
-            child.pos_y = float(math.sin(angle) * 256.0 + pos_y)
-            local_48 += 2
-
-        chain_prev = spawn_chain_children(
-            creatures,
-            template_id,
-            pos_x,
-            pos_y,
-            rng,
-            count=4,
-            ai_mode=3,
-            child_spec=child_spec,
-            setup_child=setup_child,
-        )
-
-        parent.ai_link_parent = chain_prev
-        primary_idx = chain_prev
-        _apply_unhandled_creature_type_fallback(creatures, primary_idx)
-    elif template_id == 0x12:
-        parent = creatures[0]
-        parent.type_id = CreatureTypeId.ALIEN
-        apply_tint(parent, (0.65, 0.85, 0.97, 1.0))
-        parent.health = 200.0
-        parent.max_health = 200.0
-        parent.move_speed = 2.2
-        parent.reward_value = 600.0
-        parent.size = 55.0
-        parent.contact_damage = 14.0
-
-        # Spawns 8 linked orbiters in a ring (step ~= pi/4).
-        child_spec = FormationChildSpec(
-            type_id=CreatureTypeId.ALIEN,
-            health=40.0,
-            move_speed=2.4,
-            reward_value=60.0,
-            size=50.0,
-            contact_damage=4.0,
-            tint=(0.32, 0.588, 0.426, 1.0),
-        )
-        primary_idx = spawn_ring_children(
-            creatures,
-            template_id,
-            pos_x,
-            pos_y,
-            rng,
-            count=8,
-            angle_step=math.pi / 4.0,
-            radius=100.0,
-            ai_mode=3,
-            child_spec=child_spec,
-        )
-
-        # The original function returns the last allocated creature pointer.
-        _apply_unhandled_creature_type_fallback(creatures, primary_idx)
-    elif template_id == 0x13:
-        parent = creatures[0]
-        parent.type_id = CreatureTypeId.ALIEN
-        parent.ai_mode = 6
-        parent.pos_x = pos_x + 256.0
-        parent.pos_y = pos_y
-        apply_tint(parent, (0.6, 0.8, 0.91, 1.0))
-        parent.health = 200.0
-        parent.max_health = 200.0
-        parent.move_speed = 2.0
-        parent.reward_value = 600.0
-        parent.size = 40.0
-        parent.contact_damage = 20.0
-
-        child_spec = FormationChildSpec(
-            type_id=CreatureTypeId.ALIEN,
-            health=60.0,
-            move_speed=2.0,
-            reward_value=60.0,
-            size=50.0,
-            contact_damage=4.0,
-            tint=(0.4, 0.7, 0.11, 1.0),
-            orbit_angle=math.pi,
-            orbit_radius=10.0,
-        )
-
-        def setup_child(child: CreatureInit, idx: int) -> None:
-            angle_idx = 2 + idx * 2
-            angle = float(angle_idx) * math.radians(20.0)
-            child.pos_x = float(math.cos(angle) * 256.0 + pos_x)
-            child.pos_y = float(math.sin(angle) * 256.0 + pos_y)
-
-        chain_prev = spawn_chain_children(
-            creatures,
-            template_id,
-            pos_x,
-            pos_y,
-            rng,
-            count=10,
-            ai_mode=6,
-            child_spec=child_spec,
-            setup_child=setup_child,
-        )
-
-        parent.ai_link_parent = chain_prev
-        primary_idx = chain_prev
-        _apply_unhandled_creature_type_fallback(creatures, primary_idx)
-    elif template_id == 0x14:
-        parent = creatures[0]
-        parent.type_id = CreatureTypeId.ALIEN
-        parent.ai_mode = 2
-        apply_tint(parent, (0.7, 0.8, 0.31, 1.0))
-        parent.health = 1500.0
-        parent.max_health = 1500.0
-        parent.move_speed = 2.0
-        parent.reward_value = 600.0
-        parent.size = 50.0
-        parent.contact_damage = 40.0
-
-        child_spec = FormationChildSpec(
-            type_id=CreatureTypeId.ALIEN,
-            health=40.0,
-            move_speed=2.0,
-            reward_value=60.0,
-            size=50.0,
-            contact_damage=4.0,
-            tint=(0.4, 0.7, 0.11, 1.0),
-        )
-        primary_idx = spawn_grid_children(
-            creatures,
-            template_id,
-            pos_x,
-            pos_y,
-            rng,
-            x_range=range(0, -576, -64),
-            y_range=range(128, 257, 16),
-            ai_mode=5,
-            child_spec=child_spec,
-        )
-        _apply_unhandled_creature_type_fallback(creatures, primary_idx)
-    elif template_id == 0x15:
-        parent = creatures[0]
-        parent.type_id = CreatureTypeId.ALIEN
-        parent.ai_mode = 2
-        apply_tint(parent, (1.0, 1.0, 1.0, 1.0))
-        parent.health = 1500.0
-        parent.max_health = 1500.0
-        parent.move_speed = 2.0
-        parent.reward_value = 600.0
-        parent.size = 60.0
-        parent.contact_damage = 40.0
-
-        child_spec = FormationChildSpec(
-            type_id=CreatureTypeId.ALIEN,
-            health=40.0,
-            move_speed=2.0,
-            reward_value=60.0,
-            size=50.0,
-            contact_damage=4.0,
-            tint=(0.4, 0.7, 0.11, 1.0),
-        )
-        primary_idx = spawn_grid_children(
-            creatures,
-            template_id,
-            pos_x,
-            pos_y,
-            rng,
-            x_range=range(0, -576, -64),
-            y_range=range(128, 257, 16),
-            ai_mode=4,
-            child_spec=child_spec,
-        )
-        _apply_unhandled_creature_type_fallback(creatures, primary_idx)
-    elif template_id == 0x16:
-        parent = creatures[0]
-        parent.type_id = CreatureTypeId.LIZARD
-        parent.ai_mode = 2
-        apply_tint(parent, (1.0, 1.0, 1.0, 1.0))
-        parent.health = 1500.0
-        parent.max_health = 1500.0
-        parent.move_speed = 2.0
-        parent.reward_value = 600.0
-        parent.size = 64.0
-        parent.contact_damage = 40.0
-
-        child_spec = FormationChildSpec(
-            type_id=CreatureTypeId.LIZARD,
-            health=40.0,
-            move_speed=2.0,
-            reward_value=60.0,
-            size=60.0,
-            contact_damage=4.0,
-            tint=(0.4, 0.7, 0.11, 1.0),
-        )
-        primary_idx = spawn_grid_children(
-            creatures,
-            template_id,
-            pos_x,
-            pos_y,
-            rng,
-            x_range=range(0, -576, -64),
-            y_range=range(128, 257, 16),
-            ai_mode=4,
-            child_spec=child_spec,
-        )
-        _apply_unhandled_creature_type_fallback(creatures, primary_idx)
-    elif template_id == 0x17:
-        parent = creatures[0]
-        parent.type_id = CreatureTypeId.SPIDER_SP1
-        parent.ai_mode = 2
-        apply_tint(parent, (1.0, 1.0, 1.0, 1.0))
-        parent.health = 1500.0
-        parent.max_health = 1500.0
-        parent.move_speed = 2.0
-        parent.reward_value = 600.0
-        parent.size = 60.0
-        parent.contact_damage = 40.0
-
-        child_spec = FormationChildSpec(
-            type_id=CreatureTypeId.SPIDER_SP1,
-            health=40.0,
-            move_speed=2.0,
-            reward_value=60.0,
-            size=50.0,
-            contact_damage=4.0,
-            tint=(0.4, 0.7, 0.11, 1.0),
-        )
-        primary_idx = spawn_grid_children(
-            creatures,
-            template_id,
-            pos_x,
-            pos_y,
-            rng,
-            x_range=range(0, -576, -64),
-            y_range=range(128, 257, 16),
-            ai_mode=4,
-            child_spec=child_spec,
-        )
-        _apply_unhandled_creature_type_fallback(creatures, primary_idx)
-    elif template_id == 0x18:
-        parent = creatures[0]
-        parent.type_id = CreatureTypeId.ALIEN
-        parent.ai_mode = 2
-        apply_tint(parent, (0.7, 0.8, 0.31, 1.0))
-        parent.health = 500.0
-        parent.max_health = 500.0
-        parent.move_speed = 2.0
-        parent.reward_value = 600.0
-        parent.size = 40.0
-        parent.contact_damage = 40.0
-
-        child_spec = FormationChildSpec(
-            type_id=CreatureTypeId.ALIEN,
-            health=260.0,
-            move_speed=3.8,
-            reward_value=60.0,
-            size=50.0,
-            contact_damage=35.0,
-            tint=(0.7125, 0.4125, 0.2775, 0.6),
-        )
-        primary_idx = spawn_grid_children(
-            creatures,
-            template_id,
-            pos_x,
-            pos_y,
-            rng,
-            x_range=range(0, -576, -64),
-            y_range=range(128, 257, 16),
-            ai_mode=3,
-            child_spec=child_spec,
-        )
-    elif template_id == 0x19:
-        parent = creatures[0]
-        parent.type_id = CreatureTypeId.ALIEN
-        apply_tint(parent, (0.95, 0.55, 0.37, 1.0))
-        parent.health = 50.0
-        parent.max_health = 50.0
-        parent.move_speed = 3.8
-        parent.reward_value = 300.0
-        parent.size = 55.0
-        parent.contact_damage = 40.0
-
-        child_spec = FormationChildSpec(
-            type_id=CreatureTypeId.ALIEN,
-            health=220.0,
-            move_speed=3.8,
-            reward_value=60.0,
-            size=50.0,
-            contact_damage=35.0,
-            tint=(0.7125, 0.4125, 0.2775, 0.6),
-        )
-        primary_idx = spawn_ring_children(
-            creatures,
-            template_id,
-            pos_x,
-            pos_y,
-            rng,
-            count=5,
-            angle_step=math.tau / 5.0,
-            radius=110.0,
-            ai_mode=5,
-            child_spec=child_spec,
-            set_position=True,
-        )
-        _apply_unhandled_creature_type_fallback(creatures, primary_idx)
-    elif template_id in (0x1A, 0x1B, 0x1C):
-        c = creatures[0]
-        c.ai_mode = 1
-        c.size = 50.0
-        c.move_speed = 2.4
-        c.reward_value = 125.0
-
-        if template_id == 0x1A:
-            c.type_id = CreatureTypeId.ALIEN
-            c.health = 50.0
-        elif template_id == 0x1B:
-            c.type_id = CreatureTypeId.SPIDER_SP1
-            c.health = 40.0
-        else:
-            c.type_id = CreatureTypeId.LIZARD
-            c.health = 50.0
-
-        tint = float(rng.rand() % 40) * 0.01 + 0.5
-        apply_tint(c, (tint, tint, 1.0, 1.0))
-        c.contact_damage = 5.0
-        primary_idx = 0
-    elif template_id == 0x1D:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ALIEN
-        size = randf(rng, 20, 1.0, 35.0)
-        apply_size_health(c, size, health_scale=8.0 / 7.0, health_add=10.0)
-        apply_random_move_speed(c, rng, 15, 0.1, 1.1)
-        c.reward_value = randf(rng, 100, 1.0, 50.0)
-        apply_tint(
-            c,
-            (
-                randf(rng, 50, 0.001, 0.6),
-                randf(rng, 50, 0.01, 0.5),
-                randf(rng, 50, 0.001, 0.6),
-                1.0,
-            ),
-        )
-        c.contact_damage = randf(rng, 10, 1.0, 4.0)
-        primary_idx = 0
-    elif template_id == 0x1E:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ALIEN
-        size = randf(rng, 30, 1.0, 35.0)
-        apply_size_health(c, size, health_scale=16.0 / 7.0, health_add=10.0)
-        apply_random_move_speed(c, rng, 17, 0.1, 1.5)
-        c.reward_value = randf(rng, 200, 1.0, 50.0)
-        apply_tint(
-            c,
-            (
-                randf(rng, 50, 0.001, 0.6),
-                randf(rng, 50, 0.001, 0.6),
-                randf(rng, 50, 0.01, 0.5),
-                1.0,
-            ),
-        )
-        c.contact_damage = randf(rng, 30, 1.0, 4.0)
-        primary_idx = 0
-    elif template_id == 0x1F:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ALIEN
-        size = randf(rng, 30, 1.0, 45.0)
-        apply_size_health(c, size, health_scale=26.0 / 7.0, health_add=30.0)
-        apply_random_move_speed(c, rng, 21, 0.1, 1.6)
-        c.reward_value = randf(rng, 200, 1.0, 80.0)
-        apply_tint(
-            c,
-            (
-                randf(rng, 50, 0.01, 0.5),
-                randf(rng, 50, 0.001, 0.6),
-                randf(rng, 50, 0.001, 0.6),
-                1.0,
-            ),
-        )
-        c.contact_damage = randf(rng, 35, 1.0, 8.0)
-        primary_idx = 0
-    elif template_id == 0x20:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ALIEN
-        size = float(rng.rand() % 30 + 40)
-        c.size = size
-        c.health = size * (8.0 / 7.0) + 20.0
-        c.move_speed = float(rng.rand() % 18) * 0.1 + 1.1
-        c.reward_value = size + size + 50.0
-        tint_g = float(rng.rand() % 40) * 0.01 + 0.6
-        apply_tint(c, (0.3, tint_g, 0.3, 1.0))
-        c.contact_damage = float(rng.rand() % 10) + 4.0
-        primary_idx = 0
-    # Constant single-creature templates (includes demo/attract-mode ids).
+        _apply_alien_spawner(ctx, ALIEN_SPAWNER_TEMPLATES[template_id])
+    elif template_id in GRID_FORMATIONS:
+        _apply_grid_formation(ctx, GRID_FORMATIONS[template_id])
     elif template_id in CONSTANT_SPAWN_TEMPLATES:
-        c = creatures[0]
-        apply_constant_template(c, CONSTANT_SPAWN_TEMPLATES[template_id])
-        primary_idx = 0
-    elif template_id == 0x2E:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.LIZARD
-        size = randf(rng, 30, 1.0, 40.0)
-        apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
-        apply_random_move_speed(c, rng, 18, 0.1, 1.1)
-        apply_tint(
-            c,
-            (
-                randf(rng, 40, 0.01, 0.6),
-                randf(rng, 40, 0.01, 0.6),
-                randf(rng, 40, 0.01, 0.6),
-                1.0,
-            ),
-        )
-        c.contact_damage = randf(rng, 10, 1.0, 4.0)
-        primary_idx = 0
-    elif template_id == 0x31:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.LIZARD
-        size = randf(rng, 30, 1.0, 40.0)
-        apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=10.0)
-        apply_random_move_speed(c, rng, 18, 0.1, 1.1)
-        tint = randf(rng, 30, 0.01, 0.6)
-        apply_tint(c, (tint, tint, 0.38, 1.0))
-        c.contact_damage = size * 0.14 + 4.0
-        primary_idx = 0
-    elif template_id == 0x32:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.SPIDER_SP1
-        size = randf(rng, 25, 1.0, 40.0)
-        apply_size_health_reward(c, size, health_scale=1.0, health_add=10.0)
-        apply_random_move_speed(c, rng, 17, 0.1, 1.1)
-        tint = randf(rng, 40, 0.01, 0.6)
-        apply_tint(c, (tint, tint, tint, 1.0))
-        c.contact_damage = size * 0.14 + 4.0
-        primary_idx = 0
-    elif template_id == 0x33:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.SPIDER_SP1
-        size = randf(rng, 15, 1.0, 45.0)
-        apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
-        apply_random_move_speed(c, rng, 18, 0.1, 1.1)
-        apply_tint(c, (randf(rng, 40, 0.01, 0.6), 0.5, 0.5, 1.0))
-        c.contact_damage = randf(rng, 10, 1.0, 4.0)
-        primary_idx = 0
-    elif template_id == 0x34:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.SPIDER_SP1
-        size = randf(rng, 20, 1.0, 40.0)
-        apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
-        apply_random_move_speed(c, rng, 18, 0.1, 1.1)
-        apply_tint(c, (0.5, randf(rng, 40, 0.01, 0.6), 0.5, 1.0))
-        c.contact_damage = randf(rng, 10, 1.0, 4.0)
-        primary_idx = 0
-    elif template_id == 0x35:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.SPIDER_SP2
-        size = randf(rng, 10, 1.0, 30.0)
-        apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
-        apply_random_move_speed(c, rng, 18, 0.1, 1.1)
-        apply_tint(c, (0.8, randf(rng, 20, 0.01, 0.8), 0.8, 1.0))
-        c.contact_damage = randf(rng, 10, 1.0, 4.0)
-        primary_idx = 0
-    elif template_id == 0x36:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ALIEN
-        c.size = 50.0
-        c.ai_mode = 7
-        c.orbit_radius = 1.5
-        c.health = 10.0
-        c.move_speed = 1.8
-        c.reward_value = 150.0
-        tint_g = float(rng.rand() % 5) * 0.01 + 0.65
-        apply_tint(c, (0.65, tint_g, 0.95, 1.0))
-        c.contact_damage = 40.0
-        primary_idx = 0
-    elif template_id == 0x37:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.SPIDER_SP2
-        c.flags = CreatureFlags.RANGED_ATTACK_VARIANT
-        c.health = 50.0
-        c.move_speed = 3.2
-        c.reward_value = 433.0
-        apply_tint(c, (1.0, 0.75, 0.1, 1.0))
-        c.size = float((rng.rand() & 3) + 41)
-        c.contact_damage = 10.0
-        primary_idx = 0
-    elif template_id == 0x38:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.SPIDER_SP1
-        c.flags = CreatureFlags.AI7_LINK_TIMER
-        c.ai_timer = 0
-        c.health = 50.0
-        c.move_speed = 4.8
-        c.reward_value = 433.0
-        apply_tint(c, (1.0, 0.75, 0.1, 1.0))
-        c.size = float((rng.rand() & 3) + 41)
-        c.contact_damage = 10.0
-        primary_idx = 0
-    elif template_id == 0x39:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.SPIDER_SP1
-        c.flags = CreatureFlags.AI7_LINK_TIMER
-        c.ai_timer = 0
-        c.health = 4.0
-        c.move_speed = 4.8
-        c.reward_value = 50.0
-        apply_tint(c, (0.8, 0.65, 0.1, 1.0))
-        c.size = float(rng.rand() % 4 + 26)
-        c.contact_damage = 10.0
-        primary_idx = 0
-    elif template_id == 0x3D:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.SPIDER_SP1
-        c.health = 70.0
-        c.move_speed = 2.6
-        c.reward_value = 120.0
-        tint = float(rng.rand() % 20) * 0.01 + 0.8
-        apply_tint(c, (tint, tint, tint, 1.0))
-        size = float(rng.rand() % 7 + 45)
-        c.size = size
-        c.contact_damage = size * 0.22
-        primary_idx = 0
-    elif template_id == 0x41:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ZOMBIE
-        size = randf(rng, 30, 1.0, 40.0)
-        apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=10.0)
-        apply_size_move_speed(c, size, 0.0025, 0.9)
-        tint = randf(rng, 40, 0.01, 0.6)
-        apply_tint(c, (tint, tint, tint, 1.0))
-        c.contact_damage = randf(rng, 10, 1.0, 4.0)
-        primary_idx = 0
+        _apply_constant_spawn(ctx, CONSTANT_SPAWN_TEMPLATES[template_id])
     else:
         raise NotImplementedError(f"spawn plan not implemented for template_id=0x{template_id:x}")
 
-    _apply_tail(
-        template_id=template_id,
-        plan_creatures=creatures,
-        plan_spawn_slots=spawn_slots,
-        plan_effects=effects,
-        primary_idx=primary_idx,
-        final_heading=final_heading,
-        env=env,
-    )
-    return SpawnPlan(
-        creatures=tuple(creatures),
-        spawn_slots=tuple(spawn_slots),
-        effects=tuple(effects),
-        primary=primary_idx,
-    )
+    return ctx.finish(final_heading)
