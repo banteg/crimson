@@ -4823,7 +4823,7 @@ int FUN_00406350(void)
     sfx_play_exclusive(music_track_crimson_theme_id);
     ui_transition_direction = 0;
     game_state_pending = 0;
-    DAT_00487292 = 0;
+    ui_sign_crimson_update_disabled = 0;
   }
   ui_cursor_render();
   return extraout_EAX;
@@ -5888,7 +5888,7 @@ void __cdecl tutorial_prompt_dialog(char *text,float alpha)
     fStack_14 = 10.0;
     ui_button_update(&fStack_14,(int *)&ui_button_table_c);
     if (DAT_004807d5 != '\0') {
-      DAT_00487292 = 0;
+      ui_sign_crimson_update_disabled = 0;
       game_state_pending = 1;
       render_pass_mode = 0;
       ui_transition_direction = 0;
@@ -5907,7 +5907,7 @@ void __cdecl tutorial_prompt_dialog(char *text,float alpha)
     fStack_10 = 90.0;
     ui_button_update(&fStack_14,(int *)&ui_button_table_b);
     if (DAT_004807d5 != '\0') {
-      DAT_00487292 = 0;
+      ui_sign_crimson_update_disabled = 0;
       game_state_pending = 1;
       render_pass_mode = 0;
       ui_transition_direction = 0;
@@ -10372,7 +10372,7 @@ LAB_004103c2:
     sfx_play_exclusive(music_track_crimson_theme_id);
     ui_transition_direction = '\0';
     game_state_pending = 0;
-    DAT_00487292 = 0;
+    ui_sign_crimson_update_disabled = 0;
   }
 LAB_00410782:
   ui_cursor_render();
@@ -10528,7 +10528,7 @@ void quest_failed_screen_update(void)
     DAT_00487194 = 0;
     ui_transition_direction = '\0';
     game_state_pending = 0xb;
-    DAT_00487292 = 0;
+    ui_sign_crimson_update_disabled = 0;
     sfx_mute_all(music_track_crimson_theme_id);
     sfx_mute_all(music_track_shortie_monk_id);
     sfx_mute_all(music_track_extra_0);
@@ -10542,7 +10542,7 @@ void quest_failed_screen_update(void)
     sfx_play_exclusive(music_track_crimson_theme_id);
     ui_transition_direction = '\0';
     game_state_pending = 0;
-    DAT_00487292 = 0;
+    ui_sign_crimson_update_disabled = 0;
   }
 LAB_00410cc1:
   ui_cursor_render();
@@ -11135,7 +11135,7 @@ LAB_00411906:
     sfx_play_exclusive(music_track_crimson_theme_id);
     ui_transition_direction = '\0';
     game_state_pending = 0;
-    DAT_00487292 = 0;
+    ui_sign_crimson_update_disabled = 0;
   }
 LAB_00412007:
   perk_prompt_update_and_render();
@@ -15878,7 +15878,7 @@ void ui_elements_update_and_render(void)
       config_load_presets();
     }
     fVar3 = (float10)fcos((float10)0.0);
-    DAT_00487292 = 1;
+    ui_sign_crimson_update_disabled = 1;
     _DAT_00487594 = (float)fVar3;
     fVar4 = (float10)fsin((float10)0.0);
     _DAT_00487598 = (float)-fVar4;
@@ -17159,127 +17159,114 @@ int __cdecl dx_get_version(int *version,char *out,int out_len)
 
 /* FUN_0041cdb0 @ 0041cdb0 */
 
-/* WARNING: Restarted to delay deadcode elimination for space: stack */
+/* WARNING: Removing unreachable block (ram,0x0041ce9f) */
+/* WARNING: Removing unreachable block (ram,0x0041cea7) */
+/* WARNING: Removing unreachable block (ram,0x0041cead) */
+/* WARNING: Removing unreachable block (ram,0x0041cf52) */
+/* WARNING: Removing unreachable block (ram,0x0041cf5a) */
+/* WARNING: Enum "tagCALLCONV": Some values do not have unique names */
 
 int FUN_0041cdb0(void)
 
 {
-  bool bVar1;
+  HRESULT HVar1;
   HRESULT HVar2;
-  HRESULT HVar3;
-  int iVar4;
+  int iVar3;
+  char cVar4;
   int *unaff_EDI;
-  char cStack_84;
-  char cStack_83;
-  char cStack_82;
-  undefined4 uStack_80;
-  int **ppiVar5;
-  undefined4 uStack_70;
+  undefined4 uStack_74;
+  int *piVar5;
   wchar_t *pwStack_64;
-  int **ppiStack_60;
-  int ***lpWideCharStr;
-  int *piVar6;
-  short sVar7;
-  int *piVar8;
-  int **ppiVar9;
-  int *local_3c;
-  int *piStack_38;
-  int **local_34 [2];
-  int *piStack_2c;
-  undefined4 *puStack_20;
+  wchar_t *pwStack_60;
+  undefined2 uVar6;
+  undefined4 uVar7;
+  undefined4 lpWideCharStr;
+  undefined2 uVar8;
+  undefined4 local_3c;
+  undefined4 uStack_38;
+  _union_2156 local_34;
+  undefined4 *puStack_24;
   undefined4 local_10;
   undefined4 local_c;
   undefined4 local_8;
   undefined4 local_4;
   
-  bVar1 = false;
-  HVar2 = CoInitialize((LPVOID)0x0);
-  local_34[0] = (int **)0x0;
-  local_3c = (int *)((uint)(-1 < HVar2) << 0x18);
-  HVar3 = CoCreateInstance((IID *)&DAT_0046f5c8,(LPUNKNOWN)0x0,1,(IID *)&DAT_0046f5b8,local_34);
-  if (HVar3 < 0) {
-    cStack_84 = '\0';
+  HVar1 = CoInitialize((LPVOID)0x0);
+  local_34._0_4_ = (wchar_t *)0x0;
+  local_3c = (uint)(-1 < HVar1) << 0x18;
+  HVar2 = CoCreateInstance((IID *)&DAT_0046f5c8,(LPUNKNOWN)0x0,1,(IID *)&DAT_0046f5b8,
+                           (LPVOID *)&local_34);
+  if (HVar2 < 0) {
+    cVar4 = '\0';
   }
   else {
     local_10 = 0x10;
     local_c = 0x6f;
     local_8 = 0;
     local_4 = 0;
-    ppiVar9 = local_34[0];
-    iVar4 = (*(code *)(*local_34[0])[3])();
-    if (-1 < iVar4) {
-      piStack_38 = (int *)0x0;
-      iVar4 = (**(code **)(*local_3c + 0x10))();
-      if (-1 < iVar4) {
-        piVar8 = (int *)&stack0xffffffc0;
-        sVar7 = 0x392c;
-        piVar6 = piStack_38;
-        iVar4 = (**(code **)(*piStack_38 + 0x14))();
-        if (iVar4 < 0) {
-          cStack_84 = (char)piVar8;
-          ppiStack_60 = (int **)0x41cf96;
+    uVar7 = local_34._0_4_;
+    iVar3 = (**(code **)(*(int *)local_34._0_4_ + 0xc))();
+    if (-1 < iVar3) {
+      uStack_38 = (int *)0x0;
+      iVar3 = (**(code **)(*(int *)local_3c + 0x10))();
+      if (-1 < iVar3) {
+        lpWideCharStr = &stack0xffffffc0;
+        iVar3 = (**(code **)(iRam00000000 + 0x14))();
+        if (iVar3 < 0) {
+          cVar4 = (char)lpWideCharStr;
+          pwStack_60 = (wchar_t *)0x41cf96;
           (**(code **)(*unaff_EDI + 8))();
-          ppiStack_60 = ppiVar9;
+          pwStack_60 = (wchar_t *)uVar7;
           pwStack_64 = (wchar_t *)0x41cfa0;
-          (*(code *)(*ppiStack_60)[2])();
+          (**(code **)(*(int *)pwStack_60 + 8))();
         }
         else {
-          lpWideCharStr = local_34;
-          ppiStack_60 = (int **)0x41ce7f;
-          Ordinal_8();
-          ppiStack_60 = &piStack_38;
-          pwStack_64 = u_dwDirectXVersionMajor_00473900;
-          iVar4 = (**(code **)(*piVar8 + 0x20))();
-          if ((-1 < iVar4) && ((short)unaff_EDI == 0x13)) {
-            if (puStack_20 != (undefined4 *)0x0) {
-              *puStack_20 = local_3c;
-            }
-            bVar1 = true;
+          pwStack_60 = (wchar_t *)0x41ce7f;
+          pwStack_64 = (wchar_t *)uVar7;
+          VariantInit((VARIANTARG *)&local_34.field0);
+          pwStack_60 = u_dwDirectXVersionMajor_00473900;
+          uVar7 = pwStack_64;
+          (**(code **)(*(int *)pwStack_64 + 0x20))();
+          uVar8 = (undefined2)uVar7;
+          VariantClear((VARIANTARG *)&stack0xffffffc0);
+          piVar5 = (int *)&stack0xffffffc0;
+          uVar7 = uStack_38;
+          iVar3 = (**(code **)(*(int *)uStack_38 + 0x20))();
+          uVar6 = (undefined2)uVar7;
+          if (((-1 < iVar3) && (uVar8 == 0x13)) && (puStack_24 != (undefined4 *)0x0)) {
+            *puStack_24 = unaff_EDI;
           }
-          uStack_70 = (int *)&stack0xffffffbc;
-          Ordinal_9();
-          ppiVar5 = ppiStack_60;
-          iVar4 = (*(code *)(*ppiStack_60)[8])
-                            (ppiStack_60,u_dwDirectXVersionMinor_004738d4,&stack0xffffffb8);
-          if ((-1 < iVar4) && (sVar7 == 0x13)) {
-            if (piStack_2c != (int *)0x0) {
-              *piStack_2c = (int)ppiVar9;
-            }
-            uStack_70._0_2_ = CONCAT11(1,(CHAR)uStack_70);
-          }
-          Ordinal_9();
-          iVar4 = (**(code **)(*uStack_70 + 0x20))(uStack_70,u_szDirectXVersionLetter_004738a4);
-          uStack_80 = (int *)&stack0xffffffac;
-          if (((-1 < iVar4) && ((short)pwStack_64 == 8)) && (lpWideCharStr != (int ***)0x0)) {
-            WideCharToMultiByte(0,0,(LPCWCH)lpWideCharStr,-1,(LPSTR)&uStack_70,10,(LPCCH)0x0,
+          VariantClear((VARIANTARG *)&stack0xffffffb4);
+          iVar3 = (**(code **)(*(int *)pwStack_64 + 0x20))
+                            (pwStack_64,u_szDirectXVersionLetter_004738a4,&stack0xffffffb4);
+          uStack_74 = uStack_38;
+          if (((-1 < iVar3) && (uVar6 == 8)) && ((LPCWCH)lpWideCharStr != (LPCWCH)0x0)) {
+            WideCharToMultiByte(0,0,(LPCWCH)lpWideCharStr,-1,(LPSTR)&pwStack_64,10,(LPCCH)0x0,
                                 (LPBOOL)0x0);
-            if (piStack_38 != (int *)0x0) {
-              *(CHAR *)piStack_38 = (CHAR)uStack_70;
+            if ((undefined1 *)local_34._8_4_ != (undefined1 *)0x0) {
+              *(undefined1 *)local_34._8_4_ = pwStack_64._0_1_;
             }
-            uStack_80._3_1_ = (undefined1)((uint)&stack0xffffffac >> 0x18);
-            uStack_80._0_3_ = CONCAT12(1,(short)&stack0xffffffac);
+            uStack_74._3_1_ = (undefined1)((uint)uStack_38 >> 0x18);
+            uStack_74._0_3_ = CONCAT12(1,(short)uStack_38);
           }
-          Ordinal_9(&pwStack_64);
-          if (((!bVar1) || (cStack_83 = (char)((uint)&stack0xffffffa8 >> 8), cStack_83 == '\0')) ||
-             (cStack_82 = (char)((uint)&stack0xffffffa8 >> 0x10), cStack_84 = '\x01',
-             cStack_82 == '\0')) {
-            cStack_84 = (char)&stack0xffffffa8;
-          }
-          (**(code **)(*uStack_80 + 8))(uStack_80);
-          (*(code *)(*ppiVar5)[2])(ppiVar5);
-          (*(code *)piVar6[2])(&stack0xffffffa8);
+          VariantClear((VARIANTARG *)&stack0xffffffa8);
+          cVar4 = (char)uStack_74;
+          (**(code **)(u_dwDirectXVersionMinor_004738d4._0_4_ + 8))
+                    (u_dwDirectXVersionMinor_004738d4);
+          (**(code **)(*piVar5 + 8))(piVar5);
+          (**(code **)(*(int *)uStack_74 + 8))(uStack_74);
         }
         goto LAB_0041cfb6;
       }
     }
-    cStack_84 = (char)unaff_EDI;
-    (**(code **)(*local_3c + 8))();
+    cVar4 = (char)unaff_EDI;
+    (**(code **)(*(int *)local_3c + 8))();
   }
 LAB_0041cfb6:
-  if (-1 < HVar2) {
+  if (-1 < HVar1) {
     CoUninitialize();
   }
-  return (-(uint)(cStack_84 != '\0') & 0x7fffbffb) + 0x80004005;
+  return (-(uint)(cVar4 != '\0') & 0x7fffbffb) + 0x80004005;
 }
 
 
@@ -28407,9 +28394,12 @@ int __cdecl FUN_00430a20(int *arg1,int arg2,int arg3,char *arg4)
 
 
 
-/* FUN_00430ad0 @ 00430ad0 */
+/* creature_spawn_slot_alloc @ 00430ad0 */
 
-int FUN_00430ad0(void)
+/* returns first free spawn slot index (creature_spawn_slot_owner == 0); returns 0x1f if none free
+    */
+
+int creature_spawn_slot_alloc(void)
 
 {
   int iVar1;
@@ -28942,7 +28932,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
             if (template_id == 10) {
               (&creature_pool)[iVar6].type_id = 2;
               (&creature_pool)[iVar6].flags = 4;
-              iVar7 = FUN_00430ad0();
+              iVar7 = creature_spawn_slot_alloc();
               (&creature_pool)[iVar6].link_index = iVar7;
               (&creature_spawn_slot_timer)[iVar7 * 6] = 0x40000000;
               (&creature_spawn_slot_count)[iVar7 * 6] = 0;
@@ -28964,7 +28954,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
             if (template_id == 0xb) {
               (&creature_pool)[iVar6].type_id = 2;
               (&creature_pool)[iVar6].flags = 4;
-              iVar7 = FUN_00430ad0();
+              iVar7 = creature_spawn_slot_alloc();
               (&creature_pool)[iVar6].link_index = iVar7;
               (&creature_spawn_slot_timer)[iVar7 * 6] = 0x40000000;
               (&creature_spawn_slot_count)[iVar7 * 6] = 0;
@@ -28986,7 +28976,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
             if (template_id == 0x10) {
               (&creature_pool)[iVar6].type_id = 2;
               (&creature_pool)[iVar6].flags = 4;
-              iVar7 = FUN_00430ad0();
+              iVar7 = creature_spawn_slot_alloc();
               (&creature_pool)[iVar6].link_index = iVar7;
               (&creature_spawn_slot_timer)[iVar7 * 6] = 0x3fc00000;
               (&creature_spawn_slot_count)[iVar7 * 6] = 0;
@@ -29003,7 +28993,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
               if (template_id == 0xe) {
                 (&creature_pool)[iVar6].type_id = 2;
                 (&creature_pool)[iVar6].flags = 4;
-                iVar7 = FUN_00430ad0();
+                iVar7 = creature_spawn_slot_alloc();
                 (&creature_pool)[iVar6].link_index = iVar7;
                 pos = (float *)0x0;
                 (&creature_spawn_slot_timer)[iVar7 * 6] = 0x3fc00000;
@@ -29060,7 +29050,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
               if (template_id == 0xc) {
                 (&creature_pool)[iVar6].type_id = 2;
                 (&creature_pool)[iVar6].flags = 4;
-                iVar7 = FUN_00430ad0();
+                iVar7 = creature_spawn_slot_alloc();
                 (&creature_pool)[iVar6].link_index = iVar7;
                 (&creature_spawn_slot_timer)[iVar7 * 6] = 0x3fc00000;
                 (&creature_spawn_slot_count)[iVar7 * 6] = 0;
@@ -29078,7 +29068,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                   if (template_id == 9) {
                     (&creature_pool)[iVar6].type_id = 2;
                     (&creature_pool)[iVar6].flags = 4;
-                    iVar7 = FUN_00430ad0();
+                    iVar7 = creature_spawn_slot_alloc();
                     (&creature_pool)[iVar6].link_index = iVar7;
                     (&creature_spawn_slot_timer)[iVar7 * 6] = 0x3f800000;
                     (&creature_spawn_slot_count)[iVar7 * 6] = 0;
@@ -29100,7 +29090,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                   if (template_id == 7) {
                     (&creature_pool)[iVar6].type_id = 2;
                     (&creature_pool)[iVar6].flags = 4;
-                    iVar7 = FUN_00430ad0();
+                    iVar7 = creature_spawn_slot_alloc();
                     (&creature_pool)[iVar6].link_index = iVar7;
                     (&creature_spawn_slot_timer)[iVar7 * 6] = 0x3f800000;
                     (&creature_spawn_slot_count)[iVar7 * 6] = 0;
@@ -29800,7 +29790,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                                       (&creature_pool)[iVar6].tint_a = 0.8;
                                       (&creature_pool)[iVar6].size = 64.0;
                                       (&creature_pool)[iVar6].contact_damage = 50.0;
-                                      iVar7 = FUN_00430ad0();
+                                      iVar7 = creature_spawn_slot_alloc();
                                       (&creature_pool)[iVar6].link_index = iVar7;
                                       (&creature_spawn_slot_timer)[iVar7 * 6] = 0x3f800000;
                                       (&creature_spawn_slot_count)[iVar7 * 6] = 0;
@@ -29995,7 +29985,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                     }
                     (&creature_pool)[iVar6].type_id = 2;
                     (&creature_pool)[iVar6].flags = 4;
-                    iVar7 = FUN_00430ad0();
+                    iVar7 = creature_spawn_slot_alloc();
                     (&creature_pool)[iVar6].link_index = iVar7;
                     (&creature_spawn_slot_timer)[iVar7 * 6] = 0x3f800000;
                     (&creature_spawn_slot_count)[iVar7 * 6] = 0;
@@ -30017,7 +30007,7 @@ void * __cdecl creature_spawn_template(int template_id,float *pos,float heading)
                 }
                 (&creature_pool)[iVar6].type_id = 2;
                 (&creature_pool)[iVar6].flags = 4;
-                iVar7 = FUN_00430ad0();
+                iVar7 = creature_spawn_slot_alloc();
                 (&creature_pool)[iVar6].link_index = iVar7;
                 (&creature_spawn_slot_timer)[iVar7 * 6] = 0x40000000;
                 (&creature_spawn_slot_count)[iVar7 * 6] = 0;
@@ -35627,7 +35617,7 @@ void resource_close(void)
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 /* initializes DirectSound and the primary buffer */
 
-int dsound_init(void *hwnd,uint coop_level)
+int __cdecl dsound_init(void *hwnd,uint coop_level)
 
 {
   uint uVar1;
@@ -35635,59 +35625,41 @@ int dsound_init(void *hwnd,uint coop_level)
   int iVar3;
   undefined4 *puVar4;
   int *piVar5;
-  undefined4 uStack_60;
   undefined4 uStack_54;
-  uint uStack_50;
-  undefined4 uStack_4c;
-  int **ppiStack_48;
-  int *piStack_44;
-  undefined4 auStack_3c [4];
-  undefined4 uStack_2c;
-  short sStack_1c;
-  ushort uStack_14;
-  undefined4 uStack_8;
-  uint uStack_4;
+  undefined4 auStack_30 [4];
+  undefined4 uStack_20;
+  short sStack_10;
+  ushort uStack_8;
   
   if (DAT_004c3964 != (int *)0x0) {
-    piStack_44 = DAT_004c3964;
-    ppiStack_48 = (int **)0x43bb05;
     (**(code **)(*DAT_004c3964 + 8))();
   }
-  piStack_44 = (int *)0x0;
-  ppiStack_48 = &DAT_004c3964;
-  uStack_4c = 0;
   DAT_004c3964 = (int *)0x0;
-  uStack_50 = 0x43bb17;
-  uVar1 = Ordinal_11();
+  uVar1 = DirectSoundCreate8((LPCGUID)0x0,(LPDIRECTSOUND8 *)&DAT_004c3964,(LPUNKNOWN)0x0);
   if ((int)uVar1 < 0) {
     return uVar1 & 0xffffff00;
   }
-  uStack_50 = uStack_4;
-  uStack_54 = uStack_8;
   uVar1 = (**(code **)(*DAT_004c3964 + 0x18))();
   if ((int)uVar1 < 0) {
     return uVar1 & 0xffffff00;
   }
-  puVar4 = auStack_3c;
+  puVar4 = auStack_30;
   for (iVar3 = 9; iVar3 != 0; iVar3 = iVar3 + -1) {
     *puVar4 = 0;
     puVar4 = puVar4 + 1;
   }
-  uStack_60 = 0;
   uStack_54 = 0;
-  auStack_3c[0] = 0x24;
-  auStack_3c[1] = 1;
-  auStack_3c[2] = 0;
-  uStack_2c = 0;
-  uVar1 = (**(code **)(*DAT_004c3964 + 0xc))(DAT_004c3964,auStack_3c);
+  auStack_30[0] = 0x24;
+  auStack_30[1] = 1;
+  auStack_30[2] = 0;
+  uStack_20 = 0;
+  uVar1 = (**(code **)(*DAT_004c3964 + 0xc))(DAT_004c3964,auStack_30);
   if ((int)uVar1 < 0) {
     return uVar1 & 0xffffff00;
   }
-  uStack_60 = CONCAT22(sStack_1c,1);
-  uStack_54 = CONCAT22(uStack_14,(uStack_14 >> 3) * sStack_1c);
-  uStack_50 = uStack_50 & 0xffff0000;
-  piVar5 = &uStack_60;
-  uVar1 = (**(code **)(uStack_54 + 0x38))(&uStack_54);
+  uStack_54 = CONCAT22(sStack_10,1);
+  piVar5 = &uStack_54;
+  uVar1 = (**(code **)(CONCAT22(uStack_8,(uStack_8 >> 3) * sStack_10) + 0x38))(&stack0xffffffb8);
   if ((int)uVar1 < 0) {
     return uVar1 & 0xffffff00;
   }
@@ -40460,7 +40432,7 @@ void __cdecl game_state_set(int state_id)
   if (state_id == 0) {
     DAT_0048724d = '\0';
     render_pass_mode = '\0';
-    DAT_00487290 = 1;
+    ui_sign_crimson = 1;
     iVar2 = game_is_full_version();
     if ((char)iVar2 != '\0') {
       bVar1 = mods_any_available();
@@ -40576,7 +40548,7 @@ void __cdecl game_state_set(int state_id)
   }
   else if (state_id == 0x16) {
     render_pass_mode = '\0';
-    DAT_00487292 = 0;
+    ui_sign_crimson_update_disabled = 0;
   }
   else if (state_id == 9) {
     DAT_0048eb38 = 1;
@@ -40631,13 +40603,13 @@ void __cdecl game_state_set(int state_id)
     }
   }
   else if (state_id == 1) {
-    DAT_00487290 = 1;
+    ui_sign_crimson = 1;
     DAT_00489498 = 1;
     DAT_004897b0 = 1;
   }
   else if (state_id == 2) {
     if (DAT_004824d1 == '\0') {
-      DAT_00487290 = 1;
+      ui_sign_crimson = 1;
     }
     DAT_00488b50 = 1;
     _DAT_0048cf78 = 0xc2680000;
@@ -40647,7 +40619,7 @@ void __cdecl game_state_set(int state_id)
   }
   else if (state_id == 4) {
     DAT_0048724d = '\0';
-    DAT_00487290 = 1;
+    ui_sign_crimson = 1;
     DAT_0048e820 = 1;
     _DAT_0048e858 = &LAB_0043f550;
   }
@@ -40655,11 +40627,11 @@ void __cdecl game_state_set(int state_id)
     _DAT_00489e18 = FUN_00446140;
 LAB_00446764:
     DAT_00489de0._0_1_ = 1;
-    DAT_00487290 = 1;
+    ui_sign_crimson = 1;
     highscore_load_table();
   }
   else if (state_id == 3) {
-    DAT_00487290 = 1;
+    ui_sign_crimson = 1;
     _DAT_0048cf78 = 0xc3340000;
     DAT_0048d278 = 1;
     DAT_0048d590 = 1;
@@ -40673,46 +40645,46 @@ LAB_00446764:
   }
   _DAT_0048a130 = 0;
   if (state_id == 0x13) {
-    DAT_00487290 = 1;
+    ui_sign_crimson = 1;
     DAT_00489de0._0_1_ = 1;
   }
   else if (state_id == 0x1a) {
-    DAT_00487290 = 1;
+    ui_sign_crimson = 1;
     DAT_00489de0._0_1_ = 1;
     _DAT_00489e18 = credits_secret_alien_zookeeper_update;
   }
   else if (state_id == 0x14) {
-    DAT_00487290 = 1;
+    ui_sign_crimson = 1;
     DAT_00489de0._0_1_ = 1;
     _DAT_00489e18 = (code *)&LAB_0040e9a0;
   }
   else if (state_id == 0xf) {
-    DAT_00487290 = 1;
+    ui_sign_crimson = 1;
     DAT_00489de0._0_1_ = 1;
     DAT_0048a0f8 = 1;
     _DAT_00489e18 = (code *)&LAB_00440110;
   }
   else if (state_id == 0x10) {
-    DAT_00487290 = 1;
+    ui_sign_crimson = 1;
     DAT_00489de0._0_1_ = 1;
     DAT_0048a0f8 = 1;
     _DAT_00489e18 = (code *)&LAB_00440960;
   }
   else if (state_id == 0x11) {
     DAT_00487234 = 0;
-    DAT_00487290 = 1;
+    ui_sign_crimson = 1;
     DAT_00489de0._0_1_ = 1;
     _DAT_00489e18 = credits_screen_update;
   }
   else if (state_id == 0xb) {
-    DAT_00487290 = 1;
+    ui_sign_crimson = 1;
     DAT_0048e1f0 = 1;
   }
   else if (state_id == 5) {
     if (DAT_004824d1 == '\0') {
-      DAT_00487290 = 1;
+      ui_sign_crimson = 1;
     }
-    DAT_00487292 = 0;
+    ui_sign_crimson_update_disabled = 0;
     DAT_0048b9b8 = 1;
     DAT_0048bcd0 = 1;
     DAT_0048bfe8 = 1;
@@ -40741,7 +40713,7 @@ LAB_00446764:
   }
 LAB_004468da:
   if (DAT_0048724d != '\0') {
-    DAT_00487290 = 0;
+    ui_sign_crimson = 0;
   }
   ui_elements_timeline = 0;
   ui_transition_direction = 1;
@@ -41166,32 +41138,28 @@ int FUN_00447420(void)
 
 
 
-/* FUN_00447580 @ 00447580 */
+/* config_apply_detail_preset @ 00447580 */
 
-/* [binja] int32_t sub_447580() */
+/* Applies config_detail_preset ("Graphics detail" 1..5) to the config_fx_detail_flag0/1/2 bytes. */
 
-int FUN_00447580(void)
+void config_apply_detail_preset(void)
 
 {
-  int iVar1;
-  
-  iVar1 = config_blob.detail_preset + -1;
-  switch(iVar1) {
-  case 0:
-    config_blob.reserved0[0x11] = '\0';
+  switch(config_blob.detail_preset) {
   case 1:
+    config_blob.reserved0[0x11] = '\0';
+  case 2:
     config_blob.reserved0[0xe] = '\0';
     config_blob.reserved0[0x10] = '\0';
-    return iVar1;
-  case 2:
+    return;
   case 3:
   case 4:
-    iVar1 = CONCAT31((int3)((uint)iVar1 >> 8),1);
+  case 5:
     config_blob.reserved0[0x10] = '\x01';
     config_blob.reserved0[0x11] = '\x01';
     config_blob.reserved0[0xe] = '\x01';
   default:
-    return iVar1;
+    return;
   }
 }
 
@@ -41492,7 +41460,7 @@ void ui_menu_layout_init(void)
     *ppuVar11 = (ui_element_t *)0x0;
     ppuVar11 = ppuVar11 + 1;
   }
-  ui_element_table_end = (ui_element_t *)&DAT_00487290;
+  ui_element_table_end = (ui_element_t *)&ui_sign_crimson;
   DAT_0048f16c = &DAT_004875a8;
   DAT_0048f170 = &DAT_00488208;
   _DAT_0048f174 = &DAT_004878c0;

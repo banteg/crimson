@@ -1357,7 +1357,7 @@
     "signature": "int FUN_0041cdb0(void)",
     "external": false,
     "calls_total": 6,
-    "calls": ["CoCreateInstance", "CoInitialize", "CoUninitialize", "Ordinal_8", "Ordinal_9", "WideCharToMultiByte"]
+    "calls": ["CoCreateInstance", "CoInitialize", "CoUninitialize", "VariantClear", "VariantInit", "WideCharToMultiByte"]
   },
   {
     "name": "FUN_0041cfe0",
@@ -2184,9 +2184,9 @@
     "calls": ["console_printf", "crt_free", "strdup_malloc"]
   },
   {
-    "name": "FUN_00430ad0",
+    "name": "creature_spawn_slot_alloc",
     "address": "00430ad0",
-    "signature": "int FUN_00430ad0(void)",
+    "signature": "int creature_spawn_slot_alloc(void)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -2197,7 +2197,7 @@
     "signature": "void * creature_spawn_template(int template_id, float * pos, float heading)",
     "external": false,
     "calls_total": 5,
-    "calls": ["FUN_00430ad0", "console_printf", "creature_alloc_slot", "crt_rand", "effect_spawn_burst"]
+    "calls": ["console_printf", "creature_alloc_slot", "creature_spawn_slot_alloc", "crt_rand", "effect_spawn_burst"]
   },
   {
     "name": "quest_spawn_table_empty",
@@ -2885,7 +2885,7 @@
     "signature": "int dsound_init(void * hwnd, uint coop_level)",
     "external": false,
     "calls_total": 1,
-    "calls": ["Ordinal_11"]
+    "calls": ["DirectSoundCreate8"]
   },
   {
     "name": "dsound_shutdown",
@@ -3480,9 +3480,9 @@
     "calls": []
   },
   {
-    "name": "FUN_00447580",
+    "name": "config_apply_detail_preset",
     "address": "00447580",
-    "signature": "int FUN_00447580(void)",
+    "signature": "void config_apply_detail_preset(void)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -7344,9 +7344,9 @@
     "calls": []
   },
   {
-    "name": "Ordinal_11",
+    "name": "DirectSoundCreate8",
     "address": "0046e962",
-    "signature": "undefined Ordinal_11()",
+    "signature": "HRESULT DirectSoundCreate8(LPCGUID lpGUID, LPDIRECTSOUND8 * ppDS8, LPUNKNOWN pUnkOuter)",
     "external": false,
     "calls_total": 0,
     "calls": []
