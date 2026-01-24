@@ -486,7 +486,7 @@ SPAWN_TEMPLATES = [
         type_id=CreatureTypeId.SPIDER_SP1,
         flags=CreatureFlags.RANGED_ATTACK_SHOCK,
         creature="spider_sp1",
-        anim_note=None,
+        anim_note="projectile_type=9",
     ),
     SpawnTemplate(
         spawn_id=0x3B,
@@ -500,7 +500,7 @@ SPAWN_TEMPLATES = [
         type_id=CreatureTypeId.SPIDER_SP1,
         flags=CreatureFlags.RANGED_ATTACK_VARIANT,
         creature="spider_sp1",
-        anim_note=None,
+        anim_note="projectile_type=26 (packed in orbit_radius)",
     ),
     SpawnTemplate(
         spawn_id=0x3D,
