@@ -1551,6 +1551,14 @@ class GameLoopView:
         return self._state.quit_requested
 
     def update(self, dt: float) -> None:
+        console = self._state.console
+        console.handle_hotkey()
+        if console.open_flag:
+            console.update()
+            if console.quit_requested:
+                self._state.quit_requested = True
+                console.quit_requested = False
+            return
         self._active.update(dt)
         if self._front_active is not None:
             action = self._front_active.take_action()
@@ -1620,9 +1628,13 @@ class GameLoopView:
             self._menu.open()
             self._active = self._menu
             self._menu_active = True
+        if console.quit_requested:
+            self._state.quit_requested = True
+            console.quit_requested = False
 
     def draw(self) -> None:
         self._active.draw()
+        self._state.console.draw()
 
     def close(self) -> None:
         if self._menu_active:
@@ -1635,6 +1647,7 @@ class GameLoopView:
             rl.unload_render_texture(self._state.menu_ground.render_target)
             self._state.menu_ground.render_target = None
         self._boot.close()
+        self._state.console.close()
 
 
 def _score_assets_dir(path: Path) -> tuple[int, str]:
@@ -1729,9 +1742,9 @@ def run_game(config: GameConfig) -> None:
     width = cfg.screen_width if config.width is None else config.width
     height = cfg.screen_height if config.height is None else config.height
     rng = random.Random(config.seed)
-    console = create_console(base_dir)
-    status = ensure_game_status(base_dir)
     assets_dir = _resolve_assets_dir(config)
+    console = create_console(base_dir, assets_dir=assets_dir)
+    status = ensure_game_status(base_dir)
     state: GameState | None = None
     try:
         register_boot_commands(console)
