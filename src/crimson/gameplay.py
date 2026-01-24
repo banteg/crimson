@@ -8,7 +8,7 @@ from .bonuses import BONUS_BY_ID, BonusId
 from .crand import Crand
 from .perks import PerkFlags, PerkId, PerkMeta, PERK_TABLE
 from .projectiles import ProjectilePool, SecondaryProjectilePool
-from .weapons import WEAPON_BY_ID, Weapon
+from .weapons import WEAPON_BY_ID, WEAPON_TABLE, Weapon
 
 
 class _HasPos(Protocol):
@@ -126,6 +126,17 @@ class BonusHudSlot:
 
 BONUS_HUD_SLOT_COUNT = 16
 
+BONUS_POOL_SIZE = 16
+BONUS_SPAWN_MARGIN = 32.0
+BONUS_SPAWN_MIN_DISTANCE = 32.0
+BONUS_PICKUP_RADIUS = 26.0
+BONUS_PICKUP_DECAY_RATE = 3.0
+BONUS_PICKUP_LINGER = 0.5
+BONUS_TIME_MAX = 10.0
+BONUS_WEAPON_NEAR_RADIUS = 56.0
+
+_WEAPON_RANDOM_IDS = [entry.weapon_id for entry in WEAPON_TABLE if entry.name is not None]
+
 
 @dataclass(slots=True)
 class BonusHudState:
@@ -152,6 +163,240 @@ class BonusHudState:
 
 
 @dataclass(slots=True)
+class BonusEntry:
+    bonus_id: int = 0
+    picked: bool = False
+    time_left: float = 0.0
+    time_max: float = 0.0
+    pos_x: float = 0.0
+    pos_y: float = 0.0
+    amount: int = 0
+
+
+@dataclass(frozen=True, slots=True)
+class BonusPickupEvent:
+    player_index: int
+    bonus_id: int
+    amount: int
+    pos_x: float
+    pos_y: float
+
+
+class BonusPool:
+    def __init__(self, *, size: int = BONUS_POOL_SIZE) -> None:
+        self._entries = [BonusEntry() for _ in range(int(size))]
+
+    @property
+    def entries(self) -> list[BonusEntry]:
+        return self._entries
+
+    def reset(self) -> None:
+        for entry in self._entries:
+            entry.bonus_id = 0
+            entry.picked = False
+            entry.time_left = 0.0
+            entry.time_max = 0.0
+            entry.amount = 0
+
+    def iter_active(self) -> list[BonusEntry]:
+        return [entry for entry in self._entries if entry.bonus_id != 0]
+
+    def _alloc_slot(self) -> BonusEntry | None:
+        for entry in self._entries:
+            if entry.bonus_id == 0:
+                return entry
+        return None
+
+    def _clear_entry(self, entry: BonusEntry) -> None:
+        entry.bonus_id = 0
+        entry.picked = False
+        entry.time_left = 0.0
+        entry.time_max = 0.0
+        entry.amount = 0
+
+    def spawn_at(
+        self,
+        pos_x: float,
+        pos_y: float,
+        bonus_id: int | BonusId,
+        duration_override: int = -1,
+        *,
+        world_width: float = 1024.0,
+        world_height: float = 1024.0,
+    ) -> BonusEntry | None:
+        if int(bonus_id) == 0:
+            return None
+        entry = self._alloc_slot()
+        if entry is None:
+            return None
+
+        x = _clamp(float(pos_x), BONUS_SPAWN_MARGIN, float(world_width) - BONUS_SPAWN_MARGIN)
+        y = _clamp(float(pos_y), BONUS_SPAWN_MARGIN, float(world_height) - BONUS_SPAWN_MARGIN)
+
+        entry.bonus_id = int(bonus_id)
+        entry.picked = False
+        entry.pos_x = x
+        entry.pos_y = y
+        entry.time_left = BONUS_TIME_MAX
+        entry.time_max = BONUS_TIME_MAX
+
+        amount = duration_override
+        if amount == -1:
+            meta = BONUS_BY_ID.get(int(bonus_id))
+            amount = int(meta.default_amount or 0) if meta is not None else 0
+        entry.amount = int(amount)
+        return entry
+
+    def spawn_at_pos(
+        self,
+        pos_x: float,
+        pos_y: float,
+        *,
+        state: "GameplayState",
+        players: list["PlayerState"],
+        world_width: float = 1024.0,
+        world_height: float = 1024.0,
+    ) -> BonusEntry | None:
+        if (
+            pos_x < BONUS_SPAWN_MARGIN
+            or pos_y < BONUS_SPAWN_MARGIN
+            or pos_x > world_width - BONUS_SPAWN_MARGIN
+            or pos_y > world_height - BONUS_SPAWN_MARGIN
+        ):
+            return None
+
+        min_dist_sq = BONUS_SPAWN_MIN_DISTANCE * BONUS_SPAWN_MIN_DISTANCE
+        for entry in self._entries:
+            if entry.bonus_id == 0:
+                continue
+            if _distance_sq(pos_x, pos_y, entry.pos_x, entry.pos_y) < min_dist_sq:
+                return None
+
+        entry = self._alloc_slot()
+        if entry is None:
+            return None
+
+        bonus_id = bonus_pick_random_type(self, state, players)
+        entry.bonus_id = int(bonus_id)
+        entry.picked = False
+        entry.pos_x = float(pos_x)
+        entry.pos_y = float(pos_y)
+        entry.time_left = BONUS_TIME_MAX
+        entry.time_max = BONUS_TIME_MAX
+
+        rng = state.rng
+        if entry.bonus_id == int(BonusId.WEAPON):
+            entry.amount = weapon_pick_random_available(rng)
+        elif entry.bonus_id == int(BonusId.POINTS):
+            entry.amount = 1000 if (rng.rand() & 7) < 3 else 500
+        else:
+            meta = BONUS_BY_ID.get(entry.bonus_id)
+            entry.amount = int(meta.default_amount or 0) if meta is not None else 0
+        return entry
+
+    def try_spawn_on_kill(
+        self,
+        pos_x: float,
+        pos_y: float,
+        *,
+        state: "GameplayState",
+        players: list["PlayerState"],
+        world_width: float = 1024.0,
+        world_height: float = 1024.0,
+    ) -> BonusEntry | None:
+        if state.bonus_spawn_guard:
+            return None
+
+        rng = state.rng
+        if rng.rand() % 9 != 1:
+            if not any(perk_active(player, PerkId.BONUS_MAGNET) for player in players):
+                return None
+            if rng.rand() % 10 != 2:
+                return None
+
+        entry = self.spawn_at_pos(
+            pos_x,
+            pos_y,
+            state=state,
+            players=players,
+            world_width=world_width,
+            world_height=world_height,
+        )
+        if entry is None:
+            return None
+
+        if entry.bonus_id == int(BonusId.WEAPON):
+            near_sq = BONUS_WEAPON_NEAR_RADIUS * BONUS_WEAPON_NEAR_RADIUS
+            for player in players:
+                if _distance_sq(pos_x, pos_y, player.pos_x, player.pos_y) < near_sq:
+                    entry.bonus_id = int(BonusId.POINTS)
+                    entry.amount = 100
+                    break
+
+        if entry.bonus_id != int(BonusId.POINTS):
+            matches = sum(1 for bonus in self._entries if bonus.bonus_id == entry.bonus_id)
+            if matches > 1:
+                self._clear_entry(entry)
+                return None
+
+        if entry.bonus_id == int(BonusId.WEAPON):
+            for player in players:
+                if entry.amount == player.weapon_id:
+                    self._clear_entry(entry)
+                    return None
+
+        return entry
+
+    def update(
+        self,
+        dt: float,
+        *,
+        state: "GameplayState",
+        players: list["PlayerState"],
+    ) -> list[BonusPickupEvent]:
+        if dt <= 0.0:
+            return []
+
+        pickups: list[BonusPickupEvent] = []
+        for entry in self._entries:
+            if entry.bonus_id == 0:
+                continue
+
+            decay = dt * (BONUS_PICKUP_DECAY_RATE if entry.picked else 1.0)
+            entry.time_left -= decay
+            if entry.time_left < 0.0:
+                self._clear_entry(entry)
+                continue
+
+            if entry.picked:
+                continue
+
+            for player in players:
+                if _distance_sq(entry.pos_x, entry.pos_y, player.pos_x, player.pos_y) < BONUS_PICKUP_RADIUS * BONUS_PICKUP_RADIUS:
+                    bonus_apply(
+                        state,
+                        player,
+                        BonusId(entry.bonus_id),
+                        amount=entry.amount,
+                        origin=player,
+                    )
+                    entry.picked = True
+                    entry.time_left = BONUS_PICKUP_LINGER
+                    pickups.append(
+                        BonusPickupEvent(
+                            player_index=player.index,
+                            bonus_id=entry.bonus_id,
+                            amount=entry.amount,
+                            pos_x=entry.pos_x,
+                            pos_y=entry.pos_y,
+                        )
+                    )
+                    break
+
+        return pickups
+
+
+@dataclass(slots=True)
 class GameplayState:
     rng: Crand = field(default_factory=lambda: Crand(0xBEEF))
     projectiles: ProjectilePool = field(default_factory=ProjectilePool)
@@ -161,6 +406,9 @@ class GameplayState:
     perk_selection: PerkSelectionState = field(default_factory=PerkSelectionState)
     bonus_spawn_guard: bool = False
     bonus_hud: BonusHudState = field(default_factory=BonusHudState)
+    bonus_pool: BonusPool = field(default_factory=BonusPool)
+    shock_chain_links_left: int = 0
+    shock_chain_projectile_id: int = -1
 
 
 def perk_count_get(player: PlayerState, perk_id: PerkId) -> int:
@@ -420,6 +668,12 @@ def _normalize(x: float, y: float) -> tuple[float, float]:
     return x * inv, y * inv
 
 
+def _distance_sq(x0: float, y0: float, x1: float, y1: float) -> float:
+    dx = x1 - x0
+    dy = y1 - y0
+    return dx * dx + dy * dy
+
+
 def _owner_id_for_player(player_index: int) -> int:
     # crimsonland.exe uses -1/-2/-3 for players (and sometimes -100 in demo paths).
     return -1 - int(player_index)
@@ -429,10 +683,69 @@ def _weapon_entry(weapon_id: int) -> Weapon | None:
     return WEAPON_BY_ID.get(int(weapon_id))
 
 
+def weapon_pick_random_available(rng: Crand) -> int:
+    if not _WEAPON_RANDOM_IDS:
+        return 0
+    idx = int(rng.rand()) % len(_WEAPON_RANDOM_IDS)
+    return int(_WEAPON_RANDOM_IDS[idx])
+
+
 def _projectile_meta_for_type_id(type_id: int) -> float:
     entry = WEAPON_BY_ID.get(int(type_id))
     meta = entry.projectile_type if entry is not None else None
     return float(meta if meta is not None else 45.0)
+
+
+def _bonus_enabled(bonus_id: int) -> bool:
+    meta = BONUS_BY_ID.get(int(bonus_id))
+    if meta is None:
+        return False
+    return meta.bonus_id != BonusId.UNUSED
+
+
+def _bonus_id_from_roll(roll: int, rng: Crand) -> int:
+    if roll <= 13:
+        return int(BonusId.POINTS)
+    if roll == 14:
+        if (rng.rand() & 0x3F) == 0:
+            return int(BonusId.ENERGIZER)
+    remainder = roll - 14
+    bucket = int(BonusId.WEAPON)
+    while remainder > 10:
+        remainder -= 10
+        bucket += 1
+        if bucket >= 15:
+            return 0
+    return bucket
+
+
+def bonus_pick_random_type(pool: BonusPool, state: "GameplayState", players: list["PlayerState"]) -> int:
+    has_fire_bullets_drop = any(
+        entry.bonus_id == int(BonusId.FIRE_BULLETS) and not entry.picked
+        for entry in pool.entries
+    )
+
+    for _ in range(101):
+        roll = int(state.rng.rand()) % 162 + 1
+        bonus_id = _bonus_id_from_roll(roll, state.rng)
+        if bonus_id <= 0:
+            continue
+        if state.shock_chain_links_left > 0 and bonus_id == int(BonusId.SHOCK_CHAIN):
+            continue
+        if bonus_id == int(BonusId.FREEZE) and state.bonuses.freeze > 0.0:
+            continue
+        if bonus_id == int(BonusId.SHIELD) and any(player.shield_timer > 0.0 for player in players):
+            continue
+        if bonus_id == int(BonusId.WEAPON) and has_fire_bullets_drop:
+            continue
+        if bonus_id == int(BonusId.WEAPON) and any(perk_active(player, PerkId.MY_FAVOURITE_WEAPON) for player in players):
+            continue
+        if bonus_id == int(BonusId.MEDIKIT) and any(perk_active(player, PerkId.DEATH_CLOCK) for player in players):
+            continue
+        if not _bonus_enabled(bonus_id):
+            continue
+        return bonus_id
+    return int(BonusId.POINTS)
 
 
 def weapon_assign_player(player: PlayerState, weapon_id: int) -> None:
@@ -912,3 +1225,27 @@ def bonus_hud_update(state: GameplayState, players: list[PlayerState]) -> None:
             slot.active = False
             slot.timer_ref = None
             slot.timer_ref_alt = None
+
+
+def bonus_update(
+    state: GameplayState,
+    players: list[PlayerState],
+    dt: float,
+    *,
+    update_hud: bool = True,
+) -> list[BonusPickupEvent]:
+    """Advance world bonuses and global timers (subset of `bonus_update`)."""
+
+    pickups = state.bonus_pool.update(dt, state=state, players=players)
+
+    if dt > 0.0:
+        state.bonuses.weapon_power_up = max(0.0, state.bonuses.weapon_power_up - dt)
+        state.bonuses.reflex_boost = max(0.0, state.bonuses.reflex_boost - dt)
+        state.bonuses.energizer = max(0.0, state.bonuses.energizer - dt)
+        state.bonuses.double_experience = max(0.0, state.bonuses.double_experience - dt)
+        state.bonuses.freeze = max(0.0, state.bonuses.freeze - dt)
+
+    if update_hud:
+        bonus_hud_update(state, players)
+
+    return pickups
