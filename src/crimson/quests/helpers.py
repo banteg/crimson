@@ -3,8 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 import random
-from typing import Iterator, SupportsInt
+from typing import Iterator
 
+from ..creatures.spawn import SpawnId
 from .types import SpawnEntry
 
 
@@ -113,7 +114,7 @@ def spawn(
     x: float,
     y: float,
     heading: float = 0.0,
-    spawn_id: SupportsInt,
+    spawn_id: SpawnId,
     trigger_ms: int,
     count: int,
 ) -> SpawnEntry:
@@ -121,7 +122,7 @@ def spawn(
         x=x,
         y=y,
         heading=heading,
-        spawn_id=int(spawn_id),
+        spawn_id=spawn_id,
         trigger_ms=trigger_ms,
         count=count,
     )
@@ -131,7 +132,7 @@ def spawn_at(
     point: tuple[float, float],
     *,
     heading: float = 0.0,
-    spawn_id: SupportsInt,
+    spawn_id: SpawnId,
     trigger_ms: int,
     count: int,
 ) -> SpawnEntry:

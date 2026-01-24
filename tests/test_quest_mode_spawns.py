@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+from crimson.creatures.spawn import SpawnId
 from crimson.quests.timeline import tick_quest_mode_spawns
 from crimson.quests.types import SpawnEntry
 
@@ -26,7 +27,7 @@ def test_tick_quest_mode_spawns_advances_timeline_when_creatures_active() -> Non
 
 def test_tick_quest_mode_spawns_advances_timeline_when_table_not_empty() -> None:
     entries = (
-        SpawnEntry(x=512.0, y=512.0, heading=0.0, spawn_id=0x12, trigger_ms=10_000, count=1),
+        SpawnEntry(x=512.0, y=512.0, heading=0.0, spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12, trigger_ms=10_000, count=1),
     )
     updated, timeline_ms, creatures_none_active, idle_ms, spawns = tick_quest_mode_spawns(
         entries,
@@ -64,7 +65,7 @@ def test_tick_quest_mode_spawns_freezes_timeline_when_idle_complete() -> None:
 
 def test_tick_quest_mode_spawns_can_fire_entries_after_timeline_advance() -> None:
     entries = (
-        SpawnEntry(x=512.0, y=512.0, heading=0.25, spawn_id=0x12, trigger_ms=1000, count=1),
+        SpawnEntry(x=512.0, y=512.0, heading=0.25, spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12, trigger_ms=1000, count=1),
     )
     updated, timeline_ms, creatures_none_active, idle_ms, spawns = tick_quest_mode_spawns(
         entries,
@@ -80,5 +81,4 @@ def test_tick_quest_mode_spawns_can_fire_entries_after_timeline_advance() -> Non
     assert creatures_none_active is False
     assert idle_ms == pytest.approx(2.0, abs=1e-9)
     assert len(spawns) == 1
-    assert spawns[0].template_id == 0x12
-
+    assert spawns[0].template_id == SpawnId.FORMATION_RING_ALIEN_8_12

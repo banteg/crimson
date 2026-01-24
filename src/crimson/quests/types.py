@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable
 
+from ..creatures.spawn import SpawnId
+
 
 @dataclass(frozen=True, slots=True)
 class QuestContext:
@@ -16,7 +18,7 @@ class SpawnEntry:
     x: float
     y: float
     heading: float
-    spawn_id: int
+    spawn_id: SpawnId
     trigger_ms: int
     count: int
 
