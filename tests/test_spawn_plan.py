@@ -5,7 +5,15 @@ import math
 import pytest
 
 from crimson.crand import Crand
-from crimson.creatures.spawn import CreatureFlags, CreatureTypeId, SpawnEnv, build_spawn_plan
+from crimson.creatures.spawn import (
+    CreatureFlags,
+    CreatureTypeId,
+    SPAWN_IDS_PORTED,
+    SPAWN_IDS_VERIFIED,
+    SPAWN_TEMPLATES,
+    SpawnEnv,
+    build_spawn_plan,
+)
 
 
 def _step_msvcrt(state: int, n: int) -> int:
@@ -2705,3 +2713,13 @@ def test_spawn_plan_template_11_spawns_chain_children_and_falls_into_unhandled_o
     # - base init random heading: 1
     # - 4 child allocs: 4
     assert rng.state == _step_msvcrt(0xBEEF, 6)
+
+
+def test_spawn_plan_porting_is_complete() -> None:
+    # creature_spawn_template uses template ids in range 0x00..0x43 (0x44 total),
+    # but 0x02 is not present in the switch/decompile extracts.
+    expected = frozenset(set(range(0x44)) - {0x02})
+    actual = frozenset(entry.spawn_id for entry in SPAWN_TEMPLATES)
+    assert actual == expected
+    assert SPAWN_IDS_PORTED == expected
+    assert SPAWN_IDS_VERIFIED == expected
