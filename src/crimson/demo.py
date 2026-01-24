@@ -417,13 +417,16 @@ class DemoView:
             and purchase_rect.y <= mouse.y <= purchase_rect.y + purchase_rect.height
             and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
         ):
-            self._purchase_url_opened = True
-            try:
-                import webbrowser
+            if not self._purchase_url_opened:
+                self._purchase_url_opened = True
+                try:
+                    import webbrowser
 
-                webbrowser.open(DEMO_PURCHASE_URL)
-            except Exception:
-                pass
+                    webbrowser.open(DEMO_PURCHASE_URL)
+                except Exception:
+                    pass
+            if hasattr(self._state, "quit_requested"):
+                self._state.quit_requested = True
 
         if (
             maybe_rect.x <= mouse.x <= maybe_rect.x + maybe_rect.width
@@ -436,13 +439,16 @@ class DemoView:
 
         # Keyboard activation for convenience; original uses UI mouse.
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
-            self._purchase_url_opened = True
-            try:
-                import webbrowser
+            if not self._purchase_url_opened:
+                self._purchase_url_opened = True
+                try:
+                    import webbrowser
 
-                webbrowser.open(DEMO_PURCHASE_URL)
-            except Exception:
-                pass
+                    webbrowser.open(DEMO_PURCHASE_URL)
+                except Exception:
+                    pass
+            if hasattr(self._state, "quit_requested"):
+                self._state.quit_requested = True
 
         # Keep small referenced to avoid unused warnings if this method grows.
         _ = small
