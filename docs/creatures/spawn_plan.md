@@ -57,6 +57,21 @@ in the plan are treated as implicit defaults for the purposes of porting.
 - Visualize a single template as points/links: `uv run crimson view spawn-plan`
 - Show per-entry allocation totals for a quest script: `uv run crimson quests 1.1 --show-plan`
 
+## Spawn slot ticking (runtime)
+
+Spawn slots are configured in `creature_spawn_template`, but they are **advanced at runtime** by
+`creature_update_all` using the slot index stored in the spawner creature's `link_index`.
+
+The update logic is:
+
+- `timer -= frame_dt`
+- If `timer < 0.0`:
+  - `timer += interval` (note: no loop; large `dt` can keep it negative)
+  - If `count < limit`: increment `count` and spawn `child_template_id` at the creature's current position
+    with `heading = -100.0` (randomized).
+
+We model this as a pure helper: `tick_spawn_slot(slot, frame_dt) -> child_template_id | None`.
+
 ## Example (template 0x12 / ring formation)
 
 Template `0x12` allocates a base creature and then 8 linked children arranged in a ring:
