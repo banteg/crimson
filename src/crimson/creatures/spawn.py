@@ -353,7 +353,7 @@ SPAWN_TEMPLATES = [
         type_id=CreatureTypeId.ALIEN,
         flags=CreatureFlags.BONUS_ON_DEATH,
         creature="alien",
-        anim_note=None,
+        anim_note="bonus_id=WEAPON (3), duration_override=5 (packed in link_index)",
     ),
     SpawnTemplate(
         spawn_id=0x28,
