@@ -528,9 +528,8 @@ class DemoView:
             src = rl.Rectangle(0.0, 0.0, float(cl_logo.width), float(cl_logo.height))
             rl.draw_texture_pro(cl_logo, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
-        # Text block uses the small font at scale 0.6 in the original.
         small = self._ensure_small_font()
-        text_scale = 0.6
+        text_scale = 1.2
         x_text = screen_w / 2.0 - 296.0 - wide_shift * 0.8
         y = screen_h / 2.0 - 104.0
         color = rl.Color(255, 255, 255, 255)
@@ -564,9 +563,7 @@ class DemoView:
             hovered = x <= mouse.x <= x + texture.width and y0 <= mouse.y <= y0 + texture.height
             tint = rl.Color(255, 255, 255, 255) if hovered else rl.Color(220, 220, 220, 255)
             rl.draw_texture(texture, int(x), int(y0), tint)
-            # ui_button_update sets config 0x18 to 0.5 for button labels and uses a
-            # fixed y offset of +10px from the button top.
-            label_scale = 0.5
+            label_scale = 1.0
             text_w = measure_small_text_width(small, label, label_scale)
             text_x = x + float(texture.width) * 0.5 - text_w * 0.5 + 1.0
             text_y = y0 + 10.0
