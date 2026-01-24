@@ -18,6 +18,7 @@ from dataclasses import dataclass
 from enum import IntEnum, IntFlag
 import math
 
+from ..bonuses import BonusId
 from ..crand import Crand
 
 
@@ -629,6 +630,10 @@ class CreatureInit:
 
     # Spawn slot reference (stored in link_index in the original when flags include 0x4).
     spawn_slot: int | None = None
+
+    # BONUS_ON_DEATH uses link_index low/high 16-bit fields for bonus spawn args.
+    bonus_id: BonusId | None = None
+    bonus_duration_override: int | None = None
 
 
 @dataclass(slots=True)
@@ -1782,6 +1787,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
                 child = _alloc_creature(template_id, pos_x, pos_y, rng)
                 child.ai_mode = 5
                 child.ai_link_parent = 0
+                child.phase_seed = 0.0  # template forces anim_phase = 0.0
                 child.target_offset_x = float(x_offset)
                 child.target_offset_y = float(y_offset)
                 child.pos_x = float(pos_x + x_offset)
@@ -1821,6 +1827,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
                 child = _alloc_creature(template_id, pos_x, pos_y, rng)
                 child.ai_mode = 4
                 child.ai_link_parent = 0
+                child.phase_seed = 0.0  # template forces anim_phase = 0.0
                 child.target_offset_x = float(x_offset)
                 child.target_offset_y = float(y_offset)
                 child.pos_x = float(pos_x + x_offset)
@@ -1860,6 +1867,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
                 child = _alloc_creature(template_id, pos_x, pos_y, rng)
                 child.ai_mode = 4
                 child.ai_link_parent = 0
+                child.phase_seed = 0.0  # template forces anim_phase = 0.0
                 child.target_offset_x = float(x_offset)
                 child.target_offset_y = float(y_offset)
                 child.pos_x = float(pos_x + x_offset)
@@ -1899,6 +1907,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
                 child = _alloc_creature(template_id, pos_x, pos_y, rng)
                 child.ai_mode = 4
                 child.ai_link_parent = 0
+                child.phase_seed = 0.0  # template forces anim_phase = 0.0
                 child.target_offset_x = float(x_offset)
                 child.target_offset_y = float(y_offset)
                 child.pos_x = float(pos_x + x_offset)
@@ -1938,6 +1947,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
                 child = _alloc_creature(template_id, pos_x, pos_y, rng)
                 child.ai_mode = 3
                 child.ai_link_parent = 0
+                child.phase_seed = 0.0  # template forces anim_phase = 0.0
                 child.target_offset_x = float(x_offset)
                 child.target_offset_y = float(y_offset)
                 child.pos_x = float(pos_x + x_offset)
@@ -1956,7 +1966,6 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
                 creatures.append(child)
 
         primary_idx = len(creatures) - 1
-        _apply_unhandled_creature_type_fallback(creatures, primary_idx)
     elif template_id == 0x19:
         parent = creatures[0]
         parent.type_id = CreatureTypeId.ALIEN
@@ -2158,6 +2167,8 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c = creatures[0]
         c.type_id = CreatureTypeId.ALIEN
         c.flags = CreatureFlags.BONUS_ON_DEATH
+        c.bonus_id = BonusId.WEAPON
+        c.bonus_duration_override = 5
         c.health = 50.0
         c.move_speed = 2.1
         c.reward_value = 125.0

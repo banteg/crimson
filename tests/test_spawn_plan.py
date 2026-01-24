@@ -4,6 +4,7 @@ import math
 
 import pytest
 
+from crimson.bonuses import BonusId
 from crimson.crand import Crand
 from crimson.creatures.spawn import (
     CreatureFlags,
@@ -974,7 +975,7 @@ def test_spawn_plan_template_18_spawns_grid_children() -> None:
         assert child.pos_x == 100.0 + x_offset
         assert child.pos_y == 200.0 + y_offset
 
-        expected_health = 20.0 if idx == 80 else 260.0
+        expected_health = 260.0
         assert child.health == expected_health
         assert child.max_health == expected_health
         assert child.move_speed == 3.8
@@ -1558,6 +1559,8 @@ def test_spawn_plan_template_27_is_constant() -> None:
     c = plan.creatures[0]
     assert c.type_id == CreatureTypeId.ALIEN
     assert c.flags == CreatureFlags.BONUS_ON_DEATH
+    assert c.bonus_id == BonusId.WEAPON
+    assert c.bonus_duration_override == 5
     assert c.health == 50.0
     assert c.max_health == 50.0
     assert c.move_speed == 2.1
