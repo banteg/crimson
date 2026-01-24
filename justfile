@@ -19,6 +19,41 @@ test *args:
 test-cov *args:
     uv run pytest --cov-report=html --cov-report=xml {{args}}
 
+# Profiling
+[unix]
+pyspy-game-record out="artifacts/profiling/pyspy.speedscope.json" duration="10" rate="100" format="speedscope" *args:
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    out="{{out}}"
+    duration="{{duration}}"
+    rate="{{rate}}"
+    format="{{format}}"
+
+    mkdir -p "$(dirname "$out")"
+
+    uv run crimson game {{args}} &
+    launcher_pid="$!"
+
+    pid="$launcher_pid"
+    for _ in {1..40}; do
+        child="$(pgrep -P "$launcher_pid" -n || true)"
+        if [[ -n "$child" ]]; then
+            pid="$child"
+            break
+        fi
+        sleep 0.05
+    done
+
+    echo "game pid: $pid (launcher: $launcher_pid)"
+    echo "recording ${duration}s @ ${rate}Hz (${format}) -> $out"
+
+    user_id="$(id -u)"
+    group_id="$(id -g)"
+    sudo uv run py-spy record --pid "$pid" --rate "$rate" --duration "$duration" --format "$format" --output "$out" --nonblocking
+    sudo chown "${user_id}:${group_id}" "$out"
+    echo "saved: $out"
+
 # Assets
 extract:
     uv run paq extract {{game_dir}} {{assets_dir}}
