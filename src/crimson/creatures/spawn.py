@@ -679,6 +679,178 @@ def _alloc_creature(template_id: int, pos_x: float, pos_y: float, rng: Crand) ->
     return CreatureInit(origin_template_id=template_id, pos_x=pos_x, pos_y=pos_y, heading=0.0, phase_seed=phase_seed)
 
 
+def _clamp01(value: float) -> float:
+    if value < 0.0:
+        return 0.0
+    if 1.0 < value:
+        return 1.0
+    return value
+
+
+def build_survival_spawn_creature(pos: tuple[float, float], rng: Crand, *, player_experience: int) -> CreatureInit:
+    """Pure model of `survival_spawn_creature` (crimsonland.exe 0x00407510).
+
+    Note: this is not a `creature_spawn_template` spawn id; it picks a `type_id` and stats
+    dynamically based on `player_experience`.
+    """
+    pos_x, pos_y = pos
+    xp = int(player_experience)
+
+    c = _alloc_creature(-1, pos_x, pos_y, rng)
+    c.ai_mode = 0
+
+    r10 = rng.rand() % 10
+
+    if xp < 12000:
+        type_id = 2 if r10 < 9 else 3
+    elif xp < 25000:
+        type_id = 0 if r10 < 4 else 3
+        if 8 < r10:
+            type_id = 2
+    elif xp < 42000:
+        if r10 < 5:
+            type_id = 2
+        else:
+            # Decompiled as a sign-bit trick, but in practice this is a parity pick.
+            type_id = (rng.rand() & 1) + 3
+    elif xp < 50000:
+        type_id = 2
+    elif xp < 90000:
+        type_id = 4
+    else:
+        if 109999 < xp:
+            if r10 < 6:
+                type_id = 2
+            elif r10 < 9:
+                type_id = 4
+            else:
+                type_id = 0
+        else:
+            type_id = 0
+
+    # Rare override: forces spider_sp1 when (rand() & 0x1f) == 2.
+    if (rng.rand() & 0x1F) == 2:
+        type_id = 3
+
+    c.type_id = CreatureTypeId(type_id)
+
+    # size = rand() % 0x14 + 0x2c
+    c.size = float(rng.rand() % 0x14 + 0x2C)
+
+    # heading = (rand() % 0x13a) * 0.01
+    c.heading = float(rng.rand() % 0x13A) * 0.01
+
+    move_speed = float(xp // 4000) * 0.045 + 0.9
+    if c.type_id == CreatureTypeId.SPIDER_SP1:
+        c.flags |= CreatureFlags.AI7_LINK_TIMER
+        move_speed *= 1.3
+
+    r_health = rng.rand()
+    health = float(xp) * 0.00125 + float(r_health & 0xF) + 52.0
+
+    if c.type_id == CreatureTypeId.ZOMBIE:
+        move_speed *= 0.6
+        if move_speed < 1.3:
+            move_speed = 1.3
+        health *= 1.5
+
+    if 3.5 < move_speed:
+        move_speed = 3.5
+
+    c.move_speed = move_speed
+    c.health = health
+    c.reward_value = 0.0
+    c.tint_a = 1.0
+
+    # Tint based on player_experience thresholds.
+    if xp < 50_000:
+        c.tint_r = 1.0 - 1.0 / (float(xp // 1000) + 10.0)
+        c.tint_g = float(rng.rand() % 10) * 0.01 + 0.9 - 1.0 / (float(xp // 10000) + 10.0)
+        c.tint_b = float(rng.rand() % 10) * 0.01 + 0.7
+    elif xp < 100_000:
+        c.tint_r = 0.9 - 1.0 / (float(xp // 1000) + 10.0)
+        c.tint_g = float(rng.rand() % 10) * 0.01 + 0.8 - 1.0 / (float(xp // 10000) + 10.0)
+        c.tint_b = float(xp - 50_000) * 6e-06 + float(rng.rand() % 10) * 0.01 + 0.7
+    else:
+        c.tint_r = 1.0 - 1.0 / (float(xp // 1000) + 10.0)
+        c.tint_g = float(rng.rand() % 10) * 0.01 + 0.9 - 1.0 / (float(xp // 10000) + 10.0)
+        tint_b = float(rng.rand() % 10) * 0.01 + 1.0 - float(xp - 100_000) * 3e-06
+        if tint_b < 0.5:
+            tint_b = 0.5
+        c.tint_b = tint_b
+
+    # contact_damage = size * 0.0952381
+    c.contact_damage = float(c.size or 0.0) * (2.0 / 21.0)
+
+    # reward_value is always 0.0 at this point in the original.
+    c.reward_value = float(c.health or 0.0) * 0.4 + float(c.contact_damage or 0.0) * 0.8 + move_speed * 5.0 + float(rng.rand() % 10 + 10)
+
+    # Rare stat overrides (color-coded variants).
+    r = rng.rand()
+    if r % 0xB4 < 2:
+        c.tint_r = 0.9
+        c.tint_g = 0.4
+        c.tint_b = 0.4
+        c.tint_a = 1.0
+        c.health = 65.0
+        c.reward_value = 320.0
+    else:
+        r = rng.rand()
+        if r % 0xF0 < 2:
+            c.tint_r = 0.4
+            c.tint_g = 0.9
+            c.tint_b = 0.4
+            c.tint_a = 1.0
+            c.health = 85.0
+            c.reward_value = 420.0
+        else:
+            r = rng.rand()
+            if r % 0x168 < 2:
+                c.tint_r = 0.4
+                c.tint_g = 0.4
+                c.tint_b = 0.9
+                c.tint_a = 1.0
+                c.health = 125.0
+                c.reward_value = 520.0
+
+    # Rare health/size boosts (do not recompute contact_damage).
+    r = rng.rand()
+    if r % 0x528 < 4:
+        c.tint_r = 0.84
+        c.tint_g = 0.24
+        c.tint_b = 0.89
+        c.tint_a = 1.0
+        c.size = 80.0
+        c.reward_value = 600.0
+        c.health = float(c.health or 0.0) + 230.0
+    else:
+        r = rng.rand()
+        if r % 0x654 < 4:
+            c.tint_r = 0.94
+            c.tint_g = 0.84
+            c.tint_b = 0.29
+            c.tint_a = 1.0
+            c.size = 85.0
+            c.reward_value = 900.0
+            c.health = float(c.health or 0.0) + 2230.0
+
+    if c.health is not None:
+        c.max_health = c.health
+    if c.reward_value is not None:
+        c.reward_value *= 0.8
+
+    if c.tint_r is not None:
+        c.tint_r = _clamp01(c.tint_r)
+    if c.tint_g is not None:
+        c.tint_g = _clamp01(c.tint_g)
+    if c.tint_b is not None:
+        c.tint_b = _clamp01(c.tint_b)
+    if c.tint_a is not None:
+        c.tint_a = _clamp01(c.tint_a)
+
+    return c
+
+
 def _apply_tail(
     template_id: int,
     plan_creatures: list[CreatureInit],
