@@ -899,6 +899,19 @@ class GridFormationSpec:
     set_parent_max_health: bool = True
 
 
+@dataclass(frozen=True, slots=True)
+class RingFormationSpec:
+    parent: ConstantSpawnSpec
+    child_ai_mode: int
+    child_spec: FormationChildSpec
+    count: int
+    angle_step: float
+    radius: float
+    apply_fallback: bool = False
+    set_position: bool = False
+    set_parent_max_health: bool = True
+
+
 CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
     SpawnId.ALIEN_CONST_PURPLE_GHOST_21: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
@@ -1247,12 +1260,67 @@ GRID_FORMATIONS: dict[int, GridFormationSpec] = {
     ),
 }
 
+RING_FORMATIONS: dict[int, RingFormationSpec] = {
+    SpawnId.FORMATION_RING_ALIEN_8_12: RingFormationSpec(
+        parent=ConstantSpawnSpec(
+            type_id=CreatureTypeId.ALIEN,
+            health=200.0,
+            move_speed=2.2,
+            reward_value=600.0,
+            tint=(0.65, 0.85, 0.97, 1.0),
+            size=55.0,
+            contact_damage=14.0,
+        ),
+        child_ai_mode=3,
+        child_spec=FormationChildSpec(
+            type_id=CreatureTypeId.ALIEN,
+            health=40.0,
+            move_speed=2.4,
+            reward_value=60.0,
+            size=50.0,
+            contact_damage=4.0,
+            tint=(0.32, 0.588, 0.426, 1.0),
+        ),
+        count=8,
+        angle_step=math.pi / 4.0,
+        radius=100.0,
+        apply_fallback=True,
+    ),
+    SpawnId.FORMATION_RING_ALIEN_5_19: RingFormationSpec(
+        parent=ConstantSpawnSpec(
+            type_id=CreatureTypeId.ALIEN,
+            health=50.0,
+            move_speed=3.8,
+            reward_value=300.0,
+            tint=(0.95, 0.55, 0.37, 1.0),
+            size=55.0,
+            contact_damage=40.0,
+        ),
+        child_ai_mode=5,
+        child_spec=FormationChildSpec(
+            type_id=CreatureTypeId.ALIEN,
+            health=220.0,
+            move_speed=3.8,
+            reward_value=60.0,
+            size=50.0,
+            contact_damage=35.0,
+            tint=(0.7125, 0.4125, 0.2775, 0.6),
+        ),
+        count=5,
+        angle_step=math.tau / 5.0,
+        radius=110.0,
+        set_position=True,
+        apply_fallback=True,
+    ),
+}
+
 
 def spawn_id_label(spawn_id: SupportsInt) -> str:
     entry = SPAWN_ID_TO_TEMPLATE.get(int(spawn_id))
     if entry is None or entry.creature is None:
         return "unknown"
     return entry.creature
+
 
 @dataclass(frozen=True, slots=True, kw_only=True)
 class SpawnEnv:
@@ -2303,6 +2371,23 @@ def apply_grid_formation(ctx: PlanBuilder, spec: GridFormationSpec) -> None:
         apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
 
 
+def apply_ring_formation(ctx: PlanBuilder, spec: RingFormationSpec) -> None:
+    parent = ctx.base
+    apply_constant_template(parent, spec.parent)
+    if spec.set_parent_max_health and parent.health is not None:
+        parent.max_health = parent.health
+    ctx.primary = ctx.ring_children(
+        count=spec.count,
+        angle_step=spec.angle_step,
+        radius=spec.radius,
+        ai_mode=spec.child_ai_mode,
+        child_spec=spec.child_spec,
+        set_position=spec.set_position,
+    )
+    if spec.apply_fallback:
+        apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
+
+
 @register_template(SpawnId.ZOMBIE_BOSS_SPAWNER_00)
 def template_00_zombie_boss_spawner(ctx: PlanBuilder) -> None:
     c = ctx.base
@@ -2468,40 +2553,6 @@ def template_11_formation_chain_lizard_4(ctx: PlanBuilder) -> None:
     apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
 
 
-@register_template(SpawnId.FORMATION_RING_ALIEN_8_12)
-def template_12_formation_ring_alien_8(ctx: PlanBuilder) -> None:
-    parent = ctx.base
-    parent.type_id = CreatureTypeId.ALIEN
-    apply_tint(parent, (0.65, 0.85, 0.97, 1.0))
-    parent.health = 200.0
-    parent.max_health = 200.0
-    parent.move_speed = 2.2
-    parent.reward_value = 600.0
-    parent.size = 55.0
-    parent.contact_damage = 14.0
-
-    # Spawns 8 linked orbiters in a ring (step ~= pi/4).
-    child_spec = FormationChildSpec(
-        type_id=CreatureTypeId.ALIEN,
-        health=40.0,
-        move_speed=2.4,
-        reward_value=60.0,
-        size=50.0,
-        contact_damage=4.0,
-        tint=(0.32, 0.588, 0.426, 1.0),
-    )
-    ctx.primary = ctx.ring_children(
-        count=8,
-        angle_step=math.pi / 4.0,
-        radius=100.0,
-        ai_mode=3,
-        child_spec=child_spec,
-    )
-
-    # The original function returns the last allocated creature pointer.
-    apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
-
-
 @register_template(SpawnId.FORMATION_CHAIN_ALIEN_10_13)
 def template_13_formation_chain_alien_10(ctx: PlanBuilder) -> None:
     parent = ctx.base
@@ -2549,36 +2600,11 @@ def template_13_formation_chain_alien_10(ctx: PlanBuilder) -> None:
     apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
 
 
-@register_template(SpawnId.FORMATION_RING_ALIEN_5_19)
-def template_19_formation_ring_alien_5(ctx: PlanBuilder) -> None:
-    parent = ctx.base
-    parent.type_id = CreatureTypeId.ALIEN
-    apply_tint(parent, (0.95, 0.55, 0.37, 1.0))
-    parent.health = 50.0
-    parent.max_health = 50.0
-    parent.move_speed = 3.8
-    parent.reward_value = 300.0
-    parent.size = 55.0
-    parent.contact_damage = 40.0
-
-    child_spec = FormationChildSpec(
-        type_id=CreatureTypeId.ALIEN,
-        health=220.0,
-        move_speed=3.8,
-        reward_value=60.0,
-        size=50.0,
-        contact_damage=35.0,
-        tint=(0.7125, 0.4125, 0.2775, 0.6),
-    )
-    ctx.primary = ctx.ring_children(
-        count=5,
-        angle_step=math.tau / 5.0,
-        radius=110.0,
-        ai_mode=5,
-        child_spec=child_spec,
-        set_position=True,
-    )
-    apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
+AI1_BLUE_TINT_TEMPLATES: dict[int, tuple[CreatureTypeId, float]] = {
+    SpawnId.AI1_ALIEN_BLUE_TINT_1A: (CreatureTypeId.ALIEN, 50.0),
+    SpawnId.AI1_SPIDER_SP1_BLUE_TINT_1B: (CreatureTypeId.SPIDER_SP1, 40.0),
+    SpawnId.AI1_LIZARD_BLUE_TINT_1C: (CreatureTypeId.LIZARD, 50.0),
+}
 
 
 @register_template(SpawnId.AI1_ALIEN_BLUE_TINT_1A, SpawnId.AI1_SPIDER_SP1_BLUE_TINT_1B, SpawnId.AI1_LIZARD_BLUE_TINT_1C)
@@ -2589,15 +2615,7 @@ def template_1a_1b_1c_ai1_blue_tint(ctx: PlanBuilder) -> None:
     c.move_speed = 2.4
     c.reward_value = 125.0
 
-    if ctx.template_id == SpawnId.AI1_ALIEN_BLUE_TINT_1A:
-        c.type_id = CreatureTypeId.ALIEN
-        c.health = 50.0
-    elif ctx.template_id == SpawnId.AI1_SPIDER_SP1_BLUE_TINT_1B:
-        c.type_id = CreatureTypeId.SPIDER_SP1
-        c.health = 40.0
-    else:
-        c.type_id = CreatureTypeId.LIZARD
-        c.health = 50.0
+    c.type_id, c.health = AI1_BLUE_TINT_TEMPLATES[ctx.template_id]
 
     tint = float(ctx.rng.rand() % 40) * 0.01 + 0.5
     apply_tint(c, (tint, tint, 1.0, 1.0))
@@ -2877,6 +2895,8 @@ def build_spawn_plan(
         apply_alien_spawner(ctx, ALIEN_SPAWNER_TEMPLATES[template_id])
     elif template_id in GRID_FORMATIONS:
         apply_grid_formation(ctx, GRID_FORMATIONS[template_id])
+    elif template_id in RING_FORMATIONS:
+        apply_ring_formation(ctx, RING_FORMATIONS[template_id])
     elif template_id in CONSTANT_SPAWN_TEMPLATES:
         apply_constant_spawn(ctx, CONSTANT_SPAWN_TEMPLATES[template_id])
     else:
