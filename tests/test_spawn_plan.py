@@ -124,7 +124,7 @@ def test_spawn_plan_template_03_is_randomized_and_tail_enables_ai7_timer() -> No
 
     state, r_size = _msvcrt_rand(state)
     expected_size = float(r_size % 0xF + 0x26)
-    expected_health = expected_size * 1.1428572 + 20.0
+    expected_health = expected_size * (8.0 / 7.0) + 20.0
     expected_reward = expected_size + expected_size + 50.0
 
     state, r_speed = _msvcrt_rand(state)
@@ -175,7 +175,7 @@ def test_spawn_plan_template_04_is_randomized() -> None:
 
     state, r_size = _msvcrt_rand(state)
     expected_size = float(r_size % 0xF + 0x26)
-    expected_health = expected_size * 1.1428572 + 20.0
+    expected_health = expected_size * (8.0 / 7.0) + 20.0
     expected_reward = expected_size + expected_size + 50.0
 
     state, r_speed = _msvcrt_rand(state)
@@ -220,7 +220,7 @@ def test_spawn_plan_template_05_is_randomized() -> None:
 
     state, r_size = _msvcrt_rand(state)
     expected_size = float(r_size % 0xF + 0x26)
-    expected_health = expected_size * 1.1428572 + 20.0
+    expected_health = expected_size * (8.0 / 7.0) + 20.0
     expected_reward = expected_size + expected_size + 50.0
 
     state, r_speed = _msvcrt_rand(state)
@@ -269,7 +269,7 @@ def test_spawn_plan_template_06_is_randomized() -> None:
 
     state, r_size = _msvcrt_rand(state)
     expected_size = float(r_size % 0xF + 0x26)
-    expected_health = expected_size * 1.1428572 + 20.0
+    expected_health = expected_size * (8.0 / 7.0) + 20.0
     expected_reward = expected_size + expected_size + 50.0
 
     state, r_speed = _msvcrt_rand(state)
@@ -654,9 +654,9 @@ def test_spawn_plan_template_12_spawns_formation_children() -> None:
         assert child.max_health == expected_health
         assert child.move_speed == 2.4
         assert child.size == 50.0
-        assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (0.32000002, 0.58800006, 0.426, 1.0)
+        assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (0.32, 0.588, 0.426, 1.0)
 
-        angle = float(i) * 0.7853982
+        angle = float(i) * (math.pi / 4.0)
         assert (child.target_offset_x or 0.0) == pytest.approx(math.cos(angle) * 100.0, abs=1e-4)
         assert (child.target_offset_y or 0.0) == pytest.approx(math.sin(angle) * 100.0, abs=1e-4)
 
@@ -700,7 +700,7 @@ def test_spawn_plan_template_13_spawns_ring_children_and_links_parent() -> None:
         assert child.type_id == CreatureTypeId.ALIEN
         assert child.ai_mode == 6
         assert child.ai_link_parent == i
-        assert child.orbit_angle == 3.1415927
+        assert child.orbit_angle == math.pi
         assert child.orbit_radius == 10.0
 
         expected_health = 20.0 if i == 9 else 60.0
@@ -712,7 +712,7 @@ def test_spawn_plan_template_13_spawns_ring_children_and_links_parent() -> None:
         assert child.contact_damage == 4.0
         assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (0.4, 0.7, 0.11, 1.0)
 
-        angle = float(2 + 2 * i) * 0.34906587
+        angle = float(2 + 2 * i) * math.radians(20.0)
         assert child.pos_x == pytest.approx(100.0 + math.cos(angle) * 256.0, abs=1e-4)
         assert child.pos_y == pytest.approx(200.0 + math.sin(angle) * 256.0, abs=1e-4)
 
@@ -981,7 +981,7 @@ def test_spawn_plan_template_18_spawns_grid_children() -> None:
         assert child.reward_value == 60.0
         assert child.size == 50.0
         assert child.contact_damage == 35.0
-        assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (0.7125, 0.41250002, 0.2775, 0.6)
+        assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (0.7125, 0.4125, 0.2775, 0.6)
 
     # Rand consumption:
     # - base alloc: 1
@@ -1022,9 +1022,9 @@ def test_spawn_plan_template_19_spawns_formation_children() -> None:
         assert child.max_health == expected_health
         assert child.move_speed == 3.8
         assert child.size == 50.0
-        assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (0.7125, 0.41250002, 0.2775, 0.6)
+        assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (0.7125, 0.4125, 0.2775, 0.6)
 
-        angle = float(i) * 1.2566371
+        angle = float(i) * (math.tau / 5.0)
         assert (child.target_offset_x or 0.0) == pytest.approx(math.cos(angle) * 110.0, abs=1e-4)
         assert (child.target_offset_y or 0.0) == pytest.approx(math.sin(angle) * 110.0, abs=1e-4)
         assert child.pos_x == pytest.approx(100.0 + (child.target_offset_x or 0.0), abs=1e-4)
@@ -1172,7 +1172,7 @@ def test_spawn_plan_template_1d_is_randomized() -> None:
 
     state, r_size = _msvcrt_rand(state)
     expected_size = float(r_size % 20 + 35)
-    expected_health = expected_size * 1.1428572 + 10.0
+    expected_health = expected_size * (8.0 / 7.0) + 10.0
 
     state, r_speed = _msvcrt_rand(state)
     expected_speed = float(r_speed % 15) * 0.1 + 1.1
@@ -1181,13 +1181,13 @@ def test_spawn_plan_template_1d_is_randomized() -> None:
     expected_reward = float(r_reward % 100 + 50)
 
     state, r_tint_r = _msvcrt_rand(state)
-    expected_tint_r = float(r_tint_r % 50) * 0.001 + 0.60000002
+    expected_tint_r = float(r_tint_r % 50) * 0.001 + 0.6
 
     state, r_tint_g = _msvcrt_rand(state)
-    expected_tint_g = float(r_tint_g % 50) * 0.0099999998 + 0.5
+    expected_tint_g = float(r_tint_g % 50) * 0.01 + 0.5
 
     state, r_tint_b = _msvcrt_rand(state)
-    expected_tint_b = float(r_tint_b % 50) * 0.001 + 0.60000002
+    expected_tint_b = float(r_tint_b % 50) * 0.001 + 0.6
 
     state, r_contact = _msvcrt_rand(state)
     expected_contact = float(r_contact % 10) + 4.0
@@ -1228,7 +1228,7 @@ def test_spawn_plan_template_1e_is_randomized() -> None:
 
     state, r_size = _msvcrt_rand(state)
     expected_size = float(r_size % 30 + 35)
-    expected_health = expected_size * 2.2857144 + 10.0
+    expected_health = expected_size * (16.0 / 7.0) + 10.0
 
     state, r_speed = _msvcrt_rand(state)
     expected_speed = float(r_speed % 17) * 0.1 + 1.5
@@ -1237,13 +1237,13 @@ def test_spawn_plan_template_1e_is_randomized() -> None:
     expected_reward = float(r_reward % 200 + 50)
 
     state, r_tint_r = _msvcrt_rand(state)
-    expected_tint_r = float(r_tint_r % 50) * 0.001 + 0.60000002
+    expected_tint_r = float(r_tint_r % 50) * 0.001 + 0.6
 
     state, r_tint_g = _msvcrt_rand(state)
-    expected_tint_g = float(r_tint_g % 50) * 0.001 + 0.60000002
+    expected_tint_g = float(r_tint_g % 50) * 0.001 + 0.6
 
     state, r_tint_b = _msvcrt_rand(state)
-    expected_tint_b = float(r_tint_b % 50) * 0.0099999998 + 0.5
+    expected_tint_b = float(r_tint_b % 50) * 0.01 + 0.5
 
     state, r_contact = _msvcrt_rand(state)
     expected_contact = float(r_contact % 30) + 4.0
@@ -1284,7 +1284,7 @@ def test_spawn_plan_template_1f_is_randomized() -> None:
 
     state, r_size = _msvcrt_rand(state)
     expected_size = float(r_size % 30 + 45)
-    expected_health = expected_size * 3.7142856 + 30.0
+    expected_health = expected_size * (26.0 / 7.0) + 30.0
 
     state, r_speed = _msvcrt_rand(state)
     expected_speed = float(r_speed % 21) * 0.1 + 1.6
@@ -1293,13 +1293,13 @@ def test_spawn_plan_template_1f_is_randomized() -> None:
     expected_reward = float(r_reward % 200 + 80)
 
     state, r_tint_r = _msvcrt_rand(state)
-    expected_tint_r = float(r_tint_r % 50) * 0.0099999998 + 0.5
+    expected_tint_r = float(r_tint_r % 50) * 0.01 + 0.5
 
     state, r_tint_g = _msvcrt_rand(state)
-    expected_tint_g = float(r_tint_g % 50) * 0.001 + 0.60000002
+    expected_tint_g = float(r_tint_g % 50) * 0.001 + 0.6
 
     state, r_tint_b = _msvcrt_rand(state)
-    expected_tint_b = float(r_tint_b % 50) * 0.001 + 0.60000002
+    expected_tint_b = float(r_tint_b % 50) * 0.001 + 0.6
 
     state, r_contact = _msvcrt_rand(state)
     expected_contact = float(r_contact % 35) + 8.0
@@ -1340,14 +1340,14 @@ def test_spawn_plan_template_20_is_randomized() -> None:
 
     state, r_size = _msvcrt_rand(state)
     expected_size = float(r_size % 30 + 40)
-    expected_health = expected_size * 1.1428572 + 20.0
+    expected_health = expected_size * (8.0 / 7.0) + 20.0
 
     state, r_speed = _msvcrt_rand(state)
     expected_speed = float(r_speed % 18) * 0.1 + 1.1
     expected_reward = expected_size + expected_size + 50.0
 
     state, r_tint_g = _msvcrt_rand(state)
-    expected_tint_g = float(r_tint_g % 40) * 0.0099999998 + 0.60000002
+    expected_tint_g = float(r_tint_g % 40) * 0.01 + 0.6
 
     state, r_contact = _msvcrt_rand(state)
     expected_contact = float(r_contact % 10) + 4.0
@@ -1767,7 +1767,7 @@ def test_spawn_plan_template_2e_is_randomized() -> None:
 
     state, r_size = _msvcrt_rand(state)
     expected_size = float(r_size % 0x1E + 0x28)
-    expected_health = expected_size * 1.1428572 + 20.0
+    expected_health = expected_size * (8.0 / 7.0) + 20.0
 
     state, r_speed = _msvcrt_rand(state)
     expected_speed = float(r_speed % 0x12) * 0.1 + 1.1
@@ -1879,7 +1879,7 @@ def test_spawn_plan_template_31_is_randomized() -> None:
 
     state, r_size = _msvcrt_rand(state)
     expected_size = float(r_size % 0x1E + 0x28)
-    expected_health = expected_size * 1.1428572 + 10.0
+    expected_health = expected_size * (8.0 / 7.0) + 10.0
 
     state, r_speed = _msvcrt_rand(state)
     expected_speed = float(r_speed % 0x12) * 0.1 + 1.1
@@ -1975,7 +1975,7 @@ def test_spawn_plan_template_33_is_randomized_and_tail_enables_ai7_timer() -> No
 
     state, r_size = _msvcrt_rand(state)
     expected_size = float(r_size % 0xF + 0x2D)
-    expected_health = expected_size * 1.1428572 + 20.0
+    expected_health = expected_size * (8.0 / 7.0) + 20.0
 
     state, r_speed = _msvcrt_rand(state)
     expected_speed_pre_tail = float(r_speed % 0x12) * 0.1 + 1.1
@@ -2027,7 +2027,7 @@ def test_spawn_plan_template_34_is_randomized_and_tail_enables_ai7_timer() -> No
 
     state, r_size = _msvcrt_rand(state)
     expected_size = float(r_size % 0x14 + 0x28)
-    expected_health = expected_size * 1.1428572 + 20.0
+    expected_health = expected_size * (8.0 / 7.0) + 20.0
 
     state, r_speed = _msvcrt_rand(state)
     expected_speed_pre_tail = float(r_speed % 0x12) * 0.1 + 1.1
@@ -2079,7 +2079,7 @@ def test_spawn_plan_template_35_is_randomized() -> None:
 
     state, r_size = _msvcrt_rand(state)
     expected_size = float(r_size % 10 + 0x1E)
-    expected_health = expected_size * 1.1428572 + 20.0
+    expected_health = expected_size * (8.0 / 7.0) + 20.0
 
     state, r_speed = _msvcrt_rand(state)
     expected_speed = float(r_speed % 0x12) * 0.1 + 1.1
@@ -2516,7 +2516,7 @@ def test_spawn_plan_template_41_is_randomized() -> None:
 
     state, r_size = _msvcrt_rand(state)
     expected_size = float(r_size % 0x1E + 0x28)
-    expected_health = expected_size * 1.1428572 + 10.0
+    expected_health = expected_size * (8.0 / 7.0) + 10.0
     expected_speed = expected_size * 0.0025 + 0.9
     expected_reward = expected_size + expected_size + 50.0
 
@@ -2648,7 +2648,7 @@ def test_spawn_plan_template_0e_spawns_ring_children_and_has_spawn_slot() -> Non
         assert child.contact_damage == 30.0
         assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (1.0, 0.3, 0.3, 1.0)
 
-        angle = float(i) * 0.2617994
+        angle = float(i) * (math.pi / 12.0)
         assert (child.target_offset_x or 0.0) == pytest.approx(math.cos(angle) * 100.0, abs=1e-4)
         assert (child.target_offset_y or 0.0) == pytest.approx(math.sin(angle) * 100.0, abs=1e-4)
 
@@ -2698,7 +2698,7 @@ def test_spawn_plan_template_11_spawns_chain_children_and_falls_into_unhandled_o
         assert child.contact_damage == 14.0
         assert (child.tint_r, child.tint_g, child.tint_b, child.tint_a) == (0.6, 0.6, 0.31, 1.0)
 
-        angle = float(2 + 2 * i) * 0.3926991
+        angle = float(2 + 2 * i) * (math.pi / 8.0)
         assert child.pos_x == pytest.approx(100.0 + math.cos(angle) * 256.0, abs=1e-4)
         assert child.pos_y == pytest.approx(200.0 + math.sin(angle) * 256.0, abs=1e-4)
 

@@ -830,7 +830,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.type_id = CreatureTypeId.SPIDER_SP1
         size = float(rng.rand() % 0xF + 0x26)
         c.size = size
-        c.health = size * 1.1428572 + 20.0
+        c.health = size * (8.0 / 7.0) + 20.0
         c.tint_a = 1.0
         c.tint_r = 0.6
         c.tint_g = 0.6
@@ -845,7 +845,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.type_id = CreatureTypeId.LIZARD
         size = float(rng.rand() % 0xF + 0x26)
         c.size = size
-        c.health = size * 1.1428572 + 20.0
+        c.health = size * (8.0 / 7.0) + 20.0
         c.tint_a = 1.0
         c.tint_r = 0.67
         c.tint_g = 0.67
@@ -859,7 +859,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.type_id = CreatureTypeId.SPIDER_SP2
         size = float(rng.rand() % 0xF + 0x26)
         c.size = size
-        c.health = size * 1.1428572 + 20.0
+        c.health = size * (8.0 / 7.0) + 20.0
         c.tint_a = 1.0
         c.tint_r = 0.6
         c.tint_g = 0.6
@@ -874,7 +874,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.type_id = CreatureTypeId.ALIEN
         size = float(rng.rand() % 0xF + 0x26)
         c.size = size
-        c.health = size * 1.1428572 + 20.0
+        c.health = size * (8.0 / 7.0) + 20.0
         c.tint_a = 1.0
         c.tint_r = 0.6
         c.tint_g = 0.6
@@ -1102,7 +1102,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
             child.ai_link_parent = 0
             child.heading = 0.0
             child.phase_seed = 0.0  # template overwrites anim_phase to 0.0
-            angle = float(i) * 0.2617994
+            angle = float(i) * (math.pi / 12.0)
             child.target_offset_x = float(math.cos(angle) * 100.0)
             child.target_offset_y = float(math.sin(angle) * 100.0)
             child.tint_r = 1.0
@@ -1157,7 +1157,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
             child.ai_link_parent = chain_prev
             child.target_offset_x = -256.0 + float(i) * 64.0
             child.target_offset_y = -256.0
-            angle = float(local_48) * 0.3926991
+            angle = float(local_48) * (math.pi / 8.0)
             child.pos_x = float(math.cos(angle) * 256.0 + pos_x)
             child.pos_y = float(math.sin(angle) * 256.0 + pos_y)
             child.tint_r = 0.6
@@ -1197,11 +1197,11 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
             child = _alloc_creature(template_id, pos_x, pos_y, rng)
             child.ai_mode = 3
             child.ai_link_parent = 0
-            angle = float(i) * 0.7853982
+            angle = float(i) * (math.pi / 4.0)
             child.target_offset_x = float(math.cos(angle) * 100.0)
             child.target_offset_y = float(math.sin(angle) * 100.0)
-            child.tint_r = 0.32000002
-            child.tint_g = 0.58800006
+            child.tint_r = 0.32
+            child.tint_g = 0.588
             child.tint_b = 0.426
             child.tint_a = 1.0
             child.health = 40.0
@@ -1238,9 +1238,9 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
             child = _alloc_creature(template_id, pos_x, pos_y, rng)
             child.ai_mode = 6
             child.ai_link_parent = chain_prev
-            child.orbit_angle = 3.1415927
+            child.orbit_angle = math.pi
             child.orbit_radius = 10.0
-            angle = float(i) * 0.34906587
+            angle = float(i) * math.radians(20.0)
             child.pos_x = float(math.cos(angle) * 256.0 + pos_x)
             child.pos_y = float(math.sin(angle) * 256.0 + pos_y)
             child.tint_r = 0.4
@@ -1441,7 +1441,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
                 child.pos_x = float(pos_x + x_offset)
                 child.pos_y = float(pos_y + y_offset)
                 child.tint_r = 0.7125
-                child.tint_g = 0.41250002
+                child.tint_g = 0.4125
                 child.tint_b = 0.2775
                 child.tint_a = 0.6
                 child.health = 260.0
@@ -1473,13 +1473,13 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
             child = _alloc_creature(template_id, pos_x, pos_y, rng)
             child.ai_mode = 5
             child.ai_link_parent = 0
-            angle = float(i) * 1.2566371
+            angle = float(i) * (math.tau / 5.0)
             child.target_offset_x = float(math.cos(angle) * 110.0)
             child.target_offset_y = float(math.sin(angle) * 110.0)
             child.pos_x = pos_x + (child.target_offset_x or 0.0)
             child.pos_y = pos_y + (child.target_offset_y or 0.0)
             child.tint_r = 0.7125
-            child.tint_g = 0.41250002
+            child.tint_g = 0.4125
             child.tint_b = 0.2775
             child.tint_a = 0.6
             child.health = 220.0
@@ -1522,13 +1522,13 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.type_id = CreatureTypeId.ALIEN
         size = float(rng.rand() % 20 + 35)
         c.size = size
-        c.health = size * 1.1428572 + 10.0
+        c.health = size * (8.0 / 7.0) + 10.0
         c.move_speed = float(rng.rand() % 15) * 0.1 + 1.1
         c.reward_value = float(rng.rand() % 100 + 50)
         c.tint_a = 1.0
-        c.tint_r = float(rng.rand() % 50) * 0.001 + 0.60000002
-        c.tint_g = float(rng.rand() % 50) * 0.0099999998 + 0.5
-        c.tint_b = float(rng.rand() % 50) * 0.001 + 0.60000002
+        c.tint_r = float(rng.rand() % 50) * 0.001 + 0.6
+        c.tint_g = float(rng.rand() % 50) * 0.01 + 0.5
+        c.tint_b = float(rng.rand() % 50) * 0.001 + 0.6
         c.contact_damage = float(rng.rand() % 10) + 4.0
         primary_idx = 0
     elif template_id == 0x1E:
@@ -1536,13 +1536,13 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.type_id = CreatureTypeId.ALIEN
         size = float(rng.rand() % 30 + 35)
         c.size = size
-        c.health = size * 2.2857144 + 10.0
+        c.health = size * (16.0 / 7.0) + 10.0
         c.move_speed = float(rng.rand() % 17) * 0.1 + 1.5
         c.reward_value = float(rng.rand() % 200 + 50)
         c.tint_a = 1.0
-        c.tint_r = float(rng.rand() % 50) * 0.001 + 0.60000002
-        c.tint_g = float(rng.rand() % 50) * 0.001 + 0.60000002
-        c.tint_b = float(rng.rand() % 50) * 0.0099999998 + 0.5
+        c.tint_r = float(rng.rand() % 50) * 0.001 + 0.6
+        c.tint_g = float(rng.rand() % 50) * 0.001 + 0.6
+        c.tint_b = float(rng.rand() % 50) * 0.01 + 0.5
         c.contact_damage = float(rng.rand() % 30) + 4.0
         primary_idx = 0
     elif template_id == 0x1F:
@@ -1550,13 +1550,13 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.type_id = CreatureTypeId.ALIEN
         size = float(rng.rand() % 30 + 45)
         c.size = size
-        c.health = size * 3.7142856 + 30.0
+        c.health = size * (26.0 / 7.0) + 30.0
         c.move_speed = float(rng.rand() % 21) * 0.1 + 1.6
         c.reward_value = float(rng.rand() % 200 + 80)
         c.tint_a = 1.0
-        c.tint_r = float(rng.rand() % 50) * 0.0099999998 + 0.5
-        c.tint_g = float(rng.rand() % 50) * 0.001 + 0.60000002
-        c.tint_b = float(rng.rand() % 50) * 0.001 + 0.60000002
+        c.tint_r = float(rng.rand() % 50) * 0.01 + 0.5
+        c.tint_g = float(rng.rand() % 50) * 0.001 + 0.6
+        c.tint_b = float(rng.rand() % 50) * 0.001 + 0.6
         c.contact_damage = float(rng.rand() % 35) + 8.0
         primary_idx = 0
     elif template_id == 0x20:
@@ -1564,13 +1564,13 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.type_id = CreatureTypeId.ALIEN
         size = float(rng.rand() % 30 + 40)
         c.size = size
-        c.health = size * 1.1428572 + 20.0
+        c.health = size * (8.0 / 7.0) + 20.0
         c.tint_a = 1.0
         c.tint_r = 0.3
         c.move_speed = float(rng.rand() % 18) * 0.1 + 1.1
         c.reward_value = size + size + 50.0
         c.tint_b = 0.3
-        c.tint_g = float(rng.rand() % 40) * 0.0099999998 + 0.60000002
+        c.tint_g = float(rng.rand() % 40) * 0.01 + 0.6
         c.contact_damage = float(rng.rand() % 10) + 4.0
         primary_idx = 0
     elif template_id == 0x21:
@@ -1750,7 +1750,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.type_id = CreatureTypeId.LIZARD
         size = float(rng.rand() % 0x1E + 0x28)
         c.size = size
-        c.health = size * 1.1428572 + 20.0
+        c.health = size * (8.0 / 7.0) + 20.0
         c.tint_a = 1.0
         c.move_speed = float(rng.rand() % 0x12) * 0.1 + 1.1
         c.reward_value = size + size + 50.0
@@ -1790,7 +1790,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.type_id = CreatureTypeId.LIZARD
         size = float(rng.rand() % 0x1E + 0x28)
         c.size = size
-        c.health = size * 1.1428572 + 10.0
+        c.health = size * (8.0 / 7.0) + 10.0
         c.tint_a = 1.0
         c.move_speed = float(rng.rand() % 0x12) * 0.1 + 1.1
         c.reward_value = size + size + 50.0
@@ -1820,7 +1820,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.type_id = CreatureTypeId.SPIDER_SP1
         size = float(rng.rand() % 0xF + 0x2D)
         c.size = size
-        c.health = size * 1.1428572 + 20.0
+        c.health = size * (8.0 / 7.0) + 20.0
         c.tint_a = 1.0
         c.move_speed = float(rng.rand() % 0x12) * 0.1 + 1.1
         c.reward_value = size + size + 50.0
@@ -1833,7 +1833,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c = creatures[0]
         c.type_id = CreatureTypeId.SPIDER_SP1
         c.size = float(rng.rand() % 0x14 + 0x28)
-        c.health = float((c.size or 0.0) * 1.1428572 + 20.0)
+        c.health = float((c.size or 0.0) * (8.0 / 7.0) + 20.0)
         c.tint_a = 1.0
         c.move_speed = float(rng.rand() % 0x12) * 0.1 + 1.1
         c.reward_value = float((c.size or 0.0) + (c.size or 0.0) + 50.0)
@@ -1846,7 +1846,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c = creatures[0]
         c.type_id = CreatureTypeId.SPIDER_SP2
         c.size = float(rng.rand() % 10 + 0x1E)
-        c.health = float((c.size or 0.0) * 1.1428572 + 20.0)
+        c.health = float((c.size or 0.0) * (8.0 / 7.0) + 20.0)
         c.tint_a = 1.0
         c.tint_b = 0.8
         c.move_speed = float(rng.rand() % 0x12) * 0.1 + 1.1
@@ -2019,7 +2019,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.type_id = CreatureTypeId.ZOMBIE
         c.tint_a = 1.0
         c.size = float(rng.rand() % 0x1E + 0x28)
-        c.health = float((c.size or 0.0) * 1.1428572 + 10.0)
+        c.health = float((c.size or 0.0) * (8.0 / 7.0) + 10.0)
         c.move_speed = float((c.size or 0.0) * 0.0025 + 0.9)
         c.reward_value = float((c.size or 0.0) + (c.size or 0.0) + 50.0)
         tint = float(rng.rand() % 0x28) * 0.01 + 0.6
