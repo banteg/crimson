@@ -10,7 +10,9 @@ __all__ = [
     "fonts",
     "input",
     "jaz",
+    "music",
     "paq",
+    "sfx",
     "terrain_render",
     "view",
 ]
