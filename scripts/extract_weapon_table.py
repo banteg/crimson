@@ -279,8 +279,16 @@ def main() -> None:
         icon_index = value_as_int(fields.get(ICON_OFFSET))
         flags = value_as_int(fields.get(FLAGS_OFFSET))
         projectile_value = value_as_float(fields.get(PROJECTILE_TYPE_OFFSET))
+        if projectile_value is None and idx > 0:
+            # Most weapons use the default projectile meta (0x6c) of 45.0.
+            # Runtime probe (2026-01-18) confirms this for multiple entries.
+            projectile_value = 45.0
         projectile_type = None if projectile_value is None else int(round(projectile_value))
         damage_mult = value_as_float(fields.get(DAMAGE_MULT_OFFSET))
+        if damage_mult is None and idx > 0:
+            # Most weapons use the default damage scale (0x70) of 1.0.
+            # Runtime probe (2026-01-18) confirms this for multiple entries.
+            damage_mult = 1.0
         lines.append("    Weapon(\n")
         lines.append(f"        weapon_id={idx - 1},\n")
         lines.append(f"        name={name!r},\n")
