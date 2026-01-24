@@ -52,11 +52,29 @@ def init_audio_state(config: CrimsonConfig, assets_dir: Path, console: ConsoleSt
 def load_music_tracks(state: AudioState, assets_dir: Path, console: ConsoleState) -> None:
     if not state.ready:
         return
-    paq_path = assets_dir / MUSIC_PAK_NAME
-    if not paq_path.exists():
-        console.log.log(f"audio: missing {MUSIC_PAK_NAME}")
+    music_dir = assets_dir / "music"
+    if music_dir.exists() and music_dir.is_dir():
+        loaded = 0
+        for track_name, candidates in MUSIC_TRACKS.items():
+            music = None
+            for candidate in candidates:
+                path = assets_dir / candidate
+                if not path.exists():
+                    continue
+                music = rl.load_music_stream(str(path))
+                if music is not None:
+                    break
+            if music is None:
+                raise FileNotFoundError(f"audio: missing music file for track '{track_name}' in {music_dir}")
+            rl.set_music_volume(music, state.volume)
+            state.music_tracks[track_name] = music
+            loaded += 1
+        console.log.log(f"audio: music tracks loaded {loaded}/{len(MUSIC_TRACKS)} from files")
         console.log.flush()
         return
+    paq_path = assets_dir / MUSIC_PAK_NAME
+    if not paq_path.exists():
+        raise FileNotFoundError(f"audio: missing {MUSIC_PAK_NAME} in {assets_dir}")
     entries: dict[str, bytes] = {}
     for name, data in paq.iter_entries(paq_path):
         entries[name.replace("\\", "/")] = data
@@ -68,11 +86,8 @@ def load_music_tracks(state: AudioState, assets_dir: Path, console: ConsoleState
             if data is not None:
                 break
         if data is None:
-            continue
-        try:
-            music = rl.load_music_stream_from_memory(".ogg", data, len(data))
-        except Exception:
-            continue
+            raise FileNotFoundError(f"audio: missing music entry for track '{track_name}' in {MUSIC_PAK_NAME}")
+        music = rl.load_music_stream_from_memory(".ogg", data, len(data))
         rl.set_music_volume(music, state.volume)
         state.music_tracks[track_name] = music
         loaded += 1
