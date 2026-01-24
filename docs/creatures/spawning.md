@@ -63,6 +63,8 @@ Applied after the template switch to the returned creature:
 
 - If not in demo mode and inside terrain bounds: `effect_spawn_burst(pos, 8)`.
 - `max_health = health`.
+- Note: difficulty/hardcore scaling applies to `health` after this assignment, so `max_health` retains the
+  pre-scaled value.
 - Spider SP1 special case: when `type_id == 3` and flags do not include `0x10` or `0x80`,
   sets `0x80`, clears `link_index`, and applies a `move_speed *= 1.2` buff.
 - Template `0x38` special case: in hardcore, applies `move_speed *= 0.7`.
