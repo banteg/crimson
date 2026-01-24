@@ -15,8 +15,8 @@ from ..creatures.spawn import (
     spawn_id_label,
     tick_spawn_slot,
 )
-from .font_small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from .registry import register_view
+from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim.view import View, ViewContext
 
 

@@ -3,23 +3,23 @@ from __future__ import annotations
 import pyray as rl
 
 from ..grim2d.font import DEFAULT_SAMPLE
-from .font_grim_mono import (
-    GrimMonoFont,
-    draw_grim_mono_text,
-    load_grim_mono_font,
-    measure_grim_mono_text_height,
-)
-from .font_small import (
-    SmallFontData,
-    draw_small_text,
-    load_small_font,
-    measure_small_text_height,
-)
 from .quest_title_overlay import (
     draw_quest_title_overlay,
     quest_title_base_scale,
 )
 from .registry import register_view
+from grim.fonts.grim_mono import (
+    GrimMonoFont,
+    draw_grim_mono_text,
+    load_grim_mono_font,
+    measure_grim_mono_text_height,
+)
+from grim.fonts.small import (
+    SmallFontData,
+    draw_small_text,
+    load_small_font,
+    measure_small_text_height,
+)
 from grim.view import View, ViewContext
 
 SMALL_SAMPLE_SCALE = 1.0

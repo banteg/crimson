@@ -9,10 +9,10 @@ from grim.config import ensure_crimson_cfg
 from grim.terrain_render import GroundRenderer
 from ..quests import all_quests
 from ..quests.types import QuestDefinition
-from .font_grim_mono import GrimMonoFont, load_grim_mono_font
-from .font_small import SmallFontData, draw_small_text, load_small_font
 from .quest_title_overlay import draw_quest_title_overlay
 from .registry import register_view
+from grim.fonts.grim_mono import GrimMonoFont, load_grim_mono_font
+from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.view import View, ViewContext
 
 

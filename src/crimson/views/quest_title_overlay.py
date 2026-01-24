@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import pyray as rl
 
-from .font_grim_mono import GrimMonoFont, draw_grim_mono_text
+from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text
 
 QUEST_TITLE_ALPHA = 1.0
 QUEST_NUMBER_ALPHA_RATIO = 0.5

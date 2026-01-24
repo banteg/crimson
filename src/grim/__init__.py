@@ -6,6 +6,7 @@ __all__ = [
     "audio",
     "config",
     "console",
+    "fonts",
     "input",
     "jaz",
     "paq",

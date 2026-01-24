@@ -6,8 +6,8 @@ import pyray as rl
 
 from ..bonuses import BONUS_TABLE, BonusMeta
 from ..weapons import WEAPON_TABLE
-from .font_small import SmallFontData, draw_small_text, load_small_font
 from .registry import register_view
+from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.view import View, ViewContext
 
 UI_TEXT_SCALE = 1.0

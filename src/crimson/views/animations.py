@@ -6,8 +6,8 @@ import pyray as rl
 
 from ..creatures.anim import creature_anim_advance_phase, creature_anim_select_frame
 from ..creatures.spawn import CreatureFlags, CreatureTypeId, SPAWN_TEMPLATES, SpawnTemplate, resolve_tint
-from .font_small import SmallFontData, draw_small_text, load_small_font
 from .registry import register_view
+from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.view import View, ViewContext
 
 UI_TEXT_SCALE = 1.0

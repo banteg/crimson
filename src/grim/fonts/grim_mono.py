@@ -109,3 +109,4 @@ def draw_grim_mono_text(font: GrimMonoFont, text: str, x: float, y: float, scale
 def measure_grim_mono_text_height(font: GrimMonoFont, text: str, scale: float) -> float:
     line_count = text.count("\n") + 1
     return GRIM_MONO_LINE_HEIGHT * scale * line_count
+

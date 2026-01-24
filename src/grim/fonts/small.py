@@ -115,3 +115,4 @@ def measure_small_text_width(font: SmallFontData, text: str, scale: float) -> fl
         x += float(width) * scale_px
     best = max(best, x)
     return best
+

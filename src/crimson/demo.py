@@ -26,9 +26,9 @@ from .creatures.spawn import (
     tick_spawn_slot,
 )
 from .projectiles import ProjectilePool, SecondaryProjectilePool
-from .views.font_grim_mono import GrimMonoFont, draw_grim_mono_text, load_grim_mono_font
-from .views.font_small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from .weapons import WEAPON_BY_ID, WEAPON_TABLE, Weapon
+from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text, load_grim_mono_font
+from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 
 
 WORLD_SIZE = 1024.0
