@@ -1,33 +1,26 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-import math
-from pathlib import Path
 
 import pyray as rl
 
 from .registry import register_view
-from grim.audio import init_audio_state, play_sfx, shutdown_audio
-from grim.config import CrimsonConfig, default_crimson_cfg_data
-from grim.console import create_console
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.view import View, ViewContext
 
-from ..bonuses import BONUS_BY_ID, BonusId
-from ..effects import ParticlePool, SpriteEffectPool
+from ..bonuses import BonusId
 from ..gameplay import (
-    BonusPickupEvent,
     GameplayState,
     PlayerInput,
     PlayerState,
     bonus_apply,
-    bonus_update,
     bonus_hud_update,
     player_update,
     weapon_assign_player,
 )
 from ..perks import PerkId
-from ..weapons import WEAPON_BY_ID, WEAPON_TABLE
+from ..ui.hud import HudAssets, draw_hud_overlay, hud_ui_scale, load_hud_assets
+from ..weapons import WEAPON_TABLE
 
 WORLD_SIZE = 1024.0
 
@@ -66,15 +59,14 @@ class PlayerSandboxView:
         self._assets_root = ctx.assets_dir
         self._missing_assets: list[str] = []
         self._small: SmallFontData | None = None
-        self._bonus_texture: rl.Texture | None = None
-        self._wicon_texture: rl.Texture | None = None
 
         self._state = GameplayState()
         self._player = PlayerState(index=0, pos_x=WORLD_SIZE * 0.5, pos_y=WORLD_SIZE * 0.5)
         self._creatures: list[DummyCreature] = []
-        self._particles = ParticlePool(rand=self._state.rng.rand)
-        self._sprite_fx = SpriteEffectPool(rand=self._state.rng.rand)
-        self._audio = None
+
+        self._hud_assets: HudAssets | None = None
+        self._hud_missing: list[str] = []
+        self._elapsed_ms = 0.0
 
         self._camera_x = -1.0
         self._camera_y = -1.0
@@ -136,13 +128,14 @@ class PlayerSandboxView:
 
     def open(self) -> None:
         self._missing_assets.clear()
+        self._hud_missing.clear()
         try:
             self._small = load_small_font(self._assets_root, self._missing_assets)
         except Exception:
             self._small = None
-        self._bonus_texture = self._load_texture("game/bonuses.png")
-        self._wicon_texture = self._load_texture("ui/ui_wicons.png")
-        self._audio = self._init_audio()
+        self._hud_assets = load_hud_assets(self._assets_root)
+        if self._hud_assets.missing:
+            self._hud_missing = list(self._hud_assets.missing)
 
         self._state.rng.srand(0xBEEF)
         self._creatures.clear()
@@ -154,20 +147,15 @@ class PlayerSandboxView:
         self._player.pos_x = WORLD_SIZE * 0.5
         self._player.pos_y = WORLD_SIZE * 0.5
         self._player.health = 100.0
+        self._elapsed_ms = 0.0
 
     def close(self) -> None:
         if self._small is not None:
             rl.unload_texture(self._small.texture)
             self._small = None
-        if self._bonus_texture is not None:
-            rl.unload_texture(self._bonus_texture)
-            self._bonus_texture = None
-        if self._wicon_texture is not None:
-            rl.unload_texture(self._wicon_texture)
-            self._wicon_texture = None
-        if self._audio is not None:
-            shutdown_audio(self._audio)
-            self._audio = None
+        if self._hud_assets is not None:
+            self._hud_assets.unload()
+            self._hud_assets = None
 
     def _handle_input(self) -> None:
         if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
@@ -214,95 +202,6 @@ class PlayerSandboxView:
             self._player.speed_bonus_timer = 0.0
             self._player.fire_bullets_timer = 0.0
             bonus_hud_update(self._state, [self._player])
-
-    def _load_texture(self, rel_path: str) -> rl.Texture | None:
-        path = self._assets_root / "crimson" / rel_path
-        if not path.is_file():
-            self._missing_assets.append(rel_path)
-            return None
-        return rl.load_texture(str(path))
-
-    def _init_audio(self):
-        try:
-            base_dir = Path("artifacts") / "runtime"
-            console = create_console(base_dir)
-            cfg = CrimsonConfig(path=base_dir / "crimson.cfg", data=default_crimson_cfg_data())
-            return init_audio_state(cfg, self._assets_root, console)
-        except Exception:
-            return None
-
-    def _spawn_bonus_pickup_fx(self, events: list[BonusPickupEvent]) -> None:
-        if not events:
-            return
-        rng = self._state.rng
-        for event in events:
-            if self._audio is not None:
-                play_sfx(self._audio, "sfx_ui_bonus")
-            for _ in range(12):
-                angle = float(rng.rand() % 628) * 0.01
-                self._particles.spawn_particle(
-                    pos_x=event.pos_x,
-                    pos_y=event.pos_y,
-                    angle=angle,
-                    intensity=1.0,
-                )
-            for _ in range(8):
-                vel_x = float((rng.rand() & 0x7F) - 0x40)
-                vel_y = float((rng.rand() & 0x7F) - 0x40)
-                self._sprite_fx.spawn(
-                    pos_x=event.pos_x,
-                    pos_y=event.pos_y,
-                    vel_x=vel_x,
-                    vel_y=vel_y,
-                    scale=0.35,
-                )
-
-    def _bonus_icon_src(self, icon_id: int) -> rl.Rectangle | None:
-        texture = self._bonus_texture
-        if texture is None:
-            return None
-        if icon_id < 0:
-            return None
-        grid = 4
-        cell_w = float(texture.width) / grid
-        cell_h = float(texture.height) / grid
-        col = int(icon_id) % grid
-        row = int(icon_id) // grid
-        return rl.Rectangle(cell_w * col, cell_h * row, cell_w, cell_h)
-
-    def _weapon_icon_src(self, weapon_id: int) -> rl.Rectangle | None:
-        texture = self._wicon_texture
-        if texture is None:
-            return None
-        weapon = WEAPON_BY_ID.get(int(weapon_id))
-        icon_index = weapon.icon_index if weapon is not None else None
-        if icon_index is None or icon_index < 0:
-            return None
-        cols = 8
-        rows = 8
-        cell_w = float(texture.width) / cols
-        cell_h = float(texture.height) / rows
-        frame = int(icon_index) * 2
-        col = frame % cols
-        row = frame // cols
-        return rl.Rectangle(cell_w * col, cell_h * row, cell_w * 2.0, cell_h)
-
-    def _draw_bonus_icon(
-        self,
-        *,
-        texture: rl.Texture,
-        src: rl.Rectangle,
-        world_x: float,
-        world_y: float,
-        scale: float,
-        tint: rl.Color,
-    ) -> None:
-        screen_x, screen_y = self._camera_world_to_screen(world_x, world_y)
-        width = src.width * scale
-        height = src.height * scale
-        dst = rl.Rectangle(float(screen_x), float(screen_y), float(width), float(height))
-        origin = rl.Vector2(width * 0.5, height * 0.5)
-        rl.draw_texture_pro(texture, src, dst, origin, 0.0, tint)
 
     def _camera_world_to_screen(self, x: float, y: float) -> tuple[float, float]:
         return self._camera_x + x, self._camera_y + y
@@ -375,6 +274,8 @@ class PlayerSandboxView:
         if self._paused:
             dt = 0.0
 
+        self._elapsed_ms += dt * 1000.0
+
         # Frame loop: projectiles update first; player spawns are visible next tick.
         self._state.projectiles.update(
             dt,
@@ -387,15 +288,12 @@ class PlayerSandboxView:
         self._creatures = [c for c in self._creatures if c.hp > 0.0]
         self._ensure_creatures(10)
 
+        self._decay_global_timers(dt)
+
         input_state = self._build_input()
         player_update(self._player, input_state, dt, self._state, world_size=WORLD_SIZE)
 
-        pickup_events = bonus_update(self._state, [self._player], dt, update_hud=True)
-        self._spawn_bonus_pickup_fx(pickup_events)
-
-        self._particles.update(dt)
-        self._sprite_fx.update(dt)
-
+        bonus_hud_update(self._state, [self._player])
         self._update_camera(dt)
 
     def draw(self) -> None:
@@ -415,51 +313,6 @@ class PlayerSandboxView:
             sx, sy = self._camera_world_to_screen(creature.x, creature.y)
             color = rl.Color(220, 90, 90, 255)
             rl.draw_circle(int(sx), int(sy), float(creature.size * 0.5), color)
-
-        # Bonuses.
-        for entry in self._state.bonus_pool.iter_active():
-            meta = BONUS_BY_ID.get(int(entry.bonus_id))
-            icon_id = meta.icon_id if meta is not None and meta.icon_id is not None else -1
-            if entry.bonus_id == int(BonusId.WEAPON):
-                src = self._weapon_icon_src(entry.amount)
-                texture = self._wicon_texture
-            else:
-                src = self._bonus_icon_src(int(icon_id))
-                texture = self._bonus_texture
-            if src is None or texture is None:
-                sx, sy = self._camera_world_to_screen(entry.pos_x, entry.pos_y)
-                rl.draw_circle(int(sx), int(sy), 10.0, rl.Color(220, 200, 80, 220))
-                continue
-
-            t = entry.time_left / entry.time_max if entry.time_max > 0.0 else 0.0
-            t = _clamp(t, 0.0, 1.0)
-            pulse = 0.85 + 0.15 * math.sin(entry.time_left * 6.0)
-            scale = (0.7 + 0.3 * t) * pulse
-            alpha = int((0.6 + 0.4 * t) * 255)
-            if entry.picked:
-                alpha = int(alpha * 0.5)
-            tint = rl.Color(255, 255, 255, alpha)
-            self._draw_bonus_icon(
-                texture=texture,
-                src=src,
-                world_x=entry.pos_x,
-                world_y=entry.pos_y,
-                scale=scale,
-                tint=tint,
-            )
-
-        # Bonus pickup FX.
-        for particle in self._particles.iter_active():
-            sx, sy = self._camera_world_to_screen(particle.pos_x, particle.pos_y)
-            alpha = int(_clamp(particle.age, 0.0, 1.0) * 255)
-            radius = max(1.0, 2.0 + particle.scale_x * 6.0)
-            rl.draw_circle(int(sx), int(sy), radius, rl.Color(255, 210, 120, alpha))
-
-        for fx in self._sprite_fx.iter_active():
-            sx, sy = self._camera_world_to_screen(fx.pos_x, fx.pos_y)
-            alpha = int(_clamp(fx.color_a, 0.0, 1.0) * 255)
-            radius = max(1.0, fx.scale * 0.25)
-            rl.draw_circle(int(sx), int(sy), radius, rl.Color(255, 180, 120, alpha))
 
         # Projectiles.
         for proj in self._state.projectiles.iter_active():
@@ -481,10 +334,26 @@ class PlayerSandboxView:
         ay = py + self._player.aim_dir_y * aim_len
         rl.draw_line(int(px), int(py), int(ax), int(ay), rl.Color(240, 240, 240, 255))
 
+        hud_bottom = 0.0
+        if self._hud_assets is not None:
+            hud_bottom = draw_hud_overlay(
+                self._hud_assets,
+                player=self._player,
+                bonus_hud=self._state.bonus_hud,
+                elapsed_ms=self._elapsed_ms,
+                score=self._player.experience,
+                font=self._small,
+            )
+
+        if self._hud_missing:
+            warn = "Missing HUD assets: " + ", ".join(self._hud_missing)
+            self._draw_ui_text(warn, 24, rl.get_screen_height() - 28, UI_ERROR_COLOR, scale=0.8)
+
         # UI.
+        scale = hud_ui_scale(float(rl.get_screen_width()), float(rl.get_screen_height()))
         margin = 18
         x = float(margin)
-        y = float(margin)
+        y = max(float(margin) + 110.0 * scale, hud_bottom + 12.0 * scale)
         line = self._ui_line_height()
 
         weapon_id = self._player.weapon_id

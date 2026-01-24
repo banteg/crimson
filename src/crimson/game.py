@@ -1584,6 +1584,9 @@ class GameLoopView:
             if action is not None:
                 view = self._front_views.get(action)
                 if view is not None:
+                    if action == "open_play_game":
+                        # TODO: move to the actual mode start once gameplay is wired.
+                        self._state.status.increment_mode_play_count("survival")
                     self._menu.close()
                     self._menu_active = False
                     view.open()

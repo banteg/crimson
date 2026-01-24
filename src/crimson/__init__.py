@@ -9,6 +9,7 @@ __all__ = [
     "effects_atlas",
     "perks",
     "quests",
+    "ui",
     "views",
     "weapons",
 ]
