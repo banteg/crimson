@@ -404,7 +404,7 @@ class DemoView:
         h = float(self._state.config.screen_height)
         wide_shift = self._purchase_var_28_2()
         button_x = w / 2.0 + 128.0
-        button_base_y = h / 2.0 + 102.0 + wide_shift * 0.300000012
+        button_base_y = h / 2.0 + 102.0 + wide_shift * 0.3
         purchase_y = button_base_y + 50.0
         maybe_y = button_base_y + 90.0
 
@@ -461,8 +461,8 @@ class DemoView:
             return
         backplasma = logos.backplasma.texture
 
-        pulse_t = float(self._upsell_pulse_ms % 1000) / 1000.0
-        pulse = math.sin(pulse_t * (math.pi * 2.0))
+        pulse_phase = float(self._upsell_pulse_ms % 1000)
+        pulse = math.sin(pulse_phase * 6.2831855)
         pulse = pulse * pulse
 
         screen_w = float(self._state.config.screen_width)
@@ -471,30 +471,20 @@ class DemoView:
         # demo_purchase_screen_update @ 0x0040b985:
         #   - full-screen quad
         #   - UV: 0..0.5 (top-left quarter of the backplasma atlas)
-        #   - per-corner color slots, with a pulsing alpha/color at bottom-right
-        #   - global fade-in (0..1250ms) + fade-out (last 500ms)
-        timeline_ms = max(0, int(self._quest_spawn_timeline_ms))
-        limit_ms = max(0, int(self._demo_time_limit_ms))
-        fade = 1.0
-        ramp = float(timeline_ms) * 0.0160000008
-        if ramp < 20.0:
-            fade = ramp * 0.0500000007  # == timeline_ms / 1250.0
-        if limit_ms > 0 and timeline_ms > limit_ms - 0x1F4:
-            fade = float(limit_ms - timeline_ms) * 0.00200000009
-        fade = _clamp(fade, 0.0, 1.0)
+        #   - per-corner color slots, with a sin^2 pulse at bottom-right
 
         def _to_u8(value: float) -> int:
             return int(_clamp(value, 0.0, 1.0) * 255.0 + 0.5)
 
-        c0 = rl.Color(_to_u8(0.0), _to_u8(0.0), _to_u8(0.0), _to_u8(1.0 * fade))
-        c1 = rl.Color(_to_u8(0.0), _to_u8(0.0), _to_u8(0.300000012), _to_u8(1.0 * fade))
+        c0 = rl.Color(_to_u8(0.0), _to_u8(0.0), _to_u8(0.0), _to_u8(1.0))
+        c1 = rl.Color(_to_u8(0.0), _to_u8(0.0), _to_u8(0.3), _to_u8(1.0))
         c2 = rl.Color(
             _to_u8(0.0),
-            _to_u8(0.400000006),
-            _to_u8(pulse * 0.550000012),
-            _to_u8(pulse * fade),
+            _to_u8(0.4),
+            _to_u8(pulse * 0.55),
+            _to_u8(pulse),
         )
-        c3 = rl.Color(_to_u8(0.0), _to_u8(0.400000006), _to_u8(0.400000006), _to_u8(1.0 * fade))
+        c3 = rl.Color(_to_u8(0.0), _to_u8(0.4), _to_u8(0.4), _to_u8(1.0))
 
         rl.begin_blend_mode(rl.BLEND_ALPHA)
         rl.rl_set_texture(backplasma.id)
@@ -533,7 +523,7 @@ class DemoView:
         if logos.cl_logo.texture is not None:
             cl_logo = logos.cl_logo.texture
             x = screen_w / 2.0 - 256.0
-            y = screen_h / 2.0 - 200.0 - wide_shift * 0.400000006
+            y = screen_h / 2.0 - 200.0 - wide_shift * 0.4
             dst = rl.Rectangle(x, y, 512.0, 64.0)
             src = rl.Rectangle(0.0, 0.0, float(cl_logo.width), float(cl_logo.height))
             rl.draw_texture_pro(cl_logo, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
@@ -541,7 +531,7 @@ class DemoView:
         # Text block uses the small font at scale 0.6 in the original.
         small = self._ensure_small_font()
         text_scale = 0.6
-        x_text = screen_w / 2.0 - 296.0 - wide_shift * 0.800000012
+        x_text = screen_w / 2.0 - 296.0 - wide_shift * 0.8
         y = screen_h / 2.0 - 104.0
         color = rl.Color(255, 255, 255, 255)
         draw_small_text(small, _DEMO_PURCHASE_TITLE, x_text, y, text_scale, color)
@@ -565,7 +555,7 @@ class DemoView:
             return
 
         button_x = screen_w / 2.0 + 128.0
-        button_base_y = screen_h / 2.0 + 102.0 + wide_shift * 0.300000012
+        button_base_y = screen_h / 2.0 + 102.0 + wide_shift * 0.3
         purchase_y = button_base_y + 50.0
         maybe_y = button_base_y + 90.0
         mouse = rl.get_mouse_position()
@@ -580,7 +570,7 @@ class DemoView:
             text_w = measure_small_text_width(small, label, label_scale)
             text_x = x + float(texture.width) * 0.5 - text_w * 0.5 + 1.0
             text_y = y0 + 10.0
-            alpha = 1.0 if hovered else 0.699999988
+            alpha = 1.0 if hovered else 0.7
             draw_small_text(small, label, text_x, text_y, label_scale, rl.Color(255, 255, 255, int(255 * alpha)))
 
         draw_button(button_tex, "Purchase", button_x, purchase_y)
@@ -1110,17 +1100,17 @@ class DemoView:
 
         timeline_ms = self._quest_spawn_timeline_ms
         limit_ms = self._demo_time_limit_ms
-        var_2c = float(timeline_ms) * 0.0160000008
+        var_2c = float(timeline_ms) * 0.016
 
         alpha = 1.0
         if var_2c < 20.0:
-            alpha = var_2c * 0.0500000007
+            alpha = var_2c * 0.05
         if timeline_ms > limit_ms - 500:
-            alpha = float(limit_ms - timeline_ms) * 0.00200000009
+            alpha = float(limit_ms - timeline_ms) * 0.002
         alpha = _clamp(alpha, 0.0, 1.0)
 
         scale = 0.8
-        text_w = float(len(msg)) * 12.8000002
+        text_w = float(len(msg)) * 12.8
 
         text_x = 50.0
         text_y = var_2c + 50.0
