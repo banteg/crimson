@@ -2054,17 +2054,13 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c = creatures[0]
         c.type_id = CreatureTypeId.ZOMBIE
         c.flags = CreatureFlags.ANIM_PING_PONG | CreatureFlags.ANIM_LONG_STRIP
-        slot_idx = len(spawn_slots)
-        c.spawn_slot = slot_idx
-        spawn_slots.append(
-            SpawnSlotInit(
-                owner_creature=0,
-                timer=1.0,
-                count=0,
-                limit=0x32C,
-                interval=0.7,
-                child_template_id=0x41,
-            )
+        c.spawn_slot = add_spawn_slot(
+            spawn_slots,
+            owner_creature=0,
+            timer=1.0,
+            limit=0x32C,
+            interval=0.7,
+            child_template_id=0x41,
         )
         c.size = 64.0
         c.health = 8500.0
@@ -2173,17 +2169,13 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         parent = creatures[0]
         parent.type_id = CreatureTypeId.ALIEN
         parent.flags = CreatureFlags.ANIM_PING_PONG
-        slot_idx = len(spawn_slots)
-        parent.spawn_slot = slot_idx
-        spawn_slots.append(
-            SpawnSlotInit(
-                owner_creature=0,
-                timer=1.5,
-                count=0,
-                limit=0x40,
-                interval=1.05,
-                child_template_id=0x1C,
-            )
+        parent.spawn_slot = add_spawn_slot(
+            spawn_slots,
+            owner_creature=0,
+            timer=1.5,
+            limit=0x40,
+            interval=1.05,
+            child_template_id=0x1C,
         )
         parent.size = 32.0
         parent.health = 50.0
