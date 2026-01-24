@@ -52,6 +52,11 @@ in the plan are treated as implicit defaults for the purposes of porting.
 - Add/update tests in `tests/test_spawn_plan.py` (RNG consumption is part of the contract).
 - Regenerate the spawn-id checklist in `docs/creatures/spawning.md` via `scripts/gen_spawn_templates.py`.
 
+## Debug tooling
+
+- Visualize a single template as points/links: `uv run crimson view spawn-plan`
+- Show per-entry allocation totals for a quest script: `uv run crimson quests 1.1 --show-plan`
+
 ## Example (template 0x12 / ring formation)
 
 Template `0x12` allocates a base creature and then 8 linked children arranged in a ring:
