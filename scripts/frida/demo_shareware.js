@@ -139,6 +139,35 @@ function maybeStartDemo() {
   }
 }
 
+function patchReturnValue(addr, value) {
+  const v = value ? 1 : 0;
+  let bytes = null;
+
+  if (Process.arch === 'ia32') {
+    bytes = v === 0
+      ? [0x33, 0xc0, 0xc3] // xor eax, eax; ret
+      : [0xb8, 0x01, 0x00, 0x00, 0x00, 0xc3]; // mov eax, 1; ret
+  } else if (Process.arch === 'x64') {
+    bytes = v === 0
+      ? [0x48, 0x31, 0xc0, 0xc3] // xor rax, rax; ret
+      : [0x48, 0xc7, 0xc0, 0x01, 0x00, 0x00, 0x00, 0xc3]; // mov rax, 1; ret
+  } else {
+    writeLog({ event: 'patch_asm_error', error: 'unsupported_arch', arch: Process.arch });
+    return false;
+  }
+
+  try {
+    Memory.patchCode(addr, bytes.length, (code) => {
+      code.writeByteArray(bytes);
+    });
+    writeLog({ event: 'patched_asm', addr: addr.toString(), value: v, arch: Process.arch });
+    return true;
+  } catch (e) {
+    writeLog({ event: 'patch_asm_error', addr: addr.toString(), error: String(e) });
+    return false;
+  }
+}
+
 function patchSharewareGate() {
   const addr = exePtr(ADDR.game_is_full_version);
   if (!addr) {
@@ -148,6 +177,7 @@ function patchSharewareGate() {
   }
 
   let hooked = false;
+  let patchedAsm = false;
   try {
     Interceptor.replace(
       addr,
@@ -174,6 +204,10 @@ function patchSharewareGate() {
   }
 
   if (!hooked) {
+    patchedAsm = patchReturnValue(addr, CONFIG.forceValue);
+  }
+
+  if (!hooked && !patchedAsm) {
     writeConfigFullVersion(CONFIG.forceValue);
   } else {
     // Keep config in sync too; some code reads the flag directly.
