@@ -1562,7 +1562,7 @@ def spawn_ring_children(
 ) -> int:
     last_idx = -1
     for i in range(count):
-        child = _alloc_creature(template_id, pos_x, pos_y, rng)
+        child = alloc_creature(template_id, pos_x, pos_y, rng)
         child.ai_mode = ai_mode
         child.ai_link_parent = link_parent
         angle = float(i) * angle_step
@@ -1595,7 +1595,7 @@ def spawn_grid_children(
     last_idx = -1
     for x_offset in x_range:
         for y_offset in y_range:
-            child = _alloc_creature(template_id, pos_x, pos_y, rng)
+            child = alloc_creature(template_id, pos_x, pos_y, rng)
             child.ai_mode = ai_mode
             child.ai_link_parent = link_parent
             child.target_offset_x = float(x_offset)
@@ -1623,7 +1623,7 @@ def spawn_chain_children(
 ) -> int:
     chain_prev = link_parent_start
     for idx in range(count):
-        child = _alloc_creature(template_id, pos_x, pos_y, rng)
+        child = alloc_creature(template_id, pos_x, pos_y, rng)
         child.ai_mode = ai_mode
         child.ai_link_parent = chain_prev
         setup_child(child, idx)
@@ -1657,7 +1657,7 @@ class PlanBuilder:
         pos_x, pos_y = pos
 
         # creature_alloc_slot() for the base creature.
-        creatures: list[CreatureInit] = [_alloc_creature(template_id, pos_x, pos_y, rng)]
+        creatures: list[CreatureInit] = [alloc_creature(template_id, pos_x, pos_y, rng)]
         spawn_slots: list[SpawnSlotInit] = []
         effects: list[BurstEffect] = []
 
@@ -1726,7 +1726,7 @@ class PlanBuilder:
         )
 
     def finish(self, final_heading: float) -> SpawnPlan:
-        _apply_tail(
+        apply_tail(
             template_id=self.template_id,
             plan_creatures=self.creatures,
             plan_spawn_slots=self.spawn_slots,
@@ -1778,7 +1778,7 @@ def tick_spawn_slot(slot: SpawnSlotInit, frame_dt: float) -> int | None:
     return None
 
 
-def _alloc_creature(template_id: int, pos_x: float, pos_y: float, rng: Crand) -> CreatureInit:
+def alloc_creature(template_id: int, pos_x: float, pos_y: float, rng: Crand) -> CreatureInit:
     # creature_alloc_slot():
     # - clears flags
     # - seeds phase_seed = float(crt_rand() & 0x17f)
@@ -1786,7 +1786,7 @@ def _alloc_creature(template_id: int, pos_x: float, pos_y: float, rng: Crand) ->
     return CreatureInit(origin_template_id=template_id, pos_x=pos_x, pos_y=pos_y, heading=0.0, phase_seed=phase_seed)
 
 
-def _clamp01(value: float) -> float:
+def clamp01(value: float) -> float:
     if value < 0.0:
         return 0.0
     if 1.0 < value:
@@ -1803,7 +1803,7 @@ def build_survival_spawn_creature(pos: tuple[float, float], rng: Crand, *, playe
     pos_x, pos_y = pos
     xp = int(player_experience)
 
-    c = _alloc_creature(-1, pos_x, pos_y, rng)
+    c = alloc_creature(-1, pos_x, pos_y, rng)
     c.ai_mode = 0
 
     r10 = rng.rand() % 10
@@ -1932,18 +1932,18 @@ def build_survival_spawn_creature(pos: tuple[float, float], rng: Crand, *, playe
         c.reward_value *= 0.8
 
     if c.tint_r is not None:
-        c.tint_r = _clamp01(c.tint_r)
+        c.tint_r = clamp01(c.tint_r)
     if c.tint_g is not None:
-        c.tint_g = _clamp01(c.tint_g)
+        c.tint_g = clamp01(c.tint_g)
     if c.tint_b is not None:
-        c.tint_b = _clamp01(c.tint_b)
+        c.tint_b = clamp01(c.tint_b)
     if c.tint_a is not None:
-        c.tint_a = _clamp01(c.tint_a)
+        c.tint_a = clamp01(c.tint_a)
 
     return c
 
 
-def _rand_survival_spawn_pos(rng: Crand, *, terrain_width: int, terrain_height: int) -> tuple[float, float]:
+def rand_survival_spawn_pos(rng: Crand, *, terrain_width: int, terrain_height: int) -> tuple[float, float]:
     match rng.rand() & 3:
         case 0:
             return float(rng.rand() % terrain_width), -40.0
@@ -1991,14 +1991,14 @@ def tick_survival_wave_spawns(
         extra = (1 - interval_ms) >> 1
         interval_ms += int(extra) * 2
         for _ in range(int(extra)):
-            pos = _rand_survival_spawn_pos(rng, terrain_width=terrain_width, terrain_height=terrain_height)
+            pos = rand_survival_spawn_pos(rng, terrain_width=terrain_width, terrain_height=terrain_height)
             spawns.append(build_survival_spawn_creature(pos, rng, player_experience=player_experience))
 
     if interval_ms < 1:
         interval_ms = 1
     spawn_cooldown += float(interval_ms)
 
-    pos = _rand_survival_spawn_pos(rng, terrain_width=terrain_width, terrain_height=terrain_height)
+    pos = rand_survival_spawn_pos(rng, terrain_width=terrain_width, terrain_height=terrain_height)
     spawns.append(build_survival_spawn_creature(pos, rng, player_experience=player_experience))
 
     return spawn_cooldown, tuple(spawns)
@@ -2128,7 +2128,7 @@ def build_rush_mode_spawn_creature(
     pos_x, pos_y = pos
     elapsed_ms = int(survival_elapsed_ms)
 
-    c = _alloc_creature(-1, pos_x, pos_y, rng)
+    c = alloc_creature(-1, pos_x, pos_y, rng)
     c.type_id = CreatureTypeId(type_id)
     c.ai_mode = 0
 
@@ -2165,9 +2165,9 @@ def tick_rush_mode_spawns(
         spawn_cooldown += 250.0
 
         t = float(int(float(survival_elapsed_ms) + 1.0))
-        tint_r = _clamp01(t * (1.0 / 120000.0) + 0.3)
-        tint_g = _clamp01(t * 10000.0 + 0.3)
-        tint_b = _clamp01(math.sin(t * 1e-4) + 0.3)
+        tint_r = clamp01(t * (1.0 / 120000.0) + 0.3)
+        tint_g = clamp01(t * 10000.0 + 0.3)
+        tint_b = clamp01(math.sin(t * 1e-4) + 0.3)
         tint_a = 1.0
         tint = (tint_r, tint_g, tint_b, tint_a)
 
@@ -2255,7 +2255,7 @@ def build_tutorial_stage6_perks_done_spawns() -> tuple[SpawnTemplateCall, ...]:
     )
 
 
-def _apply_tail(
+def apply_tail(
     template_id: int,
     plan_creatures: list[CreatureInit],
     plan_spawn_slots: list[SpawnSlotInit],
@@ -2352,7 +2352,7 @@ def _apply_tail(
             )
 
 
-def _apply_unhandled_creature_type_fallback(plan_creatures: list[CreatureInit], primary_idx: int) -> None:
+def apply_unhandled_creature_type_fallback(plan_creatures: list[CreatureInit], primary_idx: int) -> None:
     # Some template paths jump to the "Unhandled creatureType.\n" debug block in the original,
     # which forcibly overwrites `type_id` and `health` on the *current* creature pointer.
     # See artifacts/creature_spawn_template/binja-hlil.txt (label_431099).
@@ -2362,7 +2362,7 @@ def _apply_unhandled_creature_type_fallback(plan_creatures: list[CreatureInit], 
     c.health = 20.0
 
 
-def _apply_alien_spawner(ctx: PlanBuilder, spec: AlienSpawnerSpec) -> None:
+def apply_alien_spawner(ctx: PlanBuilder, spec: AlienSpawnerSpec) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ALIEN
     c.flags = CreatureFlags.ANIM_PING_PONG
@@ -2382,13 +2382,13 @@ def _apply_alien_spawner(ctx: PlanBuilder, spec: AlienSpawnerSpec) -> None:
     ctx.primary = 0
 
 
-def _apply_constant_spawn(ctx: PlanBuilder, spec: ConstantSpawnSpec) -> None:
+def apply_constant_spawn(ctx: PlanBuilder, spec: ConstantSpawnSpec) -> None:
     c = ctx.base
     apply_constant_template(c, spec)
     ctx.primary = 0
 
 
-def _apply_grid_formation(ctx: PlanBuilder, spec: GridFormationSpec) -> None:
+def apply_grid_formation(ctx: PlanBuilder, spec: GridFormationSpec) -> None:
     parent = ctx.base
     apply_constant_template(parent, spec.parent)
     if spec.set_parent_max_health and parent.health is not None:
@@ -2400,11 +2400,11 @@ def _apply_grid_formation(ctx: PlanBuilder, spec: GridFormationSpec) -> None:
         child_spec=spec.child_spec,
     )
     if spec.apply_fallback:
-        _apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
+        apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
 
 
 @register_template(SpawnId.ZOMBIE_BOSS_SPAWNER_00)
-def _t00(ctx: PlanBuilder) -> None:
+def template_00_zombie_boss_spawner(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ZOMBIE
     c.flags = CreatureFlags.ANIM_PING_PONG | CreatureFlags.ANIM_LONG_STRIP
@@ -2425,7 +2425,7 @@ def _t00(ctx: PlanBuilder) -> None:
 
 
 @register_template(SpawnId.SPIDER_SP2_SPLITTER_01)
-def _t01(ctx: PlanBuilder) -> None:
+def template_01_spider_sp2_splitter(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.SPIDER_SP2
     c.flags = CreatureFlags.SPLIT_ON_DEATH
@@ -2439,7 +2439,7 @@ def _t01(ctx: PlanBuilder) -> None:
 
 
 @register_template(SpawnId.SPIDER_SP1_RANDOM_03, SpawnId.SPIDER_SP2_RANDOM_05, SpawnId.ALIEN_RANDOM_06)
-def _t03_05_06(ctx: PlanBuilder) -> None:
+def template_03_05_06_basic_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     if ctx.template_id == SpawnId.SPIDER_SP1_RANDOM_03:
         c.type_id = CreatureTypeId.SPIDER_SP1
@@ -2451,13 +2451,13 @@ def _t03_05_06(ctx: PlanBuilder) -> None:
     apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
     apply_random_move_speed(c, ctx.rng, 18, 0.1, 1.1)
     tint_b = randf(ctx.rng, 25, 0.01, 0.8)
-    apply_tint(c, (0.6, 0.6, _clamp01(tint_b), 1.0))
+    apply_tint(c, (0.6, 0.6, clamp01(tint_b), 1.0))
     c.contact_damage = randf(ctx.rng, 10, 1.0, 4.0)
     ctx.primary = 0
 
 
 @register_template(SpawnId.LIZARD_RANDOM_04)
-def _t04(ctx: PlanBuilder) -> None:
+def template_04_lizard_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.LIZARD
     size = randf(ctx.rng, 15, 1.0, 38.0)
@@ -2469,7 +2469,7 @@ def _t04(ctx: PlanBuilder) -> None:
 
 
 @register_template(SpawnId.ALIEN_SPAWNER_RING_24_0E)
-def _t0e(ctx: PlanBuilder) -> None:
+def template_0e_alien_spawner_ring_24(ctx: PlanBuilder) -> None:
     parent = ctx.base
     parent.type_id = CreatureTypeId.ALIEN
     parent.flags = CreatureFlags.ANIM_PING_PONG
@@ -2507,7 +2507,7 @@ def _t0e(ctx: PlanBuilder) -> None:
 
 
 @register_template(SpawnId.ALIEN_CONST_BROWN_TRANSPARENT_0F)
-def _t0f(ctx: PlanBuilder) -> None:
+def template_0f_alien_const_brown_transparent(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ALIEN
     apply_tint(c, (0.665, 0.385, 0.259, 0.56))
@@ -2520,7 +2520,7 @@ def _t0f(ctx: PlanBuilder) -> None:
 
 
 @register_template(SpawnId.FORMATION_CHAIN_LIZARD_4_11)
-def _t11(ctx: PlanBuilder) -> None:
+def template_11_formation_chain_lizard_4(ctx: PlanBuilder) -> None:
     parent = ctx.base
     parent.type_id = CreatureTypeId.LIZARD
     parent.ai_mode = 1
@@ -2565,11 +2565,11 @@ def _t11(ctx: PlanBuilder) -> None:
 
     parent.ai_link_parent = chain_prev
     ctx.primary = chain_prev
-    _apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
+    apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
 
 
 @register_template(SpawnId.FORMATION_RING_ALIEN_8_12)
-def _t12(ctx: PlanBuilder) -> None:
+def template_12_formation_ring_alien_8(ctx: PlanBuilder) -> None:
     parent = ctx.base
     parent.type_id = CreatureTypeId.ALIEN
     apply_tint(parent, (0.65, 0.85, 0.97, 1.0))
@@ -2599,11 +2599,11 @@ def _t12(ctx: PlanBuilder) -> None:
     )
 
     # The original function returns the last allocated creature pointer.
-    _apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
+    apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
 
 
 @register_template(SpawnId.FORMATION_CHAIN_ALIEN_10_13)
-def _t13(ctx: PlanBuilder) -> None:
+def template_13_formation_chain_alien_10(ctx: PlanBuilder) -> None:
     parent = ctx.base
     parent.type_id = CreatureTypeId.ALIEN
     parent.ai_mode = 6
@@ -2646,11 +2646,11 @@ def _t13(ctx: PlanBuilder) -> None:
 
     parent.ai_link_parent = chain_prev
     ctx.primary = chain_prev
-    _apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
+    apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
 
 
 @register_template(SpawnId.FORMATION_RING_ALIEN_5_19)
-def _t19(ctx: PlanBuilder) -> None:
+def template_19_formation_ring_alien_5(ctx: PlanBuilder) -> None:
     parent = ctx.base
     parent.type_id = CreatureTypeId.ALIEN
     apply_tint(parent, (0.95, 0.55, 0.37, 1.0))
@@ -2678,11 +2678,11 @@ def _t19(ctx: PlanBuilder) -> None:
         child_spec=child_spec,
         set_position=True,
     )
-    _apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
+    apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
 
 
 @register_template(SpawnId.AI1_ALIEN_BLUE_TINT_1A, SpawnId.AI1_SPIDER_SP1_BLUE_TINT_1B, SpawnId.AI1_LIZARD_BLUE_TINT_1C)
-def _t1a_1b_1c(ctx: PlanBuilder) -> None:
+def template_1a_1b_1c_ai1_blue_tint(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.ai_mode = 1
     c.size = 50.0
@@ -2706,7 +2706,7 @@ def _t1a_1b_1c(ctx: PlanBuilder) -> None:
 
 
 @register_template(SpawnId.ALIEN_RANDOM_1D)
-def _t1d(ctx: PlanBuilder) -> None:
+def template_1d_alien_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ALIEN
     size = randf(ctx.rng, 20, 1.0, 35.0)
@@ -2727,7 +2727,7 @@ def _t1d(ctx: PlanBuilder) -> None:
 
 
 @register_template(SpawnId.ALIEN_RANDOM_1E)
-def _t1e(ctx: PlanBuilder) -> None:
+def template_1e_alien_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ALIEN
     size = randf(ctx.rng, 30, 1.0, 35.0)
@@ -2748,7 +2748,7 @@ def _t1e(ctx: PlanBuilder) -> None:
 
 
 @register_template(SpawnId.ALIEN_RANDOM_1F)
-def _t1f(ctx: PlanBuilder) -> None:
+def template_1f_alien_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ALIEN
     size = randf(ctx.rng, 30, 1.0, 45.0)
@@ -2769,7 +2769,7 @@ def _t1f(ctx: PlanBuilder) -> None:
 
 
 @register_template(SpawnId.ALIEN_RANDOM_GREEN_20)
-def _t20(ctx: PlanBuilder) -> None:
+def template_20_alien_random_green(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ALIEN
     size = float(ctx.rng.rand() % 30 + 40)
@@ -2784,7 +2784,7 @@ def _t20(ctx: PlanBuilder) -> None:
 
 
 @register_template(SpawnId.LIZARD_RANDOM_2E)
-def _t2e(ctx: PlanBuilder) -> None:
+def template_2e_lizard_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.LIZARD
     size = randf(ctx.rng, 30, 1.0, 40.0)
@@ -2804,7 +2804,7 @@ def _t2e(ctx: PlanBuilder) -> None:
 
 
 @register_template(SpawnId.LIZARD_RANDOM_31)
-def _t31(ctx: PlanBuilder) -> None:
+def template_31_lizard_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.LIZARD
     size = randf(ctx.rng, 30, 1.0, 40.0)
@@ -2817,7 +2817,7 @@ def _t31(ctx: PlanBuilder) -> None:
 
 
 @register_template(SpawnId.SPIDER_SP1_RANDOM_32)
-def _t32(ctx: PlanBuilder) -> None:
+def template_32_spider_sp1_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.SPIDER_SP1
     size = randf(ctx.rng, 25, 1.0, 40.0)
@@ -2830,7 +2830,7 @@ def _t32(ctx: PlanBuilder) -> None:
 
 
 @register_template(SpawnId.SPIDER_SP1_RANDOM_RED_33)
-def _t33(ctx: PlanBuilder) -> None:
+def template_33_spider_sp1_random_red(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.SPIDER_SP1
     size = randf(ctx.rng, 15, 1.0, 45.0)
@@ -2842,7 +2842,7 @@ def _t33(ctx: PlanBuilder) -> None:
 
 
 @register_template(SpawnId.SPIDER_SP1_RANDOM_GREEN_34)
-def _t34(ctx: PlanBuilder) -> None:
+def template_34_spider_sp1_random_green(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.SPIDER_SP1
     size = randf(ctx.rng, 20, 1.0, 40.0)
@@ -2854,7 +2854,7 @@ def _t34(ctx: PlanBuilder) -> None:
 
 
 @register_template(SpawnId.SPIDER_SP2_RANDOM_35)
-def _t35(ctx: PlanBuilder) -> None:
+def template_35_spider_sp2_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.SPIDER_SP2
     size = randf(ctx.rng, 10, 1.0, 30.0)
@@ -2866,7 +2866,7 @@ def _t35(ctx: PlanBuilder) -> None:
 
 
 @register_template(SpawnId.ALIEN_AI7_ORBITER_36)
-def _t36(ctx: PlanBuilder) -> None:
+def template_36_alien_ai7_orbiter(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ALIEN
     c.size = 50.0
@@ -2882,7 +2882,7 @@ def _t36(ctx: PlanBuilder) -> None:
 
 
 @register_template(SpawnId.SPIDER_SP2_RANGED_VARIANT_37)
-def _t37(ctx: PlanBuilder) -> None:
+def template_37_spider_sp2_ranged_variant(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.SPIDER_SP2
     c.flags = CreatureFlags.RANGED_ATTACK_VARIANT
@@ -2896,7 +2896,7 @@ def _t37(ctx: PlanBuilder) -> None:
 
 
 @register_template(SpawnId.SPIDER_SP1_AI7_TIMER_38)
-def _t38(ctx: PlanBuilder) -> None:
+def template_38_spider_sp1_ai7_timer(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.SPIDER_SP1
     c.flags = CreatureFlags.AI7_LINK_TIMER
@@ -2911,7 +2911,7 @@ def _t38(ctx: PlanBuilder) -> None:
 
 
 @register_template(SpawnId.SPIDER_SP1_AI7_TIMER_WEAK_39)
-def _t39(ctx: PlanBuilder) -> None:
+def template_39_spider_sp1_ai7_timer_weak(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.SPIDER_SP1
     c.flags = CreatureFlags.AI7_LINK_TIMER
@@ -2926,7 +2926,7 @@ def _t39(ctx: PlanBuilder) -> None:
 
 
 @register_template(SpawnId.SPIDER_SP1_RANDOM_3D)
-def _t3d(ctx: PlanBuilder) -> None:
+def template_3d_spider_sp1_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.SPIDER_SP1
     c.health = 70.0
@@ -2941,7 +2941,7 @@ def _t3d(ctx: PlanBuilder) -> None:
 
 
 @register_template(SpawnId.ZOMBIE_RANDOM_41)
-def _t41(ctx: PlanBuilder) -> None:
+def template_41_zombie_random(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ZOMBIE
     size = randf(ctx.rng, 30, 1.0, 40.0)
@@ -2974,11 +2974,11 @@ def build_spawn_plan(
     if builder is not None:
         builder(ctx)
     elif template_id in ALIEN_SPAWNER_TEMPLATES:
-        _apply_alien_spawner(ctx, ALIEN_SPAWNER_TEMPLATES[template_id])
+        apply_alien_spawner(ctx, ALIEN_SPAWNER_TEMPLATES[template_id])
     elif template_id in GRID_FORMATIONS:
-        _apply_grid_formation(ctx, GRID_FORMATIONS[template_id])
+        apply_grid_formation(ctx, GRID_FORMATIONS[template_id])
     elif template_id in CONSTANT_SPAWN_TEMPLATES:
-        _apply_constant_spawn(ctx, CONSTANT_SPAWN_TEMPLATES[template_id])
+        apply_constant_spawn(ctx, CONSTANT_SPAWN_TEMPLATES[template_id])
     else:
         raise NotImplementedError(f"spawn plan not implemented for template_id=0x{template_id:x}")
 
