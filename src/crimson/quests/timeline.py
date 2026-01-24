@@ -71,3 +71,45 @@ def tick_quest_spawn_timeline(
     creatures_none_active = False
 
     return tuple(updated_entries), creatures_none_active, no_creatures_timer_ms, tuple(spawns)
+
+
+def quest_spawn_table_empty(entries: tuple[SpawnEntry, ...]) -> bool:
+    """Return True when all quest spawn entries are exhausted (count <= 0)."""
+    return all(entry.count <= 0 for entry in entries)
+
+
+def tick_quest_mode_spawns(
+    entries: tuple[SpawnEntry, ...],
+    quest_spawn_timeline_ms: float,
+    frame_dt_ms: float,
+    *,
+    terrain_width: float,
+    creatures_none_active: bool,
+    no_creatures_timer_ms: float,
+) -> tuple[tuple[SpawnEntry, ...], float, bool, float, tuple[SpawnTemplateCall, ...]]:
+    """Advance quest-mode spawning (spawn timeline + table firing).
+
+    Modeled after the spawning portion of `quest_mode_update` (0x004070e0), which:
+      - Advances `quest_spawn_timeline` unless the quest is idle-complete (no creatures active and
+        the spawn table is empty).
+      - Calls `quest_spawn_timeline_update` to fire spawn entries.
+
+    Returns:
+      (updated_entries, quest_spawn_timeline_ms, creatures_none_active, no_creatures_timer_ms, spawn_calls)
+    """
+    timeline_ms = float(quest_spawn_timeline_ms)
+    dt_ms = float(frame_dt_ms)
+
+    if (not creatures_none_active) or (not quest_spawn_table_empty(entries)):
+        timeline_ms += dt_ms
+
+    entries, creatures_none_active, no_creatures_timer_ms, spawns = tick_quest_spawn_timeline(
+        entries,
+        quest_spawn_timeline_ms=timeline_ms,
+        frame_dt_ms=dt_ms,
+        terrain_width=terrain_width,
+        creatures_none_active=creatures_none_active,
+        no_creatures_timer_ms=no_creatures_timer_ms,
+    )
+
+    return entries, timeline_ms, creatures_none_active, no_creatures_timer_ms, spawns
