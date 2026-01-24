@@ -881,6 +881,219 @@ ALIEN_SPAWNER_TEMPLATES: dict[int, AlienSpawnerSpec] = {
 }
 
 
+@dataclass(frozen=True, slots=True)
+class ConstantSpawnSpec:
+    type_id: CreatureTypeId
+    health: float
+    move_speed: float
+    reward_value: float
+    tint: tuple[float, float, float, float]
+    size: float
+    contact_damage: float
+    flags: CreatureFlags = CreatureFlags(0)
+    ai_mode: int = 0
+    orbit_angle: float | None = None
+    orbit_radius: float | None = None
+    ranged_projectile_type: int | None = None
+    bonus_id: BonusId | None = None
+    bonus_duration_override: int | None = None
+
+
+CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
+    0x24: ConstantSpawnSpec(
+        type_id=CreatureTypeId.ALIEN,
+        health=20.0,
+        move_speed=2.0,
+        reward_value=110.0,
+        tint=(0.1, 0.7, 0.11, 1.0),
+        size=50.0,
+        contact_damage=4.0,
+    ),
+    0x25: ConstantSpawnSpec(
+        type_id=CreatureTypeId.ALIEN,
+        health=25.0,
+        move_speed=2.5,
+        reward_value=125.0,
+        tint=(0.1, 0.8, 0.11, 1.0),
+        size=30.0,
+        contact_damage=3.0,
+    ),
+    0x26: ConstantSpawnSpec(
+        type_id=CreatureTypeId.ALIEN,
+        health=50.0,
+        move_speed=2.2,
+        reward_value=125.0,
+        tint=(0.6, 0.8, 0.6, 1.0),
+        size=45.0,
+        contact_damage=10.0,
+    ),
+    0x27: ConstantSpawnSpec(
+        type_id=CreatureTypeId.ALIEN,
+        health=50.0,
+        move_speed=2.1,
+        reward_value=125.0,
+        tint=(1.0, 0.8, 0.1, 1.0),
+        size=45.0,
+        contact_damage=10.0,
+        flags=CreatureFlags.BONUS_ON_DEATH,
+        bonus_id=BonusId.WEAPON,
+        bonus_duration_override=5,
+    ),
+    0x28: ConstantSpawnSpec(
+        type_id=CreatureTypeId.ALIEN,
+        health=50.0,
+        move_speed=1.7,
+        reward_value=150.0,
+        tint=(0.7, 0.1, 0.51, 1.0),
+        size=55.0,
+        contact_damage=8.0,
+    ),
+    0x29: ConstantSpawnSpec(
+        type_id=CreatureTypeId.ALIEN,
+        health=800.0,
+        move_speed=2.5,
+        reward_value=450.0,
+        tint=(0.8, 0.8, 0.8, 1.0),
+        size=70.0,
+        contact_damage=20.0,
+    ),
+    0x2A: ConstantSpawnSpec(
+        type_id=CreatureTypeId.ALIEN,
+        health=50.0,
+        move_speed=3.1,
+        reward_value=300.0,
+        tint=(0.3, 0.3, 0.3, 1.0),
+        size=60.0,
+        contact_damage=8.0,
+    ),
+    0x2B: ConstantSpawnSpec(
+        type_id=CreatureTypeId.ALIEN,
+        health=30.0,
+        move_speed=3.6,
+        reward_value=450.0,
+        tint=(1.0, 0.3, 0.3, 1.0),
+        size=35.0,
+        contact_damage=20.0,
+    ),
+    0x2C: ConstantSpawnSpec(
+        type_id=CreatureTypeId.ALIEN,
+        health=3800.0,
+        move_speed=2.0,
+        reward_value=1500.0,
+        tint=(0.85, 0.2, 0.2, 1.0),
+        size=80.0,
+        contact_damage=40.0,
+    ),
+    0x2D: ConstantSpawnSpec(
+        type_id=CreatureTypeId.ALIEN,
+        health=45.0,
+        move_speed=3.1,
+        reward_value=200.0,
+        tint=(0.0, 0.9, 0.8, 1.0),
+        size=38.0,
+        contact_damage=3.0,
+        ai_mode=2,
+    ),
+    0x2F: ConstantSpawnSpec(
+        type_id=CreatureTypeId.LIZARD,
+        health=20.0,
+        move_speed=2.5,
+        reward_value=150.0,
+        tint=(0.8, 0.8, 0.8, 1.0),
+        size=45.0,
+        contact_damage=4.0,
+    ),
+    0x30: ConstantSpawnSpec(
+        type_id=CreatureTypeId.LIZARD,
+        health=1000.0,
+        move_speed=2.0,
+        reward_value=400.0,
+        tint=(0.9, 0.8, 0.1, 1.0),
+        size=65.0,
+        contact_damage=10.0,
+    ),
+    0x3A: ConstantSpawnSpec(
+        type_id=CreatureTypeId.SPIDER_SP1,
+        health=4500.0,
+        move_speed=2.0,
+        reward_value=4500.0,
+        tint=(1.0, 1.0, 1.0, 1.0),
+        size=64.0,
+        contact_damage=50.0,
+        flags=CreatureFlags.RANGED_ATTACK_SHOCK,
+        orbit_angle=0.9,
+        ranged_projectile_type=9,
+    ),
+    0x3B: ConstantSpawnSpec(
+        type_id=CreatureTypeId.SPIDER_SP1,
+        health=1200.0,
+        move_speed=2.0,
+        reward_value=4000.0,
+        tint=(0.9, 0.0, 0.0, 1.0),
+        size=70.0,
+        contact_damage=20.0,
+    ),
+    0x3C: ConstantSpawnSpec(
+        type_id=CreatureTypeId.SPIDER_SP1,
+        health=200.0,
+        move_speed=2.0,
+        reward_value=200.0,
+        tint=(0.9, 0.1, 0.1, 1.0),
+        size=40.0,
+        contact_damage=20.0,
+        flags=CreatureFlags.RANGED_ATTACK_VARIANT,
+        ai_mode=2,
+        orbit_angle=0.4,
+        ranged_projectile_type=26,
+    ),
+    0x3E: ConstantSpawnSpec(
+        type_id=CreatureTypeId.SPIDER_SP1,
+        health=1000.0,
+        move_speed=2.8,
+        reward_value=500.0,
+        tint=(1.0, 1.0, 1.0, 1.0),
+        size=64.0,
+        contact_damage=40.0,
+    ),
+    0x3F: ConstantSpawnSpec(
+        type_id=CreatureTypeId.SPIDER_SP1,
+        health=200.0,
+        move_speed=2.3,
+        reward_value=210.0,
+        tint=(0.7, 0.4, 0.1, 1.0),
+        size=35.0,
+        contact_damage=20.0,
+    ),
+    0x40: ConstantSpawnSpec(
+        type_id=CreatureTypeId.SPIDER_SP1,
+        health=70.0,
+        move_speed=2.2,
+        reward_value=160.0,
+        tint=(0.5, 0.6, 0.9, 1.0),
+        size=45.0,
+        contact_damage=5.0,
+    ),
+    0x42: ConstantSpawnSpec(
+        type_id=CreatureTypeId.ZOMBIE,
+        health=200.0,
+        move_speed=1.7,
+        reward_value=160.0,
+        tint=(0.9, 0.9, 0.9, 1.0),
+        size=45.0,
+        contact_damage=15.0,
+    ),
+    0x43: ConstantSpawnSpec(
+        type_id=CreatureTypeId.ZOMBIE,
+        health=2000.0,
+        move_speed=2.1,
+        reward_value=460.0,
+        tint=(0.2, 0.6, 0.1, 1.0),
+        size=70.0,
+        contact_damage=15.0,
+    ),
+}
+
+
 def spawn_id_label(spawn_id: int) -> str:
     entry = SPAWN_ID_TO_TEMPLATE.get(spawn_id)
     if entry is None or entry.creature is None:
@@ -1000,6 +1213,28 @@ def add_spawn_slot(
         )
     )
     return slot_idx
+
+
+def apply_constant_template(c: CreatureInit, spec: ConstantSpawnSpec) -> None:
+    c.type_id = spec.type_id
+    c.flags = spec.flags
+    c.ai_mode = spec.ai_mode
+    c.health = spec.health
+    c.move_speed = spec.move_speed
+    c.reward_value = spec.reward_value
+    c.tint_r, c.tint_g, c.tint_b, c.tint_a = spec.tint
+    c.size = spec.size
+    c.contact_damage = spec.contact_damage
+    if spec.orbit_angle is not None:
+        c.orbit_angle = spec.orbit_angle
+    if spec.orbit_radius is not None:
+        c.orbit_radius = spec.orbit_radius
+    if spec.ranged_projectile_type is not None:
+        c.ranged_projectile_type = spec.ranged_projectile_type
+    if spec.bonus_id is not None:
+        c.bonus_id = spec.bonus_id
+    if spec.bonus_duration_override is not None:
+        c.bonus_duration_override = spec.bonus_duration_override
 
 
 def tick_spawn_slot(slot: SpawnSlotInit, frame_dt: float) -> int | None:
@@ -2304,140 +2539,10 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.size = 45.0
         c.contact_damage = 8.0
         primary_idx = 0
-    # Demo (attract-mode) templates.
-    elif template_id == 0x24:
+    # Constant single-creature templates (includes demo/attract-mode ids).
+    elif template_id in CONSTANT_SPAWN_TEMPLATES:
         c = creatures[0]
-        c.type_id = CreatureTypeId.ALIEN
-        c.health = 20.0
-        c.move_speed = 2.0
-        c.reward_value = 110.0
-        c.tint_r = 0.1
-        c.tint_g = 0.7
-        c.tint_b = 0.11
-        c.tint_a = 1.0
-        c.size = 50.0
-        c.contact_damage = 4.0
-        primary_idx = 0
-    elif template_id == 0x25:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ALIEN
-        c.health = 25.0
-        c.move_speed = 2.5
-        c.reward_value = 125.0
-        c.tint_r = 0.1
-        c.tint_g = 0.8
-        c.tint_b = 0.11
-        c.tint_a = 1.0
-        c.size = 30.0
-        c.contact_damage = 3.0
-        primary_idx = 0
-    elif template_id == 0x26:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ALIEN
-        c.health = 50.0
-        c.move_speed = 2.2
-        c.reward_value = 125.0
-        c.tint_r = 0.6
-        c.tint_g = 0.8
-        c.tint_b = 0.6
-        c.tint_a = 1.0
-        c.size = 45.0
-        c.contact_damage = 10.0
-        primary_idx = 0
-    elif template_id == 0x27:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ALIEN
-        c.flags = CreatureFlags.BONUS_ON_DEATH
-        c.bonus_id = BonusId.WEAPON
-        c.bonus_duration_override = 5
-        c.health = 50.0
-        c.move_speed = 2.1
-        c.reward_value = 125.0
-        c.tint_r = 1.0
-        c.tint_g = 0.8
-        c.tint_b = 0.1
-        c.tint_a = 1.0
-        c.size = 45.0
-        c.contact_damage = 10.0
-        primary_idx = 0
-    elif template_id == 0x28:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ALIEN
-        c.health = 50.0
-        c.move_speed = 1.7
-        c.reward_value = 150.0
-        c.tint_r = 0.7
-        c.tint_g = 0.1
-        c.tint_b = 0.51
-        c.tint_a = 1.0
-        c.size = 55.0
-        c.contact_damage = 8.0
-        primary_idx = 0
-    elif template_id == 0x29:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ALIEN
-        c.health = 800.0
-        c.move_speed = 2.5
-        c.reward_value = 450.0
-        c.tint_r = 0.8
-        c.tint_g = 0.8
-        c.tint_b = 0.8
-        c.tint_a = 1.0
-        c.size = 70.0
-        c.contact_damage = 20.0
-        primary_idx = 0
-    elif template_id == 0x2A:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ALIEN
-        c.health = 50.0
-        c.move_speed = 3.1
-        c.reward_value = 300.0
-        c.tint_r = 0.3
-        c.tint_g = 0.3
-        c.tint_b = 0.3
-        c.tint_a = 1.0
-        c.size = 60.0
-        c.contact_damage = 8.0
-        primary_idx = 0
-    elif template_id == 0x2B:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ALIEN
-        c.health = 30.0
-        c.move_speed = 3.6
-        c.reward_value = 450.0
-        c.tint_r = 1.0
-        c.tint_g = 0.3
-        c.tint_b = 0.3
-        c.tint_a = 1.0
-        c.size = 35.0
-        c.contact_damage = 20.0
-        primary_idx = 0
-    elif template_id == 0x2C:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ALIEN
-        c.health = 3800.0
-        c.move_speed = 2.0
-        c.reward_value = 1500.0
-        c.tint_r = 0.85
-        c.tint_g = 0.2
-        c.tint_b = 0.2
-        c.tint_a = 1.0
-        c.size = 80.0
-        c.contact_damage = 40.0
-        primary_idx = 0
-    elif template_id == 0x2D:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ALIEN
-        c.ai_mode = 2
-        c.health = 45.0
-        c.move_speed = 3.1
-        c.reward_value = 200.0
-        c.tint_r = 0.0
-        c.tint_g = 0.9
-        c.tint_b = 0.8
-        c.tint_a = 1.0
-        c.size = 38.0
-        c.contact_damage = 3.0
+        apply_constant_template(c, CONSTANT_SPAWN_TEMPLATES[template_id])
         primary_idx = 0
     elif template_id == 0x2E:
         c = creatures[0]
@@ -2452,32 +2557,6 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.tint_g = float(rng.rand() % 0x28) * 0.01 + 0.6
         c.tint_b = float(rng.rand() % 0x28) * 0.01 + 0.6
         c.contact_damage = float(rng.rand() % 10) + 4.0
-        primary_idx = 0
-    elif template_id == 0x2F:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.LIZARD
-        c.health = 20.0
-        c.move_speed = 2.5
-        c.reward_value = 150.0
-        c.tint_r = 0.8
-        c.tint_g = 0.8
-        c.tint_b = 0.8
-        c.tint_a = 1.0
-        c.size = 45.0
-        c.contact_damage = 4.0
-        primary_idx = 0
-    elif template_id == 0x30:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.LIZARD
-        c.health = 1000.0
-        c.move_speed = 2.0
-        c.reward_value = 400.0
-        c.tint_r = 0.9
-        c.tint_g = 0.8
-        c.tint_b = 0.1
-        c.tint_a = 1.0
-        c.size = 65.0
-        c.contact_damage = 10.0
         primary_idx = 0
     elif template_id == 0x31:
         c = creatures[0]
@@ -2608,52 +2687,6 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.size = float(rng.rand() % 4 + 26)
         c.contact_damage = 10.0
         primary_idx = 0
-    elif template_id == 0x3A:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.SPIDER_SP1
-        c.flags = CreatureFlags.RANGED_ATTACK_SHOCK
-        c.orbit_angle = 0.9
-        c.ranged_projectile_type = 9
-        c.health = 4500.0
-        c.move_speed = 2.0
-        c.reward_value = 4500.0
-        c.tint_r = 1.0
-        c.tint_g = 1.0
-        c.tint_b = 1.0
-        c.tint_a = 1.0
-        c.size = 64.0
-        c.contact_damage = 50.0
-        primary_idx = 0
-    elif template_id == 0x3B:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.SPIDER_SP1
-        c.health = 1200.0
-        c.move_speed = 2.0
-        c.reward_value = 4000.0
-        c.tint_r = 0.9
-        c.tint_g = 0.0
-        c.tint_b = 0.0
-        c.tint_a = 1.0
-        c.size = 70.0
-        c.contact_damage = 20.0
-        primary_idx = 0
-    elif template_id == 0x3C:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.SPIDER_SP1
-        c.flags = CreatureFlags.RANGED_ATTACK_VARIANT
-        c.orbit_angle = 0.4
-        c.ranged_projectile_type = 26
-        c.health = 200.0
-        c.move_speed = 2.0
-        c.reward_value = 200.0
-        c.tint_r = 0.9
-        c.tint_g = 0.1
-        c.tint_b = 0.1
-        c.tint_a = 1.0
-        c.size = 40.0
-        c.contact_damage = 20.0
-        c.ai_mode = 2
-        primary_idx = 0
     elif template_id == 0x3D:
         c = creatures[0]
         c.type_id = CreatureTypeId.SPIDER_SP1
@@ -2669,45 +2702,6 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.size = size
         c.contact_damage = size * 0.22
         primary_idx = 0
-    elif template_id == 0x3E:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.SPIDER_SP1
-        c.health = 1000.0
-        c.move_speed = 2.8
-        c.reward_value = 500.0
-        c.tint_r = 1.0
-        c.tint_g = 1.0
-        c.tint_b = 1.0
-        c.tint_a = 1.0
-        c.size = 64.0
-        c.contact_damage = 40.0
-        primary_idx = 0
-    elif template_id == 0x3F:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.SPIDER_SP1
-        c.health = 200.0
-        c.move_speed = 2.3
-        c.reward_value = 210.0
-        c.tint_r = 0.7
-        c.tint_g = 0.4
-        c.tint_b = 0.1
-        c.tint_a = 1.0
-        c.size = 35.0
-        c.contact_damage = 20.0
-        primary_idx = 0
-    elif template_id == 0x40:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.SPIDER_SP1
-        c.health = 70.0
-        c.move_speed = 2.2
-        c.reward_value = 160.0
-        c.tint_r = 0.5
-        c.tint_g = 0.6
-        c.tint_b = 0.9
-        c.tint_a = 1.0
-        c.size = 45.0
-        c.contact_damage = 5.0
-        primary_idx = 0
     elif template_id == 0x41:
         c = creatures[0]
         c.type_id = CreatureTypeId.ZOMBIE
@@ -2721,32 +2715,6 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.tint_g = tint
         c.tint_b = tint
         c.contact_damage = float(rng.rand() % 10) + 4.0
-        primary_idx = 0
-    elif template_id == 0x42:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ZOMBIE
-        c.health = 200.0
-        c.move_speed = 1.7
-        c.reward_value = 160.0
-        c.tint_r = 0.9
-        c.tint_g = 0.9
-        c.tint_b = 0.9
-        c.tint_a = 1.0
-        c.size = 45.0
-        c.contact_damage = 15.0
-        primary_idx = 0
-    elif template_id == 0x43:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ZOMBIE
-        c.health = 2000.0
-        c.move_speed = 2.1
-        c.reward_value = 460.0
-        c.tint_r = 0.2
-        c.tint_g = 0.6
-        c.tint_b = 0.1
-        c.tint_a = 1.0
-        c.size = 70.0
-        c.contact_damage = 15.0
         primary_idx = 0
     else:
         raise NotImplementedError(f"spawn plan not implemented for template_id=0x{template_id:x}")
