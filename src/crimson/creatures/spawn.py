@@ -2524,16 +2524,13 @@ def template_11_formation_chain_lizard_4(ctx: PlanBuilder) -> None:
     )
     pos_x = ctx.pos_x
     pos_y = ctx.pos_y
-    angle_idx = 2
 
     def setup_child(child: CreatureInit, idx: int) -> None:
-        nonlocal angle_idx
         child.target_offset_x = -256.0 + float(idx) * 64.0
         child.target_offset_y = -256.0
-        angle = float(angle_idx) * (math.pi / 8.0)
+        angle = float(2 + idx * 2) * (math.pi / 8.0)
         child.pos_x = float(math.cos(angle) * 256.0 + pos_x)
         child.pos_y = float(math.sin(angle) * 256.0 + pos_y)
-        angle_idx += 2
 
     chain_prev = ctx.chain_children(
         count=4,
