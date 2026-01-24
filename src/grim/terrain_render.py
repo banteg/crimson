@@ -225,18 +225,19 @@ class GroundRenderer:
             rl.RL_FUNC_ADD,
         ):
             for decal in decals:
-                x = decal.x
-                y = decal.y
                 w = decal.width
                 h = decal.height
                 if decal.centered:
-                    x -= w * 0.5
-                    y -= h * 0.5
-                x *= inv_scale
-                y *= inv_scale
+                    pivot_x = decal.x
+                    pivot_y = decal.y
+                else:
+                    pivot_x = decal.x + w * 0.5
+                    pivot_y = decal.y + h * 0.5
+                pivot_x *= inv_scale
+                pivot_y *= inv_scale
                 w *= inv_scale
                 h *= inv_scale
-                dst = rl.Rectangle(x, y, w, h)
+                dst = rl.Rectangle(pivot_x, pivot_y, w, h)
                 origin = rl.Vector2(w * 0.5, h * 0.5)
                 rl.draw_texture_pro(
                     decal.texture,
@@ -454,7 +455,7 @@ class GroundRenderer:
                 size = decal.size * inv_scale * 1.064
                 x = (decal.top_left_x - 0.5) * inv_scale - offset
                 y = (decal.top_left_y - 0.5) * inv_scale - offset
-                dst = rl.Rectangle(x, y, size, size)
+                dst = rl.Rectangle(x + size * 0.5, y + size * 0.5, size, size)
                 origin = rl.Vector2(size * 0.5, size * 0.5)
                 tint = rl.Color(
                     decal.tint.r,
@@ -491,7 +492,7 @@ class GroundRenderer:
                 size = decal.size * inv_scale
                 x = decal.top_left_x * inv_scale - offset
                 y = decal.top_left_y * inv_scale - offset
-                dst = rl.Rectangle(x, y, size, size)
+                dst = rl.Rectangle(x + size * 0.5, y + size * 0.5, size, size)
                 origin = rl.Vector2(size * 0.5, size * 0.5)
                 rl.draw_texture_pro(
                     bodyset_texture,

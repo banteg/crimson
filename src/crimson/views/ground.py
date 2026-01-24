@@ -5,6 +5,8 @@ from pathlib import Path
 
 import pyray as rl
 
+from crimson.effects import FxQueue, FxQueueRotated
+from grim.fx_queue import FxQueueTextures, bake_fx_queues
 from grim.config import ensure_crimson_cfg
 from grim.terrain_render import GroundRenderer
 from ..quests import all_quests
@@ -52,6 +54,9 @@ class GroundView:
         self._quests: list[QuestDefinition] = []
         self._quest_index = 0
         self._terrain_seed: int | None = None
+        self._fx_queue = FxQueue()
+        self._fx_queue_rotated = FxQueueRotated()
+        self._fx_textures: FxQueueTextures | None = None
 
     def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
         if self._small is not None:
@@ -86,6 +91,20 @@ class GroundView:
             raise FileNotFoundError(f"Missing ground assets: {', '.join(self._missing_assets)}")
         self._assets = GroundAssets(textures=textures)
         self._quests = all_quests()
+        self._fx_queue.clear()
+        self._fx_queue_rotated.clear()
+        particles_path = self._resolve_asset("game/particles.png")
+        if particles_path is None:
+            self._missing_assets.append("game/particles.png")
+        bodyset_path = self._resolve_asset("game/bodyset.png")
+        if bodyset_path is None:
+            self._missing_assets.append("game/bodyset.png")
+        if self._missing_assets:
+            raise FileNotFoundError(f"Missing ground assets: {', '.join(self._missing_assets)}")
+        self._fx_textures = FxQueueTextures(
+            particles=rl.load_texture(str(particles_path)),
+            bodyset=rl.load_texture(str(bodyset_path)),
+        )
         texture_scale, screen_w, screen_h = self._load_runtime_config()
         if self._renderer is not None:
             self._renderer.texture_scale = texture_scale
@@ -107,6 +126,12 @@ class GroundView:
         if self._grim_mono is not None:
             rl.unload_texture(self._grim_mono.texture)
             self._grim_mono = None
+        if self._fx_textures is not None:
+            rl.unload_texture(self._fx_textures.particles)
+            rl.unload_texture(self._fx_textures.bodyset)
+            self._fx_textures = None
+        self._fx_queue.clear()
+        self._fx_queue_rotated.clear()
 
     def update(self, dt: float) -> None:
         speed = 240.0
@@ -126,6 +151,27 @@ class GroundView:
             self._apply_quest()
         if self._renderer is not None:
             self._renderer.process_pending()
+            if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
+                mouse = rl.get_mouse_position()
+                world_x = -self._camera_x + float(mouse.x)
+                world_y = -self._camera_y + float(mouse.y)
+                self._fx_queue.add(
+                    effect_id=0x07,  # blood
+                    pos_x=world_x,
+                    pos_y=world_y,
+                    width=30.0,
+                    height=30.0,
+                    rotation=0.0,
+                    rgba=(1.0, 1.0, 1.0, 1.0),
+                )
+            if self._fx_textures is not None and (self._fx_queue.count or self._fx_queue_rotated.count):
+                bake_fx_queues(
+                    self._renderer,
+                    fx_queue=self._fx_queue,
+                    fx_queue_rotated=self._fx_queue_rotated,
+                    textures=self._fx_textures,
+                    corpse_frame_for_type=lambda type_id: int(type_id) & 0xF,
+                )
 
     def draw(self) -> None:
         rl.clear_background(rl.Color(12, 12, 14, 255))

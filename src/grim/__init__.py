@@ -6,6 +6,7 @@ __all__ = [
     "audio",
     "config",
     "console",
+    "fx_queue",
     "fonts",
     "input",
     "jaz",

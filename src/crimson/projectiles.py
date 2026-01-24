@@ -15,6 +15,10 @@ MAIN_PROJECTILE_POOL_SIZE = 0x60
 SECONDARY_PROJECTILE_POOL_SIZE = 0x40
 
 
+def _rng_zero() -> int:
+    return 0
+
+
 @dataclass(slots=True)
 class Projectile:
     active: bool = False
@@ -167,7 +171,7 @@ class ProjectilePool:
             damage_scale_by_type = {}
 
         if rng is None:
-            rng = lambda: 0
+            rng = _rng_zero
 
         hits: list[tuple[int, float, float, float, float]] = []
         margin = 64.0

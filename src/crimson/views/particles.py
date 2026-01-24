@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import pyray as rl
 
 from .registry import register_view
+from ..effects_atlas import EFFECT_ID_ATLAS_TABLE, SIZE_CODE_GRID
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.view import View, ViewContext
 
@@ -15,13 +16,6 @@ UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 UI_KNOWN_COLOR = rl.Color(80, 160, 240, 255)
 UI_HOVER_COLOR = rl.Color(240, 200, 80, 255)
 UI_CLAMP_COLOR = rl.Color(120, 120, 220, 255)
-
-SIZE_CODE_GRID = {
-    0x10: 16,
-    0x20: 8,
-    0x40: 4,
-    0x80: 2,
-}
 
 EFFECT_UV_STEP = {
     2: 0.4921875,
@@ -43,26 +37,22 @@ class EffectEntry:
         return SIZE_CODE_GRID[self.size_code]
 
 
+EFFECT_LABELS = {
+    0x00: "burst",
+    0x01: "ring",
+    0x07: "blood",
+    0x08: "freeze",
+    0x09: "freeze",
+    0x0A: "freeze",
+    0x0C: "explosion",
+    0x0E: "shatter",
+    0x11: "explosion",
+    0x12: "muzzle",
+}
+
 EFFECT_ENTRIES = [
-    EffectEntry(0x00, 0x80, 0x02, "burst"),
-    EffectEntry(0x01, 0x80, 0x03, "ring"),
-    EffectEntry(0x02, 0x20, 0x00),
-    EffectEntry(0x03, 0x20, 0x01),
-    EffectEntry(0x04, 0x20, 0x02),
-    EffectEntry(0x05, 0x20, 0x03),
-    EffectEntry(0x06, 0x20, 0x04),
-    EffectEntry(0x07, 0x20, 0x05, "blood"),
-    EffectEntry(0x08, 0x20, 0x08, "freeze"),
-    EffectEntry(0x09, 0x20, 0x09, "freeze"),
-    EffectEntry(0x0A, 0x20, 0x0A, "freeze"),
-    EffectEntry(0x0B, 0x20, 0x0B),
-    EffectEntry(0x0C, 0x40, 0x05, "explosion"),
-    EffectEntry(0x0D, 0x40, 0x03),
-    EffectEntry(0x0E, 0x40, 0x04, "shatter"),
-    EffectEntry(0x0F, 0x40, 0x05),
-    EffectEntry(0x10, 0x40, 0x06),
-    EffectEntry(0x11, 0x40, 0x07, "explosion"),
-    EffectEntry(0x12, 0x10, 0x26, "muzzle"),
+    EffectEntry(entry.effect_id, entry.size_code, entry.frame, EFFECT_LABELS.get(entry.effect_id))
+    for entry in EFFECT_ID_ATLAS_TABLE
 ]
 
 
