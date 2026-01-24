@@ -27,6 +27,7 @@ __all__ = [
     "CreatureFlags",
     "CreatureInit",
     "CreatureTypeId",
+    "SpawnId",
     "SPAWN_ID_TO_TEMPLATE",
     "SPAWN_TEMPLATES",
     "SpawnEnv",
@@ -72,9 +73,90 @@ class CreatureFlags(IntFlag):
     BONUS_ON_DEATH = 0x400  # spawns bonus on death
 
 
+class SpawnId(IntEnum):
+    ZOMBIE_BOSS_SPAWNER_00 = 0x00
+    SPIDER_SP2_SPLITTER_01 = 0x01
+    UNUSED_02 = 0x02
+    SPIDER_SP1_RANDOM_03 = 0x03
+    LIZARD_RANDOM_04 = 0x04
+    SPIDER_SP2_RANDOM_05 = 0x05
+    ALIEN_RANDOM_06 = 0x06
+
+    ALIEN_SPAWNER_CHILD_1D_FAST_07 = 0x07
+    ALIEN_SPAWNER_CHILD_1D_SLOW_08 = 0x08
+    ALIEN_SPAWNER_CHILD_1D_LIMITED_09 = 0x09
+    ALIEN_SPAWNER_CHILD_32_SLOW_0A = 0x0A
+    ALIEN_SPAWNER_CHILD_3C_SLOW_0B = 0x0B
+    ALIEN_SPAWNER_CHILD_31_FAST_0C = 0x0C
+    ALIEN_SPAWNER_CHILD_31_SLOW_0D = 0x0D
+    ALIEN_SPAWNER_RING_24_0E = 0x0E
+    ALIEN_CONST_BROWN_TRANSPARENT_0F = 0x0F
+    ALIEN_SPAWNER_CHILD_32_FAST_10 = 0x10
+
+    FORMATION_CHAIN_LIZARD_4_11 = 0x11
+    FORMATION_RING_ALIEN_8_12 = 0x12
+    FORMATION_CHAIN_ALIEN_10_13 = 0x13
+    FORMATION_GRID_ALIEN_GREEN_14 = 0x14
+    FORMATION_GRID_ALIEN_WHITE_15 = 0x15
+    FORMATION_GRID_LIZARD_WHITE_16 = 0x16
+    FORMATION_GRID_SPIDER_SP1_WHITE_17 = 0x17
+    FORMATION_GRID_ALIEN_BRONZE_18 = 0x18
+    FORMATION_RING_ALIEN_5_19 = 0x19
+
+    AI1_ALIEN_BLUE_TINT_1A = 0x1A
+    AI1_SPIDER_SP1_BLUE_TINT_1B = 0x1B
+    AI1_LIZARD_BLUE_TINT_1C = 0x1C
+
+    ALIEN_RANDOM_1D = 0x1D
+    ALIEN_RANDOM_1E = 0x1E
+    ALIEN_RANDOM_1F = 0x1F
+    ALIEN_RANDOM_GREEN_20 = 0x20
+
+    ALIEN_CONST_PURPLE_GHOST_21 = 0x21
+    ALIEN_CONST_GREEN_GHOST_22 = 0x22
+    ALIEN_CONST_GREEN_GHOST_SMALL_23 = 0x23
+    ALIEN_CONST_GREEN_24 = 0x24
+    ALIEN_CONST_GREEN_SMALL_25 = 0x25
+    ALIEN_CONST_PALE_GREEN_26 = 0x26
+    ALIEN_CONST_WEAPON_BONUS_27 = 0x27
+    ALIEN_CONST_PURPLE_28 = 0x28
+    ALIEN_CONST_GREY_BRUTE_29 = 0x29
+    ALIEN_CONST_GREY_FAST_2A = 0x2A
+    ALIEN_CONST_RED_FAST_2B = 0x2B
+    ALIEN_CONST_RED_BOSS_2C = 0x2C
+    ALIEN_CONST_CYAN_AI2_2D = 0x2D
+
+    LIZARD_RANDOM_2E = 0x2E
+    LIZARD_CONST_GREY_2F = 0x2F
+    LIZARD_CONST_YELLOW_BOSS_30 = 0x30
+    LIZARD_RANDOM_31 = 0x31
+
+    SPIDER_SP1_RANDOM_32 = 0x32
+    SPIDER_SP1_RANDOM_RED_33 = 0x33
+    SPIDER_SP1_RANDOM_GREEN_34 = 0x34
+    SPIDER_SP2_RANDOM_35 = 0x35
+
+    ALIEN_AI7_ORBITER_36 = 0x36
+    SPIDER_SP2_RANGED_VARIANT_37 = 0x37
+    SPIDER_SP1_AI7_TIMER_38 = 0x38
+    SPIDER_SP1_AI7_TIMER_WEAK_39 = 0x39
+
+    SPIDER_SP1_CONST_SHOCK_BOSS_3A = 0x3A
+    SPIDER_SP1_CONST_RED_BOSS_3B = 0x3B
+    SPIDER_SP1_CONST_RANGED_VARIANT_3C = 0x3C
+    SPIDER_SP1_RANDOM_3D = 0x3D
+    SPIDER_SP1_CONST_WHITE_FAST_3E = 0x3E
+    SPIDER_SP1_CONST_BROWN_SMALL_3F = 0x3F
+    SPIDER_SP1_CONST_BLUE_40 = 0x40
+
+    ZOMBIE_RANDOM_41 = 0x41
+    ZOMBIE_CONST_GREY_42 = 0x42
+    ZOMBIE_CONST_GREEN_BRUTE_43 = 0x43
+
+
 @dataclass(frozen=True, slots=True)
 class SpawnTemplate:
-    spawn_id: int
+    spawn_id: SpawnId
     type_id: CreatureTypeId | None
     flags: CreatureFlags | None
     creature: str | None
@@ -100,7 +182,7 @@ TYPE_ID_TO_NAME = {
 # We only fill them in when the game uses fixed constants (and keep the rest as `None`).
 SPAWN_TEMPLATES = [
     SpawnTemplate(
-        spawn_id=0x00,
+        spawn_id=SpawnId.ZOMBIE_BOSS_SPAWNER_00,
         type_id=CreatureTypeId.ZOMBIE,
         flags=CreatureFlags.ANIM_PING_PONG | CreatureFlags.ANIM_LONG_STRIP,
         creature="zombie",
@@ -113,7 +195,7 @@ SPAWN_TEMPLATES = [
         move_speed=1.3,
     ),
     SpawnTemplate(
-        spawn_id=0x01,
+        spawn_id=SpawnId.SPIDER_SP2_SPLITTER_01,
         type_id=CreatureTypeId.SPIDER_SP2,
         flags=CreatureFlags.SPLIT_ON_DEATH,
         creature="spider_sp2",
@@ -126,35 +208,35 @@ SPAWN_TEMPLATES = [
         move_speed=2.0,
     ),
     SpawnTemplate(
-        spawn_id=0x03,
+        spawn_id=SpawnId.SPIDER_SP1_RANDOM_03,
         type_id=CreatureTypeId.SPIDER_SP1,
         flags=None,
         creature="spider_sp1",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x04,
+        spawn_id=SpawnId.LIZARD_RANDOM_04,
         type_id=CreatureTypeId.LIZARD,
         flags=None,
         creature="lizard",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x05,
+        spawn_id=SpawnId.SPIDER_SP2_RANDOM_05,
         type_id=CreatureTypeId.SPIDER_SP2,
         flags=None,
         creature="spider_sp2",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x06,
+        spawn_id=SpawnId.ALIEN_RANDOM_06,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x07,
+        spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07,
         type_id=CreatureTypeId.ALIEN,
         flags=CreatureFlags.ANIM_PING_PONG,
         creature="alien",
@@ -167,7 +249,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.0,
     ),
     SpawnTemplate(
-        spawn_id=0x08,
+        spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08,
         type_id=CreatureTypeId.ALIEN,
         flags=CreatureFlags.ANIM_PING_PONG,
         creature="alien",
@@ -180,7 +262,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.0,
     ),
     SpawnTemplate(
-        spawn_id=0x09,
+        spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09,
         type_id=CreatureTypeId.ALIEN,
         flags=CreatureFlags.ANIM_PING_PONG,
         creature="alien",
@@ -193,7 +275,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.0,
     ),
     SpawnTemplate(
-        spawn_id=0x0A,
+        spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A,
         type_id=CreatureTypeId.ALIEN,
         flags=CreatureFlags.ANIM_PING_PONG,
         creature="alien",
@@ -206,7 +288,7 @@ SPAWN_TEMPLATES = [
         move_speed=1.5,
     ),
     SpawnTemplate(
-        spawn_id=0x0B,
+        spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_3C_SLOW_0B,
         type_id=CreatureTypeId.ALIEN,
         flags=CreatureFlags.ANIM_PING_PONG,
         creature="alien",
@@ -219,7 +301,7 @@ SPAWN_TEMPLATES = [
         move_speed=1.5,
     ),
     SpawnTemplate(
-        spawn_id=0x0C,
+        spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_FAST_0C,
         type_id=CreatureTypeId.ALIEN,
         flags=CreatureFlags.ANIM_PING_PONG,
         creature="alien",
@@ -232,7 +314,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.8,
     ),
     SpawnTemplate(
-        spawn_id=0x0D,
+        spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_31_SLOW_0D,
         type_id=CreatureTypeId.ALIEN,
         flags=CreatureFlags.ANIM_PING_PONG,
         creature="alien",
@@ -245,7 +327,7 @@ SPAWN_TEMPLATES = [
         move_speed=1.3,
     ),
     SpawnTemplate(
-        spawn_id=0x0E,
+        spawn_id=SpawnId.ALIEN_SPAWNER_RING_24_0E,
         type_id=CreatureTypeId.ALIEN,
         flags=CreatureFlags.ANIM_PING_PONG,
         creature="alien",
@@ -258,7 +340,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.8,
     ),
     SpawnTemplate(
-        spawn_id=0x0F,
+        spawn_id=SpawnId.ALIEN_CONST_BROWN_TRANSPARENT_0F,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
@@ -271,7 +353,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.9,
     ),
     SpawnTemplate(
-        spawn_id=0x10,
+        spawn_id=SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10,
         type_id=CreatureTypeId.ALIEN,
         flags=CreatureFlags.ANIM_PING_PONG,
         creature="alien",
@@ -284,140 +366,140 @@ SPAWN_TEMPLATES = [
         move_speed=2.8,
     ),
     SpawnTemplate(
-        spawn_id=0x11,
+        spawn_id=SpawnId.FORMATION_CHAIN_LIZARD_4_11,
         type_id=CreatureTypeId.LIZARD,
         flags=None,
         creature="lizard",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x12,
+        spawn_id=SpawnId.FORMATION_RING_ALIEN_8_12,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x13,
+        spawn_id=SpawnId.FORMATION_CHAIN_ALIEN_10_13,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x14,
+        spawn_id=SpawnId.FORMATION_GRID_ALIEN_GREEN_14,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x15,
+        spawn_id=SpawnId.FORMATION_GRID_ALIEN_WHITE_15,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x16,
+        spawn_id=SpawnId.FORMATION_GRID_LIZARD_WHITE_16,
         type_id=CreatureTypeId.LIZARD,
         flags=None,
         creature="lizard",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x17,
+        spawn_id=SpawnId.FORMATION_GRID_SPIDER_SP1_WHITE_17,
         type_id=CreatureTypeId.SPIDER_SP1,
         flags=None,
         creature="spider_sp1",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x18,
+        spawn_id=SpawnId.FORMATION_GRID_ALIEN_BRONZE_18,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x19,
+        spawn_id=SpawnId.FORMATION_RING_ALIEN_5_19,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x1A,
+        spawn_id=SpawnId.AI1_ALIEN_BLUE_TINT_1A,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x1B,
+        spawn_id=SpawnId.AI1_SPIDER_SP1_BLUE_TINT_1B,
         type_id=CreatureTypeId.SPIDER_SP1,
         flags=None,
         creature="spider_sp1",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x1C,
+        spawn_id=SpawnId.AI1_LIZARD_BLUE_TINT_1C,
         type_id=CreatureTypeId.LIZARD,
         flags=None,
         creature="lizard",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x1D,
+        spawn_id=SpawnId.ALIEN_RANDOM_1D,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x1E,
+        spawn_id=SpawnId.ALIEN_RANDOM_1E,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x1F,
+        spawn_id=SpawnId.ALIEN_RANDOM_1F,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x20,
+        spawn_id=SpawnId.ALIEN_RANDOM_GREEN_20,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x21,
+        spawn_id=SpawnId.ALIEN_CONST_PURPLE_GHOST_21,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x22,
+        spawn_id=SpawnId.ALIEN_CONST_GREEN_GHOST_22,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x23,
+        spawn_id=SpawnId.ALIEN_CONST_GREEN_GHOST_SMALL_23,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x24,
+        spawn_id=SpawnId.ALIEN_CONST_GREEN_24,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
@@ -430,7 +512,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.0,
     ),
     SpawnTemplate(
-        spawn_id=0x25,
+        spawn_id=SpawnId.ALIEN_CONST_GREEN_SMALL_25,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
@@ -443,7 +525,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.5,
     ),
     SpawnTemplate(
-        spawn_id=0x26,
+        spawn_id=SpawnId.ALIEN_CONST_PALE_GREEN_26,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
@@ -456,7 +538,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.2,
     ),
     SpawnTemplate(
-        spawn_id=0x27,
+        spawn_id=SpawnId.ALIEN_CONST_WEAPON_BONUS_27,
         type_id=CreatureTypeId.ALIEN,
         flags=CreatureFlags.BONUS_ON_DEATH,
         creature="alien",
@@ -469,7 +551,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.1,
     ),
     SpawnTemplate(
-        spawn_id=0x28,
+        spawn_id=SpawnId.ALIEN_CONST_PURPLE_28,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
@@ -482,7 +564,7 @@ SPAWN_TEMPLATES = [
         move_speed=1.7,
     ),
     SpawnTemplate(
-        spawn_id=0x29,
+        spawn_id=SpawnId.ALIEN_CONST_GREY_BRUTE_29,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
@@ -495,7 +577,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.5,
     ),
     SpawnTemplate(
-        spawn_id=0x2A,
+        spawn_id=SpawnId.ALIEN_CONST_GREY_FAST_2A,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
@@ -508,7 +590,7 @@ SPAWN_TEMPLATES = [
         move_speed=3.1,
     ),
     SpawnTemplate(
-        spawn_id=0x2B,
+        spawn_id=SpawnId.ALIEN_CONST_RED_FAST_2B,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
@@ -521,7 +603,7 @@ SPAWN_TEMPLATES = [
         move_speed=3.6,
     ),
     SpawnTemplate(
-        spawn_id=0x2C,
+        spawn_id=SpawnId.ALIEN_CONST_RED_BOSS_2C,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
@@ -534,7 +616,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.0,
     ),
     SpawnTemplate(
-        spawn_id=0x2D,
+        spawn_id=SpawnId.ALIEN_CONST_CYAN_AI2_2D,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
@@ -547,63 +629,63 @@ SPAWN_TEMPLATES = [
         move_speed=3.1,
     ),
     SpawnTemplate(
-        spawn_id=0x2E,
+        spawn_id=SpawnId.LIZARD_RANDOM_2E,
         type_id=CreatureTypeId.LIZARD,
         flags=None,
         creature="lizard",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x2F,
+        spawn_id=SpawnId.LIZARD_CONST_GREY_2F,
         type_id=CreatureTypeId.LIZARD,
         flags=None,
         creature="lizard",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x30,
+        spawn_id=SpawnId.LIZARD_CONST_YELLOW_BOSS_30,
         type_id=CreatureTypeId.LIZARD,
         flags=None,
         creature="lizard",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x31,
+        spawn_id=SpawnId.LIZARD_RANDOM_31,
         type_id=CreatureTypeId.LIZARD,
         flags=None,
         creature="lizard",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x32,
+        spawn_id=SpawnId.SPIDER_SP1_RANDOM_32,
         type_id=CreatureTypeId.SPIDER_SP1,
         flags=None,
         creature="spider_sp1",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x33,
+        spawn_id=SpawnId.SPIDER_SP1_RANDOM_RED_33,
         type_id=CreatureTypeId.SPIDER_SP1,
         flags=None,
         creature="spider_sp1",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x34,
+        spawn_id=SpawnId.SPIDER_SP1_RANDOM_GREEN_34,
         type_id=CreatureTypeId.SPIDER_SP1,
         flags=None,
         creature="spider_sp1",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x35,
+        spawn_id=SpawnId.SPIDER_SP2_RANDOM_35,
         type_id=CreatureTypeId.SPIDER_SP2,
         flags=None,
         creature="spider_sp2",
         anim_note=None,
     ),
     SpawnTemplate(
-        spawn_id=0x36,
+        spawn_id=SpawnId.ALIEN_AI7_ORBITER_36,
         type_id=CreatureTypeId.ALIEN,
         flags=None,
         creature="alien",
@@ -615,7 +697,7 @@ SPAWN_TEMPLATES = [
         move_speed=1.8,
     ),
     SpawnTemplate(
-        spawn_id=0x37,
+        spawn_id=SpawnId.SPIDER_SP2_RANGED_VARIANT_37,
         type_id=CreatureTypeId.SPIDER_SP2,
         flags=CreatureFlags.RANGED_ATTACK_VARIANT,
         creature="spider_sp2",
@@ -627,7 +709,7 @@ SPAWN_TEMPLATES = [
         move_speed=3.2,
     ),
     SpawnTemplate(
-        spawn_id=0x38,
+        spawn_id=SpawnId.SPIDER_SP1_AI7_TIMER_38,
         type_id=CreatureTypeId.SPIDER_SP1,
         flags=CreatureFlags.AI7_LINK_TIMER,
         creature="spider_sp1",
@@ -639,7 +721,7 @@ SPAWN_TEMPLATES = [
         move_speed=4.8,
     ),
     SpawnTemplate(
-        spawn_id=0x39,
+        spawn_id=SpawnId.SPIDER_SP1_AI7_TIMER_WEAK_39,
         type_id=CreatureTypeId.SPIDER_SP1,
         flags=CreatureFlags.AI7_LINK_TIMER,
         creature="spider_sp1",
@@ -651,7 +733,7 @@ SPAWN_TEMPLATES = [
         move_speed=4.8,
     ),
     SpawnTemplate(
-        spawn_id=0x3A,
+        spawn_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A,
         type_id=CreatureTypeId.SPIDER_SP1,
         flags=CreatureFlags.RANGED_ATTACK_SHOCK,
         creature="spider_sp1",
@@ -664,7 +746,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.0,
     ),
     SpawnTemplate(
-        spawn_id=0x3B,
+        spawn_id=SpawnId.SPIDER_SP1_CONST_RED_BOSS_3B,
         type_id=CreatureTypeId.SPIDER_SP1,
         flags=None,
         creature="spider_sp1",
@@ -677,7 +759,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.0,
     ),
     SpawnTemplate(
-        spawn_id=0x3C,
+        spawn_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
         type_id=CreatureTypeId.SPIDER_SP1,
         flags=CreatureFlags.RANGED_ATTACK_VARIANT,
         creature="spider_sp1",
@@ -690,7 +772,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.0,
     ),
     SpawnTemplate(
-        spawn_id=0x3D,
+        spawn_id=SpawnId.SPIDER_SP1_RANDOM_3D,
         type_id=CreatureTypeId.SPIDER_SP1,
         flags=None,
         creature="spider_sp1",
@@ -699,7 +781,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.6,
     ),
     SpawnTemplate(
-        spawn_id=0x3E,
+        spawn_id=SpawnId.SPIDER_SP1_CONST_WHITE_FAST_3E,
         type_id=CreatureTypeId.SPIDER_SP1,
         flags=None,
         creature="spider_sp1",
@@ -712,7 +794,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.8,
     ),
     SpawnTemplate(
-        spawn_id=0x3F,
+        spawn_id=SpawnId.SPIDER_SP1_CONST_BROWN_SMALL_3F,
         type_id=CreatureTypeId.SPIDER_SP1,
         flags=None,
         creature="spider_sp1",
@@ -725,7 +807,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.3,
     ),
     SpawnTemplate(
-        spawn_id=0x40,
+        spawn_id=SpawnId.SPIDER_SP1_CONST_BLUE_40,
         type_id=CreatureTypeId.SPIDER_SP1,
         flags=None,
         creature="spider_sp1",
@@ -738,7 +820,7 @@ SPAWN_TEMPLATES = [
         move_speed=2.2,
     ),
     SpawnTemplate(
-        spawn_id=0x41,
+        spawn_id=SpawnId.ZOMBIE_RANDOM_41,
         type_id=CreatureTypeId.ZOMBIE,
         flags=None,
         creature="zombie",
@@ -746,7 +828,7 @@ SPAWN_TEMPLATES = [
         tint_a=1.0,
     ),
     SpawnTemplate(
-        spawn_id=0x42,
+        spawn_id=SpawnId.ZOMBIE_CONST_GREY_42,
         type_id=CreatureTypeId.ZOMBIE,
         flags=None,
         creature="zombie",
@@ -759,7 +841,7 @@ SPAWN_TEMPLATES = [
         move_speed=1.7,
     ),
     SpawnTemplate(
-        spawn_id=0x43,
+        spawn_id=SpawnId.ZOMBIE_CONST_GREEN_BRUTE_43,
         type_id=CreatureTypeId.ZOMBIE,
         flags=None,
         creature="zombie",
@@ -790,88 +872,88 @@ class AlienSpawnerSpec:
 
 
 ALIEN_SPAWNER_TEMPLATES: dict[int, AlienSpawnerSpec] = {
-    0x07: AlienSpawnerSpec(
+    SpawnId.ALIEN_SPAWNER_CHILD_1D_FAST_07: AlienSpawnerSpec(
         timer=1.0,
         limit=100,
         interval=2.2,
-        child_template_id=0x1D,
+        child_template_id=SpawnId.ALIEN_RANDOM_1D,
         size=50.0,
         health=1000.0,
         move_speed=2.0,
         reward_value=3000.0,
         tint=(1.0, 1.0, 1.0, 1.0),
     ),
-    0x08: AlienSpawnerSpec(
+    SpawnId.ALIEN_SPAWNER_CHILD_1D_SLOW_08: AlienSpawnerSpec(
         timer=1.0,
         limit=100,
         interval=2.8,
-        child_template_id=0x1D,
+        child_template_id=SpawnId.ALIEN_RANDOM_1D,
         size=50.0,
         health=1000.0,
         move_speed=2.0,
         reward_value=3000.0,
         tint=(1.0, 1.0, 1.0, 1.0),
     ),
-    0x09: AlienSpawnerSpec(
+    SpawnId.ALIEN_SPAWNER_CHILD_1D_LIMITED_09: AlienSpawnerSpec(
         timer=1.0,
         limit=16,
         interval=2.0,
-        child_template_id=0x1D,
+        child_template_id=SpawnId.ALIEN_RANDOM_1D,
         size=40.0,
         health=450.0,
         move_speed=2.0,
         reward_value=1000.0,
         tint=(1.0, 1.0, 1.0, 1.0),
     ),
-    0x0A: AlienSpawnerSpec(
+    SpawnId.ALIEN_SPAWNER_CHILD_32_SLOW_0A: AlienSpawnerSpec(
         timer=2.0,
         limit=100,
         interval=5.0,
-        child_template_id=0x32,
+        child_template_id=SpawnId.SPIDER_SP1_RANDOM_32,
         size=55.0,
         health=1000.0,
         move_speed=1.5,
         reward_value=3000.0,
         tint=(0.8, 0.7, 0.4, 1.0),
     ),
-    0x0B: AlienSpawnerSpec(
+    SpawnId.ALIEN_SPAWNER_CHILD_3C_SLOW_0B: AlienSpawnerSpec(
         timer=2.0,
         limit=100,
         interval=6.0,
-        child_template_id=0x3C,
+        child_template_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C,
         size=65.0,
         health=3500.0,
         move_speed=1.5,
         reward_value=5000.0,
         tint=(0.9, 0.1, 0.1, 1.0),
     ),
-    0x0C: AlienSpawnerSpec(
+    SpawnId.ALIEN_SPAWNER_CHILD_31_FAST_0C: AlienSpawnerSpec(
         timer=1.5,
         limit=100,
         interval=2.0,
-        child_template_id=0x31,
+        child_template_id=SpawnId.LIZARD_RANDOM_31,
         size=32.0,
         health=50.0,
         move_speed=2.8,
         reward_value=1000.0,
         tint=(0.9, 0.8, 0.4, 1.0),
     ),
-    0x0D: AlienSpawnerSpec(
+    SpawnId.ALIEN_SPAWNER_CHILD_31_SLOW_0D: AlienSpawnerSpec(
         timer=2.0,
         limit=100,
         interval=6.0,
-        child_template_id=0x31,
+        child_template_id=SpawnId.LIZARD_RANDOM_31,
         size=32.0,
         health=50.0,
         move_speed=1.3,
         reward_value=1000.0,
         tint=(0.9, 0.8, 0.4, 1.0),
     ),
-    0x10: AlienSpawnerSpec(
+    SpawnId.ALIEN_SPAWNER_CHILD_32_FAST_10: AlienSpawnerSpec(
         timer=1.5,
         limit=100,
         interval=2.3,
-        child_template_id=0x32,
+        child_template_id=SpawnId.SPIDER_SP1_RANDOM_32,
         size=32.0,
         health=50.0,
         move_speed=2.8,
@@ -925,7 +1007,7 @@ class GridFormationSpec:
 
 
 CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
-    0x21: ConstantSpawnSpec(
+    SpawnId.ALIEN_CONST_PURPLE_GHOST_21: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
         health=53.0,
         move_speed=1.7,
@@ -934,7 +1016,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
         size=55.0,
         contact_damage=8.0,
     ),
-    0x22: ConstantSpawnSpec(
+    SpawnId.ALIEN_CONST_GREEN_GHOST_22: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
         health=25.0,
         move_speed=1.7,
@@ -943,7 +1025,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
         size=50.0,
         contact_damage=8.0,
     ),
-    0x23: ConstantSpawnSpec(
+    SpawnId.ALIEN_CONST_GREEN_GHOST_SMALL_23: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
         health=5.0,
         move_speed=1.7,
@@ -952,7 +1034,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
         size=45.0,
         contact_damage=8.0,
     ),
-    0x24: ConstantSpawnSpec(
+    SpawnId.ALIEN_CONST_GREEN_24: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
         health=20.0,
         move_speed=2.0,
@@ -961,7 +1043,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
         size=50.0,
         contact_damage=4.0,
     ),
-    0x25: ConstantSpawnSpec(
+    SpawnId.ALIEN_CONST_GREEN_SMALL_25: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
         health=25.0,
         move_speed=2.5,
@@ -970,7 +1052,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
         size=30.0,
         contact_damage=3.0,
     ),
-    0x26: ConstantSpawnSpec(
+    SpawnId.ALIEN_CONST_PALE_GREEN_26: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
         health=50.0,
         move_speed=2.2,
@@ -979,7 +1061,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
         size=45.0,
         contact_damage=10.0,
     ),
-    0x27: ConstantSpawnSpec(
+    SpawnId.ALIEN_CONST_WEAPON_BONUS_27: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
         health=50.0,
         move_speed=2.1,
@@ -991,7 +1073,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
         bonus_id=BonusId.WEAPON,
         bonus_duration_override=5,
     ),
-    0x28: ConstantSpawnSpec(
+    SpawnId.ALIEN_CONST_PURPLE_28: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
         health=50.0,
         move_speed=1.7,
@@ -1000,7 +1082,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
         size=55.0,
         contact_damage=8.0,
     ),
-    0x29: ConstantSpawnSpec(
+    SpawnId.ALIEN_CONST_GREY_BRUTE_29: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
         health=800.0,
         move_speed=2.5,
@@ -1009,7 +1091,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
         size=70.0,
         contact_damage=20.0,
     ),
-    0x2A: ConstantSpawnSpec(
+    SpawnId.ALIEN_CONST_GREY_FAST_2A: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
         health=50.0,
         move_speed=3.1,
@@ -1018,7 +1100,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
         size=60.0,
         contact_damage=8.0,
     ),
-    0x2B: ConstantSpawnSpec(
+    SpawnId.ALIEN_CONST_RED_FAST_2B: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
         health=30.0,
         move_speed=3.6,
@@ -1027,7 +1109,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
         size=35.0,
         contact_damage=20.0,
     ),
-    0x2C: ConstantSpawnSpec(
+    SpawnId.ALIEN_CONST_RED_BOSS_2C: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
         health=3800.0,
         move_speed=2.0,
@@ -1036,7 +1118,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
         size=80.0,
         contact_damage=40.0,
     ),
-    0x2D: ConstantSpawnSpec(
+    SpawnId.ALIEN_CONST_CYAN_AI2_2D: ConstantSpawnSpec(
         type_id=CreatureTypeId.ALIEN,
         health=45.0,
         move_speed=3.1,
@@ -1046,7 +1128,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
         contact_damage=3.0,
         ai_mode=2,
     ),
-    0x2F: ConstantSpawnSpec(
+    SpawnId.LIZARD_CONST_GREY_2F: ConstantSpawnSpec(
         type_id=CreatureTypeId.LIZARD,
         health=20.0,
         move_speed=2.5,
@@ -1055,7 +1137,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
         size=45.0,
         contact_damage=4.0,
     ),
-    0x30: ConstantSpawnSpec(
+    SpawnId.LIZARD_CONST_YELLOW_BOSS_30: ConstantSpawnSpec(
         type_id=CreatureTypeId.LIZARD,
         health=1000.0,
         move_speed=2.0,
@@ -1064,7 +1146,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
         size=65.0,
         contact_damage=10.0,
     ),
-    0x3A: ConstantSpawnSpec(
+    SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A: ConstantSpawnSpec(
         type_id=CreatureTypeId.SPIDER_SP1,
         health=4500.0,
         move_speed=2.0,
@@ -1076,7 +1158,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
         orbit_angle=0.9,
         ranged_projectile_type=9,
     ),
-    0x3B: ConstantSpawnSpec(
+    SpawnId.SPIDER_SP1_CONST_RED_BOSS_3B: ConstantSpawnSpec(
         type_id=CreatureTypeId.SPIDER_SP1,
         health=1200.0,
         move_speed=2.0,
@@ -1085,7 +1167,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
         size=70.0,
         contact_damage=20.0,
     ),
-    0x3C: ConstantSpawnSpec(
+    SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C: ConstantSpawnSpec(
         type_id=CreatureTypeId.SPIDER_SP1,
         health=200.0,
         move_speed=2.0,
@@ -1098,7 +1180,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
         orbit_angle=0.4,
         ranged_projectile_type=26,
     ),
-    0x3E: ConstantSpawnSpec(
+    SpawnId.SPIDER_SP1_CONST_WHITE_FAST_3E: ConstantSpawnSpec(
         type_id=CreatureTypeId.SPIDER_SP1,
         health=1000.0,
         move_speed=2.8,
@@ -1107,7 +1189,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
         size=64.0,
         contact_damage=40.0,
     ),
-    0x3F: ConstantSpawnSpec(
+    SpawnId.SPIDER_SP1_CONST_BROWN_SMALL_3F: ConstantSpawnSpec(
         type_id=CreatureTypeId.SPIDER_SP1,
         health=200.0,
         move_speed=2.3,
@@ -1116,7 +1198,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
         size=35.0,
         contact_damage=20.0,
     ),
-    0x40: ConstantSpawnSpec(
+    SpawnId.SPIDER_SP1_CONST_BLUE_40: ConstantSpawnSpec(
         type_id=CreatureTypeId.SPIDER_SP1,
         health=70.0,
         move_speed=2.2,
@@ -1125,7 +1207,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
         size=45.0,
         contact_damage=5.0,
     ),
-    0x42: ConstantSpawnSpec(
+    SpawnId.ZOMBIE_CONST_GREY_42: ConstantSpawnSpec(
         type_id=CreatureTypeId.ZOMBIE,
         health=200.0,
         move_speed=1.7,
@@ -1134,7 +1216,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
         size=45.0,
         contact_damage=15.0,
     ),
-    0x43: ConstantSpawnSpec(
+    SpawnId.ZOMBIE_CONST_GREEN_BRUTE_43: ConstantSpawnSpec(
         type_id=CreatureTypeId.ZOMBIE,
         health=2000.0,
         move_speed=2.1,
@@ -1146,7 +1228,7 @@ CONSTANT_SPAWN_TEMPLATES: dict[int, ConstantSpawnSpec] = {
 }
 
 GRID_FORMATIONS: dict[int, GridFormationSpec] = {
-    0x14: GridFormationSpec(
+    SpawnId.FORMATION_GRID_ALIEN_GREEN_14: GridFormationSpec(
         parent=ConstantSpawnSpec(
             type_id=CreatureTypeId.ALIEN,
             health=1500.0,
@@ -1171,7 +1253,7 @@ GRID_FORMATIONS: dict[int, GridFormationSpec] = {
         y_range=range(128, 257, 16),
         apply_fallback=True,
     ),
-    0x15: GridFormationSpec(
+    SpawnId.FORMATION_GRID_ALIEN_WHITE_15: GridFormationSpec(
         parent=ConstantSpawnSpec(
             type_id=CreatureTypeId.ALIEN,
             health=1500.0,
@@ -1196,7 +1278,7 @@ GRID_FORMATIONS: dict[int, GridFormationSpec] = {
         y_range=range(128, 257, 16),
         apply_fallback=True,
     ),
-    0x16: GridFormationSpec(
+    SpawnId.FORMATION_GRID_LIZARD_WHITE_16: GridFormationSpec(
         parent=ConstantSpawnSpec(
             type_id=CreatureTypeId.LIZARD,
             health=1500.0,
@@ -1221,7 +1303,7 @@ GRID_FORMATIONS: dict[int, GridFormationSpec] = {
         y_range=range(128, 257, 16),
         apply_fallback=True,
     ),
-    0x17: GridFormationSpec(
+    SpawnId.FORMATION_GRID_SPIDER_SP1_WHITE_17: GridFormationSpec(
         parent=ConstantSpawnSpec(
             type_id=CreatureTypeId.SPIDER_SP1,
             health=1500.0,
@@ -1246,7 +1328,7 @@ GRID_FORMATIONS: dict[int, GridFormationSpec] = {
         y_range=range(128, 257, 16),
         apply_fallback=True,
     ),
-    0x18: GridFormationSpec(
+    SpawnId.FORMATION_GRID_ALIEN_BRONZE_18: GridFormationSpec(
         parent=ConstantSpawnSpec(
             type_id=CreatureTypeId.ALIEN,
             health=500.0,
@@ -1945,15 +2027,15 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
             if level < 5:
                 break
             stage = 1
-            spawns.append(SpawnTemplateCall(template_id=0x12, pos=(-164.0, 512.0), heading=heading))
-            spawns.append(SpawnTemplateCall(template_id=0x12, pos=(1188.0, 512.0), heading=heading))
+            spawns.append(SpawnTemplateCall(template_id=SpawnId.FORMATION_RING_ALIEN_8_12, pos=(-164.0, 512.0), heading=heading))
+            spawns.append(SpawnTemplateCall(template_id=SpawnId.FORMATION_RING_ALIEN_8_12, pos=(1188.0, 512.0), heading=heading))
             continue
 
         if stage == 1:
             if level < 9:
                 break
             stage = 2
-            spawns.append(SpawnTemplateCall(template_id=0x2C, pos=(1088.0, 512.0), heading=heading))
+            spawns.append(SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_RED_BOSS_2C, pos=(1088.0, 512.0), heading=heading))
             continue
 
         if stage == 2:
@@ -1962,7 +2044,7 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
             stage = 3
             step = 128.0 / 3.0
             for i in range(12):
-                spawns.append(SpawnTemplateCall(template_id=0x35, pos=(1088.0, float(i) * step + 256.0), heading=heading))
+                spawns.append(SpawnTemplateCall(template_id=SpawnId.SPIDER_SP2_RANDOM_35, pos=(1088.0, float(i) * step + 256.0), heading=heading))
             continue
 
         if stage == 3:
@@ -1970,7 +2052,7 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
                 break
             stage = 4
             for i in range(4):
-                spawns.append(SpawnTemplateCall(template_id=0x2B, pos=(1088.0, float(i) * 64.0 + 384.0), heading=heading))
+                spawns.append(SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_RED_FAST_2B, pos=(1088.0, float(i) * 64.0 + 384.0), heading=heading))
             continue
 
         if stage == 4:
@@ -1978,31 +2060,31 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
                 break
             stage = 5
             for i in range(4):
-                spawns.append(SpawnTemplateCall(template_id=0x38, pos=(1088.0, float(i) * 64.0 + 384.0), heading=heading))
+                spawns.append(SpawnTemplateCall(template_id=SpawnId.SPIDER_SP1_AI7_TIMER_38, pos=(1088.0, float(i) * 64.0 + 384.0), heading=heading))
             for i in range(4):
-                spawns.append(SpawnTemplateCall(template_id=0x38, pos=(-64.0, float(i) * 64.0 + 384.0), heading=heading))
+                spawns.append(SpawnTemplateCall(template_id=SpawnId.SPIDER_SP1_AI7_TIMER_38, pos=(-64.0, float(i) * 64.0 + 384.0), heading=heading))
             continue
 
         if stage == 5:
             if level < 17:
                 break
             stage = 6
-            spawns.append(SpawnTemplateCall(template_id=0x3A, pos=(1088.0, 512.0), heading=heading))
+            spawns.append(SpawnTemplateCall(template_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A, pos=(1088.0, 512.0), heading=heading))
             continue
 
         if stage == 6:
             if level < 19:
                 break
             stage = 7
-            spawns.append(SpawnTemplateCall(template_id=1, pos=(640.0, 512.0), heading=heading))
+            spawns.append(SpawnTemplateCall(template_id=SpawnId.SPIDER_SP2_SPLITTER_01, pos=(640.0, 512.0), heading=heading))
             continue
 
         if stage == 7:
             if level < 21:
                 break
             stage = 8
-            spawns.append(SpawnTemplateCall(template_id=1, pos=(384.0, 256.0), heading=heading))
-            spawns.append(SpawnTemplateCall(template_id=1, pos=(640.0, 768.0), heading=heading))
+            spawns.append(SpawnTemplateCall(template_id=SpawnId.SPIDER_SP2_SPLITTER_01, pos=(384.0, 256.0), heading=heading))
+            spawns.append(SpawnTemplateCall(template_id=SpawnId.SPIDER_SP2_SPLITTER_01, pos=(640.0, 768.0), heading=heading))
             continue
 
         if stage == 8:
@@ -2010,22 +2092,22 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
                 break
             stage = 9
             for i in range(4):
-                spawns.append(SpawnTemplateCall(template_id=0x3C, pos=(1088.0, float(i) * 64.0 + 384.0), heading=heading))
+                spawns.append(SpawnTemplateCall(template_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C, pos=(1088.0, float(i) * 64.0 + 384.0), heading=heading))
             for i in range(4):
-                spawns.append(SpawnTemplateCall(template_id=0x3C, pos=(-64.0, float(i) * 64.0 + 384.0), heading=heading))
+                spawns.append(SpawnTemplateCall(template_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C, pos=(-64.0, float(i) * 64.0 + 384.0), heading=heading))
             continue
 
         if stage == 9:
             if level <= 31:
                 break
             stage = 10
-            spawns.append(SpawnTemplateCall(template_id=0x3A, pos=(1088.0, 512.0), heading=heading))
-            spawns.append(SpawnTemplateCall(template_id=0x3A, pos=(-64.0, 512.0), heading=heading))
+            spawns.append(SpawnTemplateCall(template_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A, pos=(1088.0, 512.0), heading=heading))
+            spawns.append(SpawnTemplateCall(template_id=SpawnId.SPIDER_SP1_CONST_SHOCK_BOSS_3A, pos=(-64.0, 512.0), heading=heading))
             for i in range(4):
-                spawns.append(SpawnTemplateCall(template_id=0x3C, pos=(float(i) * 64.0 + 384.0, -64.0), heading=heading))
+                spawns.append(SpawnTemplateCall(template_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C, pos=(float(i) * 64.0 + 384.0, -64.0), heading=heading))
             for i in range(4):
                 spawns.append(
-                    SpawnTemplateCall(template_id=0x3C, pos=(float(i) * 64.0 + 384.0, 1088.0), heading=heading)
+                    SpawnTemplateCall(template_id=SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C, pos=(float(i) * 64.0 + 384.0, 1088.0), heading=heading)
                 )
             continue
 
@@ -2112,9 +2194,9 @@ def build_tutorial_stage3_fire_spawns() -> tuple[SpawnTemplateCall, ...]:
     """Spawn pack triggered by the stage-3 fire-key transition in `tutorial_timeline_update` (0x00408990)."""
     heading = float(math.pi)
     return (
-        SpawnTemplateCall(template_id=0x24, pos=(-164.0, 412.0), heading=heading),
-        SpawnTemplateCall(template_id=0x26, pos=(-184.0, 512.0), heading=heading),
-        SpawnTemplateCall(template_id=0x24, pos=(-154.0, 612.0), heading=heading),
+        SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=(-164.0, 412.0), heading=heading),
+        SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_PALE_GREEN_26, pos=(-184.0, 512.0), heading=heading),
+        SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=(-154.0, 612.0), heading=heading),
     )
 
 
@@ -2122,9 +2204,9 @@ def build_tutorial_stage4_clear_spawns() -> tuple[SpawnTemplateCall, ...]:
     """Spawn pack triggered by the stage-4 "all clear" transition in `tutorial_timeline_update` (0x00408990)."""
     heading = float(math.pi)
     return (
-        SpawnTemplateCall(template_id=0x24, pos=(1188.0, 412.0), heading=heading),
-        SpawnTemplateCall(template_id=0x26, pos=(1208.0, 512.0), heading=heading),
-        SpawnTemplateCall(template_id=0x24, pos=(1178.0, 612.0), heading=heading),
+        SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=(1188.0, 412.0), heading=heading),
+        SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_PALE_GREEN_26, pos=(1208.0, 512.0), heading=heading),
+        SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=(1178.0, 612.0), heading=heading),
     )
 
 
@@ -2148,17 +2230,17 @@ def build_tutorial_stage5_repeat_spawns(repeat_spawn_count: int) -> tuple[SpawnT
     if (n & 1) == 0:
         # Even: right-side spawn pack (with an off-screen bottom-right spawn).
         if n < 6:
-            spawns.append(SpawnTemplateCall(template_id=0x27, pos=(1056.0, 1056.0), heading=heading))
-        spawns.append(SpawnTemplateCall(template_id=0x24, pos=(1188.0, 1136.0), heading=heading))
-        spawns.append(SpawnTemplateCall(template_id=0x26, pos=(1208.0, 512.0), heading=heading))
-        spawns.append(SpawnTemplateCall(template_id=0x24, pos=(1178.0, 612.0), heading=heading))
+            spawns.append(SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_WEAPON_BONUS_27, pos=(1056.0, 1056.0), heading=heading))
+        spawns.append(SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=(1188.0, 1136.0), heading=heading))
+        spawns.append(SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_PALE_GREEN_26, pos=(1208.0, 512.0), heading=heading))
+        spawns.append(SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_GREEN_24, pos=(1178.0, 612.0), heading=heading))
         if n == 4:
-            spawns.append(SpawnTemplateCall(template_id=0x40, pos=(512.0, 1056.0), heading=heading))
+            spawns.append(SpawnTemplateCall(template_id=SpawnId.SPIDER_SP1_CONST_BLUE_40, pos=(512.0, 1056.0), heading=heading))
         return tuple(spawns)
 
     # Odd: left-side spawn pack.
     if n < 6:
-        spawns.append(SpawnTemplateCall(template_id=0x27, pos=(-32.0, 1056.0), heading=heading))
+        spawns.append(SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_WEAPON_BONUS_27, pos=(-32.0, 1056.0), heading=heading))
     spawns.extend(build_tutorial_stage3_fire_spawns())
     return tuple(spawns)
 
@@ -2168,7 +2250,7 @@ def build_tutorial_stage6_perks_done_spawns() -> tuple[SpawnTemplateCall, ...]:
     heading = float(math.pi)
     return (
         *build_tutorial_stage3_fire_spawns(),
-        SpawnTemplateCall(template_id=0x28, pos=(-32.0, -32.0), heading=heading),
+        SpawnTemplateCall(template_id=SpawnId.ALIEN_CONST_PURPLE_28, pos=(-32.0, -32.0), heading=heading),
         *build_tutorial_stage4_clear_spawns(),
     )
 
@@ -2209,7 +2291,7 @@ def _apply_tail(
             c.move_speed *= 1.2
 
     # Hardcore tweak for template 0x38 only.
-    if template_id == 0x38 and env.hardcore and c.move_speed is not None:
+    if template_id == SpawnId.SPIDER_SP1_AI7_TIMER_38 and env.hardcore and c.move_speed is not None:
         c.move_speed *= 0.7
 
     c.heading = final_heading
@@ -2321,7 +2403,7 @@ def _apply_grid_formation(ctx: PlanBuilder, spec: GridFormationSpec) -> None:
         _apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
 
 
-@register_template(0x00)
+@register_template(SpawnId.ZOMBIE_BOSS_SPAWNER_00)
 def _t00(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ZOMBIE
@@ -2331,7 +2413,7 @@ def _t00(ctx: PlanBuilder) -> None:
         timer=1.0,
         limit=812,
         interval=0.7,
-        child=0x41,
+        child=SpawnId.ZOMBIE_RANDOM_41,
     )
     c.size = 64.0
     c.health = 8500.0
@@ -2342,7 +2424,7 @@ def _t00(ctx: PlanBuilder) -> None:
     ctx.primary = 0
 
 
-@register_template(0x01)
+@register_template(SpawnId.SPIDER_SP2_SPLITTER_01)
 def _t01(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.SPIDER_SP2
@@ -2356,12 +2438,12 @@ def _t01(ctx: PlanBuilder) -> None:
     ctx.primary = 0
 
 
-@register_template(0x03, 0x05, 0x06)
+@register_template(SpawnId.SPIDER_SP1_RANDOM_03, SpawnId.SPIDER_SP2_RANDOM_05, SpawnId.ALIEN_RANDOM_06)
 def _t03_05_06(ctx: PlanBuilder) -> None:
     c = ctx.base
-    if ctx.template_id == 0x03:
+    if ctx.template_id == SpawnId.SPIDER_SP1_RANDOM_03:
         c.type_id = CreatureTypeId.SPIDER_SP1
-    elif ctx.template_id == 0x05:
+    elif ctx.template_id == SpawnId.SPIDER_SP2_RANDOM_05:
         c.type_id = CreatureTypeId.SPIDER_SP2
     else:
         c.type_id = CreatureTypeId.ALIEN
@@ -2374,7 +2456,7 @@ def _t03_05_06(ctx: PlanBuilder) -> None:
     ctx.primary = 0
 
 
-@register_template(0x04)
+@register_template(SpawnId.LIZARD_RANDOM_04)
 def _t04(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.LIZARD
@@ -2386,7 +2468,7 @@ def _t04(ctx: PlanBuilder) -> None:
     ctx.primary = 0
 
 
-@register_template(0x0E)
+@register_template(SpawnId.ALIEN_SPAWNER_RING_24_0E)
 def _t0e(ctx: PlanBuilder) -> None:
     parent = ctx.base
     parent.type_id = CreatureTypeId.ALIEN
@@ -2396,7 +2478,7 @@ def _t0e(ctx: PlanBuilder) -> None:
         timer=1.5,
         limit=64,
         interval=1.05,
-        child=0x1C,
+        child=SpawnId.AI1_LIZARD_BLUE_TINT_1C,
     )
     parent.size = 32.0
     parent.health = 50.0
@@ -2424,7 +2506,7 @@ def _t0e(ctx: PlanBuilder) -> None:
     )
 
 
-@register_template(0x0F)
+@register_template(SpawnId.ALIEN_CONST_BROWN_TRANSPARENT_0F)
 def _t0f(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ALIEN
@@ -2437,7 +2519,7 @@ def _t0f(ctx: PlanBuilder) -> None:
     ctx.primary = 0
 
 
-@register_template(0x11)
+@register_template(SpawnId.FORMATION_CHAIN_LIZARD_4_11)
 def _t11(ctx: PlanBuilder) -> None:
     parent = ctx.base
     parent.type_id = CreatureTypeId.LIZARD
@@ -2486,7 +2568,7 @@ def _t11(ctx: PlanBuilder) -> None:
     _apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
 
 
-@register_template(0x12)
+@register_template(SpawnId.FORMATION_RING_ALIEN_8_12)
 def _t12(ctx: PlanBuilder) -> None:
     parent = ctx.base
     parent.type_id = CreatureTypeId.ALIEN
@@ -2520,7 +2602,7 @@ def _t12(ctx: PlanBuilder) -> None:
     _apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
 
 
-@register_template(0x13)
+@register_template(SpawnId.FORMATION_CHAIN_ALIEN_10_13)
 def _t13(ctx: PlanBuilder) -> None:
     parent = ctx.base
     parent.type_id = CreatureTypeId.ALIEN
@@ -2567,7 +2649,7 @@ def _t13(ctx: PlanBuilder) -> None:
     _apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
 
 
-@register_template(0x19)
+@register_template(SpawnId.FORMATION_RING_ALIEN_5_19)
 def _t19(ctx: PlanBuilder) -> None:
     parent = ctx.base
     parent.type_id = CreatureTypeId.ALIEN
@@ -2599,7 +2681,7 @@ def _t19(ctx: PlanBuilder) -> None:
     _apply_unhandled_creature_type_fallback(ctx.creatures, ctx.primary)
 
 
-@register_template(0x1A, 0x1B, 0x1C)
+@register_template(SpawnId.AI1_ALIEN_BLUE_TINT_1A, SpawnId.AI1_SPIDER_SP1_BLUE_TINT_1B, SpawnId.AI1_LIZARD_BLUE_TINT_1C)
 def _t1a_1b_1c(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.ai_mode = 1
@@ -2607,10 +2689,10 @@ def _t1a_1b_1c(ctx: PlanBuilder) -> None:
     c.move_speed = 2.4
     c.reward_value = 125.0
 
-    if ctx.template_id == 0x1A:
+    if ctx.template_id == SpawnId.AI1_ALIEN_BLUE_TINT_1A:
         c.type_id = CreatureTypeId.ALIEN
         c.health = 50.0
-    elif ctx.template_id == 0x1B:
+    elif ctx.template_id == SpawnId.AI1_SPIDER_SP1_BLUE_TINT_1B:
         c.type_id = CreatureTypeId.SPIDER_SP1
         c.health = 40.0
     else:
@@ -2623,7 +2705,7 @@ def _t1a_1b_1c(ctx: PlanBuilder) -> None:
     ctx.primary = 0
 
 
-@register_template(0x1D)
+@register_template(SpawnId.ALIEN_RANDOM_1D)
 def _t1d(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ALIEN
@@ -2644,7 +2726,7 @@ def _t1d(ctx: PlanBuilder) -> None:
     ctx.primary = 0
 
 
-@register_template(0x1E)
+@register_template(SpawnId.ALIEN_RANDOM_1E)
 def _t1e(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ALIEN
@@ -2665,7 +2747,7 @@ def _t1e(ctx: PlanBuilder) -> None:
     ctx.primary = 0
 
 
-@register_template(0x1F)
+@register_template(SpawnId.ALIEN_RANDOM_1F)
 def _t1f(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ALIEN
@@ -2686,7 +2768,7 @@ def _t1f(ctx: PlanBuilder) -> None:
     ctx.primary = 0
 
 
-@register_template(0x20)
+@register_template(SpawnId.ALIEN_RANDOM_GREEN_20)
 def _t20(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ALIEN
@@ -2701,7 +2783,7 @@ def _t20(ctx: PlanBuilder) -> None:
     ctx.primary = 0
 
 
-@register_template(0x2E)
+@register_template(SpawnId.LIZARD_RANDOM_2E)
 def _t2e(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.LIZARD
@@ -2721,7 +2803,7 @@ def _t2e(ctx: PlanBuilder) -> None:
     ctx.primary = 0
 
 
-@register_template(0x31)
+@register_template(SpawnId.LIZARD_RANDOM_31)
 def _t31(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.LIZARD
@@ -2734,7 +2816,7 @@ def _t31(ctx: PlanBuilder) -> None:
     ctx.primary = 0
 
 
-@register_template(0x32)
+@register_template(SpawnId.SPIDER_SP1_RANDOM_32)
 def _t32(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.SPIDER_SP1
@@ -2747,7 +2829,7 @@ def _t32(ctx: PlanBuilder) -> None:
     ctx.primary = 0
 
 
-@register_template(0x33)
+@register_template(SpawnId.SPIDER_SP1_RANDOM_RED_33)
 def _t33(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.SPIDER_SP1
@@ -2759,7 +2841,7 @@ def _t33(ctx: PlanBuilder) -> None:
     ctx.primary = 0
 
 
-@register_template(0x34)
+@register_template(SpawnId.SPIDER_SP1_RANDOM_GREEN_34)
 def _t34(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.SPIDER_SP1
@@ -2771,7 +2853,7 @@ def _t34(ctx: PlanBuilder) -> None:
     ctx.primary = 0
 
 
-@register_template(0x35)
+@register_template(SpawnId.SPIDER_SP2_RANDOM_35)
 def _t35(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.SPIDER_SP2
@@ -2783,7 +2865,7 @@ def _t35(ctx: PlanBuilder) -> None:
     ctx.primary = 0
 
 
-@register_template(0x36)
+@register_template(SpawnId.ALIEN_AI7_ORBITER_36)
 def _t36(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ALIEN
@@ -2799,7 +2881,7 @@ def _t36(ctx: PlanBuilder) -> None:
     ctx.primary = 0
 
 
-@register_template(0x37)
+@register_template(SpawnId.SPIDER_SP2_RANGED_VARIANT_37)
 def _t37(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.SPIDER_SP2
@@ -2813,7 +2895,7 @@ def _t37(ctx: PlanBuilder) -> None:
     ctx.primary = 0
 
 
-@register_template(0x38)
+@register_template(SpawnId.SPIDER_SP1_AI7_TIMER_38)
 def _t38(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.SPIDER_SP1
@@ -2828,7 +2910,7 @@ def _t38(ctx: PlanBuilder) -> None:
     ctx.primary = 0
 
 
-@register_template(0x39)
+@register_template(SpawnId.SPIDER_SP1_AI7_TIMER_WEAK_39)
 def _t39(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.SPIDER_SP1
@@ -2843,7 +2925,7 @@ def _t39(ctx: PlanBuilder) -> None:
     ctx.primary = 0
 
 
-@register_template(0x3D)
+@register_template(SpawnId.SPIDER_SP1_RANDOM_3D)
 def _t3d(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.SPIDER_SP1
@@ -2858,7 +2940,7 @@ def _t3d(ctx: PlanBuilder) -> None:
     ctx.primary = 0
 
 
-@register_template(0x41)
+@register_template(SpawnId.ZOMBIE_RANDOM_41)
 def _t41(ctx: PlanBuilder) -> None:
     c = ctx.base
     c.type_id = CreatureTypeId.ZOMBIE
