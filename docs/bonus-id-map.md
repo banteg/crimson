@@ -6,6 +6,7 @@ tags:
 # Bonus ID map
 
 This map is derived from `bonus_metadata_init`, which builds the bonus metadata table at `bonus_meta_label`.
+See also: [Bonus drop rates](bonus-drop-rates.md).
 The entry index is the bonus type id used by `bonus_apply` and `bonus_spawn_at`.
 
 Table fields:

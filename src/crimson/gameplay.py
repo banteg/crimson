@@ -704,19 +704,18 @@ def _bonus_enabled(bonus_id: int) -> bool:
 
 
 def _bonus_id_from_roll(roll: int, rng: Crand) -> int:
-    if roll <= 13:
+    # Mirrors bonus_pick_random_type (0x412470): r = rand() % 0xA2 (0..161),
+    # Points if r <= 12, Energizer if r == 13 and (rand & 0x3f) == 0, else
+    # bucketed ids 3..14 with a 10-step loop that wraps every 120 counts.
+    r = roll - 1
+    if r < 0 or r >= 162:
+        return 0
+    if r <= 12:
         return int(BonusId.POINTS)
-    if roll == 14:
-        if (rng.rand() & 0x3F) == 0:
-            return int(BonusId.ENERGIZER)
-    remainder = roll - 14
-    bucket = int(BonusId.WEAPON)
-    while remainder > 10:
-        remainder -= 10
-        bucket += 1
-        if bucket >= 15:
-            return 0
-    return bucket
+    if r == 13 and (rng.rand() & 0x3F) == 0:
+        return int(BonusId.ENERGIZER)
+    bucket_index = (r - 13) % 120
+    return int(BonusId.WEAPON) + (bucket_index // 10)
 
 
 def bonus_pick_random_type(pool: BonusPool, state: "GameplayState", players: list["PlayerState"]) -> int:
