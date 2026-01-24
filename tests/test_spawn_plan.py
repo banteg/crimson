@@ -9,8 +9,6 @@ from crimson.crand import Crand
 from crimson.creatures.spawn import (
     CreatureFlags,
     CreatureTypeId,
-    SPAWN_IDS_PORTED,
-    SPAWN_IDS_VERIFIED,
     SPAWN_TEMPLATES,
     SpawnEnv,
     build_spawn_plan,
@@ -2729,5 +2727,3 @@ def test_spawn_plan_porting_is_complete() -> None:
     expected = frozenset(set(range(0x44)) - {0x02})
     actual = frozenset(entry.spawn_id for entry in SPAWN_TEMPLATES)
     assert actual == expected
-    assert SPAWN_IDS_PORTED == expected
-    assert SPAWN_IDS_VERIFIED == expected

@@ -51,7 +51,7 @@ in the plan are treated as implicit defaults for the purposes of porting.
 ## Porting workflow (repo conventions)
 
 - Implement the case in `src/crimson/creatures/spawn.py` (`build_spawn_plan`).
-- Add the id to `SPAWN_IDS_PORTED` and (once unit-tested) `SPAWN_IDS_VERIFIED`.
+- Add the id to `SPAWN_TEMPLATES` and verify via `tests/test_spawn_plan.py`.
 - Add/update tests in `tests/test_spawn_plan.py` (RNG consumption is part of the contract).
 - Regenerate the spawn-id checklist in `docs/creatures/spawning.md` via `scripts/gen_spawn_templates.py`.
 
