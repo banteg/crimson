@@ -1024,6 +1024,67 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
     return stage, tuple(spawns)
 
 
+def build_tutorial_stage3_fire_spawns() -> tuple[SpawnTemplateCall, ...]:
+    """Spawn pack triggered by the stage-3 fire-key transition in `tutorial_timeline_update` (0x00408990)."""
+    heading = float(math.pi)
+    return (
+        SpawnTemplateCall(template_id=0x24, pos=(-164.0, 412.0), heading=heading),
+        SpawnTemplateCall(template_id=0x26, pos=(-184.0, 512.0), heading=heading),
+        SpawnTemplateCall(template_id=0x24, pos=(-154.0, 612.0), heading=heading),
+    )
+
+
+def build_tutorial_stage4_clear_spawns() -> tuple[SpawnTemplateCall, ...]:
+    """Spawn pack triggered by the stage-4 "all clear" transition in `tutorial_timeline_update` (0x00408990)."""
+    heading = float(math.pi)
+    return (
+        SpawnTemplateCall(template_id=0x24, pos=(1188.0, 412.0), heading=heading),
+        SpawnTemplateCall(template_id=0x26, pos=(1208.0, 512.0), heading=heading),
+        SpawnTemplateCall(template_id=0x24, pos=(1178.0, 612.0), heading=heading),
+    )
+
+
+def build_tutorial_stage5_repeat_spawns(repeat_spawn_count: int) -> tuple[SpawnTemplateCall, ...]:
+    """Spawn packs triggered by the stage-5 repeat loop in `tutorial_timeline_update` (0x00408990).
+
+    `repeat_spawn_count` is the incremented counter value (1..7). When it reaches 8, the tutorial
+    transitions instead of spawning more creatures.
+    """
+    n = int(repeat_spawn_count)
+    if n < 1 or 8 <= n:
+        return ()
+
+    heading = float(math.pi)
+    spawns: list[SpawnTemplateCall] = []
+
+    if (n & 1) == 0:
+        # Even: right-side spawn pack (with an off-screen bottom-right spawn).
+        if n < 6:
+            spawns.append(SpawnTemplateCall(template_id=0x27, pos=(1056.0, 1056.0), heading=heading))
+        spawns.append(SpawnTemplateCall(template_id=0x24, pos=(1188.0, 1136.0), heading=heading))
+        spawns.append(SpawnTemplateCall(template_id=0x26, pos=(1208.0, 512.0), heading=heading))
+        spawns.append(SpawnTemplateCall(template_id=0x24, pos=(1178.0, 612.0), heading=heading))
+        if n == 4:
+            spawns.append(SpawnTemplateCall(template_id=0x40, pos=(512.0, 1056.0), heading=heading))
+        return tuple(spawns)
+
+    # Odd: left-side spawn pack.
+    if n < 6:
+        spawns.append(SpawnTemplateCall(template_id=0x27, pos=(-32.0, 1056.0), heading=heading))
+    spawns.extend(build_tutorial_stage3_fire_spawns())
+    return tuple(spawns)
+
+
+def build_tutorial_stage6_perks_done_spawns() -> tuple[SpawnTemplateCall, ...]:
+    """Spawn pack triggered by the stage-6 "no perks pending" transition in `tutorial_timeline_update` (0x00408990)."""
+    heading = float(math.pi)
+    return (
+        *build_tutorial_stage3_fire_spawns(),
+        SpawnTemplateCall(template_id=0x28, pos=(-32.0, -32.0), heading=heading),
+        *build_tutorial_stage4_clear_spawns(),
+    )
+
+
 def _apply_tail(
     template_id: int,
     plan_creatures: list[CreatureInit],
