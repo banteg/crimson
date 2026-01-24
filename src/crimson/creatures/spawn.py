@@ -21,6 +21,35 @@ import math
 from ..bonuses import BonusId
 from ..crand import Crand
 
+__all__ = [
+    "BurstEffect",
+    "CreatureFlags",
+    "CreatureInit",
+    "CreatureTypeId",
+    "SPAWN_IDS_PORTED",
+    "SPAWN_IDS_VERIFIED",
+    "SPAWN_ID_TO_TEMPLATE",
+    "SPAWN_TEMPLATES",
+    "SpawnEnv",
+    "SpawnPlan",
+    "SpawnSlotInit",
+    "SpawnTemplate",
+    "SpawnTemplateCall",
+    "TYPE_ID_TO_NAME",
+    "advance_survival_spawn_stage",
+    "build_rush_mode_spawn_creature",
+    "build_spawn_plan",
+    "build_survival_spawn_creature",
+    "build_tutorial_stage3_fire_spawns",
+    "build_tutorial_stage4_clear_spawns",
+    "build_tutorial_stage5_repeat_spawns",
+    "build_tutorial_stage6_perks_done_spawns",
+    "spawn_id_label",
+    "tick_rush_mode_spawns",
+    "tick_spawn_slot",
+    "tick_survival_wave_spawns",
+]
+
 
 class CreatureTypeId(IntEnum):
     ZOMBIE = 0
@@ -747,6 +776,111 @@ SPAWN_TEMPLATES = [
 SPAWN_ID_TO_TEMPLATE = {entry.spawn_id: entry for entry in SPAWN_TEMPLATES}
 
 
+@dataclass(frozen=True, slots=True)
+class AlienSpawnerSpec:
+    timer: float
+    limit: int
+    interval: float
+    child_template_id: int
+    size: float
+    health: float
+    move_speed: float
+    reward_value: float
+    tint: tuple[float, float, float, float]
+
+
+ALIEN_SPAWNER_TEMPLATES: dict[int, AlienSpawnerSpec] = {
+    0x07: AlienSpawnerSpec(
+        timer=1.0,
+        limit=100,
+        interval=2.2,
+        child_template_id=0x1D,
+        size=50.0,
+        health=1000.0,
+        move_speed=2.0,
+        reward_value=3000.0,
+        tint=(1.0, 1.0, 1.0, 1.0),
+    ),
+    0x08: AlienSpawnerSpec(
+        timer=1.0,
+        limit=100,
+        interval=2.8,
+        child_template_id=0x1D,
+        size=50.0,
+        health=1000.0,
+        move_speed=2.0,
+        reward_value=3000.0,
+        tint=(1.0, 1.0, 1.0, 1.0),
+    ),
+    0x09: AlienSpawnerSpec(
+        timer=1.0,
+        limit=0x10,
+        interval=2.0,
+        child_template_id=0x1D,
+        size=40.0,
+        health=450.0,
+        move_speed=2.0,
+        reward_value=1000.0,
+        tint=(1.0, 1.0, 1.0, 1.0),
+    ),
+    0x0A: AlienSpawnerSpec(
+        timer=2.0,
+        limit=100,
+        interval=5.0,
+        child_template_id=0x32,
+        size=55.0,
+        health=1000.0,
+        move_speed=1.5,
+        reward_value=3000.0,
+        tint=(0.8, 0.7, 0.4, 1.0),
+    ),
+    0x0B: AlienSpawnerSpec(
+        timer=2.0,
+        limit=100,
+        interval=6.0,
+        child_template_id=0x3C,
+        size=65.0,
+        health=3500.0,
+        move_speed=1.5,
+        reward_value=5000.0,
+        tint=(0.9, 0.1, 0.1, 1.0),
+    ),
+    0x0C: AlienSpawnerSpec(
+        timer=1.5,
+        limit=100,
+        interval=2.0,
+        child_template_id=0x31,
+        size=32.0,
+        health=50.0,
+        move_speed=2.8,
+        reward_value=1000.0,
+        tint=(0.9, 0.8, 0.4, 1.0),
+    ),
+    0x0D: AlienSpawnerSpec(
+        timer=2.0,
+        limit=100,
+        interval=6.0,
+        child_template_id=0x31,
+        size=32.0,
+        health=50.0,
+        move_speed=1.3,
+        reward_value=1000.0,
+        tint=(0.9, 0.8, 0.4, 1.0),
+    ),
+    0x10: AlienSpawnerSpec(
+        timer=1.5,
+        limit=100,
+        interval=2.3,
+        child_template_id=0x32,
+        size=32.0,
+        health=50.0,
+        move_speed=2.8,
+        reward_value=800.0,
+        tint=(0.9, 0.8, 0.4, 1.0),
+    ),
+}
+
+
 def spawn_id_label(spawn_id: int) -> str:
     entry = SPAWN_ID_TO_TEMPLATE.get(spawn_id)
     if entry is None or entry.creature is None:
@@ -843,6 +977,29 @@ class SpawnPlan:
     spawn_slots: tuple[SpawnSlotInit, ...]
     effects: tuple[BurstEffect, ...]
     primary: int
+
+
+def add_spawn_slot(
+    spawn_slots: list[SpawnSlotInit],
+    *,
+    owner_creature: int,
+    timer: float,
+    limit: int,
+    interval: float,
+    child_template_id: int,
+) -> int:
+    slot_idx = len(spawn_slots)
+    spawn_slots.append(
+        SpawnSlotInit(
+            owner_creature=owner_creature,
+            timer=timer,
+            count=0,
+            limit=limit,
+            interval=interval,
+            child_template_id=child_template_id,
+        )
+    )
+    return slot_idx
 
 
 def tick_spawn_slot(slot: SpawnSlotInit, frame_dt: float) -> int | None:
@@ -1587,190 +1744,24 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.tint_b = min(max(tint_b, 0.0), 1.0)
         c.contact_damage = float(rng.rand() % 10) + 4.0
         primary_idx = 0
-    elif template_id in (0x07, 0x08):
+    elif template_id in ALIEN_SPAWNER_TEMPLATES:
         c = creatures[0]
         c.type_id = CreatureTypeId.ALIEN
         c.flags = CreatureFlags.ANIM_PING_PONG
-        slot_idx = len(spawn_slots)
-        c.spawn_slot = slot_idx
-        interval = 2.2 if template_id == 0x07 else 2.8
-        spawn_slots.append(
-            SpawnSlotInit(
-                owner_creature=0,
-                timer=1.0,
-                count=0,
-                limit=100,
-                interval=interval,
-                child_template_id=0x1D,
-            )
+        spec = ALIEN_SPAWNER_TEMPLATES[template_id]
+        c.spawn_slot = add_spawn_slot(
+            spawn_slots,
+            owner_creature=0,
+            timer=spec.timer,
+            limit=spec.limit,
+            interval=spec.interval,
+            child_template_id=spec.child_template_id,
         )
-        c.size = 50.0
-        c.health = 1000.0
-        c.move_speed = 2.0
-        c.reward_value = 3000.0
-        c.tint_a = 1.0
-        c.tint_r = 1.0
-        c.tint_g = 1.0
-        c.tint_b = 1.0
-        c.contact_damage = 0.0
-        primary_idx = 0
-    elif template_id == 0x09:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ALIEN
-        c.flags = CreatureFlags.ANIM_PING_PONG
-        slot_idx = len(spawn_slots)
-        c.spawn_slot = slot_idx
-        spawn_slots.append(
-            SpawnSlotInit(
-                owner_creature=0,
-                timer=1.0,
-                count=0,
-                limit=0x10,
-                interval=2.0,
-                child_template_id=0x1D,
-            )
-        )
-        c.size = 40.0
-        c.health = 450.0
-        c.move_speed = 2.0
-        c.reward_value = 1000.0
-        c.tint_a = 1.0
-        c.tint_r = 1.0
-        c.tint_g = 1.0
-        c.tint_b = 1.0
-        c.contact_damage = 0.0
-        primary_idx = 0
-    elif template_id == 0x0A:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ALIEN
-        c.flags = CreatureFlags.ANIM_PING_PONG
-        slot_idx = len(spawn_slots)
-        c.spawn_slot = slot_idx
-        spawn_slots.append(
-            SpawnSlotInit(
-                owner_creature=0,
-                timer=2.0,
-                count=0,
-                limit=100,
-                interval=5.0,
-                child_template_id=0x32,
-            )
-        )
-        c.size = 55.0
-        c.health = 1000.0
-        c.move_speed = 1.5
-        c.reward_value = 3000.0
-        c.tint_a = 1.0
-        c.tint_r = 0.8
-        c.tint_g = 0.7
-        c.tint_b = 0.4
-        c.contact_damage = 0.0
-        primary_idx = 0
-    elif template_id == 0x0B:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ALIEN
-        c.flags = CreatureFlags.ANIM_PING_PONG
-        slot_idx = len(spawn_slots)
-        c.spawn_slot = slot_idx
-        spawn_slots.append(
-            SpawnSlotInit(
-                owner_creature=0,
-                timer=2.0,
-                count=0,
-                limit=100,
-                interval=6.0,
-                child_template_id=0x3C,
-            )
-        )
-        c.size = 65.0
-        c.health = 3500.0
-        c.move_speed = 1.5
-        c.reward_value = 5000.0
-        c.tint_a = 1.0
-        c.tint_r = 0.9
-        c.tint_g = 0.1
-        c.tint_b = 0.1
-        c.contact_damage = 0.0
-        primary_idx = 0
-    elif template_id == 0x0C:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ALIEN
-        c.flags = CreatureFlags.ANIM_PING_PONG
-        slot_idx = len(spawn_slots)
-        c.spawn_slot = slot_idx
-        spawn_slots.append(
-            SpawnSlotInit(
-                owner_creature=0,
-                timer=1.5,
-                count=0,
-                limit=100,
-                interval=2.0,
-                child_template_id=0x31,
-            )
-        )
-        c.size = 32.0
-        c.health = 50.0
-        c.move_speed = 2.8
-        c.reward_value = 1000.0
-        # Shared "alien spawner" tail for this branch sets these (before LAB_004310b8).
-        c.tint_a = 1.0
-        c.tint_r = 0.9
-        c.tint_g = 0.8
-        c.tint_b = 0.4
-        c.contact_damage = 0.0
-        primary_idx = 0
-    elif template_id == 0x0D:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ALIEN
-        c.flags = CreatureFlags.ANIM_PING_PONG
-        slot_idx = len(spawn_slots)
-        c.spawn_slot = slot_idx
-        spawn_slots.append(
-            SpawnSlotInit(
-                owner_creature=0,
-                timer=2.0,
-                count=0,
-                limit=100,
-                interval=6.0,
-                child_template_id=0x31,
-            )
-        )
-        c.size = 32.0
-        c.health = 50.0
-        c.move_speed = 1.3
-        c.reward_value = 1000.0
-        # Shared "alien spawner" tail for this branch sets these (before LAB_004310b8).
-        c.tint_a = 1.0
-        c.tint_r = 0.9
-        c.tint_g = 0.8
-        c.tint_b = 0.4
-        c.contact_damage = 0.0
-        primary_idx = 0
-    elif template_id == 0x10:
-        c = creatures[0]
-        c.type_id = CreatureTypeId.ALIEN
-        c.flags = CreatureFlags.ANIM_PING_PONG
-        slot_idx = len(spawn_slots)
-        c.spawn_slot = slot_idx
-        spawn_slots.append(
-            SpawnSlotInit(
-                owner_creature=0,
-                timer=1.5,
-                count=0,
-                limit=100,
-                interval=2.3,
-                child_template_id=0x32,
-            )
-        )
-        c.size = 32.0
-        c.health = 50.0
-        c.move_speed = 2.8
-        c.reward_value = 800.0
-        # Shared "alien spawner" tail for this branch sets these (before LAB_004310b8).
-        c.tint_a = 1.0
-        c.tint_r = 0.9
-        c.tint_g = 0.8
-        c.tint_b = 0.4
+        c.size = spec.size
+        c.health = spec.health
+        c.move_speed = spec.move_speed
+        c.reward_value = spec.reward_value
+        c.tint_r, c.tint_g, c.tint_b, c.tint_a = spec.tint
         c.contact_damage = 0.0
         primary_idx = 0
     elif template_id == 0x0E:
