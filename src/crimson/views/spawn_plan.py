@@ -6,7 +6,15 @@ import math
 import pyray as rl
 
 from ..crand import Crand
-from ..creatures.spawn import CreatureTypeId, SPAWN_TEMPLATES, SpawnEnv, build_spawn_plan
+from ..creatures.spawn import (
+    CreatureTypeId,
+    SPAWN_TEMPLATES,
+    SpawnEnv,
+    SpawnSlotInit,
+    build_spawn_plan,
+    spawn_id_label,
+    tick_spawn_slot,
+)
 from .font_small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from .registry import register_view
 from grim.view import View, ViewContext
@@ -66,6 +74,11 @@ class SpawnPlanView:
         self._plan_summary = None
         self._error = None
 
+        self._sim_running = False
+        self._sim_time = 0.0
+        self._sim_slots: list[SpawnSlotInit] = []
+        self._sim_events: list[str] = []
+
         self._rebuild_plan()
 
     def open(self) -> None:
@@ -122,11 +135,32 @@ class SpawnPlanView:
                 effect_count=len(self._plan.effects),
                 primary_idx=self._plan.primary,
             )
+            self._reset_sim()
             self._error = None
         except Exception as exc:
             self._plan = None
             self._plan_summary = None
             self._error = str(exc)
+            self._reset_sim()
+
+    def _reset_sim(self) -> None:
+        self._sim_running = False
+        self._sim_time = 0.0
+        self._sim_events.clear()
+        self._sim_slots = []
+        if self._plan is None:
+            return
+        for slot in self._plan.spawn_slots:
+            self._sim_slots.append(
+                SpawnSlotInit(
+                    owner_creature=slot.owner_creature,
+                    timer=slot.timer,
+                    count=slot.count,
+                    limit=slot.limit,
+                    interval=slot.interval,
+                    child_template_id=slot.child_template_id,
+                )
+            )
 
     def _advance_template(self, delta: int) -> None:
         if not self._template_ids:
@@ -154,7 +188,6 @@ class SpawnPlanView:
         self._rebuild_plan()
 
     def update(self, dt: float) -> None:
-        del dt
         if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT):
             self._advance_template(1)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT):
@@ -181,6 +214,24 @@ class SpawnPlanView:
             self._adjust_difficulty(-1)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_PERIOD):
             self._adjust_difficulty(1)
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE):
+            self._sim_running = not self._sim_running
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE):
+            self._reset_sim()
+
+        if self._sim_running and self._sim_slots:
+            sim_dt = min(max(0.0, float(dt)), 0.1)
+            self._sim_time += sim_dt
+            for idx, slot in enumerate(self._sim_slots):
+                child_template_id = tick_spawn_slot(slot, sim_dt)
+                if child_template_id is None:
+                    continue
+                self._sim_events.append(
+                    f"t={self._sim_time:6.2f}  slot={idx:02d}  spawn=0x{child_template_id:02x} ({spawn_id_label(child_template_id)})"
+                )
+            if len(self._sim_events) > 12:
+                self._sim_events = self._sim_events[-12:]
 
     def _world_to_screen(self, x: float, y: float) -> tuple[float, float]:
         base_x, base_y = BASE_POS
@@ -220,7 +271,7 @@ class SpawnPlanView:
             UI_TEXT_COLOR,
             scale=0.8,
         )
-        hints = "Left/Right: id  Up/Down: seed  R: random seed  [,]: scale  H: hardcore  D: demo-mode  ,/.: difficulty"
+        hints = "Left/Right: id  Up/Down: seed  R: random seed  [,]: scale  H: hardcore  D: demo-mode  ,/.: difficulty  Space: sim  Backspace: reset"
         self._draw_ui_text(hints, margin, margin + line_h, UI_HINT_COLOR)
 
         y = margin + line_h * 2.0 + 4.0
@@ -249,6 +300,24 @@ class SpawnPlanView:
             margin,
             y,
         )
+        y += line_h
+        sim_state = "running" if self._sim_running else "paused"
+        self._draw_ui_label("sim", f"{sim_state}  t={self._sim_time:.2f}s", margin, y)
+        y += line_h
+        for idx, slot in enumerate(self._sim_slots[:3]):
+            self._draw_ui_label(
+                f"slot{idx:02d}",
+                f"timer={slot.timer:5.2f} count={slot.count:3d}/{slot.limit:<3d} interval={slot.interval:5.2f} child=0x{slot.child_template_id:02x}",
+                margin,
+                y,
+            )
+            y += line_h
+        if self._sim_events:
+            self._draw_ui_text("events:", margin, y + 2.0, UI_HINT_COLOR)
+            y += line_h
+            for ev in self._sim_events[-5:]:
+                self._draw_ui_text(ev, margin, y, UI_TEXT_COLOR)
+                y += line_h
 
         # Link lines.
         for idx, c in enumerate(self._plan.creatures):
@@ -292,4 +361,3 @@ class SpawnPlanView:
 @register_view("spawn-plan", "Spawn plan")
 def view_spawn_plan(*, ctx: ViewContext) -> View:
     return SpawnPlanView(ctx)
-
