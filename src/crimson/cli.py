@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import io
 import inspect
+import json
 import random
 import re
 from pathlib import Path
+from dataclasses import fields
 
 import typer
 from PIL import Image
@@ -286,6 +288,98 @@ def _format_cfg_value(value: object) -> str:
             return f"{text!r} (len={length})"
         return f"0x{bytes(value).hex()} (len={length})"
     return str(value)
+
+
+def _parse_int_auto(text: str) -> int:
+    try:
+        return int(text, 0)
+    except ValueError as exc:
+        raise typer.BadParameter(f"invalid integer: {text!r}") from exc
+
+
+def _dc_to_dict(obj: object) -> dict[str, object]:
+    return {f.name: getattr(obj, f.name) for f in fields(obj)}
+
+
+@app.command("spawn-plan")
+def cmd_spawn_plan(
+    template: str = typer.Argument(..., help="spawn id (e.g. 0x12)"),
+    seed: str = typer.Option("0xBEEF", help="MSVCRT rand() seed (e.g. 0xBEEF)"),
+    x: float = typer.Option(512.0, help="spawn x"),
+    y: float = typer.Option(512.0, help="spawn y"),
+    heading: float = typer.Option(0.0, help="heading (radians)"),
+    terrain_w: float = typer.Option(1024.0, help="terrain width"),
+    terrain_h: float = typer.Option(1024.0, help="terrain height"),
+    demo_mode_active: bool = typer.Option(True, help="when true, burst effect is skipped"),
+    hardcore: bool = typer.Option(False, help="hardcore mode"),
+    difficulty: int = typer.Option(0, help="difficulty level"),
+    as_json: bool = typer.Option(False, "--json", help="print JSON"),
+) -> None:
+    """Build and print a spawn plan for a single template id."""
+    template_id = _parse_int_auto(template)
+    rng = Crand(_parse_int_auto(seed))
+    env = SpawnEnv(
+        terrain_width=terrain_w,
+        terrain_height=terrain_h,
+        demo_mode_active=demo_mode_active,
+        hardcore=hardcore,
+        difficulty_level=difficulty,
+    )
+    plan = build_spawn_plan(template_id, (x, y), heading, rng, env)
+    if as_json:
+        payload: dict[str, object] = {
+            "template_id": template_id,
+            "pos": [x, y],
+            "heading": heading,
+            "seed": _parse_int_auto(seed),
+            "env": {
+                "terrain_width": terrain_w,
+                "terrain_height": terrain_h,
+                "demo_mode_active": demo_mode_active,
+                "hardcore": hardcore,
+                "difficulty_level": difficulty,
+            },
+            "primary": plan.primary,
+            "creatures": [_dc_to_dict(c) for c in plan.creatures],
+            "spawn_slots": [_dc_to_dict(s) for s in plan.spawn_slots],
+            "effects": [_dc_to_dict(e) for e in plan.effects],
+            "rng_state": rng.state,
+        }
+        typer.echo(json.dumps(payload, indent=2, sort_keys=True))
+        return
+
+    typer.echo(f"template_id=0x{template_id:02x} ({template_id}) creature={spawn_id_label(template_id)}")
+    typer.echo(f"pos=({x:.1f},{y:.1f}) heading={heading:.6f} seed=0x{_parse_int_auto(seed):08x} rng_state=0x{rng.state:08x}")
+    typer.echo(
+        "env="
+        f"demo_mode_active={demo_mode_active} "
+        f"hardcore={hardcore} "
+        f"difficulty={difficulty} "
+        f"terrain={terrain_w:.0f}x{terrain_h:.0f}"
+    )
+    typer.echo(f"primary={plan.primary} creatures={len(plan.creatures)} slots={len(plan.spawn_slots)} effects={len(plan.effects)}")
+    typer.echo("")
+    typer.echo("creatures:")
+    for idx, c in enumerate(plan.creatures):
+        primary = "*" if idx == plan.primary else " "
+        typer.echo(
+            f"{primary}{idx:02d} type={c.type_id!s:14s} ai={c.ai_mode:2d} flags=0x{int(c.flags):03x} "
+            f"pos=({c.pos_x:7.1f},{c.pos_y:7.1f}) health={c.health!s:>6s} size={c.size!s:>6s} link={c.ai_link_parent!s:>3s} "
+            f"slot={c.spawn_slot!s:>3s}"
+        )
+    if plan.spawn_slots:
+        typer.echo("")
+        typer.echo("spawn_slots:")
+        for idx, slot in enumerate(plan.spawn_slots):
+            typer.echo(
+                f"{idx:02d} owner={slot.owner_creature:02d} timer={slot.timer:.2f} count={slot.count:3d} "
+                f"limit={slot.limit:3d} interval={slot.interval:.3f} child=0x{slot.child_template_id:02x}"
+            )
+    if plan.effects:
+        typer.echo("")
+        typer.echo("effects:")
+        for fx in plan.effects:
+            typer.echo(f"burst x={fx.x:.1f} y={fx.y:.1f} count={fx.count}")
 
 
 def main(argv: list[str] | None = None) -> None:
