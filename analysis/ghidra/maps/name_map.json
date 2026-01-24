@@ -1866,6 +1866,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x00430ad0",
+    "name": "creature_spawn_slot_alloc",
+    "signature": "int creature_spawn_slot_alloc(void)",
+    "comment": "returns first free spawn slot index (creature_spawn_slot_owner == 0); returns 0x1f if none free"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x00430af0",
     "name": "creature_spawn_template",
     "signature": "void * creature_spawn_template(int template_id, float *pos, float heading)",
