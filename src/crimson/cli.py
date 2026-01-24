@@ -10,9 +10,10 @@ import typer
 from PIL import Image
 
 from grim import jaz, paq
+from .crand import Crand
+from .creatures.spawn import SpawnEnv, build_spawn_plan, spawn_id_label
 from .quests import all_quests
 from .quests.types import QuestContext, QuestDefinition, SpawnEntry
-from .creatures.spawn import spawn_id_label
 
 
 app = typer.Typer(add_completion=False)
@@ -103,14 +104,19 @@ def _call_builder(builder, ctx: QuestContext, rng: random.Random | None) -> list
     return builder(ctx)
 
 
-def _format_entry(idx: int, entry: SpawnEntry) -> str:
+def _format_entry(idx: int, entry: SpawnEntry, *, plan_info: tuple[int, int] | None) -> str:
     creature = spawn_id_label(entry.spawn_id)
+    plan_text = ""
+    if plan_info is not None:
+        creatures_per_spawn, spawn_slots_per_spawn = plan_info
+        alloc = entry.count * creatures_per_spawn
+        plan_text = f"  alloc={alloc:3d} (x{creatures_per_spawn:2d})  slots={spawn_slots_per_spawn}"
     return (
         f"{idx:02d}  t={entry.trigger_ms:5d}  "
         f"id=0x{entry.spawn_id:02x} ({entry.spawn_id:2d})  "
         f"creature={creature:10s}  "
         f"count={entry.count:2d}  "
-        f"x={entry.x:7.1f}  y={entry.y:7.1f}  heading={entry.heading:7.3f}"
+        f"x={entry.x:7.1f}  y={entry.y:7.1f}  heading={entry.heading:7.3f}{plan_text}"
     )
 
 
@@ -147,6 +153,7 @@ def cmd_quests(
     player_count: int = typer.Option(1, help="player count"),
     seed: int | None = typer.Option(None, help="seed for randomized quests"),
     sort: bool = typer.Option(False, help="sort output by trigger time"),
+    show_plan: bool = typer.Option(False, help="include spawn-plan allocation summary"),
 ) -> None:
     """Print quest spawn scripts for a given level."""
     quest = _QUEST_DEFS.get(level)
@@ -163,8 +170,27 @@ def cmd_quests(
         entries = sorted(entries, key=lambda e: (e.trigger_ms, e.spawn_id, e.x, e.y))
     typer.echo(f"Quest {level} {title} ({len(entries)} entries)")
     typer.echo("Meta: " + "; ".join(_format_meta(quest)))
+
+    plan_cache: dict[int, tuple[int, int]] = {}
+    if show_plan:
+        env = SpawnEnv(
+            terrain_width=float(width),
+            terrain_height=float(height),
+            demo_mode_active=True,
+            hardcore=False,
+            difficulty_level=0,
+        )
+        for entry in entries:
+            if entry.spawn_id in plan_cache:
+                continue
+            plan = build_spawn_plan(entry.spawn_id, (512.0, 512.0), 0.0, Crand(0), env)
+            plan_cache[entry.spawn_id] = (len(plan.creatures), len(plan.spawn_slots))
+        total_alloc = sum(entry.count * plan_cache[entry.spawn_id][0] for entry in entries)
+        total_slots = sum(entry.count * plan_cache[entry.spawn_id][1] for entry in entries)
+        typer.echo(f"Plan: total_alloc={total_alloc} total_spawn_slots={total_slots}")
+
     for idx, entry in enumerate(entries, start=1):
-        typer.echo(_format_entry(idx, entry))
+        typer.echo(_format_entry(idx, entry, plan_info=plan_cache.get(entry.spawn_id)))
 
 
 @app.command("view")
