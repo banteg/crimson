@@ -264,6 +264,10 @@ Notes:
   `player_experience` (not a spawn id). Python models: `advance_survival_spawn_stage`,
   `tick_survival_wave_spawns`, `build_survival_spawn_creature`.
 
+- Rush mode (`rush_mode_update`, `FUN_004072b0`): spawns edge waves via `creature_spawn`
+  (type ids `2`/`3`), not `creature_spawn_template`. Python models: `tick_rush_mode_spawns`,
+  `build_rush_mode_spawn_creature`.
+
 - Tutorial timeline (`tutorial_timeline_update`, `FUN_00408990`): scripted spawns using `0x24`, `0x26`,
   `0x27`, `0x28`, `0x40`. Python models: `build_tutorial_stage3_fire_spawns`,
   `build_tutorial_stage4_clear_spawns`, `build_tutorial_stage5_repeat_spawns`,
@@ -316,6 +320,9 @@ Notes:
 - Survival mode (pure models): `src/crimson/creatures/spawn.py`
   - `advance_survival_spawn_stage`, `tick_survival_wave_spawns`, `build_survival_spawn_creature`
   - Tests: `tests/test_survival_milestones.py`, `tests/test_survival_wave.py`, `tests/test_survival_spawn.py`
+- Rush mode (pure models): `src/crimson/creatures/spawn.py`
+  - `tick_rush_mode_spawns`, `build_rush_mode_spawn_creature`
+  - Tests: `tests/test_rush_mode_spawn.py`
 - Tutorial timeline (pure models): `src/crimson/creatures/spawn.py`
   - `build_tutorial_stage3_fire_spawns`, `build_tutorial_stage4_clear_spawns`,
     `build_tutorial_stage5_repeat_spawns`, `build_tutorial_stage6_perks_done_spawns`
