@@ -13,10 +13,13 @@ from grim.assets import PaqTextureCache, load_paq_entries
 from grim.config import CrimsonConfig
 from grim.terrain_render import GroundRenderer
 
-from .creatures.spawn import CreatureFlags, CreatureTypeId, SPAWN_ID_TO_TEMPLATE
+from .crand import Crand
+from .creatures.anim import creature_anim_advance_phase, creature_anim_select_frame
+from .creatures.spawn import CreatureFlags, CreatureTypeId, SPAWN_ID_TO_TEMPLATE, SpawnEnv, build_spawn_plan
+from .projectiles import ProjectilePool, SecondaryProjectilePool
 from .views.font_grim_mono import GrimMonoFont, draw_grim_mono_text, load_grim_mono_font
 from .views.font_small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
-from .weapons import WEAPON_TABLE
+from .weapons import WEAPON_BY_ID, WEAPON_TABLE, Weapon
 
 
 WORLD_SIZE = 1024.0
@@ -82,8 +85,27 @@ class DemoCreature:
     vx: float = 0.0
     vy: float = 0.0
     hp: float = 10.0
-    phase: float = 0.0
+    size: float = 18.0
+    move_speed: float = 1.0
+    move_scale: float = 1.0
+    type_id: CreatureTypeId | None = None
+    flags: CreatureFlags = CreatureFlags(0)
+    tint_r: float | None = None
+    tint_g: float | None = None
+    tint_b: float | None = None
+    tint_a: float | None = None
+    heading: float = 0.0
+    phase_seed: float = 0.0
+    anim_phase: float = 0.0
     target_player: int | None = None
+    force_target: int = 0
+    target_x: float = 0.0
+    target_y: float = 0.0
+    target_heading: float = 0.0
+    ai_mode: int = 0
+    link_index: int = 0
+    target_offset_x: float | None = None
+    target_offset_y: float | None = None
 
 
 @dataclass(slots=True)
@@ -96,9 +118,11 @@ class DemoPlayer:
     vy: float = 0.0
     aim_x: float = 1.0
     aim_y: float = 0.0
-    fire_cooldown: float = 0.0
+    shot_cooldown: float = 0.0
     reload_timer: float = 0.0
-    clip_remaining: int | None = None
+    reload_timer_max: float = 0.0
+    ammo: int = 0
+    spread_heat: float = 0.01
     target_creature: int | None = None
     phase: float = 0.0
 
@@ -108,18 +132,6 @@ def _weapon_name(weapon_id: int) -> str:
         if weapon.weapon_id == weapon_id:
             return weapon.name or f"weapon_{weapon_id}"
     return f"weapon_{weapon_id}"
-
-
-@dataclass(slots=True)
-class DemoProjectile:
-    kind: str
-    x: float
-    y: float
-    vx: float
-    vy: float
-    life: float
-    radius: float
-    damage: float
 
 
 @dataclass(slots=True)
@@ -170,6 +182,34 @@ def _lerp(a: float, b: float, t: float) -> float:
     return a + (b - a) * t
 
 
+def _angle_approach(angle: float, target: float, rate: float, dt: float) -> float:
+    """Port of `angle_approach` (0x0041f430), parameterized by dt."""
+
+    tau = math.tau
+    while angle < 0.0:
+        angle += tau
+    while tau < angle:
+        angle -= tau
+
+    direct = abs(target - angle)
+    hi = target if angle < target else angle
+    lo = angle if angle < target else target
+    wrap = abs((tau - hi) + lo)
+    arc = min(direct, wrap)
+    if arc > 1.0:
+        arc = 1.0
+
+    step = dt * arc * rate
+    if direct <= wrap:
+        if angle < target:
+            return angle + step
+        return angle - step
+
+    if target < angle:
+        return angle + step
+    return angle - step
+
+
 class DemoView:
     """Attract-mode demo scaffold.
 
@@ -184,15 +224,18 @@ class DemoView:
     def __init__(self, state: DemoState) -> None:
         self._state = state
         self._ground: GroundRenderer | None = None
+        self._crand = Crand(0)
         self._creatures: list[DemoCreature] = []
         self._players: list[DemoPlayer] = []
-        self._projectiles: list[DemoProjectile] = []
+        self._projectile_pool = ProjectilePool()
+        self._secondary_projectile_pool = SecondaryProjectilePool()
         self._beams: list[DemoBeam] = []
         self._explosions: list[DemoExplosion] = []
         self._variant_index = 0
         self._demo_variant_index = 0
         self._quest_spawn_timeline_ms = 0
         self._demo_time_limit_ms = 0
+        self._bonus_weapon_power_up_timer = 0.0
         self._finished = False
         self._camera_x = 0.0
         self._camera_y = 0.0
@@ -213,6 +256,8 @@ class DemoView:
         self._demo_variant_index = 0
         self._quest_spawn_timeline_ms = 0
         self._demo_time_limit_ms = 0
+        self._bonus_weapon_power_up_timer = 0.0
+        self._crand.srand(self._state.rng.getrandbits(32))
         self._demo_mode_start()
 
     def close(self) -> None:
@@ -227,7 +272,8 @@ class DemoView:
             self._small_font = None
         self._creatures.clear()
         self._players.clear()
-        self._projectiles.clear()
+        self._projectile_pool.reset()
+        self._secondary_projectile_pool.reset()
         self._beams.clear()
         self._explosions.clear()
 
@@ -264,7 +310,7 @@ class DemoView:
             return
 
         self._quest_spawn_timeline_ms += frame_dt_ms
-        self._update_sim(frame_dt)
+        self._update_sim(frame_dt, frame_dt_ms)
         self._advance_anim_phase(frame_dt)
         if self._quest_spawn_timeline_ms > self._demo_time_limit_ms:
             self._demo_mode_start()
@@ -516,13 +562,25 @@ class DemoView:
 
     def _advance_anim_phase(self, dt: float) -> None:
         for creature in self._creatures:
-            template = SPAWN_ID_TO_TEMPLATE.get(creature.spawn_id)
-            if template is None or template.type_id is None:
+            type_id = creature.type_id
+            if type_id is None:
+                template = SPAWN_ID_TO_TEMPLATE.get(creature.spawn_id)
+                type_id = template.type_id if template is not None else None
+            if type_id is None:
                 continue
-            info = _TYPE_ANIM.get(template.type_id)
+            info = _TYPE_ANIM.get(type_id)
             if info is None:
                 continue
-            creature.phase += info.anim_rate * dt * 60.0
+            creature.anim_phase, _ = creature_anim_advance_phase(
+                creature.anim_phase,
+                anim_rate=info.anim_rate,
+                move_speed=creature.move_speed,
+                dt=dt,
+                size=creature.size,
+                local_scale=creature.move_scale,
+                flags=creature.flags,
+                ai_mode=creature.ai_mode,
+            )
         for player in self._players:
             info = _TYPE_ANIM.get(CreatureTypeId.TROOPER)
             if info is None:
@@ -549,9 +607,11 @@ class DemoView:
 
         self._creatures.clear()
         self._players.clear()
-        self._projectiles.clear()
+        self._projectile_pool.reset()
+        self._secondary_projectile_pool.reset()
         self._beams.clear()
         self._explosions.clear()
+        self._bonus_weapon_power_up_timer = 0.0
         if index == 0:
             self._apply_variant_ground(0)
             self._setup_variant_0()
@@ -649,11 +709,95 @@ class DemoView:
     def _wrap_pos(self, x: float, y: float) -> tuple[float, float]:
         return (x % WORLD_SIZE, y % WORLD_SIZE)
 
-    def _spawn(self, spawn_id: int, x: float, y: float) -> None:
+    def _crand_mod(self, mod: int) -> int:
+        if mod <= 0:
+            return 0
+        return int(self._crand.rand() % mod)
+
+    def _crand_float01(self) -> float:
+        return float(self._crand.rand()) / 32767.0
+
+    def _spawn(self, spawn_id: int, x: float, y: float, *, heading: float) -> None:
         x, y = self._wrap_pos(x, y)
-        template = SPAWN_ID_TO_TEMPLATE.get(spawn_id)
-        hp = self._creature_hp(template.type_id if template is not None else None)
-        self._creatures.append(DemoCreature(spawn_id=spawn_id, x=x, y=y, hp=hp))
+        env = SpawnEnv(
+            terrain_width=WORLD_SIZE,
+            terrain_height=WORLD_SIZE,
+            demo_mode_active=True,
+            hardcore=bool(int(self._state.config.data.get("hardcore_flag", 0) or 0)),
+            difficulty_level=0,
+        )
+
+        try:
+            plan = build_spawn_plan(spawn_id, (x, y), heading, self._crand, env)
+        except NotImplementedError:
+            template = SPAWN_ID_TO_TEMPLATE.get(spawn_id)
+            type_id = template.type_id if template is not None else None
+            flags = template.flags or CreatureFlags(0) if template is not None else CreatureFlags(0)
+            hp = self._creature_hp(type_id)
+            move_speed = self._creature_speed(type_id) / 30.0
+            self._creatures.append(
+                DemoCreature(
+                    spawn_id=spawn_id,
+                    x=x,
+                    y=y,
+                    hp=hp,
+                    size=18.0,
+                    move_speed=move_speed,
+                    type_id=type_id,
+                    flags=flags,
+                    phase_seed=float(self._crand.rand() & 0x17F),
+                    anim_phase=0.0,
+                )
+            )
+            return
+
+        for entry in plan.creatures:
+            cx, cy = self._wrap_pos(entry.pos_x, entry.pos_y)
+            template = SPAWN_ID_TO_TEMPLATE.get(entry.origin_template_id)
+            type_id = entry.type_id if entry.type_id is not None else (template.type_id if template is not None else None)
+            size = float(entry.size) if entry.size is not None else 18.0
+            hp = float(entry.health) if entry.health is not None else self._creature_hp(type_id)
+            move_speed = float(entry.move_speed) if entry.move_speed is not None else self._creature_speed(type_id) / 30.0
+            link_index = 0
+            if entry.ai_timer is not None:
+                link_index = int(entry.ai_timer)
+            elif entry.ai_link_parent is not None:
+                link_index = int(entry.ai_link_parent)
+            elif entry.spawn_slot is not None:
+                link_index = int(entry.spawn_slot)
+            self._creatures.append(
+                DemoCreature(
+                    spawn_id=entry.origin_template_id,
+                    x=cx,
+                    y=cy,
+                    hp=hp,
+                    size=size,
+                    move_speed=move_speed,
+                    type_id=type_id,
+                    flags=entry.flags,
+                    tint_r=entry.tint_r,
+                    tint_g=entry.tint_g,
+                    tint_b=entry.tint_b,
+                    tint_a=entry.tint_a,
+                    heading=entry.heading,
+                    phase_seed=entry.phase_seed,
+                    anim_phase=0.0,
+                    ai_mode=entry.ai_mode,
+                    link_index=link_index,
+                    target_offset_x=entry.target_offset_x,
+                    target_offset_y=entry.target_offset_y,
+                )
+            )
+
+    def _reset_player_weapon_state(self) -> None:
+        for player in self._players:
+            weapon = self._weapon_entry(player.weapon_id)
+            clip_size = int(getattr(weapon, "clip_size", 0) or 0)
+            player.ammo = max(0, clip_size)
+            player.shot_cooldown = 0.0
+            player.reload_timer = 0.0
+            player.reload_timer_max = 0.0
+            player.spread_heat = 0.01
 
     def _setup_variant_0(self) -> None:
         self._demo_time_limit_ms = 4000
@@ -662,43 +806,47 @@ class DemoView:
             DemoPlayer(index=0, x=448.0, y=384.0, weapon_id=weapon_id),
             DemoPlayer(index=1, x=546.0, y=654.0, weapon_id=weapon_id),
         ]
+        self._reset_player_weapon_state()
         y = 256
         i = 0
         while y < 1696:
             col = i % 2
-            self._spawn(0x38, float((col + 2) * 64), float(y))
-            self._spawn(0x38, float(col * 64 + 798), float(y))
+            self._spawn(0x38, float((col + 2) * 64), float(y), heading=-100.0)
+            self._spawn(0x38, float(col * 64 + 798), float(y), heading=-100.0)
             y += 80
             i += 1
 
     def _setup_variant_1(self) -> None:
         self._demo_time_limit_ms = 5000
+        self._bonus_weapon_power_up_timer = 15.0
         weapon_id = 5
         self._players = [
             DemoPlayer(index=0, x=490.0, y=448.0, weapon_id=weapon_id),
             DemoPlayer(index=1, x=480.0, y=576.0, weapon_id=weapon_id),
         ]
+        self._reset_player_weapon_state()
         for idx in range(20):
-            x = float(self._state.rng.randrange(200) + 32)
-            y = float(self._state.rng.randrange(899) + 64)
-            self._spawn(0x34, x, y)
+            x = float(self._crand_mod(200) + 32)
+            y = float(self._crand_mod(899) + 64)
+            self._spawn(0x34, x, y, heading=-100.0)
             if idx % 3 != 0:
-                x2 = float(self._state.rng.randrange(30) + 32)
-                y2 = float(self._state.rng.randrange(899) + 64)
-                self._spawn(0x35, x2, y2)
+                x2 = float(self._crand_mod(30) + 32)
+                y2 = float(self._crand_mod(899) + 64)
+                self._spawn(0x35, x2, y2, heading=-100.0)
 
     def _setup_variant_2(self) -> None:
         self._demo_time_limit_ms = 5000
         weapon_id = 21
         self._players = [DemoPlayer(index=0, x=512.0, y=512.0, weapon_id=weapon_id)]
+        self._reset_player_weapon_state()
         y = 128
         i = 0
         while y < 848:
             col = i % 2
-            self._spawn(0x41, float(col * 64 + 32), float(y))
-            self._spawn(0x41, float((col + 2) * 64), float(y))
-            self._spawn(0x41, float(col * 64 - 64), float(y))
-            self._spawn(0x41, float((col + 12) * 64), float(y))
+            self._spawn(0x41, float(col * 64 + 32), float(y), heading=-100.0)
+            self._spawn(0x41, float((col + 2) * 64), float(y), heading=-100.0)
+            self._spawn(0x41, float(col * 64 - 64), float(y), heading=-100.0)
+            self._spawn(0x41, float((col + 12) * 64), float(y), heading=-100.0)
             y += 60
             i += 1
 
@@ -706,14 +854,15 @@ class DemoView:
         self._demo_time_limit_ms = 4000
         weapon_id = 18
         self._players = [DemoPlayer(index=0, x=512.0, y=512.0, weapon_id=weapon_id)]
+        self._reset_player_weapon_state()
         for idx in range(20):
-            x = float(self._state.rng.randrange(200) + 32)
-            y = float(self._state.rng.randrange(899) + 64)
-            self._spawn(0x24, x, y)
+            x = float(self._crand_mod(200) + 32)
+            y = float(self._crand_mod(899) + 64)
+            self._spawn(0x24, x, y, heading=0.0)
             if idx % 3 != 0:
-                x2 = float(self._state.rng.randrange(30) + 32)
-                y2 = float(self._state.rng.randrange(899) + 64)
-                self._spawn(0x25, x2, y2)
+                x2 = float(self._crand_mod(30) + 32)
+                y2 = float(self._crand_mod(899) + 64)
+                self._spawn(0x25, x2, y2, heading=0.0)
 
     def _world_params(self) -> tuple[float, float, float, float]:
         out_w = float(rl.get_screen_width())
@@ -754,36 +903,50 @@ class DemoView:
         if info is None:
             return 0, False
         flags = template.flags or CreatureFlags(0)
-        long_strip = not (flags & CreatureFlags.ANIM_PING_PONG) or (flags & CreatureFlags.ANIM_LONG_STRIP)
-        if long_strip:
-            base_frame = int(phase) % 32
-            frame = base_frame
-            if flags & CreatureFlags.RANGED_ATTACK_SHOCK:
-                frame += 0x20
-            mirror = info.mirror and base_frame >= 16
-            return frame, mirror
-        ping = int(phase) % 16
-        if ping >= 8:
-            ping = 15 - ping
-        frame = info.base + 0x10 + ping
-        return frame, False
+        frame, mirror_applied, _ = creature_anim_select_frame(
+            phase,
+            base_frame=info.base,
+            mirror_long=info.mirror,
+            flags=flags,
+        )
+        return frame, mirror_applied
 
     def _draw_fx(self) -> None:
-        if not (self._projectiles or self._beams or self._explosions):
+        projectiles = self._projectile_pool.iter_active()
+        secondary = self._secondary_projectile_pool.iter_active()
+        if not (projectiles or secondary or self._beams or self._explosions):
             return
         cam_x, cam_y, scale_x, scale_y = self._world_params()
         del cam_x, cam_y
         scale = (scale_x + scale_y) * 0.5
 
-        for proj in self._projectiles:
-            sx, sy = self._world_to_screen(proj.x, proj.y)
-            radius = max(1.0, proj.radius * scale)
+        for proj in projectiles:
+            sx, sy = self._world_to_screen(proj.pos_x, proj.pos_y)
+            base_radius = {
+                0x05: 6.0,  # gauss
+                0x0B: 10.0,  # rocket launcher
+                0x15: 7.0,  # ion minigun beam seed
+            }.get(proj.type_id, 5.0)
+            radius = max(1.0, base_radius * scale)
             color = {
-                "gauss": rl.Color(235, 235, 235, 255),
-                "rocket": rl.Color(255, 120, 80, 255),
-                "pulse": rl.Color(200, 120, 255, 255),
-            }.get(proj.kind, rl.Color(235, 235, 235, 255))
+                0x05: rl.Color(235, 235, 235, 255),
+                0x0B: rl.Color(255, 120, 80, 255),
+                0x15: rl.Color(120, 220, 255, 255),
+            }.get(proj.type_id, rl.Color(235, 235, 235, 255))
             rl.draw_circle(int(sx), int(sy), radius, color)
+
+        for proj in secondary:
+            sx, sy = self._world_to_screen(proj.pos_x, proj.pos_y)
+            if proj.type_id == 4:
+                radius = max(1.0, 12.0 * scale)
+                rl.draw_circle(int(sx), int(sy), radius, rl.Color(200, 120, 255, 255))
+                continue
+            if proj.type_id == 3:
+                t = _clamp(proj.lifetime, 0.0, 1.0)
+                radius = proj.speed * t * 80.0
+                alpha = int((1.0 - t) * 180.0)
+                color = rl.Color(200, 120, 255, alpha)
+                rl.draw_circle_lines(int(sx), int(sy), max(1.0, radius * scale), color)
 
         for beam in self._beams:
             x0, y0 = self._world_to_screen(beam.x0, beam.y0)
@@ -832,16 +995,31 @@ class DemoView:
                 texture = cache.get_or_load(template.creature, rel_path).texture
             if texture is None:
                 continue
+            type_id = creature.type_id or template.type_id
+            flags = creature.flags
+
+            def _to_u8(value: float) -> int:
+                return int(_clamp(value, 0.0, 1.0) * 255.0 + 0.5)
+
+            tint = rl.WHITE
+            if any(v is not None for v in (creature.tint_r, creature.tint_g, creature.tint_b, creature.tint_a)):
+                tint = rl.Color(
+                    _to_u8(creature.tint_r if creature.tint_r is not None else 1.0),
+                    _to_u8(creature.tint_g if creature.tint_g is not None else 1.0),
+                    _to_u8(creature.tint_b if creature.tint_b is not None else 1.0),
+                    _to_u8(creature.tint_a if creature.tint_a is not None else 1.0),
+                )
             self._draw_sprite(
                 texture,
-                template.type_id,
-                template.flags or CreatureFlags(0),
-                creature.phase,
+                type_id,
+                flags,
+                creature.anim_phase,
                 creature.x,
                 creature.y,
                 scale_x,
                 scale_y,
-                tint=rl.WHITE,
+                tint=tint,
+                size_scale=_clamp((creature.size or 64.0) / 64.0, 0.25, 2.0),
             )
 
     def _draw_sprite(
@@ -856,35 +1034,26 @@ class DemoView:
         scale_y: float,
         *,
         tint: rl.Color,
+        size_scale: float = 1.0,
     ) -> None:
         info = _TYPE_ANIM.get(type_id)
         if info is None:
             return
-        long_strip = not (flags & CreatureFlags.ANIM_PING_PONG) or (flags & CreatureFlags.ANIM_LONG_STRIP)
-        if long_strip:
-            base_frame = int(phase) % 32
-            frame = base_frame
-            if flags & CreatureFlags.RANGED_ATTACK_SHOCK:
-                frame += 0x20
-            mirror = info.mirror and base_frame >= 16
-        else:
-            ping = int(phase) % 16
-            if ping >= 8:
-                ping = 15 - ping
-            frame = info.base + 0x10 + ping
-            mirror = False
+        frame, _, _ = creature_anim_select_frame(
+            phase,
+            base_frame=info.base,
+            mirror_long=info.mirror,
+            flags=flags,
+        )
 
         grid = 8
         cell = float(texture.width) / grid if grid > 0 else float(texture.width)
         row = frame // grid
         col = frame % grid
         src = rl.Rectangle(float(col * cell), float(row * cell), float(cell), float(cell))
-        if mirror:
-            src.x += src.width
-            src.width = -src.width
         screen_x, screen_y = self._world_to_screen(world_x, world_y)
-        width = cell * scale_x
-        height = cell * scale_y
+        width = cell * scale_x * size_scale
+        height = cell * scale_y * size_scale
         dst = rl.Rectangle(screen_x, screen_y, width, height)
         origin = rl.Vector2(width * 0.5, height * 0.5)
         rl.draw_texture_pro(texture, src, dst, origin, 0.0, tint)
@@ -976,38 +1145,14 @@ class DemoView:
             return 85.0
         return 80.0
 
-    def _weapon_spec(self, weapon_id: int) -> tuple[float, float, float, float]:
-        """Return (fire_interval, spread_rad, speed, damage) for demo weapons."""
-        fire_interval = 0.2
-        spread = 0.0
-        speed = 650.0
-        damage = 10.0
-        for weapon in WEAPON_TABLE:
-            if weapon.weapon_id != weapon_id:
-                continue
-            if weapon.fire_rate is not None:
-                fire_interval = max(0.02, float(weapon.fire_rate))
-            if weapon.spread is not None:
-                spread = float(weapon.spread)
-            break
-        if weapon_id == 5:  # Gauss Gun
-            speed = 920.0
-            damage = 18.0
-        elif weapon_id == 11:  # Rocket Launcher
-            speed = 520.0
-            damage = 32.0
-        elif weapon_id == 18:  # Pulse Gun
-            speed = 280.0
-            damage = 14.0
-        elif weapon_id == 21:  # Ion Minigun (beam)
-            speed = 0.0
-            damage = 5.0
-        return fire_interval, spread, speed, damage
+    def _weapon_entry(self, weapon_id: int) -> Weapon | None:
+        return WEAPON_BY_ID.get(weapon_id)
 
-    def _update_sim(self, dt: float) -> None:
-        self._update_creatures(dt)
-        self._update_players(dt)
+    def _update_sim(self, dt: float, dt_ms: int) -> None:
+        self._bonus_weapon_power_up_timer = max(0.0, self._bonus_weapon_power_up_timer - dt)
+        self._update_creatures(dt, dt_ms)
         self._update_projectiles(dt)
+        self._update_players(dt)
         self._update_fx(dt)
         self._update_camera(dt)
 
@@ -1033,12 +1178,33 @@ class DemoView:
                 best_dist = d
         return best_idx
 
-    def _update_creatures(self, dt: float) -> None:
+    def _update_creatures(self, dt: float, dt_ms: int) -> None:
         if not self._creatures or not self._players:
             return
         for creature in self._creatures:
             if creature.hp <= 0.0:
                 continue
+            type_id = creature.type_id
+            if type_id is None:
+                template = SPAWN_ID_TO_TEMPLATE.get(creature.spawn_id)
+                type_id = template.type_id if template is not None else None
+
+            move_speed = creature.move_speed
+            if move_speed <= 0.0:
+                move_speed = self._creature_speed(type_id) / 30.0
+
+            # creature_update_all: AI7 link-timer behavior (flag 0x80).
+            if creature.flags & CreatureFlags.AI7_LINK_TIMER:
+                if creature.link_index < 0:
+                    creature.link_index += dt_ms
+                    if creature.link_index >= 0:
+                        creature.ai_mode = 7
+                        creature.link_index = (self._crand.rand() & 0x1FF) + 500
+                else:
+                    creature.link_index -= dt_ms
+                    if creature.link_index < 1:
+                        creature.link_index = -700 - (self._crand.rand() & 0x3FF)
+
             target_idx = self._nearest_player_index(creature.x, creature.y)
             creature.target_player = target_idx
             if target_idx is None:
@@ -1046,15 +1212,92 @@ class DemoView:
                 creature.vy = 0.0
                 continue
             target = self._players[target_idx]
+
             dx = target.x - creature.x
             dy = target.y - creature.y
-            nx, ny, _ = _normalize(dx, dy)
-            template = SPAWN_ID_TO_TEMPLATE.get(creature.spawn_id)
-            speed = self._creature_speed(template.type_id if template is not None else None)
-            creature.vx = nx * speed
-            creature.vy = ny * speed
-            creature.x = _clamp(creature.x + creature.vx * dt, 0.0, WORLD_SIZE)
-            creature.y = _clamp(creature.y + creature.vy * dt, 0.0, WORLD_SIZE)
+            dist_to_player = math.hypot(dx, dy)
+
+            orbit_angle = float(int(creature.phase_seed)) * 3.7 * math.pi
+            local_scale = 1.0
+            creature.force_target = 0
+
+            ai_mode = creature.ai_mode
+            if ai_mode == 7 and (creature.flags & CreatureFlags.AI7_LINK_TIMER) and creature.link_index < 1:
+                ai_mode = 0
+                creature.ai_mode = 0
+
+            if ai_mode == 0:
+                if dist_to_player > 800.0:
+                    creature.target_x = target.x
+                    creature.target_y = target.y
+                else:
+                    creature.target_x = target.x + math.cos(orbit_angle) * dist_to_player * 0.85
+                    creature.target_y = target.y + math.sin(orbit_angle) * dist_to_player * 0.85
+            elif ai_mode == 1:
+                if dist_to_player > 800.0:
+                    creature.target_x = target.x
+                    creature.target_y = target.y
+                else:
+                    creature.target_x = target.x + math.cos(orbit_angle) * dist_to_player * 0.55
+                    creature.target_y = target.y + math.sin(orbit_angle) * dist_to_player * 0.55
+            elif ai_mode == 8:
+                creature.target_x = target.x + math.cos(orbit_angle) * dist_to_player * 0.9
+                creature.target_y = target.y + math.sin(orbit_angle) * dist_to_player * 0.9
+            elif ai_mode == 3:
+                link = creature.link_index
+                if 0 <= link < len(self._creatures) and self._creatures[link].hp > 0.0:
+                    creature.target_x = self._creatures[link].x + float(creature.target_offset_x or 0.0)
+                    creature.target_y = self._creatures[link].y + float(creature.target_offset_y or 0.0)
+                else:
+                    creature.ai_mode = 0
+                    creature.target_x = target.x
+                    creature.target_y = target.y
+            elif ai_mode == 5:
+                link = creature.link_index
+                if 0 <= link < len(self._creatures) and self._creatures[link].hp > 0.0:
+                    creature.target_x = self._creatures[link].x + float(creature.target_offset_x or 0.0)
+                    creature.target_y = self._creatures[link].y + float(creature.target_offset_y or 0.0)
+                    dist_to_target = math.hypot(creature.target_x - creature.x, creature.target_y - creature.y)
+                    if dist_to_target <= 64.0:
+                        local_scale = dist_to_target * 0.015625
+                else:
+                    creature.ai_mode = 0
+                    creature.target_x = target.x
+                    creature.target_y = target.y
+            elif ai_mode == 7:
+                creature.target_x = creature.x
+                creature.target_y = creature.y
+            else:
+                creature.target_x = target.x
+                creature.target_y = target.y
+
+            dist_to_target = math.hypot(creature.target_x - creature.x, creature.target_y - creature.y)
+            if dist_to_target < 40.0 or dist_to_target > 400.0:
+                creature.force_target = 1
+            if creature.force_target or creature.ai_mode == 2:
+                creature.target_x = target.x
+                creature.target_y = target.y
+
+            creature.target_heading = math.atan2(creature.target_y - creature.y, creature.target_x - creature.x) + math.pi / 2.0
+            if creature.ai_mode == 7:
+                creature.move_scale = local_scale
+                creature.vx = 0.0
+                creature.vy = 0.0
+                continue
+
+            creature.heading = _angle_approach(
+                creature.heading, creature.target_heading, move_speed * 0.33333334 * 4.0, dt
+            )
+            speed = move_speed * 30.0
+            direction_x = math.cos(creature.heading - math.pi / 2.0)
+            direction_y = math.sin(creature.heading - math.pi / 2.0)
+            creature.vx = direction_x * dt * local_scale * speed
+            creature.vy = direction_y * dt * local_scale * speed
+            creature.move_scale = local_scale
+
+            radius = max(0.0, creature.size)
+            creature.x = _clamp(creature.x + creature.vx, radius, WORLD_SIZE - radius)
+            creature.y = _clamp(creature.y + creature.vy, radius, WORLD_SIZE - radius)
 
     def _select_player_target(self, player: DemoPlayer) -> int | None:
         candidate = self._nearest_creature_index(player.x, player.y)
@@ -1082,9 +1325,19 @@ class DemoView:
             return
         center_x = WORLD_SIZE * 0.5
         center_y = WORLD_SIZE * 0.5
+        shot_cooldown_decay = dt * (1.5 if self._bonus_weapon_power_up_timer > 0.0 else 1.0)
         for player in self._players:
-            player.fire_cooldown = max(0.0, player.fire_cooldown - dt)
-            player.reload_timer = max(0.0, player.reload_timer - dt)
+            player.shot_cooldown = max(0.0, player.shot_cooldown - shot_cooldown_decay)
+            player.spread_heat = max(0.01, player.spread_heat - dt * 0.4)
+
+            if player.reload_timer > 0.0:
+                player.reload_timer = max(0.0, player.reload_timer - dt)
+                if player.reload_timer <= 0.0:
+                    weapon = self._weapon_entry(player.weapon_id)
+                    clip_size = int(getattr(weapon, "clip_size", 0) or 0)
+                    player.ammo = max(0, clip_size)
+                    player.reload_timer = 0.0
+                    player.reload_timer_max = 0.0
 
             player.target_creature = self._select_player_target(player)
             target = self._creatures[player.target_creature] if player.target_creature is not None else None
@@ -1131,156 +1384,108 @@ class DemoView:
             self._player_fire(player, target)
 
     def _player_fire(self, player: DemoPlayer, target: DemoCreature | None) -> None:
+        weapon = self._weapon_entry(player.weapon_id)
+        if weapon is None:
+            return
+
         if player.reload_timer > 0.0:
             return
-        if player.fire_cooldown > 0.0:
+        if player.shot_cooldown > 0.0:
             return
         if target is None or target.hp <= 0.0:
             return
 
-        fire_interval, spread, speed, damage = self._weapon_spec(player.weapon_id)
-        player.fire_cooldown = fire_interval
-        ax, ay = player.aim_x, player.aim_y
-        if spread > 0.0:
-            jitter = (self._state.rng.random() * 2.0 - 1.0) * spread
-            ca = math.cos(jitter)
-            sa = math.sin(jitter)
-            ax, ay = ax * ca - ay * sa, ax * sa + ay * ca
-
-        if player.weapon_id == 21:
-            self._fire_ion_beam(player, damage)
+        if player.ammo <= 0:
+            reload_time = float(getattr(weapon, "reload_time", 0.0) or 0.0)
+            if self._bonus_weapon_power_up_timer > 0.0:
+                reload_time *= 0.6
+            player.reload_timer_max = max(0.0, reload_time)
+            player.reload_timer = player.reload_timer_max
             return
 
-        if speed <= 0.0:
-            return
+        shot_cooldown = float(getattr(weapon, "fire_rate", 0.0) or 0.0)
+        player.shot_cooldown = max(0.02, shot_cooldown)
 
-        if player.weapon_id == 11:
-            radius = 10.0
-            life = 1.6
-            kind = "rocket"
+        spread_inc = float(getattr(weapon, "spread", 0.0) or 0.0)
+        player.spread_heat = min(0.48, max(0.01, player.spread_heat + spread_inc))
+
+        theta = math.atan2(player.aim_y, player.aim_x)
+        if player.spread_heat > 0.0:
+            theta += (self._crand_float01() * 2.0 - 1.0) * player.spread_heat
+        angle = theta + math.pi / 2.0
+
+        muzzle_x = player.x + player.aim_x * 16.0
+        muzzle_y = player.y + player.aim_y * 16.0
+
+        if player.weapon_id in {5, 11, 21}:
+            meta = float(getattr(weapon, "projectile_type", 0.0) or 0.0)
+            if meta <= 0.0:
+                meta = 45.0
+            self._projectile_pool.spawn(
+                pos_x=muzzle_x,
+                pos_y=muzzle_y,
+                angle=angle,
+                type_id=player.weapon_id,
+                owner_id=-100,
+                base_damage=meta,
+            )
         elif player.weapon_id == 18:
-            radius = 12.0
-            life = 0.7
-            kind = "pulse"
-        else:
-            radius = 6.0
-            life = 1.2
-            kind = "gauss"
-        self._projectiles.append(
-            DemoProjectile(
-                kind=kind,
-                x=player.x,
-                y=player.y,
-                vx=ax * speed,
-                vy=ay * speed,
-                life=life,
-                radius=radius,
-                damage=damage,
+            self._secondary_projectile_pool.spawn(
+                pos_x=muzzle_x,
+                pos_y=muzzle_y,
+                angle=angle,
+                type_id=4,
             )
-        )
 
-    def _fire_ion_beam(self, player: DemoPlayer, damage: float) -> None:
-        max_range = 420.0
-        hit_idx = self._nearest_creature_index(player.x, player.y)
-        if hit_idx is None:
-            return
-        creature = self._creatures[hit_idx]
-        if creature.hp <= 0.0:
-            return
-        dist = math.hypot(creature.x - player.x, creature.y - player.y)
-        if dist > max_range:
-            return
-        creature.hp -= damage
-        self._beams.append(
-            DemoBeam(
-                x0=player.x,
-                y0=player.y,
-                x1=creature.x,
-                y1=creature.y,
-                life=0.08,
-            )
-        )
+        player.ammo = max(0, player.ammo - 1)
+        if player.ammo <= 0:
+            reload_time = float(getattr(weapon, "reload_time", 0.0) or 0.0)
+            if self._bonus_weapon_power_up_timer > 0.0:
+                reload_time *= 0.6
+            player.reload_timer_max = max(0.0, reload_time)
+            player.reload_timer = player.reload_timer_max
 
     def _update_projectiles(self, dt: float) -> None:
-        if not self._projectiles:
-            return
-        survivors: list[DemoProjectile] = []
-        for proj in self._projectiles:
-            proj.life -= dt
-            proj.x += proj.vx * dt
-            proj.y += proj.vy * dt
-            if proj.x < -64.0 or proj.x > WORLD_SIZE + 64.0:
-                continue
-            if proj.y < -64.0 or proj.y > WORLD_SIZE + 64.0:
-                continue
+        damage_scale_by_type: dict[int, float] = {}
+        for type_id in (0x05, 0x0B, 0x15):
+            weapon = self._weapon_entry(type_id)
+            scale = float(getattr(weapon, "damage_mult", 0.0) or 0.0) if weapon is not None else 0.0
+            damage_scale_by_type[type_id] = scale if scale > 0.0 else 1.0
 
-            if proj.kind in {"gauss", "rocket"}:
-                if self._projectile_hit_creature(proj):
-                    continue
-            if proj.kind == "pulse" and proj.life <= 0.0:
-                self._explosions.append(
-                    DemoExplosion(
-                        kind="pulse",
-                        x=proj.x,
-                        y=proj.y,
-                        elapsed=0.0,
-                        duration=0.9,
-                        max_radius=120.0,
-                        damage_per_tick=4.0,
-                        tick_interval=0.12,
-                        tick_accum=0.12,
+        hits = self._projectile_pool.update(
+            dt,
+            self._creatures,
+            world_size=WORLD_SIZE,
+            damage_scale_by_type=damage_scale_by_type,
+            rng=self._crand.rand,
+        )
+        for type_id, origin_x, origin_y, hit_x, hit_y in hits:
+            if type_id == 0x15:
+                self._beams.append(
+                    DemoBeam(
+                        x0=origin_x,
+                        y0=origin_y,
+                        x1=hit_x,
+                        y1=hit_y,
+                        life=0.08,
                     )
                 )
-                continue
-
-            if proj.life > 0.0:
-                survivors.append(proj)
-        self._projectiles = survivors
-        self._creatures = [c for c in self._creatures if c.hp > 0.0]
-
-    def _projectile_hit_creature(self, proj: DemoProjectile) -> bool:
-        hit_idx = None
-        hit_dist = 0.0
-        for idx, creature in enumerate(self._creatures):
-            if creature.hp <= 0.0:
-                continue
-            d = _distance_sq(proj.x, proj.y, creature.x, creature.y)
-            if hit_idx is None or d < hit_dist:
-                hit_idx = idx
-                hit_dist = d
-        if hit_idx is None:
-            return False
-        creature = self._creatures[hit_idx]
-        hit_radius = proj.radius + 18.0
-        if hit_dist > hit_radius * hit_radius:
-            return False
-
-        if proj.kind == "rocket":
-            radius = 90.0
-            self._apply_radial_damage(proj.x, proj.y, radius, proj.damage)
-            self._explosions.append(
-                DemoExplosion(
-                    kind="rocket",
-                    x=proj.x,
-                    y=proj.y,
-                    elapsed=0.0,
-                    duration=0.35,
-                    max_radius=radius,
-                    damage_per_tick=0.0,
-                    tick_interval=1.0,
+            if type_id == 0x0B:
+                self._explosions.append(
+                    DemoExplosion(
+                        kind="rocket",
+                        x=hit_x,
+                        y=hit_y,
+                        elapsed=0.0,
+                        duration=0.35,
+                        max_radius=90.0,
+                        damage_per_tick=0.0,
+                        tick_interval=1.0,
+                    )
                 )
-            )
-        else:
-            creature.hp -= proj.damage
-        return True
 
-    def _apply_radial_damage(self, x: float, y: float, radius: float, damage: float) -> None:
-        rsq = radius * radius
-        for creature in self._creatures:
-            if creature.hp <= 0.0:
-                continue
-            if _distance_sq(x, y, creature.x, creature.y) <= rsq:
-                creature.hp -= damage
+        self._secondary_projectile_pool.update_pulse_gun(dt, self._creatures)
+        self._creatures = [c for c in self._creatures if c.hp > 0.0]
 
     def _update_fx(self, dt: float) -> None:
         if self._beams:
