@@ -6,7 +6,7 @@ from typing import Protocol
 
 from .bonuses import BONUS_BY_ID, BonusId
 from .crand import Crand
-from .perks import PerkId
+from .perks import PerkFlags, PerkId, PerkMeta, PERK_TABLE
 from .projectiles import ProjectilePool, SecondaryProjectilePool
 from .weapons import WEAPON_BY_ID, Weapon
 
@@ -67,6 +67,7 @@ class PlayerState:
     level: int = 1
 
     perk_counts: list[int] = field(default_factory=lambda: [0] * PERK_COUNT_SIZE)
+    plaguebearer_active: bool = False
     hot_tempered_timer: float = 0.0
     man_bomb_timer: float = 0.0
     living_fortress_timer: float = 0.0
@@ -97,6 +98,13 @@ class PerkEffectIntervals:
     man_bomb: float = 4.0
     fire_cough: float = 2.0
     hot_tempered: float = 2.0
+
+
+@dataclass(slots=True)
+class PerkSelectionState:
+    pending_count: int = 0
+    choices: list[int] = field(default_factory=list)
+    choices_dirty: bool = True
 
 
 @dataclass(frozen=True, slots=True)
@@ -150,6 +158,7 @@ class GameplayState:
     secondary_projectiles: SecondaryProjectilePool = field(default_factory=SecondaryProjectilePool)
     bonuses: BonusTimers = field(default_factory=BonusTimers)
     perk_intervals: PerkEffectIntervals = field(default_factory=PerkEffectIntervals)
+    perk_selection: PerkSelectionState = field(default_factory=PerkSelectionState)
     bonus_spawn_guard: bool = False
     bonus_hud: BonusHudState = field(default_factory=BonusHudState)
 
@@ -165,6 +174,234 @@ def perk_count_get(player: PlayerState, perk_id: PerkId) -> int:
 
 def perk_active(player: PlayerState, perk_id: PerkId) -> bool:
     return perk_count_get(player, perk_id) > 0
+
+
+def award_experience(state: GameplayState, player: PlayerState, amount: int) -> int:
+    """Grant XP while honoring active bonus multipliers."""
+
+    xp = int(amount)
+    if xp <= 0:
+        return 0
+    if state.bonuses.double_experience > 0.0:
+        xp *= 2
+    player.experience += xp
+    return xp
+
+
+def survival_level_threshold(level: int) -> int:
+    """Return the XP threshold for advancing past the given level."""
+
+    level = max(1, int(level))
+    return int(1000.0 + (math.pow(float(level), 1.8) * 1000.0))
+
+
+def survival_check_level_up(player: PlayerState, perk_state: PerkSelectionState) -> int:
+    """Advance survival levels if XP exceeds thresholds, returning number of level-ups."""
+
+    advanced = 0
+    while player.experience > survival_level_threshold(player.level):
+        player.level += 1
+        perk_state.pending_count += 1
+        perk_state.choices_dirty = True
+        advanced += 1
+    return advanced
+
+
+def perk_choice_count(player: PlayerState) -> int:
+    if perk_active(player, PerkId.PERK_MASTER):
+        return 7
+    if perk_active(player, PerkId.PERK_EXPERT):
+        return 6
+    return 5
+
+
+def perk_can_offer(player: PlayerState, meta: PerkMeta, *, game_mode: int, player_count: int) -> bool:
+    perk_id = meta.perk_id
+    if perk_id == PerkId.ANTIPERK:
+        return False
+    flags = meta.flags or PerkFlags(0)
+    if (flags & PerkFlags.MODE_3_ONLY) and game_mode != 3:
+        return False
+    if (flags & PerkFlags.TWO_PLAYER_ONLY) and player_count != 2:
+        return False
+    if (flags & PerkFlags.STACKABLE) == 0 and perk_count_get(player, perk_id) > 0:
+        return False
+    if meta.prereq and any(perk_count_get(player, req) <= 0 for req in meta.prereq):
+        return False
+    return True
+
+
+def perk_generate_choices(
+    state: GameplayState,
+    player: PlayerState,
+    *,
+    game_mode: int,
+    player_count: int,
+    count: int | None = None,
+) -> list[PerkId]:
+    """Generate a unique list of perk choices for the current selection."""
+
+    if count is None:
+        count = perk_choice_count(player)
+    pool = [meta.perk_id for meta in PERK_TABLE if perk_can_offer(player, meta, game_mode=game_mode, player_count=player_count)]
+    choices: list[PerkId] = []
+    while pool and len(choices) < count:
+        idx = int(state.rng.rand() % len(pool))
+        choices.append(pool.pop(idx))
+    return choices
+
+
+def _increment_perk_count(player: PlayerState, perk_id: PerkId, *, amount: int = 1) -> None:
+    idx = int(perk_id)
+    if 0 <= idx < len(player.perk_counts):
+        player.perk_counts[idx] += int(amount)
+
+
+def perk_apply(
+    state: GameplayState,
+    players: list[PlayerState],
+    perk_id: PerkId,
+    *,
+    perk_state: PerkSelectionState | None = None,
+) -> None:
+    """Apply immediate perk effects and increment the perk counter."""
+
+    if not players:
+        return
+    owner = players[0]
+    _increment_perk_count(owner, perk_id)
+
+    if perk_id == PerkId.INSTANT_WINNER:
+        owner.experience += 2500
+        return
+
+    if perk_id == PerkId.FATAL_LOTTERY:
+        if state.rng.rand() & 1:
+            for player in players:
+                if player.health > 0.0:
+                    player.health = -1.0
+        else:
+            owner.experience += 10000
+        return
+
+    if perk_id == PerkId.LIFELINE_50_50:
+        # Requires creature pool access; keep as a no-op for now.
+        return
+
+    if perk_id == PerkId.THICK_SKINNED:
+        for player in players:
+            if player.health > 0.0:
+                player.health = max(1.0, player.health * (2.0 / 3.0))
+        return
+
+    if perk_id == PerkId.BREATHING_ROOM:
+        for player in players:
+            if player.health > 0.0:
+                player.health -= player.health * (2.0 / 3.0)
+        # Creature clear not modeled yet.
+        return
+
+    if perk_id == PerkId.INFERNAL_CONTRACT:
+        owner.level += 3
+        if perk_state is not None:
+            perk_state.pending_count += 3
+            perk_state.choices_dirty = True
+        for player in players:
+            if player.health > 0.0:
+                player.health = 0.1
+        return
+
+    if perk_id == PerkId.GRIM_DEAL:
+        owner.health = -1.0
+        owner.experience += int(owner.experience * 0.18)
+        return
+
+    if perk_id == PerkId.AMMO_MANIAC:
+        for player in players:
+            player.ammo = player.clip_size
+            player.reload_active = False
+            player.reload_timer = 0.0
+            player.reload_timer_max = 0.0
+        return
+
+    if perk_id == PerkId.DEATH_CLOCK:
+        _increment_perk_count(owner, PerkId.REGENERATION, amount=-perk_count_get(owner, PerkId.REGENERATION))
+        _increment_perk_count(owner, PerkId.GREATER_REGENERATION, amount=-perk_count_get(owner, PerkId.GREATER_REGENERATION))
+        for player in players:
+            if player.health > 0.0:
+                player.health = 100.0
+        return
+
+    if perk_id == PerkId.BANDAGE:
+        for player in players:
+            if player.health > 0.0:
+                scale = float(state.rng.rand() % 50 + 1)
+                player.health = min(100.0, player.health * scale)
+        return
+
+    if perk_id == PerkId.MY_FAVOURITE_WEAPON:
+        for player in players:
+            player.clip_size += 2
+        return
+
+    if perk_id == PerkId.PLAGUEBEARER:
+        owner.plaguebearer_active = True
+
+
+def perk_auto_pick(
+    state: GameplayState,
+    players: list[PlayerState],
+    perk_state: PerkSelectionState,
+    *,
+    game_mode: int,
+    player_count: int | None = None,
+) -> list[PerkId]:
+    """Resolve pending perks by auto-selecting from generated choices."""
+
+    if not players:
+        return []
+    if player_count is None:
+        player_count = len(players)
+    picks: list[PerkId] = []
+    while perk_state.pending_count > 0:
+        if perk_state.choices_dirty or not perk_state.choices:
+            perk_state.choices = [int(perk) for perk in perk_generate_choices(state, players[0], game_mode=game_mode, player_count=player_count)]
+            perk_state.choices_dirty = False
+        if not perk_state.choices:
+            break
+        idx = int(state.rng.rand() % len(perk_state.choices))
+        perk_id = PerkId(perk_state.choices[idx])
+        perk_apply(state, players, perk_id, perk_state=perk_state)
+        picks.append(perk_id)
+        perk_state.pending_count -= 1
+        perk_state.choices_dirty = True
+    return picks
+
+
+def survival_progression_update(
+    state: GameplayState,
+    players: list[PlayerState],
+    *,
+    game_mode: int,
+    player_count: int | None = None,
+    auto_pick: bool = True,
+) -> list[PerkId]:
+    """Advance survival level/perk progression and optionally auto-pick perks."""
+
+    if not players:
+        return []
+    if player_count is None:
+        player_count = len(players)
+    survival_check_level_up(players[0], state.perk_selection)
+    if auto_pick:
+        return perk_auto_pick(
+            state,
+            players,
+            state.perk_selection,
+            game_mode=game_mode,
+            player_count=player_count,
+        )
+    return []
 
 
 def _clamp(value: float, lo: float, hi: float) -> float:
@@ -577,7 +814,7 @@ def bonus_apply(
         amount = int(meta.default_amount or 0)
 
     if bonus_id == BonusId.POINTS:
-        player.experience += int(amount)
+        award_experience(state, player, int(amount))
         return
 
     if bonus_id == BonusId.ENERGIZER:
