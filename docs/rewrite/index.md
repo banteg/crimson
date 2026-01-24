@@ -12,7 +12,6 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - `uv run crimson game` (boot + splash/logo + menu scaffold; auto-copies missing `.paq` assets from `game_bins/`)
 - `uv run crimson view <name>` (debug views)
 - `uv run crimson quests 1.1` (quest spawn dump)
-- `uv run crimson entrypoint` (print boot plan)
 - `uv run crimson config` (inspect `crimson.cfg`)
 
 ## What exists now

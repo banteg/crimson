@@ -33,8 +33,9 @@ from grim.terrain_render import GroundRenderer
 from grim.view import View
 
 from .demo import DemoView
-from .entrypoint import DEFAULT_BASE_DIR
 from .save_status import MODE_COUNT_ORDER, GameStatus, ensure_game_status
+
+DEFAULT_BASE_DIR = Path("artifacts") / "runtime"
 
 
 @dataclass(frozen=True, slots=True)

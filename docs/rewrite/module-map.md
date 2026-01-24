@@ -30,7 +30,6 @@ Config (crimson.cfg) | `src/grim/config.py` | `src/grim/config.py` | Global sett
 Console/log | `src/grim/console.py` | `src/grim/console.py` | Console as engine/debug layer.
 Fonts (small, mono) | `src/grim/fonts/small.py`, `src/grim/fonts/grim_mono.py` | `src/grim/fonts/*` | Font loaders + draw/measure helpers.
 CLI entrypoint | `src/crimson/cli.py` | `src/crimson/cli.py` | Stays in game package.
-Entrypoint boot plan | `src/crimson/entrypoint.py` | `src/crimson/entrypoint.py` | Game flow + asset staging.
 Main game flow | `src/crimson/game.py`, `src/crimson/demo.py` | `src/crimson/*` | State machine + demo flow.
 Quests | `src/crimson/quests/*` | `src/crimson/quests/*` | Game content.
 Data tables (Python) | `src/crimson/weapons.py`, `src/crimson/perks.py`, `src/crimson/bonuses.py`, `src/crimson/creatures/spawn.py` | `src/crimson/*` (or `src/crimson/data/*`) | Keep tables/enums in Python (no JSON move).
