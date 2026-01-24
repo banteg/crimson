@@ -261,7 +261,8 @@ Notes:
 - `survival_update` (`FUN_00407cd0`): milestone spawns using `0x12`, `0x2b`,
   `0x2c`, `0x35`, `0x38`, `0x3a`, `0x3c`, and `1`. Regular enemy waves are spawned via
   `survival_spawn_creature` (`FUN_00407510`), which selects type/stats based on
-  `player_experience` (not a spawn id).
+  `player_experience` (not a spawn id). Python models: `advance_survival_spawn_stage`,
+  `tick_survival_wave_spawns`, `build_survival_spawn_creature`.
 
 - Tutorial timeline (`tutorial_timeline_update`, `FUN_00408990`): scripted spawns using `0x24`, `0x26`,
   `0x27`, `0x28`, `0x40`.
@@ -309,5 +310,7 @@ Notes:
   - `artifacts/creature_spawn_template/binja-hlil.txt`
 - Creature pool + spawn-slot fields: `docs/creatures/struct.md`
 - Rewrite model (pure plan builder): `src/crimson/creatures/spawn.py`
-- Survival wave spawns (pure model): `src/crimson/creatures/spawn.py` (`build_survival_spawn_creature`)
+- Survival mode (pure models): `src/crimson/creatures/spawn.py`
+  - `advance_survival_spawn_stage`, `tick_survival_wave_spawns`, `build_survival_spawn_creature`
+  - Tests: `tests/test_survival_milestones.py`, `tests/test_survival_wave.py`, `tests/test_survival_spawn.py`
 - MSVCRT-compatible RNG for deterministic replays: `src/crimson/crand.py`
