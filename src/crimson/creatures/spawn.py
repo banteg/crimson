@@ -814,7 +814,7 @@ ALIEN_SPAWNER_TEMPLATES: dict[int, AlienSpawnerSpec] = {
     ),
     0x09: AlienSpawnerSpec(
         timer=1.0,
-        limit=0x10,
+        limit=16,
         interval=2.0,
         child_template_id=0x1D,
         size=40.0,
@@ -1497,11 +1497,11 @@ def build_survival_spawn_creature(pos: tuple[float, float], rng: Crand, *, playe
 
     c.type_id = CreatureTypeId(type_id)
 
-    # size = rand() % 0x14 + 0x2c
-    c.size = float(rng.rand() % 0x14 + 0x2C)
+    # size = rand() % 20 + 44
+    c.size = float(rng.rand() % 20 + 44)
 
-    # heading = (rand() % 0x13a) * 0.01
-    c.heading = float(rng.rand() % 0x13A) * 0.01
+    # heading = (rand() % 314) * 0.01
+    c.heading = float(rng.rand() % 314) * 0.01
 
     move_speed = float(xp // 4000) * 0.045 + 0.9
     if c.type_id == CreatureTypeId.SPIDER_SP1:
@@ -1550,7 +1550,7 @@ def build_survival_spawn_creature(pos: tuple[float, float], rng: Crand, *, playe
 
     # Rare stat overrides (color-coded variants).
     r = rng.rand()
-    if r % 0xB4 < 2:
+    if r % 180 < 2:
         c.tint_r = 0.9
         c.tint_g = 0.4
         c.tint_b = 0.4
@@ -1559,7 +1559,7 @@ def build_survival_spawn_creature(pos: tuple[float, float], rng: Crand, *, playe
         c.reward_value = 320.0
     else:
         r = rng.rand()
-        if r % 0xF0 < 2:
+        if r % 240 < 2:
             c.tint_r = 0.4
             c.tint_g = 0.9
             c.tint_b = 0.4
@@ -1568,7 +1568,7 @@ def build_survival_spawn_creature(pos: tuple[float, float], rng: Crand, *, playe
             c.reward_value = 420.0
         else:
             r = rng.rand()
-            if r % 0x168 < 2:
+            if r % 360 < 2:
                 c.tint_r = 0.4
                 c.tint_g = 0.4
                 c.tint_b = 0.9
@@ -1578,7 +1578,7 @@ def build_survival_spawn_creature(pos: tuple[float, float], rng: Crand, *, playe
 
     # Rare health/size boosts (do not recompute contact_damage).
     r = rng.rand()
-    if r % 0x528 < 4:
+    if r % 1320 < 4:
         c.tint_r = 0.84
         c.tint_g = 0.24
         c.tint_b = 0.89
@@ -1588,7 +1588,7 @@ def build_survival_spawn_creature(pos: tuple[float, float], rng: Crand, *, playe
         c.health = float(c.health or 0.0) + 230.0
     else:
         r = rng.rand()
-        if r % 0x654 < 4:
+        if r % 1620 < 4:
             c.tint_r = 0.94
             c.tint_g = 0.84
             c.tint_b = 0.29
@@ -1642,7 +1642,7 @@ def tick_survival_wave_spawns(
     Modeled after `survival_update` (crimsonland.exe 0x00407cd0) wave spawns:
       spawn_cooldown -= player_count * frame_dt_ms
       if spawn_cooldown <= -1:
-        interval_ms = 500 - int(survival_elapsed_ms) / 0x708
+        interval_ms = 500 - int(survival_elapsed_ms) / 1800
         if interval_ms < 0:
           extra = (1 - interval_ms) >> 1
           interval_ms += extra * 2
@@ -1655,7 +1655,7 @@ def tick_survival_wave_spawns(
     if spawn_cooldown > -1.0:
         return spawn_cooldown, ()
 
-    interval_ms = 500 - int(survival_elapsed_ms) // 0x708
+    interval_ms = 500 - int(survival_elapsed_ms) // 1800
 
     spawns: list[CreatureInit] = []
     if interval_ms < 0:
@@ -1710,16 +1710,16 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
             continue
 
         if stage == 2:
-            if level < 0xB:
+            if level < 11:
                 break
             stage = 3
             step = 128.0 / 3.0
-            for i in range(0xC):
+            for i in range(12):
                 spawns.append(SpawnTemplateCall(template_id=0x35, pos=(1088.0, float(i) * step + 256.0), heading=heading))
             continue
 
         if stage == 3:
-            if level < 0xD:
+            if level < 13:
                 break
             stage = 4
             for i in range(4):
@@ -1727,7 +1727,7 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
             continue
 
         if stage == 4:
-            if level < 0xF:
+            if level < 15:
                 break
             stage = 5
             for i in range(4):
@@ -1737,21 +1737,21 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
             continue
 
         if stage == 5:
-            if level < 0x11:
+            if level < 17:
                 break
             stage = 6
             spawns.append(SpawnTemplateCall(template_id=0x3A, pos=(1088.0, 512.0), heading=heading))
             continue
 
         if stage == 6:
-            if level < 0x13:
+            if level < 19:
                 break
             stage = 7
             spawns.append(SpawnTemplateCall(template_id=1, pos=(640.0, 512.0), heading=heading))
             continue
 
         if stage == 7:
-            if level < 0x15:
+            if level < 21:
                 break
             stage = 8
             spawns.append(SpawnTemplateCall(template_id=1, pos=(384.0, 256.0), heading=heading))
@@ -1759,7 +1759,7 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
             continue
 
         if stage == 8:
-            if level < 0x1A:
+            if level < 26:
                 break
             stage = 9
             for i in range(4):
@@ -1769,7 +1769,7 @@ def advance_survival_spawn_stage(stage: int, *, player_level: int) -> tuple[int,
             continue
 
         if stage == 9:
-            if level <= 0x1F:
+            if level <= 31:
                 break
             stage = 10
             spawns.append(SpawnTemplateCall(template_id=0x3A, pos=(1088.0, 512.0), heading=heading))
@@ -1804,9 +1804,9 @@ def build_rush_mode_spawn_creature(
     c.ai_mode = 0
 
     c.health = float(elapsed_ms) * 0.000100000005 + 10.0
-    c.heading = float(rng.rand() % 0x13A) * 0.01
+    c.heading = float(rng.rand() % 314) * 0.01
     c.move_speed = float(elapsed_ms) * 1.0000001e-05 + 2.5
-    c.reward_value = float(rng.rand() % 0x1E + 0x8C)
+    c.reward_value = float(rng.rand() % 30 + 140)
 
     c.tint_r, c.tint_g, c.tint_b, c.tint_a = tint_rgba
     c.contact_damage = 4.0
@@ -2050,10 +2050,10 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
     # `heading == -100.0` uses a randomized heading.
     final_heading = heading
     if final_heading == -100.0:
-        final_heading = float(rng.rand() % 0x274) * 0.01
+        final_heading = float(rng.rand() % 628) * 0.01
 
     # Base initialization always consumes one rand() for a transient heading value.
-    creatures[0].heading = float(rng.rand() % 0x13A) * 0.01
+    creatures[0].heading = float(rng.rand() % 314) * 0.01
 
     if template_id == 0x00:
         c = creatures[0]
@@ -2063,7 +2063,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
             spawn_slots,
             owner_creature=0,
             timer=1.0,
-            limit=0x32C,
+            limit=812,
             interval=0.7,
             child_template_id=0x41,
         )
@@ -2099,26 +2099,26 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
             c.type_id = CreatureTypeId.SPIDER_SP2
         else:
             c.type_id = CreatureTypeId.ALIEN
-        size = randf(rng, 0xF, 1.0, 0x26)
+        size = randf(rng, 15, 1.0, 38.0)
         apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
         c.tint_a = 1.0
         c.tint_r = 0.6
         c.tint_g = 0.6
-        apply_random_move_speed(c, rng, 0x12, 0.1, 1.1)
-        tint_b = randf(rng, 0x19, 0.01, 0.8)
+        apply_random_move_speed(c, rng, 18, 0.1, 1.1)
+        tint_b = randf(rng, 25, 0.01, 0.8)
         c.tint_b = _clamp01(tint_b)
         c.contact_damage = randf(rng, 10, 1.0, 4.0)
         primary_idx = 0
     elif template_id == 0x04:
         c = creatures[0]
         c.type_id = CreatureTypeId.LIZARD
-        size = randf(rng, 0xF, 1.0, 0x26)
+        size = randf(rng, 15, 1.0, 38.0)
         apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
         c.tint_a = 1.0
         c.tint_r = 0.67
         c.tint_g = 0.67
         c.tint_b = 1.0
-        apply_random_move_speed(c, rng, 0x12, 0.1, 1.1)
+        apply_random_move_speed(c, rng, 18, 0.1, 1.1)
         c.contact_damage = randf(rng, 10, 1.0, 4.0)
         primary_idx = 0
     elif template_id in ALIEN_SPAWNER_TEMPLATES:
@@ -2149,7 +2149,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
             spawn_slots,
             owner_creature=0,
             timer=1.5,
-            limit=0x40,
+            limit=64,
             interval=1.05,
             child_template_id=0x1C,
         )
@@ -2178,7 +2178,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
             pos_x,
             pos_y,
             rng,
-            count=0x18,
+            count=24,
             angle_step=math.pi / 12.0,
             radius=100.0,
             ai_mode=3,
@@ -2369,8 +2369,8 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
             pos_x,
             pos_y,
             rng,
-            x_range=range(0, -0x240, -0x40),
-            y_range=range(0x80, 0x101, 0x10),
+            x_range=range(0, -576, -64),
+            y_range=range(128, 257, 16),
             ai_mode=5,
             child_spec=child_spec,
         )
@@ -2405,8 +2405,8 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
             pos_x,
             pos_y,
             rng,
-            x_range=range(0, -0x240, -0x40),
-            y_range=range(0x80, 0x101, 0x10),
+            x_range=range(0, -576, -64),
+            y_range=range(128, 257, 16),
             ai_mode=4,
             child_spec=child_spec,
         )
@@ -2441,8 +2441,8 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
             pos_x,
             pos_y,
             rng,
-            x_range=range(0, -0x240, -0x40),
-            y_range=range(0x80, 0x101, 0x10),
+            x_range=range(0, -576, -64),
+            y_range=range(128, 257, 16),
             ai_mode=4,
             child_spec=child_spec,
         )
@@ -2477,8 +2477,8 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
             pos_x,
             pos_y,
             rng,
-            x_range=range(0, -0x240, -0x40),
-            y_range=range(0x80, 0x101, 0x10),
+            x_range=range(0, -576, -64),
+            y_range=range(128, 257, 16),
             ai_mode=4,
             child_spec=child_spec,
         )
@@ -2513,8 +2513,8 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
             pos_x,
             pos_y,
             rng,
-            x_range=range(0, -0x240, -0x40),
-            y_range=range(0x80, 0x101, 0x10),
+            x_range=range(0, -576, -64),
+            y_range=range(128, 257, 16),
             ai_mode=3,
             child_spec=child_spec,
         )
@@ -2640,23 +2640,23 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
     elif template_id == 0x2E:
         c = creatures[0]
         c.type_id = CreatureTypeId.LIZARD
-        size = randf(rng, 0x1E, 1.0, 0x28)
+        size = randf(rng, 30, 1.0, 40.0)
         apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
         c.tint_a = 1.0
-        apply_random_move_speed(c, rng, 0x12, 0.1, 1.1)
-        c.tint_r = randf(rng, 0x28, 0.01, 0.6)
-        c.tint_g = randf(rng, 0x28, 0.01, 0.6)
-        c.tint_b = randf(rng, 0x28, 0.01, 0.6)
+        apply_random_move_speed(c, rng, 18, 0.1, 1.1)
+        c.tint_r = randf(rng, 40, 0.01, 0.6)
+        c.tint_g = randf(rng, 40, 0.01, 0.6)
+        c.tint_b = randf(rng, 40, 0.01, 0.6)
         c.contact_damage = randf(rng, 10, 1.0, 4.0)
         primary_idx = 0
     elif template_id == 0x31:
         c = creatures[0]
         c.type_id = CreatureTypeId.LIZARD
-        size = randf(rng, 0x1E, 1.0, 0x28)
+        size = randf(rng, 30, 1.0, 40.0)
         apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=10.0)
         c.tint_a = 1.0
-        apply_random_move_speed(c, rng, 0x12, 0.1, 1.1)
-        tint = randf(rng, 0x1E, 0.01, 0.6)
+        apply_random_move_speed(c, rng, 18, 0.1, 1.1)
+        tint = randf(rng, 30, 0.01, 0.6)
         c.tint_r = tint
         c.tint_g = tint
         c.tint_b = 0.38
@@ -2665,11 +2665,11 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
     elif template_id == 0x32:
         c = creatures[0]
         c.type_id = CreatureTypeId.SPIDER_SP1
-        size = randf(rng, 0x19, 1.0, 0x28)
+        size = randf(rng, 25, 1.0, 40.0)
         apply_size_health_reward(c, size, health_scale=1.0, health_add=10.0)
         c.tint_a = 1.0
-        apply_random_move_speed(c, rng, 0x11, 0.1, 1.1)
-        tint = randf(rng, 0x28, 0.01, 0.6)
+        apply_random_move_speed(c, rng, 17, 0.1, 1.1)
+        tint = randf(rng, 40, 0.01, 0.6)
         c.tint_r = tint
         c.tint_g = tint
         c.tint_b = tint
@@ -2678,37 +2678,37 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
     elif template_id == 0x33:
         c = creatures[0]
         c.type_id = CreatureTypeId.SPIDER_SP1
-        size = randf(rng, 0xF, 1.0, 0x2D)
+        size = randf(rng, 15, 1.0, 45.0)
         apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
         c.tint_a = 1.0
-        apply_random_move_speed(c, rng, 0x12, 0.1, 1.1)
+        apply_random_move_speed(c, rng, 18, 0.1, 1.1)
         c.tint_g = 0.5
         c.tint_b = 0.5
-        c.tint_r = randf(rng, 0x28, 0.01, 0.6)
+        c.tint_r = randf(rng, 40, 0.01, 0.6)
         c.contact_damage = randf(rng, 10, 1.0, 4.0)
         primary_idx = 0
     elif template_id == 0x34:
         c = creatures[0]
         c.type_id = CreatureTypeId.SPIDER_SP1
-        size = randf(rng, 0x14, 1.0, 0x28)
+        size = randf(rng, 20, 1.0, 40.0)
         apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
         c.tint_a = 1.0
-        apply_random_move_speed(c, rng, 0x12, 0.1, 1.1)
+        apply_random_move_speed(c, rng, 18, 0.1, 1.1)
         c.tint_r = 0.5
         c.tint_b = 0.5
-        c.tint_g = randf(rng, 0x28, 0.01, 0.6)
+        c.tint_g = randf(rng, 40, 0.01, 0.6)
         c.contact_damage = randf(rng, 10, 1.0, 4.0)
         primary_idx = 0
     elif template_id == 0x35:
         c = creatures[0]
         c.type_id = CreatureTypeId.SPIDER_SP2
-        size = randf(rng, 10, 1.0, 0x1E)
+        size = randf(rng, 10, 1.0, 30.0)
         apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=20.0)
         c.tint_a = 1.0
         c.tint_b = 0.8
-        apply_random_move_speed(c, rng, 0x12, 0.1, 1.1)
+        apply_random_move_speed(c, rng, 18, 0.1, 1.1)
         c.tint_r = 0.8
-        c.tint_g = randf(rng, 0x14, 0.01, 0.8)
+        c.tint_g = randf(rng, 20, 0.01, 0.8)
         c.contact_damage = randf(rng, 10, 1.0, 4.0)
         primary_idx = 0
     elif template_id == 0x36:
@@ -2737,7 +2737,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.tint_g = 0.75
         c.tint_b = 0.1
         c.tint_a = 1.0
-        c.size = float((rng.rand() & 3) + 0x29)
+        c.size = float((rng.rand() & 3) + 41)
         c.contact_damage = 10.0
         primary_idx = 0
     elif template_id == 0x38:
@@ -2752,7 +2752,7 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c.tint_g = 0.75
         c.tint_b = 0.1
         c.tint_a = 1.0
-        c.size = float((rng.rand() & 3) + 0x29)
+        c.size = float((rng.rand() & 3) + 41)
         c.contact_damage = 10.0
         primary_idx = 0
     elif template_id == 0x39:
@@ -2789,10 +2789,10 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
         c = creatures[0]
         c.type_id = CreatureTypeId.ZOMBIE
         c.tint_a = 1.0
-        size = randf(rng, 0x1E, 1.0, 0x28)
+        size = randf(rng, 30, 1.0, 40.0)
         apply_size_health_reward(c, size, health_scale=8.0 / 7.0, health_add=10.0)
         apply_size_move_speed(c, size, 0.0025, 0.9)
-        tint = randf(rng, 0x28, 0.01, 0.6)
+        tint = randf(rng, 40, 0.01, 0.6)
         c.tint_r = tint
         c.tint_g = tint
         c.tint_b = tint
