@@ -2637,13 +2637,18 @@ def test_spawn_plan_template_0e_spawns_ring_children_and_has_spawn_slot() -> Non
     assert slot.child_template_id == 0x1C
     assert slot.interval == 1.05
 
+    state = 0xBEEF
+    state, _ = _msvcrt_rand(state)  # base alloc phase_seed
+    state, _ = _msvcrt_rand(state)  # base init random heading
+
     for i, child in enumerate(plan.creatures[1:], start=0):
+        state, r_phase_seed = _msvcrt_rand(state)
         assert child.type_id == CreatureTypeId.ALIEN
         assert child.ai_mode == 3
         assert child.ai_link_parent == 0
         assert child.pos_x == 100.0
         assert child.pos_y == 200.0
-        assert child.phase_seed == 0.0
+        assert child.phase_seed == float(r_phase_seed & 0x17F)
         assert child.health == 40.0
         assert child.max_health == 40.0
         assert child.move_speed == 4.0

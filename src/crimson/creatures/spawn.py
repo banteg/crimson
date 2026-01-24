@@ -1608,7 +1608,6 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
             child.ai_mode = 3
             child.ai_link_parent = 0
             child.heading = 0.0
-            child.phase_seed = 0.0  # template overwrites anim_phase to 0.0
             angle = float(i) * (math.pi / 12.0)
             child.target_offset_x = float(math.cos(angle) * 100.0)
             child.target_offset_y = float(math.sin(angle) * 100.0)
@@ -1787,7 +1786,6 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
                 child = _alloc_creature(template_id, pos_x, pos_y, rng)
                 child.ai_mode = 5
                 child.ai_link_parent = 0
-                child.phase_seed = 0.0  # template forces anim_phase = 0.0
                 child.target_offset_x = float(x_offset)
                 child.target_offset_y = float(y_offset)
                 child.pos_x = float(pos_x + x_offset)
@@ -1827,7 +1825,6 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
                 child = _alloc_creature(template_id, pos_x, pos_y, rng)
                 child.ai_mode = 4
                 child.ai_link_parent = 0
-                child.phase_seed = 0.0  # template forces anim_phase = 0.0
                 child.target_offset_x = float(x_offset)
                 child.target_offset_y = float(y_offset)
                 child.pos_x = float(pos_x + x_offset)
@@ -1867,7 +1864,6 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
                 child = _alloc_creature(template_id, pos_x, pos_y, rng)
                 child.ai_mode = 4
                 child.ai_link_parent = 0
-                child.phase_seed = 0.0  # template forces anim_phase = 0.0
                 child.target_offset_x = float(x_offset)
                 child.target_offset_y = float(y_offset)
                 child.pos_x = float(pos_x + x_offset)
@@ -1907,7 +1903,6 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
                 child = _alloc_creature(template_id, pos_x, pos_y, rng)
                 child.ai_mode = 4
                 child.ai_link_parent = 0
-                child.phase_seed = 0.0  # template forces anim_phase = 0.0
                 child.target_offset_x = float(x_offset)
                 child.target_offset_y = float(y_offset)
                 child.pos_x = float(pos_x + x_offset)
@@ -1947,7 +1942,6 @@ def build_spawn_plan(template_id: int, pos: tuple[float, float], heading: float,
                 child = _alloc_creature(template_id, pos_x, pos_y, rng)
                 child.ai_mode = 3
                 child.ai_link_parent = 0
-                child.phase_seed = 0.0  # template forces anim_phase = 0.0
                 child.target_offset_x = float(x_offset)
                 child.target_offset_y = float(y_offset)
                 child.pos_x = float(pos_x + x_offset)
