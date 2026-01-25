@@ -30,10 +30,10 @@ What to document first (to unblock Survival) is anything that defines the “run
 
 ## 4) Fix/Restore the Spawn Plan Doc Link (quick win, needed for onboarding)
 
-- [ ] Create docs/creatures/spawn_plan.md (new) OR update references in:
+- [x] Create docs/creatures/spawn_plan.md (new) OR update references in:
     - docs/creatures/index.md
     - docs/creatures/spawning.md
-- [ ] Content: explain build_spawn_plan, what "ported+verified" means, how spawn slots appear in plans, and where the tests live.
+- [x] Content: explain build_spawn_plan, what "ported+verified" means, how spawn slots appear in plans, and where the tests live.
 
 ## 5) Update Rewrite Status Docs (coordination, not blocking but high leverage)
 
