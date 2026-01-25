@@ -17,6 +17,7 @@ def _register_builtin_views() -> None:
     from . import particles as _particles  # noqa: F401
     from . import spawn_plan as _spawn_plan  # noqa: F401
     from . import player as _player  # noqa: F401
+    from . import survival as _survival  # noqa: F401
 
 
 _register_builtin_views()
