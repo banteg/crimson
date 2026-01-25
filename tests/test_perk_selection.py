@@ -1,0 +1,40 @@
+from __future__ import annotations
+
+from crimson.gameplay import GameplayState, PerkSelectionState, PlayerState, perk_selection_pick
+from crimson.perks import PerkId
+
+
+def test_perk_selection_pick_applies_perk_and_marks_dirty() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    perk_state = PerkSelectionState(
+        pending_count=1,
+        choices=[int(PerkId.INSTANT_WINNER)],
+        choices_dirty=False,
+    )
+
+    picked = perk_selection_pick(state, [player], perk_state, 0, game_mode=3, player_count=1)
+
+    assert picked == PerkId.INSTANT_WINNER
+    assert perk_state.pending_count == 0
+    assert perk_state.choices_dirty is True
+    assert player.perk_counts[int(PerkId.INSTANT_WINNER)] == 1
+    assert player.experience == 2500
+
+
+def test_perk_selection_pick_infernal_contract_adds_pending_perks() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0, health=100.0, level=1)
+    perk_state = PerkSelectionState(
+        pending_count=1,
+        choices=[int(PerkId.INFERNAL_CONTRACT)],
+        choices_dirty=False,
+    )
+
+    picked = perk_selection_pick(state, [player], perk_state, 0, game_mode=3, player_count=1)
+
+    assert picked == PerkId.INFERNAL_CONTRACT
+    assert player.level == 4
+    assert player.health == 0.1
+    assert perk_state.pending_count == 3
+    assert perk_state.choices_dirty is True

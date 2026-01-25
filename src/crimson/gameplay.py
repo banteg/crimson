@@ -628,6 +628,60 @@ def perk_auto_pick(
     return picks
 
 
+def perk_selection_current_choices(
+    state: GameplayState,
+    players: list[PlayerState],
+    perk_state: PerkSelectionState,
+    *,
+    game_mode: int,
+    player_count: int | None = None,
+) -> list[PerkId]:
+    """Return the current perk choices, generating them if needed.
+
+    Mirrors `perk_choices_dirty` + `perks_generate_choices` before entering the
+    perk selection screen (state 6).
+    """
+
+    if not players:
+        return []
+    if player_count is None:
+        player_count = len(players)
+    if perk_state.choices_dirty or not perk_state.choices:
+        perk_state.choices = [int(perk) for perk in perk_generate_choices(state, players[0], game_mode=game_mode, player_count=player_count)]
+        perk_state.choices_dirty = False
+    return [PerkId(perk_id) for perk_id in perk_state.choices]
+
+
+def perk_selection_pick(
+    state: GameplayState,
+    players: list[PlayerState],
+    perk_state: PerkSelectionState,
+    choice_index: int,
+    *,
+    game_mode: int,
+    player_count: int | None = None,
+) -> PerkId | None:
+    """Pick a perk from the current choice list and apply it.
+
+    On success, decrements `pending_count` (one perk resolved) and marks the
+    choice list dirty, matching `perk_selection_screen_update`.
+    """
+
+    if perk_state.pending_count <= 0:
+        return None
+    choices = perk_selection_current_choices(state, players, perk_state, game_mode=game_mode, player_count=player_count)
+    if not choices:
+        return None
+    idx = int(choice_index)
+    if idx < 0 or idx >= len(choices):
+        return None
+    perk_id = choices[idx]
+    perk_apply(state, players, perk_id, perk_state=perk_state)
+    perk_state.pending_count = max(0, int(perk_state.pending_count) - 1)
+    perk_state.choices_dirty = True
+    return perk_id
+
+
 def survival_progression_update(
     state: GameplayState,
     players: list[PlayerState],
