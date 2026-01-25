@@ -35,6 +35,8 @@ CONSOLE_INPUT_X_MONO = 26.0
 CONSOLE_VERSION_OFFSET_X = 210.0
 CONSOLE_VERSION_OFFSET_Y = 18.0
 CONSOLE_BORDER_HEIGHT = 4.0
+CONSOLE_BG_COLOR = (0.140625, 0.1875, 0.2890625)
+CONSOLE_BORDER_COLOR = (0.21875, 0.265625, 0.3671875)
 CONSOLE_PROMPT_MONO = ">"
 CONSOLE_PROMPT_SMALL_FMT = ">%s"
 CONSOLE_CARET_TEXT = "_"
@@ -255,14 +257,20 @@ class ConsoleState:
             return
         screen_w = float(rl.get_screen_width())
         offset_y = self._offset_y
-        rl.draw_rectangle(0, int(offset_y), int(screen_w), int(height), _rgba(0.6, 0.6, 0.6, ratio))
+        rl.draw_rectangle(
+            0,
+            int(offset_y),
+            int(screen_w),
+            int(height),
+            _rgba(*CONSOLE_BG_COLOR, ratio),
+        )
         border_y = int(offset_y + height - CONSOLE_BORDER_HEIGHT)
         rl.draw_rectangle(
             0,
             border_y,
             int(screen_w),
             int(CONSOLE_BORDER_HEIGHT),
-            _rgba(0.1, 0.6, 1.0, ratio),
+            _rgba(*CONSOLE_BORDER_COLOR, ratio),
         )
 
         version_x = screen_w - CONSOLE_VERSION_OFFSET_X
