@@ -507,7 +507,13 @@ class SurvivalView:
         rect = self._perk_prompt_rect(label, scale=scale)
         bg = UI_PROMPT_HOVER if self._perk_prompt_hover else UI_PROMPT_BG
         rl.draw_rectangle_rounded(rect, 0.2, 6, rl.Color(bg.r, bg.g, bg.b, int(bg.a * alpha)))
-        rl.draw_rectangle_rounded_lines(rect, 0.2, 6, 1.2, rl.Color(UI_PANEL_BORDER.r, UI_PANEL_BORDER.g, UI_PANEL_BORDER.b, int(255 * alpha)))
+        rl.draw_rectangle_rounded_lines_ex(
+            rect,
+            0.2,
+            6,
+            1.2,
+            rl.Color(UI_PANEL_BORDER.r, UI_PANEL_BORDER.g, UI_PANEL_BORDER.b, int(255 * alpha)),
+        )
         pad_x = 12.0
         pad_y = 8.0
         self._draw_ui_text(label, rect.x + pad_x, rect.y + pad_y, rl.Color(UI_TEXT_COLOR.r, UI_TEXT_COLOR.g, UI_TEXT_COLOR.b, int(255 * alpha)), scale=scale)
@@ -533,7 +539,7 @@ class SurvivalView:
 
         panel, item_rects, desc_rect, cancel_rect, select_rect = self._perk_menu_layout(choice_count=len(choices))
         rl.draw_rectangle_rounded(panel, 0.06, 8, UI_PANEL_BG)
-        rl.draw_rectangle_rounded_lines(panel, 0.06, 8, 2.0, UI_PANEL_BORDER)
+        rl.draw_rectangle_rounded_lines_ex(panel, 0.06, 8, 2.0, UI_PANEL_BORDER)
 
         header_x = panel.x + 18.0
         header_y = panel.y + 14.0
@@ -556,7 +562,7 @@ class SurvivalView:
             bg = UI_PANEL_ITEM_HOVER if is_hover or is_selected else UI_PANEL_ITEM_BG
             rl.draw_rectangle_rounded(rect, 0.2, 6, bg)
             if is_selected:
-                rl.draw_rectangle_rounded_lines(rect, 0.2, 6, 1.5, UI_PANEL_HILITE)
+                rl.draw_rectangle_rounded_lines_ex(rect, 0.2, 6, 1.5, UI_PANEL_HILITE)
             meta = PERK_BY_ID.get(int(perk_id))
             label = meta.name if meta is not None else f"Perk {int(perk_id)}"
             self._draw_ui_text(label, rect.x + 10.0, rect.y + 6.0, UI_TEXT_COLOR)
@@ -585,7 +591,7 @@ class SurvivalView:
         ):
             bg = UI_PANEL_ITEM_HOVER if hover else UI_PANEL_ITEM_BG
             rl.draw_rectangle_rounded(rect, 0.2, 6, bg)
-            rl.draw_rectangle_rounded_lines(rect, 0.2, 6, 1.5, UI_PANEL_BORDER)
+            rl.draw_rectangle_rounded_lines_ex(rect, 0.2, 6, 1.5, UI_PANEL_BORDER)
             text_w = float(self._ui_text_width(label, button_scale))
             text_x = rect.x + (rect.width - text_w) * 0.5
             text_y = rect.y + (rect.height - float(self._ui_line_height(button_scale))) * 0.5
