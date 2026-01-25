@@ -1668,7 +1668,7 @@ class OptionsMenuView(PanelMenuView):
         panel_left = panel_x - origin_x
         panel_top = panel_y - origin_y
         base_x = panel_left + 212.0 * panel_scale
-        base_y = panel_top + 20.0 * panel_scale
+        base_y = panel_top + 32.0 * panel_scale
         label_x = base_x + 8.0 * panel_scale
         slider_x = label_x + 130.0 * panel_scale
         return {
