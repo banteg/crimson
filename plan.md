@@ -4,13 +4,13 @@ What to document first (to unblock Survival) is anything that defines the “run
 
 ## 1) Creature Runtime Contract (must-have)
 
-- [ ] Add docs/creatures/update.md (new, status-analysis)
+- [x] Add docs/creatures/update.md (new, status-analysis)
 - Goal: a single spec for the minimum subset of creature_update_all we need for Survival.
 - Include:
-    - [ ] Per-tick order: AI target selection (docs/creatures/ai.md + src/crimson/creatures/ai.py), heading/velocity integration, bounds clamp, collision/contact damage, ranged attacks, spawn-slot ticking.
-    - [ ] "Death contract": when hp crosses <= 0, what gets updated (kill counters, reward_value->XP, bonus drop attempt, fx queues for blood/corpses, SFX).
-    - [ ] Tables referenced: type table fields (anim rate, base frame, corpse frame, SFX banks) from docs/creatures/animations.md.
-    - [ ] Spawn-slot semantics (tie to SpawnSlotInit + tick_spawn_slot behavior, currently tested in tests/test_spawn_slots.py but not documented anywhere).
+    - [x] Per-tick order: AI target selection (docs/creatures/ai.md + src/crimson/creatures/ai.py), heading/velocity integration, bounds clamp, collision/contact damage, ranged attacks, spawn-slot ticking.
+    - [x] "Death contract": when hp crosses <= 0, what gets updated (kill counters, reward_value->XP, bonus drop attempt, fx queues for blood/corpses, SFX).
+    - [x] Tables referenced: type table fields (anim rate, base frame, corpse frame, SFX banks) from docs/creatures/animations.md.
+    - [x] Spawn-slot semantics (tie to SpawnSlotInit + tick_spawn_slot behavior, currently tested in tests/test_spawn_slots.py but not documented anywhere).
 
 ## 2) Survival Mode Contract (must-have)
 
