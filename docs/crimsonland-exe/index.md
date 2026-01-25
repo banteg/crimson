@@ -21,6 +21,7 @@ Sections:
 - [Online scores](online-scores.md)
 - [Mods](mods.md)
 - [Gameplay glue](gameplay.md)
+- [Player damage](player-damage.md)
 - [Creature spawning (templates)](../creatures/spawning.md)
 
 Related references:

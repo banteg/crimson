@@ -23,10 +23,10 @@ What to document first (to unblock Survival) is anything that defines the “run
 
 ## 3) Player Damage Contract (must-have for contact damage + "game over")
 
-- [ ] Add docs/crimsonland-exe/player-damage.md (new, status-analysis) or extend docs/structs/player.md with a dedicated "player_take_damage" section.
+- [x] Add docs/crimsonland-exe/player-damage.md (new, status-analysis) or extend docs/structs/player.md with a dedicated "player_take_damage" section.
 - Include:
-    - [ ] Shield immunity, reload mitigation, low-health warnings, death timer behavior.
-    - [ ] Contact damage frequency gate (collision_flag/timer relationship from docs/creatures/struct.md).
+    - [x] Shield immunity, reload mitigation, low-health warnings, death timer behavior.
+    - [x] Contact damage frequency gate (collision_flag/timer relationship from docs/creatures/struct.md).
 
 ## 4) Fix/Restore the Spawn Plan Doc Link (quick win, needed for onboarding)
 
