@@ -11,6 +11,7 @@ import shutil
 import time
 import traceback
 import webbrowser
+from typing import Protocol
 
 import pyray as rl
 
@@ -40,7 +41,7 @@ from grim.console import (
 )
 from grim.app import run_view
 from grim.terrain_render import GroundRenderer
-from grim.view import View
+from grim.view import View, ViewContext
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 from grim import music
 
@@ -1918,19 +1919,61 @@ class StatisticsMenuView(PanelMenuView):
         super().open()
 
 
+class FrontView(Protocol):
+    def open(self) -> None: ...
+
+    def close(self) -> None: ...
+
+    def update(self, dt: float) -> None: ...
+
+    def draw(self) -> None: ...
+
+    def take_action(self) -> str | None: ...
+
+
+class SurvivalGameView:
+    """Gameplay view wrapper that adapts the debug SurvivalView into `crimson game`.
+
+    This lets us iterate on Survival runtime wiring without first porting all of
+    the original mode-selection UI.
+    """
+
+    def __init__(self, state: GameState) -> None:
+        from .views.survival import SurvivalView
+
+        self._view = SurvivalView(ViewContext(assets_dir=state.assets_dir))
+        self._action: str | None = None
+
+    def open(self) -> None:
+        self._action = None
+        self._view.open()
+
+    def close(self) -> None:
+        self._view.close()
+
+    def update(self, dt: float) -> None:
+        self._view.update(dt)
+        if getattr(self._view, "close_requested", False):
+            self._action = "back_to_menu"
+            self._view.close_requested = False
+
+    def draw(self) -> None:
+        self._view.draw()
+
+    def take_action(self) -> str | None:
+        action = self._action
+        self._action = None
+        return action
+
+
 class GameLoopView:
     def __init__(self, state: GameState) -> None:
         self._state = state
         self._boot = BootView(state)
         self._demo = DemoView(state)
         self._menu = MenuView(state)
-        self._front_views: dict[str, PanelMenuView] = {
-            "open_play_game": PanelMenuView(
-                state,
-                title="Play Game",
-                body="Mode selection + gameplay loop are not implemented yet.",
-                back_pos_y=462.0,
-            ),
+        self._front_views: dict[str, FrontView] = {
+            "open_play_game": SurvivalGameView(state),
             "open_options": OptionsMenuView(state),
             "open_controls": PanelMenuView(
                 state,
@@ -1950,7 +1993,7 @@ class GameLoopView:
                 body="This menu is out of scope for the rewrite.",
             ),
         }
-        self._front_active: PanelMenuView | None = None
+        self._front_active: FrontView | None = None
         self._active: View = self._boot
         self._demo_active = False
         self._menu_active = False
