@@ -15,6 +15,7 @@ Sections:
 - [Rendering](rendering.md)
 - [UI and menus](ui.md)
 - [Main menu (state 0)](main-menu.md)
+- [Play Game menu (state 1)](play-game-menu.md)
 - [Screens and flows](screens.md)
 - [Demo / attract mode](demo-mode.md)
 - [Survival mode](survival.md)
