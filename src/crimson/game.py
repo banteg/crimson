@@ -1590,7 +1590,7 @@ class OptionsMenuView(PanelMenuView):
             config.data["mouse_sensitivity"] = sensitivity
             self._dirty = True
 
-        if self._update_checkbox(label_x, base_y + 133.0 * scale, scale):
+        if self._update_checkbox(label_x, base_y + 135.0 * scale, scale):
             value = 1 if self._ui_info_texts else 0
             config.data["hud_indicators"] = bytes((value, value))
             self._dirty = True
@@ -1667,7 +1667,7 @@ class OptionsMenuView(PanelMenuView):
         origin_y = -(MENU_PANEL_OFFSET_Y * panel_scale)
         panel_left = panel_x - origin_x
         panel_top = panel_y - origin_y
-        base_x = panel_left + 40.0 * panel_scale
+        base_x = panel_left + 212.0 * panel_scale
         base_y = panel_top + 20.0 * panel_scale
         label_x = base_x + 8.0 * panel_scale
         slider_x = label_x + 130.0 * panel_scale
@@ -1736,7 +1736,7 @@ class OptionsMenuView(PanelMenuView):
         text_scale = 1.0 * scale
         label = "UI Info texts"
         label_w = measure_small_text_width(font, label, text_scale)
-        rect_w = float(check_on.width) * scale + 8.0 * scale + label_w
+        rect_w = float(check_on.width) * scale + 6.0 * scale + label_w
         rect_h = max(float(check_on.height) * scale, font.cell_size * text_scale)
         mouse = rl.get_mouse_position()
         hovered = x <= mouse.x <= x + rect_w and y <= mouse.y <= y + rect_h
@@ -1797,7 +1797,7 @@ class OptionsMenuView(PanelMenuView):
         else:
             rl.draw_text(self._title, int(base_x), int(base_y), int(24 * scale), rl.WHITE)
 
-        y_offsets = (45.0, 65.0, 85.0, 105.0)
+        y_offsets = (47.0, 67.0, 87.0, 107.0)
         for label, offset in zip(self._LABELS, y_offsets, strict=False):
             draw_small_text(font, label, label_x, base_y + offset * scale, text_scale, text_color)
 
@@ -1820,7 +1820,7 @@ class OptionsMenuView(PanelMenuView):
             check_w = float(check_tex.width) * scale
             check_h = float(check_tex.height) * scale
             check_x = label_x
-            check_y = base_y + 133.0 * scale
+            check_y = base_y + 135.0 * scale
             rl.draw_texture_pro(
                 check_tex,
                 rl.Rectangle(0.0, 0.0, float(check_tex.width), float(check_tex.height)),
@@ -1832,8 +1832,8 @@ class OptionsMenuView(PanelMenuView):
             draw_small_text(
                 font,
                 "UI Info texts",
-                check_x + check_w + 8.0 * scale,
-                check_y,
+                check_x + check_w + 6.0 * scale,
+                check_y + 1.0 * scale,
                 text_scale,
                 text_color,
             )
@@ -1874,13 +1874,14 @@ class OptionsMenuView(PanelMenuView):
         for idx in range(slider.max_value):
             tex = rect_on if idx < slider.value else rect_off
             dst = rl.Rectangle(x + float(idx) * rect_w, y, rect_w, rect_h)
+            tint = rl.WHITE if idx < slider.value else rl.Color(255, 255, 255, int(255 * 0.5))
             rl.draw_texture_pro(
                 tex,
                 rl.Rectangle(0.0, 0.0, float(tex.width), float(tex.height)),
                 dst,
                 rl.Vector2(0.0, 0.0),
                 0.0,
-                rl.WHITE,
+                tint,
             )
 
 
