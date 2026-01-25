@@ -518,7 +518,7 @@ class ConsoleState:
         if font is None:
             rl.draw_text(text, int(x), int(y), int(16 * CONSOLE_MONO_SCALE), color)
             return
-        advance = font.advance * CONSOLE_FONT_SCALE
+        advance = font.advance * CONSOLE_MONO_SCALE
         draw_grim_mono_text(font, text, x - advance, y, CONSOLE_MONO_SCALE, color)
 
     def _draw_small_text(self, text: str, x: float, y: float, color: rl.Color) -> None:
