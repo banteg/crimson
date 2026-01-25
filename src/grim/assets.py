@@ -76,14 +76,17 @@ class PaqTextureCache:
             asset.unload()
 
 
-def load_paq_entries(assets_dir: Path) -> dict[str, bytes]:
-    paq_path = assets_dir / PAQ_NAME
+def load_paq_entries_from_path(paq_path: Path) -> dict[str, bytes]:
     entries: dict[str, bytes] = {}
     if not paq_path.exists():
         raise FileNotFoundError(f"Missing PAQ archive: {paq_path}")
     for name, data in paq.iter_entries(paq_path):
         entries[name.replace("\\", "/")] = data
     return entries
+
+
+def load_paq_entries(assets_dir: Path) -> dict[str, bytes]:
+    return load_paq_entries_from_path(assets_dir / PAQ_NAME)
 
 
 def _load_texture_from_bytes(data: bytes, fmt: str) -> rl.Texture2D:

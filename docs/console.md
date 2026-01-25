@@ -136,6 +136,30 @@ The cvar paths emit:
 - `openurl` → `console_cmd_open_url` (`0x0042a890`).
 - `sndfreqadjustment` → `console_cmd_snd_freq_adjustment` (`0x0042a930`).
 
+## Command implementation status (rewrite)
+
+Tracking which console commands are implemented in `src/` vs still partial.
+
+| Command | Origin | Status | Notes |
+| --- | --- | --- | --- |
+| `cmdlist` | core | implemented | Prints registered commands. |
+| `vars` | core | implemented | Prints registered cvars. |
+| `set` | core | implemented | `set <var> <value>` with console log. |
+| `echo` | core | implemented | `echo on/off` or echo args. |
+| `quit` | core | implemented | Sets quit flag. |
+| `clear` | core | implemented | Clears console log. |
+| `extendconsole` | core | implemented | Expands console height to 480. |
+| `minimizeconsole` | core | implemented | Restores console height to 300. |
+| `exec` | core | implemented | Executes scripts; ignores `//` comment lines. |
+| `setGammaRamp` | startup | partial | Stores scalar; no renderer gamma yet. |
+| `snd_addGameTune` | startup | implemented | Loads `music/<name>` and queues. |
+| `generateterrain` | startup | partial | Regenerates menu ground only. |
+| `telltimesurvived` | startup | partial | Reports session time elapsed. |
+| `setresourcepaq` | startup | implemented | Validates path and swaps resource paq entries. |
+| `loadtexture` | startup | implemented | Loads from current resource paq; logs ok/failed. |
+| `openurl` | startup | implemented | Launches browser. |
+| `sndfreqadjustment` | startup | partial | Toggles runtime flag only. |
+
 ## Known console variables (cvars)
 
 Core cvars are registered in `register_core_cvars` (`0x00402c00`) and during startup.

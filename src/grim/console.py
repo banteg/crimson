@@ -4,13 +4,19 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Iterable
 
+import math
 import pyray as rl
 
 from grim.fonts.grim_mono import (
-    GRIM_MONO_LINE_HEIGHT,
     GrimMonoFont,
     draw_grim_mono_text,
     load_grim_mono_font,
+)
+from grim.fonts.small import (
+    SmallFontData,
+    draw_small_text,
+    load_small_font,
+    measure_small_text_width,
 )
 
 CONSOLE_LOG_NAME = "console.log"
@@ -18,14 +24,20 @@ MAX_CONSOLE_LINES = 0x1000
 MAX_CONSOLE_INPUT = 0x3FF
 DEFAULT_CONSOLE_HEIGHT = 300
 EXTENDED_CONSOLE_HEIGHT = 480
-
-CONSOLE_TEXT_SCALE = 0.7
-CONSOLE_PADDING_X = 12.0
-CONSOLE_PADDING_Y = 8.0
-CONSOLE_BG_COLOR = rl.Color(10, 10, 12, 200)
-CONSOLE_TEXT_COLOR = rl.Color(230, 230, 230, 255)
-CONSOLE_ACCENT_COLOR = rl.Color(200, 220, 160, 255)
-CONSOLE_CARET_COLOR = rl.Color(255, 255, 255, 255)
+CONSOLE_VERSION_TEXT = "Crimsonland 1.9.93"
+CONSOLE_ANIM_SPEED = 3.5
+CONSOLE_BLINK_SPEED = 3.0
+CONSOLE_LINE_HEIGHT = 16.0
+CONSOLE_MONO_SCALE = 0.5
+CONSOLE_SMALL_SCALE = 1.0
+CONSOLE_TEXT_X = 10.0
+CONSOLE_INPUT_X_MONO = 26.0
+CONSOLE_VERSION_OFFSET_X = 210.0
+CONSOLE_VERSION_OFFSET_Y = 18.0
+CONSOLE_BORDER_HEIGHT = 4.0
+CONSOLE_PROMPT_MONO = ">"
+CONSOLE_PROMPT_SMALL_FMT = ">%s"
+CONSOLE_CARET_TEXT = "_"
 
 CommandHandler = Callable[[list[str]], None]
 
@@ -45,6 +57,29 @@ def _normalize_script_path(name: str) -> Path:
     raw = name.strip().strip("\"'")
     normalized = raw.replace("\\", "/")
     return Path(normalized)
+
+
+def _resolve_script_path(console: "ConsoleState", target: Path) -> Path | None:
+    if target.is_absolute():
+        return target if target.is_file() else None
+    for base in console.script_dirs:
+        candidate = base / target
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def _clamp(value: float, low: float, high: float) -> float:
+    return max(low, min(high, value))
+
+
+def _rgba(r: float, g: float, b: float, a: float) -> rl.Color:
+    return rl.Color(
+        int(_clamp(r, 0.0, 1.0) * 255),
+        int(_clamp(g, 0.0, 1.0) * 255),
+        int(_clamp(b, 0.0, 1.0) * 255),
+        int(_clamp(a, 0.0, 1.0) * 255),
+    )
 
 
 @dataclass(slots=True)
@@ -91,6 +126,7 @@ class ConsoleState:
     base_dir: Path
     log: ConsoleLog
     assets_dir: Path | None = None
+    script_dirs: tuple[Path, ...] = field(default_factory=tuple)
     commands: dict[str, CommandHandler] = field(default_factory=dict)
     cvars: dict[str, ConsoleCvar] = field(default_factory=dict)
     open_flag: bool = False
@@ -106,14 +142,26 @@ class ConsoleState:
     echo_enabled: bool = True
     quit_requested: bool = False
     prompt_string: str = "> %s"
-    _font: GrimMonoFont | None = field(default=None, init=False, repr=False)
-    _font_error: str | None = field(default=None, init=False, repr=False)
+    _mono_font: GrimMonoFont | None = field(default=None, init=False, repr=False)
+    _mono_font_error: str | None = field(default=None, init=False, repr=False)
+    _small_font: SmallFontData | None = field(default=None, init=False, repr=False)
+    _small_font_error: str | None = field(default=None, init=False, repr=False)
+    _slide_t: float = 1.0
+    _offset_y: float = field(default=0.0, init=False)
+    _blink_time: float = 0.0
 
     def register_command(self, name: str, handler: CommandHandler) -> None:
         self.commands[name] = handler
 
     def register_cvar(self, name: str, value: str) -> None:
         self.cvars[name] = ConsoleCvar.from_value(name, value)
+
+    def add_script_dir(self, path: Path | None) -> None:
+        if path is None:
+            return
+        if path in self.script_dirs:
+            return
+        self.script_dirs = (*self.script_dirs, path)
 
     def set_open(self, open_flag: bool) -> None:
         self.open_flag = open_flag
@@ -150,7 +198,10 @@ class ConsoleState:
             return
         self.log.log(f"Unknown command \"{name}\"")
 
-    def update(self) -> None:
+    def update(self, dt: float) -> None:
+        frame_dt = min(dt, 0.1)
+        self._blink_time += frame_dt
+        self._update_slide(frame_dt)
         if not self.open_flag or not self.input_enabled:
             return
         ctrl_down = rl.is_key_down(rl.KeyboardKey.KEY_LEFT_CONTROL) or rl.is_key_down(rl.KeyboardKey.KEY_RIGHT_CONTROL)
@@ -165,17 +216,17 @@ class ConsoleState:
             else:
                 self._history_next()
         if rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_UP):
-            self._scroll_lines(self._visible_log_lines())
+            self._scroll_lines(2)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_PAGE_DOWN):
-            self._scroll_lines(-self._visible_log_lines())
+            self._scroll_lines(-2)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT):
             self.input_caret = max(0, self.input_caret - 1)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT):
             self.input_caret = min(len(self.input_buffer), self.input_caret + 1)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_HOME):
-            self.input_caret = 0
+            self._scroll_lines(0x14)
         if rl.is_key_pressed(rl.KeyboardKey.KEY_END):
-            self.input_caret = len(self.input_buffer)
+            self.scroll_offset = 0
         if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
             self._autocomplete()
         if rl.is_key_pressed(rl.KeyboardKey.KEY_BACKSPACE):
@@ -196,44 +247,73 @@ class ConsoleState:
         self._poll_text_input()
 
     def draw(self) -> None:
-        if not self.open_flag:
-            return
-        screen_w = float(rl.get_screen_width())
-        screen_h = float(rl.get_screen_height())
-        height = min(float(self.height_px), screen_h)
+        height = float(self.height_px)
         if height <= 0.0:
             return
-        rl.draw_rectangle(0, 0, int(screen_w), int(height), CONSOLE_BG_COLOR)
-        line_height = self._line_height()
-        if line_height <= 0.0:
+        ratio = self._open_ratio(height)
+        if ratio <= 0.0:
             return
-        pad_x = CONSOLE_PADDING_X
-        pad_y = CONSOLE_PADDING_Y
-        total_lines = max(int((height - pad_y * 2) // line_height), 1)
-        log_lines = max(total_lines - 1, 1)
-        visible = self._visible_log_slice(log_lines)
-        y = pad_y
+        screen_w = float(rl.get_screen_width())
+        offset_y = self._offset_y
+        rl.draw_rectangle(0, int(offset_y), int(screen_w), int(height), _rgba(0.6, 0.6, 0.6, ratio))
+        border_y = int(offset_y + height - CONSOLE_BORDER_HEIGHT)
+        rl.draw_rectangle(
+            0,
+            border_y,
+            int(screen_w),
+            int(CONSOLE_BORDER_HEIGHT),
+            _rgba(0.1, 0.6, 1.0, ratio),
+        )
+
+        version_x = screen_w - CONSOLE_VERSION_OFFSET_X
+        version_y = offset_y + height - CONSOLE_VERSION_OFFSET_Y
+        self._draw_version_text(version_x, version_y, _rgba(1.0, 1.0, 1.0, ratio * 0.3))
+
+        visible, visible_count = self._visible_log_block(height)
+        input_y = offset_y + (visible_count + 1) * CONSOLE_LINE_HEIGHT
+        text_color = _rgba(1.0, 1.0, 1.0, ratio)
+        use_mono = self._use_mono_font()
+        if use_mono:
+            self._draw_mono_text(CONSOLE_PROMPT_MONO, CONSOLE_TEXT_X, input_y, text_color)
+            self._draw_mono_text(self.input_buffer, CONSOLE_INPUT_X_MONO, input_y, text_color)
+        else:
+            prompt = CONSOLE_PROMPT_SMALL_FMT.replace("%s", self.input_buffer)
+            self._draw_small_text(prompt, CONSOLE_TEXT_X, input_y, text_color)
+
+        log_color = _rgba(0.6, 0.6, 0.7, ratio)
+        y = offset_y + CONSOLE_LINE_HEIGHT
         for line in visible:
-            self._draw_text(line, pad_x, y, CONSOLE_TEXT_SCALE, CONSOLE_TEXT_COLOR)
-            y += line_height
-        prompt = self._prompt_text()
-        input_y = height - pad_y - line_height
-        self._draw_text(prompt, pad_x, input_y, CONSOLE_TEXT_SCALE, CONSOLE_ACCENT_COLOR)
-        caret_x = self._caret_x(prompt_prefix=self._prompt_prefix())
-        rl.draw_rectangle(int(caret_x), int(input_y), 2, int(line_height), CONSOLE_CARET_COLOR)
+            if use_mono:
+                self._draw_mono_text(line, CONSOLE_TEXT_X, y, log_color)
+            else:
+                self._draw_small_text(line, CONSOLE_TEXT_X, y, log_color)
+            y += CONSOLE_LINE_HEIGHT
+
+        caret_alpha = ratio * self._caret_blink_alpha()
+        caret_color = _rgba(1.0, 1.0, 1.0, caret_alpha)
+        caret_y = input_y + 2.0
+        if use_mono:
+            caret_x = CONSOLE_INPUT_X_MONO + float(self.input_caret) * 8.0
+            self._draw_mono_text(CONSOLE_CARET_TEXT, caret_x, caret_y, caret_color)
+        else:
+            caret_x = self._small_caret_x()
+            self._draw_small_text(CONSOLE_CARET_TEXT, caret_x, caret_y, caret_color)
 
     def close(self) -> None:
-        if self._font is not None:
-            rl.unload_texture(self._font.texture)
-            self._font = None
+        if self._mono_font is not None:
+            rl.unload_texture(self._mono_font.texture)
+            self._mono_font = None
+        if self._small_font is not None:
+            rl.unload_texture(self._small_font.texture)
+            self._small_font = None
 
     def _tokenize_line(self, line: str) -> list[str]:
-        return line.strip().split()
-
-    def _prompt_prefix(self) -> str:
-        if "%s" in self.prompt_string:
-            return self.prompt_string.split("%s", 1)[0]
-        return self.prompt_string
+        stripped = line.strip()
+        if not stripped:
+            return []
+        if stripped.startswith("//"):
+            return []
+        return stripped.split()
 
     def _prompt_text(self) -> str:
         if "%s" in self.prompt_string:
@@ -283,6 +363,7 @@ class ConsoleState:
         if not self.history or self.history[-1] != line:
             self.history.append(line)
         self.exec_line(line)
+        self.input_ready = False
         self.scroll_offset = 0
 
     def _poll_text_input(self) -> None:
@@ -333,85 +414,126 @@ class ConsoleState:
         return None
 
     def _scroll_lines(self, delta: int) -> None:
-        visible = self._visible_log_lines()
-        max_offset = max(0, len(self.log.lines) - visible)
+        max_offset = self._max_scroll_offset()
         if max_offset <= 0:
             self.scroll_offset = 0
             return
         self.scroll_offset = max(0, min(max_offset, self.scroll_offset + int(delta)))
 
-    def _visible_log_lines(self) -> int:
-        height = min(float(self.height_px), float(rl.get_screen_height()))
-        if height <= 0.0:
-            return 1
-        line_height = self._line_height()
-        if line_height <= 0.0:
-            return 1
-        total_lines = max(int((height - CONSOLE_PADDING_Y * 2) // line_height), 1)
-        return max(total_lines - 1, 1)
+    def _max_visible_lines(self, height: float | None = None) -> int:
+        use_height = height if height is not None else float(self.height_px)
+        if use_height <= 0.0:
+            return 0
+        return max(int(use_height // CONSOLE_LINE_HEIGHT) - 2, 0)
 
-    def _visible_log_slice(self, log_lines: int) -> list[str]:
-        if not self.log.lines:
-            return []
-        max_offset = max(0, len(self.log.lines) - log_lines)
+    def _max_scroll_offset(self) -> int:
+        max_lines = self._max_visible_lines()
+        log_count = len(self.log.lines)
+        visible = min(log_count, max_lines)
+        return max(0, log_count - visible)
+
+    def _visible_log_block(self, height: float) -> tuple[list[str], int]:
+        max_lines = self._max_visible_lines(height)
+        log_count = len(self.log.lines)
+        visible_count = min(log_count, max_lines)
+        if visible_count <= 0:
+            return [], 0
+        max_offset = max(0, log_count - visible_count)
         if self.scroll_offset > max_offset:
             self.scroll_offset = max_offset
-        start = max(0, len(self.log.lines) - log_lines - self.scroll_offset)
-        end = min(len(self.log.lines), start + log_lines)
-        return self.log.lines[start:end]
+        start = max(0, log_count - visible_count - self.scroll_offset)
+        end = min(log_count, start + visible_count)
+        return self.log.lines[start:end], visible_count
 
-    def _line_height(self) -> float:
-        if self._ensure_font() is not None:
-            return GRIM_MONO_LINE_HEIGHT * CONSOLE_TEXT_SCALE
-        return float(20 * CONSOLE_TEXT_SCALE)
+    def _update_slide(self, dt: float) -> None:
+        if self.open_flag:
+            self._slide_t = max(0.0, self._slide_t - dt * CONSOLE_ANIM_SPEED)
+        else:
+            self._slide_t = min(1.0, self._slide_t + dt * CONSOLE_ANIM_SPEED)
+        height = float(self.height_px)
+        if height <= 0.0:
+            self._offset_y = -height
+            return
+        eased = math.sin((1.0 - self._slide_t) * math.pi / 2.0)
+        self._offset_y = eased * height - height
 
-    def _ensure_font(self) -> GrimMonoFont | None:
-        if self._font is not None:
-            return self._font
-        if self._font_error is not None:
+    def _open_ratio(self, height: float) -> float:
+        if height <= 0.0:
+            return 0.0
+        return _clamp((height + self._offset_y) / height, 0.0, 1.0)
+
+    def _caret_blink_alpha(self) -> float:
+        pulse = math.sin(self._blink_time * CONSOLE_BLINK_SPEED)
+        value = max(0.2, abs(pulse) ** 2)
+        return _clamp(value, 0.0, 1.0)
+
+    def _use_mono_font(self) -> bool:
+        cvar = self.cvars.get("con_monoFont")
+        if cvar is None:
+            return False
+        return bool(cvar.value_f)
+
+    def _ensure_mono_font(self) -> GrimMonoFont | None:
+        if self._mono_font is not None:
+            return self._mono_font
+        if self._mono_font_error is not None:
             return None
         if self.assets_dir is None:
-            self._font_error = "missing assets dir"
+            self._mono_font_error = "missing assets dir"
             return None
         missing_assets: list[str] = []
         try:
-            self._font = load_grim_mono_font(self.assets_dir, missing_assets)
+            self._mono_font = load_grim_mono_font(self.assets_dir, missing_assets)
         except FileNotFoundError as exc:
-            self._font_error = str(exc)
-            self._font = None
-        return self._font
+            self._mono_font_error = str(exc)
+            self._mono_font = None
+        return self._mono_font
 
-    def _draw_text(self, text: str, x: float, y: float, scale: float, color: rl.Color) -> None:
-        font = self._ensure_font()
+    def _ensure_small_font(self) -> SmallFontData | None:
+        if self._small_font is not None:
+            return self._small_font
+        if self._small_font_error is not None:
+            return None
+        if self.assets_dir is None:
+            self._small_font_error = "missing assets dir"
+            return None
+        missing_assets: list[str] = []
+        try:
+            self._small_font = load_small_font(self.assets_dir, missing_assets)
+        except FileNotFoundError as exc:
+            self._small_font_error = str(exc)
+            self._small_font = None
+        return self._small_font
+
+    def _draw_mono_text(self, text: str, x: float, y: float, color: rl.Color) -> None:
+        font = self._ensure_mono_font()
         if font is None:
-            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
+            rl.draw_text(text, int(x), int(y), int(16 * CONSOLE_MONO_SCALE), color)
             return
-        draw_grim_mono_text(font, text, x, y, scale, color)
+        advance = font.advance * CONSOLE_FONT_SCALE
+        draw_grim_mono_text(font, text, x - advance, y, CONSOLE_MONO_SCALE, color)
 
-    def _caret_x(self, prompt_prefix: str) -> float:
-        font = self._ensure_font()
-        advance = 16.0 * CONSOLE_TEXT_SCALE
-        if font is not None:
-            advance = font.advance * CONSOLE_TEXT_SCALE
-        count = self._advance_count(prompt_prefix + self.input_buffer[: self.input_caret])
-        return CONSOLE_PADDING_X + advance * float(count + 1)
+    def _draw_small_text(self, text: str, x: float, y: float, color: rl.Color) -> None:
+        font = self._ensure_small_font()
+        if font is None:
+            rl.draw_text(text, int(x), int(y), int(16 * CONSOLE_SMALL_SCALE), color)
+            return
+        draw_small_text(font, text, x, y, CONSOLE_SMALL_SCALE, color)
 
-    def _advance_count(self, text: str) -> int:
-        count = 0
-        skip_advance = False
-        for value in text.encode("latin-1", errors="replace"):
-            if value == 0x0A:
-                continue
-            if value == 0x0D:
-                continue
-            if value == 0xA7:
-                skip_advance = True
-                continue
-            if skip_advance:
-                skip_advance = False
-                continue
-            count += 1
-        return count
+    def _draw_version_text(self, x: float, y: float, color: rl.Color) -> None:
+        font = self._ensure_small_font()
+        if font is None:
+            self._draw_mono_text(CONSOLE_VERSION_TEXT, x, y, color)
+            return
+        draw_small_text(font, CONSOLE_VERSION_TEXT, x, y, CONSOLE_SMALL_SCALE, color)
+
+    def _small_caret_x(self) -> float:
+        font = self._ensure_small_font()
+        if font is None:
+            return CONSOLE_TEXT_X + 16.0 + float(self.input_caret) * 8.0
+        prompt_w = measure_small_text_width(font, CONSOLE_PROMPT_SMALL_FMT.replace("%s", ""), CONSOLE_SMALL_SCALE)
+        input_w = measure_small_text_width(font, self.input_buffer[: self.input_caret], CONSOLE_SMALL_SCALE)
+        return CONSOLE_TEXT_X + prompt_w + input_w
 
     def _flush_input_queue(self) -> None:
         while rl.get_char_pressed():
@@ -421,7 +543,23 @@ class ConsoleState:
 
 
 def create_console(base_dir: Path, assets_dir: Path | None = None) -> ConsoleState:
-    console = ConsoleState(base_dir=base_dir, log=ConsoleLog(base_dir=base_dir), assets_dir=assets_dir)
+    script_dirs: tuple[Path, ...] = (base_dir,)
+    if assets_dir is not None and assets_dir != base_dir:
+        script_dirs = (*script_dirs, assets_dir)
+    console = ConsoleState(
+        base_dir=base_dir,
+        log=ConsoleLog(base_dir=base_dir),
+        assets_dir=assets_dir,
+        script_dirs=script_dirs,
+    )
+    console.register_cvar("version", CONSOLE_VERSION_TEXT)
+    console.register_cvar("con_monoFont", "1")
+    if console.open_flag:
+        console._slide_t = 0.0
+        console._offset_y = 0.0
+    else:
+        console._slide_t = 1.0
+        console._offset_y = -float(console.height_px)
     register_core_commands(console)
     return console
 
@@ -433,7 +571,10 @@ def _make_noop_command(console: ConsoleState, name: str) -> CommandHandler:
     return _handler
 
 
-def register_boot_commands(console: ConsoleState) -> None:
+def register_boot_commands(
+    console: ConsoleState, handlers: dict[str, CommandHandler] | None = None
+) -> None:
+    resolved = handlers or {}
     commands = (
         "setGammaRamp",
         "snd_addGameTune",
@@ -445,7 +586,10 @@ def register_boot_commands(console: ConsoleState) -> None:
         "sndfreqadjustment",
     )
     for name in commands:
-        console.register_command(name, _make_noop_command(console, name))
+        handler = resolved.get(name)
+        if handler is None:
+            handler = _make_noop_command(console, name)
+        console.register_command(name, handler)
 
 
 def register_core_cvars(console: ConsoleState, width: int, height: int) -> None:
@@ -499,12 +643,12 @@ def register_core_commands(console: ConsoleState) -> None:
 
     def cmd_exec(args: list[str]) -> None:
         if not args:
-            console.log.log("Usage: exec <file>")
+            console.log.log("exec <script>")
             return
         target = _normalize_script_path(args[0])
-        path = target if target.is_absolute() else game_build_path(console.base_dir, str(target))
-        if not path.is_file():
-            console.log.log(f"Cannot open '{args[0]}'")
+        path = _resolve_script_path(console, target)
+        if path is None:
+            console.log.log(f"Cannot open file '{args[0]}'")
             return
         console.log.log(f"Executing '{args[0]}'")
         try:
@@ -513,7 +657,7 @@ def register_core_commands(console: ConsoleState) -> None:
                 if line:
                     console.exec_line(line)
         except OSError:
-            console.log.log(f"Cannot open '{args[0]}'")
+            console.log.log(f"Cannot open file '{args[0]}'")
 
     console.register_command("cmdlist", cmdlist)
     console.register_command("vars", vars_cmd)
