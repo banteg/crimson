@@ -37,5 +37,5 @@ What to document first (to unblock Survival) is anything that defines the “run
 
 ## 5) Update Rewrite Status Docs (coordination, not blocking but high leverage)
 
-- [ ] Update docs/rewrite/index.md and docs/rewrite/tech-tree.md to reflect recent reality:
+- [x] Update docs/rewrite/index.md and docs/rewrite/tech-tree.md to reflect recent reality:
     - SFX, FX pools/queue baking, game.cfg persistence, perk/bonus systems, HUD, console UI, player_update glue.

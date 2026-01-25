@@ -10,7 +10,7 @@ it unlocks for parity. Goal: 100% replication of game logic.
 - [x] Texture cache (JAZ/TGA/JPG) -> Unlocks: boot splash, menu, views.
 - [x] Raylib window loop + screenshot hotkey -> Unlocks: visual debugging.
 - [x] `crimson.cfg` loader/writer -> Unlocks: screen settings + audio toggles.
-- [x] Console log + command stubs -> Unlocks: boot logging + future console flow.
+- [x] Console UI overlay + commands/cvars -> Unlocks: interactive console parity.
 
 ## Boot + front-end
 
@@ -39,7 +39,7 @@ it unlocks for parity. Goal: 100% replication of game logic.
 ## Rendering + debug views
 
 - [x] Terrain render-target + procedural stamping -> Unlocks: ground parity and quest previews.
-- [ ] Terrain decal baking (fx_queue_render parity) -> Unlocks: baked blood/scorch/corpses on ground.
+- [x] Terrain decal baking (fx_queue_render port; used in `ground` view) -> Unlocks: baked blood/scorch/corpses on ground.
 - [x] Creature animation preview -> Unlocks: sprite timing validation.
 - [x] Sprite/particle/bonus/weapon atlas previews -> Unlocks: asset alignment.
 - [x] UI + font previews -> Unlocks: HUD/menu layout checks.
@@ -47,15 +47,15 @@ it unlocks for parity. Goal: 100% replication of game logic.
 ## Next (short term)
 
 - [ ] Options screen widgets (fx/audio/windowed toggles) -> Unlocks: config editing parity.
-- [ ] Player input + movement state -> Unlocks: controllable gameplay loop.
-- [ ] Weapon firing + reload timers -> Unlocks: combat timing parity.
-- [ ] Projectile system (spawn/update/collide) -> Unlocks: damage + FX.
+- [x] Player input + movement state (sandbox view) -> Unlocks: controllable gameplay loop.
+- [x] Weapon firing + reload timers (sandbox view) -> Unlocks: combat timing parity.
+- [x] Projectile system (spawn/update/hit subset) -> Unlocks: damage + FX.
 - [ ] Creature updates + spawners -> Unlocks: enemy waves in modes.
 - [ ] Replace DemoView toy simulation with real gameplay systems -> Unlocks: reuse gameplay loop for attract mode.
-- [ ] Bonus/perk application logic -> Unlocks: timers + power-up effects.
-- [ ] HUD overlay (health/ammo/bonuses) -> Unlocks: in-game UI parity.
-- [ ] SFX playback (non-music) -> Unlocks: gameplay/audio feedback.
-- [ ] Save/status integration -> Unlocks: persistence + unlock tracking.
+- [x] Bonus/perk application logic (subset) -> Unlocks: timers + power-up effects.
+- [x] HUD overlay (health/ammo/bonuses) -> Unlocks: in-game UI parity.
+- [x] SFX playback (non-music; demo wired) -> Unlocks: gameplay/audio feedback.
+- [x] Save/status integration (`game.cfg` load/save + stats screen) -> Unlocks: persistence + unlock tracking.
 
 ## Later parity gates
 
