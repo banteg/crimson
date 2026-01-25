@@ -704,15 +704,15 @@ def _bonus_enabled(bonus_id: int) -> bool:
 
 
 def _bonus_id_from_roll(roll: int, rng: Crand) -> int:
-    # Mirrors bonus_pick_random_type (0x412470): r = rand() % 0xA2 (0..161),
-    # Points if r <= 12, Energizer if r == 13 and (rand & 0x3f) == 0, else
+    # Mirrors bonus_pick_random_type (0x412470): r = rand() % 162 (0..161),
+    # Points if r <= 12, Energizer if r == 13 and (rand & 63) == 0, else
     # bucketed ids 3..14 with a 10-step loop that wraps every 120 counts.
     r = roll - 1
     if r < 0 or r >= 162:
         return 0
     if r <= 12:
         return int(BonusId.POINTS)
-    if r == 13 and (rng.rand() & 0x3F) == 0:
+    if r == 13 and (rng.rand() & 63) == 0:
         return int(BonusId.ENERGIZER)
     bucket_index = (r - 13) % 120
     return int(BonusId.WEAPON) + (bucket_index // 10)
