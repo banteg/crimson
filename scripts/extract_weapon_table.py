@@ -35,7 +35,41 @@ class Value:
     number: int | float | None
 
 
-def load_pe_reader(path: Path) -> Callable[[int], str | None] | None:
+@dataclass(frozen=True)
+class PeReader:
+    data: bytes
+    image_base: int
+    sections: list[tuple[int, int, int]]
+
+    def va_to_offset(self, va: int) -> int | None:
+        rva = va - self.image_base
+        if rva < 0:
+            return None
+        for virt_addr, span, raw_ptr in self.sections:
+            if virt_addr <= rva < virt_addr + span:
+                return raw_ptr + (rva - virt_addr)
+        return None
+
+    def read_c_string(self, va: int, max_len: int = 256) -> str | None:
+        off = self.va_to_offset(va)
+        if off is None:
+            return None
+        end = self.data.find(b"\x00", off, off + max_len)
+        if end == -1:
+            end = off + max_len
+        raw = self.data[off:end]
+        if not raw or not any(32 <= b < 127 for b in raw):
+            return None
+        return raw.decode("ascii", errors="ignore")
+
+    def read_u32(self, va: int) -> int | None:
+        off = self.va_to_offset(va)
+        if off is None or off + 4 > len(self.data):
+            return None
+        return struct.unpack_from("<I", self.data, off)[0]
+
+
+def load_pe_reader(path: Path) -> PeReader | None:
     if not path.exists():
         return None
     data = path.read_bytes()
@@ -67,28 +101,7 @@ def load_pe_reader(path: Path) -> Callable[[int], str | None] | None:
         span = max(virt_size, raw_size)
         sections.append((virt_addr, span, raw_ptr))
 
-    def va_to_offset(va: int) -> int | None:
-        rva = va - image_base
-        if rva < 0:
-            return None
-        for virt_addr, span, raw_ptr in sections:
-            if virt_addr <= rva < virt_addr + span:
-                return raw_ptr + (rva - virt_addr)
-        return None
-
-    def read_c_string(va: int, max_len: int = 256) -> str | None:
-        off = va_to_offset(va)
-        if off is None:
-            return None
-        end = data.find(b"\x00", off, off + max_len)
-        if end == -1:
-            end = off + max_len
-        raw = data[off:end]
-        if not raw or not any(32 <= b < 127 for b in raw):
-            return None
-        return raw.decode("ascii", errors="ignore")
-
-    return read_c_string
+    return PeReader(data=data, image_base=image_base, sections=sections)
 
 
 def parse_strings() -> dict[int, str]:
@@ -164,14 +177,14 @@ def parse_offset(sign: str | None, value: str | None) -> int:
 
 def resolve_string(
     addr_to_str: dict[int, str],
-    pe_reader: Callable[[int], str | None] | None,
+    pe_reader: PeReader | None,
     addr: int,
 ) -> str | None:
     name = addr_to_str.get(addr)
     if name:
         return name
     if pe_reader:
-        return pe_reader(addr)
+        return pe_reader.read_c_string(addr)
     return None
 
 
@@ -182,6 +195,7 @@ def main() -> None:
 
     entries: list[dict[int, Value]] = [dict() for _ in range((END_ADDR - BASE_ADDR) // STRIDE_BYTES)]
     names: dict[int, str] = {}
+    ammo_classes: list[int | None] = [None for _ in range(len(entries))]
 
     current_str_addr: int | None = None
     current_str_offset = 0
@@ -236,6 +250,16 @@ def main() -> None:
         offset = (dst_addr - BASE_ADDR) % STRIDE_BYTES
         entries[entry][offset] = Value(raw=src, number=parse_number(src))
 
+    if pe_reader is not None:
+        for idx in range(len(entries)):
+            va = BASE_ADDR - 4 + idx * STRIDE_BYTES
+            raw = pe_reader.read_u32(va)
+            if raw is None:
+                continue
+            if raw & 0x80000000:
+                raw = raw - 0x100000000
+            ammo_classes[idx] = int(raw)
+
     lines: list[str] = []
     lines.append("from __future__ import annotations\n")
     lines.append("\n")
@@ -251,6 +275,7 @@ def main() -> None:
     lines.append("class Weapon:\n")
     lines.append("    weapon_id: int\n")
     lines.append("    name: str | None\n")
+    lines.append("    ammo_class: int | None\n")
     lines.append("    clip_size: int | None\n")
     lines.append("    fire_rate: float | None\n")
     lines.append("    reload_time: float | None\n")
@@ -268,6 +293,7 @@ def main() -> None:
         if not fields and idx not in names:
             continue
         name = names.get(idx)
+        ammo_class = ammo_classes[idx]
         clip_size = value_as_int(fields.get(CLIP_SIZE_OFFSET))
         fire_rate = value_as_float(fields.get(FIRE_RATE_OFFSET))
         reload_time = value_as_float(fields.get(RELOAD_TIME_OFFSET))
@@ -292,6 +318,7 @@ def main() -> None:
         lines.append("    Weapon(\n")
         lines.append(f"        weapon_id={idx - 1},\n")
         lines.append(f"        name={name!r},\n")
+        lines.append(f"        ammo_class={ammo_class!r},\n")
         lines.append(f"        clip_size={clip_size!r},\n")
         lines.append(f"        fire_rate={fire_rate!r},\n")
         lines.append(f"        reload_time={reload_time!r},\n")

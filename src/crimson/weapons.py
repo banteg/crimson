@@ -12,6 +12,7 @@ from dataclasses import dataclass
 class Weapon:
     weapon_id: int
     name: str | None
+    ammo_class: int | None
     clip_size: int | None
     fire_rate: float | None
     reload_time: float | None
@@ -28,6 +29,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=0,
         name='Pistol',
+        ammo_class=None,
         clip_size=12,
         fire_rate=0.7117000222206116,
         reload_time=1.2000000476837158,
@@ -42,6 +44,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=1,
         name='Assault Rifle',
+        ammo_class=None,
         clip_size=25,
         fire_rate=0.11699999868869781,
         reload_time=1.2000000476837158,
@@ -56,6 +59,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=2,
         name='Shotgun',
+        ammo_class=None,
         clip_size=12,
         fire_rate=0.8500000238418579,
         reload_time=1.899999976158142,
@@ -70,6 +74,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=3,
         name='Sawed-off Shotgun',
+        ammo_class=None,
         clip_size=12,
         fire_rate=0.8700000047683716,
         reload_time=1.899999976158142,
@@ -84,6 +89,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=4,
         name='Submachine Gun',
+        ammo_class=None,
         clip_size=30,
         fire_rate=0.08811700344085693,
         reload_time=1.2000000476837158,
@@ -98,6 +104,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=5,
         name='Gauss Gun',
+        ammo_class=None,
         clip_size=6,
         fire_rate=0.6000000238418579,
         reload_time=1.600000023841858,
@@ -112,6 +119,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=6,
         name='Mean Minigun',
+        ammo_class=None,
         clip_size=120,
         fire_rate=0.09000000357627869,
         reload_time=4.0,
@@ -126,6 +134,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=7,
         name='Flamethrower',
+        ammo_class=None,
         clip_size=30,
         fire_rate=0.008112999610602856,
         reload_time=2.0,
@@ -140,6 +149,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=8,
         name='Plasma Rifle',
+        ammo_class=None,
         clip_size=20,
         fire_rate=0.290811687707901,
         reload_time=1.2000000476837158,
@@ -154,6 +164,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=9,
         name='Multi-Plasma',
+        ammo_class=None,
         clip_size=8,
         fire_rate=0.6208117008209229,
         reload_time=1.399999976158142,
@@ -168,6 +179,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=10,
         name='Plasma Minigun',
+        ammo_class=None,
         clip_size=30,
         fire_rate=0.10999999940395355,
         reload_time=1.2999999523162842,
@@ -182,6 +194,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=11,
         name='Rocket Launcher',
+        ammo_class=None,
         clip_size=5,
         fire_rate=0.7408117055892944,
         reload_time=1.2000000476837158,
@@ -196,6 +209,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=12,
         name='Seeker Rockets',
+        ammo_class=None,
         clip_size=8,
         fire_rate=0.31081169843673706,
         reload_time=1.2000000476837158,
@@ -210,6 +224,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=13,
         name='Plasma Shotgun',
+        ammo_class=None,
         clip_size=8,
         fire_rate=0.47999998927116394,
         reload_time=3.0999999046325684,
@@ -224,6 +239,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=14,
         name='Blow Torch',
+        ammo_class=None,
         clip_size=30,
         fire_rate=0.006113000214099884,
         reload_time=1.5,
@@ -238,6 +254,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=15,
         name='HR Flamer',
+        ammo_class=None,
         clip_size=30,
         fire_rate=0.008500000461935997,
         reload_time=1.7999999523162842,
@@ -252,6 +269,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=16,
         name='Mini-Rocket Swarmers',
+        ammo_class=None,
         clip_size=5,
         fire_rate=1.7999999523162842,
         reload_time=1.7999999523162842,
@@ -266,6 +284,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=17,
         name='Rocket Minigun',
+        ammo_class=None,
         clip_size=16,
         fire_rate=0.11999999731779099,
         reload_time=1.7999999523162842,
@@ -280,6 +299,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=18,
         name='Pulse Gun',
+        ammo_class=None,
         clip_size=16,
         fire_rate=0.10000000149011612,
         reload_time=0.10000000149011612,
@@ -294,6 +314,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=19,
         name='Jackhammer',
+        ammo_class=None,
         clip_size=16,
         fire_rate=0.14000000059604645,
         reload_time=3.0,
@@ -308,6 +329,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=20,
         name='Ion Rifle',
+        ammo_class=None,
         clip_size=8,
         fire_rate=0.4000000059604645,
         reload_time=1.350000023841858,
@@ -322,6 +344,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=21,
         name='Ion Minigun',
+        ammo_class=None,
         clip_size=20,
         fire_rate=0.10000000149011612,
         reload_time=1.7999999523162842,
@@ -336,6 +359,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=22,
         name='Ion Cannon',
+        ammo_class=None,
         clip_size=3,
         fire_rate=1.0,
         reload_time=3.0,
@@ -350,6 +374,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=23,
         name='Shrinkifier 5k',
+        ammo_class=None,
         clip_size=8,
         fire_rate=0.20999999344348907,
         reload_time=1.2200000286102295,
@@ -364,6 +389,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=24,
         name='Blade Gun',
+        ammo_class=None,
         clip_size=6,
         fire_rate=0.3499999940395355,
         reload_time=3.5,
@@ -378,6 +404,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=25,
         name='Spider Plasma',
+        ammo_class=None,
         clip_size=5,
         fire_rate=0.20000000298023224,
         reload_time=1.2000000476837158,
@@ -392,6 +419,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=26,
         name='Evil Scythe',
+        ammo_class=None,
         clip_size=3,
         fire_rate=1.0,
         reload_time=3.0,
@@ -406,6 +434,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=27,
         name='Plasma Cannon',
+        ammo_class=None,
         clip_size=3,
         fire_rate=0.8999999761581421,
         reload_time=2.700000047683716,
@@ -420,6 +449,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=28,
         name='Splitter Gun',
+        ammo_class=None,
         clip_size=6,
         fire_rate=0.699999988079071,
         reload_time=2.200000047683716,
@@ -434,6 +464,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=29,
         name='Gauss Shotgun',
+        ammo_class=None,
         clip_size=4,
         fire_rate=1.0499999523162842,
         reload_time=2.0999999046325684,
@@ -448,6 +479,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=30,
         name='Ion Shotgun',
+        ammo_class=None,
         clip_size=10,
         fire_rate=0.8500000238418579,
         reload_time=1.899999976158142,
@@ -462,6 +494,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=31,
         name='Flameburst',
+        ammo_class=None,
         clip_size=60,
         fire_rate=0.019999999552965164,
         reload_time=3.0,
@@ -476,6 +509,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=32,
         name='RayGun',
+        ammo_class=None,
         clip_size=12,
         fire_rate=0.699999988079071,
         reload_time=2.0,
@@ -490,6 +524,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=40,
         name='Plague Sphreader Gun',
+        ammo_class=None,
         clip_size=5,
         fire_rate=0.20000000298023224,
         reload_time=1.2000000476837158,
@@ -504,6 +539,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=41,
         name='Bubblegun',
+        ammo_class=None,
         clip_size=15,
         fire_rate=0.16130000352859497,
         reload_time=1.2000000476837158,
@@ -518,6 +554,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=42,
         name='Rainbow Gun',
+        ammo_class=None,
         clip_size=10,
         fire_rate=0.20000000298023224,
         reload_time=1.2000000476837158,
@@ -532,6 +569,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=43,
         name='Grim Weapon',
+        ammo_class=None,
         clip_size=3,
         fire_rate=0.5,
         reload_time=1.2000000476837158,
@@ -546,6 +584,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=44,
         name='Fire bullets',
+        ammo_class=None,
         clip_size=112,
         fire_rate=0.14000000059604645,
         reload_time=1.2000000476837158,
@@ -560,6 +599,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=49,
         name='Transmutator',
+        ammo_class=None,
         clip_size=50,
         fire_rate=0.03999999910593033,
         reload_time=5.0,
@@ -574,6 +614,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=50,
         name='Blaster R-300',
+        ammo_class=None,
         clip_size=20,
         fire_rate=0.07999999821186066,
         reload_time=2.0,
@@ -588,6 +629,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=51,
         name='Lighting Rifle',
+        ammo_class=None,
         clip_size=500,
         fire_rate=4.0,
         reload_time=8.0,
@@ -602,6 +644,7 @@ WEAPON_TABLE = [
     Weapon(
         weapon_id=52,
         name='Nuke Launcher',
+        ammo_class=None,
         clip_size=1,
         fire_rate=4.0,
         reload_time=8.0,
