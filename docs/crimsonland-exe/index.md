@@ -17,6 +17,7 @@ Sections:
 - [Main menu (state 0)](main-menu.md)
 - [Screens and flows](screens.md)
 - [Demo / attract mode](demo-mode.md)
+- [Survival mode](survival.md)
 - [Online scores](online-scores.md)
 - [Mods](mods.md)
 - [Gameplay glue](gameplay.md)

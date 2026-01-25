@@ -14,12 +14,12 @@ What to document first (to unblock Survival) is anything that defines the “run
 
 ## 2) Survival Mode Contract (must-have)
 
-- [ ] Add docs/crimsonland-exe/survival.md (new, status-analysis)
+- [x] Add docs/crimsonland-exe/survival.md (new, status-analysis)
 - Goal: define Survival's state + update responsibilities independent of rendering.
 - Include:
-    - [ ] State variables (elapsed_ms, spawn_cooldown, scripted_stage, reward handout gates; see docs/detangling.md + docs/creatures/struct.md).
-    - [ ] Spawn cadence + milestones as the authoritative model (already in src/crimson/creatures/spawn.py + tests: tests/test_survival_wave.py, tests/test_survival_milestones.py, tests/test_survival_spawn.py).
-    - [ ] Progression: XP awarding rules (incl. Double XP), level thresholds, perk pending/resolve strategy (we already have survival_progression_update + auto-pick in src/crimson/gameplay.py, but the doc should state what the exe does / what we're approximating).
+    - [x] State variables (elapsed_ms, spawn_cooldown, scripted_stage, reward handout gates; see docs/detangling.md + docs/creatures/struct.md).
+    - [x] Spawn cadence + milestones as the authoritative model (already in src/crimson/creatures/spawn.py + tests: tests/test_survival_wave.py, tests/test_survival_milestones.py, tests/test_survival_spawn.py).
+    - [x] Progression: XP awarding rules (incl. Double XP), level thresholds, perk pending/resolve strategy (we already have survival_progression_update + auto-pick in src/crimson/gameplay.py, but the doc should state what the exe does / what we're approximating).
 
 ## 3) Player Damage Contract (must-have for contact damage + "game over")
 
