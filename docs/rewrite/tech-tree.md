@@ -44,18 +44,32 @@ it unlocks for parity. Goal: 100% replication of game logic.
 - [x] Sprite/particle/bonus/weapon atlas previews -> Unlocks: asset alignment.
 - [x] UI + font previews -> Unlocks: HUD/menu layout checks.
 
-## Next (short term)
+## Next (short term / integration)
 
+- [ ] Wire gameplay scene into `crimson game` (player + camera + HUD) -> Unlocks: playtesting loop outside debug views.
+- [ ] Port `player_take_damage` + game over flow -> Unlocks: contact damage + death handling.
+- [ ] Integrate creature updates + spawners into runtime loop -> Unlocks: enemy waves in modes.
+- [ ] Integrate combat loop (projectiles -> creatures, death contract -> XP/bonuses/FX/SFX) -> Unlocks: combat parity.
+- [ ] Wire FX queues into gameplay ground renderer -> Unlocks: persistent blood/corpses in modes.
+- [ ] Implement Survival mode loop (rewrite runtime) -> Unlocks: first playable mode.
+- [ ] Replace DemoView toy simulation with gameplay scene -> Unlocks: reuse gameplay loop for attract mode.
 - [ ] Options screen widgets (fx/audio/windowed toggles) -> Unlocks: config editing parity.
+
+## Gameplay building blocks (implemented, not fully integrated)
+
 - [x] Player input + movement state (sandbox view) -> Unlocks: controllable gameplay loop.
 - [x] Weapon firing + reload timers (sandbox view) -> Unlocks: combat timing parity.
 - [x] Projectile system (spawn/update/hit subset) -> Unlocks: damage + FX.
-- [ ] Creature updates + spawners -> Unlocks: enemy waves in modes.
-- [ ] Replace DemoView toy simulation with real gameplay systems -> Unlocks: reuse gameplay loop for attract mode.
 - [x] Bonus/perk application logic (subset) -> Unlocks: timers + power-up effects.
 - [x] HUD overlay (health/ammo/bonuses) -> Unlocks: in-game UI parity.
 - [x] SFX playback (non-music; demo wired) -> Unlocks: gameplay/audio feedback.
 - [x] Save/status integration (`game.cfg` load/save + stats screen) -> Unlocks: persistence + unlock tracking.
+
+## Gaps (still missing)
+
+- `crimson game` has no playable mode loop yet (Survival/Rush/Quest).
+- Progression/UI wiring is incomplete (perk selection flow, unlocks).
+- Many systems exist only in debug views / toy simulations (need integration + parity passes).
 
 ## Later parity gates
 

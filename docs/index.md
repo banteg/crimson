@@ -3,10 +3,12 @@
 Reverse engineering and rewriting Crimsonland v1.9.93 in Python + raylib.
 
 !!! abstract "Current state"
-    The rewrite boots to a working menu with terrain rendering, music playback, and
-    demo/attract mode scaffolding. All 50 quest builders are runtime-validated and
-    mirrored in Python. Asset pipeline (PAQ/JAZ) is complete. Next milestone:
-    player input + weapon firing to unlock the gameplay loop.
+    The rewrite boots to a working front-end (menu + terrain, music + SFX,
+    console overlay, demo/attract flow) and loads/saves `game.cfg`. Core gameplay
+    pieces (`player_update`, weapons/projectiles, perks/bonuses, HUD) exist and
+    are exercised in `uv run crimson view player`, but are not wired into
+    `uv run crimson game` yet. Next milestone: integrate the real-time gameplay
+    loop (player + creatures + spawners) and bring up Survival.
 
 ## Analysis
 
