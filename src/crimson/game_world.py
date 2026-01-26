@@ -652,8 +652,14 @@ class GameWorld:
     def _clamp_camera(self, cam_x: float, cam_y: float, screen_w: float, screen_h: float) -> tuple[float, float]:
         min_x = screen_w - float(self.world_size)
         min_y = screen_h - float(self.world_size)
-        cam_x = _clamp(cam_x, min_x, -1.0)
-        cam_y = _clamp(cam_y, min_y, -1.0)
+        if cam_x > -1.0:
+            cam_x = -1.0
+        if cam_x < min_x:
+            cam_x = min_x
+        if cam_y > -1.0:
+            cam_y = -1.0
+        if cam_y < min_y:
+            cam_y = min_y
         return cam_x, cam_y
 
     def _world_params(self) -> tuple[float, float, float, float]:
@@ -824,13 +830,17 @@ class GameWorld:
 
     def draw(self) -> None:
         clear_color = rl.Color(10, 10, 12, 255)
+        screen_w, screen_h = self._camera_screen_size()
+        cam_x, cam_y = self._clamp_camera(self.camera_x, self.camera_y, screen_w, screen_h)
+        out_w = float(rl.get_screen_width())
+        out_h = float(rl.get_screen_height())
+        scale_x = out_w / screen_w if screen_w > 0 else 1.0
+        scale_y = out_h / screen_h if screen_h > 0 else 1.0
         if self.ground is None:
             rl.clear_background(clear_color)
         else:
             rl.clear_background(clear_color)
-            self.ground.draw(self.camera_x, self.camera_y)
-
-        cam_x, cam_y, scale_x, scale_y = self._world_params()
+            self.ground.draw(cam_x, cam_y, screen_w=screen_w, screen_h=screen_h)
         scale = (scale_x + scale_y) * 0.5
 
         # World bounds for debug if terrain is missing.

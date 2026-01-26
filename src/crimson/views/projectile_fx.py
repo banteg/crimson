@@ -174,8 +174,14 @@ class ProjectileFxView:
 
         min_x = screen_w - WORLD_SIZE
         min_y = screen_h - WORLD_SIZE
-        desired_x = _clamp(desired_x, min_x, -1.0)
-        desired_y = _clamp(desired_y, min_y, -1.0)
+        if desired_x > -1.0:
+            desired_x = -1.0
+        if desired_x < min_x:
+            desired_x = min_x
+        if desired_y > -1.0:
+            desired_y = -1.0
+        if desired_y < min_y:
+            desired_y = min_y
 
         t = _clamp(dt * 6.0, 0.0, 1.0)
         self._camera_x = _lerp(self._camera_x, desired_x, t)
@@ -603,4 +609,3 @@ class ProjectileFxView:
 @register_view("projectile_fx", "Projectile FX lab")
 def build_projectile_fx_view(ctx: ViewContext) -> View:
     return ProjectileFxView(ctx)
-

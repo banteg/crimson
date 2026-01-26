@@ -275,7 +275,14 @@ class GroundRenderer:
         self._render_target_ready = True
         return True
 
-    def draw(self, camera_x: float, camera_y: float) -> None:
+    def draw(
+        self,
+        camera_x: float,
+        camera_y: float,
+        *,
+        screen_w: float | None = None,
+        screen_h: float | None = None,
+    ) -> None:
         if self.render_target is None or not self._render_target_ready:
             rl.draw_rectangle(
                 0,
@@ -289,8 +296,14 @@ class GroundRenderer:
         target = self.render_target
         out_w = float(rl.get_screen_width())
         out_h = float(rl.get_screen_height())
-        screen_w = float(self.screen_width or out_w)
-        screen_h = float(self.screen_height or out_h)
+        if screen_w is None:
+            screen_w = float(self.screen_width or out_w)
+        if screen_h is None:
+            screen_h = float(self.screen_height or out_h)
+        if screen_w <= 0.0:
+            screen_w = out_w
+        if screen_h <= 0.0:
+            screen_h = out_h
         if screen_w > self.width:
             screen_w = float(self.width)
         if screen_h > self.height:
@@ -347,14 +360,14 @@ class GroundRenderer:
     def _clamp_camera(self, camera_x: float, camera_y: float, screen_w: float, screen_h: float) -> tuple[float, float]:
         min_x = screen_w - float(self.width)
         min_y = screen_h - float(self.height)
-        if camera_x < min_x:
-            camera_x = min_x
         if camera_x > -1.0:
             camera_x = -1.0
-        if camera_y < min_y:
-            camera_y = min_y
         if camera_y > -1.0:
             camera_y = -1.0
+        if camera_x < min_x:
+            camera_x = min_x
+        if camera_y < min_y:
+            camera_y = min_y
         return camera_x, camera_y
 
     def _ensure_render_target(self, render_w: int, render_h: int) -> bool:
