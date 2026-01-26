@@ -277,6 +277,11 @@ typedef struct sprite_effect_t {
     float scale;
 } sprite_effect_t;
 
+typedef struct effect_id_entry_t {
+    int size_code;
+    int frame;
+} effect_id_entry_t;
+
 typedef struct effect_entry_t {
     float pos_x;
     float pos_y;

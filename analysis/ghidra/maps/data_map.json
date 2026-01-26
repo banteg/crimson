@@ -219,13 +219,14 @@
     },
     {
       "address": "0x004755f0",
-      "comment": "Effect id table size code (stride 0x08 bytes)",
-      "name": "effect_id_size_code",
-      "program": "crimsonland.exe"
+      "comment": "Effect id table (stride 0x08 bytes).",
+      "name": "effect_id_table",
+      "program": "crimsonland.exe",
+      "type": "effect_id_entry_t"
     },
     {
       "address": "0x004755f4",
-      "comment": "Effect id table frame index (effect_id_size_code + 0x04)",
+      "comment": "Effect id table frame index (effect_id_table + 0x04).",
       "name": "effect_id_frame",
       "program": "crimsonland.exe"
     },

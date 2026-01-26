@@ -26446,8 +26446,8 @@ void __cdecl effect_select_texture(int effect_id)
   int atlas_size;
   int unaff_retaddr;
   
-  iVar1 = *(int *)(&effect_id_size_code + effect_id * 8);
-  atlas_size = *(int *)(&effect_id_frame + effect_id * 8);
+  iVar1 = (&effect_id_table)[effect_id].size_code;
+  atlas_size = (&effect_id_table)[effect_id].frame;
   if (iVar1 == 0x10) {
     (*grim_interface_ptr->vtable->grim_set_atlas_frame)((IGrim2D *)0x10,atlas_size,unaff_retaddr);
     return;
@@ -26492,8 +26492,8 @@ void * __cdecl effect_spawn(int effect_id,float *pos)
       return &DAT_004ab270;
     }
   }
-  iVar2 = *(int *)(&effect_id_size_code + effect_id * 8);
-  iVar3 = *(int *)(&effect_id_frame + effect_id * 8);
+  iVar2 = (&effect_id_table)[effect_id].size_code;
+  iVar3 = (&effect_id_table)[effect_id].frame;
   pfVar5 = effect_free_list_head;
   pfVar7 = (float *)effect_free_list_head[0x2e];
   if ((float *)effect_free_list_head[0x2e] == (float *)0x0) {

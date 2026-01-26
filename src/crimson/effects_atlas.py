@@ -30,7 +30,7 @@ class EffectAtlasEntry:
         return SIZE_CODE_GRID[self.size_code]
 
 
-# Extracted from `effect_id_size_code` / `effect_id_frame` (see `docs/structs/effects.md`).
+# Extracted from `effect_id_table` (`size_code`, `frame`) (see `docs/structs/effects.md`).
 EFFECT_ID_ATLAS_TABLE: tuple[EffectAtlasEntry, ...] = (
     EffectAtlasEntry(0x00, 0x80, 0x02),
     EffectAtlasEntry(0x01, 0x80, 0x03),
@@ -71,4 +71,3 @@ def effect_src_rect(effect_id: int, *, texture_width: float, texture_height: flo
     cell_w = float(texture_width) / float(grid)
     cell_h = float(texture_height) / float(grid)
     return cell_w * float(col), cell_h * float(row), cell_w, cell_h
-

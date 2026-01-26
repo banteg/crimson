@@ -179,7 +179,7 @@ Layout (struct view of the SoA block):
 
 Notes:
 
-- `effect_select_texture` resolves `effect_id` through `effect_id_size_code` / `effect_id_frame` and sets
+- `effect_select_texture` resolves `effect_id` through `effect_id_table` (`size_code`, `frame`) and sets
   atlas size/frame (`0x10/0x20/0x40/0x80` -> `16/8/4/2` cells).
 
 - `fx_queue_add_random` is a small helper that spawns a random `fx_queue_add` entry
@@ -345,7 +345,7 @@ Quad layout (from `effect_spawn` writes):
 | 2 | `0x80/0x84` | `0x94/0x98` | `( half_w,  half_h)` + `(u1, v1)` |
 | 3 | `0xa0/0xa4` | `0xb0/0xb4` | `(-half_w,  half_h)` + `(u0, v1)` |
 
-- `effect_spawn` reads `effect_id_size_code` / `effect_id_frame` to pick atlas size + frame index, then
+- `effect_spawn` reads `effect_id_table` (`size_code`, `frame`) to pick atlas size + frame index, then
   pulls UVs from size-specific tables:
 
   - `0x10` -> `effect_uv16_u` / `effect_uv16_v` with base `effect_uv_step_16`.
@@ -378,7 +378,7 @@ the effect entry (offsets `0x0c..0x44`) before the UVs are assigned.
 | `effect_template_rotation_step` | 0x40 | rotation_step |
 | `effect_template_scale_step` | 0x44 | scale_step |
 
-### Effect id table (`effect_id_size_code`)
+### Effect id table (`effect_id_table`)
 
 Entry size: `0x08` bytes. Indexed by `effect_id`.
 
@@ -394,7 +394,7 @@ stores UVs in the effect pool.
 | 0x00 | atlas size code | Read by `effect_select_texture`/`effect_spawn`; values `0x10/0x20/0x40/0x80` map to `16/8/4/2` cell atlases. |
 | 0x04 | frame index | Read by `effect_select_texture`/`effect_spawn`; selects the atlas frame. |
 
-Known entries (extracted from `crimsonland.exe` at `effect_id_size_code`):
+Known entries (extracted from `crimsonland.exe` at `effect_id_table`):
 
 | effect_id | size code | frame |
 | --- | --- | --- |
