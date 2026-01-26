@@ -2,6 +2,11 @@
 #ifndef CRIMSONLAND_TYPES_H
 #define CRIMSONLAND_TYPES_H
 
+typedef struct vec2f_t {
+    float x;
+    float y;
+} vec2f_t;
+
 typedef struct weapon_stats_t {
     char name[0x40];
     unsigned char unlocked;

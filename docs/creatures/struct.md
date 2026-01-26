@@ -131,7 +131,7 @@ Spawn slots (used by `creature_update_all` when `creature_link_index` selects a 
 
 Survival reward tracking (globals):
 
-- `survival_recent_death_pos_x` / `survival_recent_death_pos_y` — up to 3 recent creature death positions (recorded in `creature_handle_death`).
+- `survival_recent_death_pos` — up to 3 recent creature death positions (recorded in `creature_handle_death`).
 - `survival_recent_death_count` — increments with deaths (caps at 6) and gates the survival weapon reward check in `survival_update`.
 - `survival_reward_handout_enabled` — one-time survival handout gate (cleared after the handout or after 3 death samples).
 - `survival_reward_fire_seen` — set when the player fires; blocks the survival reward checks in `survival_update`.

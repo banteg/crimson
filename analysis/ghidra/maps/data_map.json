@@ -1667,15 +1667,30 @@
     },
     {
       "address": "0x00486fe8",
-      "comment": "Survival reward tracking: recent creature death X positions (3 entries, stride 8 bytes).",
-      "name": "survival_recent_death_pos_x",
-      "program": "crimsonland.exe"
+      "comment": "Survival reward tracking: recent creature death positions (3 entries, stride 0x08 bytes).",
+      "name": "survival_recent_death_pos",
+      "program": "crimsonland.exe",
+      "type": "vec2f_t"
     },
     {
       "address": "0x00486fec",
-      "comment": "Survival reward tracking: recent creature death Y positions (3 entries, stride 8 bytes).",
+      "comment": "Survival reward tracking: recent creature death Y positions (survival_recent_death_pos + 0x04; 3 entries, stride 0x08 bytes).",
       "name": "survival_recent_death_pos_y",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00486ff0",
+      "comment": "Survival reward tracking: recent creature death position slot 1 (stride 0x08 bytes).",
+      "name": "survival_recent_death_pos_1",
+      "program": "crimsonland.exe",
+      "type": "vec2f_t"
+    },
+    {
+      "address": "0x00486ff8",
+      "comment": "Survival reward tracking: recent creature death position slot 2 (stride 0x08 bytes).",
+      "name": "survival_recent_death_pos_2",
+      "program": "crimsonland.exe",
+      "type": "vec2f_t"
     },
     {
       "address": "0x00487000",

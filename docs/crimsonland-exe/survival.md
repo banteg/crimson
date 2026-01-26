@@ -29,7 +29,7 @@ Survival-specific state referenced by `survival_update` / death handling:
   - `survival_reward_handout_enabled`
   - `survival_reward_fire_seen`
   - `survival_reward_damage_seen`
-  - `survival_recent_death_pos_x/y` + `survival_recent_death_count` (tracked in `creature_handle_death`)
+  - `survival_recent_death_pos` + `survival_recent_death_count` (tracked in `creature_handle_death`)
 - Player progression (stored in the per-player struct; see `docs/structs/player.md`):
   - `player_experience` (`player_health + 0x88`)
   - `player_level` (`player_health + 0x90`)
@@ -166,4 +166,3 @@ Rewrite behavior today:
   opening a selection UI. This is an approximation until the full perk prompt/selection flow is implemented.
 
 See also: `docs/crimsonland-exe/frame-loop.md` and `docs/crimsonland-exe/gameplay.md`.
-

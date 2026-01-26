@@ -5401,7 +5401,6 @@ LAB_00407611:
 
 /* survival_update @ 00407cd0 */
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* main survival mode update: timers, scripted spawns, and enemy wave spawning */
 
 void survival_update(void)
@@ -5458,9 +5457,11 @@ void survival_update(void)
       survival_reward_fire_seen = '\x01';
     }
     if (((survival_recent_death_count == 3) && (survival_reward_fire_seen == '\0')) &&
-       ((local_44 = (_DAT_00486ffc + _DAT_00486ff4 + survival_recent_death_pos_y) * 0.33333334,
+       ((local_44 = (survival_recent_death_pos_2.y +
+                    survival_recent_death_pos_1.y + survival_recent_death_pos.y) * 0.33333334,
         fVar1 = player_state_table.pos_x -
-                (_survival_recent_death_pos_x + _DAT_00486ff0 + _DAT_00486ff8) * 0.33333334,
+                (survival_recent_death_pos.x + survival_recent_death_pos_1.x +
+                survival_recent_death_pos_2.x) * 0.33333334,
         SQRT(fVar1 * fVar1 +
              (player_state_table.pos_y - local_44) * (player_state_table.pos_y - local_44)) < 16.0
         && (player_state_table.health < 15.0)))) {
@@ -18390,9 +18391,9 @@ void __cdecl creature_handle_death(int creature_id,bool keep_corpse)
   }
   if (survival_recent_death_count < 6) {
     if (survival_recent_death_count < 3) {
-      *(float *)(&survival_recent_death_pos_x + survival_recent_death_count * 8) =
+      (&survival_recent_death_pos)[survival_recent_death_count].x =
            (&creature_pool)[creature_id].pos_x;
-      (&survival_recent_death_pos_y)[survival_recent_death_count * 2] =
+      (&survival_recent_death_pos)[survival_recent_death_count].y =
            (&creature_pool)[creature_id].pos_y;
     }
     survival_recent_death_count = survival_recent_death_count + 1;
