@@ -30,6 +30,7 @@ from ..ui.perk_menu import (
     button_update,
     button_width,
     cursor_draw,
+    draw_menu_panel,
     draw_menu_item,
     draw_ui_text,
     load_perk_menu_assets,
@@ -541,14 +542,13 @@ class SurvivalView:
 
         panel_tex = self._perk_menu_assets.menu_panel
         if panel_tex is not None:
-            src = rl.Rectangle(0.0, 0.0, float(panel_tex.width), float(panel_tex.height))
             dst = rl.Rectangle(
                 origin_x + self._perk_ui_layout.panel_x * scale,
                 origin_y + self._perk_ui_layout.panel_y * scale,
                 self._perk_ui_layout.panel_w * scale,
                 self._perk_ui_layout.panel_h * scale,
             )
-            rl.draw_texture_pro(panel_tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+            draw_menu_panel(panel_tex, dst=dst)
 
         title_tex = self._perk_menu_assets.title_pick_perk
         if title_tex is not None:

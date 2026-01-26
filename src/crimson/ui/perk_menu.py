@@ -13,6 +13,10 @@ UI_BASE_WIDTH = 1024.0
 UI_BASE_HEIGHT = 768.0
 
 
+MENU_PANEL_SLICE_Y1 = 130.0
+MENU_PANEL_SLICE_Y2 = 150.0
+
+
 @dataclass(slots=True)
 class PerkMenuLayout:
     # Layout is tuned to match the classic perk selection screen:
@@ -55,6 +59,33 @@ def ui_origin(screen_w: float, screen_h: float, scale: float) -> tuple[float, fl
     origin_x = (screen_w - UI_BASE_WIDTH * scale) * 0.5
     origin_y = (screen_h - UI_BASE_HEIGHT * scale) * 0.5
     return origin_x, origin_y
+
+
+def draw_menu_panel(texture: rl.Texture, *, dst: rl.Rectangle, tint: rl.Color = rl.WHITE) -> None:
+    scale = float(dst.width) / float(texture.width)
+    top_h = MENU_PANEL_SLICE_Y1 * scale
+    bottom_h = (float(texture.height) - MENU_PANEL_SLICE_Y2) * scale
+    mid_h = float(dst.height) - top_h - bottom_h
+    if mid_h < 0.0:
+        src = rl.Rectangle(0.0, 0.0, float(texture.width), float(texture.height))
+        rl.draw_texture_pro(texture, src, dst, rl.Vector2(0.0, 0.0), 0.0, tint)
+        return
+
+    src_w = float(texture.width)
+    src_h = float(texture.height)
+
+    src_top = rl.Rectangle(0.0, 0.0, src_w, MENU_PANEL_SLICE_Y1)
+    src_mid = rl.Rectangle(0.0, MENU_PANEL_SLICE_Y1, src_w, MENU_PANEL_SLICE_Y2 - MENU_PANEL_SLICE_Y1)
+    src_bot = rl.Rectangle(0.0, MENU_PANEL_SLICE_Y2, src_w, src_h - MENU_PANEL_SLICE_Y2)
+
+    dst_top = rl.Rectangle(float(dst.x), float(dst.y), float(dst.width), top_h)
+    dst_mid = rl.Rectangle(float(dst.x), float(dst.y) + top_h, float(dst.width), mid_h)
+    dst_bot = rl.Rectangle(float(dst.x), float(dst.y) + top_h + mid_h, float(dst.width), bottom_h)
+
+    origin = rl.Vector2(0.0, 0.0)
+    rl.draw_texture_pro(texture, src_top, dst_top, origin, 0.0, tint)
+    rl.draw_texture_pro(texture, src_mid, dst_mid, origin, 0.0, tint)
+    rl.draw_texture_pro(texture, src_bot, dst_bot, origin, 0.0, tint)
 
 
 def _resolve_asset(assets_root: Path, rel_path: str) -> Path | None:
