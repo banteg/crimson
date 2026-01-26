@@ -131,8 +131,7 @@ Holding `F1` (DIK `0x3B`) draws:
 
 Counts come from `game.cfg`:
 
-- Quests total: sum of 40 ints (quest play counts array slice)
+- Quests total: sum of 40 ints from `game_status_blob+0x104..0x1a4`
 - Rush: `mode_play_rush`
 - Survival: `mode_play_survival`
 - Typ-o: `mode_play_typo`
-

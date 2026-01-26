@@ -79,6 +79,7 @@ class GameState:
     snd_freq_adjustment_enabled: bool = False
     menu_ground: GroundRenderer | None = None
     menu_sign_locked: bool = False
+    pending_quest_level: str | None = None
     quit_requested: bool = False
 
 
@@ -1436,17 +1437,9 @@ class PanelMenuView:
         sign_h = MENU_SIGN_HEIGHT * scale
         offset_x = MENU_SIGN_OFFSET_X * scale + shift_x
         offset_y = MENU_SIGN_OFFSET_Y * scale
+        # Quest screen is only reachable after the Play Game panel is fully visible,
+        # so the sign is already locked in place. Keep it static here.
         rotation_deg = 0.0
-        if not self._state.menu_sign_locked:
-            angle_rad, slide_x = MenuView._ui_element_anim(
-                self,
-                index=0,
-                start_ms=300,
-                end_ms=0,
-                width=sign_w,
-            )
-            _ = slide_x
-            rotation_deg = math.degrees(angle_rad)
         sign = assets.sign
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
         if fx_detail:
@@ -1707,8 +1700,9 @@ class PlayGameMenuView(PanelMenuView):
         counts = self._state.status.data.get("quest_play_counts", [])
         if not isinstance(counts, list) or not counts:
             return 0
-        # `sub_44ed80` sums the first 40 ints (0x104..0x1a4).
-        return int(sum(int(v) for v in counts[:40]))
+        # `sub_44ed80` sums 40 ints from game_status_blob+0x104..0x1a4.
+        # Our `quest_play_counts` array starts at blob+0xd8, so this is indices 11..50.
+        return int(sum(int(v) for v in counts[11:51]))
 
     def _mode_entries(self) -> tuple[list[_PlayGameModeEntry], float, float, float]:
         config = self._state.config
@@ -2099,6 +2093,567 @@ class PlayGameMenuView(PanelMenuView):
             for line in mode.tooltip.splitlines():
                 draw_small_text(font, line, x, y, 1.0 * scale, rl.Color(255, 255, 255, alpha))
                 y += font.cell_size * 1.0 * scale
+
+
+QUEST_MENU_BASE_X = -5.0
+QUEST_MENU_BASE_Y = 185.0
+
+QUEST_TITLE_X_OFFSET = 219.0  # 300 + 64 - 145
+QUEST_TITLE_Y_OFFSET = 44.0  # 40 + 4
+QUEST_TITLE_W = 64.0
+QUEST_TITLE_H = 32.0
+
+QUEST_STAGE_ICON_X_OFFSET = 80.0  # 64 + 16
+QUEST_STAGE_ICON_Y_OFFSET = 3.0
+QUEST_STAGE_ICON_SIZE = 32.0
+QUEST_STAGE_ICON_STEP = 36.0
+QUEST_STAGE_ICON_SCALE_UNSELECTED = 0.8
+
+QUEST_LIST_Y_OFFSET = 50.0
+QUEST_LIST_ROW_STEP = 20.0
+QUEST_LIST_NAME_X_OFFSET = 32.0
+QUEST_LIST_HOVER_LEFT_PAD = 10.0
+QUEST_LIST_HOVER_RIGHT_PAD = 210.0
+QUEST_LIST_HOVER_TOP_PAD = 2.0
+QUEST_LIST_HOVER_BOTTOM_PAD = 18.0
+
+QUEST_HARDCORE_UNLOCK_INDEX = 40
+QUEST_HARDCORE_CHECKBOX_X_OFFSET = 132.0
+QUEST_HARDCORE_CHECKBOX_Y_OFFSET = -12.0
+QUEST_HARDCORE_LIST_Y_SHIFT = 10.0
+
+QUEST_BACK_BUTTON_X_OFFSET = 148.0
+QUEST_BACK_BUTTON_Y_OFFSET = 212.0
+
+
+class QuestsMenuView:
+    """Quest selection menu.
+
+    Layout and gating are based on `sub_447d40` (crimsonland.exe).
+
+    The classic game treats this as a distinct UI state (transition target `0x0b`),
+    entered from the Play Game panel.
+    """
+
+    def __init__(self, state: GameState) -> None:
+        self._state = state
+        self._assets: MenuAssets | None = None
+        self._ground: GroundRenderer | None = None
+
+        self._small_font: SmallFontData | None = None
+        self._text_quest: rl.Texture2D | None = None
+        self._stage_icons: dict[int, rl.Texture2D | None] = {}
+        self._check_on: rl.Texture2D | None = None
+        self._check_off: rl.Texture2D | None = None
+        self._button_sm: rl.Texture2D | None = None
+        self._button_md: rl.Texture2D | None = None
+
+        self._menu_screen_width = 0
+        self._widescreen_y_shift = 0.0
+
+        self._stage = 1
+        self._action: str | None = None
+        self._dirty = False
+
+    def open(self) -> None:
+        layout_w = float(self._state.config.screen_width)
+        self._menu_screen_width = int(layout_w)
+        self._widescreen_y_shift = MenuView._menu_widescreen_y_shift(layout_w)
+        cache = _ensure_texture_cache(self._state)
+
+        # Sign and ground match the main menu/panels.
+        sign = cache.get_or_load("ui_signCrimson", "ui/ui_signCrimson.jaz").texture
+        self._assets = MenuAssets(sign=sign, item=None, panel=None, labels=None)
+        self._init_ground()
+
+        self._text_quest = cache.get_or_load("ui_textQuest", "ui/ui_textQuest.jaz").texture
+        self._stage_icons = {
+            1: cache.get_or_load("ui_num1", "ui/ui_num1.jaz").texture,
+            2: cache.get_or_load("ui_num2", "ui/ui_num2.jaz").texture,
+            3: cache.get_or_load("ui_num3", "ui/ui_num3.jaz").texture,
+            4: cache.get_or_load("ui_num4", "ui/ui_num4.jaz").texture,
+            5: cache.get_or_load("ui_num5", "ui/ui_num5.jaz").texture,
+        }
+        self._check_on = cache.get_or_load("ui_checkOn", "ui/ui_checkOn.jaz").texture
+        self._check_off = cache.get_or_load("ui_checkOff", "ui/ui_checkOff.jaz").texture
+        self._button_sm = cache.get_or_load("ui_buttonSm", "ui/ui_button_64x32.jaz").texture
+        self._button_md = cache.get_or_load("ui_buttonMd", "ui/ui_button_128x32.jaz").texture
+
+        self._action = None
+        self._dirty = False
+        self._stage = max(1, min(5, int(self._stage)))
+
+        # Ensure the quest registry is populated so titles render.
+        # (The package import registers all tier builders.)
+        try:
+            from . import quests as _quests
+
+            _ = _quests
+        except Exception:
+            pass
+
+    def close(self) -> None:
+        if self._dirty:
+            try:
+                self._state.config.save()
+            except Exception:
+                pass
+            self._dirty = False
+        self._ground = None
+
+    def update(self, dt: float) -> None:
+        if self._state.audio is not None:
+            update_audio(self._state.audio)
+        if self._ground is not None:
+            self._ground.process_pending()
+
+        config = self._state.config
+
+        # The original forcibly clears hardcore in the demo build.
+        if not bool(config.data.get("full_version_flag", 0)):
+            if int(config.data.get("hardcore_flag", 0) or 0) != 0:
+                config.data["hardcore_flag"] = 0
+                self._dirty = True
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+            self._action = "open_play_game"
+            return
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT):
+            self._stage = max(1, self._stage - 1)
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT):
+            self._stage = min(5, self._stage + 1)
+
+        layout = self._layout()
+
+        # Stage icons: hover is tracked, but stage selection requires a click.
+        hovered_stage = self._hovered_stage(layout)
+        if hovered_stage is not None and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
+            self._stage = hovered_stage
+            return
+
+        if self._hardcore_checkbox_clicked(layout):
+            return
+
+        if self._back_button_clicked(layout):
+            self._action = "open_play_game"
+            return
+
+        # Quick-select row numbers 1..0 (10).
+        row_from_key = self._digit_row_pressed()
+        if row_from_key is not None:
+            self._try_start_quest(self._stage, row_from_key)
+            return
+
+        hovered_row = self._hovered_row(layout)
+        if hovered_row is not None and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
+            self._try_start_quest(self._stage, hovered_row)
+            return
+
+        if hovered_row is not None and rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
+            self._try_start_quest(self._stage, hovered_row)
+            return
+
+    def draw(self) -> None:
+        rl.clear_background(rl.BLACK)
+        if self._ground is not None:
+            self._ground.draw(0.0, 0.0)
+
+        self._draw_sign()
+        self._draw_contents()
+
+    def take_action(self) -> str | None:
+        action = self._action
+        self._action = None
+        return action
+
+    def _ensure_small_font(self) -> SmallFontData:
+        if self._small_font is not None:
+            return self._small_font
+        missing_assets: list[str] = []
+        self._small_font = load_small_font(self._state.assets_dir, missing_assets)
+        return self._small_font
+
+    def _init_ground(self) -> None:
+        self._ground = ensure_menu_ground(self._state)
+
+    def _layout(self) -> dict[str, float]:
+        # `sub_447d40` base sums:
+        #   x_sum = <ui_element_x> + (-5)
+        #   y_sum = <ui_element_y> + 185 (+ widescreen shift via ui_menu_layout_init)
+        x_sum = QUEST_MENU_BASE_X
+        y_sum = QUEST_MENU_BASE_Y + self._widescreen_y_shift
+
+        title_x = x_sum + QUEST_TITLE_X_OFFSET
+        title_y = y_sum + QUEST_TITLE_Y_OFFSET
+        icons_x0 = title_x + QUEST_STAGE_ICON_X_OFFSET
+        icons_y = title_y + QUEST_STAGE_ICON_Y_OFFSET
+        last_icon_x = icons_x0 + QUEST_STAGE_ICON_STEP * 4.0
+        list_x = last_icon_x - 208.0 + 16.0
+        list_y0 = title_y + QUEST_LIST_Y_OFFSET
+        return {
+            "title_x": title_x,
+            "title_y": title_y,
+            "icons_x0": icons_x0,
+            "icons_y": icons_y,
+            "list_x": list_x,
+            "list_y0": list_y0,
+        }
+
+    def _hovered_stage(self, layout: dict[str, float]) -> int | None:
+        title_y = layout["title_y"]
+        x0 = layout["icons_x0"]
+        mouse = rl.get_mouse_position()
+        for stage in range(1, 6):
+            x = x0 + float(stage - 1) * QUEST_STAGE_ICON_STEP
+            # Hover bounds are fixed 32x32, anchored at (x, title_y) (not icons_y).
+            if (x <= mouse.x <= x + QUEST_STAGE_ICON_SIZE) and (title_y <= mouse.y <= title_y + QUEST_STAGE_ICON_SIZE):
+                return stage
+        return None
+
+    def _hardcore_checkbox_clicked(self, layout: dict[str, float]) -> bool:
+        status = self._state.status
+        if int(status.quest_unlock_index) < QUEST_HARDCORE_UNLOCK_INDEX:
+            return False
+        check_on = self._check_on
+        check_off = self._check_off
+        if check_on is None or check_off is None:
+            return False
+        config = self._state.config
+        hardcore = bool(int(config.data.get("hardcore_flag", 0) or 0))
+
+        font = self._ensure_small_font()
+        text_scale = 1.0
+        label = "Hardcore"
+        label_w = measure_small_text_width(font, label, text_scale)
+
+        x = layout["list_x"] + QUEST_HARDCORE_CHECKBOX_X_OFFSET
+        y = layout["list_y0"] + QUEST_HARDCORE_CHECKBOX_Y_OFFSET
+        rect_w = float(check_on.width) + 6.0 + label_w
+        rect_h = max(float(check_on.height), font.cell_size * text_scale)
+
+        mouse = rl.get_mouse_position()
+        hovered = x <= mouse.x <= x + rect_w and y <= mouse.y <= y + rect_h
+        if hovered and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT):
+            config.data["hardcore_flag"] = 0 if hardcore else 1
+            self._dirty = True
+            if not bool(config.data.get("full_version_flag", 0)):
+                config.data["hardcore_flag"] = 0
+            return True
+        return False
+
+    def _back_button_clicked(self, layout: dict[str, float]) -> bool:
+        tex = self._button_sm
+        if tex is None:
+            tex = self._button_md
+        if tex is None:
+            return False
+        x = layout["list_x"] + QUEST_BACK_BUTTON_X_OFFSET
+        y = self._rows_y0(layout) + QUEST_BACK_BUTTON_Y_OFFSET
+        w = float(tex.width)
+        h = float(tex.height)
+        mouse = rl.get_mouse_position()
+        hovered = x <= mouse.x <= x + w and y <= mouse.y <= y + h
+        return hovered and rl.is_mouse_button_pressed(rl.MOUSE_BUTTON_LEFT)
+
+    @staticmethod
+    def _digit_row_pressed() -> int | None:
+        keys = [
+            (rl.KeyboardKey.KEY_ONE, 0),
+            (rl.KeyboardKey.KEY_TWO, 1),
+            (rl.KeyboardKey.KEY_THREE, 2),
+            (rl.KeyboardKey.KEY_FOUR, 3),
+            (rl.KeyboardKey.KEY_FIVE, 4),
+            (rl.KeyboardKey.KEY_SIX, 5),
+            (rl.KeyboardKey.KEY_SEVEN, 6),
+            (rl.KeyboardKey.KEY_EIGHT, 7),
+            (rl.KeyboardKey.KEY_NINE, 8),
+            (rl.KeyboardKey.KEY_ZERO, 9),
+        ]
+        for key, row in keys:
+            if rl.is_key_pressed(key):
+                return row
+        return None
+
+    def _rows_y0(self, layout: dict[str, float]) -> float:
+        # `sub_447d40` adds +10 to the list Y after rendering the Hardcore checkbox.
+        status = self._state.status
+        y0 = layout["list_y0"]
+        if int(status.quest_unlock_index) >= QUEST_HARDCORE_UNLOCK_INDEX:
+            y0 += QUEST_HARDCORE_LIST_Y_SHIFT
+        return y0
+
+    def _hovered_row(self, layout: dict[str, float]) -> int | None:
+        list_x = layout["list_x"]
+        y0 = self._rows_y0(layout)
+        mouse = rl.get_mouse_position()
+        for row in range(10):
+            y = y0 + float(row) * QUEST_LIST_ROW_STEP
+            left = list_x - QUEST_LIST_HOVER_LEFT_PAD
+            top = y - QUEST_LIST_HOVER_TOP_PAD
+            right = list_x + QUEST_LIST_HOVER_RIGHT_PAD
+            bottom = y + QUEST_LIST_HOVER_BOTTOM_PAD
+            if left <= mouse.x <= right and top <= mouse.y <= bottom:
+                return row
+        return None
+
+    def _quest_unlocked(self, stage: int, row: int) -> bool:
+        status = self._state.status
+        config = self._state.config
+        unlock = int(status.quest_unlock_index)
+        if bool(int(config.data.get("hardcore_flag", 0) or 0)):
+            unlock = int(status.quest_unlock_index_full)
+        global_index = (int(stage) - 1) * 10 + int(row)
+        return unlock >= global_index
+
+    def _try_start_quest(self, stage: int, row: int) -> None:
+        if not self._quest_unlocked(stage, row):
+            return
+        level = f"{int(stage)}.{int(row) + 1}"
+        self._state.pending_quest_level = level
+        self._state.config.data["game_mode"] = 3
+        self._dirty = True
+        self._action = "start_quest"
+
+    def _quest_title(self, stage: int, row: int) -> str:
+        level = f"{int(stage)}.{int(row) + 1}"
+        try:
+            from .quests import quest_by_level
+
+            quest = quest_by_level(level)
+        except Exception:
+            quest = None
+        if quest is None:
+            return "???"
+        return quest.title
+
+    @staticmethod
+    def _quest_row_colors(*, hardcore: bool) -> tuple[rl.Color, rl.Color]:
+        # `sub_447d40` uses different RGB when hardcore is toggled.
+        if hardcore:
+            # (0.980392, 0.274509, 0.235294, alpha)
+            r, g, b = 250, 70, 60
+        else:
+            # (0.274509, 0.707..., 0.941..., alpha)
+            r, g, b = 70, 180, 240
+        return (rl.Color(r, g, b, 153), rl.Color(r, g, b, 255))
+
+    def _quest_counts(self, *, stage: int, row: int) -> tuple[int, int] | None:
+        # In `sub_447d40`, counts are indexed by (row + stage*10) and split across two
+        # arrays at offsets 0xDC (games) and 0x17C (completed) within game.cfg.
+        #
+        # We only model the stable subset (stages 1..4 -> 40 quests). The stage 5
+        # indices overlap unrelated fields in the saved blob in the original build.
+        global_index = (int(stage) - 1) * 10 + int(row)
+        if not (0 <= global_index < 40):
+            return None
+        count_index = global_index + 10
+
+        status = self._state.status
+        games_idx = 1 + count_index
+        completed_idx = 41 + count_index
+        try:
+            games = int(status.quest_play_count(games_idx))
+            completed = int(status.quest_play_count(completed_idx))
+        except Exception:
+            return None
+        return completed, games
+
+    def _draw_contents(self) -> None:
+        layout = self._layout()
+        title_x = layout["title_x"]
+        title_y = layout["title_y"]
+        icons_x0 = layout["icons_x0"]
+        icons_y = layout["icons_y"]
+        list_x = layout["list_x"]
+
+        stage = int(self._stage)
+        if stage < 1:
+            stage = 1
+        if stage > 5:
+            stage = 5
+
+        hovered_stage = self._hovered_stage(layout)
+        hovered_row = self._hovered_row(layout)
+        show_counts = rl.is_key_down(rl.KeyboardKey.KEY_F1)
+
+        # Title texture is tinted by (0.7, 0.7, 0.7, 0.7).
+        title_tex = self._text_quest
+        if title_tex is not None:
+            rl.draw_texture_pro(
+                title_tex,
+                rl.Rectangle(0.0, 0.0, float(title_tex.width), float(title_tex.height)),
+                rl.Rectangle(title_x, title_y, QUEST_TITLE_W, QUEST_TITLE_H),
+                rl.Vector2(0.0, 0.0),
+                0.0,
+                rl.Color(179, 179, 179, 179),
+            )
+
+        # Stage icons (1..5).
+        hover_tint = rl.Color(255, 255, 255, 204)  # 0.8 alpha
+        base_tint = rl.Color(179, 179, 179, 179)  # 0.7 RGBA
+        selected_tint = rl.WHITE
+        for idx in range(1, 6):
+            icon = self._stage_icons.get(idx)
+            if icon is None:
+                continue
+            x = icons_x0 + float(idx - 1) * QUEST_STAGE_ICON_STEP
+            local_scale = 1.0 if idx == stage else QUEST_STAGE_ICON_SCALE_UNSELECTED
+            size = QUEST_STAGE_ICON_SIZE * local_scale
+            tint = base_tint
+            if hovered_stage == idx:
+                tint = hover_tint
+            if idx == stage:
+                tint = selected_tint
+            rl.draw_texture_pro(
+                icon,
+                rl.Rectangle(0.0, 0.0, float(icon.width), float(icon.height)),
+                rl.Rectangle(x, icons_y, size, size),
+                rl.Vector2(0.0, 0.0),
+                0.0,
+                tint,
+            )
+
+        config = self._state.config
+        status = self._state.status
+        hardcore_flag = bool(int(config.data.get("hardcore_flag", 0) or 0))
+        base_color, hover_color = self._quest_row_colors(hardcore=hardcore_flag)
+
+        font = self._ensure_small_font()
+
+        y0 = self._rows_y0(layout)
+        # Hardcore checkbox (only drawn once tier5 is reachable in normal mode).
+        if int(status.quest_unlock_index) >= QUEST_HARDCORE_UNLOCK_INDEX:
+            check_on = self._check_on
+            check_off = self._check_off
+            if check_on is not None and check_off is not None:
+                check_tex = check_on if hardcore_flag else check_off
+                x = list_x + QUEST_HARDCORE_CHECKBOX_X_OFFSET
+                y = layout["list_y0"] + QUEST_HARDCORE_CHECKBOX_Y_OFFSET
+                rl.draw_texture_pro(
+                    check_tex,
+                    rl.Rectangle(0.0, 0.0, float(check_tex.width), float(check_tex.height)),
+                    rl.Rectangle(x, y, float(check_tex.width), float(check_tex.height)),
+                    rl.Vector2(0.0, 0.0),
+                    0.0,
+                    rl.WHITE,
+                )
+                draw_small_text(font, "Hardcore", x + float(check_tex.width) + 6.0, y + 1.0, 1.0, base_color)
+
+        # Quest list (10 rows).
+        for row in range(10):
+            y = y0 + float(row) * QUEST_LIST_ROW_STEP
+            unlocked = self._quest_unlocked(stage, row)
+            color = hover_color if hovered_row == row else base_color
+
+            draw_small_text(font, f"{stage}.{row + 1}", list_x, y, 1.0, color)
+
+            if unlocked:
+                title = self._quest_title(stage, row)
+            else:
+                title = "???"
+            draw_small_text(font, title, list_x + QUEST_LIST_NAME_X_OFFSET, y, 1.0, color)
+
+            if show_counts and unlocked:
+                counts = self._quest_counts(stage=stage, row=row)
+                if counts is not None:
+                    completed, games = counts
+                    title_w = measure_small_text_width(font, title, 1.0)
+                    counts_x = list_x + QUEST_LIST_NAME_X_OFFSET + title_w + 12.0
+                    draw_small_text(font, f"({completed}/{games})", counts_x, y, 1.0, color)
+
+        if show_counts:
+            # Header is drawn below the list, aligned with the count column.
+            header_x = list_x + 96.0
+            header_y = y0 + QUEST_LIST_ROW_STEP * 10.0 - 2.0
+            draw_small_text(font, "(completed/games)", header_x, header_y, 1.0, base_color)
+
+        # Back button.
+        button = self._button_sm or self._button_md
+        if button is not None:
+            back_x = list_x + QUEST_BACK_BUTTON_X_OFFSET
+            back_y = y0 + QUEST_BACK_BUTTON_Y_OFFSET
+            back_w = float(button.width)
+            back_h = float(button.height)
+            mouse = rl.get_mouse_position()
+            hovered = back_x <= mouse.x <= back_x + back_w and back_y <= mouse.y <= back_y + back_h
+            rl.draw_texture_pro(
+                button,
+                rl.Rectangle(0.0, 0.0, float(button.width), float(button.height)),
+                rl.Rectangle(back_x, back_y, back_w, back_h),
+                rl.Vector2(0.0, 0.0),
+                0.0,
+                rl.WHITE,
+            )
+            label = "Back"
+            label_w = measure_small_text_width(font, label, 1.0)
+            text_x = back_x + (back_w - label_w) * 0.5 + 1.0
+            text_y = back_y + 10.0
+            text_alpha = 255 if hovered else 179
+            draw_small_text(font, label, text_x, text_y, 1.0, rl.Color(255, 255, 255, text_alpha))
+
+    def _draw_sign(self) -> None:
+        assets = self._assets
+        if assets is None or assets.sign is None:
+            return
+        screen_w = float(self._state.config.screen_width)
+        scale, shift_x = MenuView._sign_layout_scale(int(screen_w))
+        pos_x = screen_w + MENU_SIGN_POS_X_PAD
+        pos_y = MENU_SIGN_POS_Y if screen_w > MENU_SCALE_SMALL_THRESHOLD else MENU_SIGN_POS_Y_SMALL
+        sign_w = MENU_SIGN_WIDTH * scale
+        sign_h = MENU_SIGN_HEIGHT * scale
+        offset_x = MENU_SIGN_OFFSET_X * scale + shift_x
+        offset_y = MENU_SIGN_OFFSET_Y * scale
+        rotation_deg = 0.0
+        if not self._state.menu_sign_locked:
+            angle_rad, slide_x = MenuView._ui_element_anim(
+                self,
+                index=0,
+                start_ms=300,
+                end_ms=0,
+                width=sign_w,
+            )
+            _ = slide_x
+            rotation_deg = math.degrees(angle_rad)
+        sign = assets.sign
+        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        if fx_detail:
+            MenuView._draw_ui_quad(
+                texture=sign,
+                src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
+                dst=rl.Rectangle(pos_x + 7.0, pos_y + 7.0, sign_w, sign_h),
+                origin=rl.Vector2(-offset_x, -offset_y),
+                rotation_deg=rotation_deg,
+                tint=rl.Color(0x44, 0x44, 0x44, 0x44),
+            )
+        MenuView._draw_ui_quad(
+            texture=sign,
+            src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
+            dst=rl.Rectangle(pos_x, pos_y, sign_w, sign_h),
+            origin=rl.Vector2(-offset_x, -offset_y),
+            rotation_deg=rotation_deg,
+            tint=rl.WHITE,
+        )
+
+
+class QuestStartView(PanelMenuView):
+    def __init__(self, state: GameState) -> None:
+        super().__init__(
+            state,
+            title="Quest",
+            body="Quest gameplay is not implemented yet.",
+            back_action="open_quests",
+        )
+
+    def open(self) -> None:
+        level = self._state.pending_quest_level or "unknown"
+        self._title = f"Quest {level}"
+        self._body_lines = [
+            f"Selected quest: {level}",
+            "",
+            "Quest gameplay is not implemented yet.",
+        ]
+        super().open()
 
 
 class OptionsMenuView(PanelMenuView):
@@ -2564,12 +3119,8 @@ class GameLoopView:
         self._menu = MenuView(state)
         self._front_views: dict[str, FrontView] = {
             "open_play_game": PlayGameMenuView(state),
-            "open_quests": PanelMenuView(
-                state,
-                title="Quests",
-                body="Quest selection is not implemented yet.",
-                back_action="open_play_game",
-            ),
+            "open_quests": QuestsMenuView(state),
+            "start_quest": QuestStartView(state),
             "start_survival": SurvivalGameView(state),
             "start_rush": PanelMenuView(
                 state,
