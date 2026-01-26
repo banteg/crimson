@@ -39,6 +39,12 @@ v1 = v0 + 1/16
 
 A small bias of 1/512 is applied to the U/V values in code to reduce bleeding.
 
+### Identification (font source)
+
+The small font glyphs match **Pixel Arial 11**. The closest match we found is
+`PIXEARG_.TTF` (often distributed as "Pixel Arial 11"). Reference:
+https://www.dafont.com/pixel-arial-11.font
+
 ### Rendering hooks (grim.dll)
 
 - `grim_init_system` (`FUN_10005eb0`) loads `load\smallFnt.dat` and copies 0x100 bytes into `grim_font2_glyph_widths`.
