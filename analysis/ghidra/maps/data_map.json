@@ -2094,37 +2094,38 @@
     },
     {
       "address": "0x0048f588",
-      "comment": "Bonus HUD slot active flag array (stride 0x20 bytes).",
-      "name": "bonus_hud_slot_active",
-      "program": "crimsonland.exe"
+      "comment": "Bonus HUD slot table (0x10 entries, stride 0x20 bytes).",
+      "name": "bonus_hud_slot_table",
+      "program": "crimsonland.exe",
+      "type": "bonus_hud_slot_t"
     },
     {
       "address": "0x0048f58c",
-      "comment": "Bonus HUD slot Y/slide offset (bonus_hud_slot_active + 0x04).",
+      "comment": "Bonus HUD slot slide X offset (bonus_hud_slot_table + 0x04).",
       "name": "bonus_hud_slot_y",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x0048f594",
-      "comment": "Bonus HUD slot timer pointer (bonus_hud_slot_active + 0x0c).",
+      "comment": "Bonus HUD slot timer pointer (bonus_hud_slot_table + 0x0c).",
       "name": "bonus_hud_slot_timer_ptr",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x0048f598",
-      "comment": "Bonus HUD slot alternate timer pointer (bonus_hud_slot_active + 0x10); used for player 2 timers.",
+      "comment": "Bonus HUD slot alternate timer pointer (bonus_hud_slot_table + 0x10); used for player 2 timers.",
       "name": "bonus_hud_slot_alt_timer_ptr",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x0048f59c",
-      "comment": "Bonus HUD slot label string pointer (bonus_hud_slot_active + 0x14).",
+      "comment": "Bonus HUD slot label string pointer (bonus_hud_slot_table + 0x14).",
       "name": "bonus_hud_slot_label",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x0048f5a0",
-      "comment": "Bonus HUD slot icon id (bonus_hud_slot_active + 0x18).",
+      "comment": "Bonus HUD slot icon id (bonus_hud_slot_table + 0x18).",
       "name": "bonus_hud_slot_icon_id",
       "program": "crimsonland.exe"
     },

@@ -11720,14 +11720,14 @@ void gameplay_reset_state(void)
 
 {
   undefined4 uVar1;
-  undefined4 *puVar2;
-  uint uVar3;
-  float *pfVar4;
-  bonus_entry_t *pbVar5;
-  projectile_t *ppVar6;
-  sprite_effect_t *psVar7;
-  secondary_projectile_t *psVar8;
-  int iVar9;
+  uint uVar2;
+  float *pfVar3;
+  bonus_entry_t *pbVar4;
+  projectile_t *ppVar5;
+  sprite_effect_t *psVar6;
+  secondary_projectile_t *psVar7;
+  int iVar8;
+  undefined4 *puVar9;
   int iVar10;
   char *unaff_EBX;
   char *unaff_ESI;
@@ -11741,17 +11741,17 @@ void gameplay_reset_state(void)
   char *in_stack_fffffff8;
   char *in_stack_fffffffc;
   
-  puVar2 = &bonus_hud_slot_y;
+  pfVar3 = &bonus_hud_slot_table.slide_x;
   DAT_0048727c = 0;
   do {
-    puVar2[6] = 0x40a00000;
-    *(undefined1 *)(puVar2 + -1) = 0;
-    *puVar2 = 0;
-    puVar2[5] = 1;
-    puVar2[4] = s_Empty_00473764;
-    puVar2[1] = 0x3f800000;
-    puVar2 = puVar2 + 8;
-  } while ((int)puVar2 < 0x48f78c);
+    pfVar3[6] = 5.0;
+    ((bonus_hud_slot_t *)(pfVar3 + -1))->active = '\0';
+    *pfVar3 = 0.0;
+    pfVar3[5] = 1.4013e-45;
+    pfVar3[4] = (float)s_Empty_00473764;
+    pfVar3[1] = 1.0;
+    pfVar3 = pfVar3 + 8;
+  } while ((int)pfVar3 < 0x48f78c);
   quest_spawn_timeline = 0;
   shock_chain_links_left = 0;
   DAT_00486fb8 = 1;
@@ -11847,10 +11847,10 @@ void gameplay_reset_state(void)
   _camera_offset_x = (float)terrain_texture_width * 0.5;
   perk_choices_dirty = 1;
   bonus_spawn_guard = 0;
-  puVar2 = &DAT_0048708c;
+  puVar9 = &DAT_0048708c;
   for (iVar10 = 0x40; iVar10 != 0; iVar10 = iVar10 + -1) {
-    *puVar2 = 0;
-    puVar2 = puVar2 + 1;
+    *puVar9 = 0;
+    puVar9 = puVar9 + 1;
   }
   _camera_offset_y = (float)terrain_texture_height * 0.5;
   fStack00000010 = _camera_offset_x;
@@ -11884,8 +11884,8 @@ void gameplay_reset_state(void)
   highscore_active_record.month = '\0';
   highscore_active_record.day = '\0';
   highscore_active_record.flags = '\0';
-  uVar3 = crt_rand();
-  highscore_active_record.reserved0._0_4_ = uVar3 & 0xfee050f;
+  uVar2 = crt_rand();
+  highscore_active_record.reserved0._0_4_ = uVar2 & 0xfee050f;
   _DAT_004aaf24 = 0;
   _bonus_freeze_timer = 0;
   _DAT_004aaf1c = 0;
@@ -11897,34 +11897,34 @@ void gameplay_reset_state(void)
   DAT_004871d0 = 0;
   fStack00000014 = -1.0;
   DAT_004871d4 = 0;
-  pfVar4 = &player_state_table.low_health_timer;
+  pfVar3 = &player_state_table.low_health_timer;
   do {
-    pfVar4[5] = -1.0;
-    pfVar4[6] = -1.0;
-    *pfVar4 = 100.0;
-    pfVar4[3] = 0.0;
-    pfVar4 = pfVar4 + 0xd8;
-  } while ((int)pfVar4 < 0x491280);
-  pbVar5 = &bonus_pool;
+    pfVar3[5] = -1.0;
+    pfVar3[6] = -1.0;
+    *pfVar3 = 100.0;
+    pfVar3[3] = 0.0;
+    pfVar3 = pfVar3 + 0xd8;
+  } while ((int)pfVar3 < 0x491280);
+  pbVar4 = &bonus_pool;
   do {
-    pbVar5->bonus_id = 0;
-    pbVar5 = pbVar5 + 1;
-  } while ((int)pbVar5 < 0x482b08);
-  ppVar6 = &projectile_pool;
+    pbVar4->bonus_id = 0;
+    pbVar4 = pbVar4 + 1;
+  } while ((int)pbVar4 < 0x482b08);
+  ppVar5 = &projectile_pool;
   do {
-    ppVar6->active = '\0';
-    ppVar6 = ppVar6 + 1;
-  } while ((int)ppVar6 < 0x493eb8);
-  psVar7 = &sprite_effect_pool;
+    ppVar5->active = '\0';
+    ppVar5 = ppVar5 + 1;
+  } while ((int)ppVar5 < 0x493eb8);
+  psVar6 = &sprite_effect_pool;
   do {
-    *(undefined1 *)&psVar7->active = 0;
-    psVar7 = psVar7 + 1;
-  } while ((int)psVar7 < 0x49aa20);
-  psVar8 = &secondary_projectile_pool;
+    *(undefined1 *)&psVar6->active = 0;
+    psVar6 = psVar6 + 1;
+  } while ((int)psVar6 < 0x49aa20);
+  psVar7 = &secondary_projectile_pool;
   do {
-    psVar8->active = '\0';
-    psVar8 = (secondary_projectile_t *)&psVar8[1].angle;
-  } while ((int)psVar8 < 0x4965d8);
+    psVar7->active = '\0';
+    psVar7 = (secondary_projectile_t *)&psVar7[1].angle;
+  } while ((int)psVar7 < 0x4965d8);
   iVar10 = 0;
   piVar11 = &creature_pool.target_player;
   do {
@@ -11939,18 +11939,18 @@ void gameplay_reset_state(void)
     }
     *(uchar *)(piVar11 + -0x1a) = '\x01';
     piVar11[7] = 0;
-    iVar9 = crt_rand();
+    iVar8 = crt_rand();
     piVar12 = piVar11 + 0x26;
-    fStack00000010 = (float)(iVar9 % 0x1f);
+    fStack00000010 = (float)(iVar8 % 0x1f);
     iVar10 = iVar10 + 1;
     piVar11[9] = (int)(float)(int)fStack00000010;
     piVar11 = piVar12;
   } while ((int)piVar12 < 0x4aa3a8);
-  puVar2 = &creature_spawn_slot_owner;
+  puVar9 = &creature_spawn_slot_owner;
   do {
-    *puVar2 = 0;
-    puVar2 = puVar2 + 6;
-  } while ((int)puVar2 < 0x4852d0);
+    *puVar9 = 0;
+    puVar9 = puVar9 + 6;
+  } while ((int)puVar9 < 0x4852d0);
   fx_queue_rotated = 0;
   fx_queue_count = 0;
   highscore_active_record.full_version_marker = '\0';
@@ -11969,8 +11969,8 @@ void gameplay_reset_state(void)
   highscore_active_record.day = '\0';
   highscore_active_record.flags = '\0';
   uStack00000004 = 0x413412;
-  uVar3 = crt_rand();
-  highscore_active_record.reserved0._0_4_ = uVar3 & 0xfee050f;
+  uVar2 = crt_rand();
+  highscore_active_record.reserved0._0_4_ = uVar2 & 0xfee050f;
   uStack00000004 = 0x413421;
   terrain_generate_random();
   return;
@@ -15628,54 +15628,52 @@ void __cdecl ui_draw_progress_bar(float *xy,float width,float ratio,float *rgba)
 
 /* FUN_0041a810 @ 0041a810 */
 
-void __cdecl
-FUN_0041a810(undefined4 param_1,undefined4 param_2,undefined4 param_3,undefined4 param_4)
+void __cdecl FUN_0041a810(char *param_1,int param_2,float *param_3,float *param_4)
 
 {
   undefined4 uVar1;
   int iVar2;
-  int iVar3;
-  undefined1 *puVar4;
-  char *pcVar5;
-  int *piVar6;
+  undefined1 *puVar3;
+  bonus_hud_slot_t *pbVar4;
+  int iVar5;
+  float **ppfVar6;
   
   iVar2 = 0;
-  pcVar5 = &bonus_hud_slot_active;
+  pbVar4 = &bonus_hud_slot_table;
   do {
-    if (*pcVar5 == '\0') {
-      iVar3 = iVar2 * 0x20;
-      (&bonus_hud_slot_timer_ptr)[iVar2 * 8] = param_3;
-      (&bonus_hud_slot_icon_id)[iVar2 * 8] = param_2;
+    if (pbVar4->active == '\0') {
+      (&bonus_hud_slot_table)[iVar2].timer_ptr = param_3;
+      (&bonus_hud_slot_table)[iVar2].icon_id = param_2;
       uVar1 = config_blob.reserved0._20_4_;
-      *(undefined4 *)(&bonus_hud_slot_alt_timer_ptr + iVar3) = param_4;
-      (&bonus_hud_slot_active)[iVar3] = 1;
-      (&bonus_hud_slot_y)[iVar2 * 8] = 0xc3380000;
-      (&bonus_hud_slot_label)[iVar2 * 8] = param_1;
+      (&bonus_hud_slot_table)[iVar2].alt_timer_ptr = param_4;
+      (&bonus_hud_slot_table)[iVar2].active = '\x01';
+      (&bonus_hud_slot_table)[iVar2].slide_x = -184.0;
+      (&bonus_hud_slot_table)[iVar2].label = param_1;
       if ((int)uVar1 < 2) {
-        *(undefined4 *)(&bonus_hud_slot_alt_timer_ptr + iVar3) = 0;
+        (&bonus_hud_slot_table)[iVar2].alt_timer_ptr = (float *)0x0;
       }
       iVar2 = 0;
-      piVar6 = &bonus_hud_slot_timer_ptr;
+      ppfVar6 = &bonus_hud_slot_table.timer_ptr;
       do {
-        if ((char)piVar6[-3] != '\0') {
-          iVar3 = 0x10;
-          puVar4 = &DAT_0048f788;
+        if (((bonus_hud_slot_t *)(ppfVar6 + -3))->active != '\0') {
+          iVar5 = 0x10;
+          puVar3 = &DAT_0048f788;
           do {
-            if ((*piVar6 == *(int *)(puVar4 + 0xc)) && (iVar2 != iVar3)) {
-              *puVar4 = 0;
+            if ((*ppfVar6 == *(float **)(puVar3 + 0xc)) && (iVar2 != iVar5)) {
+              *puVar3 = 0;
             }
-            puVar4 = puVar4 + -0x20;
-            iVar3 = iVar3 + -1;
-          } while (0x48f587 < (int)puVar4);
+            puVar3 = puVar3 + -0x20;
+            iVar5 = iVar5 + -1;
+          } while (0x48f587 < (int)puVar3);
         }
-        piVar6 = piVar6 + 8;
+        ppfVar6 = ppfVar6 + 8;
         iVar2 = iVar2 + 1;
-      } while ((int)piVar6 < 0x48f794);
+      } while ((int)ppfVar6 < 0x48f794);
       return;
     }
-    pcVar5 = pcVar5 + 0x20;
+    pbVar4 = pbVar4 + 1;
     iVar2 = iVar2 + 1;
-  } while ((int)pcVar5 < 0x48f788);
+  } while ((int)pbVar4 < 0x48f788);
   return;
 }
 
@@ -15696,12 +15694,11 @@ void __cdecl bonus_hud_slot_update_and_render(float *xy,int slot)
   float unaff_EBX;
   float fVar6;
   float unaff_ESI;
-  int iVar7;
   int unaff_EDI;
-  float *pfVar8;
-  bool bVar9;
+  float *pfVar7;
+  bool bVar8;
   int unaff_retaddr;
-  float in_stack_0000000c;
+  char *in_stack_0000000c;
   char *in_stack_00000010;
   float fStack00000014;
   float *in_stack_00000018;
@@ -15718,33 +15715,32 @@ void __cdecl bonus_hud_slot_update_and_render(float *xy,int slot)
   float in_stack_fffffff8;
   int in_stack_fffffffc;
   
-  iVar7 = slot * 0x20;
-  if ((&bonus_hud_slot_active)[iVar7] != '\0') {
-    if ((0.0 < *(float *)(&bonus_hud_slot_timer_ptr)[slot * 8]) ||
-       ((*(float **)(&bonus_hud_slot_alt_timer_ptr + iVar7) != (float *)0x0 &&
-        (0.0 < **(float **)(&bonus_hud_slot_alt_timer_ptr + iVar7))))) {
-      fVar6 = frame_dt * 350.0 + (float)(&bonus_hud_slot_y)[slot * 8];
+  if ((&bonus_hud_slot_table)[slot].active != '\0') {
+    if ((0.0 < *(&bonus_hud_slot_table)[slot].timer_ptr) ||
+       (((&bonus_hud_slot_table)[slot].alt_timer_ptr != (float *)0x0 &&
+        (0.0 < *(&bonus_hud_slot_table)[slot].alt_timer_ptr)))) {
+      fVar6 = frame_dt * 350.0 + (&bonus_hud_slot_table)[slot].slide_x;
     }
     else {
-      fVar6 = (float)(&bonus_hud_slot_y)[slot * 8] - frame_dt * 320.0;
+      fVar6 = (&bonus_hud_slot_table)[slot].slide_x - frame_dt * 320.0;
     }
-    (&bonus_hud_slot_y)[slot * 8] = fVar6;
-    if (-2.0 < (float)(&bonus_hud_slot_y)[slot * 8]) {
-      (&bonus_hud_slot_y)[slot * 8] = 0xc0000000;
+    (&bonus_hud_slot_table)[slot].slide_x = fVar6;
+    if (-2.0 < (&bonus_hud_slot_table)[slot].slide_x) {
+      (&bonus_hud_slot_table)[slot].slide_x = -2.0;
     }
-    if ((float)(&bonus_hud_slot_y)[slot * 8] < -184.0) {
+    if ((&bonus_hud_slot_table)[slot].slide_x < -184.0) {
       iVar3 = 0xf;
       if (slot < 0x10) {
         pcVar5 = &DAT_0048f768;
-        bVar9 = slot == 0xf;
+        bVar8 = slot == 0xf;
         do {
-          if (bVar9) {
-            (&bonus_hud_slot_active)[iVar7] = '\0';
+          if (bVar8) {
+            (&bonus_hud_slot_table)[slot].active = '\0';
           }
           else if (*pcVar5 != '\0') break;
           iVar3 = iVar3 + -1;
           pcVar5 = pcVar5 + -0x20;
-          bVar9 = slot == iVar3;
+          bVar8 = slot == iVar3;
         } while (slot <= iVar3);
       }
       *xy = *xy + 52.0;
@@ -15760,10 +15756,10 @@ void __cdecl bonus_hud_slot_update_and_render(float *xy,int slot)
                 ((IGrim2D *)0x3f800000,1.0,1.0,fVar6,in_stack_ffffffe8);
       (*grim_interface_ptr->vtable->grim_begin_batch)(in_stack_ffffffec);
       (*grim_interface_ptr->vtable->grim_draw_quad)
-                ((IGrim2D *)(&bonus_hud_slot_y)[slot * 8],*in_stack_00000018 - 11.0,182.0,53.0,
-                 in_stack_fffffff0);
+                ((IGrim2D *)(&bonus_hud_slot_table)[slot].slide_x,*in_stack_00000018 - 11.0,182.0,
+                 53.0,in_stack_fffffff0);
       (*grim_interface_ptr->vtable->grim_end_batch)(in_stack_fffffff4);
-      pfVar8 = in_stack_00000018;
+      pfVar7 = in_stack_00000018;
     }
     else {
       (*grim_interface_ptr->vtable->grim_bind_texture)(DAT_0048f7c4,0,unaff_EDI);
@@ -15775,40 +15771,41 @@ void __cdecl bonus_hud_slot_update_and_render(float *xy,int slot)
                 ((IGrim2D *)0x3f800000,1.0,1.0,fVar6,in_stack_ffffffe8);
       (*grim_interface_ptr->vtable->grim_begin_batch)(in_stack_ffffffec);
       (*grim_interface_ptr->vtable->grim_draw_quad)
-                ((IGrim2D *)(((float)(&bonus_hud_slot_y)[slot * 8] - 100.0) + 4.0),
+                ((IGrim2D *)(((&bonus_hud_slot_table)[slot].slide_x - 100.0) + 4.0),
                  *in_stack_00000018 + 5.0,182.0,26.5,in_stack_fffffff0);
       (*grim_interface_ptr->vtable->grim_end_batch)(in_stack_fffffff4);
-      pfVar8 = in_stack_00000018;
+      pfVar7 = in_stack_00000018;
     }
     (*grim_interface_ptr->vtable->grim_set_color)
               ((IGrim2D *)0x3f800000,1.0,1.0,in_stack_00000028,in_stack_fffffff8);
     (*grim_interface_ptr->vtable->grim_bind_texture)(bonus_texture,0,in_stack_fffffffc);
     (*grim_interface_ptr->vtable->grim_set_atlas_frame)
-              ((IGrim2D *)0x4,(&bonus_hud_slot_icon_id)[slot * 8],unaff_retaddr);
+              ((IGrim2D *)0x4,(&bonus_hud_slot_table)[slot].icon_id,unaff_retaddr);
     (*grim_interface_ptr->vtable->grim_draw_quad)
-              ((IGrim2D *)((float)(&bonus_hud_slot_y)[slot * 8] - 1.0),*pfVar8,32.0,32.0,(float)xy);
+              ((IGrim2D *)((&bonus_hud_slot_table)[slot].slide_x - 1.0),*pfVar7,32.0,32.0,(float)xy)
+    ;
     (*grim_interface_ptr->vtable->grim_end_batch)((IGrim2D *)slot);
     if (*(float *)((int)cv_uiSmallIndicators + 0xc) != 0.0) {
-      if (*(int *)(&bonus_hud_slot_alt_timer_ptr + iVar7) == 0) {
-        fVar1 = (float)(&bonus_hud_slot_y)[slot * 8];
+      if ((&bonus_hud_slot_table)[slot].alt_timer_ptr == (float *)0x0) {
+        fVar1 = (&bonus_hud_slot_table)[slot].slide_x;
         uStack0000002c = in_stack_00000038;
-        fStack0000001c = *pfVar8 + 21.0;
-        fVar2 = *(float *)(&bonus_hud_slot_timer_ptr)[slot * 8];
+        fStack0000001c = *pfVar7 + 21.0;
+        fVar2 = *(&bonus_hud_slot_table)[slot].timer_ptr;
       }
       else {
-        in_stack_00000018 = (float *)((float)(&bonus_hud_slot_y)[slot * 8] + 36.0);
+        in_stack_00000018 = (float *)((&bonus_hud_slot_table)[slot].slide_x + 36.0);
         uStack0000002c = in_stack_00000038;
         fStack00000020 = 0.1;
         uStack00000024 = 0x3e99999a;
         in_stack_00000028 = 0.6;
-        fStack0000001c = ((*pfVar8 + 21.0) - 4.0) - 4.0;
+        fStack0000001c = ((*pfVar7 + 21.0) - 4.0) - 4.0;
         ui_draw_progress_bar
-                  ((float *)&stack0x00000018,32.0,
-                   *(float *)(&bonus_hud_slot_timer_ptr)[slot * 8] * 0.05,&stack0x00000020);
-        fVar1 = (float)(&bonus_hud_slot_y)[slot * 8];
-        fStack0000001c = *pfVar8 + 23.0;
+                  ((float *)&stack0x00000018,32.0,*(&bonus_hud_slot_table)[slot].timer_ptr * 0.05,
+                   &stack0x00000020);
+        fVar1 = (&bonus_hud_slot_table)[slot].slide_x;
+        fStack0000001c = *pfVar7 + 23.0;
         uStack0000002c = in_stack_00000038;
-        fVar2 = **(float **)(&bonus_hud_slot_alt_timer_ptr + iVar7);
+        fVar2 = *(&bonus_hud_slot_table)[slot].alt_timer_ptr;
       }
       fStack0000001c = fStack0000001c - 4.0;
       in_stack_00000018 = (float *)(fVar1 + 36.0);
@@ -15819,55 +15816,55 @@ void __cdecl bonus_hud_slot_update_and_render(float *xy,int slot)
       fStack00000020 = 0.1;
       ui_draw_progress_bar((float *)&stack0x00000018,32.0,(float)xy,(float *)slot);
       (*grim_interface_ptr->vtable->grim_set_color)
-                ((IGrim2D *)0x3f800000,1.0,1.0,fVar6,in_stack_0000000c);
-      *pfVar8 = *pfVar8 + 52.0;
+                ((IGrim2D *)0x3f800000,1.0,1.0,fVar6,(float)in_stack_0000000c);
+      *pfVar7 = *pfVar7 + 52.0;
       return;
     }
-    if (*(int *)(&bonus_hud_slot_alt_timer_ptr + iVar7) == 0) {
-      in_stack_00000018 = (float *)((float)(&bonus_hud_slot_y)[slot * 8] + 36.0);
+    if ((&bonus_hud_slot_table)[slot].alt_timer_ptr == (float *)0x0) {
+      in_stack_00000018 = (float *)((&bonus_hud_slot_table)[slot].slide_x + 36.0);
       uStack0000002c = in_stack_00000038;
-      fStack0000001c = *pfVar8 + 21.0;
+      fStack0000001c = *pfVar7 + 21.0;
       fStack00000020 = 0.1;
       uStack00000024 = 0x3e99999a;
       in_stack_00000028 = 0.6;
       ui_draw_progress_bar
-                ((float *)&stack0x00000018,100.0,
-                 *(float *)(&bonus_hud_slot_timer_ptr)[slot * 8] * 0.05,&stack0x00000020);
+                ((float *)&stack0x00000018,100.0,*(&bonus_hud_slot_table)[slot].timer_ptr * 0.05,
+                 &stack0x00000020);
       (*grim_interface_ptr->vtable->grim_set_color)
-                ((IGrim2D *)0x3f800000,1.0,1.0,fVar6,in_stack_0000000c);
-      in_stack_0000000c = (float)(&bonus_hud_slot_label)[slot * 8];
+                ((IGrim2D *)0x3f800000,1.0,1.0,fVar6,(float)in_stack_0000000c);
+      in_stack_0000000c = (&bonus_hud_slot_table)[slot].label;
       pIVar4 = grim_interface_ptr->vtable;
-      fVar6 = *pfVar8 + 6.0;
+      fVar6 = *pfVar7 + 6.0;
     }
     else {
-      in_stack_00000018 = (float *)((float)(&bonus_hud_slot_y)[slot * 8] + 36.0);
+      in_stack_00000018 = (float *)((&bonus_hud_slot_table)[slot].slide_x + 36.0);
       uStack0000002c = in_stack_00000038;
       fStack00000020 = 0.1;
-      fStack0000001c = (*pfVar8 + 21.0) - 4.0;
+      fStack0000001c = (*pfVar7 + 21.0) - 4.0;
       uStack00000024 = 0x3e99999a;
       in_stack_00000028 = 0.6;
       ui_draw_progress_bar
-                ((float *)&stack0x00000018,100.0,
-                 *(float *)(&bonus_hud_slot_timer_ptr)[slot * 8] * 0.05,&stack0x00000020);
-      in_stack_00000018 = (float *)((float)(&bonus_hud_slot_y)[slot * 8] + 36.0);
-      fStack0000001c = *pfVar8 + 23.0;
+                ((float *)&stack0x00000018,100.0,*(&bonus_hud_slot_table)[slot].timer_ptr * 0.05,
+                 &stack0x00000020);
+      in_stack_00000018 = (float *)((&bonus_hud_slot_table)[slot].slide_x + 36.0);
+      fStack0000001c = *pfVar7 + 23.0;
       uStack0000002c = in_stack_00000038;
       fStack00000020 = 0.1;
       uStack00000024 = 0x3e99999a;
       in_stack_00000028 = 0.6;
       ui_draw_progress_bar
-                ((float *)&stack0x00000018,100.0,
-                 **(float **)(&bonus_hud_slot_alt_timer_ptr + iVar7) * 0.05,&stack0x00000020);
+                ((float *)&stack0x00000018,100.0,*(&bonus_hud_slot_table)[slot].alt_timer_ptr * 0.05
+                 ,&stack0x00000020);
       (*grim_interface_ptr->vtable->grim_set_color)
-                ((IGrim2D *)0x3f800000,1.0,1.0,fVar6,in_stack_0000000c);
-      in_stack_0000000c = (float)(&bonus_hud_slot_label)[slot * 8];
+                ((IGrim2D *)0x3f800000,1.0,1.0,fVar6,(float)in_stack_0000000c);
+      in_stack_0000000c = (&bonus_hud_slot_table)[slot].label;
       pIVar4 = grim_interface_ptr->vtable;
-      fVar6 = *pfVar8 + 2.0;
+      fVar6 = *pfVar7 + 2.0;
     }
     (*pIVar4->grim_draw_text_small)
-              ((IGrim2D *)((float)(&bonus_hud_slot_y)[slot * 8] + 36.0),fVar6,in_stack_0000000c,
-               in_stack_00000010);
-    *pfVar8 = *pfVar8 + 52.0;
+              ((IGrim2D *)((&bonus_hud_slot_table)[slot].slide_x + 36.0),fVar6,
+               (float)in_stack_0000000c,in_stack_00000010);
+    *pfVar7 = *pfVar7 + 52.0;
   }
   return;
 }

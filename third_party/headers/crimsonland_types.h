@@ -424,6 +424,18 @@ typedef struct bonus_entry_t {
     int amount;
 } bonus_entry_t;
 
+typedef struct bonus_hud_slot_t {
+    unsigned char active;
+    unsigned char _pad0[3];
+    float slide_x;
+    float field_0x08;
+    float *timer_ptr;
+    float *alt_timer_ptr;
+    char *label;
+    int icon_id;
+    float field_0x1c;
+} bonus_hud_slot_t;
+
 typedef struct mod_info_t {
     char name[0x20];
     char author[0x20];
