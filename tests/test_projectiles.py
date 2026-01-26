@@ -69,6 +69,29 @@ def test_projectile_pool_update_applies_distance_scaled_damage() -> None:
     assert math.isclose(creatures[0].hp, 33.5, abs_tol=1e-9)
 
 
+def test_projectile_pool_update_rocket_splash_hits_nearby_creatures() -> None:
+    pool = ProjectilePool(size=1)
+    pool.spawn(
+        pos_x=0.0,
+        pos_y=0.0,
+        angle=math.pi / 2.0,
+        type_id=0x0B,
+        owner_id=-100,
+        base_damage=15.0,
+    )
+    creatures = [
+        _Creature(x=30.0, y=0.0, hp=100.0),
+        _Creature(x=70.0, y=0.0, hp=100.0),
+        _Creature(x=200.0, y=0.0, hp=100.0),
+    ]
+
+    pool.update(0.1, creatures, world_size=1024.0, damage_scale_by_type={0x0B: 1.0})
+
+    assert creatures[0].hp < 100.0
+    assert creatures[1].hp < 100.0
+    assert math.isclose(creatures[2].hp, 100.0, abs_tol=1e-9)
+
+
 def test_projectile_pool_update_ion_minigun_linger_deals_aoe_damage() -> None:
     pool = ProjectilePool(size=1)
     pool.spawn(

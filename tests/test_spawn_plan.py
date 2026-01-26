@@ -10,6 +10,7 @@ from crimson.creatures.spawn import (
     CreatureFlags,
     CreatureTypeId,
     SPAWN_TEMPLATES,
+    SpawnId,
     SpawnEnv,
     build_spawn_plan,
 )
@@ -293,6 +294,28 @@ def test_spawn_plan_template_06_is_randomized() -> None:
     assert c.heading == 0.0
 
     assert rng.state == _step_msvcrt(seed, 6)
+
+
+def test_spawn_plan_template_3c_sets_ranged_projectile_type() -> None:
+    rng = Crand(0)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,
+        hardcore=False,
+        difficulty_level=0,
+    )
+
+    plan = build_spawn_plan(SpawnId.SPIDER_SP1_CONST_RANGED_VARIANT_3C, (100.0, 200.0), 0.0, rng, env)
+
+    assert plan.primary == 0
+    assert len(plan.creatures) == 1
+
+    c = plan.creatures[0]
+    assert c.type_id == CreatureTypeId.SPIDER_SP1
+    assert c.flags & CreatureFlags.RANGED_ATTACK_VARIANT
+    assert c.ai_mode == 2
+    assert c.ranged_projectile_type == 26
 
 
 def test_spawn_plan_template_07_has_spawn_slot_and_non_hardcore_interval_bump() -> None:

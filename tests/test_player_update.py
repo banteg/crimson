@@ -119,6 +119,20 @@ def test_player_fire_weapon_fire_bullets_spawns_weapon_pellet_count() -> None:
     assert set(type_ids) == {0x2C}
 
 
+def test_player_fire_weapon_shotgun_spawns_pellets() -> None:
+    pool = ProjectilePool(size=64)
+    state = GameplayState(projectiles=pool)
+    player = PlayerState(index=0, pos_x=100.0, pos_y=100.0, weapon_id=2, clip_size=10, ammo=10)
+    player.aim_dir_x = 1.0
+    player.aim_dir_y = 0.0
+
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=101.0, aim_y=100.0), 0.0, state)
+
+    type_ids = _active_type_ids(pool)
+    assert len(type_ids) == 12
+    assert set(type_ids) == {2}
+
+
 def test_player_update_hot_tempered_spawns_ring() -> None:
     pool = ProjectilePool(size=16)
     state = GameplayState(projectiles=pool)
