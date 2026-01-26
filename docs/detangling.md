@@ -889,7 +889,7 @@ Init timing note:
 - `FUN_0042e120` -> `effect_spawn`
   - Evidence: pops an entry from the pool `effect_free_list_head`, copies template `effect_template_vel_x`,
     writes position from `param_2`, tags the effect id, and assigns quad UVs from atlas tables
-    `effect_id_table` (`size_code`, `frame`) plus arrays `effect_uv16`, `effect_uv8_u`, `effect_uv4_u`, `effect_uv2_u`.
+    `effect_id_table` (`size_code`, `frame`) plus arrays `effect_uv16`, `effect_uv8`, `effect_uv4_u`, `effect_uv2_u`.
 
 - `FUN_0042e710` -> `effects_update`
   - Evidence: iterates pool entries, advances timers/positions with `DAT_00480840`, and calls

@@ -2733,13 +2733,14 @@
     },
     {
       "address": "0x00491010",
-      "comment": "Effect UV table U for 8x8 atlas frames",
-      "name": "effect_uv8_u",
-      "program": "crimsonland.exe"
+      "comment": "Effect UV table for 8x8 atlas frames (u,v).",
+      "name": "effect_uv8",
+      "program": "crimsonland.exe",
+      "type": "uv2f_t"
     },
     {
       "address": "0x00491014",
-      "comment": "Effect UV table V for 8x8 atlas frames",
+      "comment": "Effect UV table V for 8x8 atlas frames (effect_uv8 + 0x04).",
       "name": "effect_uv8_v",
       "program": "crimsonland.exe"
     },

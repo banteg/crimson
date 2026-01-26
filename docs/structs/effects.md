@@ -349,7 +349,7 @@ Quad layout (from `effect_spawn` writes):
   pulls UVs from size-specific tables:
 
   - `0x10` -> `effect_uv16` (`u`, `v`) with base `effect_uv_step_16`.
-  - `0x20` -> `effect_uv8_u` / `effect_uv8_v` with base `effect_uv_step_8`.
+  - `0x20` -> `effect_uv8` (`u`, `v`) with base `effect_uv_step_8`.
   - `0x40` -> `effect_uv4_u` / `effect_uv4_v` with base `effect_uv_step_4`.
   - `0x80` -> `effect_uv2_u` / `effect_uv2_v` with base `effect_uv_step_2`.
 - `effect_spawn` copies 15 floats from the template block at `effect_template_vel_x`

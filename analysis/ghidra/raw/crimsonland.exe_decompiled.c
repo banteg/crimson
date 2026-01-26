@@ -19545,14 +19545,14 @@ void effect_uv_tables_init(void)
     pfVar5 = pfVar5 + 8;
   } while (local_4 < 4);
   local_4 = 0;
-  pfVar5 = (float *)&effect_uv8_v;
+  pfVar5 = &effect_uv8.v;
   do {
     local_8 = 0;
     pfVar4 = pfVar5;
     do {
       fVar1 = (float)local_8;
       local_8 = local_8 + 1;
-      pfVar4[-1] = fVar1 * 0.125;
+      ((uv2f_t *)(pfVar4 + -1))->u = fVar1 * 0.125;
       *pfVar4 = (float)local_4 * 0.125;
       pfVar4 = pfVar4 + 2;
     } while (local_8 < 8);
@@ -23749,7 +23749,7 @@ int __cdecl creature_spawn(float *pos,float *tint_rgba,int type_id)
 void player_render_overlays(void)
 
 {
-  float *pfVar1;
+  uv2f_t *puVar1;
   float *pfVar2;
   int iVar3;
   int iVar4;
@@ -23846,11 +23846,11 @@ void player_render_overlays(void)
     (*grim_interface_ptr->vtable->grim_set_rotation)
               ((IGrim2D *)(&player_state_table)[render_overlay_player_index].heading,(float)pIVar10)
     ;
-    DAT_004965d8 = (float)(&effect_uv8_u)[iVar4 * 2];
-    DAT_004965dc = (float)(&effect_uv8_v)[iVar4 * 2];
-    pfVar1 = (float *)(&effect_uv8_u + iVar4 * 2);
-    _DAT_004965e0 = (IGrim2D *)(*pfVar1 + 0.125);
-    _DAT_004965e4 = (float)(&effect_uv8_v)[iVar4 * 2] + 0.125;
+    DAT_004965d8 = (&effect_uv8)[iVar4].u;
+    DAT_004965dc = (&effect_uv8)[iVar4].v;
+    puVar1 = &effect_uv8 + iVar4;
+    _DAT_004965e0 = (IGrim2D *)(puVar1->u + 0.125);
+    _DAT_004965e4 = (&effect_uv8)[iVar4].v + 0.125;
     b_00 = (float)_DAT_004965e0;
     (*grim_interface_ptr->vtable->grim_set_uv)
               ((IGrim2D *)DAT_004965d8,DAT_004965dc,(float)_DAT_004965e0,_DAT_004965e4,fVar13);
@@ -23900,10 +23900,10 @@ void player_render_overlays(void)
     (*grim_interface_ptr->vtable->grim_set_color)((IGrim2D *)0x3f800000,1.0,1.0,b,(float)pIVar11);
     (*grim_interface_ptr->vtable->grim_set_rotation)
               ((IGrim2D *)(&player_state_table)[render_overlay_player_index].heading,fVar17);
-    DAT_004965d8 = *pfVar1;
-    DAT_004965dc = (float)(&effect_uv8_v)[iVar4 * 2];
-    _DAT_004965e0 = (IGrim2D *)(*pfVar1 + 0.125);
-    _DAT_004965e4 = (float)(&effect_uv8_v)[iVar4 * 2] + 0.125;
+    DAT_004965d8 = puVar1->u;
+    DAT_004965dc = (&effect_uv8)[iVar4].v;
+    _DAT_004965e0 = (IGrim2D *)(puVar1->u + 0.125);
+    _DAT_004965e4 = (&effect_uv8)[iVar4].v + 0.125;
     pIVar15 = _DAT_004965e0;
     pIStack0000001c = (IGrim2D *)_DAT_004965e4;
     (*grim_interface_ptr->vtable->grim_set_uv)
@@ -23962,10 +23962,10 @@ void player_render_overlays(void)
       (*grim_interface_ptr->vtable->grim_bind_texture)((IGrim2D *)particles_texture,0,iVar3);
       effect_select_texture(2);
       fVar7 = (float10)fsin((float10)_DAT_0047ea4c);
-      pfVar1 = &(&player_state_table)[render_overlay_player_index].shield_timer;
-      fVar7 = (fVar7 + (float10)1.0) * (float10)0.25 + (float10)*pfVar1;
-      if (*pfVar1 < 1.0) {
-        fVar7 = fVar7 * (float10)*pfVar1;
+      pfVar2 = &(&player_state_table)[render_overlay_player_index].shield_timer;
+      fVar7 = (fVar7 + (float10)1.0) * (float10)0.25 + (float10)*pfVar2;
+      if (*pfVar2 < 1.0) {
+        fVar7 = fVar7 * (float10)*pfVar2;
       }
       if ((float10)1.0 < fVar7) {
         fVar7 = (float10)1.0;
@@ -24134,10 +24134,10 @@ void player_render_overlays(void)
     iVar3 = 0x34;
   }
   (*grim_interface_ptr->vtable->grim_begin_batch)(pIVar15);
-  DAT_004965d8 = (float)(&effect_uv8_u)[iVar3 * 2];
-  DAT_004965dc = (float)(&effect_uv8_v)[iVar3 * 2];
-  _DAT_004965e0 = (IGrim2D *)((float)(&effect_uv8_u)[iVar3 * 2] + 0.125);
-  _DAT_004965e4 = (float)(&effect_uv8_v)[iVar3 * 2] + 0.125;
+  DAT_004965d8 = (&effect_uv8)[iVar3].u;
+  DAT_004965dc = (&effect_uv8)[iVar3].v;
+  _DAT_004965e0 = (IGrim2D *)((&effect_uv8)[iVar3].u + 0.125);
+  _DAT_004965e4 = (&effect_uv8)[iVar3].v + 0.125;
   (*grim_interface_ptr->vtable->grim_set_uv)
             ((IGrim2D *)DAT_004965d8,DAT_004965dc,(float)_DAT_004965e0,_DAT_004965e4,(float)pIVar10)
   ;
@@ -26538,25 +26538,25 @@ void * __cdecl effect_spawn(int effect_id,float *pos)
     return pfVar5;
   }
   if (iVar2 == 0x20) {
-    pfVar5[0x17] = (float)(&effect_uv8_u)[iVar3 * 2];
-    pfVar5[0x18] = (float)(&effect_uv8_v)[iVar3 * 2];
+    pfVar5[0x17] = (&effect_uv8)[iVar3].u;
+    pfVar5[0x18] = (&effect_uv8)[iVar3].v;
     fVar1 = -_effect_template_half_height;
     pfVar5[0x12] = -_effect_template_half_width;
     pfVar5[0x13] = fVar1;
-    fVar1 = (float)(&effect_uv8_v)[iVar3 * 2];
-    pfVar5[0x1e] = _effect_uv_step_8 + (float)(&effect_uv8_u)[iVar3 * 2];
+    fVar1 = (&effect_uv8)[iVar3].v;
+    pfVar5[0x1e] = _effect_uv_step_8 + (&effect_uv8)[iVar3].u;
     pfVar5[0x1f] = fVar1;
     fVar1 = -_effect_template_half_height;
     pfVar5[0x19] = _effect_template_half_width;
     pfVar5[0x1a] = fVar1;
-    fVar1 = _effect_uv_step_8 + (float)(&effect_uv8_v)[iVar3 * 2];
-    pfVar5[0x25] = _effect_uv_step_8 + (float)(&effect_uv8_u)[iVar3 * 2];
+    fVar1 = _effect_uv_step_8 + (&effect_uv8)[iVar3].v;
+    pfVar5[0x25] = _effect_uv_step_8 + (&effect_uv8)[iVar3].u;
     pfVar5[0x26] = fVar1;
     fVar1 = _effect_template_half_height;
     pfVar5[0x20] = _effect_template_half_width;
     pfVar5[0x21] = fVar1;
-    fVar1 = _effect_uv_step_8 + (float)(&effect_uv8_v)[iVar3 * 2];
-    pfVar5[0x2c] = (float)(&effect_uv8_u)[iVar3 * 2];
+    fVar1 = _effect_uv_step_8 + (&effect_uv8)[iVar3].v;
+    pfVar5[0x2c] = (&effect_uv8)[iVar3].u;
     pfVar5[0x2d] = fVar1;
     fVar1 = _effect_template_half_height;
     pfVar5[0x27] = -_effect_template_half_width;
