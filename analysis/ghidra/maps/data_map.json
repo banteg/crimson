@@ -1147,7 +1147,7 @@
       "comment": "Credits line table (0x100 entries, stride 0x08 bytes).",
       "name": "credits_line_table",
       "program": "crimsonland.exe",
-      "type": "credits_line_t"
+      "type": "credits_line_table_t"
     },
     {
       "address": "0x00480984",
@@ -4085,10 +4085,10 @@
     },
     {
       "address": "0x004c3c80",
-      "comment": "SFX cooldown table (float timers; per-id throttle used by sfx_play).",
+      "comment": "SFX cooldown table (0x80 entries; float timers; per-id throttle used by sfx_play).",
       "name": "sfx_cooldown_table",
       "program": "crimsonland.exe",
-      "type": "float"
+      "type": "sfx_cooldown_table_t"
     },
     {
       "address": "0x004c3e80",
@@ -4585,10 +4585,10 @@
     },
     {
       "address": "0x004c404c",
-      "comment": "Per-SFX volume table (float; updated by sfx_play_exclusive and sfx_update_mute_fades).",
+      "comment": "Per-SFX volume table (0x80 entries; float; updated by sfx_play_exclusive and sfx_update_mute_fades).",
       "name": "sfx_volume_table",
       "program": "crimsonland.exe",
-      "type": "float"
+      "type": "sfx_volume_table_t"
     },
     {
       "address": "0x004c4250",
@@ -4599,10 +4599,10 @@
     },
     {
       "address": "0x004c8450",
-      "comment": "Per-SFX mute flag table (char; set by sfx_mute_all).",
+      "comment": "Per-SFX mute flag table (0x80 entries; char; set by sfx_mute_all).",
       "name": "sfx_mute_flags",
       "program": "crimsonland.exe",
-      "type": "char"
+      "type": "sfx_mute_flags_t"
     },
     {
       "address": "0x004c84d0",
@@ -4619,10 +4619,10 @@
     },
     {
       "address": "0x004cc6d0",
-      "comment": "Music playlist queue (int track id array).",
+      "comment": "Music playlist queue (0x80 entries; int track id array).",
       "name": "music_playlist",
       "program": "crimsonland.exe",
-      "type": "int"
+      "type": "music_playlist_t"
     },
     {
       "address": "0x004cc8d6",
