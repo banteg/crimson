@@ -89,6 +89,9 @@ entrypoint-trace:
 function-hotspots:
     uv run python scripts/function_hotspots.py --top 12 --only-fun
 
+dat-hotspots *args:
+    uv run python scripts/dat_hotspots.py {{args}}
+
 angr-trial-exe:
     uv run --no-project --isolated --python 3.12 --with angr \
       python scripts/angr_trial.py \
