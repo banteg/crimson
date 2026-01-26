@@ -402,6 +402,12 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00480321",
+      "comment": "Game-complete/congratulations screen init flags for the navigation buttons (Survival/Rush/Typ'o/Main Menu).",
+      "name": "game_completed_screen_flags",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x00480348",
       "comment": "crimson.cfg blob (0x480 bytes)",
       "name": "config_blob",
@@ -887,6 +893,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00480848",
+      "comment": "Game time accumulator in ms (advances by frame_dt_ms).",
+      "name": "game_time_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x0048084c",
       "comment": "Demo/trial gameplay timer (ms) used for the demo countdown overlay and time-limit gating.",
       "name": "demo_trial_elapsed_ms",
@@ -1161,6 +1174,13 @@
       "name": "plugin_interface_ptr",
       "type": "mod_interface_t *",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004824d8",
+      "comment": "Loaded CMOD plugin module handle (LoadLibraryA result); freed when plugin shuts down.",
+      "name": "plugin_module_handle",
+      "program": "crimsonland.exe",
+      "type": "HMODULE"
     },
     {
       "address": "0x004824e4",
@@ -1824,6 +1844,13 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00487194",
+      "comment": "Quest failed screen retry counter (increments on \"Play Again\"; selects variant message text).",
+      "name": "quest_fail_retry_count",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x004871c8",
       "comment": "Terrain texture creation failure flag (safe mode).",
       "name": "terrain_texture_failed",
@@ -1900,6 +1927,12 @@
       "address": "0x0048724c",
       "comment": "UI transition direction flag (0 = countdown, nonzero = count up).",
       "name": "ui_transition_direction",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048724d",
+      "comment": "High-score return latch set when transitioning into the high score screen (state 0xe); used to restore prior mode/stage on return.",
+      "name": "highscore_return_latch",
       "program": "crimsonland.exe"
     },
     {
@@ -2153,6 +2186,13 @@
       "comment": "Texture handle for bonuses atlas.",
       "name": "bonus_texture",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048fba8",
+      "comment": "Menu UI element template loaded from ui_menuItem.jaz (used by ui_menu_assets_init).",
+      "name": "ui_menu_item_element",
+      "program": "crimsonland.exe",
+      "type": "ui_element_t"
     },
     {
       "address": "0x00490300",
@@ -4105,6 +4145,40 @@
       "type": "int *"
     },
     {
+      "address": "0x004c3c68",
+      "comment": "Active resource file handle used by resource_open_read/resource_close.",
+      "name": "resource_fp",
+      "program": "crimsonland.exe",
+      "type": "FILE *"
+    },
+    {
+      "address": "0x004c3c6c",
+      "comment": "Resource pack enabled flag (nonzero when the active pack path is set; gates pack scanning in resource_open_read).",
+      "name": "resource_pack_enabled",
+      "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004c3c70",
+      "comment": "Buffer reader base pointer (set by buffer_reader_init).",
+      "name": "buffer_reader_data",
+      "program": "crimsonland.exe",
+      "type": "void *"
+    },
+    {
+      "address": "0x004c3c74",
+      "comment": "Buffer reader size in bytes (set by buffer_reader_init).",
+      "name": "buffer_reader_size",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004c3c78",
+      "comment": "Buffer reader cursor/offset in bytes (set by buffer_reader_seek and advanced by reads).",
+      "name": "buffer_reader_offset",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
       "address": "0x004c3c80",
       "comment": "SFX cooldown table (0x80 entries; float timers; per-id throttle used by sfx_play).",
       "name": "sfx_cooldown_table",
@@ -4656,6 +4730,55 @@
       "comment": "UI focus candidate list used by ui_focus_update.",
       "name": "ui_focus_candidates",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004d11e0",
+      "comment": "UI focus candidate count used by ui_focus_update.",
+      "name": "ui_focus_count",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d11e4",
+      "comment": "UI focus active candidate index used by ui_focus_update.",
+      "name": "ui_focus_index",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d11e8",
+      "comment": "UI focus frame marker (stores game_time_ms to detect repeated ui_focus_update calls within a frame).",
+      "name": "ui_focus_frame_marker_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d11ec",
+      "comment": "UI focus timer in ms used for highlight animation; reset to 1000 when focus changes.",
+      "name": "ui_focus_timer_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004d1208",
+      "comment": "UI stats hover accumulator for the \"most used weapon\" tooltip (clamped to [0..1]).",
+      "name": "ui_stats_hover_weapon",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004d120c",
+      "comment": "UI stats hover accumulator for the \"game time\" tooltip (clamped to [0..1]).",
+      "name": "ui_stats_hover_time",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004d1210",
+      "comment": "UI stats hover accumulator for the \"hit ratio\" tooltip (clamped to [0..1]).",
+      "name": "ui_stats_hover_hit_ratio",
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004d7a28",
