@@ -48,6 +48,7 @@ it unlocks for parity. Goal: 100% replication of game logic.
 
 - [x] Wire gameplay scene into `crimson game` (player + camera + HUD) -> Unlocks: playtesting loop outside debug views.
 - [x] Port `player_take_damage` + game over flow -> Unlocks: contact damage + death handling.
+- [x] Game over / high score entry UI (Survival) -> Unlocks: post-run loop parity + score persistence.
 - [x] Integrate creature updates + spawners into runtime loop -> Unlocks: enemy waves in modes.
 - [x] Integrate combat loop (projectiles -> creatures, death contract -> XP/bonuses/FX/SFX) -> Unlocks: combat parity.
 - [x] Wire FX queues into gameplay ground renderer -> Unlocks: persistent blood/corpses in modes.

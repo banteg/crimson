@@ -55,6 +55,7 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - `GameWorld` owns the active runtime state: players, projectiles, creatures, bonuses/perks, FX queues, terrain, and sprite rendering.
 - Survival mode loop is wired into `crimson game` and the view runner (`uv run crimson view survival`).
   - Player/projectile updates, creature pool + spawns, XP/level/perk selection UI, HUD overlay, terrain decal baking.
+- Game over / high score entry screen is implemented for Survival: [rewrite/game-over.md](game-over.md)
 - Demo/attract mode reuses the same gameplay systems (no separate “toy sim”).
 
 ### Gameplay (sandbox)

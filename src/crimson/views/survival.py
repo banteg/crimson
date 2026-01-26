@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 import math
 import random
 
@@ -17,7 +18,9 @@ from ..creatures.spawn import advance_survival_spawn_stage, tick_survival_wave_s
 from ..effects_atlas import effect_src_rect
 from ..game_world import GameWorld
 from ..gameplay import PlayerInput, perk_selection_current_choices, perk_selection_pick
+from ..highscores import HighScoreRecord
 from ..perks import PERK_BY_ID, PerkId
+from ..ui.game_over import GameOverUi
 from ..ui.hud import HudAssets, draw_hud_overlay, load_hud_assets
 from ..ui.perk_menu import (
     PerkMenuLayout,
@@ -77,6 +80,8 @@ class SurvivalView:
         self._assets_root = ctx.assets_dir
         self._missing_assets: list[str] = []
         self._small: SmallFontData | None = None
+        self._config = config
+        self._base_dir = config.path.parent if config is not None else Path.cwd()
 
         self.close_requested = False
         self._paused = False
@@ -104,6 +109,15 @@ class SurvivalView:
         self._perk_menu_assets = None
         self._perk_ui_layout = PerkMenuLayout()
         self._perk_cancel_button = UiButtonState("Cancel")
+
+        self._game_over_active = False
+        self._game_over_record: HighScoreRecord | None = None
+        self._game_over_ui = GameOverUi(
+            assets_root=self._assets_root,
+            base_dir=self._base_dir,
+            config=config or CrimsonConfig(path=self._base_dir / "crimson.cfg", data={"game_mode": 1}),
+        )
+        self._game_over_banner = "reaper"
 
         self._ui_mouse_x = 0.0
         self._ui_mouse_y = 0.0
@@ -192,6 +206,11 @@ class SurvivalView:
         if self._hud_assets.missing:
             self._hud_missing = list(self._hud_assets.missing)
 
+        self._game_over_active = False
+        self._game_over_record = None
+        self._game_over_banner = "reaper"
+        self._game_over_ui.close()
+
         self._perk_menu_assets = load_perk_menu_assets(self._assets_root)
         if self._perk_menu_assets.missing:
             self._missing_assets.extend(self._perk_menu_assets.missing)
@@ -219,6 +238,7 @@ class SurvivalView:
         self._perk_menu_selected = 0
 
     def close(self) -> None:
+        self._game_over_ui.close()
         if self._cursor_disabled:
             rl.enable_cursor()
             self._cursor_disabled = False
@@ -230,10 +250,14 @@ class SurvivalView:
             self._small = None
         if self._hud_assets is not None:
             self._hud_assets.unload()
-            self._hud_assets = None
+        self._hud_assets = None
         self._world.close()
 
     def _handle_input(self) -> None:
+        if self._game_over_active:
+            if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+                self.close_requested = True
+            return
         if self._perk_menu_open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
             self._perk_menu_open = False
             return
@@ -243,9 +267,6 @@ class SurvivalView:
 
         if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
             self.close_requested = True
-
-        if self._player.health <= 0.0 and rl.is_key_pressed(rl.KeyboardKey.KEY_ENTER):
-            self.open()
 
     def _build_input(self) -> PlayerInput:
         move_x = 0.0
@@ -275,6 +296,36 @@ class SurvivalView:
             fire_pressed=fire_pressed,
             reload_pressed=reload_pressed,
         )
+
+    def _player_name_default(self) -> str:
+        config = self._config
+        if config is None:
+            return ""
+        raw = config.data.get("player_name")
+        if isinstance(raw, (bytes, bytearray)):
+            return bytes(raw).split(b"\x00", 1)[0].decode("latin-1", errors="ignore")
+        if isinstance(raw, str):
+            return raw
+        return ""
+
+    def _enter_game_over(self) -> None:
+        if self._game_over_active:
+            return
+        record = HighScoreRecord.blank()
+        record.score_xp = int(self._player.experience)
+        record.survival_elapsed_ms = int(self._survival.elapsed_ms)
+        record.creature_kill_count = int(self._creatures.kill_count)
+
+        # Missing fidelity: we don't track usage/hit stats yet.
+        record.most_used_weapon_id = int(self._player.weapon_id)
+        record.shots_fired = 0
+        record.shots_hit = 0
+
+        record.game_mode_id = int(self._config.data.get("game_mode", 1)) if self._config is not None else 1
+        self._game_over_record = record
+        self._game_over_ui.open()
+        self._game_over_active = True
+        self._perk_menu_open = False
 
     def _perk_prompt_label(self) -> str:
         pending = int(self._state.perk_selection.pending_count)
@@ -404,6 +455,22 @@ class SurvivalView:
         self._cursor_pulse_time += dt_frame * 1.1
         self._handle_input()
 
+        if self._game_over_active:
+            record = self._game_over_record
+            if record is None:
+                self._enter_game_over()
+                record = self._game_over_record
+            if record is not None:
+                action = self._game_over_ui.update(dt, record=record, player_name_default=self._player_name_default())
+                if action == "play_again":
+                    self.open()
+                    return
+                if action in {"main_menu", "high_scores"}:
+                    # High scores screen isn't implemented yet; route back to menu.
+                    self.close_requested = True
+                    return
+            return
+
         perk_pending = int(self._state.perk_selection.pending_count) > 0 and self._player.health > 0.0
 
         if self._perk_menu_open:
@@ -433,6 +500,8 @@ class SurvivalView:
         self._survival.elapsed_ms += dt * 1000.0
 
         if dt <= 0.0:
+            if self._player.health <= 0.0:
+                self._enter_game_over()
             return
 
         input_state = self._build_input()
@@ -469,7 +538,12 @@ class SurvivalView:
         self._survival.spawn_cooldown = cooldown
         self._creatures.spawn_inits(wave_spawns)
 
+        if self._player.health <= 0.0:
+            self._enter_game_over()
+
     def _draw_perk_prompt(self) -> None:
+        if self._game_over_active:
+            return
         if self._perk_menu_open:
             return
         if self._player.health <= 0.0:
@@ -490,6 +564,8 @@ class SurvivalView:
         draw_ui_text(self._small, label, rect.x, rect.y, scale=UI_TEXT_SCALE, color=color)
 
     def _draw_perk_menu(self) -> None:
+        if self._game_over_active:
+            return
         if not self._perk_menu_open:
             return
         if self._perk_menu_assets is None:
@@ -617,7 +693,7 @@ class SurvivalView:
         self._world.draw(draw_aim_indicators=not self._perk_menu_open)
 
         hud_bottom = 0.0
-        if self._hud_assets is not None:
+        if (not self._game_over_active) and self._hud_assets is not None:
             hud_bottom = draw_hud_overlay(
                 self._hud_assets,
                 player=self._player,
@@ -627,16 +703,17 @@ class SurvivalView:
                 font=self._small,
             )
 
-        # Minimal debug text.
-        x = 18.0
-        y = max(18.0, hud_bottom + 10.0)
-        line = float(self._ui_line_height())
-        self._draw_ui_text(f"survival: t={self._survival.elapsed_ms/1000.0:6.1f}s  stage={self._survival.stage}", x, y, UI_TEXT_COLOR)
-        self._draw_ui_text(f"xp={self._player.experience}  level={self._player.level}  kills={self._creatures.kill_count}", x, y + line, UI_HINT_COLOR)
-        if self._paused:
-            self._draw_ui_text("paused (TAB)", x, y + line * 2.0, UI_HINT_COLOR)
-        if self._player.health <= 0.0:
-            self._draw_ui_text("game over (ENTER to restart)", x, y + line * 2.0, UI_ERROR_COLOR)
+        if not self._game_over_active:
+            # Minimal debug text.
+            x = 18.0
+            y = max(18.0, hud_bottom + 10.0)
+            line = float(self._ui_line_height())
+            self._draw_ui_text(f"survival: t={self._survival.elapsed_ms/1000.0:6.1f}s  stage={self._survival.stage}", x, y, UI_TEXT_COLOR)
+            self._draw_ui_text(f"xp={self._player.experience}  level={self._player.level}  kills={self._creatures.kill_count}", x, y + line, UI_HINT_COLOR)
+            if self._paused:
+                self._draw_ui_text("paused (TAB)", x, y + line * 2.0, UI_HINT_COLOR)
+            if self._player.health <= 0.0:
+                self._draw_ui_text("game over", x, y + line * 2.0, UI_ERROR_COLOR)
         warn_y = float(rl.get_screen_height()) - 28.0
         if self._world.missing_assets:
             warn = "Missing world assets: " + ", ".join(self._world.missing_assets)
@@ -648,7 +725,11 @@ class SurvivalView:
 
         self._draw_perk_prompt()
         self._draw_perk_menu()
-        self._draw_game_cursor()
+        if not self._game_over_active:
+            self._draw_game_cursor()
+
+        if self._game_over_active and self._game_over_record is not None:
+            self._game_over_ui.draw(record=self._game_over_record, banner_kind=self._game_over_banner, hud_assets=self._hud_assets)
 
 
 @register_view("survival", "Survival")
