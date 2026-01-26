@@ -695,7 +695,7 @@ class SurvivalView:
             rl.draw_texture_pro(cursor_tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
     def draw(self) -> None:
-        self._world.draw(draw_aim_indicators=not self._perk_menu_open)
+        self._world.draw(draw_aim_indicators=(not self._perk_menu_open) and (not self._game_over_active))
 
         hud_bottom = 0.0
         if (not self._game_over_active) and self._hud_assets is not None:
@@ -730,7 +730,7 @@ class SurvivalView:
 
         self._draw_perk_prompt()
         self._draw_perk_menu()
-        if not self._game_over_active:
+        if (not self._game_over_active) and self._perk_menu_open:
             self._draw_game_cursor()
 
         if self._game_over_active and self._game_over_record is not None:

@@ -1051,7 +1051,7 @@ class GameWorld:
             return
         rl.draw_circle(int(sx), int(sy), max(1.0, 4.0 * scale), rl.Color(200, 200, 220, 200))
 
-    def draw(self) -> None:
+    def draw(self, *, draw_aim_indicators: bool = True) -> None:
         clear_color = rl.Color(10, 10, 12, 255)
         screen_w, screen_h = self._camera_screen_size()
         cam_x, cam_y = self._clamp_camera(self.camera_x, self.camera_y, screen_w, screen_h)
@@ -1183,7 +1183,7 @@ class GameWorld:
                     sx = (player.pos_x + cam_x) * scale_x
                     sy = (player.pos_y + cam_y) * scale_y
                     rl.draw_circle(int(sx), int(sy), max(1.0, 14.0 * scale), rl.Color(90, 190, 120, 255))
-            if not self.demo_mode_active:
+            if draw_aim_indicators and (not self.demo_mode_active):
                 for player in self.players:
                     if player.health <= 0.0:
                         continue
