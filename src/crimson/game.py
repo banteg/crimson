@@ -3241,7 +3241,11 @@ class SurvivalGameView:
     def __init__(self, state: GameState) -> None:
         from .views.survival import SurvivalView
 
-        self._view = SurvivalView(ViewContext(assets_dir=state.assets_dir))
+        self._view = SurvivalView(
+            ViewContext(assets_dir=state.assets_dir),
+            texture_cache=state.texture_cache,
+            config=state.config,
+        )
         self._action: str | None = None
 
     def open(self) -> None:

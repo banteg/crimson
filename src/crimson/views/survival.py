@@ -4,6 +4,8 @@ from dataclasses import dataclass
 
 import pyray as rl
 
+from grim.assets import PaqTextureCache
+from grim.config import CrimsonConfig
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.fonts.small import measure_small_text_width
 from grim.view import ViewContext
@@ -59,7 +61,13 @@ class _SurvivalState:
 
 
 class SurvivalView:
-    def __init__(self, ctx: ViewContext) -> None:
+    def __init__(
+        self,
+        ctx: ViewContext,
+        *,
+        texture_cache: PaqTextureCache | None = None,
+        config: CrimsonConfig | None = None,
+    ) -> None:
         self._assets_root = ctx.assets_dir
         self._missing_assets: list[str] = []
         self._small: SmallFontData | None = None
@@ -72,6 +80,8 @@ class SurvivalView:
             demo_mode_active=False,
             difficulty_level=0,
             hardcore=False,
+            texture_cache=texture_cache,
+            config=config,
         )
         self._bind_world()
         self._survival = _SurvivalState()
@@ -164,8 +174,8 @@ class SurvivalView:
         self._paused = False
         self.close_requested = False
 
-        self._world.open()
         self._world.reset(seed=0xBEEF, player_count=1)
+        self._world.open()
         self._bind_world()
         self._survival = _SurvivalState()
 
@@ -540,56 +550,7 @@ class SurvivalView:
         cursor_draw(self._perk_menu_assets, mouse=mouse, scale=scale)
 
     def draw(self) -> None:
-        rl.clear_background(rl.Color(10, 10, 12, 255))
-
-        # World bounds.
-        world_size = float(self._world.world_size)
-        x0, y0 = self._camera_world_to_screen(0.0, 0.0)
-        x1, y1 = self._camera_world_to_screen(world_size, world_size)
-        rl.draw_rectangle_lines(int(x0), int(y0), int(x1 - x0), int(y1 - y0), rl.Color(40, 40, 55, 255))
-
-        # Creatures (debug shapes).
-        for creature in self._creatures.entries:
-            if not (creature.active and creature.hp > 0.0):
-                continue
-            sx, sy = self._camera_world_to_screen(creature.x, creature.y)
-            color = rl.Color(220, 90, 90, 255)
-            if creature.type_id == 0:
-                color = rl.Color(140, 220, 140, 255)  # zombie
-            elif creature.type_id == 1:
-                color = rl.Color(120, 200, 240, 255)  # lizard
-            elif creature.type_id == 2:
-                color = rl.Color(220, 160, 80, 255)  # alien
-            elif creature.type_id in (3, 4):
-                color = rl.Color(220, 90, 200, 255)  # spiders
-            rl.draw_circle(int(sx), int(sy), float(creature.size * 0.5), color)
-
-        # Bonuses.
-        for bonus in self._state.bonus_pool.entries:
-            if bonus.bonus_id == 0:
-                continue
-            sx, sy = self._camera_world_to_screen(bonus.pos_x, bonus.pos_y)
-            rl.draw_circle(int(sx), int(sy), 10.0, rl.Color(220, 220, 90, 255))
-
-        # Projectiles.
-        for proj in self._state.projectiles.iter_active():
-            sx, sy = self._camera_world_to_screen(proj.pos_x, proj.pos_y)
-            rl.draw_circle(int(sx), int(sy), 2.0, rl.Color(240, 220, 160, 255))
-
-        for proj in self._state.secondary_projectiles.iter_active():
-            sx, sy = self._camera_world_to_screen(proj.pos_x, proj.pos_y)
-            color = rl.Color(120, 200, 240, 255) if proj.type_id != 3 else rl.Color(200, 240, 160, 255)
-            rl.draw_circle(int(sx), int(sy), 3.0, color)
-
-        # Player.
-        px, py = self._camera_world_to_screen(self._player.pos_x, self._player.pos_y)
-        rl.draw_circle(int(px), int(py), 14.0, rl.Color(90, 190, 120, 255))
-        rl.draw_circle_lines(int(px), int(py), 14.0, rl.Color(40, 80, 50, 255))
-
-        aim_len = 42.0
-        ax = px + self._player.aim_dir_x * aim_len
-        ay = py + self._player.aim_dir_y * aim_len
-        rl.draw_line(int(px), int(py), int(ax), int(ay), rl.Color(240, 240, 240, 255))
+        self._world.draw()
 
         hud_bottom = 0.0
         if self._hud_assets is not None:
@@ -612,14 +573,19 @@ class SurvivalView:
             self._draw_ui_text("paused (TAB)", x, y + line * 2.0, UI_HINT_COLOR)
         if self._player.health <= 0.0:
             self._draw_ui_text("game over (ENTER to restart)", x, y + line * 2.0, UI_ERROR_COLOR)
+        warn_y = float(rl.get_screen_height()) - 28.0
+        if self._world.missing_assets:
+            warn = "Missing world assets: " + ", ".join(self._world.missing_assets)
+            self._draw_ui_text(warn, 24.0, warn_y, UI_ERROR_COLOR, scale=0.8)
+            warn_y -= float(self._ui_line_height(scale=0.8)) + 2.0
         if self._hud_missing:
             warn = "Missing HUD assets: " + ", ".join(self._hud_missing)
-            self._draw_ui_text(warn, 24.0, float(rl.get_screen_height()) - 28.0, UI_ERROR_COLOR, scale=0.8)
+            self._draw_ui_text(warn, 24.0, warn_y, UI_ERROR_COLOR, scale=0.8)
 
         self._draw_perk_prompt()
         self._draw_perk_menu()
 
 
-@register_view("survival", "Survival (debug)")
+@register_view("survival", "Survival")
 def _create_survival_view(*, ctx: ViewContext) -> SurvivalView:
     return SurvivalView(ctx)
