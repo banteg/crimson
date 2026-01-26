@@ -25,7 +25,6 @@ from ..ui.perk_menu import (
     button_draw,
     button_update,
     button_width,
-    cursor_draw,
     draw_menu_panel,
     draw_menu_item,
     draw_ui_text,
@@ -579,8 +578,6 @@ class SurvivalView:
         button_y = computed.cancel_y
         button_draw(self._perk_menu_assets, self._small, self._perk_cancel_button, x=cancel_x, y=button_y, width=cancel_w, scale=scale)
 
-        cursor_draw(self._perk_menu_assets, mouse=mouse, scale=scale)
-
     def _draw_game_cursor(self) -> None:
         mouse_x = float(self._ui_mouse_x)
         mouse_y = float(self._ui_mouse_y)
@@ -599,6 +596,7 @@ class SurvivalView:
                 tint = rl.Color(255, 255, 255, int(alpha * 255.0 + 0.5))
                 origin = rl.Vector2(0.0, 0.0)
 
+                rl.begin_blend_mode(rl.BLEND_ADDITIVE)
                 for dx, dy, size in (
                     (-28.0, -28.0, 64.0),
                     (-10.0, -18.0, 64.0),
@@ -607,6 +605,7 @@ class SurvivalView:
                 ):
                     dst = rl.Rectangle(mouse_x + dx, mouse_y + dy, size, size)
                     rl.draw_texture_pro(particles, src_rect, dst, origin, 0.0, tint)
+                rl.end_blend_mode()
 
         cursor_tex = self._perk_menu_assets.cursor if self._perk_menu_assets is not None else None
         if cursor_tex is not None:
@@ -615,7 +614,7 @@ class SurvivalView:
             rl.draw_texture_pro(cursor_tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
     def draw(self) -> None:
-        self._world.draw()
+        self._world.draw(draw_aim_indicators=not self._perk_menu_open)
 
         hud_bottom = 0.0
         if self._hud_assets is not None:
@@ -649,8 +648,7 @@ class SurvivalView:
 
         self._draw_perk_prompt()
         self._draw_perk_menu()
-        if not self._perk_menu_open:
-            self._draw_game_cursor()
+        self._draw_game_cursor()
 
 
 @register_view("survival", "Survival")
