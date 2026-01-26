@@ -1338,11 +1338,12 @@ def bonus_update(
     players: list[PlayerState],
     dt: float,
     *,
+    creatures: list[Damageable] | None = None,
     update_hud: bool = True,
 ) -> list[BonusPickupEvent]:
     """Advance world bonuses and global timers (subset of `bonus_update`)."""
 
-    pickups = state.bonus_pool.update(dt, state=state, players=players)
+    pickups = state.bonus_pool.update(dt, state=state, players=players, creatures=creatures)
 
     if dt > 0.0:
         state.bonuses.weapon_power_up = max(0.0, state.bonuses.weapon_power_up - dt)

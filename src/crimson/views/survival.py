@@ -8,19 +8,9 @@ from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
 from grim.fonts.small import measure_small_text_width
 from grim.view import ViewContext
 
-from ..creatures.runtime import CreaturePool
-from ..creatures.spawn import SpawnEnv, advance_survival_spawn_stage, tick_survival_wave_spawns
-from ..gameplay import (
-    GameplayState,
-    PlayerInput,
-    PlayerState,
-    bonus_hud_update,
-    perk_selection_current_choices,
-    perk_selection_pick,
-    player_update,
-    survival_progression_update,
-    weapon_assign_player,
-)
+from ..creatures.spawn import advance_survival_spawn_stage, tick_survival_wave_spawns
+from ..game_world import GameWorld
+from ..gameplay import PlayerInput, perk_selection_current_choices, perk_selection_pick
 from ..perks import PERK_BY_ID, PerkId
 from ..ui.hud import HudAssets, draw_hud_overlay, load_hud_assets
 from ..ui.perk_menu import (
@@ -40,7 +30,6 @@ from ..ui.perk_menu import (
     ui_scale,
     wrap_ui_text,
 )
-from ..weapons import WEAPON_TABLE
 from .registry import register_view
 
 WORLD_SIZE = 1024.0
@@ -61,9 +50,6 @@ def _clamp(value: float, lo: float, hi: float) -> float:
     return value
 
 
-def _lerp(a: float, b: float, t: float) -> float:
-    return a + (b - a) * t
-
 
 @dataclass(slots=True)
 class _SurvivalState:
@@ -80,30 +66,18 @@ class SurvivalView:
 
         self.close_requested = False
         self._paused = False
-        self._damage_scale_by_type = {
-            entry.weapon_id: float(entry.damage_mult or 1.0)
-            for entry in WEAPON_TABLE
-            if entry.weapon_id >= 0
-        }
-
-        self._spawn_env = SpawnEnv(
-            terrain_width=WORLD_SIZE,
-            terrain_height=WORLD_SIZE,
+        self._world = GameWorld(
+            assets_dir=ctx.assets_dir,
+            world_size=WORLD_SIZE,
             demo_mode_active=False,
-            hardcore=False,
             difficulty_level=0,
+            hardcore=False,
         )
-
-        self._state = GameplayState()
-        self._player = PlayerState(index=0, pos_x=WORLD_SIZE * 0.5, pos_y=WORLD_SIZE * 0.5)
-        self._creatures = CreaturePool(env=self._spawn_env)
+        self._bind_world()
         self._survival = _SurvivalState()
 
         self._hud_assets: HudAssets | None = None
         self._hud_missing: list[str] = []
-
-        self._camera_x = -1.0
-        self._camera_y = -1.0
 
         self._perk_prompt_timer_ms = 0.0
         self._perk_prompt_hover = False
@@ -113,6 +87,11 @@ class SurvivalView:
         self._perk_ui_layout = PerkMenuLayout()
         self._perk_cancel_button = UiButtonState("Cancel")
         self._perk_cursor_hidden = False
+
+    def _bind_world(self) -> None:
+        self._state = self._world.state
+        self._creatures = self._world.creatures
+        self._player = self._world.players[0]
 
     def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
         if self._small is not None:
@@ -157,32 +136,10 @@ class SurvivalView:
         return lines
 
     def _camera_world_to_screen(self, x: float, y: float) -> tuple[float, float]:
-        return self._camera_x + x, self._camera_y + y
+        return self._world.world_to_screen(x, y)
 
     def _camera_screen_to_world(self, x: float, y: float) -> tuple[float, float]:
-        return x - self._camera_x, y - self._camera_y
-
-    def _update_camera(self, dt: float) -> None:
-        screen_w = float(rl.get_screen_width())
-        screen_h = float(rl.get_screen_height())
-        if screen_w > WORLD_SIZE:
-            screen_w = WORLD_SIZE
-        if screen_h > WORLD_SIZE:
-            screen_h = WORLD_SIZE
-
-        focus_x = self._player.pos_x
-        focus_y = self._player.pos_y
-        desired_x = (screen_w * 0.5) - focus_x
-        desired_y = (screen_h * 0.5) - focus_y
-
-        min_x = screen_w - WORLD_SIZE
-        min_y = screen_h - WORLD_SIZE
-        desired_x = _clamp(desired_x, min_x, -1.0)
-        desired_y = _clamp(desired_y, min_y, -1.0)
-
-        t = _clamp(dt * 6.0, 0.0, 1.0)
-        self._camera_x = _lerp(self._camera_x, desired_x, t)
-        self._camera_y = _lerp(self._camera_y, desired_y, t)
+        return self._world.screen_to_world(x, y)
 
     def open(self) -> None:
         self._missing_assets.clear()
@@ -207,17 +164,10 @@ class SurvivalView:
         self._paused = False
         self.close_requested = False
 
-        self._state = GameplayState()
-        self._state.rng.srand(0xBEEF)
-
-        self._player = PlayerState(index=0, pos_x=WORLD_SIZE * 0.5, pos_y=WORLD_SIZE * 0.5)
-        weapon_assign_player(self._player, 0)  # pistol
-
-        self._creatures = CreaturePool(env=self._spawn_env)
+        self._world.open()
+        self._world.reset(seed=0xBEEF, player_count=1)
+        self._bind_world()
         self._survival = _SurvivalState()
-
-        self._camera_x = -1.0
-        self._camera_y = -1.0
 
         self._perk_prompt_timer_ms = 0.0
         self._perk_prompt_hover = False
@@ -237,14 +187,7 @@ class SurvivalView:
         if self._hud_assets is not None:
             self._hud_assets.unload()
             self._hud_assets = None
-
-    def _decay_global_timers(self, dt: float) -> None:
-        bonuses = self._state.bonuses
-        bonuses.weapon_power_up = max(0.0, bonuses.weapon_power_up - dt)
-        bonuses.reflex_boost = max(0.0, bonuses.reflex_boost - dt)
-        bonuses.energizer = max(0.0, bonuses.energizer - dt)
-        bonuses.double_experience = max(0.0, bonuses.double_experience - dt)
-        bonuses.freeze = max(0.0, bonuses.freeze - dt)
+        self._world.close()
 
     def _handle_input(self) -> None:
         if self._perk_menu_open and rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
@@ -451,32 +394,13 @@ class SurvivalView:
         if dt <= 0.0:
             return
 
-        # Existing projectiles update first; new spawns (from player_update) take effect next tick.
-        self._state.projectiles.update(
-            dt,
-            self._creatures.entries,
-            world_size=WORLD_SIZE,
-            damage_scale_by_type=self._damage_scale_by_type,
-            rng=self._state.rng.rand,
-            runtime_state=self._state,
-        )
-        self._state.secondary_projectiles.update_pulse_gun(dt, self._creatures.entries)
-
-        self._decay_global_timers(dt)
-
         input_state = self._build_input()
-        player_update(self._player, input_state, dt, self._state, world_size=WORLD_SIZE)
-
-        self._creatures.update(
+        self._world.update(
             dt,
-            state=self._state,
-            players=[self._player],
-            world_width=WORLD_SIZE,
-            world_height=WORLD_SIZE,
+            inputs=[input_state],
+            auto_pick_perks=False,
+            game_mode=GAME_MODE_SURVIVAL,
         )
-
-        self._state.bonus_pool.update(dt, state=self._state, players=[self._player], creatures=self._creatures.entries)
-        survival_progression_update(self._state, [self._player], game_mode=GAME_MODE_SURVIVAL, auto_pick=False)
 
         # Scripted milestone spawns based on level.
         stage, milestone_calls = advance_survival_spawn_stage(self._survival.stage, player_level=self._player.level)
@@ -488,7 +412,6 @@ class SurvivalView:
                 float(call.heading),
                 self._state.rng,
                 rand=self._state.rng.rand,
-                env=self._spawn_env,
             )
 
         # Regular wave spawns based on elapsed time.
@@ -499,14 +422,11 @@ class SurvivalView:
             player_count=1,
             survival_elapsed_ms=self._survival.elapsed_ms,
             player_experience=self._player.experience,
-            terrain_width=int(WORLD_SIZE),
-            terrain_height=int(WORLD_SIZE),
+            terrain_width=int(self._world.world_size),
+            terrain_height=int(self._world.world_size),
         )
         self._survival.spawn_cooldown = cooldown
         self._creatures.spawn_inits(wave_spawns)
-
-        bonus_hud_update(self._state, [self._player])
-        self._update_camera(dt)
 
     def _draw_perk_prompt(self) -> None:
         if self._perk_menu_open:
@@ -623,8 +543,9 @@ class SurvivalView:
         rl.clear_background(rl.Color(10, 10, 12, 255))
 
         # World bounds.
+        world_size = float(self._world.world_size)
         x0, y0 = self._camera_world_to_screen(0.0, 0.0)
-        x1, y1 = self._camera_world_to_screen(WORLD_SIZE, WORLD_SIZE)
+        x1, y1 = self._camera_world_to_screen(world_size, world_size)
         rl.draw_rectangle_lines(int(x0), int(y0), int(x1 - x0), int(y1 - y0), rl.Color(40, 40, 55, 255))
 
         # Creatures (debug shapes).
