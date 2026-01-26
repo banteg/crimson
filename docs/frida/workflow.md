@@ -14,6 +14,7 @@ set `CRIMSON_FRIDA_CONFIG` to point at a different `grim_hooks_targets.json`.
 - `scripts/frida/grim_hooks_targets.json`
 - `scripts/frida/crimsonland_probe.js`
 - `scripts/frida/menu_logo_pivot_trace.js`
+- `scripts/frida/creature_anim_trace.js`
 
 Attach by process name (required; spawn caused empty textures + crash on 2026-01-18):
 
@@ -33,6 +34,12 @@ Menu logo rotation trace (focused, JSONL to `menu_logo_pivot_trace.jsonl`):
 frida -n crimsonland.exe -l C:\share\frida\menu_logo_pivot_trace.js
 ```
 
+Creature animation phase trace (focused, JSONL to `creature_anim_trace.jsonl`):
+
+```text
+frida -n crimsonland.exe -l C:\share\frida\creature_anim_trace.js
+```
+
 Just shortcut (Windows VM):
 
 ```text
@@ -45,6 +52,7 @@ Default logs written by the scripts:
 
 - `C:\share\frida\grim_hits.jsonl`
 - `C:\share\frida\crimsonland_frida_hits.jsonl`
+- `C:\share\frida\creature_anim_trace.jsonl`
 
 ## 2) Copy logs into the repo
 
