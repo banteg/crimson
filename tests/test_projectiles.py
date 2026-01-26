@@ -13,6 +13,19 @@ class _Creature:
     hp: float
 
 
+def _fixed_rng(value: int):
+    def _rng() -> int:
+        return value
+
+    return _rng
+
+
+def _expected_damage(dist: float, damage_scale: float = 1.0) -> float:
+    if dist < 50.0:
+        dist = 50.0
+    return ((100.0 / dist) * damage_scale * 30.0 + 10.0) * 0.95
+
+
 def test_projectile_pool_keeps_flight_timer_when_in_bounds() -> None:
     pool = ProjectilePool(size=1)
     idx = pool.spawn(pos_x=0.0, pos_y=0.0, angle=math.pi / 2.0, type_id=4, owner_id=-100)
@@ -67,6 +80,67 @@ def test_projectile_pool_update_applies_distance_scaled_damage() -> None:
 
     assert hits == [(4, 0.0, 0.0, 30.0, 0.0)]
     assert math.isclose(creatures[0].hp, 33.5, abs_tol=1e-9)
+
+
+def test_projectile_pool_update_applies_rng_jitter_to_hit_position() -> None:
+    pool = ProjectilePool(size=1)
+    idx = pool.spawn(
+        pos_x=0.0,
+        pos_y=0.0,
+        angle=math.pi / 2.0,
+        type_id=4,
+        owner_id=-100,
+        base_damage=30.0,
+    )
+    creatures = [_Creature(x=71.1428574, y=0.0, hp=100.0)]
+
+    hits = pool.update(
+        0.1,
+        creatures,
+        world_size=1024.0,
+        damage_scale_by_type={4: 1.0},
+        rng=_fixed_rng(2),
+    )
+
+    assert hits == [(4, 0.0, 0.0, 60.0, 0.0)]
+    proj = pool.entries[idx]
+    assert math.isclose(proj.pos_x, 62.0, abs_tol=1e-9)
+    assert proj.life_timer == 0.25
+
+    expected_damage = _expected_damage(62.0, 1.0)
+    assert math.isclose(creatures[0].hp, 100.0 - expected_damage, abs_tol=1e-6)
+
+
+def test_projectile_pool_update_rocket_splash_damage_is_distance_scaled() -> None:
+    pool = ProjectilePool(size=1)
+    pool.spawn(
+        pos_x=0.0,
+        pos_y=0.0,
+        angle=math.pi / 2.0,
+        type_id=0x0B,
+        owner_id=-100,
+        base_damage=30.0,
+    )
+    creatures = [
+        _Creature(x=71.1428574, y=0.0, hp=100.0),
+        _Creature(x=100.0, y=0.0, hp=100.0),
+        _Creature(x=160.0, y=0.0, hp=100.0),
+        _Creature(x=220.0, y=0.0, hp=100.0),
+    ]
+
+    hits = pool.update(
+        0.1,
+        creatures,
+        world_size=1024.0,
+        damage_scale_by_type={0x0B: 1.0},
+        rng=_fixed_rng(0),
+    )
+
+    assert hits == [(0x0B, 0.0, 0.0, 60.0, 0.0)]
+    assert math.isclose(creatures[0].hp, 100.0 - _expected_damage(50.0), abs_tol=1e-6)
+    assert math.isclose(creatures[1].hp, 100.0 - _expected_damage(40.0), abs_tol=1e-6)
+    assert math.isclose(creatures[2].hp, 100.0 - _expected_damage(100.0), abs_tol=1e-6)
+    assert math.isclose(creatures[3].hp, 100.0, abs_tol=1e-9)
 
 
 def test_projectile_pool_update_rocket_splash_hits_nearby_creatures() -> None:
