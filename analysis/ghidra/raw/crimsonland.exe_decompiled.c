@@ -5037,7 +5037,7 @@ LAB_00407129:
           DAT_00487088 = 0x803;
           sfx_play_exclusive(music_track_crimsonquest_id);
           DAT_00487088 = DAT_00487088 + frame_dt_ms;
-          (&sfx_volume_table)[music_track_crimsonquest_id] = 0;
+          (&sfx_volume_table)[music_track_crimsonquest_id] = 0.0;
           return;
         }
         if (0x9c4 < DAT_00487088) {
@@ -36200,6 +36200,7 @@ void audio_init_music(void)
 {
   int iVar1;
   undefined4 *puVar2;
+  float *pfVar3;
   char *fmt;
   
   if ((config_blob.reserved0[0] == '\0') && (config_blob.reserved0[1] == '\0')) {
@@ -36208,10 +36209,10 @@ void audio_init_music(void)
       *puVar2 = 0x1010101;
       puVar2 = puVar2 + 1;
     }
-    puVar2 = &sfx_volume_table;
+    pfVar3 = &sfx_volume_table;
     for (iVar1 = 0x80; iVar1 != 0; iVar1 = iVar1 + -1) {
-      *puVar2 = 0;
-      puVar2 = puVar2 + 1;
+      *pfVar3 = 0.0;
+      pfVar3 = pfVar3 + 1;
     }
     iVar1 = resource_pack_set(s_music_paq_00477eec);
     DAT_004cc8d5 = (char)iVar1;
@@ -36641,7 +36642,7 @@ void __cdecl sfx_play_exclusive(int sfx_id)
       }
       iVar2 = iVar2 + 1;
     } while (iVar2 < 0x80);
-    if ((float)(&sfx_volume_table)[sfx_id] <= 0.0) {
+    if ((&sfx_volume_table)[sfx_id] <= 0.0) {
       sfx_entry_start_playback((int)(&music_entry_table + sfx_id));
       sfx_entry_set_volume((int)(&music_entry_table + sfx_id),config_blob.music_volume);
       fVar1 = config_blob.music_volume;
@@ -36700,7 +36701,7 @@ void sfx_update_mute_fades(void)
   
   if ((audio_suspend_flag == '\0') && (sfx_unmuted_flag != '\0')) {
     iVar2 = 0;
-    pfVar3 = (float *)&sfx_volume_table;
+    pfVar3 = &sfx_volume_table;
     entry = &music_entry_table;
     do {
       if (entry->vorbis_stream != (void *)0x0) {

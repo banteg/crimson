@@ -4579,9 +4579,10 @@
     },
     {
       "address": "0x004c404c",
-      "comment": "Per-SFX volume table updated by sfx_play_exclusive and sfx_update_mute_fades.",
+      "comment": "Per-SFX volume table (float; updated by sfx_play_exclusive and sfx_update_mute_fades).",
       "name": "sfx_volume_table",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004c4250",
