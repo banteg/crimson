@@ -2237,39 +2237,39 @@
     },
     {
       "address": "0x004908c0",
-      "comment": "Per-player death/respawn timer (player_health - 0x14)",
-      "name": "player_death_timer",
-      "program": "crimsonland.exe"
+      "comment": "Per-player state table base (stride 0x360 bytes / 0xd8 dwords).",
+      "name": "player_state_table",
+      "program": "crimsonland.exe",
+      "type": "player_state_t"
     },
     {
       "address": "0x004908c4",
-      "comment": "Per-player position X (player_health - 0x10)",
+      "comment": "Per-player position X (player_state_table + 0x04).",
       "name": "player_pos_x",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x004908c8",
-      "comment": "Per-player position Y (player_health - 0x0c)",
+      "comment": "Per-player position Y (player_state_table + 0x08).",
       "name": "player_pos_y",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x004908cc",
-      "comment": "Per-player movement delta X (player_health - 0x08)",
+      "comment": "Per-player movement delta X (player_state_table + 0x0c).",
       "name": "player_move_dx",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x004908d0",
-      "comment": "Per-player movement delta Y (player_health - 0x04)",
+      "comment": "Per-player movement delta Y (player_state_table + 0x10).",
       "name": "player_move_dy",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x004908d4",
-      "comment": "Per-player state table base (stride 0x360 bytes / 0xd8 dwords)",
+      "comment": "Per-player health value (player_state_table + 0x14).",
       "name": "player_health",
-      "type": "player_state_t",
       "program": "crimsonland.exe"
     },
     {
