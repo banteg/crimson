@@ -14,12 +14,12 @@ Legend: ✅ complete · 🚧 in progress · ⬜ not started
 | Boot Sequence | ✅ | ✅ | ✅ | 🚧 | Logos, loading steps, and music handoff implemented. |
 | Menu System | ✅ | ✅ | 🚧 | 🚧 | State 0: quit wired; panel/back positions + slide animation match; terrain stable across menu screens; sign shadow pass matches when fx_detail is enabled. |
 | Demo / attract loop | ✅ | 🚧 | ⬜ | ⬜ | Variants + spawn ids identified; upsell overlay + purchase screen implemented; sequencing/idle trigger still stubbed. |
-| Weapons | ✅ | ✅ | 🚧 | ⬜ | Table structure known; projectile logic pending. |
+| Weapons | ✅ | ✅ | 🚧 | 🚧 | Core weapons (pistol/AR/shotgun/minigun/rocket) use pellet spread + rocket splash; basic fire/reload/hit SFX hooks wired; remaining special weapons pending. |
 | Creatures: structs | ✅ | 🚧 | ⬜ | ⬜ | Creature pool field map is medium-confidence; needs more xrefs + runtime checks. |
 | Creatures: spawning | ✅ | 🚧 | ⬜ | ⬜ | Spawn templates are an algorithm (formations/spawn slots/tail mods); plan rewrite started. |
 | Creatures: animations | ✅ | 🚧 | ⬜ | ⬜ | Atlas/frame selection wired into Survival; parity tuning in progress. |
 | Creatures: AI | ✅ | 🚧 | ⬜ | ⬜ | AI modes partially mapped; needs runtime evidence and edge cases. |
-| Creatures: other | ✅ | ⬜ | ⬜ | ⬜ | Attacks, damage/death, loot/bonuses, and audio behaviors still being scoped. |
+| Creatures: other | ✅ | 🚧 | ⬜ | 🚧 | Contact damage/death/bonus hooks live; death SFX hooks wired; ranged attacks + full audio behaviors pending. |
 | Player | ✅ | ✅ | 🚧 | ⬜ | Input & movement mapped; state struct partially validated. |
 | Grim2D | ✅ | ✅ | ✅ | ⬜ | Vtable mapped & validated; implementation deferred. |
 | Save/Config | ✅ | ✅ | ⬜ | ⬜ | File formats reversed; editor tools built. |

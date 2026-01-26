@@ -7,7 +7,8 @@ Reverse engineering and rewriting Crimsonland v1.9.93 in Python + raylib.
     console overlay, demo/attract flow) and loads/saves `game.cfg`. Survival is
     now wired into `uv run crimson game` with terrain + sprites + decal baking,
     using the real gameplay loop (player/projectiles/creatures/spawns/bonuses).
-    Parity work remains on SFX hooks plus full weapon/creature coverage.
+    Parity work remains on broader weapon/creature coverage and SFX tuning
+    (basic fire/reload/hit/death hooks are now wired in gameplay).
 
 ## Analysis
 
