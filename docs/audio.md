@@ -44,6 +44,9 @@ Notes:
 - Music tracks set `vorbis_stream` and use a single streaming buffer at `0x24`.
 - The entry size is 0x84 bytes; table strides for `sfx_entry_table` and
   `music_entry_table` use this size.
+- `sfx_voice_table` (`0x004c3e80`) is a 0x20-entry table of DirectSound buffer
+  pointers; it is only zeroed during `sfx_system_init`, so the role remains
+  inferred.
 
 ## SFX ID map
 

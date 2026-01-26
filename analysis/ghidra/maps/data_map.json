@@ -4092,10 +4092,10 @@
     },
     {
       "address": "0x004c3e80",
-      "comment": "SFX voice/handle table (void*; cleared during sfx_system_init).",
+      "comment": "SFX voice/handle table (0x20 entries; LPDIRECTSOUNDBUFFER; cleared during sfx_system_init; inferred).",
       "name": "sfx_voice_table",
       "program": "crimsonland.exe",
-      "type": "void *"
+      "type": "sfx_voice_table_t"
     },
     {
       "address": "0x004c3f00",

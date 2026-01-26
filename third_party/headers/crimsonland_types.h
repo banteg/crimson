@@ -58,6 +58,7 @@ typedef audio_entry_t sfx_entry_t;
 typedef audio_entry_t music_entry_t;
 
 typedef float sfx_cooldown_table_t[0x80];
+typedef LPDIRECTSOUNDBUFFER sfx_voice_table_t[0x20];
 typedef float sfx_volume_table_t[0x80];
 typedef char sfx_mute_flags_t[0x80];
 typedef int music_playlist_t[0x80];
