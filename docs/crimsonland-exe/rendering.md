@@ -75,6 +75,20 @@ matching the quest metadata and `terrain_ids_for` logic.
 weapon indicators). It is gated by `game_state_id` (`DAT_00487270`) values (not drawn in modal
 states like `0x14/0x16`) and `ui_transition_alpha` (`DAT_00487278`) (transition alpha).
 
+### Player sprite UV tables (2026-01-26)
+
+`player_render_overlays` uses two UV tables for the trooper sprite:
+
+- Legs: `effect_uv8` (8×8 atlas grid, frames `0–14`, empty `15`)
+- Torso: `DAT_00491090`, which is **`effect_uv8 + 16`** (frames `16–30`, empty `31`)
+
+This table is not filled separately; it aliases into `effect_uv8`, which is populated by
+`effect_uv_tables_init` (`FUN_0041fed0`), called during `game_startup_init_prelude` (`FUN_0042b090`).
+
+Runtime trace (`artifacts/frida/share/player_sprite_trace.jsonl`) shows paired draw calls with indices
+`(0,16) … (14,30)`, and the trooper atlas (`game/trooper.png`) has fully empty frames at 15 and 31,
+matching the decompile and the observed render order.
+
 See also:
 
 - [Sprite atlas cutting](../atlas.md)
