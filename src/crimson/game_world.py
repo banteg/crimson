@@ -23,10 +23,12 @@ from .gameplay import (
     PlayerInput,
     PlayerState,
     bonus_update,
+    perk_active,
     player_update,
     survival_progression_update,
     weapon_assign_player,
 )
+from .perks import PerkId
 from .projectiles import (
     FIRE_BULLETS_PROJECTILE_TYPE_ID,
     GAUSS_GUN_PROJECTILE_TYPE_ID,
@@ -718,9 +720,11 @@ class GameWorld:
         phase: float,
         world_x: float,
         world_y: float,
+        rotation_rad: float,
         scale: float,
         size_scale: float,
         tint: rl.Color,
+        shadow: bool = False,
     ) -> None:
         info = _CREATURE_ANIM.get(type_id)
         if info is None:
@@ -741,9 +745,26 @@ class GameWorld:
         sy = (world_y + cam_y) * scale_y
         width = cell * scale * size_scale
         height = cell * scale * size_scale
+        rotation_deg = float(rotation_rad * _RAD_TO_DEG)
+
+        if shadow:
+            # In the original exe this is a "darken" blend pass gated by fx_detail_0
+            # (creature_render_type). We approximate it with a black silhouette draw.
+            # The observed pass is slightly bigger than the main sprite and offset
+            # down-right by ~1px at default sizes.
+            alpha = int(_clamp(float(tint.a) * 0.4, 0.0, 255.0) + 0.5)
+            shadow_tint = rl.Color(0, 0, 0, alpha)
+            shadow_scale = 1.07
+            shadow_w = width * shadow_scale
+            shadow_h = height * shadow_scale
+            offset = width * 0.035 - 0.7 * scale
+            shadow_dst = rl.Rectangle(sx + offset, sy + offset, shadow_w, shadow_h)
+            shadow_origin = rl.Vector2(shadow_w * 0.5, shadow_h * 0.5)
+            rl.draw_texture_pro(texture, src, shadow_dst, shadow_origin, rotation_deg, shadow_tint)
+
         dst = rl.Rectangle(sx, sy, width, height)
         origin = rl.Vector2(width * 0.5, height * 0.5)
-        rl.draw_texture_pro(texture, src, dst, origin, 0.0, tint)
+        rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
 
     def _draw_player_trooper_sprite(
         self,
@@ -986,6 +1007,10 @@ class GameWorld:
             if texture is not None:
                 tint = self._color_from_rgba((creature.tint_r, creature.tint_g, creature.tint_b, creature.tint_a))
                 size_scale = _clamp(float(creature.size) / 64.0, 0.25, 2.0)
+                fx_detail = bool(self.config.data.get("fx_detail_0", 0)) if self.config is not None else True
+                # Mirrors `creature_render_type`: the "shadow-ish" pass is gated by fx_detail_0
+                # and is disabled when the Monster Vision perk is active.
+                shadow = fx_detail and (not self.players or not perk_active(self.players[0], PerkId.MONSTER_VISION))
                 self._draw_creature_sprite(
                     texture,
                     type_id=type_id or CreatureTypeId.ZOMBIE,
@@ -993,9 +1018,11 @@ class GameWorld:
                     phase=creature.anim_phase,
                     world_x=creature.x,
                     world_y=creature.y,
+                    rotation_rad=float(creature.heading) - math.pi / 2.0,
                     scale=scale,
                     size_scale=size_scale,
                     tint=tint,
+                    shadow=shadow,
                 )
             else:
                 sx = (creature.x + cam_x) * scale_x

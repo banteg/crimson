@@ -22,6 +22,7 @@ The renderer (`creature_render_type`, `FUN_00418b60`) selects an atlas frame bas
 - the type table `base_frame`
 - the per-creature flags (`creature_flags`)
 - the integer part of `anim_phase`
+- the creature `heading` (rotation)
 
 Known behaviors (medium confidence):
 
@@ -31,6 +32,15 @@ Known behaviors (medium confidence):
   where ping‑pong folds 0..15 into 0..7..0.
 - For the long strip: `frame = base + int(phase)` with an optional mirror fold when the type table sets the mirror flag.
 - If per‑creature flags include `0x10`, the frame offset shifts by `+0x20` (alt strip for some spawns).
+- Rotation: `grim_set_rotation(creature_heading - pi/2)`; creatures visually face along their movement heading.
+
+## Shadow/outline pass (fx_detail_0)
+
+When `crimson.cfg` `fx_detail_0` is enabled (`config_fx_detail_flag0`) and the **Monster Vision** perk is *not* active,
+`creature_render_type` runs an extra pre-pass that darkens behind each creature sprite:
+
+- alpha is derived from creature tint alpha (`tint_a * 0.4` in the decompile)
+- the sprite is slightly upscaled (~`size * 1.07`) and offset down-right before the main draw
 
 ## Creature flags related to animation / attacks (partial)
 
@@ -76,4 +86,3 @@ Notes:
 
 - No references to offsets `0x1c..0x30` were found in the decompiled output.
   Only offset `0x20` is initialized (to `1.0`), so the remaining fields appear unused or reserved in this build.
-
