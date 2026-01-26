@@ -41,7 +41,7 @@ MENU_DESC_RIGHT_X = 480.0
 
 @dataclass(slots=True)
 class PerkMenuLayout:
-    # Coordinates live in the original 640x480 UI space and are scaled up.
+    # Coordinates live in the original 640x480 UI space.
     # Matches the classic menu panel: pos (-45, 110) + offset (20, -82).
     panel_x: float = -25.0
     panel_y: float = 28.0
@@ -64,14 +64,12 @@ class PerkMenuComputedLayout:
 
 
 def ui_scale(screen_w: float, screen_h: float) -> float:
-    scale = min(screen_w / UI_BASE_WIDTH, screen_h / UI_BASE_HEIGHT)
-    return float(scale)
+    # Classic UI renders in backbuffer pixels; keep menu scale fixed.
+    return 1.0
 
 
 def ui_origin(screen_w: float, screen_h: float, scale: float) -> tuple[float, float]:
-    origin_x = (screen_w - UI_BASE_WIDTH * scale) * 0.5
-    origin_y = (screen_h - UI_BASE_HEIGHT * scale) * 0.5
-    return origin_x, origin_y
+    return 0.0, 0.0
 
 
 def perk_menu_compute_layout(
