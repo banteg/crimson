@@ -3417,13 +3417,14 @@
     },
     {
       "address": "0x004aa4d8",
-      "comment": "Effect UV table U for 16x16 atlas frames",
-      "name": "effect_uv16_u",
-      "program": "crimsonland.exe"
+      "comment": "Effect UV table for 16x16 atlas frames (u,v).",
+      "name": "effect_uv16",
+      "program": "crimsonland.exe",
+      "type": "uv2f_t"
     },
     {
       "address": "0x004aa4dc",
-      "comment": "Effect UV table V for 16x16 atlas frames",
+      "comment": "Effect UV table V for 16x16 atlas frames (effect_uv16 + 0x04).",
       "name": "effect_uv16_v",
       "program": "crimsonland.exe"
     },

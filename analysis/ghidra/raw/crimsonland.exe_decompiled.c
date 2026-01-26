@@ -19560,14 +19560,14 @@ void effect_uv_tables_init(void)
     pfVar5 = pfVar5 + 0x10;
   } while (local_4 < 8);
   local_4 = 0;
-  pfVar5 = (float *)&effect_uv16_v;
+  pfVar5 = &effect_uv16.v;
   do {
     local_8 = 0;
     pfVar4 = pfVar5;
     do {
       fVar1 = (float)local_8;
       local_8 = local_8 + 1;
-      pfVar4[-1] = fVar1 * 0.0625;
+      ((uv2f_t *)(pfVar4 + -1))->u = fVar1 * 0.0625;
       *pfVar4 = (float)local_4 * 0.0625;
       pfVar4 = pfVar4 + 2;
     } while (local_8 < 0x10);
@@ -26512,25 +26512,25 @@ void * __cdecl effect_spawn(int effect_id,float *pos)
   pfVar5[1] = pos[1];
   *(char *)(pfVar5 + 2) = (char)effect_id;
   if (iVar2 == 0x10) {
-    pfVar5[0x17] = (float)(&effect_uv16_u)[iVar3 * 2];
-    pfVar5[0x18] = (float)(&effect_uv16_v)[iVar3 * 2];
+    pfVar5[0x17] = (&effect_uv16)[iVar3].u;
+    pfVar5[0x18] = (&effect_uv16)[iVar3].v;
     fVar1 = -_effect_template_half_height;
     pfVar5[0x12] = -_effect_template_half_width;
     pfVar5[0x13] = fVar1;
-    fVar1 = (float)(&effect_uv16_v)[iVar3 * 2];
-    pfVar5[0x1e] = _effect_uv_step_16 + (float)(&effect_uv16_u)[iVar3 * 2];
+    fVar1 = (&effect_uv16)[iVar3].v;
+    pfVar5[0x1e] = _effect_uv_step_16 + (&effect_uv16)[iVar3].u;
     pfVar5[0x1f] = fVar1;
     fVar1 = -_effect_template_half_height;
     pfVar5[0x19] = _effect_template_half_width;
     pfVar5[0x1a] = fVar1;
-    fVar1 = _effect_uv_step_16 + (float)(&effect_uv16_v)[iVar3 * 2];
-    pfVar5[0x25] = _effect_uv_step_16 + (float)(&effect_uv16_u)[iVar3 * 2];
+    fVar1 = _effect_uv_step_16 + (&effect_uv16)[iVar3].v;
+    pfVar5[0x25] = _effect_uv_step_16 + (&effect_uv16)[iVar3].u;
     pfVar5[0x26] = fVar1;
     fVar1 = _effect_template_half_height;
     pfVar5[0x20] = _effect_template_half_width;
     pfVar5[0x21] = fVar1;
-    fVar1 = _effect_uv_step_16 + (float)(&effect_uv16_v)[iVar3 * 2];
-    pfVar5[0x2c] = (float)(&effect_uv16_u)[iVar3 * 2];
+    fVar1 = _effect_uv_step_16 + (&effect_uv16)[iVar3].v;
+    pfVar5[0x2c] = (&effect_uv16)[iVar3].u;
     pfVar5[0x2d] = fVar1;
     fVar1 = _effect_template_half_height;
     pfVar5[0x27] = -_effect_template_half_width;

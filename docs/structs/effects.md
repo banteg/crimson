@@ -348,7 +348,7 @@ Quad layout (from `effect_spawn` writes):
 - `effect_spawn` reads `effect_id_table` (`size_code`, `frame`) to pick atlas size + frame index, then
   pulls UVs from size-specific tables:
 
-  - `0x10` -> `effect_uv16_u` / `effect_uv16_v` with base `effect_uv_step_16`.
+  - `0x10` -> `effect_uv16` (`u`, `v`) with base `effect_uv_step_16`.
   - `0x20` -> `effect_uv8_u` / `effect_uv8_v` with base `effect_uv_step_8`.
   - `0x40` -> `effect_uv4_u` / `effect_uv4_v` with base `effect_uv_step_4`.
   - `0x80` -> `effect_uv2_u` / `effect_uv2_v` with base `effect_uv_step_2`.

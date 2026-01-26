@@ -7,6 +7,11 @@ typedef struct vec2f_t {
     float y;
 } vec2f_t;
 
+typedef struct uv2f_t {
+    float u;
+    float v;
+} uv2f_t;
+
 typedef struct weapon_stats_t {
     char name[0x40];
     unsigned char unlocked;
