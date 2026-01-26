@@ -36367,7 +36367,7 @@ int sfx_system_init(void)
   uint3 extraout_var;
   undefined3 extraout_var_00;
   float *pfVar2;
-  undefined4 *puVar3;
+  void **ppvVar3;
   uint coop_level;
   
   if (config_blob.reserved0[0] != '\0') {
@@ -36392,10 +36392,10 @@ int sfx_system_init(void)
     *pfVar2 = 0.0;
     pfVar2 = pfVar2 + 1;
   }
-  puVar3 = &sfx_voice_table;
+  ppvVar3 = &sfx_voice_table;
   for (iVar1 = 0x20; iVar1 != 0; iVar1 = iVar1 + -1) {
-    *puVar3 = 0;
-    puVar3 = puVar3 + 1;
+    *ppvVar3 = (void *)0x0;
+    ppvVar3 = ppvVar3 + 1;
   }
   console_printf(&console_log_queue,s_Init_Grim_SFX_done_004784fc);
   return CONCAT31(extraout_var_00,1);
