@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import math
 
+from crimson.crand import Crand
 from crimson.gameplay import (
     BonusId,
     GameplayState,
@@ -131,6 +132,51 @@ def test_player_fire_weapon_shotgun_spawns_pellets() -> None:
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 12
     assert set(type_ids) == {2}
+
+
+def test_player_update_tracks_aim_point() -> None:
+    state = GameplayState()
+    player = PlayerState(index=0, pos_x=10.0, pos_y=20.0)
+    input_state = PlayerInput(aim_x=123.0, aim_y=456.0)
+
+    player_update(player, input_state, 0.1, state)
+
+    assert player.aim_x == 123.0
+    assert player.aim_y == 456.0
+
+
+def test_player_fire_weapon_uses_disc_spread_jitter() -> None:
+    pool = ProjectilePool(size=8)
+    state = GameplayState(projectiles=pool)
+
+    seed = 0xBEEF
+    state.rng.srand(seed)
+
+    player = PlayerState(index=0, pos_x=100.0, pos_y=100.0, weapon_id=1, clip_size=10, ammo=10, spread_heat=0.2)
+
+    aim_x = 200.0
+    aim_y = 100.0
+
+    expected_rng = Crand(seed)
+    rand_dir = expected_rng.rand()
+    rand_mag = expected_rng.rand()
+
+    dx = aim_x - player.pos_x
+    dy = aim_y - player.pos_y
+    dist = math.hypot(dx, dy)
+    max_offset = dist * player.spread_heat * 0.5
+    dir_angle = float(rand_dir & 0x1FF) * (math.tau / 512.0)
+    mag = float(rand_mag & 0x1FF) * (1.0 / 512.0)
+    offset = max_offset * mag
+    jitter_x = aim_x + math.cos(dir_angle) * offset
+    jitter_y = aim_y + math.sin(dir_angle) * offset
+    expected_angle = math.atan2(jitter_y - player.pos_y, jitter_x - player.pos_x) + math.pi / 2.0
+
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=aim_x, aim_y=aim_y), 0.0, state)
+
+    projectiles = pool.iter_active()
+    assert len(projectiles) == 1
+    assert math.isclose(projectiles[0].angle, expected_angle, abs_tol=1e-9)
 
 
 def test_player_update_hot_tempered_spawns_ring() -> None:

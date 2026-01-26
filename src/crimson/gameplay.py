@@ -43,6 +43,8 @@ class PlayerState:
     heading: float = 0.0
     death_timer: float = 16.0
 
+    aim_x: float = 0.0
+    aim_y: float = 0.0
     aim_heading: float = 0.0
     aim_dir_x: float = 1.0
     aim_dir_y: float = 0.0
@@ -1016,48 +1018,42 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
         shot_cooldown *= 1.05
     player.shot_cooldown = max(0.0, shot_cooldown)
 
-    if not perk_active(player, PerkId.SHARPSHOOTER):
-        player.spread_heat = min(0.48, max(0.0, player.spread_heat + spread_inc))
+    aim_x = float(input_state.aim_x)
+    aim_y = float(input_state.aim_y)
+    dx = aim_x - float(player.pos_x)
+    dy = aim_y - float(player.pos_y)
+    dist = math.hypot(dx, dy)
+    max_offset = dist * float(player.spread_heat) * 0.5
+    dir_angle = float(int(state.rng.rand()) & 0x1FF) * (math.tau / 512.0)
+    mag = float(int(state.rng.rand()) & 0x1FF) * (1.0 / 512.0)
+    offset = max_offset * mag
+    aim_jitter_x = aim_x + math.cos(dir_angle) * offset
+    aim_jitter_y = aim_y + math.sin(dir_angle) * offset
+    shot_angle = math.atan2(aim_jitter_y - float(player.pos_y), aim_jitter_x - float(player.pos_x)) + math.pi / 2.0
+
+    muzzle_x = player.pos_x + player.aim_dir_x * 16.0
+    muzzle_y = player.pos_y + player.aim_dir_y * 16.0
 
     # Secondary-projectile weapons (effects.md).
     if player.weapon_id == 12:
         # Seeker Rockets -> secondary type 1.
-        theta = math.atan2(player.aim_dir_y, player.aim_dir_x) + math.pi / 2.0
-        muzzle_x = player.pos_x + player.aim_dir_x * 16.0
-        muzzle_y = player.pos_y + player.aim_dir_y * 16.0
-        state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=theta, type_id=1)
+        state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=1)
     elif player.weapon_id == 13:
         # Plasma Shotgun -> secondary type 2.
-        theta = math.atan2(player.aim_dir_y, player.aim_dir_x) + math.pi / 2.0
-        muzzle_x = player.pos_x + player.aim_dir_x * 16.0
-        muzzle_y = player.pos_y + player.aim_dir_y * 16.0
-        state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=theta, type_id=2)
+        state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=2)
     elif player.weapon_id == 17:
         # Rocket Minigun -> secondary type 2 (multiple per shot in native; keep 1 for now).
-        theta = math.atan2(player.aim_dir_y, player.aim_dir_x) + math.pi / 2.0
-        muzzle_x = player.pos_x + player.aim_dir_x * 16.0
-        muzzle_y = player.pos_y + player.aim_dir_y * 16.0
-        state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=theta, type_id=2)
+        state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=2)
     elif player.weapon_id == 18:
         # Pulse Gun -> secondary type 4.
-        theta = math.atan2(player.aim_dir_y, player.aim_dir_x) + math.pi / 2.0
-        muzzle_x = player.pos_x + player.aim_dir_x * 16.0
-        muzzle_y = player.pos_y + player.aim_dir_y * 16.0
-        state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=theta, type_id=4)
+        state.secondary_projectiles.spawn(pos_x=muzzle_x, pos_y=muzzle_y, angle=shot_angle, type_id=4)
     else:
-        base_theta = math.atan2(player.aim_dir_y, player.aim_dir_x)
-        muzzle_x = player.pos_x + player.aim_dir_x * 16.0
-        muzzle_y = player.pos_y + player.aim_dir_y * 16.0
-
         def _spawn_pellet_shot(type_id: int, *, meta: float, pellets: int) -> None:
             count = max(1, int(pellets))
             for _ in range(count):
-                theta = base_theta
-                if player.spread_heat > 0.0:
-                    theta += (float(state.rng.rand()) / 32767.0 * 2.0 - 1.0) * player.spread_heat
+                angle = shot_angle
                 if count > 1:
-                    theta += (float(state.rng.rand() % 200) - 100.0) * 0.0015
-                angle = theta + math.pi / 2.0
+                    angle += float(int(state.rng.rand()) % 200 - 100) * 0.0015
                 state.projectiles.spawn(
                     pos_x=muzzle_x,
                     pos_y=muzzle_y,
@@ -1082,6 +1078,9 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
                 meta=_projectile_meta_for_type_id(type_id),
                 pellets=pellet_count,
             )
+
+    if not perk_active(player, PerkId.SHARPSHOOTER):
+        player.spread_heat = min(0.48, max(0.0, player.spread_heat + spread_inc))
 
     player.muzzle_flash_alpha = min(1.0, player.muzzle_flash_alpha + 0.8)
 
@@ -1117,8 +1116,10 @@ def player_update(player: PlayerState, input_state: PlayerInput, dt: float, stat
     player.speed_bonus_timer = max(0.0, player.speed_bonus_timer - dt)
 
     # Aim: compute direction from (player -> aim point).
-    aim_dx = input_state.aim_x - player.pos_x
-    aim_dy = input_state.aim_y - player.pos_y
+    player.aim_x = float(input_state.aim_x)
+    player.aim_y = float(input_state.aim_y)
+    aim_dx = player.aim_x - player.pos_x
+    aim_dy = player.aim_y - player.pos_y
     aim_dir_x, aim_dir_y = _normalize(aim_dx, aim_dy)
     if aim_dir_x != 0.0 or aim_dir_y != 0.0:
         player.aim_dir_x = aim_dir_x
