@@ -39,21 +39,26 @@ it unlocks for parity. Goal: 100% replication of game logic.
 ## Rendering + debug views
 
 - [x] Terrain render-target + procedural stamping -> Unlocks: ground parity and quest previews.
-- [x] Terrain decal baking (fx_queue_render port; used in `ground` view) -> Unlocks: baked blood/scorch/corpses on ground.
+- [x] Terrain decal baking (fx_queue_render port; used in Survival/Demo via `GameWorld`) -> Unlocks: baked blood/scorch/corpses on ground.
 - [x] Creature animation preview -> Unlocks: sprite timing validation.
 - [x] Sprite/particle/bonus/weapon atlas previews -> Unlocks: asset alignment.
 - [x] UI + font previews -> Unlocks: HUD/menu layout checks.
 
 ## Next (short term / integration)
 
-- [ ] Wire gameplay scene into `crimson game` (player + camera + HUD) -> Unlocks: playtesting loop outside debug views.
-- [ ] Port `player_take_damage` + game over flow -> Unlocks: contact damage + death handling.
-- [ ] Integrate creature updates + spawners into runtime loop -> Unlocks: enemy waves in modes.
-- [ ] Integrate combat loop (projectiles -> creatures, death contract -> XP/bonuses/FX/SFX) -> Unlocks: combat parity.
-- [ ] Wire FX queues into gameplay ground renderer -> Unlocks: persistent blood/corpses in modes.
-- [ ] Implement Survival mode loop (rewrite runtime) -> Unlocks: first playable mode.
-- [ ] Replace DemoView toy simulation with gameplay scene -> Unlocks: reuse gameplay loop for attract mode.
+- [x] Wire gameplay scene into `crimson game` (player + camera + HUD) -> Unlocks: playtesting loop outside debug views.
+- [x] Port `player_take_damage` + game over flow -> Unlocks: contact damage + death handling.
+- [x] Integrate creature updates + spawners into runtime loop -> Unlocks: enemy waves in modes.
+- [x] Integrate combat loop (projectiles -> creatures, death contract -> XP/bonuses/FX/SFX) -> Unlocks: combat parity.
+- [x] Wire FX queues into gameplay ground renderer -> Unlocks: persistent blood/corpses in modes.
+- [x] Implement Survival mode loop (rewrite runtime) -> Unlocks: first playable mode.
+- [x] Replace DemoView toy simulation with gameplay scene -> Unlocks: reuse gameplay loop for attract mode.
 - [ ] Options screen widgets (fx/audio/windowed toggles) -> Unlocks: config editing parity.
+- [ ] Implement creature ranged attacks (`CreatureFlags.RANGED_ATTACK_*`) -> Unlocks: Survival enemy variety parity.
+- [ ] Implement split-on-death (`CreatureFlags.SPLIT_ON_DEATH`) -> Unlocks: splitter enemy parity.
+- [ ] Wire missing gameplay SFX/events (bonus pickup, perk UI, ranged fire) -> Unlocks: feedback parity.
+- [ ] Wire Rush/Quest mode loops into `crimson game` -> Unlocks: additional playable modes.
+- [ ] Confirm demo idle threshold from the original demo build -> Unlocks: attract timing parity.
 
 ## Gameplay building blocks (implemented, not fully integrated)
 
@@ -62,14 +67,14 @@ it unlocks for parity. Goal: 100% replication of game logic.
 - [x] Projectile system (spawn/update/hit subset) -> Unlocks: damage + FX.
 - [x] Bonus/perk application logic (subset) -> Unlocks: timers + power-up effects.
 - [x] HUD overlay (health/ammo/bonuses) -> Unlocks: in-game UI parity.
-- [x] SFX playback (non-music; demo wired) -> Unlocks: gameplay/audio feedback.
+- [x] SFX playback (music + SFX; basic gameplay events wired) -> Unlocks: gameplay/audio feedback.
 - [x] Save/status integration (`game.cfg` load/save + stats screen) -> Unlocks: persistence + unlock tracking.
 
 ## Gaps (still missing)
 
-- `crimson game` has no playable mode loop yet (Survival/Rush/Quest).
-- Progression/UI wiring is incomplete (perk selection flow, unlocks).
-- Many systems exist only in debug views / toy simulations (need integration + parity passes).
+- Rush/Quest mode loops are not wired yet (Survival is the current playable mode).
+- Creature runtime parity gaps: ranged attacks, split-on-death, and AI edge cases.
+- Some progression/unlock wiring is still incomplete, and several gameplay SFX/events are missing.
 
 ## Later parity gates
 

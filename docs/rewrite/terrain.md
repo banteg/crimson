@@ -103,13 +103,13 @@ rl.end_blend_mode()
 
 This ensures terrain is always drawn opaque, matching the original game's behavior.
 
-## Next step
+## Current status
 
-For visual verification, the `ground` debug view can now bake blood decals into
-the terrain render target (left click to stamp).
+- Gameplay produces decal events through `FxQueue` / `FxQueueRotated` (projectile hits and creature deaths) in `src/crimson/game_world.py`.
+- `GameWorld.update()` bakes queued decals into the ground render target via `bake_fx_queues(...)`; the result is then shown when `GroundRenderer.draw(...)` blits the RT to the screen.
+- The `ground` debug view is still useful for manual stamping when validating blend/filter behavior.
 
-Remaining gaps for parity:
+## Remaining gaps
 
-- A real producer for terrain decal events (queueing from gameplay/effects).
-- Calling the baking pass in the correct place in the main render order (exe:
-  `fx_queue_render` before `terrain_render`).
+- Validate effect selection, sizes, and tints against runtime captures for a wider set of weapons/bonuses.
+- Expand decal producers beyond the current hit/death hooks as more gameplay effects are ported.

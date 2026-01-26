@@ -9,8 +9,9 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 
 ## How to run (current)
 
-- `uv run crimson game` (boot + splash/logo + menu scaffold; auto-copies missing `.paq` assets from `game_bins/`)
-- `uv run crimson view <name>` (debug views)
+- `uv run crimson game` (boot + splash/logo + menu; **Play Game** starts Survival; menu idle triggers demo/attract)
+- `uv run crimson view <name>` (debug views + mode views)
+- `uv run crimson view survival` (Survival loop in the view runner)
 - `uv run crimson view player` (player_update + weapons/projectiles + HUD sandbox)
 - `uv run crimson quests 1.1` (quest spawn dump)
 - `uv run crimson config` (inspect `crimson.cfg`)
@@ -23,15 +24,17 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - Stage-based texture loading (boot stages 0..9).
 - Company logo sequence (10tons / Reflexive) with skip behavior.
 - Intro/theme music handoff.
-- Main menu layout + animation scaffold (tab/enter selection logging).
+- Main menu buttons wired (Play/Options/Stats/Mods/Quit) with panel/back slide animation.
 - Menu terrain persists between screens (no regen on Options/Stats/etc navigation).
-- Demo/attract-mode scaffold (variants + simple sprite anim phases; upsell overlay + purchase screen flow in demo builds).
+- Menu sign shadow pass matches the original when `fx_detail` is enabled.
+- Demo/attract mode: idle trigger + variant sequencing; upsell overlay + purchase screen flow in demo builds (trial overlay pending).
 
 ### Assets + rendering
 
 - PAQ archive reader and JAZ decoder (Construct-based).
 - Texture cache from `crimson.paq` with JAZ/TGA/JPG loaders.
-- Terrain renderer (render-target generation + UV scroll draw; decal baking helpers).
+- Terrain renderer (render-target generation + UV scroll draw; decal baking via FX queues).
+- Shared `GameWorld` renderer (terrain + sprites for player/creatures/projectiles/bonuses, with debug fallbacks when assets are missing).
 - Raylib view runner with screenshot capture (P key).
 
 ### Data tables + content
@@ -45,11 +48,18 @@ Code lives in `src/crimson/` (game) and `src/grim/` (engine), exercised via the
 - Music pack loader (`music.paq`) with raylib music streams.
 - Intro + theme playback with volume from `crimson.cfg`.
 - SFX system (`sfx.paq` or unpacked `assets_dir/sfx/*`) with key mapping + variant selection.
-- Weapon fire/reload SFX wired in demo toy simulation.
+- Basic gameplay SFX hooks via `GameWorld` (weapon fire/reload, projectile hit, creature death).
+
+### Gameplay (modes)
+
+- `GameWorld` owns the active runtime state: players, projectiles, creatures, bonuses/perks, FX queues, terrain, and sprite rendering.
+- Survival mode loop is wired into `crimson game` and the view runner (`uv run crimson view survival`).
+  - Player/projectile updates, creature pool + spawns, XP/level/perk selection UI, HUD overlay, terrain decal baking.
+- Demo/attract mode reuses the same gameplay systems (no separate “toy sim”).
 
 ### Gameplay (sandbox)
 
-These systems exist in `src/`, but are not yet wired into the main `crimson game` mode loops:
+These sandboxes are still useful for focused iteration:
 
 - `player_update` port (movement, aiming, reload, firing, perk timers).
 - Projectile pools (main + secondary) with basic spawn/update/hit logic.
@@ -85,10 +95,11 @@ See also:
 
 ## Known gaps (short list)
 
-- No real gameplay mode loop wired into `crimson game` yet (Survival/Rush/Quest).
-- Creature update + spawners exist as models/tests/docs, but are not integrated into a real-time loop yet.
-- Ground decal baking via FX queues is only exercised in debug views (not in modes).
-- `game.cfg` is loaded/saved, but most progression/unlock wiring is still missing.
+- Rush/Quest mode loops are not wired yet (Survival is the current playable mode).
+- Creature runtime parity gaps: ranged attacks (`CreatureFlags.RANGED_ATTACK_*`) and `SPLIT_ON_DEATH` are still pending.
+- Some gameplay SFX/events are still missing (bonus pickup, perk UI, ranged enemy fire).
+- Survival currently uses a fixed seed by default (good for repro, bad for variety).
+- `game.cfg` is loaded/saved, but progression/unlock wiring is still incomplete.
 - Demo purchase URL is defunct (screen exists only for parity).
 
 ## Roadmap

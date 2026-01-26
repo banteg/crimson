@@ -13,7 +13,7 @@ Legend: ✅ complete · 🚧 in progress · ⬜ not started
 | Terrain | ✅ | ✅ | ✅ | 🚧 | Rendering logic validated; decal baking wired into Survival. |
 | Boot Sequence | ✅ | ✅ | ✅ | 🚧 | Logos, loading steps, and music handoff implemented. |
 | Menu System | ✅ | ✅ | 🚧 | 🚧 | State 0: quit wired; panel/back positions + slide animation match; terrain stable across menu screens; sign shadow pass matches when fx_detail is enabled. |
-| Demo / attract loop | ✅ | 🚧 | ⬜ | ⬜ | Variants + spawn ids identified; upsell overlay + purchase screen implemented; sequencing/idle trigger still stubbed. |
+| Demo / attract loop | ✅ | 🚧 | ⬜ | ⬜ | Variants + spawn ids identified; idle trigger + variant sequencing implemented (idle threshold still TODO); trial overlay pending. |
 | Weapons | ✅ | ✅ | 🚧 | 🚧 | Core weapons (pistol/AR/shotgun/minigun/rocket) use pellet spread + rocket splash; basic fire/reload/hit SFX hooks wired; remaining special weapons pending. |
 | Creatures: structs | ✅ | 🚧 | ⬜ | ⬜ | Creature pool field map is medium-confidence; needs more xrefs + runtime checks. |
 | Creatures: spawning | ✅ | 🚧 | ⬜ | ⬜ | Spawn templates are an algorithm (formations/spawn slots/tail mods); plan rewrite started. |
