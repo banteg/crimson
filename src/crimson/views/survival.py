@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 import random
 
 import pyray as rl
@@ -13,6 +14,7 @@ from grim.fonts.small import measure_small_text_width
 from grim.view import ViewContext
 
 from ..creatures.spawn import advance_survival_spawn_stage, tick_survival_wave_spawns
+from ..effects_atlas import effect_src_rect
 from ..game_world import GameWorld
 from ..gameplay import PlayerInput, perk_selection_current_choices, perk_selection_pick
 from ..perks import PERK_BY_ID, PerkId
@@ -45,6 +47,7 @@ UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
 UI_SPONSOR_COLOR = rl.Color(255, 255, 255, int(255 * 0.5))
 UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
 
+CURSOR_EFFECT_ID = 0x0D
 
 def _clamp(value: float, lo: float, hi: float) -> float:
     if value < lo:
@@ -102,7 +105,12 @@ class SurvivalView:
         self._perk_menu_assets = None
         self._perk_ui_layout = PerkMenuLayout()
         self._perk_cancel_button = UiButtonState("Cancel")
-        self._perk_cursor_hidden = False
+
+        self._ui_mouse_x = 0.0
+        self._ui_mouse_y = 0.0
+        self._cursor_time = 0.0
+        self._cursor_pulse_time = 0.0
+        self._cursor_disabled = False
 
     def _bind_world(self) -> None:
         self._state = self._world.state
@@ -157,6 +165,22 @@ class SurvivalView:
     def _camera_screen_to_world(self, x: float, y: float) -> tuple[float, float]:
         return self._world.screen_to_world(x, y)
 
+    def _ui_mouse_pos(self) -> rl.Vector2:
+        return rl.Vector2(float(self._ui_mouse_x), float(self._ui_mouse_y))
+
+    def _update_ui_mouse(self) -> None:
+        delta = rl.get_mouse_delta()
+        sensitivity = 1.0
+        if self._world.config is not None:
+            sensitivity = float(self._world.config.data.get("mouse_sensitivity", 1.0))
+        self._ui_mouse_x += float(delta.x) * sensitivity * 2.0
+        self._ui_mouse_y += float(delta.y) * sensitivity * 2.0
+
+        screen_w = float(rl.get_screen_width())
+        screen_h = float(rl.get_screen_height())
+        self._ui_mouse_x = _clamp(self._ui_mouse_x, 0.0, max(0.0, screen_w - 1.0))
+        self._ui_mouse_y = _clamp(self._ui_mouse_y, 0.0, max(0.0, screen_h - 1.0))
+
     def open(self) -> None:
         self._missing_assets.clear()
         self._hud_missing.clear()
@@ -174,8 +198,13 @@ class SurvivalView:
             self._missing_assets.extend(self._perk_menu_assets.missing)
         self._perk_ui_layout = PerkMenuLayout()
         self._perk_cancel_button = UiButtonState("Cancel")
-        self._perk_cursor_hidden = False
-        rl.show_cursor()
+        self._ui_mouse_x = float(rl.get_screen_width()) * 0.5
+        self._ui_mouse_y = float(rl.get_screen_height()) * 0.5
+        self._cursor_time = 0.0
+        self._cursor_pulse_time = 0.0
+        if not self._cursor_disabled:
+            rl.disable_cursor()
+            self._cursor_disabled = True
 
         self._paused = False
         self.close_requested = False
@@ -191,9 +220,9 @@ class SurvivalView:
         self._perk_menu_selected = 0
 
     def close(self) -> None:
-        if self._perk_cursor_hidden:
-            rl.show_cursor()
-            self._perk_cursor_hidden = False
+        if self._cursor_disabled:
+            rl.enable_cursor()
+            self._cursor_disabled = False
         if self._perk_menu_assets is not None:
             self._perk_menu_assets.unload()
             self._perk_menu_assets = None
@@ -231,7 +260,7 @@ class SurvivalView:
         if rl.is_key_down(rl.KeyboardKey.KEY_S):
             move_y += 1.0
 
-        mouse = rl.get_mouse_position()
+        mouse = self._ui_mouse_pos()
         aim_x, aim_y = self._camera_screen_to_world(float(mouse.x), float(mouse.y))
 
         fire_down = rl.is_mouse_button_down(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -305,7 +334,7 @@ class SurvivalView:
         scale = ui_scale(screen_w, screen_h)
         origin_x, origin_y = ui_origin(screen_w, screen_h, scale)
 
-        mouse = rl.get_mouse_position()
+        mouse = self._ui_mouse_pos()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
 
         master_owned = int(self._player.perk_counts[int(PerkId.PERK_MASTER)]) > 0
@@ -369,27 +398,24 @@ class SurvivalView:
             self._perk_menu_open = False
 
     def update(self, dt: float) -> None:
-        dt_ui_ms = float(min(dt, 0.1) * 1000.0)
+        dt_frame = float(dt)
+        dt_ui_ms = float(min(dt_frame, 0.1) * 1000.0)
+        self._update_ui_mouse()
+        self._cursor_time += dt_frame
+        self._cursor_pulse_time += dt_frame * 1.1
         self._handle_input()
 
         perk_pending = int(self._state.perk_selection.pending_count) > 0 and self._player.health > 0.0
 
         if self._perk_menu_open:
-            if not self._perk_cursor_hidden:
-                rl.hide_cursor()
-                self._perk_cursor_hidden = True
             self._perk_menu_handle_input(dt_ui_ms)
             dt = 0.0
-        else:
-            if self._perk_cursor_hidden:
-                rl.show_cursor()
-                self._perk_cursor_hidden = False
 
         if (not self._perk_menu_open) and perk_pending:
             label = self._perk_prompt_label()
             if label:
                 rect = self._perk_prompt_rect(label)
-                mouse = rl.get_mouse_position()
+                mouse = self._ui_mouse_pos()
                 self._perk_prompt_hover = rl.check_collision_point_rec(mouse, rect)
             if rl.is_key_pressed(rl.KeyboardKey.KEY_P) or (
                 self._perk_prompt_hover and rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
@@ -521,7 +547,7 @@ class SurvivalView:
                 color=UI_SPONSOR_COLOR,
             )
 
-        mouse = rl.get_mouse_position()
+        mouse = self._ui_mouse_pos()
         for idx, perk_id in enumerate(choices):
             meta = PERK_BY_ID.get(int(perk_id))
             label = meta.name if meta is not None else f"Perk {int(perk_id)}"
@@ -554,6 +580,39 @@ class SurvivalView:
         button_draw(self._perk_menu_assets, self._small, self._perk_cancel_button, x=cancel_x, y=button_y, width=cancel_w, scale=scale)
 
         cursor_draw(self._perk_menu_assets, mouse=mouse, scale=scale)
+
+    def _draw_game_cursor(self) -> None:
+        mouse_x = float(self._ui_mouse_x)
+        mouse_y = float(self._ui_mouse_y)
+
+        particles = self._world.particles_texture
+        if particles is not None:
+            src = effect_src_rect(
+                CURSOR_EFFECT_ID,
+                texture_width=float(particles.width),
+                texture_height=float(particles.height),
+            )
+            if src is not None:
+                src_rect = rl.Rectangle(src[0], src[1], src[2], src[3])
+                alpha = (math.pow(2.0, math.sin(self._cursor_pulse_time)) + 2.0) * 0.32
+                alpha = _clamp(alpha, 0.0, 1.0)
+                tint = rl.Color(255, 255, 255, int(alpha * 255.0 + 0.5))
+                origin = rl.Vector2(0.0, 0.0)
+
+                for dx, dy, size in (
+                    (-28.0, -28.0, 64.0),
+                    (-10.0, -18.0, 64.0),
+                    (-18.0, -10.0, 64.0),
+                    (-48.0, -48.0, 128.0),
+                ):
+                    dst = rl.Rectangle(mouse_x + dx, mouse_y + dy, size, size)
+                    rl.draw_texture_pro(particles, src_rect, dst, origin, 0.0, tint)
+
+        cursor_tex = self._perk_menu_assets.cursor if self._perk_menu_assets is not None else None
+        if cursor_tex is not None:
+            src = rl.Rectangle(0.0, 0.0, float(cursor_tex.width), float(cursor_tex.height))
+            dst = rl.Rectangle(mouse_x - 2.0, mouse_y - 2.0, 32.0, 32.0)
+            rl.draw_texture_pro(cursor_tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
     def draw(self) -> None:
         self._world.draw()
@@ -590,6 +649,8 @@ class SurvivalView:
 
         self._draw_perk_prompt()
         self._draw_perk_menu()
+        if not self._perk_menu_open:
+            self._draw_game_cursor()
 
 
 @register_view("survival", "Survival")
