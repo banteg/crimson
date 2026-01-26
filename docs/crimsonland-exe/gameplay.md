@@ -133,6 +133,8 @@ The game models continuous-fire inaccuracy as a per-player "heat" value stored i
   offsets around `ui_mouse_x/y`, then draws `ui_cursor` at `(ui_mouse_x - 2, ui_mouse_y - 2)`
   sized `32×32`. The pulse alpha is
   `alpha = (pow(2.0, sin(t)) + 2.0) * 0.32` with `t += frame_dt * 1.1`. [static]
+  - Pulse blend: `SRCBLEND=SRCALPHA` (`0x13=5`), `DESTBLEND=ONE` (`0x14=2`). [static]
+  - Cursor blend: `SRCBLEND=SRCALPHA` (`0x13=5`), `DESTBLEND=INVSRCALPHA` (`0x14=6`). [static]
 
 ### Reload + spread interactions
 
