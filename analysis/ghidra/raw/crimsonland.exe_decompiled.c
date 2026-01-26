@@ -8224,12 +8224,12 @@ void __cdecl credits_line_set(int index,char *text,int flags)
 {
   char *pcVar1;
   
-  (&credits_line_table_flags)[index * 2] = flags;
-  if ((void *)(&credits_line_table_ptrs)[index * 2] != (void *)0x0) {
-    crt_free((void *)(&credits_line_table_ptrs)[index * 2]);
+  (&credits_line_table)[index].flags = flags;
+  if ((&credits_line_table)[index].text != (char *)0x0) {
+    crt_free((&credits_line_table)[index].text);
   }
   pcVar1 = strdup_malloc(text);
-  (&credits_line_table_ptrs)[index * 2] = pcVar1;
+  (&credits_line_table)[index].text = pcVar1;
   DAT_004811b8 = index;
   return;
 }
@@ -8244,18 +8244,18 @@ void __cdecl credits_line_set(int index,char *text,int flags)
 void __cdecl credits_line_clear_flag(int index)
 
 {
-  byte *pbVar1;
+  int *piVar1;
   
   if (-1 < index) {
-    pbVar1 = (byte *)(&credits_line_table_flags + index * 2);
-    while ((*pbVar1 & 4) == 0) {
+    piVar1 = &(&credits_line_table)[index].flags;
+    while ((*piVar1 & 4) == 0) {
       index = index + -1;
-      pbVar1 = pbVar1 + -8;
+      piVar1 = piVar1 + -2;
       if (index < 0) {
         return;
       }
     }
-    (&credits_line_table_flags)[index * 2] = (&credits_line_table_flags)[index * 2] & 0xfffffffb;
+    (&credits_line_table)[index].flags = (&credits_line_table)[index].flags & 0xfffffffb;
     sfx_play(sfx_trooper_inpain_01);
   }
   return;
@@ -8429,8 +8429,8 @@ void credits_screen_update(void)
   char *unaff_EBP;
   float unaff_ESI;
   int iVar9;
-  undefined4 *puVar10;
-  float unaff_EDI;
+  credits_line_t *pcVar10;
+  char *unaff_EDI;
   longlong lVar11;
   IGrim2D *self;
   float fVar12;
@@ -8503,7 +8503,7 @@ void credits_screen_update(void)
           iVar9 = 0;
         }
         iVar6 = (*grim_interface_ptr->vtable->grim_measure_text_width)
-                          ((IGrim2D *)(&credits_line_table_ptrs)[iVar9 * 2],unaff_EBP);
+                          ((IGrim2D *)(&credits_line_table)[iVar9].text,unaff_EBP);
         fVar2 = ((float)(int)fVar4 + fStack_4) - (fVar3 + 300.0);
         fVar12 = (fStack_4 - 16.0) + 24.0;
         if (fVar12 <= fVar2) {
@@ -8528,18 +8528,18 @@ LAB_0040db8e:
         }
         iVar6 = ui_mouse_inside_rect((float *)&stack0x00000000,0x10,iVar6);
         if (((char)iVar6 != '\0') && (iVar6 = input_primary_just_pressed(), (char)iVar6 != '\0')) {
-          pcVar7 = _strchr((char *)(&credits_line_table_ptrs)[iVar9 * 2],0x6f);
+          pcVar7 = _strchr((&credits_line_table)[iVar9].text,0x6f);
           if (pcVar7 == (char *)0x0) {
             credits_line_clear_flag(iVar9);
           }
           else {
-            if ((*(byte *)(&credits_line_table_flags + iVar9 * 2) & 4) == 0) {
+            if (((&credits_line_table)[iVar9].flags & 4) == 0) {
               sfx_play(sfx_ui_bonus);
             }
-            (&credits_line_table_flags)[iVar9 * 2] = (&credits_line_table_flags)[iVar9 * 2] | 4;
+            (&credits_line_table)[iVar9].flags = (&credits_line_table)[iVar9].flags | 4;
           }
         }
-        uVar1 = (&credits_line_table_flags)[iVar9 * 2];
+        uVar1 = (&credits_line_table)[iVar9].flags;
         if ((uVar1 & 4) == 0) {
           pIVar8 = grim_interface_ptr->vtable;
           if ((uVar1 & 1) == 0) {
@@ -8564,11 +8564,12 @@ LAB_0040dcc6:
             self = (IGrim2D *)0x3f666666;
           }
         }
-        (*pIVar8->grim_set_color)(self,fVar12,g,fStack_20,unaff_EDI);
-        unaff_EDI = (float)(&credits_line_table_ptrs)[iVar9 * 2];
+        (*pIVar8->grim_set_color)(self,fVar12,g,fStack_20,(float)unaff_EDI);
+        unaff_EDI = (&credits_line_table)[iVar9].text;
         unaff_EBP = pcStack_c;
         (*grim_interface_ptr->vtable->grim_draw_text_small)
-                  ((IGrim2D *)((fStack_4 + 140.0) - fVar2),(float)pcStack_c,unaff_EDI,unaff_EBX);
+                  ((IGrim2D *)((fStack_4 + 140.0) - fVar2),(float)pcStack_c,(float)unaff_EDI,
+                   unaff_EBX);
         iVar5 = iVar5 + 1;
       } while (iVar5 < DAT_00481180 - DAT_00481184);
     }
@@ -8576,49 +8577,49 @@ LAB_0040dcc6:
     _credits_back_button = &DAT_00472e80;
     fStack_8 = fStack_8 + 250.0;
     ui_button_update((float *)&pcStack_c,(ui_button_t *)&credits_back_button);
-    puVar10 = &credits_line_table_ptrs;
+    pcVar10 = &credits_line_table;
     do {
-      if ((((char *)*puVar10 != (char *)0x0) &&
-          (pcVar7 = _strchr((char *)*puVar10,0x6f), pcVar7 != (char *)0x0)) &&
-         ((*(byte *)(puVar10 + 1) & 4) == 0)) goto LAB_0040d970;
+      if (((pcVar10->text != (char *)0x0) &&
+          (pcVar7 = _strchr(pcVar10->text,0x6f), pcVar7 != (char *)0x0)) &&
+         ((pcVar10->flags & 4) == 0)) goto LAB_0040d970;
       iVar5 = credits_secret_line_base_index;
-      puVar10 = puVar10 + 2;
-    } while ((int)puVar10 < 0x481180);
+      pcVar10 = pcVar10 + 1;
+    } while ((int)pcVar10 < 0x481180);
     if (credits_secret_unlock_flag == '\0') {
       credits_secret_unlock_flag = '\x01';
-      (&credits_line_table_flags)[credits_secret_line_base_index * 2] =
-           (&credits_line_table_flags)[credits_secret_line_base_index * 2] | 4;
-      (&credits_line_table_flags)[(iVar5 + 1) * 2] = (&DAT_0048098c)[iVar5 * 2] | 4;
-      (&credits_line_table_flags)[(iVar5 + 2) * 2] = (&DAT_0048098c)[(iVar5 + 1) * 2] | 4;
-      (&credits_line_table_flags)[(iVar5 + 3) * 2] = (&DAT_0048098c)[(iVar5 + 2) * 2] | 4;
-      (&credits_line_table_flags)[(iVar5 + 4) * 2] = (&DAT_0048098c)[(iVar5 + 3) * 2] | 4;
-      (&credits_line_table_flags)[(iVar5 + 5) * 2] = (&DAT_0048098c)[(iVar5 + 4) * 2] | 4;
-      (&credits_line_table_flags)[(iVar5 + 6) * 2] = (&DAT_0048098c)[(iVar5 + 5) * 2] | 4;
-      (&credits_line_table_flags)[(iVar5 + 7) * 2] = (&DAT_0048098c)[(iVar5 + 6) * 2] | 4;
+      (&credits_line_table)[credits_secret_line_base_index].flags =
+           (&credits_line_table)[credits_secret_line_base_index].flags | 4;
+      (&credits_line_table)[iVar5 + 1].flags = (&DAT_0048098c)[iVar5 * 2] | 4;
+      (&credits_line_table)[iVar5 + 2].flags = (&DAT_0048098c)[(iVar5 + 1) * 2] | 4;
+      (&credits_line_table)[iVar5 + 3].flags = (&DAT_0048098c)[(iVar5 + 2) * 2] | 4;
+      (&credits_line_table)[iVar5 + 4].flags = (&DAT_0048098c)[(iVar5 + 3) * 2] | 4;
+      (&credits_line_table)[iVar5 + 5].flags = (&DAT_0048098c)[(iVar5 + 4) * 2] | 4;
+      (&credits_line_table)[iVar5 + 6].flags = (&DAT_0048098c)[(iVar5 + 5) * 2] | 4;
+      (&credits_line_table)[iVar5 + 7].flags = (&DAT_0048098c)[(iVar5 + 6) * 2] | 4;
       iVar9 = iVar5 + 8;
-      (&credits_line_table_flags)[iVar9 * 2] = (&DAT_0048098c)[(iVar5 + 7) * 2] | 4;
+      (&credits_line_table)[iVar9].flags = (&DAT_0048098c)[(iVar5 + 7) * 2] | 4;
       (&DAT_0048098c)[iVar9 * 2] = (&DAT_0048098c)[iVar9 * 2] | 4;
       pcVar7 = strdup_malloc(s_Inside_Dead_Let_Mighty_Blood_00472e60);
-      (&credits_line_table_ptrs)[iVar5 * 2] = pcVar7;
+      (&credits_line_table)[iVar5].text = pcVar7;
       pcVar7 = strdup_malloc(s_Do_Firepower_See_Mark_Of_00472e44);
-      (&credits_line_table_ptrs)[(iVar5 + 1) * 2] = pcVar7;
+      (&credits_line_table)[iVar5 + 1].text = pcVar7;
       pcVar7 = strdup_malloc(s_The_Sacrifice_Old_Center_00472e28);
-      (&credits_line_table_ptrs)[(iVar5 + 2) * 2] = pcVar7;
+      (&credits_line_table)[iVar5 + 2].text = pcVar7;
       pcVar7 = strdup_malloc(s_Yourself_Ground_First_For_00472e0c);
-      (&credits_line_table_ptrs)[(iVar5 + 3) * 2] = pcVar7;
+      (&credits_line_table)[iVar5 + 3].text = pcVar7;
       pcVar7 = strdup_malloc(s_Triangle_Cube_Last_Not_Flee_00472df0);
-      (&credits_line_table_ptrs)[(iVar5 + 4) * 2] = pcVar7;
+      (&credits_line_table)[iVar5 + 4].text = pcVar7;
       pcVar7 = strdup_malloc(s_0001001110000010101110011_00472dd4);
-      (&credits_line_table_ptrs)[(iVar5 + 5) * 2] = pcVar7;
+      (&credits_line_table)[iVar5 + 5].text = pcVar7;
       pcVar7 = strdup_malloc(s_0101001011100010010101100_00472db8);
-      (&credits_line_table_ptrs)[(iVar5 + 6) * 2] = pcVar7;
+      (&credits_line_table)[iVar5 + 6].text = pcVar7;
       pcVar7 = strdup_malloc(s_011111001000111_00472da8);
-      (&credits_line_table_ptrs)[(iVar5 + 7) * 2] = pcVar7;
+      (&credits_line_table)[iVar5 + 7].text = pcVar7;
       pcVar7 = strdup_malloc(s__4_bits_for_index__<__OOOPS_I_me_00472d7c);
-      (&credits_line_table_ptrs)[(iVar5 + 8) * 2] = pcVar7;
+      (&credits_line_table)[iVar5 + 8].text = pcVar7;
       crt_free((void *)(&DAT_00480988)[(iVar5 + 8) * 2]);
       pcVar7 = strdup_malloc(s__4_bits_for_index__00472d68);
-      (&credits_line_table_ptrs)[(iVar5 + 9) * 2] = pcVar7;
+      (&credits_line_table)[iVar5 + 9].text = pcVar7;
     }
     fStack_4 = (float)pcStack_c + 94.0;
     ui_button_update(&fStack_4,(ui_button_t *)&credits_secret_button);

@@ -336,6 +336,11 @@ typedef struct ui_button_t {
     unsigned char _pad1[2];
 } ui_button_t;
 
+typedef struct credits_line_t {
+    char *text;
+    int flags;
+} credits_line_t;
+
 typedef struct crimson_cfg_t {
     unsigned char reserved0[0x0a8];
     char saved_names[8][27];

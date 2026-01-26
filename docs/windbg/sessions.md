@@ -234,7 +234,7 @@ ba w1 crimsonland+0x811c4 ".printf \"[credits] Secret unlock write (DAT_004811c4
 
 ### Secret line table dump
 
-The credits line table lives at `0x00480980` and is a pair array: `ptr, flags`.
+The credits line table lives at `0x00480980` as `credits_line_t credits_line_table[0x100]` (`text`, `flags`).
 The secret lines begin at index `0x54`, so the injected block starts at:
 
 - `0x00480980 + 0x54*8 = 0x00480c20`

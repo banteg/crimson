@@ -1143,13 +1143,14 @@
     },
     {
       "address": "0x00480980",
-      "comment": "Credits line table: pointer slots (interleaved with flags, stride 8 bytes).",
-      "name": "credits_line_table_ptrs",
-      "program": "crimsonland.exe"
+      "comment": "Credits line table (0x100 entries, stride 0x08 bytes).",
+      "name": "credits_line_table",
+      "program": "crimsonland.exe",
+      "type": "credits_line_t"
     },
     {
       "address": "0x00480984",
-      "comment": "Credits line table flags (interleaved with pointers, stride 8 bytes; bit0 heading, bit2 clicked).",
+      "comment": "Credits line table flags (credits_line_table + 0x04; bit0 heading, bit2 clicked).",
       "name": "credits_line_table_flags",
       "program": "crimsonland.exe"
     },
