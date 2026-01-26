@@ -89,6 +89,24 @@ Runtime trace (`artifacts/frida/share/player_sprite_trace.jsonl`) shows paired d
 `(0,16) … (14,30)`, and the trooper atlas (`game/trooper.png`) has fully empty frames at 15 and 31,
 matching the decompile and the observed render order.
 
+### Recoil / muzzle-flash kick (2026-01-26)
+
+Recoil is driven by `player_state.muzzle_flash_alpha`:
+
+- Decay: `muzzle_flash_alpha = max(0, muzzle_flash_alpha - 2 * frame_dt)`
+  (applied in both `player_update` and `player_fire_weapon`).
+- On fire: `muzzle_flash_alpha += weapon_table[weapon_id].spread_heat`, then clamped
+  (`<= 1.0` immediately, and `<= 0.8` at the end of `player_fire_weapon`).
+
+During `player_render_overlays`, the **torso quad** is offset by a recoil vector computed from aim heading:
+
+- `dir = (cos(aim_heading + π/2), sin(aim_heading + π/2))`
+- `offset = dir * (muzzle_flash_alpha * 12.0)`
+- the torso quad is drawn at `(camera + pos - size/2) + offset`
+
+The recoil pass uses the torso UV table (`DAT_00491090`) and rotates by `aim_heading`.
+The shadow/highlight pass draws a slightly larger quad (`size * 1.03`) and shifts it by `(+1, +1)`.
+
 See also:
 
 - [Sprite atlas cutting](../atlas.md)
