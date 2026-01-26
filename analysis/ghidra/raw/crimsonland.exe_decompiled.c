@@ -11202,7 +11202,7 @@ int FUN_004123d0(void)
 {
   int extraout_EAX;
   
-  crt_ehvec_ctor(&bonus_meta_label,0x14,0xf,&LAB_004123f0,FUN_00412410);
+  crt_ehvec_ctor(&bonus_meta_table,0x14,0xf,&LAB_004123f0,FUN_00412410);
   return extraout_EAX;
 }
 
@@ -11325,7 +11325,7 @@ LAB_0041258a:
               (uVar7 != 10)) &&
              ((iVar4 = perk_count_get(perk_id_my_favourite_weapon), iVar4 == 0 || (uVar7 != 3))))))
            && (((iVar4 = perk_count_get(perk_id_death_clock), iVar4 == 0 || (uVar7 != 0xc)) &&
-               (((uVar7 != 3 || (!bVar2)) && ((&bonus_meta_enabled)[uVar7 * 0x14] != '\0')))))) {
+               (((uVar7 != 3 || (!bVar2)) && ((&bonus_meta_table)[uVar7].enabled != '\0')))))) {
           return uVar7;
         }
       }
@@ -11430,15 +11430,15 @@ void bonus_metadata_init(void)
 char * FUN_00412940(void)
 
 {
-  char *pcVar1;
+  uchar *puVar1;
   
-  pcVar1 = &bonus_meta_enabled;
+  puVar1 = &bonus_meta_table.enabled;
   do {
-    *pcVar1 = '\x01';
-    pcVar1 = pcVar1 + 0x14;
-  } while ((int)pcVar1 < 0x485508);
-  bonus_meta_enabled = 0;
-  return pcVar1;
+    *puVar1 = '\x01';
+    puVar1 = puVar1 + 0x14;
+  } while ((int)puVar1 < 0x485508);
+  bonus_meta_table.enabled = '\0';
+  return (char *)puVar1;
 }
 
 
@@ -19103,7 +19103,7 @@ bonus_entry_t * __cdecl bonus_spawn_at(float *pos,int bonus_id,int duration_over
     pbVar1->bonus_id = bonus_id;
     pbVar1->amount = duration_override;
     if (duration_override == -1) {
-      pbVar1->amount = *(int *)(&bonus_meta_default_amount + bonus_id * 0x14);
+      pbVar1->amount = (&bonus_meta_table)[bonus_id].default_amount;
     }
     _effect_template_color_r = 0x3ecccccd;
     _effect_template_flags = 0x1d;
@@ -19188,7 +19188,7 @@ LAB_0041f853:
         }
       }
       else {
-        pbVar3->amount = *(int *)(&bonus_meta_default_amount + pbVar3->bonus_id * 0x14);
+        pbVar3->amount = (&bonus_meta_table)[pbVar3->bonus_id].default_amount;
       }
       return pbVar3;
     }
@@ -24208,7 +24208,7 @@ char * __cdecl bonus_label_for_entry(bonus_entry_t *bonus_entry)
     crt_sprintf(&DAT_0049679c,s__s___d_00473e8c,DAT_004853e4,bonus_entry->amount);
     return &DAT_0049679c;
   }
-  return *(char **)(&bonus_meta_label + iVar1 * 0x14);
+  return (&bonus_meta_table)[iVar1].label;
 }
 
 
@@ -24360,7 +24360,7 @@ void bonus_render(void)
         (*grim_interface_ptr->vtable->grim_draw_quad)
                   ((IGrim2D *)((_camera_offset_x + pfVar6[2]) - 16.0),(float)pIVar16,32.0,32.0,
                    (float)pIVar18);
-        iVar13 = *(int *)(&bonus_meta_icon_id + ((bonus_entry_t *)(pfVar6 + -2))->bonus_id * 0x14);
+        iVar13 = (&bonus_meta_table)[((bonus_entry_t *)(pfVar6 + -2))->bonus_id].icon_id;
         if (-1 < iVar13) {
           if (0.5 <= *pfVar6) {
             fVar1 = pfVar6[1] - *pfVar6;

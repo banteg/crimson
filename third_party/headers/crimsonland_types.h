@@ -404,6 +404,15 @@ typedef struct perk_meta_t {
     int prerequisite;
 } perk_meta_t;
 
+typedef struct bonus_meta_t {
+    char *label;
+    char *description;
+    int icon_id;
+    unsigned char enabled;
+    unsigned char _pad0[3];
+    int default_amount;
+} bonus_meta_t;
+
 typedef struct bonus_entry_t {
     int bonus_id;
     unsigned char state;

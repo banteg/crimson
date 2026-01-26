@@ -1517,31 +1517,32 @@
     },
     {
       "address": "0x004853d0",
-      "comment": "Bonus metadata label pointer (stride 0x14 bytes)",
-      "name": "bonus_meta_label",
-      "program": "crimsonland.exe"
+      "comment": "Bonus metadata table (0x0f entries, stride 0x14 bytes).",
+      "name": "bonus_meta_table",
+      "program": "crimsonland.exe",
+      "type": "bonus_meta_t"
     },
     {
       "address": "0x004853d4",
-      "comment": "Bonus metadata description pointer (bonus_meta_label + 0x04)",
+      "comment": "Bonus metadata description pointer (bonus_meta_table + 0x04).",
       "name": "bonus_meta_description",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x004853d8",
-      "comment": "Bonus metadata icon id (bonus_meta_label + 0x08)",
+      "comment": "Bonus metadata icon id (bonus_meta_table + 0x08).",
       "name": "bonus_meta_icon_id",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x004853dc",
-      "comment": "Bonus metadata enabled flag (bonus_meta_label + 0x0c); id 0 is disabled.",
+      "comment": "Bonus metadata enabled flag (bonus_meta_table + 0x0c); id 0 is disabled.",
       "name": "bonus_meta_enabled",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x004853e0",
-      "comment": "Bonus metadata default amount (bonus_meta_label + 0x10)",
+      "comment": "Bonus metadata default amount (bonus_meta_table + 0x10).",
       "name": "bonus_meta_default_amount",
       "program": "crimsonland.exe"
     },
