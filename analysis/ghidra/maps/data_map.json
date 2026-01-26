@@ -2746,25 +2746,27 @@
     },
     {
       "address": "0x00491210",
-      "comment": "Effect UV table U for 4x4 atlas frames",
-      "name": "effect_uv4_u",
-      "program": "crimsonland.exe"
+      "comment": "Effect UV table for 4x4 atlas frames (u,v).",
+      "name": "effect_uv4",
+      "program": "crimsonland.exe",
+      "type": "uv2f_t"
     },
     {
       "address": "0x00491214",
-      "comment": "Effect UV table V for 4x4 atlas frames",
+      "comment": "Effect UV table V for 4x4 atlas frames (effect_uv4 + 0x04).",
       "name": "effect_uv4_v",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x00491290",
-      "comment": "Effect UV table U for 2x2 atlas frames",
-      "name": "effect_uv2_u",
-      "program": "crimsonland.exe"
+      "comment": "Effect UV table for 2x2 atlas frames (u,v).",
+      "name": "effect_uv2",
+      "program": "crimsonland.exe",
+      "type": "uv2f_t"
     },
     {
       "address": "0x00491294",
-      "comment": "Effect UV table V for 2x2 atlas frames",
+      "comment": "Effect UV table V for 2x2 atlas frames (effect_uv2 + 0x04).",
       "name": "effect_uv2_v",
       "program": "crimsonland.exe"
     },
