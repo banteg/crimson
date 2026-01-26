@@ -49,4 +49,4 @@ Legend: ✅ complete · 🚧 in progress · ⬜ not started
 - ✅ Implement demo upsell overlay (upsell "Want more ..." message + progress bar).
 - ⬜ Implement `demo_trial_overlay_render` for demo builds (trial messaging + timing).
 - ✅ Implement full `demo_purchase_screen_update` purchase screen UI.
-- ⬜ Replace DemoView toy simulation with real gameplay systems (creature alloc/update, weapons/projectiles, collision/damage, terrain bounds).
+- ✅ Replace DemoView toy simulation with real gameplay systems (creature alloc/update, weapons/projectiles, collision/damage, terrain bounds).
