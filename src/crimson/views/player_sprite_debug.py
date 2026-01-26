@@ -47,7 +47,7 @@ class PlayerSpriteDebugView:
         self._muzzle_flash = 0.0
 
         self._leg_base = 0
-        self._torso_base = 32
+        self._torso_base = 16
         self._frame_count = LEG_FRAME_COUNT
         self._show_grid = True
         self._show_shadow = True
