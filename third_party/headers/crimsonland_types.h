@@ -310,6 +310,17 @@ typedef struct quest_spawn_entry_t {
     int count;
 } quest_spawn_entry_t;
 
+typedef struct bonus_entry_t {
+    int bonus_id;
+    unsigned char state;
+    unsigned char _pad0[3];
+    float time_left;
+    float time_max;
+    float pos_x;
+    float pos_y;
+    int amount;
+} bonus_entry_t;
+
 typedef struct mod_info_t {
     char name[0x20];
     char author[0x20];

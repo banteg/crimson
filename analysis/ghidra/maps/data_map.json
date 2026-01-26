@@ -1346,7 +1346,8 @@
       "address": "0x00482948",
       "comment": "Bonus/pickup pool base (16 entries, stride 0x1c)",
       "name": "bonus_pool",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "bonus_entry_t"
     },
     {
       "address": "0x0048294c",
@@ -2212,7 +2213,8 @@
       "address": "0x00490630",
       "comment": "Bonus pool sentinel pointer returned by bonus_alloc_slot/bonus_spawn when no slot is available.",
       "name": "bonus_pool_sentinel",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "bonus_entry_t"
     },
     {
       "address": "0x004906a8",

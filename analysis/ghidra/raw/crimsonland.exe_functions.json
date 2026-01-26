@@ -562,7 +562,7 @@
   {
     "name": "bonus_apply",
     "address": "00409890",
-    "signature": "void bonus_apply(int player_index, int * bonus_entry)",
+    "signature": "void bonus_apply(int player_index, bonus_entry_t * bonus_entry)",
     "external": false,
     "calls_total": 13,
     "calls": ["FUN_0041a810", "creature_apply_damage", "creature_find_nearest", "crt_rand", "effect_spawn", "effect_spawn_explosion_burst", "effect_spawn_freeze_shard", "effect_spawn_freeze_shatter", "perk_count_get", "projectile_spawn", "sfx_play", "sfx_play_panned", "weapon_assign_player"]
@@ -1562,7 +1562,7 @@
   {
     "name": "bonus_alloc_slot",
     "address": "0041f580",
-    "signature": "int * bonus_alloc_slot(void)",
+    "signature": "bonus_entry_t * bonus_alloc_slot(void)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -1570,7 +1570,7 @@
   {
     "name": "bonus_spawn_at",
     "address": "0041f5b0",
-    "signature": "int * bonus_spawn_at(float * pos, int bonus_id, int duration_override)",
+    "signature": "bonus_entry_t * bonus_spawn_at(float * pos, int bonus_id, int duration_override)",
     "external": false,
     "calls_total": 3,
     "calls": ["bonus_alloc_slot", "crt_rand", "effect_spawn"]
@@ -1578,7 +1578,7 @@
   {
     "name": "bonus_spawn_at_pos",
     "address": "0041f790",
-    "signature": "uint * bonus_spawn_at_pos(float * pos)",
+    "signature": "bonus_entry_t * bonus_spawn_at_pos(float * pos)",
     "external": false,
     "calls_total": 4,
     "calls": ["bonus_alloc_slot", "bonus_pick_random_type", "crt_rand", "weapon_pick_random_available"]
@@ -1586,7 +1586,7 @@
   {
     "name": "bonus_try_spawn_on_kill",
     "address": "0041f8d0",
-    "signature": "uint * bonus_try_spawn_on_kill(float * pos)",
+    "signature": "void bonus_try_spawn_on_kill(float * pos)",
     "external": false,
     "calls_total": 5,
     "calls": ["bonus_spawn_at_pos", "crt_rand", "effect_spawn", "perk_count_get", "weapon_pick_random_available"]
@@ -1810,7 +1810,7 @@
   {
     "name": "bonus_label_for_entry",
     "address": "00429580",
-    "signature": "char * bonus_label_for_entry(int * bonus_entry)",
+    "signature": "char * bonus_label_for_entry(bonus_entry_t * bonus_entry)",
     "external": false,
     "calls_total": 2,
     "calls": ["crt_sprintf", "weapon_table_entry"]
