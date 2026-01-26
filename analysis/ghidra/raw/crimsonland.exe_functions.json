@@ -674,7 +674,7 @@
   {
     "name": "mod_api_core_printf",
     "address": "0040e000",
-    "signature": "undefined mod_api_core_printf(byte * param_1)",
+    "signature": "void mod_api_core_printf(char * fmt, ...)",
     "external": false,
     "calls_total": 2,
     "calls": ["OutputDebugStringA", "crt_vsprintf"]
@@ -682,7 +682,7 @@
   {
     "name": "mod_api_core_get_var",
     "address": "0040e040",
-    "signature": "undefined4 * mod_api_core_get_var(uint * param_1)",
+    "signature": "mod_var_t * mod_api_core_get_var(char * id)",
     "external": false,
     "calls_total": 2,
     "calls": ["console_cvar_find", "console_register_cvar"]
@@ -690,7 +690,7 @@
   {
     "name": "mod_api_core_del_var",
     "address": "0040e080",
-    "signature": "undefined mod_api_core_del_var()",
+    "signature": "uchar mod_api_core_del_var(char * id)",
     "external": false,
     "calls_total": 1,
     "calls": ["console_cvar_unregister"]
@@ -698,7 +698,7 @@
   {
     "name": "mod_api_core_execute",
     "address": "0040e0a0",
-    "signature": "undefined mod_api_core_execute()",
+    "signature": "void mod_api_core_execute(char * string)",
     "external": false,
     "calls_total": 1,
     "calls": ["console_exec_line"]
@@ -706,7 +706,7 @@
   {
     "name": "mod_api_core_add_command",
     "address": "0040e0c0",
-    "signature": "undefined mod_api_core_add_command()",
+    "signature": "void mod_api_core_add_command(char * id, void * cmd)",
     "external": false,
     "calls_total": 1,
     "calls": ["console_register_command"]
@@ -714,7 +714,7 @@
   {
     "name": "mod_api_core_del_command",
     "address": "0040e0e0",
-    "signature": "undefined mod_api_core_del_command()",
+    "signature": "uchar mod_api_core_del_command(char * id)",
     "external": false,
     "calls_total": 1,
     "calls": ["console_command_unregister"]
@@ -722,7 +722,7 @@
   {
     "name": "mod_api_core_get_extension",
     "address": "0040e100",
-    "signature": "undefined mod_api_core_get_extension()",
+    "signature": "void * mod_api_core_get_extension(char * ext)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -738,7 +738,7 @@
   {
     "name": "mod_api_gfx_get_string_width",
     "address": "0040e220",
-    "signature": "undefined mod_api_gfx_get_string_width()",
+    "signature": "int mod_api_gfx_get_string_width(char * string)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -746,7 +746,7 @@
   {
     "name": "mod_api_gfx_printf",
     "address": "0040e240",
-    "signature": "undefined mod_api_gfx_printf()",
+    "signature": "void mod_api_gfx_printf(float x, float y, char * fmt, ...)",
     "external": false,
     "calls_total": 1,
     "calls": ["crt_vsprintf"]
@@ -754,7 +754,7 @@
   {
     "name": "mod_api_gfx_load_texture",
     "address": "0040e280",
-    "signature": "undefined mod_api_gfx_load_texture()",
+    "signature": "int mod_api_gfx_load_texture(char * filename)",
     "external": false,
     "calls_total": 2,
     "calls": ["crt_sprintf", "texture_get_or_load"]
@@ -850,7 +850,7 @@
   {
     "name": "mod_api_sfx_load_sample",
     "address": "0040e530",
-    "signature": "undefined mod_api_sfx_load_sample()",
+    "signature": "int mod_api_sfx_load_sample(char * filename)",
     "external": false,
     "calls_total": 2,
     "calls": ["crt_sprintf", "sfx_load_sample"]
@@ -874,7 +874,7 @@
   {
     "name": "mod_api_sfx_load_tune",
     "address": "0040e5b0",
-    "signature": "undefined mod_api_sfx_load_tune()",
+    "signature": "int mod_api_sfx_load_tune(char * filename)",
     "external": false,
     "calls_total": 2,
     "calls": ["crt_sprintf", "music_load_track"]
@@ -938,7 +938,7 @@
   {
     "name": "mod_api_cl_enter_menu",
     "address": "0040e690",
-    "signature": "undefined mod_api_cl_enter_menu(byte * param_1)",
+    "signature": "void mod_api_cl_enter_menu(char * menu)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -2706,7 +2706,7 @@
   {
     "name": "highscore_compare_survival_score_desc",
     "address": "0043aeb0",
-    "signature": "undefined highscore_compare_survival_score_desc()",
+    "signature": "int highscore_compare_survival_score_desc(void * a, void * b)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -2714,7 +2714,7 @@
   {
     "name": "highscore_compare_rush_field32_desc",
     "address": "0043aed0",
-    "signature": "undefined highscore_compare_rush_field32_desc()",
+    "signature": "int highscore_compare_rush_field32_desc(void * a, void * b)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -2722,7 +2722,7 @@
   {
     "name": "highscore_compare_quest_field32_asc_nonzero_first",
     "address": "0043aef0",
-    "signature": "undefined highscore_compare_quest_field32_asc_nonzero_first()",
+    "signature": "int highscore_compare_quest_field32_asc_nonzero_first(void * a, void * b)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -3464,9 +3464,25 @@
     "calls": ["ui_focus_update"]
   },
   {
+    "name": "ui_menu_main_click_options",
+    "address": "00447370",
+    "signature": "void ui_menu_main_click_options(void)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
     "name": "FUN_004473e0",
     "address": "004473e0",
     "signature": "int FUN_004473e0(void)",
+    "external": false,
+    "calls_total": 0,
+    "calls": []
+  },
+  {
+    "name": "ui_menu_main_click_play_game",
+    "address": "00447400",
+    "signature": "void ui_menu_main_click_play_game(void)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -3478,6 +3494,14 @@
     "external": false,
     "calls_total": 0,
     "calls": []
+  },
+  {
+    "name": "ui_menu_main_click_quit",
+    "address": "00447450",
+    "signature": "void ui_menu_main_click_quit(void)",
+    "external": false,
+    "calls_total": 1,
+    "calls": ["sfx_mute_all"]
   },
   {
     "name": "config_apply_detail_preset",

@@ -8808,12 +8808,12 @@ void mod_api_init(void)
 
 /* mod API vtable 0x00: clAPI_t::CORE_Printf (writes to OutputDebugStringA) */
 
-void __cdecl mod_api_core_printf(byte *param_1)
+void __cdecl mod_api_core_printf(char *fmt,...)
 
 {
   char local_ffc [4092];
   
-  crt_vsprintf(local_ffc,(char *)param_1,&stack0x00000008);
+  crt_vsprintf(local_ffc,fmt,&stack0x00000008);
   OutputDebugStringA(local_ffc);
   return;
 }
@@ -8825,44 +8825,48 @@ void __cdecl mod_api_core_printf(byte *param_1)
 /* mod API vtable 0x04: clAPI_t::CORE_GetVar (returns a 3-pointer var_t view:
    id/stringValue/floatValue) */
 
-undefined4 * mod_api_core_get_var(uint *param_1)
+mod_var_t * mod_api_core_get_var(char *id)
 
 {
   undefined4 *puVar1;
   
-  puVar1 = console_cvar_find(&console_log_queue,(char *)param_1);
+  puVar1 = console_cvar_find(&console_log_queue,id);
   if (puVar1 == (undefined4 *)0x0) {
-    puVar1 = console_register_cvar(&console_log_queue,(char *)param_1,&DAT_0047125c);
+    puVar1 = console_register_cvar(&console_log_queue,id,&DAT_0047125c);
   }
   puVar1[8] = puVar1 + 3;
-  puVar1[6] = *puVar1;
+  ((mod_var_t *)(puVar1 + 6))->id = (char *)*puVar1;
   puVar1[7] = puVar1[4];
-  return puVar1 + 6;
+  return (mod_var_t *)(puVar1 + 6);
 }
 
 
 
 /* mod_api_core_del_var @ 0040e080 */
 
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* mod API vtable 0x08: clAPI_t::CORE_DelVar */
 
-void mod_api_core_del_var(char *param_1)
+uchar mod_api_core_del_var(char *id)
 
 {
-  console_cvar_unregister(&console_log_queue,param_1);
-  return;
+  uchar uVar1;
+  
+  uVar1 = console_cvar_unregister(&console_log_queue,id);
+  return uVar1;
 }
 
 
 
 /* mod_api_core_execute @ 0040e0a0 */
 
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* mod API vtable 0x0c: clAPI_t::CORE_Execute */
 
-void mod_api_core_execute(char *param_1)
+void mod_api_core_execute(char *string)
 
 {
-  console_exec_line(&console_log_queue,param_1);
+  console_exec_line(&console_log_queue,string);
   return;
 }
 
@@ -8870,12 +8874,13 @@ void mod_api_core_execute(char *param_1)
 
 /* mod_api_core_add_command @ 0040e0c0 */
 
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* mod API vtable 0x10: clAPI_t::CORE_AddCommand */
 
-void mod_api_core_add_command(char *param_1,void *param_2)
+void mod_api_core_add_command(char *id,void *cmd)
 
 {
-  console_register_command(&console_log_queue,param_1,param_2);
+  console_register_command(&console_log_queue,id,cmd);
   return;
 }
 
@@ -8883,22 +8888,26 @@ void mod_api_core_add_command(char *param_1,void *param_2)
 
 /* mod_api_core_del_command @ 0040e0e0 */
 
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* mod API vtable 0x14: clAPI_t::CORE_DelCommand */
 
-void mod_api_core_del_command(char *param_1)
+uchar mod_api_core_del_command(char *id)
 
 {
-  console_command_unregister(&console_log_queue,param_1);
-  return;
+  uchar uVar1;
+  
+  uVar1 = console_command_unregister(&console_log_queue,id);
+  return uVar1;
 }
 
 
 
 /* mod_api_core_get_extension @ 0040e100 */
 
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* mod API vtable 0x18: clAPI_t::CORE_GetExtension (handles "grimgfx", "grimsfx", "IDirect3D8") */
 
-IGrim2D * mod_api_core_get_extension(byte *param_1)
+void * mod_api_core_get_extension(char *ext)
 
 {
   byte bVar1;
@@ -8911,7 +8920,7 @@ IGrim2D * mod_api_core_get_extension(byte *param_1)
   IGrim2D aIStack_10 [4];
   
   pbVar4 = &DAT_00472f48;
-  pbVar2 = param_1;
+  pbVar2 = (byte *)ext;
   do {
     bVar1 = *pbVar2;
     bVar6 = bVar1 < *pbVar4;
@@ -8933,7 +8942,7 @@ LAB_0040e13e:
     return grim_interface_ptr;
   }
   pbVar4 = &DAT_00472f40;
-  pbVar2 = param_1;
+  pbVar2 = (byte *)ext;
   do {
     bVar1 = *pbVar2;
     bVar6 = bVar1 < *pbVar4;
@@ -8954,7 +8963,7 @@ LAB_0040e184:
   if (iVar3 != 0) {
     pcVar5 = s_IDirect3D8_00472f34;
     do {
-      bVar1 = *param_1;
+      bVar1 = *ext;
       bVar6 = bVar1 < (byte)*pcVar5;
       if (bVar1 != *pcVar5) {
 LAB_0040e1b7:
@@ -8962,20 +8971,20 @@ LAB_0040e1b7:
         goto LAB_0040e1bc;
       }
       if (bVar1 == 0) break;
-      bVar1 = param_1[1];
+      bVar1 = ((byte *)ext)[1];
       bVar6 = bVar1 < ((byte *)pcVar5)[1];
       if (bVar1 != ((byte *)pcVar5)[1]) goto LAB_0040e1b7;
-      param_1 = param_1 + 2;
+      ext = (char *)((byte *)ext + 2);
       pcVar5 = (char *)((byte *)pcVar5 + 2);
     } while (bVar1 != 0);
     iVar3 = 0;
 LAB_0040e1bc:
     if (iVar3 == 0) {
       iVar3 = (*grim_interface_ptr->vtable->grim_get_config_var)(aIStack_10,(uint *)0x51,unaff_EDI);
-      return *(IGrim2D **)(iVar3 + 0xc);
+      return *(void **)(iVar3 + 0xc);
     }
   }
-  return (IGrim2D *)0x0;
+  return (void *)0x0;
 }
 
 
@@ -8998,30 +9007,35 @@ void mod_api_gfx_clear(float r,float g,float b,float a)
 
 /* mod_api_gfx_get_string_width @ 0040e220 */
 
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* mod API vtable 0x20: clAPI_t::GFX_GetStringWidth (bridges to grim_measure_text_width) */
 
-void mod_api_gfx_get_string_width(IGrim2D *param_1)
+int mod_api_gfx_get_string_width(char *string)
 
 {
+  int iVar1;
   char *unaff_retaddr;
   
-  (*grim_interface_ptr->vtable->grim_measure_text_width)(param_1,unaff_retaddr);
-  return;
+  iVar1 = (*grim_interface_ptr->vtable->grim_measure_text_width)((IGrim2D *)string,unaff_retaddr);
+  return iVar1;
 }
 
 
 
 /* mod_api_gfx_printf @ 0040e240 */
 
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* mod API vtable 0x24: clAPI_t::GFX_Printf */
 
-void mod_api_gfx_printf(undefined4 param_1,IGrim2D *param_2,float param_3,char *param_4)
+void mod_api_gfx_printf(float x,float y,char *fmt,...)
 
 {
   char *unaff_retaddr;
+  char *in_stack_00000010;
   
-  crt_vsprintf(&DAT_004d9d00,param_4,&stack0x00000014);
-  (*grim_interface_ptr->vtable->grim_draw_text_small)(param_2,param_3,7.127654e-39,unaff_retaddr);
+  crt_vsprintf(&DAT_004d9d00,in_stack_00000010,&stack0x00000014);
+  (*grim_interface_ptr->vtable->grim_draw_text_small)
+            ((IGrim2D *)y,(float)fmt,7.127654e-39,unaff_retaddr);
   return;
 }
 
@@ -9029,18 +9043,20 @@ void mod_api_gfx_printf(undefined4 param_1,IGrim2D *param_2,float param_3,char *
 
 /* mod_api_gfx_load_texture @ 0040e280 */
 
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* mod API vtable 0x28: clAPI_t::GFX_LoadTexture (loads under mods\\ and prefixes CLM_) */
 
-void mod_api_gfx_load_texture(undefined4 param_1)
+int mod_api_gfx_load_texture(char *filename)
 
 {
+  int iVar1;
   char acStack_208 [260];
   char acStack_104 [260];
   
-  crt_sprintf(acStack_208,s_mods__s_00472f58,param_1);
-  crt_sprintf(acStack_104,s_CLM__s_00472f50,param_1);
-  texture_get_or_load(acStack_104,acStack_208);
-  return;
+  crt_sprintf(acStack_208,s_mods__s_00472f58,filename);
+  crt_sprintf(acStack_104,s_CLM__s_00472f50,filename);
+  iVar1 = texture_get_or_load(acStack_104,acStack_208);
+  return iVar1;
 }
 
 
@@ -9250,16 +9266,18 @@ void mod_api_gfx_draw_quads(mod_vertex2_t *v,int numQuads)
 
 /* mod_api_sfx_load_sample @ 0040e530 */
 
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* mod API vtable 0x58: clAPI_t::SFX_LoadSample (loads under mods\\) */
 
-void mod_api_sfx_load_sample(undefined4 param_1)
+int mod_api_sfx_load_sample(char *filename)
 
 {
+  int iVar1;
   char acStack_104 [260];
   
-  crt_sprintf(acStack_104,s_mods__s_00472f58,param_1);
-  sfx_load_sample(acStack_104);
-  return;
+  crt_sprintf(acStack_104,s_mods__s_00472f58,filename);
+  iVar1 = sfx_load_sample(acStack_104);
+  return iVar1;
 }
 
 
@@ -9295,16 +9313,18 @@ void mod_api_sfx_play_sample(int sfxId,float pan,float volume)
 
 /* mod_api_sfx_load_tune @ 0040e5b0 */
 
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* mod API vtable 0x64: clAPI_t::SFX_LoadTune (loads under mods\\) */
 
-void mod_api_sfx_load_tune(undefined4 param_1)
+int mod_api_sfx_load_tune(char *filename)
 
 {
+  int iVar1;
   char acStack_104 [260];
   
-  crt_sprintf(acStack_104,s_mods__s_00472f58,param_1);
-  music_load_track(acStack_104);
-  return;
+  crt_sprintf(acStack_104,s_mods__s_00472f58,filename);
+  iVar1 = music_load_track(acStack_104);
+  return iVar1;
 }
 
 
@@ -9435,7 +9455,7 @@ char * mod_api_inp_get_key_name(int key)
 
 /* mod API vtable 0x84: clAPI_t::CL_EnterMenu (only handles "game_pause") */
 
-void mod_api_cl_enter_menu(byte *param_1)
+void mod_api_cl_enter_menu(char *menu)
 
 {
   byte bVar1;
@@ -9443,22 +9463,22 @@ void mod_api_cl_enter_menu(byte *param_1)
   int iVar3;
   bool bVar4;
   
-  if (param_1 != (byte *)0x0) {
+  if (menu != (char *)0x0) {
     pcVar2 = s_game_pause_00472f60;
     do {
       bVar1 = *pcVar2;
-      bVar4 = bVar1 < *param_1;
-      if (bVar1 != *param_1) {
+      bVar4 = bVar1 < (byte)*menu;
+      if (bVar1 != *menu) {
 LAB_0040e6c7:
         iVar3 = (1 - (uint)bVar4) - (uint)(bVar4 != 0);
         goto LAB_0040e6cc;
       }
       if (bVar1 == 0) break;
       bVar1 = ((byte *)pcVar2)[1];
-      bVar4 = bVar1 < param_1[1];
-      if (bVar1 != param_1[1]) goto LAB_0040e6c7;
+      bVar4 = bVar1 < ((byte *)menu)[1];
+      if (bVar1 != ((byte *)menu)[1]) goto LAB_0040e6c7;
       pcVar2 = (char *)((byte *)pcVar2 + 2);
-      param_1 = param_1 + 2;
+      menu = (char *)((byte *)menu + 2);
     } while (bVar1 != 0);
     iVar3 = 0;
 LAB_0040e6cc:
@@ -34669,52 +34689,55 @@ void __cdecl highscore_write_record(byte *record,FILE *fp)
 
 /* highscore_compare_survival_score_desc @ 0043aeb0 */
 
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* qsort comparator used by highscore_load_table() for survival mode; sorts descending by dword at
    offset 0x24 */
 
-uint highscore_compare_survival_score_desc(int param_1,int param_2)
+int highscore_compare_survival_score_desc(void *a,void *b)
 
 {
-  if (*(int *)(param_2 + 0x24) < *(int *)(param_1 + 0x24)) {
-    return 0xffffffff;
+  if (*(int *)((int)b + 0x24) < *(int *)((int)a + 0x24)) {
+    return -1;
   }
-  return (uint)(*(int *)(param_1 + 0x24) < *(int *)(param_2 + 0x24));
+  return (uint)(*(int *)((int)a + 0x24) < *(int *)((int)b + 0x24));
 }
 
 
 
 /* highscore_compare_rush_field32_desc @ 0043aed0 */
 
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* qsort comparator used by highscore_load_table() for rush mode; sorts descending by dword at
    offset 0x20 */
 
-uint highscore_compare_rush_field32_desc(int param_1,int param_2)
+int highscore_compare_rush_field32_desc(void *a,void *b)
 
 {
-  if (*(int *)(param_2 + 0x20) < *(int *)(param_1 + 0x20)) {
-    return 0xffffffff;
+  if (*(int *)((int)b + 0x20) < *(int *)((int)a + 0x20)) {
+    return -1;
   }
-  return (uint)(*(int *)(param_1 + 0x20) < *(int *)(param_2 + 0x20));
+  return (uint)(*(int *)((int)a + 0x20) < *(int *)((int)b + 0x20));
 }
 
 
 
 /* highscore_compare_quest_field32_asc_nonzero_first @ 0043aef0 */
 
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* qsort comparator used by highscore_load_table() for quest mode; sorts ascending by dword at
    offset 0x20, treating 0 as "missing" (sorted last) */
 
-int highscore_compare_quest_field32_asc_nonzero_first(int param_1,int param_2)
+int highscore_compare_quest_field32_asc_nonzero_first(void *a,void *b)
 
 {
   int iVar1;
   int iVar2;
   
-  iVar1 = *(int *)(param_1 + 0x20);
+  iVar1 = *(int *)((int)a + 0x20);
   if (iVar1 == 0) {
     return 1;
   }
-  iVar2 = *(int *)(param_2 + 0x20);
+  iVar2 = *(int *)((int)b + 0x20);
   if (iVar2 == 0) {
     return -1;
   }
@@ -41100,6 +41123,21 @@ LAB_00447154:
 
 
 
+/* ui_menu_main_click_options @ 00447370 */
+
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* main menu OPTIONS click callback (sets ui_transition_direction=0 and game_state_pending=2) */
+
+void ui_menu_main_click_options(void)
+
+{
+  ui_transition_direction = 0;
+  game_state_pending = 2;
+  return;
+}
+
+
+
 /* FUN_004473e0 @ 004473e0 */
 
 /* [binja] int32_t sub_4473e0() */
@@ -41112,6 +41150,21 @@ int FUN_004473e0(void)
   ui_transition_direction = 0;
   game_state_pending = 3;
   return in_EAX;
+}
+
+
+
+/* ui_menu_main_click_play_game @ 00447400 */
+
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* main menu PLAY GAME click callback (sets ui_transition_direction=0 and game_state_pending=1) */
+
+void ui_menu_main_click_play_game(void)
+
+{
+  ui_transition_direction = 0;
+  game_state_pending = 1;
+  return;
 }
 
 
@@ -41132,6 +41185,26 @@ int FUN_00447420(void)
   }
   game_state_pending = -(uint)(render_pass_mode != '\0') & 5;
   return game_state_pending;
+}
+
+
+
+/* ui_menu_main_click_quit @ 00447450 */
+
+/* WARNING: Unknown calling convention -- yet parameter storage is locked */
+/* main menu QUIT click callback (clears ui_sign_crimson_update_disabled, sets
+   ui_transition_direction=0, game_state_pending=10, mutes music) */
+
+void ui_menu_main_click_quit(void)
+
+{
+  game_state_pending = 10;
+  ui_sign_crimson_update_disabled = 0;
+  ui_transition_direction = 0;
+  sfx_mute_all(music_track_crimson_theme_id);
+  sfx_mute_all(music_track_extra_0);
+  sfx_mute_all(music_track_shortie_monk_id);
+  return;
 }
 
 
@@ -41564,7 +41637,7 @@ void ui_menu_layout_init(void)
   IStack_1c.vtable = (IGrim2D_vtbl *)0x43870000;
   fStack_18 = -38.0;
   ui_element_set_rect((ui_element_t *)&DAT_004879e4,124.0,30.0,(float *)&IStack_1c);
-  _DAT_004878f4 = &LAB_00447400;
+  _DAT_004878f4 = ui_menu_main_click_play_game;
   _DAT_004878f0 = 0x19;
   IStack_1c.vtable = (IGrim2D_vtbl *)0x43870000;
   puVar12 = &DAT_0048fba8;
@@ -41578,7 +41651,7 @@ void ui_menu_layout_init(void)
   _DAT_00487bf4 = 0x43a50000;
   fStack_18 = -38.0;
   ui_element_set_rect((ui_element_t *)&DAT_00487cfc,124.0,30.0,(float *)&IStack_1c);
-  _DAT_00487c0c = &LAB_00447370;
+  _DAT_00487c0c = ui_menu_main_click_options;
   _DAT_00487c08 = 0x18;
   IStack_1c.vtable = (IGrim2D_vtbl *)0x43870000;
   puVar12 = &DAT_0048fba8;
@@ -41628,7 +41701,7 @@ void ui_menu_layout_init(void)
   _DAT_00488854 = fStack_5c;
   ui_element_set_rect((ui_element_t *)&DAT_0048895c,124.0,30.0,&fStack_18);
   fVar13 = 0.0;
-  _DAT_0048886c = &LAB_00447450;
+  _DAT_0048886c = ui_menu_main_click_quit;
   _DAT_00488868 = 0x10;
   iVar9 = 2;
   do {
@@ -41836,7 +41909,7 @@ void ui_menu_layout_init(void)
   }
   DAT_0048b9c8 = DAT_0048b9c8 + 100;
   DAT_0048b9cc = DAT_0048b9cc + 100;
-  _DAT_0048b9ec = &LAB_00447370;
+  _DAT_0048b9ec = ui_menu_main_click_options;
   puVar12 = &DAT_0048fba8;
   puVar15 = &DAT_0048bd0c;
   for (iVar9 = 0x3a; iVar9 != 0; iVar9 = iVar9 + -1) {
@@ -41981,7 +42054,7 @@ void ui_menu_layout_init(void)
   }
   _DAT_0048d8c0 = 0xc32f0000;
   _DAT_0048d8c4 = 0x42340000;
-  _DAT_0048d5c4 = &LAB_00447370;
+  _DAT_0048d5c4 = ui_menu_main_click_options;
   _DAT_0048d594 = 0;
   _DAT_0048d5c0 = 0x30;
   _DAT_0048d8ac = 1;

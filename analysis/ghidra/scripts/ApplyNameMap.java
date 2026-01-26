@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class ApplyNameMap extends GhidraScript {
     private static class Row {
@@ -38,6 +39,11 @@ public class ApplyNameMap extends GhidraScript {
         String comment;
         Boolean create;
     }
+
+    private static final Pattern QUALIFIER_RE = Pattern.compile("\\b(const|volatile)\\b\\s*");
+    private static final Pattern FUNCTION_POINTER_RE = Pattern.compile(
+        "\\b(?<ret>[A-Za-z_][A-Za-z0-9_\\s]*?)\\(\\s*\\*\\s*(?<name>[A-Za-z_][A-Za-z0-9_]*)\\s*\\)\\s*\\([^)]*\\)"
+    );
 
     private static String defaultMapPath() {
         String jsonPath = "analysis" + File.separator + "ghidra" + File.separator + "maps"
@@ -296,7 +302,8 @@ public class ApplyNameMap extends GhidraScript {
 
             if (row.signature != null && !row.signature.isBlank()) {
                 try {
-                    FunctionDefinitionDataType sig = parser.parse(function.getSignature(), row.signature);
+                    String normalized = normalizeSignature(row.signature);
+                    FunctionDefinitionDataType sig = parser.parse(function.getSignature(), normalized);
                     if (sig == null) {
                         printerr("Signature parse failed for " + row.name + ": " + row.signature);
                     } else {
@@ -330,5 +337,16 @@ public class ApplyNameMap extends GhidraScript {
         println("Updated entries: " + applied);
         println("Renamed: " + renamed + ", Signatures: " + signatures + ", Comments: " + comments);
         println("Missing: " + missing + ", Skipped: " + skipped);
+    }
+
+    private static String normalizeSignature(String signature) {
+        if (signature == null) {
+            return "";
+        }
+        String normalized = QUALIFIER_RE.matcher(signature).replaceAll("");
+        normalized = FUNCTION_POINTER_RE.matcher(normalized)
+            .replaceAll(match -> match.group("ret").trim() + " *" + match.group("name"));
+        normalized = normalized.replaceAll("\\s+", " ").trim();
+        return normalized;
     }
 }
