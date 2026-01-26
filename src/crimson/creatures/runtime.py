@@ -46,11 +46,11 @@ CREATURE_POOL_SIZE = 0x180
 CONTACT_DAMAGE_PERIOD = 0.5
 
 # The native uses per-type speed scaling; until we port the exact table, keep a
-# single global factor that produces playable movement against player speed.
-CREATURE_SPEED_SCALE = 120.0
+# single global factor (native multiplies `move_speed * 30.0` in creature_update_all).
+CREATURE_SPEED_SCALE = 30.0
 
-# Max turn speed (radians / second) for heading integration.
-CREATURE_TURN_RATE = 10.0
+# Base heading turn rate multiplier (angle_approach clamps by frame_dt internally).
+CREATURE_TURN_RATE_SCALE = 4.0 / 3.0
 
 
 def _clamp(value: float, lo: float, hi: float) -> float:
@@ -65,13 +65,15 @@ def _wrap_angle(angle: float) -> float:
     return (angle + math.pi) % math.tau - math.pi
 
 
-def _approach_angle(current: float, target: float, max_delta: float) -> float:
+def _angle_approach(current: float, target: float, rate: float, dt: float) -> float:
     delta = _wrap_angle(target - current)
-    if delta > max_delta:
-        delta = max_delta
-    elif delta < -max_delta:
-        delta = -max_delta
-    return current + delta
+    step_scale = min(1.0, abs(delta))
+    step = float(dt) * step_scale * float(rate)
+    if delta >= 0.0:
+        current += step
+    else:
+        current -= step
+    return _wrap_angle(current)
 
 
 def _distance_sq(x0: float, y0: float, x1: float, y1: float) -> float:
@@ -106,6 +108,7 @@ class CreatureState:
     orbit_angle: float = 0.0
     orbit_radius: float = 0.0
     phase_seed: float = 0.0
+    move_scale: float = 1.0
 
     # Combat / timers.
     hp: float = 0.0
@@ -383,6 +386,7 @@ class CreaturePool:
                 creatures=self._entries,
                 dt=dt,
             )
+            creature.move_scale = float(ai.move_scale)
             if ai.self_damage is not None and ai.self_damage > 0.0:
                 creature.hp -= float(ai.self_damage)
                 if creature.hp <= 0.0:
@@ -401,15 +405,40 @@ class CreaturePool:
                     )
                     continue
 
-            creature.heading = _approach_angle(creature.heading, creature.target_heading, CREATURE_TURN_RATE * dt)
+            turn_rate = float(creature.move_speed) * CREATURE_TURN_RATE_SCALE
+            speed = float(creature.move_speed) * CREATURE_SPEED_SCALE * creature.move_scale
 
-            speed = float(creature.move_speed) * CREATURE_SPEED_SCALE * float(ai.move_scale)
-            dir_x = math.cos(creature.heading - math.pi / 2.0)
-            dir_y = math.sin(creature.heading - math.pi / 2.0)
-            creature.vel_x = dir_x * speed
-            creature.vel_y = dir_y * speed
-            creature.x = _clamp(creature.x + creature.vel_x * dt, 0.0, float(world_width))
-            creature.y = _clamp(creature.y + creature.vel_y * dt, 0.0, float(world_height))
+            if (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0:
+                if creature.ai_mode == 7:
+                    creature.vel_x = 0.0
+                    creature.vel_y = 0.0
+                else:
+                    creature.heading = _angle_approach(creature.heading, creature.target_heading, turn_rate, dt)
+                    dir_x = math.cos(creature.heading - math.pi / 2.0)
+                    dir_y = math.sin(creature.heading - math.pi / 2.0)
+                    creature.vel_x = dir_x * speed
+                    creature.vel_y = dir_y * speed
+                    creature.x = _clamp(creature.x + creature.vel_x * dt, 0.0, float(world_width))
+                    creature.y = _clamp(creature.y + creature.vel_y * dt, 0.0, float(world_height))
+            else:
+                # Spawner/short-strip creatures clamp to bounds using `size` as a radius; most are stationary
+                # unless ANIM_LONG_STRIP is set (see creature_update_all).
+                radius = max(0.0, float(creature.size))
+                max_x = max(radius, float(world_width) - radius)
+                max_y = max(radius, float(world_height) - radius)
+                creature.x = _clamp(creature.x, radius, max_x)
+                creature.y = _clamp(creature.y, radius, max_y)
+                if (creature.flags & CreatureFlags.ANIM_LONG_STRIP) == 0:
+                    creature.vel_x = 0.0
+                    creature.vel_y = 0.0
+                else:
+                    creature.heading = _angle_approach(creature.heading, creature.target_heading, turn_rate, dt)
+                    dir_x = math.cos(creature.heading - math.pi / 2.0)
+                    dir_y = math.sin(creature.heading - math.pi / 2.0)
+                    creature.vel_x = dir_x * speed
+                    creature.vel_y = dir_y * speed
+                    creature.x = _clamp(creature.x + creature.vel_x * dt, radius, max_x)
+                    creature.y = _clamp(creature.y + creature.vel_y * dt, radius, max_y)
 
             # Contact damage throttle.
             contact_r = (float(creature.size) + float(player.size)) * 0.25 + 20.0
@@ -573,4 +602,3 @@ class CreaturePool:
             reward_value=float(creature.reward_value),
             xp_awarded=int(xp_awarded),
         )
-

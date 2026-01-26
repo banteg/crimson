@@ -14,6 +14,7 @@ from grim.fx_queue import FxQueueTextures, bake_fx_queues
 from grim.terrain_render import GroundRenderer
 
 from .bonuses import BONUS_BY_ID
+from .camera import camera_shake_update
 from .creatures.anim import creature_anim_advance_phase, creature_anim_select_frame
 from .creatures.runtime import CreaturePool
 from .creatures.spawn import CreatureFlags, CreatureTypeId, SpawnEnv
@@ -593,7 +594,7 @@ class GameWorld:
                 move_speed=float(creature.move_speed),
                 dt=dt,
                 size=float(creature.size),
-                local_scale=1.0,
+                local_scale=float(getattr(creature, "move_scale", 1.0)),
                 flags=creature.flags,
                 ai_mode=int(creature.ai_mode),
             )
@@ -1056,17 +1057,24 @@ class GameWorld:
     def update_camera(self, dt: float) -> None:
         if not self.players:
             return
+        camera_shake_update(self.state, dt)
+
         screen_w, screen_h = self._camera_screen_size()
 
-        focus = self.players[0]
-        desired_x = (screen_w * 0.5) - focus.pos_x
-        desired_y = (screen_h * 0.5) - focus.pos_y
+        alive = [player for player in self.players if player.health > 0.0]
+        if alive:
+            focus_x = sum(player.pos_x for player in alive) / float(len(alive))
+            focus_y = sum(player.pos_y for player in alive) / float(len(alive))
+            cam_x = (screen_w * 0.5) - focus_x
+            cam_y = (screen_h * 0.5) - focus_y
+        else:
+            cam_x = self.camera_x
+            cam_y = self.camera_y
 
-        desired_x, desired_y = self._clamp_camera(desired_x, desired_y, screen_w, screen_h)
+        cam_x += self.state.camera_shake_offset_x
+        cam_y += self.state.camera_shake_offset_y
 
-        t = _clamp(dt * 6.0, 0.0, 1.0)
-        self.camera_x = _lerp(self.camera_x, desired_x, t)
-        self.camera_y = _lerp(self.camera_y, desired_y, t)
+        self.camera_x, self.camera_y = self._clamp_camera(cam_x, cam_y, screen_w, screen_h)
 
     def world_to_screen(self, x: float, y: float) -> tuple[float, float]:
         cam_x, cam_y, scale_x, scale_y = self._world_params()
