@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import math
 from pathlib import Path
 import random
@@ -8,32 +7,16 @@ from typing import Protocol
 
 import pyray as rl
 
-from grim.audio import AudioState, play_sfx, update_audio
+from grim.audio import AudioState, update_audio
 from grim.assets import PaqTextureCache, load_paq_entries
 from grim.config import CrimsonConfig
-from grim.terrain_render import GroundRenderer
-
-from .crand import Crand
-from .creatures.ai import creature_ai7_tick_link_timer, creature_ai_update_target
-from .creatures.anim import creature_anim_advance_phase, creature_anim_select_frame
-from .creatures.spawn import (
-    CreatureFlags,
-    CreatureTypeId,
-    SPAWN_ID_TO_TEMPLATE,
-    SpawnEnv,
-    SpawnSlotInit,
-    build_spawn_plan,
-    resolve_tint,
-    tick_spawn_slot,
-)
-from .projectiles import ProjectilePool, SecondaryProjectilePool
-from .weapons import WEAPON_BY_ID, WEAPON_TABLE, Weapon
-from .weapon_sfx import resolve_weapon_sfx_ref
 from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text, load_grim_mono_font
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 
+from .crand import Crand
 from .game_world import GameWorld
 from .gameplay import PlayerInput, PlayerState, weapon_assign_player
+from .weapons import WEAPON_TABLE
 
 WORLD_SIZE = 1024.0
 DEMO_VARIANT_COUNT = 6
@@ -73,110 +56,11 @@ class DemoState(Protocol):
     audio: AudioState | None
 
 
-@dataclass(frozen=True, slots=True)
-class _AnimInfo:
-    base: int
-    anim_rate: float
-    mirror: bool
-
-
-_TYPE_ANIM: dict[CreatureTypeId, _AnimInfo] = {
-    CreatureTypeId.ZOMBIE: _AnimInfo(base=0x20, anim_rate=1.2, mirror=False),
-    CreatureTypeId.LIZARD: _AnimInfo(base=0x10, anim_rate=1.6, mirror=True),
-    CreatureTypeId.ALIEN: _AnimInfo(base=0x20, anim_rate=1.35, mirror=False),
-    CreatureTypeId.SPIDER_SP1: _AnimInfo(base=0x10, anim_rate=1.5, mirror=True),
-    CreatureTypeId.SPIDER_SP2: _AnimInfo(base=0x10, anim_rate=1.5, mirror=True),
-    CreatureTypeId.TROOPER: _AnimInfo(base=0x00, anim_rate=1.0, mirror=False),
-}
-
-_TYPE_ASSET: dict[CreatureTypeId, str] = {
-    CreatureTypeId.ZOMBIE: "zombie",
-    CreatureTypeId.LIZARD: "lizard",
-    CreatureTypeId.ALIEN: "alien",
-    CreatureTypeId.SPIDER_SP1: "spider_sp1",
-    CreatureTypeId.SPIDER_SP2: "spider_sp2",
-    CreatureTypeId.TROOPER: "trooper",
-}
-
-
-@dataclass(slots=True)
-class DemoCreature:
-    spawn_id: int
-    x: float
-    y: float
-    type_id: CreatureTypeId | None = None
-    flags: CreatureFlags = CreatureFlags(0)
-    vx: float = 0.0
-    vy: float = 0.0
-    hp: float = 10.0
-    size: float = 18.0
-    move_speed: float = 1.0
-    move_scale: float = 1.0
-    type_id: CreatureTypeId | None = None
-    flags: CreatureFlags = CreatureFlags(0)
-    tint: tuple[float | None, float | None, float | None, float | None] | None = None
-    heading: float = 0.0
-    phase_seed: float = 0.0
-    anim_phase: float = 0.0
-    target_player: int | None = None
-    force_target: int = 0
-    target_x: float = 0.0
-    target_y: float = 0.0
-    target_heading: float = 0.0
-    ai_mode: int = 0
-    link_index: int = 0
-    target_offset_x: float | None = None
-    target_offset_y: float | None = None
-    orbit_angle: float = 0.0
-    orbit_radius: float = 0.0
-
-
-@dataclass(slots=True)
-class DemoPlayer:
-    index: int
-    x: float
-    y: float
-    weapon_id: int
-    vx: float = 0.0
-    vy: float = 0.0
-    aim_x: float = 1.0
-    aim_y: float = 0.0
-    shot_cooldown: float = 0.0
-    reload_timer: float = 0.0
-    reload_timer_max: float = 0.0
-    ammo: int = 0
-    spread_heat: float = 0.01
-    target_creature: int | None = None
-    phase: float = 0.0
-
-
 def _weapon_name(weapon_id: int) -> str:
     for weapon in WEAPON_TABLE:
         if weapon.weapon_id == weapon_id:
             return weapon.name or f"weapon_{weapon_id}"
     return f"weapon_{weapon_id}"
-
-
-@dataclass(slots=True)
-class DemoBeam:
-    x0: float
-    y0: float
-    x1: float
-    y1: float
-    life: float
-
-
-@dataclass(slots=True)
-class DemoExplosion:
-    kind: str
-    x: float
-    y: float
-    elapsed: float
-    duration: float
-    max_radius: float
-    damage_per_tick: float
-    tick_interval: float
-    tick_accum: float = 0.0
 
 
 def _clamp(value: float, lo: float, hi: float) -> float:
@@ -199,38 +83,6 @@ def _normalize(dx: float, dy: float) -> tuple[float, float, float]:
         return 0.0, 0.0, 0.0
     inv = 1.0 / d
     return dx * inv, dy * inv, d
-
-
-def _lerp(a: float, b: float, t: float) -> float:
-    return a + (b - a) * t
-
-
-def _angle_approach(angle: float, target: float, rate: float, dt: float) -> float:
-    """Port of `angle_approach` (0x0041f430), parameterized by dt."""
-
-    tau = math.tau
-    while angle < 0.0:
-        angle += tau
-    while tau < angle:
-        angle -= tau
-
-    direct = abs(target - angle)
-    hi = target if angle < target else angle
-    lo = angle if angle < target else target
-    wrap = abs((tau - hi) + lo)
-    arc = min(direct, wrap)
-    if arc > 1.0:
-        arc = 1.0
-
-    step = dt * arc * rate
-    if direct <= wrap:
-        if angle < target:
-            return angle + step
-        return angle - step
-
-    if target < angle:
-        return angle + step
-    return angle - step
 
 
 class DemoView:
@@ -257,24 +109,13 @@ class DemoView:
             audio=state.audio,
             audio_rng=state.rng,
         )
-        self._ground: GroundRenderer | None = None
         self._crand = Crand(0)
-        self._creatures: list[DemoCreature] = []
-        self._spawn_slots: list[SpawnSlotInit] = []
-        self._players: list[DemoPlayer] = []
         self._demo_targets: list[int | None] = []
-        self._projectile_pool = ProjectilePool()
-        self._secondary_projectile_pool = SecondaryProjectilePool()
-        self._beams: list[DemoBeam] = []
-        self._explosions: list[DemoExplosion] = []
         self._variant_index = 0
         self._demo_variant_index = 0
         self._quest_spawn_timeline_ms = 0
         self._demo_time_limit_ms = 0
-        self._bonus_weapon_power_up_timer = 0.0
         self._finished = False
-        self._camera_x = 0.0
-        self._camera_y = 0.0
         self._upsell_message_index = 0
         self._upsell_pulse_ms = 0
         self._upsell_font: GrimMonoFont | None = None
@@ -293,29 +134,18 @@ class DemoView:
         self._demo_variant_index = 0
         self._quest_spawn_timeline_ms = 0
         self._demo_time_limit_ms = 0
-        self._bonus_weapon_power_up_timer = 0.0
         self._crand.srand(self._state.rng.getrandbits(32))
         self._world.open()
         self._demo_mode_start()
 
     def close(self) -> None:
         self._world.close()
-        if self._ground is not None and self._ground.render_target is not None:
-            rl.unload_render_texture(self._ground.render_target)
-        self._ground = None
         if self._upsell_font is not None:
             rl.unload_texture(self._upsell_font.texture)
             self._upsell_font = None
         if self._small_font is not None:
             rl.unload_texture(self._small_font.texture)
             self._small_font = None
-        self._creatures.clear()
-        self._spawn_slots.clear()
-        self._players.clear()
-        self._projectile_pool.reset()
-        self._secondary_projectile_pool.reset()
-        self._beams.clear()
-        self._explosions.clear()
 
     def is_finished(self) -> bool:
         return self._finished
@@ -586,33 +416,6 @@ class DemoView:
         draw_button(button_tex, "Purchase", button_x, purchase_y)
         draw_button(button_tex, "Maybe later", button_x, maybe_y)
 
-    def _advance_anim_phase(self, dt: float) -> None:
-        for creature in self._creatures:
-            type_id = creature.type_id
-            if type_id is None:
-                template = SPAWN_ID_TO_TEMPLATE.get(creature.spawn_id)
-                type_id = template.type_id if template is not None else None
-            if type_id is None:
-                continue
-            info = _TYPE_ANIM.get(type_id)
-            if info is None:
-                continue
-            creature.anim_phase, _ = creature_anim_advance_phase(
-                creature.anim_phase,
-                anim_rate=info.anim_rate,
-                move_speed=creature.move_speed,
-                dt=dt,
-                size=creature.size,
-                local_scale=creature.move_scale,
-                flags=creature.flags,
-                ai_mode=creature.ai_mode,
-            )
-        for player in self._players:
-            info = _TYPE_ANIM.get(CreatureTypeId.TROOPER)
-            if info is None:
-                continue
-            player.phase += info.anim_rate * dt * 60.0
-
     def _ensure_cache(self) -> PaqTextureCache:
         cache = self._state.texture_cache
         if cache is not None:
@@ -631,15 +434,6 @@ class DemoView:
         self._purchase_active = False
         self._purchase_url_opened = False
         self._spawn_rng.srand(self._state.rng.randrange(0, 0x1_0000_0000))
-
-        self._creatures.clear()
-        self._spawn_slots.clear()
-        self._players.clear()
-        self._projectile_pool.reset()
-        self._secondary_projectile_pool.reset()
-        self._beams.clear()
-        self._explosions.clear()
-        self._bonus_weapon_power_up_timer = 0.0
         self._world.state.bonuses.weapon_power_up = 0.0
         if index == 0:
             self._apply_variant_ground(0)
@@ -736,9 +530,6 @@ class DemoView:
             return 0
         return int(self._crand.rand() % mod)
 
-    def _crand_float01(self) -> float:
-        return float(self._crand.rand()) / 32767.0
-
     def _spawn(self, spawn_id: int, x: float, y: float, *, heading: float = 0.0) -> None:
         x, y = self._wrap_pos(x, y)
         self._world.creatures.spawn_template(
@@ -748,16 +539,6 @@ class DemoView:
             self._spawn_rng,
             rand=self._spawn_rng.rand,
         )
-
-    def _reset_player_weapon_state(self) -> None:
-        for player in self._players:
-            weapon = self._weapon_entry(player.weapon_id)
-            clip_size = int(getattr(weapon, "clip_size", 0) or 0)
-            player.ammo = max(0, clip_size)
-            player.shot_cooldown = 0.0
-            player.reload_timer = 0.0
-            player.reload_timer_max = 0.0
-            player.spread_heat = 0.01
 
     def _setup_variant_0(self) -> None:
         self._demo_time_limit_ms = 4000
@@ -823,203 +604,6 @@ class DemoView:
                 x2 = float(self._crand_mod(30) + 32)
                 y2 = float(self._crand_mod(899) + 64)
                 self._spawn(0x25, x2, y2, heading=0.0)
-
-    def _world_params(self) -> tuple[float, float, float, float]:
-        out_w = float(rl.get_screen_width())
-        out_h = float(rl.get_screen_height())
-        screen_w = float(self._state.config.screen_width)
-        screen_h = float(self._state.config.screen_height)
-        if screen_w > WORLD_SIZE:
-            screen_w = WORLD_SIZE
-        if screen_h > WORLD_SIZE:
-            screen_h = WORLD_SIZE
-
-        cam_x = self._camera_x
-        cam_y = self._camera_y
-        min_x = screen_w - WORLD_SIZE
-        min_y = screen_h - WORLD_SIZE
-        if cam_x < min_x:
-            cam_x = min_x
-        if cam_x > -1.0:
-            cam_x = -1.0
-        if cam_y < min_y:
-            cam_y = min_y
-        if cam_y > -1.0:
-            cam_y = -1.0
-
-        scale_x = out_w / screen_w if screen_w > 0 else 1.0
-        scale_y = out_h / screen_h if screen_h > 0 else 1.0
-        return cam_x, cam_y, scale_x, scale_y
-
-    def _world_to_screen(self, x: float, y: float) -> tuple[float, float]:
-        cam_x, cam_y, scale_x, scale_y = self._world_params()
-        return (x + cam_x) * scale_x, (y + cam_y) * scale_y
-
-    def _select_frame(self, spawn_id: int, phase: float) -> tuple[int, bool]:
-        template = SPAWN_ID_TO_TEMPLATE.get(spawn_id)
-        if template is None or template.type_id is None:
-            return 0, False
-        info = _TYPE_ANIM.get(template.type_id)
-        if info is None:
-            return 0, False
-        flags = template.flags or CreatureFlags(0)
-        frame, mirror_applied, _ = creature_anim_select_frame(
-            phase,
-            base_frame=info.base,
-            mirror_long=info.mirror,
-            flags=flags,
-        )
-        return frame, mirror_applied
-
-    def _draw_fx(self) -> None:
-        projectiles = self._projectile_pool.iter_active()
-        secondary = self._secondary_projectile_pool.iter_active()
-        if not (projectiles or secondary or self._beams or self._explosions):
-            return
-        cam_x, cam_y, scale_x, scale_y = self._world_params()
-        del cam_x, cam_y
-        scale = (scale_x + scale_y) * 0.5
-
-        for proj in projectiles:
-            sx, sy = self._world_to_screen(proj.pos_x, proj.pos_y)
-            base_radius = {
-                0x05: 6.0,  # gauss
-                0x0B: 10.0,  # rocket launcher
-                0x15: 7.0,  # ion minigun beam seed
-            }.get(proj.type_id, 5.0)
-            radius = max(1.0, base_radius * scale)
-            color = {
-                0x05: rl.Color(235, 235, 235, 255),
-                0x0B: rl.Color(255, 120, 80, 255),
-                0x15: rl.Color(120, 220, 255, 255),
-            }.get(proj.type_id, rl.Color(235, 235, 235, 255))
-            rl.draw_circle(int(sx), int(sy), radius, color)
-
-        for proj in secondary:
-            sx, sy = self._world_to_screen(proj.pos_x, proj.pos_y)
-            if proj.type_id == 4:
-                radius = max(1.0, 12.0 * scale)
-                rl.draw_circle(int(sx), int(sy), radius, rl.Color(200, 120, 255, 255))
-                continue
-            if proj.type_id == 3:
-                t = _clamp(proj.lifetime, 0.0, 1.0)
-                radius = proj.speed * t * 80.0
-                alpha = int((1.0 - t) * 180.0)
-                color = rl.Color(200, 120, 255, alpha)
-                rl.draw_circle_lines(int(sx), int(sy), max(1.0, radius * scale), color)
-
-        for beam in self._beams:
-            x0, y0 = self._world_to_screen(beam.x0, beam.y0)
-            x1, y1 = self._world_to_screen(beam.x1, beam.y1)
-            alpha = int(_clamp(beam.life / 0.08, 0.0, 1.0) * 255.0)
-            color = rl.Color(120, 220, 255, alpha)
-            rl.draw_line_ex(rl.Vector2(x0, y0), rl.Vector2(x1, y1), 2.0 * scale, color)
-
-        for fx in self._explosions:
-            t = fx.elapsed / fx.duration if fx.duration > 0 else 1.0
-            radius = fx.max_radius * _clamp(t, 0.0, 1.0)
-            sx, sy = self._world_to_screen(fx.x, fx.y)
-            alpha = int((1.0 - _clamp(t, 0.0, 1.0)) * 180.0)
-            color = rl.Color(255, 180, 100, alpha) if fx.kind == "rocket" else rl.Color(200, 120, 255, alpha)
-            rl.draw_circle_lines(int(sx), int(sy), max(1.0, radius * scale), color)
-
-    def _draw_entities(self) -> None:
-        cache = self._state.texture_cache
-        if cache is None:
-            return
-        cam_x, cam_y, scale_x, scale_y = self._world_params()
-        del cam_x, cam_y
-
-        player_tex = cache.get_or_load("trooper", "game/trooper.jaz").texture
-        if player_tex is not None:
-            for player in self._players:
-                self._draw_sprite(
-                    player_tex,
-                    CreatureTypeId.TROOPER,
-                    CreatureFlags(0),
-                    player.phase,
-                    player.x,
-                    player.y,
-                    scale_x,
-                    scale_y,
-                    tint=rl.Color(240, 240, 255, 255),
-                )
-
-        for creature in self._creatures:
-            type_id = creature.type_id
-            if type_id is None:
-                continue
-            asset = _TYPE_ASSET.get(type_id)
-            if asset is None:
-                continue
-            texture = cache.texture(asset)
-            if texture is None:
-                rel_path = f"game/{asset}.jaz"
-                texture = cache.get_or_load(asset, rel_path).texture
-            if texture is None:
-                continue
-            flags = creature.flags
-
-            def _to_u8(value: float) -> int:
-                return int(_clamp(value, 0.0, 1.0) * 255.0 + 0.5)
-
-            tint = rl.WHITE
-            if creature.tint is not None and any(v is not None for v in creature.tint):
-                tint_r, tint_g, tint_b, tint_a = resolve_tint(creature.tint)
-                tint = rl.Color(
-                    _to_u8(tint_r),
-                    _to_u8(tint_g),
-                    _to_u8(tint_b),
-                    _to_u8(tint_a),
-                )
-            self._draw_sprite(
-                texture,
-                type_id,
-                flags,
-                creature.anim_phase,
-                creature.x,
-                creature.y,
-                scale_x,
-                scale_y,
-                tint=tint,
-                size_scale=_clamp(creature.size / 64.0, 0.25, 2.0),
-            )
-
-    def _draw_sprite(
-        self,
-        texture: rl.Texture2D,
-        type_id: CreatureTypeId,
-        flags: CreatureFlags,
-        phase: float,
-        world_x: float,
-        world_y: float,
-        scale_x: float,
-        scale_y: float,
-        *,
-        tint: rl.Color,
-        size_scale: float = 1.0,
-    ) -> None:
-        info = _TYPE_ANIM.get(type_id)
-        if info is None:
-            return
-        frame, _, _ = creature_anim_select_frame(
-            phase,
-            base_frame=info.base,
-            mirror_long=info.mirror,
-            flags=flags,
-        )
-
-        grid = 8
-        cell = float(texture.width) / grid if grid > 0 else float(texture.width)
-        row = frame // grid
-        col = frame % grid
-        src = rl.Rectangle(float(col * cell), float(row * cell), float(cell), float(cell))
-        screen_x, screen_y = self._world_to_screen(world_x, world_y)
-        width = cell * scale_x * size_scale
-        height = cell * scale_y * size_scale
-        dst = rl.Rectangle(screen_x, screen_y, width, height)
-        origin = rl.Vector2(width * 0.5, height * 0.5)
-        rl.draw_texture_pro(texture, src, dst, origin, 0.0, tint)
 
     def _draw_overlay(self) -> None:
         if getattr(self._state, "demo_enabled", False):
@@ -1089,27 +673,6 @@ class DemoView:
         )
 
         draw_grim_mono_text(font, msg, text_x, text_y, scale, rl.Color(255, 255, 255, txt_alpha))
-
-    def _creature_hp(self, type_id: CreatureTypeId | None) -> float:
-        if type_id == CreatureTypeId.ZOMBIE:
-            return 22.0
-        if type_id in (CreatureTypeId.SPIDER_SP1, CreatureTypeId.SPIDER_SP2):
-            return 12.0
-        if type_id == CreatureTypeId.ALIEN:
-            return 16.0
-        return 14.0
-
-    def _creature_speed(self, type_id: CreatureTypeId | None) -> float:
-        if type_id == CreatureTypeId.ZOMBIE:
-            return 70.0
-        if type_id in (CreatureTypeId.SPIDER_SP1, CreatureTypeId.SPIDER_SP2):
-            return 105.0
-        if type_id == CreatureTypeId.ALIEN:
-            return 85.0
-        return 80.0
-
-    def _weapon_entry(self, weapon_id: int) -> Weapon | None:
-        return WEAPON_BY_ID.get(weapon_id)
 
     def _update_world(self, dt: float) -> None:
         if not self._world.players:
@@ -1212,372 +775,3 @@ class DemoView:
             self._demo_targets[player_index] = candidate
             return candidate
         return current
-
-    def _update_sim(self, dt: float, dt_ms: int) -> None:
-        self._bonus_weapon_power_up_timer = max(0.0, self._bonus_weapon_power_up_timer - dt)
-        self._update_creatures(dt, dt_ms)
-        self._update_spawn_slots(dt)
-        self._update_projectiles(dt)
-        self._update_players(dt)
-        self._update_fx(dt)
-        self._update_camera(dt)
-
-    def _nearest_player_index(self, x: float, y: float) -> int | None:
-        best_idx = None
-        best_dist = 0.0
-        for idx, player in enumerate(self._players):
-            d = _distance_sq(x, y, player.x, player.y)
-            if best_idx is None or d < best_dist:
-                best_idx = idx
-                best_dist = d
-        return best_idx
-
-    def _nearest_creature_index(self, x: float, y: float) -> int | None:
-        best_idx = None
-        best_dist = 0.0
-        for idx, creature in enumerate(self._creatures):
-            if creature.hp <= 0.0:
-                continue
-            d = _distance_sq(x, y, creature.x, creature.y)
-            if best_idx is None or d < best_dist:
-                best_idx = idx
-                best_dist = d
-        return best_idx
-
-    def _update_spawn_slots(self, dt: float) -> None:
-        if not self._spawn_slots:
-            return
-
-        spawn_events: list[tuple[int, float, float]] = []
-        slot_count = len(self._spawn_slots)
-        for slot_idx in range(slot_count):
-            slot = self._spawn_slots[slot_idx]
-            owner_idx = slot.owner_creature
-            if not (0 <= owner_idx < len(self._creatures)):
-                continue
-            owner = self._creatures[owner_idx]
-            if owner.hp <= 0.0:
-                continue
-            child_template_id = tick_spawn_slot(slot, dt)
-            if child_template_id is None:
-                continue
-            spawn_events.append((child_template_id, owner.x, owner.y))
-
-        for child_template_id, x, y in spawn_events:
-            self._spawn(child_template_id, x, y, heading=-100.0)
-
-    def _update_creatures(self, dt: float, dt_ms: int) -> None:
-        if not self._creatures or not self._players:
-            return
-        for creature in self._creatures:
-            if creature.hp <= 0.0:
-                continue
-            type_id = creature.type_id
-            if type_id is None:
-                template = SPAWN_ID_TO_TEMPLATE.get(creature.spawn_id)
-                type_id = template.type_id if template is not None else None
-
-            move_speed = creature.move_speed
-            if move_speed <= 0.0:
-                move_speed = self._creature_speed(type_id) / 30.0
-
-            creature_ai7_tick_link_timer(creature, dt_ms=dt_ms, rand=self._crand.rand)
-
-            target_idx = self._nearest_player_index(creature.x, creature.y)
-            creature.target_player = target_idx
-            if target_idx is None:
-                creature.vx = 0.0
-                creature.vy = 0.0
-                continue
-            target = self._players[target_idx]
-            ai = creature_ai_update_target(
-                creature,
-                player_x=target.x,
-                player_y=target.y,
-                creatures=self._creatures,
-                dt=dt,
-            )
-            creature.move_scale = ai.move_scale
-            if ai.self_damage is not None:
-                creature.hp -= ai.self_damage
-                if creature.hp <= 0.0:
-                    continue
-
-            if creature.ai_mode == 7:
-                creature.vx = 0.0
-                creature.vy = 0.0
-                continue
-
-            creature.heading = _angle_approach(
-                creature.heading, creature.target_heading, move_speed * 0.33333334 * 4.0, dt
-            )
-            speed = move_speed * 30.0
-            direction_x = math.cos(creature.heading - math.pi / 2.0)
-            direction_y = math.sin(creature.heading - math.pi / 2.0)
-            creature.vx = direction_x * dt * creature.move_scale * speed
-            creature.vy = direction_y * dt * creature.move_scale * speed
-
-            radius = max(0.0, creature.size)
-            creature.x = _clamp(creature.x + creature.vx, radius, WORLD_SIZE - radius)
-            creature.y = _clamp(creature.y + creature.vy, radius, WORLD_SIZE - radius)
-
-    def _select_player_target(self, player: DemoPlayer) -> int | None:
-        candidate = self._nearest_creature_index(player.x, player.y)
-        current = player.target_creature
-        if current is None:
-            return candidate
-        if not (0 <= current < len(self._creatures)):
-            return candidate
-        current_creature = self._creatures[current]
-        if current_creature.hp <= 0.0:
-            return candidate
-        if candidate is None or candidate == current:
-            return current
-        cand_creature = self._creatures[candidate]
-        if cand_creature.hp <= 0.0:
-            return current
-        cur_d = math.hypot(current_creature.x - player.x, current_creature.y - player.y)
-        cand_d = math.hypot(cand_creature.x - player.x, cand_creature.y - player.y)
-        if cand_d + 64.0 < cur_d:
-            return candidate
-        return current
-
-    def _update_players(self, dt: float) -> None:
-        if not self._players:
-            return
-        center_x = WORLD_SIZE * 0.5
-        center_y = WORLD_SIZE * 0.5
-        shot_cooldown_decay = dt * (1.5 if self._bonus_weapon_power_up_timer > 0.0 else 1.0)
-        for player in self._players:
-            player.shot_cooldown = max(0.0, player.shot_cooldown - shot_cooldown_decay)
-            player.spread_heat = max(0.01, player.spread_heat - dt * 0.4)
-
-            if player.reload_timer > 0.0:
-                player.reload_timer = max(0.0, player.reload_timer - dt)
-                if player.reload_timer <= 0.0:
-                    weapon = self._weapon_entry(player.weapon_id)
-                    clip_size = int(getattr(weapon, "clip_size", 0) or 0)
-                    player.ammo = max(0, clip_size)
-                    player.reload_timer = 0.0
-                    player.reload_timer_max = 0.0
-
-            player.target_creature = self._select_player_target(player)
-            target = self._creatures[player.target_creature] if player.target_creature is not None else None
-            if target is not None and target.hp > 0.0:
-                dx = target.x - player.x
-                dy = target.y - player.y
-                nx, ny, _ = _normalize(dx, dy)
-                player.aim_x, player.aim_y = nx, ny
-            else:
-                dx = center_x - player.x
-                dy = center_y - player.y
-                nx, ny, _ = _normalize(dx, dy)
-                player.aim_x, player.aim_y = nx, ny
-
-            move_x, move_y = 0.0, 0.0
-            to_cx = center_x - player.x
-            to_cy = center_y - player.y
-            nx, ny, d = _normalize(to_cx, to_cy)
-            if d > 120.0:
-                move_x += nx
-                move_y += ny
-
-            if target is not None and target.hp > 0.0:
-                rx = player.x - target.x
-                ry = player.y - target.y
-                rnx, rny, rd = _normalize(rx, ry)
-                if 0.0 < rd < 160.0:
-                    strength = (160.0 - rd) / 160.0
-                    move_x += rnx * (1.5 * strength)
-                    move_y += rny * (1.5 * strength)
-
-            orbit_dir = -1.0 if (player.index % 2) else 1.0
-            ox, oy, _ = _normalize(-(player.y - center_y), player.x - center_x)
-            move_x += ox * 0.55 * orbit_dir
-            move_y += oy * 0.55 * orbit_dir
-
-            mnx, mny, _ = _normalize(move_x, move_y)
-            speed = 150.0
-            player.vx = mnx * speed
-            player.vy = mny * speed
-            player.x = _clamp(player.x + player.vx * dt, 0.0, WORLD_SIZE)
-            player.y = _clamp(player.y + player.vy * dt, 0.0, WORLD_SIZE)
-
-            self._player_fire(player, target)
-
-    def _player_fire(self, player: DemoPlayer, target: DemoCreature | None) -> None:
-        weapon = self._weapon_entry(player.weapon_id)
-        if weapon is None:
-            return
-
-        if player.reload_timer > 0.0:
-            return
-        if player.shot_cooldown > 0.0:
-            return
-        if target is None or target.hp <= 0.0:
-            return
-
-        if player.ammo <= 0:
-            reload_time = float(getattr(weapon, "reload_time", 0.0) or 0.0)
-            if self._bonus_weapon_power_up_timer > 0.0:
-                reload_time *= 0.6
-            player.reload_timer_max = max(0.0, reload_time)
-            player.reload_timer = player.reload_timer_max
-            play_sfx(self._state.audio, resolve_weapon_sfx_ref(weapon.reload_sound), rng=self._state.rng)
-            return
-
-        shot_cooldown = float(getattr(weapon, "fire_rate", 0.0) or 0.0)
-        player.shot_cooldown = max(0.02, shot_cooldown)
-
-        spread_inc = float(getattr(weapon, "spread", 0.0) or 0.0)
-        player.spread_heat = min(0.48, max(0.01, player.spread_heat + spread_inc))
-
-        theta = math.atan2(player.aim_y, player.aim_x)
-        if player.spread_heat > 0.0:
-            theta += (self._crand_float01() * 2.0 - 1.0) * player.spread_heat
-        angle = theta + math.pi / 2.0
-
-        muzzle_x = player.x + player.aim_x * 16.0
-        muzzle_y = player.y + player.aim_y * 16.0
-
-        play_sfx(self._state.audio, resolve_weapon_sfx_ref(weapon.fire_sound), rng=self._state.rng)
-
-        if player.weapon_id in {5, 11, 21}:
-            meta = float(getattr(weapon, "projectile_type", 0.0) or 0.0)
-            if meta <= 0.0:
-                meta = 45.0
-            self._projectile_pool.spawn(
-                pos_x=muzzle_x,
-                pos_y=muzzle_y,
-                angle=angle,
-                type_id=player.weapon_id,
-                owner_id=-100,
-                base_damage=meta,
-            )
-        elif player.weapon_id == 18:
-            self._secondary_projectile_pool.spawn(
-                pos_x=muzzle_x,
-                pos_y=muzzle_y,
-                angle=angle,
-                type_id=4,
-            )
-
-        player.ammo = max(0, player.ammo - 1)
-        if player.ammo <= 0:
-            reload_time = float(getattr(weapon, "reload_time", 0.0) or 0.0)
-            if self._bonus_weapon_power_up_timer > 0.0:
-                reload_time *= 0.6
-            player.reload_timer_max = max(0.0, reload_time)
-            player.reload_timer = player.reload_timer_max
-            play_sfx(self._state.audio, resolve_weapon_sfx_ref(weapon.reload_sound), rng=self._state.rng)
-
-    def _update_projectiles(self, dt: float) -> None:
-        damage_scale_by_type: dict[int, float] = {}
-        for type_id in (0x05, 0x0B, 0x15):
-            weapon = self._weapon_entry(type_id)
-            scale = float(getattr(weapon, "damage_mult", 0.0) or 0.0) if weapon is not None else 0.0
-            damage_scale_by_type[type_id] = scale if scale > 0.0 else 1.0
-
-        hits = self._projectile_pool.update(
-            dt,
-            self._creatures,
-            world_size=WORLD_SIZE,
-            damage_scale_by_type=damage_scale_by_type,
-            rng=self._crand.rand,
-        )
-        for type_id, origin_x, origin_y, hit_x, hit_y in hits:
-            if type_id == 0x15:
-                self._beams.append(
-                    DemoBeam(
-                        x0=origin_x,
-                        y0=origin_y,
-                        x1=hit_x,
-                        y1=hit_y,
-                        life=0.08,
-                    )
-                )
-            if type_id == 0x0B:
-                self._explosions.append(
-                    DemoExplosion(
-                        kind="rocket",
-                        x=hit_x,
-                        y=hit_y,
-                        elapsed=0.0,
-                        duration=0.35,
-                        max_radius=90.0,
-                        damage_per_tick=0.0,
-                        tick_interval=1.0,
-                    )
-                )
-
-        self._secondary_projectile_pool.update_pulse_gun(dt, self._creatures)
-        self._creatures = [c for c in self._creatures if c.hp > 0.0]
-
-    def _update_fx(self, dt: float) -> None:
-        if self._beams:
-            beams: list[DemoBeam] = []
-            for beam in self._beams:
-                beam.life -= dt
-                if beam.life > 0.0:
-                    beams.append(beam)
-            self._beams = beams
-
-        if not self._explosions:
-            return
-        survivors: list[DemoExplosion] = []
-        for fx in self._explosions:
-            fx.elapsed += dt
-            if fx.damage_per_tick > 0.0 and fx.tick_interval > 0.0:
-                fx.tick_accum += dt
-                while fx.tick_accum >= fx.tick_interval:
-                    fx.tick_accum -= fx.tick_interval
-                    self._apply_explosion_damage(fx)
-            if fx.elapsed < fx.duration:
-                survivors.append(fx)
-        self._explosions = survivors
-        self._creatures = [c for c in self._creatures if c.hp > 0.0]
-
-    def _apply_explosion_damage(self, fx: DemoExplosion) -> None:
-        t = fx.elapsed / fx.duration if fx.duration > 0 else 1.0
-        radius = fx.max_radius * _clamp(t, 0.0, 1.0)
-        rsq = radius * radius
-        for creature in self._creatures:
-            if creature.hp <= 0.0:
-                continue
-            if _distance_sq(fx.x, fx.y, creature.x, creature.y) <= rsq:
-                creature.hp -= fx.damage_per_tick
-
-    def _update_camera(self, dt: float) -> None:
-        if not self._players:
-            return
-        screen_w = float(self._state.config.screen_width)
-        screen_h = float(self._state.config.screen_height)
-        if screen_w > WORLD_SIZE:
-            screen_w = WORLD_SIZE
-        if screen_h > WORLD_SIZE:
-            screen_h = WORLD_SIZE
-
-        if len(self._players) == 1:
-            focus_x = self._players[0].x
-            focus_y = self._players[0].y
-        else:
-            focus_x = sum(p.x for p in self._players) / len(self._players)
-            focus_y = sum(p.y for p in self._players) / len(self._players)
-
-        desired_x = (screen_w * 0.5) - focus_x
-        desired_y = (screen_h * 0.5) - focus_y
-
-        min_x = screen_w - WORLD_SIZE
-        min_y = screen_h - WORLD_SIZE
-        if desired_x < min_x:
-            desired_x = min_x
-        if desired_x > -1.0:
-            desired_x = -1.0
-        if desired_y < min_y:
-            desired_y = min_y
-        if desired_y > -1.0:
-            desired_y = -1.0
-
-        t = _clamp(dt * 6.0, 0.0, 1.0)
-        self._camera_x = _lerp(self._camera_x, desired_x, t)
-        self._camera_y = _lerp(self._camera_y, desired_y, t)
