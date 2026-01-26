@@ -9,49 +9,62 @@ from grim.assets import PaqTextureCache, load_paq_entries
 from grim.fonts.small import SmallFontData, draw_small_text, measure_small_text_width
 
 
-UI_BASE_WIDTH = 1024.0
-UI_BASE_HEIGHT = 768.0
+UI_BASE_WIDTH = 640.0
+UI_BASE_HEIGHT = 480.0
 
 
 MENU_PANEL_SLICE_Y1 = 130.0
 MENU_PANEL_SLICE_Y2 = 150.0
 
+# Layout offsets from the classic game (perk selection screen), derived from
+# `perk_selection_screen_update` (see analysis/ghidra + BN).
+MENU_PANEL_ANCHOR_X = 224.0
+MENU_PANEL_ANCHOR_Y = 40.0
+MENU_TITLE_X = 54.0
+MENU_TITLE_Y = 6.0
+MENU_TITLE_W = 128.0
+MENU_TITLE_H = 32.0
+MENU_SPONSOR_Y = -8.0
+MENU_SPONSOR_X_EXPERT = -26.0
+MENU_SPONSOR_X_MASTER = -28.0
+MENU_LIST_Y_NORMAL = 50.0
+MENU_LIST_Y_EXPERT = 40.0
+MENU_LIST_STEP_NORMAL = 19.0
+MENU_LIST_STEP_EXPERT = 18.0
+MENU_DESC_X = -12.0
+MENU_DESC_Y_AFTER_LIST = 32.0
+MENU_DESC_Y_EXTRA_TIGHTEN = 20.0
+MENU_BUTTON_X = 162.0
+MENU_BUTTON_Y = 276.0
+MENU_DESC_RIGHT_X = 480.0
+
 
 @dataclass(slots=True)
 class PerkMenuLayout:
-    # Layout is tuned to match the classic perk selection screen:
-    # the visible "monitor" area inside ui_menuPanel is centered.
-    panel_x: float = 172.0
-    panel_y: float = 256.0
+    # Coordinates live in the original 640x480 UI space and are scaled up.
+    # Matches the classic menu panel: pos (-45, 110) + offset (20, -82).
+    panel_x: float = -25.0
+    panel_y: float = 28.0
     panel_w: float = 512.0
-    panel_h: float = 256.0
+    panel_h: float = 379.0
 
-    title_x: float = 448.0
-    title_y: float = 224.0
-    title_w: float = 128.0
-    title_h: float = 32.0
 
-    # Menu items live in the monitor body and are underlined.
-    list_x: float = 377.0
-    list_y: float = 320.0
-    list_step_y: float = 19.0
-
-    desc_x: float = 470.0
-    desc_y: float = 320.0
-    desc_w: float = 200.0
-    desc_h: float = 148.0
-
-    button_y: float = 462.0
-    cancel_x: float = 582.0
-    button_h: float = 32.0
+@dataclass(slots=True)
+class PerkMenuComputedLayout:
+    panel: rl.Rectangle
+    title: rl.Rectangle
+    sponsor_x: float
+    sponsor_y: float
+    list_x: float
+    list_y: float
+    list_step_y: float
+    desc: rl.Rectangle
+    cancel_x: float
+    cancel_y: float
 
 
 def ui_scale(screen_w: float, screen_h: float) -> float:
     scale = min(screen_w / UI_BASE_WIDTH, screen_h / UI_BASE_HEIGHT)
-    if scale < 0.75:
-        return 0.75
-    if scale > 1.5:
-        return 1.5
     return float(scale)
 
 
@@ -59,6 +72,66 @@ def ui_origin(screen_w: float, screen_h: float, scale: float) -> tuple[float, fl
     origin_x = (screen_w - UI_BASE_WIDTH * scale) * 0.5
     origin_y = (screen_h - UI_BASE_HEIGHT * scale) * 0.5
     return origin_x, origin_y
+
+
+def perk_menu_compute_layout(
+    layout: PerkMenuLayout,
+    *,
+    origin_x: float,
+    origin_y: float,
+    scale: float,
+    choice_count: int,
+    expert_owned: bool,
+    master_owned: bool,
+) -> PerkMenuComputedLayout:
+    panel = rl.Rectangle(
+        origin_x + layout.panel_x * scale,
+        origin_y + layout.panel_y * scale,
+        layout.panel_w * scale,
+        layout.panel_h * scale,
+    )
+    anchor_x = panel.x + MENU_PANEL_ANCHOR_X * scale
+    anchor_y = panel.y + MENU_PANEL_ANCHOR_Y * scale
+
+    title = rl.Rectangle(
+        anchor_x + MENU_TITLE_X * scale,
+        anchor_y + MENU_TITLE_Y * scale,
+        MENU_TITLE_W * scale,
+        MENU_TITLE_H * scale,
+    )
+
+    sponsor_x = anchor_x + (MENU_SPONSOR_X_MASTER if master_owned else MENU_SPONSOR_X_EXPERT) * scale
+    sponsor_y = anchor_y + MENU_SPONSOR_Y * scale
+
+    list_step_y = MENU_LIST_STEP_EXPERT if expert_owned else MENU_LIST_STEP_NORMAL
+    list_x = anchor_x
+    list_y = anchor_y + (MENU_LIST_Y_EXPERT if expert_owned else MENU_LIST_Y_NORMAL) * scale
+
+    desc_x = anchor_x + MENU_DESC_X * scale
+    desc_y = list_y + float(choice_count) * list_step_y * scale + MENU_DESC_Y_AFTER_LIST * scale
+    if choice_count > 5:
+        desc_y -= MENU_DESC_Y_EXTRA_TIGHTEN * scale
+
+    # Keep the description within the monitor screen area and above the button.
+    desc_right = panel.x + MENU_DESC_RIGHT_X * scale
+    cancel_x = anchor_x + MENU_BUTTON_X * scale
+    cancel_y = anchor_y + MENU_BUTTON_Y * scale
+    desc_w = max(0.0, float(desc_right - desc_x))
+    desc_h = max(0.0, float(cancel_y - 12.0 * scale - desc_y))
+    desc = rl.Rectangle(float(desc_x), float(desc_y), float(desc_w), float(desc_h))
+
+    return PerkMenuComputedLayout(
+        panel=panel,
+        title=title,
+        sponsor_x=float(sponsor_x),
+        sponsor_y=float(sponsor_y),
+        list_x=float(list_x),
+        list_y=float(list_y),
+        list_step_y=float(list_step_y * scale),
+        desc=desc,
+        cancel_x=float(cancel_x),
+        cancel_y=float(cancel_y),
+    )
 
 
 def draw_menu_panel(texture: rl.Texture, *, dst: rl.Rectangle, tint: rl.Color = rl.WHITE) -> None:

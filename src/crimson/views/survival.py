@@ -35,6 +35,7 @@ from ..ui.perk_menu import (
     draw_ui_text,
     load_perk_menu_assets,
     menu_item_hit_rect,
+    perk_menu_compute_layout,
     ui_origin,
     ui_scale,
     wrap_ui_text,
@@ -348,15 +349,23 @@ class SurvivalView:
         mouse = rl.get_mouse_position()
         click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
 
+        master_owned = int(self._player.perk_counts[int(PerkId.PERK_MASTER)]) > 0
         expert_owned = int(self._player.perk_counts[int(PerkId.PERK_EXPERT)]) > 0
-        list_y = self._perk_ui_layout.list_y - (10.0 if expert_owned else 0.0)
-        list_step = 18.0 if expert_owned else self._perk_ui_layout.list_step_y
+        computed = perk_menu_compute_layout(
+            self._perk_ui_layout,
+            origin_x=origin_x,
+            origin_y=origin_y,
+            scale=scale,
+            choice_count=len(choices),
+            expert_owned=expert_owned,
+            master_owned=master_owned,
+        )
 
         for idx, perk_id in enumerate(choices):
             meta = PERK_BY_ID.get(int(perk_id))
             label = meta.name if meta is not None else f"Perk {int(perk_id)}"
-            item_x = origin_x + self._perk_ui_layout.list_x * scale
-            item_y = origin_y + (list_y + float(idx) * list_step) * scale
+            item_x = computed.list_x
+            item_y = computed.list_y + float(idx) * computed.list_step_y
             rect = menu_item_hit_rect(self._small, label, x=item_x, y=item_y, scale=scale)
             if rl.check_collision_point_rec(mouse, rect):
                 self._perk_menu_selected = idx
@@ -374,8 +383,8 @@ class SurvivalView:
                 break
 
         cancel_w = button_width(self._small, self._perk_cancel_button.label, scale=scale, force_wide=self._perk_cancel_button.force_wide)
-        cancel_x = origin_x + self._perk_ui_layout.cancel_x * scale
-        button_y = origin_y + self._perk_ui_layout.button_y * scale
+        cancel_x = computed.cancel_x
+        button_y = computed.cancel_y
 
         if button_update(
             self._perk_cancel_button,
@@ -540,29 +549,27 @@ class SurvivalView:
         scale = ui_scale(screen_w, screen_h)
         origin_x, origin_y = ui_origin(screen_w, screen_h, scale)
 
+        master_owned = int(self._player.perk_counts[int(PerkId.PERK_MASTER)]) > 0
+        expert_owned = int(self._player.perk_counts[int(PerkId.PERK_EXPERT)]) > 0
+        computed = perk_menu_compute_layout(
+            self._perk_ui_layout,
+            origin_x=origin_x,
+            origin_y=origin_y,
+            scale=scale,
+            choice_count=len(choices),
+            expert_owned=expert_owned,
+            master_owned=master_owned,
+        )
+
         panel_tex = self._perk_menu_assets.menu_panel
         if panel_tex is not None:
-            dst = rl.Rectangle(
-                origin_x + self._perk_ui_layout.panel_x * scale,
-                origin_y + self._perk_ui_layout.panel_y * scale,
-                self._perk_ui_layout.panel_w * scale,
-                self._perk_ui_layout.panel_h * scale,
-            )
-            draw_menu_panel(panel_tex, dst=dst)
+            draw_menu_panel(panel_tex, dst=computed.panel)
 
         title_tex = self._perk_menu_assets.title_pick_perk
         if title_tex is not None:
             src = rl.Rectangle(0.0, 0.0, float(title_tex.width), float(title_tex.height))
-            dst = rl.Rectangle(
-                origin_x + self._perk_ui_layout.title_x * scale,
-                origin_y + self._perk_ui_layout.title_y * scale,
-                self._perk_ui_layout.title_w * scale,
-                self._perk_ui_layout.title_h * scale,
-            )
-            rl.draw_texture_pro(title_tex, src, dst, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
+            rl.draw_texture_pro(title_tex, src, computed.title, rl.Vector2(0.0, 0.0), 0.0, rl.WHITE)
 
-        master_owned = int(self._player.perk_counts[int(PerkId.PERK_MASTER)]) > 0
-        expert_owned = int(self._player.perk_counts[int(PerkId.PERK_EXPERT)]) > 0
         sponsor = None
         if master_owned:
             sponsor = "extra perks sponsored by the Perk Master"
@@ -572,21 +579,18 @@ class SurvivalView:
             draw_ui_text(
                 self._small,
                 sponsor,
-                origin_x + (self._perk_ui_layout.title_x - 28.0) * scale,
-                origin_y + (self._perk_ui_layout.title_y - 8.0) * scale,
+                computed.sponsor_x,
+                computed.sponsor_y,
                 scale=scale,
                 color=UI_SPONSOR_COLOR,
             )
-
-        list_y = self._perk_ui_layout.list_y - (10.0 if expert_owned else 0.0)
-        list_step = 18.0 if expert_owned else self._perk_ui_layout.list_step_y
 
         mouse = rl.get_mouse_position()
         for idx, perk_id in enumerate(choices):
             meta = PERK_BY_ID.get(int(perk_id))
             label = meta.name if meta is not None else f"Perk {int(perk_id)}"
-            item_x = origin_x + self._perk_ui_layout.list_x * scale
-            item_y = origin_y + (list_y + float(idx) * list_step) * scale
+            item_x = computed.list_x
+            item_y = computed.list_y + float(idx) * computed.list_step_y
             rect = menu_item_hit_rect(self._small, label, x=item_x, y=item_y, scale=scale)
             hovered = rl.check_collision_point_rec(mouse, rect) or (idx == self._perk_menu_selected)
             draw_menu_item(self._small, label, x=item_x, y=item_y, scale=scale, hovered=hovered)
@@ -594,10 +598,10 @@ class SurvivalView:
         selected = choices[self._perk_menu_selected]
         meta = PERK_BY_ID.get(int(selected))
         desc = meta.description if meta is not None else "Unknown perk."
-        desc_x = origin_x + self._perk_ui_layout.desc_x * scale
-        desc_y = origin_y + self._perk_ui_layout.desc_y * scale
-        desc_w = self._perk_ui_layout.desc_w * scale
-        desc_h = self._perk_ui_layout.desc_h * scale
+        desc_x = float(computed.desc.x)
+        desc_y = float(computed.desc.y)
+        desc_w = float(computed.desc.width)
+        desc_h = float(computed.desc.height)
         desc_scale = scale * 0.85
         desc_lines = wrap_ui_text(self._small, desc, max_width=desc_w, scale=desc_scale)
         line_h = float(self._small.cell_size * desc_scale) if self._small is not None else float(20 * desc_scale)
@@ -609,8 +613,8 @@ class SurvivalView:
             y += line_h
 
         cancel_w = button_width(self._small, self._perk_cancel_button.label, scale=scale, force_wide=self._perk_cancel_button.force_wide)
-        cancel_x = origin_x + self._perk_ui_layout.cancel_x * scale
-        button_y = origin_y + self._perk_ui_layout.button_y * scale
+        cancel_x = computed.cancel_x
+        button_y = computed.cancel_y
         button_draw(self._perk_menu_assets, self._small, self._perk_cancel_button, x=cancel_x, y=button_y, width=cancel_w, scale=scale)
 
         cursor_draw(self._perk_menu_assets, mouse=mouse, scale=scale)
