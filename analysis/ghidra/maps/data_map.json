@@ -569,27 +569,9 @@
       "program": "crimsonland.exe"
     },
     {
-      "address": "0x00480514",
-      "comment": "Config: P1 move backward key.",
-      "name": "config_p1_move_backward",
-      "program": "crimsonland.exe"
-    },
-    {
       "address": "0x00480518",
       "comment": "Config: P1 turn left key.",
       "name": "config_p1_turn_left",
-      "program": "crimsonland.exe"
-    },
-    {
-      "address": "0x00480518",
-      "comment": "Config: P1 turn left key.",
-      "name": "config_p1_turn_left",
-      "program": "crimsonland.exe"
-    },
-    {
-      "address": "0x0048051c",
-      "comment": "Config: P1 turn right key.",
-      "name": "config_p1_turn_right",
       "program": "crimsonland.exe"
     },
     {
@@ -605,27 +587,9 @@
       "program": "crimsonland.exe"
     },
     {
-      "address": "0x00480520",
-      "comment": "Config: P1 fire key.",
-      "name": "config_p1_fire",
-      "program": "crimsonland.exe"
-    },
-    {
       "address": "0x00480524",
       "comment": "Config: P1 reserved key 0.",
       "name": "config_p1_key_reserved_0",
-      "program": "crimsonland.exe"
-    },
-    {
-      "address": "0x00480524",
-      "comment": "Config: P1 reserved key 0.",
-      "name": "config_p1_key_reserved_0",
-      "program": "crimsonland.exe"
-    },
-    {
-      "address": "0x00480528",
-      "comment": "Config: P1 reserved key 1.",
-      "name": "config_p1_key_reserved_1",
       "program": "crimsonland.exe"
     },
     {
@@ -641,18 +605,6 @@
       "program": "crimsonland.exe"
     },
     {
-      "address": "0x0048052c",
-      "comment": "Config: P1 aim left key.",
-      "name": "config_p1_aim_left",
-      "program": "crimsonland.exe"
-    },
-    {
-      "address": "0x00480530",
-      "comment": "Config: P1 aim right key.",
-      "name": "config_p1_aim_right",
-      "program": "crimsonland.exe"
-    },
-    {
       "address": "0x00480530",
       "comment": "Config: P1 aim right key.",
       "name": "config_p1_aim_right",
@@ -665,27 +617,9 @@
       "program": "crimsonland.exe"
     },
     {
-      "address": "0x00480534",
-      "comment": "Config: P1 aim axis Y.",
-      "name": "config_p1_axis_aim_y",
-      "program": "crimsonland.exe"
-    },
-    {
       "address": "0x00480538",
       "comment": "Config: P1 aim axis X.",
       "name": "config_p1_axis_aim_x",
-      "program": "crimsonland.exe"
-    },
-    {
-      "address": "0x00480538",
-      "comment": "Config: P1 aim axis X.",
-      "name": "config_p1_axis_aim_x",
-      "program": "crimsonland.exe"
-    },
-    {
-      "address": "0x0048053c",
-      "comment": "Config: P1 move axis Y.",
-      "name": "config_p1_axis_move_y",
       "program": "crimsonland.exe"
     },
     {
@@ -725,27 +659,9 @@
       "program": "crimsonland.exe"
     },
     {
-      "address": "0x00480550",
-      "comment": "Config: P2 move forward key.",
-      "name": "config_p2_move_forward",
-      "program": "crimsonland.exe"
-    },
-    {
       "address": "0x00480554",
       "comment": "Config: P2 move backward key.",
       "name": "config_p2_move_backward",
-      "program": "crimsonland.exe"
-    },
-    {
-      "address": "0x00480554",
-      "comment": "Config: P2 move backward key.",
-      "name": "config_p2_move_backward",
-      "program": "crimsonland.exe"
-    },
-    {
-      "address": "0x00480558",
-      "comment": "Config: P2 turn left key.",
-      "name": "config_p2_turn_left",
       "program": "crimsonland.exe"
     },
     {
@@ -761,27 +677,9 @@
       "program": "crimsonland.exe"
     },
     {
-      "address": "0x0048055c",
-      "comment": "Config: P2 turn right key.",
-      "name": "config_p2_turn_right",
-      "program": "crimsonland.exe"
-    },
-    {
       "address": "0x00480560",
       "comment": "Config: P2 fire key.",
       "name": "config_p2_fire",
-      "program": "crimsonland.exe"
-    },
-    {
-      "address": "0x00480560",
-      "comment": "Config: P2 fire key.",
-      "name": "config_p2_fire",
-      "program": "crimsonland.exe"
-    },
-    {
-      "address": "0x00480564",
-      "comment": "Config: P2 reserved key 0.",
-      "name": "config_p2_key_reserved_0",
       "program": "crimsonland.exe"
     },
     {
@@ -797,27 +695,9 @@
       "program": "crimsonland.exe"
     },
     {
-      "address": "0x00480568",
-      "comment": "Config: P2 reserved key 1.",
-      "name": "config_p2_key_reserved_1",
-      "program": "crimsonland.exe"
-    },
-    {
       "address": "0x0048056c",
       "comment": "Config: P2 aim left key.",
       "name": "config_p2_aim_left",
-      "program": "crimsonland.exe"
-    },
-    {
-      "address": "0x0048056c",
-      "comment": "Config: P2 aim left key.",
-      "name": "config_p2_aim_left",
-      "program": "crimsonland.exe"
-    },
-    {
-      "address": "0x00480570",
-      "comment": "Config: P2 aim right key.",
-      "name": "config_p2_aim_right",
       "program": "crimsonland.exe"
     },
     {
@@ -833,18 +713,6 @@
       "program": "crimsonland.exe"
     },
     {
-      "address": "0x00480574",
-      "comment": "Config: P2 aim axis Y.",
-      "name": "config_p2_axis_aim_y",
-      "program": "crimsonland.exe"
-    },
-    {
-      "address": "0x00480578",
-      "comment": "Config: P2 aim axis X.",
-      "name": "config_p2_axis_aim_x",
-      "program": "crimsonland.exe"
-    },
-    {
       "address": "0x00480578",
       "comment": "Config: P2 aim axis X.",
       "name": "config_p2_axis_aim_x",
@@ -854,18 +722,6 @@
       "address": "0x0048057c",
       "comment": "Config: P2 move axis Y.",
       "name": "config_p2_axis_move_y",
-      "program": "crimsonland.exe"
-    },
-    {
-      "address": "0x0048057c",
-      "comment": "Config: P2 move axis Y.",
-      "name": "config_p2_axis_move_y",
-      "program": "crimsonland.exe"
-    },
-    {
-      "address": "0x00480580",
-      "comment": "Config: P2 move axis X.",
-      "name": "config_p2_axis_move_x",
       "program": "crimsonland.exe"
     },
     {
