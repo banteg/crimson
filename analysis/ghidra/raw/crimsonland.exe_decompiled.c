@@ -48102,12 +48102,12 @@ int __cdecl crt_flushall(int mode)
   iVar4 = 0;
   crt_lock(2);
   stream_index = 0;
-  if (0 < DAT_004db4e0) {
+  if (0 < crt_stream_count) {
     do {
-      pFVar1 = *(FILE **)(DAT_004da4c4 + stream_index * 4);
+      pFVar1 = crt_stream_table[stream_index];
       if ((pFVar1 != (FILE *)0x0) && ((pFVar1->_flag & 0x83) != 0)) {
         crt_lock_file2(stream_index,pFVar1);
-        pFVar1 = *(FILE **)(DAT_004da4c4 + stream_index * 4);
+        pFVar1 = crt_stream_table[stream_index];
         if ((pFVar1->_flag & 0x83U) != 0) {
           if (mode == 1) {
             iVar2 = crt_fflush_nolock(pFVar1);
@@ -48122,10 +48122,10 @@ int __cdecl crt_flushall(int mode)
             }
           }
         }
-        crt_unlock_file2(stream_index,*(FILE **)(DAT_004da4c4 + stream_index * 4));
+        crt_unlock_file2(stream_index,crt_stream_table[stream_index]);
       }
       stream_index = stream_index + 1;
-    } while (stream_index < DAT_004db4e0);
+    } while (stream_index < crt_stream_count);
   }
   crt_unlock(2);
   if (mode != 1) {
@@ -48685,7 +48685,6 @@ long __cdecl crt_ftell_nolock(FILE *fp)
   FILE *pFVar7;
   char *pcVar8;
   char *pcVar9;
-  int iVar10;
   int local_c;
   int local_8;
   
@@ -48716,7 +48715,7 @@ LAB_00461cbe:
     }
     else {
       pcVar8 = pcVar9;
-      if ((*(byte *)((&DAT_004da3c0)[(int)fd >> 5] + 4 + (fd & 0x1f) * 0x24) & 0x80) != 0) {
+      if (((uint)(&crt_pioinfo_table)[(int)fd >> 5][(fd & 0x1f) * 9 + 1] & 0x80) != 0) {
         for (; pcVar8 < pcVar6; pcVar8 = pcVar8 + 1) {
           if (*pcVar8 == '\n') {
             local_c = local_c + 1;
@@ -48731,8 +48730,7 @@ LAB_00461cbe:
         }
         else {
           pFVar4 = (FILE *)(pcVar6 + (fp->_cnt - (int)pcVar9));
-          iVar10 = (fd & 0x1f) * 0x24;
-          if ((*(byte *)(iVar10 + 4 + (&DAT_004da3c0)[(int)fd >> 5]) & 0x80) != 0) {
+          if (((uint)(&crt_pioinfo_table)[(int)fd >> 5][(fd & 0x1f) * 9 + 1] & 0x80) != 0) {
             lVar5 = crt_lseek(fd,0,2);
             if (lVar5 == local_8) {
               pcVar6 = fp->_base;
@@ -48752,7 +48750,7 @@ LAB_00461cbe:
                  ((fp->_flag & 0x400U) != 0)) {
                 pFVar7 = (FILE *)fp->_bufsiz;
               }
-              bVar2 = *(byte *)(iVar10 + 4 + (&DAT_004da3c0)[(int)fd >> 5]) & 4;
+              bVar2 = *(byte *)((&crt_pioinfo_table)[(int)fd >> 5] + (fd & 0x1f) * 9 + 1) & 4;
               fp = pFVar7;
             }
             pFVar4 = fp;
@@ -49469,7 +49467,7 @@ void __cdecl crt_free_base(void *ptr)
     return;
   }
 LAB_0046268d:
-  HeapFree(DAT_004da3a4,0,ptr);
+  HeapFree(crt_heap_handle,0,ptr);
   ExceptionList = local_14;
   return;
 }
@@ -49578,7 +49576,7 @@ void * __cdecl crt_realloc(void *ptr,size_t size)
                   size = 1;
                 }
                 size = size + 0xf & 0xfffffff0;
-                local_28 = HeapAlloc(DAT_004da3a4,0,size);
+                local_28 = HeapAlloc(crt_heap_handle,0,size);
                 if (local_28 != (LPVOID)0x0) {
                   local_24 = (void *)(*(int *)((int)ptr + -4) - 1);
                   pvVar1 = local_24;
@@ -49597,7 +49595,7 @@ void * __cdecl crt_realloc(void *ptr,size_t size)
                 size = 1;
               }
               size = size + 0xf & 0xfffffff0;
-              local_28 = HeapReAlloc(DAT_004da3a4,0,ptr,size);
+              local_28 = HeapReAlloc(crt_heap_handle,0,ptr,size);
             }
           }
           if (local_28 != (void *)0x0) {
@@ -49633,7 +49631,7 @@ void * __cdecl crt_realloc(void *ptr,size_t size)
               arg3 = crt_sbh_find_block(ptr,&local_3c,(uint *)&local_30);
               local_34 = arg3;
               if (arg3 == (byte *)0x0) {
-                local_28 = HeapReAlloc(DAT_004da3a4,0,ptr,size);
+                local_28 = HeapReAlloc(crt_heap_handle,0,ptr,size);
               }
               else {
                 if (size < DAT_0047db14) {
@@ -49655,7 +49653,7 @@ void * __cdecl crt_realloc(void *ptr,size_t size)
                   }
                 }
                 if ((local_28 == (byte *)0x0) &&
-                   (local_28 = HeapAlloc(DAT_004da3a4,0,size), local_28 != (byte *)0x0)) {
+                   (local_28 = HeapAlloc(crt_heap_handle,0,size), local_28 != (byte *)0x0)) {
                   local_38 = (uint)*arg3 << 4;
                   uVar3 = local_38;
                   if (size <= local_38) {
@@ -49687,7 +49685,7 @@ void * __cdecl crt_realloc(void *ptr,size_t size)
                 size = 1;
               }
               size = size + 0xf & 0xfffffff0;
-              pvVar4 = HeapReAlloc(DAT_004da3a4,0,ptr,size);
+              pvVar4 = HeapReAlloc(crt_heap_handle,0,ptr,size);
             }
             if (pvVar4 != (LPVOID)0x0) {
               ExceptionList = local_14;
@@ -49852,7 +49850,7 @@ void * __cdecl FUN_00462a17(uint arg1)
   }
   dwBytes = arg1 + 0xf & 0xfffffff0;
 LAB_00462af6:
-  pvVar2 = HeapAlloc(DAT_004da3a4,0,dwBytes);
+  pvVar2 = HeapAlloc(crt_heap_handle,0,dwBytes);
   ExceptionList = local_14;
   return pvVar2;
 }
@@ -51408,7 +51406,7 @@ size_t __cdecl crt_msize(void *ptr)
     return sVar3;
   }
 LAB_00463c44:
-  SVar2 = HeapSize(DAT_004da3a4,0,ptr);
+  SVar2 = HeapSize(crt_heap_handle,0,ptr);
   ExceptionList = local_14;
   return SVar2;
 }
@@ -51558,8 +51556,8 @@ int __cdecl crt_close(int fd)
   int *piVar2;
   uint *puVar3;
   
-  if (((uint)fd < DAT_004da4c0) &&
-     ((*(byte *)((&DAT_004da3c0)[fd >> 5] + 4 + (fd & 0x1fU) * 0x24) & 1) != 0)) {
+  if (((uint)fd < (uint)crt_nhandle) &&
+     (((uint)(&crt_pioinfo_table)[fd >> 5][(fd & 0x1fU) * 9 + 1] & 1) != 0)) {
     crt_lock_fh(fd);
     iVar1 = crt_close_nolock(fd);
     crt_unlock_fh(fd);
@@ -51605,7 +51603,7 @@ LAB_00463ef4:
   os_error = 0;
 LAB_00463ef6:
   FUN_0046ac37(fd);
-  *(undefined1 *)((&DAT_004da3c0)[fd >> 5] + 4 + (fd & 0x1fU) * 0x24) = 0;
+  *(undefined1 *)((&crt_pioinfo_table)[fd >> 5] + (fd & 0x1fU) * 9 + 1) = 0;
   if (os_error == 0) {
     iVar4 = 0;
   }
@@ -51650,7 +51648,7 @@ int __cdecl crt_filbuf(FILE *fp)
   byte bVar1;
   uint uVar2;
   int iVar3;
-  undefined *puVar4;
+  void **ppvVar4;
   
   uVar2 = fp->_flag;
   if (((uVar2 & 0x83) != 0) && ((uVar2 & 0x40) == 0)) {
@@ -51668,12 +51666,12 @@ int __cdecl crt_filbuf(FILE *fp)
         if ((fp->_flag & 0x82U) == 0) {
           uVar2 = fp->_file;
           if (uVar2 == 0xffffffff) {
-            puVar4 = &DAT_0047b930;
+            ppvVar4 = (void **)&DAT_0047b930;
           }
           else {
-            puVar4 = (undefined *)((&DAT_004da3c0)[(int)uVar2 >> 5] + (uVar2 & 0x1f) * 0x24);
+            ppvVar4 = (&crt_pioinfo_table)[(int)uVar2 >> 5] + (uVar2 & 0x1f) * 9;
           }
-          if ((puVar4[4] & 0x82) == 0x82) {
+          if (((uint)ppvVar4[1] & 0x82) == 0x82) {
             fp->_flag = fp->_flag | 0x2000;
           }
         }
@@ -51824,50 +51822,47 @@ FILE * crt_getstream(void)
 
 {
   FILE *pFVar1;
-  void *pvVar2;
-  int iVar3;
-  FILE *pFVar4;
+  int stream_index;
+  FILE *pFVar2;
   
-  pFVar4 = (FILE *)0x0;
+  pFVar2 = (FILE *)0x0;
   crt_lock(2);
-  iVar3 = 0;
-  if (0 < DAT_004db4e0) {
+  stream_index = 0;
+  if (0 < crt_stream_count) {
     do {
-      pFVar1 = *(FILE **)(DAT_004da4c4 + iVar3 * 4);
+      pFVar1 = crt_stream_table[stream_index];
       if (pFVar1 == (FILE *)0x0) {
-        iVar3 = iVar3 * 4;
-        pvVar2 = _malloc(0x38);
-        *(void **)(iVar3 + DAT_004da4c4) = pvVar2;
-        if (*(int *)(iVar3 + DAT_004da4c4) != 0) {
-          InitializeCriticalSection((LPCRITICAL_SECTION)(*(int *)(iVar3 + DAT_004da4c4) + 0x20));
-          EnterCriticalSection((LPCRITICAL_SECTION)(*(int *)(iVar3 + DAT_004da4c4) + 0x20));
-          pFVar4 = *(FILE **)(iVar3 + DAT_004da4c4);
+        pFVar1 = _malloc(0x38);
+        crt_stream_table[stream_index] = pFVar1;
+        if (crt_stream_table[stream_index] != (FILE *)0x0) {
+          InitializeCriticalSection((LPCRITICAL_SECTION)(crt_stream_table[stream_index] + 1));
+          EnterCriticalSection((LPCRITICAL_SECTION)(crt_stream_table[stream_index] + 1));
+          pFVar2 = crt_stream_table[stream_index];
 LAB_00464244:
-          if (pFVar4 != (FILE *)0x0) {
-            pFVar4->_file = -1;
-            pFVar4->_cnt = 0;
-            pFVar4->_flag = 0;
-            pFVar4->_base = (char *)0x0;
-            pFVar4->_ptr = (char *)0x0;
-            pFVar4->_tmpfname = (char *)0x0;
+          if (pFVar2 != (FILE *)0x0) {
+            pFVar2->_file = -1;
+            pFVar2->_cnt = 0;
+            pFVar2->_flag = 0;
+            pFVar2->_base = (char *)0x0;
+            pFVar2->_ptr = (char *)0x0;
+            pFVar2->_tmpfname = (char *)0x0;
           }
         }
         break;
       }
       if ((pFVar1->_flag & 0x83) == 0) {
-        crt_lock_file2(iVar3,pFVar1);
-        pFVar1 = *(FILE **)(DAT_004da4c4 + iVar3 * 4);
-        if ((pFVar1->_flag & 0x83) == 0) {
-          pFVar4 = *(FILE **)(DAT_004da4c4 + iVar3 * 4);
+        crt_lock_file2(stream_index,pFVar1);
+        if ((crt_stream_table[stream_index]->_flag & 0x83) == 0) {
+          pFVar2 = crt_stream_table[stream_index];
           goto LAB_00464244;
         }
-        crt_unlock_file2(iVar3,pFVar1);
+        crt_unlock_file2(stream_index,crt_stream_table[stream_index]);
       }
-      iVar3 = iVar3 + 1;
-    } while (iVar3 < DAT_004db4e0);
+      stream_index = stream_index + 1;
+    } while (stream_index < crt_stream_count);
   }
   crt_unlock(2);
-  return pFVar4;
+  return pFVar2;
 }
 
 
@@ -51885,7 +51880,7 @@ int __cdecl crt_flsbuf(int ch,FILE *fp)
   FILE *fp_00;
   byte bVar2;
   undefined3 extraout_var;
-  undefined *puVar3;
+  void **ppvVar3;
   FILE *count;
   
   fp_00 = fp;
@@ -51922,12 +51917,12 @@ LAB_00464374:
       fp_00->_cnt = fp_00->_bufsiz + -1;
       if ((int)count < 1) {
         if (fd == 0xffffffff) {
-          puVar3 = &DAT_0047b930;
+          ppvVar3 = (void **)&DAT_0047b930;
         }
         else {
-          puVar3 = (undefined *)((&DAT_004da3c0)[(int)fd >> 5] + (fd & 0x1f) * 0x24);
+          ppvVar3 = (&crt_pioinfo_table)[(int)fd >> 5] + (fd & 0x1f) * 9;
         }
-        if ((puVar3[4] & 0x20) != 0) {
+        if (((uint)ppvVar3[1] & 0x20) != 0) {
           crt_lseek(fd,0,2);
         }
       }
@@ -53032,16 +53027,15 @@ int __cdecl crt_commit(int fd)
   int *piVar4;
   int iVar5;
   
-  if (DAT_004da4c0 <= (uint)fd) {
+  if ((uint)crt_nhandle <= (uint)fd) {
 LAB_00465640:
     piVar4 = crt_errno_ptr();
     *piVar4 = 9;
     return -1;
   }
-  iVar5 = (fd & 0x1fU) * 0x24;
-  if ((*(byte *)((&DAT_004da3c0)[fd >> 5] + 4 + iVar5) & 1) == 0) goto LAB_00465640;
+  if (((uint)(&crt_pioinfo_table)[fd >> 5][(fd & 0x1fU) * 9 + 1] & 1) == 0) goto LAB_00465640;
   crt_lock_fh(fd);
-  if ((*(byte *)((&DAT_004da3c0)[fd >> 5] + 4 + iVar5) & 1) != 0) {
+  if (((uint)(&crt_pioinfo_table)[fd >> 5][(fd & 0x1fU) * 9 + 1] & 1) != 0) {
     hFile = crt_get_osfhandle(fd);
     WVar1 = FlushFileBuffers(hFile);
     if (WVar1 == 0) {
@@ -53076,8 +53070,8 @@ int __cdecl crt_write(int fd,char *buf,uint count)
   int *piVar2;
   uint *puVar3;
   
-  if (((uint)fd < DAT_004da4c0) &&
-     ((*(byte *)((&DAT_004da3c0)[fd >> 5] + 4 + (fd & 0x1fU) * 0x24) & 1) != 0)) {
+  if (((uint)fd < (uint)crt_nhandle) &&
+     (((uint)(&crt_pioinfo_table)[fd >> 5][(fd & 0x1fU) * 9 + 1] & 1) != 0)) {
     crt_lock_fh(fd);
     iVar1 = crt_write_nolock(fd,buf,count);
     crt_unlock_fh(fd);
@@ -53099,13 +53093,15 @@ int __cdecl crt_write(int fd,char *buf,uint count)
 int __cdecl crt_write_nolock(int fd,char *buf,uint count)
 
 {
-  char *pcVar1;
-  char cVar2;
-  int iVar3;
-  char *pcVar4;
-  WINBOOL WVar5;
-  int *piVar6;
-  uint *puVar7;
+  void ***pppvVar1;
+  char *pcVar2;
+  char cVar3;
+  int iVar4;
+  uint uVar5;
+  char *pcVar6;
+  WINBOOL WVar7;
+  int *piVar8;
+  uint *puVar9;
   char local_418 [1028];
   int local_14;
   DWORD local_10;
@@ -53116,17 +53112,17 @@ int __cdecl crt_write_nolock(int fd,char *buf,uint count)
   local_14 = 0;
   if (count == 0) {
 LAB_004656d0:
-    iVar3 = 0;
+    iVar4 = 0;
   }
   else {
-    piVar6 = &DAT_004da3c0 + (fd >> 5);
-    iVar3 = (fd & 0x1fU) * 0x24;
-    if ((*(byte *)(*piVar6 + 4 + iVar3) & 0x20) != 0) {
+    pppvVar1 = &crt_pioinfo_table + (fd >> 5);
+    uVar5 = fd & 0x1f;
+    if (((uint)(*pppvVar1)[uVar5 * 9 + 1] & 0x20) != 0) {
       crt_lseek_nolock(fd,0,2);
     }
-    if ((*(byte *)((undefined4 *)(*piVar6 + iVar3) + 1) & 0x80) == 0) {
-      WVar5 = WriteFile(*(HANDLE *)(*piVar6 + iVar3),buf,count,&local_10,(LPOVERLAPPED)0x0);
-      if (WVar5 == 0) {
+    if (((uint)(*pppvVar1 + uVar5 * 9)[1] & 0x80) == 0) {
+      WVar7 = WriteFile((*pppvVar1)[uVar5 * 9],buf,count,&local_10,(LPOVERLAPPED)0x0);
+      if (WVar7 == 0) {
         fd = GetLastError();
       }
       else {
@@ -53139,10 +53135,10 @@ LAB_0046579f:
       }
       if (fd == 0) goto LAB_00465811;
       if (fd == 5) {
-        piVar6 = crt_errno_ptr();
-        *piVar6 = 9;
-        puVar7 = crt_doserrno_ptr();
-        *puVar7 = 5;
+        piVar8 = crt_errno_ptr();
+        *piVar8 = 9;
+        puVar9 = crt_doserrno_ptr();
+        *puVar9 = 5;
       }
       else {
         crt_dosmaperr(fd);
@@ -53153,41 +53149,41 @@ LAB_0046579f:
       fd = 0;
       if (count != 0) {
         do {
-          pcVar4 = local_418;
+          pcVar6 = local_418;
           do {
             if (count <= (uint)((int)local_8 - (int)buf)) break;
-            pcVar1 = local_8 + 1;
-            cVar2 = *local_8;
-            local_8 = pcVar1;
-            if (cVar2 == '\n') {
+            pcVar2 = local_8 + 1;
+            cVar3 = *local_8;
+            local_8 = pcVar2;
+            if (cVar3 == '\n') {
               local_14 = local_14 + 1;
-              *pcVar4 = '\r';
-              pcVar4 = pcVar4 + 1;
+              *pcVar6 = '\r';
+              pcVar6 = pcVar6 + 1;
             }
-            *pcVar4 = cVar2;
-            pcVar4 = pcVar4 + 1;
-          } while ((int)pcVar4 - (int)local_418 < 0x400);
-          WVar5 = WriteFile(*(HANDLE *)(*piVar6 + iVar3),local_418,(int)pcVar4 - (int)local_418,
-                            &local_10,(LPOVERLAPPED)0x0);
-          if (WVar5 == 0) {
+            *pcVar6 = cVar3;
+            pcVar6 = pcVar6 + 1;
+          } while ((int)pcVar6 - (int)local_418 < 0x400);
+          WVar7 = WriteFile((*pppvVar1)[uVar5 * 9],local_418,(int)pcVar6 - (int)local_418,&local_10,
+                            (LPOVERLAPPED)0x0);
+          if (WVar7 == 0) {
             fd = GetLastError();
             goto LAB_0046579f;
           }
           local_c = local_c + local_10;
-          if (((int)local_10 < (int)pcVar4 - (int)local_418) ||
+          if (((int)local_10 < (int)pcVar6 - (int)local_418) ||
              (count <= (uint)((int)local_8 - (int)buf))) goto LAB_0046579f;
         } while( true );
       }
 LAB_00465811:
-      if (((*(byte *)(*piVar6 + 4 + iVar3) & 0x40) != 0) && (*buf == '\x1a')) goto LAB_004656d0;
-      piVar6 = crt_errno_ptr();
-      *piVar6 = 0x1c;
-      puVar7 = crt_doserrno_ptr();
-      *puVar7 = 0;
+      if ((((uint)(*pppvVar1)[uVar5 * 9 + 1] & 0x40) != 0) && (*buf == '\x1a')) goto LAB_004656d0;
+      piVar8 = crt_errno_ptr();
+      *piVar8 = 0x1c;
+      puVar9 = crt_doserrno_ptr();
+      *puVar9 = 0;
     }
-    iVar3 = -1;
+    iVar4 = -1;
   }
-  return iVar3;
+  return iVar4;
 }
 
 
@@ -53894,8 +53890,8 @@ int __cdecl crt_read(int fd,char *buf,uint count)
   int *piVar2;
   uint *puVar3;
   
-  if (((uint)fd < DAT_004da4c0) &&
-     ((*(byte *)((&DAT_004da3c0)[fd >> 5] + 4 + (fd & 0x1fU) * 0x24) & 1) != 0)) {
+  if (((uint)fd < (uint)crt_nhandle) &&
+     (((uint)(&crt_pioinfo_table)[fd >> 5][(fd & 0x1fU) * 9 + 1] & 1) != 0)) {
     crt_lock_fh(fd);
     iVar1 = crt_read_nolock(fd,buf,count);
     crt_unlock_fh(fd);
@@ -53917,73 +53913,75 @@ int __cdecl crt_read(int fd,char *buf,uint count)
 int __cdecl crt_read_nolock(int fd,char *buf,uint count)
 
 {
-  byte *pbVar1;
+  void ***pppvVar1;
   char cVar2;
-  byte bVar3;
-  WINBOOL WVar4;
-  DWORD DVar5;
-  int *piVar6;
-  uint *puVar7;
-  char *pcVar8;
-  int iVar9;
+  void *pvVar3;
+  byte bVar4;
+  uint uVar5;
+  WINBOOL WVar6;
+  DWORD DVar7;
+  int *piVar8;
+  uint *puVar9;
+  char *pcVar10;
+  int iVar11;
   DWORD local_10;
   char *local_c;
   char local_5;
   
   local_c = (char *)0x0;
   if (count != 0) {
-    piVar6 = &DAT_004da3c0 + (fd >> 5);
-    iVar9 = (fd & 0x1fU) * 0x24;
-    bVar3 = *(byte *)((&DAT_004da3c0)[fd >> 5] + iVar9 + 4);
-    if ((bVar3 & 2) == 0) {
-      pcVar8 = buf;
-      if (((bVar3 & 0x48) != 0) &&
-         (cVar2 = *(char *)((&DAT_004da3c0)[fd >> 5] + iVar9 + 5), cVar2 != '\n')) {
+    uVar5 = fd & 0x1f;
+    pppvVar1 = &crt_pioinfo_table + (fd >> 5);
+    iVar11 = uVar5 * 0x24;
+    pvVar3 = (&crt_pioinfo_table)[fd >> 5][uVar5 * 9 + 1];
+    if (((uint)pvVar3 & 2) == 0) {
+      pcVar10 = buf;
+      if ((((uint)pvVar3 & 0x48) != 0) &&
+         (cVar2 = *(char *)((int)(&crt_pioinfo_table)[fd >> 5] + iVar11 + 5), cVar2 != '\n')) {
         count = count - 1;
         *buf = cVar2;
-        pcVar8 = buf + 1;
+        pcVar10 = buf + 1;
         local_c = (char *)0x1;
-        *(undefined1 *)(*piVar6 + 5 + iVar9) = 10;
+        *(undefined1 *)((int)*pppvVar1 + iVar11 + 5) = 10;
       }
-      WVar4 = ReadFile(*(HANDLE *)(*piVar6 + iVar9),pcVar8,count,&local_10,(LPOVERLAPPED)0x0);
-      if (WVar4 == 0) {
-        DVar5 = GetLastError();
-        if (DVar5 == 5) {
-          piVar6 = crt_errno_ptr();
-          *piVar6 = 9;
-          puVar7 = crt_doserrno_ptr();
-          *puVar7 = 5;
+      WVar6 = ReadFile((*pppvVar1)[uVar5 * 9],pcVar10,count,&local_10,(LPOVERLAPPED)0x0);
+      if (WVar6 == 0) {
+        DVar7 = GetLastError();
+        if (DVar7 == 5) {
+          piVar8 = crt_errno_ptr();
+          *piVar8 = 9;
+          puVar9 = crt_doserrno_ptr();
+          *puVar9 = 5;
         }
         else {
-          if (DVar5 == 0x6d) {
+          if (DVar7 == 0x6d) {
             return 0;
           }
-          crt_dosmaperr(DVar5);
+          crt_dosmaperr(DVar7);
         }
         return -1;
       }
-      bVar3 = *(byte *)(*piVar6 + 4 + iVar9);
-      if ((bVar3 & 0x80) == 0) {
+      bVar4 = *(byte *)(*pppvVar1 + uVar5 * 9 + 1);
+      if ((bVar4 & 0x80) == 0) {
         return (int)local_c + local_10;
       }
       if ((local_10 == 0) || (*buf != '\n')) {
-        bVar3 = bVar3 & 0xfb;
+        bVar4 = bVar4 & 0xfb;
       }
       else {
-        bVar3 = bVar3 | 4;
+        bVar4 = bVar4 | 4;
       }
-      *(byte *)(*piVar6 + 4 + iVar9) = bVar3;
+      *(byte *)(*pppvVar1 + uVar5 * 9 + 1) = bVar4;
       count = (uint)buf;
       local_c = buf + (int)local_c + local_10;
-      pcVar8 = buf;
+      pcVar10 = buf;
       if (buf < local_c) {
         do {
           cVar2 = *(char *)count;
           if (cVar2 == '\x1a') {
-            pbVar1 = (byte *)(*piVar6 + 4 + iVar9);
-            bVar3 = *pbVar1;
-            if ((bVar3 & 0x40) == 0) {
-              *pbVar1 = bVar3 | 2;
+            bVar4 = *(byte *)(*pppvVar1 + uVar5 * 9 + 1);
+            if ((bVar4 & 0x40) == 0) {
+              *(byte *)(*pppvVar1 + uVar5 * 9 + 1) = bVar4 | 2;
             }
             break;
           }
@@ -53993,23 +53991,23 @@ int __cdecl crt_read_nolock(int fd,char *buf,uint count)
                 count = count + 2;
                 goto LAB_004661ef;
               }
-              *pcVar8 = '\r';
-              pcVar8 = pcVar8 + 1;
+              *pcVar10 = '\r';
+              pcVar10 = pcVar10 + 1;
               count = count + 1;
             }
             else {
               count = count + 1;
-              WVar4 = ReadFile(*(HANDLE *)(*piVar6 + iVar9),&local_5,1,&local_10,(LPOVERLAPPED)0x0);
-              if (((WVar4 == 0) && (DVar5 = GetLastError(), DVar5 != 0)) || (local_10 == 0)) {
+              WVar6 = ReadFile((*pppvVar1)[uVar5 * 9],&local_5,1,&local_10,(LPOVERLAPPED)0x0);
+              if (((WVar6 == 0) && (DVar7 = GetLastError(), DVar7 != 0)) || (local_10 == 0)) {
 LAB_00466209:
-                *pcVar8 = '\r';
+                *pcVar10 = '\r';
 LAB_0046620c:
-                pcVar8 = pcVar8 + 1;
+                pcVar10 = pcVar10 + 1;
               }
-              else if ((*(byte *)(*piVar6 + 4 + iVar9) & 0x48) == 0) {
-                if ((pcVar8 == buf) && (local_5 == '\n')) {
+              else if (((uint)(*pppvVar1)[uVar5 * 9 + 1] & 0x48) == 0) {
+                if ((pcVar10 == buf) && (local_5 == '\n')) {
 LAB_004661ef:
-                  *pcVar8 = '\n';
+                  *pcVar10 = '\n';
                   goto LAB_0046620c;
                 }
                 crt_lseek_nolock(fd,-1,1);
@@ -54017,20 +54015,20 @@ LAB_004661ef:
               }
               else {
                 if (local_5 == '\n') goto LAB_004661ef;
-                *pcVar8 = '\r';
-                pcVar8 = pcVar8 + 1;
-                *(char *)(*piVar6 + 5 + iVar9) = local_5;
+                *pcVar10 = '\r';
+                pcVar10 = pcVar10 + 1;
+                *(char *)((int)*pppvVar1 + iVar11 + 5) = local_5;
               }
             }
           }
           else {
-            *pcVar8 = cVar2;
-            pcVar8 = pcVar8 + 1;
+            *pcVar10 = cVar2;
+            pcVar10 = pcVar10 + 1;
             count = count + 1;
           }
         } while (count < local_c);
       }
-      return (int)pcVar8 - (int)buf;
+      return (int)pcVar10 - (int)buf;
     }
   }
   return 0;
@@ -54046,104 +54044,104 @@ void crt_io_init(void)
 
 {
   undefined4 *puVar1;
-  undefined4 *puVar2;
+  void **ppvVar2;
   undefined4 *puVar3;
   DWORD DVar4;
   HANDLE hFile;
-  UINT *pUVar5;
-  int iVar6;
+  byte *pbVar5;
+  undefined4 *puVar6;
   uint uVar7;
-  UINT UVar8;
-  UINT UVar9;
+  int iVar8;
+  int iVar9;
   _STARTUPINFOA local_4c;
   byte *local_8;
   
-  puVar2 = _malloc(0x480);
-  if (puVar2 == (undefined4 *)0x0) {
+  ppvVar2 = _malloc(0x480);
+  if (ppvVar2 == (void **)0x0) {
     __amsg_exit(0x1b);
   }
-  DAT_004da4c0 = 0x20;
-  DAT_004da3c0 = puVar2;
-  for (; puVar2 < DAT_004da3c0 + 0x120; puVar2 = puVar2 + 9) {
-    *(undefined1 *)(puVar2 + 1) = 0;
-    *puVar2 = 0xffffffff;
-    puVar2[2] = 0;
-    *(undefined1 *)((int)puVar2 + 5) = 10;
+  crt_nhandle = 0x20;
+  crt_pioinfo_table = ppvVar2;
+  for (; ppvVar2 < crt_pioinfo_table + 0x120; ppvVar2 = ppvVar2 + 9) {
+    *(undefined1 *)(ppvVar2 + 1) = 0;
+    *ppvVar2 = (void *)0xffffffff;
+    ppvVar2[2] = (void *)0x0;
+    *(undefined1 *)((int)ppvVar2 + 5) = 10;
   }
   GetStartupInfoA(&local_4c);
-  if ((local_4c.cbReserved2 != 0) && ((UINT *)local_4c.lpReserved2 != (UINT *)0x0)) {
-    UVar8 = *(UINT *)local_4c.lpReserved2;
-    pUVar5 = (UINT *)((int)local_4c.lpReserved2 + 4);
-    local_8 = (byte *)((int)pUVar5 + UVar8);
-    if (0x7ff < (int)UVar8) {
-      UVar8 = 0x800;
+  if ((local_4c.cbReserved2 != 0) && ((int *)local_4c.lpReserved2 != (int *)0x0)) {
+    iVar8 = *(int *)local_4c.lpReserved2;
+    pbVar5 = (byte *)((int)local_4c.lpReserved2 + 4);
+    local_8 = pbVar5 + iVar8;
+    if (0x7ff < iVar8) {
+      iVar8 = 0x800;
     }
-    UVar9 = UVar8;
-    if ((int)DAT_004da4c0 < (int)UVar8) {
-      puVar2 = &DAT_004da3c4;
+    iVar9 = iVar8;
+    if (crt_nhandle < iVar8) {
+      puVar6 = &DAT_004da3c4;
       do {
         puVar3 = _malloc(0x480);
-        UVar9 = DAT_004da4c0;
+        iVar9 = crt_nhandle;
         if (puVar3 == (undefined4 *)0x0) break;
-        DAT_004da4c0 = DAT_004da4c0 + 0x20;
-        *puVar2 = puVar3;
+        crt_nhandle = crt_nhandle + 0x20;
+        *puVar6 = puVar3;
         puVar1 = puVar3;
         for (; puVar3 < puVar1 + 0x120; puVar3 = puVar3 + 9) {
           *(undefined1 *)(puVar3 + 1) = 0;
           *puVar3 = 0xffffffff;
           puVar3[2] = 0;
           *(undefined1 *)((int)puVar3 + 5) = 10;
-          puVar1 = (undefined4 *)*puVar2;
+          puVar1 = (undefined4 *)*puVar6;
         }
-        puVar2 = puVar2 + 1;
-        UVar9 = UVar8;
-      } while ((int)DAT_004da4c0 < (int)UVar8);
+        puVar6 = puVar6 + 1;
+        iVar9 = iVar8;
+      } while (crt_nhandle < iVar8);
     }
     uVar7 = 0;
-    if (0 < (int)UVar9) {
+    if (0 < iVar9) {
       do {
-        if (((*(HANDLE *)local_8 != (HANDLE)0xffffffff) && ((*pUVar5 & 1) != 0)) &&
-           (((*pUVar5 & 8) != 0 || (DVar4 = GetFileType(*(HANDLE *)local_8), DVar4 != 0)))) {
-          puVar2 = (undefined4 *)((int)(&DAT_004da3c0)[(int)uVar7 >> 5] + (uVar7 & 0x1f) * 0x24);
-          *puVar2 = *(undefined4 *)local_8;
-          *(byte *)(puVar2 + 1) = (byte)*pUVar5;
+        if (((*(HANDLE *)local_8 != (HANDLE)0xffffffff) && ((*pbVar5 & 1) != 0)) &&
+           (((*pbVar5 & 8) != 0 || (DVar4 = GetFileType(*(HANDLE *)local_8), DVar4 != 0)))) {
+          ppvVar2 = (&crt_pioinfo_table)[(int)uVar7 >> 5];
+          ppvVar2[(uVar7 & 0x1f) * 9] = *(void **)local_8;
+          *(byte *)(ppvVar2 + (uVar7 & 0x1f) * 9 + 1) = *pbVar5;
         }
         local_8 = local_8 + 4;
         uVar7 = uVar7 + 1;
-        pUVar5 = (UINT *)((int)pUVar5 + 1);
-      } while ((int)uVar7 < (int)UVar9);
+        pbVar5 = pbVar5 + 1;
+      } while ((int)uVar7 < iVar9);
     }
   }
-  iVar6 = 0;
+  iVar8 = 0;
   do {
-    puVar2 = DAT_004da3c0 + iVar6 * 9;
-    if (DAT_004da3c0[iVar6 * 9] == -1) {
-      *(undefined1 *)(puVar2 + 1) = 0x81;
-      if (iVar6 == 0) {
+    ppvVar2 = crt_pioinfo_table + iVar8 * 9;
+    if (crt_pioinfo_table[iVar8 * 9] == (void *)0xffffffff) {
+      *(undefined1 *)(ppvVar2 + 1) = 0x81;
+      if (iVar8 == 0) {
         DVar4 = 0xfffffff6;
       }
       else {
-        DVar4 = 0xfffffff5 - (iVar6 != 1);
+        DVar4 = 0xfffffff5 - (iVar8 != 1);
       }
       hFile = GetStdHandle(DVar4);
       if ((hFile != (HANDLE)0xffffffff) && (DVar4 = GetFileType(hFile), DVar4 != 0)) {
-        *puVar2 = hFile;
+        *ppvVar2 = hFile;
         if ((DVar4 & 0xff) != 2) {
           if ((DVar4 & 0xff) == 3) {
-            *(byte *)(puVar2 + 1) = *(byte *)(puVar2 + 1) | 8;
+            *(byte *)(ppvVar2 + 1) = *(byte *)(ppvVar2 + 1) | 8;
           }
           goto LAB_004663e2;
         }
       }
-      *(byte *)(puVar2 + 1) = *(byte *)(puVar2 + 1) | 0x40;
+      *(byte *)(ppvVar2 + 1) = *(byte *)(ppvVar2 + 1) | 0x40;
     }
     else {
-      *(byte *)(puVar2 + 1) = *(byte *)(puVar2 + 1) | 0x80;
+      *(byte *)(ppvVar2 + 1) = *(byte *)(ppvVar2 + 1) | 0x80;
     }
 LAB_004663e2:
-    iVar6 = iVar6 + 1;
-    if (2 < iVar6) {
-      SetHandleCount(DAT_004da4c0);
+    iVar8 = iVar8 + 1;
+    if (2 < iVar8) {
+      SetHandleCount(crt_nhandle);
       return;
     }
   } while( true );
@@ -54162,8 +54160,8 @@ long __cdecl crt_lseek(int fd,long offset,int origin)
   int *piVar2;
   uint *puVar3;
   
-  if (((uint)fd < DAT_004da4c0) &&
-     ((*(byte *)((&DAT_004da3c0)[fd >> 5] + 4 + (fd & 0x1fU) * 0x24) & 1) != 0)) {
+  if (((uint)fd < (uint)crt_nhandle) &&
+     (((uint)(&crt_pioinfo_table)[fd >> 5][(fd & 0x1fU) * 9 + 1] & 1) != 0)) {
     crt_lock_fh(fd);
     lVar1 = crt_lseek_nolock(fd,offset,origin);
     crt_unlock_fh(fd);
@@ -54185,29 +54183,28 @@ long __cdecl crt_lseek(int fd,long offset,int origin)
 long __cdecl crt_lseek_nolock(int fd,long offset,int origin)
 
 {
-  byte *pbVar1;
   void *hFile;
-  int *piVar2;
-  DWORD DVar3;
+  int *piVar1;
+  DWORD DVar2;
   uint os_error;
   
   hFile = crt_get_osfhandle(fd);
   if (hFile == (void *)0xffffffff) {
-    piVar2 = crt_errno_ptr();
-    *piVar2 = 9;
+    piVar1 = crt_errno_ptr();
+    *piVar1 = 9;
   }
   else {
-    DVar3 = SetFilePointer(hFile,offset,(PLONG)0x0,origin);
-    if (DVar3 == 0xffffffff) {
+    DVar2 = SetFilePointer(hFile,offset,(PLONG)0x0,origin);
+    if (DVar2 == 0xffffffff) {
       os_error = GetLastError();
     }
     else {
       os_error = 0;
     }
     if (os_error == 0) {
-      pbVar1 = (byte *)((&DAT_004da3c0)[fd >> 5] + 4 + (fd & 0x1fU) * 0x24);
-      *pbVar1 = *pbVar1 & 0xfd;
-      return DVar3;
+      *(byte *)((&crt_pioinfo_table)[fd >> 5] + (fd & 0x1fU) * 9 + 1) =
+           *(byte *)((&crt_pioinfo_table)[fd >> 5] + (fd & 0x1fU) * 9 + 1) & 0xfd;
+      return DVar2;
     }
     crt_dosmaperr(os_error);
   }
@@ -54454,7 +54451,7 @@ LAB_00466894:
         if (local_24 != (void *)0x0) goto LAB_00466888;
       }
 LAB_00466899:
-      local_24 = HeapAlloc(DAT_004da3a4,8,uVar2);
+      local_24 = HeapAlloc(crt_heap_handle,8,uVar2);
     }
     if (local_24 != (LPVOID)0x0) {
       ExceptionList = local_14;
@@ -54738,8 +54735,8 @@ undefined4 __cdecl crt_heap_init(int param_1)
 {
   undefined **ppuVar1;
   
-  DAT_004da3a4 = HeapCreate((uint)(param_1 == 0),0x1000,0);
-  if (DAT_004da3a4 != (HANDLE)0x0) {
+  crt_heap_handle = HeapCreate((uint)(param_1 == 0),0x1000,0);
+  if (crt_heap_handle != (HANDLE)0x0) {
     crt_heap_mode = crt_heap_select();
     if (crt_heap_mode == 3) {
       ppuVar1 = (undefined **)crt_sbh_init(0x3f8);
@@ -54753,7 +54750,7 @@ undefined4 __cdecl crt_heap_init(int param_1)
     if (ppuVar1 != (undefined **)0x0) {
       return 1;
     }
-    HeapDestroy(DAT_004da3a4);
+    HeapDestroy(crt_heap_handle);
   }
   return 0;
 }
@@ -54767,7 +54764,7 @@ undefined4 __cdecl crt_heap_init(int param_1)
 undefined4 __cdecl crt_sbh_init(undefined4 param_1)
 
 {
-  DAT_004da39c = HeapAlloc(DAT_004da3a4,0,0x140);
+  DAT_004da39c = HeapAlloc(crt_heap_handle,0,0x140);
   if (DAT_004da39c == (LPVOID)0x0) {
     return 0;
   }
@@ -54948,7 +54945,7 @@ int * __cdecl FUN_00466ca6(void *arg1,int *arg2)
         }
         if (*(int *)((int)DAT_004da394 + 8) == -1) {
           VirtualFree(*(LPVOID *)((int)DAT_004da394 + 0xc),0,0x8000);
-          HeapFree(DAT_004da3a4,0,*(LPVOID *)((int)DAT_004da394 + 0x10));
+          HeapFree(crt_heap_handle,0,*(LPVOID *)((int)DAT_004da394 + 0x10));
           crt_memmove(DAT_004da394,(void *)((int)DAT_004da394 + 0x14),
                       (DAT_004da398 * 0x14 - (int)DAT_004da394) + -0x14 + DAT_004da39c);
           DAT_004da398 = DAT_004da398 + -1;
@@ -55143,7 +55140,7 @@ int * FUN_004672d8(void)
   LPVOID pvVar2;
   
   if (DAT_004da398 == DAT_004da388) {
-    pvVar2 = HeapReAlloc(DAT_004da3a4,0,DAT_004da39c,(DAT_004da388 * 5 + 0x50) * 4);
+    pvVar2 = HeapReAlloc(crt_heap_handle,0,DAT_004da39c,(DAT_004da388 * 5 + 0x50) * 4);
     if (pvVar2 == (LPVOID)0x0) {
       return (int *)0x0;
     }
@@ -55151,7 +55148,7 @@ int * FUN_004672d8(void)
     DAT_004da39c = pvVar2;
   }
   piVar1 = (int *)((int)DAT_004da39c + DAT_004da398 * 0x14);
-  pvVar2 = HeapAlloc(DAT_004da3a4,8,0x41c4);
+  pvVar2 = HeapAlloc(crt_heap_handle,8,0x41c4);
   piVar1[4] = (int)pvVar2;
   if (pvVar2 != (LPVOID)0x0) {
     pvVar2 = VirtualAlloc((LPVOID)0x0,0x100000,0x2000,4);
@@ -55164,7 +55161,7 @@ int * FUN_004672d8(void)
       *(undefined4 *)piVar1[4] = 0xffffffff;
       return piVar1;
     }
-    HeapFree(DAT_004da3a4,0,(LPVOID)piVar1[4]);
+    HeapFree(crt_heap_handle,0,(LPVOID)piVar1[4]);
   }
   return (int *)0x0;
 }
@@ -55437,7 +55434,7 @@ undefined ** crt_sbh_create_region(void)
     lpMem = &PTR_LOOP_0047baf0;
   }
   else {
-    lpMem = HeapAlloc(DAT_004da3a4,0,0x2020);
+    lpMem = HeapAlloc(crt_heap_handle,0,0x2020);
     if (lpMem == (undefined **)0x0) {
       return (undefined **)0x0;
     }
@@ -55484,7 +55481,7 @@ undefined ** crt_sbh_create_region(void)
     VirtualFree(lpAddress,0,0x8000);
   }
   if (lpMem != &PTR_LOOP_0047baf0) {
-    HeapFree(DAT_004da3a4,0,lpMem);
+    HeapFree(crt_heap_handle,0,lpMem);
   }
   return (undefined **)0x0;
 }
@@ -55509,7 +55506,7 @@ BOOL __cdecl FUN_004678be(int *arg1)
   if ((undefined **)arg1 != &PTR_LOOP_0047baf0) {
     *(int *)arg1[1] = *arg1;
     *(int *)(*arg1 + 4) = arg1[1];
-    WVar2 = HeapFree(DAT_004da3a4,0,arg1);
+    WVar2 = HeapFree(crt_heap_handle,0,arg1);
     return WVar2;
   }
   DAT_0047bb00 = 0xffffffff;
@@ -56744,8 +56741,8 @@ void crt_build_environ(void)
 {
   char cVar1;
   size_t sVar2;
-  undefined4 *puVar3;
-  void *pvVar4;
+  char **ppcVar3;
+  char *pcVar4;
   int iVar5;
   char *pcVar6;
   
@@ -56759,9 +56756,9 @@ void crt_build_environ(void)
     }
     sVar2 = _strlen(pcVar6);
   }
-  puVar3 = _malloc(iVar5 * 4 + 4);
-  DAT_004d99a0 = puVar3;
-  if (puVar3 == (undefined4 *)0x0) {
+  ppcVar3 = _malloc(iVar5 * 4 + 4);
+  crt_environ = ppcVar3;
+  if (ppcVar3 == (char **)0x0) {
     __amsg_exit(9);
   }
   cVar1 = *DAT_004d99c4;
@@ -56769,20 +56766,20 @@ void crt_build_environ(void)
   while (cVar1 != '\0') {
     sVar2 = _strlen(pcVar6);
     if (*pcVar6 != '=') {
-      pvVar4 = _malloc(sVar2 + 1);
-      *puVar3 = pvVar4;
-      if (pvVar4 == (void *)0x0) {
+      pcVar4 = _malloc(sVar2 + 1);
+      *ppcVar3 = pcVar4;
+      if (pcVar4 == (char *)0x0) {
         __amsg_exit(9);
       }
-      crt_strcpy((char *)*puVar3,pcVar6);
-      puVar3 = puVar3 + 1;
+      crt_strcpy(*ppcVar3,pcVar6);
+      ppcVar3 = ppcVar3 + 1;
     }
     pcVar6 = pcVar6 + sVar2 + 1;
     cVar1 = *pcVar6;
   }
   crt_free_base(DAT_004d99c4);
   DAT_004d99c4 = (char *)0x0;
-  *puVar3 = 0;
+  *ppcVar3 = (char *)0x0;
   DAT_004db4e8 = 1;
   return;
 }
@@ -59179,9 +59176,9 @@ FUN_0046a8ce(DWORD param_1,LPCSTR param_2,int param_3,LPWORD param_4,UINT param_
 uint FUN_0046aa98(void)
 
 {
-  undefined4 *puVar1;
-  undefined4 *puVar2;
-  int *piVar3;
+  void **ppvVar1;
+  void **ppvVar2;
+  void ***pppvVar3;
   uint fd;
   int local_8;
   int local_4;
@@ -59190,45 +59187,45 @@ uint FUN_0046aa98(void)
   crt_lock(0x12);
   local_8 = 0;
   local_4 = 0;
-  piVar3 = &DAT_004da3c0;
-  while (puVar2 = (undefined4 *)*piVar3, puVar1 = puVar2, puVar2 != (undefined4 *)0x0) {
-    for (; puVar2 < puVar1 + 0x120; puVar2 = puVar2 + 9) {
-      if ((*(byte *)(puVar2 + 1) & 1) == 0) {
-        if (puVar2[2] == 0) {
+  pppvVar3 = &crt_pioinfo_table;
+  while (ppvVar2 = *pppvVar3, ppvVar1 = ppvVar2, ppvVar2 != (void **)0x0) {
+    for (; ppvVar2 < ppvVar1 + 0x120; ppvVar2 = ppvVar2 + 9) {
+      if (((uint)ppvVar2[1] & 1) == 0) {
+        if (ppvVar2[2] == (void *)0x0) {
           crt_lock(0x11);
-          if (puVar2[2] == 0) {
-            InitializeCriticalSection((LPCRITICAL_SECTION)(puVar2 + 3));
-            puVar2[2] = puVar2[2] + 1;
+          if (ppvVar2[2] == (void *)0x0) {
+            InitializeCriticalSection((LPCRITICAL_SECTION)(ppvVar2 + 3));
+            ppvVar2[2] = (void *)((int)ppvVar2[2] + 1);
           }
           crt_unlock(0x11);
         }
-        EnterCriticalSection((LPCRITICAL_SECTION)(puVar2 + 3));
-        if ((*(byte *)(puVar2 + 1) & 1) == 0) {
-          *puVar2 = 0xffffffff;
-          fd = ((int)puVar2 - *piVar3) / 0x24 + local_4;
+        EnterCriticalSection((LPCRITICAL_SECTION)(ppvVar2 + 3));
+        if (((uint)ppvVar2[1] & 1) == 0) {
+          *ppvVar2 = (void *)0xffffffff;
+          fd = ((int)ppvVar2 - (int)*pppvVar3) / 0x24 + local_4;
           if (fd != 0xffffffff) goto LAB_0046abaa;
           break;
         }
-        LeaveCriticalSection((LPCRITICAL_SECTION)(puVar2 + 3));
+        LeaveCriticalSection((LPCRITICAL_SECTION)(ppvVar2 + 3));
       }
-      puVar1 = (undefined4 *)*piVar3;
+      ppvVar1 = *pppvVar3;
     }
     local_4 = local_4 + 0x20;
-    piVar3 = piVar3 + 1;
+    pppvVar3 = pppvVar3 + 1;
     local_8 = local_8 + 1;
-    if (0x4da4bf < (int)piVar3) goto LAB_0046abaa;
+    if (0x4da4bf < (int)pppvVar3) goto LAB_0046abaa;
   }
-  puVar2 = _malloc(0x480);
-  if (puVar2 != (undefined4 *)0x0) {
-    DAT_004da4c0 = DAT_004da4c0 + 0x20;
-    (&DAT_004da3c0)[local_8] = puVar2;
-    puVar1 = puVar2;
-    for (; puVar2 < puVar1 + 0x120; puVar2 = puVar2 + 9) {
-      *(undefined1 *)(puVar2 + 1) = 0;
-      *puVar2 = 0xffffffff;
-      puVar2[2] = 0;
-      *(undefined1 *)((int)puVar2 + 5) = 10;
-      puVar1 = (undefined4 *)(&DAT_004da3c0)[local_8];
+  ppvVar2 = _malloc(0x480);
+  if (ppvVar2 != (void **)0x0) {
+    crt_nhandle = crt_nhandle + 0x20;
+    (&crt_pioinfo_table)[local_8] = ppvVar2;
+    ppvVar1 = ppvVar2;
+    for (; ppvVar2 < ppvVar1 + 0x120; ppvVar2 = ppvVar2 + 9) {
+      *(undefined1 *)(ppvVar2 + 1) = 0;
+      *ppvVar2 = (void *)0xffffffff;
+      ppvVar2[2] = (void *)0x0;
+      *(undefined1 *)((int)ppvVar2 + 5) = 10;
+      ppvVar1 = (&crt_pioinfo_table)[local_8];
     }
     fd = local_8 << 5;
     crt_lock_fh(fd);
@@ -59249,12 +59246,10 @@ int __cdecl FUN_0046abbb(int arg1,HANDLE arg2)
 {
   int *piVar1;
   uint *puVar2;
-  int iVar3;
   DWORD nStdHandle;
   
-  if ((uint)arg1 < DAT_004da4c0) {
-    iVar3 = (arg1 & 0x1fU) * 0x24;
-    if (*(int *)((&DAT_004da3c0)[arg1 >> 5] + iVar3) == -1) {
+  if ((uint)arg1 < (uint)crt_nhandle) {
+    if ((&crt_pioinfo_table)[arg1 >> 5][(arg1 & 0x1fU) * 9] == (void *)0xffffffff) {
       if (DAT_0047b184 == 1) {
         if (arg1 == 0) {
           nStdHandle = 0xfffffff6;
@@ -59269,7 +59264,7 @@ int __cdecl FUN_0046abbb(int arg1,HANDLE arg2)
         SetStdHandle(nStdHandle,arg2);
       }
 LAB_0046ac14:
-      *(HANDLE *)((&DAT_004da3c0)[arg1 >> 5] + iVar3) = arg2;
+      (&crt_pioinfo_table)[arg1 >> 5][(arg1 & 0x1fU) * 9] = arg2;
       return 0;
     }
   }
@@ -59289,15 +59284,14 @@ LAB_0046ac14:
 int __cdecl FUN_0046ac37(int arg1)
 
 {
-  int *piVar1;
-  uint *puVar2;
-  int iVar3;
+  void **ppvVar1;
+  int *piVar2;
+  uint *puVar3;
   DWORD nStdHandle;
   
-  if ((uint)arg1 < DAT_004da4c0) {
-    iVar3 = (arg1 & 0x1fU) * 0x24;
-    piVar1 = (int *)((&DAT_004da3c0)[arg1 >> 5] + iVar3);
-    if (((*(byte *)(piVar1 + 1) & 1) != 0) && (*piVar1 != -1)) {
+  if ((uint)arg1 < (uint)crt_nhandle) {
+    ppvVar1 = (&crt_pioinfo_table)[arg1 >> 5] + (arg1 & 0x1fU) * 9;
+    if ((((uint)ppvVar1[1] & 1) != 0) && (*ppvVar1 != (void *)0xffffffff)) {
       if (DAT_0047b184 == 1) {
         if (arg1 == 0) {
           nStdHandle = 0xfffffff6;
@@ -59312,14 +59306,14 @@ int __cdecl FUN_0046ac37(int arg1)
         SetStdHandle(nStdHandle,(HANDLE)0x0);
       }
 LAB_0046ac93:
-      *(undefined4 *)((&DAT_004da3c0)[arg1 >> 5] + iVar3) = 0xffffffff;
+      (&crt_pioinfo_table)[arg1 >> 5][(arg1 & 0x1fU) * 9] = (void *)0xffffffff;
       return 0;
     }
   }
-  piVar1 = crt_errno_ptr();
-  *piVar1 = 9;
-  puVar2 = crt_doserrno_ptr();
-  *puVar2 = 0;
+  piVar2 = crt_errno_ptr();
+  *piVar2 = 9;
+  puVar3 = crt_doserrno_ptr();
+  *puVar3 = 0;
   return -1;
 }
 
@@ -59335,9 +59329,9 @@ void * __cdecl crt_get_osfhandle(int fd)
   int *piVar1;
   uint *puVar2;
   
-  if (((uint)fd < DAT_004da4c0) &&
-     ((*(byte *)((&DAT_004da3c0)[fd >> 5] + 4 + (fd & 0x1fU) * 0x24) & 1) != 0)) {
-    return *(void **)((&DAT_004da3c0)[fd >> 5] + (fd & 0x1fU) * 0x24);
+  if (((uint)fd < (uint)crt_nhandle) &&
+     (((uint)(&crt_pioinfo_table)[fd >> 5][(fd & 0x1fU) * 9 + 1] & 1) != 0)) {
+    return (&crt_pioinfo_table)[fd >> 5][(fd & 0x1fU) * 9];
   }
   piVar1 = crt_errno_ptr();
   *piVar1 = 9;
@@ -59355,20 +59349,20 @@ void * __cdecl crt_get_osfhandle(int fd)
 void __cdecl crt_lock_fh(uint fd)
 
 {
-  int iVar1;
-  int iVar2;
+  void **ppvVar1;
+  uint uVar2;
   
-  iVar2 = (fd & 0x1f) * 0x24;
-  iVar1 = (&DAT_004da3c0)[(int)fd >> 5] + iVar2;
-  if (*(int *)(iVar1 + 8) == 0) {
+  uVar2 = fd & 0x1f;
+  ppvVar1 = (&crt_pioinfo_table)[(int)fd >> 5];
+  if (ppvVar1[uVar2 * 9 + 2] == (void *)0x0) {
     crt_lock(0x11);
-    if (*(int *)(iVar1 + 8) == 0) {
-      InitializeCriticalSection((LPCRITICAL_SECTION)(iVar1 + 0xc));
-      *(int *)(iVar1 + 8) = *(int *)(iVar1 + 8) + 1;
+    if (ppvVar1[uVar2 * 9 + 2] == (void *)0x0) {
+      InitializeCriticalSection((LPCRITICAL_SECTION)(ppvVar1 + uVar2 * 9 + 3));
+      ppvVar1[uVar2 * 9 + 2] = (void *)((int)ppvVar1[uVar2 * 9 + 2] + 1);
     }
     crt_unlock(0x11);
   }
-  EnterCriticalSection((LPCRITICAL_SECTION)((&DAT_004da3c0)[(int)fd >> 5] + 0xc + iVar2));
+  EnterCriticalSection((LPCRITICAL_SECTION)((&crt_pioinfo_table)[(int)fd >> 5] + uVar2 * 9 + 3));
   return;
 }
 
@@ -59382,7 +59376,7 @@ void __cdecl crt_unlock_fh(uint fd)
 
 {
   LeaveCriticalSection
-            ((LPCRITICAL_SECTION)((&DAT_004da3c0)[(int)fd >> 5] + 0xc + (fd & 0x1f) * 0x24));
+            ((LPCRITICAL_SECTION)((&crt_pioinfo_table)[(int)fd >> 5] + (fd & 0x1f) * 9 + 3));
   return;
 }
 
@@ -59424,7 +59418,7 @@ void __cdecl crt_file_buffer_init(FILE *fp)
 int __cdecl crt_sopen(char *filename,int oflag,int shflag,int pmode)
 
 {
-  byte *pbVar1;
+  void **ppvVar1;
   uint uVar2;
   uint fd;
   int *piVar3;
@@ -59433,24 +59427,23 @@ int __cdecl crt_sopen(char *filename,int oflag,int shflag,int pmode)
   DWORD DVar5;
   int iVar6;
   long lVar7;
-  int iVar8;
-  bool bVar9;
+  bool bVar8;
   _SECURITY_ATTRIBUTES local_20;
   DWORD local_14;
   DWORD local_10;
   DWORD local_c;
   byte local_5;
   
-  bVar9 = (oflag & 0x80U) == 0;
+  bVar8 = (oflag & 0x80U) == 0;
   local_20.nLength = 0xc;
   local_20.lpSecurityDescriptor = (LPVOID)0x0;
-  if (bVar9) {
+  if (bVar8) {
     local_5 = 0;
   }
   else {
     local_5 = 0x10;
   }
-  local_20.bInheritHandle = (WINBOOL)bVar9;
+  local_20.bInheritHandle = (WINBOOL)bVar8;
   if (((oflag & 0x8000U) == 0) && (((oflag & 0x4000U) != 0 || (DAT_004d9cd8 != 0x8000)))) {
     local_5 = local_5 | 0x80;
   }
@@ -59549,9 +59542,8 @@ LAB_0046aeeb:
         local_5 = local_5 | 8;
       }
       FUN_0046abbb(fd,hFile);
-      iVar8 = (fd & 0x1f) * 0x24;
       filename._3_1_ = local_5 & 0x48;
-      *(byte *)((&DAT_004da3c0)[(int)fd >> 5] + 4 + iVar8) = local_5 | 1;
+      *(byte *)((&crt_pioinfo_table)[(int)fd >> 5] + (fd & 0x1f) * 9 + 1) = local_5 | 1;
       if ((((local_5 & 0x48) == 0) && ((local_5 & 0x80) != 0)) && ((oflag & 2U) != 0)) {
         local_14 = crt_lseek_nolock(fd,-1,2);
         if (local_14 == 0xffffffff) {
@@ -59572,8 +59564,8 @@ LAB_0046aeeb:
 LAB_0046b065:
         uVar2 = fd;
         if ((filename._3_1_ == 0) && ((oflag & 8U) != 0)) {
-          pbVar1 = (byte *)((&DAT_004da3c0)[(int)fd >> 5] + 4 + iVar8);
-          *pbVar1 = *pbVar1 | 0x20;
+          ppvVar1 = (&crt_pioinfo_table)[(int)fd >> 5] + (fd & 0x1f) * 9 + 1;
+          *(byte *)ppvVar1 = *(byte *)ppvVar1 | 0x20;
         }
       }
       goto LAB_0046b07e;
@@ -59595,10 +59587,10 @@ LAB_0046b07e:
 byte __cdecl FUN_0046b08c(uint param_1)
 
 {
-  if (DAT_004da4c0 <= param_1) {
+  if ((uint)crt_nhandle <= param_1) {
     return 0;
   }
-  return *(byte *)((&DAT_004da3c0)[(int)param_1 >> 5] + 4 + (param_1 & 0x1f) * 0x24) & 0x40;
+  return *(byte *)((&crt_pioinfo_table)[(int)param_1 >> 5] + (param_1 & 0x1f) * 9 + 1) & 0x40;
 }
 
 
@@ -62469,18 +62461,18 @@ int __cdecl FUN_0046e0d7(uchar *param_1)
   int iVar1;
   size_t _MaxCount;
   size_t sVar2;
-  int *piVar3;
+  char **ppcVar3;
   
   if (((DAT_004db4e8 != 0) &&
-      ((DAT_004d99a0 != (int *)0x0 ||
-       (((DAT_004d99a8 != 0 && (iVar1 = FUN_0046e301(), iVar1 == 0)) && (DAT_004d99a0 != (int *)0x0)
-        ))))) && (piVar3 = DAT_004d99a0, param_1 != (uchar *)0x0)) {
+      ((crt_environ != (char **)0x0 ||
+       (((DAT_004d99a8 != 0 && (iVar1 = FUN_0046e301(), iVar1 == 0)) &&
+        (crt_environ != (char **)0x0)))))) && (ppcVar3 = crt_environ, param_1 != (uchar *)0x0)) {
     _MaxCount = _strlen((char *)param_1);
-    for (; (char *)*piVar3 != (char *)0x0; piVar3 = piVar3 + 1) {
-      sVar2 = _strlen((char *)*piVar3);
-      if (((_MaxCount < sVar2) && (((uchar *)*piVar3)[_MaxCount] == '=')) &&
-         (iVar1 = __mbsnbicoll((uchar *)*piVar3,param_1,_MaxCount), iVar1 == 0)) {
-        return *piVar3 + 1 + _MaxCount;
+    for (; *ppcVar3 != (char *)0x0; ppcVar3 = ppcVar3 + 1) {
+      sVar2 = _strlen(*ppcVar3);
+      if (((_MaxCount < sVar2) && ((*ppcVar3)[_MaxCount] == '=')) &&
+         (iVar1 = __mbsnbicoll((uchar *)*ppcVar3,param_1,_MaxCount), iVar1 == 0)) {
+        return (int)(*ppcVar3 + _MaxCount + 1);
       }
     }
   }
@@ -62605,7 +62597,7 @@ int __cdecl FUN_0046e261(uint param_1,int param_2)
   int *piVar2;
   byte bVar3;
   
-  bVar1 = *(byte *)((&DAT_004da3c0)[(int)param_1 >> 5] + 4 + (param_1 & 0x1f) * 0x24);
+  bVar1 = *(byte *)((&crt_pioinfo_table)[(int)param_1 >> 5] + (param_1 & 0x1f) * 9 + 1);
   if (param_2 == 0x8000) {
     bVar3 = bVar1 & 0x7f;
   }
@@ -62617,7 +62609,7 @@ int __cdecl FUN_0046e261(uint param_1,int param_2)
     }
     bVar3 = bVar1 | 0x80;
   }
-  *(byte *)((&DAT_004da3c0)[(int)param_1 >> 5] + 4 + (param_1 & 0x1f) * 0x24) = bVar3;
+  *(byte *)((&crt_pioinfo_table)[(int)param_1 >> 5] + (param_1 & 0x1f) * 9 + 1) = bVar3;
   return (-(uint)((bVar1 & 0x80) != 0) & 0xffffc000) + 0x8000;
 }
 
@@ -62868,10 +62860,10 @@ int __cdecl FUN_0046e617(char *arg1,int arg2)
 {
   byte *pbVar1;
   int iVar2;
-  int *piVar3;
+  char **ppcVar3;
   size_t sVar4;
   char *dst;
-  int *piVar5;
+  char **ppcVar5;
   bool bVar6;
   
   if (arg1 == (char *)0x0) {
@@ -62885,19 +62877,19 @@ int __cdecl FUN_0046e617(char *arg1,int arg2)
     return -1;
   }
   bVar6 = pbVar1[1] == 0;
-  if (DAT_004d99a0 == DAT_004d99a4) {
-    DAT_004d99a0 = FUN_0046e7f6(DAT_004d99a0);
+  if (crt_environ == DAT_004d99a4) {
+    crt_environ = FUN_0046e7f6((int *)crt_environ);
   }
-  if (DAT_004d99a0 == (int *)0x0) {
+  if (crt_environ == (char **)0x0) {
     if ((arg2 == 0) || (DAT_004d99a8 == (undefined4 *)0x0)) {
       if (bVar6) {
         return 0;
       }
-      DAT_004d99a0 = _malloc(4);
-      if (DAT_004d99a0 == (int *)0x0) {
+      crt_environ = _malloc(4);
+      if (crt_environ == (char **)0x0) {
         return -1;
       }
-      *DAT_004d99a0 = 0;
+      *crt_environ = (char *)0x0;
       if (DAT_004d99a8 == (undefined4 *)0x0) {
         DAT_004d99a8 = _malloc(4);
         if (DAT_004d99a8 == (undefined4 *)0x0) {
@@ -62913,37 +62905,37 @@ int __cdecl FUN_0046e617(char *arg1,int arg2)
       }
     }
   }
-  piVar3 = DAT_004d99a0;
+  ppcVar3 = crt_environ;
   iVar2 = FUN_0046e79e((uchar *)arg1,(int)pbVar1 - (int)arg1);
-  if ((iVar2 < 0) || (*piVar3 == 0)) {
+  if ((iVar2 < 0) || (*ppcVar3 == (char *)0x0)) {
     if (bVar6) {
       return 0;
     }
     if (iVar2 < 0) {
       iVar2 = -iVar2;
     }
-    piVar3 = crt_realloc(piVar3,iVar2 * 4 + 8);
-    if (piVar3 == (int *)0x0) {
+    ppcVar3 = crt_realloc(ppcVar3,iVar2 * 4 + 8);
+    if (ppcVar3 == (char **)0x0) {
       return -1;
     }
-    piVar3[iVar2] = (int)arg1;
-    piVar3[iVar2 + 1] = 0;
+    ppcVar3[iVar2] = arg1;
+    ppcVar3[iVar2 + 1] = (char *)0x0;
   }
   else {
     if (!bVar6) {
-      piVar3[iVar2] = (int)arg1;
+      ppcVar3[iVar2] = arg1;
       goto LAB_0046e74b;
     }
-    piVar5 = piVar3 + iVar2;
-    crt_free_base((void *)piVar3[iVar2]);
-    for (; *piVar5 != 0; piVar5 = piVar5 + 1) {
+    ppcVar5 = ppcVar3 + iVar2;
+    crt_free_base(ppcVar3[iVar2]);
+    for (; *ppcVar5 != (char *)0x0; ppcVar5 = ppcVar5 + 1) {
       iVar2 = iVar2 + 1;
-      *piVar5 = piVar5[1];
+      *ppcVar5 = ppcVar5[1];
     }
-    piVar3 = crt_realloc(piVar3,iVar2 << 2);
-    if (piVar3 == (int *)0x0) goto LAB_0046e74b;
+    ppcVar3 = crt_realloc(ppcVar3,iVar2 << 2);
+    if (ppcVar3 == (char **)0x0) goto LAB_0046e74b;
   }
-  DAT_004d99a0 = piVar3;
+  crt_environ = ppcVar3;
 LAB_0046e74b:
   if (arg2 != 0) {
     sVar4 = _strlen(arg1);
@@ -62968,21 +62960,20 @@ int __cdecl FUN_0046e79e(uchar *param_1,size_t param_2)
 {
   uchar *_Str2;
   int iVar1;
-  int *piVar2;
+  char **ppcVar2;
   
-  _Str2 = (uchar *)*DAT_004d99a0;
-  piVar2 = DAT_004d99a0;
+  _Str2 = (uchar *)*crt_environ;
+  ppcVar2 = crt_environ;
   while( true ) {
     if (_Str2 == (uchar *)0x0) {
-      return -((int)piVar2 - (int)DAT_004d99a0 >> 2);
+      return -((int)ppcVar2 - (int)crt_environ >> 2);
     }
     iVar1 = __mbsnbicoll(param_1,_Str2,param_2);
-    if ((iVar1 == 0) &&
-       ((*(char *)(*piVar2 + param_2) == '=' || (*(char *)(*piVar2 + param_2) == '\0')))) break;
-    _Str2 = (uchar *)piVar2[1];
-    piVar2 = piVar2 + 1;
+    if ((iVar1 == 0) && (((*ppcVar2)[param_2] == '=' || ((*ppcVar2)[param_2] == '\0')))) break;
+    _Str2 = (uchar *)ppcVar2[1];
+    ppcVar2 = ppcVar2 + 1;
   }
-  return (int)piVar2 - (int)DAT_004d99a0 >> 2;
+  return (int)ppcVar2 - (int)crt_environ >> 2;
 }
 
 
