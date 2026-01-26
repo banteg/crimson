@@ -112,6 +112,18 @@ function safeReadS32(ptrVal) {
     }
 }
 
+function u32ToF32(u32) {
+    const buf = new ArrayBuffer(4);
+    const view = new DataView(buf);
+    view.setUint32(0, u32 >>> 0, true);
+    return view.getFloat32(0, true);
+}
+
+function argAsF32(arg) {
+    // Interceptor passes args as NativePointer values. For x86 floats are 32-bit.
+    return u32ToF32(arg.toUInt32());
+}
+
 function uvIndex8(u0, v0) {
     if (u0 == null || v0 == null) return null;
     const step = 1.0 / 8.0;
@@ -229,10 +241,10 @@ function main() {
         Interceptor.attach(setUv, {
             onEnter(args) {
                 state.currentUv = {
-                    u0: args[0].readFloat(),
-                    v0: args[1].readFloat(),
-                    u1: args[2].readFloat(),
-                    v1: args[3].readFloat(),
+                    u0: argAsF32(args[0]),
+                    v0: argAsF32(args[1]),
+                    u1: argAsF32(args[2]),
+                    v1: argAsF32(args[3]),
                 };
                 const tid = this.threadId;
                 if (!inPlayer(tid)) return;
@@ -253,7 +265,7 @@ function main() {
     if (!attached.set_rotation) {
         Interceptor.attach(setRotation, {
             onEnter(args) {
-                state.currentRotation = args[0].readFloat();
+                state.currentRotation = argAsF32(args[0]);
             },
         });
         attached.set_rotation = true;
@@ -279,10 +291,10 @@ function main() {
                     uv_index: idx,
                     rotation: state.currentRotation,
                     quad: {
-                        x: args[0].readFloat(),
-                        y: args[1].readFloat(),
-                        w: args[2].readFloat(),
-                        h: args[3].readFloat(),
+                        x: argAsF32(args[0]),
+                        y: argAsF32(args[1]),
+                        w: argAsF32(args[2]),
+                        h: argAsF32(args[3]),
                     },
                 });
             },
