@@ -461,7 +461,12 @@ class SurvivalView:
                 self._enter_game_over()
                 record = self._game_over_record
             if record is not None:
-                action = self._game_over_ui.update(dt, record=record, player_name_default=self._player_name_default())
+                action = self._game_over_ui.update(
+                    dt,
+                    record=record,
+                    player_name_default=self._player_name_default(),
+                    mouse=self._ui_mouse_pos(),
+                )
                 if action == "play_again":
                     self.open()
                     return
@@ -729,7 +734,12 @@ class SurvivalView:
             self._draw_game_cursor()
 
         if self._game_over_active and self._game_over_record is not None:
-            self._game_over_ui.draw(record=self._game_over_record, banner_kind=self._game_over_banner, hud_assets=self._hud_assets)
+            self._game_over_ui.draw(
+                record=self._game_over_record,
+                banner_kind=self._game_over_banner,
+                hud_assets=self._hud_assets,
+                mouse=self._ui_mouse_pos(),
+            )
 
 
 @register_view("survival", "Survival")

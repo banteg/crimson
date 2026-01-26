@@ -304,9 +304,12 @@ class GameOverUi:
         *,
         record: HighScoreRecord,
         player_name_default: str,
+        mouse: rl.Vector2 | None = None,
     ) -> str | None:
         self._dt = float(min(dt, 0.1))
         dt_ms = self._dt * 1000.0
+        if mouse is None:
+            mouse = rl.get_mouse_position()
 
         if self.assets is None:
             return None
@@ -333,7 +336,6 @@ class GameOverUi:
 
         # Basic text input behavior for the name-entry phase.
         if self.phase == 0:
-            mouse = rl.get_mouse_position()
             click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
             typed = _poll_text_input(NAME_MAX_EDIT - len(self.input_text), allow_space=True)
             if typed:
@@ -379,7 +381,6 @@ class GameOverUi:
                 # else: ignore (native plays a buzzer SFX)
         else:
             # Buttons phase: let the caller handle navigation; we just report actions.
-            mouse = rl.get_mouse_position()
             click = rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT)
             screen_w = float(rl.get_screen_width())
             screen_h = float(rl.get_screen_height())
@@ -418,9 +419,9 @@ class GameOverUi:
         alpha: float,
         show_weapon_row: bool,
         scale: float,
+        mouse: rl.Vector2,
     ) -> None:
         dt_hover = float(self._dt) * 2.0
-        mouse = rl.get_mouse_position()
         label_color = rl.Color(COLOR_SCORE_LABEL.r, COLOR_SCORE_LABEL.g, COLOR_SCORE_LABEL.b, int(255 * alpha * 0.8))
         value_color = rl.Color(COLOR_SCORE_VALUE.r, COLOR_SCORE_VALUE.g, COLOR_SCORE_VALUE.b, int(255 * alpha))
         hint_color = rl.Color(COLOR_SCORE_LABEL.r, COLOR_SCORE_LABEL.g, COLOR_SCORE_LABEL.b, int(255 * alpha * 0.7))
@@ -541,9 +542,12 @@ class GameOverUi:
         record: HighScoreRecord,
         banner_kind: str,
         hud_assets: HudAssets | None,
+        mouse: rl.Vector2 | None = None,
     ) -> None:
         if self.assets is None:
             return
+        if mouse is None:
+            mouse = rl.get_mouse_position()
 
         screen_w = float(rl.get_screen_width())
         screen_h = float(rl.get_screen_height())
@@ -608,6 +612,7 @@ class GameOverUi:
                 alpha=1.0,
                 show_weapon_row=False,
                 scale=scale,
+                mouse=mouse,
             )
         else:
             score_card_x = banner_x + 30.0 * scale
@@ -624,11 +629,11 @@ class GameOverUi:
                 alpha=1.0,
                 show_weapon_row=True,
                 scale=scale,
+                mouse=mouse,
             )
 
         # Buttons phase rendering.
         if self.phase == 1:
-            mouse = rl.get_mouse_position()
             score_y = banner_y + (64.0 if self.rank < TABLE_MAX else 62.0) * scale
             button_x = banner_x + 52.0 * scale
             button_y = score_y + 146.0 * scale
@@ -643,5 +648,4 @@ class GameOverUi:
             main_menu_w = button_width(self.font, self._main_menu_button.label, scale=scale, force_wide=self._main_menu_button.force_wide)
             button_draw(self.assets.perk_menu_assets, self.font, self._main_menu_button, x=button_x, y=button_y, width=main_menu_w, scale=scale)
 
-        mouse = rl.get_mouse_position()
         cursor_draw(self.assets.perk_menu_assets, mouse=mouse, scale=scale)
