@@ -260,6 +260,27 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x0047ea60",
+      "comment": "Console token 0: command name (argv[0]) parsed from input line.",
+      "name": "console_cmd_name",
+      "program": "crimsonland.exe",
+      "type": "char*"
+    },
+    {
+      "address": "0x0047ea64",
+      "comment": "Console token 1: first argument (argv[1]) parsed from input line.",
+      "name": "console_cmd_arg1",
+      "program": "crimsonland.exe",
+      "type": "char*"
+    },
+    {
+      "address": "0x0047ea68",
+      "comment": "Console token 2: second argument (argv[2]) parsed from input line.",
+      "name": "console_cmd_arg2",
+      "program": "crimsonland.exe",
+      "type": "char*"
+    },
+    {
       "address": "0x0047eea0",
       "comment": "Console log/list head used by console_printf.",
       "name": "console_log_queue",
@@ -294,6 +315,13 @@
       "comment": "Console open flag (console_log_queue + 0x28). When set, gameplay updates are paused.",
       "name": "console_open_flag",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0047f4cc",
+      "comment": "Console token count (argc; includes the command token at index 0).",
+      "name": "console_cmd_argc",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x0047f4d4",
@@ -5221,6 +5249,12 @@
       "address": "0x1005db54",
       "comment": "Mouse delta Y (pixels) accumulated per poll.",
       "name": "grim_mouse_dy",
+      "program": "grim.dll"
+    },
+    {
+      "address": "0x1005db70",
+      "comment": "Saved x87 FPU control word used by DXT encode helpers (fnstcw/fldcw).",
+      "name": "fpu_control_word_saved_dxt",
       "program": "grim.dll"
     },
     {

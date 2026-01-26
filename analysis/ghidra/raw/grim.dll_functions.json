@@ -4416,9 +4416,9 @@
     "calls": []
   },
   {
-    "name": "FUN_10020708",
+    "name": "fpu_save_control_word",
     "address": "10020708",
-    "signature": "undefined FUN_10020708(undefined4 param_1)",
+    "signature": "void fpu_save_control_word(void)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -4429,7 +4429,7 @@
     "signature": "uint grim_dxt_pack_rgb565(float * rgb)",
     "external": false,
     "calls_total": 1,
-    "calls": ["FUN_10020708"]
+    "calls": ["fpu_save_control_word"]
   },
   {
     "name": "grim_dxt5_optimize_alpha_endpoints",
@@ -4437,7 +4437,7 @@
     "signature": "void grim_dxt5_optimize_alpha_endpoints(float * min_out, float * max_out, float * alphas, uint mode)",
     "external": false,
     "calls_total": 1,
-    "calls": ["FUN_10020708"]
+    "calls": ["fpu_save_control_word"]
   },
   {
     "name": "grim_dxt1_optimize_color_endpoints",
@@ -4445,7 +4445,7 @@
     "signature": "void grim_dxt1_optimize_color_endpoints(float * min_out, float * max_out, float * rgba, float mode)",
     "external": false,
     "calls_total": 1,
-    "calls": ["FUN_10020708"]
+    "calls": ["fpu_save_control_word"]
   },
   {
     "name": "grim_dxt1_encode_color_block",
@@ -4453,7 +4453,7 @@
     "signature": "int grim_dxt1_encode_color_block(ushort * out_block, float mode)",
     "external": false,
     "calls_total": 4,
-    "calls": ["FUN_10020708", "grim_dxt1_optimize_color_endpoints", "grim_dxt_decode_rgb565", "grim_dxt_pack_rgb565"]
+    "calls": ["fpu_save_control_word", "grim_dxt1_optimize_color_endpoints", "grim_dxt_decode_rgb565", "grim_dxt_pack_rgb565"]
   },
   {
     "name": "grim_dxt1_decode_color_block",
@@ -4485,7 +4485,7 @@
     "signature": "void grim_dxt3_encode_block(uint * out_block, float * rgba)",
     "external": false,
     "calls_total": 2,
-    "calls": ["FUN_10020708", "grim_dxt1_encode_color_block"]
+    "calls": ["fpu_save_control_word", "grim_dxt1_encode_color_block"]
   },
   {
     "name": "grim_dxt5_encode_block",
@@ -4493,7 +4493,7 @@
     "signature": "int grim_dxt5_encode_block(uchar * out_block, float * rgba)",
     "external": false,
     "calls_total": 3,
-    "calls": ["FUN_10020708", "grim_dxt1_encode_color_block", "grim_dxt5_optimize_alpha_endpoints"]
+    "calls": ["fpu_save_control_word", "grim_dxt1_encode_color_block", "grim_dxt5_optimize_alpha_endpoints"]
   },
   {
     "name": "grim_dxt2_encode_block",

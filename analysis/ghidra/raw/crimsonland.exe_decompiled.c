@@ -89,29 +89,29 @@ int FUN_004010f0(int arg1,int arg2,int arg3,int arg4)
 
 
 
-/* FUN_00401120 @ 00401120 */
+/* console_cmd_arg_get @ 00401120 */
 
-/* [binja] void* sub_401120(int32_t arg1) */
+/* returns console token N (1..argc-1); returns empty string if out of range */
 
-void * __cdecl FUN_00401120(int arg1)
+char * __cdecl console_cmd_arg_get(int index)
 
 {
-  if (((0 < DAT_0047f4cc) && (0 < arg1)) && (arg1 < DAT_0047f4cc)) {
-    return (void *)(&DAT_0047ea60)[arg1];
+  if (((0 < console_cmd_argc) && (0 < index)) && (index < console_cmd_argc)) {
+    return (&console_cmd_name)[index];
   }
   return PTR_DAT_00471158;
 }
 
 
 
-/* FUN_00401150 @ 00401150 */
+/* console_cmd_argc_get @ 00401150 */
 
-/* [binja] int32_t sub_401150() */
+/* returns current console token count (argc; includes the command token at index 0) */
 
-int FUN_00401150(void)
+int console_cmd_argc_get(void)
 
 {
-  return DAT_0047f4cc;
+  return console_cmd_argc;
 }
 
 
@@ -225,14 +225,14 @@ void console_cmd_exec(void)
   FILE *fp;
   char *pcVar1;
   
-  if (DAT_0047f4cc != 2) {
+  if (console_cmd_argc != 2) {
     console_printf(&console_log_queue,s_exec_<script>_0047118c);
     return;
   }
-  fp = crt_fopen(DAT_0047ea64,&DAT_00471160);
+  fp = crt_fopen(console_cmd_arg1,&DAT_00471160);
   if (fp != (FILE *)0x0) {
-    console_printf(&console_log_queue,s_Executing___s__00471164,DAT_0047ea64);
-    pcVar1 = FUN_00460fac(&DAT_0047e848,0x1ff,(int *)fp);
+    console_printf(&console_log_queue,s_Executing___s__00471164,console_cmd_arg1);
+    pcVar1 = crt_fgets(&DAT_0047e848,0x1ff,fp);
     while (pcVar1 != (char *)0x0) {
       pcVar1 = _strchr(&DAT_0047e848,10);
       if (pcVar1 != (char *)0x0) {
@@ -243,12 +243,12 @@ void console_cmd_exec(void)
          ((DAT_0047e848 != '\0' && (DAT_0047e848 != '#')))) {
         console_exec_line(&console_log_queue,&DAT_0047e848);
       }
-      pcVar1 = FUN_00460fac(&DAT_0047e848,0x1ff,(int *)fp);
+      pcVar1 = crt_fgets(&DAT_0047e848,0x1ff,fp);
     }
     crt_fclose(fp);
     return;
   }
-  console_printf(&console_log_queue,s_Cannot_open_file___s__00471174,DAT_0047ea64);
+  console_printf(&console_log_queue,s_Cannot_open_file___s__00471174,console_cmd_arg1);
   return;
 }
 
@@ -343,14 +343,14 @@ void console_echo(void)
   byte bVar1;
   int iVar2;
   byte *pbVar3;
-  void *pvVar4;
+  char *pcVar4;
   byte *pbVar5;
-  int arg1;
+  int index;
   bool bVar6;
   
-  iVar2 = FUN_00401150();
+  iVar2 = console_cmd_argc_get();
   if (iVar2 == 2) {
-    pbVar3 = FUN_00401120(1);
+    pbVar3 = (byte *)console_cmd_arg_get(1);
     pbVar5 = &DAT_004711cc;
     do {
       bVar1 = *pbVar5;
@@ -374,9 +374,9 @@ LAB_0040145a:
       return;
     }
   }
-  iVar2 = FUN_00401150();
+  iVar2 = console_cmd_argc_get();
   if (iVar2 == 2) {
-    pbVar3 = FUN_00401120(1);
+    pbVar3 = (byte *)console_cmd_arg_get(1);
     pbVar5 = &DAT_004711c8;
     do {
       bVar1 = *pbVar5;
@@ -400,15 +400,15 @@ LAB_004014ae:
       return;
     }
   }
-  arg1 = 1;
-  iVar2 = FUN_00401150();
+  index = 1;
+  iVar2 = console_cmd_argc_get();
   if (1 < iVar2) {
     do {
-      pvVar4 = FUN_00401120(arg1);
-      console_printf(&console_log_queue,&DAT_004711c4,pvVar4);
-      arg1 = arg1 + 1;
-      iVar2 = FUN_00401150();
-    } while (arg1 < iVar2);
+      pcVar4 = console_cmd_arg_get(index);
+      console_printf(&console_log_queue,&DAT_004711c4,pcVar4);
+      index = index + 1;
+      iVar2 = console_cmd_argc_get();
+    } while (index < iVar2);
   }
   console_printf(&console_log_queue,&DAT_004711c0);
   return;
@@ -426,11 +426,11 @@ void console_cmd_set(void)
 {
   undefined4 *puVar1;
   
-  if (DAT_0047f4cc != 3) {
+  if (console_cmd_argc != 3) {
     console_printf(&console_log_queue,s_set_<var>_<value>_004711e4);
     return;
   }
-  puVar1 = console_register_cvar(&console_log_queue,DAT_0047ea64,DAT_0047ea68);
+  puVar1 = console_register_cvar(&console_log_queue,console_cmd_arg1,console_cmd_arg2);
   console_printf(&console_log_queue,s___s__set_to___s__004711d0,*puVar1,puVar1[4]);
   return;
 }
@@ -479,7 +479,7 @@ int * __fastcall console_init(int *console_state)
   _DAT_0047eaa4 = 0;
   _DAT_0047eaa8 = 0;
   _DAT_0047eaac = 0;
-  DAT_0047f4cc = 0;
+  console_cmd_argc = 0;
   console_register_command(console_state,console_cmd_cmdlist,console_cmdlist);
   console_register_command(console_state,&console_cmd_vars,console_vars);
   console_register_command(console_state,&console_cmd_echo,console_echo);
@@ -747,9 +747,9 @@ char __thiscall console_exec_line(void *this,char *line)
   char *str;
   
   console_tokenize_line(line);
-  if (DAT_0047f4cc != 0) {
-    puVar2 = console_cvar_find(this,DAT_0047ea60);
-    pvVar3 = console_command_find(this,DAT_0047ea60);
+  if (console_cmd_argc != 0) {
+    puVar2 = console_cvar_find(this,console_cmd_name);
+    pvVar3 = console_command_find(this,console_cmd_name);
     if (puVar2 == (undefined4 *)0x0) {
       if (pvVar3 == (void *)0x0) {
         cVar1 = console_printf(this,s_Unknown_command___s__0047126c);
@@ -758,15 +758,15 @@ char __thiscall console_exec_line(void *this,char *line)
       cVar1 = (**(code **)((int)pvVar3 + 8))();
       return cVar1;
     }
-    if (DAT_0047f4cc == 2) {
+    if (console_cmd_argc == 2) {
       if ((void *)puVar2[4] != (void *)0x0) {
         crt_free((void *)puVar2[4]);
       }
       puVar2[4] = 0;
-      str = DAT_0047ea64;
-      pcVar4 = strdup_malloc(DAT_0047ea64);
+      str = console_cmd_arg1;
+      pcVar4 = strdup_malloc(console_cmd_arg1);
       puVar2[4] = pcVar4;
-      dVar5 = crt_atof_l(DAT_0047ea64,DAT_0047ea64,str);
+      dVar5 = crt_atof_l(console_cmd_arg1,console_cmd_arg1,str);
       puVar2[3] = (float)dVar5;
       if (*(char *)((int)this + 0xc) != '\0') {
         cVar1 = console_printf(this,s___s__set_to___s____ff__00471298,*puVar2,puVar2[4],
@@ -1423,12 +1423,12 @@ void console_tokenize_line(char *line)
   char *pcVar2;
   uint uVar3;
   uint uVar4;
-  undefined4 *puVar5;
+  char **ppcVar5;
   char *pcVar6;
   int iVar7;
   
-  DAT_0047f4cc = 0;
-  iVar7 = DAT_0047f4cc;
+  console_cmd_argc = 0;
+  iVar7 = console_cmd_argc;
   if (line != (char *)0x0) {
     uVar3 = 0xffffffff;
     pcVar2 = line;
@@ -1462,20 +1462,20 @@ void console_tokenize_line(char *line)
         pcVar6 = pcVar6 + 1;
       }
       pcVar2 = crt_strtok((char *)&DAT_0047eaa0,&DAT_004712d8);
-      iVar7 = DAT_0047f4cc;
+      iVar7 = console_cmd_argc;
       if (pcVar2 != (char *)0x0) {
         iVar7 = 1;
-        puVar5 = &DAT_0047ea64;
-        DAT_0047ea60 = pcVar2;
+        ppcVar5 = &console_cmd_arg1;
+        console_cmd_name = pcVar2;
         while (pcVar2 = crt_strtok((char *)0x0,&DAT_004712d8), pcVar2 != (char *)0x0) {
-          *puVar5 = pcVar2;
+          *ppcVar5 = pcVar2;
           iVar7 = iVar7 + 1;
-          puVar5 = puVar5 + 1;
+          ppcVar5 = ppcVar5 + 1;
         }
       }
     }
   }
-  DAT_0047f4cc = iVar7;
+  console_cmd_argc = iVar7;
   return;
 }
 
@@ -25308,13 +25308,13 @@ void console_cmd_load_texture(void)
   char *path;
   char *name;
   
-  iVar1 = FUN_00401150();
+  iVar1 = console_cmd_argc_get();
   if (iVar1 != 2) {
     console_printf(&console_log_queue,s_loadtexture_<texturefileid>_00473ef0);
     return;
   }
-  path = FUN_00401120(2);
-  name = FUN_00401120(2);
+  path = console_cmd_arg_get(2);
+  name = console_cmd_arg_get(2);
   texture_get_or_load(name,path);
   return;
 }
@@ -25330,32 +25330,31 @@ void console_cmd_set_resource_paq(void)
 
 {
   int iVar1;
-  char *path;
+  char *pcVar2;
   FILE *fp;
-  void *pvVar2;
   uint in_stack_ffffffec;
   uint value;
   char *mode;
   
-  iVar1 = FUN_00401150();
+  iVar1 = console_cmd_argc_get();
   if (iVar1 != 2) {
     console_printf(&console_log_queue,s_setresourcepaq_<resourcepaq>_00473f44);
     return;
   }
   mode = &file_mode_read_binary;
-  path = FUN_00401120(1);
+  pcVar2 = console_cmd_arg_get(1);
   value = 0x42a7f4;
-  fp = crt_fopen(path,mode);
+  fp = crt_fopen(pcVar2,mode);
   if (fp == (FILE *)0x0) {
-    pvVar2 = FUN_00401120(1);
-    console_printf(&console_log_queue,s_File___s__not_found__00473f2c,pvVar2);
+    pcVar2 = console_cmd_arg_get(1);
+    console_printf(&console_log_queue,s_File___s__not_found__00473f2c,pcVar2);
     return;
   }
   crt_fclose(fp);
-  FUN_00401120(1);
+  console_cmd_arg_get(1);
   (*grim_interface_ptr->vtable->grim_set_config_var)((IGrim2D *)0x10,in_stack_ffffffec,value);
-  pvVar2 = FUN_00401120(1);
-  console_printf(&console_log_queue,s_Set_resource_paq_to___s__00473f10,pvVar2);
+  pcVar2 = console_cmd_arg_get(1);
+  console_printf(&console_log_queue,s_Set_resource_paq_to___s__00473f10,pcVar2);
   return;
 }
 
@@ -25387,30 +25386,29 @@ void console_cmd_open_url(void)
 
 {
   int iVar1;
-  LPCCH lpMultiByteStr;
-  HRESULT HVar2;
-  void *pvVar3;
+  char *pcVar2;
+  HRESULT HVar3;
   WCHAR *lpWideCharStr;
   int cchWideChar;
   WCHAR aWStack_208 [260];
   
   lpWideCharStr = aWStack_208;
-  iVar1 = FUN_00401150();
+  iVar1 = console_cmd_argc_get();
   if (iVar1 != 2) {
     console_printf(&console_log_queue,s_openurl_<url>_00473fbc);
     return;
   }
   cchWideChar = 0x104;
   iVar1 = -1;
-  lpMultiByteStr = FUN_00401120(1);
-  MultiByteToWideChar(0,0,lpMultiByteStr,iVar1,lpWideCharStr,cchWideChar);
-  HVar2 = HlinkNavigateString((IUnknown *)0x0,aWStack_208);
-  if (HVar2 < 0) {
+  pcVar2 = console_cmd_arg_get(1);
+  MultiByteToWideChar(0,0,pcVar2,iVar1,lpWideCharStr,cchWideChar);
+  HVar3 = HlinkNavigateString((IUnknown *)0x0,aWStack_208);
+  if (HVar3 < 0) {
     console_printf(&console_log_queue,s_Failed_to_launch_web_browser__00473f9c);
     return;
   }
-  pvVar3 = FUN_00401120(1);
-  console_printf(&console_log_queue,s_Launching_web_browser___s____00473f7c,pvVar3);
+  pcVar2 = console_cmd_arg_get(1);
+  console_printf(&console_log_queue,s_Launching_web_browser___s____00473f7c,pcVar2);
   return;
 }
 
@@ -26289,16 +26287,16 @@ void console_cmd_snd_add_game_tune(void)
 
 {
   int iVar1;
-  void *pvVar2;
+  char *pcVar2;
   char acStack_400 [1024];
   
-  iVar1 = FUN_00401150();
+  iVar1 = console_cmd_argc_get();
   if (iVar1 != 2) {
     console_printf(&console_log_queue,s_snd_addGameTune_<tuneName_ogg>_0047474c);
     return;
   }
-  pvVar2 = FUN_00401120(1);
-  crt_sprintf(acStack_400,s_music__s_00474740,pvVar2);
+  pcVar2 = console_cmd_arg_get(1);
+  crt_sprintf(acStack_400,s_music__s_00474740,pcVar2);
   iVar1 = music_load_track(acStack_400);
   if (-1 < iVar1) {
     music_queue_track(iVar1);
@@ -26317,21 +26315,21 @@ void console_cmd_set_gamma_ramp(void)
 
 {
   int iVar1;
-  void *locale;
+  char *locale;
   void *this;
   double dVar2;
   uint value;
   char *str;
   float id;
   
-  iVar1 = FUN_00401150();
+  iVar1 = console_cmd_argc_get();
   if (iVar1 != 2) {
     console_printf(&console_log_queue,s_setGammaRamp_<scalar_>_0>_004747e4);
     console_printf(&console_log_queue,s_Command_adjusts_gamma_ramp_linea_0047479c);
     return;
   }
   str = (char *)0x1;
-  locale = FUN_00401120(1);
+  locale = console_cmd_arg_get(1);
   value = 0x42c40e;
   dVar2 = crt_atof_l(this,locale,str);
   id = (float)dVar2;
@@ -50335,38 +50333,38 @@ char * __cdecl _strchr(char *_Str,int _Val)
 
 
 
-/* FUN_00460fac @ 00460fac */
+/* crt_fgets @ 00460fac */
 
-/* [binja] char* sub_460fac(char* arg1, int32_t arg2, int32_t* arg3) */
+/* CRT fgets wrapper with file lock/unlock (reads until newline or size-1) */
 
-char * __cdecl FUN_00460fac(char *arg1,int arg2,int *arg3)
+char * __cdecl crt_fgets(char *dst,int dst_len,FILE *fp)
 
 {
   int *piVar1;
   uint uVar2;
   char *pcVar3;
   
-  if (arg2 < 1) {
-    arg1 = (char *)0x0;
+  if (dst_len < 1) {
+    dst = (char *)0x0;
   }
   else {
-    crt_lock_file((FILE *)arg3);
-    pcVar3 = arg1;
+    crt_lock_file(fp);
+    pcVar3 = dst;
     do {
-      arg2 = arg2 + -1;
-      if (arg2 == 0) break;
-      piVar1 = arg3 + 1;
+      dst_len = dst_len + -1;
+      if (dst_len == 0) break;
+      piVar1 = &fp->_cnt;
       *piVar1 = *piVar1 + -1;
       if (*piVar1 < 0) {
-        uVar2 = crt_filbuf((FILE *)arg3);
+        uVar2 = crt_filbuf(fp);
       }
       else {
-        uVar2 = (uint)*(byte *)*arg3;
-        *arg3 = (int)((byte *)*arg3 + 1);
+        uVar2 = (uint)(byte)*fp->_ptr;
+        fp->_ptr = fp->_ptr + 1;
       }
       if (uVar2 == 0xffffffff) {
-        if (pcVar3 == arg1) {
-          arg1 = (char *)0x0;
+        if (pcVar3 == dst) {
+          dst = (char *)0x0;
           goto LAB_00461000;
         }
         break;
@@ -50376,9 +50374,9 @@ char * __cdecl FUN_00460fac(char *arg1,int arg2,int *arg3)
     } while ((char)uVar2 != '\n');
     *pcVar3 = '\0';
 LAB_00461000:
-    crt_unlock_file((FILE *)arg3);
+    crt_unlock_file(fp);
   }
-  return arg1;
+  return dst;
 }
 
 

@@ -32,17 +32,17 @@
     "calls": []
   },
   {
-    "name": "FUN_00401120",
+    "name": "console_cmd_arg_get",
     "address": "00401120",
-    "signature": "void * FUN_00401120(int arg1)",
+    "signature": "char * console_cmd_arg_get(int index)",
     "external": false,
     "calls_total": 0,
     "calls": []
   },
   {
-    "name": "FUN_00401150",
+    "name": "console_cmd_argc_get",
     "address": "00401150",
-    "signature": "int FUN_00401150(void)",
+    "signature": "int console_cmd_argc_get(void)",
     "external": false,
     "calls_total": 0,
     "calls": []
@@ -93,7 +93,7 @@
     "signature": "void console_cmd_exec(void)",
     "external": false,
     "calls_total": 6,
-    "calls": ["FUN_00460fac", "_strchr", "console_exec_line", "console_printf", "crt_fclose", "crt_fopen"]
+    "calls": ["_strchr", "console_exec_line", "console_printf", "crt_fclose", "crt_fgets", "crt_fopen"]
   },
   {
     "name": "console_cmd_extend",
@@ -133,7 +133,7 @@
     "signature": "void console_echo(void)",
     "external": false,
     "calls_total": 3,
-    "calls": ["FUN_00401120", "FUN_00401150", "console_printf"]
+    "calls": ["console_cmd_arg_get", "console_cmd_argc_get", "console_printf"]
   },
   {
     "name": "console_cmd_set",
@@ -1861,7 +1861,7 @@
     "signature": "void console_cmd_load_texture(void)",
     "external": false,
     "calls_total": 4,
-    "calls": ["FUN_00401120", "FUN_00401150", "console_printf", "texture_get_or_load"]
+    "calls": ["console_cmd_arg_get", "console_cmd_argc_get", "console_printf", "texture_get_or_load"]
   },
   {
     "name": "console_cmd_set_resource_paq",
@@ -1869,7 +1869,7 @@
     "signature": "void console_cmd_set_resource_paq(void)",
     "external": false,
     "calls_total": 5,
-    "calls": ["FUN_00401120", "FUN_00401150", "console_printf", "crt_fclose", "crt_fopen"]
+    "calls": ["console_cmd_arg_get", "console_cmd_argc_get", "console_printf", "crt_fclose", "crt_fopen"]
   },
   {
     "name": "console_cmd_tell_time_survived",
@@ -1885,7 +1885,7 @@
     "signature": "void console_cmd_open_url(void)",
     "external": false,
     "calls_total": 5,
-    "calls": ["FUN_00401120", "FUN_00401150", "HlinkNavigateString", "MultiByteToWideChar", "console_printf"]
+    "calls": ["HlinkNavigateString", "MultiByteToWideChar", "console_cmd_arg_get", "console_cmd_argc_get", "console_printf"]
   },
   {
     "name": "console_cmd_snd_freq_adjustment",
@@ -1957,7 +1957,7 @@
     "signature": "void console_cmd_snd_add_game_tune(void)",
     "external": false,
     "calls_total": 6,
-    "calls": ["FUN_00401120", "FUN_00401150", "console_printf", "crt_sprintf", "music_load_track", "music_queue_track"]
+    "calls": ["console_cmd_arg_get", "console_cmd_argc_get", "console_printf", "crt_sprintf", "music_load_track", "music_queue_track"]
   },
   {
     "name": "console_cmd_set_gamma_ramp",
@@ -1965,7 +1965,7 @@
     "signature": "void console_cmd_set_gamma_ramp(void)",
     "external": false,
     "calls_total": 4,
-    "calls": ["FUN_00401120", "FUN_00401150", "console_printf", "crt_atof_l"]
+    "calls": ["console_cmd_arg_get", "console_cmd_argc_get", "console_printf", "crt_atof_l"]
   },
   {
     "name": "crimsonland_main",
@@ -4632,9 +4632,9 @@
     "calls": []
   },
   {
-    "name": "FUN_00460fac",
+    "name": "crt_fgets",
     "address": "00460fac",
-    "signature": "char * FUN_00460fac(char * arg1, int arg2, int * arg3)",
+    "signature": "char * crt_fgets(char * dst, int dst_len, FILE * fp)",
     "external": false,
     "calls_total": 3,
     "calls": ["crt_filbuf", "crt_lock_file", "crt_unlock_file"]

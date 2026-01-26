@@ -30,16 +30,16 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00401120",
-    "name": "FUN_00401120",
-    "signature": "void * FUN_00401120(int arg1)",
-    "comment": "[binja] void* sub_401120(int32_t arg1)"
+    "name": "console_cmd_arg_get",
+    "signature": "char * console_cmd_arg_get(int index)",
+    "comment": "returns console token N (1..argc-1); returns empty string if out of range"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00401150",
-    "name": "FUN_00401150",
-    "signature": "int FUN_00401150(void)",
-    "comment": "[binja] int32_t sub_401150()"
+    "name": "console_cmd_argc_get",
+    "signature": "int console_cmd_argc_get(void)",
+    "comment": "returns current console token count (argc; includes the command token at index 0)"
   },
   {
     "program": "crimsonland.exe",
@@ -3459,9 +3459,9 @@
   {
     "program": "crimsonland.exe",
     "address": "0x00460fac",
-    "name": "FUN_00460fac",
-    "signature": "char * FUN_00460fac(char *arg1, int arg2, int *arg3)",
-    "comment": "[binja] char* sub_460fac(char* arg1, int32_t arg2, int32_t* arg3)"
+    "name": "crt_fgets",
+    "signature": "char * crt_fgets(char *dst, int dst_len, FILE *fp)",
+    "comment": "CRT fgets wrapper with file lock/unlock (reads until newline or size-1)"
   },
   {
     "program": "crimsonland.exe",
@@ -7793,6 +7793,13 @@
     "name": "grim_dxt_premultiply_rgba_block",
     "signature": "int grim_dxt_premultiply_rgba_block(float *out_rgba)",
     "comment": "multiplies rgb by alpha for a 4x4 RGBA block"
+  },
+  {
+    "program": "grim.dll",
+    "address": "0x10020708",
+    "name": "fpu_save_control_word",
+    "signature": "void fpu_save_control_word(void)",
+    "comment": "captures x87 FPU control word into DAT_1005db70 (used by DXT encode helpers)"
   },
   {
     "program": "grim.dll",

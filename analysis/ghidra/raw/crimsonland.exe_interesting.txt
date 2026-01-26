@@ -94,6 +94,8 @@ Interesting Functions and Patterns
   sfx_system_init @ 0043cf90
 
 [CMD related]
+  console_cmd_arg_get @ 00401120
+  console_cmd_argc_get @ 00401150
   console_cmd_quit @ 00401240
   console_cmd_exec @ 00401250
   console_cmd_extend @ 00401340

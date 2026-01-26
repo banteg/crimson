@@ -26046,16 +26046,19 @@ int __fastcall grim_dxt_premultiply_rgba_block(float *out_rgba)
 
 
 
-/* FUN_10020708 @ 10020708 */
+/* fpu_save_control_word @ 10020708 */
 
-void __fastcall FUN_10020708(undefined4 param_1)
+/* captures x87 FPU control word into DAT_1005db70 (used by DXT encode helpers) */
+
+void __fastcall fpu_save_control_word(void)
 
 {
+  undefined4 in_ECX;
   undefined2 in_FPUControlWord;
   undefined4 local_8;
   
-  local_8 = CONCAT22((short)((uint)param_1 >> 0x10),in_FPUControlWord);
-  DAT_1005db70 = local_8;
+  local_8 = CONCAT22((short)((uint)in_ECX >> 0x10),in_FPUControlWord);
+  fpu_control_word_saved_dxt = local_8;
   return;
 }
 
@@ -26105,7 +26108,7 @@ uint __fastcall grim_dxt_pack_rgb565(float *rgb)
   else {
     local_14 = 0.0;
   }
-  FUN_10020708(rgb);
+  fpu_save_control_word();
   return ((int)ROUND(local_1c * 31.0 + 0.5) << 6 | (int)ROUND(local_18 * 63.0 + 0.5)) << 5 |
          (int)ROUND(local_14 * 31.0 + 0.5);
 }
@@ -26183,7 +26186,7 @@ grim_dxt5_optimize_alpha_endpoints(float *min_out,float *max_out,float *alphas,u
     local_28 = local_28 + 4.2949673e+09;
   }
   local_34 = uVar3;
-  FUN_10020708(pfVar2);
+  fpu_save_control_word();
   local_24 = 0;
   while (0.00390625 <= local_c - local_8) {
     local_2c = local_28 / (local_c - local_8);
@@ -26404,9 +26407,8 @@ grim_dxt1_optimize_color_endpoints(float *min_out,float *max_out,float *rgba,flo
     uVar16 = 0;
     uVar15 = 1;
     do {
-      pfVar13 = local_34 + uVar15;
-      if (fVar3 < *pfVar13) {
-        fVar3 = *pfVar13;
+      if (fVar3 < local_34[uVar15]) {
+        fVar3 = local_34[uVar15];
         uVar16 = uVar15;
       }
       uVar15 = uVar15 + 1;
@@ -26424,7 +26426,7 @@ grim_dxt1_optimize_color_endpoints(float *min_out,float *max_out,float *rgba,flo
       if ((int)mode + -1 < 0) {
         local_60 = local_60 + 4.2949673e+09;
       }
-      FUN_10020708(pfVar13);
+      fpu_save_control_word();
       local_48 = 0.0;
       while( true ) {
         iVar12 = 0x10;
@@ -26656,7 +26658,7 @@ int __cdecl grim_dxt1_encode_color_block(ushort *out_block,float mode)
     *pfVar4 = 0.0;
     pfVar4 = pfVar4 + 1;
   }
-  FUN_10020708(0);
+  fpu_save_control_word();
   local_58 = local_1cc + -in_EAX;
   local_b8 = local_1c8 + -in_EAX;
   local_c0 = local_1c4 + -in_EAX;
@@ -26818,7 +26820,7 @@ int __cdecl grim_dxt1_encode_color_block(ushort *out_block,float mode)
     }
     local_1c = fVar1 * fVar6;
     local_18 = fVar1 * mode;
-    FUN_10020708(0);
+    fpu_save_control_word();
     local_c = &local_1d4;
     local_2c = (float *)(local_1cc + (-4 - in_EAX));
     local_58 = local_1c0 + -in_EAX;
@@ -27129,7 +27131,7 @@ void __cdecl grim_dxt3_encode_block(uint *out_block,float *rgba)
     *pfVar6 = 0.0;
     pfVar6 = pfVar6 + 1;
   }
-  FUN_10020708(0);
+  fpu_save_control_word();
   local_8 = rgba + 3;
   out_block = extraout_EDX;
   do {
@@ -27179,7 +27181,6 @@ int __cdecl grim_dxt5_encode_block(uchar *out_block,float *rgba)
   uint uVar5;
   uchar uVar6;
   int iVar7;
-  undefined4 extraout_ECX;
   uint uVar8;
   float *pfVar9;
   float fVar10;
@@ -27203,7 +27204,7 @@ int __cdecl grim_dxt5_encode_block(uchar *out_block,float *rgba)
     *pfVar12 = 0.0;
     pfVar12 = pfVar12 + 1;
   }
-  FUN_10020708(0);
+  fpu_save_control_word();
   puVar3 = out_block;
   uVar8 = 0;
   pfVar12 = pfVar9;
@@ -27238,7 +27239,7 @@ int __cdecl grim_dxt5_encode_block(uchar *out_block,float *rgba)
     uVar8 = uVar8 + 1;
     pfVar12 = pfVar12 + 4;
   } while (uVar8 < 0x10);
-  local_8 = DAT_1005db70;
+  local_8 = fpu_control_word_saved_dxt;
   iVar7 = grim_dxt1_encode_color_block((ushort *)(out_block + 8),0.0);
   if (iVar7 < 0) {
     return iVar7;
@@ -27264,7 +27265,7 @@ LAB_10021ea4:
       rgba = (float *)0x8;
     }
     grim_dxt5_optimize_alpha_endpoints(&local_8,(float *)&out_block,local_a4 + 0x10,uVar8);
-    FUN_10020708(extraout_ECX);
+    fpu_save_control_word();
     uVar11 = (uint)ROUND(local_8 * 255.0 + 0.5);
     local_8 = (float)(int)ROUND((float)out_block * 255.0 + 0.5);
     fVar10 = (float)(uVar11 & 0xff) * 0.003921569;
@@ -27337,7 +27338,7 @@ LAB_10021f19:
       *pfVar12 = 0.0;
       pfVar12 = pfVar12 + 1;
     }
-    FUN_10020708(0);
+    fpu_save_control_word();
     local_c = pfVar9;
     fVar10 = 0.0;
     do {
