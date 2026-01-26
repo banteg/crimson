@@ -30,8 +30,12 @@ Known behaviors (medium confidence):
 - Flag `0x40` forces the long strip even when `0x4` is set.
 - For the short strip: `frame = base + 0x10 + ping_pong(int(phase) & 0xf)`,
   where ping‑pong folds 0..15 into 0..7..0.
-- For the long strip: `frame = base + int(phase)` with an optional mirror fold when the type table sets the mirror flag.
+- For the long strip (alive, `hitbox_size >= 16.0`): `frame = __ftol(anim_phase + 0.5)`.
+  - If the type mirror flag is set and `frame > 0x0f`, the index is mirrored: `frame = 0x1f - frame`.
 - If per‑creature flags include `0x10`, the frame offset shifts by `+0x20` (alt strip for some spawns).
+- For the long strip during death staging (`0 <= hitbox_size < 16.0`): `frame = __ftol((base_frame + 0x0f) - hitbox_size)`
+  - This effectively ramps through the 16 death frames as `hitbox_size` decays from `~16` to `0`.
+- For long-strip corpses (`hitbox_size < 0.0`): `frame = base_frame + 0x0f` (static corpse frame).
 - Rotation: `grim_set_rotation(creature_heading - pi/2)`; creatures visually face along their movement heading.
 
 ## Shadow/outline pass (fx_detail_0)
@@ -41,6 +45,7 @@ When `crimson.cfg` `fx_detail_0` is enabled (`config_fx_detail_flag0`) and the *
 
 - alpha is derived from creature tint alpha (`tint_a * 0.4` in the decompile)
 - the sprite is slightly upscaled (~`size * 1.07`) and offset down-right before the main draw
+- for long-strip corpses (`hitbox_size < 0.0`), the shadow alpha decays much faster: `tint_a * 0.4 + hitbox_size * 0.5` (clamped to `>= 0`).
 
 ## Creature flags related to animation / attacks (partial)
 

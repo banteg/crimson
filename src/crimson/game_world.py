@@ -720,6 +720,7 @@ class GameWorld:
         flags: CreatureFlags,
         phase: float,
         mirror_long: bool | None = None,
+        shadow_alpha: int | None = None,
         world_x: float,
         world_y: float,
         rotation_rad: float,
@@ -755,7 +756,7 @@ class GameWorld:
             # (creature_render_type). We approximate it with a black silhouette draw.
             # The observed pass is slightly bigger than the main sprite and offset
             # down-right by ~1px at default sizes.
-            alpha = int(_clamp(float(tint.a) * 0.4, 0.0, 255.0) + 0.5)
+            alpha = int(shadow_alpha) if shadow_alpha is not None else int(_clamp(float(tint.a) * 0.4, 0.0, 255.0) + 0.5)
             shadow_tint = rl.Color(0, 0, 0, alpha)
             shadow_scale = 1.07
             shadow_w = width * shadow_scale
@@ -1008,10 +1009,17 @@ class GameWorld:
             asset = _CREATURE_ASSET.get(type_id) if type_id is not None else None
             texture = self.creature_textures.get(asset) if asset is not None else None
             if texture is not None:
-                alpha = float(creature.tint_a)
-                if float(creature.hitbox_size) < 0.0:
-                    alpha = max(0.0, alpha + float(creature.hitbox_size) * 0.1)
-                tint = self._color_from_rgba((creature.tint_r, creature.tint_g, creature.tint_b, alpha))
+                info = _CREATURE_ANIM.get(type_id) if type_id is not None else None
+                if info is None:
+                    continue
+
+                hitbox_size = float(creature.hitbox_size)
+                tint_alpha = float(creature.tint_a)
+                if hitbox_size < 0.0:
+                    # Mirrors the main-pass alpha fade when hitbox_size ramps negative.
+                    tint_alpha = max(0.0, tint_alpha + hitbox_size * 0.1)
+                tint = self._color_from_rgba((creature.tint_r, creature.tint_g, creature.tint_b, tint_alpha))
+
                 size_scale = _clamp(float(creature.size) / 64.0, 0.25, 2.0)
                 fx_detail = bool(self.config.data.get("fx_detail_0", 0)) if self.config is not None else True
                 # Mirrors `creature_render_type`: the "shadow-ish" pass is gated by fx_detail_0
@@ -1021,16 +1029,30 @@ class GameWorld:
                     creature.flags & CreatureFlags.ANIM_LONG_STRIP
                 ) != 0
                 phase = float(creature.anim_phase)
-                if long_strip and float(creature.hitbox_size) < 0.0:
-                    # Negative phase selects the fallback "corpse" frame in creature_render_type.
-                    phase = -1.0
+                if long_strip:
+                    if hitbox_size < 0.0:
+                        # Negative phase selects the fallback "corpse" frame in creature_render_type.
+                        phase = -1.0
+                    elif hitbox_size < 16.0:
+                        # Death staging: while hitbox_size ramps down (16..0), creature_render_type
+                        # selects frames via `__ftol((base_frame + 15) - hitbox_size)`.
+                        phase = float(info.base + 0x0F) - hitbox_size - 0.5
+
+                shadow_alpha = None
+                if shadow:
+                    # Shadow pass uses tint_a * 0.4 and fades much faster for corpses (hitbox_size < 0).
+                    shadow_a = float(creature.tint_a) * 0.4
+                    if hitbox_size < 0.0:
+                        shadow_a += hitbox_size * (0.5 if long_strip else 0.1)
+                        shadow_a = max(0.0, shadow_a)
+                    shadow_alpha = int(_clamp(shadow_a * 255.0, 0.0, 255.0) + 0.5)
                 self._draw_creature_sprite(
                     texture,
                     type_id=type_id or CreatureTypeId.ZOMBIE,
                     flags=creature.flags,
                     phase=phase,
-                    mirror_long=bool(_CREATURE_ANIM.get(type_id or CreatureTypeId.ZOMBIE).mirror)
-                    and float(creature.hitbox_size) >= 16.0,
+                    mirror_long=bool(info.mirror) and hitbox_size >= 16.0,
+                    shadow_alpha=shadow_alpha,
                     world_x=creature.x,
                     world_y=creature.y,
                     rotation_rad=float(creature.heading) - math.pi / 2.0,

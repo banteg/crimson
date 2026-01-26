@@ -617,9 +617,13 @@ class DecalsDebugView:
             flags = creature.flags
             long_strip = (flags & CreatureFlags.ANIM_PING_PONG) == 0 or (flags & CreatureFlags.ANIM_LONG_STRIP) != 0
             phase = float(creature.anim_phase)
-            if long_strip and float(creature.hitbox_size) < 0.0:
-                phase = -1.0
-            mirror_long = bool(info.mirror) and float(creature.hitbox_size) >= 16.0
+            hitbox_size = float(creature.hitbox_size)
+            if long_strip:
+                if hitbox_size < 0.0:
+                    phase = -1.0
+                elif hitbox_size < 16.0:
+                    phase = float(info.base + 0x0F) - hitbox_size - 0.5
+            mirror_long = bool(info.mirror) and hitbox_size >= 16.0
 
             size_scale = max(0.25, min(float(creature.size) / 64.0, 2.0))
             self._draw_creature_sprite(
