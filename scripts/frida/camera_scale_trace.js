@@ -26,8 +26,8 @@ const GAME_MODULE = "crimsonland.exe";
 const GRIM_MODULE = "grim.dll";
 
 const EXE_RVAS = {
-    camera_update: 0x409500,
-    terrain_render: 0x4188a0,
+    camera_update: 0x09500,
+    terrain_render: 0x188a0,
     grim_interface_ptr: 0x8083c,
 };
 
