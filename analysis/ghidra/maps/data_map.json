@@ -1388,7 +1388,8 @@
       "address": "0x00482b08",
       "comment": "Quest spawn table entry count (used by quest_spawn_timeline_update).",
       "name": "quest_spawn_count",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00482b10",
@@ -1564,7 +1565,8 @@
       "address": "0x004857a8",
       "comment": "Quest spawn table base (entries used by quest_spawn_timeline_update).",
       "name": "quest_spawn_table",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "quest_spawn_entry_t"
     },
     {
       "address": "0x00486fa8",
@@ -1624,7 +1626,8 @@
       "address": "0x00486fd0",
       "comment": "Quest spawn timeline (elapsed ms for quest triggers).",
       "name": "quest_spawn_timeline",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00486fd8",

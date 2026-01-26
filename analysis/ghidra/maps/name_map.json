@@ -1903,357 +1903,357 @@
     "program": "crimsonland.exe",
     "address": "0x004343e0",
     "name": "quest_build_fallback",
-    "signature": "void quest_build_fallback(float *entries, int *count)",
+    "signature": "void quest_build_fallback(quest_spawn_entry_t *entries, int *count)",
     "comment": "fills a default quest spawn table when no quest builder is present"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00434480",
     "name": "quest_build_nagolipoli",
-    "signature": "void quest_build_nagolipoli(float *entries, int *count)",
+    "signature": "void quest_build_nagolipoli(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 5 Quest 9 (Nagolipoli)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00434860",
     "name": "quest_build_monster_blues",
-    "signature": "void quest_build_monster_blues(float *entries, int *count)",
+    "signature": "void quest_build_monster_blues(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 5 Quest 8 (Monster Blues)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004349c0",
     "name": "quest_build_the_gathering",
-    "signature": "void quest_build_the_gathering(float *entries, int *count)",
+    "signature": "void quest_build_the_gathering(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 5 Quest 10 (The Gathering)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00434ca0",
     "name": "quest_build_army_of_three",
-    "signature": "void quest_build_army_of_three(float *entries, int *count)",
+    "signature": "void quest_build_army_of_three(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 5 Quest 7 (Army of Three)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00434f00",
     "name": "quest_build_knee_deep_in_the_dead",
-    "signature": "void quest_build_knee_deep_in_the_dead(float *entries, int *count)",
+    "signature": "void quest_build_knee_deep_in_the_dead(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 5 Quest 5 (Knee-deep in the Dead)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00435120",
     "name": "quest_build_the_gang_wars",
-    "signature": "void quest_build_the_gang_wars(float *entries, int *count)",
+    "signature": "void quest_build_the_gang_wars(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 5 Quest 4 (The Gang Wars)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004352d0",
     "name": "quest_build_the_fortress",
-    "signature": "void quest_build_the_fortress(float *entries, int *count)",
+    "signature": "void quest_build_the_fortress(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 5 Quest 3 (The Fortress)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00435480",
     "name": "quest_build_cross_fire",
-    "signature": "void quest_build_cross_fire(float *entries, int *count)",
+    "signature": "void quest_build_cross_fire(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 5 Quest 6 (Cross Fire)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00435610",
     "name": "quest_build_the_beating",
-    "signature": "void quest_build_the_beating(float *entries, int *count)",
+    "signature": "void quest_build_the_beating(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 5 Quest 1 (The Beating)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004358a0",
     "name": "quest_build_the_spanking_of_the_dead",
-    "signature": "void quest_build_the_spanking_of_the_dead(float *entries, int *count)",
+    "signature": "void quest_build_the_spanking_of_the_dead(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 5 Quest 2 (The Spanking Of The Dead)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00435a30",
     "name": "quest_build_hidden_evil",
-    "signature": "void quest_build_hidden_evil(float *entries, int *count)",
+    "signature": "void quest_build_hidden_evil(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 3 Quest 4 (Hidden Evil)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00435bd0",
     "name": "quest_build_land_hostile",
-    "signature": "void quest_build_land_hostile(float *entries, int *count)",
+    "signature": "void quest_build_land_hostile(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 1 Quest 1 (Land Hostile)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00435cc0",
     "name": "quest_build_minor_alien_breach",
-    "signature": "void quest_build_minor_alien_breach(float *entries, int *count)",
+    "signature": "void quest_build_minor_alien_breach(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 1 Quest 2 (Minor Alien Breach)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00435ea0",
     "name": "quest_build_alien_squads",
-    "signature": "void quest_build_alien_squads(float *entries, int *count)",
+    "signature": "void quest_build_alien_squads(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 1 Quest 8 (Alien Squads)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004360a0",
     "name": "quest_build_zombie_masters",
-    "signature": "void quest_build_zombie_masters(float *entries, int *count)",
+    "signature": "void quest_build_zombie_masters(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 3 Quest 10 (Zombie Masters)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00436120",
     "name": "quest_build_8_legged_terror",
-    "signature": "void quest_build_8_legged_terror(float *entries, int *count)",
+    "signature": "void quest_build_8_legged_terror(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 1 Quest 10 (8-legged Terror)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00436200",
     "name": "quest_build_ghost_patrols",
-    "signature": "void quest_build_ghost_patrols(float *entries, int *count)",
+    "signature": "void quest_build_ghost_patrols(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 2 Quest 9 (Ghost Patrols)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00436350",
     "name": "quest_build_the_random_factor",
-    "signature": "void quest_build_the_random_factor(float *entries, int *count)",
+    "signature": "void quest_build_the_random_factor(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 1 Quest 6 (The Random Factor)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00436440",
     "name": "quest_build_spider_wave_syndrome",
-    "signature": "void quest_build_spider_wave_syndrome(float *entries, int *count)",
+    "signature": "void quest_build_spider_wave_syndrome(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 1 Quest 7 (Spider Wave Syndrome)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004364a0",
     "name": "quest_build_nesting_grounds",
-    "signature": "void quest_build_nesting_grounds(float *entries, int *count)",
+    "signature": "void quest_build_nesting_grounds(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 1 Quest 9 (Nesting Grounds)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00436720",
     "name": "quest_build_alien_dens",
-    "signature": "void quest_build_alien_dens(float *entries, int *count)",
+    "signature": "void quest_build_alien_dens(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 1 Quest 5 (Alien Dens)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00436820",
     "name": "quest_build_arachnoid_farm",
-    "signature": "void quest_build_arachnoid_farm(float *entries, int *count)",
+    "signature": "void quest_build_arachnoid_farm(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 2 Quest 3 (Arachnoid Farm)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004369a0",
     "name": "quest_build_gauntlet",
-    "signature": "void quest_build_gauntlet(float *entries, int *count)",
+    "signature": "void quest_build_gauntlet(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 4 Quest 7 (Gauntlet)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00436c10",
     "name": "quest_build_syntax_terror",
-    "signature": "void quest_build_syntax_terror(float *entries, int *count)",
+    "signature": "void quest_build_syntax_terror(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 4 Quest 8 (Syntax Terror)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00436d70",
     "name": "quest_build_spider_spawns",
-    "signature": "void quest_build_spider_spawns(float *entries, int *count)",
+    "signature": "void quest_build_spider_spawns(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 2 Quest 2 (Spider Spawns)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00436ee0",
     "name": "quest_build_two_fronts",
-    "signature": "void quest_build_two_fronts(float *entries, int *count)",
+    "signature": "void quest_build_two_fronts(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 2 Quest 4 (Two Fronts)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00437060",
     "name": "quest_build_survival_of_the_fastest",
-    "signature": "void quest_build_survival_of_the_fastest(float *entries, int *count)",
+    "signature": "void quest_build_survival_of_the_fastest(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 2 Quest 7 (Survival Of The Fastest)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004373c0",
     "name": "quest_build_spideroids",
-    "signature": "void quest_build_spideroids(float *entries, int *count)",
+    "signature": "void quest_build_spideroids(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 2 Quest 10 (Spideroids)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004374a0",
     "name": "quest_build_evil_zombies_at_large",
-    "signature": "void quest_build_evil_zombies_at_large(float *entries, int *count)",
+    "signature": "void quest_build_evil_zombies_at_large(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 2 Quest 6 (Evil Zombies At Large)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004375a0",
     "name": "quest_build_everred_pastures",
-    "signature": "void quest_build_everred_pastures(float *entries, int *count)",
+    "signature": "void quest_build_everred_pastures(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 2 Quest 1 (Everred Pastures)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00437710",
     "name": "quest_build_lizard_kings",
-    "signature": "void quest_build_lizard_kings(float *entries, int *count)",
+    "signature": "void quest_build_lizard_kings(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 3 Quest 2 (Lizard Kings)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00437810",
     "name": "quest_build_sweep_stakes",
-    "signature": "void quest_build_sweep_stakes(float *entries, int *count)",
+    "signature": "void quest_build_sweep_stakes(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 2 Quest 5 (Sweep Stakes)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00437920",
     "name": "quest_build_deja_vu",
-    "signature": "void quest_build_deja_vu(float *entries, int *count)",
+    "signature": "void quest_build_deja_vu(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 3 Quest 9 (Deja vu)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00437a00",
     "name": "quest_build_target_practice",
-    "signature": "void quest_build_target_practice(float *entries, int *count)",
+    "signature": "void quest_build_target_practice(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 1 Quest 3 (Target Practice)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00437af0",
     "name": "quest_build_major_alien_breach",
-    "signature": "void quest_build_major_alien_breach(float *entries, int *count)",
+    "signature": "void quest_build_major_alien_breach(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 4 Quest 1 (Major Alien Breach)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00437ba0",
     "name": "quest_build_land_of_lizards",
-    "signature": "void quest_build_land_of_lizards(float *entries, int *count)",
+    "signature": "void quest_build_land_of_lizards(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 2 Quest 8 (Land Of Lizards)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00437c70",
     "name": "quest_build_the_lizquidation",
-    "signature": "void quest_build_the_lizquidation(float *entries, int *count)",
+    "signature": "void quest_build_the_lizquidation(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 3 Quest 6 (The Lizquidation)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00437d70",
     "name": "quest_build_zombie_time",
-    "signature": "void quest_build_zombie_time(float *entries, int *count)",
+    "signature": "void quest_build_zombie_time(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 4 Quest 2 (Zombie Time)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00437e10",
     "name": "quest_build_frontline_assault",
-    "signature": "void quest_build_frontline_assault(float *entries, int *count)",
+    "signature": "void quest_build_frontline_assault(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 1 Quest 4 (Frontline Assault)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00437f30",
     "name": "quest_build_the_collaboration",
-    "signature": "void quest_build_the_collaboration(float *entries, int *count)",
+    "signature": "void quest_build_the_collaboration(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 4 Quest 4 (The Collaboration)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00438050",
     "name": "quest_build_the_blighting",
-    "signature": "void quest_build_the_blighting(float *entries, int *count)",
+    "signature": "void quest_build_the_blighting(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 3 Quest 1 (The Blighting)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004382c0",
     "name": "quest_build_the_annihilation",
-    "signature": "void quest_build_the_annihilation(float *entries, int *count)",
+    "signature": "void quest_build_the_annihilation(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 4 Quest 9 (The Annihilation)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004383e0",
     "name": "quest_build_the_massacre",
-    "signature": "void quest_build_the_massacre(float *entries, int *count)",
+    "signature": "void quest_build_the_massacre(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 4 Quest 5 (The Massacre)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004384a0",
     "name": "quest_build_the_killing",
-    "signature": "void quest_build_the_killing(float *entries, int *count)",
+    "signature": "void quest_build_the_killing(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 3 Quest 3 (The Killing)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00438700",
     "name": "quest_build_lizard_zombie_pact",
-    "signature": "void quest_build_lizard_zombie_pact(float *entries, int *count)",
+    "signature": "void quest_build_lizard_zombie_pact(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 4 Quest 3 (Lizard Zombie Pact)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00438840",
     "name": "quest_build_lizard_raze",
-    "signature": "void quest_build_lizard_raze(float *entries, int *count)",
+    "signature": "void quest_build_lizard_raze(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 3 Quest 8 (Lizard Raze)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00438940",
     "name": "quest_build_surrounded_by_reptiles",
-    "signature": "void quest_build_surrounded_by_reptiles(float *entries, int *count)",
+    "signature": "void quest_build_surrounded_by_reptiles(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 3 Quest 5 (Surrounded By Reptiles)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00438a40",
     "name": "quest_build_the_unblitzkrieg",
-    "signature": "void quest_build_the_unblitzkrieg(float *entries, int *count)",
+    "signature": "void quest_build_the_unblitzkrieg(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 4 Quest 6 (The Unblitzkrieg)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x00438e10",
     "name": "quest_build_the_end_of_all",
-    "signature": "void quest_build_the_end_of_all(float *entries, int *count)",
+    "signature": "void quest_build_the_end_of_all(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 4 Quest 10 (The End of All)"
   },
   {
     "program": "crimsonland.exe",
     "address": "0x004390d0",
     "name": "quest_build_spiders_inc",
-    "signature": "void quest_build_spiders_inc(float *entries, int *count)",
+    "signature": "void quest_build_spiders_inc(quest_spawn_entry_t *entries, int *count)",
     "comment": "quest builder for Tier 3 Quest 7 (Spiders Inc.)"
   },
   {

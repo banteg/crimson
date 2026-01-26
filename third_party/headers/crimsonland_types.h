@@ -301,6 +301,15 @@ typedef struct game_status_t {
     unsigned char reserved0[0x10];
 } game_status_t;
 
+typedef struct quest_spawn_entry_t {
+    float pos_x;
+    float pos_y;
+    float heading;
+    int template_id;
+    int trigger_time_ms;
+    int count;
+} quest_spawn_entry_t;
+
 typedef struct mod_info_t {
     char name[0x20];
     char author[0x20];

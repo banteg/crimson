@@ -10706,7 +10706,7 @@ void quest_results_screen_update(void)
             DAT_00482724 = 0x28;
             sfx_play(sfx_ui_clink_01);
             DAT_00482720 = DAT_00482710;
-            if ((int)quest_spawn_timeline <= (int)DAT_00482710) {
+            if (quest_spawn_timeline <= (int)DAT_00482710) {
               DAT_0048271c = DAT_0048271c + 1;
               DAT_00482710 = quest_spawn_timeline;
               DAT_00482720 = DAT_00482710;
@@ -16655,7 +16655,7 @@ void ui_render_hud(void)
     in_stack_0000007c = 0;
     _DAT_004902fc = 0;
     if (0 < quest_spawn_count) {
-      piVar5 = &DAT_004857bc;
+      piVar5 = &quest_spawn_table.count;
       iVar9 = quest_spawn_count;
       do {
         iVar7 = *piVar5;
@@ -30225,7 +30225,7 @@ int quest_spawn_table_empty(void)
   
   uVar1 = quest_spawn_count - 1;
   if (-1 < (int)uVar1) {
-    piVar2 = &DAT_004857bc + uVar1 * 6;
+    piVar2 = &(&quest_spawn_table)[uVar1].count;
     do {
       if (0 < *piVar2) {
         return uVar1 & 0xffffff00;
@@ -30249,7 +30249,7 @@ void quest_spawn_timeline_update(void)
   int *piVar1;
   uint uVar2;
   int iVar3;
-  float *pfVar4;
+  quest_spawn_entry_t *pqVar4;
   int iVar5;
   int local_1c;
   float local_18;
@@ -30265,22 +30265,22 @@ void quest_spawn_timeline_update(void)
   }
   iVar3 = 0;
   if (0 < quest_spawn_count) {
-    piVar1 = &DAT_004857b8;
+    piVar1 = &quest_spawn_table.trigger_time_ms;
     do {
       if ((0 < piVar1[1]) &&
          ((*piVar1 < quest_spawn_timeline ||
           (((creatures_any_active_flag != '\0' && (3000 < DAT_004c3654)) &&
            (0x6a4 < quest_spawn_timeline)))))) {
-        pfVar4 = (float *)(&quest_spawn_table + iVar3 * 0x18);
+        pqVar4 = &quest_spawn_table + iVar3;
         iVar5 = quest_spawn_count;
         while( true ) {
           uVar2 = 0;
           local_18 = 0.0;
           local_14 = 0.0;
-          if (0 < (int)pfVar4[5]) {
+          if (0 < pqVar4->count) {
             local_1c = 0;
             do {
-              if ((*pfVar4 < 0.0) || ((float)terrain_texture_width < *pfVar4)) {
+              if ((pqVar4->pos_x < 0.0) || ((float)terrain_texture_width < pqVar4->pos_x)) {
                 local_14 = (float)local_1c;
                 if ((uVar2 & 1) != 0) {
                   local_14 = -local_14;
@@ -30292,23 +30292,23 @@ void quest_spawn_timeline_update(void)
                   local_18 = -local_18;
                 }
               }
-              local_8 = local_18 + *pfVar4;
-              local_4 = local_14 + pfVar4[1];
-              creature_spawn_template((int)pfVar4[3],&local_8,pfVar4[2]);
+              local_8 = local_18 + pqVar4->pos_x;
+              local_4 = local_14 + pqVar4->pos_y;
+              creature_spawn_template(pqVar4->template_id,&local_8,pqVar4->heading);
               uVar2 = uVar2 + 1;
               local_1c = local_1c + 0x28;
               iVar5 = quest_spawn_count;
-            } while ((int)uVar2 < (int)pfVar4[5]);
+            } while ((int)uVar2 < pqVar4->count);
           }
-          pfVar4[5] = 0.0;
+          pqVar4->count = 0;
           creatures_any_active_flag = '\0';
           if (iVar5 + -1 <= iVar3) break;
-          if (pfVar4[4] != pfVar4[10]) {
+          if (pqVar4->trigger_time_ms != pqVar4[1].trigger_time_ms) {
             creatures_any_active_flag = 0;
             return;
           }
           iVar3 = iVar3 + 1;
-          pfVar4 = pfVar4 + 6;
+          pqVar4 = pqVar4 + 1;
         }
         creatures_any_active_flag = 0;
         return;
@@ -30346,24 +30346,24 @@ void __cdecl quest_database_advance_slot(int *tier,int *index)
 
 /* fills a default quest spawn table when no quest builder is present */
 
-void __cdecl quest_build_fallback(float *entries,int *count)
+void __cdecl quest_build_fallback(quest_spawn_entry_t *entries,int *count)
 
 {
   float fVar1;
   
   console_printf(&console_log_queue,s___Generating_a_fallback_quest__00477782 + 2);
   fVar1 = (float)terrain_texture_height;
-  *entries = -50.0;
-  entries[1] = fVar1 * 0.5;
-  entries[3] = 8.96831e-44;
-  entries[4] = 7.00649e-43;
-  entries[5] = 1.4013e-44;
+  entries->pos_x = -50.0;
+  entries->pos_y = fVar1 * 0.5;
+  entries->template_id = 0x40;
+  entries->trigger_time_ms = 500;
+  entries->count = 10;
   fVar1 = (float)terrain_texture_height;
-  entries[6] = -50.0;
-  entries[7] = fVar1 * 0.5;
-  entries[9] = 8.96831e-44;
-  entries[10] = 7.00649e-42;
-  entries[0xb] = 2.8026e-44;
+  entries[1].pos_x = -50.0;
+  entries[1].pos_y = fVar1 * 0.5;
+  entries[1].template_id = 0x40;
+  entries[1].trigger_time_ms = 5000;
+  entries[1].count = 0x14;
   *count = 2;
   return;
 }
@@ -30375,156 +30375,159 @@ void __cdecl quest_build_fallback(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 5 Quest 9 (Nagolipoli) */
 
-void quest_build_nagolipoli(float *entries,int *count)
+void quest_build_nagolipoli(quest_spawn_entry_t *entries,int *count)
 
 {
-  float *pfVar1;
-  int iVar2;
-  float fVar3;
+  quest_spawn_entry_t *pqVar1;
+  float fVar2;
+  int iVar3;
   float *pfVar4;
-  int iVar5;
+  quest_spawn_entry_t *pqVar5;
   int iVar6;
   int iVar7;
-  float fVar8;
-  float10 fVar9;
+  int iVar8;
+  int iVar9;
   float10 fVar10;
+  float10 fVar11;
   int iStack_20;
   
-  pfVar1 = entries;
+  pqVar1 = entries;
   iStack_20 = 0;
-  pfVar4 = entries + 1;
+  pfVar4 = &entries->pos_y;
   do {
-    iVar2 = iStack_20;
-    iVar6 = iStack_20 + 1;
-    fVar9 = (float10)iStack_20 * (float10)0.7853982;
-    fVar10 = (float10)fcos(fVar9);
-    pfVar4[-1] = (float)(fVar10 * (float10)128.0);
-    fVar10 = (float10)fsin(fVar9);
-    *pfVar4 = (float)(fVar10 * (float10)128.0);
-    pfVar4[-1] = pfVar4[-1] + 512.0;
+    iVar3 = iStack_20;
+    iVar7 = iStack_20 + 1;
+    fVar10 = (float10)iStack_20 * (float10)0.7853982;
+    fVar11 = (float10)fcos(fVar10);
+    ((quest_spawn_entry_t *)(pfVar4 + -1))->pos_x = (float)(fVar11 * (float10)128.0);
+    fVar11 = (float10)fsin(fVar10);
+    *pfVar4 = (float)(fVar11 * (float10)128.0);
+    ((quest_spawn_entry_t *)(pfVar4 + -1))->pos_x =
+         ((quest_spawn_entry_t *)(pfVar4 + -1))->pos_x + 512.0;
     *pfVar4 = *pfVar4 + 512.0;
     pfVar4[2] = 8.96831e-44;
-    pfVar4[1] = (float)fVar9;
+    pfVar4[1] = (float)fVar10;
     pfVar4[3] = 2.8026e-42;
     pfVar4[4] = 1.4013e-45;
     pfVar4 = pfVar4 + 6;
-    iStack_20 = iVar6;
-  } while (iVar6 < 8);
+    iStack_20 = iVar7;
+  } while (iVar7 < 8);
   iStack_20 = 0;
-  pfVar4 = entries + iVar6 * 6 + 1;
+  pfVar4 = &entries[iVar7].pos_y;
   do {
-    fVar9 = (float10)iStack_20;
+    fVar10 = (float10)iStack_20;
     iStack_20 = iStack_20 + 1;
-    fVar9 = fVar9 * (float10)0.5235988;
-    fVar10 = (float10)fcos(fVar9);
-    pfVar4[-1] = (float)(fVar10 * (float10)178.0);
-    fVar10 = (float10)fsin(fVar9);
-    *pfVar4 = (float)(fVar10 * (float10)178.0);
-    pfVar4[-1] = pfVar4[-1] + 512.0;
+    fVar10 = fVar10 * (float10)0.5235988;
+    fVar11 = (float10)fcos(fVar10);
+    ((quest_spawn_entry_t *)(pfVar4 + -1))->pos_x = (float)(fVar11 * (float10)178.0);
+    fVar11 = (float10)fsin(fVar10);
+    *pfVar4 = (float)(fVar11 * (float10)178.0);
+    ((quest_spawn_entry_t *)(pfVar4 + -1))->pos_x =
+         ((quest_spawn_entry_t *)(pfVar4 + -1))->pos_x + 512.0;
     *pfVar4 = *pfVar4 + 512.0;
     pfVar4[2] = 8.96831e-44;
-    pfVar4[1] = (float)fVar9;
+    pfVar4[1] = (float)fVar10;
     pfVar4[3] = 1.12104e-41;
     pfVar4[4] = 1.4013e-45;
     pfVar4 = pfVar4 + 6;
   } while (iStack_20 < 0xc);
-  pfVar4 = entries + (iVar2 + 0xd) * 6;
-  fVar8 = 1.82169e-41;
-  iVar6 = 0;
-  iVar2 = iVar2 + 0xd;
+  pqVar5 = entries + iVar3 + 0xd;
+  iVar9 = 13000;
+  iVar7 = 0;
+  iVar3 = iVar3 + 0xd;
   do {
-    iVar7 = iVar2;
-    iVar5 = iVar6;
-    *pfVar4 = -64.0;
-    pfVar4[1] = -64.0;
-    pfVar4[3] = 3.92364e-44;
-    pfVar4[2] = 1.0471976;
-    fVar3 = (float)(((int)(iVar5 + (iVar5 >> 0x1f & 7U)) >> 3) + 1);
-    pfVar4[4] = fVar8;
-    pfVar4[5] = fVar3;
-    pfVar4[6] = 1088.0;
-    pfVar4[7] = -64.0;
-    pfVar4[9] = 3.92364e-44;
-    pfVar4[8] = -1.0471976;
-    pfVar4[10] = fVar8;
-    pfVar4[0xb] = fVar3;
-    pfVar4[0xc] = -64.0;
-    pfVar4[0xd] = 1088.0;
-    pfVar4[0xf] = 3.92364e-44;
-    pfVar4[0xe] = -1.0471976;
-    pfVar4[0x10] = fVar8;
-    pfVar4[0x11] = fVar3;
-    pfVar4[0x12] = 1088.0;
-    pfVar4[0x13] = 1088.0;
-    pfVar4[0x15] = 3.92364e-44;
-    pfVar4[0x14] = 3.926991;
-    pfVar4[0x16] = fVar8;
-    pfVar4[0x17] = fVar3;
-    pfVar4 = pfVar4 + 0x18;
-    fVar8 = (float)((int)fVar8 + 800);
-    iVar6 = iVar5 + 1;
-    iVar2 = iVar7 + 4;
-  } while ((int)fVar8 < 0x96c8);
+    iVar8 = iVar3;
+    iVar6 = iVar7;
+    pqVar5->pos_x = -64.0;
+    pqVar5->pos_y = -64.0;
+    pqVar5->template_id = 0x1c;
+    pqVar5->heading = 1.0471976;
+    iVar3 = ((int)(iVar6 + (iVar6 >> 0x1f & 7U)) >> 3) + 1;
+    pqVar5->trigger_time_ms = iVar9;
+    pqVar5->count = iVar3;
+    pqVar5[1].pos_x = 1088.0;
+    pqVar5[1].pos_y = -64.0;
+    pqVar5[1].template_id = 0x1c;
+    pqVar5[1].heading = -1.0471976;
+    pqVar5[1].trigger_time_ms = iVar9;
+    pqVar5[1].count = iVar3;
+    pqVar5[2].pos_x = -64.0;
+    pqVar5[2].pos_y = 1088.0;
+    pqVar5[2].template_id = 0x1c;
+    pqVar5[2].heading = -1.0471976;
+    pqVar5[2].trigger_time_ms = iVar9;
+    pqVar5[2].count = iVar3;
+    pqVar5[3].pos_x = 1088.0;
+    pqVar5[3].pos_y = 1088.0;
+    pqVar5[3].template_id = 0x1c;
+    pqVar5[3].heading = 3.926991;
+    pqVar5[3].trigger_time_ms = iVar9;
+    pqVar5[3].count = iVar3;
+    pqVar5 = pqVar5 + 4;
+    iVar9 = iVar9 + 800;
+    iVar7 = iVar6 + 1;
+    iVar3 = iVar8 + 4;
+  } while (iVar9 < 0x96c8);
   iStack_20 = 0;
-  fVar8 = (float)((iVar5 + 0x97 + iVar6 * 4) * 0xa0);
-  pfVar4 = entries + (iVar7 + 4) * 6 + 2;
+  iVar3 = (iVar6 + 0x97 + iVar7 * 4) * 0xa0;
+  pfVar4 = &entries[iVar8 + 4].heading;
   do {
-    pfVar4[-2] = 64.0;
+    ((quest_spawn_entry_t *)(pfVar4 + -2))->pos_x = 64.0;
     pfVar4[-1] = (float)iStack_20 * 85.333336 + 256.0;
     pfVar4[1] = 1.4013e-44;
     *pfVar4 = 0.0;
-    pfVar4[2] = fVar8;
+    pfVar4[2] = (float)iVar3;
     pfVar4[3] = 1.4013e-45;
     iStack_20 = iStack_20 + 1;
-    fVar8 = (float)((int)fVar8 + 100);
+    iVar3 = iVar3 + 100;
     pfVar4 = pfVar4 + 6;
   } while (iStack_20 < 6);
   iStack_20 = 0;
-  pfVar4 = entries + (iVar7 + 10) * 6 + 2;
-  entries = (float *)(iVar6 * 800 + 25000);
+  pfVar4 = &entries[iVar8 + 10].heading;
+  entries = (quest_spawn_entry_t *)(iVar7 * 800 + 25000);
   do {
-    fVar8 = (float)iStack_20;
-    pfVar4[-2] = 960.0;
+    fVar2 = (float)iStack_20;
+    ((quest_spawn_entry_t *)(pfVar4 + -2))->pos_x = 960.0;
     iStack_20 = iStack_20 + 1;
-    pfVar4[-1] = fVar8 * 85.333336 + 256.0;
+    pfVar4[-1] = fVar2 * 85.333336 + 256.0;
     pfVar4[1] = 1.4013e-44;
     *pfVar4 = 0.0;
     pfVar4[2] = (float)entries;
     pfVar4[3] = 1.4013e-45;
-    entries = entries + 0x19;
+    entries = (quest_spawn_entry_t *)&entries[4].pos_y;
     pfVar4 = pfVar4 + 6;
   } while (iStack_20 < 6);
-  pfVar4 = pfVar1 + (iVar7 + 0x10) * 6;
-  *pfVar4 = 512.0;
-  pfVar4[1] = 256.0;
-  pfVar4[3] = 1.54143e-44;
-  pfVar4[2] = 3.1415927;
-  fVar8 = (float)((iVar5 + 0xb0 + iVar6 * 4) * 0xa0);
-  pfVar4[4] = fVar8;
-  pfVar4[5] = 1.4013e-45;
-  pfVar4 = pfVar1 + (iVar7 + 0x11) * 6;
-  *pfVar4 = 512.0;
-  pfVar4[1] = 768.0;
-  pfVar4[3] = 1.54143e-44;
-  pfVar4[2] = 3.1415927;
-  pfVar4[4] = fVar8;
-  pfVar4[5] = 1.4013e-45;
-  pfVar4 = pfVar1 + (iVar7 + 0x12) * 6;
-  *pfVar4 = 512.0;
-  pfVar4[1] = 1088.0;
-  pfVar4[3] = 3.92364e-44;
-  fVar8 = (float)(iVar6 * 800 + 0x6f54);
-  pfVar4[2] = 3.926991;
-  pfVar4[4] = fVar8;
-  pfVar4[5] = 1.12104e-44;
-  pfVar1 = pfVar1 + (iVar7 + 0x13) * 6;
-  *pfVar1 = 512.0;
-  pfVar1[1] = -64.0;
-  pfVar1[3] = 3.92364e-44;
-  pfVar1[2] = 3.926991;
-  pfVar1[4] = fVar8;
-  pfVar1[5] = 1.12104e-44;
-  *count = iVar7 + 0x14;
+  pqVar5 = pqVar1 + iVar8 + 0x10;
+  pqVar5->pos_x = 512.0;
+  pqVar5->pos_y = 256.0;
+  pqVar5->template_id = 0xb;
+  pqVar5->heading = 3.1415927;
+  iVar3 = (iVar6 + 0xb0 + iVar7 * 4) * 0xa0;
+  pqVar5->trigger_time_ms = iVar3;
+  pqVar5->count = 1;
+  pqVar5 = pqVar1 + iVar8 + 0x11;
+  pqVar5->pos_x = 512.0;
+  pqVar5->pos_y = 768.0;
+  pqVar5->template_id = 0xb;
+  pqVar5->heading = 3.1415927;
+  pqVar5->trigger_time_ms = iVar3;
+  pqVar5->count = 1;
+  pqVar5 = pqVar1 + iVar8 + 0x12;
+  pqVar5->pos_x = 512.0;
+  pqVar5->pos_y = 1088.0;
+  pqVar5->template_id = 0x1c;
+  iVar3 = iVar7 * 800 + 0x6f54;
+  pqVar5->heading = 3.926991;
+  pqVar5->trigger_time_ms = iVar3;
+  pqVar5->count = 8;
+  pqVar1 = pqVar1 + iVar8 + 0x13;
+  pqVar1->pos_x = 512.0;
+  pqVar1->pos_y = -64.0;
+  pqVar1->template_id = 0x1c;
+  pqVar1->heading = 3.926991;
+  pqVar1->trigger_time_ms = iVar3;
+  pqVar1->count = 8;
+  *count = iVar8 + 0x14;
   return;
 }
 
@@ -30535,60 +30538,61 @@ void quest_build_nagolipoli(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 5 Quest 8 (Monster Blues) */
 
-void quest_build_monster_blues(float *entries,int *count)
+void quest_build_monster_blues(quest_spawn_entry_t *entries,int *count)
 
 {
-  uint uVar1;
-  int iVar2;
-  float *pfVar3;
-  uint uVar4;
-  float fVar5;
+  float fVar1;
+  uint uVar2;
+  int iVar3;
+  int *piVar4;
+  uint uVar5;
+  int iVar6;
   
-  fVar5 = (float)terrain_texture_height;
-  *entries = -50.0;
-  entries[1] = fVar5 * 0.5;
-  entries[3] = 5.60519e-45;
-  entries[4] = 7.00649e-43;
-  entries[5] = 1.4013e-44;
-  fVar5 = (float)terrain_texture_height;
-  entries[6] = 1074.0;
-  entries[7] = fVar5 * 0.5;
-  entries[9] = 8.40779e-45;
-  entries[10] = 1.05097e-41;
-  entries[0xb] = 1.4013e-44;
-  entries[0xc] = 512.0;
-  entries[0xd] = 1088.0;
-  entries[0xf] = 4.2039e-45;
-  entries[0x10] = 2.45227e-41;
-  entries[0x11] = 1.68156e-44;
-  entries[0x12] = 512.0;
-  entries[0x13] = -64.0;
-  entries[0x15] = 4.2039e-45;
-  entries[0x16] = 2.45227e-41;
-  entries[0x17] = 1.68156e-44;
-  uVar4 = 0;
-  fVar5 = 3.85357e-41;
-  pfVar3 = entries + 0x1b;
+  fVar1 = (float)terrain_texture_height;
+  entries->pos_x = -50.0;
+  entries->pos_y = fVar1 * 0.5;
+  entries->template_id = 4;
+  entries->trigger_time_ms = 500;
+  entries->count = 10;
+  fVar1 = (float)terrain_texture_height;
+  entries[1].pos_x = 1074.0;
+  entries[1].pos_y = fVar1 * 0.5;
+  entries[1].template_id = 6;
+  entries[1].trigger_time_ms = 0x1d4c;
+  entries[1].count = 10;
+  entries[2].pos_x = 512.0;
+  entries[2].pos_y = 1088.0;
+  entries[2].template_id = 3;
+  entries[2].trigger_time_ms = 0x445c;
+  entries[2].count = 0xc;
+  entries[3].pos_x = 512.0;
+  entries[3].pos_y = -64.0;
+  entries[3].template_id = 3;
+  entries[3].trigger_time_ms = 0x445c;
+  entries[3].count = 0xc;
+  uVar5 = 0;
+  iVar6 = 0x6b6c;
+  piVar4 = &entries[4].template_id;
   do {
-    pfVar3[-3] = -64.0;
-    uVar1 = uVar4 & 0x80000003;
-    pfVar3[-2] = 512.0;
-    if ((int)uVar1 < 0) {
-      uVar1 = (uVar1 - 1 | 0xfffffffc) + 1;
+    ((quest_spawn_entry_t *)(piVar4 + -3))->pos_x = -64.0;
+    uVar2 = uVar5 & 0x80000003;
+    piVar4[-2] = 0x44000000;
+    if ((int)uVar2 < 0) {
+      uVar2 = (uVar2 - 1 | 0xfffffffc) + 1;
     }
-    if (uVar1 == 0) {
-      *pfVar3 = 8.40779e-45;
+    if (uVar2 == 0) {
+      *piVar4 = 6;
     }
     else {
-      *pfVar3 = (float)((-(uint)(uVar1 != 1) & 2) + 3);
+      *piVar4 = (-(uint)(uVar2 != 1) & 2) + 3;
     }
-    pfVar3[1] = fVar5;
-    fVar5 = (float)((int)fVar5 + 900);
-    iVar2 = uVar4 + ((int)uVar4 >> 0x1f & 7U);
-    uVar4 = uVar4 + 1;
-    pfVar3[2] = (float)((iVar2 >> 3) + 2);
-    pfVar3 = pfVar3 + 6;
-  } while ((int)uVar4 < 0x40);
+    piVar4[1] = iVar6;
+    iVar6 = iVar6 + 900;
+    iVar3 = uVar5 + ((int)uVar5 >> 0x1f & 7U);
+    uVar5 = uVar5 + 1;
+    piVar4[2] = (iVar3 >> 3) + 2;
+    piVar4 = piVar4 + 6;
+  } while ((int)uVar5 < 0x40);
   *count = 0x44;
   return;
 }
@@ -30600,74 +30604,74 @@ void quest_build_monster_blues(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 5 Quest 10 (The Gathering) */
 
-void quest_build_the_gathering(float *entries,int *count)
+void quest_build_the_gathering(quest_spawn_entry_t *entries,int *count)
 
 {
-  *entries = 256.0;
-  entries[1] = 512.0;
-  entries[3] = 1.4013e-45;
-  entries[4] = 7.00649e-43;
-  entries[5] = 1.4013e-45;
-  entries[6] = 768.0;
-  entries[7] = 512.0;
-  entries[9] = 1.4013e-45;
-  entries[10] = 1.33123e-41;
-  entries[0xb] = 2.8026e-45;
-  entries[0xc] = 256.0;
-  entries[0xd] = 512.0;
-  entries[0xf] = 8.12753e-44;
-  entries[0x10] = 2.17201e-41;
-  entries[0x11] = 2.8026e-45;
-  entries[0x12] = 768.0;
-  entries[0x13] = 512.0;
-  entries[0x15] = 8.12753e-44;
-  entries[0x16] = 3.43318e-41;
-  entries[0x17] = 2.8026e-45;
-  entries[0x18] = 256.0;
-  entries[0x19] = 512.0;
-  entries[0x1b] = 0.0;
-  entries[0x1c] = 4.27396e-41;
-  entries[0x1d] = 2.8026e-45;
-  entries[0x1e] = 768.0;
-  entries[0x1f] = 512.0;
-  entries[0x21] = 0.0;
-  entries[0x22] = 5.53513e-41;
-  entries[0x23] = 2.8026e-45;
-  entries[0x24] = 64.0;
-  entries[0x25] = 64.0;
-  entries[0x27] = 8.40779e-44;
-  entries[0x28] = 7.63708e-41;
-  entries[0x29] = 2.8026e-45;
-  entries[0x2a] = 960.0;
-  entries[0x2b] = 64.0;
-  entries[0x2d] = 8.40779e-44;
-  entries[0x2e] = 7.63708e-41;
-  entries[0x2f] = 1.4013e-45;
-  entries[0x30] = 64.0;
-  entries[0x31] = 960.0;
-  entries[0x33] = 8.40779e-44;
-  entries[0x34] = 7.63708e-41;
-  entries[0x35] = 2.8026e-45;
-  entries[0x36] = 960.0;
-  entries[0x37] = 960.0;
-  entries[0x39] = 8.40779e-44;
-  entries[0x3a] = 7.63708e-41;
-  entries[0x3b] = 1.4013e-45;
-  entries[0x3c] = -128.0;
-  entries[0x3d] = 512.0;
-  entries[0x3f] = 8.12753e-44;
-  entries[0x40] = 1.26818e-40;
-  entries[0x41] = 8.40779e-45;
-  entries[0x42] = 1152.0;
-  entries[0x43] = 512.0;
-  entries[0x45] = 1.4013e-45;
-  entries[0x46] = 1.39429e-40;
-  entries[0x47] = 5.60519e-45;
-  entries[0x48] = 1152.0;
-  entries[0x49] = 512.0;
-  entries[0x4b] = 1.4013e-45;
-  entries[0x4c] = 1.53442e-40;
-  entries[0x4d] = 2.8026e-45;
+  entries->pos_x = 256.0;
+  entries->pos_y = 512.0;
+  entries->template_id = 1;
+  entries->trigger_time_ms = 500;
+  entries->count = 1;
+  entries[1].pos_x = 768.0;
+  entries[1].pos_y = 512.0;
+  entries[1].template_id = 1;
+  entries[1].trigger_time_ms = 0x251c;
+  entries[1].count = 2;
+  entries[2].pos_x = 256.0;
+  entries[2].pos_y = 512.0;
+  entries[2].template_id = 0x3a;
+  entries[2].trigger_time_ms = 0x3c8c;
+  entries[2].count = 2;
+  entries[3].pos_x = 768.0;
+  entries[3].pos_y = 512.0;
+  entries[3].template_id = 0x3a;
+  entries[3].trigger_time_ms = 0x5fb4;
+  entries[3].count = 2;
+  entries[4].pos_x = 256.0;
+  entries[4].pos_y = 512.0;
+  entries[4].template_id = 0;
+  entries[4].trigger_time_ms = 0x7724;
+  entries[4].count = 2;
+  entries[5].pos_x = 768.0;
+  entries[5].pos_y = 512.0;
+  entries[5].template_id = 0;
+  entries[5].trigger_time_ms = 0x9a4c;
+  entries[5].count = 2;
+  entries[6].pos_x = 64.0;
+  entries[6].pos_y = 64.0;
+  entries[6].template_id = 0x3c;
+  entries[6].trigger_time_ms = 0xd4e4;
+  entries[6].count = 2;
+  entries[7].pos_x = 960.0;
+  entries[7].pos_y = 64.0;
+  entries[7].template_id = 0x3c;
+  entries[7].trigger_time_ms = 0xd4e4;
+  entries[7].count = 1;
+  entries[8].pos_x = 64.0;
+  entries[8].pos_y = 960.0;
+  entries[8].template_id = 0x3c;
+  entries[8].trigger_time_ms = 0xd4e4;
+  entries[8].count = 2;
+  entries[9].pos_x = 960.0;
+  entries[9].pos_y = 960.0;
+  entries[9].template_id = 0x3c;
+  entries[9].trigger_time_ms = 0xd4e4;
+  entries[9].count = 1;
+  entries[10].pos_x = -128.0;
+  entries[10].pos_y = 512.0;
+  entries[10].template_id = 0x3a;
+  entries[10].trigger_time_ms = 0x16184;
+  entries[10].count = 6;
+  entries[0xb].pos_x = 1152.0;
+  entries[0xb].pos_y = 512.0;
+  entries[0xb].template_id = 1;
+  entries[0xb].trigger_time_ms = 0x184ac;
+  entries[0xb].count = 4;
+  entries[0xc].pos_x = 1152.0;
+  entries[0xc].pos_y = 512.0;
+  entries[0xc].template_id = 1;
+  entries[0xc].trigger_time_ms = 0x1abbc;
+  entries[0xc].count = 2;
   *count = 0xd;
   return;
 }
@@ -30679,64 +30683,64 @@ void quest_build_the_gathering(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 5 Quest 7 (Army of Three) */
 
-void quest_build_army_of_three(float *entries,int *count)
+void quest_build_army_of_three(quest_spawn_entry_t *entries,int *count)
 
 {
-  *entries = -64.0;
-  entries[1] = 256.0;
-  entries[3] = 2.94273e-44;
-  entries[4] = 7.00649e-43;
-  entries[5] = 1.4013e-45;
-  entries[6] = -64.0;
-  entries[7] = 512.0;
-  entries[9] = 2.94273e-44;
-  entries[10] = 7.70714e-42;
-  entries[0xb] = 1.4013e-45;
-  entries[0xc] = -64.0;
-  entries[0xd] = 768.0;
-  entries[0xf] = 2.94273e-44;
-  entries[0x10] = 2.10195e-41;
-  entries[0x11] = 1.4013e-45;
-  entries[0x12] = -64.0;
-  entries[0x13] = 768.0;
-  entries[0x15] = 3.22299e-44;
-  entries[0x16] = 2.73253e-41;
-  entries[0x17] = 1.4013e-45;
-  entries[0x18] = -64.0;
-  entries[0x19] = 512.0;
-  entries[0x1b] = 3.22299e-44;
-  entries[0x1c] = 3.15292e-41;
-  entries[0x1d] = 1.4013e-45;
-  entries[0x1e] = -64.0;
-  entries[0x1f] = 256.0;
-  entries[0x21] = 3.22299e-44;
-  entries[0x22] = 3.71344e-41;
-  entries[0x23] = 1.4013e-45;
-  entries[0x24] = -64.0;
-  entries[0x25] = 256.0;
-  entries[0x27] = 3.08286e-44;
-  entries[0x28] = 4.97461e-41;
-  entries[0x29] = 1.4013e-45;
-  entries[0x2a] = -64.0;
-  entries[0x2b] = 512.0;
-  entries[0x2d] = 3.08286e-44;
-  entries[0x2e] = 5.53513e-41;
-  entries[0x2f] = 1.4013e-45;
-  entries[0x30] = -64.0;
-  entries[0x31] = 768.0;
-  entries[0x33] = 3.08286e-44;
-  entries[0x34] = 5.95552e-41;
-  entries[0x35] = 1.4013e-45;
-  entries[0x36] = 512.0;
-  entries[0x37] = 1152.0;
-  entries[0x39] = 2.94273e-44;
-  entries[0x3a] = 7.35682e-41;
-  entries[0x3b] = 4.2039e-45;
-  entries[0x3c] = 512.0;
-  entries[0x3d] = -256.0;
-  entries[0x3f] = 3.22299e-44;
-  entries[0x40] = 7.91734e-41;
-  entries[0x41] = 4.2039e-45;
+  entries->pos_x = -64.0;
+  entries->pos_y = 256.0;
+  entries->template_id = 0x15;
+  entries->trigger_time_ms = 500;
+  entries->count = 1;
+  entries[1].pos_x = -64.0;
+  entries[1].pos_y = 512.0;
+  entries[1].template_id = 0x15;
+  entries[1].trigger_time_ms = 0x157c;
+  entries[1].count = 1;
+  entries[2].pos_x = -64.0;
+  entries[2].pos_y = 768.0;
+  entries[2].template_id = 0x15;
+  entries[2].trigger_time_ms = 15000;
+  entries[2].count = 1;
+  entries[3].pos_x = -64.0;
+  entries[3].pos_y = 768.0;
+  entries[3].template_id = 0x17;
+  entries[3].trigger_time_ms = 0x4c2c;
+  entries[3].count = 1;
+  entries[4].pos_x = -64.0;
+  entries[4].pos_y = 512.0;
+  entries[4].template_id = 0x17;
+  entries[4].trigger_time_ms = 0x57e4;
+  entries[4].count = 1;
+  entries[5].pos_x = -64.0;
+  entries[5].pos_y = 256.0;
+  entries[5].template_id = 0x17;
+  entries[5].trigger_time_ms = 0x6784;
+  entries[5].count = 1;
+  entries[6].pos_x = -64.0;
+  entries[6].pos_y = 256.0;
+  entries[6].template_id = 0x16;
+  entries[6].trigger_time_ms = 0x8aac;
+  entries[6].count = 1;
+  entries[7].pos_x = -64.0;
+  entries[7].pos_y = 512.0;
+  entries[7].template_id = 0x16;
+  entries[7].trigger_time_ms = 0x9a4c;
+  entries[7].count = 1;
+  entries[8].pos_x = -64.0;
+  entries[8].pos_y = 768.0;
+  entries[8].template_id = 0x16;
+  entries[8].trigger_time_ms = 0xa604;
+  entries[8].count = 1;
+  entries[9].pos_x = 512.0;
+  entries[9].pos_y = 1152.0;
+  entries[9].template_id = 0x15;
+  entries[9].trigger_time_ms = 0xcd14;
+  entries[9].count = 3;
+  entries[10].pos_x = 512.0;
+  entries[10].pos_y = -256.0;
+  entries[10].template_id = 0x17;
+  entries[10].trigger_time_ms = 0xdcb4;
+  entries[10].count = 3;
   *count = 0xb;
   return;
 }
@@ -30748,102 +30752,102 @@ void quest_build_army_of_three(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 5 Quest 5 (Knee-deep in the Dead) */
 
-void quest_build_knee_deep_in_the_dead(float *entries,int *count)
+void quest_build_knee_deep_in_the_dead(quest_spawn_entry_t *entries,int *count)
 
 {
   float fVar1;
-  float *pfVar2;
-  float *pfVar3;
-  float *pfVar4;
-  float fVar5;
+  quest_spawn_entry_t *pqVar2;
+  quest_spawn_entry_t *pqVar3;
+  quest_spawn_entry_t *pqVar4;
+  int iVar5;
   uint uVar6;
   uint uVar7;
   int iVar8;
   int iVar9;
   bool bVar10;
   
-  fVar5 = (float)terrain_texture_height;
-  *entries = -50.0;
-  entries[1] = fVar5 * 0.5;
-  entries[3] = 9.3887e-44;
-  entries[4] = 1.4013e-43;
-  entries[5] = 1.4013e-45;
+  fVar1 = (float)terrain_texture_height;
+  entries->pos_x = -50.0;
+  entries->pos_y = fVar1 * 0.5;
+  entries->template_id = 0x43;
+  entries->trigger_time_ms = 100;
+  entries->count = 1;
   uVar7 = 0;
   iVar8 = 1;
-  pfVar4 = entries + 6;
-  fVar5 = 7.00649e-43;
+  pqVar4 = entries + 1;
+  iVar5 = 500;
   do {
     uVar6 = uVar7 & 0x80000007;
     bVar10 = uVar6 == 0;
     if ((int)uVar6 < 0) {
       bVar10 = (uVar6 - 1 | 0xfffffff8) == 0xffffffff;
     }
-    pfVar2 = pfVar4;
+    pqVar2 = pqVar4;
     iVar9 = iVar8;
     if (bVar10) {
       fVar1 = (float)terrain_texture_height;
-      *pfVar4 = -50.0;
+      pqVar4->pos_x = -50.0;
       iVar9 = iVar8 + 1;
-      pfVar2 = pfVar4 + 6;
-      pfVar4[1] = fVar1 * 0.5;
-      pfVar4[3] = 9.3887e-44;
-      pfVar4[4] = (float)((int)fVar5 + -2);
-      pfVar4[5] = 1.4013e-45;
+      pqVar2 = pqVar4 + 1;
+      pqVar4->pos_y = fVar1 * 0.5;
+      pqVar4->template_id = 0x43;
+      pqVar4->trigger_time_ms = iVar5 + -2;
+      pqVar4->count = 1;
     }
     fVar1 = (float)terrain_texture_height;
-    *pfVar2 = -50.0;
-    pfVar2[1] = fVar1 * 0.5;
-    pfVar2[3] = 9.10844e-44;
-    pfVar2[4] = fVar5;
-    pfVar2[5] = (float)((0x20 < (int)uVar7) + 1);
+    pqVar2->pos_x = -50.0;
+    pqVar2->pos_y = fVar1 * 0.5;
+    pqVar2->template_id = 0x41;
+    pqVar2->trigger_time_ms = iVar5;
+    pqVar2->count = (0x20 < (int)uVar7) + 1;
     iVar8 = iVar9 + 1;
-    pfVar4 = pfVar2 + 6;
-    if (0x30d4 < (int)fVar5) {
+    pqVar4 = pqVar2 + 1;
+    if (0x30d4 < iVar5) {
       fVar1 = (float)terrain_texture_height;
-      *pfVar4 = -50.0;
+      pqVar4->pos_x = -50.0;
       iVar8 = iVar9 + 2;
-      pfVar4 = pfVar2 + 0xc;
-      pfVar2[7] = fVar1 * 0.5 + 158.0;
-      pfVar2[9] = 9.10844e-44;
-      pfVar2[10] = (float)((int)fVar5 + 500);
-      pfVar2[0xb] = 1.4013e-45;
+      pqVar4 = pqVar2 + 2;
+      pqVar2[1].pos_y = fVar1 * 0.5 + 158.0;
+      pqVar2[1].template_id = 0x41;
+      pqVar2[1].trigger_time_ms = iVar5 + 500;
+      pqVar2[1].count = 1;
     }
-    pfVar2 = pfVar4;
-    if (0x5fb4 < (int)fVar5) {
+    pqVar2 = pqVar4;
+    if (0x5fb4 < iVar5) {
       fVar1 = (float)terrain_texture_height;
-      *pfVar4 = -50.0;
+      pqVar4->pos_x = -50.0;
       iVar8 = iVar8 + 1;
-      pfVar2 = pfVar4 + 6;
-      pfVar4[1] = fVar1 * 0.5 - 158.0;
-      pfVar4[3] = 9.10844e-44;
-      pfVar4[4] = (float)((int)fVar5 + 1000);
-      pfVar4[5] = 1.4013e-45;
+      pqVar2 = pqVar4 + 1;
+      pqVar4->pos_y = fVar1 * 0.5 - 158.0;
+      pqVar4->template_id = 0x41;
+      pqVar4->trigger_time_ms = iVar5 + 1000;
+      pqVar4->count = 1;
     }
-    pfVar3 = pfVar2;
-    if (0x8e94 < (int)fVar5) {
+    pqVar3 = pqVar2;
+    if (0x8e94 < iVar5) {
       fVar1 = (float)terrain_texture_height;
-      *pfVar2 = -50.0;
+      pqVar2->pos_x = -50.0;
       iVar8 = iVar8 + 1;
-      pfVar3 = pfVar2 + 6;
-      pfVar2[1] = fVar1 * 0.5 - 258.0;
-      pfVar2[3] = 9.24857e-44;
-      pfVar2[4] = (float)((int)fVar5 + 0x514);
-      pfVar2[5] = 1.4013e-45;
+      pqVar3 = pqVar2 + 1;
+      pqVar2->pos_y = fVar1 * 0.5 - 258.0;
+      pqVar2->template_id = 0x42;
+      pqVar2->trigger_time_ms = iVar5 + 0x514;
+      pqVar2->count = 1;
     }
-    pfVar4 = pfVar3;
-    if (0xbd74 < (int)fVar5) {
+    pqVar4 = pqVar3;
+    if (0xbd74 < iVar5) {
       fVar1 = (float)terrain_texture_height;
-      *pfVar3 = -50.0;
+      pqVar3->pos_x = -50.0;
       iVar8 = iVar8 + 1;
-      pfVar4 = pfVar3 + 6;
-      pfVar3[1] = fVar1 * 0.5 + 258.0;
-      pfVar3[3] = 9.24857e-44;
-      pfVar3[4] = (float)((int)fVar5 + 300);
-      pfVar3[5] = 1.4013e-45;
+      pqVar4 = pqVar3 + 1;
+      pqVar3->pos_y = fVar1 * 0.5 + 258.0;
+      pqVar3->template_id = 0x42;
+      pqVar3->trigger_time_ms = iVar5 + 300;
+      pqVar3->count = 1;
     }
-    fVar5 = (float)((int)fVar5 + 0x5dc);
+    iVar5 = iVar5 + 0x5dc;
     uVar7 = uVar7 + 1;
-  } while ((int)fVar5 < 0x178f4);
+  } while (iVar5 < 0x178f4);
   *count = iVar8;
   return;
 }
@@ -30855,62 +30859,62 @@ void quest_build_knee_deep_in_the_dead(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 5 Quest 4 (The Gang Wars) */
 
-void quest_build_the_gang_wars(float *entries,int *count)
+void quest_build_the_gang_wars(quest_spawn_entry_t *entries,int *count)
 
 {
   float fVar1;
-  float *pfVar2;
-  float fVar3;
+  int *piVar2;
+  int iVar3;
   int iVar4;
   
-  fVar3 = (float)terrain_texture_height;
-  *entries = -150.0;
-  entries[1] = fVar3 * 0.5;
-  entries[3] = 2.52234e-44;
-  entries[4] = 1.4013e-43;
-  entries[5] = 1.4013e-45;
-  fVar3 = (float)terrain_texture_height;
-  entries[6] = 1174.0;
+  fVar1 = (float)terrain_texture_height;
+  entries->pos_x = -150.0;
+  entries->pos_y = fVar1 * 0.5;
+  entries->template_id = 0x12;
+  entries->trigger_time_ms = 100;
+  entries->count = 1;
+  fVar1 = (float)terrain_texture_height;
+  entries[1].pos_x = 1174.0;
   iVar4 = 10;
-  entries[7] = fVar3 * 0.5;
-  entries[9] = 2.52234e-44;
-  entries[10] = 3.50325e-42;
-  entries[0xb] = 1.4013e-45;
-  fVar3 = 7.70714e-42;
-  pfVar2 = entries + 0x10;
+  entries[1].pos_y = fVar1 * 0.5;
+  entries[1].template_id = 0x12;
+  entries[1].trigger_time_ms = 0x9c4;
+  entries[1].count = 1;
+  iVar3 = 0x157c;
+  piVar2 = &entries[2].trigger_time_ms;
   do {
     fVar1 = (float)terrain_texture_height;
-    pfVar2[-4] = 1174.0;
-    pfVar2[-3] = fVar1 * 0.5;
-    pfVar2[-1] = 2.52234e-44;
-    *pfVar2 = fVar3;
-    pfVar2[1] = 2.8026e-45;
-    fVar3 = (float)((int)fVar3 + 4000);
+    ((quest_spawn_entry_t *)(piVar2 + -4))->pos_x = 1174.0;
+    piVar2[-3] = (int)(fVar1 * 0.5);
+    piVar2[-1] = 0x12;
+    *piVar2 = iVar3;
+    piVar2[1] = 2;
+    iVar3 = iVar3 + 4000;
     iVar4 = iVar4 + -1;
-    pfVar2 = pfVar2 + 6;
+    piVar2 = piVar2 + 6;
   } while (iVar4 != 0);
-  entries[0x48] = 512.0;
-  entries[0x49] = 1152.0;
-  entries[0x4b] = 2.66247e-44;
-  entries[0x4c] = 7.07656e-41;
-  entries[0x4d] = 1.4013e-45;
-  fVar3 = 8.33773e-41;
-  pfVar2 = entries + 0x52;
+  entries[0xc].pos_x = 512.0;
+  entries[0xc].pos_y = 1152.0;
+  entries[0xc].template_id = 0x13;
+  entries[0xc].trigger_time_ms = 0xc544;
+  entries[0xc].count = 1;
+  iVar3 = 0xe86c;
+  piVar2 = &entries[0xd].trigger_time_ms;
   do {
     fVar1 = (float)terrain_texture_height;
-    pfVar2[-4] = -150.0;
-    pfVar2[-3] = fVar1 * 0.5;
-    pfVar2[-1] = 2.52234e-44;
-    *pfVar2 = fVar3;
-    pfVar2[1] = 2.8026e-45;
-    fVar3 = (float)((int)fVar3 + 4000);
-    pfVar2 = pfVar2 + 6;
-  } while ((int)fVar3 < 0x184ac);
-  entries[0x8a] = 512.0;
-  entries[0x8b] = 1152.0;
-  entries[0x8d] = 2.66247e-44;
-  entries[0x8e] = 1.5064e-40;
-  entries[0x8f] = 4.2039e-45;
+    ((quest_spawn_entry_t *)(piVar2 + -4))->pos_x = -150.0;
+    piVar2[-3] = (int)(fVar1 * 0.5);
+    piVar2[-1] = 0x12;
+    *piVar2 = iVar3;
+    piVar2[1] = 2;
+    iVar3 = iVar3 + 4000;
+    piVar2 = piVar2 + 6;
+  } while (iVar3 < 0x184ac);
+  entries[0x17].pos_x = 512.0;
+  entries[0x17].pos_y = 1152.0;
+  entries[0x17].template_id = 0x13;
+  entries[0x17].trigger_time_ms = 0x1a3ec;
+  entries[0x17].count = 3;
   *count = 0x18;
   return;
 }
@@ -30922,62 +30926,64 @@ void quest_build_the_gang_wars(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 5 Quest 3 (The Fortress) */
 
-void quest_build_the_fortress(float *entries,int *count)
+void quest_build_the_fortress(quest_spawn_entry_t *entries,int *count)
 
 {
-  float *pfVar1;
-  float *pfVar2;
-  float fVar3;
+  float fVar1;
+  quest_spawn_entry_t *pqVar2;
+  int *piVar3;
   int iVar4;
   int iVar5;
+  int iVar6;
   
-  pfVar1 = entries;
-  fVar3 = (float)terrain_texture_height;
-  *entries = -50.0;
-  entries = (float *)0x200;
-  pfVar1[1] = fVar3 * 0.5;
-  pfVar1[3] = 8.96831e-44;
-  pfVar1[4] = 1.4013e-43;
-  pfVar1[5] = 8.40779e-45;
-  fVar3 = 1.54143e-42;
-  iVar5 = 8;
-  pfVar2 = pfVar1 + 10;
+  pqVar2 = entries;
+  fVar1 = (float)terrain_texture_height;
+  entries->pos_x = -50.0;
+  entries = (quest_spawn_entry_t *)0x200;
+  pqVar2->pos_y = fVar1 * 0.5;
+  pqVar2->template_id = 0x40;
+  pqVar2->trigger_time_ms = 100;
+  pqVar2->count = 6;
+  iVar4 = 0x44c;
+  iVar6 = 8;
+  piVar3 = &pqVar2[1].trigger_time_ms;
   do {
-    pfVar2[-4] = 768.0;
-    pfVar2[-3] = (float)(int)entries * 0.125 + 256.0;
-    pfVar2[-1] = 1.26117e-44;
-    *pfVar2 = fVar3;
-    pfVar2[1] = 1.4013e-45;
-    fVar3 = (float)((int)fVar3 + 600);
-    entries = entries + 0x80;
-    pfVar2 = pfVar2 + 6;
-  } while ((int)fVar3 < 0x14b4);
-  pfVar1[0x30] = 128.0;
-  pfVar1[0x31] = 512.0;
-  pfVar1[0x33] = 1.96182e-44;
-  pfVar1[0x34] = 9.10844e-42;
-  pfVar1[0x35] = 1.4013e-45;
-  entries = (float *)0x180;
+    ((quest_spawn_entry_t *)(piVar3 + -4))->pos_x = 768.0;
+    piVar3[-3] = (int)((float)(int)entries * 0.125 + 256.0);
+    piVar3[-1] = 9;
+    *piVar3 = iVar4;
+    piVar3[1] = 1;
+    iVar4 = iVar4 + 600;
+    entries = (quest_spawn_entry_t *)&entries[0x15].heading;
+    piVar3 = piVar3 + 6;
+  } while (iVar4 < 0x14b4);
+  pqVar2[8].pos_x = 128.0;
+  pqVar2[8].pos_y = 512.0;
+  pqVar2[8].template_id = 0xe;
+  pqVar2[8].trigger_time_ms = 0x1964;
+  pqVar2[8].count = 1;
+  entries = (quest_spawn_entry_t *)0x180;
   do {
-    iVar4 = 1;
-    fVar3 = (float)(iVar5 * 600 + 0x157c);
-    pfVar2 = pfVar1 + iVar5 * 6 + 4;
+    iVar5 = 1;
+    iVar4 = iVar6 * 600 + 0x157c;
+    piVar3 = &pqVar2[iVar6].trigger_time_ms;
     do {
-      if ((iVar4 != 1) || ((entries != (float *)0x480 && (entries != (float *)0x600)))) {
-        iVar5 = iVar5 + 1;
-        pfVar2[-4] = (float)(int)entries * 0.16666667 + 256.0;
-        pfVar2[-3] = 512.0 - (float)(iVar4 * 0x180) * 0.16666667;
-        pfVar2[-1] = 1.4013e-44;
-        *pfVar2 = fVar3;
-        pfVar2[1] = 1.4013e-45;
-        fVar3 = (float)((int)fVar3 + 600);
-        pfVar2 = pfVar2 + 6;
+      if ((iVar5 != 1) ||
+         ((entries != (quest_spawn_entry_t *)0x480 && (entries != (quest_spawn_entry_t *)0x600)))) {
+        iVar6 = iVar6 + 1;
+        ((quest_spawn_entry_t *)(piVar3 + -4))->pos_x = (float)(int)entries * 0.16666667 + 256.0;
+        piVar3[-3] = (int)(512.0 - (float)(iVar5 * 0x180) * 0.16666667);
+        piVar3[-1] = 10;
+        *piVar3 = iVar4;
+        piVar3[1] = 1;
+        iVar4 = iVar4 + 600;
+        piVar3 = piVar3 + 6;
       }
-      iVar4 = iVar4 + 1;
-    } while (iVar4 < 7);
-    entries = entries + 0x60;
+      iVar5 = iVar5 + 1;
+    } while (iVar5 < 7);
+    entries = entries + 0x10;
   } while ((int)entries < 0x901);
-  *count = iVar5;
+  *count = iVar6;
   return;
 }
 
@@ -30988,47 +30994,47 @@ void quest_build_the_fortress(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 5 Quest 6 (Cross Fire) */
 
-void quest_build_cross_fire(float *entries,int *count)
+void quest_build_cross_fire(quest_spawn_entry_t *entries,int *count)
 
 {
   float fVar1;
   
   fVar1 = (float)terrain_texture_height;
-  *entries = 1074.0;
-  entries[1] = fVar1 * 0.5;
-  entries[3] = 8.96831e-44;
-  entries[4] = 1.4013e-43;
-  entries[5] = 8.40779e-45;
-  entries[6] = -40.0;
-  entries[7] = 512.0;
-  entries[9] = 8.40779e-44;
-  entries[10] = 7.70714e-42;
-  entries[0xb] = 5.60519e-45;
-  entries[0xc] = -40.0;
-  entries[0xd] = 512.0;
-  entries[0xf] = 8.40779e-44;
-  entries[0x10] = 2.17201e-41;
-  entries[0x11] = 8.40779e-45;
-  entries[0x12] = 512.0;
-  entries[0x13] = 512.0;
-  entries[0x15] = 1.4013e-45;
-  entries[0x16] = 2.5924e-41;
-  entries[0x17] = 2.8026e-45;
-  entries[0x18] = -100.0;
-  entries[0x19] = 512.0;
-  entries[0x1b] = 8.40779e-44;
-  entries[0x1c] = 3.57331e-41;
-  entries[0x1d] = 1.12104e-44;
-  entries[0x1e] = 512.0;
-  entries[0x1f] = 1152.0;
-  entries[0x21] = 8.96831e-44;
-  entries[0x22] = 3.64338e-41;
-  entries[0x23] = 8.40779e-45;
-  entries[0x24] = 512.0;
-  entries[0x25] = -128.0;
-  entries[0x27] = 8.96831e-44;
-  entries[0x28] = 3.64338e-41;
-  entries[0x29] = 8.40779e-45;
+  entries->pos_x = 1074.0;
+  entries->pos_y = fVar1 * 0.5;
+  entries->template_id = 0x40;
+  entries->trigger_time_ms = 100;
+  entries->count = 6;
+  entries[1].pos_x = -40.0;
+  entries[1].pos_y = 512.0;
+  entries[1].template_id = 0x3c;
+  entries[1].trigger_time_ms = 0x157c;
+  entries[1].count = 4;
+  entries[2].pos_x = -40.0;
+  entries[2].pos_y = 512.0;
+  entries[2].template_id = 0x3c;
+  entries[2].trigger_time_ms = 0x3c8c;
+  entries[2].count = 6;
+  entries[3].pos_x = 512.0;
+  entries[3].pos_y = 512.0;
+  entries[3].template_id = 1;
+  entries[3].trigger_time_ms = 0x4844;
+  entries[3].count = 2;
+  entries[4].pos_x = -100.0;
+  entries[4].pos_y = 512.0;
+  entries[4].template_id = 0x3c;
+  entries[4].trigger_time_ms = 0x639c;
+  entries[4].count = 8;
+  entries[5].pos_x = 512.0;
+  entries[5].pos_y = 1152.0;
+  entries[5].template_id = 0x40;
+  entries[5].trigger_time_ms = 26000;
+  entries[5].count = 6;
+  entries[6].pos_x = 512.0;
+  entries[6].pos_y = -128.0;
+  entries[6].template_id = 0x40;
+  entries[6].trigger_time_ms = 26000;
+  entries[6].count = 6;
   *count = 7;
   return;
 }
@@ -31040,96 +31046,97 @@ void quest_build_cross_fire(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 5 Quest 1 (The Beating) */
 
-void quest_build_the_beating(float *entries,int *count)
+void quest_build_the_beating(quest_spawn_entry_t *entries,int *count)
 
 {
-  int iVar1;
+  quest_spawn_entry_t *pqVar1;
   int iVar2;
-  float *pfVar3;
-  float *pfVar4;
-  float fVar5;
-  float *pfVar6;
+  int iVar3;
+  int *piVar4;
+  int iVar5;
+  quest_spawn_entry_t *pqVar6;
   int iVar7;
   int iVar8;
   
-  pfVar4 = entries;
-  *entries = 256.0;
-  entries[1] = 256.0;
-  entries[3] = 5.46506e-44;
-  entries[4] = 7.00649e-43;
-  entries[5] = 1.4013e-45;
-  fVar5 = 1.4013e-41;
-  iVar1 = terrain_texture_height / 2;
-  entries[6] = (float)(terrain_texture_width + 0x20);
+  pqVar1 = entries;
+  entries->pos_x = 256.0;
+  entries->pos_y = 256.0;
+  entries->template_id = 0x27;
+  entries->trigger_time_ms = 500;
+  entries->count = 1;
+  iVar5 = 10000;
+  iVar2 = terrain_texture_height / 2;
+  entries[1].pos_x = (float)(terrain_texture_width + 0x20);
   iVar8 = 0x40;
   iVar7 = 8;
-  entries[7] = (float)iVar1;
-  entries[9] = 5.74532e-44;
-  entries[10] = 1.12104e-41;
-  entries[0xb] = 4.2039e-45;
-  pfVar3 = entries + 0x10;
+  entries[1].pos_y = (float)iVar2;
+  entries[1].template_id = 0x29;
+  entries[1].trigger_time_ms = 8000;
+  entries[1].count = 3;
+  piVar4 = &entries[2].trigger_time_ms;
   do {
-    iVar1 = iVar8 + terrain_texture_width;
+    iVar2 = iVar8 + terrain_texture_width;
     iVar8 = iVar8 + 0x20;
-    iVar2 = terrain_texture_height / 2;
-    pfVar3[-4] = (float)iVar1;
-    pfVar3[-3] = (float)iVar2;
-    pfVar3[-1] = 5.1848e-44;
-    *pfVar3 = fVar5;
-    pfVar3[1] = 1.12104e-44;
-    fVar5 = (float)((int)fVar5 + 100);
+    iVar3 = terrain_texture_height / 2;
+    ((quest_spawn_entry_t *)(piVar4 + -4))->pos_x = (float)iVar2;
+    piVar4[-3] = (int)(float)iVar3;
+    piVar4[-1] = 0x25;
+    *piVar4 = iVar5;
+    piVar4[1] = 8;
+    iVar5 = iVar5 + 100;
     iVar7 = iVar7 + -1;
-    pfVar3 = pfVar3 + 6;
+    piVar4 = piVar4 + 6;
   } while (iVar7 != 0);
-  iVar1 = terrain_texture_height / 2;
-  entries[0x3c] = -32.0;
-  fVar5 = 2.8026e-41;
-  pfVar3 = entries + 0x46;
-  entries = (float *)0xffffffc0;
-  pfVar4[0x3d] = (float)iVar1;
-  pfVar4[0x3f] = 5.74532e-44;
-  pfVar4[0x40] = 2.52234e-41;
-  pfVar4[0x41] = 4.2039e-45;
+  iVar2 = terrain_texture_height / 2;
+  entries[10].pos_x = -32.0;
+  iVar5 = 20000;
+  pqVar6 = entries + 0xb;
+  entries = (quest_spawn_entry_t *)0xffffffc0;
+  pqVar1[10].pos_y = (float)iVar2;
+  pqVar1[10].template_id = 0x29;
+  pqVar1[10].trigger_time_ms = 18000;
+  pqVar1[10].count = 3;
+  piVar4 = &pqVar6->trigger_time_ms;
   do {
-    pfVar6 = entries + -8;
-    iVar1 = terrain_texture_height / 2;
-    pfVar3[-4] = (float)(int)entries;
-    pfVar3[-3] = (float)iVar1;
-    pfVar3[-1] = 5.1848e-44;
-    *pfVar3 = fVar5;
-    pfVar3[1] = 1.12104e-44;
-    fVar5 = (float)((int)fVar5 + 100);
-    pfVar3 = pfVar3 + 6;
-    entries = pfVar6;
-  } while (-0x140 < (int)pfVar6);
-  fVar5 = 5.60519e-41;
-  entries = (float *)0xffffffc0;
-  pfVar3 = pfVar4 + 0x76;
+    pqVar6 = entries + -2;
+    iVar2 = terrain_texture_height / 2;
+    ((quest_spawn_entry_t *)(piVar4 + -4))->pos_x = (float)(int)entries;
+    piVar4[-3] = (int)(float)iVar2;
+    piVar4[-1] = 0x25;
+    *piVar4 = iVar5;
+    piVar4[1] = 8;
+    iVar5 = iVar5 + 100;
+    piVar4 = piVar4 + 6;
+    entries = (quest_spawn_entry_t *)&pqVar6->trigger_time_ms;
+  } while (-0x140 < (int)&pqVar6->trigger_time_ms);
+  iVar2 = 40000;
+  entries = (quest_spawn_entry_t *)0xffffffc0;
+  piVar4 = &pqVar1[0x13].trigger_time_ms;
   do {
-    pfVar6 = (float *)((int)entries + -0x2a);
-    pfVar3[-4] = (float)(terrain_texture_width / 2);
-    pfVar3[-3] = (float)(int)entries;
-    pfVar3[-1] = 2.10195e-44;
-    *pfVar3 = fVar5;
-    pfVar3[1] = 5.60519e-45;
-    fVar5 = (float)((int)fVar5 + 100);
-    pfVar3 = pfVar3 + 6;
-    entries = pfVar6;
-  } while (-0x13c < (int)pfVar6);
-  iVar1 = 0;
-  fVar5 = 5.60519e-41;
-  pfVar4 = pfVar4 + 0x9a;
+    pqVar6 = (quest_spawn_entry_t *)((int)&entries[-2].pos_y + 2);
+    ((quest_spawn_entry_t *)(piVar4 + -4))->pos_x = (float)(terrain_texture_width / 2);
+    piVar4[-3] = (int)(float)(int)entries;
+    piVar4[-1] = 0xf;
+    *piVar4 = iVar2;
+    piVar4[1] = 4;
+    iVar2 = iVar2 + 100;
+    piVar4 = piVar4 + 6;
+    entries = pqVar6;
+  } while (-0x13c < (int)pqVar6);
+  iVar2 = 0;
+  iVar5 = 40000;
+  piVar4 = &pqVar1[0x19].trigger_time_ms;
   do {
-    iVar7 = iVar1 + 0x2c + terrain_texture_width;
-    iVar1 = iVar1 + 0x20;
-    pfVar4[-4] = (float)(terrain_texture_width / 2);
-    pfVar4[-3] = (float)iVar7;
-    pfVar4[-1] = 2.52234e-44;
-    *pfVar4 = fVar5;
-    pfVar4[1] = 2.8026e-45;
-    fVar5 = (float)((int)fVar5 + 100);
-    pfVar4 = pfVar4 + 6;
-  } while ((int)fVar5 < 0x9e98);
+    iVar7 = iVar2 + 0x2c + terrain_texture_width;
+    iVar2 = iVar2 + 0x20;
+    ((quest_spawn_entry_t *)(piVar4 + -4))->pos_x = (float)(terrain_texture_width / 2);
+    piVar4[-3] = (int)(float)iVar7;
+    piVar4[-1] = 0x12;
+    *piVar4 = iVar5;
+    piVar4[1] = 2;
+    iVar5 = iVar5 + 100;
+    piVar4 = piVar4 + 6;
+  } while (iVar5 < 0x9e98);
   *count = 0x1f;
   return;
 }
@@ -31141,60 +31148,59 @@ void quest_build_the_beating(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 5 Quest 2 (The Spanking Of The Dead) */
 
-void quest_build_the_spanking_of_the_dead(float *entries,int *count)
+void quest_build_the_spanking_of_the_dead(quest_spawn_entry_t *entries,int *count)
 
 {
-  float *pfVar1;
-  float *pfVar2;
+  quest_spawn_entry_t *pqVar1;
+  int *piVar2;
   int iVar3;
-  float fVar4;
-  float *pfVar5;
+  quest_spawn_entry_t *pqVar4;
+  float10 fVar5;
   float10 fVar6;
   float10 fVar7;
   float10 fVar8;
-  float10 fVar9;
   
-  pfVar1 = entries;
-  *entries = 256.0;
-  entries[1] = 512.0;
-  entries[3] = 5.46506e-44;
-  entries[4] = 7.00649e-43;
-  entries[5] = 1.4013e-45;
-  entries[6] = 768.0;
-  entries[7] = 512.0;
-  entries[9] = 5.46506e-44;
-  entries[10] = 7.00649e-43;
-  entries[0xb] = 1.4013e-45;
-  entries = (float *)0x0;
-  fVar4 = 7.00649e-42;
-  pfVar2 = pfVar1 + 0xf;
+  pqVar1 = entries;
+  entries->pos_x = 256.0;
+  entries->pos_y = 512.0;
+  entries->template_id = 0x27;
+  entries->trigger_time_ms = 500;
+  entries->count = 1;
+  entries[1].pos_x = 768.0;
+  entries[1].pos_y = 512.0;
+  entries[1].template_id = 0x27;
+  entries[1].trigger_time_ms = 500;
+  entries[1].count = 1;
+  entries = (quest_spawn_entry_t *)0x0;
+  iVar3 = 5000;
+  piVar2 = &pqVar1[2].template_id;
   do {
-    pfVar5 = (float *)((int)entries + 1);
-    fVar6 = (float10)(int)entries * (float10)0.33333334;
-    fVar7 = (float10)512.0 - (float10)(int)entries * (float10)3.8;
-    fVar8 = (float10)fcos(fVar6);
-    fVar9 = (float10)fsin(fVar6);
-    pfVar2[-3] = (float)(fVar8 * fVar7 + (float10)512.0);
-    pfVar2[-2] = (float)(fVar9 * fVar7 + (float10)512.0);
-    pfVar2[-1] = (float)fVar6;
-    *pfVar2 = 9.10844e-44;
-    pfVar2[1] = fVar4;
-    pfVar2[2] = 1.4013e-45;
-    fVar4 = (float)((int)fVar4 + 300);
-    pfVar2 = pfVar2 + 6;
-    entries = pfVar5;
-  } while ((int)fVar4 < 0xa988);
-  pfVar1[0x30c] = 1280.0;
-  pfVar1[0x30d] = 512.0;
-  iVar3 = (int)pfVar5 * 300;
-  pfVar1[0x30f] = 9.24857e-44;
-  pfVar1[0x310] = (float)(iVar3 + 10000);
-  pfVar1[0x311] = 2.24208e-44;
-  pfVar1[0x312] = -256.0;
-  pfVar1[0x313] = 512.0;
-  pfVar1[0x315] = 9.24857e-44;
-  pfVar1[0x316] = (float)(iVar3 + 20000);
-  pfVar1[0x317] = 2.24208e-44;
+    pqVar4 = (quest_spawn_entry_t *)((int)&entries->pos_x + 1);
+    fVar5 = (float10)(int)entries * (float10)0.33333334;
+    fVar6 = (float10)512.0 - (float10)(int)entries * (float10)3.8;
+    fVar7 = (float10)fcos(fVar5);
+    fVar8 = (float10)fsin(fVar5);
+    ((quest_spawn_entry_t *)(piVar2 + -3))->pos_x = (float)(fVar7 * fVar6 + (float10)512.0);
+    piVar2[-2] = (int)(float)(fVar8 * fVar6 + (float10)512.0);
+    piVar2[-1] = (int)(float)fVar5;
+    *piVar2 = 0x41;
+    piVar2[1] = iVar3;
+    piVar2[2] = 1;
+    iVar3 = iVar3 + 300;
+    piVar2 = piVar2 + 6;
+    entries = pqVar4;
+  } while (iVar3 < 0xa988);
+  pqVar1[0x82].pos_x = 1280.0;
+  pqVar1[0x82].pos_y = 512.0;
+  iVar3 = (int)pqVar4 * 300;
+  pqVar1[0x82].template_id = 0x42;
+  pqVar1[0x82].trigger_time_ms = iVar3 + 10000;
+  pqVar1[0x82].count = 0x10;
+  pqVar1[0x83].pos_x = -256.0;
+  pqVar1[0x83].pos_y = 512.0;
+  pqVar1[0x83].template_id = 0x42;
+  pqVar1[0x83].trigger_time_ms = iVar3 + 20000;
+  pqVar1[0x83].count = 0x10;
   *count = 0x84;
   return;
 }
@@ -31206,41 +31212,41 @@ void quest_build_the_spanking_of_the_dead(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 3 Quest 4 (Hidden Evil) */
 
-void quest_build_hidden_evil(float *entries,int *count)
+void quest_build_hidden_evil(quest_spawn_entry_t *entries,int *count)
 
 {
   int iVar1;
   
   iVar1 = terrain_texture_height + 0x40;
-  *entries = (float)(terrain_texture_width / 2);
-  entries[1] = (float)iVar1;
-  entries[3] = 4.62428e-44;
-  entries[4] = 7.00649e-43;
-  entries[5] = 7.00649e-44;
+  entries->pos_x = (float)(terrain_texture_width / 2);
+  entries->pos_y = (float)iVar1;
+  entries->template_id = 0x21;
+  entries->trigger_time_ms = 500;
+  entries->count = 0x32;
   iVar1 = terrain_texture_height + 0x40;
-  entries[6] = (float)(terrain_texture_width / 2);
-  entries[7] = (float)iVar1;
-  entries[9] = 4.76441e-44;
-  entries[10] = 2.10195e-41;
-  entries[0xb] = 4.2039e-44;
+  entries[1].pos_x = (float)(terrain_texture_width / 2);
+  entries[1].pos_y = (float)iVar1;
+  entries[1].template_id = 0x22;
+  entries[1].trigger_time_ms = 15000;
+  entries[1].count = 0x1e;
   iVar1 = terrain_texture_height + 0x40;
-  entries[0xc] = (float)(terrain_texture_width / 2);
-  entries[0xd] = (float)iVar1;
-  entries[0xf] = 4.90454e-44;
-  entries[0x10] = 3.50325e-41;
-  entries[0x11] = 2.8026e-44;
+  entries[2].pos_x = (float)(terrain_texture_width / 2);
+  entries[2].pos_y = (float)iVar1;
+  entries[2].template_id = 0x23;
+  entries[2].trigger_time_ms = 25000;
+  entries[2].count = 0x14;
   iVar1 = terrain_texture_height + 0x40;
-  entries[0x12] = (float)(terrain_texture_width / 2);
-  entries[0x13] = (float)iVar1;
-  entries[0x15] = 4.90454e-44;
-  entries[0x16] = 4.2039e-41;
-  entries[0x17] = 4.2039e-44;
+  entries[3].pos_x = (float)(terrain_texture_width / 2);
+  entries[3].pos_y = (float)iVar1;
+  entries[3].template_id = 0x23;
+  entries[3].trigger_time_ms = 30000;
+  entries[3].count = 0x1e;
   iVar1 = terrain_texture_height + 0x40;
-  entries[0x18] = (float)(terrain_texture_width / 2);
-  entries[0x19] = (float)iVar1;
-  entries[0x1b] = 4.76441e-44;
-  entries[0x1c] = 4.90454e-41;
-  entries[0x1d] = 4.2039e-44;
+  entries[4].pos_x = (float)(terrain_texture_width / 2);
+  entries[4].pos_y = (float)iVar1;
+  entries[4].template_id = 0x22;
+  entries[4].trigger_time_ms = 35000;
+  entries[4].count = 0x1e;
   *count = 5;
   return;
 }
@@ -31252,32 +31258,32 @@ void quest_build_hidden_evil(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 1 Quest 1 (Land Hostile) */
 
-void quest_build_land_hostile(float *entries,int *count)
+void quest_build_land_hostile(quest_spawn_entry_t *entries,int *count)
 
 {
   int iVar1;
   
   iVar1 = terrain_texture_height + 0x40;
-  *entries = (float)(terrain_texture_width / 2);
-  entries[1] = (float)iVar1;
-  entries[3] = 5.32493e-44;
-  entries[4] = 7.00649e-43;
-  entries[5] = 1.4013e-45;
-  entries[6] = -64.0;
-  entries[7] = 1088.0;
-  entries[9] = 5.32493e-44;
-  entries[10] = 3.50325e-42;
-  entries[0xb] = 2.8026e-45;
-  entries[0xc] = -64.0;
-  entries[0xd] = -64.0;
-  entries[0xf] = 5.32493e-44;
-  entries[0x10] = 9.10844e-42;
-  entries[0x11] = 4.2039e-45;
-  entries[0x12] = 1088.0;
-  entries[0x13] = -64.0;
-  entries[0x15] = 5.32493e-44;
-  entries[0x16] = 1.61149e-41;
-  entries[0x17] = 5.60519e-45;
+  entries->pos_x = (float)(terrain_texture_width / 2);
+  entries->pos_y = (float)iVar1;
+  entries->template_id = 0x26;
+  entries->trigger_time_ms = 500;
+  entries->count = 1;
+  entries[1].pos_x = -64.0;
+  entries[1].pos_y = 1088.0;
+  entries[1].template_id = 0x26;
+  entries[1].trigger_time_ms = 0x9c4;
+  entries[1].count = 2;
+  entries[2].pos_x = -64.0;
+  entries[2].pos_y = -64.0;
+  entries[2].template_id = 0x26;
+  entries[2].trigger_time_ms = 0x1964;
+  entries[2].count = 3;
+  entries[3].pos_x = 1088.0;
+  entries[3].pos_y = -64.0;
+  entries[3].template_id = 0x26;
+  entries[3].trigger_time_ms = 0x2cec;
+  entries[3].count = 4;
   *count = 4;
   return;
 }
@@ -31289,72 +31295,72 @@ void quest_build_land_hostile(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 1 Quest 2 (Minor Alien Breach) */
 
-void quest_build_minor_alien_breach(float *entries,int *count)
+void quest_build_minor_alien_breach(quest_spawn_entry_t *entries,int *count)
 
 {
   int iVar1;
-  float *pfVar2;
-  float *pfVar3;
+  quest_spawn_entry_t *pqVar2;
+  quest_spawn_entry_t *pqVar3;
   int iVar4;
-  float fVar5;
+  int iVar5;
   int iVar6;
   
-  *entries = 256.0;
-  entries[1] = 256.0;
-  entries[3] = 5.32493e-44;
+  entries->pos_x = 256.0;
+  entries->pos_y = 256.0;
+  entries->template_id = 0x26;
   iVar6 = 2;
-  entries[4] = 1.4013e-42;
-  entries[5] = 2.8026e-45;
-  entries[6] = 256.0;
-  entries[7] = 128.0;
-  entries[9] = 5.32493e-44;
-  entries[10] = 2.38221e-42;
-  entries[0xb] = 2.8026e-45;
+  entries->trigger_time_ms = 1000;
+  entries->count = 2;
+  entries[1].pos_x = 256.0;
+  entries[1].pos_y = 128.0;
+  entries[1].template_id = 0x26;
+  entries[1].trigger_time_ms = 0x6a4;
+  entries[1].count = 2;
   iVar4 = 2;
-  pfVar3 = entries + 0xc;
+  pqVar3 = entries + 2;
   do {
     iVar1 = terrain_texture_height / 2;
-    *pfVar3 = (float)(terrain_texture_width + 0x40);
-    pfVar3[1] = (float)iVar1;
-    pfVar3[3] = 5.32493e-44;
-    fVar5 = (float)((iVar4 * 5 + -10) * 0x2d0);
-    pfVar3[4] = fVar5;
-    pfVar3[5] = 1.4013e-45;
-    pfVar2 = pfVar3 + 6;
+    pqVar3->pos_x = (float)(terrain_texture_width + 0x40);
+    pqVar3->pos_y = (float)iVar1;
+    pqVar3->template_id = 0x26;
+    iVar5 = (iVar4 * 5 + -10) * 0x2d0;
+    pqVar3->trigger_time_ms = iVar5;
+    pqVar3->count = 1;
+    pqVar2 = pqVar3 + 1;
     iVar1 = iVar6 + 1;
     if (6 < iVar4) {
       iVar1 = terrain_texture_height / 2;
-      pfVar3[6] = (float)(terrain_texture_width + 0x40);
-      pfVar3[7] = (float)(iVar1 + -0x100);
-      pfVar3[9] = 5.32493e-44;
-      pfVar3[10] = fVar5;
-      pfVar3[0xb] = 1.4013e-45;
-      pfVar2 = pfVar3 + 0xc;
+      pqVar3[1].pos_x = (float)(terrain_texture_width + 0x40);
+      pqVar3[1].pos_y = (float)(iVar1 + -0x100);
+      pqVar3[1].template_id = 0x26;
+      pqVar3[1].trigger_time_ms = iVar5;
+      pqVar3[1].count = 1;
+      pqVar2 = pqVar3 + 2;
       iVar1 = iVar6 + 2;
     }
     iVar6 = iVar1;
-    pfVar3 = pfVar2;
+    pqVar3 = pqVar2;
     if (iVar4 == 0xd) {
       iVar1 = terrain_texture_height + 0x40;
       iVar6 = iVar6 + 1;
-      *pfVar3 = (float)(terrain_texture_width / 2);
-      pfVar3[1] = (float)iVar1;
-      pfVar3[3] = 5.74532e-44;
-      pfVar3[4] = 5.54914e-41;
-      pfVar3[5] = 1.4013e-45;
-      pfVar2 = pfVar3 + 6;
+      pqVar3->pos_x = (float)(terrain_texture_width / 2);
+      pqVar3->pos_y = (float)iVar1;
+      pqVar3->template_id = 0x29;
+      pqVar3->trigger_time_ms = 0x9ab0;
+      pqVar3->count = 1;
+      pqVar2 = pqVar3 + 1;
 LAB_00435e39:
       iVar1 = terrain_texture_height / 2;
-      *pfVar2 = -64.0;
+      pqVar2->pos_x = -64.0;
       iVar6 = iVar6 + 1;
-      pfVar3 = pfVar2 + 6;
-      pfVar2[1] = (float)(iVar1 + 0x100);
-      pfVar2[3] = 5.32493e-44;
-      pfVar2[4] = fVar5;
-      pfVar2[5] = 1.4013e-45;
+      pqVar3 = pqVar2 + 1;
+      pqVar2->pos_y = (float)(iVar1 + 0x100);
+      pqVar2->template_id = 0x26;
+      pqVar2->trigger_time_ms = iVar5;
+      pqVar2->count = 1;
     }
     else {
-      pfVar2 = pfVar3;
+      pqVar2 = pqVar3;
       if (10 < iVar4) goto LAB_00435e39;
     }
     iVar4 = iVar4 + 1;
@@ -31372,71 +31378,71 @@ LAB_00435e39:
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 1 Quest 8 (Alien Squads) */
 
-void quest_build_alien_squads(float *entries,int *count)
+void quest_build_alien_squads(quest_spawn_entry_t *entries,int *count)
 
 {
-  float *pfVar1;
-  float fVar2;
+  quest_spawn_entry_t *pqVar1;
+  int iVar2;
   int iVar3;
   
-  *entries = -256.0;
-  entries[1] = 256.0;
-  entries[3] = 2.52234e-44;
-  entries[4] = 2.10195e-42;
-  entries[5] = 1.4013e-45;
-  entries[6] = -256.0;
-  entries[7] = 768.0;
-  entries[9] = 2.52234e-44;
-  entries[10] = 3.50325e-42;
-  entries[0xb] = 1.4013e-45;
-  entries[0xc] = 768.0;
-  entries[0xd] = -256.0;
-  entries[0xf] = 2.52234e-44;
-  entries[0x10] = 7.70714e-42;
-  entries[0x11] = 1.4013e-45;
-  entries[0x12] = 768.0;
-  entries[0x13] = 1280.0;
-  entries[0x15] = 2.52234e-44;
-  entries[0x16] = 1.1911e-41;
-  entries[0x17] = 1.4013e-45;
-  entries[0x18] = 1280.0;
-  entries[0x19] = 1280.0;
-  entries[0x1b] = 2.52234e-44;
-  entries[0x1c] = 2.03188e-41;
-  entries[0x1d] = 1.4013e-45;
-  entries[0x1e] = 1280.0;
-  entries[0x1f] = 768.0;
-  entries[0x21] = 2.52234e-44;
-  entries[0x22] = 2.5924e-41;
-  entries[0x23] = 1.4013e-45;
-  entries[0x24] = -256.0;
-  entries[0x25] = 256.0;
-  entries[0x27] = 2.52234e-44;
-  entries[0x28] = 3.50325e-41;
-  entries[0x29] = 1.4013e-45;
-  entries[0x2a] = -256.0;
-  entries[0x2b] = 768.0;
-  entries[0x2d] = 2.52234e-44;
-  entries[0x2e] = 4.2039e-41;
-  entries[0x2f] = 1.4013e-45;
+  entries->pos_x = -256.0;
+  entries->pos_y = 256.0;
+  entries->template_id = 0x12;
+  entries->trigger_time_ms = 0x5dc;
+  entries->count = 1;
+  entries[1].pos_x = -256.0;
+  entries[1].pos_y = 768.0;
+  entries[1].template_id = 0x12;
+  entries[1].trigger_time_ms = 0x9c4;
+  entries[1].count = 1;
+  entries[2].pos_x = 768.0;
+  entries[2].pos_y = -256.0;
+  entries[2].template_id = 0x12;
+  entries[2].trigger_time_ms = 0x157c;
+  entries[2].count = 1;
+  entries[3].pos_x = 768.0;
+  entries[3].pos_y = 1280.0;
+  entries[3].template_id = 0x12;
+  entries[3].trigger_time_ms = 0x2134;
+  entries[3].count = 1;
+  entries[4].pos_x = 1280.0;
+  entries[4].pos_y = 1280.0;
+  entries[4].template_id = 0x12;
+  entries[4].trigger_time_ms = 0x38a4;
+  entries[4].count = 1;
+  entries[5].pos_x = 1280.0;
+  entries[5].pos_y = 768.0;
+  entries[5].template_id = 0x12;
+  entries[5].trigger_time_ms = 0x4844;
+  entries[5].count = 1;
+  entries[6].pos_x = -256.0;
+  entries[6].pos_y = 256.0;
+  entries[6].template_id = 0x12;
+  entries[6].trigger_time_ms = 25000;
+  entries[6].count = 1;
+  entries[7].pos_x = -256.0;
+  entries[7].pos_y = 768.0;
+  entries[7].template_id = 0x12;
+  entries[7].trigger_time_ms = 30000;
+  entries[7].count = 1;
   iVar3 = 8;
-  pfVar1 = entries + 0x30;
-  fVar2 = 5.0727e-41;
+  pqVar1 = entries + 8;
+  iVar2 = 0x8d68;
   do {
-    *pfVar1 = -64.0;
-    pfVar1[1] = -64.0;
-    pfVar1[3] = 5.32493e-44;
-    pfVar1[4] = (float)((int)fVar2 + -400);
-    pfVar1[5] = 1.4013e-45;
+    pqVar1->pos_x = -64.0;
+    pqVar1->pos_y = -64.0;
+    pqVar1->template_id = 0x26;
+    pqVar1->trigger_time_ms = iVar2 + -400;
+    pqVar1->count = 1;
     iVar3 = iVar3 + 2;
-    pfVar1[6] = 1088.0;
-    pfVar1[7] = 1088.0;
-    pfVar1[9] = 5.32493e-44;
-    pfVar1[10] = fVar2;
-    pfVar1[0xb] = 1.4013e-45;
-    fVar2 = (float)((int)fVar2 + 0x708);
-    pfVar1 = pfVar1 + 0xc;
-  } while ((int)fVar2 < 83000);
+    pqVar1[1].pos_x = 1088.0;
+    pqVar1[1].pos_y = 1088.0;
+    pqVar1[1].template_id = 0x26;
+    pqVar1[1].trigger_time_ms = iVar2;
+    pqVar1[1].count = 1;
+    iVar2 = iVar2 + 0x708;
+    pqVar1 = pqVar1 + 2;
+  } while (iVar2 < 83000);
   *count = iVar3;
   return;
 }
@@ -31448,29 +31454,29 @@ void quest_build_alien_squads(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 3 Quest 10 (Zombie Masters) */
 
-void quest_build_zombie_masters(float *entries,int *count)
+void quest_build_zombie_masters(quest_spawn_entry_t *entries,int *count)
 
 {
-  *entries = 256.0;
-  entries[1] = 256.0;
-  entries[3] = 0.0;
-  entries[4] = 1.4013e-42;
-  entries[5] = (float)config_blob.reserved0._20_4_;
-  entries[6] = 512.0;
-  entries[7] = 256.0;
-  entries[9] = 0.0;
-  entries[10] = 8.40779e-42;
-  entries[0xb] = 1.4013e-45;
-  entries[0xc] = 768.0;
-  entries[0xd] = 256.0;
-  entries[0xf] = 0.0;
-  entries[0x10] = 1.96182e-41;
-  entries[0x11] = (float)config_blob.reserved0._20_4_;
-  entries[0x12] = 768.0;
-  entries[0x13] = 768.0;
-  entries[0x15] = 0.0;
-  entries[0x16] = 2.52234e-41;
-  entries[0x17] = 1.4013e-45;
+  entries->pos_x = 256.0;
+  entries->pos_y = 256.0;
+  entries->template_id = 0;
+  entries->trigger_time_ms = 1000;
+  entries->count = config_blob.reserved0._20_4_;
+  entries[1].pos_x = 512.0;
+  entries[1].pos_y = 256.0;
+  entries[1].template_id = 0;
+  entries[1].trigger_time_ms = 6000;
+  entries[1].count = 1;
+  entries[2].pos_x = 768.0;
+  entries[2].pos_y = 256.0;
+  entries[2].template_id = 0;
+  entries[2].trigger_time_ms = 14000;
+  entries[2].count = config_blob.reserved0._20_4_;
+  entries[3].pos_x = 768.0;
+  entries[3].pos_y = 768.0;
+  entries[3].template_id = 0;
+  entries[3].trigger_time_ms = 18000;
+  entries[3].count = 1;
   *count = 4;
   return;
 }
@@ -31482,46 +31488,46 @@ void quest_build_zombie_masters(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 1 Quest 10 (8-legged Terror) */
 
-void quest_build_8_legged_terror(float *entries,int *count)
+void quest_build_8_legged_terror(quest_spawn_entry_t *entries,int *count)
 
 {
-  float *pfVar1;
-  float fVar2;
+  quest_spawn_entry_t *pqVar1;
+  int iVar2;
   int iVar3;
   
-  *entries = (float)(terrain_texture_width + -0x100);
+  entries->pos_x = (float)(terrain_texture_width + -0x100);
   iVar3 = 1;
-  pfVar1 = entries + 6;
-  entries[1] = (float)(terrain_texture_width / 2);
-  entries[3] = 8.12753e-44;
-  entries[4] = 1.4013e-42;
-  entries[5] = 1.4013e-45;
-  fVar2 = 8.40779e-42;
+  pqVar1 = entries + 1;
+  entries->pos_y = (float)(terrain_texture_width / 2);
+  entries->template_id = 0x3a;
+  entries->trigger_time_ms = 1000;
+  entries->count = 1;
+  iVar2 = 6000;
   do {
-    *pfVar1 = -25.0;
-    pfVar1[1] = -25.0;
-    pfVar1[3] = 8.54792e-44;
-    pfVar1[4] = fVar2;
-    pfVar1[5] = (float)config_blob.reserved0._20_4_;
-    pfVar1[6] = 1049.0;
-    pfVar1[7] = -25.0;
-    pfVar1[9] = 8.54792e-44;
-    pfVar1[10] = fVar2;
-    pfVar1[0xb] = 1.4013e-45;
-    pfVar1[0xc] = -25.0;
-    pfVar1[0xd] = 1049.0;
-    pfVar1[0xf] = 8.54792e-44;
-    pfVar1[0x10] = fVar2;
-    pfVar1[0x11] = (float)config_blob.reserved0._20_4_;
+    pqVar1->pos_x = -25.0;
+    pqVar1->pos_y = -25.0;
+    pqVar1->template_id = 0x3d;
+    pqVar1->trigger_time_ms = iVar2;
+    pqVar1->count = config_blob.reserved0._20_4_;
+    pqVar1[1].pos_x = 1049.0;
+    pqVar1[1].pos_y = -25.0;
+    pqVar1[1].template_id = 0x3d;
+    pqVar1[1].trigger_time_ms = iVar2;
+    pqVar1[1].count = 1;
+    pqVar1[2].pos_x = -25.0;
+    pqVar1[2].pos_y = 1049.0;
+    pqVar1[2].template_id = 0x3d;
+    pqVar1[2].trigger_time_ms = iVar2;
+    pqVar1[2].count = config_blob.reserved0._20_4_;
     iVar3 = iVar3 + 4;
-    pfVar1[0x12] = 1049.0;
-    pfVar1[0x13] = 1049.0;
-    pfVar1[0x15] = 8.54792e-44;
-    pfVar1[0x16] = fVar2;
-    pfVar1[0x17] = 1.4013e-45;
-    fVar2 = (float)((int)fVar2 + 0x898);
-    pfVar1 = pfVar1 + 0x18;
-  } while ((int)fVar2 < 0x8fc0);
+    pqVar1[3].pos_x = 1049.0;
+    pqVar1[3].pos_y = 1049.0;
+    pqVar1[3].template_id = 0x3d;
+    pqVar1[3].trigger_time_ms = iVar2;
+    pqVar1[3].count = 1;
+    iVar2 = iVar2 + 0x898;
+    pqVar1 = pqVar1 + 4;
+  } while (iVar2 < 0x8fc0);
   *count = iVar3;
   return;
 }
@@ -31533,22 +31539,22 @@ void quest_build_8_legged_terror(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 2 Quest 9 (Ghost Patrols) */
 
-void quest_build_ghost_patrols(float *entries,int *count)
+void quest_build_ghost_patrols(quest_spawn_entry_t *entries,int *count)
 
 {
   uint uVar1;
-  float fVar2;
-  float *pfVar3;
+  int iVar2;
+  int *piVar3;
   uint uVar4;
   bool bVar5;
   
-  fVar2 = 3.50325e-42;
-  *entries = (float)(terrain_texture_width + 0x80);
-  entries[1] = (float)(terrain_texture_width / 2);
-  entries[3] = 6.02558e-44;
-  entries[4] = 2.10195e-42;
-  entries[5] = 2.8026e-45;
-  pfVar3 = entries + 9;
+  iVar2 = 0x9c4;
+  entries->pos_x = (float)(terrain_texture_width + 0x80);
+  entries->pos_y = (float)(terrain_texture_width / 2);
+  entries->template_id = 0x2b;
+  entries->trigger_time_ms = 0x5dc;
+  entries->count = 2;
+  piVar3 = &entries[1].template_id;
   uVar1 = 0;
   do {
     uVar4 = uVar1;
@@ -31558,29 +31564,29 @@ void quest_build_ghost_patrols(float *entries,int *count)
       bVar5 = (uVar1 - 1 | 0xfffffffe) == 0xffffffff;
     }
     if (bVar5) {
-      pfVar3[-3] = -128.0;
+      ((quest_spawn_entry_t *)(piVar3 + -3))->pos_x = -128.0;
     }
     else {
-      pfVar3[-3] = 1152.0;
+      ((quest_spawn_entry_t *)(piVar3 + -3))->pos_x = 1152.0;
     }
     uVar1 = uVar4 + 1;
-    pfVar3[-2] = (float)(terrain_texture_width / 2);
-    *pfVar3 = 3.50325e-44;
-    pfVar3[1] = fVar2;
-    pfVar3[2] = 1.4013e-45;
-    fVar2 = (float)((int)fVar2 + 0x9c4);
-    pfVar3 = pfVar3 + 6;
-  } while ((int)fVar2 < 0x7ef4);
-  entries[0x4e] = -264.0;
-  entries[0x4f] = (float)(terrain_texture_width / 2);
-  entries[0x51] = 6.02558e-44;
-  entries[0x52] = (float)(uVar1 * 0x9c4 + -0x9c4);
-  entries[0x53] = 1.4013e-45;
-  entries[0x54] = -128.0;
-  entries[0x55] = (float)(terrain_texture_width / 2);
-  entries[0x57] = 3.36312e-44;
-  entries[0x58] = (float)((uVar4 + 0x10 + uVar1 * 4) * 500);
-  entries[0x59] = 1.4013e-45;
+    piVar3[-2] = (int)(float)(terrain_texture_width / 2);
+    *piVar3 = 0x19;
+    piVar3[1] = iVar2;
+    piVar3[2] = 1;
+    iVar2 = iVar2 + 0x9c4;
+    piVar3 = piVar3 + 6;
+  } while (iVar2 < 0x7ef4);
+  entries[0xd].pos_x = -264.0;
+  entries[0xd].pos_y = (float)(terrain_texture_width / 2);
+  entries[0xd].template_id = 0x2b;
+  entries[0xd].trigger_time_ms = uVar1 * 0x9c4 + -0x9c4;
+  entries[0xd].count = 1;
+  entries[0xe].pos_x = -128.0;
+  entries[0xe].pos_y = (float)(terrain_texture_width / 2);
+  entries[0xe].template_id = 0x18;
+  entries[0xe].trigger_time_ms = (uVar4 + 0x10 + uVar1 * 4) * 500;
+  entries[0xe].count = 1;
   *count = 0xf;
   return;
 }
@@ -31591,44 +31597,44 @@ void quest_build_ghost_patrols(float *entries,int *count)
 
 /* quest builder for Tier 1 Quest 6 (The Random Factor) */
 
-void __cdecl quest_build_the_random_factor(float *entries,int *count)
+void __cdecl quest_build_the_random_factor(quest_spawn_entry_t *entries,int *count)
 
 {
-  float *pfVar1;
+  quest_spawn_entry_t *pqVar1;
   int iVar2;
   int iVar3;
   int iVar4;
-  float fVar5;
+  int iVar5;
   
-  fVar5 = 2.10195e-42;
+  iVar5 = 0x5dc;
   iVar3 = 0;
   do {
-    pfVar1 = entries + iVar3 * 6;
-    *pfVar1 = (float)(terrain_texture_width + 0x40);
-    pfVar1[1] = (float)(terrain_texture_width / 2);
-    pfVar1[3] = 4.06377e-44;
-    pfVar1[4] = fVar5;
-    pfVar1[5] = (float)(config_blob.reserved0._20_4_ * 2 + 4);
-    pfVar1 = entries + (iVar3 + 1) * 6;
-    *pfVar1 = -64.0;
+    pqVar1 = entries + iVar3;
+    pqVar1->pos_x = (float)(terrain_texture_width + 0x40);
+    pqVar1->pos_y = (float)(terrain_texture_width / 2);
+    pqVar1->template_id = 0x1d;
+    pqVar1->trigger_time_ms = iVar5;
+    pqVar1->count = config_blob.reserved0._20_4_ * 2 + 4;
+    pqVar1 = entries + iVar3 + 1;
+    pqVar1->pos_x = -64.0;
     iVar4 = iVar3 + 2;
-    pfVar1[1] = (float)(terrain_texture_width / 2);
-    pfVar1[3] = 4.06377e-44;
-    pfVar1[4] = (float)((int)fVar5 + 200);
-    pfVar1[5] = 8.40779e-45;
+    pqVar1->pos_y = (float)(terrain_texture_width / 2);
+    pqVar1->template_id = 0x1d;
+    pqVar1->trigger_time_ms = iVar5 + 200;
+    pqVar1->count = 6;
     iVar2 = crt_rand();
     if (iVar2 % 5 == 3) {
-      pfVar1 = entries + iVar4 * 6;
+      pqVar1 = entries + iVar4;
       iVar4 = iVar3 + 3;
-      *pfVar1 = (float)(terrain_texture_width / 2);
-      pfVar1[1] = 1088.0;
-      pfVar1[3] = 5.74532e-44;
-      pfVar1[4] = fVar5;
-      pfVar1[5] = (float)config_blob.reserved0._20_4_;
+      pqVar1->pos_x = (float)(terrain_texture_width / 2);
+      pqVar1->pos_y = 1088.0;
+      pqVar1->template_id = 0x29;
+      pqVar1->trigger_time_ms = iVar5;
+      pqVar1->count = config_blob.reserved0._20_4_;
     }
-    fVar5 = (float)((int)fVar5 + 10000);
+    iVar5 = iVar5 + 10000;
     iVar3 = iVar4;
-  } while ((int)fVar5 < 0x18c7c);
+  } while (iVar5 < 0x18c7c);
   *count = iVar4;
   return;
 }
@@ -31639,25 +31645,25 @@ void __cdecl quest_build_the_random_factor(float *entries,int *count)
 
 /* quest builder for Tier 1 Quest 7 (Spider Wave Syndrome) */
 
-void __cdecl quest_build_spider_wave_syndrome(float *entries,int *count)
+void __cdecl quest_build_spider_wave_syndrome(quest_spawn_entry_t *entries,int *count)
 
 {
-  float *pfVar1;
+  quest_spawn_entry_t *pqVar1;
   int iVar2;
-  float fVar3;
+  int iVar3;
   
   iVar2 = 0;
-  fVar3 = 2.10195e-42;
+  iVar3 = 0x5dc;
   do {
-    pfVar1 = entries + iVar2 * 6;
-    *pfVar1 = -64.0;
+    pqVar1 = entries + iVar2;
+    pqVar1->pos_x = -64.0;
     iVar2 = iVar2 + 1;
-    pfVar1[1] = (float)(terrain_texture_width / 2);
-    pfVar1[3] = 8.96831e-44;
-    pfVar1[4] = fVar3;
-    fVar3 = (float)((int)fVar3 + 0x157c);
-    pfVar1[5] = (float)(config_blob.reserved0._20_4_ * 2 + 6);
-  } while ((int)fVar3 < 0x18894);
+    pqVar1->pos_y = (float)(terrain_texture_width / 2);
+    pqVar1->template_id = 0x40;
+    pqVar1->trigger_time_ms = iVar3;
+    iVar3 = iVar3 + 0x157c;
+    pqVar1->count = config_blob.reserved0._20_4_ * 2 + 6;
+  } while (iVar3 < 0x18894);
   *count = iVar2;
   return;
 }
@@ -31669,69 +31675,69 @@ void __cdecl quest_build_spider_wave_syndrome(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 1 Quest 9 (Nesting Grounds) */
 
-void quest_build_nesting_grounds(float *entries,int *count)
+void quest_build_nesting_grounds(quest_spawn_entry_t *entries,int *count)
 
 {
-  *entries = (float)(terrain_texture_width / 2);
-  entries[1] = (float)(terrain_texture_height + 0x40);
-  entries[3] = 4.06377e-44;
-  entries[4] = 2.10195e-42;
-  entries[5] = (float)(config_blob.reserved0._20_4_ * 2 + 6);
-  entries[6] = 256.0;
-  entries[7] = 256.0;
-  entries[9] = 1.26117e-44;
-  entries[10] = 1.12104e-41;
-  entries[0xb] = 1.4013e-45;
-  entries[0xc] = 512.0;
-  entries[0xd] = 512.0;
-  entries[0xf] = 1.26117e-44;
-  entries[0x10] = 1.82169e-41;
-  entries[0x11] = 1.4013e-45;
-  entries[0x12] = 768.0;
-  entries[0x13] = 768.0;
-  entries[0x15] = 1.26117e-44;
-  entries[0x16] = 2.52234e-41;
-  entries[0x17] = 1.4013e-45;
-  entries[0x18] = (float)(terrain_texture_width / 2);
-  entries[0x19] = (float)(terrain_texture_height + 0x40);
-  entries[0x1b] = 4.06377e-44;
-  entries[0x1c] = 3.50325e-41;
-  entries[0x1d] = (float)(config_blob.reserved0._20_4_ * 2 + 6);
-  entries[0x1e] = (float)(terrain_texture_width / 2);
-  entries[0x1f] = (float)(terrain_texture_height + 0x40);
-  entries[0x21] = 4.06377e-44;
-  entries[0x22] = 5.46506e-41;
-  entries[0x23] = (float)(config_blob.reserved0._20_4_ * 3 + 3);
-  entries[0x24] = 384.0;
-  entries[0x25] = 512.0;
-  entries[0x27] = 1.26117e-44;
-  entries[0x28] = 5.75934e-41;
-  entries[0x29] = 1.4013e-45;
-  entries[0x2a] = 640.0;
-  entries[0x2b] = 512.0;
-  entries[0x2d] = 1.26117e-44;
-  entries[0x2e] = 5.89947e-41;
-  entries[0x2f] = 1.4013e-45;
-  entries[0x30] = 512.0;
-  entries[0x31] = 640.0;
-  entries[0x33] = 1.26117e-44;
-  entries[0x34] = 6.0396e-41;
-  entries[0x35] = 1.4013e-45;
-  entries[0x36] = 512.0;
-  entries[0x37] = 512.0;
-  entries[0x39] = 1.12104e-44;
-  entries[0x3a] = 6.17973e-41;
-  entries[0x3b] = 1.4013e-45;
-  entries[0x3c] = (float)(terrain_texture_width / 2);
-  entries[0x3d] = (float)(terrain_texture_height + 0x40);
-  entries[0x3f] = 4.2039e-44;
-  entries[0x40] = 7.00649e-41;
-  entries[0x41] = (float)(config_blob.reserved0._20_4_ * 2 + 5);
-  entries[0x42] = (float)(terrain_texture_width / 2);
-  entries[0x43] = (float)(terrain_texture_height + 0x40);
-  entries[0x45] = 4.34403e-44;
-  entries[0x46] = 7.70714e-41;
-  entries[0x47] = (float)(config_blob.reserved0._20_4_ * 2 + 2);
+  entries->pos_x = (float)(terrain_texture_width / 2);
+  entries->pos_y = (float)(terrain_texture_height + 0x40);
+  entries->template_id = 0x1d;
+  entries->trigger_time_ms = 0x5dc;
+  entries->count = config_blob.reserved0._20_4_ * 2 + 6;
+  entries[1].pos_x = 256.0;
+  entries[1].pos_y = 256.0;
+  entries[1].template_id = 9;
+  entries[1].trigger_time_ms = 8000;
+  entries[1].count = 1;
+  entries[2].pos_x = 512.0;
+  entries[2].pos_y = 512.0;
+  entries[2].template_id = 9;
+  entries[2].trigger_time_ms = 13000;
+  entries[2].count = 1;
+  entries[3].pos_x = 768.0;
+  entries[3].pos_y = 768.0;
+  entries[3].template_id = 9;
+  entries[3].trigger_time_ms = 18000;
+  entries[3].count = 1;
+  entries[4].pos_x = (float)(terrain_texture_width / 2);
+  entries[4].pos_y = (float)(terrain_texture_height + 0x40);
+  entries[4].template_id = 0x1d;
+  entries[4].trigger_time_ms = 25000;
+  entries[4].count = config_blob.reserved0._20_4_ * 2 + 6;
+  entries[5].pos_x = (float)(terrain_texture_width / 2);
+  entries[5].pos_y = (float)(terrain_texture_height + 0x40);
+  entries[5].template_id = 0x1d;
+  entries[5].trigger_time_ms = 39000;
+  entries[5].count = config_blob.reserved0._20_4_ * 3 + 3;
+  entries[6].pos_x = 384.0;
+  entries[6].pos_y = 512.0;
+  entries[6].template_id = 9;
+  entries[6].trigger_time_ms = 0xa08c;
+  entries[6].count = 1;
+  entries[7].pos_x = 640.0;
+  entries[7].pos_y = 512.0;
+  entries[7].template_id = 9;
+  entries[7].trigger_time_ms = 0xa474;
+  entries[7].count = 1;
+  entries[8].pos_x = 512.0;
+  entries[8].pos_y = 640.0;
+  entries[8].template_id = 9;
+  entries[8].trigger_time_ms = 0xa85c;
+  entries[8].count = 1;
+  entries[9].pos_x = 512.0;
+  entries[9].pos_y = 512.0;
+  entries[9].template_id = 8;
+  entries[9].trigger_time_ms = 0xac44;
+  entries[9].count = 1;
+  entries[10].pos_x = (float)(terrain_texture_width / 2);
+  entries[10].pos_y = (float)(terrain_texture_height + 0x40);
+  entries[10].template_id = 0x1e;
+  entries[10].trigger_time_ms = 50000;
+  entries[10].count = config_blob.reserved0._20_4_ * 2 + 5;
+  entries[0xb].pos_x = (float)(terrain_texture_width / 2);
+  entries[0xb].pos_y = (float)(terrain_texture_height + 0x40);
+  entries[0xb].template_id = 0x1f;
+  entries[0xb].trigger_time_ms = 55000;
+  entries[0xb].count = config_blob.reserved0._20_4_ * 2 + 2;
   *count = 0xc;
   return;
 }
@@ -31743,34 +31749,34 @@ void quest_build_nesting_grounds(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 1 Quest 5 (Alien Dens) */
 
-void quest_build_alien_dens(float *entries,int *count)
+void quest_build_alien_dens(quest_spawn_entry_t *entries,int *count)
 
 {
-  *entries = 256.0;
-  entries[1] = 256.0;
-  entries[3] = 1.12104e-44;
-  entries[4] = 2.10195e-42;
-  entries[5] = 1.4013e-45;
-  entries[6] = 768.0;
-  entries[7] = 768.0;
-  entries[9] = 1.12104e-44;
-  entries[10] = 2.10195e-42;
-  entries[0xb] = 1.4013e-45;
-  entries[0xc] = 512.0;
-  entries[0xd] = 512.0;
-  entries[0xf] = 1.12104e-44;
-  entries[0x10] = 3.29305e-41;
-  entries[0x11] = (float)config_blob.reserved0._20_4_;
-  entries[0x12] = 256.0;
-  entries[0x13] = 768.0;
-  entries[0x15] = 1.12104e-44;
-  entries[0x16] = 5.395e-41;
-  entries[0x17] = 1.4013e-45;
-  entries[0x18] = 768.0;
-  entries[0x19] = 256.0;
-  entries[0x1b] = 1.12104e-44;
-  entries[0x1c] = 5.395e-41;
-  entries[0x1d] = 1.4013e-45;
+  entries->pos_x = 256.0;
+  entries->pos_y = 256.0;
+  entries->template_id = 8;
+  entries->trigger_time_ms = 0x5dc;
+  entries->count = 1;
+  entries[1].pos_x = 768.0;
+  entries[1].pos_y = 768.0;
+  entries[1].template_id = 8;
+  entries[1].trigger_time_ms = 0x5dc;
+  entries[1].count = 1;
+  entries[2].pos_x = 512.0;
+  entries[2].pos_y = 512.0;
+  entries[2].template_id = 8;
+  entries[2].trigger_time_ms = 0x5bcc;
+  entries[2].count = config_blob.reserved0._20_4_;
+  entries[3].pos_x = 256.0;
+  entries[3].pos_y = 768.0;
+  entries[3].template_id = 8;
+  entries[3].trigger_time_ms = 0x9664;
+  entries[3].count = 1;
+  entries[4].pos_x = 768.0;
+  entries[4].pos_y = 256.0;
+  entries[4].template_id = 8;
+  entries[4].trigger_time_ms = 0x9664;
+  entries[4].count = 1;
   *count = 5;
   return;
 }
@@ -31782,64 +31788,64 @@ void quest_build_alien_dens(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 2 Quest 3 (Arachnoid Farm) */
 
-void quest_build_arachnoid_farm(float *entries,int *count)
+void quest_build_arachnoid_farm(quest_spawn_entry_t *entries,int *count)
 
 {
   float fVar1;
-  float *pfVar2;
+  int *piVar2;
   int iVar3;
-  float fVar4;
+  int iVar4;
   int iStack_c;
   
   iVar3 = 0;
   iStack_c = 0;
   if (config_blob.reserved0._20_4_ != -4 && -1 < config_blob.reserved0._20_4_ + 4) {
-    fVar4 = 7.00649e-43;
-    pfVar2 = entries + 4;
+    iVar4 = 500;
+    piVar2 = &entries->trigger_time_ms;
     do {
       iVar3 = iStack_c + 1;
-      pfVar2[-4] = (float)iStack_c * 102.4 + 256.0;
-      pfVar2[-3] = 256.0;
-      pfVar2[-1] = 1.4013e-44;
-      *pfVar2 = fVar4;
-      pfVar2[1] = 1.4013e-45;
-      fVar4 = (float)((int)fVar4 + 500);
-      pfVar2 = pfVar2 + 6;
+      ((quest_spawn_entry_t *)(piVar2 + -4))->pos_x = (float)iStack_c * 102.4 + 256.0;
+      piVar2[-3] = 0x43800000;
+      piVar2[-1] = 10;
+      *piVar2 = iVar4;
+      piVar2[1] = 1;
+      iVar4 = iVar4 + 500;
+      piVar2 = piVar2 + 6;
       iStack_c = iVar3;
     } while (iVar3 < config_blob.reserved0._20_4_ + 4);
   }
   iStack_c = 0;
   if (config_blob.reserved0._20_4_ != -4 && -1 < config_blob.reserved0._20_4_ + 4) {
-    fVar4 = 1.47136e-41;
-    pfVar2 = entries + iVar3 * 6 + 4;
+    iVar4 = 0x2904;
+    piVar2 = &entries[iVar3].trigger_time_ms;
     do {
       fVar1 = (float)iStack_c;
       iVar3 = iVar3 + 1;
       iStack_c = iStack_c + 1;
-      pfVar2[-4] = fVar1 * 102.4 + 256.0;
-      pfVar2[-3] = 768.0;
-      pfVar2[-1] = 1.4013e-44;
-      *pfVar2 = fVar4;
-      pfVar2[1] = 1.4013e-45;
-      fVar4 = (float)((int)fVar4 + 500);
-      pfVar2 = pfVar2 + 6;
+      ((quest_spawn_entry_t *)(piVar2 + -4))->pos_x = fVar1 * 102.4 + 256.0;
+      piVar2[-3] = 0x44400000;
+      piVar2[-1] = 10;
+      *piVar2 = iVar4;
+      piVar2[1] = 1;
+      iVar4 = iVar4 + 500;
+      piVar2 = piVar2 + 6;
     } while (iStack_c < config_blob.reserved0._20_4_ + 4);
   }
   iStack_c = 0;
   if (config_blob.reserved0._20_4_ != -7 && -1 < config_blob.reserved0._20_4_ + 7) {
-    fVar4 = 5.67526e-41;
-    pfVar2 = entries + iVar3 * 6 + 4;
+    iVar4 = 0x9e34;
+    piVar2 = &entries[iVar3].trigger_time_ms;
     do {
       fVar1 = (float)iStack_c;
       iVar3 = iVar3 + 1;
       iStack_c = iStack_c + 1;
-      pfVar2[-4] = fVar1 * 64.0 + 256.0;
-      pfVar2[-3] = 512.0;
-      pfVar2[-1] = 2.24208e-44;
-      *pfVar2 = fVar4;
-      pfVar2[1] = 1.4013e-45;
-      fVar4 = (float)((int)fVar4 + 0xdac);
-      pfVar2 = pfVar2 + 6;
+      ((quest_spawn_entry_t *)(piVar2 + -4))->pos_x = fVar1 * 64.0 + 256.0;
+      piVar2[-3] = 0x44000000;
+      piVar2[-1] = 0x10;
+      *piVar2 = iVar4;
+      piVar2[1] = 1;
+      iVar4 = iVar4 + 0xdac;
+      piVar2 = piVar2 + 6;
     } while (iStack_c < config_blob.reserved0._20_4_ + 7);
     *count = iVar3;
     return;
@@ -31855,106 +31861,109 @@ void quest_build_arachnoid_farm(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 4 Quest 7 (Gauntlet) */
 
-void quest_build_gauntlet(float *entries,int *count)
+void quest_build_gauntlet(quest_spawn_entry_t *entries,int *count)
 
 {
   int iVar1;
-  float *pfVar2;
-  float *pfVar3;
-  float fVar4;
+  quest_spawn_entry_t *pqVar2;
+  int *piVar3;
+  quest_spawn_entry_t *pqVar4;
   int iVar5;
-  float fVar6;
-  float10 fVar7;
+  int iVar6;
+  int iVar7;
   float10 fVar8;
+  float10 fVar9;
   int iStack_8;
   int iStack_4;
   
-  pfVar3 = entries;
-  iVar5 = 0;
+  pqVar2 = entries;
+  iVar6 = 0;
   iStack_8 = 0;
   if (config_blob.hardcore != '\0') {
     config_blob.reserved0._20_4_ = config_blob.reserved0._20_4_ + 4;
   }
   iStack_4 = config_blob.reserved0._20_4_ + 9;
   if (0 < iStack_4) {
-    fVar6 = 0.0;
-    pfVar2 = entries + 3;
+    iVar7 = 0;
+    piVar3 = &entries->template_id;
     do {
-      fVar7 = (float10)fcos(((float10)iStack_8 * (float10)6.2831855) / (float10)iStack_4);
-      pfVar2[-3] = (float)(fVar7 * (float10)158.0 + (float10)512.0);
-      iVar5 = iStack_8 + 1;
-      fVar7 = (float10)fsin(((float10)iStack_8 * (float10)6.2831855) /
+      fVar8 = (float10)fcos(((float10)iStack_8 * (float10)6.2831855) / (float10)iStack_4);
+      ((quest_spawn_entry_t *)(piVar3 + -3))->pos_x =
+           (float)(fVar8 * (float10)158.0 + (float10)512.0);
+      iVar6 = iStack_8 + 1;
+      fVar8 = (float10)fsin(((float10)iStack_8 * (float10)6.2831855) /
                             (float10)(config_blob.reserved0._20_4_ + 9));
-      pfVar2[-2] = (float)(fVar7 * (float10)158.0 + (float10)512.0);
-      *pfVar2 = 1.4013e-44;
-      pfVar2[1] = fVar6;
-      pfVar2[2] = 1.4013e-45;
-      fVar6 = (float)((int)fVar6 + 200);
+      piVar3[-2] = (int)(float)(fVar8 * (float10)158.0 + (float10)512.0);
+      *piVar3 = 10;
+      piVar3[1] = iVar7;
+      piVar3[2] = 1;
+      iVar7 = iVar7 + 200;
       iStack_4 = config_blob.reserved0._20_4_ + 9;
-      pfVar2 = pfVar2 + 6;
-      iStack_8 = iVar5;
-    } while (iVar5 < iStack_4);
+      piVar3 = piVar3 + 6;
+      iStack_8 = iVar6;
+    } while (iVar6 < iStack_4);
   }
   if (config_blob.reserved0._20_4_ != -9 && -1 < config_blob.reserved0._20_4_ + 9) {
-    fVar4 = 5.60519e-42;
-    pfVar2 = entries + iVar5 * 6;
-    fVar6 = 2.8026e-45;
+    iVar5 = 4000;
+    pqVar4 = entries + iVar6;
+    iVar7 = 2;
     do {
-      *pfVar2 = (float)(terrain_texture_width + 0x40);
-      pfVar2[1] = (float)(terrain_texture_width / 2);
-      pfVar2[3] = 9.10844e-44;
-      pfVar2[4] = fVar4;
-      pfVar2[5] = fVar6;
-      pfVar2[6] = -64.0;
-      pfVar2[7] = (float)(terrain_texture_width / 2);
-      pfVar2[9] = 9.10844e-44;
-      pfVar2[10] = fVar4;
-      pfVar2[0xb] = fVar6;
-      pfVar2[0xc] = (float)(terrain_texture_width / 2);
-      pfVar2[0xd] = (float)(terrain_texture_width + 0x40);
-      pfVar2[0xf] = 9.10844e-44;
-      pfVar2[0x10] = fVar4;
-      pfVar2[0x11] = fVar6;
-      iVar5 = iVar5 + 4;
-      pfVar2[0x12] = (float)(terrain_texture_width / 2);
-      pfVar2[0x13] = -64.0;
-      pfVar2[0x15] = 9.10844e-44;
-      pfVar2[0x16] = fVar4;
-      pfVar2[0x17] = fVar6;
-      fVar4 = (float)((int)fVar4 + 0x157c);
-      iVar1 = (int)fVar6 + -1;
-      pfVar2 = pfVar2 + 0x18;
-      fVar6 = (float)((int)fVar6 + 1);
+      pqVar4->pos_x = (float)(terrain_texture_width + 0x40);
+      pqVar4->pos_y = (float)(terrain_texture_width / 2);
+      pqVar4->template_id = 0x41;
+      pqVar4->trigger_time_ms = iVar5;
+      pqVar4->count = iVar7;
+      pqVar4[1].pos_x = -64.0;
+      pqVar4[1].pos_y = (float)(terrain_texture_width / 2);
+      pqVar4[1].template_id = 0x41;
+      pqVar4[1].trigger_time_ms = iVar5;
+      pqVar4[1].count = iVar7;
+      pqVar4[2].pos_x = (float)(terrain_texture_width / 2);
+      pqVar4[2].pos_y = (float)(terrain_texture_width + 0x40);
+      pqVar4[2].template_id = 0x41;
+      pqVar4[2].trigger_time_ms = iVar5;
+      pqVar4[2].count = iVar7;
+      iVar6 = iVar6 + 4;
+      pqVar4[3].pos_x = (float)(terrain_texture_width / 2);
+      pqVar4[3].pos_y = -64.0;
+      pqVar4[3].template_id = 0x41;
+      pqVar4[3].trigger_time_ms = iVar5;
+      pqVar4[3].count = iVar7;
+      iVar5 = iVar5 + 0x157c;
+      iVar1 = iVar7 + -1;
+      pqVar4 = pqVar4 + 4;
+      iVar7 = iVar7 + 1;
     } while (iVar1 < config_blob.reserved0._20_4_ + 9);
   }
   iStack_4 = config_blob.reserved0._20_4_ + 0x11;
-  entries = (float *)0x0;
+  entries = (quest_spawn_entry_t *)0x0;
   if (0 < iStack_4) {
-    fVar6 = 5.95552e-41;
-    pfVar3 = pfVar3 + iVar5 * 6 + 3;
+    iVar7 = 0xa604;
+    piVar3 = &pqVar2[iVar6].template_id;
     do {
-      fVar7 = (float10)(int)entries;
-      fVar8 = (float10)fcos((fVar7 * (float10)6.2831855) / (float10)iStack_4);
-      pfVar3[-3] = (float)(fVar8 * (float10)258.0 + (float10)512.0);
-      iVar5 = iVar5 + 1;
-      entries = (float *)((int)entries + 1);
-      fVar7 = (float10)fsin((fVar7 * (float10)6.2831855) /
+      fVar8 = (float10)(int)entries;
+      fVar9 = (float10)fcos((fVar8 * (float10)6.2831855) / (float10)iStack_4);
+      ((quest_spawn_entry_t *)(piVar3 + -3))->pos_x =
+           (float)(fVar9 * (float10)258.0 + (float10)512.0);
+      iVar6 = iVar6 + 1;
+      entries = (quest_spawn_entry_t *)((int)&entries->pos_x + 1);
+      fVar8 = (float10)fsin((fVar8 * (float10)6.2831855) /
                             (float10)(config_blob.reserved0._20_4_ + 0x11));
-      pfVar3[-2] = (float)(fVar7 * (float10)258.0 + (float10)512.0);
-      *pfVar3 = 1.4013e-44;
-      pfVar3[1] = fVar6;
-      pfVar3[2] = 1.4013e-45;
-      fVar6 = (float)((int)fVar6 + 500);
+      piVar3[-2] = (int)(float)(fVar8 * (float10)258.0 + (float10)512.0);
+      *piVar3 = 10;
+      piVar3[1] = iVar7;
+      piVar3[2] = 1;
+      iVar7 = iVar7 + 500;
       iStack_4 = config_blob.reserved0._20_4_ + 0x11;
-      pfVar3 = pfVar3 + 6;
+      piVar3 = piVar3 + 6;
     } while ((int)entries < iStack_4);
   }
   if (config_blob.hardcore == '\0') {
-    *count = iVar5;
+    *count = iVar6;
     return;
   }
   config_blob.reserved0._20_4_ = config_blob.reserved0._20_4_ + -4;
-  *count = iVar5;
+  *count = iVar6;
   return;
 }
 
@@ -31965,19 +31974,19 @@ void quest_build_gauntlet(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 4 Quest 8 (Syntax Terror) */
 
-void quest_build_syntax_terror(float *entries,int *count)
+void quest_build_syntax_terror(quest_spawn_entry_t *entries,int *count)
 
 {
   int iVar1;
-  float *pfVar2;
+  int *piVar2;
   int iVar3;
   int iVar4;
   int iVar5;
-  float fVar6;
+  int iVar6;
   int iStack_1c;
   int iStack_18;
   int iStack_14;
-  float fStack_10;
+  int iStack_10;
   
   iVar4 = 0;
   iStack_1c = 0;
@@ -31985,36 +31994,37 @@ void quest_build_syntax_terror(float *entries,int *count)
     config_blob.reserved0._20_4_ = config_blob.reserved0._20_4_ + 4;
   }
   iStack_18 = 0;
-  fStack_10 = 2.10195e-42;
+  iStack_10 = 0x5dc;
   iStack_14 = 0x14c9;
   iVar1 = config_blob.reserved0._20_4_;
   do {
     iVar5 = 0;
     if (iVar1 != -9 && -1 < iVar1 + 9) {
-      pfVar2 = entries + iVar4 * 6 + 3;
+      piVar2 = &entries[iVar4].template_id;
       iVar3 = 0x4c5;
-      fVar6 = fStack_10;
+      iVar6 = iStack_10;
       do {
         iVar1 = iVar3 * iVar5;
-        pfVar2[-3] = (float)(((iVar5 * iVar5 * 0x4c + 0xec) * iVar5 + iStack_14 * iStack_18) % 0x380
-                            + 0x40);
+        ((quest_spawn_entry_t *)(piVar2 + -3))->pos_x =
+             (float)(((iVar5 * iVar5 * 0x4c + 0xec) * iVar5 + iStack_14 * iStack_18) % 0x380 + 0x40)
+        ;
         iVar4 = iStack_1c + 1;
         iVar5 = iVar5 + 1;
-        pfVar2[-2] = (float)((iVar1 + (iStack_18 * iStack_18 * 0x4c + 0x1b) * iStack_18) % 0x380 +
-                            0x40);
-        *pfVar2 = 9.80909e-45;
-        pfVar2[1] = fVar6;
-        pfVar2[2] = 1.4013e-45;
-        fVar6 = (float)((int)fVar6 + 300);
+        piVar2[-2] = (int)(float)((iVar1 + (iStack_18 * iStack_18 * 0x4c + 0x1b) * iStack_18) %
+                                  0x380 + 0x40);
+        *piVar2 = 7;
+        piVar2[1] = iVar6;
+        piVar2[2] = 1;
+        iVar6 = iVar6 + 300;
         iVar1 = config_blob.reserved0._20_4_;
-        pfVar2 = pfVar2 + 6;
+        piVar2 = piVar2 + 6;
         iVar3 = iVar3 + 0x15;
         iStack_1c = iVar4;
       } while (iVar5 < config_blob.reserved0._20_4_ + 9);
     }
     iStack_14 = iStack_14 + 0x35;
     iStack_18 = iStack_18 + 1;
-    fStack_10 = (float)((int)fStack_10 + 30000);
+    iStack_10 = iStack_10 + 30000;
   } while (iStack_14 < 0x159d);
   if (config_blob.hardcore == '\0') {
     *count = iVar4;
@@ -32032,64 +32042,64 @@ void quest_build_syntax_terror(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 2 Quest 2 (Spider Spawns) */
 
-void quest_build_spider_spawns(float *entries,int *count)
+void quest_build_spider_spawns(quest_spawn_entry_t *entries,int *count)
 
 {
-  *entries = 128.0;
-  entries[1] = 128.0;
-  entries[3] = 2.24208e-44;
-  entries[4] = 2.10195e-42;
-  entries[5] = 1.4013e-45;
-  entries[6] = 896.0;
-  entries[7] = 896.0;
-  entries[9] = 2.24208e-44;
-  entries[10] = 2.10195e-42;
-  entries[0xb] = 1.4013e-45;
-  entries[0xc] = 896.0;
-  entries[0xd] = 128.0;
-  entries[0xf] = 2.24208e-44;
-  entries[0x10] = 2.10195e-42;
-  entries[0x11] = 1.4013e-45;
-  entries[0x12] = 128.0;
-  entries[0x13] = 896.0;
-  entries[0x15] = 2.24208e-44;
-  entries[0x16] = 2.10195e-42;
-  entries[0x17] = 1.4013e-45;
-  entries[0x18] = -64.0;
-  entries[0x19] = 512.0;
-  entries[0x1b] = 7.84727e-44;
-  entries[0x1c] = 4.2039e-42;
-  entries[0x1d] = 2.8026e-45;
-  entries[0x1e] = 512.0;
-  entries[0x1f] = 512.0;
-  entries[0x21] = 1.4013e-44;
-  entries[0x22] = 2.52234e-41;
-  entries[0x23] = 1.4013e-45;
-  entries[0x24] = 448.0;
-  entries[0x25] = 448.0;
-  entries[0x27] = 2.24208e-44;
-  entries[0x28] = 2.87266e-41;
-  entries[0x29] = 1.4013e-45;
-  entries[0x2a] = 576.0;
-  entries[0x2b] = 448.0;
-  entries[0x2d] = 2.24208e-44;
-  entries[0x2e] = 3.64338e-41;
-  entries[0x2f] = 1.4013e-45;
-  entries[0x30] = 1088.0;
-  entries[0x31] = 512.0;
-  entries[0x33] = 7.84727e-44;
-  entries[0x34] = 2.94273e-41;
-  entries[0x35] = 2.8026e-45;
-  entries[0x36] = 576.0;
-  entries[0x37] = 576.0;
-  entries[0x39] = 2.24208e-44;
-  entries[0x3a] = 4.41409e-41;
-  entries[0x3b] = 1.4013e-45;
-  entries[0x3c] = 448.0;
-  entries[0x3d] = 576.0;
-  entries[0x3f] = 2.24208e-44;
-  entries[0x40] = 3.08286e-41;
-  entries[0x41] = 1.4013e-45;
+  entries->pos_x = 128.0;
+  entries->pos_y = 128.0;
+  entries->template_id = 0x10;
+  entries->trigger_time_ms = 0x5dc;
+  entries->count = 1;
+  entries[1].pos_x = 896.0;
+  entries[1].pos_y = 896.0;
+  entries[1].template_id = 0x10;
+  entries[1].trigger_time_ms = 0x5dc;
+  entries[1].count = 1;
+  entries[2].pos_x = 896.0;
+  entries[2].pos_y = 128.0;
+  entries[2].template_id = 0x10;
+  entries[2].trigger_time_ms = 0x5dc;
+  entries[2].count = 1;
+  entries[3].pos_x = 128.0;
+  entries[3].pos_y = 896.0;
+  entries[3].template_id = 0x10;
+  entries[3].trigger_time_ms = 0x5dc;
+  entries[3].count = 1;
+  entries[4].pos_x = -64.0;
+  entries[4].pos_y = 512.0;
+  entries[4].template_id = 0x38;
+  entries[4].trigger_time_ms = 3000;
+  entries[4].count = 2;
+  entries[5].pos_x = 512.0;
+  entries[5].pos_y = 512.0;
+  entries[5].template_id = 10;
+  entries[5].trigger_time_ms = 18000;
+  entries[5].count = 1;
+  entries[6].pos_x = 448.0;
+  entries[6].pos_y = 448.0;
+  entries[6].template_id = 0x10;
+  entries[6].trigger_time_ms = 0x5014;
+  entries[6].count = 1;
+  entries[7].pos_x = 576.0;
+  entries[7].pos_y = 448.0;
+  entries[7].template_id = 0x10;
+  entries[7].trigger_time_ms = 26000;
+  entries[7].count = 1;
+  entries[8].pos_x = 1088.0;
+  entries[8].pos_y = 512.0;
+  entries[8].template_id = 0x38;
+  entries[8].trigger_time_ms = 21000;
+  entries[8].count = 2;
+  entries[9].pos_x = 576.0;
+  entries[9].pos_y = 576.0;
+  entries[9].template_id = 0x10;
+  entries[9].trigger_time_ms = 0x7b0c;
+  entries[9].count = 1;
+  entries[10].pos_x = 448.0;
+  entries[10].pos_y = 576.0;
+  entries[10].template_id = 0x10;
+  entries[10].trigger_time_ms = 22000;
+  entries[10].count = 1;
   *count = 0xb;
   return;
 }
@@ -32101,62 +32111,61 @@ void quest_build_spider_spawns(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 2 Quest 4 (Two Fronts) */
 
-void quest_build_two_fronts(float *entries,int *count)
+void quest_build_two_fronts(quest_spawn_entry_t *entries,int *count)
 
 {
-  float *pfVar1;
+  quest_spawn_entry_t *pqVar1;
   int iVar2;
   int iVar3;
   int iVar4;
-  float fVar5;
   
+  iVar2 = 0;
   iVar3 = 0;
-  iVar4 = 0;
   do {
-    *entries = (float)(terrain_texture_width + 0x40);
-    entries[1] = (float)(terrain_texture_width / 2);
-    entries[3] = 3.64338e-44;
-    entries[4] = (float)(iVar4 * 2000 + 1000);
-    entries[5] = 1.4013e-45;
-    entries[6] = -64.0;
-    entries[7] = (float)(terrain_texture_width / 2);
-    entries[9] = 3.78351e-44;
-    entries[10] = (float)((iVar4 * 5 + 5) * 400);
-    entries[0xb] = 1.4013e-45;
-    if ((iVar4 == 10) || (pfVar1 = entries + 0xc, iVar2 = iVar3 + 2, iVar4 == 0x14)) {
-      entries[0xc] = 256.0;
-      fVar5 = (float)(iVar4 * 2000 + 0x9c4);
-      entries[0xd] = 256.0;
-      entries[0xf] = 1.4013e-44;
-      entries[0x10] = fVar5;
-      entries[0x11] = 1.4013e-45;
-      entries[0x12] = 768.0;
-      entries[0x13] = 768.0;
-      entries[0x15] = 9.80909e-45;
-      entries[0x16] = fVar5;
-      entries[0x17] = 1.4013e-45;
-      pfVar1 = entries + 0x18;
-      iVar2 = iVar3 + 4;
+    entries->pos_x = (float)(terrain_texture_width + 0x40);
+    entries->pos_y = (float)(terrain_texture_width / 2);
+    entries->template_id = 0x1a;
+    entries->trigger_time_ms = iVar3 * 2000 + 1000;
+    entries->count = 1;
+    entries[1].pos_x = -64.0;
+    entries[1].pos_y = (float)(terrain_texture_width / 2);
+    entries[1].template_id = 0x1b;
+    entries[1].trigger_time_ms = (iVar3 * 5 + 5) * 400;
+    entries[1].count = 1;
+    if ((iVar3 == 10) || (pqVar1 = entries + 2, iVar4 = iVar2 + 2, iVar3 == 0x14)) {
+      entries[2].pos_x = 256.0;
+      iVar4 = iVar3 * 2000 + 0x9c4;
+      entries[2].pos_y = 256.0;
+      entries[2].template_id = 10;
+      entries[2].trigger_time_ms = iVar4;
+      entries[2].count = 1;
+      entries[3].pos_x = 768.0;
+      entries[3].pos_y = 768.0;
+      entries[3].template_id = 7;
+      entries[3].trigger_time_ms = iVar4;
+      entries[3].count = 1;
+      pqVar1 = entries + 4;
+      iVar4 = iVar2 + 4;
     }
-    iVar3 = iVar2;
-    entries = pfVar1;
-    if (iVar4 == 0x1e) {
-      *entries = 768.0;
-      entries[1] = 256.0;
-      entries[3] = 1.4013e-44;
-      entries[4] = 8.75812e-41;
-      entries[5] = 1.4013e-45;
-      entries[6] = 256.0;
-      entries[7] = 768.0;
-      entries[9] = 9.80909e-45;
-      entries[10] = 8.75812e-41;
-      entries[0xb] = 1.4013e-45;
-      iVar3 = iVar3 + 2;
-      entries = entries + 0xc;
+    iVar2 = iVar4;
+    entries = pqVar1;
+    if (iVar3 == 0x1e) {
+      entries->pos_x = 768.0;
+      entries->pos_y = 256.0;
+      entries->template_id = 10;
+      entries->trigger_time_ms = 0xf424;
+      entries->count = 1;
+      entries[1].pos_x = 256.0;
+      entries[1].pos_y = 768.0;
+      entries[1].template_id = 7;
+      entries[1].trigger_time_ms = 0xf424;
+      entries[1].count = 1;
+      iVar2 = iVar2 + 2;
+      entries = entries + 2;
     }
-    iVar4 = iVar4 + 1;
-  } while (iVar4 < 0x28);
-  *count = iVar3;
+    iVar3 = iVar3 + 1;
+  } while (iVar3 < 0x28);
+  *count = iVar2;
   return;
 }
 
@@ -32167,109 +32176,108 @@ void quest_build_two_fronts(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 2 Quest 7 (Survival Of The Fastest) */
 
-void quest_build_survival_of_the_fastest(float *entries,int *count)
+void quest_build_survival_of_the_fastest(quest_spawn_entry_t *entries,int *count)
 
 {
   float fVar1;
-  float *pfVar2;
-  float *pfVar3;
-  float fVar4;
-  int iVar5;
-  float fStack_c;
+  quest_spawn_entry_t *pqVar2;
+  int *piVar3;
+  int iVar4;
+  int iStack_c;
   
-  pfVar2 = entries;
-  fVar4 = 7.00649e-43;
-  fStack_c = 3.58732e-43;
-  pfVar3 = entries + 4;
+  pqVar2 = entries;
+  iVar4 = 500;
+  iStack_c = 0x100;
+  piVar3 = &entries->trigger_time_ms;
   do {
-    fVar1 = (float)(int)fStack_c;
-    fStack_c = (float)((int)fStack_c + 0x48);
-    pfVar3[-4] = fVar1;
-    pfVar3[-3] = 256.0;
-    pfVar3[-1] = 2.24208e-44;
-    *pfVar3 = fVar4;
-    pfVar3[1] = 1.4013e-45;
-    fVar4 = (float)((int)fVar4 + 900);
-    pfVar3 = pfVar3 + 6;
-  } while ((int)fStack_c < 0x2b0);
-  fStack_c = 8.26766e-42;
-  entries = (float *)0x100;
-  pfVar3 = pfVar2 + 0x28;
+    fVar1 = (float)iStack_c;
+    iStack_c = iStack_c + 0x48;
+    ((quest_spawn_entry_t *)(piVar3 + -4))->pos_x = fVar1;
+    piVar3[-3] = 0x43800000;
+    piVar3[-1] = 0x10;
+    *piVar3 = iVar4;
+    piVar3[1] = 1;
+    iVar4 = iVar4 + 900;
+    piVar3 = piVar3 + 6;
+  } while (iStack_c < 0x2b0);
+  iStack_c = 0x170c;
+  entries = (quest_spawn_entry_t *)0x100;
+  piVar3 = &pqVar2[6].trigger_time_ms;
   do {
-    fVar4 = (float)(int)entries;
-    entries = entries + 0x12;
-    pfVar3[-4] = 688.0;
-    pfVar3[-3] = fVar4;
-    pfVar3[-1] = 2.24208e-44;
-    *pfVar3 = fStack_c;
-    pfVar3[1] = 1.4013e-45;
-    fStack_c = (float)((int)fStack_c + 900);
-    pfVar3 = pfVar3 + 6;
+    fVar1 = (float)(int)entries;
+    entries = entries + 3;
+    ((quest_spawn_entry_t *)(piVar3 + -4))->pos_x = 688.0;
+    piVar3[-3] = (int)fVar1;
+    piVar3[-1] = 0x10;
+    *piVar3 = iStack_c;
+    piVar3[1] = 1;
+    iStack_c = iStack_c + 900;
+    piVar3 = piVar3 + 6;
   } while ((int)entries < 0x2b0);
-  entries = (float *)0x2b0;
-  iVar5 = 4;
-  fStack_c = 1.58347e-41;
-  pfVar3 = pfVar2 + 0x4c;
+  entries = (quest_spawn_entry_t *)0x2b0;
+  iVar4 = 4;
+  iStack_c = 0x2c24;
+  piVar3 = &pqVar2[0xc].trigger_time_ms;
   do {
-    pfVar3[-4] = (float)(int)entries;
-    pfVar3[-3] = 688.0;
-    pfVar3[-1] = 2.24208e-44;
-    *pfVar3 = fStack_c;
-    pfVar3[1] = 1.4013e-45;
-    entries = entries + -0x12;
-    fStack_c = (float)((int)fStack_c + 900);
-    iVar5 = iVar5 + -1;
-    pfVar3 = pfVar3 + 6;
-  } while (iVar5 != 0);
-  entries = (float *)0x2b0;
-  fStack_c = 2.08793e-41;
-  iVar5 = 4;
-  pfVar3 = pfVar2 + 100;
+    ((quest_spawn_entry_t *)(piVar3 + -4))->pos_x = (float)(int)entries;
+    piVar3[-3] = 0x442c0000;
+    piVar3[-1] = 0x10;
+    *piVar3 = iStack_c;
+    piVar3[1] = 1;
+    entries = entries + -3;
+    iStack_c = iStack_c + 900;
+    iVar4 = iVar4 + -1;
+    piVar3 = piVar3 + 6;
+  } while (iVar4 != 0);
+  entries = (quest_spawn_entry_t *)0x2b0;
+  iStack_c = 0x3a34;
+  iVar4 = 4;
+  piVar3 = &pqVar2[0x10].trigger_time_ms;
   do {
-    pfVar3[-4] = 400.0;
-    pfVar3[-3] = (float)(int)entries;
-    pfVar3[-1] = 2.24208e-44;
-    *pfVar3 = fStack_c;
-    pfVar3[1] = 1.4013e-45;
-    entries = entries + -0x12;
-    fStack_c = (float)((int)fStack_c + 900);
-    iVar5 = iVar5 + -1;
-    pfVar3 = pfVar3 + 6;
-  } while (iVar5 != 0);
-  fStack_c = 2.5924e-41;
-  iVar5 = 400;
-  pfVar3 = pfVar2 + 0x7c;
+    ((quest_spawn_entry_t *)(piVar3 + -4))->pos_x = 400.0;
+    piVar3[-3] = (int)(float)(int)entries;
+    piVar3[-1] = 0x10;
+    *piVar3 = iStack_c;
+    piVar3[1] = 1;
+    entries = entries + -3;
+    iStack_c = iStack_c + 900;
+    iVar4 = iVar4 + -1;
+    piVar3 = piVar3 + 6;
+  } while (iVar4 != 0);
+  iStack_c = 0x4844;
+  iVar4 = 400;
+  piVar3 = &pqVar2[0x14].trigger_time_ms;
   do {
-    fVar4 = (float)iVar5;
-    iVar5 = iVar5 + 0x48;
-    pfVar3[-4] = fVar4;
-    pfVar3[-3] = 400.0;
-    pfVar3[-1] = 2.24208e-44;
-    *pfVar3 = fStack_c;
-    pfVar3[1] = 1.4013e-45;
-    fStack_c = (float)((int)fStack_c + 900);
-    pfVar3 = pfVar3 + 6;
-  } while (iVar5 < 0x220);
-  pfVar2[0x84] = 128.0;
-  pfVar2[0x85] = 128.0;
-  pfVar2[0x87] = 2.24208e-44;
-  pfVar2[0x88] = 3.1249e-41;
-  pfVar2[0x89] = 1.4013e-45;
-  pfVar2[0x8a] = 896.0;
-  pfVar2[0x8b] = 128.0;
-  pfVar2[0x8d] = 9.80909e-45;
-  pfVar2[0x8e] = 3.1249e-41;
-  pfVar2[0x8f] = 1.4013e-45;
-  pfVar2[0x90] = 128.0;
-  pfVar2[0x91] = 896.0;
-  pfVar2[0x93] = 9.80909e-45;
-  pfVar2[0x94] = 3.40516e-41;
-  pfVar2[0x95] = 1.4013e-45;
-  pfVar2[0x96] = 896.0;
-  pfVar2[0x97] = 896.0;
-  pfVar2[0x99] = 2.24208e-44;
-  pfVar2[0x9a] = 3.40516e-41;
-  pfVar2[0x9b] = 1.4013e-45;
+    fVar1 = (float)iVar4;
+    iVar4 = iVar4 + 0x48;
+    ((quest_spawn_entry_t *)(piVar3 + -4))->pos_x = fVar1;
+    piVar3[-3] = 0x43c80000;
+    piVar3[-1] = 0x10;
+    *piVar3 = iStack_c;
+    piVar3[1] = 1;
+    iStack_c = iStack_c + 900;
+    piVar3 = piVar3 + 6;
+  } while (iVar4 < 0x220);
+  pqVar2[0x16].pos_x = 128.0;
+  pqVar2[0x16].pos_y = 128.0;
+  pqVar2[0x16].template_id = 0x10;
+  pqVar2[0x16].trigger_time_ms = 0x571c;
+  pqVar2[0x16].count = 1;
+  pqVar2[0x17].pos_x = 896.0;
+  pqVar2[0x17].pos_y = 128.0;
+  pqVar2[0x17].template_id = 7;
+  pqVar2[0x17].trigger_time_ms = 0x571c;
+  pqVar2[0x17].count = 1;
+  pqVar2[0x18].pos_x = 128.0;
+  pqVar2[0x18].pos_y = 896.0;
+  pqVar2[0x18].template_id = 7;
+  pqVar2[0x18].trigger_time_ms = 0x5eec;
+  pqVar2[0x18].count = 1;
+  pqVar2[0x19].pos_x = 896.0;
+  pqVar2[0x19].pos_y = 896.0;
+  pqVar2[0x19].template_id = 0x10;
+  pqVar2[0x19].trigger_time_ms = 0x5eec;
+  pqVar2[0x19].count = 1;
   *count = 0x1a;
   return;
 }
@@ -32281,51 +32289,51 @@ void quest_build_survival_of_the_fastest(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 2 Quest 10 (Spideroids) */
 
-void quest_build_spideroids(float *entries,int *count)
+void quest_build_spideroids(quest_spawn_entry_t *entries,int *count)
 
 {
-  float *pfVar1;
+  quest_spawn_entry_t *pqVar1;
   int iVar2;
   
-  *entries = 1088.0;
-  entries[1] = 512.0;
-  entries[3] = 1.4013e-45;
-  entries[4] = 1.4013e-42;
-  entries[5] = 1.4013e-45;
-  entries[6] = -64.0;
-  entries[7] = 512.0;
-  entries[9] = 1.4013e-45;
-  entries[10] = 4.2039e-42;
-  entries[0xb] = 1.4013e-45;
-  entries[0xc] = 1088.0;
-  entries[0xd] = 256.0;
-  entries[0xf] = 1.4013e-45;
-  entries[0x10] = 8.40779e-42;
-  entries[0x11] = 1.4013e-45;
+  entries->pos_x = 1088.0;
+  entries->pos_y = 512.0;
+  entries->template_id = 1;
+  entries->trigger_time_ms = 1000;
+  entries->count = 1;
+  entries[1].pos_x = -64.0;
+  entries[1].pos_y = 512.0;
+  entries[1].template_id = 1;
+  entries[1].trigger_time_ms = 3000;
+  entries[1].count = 1;
+  entries[2].pos_x = 1088.0;
+  entries[2].pos_y = 256.0;
+  entries[2].template_id = 1;
+  entries[2].trigger_time_ms = 6000;
+  entries[2].count = 1;
   iVar2 = 3;
   if (config_blob.hardcore != '\0') {
-    entries[0x12] = 1088.0;
-    entries[0x13] = 762.0;
-    entries[0x15] = 1.4013e-45;
-    entries[0x16] = 1.26117e-41;
-    entries[0x17] = 1.4013e-45;
-    entries[0x18] = 512.0;
-    entries[0x19] = 1088.0;
-    entries[0x1b] = 1.4013e-45;
-    entries[0x1c] = 1.26117e-41;
-    entries[0x1d] = 1.4013e-45;
+    entries[3].pos_x = 1088.0;
+    entries[3].pos_y = 762.0;
+    entries[3].template_id = 1;
+    entries[3].trigger_time_ms = 9000;
+    entries[3].count = 1;
+    entries[4].pos_x = 512.0;
+    entries[4].pos_y = 1088.0;
+    entries[4].template_id = 1;
+    entries[4].trigger_time_ms = 9000;
+    entries[4].count = 1;
     iVar2 = 5;
   }
   if (((int)config_blob.reserved0._20_4_ < 2) && (config_blob.hardcore == '\0')) {
     *count = iVar2;
     return;
   }
-  pfVar1 = entries + iVar2 * 6;
-  *pfVar1 = -64.0;
-  pfVar1[1] = 762.0;
-  pfVar1[3] = 1.4013e-45;
-  pfVar1[4] = 1.26117e-41;
-  pfVar1[5] = 1.4013e-45;
+  pqVar1 = entries + iVar2;
+  pqVar1->pos_x = -64.0;
+  pqVar1->pos_y = 762.0;
+  pqVar1->template_id = 1;
+  pqVar1->trigger_time_ms = 9000;
+  pqVar1->count = 1;
   *count = iVar2 + 1;
   return;
 }
@@ -32337,43 +32345,43 @@ void quest_build_spideroids(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 2 Quest 6 (Evil Zombies At Large) */
 
-void quest_build_evil_zombies_at_large(float *entries,int *count)
+void quest_build_evil_zombies_at_large(quest_spawn_entry_t *entries,int *count)
 
 {
   int iVar1;
   int iVar2;
-  float fVar3;
-  float fVar4;
+  int iVar3;
+  int iVar4;
   
   iVar2 = 0;
-  fVar4 = 2.10195e-42;
-  fVar3 = 5.60519e-45;
+  iVar4 = 0x5dc;
+  iVar3 = 4;
   do {
-    *entries = (float)(terrain_texture_width + 0x40);
-    entries[1] = (float)(terrain_texture_width / 2);
-    entries[3] = 9.10844e-44;
-    entries[4] = fVar4;
-    entries[5] = fVar3;
-    entries[6] = -64.0;
-    entries[7] = (float)(terrain_texture_width / 2);
-    entries[9] = 9.10844e-44;
-    entries[10] = fVar4;
-    entries[0xb] = fVar3;
-    entries[0xc] = (float)(terrain_texture_width / 2);
-    entries[0xd] = (float)(terrain_texture_width + 0x40);
-    entries[0xf] = 9.10844e-44;
-    entries[0x10] = fVar4;
-    entries[0x11] = fVar3;
+    entries->pos_x = (float)(terrain_texture_width + 0x40);
+    entries->pos_y = (float)(terrain_texture_width / 2);
+    entries->template_id = 0x41;
+    entries->trigger_time_ms = iVar4;
+    entries->count = iVar3;
+    entries[1].pos_x = -64.0;
+    entries[1].pos_y = (float)(terrain_texture_width / 2);
+    entries[1].template_id = 0x41;
+    entries[1].trigger_time_ms = iVar4;
+    entries[1].count = iVar3;
+    entries[2].pos_x = (float)(terrain_texture_width / 2);
+    entries[2].pos_y = (float)(terrain_texture_width + 0x40);
+    entries[2].template_id = 0x41;
+    entries[2].trigger_time_ms = iVar4;
+    entries[2].count = iVar3;
     iVar2 = iVar2 + 4;
-    entries[0x12] = (float)(terrain_texture_width / 2);
-    entries[0x13] = -64.0;
-    entries[0x15] = 9.10844e-44;
-    entries[0x16] = fVar4;
-    entries[0x17] = fVar3;
-    fVar4 = (float)((int)fVar4 + 0x157c);
-    iVar1 = (int)fVar3 + -3;
-    entries = entries + 0x18;
-    fVar3 = (float)((int)fVar3 + 1);
+    entries[3].pos_x = (float)(terrain_texture_width / 2);
+    entries[3].pos_y = -64.0;
+    entries[3].template_id = 0x41;
+    entries[3].trigger_time_ms = iVar4;
+    entries[3].count = iVar3;
+    iVar4 = iVar4 + 0x157c;
+    iVar1 = iVar3 + -3;
+    entries = entries + 4;
+    iVar3 = iVar3 + 1;
   } while (iVar1 < 10);
   *count = iVar2;
   return;
@@ -32386,61 +32394,61 @@ void quest_build_evil_zombies_at_large(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 2 Quest 1 (Everred Pastures) */
 
-void quest_build_everred_pastures(float *entries,int *count)
+void quest_build_everred_pastures(quest_spawn_entry_t *entries,int *count)
 
 {
-  float fVar1;
-  float fVar2;
-  float *pfVar3;
+  int iVar1;
+  int iVar2;
+  quest_spawn_entry_t *pqVar3;
   int iVar4;
   int iVar5;
-  float fVar6;
+  int iVar6;
   
   iVar4 = 0;
-  fVar6 = 0.0;
+  iVar6 = 0;
   do {
-    fVar1 = (float)((int)fVar6 + 1);
-    *entries = (float)(terrain_texture_width + 0x40);
-    pfVar3 = entries + 0x18;
-    entries[1] = (float)(terrain_texture_width / 2);
-    entries[3] = 7.00649e-44;
-    fVar2 = (float)((int)fVar6 * 13000 + 0x5dc);
-    entries[4] = fVar2;
-    entries[5] = fVar1;
-    entries[6] = -64.0;
-    entries[7] = (float)(terrain_texture_width / 2);
-    entries[9] = 7.14662e-44;
-    entries[10] = fVar2;
-    entries[0xb] = fVar1;
-    entries[0xc] = (float)(terrain_texture_width / 2);
-    entries[0xd] = (float)(terrain_texture_width + 0x40);
-    entries[0xf] = 7.28675e-44;
-    entries[0x10] = fVar2;
-    entries[0x11] = fVar1;
+    iVar1 = iVar6 + 1;
+    entries->pos_x = (float)(terrain_texture_width + 0x40);
+    pqVar3 = entries + 4;
+    entries->pos_y = (float)(terrain_texture_width / 2);
+    entries->template_id = 0x32;
+    iVar2 = iVar6 * 13000 + 0x5dc;
+    entries->trigger_time_ms = iVar2;
+    entries->count = iVar1;
+    entries[1].pos_x = -64.0;
+    entries[1].pos_y = (float)(terrain_texture_width / 2);
+    entries[1].template_id = 0x33;
+    entries[1].trigger_time_ms = iVar2;
+    entries[1].count = iVar1;
+    entries[2].pos_x = (float)(terrain_texture_width / 2);
+    entries[2].pos_y = (float)(terrain_texture_width + 0x40);
+    entries[2].template_id = 0x34;
+    entries[2].trigger_time_ms = iVar2;
+    entries[2].count = iVar1;
     iVar5 = iVar4 + 4;
-    entries[0x12] = (float)(terrain_texture_width / 2);
-    entries[0x13] = -64.0;
-    entries[0x15] = 7.42688e-44;
-    entries[0x16] = fVar2;
-    entries[0x17] = fVar1;
-    if (fVar6 == 4.2039e-45) {
-      entries[0x18] = (float)(terrain_texture_width / 2);
-      entries[0x19] = -64.0;
-      entries[0x1b] = 3.78351e-44;
-      entries[0x1c] = 5.67526e-41;
-      entries[0x1d] = 1.12104e-44;
+    entries[3].pos_x = (float)(terrain_texture_width / 2);
+    entries[3].pos_y = -64.0;
+    entries[3].template_id = 0x35;
+    entries[3].trigger_time_ms = iVar2;
+    entries[3].count = iVar1;
+    if (iVar6 == 3) {
+      entries[4].pos_x = (float)(terrain_texture_width / 2);
+      entries[4].pos_y = -64.0;
+      entries[4].template_id = 0x1b;
+      entries[4].trigger_time_ms = 0x9e34;
+      entries[4].count = 8;
       iVar5 = iVar4 + 6;
-      pfVar3 = entries + 0x24;
-      entries[0x1e] = (float)(terrain_texture_width / 2);
-      entries[0x1f] = 1088.0;
-      entries[0x21] = 3.78351e-44;
-      entries[0x22] = 5.67526e-41;
-      entries[0x23] = 1.12104e-44;
+      pqVar3 = entries + 6;
+      entries[5].pos_x = (float)(terrain_texture_width / 2);
+      entries[5].pos_y = 1088.0;
+      entries[5].template_id = 0x1b;
+      entries[5].trigger_time_ms = 0x9e34;
+      entries[5].count = 8;
     }
-    entries = pfVar3;
+    entries = pqVar3;
     iVar4 = iVar5;
-    fVar6 = fVar1;
-  } while ((int)fVar1 < 8);
+    iVar6 = iVar1;
+  } while (iVar1 < 8);
   *count = iVar5;
   return;
 }
@@ -32452,48 +32460,50 @@ void quest_build_everred_pastures(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 3 Quest 2 (Lizard Kings) */
 
-void quest_build_lizard_kings(float *entries,int *count)
+void quest_build_lizard_kings(quest_spawn_entry_t *entries,int *count)
 
 {
-  float *pfVar1;
-  float fVar2;
-  float10 fVar3;
+  quest_spawn_entry_t *pqVar1;
+  int *piVar2;
+  int iVar3;
   float10 fVar4;
   float10 fVar5;
+  float10 fVar6;
   
-  pfVar1 = entries;
-  *entries = 1152.0;
-  entries[1] = 512.0;
-  fVar2 = 2.10195e-42;
-  entries[3] = 2.38221e-44;
-  entries[4] = 2.10195e-42;
-  entries[5] = 1.4013e-45;
-  entries[6] = -128.0;
-  entries[7] = 512.0;
-  entries[9] = 2.38221e-44;
-  entries[10] = 2.10195e-42;
-  entries[0xb] = 1.4013e-45;
-  entries[0xc] = 1152.0;
-  entries[0xd] = 896.0;
-  entries[0xf] = 2.38221e-44;
-  entries[0x10] = 2.10195e-42;
-  entries[0x11] = 1.4013e-45;
-  entries = (float *)0x0;
-  pfVar1 = pfVar1 + 0x15;
+  pqVar1 = entries;
+  entries->pos_x = 1152.0;
+  entries->pos_y = 512.0;
+  iVar3 = 0x5dc;
+  entries->template_id = 0x11;
+  entries->trigger_time_ms = 0x5dc;
+  entries->count = 1;
+  entries[1].pos_x = -128.0;
+  entries[1].pos_y = 512.0;
+  entries[1].template_id = 0x11;
+  entries[1].trigger_time_ms = 0x5dc;
+  entries[1].count = 1;
+  entries[2].pos_x = 1152.0;
+  entries[2].pos_y = 896.0;
+  entries[2].template_id = 0x11;
+  entries[2].trigger_time_ms = 0x5dc;
+  entries[2].count = 1;
+  entries = (quest_spawn_entry_t *)0x0;
+  piVar2 = &pqVar1[3].template_id;
   do {
-    fVar3 = (float10)(int)entries;
-    fVar4 = fVar3 * (float10)0.34906587;
-    fVar5 = (float10)fcos(fVar4);
-    pfVar1[-3] = (float)(fVar5 * (float10)256.0 + (float10)512.0);
-    fVar4 = (float10)fsin(fVar4);
-    pfVar1[-2] = (float)(fVar4 * (float10)256.0 + (float10)512.0);
-    *pfVar1 = 6.86636e-44;
-    pfVar1[1] = fVar2;
-    pfVar1[2] = 1.4013e-45;
-    fVar2 = (float)((int)fVar2 + 900);
-    entries = (float *)((int)entries + 1);
-    pfVar1[-1] = (float)(fVar3 * (float10)-0.34906587);
-    pfVar1 = pfVar1 + 6;
+    fVar4 = (float10)(int)entries;
+    fVar5 = fVar4 * (float10)0.34906587;
+    fVar6 = (float10)fcos(fVar5);
+    ((quest_spawn_entry_t *)(piVar2 + -3))->pos_x = (float)(fVar6 * (float10)256.0 + (float10)512.0)
+    ;
+    fVar5 = (float10)fsin(fVar5);
+    piVar2[-2] = (int)(float)(fVar5 * (float10)256.0 + (float10)512.0);
+    *piVar2 = 0x31;
+    piVar2[1] = iVar3;
+    piVar2[2] = 1;
+    iVar3 = iVar3 + 900;
+    entries = (quest_spawn_entry_t *)((int)&entries->pos_x + 1);
+    piVar2[-1] = (int)(float)(fVar4 * (float10)-0.34906587);
+    piVar2 = piVar2 + 6;
   } while ((int)entries < 0x1c);
   *count = 0x1f;
   return;
@@ -32506,11 +32516,11 @@ void quest_build_lizard_kings(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 2 Quest 5 (Sweep Stakes) */
 
-void quest_build_sweep_stakes(float *entries,int *count)
+void quest_build_sweep_stakes(quest_spawn_entry_t *entries,int *count)
 
 {
   int iVar1;
-  float *pfVar2;
+  quest_spawn_entry_t *pqVar2;
   float fVar3;
   int iVar4;
   float10 fVar5;
@@ -32520,26 +32530,26 @@ void quest_build_sweep_stakes(float *entries,int *count)
   
   fVar3 = 2.8026e-42;
   iVar4 = 2000;
-  entries = entries + 4;
+  entries = (quest_spawn_entry_t *)&entries->trigger_time_ms;
   do {
     iVar1 = crt_rand();
     iStack_18 = 0x54;
     fVar5 = (float10)(iVar1 % 0x264) * (float10)0.01;
     fVar6 = (float10)fcos(fVar5);
     fVar5 = (float10)fsin(fVar5);
-    pfVar2 = entries;
+    pqVar2 = entries;
     do {
       fVar7 = (float10)iStack_18;
       iStack_18 = iStack_18 + 0x2a;
-      pfVar2[-4] = (float)(fVar7 * (float10)(float)fVar6) + 512.0;
-      pfVar2[-3] = (float)(fVar7 * fVar5 + (float10)512.0);
-      pfVar2[-1] = 7.56701e-44;
-      *pfVar2 = fVar3;
-      pfVar2[1] = 1.4013e-45;
-      fVar7 = (float10)fpatan((float10)pfVar2[-3] - (float10)512.0,
-                              (float10)pfVar2[-4] - (float10)512.0);
-      pfVar2[-2] = (float)(fVar7 - (float10)1.5707964);
-      pfVar2 = pfVar2 + 6;
+      pqVar2[-1].heading = (float)(fVar7 * (float10)(float)fVar6) + 512.0;
+      pqVar2[-1].template_id = (int)(float)(fVar7 * fVar5 + (float10)512.0);
+      pqVar2[-1].count = 0x36;
+      pqVar2->pos_x = fVar3;
+      pqVar2->pos_y = 1.4013e-45;
+      fVar7 = (float10)fpatan((float10)(float)pqVar2[-1].template_id - (float10)512.0,
+                              (float10)pqVar2[-1].heading - (float10)512.0);
+      pqVar2[-1].trigger_time_ms = (int)(float)(fVar7 - (float10)1.5707964);
+      pqVar2 = pqVar2 + 1;
     } while (iStack_18 < 0xfc);
     iVar1 = iVar4;
     if (iVar4 < 600) {
@@ -32547,7 +32557,7 @@ void quest_build_sweep_stakes(float *entries,int *count)
     }
     iVar4 = iVar4 + -0x50;
     fVar3 = (float)((int)fVar3 + iVar1);
-    entries = entries + 0x18;
+    entries = entries + 4;
   } while (0x2d0 < iVar4);
   *count = 0x40;
   return;
@@ -32560,41 +32570,42 @@ void quest_build_sweep_stakes(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 3 Quest 9 (Deja vu) */
 
-void quest_build_deja_vu(float *entries,int *count)
+void quest_build_deja_vu(quest_spawn_entry_t *entries,int *count)
 
 {
   int iVar1;
-  float *pfVar2;
-  float *pfVar3;
-  float fVar4;
+  int *piVar2;
+  int *piVar3;
+  int iVar4;
   float10 fVar5;
   float10 fVar6;
   float10 fVar7;
   int iStack_18;
   
-  fVar4 = 2.8026e-42;
+  iVar4 = 2000;
   iStack_18 = 2000;
-  pfVar3 = entries + 4;
+  piVar3 = &entries->trigger_time_ms;
   do {
     iVar1 = crt_rand();
-    entries = (float *)0x54;
+    entries = (quest_spawn_entry_t *)0x54;
     fVar5 = (float10)(iVar1 % 0x264) * (float10)0.01;
     fVar6 = (float10)fcos(fVar5);
     fVar5 = (float10)fsin(fVar5);
-    pfVar2 = pfVar3;
+    piVar2 = piVar3;
     do {
       fVar7 = (float10)(int)entries;
-      entries = (float *)((int)entries + 0x2a);
-      pfVar2[-4] = (float)(fVar7 * (float10)(float)fVar6) + 512.0;
-      pfVar2[-3] = (float)(fVar7 * fVar5 + (float10)512.0);
-      pfVar2[-1] = 1.82169e-44;
-      *pfVar2 = fVar4;
-      pfVar2[1] = 1.4013e-45;
-      pfVar2 = pfVar2 + 6;
+      entries = (quest_spawn_entry_t *)((int)&entries[1].trigger_time_ms + 2);
+      ((quest_spawn_entry_t *)(piVar2 + -4))->pos_x = (float)(fVar7 * (float10)(float)fVar6) + 512.0
+      ;
+      piVar2[-3] = (int)(float)(fVar7 * fVar5 + (float10)512.0);
+      piVar2[-1] = 0xd;
+      *piVar2 = iVar4;
+      piVar2[1] = 1;
+      piVar2 = piVar2 + 6;
     } while ((int)entries < 0xfc);
-    fVar4 = (float)((int)fVar4 + iStack_18);
+    iVar4 = iVar4 + iStack_18;
     iStack_18 = iStack_18 + -0x50;
-    pfVar3 = pfVar3 + 0x18;
+    piVar3 = piVar3 + 0x18;
   } while (0x230 < iStack_18);
   *count = 0x48;
   return;
@@ -32607,22 +32618,22 @@ void quest_build_deja_vu(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 1 Quest 3 (Target Practice) */
 
-void quest_build_target_practice(float *entries,int *count)
+void quest_build_target_practice(quest_spawn_entry_t *entries,int *count)
 
 {
   float fVar1;
   int iVar2;
   uint uVar3;
-  float fVar4;
-  float *pfVar5;
+  int iVar4;
+  int *piVar5;
   int iVar6;
   float10 fVar7;
   float10 fVar8;
   float10 fVar9;
   
-  fVar4 = 2.8026e-42;
+  iVar4 = 2000;
   iVar6 = 2000;
-  pfVar5 = entries + 4;
+  piVar5 = &entries->trigger_time_ms;
   do {
     iVar2 = crt_rand();
     fVar1 = (float)(iVar2 % 0x264) * 0.01;
@@ -32634,21 +32645,22 @@ void quest_build_target_practice(float *entries,int *count)
     fVar7 = (float10)(int)((uVar3 + 2) * 0x20);
     fVar8 = (float10)fcos((float10)fVar1);
     fVar9 = (float10)fsin((float10)fVar1);
-    pfVar5[-4] = (float)(fVar8 * fVar7) + 512.0;
-    pfVar5[-3] = (float)(fVar9 * fVar7 + (float10)512.0);
-    pfVar5[-1] = 7.56701e-44;
-    *pfVar5 = fVar4;
-    pfVar5[1] = 1.4013e-45;
-    fVar7 = (float10)fpatan((float10)pfVar5[-3] - (float10)512.0,
-                            (float10)pfVar5[-4] - (float10)512.0);
-    pfVar5[-2] = (float)(fVar7 - (float10)1.5707964);
+    ((quest_spawn_entry_t *)(piVar5 + -4))->pos_x = (float)(fVar8 * fVar7) + 512.0;
+    piVar5[-3] = (int)(float)(fVar9 * fVar7 + (float10)512.0);
+    piVar5[-1] = 0x36;
+    *piVar5 = iVar4;
+    piVar5[1] = 1;
+    fVar7 = (float10)fpatan((float10)(float)piVar5[-3] - (float10)512.0,
+                            (float10)((quest_spawn_entry_t *)(piVar5 + -4))->pos_x - (float10)512.0)
+    ;
+    piVar5[-2] = (int)(float)(fVar7 - (float10)1.5707964);
     iVar2 = iVar6;
     if (iVar6 < 0x44c) {
       iVar2 = 0x44c;
     }
     iVar6 = iVar6 + -0x32;
-    fVar4 = (float)((int)fVar4 + iVar2);
-    pfVar5 = pfVar5 + 6;
+    iVar4 = iVar4 + iVar2;
+    piVar5 = piVar5 + 6;
   } while (500 < iVar6);
   *count = 0x1e;
   return;
@@ -32661,32 +32673,32 @@ void quest_build_target_practice(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 4 Quest 1 (Major Alien Breach) */
 
-void quest_build_major_alien_breach(float *entries,int *count)
+void quest_build_major_alien_breach(quest_spawn_entry_t *entries,int *count)
 
 {
-  float fVar1;
+  int iVar1;
   int iVar2;
   int iVar3;
   
   iVar2 = 0;
-  fVar1 = 5.60519e-42;
+  iVar1 = 4000;
   iVar3 = 0;
   do {
-    *entries = 1088.0;
-    entries[1] = 512.0;
-    entries[3] = 4.48416e-44;
-    entries[4] = fVar1;
-    entries[5] = 2.8026e-45;
+    entries->pos_x = 1088.0;
+    entries->pos_y = 512.0;
+    entries->template_id = 0x20;
+    entries->trigger_time_ms = iVar1;
+    entries->count = 2;
     iVar2 = iVar2 + 2;
-    entries[6] = 512.0;
-    entries[7] = -64.0;
-    entries[9] = 4.48416e-44;
-    entries[10] = fVar1;
-    entries[0xb] = 2.8026e-45;
-    fVar1 = (float)((int)fVar1 + (2000 - iVar3));
-    entries = entries + 0xc;
-    if ((int)fVar1 < 1000) {
-      fVar1 = 1.4013e-42;
+    entries[1].pos_x = 512.0;
+    entries[1].pos_y = -64.0;
+    entries[1].template_id = 0x20;
+    entries[1].trigger_time_ms = iVar1;
+    entries[1].count = 2;
+    iVar1 = iVar1 + (2000 - iVar3);
+    entries = entries + 2;
+    if (iVar1 < 1000) {
+      iVar1 = 1000;
     }
     iVar3 = iVar3 + 0xf;
   } while (iVar3 < 0x5dc);
@@ -32701,29 +32713,29 @@ void quest_build_major_alien_breach(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 2 Quest 8 (Land Of Lizards) */
 
-void quest_build_land_of_lizards(float *entries,int *count)
+void quest_build_land_of_lizards(quest_spawn_entry_t *entries,int *count)
 
 {
-  *entries = 256.0;
-  entries[1] = 256.0;
-  entries[3] = 1.96182e-44;
-  entries[4] = 2.8026e-42;
-  entries[5] = 1.4013e-45;
-  entries[6] = 768.0;
-  entries[7] = 256.0;
-  entries[9] = 1.96182e-44;
-  entries[10] = 1.68156e-41;
-  entries[0xb] = 1.4013e-45;
-  entries[0xc] = 256.0;
-  entries[0xd] = 768.0;
-  entries[0xf] = 1.96182e-44;
-  entries[0x10] = 3.08286e-41;
-  entries[0x11] = 1.4013e-45;
-  entries[0x12] = 768.0;
-  entries[0x13] = 768.0;
-  entries[0x15] = 1.96182e-44;
-  entries[0x16] = 4.48416e-41;
-  entries[0x17] = 1.4013e-45;
+  entries->pos_x = 256.0;
+  entries->pos_y = 256.0;
+  entries->template_id = 0xe;
+  entries->trigger_time_ms = 2000;
+  entries->count = 1;
+  entries[1].pos_x = 768.0;
+  entries[1].pos_y = 256.0;
+  entries[1].template_id = 0xe;
+  entries[1].trigger_time_ms = 12000;
+  entries[1].count = 1;
+  entries[2].pos_x = 256.0;
+  entries[2].pos_y = 768.0;
+  entries[2].template_id = 0xe;
+  entries[2].trigger_time_ms = 22000;
+  entries[2].count = 1;
+  entries[3].pos_x = 768.0;
+  entries[3].pos_y = 768.0;
+  entries[3].template_id = 0xe;
+  entries[3].trigger_time_ms = 32000;
+  entries[3].count = 1;
   *count = 4;
   return;
 }
@@ -32735,11 +32747,11 @@ void quest_build_land_of_lizards(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 3 Quest 6 (The Lizquidation) */
 
-void quest_build_the_lizquidation(float *entries,int *count)
+void quest_build_the_lizquidation(quest_spawn_entry_t *entries,int *count)
 
 {
-  float fVar1;
-  float *pfVar2;
+  int iVar1;
+  quest_spawn_entry_t *pqVar2;
   int iVar3;
   int iVar4;
   int iVar5;
@@ -32747,28 +32759,28 @@ void quest_build_the_lizquidation(float *entries,int *count)
   iVar5 = 0;
   iVar3 = 0;
   do {
-    fVar1 = (float)(iVar5 * 8000 + 0x5dc);
-    pfVar2 = entries + iVar3 * 6;
-    *pfVar2 = (float)(terrain_texture_width + 0x40);
-    pfVar2[1] = (float)(terrain_texture_width / 2);
-    pfVar2[3] = 6.44597e-44;
-    pfVar2[4] = fVar1;
-    pfVar2[5] = (float)(iVar5 + 6);
-    pfVar2 = entries + (iVar3 + 1) * 6;
-    *pfVar2 = -64.0;
+    iVar1 = iVar5 * 8000 + 0x5dc;
+    pqVar2 = entries + iVar3;
+    pqVar2->pos_x = (float)(terrain_texture_width + 0x40);
+    pqVar2->pos_y = (float)(terrain_texture_width / 2);
+    pqVar2->template_id = 0x2e;
+    pqVar2->trigger_time_ms = iVar1;
+    pqVar2->count = iVar5 + 6;
+    pqVar2 = entries + iVar3 + 1;
+    pqVar2->pos_x = -64.0;
     iVar4 = iVar3 + 2;
-    pfVar2[1] = (float)(terrain_texture_width / 2);
-    pfVar2[3] = 6.44597e-44;
-    pfVar2[4] = fVar1;
-    pfVar2[5] = (float)(iVar5 + 6);
+    pqVar2->pos_y = (float)(terrain_texture_width / 2);
+    pqVar2->template_id = 0x2e;
+    pqVar2->trigger_time_ms = iVar1;
+    pqVar2->count = iVar5 + 6;
     if (iVar5 == 4) {
-      pfVar2 = entries + iVar4 * 6;
-      *pfVar2 = (float)(terrain_texture_width + 0x80);
+      pqVar2 = entries + iVar4;
+      pqVar2->pos_x = (float)(terrain_texture_width + 0x80);
       iVar4 = iVar3 + 3;
-      pfVar2[1] = (float)(terrain_texture_width / 2);
-      pfVar2[3] = 6.02558e-44;
-      pfVar2[4] = 2.10195e-42;
-      pfVar2[5] = 2.8026e-45;
+      pqVar2->pos_y = (float)(terrain_texture_width / 2);
+      pqVar2->template_id = 0x2b;
+      pqVar2->trigger_time_ms = 0x5dc;
+      pqVar2->count = 2;
     }
     iVar5 = iVar5 + 1;
     iVar3 = iVar4;
@@ -32783,31 +32795,31 @@ void quest_build_the_lizquidation(float *entries,int *count)
 
 /* quest builder for Tier 4 Quest 2 (Zombie Time) */
 
-void __cdecl quest_build_zombie_time(float *entries,int *count)
+void __cdecl quest_build_zombie_time(quest_spawn_entry_t *entries,int *count)
 
 {
-  float *pfVar1;
+  quest_spawn_entry_t *pqVar1;
   int iVar2;
-  float fVar3;
+  int iVar3;
   
   iVar2 = 0;
-  fVar3 = 2.10195e-42;
+  iVar3 = 0x5dc;
   do {
-    pfVar1 = entries + iVar2 * 6;
-    *pfVar1 = (float)(terrain_texture_width + 0x40);
-    pfVar1[1] = (float)(terrain_texture_width / 2);
-    pfVar1[3] = 9.10844e-44;
-    pfVar1[4] = fVar3;
-    pfVar1[5] = 1.12104e-44;
-    pfVar1 = entries + (iVar2 + 1) * 6;
-    *pfVar1 = -64.0;
+    pqVar1 = entries + iVar2;
+    pqVar1->pos_x = (float)(terrain_texture_width + 0x40);
+    pqVar1->pos_y = (float)(terrain_texture_width / 2);
+    pqVar1->template_id = 0x41;
+    pqVar1->trigger_time_ms = iVar3;
+    pqVar1->count = 8;
+    pqVar1 = entries + iVar2 + 1;
+    pqVar1->pos_x = -64.0;
     iVar2 = iVar2 + 2;
-    pfVar1[1] = (float)(terrain_texture_width / 2);
-    pfVar1[3] = 9.10844e-44;
-    pfVar1[4] = fVar3;
-    fVar3 = (float)((int)fVar3 + 8000);
-    pfVar1[5] = 1.12104e-44;
-  } while ((int)fVar3 < 0x17cdc);
+    pqVar1->pos_y = (float)(terrain_texture_width / 2);
+    pqVar1->template_id = 0x41;
+    pqVar1->trigger_time_ms = iVar3;
+    iVar3 = iVar3 + 8000;
+    pqVar1->count = 8;
+  } while (iVar3 < 0x17cdc);
   *count = iVar2;
   return;
 }
@@ -32819,12 +32831,12 @@ void __cdecl quest_build_zombie_time(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 1 Quest 4 (Frontline Assault) */
 
-void quest_build_frontline_assault(float *entries,int *count)
+void quest_build_frontline_assault(quest_spawn_entry_t *entries,int *count)
 
 {
-  float *pfVar1;
+  quest_spawn_entry_t *pqVar1;
   int iVar2;
-  float fVar3;
+  int iVar3;
   int iVar4;
   int iVar5;
   int iVar6;
@@ -32833,56 +32845,56 @@ void quest_build_frontline_assault(float *entries,int *count)
   iVar6 = 0x9c4;
   iVar4 = 2;
   do {
-    *entries = (float)(terrain_texture_width / 2);
-    entries[1] = 1088.0;
+    entries->pos_x = (float)(terrain_texture_width / 2);
+    entries->pos_y = 1088.0;
     if (iVar4 < 5) {
-      entries[3] = 5.32493e-44;
+      entries->template_id = 0x26;
     }
     else if (iVar4 < 10) {
-      entries[3] = 3.64338e-44;
+      entries->template_id = 0x1a;
     }
     else {
-      entries[3] = 5.32493e-44;
+      entries->template_id = 0x26;
     }
-    fVar3 = (float)(iVar4 * iVar6 + -5000);
-    entries[4] = fVar3;
-    entries[5] = 1.4013e-45;
-    pfVar1 = entries + 6;
-    iVar2 = iVar5 + 1;
+    iVar2 = iVar4 * iVar6 + -5000;
+    entries->trigger_time_ms = iVar2;
+    entries->count = 1;
+    pqVar1 = entries + 1;
+    iVar3 = iVar5 + 1;
     if (4 < iVar4) {
-      entries[6] = -64.0;
-      entries[7] = -64.0;
-      entries[9] = 5.32493e-44;
-      entries[10] = fVar3;
-      entries[0xb] = 1.4013e-45;
-      pfVar1 = entries + 0xc;
-      iVar2 = iVar5 + 2;
+      entries[1].pos_x = -64.0;
+      entries[1].pos_y = -64.0;
+      entries[1].template_id = 0x26;
+      entries[1].trigger_time_ms = iVar2;
+      entries[1].count = 1;
+      pqVar1 = entries + 2;
+      iVar3 = iVar5 + 2;
     }
-    iVar5 = iVar2;
-    entries = pfVar1;
+    iVar5 = iVar3;
+    entries = pqVar1;
     if (10 < iVar4) {
-      *entries = 1088.0;
-      entries[1] = -64.0;
-      entries[3] = 5.32493e-44;
-      entries[4] = fVar3;
-      entries[5] = 1.4013e-45;
+      entries->pos_x = 1088.0;
+      entries->pos_y = -64.0;
+      entries->template_id = 0x26;
+      entries->trigger_time_ms = iVar2;
+      entries->count = 1;
       iVar5 = iVar5 + 1;
-      entries = entries + 6;
+      entries = entries + 1;
     }
     if (iVar4 == 10) {
-      *entries = 1088.0;
-      entries[1] = 512.0;
-      fVar3 = (float)((iVar6 * 5 + -0x9c4) * 2);
-      entries[3] = 5.74532e-44;
-      entries[4] = fVar3;
-      entries[5] = 1.4013e-45;
-      entries[6] = -64.0;
-      entries[7] = 512.0;
-      entries[9] = 5.74532e-44;
-      entries[10] = fVar3;
-      entries[0xb] = 1.4013e-45;
+      entries->pos_x = 1088.0;
+      entries->pos_y = 512.0;
+      iVar3 = (iVar6 * 5 + -0x9c4) * 2;
+      entries->template_id = 0x29;
+      entries->trigger_time_ms = iVar3;
+      entries->count = 1;
+      entries[1].pos_x = -64.0;
+      entries[1].pos_y = 512.0;
+      entries[1].template_id = 0x29;
+      entries[1].trigger_time_ms = iVar3;
+      entries[1].count = 1;
       iVar5 = iVar5 + 2;
-      entries = entries + 0xc;
+      entries = entries + 2;
     }
     iVar6 = iVar6 + -0x32;
     if (iVar6 < 0x708) {
@@ -32901,49 +32913,49 @@ void quest_build_frontline_assault(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 4 Quest 4 (The Collaboration) */
 
-void quest_build_the_collaboration(float *entries,int *count)
+void quest_build_the_collaboration(quest_spawn_entry_t *entries,int *count)
 
 {
-  float *pfVar1;
-  float fVar2;
+  quest_spawn_entry_t *pqVar1;
+  int iVar2;
   int iVar3;
   int iVar4;
-  float fVar5;
+  int iVar5;
   longlong lVar6;
   
   iVar3 = 0;
-  fVar5 = 2.10195e-42;
+  iVar5 = 0x5dc;
   do {
     lVar6 = __ftol();
-    fVar2 = (float)lVar6;
-    pfVar1 = entries + iVar3 * 6;
-    *pfVar1 = (float)(terrain_texture_width + 0x40);
-    pfVar1[1] = (float)(terrain_texture_width / 2);
-    pfVar1[3] = 3.64338e-44;
-    pfVar1[4] = fVar5;
-    pfVar1[5] = fVar2;
-    pfVar1 = entries + (iVar3 + 1) * 6;
-    pfVar1[1] = (float)(terrain_texture_width + 0x40);
-    *pfVar1 = (float)(terrain_texture_width / 2);
-    pfVar1[3] = 3.78351e-44;
-    pfVar1[4] = fVar5;
-    pfVar1[5] = fVar2;
-    pfVar1 = entries + (iVar3 + 2) * 6;
-    *pfVar1 = -64.0;
+    iVar2 = (int)lVar6;
+    pqVar1 = entries + iVar3;
+    pqVar1->pos_x = (float)(terrain_texture_width + 0x40);
+    pqVar1->pos_y = (float)(terrain_texture_width / 2);
+    pqVar1->template_id = 0x1a;
+    pqVar1->trigger_time_ms = iVar5;
+    pqVar1->count = iVar2;
+    pqVar1 = entries + iVar3 + 1;
+    pqVar1->pos_y = (float)(terrain_texture_width + 0x40);
+    pqVar1->pos_x = (float)(terrain_texture_width / 2);
+    pqVar1->template_id = 0x1b;
+    pqVar1->trigger_time_ms = iVar5;
+    pqVar1->count = iVar2;
+    pqVar1 = entries + iVar3 + 2;
+    pqVar1->pos_x = -64.0;
     iVar4 = iVar3 + 3;
-    pfVar1[1] = (float)(terrain_texture_width / 2);
-    pfVar1[3] = 3.92364e-44;
-    pfVar1[4] = fVar5;
-    pfVar1[5] = fVar2;
+    pqVar1->pos_y = (float)(terrain_texture_width / 2);
+    pqVar1->template_id = 0x1c;
+    pqVar1->trigger_time_ms = iVar5;
+    pqVar1->count = iVar2;
     iVar3 = iVar3 + 4;
-    pfVar1 = entries + iVar4 * 6;
-    *pfVar1 = 512.0;
-    pfVar1[1] = -64.0;
-    pfVar1[3] = 9.10844e-44;
-    pfVar1[4] = fVar5;
-    fVar5 = (float)((int)fVar5 + 11000);
-    pfVar1[5] = fVar2;
-  } while ((int)fVar5 < 0x2b55c);
+    pqVar1 = entries + iVar4;
+    pqVar1->pos_x = 512.0;
+    pqVar1->pos_y = -64.0;
+    pqVar1->template_id = 0x41;
+    pqVar1->trigger_time_ms = iVar5;
+    iVar5 = iVar5 + 11000;
+    pqVar1->count = iVar2;
+  } while (iVar5 < 0x2b55c);
   *count = iVar3;
   return;
 }
@@ -32955,112 +32967,112 @@ void quest_build_the_collaboration(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 3 Quest 1 (The Blighting) */
 
-void quest_build_the_blighting(float *entries,int *count)
+void quest_build_the_blighting(quest_spawn_entry_t *entries,int *count)
 
 {
   uint uVar1;
-  float *pfVar2;
-  float *pfVar3;
+  quest_spawn_entry_t *pqVar2;
+  quest_spawn_entry_t *pqVar3;
   int iVar4;
-  float fVar5;
-  float fVar6;
+  int iVar5;
+  int iVar6;
   int iVar7;
   uint uStack_8;
   
-  *entries = (float)(terrain_texture_width + 0x80);
-  fVar5 = 3.64338e-44;
-  entries[1] = (float)(terrain_texture_width / 2);
-  entries[3] = 6.02558e-44;
-  entries[4] = 2.10195e-42;
-  entries[5] = 2.8026e-45;
-  entries[6] = -128.0;
-  entries[7] = (float)(terrain_texture_width / 2);
-  entries[9] = 6.02558e-44;
-  entries[10] = 2.10195e-42;
-  entries[0xb] = 2.8026e-45;
-  entries[0xd] = 128.0;
-  entries[0xc] = 896.0;
-  entries[0xf] = 9.80909e-45;
-  entries[0x10] = 2.8026e-42;
-  entries[0x11] = 1.4013e-45;
-  entries[0x13] = 128.0;
-  entries[0x12] = 128.0;
-  entries[0x15] = 9.80909e-45;
-  entries[0x16] = 2.8026e-42;
-  entries[0x17] = 1.4013e-45;
-  entries[0x19] = 896.0;
-  entries[0x18] = 128.0;
-  entries[0x1b] = 9.80909e-45;
-  entries[0x1c] = 2.8026e-42;
-  entries[0x1d] = 1.4013e-45;
-  entries[0x1f] = 896.0;
-  entries[0x1e] = 896.0;
-  entries[0x21] = 9.80909e-45;
-  entries[0x22] = 2.8026e-42;
-  entries[0x23] = 1.4013e-45;
+  entries->pos_x = (float)(terrain_texture_width + 0x80);
+  iVar5 = 0x1a;
+  entries->pos_y = (float)(terrain_texture_width / 2);
+  entries->template_id = 0x2b;
+  entries->trigger_time_ms = 0x5dc;
+  entries->count = 2;
+  entries[1].pos_x = -128.0;
+  entries[1].pos_y = (float)(terrain_texture_width / 2);
+  entries[1].template_id = 0x2b;
+  entries[1].trigger_time_ms = 0x5dc;
+  entries[1].count = 2;
+  entries[2].pos_y = 128.0;
+  entries[2].pos_x = 896.0;
+  entries[2].template_id = 7;
+  entries[2].trigger_time_ms = 2000;
+  entries[2].count = 1;
+  entries[3].pos_y = 128.0;
+  entries[3].pos_x = 128.0;
+  entries[3].template_id = 7;
+  entries[3].trigger_time_ms = 2000;
+  entries[3].count = 1;
+  entries[4].pos_y = 896.0;
+  entries[4].pos_x = 128.0;
+  entries[4].template_id = 7;
+  entries[4].trigger_time_ms = 2000;
+  entries[4].count = 1;
+  entries[5].pos_y = 896.0;
+  entries[5].pos_x = 896.0;
+  entries[5].template_id = 7;
+  entries[5].trigger_time_ms = 2000;
+  entries[5].count = 1;
   iVar7 = 6;
-  fVar6 = 5.60519e-42;
+  iVar6 = 4000;
   uStack_8 = 0;
-  pfVar3 = entries + 0x24;
+  pqVar3 = entries + 6;
   do {
     uVar1 = uStack_8 & 0x80000001;
     if ((int)uVar1 < 0) {
       uVar1 = (uVar1 - 1 | 0xfffffffe) + 1;
     }
-    if ((uStack_8 == 2) || (pfVar2 = pfVar3, uStack_8 == 4)) {
-      *pfVar3 = -128.0;
+    if ((uStack_8 == 2) || (pqVar2 = pqVar3, uStack_8 == 4)) {
+      pqVar3->pos_x = -128.0;
       iVar7 = iVar7 + 1;
-      pfVar2 = pfVar3 + 6;
-      pfVar3[1] = (float)(terrain_texture_width / 2);
-      pfVar3[3] = 6.02558e-44;
-      pfVar3[4] = fVar6;
-      pfVar3[5] = 5.60519e-45;
+      pqVar2 = pqVar3 + 1;
+      pqVar3->pos_y = (float)(terrain_texture_width / 2);
+      pqVar3->template_id = 0x2b;
+      pqVar3->trigger_time_ms = iVar6;
+      pqVar3->count = 4;
     }
-    if ((uStack_8 == 3) || (pfVar3 = pfVar2, uStack_8 == 5)) {
-      *pfVar2 = 1152.0;
+    if ((uStack_8 == 3) || (pqVar3 = pqVar2, uStack_8 == 5)) {
+      pqVar2->pos_x = 1152.0;
       iVar7 = iVar7 + 1;
-      pfVar3 = pfVar2 + 6;
-      pfVar2[1] = (float)(terrain_texture_width / 2);
-      pfVar2[3] = 6.02558e-44;
-      pfVar2[4] = fVar6;
-      pfVar2[5] = 5.60519e-45;
+      pqVar3 = pqVar2 + 1;
+      pqVar2->pos_y = (float)(terrain_texture_width / 2);
+      pqVar2->template_id = 0x2b;
+      pqVar2->trigger_time_ms = iVar6;
+      pqVar2->count = 4;
     }
     if (uVar1 == 0) {
-      fVar5 = 3.64338e-44;
+      iVar5 = 0x1a;
     }
     else if (uVar1 == 1) {
-      fVar5 = 3.92364e-44;
+      iVar5 = 0x1c;
     }
     iVar4 = (int)uStack_8 % 5;
     if (iVar4 == 0) {
-      *pfVar3 = (float)(terrain_texture_width + 0x40);
-      pfVar3[1] = (float)(terrain_texture_width / 2);
+      pqVar3->pos_x = (float)(terrain_texture_width + 0x40);
+      pqVar3->pos_y = (float)(terrain_texture_width / 2);
 LAB_00438283:
-      pfVar3[3] = fVar5;
-      pfVar3[4] = fVar6;
-      pfVar3[5] = 1.68156e-44;
+      pqVar3->template_id = iVar5;
+      pqVar3->trigger_time_ms = iVar6;
+      pqVar3->count = 0xc;
       iVar7 = iVar7 + 1;
-      pfVar3 = pfVar3 + 6;
-      fVar6 = (float)((int)fVar6 + 15000);
+      pqVar3 = pqVar3 + 1;
+      iVar6 = iVar6 + 15000;
     }
     else {
       if (iVar4 == 1) {
-        *pfVar3 = -64.0;
-        pfVar3[1] = (float)(terrain_texture_width / 2);
+        pqVar3->pos_x = -64.0;
+        pqVar3->pos_y = (float)(terrain_texture_width / 2);
         goto LAB_00438283;
       }
       if (iVar4 == 2) {
-        pfVar3[1] = (float)(terrain_texture_width + 0x40);
+        pqVar3->pos_y = (float)(terrain_texture_width + 0x40);
 LAB_00438281:
-        *pfVar3 = (float)(terrain_texture_width / 2);
+        pqVar3->pos_x = (float)(terrain_texture_width / 2);
         goto LAB_00438283;
       }
       if (iVar4 == 3) {
-        pfVar3[1] = -64.0;
+        pqVar3->pos_y = -64.0;
         goto LAB_00438281;
       }
     }
-    fVar6 = (float)((int)fVar6 + 1000);
+    iVar6 = iVar6 + 1000;
     uStack_8 = uStack_8 + 1;
     if (7 < (int)uStack_8) {
       *count = iVar7;
@@ -33076,60 +33088,60 @@ LAB_00438281:
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 4 Quest 9 (The Annihilation) */
 
-void quest_build_the_annihilation(float *entries,int *count)
+void quest_build_the_annihilation(quest_spawn_entry_t *entries,int *count)
 
 {
-  float *pfVar1;
+  int *piVar1;
   bool bVar2;
   uint uVar3;
-  float fVar4;
+  int iVar4;
   int iVar5;
   
-  fVar4 = 7.00649e-43;
-  *entries = 128.0;
+  iVar4 = 500;
+  entries->pos_x = 128.0;
   uVar3 = 0;
   iVar5 = 0;
-  pfVar1 = entries + 9;
-  entries[1] = (float)(terrain_texture_width / 2);
-  entries[3] = 6.02558e-44;
-  entries[4] = 7.00649e-43;
-  entries[5] = 2.8026e-45;
+  piVar1 = &entries[1].template_id;
+  entries->pos_y = (float)(terrain_texture_width / 2);
+  entries->template_id = 0x2b;
+  entries->trigger_time_ms = 500;
+  entries->count = 2;
   do {
-    pfVar1[-2] = (float)(iVar5 / 0xc + 0x80);
+    piVar1[-2] = (int)(float)(iVar5 / 0xc + 0x80);
     if ((uVar3 & 1) == 0) {
-      pfVar1[-3] = 832.0;
+      ((quest_spawn_entry_t *)(piVar1 + -3))->pos_x = 832.0;
     }
     else {
-      pfVar1[-3] = 896.0;
+      ((quest_spawn_entry_t *)(piVar1 + -3))->pos_x = 896.0;
     }
-    *pfVar1 = 9.80909e-45;
-    pfVar1[1] = fVar4;
-    pfVar1[2] = 1.4013e-45;
-    fVar4 = (float)((int)fVar4 + 500);
+    *piVar1 = 7;
+    piVar1[1] = iVar4;
+    piVar1[2] = 1;
+    iVar4 = iVar4 + 500;
     iVar5 = iVar5 + 0x300;
-    pfVar1 = pfVar1 + 6;
+    piVar1 = piVar1 + 6;
     uVar3 = uVar3 + 1;
   } while ((int)uVar3 < 0xc);
   bVar2 = false;
   iVar5 = 0;
-  fVar4 = 6.30584e-41;
-  pfVar1 = entries + 0x51;
+  iVar4 = 45000;
+  piVar1 = &entries[0xd].template_id;
   do {
-    pfVar1[-2] = (float)(iVar5 / 0xc + 0x80);
+    piVar1[-2] = (int)(float)(iVar5 / 0xc + 0x80);
     if (bVar2) {
-      pfVar1[-3] = 832.0;
+      ((quest_spawn_entry_t *)(piVar1 + -3))->pos_x = 832.0;
     }
     else {
-      pfVar1[-3] = 896.0;
+      ((quest_spawn_entry_t *)(piVar1 + -3))->pos_x = 896.0;
     }
-    *pfVar1 = 9.80909e-45;
-    pfVar1[1] = fVar4;
-    pfVar1[2] = 1.4013e-45;
-    pfVar1 = pfVar1 + 6;
-    fVar4 = (float)((int)fVar4 + 300);
+    *piVar1 = 7;
+    piVar1[1] = iVar4;
+    piVar1[2] = 1;
+    piVar1 = piVar1 + 6;
+    iVar4 = iVar4 + 300;
     bVar2 = (bool)(bVar2 ^ 1);
     iVar5 = iVar5 + 0x300;
-  } while ((int)fVar4 < 0xbdd8);
+  } while (iVar4 < 0xbdd8);
   *count = 0x19;
   return;
 }
@@ -33141,47 +33153,47 @@ void quest_build_the_annihilation(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 4 Quest 5 (The Massacre) */
 
-void quest_build_the_massacre(float *entries,int *count)
+void quest_build_the_massacre(quest_spawn_entry_t *entries,int *count)
 
 {
-  float *pfVar1;
-  float fVar2;
+  quest_spawn_entry_t *pqVar1;
+  uint uVar2;
   uint uVar3;
   int iVar4;
   int iVar5;
-  float fVar6;
+  int iVar6;
   bool bVar7;
   
-  fVar6 = 2.10195e-42;
-  fVar2 = 0.0;
+  iVar6 = 0x5dc;
+  uVar2 = 0;
   iVar4 = 0;
   do {
-    pfVar1 = entries + 6;
-    *entries = (float)(terrain_texture_width + 0x40);
+    pqVar1 = entries + 1;
+    entries->pos_x = (float)(terrain_texture_width + 0x40);
     iVar5 = iVar4 + 1;
-    uVar3 = (uint)fVar2 & 0x80000001;
+    uVar3 = uVar2 & 0x80000001;
     bVar7 = uVar3 == 0;
-    entries[1] = (float)(terrain_texture_width / 2);
-    entries[3] = 9.10844e-44;
-    entries[4] = fVar6;
-    entries[5] = (float)((int)fVar2 + 3);
+    entries->pos_y = (float)(terrain_texture_width / 2);
+    entries->template_id = 0x41;
+    entries->trigger_time_ms = iVar6;
+    entries->count = uVar2 + 3;
     if ((int)uVar3 < 0) {
       bVar7 = (uVar3 - 1 | 0xfffffffe) == 0xffffffff;
     }
     if (bVar7) {
-      *pfVar1 = (float)(terrain_texture_width + 0x80);
+      pqVar1->pos_x = (float)(terrain_texture_width + 0x80);
       iVar5 = iVar4 + 2;
-      pfVar1 = entries + 0xc;
-      entries[7] = (float)(terrain_texture_width / 2);
-      entries[9] = 6.02558e-44;
-      entries[10] = fVar6;
-      entries[0xb] = (float)((int)fVar2 + 1);
+      pqVar1 = entries + 2;
+      entries[1].pos_y = (float)(terrain_texture_width / 2);
+      entries[1].template_id = 0x2b;
+      entries[1].trigger_time_ms = iVar6;
+      entries[1].count = uVar2 + 1;
     }
-    fVar6 = (float)((int)fVar6 + 5000);
-    entries = pfVar1;
-    fVar2 = (float)((int)fVar2 + 1);
+    iVar6 = iVar6 + 5000;
+    entries = pqVar1;
+    uVar2 = uVar2 + 1;
     iVar4 = iVar5;
-  } while ((int)fVar6 < 0x1656c);
+  } while (iVar6 < 0x1656c);
   *count = iVar5;
   return;
 }
@@ -33193,99 +33205,99 @@ void quest_build_the_massacre(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 3 Quest 3 (The Killing) */
 
-void quest_build_the_killing(float *entries,int *count)
+void quest_build_the_killing(quest_spawn_entry_t *entries,int *count)
 
 {
   int iVar1;
   int iVar2;
-  float fVar3;
-  float *pfVar4;
-  float *pfVar5;
-  float fVar6;
+  int iVar3;
+  quest_spawn_entry_t *pqVar4;
+  quest_spawn_entry_t *pqVar5;
+  int iVar6;
   int iStack_4;
   
   iVar2 = 0;
-  fVar6 = 2.8026e-42;
-  fVar3 = 3.64338e-44;
+  iVar6 = 2000;
+  iVar3 = 0x1a;
   iStack_4 = 0;
-  pfVar5 = entries;
+  pqVar5 = entries;
   do {
     crt_rand();
     iVar1 = iStack_4 % 3;
     if (iVar1 == 0) {
-      fVar3 = 3.64338e-44;
+      iVar3 = 0x1a;
     }
     else if (iVar1 == 1) {
-      fVar3 = 3.78351e-44;
+      iVar3 = 0x1b;
     }
     else if (iVar1 == 2) {
-      fVar3 = 3.92364e-44;
+      iVar3 = 0x1c;
     }
     crt_rand();
     iVar1 = iStack_4 % 5;
-    pfVar4 = pfVar5;
+    pqVar4 = pqVar5;
     if (iVar1 == 0) {
-      *pfVar5 = (float)(terrain_texture_width + 0x40);
+      pqVar5->pos_x = (float)(terrain_texture_width + 0x40);
 LAB_00438544:
-      entries = (float *)(terrain_texture_width / 2);
-      pfVar5[1] = (float)(int)entries;
-      pfVar5[3] = fVar3;
-      pfVar5[4] = fVar6;
-      pfVar5[5] = 1.68156e-44;
+      entries = (quest_spawn_entry_t *)(terrain_texture_width / 2);
+      pqVar5->pos_y = (float)(int)entries;
+      pqVar5->template_id = iVar3;
+      pqVar5->trigger_time_ms = iVar6;
+      pqVar5->count = 0xc;
 LAB_004386cc:
       iVar2 = iVar2 + 1;
-      pfVar5 = pfVar4 + 6;
-      fVar6 = (float)((int)fVar6 + 5000);
+      pqVar5 = pqVar4 + 1;
+      iVar6 = iVar6 + 5000;
     }
     else {
       if (iVar1 == 1) {
-        *pfVar5 = -64.0;
+        pqVar5->pos_x = -64.0;
         goto LAB_00438544;
       }
       if (iVar1 == 2) {
-        pfVar5[1] = (float)(terrain_texture_width + 0x40);
-        *pfVar5 = (float)(terrain_texture_width / 2);
-        pfVar5[3] = fVar3;
-        pfVar5[4] = fVar6;
-        pfVar5[5] = 1.68156e-44;
+        pqVar5->pos_y = (float)(terrain_texture_width + 0x40);
+        pqVar5->pos_x = (float)(terrain_texture_width / 2);
+        pqVar5->template_id = iVar3;
+        pqVar5->trigger_time_ms = iVar6;
+        pqVar5->count = 0xc;
         goto LAB_004386cc;
       }
       if (iVar1 == 3) {
-        pfVar5[1] = -64.0;
-        *pfVar5 = (float)(terrain_texture_width / 2);
-        pfVar5[3] = fVar3;
-        pfVar5[4] = fVar6;
-        pfVar5[5] = 1.68156e-44;
+        pqVar5->pos_y = -64.0;
+        pqVar5->pos_x = (float)(terrain_texture_width / 2);
+        pqVar5->template_id = iVar3;
+        pqVar5->trigger_time_ms = iVar6;
+        pqVar5->count = 0xc;
         goto LAB_004386cc;
       }
       if (iVar1 == 4) {
         iVar1 = crt_rand();
-        pfVar5[1] = (float)(iVar1 % 0x300 + 0x80);
+        pqVar5->pos_y = (float)(iVar1 % 0x300 + 0x80);
         iVar1 = crt_rand();
-        *pfVar5 = (float)(iVar1 % 0x300 + 0x80);
-        pfVar5[3] = 9.80909e-45;
-        pfVar5[4] = fVar6;
-        pfVar5[5] = 4.2039e-45;
+        pqVar5->pos_x = (float)(iVar1 % 0x300 + 0x80);
+        pqVar5->template_id = 7;
+        pqVar5->trigger_time_ms = iVar6;
+        pqVar5->count = 3;
         iVar1 = crt_rand();
-        pfVar5[7] = (float)(iVar1 % 0x300 + 0x80);
+        pqVar5[1].pos_y = (float)(iVar1 % 0x300 + 0x80);
         iVar1 = crt_rand();
-        pfVar4 = pfVar5 + 0xc;
+        pqVar4 = pqVar5 + 2;
         iVar2 = iVar2 + 2;
-        pfVar5[6] = (float)(iVar1 % 0x300 + 0x80);
-        pfVar5[9] = 9.80909e-45;
-        pfVar5[10] = (float)((int)fVar6 + 1000);
-        pfVar5[0xb] = 4.2039e-45;
+        pqVar5[1].pos_x = (float)(iVar1 % 0x300 + 0x80);
+        pqVar5[1].template_id = 7;
+        pqVar5[1].trigger_time_ms = iVar6 + 1000;
+        pqVar5[1].count = 3;
         iVar1 = crt_rand();
-        pfVar5[0xd] = (float)(iVar1 % 0x300 + 0x80);
+        pqVar5[2].pos_y = (float)(iVar1 % 0x300 + 0x80);
         iVar1 = crt_rand();
-        *pfVar4 = (float)(iVar1 % 0x300 + 0x80);
-        pfVar5[0xf] = 9.80909e-45;
-        pfVar5[0x10] = (float)((int)fVar6 + 2000);
-        pfVar5[0x11] = 4.2039e-45;
+        pqVar4->pos_x = (float)(iVar1 % 0x300 + 0x80);
+        pqVar5[2].template_id = 7;
+        pqVar5[2].trigger_time_ms = iVar6 + 2000;
+        pqVar5[2].count = 3;
         goto LAB_004386cc;
       }
     }
-    fVar6 = (float)((int)fVar6 + 1000);
+    iVar6 = iVar6 + 1000;
     iStack_4 = iStack_4 + 1;
     if (9 < iStack_4) {
       *count = iVar2;
@@ -33301,53 +33313,53 @@ LAB_004386cc:
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 4 Quest 3 (Lizard Zombie Pact) */
 
-void quest_build_lizard_zombie_pact(float *entries,int *count)
+void quest_build_lizard_zombie_pact(quest_spawn_entry_t *entries,int *count)
 
 {
-  float *pfVar1;
+  quest_spawn_entry_t *pqVar1;
   int iVar2;
   int iVar3;
   int iVar4;
-  float fVar5;
+  int iVar5;
   int iStack_4;
   
-  fVar5 = 2.10195e-42;
+  iVar5 = 0x5dc;
   iStack_4 = 0;
   iVar3 = 0;
   do {
-    pfVar1 = entries + iVar3 * 6;
-    *pfVar1 = (float)(terrain_texture_width + 0x40);
-    pfVar1[1] = (float)(terrain_texture_width / 2);
-    pfVar1[3] = 9.10844e-44;
-    pfVar1[4] = fVar5;
-    pfVar1[5] = 8.40779e-45;
-    pfVar1 = entries + (iVar3 + 1) * 6;
-    *pfVar1 = -64.0;
-    pfVar1[1] = (float)(terrain_texture_width / 2);
-    pfVar1[3] = 9.10844e-44;
-    pfVar1[4] = fVar5;
-    pfVar1[5] = 8.40779e-45;
+    pqVar1 = entries + iVar3;
+    pqVar1->pos_x = (float)(terrain_texture_width + 0x40);
+    pqVar1->pos_y = (float)(terrain_texture_width / 2);
+    pqVar1->template_id = 0x41;
+    pqVar1->trigger_time_ms = iVar5;
+    pqVar1->count = 6;
+    pqVar1 = entries + iVar3 + 1;
+    pqVar1->pos_x = -64.0;
+    pqVar1->pos_y = (float)(terrain_texture_width / 2);
+    pqVar1->template_id = 0x41;
+    pqVar1->trigger_time_ms = iVar5;
+    pqVar1->count = 6;
     iVar4 = iVar3 + 2;
     if (iStack_4 % 5 == 0) {
-      pfVar1 = entries + iVar4 * 6;
+      pqVar1 = entries + iVar4;
       iVar2 = iStack_4 / 5;
-      *pfVar1 = 356.0;
-      pfVar1[1] = (float)(iVar2 * 0xb4 + 0x100);
-      pfVar1[3] = 1.68156e-44;
-      pfVar1[4] = fVar5;
-      pfVar1[5] = (float)(iVar2 + 1);
+      pqVar1->pos_x = 356.0;
+      pqVar1->pos_y = (float)(iVar2 * 0xb4 + 0x100);
+      pqVar1->template_id = 0xc;
+      pqVar1->trigger_time_ms = iVar5;
+      pqVar1->count = iVar2 + 1;
       iVar4 = iVar3 + 4;
-      pfVar1 = entries + (iVar3 + 3) * 6;
-      *pfVar1 = 356.0;
-      pfVar1[1] = (float)(iVar2 * 0xb4 + 0x180);
-      pfVar1[3] = 1.68156e-44;
-      pfVar1[4] = fVar5;
-      pfVar1[5] = (float)(iVar2 + 2);
+      pqVar1 = entries + iVar3 + 3;
+      pqVar1->pos_x = 356.0;
+      pqVar1->pos_y = (float)(iVar2 * 0xb4 + 0x180);
+      pqVar1->template_id = 0xc;
+      pqVar1->trigger_time_ms = iVar5;
+      pqVar1->count = iVar2 + 2;
     }
-    fVar5 = (float)((int)fVar5 + 7000);
+    iVar5 = iVar5 + 7000;
     iStack_4 = iStack_4 + 1;
     iVar3 = iVar4;
-  } while ((int)fVar5 < 0x1bb5c);
+  } while (iVar5 < 0x1bb5c);
   *count = iVar4;
   return;
 }
@@ -33358,51 +33370,51 @@ void quest_build_lizard_zombie_pact(float *entries,int *count)
 
 /* quest builder for Tier 3 Quest 8 (Lizard Raze) */
 
-void __cdecl quest_build_lizard_raze(float *entries,int *count)
+void __cdecl quest_build_lizard_raze(quest_spawn_entry_t *entries,int *count)
 
 {
-  float *pfVar1;
+  quest_spawn_entry_t *pqVar1;
   int iVar2;
   int iVar3;
-  float fVar4;
+  int iVar4;
   
-  fVar4 = 2.10195e-42;
+  iVar4 = 0x5dc;
   iVar2 = 0;
   do {
     iVar3 = iVar2;
-    pfVar1 = entries + iVar3 * 6;
-    *pfVar1 = (float)(terrain_texture_width + 0x40);
-    pfVar1[1] = (float)(terrain_texture_width / 2);
-    pfVar1[3] = 6.44597e-44;
-    pfVar1[4] = fVar4;
-    pfVar1[5] = 8.40779e-45;
-    pfVar1 = entries + (iVar3 + 1) * 6;
-    *pfVar1 = -64.0;
-    pfVar1[1] = (float)(terrain_texture_width / 2);
-    pfVar1[3] = 6.44597e-44;
-    pfVar1[4] = fVar4;
-    fVar4 = (float)((int)fVar4 + 6000);
-    pfVar1[5] = 8.40779e-45;
+    pqVar1 = entries + iVar3;
+    pqVar1->pos_x = (float)(terrain_texture_width + 0x40);
+    pqVar1->pos_y = (float)(terrain_texture_width / 2);
+    pqVar1->template_id = 0x2e;
+    pqVar1->trigger_time_ms = iVar4;
+    pqVar1->count = 6;
+    pqVar1 = entries + iVar3 + 1;
+    pqVar1->pos_x = -64.0;
+    pqVar1->pos_y = (float)(terrain_texture_width / 2);
+    pqVar1->template_id = 0x2e;
+    pqVar1->trigger_time_ms = iVar4;
+    iVar4 = iVar4 + 6000;
+    pqVar1->count = 6;
     iVar2 = iVar3 + 2;
-  } while ((int)fVar4 < 0x1656c);
-  pfVar1 = entries + (iVar3 + 2) * 6;
-  *pfVar1 = 128.0;
-  pfVar1[1] = 256.0;
-  pfVar1[3] = 1.68156e-44;
-  pfVar1[4] = 1.4013e-41;
-  pfVar1[5] = 1.4013e-45;
-  pfVar1 = entries + (iVar3 + 3) * 6;
-  *pfVar1 = 128.0;
-  pfVar1[1] = 384.0;
-  pfVar1[3] = 1.68156e-44;
-  pfVar1[4] = 1.4013e-41;
-  pfVar1[5] = 1.4013e-45;
-  pfVar1 = entries + (iVar3 + 4) * 6;
-  *pfVar1 = 128.0;
-  pfVar1[1] = 512.0;
-  pfVar1[3] = 1.68156e-44;
-  pfVar1[4] = 1.4013e-41;
-  pfVar1[5] = 1.4013e-45;
+  } while (iVar4 < 0x1656c);
+  pqVar1 = entries + iVar3 + 2;
+  pqVar1->pos_x = 128.0;
+  pqVar1->pos_y = 256.0;
+  pqVar1->template_id = 0xc;
+  pqVar1->trigger_time_ms = 10000;
+  pqVar1->count = 1;
+  pqVar1 = entries + iVar3 + 3;
+  pqVar1->pos_x = 128.0;
+  pqVar1->pos_y = 384.0;
+  pqVar1->template_id = 0xc;
+  pqVar1->trigger_time_ms = 10000;
+  pqVar1->count = 1;
+  pqVar1 = entries + iVar3 + 4;
+  pqVar1->pos_x = 128.0;
+  pqVar1->pos_y = 512.0;
+  pqVar1->template_id = 0xc;
+  pqVar1->trigger_time_ms = 10000;
+  pqVar1->count = 1;
   *count = iVar3 + 5;
   return;
 }
@@ -33413,58 +33425,58 @@ void __cdecl quest_build_lizard_raze(float *entries,int *count)
 
 /* quest builder for Tier 3 Quest 5 (Surrounded By Reptiles) */
 
-void __cdecl quest_build_surrounded_by_reptiles(float *entries,int *count)
+void __cdecl quest_build_surrounded_by_reptiles(quest_spawn_entry_t *entries,int *count)
 
 {
   float fVar1;
-  float *pfVar2;
+  quest_spawn_entry_t *pqVar2;
   int iVar3;
-  float fVar4;
+  int iVar4;
   int local_4;
   
   iVar3 = 0;
   local_4 = 0;
-  fVar4 = 1.4013e-42;
-  pfVar2 = entries;
+  iVar4 = 1000;
+  pqVar2 = entries;
   do {
     fVar1 = (float)local_4;
-    *pfVar2 = 256.0;
+    pqVar2->pos_x = 256.0;
     iVar3 = iVar3 + 2;
     local_4 = local_4 + 0x200;
     fVar1 = fVar1 * 0.2 + 256.0;
-    pfVar2[1] = fVar1;
-    pfVar2[3] = 1.82169e-44;
-    pfVar2[4] = fVar4;
-    pfVar2[5] = 1.4013e-45;
-    pfVar2[6] = 768.0;
-    pfVar2[7] = fVar1;
-    pfVar2[9] = 1.82169e-44;
-    pfVar2[10] = fVar4;
-    pfVar2[0xb] = 1.4013e-45;
-    fVar4 = (float)((int)fVar4 + 800);
-    pfVar2 = pfVar2 + 0xc;
-  } while ((int)fVar4 < 5000);
+    pqVar2->pos_y = fVar1;
+    pqVar2->template_id = 0xd;
+    pqVar2->trigger_time_ms = iVar4;
+    pqVar2->count = 1;
+    pqVar2[1].pos_x = 768.0;
+    pqVar2[1].pos_y = fVar1;
+    pqVar2[1].template_id = 0xd;
+    pqVar2[1].trigger_time_ms = iVar4;
+    pqVar2[1].count = 1;
+    iVar4 = iVar4 + 800;
+    pqVar2 = pqVar2 + 2;
+  } while (iVar4 < 5000);
   local_4 = 0;
-  fVar4 = 1.12104e-41;
-  pfVar2 = entries + iVar3 * 6;
+  iVar4 = 8000;
+  pqVar2 = entries + iVar3;
   do {
     fVar1 = (float)local_4;
-    pfVar2[1] = 256.0;
+    pqVar2->pos_y = 256.0;
     iVar3 = iVar3 + 2;
     local_4 = local_4 + 0x200;
     fVar1 = fVar1 * 0.2 + 256.0;
-    *pfVar2 = fVar1;
-    pfVar2[3] = 1.82169e-44;
-    pfVar2[4] = fVar4;
-    pfVar2[5] = 1.4013e-45;
-    pfVar2[7] = 768.0;
-    pfVar2[6] = fVar1;
-    pfVar2[9] = 1.82169e-44;
-    pfVar2[10] = fVar4;
-    pfVar2[0xb] = 1.4013e-45;
-    fVar4 = (float)((int)fVar4 + 800);
-    pfVar2 = pfVar2 + 0xc;
-  } while ((int)fVar4 < 12000);
+    pqVar2->pos_x = fVar1;
+    pqVar2->template_id = 0xd;
+    pqVar2->trigger_time_ms = iVar4;
+    pqVar2->count = 1;
+    pqVar2[1].pos_y = 768.0;
+    pqVar2[1].pos_x = fVar1;
+    pqVar2[1].template_id = 0xd;
+    pqVar2[1].trigger_time_ms = iVar4;
+    pqVar2[1].count = 1;
+    iVar4 = iVar4 + 800;
+    pqVar2 = pqVar2 + 2;
+  } while (iVar4 < 12000);
   *count = iVar3;
   return;
 }
@@ -33476,139 +33488,140 @@ void __cdecl quest_build_surrounded_by_reptiles(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 4 Quest 6 (The Unblitzkrieg) */
 
-void quest_build_the_unblitzkrieg(float *entries,int *count)
+void quest_build_the_unblitzkrieg(quest_spawn_entry_t *entries,int *count)
 
 {
-  int iVar1;
-  uint uVar2;
-  byte bVar3;
-  float fVar4;
+  quest_spawn_entry_t *pqVar1;
+  int iVar2;
+  uint uVar3;
+  byte bVar4;
   int iVar5;
-  float *pfVar6;
-  uint uVar7;
+  int iVar6;
+  int *piVar7;
+  uint uVar8;
   
-  fVar4 = 7.00649e-43;
-  iVar5 = 0;
-  pfVar6 = entries + 3;
-  uVar2 = 0;
+  iVar5 = 500;
+  iVar6 = 0;
+  piVar7 = &entries->template_id;
+  uVar3 = 0;
   do {
-    uVar7 = uVar2;
-    pfVar6[-3] = 824.0;
-    iVar1 = iVar5 / 10;
-    iVar5 = iVar5 + 0x270;
-    pfVar6[-2] = (float)(iVar1 + 200);
-    *pfVar6 = (float)((-(uint)((uVar7 & 1) != 0) & 6) + 7);
-    pfVar6[1] = fVar4;
-    pfVar6[2] = 1.4013e-45;
-    fVar4 = (float)((int)fVar4 + 0x708);
-    pfVar6 = pfVar6 + 6;
-    uVar2 = uVar7 + 1;
-  } while (iVar5 < 0x1860);
-  iVar5 = 0;
-  bVar3 = 0;
-  pfVar6 = entries + (uVar7 + 1) * 6 + 3;
+    uVar8 = uVar3;
+    ((quest_spawn_entry_t *)(piVar7 + -3))->pos_x = 824.0;
+    iVar2 = iVar6 / 10;
+    iVar6 = iVar6 + 0x270;
+    piVar7[-2] = (int)(float)(iVar2 + 200);
+    *piVar7 = (-(uint)((uVar8 & 1) != 0) & 6) + 7;
+    piVar7[1] = iVar5;
+    piVar7[2] = 1;
+    iVar5 = iVar5 + 0x708;
+    piVar7 = piVar7 + 6;
+    uVar3 = uVar8 + 1;
+  } while (iVar6 < 0x1860);
+  iVar6 = 0;
+  bVar4 = 0;
+  piVar7 = &entries[uVar8 + 1].template_id;
   do {
-    pfVar6[-3] = (float)(0x338 - iVar5 / 10);
-    pfVar6[-2] = 824.0;
-    iVar5 = iVar5 + 0x270;
-    *pfVar6 = (float)((-(uint)bVar3 & 6) + 7);
-    pfVar6[1] = fVar4;
-    pfVar6[2] = 1.4013e-45;
-    fVar4 = (float)((int)fVar4 + 0x5dc);
-    bVar3 = bVar3 ^ 1;
-    pfVar6 = pfVar6 + 6;
-  } while (iVar5 < 0x1860);
-  iVar5 = 0;
-  pfVar6 = entries + (uVar7 + 0xb) * 6;
-  bVar3 = 0;
-  *pfVar6 = 512.0;
-  pfVar6[1] = 512.0;
-  pfVar6[4] = fVar4;
-  pfVar6[3] = 9.80909e-45;
-  pfVar6[5] = 1.4013e-45;
-  pfVar6 = entries + (uVar7 + 0xc) * 6 + 3;
+    ((quest_spawn_entry_t *)(piVar7 + -3))->pos_x = (float)(0x338 - iVar6 / 10);
+    piVar7[-2] = 0x444e0000;
+    iVar6 = iVar6 + 0x270;
+    *piVar7 = (-(uint)bVar4 & 6) + 7;
+    piVar7[1] = iVar5;
+    piVar7[2] = 1;
+    iVar5 = iVar5 + 0x5dc;
+    bVar4 = bVar4 ^ 1;
+    piVar7 = piVar7 + 6;
+  } while (iVar6 < 0x1860);
+  iVar6 = 0;
+  pqVar1 = entries + uVar8 + 0xb;
+  bVar4 = 0;
+  pqVar1->pos_x = 512.0;
+  pqVar1->pos_y = 512.0;
+  pqVar1->trigger_time_ms = iVar5;
+  pqVar1->template_id = 7;
+  pqVar1->count = 1;
+  piVar7 = &entries[uVar8 + 0xc].template_id;
   do {
-    pfVar6[-3] = 200.0;
-    pfVar6[-2] = (float)(0x338 - iVar5 / 10);
-    iVar5 = iVar5 + 0x270;
-    *pfVar6 = (float)((-(uint)bVar3 & 6) + 7);
-    pfVar6[1] = fVar4;
-    pfVar6[2] = 1.4013e-45;
-    fVar4 = (float)((int)fVar4 + 0x4b0);
-    bVar3 = bVar3 ^ 1;
-    pfVar6 = pfVar6 + 6;
-  } while (iVar5 < 0x1860);
-  iVar5 = 0;
-  bVar3 = 0;
-  pfVar6 = entries + (uVar7 + 0x16) * 6 + 3;
+    ((quest_spawn_entry_t *)(piVar7 + -3))->pos_x = 200.0;
+    piVar7[-2] = (int)(float)(0x338 - iVar6 / 10);
+    iVar6 = iVar6 + 0x270;
+    *piVar7 = (-(uint)bVar4 & 6) + 7;
+    piVar7[1] = iVar5;
+    piVar7[2] = 1;
+    iVar5 = iVar5 + 0x4b0;
+    bVar4 = bVar4 ^ 1;
+    piVar7 = piVar7 + 6;
+  } while (iVar6 < 0x1860);
+  iVar6 = 0;
+  bVar4 = 0;
+  piVar7 = &entries[uVar8 + 0x16].template_id;
   do {
-    pfVar6[-3] = (float)(iVar5 / 10 + 200);
-    pfVar6[-2] = 200.0;
-    iVar5 = iVar5 + 0x270;
-    *pfVar6 = (float)((-(uint)bVar3 & 6) + 7);
-    pfVar6[1] = fVar4;
-    pfVar6[2] = 1.4013e-45;
-    fVar4 = (float)((int)fVar4 + 800);
-    bVar3 = bVar3 ^ 1;
-    pfVar6 = pfVar6 + 6;
-  } while (iVar5 < 0x1860);
-  iVar5 = 0;
-  bVar3 = 0;
-  pfVar6 = entries + (uVar7 + 0x20) * 6 + 3;
+    ((quest_spawn_entry_t *)(piVar7 + -3))->pos_x = (float)(iVar6 / 10 + 200);
+    piVar7[-2] = 0x43480000;
+    iVar6 = iVar6 + 0x270;
+    *piVar7 = (-(uint)bVar4 & 6) + 7;
+    piVar7[1] = iVar5;
+    piVar7[2] = 1;
+    iVar5 = iVar5 + 800;
+    bVar4 = bVar4 ^ 1;
+    piVar7 = piVar7 + 6;
+  } while (iVar6 < 0x1860);
+  iVar6 = 0;
+  bVar4 = 0;
+  piVar7 = &entries[uVar8 + 0x20].template_id;
   do {
-    pfVar6[-3] = 824.0;
-    pfVar6[-2] = (float)(iVar5 / 10 + 200);
-    iVar5 = iVar5 + 0x270;
-    *pfVar6 = (float)((-(uint)bVar3 & 6) + 7);
-    pfVar6[1] = fVar4;
-    pfVar6[2] = 1.4013e-45;
-    fVar4 = (float)((int)fVar4 + 800);
-    bVar3 = bVar3 ^ 1;
-    pfVar6 = pfVar6 + 6;
-  } while (iVar5 < 0x1860);
-  iVar5 = 0;
-  bVar3 = 0;
-  pfVar6 = entries + (uVar7 + 0x2a) * 6 + 3;
+    ((quest_spawn_entry_t *)(piVar7 + -3))->pos_x = 824.0;
+    piVar7[-2] = (int)(float)(iVar6 / 10 + 200);
+    iVar6 = iVar6 + 0x270;
+    *piVar7 = (-(uint)bVar4 & 6) + 7;
+    piVar7[1] = iVar5;
+    piVar7[2] = 1;
+    iVar5 = iVar5 + 800;
+    bVar4 = bVar4 ^ 1;
+    piVar7 = piVar7 + 6;
+  } while (iVar6 < 0x1860);
+  iVar6 = 0;
+  bVar4 = 0;
+  piVar7 = &entries[uVar8 + 0x2a].template_id;
   do {
-    pfVar6[-3] = (float)(0x338 - iVar5 / 10);
-    pfVar6[-2] = 824.0;
-    iVar5 = iVar5 + 0x270;
-    *pfVar6 = (float)((-(uint)bVar3 & 6) + 7);
-    pfVar6[1] = fVar4;
-    pfVar6[2] = 1.4013e-45;
-    fVar4 = (float)((int)fVar4 + 700);
-    bVar3 = bVar3 ^ 1;
-    pfVar6 = pfVar6 + 6;
-  } while (iVar5 < 0x1860);
-  iVar5 = 0;
-  bVar3 = 0;
-  pfVar6 = entries + (uVar7 + 0x34) * 6 + 3;
+    ((quest_spawn_entry_t *)(piVar7 + -3))->pos_x = (float)(0x338 - iVar6 / 10);
+    piVar7[-2] = 0x444e0000;
+    iVar6 = iVar6 + 0x270;
+    *piVar7 = (-(uint)bVar4 & 6) + 7;
+    piVar7[1] = iVar5;
+    piVar7[2] = 1;
+    iVar5 = iVar5 + 700;
+    bVar4 = bVar4 ^ 1;
+    piVar7 = piVar7 + 6;
+  } while (iVar6 < 0x1860);
+  iVar6 = 0;
+  bVar4 = 0;
+  piVar7 = &entries[uVar8 + 0x34].template_id;
   do {
-    pfVar6[-3] = 200.0;
-    pfVar6[-2] = (float)(0x338 - iVar5 / 10);
-    iVar5 = iVar5 + 0x270;
-    *pfVar6 = (float)((-(uint)bVar3 & 6) + 7);
-    pfVar6[1] = fVar4;
-    pfVar6[2] = 1.4013e-45;
-    fVar4 = (float)((int)fVar4 + 700);
-    bVar3 = bVar3 ^ 1;
-    pfVar6 = pfVar6 + 6;
-  } while (iVar5 < 0x1860);
-  iVar5 = 0;
-  bVar3 = 0;
-  pfVar6 = entries + (uVar7 + 0x3e) * 6 + 3;
+    ((quest_spawn_entry_t *)(piVar7 + -3))->pos_x = 200.0;
+    piVar7[-2] = (int)(float)(0x338 - iVar6 / 10);
+    iVar6 = iVar6 + 0x270;
+    *piVar7 = (-(uint)bVar4 & 6) + 7;
+    piVar7[1] = iVar5;
+    piVar7[2] = 1;
+    iVar5 = iVar5 + 700;
+    bVar4 = bVar4 ^ 1;
+    piVar7 = piVar7 + 6;
+  } while (iVar6 < 0x1860);
+  iVar6 = 0;
+  bVar4 = 0;
+  piVar7 = &entries[uVar8 + 0x3e].template_id;
   do {
-    pfVar6[-3] = (float)(iVar5 / 10 + 200);
-    pfVar6[-2] = 200.0;
-    iVar5 = iVar5 + 0x270;
-    *pfVar6 = (float)((-(uint)bVar3 & 6) + 7);
-    pfVar6[1] = fVar4;
-    pfVar6[2] = 1.4013e-45;
-    fVar4 = (float)((int)fVar4 + 800);
-    bVar3 = bVar3 ^ 1;
-    pfVar6 = pfVar6 + 6;
-  } while (iVar5 < 0x1860);
-  *count = uVar7 + 0x48;
+    ((quest_spawn_entry_t *)(piVar7 + -3))->pos_x = (float)(iVar6 / 10 + 200);
+    piVar7[-2] = 0x43480000;
+    iVar6 = iVar6 + 0x270;
+    *piVar7 = (-(uint)bVar4 & 6) + 7;
+    piVar7[1] = iVar5;
+    piVar7[2] = 1;
+    iVar5 = iVar5 + 800;
+    bVar4 = bVar4 ^ 1;
+    piVar7 = piVar7 + 6;
+  } while (iVar6 < 0x1860);
+  *count = uVar8 + 0x48;
   return;
 }
 
@@ -33619,140 +33632,141 @@ void quest_build_the_unblitzkrieg(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 4 Quest 10 (The End of All) */
 
-void quest_build_the_end_of_all(float *entries,int *count)
+void quest_build_the_end_of_all(quest_spawn_entry_t *entries,int *count)
 
 {
   float fVar1;
   bool bVar2;
-  float *pfVar3;
-  float *pfVar4;
-  float fVar5;
-  float *pfVar6;
+  quest_spawn_entry_t *pqVar3;
+  int *piVar4;
+  int iVar5;
+  quest_spawn_entry_t *pqVar6;
   int iVar7;
   float10 fVar8;
   float10 fVar9;
   
-  pfVar3 = entries;
-  *entries = 128.0;
-  entries[1] = 128.0;
-  entries[3] = 8.40779e-44;
-  entries[4] = 4.2039e-42;
-  entries[5] = 1.4013e-45;
-  entries[6] = 896.0;
-  entries[7] = 128.0;
-  entries[9] = 8.40779e-44;
-  entries[10] = 8.40779e-42;
-  entries[0xb] = 1.4013e-45;
-  entries[0xc] = 128.0;
-  entries[0xd] = 896.0;
-  entries[0xf] = 8.40779e-44;
-  entries[0x10] = 1.26117e-41;
-  entries[0x11] = 1.4013e-45;
-  entries[0x12] = 896.0;
-  entries[0x13] = 896.0;
-  entries[0x15] = 8.40779e-44;
-  entries[0x16] = 1.68156e-41;
-  entries[0x17] = 1.4013e-45;
-  entries = (float *)0x0;
-  fVar5 = 1.82169e-41;
-  pfVar4 = pfVar3 + 0x1b;
+  pqVar3 = entries;
+  entries->pos_x = 128.0;
+  entries->pos_y = 128.0;
+  entries->template_id = 0x3c;
+  entries->trigger_time_ms = 3000;
+  entries->count = 1;
+  entries[1].pos_x = 896.0;
+  entries[1].pos_y = 128.0;
+  entries[1].template_id = 0x3c;
+  entries[1].trigger_time_ms = 6000;
+  entries[1].count = 1;
+  entries[2].pos_x = 128.0;
+  entries[2].pos_y = 896.0;
+  entries[2].template_id = 0x3c;
+  entries[2].trigger_time_ms = 9000;
+  entries[2].count = 1;
+  entries[3].pos_x = 896.0;
+  entries[3].pos_y = 896.0;
+  entries[3].template_id = 0x3c;
+  entries[3].trigger_time_ms = 12000;
+  entries[3].count = 1;
+  entries = (quest_spawn_entry_t *)0x0;
+  iVar5 = 13000;
+  piVar4 = &pqVar3[4].template_id;
   do {
-    pfVar6 = (float *)((int)entries + 1);
+    pqVar6 = (quest_spawn_entry_t *)((int)&entries->pos_x + 1);
     fVar8 = (float10)fcos((float10)(int)entries * (float10)1.0471976);
-    pfVar4[-3] = (float)(fVar8 * (float10)80.0 + (float10)512.0);
+    ((quest_spawn_entry_t *)(piVar4 + -3))->pos_x = (float)(fVar8 * (float10)80.0 + (float10)512.0);
     fVar8 = (float10)fsin((float10)(int)entries * (float10)1.0471976);
-    pfVar4[-2] = (float)(fVar8 * (float10)80.0 + (float10)512.0);
-    *pfVar4 = 9.80909e-45;
-    pfVar4[1] = fVar5;
-    pfVar4[2] = 1.4013e-45;
-    fVar5 = (float)((int)fVar5 + 300);
-    pfVar4 = pfVar4 + 6;
-    entries = pfVar6;
-  } while ((int)fVar5 < 0x39d0);
-  fVar5 = 2.52234e-41;
-  pfVar3[0x3c] = 512.0;
-  pfVar3[0x3d] = 512.0;
-  pfVar3[0x3f] = 1.54143e-44;
-  entries = (float *)0x100;
-  pfVar3[0x40] = (float)((int)pfVar6 * 300 + 13000);
-  pfVar3[0x41] = 1.4013e-45;
+    piVar4[-2] = (int)(float)(fVar8 * (float10)80.0 + (float10)512.0);
+    *piVar4 = 7;
+    piVar4[1] = iVar5;
+    piVar4[2] = 1;
+    iVar5 = iVar5 + 300;
+    piVar4 = piVar4 + 6;
+    entries = pqVar6;
+  } while (iVar5 < 0x39d0);
+  iVar5 = 18000;
+  pqVar3[10].pos_x = 512.0;
+  pqVar3[10].pos_y = 512.0;
+  pqVar3[10].template_id = 0xb;
+  entries = (quest_spawn_entry_t *)0x100;
+  pqVar3[10].trigger_time_ms = (int)pqVar6 * 300 + 13000;
+  pqVar3[10].count = 1;
   bVar2 = false;
-  pfVar4 = pfVar3 + 0x45;
+  piVar4 = &pqVar3[0xb].template_id;
   do {
     if (bVar2) {
-      pfVar4[-3] = 1152.0;
+      ((quest_spawn_entry_t *)(piVar4 + -3))->pos_x = 1152.0;
     }
     else {
-      pfVar4[-3] = -128.0;
+      ((quest_spawn_entry_t *)(piVar4 + -3))->pos_x = -128.0;
     }
     fVar1 = (float)(int)entries;
-    entries = entries + 0x20;
+    entries = (quest_spawn_entry_t *)&entries[5].heading;
     bVar2 = (bool)(bVar2 ^ 1);
-    pfVar4[-2] = fVar1;
-    *pfVar4 = 8.40779e-44;
-    pfVar4[1] = fVar5;
-    pfVar4[2] = 2.8026e-45;
-    fVar5 = (float)((int)fVar5 + 1000);
-    pfVar4 = pfVar4 + 6;
+    piVar4[-2] = (int)fVar1;
+    *piVar4 = 0x3c;
+    piVar4[1] = iVar5;
+    piVar4[2] = 2;
+    iVar5 = iVar5 + 1000;
+    piVar4 = piVar4 + 6;
   } while ((int)entries < 0x300);
-  fVar5 = 6.02558e-41;
-  entries = (float *)0x0;
+  iVar5 = 43000;
+  entries = (quest_spawn_entry_t *)0x0;
   iVar7 = 0x15;
-  pfVar4 = pfVar3 + 0x5d;
+  piVar4 = &pqVar3[0xf].template_id;
   do {
     fVar8 = (float10)(int)entries;
-    entries = (float *)((int)entries + 1);
+    entries = (quest_spawn_entry_t *)((int)&entries->pos_x + 1);
     fVar8 = fVar8 * (float10)1.0471976 + (float10)0.5235988;
     fVar9 = (float10)fcos(fVar8);
-    pfVar4[-3] = (float)(fVar9 * (float10)80.0 + (float10)512.0);
+    ((quest_spawn_entry_t *)(piVar4 + -3))->pos_x = (float)(fVar9 * (float10)80.0 + (float10)512.0);
     fVar8 = (float10)fsin(fVar8);
-    pfVar4[-2] = (float)(fVar8 * (float10)80.0 + (float10)512.0);
-    *pfVar4 = 9.80909e-45;
-    pfVar4[1] = fVar5;
-    pfVar4[2] = 1.4013e-45;
-    fVar5 = (float)((int)fVar5 + 300);
-    pfVar4 = pfVar4 + 6;
-  } while ((int)fVar5 < 0xaf00);
+    piVar4[-2] = (int)(float)(fVar8 * (float10)80.0 + (float10)512.0);
+    *piVar4 = 7;
+    piVar4[1] = iVar5;
+    piVar4[2] = 1;
+    iVar5 = iVar5 + 300;
+    piVar4 = piVar4 + 6;
+  } while (iVar5 < 0xaf00);
   if (config_blob.hardcore != '\0') {
-    entries = (float *)0x0;
-    fVar5 = 8.80015e-41;
+    entries = (quest_spawn_entry_t *)0x0;
+    iVar5 = 0xf550;
     iVar7 = 0x21;
-    pfVar4 = pfVar3 + 0x81;
+    piVar4 = &pqVar3[0x15].template_id;
     do {
       fVar8 = (float10)(int)entries;
-      entries = (float *)((int)entries + 1);
+      entries = (quest_spawn_entry_t *)((int)&entries->pos_x + 1);
       fVar8 = (fVar8 + (float10)1.0) * (float10)0.5235988;
       fVar9 = (float10)fcos(fVar8);
-      pfVar4[-3] = (float)(fVar9 * (float10)180.0 + (float10)512.0);
+      ((quest_spawn_entry_t *)(piVar4 + -3))->pos_x =
+           (float)(fVar9 * (float10)180.0 + (float10)512.0);
       fVar8 = (float10)fsin(fVar8);
-      pfVar4[-2] = (float)(fVar8 * (float10)180.0 + (float10)512.0);
-      *pfVar4 = 9.80909e-45;
-      pfVar4[1] = fVar5;
-      pfVar4[2] = 1.4013e-45;
-      fVar5 = (float)((int)fVar5 + 500);
-      pfVar4 = pfVar4 + 6;
-    } while ((int)fVar5 < 0x10cc0);
+      piVar4[-2] = (int)(float)(fVar8 * (float10)180.0 + (float10)512.0);
+      *piVar4 = 7;
+      piVar4[1] = iVar5;
+      piVar4[2] = 1;
+      iVar5 = iVar5 + 500;
+      piVar4 = piVar4 + 6;
+    } while (iVar5 < 0x10cc0);
   }
   bVar2 = false;
-  fVar5 = 6.72623e-41;
-  entries = (float *)0x100;
-  pfVar3 = pfVar3 + iVar7 * 6 + 3;
+  iVar5 = 48000;
+  entries = (quest_spawn_entry_t *)0x100;
+  piVar4 = &pqVar3[iVar7].template_id;
   do {
     if (bVar2) {
-      pfVar3[-3] = 1152.0;
+      ((quest_spawn_entry_t *)(piVar4 + -3))->pos_x = 1152.0;
     }
     else {
-      pfVar3[-3] = -128.0;
+      ((quest_spawn_entry_t *)(piVar4 + -3))->pos_x = -128.0;
     }
     fVar1 = (float)(int)entries;
-    entries = entries + 0x20;
+    entries = (quest_spawn_entry_t *)&entries[5].heading;
     bVar2 = (bool)(bVar2 ^ 1);
-    pfVar3[-2] = fVar1;
-    *pfVar3 = 8.40779e-44;
-    pfVar3[1] = fVar5;
-    pfVar3[2] = 2.8026e-45;
-    fVar5 = (float)((int)fVar5 + 1000);
-    pfVar3 = pfVar3 + 6;
+    piVar4[-2] = (int)fVar1;
+    *piVar4 = 0x3c;
+    piVar4[1] = iVar5;
+    piVar4[2] = 2;
+    iVar5 = iVar5 + 1000;
+    piVar4 = piVar4 + 6;
   } while ((int)entries < 0x300);
   *count = iVar7 + 4;
   return;
@@ -33765,52 +33779,52 @@ void quest_build_the_end_of_all(float *entries,int *count)
 /* WARNING: Unknown calling convention -- yet parameter storage is locked */
 /* quest builder for Tier 3 Quest 7 (Spiders Inc.) */
 
-void quest_build_spiders_inc(float *entries,int *count)
+void quest_build_spiders_inc(quest_spawn_entry_t *entries,int *count)
 
 {
-  float fVar1;
-  float *pfVar2;
-  float *pfVar3;
-  float fVar4;
+  int iVar1;
+  quest_spawn_entry_t *pqVar2;
+  quest_spawn_entry_t *pqVar3;
+  int iVar4;
   int iVar5;
   
-  pfVar3 = entries;
-  entries[1] = (float)(terrain_texture_width + 0x40);
-  *entries = (float)(terrain_texture_width / 2);
-  entries[3] = 7.84727e-44;
-  entries[4] = 7.00649e-43;
-  entries[5] = 1.4013e-45;
-  entries[7] = (float)(terrain_texture_width + 0x40);
-  entries[6] = (float)(terrain_texture_width / 2 + 0x40);
-  entries[9] = 7.84727e-44;
-  entries[10] = 7.00649e-43;
-  entries[0xb] = 1.4013e-45;
-  entries[0xd] = -64.0;
-  fVar4 = 2.38221e-41;
-  entries = (float *)0x0;
-  pfVar3[0xc] = (float)(terrain_texture_width / 2);
-  pfVar3[0xf] = 8.96831e-44;
-  pfVar3[0x10] = 7.00649e-43;
-  pfVar3[0x11] = 5.60519e-45;
+  pqVar3 = entries;
+  entries->pos_y = (float)(terrain_texture_width + 0x40);
+  entries->pos_x = (float)(terrain_texture_width / 2);
+  entries->template_id = 0x38;
+  entries->trigger_time_ms = 500;
+  entries->count = 1;
+  entries[1].pos_y = (float)(terrain_texture_width + 0x40);
+  entries[1].pos_x = (float)(terrain_texture_width / 2 + 0x40);
+  entries[1].template_id = 0x38;
+  entries[1].trigger_time_ms = 500;
+  entries[1].count = 1;
+  entries[2].pos_y = -64.0;
+  iVar4 = 17000;
+  entries = (quest_spawn_entry_t *)0x0;
+  pqVar3[2].pos_x = (float)(terrain_texture_width / 2);
+  pqVar3[2].template_id = 0x40;
+  pqVar3[2].trigger_time_ms = 500;
+  pqVar3[2].count = 4;
   iVar5 = 3;
   do {
-    fVar1 = (float)((int)entries / 2 + 3);
-    pfVar2 = pfVar3 + iVar5 * 6;
-    pfVar2[1] = (float)(terrain_texture_width + 0x40);
-    *pfVar2 = (float)(terrain_texture_width / 2);
-    pfVar2[3] = 7.84727e-44;
-    pfVar2[4] = fVar4;
-    pfVar2[5] = fVar1;
-    pfVar2 = pfVar3 + (iVar5 + 1) * 6;
-    pfVar2[1] = -64.0;
+    iVar1 = (int)entries / 2 + 3;
+    pqVar2 = pqVar3 + iVar5;
+    pqVar2->pos_y = (float)(terrain_texture_width + 0x40);
+    pqVar2->pos_x = (float)(terrain_texture_width / 2);
+    pqVar2->template_id = 0x38;
+    pqVar2->trigger_time_ms = iVar4;
+    pqVar2->count = iVar1;
+    pqVar2 = pqVar3 + iVar5 + 1;
+    pqVar2->pos_y = -64.0;
     iVar5 = iVar5 + 2;
-    *pfVar2 = (float)(terrain_texture_width / 2);
-    pfVar2[3] = 7.84727e-44;
-    pfVar2[4] = fVar4;
-    pfVar2[5] = fVar1;
-    fVar4 = (float)((int)fVar4 + 6000);
-    entries = (float *)((int)entries + 1);
-  } while ((int)fVar4 < 0x1a1f8);
+    pqVar2->pos_x = (float)(terrain_texture_width / 2);
+    pqVar2->template_id = 0x38;
+    pqVar2->trigger_time_ms = iVar4;
+    pqVar2->count = iVar1;
+    iVar4 = iVar4 + 6000;
+    entries = (quest_spawn_entry_t *)((int)&entries->pos_x + 1);
+  } while (iVar4 < 0x1a1f8);
   *count = iVar5;
   return;
 }
@@ -34282,7 +34296,7 @@ void __cdecl quest_start_selected(int tier,int index)
   weapon_assign_player(1,*(int *)(&quest_start_weapon_id + iVar4));
   console_printf(&console_log_queue,s_Setup_tier__d_quest__d__00477aec,tier,index);
   if (*(code **)(&quest_selected_builder + iVar4) == (code *)0x0) {
-    quest_build_fallback((float *)&quest_spawn_table,&quest_spawn_count);
+    quest_build_fallback(&quest_spawn_table,&quest_spawn_count);
   }
   else {
     (**(code **)(&quest_selected_builder + iVar4))();
@@ -34292,7 +34306,7 @@ void __cdecl quest_start_selected(int tier,int index)
   _DAT_00486fd4 = 0;
   _DAT_00487030 = 0;
   if (0 < quest_spawn_count) {
-    piVar2 = &DAT_004857bc;
+    piVar2 = &quest_spawn_table.count;
     iVar3 = quest_spawn_count;
     do {
       if (((config_blob.hardcore != '\0') && (iVar5 = *piVar2, 1 < iVar5)) && (piVar2[-2] != 0x3c))
