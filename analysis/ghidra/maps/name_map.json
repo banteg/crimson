@@ -1852,6 +1852,13 @@
   },
   {
     "program": "crimsonland.exe",
+    "address": "0x0042fd00",
+    "name": "wrap_text_to_width_alloc",
+    "signature": "char * wrap_text_to_width_alloc(uint3 unused, char *text, int max_width_px)",
+    "comment": "allocates a wrapped copy of text to fit max_width_px (replaces spaces with '\\n' using grim_measure_text_width per char)"
+  },
+  {
+    "program": "crimsonland.exe",
     "address": "0x0042fd90",
     "name": "perks_init_database",
     "signature": "void perks_init_database(void)",
