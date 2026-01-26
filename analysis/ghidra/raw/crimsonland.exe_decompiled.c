@@ -3650,8 +3650,8 @@ void perks_generate_choices(void)
     puVar6 = puVar6 + 1;
   }
 LAB_004045be:
-  if ((((iVar5 == 0) && (_quest_stage_major == *quest_monster_vision_meta)) &&
-      (_quest_stage_minor == quest_monster_vision_meta[1])) &&
+  if ((((iVar5 == 0) && (_quest_stage_major == quest_monster_vision_meta->tier)) &&
+      (_quest_stage_minor == quest_monster_vision_meta->index)) &&
      (iVar3 = perk_count_get(perk_id_monster_vision), iVar3 == 0)) {
     iVar5 = 1;
     perk_choice_ids = perk_id_monster_vision;
@@ -7838,7 +7838,7 @@ void console_hotkey_update(void)
   FILE *fp;
   float *pfVar4;
   float fVar5;
-  undefined *unaff_EBX;
+  quest_meta_t *unaff_EBX;
   IGrim2D *unaff_ESI;
   uint uVar6;
   float10 extraout_ST0;
@@ -7914,7 +7914,7 @@ void console_hotkey_update(void)
                                (pIVar10,(uint *)0x57,(int)unaff_EBX);
     if (*pcVar3 != '\0') {
       if ((render_pass_mode == '\0') || (config_blob.reserved0._24_4_ != 3)) {
-        unaff_EBX = (undefined *)0x40c31b;
+        unaff_EBX = (quest_meta_t *)0x40c31b;
         terrain_generate_random();
       }
       else {
@@ -7926,7 +7926,7 @@ void console_hotkey_update(void)
         if (3 < (int)uVar6) {
           uVar6 = uVar6 + (uVar6 >> 2) * -4;
         }
-        unaff_EBX = &quest_selected_meta + (uVar6 + uVar9 * 10) * 0x2c;
+        unaff_EBX = &quest_selected_meta + uVar6 + uVar9 * 10;
         uVar9 = 0x40c311;
         terrain_generate(unaff_EBX);
       }
@@ -10667,8 +10667,8 @@ void quest_results_screen_update(void)
   else {
     if (DAT_00487234 == -2) {
       iVar4 = _quest_stage_minor + -0xb + _quest_stage_major * 10;
-      DAT_00482700 = (&quest_unlock_weapon_id)[iVar4 * 0xb];
-      DAT_00482704 = (&quest_unlock_perk_id)[iVar4 * 0xb];
+      DAT_00482700 = (&quest_selected_meta)[iVar4].unlock_weapon_id;
+      DAT_00482704 = (&quest_selected_meta)[iVar4].unlock_perk_id;
       lVar15 = __ftol();
       fVar5 = (float)lVar15;
       player_health._pad0._0_4_ = (BADTYPE)(int)fVar5;
@@ -11022,8 +11022,9 @@ LAB_00411906:
               (grim_interface_ptr,local_4,fVar3 + 1.0,s_Weapon_unlocked__00473294);
     (*grim_interface_ptr->vtable->grim_set_color)((IGrim2D *)0x3f800000,1.0,1.0,0.9,unaff_EBX);
     pIVar2 = grim_interface_ptr->vtable;
-    pcVar6 = weapon_table_entry((&quest_unlock_weapon_id)
-                                [(_quest_stage_minor + -0xb + _quest_stage_major * 10) * 0xb]);
+    pcVar6 = weapon_table_entry((&quest_selected_meta)
+                                [_quest_stage_minor + -0xb + _quest_stage_major * 10].
+                                unlock_weapon_id);
     (*pIVar2->grim_draw_text_small_fmt)
               (grim_interface_ptr,fVar3 + 14.0,in_stack_00000004,&DAT_00471fc4,pcVar6);
     in_stack_00000004 = in_stack_00000004 + 16.0;
@@ -16702,8 +16703,7 @@ LAB_0041bdf8:
     if (0.0 <= (float)in_stack_00000060) {
       in_stack_00000064 = (IGrim2D *)0x3f4ccccd;
       uVar15 = 0xffffffff;
-      pcVar10 = *(char **)(&quest_meta_name +
-                          (_quest_stage_minor + -0xb + _quest_stage_major * 10) * 0x2c);
+      pcVar10 = (&quest_selected_meta)[_quest_stage_minor + -0xb + _quest_stage_major * 10].name;
       do {
         if (uVar15 == 0) break;
         uVar15 = uVar15 - 1;
@@ -16716,21 +16716,20 @@ LAB_0041bdf8:
       }
       (*grim_interface_ptr->vtable->grim_set_config_var)
                 ((IGrim2D *)0x18,(uint)in_stack_00000064,0x3f800000);
-      fVar16 = *(float *)(&quest_meta_name +
-                         (_quest_stage_minor + -0xb + _quest_stage_major * 10) * 0x2c);
+      pcVar10 = (&quest_selected_meta)[_quest_stage_minor + -0xb + _quest_stage_major * 10].name;
       in_stack_00000078 =
            (IGrim2D *)
            ((float)(config_blob.screen_width / 2) -
            (float)(int)in_stack_00000084 * (float)in_stack_0000005c * 8.0);
       in_stack_00000084 = (float)(config_blob.screen_height / 2 + -0x20);
-      fVar2 = (float)(int)in_stack_00000084;
+      fVar16 = (float)(int)in_stack_00000084;
       (*grim_interface_ptr->vtable->grim_draw_text_mono)
-                (in_stack_00000078,fVar2,fVar16,in_stack_00000048);
+                (in_stack_00000078,fVar16,(float)pcVar10,in_stack_00000048);
       in_stack_00000060 = (char *)((float)in_stack_00000060 - 0.2);
       (*grim_interface_ptr->vtable->grim_set_config_var)
-                ((IGrim2D *)0x18,(uint)in_stack_00000060,(uint)fVar2);
+                ((IGrim2D *)0x18,(uint)in_stack_00000060,(uint)fVar16);
       (*grim_interface_ptr->vtable->grim_set_color)
-                ((IGrim2D *)0x3f800000,1.0,1.0,(float)in_stack_00000064 * 0.5,fVar16);
+                ((IGrim2D *)0x3f800000,1.0,1.0,(float)in_stack_00000064 * 0.5,(float)pcVar10);
       if (10 < _quest_stage_minor) {
         _quest_stage_major = _quest_stage_major + 1;
         _quest_stage_minor = _quest_stage_minor + -10;
@@ -27868,7 +27867,7 @@ void perks_rebuild_available(void)
   (&perk_available_table)[perk_id_tough_reloader * 0x14] = 1;
   iVar5 = 0;
   if (0 < iVar2) {
-    piVar6 = &quest_unlock_perk_id;
+    piVar6 = &quest_selected_meta.unlock_perk_id;
     do {
       if (0x484fe7 < (int)piVar6) break;
       iVar1 = *piVar6;
@@ -28365,49 +28364,50 @@ void __fastcall perks_init_database(void)
 
 
 
-/* FUN_00430a20 @ 00430a20 */
+/* quest_meta_init_entry @ 00430a20 */
 
-/* [binja] int32_t sub_430a20(int32_t* arg1, int32_t arg2, int32_t arg3, char* arg4) */
+/* initializes a quest metadata entry (name copy, terrain ids, defaults) and updates
+   quest_meta_cursor */
 
-int __cdecl FUN_00430a20(int *arg1,int arg2,int arg3,char *arg4)
+int __cdecl quest_meta_init_entry(quest_meta_t *meta,int tier,int index,char *name)
 
 {
   int iVar1;
   char *pcVar2;
   uint uVar3;
   
-  if ((void *)arg1[3] != (void *)0x0) {
-    crt_free((void *)arg1[3]);
+  if (meta->name != (char *)0x0) {
+    crt_free(meta->name);
     console_printf(&console_log_queue,s___Quest_overwritten__00477742 + 2);
   }
-  pcVar2 = strdup_malloc(arg4);
-  arg1[3] = (int)pcVar2;
-  arg1[8] = perk_id_antiperk;
-  iVar1 = arg2 * 2 + -2;
-  arg1[9] = 0;
-  *arg1 = arg2;
-  arg1[1] = arg3;
-  arg1[4] = iVar1;
-  if (arg3 < 6) {
-    arg1[5] = arg2 * 2 + -1;
-    arg1[6] = iVar1;
+  pcVar2 = strdup_malloc(name);
+  meta->name = pcVar2;
+  meta->unlock_perk_id = perk_id_antiperk;
+  iVar1 = tier * 2 + -2;
+  meta->unlock_weapon_id = 0;
+  meta->tier = tier;
+  meta->index = index;
+  meta->terrain_id = iVar1;
+  if (index < 6) {
+    meta->terrain_id_b = tier * 2 + -1;
+    meta->terrain_id_c = iVar1;
   }
   else {
-    arg1[5] = iVar1;
-    arg1[6] = arg2 * 2 + -1;
+    meta->terrain_id_b = iVar1;
+    meta->terrain_id_c = tier * 2 + -1;
   }
-  if (4 < arg2) {
-    uVar3 = arg3 & 0x80000003;
+  if (4 < tier) {
+    uVar3 = index & 0x80000003;
     if ((int)uVar3 < 0) {
       uVar3 = (uVar3 - 1 | 0xfffffffc) + 1;
     }
-    arg1[4] = uVar3;
-    arg1[5] = 1;
-    arg1[6] = 3;
-    arg1[7] = 5;
+    meta->terrain_id = uVar3;
+    meta->terrain_id_b = 1;
+    meta->terrain_id_c = 3;
+    meta->builder = (quest_builder_fn_t)0x5;
   }
-  quest_meta_cursor = arg1;
-  return arg2;
+  quest_meta_cursor = meta;
+  return tier;
 }
 
 
@@ -33845,307 +33845,356 @@ void quest_database_init(void)
   
   local_8 = 0;
   local_4 = 0;
-  FUN_00430a20((int *)&quest_selected_meta,1,1,s_Land_Hostile_00477adc);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 120000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_land_hostile;
+  quest_meta_init_entry(&quest_selected_meta,1,1,s_Land_Hostile_00477adc);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 120000;
+  quest_meta_cursor->builder = quest_build_land_hostile;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Minor_Alien_Breach_00477ac8);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 120000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_minor_alien_breach;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Minor_Alien_Breach_00477ac8);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 120000;
+  quest_meta_cursor->builder = quest_build_minor_alien_breach;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Target_Practice_00477ab8);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 65000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_target_practice;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Target_Practice_00477ab8);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 65000;
+  quest_meta_cursor->builder = quest_build_target_practice;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Frontline_Assault_00477aa4);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_frontline_assault;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Frontline_Assault_00477aa4);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 300000;
+  quest_meta_cursor->builder = quest_build_frontline_assault;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Alien_Dens_00477a98);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 180000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_alien_dens;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Alien_Dens_00477a98);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 180000;
+  quest_meta_cursor->builder = quest_build_alien_dens;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_The_Random_Factor_00477a84);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_the_random_factor;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_The_Random_Factor_00477a84);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 300000;
+  quest_meta_cursor->builder = quest_build_the_random_factor;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Spider_Wave_Syndrome_00477a6c);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 240000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_spider_wave_syndrome;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Spider_Wave_Syndrome_00477a6c);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 240000;
+  quest_meta_cursor->builder = quest_build_spider_wave_syndrome;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Alien_Squads_00477a5c);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 180000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_alien_squads;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Alien_Squads_00477a5c);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 180000;
+  quest_meta_cursor->builder = quest_build_alien_squads;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Nesting_Grounds_00477a4c);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 240000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_nesting_grounds;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Nesting_Grounds_00477a4c);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 240000;
+  quest_meta_cursor->builder = quest_build_nesting_grounds;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_8_legged_Terror_00477a3c);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 240000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_8_legged_terror;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_8_legged_Terror_00477a3c);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 240000;
+  quest_meta_cursor->builder = quest_build_8_legged_terror;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Everred_Pastures_00477a28);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_everred_pastures;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Everred_Pastures_00477a28);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 300000;
+  quest_meta_cursor->builder = quest_build_everred_pastures;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Spider_Spawns_00477a18);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_spider_spawns;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Spider_Spawns_00477a18);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 300000;
+  quest_meta_cursor->builder = quest_build_spider_spawns;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Arachnoid_Farm_00477a08);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 240000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_arachnoid_farm;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Arachnoid_Farm_00477a08);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 240000;
+  quest_meta_cursor->builder = quest_build_arachnoid_farm;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Two_Fronts_004779fc);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 240000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_two_fronts;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Two_Fronts_004779fc);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 240000;
+  quest_meta_cursor->builder = quest_build_two_fronts;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Sweep_Stakes_004779ec);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 6;
-  *(undefined4 *)(quest_meta_cursor + 8) = 35000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_sweep_stakes;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Sweep_Stakes_004779ec);
+  quest_meta_cursor->start_weapon_id = 6;
+  quest_meta_cursor->time_limit_ms = 35000;
+  quest_meta_cursor->builder = quest_build_sweep_stakes;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Evil_Zombies_At_Large_004779d4);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 180000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_evil_zombies_at_large;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Evil_Zombies_At_Large_004779d4);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 180000;
+  quest_meta_cursor->builder = quest_build_evil_zombies_at_large;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Survival_Of_The_Fastest_004779bc);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 5;
-  *(undefined4 *)(quest_meta_cursor + 8) = 120000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_survival_of_the_fastest;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Survival_Of_The_Fastest_004779bc);
+  quest_meta_cursor->start_weapon_id = 5;
+  quest_meta_cursor->time_limit_ms = 120000;
+  quest_meta_cursor->builder = quest_build_survival_of_the_fastest;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Land_Of_Lizards_004779ac);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 180000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_land_of_lizards;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Land_Of_Lizards_004779ac);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 180000;
+  quest_meta_cursor->builder = quest_build_land_of_lizards;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Ghost_Patrols_0047799c);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 180000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_ghost_patrols;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Ghost_Patrols_0047799c);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 180000;
+  quest_meta_cursor->builder = quest_build_ghost_patrols;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Spideroids_00477990);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 360000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_spideroids;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Spideroids_00477990);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 360000;
+  quest_meta_cursor->builder = quest_build_spideroids;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_The_Blighting_00477980);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_the_blighting;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_The_Blighting_00477980);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 300000;
+  quest_meta_cursor->builder = quest_build_the_blighting;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Lizard_Kings_00477970);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 180000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_lizard_kings;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Lizard_Kings_00477970);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 180000;
+  quest_meta_cursor->builder = quest_build_lizard_kings;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_The_Killing_00477964);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_the_killing;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_The_Killing_00477964);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 300000;
+  quest_meta_cursor->builder = quest_build_the_killing;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Hidden_Evil_00477958);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_hidden_evil;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Hidden_Evil_00477958);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 300000;
+  quest_meta_cursor->builder = quest_build_hidden_evil;
   quest_monster_vision_meta = quest_meta_cursor;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Surrounded_By_Reptiles_00477940);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_surrounded_by_reptiles;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Surrounded_By_Reptiles_00477940);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 300000;
+  quest_meta_cursor->builder = quest_build_surrounded_by_reptiles;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_The_Lizquidation_0047792c);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_the_lizquidation;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_The_Lizquidation_0047792c);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 300000;
+  quest_meta_cursor->builder = quest_build_the_lizquidation;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Spiders_Inc__0047791c);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 0xb;
-  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_spiders_inc;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Spiders_Inc__0047791c);
+  quest_meta_cursor->start_weapon_id = 0xb;
+  quest_meta_cursor->time_limit_ms = 300000;
+  quest_meta_cursor->builder = quest_build_spiders_inc;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Lizard_Raze_00477910);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_lizard_raze;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Lizard_Raze_00477910);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 300000;
+  quest_meta_cursor->builder = quest_build_lizard_raze;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Deja_vu_00477908);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 6;
-  *(undefined4 *)(quest_meta_cursor + 8) = 120000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_deja_vu;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Deja_vu_00477908);
+  quest_meta_cursor->start_weapon_id = 6;
+  quest_meta_cursor->time_limit_ms = 120000;
+  quest_meta_cursor->builder = quest_build_deja_vu;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Zombie_Masters_004778f8);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_zombie_masters;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Zombie_Masters_004778f8);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 300000;
+  quest_meta_cursor->builder = quest_build_zombie_masters;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Major_Alien_Breach_004778e4);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 0x12;
-  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_major_alien_breach;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Major_Alien_Breach_004778e4);
+  quest_meta_cursor->start_weapon_id = 0x12;
+  quest_meta_cursor->time_limit_ms = 300000;
+  quest_meta_cursor->builder = quest_build_major_alien_breach;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Zombie_Time_004778d8);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_zombie_time;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Zombie_Time_004778d8);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 300000;
+  quest_meta_cursor->builder = quest_build_zombie_time;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Lizard_Zombie_Pact_004778c4);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_lizard_zombie_pact;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Lizard_Zombie_Pact_004778c4);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 300000;
+  quest_meta_cursor->builder = quest_build_lizard_zombie_pact;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_The_Collaboration_004778b0);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 360000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_the_collaboration;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_The_Collaboration_004778b0);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 360000;
+  quest_meta_cursor->builder = quest_build_the_collaboration;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_The_Massacre_004778a0);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_the_massacre;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_The_Massacre_004778a0);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 300000;
+  quest_meta_cursor->builder = quest_build_the_massacre;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_The_Unblitzkrieg_0047788c);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 600000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_the_unblitzkrieg;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_The_Unblitzkrieg_0047788c);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 600000;
+  quest_meta_cursor->builder = quest_build_the_unblitzkrieg;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Gauntlet_00477880);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_gauntlet;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Gauntlet_00477880);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 300000;
+  quest_meta_cursor->builder = quest_build_gauntlet;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Syntax_Terror_00477870);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_syntax_terror;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Syntax_Terror_00477870);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 300000;
+  quest_meta_cursor->builder = quest_build_syntax_terror;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_The_Annihilation_0047785c);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 300000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_the_annihilation;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_The_Annihilation_0047785c);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 300000;
+  quest_meta_cursor->builder = quest_build_the_annihilation;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_The_End_of_All_0047784c);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 480000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_the_end_of_all;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_The_End_of_All_0047784c);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 480000;
+  quest_meta_cursor->builder = quest_build_the_end_of_all;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_The_Beating_00477840);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 480000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_the_beating;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_The_Beating_00477840);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 480000;
+  quest_meta_cursor->builder = quest_build_the_beating;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_The_Spanking_Of_The_Dead_00477824);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 480000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_the_spanking_of_the_dead;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_The_Spanking_Of_The_Dead_00477824);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 480000;
+  quest_meta_cursor->builder = quest_build_the_spanking_of_the_dead;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_The_Fortress_00477814);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 480000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_the_fortress;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_The_Fortress_00477814);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 480000;
+  quest_meta_cursor->builder = quest_build_the_fortress;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_The_Gang_Wars_00477804);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 480000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_the_gang_wars;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_The_Gang_Wars_00477804);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 480000;
+  quest_meta_cursor->builder = quest_build_the_gang_wars;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Knee_deep_in_the_Dead_004777ec);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 480000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_knee_deep_in_the_dead;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Knee_deep_in_the_Dead_004777ec);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 480000;
+  quest_meta_cursor->builder = quest_build_knee_deep_in_the_dead;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Cross_Fire_004777e0);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 480000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_cross_fire;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Cross_Fire_004777e0);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 480000;
+  quest_meta_cursor->builder = quest_build_cross_fire;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Army_of_Three_004777d0);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 480000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_army_of_three;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Army_of_Three_004777d0);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 480000;
+  quest_meta_cursor->builder = quest_build_army_of_three;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Monster_Blues_004777c0);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 480000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_monster_blues;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Monster_Blues_004777c0);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 480000;
+  quest_meta_cursor->builder = quest_build_monster_blues;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_Nagolipoli_004777b4);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 480000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_nagolipoli;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_Nagolipoli_004777b4);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 480000;
+  quest_meta_cursor->builder = quest_build_nagolipoli;
   quest_database_advance_slot(&local_4,&local_8);
-  FUN_00430a20((int *)(&quest_selected_meta + (local_8 + local_4 * 10) * 0x2c),local_4 + 1,
-               local_8 + 1,s_The_Gathering_004777a4);
-  *(undefined4 *)(quest_meta_cursor + 0x28) = 1;
-  *(undefined4 *)(quest_meta_cursor + 8) = 480000;
-  *(code **)(quest_meta_cursor + 0x1c) = quest_build_the_gathering;
+  quest_meta_init_entry
+            (&quest_selected_meta + local_8 + local_4 * 10,local_4 + 1,local_8 + 1,
+             s_The_Gathering_004777a4);
+  quest_meta_cursor->start_weapon_id = 1;
+  quest_meta_cursor->time_limit_ms = 480000;
+  quest_meta_cursor->builder = quest_build_the_gathering;
   quest_database_advance_slot(&local_4,&local_8);
-  quest_unlock_weapon_id = 2;
+  quest_selected_meta.unlock_weapon_id = 2;
   DAT_00484780 = 3;
   _DAT_004847ac = 0;
   _DAT_004847d8 = 8;
@@ -34185,7 +34234,7 @@ void quest_database_init(void)
   _DAT_00484db0 = 0x16;
   _DAT_00484ddc = 0;
   _DAT_00484e08 = 0x17;
-  quest_unlock_perk_id = perk_id_antiperk;
+  quest_selected_meta.unlock_perk_id = perk_id_antiperk;
   DAT_0048477c = perk_id_antiperk;
   _DAT_004847a8 = 0x1c;
   _DAT_004847d4 = perk_id_antiperk;
@@ -34291,16 +34340,16 @@ void __cdecl quest_start_selected(int tier,int index)
   projectile_reset_pools();
   player_pos_x = (float)terrain_texture_width * 0.5;
   player_pos_y = (float)terrain_texture_height * 0.5;
-  iVar4 = (index + -0xb + tier * 10) * 0x2c;
+  iVar4 = index + -0xb + tier * 10;
   terrain_generate(&quest_selected_meta + iVar4);
-  weapon_assign_player(0,*(int *)(&quest_start_weapon_id + iVar4));
-  weapon_assign_player(1,*(int *)(&quest_start_weapon_id + iVar4));
+  weapon_assign_player(0,(&quest_selected_meta)[iVar4].start_weapon_id);
+  weapon_assign_player(1,(&quest_selected_meta)[iVar4].start_weapon_id);
   console_printf(&console_log_queue,s_Setup_tier__d_quest__d__00477aec,tier,index);
-  if (*(code **)(&quest_selected_builder + iVar4) == (code *)0x0) {
+  if ((&quest_selected_meta)[iVar4].builder == (quest_builder_fn_t)0x0) {
     quest_build_fallback(&quest_spawn_table,&quest_spawn_count);
   }
   else {
-    (**(code **)(&quest_selected_builder + iVar4))();
+    (*(&quest_selected_meta)[iVar4].builder)(&quest_spawn_table,&quest_spawn_count);
   }
   iVar6 = 0;
   iVar4 = 0;
@@ -43881,7 +43930,7 @@ void weapon_refresh_available(void)
   iVar5 = 0;
   DAT_004d7ae8 = 1;
   if (0 < quest_unlock_index) {
-    piVar4 = &quest_unlock_weapon_id;
+    piVar4 = &quest_selected_meta.unlock_weapon_id;
     do {
       if (0x484feb < (int)piVar4) break;
       iVar1 = *piVar4;

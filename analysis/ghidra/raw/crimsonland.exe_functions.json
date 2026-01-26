@@ -2176,9 +2176,9 @@
     "calls": ["FUN_0042fd00", "perks_rebuild_available"]
   },
   {
-    "name": "FUN_00430a20",
+    "name": "quest_meta_init_entry",
     "address": "00430a20",
-    "signature": "int FUN_00430a20(int * arg1, int arg2, int arg3, char * arg4)",
+    "signature": "int quest_meta_init_entry(quest_meta_t * meta, int tier, int index, char * name)",
     "external": false,
     "calls_total": 3,
     "calls": ["console_printf", "crt_free", "strdup_malloc"]
@@ -2637,7 +2637,7 @@
     "signature": "void quest_database_init(void)",
     "external": false,
     "calls_total": 2,
-    "calls": ["FUN_00430a20", "quest_database_advance_slot"]
+    "calls": ["quest_database_advance_slot", "quest_meta_init_entry"]
   },
   {
     "name": "quest_start_selected",

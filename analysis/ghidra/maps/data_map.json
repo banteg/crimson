@@ -1403,7 +1403,8 @@
       "address": "0x00484730",
       "comment": "Quest metadata table base (0x2c-byte entries, 0x32 total).",
       "name": "quest_selected_meta",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "quest_meta_t"
     },
     {
       "address": "0x00484734",
@@ -4044,15 +4045,17 @@
     },
     {
       "address": "0x004c3650",
-      "comment": "Pointer to the quest metadata entry last written by FUN_00430a20.",
+      "comment": "Pointer to the quest metadata entry last written by quest_meta_init_entry.",
       "name": "quest_meta_cursor",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "quest_meta_t *"
     },
     {
       "address": "0x004c3658",
       "comment": "Pointer to the quest metadata entry that unlocks Monster Vision (checked in perks_generate_choices).",
       "name": "quest_monster_vision_meta",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "quest_meta_t *"
     },
     {
       "address": "0x004c3c80",

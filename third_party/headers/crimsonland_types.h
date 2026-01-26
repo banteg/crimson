@@ -310,6 +310,22 @@ typedef struct quest_spawn_entry_t {
     int count;
 } quest_spawn_entry_t;
 
+typedef void (*quest_builder_fn_t)(quest_spawn_entry_t *entries, int *count);
+
+typedef struct quest_meta_t {
+    int tier;
+    int index;
+    int time_limit_ms;
+    char *name;
+    int terrain_id;
+    int terrain_id_b;
+    int terrain_id_c;
+    quest_builder_fn_t builder;
+    int unlock_perk_id;
+    int unlock_weapon_id;
+    int start_weapon_id;
+} quest_meta_t;
+
 typedef struct bonus_entry_t {
     int bonus_id;
     unsigned char state;
