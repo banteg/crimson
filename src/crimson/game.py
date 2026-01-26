@@ -2139,6 +2139,7 @@ class QuestsMenuView:
         self._state = state
         self._assets: MenuAssets | None = None
         self._ground: GroundRenderer | None = None
+        self._panel_tex: rl.Texture2D | None = None
 
         self._small_font: SmallFontData | None = None
         self._text_quest: rl.Texture2D | None = None
@@ -2163,7 +2164,8 @@ class QuestsMenuView:
 
         # Sign and ground match the main menu/panels.
         sign = cache.get_or_load("ui_signCrimson", "ui/ui_signCrimson.jaz").texture
-        self._assets = MenuAssets(sign=sign, item=None, panel=None, labels=None)
+        self._panel_tex = cache.get_or_load("ui_menuPanel", "ui/ui_menuPanel.jaz").texture
+        self._assets = MenuAssets(sign=sign, item=None, panel=self._panel_tex, labels=None)
         self._init_ground()
 
         self._text_quest = cache.get_or_load("ui_textQuest", "ui/ui_textQuest.jaz").texture
@@ -2259,6 +2261,7 @@ class QuestsMenuView:
         if self._ground is not None:
             self._ground.draw(0.0, 0.0)
 
+        self._draw_panel()
         self._draw_sign()
         self._draw_contents()
 
@@ -2632,6 +2635,37 @@ class QuestsMenuView:
             dst=rl.Rectangle(pos_x, pos_y, sign_w, sign_h),
             origin=rl.Vector2(-offset_x, -offset_y),
             rotation_deg=rotation_deg,
+            tint=rl.WHITE,
+        )
+
+    def _draw_panel(self) -> None:
+        panel = self._panel_tex
+        if panel is None:
+            return
+        panel_scale = 0.9 if self._menu_screen_width < 641 else 1.0
+        dst = rl.Rectangle(
+            QUEST_MENU_BASE_X,
+            QUEST_MENU_BASE_Y + self._widescreen_y_shift,
+            MENU_PANEL_WIDTH * panel_scale,
+            MENU_PANEL_HEIGHT * panel_scale,
+        )
+        origin = rl.Vector2(-(MENU_PANEL_OFFSET_X * panel_scale), -(MENU_PANEL_OFFSET_Y * panel_scale))
+        fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
+        if fx_detail:
+            MenuView._draw_ui_quad(
+                texture=panel,
+                src=rl.Rectangle(0.0, 0.0, float(panel.width), float(panel.height)),
+                dst=rl.Rectangle(dst.x + 7.0, dst.y + 7.0, dst.width, dst.height),
+                origin=origin,
+                rotation_deg=0.0,
+                tint=rl.Color(0x44, 0x44, 0x44, 0x44),
+            )
+        MenuView._draw_ui_quad(
+            texture=panel,
+            src=rl.Rectangle(0.0, 0.0, float(panel.width), float(panel.height)),
+            dst=dst,
+            origin=origin,
+            rotation_deg=0.0,
             tint=rl.WHITE,
         )
 
