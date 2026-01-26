@@ -22223,7 +22223,12 @@ int __cdecl creature_spawn(float *pos,float *tint_rgba,int type_id)
 /* player_render_overlays @ 00428390 */
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* renders per-player overlays/indicators using DAT_004908** tables */
+/* Renders per-player overlays/indicators using player_state_table + effect_uv8. Runtime
+   (analysis/frida/player_sprite_trace_summary.json): when alive (health>0) draws 2 sprite layers
+   per call from effect_uv8[frame] (0–14) and effect_uv8[frame+0x10] (16–30) using heading vs
+   aim_heading rotations, with a shadow/outline pass (scale ~1.02/1.03 and offset +3,+3 / +1,+1)
+   before the main pass. When dead, draws a single layer from effect_uv8[ftol(death_timer)]
+   (32–51) with 0x34 fallback, also with shadow+main passes. */
 
 void player_render_overlays(void)
 
