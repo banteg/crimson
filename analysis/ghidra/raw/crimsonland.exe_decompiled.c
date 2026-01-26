@@ -4545,8 +4545,8 @@ int FUN_00406350(void)
   (*pIVar1->grim_draw_text_small_fmt)(grim_interface_ptr,y,fVar3,pcVar2);
   (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
             (grim_interface_ptr,y,fVar3 + 14.0 + 8.0,s_Good_luck_with_your_battles__tro_004720b8);
-  if ((DAT_00480321 & 1) == 0) {
-    DAT_00480321 = DAT_00480321 | 1;
+  if ((game_completed_screen_flags & 1) == 0) {
+    game_completed_screen_flags = game_completed_screen_flags | 1;
     DAT_0047f5e6 = 1;
     DAT_0047f5f5 = 0;
     DAT_0047f5f4 = 0;
@@ -4559,8 +4559,8 @@ int FUN_00406350(void)
     crt_atexit(&DAT_00406ae0);
   }
   _DAT_0047f5e0 = s_Survival_004720ac;
-  if ((DAT_00480321 & 2) == 0) {
-    DAT_00480321 = DAT_00480321 | 2;
+  if ((game_completed_screen_flags & 2) == 0) {
+    game_completed_screen_flags = game_completed_screen_flags | 2;
     DAT_00480286 = 1;
     DAT_00480295 = 0;
     DAT_00480294 = 0;
@@ -4573,8 +4573,8 @@ int FUN_00406350(void)
     crt_atexit(&DAT_00406ad0);
   }
   _DAT_00480280 = s_Rush_004720a0;
-  if ((DAT_00480321 & 4) == 0) {
-    DAT_00480321 = DAT_00480321 | 4;
+  if ((game_completed_screen_flags & 4) == 0) {
+    game_completed_screen_flags = game_completed_screen_flags | 4;
     DAT_0048032e = 1;
     DAT_0048033d = 0;
     DAT_0048033c = 0;
@@ -4587,8 +4587,8 @@ int FUN_00406350(void)
     crt_atexit(&DAT_00406ac0);
   }
   _DAT_00480328 = s_Typ_o_Shooter_00472090;
-  if ((DAT_00480321 & 8) == 0) {
-    DAT_00480321 = DAT_00480321 | 8;
+  if ((game_completed_screen_flags & 8) == 0) {
+    game_completed_screen_flags = game_completed_screen_flags | 8;
     DAT_0048026e = 1;
     DAT_0048027d = 0;
     DAT_0048027c = 0;
@@ -7170,8 +7170,8 @@ void FUN_0040b630(void)
       (*plugin_interface_ptr->vtable->Shutdown)(unaff_retaddr);
       sfx_mute_all(music_track_extra_0);
       plugin_interface_ptr = (mod_interface_t *)0x0;
-      FreeLibrary(DAT_004824d8);
-      DAT_004824d8 = (HMODULE)0x0;
+      FreeLibrary((HMODULE)plugin_module_handle);
+      plugin_module_handle = (HMODULE)0x0;
       DAT_00471304 = '\x01';
       game_state_pending = 0x14;
       ui_transition_direction = '\0';
@@ -7555,7 +7555,7 @@ void console_hotkey_update(void)
     audio_resume_all();
     return;
   }
-  DAT_00480848 = DAT_00480848 + frame_dt_ms;
+  game_time_ms = game_time_ms + frame_dt_ms;
   iVar2 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0x29);
   if ((char)iVar2 != '\0') {
     console_set_open(&console_log_queue,console_open_flag == '\0');
@@ -9046,12 +9046,12 @@ void * mod_load_info(void)
   
   crt_sprintf(local_200,s_mods__s_00472f58);
   console_printf(&console_log_queue,s_CMOD____s__00472fec,local_200);
-  DAT_004824d8 = LoadLibraryA(local_200);
-  if (DAT_004824d8 == (HMODULE)0x0) {
+  plugin_module_handle = (HMODULE)LoadLibraryA(local_200);
+  if (plugin_module_handle == (HMODULE)0x0) {
     console_printf(&console_log_queue,s_CMOD__Load_library_failed__00472fd0);
     return (void *)0x0;
   }
-  pFVar1 = GetProcAddress(DAT_004824d8,s_CMOD_GetInfo_00472fc0);
+  pFVar1 = GetProcAddress((HMODULE)plugin_module_handle,s_CMOD_GetInfo_00472fc0);
   if (pFVar1 != (FARPROC)0x0) {
     if ((DAT_004819c8 & 1) == 0) {
       DAT_004819c8 = DAT_004819c8 | 1;
@@ -9087,12 +9087,12 @@ void * mod_load_info(void)
         pmVar5 = (mod_info_t *)(pmVar5->name + 4);
       }
     }
-    FreeLibrary(DAT_004824d8);
+    FreeLibrary((HMODULE)plugin_module_handle);
     console_printf(&console_log_queue,s_CMOD__mod_enum___s__00472f6c,&mod_info_block);
     return &mod_info_block;
   }
   console_printf(&console_log_queue,s_CMOD_GetInfo_failed__00472fa8);
-  FreeLibrary(DAT_004824d8);
+  FreeLibrary((HMODULE)plugin_module_handle);
   return (void *)0x0;
 }
 
@@ -9112,15 +9112,15 @@ void * mod_load_mod(void)
   
   crt_sprintf(local_200,s_mods__s_00472f58);
   console_printf(&console_log_queue,s_CMOD____s__00472fec,local_200);
-  DAT_004824d8 = LoadLibraryA(local_200);
-  if (DAT_004824d8 == (HMODULE)0x0) {
+  plugin_module_handle = (HMODULE)LoadLibraryA(local_200);
+  if (plugin_module_handle == (HMODULE)0x0) {
     console_printf(&console_log_queue,s_CMOD__Load_library_failed__00472fd0);
     return (void *)0x0;
   }
-  pFVar1 = GetProcAddress(DAT_004824d8,s_CMOD_GetMod_00473044);
+  pFVar1 = GetProcAddress((HMODULE)plugin_module_handle,s_CMOD_GetMod_00473044);
   if (pFVar1 == (FARPROC)0x0) {
     console_printf(&console_log_queue,s_CMOD__CMOD_GetMod_failed__00473028);
-    FreeLibrary(DAT_004824d8);
+    FreeLibrary((HMODULE)plugin_module_handle);
     return (void *)0x0;
   }
   pvVar2 = (void *)(*pFVar1)();
@@ -9616,8 +9616,8 @@ void game_over_screen_update(void)
     crt_atexit(&DAT_004107c0);
   }
   _bonus_reflex_boost_timer = 0;
-  if ((ui_transition_direction != '\0') && (DAT_0048724d != '\0')) {
-    DAT_0048724d = '\0';
+  if ((ui_transition_direction != '\0') && (highscore_return_latch != '\0')) {
+    highscore_return_latch = '\0';
     ui_screen_phase = 1;
   }
   if ((((game_state_id == 7) && (game_state_pending == 0x19)) && (ui_transition_direction != '\0'))
@@ -9859,7 +9859,7 @@ LAB_004103c2:
     DAT_00487258._1_1_ = config_blob.reserved0[0x19];
     DAT_00487258._2_1_ = config_blob.reserved0[0x1a];
     DAT_00487258._3_1_ = config_blob.reserved0[0x1b];
-    DAT_0048724d = '\x01';
+    highscore_return_latch = '\x01';
     DAT_00487250 = _quest_stage_major;
     DAT_00487254 = _quest_stage_minor;
     DAT_0048725c = config_blob.hardcore;
@@ -9939,7 +9939,7 @@ void quest_failed_screen_update(void)
   else if (ui_screen_phase != 0) goto LAB_00410cc1;
   local_18 = local_8 + 30.0;
   local_14 = fVar1 + 70.0 + 16.0;
-  switch(DAT_00487194) {
+  switch(quest_fail_retry_count) {
   default:
     text = s_Quest_failed__try_again__004731bc;
     pIVar3 = grim_interface_ptr->vtable;
@@ -10021,7 +10021,7 @@ void quest_failed_screen_update(void)
   ui_button_update(&local_18,(ui_button_t *)&DAT_004824f0);
   local_14 = local_14 + 32.0;
   if (DAT_00482685 != '\0') {
-    DAT_00487194 = DAT_00487194 + 1;
+    quest_fail_retry_count = quest_fail_retry_count + 1;
     ui_transition_direction = '\0';
     game_state_pending = 9;
     sfx_mute_all(music_track_crimson_theme_id);
@@ -10030,7 +10030,7 @@ void quest_failed_screen_update(void)
     render_pass_mode = 0;
   }
   if (DAT_0048269d != '\0') {
-    DAT_00487194 = 0;
+    quest_fail_retry_count = 0;
     ui_transition_direction = '\0';
     game_state_pending = 0xb;
     ui_sign_crimson_update_disabled = 0;
@@ -10040,7 +10040,7 @@ void quest_failed_screen_update(void)
     sfx_play_exclusive(music_track_crimson_theme_id);
   }
   if (DAT_004824f5 != '\0') {
-    DAT_00487194 = 0;
+    quest_fail_retry_count = 0;
     sfx_mute_all(music_track_extra_0);
     sfx_mute_all(music_track_crimson_theme_id);
     sfx_mute_all(music_track_shortie_monk_id);
@@ -10089,7 +10089,7 @@ void quest_results_screen_update(void)
   float local_4;
   
   _bonus_reflex_boost_timer = 0;
-  DAT_00487194 = 0;
+  quest_fail_retry_count = 0;
   if ((((game_state_id == 8) && (game_state_pending == 0x19)) && (ui_transition_direction != '\0'))
      && (iVar4 = sfx_is_unmuted(music_track_shortie_monk_id), (char)iVar4 == '\0')) {
     sfx_play_exclusive(music_track_crimsonquest_id);
@@ -10134,8 +10134,9 @@ void quest_results_screen_update(void)
   local_8 = local_10;
   local_c = fVar3;
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,1.0);
-  if (((game_state_prev == 0xe) && (ui_transition_direction != '\0')) && (DAT_0048724d != '\0')) {
-    DAT_0048724d = '\0';
+  if (((game_state_prev == 0xe) && (ui_transition_direction != '\0')) &&
+     (highscore_return_latch != '\0')) {
+    highscore_return_latch = '\0';
     ui_screen_phase = 2;
   }
   else {
@@ -10599,7 +10600,7 @@ LAB_00411906:
     DAT_00487258._1_1_ = config_blob.reserved0[0x19];
     DAT_00487258._2_1_ = config_blob.reserved0[0x1a];
     DAT_00487258._3_1_ = config_blob.reserved0[0x1b];
-    DAT_0048724d = '\x01';
+    highscore_return_latch = '\x01';
     DAT_00487250 = _quest_stage_major;
     DAT_00487254 = _quest_stage_minor;
     DAT_0048725c = config_blob.hardcore;
@@ -10682,7 +10683,7 @@ int FUN_004120b0(void)
   _bonus_energizer_timer = 0;
   survival_spawn_stage = 0;
   _DAT_00487028 = 0;
-  DAT_00487194 = 0;
+  quest_fail_retry_count = 0;
   demo_mode_active = 0;
   DAT_00486faa = 0;
   quest_unlock_index = 0;
@@ -13541,58 +13542,69 @@ int FUN_00417690(void)
 {
   undefined *puVar1;
   undefined4 *puVar2;
-  int iVar3;
+  ui_element_t *puVar3;
+  int iVar4;
+  int iVar5;
   
   puVar1 = &DAT_0048f808;
-  iVar3 = 8;
+  iVar4 = 8;
   do {
     FUN_00417a90(puVar1);
     puVar1 = puVar1 + 0x1c;
-    iVar3 = iVar3 + -1;
-  } while (iVar3 != 0);
+    iVar4 = iVar4 + -1;
+  } while (iVar4 != 0);
   puVar1 = &DAT_0048f8f0;
   _DAT_0048f8ec = 4;
-  iVar3 = 8;
+  iVar4 = 8;
   do {
     FUN_00417a90(puVar1);
     puVar1 = puVar1 + 0x1c;
-    iVar3 = iVar3 + -1;
-  } while (iVar3 != 0);
+    iVar4 = iVar4 + -1;
+  } while (iVar4 != 0);
   _DAT_0048f9d4 = 4;
   puVar1 = &DAT_0048f9d8;
-  iVar3 = 8;
+  iVar4 = 8;
   do {
     FUN_00417a90(puVar1);
     puVar1 = puVar1 + 0x1c;
-    iVar3 = iVar3 + -1;
-  } while (iVar3 != 0);
+    iVar4 = iVar4 + -1;
+  } while (iVar4 != 0);
   _DAT_0048fabc = 4;
   puVar2 = &DAT_0048fac0;
-  iVar3 = 8;
+  iVar4 = 8;
   do {
     FUN_00417a90(puVar2);
     puVar2 = puVar2 + 7;
-    iVar3 = iVar3 + -1;
-  } while (iVar3 != 0);
+    iVar4 = iVar4 + -1;
+  } while (iVar4 != 0);
   _DAT_0048fba4 = 4;
-  puVar2 = &DAT_0048fba8;
-  iVar3 = 8;
+  puVar3 = &ui_menu_item_element;
+  iVar4 = 8;
   do {
-    FUN_00417a90(puVar2);
-    puVar2 = puVar2 + 7;
-    iVar3 = iVar3 + -1;
-  } while (iVar3 != 0);
-  _DAT_0048fc8c = 4;
-  puVar2 = &DAT_0048fc90;
-  iVar3 = 8;
+    FUN_00417a90(puVar3);
+    puVar3 = (ui_element_t *)&puVar3->pos_y;
+    iVar4 = iVar4 + -1;
+  } while (iVar4 != 0);
+  ui_menu_item_element._pad3[0] = '\x04';
+  ui_menu_item_element._pad3[1] = '\0';
+  ui_menu_item_element._pad3[2] = '\0';
+  ui_menu_item_element._pad3[3] = '\0';
+  iVar4 = 0x48fc90;
+  iVar5 = 8;
   do {
-    FUN_00417a90(puVar2);
-    puVar2 = puVar2 + 7;
-    iVar3 = iVar3 + -1;
-  } while (iVar3 != 0);
-  _DAT_0048fd74 = 4;
+    FUN_00417a90(iVar4);
+    iVar4 = iVar4 + 0x1c;
+    iVar5 = iVar5 + -1;
+  } while (iVar5 != 0);
+  ui_menu_item_element._pad4[0xa8] = '\x04';
+  ui_menu_item_element._pad4[0xa9] = '\0';
+  ui_menu_item_element._pad4[0xaa] = '\0';
+  ui_menu_item_element._pad4[0xab] = '\0';
   FUN_004010f0(0x48fd78,0x1c,8,0x417a90);
-  _DAT_0048fe5c = 4;
+  ui_menu_item_element._pad5[0xac] = '\x04';
+  ui_menu_item_element._pad5[0xad] = '\0';
+  ui_menu_item_element._pad5[0xae] = '\0';
+  ui_menu_item_element._pad5[0xaf] = '\0';
   FUN_004010f0(0x48fe60,0x1c,8,0x417a90);
   _DAT_0048ff44 = 4;
   FUN_004010f0(0x48ff48,0x1c,8,0x417a90);
@@ -13601,9 +13613,9 @@ int FUN_00417690(void)
   _DAT_00490114 = 4;
   FUN_004010f0(0x490118,0x1c,8,0x417a90);
   _DAT_004901fc = 4;
-  iVar3 = FUN_004010f0(0x490200,0x1c,8,0x417a90);
+  iVar4 = FUN_004010f0(0x490200,0x1c,8,0x417a90);
   _DAT_004902e4 = 4;
-  return iVar3;
+  return iVar4;
 }
 
 
@@ -14559,86 +14571,98 @@ void __cdecl ui_element_load(ui_element_t *element,char *jaz_path)
 void ui_menu_assets_init(void)
 
 {
-  float *pfVar1;
-  float *pfVar2;
-  int iVar3;
-  undefined4 *puVar4;
-  undefined4 *puVar5;
+  uchar *puVar1;
+  int iVar2;
+  uchar *puVar3;
   float local_8 [2];
   
   ui_element_load((ui_element_t *)&DAT_0048fac0,s_ui_ui_signCrimson_jaz_004737f4);
   local_8[0] = -577.44;
   local_8[1] = -62.0;
   ui_element_set_rect((ui_element_t *)&DAT_0048fac0,573.44,143.36,local_8);
-  ui_element_load((ui_element_t *)&DAT_0048fba8,s_ui_ui_menuItem_jaz_004737e0);
+  ui_element_load(&ui_menu_item_element,s_ui_ui_menuItem_jaz_004737e0);
   local_8[0] = -72.0;
   local_8[1] = -60.0;
-  ui_element_set_rect((ui_element_t *)&DAT_0048fba8,512.0,64.0,local_8);
-  ui_element_load((ui_element_t *)&DAT_0048fc90,s_ui_ui_menuPanel_jaz_004737cc);
+  ui_element_set_rect(&ui_menu_item_element,512.0,64.0,local_8);
+  ui_element_load((ui_element_t *)(ui_menu_item_element._pad3 + 4),s_ui_ui_menuPanel_jaz_004737cc);
   local_8[0] = 20.0;
   local_8[1] = -82.0;
-  ui_element_set_rect((ui_element_t *)&DAT_0048fc90,512.0,256.0,local_8);
-  puVar4 = &DAT_0048fc90;
-  puVar5 = &DAT_0048fd78;
-  for (iVar3 = 0x3a; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *puVar5 = *puVar4;
-    puVar4 = puVar4 + 1;
-    puVar5 = puVar5 + 1;
+  ui_element_set_rect((ui_element_t *)(ui_menu_item_element._pad3 + 4),512.0,256.0,local_8);
+  puVar1 = ui_menu_item_element._pad3;
+  puVar3 = ui_menu_item_element._pad4 + 0xac;
+  for (iVar2 = 0x3a; puVar1 = puVar1 + 4, iVar2 != 0; iVar2 = iVar2 + -1) {
+    *(undefined4 *)puVar3 = *(undefined4 *)puVar1;
+    puVar3 = puVar3 + 4;
   }
-  _DAT_0048fe5c = 8;
-  puVar4 = &DAT_0048fdcc;
-  puVar5 = &DAT_0048fe3c;
-  for (iVar3 = 7; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *puVar5 = *puVar4;
-    puVar4 = puVar4 + 1;
-    puVar5 = puVar5 + 1;
+  ui_menu_item_element._pad5[0xac] = '\b';
+  ui_menu_item_element._pad5[0xad] = '\0';
+  ui_menu_item_element._pad5[0xae] = '\0';
+  ui_menu_item_element._pad5[0xaf] = '\0';
+  puVar1 = ui_menu_item_element._pad5 + 0x1c;
+  puVar3 = ui_menu_item_element._pad5 + 0x8c;
+  for (iVar2 = 7; iVar2 != 0; iVar2 = iVar2 + -1) {
+    *(undefined4 *)puVar3 = *(undefined4 *)puVar1;
+    puVar1 = puVar1 + 4;
+    puVar3 = puVar3 + 4;
   }
-  puVar4 = &DAT_0048fdb0;
-  puVar5 = &DAT_0048fe20;
-  for (iVar3 = 7; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *puVar5 = *puVar4;
-    puVar4 = puVar4 + 1;
-    puVar5 = puVar5 + 1;
+  puVar1 = ui_menu_item_element._pad5;
+  puVar3 = ui_menu_item_element._pad5 + 0x70;
+  for (iVar2 = 7; iVar2 != 0; iVar2 = iVar2 + -1) {
+    *(undefined4 *)puVar3 = *(undefined4 *)puVar1;
+    puVar1 = puVar1 + 4;
+    puVar3 = puVar3 + 4;
   }
-  DAT_0048fdb4 = DAT_0048fdb4 - 116.0;
-  DAT_0048fdd0 = DAT_0048fdd0 - 116.0;
-  _DAT_0048fdc8 = 0x3f020000;
-  _DAT_0048fde4 = 0x3f020000;
-  puVar4 = &DAT_0048fdcc;
-  puVar5 = &DAT_0048fde8;
-  for (iVar3 = 7; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *puVar5 = *puVar4;
-    puVar4 = puVar4 + 1;
-    puVar5 = puVar5 + 1;
+  ui_menu_item_element._pad5._4_4_ = (float)ui_menu_item_element._pad5._4_4_ - 116.0;
+  ui_menu_item_element._pad5._32_4_ = (float)ui_menu_item_element._pad5._32_4_ - 116.0;
+  ui_menu_item_element._pad5[0x18] = '\0';
+  ui_menu_item_element._pad5[0x19] = '\0';
+  ui_menu_item_element._pad5[0x1a] = '\x02';
+  ui_menu_item_element._pad5[0x1b] = '?';
+  ui_menu_item_element._pad5[0x34] = '\0';
+  ui_menu_item_element._pad5[0x35] = '\0';
+  ui_menu_item_element._pad5[0x36] = '\x02';
+  ui_menu_item_element._pad5[0x37] = '?';
+  puVar1 = ui_menu_item_element._pad5 + 0x1c;
+  puVar3 = ui_menu_item_element._pad5 + 0x38;
+  for (iVar2 = 7; iVar2 != 0; iVar2 = iVar2 + -1) {
+    *(undefined4 *)puVar3 = *(undefined4 *)puVar1;
+    puVar1 = puVar1 + 4;
+    puVar3 = puVar3 + 4;
   }
-  puVar4 = &DAT_0048fdb0;
-  puVar5 = &DAT_0048fe04;
-  for (iVar3 = 7; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *puVar5 = *puVar4;
-    puVar4 = puVar4 + 1;
-    puVar5 = puVar5 + 1;
+  puVar1 = ui_menu_item_element._pad5;
+  puVar3 = ui_menu_item_element._pad5 + 0x54;
+  for (iVar2 = 7; iVar2 != 0; iVar2 = iVar2 + -1) {
+    *(undefined4 *)puVar3 = *(undefined4 *)puVar1;
+    puVar1 = puVar1 + 4;
+    puVar3 = puVar3 + 4;
   }
-  DAT_0048fdec = DAT_0048fdec + 124.0;
-  DAT_0048fe08 = DAT_0048fe08 + 124.0;
-  DAT_0048fe24 = DAT_0048fe24 + 124.0;
-  _DAT_0048fe00 = 0x3f160000;
-  _DAT_0048fe1c = 0x3f160000;
-  DAT_0048fe40 = DAT_0048fe40 + 124.0;
-  pfVar1 = (float *)&DAT_0048fd78;
+  ui_menu_item_element._pad5._60_4_ = (float)ui_menu_item_element._pad5._60_4_ + 124.0;
+  ui_menu_item_element._pad5._88_4_ = (float)ui_menu_item_element._pad5._88_4_ + 124.0;
+  ui_menu_item_element._pad5._116_4_ = (float)ui_menu_item_element._pad5._116_4_ + 124.0;
+  ui_menu_item_element._pad5[0x50] = '\0';
+  ui_menu_item_element._pad5[0x51] = '\0';
+  ui_menu_item_element._pad5[0x52] = '\x16';
+  ui_menu_item_element._pad5[0x53] = '?';
+  ui_menu_item_element._pad5[0x6c] = '\0';
+  ui_menu_item_element._pad5[0x6d] = '\0';
+  ui_menu_item_element._pad5[0x6e] = '\x16';
+  ui_menu_item_element._pad5[0x6f] = '?';
+  ui_menu_item_element._pad5._144_4_ = (float)ui_menu_item_element._pad5._144_4_ + 124.0;
+  puVar1 = ui_menu_item_element._pad4 + 0xac;
   do {
-    pfVar1[1] = pfVar1[1];
-    pfVar2 = pfVar1 + 7;
-    *pfVar1 = *pfVar1 - 84.0;
-    pfVar1 = pfVar2;
-  } while ((int)pfVar2 < 0x48fe58);
-  puVar4 = &DAT_0048fd78;
-  puVar5 = &DAT_0048fe60;
-  for (iVar3 = 0x3a; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *puVar5 = *puVar4;
-    puVar4 = puVar4 + 1;
-    puVar5 = puVar5 + 1;
+    *(float *)(puVar1 + 4) = *(float *)(puVar1 + 4);
+    puVar3 = puVar1 + 0x1c;
+    *(float *)puVar1 = *(float *)puVar1 - 84.0;
+    puVar1 = puVar3;
+  } while ((int)puVar3 < 0x48fe58);
+  puVar1 = ui_menu_item_element._pad4 + 0xac;
+  puVar3 = ui_menu_item_element._pad5 + 0xb0;
+  for (iVar2 = 0x3a; iVar2 != 0; iVar2 = iVar2 + -1) {
+    *(undefined4 *)puVar3 = *(undefined4 *)puVar1;
+    puVar1 = puVar1 + 4;
+    puVar3 = puVar3 + 4;
   }
-  _DAT_0048fed4 = DAT_0048fdec - 100.0;
+  _DAT_0048fed4 = (float)ui_menu_item_element._pad5._60_4_ - 100.0;
   _DAT_0048fef0 = _DAT_0048fef0 - 100.0;
   _DAT_0048ff0c = _DAT_0048ff0c - 100.0;
   _DAT_0048ff28 = _DAT_0048ff28 - 100.0;
@@ -27688,8 +27712,8 @@ LAB_004310b8:
       ((&creature_spawn_slot_table)[pcVar10->link_index].interval_s =
             (&creature_spawn_slot_table)[pcVar10->link_index].interval_s + 0.2,
       config_blob.hardcore == '\0')))) {
-    if (0 < DAT_00487194) {
-      switch(DAT_00487194) {
+    if (0 < quest_fail_retry_count) {
+      switch(quest_fail_retry_count) {
       case 1:
         pcVar10->reward_value = pcVar10->reward_value * 0.9;
         pcVar10->move_speed = pcVar10->move_speed * 0.95;
@@ -27722,7 +27746,7 @@ LAB_004310b8:
       }
       pcVar10->health = fVar4;
       if ((pcVar10->flags & 4) != 0) {
-        fVar4 = (float)DAT_00487194 * 0.35;
+        fVar4 = (float)quest_fail_retry_count * 0.35;
         if (3.0 < fVar4) {
           fVar4 = 3.0;
         }
@@ -27732,7 +27756,7 @@ LAB_004310b8:
     }
   }
   else {
-    DAT_00487194 = 0;
+    quest_fail_retry_count = 0;
     pcVar10->move_speed = pcVar10->move_speed * 1.05;
     pcVar10->contact_damage = pcVar10->contact_damage * 1.4;
     pcVar10->health = pcVar10->health * 1.2;
@@ -32996,9 +33020,9 @@ void * __fastcall FUN_0043b810(void *arg1)
 void __cdecl buffer_reader_init(void *data,int size)
 
 {
-  DAT_004c3c70 = data;
-  DAT_004c3c74 = size;
-  DAT_004c3c78 = 0;
+  buffer_reader_data = data;
+  buffer_reader_size = size;
+  buffer_reader_offset = 0;
   return;
 }
 
@@ -33011,7 +33035,7 @@ void __cdecl buffer_reader_init(void *data,int size)
 void __cdecl buffer_reader_seek(int offset)
 
 {
-  DAT_004c3c78 = offset;
+  buffer_reader_offset = offset;
   return;
 }
 
@@ -33026,9 +33050,9 @@ int buffer_reader_read_u16(void)
 {
   undefined2 *puVar1;
   
-  puVar1 = (undefined2 *)(DAT_004c3c78 + DAT_004c3c70);
-  DAT_004c3c78 = DAT_004c3c78 + 2;
-  return CONCAT22((short)((uint)DAT_004c3c70 >> 0x10),*puVar1);
+  puVar1 = (undefined2 *)(buffer_reader_offset + (int)buffer_reader_data);
+  buffer_reader_offset = buffer_reader_offset + 2;
+  return CONCAT22((short)((uint)buffer_reader_data >> 0x10),*puVar1);
 }
 
 
@@ -33042,8 +33066,8 @@ uint buffer_reader_read_u32(void)
 {
   uint *puVar1;
   
-  puVar1 = (uint *)(DAT_004c3c78 + DAT_004c3c70);
-  DAT_004c3c78 = DAT_004c3c78 + 4;
+  puVar1 = (uint *)(buffer_reader_offset + (int)buffer_reader_data);
+  buffer_reader_offset = buffer_reader_offset + 4;
   return *puVar1;
 }
 
@@ -33056,7 +33080,7 @@ uint buffer_reader_read_u32(void)
 void __cdecl buffer_reader_skip(int count)
 
 {
-  DAT_004c3c78 = DAT_004c3c78 + count;
+  buffer_reader_offset = buffer_reader_offset + count;
   return;
 }
 
@@ -33073,23 +33097,23 @@ int __cdecl buffer_reader_find_tag(char *tag,int tag_len)
   int iVar2;
   
   iVar2 = 0;
-  if (0 < (int)DAT_004c3c74) {
+  if (0 < buffer_reader_size) {
     do {
       iVar1 = 0;
       if (0 < tag_len) {
         do {
-          if (*(char *)(DAT_004c3c70 + iVar2 + iVar1) != tag[iVar1]) break;
+          if (*(char *)((int)buffer_reader_data + iVar1 + iVar2) != tag[iVar1]) break;
           iVar1 = iVar1 + 1;
         } while (iVar1 < tag_len);
       }
       if (iVar1 == tag_len) {
-        DAT_004c3c78 = iVar2 + tag_len;
+        buffer_reader_offset = iVar2 + tag_len;
         return CONCAT31((int3)((uint)iVar1 >> 8),1);
       }
       iVar2 = iVar2 + 1;
-    } while (iVar2 < (int)DAT_004c3c74);
+    } while (iVar2 < buffer_reader_size);
   }
-  return DAT_004c3c74 & 0xffffff00;
+  return buffer_reader_size & 0xffffff00;
 }
 
 
@@ -33136,7 +33160,7 @@ int __cdecl resource_pack_set(char *path)
   fp = crt_fopen(path,&file_mode_read_binary);
   if (fp == (FILE *)0x0) {
     DAT_004c3968._0_1_ = 0;
-    DAT_004c3c6c = 0;
+    resource_pack_enabled = 0;
     return 0;
   }
   uVar3 = 0xffffffff;
@@ -33161,7 +33185,7 @@ int __cdecl resource_pack_set(char *path)
     pcVar5 = pcVar5 + 1;
     pcVar6 = pcVar6 + 1;
   }
-  DAT_004c3c6c = 1;
+  resource_pack_enabled = 1;
   iVar2 = crt_fclose(fp);
   return CONCAT31((int3)((uint)iVar2 >> 8),1);
 }
@@ -33183,9 +33207,9 @@ int __cdecl resource_open_read(byte *path,int *size_out)
   long lVar5;
   
   piVar1 = size_out;
-  if (DAT_004c3c6c != '\0') {
+  if (resource_pack_enabled != '\0') {
     fp = crt_fopen((char *)&DAT_004c3968,&file_mode_read_binary);
-    DAT_004c3c68 = fp;
+    resource_fp = fp;
     if (fp == (FILE *)0x0) {
       return 0;
     }
@@ -33204,14 +33228,14 @@ int __cdecl resource_open_read(byte *path,int *size_out)
     }
     crt_fclose(fp);
   }
-  DAT_004c3c68 = crt_fopen((char *)path,&file_mode_read_binary);
-  if (DAT_004c3c68 == (FILE *)0x0) {
+  resource_fp = crt_fopen((char *)path,&file_mode_read_binary);
+  if (resource_fp == (FILE *)0x0) {
     return 0;
   }
-  crt_fseek(DAT_004c3c68,0,2);
-  lVar5 = crt_ftell(DAT_004c3c68);
+  crt_fseek(resource_fp,0,2);
+  lVar5 = crt_ftell(resource_fp);
   *piVar1 = lVar5;
-  iVar3 = crt_fseek(DAT_004c3c68,0,0);
+  iVar3 = crt_fseek(resource_fp,0,0);
 LAB_0043bac3:
   return CONCAT31((int3)((uint)iVar3 >> 8),1);
 }
@@ -33225,8 +33249,8 @@ LAB_0043bac3:
 void resource_close(void)
 
 {
-  if (DAT_004c3c68 != (FILE *)0x0) {
-    crt_fclose(DAT_004c3c68);
+  if (resource_fp != (FILE *)0x0) {
+    crt_fclose(resource_fp);
   }
   return;
 }
@@ -33369,7 +33393,7 @@ int __cdecl resource_read_alloc(byte *path,void **out_data,uint *out_size)
   void *ptr;
   
   iVar1 = resource_open_read(path,(int *)out_size);
-  fp = DAT_004c3c68;
+  fp = resource_fp;
   if ((char)iVar1 == '\0') {
     return iVar1;
   }
@@ -33402,7 +33426,7 @@ int __cdecl sfx_entry_load_ogg(void *entry,byte *path)
   int local_18;
   
   iVar1 = resource_open_read(path,(int *)&local_314);
-  fp = DAT_004c3c68;
+  fp = resource_fp;
   if ((char)iVar1 == '\0') {
     return iVar1;
   }
@@ -33735,7 +33759,7 @@ int __cdecl wav_parse_into_entry(void *entry,void *data,int size)
   *(uint *)((int)entry + 0x18) = uVar2;
   puVar3 = operator_new(uVar2);
   *(undefined4 **)((int)entry + 0x14) = puVar3;
-  puVar5 = (undefined4 *)(DAT_004c3c78 + (int)data);
+  puVar5 = (undefined4 *)(buffer_reader_offset + (int)data);
   for (uVar4 = uVar2 >> 2; uVar4 != 0; uVar4 = uVar4 - 1) {
     *puVar3 = *puVar5;
     puVar5 = puVar5 + 1;
@@ -33888,7 +33912,7 @@ int __cdecl music_entry_load_ogg(void *entry,byte *path)
   undefined4 local_4;
   
   iVar2 = resource_open_read(path,(int *)&path);
-  fp = DAT_004c3c68;
+  fp = resource_fp;
   if ((char)iVar2 == '\0') {
     return iVar2;
   }
@@ -34858,24 +34882,24 @@ void __cdecl ui_focus_set(int id,char reset_timer)
   int iVar2;
   int *piVar3;
   
-  iVar1 = DAT_004d11e4;
-  if ((&ui_focus_candidates)[DAT_004d11e4] != id) {
+  iVar1 = ui_focus_index;
+  if ((&ui_focus_candidates)[ui_focus_index] != id) {
     if (reset_timer != '\0') {
-      DAT_004d11ec = 1000;
+      ui_focus_timer_ms = 1000;
     }
     iVar2 = 0;
-    if (0 < DAT_004d11e0) {
+    if (0 < ui_focus_count) {
       piVar3 = &ui_focus_candidates;
       while (iVar1 = iVar2, *piVar3 != id) {
         iVar2 = iVar2 + 1;
         piVar3 = piVar3 + 1;
-        if (DAT_004d11e0 <= iVar2) {
+        if (ui_focus_count <= iVar2) {
           return;
         }
       }
     }
   }
-  DAT_004d11e4 = iVar1;
+  ui_focus_index = iVar1;
   return;
 }
 
@@ -34891,40 +34915,40 @@ int __cdecl ui_focus_update(int id)
   int iVar1;
   int iVar2;
   
-  iVar1 = (&ui_focus_candidates)[DAT_004d11e4];
-  if (DAT_004d11e8 == DAT_00480848) {
-    if (0x1f < DAT_004d11e0) {
-      DAT_004d11e0 = 0x1f;
+  iVar1 = (&ui_focus_candidates)[ui_focus_index];
+  if (ui_focus_frame_marker_ms == game_time_ms) {
+    if (0x1f < ui_focus_count) {
+      ui_focus_count = 0x1f;
     }
-    (&ui_focus_candidates)[DAT_004d11e0] = id;
-    DAT_004d11e0 = DAT_004d11e0 + 1;
-    return CONCAT31((int3)((uint)DAT_004d11e0 >> 8),id == iVar1);
+    (&ui_focus_candidates)[ui_focus_count] = id;
+    ui_focus_count = ui_focus_count + 1;
+    return CONCAT31((int3)((uint)ui_focus_count >> 8),id == iVar1);
   }
-  DAT_004d11ec = DAT_004d11ec - frame_dt_ms;
-  if (DAT_004d11ec < 0) {
-    DAT_004d11ec = 0;
+  ui_focus_timer_ms = ui_focus_timer_ms - frame_dt_ms;
+  if (ui_focus_timer_ms < 0) {
+    ui_focus_timer_ms = 0;
   }
   if ((DAT_004871ca == '\0') &&
      (iVar2 = (*grim_interface_ptr->vtable->grim_was_key_pressed)(0xf), (char)iVar2 != '\0')) {
     iVar2 = (*grim_interface_ptr->vtable->grim_is_key_down)(0x2a);
     if (((char)iVar2 == '\0') &&
        (iVar2 = (*grim_interface_ptr->vtable->grim_is_key_down)(0x36), (char)iVar2 == '\0')) {
-      DAT_004d11e4 = DAT_004d11e4 + 1;
+      ui_focus_index = ui_focus_index + 1;
     }
     else {
-      DAT_004d11e4 = DAT_004d11e4 + -1;
+      ui_focus_index = ui_focus_index + -1;
     }
-    DAT_004d11ec = 1000;
+    ui_focus_timer_ms = 1000;
   }
-  if (DAT_004d11e4 < 0) {
-    DAT_004d11e4 = DAT_004d11e0 + -1;
+  if (ui_focus_index < 0) {
+    ui_focus_index = ui_focus_count + -1;
   }
-  if (DAT_004d11e0 + -1 < DAT_004d11e4) {
-    DAT_004d11e4 = 0;
+  if (ui_focus_count + -1 < ui_focus_index) {
+    ui_focus_index = 0;
   }
-  DAT_004d11e8 = DAT_00480848;
+  ui_focus_frame_marker_ms = game_time_ms;
   ui_focus_candidates = id;
-  DAT_004d11e0 = 1;
+  ui_focus_count = 1;
   return (uint)(id == iVar1);
 }
 
@@ -34945,7 +34969,7 @@ void __cdecl ui_focus_draw(float *xy)
   float local_4;
   
   local_10 = 0x3f4ccccd;
-  local_4 = (float)DAT_004d11ec * 0.00080000004;
+  local_4 = (float)ui_focus_timer_ms * 0.00080000004;
   local_c = 0x3f4ccccd;
   local_8 = 0x3f19999a;
   local_18 = *xy;
@@ -35554,7 +35578,7 @@ int __cdecl ui_button_update(float *xy,ui_button_t *button)
     ui_focus_set((int)button,'\0');
   }
   if ((button->enabled == '\0') ||
-     ((button->hovered == '\0' && (((char)iVar1 == '\0' || (DAT_004d11ec < 0x321)))))) {
+     ((button->hovered == '\0' && (((char)iVar1 == '\0' || (ui_focus_timer_ms < 0x321)))))) {
     iVar1 = button->hover_anim + frame_dt_ms * -4;
   }
   else {
@@ -36145,7 +36169,7 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
     (*grim_interface_ptr->vtable->grim_set_color)(0.9,0.9,0.9,fVar7);
     (*grim_interface_ptr->vtable->grim_draw_text_small)
               ((fStack_10 + 32.0) - (float)(iVar3 / 2),fStack_c + 15.0,&DAT_004d0da0);
-    _DAT_004d120c = _DAT_004d120c - (frame_dt + frame_dt);
+    ui_stats_hover_time = ui_stats_hover_time - (frame_dt + frame_dt);
   }
   else {
     (*grim_interface_ptr->vtable->grim_draw_text_small_fmt)
@@ -36155,10 +36179,10 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
     ui_draw_clock_gauge();
     if (((ui_mouse_x <= fStack_10 + 8.0) || (fStack_10 + 72.0 <= ui_mouse_x)) ||
        ((ui_mouse_y <= fStack_c + 16.0 || (fStack_c + 45.0 <= ui_mouse_y)))) {
-      _DAT_004d120c = _DAT_004d120c - (frame_dt + frame_dt);
+      ui_stats_hover_time = ui_stats_hover_time - (frame_dt + frame_dt);
     }
     else {
-      _DAT_004d120c = frame_dt + frame_dt + _DAT_004d120c;
+      ui_stats_hover_time = frame_dt + frame_dt + ui_stats_hover_time;
     }
     (*grim_interface_ptr->vtable->grim_set_color)(0.9,0.9,0.9,fVar7);
     iVar3 = *(int *)((int)y + 0x20) / 1000;
@@ -36176,7 +36200,7 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
   if (((ui_screen_phase == 2) && (game_state_id == 8)) ||
      (((game_state_id == 7 || ((game_state_id == 8 || (game_state_id == 0xc)))) &&
       (ui_screen_phase == 0)))) {
-    _DAT_004d1210 = 0.0;
+    ui_stats_hover_hit_ratio = 0.0;
   }
   else {
     FUN_004411c0();
@@ -36198,10 +36222,10 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
     (*grim_interface_ptr->vtable->grim_set_config_var)(0x15,2);
     if ((((ui_mouse_x <= fStack_10) || (fStack_10 + 64.0 <= ui_mouse_x)) || (ui_mouse_y <= fStack_c)
         ) || (fStack_c + 32.0 <= ui_mouse_y)) {
-      _DAT_004d1208 = _DAT_004d1208 - (frame_dt + frame_dt);
+      ui_stats_hover_weapon = ui_stats_hover_weapon - (frame_dt + frame_dt);
     }
     else {
-      _DAT_004d1208 = frame_dt + frame_dt + _DAT_004d1208;
+      ui_stats_hover_weapon = frame_dt + frame_dt + ui_stats_hover_weapon;
     }
     (*grim_interface_ptr->vtable->grim_set_color)(0.9,0.9,0.9,fVar2);
     iVar3 = (*grim_interface_ptr->vtable->grim_measure_text_width)
@@ -36221,55 +36245,55 @@ void __cdecl ui_text_input_render(void *input_state,float y,float alpha)
               (self,fStack_10 + 110.0,(fStack_c + 16.0) - 1.0,s_Hit______d___00478920);
     if (((ui_mouse_x <= fStack_10 + 110.0) || (fStack_10 + 174.0 <= ui_mouse_x)) ||
        ((ui_mouse_y <= (fStack_c + 16.0) - 1.0 || (fStack_c + 32.0 <= ui_mouse_y)))) {
-      _DAT_004d1210 = _DAT_004d1210 - (frame_dt + frame_dt);
+      ui_stats_hover_hit_ratio = ui_stats_hover_hit_ratio - (frame_dt + frame_dt);
     }
     else {
-      _DAT_004d1210 = frame_dt + frame_dt + _DAT_004d1210;
+      ui_stats_hover_hit_ratio = frame_dt + frame_dt + ui_stats_hover_hit_ratio;
     }
     fStack_c = fStack_c + 48.0;
   }
   (*grim_interface_ptr->vtable->grim_set_color)(1.0,1.0,1.0,alpha);
   FUN_004411c0();
-  if (_DAT_004d1208 <= 1.0) {
-    if (_DAT_004d1208 < 0.0) {
-      _DAT_004d1208 = 0.0;
+  if (ui_stats_hover_weapon <= 1.0) {
+    if (ui_stats_hover_weapon < 0.0) {
+      ui_stats_hover_weapon = 0.0;
     }
   }
   else {
-    _DAT_004d1208 = 1.0;
+    ui_stats_hover_weapon = 1.0;
   }
-  if (_DAT_004d120c <= 1.0) {
-    if (_DAT_004d120c < 0.0) {
-      _DAT_004d120c = 0.0;
+  if (ui_stats_hover_time <= 1.0) {
+    if (ui_stats_hover_time < 0.0) {
+      ui_stats_hover_time = 0.0;
     }
   }
   else {
-    _DAT_004d120c = 1.0;
+    ui_stats_hover_time = 1.0;
   }
-  if (_DAT_004d1210 <= 1.0) {
-    if (_DAT_004d1210 < 0.0) {
-      _DAT_004d1210 = 0.0;
+  if (ui_stats_hover_hit_ratio <= 1.0) {
+    if (ui_stats_hover_hit_ratio < 0.0) {
+      ui_stats_hover_hit_ratio = 0.0;
     }
   }
   else {
-    _DAT_004d1210 = 1.0;
+    ui_stats_hover_hit_ratio = 1.0;
   }
   if (((game_state_id == 7) || (game_state_id == 8)) || (game_state_id == 0xc)) {
     (*grim_interface_ptr->vtable->grim_set_color)(0.9,0.9,0.9,fVar2);
-    if (0.5 < _DAT_004d1208) {
-      fVar2 = (_DAT_004d1208 - 0.5) * alpha;
+    if (0.5 < ui_stats_hover_weapon) {
+      fVar2 = (ui_stats_hover_weapon - 0.5) * alpha;
       (*grim_interface_ptr->vtable->grim_set_color)(0.9,0.9,0.9,fVar2 + fVar2);
       (*grim_interface_ptr->vtable->grim_draw_text_small)
                 (fStack_10 - 20.0,fStack_c,s_Most_used_weapon_during_the_game_004788fc);
     }
-    if (0.5 < _DAT_004d120c) {
-      fVar2 = (_DAT_004d120c - 0.5) * alpha;
+    if (0.5 < ui_stats_hover_time) {
+      fVar2 = (ui_stats_hover_time - 0.5) * alpha;
       (*grim_interface_ptr->vtable->grim_set_color)(0.9,0.9,0.9,fVar2 + fVar2);
       (*grim_interface_ptr->vtable->grim_draw_text_small)
                 (fStack_10 + 12.0,fStack_c,s_The_time_the_game_lasted_004788e0);
     }
-    if (0.5 < _DAT_004d1210) {
-      fVar2 = (_DAT_004d1210 - 0.5) * alpha;
+    if (0.5 < ui_stats_hover_hit_ratio) {
+      fVar2 = (ui_stats_hover_hit_ratio - 0.5) * alpha;
       (*grim_interface_ptr->vtable->grim_set_color)(0.9,0.9,0.9,fVar2 + fVar2);
       (*grim_interface_ptr->vtable->grim_draw_text_small)
                 (fStack_10 - 22.0,fStack_c,s_The___of_shot_bullets_hit_the_ta_004788b8);
@@ -37802,7 +37826,7 @@ void __cdecl game_state_set(int state_id)
   (*grim_interface_ptr->vtable->grim_flush_input)();
   console_input_poll();
   if (state_id == 0) {
-    DAT_0048724d = '\0';
+    highscore_return_latch = '\0';
     render_pass_mode = '\0';
     ui_sign_crimson = 1;
     iVar3 = game_is_full_version();
@@ -37922,7 +37946,7 @@ void __cdecl game_state_set(int state_id)
     DAT_0048eb38 = 1;
     DAT_0048702c = 0;
     if (render_pass_mode == '\0') {
-      DAT_0048724d = '\0';
+      highscore_return_latch = '\0';
       gameplay_reset_state();
       iVar4 = _quest_stage_minor;
       iVar3 = _quest_stage_major;
@@ -37964,7 +37988,7 @@ void __cdecl game_state_set(int state_id)
     DAT_0048eb38 = 1;
     DAT_0048702c = 0;
     if (render_pass_mode == '\0') {
-      DAT_0048724d = '\0';
+      highscore_return_latch = '\0';
       gameplay_reset_state();
       render_pass_mode = '\x01';
       DAT_00487241 = 1;
@@ -37986,7 +38010,7 @@ void __cdecl game_state_set(int state_id)
     _DAT_0048cf7c = (((float)config_blob.screen_width * 0.0015625 * 150.0 + 10.0) - 150.0) + 135.0;
   }
   else if (state_id == 4) {
-    DAT_0048724d = '\0';
+    highscore_return_latch = '\0';
     ui_sign_crimson = 1;
     DAT_0048e820 = 1;
     _DAT_0048e858 = &LAB_0043f550;
@@ -38080,7 +38104,7 @@ LAB_00446764:
     ui_screen_phase = -1;
   }
 LAB_004468da:
-  if (DAT_0048724d != '\0') {
+  if (highscore_return_latch != '\0') {
     ui_sign_crimson = 0;
   }
   ui_elements_timeline = 0;
@@ -38267,8 +38291,8 @@ void __cdecl ui_element_render(ui_element_t *element)
   (*grim_interface_ptr->vtable->grim_set_uv)(0.0,0.0,1.0,1.0);
   (*grim_interface_ptr->vtable->grim_set_rotation)(0.0);
   if (element->counter_id != -1) {
-    if ((cVar5 != '\0') && (0 < DAT_004d11ec)) {
-      element->counter_value = DAT_004d11ec;
+    if ((cVar5 != '\0') && (0 < ui_focus_timer_ms)) {
+      element->counter_value = ui_focus_timer_ms;
     }
     if (element->on_activate == (_func_1 *)0x0) {
       puVar4 = element->_pad4 + 0x13;
@@ -38767,18 +38791,18 @@ float __cdecl FUN_0044fb50(float arg1)
 void ui_menu_layout_init(void)
 
 {
-  uchar *puVar1;
-  char *pcVar2;
-  int iVar3;
-  ui_element_t *puVar4;
-  int *piVar5;
+  char *pcVar1;
+  int iVar2;
+  ui_element_t *puVar3;
+  int *piVar4;
+  float *pfVar5;
   float *pfVar6;
-  float *pfVar7;
+  int iVar7;
   int iVar8;
-  int iVar9;
-  float fVar10;
+  float fVar9;
   char *unaff_EBX;
-  ui_element_t **ppuVar11;
+  ui_element_t **ppuVar10;
+  uchar *puVar11;
   undefined4 *puVar12;
   undefined4 *puVar13;
   char *pcVar14;
@@ -38793,10 +38817,10 @@ void ui_menu_layout_init(void)
   _DAT_0048723c = 0;
   DAT_0048702c = 0;
   _DAT_0048728c = (float)config_blob.screen_height * 0.0020833334;
-  ppuVar11 = &ui_element_table_end;
-  for (iVar8 = 0x29; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *ppuVar11 = (ui_element_t *)0x0;
-    ppuVar11 = ppuVar11 + 1;
+  ppuVar10 = &ui_element_table_end;
+  for (iVar7 = 0x29; iVar7 != 0; iVar7 = iVar7 + -1) {
+    *ppuVar10 = (ui_element_t *)0x0;
+    ppuVar10 = ppuVar10 + 1;
   }
   ui_element_table_end = (ui_element_t *)&ui_sign_crimson;
   DAT_0048f16c = &DAT_004875a8;
@@ -38804,8 +38828,8 @@ void ui_menu_layout_init(void)
   _DAT_0048f174 = &DAT_004878c0;
   _DAT_0048f178 = &DAT_00487bd8;
   _DAT_0048f17c = &DAT_00487ef0;
-  pcVar2 = (char *)(*grim_interface_ptr->vtable->grim_get_config_var)(local_20,100);
-  if (*pcVar2 == '\0') {
+  pcVar1 = (char *)(*grim_interface_ptr->vtable->grim_get_config_var)(local_20,100);
+  if (*pcVar1 == '\0') {
     _DAT_0048f184 = &DAT_00488520;
     _DAT_0048f180 = &DAT_00488838;
   }
@@ -38846,39 +38870,39 @@ void ui_menu_layout_init(void)
   _DAT_0048f200 = &DAT_0048e508;
   DAT_0048f204 = &DAT_0048e820;
   ui_element_table_start = (ui_element_t *)&DAT_0048ee50;
-  ppuVar11 = &ui_element_table_end;
+  ppuVar10 = &ui_element_table_end;
   do {
-    FUN_0044faa0((char *)*ppuVar11);
-    iVar8 = config_blob.screen_width;
-    ppuVar11 = ppuVar11 + 1;
-  } while ((int)ppuVar11 < 0x48f20c);
+    FUN_0044faa0((char *)*ppuVar10);
+    iVar7 = config_blob.screen_width;
+    ppuVar10 = ppuVar10 + 1;
+  } while ((int)ppuVar10 < 0x48f20c);
   puVar12 = &DAT_0048fac0;
   puVar13 = &DAT_004872cc;
-  for (iVar9 = 0x3a; iVar9 != 0; iVar9 = iVar9 + -1) {
-    *puVar13 = *puVar12;
-    puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
-  }
-  _DAT_004872a8 = (float)(iVar8 + 4);
-  _DAT_004872ac = 0x428c0000;
-  if (iVar8 < 0x281) {
-    _DAT_004872ac = 0x42700000;
-  }
-  pcVar14 = s_ui_ui_itemTexts_jaz_00479318;
-  DAT_0048f7f4 = texture_get_or_load_alt(s_ui_ui_itemTexts_jaz_00479318,unaff_EBX);
-  pcVar2 = s_ui_ui_textReaper_jaz_00479300;
-  DAT_0048f7f8 = texture_get_or_load_alt(s_ui_ui_textReaper_jaz_00479300,pcVar14);
-  pcVar14 = s_ui_ui_textControls_jaz_004792e8;
-  DAT_0048f7fc = texture_get_or_load_alt(s_ui_ui_textControls_jaz_004792e8,pcVar2);
-  pcVar2 = s_ui_ui_textPickAPerk_jaz_004792d0;
-  DAT_0048f800 = texture_get_or_load_alt(s_ui_ui_textPickAPerk_jaz_004792d0,pcVar14);
-  DAT_0048f804 = texture_get_or_load_alt(s_ui_ui_textWellDone_jaz_004792b8,pcVar2);
-  puVar12 = &DAT_0048fba8;
-  puVar13 = &DAT_00488244;
   for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
     *puVar13 = *puVar12;
     puVar12 = puVar12 + 1;
     puVar13 = puVar13 + 1;
+  }
+  _DAT_004872a8 = (float)(iVar7 + 4);
+  _DAT_004872ac = 0x428c0000;
+  if (iVar7 < 0x281) {
+    _DAT_004872ac = 0x42700000;
+  }
+  pcVar14 = s_ui_ui_itemTexts_jaz_00479318;
+  DAT_0048f7f4 = texture_get_or_load_alt(s_ui_ui_itemTexts_jaz_00479318,unaff_EBX);
+  pcVar1 = s_ui_ui_textReaper_jaz_00479300;
+  DAT_0048f7f8 = texture_get_or_load_alt(s_ui_ui_textReaper_jaz_00479300,pcVar14);
+  pcVar14 = s_ui_ui_textControls_jaz_004792e8;
+  DAT_0048f7fc = texture_get_or_load_alt(s_ui_ui_textControls_jaz_004792e8,pcVar1);
+  pcVar1 = s_ui_ui_textPickAPerk_jaz_004792d0;
+  DAT_0048f800 = texture_get_or_load_alt(s_ui_ui_textPickAPerk_jaz_004792d0,pcVar14);
+  DAT_0048f804 = texture_get_or_load_alt(s_ui_ui_textWellDone_jaz_004792b8,pcVar1);
+  puVar3 = &ui_menu_item_element;
+  puVar12 = &DAT_00488244;
+  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
+    *puVar12 = *(undefined4 *)puVar3;
+    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
+    puVar12 = puVar12 + 1;
   }
   DAT_00488220 = 0xc2700000;
   DAT_00488224 = 0x43520000;
@@ -38887,16 +38911,16 @@ void ui_menu_layout_init(void)
   ui_element_set_rect((ui_element_t *)&DAT_0048832c,124.0,30.0,afStack_28);
   _DAT_00488238 = 0x30;
   _DAT_0048823c = &LAB_0044fc70;
-  iVar8 = game_is_full_version();
-  if ((char)iVar8 != '\0') {
+  iVar7 = game_is_full_version();
+  if ((char)iVar7 != '\0') {
     _DAT_0048823c = &LAB_00447350;
   }
-  puVar12 = &DAT_0048fba8;
-  puVar13 = &DAT_004878fc;
-  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *puVar13 = *puVar12;
+  puVar3 = &ui_menu_item_element;
+  puVar12 = &DAT_004878fc;
+  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
+    *puVar12 = *(undefined4 *)puVar3;
+    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
     puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
   }
   _DAT_004878d8 = 0xc2700000;
   _DAT_004878dc = 0x43870000;
@@ -38906,12 +38930,12 @@ void ui_menu_layout_init(void)
   _DAT_004878f4 = ui_menu_main_click_play_game;
   _DAT_004878f0 = 0x19;
   afStack_28[0] = 270.0;
-  puVar12 = &DAT_0048fba8;
-  puVar13 = &DAT_00487c14;
-  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *puVar13 = *puVar12;
+  puVar3 = &ui_menu_item_element;
+  puVar12 = &DAT_00487c14;
+  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
+    *puVar12 = *(undefined4 *)puVar3;
+    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
     puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
   }
   _DAT_00487bf0 = 0xc2700000;
   _DAT_00487bf4 = 0x43a50000;
@@ -38920,12 +38944,12 @@ void ui_menu_layout_init(void)
   _DAT_00487c0c = ui_menu_main_click_options;
   _DAT_00487c08 = 0x18;
   afStack_28[0] = 270.0;
-  puVar12 = &DAT_0048fba8;
-  puVar13 = &DAT_00487f2c;
-  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *puVar13 = *puVar12;
+  puVar3 = &ui_menu_item_element;
+  puVar12 = &DAT_00487f2c;
+  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
+    *puVar12 = *(undefined4 *)puVar3;
+    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
     puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
   }
   _DAT_00487f08 = 0xc2700000;
   _DAT_00487f0c = 0x43c30000;
@@ -38933,15 +38957,15 @@ void ui_menu_layout_init(void)
   ui_element_set_rect((ui_element_t *)&DAT_00488014,124.0,30.0,afStack_28);
   _DAT_00487f24 = &LAB_00447390;
   _DAT_00487f20 = 0x1f;
-  iVar8 = 5;
-  pcVar2 = (char *)(*grim_interface_ptr->vtable->grim_get_config_var)((uint *)afStack_28,100);
-  if (*pcVar2 != '\0') {
-    puVar12 = &DAT_0048fba8;
-    puVar13 = &DAT_0048855c;
-    for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
-      *puVar13 = *puVar12;
+  iVar7 = 5;
+  pcVar1 = (char *)(*grim_interface_ptr->vtable->grim_get_config_var)((uint *)afStack_28,100);
+  if (*pcVar1 != '\0') {
+    puVar3 = &ui_menu_item_element;
+    puVar12 = &DAT_0048855c;
+    for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
+      *puVar12 = *(undefined4 *)puVar3;
+      puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
       puVar12 = puVar12 + 1;
-      puVar13 = puVar13 + 1;
     }
     _DAT_00488538 = 0xc2700000;
     _DAT_0048853c = 0x43e10000;
@@ -38950,172 +38974,171 @@ void ui_menu_layout_init(void)
     ui_element_set_rect((ui_element_t *)&DAT_00488644,124.0,30.0,&fStack_30);
     _DAT_00488550 = 0x30;
     _DAT_00488554 = &LAB_0044fca0;
-    iVar8 = 6;
+    iVar7 = 6;
   }
-  puVar12 = &DAT_0048fba8;
-  puVar13 = &DAT_00488874;
-  for (iVar9 = 0x3a; iVar9 != 0; iVar9 = iVar9 + -1) {
-    *puVar13 = *puVar12;
+  puVar3 = &ui_menu_item_element;
+  puVar12 = &DAT_00488874;
+  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
+    *puVar12 = *(undefined4 *)puVar3;
+    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
     puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
   }
   fStack_30 = 270.0;
   _DAT_00488850 = 0xc2700000;
-  _DAT_00488854 = (float)(iVar8 * 0x3c + 0x96);
+  _DAT_00488854 = (float)(iVar7 * 0x3c + 0x96);
   fStack_2c = -38.0;
   ui_element_set_rect((ui_element_t *)&DAT_0048895c,124.0,30.0,&fStack_30);
   _DAT_0048886c = ui_menu_main_click_quit;
   _DAT_00488868 = 0x10;
-  iVar9 = 2;
-  iVar8 = 0;
+  iVar8 = 2;
+  iVar7 = 0;
   do {
-    iVar15 = iVar8;
-    if ((iVar9 == 2) && (iVar3 = game_is_full_version(), (char)iVar3 != '\0')) {
-      iVar8 = 4;
+    iVar15 = iVar7;
+    if ((iVar8 == 2) && (iVar2 = game_is_full_version(), (char)iVar2 != '\0')) {
+      iVar7 = 4;
       iVar15 = 4;
     }
-    pcVar2 = (char *)(*grim_interface_ptr->vtable->grim_get_config_var)(local_20,100);
-    if (*pcVar2 == '\0') {
-      if (iVar9 == 6) {
-        iVar8 = 6;
+    pcVar1 = (char *)(*grim_interface_ptr->vtable->grim_get_config_var)(local_20,100);
+    if (*pcVar1 == '\0') {
+      if (iVar8 == 6) {
+        iVar7 = 6;
         iVar15 = 6;
       }
-      (&ui_element_table_end)[iVar9]->counter_id = DAT_0048f7f4;
-      puVar4 = (&ui_element_table_end)[iVar9];
-      puVar4->_pad4[0x14] = '\0';
-      puVar4->_pad4[0x15] = '\0';
-      puVar4->_pad4[0x16] = '\0';
-      puVar4->_pad4[0x17] = '\0';
-      *(float *)(puVar4->_pad4 + 0x18) = (float)iVar15 * 0.125;
-      puVar4 = (&ui_element_table_end)[iVar9];
-      puVar4->_pad4[0x30] = '\0';
-      puVar4->_pad4[0x31] = '\0';
-      puVar4->_pad4[0x32] = 0x80;
-      puVar4->_pad4[0x33] = '?';
-      *(float *)(puVar4->_pad4 + 0x34) = (float)iVar15 * 0.125;
-      puVar4 = (&ui_element_table_end)[iVar9];
-      puVar4->_pad4[0x4c] = '\0';
-      puVar4->_pad4[0x4d] = '\0';
-      puVar4->_pad4[0x4e] = 0x80;
-      puVar4->_pad4[0x4f] = '?';
-      fVar10 = (float)(iVar8 + 1) * 0.125;
-      *(float *)(puVar4->_pad4 + 0x50) = fVar10;
-      puVar4 = (&ui_element_table_end)[iVar9];
-      puVar4->_pad4[0x68] = '\0';
-      puVar4->_pad4[0x69] = '\0';
-      puVar4->_pad4[0x6a] = '\0';
-      puVar4->_pad4[0x6b] = '\0';
+      (&ui_element_table_end)[iVar8]->counter_id = DAT_0048f7f4;
+      puVar3 = (&ui_element_table_end)[iVar8];
+      puVar3->_pad4[0x14] = '\0';
+      puVar3->_pad4[0x15] = '\0';
+      puVar3->_pad4[0x16] = '\0';
+      puVar3->_pad4[0x17] = '\0';
+      *(float *)(puVar3->_pad4 + 0x18) = (float)iVar15 * 0.125;
+      puVar3 = (&ui_element_table_end)[iVar8];
+      puVar3->_pad4[0x30] = '\0';
+      puVar3->_pad4[0x31] = '\0';
+      puVar3->_pad4[0x32] = 0x80;
+      puVar3->_pad4[0x33] = '?';
+      *(float *)(puVar3->_pad4 + 0x34) = (float)iVar15 * 0.125;
+      puVar3 = (&ui_element_table_end)[iVar8];
+      puVar3->_pad4[0x4c] = '\0';
+      puVar3->_pad4[0x4d] = '\0';
+      puVar3->_pad4[0x4e] = 0x80;
+      puVar3->_pad4[0x4f] = '?';
+      fVar9 = (float)(iVar7 + 1) * 0.125;
+      *(float *)(puVar3->_pad4 + 0x50) = fVar9;
+      puVar3 = (&ui_element_table_end)[iVar8];
+      puVar3->_pad4[0x68] = '\0';
+      puVar3->_pad4[0x69] = '\0';
+      puVar3->_pad4[0x6a] = '\0';
+      puVar3->_pad4[0x6b] = '\0';
     }
     else {
-      (&ui_element_table_end)[iVar9]->counter_id = DAT_0048f7f4;
-      puVar4 = (&ui_element_table_end)[iVar9];
-      puVar4->_pad4[0x14] = '\0';
-      puVar4->_pad4[0x15] = '\0';
-      puVar4->_pad4[0x16] = '\0';
-      puVar4->_pad4[0x17] = '\0';
+      (&ui_element_table_end)[iVar8]->counter_id = DAT_0048f7f4;
+      puVar3 = (&ui_element_table_end)[iVar8];
+      puVar3->_pad4[0x14] = '\0';
+      puVar3->_pad4[0x15] = '\0';
+      puVar3->_pad4[0x16] = '\0';
+      puVar3->_pad4[0x17] = '\0';
       fStack_30 = 0.0;
-      *(float *)(puVar4->_pad4 + 0x18) = (float)iVar15 * 0.125;
-      puVar4 = (&ui_element_table_end)[iVar9];
-      puVar4->_pad4[0x30] = '\0';
-      puVar4->_pad4[0x31] = '\0';
-      puVar4->_pad4[0x32] = 0x80;
-      puVar4->_pad4[0x33] = '?';
-      *(float *)(puVar4->_pad4 + 0x34) = (float)iVar15 * 0.125;
-      puVar4 = (&ui_element_table_end)[iVar9];
-      puVar4->_pad4[0x4c] = '\0';
-      puVar4->_pad4[0x4d] = '\0';
-      puVar4->_pad4[0x4e] = 0x80;
-      puVar4->_pad4[0x4f] = '?';
-      fVar10 = (float)(iVar8 + 1) * 0.125;
-      *(float *)(puVar4->_pad4 + 0x50) = fVar10;
-      puVar4 = (&ui_element_table_end)[iVar9];
-      puVar4->_pad4[0x68] = '\0';
-      puVar4->_pad4[0x69] = '\0';
-      puVar4->_pad4[0x6a] = '\0';
-      puVar4->_pad4[0x6b] = '\0';
-      fStack_2c = fVar10;
+      *(float *)(puVar3->_pad4 + 0x18) = (float)iVar15 * 0.125;
+      puVar3 = (&ui_element_table_end)[iVar8];
+      puVar3->_pad4[0x30] = '\0';
+      puVar3->_pad4[0x31] = '\0';
+      puVar3->_pad4[0x32] = 0x80;
+      puVar3->_pad4[0x33] = '?';
+      *(float *)(puVar3->_pad4 + 0x34) = (float)iVar15 * 0.125;
+      puVar3 = (&ui_element_table_end)[iVar8];
+      puVar3->_pad4[0x4c] = '\0';
+      puVar3->_pad4[0x4d] = '\0';
+      puVar3->_pad4[0x4e] = 0x80;
+      puVar3->_pad4[0x4f] = '?';
+      fVar9 = (float)(iVar7 + 1) * 0.125;
+      *(float *)(puVar3->_pad4 + 0x50) = fVar9;
+      puVar3 = (&ui_element_table_end)[iVar8];
+      puVar3->_pad4[0x68] = '\0';
+      puVar3->_pad4[0x69] = '\0';
+      puVar3->_pad4[0x6a] = '\0';
+      puVar3->_pad4[0x6b] = '\0';
+      fStack_2c = fVar9;
     }
-    *(float *)(puVar4->_pad4 + 0x6c) = fVar10;
-    if ((iVar9 == 2) && (iVar15 = game_is_full_version(), (char)iVar15 != '\0')) {
-      iVar8 = 0;
+    *(float *)(puVar3->_pad4 + 0x6c) = fVar9;
+    if ((iVar8 == 2) && (iVar15 = game_is_full_version(), (char)iVar15 != '\0')) {
+      iVar7 = 0;
     }
-    iVar15 = iVar8 + 1;
+    iVar15 = iVar7 + 1;
     if (iVar15 == 4) {
-      iVar15 = iVar8 + 2;
+      iVar15 = iVar7 + 2;
     }
-    iVar9 = iVar9 + 1;
-    iVar8 = iVar15;
-  } while (iVar9 < 8);
+    iVar8 = iVar8 + 1;
+    iVar7 = iVar15;
+  } while (iVar8 < 8);
   if (config_blob.screen_width < 0x281) {
-    iVar8 = 0;
+    iVar7 = 0;
     do {
-      pfVar7 = (float *)((int)ui_element_table_end->quad0 + iVar8);
-      *pfVar7 = *(float *)((int)ui_element_table_end->quad0 + iVar8) * 0.8;
-      pfVar7[1] = pfVar7[1] * 0.8;
-      puVar1 = ui_element_table_end->_pad5 + iVar8 + 4;
-      *(float *)puVar1 = *(float *)(ui_element_table_end->_pad5 + iVar8 + 4) * 0.8;
-      *(float *)(puVar1 + 4) = *(float *)(puVar1 + 4) * 0.8;
-      puVar1 = ui_element_table_end->_pad4 + iVar8;
-      iVar9 = iVar8 + 0x1c;
-      *(float *)puVar1 = *(float *)(ui_element_table_end->_pad4 + iVar8) * 0.8;
-      *(float *)(puVar1 + 4) = *(float *)(puVar1 + 4) * 0.8;
-      *(float *)((int)ui_element_table_end->quad0 + iVar8) =
-           *(float *)((int)ui_element_table_end->quad0 + iVar8) + 10.0;
-      *(float *)(ui_element_table_end->_pad5 + iVar8 + 4) =
-           *(float *)(ui_element_table_end->_pad5 + iVar8 + 4) + 10.0;
-      *(float *)(ui_element_table_end->_pad4 + iVar8) =
-           *(float *)(ui_element_table_end->_pad4 + iVar8) + 10.0;
-      *(float *)(DAT_0048f16c + iVar8 + 0x40) = *(float *)(DAT_0048f16c + iVar8 + 0x40) - 14.0;
-      *(float *)(DAT_0048f16c + iVar8 + 0x210) = *(float *)(DAT_0048f16c + iVar8 + 0x210) - 14.0;
-      *(float *)(DAT_0048f16c + iVar8 + 0x128) = *(float *)(DAT_0048f16c + iVar8 + 0x128) - 14.0;
-      iVar8 = iVar9;
-    } while (iVar9 < 0x70);
+      pfVar6 = (float *)((int)ui_element_table_end->quad0 + iVar7);
+      *pfVar6 = *(float *)((int)ui_element_table_end->quad0 + iVar7) * 0.8;
+      pfVar6[1] = pfVar6[1] * 0.8;
+      puVar11 = ui_element_table_end->_pad5 + iVar7 + 4;
+      *(float *)puVar11 = *(float *)(ui_element_table_end->_pad5 + iVar7 + 4) * 0.8;
+      *(float *)(puVar11 + 4) = *(float *)(puVar11 + 4) * 0.8;
+      puVar11 = ui_element_table_end->_pad4 + iVar7;
+      iVar8 = iVar7 + 0x1c;
+      *(float *)puVar11 = *(float *)(ui_element_table_end->_pad4 + iVar7) * 0.8;
+      *(float *)(puVar11 + 4) = *(float *)(puVar11 + 4) * 0.8;
+      *(float *)((int)ui_element_table_end->quad0 + iVar7) =
+           *(float *)((int)ui_element_table_end->quad0 + iVar7) + 10.0;
+      *(float *)(ui_element_table_end->_pad5 + iVar7 + 4) =
+           *(float *)(ui_element_table_end->_pad5 + iVar7 + 4) + 10.0;
+      *(float *)(ui_element_table_end->_pad4 + iVar7) =
+           *(float *)(ui_element_table_end->_pad4 + iVar7) + 10.0;
+      *(float *)(DAT_0048f16c + iVar7 + 0x40) = *(float *)(DAT_0048f16c + iVar7 + 0x40) - 14.0;
+      *(float *)(DAT_0048f16c + iVar7 + 0x210) = *(float *)(DAT_0048f16c + iVar7 + 0x210) - 14.0;
+      *(float *)(DAT_0048f16c + iVar7 + 0x128) = *(float *)(DAT_0048f16c + iVar7 + 0x128) - 14.0;
+      iVar7 = iVar8;
+    } while (iVar8 < 0x70);
   }
   else if ((800 < config_blob.screen_width) && (config_blob.screen_width < 0x401)) {
-    iVar8 = 0;
+    iVar7 = 0;
     do {
-      pfVar7 = (float *)((int)ui_element_table_end->quad0 + iVar8);
-      *pfVar7 = *(float *)((int)ui_element_table_end->quad0 + iVar8) * 1.2;
-      pfVar7[1] = pfVar7[1] * 1.2;
-      puVar1 = ui_element_table_end->_pad5 + iVar8 + 4;
-      *(float *)puVar1 = *(float *)(ui_element_table_end->_pad5 + iVar8 + 4) * 1.2;
-      *(float *)(puVar1 + 4) = *(float *)(puVar1 + 4) * 1.2;
-      puVar1 = ui_element_table_end->_pad4 + iVar8;
-      iVar9 = iVar8 + 0x1c;
-      *(float *)puVar1 = *(float *)(ui_element_table_end->_pad4 + iVar8) * 1.2;
-      *(float *)(puVar1 + 4) = *(float *)(puVar1 + 4) * 1.2;
-      *(float *)((int)ui_element_table_end->quad0 + iVar8) =
-           *(float *)((int)ui_element_table_end->quad0 + iVar8) + 10.0;
-      *(float *)(ui_element_table_end->_pad5 + iVar8 + 4) =
-           *(float *)(ui_element_table_end->_pad5 + iVar8 + 4) + 10.0;
-      *(float *)(ui_element_table_end->_pad4 + iVar8) =
-           *(float *)(ui_element_table_end->_pad4 + iVar8) + 10.0;
-      iVar8 = iVar9;
-    } while (iVar9 < 0x70);
+      pfVar6 = (float *)((int)ui_element_table_end->quad0 + iVar7);
+      *pfVar6 = *(float *)((int)ui_element_table_end->quad0 + iVar7) * 1.2;
+      pfVar6[1] = pfVar6[1] * 1.2;
+      puVar11 = ui_element_table_end->_pad5 + iVar7 + 4;
+      *(float *)puVar11 = *(float *)(ui_element_table_end->_pad5 + iVar7 + 4) * 1.2;
+      *(float *)(puVar11 + 4) = *(float *)(puVar11 + 4) * 1.2;
+      puVar11 = ui_element_table_end->_pad4 + iVar7;
+      iVar8 = iVar7 + 0x1c;
+      *(float *)puVar11 = *(float *)(ui_element_table_end->_pad4 + iVar7) * 1.2;
+      *(float *)(puVar11 + 4) = *(float *)(puVar11 + 4) * 1.2;
+      *(float *)((int)ui_element_table_end->quad0 + iVar7) =
+           *(float *)((int)ui_element_table_end->quad0 + iVar7) + 10.0;
+      *(float *)(ui_element_table_end->_pad5 + iVar7 + 4) =
+           *(float *)(ui_element_table_end->_pad5 + iVar7 + 4) + 10.0;
+      *(float *)(ui_element_table_end->_pad4 + iVar7) =
+           *(float *)(ui_element_table_end->_pad4 + iVar7) + 10.0;
+      iVar7 = iVar8;
+    } while (iVar8 < 0x70);
   }
-  iVar9 = 100;
-  piVar5 = (int *)&DAT_0048f16c;
-  iVar8 = -0x14;
+  iVar8 = 100;
+  piVar4 = (int *)&DAT_0048f16c;
+  iVar7 = -0x14;
   do {
-    *(int *)(*piVar5 + 0x14) = *(int *)(*piVar5 + 0x14) + iVar9;
-    *(int *)(*piVar5 + 0x10) = *(int *)(*piVar5 + 0x10) + iVar9;
-    if (0 < iVar8) {
-      *(float *)(*piVar5 + 0x18) = *(float *)(*piVar5 + 0x18) - (float)iVar8;
+    *(int *)(*piVar4 + 0x14) = *(int *)(*piVar4 + 0x14) + iVar8;
+    *(int *)(*piVar4 + 0x10) = *(int *)(*piVar4 + 0x10) + iVar8;
+    if (0 < iVar7) {
+      *(float *)(*piVar4 + 0x18) = *(float *)(*piVar4 + 0x18) - (float)iVar7;
     }
-    iVar8 = iVar8 + 0x14;
-    iVar9 = iVar9 + 100;
-    piVar5 = piVar5 + 1;
-  } while (iVar8 < 0x65);
-  iVar8 = game_is_full_version();
-  if ((char)iVar8 != '\0') {
+    iVar7 = iVar7 + 0x14;
+    iVar8 = iVar8 + 100;
+    piVar4 = piVar4 + 1;
+  } while (iVar7 < 0x65);
+  iVar7 = game_is_full_version();
+  if ((char)iVar7 != '\0') {
     DAT_00486faa = 1;
   }
-  puVar12 = &DAT_0048fc90;
-  puVar13 = &DAT_00488b8c;
-  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *puVar13 = *puVar12;
+  puVar11 = ui_menu_item_element._pad3;
+  puVar12 = &DAT_00488b8c;
+  for (iVar7 = 0x3a; puVar11 = puVar11 + 4, iVar7 != 0; iVar7 = iVar7 + -1) {
+    *puVar12 = *(undefined4 *)puVar11;
     puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
   }
   _DAT_00488b78 = _DAT_00488b70 + 280.0;
   _DAT_00488b7c = _DAT_00488b74 + 180.0;
@@ -39124,12 +39147,12 @@ void ui_menu_layout_init(void)
   _DAT_00488b84 = 0;
   _DAT_00488b88 = &LAB_004475d0;
   _DAT_00488b54 = 1;
-  puVar12 = &DAT_0048fba8;
-  puVar13 = &DAT_00488ea4;
-  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *puVar13 = *puVar12;
+  puVar3 = &ui_menu_item_element;
+  puVar12 = &DAT_00488ea4;
+  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
+    *puVar12 = *(undefined4 *)puVar3;
+    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
     puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
   }
   _DAT_00488e80 = 0xc25c0000;
   _DAT_00488e84 = 0x43d70000;
@@ -39148,18 +39171,18 @@ void ui_menu_layout_init(void)
   _DAT_00488e9c = FUN_00447420;
   _DAT_00488e6c = 1;
   _DAT_00488e98 = 0x30;
-  puVar12 = &DAT_0048fba8;
-  puVar13 = &DAT_0048b9f4;
-  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *puVar13 = *puVar12;
+  puVar3 = &ui_menu_item_element;
+  puVar12 = &DAT_0048b9f4;
+  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
+    *puVar12 = *(undefined4 *)puVar3;
+    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
     puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
   }
   _DAT_0048b9d0 = 0xc2700000;
   _DAT_0048b9d4 = 0x43520000;
   puVar12 = &DAT_00487cfc;
   puVar13 = &DAT_0048badc;
-  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
+  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
     *puVar13 = *puVar12;
     puVar12 = puVar12 + 1;
     puVar13 = puVar13 + 1;
@@ -39167,18 +39190,18 @@ void ui_menu_layout_init(void)
   DAT_0048b9c8 = DAT_0048b9c8 + 100;
   DAT_0048b9cc = DAT_0048b9cc + 100;
   _DAT_0048b9ec = ui_menu_main_click_options;
-  puVar12 = &DAT_0048fba8;
-  puVar13 = &DAT_0048bd0c;
-  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *puVar13 = *puVar12;
+  puVar3 = &ui_menu_item_element;
+  puVar12 = &DAT_0048bd0c;
+  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
+    *puVar12 = *(undefined4 *)puVar3;
+    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
     puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
   }
   _DAT_0048bce8 = 0xc2a00000;
   _DAT_0048bcec = 0x43870000;
   puVar12 = &DAT_0048895c;
   puVar13 = &DAT_0048bdf4;
-  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
+  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
     *puVar13 = *puVar12;
     puVar12 = puVar12 + 1;
     puVar13 = puVar13 + 1;
@@ -39186,18 +39209,18 @@ void ui_menu_layout_init(void)
   _DAT_0048bd04 = &LAB_004474e0;
   DAT_0048bce0 = DAT_0048bce0 + 200;
   DAT_0048bce4 = DAT_0048bce4 + 200;
-  puVar12 = &DAT_0048fba8;
-  puVar13 = &DAT_0048c024;
-  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *puVar13 = *puVar12;
+  puVar3 = &ui_menu_item_element;
+  puVar12 = &DAT_0048c024;
+  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
+    *puVar12 = *(undefined4 *)puVar3;
+    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
     puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
   }
   _DAT_0048c000 = 0xc2c80000;
   _DAT_0048c004 = 0x43a50000;
   puVar12 = &DAT_00488f8c;
   puVar13 = &DAT_0048c10c;
-  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
+  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
     *puVar13 = *puVar12;
     puVar12 = puVar12 + 1;
     puVar13 = puVar13 + 1;
@@ -39209,12 +39232,12 @@ void ui_menu_layout_init(void)
   _DAT_0048c01c = &LAB_00447490;
   _DAT_0048c018 = 0x30;
   _DAT_0048c304 = 1;
-  puVar12 = &DAT_0048fd78;
-  puVar13 = &DAT_0048c654;
-  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *puVar13 = *puVar12;
+  puVar11 = ui_menu_item_element._pad4 + 0xac;
+  puVar12 = &DAT_0048c654;
+  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
+    *puVar12 = *(undefined4 *)puVar11;
+    puVar11 = puVar11 + 4;
     puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
   }
   _DAT_0048c630 = 0xc2340000;
   DAT_0048c628 = DAT_0048c628 + 100;
@@ -39224,36 +39247,36 @@ void ui_menu_layout_init(void)
   _DAT_0048c61c = 1;
   _DAT_00489198 = 0xc2700000;
   _DAT_00489184 = 1;
-  puVar12 = &DAT_0048fe60;
-  puVar13 = &DAT_004894d4;
-  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *puVar13 = *puVar12;
+  puVar11 = ui_menu_item_element._pad5 + 0xb0;
+  puVar12 = &DAT_004894d4;
+  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
+    *puVar12 = *(undefined4 *)puVar11;
+    puVar11 = puVar11 + 4;
     puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
   }
   _DAT_004894b0 = 0xc2340000;
   _DAT_004894b4 = 0x43520000;
-  pfVar7 = (float *)&DAT_004895bc;
+  pfVar6 = (float *)&DAT_004895bc;
   do {
-    pfVar6 = pfVar7 + 7;
-    *pfVar7 = *pfVar7 + 10.0;
-    pfVar7[1] = pfVar7[1] + 10.0;
-    pfVar7 = pfVar6;
-  } while ((int)pfVar6 < 0x48962c);
+    pfVar5 = pfVar6 + 7;
+    *pfVar6 = *pfVar6 + 10.0;
+    pfVar6[1] = pfVar6[1] + 10.0;
+    pfVar6 = pfVar5;
+  } while ((int)pfVar5 < 0x48962c);
   _DAT_004894d0 = &LAB_0044ed80;
   _DAT_0048949c = 1;
-  puVar12 = &DAT_0048fba8;
-  puVar13 = &DAT_004897ec;
-  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *puVar13 = *puVar12;
+  puVar3 = &ui_menu_item_element;
+  puVar12 = &DAT_004897ec;
+  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
+    *puVar12 = *(undefined4 *)puVar3;
+    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
     puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
   }
   _DAT_004897cc = 0x43e70000;
   _DAT_004897c8 = 0xc25c0000;
   puVar12 = &DAT_00488f8c;
   puVar13 = &DAT_004898d4;
-  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
+  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
     *puVar13 = *puVar12;
     puVar12 = puVar12 + 1;
     puVar13 = puVar13 + 1;
@@ -39264,12 +39287,12 @@ void ui_menu_layout_init(void)
   _DAT_004897e0 = 0x30;
   _DAT_0048c94c = 0x42340000;
   _DAT_0048c934 = 1;
-  puVar12 = &DAT_0048fd78;
-  puVar13 = &DAT_0048cc84;
-  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *puVar13 = *puVar12;
+  puVar11 = ui_menu_item_element._pad4 + 0xac;
+  puVar12 = &DAT_0048cc84;
+  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
+    *puVar12 = *(undefined4 *)puVar11;
+    puVar11 = puVar11 + 4;
     puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
   }
   _DAT_0048cc64 = 0x42dc0000;
   _DAT_0048cc60 = 0xc2340000;
@@ -39277,14 +39300,14 @@ void ui_menu_layout_init(void)
   DAT_0048cc58 = DAT_0048cc58 + 100;
   _DAT_0048cf78 = 0xc3340000;
   _DAT_0048cf7c = 0x43070000;
+  puVar11 = ui_menu_item_element._pad3;
   _DAT_0048cc4c = 1;
   _DAT_0048cf64 = 1;
-  puVar12 = &DAT_0048fc90;
-  puVar13 = &DAT_0048d2b4;
-  for (iVar8 = 0x3a; iVar9 = config_blob.screen_width, iVar8 != 0; iVar8 = iVar8 + -1) {
-    *puVar13 = *puVar12;
+  puVar12 = &DAT_0048d2b4;
+  for (iVar7 = 0x3a; iVar8 = config_blob.screen_width, puVar11 = puVar11 + 4, iVar7 != 0;
+      iVar7 = iVar7 + -1) {
+    *puVar12 = *(undefined4 *)puVar11;
     puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
   }
   _DAT_0048d290 = 0xc3250000;
   if (config_blob.screen_width < 0x281) {
@@ -39293,18 +39316,18 @@ void ui_menu_layout_init(void)
   DAT_0048d294 = 0x43480000;
   _DAT_0048d2b0 = &LAB_00448cd0;
   _DAT_0048d27c = 1;
-  puVar12 = &DAT_0048fba8;
-  puVar13 = &DAT_0048d5cc;
-  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *puVar13 = *puVar12;
+  puVar3 = &ui_menu_item_element;
+  puVar12 = &DAT_0048d5cc;
+  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
+    *puVar12 = *(undefined4 *)puVar3;
+    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
     puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
   }
   _DAT_0048d5a8 = 0xc31b0000;
   _DAT_0048d5ac = 0x43d20000;
   puVar12 = &DAT_00488f8c;
   puVar13 = &DAT_0048d6b4;
-  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
+  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
     *puVar13 = *puVar12;
     puVar12 = puVar12 + 1;
     puVar13 = puVar13 + 1;
@@ -39315,12 +39338,12 @@ void ui_menu_layout_init(void)
   _DAT_0048d594 = 0;
   _DAT_0048d5c0 = 0x30;
   _DAT_0048d8ac = 1;
-  puVar12 = &DAT_0048fd78;
-  puVar13 = &DAT_0048dbfc;
-  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *puVar13 = *puVar12;
+  puVar11 = ui_menu_item_element._pad4 + 0xac;
+  puVar12 = &DAT_0048dbfc;
+  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
+    *puVar12 = *(undefined4 *)puVar11;
+    puVar11 = puVar11 + 4;
     puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
   }
   _DAT_0048dbd8 = 0xc2340000;
   DAT_0048dbd0 = DAT_0048dbd0 + 100;
@@ -39330,12 +39353,12 @@ void ui_menu_layout_init(void)
   _DAT_0048dbc4 = 1;
   _DAT_0048def0 = 0xc3070000;
   _DAT_0048dedc = 1;
-  puVar12 = &DAT_0048fd78;
-  puVar13 = &DAT_0048e22c;
-  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *puVar13 = *puVar12;
+  puVar11 = ui_menu_item_element._pad4 + 0xac;
+  puVar12 = &DAT_0048e22c;
+  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
+    *puVar12 = *(undefined4 *)puVar11;
+    puVar11 = puVar11 + 4;
     puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
   }
   _DAT_0048e20c = 0x43390000;
   _DAT_0048e208 = 0xc0a00000;
@@ -39344,27 +39367,26 @@ void ui_menu_layout_init(void)
   _DAT_0048e1f4 = 1;
   _DAT_0048e520 = 0xc3070000;
   _DAT_0048e50c = 1;
-  puVar12 = &DAT_0048fd78;
-  puVar13 = &DAT_0048e85c;
-  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *puVar13 = *puVar12;
+  puVar11 = ui_menu_item_element._pad4 + 0xac;
+  puVar12 = &DAT_0048e85c;
+  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
+    *puVar12 = *(undefined4 *)puVar11;
+    puVar11 = puVar11 + 4;
     puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
   }
   _DAT_0048e83c = 0x43390000;
   _DAT_0048e838 = 0xc0a00000;
   _DAT_0048e824 = 1;
-  _DAT_0048a110 = (float)(iVar9 + -0x15e);
-  puVar12 = &DAT_0048fc90;
-  puVar13 = &DAT_0048a134;
-  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *puVar13 = *puVar12;
+  puVar11 = ui_menu_item_element._pad3;
+  _DAT_0048a110 = (float)(iVar8 + -0x15e);
+  puVar12 = &DAT_0048a134;
+  for (iVar7 = 0x3a; puVar11 = puVar11 + 4, iVar7 != 0; iVar7 = iVar7 + -1) {
+    *puVar12 = *(undefined4 *)puVar11;
     puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
   }
   _DAT_0048a114 = 0x43480000;
-  if (iVar9 < 0x321) {
-    if (iVar9 < 0x281) {
+  if (iVar8 < 0x321) {
+    if (iVar8 < 0x281) {
       _DAT_0048a110 = _DAT_0048a110 + 10.0;
     }
     else {
@@ -39378,250 +39400,250 @@ void ui_menu_layout_init(void)
   DAT_0048a40c = 1;
   _DAT_00489ae4 = 0x42f40000;
   _DAT_00489ae0 = 0xc3250000;
-  if (iVar9 < 0x281) {
+  if (iVar8 < 0x281) {
     _DAT_00489ae0 = 0xc3570000;
   }
   _DAT_00489acc = 1;
-  puVar12 = &DAT_0048fd78;
-  puVar13 = &DAT_00489e1c;
-  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *puVar13 = *puVar12;
+  puVar11 = ui_menu_item_element._pad4 + 0xac;
+  puVar12 = &DAT_00489e1c;
+  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
+    *puVar12 = *(undefined4 *)puVar11;
+    puVar11 = puVar11 + 4;
     puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
   }
   fStack_30 = -60.0;
   fStack_2c = 185.0;
   _DAT_00489dfc = 0x43390000;
   _DAT_00489df8 = 0xc20c0000;
-  if (iVar9 < 0x281) {
+  if (iVar8 < 0x281) {
     _DAT_00489df8 = 0xc2aa0000;
   }
   DAT_00489de4 = 1;
   DAT_0048eb48 = 500;
-  piVar5 = (int *)&DAT_0048f16c;
-  iVar8 = -0xb;
+  piVar4 = (int *)&DAT_0048f16c;
+  iVar7 = -0xb;
   do {
-    if (iVar9 < 0x281) {
-      fVar10 = (float)iVar8;
+    if (iVar8 < 0x281) {
+      fVar9 = (float)iVar7;
       iVar15 = 0;
       do {
-        pfVar7 = (float *)(*piVar5 + 0x3c + iVar15);
-        *pfVar7 = *(float *)(*piVar5 + 0x3c + iVar15) * 0.9;
-        pfVar7[1] = pfVar7[1] * 0.9;
-        pfVar7 = (float *)(*piVar5 + 0x20c + iVar15);
-        *pfVar7 = *(float *)(*piVar5 + 0x20c + iVar15) * 0.9;
-        pfVar7[1] = pfVar7[1] * 0.9;
-        pfVar7 = (float *)(*piVar5 + 0x124 + iVar15);
-        *pfVar7 = *(float *)(*piVar5 + 0x124 + iVar15) * 0.9;
-        pfVar7[1] = pfVar7[1] * 0.9;
-        *(float *)(*piVar5 + 0x40 + iVar15) = *(float *)(*piVar5 + 0x40 + iVar15) - fVar10;
-        *(float *)(*piVar5 + 0x210 + iVar15) = *(float *)(*piVar5 + 0x210 + iVar15) - fVar10;
-        pfVar7 = (float *)(*piVar5 + 0x128 + iVar15);
-        pfVar6 = (float *)(*piVar5 + 0x128 + iVar15);
+        pfVar6 = (float *)(*piVar4 + 0x3c + iVar15);
+        *pfVar6 = *(float *)(*piVar4 + 0x3c + iVar15) * 0.9;
+        pfVar6[1] = pfVar6[1] * 0.9;
+        pfVar6 = (float *)(*piVar4 + 0x20c + iVar15);
+        *pfVar6 = *(float *)(*piVar4 + 0x20c + iVar15) * 0.9;
+        pfVar6[1] = pfVar6[1] * 0.9;
+        pfVar6 = (float *)(*piVar4 + 0x124 + iVar15);
+        *pfVar6 = *(float *)(*piVar4 + 0x124 + iVar15) * 0.9;
+        pfVar6[1] = pfVar6[1] * 0.9;
+        *(float *)(*piVar4 + 0x40 + iVar15) = *(float *)(*piVar4 + 0x40 + iVar15) - fVar9;
+        *(float *)(*piVar4 + 0x210 + iVar15) = *(float *)(*piVar4 + 0x210 + iVar15) - fVar9;
+        pfVar6 = (float *)(*piVar4 + 0x128 + iVar15);
+        pfVar5 = (float *)(*piVar4 + 0x128 + iVar15);
         iVar15 = iVar15 + 0x1c;
-        *pfVar6 = *pfVar7 - fVar10;
-        iVar9 = config_blob.screen_width;
+        *pfVar5 = *pfVar6 - fVar9;
+        iVar8 = config_blob.screen_width;
       } while (iVar15 < 0x70);
     }
-    iVar8 = iVar8 + 0xb;
-    piVar5 = piVar5 + 1;
-  } while (iVar8 < 0x38);
-  piVar5 = (int *)&DAT_0048f1c0;
-  iVar8 = -5;
+    iVar7 = iVar7 + 0xb;
+    piVar4 = piVar4 + 1;
+  } while (iVar7 < 0x38);
+  piVar4 = (int *)&DAT_0048f1c0;
+  iVar7 = -5;
   iVar15 = -0xb;
   do {
-    if (iVar9 < 0x281) {
-      fVar10 = (float)iVar15;
-      iVar3 = 0;
+    if (iVar8 < 0x281) {
+      fVar9 = (float)iVar15;
+      iVar2 = 0;
       do {
-        pfVar7 = (float *)(*piVar5 + 0x3c + iVar3);
-        *pfVar7 = *(float *)(*piVar5 + 0x3c + iVar3) * 0.8;
-        pfVar7[1] = pfVar7[1] * 0.8;
-        pfVar7 = (float *)(*piVar5 + 0x20c + iVar3);
-        *pfVar7 = *(float *)(*piVar5 + 0x20c + iVar3) * 0.8;
-        pfVar7[1] = pfVar7[1] * 0.8;
-        pfVar7 = (float *)(*piVar5 + 0x124 + iVar3);
-        *pfVar7 = *(float *)(*piVar5 + 0x124 + iVar3) * 0.8;
-        pfVar7[1] = pfVar7[1] * 0.8;
-        *(float *)(*piVar5 + 0x40 + iVar3) = *(float *)(*piVar5 + 0x40 + iVar3) - fVar10;
-        *(float *)(*piVar5 + 0x210 + iVar3) = *(float *)(*piVar5 + 0x210 + iVar3) - fVar10;
-        pfVar7 = (float *)(*piVar5 + 0x128 + iVar3);
-        pfVar6 = (float *)(*piVar5 + 0x128 + iVar3);
-        iVar3 = iVar3 + 0x1c;
-        *pfVar6 = *pfVar7 - fVar10;
-        iVar9 = config_blob.screen_width;
-      } while (iVar3 < 0x70);
+        pfVar6 = (float *)(*piVar4 + 0x3c + iVar2);
+        *pfVar6 = *(float *)(*piVar4 + 0x3c + iVar2) * 0.8;
+        pfVar6[1] = pfVar6[1] * 0.8;
+        pfVar6 = (float *)(*piVar4 + 0x20c + iVar2);
+        *pfVar6 = *(float *)(*piVar4 + 0x20c + iVar2) * 0.8;
+        pfVar6[1] = pfVar6[1] * 0.8;
+        pfVar6 = (float *)(*piVar4 + 0x124 + iVar2);
+        *pfVar6 = *(float *)(*piVar4 + 0x124 + iVar2) * 0.8;
+        pfVar6[1] = pfVar6[1] * 0.8;
+        *(float *)(*piVar4 + 0x40 + iVar2) = *(float *)(*piVar4 + 0x40 + iVar2) - fVar9;
+        *(float *)(*piVar4 + 0x210 + iVar2) = *(float *)(*piVar4 + 0x210 + iVar2) - fVar9;
+        pfVar6 = (float *)(*piVar4 + 0x128 + iVar2);
+        pfVar5 = (float *)(*piVar4 + 0x128 + iVar2);
+        iVar2 = iVar2 + 0x1c;
+        *pfVar5 = *pfVar6 - fVar9;
+        iVar8 = config_blob.screen_width;
+      } while (iVar2 < 0x70);
     }
-    else if (iVar9 < 0x321) {
-      fVar10 = (float)iVar8;
-      iVar3 = 0;
+    else if (iVar8 < 0x321) {
+      fVar9 = (float)iVar7;
+      iVar2 = 0;
       do {
-        pfVar7 = (float *)(*piVar5 + 0x3c + iVar3);
-        *pfVar7 = *(float *)(*piVar5 + 0x3c + iVar3) * 0.9;
-        pfVar7[1] = pfVar7[1] * 0.9;
-        pfVar7 = (float *)(*piVar5 + 0x20c + iVar3);
-        *pfVar7 = *(float *)(*piVar5 + 0x20c + iVar3) * 0.9;
-        pfVar7[1] = pfVar7[1] * 0.9;
-        pfVar7 = (float *)(*piVar5 + 0x124 + iVar3);
-        *pfVar7 = *(float *)(*piVar5 + 0x124 + iVar3) * 0.9;
-        pfVar7[1] = pfVar7[1] * 0.9;
-        *(float *)(*piVar5 + 0x40 + iVar3) = *(float *)(*piVar5 + 0x40 + iVar3) - fVar10;
-        *(float *)(*piVar5 + 0x210 + iVar3) = *(float *)(*piVar5 + 0x210 + iVar3) - fVar10;
-        pfVar7 = (float *)(*piVar5 + 0x128 + iVar3);
-        pfVar6 = (float *)(*piVar5 + 0x128 + iVar3);
-        iVar3 = iVar3 + 0x1c;
-        *pfVar6 = *pfVar7 - fVar10;
-        iVar9 = config_blob.screen_width;
-      } while (iVar3 < 0x70);
+        pfVar6 = (float *)(*piVar4 + 0x3c + iVar2);
+        *pfVar6 = *(float *)(*piVar4 + 0x3c + iVar2) * 0.9;
+        pfVar6[1] = pfVar6[1] * 0.9;
+        pfVar6 = (float *)(*piVar4 + 0x20c + iVar2);
+        *pfVar6 = *(float *)(*piVar4 + 0x20c + iVar2) * 0.9;
+        pfVar6[1] = pfVar6[1] * 0.9;
+        pfVar6 = (float *)(*piVar4 + 0x124 + iVar2);
+        *pfVar6 = *(float *)(*piVar4 + 0x124 + iVar2) * 0.9;
+        pfVar6[1] = pfVar6[1] * 0.9;
+        *(float *)(*piVar4 + 0x40 + iVar2) = *(float *)(*piVar4 + 0x40 + iVar2) - fVar9;
+        *(float *)(*piVar4 + 0x210 + iVar2) = *(float *)(*piVar4 + 0x210 + iVar2) - fVar9;
+        pfVar6 = (float *)(*piVar4 + 0x128 + iVar2);
+        pfVar5 = (float *)(*piVar4 + 0x128 + iVar2);
+        iVar2 = iVar2 + 0x1c;
+        *pfVar5 = *pfVar6 - fVar9;
+        iVar8 = config_blob.screen_width;
+      } while (iVar2 < 0x70);
     }
     iVar15 = iVar15 + 0xb;
-    iVar8 = iVar8 + 5;
-    piVar5 = piVar5 + 1;
+    iVar7 = iVar7 + 5;
+    piVar4 = piVar4 + 1;
   } while (iVar15 < 0x17);
-  if (iVar9 < 0x281) {
-    iVar8 = 0;
+  if (iVar8 < 0x281) {
+    iVar7 = 0;
     do {
-      pfVar7 = (float *)(ui_menu_layout_c + iVar8 + 0x3c);
-      *pfVar7 = *(float *)(ui_menu_layout_c + iVar8 + 0x3c) * 0.8;
-      pfVar7[1] = pfVar7[1] * 0.8;
-      pfVar7 = (float *)(ui_menu_layout_c + iVar8 + 0x20c);
-      *pfVar7 = *(float *)(ui_menu_layout_c + iVar8 + 0x20c) * 0.8;
-      pfVar7[1] = pfVar7[1] * 0.8;
-      pfVar7 = (float *)(ui_menu_layout_c + iVar8 + 0x124);
-      iVar15 = iVar8 + 0x1c;
-      *pfVar7 = *(float *)(ui_menu_layout_c + iVar8 + 0x124) * 0.8;
-      pfVar7[1] = pfVar7[1] * 0.8;
-      *(float *)(ui_menu_layout_c + iVar8 + 0x40) =
-           *(float *)(ui_menu_layout_c + iVar8 + 0x40) - 11.0;
-      *(float *)(ui_menu_layout_c + iVar8 + 0x210) =
-           *(float *)(ui_menu_layout_c + iVar8 + 0x210) - 11.0;
-      *(float *)(ui_menu_layout_c + iVar8 + 0x128) =
-           *(float *)(ui_menu_layout_c + iVar8 + 0x128) - 11.0;
-      iVar8 = iVar15;
-      iVar9 = config_blob.screen_width;
+      pfVar6 = (float *)(ui_menu_layout_c + iVar7 + 0x3c);
+      *pfVar6 = *(float *)(ui_menu_layout_c + iVar7 + 0x3c) * 0.8;
+      pfVar6[1] = pfVar6[1] * 0.8;
+      pfVar6 = (float *)(ui_menu_layout_c + iVar7 + 0x20c);
+      *pfVar6 = *(float *)(ui_menu_layout_c + iVar7 + 0x20c) * 0.8;
+      pfVar6[1] = pfVar6[1] * 0.8;
+      pfVar6 = (float *)(ui_menu_layout_c + iVar7 + 0x124);
+      iVar15 = iVar7 + 0x1c;
+      *pfVar6 = *(float *)(ui_menu_layout_c + iVar7 + 0x124) * 0.8;
+      pfVar6[1] = pfVar6[1] * 0.8;
+      *(float *)(ui_menu_layout_c + iVar7 + 0x40) =
+           *(float *)(ui_menu_layout_c + iVar7 + 0x40) - 11.0;
+      *(float *)(ui_menu_layout_c + iVar7 + 0x210) =
+           *(float *)(ui_menu_layout_c + iVar7 + 0x210) - 11.0;
+      *(float *)(ui_menu_layout_c + iVar7 + 0x128) =
+           *(float *)(ui_menu_layout_c + iVar7 + 0x128) - 11.0;
+      iVar7 = iVar15;
+      iVar8 = config_blob.screen_width;
     } while (iVar15 < 0x70);
   }
-  else if (iVar9 < 0x321) {
-    iVar8 = 0;
+  else if (iVar8 < 0x321) {
+    iVar7 = 0;
     do {
-      pfVar7 = (float *)(ui_menu_layout_c + iVar8 + 0x3c);
-      *pfVar7 = *(float *)(ui_menu_layout_c + iVar8 + 0x3c) * 0.9;
-      pfVar7[1] = pfVar7[1] * 0.9;
-      pfVar7 = (float *)(ui_menu_layout_c + iVar8 + 0x20c);
-      *pfVar7 = *(float *)(ui_menu_layout_c + iVar8 + 0x20c) * 0.9;
-      pfVar7[1] = pfVar7[1] * 0.9;
-      pfVar7 = (float *)(ui_menu_layout_c + iVar8 + 0x124);
-      iVar15 = iVar8 + 0x1c;
-      *pfVar7 = *(float *)(ui_menu_layout_c + iVar8 + 0x124) * 0.9;
-      pfVar7[1] = pfVar7[1] * 0.9;
-      *(float *)(ui_menu_layout_c + iVar8 + 0x40) =
-           *(float *)(ui_menu_layout_c + iVar8 + 0x40) - 3.0;
-      *(float *)(ui_menu_layout_c + iVar8 + 0x210) =
-           *(float *)(ui_menu_layout_c + iVar8 + 0x210) - 3.0;
-      *(float *)(ui_menu_layout_c + iVar8 + 0x128) =
-           *(float *)(ui_menu_layout_c + iVar8 + 0x128) - 3.0;
-      iVar8 = iVar15;
-      iVar9 = config_blob.screen_width;
+      pfVar6 = (float *)(ui_menu_layout_c + iVar7 + 0x3c);
+      *pfVar6 = *(float *)(ui_menu_layout_c + iVar7 + 0x3c) * 0.9;
+      pfVar6[1] = pfVar6[1] * 0.9;
+      pfVar6 = (float *)(ui_menu_layout_c + iVar7 + 0x20c);
+      *pfVar6 = *(float *)(ui_menu_layout_c + iVar7 + 0x20c) * 0.9;
+      pfVar6[1] = pfVar6[1] * 0.9;
+      pfVar6 = (float *)(ui_menu_layout_c + iVar7 + 0x124);
+      iVar15 = iVar7 + 0x1c;
+      *pfVar6 = *(float *)(ui_menu_layout_c + iVar7 + 0x124) * 0.9;
+      pfVar6[1] = pfVar6[1] * 0.9;
+      *(float *)(ui_menu_layout_c + iVar7 + 0x40) =
+           *(float *)(ui_menu_layout_c + iVar7 + 0x40) - 3.0;
+      *(float *)(ui_menu_layout_c + iVar7 + 0x210) =
+           *(float *)(ui_menu_layout_c + iVar7 + 0x210) - 3.0;
+      *(float *)(ui_menu_layout_c + iVar7 + 0x128) =
+           *(float *)(ui_menu_layout_c + iVar7 + 0x128) - 3.0;
+      iVar7 = iVar15;
+      iVar8 = config_blob.screen_width;
     } while (iVar15 < 0x70);
   }
-  if (iVar9 < 0x281) {
-    iVar8 = 0;
+  if (iVar8 < 0x281) {
+    iVar7 = 0;
     do {
-      pfVar7 = (float *)(ui_menu_layout_a + iVar8 + 0x3c);
-      *pfVar7 = *(float *)(ui_menu_layout_a + iVar8 + 0x3c) * 0.8;
-      pfVar7[1] = pfVar7[1] * 0.8;
-      pfVar7 = (float *)(ui_menu_layout_a + iVar8 + 0x20c);
-      *pfVar7 = *(float *)(ui_menu_layout_a + iVar8 + 0x20c) * 0.8;
-      pfVar7[1] = pfVar7[1] * 0.8;
-      pfVar7 = (float *)(ui_menu_layout_a + iVar8 + 0x124);
-      iVar15 = iVar8 + 0x1c;
-      *pfVar7 = *(float *)(ui_menu_layout_a + iVar8 + 0x124) * 0.8;
-      pfVar7[1] = pfVar7[1] * 0.8;
-      *(float *)(ui_menu_layout_a + iVar8 + 0x40) =
-           *(float *)(ui_menu_layout_a + iVar8 + 0x40) - 11.0;
-      *(float *)(ui_menu_layout_a + iVar8 + 0x210) =
-           *(float *)(ui_menu_layout_a + iVar8 + 0x210) - 11.0;
-      *(float *)(ui_menu_layout_a + iVar8 + 0x128) =
-           *(float *)(ui_menu_layout_a + iVar8 + 0x128) - 11.0;
-      iVar8 = iVar15;
-      iVar9 = config_blob.screen_width;
+      pfVar6 = (float *)(ui_menu_layout_a + iVar7 + 0x3c);
+      *pfVar6 = *(float *)(ui_menu_layout_a + iVar7 + 0x3c) * 0.8;
+      pfVar6[1] = pfVar6[1] * 0.8;
+      pfVar6 = (float *)(ui_menu_layout_a + iVar7 + 0x20c);
+      *pfVar6 = *(float *)(ui_menu_layout_a + iVar7 + 0x20c) * 0.8;
+      pfVar6[1] = pfVar6[1] * 0.8;
+      pfVar6 = (float *)(ui_menu_layout_a + iVar7 + 0x124);
+      iVar15 = iVar7 + 0x1c;
+      *pfVar6 = *(float *)(ui_menu_layout_a + iVar7 + 0x124) * 0.8;
+      pfVar6[1] = pfVar6[1] * 0.8;
+      *(float *)(ui_menu_layout_a + iVar7 + 0x40) =
+           *(float *)(ui_menu_layout_a + iVar7 + 0x40) - 11.0;
+      *(float *)(ui_menu_layout_a + iVar7 + 0x210) =
+           *(float *)(ui_menu_layout_a + iVar7 + 0x210) - 11.0;
+      *(float *)(ui_menu_layout_a + iVar7 + 0x128) =
+           *(float *)(ui_menu_layout_a + iVar7 + 0x128) - 11.0;
+      iVar7 = iVar15;
+      iVar8 = config_blob.screen_width;
     } while (iVar15 < 0x70);
   }
-  else if (iVar9 < 0x321) {
-    iVar8 = 0;
+  else if (iVar8 < 0x321) {
+    iVar7 = 0;
     do {
-      pfVar7 = (float *)(ui_menu_layout_a + iVar8 + 0x3c);
-      *pfVar7 = *(float *)(ui_menu_layout_a + iVar8 + 0x3c) * 0.9;
-      pfVar7[1] = pfVar7[1] * 0.9;
-      pfVar7 = (float *)(ui_menu_layout_a + iVar8 + 0x20c);
-      *pfVar7 = *(float *)(ui_menu_layout_a + iVar8 + 0x20c) * 0.9;
-      pfVar7[1] = pfVar7[1] * 0.9;
-      pfVar7 = (float *)(ui_menu_layout_a + iVar8 + 0x124);
-      iVar15 = iVar8 + 0x1c;
-      *pfVar7 = *(float *)(ui_menu_layout_a + iVar8 + 0x124) * 0.9;
-      pfVar7[1] = pfVar7[1] * 0.9;
-      *(float *)(ui_menu_layout_a + iVar8 + 0x40) =
-           *(float *)(ui_menu_layout_a + iVar8 + 0x40) - 3.0;
-      *(float *)(ui_menu_layout_a + iVar8 + 0x210) =
-           *(float *)(ui_menu_layout_a + iVar8 + 0x210) - 3.0;
-      *(float *)(ui_menu_layout_a + iVar8 + 0x128) =
-           *(float *)(ui_menu_layout_a + iVar8 + 0x128) - 3.0;
-      iVar8 = iVar15;
-      iVar9 = config_blob.screen_width;
+      pfVar6 = (float *)(ui_menu_layout_a + iVar7 + 0x3c);
+      *pfVar6 = *(float *)(ui_menu_layout_a + iVar7 + 0x3c) * 0.9;
+      pfVar6[1] = pfVar6[1] * 0.9;
+      pfVar6 = (float *)(ui_menu_layout_a + iVar7 + 0x20c);
+      *pfVar6 = *(float *)(ui_menu_layout_a + iVar7 + 0x20c) * 0.9;
+      pfVar6[1] = pfVar6[1] * 0.9;
+      pfVar6 = (float *)(ui_menu_layout_a + iVar7 + 0x124);
+      iVar15 = iVar7 + 0x1c;
+      *pfVar6 = *(float *)(ui_menu_layout_a + iVar7 + 0x124) * 0.9;
+      pfVar6[1] = pfVar6[1] * 0.9;
+      *(float *)(ui_menu_layout_a + iVar7 + 0x40) =
+           *(float *)(ui_menu_layout_a + iVar7 + 0x40) - 3.0;
+      *(float *)(ui_menu_layout_a + iVar7 + 0x210) =
+           *(float *)(ui_menu_layout_a + iVar7 + 0x210) - 3.0;
+      *(float *)(ui_menu_layout_a + iVar7 + 0x128) =
+           *(float *)(ui_menu_layout_a + iVar7 + 0x128) - 3.0;
+      iVar7 = iVar15;
+      iVar8 = config_blob.screen_width;
     } while (iVar15 < 0x70);
   }
-  if (iVar9 < 0x281) {
-    iVar8 = 0;
+  if (iVar8 < 0x281) {
+    iVar7 = 0;
     do {
-      pfVar7 = (float *)(ui_menu_layout_b + iVar8 + 0x3c);
-      *pfVar7 = *(float *)(ui_menu_layout_b + iVar8 + 0x3c) * 0.8;
-      pfVar7[1] = pfVar7[1] * 0.8;
-      pfVar7 = (float *)(ui_menu_layout_b + iVar8 + 0x20c);
-      *pfVar7 = *(float *)(ui_menu_layout_b + iVar8 + 0x20c) * 0.8;
-      pfVar7[1] = pfVar7[1] * 0.8;
-      pfVar7 = (float *)(ui_menu_layout_b + iVar8 + 0x124);
-      iVar9 = iVar8 + 0x1c;
-      *pfVar7 = *(float *)(ui_menu_layout_b + iVar8 + 0x124) * 0.8;
-      pfVar7[1] = pfVar7[1] * 0.8;
-      *(float *)(ui_menu_layout_b + iVar8 + 0x40) =
-           *(float *)(ui_menu_layout_b + iVar8 + 0x40) - 11.0;
-      *(float *)(ui_menu_layout_b + iVar8 + 0x210) =
-           *(float *)(ui_menu_layout_b + iVar8 + 0x210) - 11.0;
-      *(float *)(ui_menu_layout_b + iVar8 + 0x128) =
-           *(float *)(ui_menu_layout_b + iVar8 + 0x128) - 11.0;
-      iVar8 = iVar9;
-    } while (iVar9 < 0x70);
+      pfVar6 = (float *)(ui_menu_layout_b + iVar7 + 0x3c);
+      *pfVar6 = *(float *)(ui_menu_layout_b + iVar7 + 0x3c) * 0.8;
+      pfVar6[1] = pfVar6[1] * 0.8;
+      pfVar6 = (float *)(ui_menu_layout_b + iVar7 + 0x20c);
+      *pfVar6 = *(float *)(ui_menu_layout_b + iVar7 + 0x20c) * 0.8;
+      pfVar6[1] = pfVar6[1] * 0.8;
+      pfVar6 = (float *)(ui_menu_layout_b + iVar7 + 0x124);
+      iVar8 = iVar7 + 0x1c;
+      *pfVar6 = *(float *)(ui_menu_layout_b + iVar7 + 0x124) * 0.8;
+      pfVar6[1] = pfVar6[1] * 0.8;
+      *(float *)(ui_menu_layout_b + iVar7 + 0x40) =
+           *(float *)(ui_menu_layout_b + iVar7 + 0x40) - 11.0;
+      *(float *)(ui_menu_layout_b + iVar7 + 0x210) =
+           *(float *)(ui_menu_layout_b + iVar7 + 0x210) - 11.0;
+      *(float *)(ui_menu_layout_b + iVar7 + 0x128) =
+           *(float *)(ui_menu_layout_b + iVar7 + 0x128) - 11.0;
+      iVar7 = iVar8;
+    } while (iVar8 < 0x70);
   }
-  else if (iVar9 < 0x321) {
-    iVar8 = 0;
+  else if (iVar8 < 0x321) {
+    iVar7 = 0;
     do {
-      pfVar7 = (float *)(ui_menu_layout_b + iVar8 + 0x3c);
-      *pfVar7 = *(float *)(ui_menu_layout_b + iVar8 + 0x3c) * 0.9;
-      pfVar7[1] = pfVar7[1] * 0.9;
-      pfVar7 = (float *)(ui_menu_layout_b + iVar8 + 0x20c);
-      *pfVar7 = *(float *)(ui_menu_layout_b + iVar8 + 0x20c) * 0.9;
-      pfVar7[1] = pfVar7[1] * 0.9;
-      pfVar7 = (float *)(ui_menu_layout_b + iVar8 + 0x124);
-      iVar9 = iVar8 + 0x1c;
-      *pfVar7 = *(float *)(ui_menu_layout_b + iVar8 + 0x124) * 0.9;
-      pfVar7[1] = pfVar7[1] * 0.9;
-      *(float *)(ui_menu_layout_b + iVar8 + 0x40) =
-           *(float *)(ui_menu_layout_b + iVar8 + 0x40) - 3.0;
-      *(float *)(ui_menu_layout_b + iVar8 + 0x210) =
-           *(float *)(ui_menu_layout_b + iVar8 + 0x210) - 3.0;
-      *(float *)(ui_menu_layout_b + iVar8 + 0x128) =
-           *(float *)(ui_menu_layout_b + iVar8 + 0x128) - 3.0;
-      iVar8 = iVar9;
-    } while (iVar9 < 0x70);
+      pfVar6 = (float *)(ui_menu_layout_b + iVar7 + 0x3c);
+      *pfVar6 = *(float *)(ui_menu_layout_b + iVar7 + 0x3c) * 0.9;
+      pfVar6[1] = pfVar6[1] * 0.9;
+      pfVar6 = (float *)(ui_menu_layout_b + iVar7 + 0x20c);
+      *pfVar6 = *(float *)(ui_menu_layout_b + iVar7 + 0x20c) * 0.9;
+      pfVar6[1] = pfVar6[1] * 0.9;
+      pfVar6 = (float *)(ui_menu_layout_b + iVar7 + 0x124);
+      iVar8 = iVar7 + 0x1c;
+      *pfVar6 = *(float *)(ui_menu_layout_b + iVar7 + 0x124) * 0.9;
+      pfVar6[1] = pfVar6[1] * 0.9;
+      *(float *)(ui_menu_layout_b + iVar7 + 0x40) =
+           *(float *)(ui_menu_layout_b + iVar7 + 0x40) - 3.0;
+      *(float *)(ui_menu_layout_b + iVar7 + 0x210) =
+           *(float *)(ui_menu_layout_b + iVar7 + 0x210) - 3.0;
+      *(float *)(ui_menu_layout_b + iVar7 + 0x128) =
+           *(float *)(ui_menu_layout_b + iVar7 + 0x128) - 3.0;
+      iVar7 = iVar8;
+    } while (iVar8 < 0x70);
   }
   FUN_0044faa0(&DAT_0048f20c);
   _DAT_0048f240 = FUN_00446140;
-  puVar12 = &DAT_0048fba8;
-  puVar13 = &perk_prompt_bounds_min_x;
-  for (iVar8 = 0x3a; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *puVar13 = *puVar12;
+  puVar3 = &ui_menu_item_element;
+  puVar12 = &perk_prompt_bounds_min_x;
+  for (iVar7 = 0x3a; iVar7 != 0; iVar7 = iVar7 + -1) {
+    *puVar12 = *(undefined4 *)puVar3;
+    puVar3 = (ui_element_t *)(puVar3->_pad0 + 2);
     puVar12 = puVar12 + 1;
-    puVar13 = puVar13 + 1;
   }
   _DAT_0048f25c = 0x3f800000;
   _DAT_0048f278 = 0;
@@ -39631,18 +39653,18 @@ void ui_menu_layout_init(void)
   fStack_30 = -230.0;
   fStack_2c = -27.0;
   ui_element_set_rect((ui_element_t *)&DAT_0048f330,75.0,25.0,&fStack_30);
-  pfVar7 = (float *)&DAT_0048f334;
+  pfVar6 = (float *)&DAT_0048f334;
   do {
-    pfVar6 = pfVar7 + 7;
-    pfVar7[-0x3b] = pfVar7[-0x3b] - 300.0;
-    pfVar7[-0x3b] = pfVar7[-0x3b] * 0.75;
-    pfVar7[-0x3a] = pfVar7[-0x3a] * 0.75;
-    pfVar7[-1] = pfVar7[-1] * 0.85;
-    *pfVar7 = *pfVar7 * 0.85;
-    pfVar7[-1] = pfVar7[-1] - 46.0;
-    *pfVar7 = *pfVar7 - 4.0;
-    pfVar7 = pfVar6;
-  } while ((int)pfVar6 < 0x48f3a4);
+    pfVar5 = pfVar6 + 7;
+    pfVar6[-0x3b] = pfVar6[-0x3b] - 300.0;
+    pfVar6[-0x3b] = pfVar6[-0x3b] * 0.75;
+    pfVar6[-0x3a] = pfVar6[-0x3a] * 0.75;
+    pfVar6[-1] = pfVar6[-1] * 0.85;
+    *pfVar6 = *pfVar6 * 0.85;
+    pfVar6[-1] = pfVar6[-1] - 46.0;
+    *pfVar6 = *pfVar6 - 4.0;
+    pfVar6 = pfVar5;
+  } while ((int)pfVar5 < 0x48f3a4);
   if (config_blob.screen_width == 0x280) {
     fStack_30 = 690.0;
     fStack_2c = 80.0;
@@ -39653,35 +39675,35 @@ void ui_menu_layout_init(void)
     fStack_30 = (float)(config_blob.screen_width + 0x32);
     _perk_prompt_origin_y = 0x42200000;
   }
-  piVar5 = (int *)&DAT_0048f16c;
+  piVar4 = (int *)&DAT_0048f16c;
   _perk_prompt_origin_x = fStack_30;
   do {
-    iVar8 = *piVar5;
-    piVar5 = piVar5 + 1;
-    *(float *)(iVar8 + 0x1c) =
-         ((float)config_blob.screen_width * 0.0015625 * 150.0 - 150.0) + *(float *)(iVar8 + 0x1c);
-    iVar8 = config_blob.screen_width;
-  } while ((int)piVar5 < 0x48f20c);
+    iVar7 = *piVar4;
+    piVar4 = piVar4 + 1;
+    *(float *)(iVar7 + 0x1c) =
+         ((float)config_blob.screen_width * 0.0015625 * 150.0 - 150.0) + *(float *)(iVar7 + 0x1c);
+    iVar7 = config_blob.screen_width;
+  } while ((int)piVar4 < 0x48f20c);
   _DAT_0048ee68 = (float)(config_blob.screen_width + -0x15e);
   puVar12 = &DAT_00489de0;
   puVar13 = &DAT_0048ee50;
-  for (iVar9 = 0xc6; iVar9 != 0; iVar9 = iVar9 + -1) {
+  for (iVar8 = 0xc6; iVar8 != 0; iVar8 = iVar8 + -1) {
     *puVar13 = *puVar12;
     puVar12 = puVar12 + 1;
     puVar13 = puVar13 + 1;
   }
   _DAT_0048ee6c = 0x43480000;
-  if (iVar8 < 0x281) {
+  if (iVar7 < 0x281) {
     _DAT_0048ee68 = _DAT_0048ee68 + 80.0;
     _DAT_0048ee6c = 0x433a0000;
   }
   DAT_0048ee54 = 1;
   DAT_0048f164 = 1;
-  ppuVar11 = &ui_element_table_end;
+  ppuVar10 = &ui_element_table_end;
   do {
-    FUN_0044fb50((float)*ppuVar11);
-    ppuVar11 = ppuVar11 + 1;
-  } while ((int)ppuVar11 < 0x48f20c);
+    FUN_0044fb50((float)*ppuVar10);
+    ppuVar10 = ppuVar10 + 1;
+  } while ((int)ppuVar10 < 0x48f20c);
   return;
 }
 
