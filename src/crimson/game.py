@@ -846,18 +846,21 @@ class MenuView:
         #   0 BUY NOW (unused in rewrite), 1 PLAY GAME, 2 OPTIONS, 3 STATISTICS, 4 MODS,
         #   5 OTHER GAMES, 6 QUIT, 7 BACK
         top = 4
-        slot4 = 5 if other_games else 7
-        return [top, 1, 2, 3, slot4, 6]
+        if other_games:
+            return [top, 1, 2, 3, 5, 6]
+        # ui_menu_layout_init swaps table idx 6/7 depending on config var 100:
+        # when empty, QUIT becomes idx 6 and the idx 7 element is inactive.
+        return [top, 1, 2, 3, 6, 7]
 
     @staticmethod
-    def _menu_slot_ys(other_games: bool, y_shift: float) -> list[float]:
+    def _menu_slot_ys(_other_games: bool, y_shift: float) -> list[float]:
         ys = [
             MENU_LABEL_BASE_Y,
             MENU_LABEL_BASE_Y + MENU_LABEL_STEP,
             MENU_LABEL_BASE_Y + MENU_LABEL_STEP * 2.0,
             MENU_LABEL_BASE_Y + MENU_LABEL_STEP * 3.0,
             MENU_LABEL_BASE_Y + MENU_LABEL_STEP * 4.0,
-            MENU_LABEL_BASE_Y + MENU_LABEL_STEP * (5.0 if other_games else 4.0),
+            MENU_LABEL_BASE_Y + MENU_LABEL_STEP * 5.0,
         ]
         return [y + y_shift for y in ys]
 
@@ -868,14 +871,9 @@ class MenuView:
         other_games: bool,
     ) -> list[bool]:
         show_top = mods_available
-        return [
-            show_top,
-            True,
-            True,
-            True,
-            other_games,
-            True,
-        ]
+        if other_games:
+            return [show_top, True, True, True, True, True]
+        return [show_top, True, True, True, True, False]
 
     def _draw_menu_items(self) -> None:
         assets = self._assets
@@ -1071,7 +1069,7 @@ class MenuView:
         del full_version
         max_ms = 300  # sign element at index 0
         show_top = mods_available
-        slot_active = [show_top, True, True, True, other_games, True]
+        slot_active = [show_top, True, True, True, True, other_games]
         for slot, active in enumerate(slot_active):
             if not active:
                 continue
