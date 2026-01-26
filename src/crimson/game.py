@@ -296,6 +296,11 @@ MENU_SCALE_SMALL = 0.8
 MENU_SCALE_LARGE = 1.2
 MENU_SCALE_SHIFT = 10.0
 
+# ui_element_render (0x446c40): shadow pass uses offset (7, 7), tint 0x44444444, and
+# blend factors (src=ZERO, dst=ONE_MINUS_SRC_ALPHA).
+UI_SHADOW_OFFSET = 7.0
+UI_SHADOW_TINT = rl.Color(0x44, 0x44, 0x44, 0x44)
+
 MENU_SIGN_WIDTH = 573.44
 MENU_SIGN_HEIGHT = 143.36
 MENU_SIGN_OFFSET_X = -577.44
@@ -883,7 +888,10 @@ class MenuView:
         item_w = float(item.width)
         item_h = float(item.height)
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
-        for idx, entry in enumerate(self._menu_entries):
+        # Matches ui_elements_update_and_render reverse table iteration:
+        # later entries draw first, earlier entries draw last (on top).
+        for idx in range(len(self._menu_entries) - 1, -1, -1):
+            entry = self._menu_entries[idx]
             pos_x = self._menu_slot_pos_x(entry.slot)
             pos_y = entry.y
             angle_rad, slide_x = self._ui_element_anim(
@@ -905,13 +913,12 @@ class MenuView:
             origin = rl.Vector2(-offset_x, -offset_y)
             rotation_deg = math.degrees(angle_rad)
             if fx_detail:
-                self._draw_ui_quad(
+                self._draw_ui_quad_shadow(
                     texture=item,
                     src=rl.Rectangle(0.0, 0.0, item_w, item_h),
-                    dst=rl.Rectangle(dst.x + 7.0, dst.y + 7.0, dst.width, dst.height),
+                    dst=rl.Rectangle(dst.x + UI_SHADOW_OFFSET, dst.y + UI_SHADOW_OFFSET, dst.width, dst.height),
                     origin=origin,
                     rotation_deg=rotation_deg,
-                    tint=rl.Color(0x44, 0x44, 0x44, 0x44),
                 )
             self._draw_ui_quad(
                 texture=item,
@@ -1112,6 +1119,27 @@ class MenuView:
     ) -> None:
         rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, tint)
 
+    @staticmethod
+    def _draw_ui_quad_shadow(
+        *,
+        texture: rl.Texture2D,
+        src: rl.Rectangle,
+        dst: rl.Rectangle,
+        origin: rl.Vector2,
+        rotation_deg: float,
+    ) -> None:
+        rl.begin_blend_mode(rl.BLEND_CUSTOM_SEPARATE)
+        rl.rl_set_blend_factors_separate(
+            rl.RL_ZERO,
+            rl.RL_ONE_MINUS_SRC_ALPHA,
+            rl.RL_ZERO,
+            rl.RL_ONE,
+            rl.RL_FUNC_ADD,
+            rl.RL_FUNC_ADD,
+        )
+        rl.draw_texture_pro(texture, src, dst, origin, rotation_deg, UI_SHADOW_TINT)
+        rl.end_blend_mode()
+
     def _draw_menu_sign(self) -> None:
         assets = self._assets
         if assets is None or assets.sign is None:
@@ -1137,13 +1165,12 @@ class MenuView:
         sign = assets.sign
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
         if fx_detail:
-            self._draw_ui_quad(
+            self._draw_ui_quad_shadow(
                 texture=sign,
                 src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-                dst=rl.Rectangle(pos_x + 7.0, pos_y + 7.0, sign_w, sign_h),
+                dst=rl.Rectangle(pos_x + UI_SHADOW_OFFSET, pos_y + UI_SHADOW_OFFSET, sign_w, sign_h),
                 origin=rl.Vector2(-offset_x, -offset_y),
                 rotation_deg=rotation_deg,
-                tint=rl.Color(0x44, 0x44, 0x44, 0x44),
             )
         self._draw_ui_quad(
             texture=sign,
@@ -1324,13 +1351,12 @@ class PanelMenuView:
         origin = rl.Vector2(-(MENU_PANEL_OFFSET_X * item_scale), -(MENU_PANEL_OFFSET_Y * item_scale))
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
         if fx_detail:
-            MenuView._draw_ui_quad(
+            MenuView._draw_ui_quad_shadow(
                 texture=panel,
                 src=rl.Rectangle(0.0, 0.0, float(panel.width), float(panel.height)),
-                dst=rl.Rectangle(dst.x + 7.0, dst.y + 7.0, dst.width, dst.height),
+                dst=rl.Rectangle(dst.x + UI_SHADOW_OFFSET, dst.y + UI_SHADOW_OFFSET, dst.width, dst.height),
                 origin=origin,
                 rotation_deg=0.0,
-                tint=rl.Color(0x44, 0x44, 0x44, 0x44),
             )
         MenuView._draw_ui_quad(
             texture=panel,
@@ -1373,13 +1399,12 @@ class PanelMenuView:
         origin = rl.Vector2(-offset_x, -offset_y)
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
         if fx_detail:
-            MenuView._draw_ui_quad(
+            MenuView._draw_ui_quad_shadow(
                 texture=item,
                 src=rl.Rectangle(0.0, 0.0, item_w, item_h),
-                dst=rl.Rectangle(dst.x + 7.0, dst.y + 7.0, dst.width, dst.height),
+                dst=rl.Rectangle(dst.x + UI_SHADOW_OFFSET, dst.y + UI_SHADOW_OFFSET, dst.width, dst.height),
                 origin=origin,
                 rotation_deg=0.0,
-                tint=rl.Color(0x44, 0x44, 0x44, 0x44),
             )
         MenuView._draw_ui_quad(
             texture=item,
@@ -1444,13 +1469,12 @@ class PanelMenuView:
         sign = assets.sign
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
         if fx_detail:
-            MenuView._draw_ui_quad(
+            MenuView._draw_ui_quad_shadow(
                 texture=sign,
                 src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-                dst=rl.Rectangle(pos_x + 7.0, pos_y + 7.0, sign_w, sign_h),
+                dst=rl.Rectangle(pos_x + UI_SHADOW_OFFSET, pos_y + UI_SHADOW_OFFSET, sign_w, sign_h),
                 origin=rl.Vector2(-offset_x, -offset_y),
                 rotation_deg=rotation_deg,
-                tint=rl.Color(0x44, 0x44, 0x44, 0x44),
             )
         MenuView._draw_ui_quad(
             texture=sign,
@@ -2622,13 +2646,12 @@ class QuestsMenuView:
         sign = assets.sign
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
         if fx_detail:
-            MenuView._draw_ui_quad(
+            MenuView._draw_ui_quad_shadow(
                 texture=sign,
                 src=rl.Rectangle(0.0, 0.0, float(sign.width), float(sign.height)),
-                dst=rl.Rectangle(pos_x + 7.0, pos_y + 7.0, sign_w, sign_h),
+                dst=rl.Rectangle(pos_x + UI_SHADOW_OFFSET, pos_y + UI_SHADOW_OFFSET, sign_w, sign_h),
                 origin=rl.Vector2(-offset_x, -offset_y),
                 rotation_deg=rotation_deg,
-                tint=rl.Color(0x44, 0x44, 0x44, 0x44),
             )
         MenuView._draw_ui_quad(
             texture=sign,
@@ -2653,13 +2676,12 @@ class QuestsMenuView:
         origin = rl.Vector2(-(MENU_PANEL_OFFSET_X * panel_scale), -(MENU_PANEL_OFFSET_Y * panel_scale))
         fx_detail = bool(self._state.config.data.get("fx_detail_0", 0))
         if fx_detail:
-            MenuView._draw_ui_quad(
+            MenuView._draw_ui_quad_shadow(
                 texture=panel,
                 src=rl.Rectangle(0.0, 0.0, float(panel.width), float(panel.height)),
-                dst=rl.Rectangle(dst.x + 7.0, dst.y + 7.0, dst.width, dst.height),
+                dst=rl.Rectangle(dst.x + UI_SHADOW_OFFSET, dst.y + UI_SHADOW_OFFSET, dst.width, dst.height),
                 origin=origin,
                 rotation_deg=0.0,
-                tint=rl.Color(0x44, 0x44, 0x44, 0x44),
             )
         MenuView._draw_ui_quad(
             texture=panel,
