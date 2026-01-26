@@ -253,7 +253,13 @@ class GroundRenderer:
         self._render_target_ready = True
         return True
 
-    def bake_corpse_decals(self, bodyset_texture: rl.Texture, decals: Sequence[GroundCorpseDecal]) -> bool:
+    def bake_corpse_decals(
+        self,
+        bodyset_texture: rl.Texture,
+        decals: Sequence[GroundCorpseDecal],
+        *,
+        shadow: bool = True,
+    ) -> bool:
         if not decals:
             return False
 
@@ -267,7 +273,8 @@ class GroundRenderer:
         self._set_texture_filters((bodyset_texture,), point=True)
 
         rl.begin_texture_mode(self.render_target)
-        self._draw_corpse_shadow_pass(bodyset_texture, decals, inv_scale, offset)
+        if shadow:
+            self._draw_corpse_shadow_pass(bodyset_texture, decals, inv_scale, offset)
         self._draw_corpse_color_pass(bodyset_texture, decals, inv_scale, offset)
         rl.end_texture_mode()
 

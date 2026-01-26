@@ -573,6 +573,7 @@ class DecalsDebugView:
                     fx_queue_rotated=self._fx_queue_rotated,
                     textures=self._fx_textures,
                     corpse_frame_for_type=creature_corpse_frame_for_type,
+                    corpse_shadow=not self._light_mode,
                 )
 
     def draw(self) -> None:

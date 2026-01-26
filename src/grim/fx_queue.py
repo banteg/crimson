@@ -38,6 +38,7 @@ def bake_fx_queues(
     fx_queue_rotated: FxQueueRotated,
     textures: FxQueueTextures,
     corpse_frame_for_type: Callable[[int], int],
+    corpse_shadow: bool = True,
     clear: bool = True,
 ) -> tuple[bool, bool]:
     """Bake queued terrain FX into the ground render target (port of `fx_queue_render`)."""
@@ -79,7 +80,7 @@ def bake_fx_queues(
         )
 
     baked_fx = ground.bake_decals(decals)
-    baked_corpses = ground.bake_corpse_decals(textures.bodyset, corpse_decals)
+    baked_corpses = ground.bake_corpse_decals(textures.bodyset, corpse_decals, shadow=corpse_shadow)
 
     if clear:
         fx_queue.clear()
