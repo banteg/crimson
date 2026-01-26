@@ -122,12 +122,12 @@ Global counters:
 
 Spawn slots (used by `creature_update_all` when `creature_link_index` selects a slot):
 
-- `creature_spawn_slot_owner` — pointer to the owning creature (used for collision and cleared on owner death).
-- `creature_spawn_slot_count` — current spawn count.
-- `creature_spawn_slot_limit` — max spawns before the slot stops.
-- `creature_spawn_slot_interval` — seconds between spawns.
-- `creature_spawn_slot_timer` — countdown timer to the next spawn.
-- `creature_spawn_slot_template` — spawn template id passed to `creature_spawn_template`.
+- `creature_spawn_slot_table` — spawn slot entry array (0x20 slots); `owner` points to the owning creature (used for collision and cleared on owner death).
+- `creature_spawn_slot_count` — current spawn count (`creature_spawn_slot_table[i].count`).
+- `creature_spawn_slot_limit` — max spawns before the slot stops (`creature_spawn_slot_table[i].limit`).
+- `creature_spawn_slot_interval` — seconds between spawns (`creature_spawn_slot_table[i].interval_s`).
+- `creature_spawn_slot_timer` — countdown timer to the next spawn (`creature_spawn_slot_table[i].timer_s`).
+- `creature_spawn_slot_template` — spawn template id passed to `creature_spawn_template` (`creature_spawn_slot_table[i].template_id`).
 
 Survival reward tracking (globals):
 

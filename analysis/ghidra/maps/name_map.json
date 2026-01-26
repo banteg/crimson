@@ -1869,7 +1869,7 @@
     "address": "0x00430ad0",
     "name": "creature_spawn_slot_alloc",
     "signature": "int creature_spawn_slot_alloc(void)",
-    "comment": "returns first free spawn slot index (creature_spawn_slot_owner == 0); returns 0x1f if none free"
+    "comment": "returns first free spawn slot index (creature_spawn_slot_table[i].owner == NULL); returns 0x1f if none free"
   },
   {
     "program": "crimsonland.exe",

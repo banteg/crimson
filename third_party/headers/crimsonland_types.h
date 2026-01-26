@@ -183,6 +183,15 @@ typedef struct creature_t {
     float anim_phase;
 } creature_t;
 
+typedef struct creature_spawn_slot_t {
+    creature_t *owner;
+    int count;
+    int limit;
+    float interval_s;
+    float timer_s;
+    int template_id;
+} creature_spawn_slot_t;
+
 typedef struct projectile_t {
     unsigned char active;
     unsigned char _pad0[3];

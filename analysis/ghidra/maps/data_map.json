@@ -1481,37 +1481,38 @@
     },
     {
       "address": "0x00484fd0",
-      "comment": "Spawn slot owner creature pointer (stride 0x18 bytes; indexed by creature_link_index).",
-      "name": "creature_spawn_slot_owner",
-      "program": "crimsonland.exe"
+      "comment": "Creature spawn slot table (0x20 entries, stride 0x18 bytes; indexed by creature_link_index).",
+      "name": "creature_spawn_slot_table",
+      "program": "crimsonland.exe",
+      "type": "creature_spawn_slot_t"
     },
     {
       "address": "0x00484fd4",
-      "comment": "Spawn slot current count (stride 0x18 bytes; indexed by creature_link_index).",
+      "comment": "Spawn slot current count (creature_spawn_slot_table + 0x04).",
       "name": "creature_spawn_slot_count",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x00484fd8",
-      "comment": "Spawn slot spawn limit (creature_spawn_slot_count + 0x04).",
+      "comment": "Spawn slot spawn limit (creature_spawn_slot_table + 0x08).",
       "name": "creature_spawn_slot_limit",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x00484fdc",
-      "comment": "Spawn slot interval seconds (creature_spawn_slot_count + 0x08).",
+      "comment": "Spawn slot interval seconds (creature_spawn_slot_table + 0x0c).",
       "name": "creature_spawn_slot_interval",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x00484fe0",
-      "comment": "Spawn slot countdown timer (creature_spawn_slot_count + 0x0c).",
+      "comment": "Spawn slot countdown timer (creature_spawn_slot_table + 0x10).",
       "name": "creature_spawn_slot_timer",
       "program": "crimsonland.exe"
     },
     {
       "address": "0x00484fe4",
-      "comment": "Spawn slot template id (creature_spawn_slot_count + 0x10).",
+      "comment": "Spawn slot template id (creature_spawn_slot_table + 0x14).",
       "name": "creature_spawn_slot_template",
       "program": "crimsonland.exe"
     },
