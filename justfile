@@ -227,5 +227,11 @@ game-screenshot:
     nircmd savescreenshotwin "screenshots\\screen.png"
 
 zip-decompile:
-    zip -r crimson.zip analysis/ghidra/raw/*.c analysis/binary_ninja/*.txt analysis/ida/raw/*/*.c scripts src docs
+    zip -r crimson.zip \
+        analysis/ghidra/ \
+        analysis/ida/ \
+        analysis/binary_ninja/raw/*.txt \
+        scripts src docs third_party/headers/crimsonland_types.h \
+        -x "*__pycache__*" \
+        -x "*winapi_32.gdt*"
     open -R crimson.zip
