@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import math
 from pathlib import Path
 
@@ -233,10 +233,10 @@ class GameOverUi:
     _hover_hit_ratio: float = 0.0
 
     # Buttons (rendered via existing ui_button implementation)
-    _ok_button: UiButtonState = UiButtonState("OK", force_wide=False)
-    _play_again_button: UiButtonState = UiButtonState("Play Again", force_wide=True)
-    _high_scores_button: UiButtonState = UiButtonState("High scores", force_wide=True)
-    _main_menu_button: UiButtonState = UiButtonState("Main Menu", force_wide=True)
+    _ok_button: UiButtonState = field(default_factory=lambda: UiButtonState("OK", force_wide=False))
+    _play_again_button: UiButtonState = field(default_factory=lambda: UiButtonState("Play Again", force_wide=True))
+    _high_scores_button: UiButtonState = field(default_factory=lambda: UiButtonState("High scores", force_wide=True))
+    _main_menu_button: UiButtonState = field(default_factory=lambda: UiButtonState("Main Menu", force_wide=True))
 
     _consume_enter: bool = False
 
