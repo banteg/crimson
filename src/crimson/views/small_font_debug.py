@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pyray as rl
 
 from grim.fonts.small import SmallFontData, load_small_font
@@ -19,6 +21,11 @@ SAMPLE_LINES = [
     "Evil Eyes",
 ]
 
+VECTOR_FONT_LOAD_SIZE = 26
+VECTOR_FONT_DRAW_SIZE = 13
+VECTOR_FONT_SPACING = 1.0
+VECTOR_FONT_FILTER = rl.TEXTURE_FILTER_BILINEAR
+
 
 class SmallFontDebugView:
     def __init__(self, ctx: ViewContext) -> None:
@@ -26,15 +33,38 @@ class SmallFontDebugView:
         self._missing_assets: list[str] = []
         self._small: SmallFontData | None = None
         self._screenshot_requested = False
+        self._vector_font: rl.Font | None = None
+        self._vector_font_path: Path | None = None
 
     def open(self) -> None:
         self._missing_assets.clear()
         self._small = load_small_font(self._assets_root, self._missing_assets)
+        self._vector_font = None
+        self._vector_font_path = None
+        for candidate in (
+            self._assets_root / "crimson" / "load" / "arial.ttf",
+            self._assets_root / "fonts" / "arial.ttf",
+            self._assets_root / "arial.ttf",
+        ):
+            if not candidate.is_file():
+                continue
+            try:
+                self._vector_font = rl.load_font_ex(str(candidate), VECTOR_FONT_LOAD_SIZE, None, 0)
+                rl.set_texture_filter(self._vector_font.texture, VECTOR_FONT_FILTER)
+                self._vector_font_path = candidate
+                break
+            except Exception:
+                self._vector_font = None
+                self._vector_font_path = None
 
     def close(self) -> None:
         if self._small is not None:
             rl.unload_texture(self._small.texture)
             self._small = None
+        if self._vector_font is not None:
+            rl.unload_font(self._vector_font)
+            self._vector_font = None
+            self._vector_font_path = None
 
     def update(self, dt: float) -> None:
         del dt
@@ -64,6 +94,7 @@ class SmallFontDebugView:
         gap = 40
         header_y = 20
         row_step = 19.0
+        vector_step = row_step
 
         rl.draw_text("smallWhite atlas", margin, header_y, 20, UI_TEXT_COLOR)
         atlas_y = header_y + 28
@@ -75,6 +106,25 @@ class SmallFontDebugView:
         for line in SAMPLE_LINES:
             draw_menu_item(self._small, line, x=float(right_x), y=text_y, scale=1.0, hovered=False)
             text_y += row_step
+
+        vector_x = right_x + 340
+        rl.draw_text("vector font (ttf)", vector_x, header_y, 20, UI_TEXT_COLOR)
+        if self._vector_font is None:
+            rl.draw_text("Place arial.ttf in:", vector_x, header_y + 28, 16, UI_TEXT_COLOR)
+            rl.draw_text(str(self._assets_root / "crimson" / "load"), vector_x, header_y + 46, 16, UI_TEXT_COLOR)
+            rl.draw_text(str(self._assets_root / "fonts"), vector_x, header_y + 64, 16, UI_TEXT_COLOR)
+        else:
+            vector_y = float(atlas_y)
+            for line in SAMPLE_LINES:
+                rl.draw_text_ex(
+                    self._vector_font,
+                    line,
+                    rl.Vector2(float(vector_x), float(vector_y)),
+                    float(VECTOR_FONT_DRAW_SIZE),
+                    float(VECTOR_FONT_SPACING),
+                    rl.WHITE,
+                )
+                vector_y += vector_step
 
 
 @register_view("small-font-debug", "Small font debug")
