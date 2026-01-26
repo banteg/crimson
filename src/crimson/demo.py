@@ -32,6 +32,8 @@ from .weapon_sfx import resolve_weapon_sfx_ref
 from grim.fonts.grim_mono import GrimMonoFont, draw_grim_mono_text, load_grim_mono_font
 from grim.fonts.small import SmallFontData, draw_small_text, load_small_font, measure_small_text_width
 
+from .game_world import GameWorld
+from .gameplay import PlayerInput, PlayerState, weapon_assign_player
 
 WORLD_SIZE = 1024.0
 DEMO_VARIANT_COUNT = 6
@@ -244,11 +246,21 @@ class DemoView:
 
     def __init__(self, state: DemoState) -> None:
         self._state = state
+        self._world = GameWorld(
+            assets_dir=state.assets_dir,
+            world_size=WORLD_SIZE,
+            demo_mode_active=True,
+            hardcore=bool(int(state.config.data.get("hardcore_flag", 0) or 0)),
+            difficulty_level=0,
+            texture_cache=state.texture_cache,
+            config=state.config,
+        )
         self._ground: GroundRenderer | None = None
         self._crand = Crand(0)
         self._creatures: list[DemoCreature] = []
         self._spawn_slots: list[SpawnSlotInit] = []
         self._players: list[DemoPlayer] = []
+        self._demo_targets: list[int | None] = []
         self._projectile_pool = ProjectilePool()
         self._secondary_projectile_pool = SecondaryProjectilePool()
         self._beams: list[DemoBeam] = []
@@ -281,9 +293,11 @@ class DemoView:
         self._demo_time_limit_ms = 0
         self._bonus_weapon_power_up_timer = 0.0
         self._crand.srand(self._state.rng.getrandbits(32))
+        self._world.open()
         self._demo_mode_start()
 
     def close(self) -> None:
+        self._world.close()
         if self._ground is not None and self._ground.render_target is not None:
             rl.unload_render_texture(self._ground.render_target)
         self._ground = None
@@ -307,8 +321,6 @@ class DemoView:
     def update(self, dt: float) -> None:
         if self._state.audio is not None:
             update_audio(self._state.audio)
-        if self._ground is not None:
-            self._ground.process_pending()
         if self._finished:
             return
         frame_dt = min(dt, 0.1)
@@ -334,8 +346,7 @@ class DemoView:
             return
 
         self._quest_spawn_timeline_ms += frame_dt_ms
-        self._update_sim(frame_dt, frame_dt_ms)
-        self._advance_anim_phase(frame_dt)
+        self._update_world(frame_dt)
         if self._quest_spawn_timeline_ms > self._demo_time_limit_ms:
             self._demo_mode_start()
 
@@ -343,11 +354,7 @@ class DemoView:
         if self._purchase_active:
             self._draw_purchase_screen()
             return
-        rl.clear_background(rl.BLACK)
-        if self._ground is not None:
-            self._ground.draw(self._camera_x, self._camera_y)
-        self._draw_fx()
-        self._draw_entities()
+        self._world.draw()
         self._draw_overlay()
 
     def _skip_triggered(self) -> bool:
@@ -631,6 +638,7 @@ class DemoView:
         self._beams.clear()
         self._explosions.clear()
         self._bonus_weapon_power_up_timer = 0.0
+        self._world.state.bonuses.weapon_power_up = 0.0
         if index == 0:
             self._apply_variant_ground(0)
             self._setup_variant_0()
@@ -655,10 +663,21 @@ class DemoView:
         if (not self._purchase_active) and _DEMO_UPSELL_MESSAGES:
             self._upsell_message_index = (self._upsell_message_index + 1) % len(_DEMO_UPSELL_MESSAGES)
 
+    def _setup_world_players(self, specs: list[tuple[float, float, int]]) -> None:
+        seed = int(self._state.rng.getrandbits(32))
+        self._world.reset(seed=seed, player_count=len(specs))
+        for idx, (x, y, weapon_id) in enumerate(specs):
+            if idx >= len(self._world.players):
+                continue
+            player = self._world.players[idx]
+            player.pos_x = float(x)
+            player.pos_y = float(y)
+            weapon_assign_player(player, int(weapon_id))
+        self._demo_targets = [None] * len(self._world.players)
+
     def _apply_variant_ground(self, index: int) -> None:
         if index == 5:
             return
-        cache = self._ensure_cache()
         terrain = {
             0: (
                 "ter_q1_base",
@@ -700,30 +719,12 @@ class DemoView:
             ),
         )
         base_key, overlay_key, base_path, overlay_path = terrain
-        base = cache.get_or_load(base_key, base_path).texture
-        if base is None:
-            return
-        overlay = cache.get_or_load(overlay_key, overlay_path).texture
-        detail = overlay or base
-        if self._ground is None:
-            self._ground = GroundRenderer(
-                texture=base,
-                overlay=overlay,
-                overlay_detail=detail,
-                width=int(WORLD_SIZE),
-                height=int(WORLD_SIZE),
-                texture_scale=self._state.config.texture_scale,
-                screen_width=float(self._state.config.screen_width),
-                screen_height=float(self._state.config.screen_height),
-            )
-        else:
-            self._ground.texture = base
-            self._ground.overlay = overlay
-            self._ground.overlay_detail = detail
-            self._ground.texture_scale = self._state.config.texture_scale
-            self._ground.screen_width = float(self._state.config.screen_width)
-            self._ground.screen_height = float(self._state.config.screen_height)
-        self._ground.schedule_generate(seed=self._state.rng.randrange(0, 10_000), layers=3)
+        self._world.set_terrain(
+            base_key=base_key,
+            overlay_key=overlay_key,
+            base_path=base_path,
+            overlay_path=overlay_path,
+        )
 
     def _wrap_pos(self, x: float, y: float) -> tuple[float, float]:
         return (x % WORLD_SIZE, y % WORLD_SIZE)
@@ -738,71 +739,13 @@ class DemoView:
 
     def _spawn(self, spawn_id: int, x: float, y: float, *, heading: float = 0.0) -> None:
         x, y = self._wrap_pos(x, y)
-        env = SpawnEnv(
-            terrain_width=WORLD_SIZE,
-            terrain_height=WORLD_SIZE,
-            demo_mode_active=True,
-            hardcore=bool(int(self._state.config.data.get("hardcore_flag", 0) or 0)),
-            difficulty_level=0,
+        self._world.creatures.spawn_template(
+            int(spawn_id),
+            (x, y),
+            float(heading),
+            self._spawn_rng,
+            rand=self._spawn_rng.rand,
         )
-
-        plan = build_spawn_plan(spawn_id, (x, y), heading, self._spawn_rng, env)
-
-        creature_base = len(self._creatures)
-        slot_base = len(self._spawn_slots)
-
-        for entry in plan.creatures:
-            cx, cy = self._wrap_pos(entry.pos_x, entry.pos_y)
-            template = SPAWN_ID_TO_TEMPLATE.get(entry.origin_template_id)
-            type_id = entry.type_id if entry.type_id is not None else (template.type_id if template is not None else None)
-            size = float(entry.size) if entry.size is not None else 18.0
-            hp = float(entry.health) if entry.health is not None else self._creature_hp(type_id)
-            move_speed = float(entry.move_speed) if entry.move_speed is not None else self._creature_speed(type_id) / 30.0
-            link_index = 0
-            if entry.ai_timer is not None:
-                link_index = int(entry.ai_timer)
-            elif entry.ai_link_parent is not None:
-                link_index = creature_base + int(entry.ai_link_parent)
-            elif entry.spawn_slot is not None:
-                link_index = slot_base + int(entry.spawn_slot)
-            orbit_angle = float(entry.orbit_angle or 0.0)
-            orbit_radius = float(entry.orbit_radius or 0.0)
-            if (entry.ranged_projectile_type is not None) and (entry.flags & CreatureFlags.RANGED_ATTACK_VARIANT):
-                orbit_radius = float(entry.ranged_projectile_type)
-            self._creatures.append(
-                DemoCreature(
-                    spawn_id=entry.origin_template_id,
-                    x=cx,
-                    y=cy,
-                    hp=hp,
-                    size=size,
-                    move_speed=move_speed,
-                    type_id=type_id,
-                    flags=entry.flags,
-                    tint=entry.tint,
-                    heading=entry.heading,
-                    phase_seed=entry.phase_seed,
-                    anim_phase=0.0,
-                    ai_mode=entry.ai_mode,
-                    link_index=link_index,
-                    target_offset_x=entry.target_offset_x,
-                    target_offset_y=entry.target_offset_y,
-                    orbit_angle=orbit_angle,
-                    orbit_radius=orbit_radius,
-                )
-            )
-
-        for slot in plan.spawn_slots:
-            self._spawn_slots.append(
-                SpawnSlotInit(
-                    owner_creature=creature_base + slot.owner_creature,
-                    timer=slot.timer,
-                    count=slot.count,
-                    limit=slot.limit,
-                    interval=slot.interval,
-                    child_template_id=slot.child_template_id,
-                )
-            )
 
     def _reset_player_weapon_state(self) -> None:
         for player in self._players:
@@ -817,11 +760,12 @@ class DemoView:
     def _setup_variant_0(self) -> None:
         self._demo_time_limit_ms = 4000
         weapon_id = 11
-        self._players = [
-            DemoPlayer(index=0, x=448.0, y=384.0, weapon_id=weapon_id),
-            DemoPlayer(index=1, x=546.0, y=654.0, weapon_id=weapon_id),
-        ]
-        self._reset_player_weapon_state()
+        self._setup_world_players(
+            [
+                (448.0, 384.0, weapon_id),
+                (546.0, 654.0, weapon_id),
+            ]
+        )
         y = 256
         i = 0
         while y < 1696:
@@ -833,13 +777,14 @@ class DemoView:
 
     def _setup_variant_1(self) -> None:
         self._demo_time_limit_ms = 5000
-        self._bonus_weapon_power_up_timer = 15.0
         weapon_id = 5
-        self._players = [
-            DemoPlayer(index=0, x=490.0, y=448.0, weapon_id=weapon_id),
-            DemoPlayer(index=1, x=480.0, y=576.0, weapon_id=weapon_id),
-        ]
-        self._reset_player_weapon_state()
+        self._setup_world_players(
+            [
+                (490.0, 448.0, weapon_id),
+                (480.0, 576.0, weapon_id),
+            ]
+        )
+        self._world.state.bonuses.weapon_power_up = 15.0
         for idx in range(20):
             x = float(self._crand_mod(200) + 32)
             y = float(self._crand_mod(899) + 64)
@@ -852,8 +797,7 @@ class DemoView:
     def _setup_variant_2(self) -> None:
         self._demo_time_limit_ms = 5000
         weapon_id = 21
-        self._players = [DemoPlayer(index=0, x=512.0, y=512.0, weapon_id=weapon_id)]
-        self._reset_player_weapon_state()
+        self._setup_world_players([(512.0, 512.0, weapon_id)])
         y = 128
         i = 0
         while y < 848:
@@ -868,8 +812,7 @@ class DemoView:
     def _setup_variant_3(self) -> None:
         self._demo_time_limit_ms = 4000
         weapon_id = 18
-        self._players = [DemoPlayer(index=0, x=512.0, y=512.0, weapon_id=weapon_id)]
-        self._reset_player_weapon_state()
+        self._setup_world_players([(512.0, 512.0, weapon_id)])
         for idx in range(20):
             x = float(self._crand_mod(200) + 32)
             y = float(self._crand_mod(899) + 64)
@@ -1083,7 +1026,7 @@ class DemoView:
         title = f"DEMO MODE  ({self._variant_index + 1}/{DEMO_VARIANT_COUNT})"
         hint = "Press any key / click to skip"
         remaining = max(0.0, float(self._demo_time_limit_ms - self._quest_spawn_timeline_ms) / 1000.0)
-        weapons = ", ".join(f"P{p.index + 1}:{_weapon_name(p.weapon_id)}" for p in self._players)
+        weapons = ", ".join(f"P{p.index + 1}:{_weapon_name(p.weapon_id)}" for p in self._world.players)
         detail = f"{weapons}  —  next in {remaining:0.1f}s"
         rl.draw_text(title, 16, 12, 20, rl.Color(240, 240, 240, 255))
         rl.draw_text(detail, 16, 36, 16, rl.Color(180, 180, 190, 255))
@@ -1165,6 +1108,108 @@ class DemoView:
 
     def _weapon_entry(self, weapon_id: int) -> Weapon | None:
         return WEAPON_BY_ID.get(weapon_id)
+
+    def _update_world(self, dt: float) -> None:
+        if not self._world.players:
+            return
+        inputs = self._build_demo_inputs()
+        self._world.update(dt, inputs=inputs, auto_pick_perks=False, game_mode=0)
+
+    def _build_demo_inputs(self) -> list[PlayerInput]:
+        players = self._world.players
+        creatures = self._world.creatures.entries
+        if len(self._demo_targets) != len(players):
+            self._demo_targets = [None] * len(players)
+        center_x = float(self._world.world_size) * 0.5
+        center_y = float(self._world.world_size) * 0.5
+
+        inputs: list[PlayerInput] = []
+        for idx, player in enumerate(players):
+            target_idx = self._select_demo_target(idx, player, creatures)
+            aim_x = center_x
+            aim_y = center_y
+            target = None
+            if target_idx is not None and 0 <= target_idx < len(creatures):
+                candidate = creatures[target_idx]
+                if candidate.hp > 0.0:
+                    target = candidate
+                    aim_x = candidate.x
+                    aim_y = candidate.y
+
+            move_x, move_y = 0.0, 0.0
+            to_cx = center_x - player.pos_x
+            to_cy = center_y - player.pos_y
+            nx, ny, d = _normalize(to_cx, to_cy)
+            if d > 120.0:
+                move_x += nx
+                move_y += ny
+
+            if target is not None:
+                rx = player.pos_x - target.x
+                ry = player.pos_y - target.y
+                rnx, rny, rd = _normalize(rx, ry)
+                if 0.0 < rd < 160.0:
+                    strength = (160.0 - rd) / 160.0
+                    move_x += rnx * (1.5 * strength)
+                    move_y += rny * (1.5 * strength)
+
+            orbit_dir = -1.0 if (player.index % 2) else 1.0
+            ox, oy, _ = _normalize(-(player.pos_y - center_y), player.pos_x - center_x)
+            move_x += ox * 0.55 * orbit_dir
+            move_y += oy * 0.55 * orbit_dir
+
+            fire_down = target is not None
+
+            inputs.append(
+                PlayerInput(
+                    move_x=move_x,
+                    move_y=move_y,
+                    aim_x=aim_x,
+                    aim_y=aim_y,
+                    fire_down=fire_down,
+                    fire_pressed=fire_down,
+                    reload_pressed=False,
+                )
+            )
+
+        return inputs
+
+    def _nearest_world_creature_index(self, x: float, y: float) -> int | None:
+        best_idx = None
+        best_dist = 0.0
+        for idx, creature in enumerate(self._world.creatures.entries):
+            if not (creature.active and creature.hp > 0.0):
+                continue
+            d = _distance_sq(x, y, creature.x, creature.y)
+            if best_idx is None or d < best_dist:
+                best_idx = idx
+                best_dist = d
+        return best_idx
+
+    def _select_demo_target(self, player_index: int, player: PlayerState, creatures: list) -> int | None:
+        candidate = self._nearest_world_creature_index(player.pos_x, player.pos_y)
+        current = self._demo_targets[player_index] if player_index < len(self._demo_targets) else None
+        if current is None:
+            self._demo_targets[player_index] = candidate
+            return candidate
+        if not (0 <= current < len(creatures)):
+            self._demo_targets[player_index] = candidate
+            return candidate
+        current_creature = creatures[current]
+        if current_creature.hp <= 0.0 or not current_creature.active:
+            self._demo_targets[player_index] = candidate
+            return candidate
+        if candidate is None or candidate == current:
+            return current
+        cand_creature = creatures[candidate]
+        if not cand_creature.active or cand_creature.hp <= 0.0:
+            return current
+        cur_d = math.hypot(current_creature.x - player.pos_x, current_creature.y - player.pos_y)
+        cand_d = math.hypot(cand_creature.x - player.pos_x, cand_creature.y - player.pos_y)
+        if cand_d + 64.0 < cur_d:
+            self._demo_targets[player_index] = candidate
+            return candidate
+        return current
 
     def _update_sim(self, dt: float, dt_ms: int) -> None:
         self._bonus_weapon_power_up_timer = max(0.0, self._bonus_weapon_power_up_timer - dt)

@@ -221,6 +221,13 @@ class GameWorld:
         self._owned_textures.append(texture)
         return texture
 
+    @staticmethod
+    def _png_path_for(rel_path: str) -> str:
+        lower = rel_path.lower()
+        if lower.endswith(".jaz"):
+            return rel_path[:-4] + ".png"
+        return rel_path
+
     def _sync_ground_settings(self) -> None:
         if self.ground is None:
             return
@@ -232,6 +239,39 @@ class GameWorld:
         self.ground.texture_scale = float(self.config.texture_scale)
         self.ground.screen_width = float(self.config.screen_width)
         self.ground.screen_height = float(self.config.screen_height)
+
+    def set_terrain(self, *, base_key: str, overlay_key: str, base_path: str, overlay_path: str) -> None:
+        base = self._load_texture(
+            base_key,
+            cache_path=base_path,
+            file_path=self._png_path_for(base_path),
+        )
+        overlay = self._load_texture(
+            overlay_key,
+            cache_path=overlay_path,
+            file_path=self._png_path_for(overlay_path),
+        )
+        detail = overlay or base
+        if base is None:
+            return
+        if self.ground is None:
+            self.ground = GroundRenderer(
+                texture=base,
+                overlay=overlay,
+                overlay_detail=detail,
+                width=int(self.world_size),
+                height=int(self.world_size),
+                texture_scale=1.0,
+                screen_width=None,
+                screen_height=None,
+            )
+        else:
+            self.ground.texture = base
+            self.ground.overlay = overlay
+            self.ground.overlay_detail = detail
+        self._sync_ground_settings()
+        terrain_seed = int(self.state.rng.rand() % 10_000)
+        self.ground.schedule_generate(seed=terrain_seed, layers=3)
 
     def open(self) -> None:
         self.close()
