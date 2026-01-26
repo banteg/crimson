@@ -15,7 +15,7 @@ class _Creature:
 
 def test_projectile_pool_keeps_flight_timer_when_in_bounds() -> None:
     pool = ProjectilePool(size=1)
-    idx = pool.spawn(pos_x=0.0, pos_y=0.0, angle=math.pi / 2.0, type_id=5, owner_id=-100)
+    idx = pool.spawn(pos_x=0.0, pos_y=0.0, angle=math.pi / 2.0, type_id=4, owner_id=-100)
     proj = pool.entries[idx]
     assert proj.active
     assert proj.life_timer == 0.4
@@ -24,7 +24,7 @@ def test_projectile_pool_keeps_flight_timer_when_in_bounds() -> None:
         0.1,
         [],
         world_size=1024.0,
-        speed_by_type={5: 100.0},
+        speed_by_type={4: 100.0},
         damage_by_type={},
     )
     assert proj.active
@@ -38,13 +38,13 @@ def test_projectile_pool_update_moves_by_projectile_meta() -> None:
         pos_x=0.0,
         pos_y=0.0,
         angle=math.pi / 2.0,
-        type_id=5,
+        type_id=4,
         owner_id=-100,
         base_damage=15.0,
     )
     proj = pool.entries[idx]
 
-    pool.update(0.1, [], world_size=1024.0, damage_scale_by_type={5: 1.0})
+    pool.update(0.1, [], world_size=1024.0, damage_scale_by_type={4: 1.0})
 
     assert proj.active
     assert proj.life_timer == 0.4
@@ -57,15 +57,15 @@ def test_projectile_pool_update_applies_distance_scaled_damage() -> None:
         pos_x=0.0,
         pos_y=0.0,
         angle=math.pi / 2.0,
-        type_id=5,
+        type_id=4,
         owner_id=-100,
         base_damage=15.0,
     )
 
     creatures = [_Creature(x=41.1428575, y=0.0, hp=100.0)]
-    hits = pool.update(0.1, creatures, world_size=1024.0, damage_scale_by_type={5: 1.0})
+    hits = pool.update(0.1, creatures, world_size=1024.0, damage_scale_by_type={4: 1.0})
 
-    assert hits == [(5, 0.0, 0.0, 30.0, 0.0)]
+    assert hits == [(4, 0.0, 0.0, 30.0, 0.0)]
     assert math.isclose(creatures[0].hp, 33.5, abs_tol=1e-9)
 
 
@@ -90,7 +90,7 @@ def test_projectile_pool_update_ion_minigun_linger_deals_aoe_damage() -> None:
 
 def test_projectile_pool_emits_hit_event_and_enters_hit_state() -> None:
     pool = ProjectilePool(size=1)
-    idx = pool.spawn(pos_x=0.0, pos_y=0.0, angle=math.pi / 2.0, type_id=5, owner_id=-100)
+    idx = pool.spawn(pos_x=0.0, pos_y=0.0, angle=math.pi / 2.0, type_id=4, owner_id=-100)
     proj = pool.entries[idx]
 
     creatures = [_Creature(x=10.0, y=0.0, hp=100.0)]
@@ -98,11 +98,11 @@ def test_projectile_pool_emits_hit_event_and_enters_hit_state() -> None:
         0.1,
         creatures,
         world_size=1024.0,
-        speed_by_type={5: 100.0},
-        damage_by_type={5: 18.0},
+        speed_by_type={4: 100.0},
+        damage_by_type={4: 18.0},
     )
 
-    assert hits == [(5, 0.0, 0.0, 10.0, 0.0)]
+    assert hits == [(4, 0.0, 0.0, 10.0, 0.0)]
     assert math.isclose(creatures[0].hp, 82.0, abs_tol=1e-9)
     assert proj.life_timer == 0.25
 
@@ -110,8 +110,8 @@ def test_projectile_pool_emits_hit_event_and_enters_hit_state() -> None:
         0.1,
         creatures,
         world_size=1024.0,
-        speed_by_type={5: 100.0},
-        damage_by_type={5: 18.0},
+        speed_by_type={4: 100.0},
+        damage_by_type={4: 18.0},
     )
     assert math.isclose(proj.life_timer, 0.15, abs_tol=1e-9)
 
@@ -137,7 +137,7 @@ def test_projectile_pool_rocket_splash_hits_nearby_creatures() -> None:
     assert math.isclose(creatures[2].hp, 100.0, abs_tol=1e-9)
 
 
-def test_projectile_pool_ion_minigun_linger_deals_aoe_damage() -> None:
+def test_projectile_pool_demo_ion_minigun_linger_deals_aoe_damage() -> None:
     pool = ProjectilePool(size=1)
     pool.spawn(pos_x=0.0, pos_y=0.0, angle=math.pi / 2.0, type_id=0x15, owner_id=-100)
     creatures = [_Creature(x=10.0, y=0.0, hp=100.0)]
@@ -158,7 +158,7 @@ def test_projectile_pool_ion_minigun_linger_deals_aoe_damage() -> None:
         speed_by_type={0x15: 100.0},
         damage_by_type={0x15: 5.0},
     )
-    assert math.isclose(creatures[0].hp, 85.0, abs_tol=1e-9)
+    assert math.isclose(creatures[0].hp, 91.0, abs_tol=1e-9)
 
 
 def test_secondary_projectile_pool_pulse_switches_to_detonation() -> None:

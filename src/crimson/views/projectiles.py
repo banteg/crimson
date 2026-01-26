@@ -31,7 +31,7 @@ KNOWN_PROJECTILES = [
     KnownProjectile(type_id=0x15, grid=4, frame=2, label="Ion Minigun"),
     KnownProjectile(type_id=0x16, grid=4, frame=2, label="Ion Cannon"),
     KnownProjectile(type_id=0x17, grid=4, frame=2, label="Shrinkifier 5k"),
-    KnownProjectile(type_id=0x2D, grid=4, frame=2, label="Fire Bullets"),
+    KnownProjectile(type_id=0x2C, grid=4, frame=2, label="Fire Bullets"),
 ]
 
 

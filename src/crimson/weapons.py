@@ -23,6 +23,7 @@ class Weapon:
     flags: int | None
     projectile_type: int | None
     damage_mult: float | None
+    pellet_count: int | None
 
 
 WEAPON_TABLE = [
@@ -40,6 +41,7 @@ WEAPON_TABLE = [
         flags=5,
         projectile_type=55,
         damage_mult=4.099999904632568,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=1,
@@ -55,10 +57,11 @@ WEAPON_TABLE = [
         flags=1,
         projectile_type=50,
         damage_mult=1.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=2,
-        name='Shotgun',
+        name=None,
         ammo_class=None,
         clip_size=12,
         fire_rate=0.8500000238418579,
@@ -70,6 +73,7 @@ WEAPON_TABLE = [
         flags=1,
         projectile_type=60,
         damage_mult=1.2000000476837158,
+        pellet_count=12,
     ),
     Weapon(
         weapon_id=3,
@@ -85,6 +89,7 @@ WEAPON_TABLE = [
         flags=1,
         projectile_type=45,
         damage_mult=1.0,
+        pellet_count=12,
     ),
     Weapon(
         weapon_id=4,
@@ -100,6 +105,7 @@ WEAPON_TABLE = [
         flags=5,
         projectile_type=45,
         damage_mult=1.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=5,
@@ -115,6 +121,7 @@ WEAPON_TABLE = [
         flags=1,
         projectile_type=215,
         damage_mult=1.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=6,
@@ -130,6 +137,7 @@ WEAPON_TABLE = [
         flags=3,
         projectile_type=45,
         damage_mult=1.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=7,
@@ -145,6 +153,7 @@ WEAPON_TABLE = [
         flags=8,
         projectile_type=45,
         damage_mult=1.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=8,
@@ -160,6 +169,7 @@ WEAPON_TABLE = [
         flags=None,
         projectile_type=30,
         damage_mult=5.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=9,
@@ -175,6 +185,7 @@ WEAPON_TABLE = [
         flags=None,
         projectile_type=45,
         damage_mult=1.0,
+        pellet_count=3,
     ),
     Weapon(
         weapon_id=10,
@@ -190,6 +201,7 @@ WEAPON_TABLE = [
         flags=None,
         projectile_type=35,
         damage_mult=2.0999999046325684,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=11,
@@ -205,6 +217,7 @@ WEAPON_TABLE = [
         flags=8,
         projectile_type=45,
         damage_mult=1.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=12,
@@ -220,6 +233,7 @@ WEAPON_TABLE = [
         flags=8,
         projectile_type=45,
         damage_mult=1.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=13,
@@ -235,6 +249,7 @@ WEAPON_TABLE = [
         flags=None,
         projectile_type=45,
         damage_mult=1.0,
+        pellet_count=14,
     ),
     Weapon(
         weapon_id=14,
@@ -250,6 +265,7 @@ WEAPON_TABLE = [
         flags=8,
         projectile_type=45,
         damage_mult=1.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=15,
@@ -265,6 +281,7 @@ WEAPON_TABLE = [
         flags=8,
         projectile_type=45,
         damage_mult=1.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=16,
@@ -280,6 +297,7 @@ WEAPON_TABLE = [
         flags=8,
         projectile_type=45,
         damage_mult=1.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=17,
@@ -295,6 +313,7 @@ WEAPON_TABLE = [
         flags=8,
         projectile_type=45,
         damage_mult=1.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=18,
@@ -310,6 +329,7 @@ WEAPON_TABLE = [
         flags=8,
         projectile_type=20,
         damage_mult=1.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=19,
@@ -325,6 +345,7 @@ WEAPON_TABLE = [
         flags=1,
         projectile_type=45,
         damage_mult=1.0,
+        pellet_count=4,
     ),
     Weapon(
         weapon_id=20,
@@ -340,6 +361,7 @@ WEAPON_TABLE = [
         flags=8,
         projectile_type=15,
         damage_mult=3.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=21,
@@ -355,6 +377,7 @@ WEAPON_TABLE = [
         flags=8,
         projectile_type=20,
         damage_mult=1.399999976158142,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=22,
@@ -370,6 +393,7 @@ WEAPON_TABLE = [
         flags=None,
         projectile_type=10,
         damage_mult=16.700000762939453,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=23,
@@ -385,6 +409,7 @@ WEAPON_TABLE = [
         flags=8,
         projectile_type=45,
         damage_mult=0.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=24,
@@ -400,6 +425,7 @@ WEAPON_TABLE = [
         flags=8,
         projectile_type=20,
         damage_mult=11.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=25,
@@ -415,6 +441,7 @@ WEAPON_TABLE = [
         flags=8,
         projectile_type=10,
         damage_mult=0.5,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=26,
@@ -430,6 +457,7 @@ WEAPON_TABLE = [
         flags=None,
         projectile_type=45,
         damage_mult=1.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=27,
@@ -445,6 +473,7 @@ WEAPON_TABLE = [
         flags=None,
         projectile_type=10,
         damage_mult=28.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=28,
@@ -460,6 +489,7 @@ WEAPON_TABLE = [
         flags=None,
         projectile_type=30,
         damage_mult=6.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=29,
@@ -475,6 +505,7 @@ WEAPON_TABLE = [
         flags=1,
         projectile_type=45,
         damage_mult=1.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=30,
@@ -490,6 +521,7 @@ WEAPON_TABLE = [
         flags=1,
         projectile_type=45,
         damage_mult=1.0,
+        pellet_count=8,
     ),
     Weapon(
         weapon_id=31,
@@ -505,10 +537,11 @@ WEAPON_TABLE = [
         flags=None,
         projectile_type=45,
         damage_mult=1.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=32,
-        name='RayGun',
+        name=None,
         ammo_class=None,
         clip_size=12,
         fire_rate=0.699999988079071,
@@ -520,6 +553,7 @@ WEAPON_TABLE = [
         flags=None,
         projectile_type=45,
         damage_mult=1.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=40,
@@ -535,6 +569,7 @@ WEAPON_TABLE = [
         flags=8,
         projectile_type=15,
         damage_mult=0.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=41,
@@ -550,6 +585,7 @@ WEAPON_TABLE = [
         flags=8,
         projectile_type=45,
         damage_mult=1.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=42,
@@ -565,6 +601,7 @@ WEAPON_TABLE = [
         flags=8,
         projectile_type=10,
         damage_mult=1.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=43,
@@ -580,6 +617,7 @@ WEAPON_TABLE = [
         flags=None,
         projectile_type=45,
         damage_mult=1.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=44,
@@ -595,6 +633,7 @@ WEAPON_TABLE = [
         flags=1,
         projectile_type=60,
         damage_mult=0.25,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=49,
@@ -610,6 +649,7 @@ WEAPON_TABLE = [
         flags=9,
         projectile_type=45,
         damage_mult=1.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=50,
@@ -625,10 +665,11 @@ WEAPON_TABLE = [
         flags=9,
         projectile_type=45,
         damage_mult=1.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=51,
-        name='Lighting Rifle',
+        name=None,
         ammo_class=None,
         clip_size=500,
         fire_rate=4.0,
@@ -640,6 +681,7 @@ WEAPON_TABLE = [
         flags=8,
         projectile_type=45,
         damage_mult=1.0,
+        pellet_count=1,
     ),
     Weapon(
         weapon_id=52,
@@ -655,6 +697,7 @@ WEAPON_TABLE = [
         flags=8,
         projectile_type=45,
         damage_mult=1.0,
+        pellet_count=1,
     ),
 ]
 

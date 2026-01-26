@@ -277,7 +277,6 @@ def main() -> int:
         raise SystemExit("missing grid selection (use --grid/--table-index/--grid-code)")
 
     grid, meta = resolve_grid(args)
-    image = Image.open(args.image)
     max_index = grid * grid - 1
     if args.indices:
         indices = parse_indices(args.indices, max_index)

@@ -19,6 +19,7 @@ from ..gameplay import (
     weapon_assign_player,
 )
 from ..ui.hud import HudAssets, draw_hud_overlay, load_hud_assets
+from ..weapons import WEAPON_TABLE
 from .registry import register_view
 
 WORLD_SIZE = 1024.0
@@ -57,6 +58,11 @@ class SurvivalView:
 
         self.close_requested = False
         self._paused = False
+        self._damage_scale_by_type = {
+            entry.weapon_id: float(entry.damage_mult or 1.0)
+            for entry in WEAPON_TABLE
+            if entry.weapon_id >= 0
+        }
 
         self._spawn_env = SpawnEnv(
             terrain_width=WORLD_SIZE,
@@ -218,7 +224,9 @@ class SurvivalView:
             dt,
             self._creatures.entries,
             world_size=WORLD_SIZE,
+            damage_scale_by_type=self._damage_scale_by_type,
             rng=self._state.rng.rand,
+            runtime_state=self._state,
         )
         self._state.secondary_projectiles.update_pulse_gun(dt, self._creatures.entries)
 
@@ -235,7 +243,7 @@ class SurvivalView:
             world_height=WORLD_SIZE,
         )
 
-        self._state.bonus_pool.update(dt, state=self._state, players=[self._player])
+        self._state.bonus_pool.update(dt, state=self._state, players=[self._player], creatures=self._creatures.entries)
         survival_progression_update(self._state, [self._player], game_mode=GAME_MODE_SURVIVAL, auto_pick=True)
 
         # Scripted milestone spawns based on level.
@@ -348,4 +356,3 @@ class SurvivalView:
 @register_view("survival", "Survival (debug)")
 def _create_survival_view(*, ctx: ViewContext) -> SurvivalView:
     return SurvivalView(ctx)
-

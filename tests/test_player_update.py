@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 import math
 
 from crimson.gameplay import (
@@ -9,10 +10,19 @@ from crimson.gameplay import (
     PlayerState,
     bonus_apply,
     bonus_hud_update,
+    player_fire_weapon,
     player_update,
 )
 from crimson.perks import PerkId
 from crimson.projectiles import ProjectilePool
+
+
+@dataclass(slots=True)
+class _Creature:
+    x: float
+    y: float
+    hp: float
+    size: float = 50.0
 
 
 def _active_type_ids(pool: ProjectilePool) -> list[int]:
@@ -66,7 +76,7 @@ def test_player_update_angry_reloader_spawns_ring_at_half() -> None:
     player_update(player, PlayerInput(aim_x=101.0, aim_y=100.0), 0.2, state)
 
     type_ids = _active_type_ids(pool)
-    assert type_ids.count(0x0B) == 15
+    assert type_ids.count(0x0A) == 15
 
 
 def test_player_update_man_bomb_spawns_8_projectiles_when_charged() -> None:
@@ -79,8 +89,8 @@ def test_player_update_man_bomb_spawns_8_projectiles_when_charged() -> None:
 
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 8
+    assert type_ids.count(0x14) == 4
     assert type_ids.count(0x15) == 4
-    assert type_ids.count(0x16) == 4
 
 
 def test_player_update_fire_cough_spawns_fire_bullet_projectile() -> None:
@@ -92,7 +102,21 @@ def test_player_update_fire_cough_spawns_fire_bullet_projectile() -> None:
     player_update(player, PlayerInput(aim_x=101.0, aim_y=100.0), 0.1, state)
 
     type_ids = _active_type_ids(pool)
-    assert type_ids == [0x2D]
+    assert type_ids == [0x2C]
+
+
+def test_player_fire_weapon_fire_bullets_spawns_weapon_pellet_count() -> None:
+    pool = ProjectilePool(size=64)
+    state = GameplayState(projectiles=pool)
+    player = PlayerState(index=0, pos_x=100.0, pos_y=100.0, weapon_id=2, clip_size=10, ammo=10, fire_bullets_timer=1.0)
+    player.aim_dir_x = 1.0
+    player.aim_dir_y = 0.0
+
+    player_fire_weapon(player, PlayerInput(fire_down=True, aim_x=101.0, aim_y=100.0), 0.0, state)
+
+    type_ids = _active_type_ids(pool)
+    assert len(type_ids) == 12
+    assert set(type_ids) == {0x2C}
 
 
 def test_player_update_hot_tempered_spawns_ring() -> None:
@@ -105,8 +129,8 @@ def test_player_update_hot_tempered_spawns_ring() -> None:
 
     type_ids = _active_type_ids(pool)
     assert len(type_ids) == 8
-    assert type_ids.count(9) == 4
-    assert type_ids.count(11) == 4
+    assert type_ids.count(8) == 4
+    assert type_ids.count(0x0A) == 4
 
 
 def test_bonus_apply_registers_hud_slot_and_expires() -> None:
@@ -122,3 +146,29 @@ def test_bonus_apply_registers_hud_slot_and_expires() -> None:
     bonus_hud_update(state, [player])
     assert not any(slot.active and slot.bonus_id == int(BonusId.WEAPON_POWER_UP) for slot in state.bonus_hud.slots)
 
+
+def test_bonus_apply_shock_chain_spawns_projectile_and_chains() -> None:
+    pool = ProjectilePool(size=8)
+    state = GameplayState(projectiles=pool)
+    player = PlayerState(index=0, pos_x=0.0, pos_y=0.0)
+    creatures = [
+        _Creature(x=50.0, y=0.0, hp=100.0),
+        _Creature(x=80.0, y=0.0, hp=100.0),
+    ]
+
+    bonus_apply(state, player, BonusId.SHOCK_CHAIN, origin=player, creatures=creatures)
+    assert state.shock_chain_links_left == 0x20
+    first_proj = state.shock_chain_projectile_id
+    assert first_proj >= 0
+
+    pool.update(0.1, creatures, world_size=1024.0, rng=lambda: 0, runtime_state=state)
+
+    assert state.shock_chain_links_left == 0x20
+    assert state.shock_chain_projectile_id == first_proj
+    assert sum(1 for entry in pool.entries if entry.active) == 1
+
+    pool.update(0.1, creatures, world_size=1024.0, rng=lambda: 0, runtime_state=state)
+
+    assert state.shock_chain_links_left < 0x20
+    assert state.shock_chain_projectile_id != first_proj
+    assert sum(1 for entry in pool.entries if entry.active) >= 2

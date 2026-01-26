@@ -4,7 +4,6 @@ from dataclasses import dataclass
 import re
 import struct
 from pathlib import Path
-from typing import Callable
 
 ROOT = Path(__file__).resolve().parents[1]
 C_PATH = ROOT / "analysis/ghidra/raw/crimsonland.exe_decompiled.c"
@@ -27,6 +26,7 @@ ICON_OFFSET = 0x64
 FLAGS_OFFSET = 0x68
 PROJECTILE_TYPE_OFFSET = 0x6C
 DAMAGE_MULT_OFFSET = 0x70
+PELLET_COUNT_OFFSET = 0x74
 
 
 @dataclass(frozen=True)
@@ -286,6 +286,7 @@ def main() -> None:
     lines.append("    flags: int | None\n")
     lines.append("    projectile_type: int | None\n")
     lines.append("    damage_mult: float | None\n")
+    lines.append("    pellet_count: int | None\n")
     lines.append("\n")
     lines.append("\n")
     lines.append("WEAPON_TABLE = [\n")
@@ -315,6 +316,9 @@ def main() -> None:
             # Most weapons use the default damage scale (0x70) of 1.0.
             # Runtime probe (2026-01-18) confirms this for multiple entries.
             damage_mult = 1.0
+        pellet_count = value_as_int(fields.get(PELLET_COUNT_OFFSET))
+        if pellet_count is None and idx > 0:
+            pellet_count = 1
         lines.append("    Weapon(\n")
         lines.append(f"        weapon_id={idx - 1},\n")
         lines.append(f"        name={name!r},\n")
@@ -331,6 +335,7 @@ def main() -> None:
         lines.append(f"        flags={flags!r},\n")
         lines.append(f"        projectile_type={projectile_type!r},\n")
         lines.append(f"        damage_mult={damage_mult!r},\n")
+        lines.append(f"        pellet_count={pellet_count!r},\n")
         lines.append("    ),\n")
     lines.append("]\n")
     lines.append("\n")

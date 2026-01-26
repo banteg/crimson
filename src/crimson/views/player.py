@@ -74,6 +74,11 @@ class PlayerSandboxView:
 
         self._weapon_ids = [entry.weapon_id for entry in WEAPON_TABLE if entry.name is not None]
         self._weapon_index = 0
+        self._damage_scale_by_type = {
+            entry.weapon_id: float(entry.damage_mult or 1.0)
+            for entry in WEAPON_TABLE
+            if entry.weapon_id >= 0
+        }
 
     def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
         if self._small is not None:
@@ -281,8 +286,9 @@ class PlayerSandboxView:
             dt,
             self._creatures,
             world_size=WORLD_SIZE,
-            damage_scale_by_type={},
+            damage_scale_by_type=self._damage_scale_by_type,
             rng=self._state.rng.rand,
+            runtime_state=self._state,
         )
         self._state.secondary_projectiles.update_pulse_gun(dt, self._creatures)
         self._creatures = [c for c in self._creatures if c.hp > 0.0]

@@ -7,7 +7,7 @@ from typing import Protocol
 from .bonuses import BONUS_BY_ID, BonusId
 from .crand import Crand
 from .perks import PerkFlags, PerkId, PerkMeta, PERK_TABLE
-from .projectiles import ProjectilePool, SecondaryProjectilePool
+from .projectiles import Damageable, ProjectilePool, SecondaryProjectilePool
 from .weapons import WEAPON_BY_ID, WEAPON_TABLE, Weapon
 
 
@@ -353,6 +353,7 @@ class BonusPool:
         *,
         state: "GameplayState",
         players: list["PlayerState"],
+        creatures: list[Damageable] | None = None,
     ) -> list[BonusPickupEvent]:
         if dt <= 0.0:
             return []
@@ -379,6 +380,7 @@ class BonusPool:
                         BonusId(entry.bonus_id),
                         amount=entry.amount,
                         origin=player,
+                        creatures=creatures,
                     )
                     entry.picked = True
                     entry.time_left = BONUS_PICKUP_LINGER
@@ -679,6 +681,9 @@ def _owner_id_for_player(player_index: int) -> int:
     return -1 - int(player_index)
 
 
+FIRE_BULLETS_PROJECTILE_TYPE_ID = 0x2C
+
+
 def _weapon_entry(weapon_id: int) -> Weapon | None:
     return WEAPON_BY_ID.get(int(weapon_id))
 
@@ -853,7 +858,7 @@ def _perk_update_man_bomb(player: PlayerState, dt: float, state: GameplayState) 
     owner_id = _owner_id_for_player(player.index)
     state.bonus_spawn_guard = True
     for idx in range(8):
-        type_id = 0x15 if (idx % 2) else 0x16
+        type_id = 0x14 if (idx % 2) else 0x15
         angle = (float(state.rng.rand() % 50) * 0.01) + float(idx) * (math.pi / 4.0) - 0.25
         state.projectiles.spawn(
             pos_x=player.pos_x,
@@ -877,7 +882,7 @@ def _perk_update_hot_tempered(player: PlayerState, dt: float, state: GameplaySta
     owner_id = _owner_id_for_player(player.index)
     state.bonus_spawn_guard = True
     for idx in range(8):
-        type_id = 9 if (idx % 2) else 11
+        type_id = 8 if (idx % 2) else 0x0A
         angle = float(idx) * (math.pi / 4.0)
         state.projectiles.spawn(
             pos_x=player.pos_x,
@@ -899,7 +904,7 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
         return
 
     owner_id = _owner_id_for_player(player.index)
-    # Fire Cough spawns a type 0x2d projectile (and a small sprite burst) from the muzzle.
+    # Fire Cough spawns a fire projectile (and a small sprite burst) from the muzzle.
     theta = math.atan2(player.aim_dir_y, player.aim_dir_x)
     jitter = (float(state.rng.rand() % 200) - 100.0) * 0.0015
     angle = theta + jitter + math.pi / 2.0
@@ -909,9 +914,9 @@ def _perk_update_fire_cough(player: PlayerState, dt: float, state: GameplayState
         pos_x=muzzle_x,
         pos_y=muzzle_y,
         angle=angle,
-        type_id=0x2D,
+        type_id=FIRE_BULLETS_PROJECTILE_TYPE_ID,
         owner_id=owner_id,
-        base_damage=_projectile_meta_for_type_id(0x2D),
+        base_damage=_projectile_meta_for_type_id(FIRE_BULLETS_PROJECTILE_TYPE_ID),
     )
 
     player.fire_cough_timer -= state.perk_intervals.fire_cough
@@ -936,21 +941,23 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
         player_start_reload(player, state)
         return
 
+    pellet_count = int(getattr(weapon, "pellet_count", 0) or 0)
+    fire_bullets_weapon = _weapon_entry(FIRE_BULLETS_PROJECTILE_TYPE_ID)
+
     shot_cooldown = float(getattr(weapon, "fire_rate", 0.0) or 0.0)
+    spread_inc = float(getattr(weapon, "spread", 0.0) or 0.0) * 1.3
+    if player.fire_bullets_timer > 0.0 and pellet_count == 1 and fire_bullets_weapon is not None:
+        shot_cooldown = float(getattr(fire_bullets_weapon, "fire_rate", 0.0) or 0.0)
+        spread_inc = float(getattr(fire_bullets_weapon, "spread", 0.0) or 0.0) * 1.3
+
     if perk_active(player, PerkId.FASTSHOT):
         shot_cooldown *= 0.88
     if perk_active(player, PerkId.SHARPSHOOTER):
         shot_cooldown *= 1.05
     player.shot_cooldown = max(0.0, shot_cooldown)
 
-    spread_inc = float(getattr(weapon, "spread", 0.0) or 0.0) * 1.3
     if not perk_active(player, PerkId.SHARPSHOOTER):
         player.spread_heat = min(0.48, max(0.0, player.spread_heat + spread_inc))
-
-    # Most main-projectile weapons map `weapon_id -> projectile_type_id` in the rewrite.
-    type_id = int(player.weapon_id)
-    if player.fire_bullets_timer > 0.0:
-        type_id = 0x2D
 
     # Secondary-projectile weapons (effects.md).
     if player.weapon_id == 12:
@@ -984,14 +991,30 @@ def player_fire_weapon(player: PlayerState, input_state: PlayerInput, dt: float,
         angle = theta + math.pi / 2.0
         muzzle_x = player.pos_x + player.aim_dir_x * 16.0
         muzzle_y = player.pos_y + player.aim_dir_y * 16.0
-        state.projectiles.spawn(
-            pos_x=muzzle_x,
-            pos_y=muzzle_y,
-            angle=angle,
-            type_id=type_id,
-            owner_id=_owner_id_for_player(player.index),
-            base_damage=_projectile_meta_for_type_id(type_id),
-        )
+        if player.fire_bullets_timer > 0.0:
+            count = max(1, pellet_count)
+            meta = _projectile_meta_for_type_id(FIRE_BULLETS_PROJECTILE_TYPE_ID)
+            for _ in range(count):
+                jitter = (float(state.rng.rand() % 200) - 100.0) * 0.0015
+                state.projectiles.spawn(
+                    pos_x=muzzle_x,
+                    pos_y=muzzle_y,
+                    angle=angle + jitter,
+                    type_id=FIRE_BULLETS_PROJECTILE_TYPE_ID,
+                    owner_id=_owner_id_for_player(player.index),
+                    base_damage=meta,
+                )
+        else:
+            # Most main-projectile weapons map `weapon_id -> projectile_type_id` in the rewrite.
+            type_id = int(player.weapon_id)
+            state.projectiles.spawn(
+                pos_x=muzzle_x,
+                pos_y=muzzle_y,
+                angle=angle,
+                type_id=type_id,
+                owner_id=_owner_id_for_player(player.index),
+                base_damage=_projectile_meta_for_type_id(type_id),
+            )
 
     player.muzzle_flash_alpha = min(1.0, player.muzzle_flash_alpha + 0.8)
 
@@ -1085,7 +1108,7 @@ def player_update(player: PlayerState, input_state: PlayerInput, dt: float, stat
                     player,
                     count=count,
                     angle_offset=0.1,
-                    type_id=0x0B,
+                    type_id=0x0A,
                     owner_id=_owner_id_for_player(player.index),
                 )
                 state.bonus_spawn_guard = False
@@ -1116,6 +1139,7 @@ def bonus_apply(
     *,
     amount: int | None = None,
     origin: _HasPos | None = None,
+    creatures: list[Damageable] | None = None,
 ) -> None:
     """Apply a bonus to player + global timers (subset of `bonus_apply`)."""
 
@@ -1145,6 +1169,35 @@ def bonus_apply(
         player.speed_bonus_timer = max(player.speed_bonus_timer, float(amount))
     elif bonus_id == BonusId.FIRE_BULLETS:
         player.fire_bullets_timer = max(player.fire_bullets_timer, float(amount))
+    elif bonus_id == BonusId.SHOCK_CHAIN:
+        if creatures:
+            origin_pos = origin or player
+            best_idx: int | None = None
+            best_dist = 0.0
+            for idx, creature in enumerate(creatures):
+                if creature.hp <= 0.0:
+                    continue
+                d = _distance_sq(float(origin_pos.pos_x), float(origin_pos.pos_y), creature.x, creature.y)
+                if best_idx is None or d < best_dist:
+                    best_idx = idx
+                    best_dist = d
+            if best_idx is not None:
+                target = creatures[best_idx]
+                dx = target.x - float(origin_pos.pos_x)
+                dy = target.y - float(origin_pos.pos_y)
+                angle = math.atan2(dy, dx) + math.pi / 2.0
+                state.bonus_spawn_guard = True
+                state.shock_chain_links_left = 0x20
+                state.shock_chain_projectile_id = state.projectiles.spawn(
+                    pos_x=float(origin_pos.pos_x),
+                    pos_y=float(origin_pos.pos_y),
+                    angle=angle,
+                    type_id=0x14,
+                    owner_id=_owner_id_for_player(player.index),
+                    base_damage=_projectile_meta_for_type_id(0x14),
+                )
+                state.bonus_spawn_guard = False
+        return
     elif bonus_id == BonusId.WEAPON:
         weapon_assign_player(player, int(amount))
         return
@@ -1156,7 +1209,7 @@ def bonus_apply(
             origin_pos,
             count=16,
             angle_offset=0.0,
-            type_id=9,
+            type_id=8,
             owner_id=_owner_id_for_player(player.index),
         )
         state.bonus_spawn_guard = False
