@@ -1,0 +1,606 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+import math
+
+import pyray as rl
+
+from .registry import register_view
+from grim.fonts.small import SmallFontData, draw_small_text, load_small_font
+from grim.view import View, ViewContext
+
+from ..bonuses import BonusId
+from ..effects_atlas import effect_src_rect
+from ..gameplay import GameplayState, PlayerState, bonus_apply
+from ..projectiles import (
+    FIRE_BULLETS_PROJECTILE_TYPE_ID,
+    GAUSS_GUN_PROJECTILE_TYPE_ID,
+    ION_CANNON_PROJECTILE_TYPE_ID,
+    ION_MINIGUN_PROJECTILE_TYPE_ID,
+    ION_RIFLE_PROJECTILE_TYPE_ID,
+    SHRINKIFIER_PROJECTILE_TYPE_ID,
+)
+from ..weapons import WEAPON_BY_ID, WEAPON_TABLE
+
+WORLD_SIZE = 1024.0
+
+UI_TEXT_SCALE = 1.0
+UI_TEXT_COLOR = rl.Color(220, 220, 220, 255)
+UI_HINT_COLOR = rl.Color(140, 140, 140, 255)
+UI_ERROR_COLOR = rl.Color(240, 80, 80, 255)
+UI_ACCENT_COLOR = rl.Color(240, 200, 80, 255)
+
+
+@dataclass(slots=True)
+class DummyCreature:
+    x: float
+    y: float
+    hp: float
+    size: float = 42.0
+    collision_flag: int = 0
+
+
+@dataclass(slots=True)
+class BeamFx:
+    x0: float
+    y0: float
+    x1: float
+    y1: float
+    life: float
+
+
+@dataclass(slots=True)
+class EffectFx:
+    effect_id: int
+    x: float
+    y: float
+    life: float
+    rotation: float
+    scale: float
+
+
+_KNOWN_PROJ_FRAMES: dict[int, tuple[int, int]] = {
+    # Based on docs/atlas.md (ported to 0-based weapon ids).
+    0x13: (2, 0),  # Jackhammer
+    0x1D: (4, 3),  # Gauss Shotgun
+    0x19: (4, 6),  # Spider Plasma
+    ION_MINIGUN_PROJECTILE_TYPE_ID: (4, 2),
+    ION_CANNON_PROJECTILE_TYPE_ID: (4, 2),
+    SHRINKIFIER_PROJECTILE_TYPE_ID: (4, 2),
+    FIRE_BULLETS_PROJECTILE_TYPE_ID: (4, 2),
+    ION_RIFLE_PROJECTILE_TYPE_ID: (4, 2),  # Shock Chain projectile
+}
+
+_BEAM_TYPES = frozenset(
+    {
+        ION_RIFLE_PROJECTILE_TYPE_ID,
+        ION_MINIGUN_PROJECTILE_TYPE_ID,
+        ION_CANNON_PROJECTILE_TYPE_ID,
+        SHRINKIFIER_PROJECTILE_TYPE_ID,
+        FIRE_BULLETS_PROJECTILE_TYPE_ID,
+        0x1D,  # Gauss Shotgun
+        0x19,  # Spider Plasma
+    }
+)
+
+
+def _clamp(value: float, lo: float, hi: float) -> float:
+    if value < lo:
+        return lo
+    if value > hi:
+        return hi
+    return value
+
+
+def _lerp(a: float, b: float, t: float) -> float:
+    return a + (b - a) * t
+
+
+def _angle_to_target(x0: float, y0: float, x1: float, y1: float) -> float:
+    return math.atan2(y1 - y0, x1 - x0) + math.pi / 2.0
+
+
+class ProjectileFxView:
+    def __init__(self, ctx: ViewContext) -> None:
+        self._assets_root = ctx.assets_dir
+        self._missing_assets: list[str] = []
+
+        self._small: SmallFontData | None = None
+        self._projs: rl.Texture | None = None
+        self._particles: rl.Texture | None = None
+
+        self.close_requested = False
+        self._paused = False
+        self._show_help = True
+        self._show_debug = True
+
+        self._state = GameplayState()
+        self._player = PlayerState(index=0, pos_x=WORLD_SIZE * 0.5, pos_y=WORLD_SIZE * 0.5)
+        self._creatures: list[DummyCreature] = []
+
+        self._camera_x = -1.0
+        self._camera_y = -1.0
+
+        max_type_id = max((entry.weapon_id for entry in WEAPON_TABLE if entry.weapon_id >= 0), default=0)
+        self._type_ids = list(range(int(max_type_id) + 1))
+        self._type_index = 0
+
+        self._damage_scale_by_type = {
+            entry.weapon_id: float(entry.damage_mult or 1.0)
+            for entry in WEAPON_TABLE
+            if entry.weapon_id >= 0
+        }
+
+        self._origin_x = WORLD_SIZE * 0.5
+        self._origin_y = WORLD_SIZE * 0.5
+
+        self._beams: list[BeamFx] = []
+        self._effects: list[EffectFx] = []
+
+    def _ui_line_height(self, scale: float = UI_TEXT_SCALE) -> int:
+        if self._small is not None:
+            return int(self._small.cell_size * scale)
+        return int(20 * scale)
+
+    def _draw_ui_text(
+        self,
+        text: str,
+        x: float,
+        y: float,
+        color: rl.Color,
+        scale: float = UI_TEXT_SCALE,
+    ) -> None:
+        if self._small is not None:
+            draw_small_text(self._small, text, x, y, scale, color)
+        else:
+            rl.draw_text(text, int(x), int(y), int(20 * scale), color)
+
+    def _camera_world_to_screen(self, x: float, y: float) -> tuple[float, float]:
+        return self._camera_x + x, self._camera_y + y
+
+    def _camera_screen_to_world(self, x: float, y: float) -> tuple[float, float]:
+        return x - self._camera_x, y - self._camera_y
+
+    def _update_camera(self, dt: float) -> None:
+        screen_w = float(rl.get_screen_width())
+        screen_h = float(rl.get_screen_height())
+        if screen_w > WORLD_SIZE:
+            screen_w = WORLD_SIZE
+        if screen_h > WORLD_SIZE:
+            screen_h = WORLD_SIZE
+
+        desired_x = (screen_w * 0.5) - self._origin_x
+        desired_y = (screen_h * 0.5) - self._origin_y
+
+        min_x = screen_w - WORLD_SIZE
+        min_y = screen_h - WORLD_SIZE
+        desired_x = _clamp(desired_x, min_x, -1.0)
+        desired_y = _clamp(desired_y, min_y, -1.0)
+
+        t = _clamp(dt * 6.0, 0.0, 1.0)
+        self._camera_x = _lerp(self._camera_x, desired_x, t)
+        self._camera_y = _lerp(self._camera_y, desired_y, t)
+
+    def _reset_scene(self) -> None:
+        self._state.projectiles.reset()
+        self._state.secondary_projectiles.reset()
+        self._state.shock_chain_links_left = 0
+        self._state.shock_chain_projectile_id = -1
+        self._beams.clear()
+        self._effects.clear()
+        self._creatures = [
+            DummyCreature(x=self._origin_x + 180.0, y=self._origin_y, hp=140.0, size=38.0),
+            DummyCreature(x=self._origin_x + 260.0, y=self._origin_y + 40.0, hp=140.0, size=42.0),
+            DummyCreature(x=self._origin_x - 220.0, y=self._origin_y + 140.0, hp=140.0, size=52.0),
+            DummyCreature(x=self._origin_x - 300.0, y=self._origin_y - 120.0, hp=140.0, size=58.0),
+        ]
+
+    def open(self) -> None:
+        self._missing_assets.clear()
+        try:
+            self._small = load_small_font(self._assets_root, self._missing_assets)
+        except Exception:
+            self._small = None
+
+        projs_path = self._assets_root / "crimson" / "game" / "projs.png"
+        if not projs_path.is_file():
+            self._missing_assets.append("game/projs.png")
+            raise FileNotFoundError(f"Missing asset: {projs_path}")
+        self._projs = rl.load_texture(str(projs_path))
+
+        particles_path = self._assets_root / "crimson" / "game" / "particles.png"
+        if particles_path.is_file():
+            self._particles = rl.load_texture(str(particles_path))
+        else:
+            self._particles = None
+            self._missing_assets.append("game/particles.png")
+
+        self.close_requested = False
+        self._paused = False
+        self._state.rng.srand(0xBEEF)
+        self._reset_scene()
+
+        self._camera_x = -1.0
+        self._camera_y = -1.0
+
+    def close(self) -> None:
+        if self._projs is not None:
+            rl.unload_texture(self._projs)
+            self._projs = None
+        if self._particles is not None:
+            rl.unload_texture(self._particles)
+            self._particles = None
+        if self._small is not None:
+            rl.unload_texture(self._small.texture)
+            self._small = None
+
+    def _selected_type_id(self) -> int:
+        if not self._type_ids:
+            return 0
+        return int(self._type_ids[self._type_index % len(self._type_ids)])
+
+    def _projectile_meta_for(self, type_id: int) -> float:
+        entry = WEAPON_BY_ID.get(int(type_id))
+        meta = entry.projectile_type if entry is not None else None
+        return float(meta if meta is not None else 45.0)
+
+    def _spawn_effect(self, *, effect_id: int, x: float, y: float, scale: float, duration: float) -> None:
+        if self._particles is None:
+            return
+        self._effects.append(
+            EffectFx(
+                effect_id=int(effect_id),
+                x=float(x),
+                y=float(y),
+                life=float(duration),
+                rotation=float(int(self._state.rng.rand()) % 0x274) * 0.01,
+                scale=float(scale),
+            )
+        )
+
+    def _spawn_projectile(self, *, type_id: int, angle: float, owner_id: int = -100) -> None:
+        meta = self._projectile_meta_for(type_id)
+        self._spawn_effect(effect_id=0x12, x=self._origin_x, y=self._origin_y, scale=0.55, duration=0.18)
+        self._state.projectiles.spawn(
+            pos_x=self._origin_x,
+            pos_y=self._origin_y,
+            angle=float(angle),
+            type_id=int(type_id),
+            owner_id=int(owner_id),
+            base_damage=meta,
+        )
+
+    def _spawn_fire_bullets_volley(self, *, angle: float) -> None:
+        base = WEAPON_BY_ID.get(self._selected_type_id())
+        pellet_count = int(getattr(base, "pellet_count", 1) or 1)
+        pellet_count = max(1, pellet_count)
+        meta = self._projectile_meta_for(FIRE_BULLETS_PROJECTILE_TYPE_ID)
+        self._spawn_effect(effect_id=0x12, x=self._origin_x, y=self._origin_y, scale=0.6, duration=0.2)
+        for _ in range(pellet_count):
+            jitter = (float(self._state.rng.rand() % 200) - 100.0) * 0.0015
+            self._state.projectiles.spawn(
+                pos_x=self._origin_x,
+                pos_y=self._origin_y,
+                angle=float(angle + jitter),
+                type_id=FIRE_BULLETS_PROJECTILE_TYPE_ID,
+                owner_id=-1,
+                base_damage=meta,
+            )
+
+    def _handle_input(self) -> None:
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_TAB):
+            self._paused = not self._paused
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_ESCAPE):
+            self.close_requested = True
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_H):
+            self._show_help = not self._show_help
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_F3):
+            self._show_debug = not self._show_debug
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_R):
+            self._reset_scene()
+
+        wheel = int(rl.get_mouse_wheel_move())
+        if wheel:
+            self._type_index = (self._type_index - wheel) % max(1, len(self._type_ids))
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_LEFT):
+            self._type_index = (self._type_index - 1) % max(1, len(self._type_ids))
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_RIGHT):
+            self._type_index = (self._type_index + 1) % max(1, len(self._type_ids))
+
+        mouse = rl.get_mouse_position()
+        aim_x, aim_y = self._camera_screen_to_world(float(mouse.x), float(mouse.y))
+        angle = _angle_to_target(self._origin_x, self._origin_y, aim_x, aim_y)
+
+        if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_RIGHT):
+            self._origin_x = _clamp(aim_x, 0.0, WORLD_SIZE)
+            self._origin_y = _clamp(aim_y, 0.0, WORLD_SIZE)
+
+        if rl.is_mouse_button_pressed(rl.MouseButton.MOUSE_BUTTON_LEFT):
+            self._spawn_projectile(type_id=self._selected_type_id(), angle=angle, owner_id=-1)
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_SPACE):
+            count = 12
+            step = math.tau / float(count)
+            for idx in range(count):
+                self._spawn_projectile(
+                    type_id=self._selected_type_id(),
+                    angle=float(idx) * step,
+                    owner_id=-1,
+                )
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_F):
+            self._spawn_fire_bullets_volley(angle=angle)
+
+        if rl.is_key_pressed(rl.KeyboardKey.KEY_S):
+            self._player.pos_x = self._origin_x
+            self._player.pos_y = self._origin_y
+            bonus_apply(self._state, self._player, BonusId.SHOCK_CHAIN, origin=self._player, creatures=self._creatures)
+
+    def update(self, dt: float) -> None:
+        self._handle_input()
+        if self._paused:
+            dt = 0.0
+
+        if dt <= 0.0:
+            return
+
+        self._update_camera(dt)
+
+        self._beams = [beam for beam in self._beams if beam.life > 0.0]
+        for beam in self._beams:
+            beam.life -= dt
+
+        self._effects = [fx for fx in self._effects if fx.life > 0.0]
+        for fx in self._effects:
+            fx.life -= dt
+
+        hits = self._state.projectiles.update(
+            dt,
+            self._creatures,
+            world_size=WORLD_SIZE,
+            damage_scale_by_type=self._damage_scale_by_type,
+            rng=self._state.rng.rand,
+            runtime_state=self._state,
+        )
+        for type_id, origin_x, origin_y, hit_x, hit_y in hits:
+            if type_id in _BEAM_TYPES:
+                self._beams.append(BeamFx(x0=origin_x, y0=origin_y, x1=hit_x, y1=hit_y, life=0.08))
+                self._spawn_effect(effect_id=0x01, x=hit_x, y=hit_y, scale=0.9, duration=0.25)
+            else:
+                effect_id = 0x11 if type_id in (GAUSS_GUN_PROJECTILE_TYPE_ID, 0x0B) else 0x00
+                self._spawn_effect(effect_id=effect_id, x=hit_x, y=hit_y, scale=1.2, duration=0.35)
+
+        self._creatures = [c for c in self._creatures if c.hp > 0.0]
+
+    def _draw_atlas_sprite(
+        self,
+        texture: rl.Texture,
+        *,
+        grid: int,
+        frame: int,
+        x: float,
+        y: float,
+        scale: float,
+        rotation_rad: float = 0.0,
+        tint: rl.Color = rl.WHITE,
+    ) -> None:
+        grid = max(1, int(grid))
+        frame = max(0, int(frame))
+
+        cell_w = float(texture.width) / float(grid)
+        cell_h = float(texture.height) / float(grid)
+        col = frame % grid
+        row = frame // grid
+        src = rl.Rectangle(cell_w * float(col), cell_h * float(row), cell_w, cell_h)
+
+        w = cell_w * float(scale)
+        h = cell_h * float(scale)
+        dst = rl.Rectangle(float(x), float(y), w, h)
+        origin = rl.Vector2(w * 0.5, h * 0.5)
+        rl.draw_texture_pro(texture, src, dst, origin, float(rotation_rad * 57.29577951308232), tint)
+
+    def _draw_projectile(self, proj: object) -> None:
+        texture = self._projs
+        if texture is None:
+            return
+
+        type_id = int(getattr(proj, "type_id", 0))
+        mapping = _KNOWN_PROJ_FRAMES.get(type_id)
+        sx, sy = self._camera_world_to_screen(float(getattr(proj, "pos_x", 0.0)), float(getattr(proj, "pos_y", 0.0)))
+
+        if mapping is None:
+            rl.draw_circle(int(sx), int(sy), 3.0, rl.Color(240, 220, 160, 255))
+            if self._show_debug:
+                rl.draw_text(f"{type_id:02x}", int(sx) + 6, int(sy) - 8, 10, UI_HINT_COLOR)
+            return
+
+        grid, frame = mapping
+        life = float(getattr(proj, "life_timer", 0.0))
+        angle = float(getattr(proj, "angle", 0.0))
+
+        color = rl.Color(240, 220, 160, 255)
+        if type_id in (ION_RIFLE_PROJECTILE_TYPE_ID, ION_MINIGUN_PROJECTILE_TYPE_ID, ION_CANNON_PROJECTILE_TYPE_ID):
+            color = rl.Color(120, 200, 255, 255)
+        elif type_id == FIRE_BULLETS_PROJECTILE_TYPE_ID:
+            color = rl.Color(255, 170, 90, 255)
+        elif type_id == SHRINKIFIER_PROJECTILE_TYPE_ID:
+            color = rl.Color(160, 255, 170, 255)
+        elif type_id == 0x19:
+            color = rl.Color(240, 120, 255, 255)
+
+        # Beam-style projectiles get a trail from origin to current position in the flight phase.
+        if type_id in _BEAM_TYPES and life >= 0.4:
+            ox = float(getattr(proj, "origin_x", 0.0))
+            oy = float(getattr(proj, "origin_y", 0.0))
+            dx = float(getattr(proj, "pos_x", 0.0)) - ox
+            dy = float(getattr(proj, "pos_y", 0.0)) - oy
+            dist = math.hypot(dx, dy)
+            if dist > 1e-6:
+                step = 14.0
+                seg_count = max(1, int(dist // step) + 1)
+                dir_x = dx / dist
+                dir_y = dy / dist
+                for idx in range(seg_count):
+                    t = float(idx) / float(max(1, seg_count - 1))
+                    px = ox + dir_x * dist * t
+                    py = oy + dir_y * dist * t
+                    alpha = int(220 * (1.0 - t * 0.75))
+                    tint = rl.Color(color.r, color.g, color.b, alpha)
+                    psx, psy = self._camera_world_to_screen(px, py)
+                    self._draw_atlas_sprite(
+                        texture,
+                        grid=grid,
+                        frame=frame,
+                        x=psx,
+                        y=psy,
+                        scale=0.55,
+                        rotation_rad=angle,
+                        tint=tint,
+                    )
+                return
+
+        alpha = int(_clamp(life / 0.4, 0.0, 1.0) * 255)
+        tint = rl.Color(color.r, color.g, color.b, alpha)
+        self._draw_atlas_sprite(texture, grid=grid, frame=frame, x=sx, y=sy, scale=0.6, rotation_rad=angle, tint=tint)
+
+    def draw(self) -> None:
+        rl.clear_background(rl.Color(10, 10, 12, 255))
+        if self._missing_assets and self._projs is None:
+            message = "Missing assets: " + ", ".join(self._missing_assets)
+            self._draw_ui_text(message, 24, 24, UI_ERROR_COLOR)
+            return
+
+        # World bounds.
+        x0, y0 = self._camera_world_to_screen(0.0, 0.0)
+        x1, y1 = self._camera_world_to_screen(WORLD_SIZE, WORLD_SIZE)
+        rl.draw_rectangle_lines(int(x0), int(y0), int(x1 - x0), int(y1 - y0), rl.Color(40, 40, 55, 255))
+
+        # Spawn origin marker.
+        sx, sy = self._camera_world_to_screen(self._origin_x, self._origin_y)
+        rl.draw_circle(int(sx), int(sy), 5.0, rl.Color(240, 200, 80, 255))
+        rl.draw_circle_lines(int(sx), int(sy), 9.0, rl.Color(70, 70, 90, 255))
+
+        # Creatures.
+        for creature in self._creatures:
+            cx, cy = self._camera_world_to_screen(creature.x, creature.y)
+            color = rl.Color(220, 90, 90, 255) if creature.collision_flag == 0 else rl.Color(240, 180, 90, 255)
+            rl.draw_circle(int(cx), int(cy), float(creature.size * 0.5), color)
+            rl.draw_circle_lines(int(cx), int(cy), float(creature.size * 0.5), rl.Color(40, 40, 55, 255))
+
+        # AOE rings for ion linger types.
+        for proj in self._state.projectiles.iter_active():
+            life = float(proj.life_timer)
+            if life >= 0.4:
+                continue
+            if proj.type_id == ION_RIFLE_PROJECTILE_TYPE_ID:
+                radius = 88.0
+                color = rl.Color(120, 200, 255, 50)
+            elif proj.type_id == ION_MINIGUN_PROJECTILE_TYPE_ID:
+                radius = 60.0
+                color = rl.Color(120, 200, 255, 40)
+            elif proj.type_id == ION_CANNON_PROJECTILE_TYPE_ID:
+                radius = 128.0
+                color = rl.Color(120, 200, 255, 40)
+            else:
+                continue
+            px, py = self._camera_world_to_screen(proj.pos_x, proj.pos_y)
+            rl.draw_circle(int(px), int(py), radius, color)
+            rl.draw_circle_lines(int(px), int(py), radius, rl.Color(120, 200, 255, 120))
+
+        # Beam flashes from hit events.
+        for beam in self._beams:
+            t = _clamp(beam.life / 0.08, 0.0, 1.0)
+            alpha = int(200 * t)
+            x0s, y0s = self._camera_world_to_screen(beam.x0, beam.y0)
+            x1s, y1s = self._camera_world_to_screen(beam.x1, beam.y1)
+            rl.draw_line_ex(
+                rl.Vector2(float(x0s), float(y0s)),
+                rl.Vector2(float(x1s), float(y1s)),
+                2.0,
+                rl.Color(150, 220, 255, alpha),
+            )
+
+        # Particle sprite effects.
+        if self._particles is not None:
+            for fx in self._effects:
+                src = effect_src_rect(
+                    fx.effect_id,
+                    texture_width=float(self._particles.width),
+                    texture_height=float(self._particles.height),
+                )
+                if src is None:
+                    continue
+                life = max(0.0, fx.life)
+                alpha = int(_clamp(life / 0.35, 0.0, 1.0) * 220)
+                tint = rl.Color(255, 255, 255, alpha)
+                sx, sy = self._camera_world_to_screen(fx.x, fx.y)
+                dst_scale = fx.scale * (1.0 + (0.7 - _clamp(life, 0.0, 0.7)) * 0.6)
+                dst = rl.Rectangle(float(sx), float(sy), src[2] * dst_scale, src[3] * dst_scale)
+                origin = rl.Vector2(dst.width * 0.5, dst.height * 0.5)
+                rl.draw_texture_pro(
+                    self._particles,
+                    rl.Rectangle(float(src[0]), float(src[1]), float(src[2]), float(src[3])),
+                    dst,
+                    origin,
+                    float(fx.rotation * 57.29577951308232),
+                    tint,
+                )
+
+        # Projectiles.
+        for proj in self._state.projectiles.iter_active():
+            self._draw_projectile(proj)
+
+        # UI.
+        margin = 18
+        x = float(margin)
+        y = float(margin)
+        line = self._ui_line_height()
+
+        type_id = self._selected_type_id()
+        weapon = WEAPON_BY_ID.get(type_id)
+        label = weapon.name if weapon is not None and weapon.name else f"type_{type_id}"
+        self._draw_ui_text(f"{label} (type_id {type_id} / 0x{type_id:02x})", x, y, UI_TEXT_COLOR)
+        y += line + 4
+
+        if self._show_debug:
+            meta = self._projectile_meta_for(type_id)
+            dmg = self._damage_scale_by_type.get(type_id, 1.0)
+            pellets = int(getattr(weapon, "pellet_count", 1) or 1) if weapon is not None else 1
+            self._draw_ui_text(f"meta {meta:.1f}  dmg_scale {dmg:.2f}  pellet_count {pellets}", x, y, UI_HINT_COLOR)
+            y += line + 4
+            self._draw_ui_text(
+                f"shock_chain links {self._state.shock_chain_links_left}  proj {self._state.shock_chain_projectile_id}",
+                x,
+                y,
+                UI_HINT_COLOR,
+            )
+            y += line + 8
+
+        if self._show_help:
+            self._draw_ui_text("controls:", x, y, UI_ACCENT_COLOR)
+            y += line + 2
+            self._draw_ui_text("- left/right: select projectile type", x, y, UI_HINT_COLOR)
+            y += line + 2
+            self._draw_ui_text("- mouse wheel: select type", x, y, UI_HINT_COLOR)
+            y += line + 2
+            self._draw_ui_text("- LMB: spawn projectile toward mouse", x, y, UI_HINT_COLOR)
+            y += line + 2
+            self._draw_ui_text("- RMB: move spawn origin", x, y, UI_HINT_COLOR)
+            y += line + 2
+            self._draw_ui_text("- space: spawn ring", x, y, UI_HINT_COLOR)
+            y += line + 2
+            self._draw_ui_text("- F: fire-bullets volley (uses pellet_count)", x, y, UI_HINT_COLOR)
+            y += line + 2
+            self._draw_ui_text("- S: apply Shock Chain bonus", x, y, UI_HINT_COLOR)
+            y += line + 2
+            self._draw_ui_text("- R: reset  Tab: pause  H: hide help  F3: toggle debug", x, y, UI_HINT_COLOR, scale=0.9)
+
+
+@register_view("projectile_fx", "Projectile FX lab")
+def build_projectile_fx_view(ctx: ViewContext) -> View:
+    return ProjectileFxView(ctx)
+
