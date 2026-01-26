@@ -122,6 +122,17 @@ The game models continuous-fire inaccuracy as a per-player "heat" value stored i
   `(aim_x, aim_y)` with radius `max(6.0, d * player_spread_heat * 0.5)`. [static]
   This makes the indicator scale with range: the same angular error produces a
   larger circle when aiming farther away.
+  - Fill: solid color `rgba(0.0, 0.0, 0.1, 0.3)` via `grim_draw_circle_filled`. [static]
+  - Outline: `bulletTrail` texture, UV `(0.5, 0.0)-(0.5, 1.0)`, color alpha `0.55`,
+    via `grim_draw_circle_outline`. [static]
+  - Grim2D tessellation (grim.dll): fill segments `trunc(r * 0.125 + 12)`, outline
+    segments `trunc(r * 0.2 + 14)`, outline outer radius `r + 2.0`. [static]
+
+- **Cursor render:** `ui_cursor_render` draws a pulsing aim effect using
+  `particles_texture` + `effect_select_texture(0x0D)` (64×64 atlas frame) at fixed
+  offsets around `ui_mouse_x/y`, then draws `ui_cursor` at `(ui_mouse_x - 2, ui_mouse_y - 2)`
+  sized `32×32`. The pulse alpha is
+  `alpha = (pow(2.0, sin(t)) + 2.0) * 0.32` with `t += frame_dt * 1.1`. [static]
 
 ### Reload + spread interactions
 
