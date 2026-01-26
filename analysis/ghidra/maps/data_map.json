@@ -4080,9 +4080,10 @@
     },
     {
       "address": "0x004c3c80",
-      "comment": "SFX cooldown table (per-id throttle used by sfx_play).",
+      "comment": "SFX cooldown table (float timers; per-id throttle used by sfx_play).",
       "name": "sfx_cooldown_table",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004c3e80",

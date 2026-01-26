@@ -36364,7 +36364,8 @@ int sfx_system_init(void)
   int iVar1;
   uint3 extraout_var;
   undefined3 extraout_var_00;
-  undefined4 *puVar2;
+  float *pfVar2;
+  undefined4 *puVar3;
   uint coop_level;
   
   if (config_blob.reserved0[0] != '\0') {
@@ -36384,15 +36385,15 @@ int sfx_system_init(void)
   console_printf(&console_log_queue,s____using_DirectSound_output_00478554);
   console_printf(&console_log_queue,s____using_default_speaker_config_00478530);
   console_printf(&console_log_queue,s____saying_hello_to_the_Ogg__00478510);
-  puVar2 = &sfx_cooldown_table;
+  pfVar2 = &sfx_cooldown_table;
   for (iVar1 = 0x80; iVar1 != 0; iVar1 = iVar1 + -1) {
-    *puVar2 = 0;
-    puVar2 = puVar2 + 1;
+    *pfVar2 = 0.0;
+    pfVar2 = pfVar2 + 1;
   }
-  puVar2 = &sfx_voice_table;
+  puVar3 = &sfx_voice_table;
   for (iVar1 = 0x20; iVar1 != 0; iVar1 = iVar1 + -1) {
-    *puVar2 = 0;
-    puVar2 = puVar2 + 1;
+    *puVar3 = 0;
+    puVar3 = puVar3 + 1;
   }
   console_printf(&console_log_queue,s_Init_Grim_SFX_done_004784fc);
   return CONCAT31(extraout_var_00,1);
@@ -36481,7 +36482,7 @@ int __cdecl sfx_play(int sfx_id)
   if (config_blob.reserved0[0] != '\0') {
     return -1;
   }
-  if (0.0 < (float)(&sfx_cooldown_table)[sfx_id]) {
+  if (0.0 < (&sfx_cooldown_table)[sfx_id]) {
     return -1;
   }
   if (_bonus_reflex_boost_timer <= 0.0) {
@@ -36497,10 +36498,10 @@ int __cdecl sfx_play(int sfx_id)
     sfx_rate_scale = 0x5622;
   }
   if ((sfx_id == sfx_flamer_fire_01) || (sfx_id == sfx_flamer_fire_02)) {
-    (&sfx_cooldown_table)[sfx_id] = 0x3ee147ae;
+    (&sfx_cooldown_table)[sfx_id] = 0.44;
   }
   else {
-    (&sfx_cooldown_table)[sfx_id] = 0x3d4ccccd;
+    (&sfx_cooldown_table)[sfx_id] = 0.05;
   }
   iVar1 = sfx_entry_start_playback((int)(&sfx_entry_table + sfx_id));
   (**(code **)(*(int *)(&sfx_entry_table)[sfx_id].buffers[iVar1] + 0x40))
@@ -36531,7 +36532,7 @@ float __cdecl sfx_play_panned(float sfx_id)
   if (config_blob.reserved0[0] != '\0') {
     return (float)in_ST0;
   }
-  if (0.0 < (float)(&sfx_cooldown_table)[(int)sfx_id]) {
+  if (0.0 < (&sfx_cooldown_table)[(int)sfx_id]) {
     return (float)in_ST0;
   }
   if (_bonus_reflex_boost_timer <= 0.0) {
@@ -36547,10 +36548,10 @@ float __cdecl sfx_play_panned(float sfx_id)
     sfx_rate_scale = 0x5622;
   }
   if ((sfx_id == sfx_flamer_fire_01) || (sfx_id == sfx_flamer_fire_02)) {
-    (&sfx_cooldown_table)[(int)sfx_id] = 0x3ee147ae;
+    (&sfx_cooldown_table)[(int)sfx_id] = 0.44;
   }
   else {
-    (&sfx_cooldown_table)[(int)sfx_id] = 0x3d4ccccd;
+    (&sfx_cooldown_table)[(int)sfx_id] = 0.05;
   }
   lVar3 = __ftol();
   iVar2 = (int)lVar3;
@@ -36581,7 +36582,7 @@ void audio_update(void)
   music_entry_t *entry;
   
   if (config_blob.reserved0[0] == '\0') {
-    pfVar1 = (float *)&sfx_cooldown_table;
+    pfVar1 = &sfx_cooldown_table;
     do {
       if (0.0 < *pfVar1) {
         *pfVar1 = *pfVar1 - _DAT_0047ea48;
