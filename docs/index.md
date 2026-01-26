@@ -4,11 +4,11 @@ Reverse engineering and rewriting Crimsonland v1.9.93 in Python + raylib.
 
 !!! abstract "Current state"
     The rewrite boots to a working front-end (menu + terrain, music + SFX,
-    console overlay, demo/attract flow) and loads/saves `game.cfg`. Core gameplay
-    pieces (`player_update`, weapons/projectiles, perks/bonuses, HUD) exist and
-    are exercised in `uv run crimson view player`, but are not wired into
-    `uv run crimson game` yet. Next milestone: integrate the real-time gameplay
-    loop (player + creatures + spawners) and bring up Survival.
+    console overlay, demo/attract flow) and loads/saves `game.cfg`. Survival is
+    now wired into `uv run crimson game` with terrain + sprites + decal baking,
+    using the real gameplay loop (player/projectiles/creatures/spawns/bonuses).
+    Parity work remains on SFX hooks, full weapon/creature coverage, and the
+    demo rebase onto the shared runtime.
 
 ## Analysis
 

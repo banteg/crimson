@@ -10,14 +10,14 @@ Legend: ✅ complete · 🚧 in progress · ⬜ not started
 |---------|:-------:|:--------:|:----------:|:------:|-------|
 | Formats (PAQ/JAZ) | ✅ | ✅ | ✅ | ✅ | Full extraction & conversion pipeline working. |
 | Quest Logic | ✅ | ✅ | ✅ | ✅ | All 50 builders dumped, validated, and mirrored in Python. |
-| Terrain | ✅ | ✅ | ✅ | 🚧 | Rendering logic validated; baking pipeline in progress. |
+| Terrain | ✅ | ✅ | ✅ | 🚧 | Rendering logic validated; decal baking wired into Survival. |
 | Boot Sequence | ✅ | ✅ | ✅ | 🚧 | Logos, loading steps, and music handoff implemented. |
 | Menu System | ✅ | ✅ | 🚧 | 🚧 | State 0: quit wired; panel/back positions + slide animation match; terrain stable across menu screens; sign shadow pass matches when fx_detail is enabled. |
 | Demo / attract loop | ✅ | 🚧 | ⬜ | ⬜ | Variants + spawn ids identified; upsell overlay + purchase screen implemented; sequencing/idle trigger still stubbed. |
 | Weapons | ✅ | ✅ | 🚧 | ⬜ | Table structure known; projectile logic pending. |
 | Creatures: structs | ✅ | 🚧 | ⬜ | ⬜ | Creature pool field map is medium-confidence; needs more xrefs + runtime checks. |
 | Creatures: spawning | ✅ | 🚧 | ⬜ | ⬜ | Spawn templates are an algorithm (formations/spawn slots/tail mods); plan rewrite started. |
-| Creatures: animations | ✅ | 🚧 | ⬜ | ⬜ | Atlas/frame selection understood at a high level; parity tuning in progress. |
+| Creatures: animations | ✅ | 🚧 | ⬜ | ⬜ | Atlas/frame selection wired into Survival; parity tuning in progress. |
 | Creatures: AI | ✅ | 🚧 | ⬜ | ⬜ | AI modes partially mapped; needs runtime evidence and edge cases. |
 | Creatures: other | ✅ | ⬜ | ⬜ | ⬜ | Attacks, damage/death, loot/bonuses, and audio behaviors still being scoped. |
 | Player | ✅ | ✅ | 🚧 | ⬜ | Input & movement mapped; state struct partially validated. |
