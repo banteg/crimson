@@ -4818,16 +4818,58 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004d99a0",
+      "comment": "CRT environ pointer (char**), built by crt_build_environ from the environment block.",
+      "name": "crt_environ",
+      "program": "crimsonland.exe",
+      "type": "char **"
+    },
+    {
       "address": "0x004da100",
       "comment": "Scratch buffer used by input_key_name (GetKeyNameTextA, 0x40 bytes).",
       "name": "input_key_name_buf",
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004da3a4",
+      "comment": "CRT process heap handle used by crt_free_base/crt_realloc (HeapAlloc/HeapFree).",
+      "name": "crt_heap_handle",
+      "program": "crimsonland.exe",
+      "type": "HANDLE"
+    },
+    {
       "address": "0x004da3a8",
       "comment": "CRT heap mode flag used by crt_free paths.",
       "name": "crt_heap_mode",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004da3c0",
+      "comment": "CRT lowio ioinfo block pointer table (MSVCRT _pioinfo-style).",
+      "name": "crt_pioinfo_table",
+      "program": "crimsonland.exe",
+      "type": "void **"
+    },
+    {
+      "address": "0x004da4c0",
+      "comment": "CRT lowio max handle count (MSVCRT _nhandle-style).",
+      "name": "crt_nhandle",
+      "program": "crimsonland.exe",
+      "type": "int"
+    },
+    {
+      "address": "0x004da4c4",
+      "comment": "CRT FILE* stream pointer table used by crt_flushall (MSVCRT __piob-style).",
+      "name": "crt_stream_table",
+      "program": "crimsonland.exe",
+      "type": "FILE **"
+    },
+    {
+      "address": "0x004db4e0",
+      "comment": "CRT stream count used for iterating crt_stream_table.",
+      "name": "crt_stream_count",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004db4f0",
