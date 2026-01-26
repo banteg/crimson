@@ -40,6 +40,8 @@ class PlayerState:
 
     move_speed_multiplier: float = 2.0
     move_phase: float = 0.0
+    heading: float = 0.0
+    death_timer: float = 16.0
 
     aim_heading: float = 0.0
     aim_dir_x: float = 1.0
@@ -1093,6 +1095,10 @@ def player_update(player: PlayerState, input_state: PlayerInput, dt: float, stat
     prev_x = player.pos_x
     prev_y = player.pos_y
 
+    if player.health <= 0.0:
+        player.death_timer -= dt * 20.0
+        return
+
     player.muzzle_flash_alpha = max(0.0, player.muzzle_flash_alpha - dt * 2.0)
     cooldown_decay = dt * (1.5 if state.bonuses.weapon_power_up > 0.0 else 1.0)
     player.shot_cooldown = max(0.0, player.shot_cooldown - cooldown_decay)
@@ -1122,6 +1128,15 @@ def player_update(player: PlayerState, input_state: PlayerInput, dt: float, stat
         speed *= 1.35
     player.pos_x = _clamp(player.pos_x + move_x * speed * dt, 0.0, float(world_size))
     player.pos_y = _clamp(player.pos_y + move_y * speed * dt, 0.0, float(world_size))
+
+    if move_x != 0.0 or move_y != 0.0:
+        player.heading = math.atan2(move_y, move_x) + math.pi / 2.0
+
+    move_dist = math.hypot(player.pos_x - prev_x, player.pos_y - prev_y)
+    if move_dist > 1e-9:
+        # Port of `move_phase += frame_dt * move_speed * 19.0` (player_update).
+        move_speed = move_dist / dt / 120.0
+        player.move_phase += dt * move_speed * 19.0
 
     stationary = abs(player.pos_x - prev_x) <= 1e-9 and abs(player.pos_y - prev_y) <= 1e-9
     reload_scale = 1.0
@@ -1191,6 +1206,11 @@ def player_update(player: PlayerState, input_state: PlayerInput, dt: float, stat
             player_start_reload(player, state)
 
     player_fire_weapon(player, input_state, dt, state)
+
+    while player.move_phase > 14.0:
+        player.move_phase -= 14.0
+    while player.move_phase < 0.0:
+        player.move_phase += 14.0
 
 
 def bonus_apply(

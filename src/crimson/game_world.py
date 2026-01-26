@@ -443,7 +443,6 @@ class GameWorld:
             self._sync_ground_settings()
             self.ground.process_pending()
 
-        prev_positions = [(player.pos_x, player.pos_y) for player in self.players]
         prev_audio = [(player.ammo, player.reload_active, player.reload_timer) for player in self.players]
 
         hits = self.state.projectiles.update(
@@ -485,7 +484,6 @@ class GameWorld:
 
         if dt > 0.0:
             self._advance_creature_anim(dt)
-            self._advance_player_anim(dt, prev_positions)
 
         bonus_update(self.state, self.players, dt, creatures=self.creatures.entries, update_hud=True)
 
@@ -747,6 +745,112 @@ class GameWorld:
         origin = rl.Vector2(width * 0.5, height * 0.5)
         rl.draw_texture_pro(texture, src, dst, origin, 0.0, tint)
 
+    def _draw_player_trooper_sprite(
+        self,
+        texture: rl.Texture,
+        player: PlayerState,
+        *,
+        cam_x: float,
+        cam_y: float,
+        scale_x: float,
+        scale_y: float,
+        scale: float,
+    ) -> None:
+        grid = 8
+        cell = float(texture.width) / float(grid) if grid > 0 else float(texture.width)
+        if cell <= 0.0:
+            return
+
+        sx = (player.pos_x + cam_x) * scale_x
+        sy = (player.pos_y + cam_y) * scale_y
+        base_size = float(player.size) * scale
+        base_scale = base_size / cell
+
+        tint = rl.Color(240, 240, 255, 255)
+        shadow_tint = rl.Color(0, 0, 0, 90)
+
+        def draw(frame: int, *, x: float, y: float, scale_mul: float, rotation: float, color: rl.Color) -> None:
+            self._draw_atlas_sprite(
+                texture,
+                grid=grid,
+                frame=max(0, min(63, int(frame))),
+                x=x,
+                y=y,
+                scale=base_scale * float(scale_mul),
+                rotation_rad=float(rotation),
+                tint=color,
+            )
+
+        if player.health > 0.0:
+            leg_frame = max(0, min(14, int(player.move_phase + 0.5)))
+            torso_frame = leg_frame + 16
+
+            recoil_dir = float(player.aim_heading) + math.pi / 2.0
+            recoil = float(player.muzzle_flash_alpha) * 12.0 * scale
+            recoil_x = math.cos(recoil_dir) * recoil
+            recoil_y = math.sin(recoil_dir) * recoil
+
+            draw(
+                leg_frame,
+                x=sx + 3.0 * scale,
+                y=sy + 3.0 * scale,
+                scale_mul=1.02,
+                rotation=float(player.heading),
+                color=shadow_tint,
+            )
+            draw(
+                torso_frame,
+                x=sx + recoil_x + 1.0 * scale,
+                y=sy + recoil_y + 1.0 * scale,
+                scale_mul=1.03,
+                rotation=float(player.aim_heading),
+                color=shadow_tint,
+            )
+            draw(
+                leg_frame,
+                x=sx,
+                y=sy,
+                scale_mul=1.0,
+                rotation=float(player.heading),
+                color=tint,
+            )
+            draw(
+                torso_frame,
+                x=sx + recoil_x,
+                y=sy + recoil_y,
+                scale_mul=1.0,
+                rotation=float(player.aim_heading),
+                color=tint,
+            )
+            return
+
+        if player.death_timer >= 0.0:
+            # Matches the observed frame ramp (32..52) in player_sprite_trace.jsonl.
+            frame = 32 + int((16.0 - float(player.death_timer)) * 1.25)
+            if frame > 52:
+                frame = 52
+            if frame < 32:
+                frame = 32
+        else:
+            frame = 52
+
+        draw(
+            frame,
+            x=sx + 1.0 * scale,
+            y=sy + 1.0 * scale,
+            scale_mul=1.03,
+            rotation=float(player.aim_heading),
+            color=shadow_tint,
+        )
+        draw(
+            frame,
+            x=sx,
+            y=sy,
+            scale_mul=1.0,
+            rotation=float(player.aim_heading),
+            color=tint,
+        )
+
     def _draw_projectile(self, proj: object, *, scale: float) -> None:
         texture = self.projs_texture
         sx, sy = self.world_to_screen(float(getattr(proj, "pos_x", 0.0)), float(getattr(proj, "pos_y", 0.0)))
@@ -904,26 +1008,23 @@ class GameWorld:
         for proj in self.state.secondary_projectiles.iter_active():
             self._draw_secondary_projectile(proj, scale=scale)
 
-        player = self.players[0] if self.players else None
-        if player is not None:
+        if self.players:
             texture = self.creature_textures.get(_CREATURE_ASSET.get(CreatureTypeId.TROOPER))
-            if texture is not None:
-                size_scale = _clamp(float(player.size) / 64.0, 0.25, 2.0)
-                self._draw_creature_sprite(
-                    texture,
-                    type_id=CreatureTypeId.TROOPER,
-                    flags=CreatureFlags(0),
-                    phase=float(player.move_phase),
-                    world_x=player.pos_x,
-                    world_y=player.pos_y,
-                    scale=scale,
-                    size_scale=size_scale,
-                    tint=rl.Color(240, 240, 255, 255),
-                )
-            else:
-                sx = (player.pos_x + cam_x) * scale_x
-                sy = (player.pos_y + cam_y) * scale_y
-                rl.draw_circle(int(sx), int(sy), max(1.0, 14.0 * scale), rl.Color(90, 190, 120, 255))
+            for player in self.players:
+                if texture is not None:
+                    self._draw_player_trooper_sprite(
+                        texture,
+                        player,
+                        cam_x=cam_x,
+                        cam_y=cam_y,
+                        scale_x=scale_x,
+                        scale_y=scale_y,
+                        scale=scale,
+                    )
+                else:
+                    sx = (player.pos_x + cam_x) * scale_x
+                    sy = (player.pos_y + cam_y) * scale_y
+                    rl.draw_circle(int(sx), int(sy), max(1.0, 14.0 * scale), rl.Color(90, 190, 120, 255))
 
     def update_camera(self, dt: float) -> None:
         if not self.players:
