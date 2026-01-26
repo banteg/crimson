@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pyray as rl
 
+from crimson.creatures.anim import creature_corpse_frame_for_type
 from crimson.effects import FxQueue, FxQueueRotated
 from grim.fx_queue import FxQueueTextures, bake_fx_queues
 from grim.config import ensure_crimson_cfg
@@ -170,7 +171,7 @@ class GroundView:
                     fx_queue=self._fx_queue,
                     fx_queue_rotated=self._fx_queue_rotated,
                     textures=self._fx_textures,
-                    corpse_frame_for_type=lambda type_id: int(type_id) & 0xF,
+                    corpse_frame_for_type=creature_corpse_frame_for_type,
                 )
 
     def draw(self) -> None:

@@ -15,7 +15,7 @@ from grim.terrain_render import GroundRenderer
 
 from .bonuses import BONUS_BY_ID
 from .camera import camera_shake_update
-from .creatures.anim import creature_anim_advance_phase, creature_anim_select_frame
+from .creatures.anim import creature_anim_advance_phase, creature_anim_select_frame, creature_corpse_frame_for_type
 from .creatures.runtime import CreaturePool
 from .creatures.spawn import CreatureFlags, CreatureTypeId, SpawnEnv
 from .effects import FxQueue, FxQueueRotated
@@ -635,7 +635,7 @@ class GameWorld:
 
     @staticmethod
     def _corpse_frame_for_type(type_id: int) -> int:
-        return int(type_id) & 0xF
+        return creature_corpse_frame_for_type(type_id)
 
     def _camera_screen_size(self) -> tuple[float, float]:
         if self.config is not None:
@@ -719,6 +719,7 @@ class GameWorld:
         type_id: CreatureTypeId,
         flags: CreatureFlags,
         phase: float,
+        mirror_long: bool | None = None,
         world_x: float,
         world_y: float,
         rotation_rad: float,
@@ -730,10 +731,11 @@ class GameWorld:
         info = _CREATURE_ANIM.get(type_id)
         if info is None:
             return
+        mirror_flag = info.mirror if mirror_long is None else bool(mirror_long)
         frame, _, _ = creature_anim_select_frame(
             phase,
             base_frame=info.base,
-            mirror_long=info.mirror,
+            mirror_long=mirror_flag,
             flags=flags,
         )
         grid = 8
@@ -997,7 +999,7 @@ class GameWorld:
                 rl.draw_circle(int(sx), int(sy), max(1.0, 10.0 * scale), rl.Color(220, 220, 90, 255))
 
         for creature in self.creatures.entries:
-            if not (creature.active and creature.hp > 0.0):
+            if not creature.active:
                 continue
             try:
                 type_id = CreatureTypeId(int(creature.type_id))
@@ -1006,17 +1008,29 @@ class GameWorld:
             asset = _CREATURE_ASSET.get(type_id) if type_id is not None else None
             texture = self.creature_textures.get(asset) if asset is not None else None
             if texture is not None:
-                tint = self._color_from_rgba((creature.tint_r, creature.tint_g, creature.tint_b, creature.tint_a))
+                alpha = float(creature.tint_a)
+                if float(creature.hitbox_size) < 0.0:
+                    alpha = max(0.0, alpha + float(creature.hitbox_size) * 0.1)
+                tint = self._color_from_rgba((creature.tint_r, creature.tint_g, creature.tint_b, alpha))
                 size_scale = _clamp(float(creature.size) / 64.0, 0.25, 2.0)
                 fx_detail = bool(self.config.data.get("fx_detail_0", 0)) if self.config is not None else True
                 # Mirrors `creature_render_type`: the "shadow-ish" pass is gated by fx_detail_0
                 # and is disabled when the Monster Vision perk is active.
                 shadow = fx_detail and (not self.players or not perk_active(self.players[0], PerkId.MONSTER_VISION))
+                long_strip = (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0 or (
+                    creature.flags & CreatureFlags.ANIM_LONG_STRIP
+                ) != 0
+                phase = float(creature.anim_phase)
+                if long_strip and float(creature.hitbox_size) < 0.0:
+                    # Negative phase selects the fallback "corpse" frame in creature_render_type.
+                    phase = -1.0
                 self._draw_creature_sprite(
                     texture,
                     type_id=type_id or CreatureTypeId.ZOMBIE,
                     flags=creature.flags,
-                    phase=creature.anim_phase,
+                    phase=phase,
+                    mirror_long=bool(_CREATURE_ANIM.get(type_id or CreatureTypeId.ZOMBIE).mirror)
+                    and float(creature.hitbox_size) >= 16.0,
                     world_x=creature.x,
                     world_y=creature.y,
                     rotation_rad=float(creature.heading) - math.pi / 2.0,
@@ -1053,6 +1067,19 @@ class GameWorld:
                     sx = (player.pos_x + cam_x) * scale_x
                     sy = (player.pos_y + cam_y) * scale_y
                     rl.draw_circle(int(sx), int(sy), max(1.0, 14.0 * scale), rl.Color(90, 190, 120, 255))
+            if not self.demo_mode_active:
+                for player in self.players:
+                    if player.health <= 0.0:
+                        continue
+                    aim_x = float(getattr(player, "aim_x", player.pos_x))
+                    aim_y = float(getattr(player, "aim_y", player.pos_y))
+                    dist = math.hypot(aim_x - float(player.pos_x), aim_y - float(player.pos_y))
+                    radius = max(6.0, dist * float(getattr(player, "spread_heat", 0.0)) * 0.5)
+                    sx = (aim_x + cam_x) * scale_x
+                    sy = (aim_y + cam_y) * scale_y
+                    screen_radius = max(1.0, radius * scale)
+                    rl.draw_circle(int(sx), int(sy), screen_radius, rl.Color(0, 0, 26, 77))
+                    rl.draw_circle_lines(int(sx), int(sy), screen_radius, rl.Color(255, 255, 255, 140))
 
     def update_camera(self, dt: float) -> None:
         if not self.players:

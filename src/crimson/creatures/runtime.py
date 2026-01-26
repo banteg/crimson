@@ -52,6 +52,15 @@ CREATURE_SPEED_SCALE = 30.0
 # Base heading turn rate multiplier (angle_approach clamps by frame_dt internally).
 CREATURE_TURN_RATE_SCALE = 4.0 / 3.0
 
+# Native uses hitbox_size as a lifecycle sentinel:
+# - 16.0 means "alive" (normal AI/movement/anim update)
+# - once HP <= 0 it ramps down quickly and drives the death slide + corpse decal timing.
+CREATURE_HITBOX_ALIVE = 16.0
+CREATURE_DEATH_TIMER_DECAY = 28.0
+CREATURE_CORPSE_FADE_DECAY = 20.0
+CREATURE_CORPSE_DESPAWN_HITBOX = -10.0
+CREATURE_DEATH_SLIDE_SCALE = 9.0
+
 
 def _clamp(value: float, lo: float, hi: float) -> float:
     if value < lo:
@@ -121,7 +130,7 @@ class CreatureState:
     # Contact damage gate.
     collision_flag: int = 0
     collision_timer: float = CONTACT_DAMAGE_PERIOD
-    hitbox_size: float = 16.0
+    hitbox_size: float = CREATURE_HITBOX_ALIVE
 
     # Presentation.
     size: float = 50.0
@@ -325,31 +334,44 @@ class CreaturePool:
         spawn_env = env or self.env
 
         deaths: list[CreatureDeath] = []
-        for idx, entry in enumerate(self._entries):
-            if entry.active and entry.hp <= 0.0:
-                deaths.append(
-                    self._handle_death(
-                        idx,
-                        entry,
-                        state=state,
-                        players=players,
-                        rand=rand,
-                        world_width=world_width,
-                        world_height=world_height,
-                        fx_queue=fx_queue,
-                        fx_queue_rotated=fx_queue_rotated,
-                    )
-                )
+        spawned: list[int] = []
 
-        if dt <= 0.0 or not players:
-            return CreatureUpdateResult(deaths=tuple(deaths), spawned=())
-
-        # Movement + AI.
-        dt_ms = int(dt * 1000.0)
+        # Movement + AI. Dead creatures keep updating (death slide + corpse decals)
+        # even when `players` is empty so debug views remain deterministic.
+        dt_ms = int(dt * 1000.0) if dt > 0.0 else 0
         for idx, creature in enumerate(self._entries):
             if not creature.active:
                 continue
+
             if creature.hp <= 0.0:
+                if creature.hitbox_size == CREATURE_HITBOX_ALIVE:
+                    deaths.append(
+                        self._start_death(
+                            idx,
+                            creature,
+                            state=state,
+                            players=players,
+                            rand=rand,
+                            world_width=world_width,
+                            world_height=world_height,
+                            fx_queue=fx_queue,
+                        )
+                    )
+                    # Make sure the one-shot handler cannot fire again, even if dt == 0.
+                    nudge = float(dt) if dt > 0.0 else 0.001
+                    creature.hitbox_size = CREATURE_HITBOX_ALIVE - nudge
+
+                if dt > 0.0:
+                    self._tick_dead(
+                        creature,
+                        dt=dt,
+                        world_width=world_width,
+                        world_height=world_height,
+                        fx_queue_rotated=fx_queue_rotated,
+                    )
+                continue
+
+            if dt <= 0.0 or not players:
                 continue
 
             if creature.flags & CreatureFlags.SELF_DAMAGE_TICK:
@@ -358,7 +380,7 @@ class CreaturePool:
                 creature.hp -= dt * 180.0
             if creature.hp <= 0.0:
                 deaths.append(
-                    self._handle_death(
+                    self._start_death(
                         idx,
                         creature,
                         state=state,
@@ -367,8 +389,15 @@ class CreaturePool:
                         world_width=world_width,
                         world_height=world_height,
                         fx_queue=fx_queue,
-                        fx_queue_rotated=fx_queue_rotated,
                     )
+                )
+                creature.hitbox_size = CREATURE_HITBOX_ALIVE - float(dt)
+                self._tick_dead(
+                    creature,
+                    dt=dt,
+                    world_width=world_width,
+                    world_height=world_height,
+                    fx_queue_rotated=fx_queue_rotated,
                 )
                 continue
 
@@ -391,7 +420,7 @@ class CreaturePool:
                 creature.hp -= float(ai.self_damage)
                 if creature.hp <= 0.0:
                     deaths.append(
-                        self._handle_death(
+                        self._start_death(
                             idx,
                             creature,
                             state=state,
@@ -400,8 +429,15 @@ class CreaturePool:
                             world_width=world_width,
                             world_height=world_height,
                             fx_queue=fx_queue,
-                            fx_queue_rotated=fx_queue_rotated,
                         )
+                    )
+                    creature.hitbox_size = CREATURE_HITBOX_ALIVE - float(dt)
+                    self._tick_dead(
+                        creature,
+                        dt=dt,
+                        world_width=world_width,
+                        world_height=world_height,
+                        fx_queue_rotated=fx_queue_rotated,
                     )
                     continue
 
@@ -454,8 +490,7 @@ class CreaturePool:
                 creature.collision_timer = CONTACT_DAMAGE_PERIOD
 
         # Spawn-slot ticking (spawns child templates while owner stays alive).
-        spawned: list[int] = []
-        if spawn_env is not None and self.spawn_slots:
+        if dt > 0.0 and spawn_env is not None and self.spawn_slots:
             for slot in self.spawn_slots:
                 owner_idx = int(slot.owner_creature)
                 if not (0 <= owner_idx < len(self._entries)):
@@ -523,7 +558,7 @@ class CreaturePool:
 
         entry.collision_flag = 0
         entry.collision_timer = CONTACT_DAMAGE_PERIOD
-        entry.hitbox_size = 16.0
+        entry.hitbox_size = CREATURE_HITBOX_ALIVE
 
     def _disable_spawn_slot(self, slot_index: int) -> None:
         if not (0 <= slot_index < len(self.spawn_slots)):
@@ -532,7 +567,69 @@ class CreaturePool:
         slot.owner_creature = -1
         slot.limit = 0
 
-    def _handle_death(
+    def _tick_dead(
+        self,
+        creature: CreatureState,
+        *,
+        dt: float,
+        world_width: float,
+        world_height: float,
+        fx_queue_rotated: FxQueueRotated | None,
+    ) -> None:
+        """Advance the post-death hitbox_size ramp and queue corpse decals.
+
+        This matches the `hitbox_size` death staging inside `creature_update_all`:
+        - while hitbox_size > 0: decrement quickly and slide backwards
+        - once hitbox_size <= 0: queue a corpse decal and fade out until < -10, then deactivate.
+        """
+
+        if dt <= 0.0:
+            return
+
+        hitbox = float(creature.hitbox_size)
+        if hitbox <= 0.0:
+            creature.hitbox_size = hitbox - float(dt) * CREATURE_CORPSE_FADE_DECAY
+            if creature.hitbox_size < CREATURE_CORPSE_DESPAWN_HITBOX:
+                creature.active = False
+            return
+
+        long_strip = (creature.flags & CreatureFlags.ANIM_PING_PONG) == 0 or (creature.flags & CreatureFlags.ANIM_LONG_STRIP) != 0
+
+        new_hitbox = hitbox - float(dt) * CREATURE_DEATH_TIMER_DECAY
+        creature.hitbox_size = new_hitbox
+        if new_hitbox > 0.0:
+            if long_strip:
+                dir_x = math.cos(creature.heading - math.pi / 2.0)
+                dir_y = math.sin(creature.heading - math.pi / 2.0)
+                creature.vel_x = dir_x * new_hitbox * float(dt) * CREATURE_DEATH_SLIDE_SCALE
+                creature.vel_y = dir_y * new_hitbox * float(dt) * CREATURE_DEATH_SLIDE_SCALE
+                creature.x = _clamp(creature.x - creature.vel_x, 0.0, float(world_width))
+                creature.y = _clamp(creature.y - creature.vel_y, 0.0, float(world_height))
+            else:
+                creature.vel_x = 0.0
+                creature.vel_y = 0.0
+            return
+
+        # hitbox_size just crossed <= 0: bake a persistent corpse decal into the ground.
+        if fx_queue_rotated is not None:
+            corpse_size = max(1.0, float(creature.size))
+            # Native uses a special fallback corpse id for ping-pong strip creatures.
+            corpse_type_id = int(creature.type_id) if long_strip else 7
+            ok = fx_queue_rotated.add(
+                top_left_x=creature.x - corpse_size * 0.5,
+                top_left_y=creature.y - corpse_size * 0.5,
+                rgba=(creature.tint_r, creature.tint_g, creature.tint_b, creature.tint_a),
+                rotation=float(creature.heading),
+                scale=corpse_size,
+                creature_type_id=corpse_type_id,
+            )
+            if not ok:
+                creature.hitbox_size = 0.001
+                return
+
+        self.kill_count += 1
+
+    def _start_death(
         self,
         idx: int,
         creature: CreatureState,
@@ -543,11 +640,8 @@ class CreaturePool:
         world_width: float,
         world_height: float,
         fx_queue: FxQueue | None,
-        fx_queue_rotated: FxQueueRotated | None,
     ) -> CreatureDeath:
-        creature.active = False
         creature.hp = 0.0
-        self.kill_count += 1
 
         if creature.spawn_slot_index is not None:
             self._disable_spawn_slot(int(creature.spawn_slot_index))
@@ -582,17 +676,6 @@ class CreaturePool:
 
         if fx_queue is not None:
             fx_queue.add_random(pos_x=creature.x, pos_y=creature.y, rand=rand)
-
-        if fx_queue_rotated is not None:
-            corpse_size = max(1.0, float(creature.size))
-            fx_queue_rotated.add(
-                top_left_x=creature.x - corpse_size * 0.5,
-                top_left_y=creature.y - corpse_size * 0.5,
-                rgba=(creature.tint_r, creature.tint_g, creature.tint_b, creature.tint_a),
-                rotation=float(creature.heading),
-                scale=corpse_size,
-                creature_type_id=int(creature.type_id),
-            )
 
         return CreatureDeath(
             index=int(idx),

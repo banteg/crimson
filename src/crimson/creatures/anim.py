@@ -21,6 +21,22 @@ def _i32(value: int) -> int:
     return value
 
 
+_CREATURE_CORPSE_FRAMES: dict[int, int] = {
+    0: 0,  # zombie
+    1: 3,  # lizard
+    2: 4,  # alien
+    3: 1,  # spider sp1
+    4: 2,  # spider sp2
+    5: 7,  # trooper
+}
+
+
+def creature_corpse_frame_for_type(type_id: int) -> int:
+    """Resolve the bodyset frame index used for corpse decals (`fx_queue_render`)."""
+
+    return _CREATURE_CORPSE_FRAMES.get(int(type_id), int(type_id) & 0xF)
+
+
 def creature_anim_is_long_strip(flags: CreatureFlags) -> bool:
     # From creature_update_all / creature_render_type:
     # long strip when (flags & 4) == 0 OR (flags & 0x40) != 0
