@@ -92,6 +92,12 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x00471fc4",
+      "comment": "printf-style format string \"%s\" used by grim_draw_text_small_fmt.",
+      "name": "s_fmt_percent_s",
+      "program": "crimsonland.exe"
+    },
+    {
       "address": "0x00472718",
       "comment": "Tutorial string sentinel (empty/guard string used for skipped entries).",
       "name": "tutorial_empty_string",
@@ -865,6 +871,13 @@
       "comment": "Frame delta time (ms) used for UI/timeline accumulation.",
       "name": "frame_dt_ms",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x0048084c",
+      "comment": "Demo/trial gameplay timer (ms) used for the demo countdown overlay and time-limit gating.",
+      "name": "demo_trial_elapsed_ms",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00480851",
@@ -1821,6 +1834,13 @@
       "comment": "UI mouse Y position.",
       "name": "ui_mouse_y",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00487234",
+      "comment": "Shared UI screen phase/state variable used across multiple screens (values like -2/-1/0/1/2).",
+      "name": "ui_screen_phase",
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x00487240",
@@ -2975,6 +2995,34 @@
       "program": "crimsonland.exe"
     },
     {
+      "address": "0x004965d8",
+      "comment": "Render scratch float used by FX/overlay render paths (UVs, positions).",
+      "name": "render_scratch_f0",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004965dc",
+      "comment": "Render scratch float used by FX/overlay render paths (UVs, positions).",
+      "name": "render_scratch_f1",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004965e0",
+      "comment": "Render scratch float used by FX/overlay render paths (UVs, positions).",
+      "name": "render_scratch_f2",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
+      "address": "0x004965e4",
+      "comment": "Render scratch float used by FX/overlay render paths (UVs, positions).",
+      "name": "render_scratch_f3",
+      "program": "crimsonland.exe",
+      "type": "float"
+    },
+    {
       "address": "0x0049669c",
       "comment": "Rotated FX queue rotation array",
       "name": "fx_rotated_rotation",
@@ -3360,6 +3408,13 @@
       "comment": "Audio suspend flag set by audio_suspend_all (1) and cleared by audio_resume_all (0); gates console hotkey block.",
       "name": "audio_suspend_flag",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x004aaf90",
+      "comment": "Startup splash/intro sequence timer/state (drives splash texture selection and fade thresholds).",
+      "name": "startup_splash_timer",
+      "program": "crimsonland.exe",
+      "type": "float"
     },
     {
       "address": "0x004ab1bc",
