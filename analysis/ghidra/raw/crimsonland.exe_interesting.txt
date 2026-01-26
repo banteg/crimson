@@ -133,6 +133,7 @@ Interesting Functions and Patterns
 [ALLOC related]
   bonus_alloc_slot @ 0041f580
   creature_alloc_slot @ 00428140
+  wrap_text_to_width_alloc @ 0042fd00
   creature_spawn_slot_alloc @ 00430ad0
   resource_read_alloc @ 0043bca0
   crt_realloc @ 004626aa

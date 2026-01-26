@@ -10,6 +10,10 @@ Reverse engineering and rewriting Crimsonland v1.9.93 in Python + raylib.
     Parity work remains on broader weapon/creature coverage and SFX tuning
     (basic fire/reload/hit/death hooks are now wired in gameplay).
 
+<!-- data-map-coverage:start -->
+Data map coverage: 15.42% (471 / 3055 symbols)
+<!-- data-map-coverage:end -->
+
 ## Analysis
 
 - [Binary Analysis](binary-analysis.md)

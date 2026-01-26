@@ -1085,7 +1085,7 @@
     "signature": "void bonus_metadata_init(void)",
     "external": false,
     "calls_total": 2,
-    "calls": ["FUN_0042fd00", "strdup_malloc"]
+    "calls": ["strdup_malloc", "wrap_text_to_width_alloc"]
   },
   {
     "name": "FUN_00412940",
@@ -1357,7 +1357,7 @@
     "signature": "int FUN_0041cdb0(void)",
     "external": false,
     "calls_total": 6,
-    "calls": ["CoCreateInstance", "CoInitialize", "CoUninitialize", "VariantClear", "VariantInit", "WideCharToMultiByte"]
+    "calls": ["CoCreateInstance", "CoInitialize", "CoUninitialize", "Ordinal_8", "Ordinal_9", "WideCharToMultiByte"]
   },
   {
     "name": "FUN_0041cfe0",
@@ -2160,9 +2160,9 @@
     "calls": []
   },
   {
-    "name": "FUN_0042fd00",
+    "name": "wrap_text_to_width_alloc",
     "address": "0042fd00",
-    "signature": "char * FUN_0042fd00(uint3 param_1, char * param_2, int param_3)",
+    "signature": "char * wrap_text_to_width_alloc(void * this, char * text, int max_width_px)",
     "external": false,
     "calls_total": 1,
     "calls": ["operator_new"]
@@ -2173,7 +2173,7 @@
     "signature": "void perks_init_database(void)",
     "external": false,
     "calls_total": 2,
-    "calls": ["FUN_0042fd00", "perks_rebuild_available"]
+    "calls": ["perks_rebuild_available", "wrap_text_to_width_alloc"]
   },
   {
     "name": "quest_meta_init_entry",
@@ -2885,7 +2885,7 @@
     "signature": "int dsound_init(void * hwnd, uint coop_level)",
     "external": false,
     "calls_total": 1,
-    "calls": ["DirectSoundCreate8"]
+    "calls": ["Ordinal_11"]
   },
   {
     "name": "dsound_shutdown",
@@ -7368,9 +7368,9 @@
     "calls": []
   },
   {
-    "name": "DirectSoundCreate8",
+    "name": "Ordinal_11",
     "address": "0046e962",
-    "signature": "HRESULT DirectSoundCreate8(LPCGUID lpGUID, LPDIRECTSOUND8 * ppDS8, LPUNKNOWN pUnkOuter)",
+    "signature": "undefined Ordinal_11()",
     "external": false,
     "calls_total": 0,
     "calls": []

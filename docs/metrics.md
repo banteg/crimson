@@ -24,6 +24,25 @@ Legend: ✅ complete · 🚧 in progress · ⬜ not started
 | Grim2D | ✅ | ✅ | ✅ | ⬜ | Vtable mapped & validated; implementation deferred. |
 | Save/Config | ✅ | ✅ | ⬜ | ⬜ | File formats reversed; editor tools built. |
 
+## Ghidra maps
+
+<!-- map-progress:start -->
+| Map | Total entries | crimsonland.exe | grim.dll | With signatures | With comments | Duplicate names |
+| --- | --- | --- | --- | --- | --- | --- |
+| Name map | 1167 | 695 | 472 | 1147 | 1144 | 0 |
+| Data map | 855 | 754 | 101 | n/a | 855 | 0 |
+<!-- map-progress:end -->
+
+### Decompiled data symbol coverage
+
+<!-- data-map-coverage:start -->
+| Program | Labeled symbols | Total data symbols | Coverage |
+| --- | --- | --- | --- |
+| crimsonland.exe | 387 | 2576 | 15.02% |
+| grim.dll | 84 | 479 | 17.54% |
+| Total | 471 | 3055 | 15.42% |
+<!-- data-map-coverage:end -->
+
 ## Status definitions
 
 See [Work status model](work-status.md) for the full lifecycle:
