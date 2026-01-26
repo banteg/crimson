@@ -4614,9 +4614,10 @@
     },
     {
       "address": "0x004cc6d0",
-      "comment": "Music playlist queue (track id array).",
+      "comment": "Music playlist queue (int track id array).",
       "name": "music_playlist",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "int"
     },
     {
       "address": "0x004cc8d6",

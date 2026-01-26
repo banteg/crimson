@@ -36162,7 +36162,7 @@ void __cdecl music_queue_track(int track_id)
 
 {
   if (-1 < track_id) {
-    *(int *)(&music_playlist + DAT_004cc8d0 * 4) = track_id;
+    (&music_playlist)[DAT_004cc8d0] = track_id;
     DAT_004cc8d0 = DAT_004cc8d0 + 1;
   }
   return;
@@ -36630,7 +36630,7 @@ void __cdecl sfx_play_exclusive(int sfx_id)
         }
         iVar2 = crt_rand();
         DAT_004cc8d4 = '\x01';
-        sfx_id = *(int *)(&music_playlist + (iVar2 % DAT_004cc8d0) * 4);
+        sfx_id = (&music_playlist)[iVar2 % DAT_004cc8d0];
       }
       else {
         DAT_004cc8d4 = '\0';
