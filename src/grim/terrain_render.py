@@ -314,7 +314,9 @@ class GroundRenderer:
         u1 = u0 + screen_w / float(self.width)
         v1 = v0 + screen_h / float(self.height)
         src_x = u0 * float(target.texture.width)
-        src_y = v0 * float(target.texture.height)
+        # Render textures are vertically flipped in raylib, so adjust the source
+        # rectangle to sample the correct world-space slice before flipping.
+        src_y = (1.0 - v1) * float(target.texture.height)
         src_w = (u1 - u0) * float(target.texture.width)
         src_h = (v1 - v0) * float(target.texture.height)
         src = rl.Rectangle(src_x, src_y, src_w, -src_h)
