@@ -28,6 +28,43 @@ def _msvcrt_rand(state: int) -> tuple[int, int]:
     return state, (state >> 16) & 0x7FFF
 
 
+def test_spawn_plan_effects_emit_when_demo_mode_disabled() -> None:
+    rng = Crand(0xBEEF)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=False,
+        hardcore=False,
+        difficulty_level=0,
+    )
+
+    plan = build_spawn_plan(SpawnId.ALIEN_CONST_GREEN_24, (100.0, 200.0), 0.0, rng, env)
+
+    assert len(plan.effects) == 1
+    effect = plan.effects[0]
+    assert effect.x == 100.0
+    assert effect.y == 200.0
+    assert effect.count == 8
+
+    assert rng.state == _step_msvcrt(0xBEEF, 2)
+
+
+def test_spawn_plan_effects_suppressed_in_demo_mode() -> None:
+    rng = Crand(0xBEEF)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,
+        hardcore=False,
+        difficulty_level=0,
+    )
+
+    plan = build_spawn_plan(SpawnId.ALIEN_CONST_GREEN_24, (100.0, 200.0), 0.0, rng, env)
+
+    assert plan.effects == ()
+    assert rng.state == _step_msvcrt(0xBEEF, 2)
+
+
 def test_spawn_plan_template_00_has_spawn_slot_and_non_hardcore_interval_bump() -> None:
     rng = Crand(0)
     env = SpawnEnv(
@@ -464,6 +501,72 @@ def test_spawn_plan_template_0a_has_spawn_slot_and_non_hardcore_interval_bump() 
     assert slot.interval == 5.2
 
     # Rand consumption: base alloc + base init random heading.
+    assert rng.state == _step_msvcrt(0, 2)
+
+
+def test_spawn_plan_template_0a_scales_with_difficulty() -> None:
+    rng = Crand(0)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,  # avoid effect noise
+        hardcore=False,
+        difficulty_level=2,
+    )
+    plan = build_spawn_plan(0x0A, (100.0, 200.0), 0.0, rng, env)
+
+    assert plan.primary == 0
+    assert len(plan.creatures) == 1
+    assert len(plan.spawn_slots) == 1
+
+    c = plan.creatures[0]
+    assert c.type_id == CreatureTypeId.ALIEN
+    assert c.flags == CreatureFlags.ANIM_PING_PONG
+    assert c.spawn_slot == 0
+    assert c.health == pytest.approx(1000.0 * 0.9, abs=1e-9)
+    assert c.max_health == 1000.0
+    assert c.move_speed == pytest.approx(1.5 * 0.9, abs=1e-9)
+    assert c.reward_value == pytest.approx(3000.0 * 0.85, abs=1e-9)
+    assert c.size == 55.0
+    assert c.tint == (0.8, 0.7, 0.4, 1.0)
+    assert c.contact_damage == 0.0
+
+    slot = plan.spawn_slots[0]
+    assert slot.interval == pytest.approx(5.0 + 0.2 + 0.7, abs=1e-9)
+
+    assert rng.state == _step_msvcrt(0, 2)
+
+
+def test_spawn_plan_template_0a_hardcore_buffs_and_shortens_interval() -> None:
+    rng = Crand(0)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,  # avoid effect noise
+        hardcore=True,
+        difficulty_level=3,
+    )
+    plan = build_spawn_plan(0x0A, (100.0, 200.0), 0.0, rng, env)
+
+    assert plan.primary == 0
+    assert len(plan.creatures) == 1
+    assert len(plan.spawn_slots) == 1
+
+    c = plan.creatures[0]
+    assert c.type_id == CreatureTypeId.ALIEN
+    assert c.flags == CreatureFlags.ANIM_PING_PONG
+    assert c.spawn_slot == 0
+    assert c.health == pytest.approx(1000.0 * 1.2, abs=1e-9)
+    assert c.max_health == 1000.0
+    assert c.move_speed == pytest.approx(1.5 * 1.05, abs=1e-9)
+    assert c.reward_value == 3000.0
+    assert c.size == 55.0
+    assert c.tint == (0.8, 0.7, 0.4, 1.0)
+    assert c.contact_damage == 0.0
+
+    slot = plan.spawn_slots[0]
+    assert slot.interval == pytest.approx(5.0 - 0.2, abs=1e-9)
+
     assert rng.state == _step_msvcrt(0, 2)
 
 
@@ -1411,6 +1514,35 @@ def test_spawn_plan_template_21_is_constant() -> None:
     assert c.reward_value == 120.0
     assert c.size == 55.0
     assert c.contact_damage == 8.0
+    assert c.tint == (0.7, 0.1, 0.51, 0.5)
+    assert c.heading == 0.0
+
+    assert rng.state == _step_msvcrt(0xBEEF, 2)
+
+
+def test_spawn_plan_template_21_scales_with_difficulty() -> None:
+    rng = Crand(0xBEEF)
+    env = SpawnEnv(
+        terrain_width=1024.0,
+        terrain_height=1024.0,
+        demo_mode_active=True,  # avoid effect noise
+        hardcore=False,
+        difficulty_level=2,
+    )
+    plan = build_spawn_plan(0x21, (100.0, 200.0), 0.0, rng, env)
+
+    assert plan.primary == 0
+    assert len(plan.creatures) == 1
+    assert plan.spawn_slots == ()
+
+    c = plan.creatures[0]
+    assert c.type_id == CreatureTypeId.ALIEN
+    assert c.health == pytest.approx(53.0 * 0.9, abs=1e-9)
+    assert c.max_health == 53.0
+    assert c.move_speed == pytest.approx(1.7 * 0.9, abs=1e-9)
+    assert c.reward_value == pytest.approx(120.0 * 0.85, abs=1e-9)
+    assert c.size == 55.0
+    assert c.contact_damage == pytest.approx(8.0 * 0.9, abs=1e-9)
     assert c.tint == (0.7, 0.1, 0.51, 0.5)
     assert c.heading == 0.0
 
