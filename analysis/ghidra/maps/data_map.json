@@ -333,7 +333,15 @@
       "address": "0x0047f5f8",
       "comment": "UI button struct array (stride 0x18) used by ui_button_update.",
       "name": "ui_button_table_a",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
+    },
+    {
+      "address": "0x0047f610",
+      "comment": "Shareware prompt: \"Already paid\" button state.",
+      "name": "ui_button_already_paid",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
     },
     {
       "address": "0x0048014c",
@@ -345,7 +353,8 @@
       "address": "0x00480250",
       "comment": "UI button struct array (stride 0x18) used by ui_button_update.",
       "name": "ui_button_table_b",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
     },
     {
       "address": "0x004802a8",
@@ -946,13 +955,21 @@
       "address": "0x004807d0",
       "comment": "UI button struct array (stride 0x18) used by ui_button_update.",
       "name": "ui_button_table_c",
-      "program": "crimsonland.exe"
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
     },
     {
       "address": "0x004807e8",
       "comment": "Perk choice table filled by perks_generate_choices.",
       "name": "perk_choice_ids",
       "program": "crimsonland.exe"
+    },
+    {
+      "address": "0x00480808",
+      "comment": "Shareware prompt: \"Maybe later\" button state.",
+      "name": "ui_button_maybe_later",
+      "program": "crimsonland.exe",
+      "type": "ui_button_t"
     },
     {
       "address": "0x0048083c",

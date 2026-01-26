@@ -3904,51 +3904,51 @@ LAB_00404ee5:
             (grim_interface_ptr,x,local_104,s_it_now__You_ll_have_a_great_time_00471b84);
   if ((DAT_0047f62c & 1) == 0) {
     DAT_0047f62c = DAT_0047f62c | 1;
-    DAT_0048080e = 1;
-    DAT_0048081d = 0;
-    DAT_0048081c = 0;
-    _DAT_00480818 = 0x3f800000;
-    _DAT_00480814 = 0;
-    _DAT_00480808 = (char *)0x0;
-    DAT_0048080c = 0;
-    DAT_0048080d = 0;
-    _DAT_00480810 = 0;
+    ui_button_maybe_later.enabled = '\x01';
+    ui_button_maybe_later.force_wide = '\0';
+    ui_button_maybe_later.force_small = '\0';
+    ui_button_maybe_later.alpha = 1.0;
+    ui_button_maybe_later.click_anim = 0;
+    ui_button_maybe_later.label = (char *)0x0;
+    ui_button_maybe_later.hovered = '\0';
+    ui_button_maybe_later.activated = '\0';
+    ui_button_maybe_later.hover_anim = 0;
     crt_atexit(&DAT_00405150);
   }
-  _DAT_00480808 = s_Maybe_later_00471b78;
+  ui_button_maybe_later.label = s_Maybe_later_00471b78;
   if ((DAT_0047f62c & 2) == 0) {
     DAT_0047f62c = DAT_0047f62c | 2;
-    DAT_0047f5fe = 1;
-    DAT_0047f60d = 0;
-    DAT_0047f60c = 0;
-    _DAT_0047f608 = 0x3f800000;
-    _DAT_0047f604 = 0;
-    _ui_button_table_a = (char *)0x0;
-    DAT_0047f5fc = 0;
-    DAT_0047f5fd = 0;
-    _DAT_0047f600 = 0;
+    ui_button_table_a.enabled = '\x01';
+    ui_button_table_a.force_wide = '\0';
+    ui_button_table_a.force_small = '\0';
+    ui_button_table_a.alpha = 1.0;
+    ui_button_table_a.click_anim = 0;
+    ui_button_table_a.label = (char *)0x0;
+    ui_button_table_a.hovered = '\0';
+    ui_button_table_a.activated = '\0';
+    ui_button_table_a.hover_anim = 0;
     crt_atexit(&DAT_00405140);
   }
-  _ui_button_table_a = s_Purchase_00471b6c;
+  ui_button_table_a.label = s_Purchase_00471b6c;
   if ((DAT_0047f62c & 4) == 0) {
     DAT_0047f62c = DAT_0047f62c | 4;
-    DAT_0047f616 = 1;
-    DAT_0047f625 = 0;
-    DAT_0047f624 = 0;
-    _DAT_0047f620 = 0x3f800000;
-    _DAT_0047f61c = 0;
-    _DAT_0047f610 = (char *)0x0;
-    DAT_0047f614 = 0;
-    DAT_0047f615 = 0;
-    _DAT_0047f618 = 0;
+    ui_button_already_paid.enabled = '\x01';
+    ui_button_already_paid.force_wide = '\0';
+    ui_button_already_paid.force_small = '\0';
+    ui_button_already_paid.alpha = 1.0;
+    ui_button_already_paid.click_anim = 0;
+    ui_button_already_paid.label = (char *)0x0;
+    ui_button_already_paid.hovered = '\0';
+    ui_button_already_paid.activated = '\0';
+    ui_button_already_paid.hover_anim = 0;
     crt_atexit(&DAT_00405130);
   }
-  _DAT_0047f610 = s_Already_paid_00471b5c;
+  ui_button_already_paid.label = s_Already_paid_00471b5c;
   fStack_fc = *xy + 22.0;
   local_108 = fStack_fc + 6.0;
   local_104 = xy[1] + 212.0 + 6.0;
   fStack_100 = local_104;
-  iVar2 = ui_button_update(&local_108,(int *)&ui_button_table_a);
+  iVar2 = ui_button_update(&local_108,&ui_button_table_a);
   if ((char)iVar2 != '\0') {
     shareware_offer_seen_latch = 1;
     DAT_0047ea50 = 1;
@@ -3957,7 +3957,7 @@ LAB_00404ee5:
   }
   fStack_fc = fStack_fc + 326.0;
   fStack_f8 = fStack_100;
-  iVar2 = ui_button_update(&fStack_fc,(int *)&DAT_00480808);
+  iVar2 = ui_button_update(&fStack_fc,&ui_button_maybe_later);
   if ((char)iVar2 != '\0') {
     ui_transition_direction = 0;
     game_state_pending = 0;
@@ -4531,7 +4531,7 @@ void perk_selection_screen_update(void)
   local_14 = local_4 + 162.0;
   _DAT_00480820 = s_Select_00472008;
   local_10 = unaff_retaddr + 276.0;
-  iVar2 = ui_button_update(&local_14,(int *)&DAT_00480090);
+  iVar2 = ui_button_update(&local_14,(ui_button_t *)&DAT_00480090);
   if ((char)iVar2 != '\0') {
     ui_transition_direction = 0;
     game_state_pending = 9;
@@ -4777,10 +4777,10 @@ int FUN_00406350(void)
     crt_atexit(&DAT_00406ab0);
   }
   _DAT_00480268 = s_Main_Menu_00472084;
-  ui_button_update((float *)&stack0xffffffdc,(int *)&DAT_0047f5e0);
-  ui_button_update((float *)&stack0xffffffdc,(int *)&DAT_00480280);
-  ui_button_update((float *)&stack0xffffffdc,(int *)&DAT_00480328);
-  ui_button_update((float *)&stack0xffffffdc,(int *)&DAT_00480268);
+  ui_button_update((float *)&stack0xffffffdc,(ui_button_t *)&DAT_0047f5e0);
+  ui_button_update((float *)&stack0xffffffdc,(ui_button_t *)&DAT_00480280);
+  ui_button_update((float *)&stack0xffffffdc,(ui_button_t *)&DAT_00480328);
+  ui_button_update((float *)&stack0xffffffdc,(ui_button_t *)&DAT_00480268);
   if (DAT_00480285 != '\0') {
     ui_transition_direction = 0;
     game_state_pending = 9;
@@ -5784,7 +5784,6 @@ switchD_00408344_default:
 
 /* tutorial_prompt_dialog @ 00408530 */
 
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 /* renders tutorial prompt text + Repeat/Play/Skip buttons and handles selections */
 
 void __cdecl tutorial_prompt_dialog(char *text,float alpha)
@@ -5847,47 +5846,47 @@ void __cdecl tutorial_prompt_dialog(char *text,float alpha)
             (grim_interface_ptr,(float)(iVar3 + 0x14),68.0,_cStack00000010);
   if ((DAT_00480148 & 1) == 0) {
     DAT_00480148 = DAT_00480148 | 1;
-    DAT_00480256 = 1;
-    DAT_00480265 = 0;
-    DAT_00480264 = 0;
-    _DAT_00480260 = 1.0;
-    _DAT_0048025c = 0;
-    _ui_button_table_b = (char *)0x0;
-    DAT_00480254 = 0;
-    DAT_00480255 = '\0';
-    _DAT_00480258 = 0;
+    ui_button_table_b.enabled = '\x01';
+    ui_button_table_b.force_wide = '\0';
+    ui_button_table_b.force_small = '\0';
+    ui_button_table_b.alpha = 1.0;
+    ui_button_table_b.click_anim = 0;
+    ui_button_table_b.label = (char *)0x0;
+    ui_button_table_b.hovered = '\0';
+    ui_button_table_b.activated = '\0';
+    ui_button_table_b.hover_anim = 0;
     crt_atexit(&DAT_00408980);
   }
-  _ui_button_table_b = s_Repeat_tutorial_004722f8;
+  ui_button_table_b.label = s_Repeat_tutorial_004722f8;
   if ((DAT_00480148 & 2) == 0) {
     DAT_00480148 = DAT_00480148 | 2;
-    DAT_004807d6 = 1;
-    DAT_004807e5 = 0;
-    DAT_004807e4 = 0;
-    _DAT_004807e0 = 1.0;
-    _DAT_004807dc = 0;
-    _ui_button_table_c = (char *)0x0;
-    DAT_004807d4 = 0;
-    DAT_004807d5 = '\0';
-    _DAT_004807d8 = 0;
+    ui_button_table_c.enabled = '\x01';
+    ui_button_table_c.force_wide = '\0';
+    ui_button_table_c.force_small = '\0';
+    ui_button_table_c.alpha = 1.0;
+    ui_button_table_c.click_anim = 0;
+    ui_button_table_c.label = (char *)0x0;
+    ui_button_table_c.hovered = '\0';
+    ui_button_table_c.activated = '\0';
+    ui_button_table_c.hover_anim = 0;
     crt_atexit(&DAT_00408970);
   }
-  _ui_button_table_c = s_Play_a_game_004722ec;
+  ui_button_table_c.label = s_Play_a_game_004722ec;
   if (in_stack_00000018 == '\0') {
-    _DAT_004807e0 = (float)(tutorial_stage_timer + -1000) * 0.001;
-    if (_DAT_004807e0 <= 1.0) {
-      if (_DAT_004807e0 < 0.0) {
-        _DAT_004807e0 = 0.0;
+    ui_button_table_c.alpha = (float)(tutorial_stage_timer + -1000) * 0.001;
+    if (ui_button_table_c.alpha <= 1.0) {
+      if (ui_button_table_c.alpha < 0.0) {
+        ui_button_table_c.alpha = 0.0;
       }
     }
     else {
-      _DAT_004807e0 = 1.0;
+      ui_button_table_c.alpha = 1.0;
     }
     fStack_10 = (float)(config_blob.screen_height + -0x32);
-    _ui_button_table_c = s_Skip_tutorial_004722dc;
+    ui_button_table_c.label = s_Skip_tutorial_004722dc;
     fStack_14 = 10.0;
-    ui_button_update(&fStack_14,(int *)&ui_button_table_c);
-    if (DAT_004807d5 != '\0') {
+    ui_button_update(&fStack_14,&ui_button_table_c);
+    if (ui_button_table_c.activated != '\0') {
       ui_sign_crimson_update_disabled = 0;
       game_state_pending = 1;
       render_pass_mode = 0;
@@ -5898,15 +5897,15 @@ void __cdecl tutorial_prompt_dialog(char *text,float alpha)
     }
   }
   else {
-    _DAT_004807e0 = in_stack_00000014;
+    ui_button_table_c.alpha = in_stack_00000014;
     fStack_14 = (float)(iVar3 + 0x20);
-    _DAT_00480260 = in_stack_00000014;
+    ui_button_table_b.alpha = in_stack_00000014;
     fStack_10 = 90.0;
-    ui_button_update(&fStack_14,(int *)&ui_button_table_c);
+    ui_button_update(&fStack_14,&ui_button_table_c);
     fStack_14 = (float)(iVar3 + 0xc0);
     fStack_10 = 90.0;
-    ui_button_update(&fStack_14,(int *)&ui_button_table_b);
-    if (DAT_004807d5 != '\0') {
+    ui_button_update(&fStack_14,&ui_button_table_b);
+    if (ui_button_table_c.activated != '\0') {
       ui_sign_crimson_update_disabled = 0;
       game_state_pending = 1;
       render_pass_mode = 0;
@@ -5915,7 +5914,7 @@ void __cdecl tutorial_prompt_dialog(char *text,float alpha)
       console_input_poll();
       tutorial_stage_transition_timer = 0xfffffc18;
     }
-    if (DAT_00480255 != '\0') {
+    if (ui_button_table_b.activated != '\0') {
       player_health._pad0[0x90] = '\x01';
       player_health._pad0[0x91] = '\0';
       player_health._pad0[0x92] = '\0';
@@ -7745,7 +7744,7 @@ void demo_purchase_screen_update(void)
     fStack00000034 = (float)in_stack_00000028.vtable * 0.3;
     in_stack_00000028.vtable = (IGrim2D_vtbl *)(config_blob.screen_height / 2 + 0x66);
     fStack0000003c = (float)(int)in_stack_00000028.vtable + fStack00000034 + 50.0;
-    iVar3 = ui_button_update((float *)&stack0x00000038,(int *)&DAT_0047f678);
+    iVar3 = ui_button_update((float *)&stack0x00000038,(ui_button_t *)&DAT_0047f678);
     if ((char)iVar3 != '\0') {
       shareware_offer_seen_latch = '\x01';
       DAT_0047ea50 = 1;
@@ -7756,7 +7755,7 @@ void demo_purchase_screen_update(void)
     IStack00000038.vtable = (IGrim2D_vtbl *)(float)(config_blob.screen_width / 2 + 0x80);
     in_stack_00000028.vtable = (IGrim2D_vtbl *)(config_blob.screen_height / 2 + 0x66);
     fStack0000003c = (float)(int)in_stack_00000028.vtable + fStack00000034 + 90.0;
-    iVar3 = ui_button_update((float *)&stack0x00000038,(int *)&DAT_004802b0);
+    iVar3 = ui_button_update((float *)&stack0x00000038,(ui_button_t *)&DAT_004802b0);
     if ((char)iVar3 != '\0') {
       if (shareware_offer_seen_latch != '\0') {
         DAT_0047ea50 = 1;
@@ -8717,7 +8716,7 @@ LAB_0040dcc6:
     pcStack_c = (char *)((float)pcStack_c + 100.0);
     _credits_back_button = &DAT_00472e80;
     fStack_8 = fStack_8 + 250.0;
-    ui_button_update((float *)&pcStack_c,(int *)&credits_back_button);
+    ui_button_update((float *)&pcStack_c,(ui_button_t *)&credits_back_button);
     puVar10 = &credits_line_table_ptrs;
     do {
       if ((((char *)*puVar10 != (char *)0x0) &&
@@ -8763,7 +8762,7 @@ LAB_0040dcc6:
       (&credits_line_table_ptrs)[(iVar5 + 9) * 2] = pcVar7;
     }
     fStack_4 = (float)pcStack_c + 94.0;
-    ui_button_update(&fStack_4,(int *)&credits_secret_button);
+    ui_button_update(&fStack_4,(ui_button_t *)&credits_secret_button);
   }
 LAB_0040d970:
   if (credits_back_button_clicked != '\0') {
@@ -10009,7 +10008,7 @@ LAB_0040fae2:
       _credits_secret_reset_button = s_Reset_004730d4;
       IStack_30.vtable = (IGrim2D_vtbl *)(fStack_14 + 256.0);
       pIStack_c = IStack_30.vtable;
-      iVar3 = ui_button_update(&fStack_10,(int *)&credits_secret_reset_button);
+      iVar3 = ui_button_update(&fStack_10,(ui_button_t *)&credits_secret_reset_button);
       if ((char)iVar3 != '\0') {
         pIStack_28 = (IGrim2D_vtbl *)0x0;
         IStack_44.vtable = IStack_44.vtable & 0xffffff;
@@ -10050,7 +10049,7 @@ LAB_0040fae2:
       fStack_10 = fStack_18 + 138.0;
       _credits_secret_back_button = &DAT_00472e80;
       pIStack_c = IStack_30.vtable;
-      iVar3 = ui_button_update(&fStack_10,(int *)&credits_secret_back_button);
+      iVar3 = ui_button_update(&fStack_10,(ui_button_t *)&credits_secret_back_button);
       if ((char)iVar3 != '\0') {
         ui_transition_direction = 0;
         game_state_pending = 4;
@@ -10216,7 +10215,7 @@ LAB_00410232:
       DAT_00496604 = 0x3f333333;
       _DAT_004825a8 = &DAT_0047318c;
       local_4 = local_c + 170.0;
-      ui_button_update(&local_4,(int *)&DAT_004825a8);
+      ui_button_update(&local_4,(ui_button_t *)&DAT_004825a8);
       _DAT_0048259c = 0xa6;
       iVar3 = ui_text_input_update(&local_c,(int *)&DAT_00482590);
       if (((char)iVar3 != '\0') || (DAT_004825ad != '\0')) {
@@ -10357,11 +10356,11 @@ LAB_004103c2:
   }
   _DAT_00482538 = s_Main_Menu_00472084;
   local_10 = (local_10 - 4.0) + 26.0;
-  ui_button_update(&local_10,(int *)&DAT_00482508);
+  ui_button_update(&local_10,(ui_button_t *)&DAT_00482508);
   local_c = local_c + 32.0;
-  ui_button_update(&local_10,(int *)&DAT_00482550);
+  ui_button_update(&local_10,(ui_button_t *)&DAT_00482550);
   local_c = local_c + 32.0;
-  ui_button_update(&local_10,(int *)&DAT_00482538);
+  ui_button_update(&local_10,(ui_button_t *)&DAT_00482538);
   local_c = local_c + 32.0;
   if (DAT_0048250d != '\0') {
     ui_transition_direction = '\0';
@@ -10529,11 +10528,11 @@ void quest_failed_screen_update(void)
     crt_atexit(&DAT_00410cf0);
   }
   _DAT_004824f0 = s_Main_Menu_00472084;
-  ui_button_update(&local_c,(int *)&DAT_00482680);
+  ui_button_update(&local_c,(ui_button_t *)&DAT_00482680);
   local_8 = local_8 + 32.0;
-  ui_button_update(&local_c,(int *)&DAT_00482698);
+  ui_button_update(&local_c,(ui_button_t *)&DAT_00482698);
   local_8 = local_8 + 32.0;
-  ui_button_update(&local_c,(int *)&DAT_004824f0);
+  ui_button_update(&local_c,(ui_button_t *)&DAT_004824f0);
   local_8 = local_8 + 32.0;
   if (DAT_00482685 != '\0') {
     DAT_00487194 = DAT_00487194 + 1;
@@ -10922,7 +10921,7 @@ void quest_results_screen_update(void)
       in_stack_00000004 = local_4 - 8.0;
       _DAT_00482530 = fVar16;
       _DAT_004826f8 = fVar16;
-      ui_button_update((float *)&stack0x00000000,(int *)&DAT_00482520);
+      ui_button_update((float *)&stack0x00000000,(ui_button_t *)&DAT_00482520);
       iVar4 = ui_text_input_update(&local_8,(int *)&DAT_004826e8);
       if (((char)iVar4 != '\0') || (DAT_00482525 != '\0')) {
         uVar7 = 0xffffffff;
@@ -11104,13 +11103,13 @@ LAB_00411906:
   _DAT_004825d0 = local_8;
   _DAT_00482618 = local_8;
   _DAT_004826c0 = local_8;
-  ui_button_update((float *)&stack0x00000000,(int *)&DAT_004825c0);
+  ui_button_update((float *)&stack0x00000000,(ui_button_t *)&DAT_004825c0);
   in_stack_00000004 = in_stack_00000004 + 32.0;
-  ui_button_update((float *)&stack0x00000000,(int *)&DAT_00482608);
+  ui_button_update((float *)&stack0x00000000,(ui_button_t *)&DAT_00482608);
   in_stack_00000004 = in_stack_00000004 + 32.0;
-  ui_button_update((float *)&stack0x00000000,(int *)&DAT_00482668);
+  ui_button_update((float *)&stack0x00000000,(ui_button_t *)&DAT_00482668);
   in_stack_00000004 = in_stack_00000004 + 32.0;
-  ui_button_update((float *)&stack0x00000000,(int *)&DAT_004826b0);
+  ui_button_update((float *)&stack0x00000000,(ui_button_t *)&DAT_004826b0);
   in_stack_00000004 = in_stack_00000004 + 32.0;
   if (DAT_004825c5 != '\0') {
     if ((_quest_stage_major == 5) && (_quest_stage_minor == 10)) {
@@ -37944,7 +37943,7 @@ LAB_0043e7e0:
 
 /* draws a UI button, updates hover/press state, and returns 1 when activated */
 
-int __cdecl ui_button_update(float *xy,int *button)
+int __cdecl ui_button_update(float *xy,ui_button_t *button)
 
 {
   int iVar1;
@@ -37978,7 +37977,8 @@ int __cdecl ui_button_update(float *xy,int *button)
     in_stack_ffffffec = xy[1];
     ui_focus_draw((float *)&stack0xffffffe8);
   }
-  iVar1 = (*grim_interface_ptr->vtable->grim_measure_text_width)((IGrim2D *)*button,unaff_EDI);
+  iVar1 = (*grim_interface_ptr->vtable->grim_measure_text_width)((IGrim2D *)button->label,unaff_EDI)
+  ;
   pIVar8 = (IGrim2D *)(float)iVar1;
   if (DAT_00478670 == -1) {
     DAT_00478670 = (*grim_interface_ptr->vtable->grim_get_texture_handle)
@@ -37988,52 +37988,53 @@ int __cdecl ui_button_update(float *xy,int *button)
     DAT_00478674 = (*grim_interface_ptr->vtable->grim_get_texture_handle)
                              ((IGrim2D *)s_ui_buttonMd_00474474,unaff_EBP);
   }
-  if ((in_stack_ffffffec < 40.0) || (fStack0000000c = 145.0, (char)button[5] != '\0')) {
+  if ((in_stack_ffffffec < 40.0) || (fStack0000000c = 145.0, button->force_small != '\0')) {
     fStack0000000c = 82.0;
   }
-  if (*(char *)((int)button + 0x15) != '\0') {
+  if (button->force_wide != '\0') {
     fStack0000000c = 145.0;
   }
   xy[1] = xy[1] + 2.0;
   lVar5 = __ftol();
   iVar1 = ui_mouse_inside_rect(xy,0x1c,(int)lVar5);
-  *(char *)(button + 1) = (char)iVar1;
+  button->hovered = (uchar)iVar1;
   xy[1] = xy[1] - 2.0;
-  if ((char)button[1] != '\0') {
+  if (button->hovered != '\0') {
     ui_focus_set((int)button,'\0');
   }
-  if ((*(char *)((int)button + 6) == '\0') ||
-     (((char)button[1] == '\0' && ((in_stack_00000010 == '\0' || (DAT_004d11ec < 0x321)))))) {
-    iVar1 = button[2] + frame_dt_ms * -4;
+  if ((button->enabled == '\0') ||
+     ((button->hovered == '\0' && ((in_stack_00000010 == '\0' || (DAT_004d11ec < 0x321)))))) {
+    iVar1 = button->hover_anim + frame_dt_ms * -4;
   }
   else {
-    iVar1 = button[2] + frame_dt_ms * 6;
+    iVar1 = button->hover_anim + frame_dt_ms * 6;
   }
-  button[2] = iVar1;
-  if (0 < button[3]) {
-    button[3] = button[3] + frame_dt_ms * -6;
+  button->hover_anim = iVar1;
+  if (0 < button->click_anim) {
+    button->click_anim = button->click_anim + frame_dt_ms * -6;
   }
-  if (button[3] < 0) {
-    button[3] = 0;
+  if (button->click_anim < 0) {
+    button->click_anim = 0;
   }
-  if (button[2] < 0) {
-    button[2] = 0;
+  if (button->hover_anim < 0) {
+    button->hover_anim = 0;
   }
-  else if (1000 < button[2]) {
-    button[2] = 1000;
+  else if (1000 < button->hover_anim) {
+    button->hover_anim = 1000;
   }
   fStack_4 = 0.5;
-  if ((0 < button[3]) && (fStack_4 = (float)button[3] * 0.0005 + 0.5, 1.0 < fStack_4)) {
+  if ((0 < button->click_anim) &&
+     (fStack_4 = (float)button->click_anim * 0.0005 + 0.5, 1.0 < fStack_4)) {
     fStack_4 = 1.0;
   }
-  self_00.vtable = (IGrim2D_vtbl *)button[2];
+  self_00.vtable = (IGrim2D_vtbl *)button->hover_anim;
   fStack_8 = fStack_4;
   if (0 < (int)self_00.vtable) {
     self_00.vtable = (IGrim2D_vtbl *)(*xy + 12.0);
     (*grim_interface_ptr->vtable->grim_draw_rect_filled)
               ((IGrim2D *)&stack0xfffffff0,(float *)(fStack0000000c - 24.0),22.0,(float)&fStack_8);
   }
-  if ((in_stack_ffffffec < 40.0) || ((char)button[5] != '\0')) {
+  if ((in_stack_ffffffec < 40.0) || (button->force_small != '\0')) {
     pIVar4 = grim_interface_ptr->vtable;
     self = (IGrim2D *)DAT_00478670;
   }
@@ -38042,10 +38043,10 @@ int __cdecl ui_button_update(float *xy,int *button)
     self = (IGrim2D *)DAT_00478674;
   }
   (*pIVar4->grim_bind_texture)(self,0,(int)unaff_EBP);
-  if (*(char *)((int)button + 0x15) != '\0') {
+  if (button->force_wide != '\0') {
     (*grim_interface_ptr->vtable->grim_bind_texture)((IGrim2D *)DAT_00478674,0,in_stack_ffffffe4);
   }
-  fVar7 = (float)button[4];
+  fVar7 = button->alpha;
   uVar6 = 0x3f800000;
   (*grim_interface_ptr->vtable->grim_set_color)((IGrim2D *)0x3f800000,1.0,1.0,fVar7,(float)pIVar8);
   (*grim_interface_ptr->vtable->grim_set_config_var)((IGrim2D *)0x15,1,uVar6);
@@ -38060,14 +38061,14 @@ int __cdecl ui_button_update(float *xy,int *button)
   fVar7 = 2.8026e-45;
   (*grim_interface_ptr->vtable->grim_set_config_var)((IGrim2D *)0x15,2,(uint)fVar9);
   (*grim_interface_ptr->vtable->grim_set_config_var)((IGrim2D *)0x18,0x3f000000,uVar6);
-  if ((char)button[1] == '\0') {
-    fVar9 = (float)button[4] * 0.7;
+  if (button->hovered == '\0') {
+    fVar9 = button->alpha * 0.7;
   }
   else {
-    fVar9 = (float)button[4];
+    fVar9 = button->alpha;
   }
   (*grim_interface_ptr->vtable->grim_set_color)((IGrim2D *)0x3f800000,1.0,1.0,fVar9,fVar7);
-  pIVar8 = (IGrim2D *)*button;
+  pIVar8 = (IGrim2D *)button->label;
   y = &DAT_00471fc4;
   pIVar4 = grim_interface_ptr->vtable;
   fStack_8 = in_stack_00000014 * 0.5 + *xy;
@@ -38076,27 +38077,27 @@ int __cdecl ui_button_update(float *xy,int *button)
                     (grim_interface_ptr,(fStack_4 - (float)(iVar1 / 2)) + 1.0,(float)y,
                      (char *)pIVar8);
   uVar3 = (undefined3)((uint)uVar2 >> 8);
-  if (*(char *)((int)button + 6) == '\0') {
-    *(undefined1 *)((int)button + 5) = 0;
+  if (button->enabled == '\0') {
+    button->activated = '\0';
   }
   else if ((in_stack_0000001c == '\0') ||
           ((iVar1 = (*grim_interface_ptr->vtable->grim_was_key_pressed)((IGrim2D *)0x1c,key),
            (char)iVar1 == '\0' &&
-           (((char)button[1] == '\0' || (iVar1 = input_primary_just_pressed(), (char)iVar1 == '\0'))
+           ((button->hovered == '\0' || (iVar1 = input_primary_just_pressed(), (char)iVar1 == '\0'))
            )))) {
     uVar3 = 0;
-    *(undefined1 *)((int)button + 5) = 0;
+    button->activated = '\0';
   }
   else {
     uVar3 = 0;
-    *(undefined1 *)((int)button + 5) = 1;
+    button->activated = '\x01';
   }
-  iVar1 = CONCAT31(uVar3,*(char *)((int)button + 5));
-  if (*(char *)((int)button + 5) != '\0') {
-    button[3] = 1000;
+  iVar1 = CONCAT31(uVar3,button->activated);
+  if (button->activated != '\0') {
+    button->click_anim = 1000;
     iVar1 = sfx_play(sfx_ui_buttonclick);
   }
-  return CONCAT31((int3)((uint)iVar1 >> 8),*(undefined1 *)((int)button + 5));
+  return CONCAT31((int3)((uint)iVar1 >> 8),button->activated);
 }
 
 
@@ -38907,7 +38908,7 @@ void __cdecl ui_update_notice_update(float *xy,float alpha)
   _DAT_004d0ed0 = s_Get_the_update_004789c8;
   local_8 = *xy + 65.0;
   local_4 = (xy[1] + 42.0) - 2.0;
-  ui_button_update(&local_8,(int *)&DAT_004d0ed0);
+  ui_button_update(&local_8,(ui_button_t *)&DAT_004d0ed0);
   if (DAT_004d0ed5 != '\0') {
     DAT_00480838 = 1;
   }
@@ -39000,7 +39001,7 @@ int __cdecl FUN_004443c0(float *arg1,char arg2)
     if ((DAT_004d121c != 0) || (config_blob.reserved0._128_4_ == 0)) goto LAB_004446ac;
     local_8 = *arg1;
     local_4 = arg1[1] + 22.0;
-    iVar7 = ui_button_update(&local_8,(int *)&DAT_004ccb00);
+    iVar7 = ui_button_update(&local_8,(ui_button_t *)&DAT_004ccb00);
     if ((char)iVar7 == '\0') goto LAB_004446ac;
     uVar5 = 0xffffffff;
     pacVar9 = config_blob.saved_names + config_blob.reserved0._132_4_ + -1;
@@ -39038,7 +39039,7 @@ int __cdecl FUN_004443c0(float *arg1,char arg2)
     if ((char)iVar7 == '\0') {
       local_8 = *arg1 + 180.0;
       local_4 = arg1[1] + 22.0;
-      iVar7 = ui_button_update(&local_8,(int *)&DAT_004ccc90);
+      iVar7 = ui_button_update(&local_8,(ui_button_t *)&DAT_004ccc90);
       if ((char)iVar7 == '\0') goto LAB_004446ac;
     }
     uVar5 = 0xffffffff;

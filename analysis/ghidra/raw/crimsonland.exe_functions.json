@@ -3242,7 +3242,7 @@
   {
     "name": "ui_button_update",
     "address": "0043e830",
-    "signature": "int ui_button_update(float * xy, int * button)",
+    "signature": "int ui_button_update(float * xy, ui_button_t * button)",
     "external": false,
     "calls_total": 7,
     "calls": ["__ftol", "input_primary_just_pressed", "sfx_play", "ui_focus_draw", "ui_focus_set", "ui_focus_update", "ui_mouse_inside_rect"]

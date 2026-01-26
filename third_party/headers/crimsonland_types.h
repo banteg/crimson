@@ -243,6 +243,20 @@ typedef struct ui_element_t {
     float rot_m11;
 } ui_element_t;
 
+typedef struct ui_button_t {
+    char *label;
+    unsigned char hovered;
+    unsigned char activated;
+    unsigned char enabled;
+    unsigned char _pad0;
+    int hover_anim;
+    int click_anim;
+    float alpha;
+    unsigned char force_small;
+    unsigned char force_wide;
+    unsigned char _pad1[2];
+} ui_button_t;
+
 typedef struct crimson_cfg_t {
     unsigned char reserved0[0x0a8];
     char saved_names[8][27];
